@@ -88,7 +88,6 @@ class AlpacaGateway(BaseGateway):
 
     def connect(self, setting: dict):
         """"""
-        print("[debug] gateway setting: ",setting)
         key = setting["key"]
         secret = setting["secret"]
         session = setting["session"]
@@ -174,7 +173,6 @@ class AlpacaRestApi(RestClient):
         self.order_dict ={} 
 
     def query_account(self):
-        print("call query_account")
         path = f"/v1/account"
         self.add_request(
             method="GET",
@@ -183,7 +181,6 @@ class AlpacaRestApi(RestClient):
         )
 
     def on_query_account(self, data, request):
-        print("on_query_account debug: " , data)
         account = AccountData(
             accountid=data['id'],
             balance=float(data['cash']),
@@ -193,7 +190,6 @@ class AlpacaRestApi(RestClient):
         self.gateway.on_account(account)
 
     def query_position(self):
-        print("call query_position")
         path = f"/v1/positions"
         self.add_request(
             method="GET",
@@ -208,7 +204,7 @@ class AlpacaRestApi(RestClient):
                 exchange=Exchange.ALPACA,
                 direction=DIRECTION_ALPACA2VT[d['side']],
                 volume=d['qty'],
-                price=d['avg_entry_price'],
+                price=round(d['avg_entry_price'],3),
                 pnl=d['unrealized_pl'],
                 gateway_name=self.gateway_name,
             )
@@ -221,6 +217,7 @@ class AlpacaRestApi(RestClient):
         headers = {
             "APCA-API-KEY-ID": self.key,
             "APCA-API-SECRET-KEY": self.secret,
+            'Content-Type': 'application/json'
         }
 
         request.headers = headers
@@ -247,28 +244,21 @@ class AlpacaRestApi(RestClient):
         self.key = key
         self.secret = secret
         self.init(url, proxy_host, proxy_port)
-        print("rest connect: ", url, proxy_host, proxy_port)
         self.start(session_num)
         self.connect_time = (
             int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
         )
-        print("rest client connected", self.connect_time)
         self.gateway.write_log("ALPACA REST API启动成功")
         self.query_account()
         self.query_position()
         #self.query_contracts()
 
     def on_send_order(self, data, request: Request ):
-        print("debug on_send_order data: ", data)
-        print("debug on_send_order request: ", request)
-        print("***debug on_send_order request: ", request.extra)
         remote_order_id = data['id']
         order = request.extra
         self.order_dict[order.orderid]=remote_order_id
-        print("+++debug on_send_order request: ", self.order_dict)
         self.gateway.on_order(order)
         GLOBAL_ORDER[remote_order_id]=order
-        print("===+++ debug update global_order_dict: ", GLOBAL_ORDER)
 
     def on_failed_order(self, status_code: int, request: Request):
         """
@@ -278,7 +268,6 @@ class AlpacaRestApi(RestClient):
         order.status = Status.REJECTED
         self.gateway.on_order(order)
         msg = f"请求失败，状态码：{status_code}，信息：{request.response.text}"
-        print('debug on_failed', msg)
         self.gateway.write_log(msg)
 
     def on_error_order(
@@ -298,12 +287,10 @@ class AlpacaRestApi(RestClient):
             self.exception_detail(exception_type, exception_value, tb, request)
         )
 
-    # need debug 0608
     def cancel_order(self, req: CancelRequest):
         """"""
         order_id = req.orderid
         remote_order_id = self.order_dict[order_id]
-        print("debug cancel order: order id ", order_id, "---", remote_order_id)
         if remote_order_id is None:
             print("[error]: can not get remote_order_id from local dict!")
             return
@@ -345,11 +332,11 @@ class AlpacaRestApi(RestClient):
             "POST",
             "/v1/orders",
             callback=self.on_send_order,
-            # data=data,
+            data=data,
             extra=order,
             on_failed=self.on_failed_order,
             on_error=self.on_error_order,
-            json_str=data,
+            #json_str=data,
         )
         print("debug send_order ret val : ", order.vt_orderid)
         return order.vt_orderid
@@ -362,8 +349,8 @@ class AlpacaRestApi(RestClient):
                 exchange=Exchange.ALPACA,  
                 name=symbol,
                 product=Product.SPOT,
-                size=1, # need debug
-                pricetick=0.01, # need debug
+                size=1, 
+                pricetick=0.01,
                 gateway_name=self.gateway_name
             )
             self.on_contract(contract)
@@ -374,7 +361,6 @@ class AlpacaRestApi(RestClient):
     def on_error_query_contracts(self, exception_type: type, exception_value: Exception, tb, request: Request):
         pass
     
-    # need debug
     def query_contracts(self):
         params = {"status": "active"}
         self.add_request(
@@ -384,7 +370,6 @@ class AlpacaRestApi(RestClient):
             callback=self.on_query_contracts,
             on_failed=self.on_failed_query_contracts,
             on_error=self.on_error_query_contracts,
-            # data=data,
         )
 
 
@@ -529,7 +514,6 @@ class AlpacaWebsocketApi(WebsocketClient):
     def handle_auth(self, data):
         stream_ret = data['stream']
         data_ret = data['data']
-        print("stream is {}, data is {}".format(stream_ret,data_ret))
         if (data_ret['status'] == "authorized"):
             print("authorization success!!!")
             self.gateway.write_log("authorization success!!!")
