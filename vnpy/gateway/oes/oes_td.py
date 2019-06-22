@@ -178,7 +178,8 @@ class OesTdMessageLoop:
                 self.gateway.write_log(
                     f"unknown msg id : {head.msgId}   {eOesMsgTypeT(head.msgId)}")
         else:
-            self.gateway.write_log(f"unknown prototype : {session_info.protocolType}")
+            self.gateway.write_log(
+                f"unknown prototype : {session_info.protocolType}")
         return 1
 
     def _message_loop(self):
@@ -220,7 +221,8 @@ class OesTdMessageLoop:
             self.gateway.write_log(
                 f"Order: {vt_order.vt_symbol}-{vt_order.vt_orderid} Code: {error_code} Rejected: {error_string}")
         else:
-            self.gateway.write_log(f"撤单失败，订单号： {data.origClSeqNo}。原因：{error_string}")
+            self.gateway.write_log(
+                f"撤单失败，订单号： {data.origClSeqNo}。原因：{error_string}")
 
     def on_order_inserted(self, d: OesRspMsgBodyT):
         """"""
@@ -318,7 +320,8 @@ class OesTdApi:
 
         self._env = OesApiClientEnvT()
 
-        self._order_manager: "OrderManager" = OrderManager(self.gateway.gateway_name)
+        self._order_manager: "OrderManager" = OrderManager(
+            self.gateway.gateway_name)
         self._message_loop = OesTdMessageLoop(gateway,
                                               self._env,
                                               self,
@@ -389,7 +392,8 @@ class OesTdApi:
                                                            self.password),
                                       0):
             return False
-        self._last_seq_index = max(self._last_seq_index, self._env.ordChannel.lastOutMsgSeq + 1)
+        self._last_seq_index = max(
+            self._last_seq_index, self._env.ordChannel.lastOutMsgSeq + 1)
         return True
 
     def connect_rpt_channel(self):
@@ -613,14 +617,16 @@ class OesTdApi:
         oes_req.clSeqNo = seq_id
         oes_req.mktId = EXCHANGE_VT2OES[vt_req.exchange]
         oes_req.ordType = ORDER_TYPE_VT2OES[(vt_req.exchange, vt_req.type)]
-        oes_req.bsType = BUY_SELL_TYPE_VT2OES[(vt_req.exchange, vt_req.offset, vt_req.direction)]
+        oes_req.bsType = BUY_SELL_TYPE_VT2OES[(
+            vt_req.exchange, vt_req.offset, vt_req.direction)]
         oes_req.invAcctId = ""
         oes_req.securityId = vt_req.symbol
         oes_req.ordQty = int(vt_req.volume)
         oes_req.ordPrice = int(vt_req.price * 10000)
         oes_req.origClOrdId = order_id
 
-        order = vt_req.create_order_data(str(order_id), self.gateway.gateway_name)
+        order = vt_req.create_order_data(
+            str(order_id), self.gateway.gateway_name)
         order.direction = Direction.NET  # fix direction into NET: stock only
         self._order_manager.save_order(order_id, order)
 
@@ -657,7 +663,8 @@ class OesTdApi:
                                         oes_req)
         if ret < 0:
             self.gateway.write_log(_("撤单失败"))  # todo: can I stringify error?
-            if is_disconnected(ret):  # is here any other ret code indicating connection lost?
+            # is here any other ret code indicating connection lost?
+            if is_disconnected(ret):
                 self.gateway.write_log(_("撤单时连接发现连接已断开，正在尝试重连"))
                 self._schedule_reconnect_ord_channel()
 
@@ -725,7 +732,8 @@ class OrderManager:
             vt_order.status = STATUS_OES2VT[data.ordStatus]
             vt_order.volume = data.ordQty
             vt_order.traded = data.cumQty
-            vt_order.time = parse_oes_datetime(data.ordDate, data.ordTime).isoformat()
+            vt_order.time = parse_oes_datetime(
+                data.ordDate, data.ordTime).isoformat()
         except KeyError:
             if data.bsType == eOesBuySellTypeT.OES_BS_TYPE_BUY:
                 offset = Offset.OPEN
@@ -736,7 +744,8 @@ class OrderManager:
                 gateway_name=self.gateway_name,
                 symbol=data.securityId,
                 exchange=EXCHANGE_OES2VT[data.mktId],
-                orderid=str(order_id if order_id else data.origClSeqNo),  # generated id
+                # generated id
+                orderid=str(order_id if order_id else data.origClSeqNo),
                 type=ORDER_TYPE_OES2VT[(data.mktId, data.ordType)],
                 direction=Direction.NET,
                 offset=offset,
@@ -747,7 +756,8 @@ class OrderManager:
                     data.ordStatus],
 
                 # this time should be generated automatically or by a static function
-                time=parse_oes_datetime(data.ordDate, data.ordCnfmTime).isoformat(),
+                time=parse_oes_datetime(
+                    data.ordDate, data.ordCnfmTime).isoformat(),
             )
             self.save_order(order_id, vt_order)
         return vt_order

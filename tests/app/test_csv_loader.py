@@ -11,7 +11,8 @@ from vnpy.trader.constant import Exchange, Interval
 class TestCsvLoader(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.engine = CsvLoaderEngine(None, None)  # no engine is necessary for CsvLoader
+        # no engine is necessary for CsvLoader
+        self.engine = CsvLoaderEngine(None, None)
 
     def test_load(self):
         data = """"Datetime","Open","High","Low","Close","Volume"

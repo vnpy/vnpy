@@ -112,7 +112,8 @@ class OesMdMessageLoop:
                 self.gateway.write_log(
                     f"unknown msg id : {head.msgId}   {eMdsMsgTypeT(head.msgId)}")
         else:
-            self.gateway.write_log(f"unknown prototype : {session_info.protocolType}")
+            self.gateway.write_log(
+                f"unknown prototype : {session_info.protocolType}")
         return 1
 
     def _message_loop(self):
@@ -143,9 +144,11 @@ class OesMdMessageLoop:
         tick.low_price = data.LowPx / 10000
 
         for i in range(min(data.BidPriceLevel, 5)):
-            tick.__dict__['bid_price_' + str(i + 1)] = data.BidLevels[i].Price / 10000
+            tick.__dict__['bid_price_' +
+                          str(i + 1)] = data.BidLevels[i].Price / 10000
         for i in range(min(data.OfferPriceLevel, 5)):
-            tick.__dict__['ask_price_' + str(i + 1)] = data.OfferLevels[i].Price / 10000
+            tick.__dict__['ask_price_' +
+                          str(i + 1)] = data.OfferLevels[i].Price / 10000
         self.gateway.on_tick(copy(tick))
 
     def on_init_tick(self, d: MdsMktRspMsgBodyT):
@@ -159,9 +162,11 @@ class OesMdMessageLoop:
         tick.low_price = data.LowPx / 10000
 
         for i in range(5):
-            tick.__dict__['bid_price_' + str(i + 1)] = data.BidLevels[i].Price / 10000
+            tick.__dict__['bid_price_' +
+                          str(i + 1)] = data.BidLevels[i].Price / 10000
         for i in range(5):
-            tick.__dict__['ask_price_' + str(i + 1)] = data.OfferLevels[i].Price / 10000
+            tick.__dict__['ask_price_' +
+                          str(i + 1)] = data.OfferLevels[i].Price / 10000
         self.gateway.on_tick(copy(tick))
 
     def on_l2_trade(self, d: MdsMktRspMsgBodyT):
@@ -296,7 +301,8 @@ class OesMdApi:
         mds_req.subSecurityCnt = 1
 
         entry.exchId = EXCHANGE_VT2MDS[req.exchange]
-        entry.securityType = eMdsSecurityTypeT.MDS_SECURITY_TYPE_STOCK  # todo: option and others
+        # todo: option and others
+        entry.securityType = eMdsSecurityTypeT.MDS_SECURITY_TYPE_STOCK
         entry.instrId = int(req.symbol)
 
         self._message_loop.register_symbol(req.symbol, req.exchange)

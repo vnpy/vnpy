@@ -397,7 +397,8 @@ class BinanceRestApi(RestClient):
         for account_data in data["balances"]:
             account = AccountData(
                 accountid=account_data["asset"],
-                balance=float(account_data["free"]) + float(account_data["locked"]),
+                balance=float(account_data["free"]) +
+                float(account_data["locked"]),
                 frozen=float(account_data["locked"]),
                 gateway_name=self.gateway_name
             )
@@ -543,7 +544,7 @@ class BinanceTradeWebsocketApi(WebsocketClient):
                 frozen=float(d["l"]),
                 gateway_name=self.gateway_name
             )
-            
+
             if account.balance:
                 self.gateway.on_account(account)
 

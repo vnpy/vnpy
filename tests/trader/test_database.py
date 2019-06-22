@@ -114,7 +114,8 @@ class TestDatabase(unittest.TestCase):
                 self.connect(settings)
                 self.manager.save_bar_data([bar])
                 self.manager.save_bar_data([bar])
-                self.assertBarCount(1, "there should be only one item after upsert")
+                self.assertBarCount(
+                    1, "there should be only one item after upsert")
 
     def test_save_load_bar(self):
         for driver, settings in profiles.items():
@@ -123,7 +124,8 @@ class TestDatabase(unittest.TestCase):
                 # save first
                 self.manager.save_bar_data([bar])
 
-                self.assertBarCount(1, "there should be only one item after save")
+                self.assertBarCount(
+                    1, "there should be only one item after save")
 
     def test_upsert_tick(self):
         for driver, settings in profiles.items():
@@ -131,7 +133,8 @@ class TestDatabase(unittest.TestCase):
                 self.connect(settings)
                 self.manager.save_tick_data([tick])
                 self.manager.save_tick_data([tick])
-                self.assertTickCount(1, "there should be only one item after upsert")
+                self.assertTickCount(
+                    1, "there should be only one item after upsert")
 
     def test_save_load_tick(self):
         for driver, settings in profiles.items():
@@ -140,13 +143,15 @@ class TestDatabase(unittest.TestCase):
                 # save first
                 self.manager.save_tick_data([tick])
 
-                self.assertTickCount(1, "there should be only one item after save")
+                self.assertTickCount(
+                    1, "there should be only one item after save")
 
     def test_newest_bar(self):
         for driver, settings in profiles.items():
             with self.subTest(driver=driver, settings=settings):
                 self.connect(settings)
-                got = self.manager.get_newest_bar_data(bar.symbol, bar.exchange, bar.interval)
+                got = self.manager.get_newest_bar_data(
+                    bar.symbol, bar.exchange, bar.interval)
                 self.assertIsNone(
                     got,
                     "database is empty, but return value for newest_bar_data() is not a None"
@@ -166,14 +171,16 @@ class TestDatabase(unittest.TestCase):
                 got = self.manager.get_newest_bar_data(
                     bar.symbol, bar.exchange, bar.interval
                 )
-                self.assertEqual(got.volume, newer_one.volume, "the newest bar we got mismatched")
+                self.assertEqual(got.volume, newer_one.volume,
+                                 "the newest bar we got mismatched")
 
     def test_newest_tick(self):
         for driver, settings in profiles.items():
             with self.subTest(driver=driver, settings=settings):
                 self.connect(settings)
 
-                got = self.manager.get_newest_tick_data(tick.symbol, tick.exchange)
+                got = self.manager.get_newest_tick_data(
+                    tick.symbol, tick.exchange)
                 self.assertIsNone(
                     got,
                     "database is empty, but return value for newest_tick_data() is not a None"
@@ -189,8 +196,10 @@ class TestDatabase(unittest.TestCase):
                 newer_one.datetime = now()
                 self.manager.save_tick_data([older_one, newer_one])
 
-                got = self.manager.get_newest_tick_data(tick.symbol, tick.exchange)
-                self.assertEqual(got.volume, newer_one.volume, "the newest tick we got mismatched")
+                got = self.manager.get_newest_tick_data(
+                    tick.symbol, tick.exchange)
+                self.assertEqual(got.volume, newer_one.volume,
+                                 "the newest tick we got mismatched")
 
 
 if __name__ == "__main__":

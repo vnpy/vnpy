@@ -75,7 +75,7 @@ class OkexfGateway(BaseGateway):
         "API Key": "",
         "Secret Key": "",
         "Passphrase": "",
-        "Leverage": 10,  
+        "Leverage": 10,
         "会话数": 3,
         "代理地址": "",
         "代理端口": "",
@@ -235,7 +235,7 @@ class OkexfRestApi(RestClient):
             return ""
 
         orderid = f"a{self.connect_time}{self._new_order_id()}"
-        
+
         data = {
             "client_oid": orderid,
             "type": TYPE_VT2OKEXF[(req.offset, req.direction)],
@@ -363,8 +363,8 @@ class OkexfRestApi(RestClient):
                 balance=float(d["equity"]),
                 frozen=float(d.get("margin_for_unfilled", 0)),
                 gateway_name=self.gateway_name,
-            )  
-            self.gateway.on_account(account)      
+            )
+            self.gateway.on_account(account)
         self.gateway.write_log("账户资金查询成功")
 
     def on_query_position(self, data, request):
@@ -379,7 +379,8 @@ class OkexfRestApi(RestClient):
                     exchange=Exchange.OKEX,
                     direction=Direction.LONG,
                     volume=pos_data["long_qty"],
-                    frozen=float(pos_data["long_qty"]) - float(pos_data["long_avail_qty"]),
+                    frozen=float(pos_data["long_qty"]) -
+                    float(pos_data["long_avail_qty"]),
                     price=pos_data["long_avg_cost"],
                     pnl=pos_data["realised_pnl"],
                     gateway_name=self.gateway_name,
@@ -392,7 +393,8 @@ class OkexfRestApi(RestClient):
                     exchange=Exchange.OKEX,
                     direction=Direction.SHORT,
                     volume=pos_data["short_qty"],
-                    frozen=float(pos_data["short_qty"]) - float(pos_data["short_avail_qty"]),
+                    frozen=float(pos_data["short_qty"]) -
+                    float(pos_data["short_avail_qty"]),
                     price=pos_data["short_avg_cost"],
                     pnl=pos_data["realised_pnl"],
                     gateway_name=self.gateway_name,
@@ -413,7 +415,8 @@ class OkexfRestApi(RestClient):
                 traded=int(order_data["filled_qty"]),
                 price=float(order_data["price"]),
                 volume=float(order_data["size"]),
-                time=utc_to_local(order_data["timestamp"]).strftime("%H:%M:%S"),
+                time=utc_to_local(
+                    order_data["timestamp"]).strftime("%H:%M:%S"),
                 status=STATUS_OKEXF2VT[order_data["status"]],
                 gateway_name=self.gateway_name,
             )
@@ -433,7 +436,7 @@ class OkexfRestApi(RestClient):
 
         order = request.extra
         order.status = Status.REJECTED
-        order.time = datetime.now().strftime("%H:%M:%S.%f")        
+        order.time = datetime.now().strftime("%H:%M:%S.%f")
         self.gateway.on_order(order)
         msg = f"委托失败，状态码：{status_code}，信息：{request.response.text}"
         self.gateway.write_log(msg)
@@ -613,7 +616,8 @@ class OkexfWebsocketApi(WebsocketClient):
         msg = f"触发异常，状态码：{exception_type}，信息：{exception_value}"
         self.gateway.write_log(msg)
 
-        sys.stderr.write(self.exception_detail(exception_type, exception_value, tb))
+        sys.stderr.write(self.exception_detail(
+            exception_type, exception_value, tb))
 
     def login(self):
         """
@@ -808,7 +812,7 @@ class OkexfWebsocketApi(WebsocketClient):
             gateway_name=self.gateway_name,
         )
         self.gateway.on_position(pos)
-        
+
 
 def generate_signature(msg: str, secret_key: str):
     """OKEX V3 signature"""
@@ -823,6 +827,6 @@ def get_timestamp():
 
 
 def utc_to_local(timestamp):
-    time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ") 
+    time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
     utc_time = time + timedelta(hours=8)
     return utc_time
