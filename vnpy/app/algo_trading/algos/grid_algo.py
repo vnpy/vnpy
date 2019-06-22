@@ -83,14 +83,14 @@ class GridAlgo(AlgoTemplate):
         target_sell_volume = self.pos - target_sell_position
 
         # Buy when price dropping
-        if target_buy_volume > 2:
+        if (target_buy_volume > 2 & self.last_tick.ask_volume_1 > 2):
             self.vt_orderid = self.buy(
                 self.vt_symbol,
                 self.last_tick.ask_price_1,
                 min(target_buy_volume, self.last_tick.ask_volume_1)
             )
         # Sell when price rising
-        elif target_sell_volume > 2:
+        elif (target_sell_volume > 2 & self.last_tick.bid_volume_1 > 2):
             self.vt_orderid = self.sell(
                 self.vt_symbol,
                 self.last_tick.bid_price_1,
