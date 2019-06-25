@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <iostream>
 #include <string>
 #include <pybind11/pybind11.h>
@@ -11,7 +13,6 @@
 #include "TORATstpTraderApi.h"
 #include "TORATstpUserApiDataType.h"
 #include "TORATstpUserApiStruct.h"
-#include "custom/custom_wrappers.hpp"
 
 
 void generate_vntora(pybind11::module & parent)
@@ -168,938 +169,506 @@ void generate_vntora(pybind11::module & parent)
     generate_class_CTORATstpTraderApi(parent);
     generate_enum_TORA_TE_RESUME_TYPE(parent);
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(int &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(int &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(int &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(int &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(int &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(int &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(int &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(int &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(int &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(int &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(int &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(int &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(double &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(double &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(double &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(double &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(double &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(double &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(double &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(double &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(double &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(double &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(double &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(double &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(char &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(char &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(char &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(char &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(char &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(char &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(char &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(char &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(char &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(char &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(char &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(char &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(short &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(short &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(short &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(short &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(short &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(short &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(short &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(short &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(short &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(short &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(short &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(short &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(long long &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(long long &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(long long &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(long long &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(long long &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(long long &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(long long &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(long long &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(long long &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(long long &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(long long &)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(long long &)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(char *)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(char *)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(char *)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(char *)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(char *)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(char *)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(char *)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(char *)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(char *)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(char *)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("set_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<void( *)(char *)>(
-                    &set_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<void( *)(char *)>(
+            &set_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(int)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(int)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(int)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(int)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(int)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(int)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(int)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(int)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(int)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(int)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(int)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(int)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(double)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(double)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(double)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(double)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(double)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(double)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(double)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(double)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(double)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(double)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(double)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(double)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(char)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(char)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(char)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(char)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(char)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(char)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(char)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(char)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(char)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(char)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(char)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(char)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(short)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(short)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(short)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(short)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(short)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(short)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(short)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(short)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(short)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(short)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(short)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(short)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(long long)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(long long)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(long long)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(long long)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(long long)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(long long)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(long long)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(long long)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(long long)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(long long)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(long long)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(long long)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(const char *)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(const char *)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(const char *)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(const char *)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(const char *)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(const char *)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(const char *)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(const char *)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(const char *)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(const char *)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("is_null",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                static_cast<bool( *)(const char *)>(
-                    &is_null
-                    )
-            >, 
-            brigand::list<
-            >
-        >::value,
+        static_cast<bool( *)(const char *)>(
+            &is_null
+            ),
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );

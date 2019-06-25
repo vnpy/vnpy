@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <iostream>
 #include <string>
 #include <pybind11/pybind11.h>
@@ -11,7 +13,6 @@
 #include "TORATstpTraderApi.h"
 #include "TORATstpUserApiDataType.h"
 #include "TORATstpUserApiStruct.h"
-#include "custom/custom_wrappers.hpp"
 
 
 autocxxpy::cross_assign module_vntora::cross;

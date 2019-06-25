@@ -45,57 +45,27 @@ void generate_vntap(pybind11::module & parent)
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("FreeITapTradeAPI",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &FreeITapTradeAPI
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &FreeITapTradeAPI,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("GetITapTradeAPIVersion",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &GetITapTradeAPIVersion
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &GetITapTradeAPIVersion,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("SetITapTradeAPIDataPath",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &SetITapTradeAPIDataPath
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &SetITapTradeAPIDataPath,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("SetITapTradeAPILogLevel",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &SetITapTradeAPILogLevel
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &SetITapTradeAPILogLevel,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("GetITapErrorDescribe",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &GetITapErrorDescribe
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &GetITapErrorDescribe,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
@@ -112,46 +82,22 @@ void generate_vntap(pybind11::module & parent)
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("FreeTapQuoteAPI",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &FreeTapQuoteAPI
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &FreeTapQuoteAPI,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("GetTapQuoteAPIVersion",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &GetTapQuoteAPIVersion
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &GetTapQuoteAPIVersion,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("SetTapQuoteAPIDataPath",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &SetTapQuoteAPIDataPath
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &SetTapQuoteAPIDataPath,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     parent.def("SetTapQuoteAPILogLevel",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &SetTapQuoteAPILogLevel
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &SetTapQuoteAPILogLevel,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );

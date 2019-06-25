@@ -7,7 +7,7 @@ if typing.TYPE_CHECKING:
     from .vntap import *
 
 
-def set_async_callback_exception_handler(handler: Callable[[AsyncDispatchException], bool]):
+def set_async_callback_exception_handler(handler: Callable[[AsyncDispatchException], None]):
     """
     set a customize exception handler for async callback in this module(pyd)
     \a handler should return True if it handles that exception,
@@ -34,7 +34,7 @@ class TapAPICommodity():
     
     
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     
     
@@ -44,10 +44,10 @@ class TapAPIContract():
     Commodity: ITapTrade.TapAPICommodity
     ContractNo1: str
     StrikePrice1: str
-    CallOrPutFlag1: int
+    CallOrPutFlag1: str
     ContractNo2: str
     StrikePrice2: str
-    CallOrPutFlag2: int
+    CallOrPutFlag2: str
     
     
 class TapAPIExchangeInfo():
@@ -61,7 +61,7 @@ class TapAPIChangePasswordReq():
     
     
     AccountNo: str
-    PasswordType: int
+    PasswordType: str
     OldPassword: str
     NewPassword: str
     
@@ -70,7 +70,7 @@ class TapAPIAuthPasswordReq():
     
     
     AccountNo: str
-    PasswordType: int
+    PasswordType: str
     Password: str
     
     
@@ -78,7 +78,7 @@ class TapAPITradeLoginAuth():
     
     
     UserNo: str
-    ISModifyPassword: int
+    ISModifyPassword: str
     Password: str
     NewPassword: str
     
@@ -117,9 +117,9 @@ class TapAPIAccountInfo():
     
     
     AccountNo: str
-    AccountType: int
-    AccountState: int
-    AccountTradeRight: int
+    AccountType: str
+    AccountState: str
+    AccountTradeRight: str
     CommodityGroupNo: str
     AccountShortName: str
     AccountEnShortName: str
@@ -130,24 +130,24 @@ class TapAPINewOrder():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
+    CallOrPutFlag: str
     ContractNo2: str
     StrikePrice2: str
-    CallOrPutFlag2: int
-    OrderType: int
-    OrderSource: int
-    TimeInForce: int
+    CallOrPutFlag2: str
+    OrderType: str
+    OrderSource: str
+    TimeInForce: str
     ExpireTime: str
-    IsRiskOrder: int
-    OrderSide: int
-    PositionEffect: int
-    PositionEffect2: int
+    IsRiskOrder: str
+    OrderSide: str
+    PositionEffect: str
+    PositionEffect2: str
     InquiryNo: str
-    HedgeFlag: int
+    HedgeFlag: str
     OrderPrice: float
     OrderPrice2: float
     StopPrice: float
@@ -159,10 +159,10 @@ class TapAPINewOrder():
     RefDouble: float
     RefString: str
     ClientID: str
-    TacticsType: int
-    TriggerCondition: int
-    TriggerPriceType: int
-    AddOneIsValid: int
+    TacticsType: str
+    TriggerCondition: str
+    TriggerPriceType: str
+    AddOneIsValid: str
     
     
 class TapAPIOrderInfo():
@@ -170,24 +170,24 @@ class TapAPIOrderInfo():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
+    CallOrPutFlag: str
     ContractNo2: str
     StrikePrice2: str
-    CallOrPutFlag2: int
-    OrderType: int
-    OrderSource: int
-    TimeInForce: int
+    CallOrPutFlag2: str
+    OrderType: str
+    OrderSource: str
+    TimeInForce: str
     ExpireTime: str
-    IsRiskOrder: int
-    OrderSide: int
-    PositionEffect: int
-    PositionEffect2: int
+    IsRiskOrder: str
+    OrderSide: str
+    PositionEffect: str
+    PositionEffect2: str
     InquiryNo: str
-    HedgeFlag: int
+    HedgeFlag: str
     OrderPrice: float
     OrderPrice2: float
     StopPrice: float
@@ -199,14 +199,14 @@ class TapAPIOrderInfo():
     MinClipSize: int
     MaxClipSize: int
     LicenseNo: str
-    ServerFlag: int
+    ServerFlag: str
     OrderNo: str
     ClientOrderNo: str
     ClientID: str
-    TacticsType: int
-    TriggerCondition: int
-    TriggerPriceType: int
-    AddOneIsValid: int
+    TacticsType: str
+    TriggerCondition: str
+    TriggerPriceType: str
+    AddOneIsValid: str
     ClientLocalIP: str
     ClientMac: str
     ClientIP: str
@@ -223,16 +223,16 @@ class TapAPIOrderInfo():
     OrderCommandUserNo: str
     OrderUpdateUserNo: str
     OrderUpdateTime: str
-    OrderState: int
+    OrderState: str
     OrderMatchPrice: float
     OrderMatchPrice2: float
     OrderMatchQty: int
     OrderMatchQty2: int
     ErrorCode: int
     ErrorText: str
-    IsBackInput: int
-    IsDeleted: int
-    IsAddOne: int
+    IsBackInput: str
+    IsDeleted: str
+    IsAddOne: str
     
     
 class TapAPIOrderInfoNotice():
@@ -246,7 +246,7 @@ class TapAPIOrderInfoNotice():
 class TapAPIOrderActionRsp():
     
     
-    ActionType: int
+    ActionType: str
     OrderInfo: ITapTrade.TapAPIOrderInfo
     
     
@@ -254,7 +254,7 @@ class TapAPIAmendOrder():
     
     
     ReqData: ITapTrade.TapAPINewOrder
-    ServerFlag: int
+    ServerFlag: str
     OrderNo: str
     
     
@@ -264,7 +264,7 @@ class TapAPIOrderCancelReq():
     RefInt: int
     RefDouble: float
     RefString: str
-    ServerFlag: int
+    ServerFlag: str
     OrderNo: str
     
     
@@ -273,24 +273,24 @@ class TapAPIOrderQryReq():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
-    OrderType: int
-    OrderSource: int
-    TimeInForce: int
+    OrderType: str
+    OrderSource: str
+    TimeInForce: str
     ExpireTime: str
-    IsRiskOrder: int
-    ServerFlag: int
+    IsRiskOrder: str
+    ServerFlag: str
     OrderNo: str
-    IsBackInput: int
-    IsDeleted: int
-    IsAddOne: int
+    IsBackInput: str
+    IsDeleted: str
+    IsAddOne: str
     
     
 class TapAPIOrderProcessQryReq():
     
     
-    ServerFlag: int
+    ServerFlag: str
     OrderNo: str
     
     
@@ -299,19 +299,19 @@ class TapAPIFillQryReq():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
-    MatchSource: int
-    MatchSide: int
-    PositionEffect: int
-    ServerFlag: int
+    CallOrPutFlag: str
+    MatchSource: str
+    MatchSide: str
+    PositionEffect: str
+    ServerFlag: str
     OrderNo: str
     UpperNo: str
-    IsDeleted: int
-    IsAddOne: int
+    IsDeleted: str
+    IsAddOne: str
     
     
 class TapAPIFillInfo():
@@ -319,15 +319,15 @@ class TapAPIFillInfo():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
-    MatchSource: int
-    MatchSide: int
-    PositionEffect: int
-    ServerFlag: int
+    CallOrPutFlag: str
+    MatchSource: str
+    MatchSide: str
+    PositionEffect: str
+    ServerFlag: str
     OrderNo: str
     OrderSystemNo: str
     MatchNo: str
@@ -338,12 +338,12 @@ class TapAPIFillInfo():
     UpperNo: str
     MatchPrice: float
     MatchQty: int
-    IsDeleted: int
-    IsAddOne: int
+    IsDeleted: str
+    IsAddOne: str
     FeeCurrencyGroup: str
     FeeCurrency: str
     FeeValue: float
-    IsManualFee: int
+    IsManualFee: str
     ClosePrositionPrice: float
     
     
@@ -352,7 +352,7 @@ class TapAPICloseQryReq():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     
     
@@ -361,12 +361,12 @@ class TapAPICloseInfo():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
-    CloseSide: int
+    CallOrPutFlag: str
+    CloseSide: str
     CloseQty: int
     OpenPrice: float
     ClosePrice: float
@@ -391,15 +391,15 @@ class TapAPIPositionInfo():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
-    MatchSide: int
-    HedgeFlag: int
+    CallOrPutFlag: str
+    MatchSide: str
+    HedgeFlag: str
     PositionNo: str
-    ServerFlag: int
+    ServerFlag: str
     OrderNo: str
     MatchNo: str
     UpperNo: str
@@ -416,7 +416,7 @@ class TapAPIPositionInfo():
     PositionProfit: float
     LMEPositionProfit: float
     OptionMarketValue: float
-    IsHistory: int
+    IsHistory: str
     
     
 class TapAPIPositionProfit():
@@ -433,7 +433,7 @@ class TapAPIPositionProfit():
 class TapAPIPositionProfitNotice():
     
     
-    IsLast: int
+    IsLast: str
     Data: ITapTrade.TapAPIPositionProfit
     
     
@@ -442,12 +442,12 @@ class TapAPIPositionSummary():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
-    MatchSide: int
+    CallOrPutFlag: str
+    MatchSide: str
     PositionPrice: float
     PositionQty: int
     HisPositionQty: int
@@ -466,8 +466,8 @@ class TapAPIFundData():
     CurrencyGroupNo: str
     CurrencyNo: str
     TradeRate: float
-    FutureAlg: int
-    OptionAlg: int
+    FutureAlg: str
+    OptionAlg: str
     PreBalance: float
     PreUnExpProfit: float
     PreLMEPositionProfit: float
@@ -509,44 +509,44 @@ class TapAPICommodityInfo():
     
     
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     CommodityName: str
     CommodityEngName: str
     RelateExchangeNo: str
-    RelateCommodityType: int
+    RelateCommodityType: str
     RelateCommodityNo: str
     RelateExchangeNo2: str
-    RelateCommodityType2: int
+    RelateCommodityType2: str
     RelateCommodityNo2: str
     CurrencyGroupNo: str
     TradeCurrency: str
     ContractSize: float
-    OpenCloseMode: int
+    OpenCloseMode: str
     StrikePriceTimes: float
     CommodityTickSize: float
     CommodityDenominator: int
-    CmbDirect: int
-    DeliveryMode: int
+    CmbDirect: str
+    DeliveryMode: str
     DeliveryDays: int
     AddOneTime: str
     CommodityTimeZone: int
-    IsAddOne: int
+    IsAddOne: str
     
     
 class TapAPITradeContractInfo():
     
     
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo1: str
     StrikePrice1: str
-    CallOrPutFlag1: int
+    CallOrPutFlag1: str
     ContractNo2: str
     StrikePrice2: str
-    CallOrPutFlag2: int
-    ContractType: int
+    CallOrPutFlag2: str
+    ContractType: str
     QuoteUnderlyingContract: str
     ContractName: str
     ContractExpDate: str
@@ -561,8 +561,8 @@ class TapAPICurrencyInfo():
     CurrencyGroupNo: str
     TradeRate: float
     TradeRate2: float
-    FutureAlg: int
-    OptionAlg: int
+    FutureAlg: str
+    OptionAlg: str
     
     
 class TapAPITradeMessageReq():
@@ -582,10 +582,10 @@ class TapAPITradeMessage():
     TMsgValidDateTime: str
     TMsgTitle: str
     TMsgContent: str
-    TMsgType: int
-    TMsgLevel: int
-    IsSendBySMS: int
-    IsSendByEMail: int
+    TMsgType: str
+    TMsgLevel: str
+    IsSendBySMS: str
+    IsSendByEMail: str
     Sender: str
     SendDateTime: str
     
@@ -594,9 +594,9 @@ class TapAPIBillQryReq():
     
     
     UserNo: str
-    BillType: int
+    BillType: str
     BillDate: str
-    BillFileType: int
+    BillFileType: str
     
     
 class TapAPIBillQryRsp():
@@ -604,7 +604,7 @@ class TapAPIBillQryRsp():
     
     Reqdata: ITapTrade.TapAPIBillQryReq
     BillLen: int
-    BillText: List[int]
+    BillText: List[str]
     
     
 class TapAPIHisOrderQryReq():
@@ -622,24 +622,24 @@ class TapAPIHisOrderQryRsp():
     Date: str
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
+    CallOrPutFlag: str
     ContractNo2: str
     StrikePrice2: str
-    CallOrPutFlag2: int
-    OrderType: int
-    OrderSource: int
-    TimeInForce: int
+    CallOrPutFlag2: str
+    OrderType: str
+    OrderSource: str
+    TimeInForce: str
     ExpireTime: str
-    IsRiskOrder: int
-    OrderSide: int
-    PositionEffect: int
-    PositionEffect2: int
+    IsRiskOrder: str
+    OrderSide: str
+    PositionEffect: str
+    PositionEffect2: str
     InquiryNo: str
-    HedgeFlag: int
+    HedgeFlag: str
     OrderPrice: float
     OrderPrice2: float
     StopPrice: float
@@ -649,7 +649,7 @@ class TapAPIHisOrderQryRsp():
     RefInt: int
     RefDouble: float
     RefString: str
-    ServerFlag: int
+    ServerFlag: str
     OrderNo: str
     OrderStreamID: int
     UpperNo: str
@@ -664,23 +664,23 @@ class TapAPIHisOrderQryRsp():
     OrderCommandUserNo: str
     OrderUpdateUserNo: str
     OrderUpdateTime: str
-    OrderState: int
+    OrderState: str
     OrderMatchPrice: float
     OrderMatchPrice2: float
     OrderMatchQty: int
     OrderMatchQty2: int
     ErrorCode: int
     ErrorText: str
-    IsBackInput: int
-    IsDeleted: int
-    IsAddOne: int
-    AddOneIsValid: int
+    IsBackInput: str
+    IsDeleted: str
+    IsAddOne: str
+    AddOneIsValid: str
     MinClipSize: int
     MaxClipSize: int
     LicenseNo: str
-    TacticsType: int
-    TriggerCondition: int
-    TriggerPriceType: int
+    TacticsType: str
+    TriggerCondition: str
+    TriggerPriceType: str
     
     
 class TapAPIHisMatchQryReq():
@@ -690,7 +690,7 @@ class TapAPIHisMatchQryReq():
     AccountAttributeNo: str
     BeginDate: str
     EndDate: str
-    CountType: int
+    CountType: str
     
     
 class TapAPIHisMatchQryRsp():
@@ -700,15 +700,15 @@ class TapAPIHisMatchQryRsp():
     TradeDate: str
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
-    MatchSource: int
-    MatchSide: int
-    PositionEffect: int
-    HedgeFlag: int
+    CallOrPutFlag: str
+    MatchSource: str
+    MatchSide: str
+    PositionEffect: str
+    HedgeFlag: str
     MatchPrice: float
     MatchQty: int
     OrderNo: str
@@ -726,12 +726,12 @@ class TapAPIHisMatchQryRsp():
     AccountFee: float
     AccountFeeCurrencyGroup: str
     AccountFeeCurrency: str
-    IsManualFee: int
+    IsManualFee: str
     AccountOtherFee: float
     UpperFee: float
     UpperFeeCurrencyGroup: str
     UpperFeeCurrency: str
-    IsUpperManualFee: int
+    IsUpperManualFee: str
     UpperOtherFee: float
     MatchDateTime: str
     UpperMatchDateTime: str
@@ -755,7 +755,7 @@ class TapAPIHisPositionQryReq():
     
     AccountNo: str
     Date: str
-    SettleFlag: int
+    SettleFlag: str
     
     
 class TapAPIHisPositionQryRsp():
@@ -765,13 +765,13 @@ class TapAPIHisPositionQryRsp():
     OpenDate: str
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
-    MatchSide: int
-    HedgeFlag: int
+    CallOrPutFlag: str
+    MatchSide: str
+    HedgeFlag: str
     PositionPrice: float
     PositionQty: int
     OrderNo: str
@@ -798,7 +798,7 @@ class TapAPIHisDeliveryQryReq():
     AccountAttributeNo: str
     BeginDate: str
     EndDate: str
-    CountType: int
+    CountType: str
     
     
 class TapAPIHisDeliveryQryRsp():
@@ -808,13 +808,13 @@ class TapAPIHisDeliveryQryRsp():
     OpenDate: str
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
-    MatchSource: int
-    OpenSide: int
+    CallOrPutFlag: str
+    MatchSource: str
+    OpenSide: str
     OpenPrice: float
     DeliveryPrice: float
     DeliveryQty: int
@@ -835,7 +835,7 @@ class TapAPIHisDeliveryQryRsp():
     UpperFeeCurrencyGroup: str
     UpperFeeCurrency: str
     UpperDeliveryFee: float
-    DeliveryMode: int
+    DeliveryMode: str
     OperatorNo: str
     OperateTime: str
     SettleGourpNo: str
@@ -856,7 +856,7 @@ class TapAPIAccountCashAdjustQryRsp():
     
     Date: str
     AccountNo: str
-    CashAdjustType: int
+    CashAdjustType: str
     CurrencyGroupNo: str
     CurrencyNo: str
     CashAdjustValue: float
@@ -865,10 +865,10 @@ class TapAPIAccountCashAdjustQryRsp():
     OperatorNo: str
     AccountBank: str
     BankAccount: str
-    AccountLWFlag: int
+    AccountLWFlag: str
     CompanyBank: str
     InternalBankAccount: str
-    CompanyLWFlag: int
+    CompanyLWFlag: str
     
     
 class TapAPIAccountFeeRentQryReq():
@@ -882,10 +882,10 @@ class TapAPIAccountFeeRentQryRsp():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
-    MatchSource: int
-    CalculateMode: int
+    MatchSource: str
+    CalculateMode: str
     CurrencyGroupNo: str
     CurrencyNo: str
     OpenCloseFee: float
@@ -897,7 +897,7 @@ class TapAPIAccountMarginRentQryReq():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     
     
@@ -906,12 +906,12 @@ class TapAPIAccountMarginRentQryRsp():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
-    CalculateMode: int
+    CallOrPutFlag: str
+    CalculateMode: str
     CurrencyGroupNo: str
     CurrencyNo: str
     InitialMargin: float
@@ -925,12 +925,12 @@ class TapAPIOrderQuoteMarketNotice():
     
     
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
-    OrderSide: int
+    CallOrPutFlag: str
+    OrderSide: str
     OrderQty: int
     
     
@@ -939,18 +939,18 @@ class TapAPIOrderMarketInsertReq():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
-    OrderType: int
-    TimeInForce: int
+    CallOrPutFlag: str
+    OrderType: str
+    TimeInForce: str
     ExpireTime: str
-    OrderSource: int
-    BuyPositionEffect: int
-    SellPositionEffect: int
-    AddOneIsValid: int
+    OrderSource: str
+    BuyPositionEffect: str
+    SellPositionEffect: str
+    AddOneIsValid: str
     OrderBuyPrice: float
     OrderSellPrice: float
     OrderBuyQty: int
@@ -968,25 +968,25 @@ class TapAPIOrderMarketInsertRsp():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
-    OrderType: int
-    TimeInForce: int
+    CallOrPutFlag: str
+    OrderType: str
+    TimeInForce: str
     ExpireTime: str
-    OrderSource: int
-    BuyPositionEffect: int
-    SellPositionEffect: int
+    OrderSource: str
+    BuyPositionEffect: str
+    SellPositionEffect: str
     OrderBuyPrice: float
     OrderSellPrice: float
     OrderBuyQty: int
     OrderSellQty: int
-    ServerFlag: int
+    ServerFlag: str
     OrderBuyNo: str
     OrderSellNo: str
-    AddOneIsValid: int
+    AddOneIsValid: str
     OrderMarketUserNo: str
     OrderMarketTime: str
     RefInt: int
@@ -1005,7 +1005,7 @@ class TapAPIOrderMarketInsertRsp():
 class TapAPIOrderMarketDeleteReq():
     
     
-    ServerFlag: int
+    ServerFlag: str
     OrderBuyNo: str
     OrderSellNo: str
     
@@ -1013,7 +1013,7 @@ class TapAPIOrderMarketDeleteReq():
 class TapAPIOrderLocalRemoveReq():
     
     
-    ServerFlag: int
+    ServerFlag: str
     OrderNo: str
     
     
@@ -1031,24 +1031,24 @@ class TapAPIOrderLocalInputReq():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
+    CallOrPutFlag: str
     ContractNo2: str
     StrikePrice2: str
-    CallOrPutFlag2: int
-    OrderType: int
-    OrderSource: int
-    TimeInForce: int
+    CallOrPutFlag2: str
+    OrderType: str
+    OrderSource: str
+    TimeInForce: str
     ExpireTime: str
-    IsRiskOrder: int
-    OrderSide: int
-    PositionEffect: int
-    PositionEffect2: int
+    IsRiskOrder: str
+    OrderSide: str
+    PositionEffect: str
+    PositionEffect2: str
     InquiryNo: str
-    HedgeFlag: int
+    HedgeFlag: str
     OrderPrice: float
     OrderPrice2: float
     StopPrice: float
@@ -1061,15 +1061,15 @@ class TapAPIOrderLocalInputReq():
     OrderMatchPrice2: float
     OrderMatchQty: int
     OrderMatchQty2: int
-    OrderState: int
-    IsAddOne: int
+    OrderState: str
+    IsAddOne: str
     
     
 class TapAPIOrderLocalModifyReq():
     
     
     req: ITapTrade.TapAPIOrderLocalInputReq
-    ServerFlag: int
+    ServerFlag: str
     OrderNo: str
     
     
@@ -1077,7 +1077,7 @@ class TapAPIOrderLocalTransferReq():
     
     
     AccountNo: str
-    ServerFlag: int
+    ServerFlag: str
     OrderNo: str
     
     
@@ -1086,14 +1086,14 @@ class TapAPIFillLocalInputReq():
     
     AccountNo: str
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     ContractNo: str
     StrikePrice: str
-    CallOrPutFlag: int
-    MatchSide: int
-    PositionEffect: int
-    HedgeFlag: int
+    CallOrPutFlag: str
+    MatchSide: str
+    PositionEffect: str
+    HedgeFlag: str
     MatchPrice: float
     MatchQty: int
     OrderSystemNo: str
@@ -1101,18 +1101,18 @@ class TapAPIFillLocalInputReq():
     MatchDateTime: str
     UpperMatchDateTime: str
     UpperNo: str
-    IsAddOne: int
+    IsAddOne: str
     FeeCurrencyGroup: str
     FeeCurrency: str
     FeeValue: float
-    IsManualFee: int
+    IsManualFee: str
     ClosePositionPrice: float
     
     
 class TapAPIFillLocalRemoveReq():
     
     
-    ServerFlag: int
+    ServerFlag: str
     MatchNo: str
     
     
@@ -1134,7 +1134,7 @@ class ITapTradeAPINotify():
         ...
     def OnRspLogin(self, errorCode: int, loginRspInfo: ITapTrade.TapAPITradeLoginRspInfo)->None:
         ...
-    def OnRtnContactInfo(self, errorCode: int, isLast: int, ContactInfo: str)->None:
+    def OnRtnContactInfo(self, errorCode: int, isLast: str, ContactInfo: str)->None:
         ...
     def OnRspRequestVertificateCode(self, sessionID: int, errorCode: int, rsp: ITapTrade.TapAPIRequestVertificateCodeRsp)->None:
         ...
@@ -1152,17 +1152,17 @@ class ITapTradeAPINotify():
         ...
     def OnRspSetReservedInfo(self, sessionID: int, errorCode: int, info: str)->None:
         ...
-    def OnRspQryAccount(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIAccountInfo)->None:
+    def OnRspQryAccount(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIAccountInfo)->None:
         ...
-    def OnRspQryFund(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIFundData)->None:
+    def OnRspQryFund(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIFundData)->None:
         ...
     def OnRtnFund(self, info: ITapTrade.TapAPIFundData)->None:
         ...
-    def OnRspQryExchange(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIExchangeInfo)->None:
+    def OnRspQryExchange(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIExchangeInfo)->None:
         ...
-    def OnRspQryCommodity(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPICommodityInfo)->None:
+    def OnRspQryCommodity(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPICommodityInfo)->None:
         ...
-    def OnRspQryContract(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPITradeContractInfo)->None:
+    def OnRspQryContract(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPITradeContractInfo)->None:
         ...
     def OnRtnContract(self, info: ITapTrade.TapAPITradeContractInfo)->None:
         ...
@@ -1170,47 +1170,47 @@ class ITapTradeAPINotify():
         ...
     def OnRtnOrder(self, info: ITapTrade.TapAPIOrderInfoNotice)->None:
         ...
-    def OnRspQryOrder(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIOrderInfo)->None:
+    def OnRspQryOrder(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIOrderInfo)->None:
         ...
-    def OnRspQryOrderProcess(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIOrderInfo)->None:
+    def OnRspQryOrderProcess(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIOrderInfo)->None:
         ...
-    def OnRspQryFill(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIFillInfo)->None:
+    def OnRspQryFill(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIFillInfo)->None:
         ...
     def OnRtnFill(self, info: ITapTrade.TapAPIFillInfo)->None:
         ...
-    def OnRspQryPosition(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIPositionInfo)->None:
+    def OnRspQryPosition(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIPositionInfo)->None:
         ...
     def OnRtnPosition(self, info: ITapTrade.TapAPIPositionInfo)->None:
         ...
-    def OnRspQryPositionSummary(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIPositionSummary)->None:
+    def OnRspQryPositionSummary(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIPositionSummary)->None:
         ...
     def OnRtnPositionSummary(self, info: ITapTrade.TapAPIPositionSummary)->None:
         ...
     def OnRtnPositionProfit(self, info: ITapTrade.TapAPIPositionProfitNotice)->None:
         ...
-    def OnRspQryCurrency(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPICurrencyInfo)->None:
+    def OnRspQryCurrency(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPICurrencyInfo)->None:
         ...
-    def OnRspQryTradeMessage(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPITradeMessage)->None:
+    def OnRspQryTradeMessage(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPITradeMessage)->None:
         ...
     def OnRtnTradeMessage(self, info: ITapTrade.TapAPITradeMessage)->None:
         ...
-    def OnRspQryHisOrder(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisOrderQryRsp)->None:
+    def OnRspQryHisOrder(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIHisOrderQryRsp)->None:
         ...
-    def OnRspQryHisOrderProcess(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisOrderQryRsp)->None:
+    def OnRspQryHisOrderProcess(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIHisOrderQryRsp)->None:
         ...
-    def OnRspQryHisMatch(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisMatchQryRsp)->None:
+    def OnRspQryHisMatch(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIHisMatchQryRsp)->None:
         ...
-    def OnRspQryHisPosition(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisPositionQryRsp)->None:
+    def OnRspQryHisPosition(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIHisPositionQryRsp)->None:
         ...
-    def OnRspQryHisDelivery(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisDeliveryQryRsp)->None:
+    def OnRspQryHisDelivery(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIHisDeliveryQryRsp)->None:
         ...
-    def OnRspQryAccountCashAdjust(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIAccountCashAdjustQryRsp)->None:
+    def OnRspQryAccountCashAdjust(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIAccountCashAdjustQryRsp)->None:
         ...
-    def OnRspQryBill(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIBillQryRsp)->None:
+    def OnRspQryBill(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIBillQryRsp)->None:
         ...
-    def OnRspQryAccountFeeRent(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIAccountFeeRentQryRsp)->None:
+    def OnRspQryAccountFeeRent(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIAccountFeeRentQryRsp)->None:
         ...
-    def OnRspQryAccountMarginRent(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIAccountMarginRentQryRsp)->None:
+    def OnRspQryAccountMarginRent(self, sessionID: int, errorCode: int, isLast: str, info: ITapTrade.TapAPIAccountMarginRentQryRsp)->None:
         ...
     def OnRspHKMarketOrderInsert(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderMarketInsertRsp)->None:
         ...
@@ -1336,7 +1336,7 @@ TAPISTR_2000 = str
 TAPIAUTHCODE = str
 TAPIMACTYPE = str
 TAPISecondSerialIDType = str
-TAPICHAR = int
+TAPICHAR = str
 TAPIClientIDType = str
 TAPIINT32 = int
 TAPIUINT32 = int
@@ -1345,101 +1345,101 @@ TAPIUINT64 = int
 TAPIUINT16 = int
 TAPIUINT8 = int
 TAPIREAL64 = float
-TAPIYNFLAG = int
-TAPIPasswordType = int
+TAPIYNFLAG = str
+TAPIPasswordType = str
 TAPIDTSTAMP = str
 TAPIDATETIME = str
 TAPIDATE = str
 TAPITIME = str
-TAPILOGLEVEL = int
-TAPIOptionType = int
-TAPICommodityType = int
-TAPICallOrPutFlagType = int
-TAPIAccountType = int
+TAPILOGLEVEL = str
+TAPIOptionType = str
+TAPICommodityType = str
+TAPICallOrPutFlagType = str
+TAPIAccountType = str
 TAPIRightIDType = int
 TAPIUserTypeType = int
-TAPIAccountState = int
-TAPIAccountRightType = int
-TAPIOrderTypeType = int
-TAPIOrderSourceType = int
-TAPITimeInForceType = int
-TAPISideType = int
-TAPIPositionEffectType = int
-TAPIHedgeFlagType = int
-TAPIOrderStateType = int
-TAPICalculateModeType = int
-TAPIMatchSourceType = int
-TAPIOpenCloseModeType = int
-TAPIFutureAlgType = int
-TAPIOptionAlgType = int
-TAPISendType = int
-TAPIBankAccountLWFlagType = int
-TAPICashAdjustTypeType = int
-TAPIMarginCalculateModeType = int
-TAPIOptionMarginCalculateModeType = int
-TAPICmbDirectType = int
-TAPIDeliveryModeType = int
-TAPIContractTypeType = int
-TAPITacticsTypeType = int
-TAPIORDERACT = int
-TAPITriggerConditionType = int
-TAPITriggerPriceTypeType = int
-TAPITradingStateType = int
+TAPIAccountState = str
+TAPIAccountRightType = str
+TAPIOrderTypeType = str
+TAPIOrderSourceType = str
+TAPITimeInForceType = str
+TAPISideType = str
+TAPIPositionEffectType = str
+TAPIHedgeFlagType = str
+TAPIOrderStateType = str
+TAPICalculateModeType = str
+TAPIMatchSourceType = str
+TAPIOpenCloseModeType = str
+TAPIFutureAlgType = str
+TAPIOptionAlgType = str
+TAPISendType = str
+TAPIBankAccountLWFlagType = str
+TAPICashAdjustTypeType = str
+TAPIMarginCalculateModeType = str
+TAPIOptionMarginCalculateModeType = str
+TAPICmbDirectType = str
+TAPIDeliveryModeType = str
+TAPIContractTypeType = str
+TAPITacticsTypeType = str
+TAPIORDERACT = str
+TAPITriggerConditionType = str
+TAPITriggerPriceTypeType = str
+TAPITradingStateType = str
 TAPINoticeIgnoreFlagType = int
-TAPIOrderQryTypeType = int
+TAPIOrderQryTypeType = str
 TapAPIOrderDeactivateReq = ITapTrade.TapAPIOrderCancelReq
 TapAPIOrderActivateReq = ITapTrade.TapAPIOrderCancelReq
 TapAPIOrderDeleteReq = ITapTrade.TapAPIOrderCancelReq
-TAPIMsgReceiverType = int
-TAPIMsgLevelType = int
-TAPIMsgTypeType = int
-TAPIBillTypeType = int
-TAPIBillFileTypeType = int
+TAPIMsgReceiverType = str
+TAPIMsgLevelType = str
+TAPIMsgTypeType = str
+TAPIBillTypeType = str
+TAPIBillFileTypeType = str
 TapAPIHisOrderProcessQryRsp = ITapTrade.TapAPIHisOrderQryRsp
-TAPISettleFlagType = int
+TAPISettleFlagType = str
 TapAPIOrderMarketDeleteRsp = ITapTrade.TapAPIOrderMarketInsertRsp
 TapAPIOrderLocalInputRsp = ITapTrade.TapAPIOrderInfo
 TapAPIOrderLocalModifyRsp = ITapTrade.TapAPIOrderInfo
 TapAPIOrderLocalTransferRsp = ITapTrade.TapAPIOrderInfo
 TapAPIFillLocalInputRsp = ITapTrade.TapAPIFillLocalInputReq
 TapAPIFillLocalRemoveRsp = ITapTrade.TapAPIFillLocalRemoveReq
-APIYNFLAG_YES: int
-APIYNFLAG_NO: int
-APIPASSWORD_TRADE: int
-APIPASSWORD_PHONE: int
-APILOGLEVEL_NONE: int
-APILOGLEVEL_ERROR: int
-APILOGLEVEL_WARNING: int
-APILOGLEVEL_DEBUG: int
-TAPI_OPTION_TYPE_AMERICAN: int
-TAPI_OPTION_TYPE_AMERICAN2: int
-TAPI_OPTION_TYPE_EUROPEAN: int
-TAPI_OPTION_TYPE_EUROPEAN2: int
-TAPI_COMMODITY_TYPE_NONE: int
-TAPI_COMMODITY_TYPE_SPOT: int
-TAPI_COMMODITY_TYPE_FUTURES: int
-TAPI_COMMODITY_TYPE_OPTION: int
-TAPI_COMMODITY_TYPE_SPREAD_MONTH: int
-TAPI_COMMODITY_TYPE_SPREAD_COMMODITY: int
-TAPI_COMMODITY_TYPE_BUL: int
-TAPI_COMMODITY_TYPE_BER: int
-TAPI_COMMODITY_TYPE_STD: int
-TAPI_COMMODITY_TYPE_STG: int
-TAPI_COMMODITY_TYPE_PRT: int
-TAPI_COMMODITY_TYPE_DIRECTFOREX: int
-TAPI_COMMODITY_TYPE_INDIRECTFOREX: int
-TAPI_COMMODITY_TYPE_CROSSFOREX: int
-TAPI_COMMODITY_TYPE_INDEX: int
-TAPI_COMMODITY_TYPE_STOCK: int
-TAPI_CALLPUT_FLAG_CALL: int
-TAPI_CALLPUT_FLAG_PUT: int
-TAPI_CALLPUT_FLAG_NONE: int
-TAPI_ACCOUNT_TYPE_PERSON: int
-TAPI_ACCOUNT_TYPE_ORGANIZATION: int
-TAPI_ACCOUNT_TYPE_AGENT: int
-TAPI_ACCOUNT_TYPE_MARGIN: int
-TAPI_ACCOUNT_TYPE_HOUSE: int
-TAPI_ACCOUNT_TYPE_STOCK: int
+APIYNFLAG_YES: str
+APIYNFLAG_NO: str
+APIPASSWORD_TRADE: str
+APIPASSWORD_PHONE: str
+APILOGLEVEL_NONE: str
+APILOGLEVEL_ERROR: str
+APILOGLEVEL_WARNING: str
+APILOGLEVEL_DEBUG: str
+TAPI_OPTION_TYPE_AMERICAN: str
+TAPI_OPTION_TYPE_AMERICAN2: str
+TAPI_OPTION_TYPE_EUROPEAN: str
+TAPI_OPTION_TYPE_EUROPEAN2: str
+TAPI_COMMODITY_TYPE_NONE: str
+TAPI_COMMODITY_TYPE_SPOT: str
+TAPI_COMMODITY_TYPE_FUTURES: str
+TAPI_COMMODITY_TYPE_OPTION: str
+TAPI_COMMODITY_TYPE_SPREAD_MONTH: str
+TAPI_COMMODITY_TYPE_SPREAD_COMMODITY: str
+TAPI_COMMODITY_TYPE_BUL: str
+TAPI_COMMODITY_TYPE_BER: str
+TAPI_COMMODITY_TYPE_STD: str
+TAPI_COMMODITY_TYPE_STG: str
+TAPI_COMMODITY_TYPE_PRT: str
+TAPI_COMMODITY_TYPE_DIRECTFOREX: str
+TAPI_COMMODITY_TYPE_INDIRECTFOREX: str
+TAPI_COMMODITY_TYPE_CROSSFOREX: str
+TAPI_COMMODITY_TYPE_INDEX: str
+TAPI_COMMODITY_TYPE_STOCK: str
+TAPI_CALLPUT_FLAG_CALL: str
+TAPI_CALLPUT_FLAG_PUT: str
+TAPI_CALLPUT_FLAG_NONE: str
+TAPI_ACCOUNT_TYPE_PERSON: str
+TAPI_ACCOUNT_TYPE_ORGANIZATION: str
+TAPI_ACCOUNT_TYPE_AGENT: str
+TAPI_ACCOUNT_TYPE_MARGIN: str
+TAPI_ACCOUNT_TYPE_HOUSE: str
+TAPI_ACCOUNT_TYPE_STOCK: str
 TAPI_RIGHT_ORDER_DEL: int
 TAPI_RIGHT_ORDER_CHECK: int
 TAPI_RIGHT_ONLY_QRY: int
@@ -1450,140 +1450,140 @@ TAPI_USERTYPE_TRADER: int
 TAPI_USERTYPE_RISK: int
 TAPI_USERTYPE_MANAGER: int
 TAPI_USERTYPE_QUOTE: int
-TAPI_ACCOUNT_STATE_NORMAL: int
-TAPI_ACCOUNT_STATE_CANCEL: int
-TAPI_ACCOUNT_STATE_SLEEP: int
-TAPI_ACCOUNT_TRADING_RIGHT_NORMAL: int
-TAPI_ACCOUNT_TRADING_RIGHT_NOTRADE: int
-TAPI_ACCOUNT_TRADING_RIGHT_CLOSE: int
-TAPI_ORDER_TYPE_MARKET: int
-TAPI_ORDER_TYPE_LIMIT: int
-TAPI_ORDER_TYPE_STOP_MARKET: int
-TAPI_ORDER_TYPE_STOP_LIMIT: int
-TAPI_ORDER_TYPE_OPT_EXEC: int
-TAPI_ORDER_TYPE_OPT_ABANDON: int
-TAPI_ORDER_TYPE_REQQUOT: int
-TAPI_ORDER_TYPE_RSPQUOT: int
-TAPI_ORDER_TYPE_ICEBERG: int
-TAPI_ORDER_TYPE_GHOST: int
-TAPI_ORDER_TYPE_HKEX_AUCTION: int
-TAPI_ORDER_TYPE_SWAP: int
-TAPI_ORDER_SOURCE_SELF_ETRADER: int
-TAPI_ORDER_SOURCE_PROXY_ETRADER: int
-TAPI_ORDER_SOURCE_JTRADER: int
-TAPI_ORDER_SOURCE_MANUAL: int
-TAPI_ORDER_SOURCE_CARRY: int
-TAPI_ORDER_SOURCE_PROGRAM: int
-TAPI_ORDER_SOURCE_DELIVERY: int
-TAPI_ORDER_SOURCE_ABANDON: int
-TAPI_ORDER_SOURCE_CHANNEL: int
-TAPI_ORDER_TIMEINFORCE_GFD: int
-TAPI_ORDER_TIMEINFORCE_GTC: int
-TAPI_ORDER_TIMEINFORCE_GTD: int
-TAPI_ORDER_TIMEINFORCE_FAK: int
-TAPI_ORDER_TIMEINFORCE_FOK: int
-TAPI_SIDE_NONE: int
-TAPI_SIDE_BUY: int
-TAPI_SIDE_SELL: int
-TAPI_PositionEffect_NONE: int
-TAPI_PositionEffect_OPEN: int
-TAPI_PositionEffect_COVER: int
-TAPI_PositionEffect_COVER_TODAY: int
-TAPI_HEDGEFLAG_NONE: int
-TAPI_HEDGEFLAG_T: int
-TAPI_HEDGEFLAG_B: int
-TAPI_HEDGEFLAG_L: int
-TAPI_ORDER_STATE_SUBMIT: int
-TAPI_ORDER_STATE_ACCEPT: int
-TAPI_ORDER_STATE_TRIGGERING: int
-TAPI_ORDER_STATE_EXCTRIGGERING: int
-TAPI_ORDER_STATE_QUEUED: int
-TAPI_ORDER_STATE_PARTFINISHED: int
-TAPI_ORDER_STATE_FINISHED: int
-TAPI_ORDER_STATE_CANCELING: int
-TAPI_ORDER_STATE_MODIFYING: int
-TAPI_ORDER_STATE_CANCELED: int
-TAPI_ORDER_STATE_LEFTDELETED: int
-TAPI_ORDER_STATE_FAIL: int
-TAPI_ORDER_STATE_DELETED: int
-TAPI_ORDER_STATE_SUPPENDED: int
-TAPI_ORDER_STATE_DELETEDFOREXPIRE: int
-TAPI_ORDER_STATE_EFFECT: int
-TAPI_ORDER_STATE_APPLY: int
-TAPI_CALULATE_MODE_COMBINE: int
-TAPI_CALCULATE_MODE_PERCENTAGE: int
-TAPI_CALCULATE_MODE_QUOTA: int
-TAPI_CALCULATE_MODE_CHAPERCENTAGE: int
-TAPI_CALCULATE_MODE_CHAQUOTA: int
-TAPI_CALCULATE_MODE_DISCOUNT: int
-TAPI_MATCH_SOURCE_ALL: int
-TAPI_MATCH_SOURCE_SELF_ETRADER: int
-TAPI_MATCH_SOURCE_PROXY_ETRADER: int
-TAPI_MATCH_SOURCE_JTRADER: int
-TAPI_MATCH_SOURCE_MANUAL: int
-TAPI_MATCH_SOURCE_CARRY: int
-TAPI_MATCH_SOURCE_PROGRAM: int
-TAPI_MATCH_SOURCE_DELIVERY: int
-TAPI_MATCH_SOURCE_ABANDON: int
-TAPI_MATCH_SOURCE_CHANNEL: int
-TAPI_MATCH_SOURCE_ESUNNY_API: int
-TAPI_CLOSE_MODE_NONE: int
-TAPI_CLOSE_MODE_UNFINISHED: int
-TAPI_CLOSE_MODE_OPENCOVER: int
-TAPI_CLOSE_MODE_CLOSETODAY: int
-TAPI_FUTURES_ALG_ZHUBI: int
-TAPI_FUTURES_ALG_DINGSHI: int
-TAPI_OPTION_ALG_FUTURES: int
-TAPI_OPTION_ALG_OPTION: int
-SENDTYPE_SMS: int
-SENDTYPE_MAIL: int
-TAPI_LWFlag_L: int
-TAPI_LWFlag_W: int
-TAPI_CASHINOUT_MODE_FEEADJUST: int
-TAPI_CASHINOUT_MODE_YKADJUST: int
-TAPI_CASHINOUT_MODE_PLEDGE: int
-TAPI_CASHINOUT_MODE_INTERESTREVENUE: int
-TAPI_CASHINOUT_MODE_COLLECTIONCOST: int
-TAPI_CASHINOUT_MODE_OTHER: int
-TAPI_CASHINOUT_MODE_COMPANY: int
-TAPI_DEPOSITCALCULATE_MODE_FEN: int
-TAPI_DEPOSITCALCULATE_MODE_SUO: int
-TAPI_CMB_DIRECT_FIRST: int
-TAPI_CMB_DIRECT_SECOND: int
-TAPI_DELIVERY_MODE_GOODS: int
-TAPI_DELIVERY_MODE_CASH: int
-TAPI_DELIVERY_MODE_EXECUTE: int
-TAPI_DELIVERY_MODE_ABANDON: int
-TAPI_DELIVERY_MODE_HKF: int
-TAPI_CONTRACT_TYPE_TRADEQUOTE: int
-TAPI_CONTRACT_TYPE_QUOTE: int
-TAPI_TACTICS_TYPE_NONE: int
-TAPI_TACTICS_TYPE_READY: int
-TAPI_TACTICS_TYPE_ATUO: int
-TAPI_TACTICS_TYPE_CONDITION: int
-APIORDER_INSERT: int
-APIORDER_MODIFY: int
-APIORDER_DELETE: int
-APIORDER_SUSPEND: int
-APIORDER_ACTIVATE: int
-APIORDER_SYSTEM_DELETE: int
-TAPI_TRIGGER_CONDITION_NONE: int
-TAPI_TRIGGER_CONDITION_GREAT: int
-TAPI_TRIGGER_CONDITION_LITTLE: int
-TAPI_TRIGGER_PRICE_NONE: int
-TAPI_TRIGGER_PRICE_BUY: int
-TAPI_TRIGGER_PRICE_SELL: int
-TAPI_TRIGGER_PRICE_LAST: int
-TAPI_TRADE_STATE_BID: int
-TAPI_TRADE_STATE_MATCH: int
-TAPI_TRADE_STATE_CONTINUOUS: int
-TAPI_TRADE_STATE_PAUSED: int
-TAPI_TRADE_STATE_CLOSE: int
-TAPI_TRADE_STATE_DEALLAST: int
-TAPI_TRADE_STATE_GWDISCONNECT: int
-TAPI_TRADE_STATE_UNKNOWN: int
-TAPI_TRADE_STATE_INITIALIZE: int
-TAPI_TRADE_STATE_READY: int
+TAPI_ACCOUNT_STATE_NORMAL: str
+TAPI_ACCOUNT_STATE_CANCEL: str
+TAPI_ACCOUNT_STATE_SLEEP: str
+TAPI_ACCOUNT_TRADING_RIGHT_NORMAL: str
+TAPI_ACCOUNT_TRADING_RIGHT_NOTRADE: str
+TAPI_ACCOUNT_TRADING_RIGHT_CLOSE: str
+TAPI_ORDER_TYPE_MARKET: str
+TAPI_ORDER_TYPE_LIMIT: str
+TAPI_ORDER_TYPE_STOP_MARKET: str
+TAPI_ORDER_TYPE_STOP_LIMIT: str
+TAPI_ORDER_TYPE_OPT_EXEC: str
+TAPI_ORDER_TYPE_OPT_ABANDON: str
+TAPI_ORDER_TYPE_REQQUOT: str
+TAPI_ORDER_TYPE_RSPQUOT: str
+TAPI_ORDER_TYPE_ICEBERG: str
+TAPI_ORDER_TYPE_GHOST: str
+TAPI_ORDER_TYPE_HKEX_AUCTION: str
+TAPI_ORDER_TYPE_SWAP: str
+TAPI_ORDER_SOURCE_SELF_ETRADER: str
+TAPI_ORDER_SOURCE_PROXY_ETRADER: str
+TAPI_ORDER_SOURCE_JTRADER: str
+TAPI_ORDER_SOURCE_MANUAL: str
+TAPI_ORDER_SOURCE_CARRY: str
+TAPI_ORDER_SOURCE_PROGRAM: str
+TAPI_ORDER_SOURCE_DELIVERY: str
+TAPI_ORDER_SOURCE_ABANDON: str
+TAPI_ORDER_SOURCE_CHANNEL: str
+TAPI_ORDER_TIMEINFORCE_GFD: str
+TAPI_ORDER_TIMEINFORCE_GTC: str
+TAPI_ORDER_TIMEINFORCE_GTD: str
+TAPI_ORDER_TIMEINFORCE_FAK: str
+TAPI_ORDER_TIMEINFORCE_FOK: str
+TAPI_SIDE_NONE: str
+TAPI_SIDE_BUY: str
+TAPI_SIDE_SELL: str
+TAPI_PositionEffect_NONE: str
+TAPI_PositionEffect_OPEN: str
+TAPI_PositionEffect_COVER: str
+TAPI_PositionEffect_COVER_TODAY: str
+TAPI_HEDGEFLAG_NONE: str
+TAPI_HEDGEFLAG_T: str
+TAPI_HEDGEFLAG_B: str
+TAPI_HEDGEFLAG_L: str
+TAPI_ORDER_STATE_SUBMIT: str
+TAPI_ORDER_STATE_ACCEPT: str
+TAPI_ORDER_STATE_TRIGGERING: str
+TAPI_ORDER_STATE_EXCTRIGGERING: str
+TAPI_ORDER_STATE_QUEUED: str
+TAPI_ORDER_STATE_PARTFINISHED: str
+TAPI_ORDER_STATE_FINISHED: str
+TAPI_ORDER_STATE_CANCELING: str
+TAPI_ORDER_STATE_MODIFYING: str
+TAPI_ORDER_STATE_CANCELED: str
+TAPI_ORDER_STATE_LEFTDELETED: str
+TAPI_ORDER_STATE_FAIL: str
+TAPI_ORDER_STATE_DELETED: str
+TAPI_ORDER_STATE_SUPPENDED: str
+TAPI_ORDER_STATE_DELETEDFOREXPIRE: str
+TAPI_ORDER_STATE_EFFECT: str
+TAPI_ORDER_STATE_APPLY: str
+TAPI_CALULATE_MODE_COMBINE: str
+TAPI_CALCULATE_MODE_PERCENTAGE: str
+TAPI_CALCULATE_MODE_QUOTA: str
+TAPI_CALCULATE_MODE_CHAPERCENTAGE: str
+TAPI_CALCULATE_MODE_CHAQUOTA: str
+TAPI_CALCULATE_MODE_DISCOUNT: str
+TAPI_MATCH_SOURCE_ALL: str
+TAPI_MATCH_SOURCE_SELF_ETRADER: str
+TAPI_MATCH_SOURCE_PROXY_ETRADER: str
+TAPI_MATCH_SOURCE_JTRADER: str
+TAPI_MATCH_SOURCE_MANUAL: str
+TAPI_MATCH_SOURCE_CARRY: str
+TAPI_MATCH_SOURCE_PROGRAM: str
+TAPI_MATCH_SOURCE_DELIVERY: str
+TAPI_MATCH_SOURCE_ABANDON: str
+TAPI_MATCH_SOURCE_CHANNEL: str
+TAPI_MATCH_SOURCE_ESUNNY_API: str
+TAPI_CLOSE_MODE_NONE: str
+TAPI_CLOSE_MODE_UNFINISHED: str
+TAPI_CLOSE_MODE_OPENCOVER: str
+TAPI_CLOSE_MODE_CLOSETODAY: str
+TAPI_FUTURES_ALG_ZHUBI: str
+TAPI_FUTURES_ALG_DINGSHI: str
+TAPI_OPTION_ALG_FUTURES: str
+TAPI_OPTION_ALG_OPTION: str
+SENDTYPE_SMS: str
+SENDTYPE_MAIL: str
+TAPI_LWFlag_L: str
+TAPI_LWFlag_W: str
+TAPI_CASHINOUT_MODE_FEEADJUST: str
+TAPI_CASHINOUT_MODE_YKADJUST: str
+TAPI_CASHINOUT_MODE_PLEDGE: str
+TAPI_CASHINOUT_MODE_INTERESTREVENUE: str
+TAPI_CASHINOUT_MODE_COLLECTIONCOST: str
+TAPI_CASHINOUT_MODE_OTHER: str
+TAPI_CASHINOUT_MODE_COMPANY: str
+TAPI_DEPOSITCALCULATE_MODE_FEN: str
+TAPI_DEPOSITCALCULATE_MODE_SUO: str
+TAPI_CMB_DIRECT_FIRST: str
+TAPI_CMB_DIRECT_SECOND: str
+TAPI_DELIVERY_MODE_GOODS: str
+TAPI_DELIVERY_MODE_CASH: str
+TAPI_DELIVERY_MODE_EXECUTE: str
+TAPI_DELIVERY_MODE_ABANDON: str
+TAPI_DELIVERY_MODE_HKF: str
+TAPI_CONTRACT_TYPE_TRADEQUOTE: str
+TAPI_CONTRACT_TYPE_QUOTE: str
+TAPI_TACTICS_TYPE_NONE: str
+TAPI_TACTICS_TYPE_READY: str
+TAPI_TACTICS_TYPE_ATUO: str
+TAPI_TACTICS_TYPE_CONDITION: str
+APIORDER_INSERT: str
+APIORDER_MODIFY: str
+APIORDER_DELETE: str
+APIORDER_SUSPEND: str
+APIORDER_ACTIVATE: str
+APIORDER_SYSTEM_DELETE: str
+TAPI_TRIGGER_CONDITION_NONE: str
+TAPI_TRIGGER_CONDITION_GREAT: str
+TAPI_TRIGGER_CONDITION_LITTLE: str
+TAPI_TRIGGER_PRICE_NONE: str
+TAPI_TRIGGER_PRICE_BUY: str
+TAPI_TRIGGER_PRICE_SELL: str
+TAPI_TRIGGER_PRICE_LAST: str
+TAPI_TRADE_STATE_BID: str
+TAPI_TRADE_STATE_MATCH: str
+TAPI_TRADE_STATE_CONTINUOUS: str
+TAPI_TRADE_STATE_PAUSED: str
+TAPI_TRADE_STATE_CLOSE: str
+TAPI_TRADE_STATE_DEALLAST: str
+TAPI_TRADE_STATE_GWDISCONNECT: str
+TAPI_TRADE_STATE_UNKNOWN: str
+TAPI_TRADE_STATE_INITIALIZE: str
+TAPI_TRADE_STATE_READY: str
 TAPI_NOTICE_IGNORE_NONE: int
 TAPI_NOTICE_IGNORE_ALL: int
 TAPI_NOTICE_IGNORE_FUND: int
@@ -1592,23 +1592,23 @@ TAPI_NOTICE_IGNORE_FILL: int
 TAPI_NOTICE_IGNORE_POSITION: int
 TAPI_NOTICE_IGNORE_CLOSE: int
 TAPI_NOTICE_IGNORE_POSITIONPROFIT: int
-TAPI_ORDER_QRY_TYPE_ALL: int
-TAPI_ORDER_QRY_TYPE_UNENDED: int
-TAPI_MSG_RECEIVER_ACCOUNTNO: int
-TAPI_MSG_RECEIVER_ACCOUNTGROUPNO: int
-TAPI_MSG_RECEIVER_ATTRIBUTE: int
-TAPI_MSG_RECEIVER_USERNO: int
-TAPI_MSG_LEVEL_NORMAL: int
-TAPI_MSG_LEVEL_IMPORTANT: int
-TAPI_MSG_LEVEL_IMERGENCY: int
-TAPI_Msg_TYPE_MANAGER: int
-TAPI_Msg_TYPE_RISKCONTROL: int
-TAPI_BILL_DATE: int
-TAPI_BILL_MONTH: int
-TAPI_BILL_FILE_TXT: int
-TAPI_BILL_FILE_PDF: int
-SettleFlag_AutoSettle: int
-SettleFlagh_Manual: int
+TAPI_ORDER_QRY_TYPE_ALL: str
+TAPI_ORDER_QRY_TYPE_UNENDED: str
+TAPI_MSG_RECEIVER_ACCOUNTNO: str
+TAPI_MSG_RECEIVER_ACCOUNTGROUPNO: str
+TAPI_MSG_RECEIVER_ATTRIBUTE: str
+TAPI_MSG_RECEIVER_USERNO: str
+TAPI_MSG_LEVEL_NORMAL: str
+TAPI_MSG_LEVEL_IMPORTANT: str
+TAPI_MSG_LEVEL_IMERGENCY: str
+TAPI_Msg_TYPE_MANAGER: str
+TAPI_Msg_TYPE_RISKCONTROL: str
+TAPI_BILL_DATE: str
+TAPI_BILL_MONTH: str
+TAPI_BILL_FILE_TXT: str
+TAPI_BILL_FILE_PDF: str
+SettleFlag_AutoSettle: str
+SettleFlagh_Manual: str
 TAPIERROR_LOGIN: int
 TAPIERROR_LOGIN_USER: int
 TAPIERROR_LOGIN_DDA: int

@@ -1,48 +1,25 @@
-from typing import Any, Sequence, List, Optional
 from datetime import datetime
-from threading import Thread
-from vnpy.event import EventEngine
-from vnpy.trader.event import EVENT_TIMER
-from vnpy.trader.constant import Exchange, Product, Direction, OrderType, Status, Offset
+from typing import Any, List, Optional
+
+from vnpy.api.tora.vntora import (CTORATstpMarketDataField, CTORATstpMdApi, CTORATstpMdSpi,
+                                  CTORATstpRspInfoField, CTORATstpRspUserLoginField,
+                                  CTORATstpUserLogoutField)
+
+from vnpy.gateway.tora.error_codes import get_error_msg
+from vnpy.trader.constant import Exchange
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
-    CancelRequest,
-    OrderRequest,
-    SubscribeRequest,
     TickData,
-    ContractData,
-    OrderData,
-    TradeData,
-    PositionData,
-    AccountData,
 )
-from vnpy.trader.utility import get_folder_path
-
-from vnpy.api.tora.vntora import (
-    set_async_callback_exception_handler,
-    AsyncDispatchException,
-    CTORATstpTraderApi,
-    CTORATstpMdApi,
-    CTORATstpMdSpi,
-    CTORATstpTraderSpi,
-    TORA_TSTP_EXD_SSE,
-    TORA_TSTP_EXD_SZSE,
-    TORA_TSTP_EXD_HK,
-    CTORATstpFundsFlowMarketDataField,
-    CTORATstpEffectVolumeMarketDataField,
-    CTORATstpEffectPriceMarketDataField,
-    CTORATstpSpecialMarketDataField,
-    CTORATstpMarketDataField,
-    CTORATstpSpecificSecurityField,
-    CTORATstpRspInfoField,
-    CTORATstpUserLogoutField,
-    CTORATstpRspUserLoginField,
-)
-from .constant import EXCHANGE_VT2TORA, EXCHANGE_TORA2VT
+from .constant import EXCHANGE_TORA2VT, EXCHANGE_VT2TORA
 
 
 def parse_datetime(date: str, time: str):
-    return datetime.now()  # fixme: return the real time
+    # sampled :
+    # date: '20190611'
+    # time: '16:28:24'
+
+    return datetime.strptime(f'{date}-{time}', "%Y%m%d-%H:%M:%S")
 
 
 class ToraMdSpi(CTORATstpMdSpi):
@@ -56,89 +33,49 @@ class ToraMdSpi(CTORATstpMdSpi):
     def OnFrontConnected(self) -> Any:
         self.gateway.write_log("行情服务器连接成功")
 
-    def OnFrontDisconnected(self, nReason: int) -> Any:
-        self.gateway.write_log("行情服务器连接断开")
+    def OnFrontDisconnected(self, error_code: int) -> Any:
+        self.gateway.write_log(f"行情服务器连接断开({error_code}):{get_error_msg(error_code)}")
 
     def OnRspError(
-        self, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool
+        self, error_info: CTORATstpRspInfoField, request_id: int, is_last: bool
     ) -> Any:
-        self.gateway.write_log("OnRspError")
+        error_id = error_info.ErrorID
+        error_msg = error_info.ErrorMsg
+        self.gateway.write_log(f"行情服务收到错误消息({error_id})：{error_msg}")
 
     def OnRspUserLogin(
         self,
-        pRspUserLogin: CTORATstpRspUserLoginField,
-        pRspInfo: CTORATstpRspInfoField,
-        nRequestID: int,
-        bIsLast: bool,
+        info: CTORATstpRspUserLoginField,
+        error_info: CTORATstpRspInfoField,
+        request_id: int,
+        is_last: bool,
     ) -> Any:
+        error_id = error_info.ErrorID
+        if error_id != 0:
+            error_msg = error_info.ErrorMsg
+            self.gateway.write_log(f"行情服务登录失败({error_id})：{error_msg}")
+            return
         self.gateway.write_log("行情服务器登录成功")
 
     def OnRspUserLogout(
         self,
-        pUserLogout: CTORATstpUserLogoutField,
-        pRspInfo: CTORATstpRspInfoField,
-        nRequestID: int,
-        bIsLast: bool,
+        info: CTORATstpUserLogoutField,
+        error_info: CTORATstpRspInfoField,
+        request_id: int,
+        is_last: bool,
     ) -> Any:
+        error_id = error_info.ErrorID
+        if error_id != 0:
+            error_msg = error_info.ErrorMsg
+            self.gateway.write_log(f"行情服务登出失败({error_id})：{error_msg}")
+            return
         self.gateway.write_log("行情服务器登出成功")
 
-    def OnRspSubMarketData(
-        self,
-        pSpecificSecurity: CTORATstpSpecificSecurityField,
-        pRspInfo: CTORATstpRspInfoField,
-        nRequestID: int,
-        bIsLast: bool,
-    ) -> Any:
-        self.gateway.write_log(f"OnRspSubMarketData({pRspInfo.ErrorID})")
-
-    def OnRspUnSubMarketData(
-        self,
-        pSpecificSecurity: CTORATstpSpecificSecurityField,
-        pRspInfo: CTORATstpRspInfoField,
-        nRequestID: int,
-        bIsLast: bool,
-    ) -> Any:
-        pass
-
-    def OnRspSubSpecialMarketData(
-        self,
-        pSpecificSecurity: CTORATstpSpecificSecurityField,
-        pRspInfo: CTORATstpRspInfoField,
-        nRequestID: int,
-        bIsLast: bool,
-    ) -> Any:
-        pass
-
-    def OnRspUnSubSpecialMarketData(
-        self,
-        pSpecificSecurity: CTORATstpSpecificSecurityField,
-        pRspInfo: CTORATstpRspInfoField,
-        nRequestID: int,
-        bIsLast: bool,
-    ) -> Any:
-        pass
-
-    def OnRspSubFundsFlowMarketData(
-        self,
-        pSpecificSecurity: CTORATstpSpecificSecurityField,
-        pRspInfo: CTORATstpRspInfoField,
-        nRequestID: int,
-        bIsLast: bool,
-    ) -> Any:
-        pass
-
-    def OnRspUnSubFundsFlowMarketData(
-        self,
-        pSpecificSecurity: CTORATstpSpecificSecurityField,
-        pRspInfo: CTORATstpRspInfoField,
-        nRequestID: int,
-        bIsLast: bool,
-    ) -> Any:
-        pass
-
     def OnRtnDepthMarketData(self, data: CTORATstpMarketDataField) -> Any:
+        if data.ExchangeID not in EXCHANGE_TORA2VT:
+            return
         tick_data = TickData(
-            gateway_name = self.gateway.gateway_name,
+            gateway_name=self.gateway.gateway_name,
             symbol=data.SecurityID,
             exchange=EXCHANGE_TORA2VT[data.ExchangeID],
             datetime=parse_datetime(data.TradingDay, data.UpdateTime),
@@ -174,30 +111,10 @@ class ToraMdSpi(CTORATstpMdSpi):
             ask_volume_5=data.AskVolume5,
         )
         self.gateway.on_tick(tick_data)
-        self.gateway.write_log("OnRtnDepthMarketData")
-
-    def OnRtnSpecialMarketData(
-        self, pSpecialMarketData: CTORATstpSpecialMarketDataField
-    ) -> Any:
-        self.gateway.write_log("OnRtnSpecialMarketData")
-
-    def OnRtnEffectPriceMarketData(
-        self, pEffectPriceMarketData: CTORATstpEffectPriceMarketDataField
-    ) -> Any:
-        self.gateway.write_log("OnRtnEffectPriceMarketData")
-
-    def OnRtnEffectVolumeMarketData(
-        self, pEffectVolumeMarketData: CTORATstpEffectVolumeMarketDataField
-    ) -> Any:
-        self.gateway.write_log("OnRtnEffectVolumeMarketData")
-
-    def OnRtnFundsFlowMarketData(
-        self, pFundsFlowMarketData: CTORATstpFundsFlowMarketDataField
-    ) -> Any:
-        self.gateway.write_log("OnRtnFundsFlowMarketData")
 
 
 class ToraMdApi:
+
     def __init__(self, gateway: BaseGateway):
         self.gateway = gateway
         self.md_address = ""
@@ -234,4 +151,12 @@ class ToraMdApi:
         return True
 
     def subscribe(self, symbols: List[str], exchange: Exchange):
-        self._native_api.SubscribeMarketData(symbols, EXCHANGE_VT2TORA[exchange])
+        err = self._native_api.SubscribeMarketData(symbols, EXCHANGE_VT2TORA[exchange])
+        self._if_error_write_log(err, "subscribe")
+
+    def _if_error_write_log(self, error_code: int, function_name: str):
+        if error_code != 0:
+            error_msg = get_error_msg(error_code)
+            msg = f'在执行 {function_name} 时发生错误({error_code}): {error_msg}'
+            self.gateway.write_log(msg)
+            return True

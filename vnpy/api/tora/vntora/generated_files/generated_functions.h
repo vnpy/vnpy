@@ -1,5 +1,5 @@
 #pragma once
-
+#include "config.h"
 
 #include <pybind11/pybind11.h>
 #include <autocxxpy/autocxxpy.hpp>
@@ -8,7 +8,6 @@
 #include "TORATstpTraderApi.h"
 #include "TORATstpUserApiDataType.h"
 #include "TORATstpUserApiStruct.h"
-#include "custom/custom_wrappers.hpp"
 
 
 void generate_vntora(pybind11::module & parent);

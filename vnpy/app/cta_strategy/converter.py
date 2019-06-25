@@ -240,7 +240,7 @@ class PositionHolding:
             td_available = self.long_td - self.long_td_frozen
 
         if req.volume > pos_available:
-            return [req]
+            return []
         elif req.volume <= td_available:
             req_td = copy(req)
             req_td.offset = Offset.CLOSETODAY
@@ -278,7 +278,7 @@ class PositionHolding:
         # If no td_volume, we close opposite yd position first
         # then open new position
         else:
-            open_volume = max(0, yd_available - req.volume)
+            open_volume = max(0, req.volume - yd_available)
             req_list = []
 
             if yd_available:

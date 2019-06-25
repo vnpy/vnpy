@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <iostream>
 #include <string>
 #include <pybind11/pybind11.h>
@@ -11,7 +13,6 @@
 #include "TORATstpTraderApi.h"
 #include "TORATstpUserApiDataType.h"
 #include "TORATstpUserApiStruct.h"
-#include "custom/custom_wrappers.hpp"
 
 
 void generate_class_CTORATstpFensUserInfoField(pybind11::object & parent)
@@ -550,32 +551,4 @@ void generate_class_CTORATstpConditionOrderField(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpConditionOrderField, "ActiveTime", ActiveTime);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpConditionOrderField, c);
     module_vntora::objects.emplace("CTORATstpConditionOrderField", c);
-}
-void generate_class_CTORATstpInputCondOrderActionField(pybind11::object & parent)
-{
-    pybind11::class_<CTORATstpInputCondOrderActionField> c(parent, "CTORATstpInputCondOrderActionField");
-    if constexpr (std::is_default_constructible_v<CTORATstpInputCondOrderActionField>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "RequestID", RequestID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "ExchangeID", ExchangeID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "CondOrderActionRef", CondOrderActionRef);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "CondOrderRef", CondOrderRef);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "FrontID", FrontID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "SessionID", SessionID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "CondOrderID", CondOrderID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "ActionFlag", ActionFlag);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "InvestorID", InvestorID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "SecurityID", SecurityID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "UserID", UserID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "IPAddress", IPAddress);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "MacAddress", MacAddress);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "CancelCondOrderID", CancelCondOrderID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "TerminalInfo", TerminalInfo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "BInfo", BInfo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "SInfo", SInfo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "IInfo", IInfo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "Operway", Operway);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInputCondOrderActionField, "HDSerial", HDSerial);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpInputCondOrderActionField, c);
-    module_vntora::objects.emplace("CTORATstpInputCondOrderActionField", c);
 }

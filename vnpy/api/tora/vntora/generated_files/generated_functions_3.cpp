@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <iostream>
 #include <string>
 #include <pybind11/pybind11.h>
@@ -11,9 +13,54 @@
 #include "TORATstpTraderApi.h"
 #include "TORATstpUserApiDataType.h"
 #include "TORATstpUserApiStruct.h"
-#include "custom/custom_wrappers.hpp"
 
 
+void generate_class_CTORATstpReqInquiryMaxOrderVolumeField(pybind11::object & parent)
+{
+    pybind11::class_<CTORATstpReqInquiryMaxOrderVolumeField> c(parent, "CTORATstpReqInquiryMaxOrderVolumeField");
+    if constexpr (std::is_default_constructible_v<CTORATstpReqInquiryMaxOrderVolumeField>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "ExchangeID", ExchangeID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "SecurityID", SecurityID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "InvestorID", InvestorID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "BusinessUnitID", BusinessUnitID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "AccountID", AccountID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "ShareholderID", ShareholderID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "Direction", Direction);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "OrderPriceType", OrderPriceType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "CombOffsetFlag", CombOffsetFlag);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "CombHedgeFlag", CombHedgeFlag);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "TimeCondition", TimeCondition);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "VolumeCondition", VolumeCondition);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "LimitPrice", LimitPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "TransfereePbuID", TransfereePbuID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, "MaxVolume", MaxVolume);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpReqInquiryMaxOrderVolumeField, c);
+    module_vntora::objects.emplace("CTORATstpReqInquiryMaxOrderVolumeField", c);
+}
+void generate_class_CTORATstpRspInquiryMaxOrderVolumeField(pybind11::object & parent)
+{
+    pybind11::class_<CTORATstpRspInquiryMaxOrderVolumeField> c(parent, "CTORATstpRspInquiryMaxOrderVolumeField");
+    if constexpr (std::is_default_constructible_v<CTORATstpRspInquiryMaxOrderVolumeField>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "ExchangeID", ExchangeID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "SecurityID", SecurityID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "InvestorID", InvestorID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "BusinessUnitID", BusinessUnitID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "AccountID", AccountID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "ShareholderID", ShareholderID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "Direction", Direction);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "OrderPriceType", OrderPriceType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "CombOffsetFlag", CombOffsetFlag);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "CombHedgeFlag", CombHedgeFlag);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "TimeCondition", TimeCondition);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "VolumeCondition", VolumeCondition);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "LimitPrice", LimitPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "TransfereePbuID", TransfereePbuID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, "MaxVolume", MaxVolume);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpRspInquiryMaxOrderVolumeField, c);
+    module_vntora::objects.emplace("CTORATstpRspInquiryMaxOrderVolumeField", c);
+}
 void generate_class_CTORATstpPeripheryPositionTransferDetailField(pybind11::object & parent)
 {
     pybind11::class_<CTORATstpPeripheryPositionTransferDetailField> c(parent, "CTORATstpPeripheryPositionTransferDetailField");
@@ -511,67 +558,4 @@ void generate_class_CTORATstpUserField(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpUserField, "LoginLimit", LoginLimit);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpUserField, c);
     module_vntora::objects.emplace("CTORATstpUserField", c);
-}
-void generate_class_CTORATstpQryInvestorField(pybind11::object & parent)
-{
-    pybind11::class_<CTORATstpQryInvestorField> c(parent, "CTORATstpQryInvestorField");
-    if constexpr (std::is_default_constructible_v<CTORATstpQryInvestorField>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryInvestorField, "InvestorID", InvestorID);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpQryInvestorField, c);
-    module_vntora::objects.emplace("CTORATstpQryInvestorField", c);
-}
-void generate_class_CTORATstpInvestorField(pybind11::object & parent)
-{
-    pybind11::class_<CTORATstpInvestorField> c(parent, "CTORATstpInvestorField");
-    if constexpr (std::is_default_constructible_v<CTORATstpInvestorField>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInvestorField, "InvestorID", InvestorID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInvestorField, "InvestorName", InvestorName);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInvestorField, "IdCardType", IdCardType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInvestorField, "IdCardNo", IdCardNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInvestorField, "Telephone", Telephone);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInvestorField, "Address", Address);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInvestorField, "OpenDate", OpenDate);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInvestorField, "Mobile", Mobile);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInvestorField, "Operways", Operways);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInvestorField, "CRiskLevel", CRiskLevel);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpInvestorField, "ProfInvestorType", ProfInvestorType);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpInvestorField, c);
-    module_vntora::objects.emplace("CTORATstpInvestorField", c);
-}
-void generate_class_CTORATstpQryShareholderAccountField(pybind11::object & parent)
-{
-    pybind11::class_<CTORATstpQryShareholderAccountField> c(parent, "CTORATstpQryShareholderAccountField");
-    if constexpr (std::is_default_constructible_v<CTORATstpQryShareholderAccountField>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryShareholderAccountField, "InvestorID", InvestorID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryShareholderAccountField, "ExchangeID", ExchangeID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryShareholderAccountField, "MarketID", MarketID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryShareholderAccountField, "ShareholderID", ShareholderID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryShareholderAccountField, "TradingCodeClass", TradingCodeClass);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpQryShareholderAccountField, c);
-    module_vntora::objects.emplace("CTORATstpQryShareholderAccountField", c);
-}
-void generate_class_CTORATstpShareholderAccountField(pybind11::object & parent)
-{
-    pybind11::class_<CTORATstpShareholderAccountField> c(parent, "CTORATstpShareholderAccountField");
-    if constexpr (std::is_default_constructible_v<CTORATstpShareholderAccountField>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpShareholderAccountField, "InvestorID", InvestorID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpShareholderAccountField, "ExchangeID", ExchangeID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpShareholderAccountField, "ShareholderID", ShareholderID);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpShareholderAccountField, "ClientIDType", ClientIDType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpShareholderAccountField, "MarketID", MarketID);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpShareholderAccountField, c);
-    module_vntora::objects.emplace("CTORATstpShareholderAccountField", c);
-}
-void generate_class_CTORATstpQryBusinessUnitField(pybind11::object & parent)
-{
-    pybind11::class_<CTORATstpQryBusinessUnitField> c(parent, "CTORATstpQryBusinessUnitField");
-    if constexpr (std::is_default_constructible_v<CTORATstpQryBusinessUnitField>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryBusinessUnitField, "InvestorID", InvestorID);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpQryBusinessUnitField, c);
-    module_vntora::objects.emplace("CTORATstpQryBusinessUnitField", c);
 }
