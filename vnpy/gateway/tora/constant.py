@@ -1,13 +1,10 @@
 from typing import Dict, Tuple
 
-from vnpy.api.tora.vntora import TORA_TSTP_D_Buy, TORA_TSTP_D_Sell, TORA_TSTP_EXD_HK, \
-    TORA_TSTP_EXD_SSE, TORA_TSTP_EXD_SZSE, TORA_TSTP_OPT_AnyPrice, TORA_TSTP_OPT_LimitPrice, \
+from vnpy.api.tora.vntora import TORA_TSTP_D_Buy, TORA_TSTP_D_Sell, TORA_TSTP_EXD_SSE, \
+    TORA_TSTP_EXD_SZSE, TORA_TSTP_OPT_LimitPrice, TORA_TSTP_OST_AllTraded, TORA_TSTP_OST_Canceled, \
+    TORA_TSTP_OST_NoTradeQueueing, TORA_TSTP_OST_PartTradedQueueing, TORA_TSTP_OST_Unknown, \
     TORA_TSTP_PID_SHBond, TORA_TSTP_PID_SHFund, TORA_TSTP_PID_SHStock, TORA_TSTP_PID_SZBond, \
-    TORA_TSTP_PID_SZFund, TORA_TSTP_PID_SZStock, TORA_TSTP_TC_IOC, TORA_TSTP_VC_AV, \
-    TORA_TSTP_TC_GTC, TORA_TSTP_TC_GFD, TORA_TSTP_OST_Canceled, TORA_TSTP_OST_AllTraded, \
-    TORA_TSTP_OST_PartTradedQueueing, TORA_TSTP_OST_PartTradedNotQueueing, \
-    TORA_TSTP_OST_NoTradeQueueing, TORA_TSTP_OST_NoTradeNotQueueing, TORA_TSTP_OST_Unknown, \
-    TORA_TSTP_OST_NotTouched, TORA_TSTP_OST_Touched, TORA_TSTP_OST_Cached
+    TORA_TSTP_PID_SZFund, TORA_TSTP_PID_SZStock, TORA_TSTP_TC_GFD, TORA_TSTP_TC_IOC, TORA_TSTP_VC_AV
 
 from vnpy.trader.constant import Direction, Exchange, OrderType, Product, Status
 
@@ -112,24 +109,24 @@ ORDER_TYPE_TORA2VT: Dict[Tuple[str, str, str], OrderType] = {
 }
 
 ORDER_STATUS_TORA2VT: Dict[str, Status] = {
-# 全部成交
-TORA_TSTP_OST_AllTraded: Status.ALLTRADED,
-# 部分成交还在队列中
-TORA_TSTP_OST_PartTradedQueueing: Status.PARTTRADED,
-# 部分成交不在队列中
-# TORA_TSTP_OST_PartTradedNotQueueing: _,
-# 未成交还在队列中
-TORA_TSTP_OST_NoTradeQueueing: Status.NOTTRADED,
-# 未成交不在队列中
-# TORA_TSTP_OST_NoTradeNotQueueing: _,
-# 撤单
-TORA_TSTP_OST_Canceled: Status.CANCELLED,
-# 未知
-TORA_TSTP_OST_Unknown: Status.NOTTRADED,  # todo: unknown status???
-# 尚未触发
-# TORA_TSTP_OST_NotTouched: _,
-# 已触发
-# TORA_TSTP_OST_Touched: _,
-# 预埋
-# TORA_TSTP_OST_Cached: _,
+    # 全部成交
+    TORA_TSTP_OST_AllTraded: Status.ALLTRADED,
+    # 部分成交还在队列中
+    TORA_TSTP_OST_PartTradedQueueing: Status.PARTTRADED,
+    # 部分成交不在队列中
+    # TORA_TSTP_OST_PartTradedNotQueueing: _,
+    # 未成交还在队列中
+    TORA_TSTP_OST_NoTradeQueueing: Status.NOTTRADED,
+    # 未成交不在队列中
+    # TORA_TSTP_OST_NoTradeNotQueueing: _,
+    # 撤单
+    TORA_TSTP_OST_Canceled: Status.CANCELLED,
+    # 未知
+    TORA_TSTP_OST_Unknown: Status.NOTTRADED,  # todo: unknown status???
+    # 尚未触发
+    # TORA_TSTP_OST_NotTouched: _,
+    # 已触发
+    # TORA_TSTP_OST_Touched: _,
+    # 预埋
+    # TORA_TSTP_OST_Cached: _,
 }

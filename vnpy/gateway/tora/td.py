@@ -2,8 +2,6 @@
 author: nanoric
 
 TODOS:
- * send_order @ sell
- * test of reconnection(am i need re-login?)
  * correct some confused keys.
  * remove useless codes
 """
@@ -25,9 +23,9 @@ from vnpy.api.tora.vntora import (CTORATstpConditionOrderField, CTORATstpInputOr
                                   CTORATstpShareholderAccountField, CTORATstpTradeField,
                                   CTORATstpTraderApi, CTORATstpTraderSpi,
                                   CTORATstpTradingAccountField, TORA_TE_RESUME_TYPE,
-                                  TORA_TSTP_AF_ForceDelete, TORA_TSTP_FCC_NotForceClose,
+                                  TORA_TSTP_AF_Delete, TORA_TSTP_FCC_NotForceClose,
                                   TORA_TSTP_HF_Speculation, TORA_TSTP_LACT_AccountID,
-                                  TORA_TSTP_OF_Open, TORA_TSTP_OPERW_PCClient, TORA_TSTP_AF_Delete)
+                                  TORA_TSTP_OF_Open, TORA_TSTP_OPERW_PCClient)
 
 from vnpy.event import EVENT_TIMER
 from vnpy.trader.constant import Direction, Exchange, Offset, OrderType, Status
@@ -36,7 +34,7 @@ from vnpy.trader.object import AccountData, CancelRequest, ContractData, OrderDa
     PositionData, TradeData
 from vnpy.trader.utility import get_folder_path
 from .constant import DIRECTION_TORA2VT, DIRECTION_VT2TORA, EXCHANGE_TORA2VT, EXCHANGE_VT2TORA, \
-    ORDER_TYPE_TORA2VT, ORDER_TYPE_VT2TORA, PRODUCT_TORA2VT, ORDER_STATUS_TORA2VT
+    ORDER_STATUS_TORA2VT, ORDER_TYPE_TORA2VT, ORDER_TYPE_VT2TORA, PRODUCT_TORA2VT
 from .error_codes import get_error_msg
 
 
@@ -442,8 +440,6 @@ class ToraTdApi:
             raise NotImplementedError()
         if req.type is OrderType.FAK or req.type is OrderType.FOK:
             assert req.exchange is Exchange.SZSE
-        if req.offset is not Offset.OPEN:
-            raise NotImplementedError()
         order_id = self._get_new_order_id()
         info = CTORATstpInputOrderField()
         info.InvestorID = self.session_info.investor_id

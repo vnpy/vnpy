@@ -13,6 +13,7 @@ from vnpy.trader.object import (
 )
 from .constant import EXCHANGE_TORA2VT, EXCHANGE_VT2TORA
 
+
 def parse_datetime(date: str, time: str):
     # sampled :
     # date: '20190611'
