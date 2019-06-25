@@ -3,8 +3,6 @@ author: nanoric
 
 TODOS:
  * send_order @ sell
- * cancel_order @ local submitted
- * cancel_order @ non-local submitted
  * test of reconnection(am i need re-login?)
  * correct some confused keys.
  * remove useless codes
@@ -29,7 +27,7 @@ from vnpy.api.tora.vntora import (CTORATstpConditionOrderField, CTORATstpInputOr
                                   CTORATstpTradingAccountField, TORA_TE_RESUME_TYPE,
                                   TORA_TSTP_AF_ForceDelete, TORA_TSTP_FCC_NotForceClose,
                                   TORA_TSTP_HF_Speculation, TORA_TSTP_LACT_AccountID,
-                                  TORA_TSTP_OF_Open, TORA_TSTP_OPERW_PCClient)
+                                  TORA_TSTP_OF_Open, TORA_TSTP_OPERW_PCClient, TORA_TSTP_AF_Delete)
 
 from vnpy.event import EVENT_TIMER
 from vnpy.trader.constant import Direction, Exchange, Offset, OrderType, Status
@@ -38,7 +36,7 @@ from vnpy.trader.object import AccountData, CancelRequest, ContractData, OrderDa
     PositionData, TradeData
 from vnpy.trader.utility import get_folder_path
 from .constant import DIRECTION_TORA2VT, DIRECTION_VT2TORA, EXCHANGE_TORA2VT, EXCHANGE_VT2TORA, \
-    ORDER_TYPE_TORA2VT, ORDER_TYPE_VT2TORA, PRODUCT_TORA2VT
+    ORDER_TYPE_TORA2VT, ORDER_TYPE_VT2TORA, PRODUCT_TORA2VT, ORDER_STATUS_TORA2VT
 from .error_codes import get_error_msg
 
 
@@ -155,19 +153,11 @@ class ToraTdSpi(CTORATstpTraderSpi):
             order_data = self.parse_order_field(info)
         except KeyError:
             return
-        traded = info.VolumeTraded
-        order_data.traded = traded
-        if traded == 0:
-            order_data.status = Status.NOTTRADED
-        elif traded < order_data.volume:
-            order_data.status = Status.PARTTRADED
-        else:
-            order_data.status = Status.ALLTRADED
-
-        self.orders[info.OrderRef] = OrderInfo(info.OrderRef,
-                                               info.ExchangeID,
-                                               info.SessionID,
-                                               info.FrontID,
+        order_data.status = ORDER_STATUS_TORA2VT[info.OrderStatus]
+        self.orders[info.OrderRef] = OrderInfo(local_order_id=info.OrderRef,
+                                               exchange_id=info.ExchangeID,
+                                               session_id=info.SessionID,
+                                               front_id=info.FrontID,
                                                )
         self.gateway.on_order(order_data)
 
@@ -496,6 +486,7 @@ class ToraTdApi:
         info = CTORATstpInputOrderActionField()
         info.InvestorID = self.session_info.investor_id
         info.ExchangeID = EXCHANGE_VT2TORA[req.exchange]  # 没有的话：(16608)：VIP:未知的交易所代码
+        info.SecurityID = req.symbol
         # info.OrderActionRef = str(self._get_new_req_id())
 
         order_info = self.orders[req.orderid]
@@ -504,8 +495,8 @@ class ToraTdApi:
         info.FrontID = order_info.front_id
         info.SessionID = order_info.session_id
 
-        # info.ActionFlag = TORA_TSTP_AF_Delete  # (12673)：VIP:撤单与原报单信息不符
-        info.ActionFlag = TORA_TSTP_AF_ForceDelete  # (12368)：VIP:报单状态异常
+        info.ActionFlag = TORA_TSTP_AF_Delete  # (12673)：VIP:撤单与原报单信息不符
+        # info.ActionFlag = TORA_TSTP_AF_ForceDelete  # (12368)：VIP:报单状态异常
 
         err = self._native_api.ReqOrderAction(info, self._get_new_req_id())
         self._if_error_write_log(err, "cancel_order:ReqOrderAction")
