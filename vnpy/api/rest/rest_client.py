@@ -258,7 +258,11 @@ class RestClient(object):
             request.response = response
             status_code = response.status_code
             if status_code // 100 == 2:  # 2xx codes are all successful
-                json_body = response.json()
+                if status_code == 204:
+                    json_body = None
+                else:
+                    json_body = response.json()
+
                 request.callback(json_body, request)
                 request.status = RequestStatus.success
             else:
