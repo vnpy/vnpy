@@ -2,6 +2,7 @@
 author: nanoric
 
 TODOS:
+ * send_order @ sell
  * cancel_order @ local submitted
  * cancel_order @ non-local submitted
  * test of reconnection(am i need re-login?)
@@ -173,14 +174,20 @@ class ToraTdSpi(CTORATstpTraderSpi):
     @_check_error(error_return=False, write_log=False, print_function_name=False)
     def OnErrRtnOrderInsert(self, info: CTORATstpInputOrderField,
                             error_info: CTORATstpRspInfoField) -> None:
-        self._api.update_last_local_order_id(int(info.OrderRef))
+        try:
+            self._api.update_last_local_order_id(int(info.OrderRef))
+        except ValueError:
+            pass
 
         try:
             order_data = self.parse_order_field(info)
         except KeyError:
+            # no prints here because we don't care about insertion failure.
             return
         order_data.status = Status.REJECTED
         self.gateway.on_order(order_data)
+        self.gateway.write_log(f"拒单({order_data.orderid}):"
+                               f"错误码:{error_info.ErrorID}, 错误消息:{error_info.ErrorMsg}")
 
     @_check_error(error_return=False, write_log=False, print_function_name=False)
     def OnErrRtnOrderAction(self, info: CTORATstpOrderActionField,
@@ -194,7 +201,7 @@ class ToraTdSpi(CTORATstpTraderSpi):
     @_check_error()
     def OnRspOrderAction(self, info: CTORATstpInputOrderActionField,
                          error_info: CTORATstpRspInfoField, request_id: int, is_last: bool) -> None:
-        pass
+        print("order action succeed!")
 
     @_check_error()
     def OnRspOrderInsert(self, info: CTORATstpInputOrderField,
