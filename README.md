@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.0.3-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.0.4-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/travis/com/vnpy/vnpy/master.svg"/>
@@ -14,7 +14,9 @@
 
 vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1月正式发布，在开源社区5年持续不断的贡献下一步步成长为全功能量化交易平台，目前国内外金融机构用户已经超过300家，包括：私募基金、证券自营和资管、期货资管和子公司、高校研究机构、自营交易公司、交易所、Token Fund等。
 
-2.0版本基于Python 3.7全新重构开发，目前功能还在逐步完善中。如需Python 2上的版本请点击：[长期支持版本v1.9.2 LTS](https://github.com/vnpy/vnpy/tree/v1.9.2-LTS)。
+使用vn.py的过程中有任何疑问，请前往[**官方社区论坛**](https://www.vnpy.com/forum/)的【提问求助】板块寻求帮助，也欢迎在【经验分享】板块分享你的使用心得！
+
+2.0版本基于Python 3.7全新重构开发，如需Python 2上的版本请点击：[长期支持版本v1.9.2 LTS](https://github.com/vnpy/vnpy/tree/v1.9.2-LTS)。
 
 ## 功能特点
 
@@ -36,16 +38,20 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * Interactive Brokers(ib)：全球证券、期货、期权、外汇等
 
+    * 易盛9.0外盘(tap)：全球期货
+
     * BitMEX(bitmex)：数字货币期货、期权、永续合约
 
     * OKEX合约(okexf)：数字货币期货
 
     * 火币合约(hbdm)：数字货币期货
 
+    * 币安(binance)：数字货币现货
+
     * OKEX(okex)：数字货币现货
 
     * 火币(huobi)：数字货币现货
-    
+
     * Bitfinex(bitfinex)：数字货币现货
 
     * 1Token(onetoken)：数字货币券商（现货、期货）
@@ -62,17 +68,21 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * data_recorder：行情记录模块，基于图形界面进行配置，根据需求实时录制Tick或者K线行情到数据库中，用于策略回测或者实盘初始化
 
+    * risk_manager：风险管理模块，提供包括交易流控、下单数量、活动委托、撤单总数等规则的统计和限制，有效实现前端风控功能
+
 4. Python交易API接口封装（vnpy.api），提供上述交易接口的底层对接实现。
 
 5. 简洁易用的事件驱动引擎（vnpy.event），作为事件驱动型交易程序的核心。
 
-6. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容。
+6. 跨进程通讯标准组件（vnpy.rpc），用于实现分布式部署的复杂交易系统。
 
-7. 官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
+7. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容。
+
+8. 官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.0.3](https://download.vnpy.com/vnstudio-2.0.3.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.0.4](https://download.vnpy.com/vnstudio-2.0.4-r.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 
@@ -100,6 +110,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 4. 点击底部的**VN Trader Lite**按钮，开始你的交易！！！
 
 注意：
+
 * 在VN Trader的运行过程中请勿关闭VN Station（会自动退出）
 * 如需要灵活配置量化交易应用组件，请使用**VN Trader Pro**
 

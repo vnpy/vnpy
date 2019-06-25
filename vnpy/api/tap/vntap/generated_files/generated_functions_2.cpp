@@ -14,6 +14,38 @@
 #include "custom/custom_wrappers.hpp"
 
 
+void generate_class_ITapTrade_TapAPICommodityInfo(pybind11::object & parent)
+{
+    pybind11::class_<ITapTrade::TapAPICommodityInfo> c(parent, "TapAPICommodityInfo");
+    if constexpr (std::is_default_constructible_v<ITapTrade::TapAPICommodityInfo>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "ExchangeNo", ExchangeNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CommodityType", CommodityType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CommodityNo", CommodityNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CommodityName", CommodityName);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CommodityEngName", CommodityEngName);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "RelateExchangeNo", RelateExchangeNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "RelateCommodityType", RelateCommodityType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "RelateCommodityNo", RelateCommodityNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "RelateExchangeNo2", RelateExchangeNo2);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "RelateCommodityType2", RelateCommodityType2);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "RelateCommodityNo2", RelateCommodityNo2);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CurrencyGroupNo", CurrencyGroupNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "TradeCurrency", TradeCurrency);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "ContractSize", ContractSize);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "OpenCloseMode", OpenCloseMode);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "StrikePriceTimes", StrikePriceTimes);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CommodityTickSize", CommodityTickSize);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CommodityDenominator", CommodityDenominator);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CmbDirect", CmbDirect);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "DeliveryMode", DeliveryMode);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "DeliveryDays", DeliveryDays);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "AddOneTime", AddOneTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CommodityTimeZone", CommodityTimeZone);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "IsAddOne", IsAddOne);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::TapAPICommodityInfo, c);
+    module_vntap::objects.emplace("ITapTrade::TapAPICommodityInfo", c);
+}
 void generate_class_ITapTrade_TapAPITradeContractInfo(pybind11::object & parent)
 {
     pybind11::class_<ITapTrade::TapAPITradeContractInfo> c(parent, "TapAPITradeContractInfo");
@@ -553,79 +585,4 @@ void generate_class_ITapTrade_TapAPIOrderMarketInsertRsp(pybind11::object & pare
     c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderMarketInsertRsp, "Remark", Remark);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::TapAPIOrderMarketInsertRsp, c);
     module_vntap::objects.emplace("ITapTrade::TapAPIOrderMarketInsertRsp", c);
-}
-void generate_class_ITapTrade_TapAPIOrderMarketDeleteReq(pybind11::object & parent)
-{
-    pybind11::class_<ITapTrade::TapAPIOrderMarketDeleteReq> c(parent, "TapAPIOrderMarketDeleteReq");
-    if constexpr (std::is_default_constructible_v<ITapTrade::TapAPIOrderMarketDeleteReq>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderMarketDeleteReq, "ServerFlag", ServerFlag);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderMarketDeleteReq, "OrderBuyNo", OrderBuyNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderMarketDeleteReq, "OrderSellNo", OrderSellNo);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::TapAPIOrderMarketDeleteReq, c);
-    module_vntap::objects.emplace("ITapTrade::TapAPIOrderMarketDeleteReq", c);
-}
-void generate_class_ITapTrade_TapAPIOrderLocalRemoveReq(pybind11::object & parent)
-{
-    pybind11::class_<ITapTrade::TapAPIOrderLocalRemoveReq> c(parent, "TapAPIOrderLocalRemoveReq");
-    if constexpr (std::is_default_constructible_v<ITapTrade::TapAPIOrderLocalRemoveReq>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveReq, "ServerFlag", ServerFlag);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveReq, "OrderNo", OrderNo);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveReq, c);
-    module_vntap::objects.emplace("ITapTrade::TapAPIOrderLocalRemoveReq", c);
-}
-void generate_class_ITapTrade_TapAPIOrderLocalRemoveRsp(pybind11::object & parent)
-{
-    pybind11::class_<ITapTrade::TapAPIOrderLocalRemoveRsp> c(parent, "TapAPIOrderLocalRemoveRsp");
-    if constexpr (std::is_default_constructible_v<ITapTrade::TapAPIOrderLocalRemoveRsp>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveRsp, "req", req);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveRsp, "ClientLocalIP", ClientLocalIP);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveRsp, "ClientMac", ClientMac);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveRsp, "ClientIP", ClientIP);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveRsp, c);
-    module_vntap::objects.emplace("ITapTrade::TapAPIOrderLocalRemoveRsp", c);
-}
-void generate_class_ITapTrade_TapAPIOrderLocalInputReq(pybind11::object & parent)
-{
-    pybind11::class_<ITapTrade::TapAPIOrderLocalInputReq> c(parent, "TapAPIOrderLocalInputReq");
-    if constexpr (std::is_default_constructible_v<ITapTrade::TapAPIOrderLocalInputReq>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "AccountNo", AccountNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "ExchangeNo", ExchangeNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "CommodityType", CommodityType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "CommodityNo", CommodityNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "ContractNo", ContractNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "StrikePrice", StrikePrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "CallOrPutFlag", CallOrPutFlag);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "ContractNo2", ContractNo2);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "StrikePrice2", StrikePrice2);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "CallOrPutFlag2", CallOrPutFlag2);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderType", OrderType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderSource", OrderSource);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "TimeInForce", TimeInForce);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "ExpireTime", ExpireTime);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "IsRiskOrder", IsRiskOrder);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderSide", OrderSide);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "PositionEffect", PositionEffect);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "PositionEffect2", PositionEffect2);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "InquiryNo", InquiryNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "HedgeFlag", HedgeFlag);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderPrice", OrderPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderPrice2", OrderPrice2);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "StopPrice", StopPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderQty", OrderQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderMinQty", OrderMinQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderSystemNo", OrderSystemNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderExchangeSystemNo", OrderExchangeSystemNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "UpperNo", UpperNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderMatchPrice", OrderMatchPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderMatchPrice2", OrderMatchPrice2);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderMatchQty", OrderMatchQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderMatchQty2", OrderMatchQty2);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderState", OrderState);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "IsAddOne", IsAddOne);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, c);
-    module_vntap::objects.emplace("ITapTrade::TapAPIOrderLocalInputReq", c);
 }

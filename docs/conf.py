@@ -188,7 +188,7 @@ texinfo_documents = [
 
 # -- Options for intersphinx output ----------------------------------------------
 intersphinx_mapping = {
-    #'python': ('https://docs.python.org/3/', None),
+    # 'python': ('https://docs.python.org/3/', None),
 }
 
 # -- Options for Epub output -------------------------------------------------

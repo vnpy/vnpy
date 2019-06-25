@@ -107,12 +107,14 @@ class Exchange(Enum):
     BMD = "BMD"             # Bursa Malaysia Derivatives
     TOCOM = "TOCOM"         # Tokyo Commodity Exchange
     EUNX = "EUNX"           # Euronext Exchange
+    KRX = "KRX"             # Korean Exchange
 
     # CryptoCurrency
     BITMEX = "BITMEX"
     OKEX = "OKEX"
     HUOBI = "HUOBI"
     BITFINEX = "BITFINEX"
+    BINANCE = "BINANCE"
 
 
 class Currency(Enum):

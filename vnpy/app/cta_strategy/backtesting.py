@@ -214,6 +214,12 @@ class BacktestingEngine:
         if not self.end:
             self.end = datetime.now()
 
+        if self.start >= self.end:
+            self.output("起始日期必须小于结束日期")    
+            return        
+
+        self.history_data.clear()       # Clear previously loaded history data
+
         # Load 30 days of data each time and allow for progress update
         progress_delta = timedelta(days=30)
         total_delta = self.end - self.start
@@ -328,9 +334,11 @@ class BacktestingEngine:
         """"""
         self.output("开始计算策略统计指标")
 
-        if not df:
+        # Check DataFrame input exterior
+        if df is None:
             df = self.daily_df
         
+        # Check for init DataFrame 
         if df is None:
             # Set all statistics to 0 if no trade.
             start_date = ""
@@ -474,9 +482,11 @@ class BacktestingEngine:
 
     def show_chart(self, df: DataFrame = None):
         """"""
-        if not df:
+        # Check DataFrame input exterior        
+        if df is None:
             df = self.daily_df
-        
+
+        # Check for init DataFrame        
         if df is None:
             return
 
@@ -1039,6 +1049,7 @@ class BacktestingEngine:
         """
         return list(self.daily_results.values())
 
+
 class DailyResult:
     """"""
 
@@ -1178,7 +1189,7 @@ def ga_optimize(parameter_values: list):
     return _ga_optimize(tuple(parameter_values))
 
 
-@lru_cache(maxsize=10)
+@lru_cache(maxsize=999)
 def load_bar_data(
     symbol: str,
     exchange: Exchange,
@@ -1192,7 +1203,7 @@ def load_bar_data(
     )
 
 
-@lru_cache(maxsize=10)
+@lru_cache(maxsize=999)
 def load_tick_data(
     symbol: str,
     exchange: Exchange,

@@ -12,5 +12,15 @@ NAME_DISPLAY_MAP = {
     "timer_count": "本轮读秒",
     "total_count": "累计读秒",
     "template_name": "算法模板",
-    "display_volume": "挂出数量"
+    "display_volume": "挂出数量",
+    "stop_price": "触发价格",
+    "price_add": "委托超价",
+    "step_price": "网格交易间距",
+    "step_volume": "网格交易数量",
+    "order_type": "类型",
+    "active_vt_symbol": "主动腿",
+    "passive_vt_symbol": "被动腿",
+    "spread_up": "价差上限",
+    "spread_down": "价差下限",
+    "max_pos": "最大持仓"
 }

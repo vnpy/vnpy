@@ -957,6 +957,9 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
     def on_connected(self):
         """"""
         self.gateway.write_log("行情Websocket API连接成功")
+
+        for ws_symbol in self.ticks.keys():
+            self.subscribe_data(ws_symbol)
         
     def subscribe(self, req: SubscribeRequest):
         """"""
@@ -979,7 +982,11 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
             gateway_name=self.gateway_name,
         )
         self.ticks[ws_symbol] = tick            
-            
+
+        self.subscribe_data(ws_symbol)
+    
+    def subscribe_data(self, ws_symbol: str):
+        """"""
         # Subscribe to market depth update
         self.req_id += 1
         req = {
