@@ -1,10 +1,3 @@
-"""
-author: nanoric
-
-TODOS:
- * correct some confused keys.
- * remove useless codes
-"""
 import functools
 from dataclasses import dataclass, field
 from datetime import datetime

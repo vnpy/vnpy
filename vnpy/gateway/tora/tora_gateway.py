@@ -1,3 +1,10 @@
+"""
+author: nanoric
+
+TODO:
+ * Linux support
+
+"""
 from vnpy.api.tora.vntora import (AsyncDispatchException, set_async_callback_exception_handler)
 
 from vnpy.event import EventEngine
