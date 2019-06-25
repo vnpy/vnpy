@@ -3,14 +3,9 @@
     Author: vigarbuaa
 """
 
-import hashlib
-import hmac
 import sys
-import time
-from copy import copy
 from threading import Lock
 from datetime import datetime
-from urllib.parse import urlencode
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
 from vnpy.event import Event
@@ -21,16 +16,15 @@ from vnpy.trader.constant import (
     Exchange,
     OrderType,
     Product,
-    Status,
-    Offset,
-    Interval
+    Status
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     TickData,
     OrderData,
     TradeData,
-    PositionData, AccountData,
+    PositionData, 
+    AccountData,
     ContractData,
     OrderRequest,
     CancelRequest,
@@ -74,7 +68,7 @@ class AlpacaGateway(BaseGateway):
         "key": "",
         "secret": "",
         "session": 3,
-        "服务器": ["REAL", "PAPER"],
+        "server": ["REAL", "PAPER"],
         "proxy_host": "127.0.0.1",
         "proxy_port": 1080,
     }
@@ -94,7 +88,7 @@ class AlpacaGateway(BaseGateway):
         session = setting["session"]
         proxy_host = setting["proxy_host"]
         proxy_port = setting["proxy_port"]
-        env = setting['服务器']
+        env = setting['server']
         rest_url = REST_HOST if env == "REAL" else PAPER_REST_HOST
         websocket_url = WEBSOCKET_HOST if env == "REAL" else PAPER_WEBSOCKET_HOST
         self.rest_api.connect(key, secret, session,
@@ -127,15 +121,6 @@ class AlpacaGateway(BaseGateway):
         self.rest_api.stop()
         self.ws_api.stop()
 
-    def process_timer_event(self, event: Event):
-        """"""
-        self.count += 1
-        if self.count < 5:
-            return
-
-        self.query_account()
-        self.query_position()
-
     def init_query(self):
         """"""
         self.count = 0
@@ -146,8 +131,7 @@ class AlpacaGateway(BaseGateway):
         self.count += 1
         if self.count < 5:
             return
-        else:
-            self.count = 0
+        self.count = 0
 
         self.query_account()
         self.query_position()
@@ -440,15 +424,7 @@ class AlpacaWebsocketApi(WebsocketClient):
             "streams": self.channels
         }}
         self.send_packet(params)
-
-    def send_order(self, req: OrderRequest):
-        pass
-
-    # ----------------------------------------------------------------------
-    def cancel_order(self, req: CancelRequest):
-        """"""
-        pass
-
+        
     def on_connected(self):
         """"""
         self.gateway.write_log("Websocket API连接成功")
@@ -472,18 +448,18 @@ class AlpacaWebsocketApi(WebsocketClient):
                 self.on_data(packet)
         else:
             print("unrecognize msg", packet)
-
-    # ----------------------------------------------------------------------
+   
     def on_data(self, data):
         print("on_data is {}".format(data))
         stream_ret = data['stream']
         data_ret = data['data']
         if(stream_ret == "account_updates"):
+            frozen = float(data_ret['cash']) - float(data_ret['cash_withdrawable'])
+
             account = AccountData(
                 accountid=data_ret['id'],
                 balance=float(data_ret['cash']),
-                frozen=float(data_ret['cash']) -
-                float(data_ret['cash_withdrawable']),
+                frozen=frozen,
                 gateway_name=self.gateway_name
             )
             self.gateway.on_account(account)
@@ -509,10 +485,9 @@ class AlpacaWebsocketApi(WebsocketClient):
                 self.gateway.on_trade(trade)
         else:
             pass
-
-    # ----------------------------------------------------------------------
+    
     def handle_auth(self, data):
-        stream_ret = data['stream']
+        # stream_ret = data['stream']
         data_ret = data['data']
         if (data_ret['status'] == "authorized"):
             print("authorization success!!!")
@@ -523,18 +498,6 @@ class AlpacaWebsocketApi(WebsocketClient):
             self.gateway.write_log("authorization failed!!!")
         else:
             print("??unhandled status:  ", data)
-
-    # ----------------------------------------------------------------------
-    def on_response(self, data):
-        """"""
-        pass
-    # ----------------------------------------------------------------------
-
-    def on_update(self, data):
-        """"""
-        pass
-
-    # ----------------------------------------------------------------------
 
     def on_error(self, exception_type: type, exception_value: Exception, tb):
         """"""
