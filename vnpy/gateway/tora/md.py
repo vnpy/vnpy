@@ -23,22 +23,28 @@ def parse_datetime(date: str, time: str):
 
 
 class ToraMdSpi(CTORATstpMdSpi):
+    """"""
 
     def __init__(self, api: "ToraMdApi", gateway: "BaseGateway"):
+        """"""
         super().__init__()
         self.gateway = gateway
 
         self._api = api
 
     def OnFrontConnected(self) -> Any:
+        """"""
         self.gateway.write_log("行情服务器连接成功")
 
     def OnFrontDisconnected(self, error_code: int) -> Any:
-        self.gateway.write_log(f"行情服务器连接断开({error_code}):{get_error_msg(error_code)}")
+        """"""
+        self.gateway.write_log(
+            f"行情服务器连接断开({error_code}):{get_error_msg(error_code)}")
 
     def OnRspError(
         self, error_info: CTORATstpRspInfoField, request_id: int, is_last: bool
     ) -> Any:
+        """"""
         error_id = error_info.ErrorID
         error_msg = error_info.ErrorMsg
         self.gateway.write_log(f"行情服务收到错误消息({error_id})：{error_msg}")
@@ -50,6 +56,7 @@ class ToraMdSpi(CTORATstpMdSpi):
         request_id: int,
         is_last: bool,
     ) -> Any:
+        """"""
         error_id = error_info.ErrorID
         if error_id != 0:
             error_msg = error_info.ErrorMsg
@@ -64,6 +71,7 @@ class ToraMdSpi(CTORATstpMdSpi):
         request_id: int,
         is_last: bool,
     ) -> Any:
+        """"""
         error_id = error_info.ErrorID
         if error_id != 0:
             error_msg = error_info.ErrorMsg
@@ -72,6 +80,7 @@ class ToraMdSpi(CTORATstpMdSpi):
         self.gateway.write_log("行情服务器登出成功")
 
     def OnRtnDepthMarketData(self, data: CTORATstpMarketDataField) -> Any:
+        """"""
         if data.ExchangeID not in EXCHANGE_TORA2VT:
             return
         tick_data = TickData(
@@ -114,8 +123,10 @@ class ToraMdSpi(CTORATstpMdSpi):
 
 
 class ToraMdApi:
+    """"""
 
     def __init__(self, gateway: BaseGateway):
+        """"""
         self.gateway = gateway
         self.md_address = ""
 
@@ -151,10 +162,13 @@ class ToraMdApi:
         return True
 
     def subscribe(self, symbols: List[str], exchange: Exchange):
-        err = self._native_api.SubscribeMarketData(symbols, EXCHANGE_VT2TORA[exchange])
+        """"""
+        err = self._native_api.SubscribeMarketData(
+            symbols, EXCHANGE_VT2TORA[exchange])
         self._if_error_write_log(err, "subscribe")
 
     def _if_error_write_log(self, error_code: int, function_name: str):
+        """"""
         if error_code != 0:
             error_msg = get_error_msg(error_code)
             msg = f'在执行 {function_name} 时发生错误({error_code}): {error_msg}'
