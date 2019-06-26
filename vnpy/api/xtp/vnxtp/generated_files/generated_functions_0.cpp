@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <iostream>
 #include <string>
 #include <pybind11/pybind11.h>
@@ -182,277 +184,127 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
     if constexpr (std::is_default_constructible_v<PyTraderSpi>)
         c.def(pybind11::init<>());
     c.def("OnDisconnected",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnDisconnected
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnDisconnected,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnError",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnError
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnError,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnOrderEvent",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnOrderEvent
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnOrderEvent,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnTradeEvent",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnTradeEvent
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnTradeEvent,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnCancelOrderError",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnCancelOrderError
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnCancelOrderError,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryOrder",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryOrder
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryOrder,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryTrade",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryTrade
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryTrade,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryPosition",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryPosition
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryPosition,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryAsset",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryAsset
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryAsset,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryStructuredFund",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryStructuredFund
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryStructuredFund,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryFundTransfer",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryFundTransfer
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryFundTransfer,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnFundTransfer",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnFundTransfer
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnFundTransfer,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryETF",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryETF
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryETF,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryETFBasket",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryETFBasket
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryETFBasket,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryIPOInfoList",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryIPOInfoList
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryIPOInfoList,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryIPOQuotaInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryIPOQuotaInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryIPOQuotaInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryOptionAuctionInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryOptionAuctionInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryOptionAuctionInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnCreditCashRepay",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnCreditCashRepay
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnCreditCashRepay,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryCreditCashRepayInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryCreditCashRepayInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryCreditCashRepayInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryCreditFundInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryCreditFundInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryCreditFundInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryCreditDebtInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryCreditDebtInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryCreditDebtInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryCreditTickerDebtInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryCreditTickerDebtInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryCreditTickerDebtInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryCreditAssetDebtInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryCreditAssetDebtInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryCreditAssetDebtInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryCreditTickerAssignInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryCreditTickerAssignInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryCreditTickerAssignInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryCreditExcessStock",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderSpi::OnQueryCreditExcessStock
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderSpi::OnQueryCreditExcessStock,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
@@ -469,423 +321,328 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
     if constexpr (std::is_default_constructible_v<PyTraderApi>)
         c.def(pybind11::init<>());
     c.def_static("CreateTraderApi",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::CreateTraderApi
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::CreateTraderApi,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("Release",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::Release
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::Release,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("GetTradingDay",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::GetTradingDay
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::GetTradingDay,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("RegisterSpi",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::RegisterSpi
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::RegisterSpi,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("GetApiLastError",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::GetApiLastError
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::GetApiLastError,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("GetApiVersion",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::GetApiVersion
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::GetApiVersion,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("GetClientIDByXTPID",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::GetClientIDByXTPID
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::GetClientIDByXTPID,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("GetAccountByXTPID",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::GetAccountByXTPID
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::GetAccountByXTPID,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SubscribePublicTopic",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::SubscribePublicTopic
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::SubscribePublicTopic,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SetSoftwareVersion",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::SetSoftwareVersion
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::SetSoftwareVersion,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SetSoftwareKey",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::SetSoftwareKey
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::SetSoftwareKey,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SetHeartBeatInterval",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::SetHeartBeatInterval
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::SetHeartBeatInterval,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("Login",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::Login
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::Login,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("Logout",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::Logout
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::Logout,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("InsertOrder",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::InsertOrder
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::InsertOrder,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("CancelOrder",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::CancelOrder
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::CancelOrder,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryOrderByXTPID",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryOrderByXTPID
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryOrderByXTPID,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryOrders",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryOrders
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryOrders,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryTradesByXTPID",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryTradesByXTPID
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryTradesByXTPID,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryTrades",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryTrades
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryTrades,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryPosition",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryPosition
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryPosition,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryAsset",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryAsset
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryAsset,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryStructuredFund",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryStructuredFund
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryStructuredFund,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("FundTransfer",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::FundTransfer
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::FundTransfer,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryFundTransfer",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryFundTransfer
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryFundTransfer,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryETF",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryETF
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryETF,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryETFTickerBasket",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryETFTickerBasket
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryETFTickerBasket,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryIPOInfoList",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryIPOInfoList
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryIPOInfoList,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryIPOQuotaInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryIPOQuotaInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryIPOQuotaInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryOptionAuctionInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryOptionAuctionInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryOptionAuctionInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("CreditCashRepay",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::CreditCashRepay
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::CreditCashRepay,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryCreditCashRepayInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryCreditCashRepayInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryCreditCashRepayInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryCreditFundInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryCreditFundInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryCreditFundInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryCreditDebtInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryCreditDebtInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryCreditDebtInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryCreditTickerDebtInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryCreditTickerDebtInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryCreditTickerDebtInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryCreditAssetDebtInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryCreditAssetDebtInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryCreditAssetDebtInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryCreditTickerAssignInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryCreditTickerAssignInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryCreditTickerAssignInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryCreditExcessStock",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &XTP::API::TraderApi::QueryCreditExcessStock
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &XTP::API::TraderApi::QueryCreditExcessStock,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnxtp, XTP::API::TraderApi, c);
     module_vnxtp::objects.emplace("XTP::API::TraderApi", c);
+}
+void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
+{
+    pybind11::class_<XTP::API::QuoteSpi, PyQuoteSpi> c(parent, "QuoteSpi");
+    if constexpr (std::is_default_constructible_v<PyQuoteSpi>)
+        c.def(pybind11::init<>());
+    c.def("OnDisconnected",
+        &XTP::API::QuoteSpi::OnDisconnected,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnError",
+        &XTP::API::QuoteSpi::OnError,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnSubMarketData",
+        &XTP::API::QuoteSpi::OnSubMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnUnSubMarketData",
+        &XTP::API::QuoteSpi::OnUnSubMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnDepthMarketData",
+        &XTP::API::QuoteSpi::OnDepthMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnSubOrderBook",
+        &XTP::API::QuoteSpi::OnSubOrderBook,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnUnSubOrderBook",
+        &XTP::API::QuoteSpi::OnUnSubOrderBook,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnOrderBook",
+        &XTP::API::QuoteSpi::OnOrderBook,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnSubTickByTick",
+        &XTP::API::QuoteSpi::OnSubTickByTick,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnUnSubTickByTick",
+        &XTP::API::QuoteSpi::OnUnSubTickByTick,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnTickByTick",
+        &XTP::API::QuoteSpi::OnTickByTick,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnSubscribeAllMarketData",
+        &XTP::API::QuoteSpi::OnSubscribeAllMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnUnSubscribeAllMarketData",
+        &XTP::API::QuoteSpi::OnUnSubscribeAllMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnSubscribeAllOrderBook",
+        &XTP::API::QuoteSpi::OnSubscribeAllOrderBook,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnUnSubscribeAllOrderBook",
+        &XTP::API::QuoteSpi::OnUnSubscribeAllOrderBook,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnSubscribeAllTickByTick",
+        &XTP::API::QuoteSpi::OnSubscribeAllTickByTick,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnUnSubscribeAllTickByTick",
+        &XTP::API::QuoteSpi::OnUnSubscribeAllTickByTick,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnQueryAllTickers",
+        &XTP::API::QuoteSpi::OnQueryAllTickers,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnQueryTickersPriceInfo",
+        &XTP::API::QuoteSpi::OnQueryTickersPriceInfo,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnSubscribeAllOptionMarketData",
+        &XTP::API::QuoteSpi::OnSubscribeAllOptionMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnUnSubscribeAllOptionMarketData",
+        &XTP::API::QuoteSpi::OnUnSubscribeAllOptionMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnSubscribeAllOptionOrderBook",
+        &XTP::API::QuoteSpi::OnSubscribeAllOptionOrderBook,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnUnSubscribeAllOptionOrderBook",
+        &XTP::API::QuoteSpi::OnUnSubscribeAllOptionOrderBook,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnSubscribeAllOptionTickByTick",
+        &XTP::API::QuoteSpi::OnSubscribeAllOptionTickByTick,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnUnSubscribeAllOptionTickByTick",
+        &XTP::API::QuoteSpi::OnUnSubscribeAllOptionTickByTick,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnxtp, XTP::API::QuoteSpi, c);
+    module_vnxtp::objects.emplace("XTP::API::QuoteSpi", c);
 }

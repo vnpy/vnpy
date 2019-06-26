@@ -17,13 +17,28 @@
 #pragma error("AUTOCXXPY_ENCODING_UTF8 and AUTOCXXPY_ENCODING_CUSTOM cann't be defined at the same time.")
 #endif
 
-#if defined(AUTOCXXPY_ENCODING_CUSTOM) and \
-    (!defined(AUTOCXXPY_ENCODING_CUSTOM_WINDOWS) || !defined(AUTOCXXPY_ENCODING_CUSTOM_LINUX))
+#if defined(AUTOCXXPY_ENCODING_CUSTOM) 
+#if !defined(AUTOCXXPY_ENCODING_CUSTOM_WINDOWS) || !defined(AUTOCXXPY_ENCODING_CUSTOM_LINUX)
 #pragma error("if you defnied AUTOCXXPY_ENCODING_CUSTOM, you must defined both" 
     " AUTOCXXPY_ENCODING_CUSTOM_WINDOWS and" 
     " AUTOCXXPY_ENCODING_CUSTOM_LINUX" 
     )
 #endif
+#endif
+//#ifdef AUTOCXXPY_ENCODING_CUSTOM
+//#ifndef AUTOCXXPY_ENCODING_CUSTOM_WINDOWS
+//#pragma error("if you defnied AUTOCXXPY_ENCODING_CUSTOM, you must defined both" 
+//    " AUTOCXXPY_ENCODING_CUSTOM_WINDOWS and" 
+//    " AUTOCXXPY_ENCODING_CUSTOM_LINUX" 
+//    )
+//#endif
+//#ifndef AUTOCXXPY_ENCODING_CUSTOM_LINUX
+//#pragma error("if you defnied AUTOCXXPY_ENCODING_CUSTOM, you must defined both" 
+//    " AUTOCXXPY_ENCODING_CUSTOM_WINDOWS and" 
+//    " AUTOCXXPY_ENCODING_CUSTOM_LINUX" 
+//    )
+//#endif
+//#endif
 
 // blow is the defines for internal use
 

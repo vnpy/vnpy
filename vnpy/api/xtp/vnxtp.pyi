@@ -7,11 +7,12 @@ if typing.TYPE_CHECKING:
     from .vnxtp import *
 
 
-def set_async_callback_exception_handler(handler: Callable[[Exception, object, str], bool]):
+def set_async_callback_exception_handler(handler: Callable[[AsyncDispatchException], None]):
     """
     set a customize exception handler for async callback in this module(pyd)
     \a handler should return True if it handles that exception,
-    If the return value of \a handler is not True, exception will be re-thrown.
+
+    :note: If the return value of \a handler is not True, exception will be re-thrown.
     """
     ...
 
@@ -155,8 +156,8 @@ class XTPTickByTickEntrust():
     seq: int
     price: float
     qty: int
-    side: int
-    ord_type: int
+    side: str
+    ord_type: str
     
     
 class XTPTickByTickTrade():
@@ -169,7 +170,7 @@ class XTPTickByTickTrade():
     money: float
     bid_no: int
     ask_no: int
-    trade_flag: int
+    trade_flag: str
     
     
 class XTPTickByTickStruct():
@@ -245,7 +246,7 @@ class XTPOrderInfo():
     order_local_id: str
     order_status: XTP_ORDER_STATUS_TYPE
     order_submit_status: XTP_ORDER_SUBMIT_STATUS_TYPE
-    order_type: int
+    order_type: str
     
     
 class XTPTradeReport():
@@ -263,7 +264,7 @@ class XTPTradeReport():
     trade_amount: float
     report_index: int
     order_exch_id: str
-    trade_type: int
+    trade_type: str
     u32: int
     side: int
     position_effect: int
@@ -774,8 +775,8 @@ XTP_OPT_CALL_OR_PUT_TYPE = XTP_OPT_CALL_OR_PUT_TYPE
 XTP_OPT_EXERCISE_TYPE_TYPE = XTP_OPT_EXERCISE_TYPE_TYPE
 XTP_POSITION_DIRECTION_TYPE = XTP_POSITION_DIRECTION_TYPE
 XTP_CRD_CR_STATUS = XTP_CRD_CR_STATUS
-TXTPTradeTypeType = int
-TXTPOrderTypeType = int
+TXTPTradeTypeType = str
+TXTPOrderTypeType = str
 XTPRI = XTPRspInfoStruct
 XTPST = XTPSpecificTickerStruct
 XTPMD = XTPMarketDataStruct
@@ -838,16 +839,16 @@ XTP_POSITION_EFFECT_CREDIT_FORCE_CLEAR: int
 XTP_POSITION_EFFECT_CREDIT_FORCE_DEBT: int
 XTP_POSITION_EFFECT_CREDIT_FORCE_UNCOND: int
 XTP_POSITION_EFFECT_UNKNOWN: int
-XTP_TRDT_COMMON: int
-XTP_TRDT_CASH: int
-XTP_TRDT_PRIMARY: int
-XTP_TRDT_CROSS_MKT_CASH: int
-XTP_ORDT_Normal: int
-XTP_ORDT_DeriveFromQuote: int
-XTP_ORDT_DeriveFromCombination: int
-XTP_ORDT_Combination: int
-XTP_ORDT_ConditionalOrder: int
-XTP_ORDT_Swap: int
+XTP_TRDT_COMMON: str
+XTP_TRDT_CASH: str
+XTP_TRDT_PRIMARY: str
+XTP_TRDT_CROSS_MKT_CASH: str
+XTP_ORDT_Normal: str
+XTP_ORDT_DeriveFromQuote: str
+XTP_ORDT_DeriveFromCombination: str
+XTP_ORDT_Combination: str
+XTP_ORDT_ConditionalOrder: str
+XTP_ORDT_Swap: str
 XTP_ERR_MSG_LEN: int
 XTP_ACCOUNT_PASSWORD_LEN: int
 
