@@ -22,8 +22,9 @@ from vnpy.trader.uiMainWindow import *
 
 # 加载底层接口
 from vnpy.trader.gateway import ctpGateway
+from vnpy.trader.gateway import ctpseGateway
 # 初始化的接口模块，以及其指定的名称,CTP是模块，value，是该模块下的多个连接配置文件,如 CTP_JR_connect.json    'CTP_Prod', 'CTP_JR', , 'CTP_JK', 'CTP_02'
-init_gateway_names = {'CTP': ['CTP','CTP01','CTP02']}
+init_gateway_names = {'CTP_SE': ['CTP','CTP01','CTP02']}
 
 from vnpy.trader.app import (ctaStrategy, riskManager, spreadTrading,dataRecorder)  #,
 
@@ -52,9 +53,9 @@ def main():
     mainEngine.logger = logger
 
     # 添加Gatway
-    for gw_name in init_gateway_names['CTP']:
+    for gw_name in init_gateway_names['CTP_SE']:
         print('add {0}'.format(gw_name))
-        mainEngine.addGateway(ctpGateway, gw_name)
+        mainEngine.addGateway(ctpseGateway, gw_name)
 
     # 添加应用
     mainEngine.addApp(ctaStrategy)
