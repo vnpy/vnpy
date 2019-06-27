@@ -1,0 +1,820 @@
+This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019) (preloaded format=xelatex 2019.6.18)  27 JUN 2019 13:11
+entering extended mode
+ restricted \write18 enabled.
+ file:line:error style messages enabled.
+ %&-line parsing enabled.
+**csv_loader.tex
+(./csv_loader.tex
+LaTeX2e <2018-12-01>
+(/usr/local/texlive/2019/texmf-dist/tex/latex/base/book.cls
+Document Class: book 2018/09/03 v1.4i Standard LaTeX document class
+(/usr/local/texlive/2019/texmf-dist/tex/latex/base/bk12.clo
+File: bk12.clo 2018/09/03 v1.4i Standard LaTeX file (size option)
+)
+\c@part=\count80
+\c@chapter=\count81
+\c@section=\count82
+\c@subsection=\count83
+\c@subsubsection=\count84
+\c@paragraph=\count85
+\c@subparagraph=\count86
+\c@figure=\count87
+\c@table=\count88
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2017/06/01 v1.1a Enhanced LaTeX Graphics (DPC,SPQR)
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks14
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2017/06/25 v1.2c Standard LaTeX Graphics (DPC,SPQR)
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: xetex.def on input line 99.
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/graphics-def/xetex.def
+File: xetex.def 2017/06/24 v5.0h Graphics/color driver for xetex
+))
+\Gin@req@height=\dimen103
+\Gin@req@width=\dimen104
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/fontspec/fontspec.sty (/usr/local/texlive/2019/texmf-dist/tex/latex/l3packages/xparse/xparse.sty (/usr/local/texlive/2019/texmf-dist/tex/latex/l3kernel/expl3.sty
+Package: expl3 2019-05-07 L3 programming layer (loader) 
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/l3kernel/expl3-code.tex
+Package: expl3 2019-05-07 L3 programming layer (code)
+\c_max_int=\count89
+\l_tmpa_int=\count90
+\l_tmpb_int=\count91
+\g_tmpa_int=\count92
+\g_tmpb_int=\count93
+\g__kernel_prg_map_int=\count94
+\c__ior_term_ior=\count95
+\c_log_iow=\count96
+\l_iow_line_count_int=\count97
+\l__iow_line_target_int=\count98
+\l__iow_one_indent_int=\count99
+\l__iow_indent_int=\count100
+\c_zero_dim=\dimen105
+\c_max_dim=\dimen106
+\l_tmpa_dim=\dimen107
+\l_tmpb_dim=\dimen108
+\g_tmpa_dim=\dimen109
+\g_tmpb_dim=\dimen110
+\c_zero_skip=\skip43
+\c_max_skip=\skip44
+\l_tmpa_skip=\skip45
+\l_tmpb_skip=\skip46
+\g_tmpa_skip=\skip47
+\g_tmpb_skip=\skip48
+\c_zero_muskip=\muskip10
+\c_max_muskip=\muskip11
+\l_tmpa_muskip=\muskip12
+\l_tmpb_muskip=\muskip13
+\g_tmpa_muskip=\muskip14
+\g_tmpb_muskip=\muskip15
+\l_keys_choice_int=\count101
+\l__intarray_loop_int=\count102
+\c__intarray_sp_dim=\dimen111
+\g__intarray_font_int=\count103
+\c__fp_leading_shift_int=\count104
+\c__fp_middle_shift_int=\count105
+\c__fp_trailing_shift_int=\count106
+\c__fp_big_leading_shift_int=\count107
+\c__fp_big_middle_shift_int=\count108
+\c__fp_big_trailing_shift_int=\count109
+\c__fp_Bigg_leading_shift_int=\count110
+\c__fp_Bigg_middle_shift_int=\count111
+\c__fp_Bigg_trailing_shift_int=\count112
+\g__fp_array_int=\count113
+\l__fp_array_loop_int=\count114
+\l__sort_length_int=\count115
+\l__sort_min_int=\count116
+\l__sort_top_int=\count117
+\l__sort_max_int=\count118
+\l__sort_true_max_int=\count119
+\l__sort_block_int=\count120
+\l__sort_begin_int=\count121
+\l__sort_end_int=\count122
+\l__sort_A_int=\count123
+\l__sort_B_int=\count124
+\l__sort_C_int=\count125
+\l__tl_analysis_normal_int=\count126
+\l__tl_analysis_index_int=\count127
+\l__tl_analysis_nesting_int=\count128
+\l__tl_analysis_type_int=\count129
+\l__regex_internal_a_int=\count130
+\l__regex_internal_b_int=\count131
+\l__regex_internal_c_int=\count132
+\l__regex_balance_int=\count133
+\l__regex_group_level_int=\count134
+\l__regex_mode_int=\count135
+\c__regex_cs_in_class_mode_int=\count136
+\c__regex_cs_mode_int=\count137
+\l__regex_catcodes_int=\count138
+\l__regex_default_catcodes_int=\count139
+\c__regex_catcode_L_int=\count140
+\c__regex_catcode_O_int=\count141
+\c__regex_catcode_A_int=\count142
+\c__regex_all_catcodes_int=\count143
+\l__regex_show_lines_int=\count144
+\l__regex_min_state_int=\count145
+\l__regex_max_state_int=\count146
+\l__regex_left_state_int=\count147
+\l__regex_right_state_int=\count148
+\l__regex_capturing_group_int=\count149
+\l__regex_min_pos_int=\count150
+\l__regex_max_pos_int=\count151
+\l__regex_curr_pos_int=\count152
+\l__regex_start_pos_int=\count153
+\l__regex_success_pos_int=\count154
+\l__regex_curr_char_int=\count155
+\l__regex_curr_catcode_int=\count156
+\l__regex_last_char_int=\count157
+\l__regex_case_changed_char_int=\count158
+\l__regex_curr_state_int=\count159
+\l__regex_step_int=\count160
+\l__regex_min_active_int=\count161
+\l__regex_max_active_int=\count162
+\l__regex_replacement_csnames_int=\count163
+\l__regex_match_count_int=\count164
+\l__regex_min_submatch_int=\count165
+\l__regex_submatch_int=\count166
+\l__regex_zeroth_submatch_int=\count167
+\g__regex_trace_regex_int=\count168
+\c_empty_box=\box27
+\l_tmpa_box=\box28
+\l_tmpb_box=\box29
+\g_tmpa_box=\box30
+\g_tmpb_box=\box31
+\l__box_top_dim=\dimen112
+\l__box_bottom_dim=\dimen113
+\l__box_left_dim=\dimen114
+\l__box_right_dim=\dimen115
+\l__box_top_new_dim=\dimen116
+\l__box_bottom_new_dim=\dimen117
+\l__box_left_new_dim=\dimen118
+\l__box_right_new_dim=\dimen119
+\l__box_internal_box=\box32
+\l__coffin_internal_box=\box33
+\l__coffin_internal_dim=\dimen120
+\l__coffin_offset_x_dim=\dimen121
+\l__coffin_offset_y_dim=\dimen122
+\l__coffin_x_dim=\dimen123
+\l__coffin_y_dim=\dimen124
+\l__coffin_x_prime_dim=\dimen125
+\l__coffin_y_prime_dim=\dimen126
+\c_empty_coffin=\box34
+\l__coffin_aligned_coffin=\box35
+\l__coffin_aligned_internal_coffin=\box36
+\l_tmpa_coffin=\box37
+\l_tmpb_coffin=\box38
+\g_tmpa_coffin=\box39
+\g_tmpb_coffin=\box40
+\l__coffin_bounding_shift_dim=\dimen127
+\l__coffin_left_corner_dim=\dimen128
+\l__coffin_right_corner_dim=\dimen129
+\l__coffin_bottom_corner_dim=\dimen130
+\l__coffin_top_corner_dim=\dimen131
+\l__coffin_scaled_total_height_dim=\dimen132
+\l__coffin_scaled_width_dim=\dimen133
+\c__coffin_empty_coffin=\box41
+\l__coffin_display_coffin=\box42
+\l__coffin_display_coord_coffin=\box43
+\l__coffin_display_pole_coffin=\box44
+\l__coffin_display_offset_dim=\dimen134
+\l__coffin_display_x_dim=\dimen135
+\l__coffin_display_y_dim=\dimen136
+\g__file_internal_ior=\read1
+\l__seq_internal_a_int=\count169
+\l__seq_internal_b_int=\count170
+\c__deprecation_minus_one=\count171
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/l3kernel/l3xdvipdfmx.def
+File: l3xdvipdfmx.def 2019-04-06 v L3 Experimental driver: xdvipdfmx
+\g__driver_image_int=\count172
+\l__driver_pdf_tmp_box=\box45
+\g__driver_pdf_object_int=\count173
+\g__driver_pdf_annotation_int=\count174
+))
+Package: xparse 2019-05-03 L3 Experimental document command parser
+\l__xparse_current_arg_int=\count175
+\g__xparse_grabber_int=\count176
+\l__xparse_m_args_int=\count177
+\l__xparse_v_nesting_int=\count178
+)
+Package: fontspec 2019/03/15 v2.7c Font selection for XeLaTeX and LuaLaTeX
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/fontspec/fontspec-xetex.sty
+Package: fontspec-xetex 2019/03/15 v2.7c Font selection for XeLaTeX and LuaLaTeX
+\l__fontspec_script_int=\count179
+\l__fontspec_language_int=\count180
+\l__fontspec_strnum_int=\count181
+\l__fontspec_tmp_int=\count182
+\l__fontspec_tmpa_int=\count183
+\l__fontspec_tmpb_int=\count184
+\l__fontspec_tmpc_int=\count185
+\l__fontspec_em_int=\count186
+\l__fontspec_emdef_int=\count187
+\l__fontspec_strong_int=\count188
+\l__fontspec_strongdef_int=\count189
+\l__fontspec_tmpa_dim=\dimen137
+\l__fontspec_tmpb_dim=\dimen138
+\l__fontspec_tmpc_dim=\dimen139
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/base/fontenc.sty
+Package: fontenc 2018/08/11 v2.0j Standard LaTeX package
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/base/tuenc.def
+File: tuenc.def 2018/08/11 v2.0j Standard LaTeX file
+LaTeX Font Info:    Redeclaring font encoding TU on input line 82.
+)) (/usr/local/texlive/2019/texmf-dist/tex/latex/fontspec/fontspec.cfg)
+LaTeX Info: Redefining \itshape on input line 4051.
+LaTeX Info: Redefining \slshape on input line 4056.
+LaTeX Info: Redefining \scshape on input line 4061.
+LaTeX Info: Redefining \upshape on input line 4066.
+LaTeX Info: Redefining \em on input line 4096.
+LaTeX Info: Redefining \emph on input line 4121.
+)) (/usr/local/texlive/2019/texmf-dist/tex/latex/base/inputenc.sty
+Package: inputenc 2018/08/11 v1.3c Input encoding file
+\inpenc@prehook=\toks15
+\inpenc@posthook=\toks16
+
+
+Package inputenc Warning: inputenc package ignored with utf8 based engines.
+
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/geometry/geometry.sty
+Package: geometry 2018/04/16 v5.8 Page Geometry
+ (/usr/local/texlive/2019/texmf-dist/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2018/09/07 v3.3 Provides the ifpdf switch
+) (/usr/local/texlive/2019/texmf-dist/tex/generic/oberdiek/ifvtex.sty
+Package: ifvtex 2016/05/16 v1.6 Detect VTeX and its facilities (HO)
+Package ifvtex Info: VTeX not detected.
+) (/usr/local/texlive/2019/texmf-dist/tex/generic/ifxetex/ifxetex.sty
+Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
+)
+\Gm@cnth=\count190
+\Gm@cntv=\count191
+\c@Gm@tempcnt=\count192
+\Gm@bindingoffset=\dimen140
+\Gm@wd@mp=\dimen141
+\Gm@odd@mp=\dimen142
+\Gm@even@mp=\dimen143
+\Gm@layoutwidth=\dimen144
+\Gm@layoutheight=\dimen145
+\Gm@layouthoffset=\dimen146
+\Gm@layoutvoffset=\dimen147
+\Gm@dimlist=\toks17
+)
+
+Package fontspec Info: Font family 'HelveticaNeue(0)' created for font
+(fontspec)             'Helvetica Neue' with options [Ligatures=TeX].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS
+(fontspec)             series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"Helvetica
+(fontspec)             Neue/AAT:mapping=tex-text;"
+(fontspec)             - 'small caps'  (m/sc) with NFSS spec.: 
+(fontspec)             - 'bold' (bx/n) with NFSS spec.: <->"Helvetica
+(fontspec)             Neue/B/AAT:mapping=tex-text;"
+(fontspec)             - 'bold small caps'  (bx/sc) with NFSS spec.: 
+(fontspec)             - 'italic' (m/it) with NFSS spec.: <->"Helvetica
+(fontspec)             Neue/I/AAT:mapping=tex-text;"
+(fontspec)             - 'italic small caps'  (m/itsc) with NFSS spec.: 
+(fontspec)             - 'bold italic' (bx/it) with NFSS spec.: <->"Helvetica
+(fontspec)             Neue/BI/AAT:mapping=tex-text;"
+(fontspec)             - 'bold italic small caps'  (bx/itsc) with NFSS spec.: 
+
+LaTeX Info: Redefining \rmfamily on input line 12.
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/hyperref/hyperref.sty
+Package: hyperref 2018/11/30 v6.88e Hypertext links for LaTeX
+ (/usr/local/texlive/2019/texmf-dist/tex/generic/oberdiek/hobsub-hyperref.sty
+Package: hobsub-hyperref 2016/05/16 v1.14 Bundle oberdiek, subset hyperref (HO)
+ (/usr/local/texlive/2019/texmf-dist/tex/generic/oberdiek/hobsub-generic.sty
+Package: hobsub-generic 2016/05/16 v1.14 Bundle oberdiek, subset generic (HO)
+Package: hobsub 2016/05/16 v1.14 Construct package bundles (HO)
+Package: infwarerr 2016/05/16 v1.4 Providing info/warning/error messages (HO)
+Package: ltxcmds 2016/05/16 v1.23 LaTeX kernel commands for general use (HO)
+Package: ifluatex 2016/05/16 v1.4 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+Package hobsub Info: Skipping package `ifvtex' (already loaded).
+Package: intcalc 2016/05/16 v1.2 Expandable calculations with integers (HO)
+Package hobsub Info: Skipping package `ifpdf' (already loaded).
+Package: etexcmds 2016/05/16 v1.6 Avoid name clashes with e-TeX commands (HO)
+Package: kvsetkeys 2016/05/16 v1.17 Key value parser (HO)
+Package: kvdefinekeys 2016/05/16 v1.4 Define keys (HO)
+Package: pdftexcmds 2018/09/10 v0.29 Utility functions of pdfTeX for LuaTeX (HO)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: pdfTeX >= 1.30 not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode not found.
+Package: pdfescape 2016/05/16 v1.14 Implements pdfTeX's escape features (HO)
+Package: bigintcalc 2016/05/16 v1.4 Expandable calculations on big integers (HO)
+Package: bitset 2016/05/16 v1.2 Handle bit-vector datatype (HO)
+Package: uniquecounter 2016/05/16 v1.3 Provide unlimited unique counter (HO)
+)
+Package hobsub Info: Skipping package `hobsub' (already loaded).
+Package: letltxmacro 2016/05/16 v1.5 Let assignment for LaTeX macros (HO)
+Package: hopatch 2016/05/16 v1.3 Wrapper for package hooks (HO)
+Package: xcolor-patch 2016/05/16 xcolor patch
+Package: atveryend 2016/05/16 v1.9 Hooks at the very end of document (HO)
+Package atveryend Info: \enddocument detected (standard20110627).
+Package: atbegshi 2016/06/09 v1.18 At begin shipout hook (HO)
+Package: refcount 2016/05/16 v3.5 Data extraction from label references (HO)
+Package: hycolor 2016/05/16 v1.8 Color options for hyperref/bookmark (HO)
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/oberdiek/auxhook.sty
+Package: auxhook 2016/05/16 v1.4 Hooks for auxiliary files (HO)
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2016/05/16 v3.12 Key value format for package options (HO)
+)
+\@linkdim=\dimen148
+\Hy@linkcounter=\count193
+\Hy@pagecounter=\count194
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/hyperref/pd1enc.def
+File: pd1enc.def 2018/11/30 v6.88e Hyperref: PDFDocEncoding definition (HO)
+)
+\Hy@SavedSpaceFactor=\count195
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/latexconfig/hyperref.cfg
+File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
+)
+Package hyperref Info: Hyper figures OFF on input line 4519.
+Package hyperref Info: Link nesting OFF on input line 4524.
+Package hyperref Info: Hyper index ON on input line 4527.
+Package hyperref Info: Plain pages OFF on input line 4534.
+Package hyperref Info: Backreferencing OFF on input line 4539.
+Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
+Package hyperref Info: Bookmarks ON on input line 4772.
+\c@Hy@tempcnt=\count196
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/url/url.sty
+\Urlmuskip=\muskip16
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+)
+LaTeX Info: Redefining \url on input line 5125.
+\XeTeXLinkMargin=\dimen149
+\Fld@menulength=\count197
+\Field@Width=\dimen150
+\Fld@charsize=\dimen151
+Package hyperref Info: Hyper figures OFF on input line 6380.
+Package hyperref Info: Link nesting OFF on input line 6385.
+Package hyperref Info: Hyper index ON on input line 6388.
+Package hyperref Info: backreferencing OFF on input line 6395.
+Package hyperref Info: Link coloring OFF on input line 6400.
+Package hyperref Info: Link coloring with OCG OFF on input line 6405.
+Package hyperref Info: PDF/A mode OFF on input line 6410.
+LaTeX Info: Redefining \ref on input line 6450.
+LaTeX Info: Redefining \pageref on input line 6454.
+\Hy@abspage=\count198
+\c@Item=\count199
+\c@Hfootnote=\count266
+)
+Package hyperref Info: Driver (autodetected): hxetex.
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/hyperref/hxetex.def
+File: hxetex.def 2018/11/30 v6.88e Hyperref driver for XeTeX
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/hyperref/puenc.def
+File: puenc.def 2018/11/30 v6.88e Hyperref: PDF Unicode definition (HO)
+) (/usr/local/texlive/2019/texmf-dist/tex/generic/oberdiek/stringenc.sty
+Package: stringenc 2016/05/16 v1.11 Convert strings between diff. encodings (HO)
+)
+\pdfm@box=\box46
+\c@Hy@AnnotLevel=\count267
+\HyField@AnnotCount=\count268
+\Fld@listcount=\count269
+\c@bookmark@seq@number=\count270
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/oberdiek/rerunfilecheck.sty
+Package: rerunfilecheck 2016/05/16 v1.8 Rerun checks for auxiliary files (HO)
+Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 282.
+)
+\Hy@SectionHShift=\skip49
+) (/Users/limingfang/Documents/GitHub/vnpy/docs/.texpadtmp/csv_loader.aux)
+\openout1 = `csv_loader.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+
+Package fontspec Info: Adjusting the maths setup (use [no-math] to avoid
+(fontspec)             this).
+
+\symlegacymaths=\mathgroup4
+LaTeX Font Info:    Overwriting symbol font `legacymaths' in version `bold'
+(Font)                  OT1/cmr/m/n --> OT1/cmr/bx/n on input line 14.
+LaTeX Font Info:    Redeclaring math accent \acute on input line 14.
+LaTeX Font Info:    Redeclaring math accent \grave on input line 14.
+LaTeX Font Info:    Redeclaring math accent \ddot on input line 14.
+LaTeX Font Info:    Redeclaring math accent \tilde on input line 14.
+LaTeX Font Info:    Redeclaring math accent \bar on input line 14.
+LaTeX Font Info:    Redeclaring math accent \breve on input line 14.
+LaTeX Font Info:    Redeclaring math accent \check on input line 14.
+LaTeX Font Info:    Redeclaring math accent \hat on input line 14.
+LaTeX Font Info:    Redeclaring math accent \dot on input line 14.
+LaTeX Font Info:    Redeclaring math accent \mathring on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \colon on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Gamma on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Delta on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Theta on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Lambda on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Xi on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Pi on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Sigma on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Upsilon on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Phi on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Psi on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Omega on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \mathdollar on input line 14.
+LaTeX Font Info:    Redeclaring symbol font `operators' on input line 14.
+LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
+(Font)              `operators' in the math version `normal' on input line 14.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
+(Font)                  OT1/cmr/m/n --> TU/HelveticaNeue(0)/m/n on input line 14.
+LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
+(Font)              `operators' in the math version `bold' on input line 14.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
+(Font)                  OT1/cmr/bx/n --> TU/HelveticaNeue(0)/m/n on input line 14.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
+(Font)                  TU/HelveticaNeue(0)/m/n --> TU/HelveticaNeue(0)/m/n on input line 14.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
+(Font)                  OT1/cmr/m/it --> TU/HelveticaNeue(0)/m/it on input line 14.
+LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
+(Font)                  OT1/cmr/bx/n --> TU/HelveticaNeue(0)/bx/n on input line 14.
+LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
+(Font)                  OT1/cmss/m/n --> TU/lmss/m/n on input line 14.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
+(Font)                  OT1/cmtt/m/n --> TU/lmtt/m/n on input line 14.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
+(Font)                  TU/HelveticaNeue(0)/m/n --> TU/HelveticaNeue(0)/bx/n on input line 14.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
+(Font)                  OT1/cmr/bx/it --> TU/HelveticaNeue(0)/bx/it on input line 14.
+LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
+(Font)                  OT1/cmss/bx/n --> TU/lmss/bx/n on input line 14.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
+(Font)                  OT1/cmtt/m/n --> TU/lmtt/bx/n on input line 14.
+
+*geometry* driver: auto-detecting
+*geometry* detected driver: xetex
+*geometry* verbose mode - [ preamble ] result:
+* driver: xetex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: twoside 
+* h-part:(L,W,R)=(36.135pt, 525.23788pt, 36.135pt)
+* v-part:(T,H,B)=(21.68121pt, 801.68442pt, 21.68121pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=525.23788pt
+* \textheight=801.68442pt
+* \oddsidemargin=-36.135pt
+* \evensidemargin=-36.135pt
+* \topmargin=-82.46257pt
+* \headheight=12.0pt
+* \headsep=19.8738pt
+* \topskip=12.0pt
+* \footskip=30.0pt
+* \marginparwidth=98.0pt
+* \marginparsep=7.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.8pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidetrue
+* \@mparswitchtrue
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+\AtBeginShipoutBox=\box47
+Package hyperref Info: Link coloring OFF on input line 14.
+(/usr/local/texlive/2019/texmf-dist/tex/latex/hyperref/nameref.sty
+Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
+ (/usr/local/texlive/2019/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
+Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
+)
+\c@section@level=\count271
+)
+LaTeX Info: Redefining \ref on input line 14.
+LaTeX Info: Redefining \pageref on input line 14.
+LaTeX Info: Redefining \nameref on input line 14.
+ (/Users/limingfang/Documents/GitHub/vnpy/docs/.texpadtmp/csv_loader.out) (/Users/limingfang/Documents/GitHub/vnpy/docs/.texpadtmp/csv_loader.out)
+\@outlinefile=\write3
+\openout3 = `csv_loader.out'.
+
+Missing character: There is no 载 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 模 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 块 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 载 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 模 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 块 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 在 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 根 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 目 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 录 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 文 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 夹 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 内 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 里 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 面 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 类 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 负 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 责 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 载 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 功 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 能 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 实 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 现 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (147.69145pt too wide) in paragraph at lines 18--19
+\TU/HelveticaNeue(0)/m/n/12 CSV载入模块在vnpy根目录下vnpyappcsv_loader文件夹内，engine.py里面的CsvLoaderEngine类负责载入功能实现。 
+ []
+
+Missing character: There is no 初 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 始 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 化 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 配 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 置 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 初 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 始 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 化 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 据 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 载 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 相 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 关 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 分 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 类 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 文 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 路 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 径 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 合 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 约 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 合 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 约 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 代 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 码 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 所 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 线 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 周 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 期 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 表 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 头 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 日 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 期 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 时 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 间 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 开 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盘 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 最 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 高 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 最 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 低 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 收 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盘 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 量 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 据 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 载 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 从 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 文 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 路 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 径 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 中 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 读 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 取 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 文 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 然 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 后 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 在 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 每 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 一 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 次 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 迭 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 代 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 中 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 载 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 据 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 到 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 据 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 库 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 中 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (27.85205pt too wide) in paragraph at lines 52--56
+\TU/HelveticaNeue(0)/m/n/12 从文件路径中读取CSV文件，然后在每一次迭代中载入数据到数据库中。 “‘ with open(file_path,
+ []
+
+(/usr/local/texlive/2019/texmf-dist/tex/generic/oberdiek/se-ascii-print.def
+File: se-ascii-print.def 2016/05/16 v1.11 stringenc: Printable ASCII characters
+) [1
+
+
+]
+Missing character: There is no 载 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 据 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 方 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 法 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 分 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 类 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 直 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 插 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 合 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 约 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 代 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 码 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 所 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 线 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 周 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 期 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 量 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 开 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盘 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 最 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 高 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 最 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 低 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 收 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盘 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 口 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 名 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 称 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 需 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 要 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 处 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 理 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 日 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 期 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 时 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 间 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no （ in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 根 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 据 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 其 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 相 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 应 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 时 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 间 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 格 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 式 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 通 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 过 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 转 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 化 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 时 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 间 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 元 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 祖 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ） in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 合 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 约 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 代 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 码 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 所 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 格 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 式 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 如 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (255.87833pt too wide) in paragraph at lines 65--68
+[]\TU/HelveticaNeue(0)/m/n/12 载入数据的方法可以分成2类： - 直接插入：合约代码、交易所、K线周期、成交量、开盘价、最高价、最低价、收盘价、接口名称
+ []
+
+
+Overfull \hbox (260.00797pt too wide) in paragraph at lines 65--68
+\TU/HelveticaNeue(0)/m/n/12 - 需要处理：日期时间（根据其相应的时间格式，通过strptime()转化成时间元祖）、vt_symbol(合约代码.交易所格式，如rb1905.SHFE) 
+ []
+
+Missing character: There is no 注 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 意 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 于 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 据 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 更 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 新 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 即 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 把 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 旧 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 据 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 替 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 换 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 新 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 91.
+[2]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 91.
+ (/Users/limingfang/Documents/GitHub/vnpy/docs/.texpadtmp/csv_loader.aux)
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 91.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 91.
+Package rerunfilecheck Info: File `csv_loader.out' has not changed.
+(rerunfilecheck)             Checksum: .
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 91.
+ ) 
+Here is how much of TeX's memory you used:
+ 19931 strings out of 492916
+ 386882 string characters out of 6133345
+ 474580 words of memory out of 5000000
+ 23912 multiletter control sequences out of 15000+600000
+ 532850 words of font info for 44 fonts, out of 8000000 for 9000
+ 1348 hyphenation exceptions out of 8191
+ 40i,5n,67p,348b,446s stack positions out of 5000i,500n,10000p,200000b,80000s
+
+Output written on /Users/limingfang/Documents/GitHub/vnpy/docs/.texpadtmp/csv_loader.pdf (2 pages).

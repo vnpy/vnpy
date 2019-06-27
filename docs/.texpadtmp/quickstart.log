@@ -1,0 +1,2389 @@
+This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019) (preloaded format=xelatex 2019.6.18)  27 JUN 2019 10:26
+entering extended mode
+ restricted \write18 enabled.
+ file:line:error style messages enabled.
+ %&-line parsing enabled.
+**quickstart.tex
+(./quickstart.tex
+LaTeX2e <2018-12-01>
+(/usr/local/texlive/2019/texmf-dist/tex/latex/base/book.cls
+Document Class: book 2018/09/03 v1.4i Standard LaTeX document class
+(/usr/local/texlive/2019/texmf-dist/tex/latex/base/bk12.clo
+File: bk12.clo 2018/09/03 v1.4i Standard LaTeX file (size option)
+)
+\c@part=\count80
+\c@chapter=\count81
+\c@section=\count82
+\c@subsection=\count83
+\c@subsubsection=\count84
+\c@paragraph=\count85
+\c@subparagraph=\count86
+\c@figure=\count87
+\c@table=\count88
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2017/06/01 v1.1a Enhanced LaTeX Graphics (DPC,SPQR)
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks14
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2017/06/25 v1.2c Standard LaTeX Graphics (DPC,SPQR)
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: xetex.def on input line 99.
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/graphics-def/xetex.def
+File: xetex.def 2017/06/24 v5.0h Graphics/color driver for xetex
+))
+\Gin@req@height=\dimen103
+\Gin@req@width=\dimen104
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/fontspec/fontspec.sty (/usr/local/texlive/2019/texmf-dist/tex/latex/l3packages/xparse/xparse.sty (/usr/local/texlive/2019/texmf-dist/tex/latex/l3kernel/expl3.sty
+Package: expl3 2019-05-07 L3 programming layer (loader) 
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/l3kernel/expl3-code.tex
+Package: expl3 2019-05-07 L3 programming layer (code)
+\c_max_int=\count89
+\l_tmpa_int=\count90
+\l_tmpb_int=\count91
+\g_tmpa_int=\count92
+\g_tmpb_int=\count93
+\g__kernel_prg_map_int=\count94
+\c__ior_term_ior=\count95
+\c_log_iow=\count96
+\l_iow_line_count_int=\count97
+\l__iow_line_target_int=\count98
+\l__iow_one_indent_int=\count99
+\l__iow_indent_int=\count100
+\c_zero_dim=\dimen105
+\c_max_dim=\dimen106
+\l_tmpa_dim=\dimen107
+\l_tmpb_dim=\dimen108
+\g_tmpa_dim=\dimen109
+\g_tmpb_dim=\dimen110
+\c_zero_skip=\skip43
+\c_max_skip=\skip44
+\l_tmpa_skip=\skip45
+\l_tmpb_skip=\skip46
+\g_tmpa_skip=\skip47
+\g_tmpb_skip=\skip48
+\c_zero_muskip=\muskip10
+\c_max_muskip=\muskip11
+\l_tmpa_muskip=\muskip12
+\l_tmpb_muskip=\muskip13
+\g_tmpa_muskip=\muskip14
+\g_tmpb_muskip=\muskip15
+\l_keys_choice_int=\count101
+\l__intarray_loop_int=\count102
+\c__intarray_sp_dim=\dimen111
+\g__intarray_font_int=\count103
+\c__fp_leading_shift_int=\count104
+\c__fp_middle_shift_int=\count105
+\c__fp_trailing_shift_int=\count106
+\c__fp_big_leading_shift_int=\count107
+\c__fp_big_middle_shift_int=\count108
+\c__fp_big_trailing_shift_int=\count109
+\c__fp_Bigg_leading_shift_int=\count110
+\c__fp_Bigg_middle_shift_int=\count111
+\c__fp_Bigg_trailing_shift_int=\count112
+\g__fp_array_int=\count113
+\l__fp_array_loop_int=\count114
+\l__sort_length_int=\count115
+\l__sort_min_int=\count116
+\l__sort_top_int=\count117
+\l__sort_max_int=\count118
+\l__sort_true_max_int=\count119
+\l__sort_block_int=\count120
+\l__sort_begin_int=\count121
+\l__sort_end_int=\count122
+\l__sort_A_int=\count123
+\l__sort_B_int=\count124
+\l__sort_C_int=\count125
+\l__tl_analysis_normal_int=\count126
+\l__tl_analysis_index_int=\count127
+\l__tl_analysis_nesting_int=\count128
+\l__tl_analysis_type_int=\count129
+\l__regex_internal_a_int=\count130
+\l__regex_internal_b_int=\count131
+\l__regex_internal_c_int=\count132
+\l__regex_balance_int=\count133
+\l__regex_group_level_int=\count134
+\l__regex_mode_int=\count135
+\c__regex_cs_in_class_mode_int=\count136
+\c__regex_cs_mode_int=\count137
+\l__regex_catcodes_int=\count138
+\l__regex_default_catcodes_int=\count139
+\c__regex_catcode_L_int=\count140
+\c__regex_catcode_O_int=\count141
+\c__regex_catcode_A_int=\count142
+\c__regex_all_catcodes_int=\count143
+\l__regex_show_lines_int=\count144
+\l__regex_min_state_int=\count145
+\l__regex_max_state_int=\count146
+\l__regex_left_state_int=\count147
+\l__regex_right_state_int=\count148
+\l__regex_capturing_group_int=\count149
+\l__regex_min_pos_int=\count150
+\l__regex_max_pos_int=\count151
+\l__regex_curr_pos_int=\count152
+\l__regex_start_pos_int=\count153
+\l__regex_success_pos_int=\count154
+\l__regex_curr_char_int=\count155
+\l__regex_curr_catcode_int=\count156
+\l__regex_last_char_int=\count157
+\l__regex_case_changed_char_int=\count158
+\l__regex_curr_state_int=\count159
+\l__regex_step_int=\count160
+\l__regex_min_active_int=\count161
+\l__regex_max_active_int=\count162
+\l__regex_replacement_csnames_int=\count163
+\l__regex_match_count_int=\count164
+\l__regex_min_submatch_int=\count165
+\l__regex_submatch_int=\count166
+\l__regex_zeroth_submatch_int=\count167
+\g__regex_trace_regex_int=\count168
+\c_empty_box=\box27
+\l_tmpa_box=\box28
+\l_tmpb_box=\box29
+\g_tmpa_box=\box30
+\g_tmpb_box=\box31
+\l__box_top_dim=\dimen112
+\l__box_bottom_dim=\dimen113
+\l__box_left_dim=\dimen114
+\l__box_right_dim=\dimen115
+\l__box_top_new_dim=\dimen116
+\l__box_bottom_new_dim=\dimen117
+\l__box_left_new_dim=\dimen118
+\l__box_right_new_dim=\dimen119
+\l__box_internal_box=\box32
+\l__coffin_internal_box=\box33
+\l__coffin_internal_dim=\dimen120
+\l__coffin_offset_x_dim=\dimen121
+\l__coffin_offset_y_dim=\dimen122
+\l__coffin_x_dim=\dimen123
+\l__coffin_y_dim=\dimen124
+\l__coffin_x_prime_dim=\dimen125
+\l__coffin_y_prime_dim=\dimen126
+\c_empty_coffin=\box34
+\l__coffin_aligned_coffin=\box35
+\l__coffin_aligned_internal_coffin=\box36
+\l_tmpa_coffin=\box37
+\l_tmpb_coffin=\box38
+\g_tmpa_coffin=\box39
+\g_tmpb_coffin=\box40
+\l__coffin_bounding_shift_dim=\dimen127
+\l__coffin_left_corner_dim=\dimen128
+\l__coffin_right_corner_dim=\dimen129
+\l__coffin_bottom_corner_dim=\dimen130
+\l__coffin_top_corner_dim=\dimen131
+\l__coffin_scaled_total_height_dim=\dimen132
+\l__coffin_scaled_width_dim=\dimen133
+\c__coffin_empty_coffin=\box41
+\l__coffin_display_coffin=\box42
+\l__coffin_display_coord_coffin=\box43
+\l__coffin_display_pole_coffin=\box44
+\l__coffin_display_offset_dim=\dimen134
+\l__coffin_display_x_dim=\dimen135
+\l__coffin_display_y_dim=\dimen136
+\g__file_internal_ior=\read1
+\l__seq_internal_a_int=\count169
+\l__seq_internal_b_int=\count170
+\c__deprecation_minus_one=\count171
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/l3kernel/l3xdvipdfmx.def
+File: l3xdvipdfmx.def 2019-04-06 v L3 Experimental driver: xdvipdfmx
+\g__driver_image_int=\count172
+\l__driver_pdf_tmp_box=\box45
+\g__driver_pdf_object_int=\count173
+\g__driver_pdf_annotation_int=\count174
+))
+Package: xparse 2019-05-03 L3 Experimental document command parser
+\l__xparse_current_arg_int=\count175
+\g__xparse_grabber_int=\count176
+\l__xparse_m_args_int=\count177
+\l__xparse_v_nesting_int=\count178
+)
+Package: fontspec 2019/03/15 v2.7c Font selection for XeLaTeX and LuaLaTeX
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/fontspec/fontspec-xetex.sty
+Package: fontspec-xetex 2019/03/15 v2.7c Font selection for XeLaTeX and LuaLaTeX
+\l__fontspec_script_int=\count179
+\l__fontspec_language_int=\count180
+\l__fontspec_strnum_int=\count181
+\l__fontspec_tmp_int=\count182
+\l__fontspec_tmpa_int=\count183
+\l__fontspec_tmpb_int=\count184
+\l__fontspec_tmpc_int=\count185
+\l__fontspec_em_int=\count186
+\l__fontspec_emdef_int=\count187
+\l__fontspec_strong_int=\count188
+\l__fontspec_strongdef_int=\count189
+\l__fontspec_tmpa_dim=\dimen137
+\l__fontspec_tmpb_dim=\dimen138
+\l__fontspec_tmpc_dim=\dimen139
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/base/fontenc.sty
+Package: fontenc 2018/08/11 v2.0j Standard LaTeX package
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/base/tuenc.def
+File: tuenc.def 2018/08/11 v2.0j Standard LaTeX file
+LaTeX Font Info:    Redeclaring font encoding TU on input line 82.
+)) (/usr/local/texlive/2019/texmf-dist/tex/latex/fontspec/fontspec.cfg)
+LaTeX Info: Redefining \itshape on input line 4051.
+LaTeX Info: Redefining \slshape on input line 4056.
+LaTeX Info: Redefining \scshape on input line 4061.
+LaTeX Info: Redefining \upshape on input line 4066.
+LaTeX Info: Redefining \em on input line 4096.
+LaTeX Info: Redefining \emph on input line 4121.
+)) (/usr/local/texlive/2019/texmf-dist/tex/latex/base/inputenc.sty
+Package: inputenc 2018/08/11 v1.3c Input encoding file
+\inpenc@prehook=\toks15
+\inpenc@posthook=\toks16
+
+
+Package inputenc Warning: inputenc package ignored with utf8 based engines.
+
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/geometry/geometry.sty
+Package: geometry 2018/04/16 v5.8 Page Geometry
+ (/usr/local/texlive/2019/texmf-dist/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2018/09/07 v3.3 Provides the ifpdf switch
+) (/usr/local/texlive/2019/texmf-dist/tex/generic/oberdiek/ifvtex.sty
+Package: ifvtex 2016/05/16 v1.6 Detect VTeX and its facilities (HO)
+Package ifvtex Info: VTeX not detected.
+) (/usr/local/texlive/2019/texmf-dist/tex/generic/ifxetex/ifxetex.sty
+Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
+)
+\Gm@cnth=\count190
+\Gm@cntv=\count191
+\c@Gm@tempcnt=\count192
+\Gm@bindingoffset=\dimen140
+\Gm@wd@mp=\dimen141
+\Gm@odd@mp=\dimen142
+\Gm@even@mp=\dimen143
+\Gm@layoutwidth=\dimen144
+\Gm@layoutheight=\dimen145
+\Gm@layouthoffset=\dimen146
+\Gm@layoutvoffset=\dimen147
+\Gm@dimlist=\toks17
+)
+
+Package fontspec Info: Font family 'HelveticaNeue(0)' created for font
+(fontspec)             'Helvetica Neue' with options [Ligatures=TeX].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS
+(fontspec)             series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"Helvetica
+(fontspec)             Neue/AAT:mapping=tex-text;"
+(fontspec)             - 'small caps'  (m/sc) with NFSS spec.: 
+(fontspec)             - 'bold' (bx/n) with NFSS spec.: <->"Helvetica
+(fontspec)             Neue/B/AAT:mapping=tex-text;"
+(fontspec)             - 'bold small caps'  (bx/sc) with NFSS spec.: 
+(fontspec)             - 'italic' (m/it) with NFSS spec.: <->"Helvetica
+(fontspec)             Neue/I/AAT:mapping=tex-text;"
+(fontspec)             - 'italic small caps'  (m/itsc) with NFSS spec.: 
+(fontspec)             - 'bold italic' (bx/it) with NFSS spec.: <->"Helvetica
+(fontspec)             Neue/BI/AAT:mapping=tex-text;"
+(fontspec)             - 'bold italic small caps'  (bx/itsc) with NFSS spec.: 
+
+LaTeX Info: Redefining \rmfamily on input line 12.
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/hyperref/hyperref.sty
+Package: hyperref 2018/11/30 v6.88e Hypertext links for LaTeX
+ (/usr/local/texlive/2019/texmf-dist/tex/generic/oberdiek/hobsub-hyperref.sty
+Package: hobsub-hyperref 2016/05/16 v1.14 Bundle oberdiek, subset hyperref (HO)
+ (/usr/local/texlive/2019/texmf-dist/tex/generic/oberdiek/hobsub-generic.sty
+Package: hobsub-generic 2016/05/16 v1.14 Bundle oberdiek, subset generic (HO)
+Package: hobsub 2016/05/16 v1.14 Construct package bundles (HO)
+Package: infwarerr 2016/05/16 v1.4 Providing info/warning/error messages (HO)
+Package: ltxcmds 2016/05/16 v1.23 LaTeX kernel commands for general use (HO)
+Package: ifluatex 2016/05/16 v1.4 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+Package hobsub Info: Skipping package `ifvtex' (already loaded).
+Package: intcalc 2016/05/16 v1.2 Expandable calculations with integers (HO)
+Package hobsub Info: Skipping package `ifpdf' (already loaded).
+Package: etexcmds 2016/05/16 v1.6 Avoid name clashes with e-TeX commands (HO)
+Package: kvsetkeys 2016/05/16 v1.17 Key value parser (HO)
+Package: kvdefinekeys 2016/05/16 v1.4 Define keys (HO)
+Package: pdftexcmds 2018/09/10 v0.29 Utility functions of pdfTeX for LuaTeX (HO)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: pdfTeX >= 1.30 not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode not found.
+Package: pdfescape 2016/05/16 v1.14 Implements pdfTeX's escape features (HO)
+Package: bigintcalc 2016/05/16 v1.4 Expandable calculations on big integers (HO)
+Package: bitset 2016/05/16 v1.2 Handle bit-vector datatype (HO)
+Package: uniquecounter 2016/05/16 v1.3 Provide unlimited unique counter (HO)
+)
+Package hobsub Info: Skipping package `hobsub' (already loaded).
+Package: letltxmacro 2016/05/16 v1.5 Let assignment for LaTeX macros (HO)
+Package: hopatch 2016/05/16 v1.3 Wrapper for package hooks (HO)
+Package: xcolor-patch 2016/05/16 xcolor patch
+Package: atveryend 2016/05/16 v1.9 Hooks at the very end of document (HO)
+Package atveryend Info: \enddocument detected (standard20110627).
+Package: atbegshi 2016/06/09 v1.18 At begin shipout hook (HO)
+Package: refcount 2016/05/16 v3.5 Data extraction from label references (HO)
+Package: hycolor 2016/05/16 v1.8 Color options for hyperref/bookmark (HO)
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/oberdiek/auxhook.sty
+Package: auxhook 2016/05/16 v1.4 Hooks for auxiliary files (HO)
+) (/usr/local/texlive/2019/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2016/05/16 v3.12 Key value format for package options (HO)
+)
+\@linkdim=\dimen148
+\Hy@linkcounter=\count193
+\Hy@pagecounter=\count194
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/hyperref/pd1enc.def
+File: pd1enc.def 2018/11/30 v6.88e Hyperref: PDFDocEncoding definition (HO)
+)
+\Hy@SavedSpaceFactor=\count195
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/latexconfig/hyperref.cfg
+File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
+)
+Package hyperref Info: Hyper figures OFF on input line 4519.
+Package hyperref Info: Link nesting OFF on input line 4524.
+Package hyperref Info: Hyper index ON on input line 4527.
+Package hyperref Info: Plain pages OFF on input line 4534.
+Package hyperref Info: Backreferencing OFF on input line 4539.
+Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
+Package hyperref Info: Bookmarks ON on input line 4772.
+\c@Hy@tempcnt=\count196
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/url/url.sty
+\Urlmuskip=\muskip16
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+)
+LaTeX Info: Redefining \url on input line 5125.
+\XeTeXLinkMargin=\dimen149
+\Fld@menulength=\count197
+\Field@Width=\dimen150
+\Fld@charsize=\dimen151
+Package hyperref Info: Hyper figures OFF on input line 6380.
+Package hyperref Info: Link nesting OFF on input line 6385.
+Package hyperref Info: Hyper index ON on input line 6388.
+Package hyperref Info: backreferencing OFF on input line 6395.
+Package hyperref Info: Link coloring OFF on input line 6400.
+Package hyperref Info: Link coloring with OCG OFF on input line 6405.
+Package hyperref Info: PDF/A mode OFF on input line 6410.
+LaTeX Info: Redefining \ref on input line 6450.
+LaTeX Info: Redefining \pageref on input line 6454.
+\Hy@abspage=\count198
+\c@Item=\count199
+\c@Hfootnote=\count266
+)
+Package hyperref Info: Driver (autodetected): hxetex.
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/hyperref/hxetex.def
+File: hxetex.def 2018/11/30 v6.88e Hyperref driver for XeTeX
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/hyperref/puenc.def
+File: puenc.def 2018/11/30 v6.88e Hyperref: PDF Unicode definition (HO)
+) (/usr/local/texlive/2019/texmf-dist/tex/generic/oberdiek/stringenc.sty
+Package: stringenc 2016/05/16 v1.11 Convert strings between diff. encodings (HO)
+)
+\pdfm@box=\box46
+\c@Hy@AnnotLevel=\count267
+\HyField@AnnotCount=\count268
+\Fld@listcount=\count269
+\c@bookmark@seq@number=\count270
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/oberdiek/rerunfilecheck.sty
+Package: rerunfilecheck 2016/05/16 v1.8 Rerun checks for auxiliary files (HO)
+Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 282.
+)
+\Hy@SectionHShift=\skip49
+) (/Users/limingfang/Documents/GitHub/vnpy/docs/.texpadtmp/quickstart.aux)
+\openout1 = `quickstart.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+
+Package fontspec Info: Adjusting the maths setup (use [no-math] to avoid
+(fontspec)             this).
+
+\symlegacymaths=\mathgroup4
+LaTeX Font Info:    Overwriting symbol font `legacymaths' in version `bold'
+(Font)                  OT1/cmr/m/n --> OT1/cmr/bx/n on input line 14.
+LaTeX Font Info:    Redeclaring math accent \acute on input line 14.
+LaTeX Font Info:    Redeclaring math accent \grave on input line 14.
+LaTeX Font Info:    Redeclaring math accent \ddot on input line 14.
+LaTeX Font Info:    Redeclaring math accent \tilde on input line 14.
+LaTeX Font Info:    Redeclaring math accent \bar on input line 14.
+LaTeX Font Info:    Redeclaring math accent \breve on input line 14.
+LaTeX Font Info:    Redeclaring math accent \check on input line 14.
+LaTeX Font Info:    Redeclaring math accent \hat on input line 14.
+LaTeX Font Info:    Redeclaring math accent \dot on input line 14.
+LaTeX Font Info:    Redeclaring math accent \mathring on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \colon on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Gamma on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Delta on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Theta on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Lambda on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Xi on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Pi on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Sigma on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Upsilon on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Phi on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Psi on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \Omega on input line 14.
+LaTeX Font Info:    Redeclaring math symbol \mathdollar on input line 14.
+LaTeX Font Info:    Redeclaring symbol font `operators' on input line 14.
+LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
+(Font)              `operators' in the math version `normal' on input line 14.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
+(Font)                  OT1/cmr/m/n --> TU/HelveticaNeue(0)/m/n on input line 14.
+LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
+(Font)              `operators' in the math version `bold' on input line 14.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
+(Font)                  OT1/cmr/bx/n --> TU/HelveticaNeue(0)/m/n on input line 14.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
+(Font)                  TU/HelveticaNeue(0)/m/n --> TU/HelveticaNeue(0)/m/n on input line 14.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
+(Font)                  OT1/cmr/m/it --> TU/HelveticaNeue(0)/m/it on input line 14.
+LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
+(Font)                  OT1/cmr/bx/n --> TU/HelveticaNeue(0)/bx/n on input line 14.
+LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
+(Font)                  OT1/cmss/m/n --> TU/lmss/m/n on input line 14.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
+(Font)                  OT1/cmtt/m/n --> TU/lmtt/m/n on input line 14.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
+(Font)                  TU/HelveticaNeue(0)/m/n --> TU/HelveticaNeue(0)/bx/n on input line 14.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
+(Font)                  OT1/cmr/bx/it --> TU/HelveticaNeue(0)/bx/it on input line 14.
+LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
+(Font)                  OT1/cmss/bx/n --> TU/lmss/bx/n on input line 14.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
+(Font)                  OT1/cmtt/m/n --> TU/lmtt/bx/n on input line 14.
+
+*geometry* driver: auto-detecting
+*geometry* detected driver: xetex
+*geometry* verbose mode - [ preamble ] result:
+* driver: xetex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: twoside 
+* h-part:(L,W,R)=(36.135pt, 525.23788pt, 36.135pt)
+* v-part:(T,H,B)=(21.68121pt, 801.68442pt, 21.68121pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=525.23788pt
+* \textheight=801.68442pt
+* \oddsidemargin=-36.135pt
+* \evensidemargin=-36.135pt
+* \topmargin=-82.46257pt
+* \headheight=12.0pt
+* \headsep=19.8738pt
+* \topskip=12.0pt
+* \footskip=30.0pt
+* \marginparwidth=98.0pt
+* \marginparsep=7.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.8pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidetrue
+* \@mparswitchtrue
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+\AtBeginShipoutBox=\box47
+Package hyperref Info: Link coloring OFF on input line 14.
+(/usr/local/texlive/2019/texmf-dist/tex/latex/hyperref/nameref.sty
+Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
+ (/usr/local/texlive/2019/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
+Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
+)
+\c@section@level=\count271
+)
+LaTeX Info: Redefining \ref on input line 14.
+LaTeX Info: Redefining \pageref on input line 14.
+LaTeX Info: Redefining \nameref on input line 14.
+ (/Users/limingfang/Documents/GitHub/vnpy/docs/.texpadtmp/quickstart.out) (/Users/limingfang/Documents/GitHub/vnpy/docs/.texpadtmp/quickstart.out)
+\@outlinefile=\write3
+\openout3 = `quickstart.out'.
+
+Missing character: There is no 基 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 本 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 使 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 启 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 动 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 程 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 序 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 图 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 形 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 模 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 式 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 登 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 陆 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 后 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 点 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 击 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 快 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 速 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 进 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no （ in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 只 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 有 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 口 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ） in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ； in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 或 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 者 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 点 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 击 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 先 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 选 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 择 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 如 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 图 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 底 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 层 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 口 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 和 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 上 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 层 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 应 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 再 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 进 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (11.94928pt too wide) in paragraph at lines 22--23
+\TU/HelveticaNeue(0)/m/n/12 登陆VN Station后，点击VN Trade Lite快速进入VN Trader（只有CTP接口）；或者点击VN Trader
+ []
+
+
+LaTeX Warning: File `https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/VnTrader_Pro.png' not found on input line 24.
+
+./quickstart.tex:24: Unable to load picture or PDF file 'https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/VnTrader_Pro.png'.
+<to be read again> 
+                   }
+l.24 ...ence/yazhang/quick_start/VnTrader_Pro.png}
+                                                  
+The requested image couldn't be read because
+it was not a recognized image format.
+
+File: https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/VnTrader_Pro.png Graphic file (type bmp)
+<https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/VnTrader_Pro.png>
+Missing character: There is no 脚 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 本 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 模 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 式 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 在 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 文 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 夹 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 中 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 找 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 到 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 文 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 按 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 住 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 鼠 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 标 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 右 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 键 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 进 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 窗 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 口 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 输 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 面 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 命 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 令 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 进 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 如 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 图 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+LaTeX Warning: File `https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/Vntrader.PNG' not found on input line 32.
+
+./quickstart.tex:32: Unable to load picture or PDF file 'https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/Vntrader.PNG'.
+<to be read again> 
+                   }
+l.32 ...perience/yazhang/quick_start/Vntrader.PNG}
+                                                  
+The requested image couldn't be read because
+it was not a recognized image format.
+
+File: https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/Vntrader.PNG Graphic file (type bmp)
+<https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/Vntrader.PNG>
+
+Overfull \hbox (79.29759pt too wide) in paragraph at lines 28--33
+\TU/HelveticaNeue(0)/m/n/12 在文件夹teststrader中找到run.py文件。按住“Shift” + 鼠标右键进入cmd窗口，输入下面命令进入如图VN
+ []
+
+Missing character: There is no 连 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 口 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仿 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 真 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 账 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 号 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 登 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 陆 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 口 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 为 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 例 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 点 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 击 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 菜 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 单 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 栏 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 系 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 统 in font Helvetica Neue/AAT:mapping=tex-text;!
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 38.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 38.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 38.
+Missing character: There is no 连 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 后 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 弹 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 出 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 如 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 上 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 图 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 所 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 示 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 口 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 配 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 置 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 对 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 话 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 框 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 输 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 内 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 容 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 后 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 即 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 登 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 录 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 户 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 名 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no （ in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 位 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 纯 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 字 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 账 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 号 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ） in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 密 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 码 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no （ in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 需 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 要 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 修 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 改 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 一 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 次 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 密 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 码 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 于 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盘 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 后 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 测 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 试 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ） in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 经 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 纪 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 商 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 编 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 号 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no （ in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 默 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 认 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 经 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 纪 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 商 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 编 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 号 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ） in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 服 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 务 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 器 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 地 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 址 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no （ in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 盘 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 后 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 测 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 试 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no ） in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 行 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 情 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 服 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 务 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 器 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 地 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 址 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no （ in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盘 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 后 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 测 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 试 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ） in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 和 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 主 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 要 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 于 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 年 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 中 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 验 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 证 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 目 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 前 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 留 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 空 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 即 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (364.3156pt too wide) in paragraph at lines 38--45
+\TU/HelveticaNeue(0)/m/n/12 以SinNow仿真交易账号登陆CTP接口为例：点击菜单栏的“系统”-$\OML/cmm/m/it/12 >$\TU/HelveticaNeue(0)/m/n/12 “连接CTP”后，弹出如上图所示CTP接口的配置对话框，输入以下内容后即可登录：
+ []
+
+
+Overfull \hbox (87.42447pt too wide) in paragraph at lines 38--45
+\TU/HelveticaNeue(0)/m/n/12 - 用户名username：111111 （6位纯数字账号） - 密码password：1111111 （需要修改一次密码用于盘后测试）
+ []
+
+
+Overfull \hbox (100.52074pt too wide) in paragraph at lines 38--45
+\TU/HelveticaNeue(0)/m/n/12 - 经纪商编号brokerid：9999 （SimNow默认经纪商编号） - 交易服务器地址td\TU/HelveticaNeue(0)/m/it/12 address：180.168.146.187:10030
+ []
+
+
+Overfull \hbox (345.20192pt too wide) in paragraph at lines 38--45
+\TU/HelveticaNeue(0)/m/it/12 （盘后测试） - 行情服务器地址md\TU/HelveticaNeue(0)/m/n/12 address：180.168.146.187:10031 （盘后测试） - auth\TU/HelveticaNeue(0)/m/it/12 code和product\TU/HelveticaNeue(0)/m/n/12 info主要用于19年中的CTP接入验证，目前留空即可 
+ []
+
+Missing character: There is no 注 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 意 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 若 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 使 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 期 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 货 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 实 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盘 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 账 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 户 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 需 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 要 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 问 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 清 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 楚 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 其 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 和 in font Helvetica Neue Italic/AAT:mapping=tex-text;!
+Missing character: There is no 并 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 且 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仿 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 真 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 需 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 要 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 另 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 外 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 申 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 请 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 开 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 通 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (132.7679pt too wide) in paragraph at lines 46--47
+[]\TU/HelveticaNeue(0)/m/n/12 注意：若使用期货实盘账户，需要问清楚其brokerid、auth\TU/HelveticaNeue(0)/m/it/12 code和product\TU/HelveticaNeue(0)/m/n/12 info; 并且仿真交易需要另外申请开通。 
+ []
+
+Missing character: There is no 连 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 功 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 后 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 日 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 志 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 会 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 立 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 刻 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 输 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 出 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 陆 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 功 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 相 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 关 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 同 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 时 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 户 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 也 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 看 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 到 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 账 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 号 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 持 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 合 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 约 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 查 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 询 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 等 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 相 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 关 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (204.54727pt too wide) in paragraph at lines 48--49
+[]\TU/HelveticaNeue(0)/m/n/12 连接成功以后，日志组件会立刻输出陆成功相关信息，同时用户也可以看到账号信息，持仓信息，合约查询等相关信息。 
+ []
+
+Missing character: There is no 订 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 阅 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 行 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 情 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 在 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 输 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 所 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 和 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 合 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 约 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 代 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 码 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 并 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 且 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 按 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 键 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 即 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 订 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 阅 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 器 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 行 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 情 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 如 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 订 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 阅 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 股 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 指 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 期 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 货 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 所 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 名 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 称 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ； in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 铁 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 矿 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 石 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 期 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 货 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 所 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 名 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 称 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (436.6689pt too wide) in paragraph at lines 54--55
+\TU/HelveticaNeue(0)/m/n/12 在交易组件输入交易所和合约代码，并且按“Enter”键即可订阅器行情。如订阅IF股指期货，交易所：CFFEX，名称：IF905；铁矿石期货，交易所：DCE，名称：i1905。 
+ []
+
+Missing character: There is no 此 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 时 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 行 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 情 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 会 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 显 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 示 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 最 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 新 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 行 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 情 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ； in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 会 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 显 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 示 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 合 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 约 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 名 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 称 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 并 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 且 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 在 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 方 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 显 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 示 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 深 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 度 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 行 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 情 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 报 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 如 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 最 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 新 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 买 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 一 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 卖 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 一 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no （ in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 字 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 货 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 币 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 品 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 种 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 显 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 示 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 十 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 档 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 行 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 情 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ） in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (452.39883pt too wide) in paragraph at lines 56--57
+[]\TU/HelveticaNeue(0)/m/n/12 此时行情组件会显示最新行情信息；交易组件会显示合约名称，并且在下方显示深度行情报价：如最新价、买一价、卖一价。（数字货币品种可以显示十档行情） 
+ []
+
+(/usr/local/texlive/2019/texmf-dist/tex/generic/oberdiek/se-ascii-print.def
+File: se-ascii-print.def 2016/05/16 v1.11 stringenc: Printable ASCII characters
+) [1
+
+
+]
+
+LaTeX Warning: File `https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract.png' not found on input line 58.
+
+./quickstart.tex:58: Unable to load picture or PDF file 'https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract.png'.
+<to be read again> 
+                   }
+l.58 ...yazhang/quick_start/subcribe_contract.png}
+                                                  
+The requested image couldn't be read because
+it was not a recognized image format.
+
+File: https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract.png Graphic file (type bmp)
+<https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract.png>
+Missing character: There is no 委 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 适 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 于 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 手 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 动 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 除 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 了 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 在 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 行 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 情 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 订 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 阅 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 中 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 输 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 所 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 和 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 合 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 约 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 代 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 码 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 外 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 还 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 需 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 要 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 填 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 写 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 个 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 字 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 段 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 方 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 向 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 开 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 平 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 类 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 型 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 类 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 型 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 格 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 和 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 量 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no （ in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 若 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 类 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 型 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 为 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 市 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 单 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 格 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 不 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 填 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ） in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (734.46146pt too wide) in paragraph at lines 64--65
+\TU/HelveticaNeue(0)/m/n/12 交易组件适用于手动交易。除了在行情订阅中输入的交易所和合约代码以外，还需要填写以下5个字段：委托方向、开平仓类型、委托类型、委托价格和委托数量。（若委托类型为市价单，委托价格可不填。） 
+ []
+
+Missing character: There is no 发 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 出 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 同 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 时 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 本 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 地 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 缓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 存 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 相 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 关 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 并 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 且 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 显 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 示 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 到 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 和 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 活 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 动 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 其 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 状 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 态 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 为 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 提 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 中 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 然 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 后 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 等 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 待 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 回 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 报 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (169.5369pt too wide) in paragraph at lines 66--67
+[]\TU/HelveticaNeue(0)/m/n/12 发出委托同时本地缓存委托相关信息，并且显示到委托组件和活动组件，其委托状态为“提交中”，然后等待委托回报。 
+ []
+
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 所 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 收 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 到 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 户 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 发 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 送 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 将 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 其 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 插 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 入 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 中 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 央 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 订 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 单 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 簿 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 来 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 进 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 行 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 撮 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 合 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 并 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 推 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 送 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 回 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 报 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 给 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 户 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 若 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 还 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 未 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 和 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 活 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 动 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 只 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 会 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 更 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 新 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 时 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 间 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 和 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 状 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 态 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 这 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 两 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 字 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 段 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 状 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 态 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 变 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 未 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ； in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 若 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 立 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 刻 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 相 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 关 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 会 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 从 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 活 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 动 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 移 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 除 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 新 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 增 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 至 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 状 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 态 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 变 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 全 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 部 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (39.3129pt too wide) in paragraph at lines 68--71
+[]\TU/HelveticaNeue(0)/m/n/12 交易所收到用户发送的委托，将其插入中央订单簿来进行撮合成交，并推送委托回报给用户：
+ []
+
+
+Overfull \hbox (82.19843pt too wide) in paragraph at lines 68--71
+\TU/HelveticaNeue(0)/m/n/12 - 若委托还未成交，委托组件和活动组件只会更新时间和委托状态这两字段，委托状态变成“未成交”；
+ []
+
+
+Overfull \hbox (70.19843pt too wide) in paragraph at lines 68--71
+\TU/HelveticaNeue(0)/m/n/12 - 若委托立刻成交，委托相关信息会从活动组件移除，新增至成交组件，委托状态变成“全部成交”。 
+ []
+
+Missing character: There is no 数 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 据 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 监 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 控 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 据 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 监 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 控 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 由 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 构 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 并 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 且 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 附 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 带 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 个 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 辅 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 助 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 功 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 能 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 选 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 定 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 任 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 一 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 鼠 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 标 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 右 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 键 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 选 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 择 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 调 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 整 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 列 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 宽 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no （ in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 特 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 别 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 适 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 于 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 屏 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 幕 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 分 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 辨 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 率 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 较 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 低 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ） in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 或 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 者 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 选 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 择 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 保 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 存 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 据 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no （ in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 格 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 式 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ） in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (448.80267pt too wide) in paragraph at lines 76--77
+\TU/HelveticaNeue(0)/m/n/12 数据监控由以下组件构成，并且附带2个辅助功能：选定以下任一组件，鼠标右键可以选择“调整列宽”（特别适用于屏幕分辨率较低），或者选择“保存数据”（csv格式） 
+ []
+
+
+LaTeX Warning: File `https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/2_optiones.png' not found on input line 78.
+
+./quickstart.tex:78: Unable to load picture or PDF file 'https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/2_optiones.png'.
+<to be read again> 
+                   }
+l.78 ...rience/yazhang/quick_start/2_optiones.png}
+                                                  
+The requested image couldn't be read because
+it was not a recognized image format.
+
+File: https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/2_optiones.png Graphic file (type bmp)
+<https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/2_optiones.png>
+Missing character: There is no 行 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 情 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 于 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 对 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 订 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 阅 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 行 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 情 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 进 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 行 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 实 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 时 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 监 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 控 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 如 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 图 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 监 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 控 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 内 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 容 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 分 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 类 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 合 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 约 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 合 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 约 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 代 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 码 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 所 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 合 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 约 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 名 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 称 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 行 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 情 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 最 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 新 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 量 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 开 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盘 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 最 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 高 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 最 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 低 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 收 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盘 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 买 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 一 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 买 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 一 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 量 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 卖 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 一 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 卖 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 一 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 量 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (110.62149pt too wide) in paragraph at lines 86--87
+[]\TU/HelveticaNeue(0)/m/n/12 行情信息：最新价、成交量、开盘价、最高价、最低价、收盘价、买一价、买一量、卖一价、卖一量 
+ []
+
+Missing character: There is no 其 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 他 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 据 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 推 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 送 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 时 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 间 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 口 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+LaTeX Warning: File `https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract_module.png' not found on input line 90.
+
+./quickstart.tex:90: Unable to load picture or PDF file 'https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract_module.png'.
+<to be read again> 
+                   }
+l.90 .../quick_start/subcribe_contract_module.png}
+                                                  
+The requested image couldn't be read because
+it was not a recognized image format.
+
+File: https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract_module.png Graphic file (type bmp)
+<https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract_module.png>
+Missing character: There is no 活 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 动 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 活 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 动 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 于 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 存 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 放 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 还 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 未 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 如 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 限 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 单 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 或 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 者 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 没 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 有 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 立 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 刻 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 市 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 单 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 状 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 态 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 永 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 远 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 是 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 提 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 中 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 在 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 该 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 中 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 鼠 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 标 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 双 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 击 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 任 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 一 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 完 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 撤 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 单 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 操 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 作 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (393.77518pt too wide) in paragraph at lines 94--95
+\TU/HelveticaNeue(0)/m/n/12 活动组件用于存放还未成交的委托，如限价单或者没有立刻成交的市价单，委托状态永远是“提交中”。在该组件中鼠标双击任一委托可以完成撤单操作。 
+ []
+
+
+LaTeX Warning: File `https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/active_order.png' not found on input line 96.
+
+./quickstart.tex:96: Unable to load picture or PDF file 'https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/active_order.png'.
+<to be read again> 
+                   }
+l.96 ...ence/yazhang/quick_start/active_order.png}
+                                                  
+The requested image couldn't be read because
+it was not a recognized image format.
+
+File: https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/active_order.png Graphic file (type bmp)
+<https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/active_order.png>
+Missing character: There is no 成 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 于 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 存 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 放 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 已 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 需 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 要 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 注 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 意 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 个 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 字 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 段 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 格 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 量 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 时 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 间 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 他 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 们 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 都 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 是 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 所 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 推 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 送 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 过 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 来 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 而 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 不 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 是 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (293.83646pt too wide) in paragraph at lines 100--101
+\TU/HelveticaNeue(0)/m/n/12 成交组件用于存放已成交的委托，需要注意3个字段信息：价格、数量、时间。他们都是交易所推送过来的成交信息，而不是委托信息。 
+ []
+
+[2]
+Missing character: There is no 注 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 意 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 有 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 些 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 口 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 会 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 独 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 立 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 推 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 送 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 如 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 口 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ； in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 有 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 些 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 口 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 则 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 需 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 要 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 从 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 里 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 面 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 提 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 取 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 相 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 关 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 字 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 段 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 如 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 口 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (185.90762pt too wide) in paragraph at lines 102--103
+[]\TU/HelveticaNeue(0)/m/n/12 注意：有些接口会独立推送成交信息，如CTP接口；有些接口则需要从委托信息里面提取成交相关字段，如Tiger接口。 
+ []
+
+
+LaTeX Warning: File `https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/trade.png' not found on input line 104.
+
+./quickstart.tex:104: Unable to load picture or PDF file 'https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/trade.png'.
+<to be read again> 
+                   }
+l.104 ...experience/yazhang/quick_start/trade.png}
+                                                  
+The requested image couldn't be read because
+it was not a recognized image format.
+
+File: https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/trade.png Graphic file (type bmp)
+<https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/trade.png>
+Missing character: There is no 委 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 于 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 存 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 放 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 户 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 发 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 出 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 所 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 有 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 其 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 状 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 态 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 是 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 提 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 中 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 已 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 撤 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 销 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 部 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 分 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 全 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 部 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 拒 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 单 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 等 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 等 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (177.00821pt too wide) in paragraph at lines 108--109
+\TU/HelveticaNeue(0)/m/n/12 委托组件用于存放用户发出的所有委托信息，其委托状态可以是提交中、已撤销、部分成交、全部成交、拒单等等。 
+ []
+
+
+LaTeX Warning: File `https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/order.png' not found on input line 110.
+
+./quickstart.tex:110: Unable to load picture or PDF file 'https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/order.png'.
+<to be read again> 
+                   }
+l.110 ...experience/yazhang/quick_start/order.png}
+                                                  
+The requested image couldn't be read because
+it was not a recognized image format.
+
+File: https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/order.png Graphic file (type bmp)
+<https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/order.png>
+Missing character: There is no 持 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 持 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 于 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 记 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 录 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 其 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 历 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 史 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 持 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 其 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 中 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 需 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 要 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 了 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 解 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 字 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 段 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 含 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 义 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 方 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 向 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 期 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 货 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 品 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 种 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 具 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 有 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 多 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 空 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 方 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 向 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ； in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 而 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 股 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 票 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 品 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 种 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 方 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 向 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 为 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 净 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 持 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 昨 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 其 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 出 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 现 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 衍 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 生 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 于 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 上 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 期 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 所 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 特 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 有 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 平 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 今 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 平 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 昨 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 模 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 式 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 需 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 要 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 量 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 总 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 持 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 即 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 今 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 昨 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 均 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 历 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 史 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 平 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 均 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 格 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no （ in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 某 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 些 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 巨 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 型 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 会 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 发 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 生 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 多 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 次 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 部 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 分 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 需 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 要 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 计 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 算 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 平 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 均 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 格 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ） in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盈 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 亏 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 持 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盈 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 亏 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 多 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 情 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 况 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盈 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 利 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 当 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 前 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 格 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 均 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ； in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 空 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 则 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 反 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 之 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (210.11774pt too wide) in paragraph at lines 114--120
+\TU/HelveticaNeue(0)/m/n/12 持仓组件用于记录其历史持仓。其中需要了解以下字段含义 - 方向：期货品种具有多空方向；而股票品种方向为“净”持仓。
+ []
+
+
+Overfull \hbox (558.01848pt too wide) in paragraph at lines 114--120
+\TU/HelveticaNeue(0)/m/n/12 - 昨仓：其出现衍生于上期所特有的平今、平昨模式的需要 - 数量：总持仓，即今仓 + 昨仓 - 均价：历史成交的平均价格（某些巨型委托，会发生多次部分成交，需要计算平均价格）
+ []
+
+Missing character: There is no 若 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 平 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 离 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 场 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 持 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 量 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 清 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 零 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 浮 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 动 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盈 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 亏 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 变 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 实 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 际 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盈 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 亏 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 从 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 而 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 影 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 响 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 账 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 号 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 余 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 额 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 变 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 化 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 故 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 字 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 段 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 数 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 量 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 昨 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 冻 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 结 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 均 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 价 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 、 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盈 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 亏 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 均 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 为 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 如 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 图 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (322.75186pt too wide) in paragraph at lines 121--122
+[]\TU/HelveticaNeue(0)/m/n/12 若平仓离场，持仓数量清零，浮动盈亏变成实际盈亏从而影响账号余额变化。故以下字段：数量、昨仓、冻结、均价、盈亏均为“0”，如下图。 
+ []
+
+
+LaTeX Warning: File `https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_position.png' not found on input line 123.
+
+./quickstart.tex:123: Unable to load picture or PDF file 'https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_position.png'.
+<to be read again> 
+                   }
+l.123 ...e/yazhang/quick_start/query_position.png}
+                                                  
+The requested image couldn't be read because
+it was not a recognized image format.
+
+File: https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_position.png Graphic file (type bmp)
+<https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_position.png>
+Missing character: There is no 资 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 金 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 资 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 金 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 显 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 示 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 了 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 账 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 号 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 基 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 础 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 如 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 图 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 需 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 要 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 注 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 意 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 个 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 字 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 段 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 资 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 金 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 于 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 现 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 金 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 冻 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 结 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 操 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 作 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 冻 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 结 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 金 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 额 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no （ in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 与 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 保 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 证 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 金 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 不 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 是 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 一 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 个 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 概 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 念 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ） in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 余 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 额 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 总 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 资 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 金 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 即 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 资 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 金 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 保 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 证 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 金 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 浮 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 动 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盈 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 亏 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (68.87042pt too wide) in paragraph at lines 127--131
+\TU/HelveticaNeue(0)/m/n/12 资金组件显示了账号的基础信息，如下图需要注意3个字段信息： - 可用资金：可以用于委托的现金
+ []
+
+
+Overfull \hbox (48.85382pt too wide) in paragraph at lines 127--131
+\TU/HelveticaNeue(0)/m/n/12 - 冻结：委托操作冻结的金额（与保证金不是一个概念） - 余额：总资金，即可用资金 + 保证金 +
+ []
+
+Missing character: There is no 注 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 意 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ： in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 若 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 全 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 部 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 平 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 仓 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 浮 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 动 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盈 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 亏 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 变 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 成 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 实 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 际 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盈 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 亏 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 保 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 证 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 金 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 和 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 浮 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 动 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 盈 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 亏 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 清 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 零 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 总 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 资 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 金 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 等 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 于 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 可 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 资 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 金 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+Overfull \hbox (25.54337pt too wide) in paragraph at lines 132--133
+[]\TU/HelveticaNeue(0)/m/n/12 注意：若全部平仓，浮动盈亏变成实际盈亏，保证金和浮动盈亏清零，总资金等于可用资金 
+ []
+
+
+LaTeX Warning: File `https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_account.png' not found on input line 134.
+
+./quickstart.tex:134: Unable to load picture or PDF file 'https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_account.png'.
+<to be read again> 
+                   }
+l.134 ...ce/yazhang/quick_start/query_account.png}
+                                                  
+The requested image couldn't be read because
+it was not a recognized image format.
+
+File: https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_account.png Graphic file (type bmp)
+<https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_account.png>
+Missing character: There is no 日 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 志 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 日 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 志 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 组 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 件 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 于 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 显 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 示 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 接 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 口 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 登 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 陆 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 以 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 及 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 委 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 托 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 报 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 错 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 信 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 息 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 如 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 图 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 。 in font Helvetica Neue/AAT:mapping=tex-text;!
+
+LaTeX Warning: File `https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/write_log.png' not found on input line 140.
+
+./quickstart.tex:140: Unable to load picture or PDF file 'https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/write_log.png'.
+<to be read again> 
+                   }
+l.140 ...rience/yazhang/quick_start/write_log.png}
+                                                  
+The requested image couldn't be read because
+it was not a recognized image format.
+
+File: https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/write_log.png Graphic file (type bmp)
+<https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/write_log.png>
+Missing character: There is no 应 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 模 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 块 in font Helvetica Neue Bold/AAT:mapping=tex-text;!
+Missing character: There is no 官 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 方 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 提 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 供 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 了 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 开 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 箱 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 即 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 的 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 量 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 化 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 交 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 易 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 应 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 模 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 块 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 在 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 菜 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 单 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 栏 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 中 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 点 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 击 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 功 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 能 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 即 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 显 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 示 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 应 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 用 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 模 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 块 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no ， in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 如 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 下 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character: There is no 图 in font Helvetica Neue/AAT:mapping=tex-text;!
+Missing character
