@@ -23,7 +23,9 @@ CSV载入模块在vnpy根目录下vnpy\app\csv_loader文件夹内，engine.py里
         self.high_head: str = ''
         self.volume_head: str = ''
 ```
-
+注：以sql数据库为例：
+	合约信息中合约代码是将csv中数据存入至何种品种数据库中。例如在合约代码中填写rb1909，在交易所中填写SHFE，在本地数据库中会有symbol和exchange两个键值用于索引。
+	在csv中，日期时间一列，格式需要为str格式。
 &nbsp;
 
 ## 数据载入
