@@ -21,6 +21,7 @@ python run.py
 &nbsp;
 
 ## 连接接口
+### simnow仿真
 以SinNow仿真交易账号登陆CTP接口为例：点击菜单栏的“系统”->“连接CTP”后，弹出如上图所示CTP接口的配置对话框，输入以下内容后即可登录：
 - 用户名username：111111 （6位纯数字账号）
 - 密码password：1111111  （需要修改一次密码用于盘后测试）
@@ -28,10 +29,20 @@ python run.py
 - 交易服务器地址td_address：180.168.146.187:10030 （盘后测试）
 - 行情服务器地址md_address：180.168.146.187:10031 （盘后测试）
 - auth_code和product_info主要用于19年中的CTP接入验证，目前留空即可
-
 注意：若使用期货实盘账户，需要问清楚其brokerid、auth_code和product_info; 并且仿真交易需要另外申请开通。
 
 连接成功以后，日志组件会立刻输出陆成功相关信息，同时用户也可以看到账号信息，持仓信息，合约查询等相关信息。
+### 穿透式接口连接（新版）
+#### 仿真用户
+以中信期货为例：如果最后不上实盘，以在生产环境下仿真为目的，则不用提交任何表格，在官网申请注册仿真账号，打开官网公告找到相应接入参数。打开vnstation后，点击菜单栏的“系统”->“连接CTP”后，弹出如上图所示CTP接口的配置对话框，输入以下内容后即可登录（appid和authcode在仿真环境下是全统一的）：
+- 用户名username：[申请的仿真账号]
+- 密码password：[仿真密码]  #最好修改一次
+- 经纪商编号brokerid：66666  #中信期货的
+- 交易服务器地址td_address：tcp://ctpfz1-front1.citicsf.com:51305
+- 行情服务器地址md_address：tcp://ctpfz1-front1.citicsf.com:51313
+- appid(产品名称）:client_xxx_1.0.1  #xxx部分非自定义，必须写xxx
+- authcode（授权码）：0D6V7N1CIBWUT1CT
+#### 实盘用户
 
 &nbsp;
 
@@ -40,6 +51,7 @@ python run.py
 
 此时行情组件会显示最新行情信息；交易组件会显示合约名称，并且在下方显示深度行情报价：如最新价、买一价、卖一价。（数字货币品种可以显示十档行情）
 
+注：订阅行情填写的代码格式可以由菜单栏的”帮助“->“查询合约”里查到（需先连接）
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract.png "enter image title here")
 
 
