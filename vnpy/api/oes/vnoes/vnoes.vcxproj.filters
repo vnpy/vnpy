@@ -45,22 +45,7 @@
     <ClCompile Include="include\autocxxpy\dummpy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="include\oes\mds_api\samples\mds_client_sample.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="include\oes\mds_api\samples\mds_subscribe_sample.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="include\oes\oes_api\samples\c_sample\oes_client_sample.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="include\oes\oes_api\samples\cpp_sample\oes_client_main_sample.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="include\oes\oes_api\samples\cpp_sample\oes_client_my_spi_sample.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="include\oes\oes_api\samples\cpp_sample\oes_client_sample.cpp">
+    <ClCompile Include="generated_files\generated_functions_8.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -717,12 +702,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\oes\oes_api\parser\oes_protocol_parser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\oes\oes_api\samples\cpp_sample\oes_client_my_spi_sample.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\oes\oes_api\samples\cpp_sample\oes_client_sample.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\oes\oes_api\oes_api.h">

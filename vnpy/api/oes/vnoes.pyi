@@ -60,7 +60,16 @@ class _spk_struct_timeval64():
     
 class _OesOrdReq():
     
-    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     mktId: int
     ordType: int
@@ -71,18 +80,22 @@ class _OesOrdReq():
     ordQty: int
     ordPrice: int
     origClOrdId: int
-    u64: int
-    i64: int
-    u32: List[int]
-    i32: List[int]
-    c8: str
-    userInfo: "(anonymous union at include\oes_global/oes_base_model.h:1525:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1525:5)"
     __ordReqOrigSendTime: _spk_struct_timeval32
     
     
 class _OesOrdCancelReq():
     
-    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     mktId: int
     __ORD_CANCEL_BASE_INFO_filler1: List[int]
@@ -92,18 +105,22 @@ class _OesOrdCancelReq():
     origClEnvId: str
     __ORD_CANCEL_BASE_INFO_filler2: List[int]
     origClOrdId: int
-    u64: int
-    i64: int
-    u32: List[int]
-    i32: List[int]
-    c8: str
-    userInfo: "(anonymous union at include\oes_global/oes_base_model.h:1541:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1541:5)"
     __ordReqOrigSendTime: _spk_struct_timeval32
     
     
 class _OesOrdReject():
     
-    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     mktId: int
     ordType: int
@@ -114,12 +131,7 @@ class _OesOrdReject():
     ordQty: int
     ordPrice: int
     origClOrdId: int
-    u64: int
-    i64: int
-    u32: List[int]
-    i32: List[int]
-    c8: str
-    userInfo: "(anonymous union at include\oes_global/oes_base_model.h:1557:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1557:5)"
     __ordReqOrigSendTime: _spk_struct_timeval32
     origClSeqNo: int
     origClEnvId: str
@@ -133,7 +145,16 @@ class _OesOrdReject():
     
 class _OesOrdCnfm():
     
-    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     mktId: int
     ordType: int
@@ -144,12 +165,7 @@ class _OesOrdCnfm():
     ordQty: int
     ordPrice: int
     origClOrdId: int
-    u64: int
-    i64: int
-    u32: List[int]
-    i32: List[int]
-    c8: str
-    userInfo: "(anonymous union at include\oes_global/oes_base_model.h:1595:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1595:5)"
     __ordReqOrigSendTime: _spk_struct_timeval32
     clOrdId: int
     clientId: int
@@ -223,7 +239,16 @@ class _OesTrdBaseInfo():
     
 class _OesTrdCnfm():
     
-    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     exchTrdNum: int
     mktId: int
     trdSide: int
@@ -257,12 +282,7 @@ class _OesTrdCnfm():
     cumAmt: int
     cumInterest: int
     cumFee: int
-    u64: int
-    i64: int
-    u32: List[int]
-    i32: List[int]
-    c8: str
-    userInfo: "(anonymous union at include\oes_global/oes_base_model.h:1795:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1795:5)"
     __trdCnfmOrigRecvTime: _spk_struct_timeval32
     __trdCnfmCollectedTime: _spk_struct_timeval32
     __trdCnfmActualDealTime: _spk_struct_timeval32
@@ -289,7 +309,16 @@ class _OesLotWinningBaseInfo():
     
 class _OesFundTrsfBaseInfo():
     
-    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     direct: int
     isAllotOnly: int
@@ -298,17 +327,21 @@ class _OesFundTrsfBaseInfo():
     trdPasswd: str
     trsfPasswd: str
     occurAmt: int
-    u64: int
-    i64: int
-    u32: List[int]
-    i32: List[int]
-    c8: str
-    userInfo: "(anonymous union at include\oes_global/oes_base_model.h:1919:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1919:5)"
     
     
 class _OesFundTrsfReq():
     
-    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     direct: int
     isAllotOnly: int
@@ -317,17 +350,21 @@ class _OesFundTrsfReq():
     trdPasswd: str
     trsfPasswd: str
     occurAmt: int
-    u64: int
-    i64: int
-    u32: List[int]
-    i32: List[int]
-    c8: str
-    userInfo: "(anonymous union at include\oes_global/oes_base_model.h:1933:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1933:5)"
     
     
 class _OesFundTrsfReject():
     
-    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     direct: int
     isAllotOnly: int
@@ -336,12 +373,7 @@ class _OesFundTrsfReject():
     trdPasswd: str
     trsfPasswd: str
     occurAmt: int
-    u64: int
-    i64: int
-    u32: List[int]
-    i32: List[int]
-    c8: str
-    userInfo: "(anonymous union at include\oes_global/oes_base_model.h:1947:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1947:5)"
     ordDate: int
     ordTime: int
     clientId: int
@@ -353,19 +385,23 @@ class _OesFundTrsfReject():
     
 class _OesFundTrsfReport():
     
-    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     clientId: int
     clEnvId: str
     direct: int
     cashAcctId: str
     occurAmt: int
-    u64: int
-    i64: int
-    u32: List[int]
-    i32: List[int]
-    c8: str
-    userInfo: "(anonymous union at include\oes_global/oes_base_model.h:1994:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1994:5)"
     fundTrsfId: int
     counterEntrustNo: int
     operDate: int
@@ -1484,32 +1520,40 @@ class _OesTestRequestRsp():
     
 class _OesChangePasswordReq():
     
-    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     encryptMethod: int
     __filler: int
     username: str
-    u64: int
-    i64: int
-    u32: List[int]
-    i32: List[int]
-    c8: str
-    userInfo: "(anonymous union at include\oes_global/oes_packets.h:510:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_packets.h:510:5)"
     oldPassword: str
     newPassword: str
     
     
 class _OesChangePasswordRsp():
     
-    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     encryptMethod: int
     __filler: int
     username: str
-    u64: int
-    i64: int
-    u32: List[int]
-    i32: List[int]
-    c8: str
-    userInfo: "(anonymous union at include\oes_global/oes_packets.h:547:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_packets.h:547:5)"
     clientId: int
     clEnvId: str
     __filler2: str
@@ -1665,7 +1709,37 @@ class _SSocketOptionConfig():
     
 class _SGeneralClientChannel():
     
-    
+    class decltype(__reserveData)():
+        
+        
+        buf: str
+        i8: List[str]
+        u8: List[int]
+        i16: List[int]
+        u16: List[int]
+        i32: List[int]
+        u32: List[int]
+        i64: List[int]
+        u64: List[int]
+        ptr: List[Any]
+        __padding: str
+        
+        
+    class decltype(__extData)():
+        
+        
+        buf: str
+        i8: List[str]
+        u8: List[int]
+        i16: List[int]
+        u16: List[int]
+        i32: List[int]
+        u32: List[int]
+        i64: List[int]
+        u64: List[int]
+        ptr: List[Any]
+        
+        
     socketFd: int
     __socket_fd_filler: int
     heartBtInt: int
@@ -1701,19 +1775,8 @@ class _SGeneralClientChannel():
     __groupFlag: int
     __protocolHints: int
     __filler: List[int]
-    buf: str
-    i8: List[str]
-    u8: List[int]
-    i16: List[int]
-    u16: List[int]
-    i32: List[int]
-    u32: List[int]
-    i64: List[int]
-    u64: List[int]
-    ptr: List[Any]
-    __padding: str
-    __reserveData: "(anonymous union at include\sutil/net/spk_general_client_define.h:181:5)"
-    __extData: "(anonymous union at include\sutil/net/spk_general_client_define.h:197:5)"
+    __reserveData: "(anonymous union at vnoes/include/oes\sutil/net/spk_general_client_define.h:181:5)"
+    __extData: "(anonymous union at vnoes/include/oes\sutil/net/spk_general_client_define.h:197:5)"
     
     
 class _SGeneralClientChannelGroup():
@@ -1823,9 +1886,7 @@ class _MdsSecurityStatusMsg():
     __origTickSeq: int
     NoSwitch: int
     __filler4: int
-    switchFlag: int
-    switchStatus: int
-    switches: List["(anonymous struct at include\mds_global/mds_base_model.h:512:5)"]
+    switches: List["(anonymous struct at vnoes/include/oes\mds_global/mds_base_model.h:512:5)"]
     __origNetTime: _spk_struct_timeval32
     __recvTime: _spk_struct_timeval32
     __collectedTime: _spk_struct_timeval32

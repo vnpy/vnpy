@@ -4,6 +4,7 @@
 #include <string>
 #include <pybind11/pybind11.h>
 #include <pybind11/functional.h>
+#include <pybind11/stl.h>
 #include <autocxxpy/autocxxpy.hpp>
 
 #include "module.hpp"
@@ -25,7 +26,8 @@ void init_dispatcher(pybind11::module &m)
 {
     m.def("set_async_callback_exception_handler", &autocxxpy::async_callback_exception_handler::set_handler);
 
-    pybind11::class_<autocxxpy::async_dispatch_exception> c(m, "AsyncDispatchException");
+    // maybe module_local is unnecessary
+    pybind11::class_<autocxxpy::async_dispatch_exception> c(m, "AsyncDispatchException", pybind11::module_local());
     c.def_property_readonly("what", &autocxxpy::async_dispatch_exception::what_mutable);
     c.def_readonly("instance", &autocxxpy::async_dispatch_exception::instance);
     c.def_readonly("function_name", &autocxxpy::async_dispatch_exception::function_name);

@@ -68,7 +68,7 @@ namespace autocxxpy
         template <class to_type, class scope_type>
         static auto generate_nocheck(scope_type &c, const char *name)
         {
-            c.def("to_TapAPIApplicationInfo",
+            c.def(name,
                 &autocxxpy::caster::copy<to_type>
             );
         }

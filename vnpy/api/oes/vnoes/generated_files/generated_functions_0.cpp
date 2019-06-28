@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 #include <pybind11/pybind11.h>
+#include <pybind11/functional.h>
+#include <pybind11/stl.h>
 #include <autocxxpy/autocxxpy.hpp>
 
 #include "module.hpp"
@@ -1283,6 +1285,49 @@ void generate_vnoes(pybind11::module & parent)
     parent.attr("MDSAPI_DEFAULT_STRING_DELIM") = MDSAPI_DEFAULT_STRING_DELIM;
     module_vnoes::cross.record_assign(parent, "STimeval32T", "STimeval32T", "::_spk_struct_timeval32");
     module_vnoes::cross.record_assign(parent, "STimeval64T", "STimeval64T", "::_spk_struct_timeval64");
+    module_vnoes::cross.record_assign(parent, "eOesExchangeIdT", "eOesExchangeIdT", "::_eOesExchangeId");
+    module_vnoes::cross.record_assign(parent, "eOesMarketIdT", "eOesMarketIdT", "::_eOesMarketId");
+    module_vnoes::cross.record_assign(parent, "eOesPlatformIdT", "eOesPlatformIdT", "::_eOesPlatformId");
+    module_vnoes::cross.record_assign(parent, "eOesMarketStatusT", "eOesMarketStatusT", "::_eOesMarketStatus");
+    module_vnoes::cross.record_assign(parent, "eOesTrdSessTypeT", "eOesTrdSessTypeT", "::_eOesTrdSessType");
+    module_vnoes::cross.record_assign(parent, "eOesSecurityTypeT", "eOesSecurityTypeT", "::_eOesSecurityType");
+    module_vnoes::cross.record_assign(parent, "eOesSubSecurityTypeT", "eOesSubSecurityTypeT", "::_eOesSubSecurityType");
+    module_vnoes::cross.record_assign(parent, "eOesSecurityLevelT", "eOesSecurityLevelT", "::_eOesSecurityLevel");
+    module_vnoes::cross.record_assign(parent, "eOesSecurityRiskLevelT", "eOesSecurityRiskLevelT", "::_eOesSecurityRiskLevel");
+    module_vnoes::cross.record_assign(parent, "eOesSecuritySuspFlagT", "eOesSecuritySuspFlagT", "::_eOesSecuritySuspFlag");
+    module_vnoes::cross.record_assign(parent, "eOesOrdStatusT", "eOesOrdStatusT", "::_eOesOrdStatus");
+    module_vnoes::cross.record_assign(parent, "eOesOrdTypeT", "eOesOrdTypeT", "::_eOesOrdType");
+    module_vnoes::cross.record_assign(parent, "eOesOrdTypeShT", "eOesOrdTypeShT", "::_eOesOrdTypeSh");
+    module_vnoes::cross.record_assign(parent, "eOesOrdTypeSzT", "eOesOrdTypeSzT", "::_eOesOrdTypeSz");
+    module_vnoes::cross.record_assign(parent, "eOesBuySellTypeT", "eOesBuySellTypeT", "::_eOesBuySellType");
+    module_vnoes::cross.record_assign(parent, "eOesOrdDirT", "eOesOrdDirT", "::_eOesOrdDir");
+    module_vnoes::cross.record_assign(parent, "eOesEtfTrdCnfmTypeT", "eOesEtfTrdCnfmTypeT", "::_eOesEtfTrdCnfmType");
+    module_vnoes::cross.record_assign(parent, "eOesEtfSubFlagT", "eOesEtfSubFlagT", "::_eOesEtfSubFlag");
+    module_vnoes::cross.record_assign(parent, "eOesLotTypeT", "eOesLotTypeT", "::_eOesLotType");
+    module_vnoes::cross.record_assign(parent, "eOesLotRejReasonT", "eOesLotRejReasonT", "::_eOesLotRejReason");
+    module_vnoes::cross.record_assign(parent, "eOesExecTypeT", "eOesExecTypeT", "::_eOesExecType");
+    module_vnoes::cross.record_assign(parent, "eOesCurrTypeT", "eOesCurrTypeT", "::_eOesCurrType");
+    module_vnoes::cross.record_assign(parent, "eOesFeeTypeT", "eOesFeeTypeT", "::_eOesFeeType");
+    module_vnoes::cross.record_assign(parent, "eOesCalcFeeModeT", "eOesCalcFeeModeT", "::_eOesCalcFeeMode");
+    module_vnoes::cross.record_assign(parent, "eOesFundTrsfDirectT", "eOesFundTrsfDirectT", "::_eOesFundTrsfDirect");
+    module_vnoes::cross.record_assign(parent, "eOesFundTrsfTypeT", "eOesFundTrsfTypeT", "::_eOesFundTrsfType");
+    module_vnoes::cross.record_assign(parent, "eOesFundTrsfStatusT", "eOesFundTrsfStatusT", "::_eOesFundTrsfStatus");
+    module_vnoes::cross.record_assign(parent, "eOesAcctTypeT", "eOesAcctTypeT", "::_eOesAcctType");
+    module_vnoes::cross.record_assign(parent, "eOesCashTypeT", "eOesCashTypeT", "::_eOesCashType");
+    module_vnoes::cross.record_assign(parent, "eOesAcctStatusT", "eOesAcctStatusT", "::_eOesAcctStatus");
+    module_vnoes::cross.record_assign(parent, "eOesTradingPermissionT", "eOesTradingPermissionT", "::_eOesTradingPermission");
+    module_vnoes::cross.record_assign(parent, "eOesTradingLimitT", "eOesTradingLimitT", "::_eOesTradingLimit");
+    module_vnoes::cross.record_assign(parent, "eOesQualificationClassT", "eOesQualificationClassT", "::_eOesQualificationClass");
+    module_vnoes::cross.record_assign(parent, "eOesInvestorClassT", "eOesInvestorClassT", "::_eOesInvestorClass");
+    module_vnoes::cross.record_assign(parent, "eOesOwnerTypeT", "eOesOwnerTypeT", "::_eOesOwnerType");
+    module_vnoes::cross.record_assign(parent, "eOesClientTypeT", "eOesClientTypeT", "::_eOesClientType");
+    module_vnoes::cross.record_assign(parent, "eOesClientStatusT", "eOesClientStatusT", "::_eOesClientStatus");
+    module_vnoes::cross.record_assign(parent, "eOesOptContractTypeT", "eOesOptContractTypeT", "::_eOesOptContractType");
+    module_vnoes::cross.record_assign(parent, "eOesOptInvLevelT", "eOesOptInvLevelT", "::_eOesOptInvLevel");
+    module_vnoes::cross.record_assign(parent, "eOpenFlagTypeT", "eOpenFlagTypeT", "::_eOpenFlagType");
+    module_vnoes::cross.record_assign(parent, "eOesOptionOpenFlagT", "eOesOptionOpenFlagT", "::_eOesOptionOpenFlag");
+    module_vnoes::cross.record_assign(parent, "eOesPositionEffT", "eOesPositionEffT", "::_eOesPositionEff");
+    module_vnoes::cross.record_assign(parent, "eOesOptionTypeT", "eOesOptionTypeT", "::_eOesOptionType");
     module_vnoes::cross.record_assign(parent, "OesOrdReqT", "OesOrdReqT", "::_OesOrdReq");
     module_vnoes::cross.record_assign(parent, "OesOrdCancelReqT", "OesOrdCancelReqT", "::_OesOrdCancelReq");
     module_vnoes::cross.record_assign(parent, "OesOrdRejectT", "OesOrdRejectT", "::_OesOrdReject");
@@ -1308,6 +1353,8 @@ void generate_vnoes(pybind11::module & parent)
     module_vnoes::cross.record_assign(parent, "OesMarketStateInfoT", "OesMarketStateInfoT", "::_OesMarketStateInfo");
     module_vnoes::cross.record_assign(parent, "OesTradingPermissionEntryT", "OesTradingPermissionEntryT", "::_OesTradingPermissionEntry");
     module_vnoes::cross.record_assign(parent, "OesInputSourceInfoT", "OesInputSourceInfoT", "::_OesInputSourceInfo");
+    module_vnoes::cross.record_assign(parent, "eSMsgProtocolTypeT", "eSMsgProtocolTypeT", "::_eSMsgProtocolType");
+    module_vnoes::cross.record_assign(parent, "eSMsgFlagT", "eSMsgFlagT", "::_eSMsgFlag");
     module_vnoes::cross.record_assign(parent, "SMsgHeadT", "SMsgHeadT", "::_SMsgHead");
     module_vnoes::cross.record_assign(parent, "OesQryCursorT", "OesQryCursorT", "::_OesQryCursor");
     module_vnoes::cross.record_assign(parent, "OesQryReqHeadT", "OesQryReqHeadT", "::_OesQryReqHead");
@@ -1375,6 +1422,8 @@ void generate_vnoes(pybind11::module & parent)
     module_vnoes::cross.record_assign(parent, "OesQryMarketStateRspT", "OesQryMarketStateRspT", "::_OesQryMarketStateRsp");
     module_vnoes::cross.record_assign(parent, "OesQryReqMsgT", "OesQryReqMsgT", "::_OesQryReqMsg");
     module_vnoes::cross.record_assign(parent, "OesQryRspMsgT", "OesQryRspMsgT", "::_OesQryRspMsg");
+    module_vnoes::cross.record_assign(parent, "eOesMsgTypeT", "eOesMsgTypeT", "::_eOesMsgType");
+    module_vnoes::cross.record_assign(parent, "eOesSubscribeReportTypeT", "eOesSubscribeReportTypeT", "::_eOesSubscribeReportType");
     module_vnoes::cross.record_assign(parent, "OesLogonReqT", "OesLogonReqT", "::_OesLogonReq");
     module_vnoes::cross.record_assign(parent, "OesLogonRspT", "OesLogonRspT", "::_OesLogonRsp");
     module_vnoes::cross.record_assign(parent, "OesReportSynchronizationReqT", "OesReportSynchronizationReqT", "::_OesReportSynchronizationReq");
@@ -1392,17 +1441,34 @@ void generate_vnoes(pybind11::module & parent)
     module_vnoes::cross.record_assign(parent, "OesRspMsgBodyT", "OesRspMsgBodyT", "::_OesRspMsgBody");
     module_vnoes::cross.record_assign(parent, "SErrMsgT", "SErrMsgT", "::_SErrMsg");
     module_vnoes::cross.record_assign(parent, "SDataBufferT", "SDataBufferT", "::_SDataBuffer");
+    module_vnoes::cross.record_assign(parent, "eSSocketProtocolTypeT", "eSSocketProtocolTypeT", "::_eSSocketProtocolType");
     module_vnoes::cross.record_assign(parent, "SSocketUriInfoT", "SSocketUriInfoT", "::_SSocketUriInfo");
     module_vnoes::cross.record_assign(parent, "SSocketIpPortInfoT", "SSocketIpPortInfoT", "::_SSocketIpPortInfo");
     module_vnoes::cross.record_assign(parent, "SSocketChannelInfoT", "SSocketChannelInfoT", "::_SSocketChannelInfo");
     module_vnoes::cross.record_assign(parent, "SSocketOptionConfigT", "SSocketOptionConfigT", "::_SSocketOptionConfig");
+    module_vnoes::cross.record_assign(parent, "eGeneralClientClusterTypeT", "eGeneralClientClusterTypeT", "::_eGeneralClientClusterType");
+    module_vnoes::cross.record_assign(parent, "eGeneralClientEncryptTypeT", "eGeneralClientEncryptTypeT", "::_eGeneralClientEncryptType");
     module_vnoes::cross.record_assign(parent, "SGeneralClientChannelT", "SGeneralClientChannelT", "::_SGeneralClientChannel");
     module_vnoes::cross.record_assign(parent, "SGeneralClientChannelGroupT", "SGeneralClientChannelGroupT", "::_SGeneralClientChannelGroup");
     module_vnoes::cross.record_assign(parent, "SGeneralClientAddrInfoT", "SGeneralClientAddrInfoT", "::_SGeneralClientAddrInfo");
     module_vnoes::cross.record_assign(parent, "SGeneralClientRemoteCfgT", "SGeneralClientRemoteCfgT", "::_SGeneralClientRemoteCfg");
+    module_vnoes::cross.record_assign(parent, "eOesApiChannelTypeT", "eOesApiChannelTypeT", "::_eOesApiChannelType");
     module_vnoes::cross.record_assign(parent, "OesApiSubscribeInfoT", "OesApiSubscribeInfoT", "::_OesApiSubscribeInfo");
     module_vnoes::cross.record_assign(parent, "OesApiClientCfgT", "OesApiClientCfgT", "::_OesApiClientCfg");
     module_vnoes::cross.record_assign(parent, "OesApiClientEnvT", "OesApiClientEnvT", "::_OesApiClientEnv");
+    module_vnoes::cross.record_assign(parent, "eMdsExchangeIdT", "eMdsExchangeIdT", "::_eMdsExchangeId");
+    module_vnoes::cross.record_assign(parent, "eMdsMsgSourceT", "eMdsMsgSourceT", "::_eMdsMsgSource");
+    module_vnoes::cross.record_assign(parent, "eMdsSecurityTypeT", "eMdsSecurityTypeT", "::_eMdsSecurityType");
+    module_vnoes::cross.record_assign(parent, "eMdsMdStreamTypeT", "eMdsMdStreamTypeT", "::_eMdsMdStreamType");
+    module_vnoes::cross.record_assign(parent, "eMdsMdLevelT", "eMdsMdLevelT", "::_eMdsMdLevel");
+    module_vnoes::cross.record_assign(parent, "eMdsL2PriceLevelOperatorT", "eMdsL2PriceLevelOperatorT", "::_eMdsL2PriceLevelOperator");
+    module_vnoes::cross.record_assign(parent, "eMdsL2VirtualAuctionSideT", "eMdsL2VirtualAuctionSideT", "::_eMdsL2VirtualAuctionSide");
+    module_vnoes::cross.record_assign(parent, "eMdsL2TradeExecTypeT", "eMdsL2TradeExecTypeT", "::_eMdsL2TradeExecType");
+    module_vnoes::cross.record_assign(parent, "eMdsL2TradeBSFlagT", "eMdsL2TradeBSFlagT", "::_eMdsL2TradeBSFlag");
+    module_vnoes::cross.record_assign(parent, "eMdsL2OrderSideT", "eMdsL2OrderSideT", "::_eMdsL2OrderSideT");
+    module_vnoes::cross.record_assign(parent, "eMdsL2OrderTypeT", "eMdsL2OrderTypeT", "::_eMdsL2OrderType");
+    module_vnoes::cross.record_assign(parent, "eMdsClientTypeT", "eMdsClientTypeT", "::_eMdsClientType");
+    module_vnoes::cross.record_assign(parent, "eMdsClientStatusT", "eMdsClientStatusT", "::_eMdsClientStatus");
     module_vnoes::cross.record_assign(parent, "MdsTradingSessionStatusMsgT", "MdsTradingSessionStatusMsgT", "::_MdsTradingSessionStatusMsg");
     module_vnoes::cross.record_assign(parent, "MdsSecurityStatusMsgT", "MdsSecurityStatusMsgT", "::_MdsSecurityStatusMsg");
     module_vnoes::cross.record_assign(parent, "MdsPriceLevelEntryT", "MdsPriceLevelEntryT", "::_MdsPriceLevelEntry");
@@ -1423,6 +1489,13 @@ void generate_vnoes(pybind11::module & parent)
     module_vnoes::cross.record_assign(parent, "MdsL2TickLostT", "MdsL2TickLostT", "::_MdsL2TickLost");
     module_vnoes::cross.record_assign(parent, "MdsQryMktDataSnapshotReqT", "MdsQryMktDataSnapshotReqT", "::_MdsQryMktDataSnapshotReq");
     module_vnoes::cross.record_assign(parent, "MdsQryTrdSessionStatusReqT", "MdsQryTrdSessionStatusReqT", "::_MdsQryTrdSessionStatusReq");
+    module_vnoes::cross.record_assign(parent, "eMdsMsgTypeT", "eMdsMsgTypeT", "::_eMdsMsgType");
+    module_vnoes::cross.record_assign(parent, "eMdsSubscribeModeT", "eMdsSubscribeModeT", "::_eMdsSubscribeMode");
+    module_vnoes::cross.record_assign(parent, "eMdsMktSubscribeFlagT", "eMdsMktSubscribeFlagT", "::_eMdsMktSubscribeFlag");
+    module_vnoes::cross.record_assign(parent, "eMdsSubscribedTickTypeT", "eMdsSubscribedTickTypeT", "::_eMdsSubscribedTickType");
+    module_vnoes::cross.record_assign(parent, "eMdsSubscribedTickExpireTypeT", "eMdsSubscribedTickExpireTypeT", "::_eMdsSubscribedTickExpireType");
+    module_vnoes::cross.record_assign(parent, "eMdsSubscribeDataTypeT", "eMdsSubscribeDataTypeT", "::_eMdsSubscribeDataType");
+    module_vnoes::cross.record_assign(parent, "eMdsTickChannelNoT", "eMdsTickChannelNoT", "::_eMdsSubscribedChannelNo");
     module_vnoes::cross.record_assign(parent, "MdsLogonReqT", "MdsLogonReqT", "::_MdsLogonReq");
     module_vnoes::cross.record_assign(parent, "MdsLogonRspT", "MdsLogonRspT", "::_MdsLogonRsp");
     module_vnoes::cross.record_assign(parent, "MdsMktDataRequestEntryT", "MdsMktDataRequestEntryT", "::_MdsMktDataRequestEntry");
@@ -1434,6 +1507,7 @@ void generate_vnoes(pybind11::module & parent)
     module_vnoes::cross.record_assign(parent, "MdsMktReqMsgBodyT", "MdsMktReqMsgBodyT", "::_MdsMktReqMsgBody");
     module_vnoes::cross.record_assign(parent, "MdsMktRspMsgBodyT", "MdsMktRspMsgBodyT", "::_MdsMktRspMsgBody");
     module_vnoes::cross.record_assign(parent, "MdsUdpPktHeadT", "MdsUdpPktHeadT", "::_MdsUdpPktHead");
+    module_vnoes::cross.record_assign(parent, "eMdsApiChannelTypeT", "eMdsApiChannelTypeT", "::_eMdsApiChannelType");
     module_vnoes::cross.record_assign(parent, "MdsApiClientCfgT", "MdsApiClientCfgT", "::_MdsApiClientCfg");
     module_vnoes::cross.record_assign(parent, "MdsApiClientEnvT", "MdsApiClientEnvT", "::_MdsApiClientEnv");
     generate_caster_(parent);

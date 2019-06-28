@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
 
-# autocxxpy version: 0.3.4b1
-python -m autocxxpy \
+script_autocxxpy_version="autocxxpy 0.4.0"
+autocxxpy_version=`python -m autocxxpy version`
+if [[ $autocxxpy_version != $script_autocxxpy_version ]]; then
+    echo "autocxxpy version not match!"
+    echo "current: " $autocxxpy_version
+    echo "script: " $script_autocxxpy_version
+    echo "to continue, change version of autocxxpy or modify this script."
+    exit 1
+fi
+python -m autocxxpy generate \
     vnoes \
     oes_api/oes_api.h \
     mds_api/mds_api.h \

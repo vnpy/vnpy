@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 #include <pybind11/pybind11.h>
+#include <pybind11/functional.h>
+#include <pybind11/stl.h>
 #include <autocxxpy/autocxxpy.hpp>
 
 #include "module.hpp"
@@ -78,15 +80,24 @@ void generate_class_OesOrdReq(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReq, "ordQty", ordQty);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReq, "ordPrice", ordPrice);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReq, "origClOrdId", origClOrdId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReq, "u64", u64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReq, "i64", i64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReq, "u32", u32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReq, "i32", i32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReq, "c8", c8);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReq, "userInfo", userInfo);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReq, "__ordReqOrigSendTime", __ordReqOrigSendTime);
+    generate_class_decltype_OesOrdReq_userInfo_(c);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesOrdReq, c);
     module_vnoes::objects.emplace("_OesOrdReq", c);
+}
+void generate_class_decltype_OesOrdReq_userInfo_(pybind11::object & parent)
+{
+    pybind11::class_<decltype(_OesOrdReq::userInfo)> c(parent, "decltype(userInfo)");
+    if constexpr (std::is_default_constructible_v<decltype(_OesOrdReq::userInfo)>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdReq::userInfo), "u64", u64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdReq::userInfo), "i64", i64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdReq::userInfo), "u32", u32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdReq::userInfo), "i32", i32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdReq::userInfo), "c8", c8);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, decltype(_OesOrdReq::userInfo), c);
+    module_vnoes::objects.emplace("decltype(_OesOrdReq::userInfo)", c);
 }
 void generate_class_OesOrdCancelReq(pybind11::object & parent)
 {
@@ -102,15 +113,24 @@ void generate_class_OesOrdCancelReq(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCancelReq, "origClEnvId", origClEnvId);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCancelReq, "__ORD_CANCEL_BASE_INFO_filler2", __ORD_CANCEL_BASE_INFO_filler2);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCancelReq, "origClOrdId", origClOrdId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCancelReq, "u64", u64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCancelReq, "i64", i64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCancelReq, "u32", u32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCancelReq, "i32", i32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCancelReq, "c8", c8);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCancelReq, "userInfo", userInfo);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCancelReq, "__ordReqOrigSendTime", __ordReqOrigSendTime);
+    generate_class_decltype_OesOrdCancelReq_userInfo_(c);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesOrdCancelReq, c);
     module_vnoes::objects.emplace("_OesOrdCancelReq", c);
+}
+void generate_class_decltype_OesOrdCancelReq_userInfo_(pybind11::object & parent)
+{
+    pybind11::class_<decltype(_OesOrdCancelReq::userInfo)> c(parent, "decltype(userInfo)");
+    if constexpr (std::is_default_constructible_v<decltype(_OesOrdCancelReq::userInfo)>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdCancelReq::userInfo), "u64", u64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdCancelReq::userInfo), "i64", i64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdCancelReq::userInfo), "u32", u32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdCancelReq::userInfo), "i32", i32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdCancelReq::userInfo), "c8", c8);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, decltype(_OesOrdCancelReq::userInfo), c);
+    module_vnoes::objects.emplace("decltype(_OesOrdCancelReq::userInfo)", c);
 }
 void generate_class_OesOrdReject(pybind11::object & parent)
 {
@@ -127,11 +147,6 @@ void generate_class_OesOrdReject(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReject, "ordQty", ordQty);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReject, "ordPrice", ordPrice);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReject, "origClOrdId", origClOrdId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReject, "u64", u64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReject, "i64", i64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReject, "u32", u32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReject, "i32", i32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReject, "c8", c8);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReject, "userInfo", userInfo);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReject, "__ordReqOrigSendTime", __ordReqOrigSendTime);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReject, "origClSeqNo", origClSeqNo);
@@ -142,8 +157,22 @@ void generate_class_OesOrdReject(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReject, "ordTime", ordTime);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReject, "ordRejReason", ordRejReason);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdReject, "__filler", __filler);
+    generate_class_decltype_OesOrdReject_userInfo_(c);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesOrdReject, c);
     module_vnoes::objects.emplace("_OesOrdReject", c);
+}
+void generate_class_decltype_OesOrdReject_userInfo_(pybind11::object & parent)
+{
+    pybind11::class_<decltype(_OesOrdReject::userInfo)> c(parent, "decltype(userInfo)");
+    if constexpr (std::is_default_constructible_v<decltype(_OesOrdReject::userInfo)>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdReject::userInfo), "u64", u64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdReject::userInfo), "i64", i64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdReject::userInfo), "u32", u32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdReject::userInfo), "i32", i32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdReject::userInfo), "c8", c8);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, decltype(_OesOrdReject::userInfo), c);
+    module_vnoes::objects.emplace("decltype(_OesOrdReject::userInfo)", c);
 }
 void generate_class_OesOrdCnfm(pybind11::object & parent)
 {
@@ -160,11 +189,6 @@ void generate_class_OesOrdCnfm(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "ordQty", ordQty);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "ordPrice", ordPrice);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "origClOrdId", origClOrdId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "u64", u64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "i64", i64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "u32", u32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "i32", i32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "c8", c8);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "userInfo", userInfo);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "__ordReqOrigSendTime", __ordReqOrigSendTime);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "clOrdId", clOrdId);
@@ -209,8 +233,22 @@ void generate_class_OesOrdCnfm(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "__ordDeclareTime", __ordDeclareTime);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "__ordDeclareDoneTime", __ordDeclareDoneTime);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "__pushingTime", __pushingTime);
+    generate_class_decltype_OesOrdCnfm_userInfo_(c);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesOrdCnfm, c);
     module_vnoes::objects.emplace("_OesOrdCnfm", c);
+}
+void generate_class_decltype_OesOrdCnfm_userInfo_(pybind11::object & parent)
+{
+    pybind11::class_<decltype(_OesOrdCnfm::userInfo)> c(parent, "decltype(userInfo)");
+    if constexpr (std::is_default_constructible_v<decltype(_OesOrdCnfm::userInfo)>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdCnfm::userInfo), "u64", u64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdCnfm::userInfo), "i64", i64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdCnfm::userInfo), "u32", u32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdCnfm::userInfo), "i32", i32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesOrdCnfm::userInfo), "c8", c8);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, decltype(_OesOrdCnfm::userInfo), c);
+    module_vnoes::objects.emplace("decltype(_OesOrdCnfm::userInfo)", c);
 }
 void generate_class_OesTrdBaseInfo(pybind11::object & parent)
 {
@@ -279,19 +317,28 @@ void generate_class_OesTrdCnfm(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "cumAmt", cumAmt);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "cumInterest", cumInterest);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "cumFee", cumFee);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "u64", u64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "i64", i64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "u32", u32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "i32", i32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "c8", c8);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "userInfo", userInfo);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "__trdCnfmOrigRecvTime", __trdCnfmOrigRecvTime);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "__trdCnfmCollectedTime", __trdCnfmCollectedTime);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "__trdCnfmActualDealTime", __trdCnfmActualDealTime);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "__trdCnfmProcessedTime", __trdCnfmProcessedTime);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "__pushingTime", __pushingTime);
+    generate_class_decltype_OesTrdCnfm_userInfo_(c);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesTrdCnfm, c);
     module_vnoes::objects.emplace("_OesTrdCnfm", c);
+}
+void generate_class_decltype_OesTrdCnfm_userInfo_(pybind11::object & parent)
+{
+    pybind11::class_<decltype(_OesTrdCnfm::userInfo)> c(parent, "decltype(userInfo)");
+    if constexpr (std::is_default_constructible_v<decltype(_OesTrdCnfm::userInfo)>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesTrdCnfm::userInfo), "u64", u64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesTrdCnfm::userInfo), "i64", i64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesTrdCnfm::userInfo), "u32", u32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesTrdCnfm::userInfo), "i32", i32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesTrdCnfm::userInfo), "c8", c8);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, decltype(_OesTrdCnfm::userInfo), c);
+    module_vnoes::objects.emplace("decltype(_OesTrdCnfm::userInfo)", c);
 }
 void generate_class_OesLotWinningBaseInfo(pybind11::object & parent)
 {
@@ -326,14 +373,23 @@ void generate_class_OesFundTrsfBaseInfo(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "trdPasswd", trdPasswd);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "trsfPasswd", trsfPasswd);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "occurAmt", occurAmt);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "u64", u64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "i64", i64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "u32", u32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "i32", i32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "c8", c8);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "userInfo", userInfo);
+    generate_class_decltype_OesFundTrsfBaseInfo_userInfo_(c);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesFundTrsfBaseInfo, c);
     module_vnoes::objects.emplace("_OesFundTrsfBaseInfo", c);
+}
+void generate_class_decltype_OesFundTrsfBaseInfo_userInfo_(pybind11::object & parent)
+{
+    pybind11::class_<decltype(_OesFundTrsfBaseInfo::userInfo)> c(parent, "decltype(userInfo)");
+    if constexpr (std::is_default_constructible_v<decltype(_OesFundTrsfBaseInfo::userInfo)>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfBaseInfo::userInfo), "u64", u64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfBaseInfo::userInfo), "i64", i64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfBaseInfo::userInfo), "u32", u32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfBaseInfo::userInfo), "i32", i32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfBaseInfo::userInfo), "c8", c8);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, decltype(_OesFundTrsfBaseInfo::userInfo), c);
+    module_vnoes::objects.emplace("decltype(_OesFundTrsfBaseInfo::userInfo)", c);
 }
 void generate_class_OesFundTrsfReq(pybind11::object & parent)
 {
@@ -348,14 +404,23 @@ void generate_class_OesFundTrsfReq(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReq, "trdPasswd", trdPasswd);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReq, "trsfPasswd", trsfPasswd);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReq, "occurAmt", occurAmt);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReq, "u64", u64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReq, "i64", i64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReq, "u32", u32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReq, "i32", i32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReq, "c8", c8);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReq, "userInfo", userInfo);
+    generate_class_decltype_OesFundTrsfReq_userInfo_(c);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesFundTrsfReq, c);
     module_vnoes::objects.emplace("_OesFundTrsfReq", c);
+}
+void generate_class_decltype_OesFundTrsfReq_userInfo_(pybind11::object & parent)
+{
+    pybind11::class_<decltype(_OesFundTrsfReq::userInfo)> c(parent, "decltype(userInfo)");
+    if constexpr (std::is_default_constructible_v<decltype(_OesFundTrsfReq::userInfo)>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReq::userInfo), "u64", u64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReq::userInfo), "i64", i64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReq::userInfo), "u32", u32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReq::userInfo), "i32", i32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReq::userInfo), "c8", c8);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, decltype(_OesFundTrsfReq::userInfo), c);
+    module_vnoes::objects.emplace("decltype(_OesFundTrsfReq::userInfo)", c);
 }
 void generate_class_OesFundTrsfReject(pybind11::object & parent)
 {
@@ -370,11 +435,6 @@ void generate_class_OesFundTrsfReject(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReject, "trdPasswd", trdPasswd);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReject, "trsfPasswd", trsfPasswd);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReject, "occurAmt", occurAmt);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReject, "u64", u64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReject, "i64", i64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReject, "u32", u32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReject, "i32", i32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReject, "c8", c8);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReject, "userInfo", userInfo);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReject, "ordDate", ordDate);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReject, "ordTime", ordTime);
@@ -383,8 +443,22 @@ void generate_class_OesFundTrsfReject(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReject, "__filler", __filler);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReject, "rejReason", rejReason);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReject, "errorInfo", errorInfo);
+    generate_class_decltype_OesFundTrsfReject_userInfo_(c);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesFundTrsfReject, c);
     module_vnoes::objects.emplace("_OesFundTrsfReject", c);
+}
+void generate_class_decltype_OesFundTrsfReject_userInfo_(pybind11::object & parent)
+{
+    pybind11::class_<decltype(_OesFundTrsfReject::userInfo)> c(parent, "decltype(userInfo)");
+    if constexpr (std::is_default_constructible_v<decltype(_OesFundTrsfReject::userInfo)>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReject::userInfo), "u64", u64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReject::userInfo), "i64", i64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReject::userInfo), "u32", u32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReject::userInfo), "i32", i32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReject::userInfo), "c8", c8);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, decltype(_OesFundTrsfReject::userInfo), c);
+    module_vnoes::objects.emplace("decltype(_OesFundTrsfReject::userInfo)", c);
 }
 void generate_class_OesFundTrsfReport(pybind11::object & parent)
 {
@@ -397,11 +471,6 @@ void generate_class_OesFundTrsfReport(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReport, "direct", direct);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReport, "cashAcctId", cashAcctId);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReport, "occurAmt", occurAmt);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReport, "u64", u64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReport, "i64", i64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReport, "u32", u32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReport, "i32", i32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReport, "c8", c8);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReport, "userInfo", userInfo);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReport, "fundTrsfId", fundTrsfId);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReport, "counterEntrustNo", counterEntrustNo);
@@ -418,8 +487,22 @@ void generate_class_OesFundTrsfReport(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReport, "__filler2", __filler2);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReport, "allotSerialNo", allotSerialNo);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfReport, "errorInfo", errorInfo);
+    generate_class_decltype_OesFundTrsfReport_userInfo_(c);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesFundTrsfReport, c);
     module_vnoes::objects.emplace("_OesFundTrsfReport", c);
+}
+void generate_class_decltype_OesFundTrsfReport_userInfo_(pybind11::object & parent)
+{
+    pybind11::class_<decltype(_OesFundTrsfReport::userInfo)> c(parent, "decltype(userInfo)");
+    if constexpr (std::is_default_constructible_v<decltype(_OesFundTrsfReport::userInfo)>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReport::userInfo), "u64", u64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReport::userInfo), "i64", i64);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReport::userInfo), "u32", u32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReport::userInfo), "i32", i32);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesFundTrsfReport::userInfo), "c8", c8);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, decltype(_OesFundTrsfReport::userInfo), c);
+    module_vnoes::objects.emplace("decltype(_OesFundTrsfReport::userInfo)", c);
 }
 void generate_class_OesIssueBaseInfo(pybind11::object & parent)
 {
@@ -491,97 +574,4 @@ void generate_class_OesStockBaseInfo(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "fundId", fundId);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesStockBaseInfo, c);
     module_vnoes::objects.emplace("_OesStockBaseInfo", c);
-}
-void generate_class_OesEtfBaseInfo(pybind11::object & parent)
-{
-    pybind11::class_<_OesEtfBaseInfo> c(parent, "_OesEtfBaseInfo");
-    if constexpr (std::is_default_constructible_v<_OesEtfBaseInfo>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "fundId", fundId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "securityId", securityId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "mktId", mktId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "securityType", securityType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "subSecurityType", subSecurityType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "isPublishIOPV", isPublishIOPV);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "isCreationAble", isCreationAble);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "isRedemptionAble", isRedemptionAble);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "isDisabled", isDisabled);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "__ETF_BASE_filler", __ETF_BASE_filler);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "componentCnt", componentCnt);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "creRdmUnit", creRdmUnit);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "maxCashRatio", maxCashRatio);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "nav", nav);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "navPerCU", navPerCU);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "dividendPerCU", dividendPerCU);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "tradingDay", tradingDay);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "preTradingDay", preTradingDay);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "estiCashCmpoent", estiCashCmpoent);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "cashCmpoent", cashCmpoent);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "creationLimit", creationLimit);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "redemLimit", redemLimit);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "netCreationLimit", netCreationLimit);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "netRedemLimit", netRedemLimit);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesEtfBaseInfo, c);
-    module_vnoes::objects.emplace("_OesEtfBaseInfo", c);
-}
-void generate_class_OesEtfComponentBaseInfo(pybind11::object & parent)
-{
-    pybind11::class_<_OesEtfComponentBaseInfo> c(parent, "_OesEtfComponentBaseInfo");
-    if constexpr (std::is_default_constructible_v<_OesEtfComponentBaseInfo>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "fundId", fundId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "securityId", securityId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "mktId", mktId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "subFlag", subFlag);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "securityType", securityType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "subSecurityType", subSecurityType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "prevClose", prevClose);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "qty", qty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "premiumRate", premiumRate);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "creationSubCash", creationSubCash);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "redemptionCashSub", redemptionCashSub);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesEtfComponentBaseInfo, c);
-    module_vnoes::objects.emplace("_OesEtfComponentBaseInfo", c);
-}
-void generate_class_OesOptionBaseInfo(pybind11::object & parent)
-{
-    pybind11::class_<_OesOptionBaseInfo> c(parent, "_OesOptionBaseInfo");
-    if constexpr (std::is_default_constructible_v<_OesOptionBaseInfo>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "securityId", securityId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "mktId", mktId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "securityType", securityType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "subSecurityType", subSecurityType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "contractType", contractType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "openFlag", openFlag);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "optionType", optionType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "suspFlag", suspFlag);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "temporarySuspFlag", temporarySuspFlag);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "contractMultiplierUnit", contractMultiplierUnit);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "excPrice", excPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "startDate", startDate);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "endDate", endDate);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "execDate", execDate);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "expDate", expDate);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "closePrice", closePrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "settlPrice", settlPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "roundLot", roundLot);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "tickSize", tickSize);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "ceilPrice", ceilPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "floorPrice", floorPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "marginUnit", marginUnit);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "leavesQty", leavesQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "lmtOrdMaxQty", lmtOrdMaxQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "lmtOrdMinQty", lmtOrdMinQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "mktOrdMaxQty", mktOrdMaxQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "mktOrdMinQty", mktOrdMinQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "underlyingSecurityId", underlyingSecurityId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "underlyingMktId", underlyingMktId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "underlyingSecuType", underlyingSecuType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "closeEndDateFlag", closeEndDateFlag);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "__OPTION_BASE_filler1", __OPTION_BASE_filler1);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "underlyingClosePrice", underlyingClosePrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "securityName", securityName);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesOptionBaseInfo, c);
-    module_vnoes::objects.emplace("_OesOptionBaseInfo", c);
 }

@@ -7,12 +7,12 @@ from threading import Thread
 from typing import Any, Callable, Dict
 
 from vnpy.api.oes.vnoes import MdsApiClientEnvT, MdsApi_DestoryAll, MdsApi_InitLogger, \
-    MdsApi_InitTcpChannel2, MdsApi_LogoutAll, MdsApi_SetThreadPassword, \
-    MdsApi_SetThreadUsername, MdsApi_SubscribeMarketData, MdsApi_WaitOnMsg, MdsL2StockSnapshotBodyT, \
-    MdsMktDataRequestEntryT, MdsMktDataRequestReqBufT, MdsMktDataRequestReqT, MdsMktRspMsgBodyT, \
-    MdsStockSnapshotBodyT, SGeneralClientChannelT, SMsgHeadT, cast, \
-    eMdsExchangeIdT, eMdsMktSubscribeFlagT, eMdsMsgTypeT, eMdsSecurityTypeT, eMdsSubscribeDataTypeT, \
-    eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, eMdsSubscribedTickTypeT, eSMsgProtocolTypeT
+    MdsApi_InitTcpChannel2, MdsApi_LogoutAll, MdsApi_SetThreadPassword, MdsApi_SetThreadUsername, \
+    MdsApi_SubscribeMarketData, MdsApi_WaitOnMsg, MdsL2StockSnapshotBodyT, MdsMktDataRequestEntryT, \
+    MdsMktDataRequestReqBufT, MdsMktDataRequestReqT, MdsMktRspMsgBodyT, MdsStockSnapshotBodyT, \
+    SGeneralClientChannelT, SMsgHeadT, caster, eMdsExchangeIdT, eMdsMktSubscribeFlagT, eMdsMsgTypeT, \
+    eMdsSecurityTypeT, eMdsSubscribeDataTypeT, eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, \
+    eMdsSubscribedTickTypeT, eSMsgProtocolTypeT
 
 from vnpy.gateway.oes.utils import create_remote_config, is_disconnected
 from vnpy.trader.constant import Exchange
@@ -103,7 +103,7 @@ class OesMdMessageLoop:
                     body: Any):
         """"""
         if session_info.protocolType == eSMsgProtocolTypeT.SMSG_PROTO_BINARY:
-            b = cast.toMdsMktRspMsgBodyT(body)
+            b = caster.toMdsMktRspMsgBodyT(body)
             if head.msgId in self.message_handlers:
                 # self.gateway.write_log(
                 #     f"msg id : {head.msgId}   {eMdsMsgTypeT(head.msgId)}")
