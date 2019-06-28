@@ -163,6 +163,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def init_toolbar(self):
         """"""
         self.toolbar = QtWidgets.QToolBar(self)
+        self.toolbar.setObjectName("工具栏")
         self.toolbar.setFloatable(False)
         self.toolbar.setMovable(False)
 

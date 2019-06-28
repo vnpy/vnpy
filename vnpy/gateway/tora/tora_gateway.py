@@ -5,7 +5,8 @@ TODO:
  * Linux support
 
 """
-from vnpy.api.tora.vntora import (AsyncDispatchException, set_async_callback_exception_handler)
+from vnpy.api.tora.vntora import (
+    AsyncDispatchException, set_async_callback_exception_handler)
 
 from vnpy.event import EventEngine
 from vnpy.trader.gateway import BaseGateway
@@ -20,6 +21,8 @@ def is_valid_front_address(address: str):
 
 
 class ToraGateway(BaseGateway):
+    """"""
+
     default_setting = {
         "账号": "",
         "密码": "",
@@ -85,13 +88,6 @@ class ToraGateway(BaseGateway):
     def query_position(self):
         """"""
         self._td_api.query_positions()
-
-    def write_log(self, msg: str):
-        """
-        for easier test
-        """
-        print(msg)
-        super().write_log(msg)
 
     def _async_callback_exception_handler(self, e: AsyncDispatchException):
         error_str = f"发生内部错误：\n" f"位置：{e.instance}.{e.function_name}" f"详细信息：{e.what}"

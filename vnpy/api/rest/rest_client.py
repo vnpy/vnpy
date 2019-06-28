@@ -256,11 +256,14 @@ class RestClient(object):
                 proxies=self.proxies,
             )
             request.response = response
-
             status_code = response.status_code
-            if status_code // 100 == 2:  # 2xx都算成功，尽管交易所都用200
-                jsonBody = response.json()
-                request.callback(jsonBody, request)
+            if status_code // 100 == 2:  # 2xx codes are all successful
+                if status_code == 204:
+                    json_body = None
+                else:
+                    json_body = response.json()
+
+                request.callback(json_body, request)
                 request.status = RequestStatus.success
             else:
                 request.status = RequestStatus.failed
