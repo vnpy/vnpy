@@ -235,14 +235,14 @@ class BacktestingEngine:
                     self.exchange,
                     self.interval,
                     start,
-                    end
+                    min(end, self.end)
                 )
             else:
                 data = load_tick_data(
                     self.symbol,
                     self.exchange,
                     start,
-                    end
+                    min(end, self.end)
                 )
 
             self.history_data.extend(data)
