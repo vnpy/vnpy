@@ -1,3 +1,4 @@
+# flake8: noqa
 from vnpy.event import EventEngine
 
 from vnpy.trader.engine import MainEngine

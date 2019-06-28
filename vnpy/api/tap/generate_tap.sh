@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# autocxxpy version: 0.3.1
+# autocxxpy version: 0.3.4b
 python -m autocxxpy \
         vntap \
         iTapTradeAPI.h TapQuoteAPI.h TapAPIError.h iTapAPIError.h \
@@ -9,7 +9,7 @@ python -m autocxxpy \
         --copy-autocxxpy-includes vntap/include \
         --pyi-output-dir . \
         \
-        --no-clear-pyi-output \
+        --no-clear-pyi-output-dir \
         \
          --output-arg-pattern \
          "(.*API::.*(sessionID$|.*ClientBuyOrderNo$|.*ClientSellOrderNo$|.*ClientOrderNo$))|(.*Result)" \

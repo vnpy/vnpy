@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# autocxxpy version: 0.2.5
+# autocxxpy version: 0.3.4b
 python -m autocxxpy \
         vntora \
         TORATstpMdApi.h\
@@ -11,7 +11,7 @@ python -m autocxxpy \
         --output-dir vntora/generated_files \
         --pyi-output-dir . \
         \
-        --no-clear-pyi-output \
+        --no-clear-pyi-output-dir \
         --no-callback-pattern \
         ".*Api::.*" \
         --string-encoding-windows .936 \
