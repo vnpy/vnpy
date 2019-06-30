@@ -229,20 +229,22 @@ class BacktestingEngine:
         progress = 0
 
         while start < self.end:
+            end = min(end, self.end)  # Make sure end time stays within set range
+            
             if self.mode == BacktestingMode.BAR:
                 data = load_bar_data(
                     self.symbol,
                     self.exchange,
                     self.interval,
                     start,
-                    min(end, self.end)
+                    end
                 )
             else:
                 data = load_tick_data(
                     self.symbol,
                     self.exchange,
                     start,
-                    min(end, self.end)
+                    end
                 )
 
             self.history_data.extend(data)
