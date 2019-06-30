@@ -618,23 +618,23 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
             # Futures
             elif _type == "future":
                 long_position = PositionData(
-                    symbol=X["contract"],
+                    symbol=account_data["contract"],
                     exchange=Exchange(self.exchange.upper()),  
                     direction=Direction.LONG,
-                    price=X["average_open_price_long"],
-                    volume=X["total_amount_long"],
-                    pnl=X["unrealized_long"],
-                    frozen=X["frozen_position_long"],
+                    price=account_data["average_open_price_long"],
+                    volume=account_data["total_amount_long"],
+                    pnl=account_data["unrealized_long"],
+                    frozen=account_data["frozen_position_long"],
                     gateway_name=self.gateway_name,
                 )
                 short_position = PositionData(
-                    symbol=X["contract"],
+                    symbol=account_data["contract"],
                     exchange=Exchange(self.exchange.upper()), 
                     direction=Direction.SHORT,
-                    price=X["average_open_price_short"],
-                    volume=X["total_amount_short"],
-                    pnl=X["unrealized_short"],
-                    frozen=X["frozen_position_short"],
+                    price=account_data["average_open_price_short"],
+                    volume=account_data["total_amount_short"],
+                    pnl=account_data["unrealized_short"],
+                    frozen=account_data["frozen_position_short"],
                     gateway_name=self.gateway_name,
                 )
                 self.gateway.on_position(long_position)
