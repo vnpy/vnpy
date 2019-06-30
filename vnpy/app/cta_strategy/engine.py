@@ -209,12 +209,18 @@ class CtaEngine(BaseEngine):
         if not strategy:
             return
 
+        # Update strategy pos before calling on_trade method
         if trade.direction == Direction.LONG:
             strategy.pos += trade.volume
         else:
             strategy.pos -= trade.volume
 
         self.call_strategy_func(strategy, strategy.on_trade, trade)
+
+        # Sync strategy variables to data file
+        self.sync_strategy_data(strategy)
+
+        # Update GUI
         self.put_strategy_event(strategy)
 
     def process_position_event(self, event: Event):
@@ -674,6 +680,9 @@ class CtaEngine(BaseEngine):
 
         # Cancel all orders of the strategy
         self.cancel_all(strategy)
+
+        # Sync strategy variables to data file
+        self.sync_strategy_data(strategy)
 
         # Update GUI
         self.put_strategy_event(strategy)
