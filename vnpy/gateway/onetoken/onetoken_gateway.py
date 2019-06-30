@@ -618,21 +618,23 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
             # Futures
             elif _type == "future":
                 long_position = PositionData(
-                    symbol=account_data["contract"],
-                    exchange=Exchange.OKEX,   # todo add Exchange
+                    symbol=X["contract"],
+                    exchange=Exchange(self.exchange.upper()),  
                     direction=Direction.LONG,
-                    volume=account_data["total_amount_long"],
-                    frozen=account_data["total_amount_long"] - \
-                    account_data["available_long"],
+                    price=X["average_open_price_long"],
+                    volume=X["total_amount_long"],
+                    pnl=X["unrealized_long"],
+                    frozen=X["frozen_position_long"],
                     gateway_name=self.gateway_name,
                 )
                 short_position = PositionData(
-                    symbol=account_data["contract"],
-                    exchange=Exchange.OKEX,   # todo add Exchange
+                    symbol=X["contract"],
+                    exchange=Exchange(self.exchange.upper()), 
                     direction=Direction.SHORT,
-                    volume=account_data["total_amount_short"],
-                    frozen=account_data["total_amount_short"] - \
-                    account_data["available_short"],
+                    price=X["average_open_price_short"],
+                    volume=X["total_amount_short"],
+                    pnl=X["unrealized_short"],
+                    frozen=X["frozen_position_short"],
                     gateway_name=self.gateway_name,
                 )
                 self.gateway.on_position(long_position)
@@ -677,20 +679,19 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
 
             trade_timestamp = order_data["last_update"][11:19]
             self.trade_count += 1
-
-            trade = TradeData(
-                symbol=order.symbol,
-                exchange=order.exchange,
-                orderid=order.orderid,
-                tradeid=str(self.trade_count),
-                direction=order.direction,
-                price=order_data["average_dealt_price"],
-                volume=order_data["last_dealt_amount"],
-                gateway_name=self.gateway_name,
-                time=trade_timestamp
-            )
-
-            self.gateway.on_trade(trade)
+            if order_data["dealt_amount"]:
+                self.trade_count += 1
+                trade = TradeData(
+                    symbol=order.symbol,
+                    exchange=order.exchange,
+                    orderid=orderid,
+                    tradeid=str(self.trade_count),
+                    direction=order.direction,
+                    price=order_data["average_dealt_price"],
+                    volume=order_data["dealt_amount"],
+                    gateway_name=self.gateway_name,
+                    time=trade_timestamp)
+                self.gateway.on_trade(trade)
 
     def ping(self):
         """"""
