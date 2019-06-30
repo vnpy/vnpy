@@ -1012,6 +1012,12 @@ class BacktestingEngine:
         Send email to default receiver.
         """
         pass
+    
+    def sync_strategy_data(self, strategy: CtaTemplate):
+        """
+        Sync strategy data into json file.
+        """
+        pass
 
     def get_engine_type(self):
         """
