@@ -659,7 +659,7 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
                 gateway_name=self.gateway_name
             )
 
-            if order_data["canceled_time"]:
+            if order_data["status"] in ("withdrawn","part-deal-withdrawn"):
                 order.status = Status.CANCELLED
             else:
                 if order.traded == order.volume:
