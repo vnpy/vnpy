@@ -619,7 +619,7 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
             elif _type == "future":
                 long_position = PositionData(
                     symbol=account_data["contract"],
-                    exchange=Exchange(self.exchange.upper()),  
+                    exchange=Exchange(self.exchange.upper()),
                     direction=Direction.LONG,
                     price=account_data["average_open_price_long"],
                     volume=account_data["total_amount_long"],
@@ -629,7 +629,7 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
                 )
                 short_position = PositionData(
                     symbol=account_data["contract"],
-                    exchange=Exchange(self.exchange.upper()), 
+                    exchange=Exchange(self.exchange.upper()),
                     direction=Direction.SHORT,
                     price=account_data["average_open_price_short"],
                     volume=account_data["total_amount_short"],
@@ -661,7 +661,7 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
                 gateway_name=self.gateway_name
             )
 
-            if order_data["status"] in ("withdrawn","part-deal-withdrawn"):
+            if order_data["status"] in ("withdrawn", "part-deal-withdrawn"):
                 order.status = Status.CANCELLED
             else:
                 if order.traded == order.volume:
