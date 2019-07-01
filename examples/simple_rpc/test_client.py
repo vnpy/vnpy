@@ -20,15 +20,15 @@ class TestClient(RpcClient):
         """
         Realize callable function
         """
-        print('client received topic:', topic, ', data:', data)
+        print(f"client received topic:{topic}, data:{data}")
 
 
-if __name__ == '__main__':
-    req_address = 'tcp://localhost:2014'
-    sub_address = 'tcp://localhost:0602'
+if __name__ == "__main__":
+    req_address = "tcp://localhost:2014"
+    sub_address = "tcp://localhost:0602"
 
     tc = TestClient(req_address, sub_address)
-    tc.subscribeTopic('')
+    tc.subscribe_topic("")
     tc.start()
 
     while 1:

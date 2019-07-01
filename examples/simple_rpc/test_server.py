@@ -22,19 +22,19 @@ class TestServer(RpcServer):
         """
         Test function
         """
-        print('receiving: %s, %s' % (a, b))
+        print(f"receiving:{a} {b}")
         return a + b
 
 
-if __name__ == '__main__':
-    rep_address = 'tcp://*:2014'
-    pub_address = 'tcp://*:0602'
+if __name__ == "__main__":
+    rep_address = "tcp://*:2014"
+    pub_address = "tcp://*:0602"
 
     ts = TestServer(rep_address, pub_address)
     ts.start()
 
     while 1:
-        content = 'current server time is %s' % time()
+        content = f"current server time is {time()}"
         print(content)
-        ts.publish('test', content)
+        ts.publish("test", content)
         sleep(2)
