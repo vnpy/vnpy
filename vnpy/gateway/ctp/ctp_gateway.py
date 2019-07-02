@@ -239,7 +239,6 @@ class CtpMdApi(MdApi):
         """
         Callback when front server is connected.
         """
-        self.connect_status = True
         self.gateway.write_log("行情服务器连接成功")
         self.login()
 
@@ -247,7 +246,6 @@ class CtpMdApi(MdApi):
         """
         Callback when front server is disconnected.
         """
-        self.connect_status = False
         self.login_status = False
         self.gateway.write_log(f"行情服务器连接断开，原因{reason}")
 
@@ -325,6 +323,8 @@ class CtpMdApi(MdApi):
             
             self.registerFront(address)
             self.init()
+
+            self.connect_status = True
         # If already connected, then login immediately.
         elif not self.login_status:
             self.login()
@@ -393,7 +393,6 @@ class CtpTdApi(TdApi):
         
     def onFrontConnected(self):
         """"""
-        self.connect_status = True
         self.gateway.write_log("交易服务器连接成功")
         
         if self.auth_code:
@@ -403,7 +402,6 @@ class CtpTdApi(TdApi):
     
     def onFrontDisconnected(self, reason: int):
         """"""
-        self.connect_status = False
         self.login_status = False
         self.gateway.write_log(f"交易服务器连接断开，原因{reason}")        
     
@@ -668,6 +666,8 @@ class CtpTdApi(TdApi):
             
             self.registerFront(address)
             self.init()            
+
+            self.connect_status = True
         else:
             self.authenticate()
     
