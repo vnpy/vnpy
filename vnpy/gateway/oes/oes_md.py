@@ -11,7 +11,7 @@ from vnpy.api.oes.vnoes import MdsApiClientEnvT, MdsApi_DestoryAll, MdsApi_InitL
     MdsApi_SubscribeMarketData, MdsApi_WaitOnMsg, MdsL2StockSnapshotBodyT, MdsMktDataRequestEntryT, \
     MdsMktDataRequestReqBufT, MdsMktDataRequestReqT, MdsMktRspMsgBodyT, MdsStockSnapshotBodyT, \
     SGeneralClientChannelT, SMsgHeadT, caster, eMdsExchangeIdT, eMdsMktSubscribeFlagT, eMdsMsgTypeT, \
-    eMdsSecurityTypeT, eMdsSubscribeDataTypeT, eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, \
+    eMdsMdProductTypeT, eMdsSubscribeDataTypeT, eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, \
     eMdsSubscribedTickTypeT, eSMsgProtocolTypeT
 
 from vnpy.gateway.oes.utils import create_remote_config, is_disconnected
@@ -296,7 +296,7 @@ class OesMdApi:
         mds_req.subSecurityCnt = 1
 
         entry.exchId = EXCHANGE_VT2MDS[req.exchange]
-        entry.securityType = eMdsSecurityTypeT.MDS_SECURITY_TYPE_STOCK  # todo: option and others
+        entry.securityType = eMdsMdProductTypeT.MDS_SECURITY_TYPE_STOCK  # todo: option and others
         entry.instrId = int(req.symbol)
 
         self._message_loop.register_symbol(req.symbol, req.exchange)
