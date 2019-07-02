@@ -296,7 +296,7 @@ class OesMdApi:
         mds_req.subSecurityCnt = 1
 
         entry.exchId = EXCHANGE_VT2MDS[req.exchange]
-        entry.securityType = eMdsMdProductTypeT.MDS_SECURITY_TYPE_STOCK  # todo: option and others
+        entry.mdProductType = eMdsMdProductTypeT.MDS_SECURITY_TYPE_STOCK  # todo: option and others
         entry.instrId = int(req.symbol)
 
         self._message_loop.register_symbol(req.symbol, req.exchange)

@@ -40,20 +40,6 @@ class ScriptEngine(BaseEngine):
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
-        self.get_tick = main_engine.get_tick
-        self.get_order = main_engine.get_order
-        self.get_trade = main_engine.get_trade
-        self.get_position = main_engine.get_position
-        self.get_account = main_engine.get_account
-        self.get_contract = main_engine.get_contract
-        self.get_all_ticks = main_engine.get_all_ticks
-        self.get_all_orders = main_engine.get_all_orders
-        self.get_all_trades = main_engine.get_all_trades
-        self.get_all_positions = main_engine.get_all_positions
-        self.get_all_accounts = main_engine.get_all_accounts
-        self.get_all_contracts = main_engine.get_all_contracts
-        self.get_all_active_orders = main_engine.get_all_active_orders
-
         self.strategy_active = False
         self.strategy_thread = None
 
@@ -93,6 +79,10 @@ class ScriptEngine(BaseEngine):
             msg = f"触发异常已停止\n{traceback.format_exc()}"
             self.write_log(msg)
 
+    def connect_gateway(self, setting: dict, gateway_name: str):
+        """"""
+        self.main_engine.connect(setting, gateway_name)
+
     def stop_strategy(self):
         """"""
         if not self.strategy_active:
@@ -122,6 +112,7 @@ class ScriptEngine(BaseEngine):
         req = OrderRequest(
             symbol=contract.symbol,
             exchange=contract.exchange,
+            direction=direction,
             type=order_type,
             volume=volume,
             price=price,
