@@ -10,11 +10,11 @@ class TestServer(RpcServer):
     Test RpcServer
     """
 
-    def __init__(self, rep_address, pub_address):
+    def __init__(self):
         """
         Constructor
         """
-        super(TestServer, self).__init__(rep_address, pub_address)
+        super(TestServer, self).__init__()
 
         self.register(self.add)
 
@@ -28,10 +28,10 @@ class TestServer(RpcServer):
 
 if __name__ == "__main__":
     rep_address = "tcp://*:2014"
-    pub_address = "tcp://*:0602"
+    pub_address = "tcp://*:4102"
 
-    ts = TestServer(rep_address, pub_address)
-    ts.start()
+    ts = TestServer()
+    ts.start(rep_address, pub_address)
 
     while 1:
         content = f"current server time is {time()}"
