@@ -40,9 +40,6 @@ class ScriptEngine(BaseEngine):
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
-        self.main_engine = main_engine
-        self.event_engine = event_engine
-
         self.get_tick = main_engine.get_tick
         self.get_order = main_engine.get_order
         self.get_trade = main_engine.get_trade

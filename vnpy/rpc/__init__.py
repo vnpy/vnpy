@@ -48,12 +48,19 @@ class RpcServer:
 
         # Worker thread related
         self.__active = False                               # RpcServer status
-        self.__thread = threading.Thread(target=self.run)   # RpcServer thread
+        self.__thread = None                                # RpcServer thread
+
+    def is_active(self):
+        """"""
+        return self.__active
 
     def start(self, rep_address: str, pub_address: str):
         """
         Start RpcServer
         """
+        if self.__active:
+            return
+
         # Bind socket address
         self.__socket_rep.bind(rep_address)
         self.__socket_pub.bind(pub_address)
@@ -62,19 +69,23 @@ class RpcServer:
         self.__active = True
 
         # Start RpcServer thread
-        if not self.__thread.isAlive():
-            self.__thread.start()
+        self.__thread = threading.Thread(target=self.run)
+        self.__thread.start()
 
-    def stop(self, join: bool = False):
+    def stop(self):
         """
         Stop RpcServer
         """
+        if not self.__active:
+            return
+
         # Stop RpcServer status
         self.__active = False
 
         # Wait for RpcServer thread to exit
-        if join and self.__thread.isAlive():
+        if self.__thread.isAlive():
             self.__thread.join()
+        self.__thread = None
 
         # Unbind socket address
         self.__socket_pub.unbind(self.__socket_pub.LAST_ENDPOINT)
