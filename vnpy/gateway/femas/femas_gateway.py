@@ -1,6 +1,4 @@
-# encoding: UTF-8
-"""
-"""
+""""""
 
 from datetime import datetime
 
