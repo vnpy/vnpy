@@ -229,6 +229,8 @@ class BacktestingEngine:
         progress = 0
 
         while start < self.end:
+            end = min(end, self.end)  # Make sure end time stays within set range
+            
             if self.mode == BacktestingMode.BAR:
                 data = load_bar_data(
                     self.symbol,
@@ -1010,6 +1012,12 @@ class BacktestingEngine:
     def send_email(self, msg: str, strategy: CtaTemplate = None):
         """
         Send email to default receiver.
+        """
+        pass
+    
+    def sync_strategy_data(self, strategy: CtaTemplate):
+        """
+        Sync strategy data into json file.
         """
         pass
 

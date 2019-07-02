@@ -20,9 +20,6 @@ class RiskManagerEngine(BaseEngine):
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
-        self.main_engine = main_engine
-        self.event_engine = event_engine
-
         self.active = False
 
         self.order_flow_count = 0

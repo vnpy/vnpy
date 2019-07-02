@@ -1,6 +1,4 @@
-# encoding: UTF-8
-"""
-"""
+""""""
 
 import hashlib
 import hmac

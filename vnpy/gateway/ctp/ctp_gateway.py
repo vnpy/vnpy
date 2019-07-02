@@ -233,7 +233,7 @@ class CtpMdApi(MdApi):
         
         self.userid = ""
         self.password = ""
-        self.brokerid = 0
+        self.brokerid = ""
     
     def onFrontConnected(self):
         """
@@ -378,7 +378,7 @@ class CtpTdApi(TdApi):
         
         self.userid = ""
         self.password = ""
-        self.brokerid = 0
+        self.brokerid = ""
         self.auth_code = ""
         self.appid = ""
         self.product_info = ""

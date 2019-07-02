@@ -7,28 +7,32 @@
 #include <mutex>
 #include <condition_variable>
 
+#include <locale>
+#include <codecvt>
+
 #include "config/config.hpp"
 #include "base/type.h"
 
 namespace autocxxpy
 {
+
+#ifdef AUTOCXXPY_ENCODING_UTF8
     template <class tag, size_t size>
     struct get_string
     {
-        auto &operator()(string_literal<size> &val) const noexcept
+        inline constexpr auto& operator()(string_literal<size>& val) const noexcept
         {
             return val;
         }
-        auto &operator()(const string_literal<size> &val) const noexcept
+        inline constexpr auto& operator()(const string_literal<size>& val) const noexcept
         {
             return val;
         }
     };
-
     template <class tag, size_t size>
     struct set_string
     {
-        void operator()(string_literal<size> &val, const char *str)
+        inline void operator()(string_literal<size>& val, const char* str)
         {
 #ifdef _MSC_VER
             strcpy_s(val, str);
@@ -37,6 +41,57 @@ namespace autocxxpy
 #endif
         }
     };
+#else
+    // converts encoding into UTF-8
+    inline std::string to_utf8(const std::string& input)
+    {
+
+#ifdef _MSC_VER
+        const char* locale_name = AUTOCXXPY_ENCODING_CUSTOM_WINDOWS; // usually ".936"
+#else
+        const char* locale_name = AUTOCXXPY_ENCODING_CUSTOM_LINUX; // usually "zh_CN.GB18030"
+#endif
+        const static std::locale loc(locale_name);
+        auto& code_convertor = std::use_facet<
+            std::codecvt<wchar_t, char, std::mbstate_t>
+        >(loc);
+
+        std::wstring wstr(input.size(), '\0');
+        wchar_t* wstr_end = nullptr;
+        const char* input_end = nullptr;
+        std::mbstate_t state = {};
+        code_convertor.in(state,
+                &input[0], &input[input.size()], input_end,
+                &wstr[0], &wstr[wstr.size()], wstr_end);
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> cutf8;
+        return cutf8.to_bytes(std::wstring(wstr.data(), wstr_end));
+    }
+    template <class tag, size_t size>
+    struct get_string
+    {
+        inline constexpr auto operator()(string_literal<size>& val) const noexcept
+        {
+            return to_utf8(val);
+        }
+        inline constexpr auto operator()(const string_literal<size>& val) const noexcept
+        {
+            return to_utf8(val);
+        }
+    };
+
+    template <class tag, size_t size>
+    struct set_string
+    {
+        inline void operator()(string_literal<size> &val, const char *str)
+        {
+#ifdef _MSC_VER
+            strcpy_s(val, to_utf8(str).c_str());
+#else
+            strcpy(val, to_utf8(str).c_str());
+#endif
+        }
+    };
+#endif
 
 
     template <class tag, class class_type, class value_type>
