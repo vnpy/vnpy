@@ -96,7 +96,7 @@ class KingKeltnerStrategy(CtaTemplate):
 
             vt_orderid = self.sell(self.intra_trade_high * (1 - self.trailing_percent / 100),
                                    abs(self.pos), True)
-            self.vt_orderids.append(vt_orderid)
+            self.vt_orderids.extend(vt_orderid)
 
         elif self.pos < 0:
             self.intra_trade_high = bar.high_price
@@ -104,7 +104,7 @@ class KingKeltnerStrategy(CtaTemplate):
 
             vt_orderid = self.cover(self.intra_trade_low * (1 + self.trailing_percent / 100),
                                     abs(self.pos), True)
-            self.vt_orderids.append(vt_orderid)
+            self.vt_orderids.extend(vt_orderid)
 
         self.put_event()
 
