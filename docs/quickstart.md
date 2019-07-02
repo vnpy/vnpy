@@ -42,8 +42,8 @@ python run.py
 - 经纪商编号brokerid：66666 （中信的）
 - 交易服务器地址td_address：tcp://ctpfz1-front1.citicsf.com:51305
 - 行情服务器地址md_address：tcp://ctpfz1-front1.citicsf.com:51313
-- auth_code(授权码):0D6V7N1CIBWUT1CT
-- appid:client_xxx_1.0.1(注意，必须写xxx，仿真不允许自定义)
+- auth_code(授权码): 0D6V7N1CIBWUT1CT
+- appid: client_xxx_1.0.1(注意，必须写xxx，仿真不允许自定义)
 
 &nbsp;
 
