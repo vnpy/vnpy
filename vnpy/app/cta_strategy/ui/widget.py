@@ -179,7 +179,7 @@ class StrategyManager(QtWidgets.QFrame):
 
     def init_ui(self):
         """"""
-        self.setMaximumHeight(300)
+        self.setFixedHeight(300)
         self.setFrameShape(self.Box)
         self.setLineWidth(1)
 
