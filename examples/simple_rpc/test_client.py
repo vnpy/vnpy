@@ -10,11 +10,11 @@ class TestClient(RpcClient):
     Test RpcClient   
     """
 
-    def __init__(self, req_address, sub_address):
+    def __init__(self):
         """
         Constructor
         """
-        super(TestClient, self).__init__(req_address, sub_address)
+        super(TestClient, self).__init__()
 
     def callback(self, topic, data):
         """
@@ -27,9 +27,9 @@ if __name__ == "__main__":
     req_address = "tcp://localhost:2014"
     sub_address = "tcp://localhost:4102"
 
-    tc = TestClient(req_address, sub_address)
+    tc = TestClient()
     tc.subscribe_topic("")
-    tc.start()
+    tc.start(req_address, sub_address)
 
     while 1:
         print(tc.add(1, 3))

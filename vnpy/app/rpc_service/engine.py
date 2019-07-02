@@ -72,7 +72,7 @@ class RpcEngine(BaseEngine):
     def start(self, rep_address: str, pub_address: str):
         """"""
         if self.server.is_active():
-            self.write_log("服务运行中")
+            self.write_log("RPC服务运行中")
             return False
 
         self.rep_address = rep_address
@@ -82,21 +82,21 @@ class RpcEngine(BaseEngine):
             self.server.start(rep_address, pub_address)
         except:  # noqa
             msg = traceback.format_exc()
-            self.write_log(f"服务启动失败：{msg}")
+            self.write_log(f"RPC服务启动失败：{msg}")
             return False
 
         self.save_setting()
-        self.write_log("服务启动成功")
+        self.write_log("RPC服务启动成功")
         return True
 
     def stop(self):
         """"""
         if not self.server.is_active():
-            self.write_log("服务未启动")
+            self.write_log("RPC服务未启动")
             return False
 
         self.server.stop()
-        self.write_log("服务已停止")
+        self.write_log("RPC服务已停止")
         return True
 
     def close(self):

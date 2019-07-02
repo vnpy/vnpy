@@ -133,22 +133,20 @@ class RpcServer:
 class RpcClient:
     """"""
 
-    def __init__(self, req_address: str, sub_address: str):
+    def __init__(self):
         """Constructor"""
         # zmq port related
-        self.__req_address = req_address
-        self.__sub_address = sub_address
-
         self.__context = zmq.Context()
+
         # Request socket (Request–reply pattern)
         self.__socket_req = self.__context.socket(zmq.REQ)
+
         # Subscribe socket (Publish–subscribe pattern)
         self.__socket_sub = self.__context.socket(zmq.SUB)
 
         # Worker thread relate, used to process data pushed from server
-        self.__active = False                                   # RpcClient status
-        self.__thread = threading.Thread(
-            target=self.run)       # RpcClient thread
+        self.__active = False   # RpcClient status
+        self.__thread = None    # RpcClient thread
 
     def __getattr__(self, name: str):
         """
@@ -171,31 +169,42 @@ class RpcClient:
 
         return dorpc
 
-    def start(self):
+    def start(self, req_address: str, sub_address: str):
         """
         Start RpcClient
         """
+        if self.__active:
+            return
+
         # Connect zmq port
-        self.__socket_req.connect(self.__req_address)
-        self.__socket_sub.connect(self.__sub_address)
+        self.__socket_req.connect(req_address)
+        self.__socket_sub.connect(sub_address)
 
         # Start RpcClient status
         self.__active = True
 
         # Start RpcClient thread
-        if not self.__thread.isAlive():
-            self.__thread.start()
+        self.__thread = threading.Thread(target=self.run)
+        self.__thread.start()
 
     def stop(self):
         """
         Stop RpcClient
         """
+        if not self.__active:
+            return
+
         # Stop RpcClient status
         self.__active = False
 
         # Wait for RpcClient thread to exit
         if self.__thread.isAlive():
             self.__thread.join()
+        self.__thread = None
+
+        # Close socket
+        self.__socket_req.close()
+        self.__socket_sub.close()
 
     def run(self):
         """
