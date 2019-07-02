@@ -32,9 +32,12 @@ class CtaTemplate(ABC):
         self.trading = False
         self.pos = 0
 
-        self.variables.insert(0, "inited")
-        self.variables.insert(1, "trading")
-        self.variables.insert(2, "pos")
+        if "inited" not in self.variables:
+            self.variables.insert(0, "inited")
+        if "trading" not in self.variables:
+            self.variables.insert(1, "trading")
+        if "pos" not in self.variables:
+            self.variables.insert(2, "pos")
 
         self.update_setting(setting)
 
