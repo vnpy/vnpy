@@ -22,6 +22,7 @@ python run.py
 
 ## 连接接口
 ### simnow仿真
+### simnow
 以SinNow仿真交易账号登陆CTP接口为例：点击菜单栏的“系统”->“连接CTP”后，弹出如上图所示CTP接口的配置对话框，输入以下内容后即可登录：
 - 用户名username：111111 （6位纯数字账号）
 - 密码password：1111111  （需要修改一次密码用于盘后测试）
@@ -43,6 +44,17 @@ python run.py
 - appid(产品名称）:client_xxx_1.0.1  #xxx部分非自定义，必须写xxx
 - authcode（授权码）：0D6V7N1CIBWUT1CT
 #### 实盘用户
+
+### 中信期货（穿透式最新教程）
+####仿真
+以中信为例，如果完全是以仿真为目的，则不用向期货公司提交任何穿透式申请表，直接在期货公司官网注册一个仿真账号，使用期货公司提供的仿真环境即可，在连接时，必须import的是ctp（6.3.15版本），不可以是ctptest（6.3.13版本）
+- 用户名username：[你的账户] 
+- 密码password：[你的密码]  （最好修改一下密码）
+- 经纪商编号brokerid：66666 （中信的）
+- 交易服务器地址td_address：tcp://ctpfz1-front1.citicsf.com:51305
+- 行情服务器地址md_address：tcp://ctpfz1-front1.citicsf.com:51313
+- auth_code(授权码): 0D6V7N1CIBWUT1CT
+- appid: client_xxx_1.0.1(注意，必须写xxx，仿真不允许自定义)
 
 &nbsp;
 

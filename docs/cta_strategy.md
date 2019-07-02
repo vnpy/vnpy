@@ -21,79 +21,27 @@ CTA策略模块主要由7部分构成，如下图：
 ## 历史数据
 
 ### 回测历史数据
-回测所需要的历史数据可通过运行getdata.py文件进行下载。该文件处于根目录下tests\backtesting文件夹内。
-下载历史数据的原理是调用RQData的get_price()函数把数据下载到内存里面；再通过generate_bar_from_row()函数，以固定格式把数据从内存载入到硬盘数据库中。
-
-下面介绍具体流程：
-
-- 填写RQData的账号密码，初始化RQData
+在开始策略回测之前，必须保证数据库内有充足的历史数据。故vnpy提供了历史数据一键下载的功能。
+下载数据功能主要是基于RQData的get_price()函数实现的。
 ```
-import rqdatac as rq
-
-
-USERNAME = ""
-PASSWORD = ""
-FIELDS = ["open", "high", "low", "close", "volume"]
-
-rq.init(USERNAME, PASSWORD, ("rqdatad-pro.ricequant.com", 16011))
-```
-
-&nbsp;
-
-- 定义数据插入格式。需要插入的数据包括：合约代码、交易所、K线周期、开盘价、最高价、最低价、收盘价、成交量、数据库名称、vt_symbol（注意：K线周期可以是"1m"、"1h"、"d"、"w"。to_pydatetime()用于时间转换成datetime格式）
-```
-def generate_bar_from_row(row, symbol, exchange):
-    """"""
-    bar = DbBarData()
-
-    bar.symbol = symbol
-    bar.exchange = exchange
-    bar.interval = "1m"
-    bar.open_price = row["open"]
-    bar.high_price = row["high"]
-    bar.low_price = row["low"]
-    bar.close_price = row["close"]
-    bar.volume = row["volume"]
-    bar.datetime = row.name.to_pydatetime()
-    bar.gateway_name = "DB"
-    bar.vt_symbol = f"{symbol}.{exchange}"
-
-    return bar
-```
-
-&nbsp;
-
-- 定义数据下载函数。主要调用RQData的get_price()获取指定合约或合约列表的历史数据（包含起止日期，日线或分钟线）。目前仅支持中国市场的股票、期货、ETF和上金所现货的行情数据，如黄金、铂金和白银产品。（注意：起始日期默认是2013-01-04，结束日期默认是2014-01-04）
-
-```
-def download_minute_bar(vt_symbol):
-    """下载某一合约的分钟线数据"""
-    print(f"开始下载合约数据{vt_symbol}")
-    symbol, exchange = vt_symbol.split(".")
-
-    start = time()
-
-    df = rq.get_price(symbol, start_date="2018-01-01", end_date="2019-01-01", frequency="1m", fields=FIELDS)
-
-    with DB.atomic():
-        for ix, row in df.iterrows():
-            print(row.name)
-            bar = generate_bar_from_row(row, symbol, exchange)
-            DbBarData.replace(bar.__data__).execute()
-
-    end = time()
-    cost = (end - start) * 1000
-
-    print(
-        "合约%s的分钟K线数据下载完成%s - %s，耗时%s毫秒"
-        % (symbol, df.index[0], df.index[-1], cost)
-    )
-
+get_price(
+    order_book_ids, start_date='2013-01-04', end_date='2014-01-04',
+    frequency='1d', fields=None, adjust_type='pre', skip_suspended =False,
+    market='cn'
+)
 ```
 
 
-&nbsp;
+在使用前要保证RQData初始化完毕，然后填写以下4个字段信息：
+- 本地代码：格式为合约品种+交易所，如IF88.CFFEX、rb88.SHFE；然后在底层通过RqdataClient的to_rq_symbol()函数转换成符合RQData格式，对应RQData中get_price()函数的order_book_ids字段。
+- K线周期：可以填1m、60m、1d，对应get_price()函数的frequency字段。
+- 开始日期：格式为yy/mm/dd，如2017/4/21，对应get_price()函数的start_date字段。（点击窗口右侧箭头按钮可改变日期大小）
+- 结束日期：格式为yy/mm/dd，如2019/4/22，对应get_price()函数的end_date字段。（点击窗口右侧箭头按钮可改变日期大小）
+  
+填写完字段信息后，点击下方“下载数据”按钮启动下载程序，下载成功如图所示。
 
+
+![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/data_loader.png)
 
 ### 实盘历史数据
 在实盘中，RQData通过实时载入数据进行策略的初始化。该功能主要在CTA实盘引擎engine.py内实现。
