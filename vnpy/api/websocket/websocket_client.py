@@ -1,5 +1,3 @@
-# encoding: UTF-8
-
 import json
 import ssl
 import sys
