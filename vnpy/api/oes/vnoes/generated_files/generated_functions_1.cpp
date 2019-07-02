@@ -205,9 +205,11 @@ void generate_class_OesOrdCnfm(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "subSecurityType", subSecurityType);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "__platformId", __platformId);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "__tgwGrpNo", __tgwGrpNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "__tgwPartitionNo", __tgwPartitionNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "productType", productType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "exchOrdId", exchOrdId);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "__declareFlag", __declareFlag);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "__ORD_CNFM_BASE_INFO_filler", __ORD_CNFM_BASE_INFO_filler);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "exchOrdId", exchOrdId);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "frzAmt", frzAmt);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "frzInterest", frzInterest);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOrdCnfm, "frzFee", frzFee);
@@ -272,7 +274,9 @@ void generate_class_OesTrdBaseInfo(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdBaseInfo, "cumQty", cumQty);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdBaseInfo, "__rowNum", __rowNum);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdBaseInfo, "__tgwGrpNo", __tgwGrpNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdBaseInfo, "__TRD_BASE_INFO_filler", __TRD_BASE_INFO_filler);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdBaseInfo, "__isTrsfInCashAvailable", __isTrsfInCashAvailable);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdBaseInfo, "__tgwPartitionNo", __tgwPartitionNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdBaseInfo, "productType", productType);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdBaseInfo, "origOrdQty", origOrdQty);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdBaseInfo, "pbuId", pbuId);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdBaseInfo, "branchId", branchId);
@@ -301,7 +305,9 @@ void generate_class_OesTrdCnfm(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "cumQty", cumQty);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "__rowNum", __rowNum);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "__tgwGrpNo", __tgwGrpNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "__TRD_BASE_INFO_filler", __TRD_BASE_INFO_filler);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "__isTrsfInCashAvailable", __isTrsfInCashAvailable);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "__tgwPartitionNo", __tgwPartitionNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "productType", productType);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "origOrdQty", origOrdQty);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "pbuId", pbuId);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesTrdCnfm, "branchId", branchId);
@@ -515,6 +521,7 @@ void generate_class_OesIssueBaseInfo(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesIssueBaseInfo, "subSecurityType", subSecurityType);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesIssueBaseInfo, "isCancelAble", isCancelAble);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesIssueBaseInfo, "isReApplyAble", isReApplyAble);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesIssueBaseInfo, "productType", productType);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesIssueBaseInfo, "__ISSUE_BASE_filler", __ISSUE_BASE_filler);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesIssueBaseInfo, "securityName", securityName);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesIssueBaseInfo, "underlyingSecurityId", underlyingSecurityId);
@@ -525,7 +532,9 @@ void generate_class_OesIssueBaseInfo(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesIssueBaseInfo, "ordMaxQty", ordMaxQty);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesIssueBaseInfo, "ordMinQty", ordMinQty);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesIssueBaseInfo, "issuePrice", issuePrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesIssueBaseInfo, "upperLimitPrice", upperLimitPrice);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesIssueBaseInfo, "ceilPrice", ceilPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesIssueBaseInfo, "lowerLimitPrice", lowerLimitPrice);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesIssueBaseInfo, "floorPrice", floorPrice);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesIssueBaseInfo, c);
     module_vnoes::objects.emplace("_OesIssueBaseInfo", c);
@@ -535,7 +544,9 @@ void generate_class_OesPriceLimit(pybind11::object & parent)
     pybind11::class_<_OesPriceLimit> c(parent, "_OesPriceLimit");
     if constexpr (std::is_default_constructible_v<_OesPriceLimit>)
         c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesPriceLimit, "upperLimitPrice", upperLimitPrice);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesPriceLimit, "ceilPrice", ceilPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesPriceLimit, "lowerLimitPrice", lowerLimitPrice);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesPriceLimit, "floorPrice", floorPrice);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesPriceLimit, c);
     module_vnoes::objects.emplace("_OesPriceLimit", c);
@@ -547,6 +558,7 @@ void generate_class_OesStockBaseInfo(pybind11::object & parent)
         c.def(pybind11::init<>());
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "securityId", securityId);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "mktId", mktId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "productType", productType);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "securityType", securityType);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "subSecurityType", subSecurityType);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "securityLevel", securityLevel);
@@ -556,13 +568,22 @@ void generate_class_OesStockBaseInfo(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "isDayTrading", isDayTrading);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "suspFlag", suspFlag);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "temporarySuspFlag", temporarySuspFlag);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "__filter", __filter);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "__STOCK_BASE_filler", __STOCK_BASE_filler);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "buyQtyUnit", buyQtyUnit);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "sellQtyUnit", sellQtyUnit);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "lmtBuyMaxQty", lmtBuyMaxQty);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "buyOrdMaxQty", buyOrdMaxQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "lmtBuyMinQty", lmtBuyMinQty);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "buyOrdMinQty", buyOrdMinQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "mktBuyMaxQty", mktBuyMaxQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "mktBuyMinQty", mktBuyMinQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "sellQtyUnit", sellQtyUnit);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "lmtSellMaxQty", lmtSellMaxQty);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "sellOrdMaxQty", sellOrdMaxQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "lmtSellMinQty", lmtSellMinQty);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "sellOrdMinQty", sellOrdMinQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "mktSellMaxQty", mktSellMaxQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "mktSellMinQty", mktSellMinQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "priceTick", priceTick);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "priceUnit", priceUnit);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "prevClose", prevClose);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "parPrice", parPrice);
@@ -572,6 +593,7 @@ void generate_class_OesStockBaseInfo(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "priceLimit", priceLimit);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "securityName", securityName);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "fundId", fundId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "__STOCK_BASE_reserve", __STOCK_BASE_reserve);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesStockBaseInfo, c);
     module_vnoes::objects.emplace("_OesStockBaseInfo", c);
 }

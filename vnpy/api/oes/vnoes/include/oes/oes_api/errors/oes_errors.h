@@ -31,6 +31,18 @@
  * @version 0.15.5.15   2018/08/14
  *          - 新增错误码定义
  *              - 1273, 非法的出入金转账类型（OESERR_ILLEGAL_FUND_TRSF_TYPE）
+ * @version 0.15.7.6    2018/10/16
+ *          - 新增错误码定义
+ *              - 1035, 非法的产品类型（OESERR_ILLEGAL_PRODUCT_TYPE）
+ *              - 1274, 股东账户没有交易沪伦通存托凭证的权限（OESERR_NO_HLTCDR_PERM）
+ * @version 0.15.8_RC3  2019/01/14
+ *          - 调整错误描述
+ *              - 1007, 非服务开放时间（OESERR_NOT_TRADING_TIME）
+ *              - 1022, 尚不支持或尚未开通此业务（OESERR_NOT_SUPPORT）
+ * @version 0.15.9      2019/03/12
+ *          - 新增错误码定义
+ *              - 1275, 股东账户没有交易科创板的权限（OESERR_NO_KSH_PERM）
+ *              - 1036, 未通过黑白名单检查（OESERR_WBLIST_CHECK_FAILURE）
  *
  * @since   2015/07/30
  */
@@ -70,11 +82,11 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_INCOMPATIBLE_PROTOCOL_VERSION    (&__ERRS_oesApiErrors[4])
 /** 1006, 数据不存在 */
 #define OESERR_NOT_FOUND                        (&__ERRS_oesApiErrors[5])
-/** 1007, 未到达服务开放时间 */
+/** 1007, 非服务开放时间 */
 #define OESERR_NOT_TRADING_TIME                 (&__ERRS_oesApiErrors[6])
 /** 1008, 非法的定位游标 */
 #define OESERR_ILLEGAL_POSITION                 (&__ERRS_oesApiErrors[7])
-/** 1009, 非法的客户端登陆用户名称 */
+/** 1009, 非法的客户端登录用户名称 */
 #define OESERR_ILLEGAL_CLIENT_NAME              (&__ERRS_oesApiErrors[8])
 /** 1010, 非法的证券代码 */
 #define OESERR_ILLEGAL_SECURITY_ID              (&__ERRS_oesApiErrors[9])
@@ -124,6 +136,12 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_ILLEGAL_DRIVER                   (&__ERRS_oesApiErrors[31])
 /** 1033, 无可用节点 */
 #define OESERR_NO_AVAILABLE_NODE                (&__ERRS_oesApiErrors[32])
+/** 1034, 密码强度不足 */
+#define OESERR_PASSWORD_WEAK_STRENGTH           (&__ERRS_oesApiErrors[33])
+/** 1035, 非法的产品类型 */
+#define OESERR_ILLEGAL_PRODUCT_TYPE             (&__ERRS_oesApiErrors[34])
+/** 1036, 未通过黑白名单检查 */
+#define OESERR_WBLIST_CHECK_FAILURE             (&__ERRS_oesApiErrors[35])
 /* -------------------------           */
 
 
@@ -204,7 +222,7 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_ORDER_ETF_CASH_RATIO             (&__ERRS_oesApiErrors[60 + 29])
 /** 1231, 非行权日 */
 #define OESERR_ORDER_NOT_EXEC_DATE              (&__ERRS_oesApiErrors[60 + 30])
-/** 1232, 产品（证券）停牌 */
+/** 1232, 证券停牌 */
 #define OESERR_ORDER_INSTR_SUSP                 (&__ERRS_oesApiErrors[60 + 31])
 /** 1233, 合约限制开仓 */
 #define OESERR_ORDER_INSTR_OPEN_LIMIT           (&__ERRS_oesApiErrors[60 + 32])
@@ -268,9 +286,9 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_FUND_TRSF_WAIT_MANUAL_INTERVENE  (&__ERRS_oesApiErrors[60 + 61])
 /** 1263, 交易日不在证券的发行期内 */
 #define OESERR_NOT_ISSUE_DATE                   (&__ERRS_oesApiErrors[60 + 62])
-/** 1264, ETF产品禁止申购 */
+/** 1264, 该ETF禁止申购 */
 #define OESERR_ETF_FORBID_CREATION              (&__ERRS_oesApiErrors[60 + 63])
-/** 1265, ETF产品禁止赎回 */
+/** 1265, 该ETF禁止赎回 */
 #define OESERR_ETF_FORBID_REDEMPTION            (&__ERRS_oesApiErrors[60 + 64])
 /** 1266, 限制股东账户进行撤指定 */
 #define OESERR_RECALL_DESIGNATION_LIMIT         (&__ERRS_oesApiErrors[60 + 65])
@@ -278,16 +296,20 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_DESIGNATION_LIMIT                (&__ERRS_oesApiErrors[60 + 66])
 /** 1268, 机构客户/主柜业务不支持银行转帐 */
 #define OESERR_NOT_SUPPORT_BANK_TRSF            (&__ERRS_oesApiErrors[60 + 67])
-/** 1269, 不能买入被禁止开仓的证券 */
-#define OESERR_SECURITY_IS_FORBIDDEN            (&__ERRS_oesApiErrors[60 + 68])
-/** 1270, 不能买入黑名单中的证券 */
-#define OESERR_SECURITY_IN_BLACKLIST            (&__ERRS_oesApiErrors[60 + 69])
+/** 1269, 禁止私募基金产品交易此证券 */
+#define OESERR_SECURITY_IN_FUND_BLACKLIST       (&__ERRS_oesApiErrors[60 + 68])
+/** 1270, 禁止客户交易此证券 */
+#define OESERR_SECURITY_IN_CUST_BLACKLIST       (&__ERRS_oesApiErrors[60 + 69])
 /** 1271, 股东账户没有交易存托凭证的权限 */
 #define OESERR_NO_CDR_PERM                      (&__ERRS_oesApiErrors[60 + 70])
 /** 1272, 股东账户没有交易创新企业股票的权限 */
 #define OESERR_NO_INNOVATION_PERM               (&__ERRS_oesApiErrors[60 + 71])
 /** 1273, 非法的出入金转账类型 */
 #define OESERR_ILLEGAL_FUND_TRSF_TYPE           (&__ERRS_oesApiErrors[60 + 72])
+/** 1274, 股东账户没有交易沪伦通存托凭证的权限 */
+#define OESERR_NO_HLTCDR_PERM                   (&__ERRS_oesApiErrors[60 + 73])
+/** 1275, 股东账户没有交易科创板的权限 */
+#define OESERR_NO_KSH_PERM                      (&__ERRS_oesApiErrors[60 + 74])
 /* -------------------------           */
 
 

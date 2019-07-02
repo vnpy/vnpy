@@ -77,6 +77,7 @@
 #       include <sys/sem.h>
 #       include <sys/shm.h>
 #       include <netinet/tcp.h>
+#       include <poll.h>
 #   else
 #       include <sys/uio.h>
 #       include "fatal-signal.h"
@@ -122,7 +123,9 @@ extern "C" {
  * 跨平台兼容性处理
  * =================================================================== */
 
-#if (defined (__WINDOWS__) || defined (__MINGW__)) && !defined (__cplusplus)
+/* snprintf */
+#if (defined (__WINDOWS__) || defined (__MINGW__)) \
+        && (!defined (__cplusplus) || (defined(_MSC_VER) && _MSC_VER <= 1800))
 #   define  snprintf                        _snprintf
 #   define  __SPK_FMT_LL__                  "I64"
 #   define  __SPK_FMT_HH__                  ""

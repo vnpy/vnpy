@@ -57,8 +57,13 @@ extern "C" {
  * =================================================================== */
 
 #if defined(__GNUC__) && (__GNUC__ >= 3)
-#   undef   __inline
-#   define  __inline                    inline __attribute__ ((always_inline))
+#   ifndef  __NO_INLINE
+#       undef   __inline
+#       define  __inline                inline __attribute__ ((always_inline))
+#   else
+#       undef   __inline
+#       define  __inline
+#   endif
 
 #   ifndef  likely
 #       define  likely(x)               __builtin_expect (!!(x), 1)
@@ -85,8 +90,13 @@ extern "C" {
 #       define  __attribute__(A)
 #   endif
 
-#   ifndef  __inline
-#       define  __inline                inline
+#   ifndef  __NO_INLINE
+#       ifndef  __inline
+#           define  __inline            inline
+#       endif
+#   else
+#       undef   __inline
+#       define  __inline
 #   endif
 
 #   ifndef  likely
@@ -133,7 +143,8 @@ extern "C" {
  * 为了解决编写和编译单元测试代码时的, 待测试函数的可见性而设
  */
 #if defined(__cplusplus) || defined(__TEST) || defined(__DEBUG) \
-        || defined(__MINGW__) || defined(__CYGWIN__) || defined(__WINDOWS__)
+        || defined(__MINGW__) || defined(__CYGWIN__) || defined(__WINDOWS__) \
+        || defined(__NO_INLINE)
 #  define   SPK_INTERNAL_INLINE
 #else
 #  define   SPK_INTERNAL_INLINE         inline __attribute__ ((always_inline))
@@ -428,7 +439,7 @@ extern "C" {
             __TIMED_SLEEP_tsReq.tv_nsec = __TIMED_SLEEP_msec * 1000000; \
         } \
         while (nanosleep(__TIMED_SLEEP_pTimerRep, __TIMED_SLEEP_pTimerRem) \
-                && errno == EINTR) { \
+                && SPK_IS_ERRNO_EINTR()) { \
             __TIMED_SLEEP_pTimerTmp = __TIMED_SLEEP_pTimerRep; \
             __TIMED_SLEEP_pTimerRep = __TIMED_SLEEP_pTimerRem; \
             __TIMED_SLEEP_pTimerRem = __TIMED_SLEEP_pTimerTmp; \
@@ -536,13 +547,13 @@ static __inline void __SPK_compiler_barrier(void) {
  */
 #ifndef SPK_ACCESS_ONCE
 # if ! defined (__WINDOWS__)
-#   define SPK_ACCESS_ONCE(x)           (*(volatile typeof(x) *) &(x))
+#   define SPK_ACCESS_ONCE(x)           (* ((volatile typeof(x) *) &(x)) )
 
 # elif defined (_MSC_VER) && _MSC_VER >= 1600
-#   define SPK_ACCESS_ONCE(x)           (*(volatile decltype(x) *) &(x))
+#   define SPK_ACCESS_ONCE(x)           (* ((volatile decltype(x) *) &(x)) )
 
 # else
-#   define SPK_ACCESS_ONCE(x)           (*(volatile decltype(x) *) &(x))
+#   define SPK_ACCESS_ONCE(x)           (x)
 
 # endif
 #endif

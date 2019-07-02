@@ -15,16 +15,6 @@
 #include "mds_api/mds_api.h"
 
 
-void generate_enum_eOesAcctType(pybind11::object & parent)
-{
-    pybind11::enum_<_eOesAcctType> e(parent, "_eOesAcctType", pybind11::arithmetic());
-    e.value("OES_ACCT_TYPE_NORMAL", _eOesAcctType::OES_ACCT_TYPE_NORMAL);
-    e.value("OES_ACCT_TYPE_CREDIT", _eOesAcctType::OES_ACCT_TYPE_CREDIT);
-    e.value("OES_ACCT_TYPE_OPTION", _eOesAcctType::OES_ACCT_TYPE_OPTION);
-    e.value("__OES_ACCT_TYPE_MAX", _eOesAcctType::__OES_ACCT_TYPE_MAX);
-    e.export_values();
-    module_vnoes::objects.emplace("_eOesAcctType", e);
-}
 void generate_enum_eOesCashType(pybind11::object & parent)
 {
     pybind11::enum_<_eOesCashType> e(parent, "_eOesCashType", pybind11::arithmetic());
@@ -64,8 +54,10 @@ void generate_enum_eOesTradingPermission(pybind11::object & parent)
     e.value("OES_PERMIS_GEM", _eOesTradingPermission::OES_PERMIS_GEM);
     e.value("OES_PERMIS_SH_HK_STOCK_CONNECT", _eOesTradingPermission::OES_PERMIS_SH_HK_STOCK_CONNECT);
     e.value("OES_PERMIS_SZ_HK_STOCK_CONNECT", _eOesTradingPermission::OES_PERMIS_SZ_HK_STOCK_CONNECT);
+    e.value("OES_PERMIS_HLTCDR", _eOesTradingPermission::OES_PERMIS_HLTCDR);
     e.value("OES_PERMIS_CDR", _eOesTradingPermission::OES_PERMIS_CDR);
     e.value("OES_PERMIS_INNOVATION", _eOesTradingPermission::OES_PERMIS_INNOVATION);
+    e.value("OES_PERMIS_KSH", _eOesTradingPermission::OES_PERMIS_KSH);
     e.value("__OES_PERMIS_ALL", _eOesTradingPermission::__OES_PERMIS_ALL);
     e.export_values();
     module_vnoes::objects.emplace("_eOesTradingPermission", e);
@@ -104,6 +96,19 @@ void generate_enum_eOesInvestorClass(pybind11::object & parent)
     e.value("OES_INVESTOR_CLASS_PROFESSIONAL_C", _eOesInvestorClass::OES_INVESTOR_CLASS_PROFESSIONAL_C);
     e.export_values();
     module_vnoes::objects.emplace("_eOesInvestorClass", e);
+}
+void generate_enum_eOesCustType(pybind11::object & parent)
+{
+    pybind11::enum_<_eOesCustType> e(parent, "_eOesCustType", pybind11::arithmetic());
+    e.value("OES_CUST_TYPE_PERSONAL", _eOesCustType::OES_CUST_TYPE_PERSONAL);
+    e.value("OES_CUST_TYPE_INSTITUTION", _eOesCustType::OES_CUST_TYPE_INSTITUTION);
+    e.value("OES_CUST_TYPE_PROPRIETARY", _eOesCustType::OES_CUST_TYPE_PROPRIETARY);
+    e.value("OES_CUST_TYPE_PRODUCT", _eOesCustType::OES_CUST_TYPE_PRODUCT);
+    e.value("OES_CUST_TYPE_MKT_MAKER", _eOesCustType::OES_CUST_TYPE_MKT_MAKER);
+    e.value("OES_CUST_TYPE_OTHERS", _eOesCustType::OES_CUST_TYPE_OTHERS);
+    e.value("__OES_CUST_TYPE_MAX", _eOesCustType::__OES_CUST_TYPE_MAX);
+    e.export_values();
+    module_vnoes::objects.emplace("_eOesCustType", e);
 }
 void generate_enum_eOesOwnerType(pybind11::object & parent)
 {
@@ -236,6 +241,7 @@ void generate_enum_eOesMsgType(pybind11::object & parent)
     e.value("OESMSG_RPT_CASH_ASSET_VARIATION", _eOesMsgType::OESMSG_RPT_CASH_ASSET_VARIATION);
     e.value("OESMSG_RPT_STOCK_HOLDING_VARIATION", _eOesMsgType::OESMSG_RPT_STOCK_HOLDING_VARIATION);
     e.value("OESMSG_RPT_OPTION_HOLDING_VARIATION", _eOesMsgType::OESMSG_RPT_OPTION_HOLDING_VARIATION);
+    e.value("OESMSG_RPT_SERVICE_STATE", _eOesMsgType::OESMSG_RPT_SERVICE_STATE);
     e.value("__OESMSG_RPT_MAX", _eOesMsgType::__OESMSG_RPT_MAX);
     e.value("__OESMSG_NONTRD_MIN", _eOesMsgType::__OESMSG_NONTRD_MIN);
     e.value("OESMSG_NONTRD_FUND_TRSF_REQ", _eOesMsgType::OESMSG_NONTRD_FUND_TRSF_REQ);
@@ -249,10 +255,8 @@ void generate_enum_eOesMsgType(pybind11::object & parent)
     e.value("OESMSG_QRYMSG_STK_HLD", _eOesMsgType::OESMSG_QRYMSG_STK_HLD);
     e.value("OESMSG_QRYMSG_OPT_HLD", _eOesMsgType::OESMSG_QRYMSG_OPT_HLD);
     e.value("OESMSG_QRYMSG_CUST", _eOesMsgType::OESMSG_QRYMSG_CUST);
-    e.value("OESMSG_QRYMSG_INV_ACCT", _eOesMsgType::OESMSG_QRYMSG_INV_ACCT);
     e.value("OESMSG_QRYMSG_COMMISSION_RATE", _eOesMsgType::OESMSG_QRYMSG_COMMISSION_RATE);
     e.value("OESMSG_QRYMSG_FUND_TRSF", _eOesMsgType::OESMSG_QRYMSG_FUND_TRSF);
-    e.value("OESMSG_QRYMSG_STOCK", _eOesMsgType::OESMSG_QRYMSG_STOCK);
     e.value("OESMSG_QRYMSG_ETF", _eOesMsgType::OESMSG_QRYMSG_ETF);
     e.value("OESMSG_QRYMSG_ETF_COMPONENT", _eOesMsgType::OESMSG_QRYMSG_ETF_COMPONENT);
     e.value("OESMSG_QRYMSG_OPTION", _eOesMsgType::OESMSG_QRYMSG_OPTION);
@@ -261,14 +265,16 @@ void generate_enum_eOesMsgType(pybind11::object & parent)
     e.value("OESMSG_QRYMSG_TRADING_DAY", _eOesMsgType::OESMSG_QRYMSG_TRADING_DAY);
     e.value("OESMSG_QRYMSG_MARKET_STATE", _eOesMsgType::OESMSG_QRYMSG_MARKET_STATE);
     e.value("OESMSG_QRYMSG_COUNTER_CASH", _eOesMsgType::OESMSG_QRYMSG_COUNTER_CASH);
+    e.value("OESMSG_QRYMSG_INV_ACCT", _eOesMsgType::OESMSG_QRYMSG_INV_ACCT);
+    e.value("OESMSG_QRYMSG_STOCK", _eOesMsgType::OESMSG_QRYMSG_STOCK);
     e.value("__OESMSG_QRYMSG_MAX", _eOesMsgType::__OESMSG_QRYMSG_MAX);
-    e.value("OESMSG_SESS_TRD_LOGIN", _eOesMsgType::OESMSG_SESS_TRD_LOGIN);
-    e.value("OESMSG_SESS_RPT_LOGIN", _eOesMsgType::OESMSG_SESS_RPT_LOGIN);
-    e.value("OESMSG_SESS_QRY_LOGIN", _eOesMsgType::OESMSG_SESS_QRY_LOGIN);
     e.value("OESMSG_SESS_HEARTBEAT", _eOesMsgType::OESMSG_SESS_HEARTBEAT);
     e.value("OESMSG_SESS_TEST_REQUEST", _eOesMsgType::OESMSG_SESS_TEST_REQUEST);
+    e.value("OESMSG_SESS_LOGIN_EXTEND", _eOesMsgType::OESMSG_SESS_LOGIN_EXTEND);
     e.value("OESMSG_SESS_LOGOUT", _eOesMsgType::OESMSG_SESS_LOGOUT);
     e.value("OESMSG_RPT_ORDER_REJECT", _eOesMsgType::OESMSG_RPT_ORDER_REJECT);
+    e.value("OESMSG_QRYMSG_INV_ACCT_L001508", _eOesMsgType::OESMSG_QRYMSG_INV_ACCT_L001508);
+    e.value("OESMSG_QRYMSG_STOCK_L001508", _eOesMsgType::OESMSG_QRYMSG_STOCK_L001508);
     e.export_values();
     module_vnoes::objects.emplace("_eOesMsgType", e);
 }
@@ -288,6 +294,16 @@ void generate_enum_eOesSubscribeReportType(pybind11::object & parent)
     e.value("__MAX_OES_SUB_RPT_TYPE", _eOesSubscribeReportType::__MAX_OES_SUB_RPT_TYPE);
     e.export_values();
     module_vnoes::objects.emplace("_eOesSubscribeReportType", e);
+}
+void generate_enum_eOesProtocolHintsType(pybind11::object & parent)
+{
+    pybind11::enum_<_eOesProtocolHintsType> e(parent, "_eOesProtocolHintsType", pybind11::arithmetic());
+    e.value("OES_PROT_HINTS_TYPE_DEFAULT", _eOesProtocolHintsType::OES_PROT_HINTS_TYPE_DEFAULT);
+    e.value("OES_PROT_HINTS_TYPE_COMPRESS", _eOesProtocolHintsType::OES_PROT_HINTS_TYPE_COMPRESS);
+    e.value("OES_PROT_HINTS_TYPE_NONE", _eOesProtocolHintsType::OES_PROT_HINTS_TYPE_NONE);
+    e.value("__MAX_OES_PROT_HINTS_TYPE", _eOesProtocolHintsType::__MAX_OES_PROT_HINTS_TYPE);
+    e.export_values();
+    module_vnoes::objects.emplace("_eOesProtocolHintsType", e);
 }
 void generate_enum_eSSocketProtocolType(pybind11::object & parent)
 {
@@ -321,6 +337,8 @@ void generate_enum_eGeneralClientEncryptType(pybind11::object & parent)
     e.value("GENERAL_CLI_ENCRYPT_DES", _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_DES);
     e.value("GENERAL_CLI_ENCRYPT_AES", _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_AES);
     e.value("GENERAL_CLI_ENCRYPT_RSA", _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_RSA);
+    e.value("__GENERAL_CLI_ENCRYPT_MASK_DIGESTED", _eGeneralClientEncryptType::__GENERAL_CLI_ENCRYPT_MASK_DIGESTED);
+    e.value("__GENERAL_CLI_ENCRYPT_MASK_ENCRYPTED", _eGeneralClientEncryptType::__GENERAL_CLI_ENCRYPT_MASK_ENCRYPTED);
     e.export_values();
     module_vnoes::objects.emplace("_eGeneralClientEncryptType", e);
 }
@@ -336,6 +354,7 @@ void generate_enum_eOesApiChannelType(pybind11::object & parent)
 void generate_enum_eMdsExchangeId(pybind11::object & parent)
 {
     pybind11::enum_<_eMdsExchangeId> e(parent, "_eMdsExchangeId", pybind11::arithmetic());
+    e.value("MDS_EXCH_UNDEFINE", _eMdsExchangeId::MDS_EXCH_UNDEFINE);
     e.value("MDS_EXCH_SSE", _eMdsExchangeId::MDS_EXCH_SSE);
     e.value("MDS_EXCH_SZSE", _eMdsExchangeId::MDS_EXCH_SZSE);
     e.value("__MAX_MDS_EXCH", _eMdsExchangeId::__MAX_MDS_EXCH);
@@ -365,29 +384,38 @@ void generate_enum_eMdsMsgSource(pybind11::object & parent)
     e.export_values();
     module_vnoes::objects.emplace("_eMdsMsgSource", e);
 }
-void generate_enum_eMdsSecurityType(pybind11::object & parent)
+void generate_enum_eMdsMdProductType(pybind11::object & parent)
 {
-    pybind11::enum_<_eMdsSecurityType> e(parent, "_eMdsSecurityType", pybind11::arithmetic());
-    e.value("MDS_SECURITY_TYPE_STOCK", _eMdsSecurityType::MDS_SECURITY_TYPE_STOCK);
-    e.value("MDS_SECURITY_TYPE_INDEX", _eMdsSecurityType::MDS_SECURITY_TYPE_INDEX);
-    e.value("MDS_SECURITY_TYPE_OPTION", _eMdsSecurityType::MDS_SECURITY_TYPE_OPTION);
-    e.value("__MAX_MDS_SECURITY_TYPE", _eMdsSecurityType::__MAX_MDS_SECURITY_TYPE);
+    pybind11::enum_<_eMdsMdProductType> e(parent, "_eMdsMdProductType", pybind11::arithmetic());
+    e.value("MDS_MD_PRODUCT_TYPE_STOCK", _eMdsMdProductType::MDS_MD_PRODUCT_TYPE_STOCK);
+    e.value("MDS_MD_PRODUCT_TYPE_INDEX", _eMdsMdProductType::MDS_MD_PRODUCT_TYPE_INDEX);
+    e.value("MDS_MD_PRODUCT_TYPE_OPTION", _eMdsMdProductType::MDS_MD_PRODUCT_TYPE_OPTION);
+    e.value("__MAX_MDS_MD_PRODUCT_TYPE", _eMdsMdProductType::__MAX_MDS_MD_PRODUCT_TYPE);
+    e.value("MDS_SECURITY_TYPE_STOCK", _eMdsMdProductType::MDS_SECURITY_TYPE_STOCK);
+    e.value("MDS_SECURITY_TYPE_INDEX", _eMdsMdProductType::MDS_SECURITY_TYPE_INDEX);
+    e.value("MDS_SECURITY_TYPE_OPTION", _eMdsMdProductType::MDS_SECURITY_TYPE_OPTION);
+    e.value("__MAX_MDS_SECURITY_TYPE", _eMdsMdProductType::__MAX_MDS_SECURITY_TYPE);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsSecurityType", e);
+    module_vnoes::objects.emplace("_eMdsMdProductType", e);
 }
 void generate_enum_eMdsMdStreamType(pybind11::object & parent)
 {
     pybind11::enum_<_eMdsMdStreamType> e(parent, "_eMdsMdStreamType", pybind11::arithmetic());
+    e.value("MDS_MD_STREAM_TYPE_L1_SNAPSHOT", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L1_SNAPSHOT);
     e.value("MDS_MD_STREAM_TYPE_INDEX", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_INDEX);
-    e.value("MDS_MD_STREAM_TYPE_STOCK", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_STOCK);
+    e.value("MDS_MD_STREAM_TYPE_OPTION", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_OPTION);
+    e.value("MDS_MD_STREAM_TYPE_SZSE_TRADE_STATS", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_SZSE_TRADE_STATS);
+    e.value("MDS_MD_STREAM_TYPE_SSE_L1_BOND", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_SSE_L1_BOND);
+    e.value("MDS_MD_STREAM_TYPE_SSE_L1_FUND", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_SSE_L1_FUND);
+    e.value("MDS_MD_STREAM_TYPE_L2_SNAPSHOT", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_SNAPSHOT);
+    e.value("MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_SNAPSHOT", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_SNAPSHOT);
+    e.value("MDS_MD_STREAM_TYPE_L2_SNAPSHOT_INCREMENTAL", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_SNAPSHOT_INCREMENTAL);
+    e.value("MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_INCREMENTAL", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_INCREMENTAL);
+    e.value("MDS_MD_STREAM_TYPE_L2_MARKET_OVERVIEW", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_MARKET_OVERVIEW);
+    e.value("__MAX_MDS_MD_STREAM_TYPE", _eMdsMdStreamType::__MAX_MDS_MD_STREAM_TYPE);
     e.value("MDS_MD_STREAM_TYPE_BOND", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_BOND);
     e.value("MDS_MD_STREAM_TYPE_FUND", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_FUND);
-    e.value("MDS_MD_STREAM_TYPE_SZSE_STOCK", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_SZSE_STOCK);
-    e.value("MDS_MD_STREAM_TYPE_SZSE_REPO", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_SZSE_REPO);
-    e.value("MDS_MD_STREAM_TYPE_SZSE_TRADE_STATS", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_SZSE_TRADE_STATS);
-    e.value("MDS_MD_STREAM_TYPE_OPTION", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_OPTION);
     e.value("MDS_MD_STREAM_TYPE_OTHERS", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_OTHERS);
-    e.value("__MAX_MDS_MD_STREAM_TYPE", _eMdsMdStreamType::__MAX_MDS_MD_STREAM_TYPE);
     e.export_values();
     module_vnoes::objects.emplace("_eMdsMdStreamType", e);
 }
@@ -410,15 +438,6 @@ void generate_enum_eMdsL2PriceLevelOperator(pybind11::object & parent)
     e.value("__MAX_MDS_L2_PX_OPERATOR", _eMdsL2PriceLevelOperator::__MAX_MDS_L2_PX_OPERATOR);
     e.export_values();
     module_vnoes::objects.emplace("_eMdsL2PriceLevelOperator", e);
-}
-void generate_enum_eMdsL2VirtualAuctionSide(pybind11::object & parent)
-{
-    pybind11::enum_<_eMdsL2VirtualAuctionSide> e(parent, "_eMdsL2VirtualAuctionSide", pybind11::arithmetic());
-    e.value("MDS_L2_VIRTUAL_AUCTION_SIDE_NONE", _eMdsL2VirtualAuctionSide::MDS_L2_VIRTUAL_AUCTION_SIDE_NONE);
-    e.value("MDS_L2_VIRTUAL_AUCTION_SIDE_BID", _eMdsL2VirtualAuctionSide::MDS_L2_VIRTUAL_AUCTION_SIDE_BID);
-    e.value("MDS_L2_VIRTUAL_AUCTION_SIDE_OFFER", _eMdsL2VirtualAuctionSide::MDS_L2_VIRTUAL_AUCTION_SIDE_OFFER);
-    e.export_values();
-    module_vnoes::objects.emplace("_eMdsL2VirtualAuctionSide", e);
 }
 void generate_enum_eMdsL2TradeExecType(pybind11::object & parent)
 {
@@ -481,7 +500,6 @@ void generate_enum_eMdsMsgType(pybind11::object & parent)
     pybind11::enum_<_eMdsMsgType> e(parent, "_eMdsMsgType", pybind11::arithmetic());
     e.value("MDS_MSGTYPE_HEARTBEAT", _eMdsMsgType::MDS_MSGTYPE_HEARTBEAT);
     e.value("MDS_MSGTYPE_TEST_REQUEST", _eMdsMsgType::MDS_MSGTYPE_TEST_REQUEST);
-    e.value("MDS_MSGTYPE_LOGON", _eMdsMsgType::MDS_MSGTYPE_LOGON);
     e.value("MDS_MSGTYPE_LOGOUT", _eMdsMsgType::MDS_MSGTYPE_LOGOUT);
     e.value("MDS_MSGTYPE_MARKET_DATA_REQUEST", _eMdsMsgType::MDS_MSGTYPE_MARKET_DATA_REQUEST);
     e.value("MDS_MSGTYPE_COMPRESSED_PACKETS", _eMdsMsgType::MDS_MSGTYPE_COMPRESSED_PACKETS);
@@ -501,9 +519,13 @@ void generate_enum_eMdsMsgType(pybind11::object & parent)
     e.value("MDS_MSGTYPE_L2_MARKET_OVERVIEW", _eMdsMsgType::MDS_MSGTYPE_L2_MARKET_OVERVIEW);
     e.value("MDS_MSGTYPE_L2_VIRTUAL_AUCTION_PRICE", _eMdsMsgType::MDS_MSGTYPE_L2_VIRTUAL_AUCTION_PRICE);
     e.value("__MDS_MSGTYPE_L2_MAX", _eMdsMsgType::__MDS_MSGTYPE_L2_MAX);
+    e.value("MDS_MSGTYPE_CMD_CHANGE_PASSWORD", _eMdsMsgType::MDS_MSGTYPE_CMD_CHANGE_PASSWORD);
+    e.value("__MDS_MSGTYPE_CMD_MAX", _eMdsMsgType::__MDS_MSGTYPE_CMD_MAX);
     e.value("MDS_MSGTYPE_QRY_MARKET_DATA_SNAPSHOT", _eMdsMsgType::MDS_MSGTYPE_QRY_MARKET_DATA_SNAPSHOT);
     e.value("MDS_MSGTYPE_QRY_SECURITY_STATUS", _eMdsMsgType::MDS_MSGTYPE_QRY_SECURITY_STATUS);
     e.value("MDS_MSGTYPE_QRY_TRADING_SESSION_STATUS", _eMdsMsgType::MDS_MSGTYPE_QRY_TRADING_SESSION_STATUS);
+    e.value("MDS_MSGTYPE_QRY_STOCK_STATIC_INFO", _eMdsMsgType::MDS_MSGTYPE_QRY_STOCK_STATIC_INFO);
+    e.value("MDS_MSGTYPE_QRY_SNAPSHOT_LIST", _eMdsMsgType::MDS_MSGTYPE_QRY_SNAPSHOT_LIST);
     e.value("__MDS_MSGTYPE_QRY_MAX", _eMdsMsgType::__MDS_MSGTYPE_QRY_MAX);
     e.export_values();
     module_vnoes::objects.emplace("_eMdsMsgType", e);
@@ -558,7 +580,6 @@ void generate_enum_eMdsSubscribeDataType(pybind11::object & parent)
     e.value("MDS_SUB_DATA_TYPE_L2_BEST_ORDERS", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_BEST_ORDERS);
     e.value("MDS_SUB_DATA_TYPE_L2_TRADE", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_TRADE);
     e.value("MDS_SUB_DATA_TYPE_L2_ORDER", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_ORDER);
-    e.value("MDS_SUB_DATA_TYPE_L2_VIRTUAL_AUCTION_PRICE", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_VIRTUAL_AUCTION_PRICE);
     e.value("MDS_SUB_DATA_TYPE_L2_MARKET_OVERVIEW", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_MARKET_OVERVIEW);
     e.value("MDS_SUB_DATA_TYPE_TRADING_SESSION_STATUS", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_TRADING_SESSION_STATUS);
     e.value("MDS_SUB_DATA_TYPE_SECURITY_STATUS", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_SECURITY_STATUS);
@@ -569,4 +590,17 @@ void generate_enum_eMdsSubscribeDataType(pybind11::object & parent)
     e.value("__MAX_MDS_SUB_DATA_TYPE", _eMdsSubscribeDataType::__MAX_MDS_SUB_DATA_TYPE);
     e.export_values();
     module_vnoes::objects.emplace("_eMdsSubscribeDataType", e);
+}
+void generate_enum_eMdsSubscribedChannelNo(pybind11::object & parent)
+{
+    pybind11::enum_<_eMdsSubscribedChannelNo> e(parent, "_eMdsSubscribedChannelNo", pybind11::arithmetic());
+    e.value("MDS_CHANNEL_NO_DEFAULT", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_DEFAULT);
+    e.value("MDS_CHANNEL_NO_ONE", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_ONE);
+    e.value("MDS_CHANNEL_NO_TWO", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_TWO);
+    e.value("MDS_CHANNEL_NO_THREE", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_THREE);
+    e.value("MDS_CHANNEL_NO_FOUR", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_FOUR);
+    e.value("MDS_CHANNEL_NO_ALL", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_ALL);
+    e.value("MDS_CHANNEL_NO_NONE", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_NONE);
+    e.export_values();
+    module_vnoes::objects.emplace("_eMdsSubscribedChannelNo", e);
 }

@@ -162,6 +162,9 @@ extern "C" {
 #   undef   SLOG_INFO
 #   undef   SLOG_WARN
 #   undef   SLOG_ERROR
+#   undef   SLOG_BZ_INFO
+#   undef   SLOG_BZ_WARN
+#   undef   SLOG_BZ_ERROR
 #   undef   SLOG_FATAL
 
 #   undef   SLOG_ASSERT
@@ -186,7 +189,7 @@ extern "C" {
 
 #   if _LOG_TRACE_ABLE
         /**
-         * SLOG_TRACE, Trace信息登记宏函数
+         * SLOG_TRACE, 跟踪信息登记宏函数
          * 以级别LOG_TRACE登记日志
          *
          * <pre>
@@ -194,7 +197,7 @@ extern "C" {
          * SLOG_TRACE("log info, a is:%s; b is: %d", a, b);
          * </pre>
          */
-#       define  SLOG_TRACE(...)  \
+#       define  SLOG_TRACE(...)     \
                 _SLog_LogImpl(__FILE__, sizeof(__FILE__), __LINE__, \
                         __FUNCTION__, _SLOG_MASK, SLOG_LEVEL_TRACE, __VA_ARGS__)
 #   else
@@ -203,7 +206,7 @@ extern "C" {
 
 #   if _LOG_DEBUG_ABLE
         /**
-         * SLOG_DEBUG, Debug信息登记宏函数
+         * SLOG_DEBUG, 调试信息登记宏函数
          * 以级别LOG_DEBUG登记日志
          *
          * <pre>
@@ -211,7 +214,7 @@ extern "C" {
          * SLOG_DEBUG("log info, a is:%s; b is: %d", a, b);
          * </pre>
          */
-#       define  SLOG_DEBUG(...)  \
+#       define  SLOG_DEBUG(...)     \
                 _SLog_LogImpl(__FILE__, sizeof(__FILE__), __LINE__, \
                         __FUNCTION__, _SLOG_MASK, SLOG_LEVEL_DEBUG, __VA_ARGS__)
 #   else
@@ -224,16 +227,16 @@ extern "C" {
          * 可在调用时指定日志屏蔽标志和日志登记级别
          *
          * <pre>
-         * SLOG_LOG(logMask, level, "log info");
-         * SLOG_LOG(logMask, level, "log info, a is:%s; b is: %d", a, b);
+         * SLOG_LOG(level, "log info");
+         * SLOG_LOG(level, "log info, a is:%s; b is: %d", a, b);
          * </pre>
          */
-#       define  SLOG_LOG(...)    \
+#       define  SLOG_LOG(...)       \
                 _SLog_LogImpl(__FILE__, sizeof(__FILE__), __LINE__, \
-                        __FUNCTION__, __VA_ARGS__)
+                        __FUNCTION__, _SLOG_MASK, __VA_ARGS__)
 
         /**
-         * SLOG_INFO, Info信息登记宏函数
+         * SLOG_INFO, 提示信息登记宏函数
          * 以级别LOG_INFO登记日志
          *
          * <pre>
@@ -241,12 +244,12 @@ extern "C" {
          * SLOG_INFO("log info, a is:%s; b is: %d", a, b);
          * </pre>
          */
-#       define  SLOG_INFO(...)   \
+#       define  SLOG_INFO(...)      \
                 _SLog_LogImpl(__FILE__, sizeof(__FILE__), __LINE__, \
                         __FUNCTION__, _SLOG_MASK, SLOG_LEVEL_INFO, __VA_ARGS__)
 
         /**
-         * SLOG_WARN, Warn信息登记宏函数
+         * SLOG_WARN, 警告信息登记宏函数
          * 以级别LOG_WARN登记日志
          *
          * <pre>
@@ -254,12 +257,12 @@ extern "C" {
          * SLOG_WARN("log info, a is:%s; b is: %d", a, b);
          * </pre>
          */
-#       define  SLOG_WARN(...)   \
+#       define  SLOG_WARN(...)      \
                 _SLog_LogImpl(__FILE__, sizeof(__FILE__), __LINE__, \
                         __FUNCTION__, _SLOG_MASK, SLOG_LEVEL_WARN, __VA_ARGS__)
 
         /**
-         * SLOG_ERROR, Error信息登记宏函数
+         * SLOG_ERROR, 错误信息登记宏函数
          * 以级别LOG_ERROR登记日志
          *
          * <pre>
@@ -267,12 +270,54 @@ extern "C" {
          * SLOG_ERROR("log info, a is:%s; b is: %d", a, b);
          * </pre>
          */
-#       define  SLOG_ERROR(...)  \
+#       define  SLOG_ERROR(...)     \
                 _SLog_LogImpl(__FILE__, sizeof(__FILE__), __LINE__, \
                         __FUNCTION__, _SLOG_MASK, SLOG_LEVEL_ERROR, __VA_ARGS__)
 
         /**
-         * SLOG_FATAL, Fatal信息登记宏函数
+         * SLOG_BZ_INFO, 业务提示信息登记宏函数
+         * 以级别BZ_INFO登记日志
+         *
+         * <pre>
+         * SLOG_BZ_INFO("log info");
+         * SLOG_BZ_INFO("log info, a is:%s; b is: %d", a, b);
+         * </pre>
+         */
+#       define  SLOG_BZ_INFO(...)   \
+                _SLog_LogImpl(__FILE__, sizeof(__FILE__), __LINE__, \
+                        __FUNCTION__, _SLOG_MASK, SLOG_LEVEL_BZ_INFO, \
+                        __VA_ARGS__)
+
+        /**
+         * SLOG_BZ_WARN, 业务警告信息登记宏函数
+         * 以级别BZ_WARN登记日志
+         *
+         * <pre>
+         * SLOG_BZ_WARN("log info");
+         * SLOG_BZ_WARN("log info, a is:%s; b is: %d", a, b);
+         * </pre>
+         */
+#       define  SLOG_BZ_WARN(...)   \
+                _SLog_LogImpl(__FILE__, sizeof(__FILE__), __LINE__, \
+                        __FUNCTION__, _SLOG_MASK, SLOG_LEVEL_BZ_WARN, \
+                        __VA_ARGS__)
+
+        /**
+         * SLOG_BZ_ERROR, 业务错误信息登记宏函数
+         * 以级别BZ_ERROR登记日志
+         *
+         * <pre>
+         * SLOG_BZ_ERROR("log info");
+         * SLOG_BZ_ERROR("log info, a is:%s; b is: %d", a, b);
+         * </pre>
+         */
+#       define  SLOG_BZ_ERROR(...)  \
+                _SLog_LogImpl(__FILE__, sizeof(__FILE__), __LINE__, \
+                        __FUNCTION__, _SLOG_MASK, SLOG_LEVEL_BZ_ERROR, \
+                        __VA_ARGS__)
+
+        /**
+         * SLOG_FATAL, 致命错误信息登记宏函数
          * 以级别LOG_FATAL登记日志
          *
          * <pre>
@@ -280,7 +325,7 @@ extern "C" {
          * SLOG_FATAL("log info, a is:%s; b is: %d", a, b);
          * </pre>
          */
-#       define  SLOG_FATAL(...)  \
+#       define  SLOG_FATAL(...)     \
                 _SLog_LogImpl(__FILE__, sizeof(__FILE__), __LINE__, \
                         __FUNCTION__, _SLOG_MASK, SLOG_LEVEL_FATAL, __VA_ARGS__)
 
@@ -289,6 +334,9 @@ extern "C" {
 #       define  SLOG_INFO(...)
 #       define  SLOG_WARN(...)
 #       define  SLOG_ERROR(...)
+#       define  SLOG_BZ_INFO(...)
+#       define  SLOG_BZ_WARN(...)
+#       define  SLOG_BZ_ERROR(...)
 #       define  SLOG_FATAL(...)
 #   endif   /* _LOG_ABLE */
 
@@ -300,12 +348,18 @@ extern "C" {
 #           define      SLOG_INFO       _SLog_InfoSimplenessMasked
 #           define      SLOG_WARN       _SLog_WarnSimplenessMasked
 #           define      SLOG_ERROR      _SLog_ErrorSimplenessMasked
+#           define      SLOG_BZ_INFO    _SLog_BzInfoSimplenessMasked
+#           define      SLOG_BZ_WARN    _SLog_BzWarnSimplenessMasked
+#           define      SLOG_BZ_ERROR   _SLog_BzErrorSimplenessMasked
 #           define      SLOG_FATAL      _SLog_FatalSimplenessMasked
 #       else
 #           define      SLOG_LOG        _SLog_LogFullSimpleness
 #           define      SLOG_INFO       _SLog_InfoSimpleness
 #           define      SLOG_WARN       _SLog_WarnSimpleness
 #           define      SLOG_ERROR      _SLog_ErrorSimpleness
+#           define      SLOG_BZ_INFO    _SLog_BzInfoSimpleness
+#           define      SLOG_BZ_WARN    _SLog_BzWarnSimpleness
+#           define      SLOG_BZ_ERROR   _SLog_BzErrorSimpleness
 #           define      SLOG_FATAL      _SLog_FatalSimpleness
 #       endif
 
@@ -335,6 +389,9 @@ extern "C" {
 #       define          SLOG_INFO
 #       define          SLOG_WARN
 #       define          SLOG_ERROR
+#       define          SLOG_BZ_INFO
+#       define          SLOG_BZ_WARN
+#       define          SLOG_BZ_ERROR
 #       define          SLOG_FATAL
 #   endif   /* _LOG_ABLE */
 
@@ -356,6 +413,9 @@ extern "C" {
 #   undef   SLOG_INFO
 #   undef   SLOG_WARN
 #   undef   SLOG_ERROR
+#   undef   SLOG_BZ_INFO
+#   undef   SLOG_BZ_WARN
+#   undef   SLOG_BZ_ERROR
 #   undef   SLOG_FATAL
 
 #   define  SLOG_TRACE      printf
@@ -363,6 +423,9 @@ extern "C" {
 #   define  SLOG_INFO       printf
 #   define  SLOG_WARN       printf
 #   define  SLOG_ERROR      printf
+#   define  SLOG_BZ_INFO    printf
+#   define  SLOG_BZ_WARN    printf
+#   define  SLOG_BZ_ERROR   printf
 #   define  SLOG_FATAL      printf
 #endif
 /* -------------------------           */

@@ -53,6 +53,7 @@ typedef struct _SLogAppender {
     void                (*fnLogger) (
                         const struct _SLogAppender *pLogAppender,
                         const char *pLogFile,
+                        const SLogLevelT *pLevel,
                         const char *pMsg,
                         int32 msgLength);
 
@@ -266,12 +267,12 @@ int32   SLog_StartAsyncLogWriterThreads(
 
 /* 日志登记处理实现声明 */
 void    _SLog_LogImpl(
-                const char *srcFile,
+                const char *pSrcFile,
                 int32 fileNameLength,
                 int32 srcLine,
-                const char *strFunction,
+                const char *pSrcFunction,
                 int32 logMask,
-                const SLogLevelT *level,
+                const SLogLevelT *pLevel,
                 const char *fmt, ...);
 /* -------------------------           */
 
@@ -291,6 +292,9 @@ void    _SLog_DebugSimpleness(const char *fmt, ...);
 void    _SLog_InfoSimpleness(const char *fmt, ...);
 void    _SLog_WarnSimpleness(const char *fmt, ...);
 void    _SLog_ErrorSimpleness(const char *fmt, ...);
+void    _SLog_BzInfoSimpleness(const char *fmt, ...);
+void    _SLog_BzWarnSimpleness(const char *fmt, ...);
+void    _SLog_BzErrorSimpleness(const char *fmt, ...);
 void    _SLog_FatalSimpleness(const char *fmt, ...);
 
 void    _SLog_LogSimplenessMasked(const char *fmt, ...);
@@ -300,6 +304,9 @@ void    _SLog_DebugSimplenessMasked(const char *fmt, ...);
 void    _SLog_InfoSimplenessMasked(const char *fmt, ...);
 void    _SLog_WarnSimplenessMasked(const char *fmt, ...);
 void    _SLog_ErrorSimplenessMasked(const char *fmt, ...);
+void    _SLog_BzInfoSimplenessMasked(const char *fmt, ...);
+void    _SLog_BzWarnSimplenessMasked(const char *fmt, ...);
+void    _SLog_BzErrorSimplenessMasked(const char *fmt, ...);
 void    _SLog_FatalSimplenessMasked(const char *fmt, ...);
 
 void    _SLog_AssertSimpleness(BOOL EXPR, const char *fmt, ...);

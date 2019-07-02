@@ -87,6 +87,10 @@ extern "C" {
 #undef  SPK_ABS
 #define SPK_ABS(x)                      ((x) >= 0 ? (x) : -(x))
 
+/* 若x大于等于0则返回x, 否则返回0 */
+#undef  SPK_FLOOR_ZERO
+#define SPK_FLOOR_ZERO(x)               ((x) > 0 ? (x) : 0)
+
 #undef  SPK_CLAMP
 #define SPK_CLAMP(x, low, high)         \
         (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
@@ -125,54 +129,83 @@ extern "C" {
 #undef  SPK_DOUBLE_TO_INT64
 #undef  SPK_TO_DOUBLE
 
-#define SPK_FLOAT_TO_INT32(f, multiplier)               \
-        ( (int32) ((f) * (multiplier) \
-                + (f > 0 ? SPK_FLOAT_ROUNDING_WINDAGE : -SPK_FLOAT_ROUNDING_WINDAGE)) )
+#define SPK_FLOAT_TO_INT32              SPK_SIGNED_FLOAT_TO_INT32
+#define SPK_FLOAT_TO_INT64              SPK_SIGNED_FLOAT_TO_INT64
+#define SPK_DOUBLE_TO_INT32             SPK_SIGNED_DOUBLE_TO_INT32
+#define SPK_DOUBLE_TO_INT64             SPK_SIGNED_DOUBLE_TO_INT64
+#define SPK_TO_DOUBLE                   SPK_SIGNED_TO_DOUBLE
 
-#define SPK_FLOAT_TO_INT64(f, multiplier)               \
-        ( (int64) ((f) * (multiplier) \
-                + (f > 0 ? SPK_FLOAT_ROUNDING_WINDAGE : -SPK_FLOAT_ROUNDING_WINDAGE)) )
 
-#define SPK_DOUBLE_TO_INT32(d, multiplier)              \
-        ( (int32) ((d) * (multiplier) \
-                + (d > 0 ? SPK_DOUBLE_ROUNDING_WINDAGE : -SPK_DOUBLE_ROUNDING_WINDAGE)) )
+/* 对浮点数进行转换操作 (不考虑为负的情况) */
+#undef  SPK_UNSIGNED_FLOAT_TO_INT32
+#undef  SPK_UNSIGNED_FLOAT_TO_INT64
+#undef  SPK_UNSIGNED_DOUBLE_TO_INT32
+#undef  SPK_UNSIGNED_DOUBLE_TO_INT64
+#undef  SPK_UNSIGNED_TO_DOUBLE
 
-#define SPK_DOUBLE_TO_INT64(d, multiplier)              \
-        ( (int64) ((d) * (multiplier) \
-                + (d > 0 ? SPK_DOUBLE_ROUNDING_WINDAGE : -SPK_DOUBLE_ROUNDING_WINDAGE)) )
+#define SPK_UNSIGNED_FLOAT_TO_INT32(f, multiplier)      \
+        ( (int32) ((f) * (multiplier) + SPK_FLOAT_ROUNDING_WINDAGE) )
 
-#define SPK_TO_DOUBLE(i, multiplier)                    \
+#define SPK_UNSIGNED_FLOAT_TO_INT64(f, multiplier)      \
+        ( (int64) ((f) * (multiplier) + SPK_FLOAT_ROUNDING_WINDAGE) )
+
+#define SPK_UNSIGNED_DOUBLE_TO_INT32(d, multiplier)     \
+        ( (int32) ((d) * (multiplier) + SPK_DOUBLE_ROUNDING_WINDAGE) )
+
+#define SPK_UNSIGNED_DOUBLE_TO_INT64(d, multiplier)     \
+        ( (int64) ((d) * (multiplier) + SPK_DOUBLE_ROUNDING_WINDAGE) )
+
+#define SPK_UNSIGNED_TO_DOUBLE(i, multiplier)           \
         ( ((double) (i) / (multiplier)) + SPK_DOUBLE_WINDAGE )
+
+
+/* 对浮点数进行转换操作 (支持负数) */
+#undef  SPK_SIGNED_FLOAT_TO_INT32
+#undef  SPK_SIGNED_FLOAT_TO_INT64
+#undef  SPK_SIGNED_DOUBLE_TO_INT32
+#undef  SPK_SIGNED_DOUBLE_TO_INT64
+#undef  SPK_SIGNED_TO_DOUBLE
+
+#define SPK_SIGNED_FLOAT_TO_INT32(f, multiplier)        \
+        ( (int32) ((f) * (multiplier) \
+                + ((f) > 0.0F ? SPK_FLOAT_ROUNDING_WINDAGE : \
+                        -SPK_FLOAT_ROUNDING_WINDAGE)) )
+
+#define SPK_SIGNED_FLOAT_TO_INT64(f, multiplier)        \
+        ( (int64) ((f) * (multiplier) \
+                + ((f) > 0.0F ? SPK_FLOAT_ROUNDING_WINDAGE : \
+                        -SPK_FLOAT_ROUNDING_WINDAGE)) )
+
+#define SPK_SIGNED_DOUBLE_TO_INT32(d, multiplier)       \
+        ( (int32) ((d) * (multiplier) \
+                + ((d) > 0.0 ? SPK_DOUBLE_ROUNDING_WINDAGE : \
+                        -SPK_DOUBLE_ROUNDING_WINDAGE)) )
+
+#define SPK_SIGNED_DOUBLE_TO_INT64(d, multiplier)       \
+        ( (int64) ((d) * (multiplier) \
+                + ((d) > 0.0 ? SPK_DOUBLE_ROUNDING_WINDAGE : \
+                        -SPK_DOUBLE_ROUNDING_WINDAGE)) )
+
+#define SPK_SIGNED_TO_DOUBLE(i, multiplier)             \
+        ( ((double) (i) / (multiplier)) \
+                + ((i) > 0 ? SPK_DOUBLE_WINDAGE :\
+                        -SPK_DOUBLE_WINDAGE) )
 /* -------------------------           */
 
 
-/*
- * 计算数组长度
- */
+/* 计算数组长度 */
 #undef  SPK_DIM
 #define SPK_DIM(x)                      (sizeof((x)) / sizeof((x)[0]))
 
-/*
- * 若x小于0则返回0
- */
-#undef  SPK_TRIM_ZERO
-#define SPK_TRIM_ZERO(x)                ((x) < 0 ? 0 : (x))
-
-/*
- * 若x小于等于0则返回v
- */
+/* 若x小于等于0则返回v, 否则返回x */
 #undef  SPK_IF_ZERO
 #define SPK_IF_ZERO(x,v)                ((x) > 0 ? (x) : (v))
 
-/*
- * 若x为负数则返回v
- */
+/* 若x为负数则返回v, 否则返回x */
 #undef  SPK_IF_NEG
 #define SPK_IF_NEG(x,v)                 ((x) < 0 ? (v) : (x))
 
-/*
- * 若x为非负数则返回v
- */
+/* 若x为非负数则返回v, 否则返回x */
 #undef  SPK_IF_NONNEG
 #define SPK_IF_NONNEG(x,v)              ((x) < 0 ? (x) : (v))
 /* -------------------------           */
@@ -442,11 +475,48 @@ extern "C" {
 
 
 /*
+ * 忙等待级别定义
+ */
+typedef enum _eSpkBusyPollLevel {
+    SPK_BUSY_POLL_LEVEL_BUSY_WAITING    = 0,    /* 忙等待级别-忙等待 */
+    SPK_BUSY_POLL_LEVEL_SCHED_YIELD     = 1,    /* 忙等待级别-让出CPU */
+    SPK_BUSY_POLL_LEVEL_SLEEP_YIELD     = 2,    /* 忙等待级别-以睡眠的方式让出CPU(睡眠1纳秒或1微秒) */
+    SPK_BUSY_POLL_LEVEL_SLEEP           = 3,    /* 忙等待级别-睡眠(睡眠1毫秒) */
+    __MAX_SPK_BUSY_POLL_LEVEL           = 1000
+} eSpkBusyPollLevelT;
+/* -------------------------           */
+
+
+/*
+ * 根据忙等待级别进行忙等待时的睡眠处理
+ *
+ * @param   BUSY_POLL_LEVEL 忙等待级别定义 @see eSpkBusyPollLevelT
+ */
+#undef  SPK_BUSY_POLL_YIELD
+#define SPK_BUSY_POLL_YIELD(BUSY_POLL_LEVEL)    \
+    do { \
+        if (likely((BUSY_POLL_LEVEL) == SPK_BUSY_POLL_LEVEL_BUSY_WAITING)) { \
+            SPK_BUSY_YIELD2(); \
+        } else if ((BUSY_POLL_LEVEL) == SPK_BUSY_POLL_LEVEL_SCHED_YIELD) { \
+            SPK_SCHED_YIELD(); \
+        } else if ((BUSY_POLL_LEVEL) == SPK_BUSY_POLL_LEVEL_SLEEP_YIELD) { \
+            SPK_SLEEP_YIELD(); \
+        } else if ((BUSY_POLL_LEVEL) <= SPK_BUSY_POLL_LEVEL_SLEEP) { \
+            SPK_SLEEP_MS(1); \
+        } else { \
+            SPK_SLEEP_MS((BUSY_POLL_LEVEL)); \
+        } \
+    } while (0)
+/* -------------------------           */
+
+
+/*
  * 用于忙等待时的睡眠处理
  */
 #undef  SPK_BUSY_YIELD
 #if defined (BUSY_YIELD_TO_WAITING)
 #   define  SPK_BUSY_YIELD(LOOP_VAR)            __SPK_CPU_RELAX()
+
 #elif defined (BUSY_YIELD_TO_SLEEP)
 #   define  SPK_BUSY_YIELD(LOOP_VAR)            \
     do { \
@@ -460,6 +530,7 @@ extern "C" {
         } \
         __SPK_CPU_RELAX(); \
     } while (0)
+
 #else
 #   define  SPK_BUSY_YIELD(LOOP_VAR)            \
     do { \
@@ -469,16 +540,20 @@ extern "C" {
             __SPK_CPU_RELAX(); \
         } \
     } while (0)
+
 #endif
 
 
 #undef  SPK_BUSY_YIELD2
 #if defined (BUSY_YIELD_TO_WAITING)
 #   define  SPK_BUSY_YIELD2()                   __SPK_CPU_RELAX()
+
 #elif defined (BUSY_YIELD_TO_SLEEP)
 #   define  SPK_BUSY_YIELD2()                   SPK_SLEEP_YIELD()
+
 #else
 #   define  SPK_BUSY_YIELD2()                   SPK_SCHED_YIELD()
+
 #endif
 /* -------------------------           */
 
@@ -487,12 +562,7 @@ extern "C" {
  * 用于忙等待时的睡眠处理
  */
 #undef  SPK_BUSY_SLEEP
-#if defined (BUSY_SLEEP_TO_WAITING)
-#   define  SPK_BUSY_SLEEP(LOOP_VAR)            __SPK_CPU_RELAX()
-#elif defined (BUSY_SLEEP_TO_YIELD)
-#   define  SPK_BUSY_SLEEP(LOOP_VAR)            SPK_BUSY_YIELD(LOOP_VAR)
-#else
-#   define  SPK_BUSY_SLEEP(LOOP_VAR)            \
+#define SPK_BUSY_SLEEP(LOOP_VAR)                \
     do { \
         switch (((LOOP_VAR)++ & 0x0F)) { \
         case 0x03: \
@@ -504,17 +574,10 @@ extern "C" {
         } \
         __SPK_CPU_RELAX(); \
     } while (0)
-#endif
 
 
 #undef  SPK_BUSY_SLEEP2
-#if defined (BUSY_SLEEP_TO_WAITING)
-#   define  SPK_BUSY_SLEEP2()                   __SPK_CPU_RELAX()
-#elif defined (BUSY_SLEEP_TO_YIELD)
-#   define  SPK_BUSY_SLEEP2()                   SPK_BUSY_YIELD2()
-#else
-#   define  SPK_BUSY_SLEEP2()                   SPK_SLEEP_YIELD()
-#endif
+#define SPK_BUSY_SLEEP2()                       SPK_SLEEP_YIELD()
 /* -------------------------           */
 
 
@@ -537,6 +600,10 @@ extern "C" {
 #undef  SPK_BUSY_YIELD_WAITING
 #if defined (BUSY_YIELD_TO_WAITING)
 #   define  SPK_BUSY_YIELD_WAITING(COND)        SPK_BUSY_WAITING(COND)
+
+#elif defined (BUSY_YIELD_TO_SLEEP)
+#   define  SPK_BUSY_YIELD_WAITING(COND)        SPK_BUSY_SLEEP_WAITING(COND)
+
 #else
 #   define  SPK_BUSY_YIELD_WAITING(COND)        \
     do { \
@@ -545,6 +612,7 @@ extern "C" {
             SPK_BUSY_YIELD(__BUSY_YIELD_loop); \
         } \
     } while (0)
+
 #endif
 /* -------------------------           */
 
@@ -553,19 +621,13 @@ extern "C" {
  * 忙等待, 直至条件不再成立
  */
 #undef  SPK_BUSY_SLEEP_WAITING
-#if defined (BUSY_SLEEP_TO_WAITING)
-#   define  SPK_BUSY_SLEEP_WAITING(COND)        SPK_BUSY_WAITING(COND)
-#elif defined (BUSY_SLEEP_TO_YIELD)
-#   define  SPK_BUSY_SLEEP_WAITING(COND)        SPK_BUSY_YIELD_WAITING(COND)
-#else
-#   define  SPK_BUSY_SLEEP_WAITING(COND)        \
+#define SPK_BUSY_SLEEP_WAITING(COND)            \
     do { \
         uint32  __BUSY_SLEEP_loop = 0; \
         while (unlikely((COND))) { \
             SPK_BUSY_SLEEP(__BUSY_SLEEP_loop); \
         } \
     } while (0)
-#endif
 /* -------------------------           */
 
 
@@ -597,6 +659,7 @@ extern "C" {
  *
  * @param   COND    忙等待的等待条件
  */
+#if !defined (_YIELD_WAITING_BEGIN)
 #if defined (BUSY_YIELD_TO_WAITING)
 #   define  _YIELD_WAITING_BEGIN(COND)          \
     do { \
@@ -629,6 +692,15 @@ extern "C" {
     } while (0)
 
 
+#elif defined (BUSY_YIELD_TO_SLEEP)
+#   define  _YIELD_WAITING_BEGIN(COND)          _SLEEP_WAITING_BEGIN(COND)
+#   define  _YIELD_WAITING_YIELD()              _SLEEP_WAITING_YIELD()
+#   define  _YIELD_WAITING_WITH_TICK(COND)      _SLEEP_WAITING_WITH_TICK(COND)
+#   define  _YIELD_WAITING_TICK(N)              _SLEEP_WAITING_TICK(N)
+#   define  _YIELD_WAITING_ELSE()               _SLEEP_WAITING_ELSE()
+#   define  _YIELD_WAITING_END()                _SLEEP_WAITING_END()
+
+
 #else
 #   define  _YIELD_WAITING_BEGIN(COND)          \
     do { \
@@ -658,6 +730,7 @@ extern "C" {
 
 
 #endif
+#endif  /* !defined (_YIELD_WAITING_BEGIN) */
 /* -------------------------           */
 
 
@@ -685,49 +758,7 @@ extern "C" {
  *
  * @param   COND    忙等待的等待条件
  */
-#if defined (BUSY_SLEEP_TO_WAITING)
-#   define  _SLEEP_WAITING_BEGIN(COND)          \
-    do { \
-        while ((COND)) {
-
-
-#   define  _SLEEP_WAITING_YIELD()              \
-        SPK_BUSY_SLEEP2()
-
-
-#   define  _SLEEP_WAITING_ELSE()               \
-            _SLEEP_WAITING_YIELD(); \
-        } \
-        {
-
-
-#   define  _SLEEP_WAITING_END()                \
-            _SLEEP_WAITING_YIELD(); \
-        } \
-    } while (0)
-
-
-#   define  _SLEEP_WAITING_WITH_TICK(COND)      \
-    do { \
-        uint32  __SLEEP_WAITING_BEGIN_loop = 0; \
-        while ((COND)) {
-
-
-#   define  _SLEEP_WAITING_TICK(N)              \
-        (((__SLEEP_WAITING_BEGIN_loop++) & (N)) == (N))
-
-
-#elif defined (BUSY_SLEEP_TO_YIELD)
-#   define  _SLEEP_WAITING_BEGIN(COND)          _YIELD_WAITING_BEGIN(COND)
-#   define  _SLEEP_WAITING_YIELD()              _YIELD_WAITING_YIELD()
-#   define  _SLEEP_WAITING_ELSE()               _YIELD_WAITING_ELSE()
-#   define  _SLEEP_WAITING_END()                _YIELD_WAITING_END()
-
-#   define  _SLEEP_WAITING_WITH_TICK(COND)      _YIELD_WAITING_WITH_TICK(COND)
-#   define  _SLEEP_WAITING_TICK(N)              _YIELD_WAITING_TICK(N)
-
-
-#else
+#if !defined (_SLEEP_WAITING_BEGIN)
 #   define  _SLEEP_WAITING_BEGIN(COND)          \
     do { \
         uint32  __SLEEP_WAITING_BEGIN_loop = 0; \
@@ -753,7 +784,6 @@ extern "C" {
             _SLEEP_WAITING_YIELD(); \
         } \
     } while (0)
-
 
 #endif
 /* -------------------------           */

@@ -96,9 +96,9 @@ extern "C" {
  * 服务器集群的集群类型
  */
 typedef enum _eGeneralClientClusterType {
-    GENERAL_CLI_CLUSTER_UNDEFINED       = 0,    /**< 未指定 (使用默认的集群类型) */
-    GENERAL_CLI_CLUSTER_REPLICA_SET     = 1,    /**< 基于复制集的高可用集群 */
-    GENERAL_CLI_CLUSTER_PEER_NODES      = 2,    /**< 基于对等节点的服务器集群 */
+    GENERAL_CLI_CLUSTER_UNDEFINED           = 0,    /**< 未指定 (使用默认的集群类型) */
+    GENERAL_CLI_CLUSTER_REPLICA_SET         = 1,    /**< 基于复制集的高可用集群 */
+    GENERAL_CLI_CLUSTER_PEER_NODES          = 2,    /**< 基于对等节点的服务器集群 */
     __MAX_GENERAL_CLI_CLUSTER_TYPE
 } eGeneralClientClusterTypeT;
 /* -------------------------           */
@@ -108,12 +108,15 @@ typedef enum _eGeneralClientClusterType {
  * 加密类型
  */
 typedef enum _eGeneralClientEncryptType {
-    GENERAL_CLI_ENCRYPT_NONE            = 0,    /**< 加密类型-无 */
-    GENERAL_CLI_ENCRYPT_MD5             = 0x01, /**< 加密类型-MD5 */
-    GENERAL_CLI_ENCRYPT_SHA             = 0x02, /**< 加密类型-SHA */
-    GENERAL_CLI_ENCRYPT_DES             = 0x10, /**< 加密类型-DES */
-    GENERAL_CLI_ENCRYPT_AES             = 0x20, /**< 加密类型-AES */
-    GENERAL_CLI_ENCRYPT_RSA             = 0x40  /**< 加密类型-RSA */
+    GENERAL_CLI_ENCRYPT_NONE                = 0,    /**< 加密类型-无 */
+    GENERAL_CLI_ENCRYPT_MD5                 = 0x01, /**< 加密类型-MD5 */
+    GENERAL_CLI_ENCRYPT_SHA                 = 0x02, /**< 加密类型-SHA */
+    GENERAL_CLI_ENCRYPT_DES                 = 0x10, /**< 加密类型-DES */
+    GENERAL_CLI_ENCRYPT_AES                 = 0x20, /**< 加密类型-AES */
+    GENERAL_CLI_ENCRYPT_RSA                 = 0x40, /**< 加密类型-RSA */
+
+    __GENERAL_CLI_ENCRYPT_MASK_DIGESTED     = 0x0F, /**< 加密类型-消息摘要类算法掩码 */
+    __GENERAL_CLI_ENCRYPT_MASK_ENCRYPTED    = 0xF0  /**< 加密类型-加密类算法掩码 */
 } eGeneralClientEncryptTypeT;
 /* -------------------------           */
 
@@ -136,10 +139,11 @@ typedef struct _SGeneralClientChannel {
     int32               heartBtInt;             /**< 心跳间隔，单位为秒 (允许预先赋值) */
     int32               testReqInt;             /**< 测试请求间隔，单位为秒 */
     uint8               protocolType;           /**< 协议类型 (Binary, JSON等) (允许预先赋值) */
+    uint8               remoteSetNum;           /**< 对端服务器的集群号 */
     uint8               remoteHostNum;          /**< 已连接上的对端服务器的主机编号 */
     uint8               remoteIsLeader;         /**< 对端服务器是否是'主节点' */
     uint8               leaderHostNum;          /**< '主节点'的主机编号 */
-    uint8               __filler1[4];           /**< 按64位对齐填充域 */
+    uint8               __filler1[3];           /**< 按64位对齐填充域 */
 
     struct _SDataBufferVar
                         __codecBuf;             /**< 编解码缓存 */
@@ -212,7 +216,7 @@ typedef struct _SGeneralClientChannel {
 /* 结构体的初始化值定义 */
 #define NULLOBJ_GENERAL_CLIENT_CHANNEL          \
         {0}, 0, 0, \
-        0, 0, 0, 0, {0}, \
+        0, 0, 0, 0, 0, {0}, \
         {NULLOBJ_SPK_DATA_BUFFER}, \
         {NULLOBJ_SPK_DATA_BUFFER}, \
         0, 0, 0, 0, 0, 0, 0, \
@@ -240,29 +244,25 @@ typedef struct _SGeneralClientChannelGroup {
 
     /** 最大的连接描述符 (仅供系统内部使用) */
     int32               __maxFd;
+    /** 最大的连接描述符集合大小 (仅供系统内部使用) */
+    int16               __maxFdCnt;
     /** 通道组标志 (仅供系统内部使用) */
     uint8               __groupFlag;
     /** 按64位对齐的填充域 */
-    uint8               __filler[3];
+    uint8               __filler;
     /** 连接描述符集合 (仅供系统内部使用) */
-    fd_set              __fdSet;
+    union {
+        SPollfdT        __fdArray[GENERAL_CLI_MAX_CHANNEL_GROUP_SIZE];
+        fd_set          __fdSet;
+    };
 } SGeneralClientChannelGroupT;
 
 
 /* 结构体的初始化值定义 */
-#if defined (__WINDOWS__) || (defined (__MINGW__) && ! defined (USE_GNULIB))
 #define NULLOBJ_GENERAL_CLIENT_CHANNEL_GROUP    \
         0, 0, {0}, \
-        0, 0, {0}, \
-        {0, {0}}
-
-#else
-#define NULLOBJ_GENERAL_CLIENT_CHANNEL_GROUP    \
-        0, 0, {0}, \
-        0, 0, {0}, \
-        {{0}}
-
-#endif
+        0, 0, 0, 0, \
+        {{{0, 0, 0}}}
 /* -------------------------           */
 
 

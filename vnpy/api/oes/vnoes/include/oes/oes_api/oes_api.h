@@ -102,11 +102,13 @@
  * @version 0.15.5.2    2018/01/29
  *          - 增加 OesApi_GetLastRecvTime、OesApi_GetLastSendTime 接口，用于获取通道最新发送/接受消息的时间
  *          - 登录失败时, 可以通过 errno/SPK_GET_ERRNO() 获取到具体失败原因
+ * @version 0.15.5.11_u2 2018/11/04
+ *          - 添加从成交回报中提取和生成委托回报信息的辅助函数
  * @version 0.15.5.14   2018/08/01
  *          - 增加 OesApi_HasMoreCachedData 接口, 用于返回已经接收到但尚未被回调函数处理的缓存数据长度
  *          - '登录应答报文(OesLogonRspT)' 结构体中增加字段:
-                - 客户端类型 (clientType)
-                - 客户端状态 (clientStatus)
+ *              - 客户端类型 (clientType)
+ *              - 客户端状态 (clientStatus)
  *          - 增加设置当前线程登录用户名/登录密码/客户端环境号的接口
  *              - OesApi_SetThreadUsername
  *              - OesApi_SetThreadPassword
@@ -158,6 +160,31 @@
  *              - 是否禁止出入金 (isFundTrsfDisabled)
  *          - '证券账户信息(OesInvAcctItemT)' 结构中增加字段:
  *              - 是否禁止交易 (isTradeDisabled)
+ * @version 0.15.7.6    2018/11/03
+ *          - '买卖类型(eOesBuySellTypeT)' 中新增:
+ *              - 配股认购 (OES_BS_TYPE_ALLOTMENT)
+ *          - 新增 '产品类型 (eOesProductTypeT)' 定义, 作为产品和持仓的高层类别定义
+ *          - 在以下结构体中增加 '产品类型 (productType)' 字段
+ *              - 证券信息(OesStockBaseInfoT/OesStockItemT)
+ *              - 证券发行信息 (OesIssueBaseInfoT/OesIssueItemT)
+ *              - 股票持仓信息 (OesStkHoldingBaseInfoT/OesStkHoldingItemT)
+ *              - 委托回报 (OesOrdCnfmT/OesOrdItemT)
+ *              - 成交回报 (OesTrdCnfmT/OesTrdItemT)
+ *          - 查询证券发行产品信息接口(OesApi_QueryIssue)的过滤条件中增加:
+ *              - ‘产品类型(productType)’ 条件
+ *          - 查询股票持仓信息接口(OesApi_QueryStkHolding)的过滤条件中增加:
+ *              - ‘产品类型(productType)’ 条件
+ *          - '证券子类型(eOesSubSecurityTypeT)'中新增:
+ *              - 沪伦通CDR本地交易业务产品(OES_SUB_SECURITY_TYPE_STOCK_HLTCDR)
+ * @version 0.15.7.6_RC2 2018/11/22
+ *          - 增加 OesApi_InitAllByCfgStruct 接口 (InitAll 的重载方法)
+ *          - 增加 OesApi_RecvReportMsg 接口 (一次只接收一条回报消息)
+ *          - 增加设置/获取当前线程订阅回报使用的客户端环境号的接口
+ *              - OesApi_SetThreadSubscribeEnvId
+ *              - OesApi_GetThreadSubscribeEnvId
+ * @version 0.15.9_I9   2019/4/15
+ *          - 重新实现登录接口 (接口OesApi_Logon)
+ *              - 增强安全性处理
  * @since   2016/03/04
  */
 
@@ -579,6 +606,24 @@ int32   OesApi_WaitReportMsg(
                 int32 timeoutMs,
                 F_OESAPI_ON_RPT_MSG_T pRptMsgCallback,
                 void *pCallbackParams);
+
+/*
+ * 接收(一条)回报消息
+ * 阻塞等待直到完整的接收到一条回报消息或者到达超时时间
+ *
+ * @param       pRptChannel     会话信息
+ * @param[out]  pOutMsgHead     消息头缓存
+ * @param[out]  pOutMsgBody     消息体数据缓存
+ * @param       bufSize         消息体数据缓存区的大小
+ * @param       timeoutMs       超时时间(毫秒)
+ * @return      大于等于0，消息体数据长度; 小于0，错误号
+ */
+int32   OesApi_RecvReportMsg(
+                OesApiSessionInfoT *pRptChannel,
+                SMsgHeadT *pOutMsgHead,
+                OesRspMsgBodyT *pOutMsgBody,
+                int32 bufSize,
+                int32 timeoutMs);
 /* -------------------------           */
 
 
@@ -688,7 +733,8 @@ int32   OesApi_QuerySingleOptHolding(
  * 查询所有委托信息
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询当前客户下所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesOrdItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -707,7 +753,8 @@ int32   OesApi_QueryOrder(
  * 查询成交信息
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询当前客户下所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesTrdItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -726,7 +773,8 @@ int32   OesApi_QueryTrade(
  * 查询客户资金信息
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询当前客户下所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesCashAssetItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -745,7 +793,8 @@ int32   OesApi_QueryCashAsset(
  * 查询股票持仓信息
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询当前客户下所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesStkHoldingItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -764,7 +813,8 @@ int32   OesApi_QueryStkHolding(
  * 查询期权持仓信息
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询当前客户下所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesOptHoldingItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -783,7 +833,8 @@ int32   OesApi_QueryOptHolding(
  * 查询新股配号、中签信息
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询当前客户下所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesLotWinningItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -802,7 +853,8 @@ int32   OesApi_QueryLotWinning(
  * 查询客户信息
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询当前客户下所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesCustItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -821,7 +873,8 @@ int32   OesApi_QueryCustInfo(
  * 查询证券账户信息
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询当前客户下所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesInvAcctItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -840,7 +893,8 @@ int32   OesApi_QueryInvAcct(
  * 查询佣金信息
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询当前客户下所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesCommissionRateItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -859,7 +913,8 @@ int32   OesApi_QueryCommissionRate(
  * 查询出入金流水
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询当前客户下所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesFundTransferSerialItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -878,14 +933,15 @@ int32   OesApi_QueryFundTransferSerial(
  * 查询证券发行产品信息
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesIssueItemT</code>
  * @param   pCallbackParams     回调函数的参数
  * @retval  >=0                 成功查询到的记录数
  * @retval  <0                  失败 (负的错误号)
  *
- * @see     OesStockItemT
+ * @see     OesIssueItemT
  */
 int32   OesApi_QueryIssue(
                 OesApiSessionInfoT *pQryChannel,
@@ -897,7 +953,8 @@ int32   OesApi_QueryIssue(
  * 查询现货产品信息
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesStockItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -916,8 +973,8 @@ int32   OesApi_QueryStock(
  * 查询ETF申赎产品信息
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
- *                              - 为空则查询所以数据
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 实际的消息体数据类型为 <code>OesEtfItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -936,7 +993,8 @@ int32   OesApi_QueryEtf(
  * 查询ETF成分股信息
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 过滤条件中fundId参数必填
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesEtfComponentItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -955,7 +1013,8 @@ int32   OesApi_QueryEtfComponent(
  * 查询期权产品信息
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesOptionItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -976,7 +1035,8 @@ int32   OesApi_QueryOption(
  * @note    目前仅深圳交易所各个交易平台的市场状态信息有效
  *
  * @param   pQryChannel         查询通道的会话信息
- * @param   pQryFilter          查询条件过滤条件
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0，将查询所有数据
  * @param   pQryMsgCallback     进行消息处理的回调函数
  *                              - 消息体的数据类型为 <code>OesMarketStateItemT</code>
  * @param   pCallbackParams     回调函数的参数
@@ -1286,6 +1346,7 @@ void    OesApi_Destory(
  * @exception   EFAULT          其他业务错误
  *
  * @see         OesApi_InitAllByConvention
+ * @see         OesApi_InitAllByCfgStruct
  */
 BOOL    OesApi_InitAll(
                 OesApiClientEnvT *pOutCliEnv,
@@ -1326,10 +1387,51 @@ BOOL    OesApi_InitAll(
  * @exception   EFAULT          其他业务错误
  *
  * @see         OesApi_InitAll
+ * @see         OesApi_InitAllByCfgStruct
  */
 BOOL    OesApi_InitAllByConvention(
                 OesApiClientEnvT *pOutCliEnv,
                 const char *pCfgFile,
+                int64 lastRptSeqNum,
+                int32 *pLastClSeqNo);
+
+/*
+ * 按照配置信息结构体, 初始化客户端环境
+ *
+ * @note        与 OesApi_InitAll 和 OesApi_InitAllByConvention 接口有一处不同,
+ *              OesApi_InitAllByCfgStruct 接口不会自动初始化日志记录器, 需要在外面
+ *              显式的调用 OesApi_InitLogger 来初始化API的日志记录器
+ *
+ * @param[out]  pOutCliEnv      输出客户端环境信息
+ * @param       pClientCfg      配置信息结构体
+ * @param       lastRptSeqNum   客户端最后接收到的回报数据的回报编号
+ *                              - 等于0, 从头开始推送回报数据
+ *                              - 大于0, 从指定的回报编号开始推送回报数据
+ *                              - 小于0, 从最新的数据开始推送回报数据
+ * @param[out]  pLastClSeqNo    返回服务器端最后接收到并校验通过的"客户委托流水号"
+ *                              - NULL表示忽略该参数
+ *                              - 在0.11之前的版本中，“客户委托流水号”是由客户端维护的
+ *                                线性递增序列，用于标识委托数据的唯一性，并防止重复申报
+ *                              - 从0.11版本开始，不再强制要求线性递增，只要维持在同一
+ *                                客户端下的唯一性即可
+ * @retval      TRUE            成功
+ * @retval      FALSE           失败。此时 errno 将被设置, 可以通过 errno/SPK_GET_ERRNO() 获取到具体失败原因
+ *
+ * @exception   EINVAL          配置异常或传入参数非法
+ * @exception   ECONNREFUSED    连接失败
+ * @exception   ETIMEDOUT       连接超时
+ * @exception   EACCES          用户名或密码错误
+ * @exception   EMLINK          连接数量超过限制
+ * @exception   ENOENT          地址列表中没有找到有效的节点配置
+ * @exception   ESRCH           登录节点非主节点
+ * @exception   EFAULT          其他业务错误
+ *
+ * @see         OesApi_InitAll
+ * @see         OesApi_InitAllByConvention
+ */
+BOOL    OesApi_InitAllByCfgStruct(
+                OesApiClientEnvT *pOutCliEnv,
+                const OesApiClientCfgT *pClientCfg,
                 int64 lastRptSeqNum,
                 int32 *pLastClSeqNo);
 
@@ -1434,7 +1536,7 @@ BOOL    OesApi_InitOrdChannel(
  */
 BOOL    OesApi_InitOrdChannel2(
                 OesApiSessionInfoT *pOrdChannel,
-                OesApiRemoteCfgT *pRemoteCfg,
+                const OesApiRemoteCfgT *pRemoteCfg,
                 int32 *pLastClSeqNo);
 
 /*
@@ -1491,8 +1593,8 @@ BOOL    OesApi_InitRptChannel(
  */
 BOOL    OesApi_InitRptChannel2(
                 OesApiSessionInfoT *pRptChannel,
-                OesApiRemoteCfgT *pRemoteCfg,
-                OesApiSubscribeInfoT *pSubscribeInfo,
+                const OesApiRemoteCfgT *pRemoteCfg,
+                const OesApiSubscribeInfoT *pSubscribeInfo,
                 int64 lastRptSeqNum);
 
 /*
@@ -1539,7 +1641,7 @@ BOOL    OesApi_InitQryChannel(
  */
 BOOL    OesApi_InitQryChannel2(
                 OesApiSessionInfoT *pQryChannel,
-                OesApiRemoteCfgT *pRemoteCfg);
+                const OesApiRemoteCfgT *pRemoteCfg);
 
 /*
  * 解析服务器地址列表字符串
@@ -1641,7 +1743,11 @@ BOOL    OesApi_DeleteFromChannelGroup(
  * 获取通道组中指定下标的连接信息
  *
  * @param       pChannelGroup   通道组信息
- * @param       index           下标位置
+ * @param       index           下标位置 (如果小于0, 则表示按照先后顺序而非下标位置进行返回)
+ *                              -  0, 返回 0 号下标位置所对应的会话信息
+ *                              - -1, 返回通道组下第一个有效的会话信息
+ *                              - -2, 返回通道组下第二个有效的会话信息
+ *                              - INT_MIN, 如果超出了通道组的有效会话数量, 则返回最后一个有效的会话信息
  * @return      连接信息
  */
 OesApiSessionInfoT *
@@ -1701,7 +1807,7 @@ int32   OesApi_WaitOnChannelGroup(
 
 
 /* ===================================================================
- * 其它辅助接口函数声明
+ * 错误处理等辅助函数
  * =================================================================== */
 
 /*
@@ -1748,6 +1854,22 @@ void    OesApi_SetThreadEnvId(
 int8    OesApi_GetThreadEnvId();
 
 /*
+ * 设置当前线程订阅回报使用的客户端环境号
+ * 不设置或者参数为空的话, 会尝试使用配置文件中的配置
+ *
+ * @param   subscribeEnvId      待订阅的客户端环境号
+ */
+void    OesApi_SetThreadSubscribeEnvId(
+                int8 subscribeEnvId);
+
+/*
+ * 返回当前线程订阅回报使用的客户端环境号
+ *
+ * @return  客户端环境号
+ */
+int8    OesApi_GetThreadSubscribeEnvId();
+
+/*
  * 设置客户端自定义的本地IP和MAC
  *
  * @param   pIpStr              点分十进制的IP地址字符串
@@ -1756,6 +1878,24 @@ int8    OesApi_GetThreadEnvId();
  */
 BOOL    OesApi_SetCustomizedIpAndMac(
                 const char *pIpStr,
+                const char *pMacStr);
+
+/*
+ * 设置客户端自定义的本地IP地址
+ *
+ * @param   pIpStr              点分十进制的IP地址字符串
+ * @return  TRUE 设置成功; FALSE 设置失败 (参数格式错误)
+ */
+BOOL    OesApi_SetCustomizedIp(
+                const char *pIpStr);
+
+/*
+ * 设置客户端自定义的本地MAC地址
+ *
+ * @param   pMacStr             MAC地址字符串 (MAC地址格式 45:38:56:89:78:5A)
+ * @return  TRUE 设置成功; FALSE 设置失败 (参数格式错误)
+ */
+BOOL    OesApi_SetCustomizedMac(
                 const char *pMacStr);
 
 /*
@@ -1885,7 +2025,7 @@ void    OesApi_SetLastError(
  * @param   errCode             错误号
  * @return  错误号对应的错误信息
  */
-const char*
+const char *
         OesApi_GetErrorMsg(
                 int32 errCode);
 
@@ -1900,6 +2040,24 @@ const char *
         OesApi_GetErrorMsg2(
                 uint8 status,
                 uint8 detailStatus);
+/* -------------------------           */
+
+
+/* ===================================================================
+ * 其它辅助函数
+ * =================================================================== */
+
+/*
+ * 从成交回报中提取和生成委托回报信息
+ *
+ * @param[in]   pTrdReport      成交回报信息
+ * @param[out]  pOutOrdReport   用于输出委托回报信息的缓存区
+ * @return      提取到的委托回报信息
+ */
+OesOrdCnfmT *
+        OesHelper_ExtractOrdReportFromTrd(
+                const OesTrdCnfmT *pTrdReport,
+                OesOrdCnfmT *pOutOrdReport);
 /* -------------------------           */
 
 

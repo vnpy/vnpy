@@ -138,6 +138,26 @@
  *              - 新增字段 证券类别(securityType) 和 买卖类型(bsType)
  *          - '股票持仓查询的过滤条件(OesQryStkHoldingFilterT)' 中
  *              - 新增字段 证券类别(securityType)
+ * @version 0.15.7.6   2018/11/03
+ *          - '证券发行信息查询的过滤条件(OesQryIssueFilterT)' 中
+ *              - 新增字段 '产品类型 (productType)'
+ *          - '查询股票持仓信息过滤条件(OesQryStkHoldingFilterT)' 中
+ *              - 新增字段 '产品类型 (productType)'
+ * @version 0.15.9      2019/03/12
+ *          - 为了支持科创板, 扩展以下查询结果 (兼容之前版本的API)
+ *              - 证券账户信息 (OesInvAcctItemT) 中增加如下字段:
+ *                  - 科创板权益 (kcSubscriptionQuota)
+ *              - 现货产品信息 (OesStockItemT) 中增加如下字段:
+ *                  - 限价买数量上限 (lmtBuyMaxQty)
+ *                  - 限价买数量下限 (lmtBuyMinQty)
+ *                  - 限价卖数量上限 (lmtSellMaxQty)
+ *                  - 限价卖数量下限 (lmtSellMinQty)
+ *                  - 市价买数量上限 (mktBuyMaxQty)
+ *                  - 市价买数量下限 (mktBuyMinQty)
+ *                  - 市价卖数量上限 (mktSellMaxQty)
+ *                  - 市价卖数量下限 (mktSellMinQty)
+ *              - 客户端总览信息中的股东账户总览 (OesInvAcctOverviewT) 中增加如下字段:
+ *                  - 科创板权益 (kcSubscriptionQuota)
  *
  * @since   2015/07/30
  */
@@ -651,8 +671,10 @@ typedef struct _OesQryStkHoldingFilter {
     uint8               mktId;
     /** 证券类别  @see eOesSecurityTypeT */
     uint8               securityType;
+    /** 产品类型 @see eOesProductTypeT */
+    uint8               productType;
     /** 按64位对齐填充域 */
-    uint8               __filler[6];
+    uint8               __filler[5];
 
     /** 用户私有信息 (由客户端自定义填充, 并在应答数据中原样返回) */
     int64               userInfo;
@@ -662,7 +684,7 @@ typedef struct _OesQryStkHoldingFilter {
 /* 结构体的初始化值定义 */
 #define NULLOBJ_OES_QRY_STK_HOLDING_FILTER          \
         {0}, {0}, {0}, \
-        0, 0, {0}, 0
+        0, 0, 0, {0}, 0
 /* -------------------------           */
 
 
@@ -965,13 +987,40 @@ typedef struct _OesQryInvAcctRsp {
  * 股东账户总览信息内容
  */
 typedef struct _OesInvAcctOverview {
-    __OES_INV_ACCT_BASE_INFO_PKT;
+    /** 股东账户代码 */
+    char                invAcctId[OES_INV_ACCT_ID_MAX_LEN];
+    /** 市场 @see eOesMarketIdT */
+    uint8               mktId;
+
+    /** 账户类型 @see eOesAcctTypeT */
+    uint8               acctType;
+    /** 账户状态 @see eOesAcctStatusT */
+    uint8               status;
+    /** 股东账户的所有者类型 @see eOesOwnerTypeT */
+    uint8               ownerType;
+    /** 期权投资者级别 @see eOesOptInvLevelT */
+    uint8               optInvLevel;
+    /** 是否禁止交易 (仅供API查询使用) */
+    uint8               isTradeDisabled;
+    /** 按64位对齐填充域 */
+    uint8               __INV_ACCT_BASE_filler[2];
+
+    /** 证券账户权限限制 @see eOesTradingLimitT */
+    uint64              limits;
+    /** 股东权限/客户权限 @see eOesTradingPermissionT */
+    uint64              permissions;
+
+    /** 席位号 */
+    int32               pbuId;
+    /** 主板权益 (新股/配股认购限额) */
+    int32               subscriptionQuota;
 
     /** 客户代码 */
     char                custId[OES_CUST_ID_MAX_LEN];
 
     uint8               isValid;                /**< 股东账户是否有效标识 */
-    uint8               __filler[7];            /**< 按64位字节对齐的填充域 */
+    uint8               __filler[3];            /**< 按64位字节对齐的填充域 */
+    int32               kcSubscriptionQuota;    /**< 科创板权益 (新股/配股认购限额) */
 
     int32               trdOrdCnt;              /**< 当日累计有效交易类委托笔数统计 */
     int32               nonTrdOrdCnt;           /**< 当日累计有效非交易类委托笔数统计 */
@@ -986,8 +1035,12 @@ typedef struct _OesInvAcctOverview {
 
 /* 结构体的初始化值定义 */
 #define NULLOBJ_OES_INV_ACCT_OVERVIEW                       \
-        __NULLOBJ_OES_INV_ACCT_BASE_INFO_PKT, \
-        {0}, 0, {0}, \
+        {0}, 0, \
+        0, 0, 0, 0, 0, {0}, \
+        0, 0, \
+        0, 0, \
+        {0}, \
+        0, {0}, 0, \
         0, 0, 0, 0, 0, 0, \
         0
 /* -------------------------           */
@@ -1167,25 +1220,25 @@ typedef struct _OesCommissionRateItem {
     /** 证券代码 */
     char                securityId[OES_SECURITY_ID_MAX_LEN];
 
-    /** 市场  @see eOesMarketIdT */
+    /** 市场 @see eOesMarketIdT */
     uint8               mktId;
-    /** 证券类别  @see eOesSecurityTypeT */
+    /** 证券类别 @see eOesSecurityTypeT */
     uint8               securityType;
-    /** 证券子类别  @see eOesSubSecurityTypeT */
+    /** 证券子类别 @see eOesSubSecurityTypeT */
     uint8               subSecurityType;
-    /** 买卖类型  @see eOesBuySellTypeT */
+    /** 买卖类型 @see eOesBuySellTypeT */
     uint8               bsType;
 
-    /** 费用标识  @see eOesFeeTypeT */
+    /** 费用标识 @see eOesFeeTypeT */
     uint8               feeType;
-    /** 币种  @see eOesCurrTypeT */
+    /** 币种 @see eOesCurrTypeT */
     uint8               currType;
-    /** 计算模式  @see eOesCalFeeModeT */
+    /** 计算模式 @see eOesCalcFeeModeT */
     uint8               calcFeeMode;
     /** 按64位对齐填充域 */
     uint8               __filler;
 
-    /** 费率, 精确到千万分之一 */
+    /** 费率, 单位精确到千万分之一, 即费率0.02% = 2000 */
     int64               feeRate;
     /** 最低费用, 大于0时有效 (单位：万分之一元) */
     int32               minFee;
@@ -1319,11 +1372,11 @@ typedef struct _OesQryFundTransferSerialRsp {
 
 
 /* ===================================================================
- * 查询新股认购、中签信息相关结构体定义
+ * 查询新股配号、中签信息相关结构体定义
  * =================================================================== */
 
 /**
- * 查询新股认购、中签信息过滤条件
+ * 查询新股配号、中签信息过滤条件
  */
 typedef struct _OesQryLotWinningFilter {
     /** 客户代码, 可选项 */
@@ -1363,7 +1416,7 @@ typedef struct _OesQryLotWinningFilter {
 
 
 /**
- * 新股认购、中签信息内容
+ * 新股配号、中签信息内容
  */
 typedef OesLotWinningBaseInfoT      OesLotWinningItemT;
 
@@ -1393,7 +1446,7 @@ typedef struct _OesQryLotWinningReq {
 
 
 /**
- * 查询新股认购、中签信息应答
+ * 查询新股配号、中签信息应答
  */
 typedef struct _OesQryLotWinningRsp {
     /** 查询应答消息头 */
@@ -1422,12 +1475,19 @@ typedef struct _OesQryIssueFilter {
     char                securityId[OES_SECURITY_ID_MAX_LEN];
 
     /**
-     * 市场代码, 可选项。如无需此过滤条件请使用 OES_MKT_ID_UNDEFINE
+     * 市场代码, 可选项。如无需此过滤条件请使用 OES_MKT_UNDEFINE
      * @see eOesMarketIdT
      */
     uint8               mktId;
+
+    /**
+     * 产品类型, 默认类型为 OES_PRODUCT_TYPE_IPO
+     * @see eOesProductTypeT
+     */
+    uint8               productType;
+
     /** 按64位对齐填充域 */
-    uint8               __filler[7];
+    uint8               __filler[6];
 
     /** 用户私有信息 (由客户端自定义填充, 并在应答数据中原样返回) */
     int64               userInfo;
@@ -1436,7 +1496,7 @@ typedef struct _OesQryIssueFilter {
 
 /* 结构体的初始化值定义 */
 #define NULLOBJ_OES_QRY_ISSUE_FILTER                \
-        {0}, 0, {0}, 0
+        {0}, 0, 0, {0}, 0
 /* -------------------------           */
 
 
@@ -1689,12 +1749,12 @@ typedef struct _OesEtfComponentItem {
     int32               prevClose;
     /** 成分证券数量 */
     int32               qty;
-    /** 溢价比例 */
+    /** 溢价比例, 单位精确到十万分之一, 即溢价比例10% = 10000 */
     int32               premiumRate;
 
-    /** 申购替代金额 */
+    /** 申购替代金额, 单位精确到元后四位, 即1元 = 10000 */
     int64               creationSubCash;
-    /** 赎回替代金额 */
+    /** 赎回替代金额, 单位精确到元后四位, 即1元 = 10000 */
     int64               redemptionCashSub;
     /** 成分股所属ETF的基金代码 */
     char                fundId[OES_SECURITY_ID_MAX_LEN];

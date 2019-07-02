@@ -87,35 +87,18 @@ typedef struct _SMsgHead {
     uint8               msgFlag;            /**< 消息标志 @see eSMsgFlagT */
     uint8               msgId;              /**< 消息代码 */
     uint8               status;             /**< 状态码 */
-    uint8               detailStatus;       /**< 明细状态代码 */
+    uint8               detailStatus;       /**< 明细状态代码 (@note 当消息为嵌套的组合消息时, 复用该字段记录消息体中的消息条数) */
     int32               msgSize;            /**< 消息大小 */
-#ifdef  TRACE_MSG_SENDING_TIME
-    STimeval32T         __sendingTime;      /**< 消息实际发送时间 */
-#endif
 } SMsgHeadT;
 
 
-/* 消息头尾部填充字段的长度 */
-#ifdef  TRACE_MSG_SENDING_TIME
-#   define  __SPK_MSG_HEAD_TAILER_SIZE      (sizeof(STimeval32T))
-#else
-#   define  __SPK_MSG_HEAD_TAILER_SIZE      (0)
-#endif
-
-
-/* 消息头尾部填充字段的初始化值定义 */
-#ifdef  TRACE_MSG_SENDING_TIME
-#   define  __NULLOBJ_SPK_MSG_HEAD_TAILER   \
-            , {0, 0}
-#else
-#   define  __NULLOBJ_SPK_MSG_HEAD_TAILER
-#endif
+/* 消息头尾部填充字段的初始化值定义 (@deprecated 已废弃, 为了兼容而暂时保留) */
+#define __NULLOBJ_SPK_MSG_HEAD_TAILER
 
 
 /* 结构体初始化值定义 */
 #define NULLOBJ_SPK_MSG_HEAD                \
-        0, 0, 0, 0, 0 \
-        __NULLOBJ_SPK_MSG_HEAD_TAILER
+        0, 0, 0, 0, 0
 /* -------------------------           */
 
 

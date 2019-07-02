@@ -1,5 +1,72 @@
 # MDS-API Change Log    {#changelog}
 
+MDS_0.15.9 / 2019-05-31
+==============================================
+
+  * fix: 修复API无法支持取值大于1024的文件描述符的问题 (因为select的限制, 当文件描述符的取值大于1024时, 会导致堆栈溢出)
+  * fix: 扩大深圳证券业务开关的最大数量（该修改会对之前版本API的延迟统计造成影响）, 以应对行情数据内容的更新
+  * 调整行情数据类型(mdStreamType, eMdsMdStreamTypeT)的取值, 使其可以标识出快照行情的具体数据类型
+     - 该修改会存在兼容性问题, 客户端程序可以通过编译错误来识别需要调整的地方 (如果没有编译错误就不需要调整)
+     - 行情数据类型的取值将尽量与消息类型保持一致, 但以下类型比较特殊：
+       - 深圳成交量统计指标
+       - 上交所 Level1 行情快照-债券
+       - 上交所 Level1 行情快照-基金
+  * 重命名 securityType => mdProductType, 以避免与交易端的证券类型混淆
+    - securityType => mdProductType
+    - eMdsSecurityTypeT => eMdsMdProductTypeT
+  * 删除已经废弃的虚拟集合竞价消息的消息定义和数据类型定义
+  * 调整快照头 MdsMktDataSnapshotHeadT 中的内部字段定义, 将 __origTickSeq 字段拆分为 __origTickSeq + __lastUpdateTime 两个字段 (内部使用的字段, 协议保持兼容)
+  * 增加修改客户端登录密码接口
+    - MdsApi_SendChangePasswordReq
+  * 增加设置/获取客户端自定义的本地IP/MAC地址的接口
+    - MdsApi_SetCustomizedIp
+    - MdsApi_GetCustomizedIp
+    - MdsApi_SetCustomizedMac
+    - MdsApi_GetCustomizedMac
+  * 增加设置/获取客户端自定义的设备序列号的接口
+    - MdsApi_SetCustomizedDriverId
+    - MdsApi_GetCustomizedDriverId
+  * 新增错误码
+    - 1029, 密码未改变
+    - 1034, 密码强度不足
+    - 1036, 未通过黑白名单检查
+
+MDS_0.15.8 / 2019-02-22
+==============================================
+
+  * fix: 修复API无法支持取值大于1024的文件描述符的问题 (因为select的限制, 当文件描述符的取值大于1024时, 会导致堆栈溢出)
+  * 重命名 securityType => mdProductType, 以避免与交易端的证券类型混淆
+    - securityType => mdProductType
+    - eMdsSecurityTypeT => eMdsMdProductTypeT
+  * 删除已经废弃的虚拟集合竞价消息的消息定义和数据类型定义
+  * 调整快照头 MdsMktDataSnapshotHeadT 中的内部字段定义, 将 __origTickSeq 字段拆分为 __origTickSeq + __lastUpdateTime 两个字段 (内部使用的字段, 协议保持兼容)
+  * 增大登录时的网络超时时间, 避免因为系统繁忙等原因导致登录失败
+  * 调整错误描述
+    - 1007, 非服务开放时间
+    - 1022, 尚不支持或尚未开通此业务
+    - 1035, 非法的产品类型
+
+MDS_0.15.7.6 / 2018-11-28
+==============================================
+
+  * 添加批量查询行情快照接口
+    - MdsApi_QuerySnapshotList
+  * 按照配置信息结构体, 增加初始化客户端环境接口
+    - MdsApi_InitAllByCfgStruct
+
+MDS_0.15.7.6 / 2018-11-03
+==============================================
+
+  * 增加查询证券(股票/债券/基金)静态信息的接口
+    - MdsApi_QueryStockStaticInfo
+  * 新增错误码定义
+    - 1035, 非法的产品类型（MDSERR_ILLEGAL_PRODUCT_TYPE）
+
+MDS_0.15.7.5 / 2018-08-31
+==============================================
+
+  * 修复 '返回错误号对应的错误信息 (MdsApi_GetErrorMsg)' 接口, windows平台获取错误信息不准确的问题
+
 MDS_0.15.7.4 / 2018-08-31
 ==============================================
 

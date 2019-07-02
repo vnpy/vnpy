@@ -57,6 +57,41 @@
  * @version 0.15.5.11   2018/06/01
  *          - 扩大Level2增量更新消息中最大已变更价位列表和委托明细的最大数量, 修复因为支持
  *            同时变更的价位数量不足, 导致部分巨幅波动场景下会丢失价位信息的BUG
+ * @version 0.15.7.6_RC1 2018/11/06
+ *          - 重命名 L1快照体(MdsL1SnapshotBodyT) 的初始化宏名称
+ *            - NULLOBJ_MDS_MKT_DATA_SNAPSHOT_BODY => NULLOBJ_MDS_L1_SNAPSHOT_BODY
+ * @version 0.15.8_RC3  2019/01/14
+ *          - 删除已经废弃的虚拟集合竞价消息的消息定义和数据类型定义
+ *          - 重命名 securityType => mdProductType, 以避免与交易端的证券类型混淆
+ *              - securityType => mdProductType
+ *              - eMdsSecurityTypeT => eMdsMdProductTypeT
+ * @version 0.15.8_u1   2019/03/22
+ *          - 交易所代码的枚举类型中增加 '未定义的交易所代码 (MDS_EXCH_UNDEFINE)'
+ * @version 0.15.8_u6   2019/05/06
+ *          - 调整快照头 MdsMktDataSnapshotHeadT 中的内部字段定义, 将 __origTickSeq 字段
+ *            拆分为 __origTickSeq + __lastUpdateTime 两个字段 (内部使用的字段, 协议保持兼容)
+ * @version 0.15.9      2019/03/12
+ *          - 为了支持科创板, 扩展证券静态信息(MdsStockStaticInfoT)的结构体定义, 增加如下字段:
+ *              - 限价买数量上限 (lmtBuyMaxQty)
+ *              - 限价买数量下限 (lmtBuyMinQty)
+ *              - 限价卖数量上限 (lmtSellMaxQty)
+ *              - 限价卖数量下限 (lmtSellMinQty)
+ *              - 市价买数量上限 (mktBuyMaxQty)
+ *              - 市价买数量下限 (mktBuyMinQty)
+ *              - 市价卖数量上限 (mktSellMaxQty)
+ *              - 市价卖数量下限 (mktSellMinQty)
+ *          - 扩大证券业务开关的最大数量, 该修改可能会对之前版本的API造成影响, 兼容性问题如下:
+ *              - 会影响到证券实时状态消息的延迟计算, 旧版本会读取到无效的打点时间
+ *          - 调整行情数据类型(mdStreamType, eMdsMdStreamTypeT)的取值, 使其可以标识出快
+ *            照行情的具体数据类型
+ *              - 该修改会存在兼容性问题, 客户端程序可以通过编译错误来识别需要调整的地方 (如
+ *                果没有编译错误就不需要调整)
+ *              - 行情数据类型的取值将尽量与消息类型保持一致, 但以下类型比较特殊
+ *                  - 深圳成交量统计指标
+ *                  - 上交所 Level1 行情快照-债券
+ *                  - 上交所 Level1 行情快照-基金
+ *          - 宏定义 '用户名最大长度 (MDS_MAX_USERNAME_LEN)' 从 40 调整为 32
+ *
  * @since   2016/02/11
  */
 
@@ -98,7 +133,7 @@ extern "C" {
 #define MDS_MAX_OPTION_CNT_TOTAL_SUBSCRIBED     (2000)
 
 /** 用户名最大长度 */
-#define MDS_MAX_USERNAME_LEN                    (40)
+#define MDS_MAX_USERNAME_LEN                    (32)
 /** 密码最大长度 */
 #define MDS_MAX_PASSWORD_LEN                    (40)
 /** 协议版本号的最大长度 */
@@ -106,12 +141,28 @@ extern "C" {
 /** 测试请求标识符的最大长度 */
 #define MDS_MAX_TEST_REQ_ID_LEN                 (32)
 
+/** 点分十进制的IPv4, 字符串的最大长度 */
+#define MDS_MAX_IP_LEN                          (16)
+/** MAC地址字符串的最大长度 */
+#define MDS_MAX_MAC_LEN                         (20)
+/** MAC地址字符串的最大长度(按64位对齐的长度) */
+#define MDS_MAX_MAC_ALGIN_LEN                   (24)
+/** 设备序列号字符串的最大长度 */
+#define MDS_MAX_DRIVER_ID_LEN                   (21)
+/** 设备序列号字符串的最大长度(按64位对齐的长度) */
+#define MDS_MAX_DRIVER_ID_ALGIN_LEN             (24)
+
 /** 产品代码长度(C6/C8) */
 #define MDS_MAX_INSTR_CODE_LEN                  (9)
 /** 实际的股票产品代码长度 */
 #define MDS_REAL_STOCK_CODE_LEN                 (6)
 /** 实际的期权产品代码长度 */
 #define MDS_REAL_OPTION_CODE_LEN                (8)
+/** 允许带.SH/.SZ后缀的产品代码的最大长度 */
+#define MDS_MAX_POSTFIXED_INSTR_CODE_LEN        (12)
+
+/** 产品名称最大长度 */
+#define MDS_MAX_SECURITY_NAME_LEN               (40)
 
 /** 发送时间字段(YYYYMMDD-HH:mm:SS.sss (*C21))的最大长度 */
 #define MDS_MAX_SENDING_TIME_LEN                (22)
@@ -144,7 +195,7 @@ extern "C" {
 #define MDS_REAL_FINANCIAL_STATUS_LEN           (8)
 
 /** 证券业务开关的最大数量(深圳证券实时状态消息) */
-#define MDS_MAX_SECURITY_SWITCH_CNT             (32)
+#define MDS_MAX_SECURITY_SWITCH_CNT             (40)
 
 /** 统一的价格单位 */
 #define MDS_UNIFIED_PRICE_UNIT                  (10000)
@@ -190,6 +241,7 @@ extern "C" {
  * 交易所代码
  */
 typedef enum _eMdsExchangeId {
+    MDS_EXCH_UNDEFINE                   = 0,    /**< 未定义的交易所代码 */
     MDS_EXCH_SSE                        = 1,    /**< 交易所-上交所 */
     MDS_EXCH_SZSE                       = 2,    /**< 交易所-深交所 */
     __MAX_MDS_EXCH,
@@ -222,57 +274,76 @@ typedef enum _eMdsMsgSource {
     MDS_MSGSRC_SSE_MDGW_STEP            = 11,   /**< 消息来源-SSE-MDGW-Binary(TCP) */
     __MAX_MDS_MSGSRC,
 
-    /** 消息来源-SZSE-MDGW-Binary @depricated 已过时, 请使用 MDS_MSGSRC_SZSE_MDGW_BINARY */
+    /** 消息来源-SZSE-MDGW-Binary @deprecated 已过时, 请使用 MDS_MSGSRC_SZSE_MDGW_BINARY */
     MDS_MSGSRC_MDGW_BINARY              = MDS_MSGSRC_SZSE_MDGW_BINARY,
-    /** 消息来源-SZSE-MDGW-STEP @depricated 已过时, 请使用 MDS_MSGSRC_SZSE_MDGW_STEP */
+    /** 消息来源-SZSE-MDGW-STEP @deprecated 已过时, 请使用 MDS_MSGSRC_SZSE_MDGW_STEP */
     MDS_MSGSRC_MDGW_STEP                = MDS_MSGSRC_SZSE_MDGW_STEP
 } eMdsMsgSourceT;
 
 
 /**
- * 证券类型
+ * 行情类别 (和交易端的产品类型不同, 行情数据中的产品类型只是用于区分是现货行情还是衍生品行情)
  */
-typedef enum _eMdsSecurityType {
-    MDS_SECURITY_TYPE_STOCK             = 1,    /**< 股票(基金/债券) */
-    MDS_SECURITY_TYPE_INDEX             = 2,    /**< 指数 */
-    MDS_SECURITY_TYPE_OPTION            = 3,    /**< 期权 */
-    __MAX_MDS_SECURITY_TYPE
-} eMdsSecurityTypeT;
+typedef enum _eMdsMdProductType {
+    MDS_MD_PRODUCT_TYPE_STOCK           = 1,    /**< 股票(基金/债券) */
+    MDS_MD_PRODUCT_TYPE_INDEX           = 2,    /**< 指数 */
+    MDS_MD_PRODUCT_TYPE_OPTION          = 3,    /**< 期权 */
+    __MAX_MDS_MD_PRODUCT_TYPE,
+
+    /* @deprecated 以下定义已过时, 为保持兼容而暂时保留 */
+    MDS_SECURITY_TYPE_STOCK             = MDS_MD_PRODUCT_TYPE_STOCK,
+    MDS_SECURITY_TYPE_INDEX             = MDS_MD_PRODUCT_TYPE_INDEX,
+    MDS_SECURITY_TYPE_OPTION            = MDS_MD_PRODUCT_TYPE_OPTION,
+    __MAX_MDS_SECURITY_TYPE             = __MAX_MDS_MD_PRODUCT_TYPE
+} eMdsMdProductTypeT;
 
 
 /**
- * 行情数据类型
+ * 行情数据类型 (仅适用于快照行情, 用于标识 Level1/Level2 快照行情的具体数据类型)
  *
- * 上交所接口协议中的原始取值 (C5):
- *  - MD001 指数行情数据
- *  - MD002 股票(A、B股)行情数据
- *  - MD003 债券行情数据
- *  - MD004 基金行情数据
- *  - M0301 期权交易行情
- *
- * 深交所接口协议中的原始取值:
- *  - 010   现货(股票,基金,债券等)集中竞价交易快照行情
- *  - 020   质押式回购交易快照行情
- *  - 030   债券分销快照行情 (* 属于综合业务, 本系统不处理)
- *  - 040   期权集中竞价交易快照行情 (==> M0301)
- *  - 060   以收盘价交易的盘后定价交易快照行情 (* 属于综合业务, 本系统不处理)
- *  - 061   以成交量加权平均价交易的盘后定价交易快照行情 (* 属于综合业务, 本系统不处理)
- *  - 900   指数快照行情 (==> MD001)
- *  - 910   成交量统计指标快照行情
+ * @note    行情数据类型的取值将尽量与消息类型保持一致, 但以下类型比较特殊
+ *          - 深圳成交量统计指标
+ *          - 上交所 Level1 行情快照-债券
+ *          - 上交所 Level1 行情快照-基金
+ * @see     eMdsMsgTypeT
  */
 typedef enum _eMdsMdStreamType {
-    MDS_MD_STREAM_TYPE_INDEX            = 1,    /**< 指数 */
-    MDS_MD_STREAM_TYPE_STOCK            = 2,    /**< 上交所股票 */
-    MDS_MD_STREAM_TYPE_BOND             = 3,    /**< 上交所债券(Level1) */
-    MDS_MD_STREAM_TYPE_FUND             = 4,    /**< 上交所基金(Level1) */
+    /** Level1 市场行情快照 (10/0x0A) */
+    MDS_MD_STREAM_TYPE_L1_SNAPSHOT      = 10,
+    /** Level1/Level2 指数行情快照 (11/0x0B) */
+    MDS_MD_STREAM_TYPE_INDEX            = 11,
+    /** Level1/Level2 期权行情快照 (12/0x0C) */
+    MDS_MD_STREAM_TYPE_OPTION           = 12,
 
-    MDS_MD_STREAM_TYPE_SZSE_STOCK       = 5,    /**< 深交所现货(股票,基金,债券等)集中竞价交易快照 */
-    MDS_MD_STREAM_TYPE_SZSE_REPO        = 6,    /**< 深交所质押式回购交易快照 */
-    MDS_MD_STREAM_TYPE_SZSE_TRADE_STATS = 7,    /**< 深交所成交量统计指标快照 */
+    /** 深交所 Level1/Level2 成交量统计指标 (15/0x0F, 结构与指数行情相同) */
+    MDS_MD_STREAM_TYPE_SZSE_TRADE_STATS = 15,
+    /** 上交所 Level1 行情快照-债券 (16/0x10, 仅适用于上海Level-1行情) */
+    MDS_MD_STREAM_TYPE_SSE_L1_BOND      = 16,
+    /** 上交所 Level1 行情快照-基金 (17/0x11, 仅适用于上海Level-1行情) */
+    MDS_MD_STREAM_TYPE_SSE_L1_FUND      = 17,
 
-    MDS_MD_STREAM_TYPE_OPTION           = 8,    /**< 期权 */
-    MDS_MD_STREAM_TYPE_OTHERS           = 9,    /**< 其它市场总揽/虚拟集合竞价等快照消息 */
-    __MAX_MDS_MD_STREAM_TYPE
+    /** Level2 市场行情快照 (20/0x14) */
+    MDS_MD_STREAM_TYPE_L2_SNAPSHOT      = 20,
+    /** Level2 委托队列快照 (买一/卖一前五十笔) (21/0x15) */
+    MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_SNAPSHOT
+                                        = 21,
+
+    /** Level2 快照行情的增量更新消息 (24/0x18, 仅上海) */
+    MDS_MD_STREAM_TYPE_L2_SNAPSHOT_INCREMENTAL
+                                        = 24,
+   /** Level2 委托队列快照的增量更新消息 (25/0x19, 仅上海) */
+    MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_INCREMENTAL
+                                        = 25,
+
+    /** Level2 市场总览消息 (26/0x1A, 仅上海) */
+    MDS_MD_STREAM_TYPE_L2_MARKET_OVERVIEW
+                                        = 26,
+    __MAX_MDS_MD_STREAM_TYPE,
+
+    /* @deprecated 以下定义已过时, 为保持兼容而暂时保留 */
+    MDS_MD_STREAM_TYPE_BOND             = MDS_MD_STREAM_TYPE_SSE_L1_BOND,
+    MDS_MD_STREAM_TYPE_FUND             = MDS_MD_STREAM_TYPE_SSE_L1_FUND,
+    MDS_MD_STREAM_TYPE_OTHERS           = MDS_MD_STREAM_TYPE_L2_MARKET_OVERVIEW
 } eMdsMdStreamTypeT;
 
 
@@ -296,16 +367,6 @@ typedef enum _eMdsL2PriceLevelOperator {
     MDS_L2_PX_OPERATOR_DELETE           = 3,    /**< L2价位运算 - Delete */
     __MAX_MDS_L2_PX_OPERATOR
 } eMdsL2PriceLevelOperatorT;
-
-
-/**
- * Level2虚拟集合竞价的虚拟未匹配量的方向
- */
-typedef enum _eMdsL2VirtualAuctionSide {
-    MDS_L2_VIRTUAL_AUCTION_SIDE_NONE    = 0,    /**< 无未匹配量, 买卖两边的未匹配量都为0 */
-    MDS_L2_VIRTUAL_AUCTION_SIDE_BID     = 1,    /**< 买方有未匹配量, 卖方未匹配量为0 */
-    MDS_L2_VIRTUAL_AUCTION_SIDE_OFFER   = 2     /**< 卖方有未匹配量, 买方未匹配量为0 */
-} eMdsL2VirtualAuctionSideT;
 
 
 /**
@@ -384,7 +445,7 @@ typedef enum _eMdsClientStatus {
  */
 typedef struct _MdsTradingSessionStatusMsg {
     uint8               exchId;                 /**< 交易所代码(沪/深) @see eMdsExchangeIdT */
-    uint8               securityType;           /**< 证券类型(股票/期权) @see eMdsSecurityTypeT */
+    uint8               mdProductType;          /**< 行情类别 (股票/指数/期权) @see eMdsMdProductTypeT */
     int8                __isRepeated;           /**< 是否是重复的行情 (供内部使用, 小于0 表示数据倒流) */
     uint8               __filler1;              /**< 按64位对齐的填充域 */
 
@@ -452,7 +513,7 @@ typedef struct _MdsTradingSessionStatusMsg {
  */
 typedef struct _MdsSecurityStatusMsg {
     uint8               exchId;                 /**< 交易所代码(沪/深) @see eMdsExchangeIdT */
-    uint8               securityType;           /**< 证券类型(股票/期权) @see eMdsSecurityTypeT */
+    uint8               mdProductType;          /**< 行情类别 (股票/指数/期权) @see eMdsMdProductTypeT */
     int8                __isRepeated;           /**< 是否是重复的行情 (供内部使用, 小于0 表示数据倒流) */
     uint8               __filler1;              /**< 按64位对齐的填充域 */
 
@@ -461,7 +522,7 @@ typedef struct _MdsSecurityStatusMsg {
     int32               __exchSendingTime;      /**< 交易所发送时间 (HHMMSSsss, 目前获取不到深交所的发送时间, 固定为 0) */
     int32               __mdsRecvTime;          /**< MDS接收到时间 (HHMMSSsss) */
 
-    int32               instrId;                /**< 产品代码 */
+    int32               instrId;                /**< 产品代码 (转换为整数类型的产品代码) */
 
     /** 产品代码 C6 / C8 (如: '000001' 等) */
     char                SecurityID[MDS_MAX_INSTR_CODE_LEN];
@@ -508,6 +569,12 @@ typedef struct _MdsSecurityStatusMsg {
      *  - 25: 实时合并, 适用于分级基金
      *  - 26: 备兑开仓, 适用于期权等衍生品
      *  - 27: 做市商报价, 适用于期权等支持做市商报价的证券
+     *  - 28: 港股通整手买
+     *  - 29: 港股通整手卖
+     *  - 30: 港股通零股买
+     *  - 31: 港股通零股卖
+     *  - 32: 期权普通转备兑仓
+     *  - 33: 期权备兑转普通仓
      */
     struct {
         /** 业务开关的使能标志 (0 未启用, 1 启用) */
@@ -558,6 +625,8 @@ typedef struct _MdsSecurityStatusMsg {
             {0, 0}, {0, 0}, {0, 0}, {0, 0}, \
             {0, 0}, {0, 0}, {0, 0}, {0, 0}, \
             {0, 0}, {0, 0}, {0, 0}, {0, 0}, \
+            {0, 0}, {0, 0}, {0, 0}, {0, 0}, \
+            {0, 0}, {0, 0}, {0, 0}, {0, 0}, \
         } \
         __NULLOBJ_MDS_SECURITY_STATUS_MSG_TAILER
 /* -------------------------           */
@@ -588,19 +657,20 @@ typedef struct _MdsPriceLevelEntry {
  */
 typedef struct _MdsMktDataSnapshotHead {
     uint8               exchId;                 /**< 交易所代码(沪/深) @see eMdsExchangeIdT */
-    uint8               securityType;           /**< 证券类型(股票/期权) @see eMdsSecurityTypeT */
+    uint8               mdProductType;          /**< 行情类别 (股票/指数/期权) @see eMdsMdProductTypeT */
     int8                __isRepeated;           /**< 是否是重复的行情 (内部使用, 小于0表示数据倒流) */
     uint8               __origMdSource;         /**< 原始行情数据来源 @see eMdsMsgSourceT */
 
     int32               tradeDate;              /**< 交易日期 (YYYYMMDD, 8位整型数值) */
     int32               updateTime;             /**< 行情时间 (HHMMSSsss, 交易所时间, 只有上海L1可能会通过拆解SendingTime得到) */
 
-    int32               instrId;                /**< 产品代码 */
+    int32               instrId;                /**< 产品代码 (转换为整数类型的产品代码) */
     int16               bodyLength;             /**< 实际数据长度 */
     uint8               mdStreamType;           /**< 行情数据类型 @see eMdsMdStreamTypeT */
     uint8               __channelNo;            /**< 内部频道号 (供内部使用, 取值范围{1,2,4,8}) */
     uint32              __dataVersion;          /**< 行情数据的更新版本号 */
-    uint64              __origTickSeq;          /**< 对应的原始行情的序列号(供内部使用) */
+    uint32              __origTickSeq;          /**< 对应的原始行情的序列号(供内部使用) */
+    int32               __lastUpdateTime;       /**< 最近一次重复数据的行情时间(供内部使用) */
 
 #ifdef  _MDS_ENABLE_LATENCY_STATS
     /** 消息原始接收时间 (从网络接收到数据的最初时间) */
@@ -640,7 +710,7 @@ typedef struct _MdsMktDataSnapshotHead {
                 MD_SOURCE)                                              \
         (EXCH_ID), (SECURITY_TYPE), 0, (MD_SOURCE), \
         0, 0, \
-        0, 0, 0, 0, 0, 0 \
+        0, 0, 0, 0, 0, 0, 0 \
         __NULLOBJ_MDS_MKT_DATA_SNAPSHOT_HEAD_TAILER
 /* -------------------------           */
 
@@ -667,7 +737,7 @@ typedef struct _MdsIndexSnapshotBody {
     int64               HighIdx;                /**< 最高指数 */
     int64               LowIdx;                 /**< 最低指数 */
     int64               LastIdx;                /**< 最新指数 */
-    int64               CloseIdx;               /**< 今收盘指数 */
+    int64               CloseIdx;               /**< 今收盘指数 (仅上海, 深圳行情没有单独的收盘指数) */
 
     int32               StockNum;               /**< 统计量指标样本个数 (用于深圳成交量统计指标) */
     int32               __filler1;              /**< 按64位对齐的填充域 */
@@ -752,11 +822,11 @@ typedef struct _MdsStockSnapshotBody {
     int32               OpenPx;                 /**< 今开盘价 (价格单位精确到元后四位, 即: 1元=10000) */
     int32               HighPx;                 /**< 最高价 */
     int32               LowPx;                  /**< 最低价 */
-    int32               TradePx;                /**< 成交价 */
+    int32               TradePx;                /**< 成交价 (最新价) */
     int32               ClosePx;                /**< 今收盘价/期权收盘价 (仅上海, 深圳行情没有单独的收盘价) */
 
     int32               IOPV;                   /**< 基金份额参考净值/ETF申赎的单位参考净值 (适用于基金) */
-    int32               NAV;                    /**< 基金 T-1 日净值 (适用于基金) */
+    int32               NAV;                    /**< 基金 T-1 日净值 (适用于基金, 上证Level-2实时行情里面没有该字段) */
     uint64              TotalLongPosition;      /**< 合约总持仓量 (适用于期权) */
 
     /** 五档买盘价位信息 */
@@ -802,8 +872,29 @@ typedef union _MdsL1SnapshotBody {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_MKT_DATA_SNAPSHOT_BODY                              \
+#define NULLOBJ_MDS_L1_SNAPSHOT_BODY                                    \
         {NULLOBJ_MDS_STOCK_SNAPSHOT_BODY}
+/* -------------------------           */
+
+
+/**
+ * 完整的 Level1 证券行情全幅消息定义
+ */
+typedef struct _MdsL1Snapshot {
+    MdsMktDataSnapshotHeadT         head;       /**< 行情数据的消息头 */
+
+    union {
+        MdsStockSnapshotBodyT       stock;      /**< 股票、债券、基金行情数据 */
+        MdsStockSnapshotBodyT       option;     /**< 期权行情数据 */
+        MdsIndexSnapshotBodyT       index;      /**< 指数行情数据 */
+    };
+} MdsL1SnapshotT;
+
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_MDS_L1_SNAPSHOT                                         \
+        {NULLOBJ_MDS_MKT_DATA_SNAPSHOT_HEAD}, \
+        {{NULLOBJ_MDS_STOCK_SNAPSHOT_BODY}}
 /* -------------------------           */
 
 
@@ -816,9 +907,8 @@ typedef union _MdsL1SnapshotBody {
  * 股票(A、B股)、债券、基金
  *
  * 关于集合竞价期间的虚拟集合竞价行情 (上海L2、深圳L2):
- * - 深圳L2集合竞价期间的虚拟成交价通过买卖盘档位揭示, 其中买一和卖一都揭示虚拟成交价格和成交数量,
+ * - 集合竞价期间的虚拟成交价通过买卖盘档位揭示, 其中买一和卖一都揭示虚拟成交价格和成交数量,
  *   买二或卖二揭示虚拟成交价位上的买剩余量或卖剩余量
- * - 上海L2的虚拟集合竞价行情通过单独虚拟集合竞价快照消息(MdsL2VirtualAuctionPriceT)发布
  */
 typedef struct _MdsL2StockSnapshotBody {
     /** 产品代码 C6 / C8 (如: '600000' 等) */
@@ -938,6 +1028,15 @@ typedef struct _MdsL2StockSnapshotBody {
 /**
  * Level2 快照行情的增量更新消息定义 (增量更新消息仅适用于上海L2)
  * 股票(A、B股)、债券、基金
+ *
+ * 关于增量更新消息补充说明如下：
+ * -# 增量更新只有上交所Level2快照有，深交所行情里面没有
+ *    - 上交所的L2快照的更新频率为：每3秒发送一次增量更新消息（如果行情有变化的话），
+ *      每60秒发送一次全量快照（无论行情有无变化）。
+ * -# 增量和全量快照的推送时点是一样的，增量并不会比全量更快，只是信息角度不一样
+ *    - 在对下游系统进行推送时，增量快照和完整快照在推送时间上是没有区别的；
+ *    - MDS会先对交易所发下来的增量更新消息进行整合，然后根据订阅条件向下游推送完整快照或增量更新消息。
+ * -# 没有特别需求的话，不需要订阅增量更新消息，增量消息处理起来比较麻烦
  */
 typedef struct _MdsL2StockSnapshotIncremental {
     uint64              NumTrades;              /**< 成交笔数 */
@@ -962,8 +1061,10 @@ typedef struct _MdsL2StockSnapshotIncremental {
     uint8               HasContainedBestBidLevel;
     /** 买盘价位数量 (不包括已删除且大于最优申买价的价位) */
     uint8               NoBidLevel;
+    /** 买盘价位列表中是否有从队列尾部删除的价位 */
+    uint8               __hasDeletedAtBidTail;
     /** 按64位对齐的填充域 */
-    uint8               __filler1[2];
+    uint8               __filler1;
 
     /** 最优申卖价 */
     int32               BestOfferPrice;
@@ -971,8 +1072,10 @@ typedef struct _MdsL2StockSnapshotIncremental {
     uint8               HasContainedBestOfferLevel;
     /** 卖盘价位数量 (不包括已删除且小于最优申卖价的价位) */
     uint8               NoOfferLevel;
+    /** 卖盘价位列表中是否有从队列尾部删除的价位 */
+    uint8               __hasDeletedAtOfferTail;
     /** 按64位对齐的填充域 */
-    uint8               __filler2[2];
+    uint8               __filler2;
 
     /**
      * (发生变更的价位列表中) 各个价位的运算操作
@@ -994,8 +1097,8 @@ typedef struct _MdsL2StockSnapshotIncremental {
         0, 0, 0, \
         0, 0, 0, 0, \
         0, 0, 0, 0, 0, 0, \
-        0, 0, 0, {0}, \
-        0, 0, 0, {0}, \
+        0, 0, 0, 0, 0, \
+        0, 0, 0, 0, 0, \
         {0}, \
         { \
             {NULLOBJ_MDS_PRICE_LEVEL_ENTRY} \
@@ -1091,36 +1194,6 @@ typedef struct _MdsL2BestOrdersSnapshotIncremental {
 
 
 /**
- * Level2 虚拟集合竞价快照消息定义
- */
-typedef struct _MdsL2VirtualAuctionPrice {
-    /** 产品代码 C6 / C8 (如: '600000' 等) */
-    char                SecurityID[MDS_MAX_INSTR_CODE_LEN];
-
-    /**
-     * 虚拟未匹配量的方向
-     * - 0 = 无未匹配量, 买卖两边的未匹配量都为0
-     * - 1 = 买方有未匹配量, 卖方未匹配量为0
-     * - 2 = 卖方有未匹配量, 买方未匹配量为0
-     * @see eMdsL2VirtualAuctionSideT
-     */
-    uint8               LeavesSide;
-    uint8               __filler[2];            /**< 按64位对齐的填充域 */
-
-    int32               Price;                  /**< 虚拟参考价格 (价格单位精确到元后四位, 即: 1元=10000) */
-    int64               VirtualAuctionQty;      /**< 虚拟匹配量 */
-    int64               LeavesQty;              /**< 虚拟未匹配量 */
-} MdsL2VirtualAuctionPriceT;
-
-
-/* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_L2_VIRTUAL_AUCTION_PRICE                            \
-        {0}, 0, {0}, \
-        0, 0, 0
-/* -------------------------           */
-
-
-/**
  * Level2 市场总览消息定义
  */
 typedef struct _MdsL2MarketOverview {
@@ -1156,9 +1229,6 @@ typedef union _MdsL2SnapshotBody {
     /** 指数行情数据 */
     MdsIndexSnapshotBodyT                   index;
 
-    /** Level2 虚拟集合竞价 (仅上证) */
-    MdsL2VirtualAuctionPriceT               l2VirtualAuctionPrice;
-
     /** Level2 市场总览 (仅上证) */
     MdsL2MarketOverviewT                    l2MarketOverview;
 } MdsL2SnapshotBodyT;
@@ -1171,7 +1241,7 @@ typedef union _MdsL2SnapshotBody {
 
 
 /**
- * (对外发布的) 完整的 Level1/Level2 证券行情全幅消息定义
+ * (对外发布的) 完整的 Level1/Level2 快照行情定义
  */
 typedef struct _MdsMktDataSnapshot {
     /** 行情数据的消息头 */
@@ -1196,9 +1266,6 @@ typedef struct _MdsMktDataSnapshot {
 
         /** Level1/Level2 指数行情数据 */
         MdsIndexSnapshotBodyT               index;
-
-        /** Level2 虚拟集合竞价 (仅上证) */
-        MdsL2VirtualAuctionPriceT           l2VirtualAuctionPrice;
 
         /** Level2 市场总览 (仅上证) */
         MdsL2MarketOverviewT                l2MarketOverview;
@@ -1228,9 +1295,6 @@ typedef struct _MdsMktDataSnapshot {
 #define DATASIZE_MDS_INDEX_SNAPSHOT                                     \
         (sizeof(MdsMktDataSnapshotHeadT) + sizeof(MdsIndexSnapshotBodyT))
 
-#define DATASIZE_MDS_L2_VIRTUAL_AUCTION_PRICE                           \
-        (sizeof(MdsMktDataSnapshotHeadT) + sizeof(MdsL2VirtualAuctionPriceT))
-
 #define DATASIZE_MDS_L2_MARKET_OVERVIEW                                 \
         (sizeof(MdsMktDataSnapshotHeadT) + sizeof(MdsL2MarketOverviewT))
 /* -------------------------           */
@@ -1245,14 +1309,14 @@ typedef struct _MdsMktDataSnapshot {
  */
 typedef struct _MdsL2Trade {
     uint8               exchId;                 /**< 交易所代码(沪/深) @see eMdsExchangeIdT */
-    uint8               securityType;           /**< 证券类型(股票/期权) @see eMdsSecurityTypeT */
+    uint8               mdProductType;          /**< 行情类别 (股票/指数/期权) @see eMdsMdProductTypeT */
     int8                __isRepeated;           /**< 是否是重复的行情 (内部使用, 小于0表示数据倒流) */
     uint8               __filler1;              /**< 按64位对齐的填充域 */
 
     int32               tradeDate;              /**< 交易日期 (YYYYMMDD, 非官方数据) */
     int32               TransactTime;           /**< 成交时间 (HHMMSSsss) */
 
-    int32               instrId;                /**< 产品代码 */
+    int32               instrId;                /**< 产品代码 (转换为整数类型的产品代码) */
     int32               ChannelNo;              /**< 成交通道/频道代码 [0..9999] */
     int32               ApplSeqNum;             /**< 成交序号/消息记录号 (从1开始, 按频道连续) */
 
@@ -1327,14 +1391,14 @@ typedef struct _MdsL2Trade {
  */
 typedef struct _MdsL2Order {
     uint8               exchId;                 /**< 交易所代码(沪/深) @see eMdsExchangeIdT */
-    uint8               securityType;           /**< 证券类型(股票/期权) @see eMdsSecurityTypeT */
+    uint8               mdProductType;          /**< 行情类别 (股票/指数/期权) @see eMdsMdProductTypeT */
     int8                __isRepeated;           /**< 是否是重复的行情 (内部使用, 小于0表示数据倒流) */
     uint8               __filler1;              /**< 按64位对齐的填充域 */
 
     int32               tradeDate;              /**< 交易日期 YYYYMMDD (自然日) */
     int32               TransactTime;           /**< 委托时间 HHMMSSsss */
 
-    int32               instrId;                /**< 产品代码 */
+    int32               instrId;                /**< 产品代码 (转换为整数类型的产品代码) */
     int32               ChannelNo;              /**< 频道代码 [0..9999] */
     int32               ApplSeqNum;             /**< 委托序号 (从1开始, 按频道连续) */
 
@@ -1391,32 +1455,98 @@ typedef struct _MdsL2Order {
 /* -------------------------           */
 
 
+/* ===================================================================
+ * 汇总的行情数据定义
+ * =================================================================== */
+
 /**
- * Level2 逐笔数据丢失消息定义
- * 逐笔数据(逐笔成交/逐笔委托)发生了数据丢失, 并且无法重建, 将放弃这些丢失的逐笔数据
- * @depricated 已废弃
+ * 完整的行情数据消息体定义
  */
-typedef struct _MdsL2TickLost {
-    uint8               exchId;                 /**< 交易所代码(沪/深) @see eMdsExchangeIdT */
-    uint8               __filler3[3];           /**< 按64位对齐的填充域 */
+typedef union _MdsWholeMktMsgBody {
+    /** 快照行情 (Level1 快照 / Level2 快照 / 指数行情 / 期权行情) */
+    MdsMktDataSnapshotT             mktDataSnapshot;
 
-    int32               tradeDate;              /**< 交易日期 YYYYMMDD (自然日) */
-    int32               lostTime;               /**< 发生数据丢失的时间 HHMMSSsss */
+    /** Level2 逐笔成交行情 */
+    MdsL2TradeT                     trade;
+    /** Level2 逐笔委托行情 */
+    MdsL2OrderT                     order;
 
-    int32               channelNo;              /**< 频道代码 */
-    int32               beginApplSeqNum;        /**< 已丢失逐笔数据的起始序号 */
-    int32               endApplSeqNum;          /**< 已丢失逐笔数据的结束序号 */
-
-    uint64              __origTickSeq;          /**< 对应的原始行情的序列号 (内部使用) */
-} MdsL2TickLostT;
+    /** 市场状态消息 (仅适用于上交所) */
+    MdsTradingSessionStatusMsgT     trdSessionStatus;
+    /** 证券实时状态消息 (仅适用于深交所) */
+    MdsSecurityStatusMsgT           securityStatus;
+} MdsWholeMktMsgBodyT;
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_L2_TICK_LOST                                        \
-        0, {0}, \
+#define NULLOBJ_MDS_WHOLE_MKT_MSG_BODY          \
+        {NULLOBJ_MDS_MKT_DATA_REQUEST_RSP}
+/* -------------------------           */
+
+
+/* ===================================================================
+ * 产品信息等静态数据定义
+ * =================================================================== */
+
+/**
+ * 证券信息(股票/基金/债券)的静态数据结构体定义
+ */
+typedef struct _MdsStockStaticInfo {
+    /** 产品代码 C6 / C8 (如: '600000' 等) */
+    char                securityId[MDS_MAX_INSTR_CODE_LEN];
+    uint8               exchId;                 /**< 交易所代码 (沪/深) @see eMdsExchangeIdT */
+    uint8               mdProductType;          /**< 行情类别 (股票/期权/指数) @see eMdsMdProductTypeT */
+    uint8               oesSecurityType;        /**< 证券类型 (股票/债券/基金/...) @see eOesSecurityTypeT */
+    uint8               subSecurityType;        /**< 证券子类型 @see eOesSubSecurityTypeT */
+    uint8               __filler[7];            /**< 按64位对齐的填充域 */
+    int32               instrId;                /**< 产品代码 (转换为整数类型的产品代码) */
+
+    int32               buyQtyUnit;             /**< 买入单位 */
+    union {
+        int32           lmtBuyMaxQty;           /**< 单笔限价买委托数量上限 */
+        int32           buyOrdMaxQty;           /**< 单笔限价买委托数量上限 @deprecated 已废弃, 为了兼容旧版本而保留 */
+    };
+    union {
+        int32           lmtBuyMinQty;           /**< 单笔限价买委托数量下限 */
+        int32           buyOrdMinQty;           /**< 单笔限价买委托数量下限 @deprecated 已废弃, 为了兼容旧版本而保留 */
+    };
+    int32               mktBuyMaxQty;           /**< 单笔市价买委托数量上限 */
+    int32               mktBuyMinQty;           /**< 单笔市价买委托数量下限 */
+
+    int32               sellQtyUnit;            /**< 卖出单位 */
+    union {
+        int32           lmtSellMaxQty;          /**< 单笔限价卖委托数量上限 */
+        int32           sellOrdMaxQty;          /**< 单笔限价卖委托数量上限 @deprecated 已废弃, 为了兼容旧版本而保留 */
+    };
+    union {
+        int32           lmtSellMinQty;          /**< 单笔限价卖委托数量下限 */
+        int32           sellOrdMinQty;          /**< 单笔限价卖委托数量下限 @deprecated 已废弃, 为了兼容旧版本而保留 */
+    };
+    int32               mktSellMaxQty;          /**< 单笔市价卖委托数量上限 */
+    int32               mktSellMinQty;          /**< 单笔市价卖委托数量下限 */
+
+    int32               prevClose;              /**< 昨日收盘价 (价格单位精确到元后四位, 即: 1元=10000) */
+    int32               priceTick;              /**< 价格档位 (价格单位精确到元后四位, 即: 1元=10000) */
+    int32               limitUpPrice;           /**< 上涨限价 (价格单位精确到元后四位, 即: 1元=10000) */
+    int32               limitDownPrice;         /**< 下跌限价 (价格单位精确到元后四位, 即: 1元=10000) */
+
+    int64               parPrice;               /**< 面值 (价格单位精确到元后四位, 即: 1元=10000) */
+    int64               bondInterest;           /**< 债券的每百元应计利息额 (单位精确到元后八位) */
+
+    /** 产品名称 (UTF-8 编码) */
+    char                securityName[MDS_MAX_SECURITY_NAME_LEN];
+    char                __reserve[32];          /**< 预留的备用字段 */
+} MdsStockStaticInfoT;
+
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_MDS_STOCK_STATIC_INFO                                   \
+        {0}, 0, 0, 0, 0, {0}, 0, \
+        0, {0}, {0}, 0, 0, \
+        0, {0}, {0}, 0, 0, \
+        0, 0, 0, 0, \
         0, 0, \
-        0, 0, 0, \
-        0
+        {0}, {0}
 /* -------------------------           */
 
 

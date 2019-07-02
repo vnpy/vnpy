@@ -113,6 +113,11 @@ struct tm*  STime_ParseTime(struct tm *pTm, const char *pTimeStr,
 BOOL        STime_IsValidDate(const char *pStr, const char *pFormat);
 
 /*
+ * 校验是否是有效的日期型整数 (YYYYMMDD)
+ */
+BOOL        STime_IsValidIntDate(int32 date);
+
+/*
  * 返回 timeval 结构体大小
  */
 int32       __STime_GetTimevalStructSize();

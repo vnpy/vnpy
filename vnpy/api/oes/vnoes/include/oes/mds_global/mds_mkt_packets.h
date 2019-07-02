@@ -17,7 +17,7 @@
 /**
  * @file    mds_mkt_packets.h
  *
- * 订单执行系统订单接收模块通讯报文定义
+ * 行情系统通讯报文定义
  *
  * @version 0.8.12      2016/09/13
  * @version 0.12        2016/11/30
@@ -60,9 +60,16 @@
  *          - 增加可订阅的数据种类 (DataType), 以支持单独订阅指数行情和期权行情
  *              - MDS_SUB_DATA_TYPE_INDEX_SNAPSHOT, 与L1_SNAPSHOT的区别在于, INDEX_SNAPSHOT可以单独订阅指数行情
  *              - MDS_SUB_DATA_TYPE_OPTION_SNAPSHOT, 与L1_SNAPSHOT的区别在于, OPTION_SNAPSHOT可以单独订阅期权行情
+ * @version 0.15.5.17   2018/11/23
+ *          - 登录应答 MdsLogonRspT 增加'服务端集群号'字段 setNum
  * @version 0.15.6      2018/05/18
  *          - 调整行情订阅消息中可订阅的数据种类 (DataType) 的枚举类型定义和取值
  *              - 新增 MDS_SUB_DATA_TYPE_DEFAULT (默认数据类型)
+ * @version 0.15.8_RC3  2019/01/14
+ *          - 删除已经废弃的虚拟集合竞价消息的消息定义和数据类型定义
+ * @version 0.15.9      2019/03/21
+ *          - 增加修改客户端登录密码请求报文和消息代码定义
+ *
  * @since   2016/01/03
  */
 
@@ -86,7 +93,7 @@ extern "C" {
  * =================================================================== */
 
 /** 当前采用的协议版本号 */
-#define MDS_APPL_VER_ID                         "0.15.7.4"
+#define MDS_APPL_VER_ID                         "0.15.9"
 
 /**
  * 当前采用的协议版本号数值
@@ -97,7 +104,7 @@ extern "C" {
  *   - DD 为构建号
  *   - X  0, 表示不带时间戳的正常版本; 1, 表示带时间戳的延迟测量版本
  */
-#define MDS_APPL_VER_VALUE                      (1001507041)
+#define MDS_APPL_VER_VALUE                      (1001509001)
 
 /** 兼容的最低协议版本号 */
 #define MDS_MIN_APPL_VER_ID                     "0.15.5"
@@ -119,14 +126,13 @@ typedef enum _eMdsMsgType {
     MDS_MSGTYPE_HEARTBEAT                           = 1,
     /** 测试请求消息 (2/0x02) */
     MDS_MSGTYPE_TEST_REQUEST                        = 2,
-    /** 登录消息 (3/0x03) */
-    MDS_MSGTYPE_LOGON                               = 3,
     /** 注销消息 (4/0x04) */
     MDS_MSGTYPE_LOGOUT                              = 4,
     /** 证券行情订阅消息 (5/0x05) */
     MDS_MSGTYPE_MARKET_DATA_REQUEST                 = 5,
     /** 压缩的数据包 (6/0x06, 内部使用) */
     MDS_MSGTYPE_COMPRESSED_PACKETS                  = 6,
+
     /** 最大的会话消息类型 */
     __MDS_MSGTYPE_SESSION_MAX,
 
@@ -167,10 +173,18 @@ typedef enum _eMdsMsgType {
 
     /** Level2 市场总览消息 (26/0x1A, 仅上海) */
     MDS_MSGTYPE_L2_MARKET_OVERVIEW                  = 26,
-    /** Level2 虚拟集合竞价消息 (27/0x1B, 仅上海) */
+    /** Level2 虚拟集合竞价消息 (27/0x1B, @deprecated 已废弃) */
     MDS_MSGTYPE_L2_VIRTUAL_AUCTION_PRICE            = 27,
     /** 最大的Level-2行情消息类型 */
     __MDS_MSGTYPE_L2_MAX,
+
+    /*
+     * 指令类消息
+     */
+    /** 修改客户端登录密码 (60/0x3C) */
+    MDS_MSGTYPE_CMD_CHANGE_PASSWORD                 = 60,
+    /** 最大的指令消息类型 */
+    __MDS_MSGTYPE_CMD_MAX,
 
     /*
      * 查询类消息
@@ -181,8 +195,13 @@ typedef enum _eMdsMsgType {
     MDS_MSGTYPE_QRY_SECURITY_STATUS                 = 81,
     /** 查询(上证)市场状态 (82/0x52) */
     MDS_MSGTYPE_QRY_TRADING_SESSION_STATUS          = 82,
+
+    /** 批量查询证券(股票/债券/基金)静态信息 (85/0x55) */
+    MDS_MSGTYPE_QRY_STOCK_STATIC_INFO               = 85,
+    /** 批量查询行情快照列表 (86/0x56) */
+    MDS_MSGTYPE_QRY_SNAPSHOT_LIST                   = 86,
     /** 最大的查询消息类型 */
-    __MDS_MSGTYPE_QRY_MAX
+    __MDS_MSGTYPE_QRY_MAX,
 
 } eMdsMsgTypeT;
 /* -------------------------           */
@@ -290,7 +309,6 @@ typedef enum _eMdsSubscribedTickExpireType {
  * - 0x0004: L2委托队列
  * - 0x0008: L2逐笔成交
  * - 0x0010: L2逐笔委托 (深圳)
- * - 0x0020: L2虚拟集合竞价 (上海)
  * - 0x0040: L2市场总览 (上海)
  * - 0x0100: 市场状态 (上海)
  * - 0x0200: 证券实时状态 (深圳)
@@ -317,9 +335,6 @@ typedef enum _eMdsSubscribeDataType {
     /** L2逐笔委托 (*深圳, 0x10/16) */
     MDS_SUB_DATA_TYPE_L2_ORDER                  = 0x0010,
 
-    /** L2虚拟集合竞价 (*上海, 0x20/32) */
-    MDS_SUB_DATA_TYPE_L2_VIRTUAL_AUCTION_PRICE  = 0x0020,
-
     /** L2市场总览 (*上海, 0x40/64) */
     MDS_SUB_DATA_TYPE_L2_MARKET_OVERVIEW        = 0x0040,
 
@@ -330,10 +345,10 @@ typedef enum _eMdsSubscribeDataType {
     MDS_SUB_DATA_TYPE_SECURITY_STATUS           = 0x0200,
 
     /** 指数行情 (与L1_SNAPSHOT的区别在于, INDEX_SNAPSHOT可以单独订阅指数行情) */
-    MDS_SUB_DATA_TYPE_INDEX_SNAPSHOT            = 0x400,
+    MDS_SUB_DATA_TYPE_INDEX_SNAPSHOT            = 0x0400,
 
     /** 期权行情 (与L1_SNAPSHOT的区别在于, OPTION_SNAPSHOT可以单独订阅期权行情) */
-    MDS_SUB_DATA_TYPE_OPTION_SNAPSHOT           = 0x800,
+    MDS_SUB_DATA_TYPE_OPTION_SNAPSHOT           = 0x0800,
 
     /** 空数据种类 (可用于不指定任何数量种类的情况) */
     MDS_SUB_DATA_TYPE_NONE                      = 0x8000,
@@ -370,70 +385,36 @@ typedef enum _eMdsSubscribedChannelNo {
 /* -------------------------           */
 
 
+/**
+ * 可指定的协议约定类型定义
+ * - 0:     默认的协议约定类型
+ * - 0x80:  约定以压缩方式传输数据
+ * - 0xFF:  无任何协议约定
+ */
+typedef enum _eMdsProtocolHintsType {
+    /** 默认的协议约定类型 */
+    MDS_PROT_HINTS_TYPE_DEFAULT                 = 0,
+
+    /** 协议约定以压缩方式传输数据 */
+    MDS_PROT_HINTS_TYPE_COMPRESS                = 0x80,
+
+    /** 无任何协议约定 */
+    MDS_PROT_HINTS_TYPE_NONE                    = 0xFF,
+    __MAX_MDS_PROT_HINTS_TYPE                   = 0xFF
+} eMdsProtocolHintsTypeT;
+/* -------------------------           */
+
+
 /* ===================================================================
  * 会话消息报文定义
  * =================================================================== */
-
-/**
- * 登录请求报文
- */
-typedef struct _MdsLogonReq {
-    /** 加密方法 */
-    int32               encryptMethod;
-    /** 心跳间隔, 单位为秒 (有效范围为 [10~300], 若取值小于0则赋值为默认值30秒, 否则设置为最大/最小值) */
-    int32               heartBtInt;
-
-    /** 用户名 */
-    char                username[MDS_MAX_USERNAME_LEN];
-    /** 密码 */
-    char                password[MDS_MAX_PASSWORD_LEN];
-    /** 客户端采用的协议版本号 */
-    char                applVerId[MDS_VER_ID_MAX_LEN];
-} MdsLogonReqT;
-
-
-/* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_LOGON_REQ                   \
-        0, 0, {0}, {0}, {0}
-/* -------------------------           */
-
-
-/**
- * 登录请求的应答报文
- */
-typedef struct _MdsLogonRsp {
-    /** 加密方法 */
-    int32               encryptMethod;
-    /** 心跳间隔, 单位为秒 */
-    int32               heartBtInt;
-
-    /** 用户名 */
-    char                username[MDS_MAX_USERNAME_LEN];
-    /** 服务器端采用的协议版本号 */
-    char                applVerId[MDS_VER_ID_MAX_LEN];
-    /** 服务器端兼容的最低协议版本号 */
-    char                minVerId[MDS_VER_ID_MAX_LEN];
-
-    uint8               hostNum;                /**< 服务端主机编号 */
-    uint8               isLeader;               /**< 是否是'主节点' */
-    uint8               leaderHostNum;          /**< '主节点'的主机编号 */
-    uint8               __filler[5];            /**< 按64位对齐的填充域 */
-} MdsLogonRspT;
-
-
-/* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_LOGON_RSP                   \
-        0, 0, {0}, {0}, {0}, \
-        0, 0, 0, {0}
-/* -------------------------           */
-
 
 /**
  * 行情订阅请求的订阅产品条目
  */
 typedef struct _MdsMktDataRequestEntry {
     uint8               exchId;                 /**< 交易所代码 @see eMdsExchangeIdT */
-    uint8               securityType;           /**< 证券类型 @see eMdsSecurityTypeT */
+    uint8               mdProductType;          /**< 证券类型 @see eMdsMdProductTypeT */
     uint8               __filler[2];            /**< 按64位对齐的填充域 */
     int32               instrId;                /**< 产品代码 */
 } MdsMktDataRequestEntryT;
@@ -580,7 +561,6 @@ typedef struct _MdsMktDataRequestReq {
      * - 0x0004: L2委托队列
      * - 0x0008: L2逐笔成交
      * - 0x0010: L2逐笔委托 (深圳)
-     * - 0x0020: L2虚拟集合竞价 (上海)
      * - 0x0040: L2市场总览 (上海)
      * - 0x0100: 市场状态 (上海)
      * - 0x0200: 证券实时状态 (深圳)
@@ -716,7 +696,6 @@ typedef struct _MdsMktDataRequestRsp {
      * - 0x0004: L2委托队列
      * - 0x0008: L2逐笔成交
      * - 0x0010: L2逐笔委托 (深圳)
-     * - 0x0020: L2虚拟集合竞价 (上海)
      * - 0x0040: L2市场总览 (上海)
      * - 0x0100: 市场状态 (上海)
      * - 0x0200: 证券实时状态 (深圳)
@@ -864,6 +843,83 @@ typedef struct _MdsTestRequestRsp {
 /* -------------------------           */
 
 
+/**
+ * 修改登录密码请求报文
+ */
+typedef struct _MdsChangePasswordReq {
+    /** 加密方法 */
+    int32               encryptMethod;
+    /** 按64位对齐的填充域 */
+    int32               __filler;
+
+    /** 登录用户名 */
+    char                username[MDS_MAX_USERNAME_LEN];
+
+    /** 用户私有信息 (由客户端自定义填充, 并在回报数据中原样返回) */
+    union {
+        uint64          u64;                    /**< uint64 类型的用户私有信息 */
+        int64           i64;                    /**< int64 类型的用户私有信息 */
+        uint32          u32[2];                 /**< uint32[2] 类型的用户私有信息 */
+        int32           i32[2];                 /**< int32[2] 类型的用户私有信息 */
+        char            c8[8];                  /**< char[8] 类型的用户私有信息 */
+    } userInfo;
+
+    /** 之前的登录密码 */
+    char                oldPassword[MDS_MAX_PASSWORD_LEN];
+
+    /** 新的登录密码 */
+    char                newPassword[MDS_MAX_PASSWORD_LEN];
+} MdsChangePasswordReqT;
+
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_MDS_CHANGE_PASSWORD_REQ         \
+        0, 0, \
+        {0}, {0}, \
+        {0}, {0}
+/* -------------------------           */
+
+
+/**
+ * 修改登录密码应答报文
+ */
+typedef struct _MdsChangePasswordRsp {
+    /** 加密方法 */
+    int32               encryptMethod;
+    /** 按64位对齐的填充域 */
+    int32               __filler;
+
+    /** 登录用户名 */
+    char                username[MDS_MAX_USERNAME_LEN];
+
+    /** 用户私有信息 (由客户端自定义填充, 并在应答数据中原样返回) */
+    union {
+        uint64          u64;                    /**< uint64 类型的用户私有信息 */
+        int64           i64;                    /**< int64 类型的用户私有信息 */
+        uint32          u32[2];                 /**< uint32[2] 类型的用户私有信息 */
+        int32           i32[2];                 /**< int32[2] 类型的用户私有信息 */
+        char            c8[8];                  /**< char[8] 类型的用户私有信息 */
+    } userInfo;
+
+    /** 按64位对齐的填充域 */
+    int32               __filler2;
+    /** 发生日期 (格式为 YYYYMMDD, 形如 20160830) */
+    int32               transDate;
+    /** 发生时间 (格式为 HHMMSSsss, 形如 141205000) */
+    int32               transTime;
+    /** 拒绝原因 */
+    int32               rejReason;
+} MdsChangePasswordRspT;
+
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_MDS_CHANGE_PASSWORD_RSP         \
+        0, 0, \
+        {0}, {0}, \
+        0, 0, 0, 0
+/* -------------------------           */
+
+
 /* ===================================================================
  * 汇总的请求/应答消息定义
  * =================================================================== */
@@ -878,8 +934,6 @@ typedef union _MdsMktReqMsgBody {
     MdsMktDataRequestReqT           mktDataRequestReq;
     /** 测试请求报文 */
     MdsTestRequestReqT              testRequestReq;
-    /** 登录请求报文 */
-    MdsLogonReqT                    logonReq;
 
     /** 证券行情查询请求 */
     MdsQryMktDataSnapshotReqT       qryMktDataSnapshotReq;
@@ -887,6 +941,13 @@ typedef union _MdsMktReqMsgBody {
     MdsQrySecurityStatusReqT        qrySecurityStatusReq;
     /** (上证)市场状态查询请求 */
     MdsQryTrdSessionStatusReqT      qryTrdSessionStatusReq;
+    /** 证券静态信息批量查询请求 */
+    MdsQryStockStaticInfoReqT       qryStockStaticInfoReq;
+    /** 行情快照批量查询请求 */
+    MdsQrySnapshotListReqT          qrySnapshotListReq;
+
+    /** 修改登录密码请求 */
+    MdsChangePasswordReqT           changePasswordReq;
 } MdsMktReqMsgBodyT;
 
 
@@ -900,26 +961,42 @@ typedef union _MdsMktReqMsgBody {
  * 汇总的应答消息的消息体定义
  */
 typedef union _MdsMktRspMsgBody {
+    /*
+     * 会话消息
+     */
     /** 行情订阅请求的应答报文 */
     MdsMktDataRequestRspT           mktDataRequestRsp;
     /** 测试请求的应答报文 */
     MdsTestRequestRspT              testRequestRsp;
-    /** 登录请求的应答报文 */
-    MdsLogonRspT                    logonRsp;
 
+    /*
+     * 行情消息
+     */
     /** 证券行情全幅消息 */
     MdsMktDataSnapshotT             mktDataSnapshot;
     /** Level2 逐笔成交行情 */
     MdsL2TradeT                     trade;
     /** Level2 逐笔委托行情 */
     MdsL2OrderT                     order;
-    /** Level2 逐笔数据丢失消息 @depricated 已废弃 */
-    MdsL2TickLostT                  tickLost;
 
     /** 市场状态消息 */
     MdsTradingSessionStatusMsgT     trdSessionStatus;
     /** 证券实时状态消息 */
     MdsSecurityStatusMsgT           securityStatus;
+
+    /*
+     * 查询消息
+     */
+    /** 证券静态信息查询的应答数据 */
+    MdsQryStockStaticInfoRspT       qryStockStaticInfoRsp;
+    /** 行情快照批量查询的应答数据 */
+    MdsQrySnapshotListRspT          qrySnapshotListRsp;
+
+    /*
+     * 指令消息
+     */
+    /** 修改登录密码的应答数据 */
+    MdsChangePasswordRspT           changePasswordRsp;
 } MdsMktRspMsgBodyT;
 
 
@@ -948,12 +1025,26 @@ typedef struct _MdsUdpPktHead {
     int32               msgCnt;                 /**< 报文中包含的消息数量 */
     int32               pktSiz;                 /**< 报文体数据大小 */
     uint64              pktSeq;                 /**< 报文顺序号 */
+
+#ifdef  _MDS_TRACE_UDP_SENDING_TIME
+    STimeval32T         __sendingTime;          /**< 消息实际发送时间 */
+#endif
 } MdsUdpPktHeadT;
+
+
+/* 消息头尾部填充字段的初始化值定义 */
+#ifdef  _MDS_TRACE_UDP_SENDING_TIME
+#   define  __NULLOBJ_MDS_UDP_HEAD_TAILER       \
+            , {0, 0}
+#else
+#   define  __NULLOBJ_MDS_UDP_HEAD_TAILER
+#endif
 
 
 /* 结构体的初始化值定义 */
 #define NULLOBJ_MDS_UDP_PKT_HEAD                \
-        0, 0, 0
+        0, 0, 0 \
+        __NULLOBJ_MDS_UDP_HEAD_TAILER
 /* -------------------------           */
 
 

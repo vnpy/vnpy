@@ -23,6 +23,20 @@
  *          - 新增错误码定义
  *              - 1031, 非法的加密类型（MDSERR_ILLEGAL_ENCRYPT_TYPE）
  *              - 1033, 无可用节点（MDSERR_NO_AVAILABLE_NODE）
+ * @version 0.15.7.6    2018/10/16
+ *          - 新增错误码定义
+ *              - 1035, 非法的产品类型（MDSERR_ILLEGAL_PRODUCT_TYPE）
+ * @version 0.15.8_RC3  2019/01/14
+ *          - 调整错误描述
+ *              - 1007, 非服务开放时间（MDSERR_NOT_TRADING_TIME）
+ *              - 1022, 尚不支持或尚未开通此业务（MDSERR_NOT_SUPPORT）
+ * @version 0.15.9      2019/03/18
+ *          - 新增错误码定义
+ *              - 1029, 密码未改变（MDSERR_PASSWORD_UNCHANGED）
+ *              - 1030, 非法的来源分类（MDSERR_ILLEGAL_SOURCE_TYPE）
+ *              - 1032, 非法的客户端设备序列号 (MDSERR_ILLEGAL_DRIVER)
+ *              - 1034, 密码强度不足（MDSERR_PASSWORD_WEAK_STRENGTH）
+ *              - 1036, 未通过黑白名单检查 (MDSERR_WBLIST_CHECK_FAILURE)
  *
  * @since   2016/1/3
  */
@@ -62,11 +76,11 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_mdsApiErrors[];
 #define MDSERR_INCOMPATIBLE_PROTOCOL_VERSION    (&__ERRS_mdsApiErrors[4])
 /** 1006, 数据不存在 */
 #define MDSERR_NOT_FOUND                        (&__ERRS_mdsApiErrors[5])
-/** 1007, 未到达服务开放时间 */
+/** 1007, 非服务开放时间 */
 #define MDSERR_NOT_TRADING_TIME                 (&__ERRS_mdsApiErrors[6])
 /** 1008, 非法的定位游标 */
 #define MDSERR_ILLEGAL_POSITION                 (&__ERRS_mdsApiErrors[7])
-/** 1009, 非法的客户端登陆用户名称 */
+/** 1009, 非法的客户端登录用户名称 */
 #define MDSERR_ILLEGAL_CLIENT_NAME              (&__ERRS_mdsApiErrors[8])
 /** 1010, 非法的证券代码 */
 #define MDSERR_ILLEGAL_SECURITY_ID              (&__ERRS_mdsApiErrors[9])
@@ -92,12 +106,28 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_mdsApiErrors[];
 #define MDSERR_CONFLICT_REQ_CONDITION           (&__ERRS_mdsApiErrors[19])
 /** 1021, 客户端IP/MAC地址格式错误 */
 #define MDSERR_ILLEGAL_IP_MAC_FORMAT            (&__ERRS_mdsApiErrors[20])
-/** 1022, 尚不支持此业务 */
+/** 1022, 尚不支持或尚未开通此业务 */
 #define MDSERR_NOT_SUPPORT                      (&__ERRS_mdsApiErrors[21])
+/** 1026, 流量超出限制范围 */
+#define MDSERR_TRAFFIC_CONTROL_OUTOF_RANGE      (&__ERRS_mdsApiErrors[25])
+/** 1027, 禁止使用API登录 */
+#define MDSERR_API_FORBIDDEN                    (&__ERRS_mdsApiErrors[26])
+/** 1029, 密码未改变 */
+#define MDSERR_PASSWORD_UNCHANGED               (&__ERRS_mdsApiErrors[28])
+/** 1030, 非法的来源分类 */
+#define MDSERR_ILLEGAL_SOURCE_TYPE              (&__ERRS_mdsApiErrors[29])
 /** 1031, 非法的加密类型 */
 #define MDSERR_ILLEGAL_ENCRYPT_TYPE             (&__ERRS_mdsApiErrors[30])
+/** 1032, 非法的客户端设备序列号 */
+#define MDSERR_ILLEGAL_DRIVER                   (&__ERRS_mdsApiErrors[31])
 /** 1033, 无可用节点 */
 #define MDSERR_NO_AVAILABLE_NODE                (&__ERRS_mdsApiErrors[32])
+/** 1034, 密码强度不足 */
+#define MDSERR_PASSWORD_WEAK_STRENGTH           (&__ERRS_mdsApiErrors[33])
+/** 1035, 非法的产品类型 */
+#define MDSERR_ILLEGAL_PRODUCT_TYPE             (&__ERRS_mdsApiErrors[34])
+/** 1036, 未通过黑白名单检查 */
+#define MDSERR_WBLIST_CHECK_FAILURE             (&__ERRS_mdsApiErrors[35])
 /* -------------------------           */
 
 

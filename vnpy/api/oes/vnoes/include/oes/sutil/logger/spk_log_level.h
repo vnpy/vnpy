@@ -69,8 +69,12 @@ extern  SLogLevelT __SPK_DLL_IMPORT     __SPK_slogLevels[];
 #define     SLOG_LEVEL_INFO             (&__SPK_slogLevels[2])
 #define     SLOG_LEVEL_WARN             (&__SPK_slogLevels[3])
 #define     SLOG_LEVEL_ERROR            (&__SPK_slogLevels[4])
-#define     SLOG_LEVEL_FATAL            (&__SPK_slogLevels[5])
-#define     SLOG_LEVEL_NONE             (&__SPK_slogLevels[6])
+
+#define     SLOG_LEVEL_BZ_INFO          (&__SPK_slogLevels[5])
+#define     SLOG_LEVEL_BZ_WARN          (&__SPK_slogLevels[6])
+#define     SLOG_LEVEL_BZ_ERROR         (&__SPK_slogLevels[7])
+#define     SLOG_LEVEL_FATAL            (&__SPK_slogLevels[8])
+#define     SLOG_LEVEL_NONE             (&__SPK_slogLevels[9])
 /* -------------------------           */
 
 
@@ -78,13 +82,17 @@ extern  SLogLevelT __SPK_DLL_IMPORT     __SPK_slogLevels[];
  * 日志级别值定义
  */
 typedef enum _eSLogLevelValue {
-    SLOG_LEVEL_VALUE_TRACE      = 0,                /**< 日志级别 TRACE */
-    SLOG_LEVEL_VALUE_DEBUG      = 1,                /**< 日志级别 DEBUG */
-    SLOG_LEVEL_VALUE_INFO       = 2,                /**< 日志级别 INFO */
-    SLOG_LEVEL_VALUE_WARN       = 3,                /**< 日志级别 WARN */
-    SLOG_LEVEL_VALUE_ERROR      = 4,                /**< 日志级别 ERROR */
-    SLOG_LEVEL_VALUE_FATAL      = 5,                /**< 日志级别 FATAL */
-    SLOG_LEVEL_VALUE_NONE       = 6,                /**< 日志级别 NONE */
+    SLOG_LEVEL_VALUE_TRACE      = 0,                /**< 日志级别-跟踪信息 */
+    SLOG_LEVEL_VALUE_DEBUG      = 1,                /**< 日志级别-调试信息 */
+    SLOG_LEVEL_VALUE_INFO       = 2,                /**< 日志级别-提示信息 */
+    SLOG_LEVEL_VALUE_WARN       = 3,                /**< 日志级别-警告信息 */
+    SLOG_LEVEL_VALUE_ERROR      = 4,                /**< 日志级别-错误信息 */
+
+    SLOG_LEVEL_VALUE_BZ_INFO    = 5,                /**< 日志级别-业务提示 */
+    SLOG_LEVEL_VALUE_BZ_WARN    = 6,                /**< 日志级别-业务警告 */
+    SLOG_LEVEL_VALUE_BZ_ERROR   = 7,                /**< 日志级别-业务错误 */
+    SLOG_LEVEL_VALUE_FATAL      = 8,                /**< 日志级别-致命错误 */
+    SLOG_LEVEL_VALUE_NONE       = 9,                /**< 日志级别-屏蔽所有日志 */
     __SLOG_LEVEL_VALUE_MAX
 } eSLogLevelValueT;
 /* -------------------------           */

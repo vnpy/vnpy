@@ -15,83 +15,6 @@
 #include "mds_api/mds_api.h"
 
 
-void generate_class_OesQryOptionRsp(pybind11::object & parent)
-{
-    pybind11::class_<_OesQryOptionRsp> c(parent, "_OesQryOptionRsp");
-    if constexpr (std::is_default_constructible_v<_OesQryOptionRsp>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryOptionRsp, "rspHead", rspHead);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryOptionRsp, "qryItems", qryItems);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryOptionRsp, c);
-    module_vnoes::objects.emplace("_OesQryOptionRsp", c);
-}
-void generate_class_OesQryTradingDayRsp(pybind11::object & parent)
-{
-    pybind11::class_<_OesQryTradingDayRsp> c(parent, "_OesQryTradingDayRsp");
-    if constexpr (std::is_default_constructible_v<_OesQryTradingDayRsp>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryTradingDayRsp, "tradingDay", tradingDay);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryTradingDayRsp, "__filler", __filler);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryTradingDayRsp, c);
-    module_vnoes::objects.emplace("_OesQryTradingDayRsp", c);
-}
-void generate_class_OesQryMarketStateFilter(pybind11::object & parent)
-{
-    pybind11::class_<_OesQryMarketStateFilter> c(parent, "_OesQryMarketStateFilter");
-    if constexpr (std::is_default_constructible_v<_OesQryMarketStateFilter>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateFilter, "exchId", exchId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateFilter, "platformId", platformId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateFilter, "__filler", __filler);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateFilter, "userInfo", userInfo);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryMarketStateFilter, c);
-    module_vnoes::objects.emplace("_OesQryMarketStateFilter", c);
-}
-void generate_class_OesQryMarketStateReq(pybind11::object & parent)
-{
-    pybind11::class_<_OesQryMarketStateReq> c(parent, "_OesQryMarketStateReq");
-    if constexpr (std::is_default_constructible_v<_OesQryMarketStateReq>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateReq, "reqHead", reqHead);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateReq, "qryFilter", qryFilter);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryMarketStateReq, c);
-    module_vnoes::objects.emplace("_OesQryMarketStateReq", c);
-}
-void generate_class_OesQryMarketStateRsp(pybind11::object & parent)
-{
-    pybind11::class_<_OesQryMarketStateRsp> c(parent, "_OesQryMarketStateRsp");
-    if constexpr (std::is_default_constructible_v<_OesQryMarketStateRsp>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateRsp, "rspHead", rspHead);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateRsp, "qryItems", qryItems);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryMarketStateRsp, c);
-    module_vnoes::objects.emplace("_OesQryMarketStateRsp", c);
-}
-void generate_class_OesQryReqMsg(pybind11::object & parent)
-{
-    pybind11::class_<_OesQryReqMsg> c(parent, "_OesQryReqMsg");
-    if constexpr (std::is_default_constructible_v<_OesQryReqMsg>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryOrd", qryOrd);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryTrd", qryTrd);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryCashAsset", qryCashAsset);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryStkHolding", qryStkHolding);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryOptHolding", qryOptHolding);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryCust", qryCust);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryInvAcct", qryInvAcct);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryComms", qryComms);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryFundTrsf", qryFundTrsf);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryLotWinning", qryLotWinning);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryIssue", qryIssue);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryStock", qryStock);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryEtf", qryEtf);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryEtfComponent", qryEtfComponent);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryOption", qryOption);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryMktState", qryMktState);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryCounterCash", qryCounterCash);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryReqMsg, c);
-    module_vnoes::objects.emplace("_OesQryReqMsg", c);
-}
 void generate_class_OesQryRspMsg(pybind11::object & parent)
 {
     pybind11::class_<_OesQryRspMsg> c(parent, "_OesQryRspMsg");
@@ -118,51 +41,6 @@ void generate_class_OesQryRspMsg(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "counterCashRsp", counterCashRsp);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryRspMsg, c);
     module_vnoes::objects.emplace("_OesQryRspMsg", c);
-}
-void generate_class_OesLogonReq(pybind11::object & parent)
-{
-    pybind11::class_<_OesLogonReq> c(parent, "_OesLogonReq");
-    if constexpr (std::is_default_constructible_v<_OesLogonReq>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonReq, "encryptMethod", encryptMethod);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonReq, "heartBtInt", heartBtInt);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonReq, "username", username);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonReq, "password", password);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonReq, "applVerId", applVerId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonReq, "clientIp", clientIp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonReq, "clientMac", clientMac);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonReq, "clEnvId", clEnvId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonReq, "sourceType", sourceType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonReq, "__protocolHints", __protocolHints);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonReq, "__filler", __filler);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonReq, "lastInMsgSeq", lastInMsgSeq);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonReq, "lastOutMsgSeq", lastOutMsgSeq);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonReq, "clientDriverId", clientDriverId);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesLogonReq, c);
-    module_vnoes::objects.emplace("_OesLogonReq", c);
-}
-void generate_class_OesLogonRsp(pybind11::object & parent)
-{
-    pybind11::class_<_OesLogonRsp> c(parent, "_OesLogonRsp");
-    if constexpr (std::is_default_constructible_v<_OesLogonRsp>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "encryptMethod", encryptMethod);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "heartBtInt", heartBtInt);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "username", username);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "applVerId", applVerId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "minVerId", minVerId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "hostNum", hostNum);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "isLeader", isLeader);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "leaderHostNum", leaderHostNum);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "clEnvId", clEnvId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "clientType", clientType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "clientStatus", clientStatus);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "__protocolHints", __protocolHints);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "__filler", __filler);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "lastInMsgSeq", lastInMsgSeq);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLogonRsp, "lastOutMsgSeq", lastOutMsgSeq);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesLogonRsp, c);
-    module_vnoes::objects.emplace("_OesLogonRsp", c);
 }
 void generate_class_OesReportSynchronizationReq(pybind11::object & parent)
 {
@@ -347,7 +225,6 @@ void generate_class_OesReqMsgBody(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesReqMsgBody, "changePasswordReq", changePasswordReq);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesReqMsgBody, "testRequestReq", testRequestReq);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesReqMsgBody, "rptSyncReq", rptSyncReq);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesReqMsgBody, "logonReq", logonReq);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesReqMsgBody, c);
     module_vnoes::objects.emplace("_OesReqMsgBody", c);
 }
@@ -361,7 +238,6 @@ void generate_class_OesRspMsgBody(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesRspMsgBody, "changePasswordRsp", changePasswordRsp);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesRspMsgBody, "testRequestRsp", testRequestRsp);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesRspMsgBody, "reportSynchronizationRsp", reportSynchronizationRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesRspMsgBody, "logonRsp", logonRsp);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesRspMsgBody, c);
     module_vnoes::objects.emplace("_OesRspMsgBody", c);
 }
@@ -472,6 +348,7 @@ void generate_class_SGeneralClientChannel(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannel, "heartBtInt", heartBtInt);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannel, "testReqInt", testReqInt);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannel, "protocolType", protocolType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannel, "remoteSetNum", remoteSetNum);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannel, "remoteHostNum", remoteHostNum);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannel, "remoteIsLeader", remoteIsLeader);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannel, "leaderHostNum", leaderHostNum);
@@ -555,9 +432,172 @@ void generate_class_SGeneralClientChannelGroup(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannelGroup, "__customFlag", __customFlag);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannelGroup, "channelList", channelList);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannelGroup, "__maxFd", __maxFd);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannelGroup, "__maxFdCnt", __maxFdCnt);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannelGroup, "__groupFlag", __groupFlag);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannelGroup, "__filler", __filler);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannelGroup, "__fdArray", __fdArray);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientChannelGroup, "__fdSet", __fdSet);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _SGeneralClientChannelGroup, c);
     module_vnoes::objects.emplace("_SGeneralClientChannelGroup", c);
+}
+void generate_class_SGeneralClientAddrInfo(pybind11::object & parent)
+{
+    pybind11::class_<_SGeneralClientAddrInfo> c(parent, "_SGeneralClientAddrInfo");
+    if constexpr (std::is_default_constructible_v<_SGeneralClientAddrInfo>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientAddrInfo, "uri", uri);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientAddrInfo, "targetCompId", targetCompId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientAddrInfo, "username", username);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientAddrInfo, "password", password);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientAddrInfo, "hostNum", hostNum);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientAddrInfo, "__filler", __filler);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _SGeneralClientAddrInfo, c);
+    module_vnoes::objects.emplace("_SGeneralClientAddrInfo", c);
+}
+void generate_class_SGeneralClientRemoteCfg(pybind11::object & parent)
+{
+    pybind11::class_<_SGeneralClientRemoteCfg> c(parent, "_SGeneralClientRemoteCfg");
+    if constexpr (std::is_default_constructible_v<_SGeneralClientRemoteCfg>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientRemoteCfg, "addrCnt", addrCnt);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientRemoteCfg, "heartBtInt", heartBtInt);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientRemoteCfg, "clusterType", clusterType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientRemoteCfg, "clEnvId", clEnvId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientRemoteCfg, "__filler", __filler);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientRemoteCfg, "senderCompId", senderCompId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientRemoteCfg, "targetCompId", targetCompId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientRemoteCfg, "username", username);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientRemoteCfg, "password", password);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientRemoteCfg, "addrList", addrList);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _SGeneralClientRemoteCfg, "socketOpt", socketOpt);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _SGeneralClientRemoteCfg, c);
+    module_vnoes::objects.emplace("_SGeneralClientRemoteCfg", c);
+}
+void generate_class_OesApiSubscribeInfo(pybind11::object & parent)
+{
+    pybind11::class_<_OesApiSubscribeInfo> c(parent, "_OesApiSubscribeInfo");
+    if constexpr (std::is_default_constructible_v<_OesApiSubscribeInfo>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiSubscribeInfo, "clEnvId", clEnvId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiSubscribeInfo, "__filler", __filler);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiSubscribeInfo, "rptTypes", rptTypes);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesApiSubscribeInfo, c);
+    module_vnoes::objects.emplace("_OesApiSubscribeInfo", c);
+}
+void generate_class_OesApiClientCfg(pybind11::object & parent)
+{
+    pybind11::class_<_OesApiClientCfg> c(parent, "_OesApiClientCfg");
+    if constexpr (std::is_default_constructible_v<_OesApiClientCfg>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiClientCfg, "ordChannelCfg", ordChannelCfg);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiClientCfg, "rptChannelCfg", rptChannelCfg);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiClientCfg, "qryChannelCfg", qryChannelCfg);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiClientCfg, "subscribeInfo", subscribeInfo);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesApiClientCfg, c);
+    module_vnoes::objects.emplace("_OesApiClientCfg", c);
+}
+void generate_class_OesApiClientEnv(pybind11::object & parent)
+{
+    pybind11::class_<_OesApiClientEnv> c(parent, "_OesApiClientEnv");
+    if constexpr (std::is_default_constructible_v<_OesApiClientEnv>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiClientEnv, "ordChannel", ordChannel);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiClientEnv, "rptChannel", rptChannel);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiClientEnv, "qryChannel", qryChannel);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesApiClientEnv, c);
+    module_vnoes::objects.emplace("_OesApiClientEnv", c);
+}
+void generate_class_MdsTradingSessionStatusMsg(pybind11::object & parent)
+{
+    pybind11::class_<_MdsTradingSessionStatusMsg> c(parent, "_MdsTradingSessionStatusMsg");
+    if constexpr (std::is_default_constructible_v<_MdsTradingSessionStatusMsg>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "exchId", exchId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "mdProductType", mdProductType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__isRepeated", __isRepeated);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__filler1", __filler1);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "tradeDate", tradeDate);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "updateTime", updateTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__exchSendingTime", __exchSendingTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__mdsRecvTime", __mdsRecvTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "TotNoRelatedSym", TotNoRelatedSym);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "TradingSessionID", TradingSessionID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__filler3", __filler3);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__dataVersion", __dataVersion);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__origTickSeq", __origTickSeq);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__origNetTime", __origNetTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__recvTime", __recvTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__collectedTime", __collectedTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__processedTime", __processedTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__pushingTime", __pushingTime);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsTradingSessionStatusMsg, c);
+    module_vnoes::objects.emplace("_MdsTradingSessionStatusMsg", c);
+}
+void generate_class_MdsSecurityStatusMsg(pybind11::object & parent)
+{
+    pybind11::class_<_MdsSecurityStatusMsg> c(parent, "_MdsSecurityStatusMsg");
+    if constexpr (std::is_default_constructible_v<_MdsSecurityStatusMsg>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "exchId", exchId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "mdProductType", mdProductType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__isRepeated", __isRepeated);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__filler1", __filler1);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "tradeDate", tradeDate);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "updateTime", updateTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__exchSendingTime", __exchSendingTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__mdsRecvTime", __mdsRecvTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "instrId", instrId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "SecurityID", SecurityID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "FinancialStatus", FinancialStatus);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__filler2", __filler2);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__channelNo", __channelNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__dataVersion", __dataVersion);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__origTickSeq", __origTickSeq);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "NoSwitch", NoSwitch);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__filler4", __filler4);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "switches", switches);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__origNetTime", __origNetTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__recvTime", __recvTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__collectedTime", __collectedTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__processedTime", __processedTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__pushingTime", __pushingTime);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsSecurityStatusMsg, c);
+    module_vnoes::objects.emplace("_MdsSecurityStatusMsg", c);
+}
+void generate_class_MdsPriceLevelEntry(pybind11::object & parent)
+{
+    pybind11::class_<_MdsPriceLevelEntry> c(parent, "_MdsPriceLevelEntry");
+    if constexpr (std::is_default_constructible_v<_MdsPriceLevelEntry>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsPriceLevelEntry, "Price", Price);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsPriceLevelEntry, "NumberOfOrders", NumberOfOrders);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsPriceLevelEntry, "OrderQty", OrderQty);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsPriceLevelEntry, c);
+    module_vnoes::objects.emplace("_MdsPriceLevelEntry", c);
+}
+void generate_class_MdsMktDataSnapshotHead(pybind11::object & parent)
+{
+    pybind11::class_<_MdsMktDataSnapshotHead> c(parent, "_MdsMktDataSnapshotHead");
+    if constexpr (std::is_default_constructible_v<_MdsMktDataSnapshotHead>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "exchId", exchId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "mdProductType", mdProductType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__isRepeated", __isRepeated);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__origMdSource", __origMdSource);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "tradeDate", tradeDate);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "updateTime", updateTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "instrId", instrId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "bodyLength", bodyLength);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "mdStreamType", mdStreamType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__channelNo", __channelNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__dataVersion", __dataVersion);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__origTickSeq", __origTickSeq);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__lastUpdateTime", __lastUpdateTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__origNetTime", __origNetTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__recvTime", __recvTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__collectedTime", __collectedTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__processedTime", __processedTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__pushingTime", __pushingTime);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsMktDataSnapshotHead, c);
+    module_vnoes::objects.emplace("_MdsMktDataSnapshotHead", c);
 }

@@ -80,7 +80,7 @@ class _OesOrdReq():
     ordQty: int
     ordPrice: int
     origClOrdId: int
-    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1525:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1629:5)"
     __ordReqOrigSendTime: _spk_struct_timeval32
     
     
@@ -105,7 +105,7 @@ class _OesOrdCancelReq():
     origClEnvId: str
     __ORD_CANCEL_BASE_INFO_filler2: List[int]
     origClOrdId: int
-    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1541:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1645:5)"
     __ordReqOrigSendTime: _spk_struct_timeval32
     
     
@@ -131,7 +131,7 @@ class _OesOrdReject():
     ordQty: int
     ordPrice: int
     origClOrdId: int
-    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1557:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1661:5)"
     __ordReqOrigSendTime: _spk_struct_timeval32
     origClSeqNo: int
     origClEnvId: str
@@ -165,7 +165,7 @@ class _OesOrdCnfm():
     ordQty: int
     ordPrice: int
     origClOrdId: int
-    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1595:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1699:5)"
     __ordReqOrigSendTime: _spk_struct_timeval32
     clOrdId: int
     clientId: int
@@ -181,9 +181,11 @@ class _OesOrdCnfm():
     subSecurityType: int
     __platformId: int
     __tgwGrpNo: int
-    __declareFlag: int
-    __ORD_CNFM_BASE_INFO_filler: int
+    __tgwPartitionNo: int
+    productType: int
     exchOrdId: str
+    __declareFlag: int
+    __ORD_CNFM_BASE_INFO_filler: List[int]
     frzAmt: int
     frzInterest: int
     frzFee: int
@@ -231,7 +233,9 @@ class _OesTrdBaseInfo():
     cumQty: int
     __rowNum: int
     __tgwGrpNo: int
-    __TRD_BASE_INFO_filler: List[int]
+    __isTrsfInCashAvailable: int
+    __tgwPartitionNo: int
+    productType: int
     origOrdQty: int
     pbuId: int
     branchId: int
@@ -266,7 +270,9 @@ class _OesTrdCnfm():
     cumQty: int
     __rowNum: int
     __tgwGrpNo: int
-    __TRD_BASE_INFO_filler: List[int]
+    __isTrsfInCashAvailable: int
+    __tgwPartitionNo: int
+    productType: int
     origOrdQty: int
     pbuId: int
     branchId: int
@@ -282,7 +288,7 @@ class _OesTrdCnfm():
     cumAmt: int
     cumInterest: int
     cumFee: int
-    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1795:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1903:5)"
     __trdCnfmOrigRecvTime: _spk_struct_timeval32
     __trdCnfmCollectedTime: _spk_struct_timeval32
     __trdCnfmActualDealTime: _spk_struct_timeval32
@@ -327,7 +333,7 @@ class _OesFundTrsfBaseInfo():
     trdPasswd: str
     trsfPasswd: str
     occurAmt: int
-    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1919:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:2027:5)"
     
     
 class _OesFundTrsfReq():
@@ -350,7 +356,7 @@ class _OesFundTrsfReq():
     trdPasswd: str
     trsfPasswd: str
     occurAmt: int
-    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1933:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:2041:5)"
     
     
 class _OesFundTrsfReject():
@@ -373,7 +379,7 @@ class _OesFundTrsfReject():
     trdPasswd: str
     trsfPasswd: str
     occurAmt: int
-    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1947:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:2055:5)"
     ordDate: int
     ordTime: int
     clientId: int
@@ -401,7 +407,7 @@ class _OesFundTrsfReport():
     direct: int
     cashAcctId: str
     occurAmt: int
-    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1994:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:2102:5)"
     fundTrsfId: int
     counterEntrustNo: int
     operDate: int
@@ -428,6 +434,7 @@ class _OesIssueBaseInfo():
     subSecurityType: int
     isCancelAble: int
     isReApplyAble: int
+    productType: int
     __ISSUE_BASE_filler: List[int]
     securityName: str
     underlyingSecurityId: str
@@ -438,14 +445,18 @@ class _OesIssueBaseInfo():
     ordMaxQty: int
     ordMinQty: int
     issuePrice: int
+    upperLimitPrice: int
     ceilPrice: int
+    lowerLimitPrice: int
     floorPrice: int
     
     
 class _OesPriceLimit():
     
     
+    upperLimitPrice: int
     ceilPrice: int
+    lowerLimitPrice: int
     floorPrice: int
     
     
@@ -454,6 +465,7 @@ class _OesStockBaseInfo():
     
     securityId: str
     mktId: int
+    productType: int
     securityType: int
     subSecurityType: int
     securityLevel: int
@@ -463,13 +475,22 @@ class _OesStockBaseInfo():
     isDayTrading: int
     suspFlag: int
     temporarySuspFlag: int
-    __filter: List[int]
+    __STOCK_BASE_filler: List[int]
     buyQtyUnit: int
-    sellQtyUnit: int
+    lmtBuyMaxQty: int
     buyOrdMaxQty: int
+    lmtBuyMinQty: int
     buyOrdMinQty: int
+    mktBuyMaxQty: int
+    mktBuyMinQty: int
+    sellQtyUnit: int
+    lmtSellMaxQty: int
     sellOrdMaxQty: int
+    lmtSellMinQty: int
     sellOrdMinQty: int
+    mktSellMaxQty: int
+    mktSellMinQty: int
+    priceTick: int
     priceUnit: int
     prevClose: int
     parPrice: int
@@ -479,6 +500,7 @@ class _OesStockBaseInfo():
     priceLimit: List[_OesPriceLimit]
     securityName: str
     fundId: str
+    __STOCK_BASE_reserve: str
     
     
 class _OesEtfBaseInfo():
@@ -622,7 +644,10 @@ class _OesInvAcctBaseInfo():
     limits: int
     permissions: int
     pbuId: int
+    __INV_ACCT_BASE_filler2: int
     subscriptionQuota: int
+    kcSubscriptionQuota: int
+    __INV_ACCT_BASE_reserve: str
     
     
 class _OesStkHoldingBaseInfo():
@@ -633,6 +658,7 @@ class _OesStkHoldingBaseInfo():
     mktId: int
     securityType: int
     subSecurityType: int
+    productType: int
     __HOLD_BASE_filler: List[int]
     originalHld: int
     originalCostAmt: int
@@ -690,16 +716,6 @@ class _OesTradingPermissionEntry():
     permissionCode: int
     applicableMarkets: List[int]
     permissionMemo: str
-    
-    
-class _OesInputSourceInfo():
-    
-    
-    sourceIp: str
-    sourceMac: str
-    sourceType: int
-    __filler: List[int]
-    sourceDriverId: str
     
     
 class _SMsgHead():
@@ -892,6 +908,7 @@ class _OesQryStkHoldingFilter():
     securityId: str
     mktId: int
     securityType: int
+    productType: int
     __filler: List[int]
     userInfo: int
     
@@ -904,6 +921,7 @@ class _OesStkHoldingItem():
     mktId: int
     securityType: int
     subSecurityType: int
+    productType: int
     __HOLD_BASE_filler: List[int]
     originalHld: int
     originalCostAmt: int
@@ -1020,7 +1038,10 @@ class _OesInvAcctItem():
     limits: int
     permissions: int
     pbuId: int
+    __INV_ACCT_BASE_filler2: int
     subscriptionQuota: int
+    kcSubscriptionQuota: int
+    __INV_ACCT_BASE_reserve: str
     custId: str
     
     
@@ -1056,6 +1077,7 @@ class _OesInvAcctOverview():
     custId: str
     isValid: int
     __filler: List[int]
+    kcSubscriptionQuota: int
     trdOrdCnt: int
     nonTrdOrdCnt: int
     cancelOrdCnt: int
@@ -1238,6 +1260,7 @@ class _OesQryIssueFilter():
     
     securityId: str
     mktId: int
+    productType: int
     __filler: List[int]
     userInfo: int
     
@@ -1440,45 +1463,6 @@ class _OesQryRspMsg():
     counterCashRsp: _OesQryCounterCashRsp
     
     
-class _OesLogonReq():
-    
-    
-    encryptMethod: int
-    heartBtInt: int
-    username: str
-    password: str
-    applVerId: str
-    clientIp: str
-    clientMac: str
-    clEnvId: str
-    sourceType: int
-    __protocolHints: int
-    __filler: List[int]
-    lastInMsgSeq: int
-    lastOutMsgSeq: int
-    clientDriverId: str
-    
-    
-class _OesLogonRsp():
-    
-    
-    encryptMethod: int
-    heartBtInt: int
-    username: str
-    applVerId: str
-    minVerId: str
-    hostNum: int
-    isLeader: int
-    leaderHostNum: int
-    clEnvId: str
-    clientType: int
-    clientStatus: int
-    __protocolHints: int
-    __filler: int
-    lastInMsgSeq: int
-    lastOutMsgSeq: int
-    
-    
 class _OesReportSynchronizationReq():
     
     
@@ -1533,7 +1517,7 @@ class _OesChangePasswordReq():
     encryptMethod: int
     __filler: int
     username: str
-    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_packets.h:510:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_packets.h:454:5)"
     oldPassword: str
     newPassword: str
     
@@ -1553,7 +1537,7 @@ class _OesChangePasswordRsp():
     encryptMethod: int
     __filler: int
     username: str
-    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_packets.h:547:5)"
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_packets.h:491:5)"
     clientId: int
     clEnvId: str
     __filler2: str
@@ -1617,7 +1601,6 @@ class _OesReqMsgBody():
     changePasswordReq: _OesChangePasswordReq
     testRequestReq: _OesTestRequestReq
     rptSyncReq: _OesReportSynchronizationReq
-    logonReq: _OesLogonReq
     
     
 class _OesRspMsgBody():
@@ -1628,7 +1611,6 @@ class _OesRspMsgBody():
     changePasswordRsp: _OesChangePasswordRsp
     testRequestRsp: _OesTestRequestRsp
     reportSynchronizationRsp: _OesReportSynchronizationRsp
-    logonRsp: _OesLogonRsp
     
     
 class _SErrMsg():
@@ -1745,6 +1727,7 @@ class _SGeneralClientChannel():
     heartBtInt: int
     testReqInt: int
     protocolType: int
+    remoteSetNum: int
     remoteHostNum: int
     remoteIsLeader: int
     leaderHostNum: int
@@ -1775,8 +1758,8 @@ class _SGeneralClientChannel():
     __groupFlag: int
     __protocolHints: int
     __filler: List[int]
-    __reserveData: "(anonymous union at vnoes/include/oes\sutil/net/spk_general_client_define.h:181:5)"
-    __extData: "(anonymous union at vnoes/include/oes\sutil/net/spk_general_client_define.h:197:5)"
+    __reserveData: "(anonymous union at vnoes/include/oes\sutil/net/spk_general_client_define.h:185:5)"
+    __extData: "(anonymous union at vnoes/include/oes\sutil/net/spk_general_client_define.h:201:5)"
     
     
 class _SGeneralClientChannelGroup():
@@ -1786,8 +1769,10 @@ class _SGeneralClientChannelGroup():
     __customFlag: int
     channelList: List[_SGeneralClientChannel]
     __maxFd: int
+    __maxFdCnt: int
     __groupFlag: int
-    __filler: List[int]
+    __filler: int
+    __fdArray: List[pollfd]
     __fdSet: fd_set
     
     
@@ -1847,7 +1832,7 @@ class _MdsTradingSessionStatusMsg():
     
     
     exchId: int
-    securityType: int
+    mdProductType: int
     __isRepeated: str
     __filler1: int
     tradeDate: int
@@ -1870,7 +1855,7 @@ class _MdsSecurityStatusMsg():
     
     
     exchId: int
-    securityType: int
+    mdProductType: int
     __isRepeated: str
     __filler1: int
     tradeDate: int
@@ -1886,7 +1871,7 @@ class _MdsSecurityStatusMsg():
     __origTickSeq: int
     NoSwitch: int
     __filler4: int
-    switches: List["(anonymous struct at vnoes/include/oes\mds_global/mds_base_model.h:512:5)"]
+    switches: List["(anonymous struct at vnoes/include/oes\mds_global/mds_base_model.h:579:5)"]
     __origNetTime: _spk_struct_timeval32
     __recvTime: _spk_struct_timeval32
     __collectedTime: _spk_struct_timeval32
@@ -1906,7 +1891,7 @@ class _MdsMktDataSnapshotHead():
     
     
     exchId: int
-    securityType: int
+    mdProductType: int
     __isRepeated: str
     __origMdSource: int
     tradeDate: int
@@ -1917,6 +1902,7 @@ class _MdsMktDataSnapshotHead():
     __channelNo: int
     __dataVersion: int
     __origTickSeq: int
+    __lastUpdateTime: int
     __origNetTime: _spk_struct_timeval32
     __recvTime: _spk_struct_timeval32
     __collectedTime: _spk_struct_timeval32
@@ -1973,6 +1959,15 @@ class _MdsL1SnapshotBody():
     index: _MdsIndexSnapshotBody
     
     
+class _MdsL1Snapshot():
+    
+    
+    head: _MdsMktDataSnapshotHead
+    stock: _MdsStockSnapshotBody
+    option: _MdsStockSnapshotBody
+    index: _MdsIndexSnapshotBody
+    
+    
 class _MdsL2StockSnapshotBody():
     
     
@@ -2020,11 +2015,13 @@ class _MdsL2StockSnapshotIncremental():
     BestBidPrice: int
     HasContainedBestBidLevel: int
     NoBidLevel: int
-    __filler1: List[int]
+    __hasDeletedAtBidTail: int
+    __filler1: int
     BestOfferPrice: int
     HasContainedBestOfferLevel: int
     NoOfferLevel: int
-    __filler2: List[int]
+    __hasDeletedAtOfferTail: int
+    __filler2: int
     PriceLevelOperator: List[int]
     PriceLevels: List[_MdsPriceLevelEntry]
     
@@ -2061,17 +2058,6 @@ class _MdsL2BestOrdersSnapshotIncremental():
     OrderQty: List[int]
     
     
-class _MdsL2VirtualAuctionPrice():
-    
-    
-    SecurityID: str
-    LeavesSide: int
-    __filler: List[int]
-    Price: int
-    VirtualAuctionQty: int
-    LeavesQty: int
-    
-    
 class _MdsL2MarketOverview():
     
     
@@ -2089,7 +2075,6 @@ class _MdsL2SnapshotBody():
     l2BestOrders: _MdsL2BestOrdersSnapshotBody
     l2BestOrdersIncremental: _MdsL2BestOrdersSnapshotIncremental
     index: _MdsIndexSnapshotBody
-    l2VirtualAuctionPrice: _MdsL2VirtualAuctionPrice
     l2MarketOverview: _MdsL2MarketOverview
     
     
@@ -2104,7 +2089,6 @@ class _MdsMktDataSnapshot():
     stock: _MdsStockSnapshotBody
     option: _MdsStockSnapshotBody
     index: _MdsIndexSnapshotBody
-    l2VirtualAuctionPrice: _MdsL2VirtualAuctionPrice
     l2MarketOverview: _MdsL2MarketOverview
     
     
@@ -2112,7 +2096,7 @@ class _MdsL2Trade():
     
     
     exchId: int
-    securityType: int
+    mdProductType: int
     __isRepeated: str
     __filler1: int
     tradeDate: int
@@ -2142,7 +2126,7 @@ class _MdsL2Order():
     
     
     exchId: int
-    securityType: int
+    mdProductType: int
     __isRepeated: str
     __filler1: int
     tradeDate: int
@@ -2165,24 +2149,55 @@ class _MdsL2Order():
     __pushingTime: _spk_struct_timeval32
     
     
-class _MdsL2TickLost():
+class _MdsWholeMktMsgBody():
     
     
+    mktDataSnapshot: _MdsMktDataSnapshot
+    trade: _MdsL2Trade
+    order: _MdsL2Order
+    trdSessionStatus: _MdsTradingSessionStatusMsg
+    securityStatus: _MdsSecurityStatusMsg
+    
+    
+class _MdsStockStaticInfo():
+    
+    
+    securityId: str
     exchId: int
-    __filler3: List[int]
-    tradeDate: int
-    lostTime: int
-    channelNo: int
-    beginApplSeqNum: int
-    endApplSeqNum: int
-    __origTickSeq: int
+    mdProductType: int
+    oesSecurityType: int
+    subSecurityType: int
+    __filler: List[int]
+    instrId: int
+    buyQtyUnit: int
+    lmtBuyMaxQty: int
+    buyOrdMaxQty: int
+    lmtBuyMinQty: int
+    buyOrdMinQty: int
+    mktBuyMaxQty: int
+    mktBuyMinQty: int
+    sellQtyUnit: int
+    lmtSellMaxQty: int
+    sellOrdMaxQty: int
+    lmtSellMinQty: int
+    sellOrdMinQty: int
+    mktSellMaxQty: int
+    mktSellMinQty: int
+    prevClose: int
+    priceTick: int
+    limitUpPrice: int
+    limitDownPrice: int
+    parPrice: int
+    bondInterest: int
+    securityName: str
+    __reserve: str
     
     
 class _MdsQryMktDataSnapshotReq():
     
     
     exchId: int
-    securityType: int
+    mdProductType: int
     __filler: List[int]
     instrId: int
     
@@ -2191,39 +2206,105 @@ class _MdsQryTrdSessionStatusReq():
     
     
     exchId: int
-    securityType: int
+    mdProductType: int
     __filler: List[int]
     
     
-class _MdsLogonReq():
+class _MdsQryReqHeadT():
     
     
-    encryptMethod: int
-    heartBtInt: int
-    username: str
-    password: str
-    applVerId: str
+    maxPageSize: int
+    lastPosition: int
     
     
-class _MdsLogonRsp():
+class _MdsQryRspHeadT():
     
     
-    encryptMethod: int
-    heartBtInt: int
-    username: str
-    applVerId: str
-    minVerId: str
-    hostNum: int
-    isLeader: int
-    leaderHostNum: int
+    itemCount: int
+    lastPosition: int
+    isEnd: str
     __filler: List[int]
+    userInfo: int
+    
+    
+class _MdsQryCursor():
+    
+    
+    seqNo: int
+    isEnd: str
+    __filler: List[str]
+    userInfo: int
+    
+    
+class _MdsQrySecurityCodeEntry():
+    
+    
+    instrId: int
+    exchId: int
+    mdProductType: int
+    __filler: List[int]
+    
+    
+class _MdsQryStockStaticInfoFilter():
+    
+    
+    securityId: str
+    exchId: int
+    oesSecurityType: int
+    subSecurityType: int
+    __filler: List[int]
+    instrId: int
+    userInfo: int
+    
+    
+class _MdsQryStockStaticInfoReq():
+    
+    
+    reqHead: _MdsQryReqHeadT
+    qryFilter: _MdsQryStockStaticInfoFilter
+    
+    
+class _MdsQryStockStaticInfoRsp():
+    
+    
+    rspHead: _MdsQryRspHeadT
+    qryItems: List[_MdsStockStaticInfo]
+    
+    
+class _MdsQrySnapshotListFilter():
+    
+    
+    exchId: int
+    mdProductType: int
+    oesSecurityType: int
+    subSecurityType: int
+    mdLevel: int
+    __filler: List[int]
+    userInfo: int
+    
+    
+class _MdsQrySnapshotListReq():
+    
+    
+    reqHead: _MdsQryReqHeadT
+    qryFilter: _MdsQrySnapshotListFilter
+    securityCodeCnt: int
+    __filler: int
+    securityCodeList: List[_MdsQrySecurityCodeEntry]
+    
+    
+class _MdsQrySnapshotListRsp():
+    
+    
+    rspHead: _MdsQryRspHeadT
+    qryItems: List[_MdsL1Snapshot]
     
     
 class _MdsMktDataRequestEntry():
     
     
     exchId: int
-    securityType: int
+    mdProductType: int
     __filler: List[int]
     instrId: int
     
@@ -2295,16 +2376,60 @@ class _MdsTestRequestRsp():
     __pushingTime: _spk_struct_timeval32
     
     
+class _MdsChangePasswordReq():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
+    encryptMethod: int
+    __filler: int
+    username: str
+    userInfo: "(anonymous union at vnoes/include/oes\mds_global/mds_mkt_packets.h:859:5)"
+    oldPassword: str
+    newPassword: str
+    
+    
+class _MdsChangePasswordRsp():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
+    encryptMethod: int
+    __filler: int
+    username: str
+    userInfo: "(anonymous union at vnoes/include/oes\mds_global/mds_mkt_packets.h:896:5)"
+    __filler2: int
+    transDate: int
+    transTime: int
+    rejReason: int
+    
+    
 class _MdsMktReqMsgBody():
     
     
     wholeMktDataReqBuf: _MdsMktDataRequestReqBuf
     mktDataRequestReq: _MdsMktDataRequestReq
     testRequestReq: _MdsTestRequestReq
-    logonReq: _MdsLogonReq
     qryMktDataSnapshotReq: _MdsQryMktDataSnapshotReq
     qrySecurityStatusReq: _MdsQryMktDataSnapshotReq
     qryTrdSessionStatusReq: _MdsQryTrdSessionStatusReq
+    qryStockStaticInfoReq: _MdsQryStockStaticInfoReq
+    qrySnapshotListReq: _MdsQrySnapshotListReq
+    changePasswordReq: _MdsChangePasswordReq
     
     
 class _MdsMktRspMsgBody():
@@ -2312,13 +2437,14 @@ class _MdsMktRspMsgBody():
     
     mktDataRequestRsp: _MdsMktDataRequestRsp
     testRequestRsp: _MdsTestRequestRsp
-    logonRsp: _MdsLogonRsp
     mktDataSnapshot: _MdsMktDataSnapshot
     trade: _MdsL2Trade
     order: _MdsL2Order
-    tickLost: _MdsL2TickLost
     trdSessionStatus: _MdsTradingSessionStatusMsg
     securityStatus: _MdsSecurityStatusMsg
+    qryStockStaticInfoRsp: _MdsQryStockStaticInfoRsp
+    qrySnapshotListRsp: _MdsQrySnapshotListRsp
+    changePasswordRsp: _MdsChangePasswordRsp
     
     
 class _MdsUdpPktHead():
@@ -2336,7 +2462,9 @@ class _MdsApiClientCfg():
     qryChannelCfg: _SGeneralClientRemoteCfg
     udpL1ChannelCfg: _SGeneralClientRemoteCfg
     udpL2ChannelCfg: _SGeneralClientRemoteCfg
+    udpTick1ChannelCfg: _SGeneralClientRemoteCfg
     udpTradeChannelCfg: _SGeneralClientRemoteCfg
+    udpTick2ChannelCfg: _SGeneralClientRemoteCfg
     udpOrderChannelCfg: _SGeneralClientRemoteCfg
     subscribeInfo: _MdsMktDataRequestReqBuf
     
@@ -2348,7 +2476,9 @@ class _MdsApiClientEnv():
     qryChannel: _SGeneralClientChannel
     udpL1Channel: _SGeneralClientChannel
     udpL2Channel: _SGeneralClientChannel
+    udpTick1Channel: _SGeneralClientChannel
     udpTradeChannel: _SGeneralClientChannel
+    udpTick2Channel: _SGeneralClientChannel
     udpOrderChannel: _SGeneralClientChannel
     udpChannelGroup: _SGeneralClientChannelGroup
     
@@ -2360,6 +2490,8 @@ class _eOesExchangeId(Enum):
     __MAX_OES_EXCH: _eOesExchangeId
     OES_EXCHANGE_TYPE_SSE: _eOesExchangeId
     OES_EXCHANGE_TYPE_SZSE: _eOesExchangeId
+    __OES_EXCH_ID_MAX_ALIGNED4: _eOesExchangeId
+    __OES_EXCH_ID_MAX_ALIGNED8: _eOesExchangeId
 class _eOesMarketId(Enum):
     OES_MKT_UNDEFINE: _eOesMarketId
     OES_MKT_SH_ASHARE: _eOesMarketId
@@ -2379,20 +2511,28 @@ class _eOesPlatformId(Enum):
     OES_PLATFORM_NON_TRADE: _eOesPlatformId
     OES_PLATFORM_DERIVATIVE_AUCTION: _eOesPlatformId
     __OES_PLATFORM_ID_MAX: _eOesPlatformId
-    __OES_PLATFORM_ACTIVE_MAX: _eOesPlatformId
-class _eOesMarketStatus(Enum):
-    OES_MKT_STATE_UNDEFINE: _eOesMarketStatus
-    OES_MKT_STATE_PRE_OPEN: _eOesMarketStatus
-    OES_MKT_STATE_OPEN_UP_COMING: _eOesMarketStatus
-    OES_MKT_STATE_OPEN: _eOesMarketStatus
-    OES_MKT_STATE_HALT: _eOesMarketStatus
-    OES_MKT_STATE_CLOSE: _eOesMarketStatus
-    __OES_MKT_STATE_MAX: _eOesMarketStatus
+    __OES_PLATFORM_ID_MAX_ALIGNED8: _eOesPlatformId
+class _eOesMarketState(Enum):
+    OES_MKT_STATE_UNDEFINE: _eOesMarketState
+    OES_MKT_STATE_PRE_OPEN: _eOesMarketState
+    OES_MKT_STATE_OPEN_UP_COMING: _eOesMarketState
+    OES_MKT_STATE_OPEN: _eOesMarketState
+    OES_MKT_STATE_HALT: _eOesMarketState
+    OES_MKT_STATE_CLOSE: _eOesMarketState
+    __OES_MKT_STATE_MAX: _eOesMarketState
 class _eOesTrdSessType(Enum):
     OES_TRD_SESS_TYPE_O: _eOesTrdSessType
     OES_TRD_SESS_TYPE_T: _eOesTrdSessType
     OES_TRD_SESS_TYPE_C: _eOesTrdSessType
     __OES_TRD_SESS_TYPE_MAX: _eOesTrdSessType
+class _eOesProductType(Enum):
+    OES_PRODUCT_TYPE_UNDEFINE: _eOesProductType
+    OES_PRODUCT_TYPE_EQUITY: _eOesProductType
+    OES_PRODUCT_TYPE_BOND_STD: _eOesProductType
+    OES_PRODUCT_TYPE_IPO: _eOesProductType
+    OES_PRODUCT_TYPE_ALLOTMENT: _eOesProductType
+    OES_PRODUCT_TYPE_OPTION: _eOesProductType
+    __OES_PRODUCT_TYPE_MAX: _eOesProductType
 class _eOesSecurityType(Enum):
     OES_SECURITY_TYPE_UNDEFINE: _eOesSecurityType
     OES_SECURITY_TYPE_STOCK: _eOesSecurityType
@@ -2408,7 +2548,10 @@ class _eOesSubSecurityType(Enum):
     OES_SUB_SECURITY_TYPE_STOCK_ASH: _eOesSubSecurityType
     OES_SUB_SECURITY_TYPE_STOCK_SME: _eOesSubSecurityType
     OES_SUB_SECURITY_TYPE_STOCK_GEM: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_STOCK_KSH: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_STOCK_KCDR: _eOesSubSecurityType
     OES_SUB_SECURITY_TYPE_STOCK_CDR: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_STOCK_HLTCDR: _eOesSubSecurityType
     __OES_SUB_SECURITY_TYPE_STOCK_MAX: _eOesSubSecurityType
     __OES_SUB_SECURITY_TYPE_BOND_MIN: _eOesSubSecurityType
     OES_SUB_SECURITY_TYPE_BOND_GBF: _eOesSubSecurityType
@@ -2434,8 +2577,8 @@ class _eOesSubSecurityType(Enum):
     OES_SUB_SECURITY_TYPE_FUND_GRADED: _eOesSubSecurityType
     __OES_SUB_SECURITY_TYPE_FUND_MAX: _eOesSubSecurityType
     __OES_SUB_SECURITY_TYPE_OPTION_MIN: _eOesSubSecurityType
-    OES_SUB_SECURITY_TYPE_OPTION_STOCK: _eOesSubSecurityType
     OES_SUB_SECURITY_TYPE_OPTION_ETF: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_OPTION_STOCK: _eOesSubSecurityType
     __OES_SUB_SECURITY_TYPE_OPTION_MAX: _eOesSubSecurityType
     __OES_SUB_SECURITY_TYPE_MAX: _eOesSubSecurityType
 class _eOesSecurityLevel(Enum):
@@ -2462,6 +2605,18 @@ class _eOesSecuritySuspFlag(Enum):
     OES_SUSPFLAG_EXCHANGE: _eOesSecuritySuspFlag
     OES_SUSPFLAG_BROKER: _eOesSecuritySuspFlag
     __OES_SUSPFLAG_OTHER: _eOesSecuritySuspFlag
+class _eOesLotType(Enum):
+    OES_LOT_TYPE_UNDEFINE: _eOesLotType
+    OES_LOT_TYPE_FAILED: _eOesLotType
+    OES_LOT_TYPE_ASSIGNMENT: _eOesLotType
+    OES_LOT_TYPE_LOTTERY: _eOesLotType
+    __OES_LOT_TYPE_MAX: _eOesLotType
+class _eOesLotRejReason(Enum):
+    OES_LOT_REJ_REASON_DUPLICATE: _eOesLotRejReason
+    OES_LOT_REJ_REASON_INVALID_DUPLICATE: _eOesLotRejReason
+    OES_LOT_REJ_REASON_OFFLINE_FIRST: _eOesLotRejReason
+    OES_LOT_REJ_REASON_BAD_RECORD: _eOesLotRejReason
+    OES_LOT_REJ_REASON_UNKNOW: _eOesLotRejReason
 class _eOesOrdStatus(Enum):
     OES_ORD_STATUS_UNDEFINE: _eOesOrdStatus
     OES_ORD_STATUS_NEW: _eOesOrdStatus
@@ -2500,20 +2655,23 @@ class _eOesOrdType(Enum):
     OES_ORD_TYPE_FOK: _eOesOrdType
     __OES_ORD_TYPE_FOK_MAX: _eOesOrdType
     __OES_ORD_TYPE_MAX: _eOesOrdType
+    __OES_ORD_TYPE_MAX_ALIGNED: _eOesOrdType
 class _eOesOrdTypeSh(Enum):
     OES_ORD_TYPE_SH_LMT: _eOesOrdTypeSh
-    OES_ORD_TYPE_SH_MTL_BEST_5: _eOesOrdTypeSh
-    OES_ORD_TYPE_SH_FAK_BEST_5: _eOesOrdTypeSh
     OES_ORD_TYPE_SH_LMT_FOK: _eOesOrdTypeSh
+    OES_ORD_TYPE_SH_MTL_BEST_5: _eOesOrdTypeSh
+    OES_ORD_TYPE_SH_MTL_BEST: _eOesOrdTypeSh
+    OES_ORD_TYPE_SH_MTL_SAMEPARTY_BEST: _eOesOrdTypeSh
+    OES_ORD_TYPE_SH_FAK_BEST_5: _eOesOrdTypeSh
     OES_ORD_TYPE_SH_FOK: _eOesOrdTypeSh
 class _eOesOrdTypeSz(Enum):
     OES_ORD_TYPE_SZ_LMT: _eOesOrdTypeSz
+    OES_ORD_TYPE_SZ_LMT_FOK: _eOesOrdTypeSz
     OES_ORD_TYPE_SZ_MTL_BEST: _eOesOrdTypeSz
     OES_ORD_TYPE_SZ_MTL_SAMEPARTY_BEST: _eOesOrdTypeSz
     OES_ORD_TYPE_SZ_FAK_BEST_5: _eOesOrdTypeSz
     OES_ORD_TYPE_SZ_FAK: _eOesOrdTypeSz
     OES_ORD_TYPE_SZ_FOK: _eOesOrdTypeSz
-    OES_ORD_TYPE_SZ_LMT_FOK: _eOesOrdTypeSz
 class _eOesBuySellType(Enum):
     OES_BS_TYPE_UNDEFINE: _eOesBuySellType
     OES_BS_TYPE_BUY: _eOesBuySellType
@@ -2523,6 +2681,9 @@ class _eOesBuySellType(Enum):
     OES_BS_TYPE_CREDIT_BUY: _eOesBuySellType
     OES_BS_TYPE_CREDIT_SELL: _eOesBuySellType
     OES_BS_TYPE_SUBSCRIPTION: _eOesBuySellType
+    OES_BS_TYPE_ALLOTMENT: _eOesBuySellType
+    __OES_BS_TYPE_MAX_SPOT: _eOesBuySellType
+    __OES_BS_TYPE_MIN_OPTION: _eOesBuySellType
     OES_BS_TYPE_BUY_OPEN: _eOesBuySellType
     OES_BS_TYPE_BUY_CLOSE: _eOesBuySellType
     OES_BS_TYPE_SELL_OPEN: _eOesBuySellType
@@ -2532,12 +2693,15 @@ class _eOesBuySellType(Enum):
     OES_BS_TYPE_OPTION_EXERCISE: _eOesBuySellType
     OES_BS_TYPE_UNDERLYING_FREEZE: _eOesBuySellType
     OES_BS_TYPE_UNDERLYING_UNFREEZE: _eOesBuySellType
+    __OES_BS_TYPE_MAX_OPTION: _eOesBuySellType
     OES_BS_TYPE_CANCEL: _eOesBuySellType
     __OES_BS_TYPE_MAX_TRADING: _eOesBuySellType
+    __OES_BS_TYPE_MIN_MGR: _eOesBuySellType
     OES_BS_TYPE_SSE_DESIGNATION: _eOesBuySellType
     OES_BS_TYPE_SSE_RECALL_DESIGNATION: _eOesBuySellType
     OES_BS_TYPE_SZSE_DESIGNATION: _eOesBuySellType
     OES_BS_TYPE_SZSE_CANCEL_DESIGNATION: _eOesBuySellType
+    __OES_BS_TYPE_MAX_MGR: _eOesBuySellType
     __OES_BS_TYPE_MAX: _eOesBuySellType
     OES_BS_TYPE_B: _eOesBuySellType
     OES_BS_TYPE_S: _eOesBuySellType
@@ -2573,18 +2737,6 @@ class _eOesEtfSubFlag(Enum):
     OES_ETF_SUBFLAG_SZ_MUST_SUB: _eOesEtfSubFlag
     OES_ETF_SUBFLAG_OTHER_REFUND_SUB: _eOesEtfSubFlag
     OES_ETF_SUBFLAG_OTHER_MUST_SUB: _eOesEtfSubFlag
-class _eOesLotType(Enum):
-    OES_LOT_TYPE_UNDEFINE: _eOesLotType
-    OES_LOT_TYPE_FAILED: _eOesLotType
-    OES_LOT_TYPE_ASSIGNMENT: _eOesLotType
-    OES_LOT_TYPE_LOTTERY: _eOesLotType
-    __OES_LOT_TYPE_MAX: _eOesLotType
-class _eOesLotRejReason(Enum):
-    OES_LOT_REJ_REASON_DUPLICATE: _eOesLotRejReason
-    OES_LOT_REJ_REASON_INVALID_DUPLICATE: _eOesLotRejReason
-    OES_LOT_REJ_REASON_OFFLINE_FIRST: _eOesLotRejReason
-    OES_LOT_REJ_REASON_BAD_RECORD: _eOesLotRejReason
-    OES_LOT_REJ_REASON_UNKNOW: _eOesLotRejReason
 class _eOesExecType(Enum):
     OES_EXECTYPE_UNDEFINE: _eOesExecType
     OES_EXECTYPE_INSERT: _eOesExecType
@@ -2665,8 +2817,10 @@ class _eOesTradingPermission(Enum):
     OES_PERMIS_GEM: _eOesTradingPermission
     OES_PERMIS_SH_HK_STOCK_CONNECT: _eOesTradingPermission
     OES_PERMIS_SZ_HK_STOCK_CONNECT: _eOesTradingPermission
+    OES_PERMIS_HLTCDR: _eOesTradingPermission
     OES_PERMIS_CDR: _eOesTradingPermission
     OES_PERMIS_INNOVATION: _eOesTradingPermission
+    OES_PERMIS_KSH: _eOesTradingPermission
     __OES_PERMIS_ALL: _eOesTradingPermission
 class _eOesTradingLimit(Enum):
     OES_LIMIT_BUY: _eOesTradingLimit
@@ -2688,6 +2842,14 @@ class _eOesInvestorClass(Enum):
     OES_INVESTOR_CLASS_PROFESSIONAL_A: _eOesInvestorClass
     OES_INVESTOR_CLASS_PROFESSIONAL_B: _eOesInvestorClass
     OES_INVESTOR_CLASS_PROFESSIONAL_C: _eOesInvestorClass
+class _eOesCustType(Enum):
+    OES_CUST_TYPE_PERSONAL: _eOesCustType
+    OES_CUST_TYPE_INSTITUTION: _eOesCustType
+    OES_CUST_TYPE_PROPRIETARY: _eOesCustType
+    OES_CUST_TYPE_PRODUCT: _eOesCustType
+    OES_CUST_TYPE_MKT_MAKER: _eOesCustType
+    OES_CUST_TYPE_OTHERS: _eOesCustType
+    __OES_CUST_TYPE_MAX: _eOesCustType
 class _eOesOwnerType(Enum):
     OES_OWNER_TYPE_PERSONAL: _eOesOwnerType
     OES_OWNER_TYPE_EXCHANGE: _eOesOwnerType
@@ -2762,6 +2924,7 @@ class _eOesMsgType(Enum):
     OESMSG_RPT_CASH_ASSET_VARIATION: _eOesMsgType
     OESMSG_RPT_STOCK_HOLDING_VARIATION: _eOesMsgType
     OESMSG_RPT_OPTION_HOLDING_VARIATION: _eOesMsgType
+    OESMSG_RPT_SERVICE_STATE: _eOesMsgType
     __OESMSG_RPT_MAX: _eOesMsgType
     __OESMSG_NONTRD_MIN: _eOesMsgType
     OESMSG_NONTRD_FUND_TRSF_REQ: _eOesMsgType
@@ -2775,10 +2938,8 @@ class _eOesMsgType(Enum):
     OESMSG_QRYMSG_STK_HLD: _eOesMsgType
     OESMSG_QRYMSG_OPT_HLD: _eOesMsgType
     OESMSG_QRYMSG_CUST: _eOesMsgType
-    OESMSG_QRYMSG_INV_ACCT: _eOesMsgType
     OESMSG_QRYMSG_COMMISSION_RATE: _eOesMsgType
     OESMSG_QRYMSG_FUND_TRSF: _eOesMsgType
-    OESMSG_QRYMSG_STOCK: _eOesMsgType
     OESMSG_QRYMSG_ETF: _eOesMsgType
     OESMSG_QRYMSG_ETF_COMPONENT: _eOesMsgType
     OESMSG_QRYMSG_OPTION: _eOesMsgType
@@ -2787,14 +2948,16 @@ class _eOesMsgType(Enum):
     OESMSG_QRYMSG_TRADING_DAY: _eOesMsgType
     OESMSG_QRYMSG_MARKET_STATE: _eOesMsgType
     OESMSG_QRYMSG_COUNTER_CASH: _eOesMsgType
+    OESMSG_QRYMSG_INV_ACCT: _eOesMsgType
+    OESMSG_QRYMSG_STOCK: _eOesMsgType
     __OESMSG_QRYMSG_MAX: _eOesMsgType
-    OESMSG_SESS_TRD_LOGIN: _eOesMsgType
-    OESMSG_SESS_RPT_LOGIN: _eOesMsgType
-    OESMSG_SESS_QRY_LOGIN: _eOesMsgType
     OESMSG_SESS_HEARTBEAT: _eOesMsgType
     OESMSG_SESS_TEST_REQUEST: _eOesMsgType
+    OESMSG_SESS_LOGIN_EXTEND: _eOesMsgType
     OESMSG_SESS_LOGOUT: _eOesMsgType
     OESMSG_RPT_ORDER_REJECT: _eOesMsgType
+    OESMSG_QRYMSG_INV_ACCT_L001508: _eOesMsgType
+    OESMSG_QRYMSG_STOCK_L001508: _eOesMsgType
 class _eOesSubscribeReportType(Enum):
     OES_SUB_RPT_TYPE_DEFAULT: _eOesSubscribeReportType
     OES_SUB_RPT_TYPE_BUSINESS_REJECT: _eOesSubscribeReportType
@@ -2807,6 +2970,11 @@ class _eOesSubscribeReportType(Enum):
     OES_SUB_RPT_TYPE_MARKET_STATE: _eOesSubscribeReportType
     OES_SUB_RPT_TYPE_ALL: _eOesSubscribeReportType
     __MAX_OES_SUB_RPT_TYPE: _eOesSubscribeReportType
+class _eOesProtocolHintsType(Enum):
+    OES_PROT_HINTS_TYPE_DEFAULT: _eOesProtocolHintsType
+    OES_PROT_HINTS_TYPE_COMPRESS: _eOesProtocolHintsType
+    OES_PROT_HINTS_TYPE_NONE: _eOesProtocolHintsType
+    __MAX_OES_PROT_HINTS_TYPE: _eOesProtocolHintsType
 class _eSSocketProtocolType(Enum):
     SPK_SOCKET_PROTOCOL_TCP: _eSSocketProtocolType
     SPK_SOCKET_PROTOCOL_IPC: _eSSocketProtocolType
@@ -2827,11 +2995,14 @@ class _eGeneralClientEncryptType(Enum):
     GENERAL_CLI_ENCRYPT_DES: _eGeneralClientEncryptType
     GENERAL_CLI_ENCRYPT_AES: _eGeneralClientEncryptType
     GENERAL_CLI_ENCRYPT_RSA: _eGeneralClientEncryptType
+    __GENERAL_CLI_ENCRYPT_MASK_DIGESTED: _eGeneralClientEncryptType
+    __GENERAL_CLI_ENCRYPT_MASK_ENCRYPTED: _eGeneralClientEncryptType
 class _eOesApiChannelType(Enum):
     OESAPI_CHANNEL_TYPE_ORDER: _eOesApiChannelType
     OESAPI_CHANNEL_TYPE_REPORT: _eOesApiChannelType
     OESAPI_CHANNEL_TYPE_QUERY: _eOesApiChannelType
 class _eMdsExchangeId(Enum):
+    MDS_EXCH_UNDEFINE: _eMdsExchangeId
     MDS_EXCH_SSE: _eMdsExchangeId
     MDS_EXCH_SZSE: _eMdsExchangeId
     __MAX_MDS_EXCH: _eMdsExchangeId
@@ -2853,22 +3024,31 @@ class _eMdsMsgSource(Enum):
     __MAX_MDS_MSGSRC: _eMdsMsgSource
     MDS_MSGSRC_MDGW_BINARY: _eMdsMsgSource
     MDS_MSGSRC_MDGW_STEP: _eMdsMsgSource
-class _eMdsSecurityType(Enum):
-    MDS_SECURITY_TYPE_STOCK: _eMdsSecurityType
-    MDS_SECURITY_TYPE_INDEX: _eMdsSecurityType
-    MDS_SECURITY_TYPE_OPTION: _eMdsSecurityType
-    __MAX_MDS_SECURITY_TYPE: _eMdsSecurityType
+class _eMdsMdProductType(Enum):
+    MDS_MD_PRODUCT_TYPE_STOCK: _eMdsMdProductType
+    MDS_MD_PRODUCT_TYPE_INDEX: _eMdsMdProductType
+    MDS_MD_PRODUCT_TYPE_OPTION: _eMdsMdProductType
+    __MAX_MDS_MD_PRODUCT_TYPE: _eMdsMdProductType
+    MDS_SECURITY_TYPE_STOCK: _eMdsMdProductType
+    MDS_SECURITY_TYPE_INDEX: _eMdsMdProductType
+    MDS_SECURITY_TYPE_OPTION: _eMdsMdProductType
+    __MAX_MDS_SECURITY_TYPE: _eMdsMdProductType
 class _eMdsMdStreamType(Enum):
+    MDS_MD_STREAM_TYPE_L1_SNAPSHOT: _eMdsMdStreamType
     MDS_MD_STREAM_TYPE_INDEX: _eMdsMdStreamType
-    MDS_MD_STREAM_TYPE_STOCK: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_OPTION: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_SZSE_TRADE_STATS: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_SSE_L1_BOND: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_SSE_L1_FUND: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_L2_SNAPSHOT: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_SNAPSHOT: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_L2_SNAPSHOT_INCREMENTAL: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_INCREMENTAL: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_L2_MARKET_OVERVIEW: _eMdsMdStreamType
+    __MAX_MDS_MD_STREAM_TYPE: _eMdsMdStreamType
     MDS_MD_STREAM_TYPE_BOND: _eMdsMdStreamType
     MDS_MD_STREAM_TYPE_FUND: _eMdsMdStreamType
-    MDS_MD_STREAM_TYPE_SZSE_STOCK: _eMdsMdStreamType
-    MDS_MD_STREAM_TYPE_SZSE_REPO: _eMdsMdStreamType
-    MDS_MD_STREAM_TYPE_SZSE_TRADE_STATS: _eMdsMdStreamType
-    MDS_MD_STREAM_TYPE_OPTION: _eMdsMdStreamType
     MDS_MD_STREAM_TYPE_OTHERS: _eMdsMdStreamType
-    __MAX_MDS_MD_STREAM_TYPE: _eMdsMdStreamType
 class _eMdsMdLevel(Enum):
     MDS_MD_LEVEL_0: _eMdsMdLevel
     MDS_MD_LEVEL_1: _eMdsMdLevel
@@ -2879,10 +3059,6 @@ class _eMdsL2PriceLevelOperator(Enum):
     MDS_L2_PX_OPERATOR_UPDATE: _eMdsL2PriceLevelOperator
     MDS_L2_PX_OPERATOR_DELETE: _eMdsL2PriceLevelOperator
     __MAX_MDS_L2_PX_OPERATOR: _eMdsL2PriceLevelOperator
-class _eMdsL2VirtualAuctionSide(Enum):
-    MDS_L2_VIRTUAL_AUCTION_SIDE_NONE: _eMdsL2VirtualAuctionSide
-    MDS_L2_VIRTUAL_AUCTION_SIDE_BID: _eMdsL2VirtualAuctionSide
-    MDS_L2_VIRTUAL_AUCTION_SIDE_OFFER: _eMdsL2VirtualAuctionSide
 class _eMdsL2TradeExecType(Enum):
     MDS_L2_TRADE_EXECTYPE_CANCELED: _eMdsL2TradeExecType
     MDS_L2_TRADE_EXECTYPE_TRADE: _eMdsL2TradeExecType
@@ -2912,7 +3088,6 @@ class _eMdsClientStatus(Enum):
 class _eMdsMsgType(Enum):
     MDS_MSGTYPE_HEARTBEAT: _eMdsMsgType
     MDS_MSGTYPE_TEST_REQUEST: _eMdsMsgType
-    MDS_MSGTYPE_LOGON: _eMdsMsgType
     MDS_MSGTYPE_LOGOUT: _eMdsMsgType
     MDS_MSGTYPE_MARKET_DATA_REQUEST: _eMdsMsgType
     MDS_MSGTYPE_COMPRESSED_PACKETS: _eMdsMsgType
@@ -2932,9 +3107,13 @@ class _eMdsMsgType(Enum):
     MDS_MSGTYPE_L2_MARKET_OVERVIEW: _eMdsMsgType
     MDS_MSGTYPE_L2_VIRTUAL_AUCTION_PRICE: _eMdsMsgType
     __MDS_MSGTYPE_L2_MAX: _eMdsMsgType
+    MDS_MSGTYPE_CMD_CHANGE_PASSWORD: _eMdsMsgType
+    __MDS_MSGTYPE_CMD_MAX: _eMdsMsgType
     MDS_MSGTYPE_QRY_MARKET_DATA_SNAPSHOT: _eMdsMsgType
     MDS_MSGTYPE_QRY_SECURITY_STATUS: _eMdsMsgType
     MDS_MSGTYPE_QRY_TRADING_SESSION_STATUS: _eMdsMsgType
+    MDS_MSGTYPE_QRY_STOCK_STATIC_INFO: _eMdsMsgType
+    MDS_MSGTYPE_QRY_SNAPSHOT_LIST: _eMdsMsgType
     __MDS_MSGTYPE_QRY_MAX: _eMdsMsgType
 class _eMdsSubscribeMode(Enum):
     MDS_SUB_MODE_SET: _eMdsSubscribeMode
@@ -2964,7 +3143,6 @@ class _eMdsSubscribeDataType(Enum):
     MDS_SUB_DATA_TYPE_L2_BEST_ORDERS: _eMdsSubscribeDataType
     MDS_SUB_DATA_TYPE_L2_TRADE: _eMdsSubscribeDataType
     MDS_SUB_DATA_TYPE_L2_ORDER: _eMdsSubscribeDataType
-    MDS_SUB_DATA_TYPE_L2_VIRTUAL_AUCTION_PRICE: _eMdsSubscribeDataType
     MDS_SUB_DATA_TYPE_L2_MARKET_OVERVIEW: _eMdsSubscribeDataType
     MDS_SUB_DATA_TYPE_TRADING_SESSION_STATUS: _eMdsSubscribeDataType
     MDS_SUB_DATA_TYPE_SECURITY_STATUS: _eMdsSubscribeDataType
@@ -2981,6 +3159,11 @@ class _eMdsSubscribedChannelNo(Enum):
     MDS_CHANNEL_NO_FOUR: _eMdsSubscribedChannelNo
     MDS_CHANNEL_NO_ALL: _eMdsSubscribedChannelNo
     MDS_CHANNEL_NO_NONE: _eMdsSubscribedChannelNo
+class _eMdsProtocolHintsType(Enum):
+    MDS_PROT_HINTS_TYPE_DEFAULT: _eMdsProtocolHintsType
+    MDS_PROT_HINTS_TYPE_COMPRESS: _eMdsProtocolHintsType
+    MDS_PROT_HINTS_TYPE_NONE: _eMdsProtocolHintsType
+    __MAX_MDS_PROT_HINTS_TYPE: _eMdsProtocolHintsType
 class _eMdsApiChannelType(Enum):
     MDSAPI_CHANNEL_TYPE_TCP: _eMdsApiChannelType
     MDSAPI_CHANNEL_TYPE_UDP: _eMdsApiChannelType
@@ -3001,13 +3184,16 @@ STimeval64T = _spk_struct_timeval64
 eOesExchangeIdT = _eOesExchangeId
 eOesMarketIdT = _eOesMarketId
 eOesPlatformIdT = _eOesPlatformId
-eOesMarketStatusT = _eOesMarketStatus
+eOesMarketStateT = _eOesMarketState
 eOesTrdSessTypeT = _eOesTrdSessType
+eOesProductTypeT = _eOesProductType
 eOesSecurityTypeT = _eOesSecurityType
 eOesSubSecurityTypeT = _eOesSubSecurityType
 eOesSecurityLevelT = _eOesSecurityLevel
 eOesSecurityRiskLevelT = _eOesSecurityRiskLevel
 eOesSecuritySuspFlagT = _eOesSecuritySuspFlag
+eOesLotTypeT = _eOesLotType
+eOesLotRejReasonT = _eOesLotRejReason
 eOesOrdStatusT = _eOesOrdStatus
 eOesOrdTypeT = _eOesOrdType
 eOesOrdTypeShT = _eOesOrdTypeSh
@@ -3016,8 +3202,6 @@ eOesBuySellTypeT = _eOesBuySellType
 eOesOrdDirT = _eOesOrdDir
 eOesEtfTrdCnfmTypeT = _eOesEtfTrdCnfmType
 eOesEtfSubFlagT = _eOesEtfSubFlag
-eOesLotTypeT = _eOesLotType
-eOesLotRejReasonT = _eOesLotRejReason
 eOesExecTypeT = _eOesExecType
 eOesCurrTypeT = _eOesCurrType
 eOesFeeTypeT = _eOesFeeType
@@ -3032,6 +3216,7 @@ eOesTradingPermissionT = _eOesTradingPermission
 eOesTradingLimitT = _eOesTradingLimit
 eOesQualificationClassT = _eOesQualificationClass
 eOesInvestorClassT = _eOesInvestorClass
+eOesCustTypeT = _eOesCustType
 eOesOwnerTypeT = _eOesOwnerType
 eOesClientTypeT = _eOesClientType
 eOesClientStatusT = _eOesClientStatus
@@ -3065,7 +3250,6 @@ OesStkHoldingBaseInfoT = _OesStkHoldingBaseInfo
 OesOptHoldingBaseInfoT = _OesOptHoldingBaseInfo
 OesMarketStateInfoT = _OesMarketStateInfo
 OesTradingPermissionEntryT = _OesTradingPermissionEntry
-OesInputSourceInfoT = _OesInputSourceInfo
 eSMsgProtocolTypeT = _eSMsgProtocolType
 eSMsgFlagT = _eSMsgFlag
 SMsgHeadT = _SMsgHead
@@ -3148,8 +3332,7 @@ OesQryReqMsgT = _OesQryReqMsg
 OesQryRspMsgT = _OesQryRspMsg
 eOesMsgTypeT = _eOesMsgType
 eOesSubscribeReportTypeT = _eOesSubscribeReportType
-OesLogonReqT = _OesLogonReq
-OesLogonRspT = _OesLogonRsp
+eOesProtocolHintsTypeT = _eOesProtocolHintsType
 OesReportSynchronizationReqT = _OesReportSynchronizationReq
 OesReportSynchronizationRspT = _OesReportSynchronizationRsp
 OesTestRequestReqT = _OesTestRequestReq
@@ -3188,11 +3371,10 @@ F_OESAPI_ON_RPT_MSG_T = Callable[[_SGeneralClientChannel,_SMsgHead,Any,Any], int
 F_OESAPI_ON_QRY_MSG_T = Callable[[_SGeneralClientChannel,_SMsgHead,Any,_OesQryCursor,Any], int]
 eMdsExchangeIdT = _eMdsExchangeId
 eMdsMsgSourceT = _eMdsMsgSource
-eMdsSecurityTypeT = _eMdsSecurityType
+eMdsMdProductTypeT = _eMdsMdProductType
 eMdsMdStreamTypeT = _eMdsMdStreamType
 eMdsMdLevelT = _eMdsMdLevel
 eMdsL2PriceLevelOperatorT = _eMdsL2PriceLevelOperator
-eMdsL2VirtualAuctionSideT = _eMdsL2VirtualAuctionSide
 eMdsL2TradeExecTypeT = _eMdsL2TradeExecType
 eMdsL2TradeBSFlagT = _eMdsL2TradeBSFlag
 eMdsL2OrderSideT = _eMdsL2OrderSideT
@@ -3206,20 +3388,31 @@ MdsMktDataSnapshotHeadT = _MdsMktDataSnapshotHead
 MdsIndexSnapshotBodyT = _MdsIndexSnapshotBody
 MdsStockSnapshotBodyT = _MdsStockSnapshotBody
 MdsL1SnapshotBodyT = _MdsL1SnapshotBody
+MdsL1SnapshotT = _MdsL1Snapshot
 MdsL2StockSnapshotBodyT = _MdsL2StockSnapshotBody
 MdsL2StockSnapshotIncrementalT = _MdsL2StockSnapshotIncremental
 MdsL2BestOrdersSnapshotBodyT = _MdsL2BestOrdersSnapshotBody
 MdsL2BestOrdersSnapshotIncrementalT = _MdsL2BestOrdersSnapshotIncremental
-MdsL2VirtualAuctionPriceT = _MdsL2VirtualAuctionPrice
 MdsL2MarketOverviewT = _MdsL2MarketOverview
 MdsL2SnapshotBodyT = _MdsL2SnapshotBody
 MdsMktDataSnapshotT = _MdsMktDataSnapshot
 MdsL2TradeT = _MdsL2Trade
 MdsL2OrderT = _MdsL2Order
-MdsL2TickLostT = _MdsL2TickLost
+MdsWholeMktMsgBodyT = _MdsWholeMktMsgBody
+MdsStockStaticInfoT = _MdsStockStaticInfo
 MdsQryMktDataSnapshotReqT = _MdsQryMktDataSnapshotReq
 MdsQrySecurityStatusReqT = _MdsQryMktDataSnapshotReq
 MdsQryTrdSessionStatusReqT = _MdsQryTrdSessionStatusReq
+MdsQryReqHeadT = _MdsQryReqHeadT
+MdsQryRspHeadT = _MdsQryRspHeadT
+MdsQryCursorT = _MdsQryCursor
+MdsQrySecurityCodeEntryT = _MdsQrySecurityCodeEntry
+MdsQryStockStaticInfoFilterT = _MdsQryStockStaticInfoFilter
+MdsQryStockStaticInfoReqT = _MdsQryStockStaticInfoReq
+MdsQryStockStaticInfoRspT = _MdsQryStockStaticInfoRsp
+MdsQrySnapshotListFilterT = _MdsQrySnapshotListFilter
+MdsQrySnapshotListReqT = _MdsQrySnapshotListReq
+MdsQrySnapshotListRspT = _MdsQrySnapshotListRsp
 eMdsMsgTypeT = _eMdsMsgType
 eMdsSubscribeModeT = _eMdsSubscribeMode
 eMdsMktSubscribeFlagT = _eMdsMktSubscribeFlag
@@ -3227,14 +3420,15 @@ eMdsSubscribedTickTypeT = _eMdsSubscribedTickType
 eMdsSubscribedTickExpireTypeT = _eMdsSubscribedTickExpireType
 eMdsSubscribeDataTypeT = _eMdsSubscribeDataType
 eMdsTickChannelNoT = _eMdsSubscribedChannelNo
-MdsLogonReqT = _MdsLogonReq
-MdsLogonRspT = _MdsLogonRsp
+eMdsProtocolHintsTypeT = _eMdsProtocolHintsType
 MdsMktDataRequestEntryT = _MdsMktDataRequestEntry
 MdsMktDataRequestReqT = _MdsMktDataRequestReq
 MdsMktDataRequestReqBufT = _MdsMktDataRequestReqBuf
 MdsMktDataRequestRspT = _MdsMktDataRequestRsp
 MdsTestRequestReqT = _MdsTestRequestReq
 MdsTestRequestRspT = _MdsTestRequestRsp
+MdsChangePasswordReqT = _MdsChangePasswordReq
+MdsChangePasswordRspT = _MdsChangePasswordRsp
 MdsMktReqMsgBodyT = _MdsMktReqMsgBody
 MdsMktRspMsgBodyT = _MdsMktRspMsgBody
 MdsUdpPktHeadT = _MdsUdpPktHead
@@ -3247,6 +3441,7 @@ MdsApiSubscribeInfoT = _MdsMktDataRequestReqBuf
 MdsApiClientCfgT = _MdsApiClientCfg
 MdsApiClientEnvT = _MdsApiClientEnv
 F_MDSAPI_ONMSG_T = Callable[[_SGeneralClientChannel,_SMsgHead,Any,Any], int]
+F_MDSAPI_ON_QRY_MSG_T = Callable[[_SGeneralClientChannel,_SMsgHead,Any,_MdsQryCursor,Any], int]
 OES_APPL_VER_ID: str
 OES_MIN_APPL_VER_ID: str
 OESAPI_CFG_DEFAULT_SECTION: str
@@ -3263,6 +3458,8 @@ MDSAPI_CFG_DEFAULT_KEY_TCP_ADDR: str
 MDSAPI_CFG_DEFAULT_KEY_QRY_ADDR: str
 MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L1: str
 MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L2: str
+MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK1: str
+MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK2: str
 MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_TRADE: str
 MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_ORDER: str
 MDSAPI_DEFAULT_STRING_DELIM: str
@@ -3307,6 +3504,8 @@ def OesApi_SendFundTransferReq(pOrdChannel: _SGeneralClientChannel, pFundTrsfReq
 def OesApi_SendChangePasswordReq(pOrdChannel: _SGeneralClientChannel, pChangePasswordReq: _OesChangePasswordReq, pOutChangePasswordRsp: _OesChangePasswordRsp)->int:
     ...
 def OesApi_WaitReportMsg(pRptChannel: _SGeneralClientChannel, timeoutMs: int, pRptMsgCallback: List[str])->int:
+    ...
+def OesApi_RecvReportMsg(pRptChannel: _SGeneralClientChannel, pOutMsgHead: _SMsgHead, pOutMsgBody: _OesRspMsgBody, bufSize: int, timeoutMs: int)->int:
     ...
 def OesApi_GetApiVersion()->str:
     ...
@@ -3382,6 +3581,8 @@ def OesApi_InitAll(pOutCliEnv: _OesApiClientEnv, pCfgFile: str, pLoggerSection: 
     return "retv","pLastClSeqNo"
 def OesApi_InitAllByConvention(pOutCliEnv: _OesApiClientEnv, pCfgFile: str, lastRptSeqNum: int, pLastClSeqNo: int)->Tuple[int,int]:
     return "retv","pLastClSeqNo"
+def OesApi_InitAllByCfgStruct(pOutCliEnv: _OesApiClientEnv, pClientCfg: _OesApiClientCfg, lastRptSeqNum: int, pLastClSeqNo: int)->Tuple[int,int]:
+    return "retv","pLastClSeqNo"
 def OesApi_LogoutAll(pCliEnv: _OesApiClientEnv, isDestory: int)->None:
     ...
 def OesApi_DestoryAll(pCliEnv: _OesApiClientEnv)->None:
@@ -3432,7 +3633,15 @@ def OesApi_SetThreadEnvId(clEnvId: str)->None:
     ...
 def OesApi_GetThreadEnvId()->str:
     ...
+def OesApi_SetThreadSubscribeEnvId(subscribeEnvId: str)->None:
+    ...
+def OesApi_GetThreadSubscribeEnvId()->str:
+    ...
 def OesApi_SetCustomizedIpAndMac(pIpStr: str, pMacStr: str)->int:
+    ...
+def OesApi_SetCustomizedIp(pIpStr: str)->int:
+    ...
+def OesApi_SetCustomizedMac(pMacStr: str)->int:
     ...
 def OesApi_GetCustomizedIp()->str:
     ...
@@ -3466,6 +3675,8 @@ def OesApi_GetErrorMsg(errCode: int)->str:
     ...
 def OesApi_GetErrorMsg2(status: int, detailStatus: int)->str:
     ...
+def OesHelper_ExtractOrdReportFromTrd(pTrdReport: _OesTrdCnfm, pOutOrdReport: _OesOrdCnfm)->_OesOrdCnfm:
+    ...
 def MdsApi_Logon(pOutSessionInfo: _SGeneralClientChannel, channelType: _eMdsApiChannelType, pUri: str, pUsername: str, pPassword: str, heartBtInt: int, pSocketOptions: _SSocketOptionConfig)->int:
     ...
 def MdsApi_LogonReplicaSet(pOutSessionInfo: _SGeneralClientChannel, channelType: _eMdsApiChannelType, pUriList: str, pUsername: str, pPassword: str, heartBtInt: int, pSocketOptions: _SSocketOptionConfig)->int:
@@ -3476,13 +3687,13 @@ def MdsApi_SyncSubscribeOnLogon(pSessionInfo: _SGeneralClientChannel, pMktDataRe
     ...
 def MdsApi_SubscribeMarketData(pSessionInfo: _SGeneralClientChannel, pMktDataRequestReq: _MdsMktDataRequestReq, pEntries: _MdsMktDataRequestEntry)->int:
     ...
-def MdsApi_SubscribeByString(pTcpChannel: _SGeneralClientChannel, pSecurityListStr: str, pDelim: str, exchangeId: _eMdsExchangeId, securityType: _eMdsSecurityType, subMode: _eMdsSubscribeMode, dataTypes: int)->int:
+def MdsApi_SubscribeByString(pTcpChannel: _SGeneralClientChannel, pSecurityListStr: str, pDelim: str, exchangeId: _eMdsExchangeId, mdProductType: _eMdsMdProductType, subMode: _eMdsSubscribeMode, dataTypes: int)->int:
     ...
-def MdsApi_SubscribeByString2(pTcpChannel: _SGeneralClientChannel, ppSecurityArray: List[str], exchangeId: _eMdsExchangeId, securityType: _eMdsSecurityType, subMode: _eMdsSubscribeMode, dataTypes: int)->int:
+def MdsApi_SubscribeByString2(pTcpChannel: _SGeneralClientChannel, ppSecurityArray: List[str], exchangeId: _eMdsExchangeId, mdProductType: _eMdsMdProductType, subMode: _eMdsSubscribeMode, dataTypes: int)->int:
     ...
-def MdsApi_SubscribeByStringAndPrefixes(pTcpChannel: _SGeneralClientChannel, pSecurityListStr: str, pDelim: str, pSseCodePrefixes: str, pSzseCodePrefixes: str, securityType: _eMdsSecurityType, subMode: _eMdsSubscribeMode, dataTypes: int)->int:
+def MdsApi_SubscribeByStringAndPrefixes(pTcpChannel: _SGeneralClientChannel, pSecurityListStr: str, pDelim: str, pSseCodePrefixes: str, pSzseCodePrefixes: str, mdProductType: _eMdsMdProductType, subMode: _eMdsSubscribeMode, dataTypes: int)->int:
     ...
-def MdsApi_SubscribeByStringAndPrefixes2(pTcpChannel: _SGeneralClientChannel, ppSecurityArray: List[str], pSseCodePrefixes: str, pSzseCodePrefixes: str, securityType: _eMdsSecurityType, subMode: _eMdsSubscribeMode, dataTypes: int)->int:
+def MdsApi_SubscribeByStringAndPrefixes2(pTcpChannel: _SGeneralClientChannel, ppSecurityArray: List[str], pSseCodePrefixes: str, pSzseCodePrefixes: str, mdProductType: _eMdsMdProductType, subMode: _eMdsSubscribeMode, dataTypes: int)->int:
     ...
 def MdsApi_SendHeartbeat(pSessionInfo: _SGeneralClientChannel)->int:
     ...
@@ -3498,19 +3709,29 @@ def MdsApi_WaitOnMsgCompressible(pTcpChannel: _SGeneralClientChannel, timeoutMs:
     ...
 def MdsApi_GetApiVersion()->str:
     ...
-def MdsApi_QueryMktDataSnapshot(pQryChannel: _SGeneralClientChannel, exchangeId: _eMdsExchangeId, securityType: _eMdsSecurityType, instrId: int, pRspBuf: _MdsMktDataSnapshot)->int:
+def MdsApi_QueryMktDataSnapshot(pQryChannel: _SGeneralClientChannel, exchangeId: _eMdsExchangeId, mdProductType: _eMdsMdProductType, instrId: int, pRspBuf: _MdsMktDataSnapshot)->int:
     ...
-def MdsApi_QuerySecurityStatus(pQryChannel: _SGeneralClientChannel, exchangeId: _eMdsExchangeId, securityType: _eMdsSecurityType, instrId: int, pRspBuf: _MdsSecurityStatusMsg)->int:
+def MdsApi_QuerySecurityStatus(pQryChannel: _SGeneralClientChannel, exchangeId: _eMdsExchangeId, mdProductType: _eMdsMdProductType, instrId: int, pRspBuf: _MdsSecurityStatusMsg)->int:
     ...
-def MdsApi_QueryTrdSessionStatus(pQryChannel: _SGeneralClientChannel, exchangeId: _eMdsExchangeId, securityType: _eMdsSecurityType, pRspBuf: _MdsTradingSessionStatusMsg)->int:
+def MdsApi_QueryTrdSessionStatus(pQryChannel: _SGeneralClientChannel, exchangeId: _eMdsExchangeId, mdProductType: _eMdsMdProductType, pRspBuf: _MdsTradingSessionStatusMsg)->int:
+    ...
+def MdsApi_QueryStockStaticInfo(pQryChannel: _SGeneralClientChannel, pQryFilter: _MdsQryStockStaticInfoFilter, pQryMsgCallback: List[str])->int:
+    ...
+def MdsApi_QuerySnapshotList(pQryChannel: _SGeneralClientChannel, pSecurityListStr: str, pDelim: str, pQryFilter: _MdsQrySnapshotListFilter, pQryMsgCallback: List[str])->int:
+    ...
+def MdsApi_QuerySnapshotList2(pQryChannel: _SGeneralClientChannel, ppSecurityArray: List[str], pQryFilter: _MdsQrySnapshotListFilter, pQryMsgCallback: List[str])->int:
+    ...
+def MdsApi_SendChangePasswordReq(pQryChannel: _SGeneralClientChannel, pChangePasswordReq: _MdsChangePasswordReq, pOutChangePasswordRsp: _MdsChangePasswordRsp)->int:
     ...
 def MdsApi_ConnectToUdpMcast(pOutSessionInfo: _SGeneralClientChannel, pUri: str, pSocketOptions: _SSocketOptionConfig)->int:
     ...
 def MdsApi_WaitOnUdpMsg(pUdpChannel: _SGeneralClientChannel, timeoutMs: int, pOnMsgCallback: List[str])->int:
     ...
-def MdsApi_InitAll(pOutCliEnv: _MdsApiClientEnv, pCfgFile: str, pLoggerSection: str, pCfgSection: str, pTcpAddrKey: str, pQryAddrKey: str, pUdpL1AddrKey: str, pUdpL2AddrKey: str, pUdpTickTradeAddrKey: str, pUdpTickOrderAddrKey: str)->int:
+def MdsApi_InitAll(pOutCliEnv: _MdsApiClientEnv, pCfgFile: str, pLoggerSection: str, pCfgSection: str, pTcpAddrKey: str, pQryAddrKey: str, pUdpL1AddrKey: str, pUdpL2AddrKey: str, pUdpTick1AddrKey: str, pUdpTick2AddrKey: str)->int:
     ...
 def MdsApi_InitAllByConvention(pOutCliEnv: _MdsApiClientEnv, pCfgFile: str)->int:
+    ...
+def MdsApi_InitAllByCfgStruct(pOutCliEnv: _MdsApiClientEnv, pClientCfg: _MdsApiClientCfg)->int:
     ...
 def MdsApi_LogoutAll(pCliEnv: _MdsApiClientEnv, isDestory: int)->None:
     ...
@@ -3558,6 +3779,18 @@ def MdsApi_GetThreadUsername()->str:
     ...
 def MdsApi_SetThreadPassword(pPassword: str)->None:
     ...
+def MdsApi_SetCustomizedIp(pIpStr: str)->int:
+    ...
+def MdsApi_SetCustomizedMac(pMacStr: str)->int:
+    ...
+def MdsApi_GetCustomizedIp()->str:
+    ...
+def MdsApi_GetCustomizedMac()->str:
+    ...
+def MdsApi_SetCustomizedDriverId(pDriverId: str)->int:
+    ...
+def MdsApi_GetCustomizedDriverId()->str:
+    ...
 def MdsApi_GetLastRecvTime(pSessionInfo: _SGeneralClientChannel)->int:
     ...
 def MdsApi_GetLastSendTime(pSessionInfo: _SGeneralClientChannel)->int:
@@ -3590,8 +3823,8 @@ def MdsHelper_SetSubscribeRequestTickType(pSubscribeInfo: _MdsMktDataRequestReqB
     ...
 def MdsHelper_SetSubscribeRequestDataTypes(pSubscribeInfo: _MdsMktDataRequestReqBuf, dataTypes: int)->None:
     ...
-def MdsHelper_SetSubscribeRequestSubFlag(pSubscribeInfo: _MdsMktDataRequestReqBuf, exchangeId: _eMdsExchangeId, securityType: _eMdsSecurityType, subFlag: _eMdsMktSubscribeFlag)->None:
+def MdsHelper_SetSubscribeRequestSubFlag(pSubscribeInfo: _MdsMktDataRequestReqBuf, exchangeId: _eMdsExchangeId, mdProductType: _eMdsMdProductType, subFlag: _eMdsMktSubscribeFlag)->None:
     ...
-def MdsHelper_AddSubscribeRequestEntry(pSubscribeInfo: _MdsMktDataRequestReqBuf, exchangeId: _eMdsExchangeId, securityType: _eMdsSecurityType, securityId: int)->int:
+def MdsHelper_AddSubscribeRequestEntry(pSubscribeInfo: _MdsMktDataRequestReqBuf, exchangeId: _eMdsExchangeId, mdProductType: _eMdsMdProductType, securityId: int)->int:
     ...
 

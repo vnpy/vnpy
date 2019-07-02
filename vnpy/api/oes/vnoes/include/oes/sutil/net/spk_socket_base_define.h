@@ -77,7 +77,7 @@ extern "C" {
 #endif
 
 /** 默认的最大同时连接请求数 */
-#define SPK_DEFAULT_SO_BACKLOG          (128)
+#define SPK_DEFAULT_SO_BACKLOG          SPK_MAX_SO_BACKLOG
 /** 默认的接收缓存大小（单位: K） */
 #define SPK_DEFAULT_SO_RCVBUF           (1024)
 /** 默认的发送缓存大小（单位: K） */
@@ -93,7 +93,9 @@ extern "C" {
 #define SPK_MAX_CONN_TIMEOUT_MS         (60000)
 
 /** 默认的SOCKET超时时间 (毫秒) */
-#define SPK_DEFAULT_SO_TIMEOUT_MS       (10000)
+#ifndef SPK_DEFAULT_SO_TIMEOUT_MS
+#   define  SPK_DEFAULT_SO_TIMEOUT_MS   (10000)
+#endif
 /** 常用的较短的SOCKET超时时间 (毫秒) */
 #define SPK_SHORT_SO_TIMEOUT_MS         (5000)
 /** 常用的最短的SOCKET超时时间 (毫秒) */
@@ -230,9 +232,9 @@ typedef struct _SSocketOptionConfig {
     int8                mcastLoopbackDisabled;
 
     /** BACKLOG size for listen */
-    int16               soBacklog;
+    uint16              soBacklog;
     /** 连接操作(connect)的超时时间 (毫秒) */
-    int16               connTimeoutMs;
+    uint16              connTimeoutMs;
 
     /** socket TCP_KEEPIDLE option, 超时时间(秒) */
     int16               keepIdle;

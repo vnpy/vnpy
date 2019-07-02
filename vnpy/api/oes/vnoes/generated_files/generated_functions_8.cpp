@@ -15,18 +15,15 @@
 #include "mds_api/mds_api.h"
 
 
-void generate_enum_eMdsSubscribedChannelNo(pybind11::object & parent)
+void generate_enum_eMdsProtocolHintsType(pybind11::object & parent)
 {
-    pybind11::enum_<_eMdsSubscribedChannelNo> e(parent, "_eMdsSubscribedChannelNo", pybind11::arithmetic());
-    e.value("MDS_CHANNEL_NO_DEFAULT", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_DEFAULT);
-    e.value("MDS_CHANNEL_NO_ONE", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_ONE);
-    e.value("MDS_CHANNEL_NO_TWO", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_TWO);
-    e.value("MDS_CHANNEL_NO_THREE", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_THREE);
-    e.value("MDS_CHANNEL_NO_FOUR", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_FOUR);
-    e.value("MDS_CHANNEL_NO_ALL", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_ALL);
-    e.value("MDS_CHANNEL_NO_NONE", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_NONE);
+    pybind11::enum_<_eMdsProtocolHintsType> e(parent, "_eMdsProtocolHintsType", pybind11::arithmetic());
+    e.value("MDS_PROT_HINTS_TYPE_DEFAULT", _eMdsProtocolHintsType::MDS_PROT_HINTS_TYPE_DEFAULT);
+    e.value("MDS_PROT_HINTS_TYPE_COMPRESS", _eMdsProtocolHintsType::MDS_PROT_HINTS_TYPE_COMPRESS);
+    e.value("MDS_PROT_HINTS_TYPE_NONE", _eMdsProtocolHintsType::MDS_PROT_HINTS_TYPE_NONE);
+    e.value("__MAX_MDS_PROT_HINTS_TYPE", _eMdsProtocolHintsType::__MAX_MDS_PROT_HINTS_TYPE);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsSubscribedChannelNo", e);
+    module_vnoes::objects.emplace("_eMdsProtocolHintsType", e);
 }
 void generate_enum_eMdsApiChannelType(pybind11::object & parent)
 {
@@ -70,7 +67,6 @@ void generate_caster_(pybind11::object & parent)
     autocxxpy::caster::try_generate<_OesOptHoldingBaseInfo>(c, "to_OesOptHoldingBaseInfo");
     autocxxpy::caster::try_generate<_OesMarketStateInfo>(c, "to_OesMarketStateInfo");
     autocxxpy::caster::try_generate<_OesTradingPermissionEntry>(c, "to_OesTradingPermissionEntry");
-    autocxxpy::caster::try_generate<_OesInputSourceInfo>(c, "to_OesInputSourceInfo");
     autocxxpy::caster::try_generate<_SMsgHead>(c, "to_SMsgHead");
     autocxxpy::caster::try_generate<_OesQryCursor>(c, "to_OesQryCursor");
     autocxxpy::caster::try_generate<_OesQryReqHead>(c, "to_OesQryReqHead");
@@ -138,8 +134,6 @@ void generate_caster_(pybind11::object & parent)
     autocxxpy::caster::try_generate<_OesQryMarketStateRsp>(c, "to_OesQryMarketStateRsp");
     autocxxpy::caster::try_generate<_OesQryReqMsg>(c, "to_OesQryReqMsg");
     autocxxpy::caster::try_generate<_OesQryRspMsg>(c, "to_OesQryRspMsg");
-    autocxxpy::caster::try_generate<_OesLogonReq>(c, "to_OesLogonReq");
-    autocxxpy::caster::try_generate<_OesLogonRsp>(c, "to_OesLogonRsp");
     autocxxpy::caster::try_generate<_OesReportSynchronizationReq>(c, "to_OesReportSynchronizationReq");
     autocxxpy::caster::try_generate<_OesReportSynchronizationRsp>(c, "to_OesReportSynchronizationRsp");
     autocxxpy::caster::try_generate<_OesTestRequestReq>(c, "to_OesTestRequestReq");
@@ -174,27 +168,38 @@ void generate_caster_(pybind11::object & parent)
     autocxxpy::caster::try_generate<_MdsIndexSnapshotBody>(c, "to_MdsIndexSnapshotBody");
     autocxxpy::caster::try_generate<_MdsStockSnapshotBody>(c, "to_MdsStockSnapshotBody");
     autocxxpy::caster::try_generate<_MdsL1SnapshotBody>(c, "to_MdsL1SnapshotBody");
+    autocxxpy::caster::try_generate<_MdsL1Snapshot>(c, "to_MdsL1Snapshot");
     autocxxpy::caster::try_generate<_MdsL2StockSnapshotBody>(c, "to_MdsL2StockSnapshotBody");
     autocxxpy::caster::try_generate<_MdsL2StockSnapshotIncremental>(c, "to_MdsL2StockSnapshotIncremental");
     autocxxpy::caster::try_generate<_MdsL2BestOrdersSnapshotBody>(c, "to_MdsL2BestOrdersSnapshotBody");
     autocxxpy::caster::try_generate<_MdsL2BestOrdersSnapshotIncremental>(c, "to_MdsL2BestOrdersSnapshotIncremental");
-    autocxxpy::caster::try_generate<_MdsL2VirtualAuctionPrice>(c, "to_MdsL2VirtualAuctionPrice");
     autocxxpy::caster::try_generate<_MdsL2MarketOverview>(c, "to_MdsL2MarketOverview");
     autocxxpy::caster::try_generate<_MdsL2SnapshotBody>(c, "to_MdsL2SnapshotBody");
     autocxxpy::caster::try_generate<_MdsMktDataSnapshot>(c, "to_MdsMktDataSnapshot");
     autocxxpy::caster::try_generate<_MdsL2Trade>(c, "to_MdsL2Trade");
     autocxxpy::caster::try_generate<_MdsL2Order>(c, "to_MdsL2Order");
-    autocxxpy::caster::try_generate<_MdsL2TickLost>(c, "to_MdsL2TickLost");
+    autocxxpy::caster::try_generate<_MdsWholeMktMsgBody>(c, "to_MdsWholeMktMsgBody");
+    autocxxpy::caster::try_generate<_MdsStockStaticInfo>(c, "to_MdsStockStaticInfo");
     autocxxpy::caster::try_generate<_MdsQryMktDataSnapshotReq>(c, "to_MdsQryMktDataSnapshotReq");
     autocxxpy::caster::try_generate<_MdsQryTrdSessionStatusReq>(c, "to_MdsQryTrdSessionStatusReq");
-    autocxxpy::caster::try_generate<_MdsLogonReq>(c, "to_MdsLogonReq");
-    autocxxpy::caster::try_generate<_MdsLogonRsp>(c, "to_MdsLogonRsp");
+    autocxxpy::caster::try_generate<_MdsQryReqHeadT>(c, "to_MdsQryReqHeadT");
+    autocxxpy::caster::try_generate<_MdsQryRspHeadT>(c, "to_MdsQryRspHeadT");
+    autocxxpy::caster::try_generate<_MdsQryCursor>(c, "to_MdsQryCursor");
+    autocxxpy::caster::try_generate<_MdsQrySecurityCodeEntry>(c, "to_MdsQrySecurityCodeEntry");
+    autocxxpy::caster::try_generate<_MdsQryStockStaticInfoFilter>(c, "to_MdsQryStockStaticInfoFilter");
+    autocxxpy::caster::try_generate<_MdsQryStockStaticInfoReq>(c, "to_MdsQryStockStaticInfoReq");
+    autocxxpy::caster::try_generate<_MdsQryStockStaticInfoRsp>(c, "to_MdsQryStockStaticInfoRsp");
+    autocxxpy::caster::try_generate<_MdsQrySnapshotListFilter>(c, "to_MdsQrySnapshotListFilter");
+    autocxxpy::caster::try_generate<_MdsQrySnapshotListReq>(c, "to_MdsQrySnapshotListReq");
+    autocxxpy::caster::try_generate<_MdsQrySnapshotListRsp>(c, "to_MdsQrySnapshotListRsp");
     autocxxpy::caster::try_generate<_MdsMktDataRequestEntry>(c, "to_MdsMktDataRequestEntry");
     autocxxpy::caster::try_generate<_MdsMktDataRequestReq>(c, "to_MdsMktDataRequestReq");
     autocxxpy::caster::try_generate<_MdsMktDataRequestReqBuf>(c, "to_MdsMktDataRequestReqBuf");
     autocxxpy::caster::try_generate<_MdsMktDataRequestRsp>(c, "to_MdsMktDataRequestRsp");
     autocxxpy::caster::try_generate<_MdsTestRequestReq>(c, "to_MdsTestRequestReq");
     autocxxpy::caster::try_generate<_MdsTestRequestRsp>(c, "to_MdsTestRequestRsp");
+    autocxxpy::caster::try_generate<_MdsChangePasswordReq>(c, "to_MdsChangePasswordReq");
+    autocxxpy::caster::try_generate<_MdsChangePasswordRsp>(c, "to_MdsChangePasswordRsp");
     autocxxpy::caster::try_generate<_MdsMktReqMsgBody>(c, "to_MdsMktReqMsgBody");
     autocxxpy::caster::try_generate<_MdsMktRspMsgBody>(c, "to_MdsMktRspMsgBody");
     autocxxpy::caster::try_generate<_MdsUdpPktHead>(c, "to_MdsUdpPktHead");
@@ -216,13 +221,16 @@ void generate_caster_(pybind11::object & parent)
     autocxxpy::caster::try_generate<eOesExchangeIdT>(c, "toeOesExchangeIdT");
     autocxxpy::caster::try_generate<eOesMarketIdT>(c, "toeOesMarketIdT");
     autocxxpy::caster::try_generate<eOesPlatformIdT>(c, "toeOesPlatformIdT");
-    autocxxpy::caster::try_generate<eOesMarketStatusT>(c, "toeOesMarketStatusT");
+    autocxxpy::caster::try_generate<eOesMarketStateT>(c, "toeOesMarketStateT");
     autocxxpy::caster::try_generate<eOesTrdSessTypeT>(c, "toeOesTrdSessTypeT");
+    autocxxpy::caster::try_generate<eOesProductTypeT>(c, "toeOesProductTypeT");
     autocxxpy::caster::try_generate<eOesSecurityTypeT>(c, "toeOesSecurityTypeT");
     autocxxpy::caster::try_generate<eOesSubSecurityTypeT>(c, "toeOesSubSecurityTypeT");
     autocxxpy::caster::try_generate<eOesSecurityLevelT>(c, "toeOesSecurityLevelT");
     autocxxpy::caster::try_generate<eOesSecurityRiskLevelT>(c, "toeOesSecurityRiskLevelT");
     autocxxpy::caster::try_generate<eOesSecuritySuspFlagT>(c, "toeOesSecuritySuspFlagT");
+    autocxxpy::caster::try_generate<eOesLotTypeT>(c, "toeOesLotTypeT");
+    autocxxpy::caster::try_generate<eOesLotRejReasonT>(c, "toeOesLotRejReasonT");
     autocxxpy::caster::try_generate<eOesOrdStatusT>(c, "toeOesOrdStatusT");
     autocxxpy::caster::try_generate<eOesOrdTypeT>(c, "toeOesOrdTypeT");
     autocxxpy::caster::try_generate<eOesOrdTypeShT>(c, "toeOesOrdTypeShT");
@@ -231,8 +239,6 @@ void generate_caster_(pybind11::object & parent)
     autocxxpy::caster::try_generate<eOesOrdDirT>(c, "toeOesOrdDirT");
     autocxxpy::caster::try_generate<eOesEtfTrdCnfmTypeT>(c, "toeOesEtfTrdCnfmTypeT");
     autocxxpy::caster::try_generate<eOesEtfSubFlagT>(c, "toeOesEtfSubFlagT");
-    autocxxpy::caster::try_generate<eOesLotTypeT>(c, "toeOesLotTypeT");
-    autocxxpy::caster::try_generate<eOesLotRejReasonT>(c, "toeOesLotRejReasonT");
     autocxxpy::caster::try_generate<eOesExecTypeT>(c, "toeOesExecTypeT");
     autocxxpy::caster::try_generate<eOesCurrTypeT>(c, "toeOesCurrTypeT");
     autocxxpy::caster::try_generate<eOesFeeTypeT>(c, "toeOesFeeTypeT");
@@ -247,6 +253,7 @@ void generate_caster_(pybind11::object & parent)
     autocxxpy::caster::try_generate<eOesTradingLimitT>(c, "toeOesTradingLimitT");
     autocxxpy::caster::try_generate<eOesQualificationClassT>(c, "toeOesQualificationClassT");
     autocxxpy::caster::try_generate<eOesInvestorClassT>(c, "toeOesInvestorClassT");
+    autocxxpy::caster::try_generate<eOesCustTypeT>(c, "toeOesCustTypeT");
     autocxxpy::caster::try_generate<eOesOwnerTypeT>(c, "toeOesOwnerTypeT");
     autocxxpy::caster::try_generate<eOesClientTypeT>(c, "toeOesClientTypeT");
     autocxxpy::caster::try_generate<eOesClientStatusT>(c, "toeOesClientStatusT");
@@ -280,7 +287,6 @@ void generate_caster_(pybind11::object & parent)
     autocxxpy::caster::try_generate<OesOptHoldingBaseInfoT>(c, "toOesOptHoldingBaseInfoT");
     autocxxpy::caster::try_generate<OesMarketStateInfoT>(c, "toOesMarketStateInfoT");
     autocxxpy::caster::try_generate<OesTradingPermissionEntryT>(c, "toOesTradingPermissionEntryT");
-    autocxxpy::caster::try_generate<OesInputSourceInfoT>(c, "toOesInputSourceInfoT");
     autocxxpy::caster::try_generate<eSMsgProtocolTypeT>(c, "toeSMsgProtocolTypeT");
     autocxxpy::caster::try_generate<eSMsgFlagT>(c, "toeSMsgFlagT");
     autocxxpy::caster::try_generate<SMsgHeadT>(c, "toSMsgHeadT");
@@ -363,8 +369,7 @@ void generate_caster_(pybind11::object & parent)
     autocxxpy::caster::try_generate<OesQryRspMsgT>(c, "toOesQryRspMsgT");
     autocxxpy::caster::try_generate<eOesMsgTypeT>(c, "toeOesMsgTypeT");
     autocxxpy::caster::try_generate<eOesSubscribeReportTypeT>(c, "toeOesSubscribeReportTypeT");
-    autocxxpy::caster::try_generate<OesLogonReqT>(c, "toOesLogonReqT");
-    autocxxpy::caster::try_generate<OesLogonRspT>(c, "toOesLogonRspT");
+    autocxxpy::caster::try_generate<eOesProtocolHintsTypeT>(c, "toeOesProtocolHintsTypeT");
     autocxxpy::caster::try_generate<OesReportSynchronizationReqT>(c, "toOesReportSynchronizationReqT");
     autocxxpy::caster::try_generate<OesReportSynchronizationRspT>(c, "toOesReportSynchronizationRspT");
     autocxxpy::caster::try_generate<OesTestRequestReqT>(c, "toOesTestRequestReqT");
@@ -403,11 +408,10 @@ void generate_caster_(pybind11::object & parent)
     autocxxpy::caster::try_generate<F_OESAPI_ON_QRY_MSG_T>(c, "toF_OESAPI_ON_QRY_MSG_T");
     autocxxpy::caster::try_generate<eMdsExchangeIdT>(c, "toeMdsExchangeIdT");
     autocxxpy::caster::try_generate<eMdsMsgSourceT>(c, "toeMdsMsgSourceT");
-    autocxxpy::caster::try_generate<eMdsSecurityTypeT>(c, "toeMdsSecurityTypeT");
+    autocxxpy::caster::try_generate<eMdsMdProductTypeT>(c, "toeMdsMdProductTypeT");
     autocxxpy::caster::try_generate<eMdsMdStreamTypeT>(c, "toeMdsMdStreamTypeT");
     autocxxpy::caster::try_generate<eMdsMdLevelT>(c, "toeMdsMdLevelT");
     autocxxpy::caster::try_generate<eMdsL2PriceLevelOperatorT>(c, "toeMdsL2PriceLevelOperatorT");
-    autocxxpy::caster::try_generate<eMdsL2VirtualAuctionSideT>(c, "toeMdsL2VirtualAuctionSideT");
     autocxxpy::caster::try_generate<eMdsL2TradeExecTypeT>(c, "toeMdsL2TradeExecTypeT");
     autocxxpy::caster::try_generate<eMdsL2TradeBSFlagT>(c, "toeMdsL2TradeBSFlagT");
     autocxxpy::caster::try_generate<eMdsL2OrderSideT>(c, "toeMdsL2OrderSideT");
@@ -421,20 +425,31 @@ void generate_caster_(pybind11::object & parent)
     autocxxpy::caster::try_generate<MdsIndexSnapshotBodyT>(c, "toMdsIndexSnapshotBodyT");
     autocxxpy::caster::try_generate<MdsStockSnapshotBodyT>(c, "toMdsStockSnapshotBodyT");
     autocxxpy::caster::try_generate<MdsL1SnapshotBodyT>(c, "toMdsL1SnapshotBodyT");
+    autocxxpy::caster::try_generate<MdsL1SnapshotT>(c, "toMdsL1SnapshotT");
     autocxxpy::caster::try_generate<MdsL2StockSnapshotBodyT>(c, "toMdsL2StockSnapshotBodyT");
     autocxxpy::caster::try_generate<MdsL2StockSnapshotIncrementalT>(c, "toMdsL2StockSnapshotIncrementalT");
     autocxxpy::caster::try_generate<MdsL2BestOrdersSnapshotBodyT>(c, "toMdsL2BestOrdersSnapshotBodyT");
     autocxxpy::caster::try_generate<MdsL2BestOrdersSnapshotIncrementalT>(c, "toMdsL2BestOrdersSnapshotIncrementalT");
-    autocxxpy::caster::try_generate<MdsL2VirtualAuctionPriceT>(c, "toMdsL2VirtualAuctionPriceT");
     autocxxpy::caster::try_generate<MdsL2MarketOverviewT>(c, "toMdsL2MarketOverviewT");
     autocxxpy::caster::try_generate<MdsL2SnapshotBodyT>(c, "toMdsL2SnapshotBodyT");
     autocxxpy::caster::try_generate<MdsMktDataSnapshotT>(c, "toMdsMktDataSnapshotT");
     autocxxpy::caster::try_generate<MdsL2TradeT>(c, "toMdsL2TradeT");
     autocxxpy::caster::try_generate<MdsL2OrderT>(c, "toMdsL2OrderT");
-    autocxxpy::caster::try_generate<MdsL2TickLostT>(c, "toMdsL2TickLostT");
+    autocxxpy::caster::try_generate<MdsWholeMktMsgBodyT>(c, "toMdsWholeMktMsgBodyT");
+    autocxxpy::caster::try_generate<MdsStockStaticInfoT>(c, "toMdsStockStaticInfoT");
     autocxxpy::caster::try_generate<MdsQryMktDataSnapshotReqT>(c, "toMdsQryMktDataSnapshotReqT");
     autocxxpy::caster::try_generate<MdsQrySecurityStatusReqT>(c, "toMdsQrySecurityStatusReqT");
     autocxxpy::caster::try_generate<MdsQryTrdSessionStatusReqT>(c, "toMdsQryTrdSessionStatusReqT");
+    autocxxpy::caster::try_generate<MdsQryReqHeadT>(c, "toMdsQryReqHeadT");
+    autocxxpy::caster::try_generate<MdsQryRspHeadT>(c, "toMdsQryRspHeadT");
+    autocxxpy::caster::try_generate<MdsQryCursorT>(c, "toMdsQryCursorT");
+    autocxxpy::caster::try_generate<MdsQrySecurityCodeEntryT>(c, "toMdsQrySecurityCodeEntryT");
+    autocxxpy::caster::try_generate<MdsQryStockStaticInfoFilterT>(c, "toMdsQryStockStaticInfoFilterT");
+    autocxxpy::caster::try_generate<MdsQryStockStaticInfoReqT>(c, "toMdsQryStockStaticInfoReqT");
+    autocxxpy::caster::try_generate<MdsQryStockStaticInfoRspT>(c, "toMdsQryStockStaticInfoRspT");
+    autocxxpy::caster::try_generate<MdsQrySnapshotListFilterT>(c, "toMdsQrySnapshotListFilterT");
+    autocxxpy::caster::try_generate<MdsQrySnapshotListReqT>(c, "toMdsQrySnapshotListReqT");
+    autocxxpy::caster::try_generate<MdsQrySnapshotListRspT>(c, "toMdsQrySnapshotListRspT");
     autocxxpy::caster::try_generate<eMdsMsgTypeT>(c, "toeMdsMsgTypeT");
     autocxxpy::caster::try_generate<eMdsSubscribeModeT>(c, "toeMdsSubscribeModeT");
     autocxxpy::caster::try_generate<eMdsMktSubscribeFlagT>(c, "toeMdsMktSubscribeFlagT");
@@ -442,14 +457,15 @@ void generate_caster_(pybind11::object & parent)
     autocxxpy::caster::try_generate<eMdsSubscribedTickExpireTypeT>(c, "toeMdsSubscribedTickExpireTypeT");
     autocxxpy::caster::try_generate<eMdsSubscribeDataTypeT>(c, "toeMdsSubscribeDataTypeT");
     autocxxpy::caster::try_generate<eMdsTickChannelNoT>(c, "toeMdsTickChannelNoT");
-    autocxxpy::caster::try_generate<MdsLogonReqT>(c, "toMdsLogonReqT");
-    autocxxpy::caster::try_generate<MdsLogonRspT>(c, "toMdsLogonRspT");
+    autocxxpy::caster::try_generate<eMdsProtocolHintsTypeT>(c, "toeMdsProtocolHintsTypeT");
     autocxxpy::caster::try_generate<MdsMktDataRequestEntryT>(c, "toMdsMktDataRequestEntryT");
     autocxxpy::caster::try_generate<MdsMktDataRequestReqT>(c, "toMdsMktDataRequestReqT");
     autocxxpy::caster::try_generate<MdsMktDataRequestReqBufT>(c, "toMdsMktDataRequestReqBufT");
     autocxxpy::caster::try_generate<MdsMktDataRequestRspT>(c, "toMdsMktDataRequestRspT");
     autocxxpy::caster::try_generate<MdsTestRequestReqT>(c, "toMdsTestRequestReqT");
     autocxxpy::caster::try_generate<MdsTestRequestRspT>(c, "toMdsTestRequestRspT");
+    autocxxpy::caster::try_generate<MdsChangePasswordReqT>(c, "toMdsChangePasswordReqT");
+    autocxxpy::caster::try_generate<MdsChangePasswordRspT>(c, "toMdsChangePasswordRspT");
     autocxxpy::caster::try_generate<MdsMktReqMsgBodyT>(c, "toMdsMktReqMsgBodyT");
     autocxxpy::caster::try_generate<MdsMktRspMsgBodyT>(c, "toMdsMktRspMsgBodyT");
     autocxxpy::caster::try_generate<MdsUdpPktHeadT>(c, "toMdsUdpPktHeadT");
@@ -462,4 +478,5 @@ void generate_caster_(pybind11::object & parent)
     autocxxpy::caster::try_generate<MdsApiClientCfgT>(c, "toMdsApiClientCfgT");
     autocxxpy::caster::try_generate<MdsApiClientEnvT>(c, "toMdsApiClientEnvT");
     autocxxpy::caster::try_generate<F_MDSAPI_ONMSG_T>(c, "toF_MDSAPI_ONMSG_T");
+    autocxxpy::caster::try_generate<F_MDSAPI_ON_QRY_MSG_T>(c, "toF_MDSAPI_ON_QRY_MSG_T");
 }

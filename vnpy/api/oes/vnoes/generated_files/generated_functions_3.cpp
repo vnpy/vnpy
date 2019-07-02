@@ -15,45 +15,6 @@
 #include "mds_api/mds_api.h"
 
 
-void generate_class_OesQryStkHoldingReq(pybind11::object & parent)
-{
-    pybind11::class_<_OesQryStkHoldingReq> c(parent, "_OesQryStkHoldingReq");
-    if constexpr (std::is_default_constructible_v<_OesQryStkHoldingReq>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryStkHoldingReq, "reqHead", reqHead);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryStkHoldingReq, "qryFilter", qryFilter);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryStkHoldingReq, c);
-    module_vnoes::objects.emplace("_OesQryStkHoldingReq", c);
-}
-void generate_class_OesQryStkHoldingRsp(pybind11::object & parent)
-{
-    pybind11::class_<_OesQryStkHoldingRsp> c(parent, "_OesQryStkHoldingRsp");
-    if constexpr (std::is_default_constructible_v<_OesQryStkHoldingRsp>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryStkHoldingRsp, "qryHead", qryHead);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryStkHoldingRsp, "qryItems", qryItems);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryStkHoldingRsp, c);
-    module_vnoes::objects.emplace("_OesQryStkHoldingRsp", c);
-}
-void generate_class_OesOptHoldingItem(pybind11::object & parent)
-{
-    pybind11::class_<_OesOptHoldingItem> c(parent, "_OesOptHoldingItem");
-    if constexpr (std::is_default_constructible_v<_OesOptHoldingItem>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptHoldingItem, "invAcctId", invAcctId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptHoldingItem, "securityId", securityId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptHoldingItem, "mktId", mktId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptHoldingItem, "__HOLD_BASE_filler", __HOLD_BASE_filler);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptHoldingItem, "hldA", hldA);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptHoldingItem, "hldB", hldB);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptHoldingItem, "hldC", hldC);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptHoldingItem, "hldC2", hldC2);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptHoldingItem, "hldRA", hldRA);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptHoldingItem, "hldRB", hldRB);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptHoldingItem, "hldRC", hldRC);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesOptHoldingItem, c);
-    module_vnoes::objects.emplace("_OesOptHoldingItem", c);
-}
 void generate_class_OesQryOptHoldingReq(pybind11::object & parent)
 {
     pybind11::class_<_OesQryOptHoldingReq> c(parent, "_OesQryOptHoldingReq");
@@ -133,7 +94,10 @@ void generate_class_OesInvAcctItem(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctItem, "limits", limits);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctItem, "permissions", permissions);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctItem, "pbuId", pbuId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctItem, "__INV_ACCT_BASE_filler2", __INV_ACCT_BASE_filler2);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctItem, "subscriptionQuota", subscriptionQuota);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctItem, "kcSubscriptionQuota", kcSubscriptionQuota);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctItem, "__INV_ACCT_BASE_reserve", __INV_ACCT_BASE_reserve);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctItem, "custId", custId);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesInvAcctItem, c);
     module_vnoes::objects.emplace("_OesInvAcctItem", c);
@@ -178,6 +142,7 @@ void generate_class_OesInvAcctOverview(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctOverview, "custId", custId);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctOverview, "isValid", isValid);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctOverview, "__filler", __filler);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctOverview, "kcSubscriptionQuota", kcSubscriptionQuota);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctOverview, "trdOrdCnt", trdOrdCnt);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctOverview, "nonTrdOrdCnt", nonTrdOrdCnt);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesInvAcctOverview, "cancelOrdCnt", cancelOrdCnt);
@@ -402,6 +367,7 @@ void generate_class_OesQryIssueFilter(pybind11::object & parent)
         c.def(pybind11::init<>());
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryIssueFilter, "securityId", securityId);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryIssueFilter, "mktId", mktId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryIssueFilter, "productType", productType);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryIssueFilter, "__filler", __filler);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryIssueFilter, "userInfo", userInfo);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryIssueFilter, c);
@@ -563,4 +529,81 @@ void generate_class_OesQryOptionReq(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryOptionReq, "qryFilter", qryFilter);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryOptionReq, c);
     module_vnoes::objects.emplace("_OesQryOptionReq", c);
+}
+void generate_class_OesQryOptionRsp(pybind11::object & parent)
+{
+    pybind11::class_<_OesQryOptionRsp> c(parent, "_OesQryOptionRsp");
+    if constexpr (std::is_default_constructible_v<_OesQryOptionRsp>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryOptionRsp, "rspHead", rspHead);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryOptionRsp, "qryItems", qryItems);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryOptionRsp, c);
+    module_vnoes::objects.emplace("_OesQryOptionRsp", c);
+}
+void generate_class_OesQryTradingDayRsp(pybind11::object & parent)
+{
+    pybind11::class_<_OesQryTradingDayRsp> c(parent, "_OesQryTradingDayRsp");
+    if constexpr (std::is_default_constructible_v<_OesQryTradingDayRsp>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryTradingDayRsp, "tradingDay", tradingDay);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryTradingDayRsp, "__filler", __filler);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryTradingDayRsp, c);
+    module_vnoes::objects.emplace("_OesQryTradingDayRsp", c);
+}
+void generate_class_OesQryMarketStateFilter(pybind11::object & parent)
+{
+    pybind11::class_<_OesQryMarketStateFilter> c(parent, "_OesQryMarketStateFilter");
+    if constexpr (std::is_default_constructible_v<_OesQryMarketStateFilter>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateFilter, "exchId", exchId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateFilter, "platformId", platformId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateFilter, "__filler", __filler);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateFilter, "userInfo", userInfo);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryMarketStateFilter, c);
+    module_vnoes::objects.emplace("_OesQryMarketStateFilter", c);
+}
+void generate_class_OesQryMarketStateReq(pybind11::object & parent)
+{
+    pybind11::class_<_OesQryMarketStateReq> c(parent, "_OesQryMarketStateReq");
+    if constexpr (std::is_default_constructible_v<_OesQryMarketStateReq>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateReq, "reqHead", reqHead);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateReq, "qryFilter", qryFilter);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryMarketStateReq, c);
+    module_vnoes::objects.emplace("_OesQryMarketStateReq", c);
+}
+void generate_class_OesQryMarketStateRsp(pybind11::object & parent)
+{
+    pybind11::class_<_OesQryMarketStateRsp> c(parent, "_OesQryMarketStateRsp");
+    if constexpr (std::is_default_constructible_v<_OesQryMarketStateRsp>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateRsp, "rspHead", rspHead);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryMarketStateRsp, "qryItems", qryItems);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryMarketStateRsp, c);
+    module_vnoes::objects.emplace("_OesQryMarketStateRsp", c);
+}
+void generate_class_OesQryReqMsg(pybind11::object & parent)
+{
+    pybind11::class_<_OesQryReqMsg> c(parent, "_OesQryReqMsg");
+    if constexpr (std::is_default_constructible_v<_OesQryReqMsg>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryOrd", qryOrd);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryTrd", qryTrd);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryCashAsset", qryCashAsset);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryStkHolding", qryStkHolding);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryOptHolding", qryOptHolding);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryCust", qryCust);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryInvAcct", qryInvAcct);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryComms", qryComms);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryFundTrsf", qryFundTrsf);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryLotWinning", qryLotWinning);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryIssue", qryIssue);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryStock", qryStock);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryEtf", qryEtf);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryEtfComponent", qryEtfComponent);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryOption", qryOption);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryMktState", qryMktState);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryReqMsg, "qryCounterCash", qryCounterCash);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryReqMsg, c);
+    module_vnoes::objects.emplace("_OesQryReqMsg", c);
 }

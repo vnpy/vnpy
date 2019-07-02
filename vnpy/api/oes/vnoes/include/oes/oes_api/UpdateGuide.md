@@ -1,5 +1,83 @@
 # OES-API Update Guide    {#update_guide}
 
+OES_0.15.9 / 2019-05-31
+-----------------------------------
+
+### 1. API更新概要
+
+  1.  服务端兼容 v0.15.5.1 版本API, 客户可以选择不升级 (建议升级, 以支持科创版业务)
+  2.  fix: 修复API无法支持取值大于1024的文件描述符的问题
+  3.  新增证券子类型
+      - 科创板股票 (OES_SUB_SECURITY_TYPE_STOCK_KSH)
+      - 科创板存托凭证 (OES_SUB_SECURITY_TYPE_STOCK_KCDR)
+      - 沪伦通CDR (OES_SUB_SECURITY_TYPE_STOCK_HLTCDR)
+  4.  新增配股认购对应的买卖类型 OES_BS_TYPE_ALLOTMENT, 以支持配股业务
+  5.  新增产品类型属性的定义, 并在如下结构中体现:
+      - 证券信息 (OesStockBaseInfoT/OesStockItemT)
+      - 证券发行信息 (OesIssueBaseInfoT/OesIssueItemT)
+      - 股票持仓信息 (OesStkHoldingBaseInfoT/OesStkHoldingItemT)
+      - 委托回报 (OesOrdCnfmT/OesOrdItemT)
+      - 成交回报 (OesTrdCnfmT/OesTrdItemT)
+      - 证券发行信息查询接口(OesApi_QueryIssue)的过滤条件
+      - 股票持仓信息查询接口(OesApi_QueryStkHolding)的过滤条件
+  6.  为了支持科创板, 扩展以下数据结构以及相应的查询结果 (兼容之前版本的API)
+      - 证券账户基础信息 (OesInvAcctBaseInfoT, OesInvAcctItemT) 中增加如下字段:
+          - 科创板权益 (kcSubscriptionQuota)
+      - 现货产品基础信息 (OesStockBaseInfoT, OesStockItemT) 中增加如下字段:
+          - 限价买数量上限 (lmtBuyMaxQty)
+          - 限价买数量下限 (lmtBuyMinQty)
+          - 限价卖数量上限 (lmtSellMaxQty)
+          - 限价卖数量下限 (lmtSellMinQty)
+          - 市价买数量上限 (mktBuyMaxQty)
+          - 市价买数量下限 (mktBuyMinQty)
+          - 市价卖数量上限 (mktSellMaxQty)
+          - 市价卖数量下限 (mktSellMinQty)
+      - 客户端总览信息中的股东账户总览 (OesInvAcctOverviewT) 中增加如下字段:
+          - 科创板权益 (kcSubscriptionQuota)
+  7.  重构涨跌停价格、价格档位字段命名, 为这些字段增加新的别名 (兼容之前版本的API)
+      - ceilPrice => upperLimitPrice
+      - floorPrice => lowerLimitPrice
+      - priceUnit => priceTick
+  8.  调整上证委托类型 (eOesOrdTypeShT)
+      - 增加 '对手方最优价格申报 (OES_ORD_TYPE_SH_MTL_BEST)' 类型 (仅适用于科创板)
+      - 增加 '本方最优价格申报 (OES_ORD_TYPE_SH_MTL_SAMEPATY_BEST)' 类型 (仅适用于科创板)
+  9.  股东账户交易权限枚举(eOesTradingPermissionT)中新增
+      - 科创板交易权限 (OES_PERMIS_KSH)
+  10. 新增错误码1035、1036、1274、1275, 调整错误码1007、1022的描述信息
+      | 错误码 | 描述
+      | ---- | ---------------
+      | 1007 | 非服务开放时间
+      | 1022 | 尚不支持或尚未开通此业务
+      | 1035 | 非法的产品类型
+      | 1036 | 未通过黑白名单检查
+      | 1274 | 股东账户没有交易沪伦通存托凭证的权限
+      | 1275 | 股东账户没有交易科创板的权限
+
+### 2. 服务端更新概要
+
+  1. 支持配股申购业务
+  2. 支持对客户设置禁止买入和限制卖出某支证券
+  3. 支持逆回购闭市时间延后到15:30
+  4. 支持科创板业务
+  5. 修复其他系统缺陷, 完善安全机制
+
+### 3. 科创板市价委托保护限价说明
+
+  1. 在进行科创板市价委托交易时, 保护限价填在委托请求中的ordPrice字段内 (对于主板的市价委托, 委托请求中的ordPrice字段无意义)
+  2. 对于上市前五日、无涨跌幅限制的科创板证券, 市价委托的保护限价必填, 且保护限价需符合价格变动单位
+  3. 对于上市五日后、有涨跌幅限制的科创板证券, 市价委托的保护限价可填写有效值或者0
+     - 对于市价买委托, 委托请求中ordPrice填0将使用涨停价作为其保护限价
+     - 对于市价卖委托, 委托请求中ordPrice填0将使用跌停价作为其保护限价
+  4. 对于有涨跌幅限制的科创板证券:
+     - 当市价买委托的保护限价高于涨停价时, 将使用涨停价冻结交易资金, 委托正常处理
+     - 当市价买委托的保护限价低于涨停价时, 将使用保护限价冻结交易资金
+     - 当市价买委托的保护限价低于跌停价时, 委托将被拒绝
+     - 当市价卖委托的保护限价低于跌停价时, 委托正常处理
+     - 当市价卖委托的保护限价高于涨停价时, 委托将被拒绝
+
+
+---
+
 OES_0.15.7.4 / 2018-09-28
 -----------------------------------
 
@@ -229,7 +307,7 @@ OES_0.15.3 / 2017-08-14
 
 ### 更新内容
 
-  1.现货产品基础信息(OesStockBaseInfoT) 中
+  1. 现货产品基础信息(OesStockBaseInfoT) 中
     - 调整字段 isQualificationRequired => qualificationClass,
         取值请参考 eOesQualificationClassT
     - 新增字段 产品风险等级(securityRiskLevel)，取值请参考 eOesSecurityRiskLevelT

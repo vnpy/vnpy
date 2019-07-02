@@ -46,7 +46,6 @@ void generate_vnoes(pybind11::module & parent)
     generate_class_OesOptHoldingBaseInfo(parent);
     generate_class_OesMarketStateInfo(parent);
     generate_class_OesTradingPermissionEntry(parent);
-    generate_class_OesInputSourceInfo(parent);
     generate_class_SMsgHead(parent);
     generate_class_OesQryCursor(parent);
     generate_class_OesQryReqHead(parent);
@@ -114,8 +113,6 @@ void generate_vnoes(pybind11::module & parent)
     generate_class_OesQryMarketStateRsp(parent);
     generate_class_OesQryReqMsg(parent);
     generate_class_OesQryRspMsg(parent);
-    generate_class_OesLogonReq(parent);
-    generate_class_OesLogonRsp(parent);
     generate_class_OesReportSynchronizationReq(parent);
     generate_class_OesReportSynchronizationRsp(parent);
     generate_class_OesTestRequestReq(parent);
@@ -150,27 +147,38 @@ void generate_vnoes(pybind11::module & parent)
     generate_class_MdsIndexSnapshotBody(parent);
     generate_class_MdsStockSnapshotBody(parent);
     generate_class_MdsL1SnapshotBody(parent);
+    generate_class_MdsL1Snapshot(parent);
     generate_class_MdsL2StockSnapshotBody(parent);
     generate_class_MdsL2StockSnapshotIncremental(parent);
     generate_class_MdsL2BestOrdersSnapshotBody(parent);
     generate_class_MdsL2BestOrdersSnapshotIncremental(parent);
-    generate_class_MdsL2VirtualAuctionPrice(parent);
     generate_class_MdsL2MarketOverview(parent);
     generate_class_MdsL2SnapshotBody(parent);
     generate_class_MdsMktDataSnapshot(parent);
     generate_class_MdsL2Trade(parent);
     generate_class_MdsL2Order(parent);
-    generate_class_MdsL2TickLost(parent);
+    generate_class_MdsWholeMktMsgBody(parent);
+    generate_class_MdsStockStaticInfo(parent);
     generate_class_MdsQryMktDataSnapshotReq(parent);
     generate_class_MdsQryTrdSessionStatusReq(parent);
-    generate_class_MdsLogonReq(parent);
-    generate_class_MdsLogonRsp(parent);
+    generate_class_MdsQryReqHeadT(parent);
+    generate_class_MdsQryRspHeadT(parent);
+    generate_class_MdsQryCursor(parent);
+    generate_class_MdsQrySecurityCodeEntry(parent);
+    generate_class_MdsQryStockStaticInfoFilter(parent);
+    generate_class_MdsQryStockStaticInfoReq(parent);
+    generate_class_MdsQryStockStaticInfoRsp(parent);
+    generate_class_MdsQrySnapshotListFilter(parent);
+    generate_class_MdsQrySnapshotListReq(parent);
+    generate_class_MdsQrySnapshotListRsp(parent);
     generate_class_MdsMktDataRequestEntry(parent);
     generate_class_MdsMktDataRequestReq(parent);
     generate_class_MdsMktDataRequestReqBuf(parent);
     generate_class_MdsMktDataRequestRsp(parent);
     generate_class_MdsTestRequestReq(parent);
     generate_class_MdsTestRequestRsp(parent);
+    generate_class_MdsChangePasswordReq(parent);
+    generate_class_MdsChangePasswordRsp(parent);
     generate_class_MdsMktReqMsgBody(parent);
     generate_class_MdsMktRspMsgBody(parent);
     generate_class_MdsUdpPktHead(parent);
@@ -179,13 +187,16 @@ void generate_vnoes(pybind11::module & parent)
     generate_enum_eOesExchangeId(parent);
     generate_enum_eOesMarketId(parent);
     generate_enum_eOesPlatformId(parent);
-    generate_enum_eOesMarketStatus(parent);
+    generate_enum_eOesMarketState(parent);
     generate_enum_eOesTrdSessType(parent);
+    generate_enum_eOesProductType(parent);
     generate_enum_eOesSecurityType(parent);
     generate_enum_eOesSubSecurityType(parent);
     generate_enum_eOesSecurityLevel(parent);
     generate_enum_eOesSecurityRiskLevel(parent);
     generate_enum_eOesSecuritySuspFlag(parent);
+    generate_enum_eOesLotType(parent);
+    generate_enum_eOesLotRejReason(parent);
     generate_enum_eOesOrdStatus(parent);
     generate_enum_eOesOrdType(parent);
     generate_enum_eOesOrdTypeSh(parent);
@@ -194,8 +205,6 @@ void generate_vnoes(pybind11::module & parent)
     generate_enum_eOesOrdDir(parent);
     generate_enum_eOesEtfTrdCnfmType(parent);
     generate_enum_eOesEtfSubFlag(parent);
-    generate_enum_eOesLotType(parent);
-    generate_enum_eOesLotRejReason(parent);
     generate_enum_eOesExecType(parent);
     generate_enum_eOesCurrType(parent);
     generate_enum_eOesFeeType(parent);
@@ -210,6 +219,7 @@ void generate_vnoes(pybind11::module & parent)
     generate_enum_eOesTradingLimit(parent);
     generate_enum_eOesQualificationClass(parent);
     generate_enum_eOesInvestorClass(parent);
+    generate_enum_eOesCustType(parent);
     generate_enum_eOesOwnerType(parent);
     generate_enum_eOesClientType(parent);
     generate_enum_eOesClientStatus(parent);
@@ -223,17 +233,17 @@ void generate_vnoes(pybind11::module & parent)
     generate_enum_eSMsgFlag(parent);
     generate_enum_eOesMsgType(parent);
     generate_enum_eOesSubscribeReportType(parent);
+    generate_enum_eOesProtocolHintsType(parent);
     generate_enum_eSSocketProtocolType(parent);
     generate_enum_eGeneralClientClusterType(parent);
     generate_enum_eGeneralClientEncryptType(parent);
     generate_enum_eOesApiChannelType(parent);
     generate_enum_eMdsExchangeId(parent);
     generate_enum_eMdsMsgSource(parent);
-    generate_enum_eMdsSecurityType(parent);
+    generate_enum_eMdsMdProductType(parent);
     generate_enum_eMdsMdStreamType(parent);
     generate_enum_eMdsMdLevel(parent);
     generate_enum_eMdsL2PriceLevelOperator(parent);
-    generate_enum_eMdsL2VirtualAuctionSide(parent);
     generate_enum_eMdsL2TradeExecType(parent);
     generate_enum_eMdsL2TradeBSFlag(parent);
     generate_enum_eMdsL2OrderSideT(parent);
@@ -247,6 +257,7 @@ void generate_vnoes(pybind11::module & parent)
     generate_enum_eMdsSubscribedTickExpireType(parent);
     generate_enum_eMdsSubscribeDataType(parent);
     generate_enum_eMdsSubscribedChannelNo(parent);
+    generate_enum_eMdsProtocolHintsType(parent);
     generate_enum_eMdsApiChannelType(parent);
     parent.def("__SPlatform_GetErrno",
         &__SPlatform_GetErrno,
@@ -357,6 +368,11 @@ void generate_vnoes(pybind11::module & parent)
                 autocxxpy::indexed_transform_holder<autocxxpy::c_function_callback_transform, 2>
             >
         >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    parent.def("OesApi_RecvReportMsg",
+        &OesApi_RecvReportMsg,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
@@ -671,6 +687,18 @@ void generate_vnoes(pybind11::module & parent)
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
+    parent.def("OesApi_InitAllByCfgStruct",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &OesApi_InitAllByCfgStruct
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::inout_argument_transform, 3>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
     parent.def("OesApi_LogoutAll",
         &OesApi_LogoutAll,
         pybind11::return_value_policy::reference,
@@ -817,8 +845,28 @@ void generate_vnoes(pybind11::module & parent)
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
+    parent.def("OesApi_SetThreadSubscribeEnvId",
+        &OesApi_SetThreadSubscribeEnvId,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    parent.def("OesApi_GetThreadSubscribeEnvId",
+        &OesApi_GetThreadSubscribeEnvId,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
     parent.def("OesApi_SetCustomizedIpAndMac",
         &OesApi_SetCustomizedIpAndMac,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    parent.def("OesApi_SetCustomizedIp",
+        &OesApi_SetCustomizedIp,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    parent.def("OesApi_SetCustomizedMac",
+        &OesApi_SetCustomizedMac,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
@@ -899,6 +947,11 @@ void generate_vnoes(pybind11::module & parent)
     );
     parent.def("OesApi_GetErrorMsg2",
         &OesApi_GetErrorMsg2,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    parent.def("OesHelper_ExtractOrdReportFromTrd",
+        &OesHelper_ExtractOrdReportFromTrd,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
@@ -1025,6 +1078,48 @@ void generate_vnoes(pybind11::module & parent)
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
+    parent.def("MdsApi_QueryStockStaticInfo",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &MdsApi_QueryStockStaticInfo
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::c_function_callback_transform, 2>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    parent.def("MdsApi_QuerySnapshotList",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &MdsApi_QuerySnapshotList
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::c_function_callback_transform, 4>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    parent.def("MdsApi_QuerySnapshotList2",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &MdsApi_QuerySnapshotList2
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::c_function_callback_transform, 4>,
+                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 1>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    parent.def("MdsApi_SendChangePasswordReq",
+        &MdsApi_SendChangePasswordReq,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
     parent.def("MdsApi_ConnectToUdpMcast",
         &MdsApi_ConnectToUdpMcast,
         pybind11::return_value_policy::reference,
@@ -1049,6 +1144,11 @@ void generate_vnoes(pybind11::module & parent)
     );
     parent.def("MdsApi_InitAllByConvention",
         &MdsApi_InitAllByConvention,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    parent.def("MdsApi_InitAllByCfgStruct",
+        &MdsApi_InitAllByCfgStruct,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
@@ -1174,6 +1274,36 @@ void generate_vnoes(pybind11::module & parent)
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
+    parent.def("MdsApi_SetCustomizedIp",
+        &MdsApi_SetCustomizedIp,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    parent.def("MdsApi_SetCustomizedMac",
+        &MdsApi_SetCustomizedMac,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    parent.def("MdsApi_GetCustomizedIp",
+        &MdsApi_GetCustomizedIp,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    parent.def("MdsApi_GetCustomizedMac",
+        &MdsApi_GetCustomizedMac,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    parent.def("MdsApi_SetCustomizedDriverId",
+        &MdsApi_SetCustomizedDriverId,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    parent.def("MdsApi_GetCustomizedDriverId",
+        &MdsApi_GetCustomizedDriverId,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
     parent.def("MdsApi_GetLastRecvTime",
         &MdsApi_GetLastRecvTime,
         pybind11::return_value_policy::reference,
@@ -1280,6 +1410,8 @@ void generate_vnoes(pybind11::module & parent)
     parent.attr("MDSAPI_CFG_DEFAULT_KEY_QRY_ADDR") = MDSAPI_CFG_DEFAULT_KEY_QRY_ADDR;
     parent.attr("MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L1") = MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L1;
     parent.attr("MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L2") = MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L2;
+    parent.attr("MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK1") = MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK1;
+    parent.attr("MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK2") = MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK2;
     parent.attr("MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_TRADE") = MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_TRADE;
     parent.attr("MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_ORDER") = MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_ORDER;
     parent.attr("MDSAPI_DEFAULT_STRING_DELIM") = MDSAPI_DEFAULT_STRING_DELIM;
@@ -1288,13 +1420,16 @@ void generate_vnoes(pybind11::module & parent)
     module_vnoes::cross.record_assign(parent, "eOesExchangeIdT", "eOesExchangeIdT", "::_eOesExchangeId");
     module_vnoes::cross.record_assign(parent, "eOesMarketIdT", "eOesMarketIdT", "::_eOesMarketId");
     module_vnoes::cross.record_assign(parent, "eOesPlatformIdT", "eOesPlatformIdT", "::_eOesPlatformId");
-    module_vnoes::cross.record_assign(parent, "eOesMarketStatusT", "eOesMarketStatusT", "::_eOesMarketStatus");
+    module_vnoes::cross.record_assign(parent, "eOesMarketStateT", "eOesMarketStateT", "::_eOesMarketState");
     module_vnoes::cross.record_assign(parent, "eOesTrdSessTypeT", "eOesTrdSessTypeT", "::_eOesTrdSessType");
+    module_vnoes::cross.record_assign(parent, "eOesProductTypeT", "eOesProductTypeT", "::_eOesProductType");
     module_vnoes::cross.record_assign(parent, "eOesSecurityTypeT", "eOesSecurityTypeT", "::_eOesSecurityType");
     module_vnoes::cross.record_assign(parent, "eOesSubSecurityTypeT", "eOesSubSecurityTypeT", "::_eOesSubSecurityType");
     module_vnoes::cross.record_assign(parent, "eOesSecurityLevelT", "eOesSecurityLevelT", "::_eOesSecurityLevel");
     module_vnoes::cross.record_assign(parent, "eOesSecurityRiskLevelT", "eOesSecurityRiskLevelT", "::_eOesSecurityRiskLevel");
     module_vnoes::cross.record_assign(parent, "eOesSecuritySuspFlagT", "eOesSecuritySuspFlagT", "::_eOesSecuritySuspFlag");
+    module_vnoes::cross.record_assign(parent, "eOesLotTypeT", "eOesLotTypeT", "::_eOesLotType");
+    module_vnoes::cross.record_assign(parent, "eOesLotRejReasonT", "eOesLotRejReasonT", "::_eOesLotRejReason");
     module_vnoes::cross.record_assign(parent, "eOesOrdStatusT", "eOesOrdStatusT", "::_eOesOrdStatus");
     module_vnoes::cross.record_assign(parent, "eOesOrdTypeT", "eOesOrdTypeT", "::_eOesOrdType");
     module_vnoes::cross.record_assign(parent, "eOesOrdTypeShT", "eOesOrdTypeShT", "::_eOesOrdTypeSh");
@@ -1303,8 +1438,6 @@ void generate_vnoes(pybind11::module & parent)
     module_vnoes::cross.record_assign(parent, "eOesOrdDirT", "eOesOrdDirT", "::_eOesOrdDir");
     module_vnoes::cross.record_assign(parent, "eOesEtfTrdCnfmTypeT", "eOesEtfTrdCnfmTypeT", "::_eOesEtfTrdCnfmType");
     module_vnoes::cross.record_assign(parent, "eOesEtfSubFlagT", "eOesEtfSubFlagT", "::_eOesEtfSubFlag");
-    module_vnoes::cross.record_assign(parent, "eOesLotTypeT", "eOesLotTypeT", "::_eOesLotType");
-    module_vnoes::cross.record_assign(parent, "eOesLotRejReasonT", "eOesLotRejReasonT", "::_eOesLotRejReason");
     module_vnoes::cross.record_assign(parent, "eOesExecTypeT", "eOesExecTypeT", "::_eOesExecType");
     module_vnoes::cross.record_assign(parent, "eOesCurrTypeT", "eOesCurrTypeT", "::_eOesCurrType");
     module_vnoes::cross.record_assign(parent, "eOesFeeTypeT", "eOesFeeTypeT", "::_eOesFeeType");
@@ -1319,6 +1452,7 @@ void generate_vnoes(pybind11::module & parent)
     module_vnoes::cross.record_assign(parent, "eOesTradingLimitT", "eOesTradingLimitT", "::_eOesTradingLimit");
     module_vnoes::cross.record_assign(parent, "eOesQualificationClassT", "eOesQualificationClassT", "::_eOesQualificationClass");
     module_vnoes::cross.record_assign(parent, "eOesInvestorClassT", "eOesInvestorClassT", "::_eOesInvestorClass");
+    module_vnoes::cross.record_assign(parent, "eOesCustTypeT", "eOesCustTypeT", "::_eOesCustType");
     module_vnoes::cross.record_assign(parent, "eOesOwnerTypeT", "eOesOwnerTypeT", "::_eOesOwnerType");
     module_vnoes::cross.record_assign(parent, "eOesClientTypeT", "eOesClientTypeT", "::_eOesClientType");
     module_vnoes::cross.record_assign(parent, "eOesClientStatusT", "eOesClientStatusT", "::_eOesClientStatus");
@@ -1352,7 +1486,6 @@ void generate_vnoes(pybind11::module & parent)
     module_vnoes::cross.record_assign(parent, "OesOptHoldingBaseInfoT", "OesOptHoldingBaseInfoT", "::_OesOptHoldingBaseInfo");
     module_vnoes::cross.record_assign(parent, "OesMarketStateInfoT", "OesMarketStateInfoT", "::_OesMarketStateInfo");
     module_vnoes::cross.record_assign(parent, "OesTradingPermissionEntryT", "OesTradingPermissionEntryT", "::_OesTradingPermissionEntry");
-    module_vnoes::cross.record_assign(parent, "OesInputSourceInfoT", "OesInputSourceInfoT", "::_OesInputSourceInfo");
     module_vnoes::cross.record_assign(parent, "eSMsgProtocolTypeT", "eSMsgProtocolTypeT", "::_eSMsgProtocolType");
     module_vnoes::cross.record_assign(parent, "eSMsgFlagT", "eSMsgFlagT", "::_eSMsgFlag");
     module_vnoes::cross.record_assign(parent, "SMsgHeadT", "SMsgHeadT", "::_SMsgHead");
@@ -1424,8 +1557,7 @@ void generate_vnoes(pybind11::module & parent)
     module_vnoes::cross.record_assign(parent, "OesQryRspMsgT", "OesQryRspMsgT", "::_OesQryRspMsg");
     module_vnoes::cross.record_assign(parent, "eOesMsgTypeT", "eOesMsgTypeT", "::_eOesMsgType");
     module_vnoes::cross.record_assign(parent, "eOesSubscribeReportTypeT", "eOesSubscribeReportTypeT", "::_eOesSubscribeReportType");
-    module_vnoes::cross.record_assign(parent, "OesLogonReqT", "OesLogonReqT", "::_OesLogonReq");
-    module_vnoes::cross.record_assign(parent, "OesLogonRspT", "OesLogonRspT", "::_OesLogonRsp");
+    module_vnoes::cross.record_assign(parent, "eOesProtocolHintsTypeT", "eOesProtocolHintsTypeT", "::_eOesProtocolHintsType");
     module_vnoes::cross.record_assign(parent, "OesReportSynchronizationReqT", "OesReportSynchronizationReqT", "::_OesReportSynchronizationReq");
     module_vnoes::cross.record_assign(parent, "OesReportSynchronizationRspT", "OesReportSynchronizationRspT", "::_OesReportSynchronizationRsp");
     module_vnoes::cross.record_assign(parent, "OesTestRequestReqT", "OesTestRequestReqT", "::_OesTestRequestReq");
@@ -1458,11 +1590,10 @@ void generate_vnoes(pybind11::module & parent)
     module_vnoes::cross.record_assign(parent, "OesApiClientEnvT", "OesApiClientEnvT", "::_OesApiClientEnv");
     module_vnoes::cross.record_assign(parent, "eMdsExchangeIdT", "eMdsExchangeIdT", "::_eMdsExchangeId");
     module_vnoes::cross.record_assign(parent, "eMdsMsgSourceT", "eMdsMsgSourceT", "::_eMdsMsgSource");
-    module_vnoes::cross.record_assign(parent, "eMdsSecurityTypeT", "eMdsSecurityTypeT", "::_eMdsSecurityType");
+    module_vnoes::cross.record_assign(parent, "eMdsMdProductTypeT", "eMdsMdProductTypeT", "::_eMdsMdProductType");
     module_vnoes::cross.record_assign(parent, "eMdsMdStreamTypeT", "eMdsMdStreamTypeT", "::_eMdsMdStreamType");
     module_vnoes::cross.record_assign(parent, "eMdsMdLevelT", "eMdsMdLevelT", "::_eMdsMdLevel");
     module_vnoes::cross.record_assign(parent, "eMdsL2PriceLevelOperatorT", "eMdsL2PriceLevelOperatorT", "::_eMdsL2PriceLevelOperator");
-    module_vnoes::cross.record_assign(parent, "eMdsL2VirtualAuctionSideT", "eMdsL2VirtualAuctionSideT", "::_eMdsL2VirtualAuctionSide");
     module_vnoes::cross.record_assign(parent, "eMdsL2TradeExecTypeT", "eMdsL2TradeExecTypeT", "::_eMdsL2TradeExecType");
     module_vnoes::cross.record_assign(parent, "eMdsL2TradeBSFlagT", "eMdsL2TradeBSFlagT", "::_eMdsL2TradeBSFlag");
     module_vnoes::cross.record_assign(parent, "eMdsL2OrderSideT", "eMdsL2OrderSideT", "::_eMdsL2OrderSideT");
@@ -1476,19 +1607,30 @@ void generate_vnoes(pybind11::module & parent)
     module_vnoes::cross.record_assign(parent, "MdsIndexSnapshotBodyT", "MdsIndexSnapshotBodyT", "::_MdsIndexSnapshotBody");
     module_vnoes::cross.record_assign(parent, "MdsStockSnapshotBodyT", "MdsStockSnapshotBodyT", "::_MdsStockSnapshotBody");
     module_vnoes::cross.record_assign(parent, "MdsL1SnapshotBodyT", "MdsL1SnapshotBodyT", "::_MdsL1SnapshotBody");
+    module_vnoes::cross.record_assign(parent, "MdsL1SnapshotT", "MdsL1SnapshotT", "::_MdsL1Snapshot");
     module_vnoes::cross.record_assign(parent, "MdsL2StockSnapshotBodyT", "MdsL2StockSnapshotBodyT", "::_MdsL2StockSnapshotBody");
     module_vnoes::cross.record_assign(parent, "MdsL2StockSnapshotIncrementalT", "MdsL2StockSnapshotIncrementalT", "::_MdsL2StockSnapshotIncremental");
     module_vnoes::cross.record_assign(parent, "MdsL2BestOrdersSnapshotBodyT", "MdsL2BestOrdersSnapshotBodyT", "::_MdsL2BestOrdersSnapshotBody");
     module_vnoes::cross.record_assign(parent, "MdsL2BestOrdersSnapshotIncrementalT", "MdsL2BestOrdersSnapshotIncrementalT", "::_MdsL2BestOrdersSnapshotIncremental");
-    module_vnoes::cross.record_assign(parent, "MdsL2VirtualAuctionPriceT", "MdsL2VirtualAuctionPriceT", "::_MdsL2VirtualAuctionPrice");
     module_vnoes::cross.record_assign(parent, "MdsL2MarketOverviewT", "MdsL2MarketOverviewT", "::_MdsL2MarketOverview");
     module_vnoes::cross.record_assign(parent, "MdsL2SnapshotBodyT", "MdsL2SnapshotBodyT", "::_MdsL2SnapshotBody");
     module_vnoes::cross.record_assign(parent, "MdsMktDataSnapshotT", "MdsMktDataSnapshotT", "::_MdsMktDataSnapshot");
     module_vnoes::cross.record_assign(parent, "MdsL2TradeT", "MdsL2TradeT", "::_MdsL2Trade");
     module_vnoes::cross.record_assign(parent, "MdsL2OrderT", "MdsL2OrderT", "::_MdsL2Order");
-    module_vnoes::cross.record_assign(parent, "MdsL2TickLostT", "MdsL2TickLostT", "::_MdsL2TickLost");
+    module_vnoes::cross.record_assign(parent, "MdsWholeMktMsgBodyT", "MdsWholeMktMsgBodyT", "::_MdsWholeMktMsgBody");
+    module_vnoes::cross.record_assign(parent, "MdsStockStaticInfoT", "MdsStockStaticInfoT", "::_MdsStockStaticInfo");
     module_vnoes::cross.record_assign(parent, "MdsQryMktDataSnapshotReqT", "MdsQryMktDataSnapshotReqT", "::_MdsQryMktDataSnapshotReq");
     module_vnoes::cross.record_assign(parent, "MdsQryTrdSessionStatusReqT", "MdsQryTrdSessionStatusReqT", "::_MdsQryTrdSessionStatusReq");
+    module_vnoes::cross.record_assign(parent, "MdsQryReqHeadT", "MdsQryReqHeadT", "::_MdsQryReqHeadT");
+    module_vnoes::cross.record_assign(parent, "MdsQryRspHeadT", "MdsQryRspHeadT", "::_MdsQryRspHeadT");
+    module_vnoes::cross.record_assign(parent, "MdsQryCursorT", "MdsQryCursorT", "::_MdsQryCursor");
+    module_vnoes::cross.record_assign(parent, "MdsQrySecurityCodeEntryT", "MdsQrySecurityCodeEntryT", "::_MdsQrySecurityCodeEntry");
+    module_vnoes::cross.record_assign(parent, "MdsQryStockStaticInfoFilterT", "MdsQryStockStaticInfoFilterT", "::_MdsQryStockStaticInfoFilter");
+    module_vnoes::cross.record_assign(parent, "MdsQryStockStaticInfoReqT", "MdsQryStockStaticInfoReqT", "::_MdsQryStockStaticInfoReq");
+    module_vnoes::cross.record_assign(parent, "MdsQryStockStaticInfoRspT", "MdsQryStockStaticInfoRspT", "::_MdsQryStockStaticInfoRsp");
+    module_vnoes::cross.record_assign(parent, "MdsQrySnapshotListFilterT", "MdsQrySnapshotListFilterT", "::_MdsQrySnapshotListFilter");
+    module_vnoes::cross.record_assign(parent, "MdsQrySnapshotListReqT", "MdsQrySnapshotListReqT", "::_MdsQrySnapshotListReq");
+    module_vnoes::cross.record_assign(parent, "MdsQrySnapshotListRspT", "MdsQrySnapshotListRspT", "::_MdsQrySnapshotListRsp");
     module_vnoes::cross.record_assign(parent, "eMdsMsgTypeT", "eMdsMsgTypeT", "::_eMdsMsgType");
     module_vnoes::cross.record_assign(parent, "eMdsSubscribeModeT", "eMdsSubscribeModeT", "::_eMdsSubscribeMode");
     module_vnoes::cross.record_assign(parent, "eMdsMktSubscribeFlagT", "eMdsMktSubscribeFlagT", "::_eMdsMktSubscribeFlag");
@@ -1496,14 +1638,15 @@ void generate_vnoes(pybind11::module & parent)
     module_vnoes::cross.record_assign(parent, "eMdsSubscribedTickExpireTypeT", "eMdsSubscribedTickExpireTypeT", "::_eMdsSubscribedTickExpireType");
     module_vnoes::cross.record_assign(parent, "eMdsSubscribeDataTypeT", "eMdsSubscribeDataTypeT", "::_eMdsSubscribeDataType");
     module_vnoes::cross.record_assign(parent, "eMdsTickChannelNoT", "eMdsTickChannelNoT", "::_eMdsSubscribedChannelNo");
-    module_vnoes::cross.record_assign(parent, "MdsLogonReqT", "MdsLogonReqT", "::_MdsLogonReq");
-    module_vnoes::cross.record_assign(parent, "MdsLogonRspT", "MdsLogonRspT", "::_MdsLogonRsp");
+    module_vnoes::cross.record_assign(parent, "eMdsProtocolHintsTypeT", "eMdsProtocolHintsTypeT", "::_eMdsProtocolHintsType");
     module_vnoes::cross.record_assign(parent, "MdsMktDataRequestEntryT", "MdsMktDataRequestEntryT", "::_MdsMktDataRequestEntry");
     module_vnoes::cross.record_assign(parent, "MdsMktDataRequestReqT", "MdsMktDataRequestReqT", "::_MdsMktDataRequestReq");
     module_vnoes::cross.record_assign(parent, "MdsMktDataRequestReqBufT", "MdsMktDataRequestReqBufT", "::_MdsMktDataRequestReqBuf");
     module_vnoes::cross.record_assign(parent, "MdsMktDataRequestRspT", "MdsMktDataRequestRspT", "::_MdsMktDataRequestRsp");
     module_vnoes::cross.record_assign(parent, "MdsTestRequestReqT", "MdsTestRequestReqT", "::_MdsTestRequestReq");
     module_vnoes::cross.record_assign(parent, "MdsTestRequestRspT", "MdsTestRequestRspT", "::_MdsTestRequestRsp");
+    module_vnoes::cross.record_assign(parent, "MdsChangePasswordReqT", "MdsChangePasswordReqT", "::_MdsChangePasswordReq");
+    module_vnoes::cross.record_assign(parent, "MdsChangePasswordRspT", "MdsChangePasswordRspT", "::_MdsChangePasswordRsp");
     module_vnoes::cross.record_assign(parent, "MdsMktReqMsgBodyT", "MdsMktReqMsgBodyT", "::_MdsMktReqMsgBody");
     module_vnoes::cross.record_assign(parent, "MdsMktRspMsgBodyT", "MdsMktRspMsgBodyT", "::_MdsMktRspMsgBody");
     module_vnoes::cross.record_assign(parent, "MdsUdpPktHeadT", "MdsUdpPktHeadT", "::_MdsUdpPktHead");

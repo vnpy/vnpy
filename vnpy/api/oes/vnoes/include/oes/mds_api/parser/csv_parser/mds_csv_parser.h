@@ -15,17 +15,22 @@
  */
 
 /**
- * @file    mds_json_parser.h
+ * @file    mds_csv_parser.h
  *
  * 行情订阅服务的消息解析处理
  *
- * @version 1.0 2016/2/19
- * @since   2016/1/3
+ * @version 0.15.7.6    2019/01/05
+ * @version 0.15.8_u6   2019/05/07
+ *          - 调整 CSV 行情数据的输出格式
+ *              - 废弃 __origNetTime 字段, 保留字段位置以兼容之前格式, 但字段名称修改为 __zero, 取值固定为0
+ *              - 为指数行情增加 __origMdSource 字段
+ *
+ * @since   2019/01/05
  */
 
 
-#ifndef _MDS_JSON_PARSER_H
-#define _MDS_JSON_PARSER_H
+#ifndef _MDS_CSV_PARSER_H
+#define _MDS_CSV_PARSER_H
 
 
 #include    <mds_global/mds_mkt_packets.h>
@@ -43,7 +48,7 @@ extern "C" {
  * =================================================================== */
 
 /* 请求消息编码处理（用于向服务器发送请求消息） */
-void*   MdsJsonParser_EncodeReq(
+void*   MdsCsvParser_EncodeReq(
                 SMsgHeadT *pReqHead,
                 const MdsMktReqMsgBodyT *pReqBody,
                 char *pBuf,
@@ -52,22 +57,14 @@ void*   MdsJsonParser_EncodeReq(
 
 /* 请求消息解码处理（用于接收客户端的请求消息） */
 MdsMktReqMsgBodyT*
-        MdsJsonParser_DecodeReq(
+        MdsCsvParser_DecodeReq(
                 SMsgHeadT *pReqHead,
                 const void *pMsgBody,
                 MdsMktReqMsgBodyT *pReqMsgBuf,
                 const char *pRemoteInfo);
 
 /* 应答消息编码处理（用于向客户端发送应答消息） */
-void*   MdsJsonParser_EncodeRsp(
-                SMsgHeadT *pRspHead,
-                const MdsMktRspMsgBodyT *pRspBody,
-                char *pBuf,
-                int32 bufSize,
-                const char *pRemoteInfo);
-
-/* 应答消息编码处理（编码为精简的JSON格式） */
-void*   MdsJsonParser_EncodeRspSimplify(
+void*   MdsCsvParser_EncodeRsp(
                 SMsgHeadT *pRspHead,
                 const MdsMktRspMsgBodyT *pRspBody,
                 char *pBuf,
@@ -76,11 +73,17 @@ void*   MdsJsonParser_EncodeRspSimplify(
 
 /* 应答消息解码处理（用于接收服务器端返回的应答消息） */
 MdsMktRspMsgBodyT*
-        MdsJsonParser_DecodeRsp(
+        MdsCsvParser_DecodeRsp(
                 SMsgHeadT *pRspHead,
                 const void *pMsgBody,
                 MdsMktRspMsgBodyT *pRspMsgBuf,
                 const char *pRemoteInfo);
+
+/* 返回应答消息编码后的记录格式 (字段列表) */
+int32   MdsCsvParser_GetRspFields(
+                uint8 msgType,
+                char *pBuf,
+                int32 bufSize);
 /* -------------------------           */
 
 
@@ -89,13 +92,13 @@ MdsMktRspMsgBodyT*
  * =================================================================== */
 
 /* 证券静态信息条目的编码处理 */
-int32   MdsJsonParser_EncodeStockStaticItem(
+int32   MdsCsvParser_EncodeStockStaticItem(
                 const MdsStockStaticInfoT *pItem,
                 char *pBuf,
                 int32 bufSize);
 
 /* 行情快照条目的编码处理 */
-int32   MdsJsonParser_EncodeSnapshotListItem(
+int32   MdsCsvParser_EncodeSnapshotListItem(
                 const MdsL1SnapshotT *pItem,
                 char *pBuf,
                 int32 bufSize);
@@ -106,4 +109,4 @@ int32   MdsJsonParser_EncodeSnapshotListItem(
 }
 #endif
 
-#endif  /* _MDS_JSON_PARSER_H */
+#endif  /* _MDS_CSV_PARSER_H */

@@ -109,7 +109,7 @@
 /* -------------------------           */
 
 
-#if defined (USE_GNULIB) || defined (HAVE_CONFIG_H)
+#if defined (HAVE_CONFIG_H) || defined (USE_GNULIB)
 #   include <config.h>
 #endif
 
@@ -158,6 +158,10 @@
 #   include <sys/time.h>
 #   include <sys/socket.h>
 #   include <sys/select.h>
+
+#   if ! defined (__MINGW__)
+#       include <poll.h>
+#   endif
 #endif
 
 
@@ -496,6 +500,21 @@ extern "C" {
 #       define  SIovecT                 _SPK_STRUCT_IOVEC
 #   endif   /* _SPK_STRUCT_IOVEC */
 
+#   ifndef  _SPK_STRUCT_POLLFD
+#   if defined (_WIN32_WINNT) && _WIN32_WINNT >= 0x0600
+#       define  _SPK_STRUCT_POLLFD      struct pollfd
+#       define  SPollfdT                _SPK_STRUCT_POLLFD
+#   else
+#       define  _SPK_STRUCT_POLLFD      struct _spk_struct_pollfd
+        _SPK_STRUCT_POLLFD {
+            SOCKET      fd;
+            short       events;
+            short       revents;
+        };
+#       define  SPollfdT                _SPK_STRUCT_POLLFD
+#   endif
+#   endif   /* _SPK_STRUCT_POLLFD */
+
 
 #else
     /* socket handle */
@@ -520,6 +539,11 @@ extern "C" {
 #       define  _SPK_STRUCT_IOVEC       struct iovec
 #       define  SIovecT                 _SPK_STRUCT_IOVEC
 #   endif   /* _SPK_STRUCT_IOVEC */
+
+#   ifndef  _SPK_STRUCT_POLLFD
+#       define  _SPK_STRUCT_POLLFD      struct pollfd
+#       define  SPollfdT                _SPK_STRUCT_POLLFD
+#   endif   /* _SPK_STRUCT_POLLFD */
 
 #endif
 /* -------------------------           */
@@ -624,6 +648,15 @@ extern "C" {
 /* ===================================================================
  * 常用缓存区长度定义
  * =================================================================== */
+
+/* FD_SETSIZE */
+#ifndef __SPK_FD_SETSIZE
+#   ifdef FD_SETSIZE
+#       define __SPK_FD_SETSIZE         FD_SETSIZE
+#   else
+#       define __SPK_FD_SETSIZE         (1024)
+#   endif
+#endif
 
 /* 最大文本块长度 */
 #ifndef SPK_MAX_BLOCK_SIZE

@@ -1,5 +1,89 @@
 # OES-API Change Log    {#changelog}
 
+OES_0.15.9_RC1 / 2019-04-28
+==============================================
+
+  * 新增证券子类型
+    - 科创板股票 (OES_SUB_SECURITY_TYPE_STOCK_KSH)
+    - 科创板存托凭证 (OES_SUB_SECURITY_TYPE_STOCK_KCDR)
+  * 为了支持科创板, 扩展以下数据结构以及相应的查询结果 (兼容之前版本的API)
+    - 证券账户基础信息 (OesInvAcctBaseInfoT, OesInvAcctItemT) 中增加如下字段:
+        - 科创板权益 (kcSubscriptionQuota)
+  * 现货产品基础信息 (OesStockBaseInfoT, OesStockItemT) 中增加如下字段:
+    - 限价买数量上限 (lmtBuyMaxQty)
+    - 限价买数量下限 (lmtBuyMinQty)
+    - 限价卖数量上限 (lmtSellMaxQty)
+    - 限价卖数量下限 (lmtSellMinQty)
+    - 市价买数量上限 (mktBuyMaxQty)
+    - 市价买数量下限 (mktBuyMinQty)
+    - 市价卖数量上限 (mktSellMaxQty)
+    - 市价卖数量下限 (mktSellMinQty)
+    - 客户端总览信息中的股东账户总览 (OesInvAcctOverviewT) 中增加如下字段:
+    - 科创板权益 (kcSubscriptionQuota)
+  * 重构涨跌停价格、价格档位字段命名, 为这些字段增加新的别名 (兼容之前版本的API)
+    - ceilPrice => upperLimitPrice
+    - floorPrice => lowerLimitPrice
+    - priceUnit => priceTick
+  * 调整上证委托类型 (eOesOrdTypeShT)
+    - 增加 '对手方最优价格申报 (OES_ORD_TYPE_SH_MTL_BEST)' 类型 (仅适用于科创板)
+    - 增加 '本方最优价格申报 (OES_ORD_TYPE_SH_MTL_SAMEPATY_BEST)' 类型 (仅适用于科创板)
+  * 股东账户交易权限枚举(eOesTradingPermissionT)中新增
+    - 科创板交易权限 (OES_PERMIS_KSH)
+  * 新增错误码
+    - 1275, 股东账户没有交易科创板的权限
+    - 1036, 未通过黑白名单检查
+
+OES_0.15.8 / 2019-02-22
+==============================================
+
+  * fix: 修复API无法支持取值大于1024的文件描述符的问题（因为select的限制，当文件描述符的取值大于1024时，会导致堆栈溢出）
+
+OES_0.15.8_RC3 / 2019-01-14
+==============================================
+
+  * 委托回报和成交回报中新增供OES内部使用的 '交易网关平台分区号(__tgwPartitionNo)' 字段 (协议保持兼容)
+  * 调整错误描述
+    - 1007, 非服务开放时间（OESERR_NOT_TRADING_TIME）
+    - 1022, 尚不支持或尚未开通此业务（OESERR_NOT_SUPPORT）
+
+OES_0.15.7.6_RC2 / 2018-11-22
+==============================================
+
+  * 增加 '按照配置信息结构体初始化客户端环境' 接口
+    - OesApi_InitAllByCfgStruct
+  * 增加 '一次只接收一条回报消息' 接口
+    - OesApi_RecvReportMsg
+  * 增加 '设置/获取当前线程订阅回报使用的客户端环境号' 接口
+    - OesApi_SetThreadSubscribeEnvId
+    - OesApi_GetThreadSubscribeEnvId
+
+OES_0.15.7.6 / 2018-11-03
+==============================================
+
+  * '买卖类型(eOesBuySellTypeT)' 中新增:
+    - '配股认购 (OES_BS_TYPE_ALLOTMENT)' 类型
+  * 新增 '产品类型 (eOesProductTypeT)' 定义, 作为产品和持仓的高层类别定义
+  * 在以下结构体中增加 '产品类型 (productType)' 字段
+    - 证券信息(OesStockBaseInfoT/OesStockItemT)
+    - 证券发行信息 (OesIssueBaseInfoT/OesIssueItemT)
+    - 股票持仓信息 (OesStkHoldingBaseInfoT/OesStkHoldingItemT)
+    - 委托回报 (OesOrdCnfmT/OesOrdItemT)
+    - 成交回报 (OesTrdCnfmT/OesTrdItemT)
+  * 证券发行产品信息查询接口(OesApi_QueryIssue)的过滤条件中增加:
+    - ‘产品类型(productType)’ 条件
+  * 股票持仓信息查询接口(OesApi_QueryStkHolding)的过滤条件中增加:
+    - ‘产品类型(productType)’ 条件
+  * '证券子类型(eOesSubSecurityTypeT)'中新增:
+    - 沪伦通CDR本地交易业务产品(OES_SUB_SECURITY_TYPE_STOCK_HLTCDR)
+  * 新增错误码定义
+    - 1035, 非法的产品类型（OESERR_ILLEGAL_PRODUCT_TYPE）
+    - 1274, 股东账户没有交易沪伦通存托凭证的权限（OESERR_NO_HLTCDR_PERM）
+
+OES_0.15.7.5 / 2018-08-31
+==============================================
+
+  * 修复Windows平台下 OesApi_GetErrorMsg 接口返回的错误信息不准确的问题
+
 OES_0.15.7.4 / 2018-09-28
 ==============================================
 
@@ -62,6 +146,11 @@ OES_0.15.6.13 / 2018-07-16
     - 创新企业股票交易权限 (OES_PERMIS_INNOVATION)
   * 增加 OesApi_HasMoreCachedData 接口, 用于返回已经接收到但尚未被回调函数处理的缓存数据长度
   * 新增错误号详见 oes_errors.h
+
+OES_0.15.5.17 / 2018-08-31
+==============================================
+
+  * 修复Windows平台下 OesApi_GetErrorMsg 接口返回的错误信息不准确的问题
 
 OES_0.15.5.16 / 2018-09-28
 ==============================================
@@ -512,7 +601,7 @@ OES_0.12.6.2 / 2017-03-16
 
   * 重命名 '出入金委托' 消息 OESMSG_NONTRD_CASH_TRSF_REQ => OESMSG_NONTRD_FUND_TRSF_REQ
   * 新增 '出入金委托响应-业务拒绝'、'出入金委托执行报告' 两类回报消息
-  * 删除 '出入金管理登陆消息' 宏定义
+  * 删除 '出入金管理登录消息' 宏定义
   * 重命名 '出入金委托'消息的结构体定义  OesCashTrsfReqT => OesFundTrsfReqT
   * '查询出入金流水信息过滤条件' 中重命名 cashSeqNo —> clSeqNo
   * 调整查询到的 '出入金流水信息' 结构 (与出入金委托执行回报结构一致)

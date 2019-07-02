@@ -294,6 +294,51 @@
  *              - 增加 '原始委托数量(origOrdQty)' 和 '原始委托价格(origOrdPrice)' 字段
  * @version 0.15.6.13   2018/07/16
  *          - 新增 OES执行类型定义 (eOesExecTypeT)
+ * @version 0.15.7.4_u4 2018/11/26
+ *          - 调整成交基础信息(OesTrdBaseInfoT)和成交回报信息(OesTrdCnfmT)的结构体字段
+ *              - 增加 __isTrsfInCashAvailable 字段, 以标识ETF赎回得到的替代资金是否当日可用
+ * @version 0.15.7.6    2018/11/03
+ *          - 新增买卖类型
+ *              - 配股认购 (OES_BS_TYPE_ALLOTMENT)
+ *          - 新增 '产品类型 (eOesProductTypeT)' 定义, 作为产品和持仓的高层类别定义
+ *          - 在以下结构体中增加 '产品类型 (productType)' 字段
+ *              - 证券信息 (OesStockBaseInfoT/OesStockItemT)
+ *              - 证券发行信息 (OesIssueBaseInfoT/OesIssueItemT)
+ *              - 股票持仓信息 (OesStkHoldingBaseInfoT/OesStkHoldingItemT)
+ *              - 委托回报 (OesOrdCnfmT/OesOrdItemT)
+ *              - 成交回报 (OesTrdCnfmT/OesTrdItemT)
+ *          - 新增证券子类型
+ *              - 沪伦通CDR本地交易业务产品(OES_SUB_SECURITY_TYPE_STOCK_HLTCDR)
+ * @version 0.15.7.6_RC2 2018/11/05
+ *          - 调整交易所订单编号(exchOrdId)的字段长度, 从char[20]调整为char[17]
+ *          - 再次调整委托确认结构体中 __declareFlag 字段的位置
+ * @version 0.15.8      2018/09/27
+ *          - 委托回报和成交回报中新增供OES内部使用的 '交易网关平台分区号(__tgwPartitionNo)' 字段 (协议保持兼容)
+ * @version 0.15.9      2019/03/12
+ *          - 新增证券子类型
+ *              - 科创板股票 (OES_SUB_SECURITY_TYPE_STOCK_KSH)
+ *              - 科创板存托凭证 (OES_SUB_SECURITY_TYPE_STOCK_KCDR)
+ *          - 为了支持科创板, 扩展以下数据结构 (兼容之前版本的API)
+ *              - 证券账户基础信息 (OesInvAcctBaseInfoT) 中增加如下字段:
+ *                  - 科创板权益 (kcSubscriptionQuota)
+ *              - 现货产品基础信息 (OesStockBaseInfoT) 中增加如下字段:
+ *                  - 限价买数量上限 (lmtBuyMaxQty)
+ *                  - 限价买数量下限 (lmtBuyMinQty)
+ *                  - 限价卖数量上限 (lmtSellMaxQty)
+ *                  - 限价卖数量下限 (lmtSellMinQty)
+ *                  - 市价买数量上限 (mktBuyMaxQty)
+ *                  - 市价买数量下限 (mktBuyMinQty)
+ *                  - 市价卖数量上限 (mktSellMaxQty)
+ *                  - 市价卖数量下限 (mktSellMinQty)
+ *          - 重构涨跌停价格、价格档位字段命名, 为这些字段增加新的别名 (兼容之前版本的API)
+ *                  - ceilPrice => upperLimitPrice
+ *                  - floorPrice => lowerLimitPrice
+ *                  - priceUnit => priceTick
+ *          - 调整上证委托类型 (eOesOrdTypeShT)
+ *              - 增加 '对手方最优价格申报 (OES_ORD_TYPE_SH_MTL_BEST)' 类型 (仅适用于科创板)
+ *              - 增加 '本方最优价格申报 (OES_ORD_TYPE_SH_MTL_SAMEPATY_BEST)' 类型 (仅适用于科创板)
+ *          - 股东账户交易权限枚举(eOesTradingPermissionT)中新增
+ *              - 科创板交易权限 (OES_PERMIS_KSH)
  *
  * @since   2015/07/30
  */
@@ -334,12 +379,14 @@ extern "C" {
 #define OES_CLIENT_NAME_MAX_LEN             (32)
 /** 客户端说明最大长度 */
 #define OES_CLIENT_DESC_MAX_LEN             (32)
-/** 系统支持的最大客户端环境号数量 */
-#define OES_MAX_CLIENT_ENVID_COUNT          (128)
+/** 客户端标签最大长度 */
+#define OES_CLIENT_TAG_MAX_LEN              (32)
 /** 密码最大长度 */
 #define OES_PWD_MAX_LEN                     (40)
 /** 协议版本号的最大长度 */
 #define OES_VER_ID_MAX_LEN                  (32)
+/** 系统支持的最大客户端环境号数量 */
+#define OES_MAX_CLIENT_ENVID_COUNT          (128)
 /** 批量委托的每批次最大委托数量 */
 #define OES_MAX_BATCH_ORDERS_COUNT          (500)
 
@@ -396,7 +443,7 @@ extern "C" {
 #define OES_SECURITY_LINK_CODE_REAL_LEN     (8)
 
 /** 交易所订单编号的最大长度 */
-#define OES_EXCH_ORDER_ID_MAX_LEN           (20)
+#define OES_EXCH_ORDER_ID_MAX_LEN           (17)
 /** 交易所订单编号的实际长度 (上证) */
 #define OES_EXCH_ORDER_ID_SSE_LEN           (8)
 /** 交易所订单编号的实际长度 (深证) */
@@ -409,7 +456,9 @@ extern "C" {
 /** MAC地址字符串的最大长度(按64位对齐的长度) */
 #define OES_MAX_MAC_ALGIN_LEN               (24)
 /** 设备序列号字符串的最大长度 */
-#define OES_MAX_DRIVER_ID_LEN               (24)
+#define OES_MAX_DRIVER_ID_LEN               (21)
+/** 设备序列号字符串的最大长度(按64位对齐的长度) */
+#define OES_MAX_DRIVER_ID_ALGIN_LEN         (24)
 
 /** 测试请求标识符的最大长度 */
 #define OES_MAX_TEST_REQ_ID_LEN             (32)
@@ -466,10 +515,13 @@ typedef enum _eOesExchangeId {
     OES_EXCH_SZSE                           = 2,        /**< 深圳证券交易所 */
     __MAX_OES_EXCH,
 
-    /** 上海证券交易所 @depricated 已过时, 请使用 OES_EXCH_SSE */
+    /** 上海证券交易所 @deprecated 已过时, 请使用 OES_EXCH_SSE */
     OES_EXCHANGE_TYPE_SSE                   = OES_EXCH_SSE,
-    /** 深圳证券交易所 @depricated 已过时, 请使用 OES_EXCH_SZSE */
-    OES_EXCHANGE_TYPE_SZSE                  = OES_EXCH_SZSE
+    /** 深圳证券交易所 @deprecated 已过时, 请使用 OES_EXCH_SZSE */
+    OES_EXCHANGE_TYPE_SZSE                  = OES_EXCH_SZSE,
+
+    __OES_EXCH_ID_MAX_ALIGNED4              = 4,        /**< 交易所代码最大值 (按4字节对齐的大小) */
+    __OES_EXCH_ID_MAX_ALIGNED8              = 8         /**< 交易所代码最大值 (按8字节对齐的大小) */
 } eOesExchangeIdT;
 
 
@@ -483,13 +535,13 @@ typedef enum _eOesMarketId {
     OES_MKT_SH_OPTION                       = 3,        /**< 上海期权 */
     __OES_MKT_ID_MAX,                                   /**< 市场类型最大值 */
 
-    /** 未定义的市场类型 @depricated 已过时, 请使用 OES_MKT_UNDEFINE  */
+    /** 未定义的市场类型 @deprecated 已过时, 请使用 OES_MKT_UNDEFINE  */
     OES_MKT_ID_UNDEFINE                     = OES_MKT_UNDEFINE,
-    /** 上海A股 @depricated 已过时, 请使用 OES_MKT_SH_ASHARE */
+    /** 上海A股 @deprecated 已过时, 请使用 OES_MKT_SH_ASHARE */
     OES_MKT_ID_SH_A                         = OES_MKT_SH_ASHARE,
-    /** 深圳A股 @depricated 已过时, 请使用 OES_MKT_SZ_ASHARE */
+    /** 深圳A股 @deprecated 已过时, 请使用 OES_MKT_SZ_ASHARE */
     OES_MKT_ID_SZ_A                         = OES_MKT_SZ_ASHARE,
-    /** 上海期权 @depricated 已过时, 请使用 OES_MKT_SH_OPTION */
+    /** 上海期权 @deprecated 已过时, 请使用 OES_MKT_SH_OPTION */
     OES_MKT_ID_SH_OPT                       = OES_MKT_SH_OPTION,
 
     __OES_MKT_ID_MAX_ALIGNED4               = 4,        /**< 市场类型最大值 (按4字节对齐的大小) */
@@ -498,7 +550,7 @@ typedef enum _eOesMarketId {
 
 
 /**
- * 市场交易平台类型定义
+ * 交易平台类型定义
  */
 typedef enum _eOesPlatformId {
     OES_PLATFORM_UNDEFINE                   = 0,        /**< 未定义的交易平台类型 */
@@ -507,14 +559,14 @@ typedef enum _eOesPlatformId {
     OES_PLATFORM_NON_TRADE                  = 3,        /**< 非交易处理平台 */
     OES_PLATFORM_DERIVATIVE_AUCTION         = 4,        /**< 衍生品集中竞价交易平台 */
     __OES_PLATFORM_ID_MAX,                              /**< 平台号的最大值 */
-    __OES_PLATFORM_ACTIVE_MAX               = 4         /**< 当前支持的平台最大值 */
+    __OES_PLATFORM_ID_MAX_ALIGNED8          = 8         /**< 平台号的最大值 (按8字节对齐的大小) */
 } eOesPlatformIdT;
 
 
 /**
  * 市场状态定义
  */
-typedef enum _eOesMarketStatus {
+typedef enum _eOesMarketState {
     OES_MKT_STATE_UNDEFINE                  = 0,        /**< 未定义的市场状态 */
     OES_MKT_STATE_PRE_OPEN                  = 1,        /**< 未开放 (PreOpen) */
     OES_MKT_STATE_OPEN_UP_COMING            = 2,        /**< 即将开放 (OpenUpComing) */
@@ -522,7 +574,7 @@ typedef enum _eOesMarketStatus {
     OES_MKT_STATE_HALT                      = 4,        /**< 暂停开放 (Halt) */
     OES_MKT_STATE_CLOSE                     = 5,        /**< 关闭 (Close) */
     __OES_MKT_STATE_MAX                                 /**< 市场状态最大值 */
-} eOesMarketStatusT;
+} eOesMarketStateT;
 
 
 /**
@@ -540,6 +592,21 @@ typedef enum _eOesTrdSessType {
 /* ===================================================================
  * 枚举类型定义 (2. 产品相关)
  * =================================================================== */
+
+/**
+ * 产品类型 (high-level category)
+ */
+typedef enum _eOesProductType {
+    OES_PRODUCT_TYPE_UNDEFINE               = 0,        /**< 未定义的产品类型 */
+    OES_PRODUCT_TYPE_EQUITY                 = 1,        /**< 普通股票/存托凭证/债券/基金/科创板 */
+    OES_PRODUCT_TYPE_BOND_STD               = 2,        /**< 逆回购标准券 */
+    OES_PRODUCT_TYPE_IPO                    = 3,        /**< 新股认购 */
+    OES_PRODUCT_TYPE_ALLOTMENT              = 4,        /**< 配股认购 */
+    OES_PRODUCT_TYPE_OPTION                 = 5,        /**< 期权 */
+
+    __OES_PRODUCT_TYPE_MAX,                             /**< 产品类型最大值 */
+} eOesProductTypeT;
+
 
 /**
  * 证券类别
@@ -567,7 +634,10 @@ typedef enum _eOesSubSecurityType {
     OES_SUB_SECURITY_TYPE_STOCK_ASH         = 11,       /**< A股股票, A Share */
     OES_SUB_SECURITY_TYPE_STOCK_SME         = 12,       /**< 中小板股票, Small & Medium Enterprise (SME) Board */
     OES_SUB_SECURITY_TYPE_STOCK_GEM         = 13,       /**< 创业板股票, Growth Enterprise Market (GEM) */
-    OES_SUB_SECURITY_TYPE_STOCK_CDR         = 14,       /**< 存托凭证, Chinese Depository Receipt (CDR) */
+    OES_SUB_SECURITY_TYPE_STOCK_KSH         = 14,       /**< 科创板股票 */
+    OES_SUB_SECURITY_TYPE_STOCK_KCDR        = 15,       /**< 科创板存托凭证 */
+    OES_SUB_SECURITY_TYPE_STOCK_CDR         = 16,       /**< 存托凭证, Chinese Depository Receipt (CDR) */
+    OES_SUB_SECURITY_TYPE_STOCK_HLTCDR      = 17,       /**< 沪伦通CDR本地交易业务产品 */
     __OES_SUB_SECURITY_TYPE_STOCK_MAX,                  /**< 股票类证券子类型最大值 */
 
     __OES_SUB_SECURITY_TYPE_BOND_MIN        = 20,       /**< 债券类证券子类型最小值 */
@@ -597,8 +667,8 @@ typedef enum _eOesSubSecurityType {
     __OES_SUB_SECURITY_TYPE_FUND_MAX,                   /**< 基金类证券子类型最大值 */
 
     __OES_SUB_SECURITY_TYPE_OPTION_MIN      = 50,       /**< 期权类证券子类型最小值 */
-    OES_SUB_SECURITY_TYPE_OPTION_STOCK      = 51,       /**< 个股期权 */
-    OES_SUB_SECURITY_TYPE_OPTION_ETF        = 52,       /**< ETF期权 */
+    OES_SUB_SECURITY_TYPE_OPTION_ETF        = 51,       /**< ETF期权 */
+    OES_SUB_SECURITY_TYPE_OPTION_STOCK      = 52,       /**< 个股期权 */
     __OES_SUB_SECURITY_TYPE_OPTION_MAX,                 /**< 期权类证券子类型最大值 */
 
     __OES_SUB_SECURITY_TYPE_MAX             = __OES_SUB_SECURITY_TYPE_OPTION_MAX
@@ -606,7 +676,7 @@ typedef enum _eOesSubSecurityType {
 
 
 /**
- * 产品级别
+ * 证券级别
  */
 typedef enum _eOesSecurityLevel {
     OES_SECURITY_LEVEL_UNDEFINE             = 0,
@@ -622,7 +692,7 @@ typedef enum _eOesSecurityLevel {
 
 
 /**
- * 产品风险等级
+ * 证券风险等级
  */
 typedef enum _eOesSecurityRiskLevel {
     OES_RISK_LEVEL_VERY_LOW                 = 0,        /**< 最低风险 */
@@ -637,7 +707,7 @@ typedef enum _eOesSecurityRiskLevel {
 
 
 /**
- * 产品停复牌标识类别
+ * 证券停复牌标识类别
  */
 typedef enum _eOesSecuritySuspFlag {
     OES_SUSPFLAG_NONE                       = 0x0,      /**< 无停牌标识 */
@@ -645,6 +715,30 @@ typedef enum _eOesSecuritySuspFlag {
     OES_SUSPFLAG_BROKER                     = 0x2,      /**< 券商人工停牌 */
     __OES_SUSPFLAG_OTHER
 } eOesSecuritySuspFlagT;
+
+
+/**
+ * OES中签、配号记录类型
+ */
+typedef enum _eOesLotType {
+    OES_LOT_TYPE_UNDEFINE                   = 0,        /**< 未定义的中签、配号记录类型 */
+    OES_LOT_TYPE_FAILED                     = 1,        /**< 配号失败记录 */
+    OES_LOT_TYPE_ASSIGNMENT                 = 2,        /**< 配号成功记录 */
+    OES_LOT_TYPE_LOTTERY                    = 3,        /**< 中签记录 */
+    __OES_LOT_TYPE_MAX                                  /**< 中签、配号记录类型最大值 */
+} eOesLotTypeT;
+
+
+/**
+ * OES配号失败原因
+ */
+typedef enum _eOesLotRejReason {
+    OES_LOT_REJ_REASON_DUPLICATE            = 1,        /**< 配号失败-重复申购 */
+    OES_LOT_REJ_REASON_INVALID_DUPLICATE    = 2,        /**< 配号失败-违规重复 */
+    OES_LOT_REJ_REASON_OFFLINE_FIRST        = 3,        /**< 配号失败-网下在先 */
+    OES_LOT_REJ_REASON_BAD_RECORD           = 4,        /**< 配号失败-不良记录 */
+    OES_LOT_REJ_REASON_UNKNOW               = 5         /**< 配号失败-未知原因 */
+} eOesLotRejReasonT;
 /* -------------------------           */
 
 
@@ -733,7 +827,8 @@ typedef enum _eOesOrdType {
 
     OES_ORD_TYPE_FOK                        = 30,       /**< 市价全部成交或全部撤销 */
     __OES_ORD_TYPE_FOK_MAX,
-    __OES_ORD_TYPE_MAX
+    __OES_ORD_TYPE_MAX,
+    __OES_ORD_TYPE_MAX_ALIGNED              = 32        /**< 委托类型最大值 (按8字节对齐的大小) */
 } eOesOrdTypeT;
 
 
@@ -749,13 +844,18 @@ typedef enum _eOesOrdType {
 typedef enum _eOesOrdTypeSh {
     /** 限价, 0 */
     OES_ORD_TYPE_SH_LMT                     = OES_ORD_TYPE_LMT,
+    /** 限价FOK(仅适用于期权), 1 */
+    OES_ORD_TYPE_SH_LMT_FOK                 = OES_ORD_TYPE_LMT_FOK,
+
     /** 最优五档即时成交剩余转限价, 10 */
     OES_ORD_TYPE_SH_MTL_BEST_5              = OES_ORD_TYPE_MTL_BEST_5,
+    /** 对手方最优价格申报(仅适用于科创板), 11 */
+    OES_ORD_TYPE_SH_MTL_BEST                = OES_ORD_TYPE_MTL_BEST,
+    /** 本方最优价格申报(仅适用于科创板), 12 */
+    OES_ORD_TYPE_SH_MTL_SAMEPARTY_BEST      = OES_ORD_TYPE_MTL_SAMEPARTY_BEST,
     /** 最优五档即时成交剩余撤销, 20 */
     OES_ORD_TYPE_SH_FAK_BEST_5              = OES_ORD_TYPE_FAK_BEST_5,
-    /** 限价FOK(期权), 1 */
-    OES_ORD_TYPE_SH_LMT_FOK                 = OES_ORD_TYPE_LMT_FOK,
-    /** 市价FOK(期权), 30 */
+    /** 市价FOK(仅适用于期权), 30 */
     OES_ORD_TYPE_SH_FOK                     = OES_ORD_TYPE_FOK
 } eOesOrdTypeShT;
 
@@ -772,6 +872,9 @@ typedef enum _eOesOrdTypeSh {
 typedef enum _eOesOrdTypeSz {
     /** 限价, 0 */
     OES_ORD_TYPE_SZ_LMT                     = OES_ORD_TYPE_LMT,
+    /** 限价全额成交或撤销申报(仅适用于期权), 1 */
+    OES_ORD_TYPE_SZ_LMT_FOK                 = OES_ORD_TYPE_LMT_FOK,
+
     /** 对手方最优价格申报, 11 */
     OES_ORD_TYPE_SZ_MTL_BEST                = OES_ORD_TYPE_MTL_BEST,
     /** 本方最优价格申报, 12 */
@@ -781,9 +884,7 @@ typedef enum _eOesOrdTypeSz {
     /** 即时成交剩余撤销申报, 21 */
     OES_ORD_TYPE_SZ_FAK                     = OES_ORD_TYPE_FAK,
     /** 市价全额成交或撤销申报, 30 */
-    OES_ORD_TYPE_SZ_FOK                     = OES_ORD_TYPE_FOK,
-    /** 限价全额成交或撤销申报(只用于期权), 1 */
-    OES_ORD_TYPE_SZ_LMT_FOK                 = OES_ORD_TYPE_LMT_FOK
+    OES_ORD_TYPE_SZ_FOK                     = OES_ORD_TYPE_FOK
 } eOesOrdTypeSzT;
 
 
@@ -800,7 +901,11 @@ typedef enum _eOesBuySellType {
     OES_BS_TYPE_CREDIT_BUY                  = 5,        /**< 融资买入 */
     OES_BS_TYPE_CREDIT_SELL                 = 6,        /**< 融券卖出, 质押式逆回购 */
     OES_BS_TYPE_SUBSCRIPTION                = 7,        /**< 新股认购 */
+    OES_BS_TYPE_ALLOTMENT                   = 8,        /**< 配股认购 */
+    __OES_BS_TYPE_MAX_SPOT,                             /**< 现货交易的买卖类型最大值 */
+    /* -------------------------           */
 
+    __OES_BS_TYPE_MIN_OPTION                = 10,       /**< 期权交易的买卖类型最小值 */
     OES_BS_TYPE_BUY_OPEN                    = 11,       /**< 期权买入开仓 */
     OES_BS_TYPE_BUY_CLOSE                   = 12,       /**< 期权买入平仓 */
     OES_BS_TYPE_SELL_OPEN                   = 13,       /**< 期权卖出开仓 */
@@ -810,18 +915,21 @@ typedef enum _eOesBuySellType {
     OES_BS_TYPE_OPTION_EXERCISE             = 17,       /**< 期权行权 */
     OES_BS_TYPE_UNDERLYING_FREEZE           = 18,       /**< 期权标的锁定 */
     OES_BS_TYPE_UNDERLYING_UNFREEZE         = 19,       /**< 期权标的解锁 */
+    __OES_BS_TYPE_MAX_OPTION,                           /**< 期权交易的买卖类型最大值 */
     /* -------------------------           */
 
     OES_BS_TYPE_CANCEL                      = 30,       /**< 撤单 */
     __OES_BS_TYPE_MAX_TRADING,                          /**< 对外开放的交易类业务的买卖类型最大值 */
     /* -------------------------           */
 
+    __OES_BS_TYPE_MIN_MGR                   = 40,       /**< 管理端非交易指令的买卖类型最小值 */
     OES_BS_TYPE_SSE_DESIGNATION             = 41,       /**< 指定登记 */
     OES_BS_TYPE_SSE_RECALL_DESIGNATION      = 42,       /**< 指定撤消 */
     OES_BS_TYPE_SZSE_DESIGNATION            = 43,       /**< 托管注册 */
     OES_BS_TYPE_SZSE_CANCEL_DESIGNATION     = 44,       /**< 托管撤消 */
+    __OES_BS_TYPE_MAX_MGR,                              /**< 管理端非交易指令的买卖类型最大值 */
 
-    __OES_BS_TYPE_MAX,                                  /**< 买卖类型最大值 */
+    __OES_BS_TYPE_MAX                       = __OES_BS_TYPE_MAX_MGR,
     /* -------------------------           */
 
     /*
@@ -860,16 +968,16 @@ typedef enum _eOesOrdDir {
 /**
  * ETF成交回报记录的成交类型
  * 上证接口规范 (IS103_ETFInterface_CV14_20130123) 中规定如下:
- * - ETF 基金二级市场代码记录表示一笔申购/赎回交易连续记录的开始,对一笔申购/赎回交易而言,有且只有一条;
- * - 一级市场代码记录不再表示对应申购/赎回交易连续记录的结束,对一笔申购/赎回交易而言,有且只有一条。
+ * - 二级市场记录表示一笔申购/赎回交易连续记录的开始,对一笔申购/赎回交易而言,有且只有一条;
+ * - 一级市场记录不再表示对应申购/赎回交易连续记录的结束,对一笔申购/赎回交易而言,有且只有一条。
  */
 typedef enum _eOesEtfTrdCnfmType {
     OES_ETF_TRDCNFM_TYPE_NONE               = 0,        /**< 无意义 */
-    OES_ETF_TRDCNFM_TYPE_ETF_FIRST          = 1,        /**< ETF二级市场记录 */
-    OES_ETF_TRDCNFM_TYPE_CMPOENT            = 2,        /**< ETF成分证券成交记录 */
-    OES_ETF_TRDCNFM_TYPE_CASH               = 3,        /**< ETF成交资金记录 */
-    OES_ETF_TRDCNFM_TYPE_ETF_LAST           = 4,        /**< ETF一级市场记录 */
-    __OES_ETF_TRDCNFM_TYPE_MAX                          /**< ETF成交的最大值 */
+    OES_ETF_TRDCNFM_TYPE_ETF_FIRST          = 1,        /**< 二级市场记录 */
+    OES_ETF_TRDCNFM_TYPE_CMPOENT            = 2,        /**< 成份股记录 */
+    OES_ETF_TRDCNFM_TYPE_CASH               = 3,        /**< 资金记录 */
+    OES_ETF_TRDCNFM_TYPE_ETF_LAST           = 4,        /**< 一级市场记录 */
+    __OES_ETF_TRDCNFM_TYPE_MAX                          /**< ETF成交类型的最大值 */
 } eOesEtfTrdCnfmTypeT;
 
 
@@ -889,40 +997,16 @@ typedef enum _eOesEtfSubFlag {
 
 
 /**
- * OES中签、配号记录类型
- */
-typedef enum _eOesLotType {
-    OES_LOT_TYPE_UNDEFINE                   = 0,        /**< 未定义的买卖类型 */
-    OES_LOT_TYPE_FAILED                     = 1,        /**< 认购失败记录 */
-    OES_LOT_TYPE_ASSIGNMENT                 = 2,        /**< 配号记录 */
-    OES_LOT_TYPE_LOTTERY                    = 3,        /**< 中签记录 */
-    __OES_LOT_TYPE_MAX                                  /**< 中签、配号记录类型最大值 */
-} eOesLotTypeT;
-
-
-/**
- * OES配号失败原因
- */
-typedef enum _eOesLotRejReason {
-    OES_LOT_REJ_REASON_DUPLICATE            = 1,        /**< 配号失败-重复申购 */
-    OES_LOT_REJ_REASON_INVALID_DUPLICATE    = 2,        /**< 配号失败-违规重复 */
-    OES_LOT_REJ_REASON_OFFLINE_FIRST        = 3,        /**< 配号失败-网下在先 */
-    OES_LOT_REJ_REASON_BAD_RECORD           = 4,        /**< 配号失败-不良记录 */
-    OES_LOT_REJ_REASON_UNKNOW               = 5         /**< 配号失败-未知原因 */
-} eOesLotRejReasonT;
-
-
-/**
  * OES执行类型
  */
 typedef enum _eOesExecType {
     OES_EXECTYPE_UNDEFINE                   = 0,        /**< 未定义的执行类型 */
-    OES_EXECTYPE_INSERT                     = 1,        /**< 已接收 */
-    OES_EXECTYPE_CONFIRMED                  = 2,        /**< 已确认 */
-    OES_EXECTYPE_CANCELLED                  = 3,        /**< 撤单 */
-    OES_EXECTYPE_AUTO_CANCELLED             = 4,        /**< 自动撤单 */
-    OES_EXECTYPE_REJECT                     = 5,        /**< 拒绝 */
-    OES_EXECTYPE_TRADE                      = 6,        /**< 成交 */
+    OES_EXECTYPE_INSERT                     = 1,        /**< 已接收 (OES已接收) */
+    OES_EXECTYPE_CONFIRMED                  = 2,        /**< 已确认 (交易所已确认/出入金主柜台已确认) */
+    OES_EXECTYPE_CANCELLED                  = 3,        /**< 已撤单 (原始委托的撤单完成回报) */
+    OES_EXECTYPE_AUTO_CANCELLED             = 4,        /**< 自动撤单 (市价委托发生自动撤单后的委托回报) */
+    OES_EXECTYPE_REJECT                     = 5,        /**< 拒绝 (OES拒绝/交易所废单/出入金主柜台拒绝) */
+    OES_EXECTYPE_TRADE                      = 6,        /**< 成交 (成交回报) */
     __OES_EXECTYPE_MAX                                  /**< 执行类型最大值 */
 } eOesExecTypeT;
 /* -------------------------           */
@@ -1080,8 +1164,10 @@ typedef enum _eOesTradingPermission {
     OES_PERMIS_SH_HK_STOCK_CONNECT          = (1 << 14),    /**< 沪港通 */
     OES_PERMIS_SZ_HK_STOCK_CONNECT          = (1 << 15),    /**< 深港通 */
 
-    OES_PERMIS_CDR                          = (1 << 16),    /**< 存托凭证 */
-    OES_PERMIS_INNOVATION                   = (1 << 17),    /**< 创新企业股票 */
+    OES_PERMIS_HLTCDR                       = (1 << 16),    /**< 沪伦通存托凭证 */
+    OES_PERMIS_CDR                          = (1 << 17),    /**< 存托凭证 */
+    OES_PERMIS_INNOVATION                   = (1 << 18),    /**< 创新企业股票 */
+    OES_PERMIS_KSH                          = (1 << 19),    /**< 科创板交易 */
 
     __OES_PERMIS_ALL                        = 0xFFFFFFFF    /**< 全部权限 */
 } eOesTradingPermissionT;
@@ -1132,6 +1218,20 @@ typedef enum _eOesInvestorClass {
     OES_INVESTOR_CLASS_PROFESSIONAL_B       = 2,        /**< B类专业投资者 */
     OES_INVESTOR_CLASS_PROFESSIONAL_C       = 3         /**< C类专业投资者 */
 } eOesInvestorClassT;
+
+
+/**
+ * 客户类型定义
+ */
+typedef enum _eOesCustType {
+    OES_CUST_TYPE_PERSONAL                  = 0,        /**< 个人 */
+    OES_CUST_TYPE_INSTITUTION               = 1,        /**< 机构 */
+    OES_CUST_TYPE_PROPRIETARY               = 2,        /**< 自营 */
+    OES_CUST_TYPE_PRODUCT                   = 3,        /**< 产品 */
+    OES_CUST_TYPE_MKT_MAKER                 = 4,        /**< 做市商 */
+    OES_CUST_TYPE_OTHERS                    = 5,        /**< 其他 */
+    __OES_CUST_TYPE_MAX                                 /**< 客户类型的最大值 */
+} eOesCustTypeT;
 
 
 /**
@@ -1462,12 +1562,16 @@ typedef enum _eOesOptionType {
         uint8           __platformId; \
         /** 交易网关组序号 (OES内部使用) */ \
         uint8           __tgwGrpNo; \
-        /** 已报盘标志 (OES内部使用) */ \
-        uint8           __declareFlag; \
-        /** 按64位对齐的填充域 */ \
-        uint8           __ORD_CNFM_BASE_INFO_filler; \
+        /** 交易网关平台分区号 (OES内部使用) */ \
+        uint8           __tgwPartitionNo; \
+        /** 产品类型 @see eOesProductTypeT */ \
+        uint8           productType; \
         /** 交易所订单编号 (深交所的订单编号是16位的非数字字符串) */ \
         char            exchOrdId[OES_EXCH_ORDER_ID_MAX_LEN]; \
+        /** 已报盘标志 (OES内部使用) */ \
+        uint8           __declareFlag; \
+        /** 按64位对齐填充域 */ \
+        uint8           __ORD_CNFM_BASE_INFO_filler[2]; \
         \
         /** 委托当前冻结的交易金额 */ \
         int64           frzAmt; \
@@ -1510,7 +1614,7 @@ typedef enum _eOesOptionType {
         0, 0, 0, 0, 0, \
         0, 0, 0, \
         0, 0, 0, 0, \
-        0, 0, 0, 0, {0}, \
+        0, 0, 0, 0, {0}, 0, {0}, \
         0, 0, 0, 0, 0, 0, \
         0, 0, \
         0, 0, 0, 0, 0, 0 \
@@ -1648,8 +1752,12 @@ typedef struct _OesOrdCnfm {
         \
         /** 交易网关组序号 (OES内部使用) */ \
         uint8           __tgwGrpNo; \
-        /** 按64位对齐填充域 */ \
-        uint8           __TRD_BASE_INFO_filler[3]; \
+        /** ETF赎回得到的替代资金是否当日可用 (OES内部使用) */ \
+        uint8           __isTrsfInCashAvailable; \
+        /** 交易网关平台分区号 (OES内部使用) */ \
+        uint8           __tgwPartitionNo; \
+        /** 产品类型 @see eOesProductTypeT */ \
+        uint8           productType; \
         /** 原始委托数量 */ \
         int32           origOrdQty; \
         \
@@ -1665,7 +1773,7 @@ typedef struct _OesOrdCnfm {
         {0}, {0}, \
         0, 0, 0, 0, 0, \
         0, 0, 0, \
-        0, {0}, 0, \
+        0, 0, 0, 0, 0, \
         0, 0
 /* -------------------------           */
 
@@ -2067,8 +2175,10 @@ typedef struct _OesFundTrsfReport {
         uint8               isCancelAble; \
         /** 是否允许重复认购 */ \
         uint8               isReApplyAble; \
+        /** 产品类型 @see eOesProductTypeT */ \
+        uint8               productType; \
         /** 按64位对齐填充域 */ \
-        uint8               __ISSUE_BASE_filler[3]; \
+        uint8               __ISSUE_BASE_filler[2]; \
         \
         /** 证券名称 */ \
         char                securityName[OES_SECURITY_NAME_MAX_LEN]; \
@@ -2091,20 +2201,27 @@ typedef struct _OesFundTrsfReport {
         \
         /** 发行价格 */ \
         int32               issuePrice; \
-        /** 申购价格区间上限 */ \
-        int32               ceilPrice; \
-        /** 申购价格区间下限 */ \
-        int32               floorPrice
-
+        union { \
+            /** 申购价格上限 (单位精确到元后四位, 即1元 = 10000) */ \
+            int32           upperLimitPrice; \
+            /** 申购价格上限 @deprecated 已废弃, 为了兼容旧版本而保留 */ \
+            int32           ceilPrice; \
+        }; \
+        union { \
+            /** 申购价格下限 (单位精确到元后四位, 即1元 = 10000) */ \
+            int32           lowerLimitPrice; \
+            /** 申购价格下限 @deprecated 已废弃, 为了兼容旧版本而保留 */ \
+            int32           floorPrice; \
+        }
 
 
 #define __NULLOBJ_OES_ISSUE_BASE_INFO_PKT               \
         {0}, 0, \
-        0, 0, 0, 0, {0}, \
+        0, 0, 0, 0, 0, {0}, \
         {0}, {0}, \
         0, 0, 0, \
         0, 0, 0, \
-        0, 0, 0
+        0, {0}, {0}
 /* -------------------------           */
 
 
@@ -2130,21 +2247,31 @@ typedef struct _OesIssueBaseInfo {
  * OES竞价的限价参数配置
  */
 typedef struct _OesPriceLimit {
-    /** 上涨限价, 单位精确到元后四位, 即1元 = 10000 */
-    int32               ceilPrice;
-    /** 下跌限价, 单位精确到元后四位, 即1元 = 10000 */
-    int32               floorPrice;
+    union {
+        /** 涨停价 (单位精确到元后四位, 即1元 = 10000) */
+        int32           upperLimitPrice;
+        /** 涨停价 @deprecated 已废弃, 为了兼容旧版本而保留 */
+        int32           ceilPrice;
+    };
+
+    union {
+        /** 跌停价 (单位精确到元后四位, 即1元 = 10000) */
+        int32           lowerLimitPrice;
+        /** 跌停价 @deprecated 已废弃, 为了兼容旧版本而保留 */
+        int32           floorPrice;
+    };
 } OesPriceLimitT;
 
 
 /* 结构体的初始化值定义 */
 #define NULLOBJ_OES_PRICE_LIMIT                         \
-        0, 0
+        {0}, {0}
 /* -------------------------           */
 
 
 /**
  * 现货产品基础信息的内容定义
+ * @since   0.15.9  2019/03/12
  */
 #define __OES_STOCK_BASE_INFO_PKT                       \
         /** 产品代码 */ \
@@ -2152,48 +2279,79 @@ typedef struct _OesPriceLimit {
         /** 市场代码 @see eOesMarketIdT */ \
         uint8               mktId; \
         \
+        /** 产品类型 @see eOesProductTypeT */ \
+        uint8               productType; \
         /** 证券类型 @see eOesSecurityTypeT */ \
         uint8               securityType; \
         /** 证券子类型 @see eOesSubSecurityTypeT */ \
         uint8               subSecurityType; \
-        /** 产品级别 @see eOesSecurityLevelT */ \
+        /** 证券级别 @see eOesSecurityLevelT */ \
         uint8               securityLevel; \
-        /** 产品风险等级 @see eOesSecurityRiskLevelT */ \
+        /** 证券风险等级 @see eOesSecurityRiskLevelT */ \
         uint8               securityRiskLevel; \
         /** 币种 @see eOesCurrTypeT */ \
         uint8               currType; \
         /** 投资者适当性管理分类 @see eOesQualificationClassT */ \
         uint8               qualificationClass; \
+        \
         /** 是否支持当日回转交易 0: 不支持; 其他: 支持 */ \
         uint8               isDayTrading; \
-        \
         /** 连续停牌标识 @see eOesSecuritySuspFlagT */ \
         uint8               suspFlag; \
         /** 临时停牌标识 (TRUE 已停牌, FALSE 未停牌) */ \
         uint8               temporarySuspFlag; \
         /** 填充字符  满足64位对齐 */ \
-        uint8               __filter[6]; \
+        uint8               __STOCK_BASE_filler[5]; \
         \
         /** 买入单位 */ \
         int32               buyQtyUnit; \
+        union { \
+            /** 单笔限价买委托数量上限 */ \
+            int32           lmtBuyMaxQty; \
+            /** 单笔限价买委托数量上限 @deprecated 已废弃, 为了兼容旧版本而保留 */ \
+            int32           buyOrdMaxQty; \
+        }; \
+        union { \
+            /** 单笔限价买委托数量下限 */ \
+            int32           lmtBuyMinQty; \
+            /** 单笔限价买委托数量下限 @deprecated 已废弃, 为了兼容旧版本而保留 */ \
+            int32           buyOrdMinQty; \
+        }; \
+        /** 单笔市价买委托数量上限 */ \
+        int32               mktBuyMaxQty; \
+        /** 单笔市价买委托数量下限 */ \
+        int32               mktBuyMinQty; \
+        \
         /** 卖出单位 */ \
         int32               sellQtyUnit; \
-        /** 单笔买委托最大份数 */ \
-        int32               buyOrdMaxQty; \
-        /** 单笔买委托最小份数 */ \
-        int32               buyOrdMinQty; \
-        /** 单笔卖委托最大份数 */ \
-        int32               sellOrdMaxQty; \
-        /** 单笔卖委托最小份数 */ \
-        int32               sellOrdMinQty; \
+        union { \
+            /** 单笔限价卖委托数量上限 */ \
+            int32           lmtSellMaxQty; \
+            /** 单笔限价卖委托数量上限 @deprecated 已废弃, 为了兼容旧版本而保留 */ \
+            int32           sellOrdMaxQty; \
+        }; \
+        union { \
+            /** 单笔限价卖委托数量下限 */ \
+            int32           lmtSellMinQty; \
+            /** 单笔限价卖委托数量下限 @deprecated 已废弃, 为了兼容旧版本而保留 */ \
+            int32           sellOrdMinQty; \
+        }; \
+        /** 单笔市价卖委托数量上限 */ \
+        int32               mktSellMaxQty; \
+        /** 单笔市价卖委托数量下限 */ \
+        int32               mktSellMinQty; \
         \
-        /** 最小价格变动单位, 单位精确到元后四位, 即1元 = 10000 */ \
-        int32               priceUnit; \
+        union { \
+            /** 最小报价单位 (单位精确到元后四位, 即1元 = 10000) */ \
+            int32           priceTick; \
+            /** 最小报价单位 @deprecated 已废弃, 为了兼容旧版本而保留 */ \
+            int32           priceUnit; \
+        }; \
         /** 昨日收盘价，单位精确到元后四位，即1元 = 10000 */ \
         int32               prevClose; \
         /** 面值, 单位精确到元后四位, 即1元 = 10000 */ \
         int64               parPrice; \
-        /** 债券的每百元应计利息额, 单位精确到元后八位 */ \
+        /** 债券的每百元应计利息额, 单位精确到元后八位, 即应计利息1元 = 100000000 */ \
         int64               bondInterest; \
         \
         /** 逆回购期限 */ \
@@ -2206,19 +2364,23 @@ typedef struct _OesPriceLimit {
         \
         /** 产品名称 */ \
         char                securityName[OES_SECURITY_NAME_MAX_LEN]; \
-        /** ETF申购赎代码 */ \
-        char                fundId[OES_SECURITY_ID_MAX_LEN]
+        /** ETF申赎代码 (ETF代码所对应的一级市场代码) */ \
+        char                fundId[OES_SECURITY_ID_MAX_LEN]; \
+        /** 预留的备用字段 */ \
+        char                __STOCK_BASE_reserve[32]
 
 
+/* 结构体的初始化值定义 */
 #define __NULLOBJ_OES_STOCK_BASE_INFO_PKT               \
         {0}, 0, \
         0, 0, 0, 0, 0, 0, 0, \
-        0, 0, {0}, \
-        0, 0, 0, 0, 0, 0, \
-        0, 0, 0, 0, \
+        0, 0, 0, {0}, \
+        0, {0}, {0}, 0, 0, \
+        0, {0}, {0}, 0, 0, \
+        {0}, 0, 0, 0, \
         0, 0, \
         {{NULLOBJ_OES_PRICE_LIMIT}}, \
-        {0}, {0}
+        {0}, {0}, {0}
 /* -------------------------           */
 
 
@@ -2271,31 +2433,31 @@ typedef struct _OesStockBaseInfo {
         int32               componentCnt; \
         /** 每个篮子 (最小申购、赎回单位) 对应的ETF份数, 即申购赎回单位 */ \
         int32               creRdmUnit; \
-        /** 最大现金替代比例, 精确到0.00001(=0.001%) */ \
+        /** 最大现金替代比例, 单位精确到十万分之一, 即替代比例50% = 50000 */ \
         int32               maxCashRatio; \
-        /** 前一日基金的单位净值 */ \
+        /** 前一日基金的单位净值, 单位精确到元后四位, 即1元 = 10000 */ \
         int32               nav; \
         \
-        /** 前一日最小申赎单位净值 */ \
+        /** 前一日最小申赎单位净值, 单位精确到元后四位, 即1元 = 10000 */ \
         int64               navPerCU; \
-        /** 红利金额 */ \
+        /** 红利金额, 单位精确到元后四位, 即1元 = 10000 */ \
         int64               dividendPerCU; \
         \
         /** 当前交易日, 格式YYYYMMDD */ \
         int32               tradingDay; \
         /** 前一交易日, 格式YYYYMMDD */ \
         int32               preTradingDay; \
-        /** 每个篮子的预估现金差额 */ \
+        /** 每个篮子的预估现金差额, 单位精确到元后四位, 即1元 = 10000 */ \
         int64               estiCashCmpoent; \
-        /** 前一日现金差额 */ \
+        /** 前一日现金差额, 单位精确到元后四位, 即1元 = 10000 */ \
         int64               cashCmpoent; \
-        /** 当日申购限额 */ \
+        /** 单个账户当日累计申购总额限制 */ \
         int64               creationLimit; \
-        /** 当日赎回限额 */ \
+        /** 单个账户当日累计赎回总额限制 */ \
         int64               redemLimit; \
-        /** 单个账户净申购总额限制 */ \
+        /** 单个账户当日净申购总额限制 */ \
         int64               netCreationLimit; \
-        /** 单个账户净赎回总额限制 */ \
+        /** 单个账户当日净赎回总额限制 */ \
         int64               netRedemLimit
 
 
@@ -2346,16 +2508,16 @@ typedef struct _OesEtfBaseInfo {
         /** 证券子类型 @see eOesSubSecurityTypeT */ \
         uint8               subSecurityType; \
         \
-        /** 昨日收盘价格 */ \
+        /** 昨日收盘价格, 单位精确到元后四位, 即1元 = 10000 */ \
         int32               prevClose; \
         /** 成分证券数量 */ \
         int32               qty; \
-        /** 溢价比例 */ \
+        /** 溢价比例, 单位精确到十万分之一, 即溢价比例10% = 10000 */ \
         int32               premiumRate; \
         \
-        /** 申购替代金额 */ \
+        /** 申购替代金额, 单位精确到元后四位, 即1元 = 10000 */ \
         int64               creationSubCash; \
-        /** 赎回替代金额 */ \
+        /** 赎回替代金额, 单位精确到元后四位, 即1元 = 10000 */ \
         int64               redemptionCashSub
 
 
@@ -2512,7 +2674,7 @@ typedef struct _OesOptionBaseInfo {
         uint8               currType; \
         /** 资金帐户类别(冗余自资金账户) @see eOesCashTypeT */ \
         uint8               cashType; \
-        /** 资金帐户状态(冗余自资金账户) @deprecated @see eOesAcctStatusT */ \
+        /** 资金帐户状态(冗余自资金账户) @see eOesAcctStatusT */ \
         uint8               cashAcctStatus; \
         /** 是否禁止出入金 (仅供API查询使用) */ \
         uint8               isFundTrsfDisabled; \
@@ -2540,7 +2702,7 @@ typedef struct _OesOptionBaseInfo {
         /** 当前提取冻结资金金额, 单位精确到元后四位, 即1元 = 10000 */ \
         int64               withdrawFrzAmt; \
         \
-        /** 日中累计卖获得资金金额, 单位精确到元后四位, 即1元 = 10000 */ \
+        /** 日中累计 卖/赎回 获得的可用资金金额, 单位精确到元后四位, 即1元 = 10000 */ \
         int64               totalSellAmt; \
         /** 日中累计 买/申购/逆回购 使用资金金额，单位精确到元后四位，即1元 = 10000 */ \
         int64               totalBuyAmt; \
@@ -2643,6 +2805,7 @@ typedef struct _OesCustBaseInfo {
 
 /**
  * 证券账户基础信息的内容定义
+ * @since   0.15.9  2019/03/12
  */
 #define __OES_INV_ACCT_BASE_INFO_PKT                    \
         /** 股东账户代码 */ \
@@ -2670,15 +2833,24 @@ typedef struct _OesCustBaseInfo {
         \
         /** 席位号 */ \
         int32               pbuId; \
-        /** 新股认购限额 */ \
-        int32               subscriptionQuota
+        /** 按64位对齐填充域 */ \
+        int32               __INV_ACCT_BASE_filler2; \
+        /** 主板权益 (新股/配股认购限额) */ \
+        int32               subscriptionQuota; \
+        /** 科创板权益 (新股/配股认购限额) */ \
+        int32               kcSubscriptionQuota; \
+        \
+        /** 预留的备用字段 */ \
+        char                __INV_ACCT_BASE_reserve[32]
 
 
+/* 结构体的初始化值定义 */
 #define __NULLOBJ_OES_INV_ACCT_BASE_INFO_PKT            \
         {0}, 0, \
         0, 0, 0, 0, 0, {0}, \
         0, 0, \
-        0, 0
+        0, 0, 0, 0, \
+        {0}
 /* -------------------------           */
 
 
@@ -2714,8 +2886,10 @@ typedef struct _OesInvAcctBaseInfo {
         uint8               securityType; \
         /** 证券子类型 @see eOesSubSecurityTypeT */ \
         uint8               subSecurityType; \
+        /** 产品类型 @see eOesProductTypeT */ \
+        uint8               productType; \
         /** 按64位对齐的填充域 */ \
-        uint8               __HOLD_BASE_filler[5]; \
+        uint8               __HOLD_BASE_filler[4]; \
         \
         /** 日初持仓 */ \
         int64               originalHld; \
@@ -2771,7 +2945,7 @@ typedef struct _OesInvAcctBaseInfo {
 /* 结构体的初始化值定义 */
 #define __NULLOBJ_OES_STK_HOLDING_BASE_INFO_PKT         \
         {0}, {0}, \
-        0, 0, 0, {0}, \
+        0, 0, 0, 0, {0}, \
         0, 0, \
         0, 0, 0, 0, \
         0, 0, 0, 0, \
@@ -2861,7 +3035,7 @@ typedef struct _OesMarketStateInfo {
     uint8               exchId;             /**< 交易所代码 @see eOesExchangeIdT */
     uint8               platformId;         /**< 交易平台类型 @see eOesPlatformIdT */
     uint8               mktId;              /**< 市场代码 @see eOesMarketIdT */
-    uint8               mktState;           /**< 市场状态 @see eOesMarketStatusT */
+    uint8               mktState;           /**< 市场状态 @see eOesMarketStateT */
     uint8               __filler[4];        /**< 按64位对齐的填充域 */
 } OesMarketStateInfoT;
 
@@ -2898,33 +3072,6 @@ typedef struct _OesTradingPermissionEntry {
 #define NULLOBJ_OES_TRADING_PERMISSION_ENTRY            \
         0, 0, 0, {0}, 0, \
         {0}, {0}
-/* -------------------------           */
-
-
-/* ===================================================================
- * 委托来源信息定义
- * =================================================================== */
-
-/**
- * 委托请求/出入金请求的输入源信息 (内部使用)
- */
-typedef struct _OesInputSourceInfo {
-    /** 客户端的IP地址 */
-    char                sourceIp[OES_MAX_IP_LEN];
-    /** 客户端的MAC地址 */
-    char                sourceMac[OES_MAX_MAC_LEN];
-    /** 客户端的登录类型 */
-    uint8               sourceType;
-    /** 按64位对齐的填充域 */
-    uint8               __filler[3];
-    /** 客户端的设备序列号 */
-    char                sourceDriverId[OES_MAX_DRIVER_ID_LEN];
-} OesInputSourceInfoT;
-
-
-/* 结构体的初始化值定义 */
-#define NULLOBJ_OES_INPUT_SOURCE_INFO                   \
-        {0}, {0}, 0, {0}, {0}
 /* -------------------------           */
 
 

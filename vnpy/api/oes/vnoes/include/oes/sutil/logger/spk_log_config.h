@@ -54,7 +54,7 @@ extern "C" {
  */
 #define     SLOGCFG_DEFAULT_MIN_LOG_LEVEL       SLOG_LEVEL_TRACE
 #define     SLOGCFG_DEFAULT_MAX_LOG_LEVEL       SLOG_LEVEL_FATAL
-#define     SLOGCFG_DEFAULT_MAX_FILE_LENGTH     (50)
+#define     SLOGCFG_DEFAULT_MAX_FILE_LENGTH     (300)
 #define     SLOGCFG_DEFAULT_MAX_BACKUP_COUNT    (3)
 #define     SLOGCFG_MAX_BACKUP_COUNT            (1000)
 #define     SLOGCFG_DEFAULT_ASYNC_QUEUE_SIZE    (1000)
@@ -97,11 +97,19 @@ typedef struct _SLogCfgItem {
     /** 日志文件名称 */
     char                logFile[SPK_MAX_PATH_LEN];
 
-    int32               maxFileLength;          /**< 日志文件最大长度 */
-    int32               maxBackupCount;         /**< 日志文件最大备份数 */
+    /**
+     * 日志文件最大长度
+     * - 日志文件最大长度允许配置为0, 表示无最大长度限制
+     * - 如果配置值小于 2048 则以兆为单位计算, 否则以字节为单位计算, 最大文件长度为2GB
+     */
+    int32               maxFileLength;
+    /** 日志文件最大备份数 */
+    int32               maxBackupCount;
 
-    int32               asyncQueueSize;         /**< 异步日志的消息队列大小 */
-    int32               asyncQueueShmId;        /**< 异步日志的共享内存ID (0 表示使用默认值) */
+    /** 异步日志的消息队列大小 */
+    int32               asyncQueueSize;
+    /** 异步日志的共享内存ID (0 表示使用默认值) */
+    int32               asyncQueueShmId;
 } SLogCfgItemT;
 
 

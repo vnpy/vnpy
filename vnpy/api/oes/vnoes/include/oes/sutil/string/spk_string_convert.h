@@ -159,9 +159,19 @@ BOOL    SStr_IsNumeric(const char *pStr, BOOL isUnitAble);
 int64   SStr_ParseUnittedInteger(const char *pStr);
 
 /*
+ * 转换带单位的数值型字符串为长整型数值 (可指定当字符串为空时的默认值)
+ */
+int64   SStr_ParseUnittedInteger2(const char *pStr, int32 defaultValue);
+
+/*
  * 解析BOOL型字符串
  */
 int32   SStr_ParseBoolean(const char *pStr);
+
+/*
+ * 解析BOOL型字符串 (可指定当字符串为空时的默认值)
+ */
+int32   SStr_ParseBoolean2(const char *pStr, int32 defaultValue);
 /* -------------------------           */
 
 

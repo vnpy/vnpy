@@ -29,7 +29,7 @@ MdsApiSample_ResubscribeByCodePostfix(MdsApiSessionInfoT *pTcpChannel,
         const char *pCodeListString) {
     return MdsApi_SubscribeByString(pTcpChannel,
             pCodeListString, (char *) NULL,
-            MDS_EXCH_SSE, MDS_SECURITY_TYPE_STOCK, MDS_SUB_MODE_SET,
+            MDS_EXCH_SSE, MDS_MD_PRODUCT_TYPE_STOCK, MDS_SUB_MODE_SET,
             MDS_SUB_DATA_TYPE_L1_SNAPSHOT
                     | MDS_SUB_DATA_TYPE_L2_SNAPSHOT
                     | MDS_SUB_DATA_TYPE_L2_BEST_ORDERS);
@@ -169,9 +169,9 @@ ON_ERROR:
 | 1004  | 因状态等基础数据不匹配，无法更新数据   |
 | 1005  | 协议版本不兼容                     |
 | 1006  | 数据不存在                         |
-| 1007  | 时间尚未到达                       |
+| 1007  | 非服务开放时间                     |
 | 1008  | 非法的定位游标                     |
-| 1009  | 非法的客户端登陆用户名称             |
+| 1009  | 非法的客户端登录用户名称             |
 | 1010  | 非法的证券代码                     |
 | 1011  | 非法的客户代码                     |
 | 1012  | 非法的客户端类型                    |
@@ -184,7 +184,11 @@ ON_ERROR:
 | 1019  | 非法的应用系统名称                  |
 | 1020  | 查询条件不匹配                     |
 | 1021  | 客户端ip/mac地址格式错误            |
-| 1022  | 尚不支持此业务                     |
+| 1022  | 尚不支持或尚未开通此业务             |
+| 1029  | 密码未改变                         |
 | 1031  | 非法的加密类型                     |
 | 1033  | 无可用节点                         |
+| 1034  | 密码强度不足                       |
+| 1035  | 非法的产品类型                     |
+| 1036  | 未通过黑白名单检查                 |
 | 1301  | 行情订阅失败                       |

@@ -119,6 +119,16 @@ BOOL    SStr_IsIgnoreCaseStartWith2(const char *pStr, const char *pStartWith,
             const char *pAnyChar, int32 n, const char **ppAfterMatched);
 
 /*
+ * 返回字符串是否是以指定的字符串结尾的
+ */
+BOOL    SStr_IsEndsWith(const char *pStr, const char *pEndsWith);
+
+/*
+ * 返回字符串是否是以指定的字符串结尾的 (忽略大小写)
+ */
+BOOL    SStr_IsIgnoreCaseEndsWith(const char *pStr, const char *pEndsWith);
+
+/*
  * 统计字符串中指定字符出现的次数
  */
 int32   SStr_TotalChars(const char *pStr, const char *pChars);
@@ -481,17 +491,19 @@ SStr_Ltrim(const char *pStr) {
  */
 static __inline const char*
 SStr_LtrimZero(const char *pStr) {
-    const char  *pPtr = pStr;
+    char        ch = 0;
+    char        prev = 0;
 
     if (unlikely(! pStr)) {
         return (const char *) NULL;
     }
 
-    while (SPK_ISSPACE(*pStr) || *pStr == '0') {
+    while ((ch = *pStr) == '0' || SPK_ISSPACE(ch)) {
         pStr++;
+        prev = ch;
     }
 
-    if ((*pStr == 'x' || *pStr == '.') && pStr > pPtr) {
+    if ((*pStr == 'x' || *pStr == '.') && prev == '0') {
         pStr--;
     }
     return pStr;
@@ -633,6 +645,51 @@ SStr_StrCopy(char *pBuf, const char *pStr, int32 maxStrlen) {
     if (likely(pStr && maxStrlen > 0)) {
         strncpy(pBuf, pStr, maxStrlen);
         pBuf[maxStrlen] = '\0';
+    } else {
+        *pBuf = '\0';
+    }
+    return pBuf;
+}
+
+
+/**
+ * 从字符串中拷贝指定位置的子字符串
+ *
+ * @param[out]  pBuf        用于输出数据的缓存区指针
+ * @param       pStr        待拷贝的字符串
+ * @param       from        子字符串的开始位置 (从0开始计数, 小于等于0则从头开始复制)
+ * @param       subLen      子字符串的长度 (小于等于0表示从末尾开始计数的子字符串结束位置)
+ *                          - 大于0, 子字符串的长度
+ *                          - 等于0, 复制从 from 至末尾的所有字符
+ *                          - 小于0, 末尾开始计数的子字符串结束位置
+ * @return      返回复制到字符串
+ */
+static __inline char*
+SStr_SubStrCopy(char *pBuf, const char *pStr, int32 from, int32 subLen) {
+    int32               totalLen = 0;
+
+    SLOG_ASSERT(pBuf);
+    if (unlikely(SStr_IsEmpty(pStr))) {
+        *pBuf = '\0';
+        return pBuf;
+    }
+
+    totalLen = strlen(pStr);
+    if (from < 0) {
+        from = 0;
+    } else if (unlikely(from >= totalLen)) {
+        *pBuf = '\0';
+        return pBuf;
+    }
+
+    if (subLen <= 0) {
+        subLen = (totalLen + subLen) - from;
+    } else {
+        subLen = SPK_MIN(subLen, totalLen - from);
+    }
+
+    if (likely(subLen > 0)) {
+        SStr_StrCopy(pBuf, pStr + from, subLen);
     } else {
         *pBuf = '\0';
     }
