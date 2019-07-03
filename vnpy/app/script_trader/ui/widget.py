@@ -44,11 +44,16 @@ class ScriptManager(QtWidgets.QWidget):
         self.log_monitor = QtWidgets.QTextEdit()
         self.log_monitor.setReadOnly(True)
 
+        clear_button = QtWidgets.QPushButton("清空")
+        clear_button.clicked.connect(self.log_monitor.clear)
+
         hbox = QtWidgets.QHBoxLayout()
         hbox.addWidget(self.strategy_line)
         hbox.addWidget(select_button)
         hbox.addWidget(start_button)
         hbox.addWidget(stop_button)
+        hbox.addStretch()
+        hbox.addWidget(clear_button)
 
         vbox = QtWidgets.QVBoxLayout()
         vbox.addLayout(hbox)
