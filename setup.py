@@ -16,6 +16,7 @@ other financial markets.
 """
 
 import ast
+import os
 import platform
 import re
 import sys
@@ -32,9 +33,12 @@ if platform.uname().system == "Windows":
     compiler_flags = [
         "/MP", "/std:c++17",  # standard
         "/O2", "/Ob2", "/Oi", "/Ot", "/Oy", "/GL",  # Optimization
-        "/wd4819"  # 936 code page
+        "/bigobj",  # Better compatibility
+        "/wd4819",  # 936 code page
+        "/D_CRT_SECURE_NO_WARNINGS",  # suppress warning of unsafe functions like fopen, strcpy, etc
     ]
     extra_link_args = []
+    runtime_library_dirs = None
 else:
     compiler_flags = [
         "-std=c++17",  # standard
@@ -42,6 +46,20 @@ else:
         "-Wno-delete-incomplete", "-Wno-sign-compare",
     ]
     extra_link_args = ["-lstdc++"]
+    runtime_library_dirs = ["$ORIGIN"]
+
+
+def gather_autocxxpy_generated_files(root: str):
+    fs = [os.path.join(root, "module.cpp")]
+    for root, dirs, filenames in os.walk(root):
+        for filename in filenames:
+            filebase, ext = os.path.splitext(filename)
+            if ext == ".cpp" and filebase.startswith("generated_functions_"):
+                path = os.path.join(root, filename)
+                fs.append(path)
+    print(fs)
+    return fs
+
 
 vnctpmd = Extension(
     "vnpy.api.ctp.vnctpmd",
@@ -56,8 +74,8 @@ vnctpmd = Extension(
     libraries=["thostmduserapi_se", "thosttraderapi_se", ],
     extra_compile_args=compiler_flags,
     extra_link_args=extra_link_args,
+    runtime_library_dirs=runtime_library_dirs,
     depends=[],
-    runtime_library_dirs=["$ORIGIN"],
     language="cpp",
 )
 vnctptd = Extension(
@@ -73,17 +91,15 @@ vnctptd = Extension(
     libraries=["thostmduserapi_se", "thosttraderapi_se", ],
     extra_compile_args=compiler_flags,
     extra_link_args=extra_link_args,
-    runtime_library_dirs=["$ORIGIN"],
+    runtime_library_dirs=runtime_library_dirs,
     depends=[],
     language="cpp",
 )
 vnoes = Extension(
-    "vnpy.api.oes.vnoes",
-    [
-        "vnpy/api/oes/vnoes/generated_files/classes_1.cpp",
-        "vnpy/api/oes/vnoes/generated_files/classes_2.cpp",
-        "vnpy/api/oes/vnoes/generated_files/module.cpp",
-    ],
+    name="vnpy.api.oes.vnoes",
+    sources=gather_autocxxpy_generated_files(
+        "vnpy/api/oes/vnoes/generated_files/",
+    ),
     include_dirs=["vnpy/api/oes/include",
                   "vnpy/api/oes/vnoes", ],
     define_macros=[("BRIGAND_NO_BOOST_SUPPORT", "1")],
@@ -92,14 +108,14 @@ vnoes = Extension(
     libraries=["oes_api"],
     extra_compile_args=compiler_flags,
     extra_link_args=extra_link_args,
-    runtime_library_dirs=["$ORIGIN"],
+    runtime_library_dirs=runtime_library_dirs,
     depends=[],
     language="cpp",
 )
 
 if platform.system() == "Windows":
     # use pre-built pyd for windows ( support python 3.7 only )
-    ext_modules = []
+    ext_modules = [vnoes]
 elif platform.system() == "Darwin":
     ext_modules = []
 else:
