@@ -118,6 +118,7 @@ def init_models(db: Database, driver: Driver):
                 volume=self.volume,
                 open_price=self.open_price,
                 high_price=self.high_price,
+                open_interest=self.open_interest,
                 low_price=self.low_price,
                 close_price=self.close_price,
                 gateway_name="DB",

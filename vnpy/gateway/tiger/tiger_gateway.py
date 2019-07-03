@@ -1,4 +1,3 @@
-# encoding: UTF-8
 """
 Author: KeKe
 Please install tiger-api before use.

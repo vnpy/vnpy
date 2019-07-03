@@ -1,5 +1,6 @@
 """"""
 from abc import ABC
+from copy import copy
 from typing import Any, Callable
 
 from vnpy.trader.constant import Interval, Direction, Offset
@@ -32,6 +33,9 @@ class CtaTemplate(ABC):
         self.trading = False
         self.pos = 0
 
+        # Copy a new variables list here to avoid duplicate insert when multiple 
+        # strategy instances are created with the same strategy class.
+        self.variables = copy(self.variables)
         self.variables.insert(0, "inited")
         self.variables.insert(1, "trading")
         self.variables.insert(2, "pos")

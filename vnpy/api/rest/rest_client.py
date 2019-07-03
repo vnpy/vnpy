@@ -1,12 +1,10 @@
-# encoding: UTF-8
-
 import sys
 import traceback
 from datetime import datetime
 from enum import Enum
 from multiprocessing.dummy import Pool
 from queue import Empty, Queue
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Union
 
 import requests
 
@@ -28,7 +26,7 @@ class Request(object):
         method: str,
         path: str,
         params: dict,
-        data: dict,
+        data: Union[dict, str, bytes],
         headers: dict,
         callback: Callable = None,
         on_failed: Callable = None,
@@ -140,7 +138,7 @@ class RestClient(object):
         path: str,
         callback: Callable,
         params: dict = None,
-        data: dict = None,
+        data: Union[dict, str, bytes] = None,
         headers: dict = None,
         on_failed: Callable = None,
         on_error: Callable = None,
@@ -152,7 +150,7 @@ class RestClient(object):
         :param path: 
         :param callback: callback function if 2xx status, type: (dict, Request)
         :param params: dict for query string
-        :param data: dict for body
+        :param data: Http body. If it is a dict, it will be converted to form-data. Otherwise, it will be converted to bytes.
         :param headers: dict for headers
         :param on_failed: callback function if Non-2xx status, type, type: (code, dict, Request)
         :param on_error: callback function when catching Python exception, type: (etype, evalue, tb, Request)
@@ -256,11 +254,14 @@ class RestClient(object):
                 proxies=self.proxies,
             )
             request.response = response
-
             status_code = response.status_code
-            if status_code // 100 == 2:  # 2xx都算成功，尽管交易所都用200
-                jsonBody = response.json()
-                request.callback(jsonBody, request)
+            if status_code // 100 == 2:  # 2xx codes are all successful
+                if status_code == 204:
+                    json_body = None
+                else:
+                    json_body = response.json()
+
+                request.callback(json_body, request)
                 request.status = RequestStatus.success
             else:
                 request.status = RequestStatus.failed

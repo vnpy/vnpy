@@ -12,6 +12,8 @@ vn.py项目文档
    cta_backtester.md
    data_recoder.md
    algo_trader.md
+   script_trader.md
+   rpc_service.md
    gateway.md
    database.md
    rpc.md

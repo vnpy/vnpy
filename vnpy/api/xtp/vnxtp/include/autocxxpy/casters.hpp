@@ -46,7 +46,7 @@ namespace autocxxpy
         template <class NewCasterClass, class T>
         static auto bind(T &m, const char *name = "caster")
         {
-            pybind11::class_<NewCasterClass> c(m, name);
+            pybind11::class_<NewCasterClass> c(m, name, pybind11::module_local());
             c.def("tostring", &toString);
             c.def("tostr", &tostr);
             return c;

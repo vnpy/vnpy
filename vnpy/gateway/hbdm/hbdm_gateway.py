@@ -1021,14 +1021,19 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
         ws_symbol = data["ch"].split(".")[1]
         tick = self.ticks[ws_symbol]
         tick.datetime = datetime.fromtimestamp(data["ts"] / 1000)
+
+        tick_data = data["tick"]
+        if "bids" not in tick_data or "asks" not in tick_data:
+            print(data)
+            return
         
-        bids = data["tick"]["bids"]
+        bids = tick_data["bids"]
         for n in range(5):
             price, volume = bids[n]
             tick.__setattr__("bid_price_" + str(n + 1), float(price))
             tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
 
-        asks = data["tick"]["asks"]
+        asks = tick_data["asks"]
         for n in range(5):
             price, volume = asks[n]
             tick.__setattr__("ask_price_" + str(n + 1), float(price))

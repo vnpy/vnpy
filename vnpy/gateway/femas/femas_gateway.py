@@ -1,6 +1,4 @@
-# encoding: UTF-8
-"""
-"""
+""""""
 
 from datetime import datetime
 
@@ -230,7 +228,6 @@ class FemasMdApi(MdApi):
         """
         Callback when front server is connected.
         """
-        self.connect_status = True
         self.gateway.write_log("行情服务器连接成功")
         self.login()
 
@@ -238,7 +235,6 @@ class FemasMdApi(MdApi):
         """
         Callback when front server is disconnected.
         """
-        self.connect_status = False
         self.login_status = False
         self.gateway.write_log(f"行情服务器连接断开，原因{reason}")
 
@@ -309,10 +305,12 @@ class FemasMdApi(MdApi):
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
             self.createFtdcMdApi(str(path) + "\\Md")
-            # 订阅主题
+
             self.subscribeMarketDataTopic(100, 2)
             self.registerFront(address)
             self.init()
+
+            self.connect_status = True
         # If already connected, then login immediately.
         elif not self.login_status:
             self.login()
@@ -374,14 +372,12 @@ class FemasTdApi(TdApi):
 
     def onFrontConnected(self):
         """"""
-        self.connect_status = True
         self.gateway.write_log("交易服务器连接成功")
 
         self.login()
 
     def onFrontDisconnected(self, reason: int):
         """"""
-        self.connect_status = False
         self.login_status = False
         self.gateway.write_log(f"交易服务器连接断开，原因{reason}")
 
@@ -609,6 +605,8 @@ class FemasTdApi(TdApi):
 
             self.registerFront(address)
             self.init()
+
+            self.connect_status = True
         else:
             if not self.login_status:
                 self.login()

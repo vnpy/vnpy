@@ -209,12 +209,18 @@ class CtaEngine(BaseEngine):
         if not strategy:
             return
 
+        # Update strategy pos before calling on_trade method
         if trade.direction == Direction.LONG:
             strategy.pos += trade.volume
         else:
             strategy.pos -= trade.volume
 
         self.call_strategy_func(strategy, strategy.on_trade, trade)
+
+        # Sync strategy variables to data file
+        self.sync_strategy_data(strategy)
+
+        # Update GUI
         self.put_strategy_event(strategy)
 
     def process_position_event(self, event: Event):
@@ -575,7 +581,10 @@ class CtaEngine(BaseEngine):
             self.write_log(f"创建策略失败，存在重名{strategy_name}")
             return
 
-        strategy_class = self.classes[class_name]
+        strategy_class = self.classes.get(class_name, None)
+        if not strategy_class:
+            self.write_log(f"创建策略失败，找不到策略类{class_name}")
+            return
 
         strategy = strategy_class(self, strategy_name, vt_symbol, setting)
         self.strategies[strategy_name] = strategy
@@ -674,6 +683,9 @@ class CtaEngine(BaseEngine):
 
         # Cancel all orders of the strategy
         self.cancel_all(strategy)
+
+        # Sync strategy variables to data file
+        self.sync_strategy_data(strategy)
 
         # Update GUI
         self.put_strategy_event(strategy)

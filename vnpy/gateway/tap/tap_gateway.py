@@ -336,9 +336,10 @@ class QuoteApi(ITapQuoteAPINotify):
         """
         Release TAP API resources.
         """
-        self.api.SetAPINotify(None)
-        FreeTapQuoteAPI(self.api)
-        self.api = None
+        if self.api:
+            self.api.SetAPINotify(None)
+            FreeTapQuoteAPI(self.api)
+            self.api = None
 
     def subscribe(self, req: SubscribeRequest):
         """
@@ -813,9 +814,10 @@ class TradeApi(ITapTradeAPINotify):
         """
         Release TAP API resources.
         """
-        self.api.SetAPINotify(None)
-        FreeITapTradeAPI(self.api)
-        self.api = None
+        if self.api:
+            self.api.SetAPINotify(None)
+            FreeITapTradeAPI(self.api)
+            self.api = None
 
 
 def parse_datetime(dt_str: str):
