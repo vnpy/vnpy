@@ -3,7 +3,7 @@
 import sys
 import importlib
 import traceback
-from typing import Sequence, Callable, Any
+from typing import Sequence, Any
 from pathlib import Path
 from datetime import datetime
 from threading import Thread
@@ -54,7 +54,9 @@ class ScriptEngine(BaseEngine):
             self.write_log("RQData数据接口初始化成功")
 
     def start_strategy(self, script_path: str):
-        """"""
+        """
+        Start running strategy function in strategy_thread.
+        """
         if self.strategy_active:
             return
         self.strategy_active = True
@@ -66,7 +68,9 @@ class ScriptEngine(BaseEngine):
         self.write_log("策略交易脚本启动")
 
     def run_strategy(self, script_path: str):
-        """"""
+        """
+        Load strategy script and call the run function.
+        """
         path = Path(script_path)
         sys.path.append(str(path.parent))
 
@@ -81,12 +85,10 @@ class ScriptEngine(BaseEngine):
             msg = f"触发异常已停止\n{traceback.format_exc()}"
             self.write_log(msg)
 
-    def connect_gateway(self, setting: dict, gateway_name: str):
-        """"""
-        self.main_engine.connect(setting, gateway_name)
-
     def stop_strategy(self):
-        """"""
+        """
+        Stop the running strategy.
+        """
         if not self.strategy_active:
             return
         self.strategy_active = False
@@ -96,6 +98,10 @@ class ScriptEngine(BaseEngine):
         self.strategy_thread = None
 
         self.write_log("策略交易脚本停止")
+
+    def connect_gateway(self, setting: dict, gateway_name: str):
+        """"""
+        self.main_engine.connect(setting, gateway_name)
 
     def send_order(
         self,
@@ -258,6 +264,11 @@ class ScriptEngine(BaseEngine):
 
         event = Event(EVENT_SCRIPT_LOG, log)
         self.event_engine.put(event)
+
+    def send_email(self, msg: str) -> None:
+        """"""
+        subject = "脚本策略引擎通知"
+        self.main_engine.send_email(subject, msg)
 
 
 def to_df(data_list: Sequence):
