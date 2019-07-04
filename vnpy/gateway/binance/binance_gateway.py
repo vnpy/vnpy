@@ -371,7 +371,7 @@ class BinanceRestApi(RestClient):
             return
 
         data = {
-            "security": Security.SIGNED
+            "security": Security.API_KEY
         }
 
         params = {
