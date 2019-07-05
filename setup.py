@@ -57,7 +57,6 @@ def gather_autocxxpy_generated_files(root: str):
             if ext == ".cpp" and filebase.startswith("generated_functions_"):
                 path = os.path.join(root, filename)
                 fs.append(path)
-    print(fs)
     return fs
 
 
@@ -115,11 +114,34 @@ vnoes = Extension(
 
 if platform.system() == "Windows":
     # use pre-built pyd for windows ( support python 3.7 only )
-    ext_modules = [vnoes]
+    ext_modules = []
 elif platform.system() == "Darwin":
     ext_modules = []
 else:
-    ext_modules = [vnctptd, vnctpmd, vnoes]
+    ext_modules = [vnctptd, vnctpmd]
+
+
+def get_env(key: str, default=None):
+    try:
+        return os.environ[key]
+    except KeyError:
+        return default
+
+
+def check_extension_build_flag(key: str, module: Extension):
+    value = get_env(key, None)
+    if value is not None:
+        global ext_modules
+        if value == '1':
+            ext_modules = list(set(ext_modules) | {module})
+        elif value == '0':
+            ext_modules = list(set(ext_modules) - {module})
+        else:
+            raise ValueError(f"Flag {key} should be '0' or '1', but {repr(value)} got.")
+
+
+check_extension_build_flag("VNPY_BUILD_OES", vnoes)
+
 
 pkgs = find_packages()
 
