@@ -38,11 +38,6 @@ void generate_caster_(pybind11::object & parent)
 {
     struct caster: autocxxpy::caster{};
     auto c = autocxxpy::caster::bind<caster>(parent, "caster"); 
-    autocxxpy::caster::try_generate<_spk_struct_timespec>(c, "to_spk_struct_timespec");
-    autocxxpy::caster::try_generate<_spk_struct_timezone>(c, "to_spk_struct_timezone");
-    autocxxpy::caster::try_generate<_spk_struct_iovec>(c, "to_spk_struct_iovec");
-    autocxxpy::caster::try_generate<_spk_struct_timeval32>(c, "to_spk_struct_timeval32");
-    autocxxpy::caster::try_generate<_spk_struct_timeval64>(c, "to_spk_struct_timeval64");
     autocxxpy::caster::try_generate<_OesOrdReq>(c, "to_OesOrdReq");
     autocxxpy::caster::try_generate<_OesOrdCancelReq>(c, "to_OesOrdCancelReq");
     autocxxpy::caster::try_generate<_OesOrdReject>(c, "to_OesOrdReject");
@@ -216,8 +211,6 @@ void generate_caster_(pybind11::object & parent)
     autocxxpy::caster::try_generate<float32>(c, "tofloat32");
     autocxxpy::caster::try_generate<float64>(c, "tofloat64");
     autocxxpy::caster::try_generate<float128>(c, "tofloat128");
-    autocxxpy::caster::try_generate<STimeval32T>(c, "toSTimeval32T");
-    autocxxpy::caster::try_generate<STimeval64T>(c, "toSTimeval64T");
     autocxxpy::caster::try_generate<eOesExchangeIdT>(c, "toeOesExchangeIdT");
     autocxxpy::caster::try_generate<eOesMarketIdT>(c, "toeOesMarketIdT");
     autocxxpy::caster::try_generate<eOesPlatformIdT>(c, "toeOesPlatformIdT");

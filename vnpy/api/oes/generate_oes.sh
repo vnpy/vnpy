@@ -11,6 +11,7 @@ python -m autocxxpy generate \
     --pyi-output-dir .\
     --no-clear-pyi-output-dir \
     --no-callback-pattern ".*" \
+    --ignore-pattern ".*(spk_struct|STimeval).*" \
     --enforce-version 0.4.1
 
 #####################################
