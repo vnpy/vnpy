@@ -121,15 +121,8 @@ else:
     ext_modules = [vnctptd, vnctpmd]
 
 
-def get_env(key: str, default=None):
-    try:
-        return os.environ[key]
-    except KeyError:
-        return default
-
-
 def check_extension_build_flag(key: str, module: Extension):
-    value = get_env(key, None)
+    value = os.environ.get(key, None)
     if value is not None:
         global ext_modules
         if value == '1':
