@@ -9,11 +9,6 @@
 
 
 void generate_vnoes(pybind11::module & parent);
-void generate_class_spk_struct_timespec(pybind11::object & parent);
-void generate_class_spk_struct_timezone(pybind11::object & parent);
-void generate_class_spk_struct_iovec(pybind11::object & parent);
-void generate_class_spk_struct_timeval32(pybind11::object & parent);
-void generate_class_spk_struct_timeval64(pybind11::object & parent);
 void generate_class_OesOrdReq(pybind11::object & parent);
 void generate_class_decltype_OesOrdReq_userInfo_(pybind11::object & parent);
 void generate_class_OesOrdCancelReq(pybind11::object & parent);

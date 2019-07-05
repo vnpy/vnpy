@@ -15,33 +15,6 @@
 #include "mds_api/mds_api.h"
 
 
-void generate_class_OesQryRspMsg(pybind11::object & parent)
-{
-    pybind11::class_<_OesQryRspMsg> c(parent, "_OesQryRspMsg");
-    if constexpr (std::is_default_constructible_v<_OesQryRspMsg>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "ordRsp", ordRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "trdRsp", trdRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "cashAssetRsp", cashAssetRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "stkHoldingRsp", stkHoldingRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "optHoldingRsp", optHoldingRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "custRsp", custRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "invAcctRsp", invAcctRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "commsRateRsp", commsRateRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "fundTrsfRsp", fundTrsfRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "lotWinningRsp", lotWinningRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "issueRsp", issueRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "stockRsp", stockRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "etfRsp", etfRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "etfComponentRsp", etfComponentRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "optionRsp", optionRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "tradingDay", tradingDay);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "mktStateRsp", mktStateRsp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "clientOverview", clientOverview);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryRspMsg, "counterCashRsp", counterCashRsp);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryRspMsg, c);
-    module_vnoes::objects.emplace("_OesQryRspMsg", c);
-}
 void generate_class_OesReportSynchronizationReq(pybind11::object & parent)
 {
     pybind11::class_<_OesReportSynchronizationReq> c(parent, "_OesReportSynchronizationReq");
@@ -600,4 +573,26 @@ void generate_class_MdsMktDataSnapshotHead(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__pushingTime", __pushingTime);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsMktDataSnapshotHead, c);
     module_vnoes::objects.emplace("_MdsMktDataSnapshotHead", c);
+}
+void generate_class_MdsIndexSnapshotBody(pybind11::object & parent)
+{
+    pybind11::class_<_MdsIndexSnapshotBody> c(parent, "_MdsIndexSnapshotBody");
+    if constexpr (std::is_default_constructible_v<_MdsIndexSnapshotBody>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "SecurityID", SecurityID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "TradingPhaseCode", TradingPhaseCode);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "__filler", __filler);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "NumTrades", NumTrades);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "TotalVolumeTraded", TotalVolumeTraded);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "TotalValueTraded", TotalValueTraded);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "PrevCloseIdx", PrevCloseIdx);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "OpenIdx", OpenIdx);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "HighIdx", HighIdx);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "LowIdx", LowIdx);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "LastIdx", LastIdx);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "CloseIdx", CloseIdx);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "StockNum", StockNum);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "__filler1", __filler1);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsIndexSnapshotBody, c);
+    module_vnoes::objects.emplace("_MdsIndexSnapshotBody", c);
 }
