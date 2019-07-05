@@ -118,7 +118,7 @@ if platform.system() == "Windows":
 elif platform.system() == "Darwin":
     ext_modules = []
 else:
-    ext_modules = [vnctptd, vnctpmd]
+    ext_modules = [vnctptd, vnctpmd, vnoes]
 
 
 def check_extension_build_flag(key: str, module: Extension):
