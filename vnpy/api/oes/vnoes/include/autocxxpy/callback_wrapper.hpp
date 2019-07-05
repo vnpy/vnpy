@@ -94,7 +94,7 @@ namespace autocxxpy
             return what();
         }
 
-		virtual char const* what() const override
+		virtual char const* what() const noexcept override
 		{
 			return _what.c_str();
 		}
