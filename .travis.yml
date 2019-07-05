@@ -4,6 +4,9 @@ dist: xenial  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
 
 cache: pip
 
+env:
+  - VNPY_BUILD_OES=0
+
 git:
   depth: 1
 
