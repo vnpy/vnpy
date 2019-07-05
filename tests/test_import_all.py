@@ -1,6 +1,11 @@
 # flake8: noqa
 import platform
 import unittest
+from os import environ
+
+
+def check_env(key: str, default=None):
+    return environ.get(key, default)
 
 
 # noinspection PyUnresolvedReferences,PyMethodMayBeStatic
@@ -33,6 +38,7 @@ class GatewayImportTest(unittest.TestCase):
         from vnpy.gateway.ctp import CtpGateway
 
     @unittest.skipIf(platform.system() == "Darwin", "Not supported yet under osx")
+    @unittest.skipIf(platform.system() == "Linux", "Not supported yet under Linux")
     def test_import_ctptest(self):
         from vnpy.gateway.ctptest import CtptestGateway
 
@@ -54,6 +60,7 @@ class GatewayImportTest(unittest.TestCase):
         from vnpy.gateway.ib import IbGateway
 
     @unittest.skipIf(platform.system() == "Darwin", "Not supported yet under osx")
+    @unittest.skipIf(check_env('VNPY_BUILD_OES') == '0', "Skip because of VNPY_BUILD_OES==0")
     def test_import_oes(self):
         from vnpy.gateway.oes import OesGateway
 
@@ -75,6 +82,7 @@ class GatewayImportTest(unittest.TestCase):
         from vnpy.gateway.tiger import TigerGateway
 
     @unittest.skipIf(platform.system() == "Darwin", "Not supported yet under osx")
+    @unittest.skipIf(platform.system() == "Linux", "Not supported yet under Linux")
     def test_import_tora(self):
         from vnpy.gateway.tora import ToraGateway
 
