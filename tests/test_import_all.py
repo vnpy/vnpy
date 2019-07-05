@@ -78,6 +78,8 @@ class GatewayImportTest(unittest.TestCase):
     def test_import_tora(self):
         from vnpy.gateway.tora import ToraGateway
 
+    @unittest.skipIf(platform.system() == "Linux", "Not supported yet under Linux")
+    @unittest.skipIf(platform.system() == "Darwin", "Not supported yet under osx")
     def test_import_xtp(self):
         from vnpy.gateway.xtp import XtpGateway
 
