@@ -36,7 +36,7 @@ from vnpy.trader.constant import (
     Offset, 
     Status
 )
-from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
+from vnpy.trader.utility import load_json, save_json, extract_vt_symbol, round_to
 from vnpy.trader.database import database_manager
 from vnpy.trader.rqdata import rqdata_client
 
@@ -187,7 +187,7 @@ class CtaEngine(BaseEngine):
                 stop_orderid=order.vt_orderid,
                 strategy_name=strategy.strategy_name,
                 status=STOP_STATUS_MAP[order.status],
-                vt_orderid=order.vt_orderid,
+                vt_orderids=[order.vt_orderid],
             )
             self.call_strategy_func(strategy, strategy.on_stop_order, so)  
 
@@ -209,12 +209,18 @@ class CtaEngine(BaseEngine):
         if not strategy:
             return
 
+        # Update strategy pos before calling on_trade method
         if trade.direction == Direction.LONG:
             strategy.pos += trade.volume
         else:
             strategy.pos -= trade.volume
 
         self.call_strategy_func(strategy, strategy.on_trade, trade)
+
+        # Sync strategy variables to data file
+        self.sync_strategy_data(strategy)
+
+        # Update GUI
         self.put_strategy_event(strategy)
 
     def process_position_event(self, event: Event):
@@ -464,7 +470,11 @@ class CtaEngine(BaseEngine):
         if not contract:
             self.write_log(f"委托失败，找不到合约：{strategy.vt_symbol}", strategy)
             return ""
-
+        
+        # Round order price and volume to nearest incremental value
+        price = round_to(price, contract.pricetick)
+        volume = round_to(volume, contract.min_volume)
+        
         if stop:
             if contract.stop_supported:
                 return self.send_server_stop_order(strategy, contract, direction, offset, price, volume, lock)
@@ -571,7 +581,10 @@ class CtaEngine(BaseEngine):
             self.write_log(f"创建策略失败，存在重名{strategy_name}")
             return
 
-        strategy_class = self.classes[class_name]
+        strategy_class = self.classes.get(class_name, None)
+        if not strategy_class:
+            self.write_log(f"创建策略失败，找不到策略类{class_name}")
+            return
 
         strategy = strategy_class(self, strategy_name, vt_symbol, setting)
         self.strategies[strategy_name] = strategy
@@ -670,6 +683,9 @@ class CtaEngine(BaseEngine):
 
         # Cancel all orders of the strategy
         self.cancel_all(strategy)
+
+        # Sync strategy variables to data file
+        self.sync_strategy_data(strategy)
 
         # Update GUI
         self.put_strategy_event(strategy)

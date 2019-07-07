@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Callable
 from itertools import product
 from functools import lru_cache
@@ -211,22 +211,52 @@ class BacktestingEngine:
         """"""
         self.output("开始加载历史数据")
 
-        if self.mode == BacktestingMode.BAR:
-            self.history_data = load_bar_data(
-                self.symbol,
-                self.exchange,
-                self.interval,
-                self.start,
-                self.end
-            )
-        else:
-            self.history_data = load_tick_data(
-                self.symbol,
-                self.exchange,
-                self.start,
-                self.end
-            )
+        if not self.end:
+            self.end = datetime.now()
 
+        if self.start >= self.end:
+            self.output("起始日期必须小于结束日期")    
+            return        
+
+        self.history_data.clear()       # Clear previously loaded history data
+
+        # Load 30 days of data each time and allow for progress update
+        progress_delta = timedelta(days=30)
+        total_delta = self.end - self.start
+
+        start = self.start
+        end = self.start + progress_delta
+        progress = 0
+
+        while start < self.end:
+            end = min(end, self.end)  # Make sure end time stays within set range
+            
+            if self.mode == BacktestingMode.BAR:
+                data = load_bar_data(
+                    self.symbol,
+                    self.exchange,
+                    self.interval,
+                    start,
+                    end
+                )
+            else:
+                data = load_tick_data(
+                    self.symbol,
+                    self.exchange,
+                    start,
+                    end
+                )
+
+            self.history_data.extend(data)
+            
+            progress += progress_delta / total_delta
+            progress = min(progress, 1)
+            progress_bar = "#" * int(progress * 10)
+            self.output(f"加载进度：{progress_bar} [{progress:.0%}]")
+            
+            start = end
+            end += progress_delta
+        
         self.output(f"历史数据加载完成，数据量：{len(self.history_data)}")
 
     def run_backtesting(self):
@@ -306,9 +336,11 @@ class BacktestingEngine:
         """"""
         self.output("开始计算策略统计指标")
 
-        if not df:
+        # Check DataFrame input exterior
+        if df is None:
             df = self.daily_df
         
+        # Check for init DataFrame 
         if df is None:
             # Set all statistics to 0 if no trade.
             start_date = ""
@@ -452,9 +484,11 @@ class BacktestingEngine:
 
     def show_chart(self, df: DataFrame = None):
         """"""
-        if not df:
+        # Check DataFrame input exterior        
+        if df is None:
             df = self.daily_df
-        
+
+        # Check for init DataFrame        
         if df is None:
             return
 
@@ -803,6 +837,7 @@ class BacktestingEngine:
                 status=Status.ALLTRADED,
                 gateway_name=self.gateway_name,
             )
+            order.datetime = self.datetime
 
             self.limit_orders[order.vt_orderid] = order
 
@@ -921,6 +956,7 @@ class BacktestingEngine:
             status=Status.NOTTRADED,
             gateway_name=self.gateway_name,
         )
+        order.datetime = self.datetime
 
         self.active_limit_orders[order.vt_orderid] = order
         self.limit_orders[order.vt_orderid] = order
@@ -978,6 +1014,12 @@ class BacktestingEngine:
         Send email to default receiver.
         """
         pass
+    
+    def sync_strategy_data(self, strategy: CtaTemplate):
+        """
+        Sync strategy data into json file.
+        """
+        pass
 
     def get_engine_type(self):
         """
@@ -996,6 +1038,24 @@ class BacktestingEngine:
         Output message of backtesting engine.
         """
         print(f"{datetime.now()}\t{msg}")
+
+    def get_all_trades(self):
+        """
+        Return all trade data of current backtesting result.
+        """
+        return list(self.trades.values())
+
+    def get_all_orders(self):
+        """
+        Return all limit order data of current backtesting result.
+        """
+        return list(self.limit_orders.values())
+
+    def get_all_daily_results(self):
+        """
+        Return all daily result data.
+        """
+        return list(self.daily_results.values())
 
 
 class DailyResult:
@@ -1137,7 +1197,7 @@ def ga_optimize(parameter_values: list):
     return _ga_optimize(tuple(parameter_values))
 
 
-@lru_cache(maxsize=10)
+@lru_cache(maxsize=999)
 def load_bar_data(
     symbol: str,
     exchange: Exchange,
@@ -1151,7 +1211,7 @@ def load_bar_data(
     )
 
 
-@lru_cache(maxsize=10)
+@lru_cache(maxsize=999)
 def load_tick_data(
     symbol: str,
     exchange: Exchange,

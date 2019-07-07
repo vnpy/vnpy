@@ -131,7 +131,8 @@ class CtptestGateway(BaseGateway):
         "交易服务器": "",
         "行情服务器": "",
         "产品名称": "",
-        "授权编码": ""
+        "授权编码": "",
+        "产品信息": ""
     }
 
     exchanges = list(EXCHANGE_CTP2VT.values())
@@ -152,13 +153,14 @@ class CtptestGateway(BaseGateway):
         md_address = setting["行情服务器"]
         appid = setting["产品名称"]
         auth_code = setting["授权编码"]
+        product_info = setting["产品信息"]
         
         if not td_address.startswith("tcp://"):
             td_address = "tcp://" + td_address
         if not md_address.startswith("tcp://"):
             md_address = "tcp://" + md_address
         
-        self.td_api.connect(td_address, userid, password, brokerid, auth_code, appid)
+        self.td_api.connect(td_address, userid, password, brokerid, auth_code, appid, product_info)
         self.md_api.connect(md_address, userid, password, brokerid)
         
         self.init_query()
@@ -231,13 +233,12 @@ class CtpMdApi(MdApi):
         
         self.userid = ""
         self.password = ""
-        self.brokerid = 0
+        self.brokerid = ""
     
     def onFrontConnected(self):
         """
         Callback when front server is connected.
         """
-        self.connect_status = True
         self.gateway.write_log("行情服务器连接成功")
         self.login()
 
@@ -245,7 +246,6 @@ class CtpMdApi(MdApi):
         """
         Callback when front server is disconnected.
         """
-        self.connect_status = False
         self.login_status = False
         self.gateway.write_log(f"行情服务器连接断开，原因{reason}")
 
@@ -322,6 +322,8 @@ class CtpMdApi(MdApi):
             
             self.registerFront(address)
             self.init()
+
+            self.connect_status = True
         # If already connected, then login immediately.
         elif not self.login_status:
             self.login()
@@ -375,9 +377,10 @@ class CtpTdApi(TdApi):
         
         self.userid = ""
         self.password = ""
-        self.brokerid = 0
+        self.brokerid = ""
         self.auth_code = ""
         self.appid = ""
+        self.product_info = ""
         
         self.frontid = 0
         self.sessionid = 0
@@ -389,7 +392,6 @@ class CtpTdApi(TdApi):
         
     def onFrontConnected(self):
         """"""
-        self.connect_status = True
         self.gateway.write_log("交易服务器连接成功")
         
         if self.auth_code:
@@ -399,14 +401,13 @@ class CtpTdApi(TdApi):
     
     def onFrontDisconnected(self, reason: int):
         """"""
-        self.connect_status = False
         self.login_status = False
         self.gateway.write_log(f"交易服务器连接断开，原因{reason}")        
     
     def onRspAuthenticate(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         if not error['ErrorID']:
-            self.authStatus = True
+            self.auth_staus = True
             self.gateway.write_log("交易服务器授权验证成功")
             self.login()
         else:
@@ -635,7 +636,16 @@ class CtpTdApi(TdApi):
         )
         self.gateway.on_trade(trade)        
     
-    def connect(self, address: str, userid: str, password: str, brokerid: int, auth_code: str, appid: str):
+    def connect(
+        self, 
+        address: str, 
+        userid: str, 
+        password: str, 
+        brokerid: int, 
+        auth_code: str, 
+        appid: str,
+        product_info
+    ):
         """
         Start connection to server.
         """
@@ -644,6 +654,7 @@ class CtpTdApi(TdApi):
         self.brokerid = brokerid
         self.auth_code = auth_code
         self.appid = appid
+        self.product_info = product_info
         
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
@@ -654,6 +665,8 @@ class CtpTdApi(TdApi):
             
             self.registerFront(address)
             self.init()            
+
+            self.connect_status = True
         else:
             self.authenticate()
     
@@ -667,6 +680,9 @@ class CtpTdApi(TdApi):
             "AuthCode": self.auth_code,
             "AppID": self.appid
         }
+
+        if self.product_info:
+            req["UserProductInfo"] = self.product_info
         
         self.reqid += 1
         self.reqAuthenticate(req, self.reqid)
@@ -684,6 +700,9 @@ class CtpTdApi(TdApi):
             "BrokerID": self.brokerid,
             "AppID": self.appid
         }
+
+        if self.product_info:
+            req["UserProductInfo"] = self.product_info
         
         self.reqid += 1
         self.reqUserLogin(req, self.reqid)

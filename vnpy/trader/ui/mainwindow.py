@@ -50,12 +50,13 @@ class MainWindow(QtWidgets.QMainWindow):
         """"""
         self.setWindowTitle(self.window_title)
         self.init_dock()
+        self.init_toolbar()
         self.init_menu()
         self.load_window_setting("custom")
 
     def init_dock(self):
         """"""
-        trading_widget, trading_dock = self.create_dock(
+        self.trading_widget, trading_dock = self.create_dock(
             TradingWidget, "交易", QtCore.Qt.LeftDockWidgetArea
         )
         tick_widget, tick_dock = self.create_dock(
@@ -113,6 +114,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.add_menu_action(
                 app_menu, app.display_name, icon_path, func
             )
+            self.add_toolbar_action(
+                app.display_name, icon_path, func
+            )
 
         # Global setting editor
         action = QtWidgets.QAction("配置", self)
@@ -128,6 +132,11 @@ class MainWindow(QtWidgets.QMainWindow):
             "contract.ico",
             partial(self.open_widget, ContractManager, "contract"),
         )
+        self.add_toolbar_action(
+            "查询合约",
+            "contract.ico",
+            partial(self.open_widget, ContractManager, "contract")
+        )
 
         self.add_menu_action(
             help_menu, "还原窗口", "restore.ico", self.restore_window_setting
@@ -140,6 +149,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.add_menu_action(
             help_menu, "社区论坛", "forum.ico", self.open_forum
         )
+        self.add_toolbar_action(
+            "社区论坛", "forum.ico", self.open_forum
+        )
 
         self.add_menu_action(
             help_menu,
@@ -147,6 +159,23 @@ class MainWindow(QtWidgets.QMainWindow):
             "about.ico",
             partial(self.open_widget, AboutDialog, "about"),
         )
+
+    def init_toolbar(self):
+        """"""
+        self.toolbar = QtWidgets.QToolBar(self)
+        self.toolbar.setObjectName("工具栏")
+        self.toolbar.setFloatable(False)
+        self.toolbar.setMovable(False)
+
+        # Set button size
+        w = 40
+        size = QtCore.QSize(w, w)
+        self.toolbar.setIconSize(size)
+
+        # Set button spacing
+        self.toolbar.layout().setSpacing(10)
+
+        self.addToolBar(QtCore.Qt.LeftToolBarArea, self.toolbar)
 
     def add_menu_action(
         self,
@@ -163,6 +192,21 @@ class MainWindow(QtWidgets.QMainWindow):
         action.setIcon(icon)
 
         menu.addAction(action)
+
+    def add_toolbar_action(
+        self,
+        action_name: str,
+        icon_name: str,
+        func: Callable,
+    ):
+        """"""
+        icon = QtGui.QIcon(get_icon_path(__file__, icon_name))
+
+        action = QtWidgets.QAction(action_name, self)
+        action.triggered.connect(func)
+        action.setIcon(icon)
+
+        self.toolbar.addAction(action)
 
     def create_dock(
         self, widget_class: QtWidgets.QWidget, name: str, area: int
@@ -187,7 +231,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not dialog:
             dialog = ConnectDialog(self.main_engine, gateway_name)
 
-        dialog.exec()
+        dialog.exec_()
 
     def closeEvent(self, event):
         """
@@ -222,7 +266,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.widgets[name] = widget
 
         if isinstance(widget, QtWidgets.QDialog):
-            widget.exec()
+            widget.exec_()
         else:
             widget.show()
 

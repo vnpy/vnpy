@@ -25,3 +25,8 @@ dist
 *.iobj
 *.ipdb
 *.pdb
+
+# Documents
+_build
+_static
+_templates

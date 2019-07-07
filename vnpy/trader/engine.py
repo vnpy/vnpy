@@ -3,6 +3,7 @@
 
 import logging
 import smtplib
+import os
 from abc import ABC
 from datetime import datetime
 from email.message import EmailMessage
@@ -30,7 +31,7 @@ from .object import (
     HistoryRequest
 )
 from .setting import SETTINGS
-from .utility import get_folder_path
+from .utility import get_folder_path, TRADER_DIR
 
 
 class MainEngine:
@@ -51,7 +52,8 @@ class MainEngine:
         self.apps = {}
         self.exchanges = []
 
-        self.init_engines()
+        os.chdir(TRADER_DIR)    # Change working directory
+        self.init_engines()     # Initialize function engines
 
     def add_engine(self, engine_class: Any):
         """
@@ -299,7 +301,7 @@ class LogEngine(BaseEngine):
         file_path = log_path.joinpath(filename)
 
         file_handler = logging.FileHandler(
-            file_path, mode="w", encoding="utf8"
+            file_path, mode="a", encoding="utf8"
         )
         file_handler.setLevel(self.level)
         file_handler.setFormatter(self.formatter)
@@ -311,7 +313,7 @@ class LogEngine(BaseEngine):
 
     def process_log_event(self, event: Event):
         """
-        Output log event data with logging function.
+        Process log event.
         """
         log = event.data
         self.logger.log(log.level, log.msg)
