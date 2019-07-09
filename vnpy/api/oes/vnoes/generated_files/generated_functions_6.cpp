@@ -15,19 +15,6 @@
 #include "mds_api/mds_api.h"
 
 
-void generate_class_decltype_MdsChangePasswordReq_userInfo_(pybind11::object & parent)
-{
-    pybind11::class_<decltype(_MdsChangePasswordReq::userInfo)> c(parent, "decltype(userInfo)");
-    if constexpr (std::is_default_constructible_v<decltype(_MdsChangePasswordReq::userInfo)>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_MdsChangePasswordReq::userInfo), "u64", u64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_MdsChangePasswordReq::userInfo), "i64", i64);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_MdsChangePasswordReq::userInfo), "u32", u32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_MdsChangePasswordReq::userInfo), "i32", i32);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_MdsChangePasswordReq::userInfo), "c8", c8);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, decltype(_MdsChangePasswordReq::userInfo), c);
-    module_vnoes::objects.emplace("decltype(_MdsChangePasswordReq::userInfo)", c);
-}
 void generate_class_MdsChangePasswordRsp(pybind11::object & parent)
 {
     pybind11::class_<_MdsChangePasswordRsp> c(parent, "_MdsChangePasswordRsp");
@@ -589,4 +576,16 @@ void generate_enum_eOesAcctType(pybind11::object & parent)
     e.value("__OES_ACCT_TYPE_MAX", _eOesAcctType::__OES_ACCT_TYPE_MAX);
     e.export_values();
     module_vnoes::objects.emplace("_eOesAcctType", e);
+}
+void generate_enum_eOesCashType(pybind11::object & parent)
+{
+    pybind11::enum_<_eOesCashType> e(parent, "_eOesCashType", pybind11::arithmetic());
+    e.value("OES_CASH_TYPE_SPOT", _eOesCashType::OES_CASH_TYPE_SPOT);
+    e.value("OES_CASH_TYPE_CREDIT", _eOesCashType::OES_CASH_TYPE_CREDIT);
+    e.value("OES_CASH_TYPE_OPTION", _eOesCashType::OES_CASH_TYPE_OPTION);
+    e.value("__OES_CASH_TYPE_MAX", _eOesCashType::__OES_CASH_TYPE_MAX);
+    e.value("OES_CASH_TYPE_CRE", _eOesCashType::OES_CASH_TYPE_CRE);
+    e.value("OES_CASH_TYPE_OPT", _eOesCashType::OES_CASH_TYPE_OPT);
+    e.export_values();
+    module_vnoes::objects.emplace("_eOesCashType", e);
 }

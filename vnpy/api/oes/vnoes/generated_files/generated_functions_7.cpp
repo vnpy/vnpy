@@ -15,18 +15,6 @@
 #include "mds_api/mds_api.h"
 
 
-void generate_enum_eOesCashType(pybind11::object & parent)
-{
-    pybind11::enum_<_eOesCashType> e(parent, "_eOesCashType", pybind11::arithmetic());
-    e.value("OES_CASH_TYPE_SPOT", _eOesCashType::OES_CASH_TYPE_SPOT);
-    e.value("OES_CASH_TYPE_CREDIT", _eOesCashType::OES_CASH_TYPE_CREDIT);
-    e.value("OES_CASH_TYPE_OPTION", _eOesCashType::OES_CASH_TYPE_OPTION);
-    e.value("__OES_CASH_TYPE_MAX", _eOesCashType::__OES_CASH_TYPE_MAX);
-    e.value("OES_CASH_TYPE_CRE", _eOesCashType::OES_CASH_TYPE_CRE);
-    e.value("OES_CASH_TYPE_OPT", _eOesCashType::OES_CASH_TYPE_OPT);
-    e.export_values();
-    module_vnoes::objects.emplace("_eOesCashType", e);
-}
 void generate_enum_eOesAcctStatus(pybind11::object & parent)
 {
     pybind11::enum_<_eOesAcctStatus> e(parent, "_eOesAcctStatus", pybind11::arithmetic());

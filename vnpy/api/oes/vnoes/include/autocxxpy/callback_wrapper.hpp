@@ -82,17 +82,23 @@ namespace autocxxpy
     struct async_dispatch_exception : public std::exception
     {
         async_dispatch_exception(const char *what, const pybind11::object &instance, std::string function_name)
-            : std::exception(what), instance(instance), function_name(function_name)
+            : _what(what), instance(instance), function_name(function_name)
         {}
+		std::string _what;
         pybind11::object instance;
         std::string function_name;
 
         // mutable version of what() for pybind11 to make it happy
         inline const char* what_mutable() noexcept
         {
-            return std::exception::what();
+            return what();
         }
-    };
+
+		virtual char const* what() const noexcept override
+		{
+			return _what.c_str();
+		}
+	};
 
     struct async_callback_exception_handler
     {

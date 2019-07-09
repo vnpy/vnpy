@@ -17,11 +17,6 @@
 
 void generate_vnoes(pybind11::module & parent)
 {
-    generate_class_spk_struct_timespec(parent);
-    generate_class_spk_struct_timezone(parent);
-    generate_class_spk_struct_iovec(parent);
-    generate_class_spk_struct_timeval32(parent);
-    generate_class_spk_struct_timeval64(parent);
     generate_class_OesOrdReq(parent);
     generate_class_OesOrdCancelReq(parent);
     generate_class_OesOrdReject(parent);
@@ -1415,8 +1410,6 @@ void generate_vnoes(pybind11::module & parent)
     parent.attr("MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_TRADE") = MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_TRADE;
     parent.attr("MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_ORDER") = MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_ORDER;
     parent.attr("MDSAPI_DEFAULT_STRING_DELIM") = MDSAPI_DEFAULT_STRING_DELIM;
-    module_vnoes::cross.record_assign(parent, "STimeval32T", "STimeval32T", "::_spk_struct_timeval32");
-    module_vnoes::cross.record_assign(parent, "STimeval64T", "STimeval64T", "::_spk_struct_timeval64");
     module_vnoes::cross.record_assign(parent, "eOesExchangeIdT", "eOesExchangeIdT", "::_eOesExchangeId");
     module_vnoes::cross.record_assign(parent, "eOesMarketIdT", "eOesMarketIdT", "::_eOesMarketId");
     module_vnoes::cross.record_assign(parent, "eOesPlatformIdT", "eOesPlatformIdT", "::_eOesPlatformId");

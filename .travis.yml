@@ -4,6 +4,9 @@ dist: xenial  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
 
 cache: pip
 
+env:
+  - VNPY_BUILD_OES=0
+
 git:
   depth: 1
 
@@ -70,7 +73,7 @@ matrix:
         -   tar -xf ta-lib-0.4.0-src.tar.gz
         -   cd ta-lib
         -   ./configure --prefix=/usr
-        -   make
+        -   make  # -j under gcc-7 failed!!?
         -   sudo make install
         - popd
         - python -m pip install numpy
