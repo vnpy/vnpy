@@ -716,6 +716,7 @@ class CtpTdApi(TdApi):
         
         ctp_req = {
             "InstrumentID": req.symbol,
+            "ExchangeID": req.exchange.value,
             "LimitPrice": req.price,
             "VolumeTotalOriginal": int(req.volume),
             "OrderPriceType": ORDERTYPE_VT2CTP.get(req.type, ""),
