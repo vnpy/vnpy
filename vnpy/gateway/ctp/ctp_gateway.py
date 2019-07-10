@@ -761,7 +761,7 @@ class CtpTdApi(TdApi):
         
         ctp_req = {
             "InstrumentID": req.symbol,
-            "Exchange": req.exchange,
+            "ExchangeID": req.exchange.value,
             "OrderRef": order_ref,
             "FrontID": int(frontid),
             "SessionID": int(sessionid),
