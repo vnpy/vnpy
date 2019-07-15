@@ -1,5 +1,6 @@
 // vnminimd.cpp : 定义 DLL 应用程序的导出函数。
 //
+
 #include "stdafx.h"
 #include "vnminitd.h"
 
@@ -9619,7 +9620,7 @@ public:
 };
 
 
-PYBIND11_MODULE(vnminintd, m)
+PYBIND11_MODULE(vnminitd, m)
 {
     class_<TdApi, PyTdApi> TdApi(m, "TdApi", module_local());
     TdApi

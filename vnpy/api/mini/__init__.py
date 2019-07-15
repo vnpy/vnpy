@@ -1,3 +1,3 @@
-from .vnctpmd import MdApi
-from .vnctptd import TdApi
-from .ctp_constant import *
+from .vnminimd import MdApi
+from .vnminitd import TdApi
+from .mini_constant import *
