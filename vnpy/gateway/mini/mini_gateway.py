@@ -443,7 +443,7 @@ class MiniTdApi(TdApi):
             exchange=exchange,
             orderid=orderid,
             direction=DIRECTION_MINI2VT[data["Direction"]],
-            offset=OFFSET_MINI2VT[data["CombOffsetFlag"]],
+            offset=OFFSET_MINI2VT.get(data["CombOffsetFlag"], Offset.NONE),
             price=data["LimitPrice"],
             volume=data["VolumeTotalOriginal"],
             status=Status.REJECTED,
