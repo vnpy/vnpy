@@ -70,12 +70,6 @@ INTERVAL_VT2OKEXF = {
     Interval.DAILY: "86400",
 }
 
-TIMEDELTA_MAP = {
-    Interval.MINUTE: timedelta(minutes=1),
-    Interval.HOUR: timedelta(hours=1),
-    Interval.DAILY: timedelta(days=1),
-}
-
 
 instruments = set()
 currencies = set()
@@ -540,7 +534,10 @@ class OkexfRestApi(RestClient):
             path = f"/api/futures/v3/instruments/{req.symbol}/candles"
             
             # Create query params
-            params = {}
+            params = {
+                "granularity": INTERVAL_VT2OKEXF[req.interval]
+            }
+            
             if end_time:
                 params["end"] = end_time
 
