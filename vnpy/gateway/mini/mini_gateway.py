@@ -3,9 +3,9 @@
 
 from datetime import datetime
 
-from .vnctpmd import MdApi
-from .vnctptd import TdApi
-from .ctp_constant import (
+from vnpy.api.mini import (
+    MdApi,
+    TdApi,
     THOST_FTDC_OAS_Submitted,
     THOST_FTDC_OAS_Accepted,
     THOST_FTDC_OAS_Rejected,
@@ -13,7 +13,7 @@ from .ctp_constant import (
     THOST_FTDC_OST_PartTradedQueueing,
     THOST_FTDC_OST_AllTraded,
     THOST_FTDC_OST_Canceled,
-    THOST_FTDC_D_Buy,
+    THOST_FTDC_D_Buy, 
     THOST_FTDC_D_Sell,
     THOST_FTDC_PD_Long,
     THOST_FTDC_PD_Short,
@@ -62,7 +62,7 @@ from vnpy.trader.utility import get_folder_path
 from vnpy.trader.event import EVENT_TIMER
 
 
-STATUS_CTP2VT = {
+STATUS_MINI2VT = {
     THOST_FTDC_OAS_Submitted: Status.SUBMITTING,
     THOST_FTDC_OAS_Accepted: Status.SUBMITTING,
     THOST_FTDC_OAS_Rejected: Status.REJECTED,
@@ -72,29 +72,29 @@ STATUS_CTP2VT = {
     THOST_FTDC_OST_Canceled: Status.CANCELLED
 }
 
-DIRECTION_VT2CTP = {
-    Direction.LONG: THOST_FTDC_D_Buy,
+DIRECTION_VT2MINI = {
+    Direction.LONG: THOST_FTDC_D_Buy, 
     Direction.SHORT: THOST_FTDC_D_Sell
 }
-DIRECTION_CTP2VT = {v: k for k, v in DIRECTION_VT2CTP.items()}
-DIRECTION_CTP2VT[THOST_FTDC_PD_Long] = Direction.LONG
-DIRECTION_CTP2VT[THOST_FTDC_PD_Short] = Direction.SHORT
+DIRECTION_MINI2VT = {v: k for k, v in DIRECTION_VT2MINI.items()}
+DIRECTION_MINI2VT[THOST_FTDC_PD_Long] = Direction.LONG
+DIRECTION_MINI2VT[THOST_FTDC_PD_Short] = Direction.SHORT
 
-ORDERTYPE_VT2CTP = {
-    OrderType.LIMIT: THOST_FTDC_OPT_LimitPrice,
+ORDERTYPE_VT2MINI = {
+    OrderType.LIMIT: THOST_FTDC_OPT_LimitPrice, 
     OrderType.MARKET: THOST_FTDC_OPT_AnyPrice
 }
-ORDERTYPE_CTP2VT = {v: k for k, v in ORDERTYPE_VT2CTP.items()}
+ORDERTYPE_MINI2VT = {v: k for k, v in ORDERTYPE_VT2MINI.items()}
 
-OFFSET_VT2CTP = {
-    Offset.OPEN: THOST_FTDC_OF_Open,
+OFFSET_VT2MINI = {
+    Offset.OPEN: THOST_FTDC_OF_Open, 
     Offset.CLOSE: THOST_FTDC_OFEN_Close,
     Offset.CLOSETODAY: THOST_FTDC_OFEN_CloseToday,
     Offset.CLOSEYESTERDAY: THOST_FTDC_OFEN_CloseYesterday,
 }
-OFFSET_CTP2VT = {v: k for k, v in OFFSET_VT2CTP.items()}
+OFFSET_MINI2VT = {v: k for k, v in OFFSET_VT2MINI.items()}
 
-EXCHANGE_CTP2VT = {
+EXCHANGE_MINI2VT = {
     "CFFEX": Exchange.CFFEX,
     "SHFE": Exchange.SHFE,
     "CZCE": Exchange.CZCE,
@@ -102,13 +102,13 @@ EXCHANGE_CTP2VT = {
     "INE": Exchange.INE
 }
 
-PRODUCT_CTP2VT = {
+PRODUCT_MINI2VT = {
     THOST_FTDC_PC_Futures: Product.FUTURES,
     THOST_FTDC_PC_Options: Product.OPTION,
     THOST_FTDC_PC_Combination: Product.SPREAD
 }
 
-OPTIONTYPE_CTP2VT = {
+OPTIONTYPE_MINI2VT = {
     THOST_FTDC_CP_CallOptions: OptionType.CALL,
     THOST_FTDC_CP_PutOptions: OptionType.PUT
 }
@@ -119,9 +119,9 @@ symbol_name_map = {}
 symbol_size_map = {}
 
 
-class CtptestGateway(BaseGateway):
+class MiniGateway(BaseGateway):
     """
-    VN Trader Gateway for CTP Test Environment (6.3.13).
+    VN Trader Gateway for CTP Mini.
     """
 
     default_setting = {
@@ -135,14 +135,14 @@ class CtptestGateway(BaseGateway):
         "产品信息": ""
     }
 
-    exchanges = list(EXCHANGE_CTP2VT.values())
+    exchanges = list(EXCHANGE_MINI2VT.values())
     
     def __init__(self, event_engine):
         """Constructor"""
-        super().__init__(event_engine, "CTPTEST")
+        super().__init__(event_engine, "MINI")
 
-        self.td_api = CtpTdApi(self)
-        self.md_api = CtpMdApi(self)
+        self.td_api = MiniTdApi(self)
+        self.md_api = MiniMdApi(self)
 
     def connect(self, setting: dict):
         """"""
@@ -215,12 +215,12 @@ class CtptestGateway(BaseGateway):
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
 
-class CtpMdApi(MdApi):
+class MiniMdApi(MdApi):
     """"""
 
     def __init__(self, gateway):
         """Constructor"""
-        super(CtpMdApi, self).__init__()
+        super(MiniMdApi, self).__init__()
         
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
@@ -292,6 +292,7 @@ class CtpMdApi(MdApi):
             datetime=datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f"),
             name=symbol_name_map[symbol],
             volume=data["Volume"],
+            open_interest=data["OpenInterest"],
             last_price=data["LastPrice"],
             limit_up=data["UpperLimitPrice"],
             limit_down=data["LowerLimitPrice"],
@@ -357,12 +358,12 @@ class CtpMdApi(MdApi):
             self.exit()
 
 
-class CtpTdApi(TdApi):
+class MiniTdApi(TdApi):
     """"""
 
     def __init__(self, gateway):
         """Constructor"""
-        super(CtpTdApi, self).__init__()
+        super(MiniTdApi, self).__init__()
         
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
@@ -421,13 +422,9 @@ class CtpTdApi(TdApi):
             self.login_status = True
             self.gateway.write_log("交易服务器登录成功")
             
-            # Confirm settlement
-            req = {
-                "BrokerID": self.brokerid,
-                "InvestorID": self.userid
-            }
+            # Get instrument data directly without confirm settlement
             self.reqid += 1
-            self.reqSettlementInfoConfirm(req, self.reqid)
+            self.reqQryInstrument({}, self.reqid)
         else:
             self.login_failed = True
             
@@ -445,8 +442,8 @@ class CtpTdApi(TdApi):
             symbol=symbol,
             exchange=exchange,
             orderid=orderid,
-            direction=DIRECTION_CTP2VT[data["Direction"]],
-            offset=OFFSET_CTP2VT.get(data["CombOffsetFlag"], Offset.NONE),
+            direction=DIRECTION_MINI2VT[data["Direction"]],
+            offset=OFFSET_MINI2VT.get(data["CombOffsetFlag"], Offset.NONE),
             price=data["LimitPrice"],
             volume=data["VolumeTotalOriginal"],
             status=Status.REJECTED,
@@ -468,56 +465,51 @@ class CtpTdApi(TdApi):
         """
         Callback of settlment info confimation.
         """
-        self.gateway.write_log("结算信息确认成功")
-        
-        self.reqid += 1
-        self.reqQryInstrument({}, self.reqid)
+        pass
     
     def onRspQryInvestorPosition(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
-        if not data:
-            return
-        
-        # Get buffered position object
-        key = f"{data['InstrumentID'], data['PosiDirection']}"
-        position = self.positions.get(key, None)
-        if not position:
-            position = PositionData(
-                symbol=data["InstrumentID"],
-                exchange=symbol_exchange_map[data["InstrumentID"]],
-                direction=DIRECTION_CTP2VT[data["PosiDirection"]],
-                gateway_name=self.gateway_name
-            )
-            self.positions[key] = position
-        
-        # For SHFE position data update
-        if position.exchange == Exchange.SHFE:
-            if data["YdPosition"] and not data["TodayPosition"]:
-                position.yd_volume = data["Position"]
-        # For other exchange position data update
-        else:
-            position.yd_volume = data["Position"] - data["TodayPosition"]
-        
-        # Get contract size (spread contract has no size value)
-        size = symbol_size_map.get(position.symbol, 0)
-        
-        # Calculate previous position cost
-        cost = position.price * position.volume * size
-        
-        # Update new position volume
-        position.volume += data["Position"]
-        position.pnl += data["PositionProfit"]
-        
-        # Calculate average position price
-        if position.volume and size:
-            cost += data["PositionCost"]
-            position.price = cost / (position.volume * size)
-        
-        # Get frozen volume
-        if position.direction == Direction.LONG:
-            position.frozen += data["ShortFrozen"]
-        else:
-            position.frozen += data["LongFrozen"]
+        if data:
+            # Get buffered position object
+            key = f"{data['InstrumentID'], data['PosiDirection']}"
+            position = self.positions.get(key, None)
+            if not position:
+                position = PositionData(
+                    symbol=data["InstrumentID"],
+                    exchange=symbol_exchange_map[data["InstrumentID"]],
+                    direction=DIRECTION_MINI2VT[data["PosiDirection"]],
+                    gateway_name=self.gateway_name
+                )
+                self.positions[key] = position
+            
+            # For SHFE position data update
+            if position.exchange == Exchange.SHFE:
+                if data["YdPosition"] and not data["TodayPosition"]:
+                    position.yd_volume = data["Position"]
+            # For other exchange position data update
+            else:
+                position.yd_volume = data["Position"] - data["TodayPosition"]
+            
+            # Get contract size (spread contract has no size value)
+            size = symbol_size_map.get(position.symbol, 0)
+            
+            # Calculate previous position cost
+            cost = position.price * position.volume * size
+            
+            # Update new position volume
+            position.volume += data["Position"]
+            position.pnl += data["PositionProfit"]
+            
+            # Calculate average position price
+            if position.volume and size:
+                cost += data["PositionCost"]
+                position.price = cost / (position.volume * size)
+            
+            # Get frozen volume
+            if position.direction == Direction.LONG:
+                position.frozen += data["ShortFrozen"]
+            else:
+                position.frozen += data["LongFrozen"]
         
         if last:
             for position in self.positions.values():
@@ -544,11 +536,11 @@ class CtpTdApi(TdApi):
         """
         Callback of instrument query.
         """
-        product = PRODUCT_CTP2VT.get(data["ProductClass"], None)
+        product = PRODUCT_MINI2VT.get(data.get("ProductClass", None), None)
         if product:            
             contract = ContractData(
                 symbol=data["InstrumentID"],
-                exchange=EXCHANGE_CTP2VT[data["ExchangeID"]],
+                exchange=EXCHANGE_MINI2VT[data["ExchangeID"]],
                 name=data["InstrumentName"],
                 product=product,
                 size=data["VolumeMultiple"],
@@ -559,7 +551,7 @@ class CtpTdApi(TdApi):
             # For option only
             if contract.product == Product.OPTION:
                 contract.option_underlying = data["UnderlyingInstrID"],
-                contract.option_type = OPTIONTYPE_CTP2VT.get(data["OptionsType"], None),
+                contract.option_type = OPTIONTYPE_MINI2VT.get(data["OptionsType"], None),
                 contract.option_strike = data["StrikePrice"],
                 contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d"),
             
@@ -599,13 +591,13 @@ class CtpTdApi(TdApi):
             symbol=symbol,
             exchange=exchange,
             orderid=orderid,
-            type=ORDERTYPE_CTP2VT[data["OrderPriceType"]],
-            direction=DIRECTION_CTP2VT[data["Direction"]],
-            offset=OFFSET_CTP2VT[data["CombOffsetFlag"]],
+            type=ORDERTYPE_MINI2VT[data["OrderPriceType"]],
+            direction=DIRECTION_MINI2VT[data["Direction"]],
+            offset=OFFSET_MINI2VT[data["CombOffsetFlag"]],
             price=data["LimitPrice"],
             volume=data["VolumeTotalOriginal"],
             traded=data["VolumeTraded"],
-            status=STATUS_CTP2VT[data["OrderStatus"]],
+            status=STATUS_MINI2VT[data["OrderStatus"]],
             time=data["InsertTime"],
             gateway_name=self.gateway_name
         )
@@ -630,8 +622,8 @@ class CtpTdApi(TdApi):
             exchange=exchange,
             orderid=orderid,
             tradeid=data["TradeID"],
-            direction=DIRECTION_CTP2VT[data["Direction"]],
-            offset=OFFSET_CTP2VT[data["OffsetFlag"]],
+            direction=DIRECTION_MINI2VT[data["Direction"]],
+            offset=OFFSET_MINI2VT[data["OffsetFlag"]],
             price=data["Price"],
             volume=data["Volume"],
             time=data["TradeTime"],
@@ -716,13 +708,14 @@ class CtpTdApi(TdApi):
         """
         self.order_ref += 1
         
-        ctp_req = {
+        mini_req = {
             "InstrumentID": req.symbol,
+            "ExchangeID": req.exchange.value,
             "LimitPrice": req.price,
             "VolumeTotalOriginal": int(req.volume),
-            "OrderPriceType": ORDERTYPE_VT2CTP.get(req.type, ""),
-            "Direction": DIRECTION_VT2CTP.get(req.direction, ""),
-            "CombOffsetFlag": OFFSET_VT2CTP.get(req.offset, ""),
+            "OrderPriceType": ORDERTYPE_VT2MINI.get(req.type, ""),
+            "Direction": DIRECTION_VT2MINI.get(req.direction, ""),
+            "CombOffsetFlag": OFFSET_VT2MINI.get(req.offset, ""),
             "OrderRef": str(self.order_ref),
             "InvestorID": self.userid,
             "UserID": self.userid,
@@ -737,16 +730,16 @@ class CtpTdApi(TdApi):
         }
         
         if req.type == OrderType.FAK:
-            ctp_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
-            ctp_req["TimeCondition"] = THOST_FTDC_TC_IOC
-            ctp_req["VolumeCondition"] = THOST_FTDC_VC_AV
+            mini_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
+            mini_req["TimeCondition"] = THOST_FTDC_TC_IOC
+            mini_req["VolumeCondition"] = THOST_FTDC_VC_AV
         elif req.type == OrderType.FOK:
-            ctp_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
-            ctp_req["TimeCondition"] = THOST_FTDC_TC_IOC
-            ctp_req["VolumeCondition"] = THOST_FTDC_VC_CV            
+            mini_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
+            mini_req["TimeCondition"] = THOST_FTDC_TC_IOC
+            mini_req["VolumeCondition"] = THOST_FTDC_VC_CV            
         
         self.reqid += 1
-        self.reqOrderInsert(ctp_req, self.reqid)
+        self.reqOrderInsert(mini_req, self.reqid)
         
         orderid = f"{self.frontid}_{self.sessionid}_{self.order_ref}"
         order = req.create_order_data(orderid, self.gateway_name)
@@ -760,9 +753,9 @@ class CtpTdApi(TdApi):
         """
         frontid, sessionid, order_ref = req.orderid.split("_")
         
-        ctp_req = {
+        mini_req = {
             "InstrumentID": req.symbol,
-            "Exchange": req.exchange,
+            "ExchangeID": req.exchange.value,
             "OrderRef": order_ref,
             "FrontID": int(frontid),
             "SessionID": int(sessionid),
@@ -772,7 +765,7 @@ class CtpTdApi(TdApi):
         }
         
         self.reqid += 1
-        self.reqOrderAction(ctp_req, self.reqid)
+        self.reqOrderAction(mini_req, self.reqid)
     
     def query_account(self):
         """
