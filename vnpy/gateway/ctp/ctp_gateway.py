@@ -528,6 +528,9 @@ class CtpTdApi(TdApi):
     
     def onRspQryTradingAccount(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
+        if "AccountID" not in data:
+            return
+
         account = AccountData(
             accountid=data["AccountID"],
             balance=data["Balance"],

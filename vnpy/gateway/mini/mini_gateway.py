@@ -422,13 +422,9 @@ class MiniTdApi(TdApi):
             self.login_status = True
             self.gateway.write_log("交易服务器登录成功")
             
-            # Confirm settlement
-            req = {
-                "BrokerID": self.brokerid,
-                "InvestorID": self.userid
-            }
+            # Get instrument data directly without confirm settlement
             self.reqid += 1
-            self.reqSettlementInfoConfirm(req, self.reqid)
+            self.reqQryInstrument({}, self.reqid)
         else:
             self.login_failed = True
             
@@ -469,14 +465,12 @@ class MiniTdApi(TdApi):
         """
         Callback of settlment info confimation.
         """
-        self.gateway.write_log("结算信息确认成功")
-        
-        self.reqid += 1
-        self.reqQryInstrument({}, self.reqid)
+        pass
     
     def onRspQryInvestorPosition(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         if not data:
+            print(data, error, reqid, last)
             return
         
         # Get buffered position object
@@ -528,6 +522,9 @@ class MiniTdApi(TdApi):
     
     def onRspQryTradingAccount(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
+        if "AccountID" not in data:
+            return
+
         account = AccountData(
             accountid=data["AccountID"],
             balance=data["Balance"],
@@ -542,7 +539,7 @@ class MiniTdApi(TdApi):
         """
         Callback of instrument query.
         """
-        product = PRODUCT_MINI2VT.get(data["ProductClass"], None)
+        product = PRODUCT_MINI2VT.get(data.get("ProductClass", None), None)
         if product:            
             contract = ContractData(
                 symbol=data["InstrumentID"],
