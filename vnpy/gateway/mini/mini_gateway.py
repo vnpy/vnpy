@@ -469,50 +469,47 @@ class MiniTdApi(TdApi):
     
     def onRspQryInvestorPosition(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
-        if not data:
-            print(data, error, reqid, last)
-            return
-        
-        # Get buffered position object
-        key = f"{data['InstrumentID'], data['PosiDirection']}"
-        position = self.positions.get(key, None)
-        if not position:
-            position = PositionData(
-                symbol=data["InstrumentID"],
-                exchange=symbol_exchange_map[data["InstrumentID"]],
-                direction=DIRECTION_MINI2VT[data["PosiDirection"]],
-                gateway_name=self.gateway_name
-            )
-            self.positions[key] = position
-        
-        # For SHFE position data update
-        if position.exchange == Exchange.SHFE:
-            if data["YdPosition"] and not data["TodayPosition"]:
-                position.yd_volume = data["Position"]
-        # For other exchange position data update
-        else:
-            position.yd_volume = data["Position"] - data["TodayPosition"]
-        
-        # Get contract size (spread contract has no size value)
-        size = symbol_size_map.get(position.symbol, 0)
-        
-        # Calculate previous position cost
-        cost = position.price * position.volume * size
-        
-        # Update new position volume
-        position.volume += data["Position"]
-        position.pnl += data["PositionProfit"]
-        
-        # Calculate average position price
-        if position.volume and size:
-            cost += data["PositionCost"]
-            position.price = cost / (position.volume * size)
-        
-        # Get frozen volume
-        if position.direction == Direction.LONG:
-            position.frozen += data["ShortFrozen"]
-        else:
-            position.frozen += data["LongFrozen"]
+        if data:
+            # Get buffered position object
+            key = f"{data['InstrumentID'], data['PosiDirection']}"
+            position = self.positions.get(key, None)
+            if not position:
+                position = PositionData(
+                    symbol=data["InstrumentID"],
+                    exchange=symbol_exchange_map[data["InstrumentID"]],
+                    direction=DIRECTION_MINI2VT[data["PosiDirection"]],
+                    gateway_name=self.gateway_name
+                )
+                self.positions[key] = position
+            
+            # For SHFE position data update
+            if position.exchange == Exchange.SHFE:
+                if data["YdPosition"] and not data["TodayPosition"]:
+                    position.yd_volume = data["Position"]
+            # For other exchange position data update
+            else:
+                position.yd_volume = data["Position"] - data["TodayPosition"]
+            
+            # Get contract size (spread contract has no size value)
+            size = symbol_size_map.get(position.symbol, 0)
+            
+            # Calculate previous position cost
+            cost = position.price * position.volume * size
+            
+            # Update new position volume
+            position.volume += data["Position"]
+            position.pnl += data["PositionProfit"]
+            
+            # Calculate average position price
+            if position.volume and size:
+                cost += data["PositionCost"]
+                position.price = cost / (position.volume * size)
+            
+            # Get frozen volume
+            if position.direction == Direction.LONG:
+                position.frozen += data["ShortFrozen"]
+            else:
+                position.frozen += data["LongFrozen"]
         
         if last:
             for position in self.positions.values():
