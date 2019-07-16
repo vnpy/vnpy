@@ -709,26 +709,25 @@ class OkexfWebsocketApi(WebsocketClient):
 
     def on_depth(self, d):
         """"""
-        for tick_data in d:
-            symbol = d["instrument_id"]
-            tick = self.ticks.get(symbol, None)
-            if not tick:
-                return
+        symbol = d["instrument_id"]
+        tick = self.ticks.get(symbol, None)
+        if not tick:
+            return
 
-            bids = d["bids"]
-            asks = d["asks"]
-            for n, buf in enumerate(bids):
-                price, volume, _, __ = buf
-                tick.__setattr__("bid_price_%s" % (n + 1), price)
-                tick.__setattr__("bid_volume_%s" % (n + 1), volume)
+        bids = d["bids"]
+        asks = d["asks"]
+        for n, buf in enumerate(bids):
+            price, volume, _, __ = buf
+            tick.__setattr__("bid_price_%s" % (n + 1), price)
+            tick.__setattr__("bid_volume_%s" % (n + 1), volume)
 
-            for n, buf in enumerate(asks):
-                price, volume, _, __ = buf
-                tick.__setattr__("ask_price_%s" % (n + 1), price)
-                tick.__setattr__("ask_volume_%s" % (n + 1), volume)
+        for n, buf in enumerate(asks):
+            price, volume, _, __ = buf
+            tick.__setattr__("ask_price_%s" % (n + 1), price)
+            tick.__setattr__("ask_volume_%s" % (n + 1), volume)
 
-            tick.datetime = utc_to_local(d["timestamp"])
-            self.gateway.on_tick(copy(tick))
+        tick.datetime = utc_to_local(d["timestamp"])
+        self.gateway.on_tick(copy(tick))
 
     def on_order(self, d):
         """"""

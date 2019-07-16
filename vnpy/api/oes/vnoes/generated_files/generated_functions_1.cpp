@@ -15,56 +15,6 @@
 #include "mds_api/mds_api.h"
 
 
-void generate_class_spk_struct_timespec(pybind11::object & parent)
-{
-    pybind11::class_<_spk_struct_timespec> c(parent, "_spk_struct_timespec");
-    if constexpr (std::is_default_constructible_v<_spk_struct_timespec>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _spk_struct_timespec, "tv_sec", tv_sec);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _spk_struct_timespec, "tv_nsec", tv_nsec);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _spk_struct_timespec, c);
-    module_vnoes::objects.emplace("_spk_struct_timespec", c);
-}
-void generate_class_spk_struct_timezone(pybind11::object & parent)
-{
-    pybind11::class_<_spk_struct_timezone> c(parent, "_spk_struct_timezone");
-    if constexpr (std::is_default_constructible_v<_spk_struct_timezone>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _spk_struct_timezone, "tz_minuteswest", tz_minuteswest);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _spk_struct_timezone, "tz_dsttime", tz_dsttime);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _spk_struct_timezone, c);
-    module_vnoes::objects.emplace("_spk_struct_timezone", c);
-}
-void generate_class_spk_struct_iovec(pybind11::object & parent)
-{
-    pybind11::class_<_spk_struct_iovec> c(parent, "_spk_struct_iovec");
-    if constexpr (std::is_default_constructible_v<_spk_struct_iovec>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _spk_struct_iovec, "iov_base", iov_base);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _spk_struct_iovec, "iov_len", iov_len);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _spk_struct_iovec, c);
-    module_vnoes::objects.emplace("_spk_struct_iovec", c);
-}
-void generate_class_spk_struct_timeval32(pybind11::object & parent)
-{
-    pybind11::class_<_spk_struct_timeval32> c(parent, "_spk_struct_timeval32");
-    if constexpr (std::is_default_constructible_v<_spk_struct_timeval32>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _spk_struct_timeval32, "tv_sec", tv_sec);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _spk_struct_timeval32, "tv_usec", tv_usec);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _spk_struct_timeval32, c);
-    module_vnoes::objects.emplace("_spk_struct_timeval32", c);
-}
-void generate_class_spk_struct_timeval64(pybind11::object & parent)
-{
-    pybind11::class_<_spk_struct_timeval64> c(parent, "_spk_struct_timeval64");
-    if constexpr (std::is_default_constructible_v<_spk_struct_timeval64>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _spk_struct_timeval64, "tv_sec", tv_sec);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _spk_struct_timeval64, "tv_usec", tv_usec);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _spk_struct_timeval64, c);
-    module_vnoes::objects.emplace("_spk_struct_timeval64", c);
-}
 void generate_class_OesOrdReq(pybind11::object & parent)
 {
     pybind11::class_<_OesOrdReq> c(parent, "_OesOrdReq");
@@ -596,4 +546,36 @@ void generate_class_OesStockBaseInfo(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesStockBaseInfo, "__STOCK_BASE_reserve", __STOCK_BASE_reserve);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesStockBaseInfo, c);
     module_vnoes::objects.emplace("_OesStockBaseInfo", c);
+}
+void generate_class_OesEtfBaseInfo(pybind11::object & parent)
+{
+    pybind11::class_<_OesEtfBaseInfo> c(parent, "_OesEtfBaseInfo");
+    if constexpr (std::is_default_constructible_v<_OesEtfBaseInfo>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "fundId", fundId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "securityId", securityId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "mktId", mktId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "securityType", securityType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "subSecurityType", subSecurityType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "isPublishIOPV", isPublishIOPV);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "isCreationAble", isCreationAble);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "isRedemptionAble", isRedemptionAble);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "isDisabled", isDisabled);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "__ETF_BASE_filler", __ETF_BASE_filler);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "componentCnt", componentCnt);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "creRdmUnit", creRdmUnit);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "maxCashRatio", maxCashRatio);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "nav", nav);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "navPerCU", navPerCU);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "dividendPerCU", dividendPerCU);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "tradingDay", tradingDay);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "preTradingDay", preTradingDay);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "estiCashCmpoent", estiCashCmpoent);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "cashCmpoent", cashCmpoent);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "creationLimit", creationLimit);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "redemLimit", redemLimit);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "netCreationLimit", netCreationLimit);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "netRedemLimit", netRedemLimit);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesEtfBaseInfo, c);
+    module_vnoes::objects.emplace("_OesEtfBaseInfo", c);
 }

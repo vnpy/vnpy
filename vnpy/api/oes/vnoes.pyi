@@ -23,41 +23,6 @@ class AsyncDispatchException:
     function_name: str
 
 
-class _spk_struct_timespec():
-    
-    
-    tv_sec: int
-    tv_nsec: int
-    
-    
-class _spk_struct_timezone():
-    
-    
-    tz_minuteswest: int
-    tz_dsttime: int
-    
-    
-class _spk_struct_iovec():
-    
-    
-    iov_base: Any
-    iov_len: int
-    
-    
-class _spk_struct_timeval32():
-    
-    
-    tv_sec: int
-    tv_usec: int
-    
-    
-class _spk_struct_timeval64():
-    
-    
-    tv_sec: int
-    tv_usec: int
-    
-    
 class _OesOrdReq():
     
     class decltype(userInfo)():
@@ -3179,8 +3144,6 @@ uint64 = int
 float32 = float
 float64 = float
 float128 = float
-STimeval32T = _spk_struct_timeval32
-STimeval64T = _spk_struct_timeval64
 eOesExchangeIdT = _eOesExchangeId
 eOesMarketIdT = _eOesMarketId
 eOesPlatformIdT = _eOesPlatformId

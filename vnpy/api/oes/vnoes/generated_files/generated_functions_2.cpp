@@ -15,38 +15,6 @@
 #include "mds_api/mds_api.h"
 
 
-void generate_class_OesEtfBaseInfo(pybind11::object & parent)
-{
-    pybind11::class_<_OesEtfBaseInfo> c(parent, "_OesEtfBaseInfo");
-    if constexpr (std::is_default_constructible_v<_OesEtfBaseInfo>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "fundId", fundId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "securityId", securityId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "mktId", mktId);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "securityType", securityType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "subSecurityType", subSecurityType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "isPublishIOPV", isPublishIOPV);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "isCreationAble", isCreationAble);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "isRedemptionAble", isRedemptionAble);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "isDisabled", isDisabled);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "__ETF_BASE_filler", __ETF_BASE_filler);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "componentCnt", componentCnt);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "creRdmUnit", creRdmUnit);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "maxCashRatio", maxCashRatio);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "nav", nav);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "navPerCU", navPerCU);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "dividendPerCU", dividendPerCU);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "tradingDay", tradingDay);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "preTradingDay", preTradingDay);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "estiCashCmpoent", estiCashCmpoent);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "cashCmpoent", cashCmpoent);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "creationLimit", creationLimit);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "redemLimit", redemLimit);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "netCreationLimit", netCreationLimit);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "netRedemLimit", netRedemLimit);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesEtfBaseInfo, c);
-    module_vnoes::objects.emplace("_OesEtfBaseInfo", c);
-}
 void generate_class_OesEtfComponentBaseInfo(pybind11::object & parent)
 {
     pybind11::class_<_OesEtfComponentBaseInfo> c(parent, "_OesEtfComponentBaseInfo");
@@ -586,4 +554,34 @@ void generate_class_OesOptHoldingItem(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptHoldingItem, "hldRC", hldRC);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesOptHoldingItem, c);
     module_vnoes::objects.emplace("_OesOptHoldingItem", c);
+}
+void generate_class_OesQryOptHoldingReq(pybind11::object & parent)
+{
+    pybind11::class_<_OesQryOptHoldingReq> c(parent, "_OesQryOptHoldingReq");
+    if constexpr (std::is_default_constructible_v<_OesQryOptHoldingReq>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryOptHoldingReq, "reqHead", reqHead);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryOptHoldingReq, "qryFilter", qryFilter);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryOptHoldingReq, c);
+    module_vnoes::objects.emplace("_OesQryOptHoldingReq", c);
+}
+void generate_class_OesQryHoldRsp(pybind11::object & parent)
+{
+    pybind11::class_<_OesQryHoldRsp> c(parent, "_OesQryHoldRsp");
+    if constexpr (std::is_default_constructible_v<_OesQryHoldRsp>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryHoldRsp, "rspHead", rspHead);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryHoldRsp, "qryItems", qryItems);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryHoldRsp, c);
+    module_vnoes::objects.emplace("_OesQryHoldRsp", c);
+}
+void generate_class_OesQryCustFilter(pybind11::object & parent)
+{
+    pybind11::class_<_OesQryCustFilter> c(parent, "_OesQryCustFilter");
+    if constexpr (std::is_default_constructible_v<_OesQryCustFilter>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryCustFilter, "custId", custId);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesQryCustFilter, "userInfo", userInfo);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesQryCustFilter, c);
+    module_vnoes::objects.emplace("_OesQryCustFilter", c);
 }

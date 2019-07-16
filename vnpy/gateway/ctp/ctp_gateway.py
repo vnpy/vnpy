@@ -528,6 +528,9 @@ class CtpTdApi(TdApi):
     
     def onRspQryTradingAccount(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
+        if "AccountID" not in data:
+            return
+
         account = AccountData(
             accountid=data["AccountID"],
             balance=data["Balance"],
@@ -716,6 +719,7 @@ class CtpTdApi(TdApi):
         
         ctp_req = {
             "InstrumentID": req.symbol,
+            "ExchangeID": req.exchange.value,
             "LimitPrice": req.price,
             "VolumeTotalOriginal": int(req.volume),
             "OrderPriceType": ORDERTYPE_VT2CTP.get(req.type, ""),
@@ -760,7 +764,7 @@ class CtpTdApi(TdApi):
         
         ctp_req = {
             "InstrumentID": req.symbol,
-            "Exchange": req.exchange,
+            "ExchangeID": req.exchange.value,
             "OrderRef": order_ref,
             "FrontID": int(frontid),
             "SessionID": int(sessionid),
