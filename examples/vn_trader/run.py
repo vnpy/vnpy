@@ -16,7 +16,7 @@ from vnpy.trader.ui import MainWindow, create_qapp
 # from vnpy.gateway.oes import OesGateway
 from vnpy.gateway.okex import OkexGateway
 # from vnpy.gateway.huobi import HuobiGateway
-# from vnpy.gateway.bitfinex import BitfinexGateway
+from vnpy.gateway.bitfinex import BitfinexGateway
 # from vnpy.gateway.onetoken import OnetokenGateway
 from vnpy.gateway.okexf import OkexfGateway
 # from vnpy.gateway.xtp import XtpGateway
@@ -53,11 +53,11 @@ def main():
     # main_engine.add_gateway(BitmexGateway)
     # main_engine.add_gateway(TigerGateway)
     # main_engine.add_gateway(OesGateway)
-    main_engine.add_gateway(OkexGateway)
+    # main_engine.add_gateway(OkexGateway)
     # main_engine.add_gateway(HuobiGateway)
-    # main_engine.add_gateway(BitfinexGateway)
+    main_engine.add_gateway(BitfinexGateway)
     # main_engine.add_gateway(OnetokenGateway)
-    main_engine.add_gateway(OkexfGateway)
+    # main_engine.add_gateway(OkexfGateway)
     # main_engine.add_gateway(HbdmGateway)
     # main_engine.add_gateway(XtpGateway)
     # main_engine.add_gateway(TapGateway)
