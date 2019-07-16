@@ -293,7 +293,7 @@ class BitfinexRestApi(RestClient):
             else:
                 data = resp.json()
                 if not data:
-                    msg = f"获取历史数据为空，开始时间：{start_time}，数量：{count}"
+                    msg = f"获取历史数据为空，开始时间：{start_time}"
                     break
 
                 buf = []
