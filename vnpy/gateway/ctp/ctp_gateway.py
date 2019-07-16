@@ -447,7 +447,7 @@ class CtpTdApi(TdApi):
             exchange=exchange,
             orderid=orderid,
             direction=DIRECTION_CTP2VT[data["Direction"]],
-            offset=OFFSET_CTP2VT[data["CombOffsetFlag"]],
+            offset=OFFSET_CTP2VT.get(data["CombOffsetFlag"], Offset.NONE),
             price=data["LimitPrice"],
             volume=data["VolumeTotalOriginal"],
             status=Status.REJECTED,
@@ -528,6 +528,9 @@ class CtpTdApi(TdApi):
     
     def onRspQryTradingAccount(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
+        if "AccountID" not in data:
+            return
+
         account = AccountData(
             accountid=data["AccountID"],
             balance=data["Balance"],
