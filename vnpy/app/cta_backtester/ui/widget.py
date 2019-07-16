@@ -315,8 +315,11 @@ class BacktesterManager(QtWidgets.QWidget):
         """"""
         vt_symbol = self.symbol_line.text()
         interval = self.interval_combo.currentText()
-        start = self.start_date_edit.date().toPyDate()
-        end = self.end_date_edit.date().toPyDate()
+        start_date = self.start_date_edit.date()
+        end_date = self.end_date_edit.date()
+
+        start = datetime(start_date.year(), start_date.month(), start_date.day())
+        end = datetime(end_date.year(), end_date.month(), end_date.day())
 
         self.backtester_engine.start_downloading(
             vt_symbol,
