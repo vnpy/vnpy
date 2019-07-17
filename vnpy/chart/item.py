@@ -89,14 +89,15 @@ class ChartItem(pg.GraphicsObject):
         This function is called by external QGraphicsView.
         """
         rect = opt.exposedRect
+
         min_ix = int(rect.left())
         max_ix = int(rect.right())
         max_ix = min(max_ix, len(self._bar_picutures))
+        self._draw_item_picture(min_ix, max_ix)
 
-        self._draw__item_picuture(min_ix, max_ix)
         self._item_picuture.play(painter)
 
-    def _draw__item_picuture(self, min_ix: int, max_ix: int) -> None:
+    def _draw_item_picture(self, min_ix: int, max_ix: int) -> None:
         """
         Draw the picture of item in specific range.
         """
@@ -179,7 +180,7 @@ class CandleItem(ChartItem):
         min_price, max_price = self._manager.get_price_range()
         rect = QtCore.QRectF(
             0,
-            max_price,
+            min_price,
             len(self._bar_picutures),
             max_price - min_price
         )
