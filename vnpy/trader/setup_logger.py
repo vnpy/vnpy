@@ -245,11 +245,11 @@ class MultiprocessHandler(logging.FileHandler):
             raise ValueError(u"指定的日期间隔单位无效: %s" % self.when)
         #拼接文件路径 格式化字符串
         #self.filefmt = "%s_%s.log" % (self.prefix,self.suffix)
-        self.filefmt = u'{}_{}.log'.format(self.prefix, self.suffix)
+        #self.filefmt = u'{}_{}.log'.format(self.prefix, self.suffix)
         #使用当前时间，格式化文件格式化字符串
-        self.filePath = datetime.now().strftime(self.filefmt)
+        self.filePath = u'{}_{}.log'.format(self.prefix, datetime.now().strftime(self.suffix))
         #获得文件夹路径
-        _dir = os.path.dirname(self.filefmt)
+        _dir = os.path.dirname(self.filePath)
         try:
             #如果日志文件夹不存在，则创建文件夹
             if not os.path.exists(_dir):
@@ -269,7 +269,7 @@ class MultiprocessHandler(logging.FileHandler):
         """更改日志写入目的写入文件
         :return True 表示已更改，False 表示未更改"""
         #以当前时间获得新日志文件路径
-        _filePath = datetime.now().strftime(self.filefmt)
+        _filePath = u'{}_{}.log'.format(self.prefix, datetime.now().strftime(self.suffix))
         #新日志文件日期 不等于 旧日志文件日期，则表示 已经到了日志切分的时候
         #   更换日志写入目的为新日志文件。
         #例如 按 天 （D）来切分日志
@@ -355,8 +355,8 @@ def setup_logger(filename, name=None, debug=False,force=False,backtesing=False):
     """
     设置日志文件，包括路径
     自动在后面添加 "_日期.log"
-    :param logger_file_name: 
-    :return: 
+    :param logger_file_name:
+    :return:
     """
 
     global _logger

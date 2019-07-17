@@ -13,8 +13,8 @@ import json
 import redis
 
 # 加载经booster编译转换的SO API库
-from vnpy.trader.gateway.ctpGateway.vnctpmd import MdApi
-from vnpy.trader.gateway.ctpGateway.vnctptd import TdApi
+from vnpy.api.ctp.vnctpmd import MdApi
+from vnpy.api.ctp.vnctptd import TdApi
 
 from vnpy.trader.vtConstant import  *
 from vnpy.trader.vtGateway import *
@@ -39,7 +39,7 @@ import copy
 priceTypeMap = {}
 priceTypeMap[PRICETYPE_LIMITPRICE] = defineDict["THOST_FTDC_OPT_LimitPrice"]
 priceTypeMap[PRICETYPE_MARKETPRICE] = defineDict["THOST_FTDC_OPT_AnyPrice"]
-priceTypeMapReverse = {v: k for k, v in priceTypeMap.items()} 
+priceTypeMapReverse = {v: k for k, v in priceTypeMap.items()}
 
 # 方向类型映射
 directionMap = {}
@@ -131,6 +131,8 @@ class CtpGateway(VtGateway):
         self.combiners = {}
         self.tick_combiner_map = {}
 
+        # 合约代码与合约名称映射
+        self.symbol_name_map = {}
     # ----------------------------------------------------------------------
     def connect(self):
         """连接"""
@@ -172,11 +174,14 @@ class CtpGateway(VtGateway):
             # 如果json文件提供了验证码
             if 'authCode' in setting:
                 authCode = str(setting['authCode'])
-                userProductInfo = str(setting['userProductInfo'])
+                appID = str(setting['appID'])
+                userProductInfo = setting.get('userProductInfo',"")
                 self.tdApi.requireAuthentication = True
+                self.writeLog(u'使用授权码验证')
             else:
                 authCode = None
                 userProductInfo = None
+                appID = EMPTY_STRING
 
             # 获取redis行情配置
             redis_conf = setting.get('redis', None)
@@ -223,12 +228,12 @@ class CtpGateway(VtGateway):
         except KeyError:
             self.writeLog(text.CONFIG_KEY_MISSING)
             return
-        
+
         # 创建行情和交易接口对象
         self.writeLog(u'连接行情服务器')
         self.mdApi.connect(userID, password, brokerID, mdAddress)
         self.writeLog(u'连接交易服务器')
-        self.tdApi.connect(userID, password, brokerID, tdAddress, authCode, userProductInfo)
+        self.tdApi.connect(userID, password, brokerID, tdAddress, authCode, userProductInfo,appID=appID)
 
         self.setQryEnabled(True)
         # 初始化并启动查询
@@ -320,19 +325,19 @@ class CtpGateway(VtGateway):
             self.subscribedSymbols.add(subscribeReq)
         except Exception as ex:
             self.writeError(u'订阅合约异常:{},{}'.format(str(ex),traceback.format_exc()))
-        
+
     # ----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
         if self.tdApi is not None:
             return self.tdApi.sendOrder(orderReq)
-        
+
     # ----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
         if self.tdApi is not None:
             self.tdApi.cancelOrder(cancelOrderReq)
-        
+
     # ----------------------------------------------------------------------
     def qryAccount(self):
         """查询账户资金"""
@@ -387,43 +392,43 @@ class CtpGateway(VtGateway):
             self.tdxConnected = False
 
         self.writeLog(u'CTP Gateway 主动断开连接')
-        
+
     #----------------------------------------------------------------------
     def initQuery(self):
         """初始化连续查询"""
         if self.qryEnabled:
             # 需要循环的查询函数列表
             self.qryFunctionList = [self.qryAccount, self.qryPosition]
-            
+
             self.qryCount = 0           # 查询触发倒计时
             self.qryTrigger = 2         # 查询触发点
             self.qryNextFunction = 0    # 上次运行的查询函数索引
-            
+
             self.startQuery()
-    
+
     #----------------------------------------------------------------------
     def query(self, event):
         """注册到事件处理引擎上的查询函数"""
         self.qryCount += 1
-        
+
         if self.qryCount > self.qryTrigger:
             # 清空倒计时
             self.qryCount = 0
-            
+
             # 执行查询函数
             function = self.qryFunctionList[self.qryNextFunction]
             function()
-            
+
             # 计算下次查询函数的索引，如果超过了列表长度，则重新设为0
             self.qryNextFunction += 1
             if self.qryNextFunction == len(self.qryFunctionList):
                 self.qryNextFunction = 0
-    
+
     #----------------------------------------------------------------------
     def startQuery(self):
         """启动连续查询"""
         self.eventEngine.register(EVENT_TIMER, self.query)
-    
+
     #----------------------------------------------------------------------
     def setQryEnabled(self, qryEnabled):
         """设置是否要启动循环查询"""
@@ -453,17 +458,17 @@ class CtpMdApi(MdApi):
     def __init__(self, gateway):
         """Constructor"""
         super(CtpMdApi, self).__init__()
-        
+
         self.gateway = gateway                  # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
-        
+
         self.reqID = EMPTY_INT              # 操作请求编号
-        
+
         self.connectionStatus = False       # 连接状态
         self.loginStatus = False            # 登录状态
-        
+
         self.subscribedSymbols = gateway.subscribedSymbols     # 已订阅合约代码
-        
+
         self.userID = EMPTY_STRING          # 账号
         self.password = EMPTY_STRING        # 密码
         self.brokerID = EMPTY_STRING        # 经纪商代码
@@ -473,27 +478,28 @@ class CtpMdApi(MdApi):
     def onFrontConnected(self):
         """服务器连接"""
         self.connectionStatus = True
-        
+
         self.writeLog(text.DATA_SERVER_CONNECTED)
 
-        self.login()
-    
-    #----------------------------------------------------------------------  
+        if not self.loginStatus:
+            self.login()
+
+    #----------------------------------------------------------------------
     def onFrontDisconnected(self, n):
         """服务器断开"""
         self.connectionStatus = False
         self.loginStatus = False
         self.gateway.mdConnected = False
-        
+
         self.writeLog(text.DATA_SERVER_DISCONNECTED)
-        
-    #---------------------------------------------------------------------- 
+
+    #----------------------------------------------------------------------
     def onHeartBeatWarning(self, n):
         """心跳报警"""
         # 因为API的心跳报警比较常被触发，且与API工作关系不大，因此选择忽略
         pass
-    
-    #----------------------------------------------------------------------   
+
+    #----------------------------------------------------------------------
     def onRspError(self, error, n, last):
         """错误回报"""
         err = VtErrorData()
@@ -501,10 +507,13 @@ class CtpMdApi(MdApi):
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg']    #.decode('gbk')
         self.gateway.onError(err)
-        
+
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
+        if getattr(self.gateway,'debug',False):
+            print('onRspUserLogin')
+
         # 如果登录成功，推送日志信息
         if error['ErrorID'] == 0:
             self.loginStatus = True
@@ -514,7 +523,7 @@ class CtpMdApi(MdApi):
 
             for subscribeReq in self.subscribedSymbols:
                 self.subscribe(subscribeReq)
-                
+
         # 否则，推送错误信息
         else:
             err = VtErrorData()
@@ -523,16 +532,18 @@ class CtpMdApi(MdApi):
             err.errorMsg = error['ErrorMsg']    #.decode('gbk')
             self.gateway.onError(err)
 
-    #---------------------------------------------------------------------- 
+    #----------------------------------------------------------------------
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
+        if getattr(self.gateway,'debug',False):
+            print('onRspUserLogout')
         # 如果登出成功，推送日志信息
         if error['ErrorID'] == 0:
             self.loginStatus = False
             self.gateway.mdConnected = False
-            
+
             self.writeLog(text.DATA_SERVER_LOGOUT)
-                
+
         # 否则，推送错误信息
         else:
             err = VtErrorData()
@@ -540,20 +551,19 @@ class CtpMdApi(MdApi):
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg']    #.decode('gbk')
             self.gateway.onError(err)
-        
-    #----------------------------------------------------------------------  
+
+    #----------------------------------------------------------------------
     def onRspSubMarketData(self, data, error, n, last):
         """订阅合约回报"""
         # 通常不在乎订阅错误，选择忽略
-        pass
-        
-    #----------------------------------------------------------------------  
+
+    #----------------------------------------------------------------------
     def onRspUnSubMarketData(self, data, error, n, last):
         """退订合约回报"""
         # 同上
-        pass  
-        
-    #----------------------------------------------------------------------  
+        pass
+
+    #----------------------------------------------------------------------
     def onRtnDepthMarketData(self, data):
         """行情推送"""
         # 忽略成交量为0的无效单合约tick数据
@@ -570,11 +580,11 @@ class CtpMdApi(MdApi):
 
         tick = VtTickData()
         tick.gatewayName = self.gatewayName
-        
+
         tick.symbol = data['InstrumentID']
         tick.exchange = exchangeMapReverse.get(data['ExchangeID'], u'未知')
         tick.vtSymbol = tick.symbol #'.'.join([tick.symbol, EXCHANGE_UNKNOWN])
-        
+
         tick.lastPrice = data['LastPrice']
         tick.volume = data['Volume']
         tick.openInterest = data['OpenInterest']
@@ -620,10 +630,10 @@ class CtpMdApi(MdApi):
         tick.highPrice = data['HighestPrice']
         tick.lowPrice = data['LowestPrice']
         tick.preClosePrice = data['PreClosePrice']
-        
+
         tick.upperLimit = data['UpperLimitPrice']
         tick.lowerLimit = data['LowerLimitPrice']
-        
+
         # CTP只有一档行情
         tick.bidPrice1 = data['BidPrice1']
         tick.bidVolume1 = data['BidVolume1']
@@ -669,30 +679,31 @@ class CtpMdApi(MdApi):
         self.gateway.onTick(tick)
 
         self.gateway.onCustomerTick(tick)
-        
-    #---------------------------------------------------------------------- 
+
+    # ----------------------------------------------------------------------
     def onRspSubForQuoteRsp(self, data, error, n, last):
         """订阅期权询价"""
         pass
-        
+
     #----------------------------------------------------------------------
     def onRspUnSubForQuoteRsp(self, data, error, n, last):
         """退订期权询价"""
-        pass 
-        
-    #---------------------------------------------------------------------- 
+        pass
+
+    # ----------------------------------------------------------------------
     def onRtnForQuoteRsp(self, data):
         """期权询价推送"""
-        pass        
-        
-    #----------------------------------------------------------------------
+        pass
+
+    # ----------------------------------------------------------------------
     def connect(self, userID, password, brokerID, address):
         """初始化连接"""
+
         self.userID = userID                # 账号
         self.password = password            # 密码
         self.brokerID = brokerID            # 经纪商代码
         self.address = address              # 服务器地址
-        
+
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
@@ -700,47 +711,57 @@ class CtpMdApi(MdApi):
             if not os.path.exists(path):
                 os.makedirs(path)
             self.createFtdcMdApi(path)
-            
+            self.writeLog(u'注册行情服务器地址:{}'.format(self.address))
             # 注册服务器地址
             self.registerFront(self.address)
-            
+
             # 初始化连接，成功会调用onFrontConnected
             self.init()
-            
+
+            self.login()
+
         # 若已经连接但尚未登录，则进行登录
         else:
             if not self.loginStatus:
                 self.login()
-        
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅合约"""
         # 这里的设计是，如果尚未登录就调用了订阅方法
         # 则先保存订阅请求，登录完成后会自动订阅
 
+
+        if self.connectionStatus and  not self.loginStatus:
+            self.login()
+
         # 订阅传统合约
         self.subscribeMarketData(str(subscribeReq.symbol))
         self.writeLog(u'订阅合约:{0}'.format(str(subscribeReq.symbol)))
         self.subscribedSymbols.add(subscribeReq)
-        
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def login(self):
         """登录"""
+
         # 如果填入了用户名密码等，则登录
         if self.userID and self.password and self.brokerID:
+            self.writeLog(u'登入行情服务器')
             req = {}
             req['UserID'] = self.userID
             req['Password'] = self.password
             req['BrokerID'] = self.brokerID
             self.reqID += 1
-            self.reqUserLogin(req, self.reqID)    
-    
-    #----------------------------------------------------------------------
+            self.reqUserLogin(req, self.reqID)
+        else:
+            self.writeLog(u'未配置用户/密码,不登录行情服务器')
+
+    # ----------------------------------------------------------------------
     def close(self):
         """关闭"""
         self.exit()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def writeLog(self, content):
         """发出日志"""
         log = VtLogData()
@@ -752,18 +773,18 @@ class CtpMdApi(MdApi):
 ########################################################################
 class CtpTdApi(TdApi):
     """CTP交易API实现"""
-    
+
     #----------------------------------------------------------------------
     def __init__(self, gateway):
         """API对象的初始化函数"""
         super(CtpTdApi, self).__init__()
-        
+
         self.gateway = gateway                  # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
-        
+
         self.reqID = EMPTY_INT              # 操作请求编号
         self.orderRef = EMPTY_INT           # 订单编号
-        
+
         self.connectionStatus = False       # 连接状态
         self.loginStatus = False            # 登录状态
         self.authStatus = False
@@ -772,10 +793,10 @@ class CtpTdApi(TdApi):
         self.password = EMPTY_STRING        # 密码
         self.brokerID = EMPTY_STRING        # 经纪商代码
         self.address = EMPTY_STRING         # 服务器地址
-        
+
         self.frontID = EMPTY_INT            # 前置机编号
         self.sessionID = EMPTY_INT          # 会话编号
-        
+
         self.posDict = {}
         self.symbolExchangeDict = {}        # 保存合约代码和交易所的印射关系
         self.symbolSizeDict = {}            # 保存合约代码和合约大小的印射关系
@@ -788,38 +809,36 @@ class CtpTdApi(TdApi):
     def onFrontConnected(self):
         """服务器连接"""
         self.connectionStatus = True
-        
         self.writeLog(text.TRADING_SERVER_CONNECTED)
-        
+
         if self.requireAuthentication:
             self.authenticate()
         else:
             self.login()
-    
+
     #----------------------------------------------------------------------
     def onFrontDisconnected(self, n):
         """服务器断开"""
         self.connectionStatus = False
         self.loginStatus = False
         self.gateway.tdConnected = False
-        
+
         self.writeLog(text.TRADING_SERVER_DISCONNECTED)
-    
+
     #----------------------------------------------------------------------
     def onHeartBeatWarning(self, n):
         """"""
-        pass
-    
+
     #----------------------------------------------------------------------
     def onRspAuthenticate(self, data, error, n, last):
         """验证客户端回报"""
         if error['ErrorID'] == 0:
             self.authStatus = True
-
             self.writeLog(text.TRADING_SERVER_AUTHENTICATED)
-
             self.login()
-    
+        else:
+            self.writeLog(u'授权码验证失败:{}'.format(error))
+
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
@@ -845,7 +864,7 @@ class CtpTdApi(TdApi):
                 self.resentReqQryInstrument()
             except:
                 pass
-                
+
         # 否则，推送错误信息
         else:
             err = VtErrorData()
@@ -866,9 +885,9 @@ class CtpTdApi(TdApi):
         if error['ErrorID'] == 0:
             self.loginStatus = False
             self.gateway.tdConnected = False
-            
+
             self.writeLog(text.TRADING_SERVER_LOGOUT)
-                
+
         # 否则，推送错误信息
         else:
             err = VtErrorData()
@@ -876,26 +895,30 @@ class CtpTdApi(TdApi):
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg']    #.decode('gbk')
             self.gateway.onError(err)
-    
+
     #----------------------------------------------------------------------
     def onRspUserPasswordUpdate(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspTradingAccountPasswordUpdate(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspOrderInsert(self, data, error, n, last):
-        """发单错误（柜台）"""
+        """发单返回（柜台）"""
         # 推送委托信息
         order = VtOrderData()
+        order.accountID = self.userID
+        order.vtAccountID = self.gatewayName + '.' + str(self.userID)
         order.gatewayName = self.gatewayName
         order.symbol = data['InstrumentID']
         order.exchange = exchangeMapReverse[data['ExchangeID']]
         order.vtSymbol = order.symbol
+        order.vtSymbolName = self.gateway.symbol_name_map.get(order.symbol, order.vtSymbol)
+
         order.orderID = data['OrderRef']
         order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
         order.direction = directionMapReverse.get(data['Direction'], DIRECTION_UNKNOWN)
@@ -913,17 +936,17 @@ class CtpTdApi(TdApi):
         err.additionalInfo = u'onRspOrderInsert():{0},{1},{2},{3}'.\
             format(order.vtSymbol, order.orderID, order.direction , order.offset)
         self.gateway.onError(err)
-    
+
     #----------------------------------------------------------------------
     def onRspParkedOrderInsert(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspParkedOrderAction(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspOrderAction(self, data, error, n, last):
         """撤单错误（柜台）"""
@@ -938,18 +961,17 @@ class CtpTdApi(TdApi):
         err.errorMsg = error['ErrorMsg']    #.decode('gbk')
         err.additionalInfo = u'onRspOrderAction,{0}'.format(symbol)
         self.gateway.onError(err)
-    
+
     #----------------------------------------------------------------------
     def onRspQueryMaxOrderVolume(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspSettlementInfoConfirm(self, data, error, n, last):
         """确认结算信息回报"""
         self.writeLog(text.SETTLEMENT_INFO_CONFIRMED)
 
-        
     #----------------------------------------------------------------------
     def onRspRemoveParkedOrder(self, data, error, n, last):
         """"""
@@ -959,32 +981,32 @@ class CtpTdApi(TdApi):
     def onRspRemoveParkedOrderAction(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspExecOrderInsert(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspExecOrderAction(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspForQuoteInsert(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQuoteInsert(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQuoteAction(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspLockInsert(self, data, error, n, last):
         """"""
@@ -999,20 +1021,19 @@ class CtpTdApi(TdApi):
     def onRspQryOrder(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryTrade(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, n, last):
         """持仓查询回报"""
-        if self.gateway.debug:
-            print('onRspQryInvestorPosition')
-            print(u'data:\n{}'.format(self.gateway.printDict(data)))
-            print(u'error:{}'.format(error))
-            print('n:{},last:{}'.format(n,last))
+
+        if self.gateway.debug and data.get('InstrumentID') == 'pp1909':
+            self.gateway.writeLog(u'data:\n{}'.format(self.gateway.printDict(data)))
+            self.gateway.writeLog('n:{},last:{}'.format(n,last))
 
         if not data['InstrumentID']:
             return
@@ -1027,59 +1048,74 @@ class CtpTdApi(TdApi):
                 pos = self.posDict[posName]
             else:
                 pos = VtPositionData()
+                pos.accountID = self.userID
+                pos.vtAccountID = self.gatewayName + '.' + str(self.userID)
                 self.posDict[posName] = pos
 
                 pos.gatewayName = self.gatewayName
                 pos.symbol = data['InstrumentID']
                 pos.vtSymbol = pos.symbol
+                pos.vtSymbolName = self.gateway.symbol_name_map.get(pos.symbol, pos.vtSymbol)
                 pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
                 pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction, pos.gatewayName])
 
             exchange = self.symbolExchangeDict.get(pos.symbol, EXCHANGE_UNKNOWN)
 
+            # 获取size
+            if pos.symbol not in self.symbolSizeDict:
+                return
+            size = self.symbolSizeDict[pos.symbol]
 
             # 针对上期所持仓的今昨分条返回（有昨仓、无今仓），读取昨仓数据
-            if exchange == EXCHANGE_SHFE:
+            if exchange in [EXCHANGE_SHFE, EXCHANGE_INE]:
                 if data['YdPosition'] and not data['TodayPosition']:
                     pos.ydPosition = data['Position']
                     yd_position = data['YdPosition']
                 else:
                     yd_position = 0
+
+                # 前汇总，总成本
+                pre_cost = pos.price * pos.position * size
+
+                # 仓位累加汇总
+                pos.position += data['Position']
+
+                if pos.position > 0 and size > 0:
+                    # 计算持仓均价
+                    pos.price = (pre_cost + data['OpenCost']) / (pos.position * size)
+
+                    # 上一交易日结算价
+                    pre_settlement_price = data['PreSettlementPrice']
+
+                    # 当前一笔的开仓均价
+                    open_cost_price = (data['OpenCost'] / (data['Position'] * size)) if data['Position'] > 0 else pre_settlement_price
+
+                    pre_profit = 0
+                    # 上-交易日收益 = (上一交易日结算价 - 开仓价)* 昨仓持仓数量 * 杠杆
+                    if pos.direction == DIRECTION_LONG:
+                        pre_profit = (pre_settlement_price - open_cost_price) * (yd_position * size)
+                    else:
+                        pre_profit = (open_cost_price - pre_settlement_price) * (yd_position * size)
+
+                    # 汇总收益：上一收益 + 上-交易日收益 + 当日持仓收益
+                    pos.positionProfit = pos.positionProfit + pre_profit + data['PositionProfit']
+
+                    if self.gateway.debug and pos.symbol == 'pp1909':
+                        self.gateway.writeLog(
+                            u'symbol:{} direction:{} pos:{} yd_pos:{}, price:{},open_cost:{},pre_set_price:{}, size:{},pre_profit:{},profit:{}'
+                            .format(pos.symbol, pos.direction, pos.position, pos.ydPosition, pos.price, open_cost_price,
+                                    pre_settlement_price, size, pre_profit, pos.positionProfit))
+
             # 否则基于总持仓和今持仓来计算昨仓数据
             else:
+                pos.position = data['Position']
                 pos.ydPosition = data['Position'] - data['TodayPosition']
-                yd_position = data['Position'] - data['TodayPosition']
+                pos.price = data['OpenCost'] / (pos.position * size) if pos.position * size != 0 else data['PreSettlementPrice']
+                if pos.position == 0:
+                    pos.price = 0
 
-            # 计算成本
-            if pos.symbol not in self.symbolSizeDict:
-                return
-            size = self.symbolSizeDict[pos.symbol]
-
-            # 前汇总，总成本
-            pre_cost = pos.price * pos.position * size
-
-            # 仓位累加汇总
-            pos.position += data['Position']
-
-            if pos.position > 0 and size > 0:
-                # 计算持仓均价
-                pos.price = (pre_cost + data['OpenCost']) / (pos.position * size)
-
-                # 上一交易日结算价
-                pre_settlement_price = data['PreSettlementPrice']
-
-                # 当前一笔的开仓均价
-                open_cost_price = (data['OpenCost'] / (data['Position'] * size)) if data['Position'] * size != 0 else 0.0
-
-                pre_profit = 0
-                # 上-交易日收益 = (上一交易日结算价 - 开仓价)* 昨仓持仓数量 * 杠杆
-                if pos.direction == DIRECTION_LONG:
-                    pre_profit = (pre_settlement_price - open_cost_price) * (yd_position * size)
-                else:
-                    pre_profit = (open_cost_price - pre_settlement_price) * (yd_position * size)
-
-                # 汇总收益：上一收益 + 上-交易日收益 + 当日持仓收益
-                pos.positionProfit = pos.positionProfit + pre_profit + data['PositionProfit']
+                pos.positionProfit = (data['PositionCost'] - data['OpenCost']) if pos.direction is DIRECTION_LONG else (data['OpenCost'] - data['PositionCost'])
+                pos.positionProfit += data['PositionProfit']
 
             # 读取冻结
             if pos.direction is DIRECTION_LONG:
@@ -1097,24 +1133,26 @@ class CtpTdApi(TdApi):
                 self.posDict.clear()
         except Exception as ex:
             self.gateway.writeError('onRspQryInvestorPosition exception:{}'.format(str(ex)))
-            self.gateway.writeError('traceL{}'.format(traceback.format_exc()))
-
+            self.gateway.writeError('trace {}'.format(traceback.format_exc()))
 
     #----------------------------------------------------------------------
     def onRspQryTradingAccount(self, data, error, n, last):
         """资金账户查询回报"""
+
         self.gateway.mdConnected = True
 
         account = VtAccountData()
         account.gatewayName = self.gatewayName
-        
+
         # 账户代码
         account.accountID = data['AccountID']
         account.vtAccountID = '.'.join([self.gatewayName, account.accountID])
-        
+
         # 数值相关
         account.preBalance = data['PreBalance']
         account.available = data['Available']
+        account.frozen = float(data['FrozenCash'])
+        account.withdraw = float(data['WithdrawQuota'])
         account.commission = data['Commission']
         account.margin = data['CurrMargin']
         account.closeProfit = data['CloseProfit']
@@ -1125,47 +1163,48 @@ class CtpTdApi(TdApi):
                            data['Mortgage'] - data['Withdraw'] + data['Deposit'] +
                            data['CloseProfit'] + data['PositionProfit'] + data['CashIn'] -
                            data['Commission'])
-        
+
+        account.currency = u'人民币'
         # 推送
         self.gateway.onAccount(account)
-    
+
     #----------------------------------------------------------------------
     def onRspQryInvestor(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryTradingCode(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryInstrumentMarginRate(self, data, error, n, last):
         """
         获取保证金率
-        :param data: 
-        :param error: 
-        :param n: 
-        :param last: 
-        :return: 
+        :param data:
+        :param error:
+        :param n:
+        :param last:
+        :return:
         """
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryInstrumentCommissionRate(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryExchange(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryProduct(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryInstrument(self, data, error, n, last):
         """合约查询回报"""
@@ -1178,7 +1217,9 @@ class CtpTdApi(TdApi):
         contract.exchange = exchangeMapReverse[data['ExchangeID']]
         contract.vtSymbol = contract.symbol #'.'.join([contract.symbol, contract.exchange])
         contract.name = data['InstrumentName']  #.decode('GBK')
-        
+
+        self.gateway.symbol_name_map.update({contract.symbol:contract.name})
+
         # 合约数值
         contract.size = data['VolumeMultiple']
         contract.priceTick = data['PriceTick']
@@ -1188,7 +1229,7 @@ class CtpTdApi(TdApi):
         contract.shortMarginRatio = data['ShortMarginRatio']
 
         contract.productClass = productClassMapReverse.get(data['ProductClass'], PRODUCT_UNKNOWN)
-        
+
         # 期权类型
         if data['OptionsType'] == '1':
             contract.optionType = OPTION_CALL
@@ -1218,77 +1259,76 @@ class CtpTdApi(TdApi):
 
         if last:
             self.writeLog(text.CONTRACT_DATA_RECEIVED)
-    
+
     #----------------------------------------------------------------------
     def onRspQryDepthMarketData(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQrySettlementInfo(self, data, error, n, last):
         """查询结算信息回报"""
         pass
-    
     #----------------------------------------------------------------------
     def onRspQryTransferBank(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryInvestorPositionDetail(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryNotice(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQrySettlementInfoConfirm(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryInvestorPositionCombineDetail(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryCFMMCTradingAccountKey(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryEWarrantOffset(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryInvestorProductGroupMargin(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryExchangeMarginRate(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryExchangeMarginRateAdjust(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryExchangeRate(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQrySecAgentACIDMap(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryProductExchRate(self, data, error, n, last):
         """"""
@@ -1303,27 +1343,27 @@ class CtpTdApi(TdApi):
     def onRspQryOptionInstrTradeCost(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryOptionInstrCommRate(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryExecOrder(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryForQuote(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryQuote(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryLock(self, data, error, n, last):
         """"""
@@ -1358,12 +1398,12 @@ class CtpTdApi(TdApi):
     def onRspQryTransferSerial(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryAccountregister(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspError(self, error, n, last):
         """错误回报"""
@@ -1373,34 +1413,40 @@ class CtpTdApi(TdApi):
         err.errorID = error['ErrorID']
         err.errorMsg = u'onRspError' + error['ErrorMsg']    #.decode('gbk')
         self.gateway.onError(err)
-    
+
     #----------------------------------------------------------------------
     def onRtnOrder(self, data):
         """报单回报"""
         # 更新最大报单编号
         newref = data['OrderRef']
         self.orderRef = max(self.orderRef, int(newref))
-        
+
         # 创建报单数据对象
         order = VtOrderData()
+        order.accountID = self.userID
+        order.vtAccountID = self.gatewayName + '.' + str(self.userID)
         order.gatewayName = self.gatewayName
-        
+
+        order.accountID = self.userID
+        order.vtAccountID = self.gatewayName + '.' + str(self.userID)
+
         # 保存代码和报单号
         order.symbol = data['InstrumentID']
         order.exchange = exchangeMapReverse[data['ExchangeID']]
         order.vtSymbol = order.symbol #'.'.join([order.symbol, order.exchange])
-        
+        order.vtSymbolName = self.gateway.symbol_name_map.get(order.symbol,order.vtSymbol)
         order.orderID = data['OrderRef']
         # CTP的报单号一致性维护需要基于frontID, sessionID, orderID三个字段
         # 但在本接口设计中，已经考虑了CTP的OrderRef的自增性，避免重复
         # 唯一可能出现OrderRef重复的情况是多处登录并在非常接近的时间内（几乎同时发单）
         # 考虑到VtTrader的应用场景，认为以上情况不会构成问题
         order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
+        order.sysOrderID = data.get('OrderSysID',EMPTY_STRING)
 
         order.direction = directionMapReverse.get(data['Direction'], DIRECTION_UNKNOWN)
         order.offset = offsetMapReverse.get(data['CombOffsetFlag'], OFFSET_UNKNOWN)
         order.status = statusMapReverse.get(data['OrderStatus'], STATUS_UNKNOWN)
-            
+
         # 价格、报单量等数值
         order.price = data['LimitPrice']
         order.totalVolume = data['VolumeTotalOriginal']
@@ -1413,48 +1459,54 @@ class CtpTdApi(TdApi):
 
         # 推送
         self.gateway.onOrder(order)
-    
+
     #----------------------------------------------------------------------
     def onRtnTrade(self, data):
         """成交回报"""
         # 创建报单数据对象
         trade = VtTradeData()
+        trade.accountID = self.userID
+        trade.vtAccountID = self.gatewayName + '.' + str(self.userID)
         trade.gatewayName = self.gatewayName
-        
+
         # 保存代码和报单号
         trade.symbol = data['InstrumentID']
         trade.exchange = exchangeMapReverse[data['ExchangeID']]
         trade.vtSymbol = trade.symbol #'.'.join([trade.symbol, trade.exchange])
-        
+        trade.vtSymbolName = self.gateway.symbol_name_map.get(trade.symbol, trade.vtSymbol)
+
         trade.tradeID = data['TradeID']
         trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
-        
+
         trade.orderID = data['OrderRef']
         trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
-        
+        trade.sysOrderID = data.get('OrderSysID',EMPTY_STRING)
         # 方向
         trade.direction = directionMapReverse.get(data['Direction'], '')
-            
+
         # 开平
         trade.offset = offsetMapReverse.get(data['OffsetFlag'], '')
-            
+
         # 价格、报单量等数值
         trade.price = data['Price']
         trade.volume = data['Volume']
         trade.tradeTime = data['TradeTime']
-        
+
         # 推送
         self.gateway.onTrade(trade)
-    
+
     #----------------------------------------------------------------------
     def onErrRtnOrderInsert(self, data, error):
         """发单错误回报（交易所）"""
         # 推送委托信息
         order = VtOrderData()
+        order.accountID = self.userID
+        order.vtAccountID = self.gatewayName + '.' + str(self.userID)
         order.gatewayName = self.gatewayName
         order.symbol = data['InstrumentID']
         order.exchange = exchangeMapReverse[data['ExchangeID']]
         order.vtSymbol = order.symbol
+        order.vtSymbolName = self.gateway.symbol_name_map.get(order.symbol, order.vtSymbol)
         order.orderID = data['OrderRef']
         order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
         order.direction = directionMapReverse.get(data['Direction'], DIRECTION_UNKNOWN)
@@ -1472,7 +1524,7 @@ class CtpTdApi(TdApi):
         err.additionalInfo = u'onErrRtnOrderInsert.{0},v:{1},ref:{2}:'\
             .format(order.vtSymbol , order.totalVolume, order.orderID)
         self.gateway.onError(err)
-    
+
     #----------------------------------------------------------------------
     def onErrRtnOrderAction(self, data, error):
         """撤单错误回报（交易所）"""
@@ -1485,62 +1537,62 @@ class CtpTdApi(TdApi):
         err.errorMsg = error['ErrorMsg']    #.decode('gbk')
         err.additionalInfo =u'onErrRtnOrderAction.{0}'.format(symbol)
         self.gateway.onError(err)
-    
+
     #----------------------------------------------------------------------
     def onRtnInstrumentStatus(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnTradingNotice(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnErrorConditionalOrder(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnExecOrder(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onErrRtnExecOrderInsert(self, data, error):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onErrRtnExecOrderAction(self, data, error):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onErrRtnForQuoteInsert(self, data, error):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnQuote(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onErrRtnQuoteInsert(self, data, error):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onErrRtnQuoteAction(self, data, error):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnForQuoteRsp(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnCFMMCTradingAccountToken(self, data):
         """"""
@@ -1570,32 +1622,32 @@ class CtpTdApi(TdApi):
     def onRspQryContractBank(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryParkedOrder(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryParkedOrderAction(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryTradingNotice(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryBrokerTradingParams(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQryBrokerTradingAlgos(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQueryCFMMCTradingAccountToken(self, data, error, n, last):
         """"""
@@ -1605,120 +1657,121 @@ class CtpTdApi(TdApi):
     def onRtnFromBankToFutureByBank(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnFromFutureToBankByBank(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnRepealFromBankToFutureByBank(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnRepealFromFutureToBankByBank(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnFromBankToFutureByFuture(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnFromFutureToBankByFuture(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnRepealFromBankToFutureByFutureManual(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnRepealFromFutureToBankByFutureManual(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnQueryBankBalanceByFuture(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onErrRtnBankToFutureByFuture(self, data, error):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onErrRtnFutureToBankByFuture(self, data, error):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onErrRtnRepealBankToFutureByFutureManual(self, data, error):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onErrRtnRepealFutureToBankByFutureManual(self, data, error):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onErrRtnQueryBankBalanceByFuture(self, data, error):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnRepealFromBankToFutureByFuture(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnRepealFromFutureToBankByFuture(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspFromBankToFutureByFuture(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspFromFutureToBankByFuture(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspQueryBankAccountMoneyByFuture(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnOpenAccountByBank(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnCancelAccountByBank(self, data):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRtnChangeAccountByBank(self, data):
         """"""
         pass
-    
+
     # ----------------------------------------------------------------------
-    def connect(self, userID, password, brokerID, address, authCode, userProductInfo):
+    def connect(self, userID, password, brokerID, address, authCode, userProductInfo, appID=EMPTY_STRING):
         """初始化连接"""
         self.userID = userID                # 账号
         self.password = password            # 密码
         self.brokerID = brokerID            # 经纪商代码
         self.address = address              # 服务器地址
-        self.authCode = authCode            #验证码
+        self.authCode = authCode            # 验证码
+        self.appID = appID                  # 产品ID
         self.userProductInfo = userProductInfo  #产品信息
 
         # 如果尚未建立服务器连接，则进行连接
@@ -1728,46 +1781,51 @@ class CtpTdApi(TdApi):
             if not os.path.exists(path):
                 os.makedirs(path)
             self.createFtdcTraderApi(path)
-            
+
             # 设置数据同步模式为推送从今日开始所有数据
             self.subscribePrivateTopic(0)
             self.subscribePublicTopic(0)
 
             # 注册服务器地址
             self.registerFront(self.address)
-            
+
             # 初始化连接，成功会调用onFrontConnected
             self.init()
-            
+
         # 若已经连接但尚未登录，则进行登录
         else:
             if self.requireAuthentication and not self.authStatus:
                 self.authenticate()
             elif not self.loginStatus:
-                self.login()    
-    
+                self.login()
+
     # ----------------------------------------------------------------------
     def login(self):
-        """连接服务器"""
+        """登录服务器"""
         # 如果填入了用户名密码等，则登录
+        self.writeLog(u'登录交易服务器')
         if self.userID and self.password and self.brokerID:
             req = {}
             req['UserID'] = self.userID
             req['Password'] = self.password
             req['BrokerID'] = self.brokerID
             self.reqID += 1
-            self.reqUserLogin(req, self.reqID)   
-        
+            self.reqUserLogin(req, self.reqID)
+
     # ----------------------------------------------------------------------
     def authenticate(self):
         """申请验证"""
-        if self.userID and self.brokerID and self.authCode and self.userProductInfo:
+        self.writeLog(u'申请授权码验证')
+        if self.userID and self.brokerID and self.authCode:
             req = {}
             req['UserID'] = self.userID
             req['BrokerID'] = self.brokerID
             req['AuthCode'] = self.authCode
-            req['UserProductInfo'] = self.userProductInfo
+            if len(self.userProductInfo) > 0:
+                req['UserProductInfo'] = self.userProductInfo
+            req['AppID'] = self.appID
             self.reqID +=1
+            self.writeLog(u'提交验证...')
             self.reqAuthenticate(req, self.reqID)
 
     # ----------------------------------------------------------------------
@@ -1775,7 +1833,7 @@ class CtpTdApi(TdApi):
         """查询账户"""
         self.reqID += 1
         self.reqQryTradingAccount({}, self.reqID)
-        
+
     # ----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
@@ -1784,15 +1842,15 @@ class CtpTdApi(TdApi):
         req['BrokerID'] = self.brokerID
         req['InvestorID'] = self.userID
         self.reqQryInvestorPosition(req, self.reqID)
-        
+
     # ----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
         self.reqID += 1
         self.orderRef += 1
-        
+
         req = {}
-        
+
         req['InstrumentID'] = orderReq.symbol
         req['LimitPrice'] = orderReq.price
 
@@ -1801,17 +1859,18 @@ class CtpTdApi(TdApi):
             req['VolumeTotalOriginal'] = int(orderReq.volume)
         else:
             req['VolumeTotalOriginal'] = orderReq.volume
-        
+
         # 下面如果由于传入的类型本接口不支持，则会 返回空字符串
         req['OrderPriceType'] = priceTypeMap.get(orderReq.priceType, '')
         req['Direction'] = directionMap.get(orderReq.direction, '')
         req['CombOffsetFlag'] = offsetMap.get(orderReq.offset, '')
-            
+
         req['OrderRef'] = str(self.orderRef)
         req['InvestorID'] = self.userID
+        req['ExchangeID'] = orderReq.exchange
         req['UserID'] = self.userID
         req['BrokerID'] = self.brokerID
-        
+
         req['CombHedgeFlag'] = defineDict['THOST_FTDC_HF_Speculation']       # 投机单
         req['ContingentCondition'] = defineDict['THOST_FTDC_CC_Immediately'] # 立即发单
         req['ForceCloseReason'] = defineDict['THOST_FTDC_FCC_NotForceClose'] # 非强平
@@ -1819,7 +1878,7 @@ class CtpTdApi(TdApi):
         req['TimeCondition'] = defineDict['THOST_FTDC_TC_GFD']               # 今日有效
         req['VolumeCondition'] = defineDict['THOST_FTDC_VC_AV']              # 任意成交量
         req['MinVolume'] = 1                                                 # 最小成交量为1
-        
+
         # 判断FAK和FOK
         if orderReq.priceType == PRICETYPE_FAK:
             req['OrderPriceType'] = defineDict["THOST_FTDC_OPT_LimitPrice"]
@@ -1828,33 +1887,33 @@ class CtpTdApi(TdApi):
         if orderReq.priceType == PRICETYPE_FOK:
             req['OrderPriceType'] = defineDict["THOST_FTDC_OPT_LimitPrice"]
             req['TimeCondition'] = defineDict['THOST_FTDC_TC_IOC']
-            req['VolumeCondition'] = defineDict['THOST_FTDC_VC_CV']        
-        
+            req['VolumeCondition'] = defineDict['THOST_FTDC_VC_CV']
+
         self.reqOrderInsert(req, self.reqID)
-        
+
         # 返回订单号（字符串），便于某些算法进行动态管理
         vtOrderID = '.'.join([self.gatewayName, str(self.orderRef)])
         return vtOrderID
-    
+
     # ----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
         self.reqID += 1
 
         req = {}
-        
+
         req['InstrumentID'] = cancelOrderReq.symbol
         req['ExchangeID'] = cancelOrderReq.exchange
         req['OrderRef'] = cancelOrderReq.orderID
         req['FrontID'] = cancelOrderReq.frontID
         req['SessionID'] = cancelOrderReq.sessionID
-        
+
         req['ActionFlag'] = defineDict['THOST_FTDC_AF_Delete']
         req['BrokerID'] = self.brokerID
         req['InvestorID'] = self.userID
-        
+
         self.reqOrderAction(req, self.reqID)
-        
+
     # ----------------------------------------------------------------------
     def close(self):
         """关闭"""
@@ -1893,32 +1952,32 @@ class TdxMdApi():
         self.pool = None                 # 线程池
         #self.req_thread = None          # 定时器线程
 
-        self.ip_list = [
-                        {"ip": "106.14.95.149", "port": 7727, "name": "扩展市场上海双线"},
-                        #{"ip": "112.74.214.43", "port": 7727, "name": "扩展市场深圳双线1"},
-                        # {"ip": "113.105.142.136", "port": 443, "name": "扩展市场东莞主站"},
-                        {"ip": "119.147.86.171", "port": 7727, "name": "扩展市场深圳主站"},
-                        {"ip": "119.97.185.5", "port": 7727, "name": "扩展市场武汉主站1"},
-                        {"ip": "120.24.0.77", "port": 7727, "name": "扩展市场深圳双线2"},
-                        {"ip": "124.74.236.94", "port": 7721},
-                        {"ip": "202.103.36.71", "port": 443, "name": "扩展市场武汉主站2"},
-                        {"ip": "47.92.127.181", "port": 7727, "name": "扩展市场北京主站"},
-                        {"ip": "59.175.238.38", "port": 7727, "name": "扩展市场武汉主站3"},
-                        {"ip": "61.152.107.141", "port": 7727, "name": "扩展市场上海主站1"},
-                        {"ip": "61.152.107.171", "port": 7727, "name": "扩展市场上海主站2"},
-                        # {"ip": "124.74.236.94","port": 7721},
-                        # {"ip": "218.80.248.229", "port": 7721},
-                        # {"ip": "58.246.109.27", "port": 7721},
-                        # added 20190222 from tdx
-                        {"ip": "119.147.86.171", "port": 7721, "name": "扩展市场深圳主站"},
+        self.ip_list =  [
+                        {"ip": "112.74.214.43", "port": 7727, "name": "扩展市场深圳双线1"},
+                        {"ip": "120.24.0.77", "port": 7727,   "name": "扩展市场深圳双线2"},
                         {"ip": "47.107.75.159", "port": 7727, "name": "扩展市场深圳双线3"},
-                        ]
-        #  调出 {'ip': '218.80.248.229', 'port': 7721},
 
-        self.best_ip = {'ip': None, 'port': None}
+                        {"ip": "113.105.142.136", "port": 443, "name": "扩展市场东莞主站"},
+                        {"ip": "113.105.142.133", "port": 443, "name": "港股期货东莞电信"},
+
+
+                        {"ip": "119.97.185.5", "port": 7727, "name": "扩展市场武汉主站1"},
+                        {"ip": "119.97.185.7", "port": 7727, "name": "港股期货武汉主站1"},
+                        {"ip": "119.97.185.9", "port": 7727, "name": "港股期货武汉主站2"},
+
+                        {"ip": "202.103.36.71", "port": 443, "name": "扩展市场武汉主站2"},
+
+                        {"ip": "47.92.127.181", "port": 7727, "name": "扩展市场北京主站"},
+                        {"ip": "106.14.95.149", "port": 7727, "name": "扩展市场上海双线"},
+                        ]
+
+        #  调出 {'ip': '218.80.248.229', 'port': 7721},
+        # {"ip": "59.175.238.38", "port": 7727, "name": "扩展市场武汉主站3"},
+        self.api_ip_dict = {}  # API 的连接服务器配置
         self.api_dict = {}  # API 的连接会话对象字典
         self.last_tick_dt = {} # 记录该会话对象的最后一个tick时间
 
+        self.last_sort_speed_dt = None
         self.instrument_count = 50000
 
         self.has_qry_instrument = False
@@ -1937,31 +1996,66 @@ class TdxMdApi():
         try:
             with apix.connect(ip, port):
                 if apix.get_instrument_count() > 10000:
-                    _timestamp = datetime.now() - __time1
-                    self.writeLog('服务器{}:{},耗时:{}'.format(ip,port,_timestamp))
+                    _timestamp = (datetime.now() - __time1).total_seconds() * 1000
+                    self.writeLog('服务器{}:{},耗时:{}ms'.format(ip,port,_timestamp))
                     return _timestamp
                 else:
-                    self.writeLog(u'该服务器IP {}无响应'.format(ip))
-                    return timedelta(9, 9, 0)
+                    self.writeLog(u'该服务器IP {}无响应.'.format(ip))
+                    return timedelta(seconds=10).total_seconds()* 1000
         except:
             self.writeError(u'tdx ping服务器，异常的响应{}'.format(ip))
-            return timedelta(9, 9, 0)
+            return timedelta(seconds=10).total_seconds() * 1000
+
+    def sort_ip_speed(self):
+        """
+        对所有服务器进行速度排序
+        :return:
+        """
+        speed_result = []
+        for x in self.ip_list:
+            speed = self.ping(x['ip'], x['port'])
+            x.update({'speed': speed})
+            speed_result.append(copy.copy(x))
+
+        # 更新服务器，按照速度排序
+        self.ip_list = sorted(speed_result, key=lambda s: s['speed'])
+        self.writeLog(u'服务器访问速度排序:{}'.format(self.ip_list))
 
     # ----------------------------------------------------------------------
-    def select_best_ip(self):
+    def select_best_ip(self,i=0):
         """
         选择行情服务器
         :return:
         """
         self.writeLog(u'选择通达信行情服务器')
+        if self.last_sort_speed_dt is None or (datetime.now() - self.last_sort_speed_dt).total_seconds() > 60:
+            self.sort_ip_speed()
+            self.last_sort_speed_dt = datetime.now()
 
-        data_future = [self.ping(x['ip'], x['port']) for x in self.ip_list]
+        valid_ip_list = [x for x in self.ip_list if x.get('speed',10000)<10000]
 
-        best_future_ip = self.ip_list[data_future.index(min(data_future))]
+        if len(valid_ip_list) == 0:
+            self.gateway.writeError(u'未能找到合适速度得行情服务器')
+            return None,None
 
-        self.writeLog(u'选取 {}:{}'.format(
-            best_future_ip['ip'], best_future_ip['port']))
-        return best_future_ip
+        # 移除旧得api对应服务器IP/port地址配置
+        self.api_ip_dict.pop(i,None)
+
+        if len(valid_ip_list) < len(self.api_ip_dict):
+            self.writeLog(u'已经选择得服务器数量，大于可供选择得服务器数量，优先选择第一个')
+            return valid_ip_list[0].get('ip'),valid_ip_list[0].get('port')
+
+        using_server = self.api_ip_dict.values()
+        self.writeLog(u'已经使用得服务器列表:{}'.format(using_server))
+        for server in valid_ip_list:
+            ip = server.get('ip')
+            port = server.get('port')
+            if '{}:{}'.format(ip,port) in using_server:
+                continue
+            return ip, port
+
+        self.writeLog(u'未能有效选择，默认第一个')
+        return valid_ip_list[0].get('ip'),valid_ip_list[0].get('port')
 
     def connect(self,n=3):
         """
@@ -1976,20 +2070,22 @@ class TdxMdApi():
                     return
 
         self.writeLog(u'开始通达信行情服务器')
-
-        # 选取最佳服务器
-        if self.best_ip['ip'] is None and self.best_ip['port'] is None:
-            self.best_ip = self.select_best_ip()
-
         # 创建n个api连接对象实例
         for i in range(n):
             try:
                 api = TdxExHq_API( heartbeat=True, auto_retry=True,raise_exception=True)
-                api.connect(self.best_ip['ip'], self.best_ip['port'])
+                # 选取最佳服务器
+                best_ip,best_port = self.select_best_ip(i)
+
+                if best_ip is None or best_port is None:
+                    self.writeError(u'未能选择到服务器')
+
+                self.writeLog(u'api[{}] 选择 {}:{}'.format(i, best_ip, best_port))
+                api.connect(best_ip, best_port)
                 # 尝试获取市场合约统计
                 c = api.get_instrument_count()
                 if c is None or c < 10:
-                    err_msg = u'该服务器IP {}/{}无响应'.format(self.best_ip['ip'],self.best_ip['port'])
+                    err_msg = u'该服务器IP {}/{}无响应'.format(best_ip,best_port )
                     err = VtErrorData()
                     err.gatewayName = self.gatewayName
                     err.errorID = -1
@@ -1998,13 +2094,13 @@ class TdxMdApi():
                 else:
                     self.writeLog(u'创建第{}个tdx连接'.format(i+1))
                     self.api_dict[i] = api
+                    self.api_ip_dict.update({i:'{}:{}'.format(best_ip,best_port)})
                     self.last_tick_dt[i] = datetime.now()
                     self.connection_status = True
                     self.instrument_count = c
 
             except Exception as ex:
                 self.writeError(u'连接服务器tdx[{}]异常:{},{}'.format(i,str(ex),traceback.format_exc()))
-                self.best_ip = {'ip': None, 'port': None}
                 return
 
         # 更新 symbol_exchange_dict , symbol_market_dict
@@ -2024,13 +2120,13 @@ class TdxMdApi():
         :return:
         """
         try:
-            self.best_ip = self.select_best_ip()
+            best_ip,best_port = self.select_best_ip(i)
             api = TdxExHq_API(heartbeat=True, auto_retry=True)
-            api.connect(self.best_ip['ip'], self.best_ip['port'])
+            api.connect(best_ip,best_port)
             # 尝试获取市场合约统计
             c = api.get_instrument_count()
             if c is None or c < 10:
-                err_msg = u'该服务器IP {}/{}无响应'.format(self.best_ip['ip'], self.best_ip['port'])
+                err_msg = u'该服务器IP {}/{}无响应'.format(best_ip,best_port)
                 err = VtErrorData()
                 err.gatewayName = self.gatewayName
                 err.errorID = -1
@@ -2039,6 +2135,7 @@ class TdxMdApi():
             else:
                 self.writeLog(u'重新创建第{}个tdx连接'.format(i + 1))
                 self.api_dict[i] = api
+                self.api_ip_dict.update({i: '{}:{}'.format(best_ip, best_port)})
             sleep(1)
         except Exception as ex:
             self.writeError(u'重新连接服务器tdx[{}]异常:{},{}'.format(i, str(ex), traceback.format_exc()))
@@ -2287,16 +2384,13 @@ class TdxMdApi():
             if tick.exchange is EXCHANGE_CFFEX:
                 if tick.datetime.hour not in [9,10,11,13,14,15]:
                     return
-                if short_symbol in ['IC','IF','IH']:
-                    if tick.datetime.hour == 9 and tick.datetime.minute < 30:
-                        return
-                    if tick.datetime.hour == 15 and tick.datetime.minute >= 0:
-                        return
-                else: # TF, T
-                    if tick.datetime.hour == 9 and tick.datetime.minute < 15:
-                        return
-                    if tick.datetime.hour == 15 and tick.datetime.minute >= 15:
-                        return
+                if tick.datetime.hour == 9 and tick.datetime.minute < 15:
+                    return
+                # 排除早盘 11:30~12:00
+                if tick.datetime.hour == 11 and tick.datetime.minute >= 30:
+                    return
+                if tick.datetime.hour == 15 and tick.datetime.minute >= 15:
+                    return
             else:  # 大商所/郑商所，上期所，上海能源
                 # 排除非开盘小时
                 if tick.datetime.hour in [3,4,5,6,7,8,12,15,16,17,18,19,20]:
@@ -2594,7 +2688,7 @@ class RedisMdApi():
                             if len(rt_tick_dict1) == 0:
                                 self.writeLog(u'redis[{}]: rt_list1 为空, {}'.format(symbols[i+1], results[i+1]))
                                 rt_tick_dict1 = None
-    
+
                             elif symbols[i+1] in lastResult and lastResult[symbols[i+1]] is not None:
                                 if str(rt_tick_dict1) != str(lastResult[symbols[i+1]]):
                                     change_percent = abs(float(lastResult[symbols[i+1]]['LastPrice']) - float(rt_tick_dict1['LastPrice'])) / float(lastResult[symbols[i+1]]['LastPrice']) * 100
@@ -2607,7 +2701,7 @@ class RedisMdApi():
                                     rt_tick_dict1 = None
                             else:
                                 lastResult[symbols[i + 1]] = rt_tick_dict1
-                                
+
                         except Exception as ex:
                             self.writeError(u'Redis行情服务器 run() exception:{},{}, rt_list1:{}不正确'
                                             .format(str(ex), traceback.format_exc(),results[i+1]))
@@ -2750,7 +2844,7 @@ class RedisMdApi():
                     return
 
             # 排除上期所夜盘数据 23:00 收盘
-            if short_symbol in NIGHT_MARKET_DL or short_symbol in NIGHT_MARKET_SQ3:
+            if  short_symbol in NIGHT_MARKET_DL or short_symbol in NIGHT_MARKET_SQ3:
                 if tick.datetime.hour in [23, 0, 1, 2]:
                     return
             # 排除上期所夜盘数据 1:00 收盘
@@ -3005,22 +3099,23 @@ def test():
     """测试"""
     from qtpy import QtCore
     import sys
-    
+
     def print_log(event):
         log = event.dict_['data']
         print(':'.join([log.logTime, log.logContent]))
-    
-    app = QtCore.QCoreApplication(sys.argv)    
+
+    app = QtCore.QCoreApplication(sys.argv)
 
     eventEngine = EventEngine()
     eventEngine.register(EVENT_LOG, print_log)
     eventEngine.start()
-    
+
     gateway = CtpGateway(eventEngine)
+    gateway.debug_tick = True
     gateway.connect()
 
     # gateway.connect()
-    auto_subscribe_symbols = ['M99', 'RB99', 'TA99', 'MA99', 'NI99', 'SR99']
+    auto_subscribe_symbols = ['m1909']
     for symbol in auto_subscribe_symbols:
         print(u'自动订阅合约:{}'.format(symbol))
         sub = VtSubscribeReq()

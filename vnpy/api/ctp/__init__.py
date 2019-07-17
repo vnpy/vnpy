@@ -1,5 +1,5 @@
 # encoding: UTF-8
 
-from vnctpmd import MdApi
-from vnctptd import TdApi
-from ctp_data_type import defineDict
+from vnpy.api.ctp.vnctpmd import MdApi
+from vnpy.api.ctp.vnctptd import TdApi
+from vnpy.api.ctp.ctp_data_type import defineDict

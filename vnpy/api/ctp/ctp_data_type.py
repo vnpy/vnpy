@@ -245,6 +245,10 @@ defineDict["THOST_FTDC_ICT_BusinessRegistration"] = 'H'
 defineDict["THOST_FTDC_ICT_HKMCIDCard"] = 'I'
 #人行开户许可证
 defineDict["THOST_FTDC_ICT_AccountsPermits"] = 'J'
+#外国人永久居留证
+defineDict["THOST_FTDC_ICT_FrgPrmtRdCard"] = 'K'
+#资管产品备案函
+defineDict["THOST_FTDC_ICT_CptMngPrdLetter"] = 'L'
 #其他证件
 defineDict["THOST_FTDC_ICT_OtherCard"] = 'x'
 
@@ -489,6 +493,28 @@ defineDict["THOST_FTDC_BFC_DeleteOrder"] = 'J'
 defineDict["THOST_FTDC_BFC_ParkedOrderInsert"] = 'K'
 #预埋报单操作
 defineDict["THOST_FTDC_BFC_ParkedOrderAction"] = 'L'
+#资金不够仍允许行权
+defineDict["THOST_FTDC_BFC_ExecOrderNoCheck"] = 'M'
+#指定
+defineDict["THOST_FTDC_BFC_Designate"] = 'N'
+#证券处置
+defineDict["THOST_FTDC_BFC_StockDisposal"] = 'O'
+#席位资金预警
+defineDict["THOST_FTDC_BFC_BrokerDepositWarn"] = 'Q'
+#备兑不足预警
+defineDict["THOST_FTDC_BFC_CoverWarn"] = 'S'
+#行权试算
+defineDict["THOST_FTDC_BFC_PreExecOrder"] = 'T'
+#行权交收风险
+defineDict["THOST_FTDC_BFC_ExecOrderRisk"] = 'P'
+#持仓限额预警
+defineDict["THOST_FTDC_BFC_PosiLimitWarn"] = 'U'
+#持仓限额查询
+defineDict["THOST_FTDC_BFC_QryPosiLimit"] = 'V'
+#银期签到签退
+defineDict["THOST_FTDC_BFC_FBSign"] = 'W'
+#银期签约解约
+defineDict["THOST_FTDC_BFC_FBAccount"] = 'X'
 
 typedefDict["TThostFtdcBrokerFunctionCodeType"] = "char"
 
@@ -595,10 +621,6 @@ defineDict["THOST_FTDC_PC_Spot"] = '4'
 defineDict["THOST_FTDC_PC_EFP"] = '5'
 #现货期权
 defineDict["THOST_FTDC_PC_SpotOption"] = '6'
-#个股期权
-defineDict["THOST_FTDC_PC_ETFOption"] = '7'
-#证券
-defineDict["THOST_FTDC_PC_Stock"] = '8'
 
 typedefDict["TThostFtdcProductClassType"] = "char"
 
@@ -686,6 +708,13 @@ defineDict["THOST_FTDC_HF_Hedge"] = '3'
 #备兑
 defineDict["THOST_FTDC_HF_Covered"] = '4'
 
+#做市商
+defineDict["THOST_FTDC_HF_MarketMaker"] = '5'
+#第一腿投机第二腿套保 大商所专用
+defineDict["THOST_FTDC_HF_SpecHedge"] = '6'
+#第一腿套保第二腿投机  大商所专用
+defineDict["THOST_FTDC_HF_HedgeSpec"] = '7'
+
 typedefDict["TThostFtdcHedgeFlagType"] = "char"
 
 #//////////////////////////////////////////////////////////////////////
@@ -709,6 +738,8 @@ defineDict["THOST_FTDC_CIDT_Speculation"] = '1'
 defineDict["THOST_FTDC_CIDT_Arbitrage"] = '2'
 #套保
 defineDict["THOST_FTDC_CIDT_Hedge"] = '3'
+#做市商
+defineDict["THOST_FTDC_CIDT_MarketMaker"] = '5'
 
 typedefDict["TThostFtdcClientIDTypeType"] = "char"
 
@@ -809,6 +840,10 @@ defineDict["THOST_FTDC_ORDT_Combination"] = '3'
 defineDict["THOST_FTDC_ORDT_ConditionalOrder"] = '4'
 #互换单
 defineDict["THOST_FTDC_ORDT_Swap"] = '5'
+#大宗交易成交衍生
+defineDict["THOST_FTDC_ORDT_DeriveFromBlockTrade"] = '6'
+#期转现成交衍生
+defineDict["THOST_FTDC_ORDT_DeriveFromEFPTrade"] = '7'
 
 typedefDict["TThostFtdcOrderTypeType"] = "char"
 
@@ -927,6 +962,8 @@ defineDict["THOST_FTDC_TRDT_OTC"] = '2'
 defineDict["THOST_FTDC_TRDT_EFPDerived"] = '3'
 #组合衍生成交
 defineDict["THOST_FTDC_TRDT_CombinationDerived"] = '4'
+#大宗交易成交
+defineDict["THOST_FTDC_TRDT_BlockTrade"] = '5'
 
 typedefDict["TThostFtdcTradeTypeType"] = "char"
 
@@ -939,6 +976,8 @@ defineDict["THOST_FTDC_PSRC_LastPrice"] = '0'
 defineDict["THOST_FTDC_PSRC_Buy"] = '1'
 #卖委托价
 defineDict["THOST_FTDC_PSRC_Sell"] = '2'
+#场外成交价
+defineDict["THOST_FTDC_PSRC_OTC"] = '3'
 
 typedefDict["TThostFtdcPriceSourceType"] = "char"
 
@@ -1412,6 +1451,26 @@ defineDict["THOST_FTDC_TPID_IsPosiFreeze"] = 'F'
 defineDict["THOST_FTDC_TPID_IsPosiLimit"] = 'M'
 #郑商所询价时间间隔
 defineDict["THOST_FTDC_TPID_ForQuoteTimeInterval"] = 'Q'
+#是否期货限仓
+defineDict["THOST_FTDC_TPID_IsFuturePosiLimit"] = 'B'
+#是否期货下单频率限制
+defineDict["THOST_FTDC_TPID_IsFutureOrderFreq"] = 'C'
+#行权冻结是否计算盈利
+defineDict["THOST_FTDC_TPID_IsExecOrderProfit"] = 'H'
+#银期开户是否验证开户银行卡号是否是预留银行账户
+defineDict["THOST_FTDC_TPID_IsCheckBankAcc"] = 'I'
+#弱密码最后修改日期
+defineDict["THOST_FTDC_TPID_PasswordDeadLine"] = 'J'
+#强密码校验
+defineDict["THOST_FTDC_TPID_IsStrongPassword"] = 'K'
+#自有资金质押比
+defineDict["THOST_FTDC_TPID_BalanceMorgage"] = 'a'
+#最小密码长度
+defineDict["THOST_FTDC_TPID_MinPwdLen"] = 'O'
+#IP当日最大登陆失败次数
+defineDict["THOST_FTDC_TPID_LoginFailMaxNumForIP"] = 'U'
+#密码有效期
+defineDict["THOST_FTDC_TPID_PasswordPeriod"] = 'V'
 
 typedefDict["TThostFtdcTradeParamIDType"] = "char"
 
@@ -3694,6 +3753,12 @@ defineDict["THOST_FTDC_FBTUET_QueryFutureAccount"] = '9'
 defineDict["THOST_FTDC_FBTUET_SignOut"] = 'A'
 #密钥同步
 defineDict["THOST_FTDC_FBTUET_SyncKey"] = 'B'
+#预约开户
+defineDict["THOST_FTDC_FBTUET_ReserveOpenAccount"] = 'C'
+#撤销预约开户
+defineDict["THOST_FTDC_FBTUET_CancelReserveOpenAccount"] = 'D'
+#预约开户确认
+defineDict["THOST_FTDC_FBTUET_ReserveOpenAccountConfirm"] = 'E'
 #其他
 defineDict["THOST_FTDC_FBTUET_Other"] = 'Z'
 
@@ -5389,6 +5454,8 @@ defineDict["THOST_FTDC_MFUR_None"] = '0'
 defineDict["THOST_FTDC_MFUR_Margin"] = '1'
 #用于手续费、盈亏、保证金
 defineDict["THOST_FTDC_MFUR_All"] = '2'
+#人民币方案3
+defineDict["THOST_FTDC_MFUR_CNY3"] = '3'
 
 typedefDict["TThostFtdcMortgageFundUseRangeType"] = "char"
 
@@ -6160,12 +6227,42 @@ defineDict["THOST_FTDC_COMBT_CLD"] = '6'
 typedefDict["TThostFtdcCombinationTypeType"] = "char"
 
 #//////////////////////////////////////////////////////////////////////
+#TFtdcDceCombinationTypeType是一个组合类型类型
+#//////////////////////////////////////////////////////////////////////
+#期货对锁组合
+defineDict["THOST_FTDC_DCECOMBT_SPL"] = '0'
+#期权对锁组合
+defineDict["THOST_FTDC_DCECOMBT_OPL"] = '1'
+#期货跨期组合
+defineDict["THOST_FTDC_DCECOMBT_SP"] = '2'
+#期货跨品种组合
+defineDict["THOST_FTDC_DCECOMBT_SPC"] = '3'
+#买入期权垂直价差组合
+defineDict["THOST_FTDC_DCECOMBT_BLS"] = '4'
+#卖出期权垂直价差组合
+defineDict["THOST_FTDC_DCECOMBT_BES"] = '5'
+#期权日历价差组合
+defineDict["THOST_FTDC_DCECOMBT_CAS"] = '6'
+#期权跨式组合
+defineDict["THOST_FTDC_DCECOMBT_STD"] = '7'
+#期权宽跨式组合
+defineDict["THOST_FTDC_DCECOMBT_STG"] = '8'
+#买入期货期权组合
+defineDict["THOST_FTDC_DCECOMBT_BFO"] = '9'
+#卖出期货期权组合
+defineDict["THOST_FTDC_DCECOMBT_SFO"] = 'a'
+
+typedefDict["TThostFtdcDceCombinationTypeType"] = "char"
+
+#//////////////////////////////////////////////////////////////////////
 #TFtdcOptionRoyaltyPriceTypeType是一个期权权利金价格类型类型
 #//////////////////////////////////////////////////////////////////////
 #昨结算价
 defineDict["THOST_FTDC_ORPT_PreSettlementPrice"] = '1'
 #开仓价
 defineDict["THOST_FTDC_ORPT_OpenPrice"] = '4'
+#最新价与昨结算价较大值
+defineDict["THOST_FTDC_ORPT_MaxPreSettlementPrice"] = '5'
 
 typedefDict["TThostFtdcOptionRoyaltyPriceTypeType"] = "char"
 
@@ -6324,14 +6421,116 @@ defineDict["THOST_FTDC_CMDR_UnComb"] = '1'
 typedefDict["TThostFtdcCombDirectionType"] = "char"
 
 #//////////////////////////////////////////////////////////////////////
-#TFtdcLockTypeType是一个锁定方向类型
+#TFtdcStrikeOffsetTypeType是一个行权偏移类型类型
 #//////////////////////////////////////////////////////////////////////
-#锁定
-defineDict["THOST_FTDC_LCKT_Lock"] = '1'
-#解锁
-defineDict["THOST_FTDC_LCKT_Unlock"] = '2'
+#实值额
+defineDict["THOST_FTDC_STOV_RealValue"] = '1'
+#盈利额
+defineDict["THOST_FTDC_STOV_ProfitValue"] = '2'
+#实值比例
+defineDict["THOST_FTDC_STOV_RealRatio"] = '3'
+#盈利比例
+defineDict["THOST_FTDC_STOV_ProfitRatio"] = '4'
 
-typedefDict["TThostFtdcLockTypeType"] = "char"
+typedefDict["TThostFtdcStrikeOffsetTypeType"] = "char"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcReserveOpenAccStasType是一个预约开户状态类型
+#//////////////////////////////////////////////////////////////////////
+#等待处理中
+defineDict["THOST_FTDC_ROAST_Processing"] = '0'
+#已撤销
+defineDict["THOST_FTDC_ROAST_Cancelled"] = '1'
+#已开户
+defineDict["THOST_FTDC_ROAST_Opened"] = '2'
+#无效请求
+defineDict["THOST_FTDC_ROAST_Invalid"] = '3'
+
+typedefDict["TThostFtdcReserveOpenAccStasType"] = "char"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcLoginRemarkType是一个登录备注类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcLoginRemarkType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcInvestUnitIDType是一个投资单元代码类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcInvestUnitIDType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcBulletinIDType是一个公告编号类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcBulletinIDType"] = "int"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcNewsTypeType是一个公告类型类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcNewsTypeType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcNewsUrgencyType是一个紧急程度类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcNewsUrgencyType"] = "char"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcAbstractType是一个消息摘要类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcAbstractType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcComeFromType是一个消息来源类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcComeFromType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcURLLinkType是一个WEB地址类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcURLLinkType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcLongIndividualNameType是一个长个人姓名类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcLongIndividualNameType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcLongFBEBankAccountNameType是一个长换汇银行账户名类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcLongFBEBankAccountNameType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcDateTimeType是一个日期时间类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcDateTimeType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcWeakPasswordSourceType是一个弱密码来源类型
+#//////////////////////////////////////////////////////////////////////
+#弱密码库
+defineDict["THOST_FTDC_WPSR_Lib"] = '1'
+#手工录入
+defineDict["THOST_FTDC_WPSR_Manual"] = '2'
+
+typedefDict["TThostFtdcWeakPasswordSourceType"] = "char"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcRandomStringType是一个随机串类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcRandomStringType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcOptSelfCloseFlagType是一个期权行权的头寸是否自对冲类型
+#//////////////////////////////////////////////////////////////////////
+#自对冲期权仓位
+defineDict["THOST_FTDC_OSCF_CloseSelfOptionPosition"] = '1'
+#保留期权仓位
+defineDict["THOST_FTDC_OSCF_ReserveOptionPosition"] = '2'
+#自对冲卖方履约后的期货仓位
+defineDict["THOST_FTDC_OSCF_SellCloseSelfFuturePosition"] = '3'
+#保留卖方履约后的期货仓位
+defineDict["THOST_FTDC_OSCF_ReserveFuturePosition"] = '4'
+
+typedefDict["TThostFtdcOptSelfCloseFlagType"] = "char"
 
 #//////////////////////////////////////////////////////////////////////
 #TFtdcBizTypeType是一个业务类型类型
@@ -6344,113 +6543,151 @@ defineDict["THOST_FTDC_BZTP_Stock"] = '2'
 typedefDict["TThostFtdcBizTypeType"] = "char"
 
 #//////////////////////////////////////////////////////////////////////
-#TFtdcDesignateTypeType是一个指定类型类型
+#TFtdcAppTypeType是一个用户App类型类型
 #//////////////////////////////////////////////////////////////////////
-#指定登记
-defineDict["THOST_FTDC_DSTP_Register"] = '1'
-#指定撤销
-defineDict["THOST_FTDC_DSTP_Cancel"] = '2'
+#直连的投资者
+defineDict["THOST_FTDC_APP_TYPE_Investor"] = '1'
+#为每个投资者都创建连接的中继
+defineDict["THOST_FTDC_APP_TYPE_InvestorRelay"] = '2'
+#所有投资者共享一个操作员连接的中继
+defineDict["THOST_FTDC_APP_TYPE_OperatorRelay"] = '3'
+#未知
+defineDict["THOST_FTDC_APP_TYPE_UnKnown"] = '4'
 
-typedefDict["TThostFtdcDesignateTypeType"] = "char"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcFreezeReasonTypeType是一个冻结原因类型
-#//////////////////////////////////////////////////////////////////////
-#初始化
-defineDict["THOST_FTDC_FRTP_Init"] = '1'
-#锁定
-defineDict["THOST_FTDC_FRTP_Lock"] = '2'
-#执行
-defineDict["THOST_FTDC_FRTP_Exec"] = '3'
-#仓位校验
-defineDict["THOST_FTDC_FRTP_Check"] = '4'
-#E+1日执行冻结
-defineDict["THOST_FTDC_FRTP_ExecFreeze"] = '5'
-
-typedefDict["TThostFtdcFreezeReasonTypeType"] = "char"
+typedefDict["TThostFtdcAppTypeType"] = "char"
 
 #//////////////////////////////////////////////////////////////////////
-#TFtdcFreezeTypeType是一个冻结类型类型
+#TFtdcAppIDType是一个App代码类型
 #//////////////////////////////////////////////////////////////////////
-#冻结
-defineDict["THOST_FTDC_FZTP_Freeze"] = '1'
-#解冻
-defineDict["THOST_FTDC_FZTP_Unfreeze"] = '2'
-#强制执行
-defineDict["THOST_FTDC_FZTP_Force"] = '3'
-
-typedefDict["TThostFtdcFreezeTypeType"] = "char"
+typedefDict["TThostFtdcAppIDType"] = "string"
 
 #//////////////////////////////////////////////////////////////////////
-#TFtdcTradeSystemTypeType是一个交易系统类型类型
+#TFtdcSystemInfoLenType是一个系统信息长度类型
 #//////////////////////////////////////////////////////////////////////
-#未知系统
-defineDict["THOST_FTDC_TSTP_Unknow"] = '0'
-#期货系统
-defineDict["THOST_FTDC_TSTP_Future"] = '1'
-#个股系统
-defineDict["THOST_FTDC_TSTP_IShare"] = '2'
-
-typedefDict["TThostFtdcTradeSystemTypeType"] = "char"
+typedefDict["TThostFtdcSystemInfoLenType"] = "int"
 
 #//////////////////////////////////////////////////////////////////////
-#TFtdcStockDisposalTypeType是一个证券处置方向类型
+#TFtdcAdditionalInfoLenType是一个补充信息长度类型
 #//////////////////////////////////////////////////////////////////////
-#划入经纪公司账户
-defineDict["THOST_FTDC_STPT_ToBroker"] = '1'
-#划入投资者账户
-defineDict["THOST_FTDC_STPT_ToInvestor"] = '2'
-
-typedefDict["TThostFtdcStockDisposalTypeType"] = "char"
+typedefDict["TThostFtdcAdditionalInfoLenType"] = "int"
 
 #//////////////////////////////////////////////////////////////////////
-#TFtdcStockDisposalSysIDType是一个证券处置编号类型
+#TFtdcClientSystemInfoType是一个交易终端系统信息类型
 #//////////////////////////////////////////////////////////////////////
-typedefDict["TThostFtdcStockDisposalSysIDType"] = "string"
+typedefDict["TThostFtdcClientSystemInfoType"] = "string"
 
 #//////////////////////////////////////////////////////////////////////
-#TFtdcStockDisposalStatusType是一个证券处置状态类型
+#TFtdcAdditionalInfoType是一个系统外部信息类型
 #//////////////////////////////////////////////////////////////////////
-#已经提交
-defineDict["THOST_FTDC_SDPS_Submitted"] = 'a'
-#已经接受
-defineDict["THOST_FTDC_SDPS_Accepted"] = 'b'
-#已经被拒绝
-defineDict["THOST_FTDC_SDPS_Rejected"] = 'c'
-#已经被撤销
-defineDict["THOST_FTDC_SDPS_Cancelled"] = 'd'
-
-typedefDict["TThostFtdcStockDisposalStatusType"] = "char"
+typedefDict["TThostFtdcAdditionalInfoType"] = "string"
 
 #//////////////////////////////////////////////////////////////////////
-#TFtdcInstructionRightTypeType是一个指令权限类型类型
+#TFtdcBase64ClientSystemInfoType是一个base64交易终端系统信息类型
 #//////////////////////////////////////////////////////////////////////
-#限价单
-defineDict["THOST_FTDC_ISTR_Limit"] = '1'
-#限价全额成交否则取消
-defineDict["THOST_FTDC_ISTR_Limit_FOK"] = '2'
-#市价订单剩余转限价
-defineDict["THOST_FTDC_ISTR_Market_RemainLimit"] = '3'
-#市价订单剩余撤销
-defineDict["THOST_FTDC_ISTR_Market_FAK"] = '4'
-#市价全额成交否则取消
-defineDict["THOST_FTDC_ISTR_Market_FOK"] = '5'
-#证券锁定
-defineDict["THOST_FTDC_ISTR_Lock"] = '6'
-#证券解锁
-defineDict["THOST_FTDC_ISTR_Unlock"] = '7'
-
-typedefDict["TThostFtdcInstructionRightTypeType"] = "char"
+typedefDict["TThostFtdcBase64ClientSystemInfoType"] = "string"
 
 #//////////////////////////////////////////////////////////////////////
-#TFtdcLevelTypeType是一个投资者分级类型类型
+#TFtdcBase64AdditionalInfoType是一个base64系统外部信息类型
 #//////////////////////////////////////////////////////////////////////
-#一级投资者
-defineDict["THOST_FTDC_IVLV_FirstLevel"] = '1'
-#二级投资者
-defineDict["THOST_FTDC_IVLV_SecondLevel"] = '2'
-#三级投资者
-defineDict["THOST_FTDC_IVLV_ThirdLevel"] = '3'
+typedefDict["TThostFtdcBase64AdditionalInfoType"] = "string"
 
-typedefDict["TThostFtdcLevelTypeType"] = "char"
+#//////////////////////////////////////////////////////////////////////
+#TFtdcCurrentAuthMethodType是一个当前可用的认证模式，0代表无需认证模式 A从低位开始最后一位代表图片验证码，倒数第二位代表动态口令，倒数第三位代表短信验证码类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcCurrentAuthMethodType"] = "int"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcCaptchaInfoLenType是一个图片验证信息长度类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcCaptchaInfoLenType"] = "int"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcCaptchaInfoType是一个图片验证信息类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcCaptchaInfoType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcUserTextSeqType是一个用户短信验证码的编号类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcUserTextSeqType"] = "int"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcHandshakeDataType是一个握手数据内容类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcHandshakeDataType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcHandshakeDataLenType是一个握手数据内容长度类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcHandshakeDataLenType"] = "int"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcCryptoKeyVersionType是一个api与front通信密钥版本号类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcCryptoKeyVersionType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcRsaKeyVersionType是一个公钥版本号类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcRsaKeyVersionType"] = "int"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcSoftwareProviderIDType是一个交易软件商ID类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcSoftwareProviderIDType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcCollectTimeType是一个信息采集时间类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcCollectTimeType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcQueryFreqType是一个查询频率类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcQueryFreqType"] = "int"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcResponseValueType是一个应答类型类型
+#//////////////////////////////////////////////////////////////////////
+#检查成功
+defineDict["THOST_FTDC_RV_Right"] = '0'
+#检查失败
+defineDict["THOST_FTDC_RV_Refuse"] = '1'
+
+typedefDict["TThostFtdcResponseValueType"] = "char"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcOTCTradeTypeType是一个OTC成交类型类型
+#//////////////////////////////////////////////////////////////////////
+#大宗交易
+defineDict["THOST_FTDC_OTC_TRDT_Block"] = '0'
+#期转现
+defineDict["THOST_FTDC_OTC_TRDT_EFP"] = '1'
+
+typedefDict["TThostFtdcOTCTradeTypeType"] = "char"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcMatchTypeType是一个期现风险匹配方式类型
+#//////////////////////////////////////////////////////////////////////
+#基点价值
+defineDict["THOST_FTDC_OTC_MT_DV01"] = '1'
+#面值
+defineDict["THOST_FTDC_OTC_MT_ParValue"] = '2'
+
+typedefDict["TThostFtdcMatchTypeType"] = "char"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcOTCTraderIDType是一个OTC交易员代码类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcOTCTraderIDType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcRiskValueType是一个期货风险值类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcRiskValueType"] = "float"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcIDBNameType是一个握手数据内容类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TThostFtdcIDBNameType"] = "string"
 

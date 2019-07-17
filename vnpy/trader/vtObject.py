@@ -144,16 +144,23 @@ class VtTradeData(VtBaseData):
         """Constructor"""
         super(VtTradeData, self).__init__()
 
+        # 账号代码相关
+        self.accountID = EMPTY_STRING  # 账户代码
+        self.vtAccountID = EMPTY_STRING  # 账户在vt中的唯一代码，通常是 Gateway名.账户代码
+
         # 代码编号相关
         self.symbol = EMPTY_STRING  # 合约代码
         self.exchange = EMPTY_STRING  # 交易所代码
         self.vtSymbol = EMPTY_STRING  # 合约在vt系统中的唯一代码，通常是 合约代码.交易所代码
+        self.vtSymbolName = EMPTY_STRING
 
-        self.tradeID = EMPTY_STRING  # 成交编号
+        self.tradeID = EMPTY_STRING  # 成交编号(来自交易所得）
         self.vtTradeID = EMPTY_STRING  # 成交在vt系统中的唯一编号，通常是 Gateway名.成交编号
 
-        self.orderID = EMPTY_STRING  # 订单编号
-        self.vtOrderID = EMPTY_STRING  # 订单在vt系统中的唯一编号，通常是 Gateway名.订单编号
+        self.orderID = EMPTY_STRING     # 订单编号（一般是对应本地得委托号)
+        self.vtOrderID = EMPTY_STRING   # 订单在vt系统中的唯一编号，通常是 Gateway名.订单编号
+
+        self.sysOrderID = EMPTY_STRING  # 订单编号（来自交易所)
 
         # 成交相关
         self.direction = EMPTY_UNICODE  # 成交方向
@@ -165,9 +172,15 @@ class VtTradeData(VtBaseData):
 
         self.strategy = EMPTY_STRING  # 策略实例名
 
+        # 股票使用
+        self.tradeAmount = EMPTY_FLOAT  # 成交金额
+        self.commission = EMPTY_FLOAT  # 手续费(印花税+佣金+过户费）
+        self.holder_id = EMPTY_STRING  # 股东代码
+        self.comment = EMPTY_STRING    # 备注
+
     #----------------------------------------------------------------------
     @staticmethod
-    def createFromGateway(gateway, symbol, exchange, tradeID, orderID, direction, tradePrice, tradeVolume):
+    def createFromGateway(gateway, symbol, exchange, tradeID, orderID, direction, tradePrice, tradeVolume, sysOrderID=EMPTY_STRING):
         trade = VtTradeData()
         trade.gatewayName = gateway.gatewayName
         trade.symbol = symbol
@@ -176,6 +189,7 @@ class VtTradeData(VtBaseData):
 
         trade.orderID = orderID
         trade.vtOrderID = trade.gatewayName + '.' + trade.tradeID
+        trade.sysOrderID = sysOrderID
 
         trade.tradeID = tradeID
         trade.vtTradeID = trade.gatewayName + '.' + tradeID
@@ -199,6 +213,7 @@ class VtTradeData(VtBaseData):
 
         trade.orderID = order.orderID
         trade.vtOrderID = order.vtOrderID
+        trade.sysOrderID = getattr(order,'sysOrderID', trade.orderID)
         trade.tradeID = tradeID
         trade.vtTradeID = trade.gatewayName + '.' + tradeID
         trade.direction = order.direction
@@ -217,13 +232,19 @@ class VtOrderData(VtBaseData):
         """Constructor"""
         super(VtOrderData, self).__init__()
 
+        # 账号代码相关
+        self.accountID = EMPTY_STRING  # 账户代码
+        self.vtAccountID = EMPTY_STRING  # 账户在vt中的唯一代码，通常是 Gateway名.账户代码
+
         # 代码编号相关
         self.symbol = EMPTY_STRING  # 合约代码
         self.exchange = EMPTY_STRING  # 交易所代码
         self.vtSymbol = EMPTY_STRING  # 合约在vt系统中的唯一代码，通常是 合约代码.交易所代码
+        self.vtSymbolName = EMPTY_STRING
 
-        self.orderID = EMPTY_STRING  # 订单编号
+        self.orderID = EMPTY_STRING  # 订单编号(本地生成）
         self.vtOrderID = EMPTY_STRING  # 订单在vt系统中的唯一编号，通常是 Gateway名.订单编号
+        self.sysOrderID = EMPTY_STRING  # 订单编号（来自交易所)
 
         # 报单相关
         self.direction = EMPTY_UNICODE  # 报单方向
@@ -241,6 +262,9 @@ class VtOrderData(VtBaseData):
         self.frontID = EMPTY_INT  # 前置机编号
         self.sessionID = EMPTY_INT  # 连接编号
 
+        # 股票相关
+        self.holder_id = EMPTY_STRING  # 股东代码
+
     #----------------------------------------------------------------------
     @staticmethod
     def createFromGateway(gateway,                          # type: VtGateway
@@ -255,6 +279,7 @@ class VtOrderData(VtBaseData):
                           status=constant.STATUS_UNKNOWN,   # type: str
                           orderTime=EMPTY_UNICODE,          # type: str
                           cancelTime=EMPTY_UNICODE,         # type: str
+                          sysOrderID=EMPTY_STRING           # type：str
                           ):                                # type: (...)->VtOrderData
         vtOrder = VtOrderData()
         vtOrder.gatewayName = gateway.gatewayName
@@ -263,6 +288,7 @@ class VtOrderData(VtBaseData):
         vtOrder.vtSymbol = symbol + '.' + exchange
         vtOrder.orderID = orderId
         vtOrder.vtOrderID = gateway.gatewayName + '.' + orderId
+        vtOrder.sysOrderID = sysOrderID
 
         vtOrder.direction = direction
         vtOrder.offset = offset
@@ -274,7 +300,6 @@ class VtOrderData(VtBaseData):
         vtOrder.cancelTime = cancelTime
         return vtOrder
 
-
 ########################################################################
 class VtPositionData(VtBaseData):
     """持仓数据类"""
@@ -284,10 +309,15 @@ class VtPositionData(VtBaseData):
         """Constructor"""
         super(VtPositionData, self).__init__()
 
+        # 账号代码相关
+        self.accountID = EMPTY_STRING  # 账户代码
+        self.vtAccountID = EMPTY_STRING  # 账户在vt中的唯一代码，通常是 Gateway名.账户代码
+
         # 代码编号相关
         self.symbol = EMPTY_STRING  # 合约代码
         self.exchange = EMPTY_STRING  # 交易所代码
         self.vtSymbol = EMPTY_STRING  # 合约在vt系统中的唯一代码，合约代码.交易所代码
+        self.vtSymbolName = EMPTY_STRING
 
         # 持仓相关
         self.direction = EMPTY_STRING  # 持仓方向
@@ -298,6 +328,8 @@ class VtPositionData(VtBaseData):
         self.ydPosition = EMPTY_INT  # 昨持仓
         self.positionProfit = EMPTY_FLOAT  # 持仓盈亏
 
+        # 股票相关
+        self.holder_id = EMPTY_STRING  # 股东代码
     #----------------------------------------------------------------------
     @staticmethod
     def createFromGateway(gateway,                      # type: VtGateway
@@ -343,12 +375,42 @@ class VtAccountData(VtBaseData):
         self.preBalance = EMPTY_FLOAT  # 昨日账户结算净值
         self.balance = EMPTY_FLOAT  # 账户净值
         self.available = EMPTY_FLOAT  # 可用资金
+        self.frozen = EMPTY_FLOAT      # 冻结资金
+        self.withdraw = EMPTY_FLOAT    # 可取资金
         self.commission = EMPTY_FLOAT  # 今日手续费
         self.margin = EMPTY_FLOAT  # 保证金占用
         self.closeProfit = EMPTY_FLOAT  # 平仓盈亏
         self.positionProfit = EMPTY_FLOAT  # 持仓盈亏
 
         self.tradingDay = EMPTY_STRING  # 当前交易日
+
+        self.currency = EMPTY_STRING    # 币种（缺省人民币）
+
+########################################################################
+class VtFundsFlowData(VtBaseData):
+    """历史资金流水数据类"""
+
+    # ----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        super(VtFundsFlowData, self).__init__()
+
+        # 账号代码相关
+        self.accountID = EMPTY_STRING  # 账户代码
+        self.vtAccountID = EMPTY_STRING  # 账户在vt中的唯一代码，通常是 Gateway名.账户代码
+
+        self.currency = EMPTY_STRING            # 币种
+        self.trade_date = EMPTY_STRING          # 成交日期
+        self.trade_price = EMPTY_FLOAT          # 成交价格
+        self.trade_volume = EMPTY_FLOAT         # 成交数量
+        self.trade_amount = EMPTY_FLOAT         # 发生金额( 正数代表卖出，或者转入资金，获取分红等，负数代表买入股票或者出金)
+        self.fund_remain = EMPTY_FLOAT          # 资金余额
+        self.contract_id = EMPTY_STRING         # 合同编号
+        self.business_name = EMPTY_STRING       # 业务名称
+        self.symbol = EMPTY_STRING              # 合约代码（证券代码）
+        self.holder_id = EMPTY_STRING           # 股东代码
+        self.direction = EMPTY_STRING           # 买卖类别：转,买，卖..
+        self.comment = EMPTY_STRING             # 备注
 
 ########################################################################
 class VtErrorData(VtBaseData):
@@ -364,7 +426,6 @@ class VtErrorData(VtBaseData):
         self.additionalInfo = EMPTY_UNICODE  # 补充信息
 
         self.errorTime = time.strftime('%X', time.localtime())  # 错误生成时间
-
 
 ########################################################################
 class VtLogData(VtBaseData):

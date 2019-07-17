@@ -38,6 +38,11 @@ EVENT_NOTIFICATION = 'eNotification'    # 全局通知
 EVENT_SIGNAL = 'eSignal'                # 信号通知
 EVENT_STATUS = 'eStatus'                # 服务状态
 
+# 股票/数字货币相关
+EVENT_HISTORY_TRADE = 'eHistoryTrade'   # 历史成交
+EVENT_HISTORY_ORDER = 'eHistoryOrder'   # 历史委托
+EVENT_FUNDS_FLOW = 'eFundsFlow'         # 资金流水
+
 # 股票使用
 EVENT_BAR = 'eBar'                      # 1分钟Bar 行情
 EVENT_BARDICT = 'eBarDict_'             # BarDict事件+策略实例名称

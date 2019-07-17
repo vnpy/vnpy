@@ -1,7 +1,9 @@
 {
-    "brokerID": "9999", 
-    "tdAddress": "tcp://180.168.146.187:10000", 
-    "password": "XXXX",
-    "mdAddress": "tcp://180.168.146.187:10010",
-    "userID": "XXXXX"
+    "brokerID": "9999",
+    "tdAddress": "tcp://180.168.146.187:10101",
+    "password": "xxxx",
+    "mdAddress": "tcp://180.168.146.187:10111",
+    "userID": "xxxx",
+    "authCode":"0000000000000000",
+    "appID": "simnow_client_test"
 }

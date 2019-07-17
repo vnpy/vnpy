@@ -57,13 +57,13 @@
 	<error id="BROKER_NOT_ENOUGH_CONDORDER" value="52" prompt="CTP:经纪公司没有足够可用的条件单数量"/>
 	<error id="INVESTOR_NOT_ENOUGH_CONDORDER" value="53" prompt="CTP:投资者没有足够可用的条件单数量"/>
 	<error id="BROKER_NOT_SUPPORT_CONDORDER" value="54" prompt="CTP:经纪公司不支持条件单"/>
-	<error id="RESEND_ORDER_BROKERINVESTOR_NOTMATCH" value="55" prompt="CTP:重发未知单经济公司/投资者不匹配"/>
+	<error id="RESEND_ORDER_BROKERINVESTOR_NOTMATCH" value="55" prompt="CTP:重发未知单经纪公司/投资者不匹配"/>
 	<error id="SYC_OTP_FAILED" value="56" prompt="CTP:同步动态令牌失败"/>
 	<error id="OTP_MISMATCH" value="57" prompt="CTP:动态令牌校验错误"/>
 	<error id="OTPPARAM_NOT_FOUND" value="58" prompt="CTP:找不到动态令牌配置信息"/>
 	<error id="UNSUPPORTED_OTPTYPE" value="59" prompt="CTP:不支持的动态令牌类型"/>
 	<error id="SINGLEUSERSESSION_EXCEED_LIMIT" value="60" prompt="CTP:用户在线会话超出上限"/>
-	<error id="EXCHANGE_UNSUPPORTED_ARBITRAGE" value="61" prompt="CTP:该交易所不支持套利类型报单"/>
+	<error id="EXCHANGE_UNSUPPORTED_ARBITRAGE" value="61" prompt="CTP:该交易所不支持套利/做市商类型报单"/>
 	<error id="NO_CONDITIONAL_ORDER_RIGHT" value="62" prompt="CTP:没有条件单交易权限"/>
 	<error id="AUTH_FAILED" value="63" prompt="CTP:客户端认证失败"/>
 	<error id="NOT_AUTHENT" value="64" prompt="CTP:客户端未认证"/>
@@ -96,28 +96,23 @@
 	<error id="EXCHANGE_RTNERROR" value="91" prompt="CTP：交易所返回的错误"/>
 	<error id="QUOTE_DERIVEDORDER_ACTIONERROR" value="92" prompt="CTP:报价衍生单要等待交易所返回才能撤单"/>
 	<error id="INSTRUMENTMAP_NOT_FOUND" value="93" prompt="CTP:找不到组合合约映射"/>
-	<error id="SPEC_COVERED_ONLY" value="94" prompt="CTP:个股期权只支持投机或者备兑"/>
-	<error id="SPEC_OPEN_ONLY" value="95" prompt="CTP:证券只支持投机开仓"/>
-	<error id="DUP_INSTRUMENT" value="96" prompt="CTP:存在相同的合约编号需指定交易所"/>
-	<error id="DUP_ORDER" value="97" prompt="CTP:找到多笔报单"/>
-	<error id="NOT_ENOUGH_LOCKPOSITION" value="98" prompt="CTP:锁定仓位不足"/>
-	<error id="NOT_ENOUGH_STOCKPOSITION" value="99" prompt="CTP:证券仓位不足"/>
-	<error id="NOT_SUPPORT_LOCK" value="100" prompt="CTP:该交易所不支持锁定"/>
+	<error id="CANCEL_OF_EFP_DERIVED_ORDER_NOT_ALLOWED" value="94" prompt="CTP:期转现衍生报单不允许撤单"/>
 	<!--灾备系统错误代码 -->		
 	<error id="NO_TRADING_RIGHT_IN_SEPC_DR" value="101" prompt="CTP:用户在本系统没有报单权限"/>
 	<error id="NO_DR_NO" value="102" prompt="CTP:系统缺少灾备标示号"/>
-	<error id="COVER_ONLY_SELL" value="103" prompt="CTP:备兑只支持卖开或买平或认购"/>
-	<error id="VOLUME_NOTSUPPORT" value="104" prompt="CTP:数量不正确"/>
-	<error id="PRICE_NOTSUPPORT" value="105" prompt="CTP:价格不正确"/>
+	<error id="BATCHACTION_NOSUPPORT" value="103" prompt="CTP:该交易所不支持批量撤单"/>
 	<error id="POSI_LIMIT" value="106" prompt="CTP:投资者限仓"/>
-	<error id="BROKERPOSI_LIMIT" value="107" prompt="CTP:经纪公司限仓"/>
-	<error id="BAD_STOCKDISPOSAL_ACTION_FIELD" value="108" prompt="CTP:证券处置操作字段有误"/>
-    <error id="DUPLICATE_STOCKDISPOSAL_ACTION_REF" value="109" prompt="CTP:证券处置撤单已报送，不允许重复撤单"/>
-	<error id="STOCKDISPOSAL_NOT_FOUND" value="110" prompt="CTP:证券处置撤单找不到相应证券处置"/>
-	<error id="NO_INSTRUCTION_RIGHT" value="111" prompt="CTP:投资者没有该交易指令权限"/>
-	<error id="NO_RIGHT_LEVEL" value="112" prompt="CTP:投资者分级权限不足"/>
 	<error id="OUT_OF_TIMEINTERVAL" value="113" prompt="CTP:当前时间禁止询价"/>
 	<error id="OUT_OF_PRICEINTERVAL" value="114" prompt="CTP:当前价差禁止询价"/>
+	<error id="ORDER_FREQ_LIMIT" value="116" prompt="CTP:下单频率限制"/>
+	<error id="WEAK_PASSWORD" value="131" prompt="CTP：您当前密码为弱密码，请修改成强密码后重新登录"/>
+	<error id="EXEC_FORBIDDEN_TIME" value="139" prompt="CTP:当前时间禁止行权"/>
+	<error id="FIRST_LOGIN" value="140" prompt="CTP:首次登录必须修改密码，请修改密码后重新登录"/>
+	<error id="PWD_OUT_OF_DATE" value="141" prompt="CTP:您当前密码已过期，请修改后登录"/>
+	<error id="PWD_MUST_DIFF" value="142" prompt="CTP:修改密码失败。新密码不允许与旧密码相同"/>
+	<error id="IP_FORBIDDEN" value="143" prompt="CTP:您登录失败次数过多，IP被禁止登入CTP"/>
+	<error id="IP_BLACK" value="144" prompt="CTP:您当前IP在黑名单中，被禁止登入CTP"/>
+	
 	<!--转帐系统错误代码 -->
 	<error id="SEND_INSTITUTION_CODE_ERROR" value="1000" prompt="CTP:银期转账：发送机构代码错误"/>
 	<error id="NO_GET_PLATFORM_SN" value="1001" prompt="CTP:银期转账：取平台流水号错误"/>
@@ -159,8 +154,9 @@
   <error id="NOT_SUPPORT_SECAGENT_BY_BANK" value="1037" prompt="CTP:银期转账：不支持银行端发起的二级代理商转账和查询"/>
   <error id="PINKEY_SYNCING" value="1038" prompt="CTP:银期转账：PIN密钥正在同步"/>
   <error id="SECAGENT_QUERY_BY_CCB" value="1039" prompt="CTP:银期转账：建行发起的二级代理商查询"/>
-  <error id="ALREADY_SIGNOUT" value="1040" prompt="CTP:银期转账：已经签退"/>
-  <error id="NO_WORKKEY" value="1041" prompt="CTP:银期转账：取密钥错误"/>
+  <error id="BANKACCOUNT_NOT_EMPTY" value="1040" prompt="CTP:银期转账：银行账户不能为空"/>
+  <error id="INVALID_RESERVE_OPEN_ACCOUNT" value="1041" prompt="CTP:银期转账：资金账户存在，预约开户失败"/>
+  <error id="OPEN_ACCOUNT_NOT_DEFAULT_ACCOUNT" value="1042" prompt="CTP:银期转账：开户请求的银行卡号和预留的账号不同"/>
 <!-- add for transfer begin -->
 	<error id="NO_VALID_BANKOFFER_AVAILABLE" value="2000" prompt="CTP:该报盘未连接到银行"/>
 	<error id="PASSWORD_MISMATCH" value="2001" prompt="CTP:资金密码错误"/>
@@ -175,7 +171,10 @@
 	<error id="NOT_ALLOW_REPEAL_BYMANUAL" value="2013" prompt="CTP:该交易不能执行手工冲正"/>
 	<error id="AMOUNT_OUTOFTHEWAY" value="2014" prompt="CTP:转帐金额错误"/>
 	<error id="EXCHANGERATE_NOT_FOUND" value="2015" prompt="CTP:找不到汇率"/>
+	<error id="RESERVE_OPEN_ACCOUNT_NOT_FUND" value="2016" prompt="CTP:找不到预约开户请求"/>
+	<error id="DUPLICATE_RESERVE_OPEN_ACCOUNT_NOT_FUND" value="2017" prompt="CTP:重复的预约开户请求"/>
 	<error id="WAITING_OFFER_RSP" value="999999" prompt="CTP:等待银期报盘处理结果"/>
+	
 	<!-- add for transfer end -->
 	<!--换汇系统错误代码 bgn-->
 	<error id="FBE_NO_GET_PLATFORM_SN" value="3001" prompt="CTP:银期换汇：取平台流水号错误"/>
@@ -199,4 +198,17 @@
   <error id="FBE_BANK_ACCOUNT_NO_FUNDS" value="3037" prompt="CTP:银期换汇：银行帐户余额不足"/>
   <error id="FBE_DUP_CERT_NO" value="3038" prompt="CTP:银期换汇：凭证号重复"/>
   <!--换汇系统错误代码 end-->
+
+   <!--登录鉴权错误代码 begin-->
+  <error id="API_UNSUPPORTED_VERSION" value="3039" prompt="CTP: 不支持该API版本"/>
+  <error id="API_INVALID_KEY" value="3040" prompt="CTP: 无效的API KEY"/>
+  <!--登录鉴权错误代码 end-->
+  
+  <error id="OPTION_SELF_CLOSE_NOT_OPTION" value="3041" prompt="CTP:期权对冲,履约对冲:非期权合约"/>
+  <error id="OPTION_SELF_CLOSE_DUPLICATE_REF" value="3042" prompt="CTP:期权对冲,履约对冲:请求引用不合法"/>
+  <error id="OPTION_SELF_CLOSE_BAD_FIELD" value="3043" prompt="CTP:期权对冲,履约对冲:非法字段 "/>
+  <error id="OPTION_SELF_CLOSE_REC_NOT_FOUND" value="3044" prompt="CTP:期权对冲,履约对冲:撤销未找到记录"/>
+  <error id="OPTION_SELF_CLOSE_STATUS_ERR" value="3045" prompt="CTP:期权对冲,履约对冲:对冲状态不对，不能撤销"/>
+  <error id="OPTION_SELF_CLOSE_DOUBLE_SET_ERR" value="3046" prompt="CTP:期权对冲,履约对冲:不能重复设置，只能先撤销再设置"/>
+
 </errors>

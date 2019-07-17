@@ -416,7 +416,7 @@ class UtilSinaClient(object):
             return False
 
 
-class TestStrategy(object):
+class test_strategy(object):
 
     def __init__(self):
         pass
@@ -431,7 +431,7 @@ class TestStrategy(object):
         print(content)
 
 if __name__ == '__main__':
-    t = TestStrategy()
+    t = test_strategy()
 
     sina = UtilSinaClient(t)
 

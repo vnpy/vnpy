@@ -21,7 +21,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, mainEngine, eventEngine):
         """Constructor"""
         super(MainWindow, self).__init__()
-        
+
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
 
@@ -53,7 +53,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.initCentral()
         self.initMenu()
         self.initStatusBar()
-        
+
     # ----------------------------------------------------------------------
     def initCentral(self):
         """初始化中心区域"""
@@ -76,7 +76,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         dockTradeM.raise_()
         dockPositionM.raise_()
-    
+
         # 连接组件之间的信号
         widgetPositionM.itemDoubleClicked.connect(widgetTradingW.closePosition)
         widgetMarketM.itemDoubleClicked.connect(widgetTradingW.autoFillSymbol)
@@ -93,7 +93,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # 创建菜单
         menubar = self.menuBar()
-        
+
         # 系统
         sysMenu = menubar.addMenu(vtText.SYSTEM)
         # 系统，连接的接口清单
@@ -156,7 +156,7 @@ class MainWindow(QtWidgets.QMainWindow):
             function = self.createOpenAppFunction(appDetail)
             action = self.createAction(appDetail['appDisplayName'], function, loadIconPath(appDetail['appIco']))
             appMenu.addAction(action)
-        
+
         # 算法相关
         #algoMenu = menubar.addMenu(u'算法')
         #algoMenu.addAction(ctaAction)
@@ -175,21 +175,21 @@ class MainWindow(QtWidgets.QMainWindow):
         helpMenu.addAction(self.createAction(vtText.ABOUT, self.openAbout, loadIconPath('about.ico')))
         helpMenu.addSeparator()
         helpMenu.addAction(self.createAction(vtText.TEST, self.test, loadIconPath('test.ico')))
-    
+
     # ----------------------------------------------------------------------
     def initStatusBar(self):
         """初始化状态栏"""
         self.statusLabel = QtWidgets.QLabel()
         self.statusLabel.setAlignment(QtCore.Qt.AlignLeft)
-        
+
         self.statusBar().addPermanentWidget(self.statusLabel)
         self.statusLabel.setText(self.getCpuMemory())
-        
+
         self.sbCount = 0
         self.sbTrigger = 10     # 10秒刷新一次
         self.signalStatusBar.connect(self.updateStatusBar)
         self.eventEngine.register(EVENT_TIMER, self.signalStatusBar.emit)
-        
+
     # ----------------------------------------------------------------------
     def updateStatusBar(self, event):
         """1、在状态栏更新CPU和内存信息"""
@@ -340,8 +340,10 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 try:
                     appEngine = self.mainEngine.getApp(appName)
-                    self.widgetDict[appName] = appDetail['appWidget'](appEngine, self.eventEngine)
-                    self.widgetDict[appName].show()
+                    app_widget = appDetail.get('appWidget')
+                    if app_widget:
+                        self.widgetDict[appName] = app_widget(appEngine, self.eventEngine)
+                        self.widgetDict[appName].show()
                 except:
                     print( "Unexpected error:", sys.exc_info()[0])
                     traceback.print_exc()
@@ -364,7 +366,7 @@ class MainWindow(QtWidgets.QMainWindow):
         except KeyError:
             self.widgetDict['aboutW'] = AboutWidget(self)
             self.widgetDict['aboutW'].show()
-    
+
     # ----------------------------------------------------------------------
     def openContract(self):
         """打开合约查询"""
@@ -436,12 +438,12 @@ class MainWindow(QtWidgets.QMainWindow):
             for widget in list(self.widgetDict.values()):
                 widget.close()
             self.saveWindowSettings('custom')
-            
+
             self.mainEngine.exit()
             event.accept()
         else:
             event.ignore()
-            
+
     # ----------------------------------------------------------------------
     def createDock(self, widgetClass, widgetName, widgetArea):
         """创建停靠组件"""
@@ -459,7 +461,7 @@ class MainWindow(QtWidgets.QMainWindow):
         settings = QtCore.QSettings('vn.trader', settingName)
         settings.setValue('state', self.saveState())
         settings.setValue('geometry', self.saveGeometry())
-        
+
     # ----------------------------------------------------------------------
     def loadWindowSettings(self, settingName):
         """载入窗口设置"""
@@ -541,4 +543,3 @@ class AboutWidget(QtWidgets.QDialog):
         vbox.addWidget(label)
 
         self.setLayout(vbox)
-    

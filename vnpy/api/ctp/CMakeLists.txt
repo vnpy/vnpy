@@ -31,12 +31,14 @@ endif()
 include_directories(${CTPAPI_PATH})
 set(CTPAPI_LIBRARY )
 find_library(CTPAPI_MD_LIBRARY
-  NAMES thostmduserapi
+  NAMES thostmduserapi_se
   PATHS ${CTPAPI_PATH}) 
 find_library(CTPAPI_TD_LIBRARY
-  NAMES thosttraderapi
+  NAMES thosttraderapi_se
   PATHS ${CTPAPI_PATH})
 
+message("CTPAPI_MD_LIBRARY:" ${CTPAPI_MD_LIBRARY})
+message("CTPAPI_TD_LIBRARY:" ${CTPAPI_TD_LIBRARY})
 
 # 设置编译源文件
 set (vnctpmd )

@@ -83,6 +83,8 @@ class TradeApi(object):
 
         self.DEBUG = False
 
+        self.err_cb_dict = {}     # req请求失败时，需要调用得回调函数
+
     # ----------------------------------------------------------------------
     def init(self, host, accessKey, secretKey, mode=None):
         """初始化"""
@@ -123,11 +125,14 @@ class TradeApi(object):
     def httpGet(self, url, params):
         """HTTP GET"""        
         headers = copy(DEFAULT_GET_HEADERS)
-        postdata = urllib.parse.urlencode(params)
+        Signature = params.pop('Signature')
+        sortedParams = sorted(params.items(), key=lambda d: d[0], reverse=False)
+        postdata = urllib.parse.urlencode(sortedParams)
+        url = url + '?' + postdata + '&'+ urllib.parse.urlencode({'Signature':Signature})
         if self.DEBUG:
-            print('httpGet:{} {}'.format(url, params))
+            print('httpGet:{}'.format(url))
         try:
-            response = requests.get(url, postdata, headers=headers, timeout=TIMEOUT)
+            response = requests.get(url,  headers=headers, timeout=TIMEOUT)
             if response.status_code == 200:
                 return True, response.json()
             else:
@@ -209,9 +214,23 @@ class TradeApi(object):
         
         if result:
             if data['status'] == 'ok':
-                callback(data['data'], reqid)
+                try:
+                    callback(data['data'], reqid)
+                except Exception as ex:
+                    print('processReq {} Exception:{}'.format(callback.__name__, str(ex)))
+                    traceback.print_exc()
             else:
-                msg = u'错误代码：%s，错误信息：%s' %(data['err-code'], data['err-msg'])
+                # 指定得失败回调
+                callback = self.err_cb_dict.pop(str(reqid),None)
+                if callback:
+                    try:
+                        callback(data, reqid)
+                    except Exception as ex:
+                        print('processReq call {} Exception:{}'.format(callback.__name__, str(ex)))
+                        traceback.print_exc()
+
+                msg = u'func:{},cb:{} 错误代码：{}，错误信息：{}'\
+                    .format(str(func.__name__),str(callback.__name__),data['err-code'], data['err-msg'])
                 self.onError(msg, reqid)
         else:
             self.onError(data, reqid)
@@ -481,7 +500,7 @@ class TradeApi(object):
     def onPlaceOrder(self, data, reqid):
         """委托回调"""
         print (reqid, data)
-    
+
     #----------------------------------------------------------------------
     def onCancelOrder(self, data, reqid):
         """撤单回调"""

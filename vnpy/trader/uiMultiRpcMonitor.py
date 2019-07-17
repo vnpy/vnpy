@@ -96,7 +96,7 @@ class StrategyMonitorWidget(QtWidgets.QGroupBox):
         hbox1.addWidget(btnStartStrategy)
         hbox1.addWidget(btnStopStrategy)
         hbox1.addWidget(btnForceInitStrategy)
-        #hbox1.addWidget(btnDispatchOutStrategy)
+        hbox1.addWidget(btnDispatchOutStrategy)
         hbox1.addStretch()
 
         # 策略的运行数据表
@@ -175,7 +175,7 @@ class CtaEngineMonitorWidget(QtWidgets.QWidget):
 
         hbox1.addWidget(btnStartStrategies)
         hbox1.addWidget(btnStopStrategies)
-        #hbox1.addWidget(btnAddStrategy)
+        hbox1.addWidget(btnAddStrategy)
         hbox1.addStretch()
 
         self.vbox = QtWidgets.QVBoxLayout()

@@ -1,4 +1,4 @@
-//说明部分
+//说锟斤拷锟斤拷锟斤拷
 
 //系统
 #ifdef WIN32
@@ -9,24 +9,23 @@
 
 //Boost
 #define BOOST_PYTHON_STATIC_LIB
-#include <boost/python/module.hpp>	//python封装
-#include <boost/python/def.hpp>		//python封装
-#include <boost/python/dict.hpp>	//python封装
-#include <boost/python/object.hpp>	//python封装
-#include <boost/python.hpp>			//python封装
-#include <boost/thread.hpp>			//任务队列的线程功能
-#include <boost/bind.hpp>			//任务队列的线程功能
-#include <boost/any.hpp>			//任务队列的任务实现
-#include <boost/locale.hpp>			//字符集转换
+#include <boost/python/module.hpp>	
+#include <boost/python/def.hpp>		
+#include <boost/python/dict.hpp>	
+#include <boost/python/object.hpp>	
+#include <boost/python.hpp>			
+#include <boost/thread.hpp>			
+#include <boost/bind.hpp>			
+#include <boost/any.hpp>			
+#include <boost/locale.hpp>
 //API
 #include "ThostFtdcMdApi.h"
 
-//命名空间
 using namespace std;
 using namespace boost::python;
 using namespace boost;
 
-//常量
+
 #define ONFRONTCONNECTED 1
 #define ONFRONTDISCONNECTED 2
 #define ONHEARTBEATWARNING 3
@@ -40,27 +39,19 @@ using namespace boost;
 #define ONRTNDEPTHMARKETDATA 11
 #define ONRTNFORQUOTERSP 12
 
-
-
-///-------------------------------------------------------------------------------------
-///API中的部分组件
-///-------------------------------------------------------------------------------------
-
-//GIL全局锁简化获取用，
-//用于帮助C++线程获得GIL锁，从而防止python崩溃
 class PyLock
 {
 private:
 	PyGILState_STATE gil_state;
 
 public:
-	//在某个函数方法中创建该对象时，获得GIL锁
+
 	PyLock()
 	{
 		gil_state = PyGILState_Ensure();
 	}
 
-	//在某个函数完成后销毁该对象时，解放GIL锁
+
 	~PyLock()
 	{
 		PyGILState_Release(gil_state);
@@ -68,90 +59,77 @@ public:
 };
 
 
-//任务结构体
 struct Task
 {
-	int task_name;		//回调函数名称对应的常量
-	any task_data;		//数据结构体
-	any task_error;		//错误结构体
-	int task_id;		//请求id
-	bool task_last;		//是否为最后返回
+	int task_name;		
+	any task_data;		
+	any task_error;		
+	int task_id;		
+	bool task_last;		
 };
 
-
-///线程安全的队列
 template<typename Data>
 
 class ConcurrentQueue
 {
 private:
-	queue<Data> the_queue;								//标准库队列
-	mutable mutex the_mutex;							//boost互斥锁
-	condition_variable the_condition_variable;			//boost条件变量
+	queue<Data> the_queue;								
+	mutable mutex the_mutex;							
+	condition_variable the_condition_variable;			
 
 public:
 
-	//存入新的任务
+	
 	void push(Data const& data)
 	{
-		mutex::scoped_lock lock(the_mutex);				//获取互斥锁
-		the_queue.push(data);							//向队列中存入数据
-		lock.unlock();									//释放锁
-		the_condition_variable.notify_one();			//通知正在阻塞等待的线程
+		mutex::scoped_lock lock(the_mutex);				
+		the_queue.push(data);							
+		lock.unlock();									
+		the_condition_variable.notify_one();			
 	}
-
-	//检查队列是否为空
+		
 	bool empty() const
 	{
 		mutex::scoped_lock lock(the_mutex);
 		return the_queue.empty();
 	}
 
-	//取出
+	
 	Data wait_and_pop()
 	{
 		mutex::scoped_lock lock(the_mutex);
 
-		while (the_queue.empty())						//当队列为空时
+		while (the_queue.empty())						
 		{
-			the_condition_variable.wait(lock);			//等待条件变量通知
+			the_condition_variable.wait(lock);			
 		}
 
-		Data popped_value = the_queue.front();			//获取队列中的最后一个任务
-		the_queue.pop();								//删除该任务
-		return popped_value;							//返回该任务
+		Data popped_value = the_queue.front();			
+		the_queue.pop();								
+		return popped_value;							
 	}
 
 };
 
 
-//从字典中获取某个建值对应的整数，并赋值到请求结构体对象的值上
 void getInt(dict d, string key, int* value);
 
 
-//从字典中获取某个建值对应的浮点数，并赋值到请求结构体对象的值上
 void getDouble(dict d, string key, double* value);
 
 
-//从字典中获取某个建值对应的字符，并赋值到请求结构体对象的值上
 void getChar(dict d, string key, char* value);
 
 
-//从字典中获取某个建值对应的字符串，并赋值到请求结构体对象的值上
 void getStr(dict d, string key, char* value);
 
 
-///-------------------------------------------------------------------------------------
-///C++ SPI的回调函数方法实现
-///-------------------------------------------------------------------------------------
-
-//API的继承实现
 class MdApi : public CThostFtdcMdSpi
 {
 private:
-	CThostFtdcMdApi* api;				//API对象
-	thread *task_thread;				//工作线程指针（向python中推送数据）
-	ConcurrentQueue<Task> task_queue;	//任务队列
+	CThostFtdcMdApi* api;				
+	thread *task_thread;				
+	ConcurrentQueue<Task> task_queue;	
 
 public:
 	MdApi()
@@ -165,55 +143,35 @@ public:
 	{
 	};
 
-	//-------------------------------------------------------------------------------------
-	//API回调函数
-	//-------------------------------------------------------------------------------------
-
-	///当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
 	virtual void OnFrontConnected();
 
-	///当客户端与交易后台通信连接断开时，该方法被调用。当发生这个情况后，API会自动重新连接，客户端可不做处理。
-	///@param nReason 错误原因
-	///        0x1001 网络读失败
-	///        0x1002 网络写失败
-	///        0x2001 接收心跳超时
-	///        0x2002 发送心跳失败
-	///        0x2003 收到错误报文
 	virtual void OnFrontDisconnected(int nReason);
 
-	///心跳超时警告。当长时间未收到报文时，该方法被调用。
-	///@param nTimeLapse 距离上次接收报文的时间
+	
 	virtual void OnHeartBeatWarning(int nTimeLapse);
 
-	///登录请求响应
+	
 	virtual void OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
-	///登出请求响应
 	virtual void OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
-	///错误应答
 	virtual void OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
-	///订阅行情应答
+
 	virtual void OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
-	///取消订阅行情应答
 	virtual void OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
-	///订阅询价应答
 	virtual void OnRspSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
-
-	///取消订阅询价应答
+	
 	virtual void OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
-	///深度行情通知
 	virtual void OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData);
 
-	///询价通知
 	virtual void OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp);
 
 	//-------------------------------------------------------------------------------------
-	//task：任务
+	//task
 	//-------------------------------------------------------------------------------------
 
 	void processTask();
@@ -242,13 +200,7 @@ public:
 
 	void processRtnForQuoteRsp(Task task);
 
-	//-------------------------------------------------------------------------------------
-	//data：回调函数的数据字典
-	//error：回调函数的错误字典
-	//id：请求id
-	//last：是否为最后返回
-	//i：整数
-	//-------------------------------------------------------------------------------------
+	
 
 	virtual void onFrontConnected(){};
 
@@ -275,7 +227,7 @@ public:
 	virtual void onRtnForQuoteRsp(dict data) {};
 
 	//-------------------------------------------------------------------------------------
-	//req:主动函数的请求字典
+	//req:锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟街碉拷
 	//-------------------------------------------------------------------------------------
 
 	void createFtdcMdApi(string pszFlowPath = "");

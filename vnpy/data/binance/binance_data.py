@@ -31,7 +31,7 @@ PERIOD_MAPPING['1month'] = '1M'
 
 SYMBOL_LIST = ['ltc_btc', 'eth_btc', 'etc_btc', 'bch_btc', 'btc_usdt', 'eth_usdt', 'ltc_usdt', 'etc_usdt', 'bch_usdt',
               'etc_eth','bt1_btc','bt2_btc','btg_btc','qtum_btc','hsr_btc','neo_btc','gas_btc',
-              'qtum_usdt','hsr_usdt','neo_usdt','gas_usdt','bnb_usdt','eos_usdt']
+              'qtum_usdt','hsr_usdt','neo_usdt','gas_usdt','bnb_usdt','eos_usdt','xrp_usdt']
 
 from vnpy.api.binance.vnbinance import symbolFromOtherExchangesToBinance
 class BinanceData(object):

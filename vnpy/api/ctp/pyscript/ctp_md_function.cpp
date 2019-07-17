@@ -4,12 +4,14 @@ int MdApi::reqUserLogin(dict req, int nRequestID)
 	memset(&myreq, 0, sizeof(myreq));
 	getStr(req, "MacAddress", myreq.MacAddress);
 	getStr(req, "UserProductInfo", myreq.UserProductInfo);
+	getInt(req, "ClientIPPort", &myreq.ClientIPPort);
 	getStr(req, "UserID", myreq.UserID);
 	getStr(req, "TradingDay", myreq.TradingDay);
 	getStr(req, "InterfaceProductInfo", myreq.InterfaceProductInfo);
 	getStr(req, "BrokerID", myreq.BrokerID);
 	getStr(req, "ClientIPAddress", myreq.ClientIPAddress);
 	getStr(req, "OneTimePassword", myreq.OneTimePassword);
+	getStr(req, "LoginRemark", myreq.LoginRemark);
 	getStr(req, "ProtocolInfo", myreq.ProtocolInfo);
 	getStr(req, "Password", myreq.Password);
 	int i = this->api->ReqUserLogin(&myreq, nRequestID);

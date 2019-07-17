@@ -101,13 +101,13 @@ def roundToVolumeTick(volumeTick,volume):
     if volumeTick == 0:
         return volume
     # 取整
-    newVolume = round(volume / volumeTick, 0) * volumeTick
+    newVolume = volume - volume % volumeTick
 
     if isinstance(volumeTick,float):
-        v_exponent = decimal.Decimal(str(volume))
+        v_exponent = decimal.Decimal(str(newVolume))
         vt_exponent = decimal.Decimal(str(volumeTick))
         if abs(v_exponent.as_tuple().exponent) > abs(vt_exponent.as_tuple().exponent):
-            newVolume = round(volume, ndigits=abs(vt_exponent.as_tuple().exponent))
+            newVolume = round(newVolume, ndigits=abs(vt_exponent.as_tuple().exponent))
             newVolume = float(str(newVolume))
 
     return newVolume
@@ -200,7 +200,7 @@ def safeUnicode(value):
     if type(value) is int or type(value) is float:
         if value > MAX_NUMBER:
             value = 0
-    
+
     # 检查防止小数点位过多
     if type(value) is float:
         d = decimal.Decimal(str(value))
@@ -209,12 +209,13 @@ def safeUnicode(value):
 
     return value
 
-
 def get_tdx_market_code(code):
     # 获取通达信股票的market code
     code = str(code)
     if code[0] in ['5', '6', '9'] or code[:3] in ["009", "126", "110", "201", "202", "203", "204"]:
+        # 上海证券交易所
         return 1
+    # 深圳证券交易所
     return 0
 
 #----------------------------------------------------------------------
@@ -230,7 +231,7 @@ def loadMongoSetting():
         host = 'localhost'
         port = 27017
         logging = False
-        
+
     return host, port, logging
 
 #----------------------------------------------------------------------
