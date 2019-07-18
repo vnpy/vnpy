@@ -2,13 +2,8 @@ from typing import List
 
 import pyqtgraph as pg
 
-from vnpy.trader.ui import QtGui
-
 from .manager import BarManager
-
-
-AXIS_WIDTH = 0.8
-AXIS_FONT = QtGui.QFont("Arial", 10, QtGui.QFont.Bold)
+from .base import AXIS_WIDTH, NORMAL_FONT
 
 
 class DatetimeAxis(pg.AxisItem):
@@ -21,7 +16,7 @@ class DatetimeAxis(pg.AxisItem):
         self._manager: BarManager = manager
 
         self.setPen(width=AXIS_WIDTH)
-        self.setStyle(tickFont=AXIS_FONT, autoExpandTextSpace=True)
+        self.tickFont = NORMAL_FONT
 
     def tickStrings(self, values: List[int], scale: float, spacing: int):
         """

@@ -6,8 +6,11 @@ from vnpy.trader.ui import QtGui, QtWidgets, QtCore
 from vnpy.trader.object import BarData
 
 from .manager import BarManager
-from .base import GREY_COLOR, WHITE_COLOR, CURSOR_COLOR, BLACK_COLOR, to_int
-from .axis import DatetimeAxis, AXIS_FONT
+from .base import (
+    GREY_COLOR, WHITE_COLOR, CURSOR_COLOR, BLACK_COLOR,
+    to_int, NORMAL_FONT
+)
+from .axis import DatetimeAxis
 from .item import ChartItem
 
 
@@ -49,7 +52,8 @@ class ChartWidget(pg.PlotWidget):
     def add_cursor(self) -> None:
         """"""
         if not self._cursor:
-            self._cursor = ChartCursor(self, self._manager, self._plots)
+            self._cursor = ChartCursor(
+                self, self._manager, self._plots, self._item_plot_map)
 
     def add_plot(
         self,
@@ -89,7 +93,7 @@ class ChartWidget(pg.PlotWidget):
         # Set right axis
         right_axis = plot.getAxis('right')
         right_axis.setWidth(60)
-        right_axis.setStyle(tickFont=AXIS_FONT)
+        right_axis.tickFont = NORMAL_FONT
 
         # Connect x-axis link
         if self._plots:
@@ -294,7 +298,8 @@ class ChartCursor(QtCore.QObject):
         self,
         widget: ChartWidget,
         manager: BarManager,
-        plots: Dict[str, pg.GraphicsObject]
+        plots: Dict[str, pg.GraphicsObject],
+        item_plot_map: Dict[ChartItem, pg.GraphicsObject]
     ):
         """"""
         super().__init__()
@@ -302,6 +307,7 @@ class ChartCursor(QtCore.QObject):
         self._widget: ChartWidget = widget
         self._manager: BarManager = manager
         self._plots: Dict[str, pg.GraphicsObject] = plots
+        self._item_plot_map: Dict[ChartItem, pg.GraphicsObject] = item_plot_map
 
         self._x: int = 0
         self._y: int = 0
@@ -346,9 +352,11 @@ class ChartCursor(QtCore.QObject):
         """
         self._y_labels: Dict[str, pg.TextItem] = {}
         for plot_name, plot in self._plots.items():
-            label = pg.TextItem(plot_name, fill=CURSOR_COLOR, color=BLACK_COLOR)
+            label = pg.TextItem(
+                plot_name, fill=CURSOR_COLOR, color=BLACK_COLOR)
             label.hide()
             label.setZValue(2)
+            label.setFont(NORMAL_FONT)
             plot.addItem(label, ignoreBounds=True)
             self._y_labels[plot_name] = label
 
@@ -356,17 +364,25 @@ class ChartCursor(QtCore.QObject):
             "datetime", fill=CURSOR_COLOR, color=BLACK_COLOR)
         self._x_label.hide()
         self._x_label.setZValue(2)
+        self._x_label.setFont(NORMAL_FONT)
         plot.addItem(self._x_label, ignoreBounds=True)
 
     def _init_info(self) -> None:
         """
         """
-        self._info = pg.TextItem("info", color=CURSOR_COLOR)
-        self._info.hide()
-        self._info.setZValue(2)
-
-        plot = list(self._plots.values())[0]
-        plot.addItem(self._info, ignoreBounds=True)
+        self._infos: Dict[str, pg.TextItem] = {}
+        for plot_name, plot in self._plots.items():
+            info = pg.TextItem(
+                "info",
+                color=CURSOR_COLOR,
+                border=CURSOR_COLOR,
+                fill=BLACK_COLOR
+            )
+            info.hide()
+            info.setZValue(2)
+            info.setFont(NORMAL_FONT)
+            plot.addItem(info)  # , ignoreBounds=True)
+            self._infos[plot_name] = info
 
     def _connect_signal(self) -> None:
         """
@@ -444,24 +460,25 @@ class ChartCursor(QtCore.QObject):
 
     def update_info(self) -> None:
         """"""
-        bar = self._manager.get_bar(self._x)
+        buf = {}
 
-        if bar:
-            op = bar.open_price
-            hp = bar.high_price
-            lp = bar.low_price
-            cp = bar.close_price
-            v = bar.volume
-            text = f"(open){op}  (high){hp}  (low){lp}  (close){cp}  (volume){v}"
-        else:
-            text = ""
+        for item, plot in self._item_plot_map.items():
+            item_info_text = item.get_info_text(self._x)
+            if item_info_text:
+                if plot not in buf:
+                    buf[plot] = item_info_text
+                else:
+                    buf[plot] += ("\n\n" + item_info_text)
 
-        self._info.setText(text)
-        self._info.show()
+        for plot_name, plot in self._plots.items():
+            plot_info_text = buf[plot]
+            info = self._infos[plot_name]
+            info.setText(plot_info_text)
+            info.show()
 
-        view = list(self._views.values())[0]
-        top_left = view.mapSceneToView(view.sceneBoundingRect().topLeft())
-        self._info.setPos(top_left)
+            view = self._views[plot_name]
+            top_left = view.mapSceneToView(view.sceneBoundingRect().topLeft())
+            info.setPos(top_left)
 
     def move_right(self) -> None:
         """
@@ -501,8 +518,8 @@ class ChartCursor(QtCore.QObject):
         self._y = 0
         self._plot_name = ""
 
-        for line in self._v_lines + self._h_lines:
+        for line in list(self._v_lines.values()) + list(self._h_lines.values()):
             line.hide()
 
-        for label in self._y_labels + [self._x_label]:
+        for label in list(self._y_labels.values()) + [self._x_label]:
             label.hide()

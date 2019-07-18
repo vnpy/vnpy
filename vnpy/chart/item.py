@@ -55,6 +55,13 @@ class ChartItem(pg.GraphicsObject):
         """
         pass
 
+    @abstractmethod
+    def get_info_text(self, ix: int) -> str:
+        """
+        Get information text to show by cursor.
+        """
+        pass
+
     def update_history(self, history: List[BarData]) -> BarData:
         """
         Update a list of bar data.
@@ -204,6 +211,38 @@ class CandleItem(ChartItem):
         min_price, max_price = self._manager.get_price_range(min_ix, max_ix)
         return min_price, max_price
 
+    def get_info_text(self, ix: int) -> str:
+        """
+        Get information text to show by cursor.
+        """
+        bar = self._manager.get_bar(ix)
+
+        if bar:
+            words = [
+                "Date",
+                bar.datetime.strftime("%Y-%m-%d"),
+                "",
+                "Time",
+                bar.datetime.strftime("%H:%M"),
+                "",
+                "Open",
+                str(bar.open_price),
+                "",
+                "High",
+                str(bar.high_price),
+                "",
+                "Low",
+                str(bar.low_price),
+                "",
+                "Close",
+                str(bar.close_price)
+            ]
+            text = "\n".join(words)
+        else:
+            text = ""
+
+        return text
+
 
 class VolumeItem(ChartItem):
     """"""
@@ -258,3 +297,16 @@ class VolumeItem(ChartItem):
         """
         min_volume, max_volume = self._manager.get_volume_range(min_ix, max_ix)
         return min_volume, max_volume
+
+    def get_info_text(self, ix: int) -> str:
+        """
+        Get information text to show by cursor.
+        """
+        bar = self._manager.get_bar(ix)
+
+        if bar:
+            text = f"Volume {bar.volume}"
+        else:
+            text = ""
+
+        return text
