@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     widget = ChartWidget()
     widget.add_plot("candle", hide_x_axis=True)
-    widget.add_plot("volume")
+    widget.add_plot("volume", maximum_height=200)
     widget.add_item(CandleItem, "candle", "candle")
     widget.add_item(VolumeItem, "volume", "volume")
     widget.add_cursor()

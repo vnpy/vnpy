@@ -1,8 +1,9 @@
 from typing import Dict, List, Tuple
 from datetime import datetime
-from functools import lru_cache
 
 from vnpy.trader.object import BarData
+
+from .base import to_int
 
 
 class BarManager:
@@ -13,6 +14,9 @@ class BarManager:
         self._bars: Dict[datetime, BarData] = {}
         self._datetime_index_map: Dict[datetime, int] = {}
         self._index_datetime_map: Dict[int, datetime] = {}
+
+        self._price_ranges: Dict[Tuple[int, int], Tuple[float, float]] = {}
+        self._volume_ranges: Dict[Tuple[int, int], Tuple[float, float]] = {}
 
     def update_history(self, history: List[BarData]) -> None:
         """
@@ -62,16 +66,18 @@ class BarManager:
         """
         return self._datetime_index_map.get(dt, None)
 
-    def get_datetime(self, ix: int) -> datetime:
+    def get_datetime(self, ix: float) -> datetime:
         """
         Get datetime with index.
         """
+        ix = to_int(ix)
         return self._index_datetime_map.get(ix, None)
 
-    def get_bar(self, ix: int) -> BarData:
+    def get_bar(self, ix: float) -> BarData:
         """
         Get bar data with index.
         """
+        ix = to_int(ix)
         dt = self._index_datetime_map.get(ix, None)
         if not dt:
             return None
@@ -84,8 +90,7 @@ class BarManager:
         """
         return list(self._bars.values())
 
-    @lru_cache(maxsize=99999)
-    def get_price_range(self, min_ix: int = None, max_ix: int = None) -> Tuple[float, float]:
+    def get_price_range(self, min_ix: float = None, max_ix: float = None) -> Tuple[float, float]:
         """
         Get price range to show within given index range.
         """
@@ -96,7 +101,13 @@ class BarManager:
             min_ix = 0
             max_ix = len(self._bars) - 1
         else:
+            min_ix = to_int(min_ix)
+            max_ix = to_int(max_ix)
             max_ix = min(max_ix, self.get_count())
+
+        buf = self._price_ranges.get((min_ix, max_ix), None)
+        if buf:
+            return buf
 
         bar_list = list(self._bars.values())[min_ix:max_ix + 1]
         first_bar = bar_list[0]
@@ -109,8 +120,7 @@ class BarManager:
 
         return min_price, max_price
 
-    @lru_cache(maxsize=99999)
-    def get_volume_range(self, min_ix: int = None, max_ix: int = None) -> Tuple[float, float]:
+    def get_volume_range(self, min_ix: float = None, max_ix: float = None) -> Tuple[float, float]:
         """
         Get volume range to show within given index range.
         """
@@ -120,8 +130,15 @@ class BarManager:
         if not min_ix:
             min_ix = 0
             max_ix = len(self._bars) - 1
+        else:
+            min_ix = to_int(min_ix)
+            max_ix = to_int(max_ix)
+            max_ix = min(max_ix, self.get_count())
 
-        max_ix = min(max_ix, self.get_count())
+        buf = self._volume_ranges.get((min_ix, max_ix), None)
+        if buf:
+            return buf
+
         bar_list = list(self._bars.values())[min_ix:max_ix + 1]
 
         first_bar = bar_list[0]
@@ -135,10 +152,10 @@ class BarManager:
 
     def _clear_cache(self) -> None:
         """
-        Clear lru_cache range data.
+        Clear cached range data.
         """
-        self.get_price_range.cache_clear()
-        self.get_volume_range.cache_clear()
+        self._price_ranges.clear()
+        self._volume_ranges.clear()
 
     def clear_all(self) -> None:
         """
