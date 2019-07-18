@@ -1,6 +1,10 @@
-# “当你想放弃时，想想你为什么开始。埃隆·马斯克”
 
-    ![image](https://github.com/msincenselee/vnpy/blob/master/huafu_on_premise.jpg)
+<p align="center">
+  <img src ="https://github.com/msincenselee/vnpy/blob/master/huafu_on_premise.jpg"/>
+</p>
+
+
+# “当你想放弃时，想想你为什么开始。埃隆·马斯克”
 
 ###Fork版本主要改进如下
 
@@ -11,8 +15,7 @@
     - 提供非GUI界面启动的主程序。examples/service
     - 支持数据货币
     - 升级至py3版本
-    
-    
+       
 
 
 大佳
