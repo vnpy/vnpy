@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 import pyqtgraph as pg
 
@@ -40,9 +40,18 @@ class ChartItem(pg.GraphicsObject):
         pass
 
     @abstractmethod
-    def boundingRect(self):
+    def boundingRect(self) -> QtCore.QRectF:
         """
         Get bounding rectangles for item.
+        """
+        pass
+
+    @abstractmethod
+    def get_y_range(self, min_ix: int = None, max_ix: int = None) -> Tuple[float, float]:
+        """
+        Get range of y-axis with given x-axis range.
+
+        If min_ix and max_ix not specified, then return range with whole data set.
         """
         pass
 
@@ -186,6 +195,15 @@ class CandleItem(ChartItem):
         )
         return rect
 
+    def get_y_range(self, min_ix: int = None, max_ix: int = None) -> Tuple[float, float]:
+        """
+        Get range of y-axis with given x-axis range.
+
+        If min_ix and max_ix not specified, then return range with whole data set.
+        """
+        min_price, max_price = self._manager.get_price_range(min_ix, max_ix)
+        return min_price, max_price
+
 
 class VolumeItem(ChartItem):
     """"""
@@ -231,3 +249,12 @@ class VolumeItem(ChartItem):
             max_volume - min_volume
         )
         return rect
+
+    def get_y_range(self, min_ix: int = None, max_ix: int = None) -> Tuple[float, float]:
+        """
+        Get range of y-axis with given x-axis range.
+
+        If min_ix and max_ix not specified, then return range with whole data set.
+        """
+        min_volume, max_volume = self._manager.get_volume_range(min_ix, max_ix)
+        return min_volume, max_volume

@@ -46,7 +46,7 @@ class BarManager:
             self._datetime_index_map[dt] = ix
             self._index_datetime_map[ix] = dt
 
-        self.datetime_bar_map[dt] = bar
+        self._bars[dt] = bar
 
         self._clear_cache()
 
