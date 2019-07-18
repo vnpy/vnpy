@@ -284,6 +284,7 @@ class ChartWidget(pg.PlotWidget):
         """
         self._right_ix = self._manager.get_count()
         self._update_x_range()
+        self._cursor.update_info()
 
 
 class ChartCursor(QtCore.QObject):
