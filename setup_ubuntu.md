@@ -61,6 +61,8 @@
     apt-get -y install build-essential
 
     apt-get -y install unzip
+    
+    apt-get -y install libgl1-mesa-glx
 
  5、boost得安装( 仅用于支持CTP的接口)[ root用户 ]
 
