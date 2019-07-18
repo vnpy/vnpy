@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     timer = QtCore.QTimer()
     timer.timeout.connect(update_bar)
-    timer.start(100)
+    # timer.start(100)
 
     widget.show()
     app.exec_()

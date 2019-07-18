@@ -402,3 +402,7 @@ class BacktesterEngine(BaseEngine):
     def get_all_daily_results(self):
         """"""
         return self.backtesting_engine.get_all_daily_results()
+
+    def get_history_data(self):
+        """"""
+        return self.backtesting_engine.history_data
