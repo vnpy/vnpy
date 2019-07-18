@@ -118,6 +118,7 @@ class BarManager:
             max_price = max(max_price, bar.high_price)
             min_price = min(min_price, bar.low_price)
 
+        self._price_ranges[(min_ix, max_ix)] = (min_price, max_price)
         return min_price, max_price
 
     def get_volume_range(self, min_ix: float = None, max_ix: float = None) -> Tuple[float, float]:
@@ -148,6 +149,7 @@ class BarManager:
         for bar in bar_list[1:]:
             max_volume = max(max_volume, bar.volume)
 
+        self._volume_ranges[(min_ix, max_ix)] = (min_volume, max_volume)
         return min_volume, max_volume
 
     def _clear_cache(self) -> None:

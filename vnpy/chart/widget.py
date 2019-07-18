@@ -399,7 +399,8 @@ class ChartCursor(QtCore.QObject):
         """
         self._proxy = pg.SignalProxy(
             self._widget.scene().sigMouseMoved,
-            rateLimit=360,
+            delay=0.1,
+            rateLimit=60,
             slot=self._mouse_moved
         )
 
@@ -412,6 +413,7 @@ class ChartCursor(QtCore.QObject):
 
         # First get current mouse point
         pos = evt[0]
+
         for plot_name, view in self._views.items():
             rect = view.sceneBoundingRect()
 

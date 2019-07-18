@@ -32,6 +32,8 @@ class ChartItem(pg.GraphicsObject):
         )
         self._down_brush: QtGui.QBrush = pg.mkBrush(color=DOWN_COLOR)
 
+        self._rect_area: Tuple[float, float] = None
+
     @abstractmethod
     def _draw_bar_picture(self, ix: int, bar: BarData) -> QtGui.QPicture:
         """
@@ -109,7 +111,11 @@ class ChartItem(pg.GraphicsObject):
         min_ix = int(rect.left())
         max_ix = int(rect.right())
         max_ix = min(max_ix, len(self._bar_picutures))
-        self._draw_item_picture(min_ix, max_ix)
+
+        rect_area = (rect.left(), rect.right())
+        if rect_area != self._rect_area or not self._item_picuture:
+            self._rect_area = rect_area
+            self._draw_item_picture(min_ix, max_ix)
 
         self._item_picuture.play(painter)
 
