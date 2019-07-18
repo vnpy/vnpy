@@ -1,6 +1,6 @@
 # “当你想放弃时，想想你为什么开始。埃隆·马斯克”
 
-    ![image][https://github.com/msincenselee/vnpy/blob/master/huafu_on_premise.jpg]
+    ![image](https://github.com/msincenselee/vnpy/blob/master/huafu_on_premise.jpg)
 
 ###Fork版本主要改进如下
 
