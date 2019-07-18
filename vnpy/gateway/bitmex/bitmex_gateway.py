@@ -618,6 +618,7 @@ class BitmexWebsocketApi(WebsocketClient):
             direction=DIRECTION_BITMEX2VT[d["side"]],
             price=d["lastPx"],
             volume=d["lastQty"],
+            xbt=d["lastQty"]/d["lastPx"],
             time=d["timestamp"][11:19],
             gateway_name=self.gateway_name,
         )
@@ -663,10 +664,12 @@ class BitmexWebsocketApi(WebsocketClient):
             symbol=d["symbol"],
             exchange=Exchange.BITMEX,
             direction=Direction.NET,
-            volume=d.get("currentQty", 0),
+            volume = d.get("currentQty", 0),
+            notional = d.get("homeNotional", 0),
             gateway_name=self.gateway_name,
         )
 
+        #print(d)
         self.gateway.on_position(position)
 
     def on_account(self, d):

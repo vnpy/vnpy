@@ -4,7 +4,8 @@ from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.event import (
     EVENT_TICK, EVENT_TIMER, EVENT_ORDER, EVENT_TRADE)
 from vnpy.trader.constant import (Direction, Offset, OrderType)
-from vnpy.trader.object import (SubscribeRequest, OrderRequest)
+from vnpy.trader.object import (SubscribeRequest, OrderRequest,  PositionData,
+    AccountData, )
 from vnpy.trader.utility import load_json, save_json, round_to
 
 from .template import AlgoTemplate
@@ -50,6 +51,8 @@ class AlgoEngine(BaseEngine):
         from .algos.best_limit_algo import BestLimitAlgo
         from .algos.grid_algo import GridAlgo
         from .algos.dma_algo import DmaAlgo
+        from .algos.my_dma_algo import MyDmaAlgo
+        from .algos.arb_algo import ArbAlgo
         from .algos.arbitrage_algo import ArbitrageAlgo
 
         self.add_algo_template(TwapAlgo)
@@ -59,6 +62,8 @@ class AlgoEngine(BaseEngine):
         self.add_algo_template(BestLimitAlgo)
         self.add_algo_template(GridAlgo)
         self.add_algo_template(DmaAlgo)
+        self.add_algo_template(MyDmaAlgo)
+        self.add_algo_template(ArbAlgo)
         self.add_algo_template(ArbitrageAlgo)
 
     def add_algo_template(self, template: AlgoTemplate):
@@ -264,10 +269,11 @@ class AlgoEngine(BaseEngine):
         """"""
         event = Event(EVENT_ALGO_PARAMETERS)
         event.data = {
-            "algo_name": algo.algo_name,
-            "parameters": parameters
-        }
+                "algo_name": algo.algo_name,
+                "parameters": parameters
+                }
         self.event_engine.put(event)
+
 
     def put_variables_event(self, algo: AlgoTemplate, variables: dict):
         """"""
@@ -277,3 +283,8 @@ class AlgoEngine(BaseEngine):
             "variables": variables
         }
         self.event_engine.put(event)
+
+    def get_position(self, vt_positionid: str, use_df: bool = False) -> PositionData:
+        """"""
+        return get_data(self.main_engine.get_position, arg=vt_positionid, use_df=use_df)
+

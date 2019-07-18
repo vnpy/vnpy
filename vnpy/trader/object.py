@@ -159,6 +159,7 @@ class TradeData(BaseData):
     offset: Offset = Offset.NONE
     price: float = 0
     volume: float = 0
+    xbt: float = 0
     time: str = ""
 
     def __post_init__(self):
@@ -179,6 +180,7 @@ class PositionData(BaseData):
     direction: Direction
 
     volume: float = 0
+    notional: float = 0
     frozen: float = 0
     price: float = 0
     pnl: float = 0
