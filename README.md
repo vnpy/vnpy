@@ -1,15 +1,18 @@
 # “当你想放弃时，想想你为什么开始。埃隆·马斯克”
 
-    ![image][huafu_on_premise.jpg]
+    ![image][https://github.com/msincenselee/vnpy/blob/master/huafu_on_premise.jpg]
 
 ###Fork版本主要改进如下
-    - 1、增加CtaLineBar，CtaPosition，CtaPolicy,UtlSinaClient等基础组件
-    - 2、增加自动断线重连功能，在开盘前启动，收盘后重连CTP
-    - 3、修改回测引擎，提供实时计算净值
-    - 4、修改CtaTemplate，增加了未执行订单的跟踪
-    - 5、提供非GUI界面启动的主程序。examples/service
-    - 6、支持数据货币
-    - 7、升级至py3版本
+
+    - 增加CtaLineBar，CtaPosition，CtaPolicy,UtlSinaClient等基础组件
+    - 增加自动断线重连功能，在开盘前启动，收盘后重连CTP
+    - 修改回测引擎，提供实时计算净值
+    - 修改CtaTemplate，增加了未执行订单的跟踪
+    - 提供非GUI界面启动的主程序。examples/service
+    - 支持数据货币
+    - 升级至py3版本
+    
+    
 
 
 大佳
