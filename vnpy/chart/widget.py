@@ -14,6 +14,9 @@ from .axis import DatetimeAxis
 from .item import ChartItem
 
 
+pg.setConfigOptions(antialias=True)
+
+
 class ChartWidget(pg.PlotWidget):
     """"""
     MIN_BAR_COUNT = 100
@@ -122,7 +125,13 @@ class ChartWidget(pg.PlotWidget):
         self._layout.nextRow()
         self._layout.addItem(plot)
 
-    def get_all_plots(self):
+    def get_plot(self, plot_name: str) -> pg.PlotItem:
+        """
+        Get specific plot with its name.
+        """
+        return self._plots.get(plot_name, None)
+
+    def get_all_plots(self) -> List[pg.PlotItem]:
         """
         Get all plot objects.
         """
