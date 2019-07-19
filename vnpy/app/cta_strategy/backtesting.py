@@ -953,7 +953,7 @@ class BacktestingEngine:
             offset=offset,
             price=price,
             volume=volume,
-            status=Status.NOTTRADED,
+            status=Status.SUBMITTING,
             gateway_name=self.gateway_name,
         )
         order.datetime = self.datetime
