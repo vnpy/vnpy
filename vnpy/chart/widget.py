@@ -397,12 +397,7 @@ class ChartCursor(QtCore.QObject):
         """
         Connect mouse move signal to update function.
         """
-        self._proxy = pg.SignalProxy(
-            self._widget.scene().sigMouseMoved,
-            delay=0.1,
-            rateLimit=60,
-            slot=self._mouse_moved
-        )
+        self._widget.scene().sigMouseMoved.connect(self._mouse_moved)
 
     def _mouse_moved(self, evt: tuple) -> None:
         """
@@ -412,7 +407,7 @@ class ChartCursor(QtCore.QObject):
             return
 
         # First get current mouse point
-        pos = evt[0]
+        pos = evt
 
         for plot_name, view in self._views.items():
             rect = view.sceneBoundingRect()
