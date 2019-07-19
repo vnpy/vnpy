@@ -115,7 +115,7 @@ class ChartItem(pg.GraphicsObject):
         max_ix = int(rect.right())
         max_ix = min(max_ix, len(self._bar_picutures))
 
-        rect_area = (rect.left(), rect.right())
+        rect_area = (min_ix, max_ix)
         if rect_area != self._rect_area or not self._item_picuture:
             self._rect_area = rect_area
             self._draw_item_picture(min_ix, max_ix)

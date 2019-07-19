@@ -470,10 +470,11 @@ class ChartCursor(QtCore.QObject):
 
         for item, plot in self._item_plot_map.items():
             item_info_text = item.get_info_text(self._x)
-            if item_info_text:
-                if plot not in buf:
-                    buf[plot] = item_info_text
-                else:
+
+            if plot not in buf:
+                buf[plot] = item_info_text
+            else:
+                if item_info_text:
                     buf[plot] += ("\n\n" + item_info_text)
 
         for plot_name, plot in self._plots.items():
