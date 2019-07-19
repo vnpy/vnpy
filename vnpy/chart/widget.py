@@ -27,8 +27,8 @@ class ChartWidget(pg.PlotWidget):
 
         self._manager: BarManager = BarManager()
 
-        self._plots: Dict[str, ChartItem] = {}
-        self._items: Dict[str, pg.GraphicsObject] = {}
+        self._plots: Dict[str, pg.GraphicsObject] = {}
+        self._items: Dict[str, ChartItem] = {}
         self._item_plot_map: Dict[ChartItem, pg.GraphicsObject] = {}
 
         self._first_plot: pg.PlotItem = None
