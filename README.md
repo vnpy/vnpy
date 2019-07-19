@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.0.5-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.0.6-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/travis/com/vnpy/vnpy/master.svg"/>
@@ -25,6 +25,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 2. 覆盖国内外所有交易品种的交易接口（vnpy.gateway）：
 
     * CTP(ctp)：国内期货、期权
+
+    * CTP Mini(mini)：国内期货、期权
 
     * 飞马(femas)：国内期货
 
@@ -84,9 +86,11 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 6. 跨进程通讯标准组件（vnpy.rpc），用于实现分布式部署的复杂交易系统。
 
-7. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容。
+7. Python高性能K线图表（vnpy.chart），支持大数据量图表显示以及实时数据更新功能。
 
-8. 官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
+8. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容。
+
+9. 官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
 
 ## 环境准备
 
