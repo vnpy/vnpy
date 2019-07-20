@@ -52,11 +52,19 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\ctpapi\thostmduserapi_se.lib" />
-    <Library Include="..\..\ctpapi\thosttraderapi_se.lib" />
+    <None Include="..\..\ctpapi\thostmduserapi.dll">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\ctpapi\thosttraderapi.dll">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\ctpapi\thosttraderapi_se.dll" />
-    <None Include="..\..\ctpapi\thostmduserapi_se.dll" />
+    <Library Include="..\..\ctpapi\thostmduserapi.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\..\ctpapi\thosttraderapi.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
   </ItemGroup>
 </Project>

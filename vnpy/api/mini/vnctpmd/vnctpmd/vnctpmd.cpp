@@ -321,6 +321,24 @@ void MdApi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketDat
 	this->task_queue.push(task);
 };
 
+void MdApi::OnRtnMBLMarketData(CThostFtdcMBLMarketDataField *pMBLMarketData)
+{
+	Task task = Task();
+	task.task_name = ONRTNMBLMARKETDATA;
+
+	if (pMBLMarketData)
+	{
+		task.task_data = *pMBLMarketData;
+	}
+	else
+	{
+		CThostFtdcMBLMarketDataField empty_data = CThostFtdcMBLMarketDataField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+	this->task_queue.push(task);
+};
+
 void MdApi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
 {
 	Task task = Task();
@@ -416,6 +434,12 @@ void MdApi::processTask()
 		case ONRTNDEPTHMARKETDATA:
 		{
 			this->processRtnDepthMarketData(task);
+			break;
+		}
+
+		case ONRTNMBLMARKETDATA:
+		{
+			this->processRtnMBLMarketData(task);
 			break;
 		}
 
@@ -613,6 +637,20 @@ void MdApi::processRtnDepthMarketData(Task task)
 	this->onRtnDepthMarketData(data);
 };
 
+void MdApi::processRtnMBLMarketData(Task task)
+{
+	PyLock lock;
+	CThostFtdcMBLMarketDataField task_data = any_cast<CThostFtdcMBLMarketDataField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["Volume"] = task_data.Volume;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["Direction"] = task_data.Direction;
+	data["Price"] = task_data.Price;
+
+	this->onRtnMBLMarketData(data);
+};
+
 void MdApi::processRtnForQuoteRsp(Task task)
 {
 	PyLock lock;
@@ -720,6 +758,7 @@ int MdApi::reqUserLogin(dict req, int nRequestID)
 	getStr(req, "BrokerID", myreq.BrokerID);
 	getStr(req, "ClientIPAddress", myreq.ClientIPAddress);
 	getStr(req, "OneTimePassword", myreq.OneTimePassword);
+	getStr(req, "LoginRemark", myreq.LoginRemark);
 	getStr(req, "ProtocolInfo", myreq.ProtocolInfo);
 	getStr(req, "Password", myreq.Password);
 	int i = this->api->ReqUserLogin(&myreq, nRequestID);
@@ -735,6 +774,7 @@ int MdApi::reqUserLogout(dict req, int nRequestID)
 	int i = this->api->ReqUserLogout(&myreq, nRequestID);
 	return i;
 };
+
 
 
 
@@ -877,6 +917,18 @@ struct MdApiWrap : MdApi, wrapper < MdApi >
 		}
 	};
 
+	virtual void onRtnMBLMarketData(dict data)
+	{
+		try
+		{
+			this->get_override("onRtnMBLMarketData")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
 	virtual void onRtnForQuoteRsp(dict data)
 	{
 		try
@@ -921,6 +973,7 @@ BOOST_PYTHON_MODULE(vnctpmd)
 		.def("onRtnDepthMarketData", pure_virtual(&MdApiWrap::onRtnDepthMarketData))
 		.def("onRspSubForQuoteRsp", pure_virtual(&MdApiWrap::onRspSubForQuoteRsp))
 		.def("onRspUnSubForQuoteRsp", pure_virtual(&MdApiWrap::onRspUnSubForQuoteRsp))
+		.def("onRtnMBLMarketData", pure_virtual(&MdApiWrap::onRtnMBLMarketData))
 		.def("onRtnForQuoteRsp", pure_virtual(&MdApiWrap::onRtnForQuoteRsp))
 		;
 };

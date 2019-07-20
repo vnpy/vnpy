@@ -38,7 +38,8 @@ using namespace boost;
 #define ONRSPSUBFORQUOTERSP 9
 #define ONRSPUNSUBFORQUOTERSP 10
 #define ONRTNDEPTHMARKETDATA 11
-#define ONRTNFORQUOTERSP 12
+#define ONRTNMBLMARKETDATA 12
+#define ONRTNFORQUOTERSP 13
 
 
 
@@ -209,6 +210,9 @@ public:
 	///深度行情通知
 	virtual void OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData);
 
+	///分价表通知
+	virtual void OnRtnMBLMarketData(CThostFtdcMBLMarketDataField *pMBLMarketData);
+
 	///询价通知
 	virtual void OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp);
 
@@ -239,6 +243,8 @@ public:
 	void processRspUnSubForQuoteRsp(Task task);
 
 	void processRtnDepthMarketData(Task task);
+
+	void processRtnMBLMarketData(Task task);
 
 	void processRtnForQuoteRsp(Task task);
 
@@ -271,6 +277,8 @@ public:
 	virtual void onRspUnSubForQuoteRsp(dict data, dict error, int id, bool last) {};
 
 	virtual void onRtnDepthMarketData(dict data) {};
+
+	virtual void onRtnMBLMarketData(dict data) {};
 
 	virtual void onRtnForQuoteRsp(dict data) {};
 

@@ -1,0 +1,9 @@
+{
+    "brokerID": "1025", 
+    "mdAddress": "tcp://124.89.33.126:51216", 
+    "tdAddress": "tcp://124.89.33.126:51217", 
+    "userID": "",
+    "password": "",
+    "appID": "vntech_vnpy_2.0",
+    "authCode": ""
+}
