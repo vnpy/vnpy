@@ -28,13 +28,7 @@ class StructGenerator:
         self.f_struct = open(f"{self.prefix}_struct.py", "w")
 
         for line in self.f_cpp:
-            try:
-                self.process_line(line)
-            except:
-                print("--------------------------")
-                print(line)
-                import traceback
-                traceback.print_exc()
+            self.process_line(line)
 
         self.f_cpp.close()
         self.f_struct.close()
@@ -86,5 +80,6 @@ class StructGenerator:
 
 
 if __name__ == "__main__":
-    generator = StructGenerator("../include/mini/ThostFtdcUserApiStruct.h", "mini")
+    generator = StructGenerator(
+        "../include/mini/ThostFtdcUserApiStruct.h", "mini")
     generator.run()

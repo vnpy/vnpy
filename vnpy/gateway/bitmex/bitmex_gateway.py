@@ -252,7 +252,7 @@ class BitmexRestApi(RestClient):
     def send_order(self, req: OrderRequest):
         """"""
         if not self.check_rate_limit():
-           return ""
+            return ""
 
         orderid = str(self.connect_time + self._new_order_id())
 

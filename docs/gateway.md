@@ -76,13 +76,14 @@ def main():
 | CTP      |                    期货                    |
 | MINI      |                    期货                   |
 | FEMAS    |                    期货                    |
-| TORA      |                 国内股票                  |
-| OES      |                  国内股票                  |
 | XTP      | 国内股票、指数、基金、债券、期权、融资融券 |
+| OES      |                  国内股票                  |
+| TORA     |                  国内股票                  |
 | IB       |            外盘股票、期货、期权            |
-| TAP      |            外盘股票、期货、期权            |
+| TAP      |               外盘期货、期权               |
 | FUTU     |            国内股票、港股、美股            |
 | TIGER    |            国内股票、港股、美股            |
+| ALPACA   |                    美股                    |
 | BITFINEX |                  数字货币                  |
 | BITMEX   |                  数字货币                  |
 | OKEX     |                  数字货币                  |
@@ -90,7 +91,8 @@ def main():
 | HUOBI    |                  数字货币                  |
 | HBDM     |                  数字货币                  |
 | ONETOKEN |                  数字货币                  |
-| BINANCE   |                  数字货币                  |  
+| RPC      |                  RPC服务                   |
+
 
 
 &nbsp;
@@ -195,74 +197,6 @@ main_engine.add_gateway(FemasGateway)
 
 
 
-### 宽睿柜台(OES)
-
-#### 如何加载
-
-先从gateway上调用OesGateway类；然后通过add_gateway()函数添加到main_engine上。
-```
-from vnpy.gateway.oes import OesGateway
-main_engine.add_gateway(OesGateway)
-```
-
-&nbsp;
-
-
-#### 相关字段
-
-- 用户名：username
-- 密码：password
-- 硬盘序列号：hdd_serial
-- 交易委托服务器：td_ord_server
-- 交易回报服务器：td_rpt_server
-- 交易查询服务器：td_qry_server
-- 行情推送服务器：md_tcp_server
-- 行情查询服务器：md_qry_server
-
-&nbsp;
-
-
-#### 获取账号
-
-测试账号请联系宽睿科技申请
-
-&nbsp;
-
-#### 其他特点
-
-宽睿柜台提供内网UDP低延时组播行情以及实时成交信息推送。
-
-&nbsp;
-
-### 华鑫奇点(tora)
-
-#### 如何加载
-
-先从gateway上调用ToraGateway类；然后通过add_gateway()函数添加到main_engine上。
-```
-from vnpy.gateway.tota import ToraGateway
-main_engine.add_gateway(OesGateway)
-```
-
-&nbsp;
-
-
-#### 相关字段
-
-- 账号: username
-- 密码: password
-- 交易服务器: td_address
-- 行情服务器: md_address
-
-&nbsp;
-
-
-#### 获取账号
-
-测试账号请联系华鑫证券申请
-
-&nbsp;
-
 ### 中泰柜台(XTP)
 
 #### 如何加载
@@ -302,6 +236,58 @@ XTP是首家提供融资融券的极速柜台。
 &nbsp;
 
 
+### 宽睿柜台(OES)
+
+#### 如何加载
+
+先从gateway上调用OesGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.oes import OesGateway
+main_engine.add_gateway(OesGateway)
+```
+
+&nbsp;
+
+
+#### 相关字段
+
+- 用户名：username
+- 密码：password
+- 硬盘序列号：hdd_serial
+- 交易委托服务器：td_ord_server
+- 交易回报服务器：td_rpt_server
+- 交易查询服务器：td_qry_server
+- 行情推送服务器：md_tcp_server
+- 行情查询服务器：md_qry_server
+
+&nbsp;
+
+
+#### 获取账号
+
+测试账号请联系宽睿科技申请
+
+&nbsp;
+
+#### 其他特点
+
+宽睿柜台提供内网UDP低延时组播行情以及实时成交信息推送。
+
+&nbsp;
+
+
+### 华鑫奇点(TORA)
+
+#### 如何加载
+
+#### 相关字段
+
+#### 获取账号
+
+#### 其他特点
+
+&nbsp;
+
 ### 盈透证券(IB)
 
 #### 如何加载
@@ -340,7 +326,7 @@ main_engine.add_gateway(IbGateway)
 &nbsp;
 
 
-### TAP
+### 易盛外盘(TAP)
 
 #### 如何加载
 
@@ -439,6 +425,19 @@ main_engine.add_gateway(TigerGateway)
 
 在老虎证券开户并且入金后可以获得API接入权限。拥有实盘账号后才可以申请开通仿真交易账号。
 
+
+&nbsp;
+
+
+### ALPACA
+
+#### 如何加载
+
+#### 相关字段
+
+#### 获取账号
+
+#### 其他特点
 
 &nbsp;
 
@@ -690,34 +689,15 @@ main_engine.add_gateway(OnetokenGateway)
 
 &nbsp;
 
-### BINANCE
+
+### RPC
 
 #### 如何加载
 
-先从gateway上调用BinanceGateway类；然后通过add_gateway()函数添加到main_engine上。
-```
-from vnpy.gateway.binance import BinanceGateway
-main_engine.add_gateway(BinanceGateway)
-```
-
-&nbsp;
-
-
 #### 相关字段
-
-- Key秘钥
-- secret
-- session_number(会话数)：3
-- proxy_host
-- proxy_port
-
-&nbsp;
-
 
 #### 获取账号
 
-在BINANCE官网开户并且入金后可以获得API接入权限。
-
-
+#### 其他特点
 
 &nbsp;

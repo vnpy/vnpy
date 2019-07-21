@@ -183,7 +183,7 @@ class RestClient(object):
                         self._queue.task_done()
                 except Empty:
                     pass
-        except:  # noqa
+        except Exception:
             et, ev, tb = sys.exc_info()
             self.on_error(et, ev, tb, None)
 
@@ -239,7 +239,6 @@ class RestClient(object):
         """
         Sending request to server and get result.
         """
-        # noinspection PyBroadException
         try:
             request = self.sign(request)
 
@@ -270,7 +269,7 @@ class RestClient(object):
                     request.on_failed(status_code, request)
                 else:
                     self.on_failed(status_code, request)
-        except:  # noqa
+        except Exception:
             request.status = RequestStatus.error
             t, v, tb = sys.exc_info()
             if request.on_error:
