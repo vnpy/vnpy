@@ -24,43 +24,51 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 2. 覆盖国内外所有交易品种的交易接口（vnpy.gateway）：
 
-    * CTP(ctp)：国内期货、期权
+    * 国内市场
 
-    * CTP Mini(mini)：国内期货、期权
+        * CTP(ctp)：国内期货、期权
 
-    * 飞马(femas)：国内期货
+        * CTP Mini(mini)：国内期货、期权
 
-    * 宽睿(oes)：国内证券（A股）
+        * 飞马(femas)：国内期货
 
-    * 中泰XTP(xtp)：国内证券（A股）
+        * 宽睿(oes)：国内证券（A股）
 
-    * 华鑫奇点(tora)：国内证券（A股）
+        * 中泰XTP(xtp)：国内证券（A股）
 
-    * 富途证券(futu)：港股、美股
+        * 华鑫奇点(tora)：国内证券（A股）
 
-    * 老虎证券(tiger)：全球证券、期货、期权、外汇等
+    * 海外市场
+     
+        * 富途证券(futu)：港股、美股
 
-    * Interactive Brokers(ib)：全球证券、期货、期权、外汇等
+        * 老虎证券(tiger)：全球证券、期货、期权、外汇等
 
-    * 易盛9.0外盘(tap)：全球期货
+        * Interactive Brokers(ib)：全球证券、期货、期权、外汇等
 
-    * BitMEX(bitmex)：数字货币期货、期权、永续合约
+        * 易盛9.0外盘(tap)：全球期货
 
-    * OKEX合约(okexf)：数字货币期货
+    * 数字货币
 
-    * 火币合约(hbdm)：数字货币期货
+        * BitMEX(bitmex)：数字货币期货、期权、永续合约
 
-    * 币安(binance)：数字货币现货
+        * OKEX合约(okexf)：数字货币期货
 
-    * OKEX(okex)：数字货币现货
+        * 火币合约(hbdm)：数字货币期货
 
-    * 火币(huobi)：数字货币现货
+        * 币安(binance)：数字货币现货
 
-    * Bitfinex(bitfinex)：数字货币现货
+        * OKEX(okex)：数字货币现货
 
-    * 1Token(onetoken)：数字货币券商（现货、期货）
+        * 火币(huobi)：数字货币现货
 
-    * RPC服务(rpc)：跨进程通讯接口，用于分布式架构
+        * Bitfinex(bitfinex)：数字货币现货
+
+        * 1Token(onetoken)：数字货币券商（现货、期货）
+
+    * 特殊应用
+    
+        * RPC服务(rpc)：跨进程通讯接口，用于分布式架构
 
 3. 开箱即用的各类量化策略交易应用（vnpy.app）：
 
@@ -90,7 +98,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 8. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容。
 
-9. 官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
+9.  官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
 
 ## 环境准备
 

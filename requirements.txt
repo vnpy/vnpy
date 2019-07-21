@@ -9,7 +9,7 @@ pymysql
 psycopg2
 mongoengine
 numpy
-pandas
+pandas==0.24
 matplotlib
 seaborn
 futu-api
@@ -18,3 +18,4 @@ rqdatac
 ta-lib
 ibapi
 deap
+pyzmq
