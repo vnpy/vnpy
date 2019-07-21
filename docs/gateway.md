@@ -74,7 +74,9 @@ def main():
 | 接口     |                    类型                    |
 | -------- | :----------------------------------------: |
 | CTP      |                    期货                    |
+| MINI      |                    期货                   |
 | FEMAS    |                    期货                    |
+| TORA      |                 国内股票                  |
 | OES      |                  国内股票                  |
 | XTP      | 国内股票、指数、基金、债券、期权、融资融券 |
 | IB       |            外盘股票、期货、期权            |
@@ -88,7 +90,7 @@ def main():
 | HUOBI    |                  数字货币                  |
 | HBDM     |                  数字货币                  |
 | ONETOKEN |                  数字货币                  |
-
+| BINANCE   |                  数字货币                  |  
 
 
 &nbsp;
@@ -125,6 +127,37 @@ main_engine.add_gateway(CtpGateway)
 - 仿真账号：从SimNow网站上获取。只需输入手机号码和短信验证即可。（短信验证有时只能在工作日正常工作时段收到）SimNow的用户名为6位纯数字，经纪商编号为9999，并且提供2套环境用于盘中仿真交易以及盘后的测试。
   
 - 实盘账号：在期货公司开户，通过联系客户经理可以开通。用户名为纯数字，经纪商编号也是4位纯数字。（每个期货公司的经纪商编号都不同）另外，实盘账号也可以开通仿真交易功能，同样需要联系客户经理。
+
+
+&nbsp;
+
+### MINI
+
+#### 如何加载
+
+先从gateway上调用MiniGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.mini import MiniGateway
+main_engine.add_gateway(MiniGateway)
+```
+
+&nbsp;
+
+#### 相关字段
+
+- 用户名：username
+- 密码：password：
+- 经纪商编号：brokerid
+- 交易服务器地址：td_address
+- 行情服务器地址：md_address
+- 产品名称：product_info
+- 授权编码：auth_code
+  
+&nbsp;
+
+#### 获取账号
+
+在期货公司开户，通过联系客户经理可以开通。用户名为纯数字，经纪商编号也是4位纯数字。（每个期货公司的经纪商编号都不同）另外，实盘账号也可以开通仿真交易功能，同样需要联系客户经理。
 
 
 &nbsp;
@@ -198,6 +231,35 @@ main_engine.add_gateway(OesGateway)
 #### 其他特点
 
 宽睿柜台提供内网UDP低延时组播行情以及实时成交信息推送。
+
+&nbsp;
+
+### 华鑫奇点(tora)
+
+#### 如何加载
+
+先从gateway上调用ToraGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.tota import ToraGateway
+main_engine.add_gateway(OesGateway)
+```
+
+&nbsp;
+
+
+#### 相关字段
+
+- 账号: username
+- 密码: password
+- 交易服务器: td_address
+- 行情服务器: md_address
+
+&nbsp;
+
+
+#### 获取账号
+
+测试账号请联系华鑫证券申请
 
 &nbsp;
 
@@ -623,6 +685,38 @@ main_engine.add_gateway(OnetokenGateway)
 #### 获取账号
 
 在Onetoken官网开户并且入金后可以获得API接入权限。
+
+
+
+&nbsp;
+
+### BINANCE
+
+#### 如何加载
+
+先从gateway上调用BinanceGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.binance import BinanceGateway
+main_engine.add_gateway(BinanceGateway)
+```
+
+&nbsp;
+
+
+#### 相关字段
+
+- Key秘钥
+- secret
+- session_number(会话数)：3
+- proxy_host
+- proxy_port
+
+&nbsp;
+
+
+#### 获取账号
+
+在BINANCE官网开户并且入金后可以获得API接入权限。
 
 
 
