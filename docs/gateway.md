@@ -74,7 +74,7 @@ def main():
 | 接口     |                    类型                    |
 | -------- | :----------------------------------------: |
 | CTP      |                    期货                    |
-| MINI      |                    期货                   |
+| MINI      |                   期货                   |
 | FEMAS    |                    期货                    |
 | XTP      | 国内股票、指数、基金、债券、期权、融资融券 |
 | OES      |                  国内股票                  |
@@ -86,12 +86,13 @@ def main():
 | ALPACA   |                    美股                    |
 | BITFINEX |                  数字货币                  |
 | BITMEX   |                  数字货币                  |
+| BINANCE  |                  数字货币                  |
 | OKEX     |                  数字货币                  |
 | OKEXF    |                  数字货币                  |
 | HUOBI    |                  数字货币                  |
 | HBDM     |                  数字货币                  |
 | ONETOKEN |                  数字货币                  |
-| RPC      |                  RPC服务                   |
+| RPC      |                  RPC服务                  |
 
 
 
@@ -280,11 +281,27 @@ main_engine.add_gateway(OesGateway)
 
 #### 如何加载
 
+先从gateway上调用ToraGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.tota import ToraGateway
+main_engine.add_gateway(OesGateway)
+```
+
+&nbsp;
+
 #### 相关字段
+
+- 账号: username
+- 密码: password
+- 交易服务器: td_address
+- 行情服务器: md_address
+
+&nbsp;
 
 #### 获取账号
 
-#### 其他特点
+测试账号请联系华鑫证券申请
+
 
 &nbsp;
 
@@ -432,11 +449,21 @@ main_engine.add_gateway(TigerGateway)
 ### ALPACA
 
 #### 如何加载
+先从gateway上调用AlpacaGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.alpaca import AlpacaGateway
+main_engine.add_gateway(AlpacaGateway)
+```
+
+&nbsp;
 
 #### 相关字段
-
+- KEY ID: key
+- Secret Key: secret
+- 会话数: 10
+- 服务器:["REAL", "PAPER"]
 #### 获取账号
-
+在OKEX官网开户并且入金后可以获得API接入权限。
 #### 其他特点
 
 &nbsp;
@@ -689,15 +716,59 @@ main_engine.add_gateway(OnetokenGateway)
 
 &nbsp;
 
+&nbsp;
+
+### BINANCE
+
+#### 如何加载
+
+先从gateway上调用BinanceGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.binance import BinanceGateway
+main_engine.add_gateway(BinanceGateway)
+```
+
+&nbsp;
+
+
+#### 相关字段
+
+- Key秘钥
+- secret
+- session_number(会话数)：3
+- proxy_host
+- proxy_port
+
+&nbsp;
+
+
+#### 获取账号
+
+在BINANCE官网开户并且入金后可以获得API接入权限。
+
+&nbsp;
+
 
 ### RPC
 
 #### 如何加载
 
+RPC的加载涉及到服务端和客户端
+- 服务端：运行vntrader时加载rpc_service模块
+    ```
+    from vnpy.app.rpc_service import RpcService
+    ```
+    启动vntrader后，首先连接外部交易交易如CTP，然后点击菜单栏"功能"->"RPC服务"，点击"启动"
+- 客户端：运行vntrader时加载RpcGateway
+    ```
+    from vnpy.gateway.rpc import RpcGateway
+    ```
+    启动vntrader后，连接rpc接口即可。
 #### 相关字段
+在服务端和客户端，使用默认填好的参数即可
 
 #### 获取账号
+使用rpc无须额外申请账号，只需要一个外部接口账号
 
 #### 其他特点
-
-&nbsp;
+rpc服务支持同一外部接口数据在本地多进程分发，比如在服务端连接了ctp接口，订阅了rb1910后，客户端多个进程会自动订阅来自服务端分发的订阅数据
