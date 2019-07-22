@@ -568,13 +568,10 @@ class CtpTdApi(TdApi):
             
             self.writeLog(text.TRADING_SERVER_LOGIN)
             
-            # 确认结算信息
-            req = {}
-            req['BrokerID'] = self.brokerID
-            req['InvestorID'] = self.userID
+            # 查询合约代码
             self.reqID += 1
-            self.reqSettlementInfoConfirm(req, self.reqID)              
-                
+            self.reqQryInstrument({}, self.reqID)
+            
         # 否则，推送错误信息
         else:
             err = VtErrorData()
@@ -731,52 +728,50 @@ class CtpTdApi(TdApi):
     def onRspQryInvestorPosition(self, data, error, n, last):
         """持仓查询回报"""
         symbol = data.get('InstrumentID', '')
-        if not symbol:
-            return
-        
-        # 获取持仓缓存对象
-        posName = '.'.join([data['InstrumentID'], data['PosiDirection']])
-        if posName in self.posDict:
-            pos = self.posDict[posName]
-        else:
-            pos = VtPositionData()
-            self.posDict[posName] = pos
+        if symbol:
+            # 获取持仓缓存对象
+            posName = '.'.join([data['InstrumentID'], data['PosiDirection']])
+            if posName in self.posDict:
+                pos = self.posDict[posName]
+            else:
+                pos = VtPositionData()
+                self.posDict[posName] = pos
+                
+                pos.gatewayName = self.gatewayName
+                pos.symbol = data['InstrumentID']
+                pos.vtSymbol = pos.symbol
+                pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
+                pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction]) 
             
-            pos.gatewayName = self.gatewayName
-            pos.symbol = data['InstrumentID']
-            pos.vtSymbol = pos.symbol
-            pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
-            pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction]) 
-        
-        exchange = self.symbolExchangeDict.get(pos.symbol, EXCHANGE_UNKNOWN)
-        
-        # 针对上期所持仓的今昨分条返回（有昨仓、无今仓），读取昨仓数据
-        if exchange == EXCHANGE_SHFE:
-            if data['YdPosition'] and not data['TodayPosition']:
-                pos.ydPosition = data['Position']
-        # 否则基于总持仓和今持仓来计算昨仓数据
-        else:
-            pos.ydPosition = data['Position'] - data['TodayPosition']
+            exchange = self.symbolExchangeDict.get(pos.symbol, EXCHANGE_UNKNOWN)
             
-        # 计算成本
-        if pos.symbol not in self.symbolSizeDict:
-            return
-        size = self.symbolSizeDict[pos.symbol]
-        cost = pos.price * pos.position * size
-        
-        # 汇总总仓
-        pos.position += data['Position']
-        pos.positionProfit += data['PositionProfit']
-        
-        # 计算持仓均价
-        if pos.position and size:    
-            pos.price = (cost + data['PositionCost']) / (pos.position * size)
-        
-        # 读取冻结
-        if pos.direction is DIRECTION_LONG: 
-            pos.frozen += data['ShortFrozen']
-        else:
-            pos.frozen += data['LongFrozen']
+            # 针对上期所持仓的今昨分条返回（有昨仓、无今仓），读取昨仓数据
+            if exchange == EXCHANGE_SHFE:
+                if data['YdPosition'] and not data['TodayPosition']:
+                    pos.ydPosition = data['Position']
+            # 否则基于总持仓和今持仓来计算昨仓数据
+            else:
+                pos.ydPosition = data['Position'] - data['TodayPosition']
+                
+            # 计算成本
+            if pos.symbol not in self.symbolSizeDict:
+                return
+            size = self.symbolSizeDict[pos.symbol]
+            cost = pos.price * pos.position * size
+            
+            # 汇总总仓
+            pos.position += data['Position']
+            pos.positionProfit += data['PositionProfit']
+            
+            # 计算持仓均价
+            if pos.position and size:    
+                pos.price = (cost + data['PositionCost']) / (pos.position * size)
+            
+            # 读取冻结
+            if pos.direction is DIRECTION_LONG: 
+                pos.frozen += data['ShortFrozen']
+            else:
+                pos.frozen += data['LongFrozen']
         
         # 查询回报结束
         if last:
@@ -790,6 +785,9 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryTradingAccount(self, data, error, n, last):
         """资金账户查询回报"""
+        if not data["AccountID"]:
+            return
+        
         account = VtAccountData()
         account.gatewayName = self.gatewayName
     
@@ -847,44 +845,45 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryInstrument(self, data, error, n, last):
         """合约查询回报"""
-        contract = VtContractData()
-        contract.gatewayName = self.gatewayName
-
-        contract.symbol = data['InstrumentID']
-        contract.exchange = exchangeMapReverse[data['ExchangeID']]
-        contract.vtSymbol = contract.symbol #'.'.join([contract.symbol, contract.exchange])
-        contract.name = data['InstrumentName'].decode('GBK')
-
-        # 合约数值
-        contract.size = data['VolumeMultiple']
-        contract.priceTick = data['PriceTick']
-        contract.strikePrice = data['StrikePrice']
-        contract.productClass = productClassMapReverse.get(data['ProductClass'], PRODUCT_UNKNOWN)
-        contract.expiryDate = data['ExpireDate']
-        
-        # ETF期权的标的命名方式需要调整（ETF代码 + 到期月份）
-        if contract.exchange in [EXCHANGE_SSE, EXCHANGE_SZSE]:
-            contract.underlyingSymbol = '-'.join([data['UnderlyingInstrID'], str(data['ExpireDate'])[2:-2]])
-        # 商品期权无需调整
-        else:
-            contract.underlyingSymbol = data['UnderlyingInstrID']   
-        
-        # 期权类型
-        if contract.productClass is PRODUCT_OPTION:
-            if data['OptionsType'] == '1':
-                contract.optionType = OPTION_CALL
-            elif data['OptionsType'] == '2':
-                contract.optionType = OPTION_PUT
-
-        # 缓存代码和交易所的印射关系
-        self.symbolExchangeDict[contract.symbol] = contract.exchange
-        self.symbolSizeDict[contract.symbol] = contract.size
-
-        # 推送
-        self.gateway.onContract(contract)
-        
-        # 缓存合约代码和交易所映射
-        symbolExchangeDict[contract.symbol] = contract.exchange
+        if data["InstrumentID"]:
+            contract = VtContractData()
+            contract.gatewayName = self.gatewayName
+    
+            contract.symbol = data['InstrumentID']
+            contract.exchange = exchangeMapReverse[data['ExchangeID']]
+            contract.vtSymbol = contract.symbol #'.'.join([contract.symbol, contract.exchange])
+            contract.name = data['InstrumentName'].decode('GBK')
+    
+            # 合约数值
+            contract.size = data['VolumeMultiple']
+            contract.priceTick = data['PriceTick']
+            contract.strikePrice = data['StrikePrice']
+            contract.productClass = productClassMapReverse.get(data['ProductClass'], PRODUCT_UNKNOWN)
+            contract.expiryDate = data['ExpireDate']
+            
+            # ETF期权的标的命名方式需要调整（ETF代码 + 到期月份）
+            if contract.exchange in [EXCHANGE_SSE, EXCHANGE_SZSE]:
+                contract.underlyingSymbol = '-'.join([data['UnderlyingInstrID'], str(data['ExpireDate'])[2:-2]])
+            # 商品期权无需调整
+            else:
+                contract.underlyingSymbol = data['UnderlyingInstrID']   
+            
+            # 期权类型
+            if contract.productClass is PRODUCT_OPTION:
+                if data['OptionsType'] == '1':
+                    contract.optionType = OPTION_CALL
+                elif data['OptionsType'] == '2':
+                    contract.optionType = OPTION_PUT
+    
+            # 缓存代码和交易所的印射关系
+            self.symbolExchangeDict[contract.symbol] = contract.exchange
+            self.symbolSizeDict[contract.symbol] = contract.size
+    
+            # 推送
+            self.gateway.onContract(contract)
+            
+            # 缓存合约代码和交易所映射
+            symbolExchangeDict[contract.symbol] = contract.exchange
 
         if last:
             self.writeLog(text.CONTRACT_DATA_RECEIVED)
