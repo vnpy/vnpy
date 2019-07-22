@@ -7,7 +7,7 @@ import hmac
 import sys
 import time
 from copy import copy
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
@@ -18,18 +18,21 @@ from vnpy.trader.constant import (
     OrderType,
     Product,
     Status,
+    Interval
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     TickData,
     OrderData,
     TradeData,
+    BarData,
     PositionData,
     AccountData,
     ContractData,
     OrderRequest,
     CancelRequest,
     SubscribeRequest,
+    HistoryRequest
 )
 
 BASE_URL = "https://api.bitfinex.com/"
@@ -55,6 +58,18 @@ DIRECTION_VT2BITFINEX = {
 DIRECTION_BITFINEX2VT = {
     "Buy": Direction.LONG,
     "Sell": Direction.SHORT,
+}
+
+INTERVAL_VT2BITFINEX = {
+    Interval.MINUTE: "1m",
+    Interval.HOUR: "1h",
+    Interval.DAILY: "1D",
+}
+
+TIMEDELTA_MAP = {
+    Interval.MINUTE: timedelta(minutes=1),
+    Interval.HOUR: timedelta(hours=1),
+    Interval.DAILY: timedelta(days=1),
 }
 
 
@@ -111,6 +126,10 @@ class BitfinexGateway(BaseGateway):
     def query_position(self):
         """"""
         pass
+
+    def query_history(self, req: HistoryRequest):
+        """"""
+        return self.rest_api.query_history(req)
 
     def close(self):
         """"""
@@ -214,6 +233,7 @@ class BitfinexRestApi(RestClient):
                 size=1,
                 pricetick=1 / pow(10, d["price_precision"]),
                 min_volume=float(d["minimum_order_size"]),
+                history_data=True,
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_contract(contract)
@@ -239,6 +259,78 @@ class BitfinexRestApi(RestClient):
         sys.stderr.write(
             self.exception_detail(exception_type, exception_value, tb, request)
         )
+
+    def query_history(self, req: HistoryRequest):
+        """"""
+        history = []
+        limit = 5000
+
+        interval = INTERVAL_VT2BITFINEX[req.interval]
+        path = f"/v2/candles/trade:{interval}:t{req.symbol}/hist"
+
+        start_time = req.start
+
+        while True:
+            # Create query params
+            params = {
+                "limit": 5000,
+                "start": datetime.timestamp(start_time) * 1000,
+                "sort": 1
+            }
+
+            # Get response from server
+            resp = self.request(
+                "GET",
+                path,
+                params=params
+            )
+
+            # Break if request failed with other status code
+            if resp.status_code // 100 != 2:
+                msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
+                self.gateway.write_log(msg)
+                break
+            else:
+                data = resp.json()
+                if not data:
+                    msg = f"获取历史数据为空，开始时间：{start_time}"
+                    break
+
+                buf = []
+
+                for l in data:
+                    ts, o, h, l, c, v = l
+                    dt = datetime.fromtimestamp(ts / 1000)
+
+                    bar = BarData(
+                        symbol=req.symbol,
+                        exchange=req.exchange,
+                        datetime=dt,
+                        interval=req.interval,
+                        volume=v,
+                        open_price=o,
+                        high_price=h,
+                        low_price=l,
+                        close_price=c,
+                        gateway_name=self.gateway_name
+                    )
+                    buf.append(bar)
+
+                history.extend(buf)
+
+                begin = buf[0].datetime
+                end = buf[-1].datetime
+                msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
+                self.gateway.write_log(msg)
+
+                # Break if total data count less than 5000 (latest date collected)
+                if len(data) < limit:
+                    break
+
+                # Update start time
+                start_time = bar.datetime + TIMEDELTA_MAP[req.interval]
+
+        return history
 
 
 class BitfinexWebsocketApi(WebsocketClient):
@@ -492,7 +584,6 @@ class BitfinexWebsocketApi(WebsocketClient):
     def on_wallet(self, data):
         """"""
         if str(data[0]) == "exchange":
-            print("wallet", data)
             accountid = str(data[1])
             account = self.accounts.get(accountid, None)
             if not account:
