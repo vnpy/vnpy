@@ -28,7 +28,7 @@ from vnpy.trader.uiMainWindow import MainWindow
 from vnpy.trader.gateway import (
     #ctpGateway, 
     #ctptestGateway,
-    #miniGateway,
+    miniGateway,
     minitestGateway,
     ibGateway, 
     huobiGateway, 

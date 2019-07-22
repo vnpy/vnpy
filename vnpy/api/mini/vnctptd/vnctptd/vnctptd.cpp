@@ -8804,6 +8804,43 @@ int TdApi::reqQueryBankAccountMoneyByFuture(dict req, int nRequestID)
 
 struct TdApiWrap : TdApi, wrapper < TdApi >
 {
+	virtual void onFrontConnected()
+	{
+		//以下的try...catch...可以实现捕捉python环境中错误的功能，防止C++直接出现原因未知的崩溃
+		try
+		{
+			this->get_override("onFrontConnected")();
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onFrontDisconnected(int i)
+	{
+		try
+		{
+			this->get_override("onFrontDisconnected")(i);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onHeartBeatWarning(int i)
+	{
+		try
+		{
+			this->get_override("onHeartBeatWarning")(i);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
 	virtual void onRspAuthenticate(dict data, dict error, int id, bool last)
 	{
 		try
