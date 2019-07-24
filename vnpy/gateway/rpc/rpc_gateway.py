@@ -50,7 +50,7 @@ class RpcGateway(BaseGateway):
     def send_order(self, req: OrderRequest):
         """"""
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
-        self.client.send_order(req, gateway_name)
+        return self.client.send_order(req, gateway_name)
 
     def cancel_order(self, req: CancelRequest):
         """"""
