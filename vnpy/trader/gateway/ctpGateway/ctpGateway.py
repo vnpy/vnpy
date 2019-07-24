@@ -1158,6 +1158,8 @@ class CtpTdApi(TdApi):
         account.closeProfit = data['CloseProfit']
         account.positionProfit = data['PositionProfit']
         account.tradingDay = str(data['TradingDay'])
+        if '-' not in account.tradingDay and len(account.tradingDay)== 8:
+            account.tradingDay = account.tradingDay[0:4] + '-' + account.tradingDay[4:6] + '-' + account.tradingDay[6:8]
         # 这里的balance和快期中的账户不确定是否一样，需要测试
         account.balance = (data['PreBalance'] - data['PreCredit'] - data['PreMortgage'] +
                            data['Mortgage'] - data['Withdraw'] + data['Deposit'] +
