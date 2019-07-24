@@ -752,6 +752,19 @@ class HbdmRestApi(RestClient):
         if not issubclass(exception_type, ConnectionError):
             self.on_error(exception_type, exception_value, tb, request)
 
+    def on_error(
+        self, exception_type: type, exception_value: Exception, tb, request: Request
+    ):
+        """
+        Callback to handler request exception.
+        """
+        msg = f"触发异常，状态码：{exception_type}，信息：{exception_value}"
+        self.gateway.write_log(msg)
+
+        sys.stderr.write(
+            self.exception_detail(exception_type, exception_value, tb, request)
+        )
+
     def check_error(self, data: dict, func: str = ""):
         """"""
         if data["status"] != "error":

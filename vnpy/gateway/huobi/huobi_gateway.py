@@ -440,7 +440,20 @@ class HuobiRestApi(RestClient):
             self.gateway.write_log(f"委托撤单成功：{order.orderid}")
         
         self.order_manager.on_order(order)
-        
+
+    def on_error(
+        self, exception_type: type, exception_value: Exception, tb, request: Request
+    ):
+        """
+        Callback to handler request exception.
+        """
+        msg = f"触发异常，状态码：{exception_type}，信息：{exception_value}"
+        self.gateway.write_log(msg)
+
+        sys.stderr.write(
+            self.exception_detail(exception_type, exception_value, tb, request)
+        )
+
     def check_error(self, data: dict, func: str = ""):
         """"""
         if data["status"] != "error":
