@@ -26,10 +26,12 @@ SETTINGS = {
     "rqdata.password": "",
 
     "database.driver": "mongodb",  # see database.Driver
-    "database.database": "database.db",  # for sqlite, use this as filepath
+    #"database.database": "database.db",  # for sqlite, use this as filepath
+    # "database.database": "vnpy",  # for sqlite, use this as filepath
+    "database.database": "",  # for sqlite, use this as filepath
     "database.host": "127.0.0.1",
     "database.port": 27017,
-    "database.user": "root",
+    "database.user": "",
     "database.password": "",
     "database.authentication_source": "vnpy",  # for mongodb
 }
@@ -37,7 +39,6 @@ SETTINGS = {
 # Load global setting from json file.
 SETTING_FILENAME = "vt_setting.json"
 SETTINGS.update(load_json(SETTING_FILENAME))
-
 
 def get_settings(prefix: str = ""):
     prefix_length = len(prefix)

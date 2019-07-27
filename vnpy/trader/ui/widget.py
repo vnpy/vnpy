@@ -458,7 +458,7 @@ class PositionMonitor(BaseMonitor):
         "exchange": {"display": "交易所", "cell": EnumCell, "update": False},
         "direction": {"display": "方向", "cell": DirectionCell, "update": False},
         "volume": {"display": "数量", "cell": BaseCell, "update": True},
-        "notional": {"display": "余额", "cell": BaseCell, "update": True},
+        "notional": {"display": "接口仓位", "cell": BaseCell, "update": True},
         "yd_volume": {"display": "昨仓", "cell": BaseCell, "update": True},
         "frozen": {"display": "冻结", "cell": BaseCell, "update": True},
         "price": {"display": "均价", "cell": BaseCell, "update": False},

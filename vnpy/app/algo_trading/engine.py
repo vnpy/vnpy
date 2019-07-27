@@ -2,10 +2,9 @@
 from vnpy.event import EventEngine, Event
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.event import (
-    EVENT_TICK, EVENT_TIMER, EVENT_ORDER, EVENT_TRADE)
+    EVENT_TICK, EVENT_TIMER, EVENT_ORDER, EVENT_TRADE, EVENT_POSITION)
 from vnpy.trader.constant import (Direction, Offset, OrderType)
-from vnpy.trader.object import (SubscribeRequest, OrderRequest,  PositionData,
-    AccountData, )
+from vnpy.trader.object import (SubscribeRequest, OrderRequest,  PositionData, AccountData, )
 from vnpy.trader.utility import load_json, save_json, round_to
 
 from .template import AlgoTemplate
@@ -18,6 +17,7 @@ EVENT_ALGO_SETTING = "eAlgoSetting"
 EVENT_ALGO_VARIABLES = "eAlgoVariables"
 EVENT_ALGO_PARAMETERS = "eAlgoParameters"
 
+EVENT_ALGO_POSITION = "eAlgoPosition"
 
 class AlgoEngine(BaseEngine):
     """"""
@@ -30,6 +30,7 @@ class AlgoEngine(BaseEngine):
         self.algos = {}
         self.symbol_algo_map = {}
         self.orderid_algo_map = {}
+        self.position_algo_map = {}
 
         self.algo_templates = {}
         self.algo_settings = {}
@@ -89,6 +90,9 @@ class AlgoEngine(BaseEngine):
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
+        self.event_engine.register(EVENT_POSITION, self.process_position_event)
+
+
 
     def process_tick_event(self, event: Event):
         """"""
@@ -115,10 +119,35 @@ class AlgoEngine(BaseEngine):
     def process_order_event(self, event: Event):
         """"""
         order = event.data
-
+        # print(f"order info {order}")
         algo = self.orderid_algo_map.get(order.vt_orderid, None)
         if algo:
             algo.update_order(order)
+
+
+    def process_position_event(self, event: Event):
+        """"""
+        pos = event.data
+
+        print(pos)
+        print(f"process_position {pos.notional} {pos.vt_positionid}")
+
+        if  not (pos.notional == 0 and pos.volume != 0 ):
+            self.position_algo_map[pos.vt_positionid] = pos
+            print(f" procescc engine algo info ------- {self.position_algo_map}")
+            self.update_position(self.position_algo_map)
+        else:
+            print(f" event ----- {self.position_algo_map}")
+            self.update_position(self.position_algo_map)
+
+
+
+        # algo = self.position_algo_map[pos.vt_positionid] = pos
+
+        # if self.position_algo_map:
+        #     # print(f" procescc engine algo info ------- {self.position_algo_map} ===== {pos}")
+        #     self.update_position(pos)
+
 
     def start_algo(self, setting: dict):
         """"""
@@ -224,6 +253,7 @@ class AlgoEngine(BaseEngine):
 
         return contract
 
+
     def write_log(self, msg: str, algo: AlgoTemplate = None):
         """"""
         if algo:
@@ -284,7 +314,31 @@ class AlgoEngine(BaseEngine):
         }
         self.event_engine.put(event)
 
-    def get_position(self, vt_positionid: str, use_df: bool = False) -> PositionData:
+    def get_position(self, algo: AlgoTemplate, vt_symbol: str):
         """"""
-        return get_data(self.main_engine.get_position, arg=vt_positionid, use_df=use_df)
+        # print(f"engine get_positon self {self.__dict__}")
+        # pos = self.main_engine.get_position(vt_symbol)
+        pos = self.position_algo_map.get(f"{vt_symbol}.Direction.NET")
+        notional = pos.notional
+        volume = pos.volume
+        print(f"position_algo_map self pos {pos}")
+        if not pos:
+            self.write_log(f"查询持仓失败，无法获取持仓：{vt_symbol}", algo)
+        elif notional == 0 and volume != 0:
+            self.write_log(f"查询仓位数据获取失败，无仓位数据返回：{vt_symbol}", algo)
+        return pos
 
+
+    def update_position(self, position: PositionData):
+        """"""
+        # print(f"self,   in engine update postion self {self.__dict__}")
+        if self.position_algo_map:
+            # print(f"in engine update_position {position.volume}")
+           # print(f"update position {position}")
+           #  print(f"update position_algo {self.position_algo_map}")
+            self.on_position(position)
+
+    def on_position(self, position: PositionData):
+        """"""
+        #print(f"in engine on_position {position}")
+        pass

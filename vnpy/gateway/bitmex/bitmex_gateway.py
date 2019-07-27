@@ -166,6 +166,7 @@ class BitmexRestApi(RestClient):
         self.order_count_lock = Lock()
 
         self.connect_time = 0
+        self.position_data = {}
 
     def sign(self, request):
         """
@@ -660,16 +661,27 @@ class BitmexWebsocketApi(WebsocketClient):
 
     def on_position(self, d):
         """"""
+        # print(self.__dict__)
+        # print(d)
+
         position = PositionData(
             symbol=d["symbol"],
             exchange=Exchange.BITMEX,
             direction=Direction.NET,
             volume = d.get("currentQty", 0),
             notional = d.get("homeNotional", 0),
+            #last_notional = round( (d.get("currentQty", 0.0) / d.get("lastPrice", 0.0)) if ( not d.get("lastPrice", 0.0) and not d.get("currentQty", 0.0)) else 0, 8),
             gateway_name=self.gateway_name,
+
         )
 
-        #print(d)
+        # if not (position.notional == 0 and position.volume != 0):
+        #     self.position_data.setdefault(position.vt_positionid, pos)
+        #     print(f" procescc  engine algo info ------- {self.position_data}")
+        # else:
+        #     print(f" event ----- {self.position_algo_map}")
+        #     self.update_position(self.position_algo_map)
+
         self.gateway.on_position(position)
 
     def on_account(self, d):
@@ -684,7 +696,7 @@ class BitmexWebsocketApi(WebsocketClient):
         account.balance = d.get("marginBalance", account.balance)
         account.available = d.get("availableMargin", account.available)
         account.frozen = account.balance - account.available
-
+        print(f"on account {account}")
         self.gateway.on_account(copy(account))
 
     def on_contract(self, d):
