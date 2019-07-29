@@ -1,59 +1,36 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-function check_result() {
-    if [ $? -ne 0 ]; then
-        echo " "
-        echo "do command failed for $1 !!!"
-        echo " "
-        exit 1
-    fi
-}
+python=$1
+prefix=$2
 
-#Build ctp/lts/ib api
-echo "是否要安装'CTP'接口? (Do you need 'CTP' interface?)"
-read -p "Enter [y]n: " var1
-var1=${var1:-y}
-if [ "$var1" = "y" ]; then
-	pushd vnpy/api/ctp
-	bash build.sh
-	popd
-fi
+[[ -z $python ]] && python=python
+[[ -z $prefix ]] && prefix=/usr
 
-echo "是否要安装'LTS'接口? (Do you need 'LTS' interface?)"
-read -p "Enter [y]n: " var1
-var1=${var1:-y}
-if [ "$var1" = "y" ]; then
-	pushd vnpy/api/lts
-	bash build.sh
-	popd
-fi
+$python -m pip install --upgrade pip setuptools wheel
 
-echo "是否要安装'XTP'接口? (Do you need 'XTP' interface?)"
-read -p "Enter [y]n: " var1
-var1=${var1:-y}
-if [ "$var1" = "y" ]; then
-	pushd vnpy/api/xtp
-	bash build.sh
-	popd
-fi
+# Get and build ta-lib
+pushd /tmp
+wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+tar -xf ta-lib-0.4.0-src.tar.gz
+cd ta-lib
+./configure --prefix=$prefix
+make -j
+sudo make install
+popd
 
-echo "是否要安装'IB'接口? (Do you need 'IB' interface?)"
-read -p "Enter [y]n: " var1
-var1=${var1:-y}
-if [ "$var1" = "y" ]; then
-	pushd vnpy/api/ib
-	bash build.sh
-	popd
-fi
+# old versions of ta-lib imports numpy in setup.py
+$python -m pip install numpy
 
-#Install Python Modules
-pip install -r requirements.txt
+# Install extra packages
+$python -m pip install --pre --extra-index-url https://rquser:ricequant99@py.ricequant.com/simple/ rqdatac
+$python -m pip install ta-lib
+$python -m pip install https://vnpy-pip.oss-cn-shanghai.aliyuncs.com/colletion/ibapi-9.75.1-py3-none-any.whl
 
-#Install Ta-Lib
-conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
-conda config --set show_channel_urls yes
-conda install -c quantopian ta-lib=0.4.9
+# Install Python Modules
+$python -m pip install -r requirements.txt
 
-#Install vn.py
-python setup.py install
+# Install local Chinese language environment
+sudo locale-gen zh_CN.GB18030
 
+# Install vn.py
+$python -m pip install .

@@ -1,0 +1,64 @@
+clone_depth: 1
+
+cache:
+  - '%LOCALAPPDATA%\pip\Cache'
+
+configuration:
+  - pip
+  - sdist
+
+image:
+  - Visual Studio 2017
+
+services:
+  - mysql
+  - mongodb
+  - postgresql
+
+environment:
+  PATH: C:\Python37-x64;C:\Python37-x64\Scripts;C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
+  VNPY_TEST_MYSQL_DATABASE: vnpy
+  VNPY_TEST_MYSQL_HOST: localhost
+  VNPY_TEST_MYSQL_PORT: 3306
+  VNPY_TEST_MYSQL_USER: root
+  VNPY_TEST_MYSQL_PASSWORD: Password12!
+
+  VNPY_TEST_POSTGRESQL_DATABASE: vnpy
+  VNPY_TEST_POSTGRESQL_HOST: localhost
+  VNPY_TEST_POSTGRESQL_PORT: 5432
+  VNPY_TEST_POSTGRESQL_USER: postgres
+  VNPY_TEST_POSTGRESQL_PASSWORD: Password12!
+
+  VNPY_TEST_MONGODB_DATABASE: vnpy
+  VNPY_TEST_MONGODB_HOST: localhost
+  VNPY_TEST_MONGODB_PORT: 27017
+
+  MYSQL_PWD: Password12!
+
+install:
+  - python -m pip install --upgrade pip wheel setuptools
+before_build:
+  - ps: psql -d "postgresql://${ENV:VNPY_TEST_POSTGRESQL_USER}:${ENV:VNPY_TEST_POSTGRESQL_PASSWORD}@localhost" -c "create database vnpy;"
+  - ps: . "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql" -u $ENV:VNPY_TEST_MYSQL_USER -e 'CREATE DATABASE vnpy;'
+
+for:
+  - matrix:
+      only:
+        - configuration: pip
+    build_script:
+      - call install.bat
+
+  - matrix:
+      only:
+        - configuration: sdist
+    build_script:
+      - python setup.py sdist
+      - python -m pip install --pre --extra-index-url https://rquser:ricequant99@py.ricequant.com/simple/ rqdatac
+      - python -m pip install https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
+      - python -m pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+      - ps: $name=(ls dist).name; python -m pip install "dist/$name"
+
+test_script:
+  - cd tests
+  - python test_all.py
+
