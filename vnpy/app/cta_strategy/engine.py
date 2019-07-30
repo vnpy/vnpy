@@ -323,6 +323,11 @@ class CtaEngine(BaseEngine):
         for req in req_list:
             vt_orderid = self.main_engine.send_order(
                 req, contract.gateway_name)
+
+            # Check if sending order successful
+            if not vt_orderid:
+                continue
+
             vt_orderids.append(vt_orderid)
 
             self.offset_converter.update_order_request(req, vt_orderid)
