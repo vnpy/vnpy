@@ -55,6 +55,8 @@ class AlgoEngine(BaseEngine):
         from .algos.my_dma_algo import MyDmaAlgo
         from .algos.arb_algo import ArbAlgo
         from .algos.arbitrage_algo import ArbitrageAlgo
+        from .algos.future_algo import FutureAlgo
+
 
         self.add_algo_template(TwapAlgo)
         self.add_algo_template(IcebergAlgo)
@@ -66,6 +68,8 @@ class AlgoEngine(BaseEngine):
         self.add_algo_template(MyDmaAlgo)
         self.add_algo_template(ArbAlgo)
         self.add_algo_template(ArbitrageAlgo)
+        self.add_algo_template(FutureAlgo)
+
 
     def add_algo_template(self, template: AlgoTemplate):
         """"""
@@ -129,15 +133,15 @@ class AlgoEngine(BaseEngine):
         """"""
         pos = event.data
 
-        print(pos)
-        print(f"process_position {pos.notional} {pos.vt_positionid}")
+        # print(pos)
+        # print(f"process_position {pos.notional} {pos.vt_positionid}")
 
         if  not (pos.notional == 0 and pos.volume != 0 ):
             self.position_algo_map[pos.vt_positionid] = pos
-            print(f" procescc engine algo info ------- {self.position_algo_map}")
+            # print(f" procescc engine algo info ------- {self.position_algo_map}")
             self.update_position(self.position_algo_map)
         else:
-            print(f" event ----- {self.position_algo_map}")
+            # print(f" event ----- {self.position_algo_map}")
             self.update_position(self.position_algo_map)
 
 
@@ -321,7 +325,7 @@ class AlgoEngine(BaseEngine):
         pos = self.position_algo_map.get(f"{vt_symbol}.Direction.NET")
         notional = pos.notional
         volume = pos.volume
-        print(f"position_algo_map self pos {pos}")
+        # print(f"position_algo_map self pos {pos}")
         if not pos:
             self.write_log(f"查询持仓失败，无法获取持仓：{vt_symbol}", algo)
         elif notional == 0 and volume != 0:

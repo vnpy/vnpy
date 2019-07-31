@@ -696,7 +696,7 @@ class BitmexWebsocketApi(WebsocketClient):
         account.balance = d.get("marginBalance", account.balance)
         account.available = d.get("availableMargin", account.available)
         account.frozen = account.balance - account.available
-        print(f"on account {account}")
+        # print(f"on account {account}")
         self.gateway.on_account(copy(account))
 
     def on_contract(self, d):
