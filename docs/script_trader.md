@@ -16,8 +16,8 @@ engine = init_cli_trading([CtpGateway])
 ```
 **注**：
 - ScriptEngine支持同时连接多个接口，因此除了上述CTP接口，还可以自行添加其他交易接口。
-- 在```init_cli_trading(gateways: Sequence[BaseGateway])```中，将多个需要连接的接口类用列表的形式传递给init\_cli\_trading。
-- init\_cli\_trading可视为vnpy封好的初始化启动函数，函数内部将主引擎、脚本引擎等各种对象已经组装完毕，仅返回ScriptEngine供用户直接使用。
+- 在```init_cli_trading(gateways: Sequence[BaseGateway])```中，将多个需要连接的接口类用列表的形式传递给init_cli_trading。
+- init_cli_trading可视为vnpy封好的初始化启动函数，函数内部将主引擎、脚本引擎等各种对象已经组装完毕，仅返回ScriptEngine供用户直接使用。
 
 ### 连接接口
 不同接口需要不同的配置参数，以ctp为例，连入simnow模拟交易。
@@ -34,7 +34,7 @@ setting = {
 }
 engine.connect_gateway(setting,"CTP")
 ```
-![](https://m.qpic.cn/psb?/V12TMAOq2xN6BZ/n*ZnJEhNKgpm2vJ6XWASfsVE9RGs.XlkkiypK1iId8Y!/b/dLYAAAAAAAAA&bo=ggSoA4IEqAMRCT4!&rf=viewer_4)
+![](https://static.vnpy.com/upload/temp/82dd7cfd-6a98-4908-a770-582cfb7e69bc.jpg)
 **注**：
 - 如果对setting的填写有疑问，可以按照vnpy/gateway目录下的接口类的default_setting来填写。
 
@@ -55,7 +55,7 @@ use_df可选参数的作用（返回pandas.DataFrame，在Jupyter中分析更方
 ### 加载启动
 
 如在脚本策略模式下使用，需要提前编写相关脚本策略文件，假设为demo_arbitrage.py,然后打开vntrader,在菜单栏"功能"处打开"脚本策略",在跳出的脚本策略窗口最上方打开/Path-To-demo_arbitrage.py/demo_arbitrage.py，然后直接启动即可。
-![](https://m.qpic.cn/psb?/V12TMAOq2xN6BZ/S4RiCWfQvQck6*2aJ201*.mB0Jkvn.f6yOC2zf5a02A!/b/dLsAAAAAAAAA&bo=Mge8ADIHvAARCT4!&rf=viewer_4)
+![](https://static.vnpy.com/upload/temp/bf6b06f8-26e9-466b-b3e0-5b3a6f99e6ba.jpg)
 ### 脚本策略
 脚本策略文件编写需要遵循一定格式,下面展示一个基础的模板
 ```
@@ -92,43 +92,46 @@ def run(engine: ScriptEngine):
 while循环的退出控制变量：engine.strategy_active
 - engine.strategy_active是脚本策略的开关，当点击“启动”时，该控制变量变为True，程序将一直在while循环内部不断运行；当点击“停止”时，该控制变量变为False，程序将运行完当前while循环后完全退出
 - 脚本策略在编写时最重要的一点是主体部分要在while循环内部进行。
+
 &nbsp;
+
 ## 函数功能说明
 
 ### 单条查询
 * **在单条查询函数中，都有use_df参数用来控制是否将函数返回的类对象转化成DataFrame，仅在get_tick中做一次详细说明，其余函数同理。**
+
 &nbsp;
 
-* get\_tick：查询单个标的最新tick。
+* get_tick：查询单个标的最新tick。
 	```
 	tick = engine.get_tick(vt_symbol="rb1910.SHFE",use_df=False)
 	```
     - vt_symbol：字符串参数，表示本地合约代码。
     - use_df：bool变量，默认False，返回TickData类对象，否则返回相应DataFrame。
 
-    ![](https://m.qpic.cn/psb?/V12TMAOq2xN6BZ/o38RYahmAsmLqPDz2cUixiDU19TGFqMH0e8WBg3wgHU!/b/dL4AAAAAAAAA&bo=iQaAAuIHBAMDCcM!&rf=viewer_4)
+    ![](https://static.vnpy.com/upload/temp/d00ca165-1266-4812-afaa-f6723745d6a4.png)
     注：DataFrame的列是TickData类属性，行是TickData个数，由于单条查询，则只有一行。
     &nbsp;
 
-* get\_order：根据vt_orderid查询委托单的详细信息。
+* get_order：根据vt_orderid查询委托单的详细信息。
 	```
 	order = engine.get_order(vt_orderid='CTP.3_-9351590_1',use_df=False)
 	```
     - vt_orderid：在委托下单时，会自动返回该委托的vt_orderid，以"CTP.3_-9351590_1"为例，它由ctp接口的name,frontid,sessionid,order_ref构成。其中，frontid和sessionid在vnpy连接上CTP接口后由CTP回调产生，order_ref是vnpy内部维护的用于区分order的一个变量。最前面还要加上接口名是因为vnpy可能同时连着很多接口进行交易。
 
-    ![](https://m.qpic.cn/psb?/V12TMAOq2xN6BZ/cvmqxaHqSjRaRoR6FXdY3vt7JRm2XtNAYB*lwDY0rmY!/b/dAgBAAAAAAAA&bo=1AfGANQHxgADCSw!&rf=viewer_4)
+    ![](https://static.vnpy.com/upload/temp/ae9f6d7f-49da-41e4-a862-825bf146118d.png)
     &nbsp;
 
-* get\_contract：根据本地vt_symbol来查询对应合约对象的详细信息。
+* get_contract：根据本地vt_symbol来查询对应合约对象的详细信息。
   ```
   contract = engine.get_contract(vt_symbol="rb1910.SHFE",use_df=False)
   ```
   - vt_symbol：字符串参数，表示本地合约代码。
 
-  ![](https://m.qpic.cn/psb?/V12TMAOq2xN6BZ/*.vXu2esXg2.iImnZ838FFYMrCBeDBOXnnFKAcpaUK0!/b/dL8AAAAAAAAA&bo=6AfUAOgH1AARCT4!&rf=viewer_4)
+  ![](https://static.vnpy.com/upload/temp/4111776b-91fd-44e6-8b2c-289961862a3a.jpg)
 &nbsp;
 
-* get\_bars：查询历史数据，要求提前在vt_setting.json中配置好rqdata相关设置。
+* get_bars：查询历史数据，要求提前在vt_setting.json中配置好rqdata相关设置。
   ```
   bars = engine.get_bars(vt_symbol="rb1910.SHFE",start_date="20190101",
                         interval=Interval.MINUTE,use_df=False)
@@ -158,13 +161,13 @@ while循环的退出控制变量：engine.strategy_active
   ```
   &nbsp;
 
-* get\_position：根据vt_positionid来查询持仓情况，包括接口名称、交易所、合约代码、数量、冻结数量等。
+* get_position：根据vt_positionid来查询持仓情况，包括接口名称、交易所、合约代码、数量、冻结数量等。
   ```
   position = engine.get_position(vt_positionid='rb1909.SHFE.Direction.LONG')
   ```
   - vt_positionid：vnpy内部对于一笔特定持仓的唯一持仓编号，格式为"vt_symbol.Direction.LONG",其中方向可选择为```DIRECTION.SHORT```或```DIRECTION.NET```
 
-  ![](https://m.qpic.cn/psb?/V12TMAOq2xN6BZ/szBIwwFgVmdXsBGYAWpkpZoA9m5ER0hmu*xya9c7u.Y!/b/dLYAAAAAAAAA&bo=3geuAN4HrgARCT4!&rf=viewer_4)
+  ![](https://static.vnpy.com/upload/temp/4c585dac-0ac9-4fd8-9926-ddc104512359.jpg)
 
 &nbsp;
 
@@ -172,23 +175,23 @@ while循环的退出控制变量：engine.strategy_active
 * **在多条查询函数中，use_df参数都可以用来控制是否将函数返回的类对象转化成DataFrame，仅在get_ticks中做一次详细说明，其余函数同理。**
 &nbsp;
 
-* get\_ticks：查询多个合约最新tick。
+* get_ticks：查询多个合约最新tick。
     ```
     ticks = engine.get_ticks(vt_symbols=['rb1910.SHFE','rb1909.SHFE'],use_df = True)
     ```
-    - use\_df：False则返回一个列表，元素为TickData；True则返回DataFrame，列是TickData的属性，每一行代表一个TickData。
+    - use_df：False则返回一个列表，元素为TickData；True则返回DataFrame，列是TickData的属性，每一行代表一个TickData。
     - vt_symbols：一个列表，元素为合约字符串vt_symbol。
 
-    ![](https://m.qpic.cn/psb?/V12TMAOq2xN6BZ/ghZR0VV5APiKLh5Zx73x7qgz1IwJ3zrG4MKVNen8PXc!/b/dL8AAAAAAAAA&bo=kAWAAvYHlAMDCV0!&rf=viewer_4)
+    ![](https://static.vnpy.com/upload/temp/311e1ee8-1a3d-496f-833f-bbb7a3a624ab.png)
 &nbsp;
 
-* get\_orders：根据查询多个vt_orderid查询其详细信息，**注**：如果use\_df=False则返回的是一个list，包含OrderData类对象，否则返回一个列是OrderData属性具有多行数据的DataFrame
+* get_orders：根据查询多个vt_orderid查询其详细信息，**注**：如果use_df=False则返回的是一个list，包含OrderData类对象，否则返回一个列是OrderData属性具有多行数据的DataFrame
 	```
 	orders = engine.get_orders([orderid_one,orderid_two],use_df=True)
 	```
     - vt_orderids：列表，元素是vt_orderid形式的字符串，和上面提到的get_order的参数形式一致，由ctp接口的name,frontid,sessionid,order_ref构成。
     &nbsp;
-* get\_trades：根据给定的一个vt_orderid返回这次报单过程中的所有TradeData对象。
+* get_trades：根据给定的一个vt_orderid返回这次报单过程中的所有TradeData对象。
     ```
     trades = engine.get_trades(vt_orderid = your_vt_orderid,use_df = True)
     ```
@@ -197,14 +200,14 @@ while循环的退出控制变量：engine.strategy_active
 ### 全量查询
 
 在全量查询中，唯一参数是use_df，默认为False，返回的是一个包含相应数据的List对象,例如ContractData，AccountData，PositionData。
-* get\_all\_contracts：默认返回一个list，包含了全市场的ContractData，如果use\_df=True则返回相应的DataFrame。
-* get\_all\_active\_orders：首先，active\_order指的是“已提交的、未成交的、部分成交的”订单,已完成的order将不显示；函数将返回list，包含这些OrderData。
-* get\_all\_accounts：：默认返回一个list，包含了AccountData，如果use\_df=True则返回相应的DataFrame。
-* get\_all\_position：默认返回一个List,包含了PositionData,如果use\_df=True则返回相应的DataFrame。
-![](https://m.qpic.cn/psb?/V12TMAOq2xN6BZ/Ym0EnCJddVzIZUHBVTAHvhI6mMhUFD0p2.BTAVHMtjs!/b/dFYBAAAAAAAA&bo=vAdKBbwHSgUDCSw!&rf=viewer_4)
+* get_all_contracts：默认返回一个list，包含了全市场的ContractData，如果use_df=True则返回相应的DataFrame。
+* get_all_active_orders：首先，active_order指的是“已提交的、未成交的、部分成交的”订单,已完成的order将不显示；函数将返回list，包含这些OrderData。
+* get_all_accounts：：默认返回一个list，包含了AccountData，如果use_df=True则返回相应的DataFrame。
+* get_all_position：默认返回一个List,包含了PositionData,如果use_df=True则返回相应的DataFrame。
+![](https://static.vnpy.com/upload/temp/5d698a27-545b-46bb-9d16-428a8ccb7956.png)
 ### 交易委托
 
-* buy：以buy为例，发出一个交易委托，需要的参数有：**本地合约代码、价格、数量、下单类型**。其中，本地合约代码指的是vt_symbol；下单类型默认下限价单，可以自行更改，参考trader/constant下的OrderType枚举类;执行交易委托后会返回vt\_orderid
+* buy：以buy为例，发出一个交易委托，需要的参数有：**本地合约代码、价格、数量、下单类型**。其中，本地合约代码指的是vt_symbol；下单类型默认下限价单，可以自行更改，参考trader/constant下的OrderType枚举类;执行交易委托后会返回vt_orderid
   ```
   #engine.buy(vt_symbol = "rb1910.SHFE",price = "3200",volume = "1",order_type=OrderType.LIMIT)
   ```
@@ -216,15 +219,19 @@ while循环的退出控制变量：engine.strategy_active
   ```
   engine.cancel_order(vt_orderid = 'CTP.3_-9351590_1')
   ```
+
 ### 信息输出
 
 * write_log：可以用于记录买卖时的交易情况，将信息输出在脚本策略窗口下方空白栏里。
+
 &nbsp;
-* send_email：用于实时通过email通知用户策略运行情况，需要提前在vt\_setting.json下配置email相关信息。其中脚本策略发的邮件标题为“脚本策略引擎通知”，msg:字符串，表示邮件正文内容。
+
+* send_email：用于实时通过email通知用户策略运行情况，需要提前在vt_setting.json下配置email相关信息。其中脚本策略发的邮件标题为“脚本策略引擎通知”，msg:字符串，表示邮件正文内容。
 	```
 	engine.send_email(msg = "Your Msg")
 	```
-    ![](https://m.qpic.cn/psb?/V12TMAOq2xN6BZ/bjXP43yUR36j5dB8YSu3cLpc1xY8jN8envDYxeSS1zA!/b/dL4AAAAAAAAA&bo=JAayASQGsgEDCSw!&rf=viewer_4)
+    ![](https://static.vnpy.com/upload/temp/8dd8d6b0-6c04-4cb4-a426-ad43d11a13eb.png)
+
     使用邮箱前需要开通SMTP服务。
     - email.server：邮件服务器地址，vnpy默认填写好了QQ邮箱服务器地址，不用改可以直接用，如果需要使用其他邮箱，需要自行查找一下其他的服务器地址。
     - email.port：邮件服务器端口号，vnpm默认填好了QQ邮箱服务器端口，可直接用。
