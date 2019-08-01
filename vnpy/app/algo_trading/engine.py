@@ -56,6 +56,7 @@ class AlgoEngine(BaseEngine):
         from .algos.arb_algo import ArbAlgo
         from .algos.arbitrage_algo import ArbitrageAlgo
         from .algos.future_algo import FutureAlgo
+        from .algos.csa_algo import CSAAlgo
 
 
         self.add_algo_template(TwapAlgo)
@@ -69,6 +70,7 @@ class AlgoEngine(BaseEngine):
         self.add_algo_template(ArbAlgo)
         self.add_algo_template(ArbitrageAlgo)
         self.add_algo_template(FutureAlgo)
+        self.add_algo_template(CSAAlgo)
 
 
     def add_algo_template(self, template: AlgoTemplate):

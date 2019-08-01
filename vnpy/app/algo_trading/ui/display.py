@@ -23,10 +23,8 @@ NAME_DISPLAY_MAP = {
     "spread_up": "价差上限",
     "spread_down": "价差下限",
     "max_pos": "最大持仓",
-    "max_pos_btc": "最大持仓(btcj)",
-    "split_order": "拆单量(btc)",
+    "max_pos_btc": "最大持仓(btc)",
+    "interval_pos_btc": "拆单量(btc)",
     "is_active_close": "主动向是否单向套利",  # True 只平仓 False 持续反向套利
-    "is_passtive_close": "被动向是否单向套利",  # True 只平仓 False 持续反向套利
-
-
+    "is_passive_close": "被动向是否单向套利",  # True 只平仓 False 持续正向套利
 }
