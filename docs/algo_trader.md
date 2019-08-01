@@ -1,5 +1,5 @@
 # 算法交易
-算法交易一般用于把巨型单子拆分成一个个小单，能够有效降低交易成本，冲击成本等。
+算法交易可以用于把巨型单子拆分成一个个小单，能够有效降低交易成本，冲击成本等（冰山算法、狙击手算法)；也可以在设定的阈值内进行高抛低吸操作(网格算法、套利算法）。
 
 &nbsp;
 
@@ -45,6 +45,7 @@
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/algo_trader/trading_section.png)
 
 交易配置可以保存在json文件，这样每次打开算法交易模块就不用重复输入配置。其操作是在“算法名称”选项输入该算法设置命名，然后点击下方"保存设置”按钮。保存的json文件在C:\Users\Administrator\\.vntrader文件夹的algo_trading_setting.json中，如图。
+
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/algo_trader/setting.png)
 
 委托交易界面最下方的“全部停止”按钮用于一键停止所有执行中的算法交易。

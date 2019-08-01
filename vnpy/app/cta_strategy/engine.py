@@ -423,7 +423,7 @@ class CtaEngine(BaseEngine):
         self.call_strategy_func(strategy, strategy.on_stop_order, stop_order)
         self.put_stop_order_event(stop_order)
 
-        return stop_orderid
+        return [stop_orderid]
 
     def cancel_server_order(self, strategy: CtaTemplate, vt_orderid: str):
         """
