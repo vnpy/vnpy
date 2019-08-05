@@ -1,6 +1,6 @@
 #pragma once
 
-namespace autocxxpy
+namespace c2py
 {
     struct additional_init_default
     {

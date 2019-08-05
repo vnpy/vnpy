@@ -2,13 +2,14 @@
 #include "config.h"
 
 #include <pybind11/pybind11.h>
-#include <autocxxpy/autocxxpy.hpp>
+#include <c2py/c2py.hpp>
 
 #include "oes_api/oes_api.h"
 #include "mds_api/mds_api.h"
 
 
 void generate_vnoes(pybind11::module & parent);
+void generate_vnoes_sub_namespace(pybind11::module & parent);
 void generate_class_OesOrdReq(pybind11::object & parent);
 void generate_class_decltype_OesOrdReq_userInfo_(pybind11::object & parent);
 void generate_class_OesOrdCancelReq(pybind11::object & parent);
@@ -186,6 +187,7 @@ void generate_class_MdsMktRspMsgBody(pybind11::object & parent);
 void generate_class_MdsUdpPktHead(pybind11::object & parent);
 void generate_class_MdsApiClientCfg(pybind11::object & parent);
 void generate_class_MdsApiClientEnv(pybind11::object & parent);
+void generate_vnoes_classes(pybind11::module & parent);
 void generate_enum_eOesExchangeId(pybind11::object & parent);
 void generate_enum_eOesMarketId(pybind11::object & parent);
 void generate_enum_eOesPlatformId(pybind11::object & parent);
@@ -261,6 +263,11 @@ void generate_enum_eMdsSubscribeDataType(pybind11::object & parent);
 void generate_enum_eMdsSubscribedChannelNo(pybind11::object & parent);
 void generate_enum_eMdsProtocolHintsType(pybind11::object & parent);
 void generate_enum_eMdsApiChannelType(pybind11::object & parent);
+void generate_vnoes_enums(pybind11::module & parent);
+void generate_vnoes_functions(pybind11::module & parent);
+void generate_vnoes_variables(pybind11::module & parent);
+void generate_vnoes_typedefs(pybind11::module & parent);
 void generate_caster_(pybind11::object & parent);
+void generate_vnoes_caster(pybind11::module & parent);
 
 

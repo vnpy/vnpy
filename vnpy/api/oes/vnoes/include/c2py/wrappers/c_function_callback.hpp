@@ -5,7 +5,7 @@
 #include "../brigand.hpp"
 #include "../base/check.h"
 
-namespace autocxxpy
+namespace c2py
 {
 
     template <class T>
