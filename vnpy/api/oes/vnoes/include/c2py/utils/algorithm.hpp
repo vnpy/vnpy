@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-namespace autocxxpy
+namespace c2py
 {
     template <size_t ... vals>
     inline constexpr int64_t tsum() noexcept {

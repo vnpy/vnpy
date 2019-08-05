@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-namespace autocxxpy
+namespace c2py
 {
     template <class element, size_t size>
     using literal_array = element[size];

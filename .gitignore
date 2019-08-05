@@ -1,5 +1,6 @@
 # Python
 *.pyc
+*.egg-info/
 
 # Jupyter
 .ipynb_checkpoints
