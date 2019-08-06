@@ -23,8 +23,8 @@ from vnpy.api.sec import (
     THOST_FTDC_OFEN_Close,
     THOST_FTDC_OFEN_CloseYesterday,
     THOST_FTDC_OFEN_CloseToday,
-    THOST_FTDC_PC_Futures,
-    THOST_FTDC_PC_Options,
+    THOST_FTDC_PC_ETFOption,
+    THOST_FTDC_PC_Stock,
     THOST_FTDC_PC_Combination,
     THOST_FTDC_CP_CallOptions,
     THOST_FTDC_CP_PutOptions,
@@ -35,8 +35,7 @@ from vnpy.api.sec import (
     THOST_FTDC_VC_AV,
     THOST_FTDC_TC_IOC,
     THOST_FTDC_VC_CV,
-    THOST_FTDC_AF_Delete,
-    THOST_FTDC_PC_ETFOption
+    THOST_FTDC_AF_Delete
 )
 from vnpy.trader.constant import (
     Direction,
@@ -96,20 +95,14 @@ OFFSET_VT2SEC = {
 OFFSET_SEC2VT = {v: k for k, v in OFFSET_VT2SEC.items()}
 
 EXCHANGE_SEC2VT = {
-    "CFFEX": Exchange.CFFEX,
-    "SHFE": Exchange.SHFE,
-    "CZCE": Exchange.CZCE,
-    "DCE": Exchange.DCE,
-    "INE": Exchange.INE,
-    "SZSE":Exchange.SZSE,
-    "SSE":Exchange.SSE
+    "SZSE": Exchange.SZSE,
+    "SSE": Exchange.SSE
 }
 
 PRODUCT_SEC2VT = {
-    THOST_FTDC_PC_Futures: Product.FUTURES,
-    THOST_FTDC_PC_Options: Product.OPTION,
-    THOST_FTDC_PC_Combination: Product.SPREAD,
-    THOST_FTDC_PC_ETFOption:Product.OPTION
+    THOST_FTDC_PC_Stock: Product.EQUITY,
+    THOST_FTDC_PC_ETFOption: Product.OPTION,
+    THOST_FTDC_PC_Combination: Product.SPREAD
 }
 
 OPTIONTYPE_SEC2VT = {
@@ -163,7 +156,7 @@ class SecGateway(BaseGateway):
             td_address = "tcp://" + td_address
         if not md_address.startswith("tcp://"):
             md_address = "tcp://" + md_address
-        print("begin to connect")
+        
         self.td_api.connect(td_address, userid, password, brokerid, auth_code, appid, product_info)
         self.md_api.connect(md_address, userid, password, brokerid)
         
@@ -250,7 +243,6 @@ class SecMdApi(MdApi):
         """
         Callback when front server is disconnected.
         """
-        print(5)
         self.login_status = False
         self.gateway.write_log(f"行情服务器连接断开，原因{reason}")
 
@@ -288,7 +280,7 @@ class SecMdApi(MdApi):
         exchange = symbol_exchange_map.get(symbol, "")
         if not exchange:
             return
-        timestamp = f"{data['ActionDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
+        timestamp = f"{data['TradingDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
         
         tick = TickData(
             symbol=symbol,
@@ -590,11 +582,9 @@ class SecTdApi(TdApi):
         symbol = data["InstrumentID"]
         exchange = symbol_exchange_map.get(symbol, "")
         if not exchange:
-            print("if not exchange")
-            print(data)
             self.order_data.append(data)
             return
-        print(data)
+        
         frontid = data["FrontID"]
         sessionid = data["SessionID"]
         order_ref = data["OrderRef"]
