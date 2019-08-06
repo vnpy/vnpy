@@ -12,7 +12,7 @@
 
 ### 脚本模式
 
-在文件夹tests\trader中找到run.py文件。按住“Shift” + 鼠标右键进入cmd窗口，输入下面命令进入如图VN Trader
+在文件夹example\trader中找到run.py文件(不是vnstudio下的，需要在github上单独下载）。按住“Shift” + 鼠标右键进入cmd窗口，输入下面命令进入如图VN Trader
 ```
 python run.py 
 ```
