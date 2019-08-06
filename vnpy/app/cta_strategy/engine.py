@@ -755,7 +755,11 @@ class CtaEngine(BaseEngine):
                 if filename.endswith(".py"):
                     strategy_module_name = ".".join(
                         [module_name, filename.replace(".py", "")])
-                    self.load_strategy_class_from_module(strategy_module_name)
+                elif filename.endswith(".cp37-win_amd64.pyd"):
+                    strategy_module_name = ".".join(
+                        [module_name, filename.replace(".cp37-win_amd64.pyd", "")])
+
+                self.load_strategy_class_from_module(strategy_module_name)
 
     def load_strategy_class_from_module(self, module_name: str):
         """
