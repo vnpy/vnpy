@@ -4,7 +4,7 @@
 #include <type_traits>
 #include <boost/callable_traits.hpp>
 
-namespace autocxxpy
+namespace c2py
 {
     // since std::invoke_result cann't get result type for class member pointer, we wrote those
     template <auto method>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <autocxxpy/utils/type_traits.hpp>
+#include <c2py/utils/type_traits.hpp>
 
 #include <memory>
 #include <string>
@@ -8,7 +8,7 @@
 
 #include <pybind11/pybind11.h>
 
-namespace autocxxpy
+namespace c2py
 {
     struct caster
     {
@@ -70,7 +70,7 @@ namespace autocxxpy
         static auto generate_nocheck(scope_type &c, const char *name)
         {
             c.def(name,
-                &autocxxpy::caster::copy<to_type>
+                &c2py::caster::copy<to_type>
             );
         }
 #endif

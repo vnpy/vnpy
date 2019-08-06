@@ -12,7 +12,7 @@
 #include "./config/config.hpp"
 #include "./wrappers/string_array.hpp"
 
-namespace autocxxpy
+namespace c2py
 {
 
     /*

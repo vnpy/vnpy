@@ -11,7 +11,7 @@
 #include <functional>
 #include "../base/check.h"
 
-namespace autocxxpy
+namespace c2py
 {
     template <size_t size>
     using string_array = literal_array<char*, size>;

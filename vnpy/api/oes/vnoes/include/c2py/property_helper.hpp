@@ -13,7 +13,7 @@
 #include "config/config.hpp"
 #include "base/type.h"
 
-namespace autocxxpy
+namespace c2py
 {
 
 #ifdef AUTOCXXPY_ENCODING_UTF8
@@ -194,5 +194,5 @@ namespace autocxxpy
     };
 }
 #define AUTOCXXPY_DEF_PROPERTY(module_tag, cls, name, member) \
-    def_property(name, autocxxpy::getter_wrap<module_tag, std::integral_constant<decltype(&cls::member), &cls::member>>::value,\
-        autocxxpy::setter_wrap<module_tag, std::integral_constant<decltype(&cls::member), &cls::member>>::value)
+    def_property(name, c2py::getter_wrap<module_tag, std::integral_constant<decltype(&cls::member), &cls::member>>::value,\
+        c2py::setter_wrap<module_tag, std::integral_constant<decltype(&cls::member), &cls::member>>::value)
