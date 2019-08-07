@@ -3,7 +3,7 @@
 
 from datetime import datetime
 
-from vnpy.api.sec import (
+from vnpy.api.sopt import (
     MdApi,
     TdApi,
     THOST_FTDC_OAS_Submitted,
@@ -62,7 +62,7 @@ from vnpy.trader.utility import get_folder_path
 from vnpy.trader.event import EVENT_TIMER
 
 
-STATUS_SEC2VT = {
+STATUS_SOPT2VT = {
     THOST_FTDC_OAS_Submitted: Status.SUBMITTING,
     THOST_FTDC_OAS_Accepted: Status.SUBMITTING,
     THOST_FTDC_OAS_Rejected: Status.REJECTED,
@@ -72,40 +72,40 @@ STATUS_SEC2VT = {
     THOST_FTDC_OST_Canceled: Status.CANCELLED
 }
 
-DIRECTION_VT2SEC = {
+DIRECTION_VT2SOPT = {
     Direction.LONG: THOST_FTDC_D_Buy, 
     Direction.SHORT: THOST_FTDC_D_Sell
 }
-DIRECTION_SEC2VT = {v: k for k, v in DIRECTION_VT2SEC.items()}
-DIRECTION_SEC2VT[THOST_FTDC_PD_Long] = Direction.LONG
-DIRECTION_SEC2VT[THOST_FTDC_PD_Short] = Direction.SHORT
+DIRECTION_SOPT2VT = {v: k for k, v in DIRECTION_VT2SOPT.items()}
+DIRECTION_SOPT2VT[THOST_FTDC_PD_Long] = Direction.LONG
+DIRECTION_SOPT2VT[THOST_FTDC_PD_Short] = Direction.SHORT
 
-ORDERTYPE_VT2SEC = {
+ORDERTYPE_VT2SOPT = {
     OrderType.LIMIT: THOST_FTDC_OPT_LimitPrice, 
     OrderType.MARKET: THOST_FTDC_OPT_AnyPrice
 }
-ORDERTYPE_SEC2VT = {v: k for k, v in ORDERTYPE_VT2SEC.items()}
+ORDERTYPE_SOPT2VT = {v: k for k, v in ORDERTYPE_VT2SOPT.items()}
 
-OFFSET_VT2SEC = {
+OFFSET_VT2SOPT = {
     Offset.OPEN: THOST_FTDC_OF_Open, 
     Offset.CLOSE: THOST_FTDC_OFEN_Close,
     Offset.CLOSETODAY: THOST_FTDC_OFEN_CloseToday,
     Offset.CLOSEYESTERDAY: THOST_FTDC_OFEN_CloseYesterday,
 }
-OFFSET_SEC2VT = {v: k for k, v in OFFSET_VT2SEC.items()}
+OFFSET_SOPT2VT = {v: k for k, v in OFFSET_VT2SOPT.items()}
 
-EXCHANGE_SEC2VT = {
+EXCHANGE_SOPT2VT = {
     "SZSE": Exchange.SZSE,
     "SSE": Exchange.SSE
 }
 
-PRODUCT_SEC2VT = {
+PRODUCT_SOPT2VT = {
     THOST_FTDC_PC_Stock: Product.EQUITY,
     THOST_FTDC_PC_ETFOption: Product.OPTION,
     THOST_FTDC_PC_Combination: Product.SPREAD
 }
 
-OPTIONTYPE_SEC2VT = {
+OPTIONTYPE_SOPT2VT = {
     THOST_FTDC_CP_CallOptions: OptionType.CALL,
     THOST_FTDC_CP_PutOptions: OptionType.PUT
 }
@@ -116,9 +116,9 @@ symbol_name_map = {}
 symbol_size_map = {}
 
 
-class SecGateway(BaseGateway):
+class SoptGateway(BaseGateway):
     """
-    VN Trader Gateway for SEC .
+    VN Trader Gateway for SOPT .
     """
 
     default_setting = {
@@ -132,14 +132,14 @@ class SecGateway(BaseGateway):
         "产品信息": ""
     }
 
-    exchanges = list(EXCHANGE_SEC2VT.values())
+    exchanges = list(EXCHANGE_SOPT2VT.values())
     
     def __init__(self, event_engine):
         """Constructor"""
-        super().__init__(event_engine, "SEC")
+        super().__init__(event_engine, "SOPT")
 
-        self.td_api = SecTdApi(self)
-        self.md_api = SecMdApi(self)
+        self.td_api = SoptTdApi(self)
+        self.md_api = SoptMdApi(self)
 
     def connect(self, setting: dict):
         """"""
@@ -212,12 +212,12 @@ class SecGateway(BaseGateway):
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
 
-class SecMdApi(MdApi):
+class SoptMdApi(MdApi):
     """"""
 
     def __init__(self, gateway):
         """Constructor"""
-        super(SecMdApi, self).__init__()
+        super(SoptMdApi, self).__init__()
         
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
@@ -352,12 +352,12 @@ class SecMdApi(MdApi):
             self.exit()
 
 
-class SecTdApi(TdApi):
+class SoptTdApi(TdApi):
     """"""
 
     def __init__(self, gateway):
         """Constructor"""
-        super(SecTdApi, self).__init__()
+        super(SoptTdApi, self).__init__()
         
         self.test = []
 
@@ -442,8 +442,8 @@ class SecTdApi(TdApi):
             symbol=symbol,
             exchange=exchange,
             orderid=orderid,
-            direction=DIRECTION_SEC2VT[data["Direction"]],
-            offset=OFFSET_SEC2VT[data["CombOffsetFlag"]],
+            direction=DIRECTION_SOPT2VT[data["Direction"]],
+            offset=OFFSET_SOPT2VT[data["CombOffsetFlag"]],
             price=data["LimitPrice"],
             volume=data["VolumeTotalOriginal"],
             status=Status.REJECTED,
@@ -482,7 +482,7 @@ class SecTdApi(TdApi):
             position = PositionData(
                 symbol=data["InstrumentID"],
                 exchange=symbol_exchange_map[data["InstrumentID"]],
-                direction=DIRECTION_SEC2VT[data["PosiDirection"]],
+                direction=DIRECTION_SOPT2VT[data["PosiDirection"]],
                 gateway_name=self.gateway_name
             )
             self.positions[key] = position
@@ -538,12 +538,12 @@ class SecTdApi(TdApi):
         """
         Callback of instrument query.
         """
-        product = PRODUCT_SEC2VT.get(data["ProductClass"], None)
+        product = PRODUCT_SOPT2VT.get(data["ProductClass"], None)
 
         if product:            
             contract = ContractData(
                 symbol=data["InstrumentID"],
-                exchange=EXCHANGE_SEC2VT[data["ExchangeID"]],
+                exchange=EXCHANGE_SOPT2VT[data["ExchangeID"]],
                 name=data["InstrumentName"],
                 product=product,
                 size=data["VolumeMultiple"],
@@ -554,7 +554,7 @@ class SecTdApi(TdApi):
             # For option only
             if contract.product == Product.OPTION:
                 contract.option_underlying = data["UnderlyingInstrID"],
-                contract.option_type = OPTIONTYPE_SEC2VT.get(data["OptionsType"], None),
+                contract.option_type = OPTIONTYPE_SOPT2VT.get(data["OptionsType"], None),
                 contract.option_strike = data["StrikePrice"],
                 contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d"),
             
@@ -594,13 +594,13 @@ class SecTdApi(TdApi):
             symbol=symbol,
             exchange=exchange,
             orderid=orderid,
-            type=ORDERTYPE_SEC2VT[data["OrderPriceType"]],
-            direction=DIRECTION_SEC2VT[data["Direction"]],
-            offset=OFFSET_SEC2VT[data["CombOffsetFlag"]],
+            type=ORDERTYPE_SOPT2VT[data["OrderPriceType"]],
+            direction=DIRECTION_SOPT2VT[data["Direction"]],
+            offset=OFFSET_SOPT2VT[data["CombOffsetFlag"]],
             price=data["LimitPrice"],
             volume=data["VolumeTotalOriginal"],
             traded=data["VolumeTraded"],
-            status=STATUS_SEC2VT[data["OrderStatus"]],
+            status=STATUS_SOPT2VT[data["OrderStatus"]],
             time=data["InsertTime"],
             gateway_name=self.gateway_name
         )
@@ -625,8 +625,8 @@ class SecTdApi(TdApi):
             exchange=exchange,
             orderid=orderid,
             tradeid=data["TradeID"],
-            direction=DIRECTION_SEC2VT[data["Direction"]],
-            offset=OFFSET_SEC2VT[data["OffsetFlag"]],
+            direction=DIRECTION_SOPT2VT[data["Direction"]],
+            offset=OFFSET_SOPT2VT[data["OffsetFlag"]],
             price=data["Price"],
             volume=data["Volume"],
             time=data["TradeTime"],
@@ -711,14 +711,14 @@ class SecTdApi(TdApi):
         """
         self.order_ref += 1
         
-        sec_req = {
+        sopt_req = {
             "InstrumentID": req.symbol,
             "ExchangeID": req.exchange.value,
             "LimitPrice": req.price,
             "VolumeTotalOriginal": int(req.volume),
-            "OrderPriceType": ORDERTYPE_VT2SEC.get(req.type, ""),
-            "Direction": DIRECTION_VT2SEC.get(req.direction, ""),
-            "CombOffsetFlag": OFFSET_VT2SEC.get(req.offset, ""),
+            "OrderPriceType": ORDERTYPE_VT2SOPT.get(req.type, ""),
+            "Direction": DIRECTION_VT2SOPT.get(req.direction, ""),
+            "CombOffsetFlag": OFFSET_VT2SOPT.get(req.offset, ""),
             "OrderRef": str(self.order_ref),
             "InvestorID": self.userid,
             "UserID": self.userid,
@@ -733,16 +733,16 @@ class SecTdApi(TdApi):
         }
         
         if req.type == OrderType.FAK:
-            sec_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
-            sec_req["TimeCondition"] = THOST_FTDC_TC_IOC
-            sec_req["VolumeCondition"] = THOST_FTDC_VC_AV
+            sopt_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
+            sopt_req["TimeCondition"] = THOST_FTDC_TC_IOC
+            sopt_req["VolumeCondition"] = THOST_FTDC_VC_AV
         elif req.type == OrderType.FOK:
-            sec_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
-            sec_req["TimeCondition"] = THOST_FTDC_TC_IOC
-            sec_req["VolumeCondition"] = THOST_FTDC_VC_CV            
+            sopt_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
+            sopt_req["TimeCondition"] = THOST_FTDC_TC_IOC
+            sopt_req["VolumeCondition"] = THOST_FTDC_VC_CV            
         
         self.reqid += 1
-        self.reqOrderInsert(sec_req, self.reqid)
+        self.reqOrderInsert(sopt_req, self.reqid)
         
         orderid = f"{self.frontid}_{self.sessionid}_{self.order_ref}"
         order = req.create_order_data(orderid, self.gateway_name)
@@ -756,7 +756,7 @@ class SecTdApi(TdApi):
         """
         frontid, sessionid, order_ref = req.orderid.split("_")
         
-        sec_req = {
+        sopt_req = {
             "InstrumentID": req.symbol,
             "Exchange": req.exchange,
             "OrderRef": order_ref,
@@ -768,7 +768,7 @@ class SecTdApi(TdApi):
         }
         
         self.reqid += 1
-        self.reqOrderAction(sec_req, self.reqid)
+        self.reqOrderAction(sopt_req, self.reqid)
     
     def query_account(self):
         """

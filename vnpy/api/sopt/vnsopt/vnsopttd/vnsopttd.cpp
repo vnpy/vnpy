@@ -1,5 +1,5 @@
 ﻿#include "stdafx.h"
-#include "vnsectd.h"
+#include "vnsopttd.h"
 
 ///////////////////////////////////////////////////////////////////////////
 /////////////原生回调接口生成task
@@ -11686,7 +11686,7 @@ public:
 };
 
 
-PYBIND11_MODULE(vnsectd, m)
+PYBIND11_MODULE(vnsopttd, m)
 {
 	class_<TdApi, PyTdApi> tdapi(m, "TdApi", module_local());
 	tdapi
@@ -11698,8 +11698,8 @@ PYBIND11_MODULE(vnsectd, m)
 		.def("exit", &TdApi::exit)
 		.def("getTradingDay", &TdApi::getTradingDay)
 		.def("registerFront", &TdApi::registerFront)
-		.def("subscribePublicTopic",&TdApi::subscribePublicTopic)
-		.def("subscribePrivateTopic",&TdApi::subscribePrivateTopic)
+		.def("subscribePublicTopic", &TdApi::subscribePublicTopic)
+		.def("subscribePrivateTopic", &TdApi::subscribePrivateTopic)
 		.def("reqAuthenticate", &TdApi::reqAuthenticate)
 		.def("reqUserLogin", &TdApi::reqUserLogin)
 		.def("reqUserLogout", &TdApi::reqUserLogout)

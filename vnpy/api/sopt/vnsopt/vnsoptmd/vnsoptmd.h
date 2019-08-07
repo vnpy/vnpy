@@ -17,7 +17,7 @@
 
 #include "ThostFtdcMdApi.h"
 #include "pybind11.h"
-#include "vnsec.h"
+#include "vnsopt.h"
 using namespace pybind11;
 
 class MdApi :public CThostFtdcMdSpi
