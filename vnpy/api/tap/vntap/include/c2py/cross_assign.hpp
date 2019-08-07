@@ -4,7 +4,7 @@
 
 #include <unordered_map>
 
-namespace autocxxpy
+namespace c2py
 {
     using object_store = std::unordered_map<std::string, pybind11::object>;
 

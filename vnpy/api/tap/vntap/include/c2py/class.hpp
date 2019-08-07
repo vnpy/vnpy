@@ -1,6 +1,6 @@
 #pragma once
 
-namespace autocxxpy
+namespace c2py
 {
     template <class tag, class T>
     struct post_register_class
@@ -13,4 +13,4 @@ namespace autocxxpy
 
 }
 #define AUTOCXXPY_POST_REGISTER_CLASS(module_tag, cls, c) \
-    (autocxxpy::post_register_class<module_tag, cls>{}.post_register(c))
+    (c2py::post_register_class<module_tag, cls>{}.post_register(c))

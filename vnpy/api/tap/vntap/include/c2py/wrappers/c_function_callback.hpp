@@ -5,7 +5,7 @@
 #include "../brigand.hpp"
 #include "../base/check.h"
 
-namespace autocxxpy
+namespace c2py
 {
 
     template <class T>
@@ -60,7 +60,7 @@ namespace autocxxpy
 
         constexpr auto method = method_constant::value;
         using func_t = ct::function_type_t<decltype(method)>;
-        using args_t = wrap<ct::args_t<func_t>, list>;
+        using args_t = ct::args_t<func_t, list>;
 
         if constexpr (check_not_out_of_bound<index, size<args_t>::value>())
         {
@@ -71,7 +71,7 @@ namespace autocxxpy
             if constexpr (check_is_c_function_callback<arg_t>())
             {
                 using mid = binding_function_t<arg_t>;
-                using binding_args = wrap<ct::args_t<mid>, list>;
+                using binding_args = ct::args_t<mid, list>;
                 return _wrap_c_function_callback_impl<method_constant, mid>(binding_args{}, ls{}, rs{});
             }
         }

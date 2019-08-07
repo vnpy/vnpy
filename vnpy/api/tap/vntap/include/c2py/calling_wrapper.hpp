@@ -10,7 +10,7 @@
 #include "wrappers/inout_argument.hpp"
 #include "wrappers/string_array.hpp"
 
-namespace autocxxpy
+namespace c2py
 {
 
     /*

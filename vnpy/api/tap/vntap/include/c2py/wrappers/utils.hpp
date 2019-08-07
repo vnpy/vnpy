@@ -2,7 +2,7 @@
 
 #include "../utils/type_traits.hpp"
 
-namespace autocxxpy
+namespace c2py
 {
     template <class T, class T2>
     auto append_as_tuple(T&& v1, T2&& v2)

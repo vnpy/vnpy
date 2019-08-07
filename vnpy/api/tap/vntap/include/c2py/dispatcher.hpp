@@ -7,7 +7,7 @@
 #include <condition_variable>
 #include <assert.h>
 
-namespace autocxxpy
+namespace c2py
 {
     class dispatcher
     {
