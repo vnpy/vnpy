@@ -1,12 +1,12 @@
 #pragma once
 #include "config.h"
 
-#include <autocxxpy/autocxxpy.hpp>
+#include <c2py/c2py.hpp>
 
 struct tag_vntap{};
 struct module_vntap{
-    static autocxxpy::cross_assign cross;
-    static autocxxpy::object_store objects;
+    static c2py::cross_assign cross;
+    static c2py::object_store objects;
     static inline void process_post_assign()
     {
         cross.process_assign(objects);

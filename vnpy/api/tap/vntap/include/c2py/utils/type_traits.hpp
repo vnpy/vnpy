@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-namespace autocxxpy
+namespace c2py
 {
 
     template <class T, class V=void>

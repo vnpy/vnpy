@@ -1,6 +1,6 @@
 #pragma once
 
-#include <autocxxpy/utils/type_traits.hpp>
+#include <c2py/utils/type_traits.hpp>
 
 #include <memory>
 #include <string>
@@ -8,7 +8,7 @@
 
 #include <pybind11/pybind11.h>
 
-namespace autocxxpy
+namespace c2py
 {
     struct caster
     {
@@ -55,21 +55,22 @@ namespace autocxxpy
         template <class to_type, class scope_type>
         static auto try_generate(scope_type &m, const char *name)
         {
-            if constexpr (is_defined_v<to_type>) {
-                if constexpr (!std::is_array_v<to_type>) {
-                    if constexpr (std::is_default_constructible_v<to_type>) {
-                        generate_nocheck<to_type>(m, name);
+            if constexpr (std::is_class_v<to_type> || std::is_enum_v<to_type> || std::is_union_v<to_type>) {
+                if constexpr (is_defined_v<to_type>) {
+                    if constexpr (!std::is_array_v<to_type>) {
+                        if constexpr (std::is_default_constructible_v<to_type>) {
+                            generate_nocheck<to_type>(m, name);
+                        }
                     }
                 }
-
             }
         }
     private:
         template <class to_type, class scope_type>
         static auto generate_nocheck(scope_type &c, const char *name)
         {
-            c.def("to_TapAPIApplicationInfo",
-                &autocxxpy::caster::copy<to_type>
+            c.def(name,
+                &c2py::caster::copy<to_type>
             );
         }
 #endif
