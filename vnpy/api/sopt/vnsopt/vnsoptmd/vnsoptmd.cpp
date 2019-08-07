@@ -1,5 +1,5 @@
 ﻿#include "stdafx.h"
-#include "vnsecmd.h"
+#include "vnsoptmd.h"
 
 ///////////////////////////////////////////////////////////////////////////
 /////////////原生回调接口生成task
@@ -793,7 +793,7 @@ public:
 	};
 };
 
-PYBIND11_MODULE(vnsecmd, m)
+PYBIND11_MODULE(vnsoptmd, m)
 {
 	class_<MdApi, PyMdApi> mdapi(m, "MdApi", module_local());
 	mdapi
