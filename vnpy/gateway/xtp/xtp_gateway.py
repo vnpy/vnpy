@@ -241,7 +241,7 @@ class XtpQuoteApi(API.QuoteSpi):
         self.server_ip = server_ip
         self.server_port = server_port
 
-        if quote_protocol == "CTP":
+        if quote_protocol == "TCP":
             self.quote_protocol = XTP_PROTOCOL_TYPE.XTP_PROTOCOL_TCP
         else:
             self.quote_protocol = XTP_PROTOCOL_TYPE.XTP_PROTOCOL_UDP
