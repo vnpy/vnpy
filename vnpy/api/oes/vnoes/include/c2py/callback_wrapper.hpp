@@ -73,11 +73,13 @@ namespace c2py
 #ifdef AUTOCXXPY_INCLUDED_PYBIND11
     template <class ret_type>
     struct pybind11_static_caster {
-        static pybind11::detail::overload_caster_t<ret_type> caster;
+        using type = pybind11::detail::overload_caster_t<ret_type>;
+        static inline type &get_caster()
+        {
+            static type _caster;
+            return _caster;
+        }
     };
-
-    template <class ret_type>
-    AUTOCXXPY_SELECT_ANY pybind11::detail::overload_caster_t<ret_type> pybind11_static_caster<ret_type>::caster;
 
     struct async_dispatch_exception : public std::exception
     {
@@ -103,15 +105,14 @@ namespace c2py
     struct async_callback_exception_handler
     {
         using handler_type = std::function<bool(const async_dispatch_exception&)>;
-        static handler_type custom_handler;
 
         inline static void handle_excepiton(const async_dispatch_exception&e)
         {
-            if (custom_handler)
+            if (get_custom_handler())
             {
                 try
                 {
-                    custom_handler(e);
+                    get_custom_handler()(e);
                 }
                 catch (pybind11::error_already_set & e2)
                 {
@@ -131,11 +132,16 @@ namespace c2py
 
         inline static void set_handler(const handler_type& handler)
         {
-            custom_handler = handler;
+            get_custom_handler() = handler;
         }
-    };
+    private:
+        inline static handler_type &get_custom_handler()
+        {
+            static handler_type _handler;
+            return _handler;
+        }
 
-    AUTOCXXPY_SELECT_ANY async_callback_exception_handler::handler_type async_callback_exception_handler::custom_handler;
+    };
 #endif
 
     namespace arg_helper
@@ -311,7 +317,7 @@ namespace c2py
                     auto result = overload(args ...);
                     if (pybind11::detail::cast_is_temporary_value_reference<ret_type>::value)
                     {
-                        auto& caster = pybind11_static_caster<ret_type>::caster;
+                        auto& caster = pybind11_static_caster<ret_type>::get_caster();
                         return pybind11::detail::cast_ref<ret_type>(std::move(result), caster);
                     }
                     else 

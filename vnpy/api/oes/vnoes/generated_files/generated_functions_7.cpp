@@ -15,576 +15,483 @@
 #include "mds_api/mds_api.h"
 
 
-void generate_class_MdsMktDataSnapshot(pybind11::object & parent)
+void generate_class_OesApiClientCfg(pybind11::object & parent)
 {
-    // _MdsMktDataSnapshot
-    pybind11::class_<_MdsMktDataSnapshot> c(parent, "_MdsMktDataSnapshot");
-    if constexpr (std::is_default_constructible_v<_MdsMktDataSnapshot>)
+    // _OesApiClientCfg
+    pybind11::class_<_OesApiClientCfg> c(parent, "_OesApiClientCfg");
+    if constexpr (std::is_default_constructible_v<_OesApiClientCfg>)
         c.def(pybind11::init<>());
-    // _MdsMktDataSnapshot::head
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshot, "head", head);
-    // _MdsMktDataSnapshot::l2Stock
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshot, "l2Stock", l2Stock);
-    // _MdsMktDataSnapshot::l2StockIncremental
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshot, "l2StockIncremental", l2StockIncremental);
-    // _MdsMktDataSnapshot::l2BestOrders
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshot, "l2BestOrders", l2BestOrders);
-    // _MdsMktDataSnapshot::l2BestOrdersIncremental
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshot, "l2BestOrdersIncremental", l2BestOrdersIncremental);
-    // _MdsMktDataSnapshot::stock
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshot, "stock", stock);
-    // _MdsMktDataSnapshot::option
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshot, "option", option);
-    // _MdsMktDataSnapshot::index
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshot, "index", index);
-    // _MdsMktDataSnapshot::l2MarketOverview
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshot, "l2MarketOverview", l2MarketOverview);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsMktDataSnapshot, c);
-    module_vnoes::objects.emplace("_MdsMktDataSnapshot", c);
+    // _OesApiClientCfg::ordChannelCfg
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiClientCfg, "ordChannelCfg", ordChannelCfg);
+    // _OesApiClientCfg::rptChannelCfg
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiClientCfg, "rptChannelCfg", rptChannelCfg);
+    // _OesApiClientCfg::qryChannelCfg
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiClientCfg, "qryChannelCfg", qryChannelCfg);
+    // _OesApiClientCfg::subscribeInfo
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiClientCfg, "subscribeInfo", subscribeInfo);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesApiClientCfg, c);
+    module_vnoes::objects.emplace("_OesApiClientCfg", c);
 }
-void generate_class_MdsL2Trade(pybind11::object & parent)
+void generate_class_OesApiClientEnv(pybind11::object & parent)
 {
-    // _MdsL2Trade
-    pybind11::class_<_MdsL2Trade> c(parent, "_MdsL2Trade");
-    if constexpr (std::is_default_constructible_v<_MdsL2Trade>)
+    // _OesApiClientEnv
+    pybind11::class_<_OesApiClientEnv> c(parent, "_OesApiClientEnv");
+    if constexpr (std::is_default_constructible_v<_OesApiClientEnv>)
         c.def(pybind11::init<>());
-    // _MdsL2Trade::exchId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "exchId", exchId);
-    // _MdsL2Trade::mdProductType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "mdProductType", mdProductType);
-    // _MdsL2Trade::__isRepeated
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "__isRepeated", __isRepeated);
-    // _MdsL2Trade::__filler1
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "__filler1", __filler1);
-    // _MdsL2Trade::tradeDate
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "tradeDate", tradeDate);
-    // _MdsL2Trade::TransactTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "TransactTime", TransactTime);
-    // _MdsL2Trade::instrId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "instrId", instrId);
-    // _MdsL2Trade::ChannelNo
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "ChannelNo", ChannelNo);
-    // _MdsL2Trade::ApplSeqNum
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "ApplSeqNum", ApplSeqNum);
-    // _MdsL2Trade::SecurityID
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "SecurityID", SecurityID);
-    // _MdsL2Trade::ExecType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "ExecType", ExecType);
-    // _MdsL2Trade::TradeBSFlag
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "TradeBSFlag", TradeBSFlag);
-    // _MdsL2Trade::__filler3
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "__filler3", __filler3);
-    // _MdsL2Trade::__channelNo
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "__channelNo", __channelNo);
-    // _MdsL2Trade::__origTickSeq
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "__origTickSeq", __origTickSeq);
-    // _MdsL2Trade::TradePrice
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "TradePrice", TradePrice);
-    // _MdsL2Trade::TradeQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "TradeQty", TradeQty);
-    // _MdsL2Trade::TradeMoney
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "TradeMoney", TradeMoney);
-    // _MdsL2Trade::BidApplSeqNum
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "BidApplSeqNum", BidApplSeqNum);
-    // _MdsL2Trade::OfferApplSeqNum
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "OfferApplSeqNum", OfferApplSeqNum);
-    // _MdsL2Trade::__origNetTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "__origNetTime", __origNetTime);
-    // _MdsL2Trade::__recvTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "__recvTime", __recvTime);
-    // _MdsL2Trade::__collectedTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "__collectedTime", __collectedTime);
-    // _MdsL2Trade::__processedTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "__processedTime", __processedTime);
-    // _MdsL2Trade::__pushingTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Trade, "__pushingTime", __pushingTime);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsL2Trade, c);
-    module_vnoes::objects.emplace("_MdsL2Trade", c);
+    // _OesApiClientEnv::ordChannel
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiClientEnv, "ordChannel", ordChannel);
+    // _OesApiClientEnv::rptChannel
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiClientEnv, "rptChannel", rptChannel);
+    // _OesApiClientEnv::qryChannel
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesApiClientEnv, "qryChannel", qryChannel);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesApiClientEnv, c);
+    module_vnoes::objects.emplace("_OesApiClientEnv", c);
 }
-void generate_class_MdsL2Order(pybind11::object & parent)
+void generate_class_MdsTradingSessionStatusMsg(pybind11::object & parent)
 {
-    // _MdsL2Order
-    pybind11::class_<_MdsL2Order> c(parent, "_MdsL2Order");
-    if constexpr (std::is_default_constructible_v<_MdsL2Order>)
+    // _MdsTradingSessionStatusMsg
+    pybind11::class_<_MdsTradingSessionStatusMsg> c(parent, "_MdsTradingSessionStatusMsg");
+    if constexpr (std::is_default_constructible_v<_MdsTradingSessionStatusMsg>)
         c.def(pybind11::init<>());
-    // _MdsL2Order::exchId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "exchId", exchId);
-    // _MdsL2Order::mdProductType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "mdProductType", mdProductType);
-    // _MdsL2Order::__isRepeated
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "__isRepeated", __isRepeated);
-    // _MdsL2Order::__filler1
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "__filler1", __filler1);
-    // _MdsL2Order::tradeDate
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "tradeDate", tradeDate);
-    // _MdsL2Order::TransactTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "TransactTime", TransactTime);
-    // _MdsL2Order::instrId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "instrId", instrId);
-    // _MdsL2Order::ChannelNo
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "ChannelNo", ChannelNo);
-    // _MdsL2Order::ApplSeqNum
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "ApplSeqNum", ApplSeqNum);
-    // _MdsL2Order::SecurityID
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "SecurityID", SecurityID);
-    // _MdsL2Order::Side
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "Side", Side);
-    // _MdsL2Order::OrderType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "OrderType", OrderType);
-    // _MdsL2Order::__filler3
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "__filler3", __filler3);
-    // _MdsL2Order::__channelNo
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "__channelNo", __channelNo);
-    // _MdsL2Order::__origTickSeq
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "__origTickSeq", __origTickSeq);
-    // _MdsL2Order::Price
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "Price", Price);
-    // _MdsL2Order::OrderQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "OrderQty", OrderQty);
-    // _MdsL2Order::__origNetTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "__origNetTime", __origNetTime);
-    // _MdsL2Order::__recvTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "__recvTime", __recvTime);
-    // _MdsL2Order::__collectedTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "__collectedTime", __collectedTime);
-    // _MdsL2Order::__processedTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "__processedTime", __processedTime);
-    // _MdsL2Order::__pushingTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2Order, "__pushingTime", __pushingTime);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsL2Order, c);
-    module_vnoes::objects.emplace("_MdsL2Order", c);
+    // _MdsTradingSessionStatusMsg::exchId
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "exchId", exchId);
+    // _MdsTradingSessionStatusMsg::mdProductType
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "mdProductType", mdProductType);
+    // _MdsTradingSessionStatusMsg::__isRepeated
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__isRepeated", __isRepeated);
+    // _MdsTradingSessionStatusMsg::__filler1
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__filler1", __filler1);
+    // _MdsTradingSessionStatusMsg::tradeDate
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "tradeDate", tradeDate);
+    // _MdsTradingSessionStatusMsg::updateTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "updateTime", updateTime);
+    // _MdsTradingSessionStatusMsg::__exchSendingTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__exchSendingTime", __exchSendingTime);
+    // _MdsTradingSessionStatusMsg::__mdsRecvTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__mdsRecvTime", __mdsRecvTime);
+    // _MdsTradingSessionStatusMsg::TotNoRelatedSym
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "TotNoRelatedSym", TotNoRelatedSym);
+    // _MdsTradingSessionStatusMsg::TradingSessionID
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "TradingSessionID", TradingSessionID);
+    // _MdsTradingSessionStatusMsg::__filler3
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__filler3", __filler3);
+    // _MdsTradingSessionStatusMsg::__dataVersion
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__dataVersion", __dataVersion);
+    // _MdsTradingSessionStatusMsg::__origTickSeq
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__origTickSeq", __origTickSeq);
+    // _MdsTradingSessionStatusMsg::__origNetTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__origNetTime", __origNetTime);
+    // _MdsTradingSessionStatusMsg::__recvTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__recvTime", __recvTime);
+    // _MdsTradingSessionStatusMsg::__collectedTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__collectedTime", __collectedTime);
+    // _MdsTradingSessionStatusMsg::__processedTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__processedTime", __processedTime);
+    // _MdsTradingSessionStatusMsg::__pushingTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTradingSessionStatusMsg, "__pushingTime", __pushingTime);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsTradingSessionStatusMsg, c);
+    module_vnoes::objects.emplace("_MdsTradingSessionStatusMsg", c);
 }
-void generate_class_MdsWholeMktMsgBody(pybind11::object & parent)
+void generate_class_MdsSecurityStatusMsg(pybind11::object & parent)
 {
-    // _MdsWholeMktMsgBody
-    pybind11::class_<_MdsWholeMktMsgBody> c(parent, "_MdsWholeMktMsgBody");
-    if constexpr (std::is_default_constructible_v<_MdsWholeMktMsgBody>)
+    // _MdsSecurityStatusMsg
+    pybind11::class_<_MdsSecurityStatusMsg> c(parent, "_MdsSecurityStatusMsg");
+    if constexpr (std::is_default_constructible_v<_MdsSecurityStatusMsg>)
         c.def(pybind11::init<>());
-    // _MdsWholeMktMsgBody::mktDataSnapshot
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsWholeMktMsgBody, "mktDataSnapshot", mktDataSnapshot);
-    // _MdsWholeMktMsgBody::trade
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsWholeMktMsgBody, "trade", trade);
-    // _MdsWholeMktMsgBody::order
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsWholeMktMsgBody, "order", order);
-    // _MdsWholeMktMsgBody::trdSessionStatus
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsWholeMktMsgBody, "trdSessionStatus", trdSessionStatus);
-    // _MdsWholeMktMsgBody::securityStatus
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsWholeMktMsgBody, "securityStatus", securityStatus);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsWholeMktMsgBody, c);
-    module_vnoes::objects.emplace("_MdsWholeMktMsgBody", c);
+    // _MdsSecurityStatusMsg::exchId
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "exchId", exchId);
+    // _MdsSecurityStatusMsg::mdProductType
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "mdProductType", mdProductType);
+    // _MdsSecurityStatusMsg::__isRepeated
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__isRepeated", __isRepeated);
+    // _MdsSecurityStatusMsg::__filler1
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__filler1", __filler1);
+    // _MdsSecurityStatusMsg::tradeDate
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "tradeDate", tradeDate);
+    // _MdsSecurityStatusMsg::updateTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "updateTime", updateTime);
+    // _MdsSecurityStatusMsg::__exchSendingTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__exchSendingTime", __exchSendingTime);
+    // _MdsSecurityStatusMsg::__mdsRecvTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__mdsRecvTime", __mdsRecvTime);
+    // _MdsSecurityStatusMsg::instrId
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "instrId", instrId);
+    // _MdsSecurityStatusMsg::SecurityID
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "SecurityID", SecurityID);
+    // _MdsSecurityStatusMsg::FinancialStatus
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "FinancialStatus", FinancialStatus);
+    // _MdsSecurityStatusMsg::__filler2
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__filler2", __filler2);
+    // _MdsSecurityStatusMsg::__channelNo
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__channelNo", __channelNo);
+    // _MdsSecurityStatusMsg::__dataVersion
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__dataVersion", __dataVersion);
+    // _MdsSecurityStatusMsg::__origTickSeq
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__origTickSeq", __origTickSeq);
+    // _MdsSecurityStatusMsg::NoSwitch
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "NoSwitch", NoSwitch);
+    // _MdsSecurityStatusMsg::__filler4
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__filler4", __filler4);
+    // _MdsSecurityStatusMsg::switches
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "switches", switches);
+    // _MdsSecurityStatusMsg::__origNetTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__origNetTime", __origNetTime);
+    // _MdsSecurityStatusMsg::__recvTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__recvTime", __recvTime);
+    // _MdsSecurityStatusMsg::__collectedTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__collectedTime", __collectedTime);
+    // _MdsSecurityStatusMsg::__processedTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__processedTime", __processedTime);
+    // _MdsSecurityStatusMsg::__pushingTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsSecurityStatusMsg, "__pushingTime", __pushingTime);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsSecurityStatusMsg, c);
+    module_vnoes::objects.emplace("_MdsSecurityStatusMsg", c);
 }
-void generate_class_MdsStockStaticInfo(pybind11::object & parent)
+void generate_class_MdsPriceLevelEntry(pybind11::object & parent)
 {
-    // _MdsStockStaticInfo
-    pybind11::class_<_MdsStockStaticInfo> c(parent, "_MdsStockStaticInfo");
-    if constexpr (std::is_default_constructible_v<_MdsStockStaticInfo>)
+    // _MdsPriceLevelEntry
+    pybind11::class_<_MdsPriceLevelEntry> c(parent, "_MdsPriceLevelEntry");
+    if constexpr (std::is_default_constructible_v<_MdsPriceLevelEntry>)
         c.def(pybind11::init<>());
-    // _MdsStockStaticInfo::securityId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "securityId", securityId);
-    // _MdsStockStaticInfo::exchId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "exchId", exchId);
-    // _MdsStockStaticInfo::mdProductType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "mdProductType", mdProductType);
-    // _MdsStockStaticInfo::oesSecurityType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "oesSecurityType", oesSecurityType);
-    // _MdsStockStaticInfo::subSecurityType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "subSecurityType", subSecurityType);
-    // _MdsStockStaticInfo::__filler
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "__filler", __filler);
-    // _MdsStockStaticInfo::instrId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "instrId", instrId);
-    // _MdsStockStaticInfo::buyQtyUnit
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "buyQtyUnit", buyQtyUnit);
-    // _MdsStockStaticInfo::lmtBuyMaxQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "lmtBuyMaxQty", lmtBuyMaxQty);
-    // _MdsStockStaticInfo::buyOrdMaxQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "buyOrdMaxQty", buyOrdMaxQty);
-    // _MdsStockStaticInfo::lmtBuyMinQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "lmtBuyMinQty", lmtBuyMinQty);
-    // _MdsStockStaticInfo::buyOrdMinQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "buyOrdMinQty", buyOrdMinQty);
-    // _MdsStockStaticInfo::mktBuyMaxQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "mktBuyMaxQty", mktBuyMaxQty);
-    // _MdsStockStaticInfo::mktBuyMinQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "mktBuyMinQty", mktBuyMinQty);
-    // _MdsStockStaticInfo::sellQtyUnit
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "sellQtyUnit", sellQtyUnit);
-    // _MdsStockStaticInfo::lmtSellMaxQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "lmtSellMaxQty", lmtSellMaxQty);
-    // _MdsStockStaticInfo::sellOrdMaxQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "sellOrdMaxQty", sellOrdMaxQty);
-    // _MdsStockStaticInfo::lmtSellMinQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "lmtSellMinQty", lmtSellMinQty);
-    // _MdsStockStaticInfo::sellOrdMinQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "sellOrdMinQty", sellOrdMinQty);
-    // _MdsStockStaticInfo::mktSellMaxQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "mktSellMaxQty", mktSellMaxQty);
-    // _MdsStockStaticInfo::mktSellMinQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "mktSellMinQty", mktSellMinQty);
-    // _MdsStockStaticInfo::prevClose
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "prevClose", prevClose);
-    // _MdsStockStaticInfo::priceTick
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "priceTick", priceTick);
-    // _MdsStockStaticInfo::limitUpPrice
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "limitUpPrice", limitUpPrice);
-    // _MdsStockStaticInfo::limitDownPrice
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "limitDownPrice", limitDownPrice);
-    // _MdsStockStaticInfo::parPrice
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "parPrice", parPrice);
-    // _MdsStockStaticInfo::bondInterest
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "bondInterest", bondInterest);
-    // _MdsStockStaticInfo::securityName
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "securityName", securityName);
-    // _MdsStockStaticInfo::__reserve
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockStaticInfo, "__reserve", __reserve);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsStockStaticInfo, c);
-    module_vnoes::objects.emplace("_MdsStockStaticInfo", c);
+    // _MdsPriceLevelEntry::Price
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsPriceLevelEntry, "Price", Price);
+    // _MdsPriceLevelEntry::NumberOfOrders
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsPriceLevelEntry, "NumberOfOrders", NumberOfOrders);
+    // _MdsPriceLevelEntry::OrderQty
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsPriceLevelEntry, "OrderQty", OrderQty);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsPriceLevelEntry, c);
+    module_vnoes::objects.emplace("_MdsPriceLevelEntry", c);
 }
-void generate_class_MdsQryMktDataSnapshotReq(pybind11::object & parent)
+void generate_class_MdsMktDataSnapshotHead(pybind11::object & parent)
 {
-    // _MdsQryMktDataSnapshotReq
-    pybind11::class_<_MdsQryMktDataSnapshotReq> c(parent, "_MdsQryMktDataSnapshotReq");
-    if constexpr (std::is_default_constructible_v<_MdsQryMktDataSnapshotReq>)
+    // _MdsMktDataSnapshotHead
+    pybind11::class_<_MdsMktDataSnapshotHead> c(parent, "_MdsMktDataSnapshotHead");
+    if constexpr (std::is_default_constructible_v<_MdsMktDataSnapshotHead>)
         c.def(pybind11::init<>());
-    // _MdsQryMktDataSnapshotReq::exchId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryMktDataSnapshotReq, "exchId", exchId);
-    // _MdsQryMktDataSnapshotReq::mdProductType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryMktDataSnapshotReq, "mdProductType", mdProductType);
-    // _MdsQryMktDataSnapshotReq::__filler
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryMktDataSnapshotReq, "__filler", __filler);
-    // _MdsQryMktDataSnapshotReq::instrId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryMktDataSnapshotReq, "instrId", instrId);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsQryMktDataSnapshotReq, c);
-    module_vnoes::objects.emplace("_MdsQryMktDataSnapshotReq", c);
+    // _MdsMktDataSnapshotHead::exchId
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "exchId", exchId);
+    // _MdsMktDataSnapshotHead::mdProductType
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "mdProductType", mdProductType);
+    // _MdsMktDataSnapshotHead::__isRepeated
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__isRepeated", __isRepeated);
+    // _MdsMktDataSnapshotHead::__origMdSource
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__origMdSource", __origMdSource);
+    // _MdsMktDataSnapshotHead::tradeDate
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "tradeDate", tradeDate);
+    // _MdsMktDataSnapshotHead::updateTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "updateTime", updateTime);
+    // _MdsMktDataSnapshotHead::instrId
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "instrId", instrId);
+    // _MdsMktDataSnapshotHead::bodyLength
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "bodyLength", bodyLength);
+    // _MdsMktDataSnapshotHead::mdStreamType
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "mdStreamType", mdStreamType);
+    // _MdsMktDataSnapshotHead::__channelNo
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__channelNo", __channelNo);
+    // _MdsMktDataSnapshotHead::__dataVersion
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__dataVersion", __dataVersion);
+    // _MdsMktDataSnapshotHead::__origTickSeq
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__origTickSeq", __origTickSeq);
+    // _MdsMktDataSnapshotHead::__lastUpdateTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__lastUpdateTime", __lastUpdateTime);
+    // _MdsMktDataSnapshotHead::__origNetTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__origNetTime", __origNetTime);
+    // _MdsMktDataSnapshotHead::__recvTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__recvTime", __recvTime);
+    // _MdsMktDataSnapshotHead::__collectedTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__collectedTime", __collectedTime);
+    // _MdsMktDataSnapshotHead::__processedTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__processedTime", __processedTime);
+    // _MdsMktDataSnapshotHead::__pushingTime
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataSnapshotHead, "__pushingTime", __pushingTime);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsMktDataSnapshotHead, c);
+    module_vnoes::objects.emplace("_MdsMktDataSnapshotHead", c);
 }
-void generate_class_MdsQryTrdSessionStatusReq(pybind11::object & parent)
+void generate_class_MdsIndexSnapshotBody(pybind11::object & parent)
 {
-    // _MdsQryTrdSessionStatusReq
-    pybind11::class_<_MdsQryTrdSessionStatusReq> c(parent, "_MdsQryTrdSessionStatusReq");
-    if constexpr (std::is_default_constructible_v<_MdsQryTrdSessionStatusReq>)
+    // _MdsIndexSnapshotBody
+    pybind11::class_<_MdsIndexSnapshotBody> c(parent, "_MdsIndexSnapshotBody");
+    if constexpr (std::is_default_constructible_v<_MdsIndexSnapshotBody>)
         c.def(pybind11::init<>());
-    // _MdsQryTrdSessionStatusReq::exchId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryTrdSessionStatusReq, "exchId", exchId);
-    // _MdsQryTrdSessionStatusReq::mdProductType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryTrdSessionStatusReq, "mdProductType", mdProductType);
-    // _MdsQryTrdSessionStatusReq::__filler
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryTrdSessionStatusReq, "__filler", __filler);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsQryTrdSessionStatusReq, c);
-    module_vnoes::objects.emplace("_MdsQryTrdSessionStatusReq", c);
+    // _MdsIndexSnapshotBody::SecurityID
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "SecurityID", SecurityID);
+    // _MdsIndexSnapshotBody::TradingPhaseCode
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "TradingPhaseCode", TradingPhaseCode);
+    // _MdsIndexSnapshotBody::__filler
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "__filler", __filler);
+    // _MdsIndexSnapshotBody::NumTrades
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "NumTrades", NumTrades);
+    // _MdsIndexSnapshotBody::TotalVolumeTraded
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "TotalVolumeTraded", TotalVolumeTraded);
+    // _MdsIndexSnapshotBody::TotalValueTraded
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "TotalValueTraded", TotalValueTraded);
+    // _MdsIndexSnapshotBody::PrevCloseIdx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "PrevCloseIdx", PrevCloseIdx);
+    // _MdsIndexSnapshotBody::OpenIdx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "OpenIdx", OpenIdx);
+    // _MdsIndexSnapshotBody::HighIdx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "HighIdx", HighIdx);
+    // _MdsIndexSnapshotBody::LowIdx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "LowIdx", LowIdx);
+    // _MdsIndexSnapshotBody::LastIdx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "LastIdx", LastIdx);
+    // _MdsIndexSnapshotBody::CloseIdx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "CloseIdx", CloseIdx);
+    // _MdsIndexSnapshotBody::StockNum
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "StockNum", StockNum);
+    // _MdsIndexSnapshotBody::__filler1
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsIndexSnapshotBody, "__filler1", __filler1);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsIndexSnapshotBody, c);
+    module_vnoes::objects.emplace("_MdsIndexSnapshotBody", c);
 }
-void generate_class_MdsQryReqHeadT(pybind11::object & parent)
+void generate_class_MdsStockSnapshotBody(pybind11::object & parent)
 {
-    // _MdsQryReqHeadT
-    pybind11::class_<_MdsQryReqHeadT> c(parent, "_MdsQryReqHeadT");
-    if constexpr (std::is_default_constructible_v<_MdsQryReqHeadT>)
+    // _MdsStockSnapshotBody
+    pybind11::class_<_MdsStockSnapshotBody> c(parent, "_MdsStockSnapshotBody");
+    if constexpr (std::is_default_constructible_v<_MdsStockSnapshotBody>)
         c.def(pybind11::init<>());
-    // _MdsQryReqHeadT::maxPageSize
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryReqHeadT, "maxPageSize", maxPageSize);
-    // _MdsQryReqHeadT::lastPosition
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryReqHeadT, "lastPosition", lastPosition);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsQryReqHeadT, c);
-    module_vnoes::objects.emplace("_MdsQryReqHeadT", c);
+    // _MdsStockSnapshotBody::SecurityID
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "SecurityID", SecurityID);
+    // _MdsStockSnapshotBody::TradingPhaseCode
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "TradingPhaseCode", TradingPhaseCode);
+    // _MdsStockSnapshotBody::__filler
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "__filler", __filler);
+    // _MdsStockSnapshotBody::NumTrades
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "NumTrades", NumTrades);
+    // _MdsStockSnapshotBody::TotalVolumeTraded
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "TotalVolumeTraded", TotalVolumeTraded);
+    // _MdsStockSnapshotBody::TotalValueTraded
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "TotalValueTraded", TotalValueTraded);
+    // _MdsStockSnapshotBody::PrevClosePx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "PrevClosePx", PrevClosePx);
+    // _MdsStockSnapshotBody::OpenPx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "OpenPx", OpenPx);
+    // _MdsStockSnapshotBody::HighPx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "HighPx", HighPx);
+    // _MdsStockSnapshotBody::LowPx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "LowPx", LowPx);
+    // _MdsStockSnapshotBody::TradePx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "TradePx", TradePx);
+    // _MdsStockSnapshotBody::ClosePx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "ClosePx", ClosePx);
+    // _MdsStockSnapshotBody::IOPV
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "IOPV", IOPV);
+    // _MdsStockSnapshotBody::NAV
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "NAV", NAV);
+    // _MdsStockSnapshotBody::TotalLongPosition
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "TotalLongPosition", TotalLongPosition);
+    // _MdsStockSnapshotBody::BidLevels
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "BidLevels", BidLevels);
+    // _MdsStockSnapshotBody::OfferLevels
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsStockSnapshotBody, "OfferLevels", OfferLevels);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsStockSnapshotBody, c);
+    module_vnoes::objects.emplace("_MdsStockSnapshotBody", c);
 }
-void generate_class_MdsQryRspHeadT(pybind11::object & parent)
+void generate_class_MdsL1SnapshotBody(pybind11::object & parent)
 {
-    // _MdsQryRspHeadT
-    pybind11::class_<_MdsQryRspHeadT> c(parent, "_MdsQryRspHeadT");
-    if constexpr (std::is_default_constructible_v<_MdsQryRspHeadT>)
+    // _MdsL1SnapshotBody
+    pybind11::class_<_MdsL1SnapshotBody> c(parent, "_MdsL1SnapshotBody");
+    if constexpr (std::is_default_constructible_v<_MdsL1SnapshotBody>)
         c.def(pybind11::init<>());
-    // _MdsQryRspHeadT::itemCount
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryRspHeadT, "itemCount", itemCount);
-    // _MdsQryRspHeadT::lastPosition
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryRspHeadT, "lastPosition", lastPosition);
-    // _MdsQryRspHeadT::isEnd
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryRspHeadT, "isEnd", isEnd);
-    // _MdsQryRspHeadT::__filler
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryRspHeadT, "__filler", __filler);
-    // _MdsQryRspHeadT::userInfo
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryRspHeadT, "userInfo", userInfo);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsQryRspHeadT, c);
-    module_vnoes::objects.emplace("_MdsQryRspHeadT", c);
+    // _MdsL1SnapshotBody::stock
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL1SnapshotBody, "stock", stock);
+    // _MdsL1SnapshotBody::option
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL1SnapshotBody, "option", option);
+    // _MdsL1SnapshotBody::index
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL1SnapshotBody, "index", index);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsL1SnapshotBody, c);
+    module_vnoes::objects.emplace("_MdsL1SnapshotBody", c);
 }
-void generate_class_MdsQryCursor(pybind11::object & parent)
+void generate_class_MdsL1Snapshot(pybind11::object & parent)
 {
-    // _MdsQryCursor
-    pybind11::class_<_MdsQryCursor> c(parent, "_MdsQryCursor");
-    if constexpr (std::is_default_constructible_v<_MdsQryCursor>)
+    // _MdsL1Snapshot
+    pybind11::class_<_MdsL1Snapshot> c(parent, "_MdsL1Snapshot");
+    if constexpr (std::is_default_constructible_v<_MdsL1Snapshot>)
         c.def(pybind11::init<>());
-    // _MdsQryCursor::seqNo
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryCursor, "seqNo", seqNo);
-    // _MdsQryCursor::isEnd
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryCursor, "isEnd", isEnd);
-    // _MdsQryCursor::__filler
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryCursor, "__filler", __filler);
-    // _MdsQryCursor::userInfo
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryCursor, "userInfo", userInfo);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsQryCursor, c);
-    module_vnoes::objects.emplace("_MdsQryCursor", c);
+    // _MdsL1Snapshot::head
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL1Snapshot, "head", head);
+    // _MdsL1Snapshot::stock
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL1Snapshot, "stock", stock);
+    // _MdsL1Snapshot::option
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL1Snapshot, "option", option);
+    // _MdsL1Snapshot::index
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL1Snapshot, "index", index);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsL1Snapshot, c);
+    module_vnoes::objects.emplace("_MdsL1Snapshot", c);
 }
-void generate_class_MdsQrySecurityCodeEntry(pybind11::object & parent)
+void generate_class_MdsL2StockSnapshotBody(pybind11::object & parent)
 {
-    // _MdsQrySecurityCodeEntry
-    pybind11::class_<_MdsQrySecurityCodeEntry> c(parent, "_MdsQrySecurityCodeEntry");
-    if constexpr (std::is_default_constructible_v<_MdsQrySecurityCodeEntry>)
+    // _MdsL2StockSnapshotBody
+    pybind11::class_<_MdsL2StockSnapshotBody> c(parent, "_MdsL2StockSnapshotBody");
+    if constexpr (std::is_default_constructible_v<_MdsL2StockSnapshotBody>)
         c.def(pybind11::init<>());
-    // _MdsQrySecurityCodeEntry::instrId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySecurityCodeEntry, "instrId", instrId);
-    // _MdsQrySecurityCodeEntry::exchId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySecurityCodeEntry, "exchId", exchId);
-    // _MdsQrySecurityCodeEntry::mdProductType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySecurityCodeEntry, "mdProductType", mdProductType);
-    // _MdsQrySecurityCodeEntry::__filler
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySecurityCodeEntry, "__filler", __filler);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsQrySecurityCodeEntry, c);
-    module_vnoes::objects.emplace("_MdsQrySecurityCodeEntry", c);
+    // _MdsL2StockSnapshotBody::SecurityID
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "SecurityID", SecurityID);
+    // _MdsL2StockSnapshotBody::TradingPhaseCode
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "TradingPhaseCode", TradingPhaseCode);
+    // _MdsL2StockSnapshotBody::__filler
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "__filler", __filler);
+    // _MdsL2StockSnapshotBody::NumTrades
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "NumTrades", NumTrades);
+    // _MdsL2StockSnapshotBody::TotalVolumeTraded
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "TotalVolumeTraded", TotalVolumeTraded);
+    // _MdsL2StockSnapshotBody::TotalValueTraded
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "TotalValueTraded", TotalValueTraded);
+    // _MdsL2StockSnapshotBody::PrevClosePx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "PrevClosePx", PrevClosePx);
+    // _MdsL2StockSnapshotBody::OpenPx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "OpenPx", OpenPx);
+    // _MdsL2StockSnapshotBody::HighPx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "HighPx", HighPx);
+    // _MdsL2StockSnapshotBody::LowPx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "LowPx", LowPx);
+    // _MdsL2StockSnapshotBody::TradePx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "TradePx", TradePx);
+    // _MdsL2StockSnapshotBody::ClosePx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "ClosePx", ClosePx);
+    // _MdsL2StockSnapshotBody::IOPV
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "IOPV", IOPV);
+    // _MdsL2StockSnapshotBody::NAV
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "NAV", NAV);
+    // _MdsL2StockSnapshotBody::TotalLongPosition
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "TotalLongPosition", TotalLongPosition);
+    // _MdsL2StockSnapshotBody::TotalBidQty
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "TotalBidQty", TotalBidQty);
+    // _MdsL2StockSnapshotBody::TotalOfferQty
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "TotalOfferQty", TotalOfferQty);
+    // _MdsL2StockSnapshotBody::WeightedAvgBidPx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "WeightedAvgBidPx", WeightedAvgBidPx);
+    // _MdsL2StockSnapshotBody::WeightedAvgOfferPx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "WeightedAvgOfferPx", WeightedAvgOfferPx);
+    // _MdsL2StockSnapshotBody::BidPriceLevel
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "BidPriceLevel", BidPriceLevel);
+    // _MdsL2StockSnapshotBody::OfferPriceLevel
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "OfferPriceLevel", OfferPriceLevel);
+    // _MdsL2StockSnapshotBody::BidLevels
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "BidLevels", BidLevels);
+    // _MdsL2StockSnapshotBody::OfferLevels
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotBody, "OfferLevels", OfferLevels);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsL2StockSnapshotBody, c);
+    module_vnoes::objects.emplace("_MdsL2StockSnapshotBody", c);
 }
-void generate_class_MdsQryStockStaticInfoFilter(pybind11::object & parent)
+void generate_class_MdsL2StockSnapshotIncremental(pybind11::object & parent)
 {
-    // _MdsQryStockStaticInfoFilter
-    pybind11::class_<_MdsQryStockStaticInfoFilter> c(parent, "_MdsQryStockStaticInfoFilter");
-    if constexpr (std::is_default_constructible_v<_MdsQryStockStaticInfoFilter>)
+    // _MdsL2StockSnapshotIncremental
+    pybind11::class_<_MdsL2StockSnapshotIncremental> c(parent, "_MdsL2StockSnapshotIncremental");
+    if constexpr (std::is_default_constructible_v<_MdsL2StockSnapshotIncremental>)
         c.def(pybind11::init<>());
-    // _MdsQryStockStaticInfoFilter::securityId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryStockStaticInfoFilter, "securityId", securityId);
-    // _MdsQryStockStaticInfoFilter::exchId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryStockStaticInfoFilter, "exchId", exchId);
-    // _MdsQryStockStaticInfoFilter::oesSecurityType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryStockStaticInfoFilter, "oesSecurityType", oesSecurityType);
-    // _MdsQryStockStaticInfoFilter::subSecurityType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryStockStaticInfoFilter, "subSecurityType", subSecurityType);
-    // _MdsQryStockStaticInfoFilter::__filler
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryStockStaticInfoFilter, "__filler", __filler);
-    // _MdsQryStockStaticInfoFilter::instrId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryStockStaticInfoFilter, "instrId", instrId);
-    // _MdsQryStockStaticInfoFilter::userInfo
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryStockStaticInfoFilter, "userInfo", userInfo);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsQryStockStaticInfoFilter, c);
-    module_vnoes::objects.emplace("_MdsQryStockStaticInfoFilter", c);
+    // _MdsL2StockSnapshotIncremental::NumTrades
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "NumTrades", NumTrades);
+    // _MdsL2StockSnapshotIncremental::TotalVolumeTraded
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "TotalVolumeTraded", TotalVolumeTraded);
+    // _MdsL2StockSnapshotIncremental::TotalValueTraded
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "TotalValueTraded", TotalValueTraded);
+    // _MdsL2StockSnapshotIncremental::OpenPx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "OpenPx", OpenPx);
+    // _MdsL2StockSnapshotIncremental::TradePx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "TradePx", TradePx);
+    // _MdsL2StockSnapshotIncremental::ClosePx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "ClosePx", ClosePx);
+    // _MdsL2StockSnapshotIncremental::IOPV
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "IOPV", IOPV);
+    // _MdsL2StockSnapshotIncremental::TotalBidQty
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "TotalBidQty", TotalBidQty);
+    // _MdsL2StockSnapshotIncremental::TotalOfferQty
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "TotalOfferQty", TotalOfferQty);
+    // _MdsL2StockSnapshotIncremental::WeightedAvgBidPx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "WeightedAvgBidPx", WeightedAvgBidPx);
+    // _MdsL2StockSnapshotIncremental::WeightedAvgOfferPx
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "WeightedAvgOfferPx", WeightedAvgOfferPx);
+    // _MdsL2StockSnapshotIncremental::BidPriceLevel
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "BidPriceLevel", BidPriceLevel);
+    // _MdsL2StockSnapshotIncremental::OfferPriceLevel
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "OfferPriceLevel", OfferPriceLevel);
+    // _MdsL2StockSnapshotIncremental::BestBidPrice
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "BestBidPrice", BestBidPrice);
+    // _MdsL2StockSnapshotIncremental::HasContainedBestBidLevel
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "HasContainedBestBidLevel", HasContainedBestBidLevel);
+    // _MdsL2StockSnapshotIncremental::NoBidLevel
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "NoBidLevel", NoBidLevel);
+    // _MdsL2StockSnapshotIncremental::__hasDeletedAtBidTail
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "__hasDeletedAtBidTail", __hasDeletedAtBidTail);
+    // _MdsL2StockSnapshotIncremental::__filler1
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "__filler1", __filler1);
+    // _MdsL2StockSnapshotIncremental::BestOfferPrice
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "BestOfferPrice", BestOfferPrice);
+    // _MdsL2StockSnapshotIncremental::HasContainedBestOfferLevel
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "HasContainedBestOfferLevel", HasContainedBestOfferLevel);
+    // _MdsL2StockSnapshotIncremental::NoOfferLevel
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "NoOfferLevel", NoOfferLevel);
+    // _MdsL2StockSnapshotIncremental::__hasDeletedAtOfferTail
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "__hasDeletedAtOfferTail", __hasDeletedAtOfferTail);
+    // _MdsL2StockSnapshotIncremental::__filler2
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "__filler2", __filler2);
+    // _MdsL2StockSnapshotIncremental::PriceLevelOperator
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "PriceLevelOperator", PriceLevelOperator);
+    // _MdsL2StockSnapshotIncremental::PriceLevels
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2StockSnapshotIncremental, "PriceLevels", PriceLevels);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsL2StockSnapshotIncremental, c);
+    module_vnoes::objects.emplace("_MdsL2StockSnapshotIncremental", c);
 }
-void generate_class_MdsQryStockStaticInfoReq(pybind11::object & parent)
+void generate_class_MdsL2BestOrdersSnapshotBody(pybind11::object & parent)
 {
-    // _MdsQryStockStaticInfoReq
-    pybind11::class_<_MdsQryStockStaticInfoReq> c(parent, "_MdsQryStockStaticInfoReq");
-    if constexpr (std::is_default_constructible_v<_MdsQryStockStaticInfoReq>)
+    // _MdsL2BestOrdersSnapshotBody
+    pybind11::class_<_MdsL2BestOrdersSnapshotBody> c(parent, "_MdsL2BestOrdersSnapshotBody");
+    if constexpr (std::is_default_constructible_v<_MdsL2BestOrdersSnapshotBody>)
         c.def(pybind11::init<>());
-    // _MdsQryStockStaticInfoReq::reqHead
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryStockStaticInfoReq, "reqHead", reqHead);
-    // _MdsQryStockStaticInfoReq::qryFilter
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryStockStaticInfoReq, "qryFilter", qryFilter);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsQryStockStaticInfoReq, c);
-    module_vnoes::objects.emplace("_MdsQryStockStaticInfoReq", c);
+    // _MdsL2BestOrdersSnapshotBody::SecurityID
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotBody, "SecurityID", SecurityID);
+    // _MdsL2BestOrdersSnapshotBody::__filler
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotBody, "__filler", __filler);
+    // _MdsL2BestOrdersSnapshotBody::NoBidOrders
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotBody, "NoBidOrders", NoBidOrders);
+    // _MdsL2BestOrdersSnapshotBody::NoOfferOrders
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotBody, "NoOfferOrders", NoOfferOrders);
+    // _MdsL2BestOrdersSnapshotBody::TotalVolumeTraded
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotBody, "TotalVolumeTraded", TotalVolumeTraded);
+    // _MdsL2BestOrdersSnapshotBody::BestBidPrice
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotBody, "BestBidPrice", BestBidPrice);
+    // _MdsL2BestOrdersSnapshotBody::BestOfferPrice
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotBody, "BestOfferPrice", BestOfferPrice);
+    // _MdsL2BestOrdersSnapshotBody::BidOrderQty
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotBody, "BidOrderQty", BidOrderQty);
+    // _MdsL2BestOrdersSnapshotBody::OfferOrderQty
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotBody, "OfferOrderQty", OfferOrderQty);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsL2BestOrdersSnapshotBody, c);
+    module_vnoes::objects.emplace("_MdsL2BestOrdersSnapshotBody", c);
 }
-void generate_class_MdsQryStockStaticInfoRsp(pybind11::object & parent)
+void generate_class_MdsL2BestOrdersSnapshotIncremental(pybind11::object & parent)
 {
-    // _MdsQryStockStaticInfoRsp
-    pybind11::class_<_MdsQryStockStaticInfoRsp> c(parent, "_MdsQryStockStaticInfoRsp");
-    if constexpr (std::is_default_constructible_v<_MdsQryStockStaticInfoRsp>)
+    // _MdsL2BestOrdersSnapshotIncremental
+    pybind11::class_<_MdsL2BestOrdersSnapshotIncremental> c(parent, "_MdsL2BestOrdersSnapshotIncremental");
+    if constexpr (std::is_default_constructible_v<_MdsL2BestOrdersSnapshotIncremental>)
         c.def(pybind11::init<>());
-    // _MdsQryStockStaticInfoRsp::rspHead
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryStockStaticInfoRsp, "rspHead", rspHead);
-    // _MdsQryStockStaticInfoRsp::qryItems
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQryStockStaticInfoRsp, "qryItems", qryItems);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsQryStockStaticInfoRsp, c);
-    module_vnoes::objects.emplace("_MdsQryStockStaticInfoRsp", c);
-}
-void generate_class_MdsQrySnapshotListFilter(pybind11::object & parent)
-{
-    // _MdsQrySnapshotListFilter
-    pybind11::class_<_MdsQrySnapshotListFilter> c(parent, "_MdsQrySnapshotListFilter");
-    if constexpr (std::is_default_constructible_v<_MdsQrySnapshotListFilter>)
-        c.def(pybind11::init<>());
-    // _MdsQrySnapshotListFilter::exchId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySnapshotListFilter, "exchId", exchId);
-    // _MdsQrySnapshotListFilter::mdProductType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySnapshotListFilter, "mdProductType", mdProductType);
-    // _MdsQrySnapshotListFilter::oesSecurityType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySnapshotListFilter, "oesSecurityType", oesSecurityType);
-    // _MdsQrySnapshotListFilter::subSecurityType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySnapshotListFilter, "subSecurityType", subSecurityType);
-    // _MdsQrySnapshotListFilter::mdLevel
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySnapshotListFilter, "mdLevel", mdLevel);
-    // _MdsQrySnapshotListFilter::__filler
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySnapshotListFilter, "__filler", __filler);
-    // _MdsQrySnapshotListFilter::userInfo
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySnapshotListFilter, "userInfo", userInfo);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsQrySnapshotListFilter, c);
-    module_vnoes::objects.emplace("_MdsQrySnapshotListFilter", c);
-}
-void generate_class_MdsQrySnapshotListReq(pybind11::object & parent)
-{
-    // _MdsQrySnapshotListReq
-    pybind11::class_<_MdsQrySnapshotListReq> c(parent, "_MdsQrySnapshotListReq");
-    if constexpr (std::is_default_constructible_v<_MdsQrySnapshotListReq>)
-        c.def(pybind11::init<>());
-    // _MdsQrySnapshotListReq::reqHead
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySnapshotListReq, "reqHead", reqHead);
-    // _MdsQrySnapshotListReq::qryFilter
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySnapshotListReq, "qryFilter", qryFilter);
-    // _MdsQrySnapshotListReq::securityCodeCnt
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySnapshotListReq, "securityCodeCnt", securityCodeCnt);
-    // _MdsQrySnapshotListReq::__filler
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySnapshotListReq, "__filler", __filler);
-    // _MdsQrySnapshotListReq::securityCodeList
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySnapshotListReq, "securityCodeList", securityCodeList);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsQrySnapshotListReq, c);
-    module_vnoes::objects.emplace("_MdsQrySnapshotListReq", c);
-}
-void generate_class_MdsQrySnapshotListRsp(pybind11::object & parent)
-{
-    // _MdsQrySnapshotListRsp
-    pybind11::class_<_MdsQrySnapshotListRsp> c(parent, "_MdsQrySnapshotListRsp");
-    if constexpr (std::is_default_constructible_v<_MdsQrySnapshotListRsp>)
-        c.def(pybind11::init<>());
-    // _MdsQrySnapshotListRsp::rspHead
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySnapshotListRsp, "rspHead", rspHead);
-    // _MdsQrySnapshotListRsp::qryItems
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsQrySnapshotListRsp, "qryItems", qryItems);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsQrySnapshotListRsp, c);
-    module_vnoes::objects.emplace("_MdsQrySnapshotListRsp", c);
-}
-void generate_class_MdsMktDataRequestEntry(pybind11::object & parent)
-{
-    // _MdsMktDataRequestEntry
-    pybind11::class_<_MdsMktDataRequestEntry> c(parent, "_MdsMktDataRequestEntry");
-    if constexpr (std::is_default_constructible_v<_MdsMktDataRequestEntry>)
-        c.def(pybind11::init<>());
-    // _MdsMktDataRequestEntry::exchId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestEntry, "exchId", exchId);
-    // _MdsMktDataRequestEntry::mdProductType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestEntry, "mdProductType", mdProductType);
-    // _MdsMktDataRequestEntry::__filler
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestEntry, "__filler", __filler);
-    // _MdsMktDataRequestEntry::instrId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestEntry, "instrId", instrId);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsMktDataRequestEntry, c);
-    module_vnoes::objects.emplace("_MdsMktDataRequestEntry", c);
-}
-void generate_class_MdsMktDataRequestReq(pybind11::object & parent)
-{
-    // _MdsMktDataRequestReq
-    pybind11::class_<_MdsMktDataRequestReq> c(parent, "_MdsMktDataRequestReq");
-    if constexpr (std::is_default_constructible_v<_MdsMktDataRequestReq>)
-        c.def(pybind11::init<>());
-    // _MdsMktDataRequestReq::subMode
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "subMode", subMode);
-    // _MdsMktDataRequestReq::tickType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "tickType", tickType);
-    // _MdsMktDataRequestReq::sseStockFlag
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "sseStockFlag", sseStockFlag);
-    // _MdsMktDataRequestReq::sseIndexFlag
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "sseIndexFlag", sseIndexFlag);
-    // _MdsMktDataRequestReq::sseOptionFlag
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "sseOptionFlag", sseOptionFlag);
-    // _MdsMktDataRequestReq::szseStockFlag
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "szseStockFlag", szseStockFlag);
-    // _MdsMktDataRequestReq::szseIndexFlag
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "szseIndexFlag", szseIndexFlag);
-    // _MdsMktDataRequestReq::szseOptionFlag
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "szseOptionFlag", szseOptionFlag);
-    // _MdsMktDataRequestReq::isRequireInitialMktData
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "isRequireInitialMktData", isRequireInitialMktData);
-    // _MdsMktDataRequestReq::__channelNos
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "__channelNos", __channelNos);
-    // _MdsMktDataRequestReq::tickExpireType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "tickExpireType", tickExpireType);
-    // _MdsMktDataRequestReq::__filler
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "__filler", __filler);
-    // _MdsMktDataRequestReq::dataTypes
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "dataTypes", dataTypes);
-    // _MdsMktDataRequestReq::beginTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "beginTime", beginTime);
-    // _MdsMktDataRequestReq::subSecurityCnt
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReq, "subSecurityCnt", subSecurityCnt);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsMktDataRequestReq, c);
-    module_vnoes::objects.emplace("_MdsMktDataRequestReq", c);
-}
-void generate_class_MdsMktDataRequestReqBuf(pybind11::object & parent)
-{
-    // _MdsMktDataRequestReqBuf
-    pybind11::class_<_MdsMktDataRequestReqBuf> c(parent, "_MdsMktDataRequestReqBuf");
-    if constexpr (std::is_default_constructible_v<_MdsMktDataRequestReqBuf>)
-        c.def(pybind11::init<>());
-    // _MdsMktDataRequestReqBuf::mktDataRequestReq
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReqBuf, "mktDataRequestReq", mktDataRequestReq);
-    // _MdsMktDataRequestReqBuf::entries
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestReqBuf, "entries", entries);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsMktDataRequestReqBuf, c);
-    module_vnoes::objects.emplace("_MdsMktDataRequestReqBuf", c);
-}
-void generate_class_MdsMktDataRequestRsp(pybind11::object & parent)
-{
-    // _MdsMktDataRequestRsp
-    pybind11::class_<_MdsMktDataRequestRsp> c(parent, "_MdsMktDataRequestRsp");
-    if constexpr (std::is_default_constructible_v<_MdsMktDataRequestRsp>)
-        c.def(pybind11::init<>());
-    // _MdsMktDataRequestRsp::subMode
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestRsp, "subMode", subMode);
-    // _MdsMktDataRequestRsp::tickType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestRsp, "tickType", tickType);
-    // _MdsMktDataRequestRsp::isRequireInitialMktData
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestRsp, "isRequireInitialMktData", isRequireInitialMktData);
-    // _MdsMktDataRequestRsp::__channelNos
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestRsp, "__channelNos", __channelNos);
-    // _MdsMktDataRequestRsp::tickExpireType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestRsp, "tickExpireType", tickExpireType);
-    // _MdsMktDataRequestRsp::__filler
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestRsp, "__filler", __filler);
-    // _MdsMktDataRequestRsp::dataTypes
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestRsp, "dataTypes", dataTypes);
-    // _MdsMktDataRequestRsp::beginTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestRsp, "beginTime", beginTime);
-    // _MdsMktDataRequestRsp::sseStockSubscribed
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestRsp, "sseStockSubscribed", sseStockSubscribed);
-    // _MdsMktDataRequestRsp::sseIndexSubscribed
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestRsp, "sseIndexSubscribed", sseIndexSubscribed);
-    // _MdsMktDataRequestRsp::sseOptionSubscribed
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestRsp, "sseOptionSubscribed", sseOptionSubscribed);
-    // _MdsMktDataRequestRsp::szseStockSubscribed
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestRsp, "szseStockSubscribed", szseStockSubscribed);
-    // _MdsMktDataRequestRsp::szseIndexSubscribed
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestRsp, "szseIndexSubscribed", szseIndexSubscribed);
-    // _MdsMktDataRequestRsp::szseOptionSubscribed
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsMktDataRequestRsp, "szseOptionSubscribed", szseOptionSubscribed);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsMktDataRequestRsp, c);
-    module_vnoes::objects.emplace("_MdsMktDataRequestRsp", c);
-}
-void generate_class_MdsTestRequestReq(pybind11::object & parent)
-{
-    // _MdsTestRequestReq
-    pybind11::class_<_MdsTestRequestReq> c(parent, "_MdsTestRequestReq");
-    if constexpr (std::is_default_constructible_v<_MdsTestRequestReq>)
-        c.def(pybind11::init<>());
-    // _MdsTestRequestReq::testReqId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTestRequestReq, "testReqId", testReqId);
-    // _MdsTestRequestReq::sendTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTestRequestReq, "sendTime", sendTime);
-    // _MdsTestRequestReq::__filler
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTestRequestReq, "__filler", __filler);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsTestRequestReq, c);
-    module_vnoes::objects.emplace("_MdsTestRequestReq", c);
-}
-void generate_class_MdsTestRequestRsp(pybind11::object & parent)
-{
-    // _MdsTestRequestRsp
-    pybind11::class_<_MdsTestRequestRsp> c(parent, "_MdsTestRequestRsp");
-    if constexpr (std::is_default_constructible_v<_MdsTestRequestRsp>)
-        c.def(pybind11::init<>());
-    // _MdsTestRequestRsp::testReqId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTestRequestRsp, "testReqId", testReqId);
-    // _MdsTestRequestRsp::origSendTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTestRequestRsp, "origSendTime", origSendTime);
-    // _MdsTestRequestRsp::__filler1
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTestRequestRsp, "__filler1", __filler1);
-    // _MdsTestRequestRsp::respTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTestRequestRsp, "respTime", respTime);
-    // _MdsTestRequestRsp::__filler2
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTestRequestRsp, "__filler2", __filler2);
-    // _MdsTestRequestRsp::__recvTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTestRequestRsp, "__recvTime", __recvTime);
-    // _MdsTestRequestRsp::__collectedTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTestRequestRsp, "__collectedTime", __collectedTime);
-    // _MdsTestRequestRsp::__pushingTime
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsTestRequestRsp, "__pushingTime", __pushingTime);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsTestRequestRsp, c);
-    module_vnoes::objects.emplace("_MdsTestRequestRsp", c);
+    // _MdsL2BestOrdersSnapshotIncremental::TotalVolumeTraded
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotIncremental, "TotalVolumeTraded", TotalVolumeTraded);
+    // _MdsL2BestOrdersSnapshotIncremental::BestBidPrice
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotIncremental, "BestBidPrice", BestBidPrice);
+    // _MdsL2BestOrdersSnapshotIncremental::HasContainedBestBidLevel
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotIncremental, "HasContainedBestBidLevel", HasContainedBestBidLevel);
+    // _MdsL2BestOrdersSnapshotIncremental::ContinualDeletedBidOrders
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotIncremental, "ContinualDeletedBidOrders", ContinualDeletedBidOrders);
+    // _MdsL2BestOrdersSnapshotIncremental::NoBidOrders
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotIncremental, "NoBidOrders", NoBidOrders);
+    // _MdsL2BestOrdersSnapshotIncremental::__filler1
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotIncremental, "__filler1", __filler1);
+    // _MdsL2BestOrdersSnapshotIncremental::BestOfferPrice
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotIncremental, "BestOfferPrice", BestOfferPrice);
+    // _MdsL2BestOrdersSnapshotIncremental::HasContainedBestOfferLevel
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotIncremental, "HasContainedBestOfferLevel", HasContainedBestOfferLevel);
+    // _MdsL2BestOrdersSnapshotIncremental::ContinualDeletedOfferOrders
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotIncremental, "ContinualDeletedOfferOrders", ContinualDeletedOfferOrders);
+    // _MdsL2BestOrdersSnapshotIncremental::NoOfferOrders
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotIncremental, "NoOfferOrders", NoOfferOrders);
+    // _MdsL2BestOrdersSnapshotIncremental::__filler2
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotIncremental, "__filler2", __filler2);
+    // _MdsL2BestOrdersSnapshotIncremental::OperatorEntryID
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotIncremental, "OperatorEntryID", OperatorEntryID);
+    // _MdsL2BestOrdersSnapshotIncremental::OrderQty
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _MdsL2BestOrdersSnapshotIncremental, "OrderQty", OrderQty);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _MdsL2BestOrdersSnapshotIncremental, c);
+    module_vnoes::objects.emplace("_MdsL2BestOrdersSnapshotIncremental", c);
 }

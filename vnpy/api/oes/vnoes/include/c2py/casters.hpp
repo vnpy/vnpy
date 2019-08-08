@@ -55,7 +55,7 @@ namespace c2py
         template <class to_type, class scope_type>
         static auto try_generate(scope_type &m, const char *name)
         {
-            if constexpr (std::is_class_v<to_type> || std::is_enum_v<to_type>) {
+            if constexpr (std::is_class_v<to_type> || std::is_enum_v<to_type> || std::is_union_v<to_type>) {
                 if constexpr (is_defined_v<to_type>) {
                     if constexpr (!std::is_array_v<to_type>) {
                         if constexpr (std::is_default_constructible_v<to_type>) {

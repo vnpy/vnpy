@@ -15,574 +15,484 @@
 #include "mds_api/mds_api.h"
 
 
-void generate_enum_eOesTradingPermission(pybind11::object & parent)
+void generate_vnoes_classes(pybind11::module & parent)
 {
-    // _eOesTradingPermission
-    pybind11::enum_<_eOesTradingPermission> e(parent, "_eOesTradingPermission", pybind11::arithmetic());
-    // _eOesTradingPermission::OES_PERMIS_MARKET_ORDER
-    e.value("OES_PERMIS_MARKET_ORDER", _eOesTradingPermission::OES_PERMIS_MARKET_ORDER);
-    // _eOesTradingPermission::OES_PERMIS_STRUCTURED_FUND
-    e.value("OES_PERMIS_STRUCTURED_FUND", _eOesTradingPermission::OES_PERMIS_STRUCTURED_FUND);
-    // _eOesTradingPermission::OES_PERMIS_BOND_QUALIFIED_INVESTOR
-    e.value("OES_PERMIS_BOND_QUALIFIED_INVESTOR", _eOesTradingPermission::OES_PERMIS_BOND_QUALIFIED_INVESTOR);
-    // _eOesTradingPermission::OES_PERMIS_XXX4
-    e.value("OES_PERMIS_XXX4", _eOesTradingPermission::OES_PERMIS_XXX4);
-    // _eOesTradingPermission::OES_PERMIS_DELISTING
-    e.value("OES_PERMIS_DELISTING", _eOesTradingPermission::OES_PERMIS_DELISTING);
-    // _eOesTradingPermission::OES_PERMIS_RISK_WARNING
-    e.value("OES_PERMIS_RISK_WARNING", _eOesTradingPermission::OES_PERMIS_RISK_WARNING);
-    // _eOesTradingPermission::OES_PERMIS_SINGLE_MARKET_ETF
-    e.value("OES_PERMIS_SINGLE_MARKET_ETF", _eOesTradingPermission::OES_PERMIS_SINGLE_MARKET_ETF);
-    // _eOesTradingPermission::OES_PERMIS_CROSS_BORDER_ETF
-    e.value("OES_PERMIS_CROSS_BORDER_ETF", _eOesTradingPermission::OES_PERMIS_CROSS_BORDER_ETF);
-    // _eOesTradingPermission::OES_PERMIS_CROSS_MARKET_ETF
-    e.value("OES_PERMIS_CROSS_MARKET_ETF", _eOesTradingPermission::OES_PERMIS_CROSS_MARKET_ETF);
-    // _eOesTradingPermission::OES_PERMIS_CURRENCY_ETF
-    e.value("OES_PERMIS_CURRENCY_ETF", _eOesTradingPermission::OES_PERMIS_CURRENCY_ETF);
-    // _eOesTradingPermission::OES_PERMIS_STOCK_PLEDGE_REPURCHASE
-    e.value("OES_PERMIS_STOCK_PLEDGE_REPURCHASE", _eOesTradingPermission::OES_PERMIS_STOCK_PLEDGE_REPURCHASE);
-    // _eOesTradingPermission::OES_PERMIS_PLEDGE_REPURCHASE
-    e.value("OES_PERMIS_PLEDGE_REPURCHASE", _eOesTradingPermission::OES_PERMIS_PLEDGE_REPURCHASE);
-    // _eOesTradingPermission::OES_PERMIS_GEM
-    e.value("OES_PERMIS_GEM", _eOesTradingPermission::OES_PERMIS_GEM);
-    // _eOesTradingPermission::OES_PERMIS_SH_HK_STOCK_CONNECT
-    e.value("OES_PERMIS_SH_HK_STOCK_CONNECT", _eOesTradingPermission::OES_PERMIS_SH_HK_STOCK_CONNECT);
-    // _eOesTradingPermission::OES_PERMIS_SZ_HK_STOCK_CONNECT
-    e.value("OES_PERMIS_SZ_HK_STOCK_CONNECT", _eOesTradingPermission::OES_PERMIS_SZ_HK_STOCK_CONNECT);
-    // _eOesTradingPermission::OES_PERMIS_HLTCDR
-    e.value("OES_PERMIS_HLTCDR", _eOesTradingPermission::OES_PERMIS_HLTCDR);
-    // _eOesTradingPermission::OES_PERMIS_CDR
-    e.value("OES_PERMIS_CDR", _eOesTradingPermission::OES_PERMIS_CDR);
-    // _eOesTradingPermission::OES_PERMIS_INNOVATION
-    e.value("OES_PERMIS_INNOVATION", _eOesTradingPermission::OES_PERMIS_INNOVATION);
-    // _eOesTradingPermission::OES_PERMIS_KSH
-    e.value("OES_PERMIS_KSH", _eOesTradingPermission::OES_PERMIS_KSH);
-    // _eOesTradingPermission::__OES_PERMIS_ALL
-    e.value("__OES_PERMIS_ALL", _eOesTradingPermission::__OES_PERMIS_ALL);
-    e.export_values();
-    module_vnoes::objects.emplace("_eOesTradingPermission", e);
+    generate_class_OesOrdReq(parent);
+    generate_class_OesOrdCancelReq(parent);
+    generate_class_OesOrdReject(parent);
+    generate_class_OesOrdCnfm(parent);
+    generate_class_OesTrdBaseInfo(parent);
+    generate_class_OesTrdCnfm(parent);
+    generate_class_OesLotWinningBaseInfo(parent);
+    generate_class_OesFundTrsfBaseInfo(parent);
+    generate_class_OesFundTrsfReq(parent);
+    generate_class_OesFundTrsfReject(parent);
+    generate_class_OesFundTrsfReport(parent);
+    generate_class_OesIssueBaseInfo(parent);
+    generate_class_OesPriceLimit(parent);
+    generate_class_OesStockBaseInfo(parent);
+    generate_class_OesEtfBaseInfo(parent);
+    generate_class_OesEtfComponentBaseInfo(parent);
+    generate_class_OesOptionBaseInfo(parent);
+    generate_class_OesCashAssetBaseInfo(parent);
+    generate_class_OesCustBaseInfo(parent);
+    generate_class_OesInvAcctBaseInfo(parent);
+    generate_class_OesStkHoldingBaseInfo(parent);
+    generate_class_OesOptHoldingBaseInfo(parent);
+    generate_class_OesMarketStateInfo(parent);
+    generate_class_OesTradingPermissionEntry(parent);
+    generate_class_SMsgHead(parent);
+    generate_class_OesQryCursor(parent);
+    generate_class_OesQryReqHead(parent);
+    generate_class_OesQryRspHead(parent);
+    generate_class_OesQryOrdFilter(parent);
+    generate_class_OesQryOrdReq(parent);
+    generate_class_OesQryOrdRsp(parent);
+    generate_class_OesQryTrdFilter(parent);
+    generate_class_OesQryTrdReq(parent);
+    generate_class_OesQryTrdRsp(parent);
+    generate_class_OesQryCashAssetFilter(parent);
+    generate_class_OesCashAssetItem(parent);
+    generate_class_OesQryCashAssetReq(parent);
+    generate_class_OesQryCashAssetRsp(parent);
+    generate_class_OesCounterCashItem(parent);
+    generate_class_OesQryCounterCashReq(parent);
+    generate_class_OesQryCounterCashRsp(parent);
+    generate_class_OesQryStkHoldingFilter(parent);
+    generate_class_OesStkHoldingItem(parent);
+    generate_class_OesQryStkHoldingReq(parent);
+    generate_class_OesQryStkHoldingRsp(parent);
+    generate_class_OesOptHoldingItem(parent);
+    generate_class_OesQryOptHoldingReq(parent);
+    generate_class_OesQryHoldRsp(parent);
+    generate_class_OesQryCustFilter(parent);
+    generate_class_OesQryCustReq(parent);
+    generate_class_OesQryCustRsp(parent);
+    generate_class_OesQryInvAcctFilter(parent);
+    generate_class_OesInvAcctItem(parent);
+    generate_class_OesQryInvAcctReq(parent);
+    generate_class_OesQryInvAcctRsp(parent);
+    generate_class_OesInvAcctOverview(parent);
+    generate_class_OesCashAcctOverview(parent);
+    generate_class_OesCustOverview(parent);
+    generate_class_OesClientOverview(parent);
+    generate_class_OesQryCommissionRateFilter(parent);
+    generate_class_OesCommissionRateItem(parent);
+    generate_class_OesQryCommissionRateReq(parent);
+    generate_class_OesQryCommissionRateRsp(parent);
+    generate_class_OesQryFundTransferSerialFilter(parent);
+    generate_class_OesQryFundTransferSerialReq(parent);
+    generate_class_OesQryFundTransferSerialRsp(parent);
+    generate_class_OesQryLotWinningFilter(parent);
+    generate_class_OesQryLotWinningReq(parent);
+    generate_class_OesQryLotWinningRsp(parent);
+    generate_class_OesQryIssueFilter(parent);
+    generate_class_OesQryIssueReq(parent);
+    generate_class_OesQryIssueRsp(parent);
+    generate_class_OesQryStockFilter(parent);
+    generate_class_OesQryStockReq(parent);
+    generate_class_OesQryStockRsp(parent);
+    generate_class_OesQryEtfFilter(parent);
+    generate_class_OesQryEtfReq(parent);
+    generate_class_OesQryEtfRsp(parent);
+    generate_class_OesQryEtfComponentFilter(parent);
+    generate_class_OesEtfComponentItem(parent);
+    generate_class_OesQryEtfComponentReq(parent);
+    generate_class_OesQryEtfComponentRsp(parent);
+    generate_class_OesQryOptionFilter(parent);
+    generate_class_OesQryOptionReq(parent);
+    generate_class_OesQryOptionRsp(parent);
+    generate_class_OesQryTradingDayRsp(parent);
+    generate_class_OesQryMarketStateFilter(parent);
+    generate_class_OesQryMarketStateReq(parent);
+    generate_class_OesQryMarketStateRsp(parent);
+    generate_class_OesQryReqMsg(parent);
+    generate_class_OesQryRspMsg(parent);
+    generate_class_OesReportSynchronizationReq(parent);
+    generate_class_OesReportSynchronizationRsp(parent);
+    generate_class_OesTestRequestReq(parent);
+    generate_class_OesTestRequestRsp(parent);
+    generate_class_OesChangePasswordReq(parent);
+    generate_class_OesChangePasswordRsp(parent);
+    generate_class_OesBatchOrdersHead(parent);
+    generate_class_OesBatchOrdersReq(parent);
+    generate_class_OesRptMsgHead(parent);
+    generate_class_OesRptMsgBody(parent);
+    generate_class_OesRptMsg(parent);
+    generate_class_OesReqMsgBody(parent);
+    generate_class_OesRspMsgBody(parent);
+    generate_class_SErrMsg(parent);
+    generate_class_SDataBuffer(parent);
+    generate_class_SDataBufferVar(parent);
+    generate_class_SSocketUriInfo(parent);
+    generate_class_SSocketIpPortInfo(parent);
+    generate_class_SSocketChannelInfo(parent);
+    generate_class_SSocketOptionConfig(parent);
+    generate_class_SGeneralClientChannel(parent);
+    generate_class_SGeneralClientChannelGroup(parent);
+    generate_class_SGeneralClientAddrInfo(parent);
+    generate_class_SGeneralClientRemoteCfg(parent);
+    generate_class_OesApiSubscribeInfo(parent);
+    generate_class_OesApiClientCfg(parent);
+    generate_class_OesApiClientEnv(parent);
+    generate_class_MdsTradingSessionStatusMsg(parent);
+    generate_class_MdsSecurityStatusMsg(parent);
+    generate_class_MdsPriceLevelEntry(parent);
+    generate_class_MdsMktDataSnapshotHead(parent);
+    generate_class_MdsIndexSnapshotBody(parent);
+    generate_class_MdsStockSnapshotBody(parent);
+    generate_class_MdsL1SnapshotBody(parent);
+    generate_class_MdsL1Snapshot(parent);
+    generate_class_MdsL2StockSnapshotBody(parent);
+    generate_class_MdsL2StockSnapshotIncremental(parent);
+    generate_class_MdsL2BestOrdersSnapshotBody(parent);
+    generate_class_MdsL2BestOrdersSnapshotIncremental(parent);
+    generate_class_MdsL2MarketOverview(parent);
+    generate_class_MdsL2SnapshotBody(parent);
+    generate_class_MdsMktDataSnapshot(parent);
+    generate_class_MdsL2Trade(parent);
+    generate_class_MdsL2Order(parent);
+    generate_class_MdsWholeMktMsgBody(parent);
+    generate_class_MdsStockStaticInfo(parent);
+    generate_class_MdsQryMktDataSnapshotReq(parent);
+    generate_class_MdsQryTrdSessionStatusReq(parent);
+    generate_class_MdsQryReqHeadT(parent);
+    generate_class_MdsQryRspHeadT(parent);
+    generate_class_MdsQryCursor(parent);
+    generate_class_MdsQrySecurityCodeEntry(parent);
+    generate_class_MdsQryStockStaticInfoFilter(parent);
+    generate_class_MdsQryStockStaticInfoReq(parent);
+    generate_class_MdsQryStockStaticInfoRsp(parent);
+    generate_class_MdsQrySnapshotListFilter(parent);
+    generate_class_MdsQrySnapshotListReq(parent);
+    generate_class_MdsQrySnapshotListRsp(parent);
+    generate_class_MdsMktDataRequestEntry(parent);
+    generate_class_MdsMktDataRequestReq(parent);
+    generate_class_MdsMktDataRequestReqBuf(parent);
+    generate_class_MdsMktDataRequestRsp(parent);
+    generate_class_MdsTestRequestReq(parent);
+    generate_class_MdsTestRequestRsp(parent);
+    generate_class_MdsChangePasswordReq(parent);
+    generate_class_MdsChangePasswordRsp(parent);
+    generate_class_MdsMktReqMsgBody(parent);
+    generate_class_MdsMktRspMsgBody(parent);
+    generate_class_MdsUdpPktHead(parent);
+    generate_class_MdsApiClientCfg(parent);
+    generate_class_MdsApiClientEnv(parent);
 }
-void generate_enum_eOesTradingLimit(pybind11::object & parent)
+void generate_enum_eOesExchangeId(pybind11::object & parent)
 {
-    // _eOesTradingLimit
-    pybind11::enum_<_eOesTradingLimit> e(parent, "_eOesTradingLimit", pybind11::arithmetic());
-    // _eOesTradingLimit::OES_LIMIT_BUY
-    e.value("OES_LIMIT_BUY", _eOesTradingLimit::OES_LIMIT_BUY);
-    // _eOesTradingLimit::OES_LIMIT_SELL
-    e.value("OES_LIMIT_SELL", _eOesTradingLimit::OES_LIMIT_SELL);
-    // _eOesTradingLimit::OES_LIMIT_RECALL_DESIGNATION
-    e.value("OES_LIMIT_RECALL_DESIGNATION", _eOesTradingLimit::OES_LIMIT_RECALL_DESIGNATION);
-    // _eOesTradingLimit::OES_LIMIT_DESIGNATION
-    e.value("OES_LIMIT_DESIGNATION", _eOesTradingLimit::OES_LIMIT_DESIGNATION);
-    // _eOesTradingLimit::OES_LIMIT_REPO
-    e.value("OES_LIMIT_REPO", _eOesTradingLimit::OES_LIMIT_REPO);
-    // _eOesTradingLimit::OES_LIMIT_REVERSE_REPO
-    e.value("OES_LIMIT_REVERSE_REPO", _eOesTradingLimit::OES_LIMIT_REVERSE_REPO);
-    // _eOesTradingLimit::OES_LIMIT_SUBSCRIPTION
-    e.value("OES_LIMIT_SUBSCRIPTION", _eOesTradingLimit::OES_LIMIT_SUBSCRIPTION);
-    // _eOesTradingLimit::OES_LIMIT_CREDIT_BUY
-    e.value("OES_LIMIT_CREDIT_BUY", _eOesTradingLimit::OES_LIMIT_CREDIT_BUY);
-    // _eOesTradingLimit::OES_LIMIT_CREDIT_SELL
-    e.value("OES_LIMIT_CREDIT_SELL", _eOesTradingLimit::OES_LIMIT_CREDIT_SELL);
-    // _eOesTradingLimit::__OES_LIMIT_ALL
-    e.value("__OES_LIMIT_ALL", _eOesTradingLimit::__OES_LIMIT_ALL);
+    // _eOesExchangeId
+    pybind11::enum_<_eOesExchangeId> e(parent, "_eOesExchangeId", pybind11::arithmetic());
+    // _eOesExchangeId::OES_EXCH_UNDEFINE
+    e.value("OES_EXCH_UNDEFINE", _eOesExchangeId::OES_EXCH_UNDEFINE);
+    // _eOesExchangeId::OES_EXCH_SSE
+    e.value("OES_EXCH_SSE", _eOesExchangeId::OES_EXCH_SSE);
+    // _eOesExchangeId::OES_EXCH_SZSE
+    e.value("OES_EXCH_SZSE", _eOesExchangeId::OES_EXCH_SZSE);
+    // _eOesExchangeId::__MAX_OES_EXCH
+    e.value("__MAX_OES_EXCH", _eOesExchangeId::__MAX_OES_EXCH);
+    // _eOesExchangeId::OES_EXCHANGE_TYPE_SSE
+    e.value("OES_EXCHANGE_TYPE_SSE", _eOesExchangeId::OES_EXCHANGE_TYPE_SSE);
+    // _eOesExchangeId::OES_EXCHANGE_TYPE_SZSE
+    e.value("OES_EXCHANGE_TYPE_SZSE", _eOesExchangeId::OES_EXCHANGE_TYPE_SZSE);
+    // _eOesExchangeId::__OES_EXCH_ID_MAX_ALIGNED4
+    e.value("__OES_EXCH_ID_MAX_ALIGNED4", _eOesExchangeId::__OES_EXCH_ID_MAX_ALIGNED4);
+    // _eOesExchangeId::__OES_EXCH_ID_MAX_ALIGNED8
+    e.value("__OES_EXCH_ID_MAX_ALIGNED8", _eOesExchangeId::__OES_EXCH_ID_MAX_ALIGNED8);
     e.export_values();
-    module_vnoes::objects.emplace("_eOesTradingLimit", e);
+    module_vnoes::objects.emplace("_eOesExchangeId", e);
 }
-void generate_enum_eOesQualificationClass(pybind11::object & parent)
+void generate_enum_eOesMarketId(pybind11::object & parent)
 {
-    // _eOesQualificationClass
-    pybind11::enum_<_eOesQualificationClass> e(parent, "_eOesQualificationClass", pybind11::arithmetic());
-    // _eOesQualificationClass::OES_QUALIFICATION_PUBLIC_INVESTOR
-    e.value("OES_QUALIFICATION_PUBLIC_INVESTOR", _eOesQualificationClass::OES_QUALIFICATION_PUBLIC_INVESTOR);
-    // _eOesQualificationClass::OES_QUALIFICATION_QUALIFIED_INVESTOR
-    e.value("OES_QUALIFICATION_QUALIFIED_INVESTOR", _eOesQualificationClass::OES_QUALIFICATION_QUALIFIED_INVESTOR);
-    // _eOesQualificationClass::OES_QUALIFICATION_QUALIFIED_INSTITUTIONAL
-    e.value("OES_QUALIFICATION_QUALIFIED_INSTITUTIONAL", _eOesQualificationClass::OES_QUALIFICATION_QUALIFIED_INSTITUTIONAL);
+    // _eOesMarketId
+    pybind11::enum_<_eOesMarketId> e(parent, "_eOesMarketId", pybind11::arithmetic());
+    // _eOesMarketId::OES_MKT_UNDEFINE
+    e.value("OES_MKT_UNDEFINE", _eOesMarketId::OES_MKT_UNDEFINE);
+    // _eOesMarketId::OES_MKT_SH_ASHARE
+    e.value("OES_MKT_SH_ASHARE", _eOesMarketId::OES_MKT_SH_ASHARE);
+    // _eOesMarketId::OES_MKT_SZ_ASHARE
+    e.value("OES_MKT_SZ_ASHARE", _eOesMarketId::OES_MKT_SZ_ASHARE);
+    // _eOesMarketId::OES_MKT_SH_OPTION
+    e.value("OES_MKT_SH_OPTION", _eOesMarketId::OES_MKT_SH_OPTION);
+    // _eOesMarketId::__OES_MKT_ID_MAX
+    e.value("__OES_MKT_ID_MAX", _eOesMarketId::__OES_MKT_ID_MAX);
+    // _eOesMarketId::OES_MKT_ID_UNDEFINE
+    e.value("OES_MKT_ID_UNDEFINE", _eOesMarketId::OES_MKT_ID_UNDEFINE);
+    // _eOesMarketId::OES_MKT_ID_SH_A
+    e.value("OES_MKT_ID_SH_A", _eOesMarketId::OES_MKT_ID_SH_A);
+    // _eOesMarketId::OES_MKT_ID_SZ_A
+    e.value("OES_MKT_ID_SZ_A", _eOesMarketId::OES_MKT_ID_SZ_A);
+    // _eOesMarketId::OES_MKT_ID_SH_OPT
+    e.value("OES_MKT_ID_SH_OPT", _eOesMarketId::OES_MKT_ID_SH_OPT);
+    // _eOesMarketId::__OES_MKT_ID_MAX_ALIGNED4
+    e.value("__OES_MKT_ID_MAX_ALIGNED4", _eOesMarketId::__OES_MKT_ID_MAX_ALIGNED4);
+    // _eOesMarketId::__OES_MKT_ID_MAX_ALIGNED8
+    e.value("__OES_MKT_ID_MAX_ALIGNED8", _eOesMarketId::__OES_MKT_ID_MAX_ALIGNED8);
     e.export_values();
-    module_vnoes::objects.emplace("_eOesQualificationClass", e);
+    module_vnoes::objects.emplace("_eOesMarketId", e);
 }
-void generate_enum_eOesInvestorClass(pybind11::object & parent)
+void generate_enum_eOesPlatformId(pybind11::object & parent)
 {
-    // _eOesInvestorClass
-    pybind11::enum_<_eOesInvestorClass> e(parent, "_eOesInvestorClass", pybind11::arithmetic());
-    // _eOesInvestorClass::OES_INVESTOR_CLASS_NORMAL
-    e.value("OES_INVESTOR_CLASS_NORMAL", _eOesInvestorClass::OES_INVESTOR_CLASS_NORMAL);
-    // _eOesInvestorClass::OES_INVESTOR_CLASS_PROFESSIONAL_A
-    e.value("OES_INVESTOR_CLASS_PROFESSIONAL_A", _eOesInvestorClass::OES_INVESTOR_CLASS_PROFESSIONAL_A);
-    // _eOesInvestorClass::OES_INVESTOR_CLASS_PROFESSIONAL_B
-    e.value("OES_INVESTOR_CLASS_PROFESSIONAL_B", _eOesInvestorClass::OES_INVESTOR_CLASS_PROFESSIONAL_B);
-    // _eOesInvestorClass::OES_INVESTOR_CLASS_PROFESSIONAL_C
-    e.value("OES_INVESTOR_CLASS_PROFESSIONAL_C", _eOesInvestorClass::OES_INVESTOR_CLASS_PROFESSIONAL_C);
+    // _eOesPlatformId
+    pybind11::enum_<_eOesPlatformId> e(parent, "_eOesPlatformId", pybind11::arithmetic());
+    // _eOesPlatformId::OES_PLATFORM_UNDEFINE
+    e.value("OES_PLATFORM_UNDEFINE", _eOesPlatformId::OES_PLATFORM_UNDEFINE);
+    // _eOesPlatformId::OES_PLATFORM_CASH_AUCTION
+    e.value("OES_PLATFORM_CASH_AUCTION", _eOesPlatformId::OES_PLATFORM_CASH_AUCTION);
+    // _eOesPlatformId::OES_PLATFORM_FINANCIAL_SERVICES
+    e.value("OES_PLATFORM_FINANCIAL_SERVICES", _eOesPlatformId::OES_PLATFORM_FINANCIAL_SERVICES);
+    // _eOesPlatformId::OES_PLATFORM_NON_TRADE
+    e.value("OES_PLATFORM_NON_TRADE", _eOesPlatformId::OES_PLATFORM_NON_TRADE);
+    // _eOesPlatformId::OES_PLATFORM_DERIVATIVE_AUCTION
+    e.value("OES_PLATFORM_DERIVATIVE_AUCTION", _eOesPlatformId::OES_PLATFORM_DERIVATIVE_AUCTION);
+    // _eOesPlatformId::__OES_PLATFORM_ID_MAX
+    e.value("__OES_PLATFORM_ID_MAX", _eOesPlatformId::__OES_PLATFORM_ID_MAX);
+    // _eOesPlatformId::__OES_PLATFORM_ID_MAX_ALIGNED8
+    e.value("__OES_PLATFORM_ID_MAX_ALIGNED8", _eOesPlatformId::__OES_PLATFORM_ID_MAX_ALIGNED8);
     e.export_values();
-    module_vnoes::objects.emplace("_eOesInvestorClass", e);
+    module_vnoes::objects.emplace("_eOesPlatformId", e);
 }
-void generate_enum_eOesCustType(pybind11::object & parent)
+void generate_enum_eOesMarketState(pybind11::object & parent)
 {
-    // _eOesCustType
-    pybind11::enum_<_eOesCustType> e(parent, "_eOesCustType", pybind11::arithmetic());
-    // _eOesCustType::OES_CUST_TYPE_PERSONAL
-    e.value("OES_CUST_TYPE_PERSONAL", _eOesCustType::OES_CUST_TYPE_PERSONAL);
-    // _eOesCustType::OES_CUST_TYPE_INSTITUTION
-    e.value("OES_CUST_TYPE_INSTITUTION", _eOesCustType::OES_CUST_TYPE_INSTITUTION);
-    // _eOesCustType::OES_CUST_TYPE_PROPRIETARY
-    e.value("OES_CUST_TYPE_PROPRIETARY", _eOesCustType::OES_CUST_TYPE_PROPRIETARY);
-    // _eOesCustType::OES_CUST_TYPE_PRODUCT
-    e.value("OES_CUST_TYPE_PRODUCT", _eOesCustType::OES_CUST_TYPE_PRODUCT);
-    // _eOesCustType::OES_CUST_TYPE_MKT_MAKER
-    e.value("OES_CUST_TYPE_MKT_MAKER", _eOesCustType::OES_CUST_TYPE_MKT_MAKER);
-    // _eOesCustType::OES_CUST_TYPE_OTHERS
-    e.value("OES_CUST_TYPE_OTHERS", _eOesCustType::OES_CUST_TYPE_OTHERS);
-    // _eOesCustType::__OES_CUST_TYPE_MAX
-    e.value("__OES_CUST_TYPE_MAX", _eOesCustType::__OES_CUST_TYPE_MAX);
+    // _eOesMarketState
+    pybind11::enum_<_eOesMarketState> e(parent, "_eOesMarketState", pybind11::arithmetic());
+    // _eOesMarketState::OES_MKT_STATE_UNDEFINE
+    e.value("OES_MKT_STATE_UNDEFINE", _eOesMarketState::OES_MKT_STATE_UNDEFINE);
+    // _eOesMarketState::OES_MKT_STATE_PRE_OPEN
+    e.value("OES_MKT_STATE_PRE_OPEN", _eOesMarketState::OES_MKT_STATE_PRE_OPEN);
+    // _eOesMarketState::OES_MKT_STATE_OPEN_UP_COMING
+    e.value("OES_MKT_STATE_OPEN_UP_COMING", _eOesMarketState::OES_MKT_STATE_OPEN_UP_COMING);
+    // _eOesMarketState::OES_MKT_STATE_OPEN
+    e.value("OES_MKT_STATE_OPEN", _eOesMarketState::OES_MKT_STATE_OPEN);
+    // _eOesMarketState::OES_MKT_STATE_HALT
+    e.value("OES_MKT_STATE_HALT", _eOesMarketState::OES_MKT_STATE_HALT);
+    // _eOesMarketState::OES_MKT_STATE_CLOSE
+    e.value("OES_MKT_STATE_CLOSE", _eOesMarketState::OES_MKT_STATE_CLOSE);
+    // _eOesMarketState::__OES_MKT_STATE_MAX
+    e.value("__OES_MKT_STATE_MAX", _eOesMarketState::__OES_MKT_STATE_MAX);
     e.export_values();
-    module_vnoes::objects.emplace("_eOesCustType", e);
+    module_vnoes::objects.emplace("_eOesMarketState", e);
 }
-void generate_enum_eOesOwnerType(pybind11::object & parent)
+void generate_enum_eOesTrdSessType(pybind11::object & parent)
 {
-    // _eOesOwnerType
-    pybind11::enum_<_eOesOwnerType> e(parent, "_eOesOwnerType", pybind11::arithmetic());
-    // _eOesOwnerType::OES_OWNER_TYPE_PERSONAL
-    e.value("OES_OWNER_TYPE_PERSONAL", _eOesOwnerType::OES_OWNER_TYPE_PERSONAL);
-    // _eOesOwnerType::OES_OWNER_TYPE_EXCHANGE
-    e.value("OES_OWNER_TYPE_EXCHANGE", _eOesOwnerType::OES_OWNER_TYPE_EXCHANGE);
-    // _eOesOwnerType::OES_OWNER_TYPE_MEMBER
-    e.value("OES_OWNER_TYPE_MEMBER", _eOesOwnerType::OES_OWNER_TYPE_MEMBER);
-    // _eOesOwnerType::OES_OWNER_TYPE_INSTITUTION
-    e.value("OES_OWNER_TYPE_INSTITUTION", _eOesOwnerType::OES_OWNER_TYPE_INSTITUTION);
-    // _eOesOwnerType::OES_OWNER_TYPE_PROPRIETARY
-    e.value("OES_OWNER_TYPE_PROPRIETARY", _eOesOwnerType::OES_OWNER_TYPE_PROPRIETARY);
-    // _eOesOwnerType::OES_OWNER_TYPE_MKT_MAKER
-    e.value("OES_OWNER_TYPE_MKT_MAKER", _eOesOwnerType::OES_OWNER_TYPE_MKT_MAKER);
-    // _eOesOwnerType::OES_OWNER_TYPE_SETTLEMENT
-    e.value("OES_OWNER_TYPE_SETTLEMENT", _eOesOwnerType::OES_OWNER_TYPE_SETTLEMENT);
-    // _eOesOwnerType::__OES_OWNER_TYPE_MAX
-    e.value("__OES_OWNER_TYPE_MAX", _eOesOwnerType::__OES_OWNER_TYPE_MAX);
+    // _eOesTrdSessType
+    pybind11::enum_<_eOesTrdSessType> e(parent, "_eOesTrdSessType", pybind11::arithmetic());
+    // _eOesTrdSessType::OES_TRD_SESS_TYPE_O
+    e.value("OES_TRD_SESS_TYPE_O", _eOesTrdSessType::OES_TRD_SESS_TYPE_O);
+    // _eOesTrdSessType::OES_TRD_SESS_TYPE_T
+    e.value("OES_TRD_SESS_TYPE_T", _eOesTrdSessType::OES_TRD_SESS_TYPE_T);
+    // _eOesTrdSessType::OES_TRD_SESS_TYPE_C
+    e.value("OES_TRD_SESS_TYPE_C", _eOesTrdSessType::OES_TRD_SESS_TYPE_C);
+    // _eOesTrdSessType::__OES_TRD_SESS_TYPE_MAX
+    e.value("__OES_TRD_SESS_TYPE_MAX", _eOesTrdSessType::__OES_TRD_SESS_TYPE_MAX);
     e.export_values();
-    module_vnoes::objects.emplace("_eOesOwnerType", e);
+    module_vnoes::objects.emplace("_eOesTrdSessType", e);
 }
-void generate_enum_eOesClientType(pybind11::object & parent)
+void generate_enum_eOesProductType(pybind11::object & parent)
 {
-    // _eOesClientType
-    pybind11::enum_<_eOesClientType> e(parent, "_eOesClientType", pybind11::arithmetic());
-    // _eOesClientType::OES_CLIENT_TYPE_UNDEFINED
-    e.value("OES_CLIENT_TYPE_UNDEFINED", _eOesClientType::OES_CLIENT_TYPE_UNDEFINED);
-    // _eOesClientType::OES_CLIENT_TYPE_INVESTOR
-    e.value("OES_CLIENT_TYPE_INVESTOR", _eOesClientType::OES_CLIENT_TYPE_INVESTOR);
-    // _eOesClientType::OES_CLIENT_TYPE_VIRTUAL
-    e.value("OES_CLIENT_TYPE_VIRTUAL", _eOesClientType::OES_CLIENT_TYPE_VIRTUAL);
+    // _eOesProductType
+    pybind11::enum_<_eOesProductType> e(parent, "_eOesProductType", pybind11::arithmetic());
+    // _eOesProductType::OES_PRODUCT_TYPE_UNDEFINE
+    e.value("OES_PRODUCT_TYPE_UNDEFINE", _eOesProductType::OES_PRODUCT_TYPE_UNDEFINE);
+    // _eOesProductType::OES_PRODUCT_TYPE_EQUITY
+    e.value("OES_PRODUCT_TYPE_EQUITY", _eOesProductType::OES_PRODUCT_TYPE_EQUITY);
+    // _eOesProductType::OES_PRODUCT_TYPE_BOND_STD
+    e.value("OES_PRODUCT_TYPE_BOND_STD", _eOesProductType::OES_PRODUCT_TYPE_BOND_STD);
+    // _eOesProductType::OES_PRODUCT_TYPE_IPO
+    e.value("OES_PRODUCT_TYPE_IPO", _eOesProductType::OES_PRODUCT_TYPE_IPO);
+    // _eOesProductType::OES_PRODUCT_TYPE_ALLOTMENT
+    e.value("OES_PRODUCT_TYPE_ALLOTMENT", _eOesProductType::OES_PRODUCT_TYPE_ALLOTMENT);
+    // _eOesProductType::OES_PRODUCT_TYPE_OPTION
+    e.value("OES_PRODUCT_TYPE_OPTION", _eOesProductType::OES_PRODUCT_TYPE_OPTION);
+    // _eOesProductType::__OES_PRODUCT_TYPE_MAX
+    e.value("__OES_PRODUCT_TYPE_MAX", _eOesProductType::__OES_PRODUCT_TYPE_MAX);
     e.export_values();
-    module_vnoes::objects.emplace("_eOesClientType", e);
+    module_vnoes::objects.emplace("_eOesProductType", e);
 }
-void generate_enum_eOesClientStatus(pybind11::object & parent)
+void generate_enum_eOesSecurityType(pybind11::object & parent)
 {
-    // _eOesClientStatus
-    pybind11::enum_<_eOesClientStatus> e(parent, "_eOesClientStatus", pybind11::arithmetic());
-    // _eOesClientStatus::OES_CLIENT_STATUS_UNACTIVATED
-    e.value("OES_CLIENT_STATUS_UNACTIVATED", _eOesClientStatus::OES_CLIENT_STATUS_UNACTIVATED);
-    // _eOesClientStatus::OES_CLIENT_STATUS_ACTIVATED
-    e.value("OES_CLIENT_STATUS_ACTIVATED", _eOesClientStatus::OES_CLIENT_STATUS_ACTIVATED);
-    // _eOesClientStatus::OES_CLIENT_STATUS_PAUSE
-    e.value("OES_CLIENT_STATUS_PAUSE", _eOesClientStatus::OES_CLIENT_STATUS_PAUSE);
-    // _eOesClientStatus::OES_CLIENT_STATUS_SUSPENDED
-    e.value("OES_CLIENT_STATUS_SUSPENDED", _eOesClientStatus::OES_CLIENT_STATUS_SUSPENDED);
-    // _eOesClientStatus::OES_CLIENT_STATUS_CANCELLED
-    e.value("OES_CLIENT_STATUS_CANCELLED", _eOesClientStatus::OES_CLIENT_STATUS_CANCELLED);
+    // _eOesSecurityType
+    pybind11::enum_<_eOesSecurityType> e(parent, "_eOesSecurityType", pybind11::arithmetic());
+    // _eOesSecurityType::OES_SECURITY_TYPE_UNDEFINE
+    e.value("OES_SECURITY_TYPE_UNDEFINE", _eOesSecurityType::OES_SECURITY_TYPE_UNDEFINE);
+    // _eOesSecurityType::OES_SECURITY_TYPE_STOCK
+    e.value("OES_SECURITY_TYPE_STOCK", _eOesSecurityType::OES_SECURITY_TYPE_STOCK);
+    // _eOesSecurityType::OES_SECURITY_TYPE_BOND
+    e.value("OES_SECURITY_TYPE_BOND", _eOesSecurityType::OES_SECURITY_TYPE_BOND);
+    // _eOesSecurityType::OES_SECURITY_TYPE_ETF
+    e.value("OES_SECURITY_TYPE_ETF", _eOesSecurityType::OES_SECURITY_TYPE_ETF);
+    // _eOesSecurityType::OES_SECURITY_TYPE_FUND
+    e.value("OES_SECURITY_TYPE_FUND", _eOesSecurityType::OES_SECURITY_TYPE_FUND);
+    // _eOesSecurityType::OES_SECURITY_TYPE_OPTION
+    e.value("OES_SECURITY_TYPE_OPTION", _eOesSecurityType::OES_SECURITY_TYPE_OPTION);
+    // _eOesSecurityType::__OES_SECURITY_TYPE_MAX
+    e.value("__OES_SECURITY_TYPE_MAX", _eOesSecurityType::__OES_SECURITY_TYPE_MAX);
+    // _eOesSecurityType::__OES_SECURITY_TYPE_NOT_SUPPORT
+    e.value("__OES_SECURITY_TYPE_NOT_SUPPORT", _eOesSecurityType::__OES_SECURITY_TYPE_NOT_SUPPORT);
     e.export_values();
-    module_vnoes::objects.emplace("_eOesClientStatus", e);
+    module_vnoes::objects.emplace("_eOesSecurityType", e);
 }
-void generate_enum_eOesOptContractType(pybind11::object & parent)
+void generate_enum_eOesSubSecurityType(pybind11::object & parent)
 {
-    // _eOesOptContractType
-    pybind11::enum_<_eOesOptContractType> e(parent, "_eOesOptContractType", pybind11::arithmetic());
-    // _eOesOptContractType::OES_OPT_CONTRACT_TYPE_CALL
-    e.value("OES_OPT_CONTRACT_TYPE_CALL", _eOesOptContractType::OES_OPT_CONTRACT_TYPE_CALL);
-    // _eOesOptContractType::OES_OPT_CONTRACT_TYPE_PUT
-    e.value("OES_OPT_CONTRACT_TYPE_PUT", _eOesOptContractType::OES_OPT_CONTRACT_TYPE_PUT);
-    // _eOesOptContractType::__OES_OPT_CONTRACT_TYPE_MAX
-    e.value("__OES_OPT_CONTRACT_TYPE_MAX", _eOesOptContractType::__OES_OPT_CONTRACT_TYPE_MAX);
+    // _eOesSubSecurityType
+    pybind11::enum_<_eOesSubSecurityType> e(parent, "_eOesSubSecurityType", pybind11::arithmetic());
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_UNDEFINE
+    e.value("OES_SUB_SECURITY_TYPE_UNDEFINE", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_UNDEFINE);
+    // _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_STOCK_MIN
+    e.value("__OES_SUB_SECURITY_TYPE_STOCK_MIN", _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_STOCK_MIN);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_STOCK_ASH
+    e.value("OES_SUB_SECURITY_TYPE_STOCK_ASH", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_STOCK_ASH);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_STOCK_SME
+    e.value("OES_SUB_SECURITY_TYPE_STOCK_SME", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_STOCK_SME);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_STOCK_GEM
+    e.value("OES_SUB_SECURITY_TYPE_STOCK_GEM", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_STOCK_GEM);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_STOCK_KSH
+    e.value("OES_SUB_SECURITY_TYPE_STOCK_KSH", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_STOCK_KSH);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_STOCK_KCDR
+    e.value("OES_SUB_SECURITY_TYPE_STOCK_KCDR", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_STOCK_KCDR);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_STOCK_CDR
+    e.value("OES_SUB_SECURITY_TYPE_STOCK_CDR", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_STOCK_CDR);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_STOCK_HLTCDR
+    e.value("OES_SUB_SECURITY_TYPE_STOCK_HLTCDR", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_STOCK_HLTCDR);
+    // _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_STOCK_MAX
+    e.value("__OES_SUB_SECURITY_TYPE_STOCK_MAX", _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_STOCK_MAX);
+    // _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_BOND_MIN
+    e.value("__OES_SUB_SECURITY_TYPE_BOND_MIN", _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_BOND_MIN);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_BOND_GBF
+    e.value("OES_SUB_SECURITY_TYPE_BOND_GBF", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_BOND_GBF);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_BOND_CBF
+    e.value("OES_SUB_SECURITY_TYPE_BOND_CBF", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_BOND_CBF);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_BOND_CPF
+    e.value("OES_SUB_SECURITY_TYPE_BOND_CPF", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_BOND_CPF);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_BOND_CCF
+    e.value("OES_SUB_SECURITY_TYPE_BOND_CCF", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_BOND_CCF);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_BOND_FBF
+    e.value("OES_SUB_SECURITY_TYPE_BOND_FBF", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_BOND_FBF);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_BOND_PRP
+    e.value("OES_SUB_SECURITY_TYPE_BOND_PRP", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_BOND_PRP);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_BOND_STD
+    e.value("OES_SUB_SECURITY_TYPE_BOND_STD", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_BOND_STD);
+    // _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_BOND_MAX
+    e.value("__OES_SUB_SECURITY_TYPE_BOND_MAX", _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_BOND_MAX);
+    // _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_ETF_MIN
+    e.value("__OES_SUB_SECURITY_TYPE_ETF_MIN", _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_ETF_MIN);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_ETF_SINGLE_MKT
+    e.value("OES_SUB_SECURITY_TYPE_ETF_SINGLE_MKT", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_ETF_SINGLE_MKT);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_ETF_CROSS_MKT
+    e.value("OES_SUB_SECURITY_TYPE_ETF_CROSS_MKT", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_ETF_CROSS_MKT);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_ETF_BOND
+    e.value("OES_SUB_SECURITY_TYPE_ETF_BOND", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_ETF_BOND);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_ETF_CURRENCY
+    e.value("OES_SUB_SECURITY_TYPE_ETF_CURRENCY", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_ETF_CURRENCY);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_ETF_CROSS_BORDER
+    e.value("OES_SUB_SECURITY_TYPE_ETF_CROSS_BORDER", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_ETF_CROSS_BORDER);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_ETF_GOLD
+    e.value("OES_SUB_SECURITY_TYPE_ETF_GOLD", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_ETF_GOLD);
+    // _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_ETF_MAX
+    e.value("__OES_SUB_SECURITY_TYPE_ETF_MAX", _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_ETF_MAX);
+    // _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_FUND_MIN
+    e.value("__OES_SUB_SECURITY_TYPE_FUND_MIN", _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_FUND_MIN);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_FUND_LOF
+    e.value("OES_SUB_SECURITY_TYPE_FUND_LOF", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_FUND_LOF);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_FUND_CEF
+    e.value("OES_SUB_SECURITY_TYPE_FUND_CEF", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_FUND_CEF);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_FUND_OEF
+    e.value("OES_SUB_SECURITY_TYPE_FUND_OEF", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_FUND_OEF);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_FUND_GRADED
+    e.value("OES_SUB_SECURITY_TYPE_FUND_GRADED", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_FUND_GRADED);
+    // _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_FUND_MAX
+    e.value("__OES_SUB_SECURITY_TYPE_FUND_MAX", _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_FUND_MAX);
+    // _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_OPTION_MIN
+    e.value("__OES_SUB_SECURITY_TYPE_OPTION_MIN", _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_OPTION_MIN);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_OPTION_ETF
+    e.value("OES_SUB_SECURITY_TYPE_OPTION_ETF", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_OPTION_ETF);
+    // _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_OPTION_STOCK
+    e.value("OES_SUB_SECURITY_TYPE_OPTION_STOCK", _eOesSubSecurityType::OES_SUB_SECURITY_TYPE_OPTION_STOCK);
+    // _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_OPTION_MAX
+    e.value("__OES_SUB_SECURITY_TYPE_OPTION_MAX", _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_OPTION_MAX);
+    // _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_MAX
+    e.value("__OES_SUB_SECURITY_TYPE_MAX", _eOesSubSecurityType::__OES_SUB_SECURITY_TYPE_MAX);
     e.export_values();
-    module_vnoes::objects.emplace("_eOesOptContractType", e);
+    module_vnoes::objects.emplace("_eOesSubSecurityType", e);
 }
-void generate_enum_eOesOptInvLevel(pybind11::object & parent)
+void generate_enum_eOesSecurityLevel(pybind11::object & parent)
 {
-    // _eOesOptInvLevel
-    pybind11::enum_<_eOesOptInvLevel> e(parent, "_eOesOptInvLevel", pybind11::arithmetic());
-    // _eOesOptInvLevel::OES_OPT_INV_LEVEL_B
-    e.value("OES_OPT_INV_LEVEL_B", _eOesOptInvLevel::OES_OPT_INV_LEVEL_B);
-    // _eOesOptInvLevel::OES_OPT_INV_LEVEL_L
-    e.value("OES_OPT_INV_LEVEL_L", _eOesOptInvLevel::OES_OPT_INV_LEVEL_L);
-    // _eOesOptInvLevel::OES_OPT_INV_LEVEL_A
-    e.value("OES_OPT_INV_LEVEL_A", _eOesOptInvLevel::OES_OPT_INV_LEVEL_A);
-    // _eOesOptInvLevel::__OES_OPT_INV_LEVEL_MAX
-    e.value("__OES_OPT_INV_LEVEL_MAX", _eOesOptInvLevel::__OES_OPT_INV_LEVEL_MAX);
+    // _eOesSecurityLevel
+    pybind11::enum_<_eOesSecurityLevel> e(parent, "_eOesSecurityLevel", pybind11::arithmetic());
+    // _eOesSecurityLevel::OES_SECURITY_LEVEL_UNDEFINE
+    e.value("OES_SECURITY_LEVEL_UNDEFINE", _eOesSecurityLevel::OES_SECURITY_LEVEL_UNDEFINE);
+    // _eOesSecurityLevel::OES_SECURITY_LEVEL_N
+    e.value("OES_SECURITY_LEVEL_N", _eOesSecurityLevel::OES_SECURITY_LEVEL_N);
+    // _eOesSecurityLevel::OES_SECURITY_LEVEL_XST
+    e.value("OES_SECURITY_LEVEL_XST", _eOesSecurityLevel::OES_SECURITY_LEVEL_XST);
+    // _eOesSecurityLevel::OES_SECURITY_LEVEL_ST
+    e.value("OES_SECURITY_LEVEL_ST", _eOesSecurityLevel::OES_SECURITY_LEVEL_ST);
+    // _eOesSecurityLevel::OES_SECURITY_LEVEL_P
+    e.value("OES_SECURITY_LEVEL_P", _eOesSecurityLevel::OES_SECURITY_LEVEL_P);
+    // _eOesSecurityLevel::OES_SECURITY_LEVEL_T
+    e.value("OES_SECURITY_LEVEL_T", _eOesSecurityLevel::OES_SECURITY_LEVEL_T);
+    // _eOesSecurityLevel::OES_SECURITY_LEVEL_U
+    e.value("OES_SECURITY_LEVEL_U", _eOesSecurityLevel::OES_SECURITY_LEVEL_U);
+    // _eOesSecurityLevel::OES_SECURITY_LEVEL_B
+    e.value("OES_SECURITY_LEVEL_B", _eOesSecurityLevel::OES_SECURITY_LEVEL_B);
+    // _eOesSecurityLevel::__OES_SECURITY_LEVEL_MAX
+    e.value("__OES_SECURITY_LEVEL_MAX", _eOesSecurityLevel::__OES_SECURITY_LEVEL_MAX);
     e.export_values();
-    module_vnoes::objects.emplace("_eOesOptInvLevel", e);
+    module_vnoes::objects.emplace("_eOesSecurityLevel", e);
 }
-void generate_enum_eOpenFlagType(pybind11::object & parent)
+void generate_enum_eOesSecurityRiskLevel(pybind11::object & parent)
 {
-    // _eOpenFlagType
-    pybind11::enum_<_eOpenFlagType> e(parent, "_eOpenFlagType", pybind11::arithmetic());
-    // _eOpenFlagType::OPEN_FLAG_TYPE_ALLOW
-    e.value("OPEN_FLAG_TYPE_ALLOW", _eOpenFlagType::OPEN_FLAG_TYPE_ALLOW);
-    // _eOpenFlagType::OPEN_FLAG_TYPE_FORBID
-    e.value("OPEN_FLAG_TYPE_FORBID", _eOpenFlagType::OPEN_FLAG_TYPE_FORBID);
-    // _eOpenFlagType::__OPEN_FLAG_TYPE_MAX
-    e.value("__OPEN_FLAG_TYPE_MAX", _eOpenFlagType::__OPEN_FLAG_TYPE_MAX);
+    // _eOesSecurityRiskLevel
+    pybind11::enum_<_eOesSecurityRiskLevel> e(parent, "_eOesSecurityRiskLevel", pybind11::arithmetic());
+    // _eOesSecurityRiskLevel::OES_RISK_LEVEL_VERY_LOW
+    e.value("OES_RISK_LEVEL_VERY_LOW", _eOesSecurityRiskLevel::OES_RISK_LEVEL_VERY_LOW);
+    // _eOesSecurityRiskLevel::OES_RISK_LEVEL_LOW
+    e.value("OES_RISK_LEVEL_LOW", _eOesSecurityRiskLevel::OES_RISK_LEVEL_LOW);
+    // _eOesSecurityRiskLevel::OES_RISK_LEVEL_MEDIUM_LOW
+    e.value("OES_RISK_LEVEL_MEDIUM_LOW", _eOesSecurityRiskLevel::OES_RISK_LEVEL_MEDIUM_LOW);
+    // _eOesSecurityRiskLevel::OES_RISK_LEVEL_MEDIUM
+    e.value("OES_RISK_LEVEL_MEDIUM", _eOesSecurityRiskLevel::OES_RISK_LEVEL_MEDIUM);
+    // _eOesSecurityRiskLevel::OES_RISK_LEVEL_MEDIUM_HIGH
+    e.value("OES_RISK_LEVEL_MEDIUM_HIGH", _eOesSecurityRiskLevel::OES_RISK_LEVEL_MEDIUM_HIGH);
+    // _eOesSecurityRiskLevel::OES_RISK_LEVEL_HIGH
+    e.value("OES_RISK_LEVEL_HIGH", _eOesSecurityRiskLevel::OES_RISK_LEVEL_HIGH);
+    // _eOesSecurityRiskLevel::OES_RISK_LEVEL_VERY_HIGH
+    e.value("OES_RISK_LEVEL_VERY_HIGH", _eOesSecurityRiskLevel::OES_RISK_LEVEL_VERY_HIGH);
+    // _eOesSecurityRiskLevel::__OES_RISK_LEVEL_MAX
+    e.value("__OES_RISK_LEVEL_MAX", _eOesSecurityRiskLevel::__OES_RISK_LEVEL_MAX);
     e.export_values();
-    module_vnoes::objects.emplace("_eOpenFlagType", e);
+    module_vnoes::objects.emplace("_eOesSecurityRiskLevel", e);
 }
-void generate_enum_eOesOptionOpenFlag(pybind11::object & parent)
+void generate_enum_eOesSecuritySuspFlag(pybind11::object & parent)
 {
-    // _eOesOptionOpenFlag
-    pybind11::enum_<_eOesOptionOpenFlag> e(parent, "_eOesOptionOpenFlag", pybind11::arithmetic());
-    // _eOesOptionOpenFlag::OES_OPTION_OPEN_FLAG_ALLOW
-    e.value("OES_OPTION_OPEN_FLAG_ALLOW", _eOesOptionOpenFlag::OES_OPTION_OPEN_FLAG_ALLOW);
-    // _eOesOptionOpenFlag::OES_OPTION_OPEN_FLAG_FORBID
-    e.value("OES_OPTION_OPEN_FLAG_FORBID", _eOesOptionOpenFlag::OES_OPTION_OPEN_FLAG_FORBID);
+    // _eOesSecuritySuspFlag
+    pybind11::enum_<_eOesSecuritySuspFlag> e(parent, "_eOesSecuritySuspFlag", pybind11::arithmetic());
+    // _eOesSecuritySuspFlag::OES_SUSPFLAG_NONE
+    e.value("OES_SUSPFLAG_NONE", _eOesSecuritySuspFlag::OES_SUSPFLAG_NONE);
+    // _eOesSecuritySuspFlag::OES_SUSPFLAG_EXCHANGE
+    e.value("OES_SUSPFLAG_EXCHANGE", _eOesSecuritySuspFlag::OES_SUSPFLAG_EXCHANGE);
+    // _eOesSecuritySuspFlag::OES_SUSPFLAG_BROKER
+    e.value("OES_SUSPFLAG_BROKER", _eOesSecuritySuspFlag::OES_SUSPFLAG_BROKER);
+    // _eOesSecuritySuspFlag::__OES_SUSPFLAG_OTHER
+    e.value("__OES_SUSPFLAG_OTHER", _eOesSecuritySuspFlag::__OES_SUSPFLAG_OTHER);
     e.export_values();
-    module_vnoes::objects.emplace("_eOesOptionOpenFlag", e);
+    module_vnoes::objects.emplace("_eOesSecuritySuspFlag", e);
 }
-void generate_enum_eOesPositionEff(pybind11::object & parent)
+void generate_enum_eOesLotType(pybind11::object & parent)
 {
-    // _eOesPositionEff
-    pybind11::enum_<_eOesPositionEff> e(parent, "_eOesPositionEff", pybind11::arithmetic());
-    // _eOesPositionEff::OES_POSITION_INVALID
-    e.value("OES_POSITION_INVALID", _eOesPositionEff::OES_POSITION_INVALID);
-    // _eOesPositionEff::OES_POSITION_OPEN
-    e.value("OES_POSITION_OPEN", _eOesPositionEff::OES_POSITION_OPEN);
-    // _eOesPositionEff::OES_POSITION_CLOSE
-    e.value("OES_POSITION_CLOSE", _eOesPositionEff::OES_POSITION_CLOSE);
+    // _eOesLotType
+    pybind11::enum_<_eOesLotType> e(parent, "_eOesLotType", pybind11::arithmetic());
+    // _eOesLotType::OES_LOT_TYPE_UNDEFINE
+    e.value("OES_LOT_TYPE_UNDEFINE", _eOesLotType::OES_LOT_TYPE_UNDEFINE);
+    // _eOesLotType::OES_LOT_TYPE_FAILED
+    e.value("OES_LOT_TYPE_FAILED", _eOesLotType::OES_LOT_TYPE_FAILED);
+    // _eOesLotType::OES_LOT_TYPE_ASSIGNMENT
+    e.value("OES_LOT_TYPE_ASSIGNMENT", _eOesLotType::OES_LOT_TYPE_ASSIGNMENT);
+    // _eOesLotType::OES_LOT_TYPE_LOTTERY
+    e.value("OES_LOT_TYPE_LOTTERY", _eOesLotType::OES_LOT_TYPE_LOTTERY);
+    // _eOesLotType::__OES_LOT_TYPE_MAX
+    e.value("__OES_LOT_TYPE_MAX", _eOesLotType::__OES_LOT_TYPE_MAX);
     e.export_values();
-    module_vnoes::objects.emplace("_eOesPositionEff", e);
-}
-void generate_enum_eOesOptionType(pybind11::object & parent)
-{
-    // _eOesOptionType
-    pybind11::enum_<_eOesOptionType> e(parent, "_eOesOptionType", pybind11::arithmetic());
-    // _eOesOptionType::OES_OPTION_TYPE_E
-    e.value("OES_OPTION_TYPE_E", _eOesOptionType::OES_OPTION_TYPE_E);
-    // _eOesOptionType::OES_OPTION_TYPE_A
-    e.value("OES_OPTION_TYPE_A", _eOesOptionType::OES_OPTION_TYPE_A);
-    // _eOesOptionType::__OES_OPTION_TYPE_MAX
-    e.value("__OES_OPTION_TYPE_MAX", _eOesOptionType::__OES_OPTION_TYPE_MAX);
-    e.export_values();
-    module_vnoes::objects.emplace("_eOesOptionType", e);
-}
-void generate_enum_eSMsgProtocolType(pybind11::object & parent)
-{
-    // _eSMsgProtocolType
-    pybind11::enum_<_eSMsgProtocolType> e(parent, "_eSMsgProtocolType", pybind11::arithmetic());
-    // _eSMsgProtocolType::SMSG_PROTO_BINARY
-    e.value("SMSG_PROTO_BINARY", _eSMsgProtocolType::SMSG_PROTO_BINARY);
-    // _eSMsgProtocolType::SMSG_PROTO_JSON
-    e.value("SMSG_PROTO_JSON", _eSMsgProtocolType::SMSG_PROTO_JSON);
-    // _eSMsgProtocolType::SMSG_PROTO_FIX
-    e.value("SMSG_PROTO_FIX", _eSMsgProtocolType::SMSG_PROTO_FIX);
-    // _eSMsgProtocolType::SMSG_PROTO_PROTOBUF
-    e.value("SMSG_PROTO_PROTOBUF", _eSMsgProtocolType::SMSG_PROTO_PROTOBUF);
-    // _eSMsgProtocolType::__MAX_SMSG_PROTO_TYPE
-    e.value("__MAX_SMSG_PROTO_TYPE", _eSMsgProtocolType::__MAX_SMSG_PROTO_TYPE);
-    e.export_values();
-    module_vnoes::objects.emplace("_eSMsgProtocolType", e);
-}
-void generate_enum_eSMsgFlag(pybind11::object & parent)
-{
-    // _eSMsgFlag
-    pybind11::enum_<_eSMsgFlag> e(parent, "_eSMsgFlag", pybind11::arithmetic());
-    // _eSMsgFlag::SMSG_MSGFLAG_NONE
-    e.value("SMSG_MSGFLAG_NONE", _eSMsgFlag::SMSG_MSGFLAG_NONE);
-    // _eSMsgFlag::SMSG_MSGFLAG_REQ
-    e.value("SMSG_MSGFLAG_REQ", _eSMsgFlag::SMSG_MSGFLAG_REQ);
-    // _eSMsgFlag::SMSG_MSGFLAG_RSP
-    e.value("SMSG_MSGFLAG_RSP", _eSMsgFlag::SMSG_MSGFLAG_RSP);
-    // _eSMsgFlag::SMSG_MSGFLAG_NESTED
-    e.value("SMSG_MSGFLAG_NESTED", _eSMsgFlag::SMSG_MSGFLAG_NESTED);
-    // _eSMsgFlag::SMSG_MSGFLAG_COMPRESSED
-    e.value("SMSG_MSGFLAG_COMPRESSED", _eSMsgFlag::SMSG_MSGFLAG_COMPRESSED);
-    // _eSMsgFlag::SMSG_MSGFLAG_MASK_RSPFLAG
-    e.value("SMSG_MSGFLAG_MASK_RSPFLAG", _eSMsgFlag::SMSG_MSGFLAG_MASK_RSPFLAG);
-    // _eSMsgFlag::SMSG_MSGFLAG_MASK_PROTOCOL
-    e.value("SMSG_MSGFLAG_MASK_PROTOCOL", _eSMsgFlag::SMSG_MSGFLAG_MASK_PROTOCOL);
-    e.export_values();
-    module_vnoes::objects.emplace("_eSMsgFlag", e);
-}
-void generate_enum_eOesMsgType(pybind11::object & parent)
-{
-    // _eOesMsgType
-    pybind11::enum_<_eOesMsgType> e(parent, "_eOesMsgType", pybind11::arithmetic());
-    // _eOesMsgType::OESMSG_ORD_NEW_ORDER
-    e.value("OESMSG_ORD_NEW_ORDER", _eOesMsgType::OESMSG_ORD_NEW_ORDER);
-    // _eOesMsgType::OESMSG_ORD_CANCEL_REQUEST
-    e.value("OESMSG_ORD_CANCEL_REQUEST", _eOesMsgType::OESMSG_ORD_CANCEL_REQUEST);
-    // _eOesMsgType::OESMSG_ORD_BATCH_ORDERS
-    e.value("OESMSG_ORD_BATCH_ORDERS", _eOesMsgType::OESMSG_ORD_BATCH_ORDERS);
-    // _eOesMsgType::__OESMSG_ORD_MAX
-    e.value("__OESMSG_ORD_MAX", _eOesMsgType::__OESMSG_ORD_MAX);
-    // _eOesMsgType::__OESMSG_RPT_MIN
-    e.value("__OESMSG_RPT_MIN", _eOesMsgType::__OESMSG_RPT_MIN);
-    // _eOesMsgType::OESMSG_RPT_MARKET_STATE
-    e.value("OESMSG_RPT_MARKET_STATE", _eOesMsgType::OESMSG_RPT_MARKET_STATE);
-    // _eOesMsgType::OESMSG_RPT_REPORT_SYNCHRONIZATION
-    e.value("OESMSG_RPT_REPORT_SYNCHRONIZATION", _eOesMsgType::OESMSG_RPT_REPORT_SYNCHRONIZATION);
-    // _eOesMsgType::OESMSG_RPT_BUSINESS_REJECT
-    e.value("OESMSG_RPT_BUSINESS_REJECT", _eOesMsgType::OESMSG_RPT_BUSINESS_REJECT);
-    // _eOesMsgType::OESMSG_RPT_ORDER_INSERT
-    e.value("OESMSG_RPT_ORDER_INSERT", _eOesMsgType::OESMSG_RPT_ORDER_INSERT);
-    // _eOesMsgType::OESMSG_RPT_ORDER_REPORT
-    e.value("OESMSG_RPT_ORDER_REPORT", _eOesMsgType::OESMSG_RPT_ORDER_REPORT);
-    // _eOesMsgType::OESMSG_RPT_TRADE_REPORT
-    e.value("OESMSG_RPT_TRADE_REPORT", _eOesMsgType::OESMSG_RPT_TRADE_REPORT);
-    // _eOesMsgType::OESMSG_RPT_FUND_TRSF_REJECT
-    e.value("OESMSG_RPT_FUND_TRSF_REJECT", _eOesMsgType::OESMSG_RPT_FUND_TRSF_REJECT);
-    // _eOesMsgType::OESMSG_RPT_FUND_TRSF_REPORT
-    e.value("OESMSG_RPT_FUND_TRSF_REPORT", _eOesMsgType::OESMSG_RPT_FUND_TRSF_REPORT);
-    // _eOesMsgType::OESMSG_RPT_CASH_ASSET_VARIATION
-    e.value("OESMSG_RPT_CASH_ASSET_VARIATION", _eOesMsgType::OESMSG_RPT_CASH_ASSET_VARIATION);
-    // _eOesMsgType::OESMSG_RPT_STOCK_HOLDING_VARIATION
-    e.value("OESMSG_RPT_STOCK_HOLDING_VARIATION", _eOesMsgType::OESMSG_RPT_STOCK_HOLDING_VARIATION);
-    // _eOesMsgType::OESMSG_RPT_OPTION_HOLDING_VARIATION
-    e.value("OESMSG_RPT_OPTION_HOLDING_VARIATION", _eOesMsgType::OESMSG_RPT_OPTION_HOLDING_VARIATION);
-    // _eOesMsgType::OESMSG_RPT_SERVICE_STATE
-    e.value("OESMSG_RPT_SERVICE_STATE", _eOesMsgType::OESMSG_RPT_SERVICE_STATE);
-    // _eOesMsgType::__OESMSG_RPT_MAX
-    e.value("__OESMSG_RPT_MAX", _eOesMsgType::__OESMSG_RPT_MAX);
-    // _eOesMsgType::__OESMSG_NONTRD_MIN
-    e.value("__OESMSG_NONTRD_MIN", _eOesMsgType::__OESMSG_NONTRD_MIN);
-    // _eOesMsgType::OESMSG_NONTRD_FUND_TRSF_REQ
-    e.value("OESMSG_NONTRD_FUND_TRSF_REQ", _eOesMsgType::OESMSG_NONTRD_FUND_TRSF_REQ);
-    // _eOesMsgType::OESMSG_NONTRD_CHANGE_PASSWORD
-    e.value("OESMSG_NONTRD_CHANGE_PASSWORD", _eOesMsgType::OESMSG_NONTRD_CHANGE_PASSWORD);
-    // _eOesMsgType::__OESMSG_NONTRD_MAX
-    e.value("__OESMSG_NONTRD_MAX", _eOesMsgType::__OESMSG_NONTRD_MAX);
-    // _eOesMsgType::__OESMSG_QRYMSG_MIN
-    e.value("__OESMSG_QRYMSG_MIN", _eOesMsgType::__OESMSG_QRYMSG_MIN);
-    // _eOesMsgType::OESMSG_QRYMSG_CLIENT_OVERVIEW
-    e.value("OESMSG_QRYMSG_CLIENT_OVERVIEW", _eOesMsgType::OESMSG_QRYMSG_CLIENT_OVERVIEW);
-    // _eOesMsgType::OESMSG_QRYMSG_ORD
-    e.value("OESMSG_QRYMSG_ORD", _eOesMsgType::OESMSG_QRYMSG_ORD);
-    // _eOesMsgType::OESMSG_QRYMSG_TRD
-    e.value("OESMSG_QRYMSG_TRD", _eOesMsgType::OESMSG_QRYMSG_TRD);
-    // _eOesMsgType::OESMSG_QRYMSG_CASH_ASSET
-    e.value("OESMSG_QRYMSG_CASH_ASSET", _eOesMsgType::OESMSG_QRYMSG_CASH_ASSET);
-    // _eOesMsgType::OESMSG_QRYMSG_STK_HLD
-    e.value("OESMSG_QRYMSG_STK_HLD", _eOesMsgType::OESMSG_QRYMSG_STK_HLD);
-    // _eOesMsgType::OESMSG_QRYMSG_OPT_HLD
-    e.value("OESMSG_QRYMSG_OPT_HLD", _eOesMsgType::OESMSG_QRYMSG_OPT_HLD);
-    // _eOesMsgType::OESMSG_QRYMSG_CUST
-    e.value("OESMSG_QRYMSG_CUST", _eOesMsgType::OESMSG_QRYMSG_CUST);
-    // _eOesMsgType::OESMSG_QRYMSG_COMMISSION_RATE
-    e.value("OESMSG_QRYMSG_COMMISSION_RATE", _eOesMsgType::OESMSG_QRYMSG_COMMISSION_RATE);
-    // _eOesMsgType::OESMSG_QRYMSG_FUND_TRSF
-    e.value("OESMSG_QRYMSG_FUND_TRSF", _eOesMsgType::OESMSG_QRYMSG_FUND_TRSF);
-    // _eOesMsgType::OESMSG_QRYMSG_ETF
-    e.value("OESMSG_QRYMSG_ETF", _eOesMsgType::OESMSG_QRYMSG_ETF);
-    // _eOesMsgType::OESMSG_QRYMSG_ETF_COMPONENT
-    e.value("OESMSG_QRYMSG_ETF_COMPONENT", _eOesMsgType::OESMSG_QRYMSG_ETF_COMPONENT);
-    // _eOesMsgType::OESMSG_QRYMSG_OPTION
-    e.value("OESMSG_QRYMSG_OPTION", _eOesMsgType::OESMSG_QRYMSG_OPTION);
-    // _eOesMsgType::OESMSG_QRYMSG_ISSUE
-    e.value("OESMSG_QRYMSG_ISSUE", _eOesMsgType::OESMSG_QRYMSG_ISSUE);
-    // _eOesMsgType::OESMSG_QRYMSG_LOT_WINNING
-    e.value("OESMSG_QRYMSG_LOT_WINNING", _eOesMsgType::OESMSG_QRYMSG_LOT_WINNING);
-    // _eOesMsgType::OESMSG_QRYMSG_TRADING_DAY
-    e.value("OESMSG_QRYMSG_TRADING_DAY", _eOesMsgType::OESMSG_QRYMSG_TRADING_DAY);
-    // _eOesMsgType::OESMSG_QRYMSG_MARKET_STATE
-    e.value("OESMSG_QRYMSG_MARKET_STATE", _eOesMsgType::OESMSG_QRYMSG_MARKET_STATE);
-    // _eOesMsgType::OESMSG_QRYMSG_COUNTER_CASH
-    e.value("OESMSG_QRYMSG_COUNTER_CASH", _eOesMsgType::OESMSG_QRYMSG_COUNTER_CASH);
-    // _eOesMsgType::OESMSG_QRYMSG_INV_ACCT
-    e.value("OESMSG_QRYMSG_INV_ACCT", _eOesMsgType::OESMSG_QRYMSG_INV_ACCT);
-    // _eOesMsgType::OESMSG_QRYMSG_STOCK
-    e.value("OESMSG_QRYMSG_STOCK", _eOesMsgType::OESMSG_QRYMSG_STOCK);
-    // _eOesMsgType::__OESMSG_QRYMSG_MAX
-    e.value("__OESMSG_QRYMSG_MAX", _eOesMsgType::__OESMSG_QRYMSG_MAX);
-    // _eOesMsgType::OESMSG_SESS_HEARTBEAT
-    e.value("OESMSG_SESS_HEARTBEAT", _eOesMsgType::OESMSG_SESS_HEARTBEAT);
-    // _eOesMsgType::OESMSG_SESS_TEST_REQUEST
-    e.value("OESMSG_SESS_TEST_REQUEST", _eOesMsgType::OESMSG_SESS_TEST_REQUEST);
-    // _eOesMsgType::OESMSG_SESS_LOGIN_EXTEND
-    e.value("OESMSG_SESS_LOGIN_EXTEND", _eOesMsgType::OESMSG_SESS_LOGIN_EXTEND);
-    // _eOesMsgType::OESMSG_SESS_LOGOUT
-    e.value("OESMSG_SESS_LOGOUT", _eOesMsgType::OESMSG_SESS_LOGOUT);
-    // _eOesMsgType::OESMSG_RPT_ORDER_REJECT
-    e.value("OESMSG_RPT_ORDER_REJECT", _eOesMsgType::OESMSG_RPT_ORDER_REJECT);
-    // _eOesMsgType::OESMSG_QRYMSG_INV_ACCT_L001508
-    e.value("OESMSG_QRYMSG_INV_ACCT_L001508", _eOesMsgType::OESMSG_QRYMSG_INV_ACCT_L001508);
-    // _eOesMsgType::OESMSG_QRYMSG_STOCK_L001508
-    e.value("OESMSG_QRYMSG_STOCK_L001508", _eOesMsgType::OESMSG_QRYMSG_STOCK_L001508);
-    e.export_values();
-    module_vnoes::objects.emplace("_eOesMsgType", e);
-}
-void generate_enum_eOesSubscribeReportType(pybind11::object & parent)
-{
-    // _eOesSubscribeReportType
-    pybind11::enum_<_eOesSubscribeReportType> e(parent, "_eOesSubscribeReportType", pybind11::arithmetic());
-    // _eOesSubscribeReportType::OES_SUB_RPT_TYPE_DEFAULT
-    e.value("OES_SUB_RPT_TYPE_DEFAULT", _eOesSubscribeReportType::OES_SUB_RPT_TYPE_DEFAULT);
-    // _eOesSubscribeReportType::OES_SUB_RPT_TYPE_BUSINESS_REJECT
-    e.value("OES_SUB_RPT_TYPE_BUSINESS_REJECT", _eOesSubscribeReportType::OES_SUB_RPT_TYPE_BUSINESS_REJECT);
-    // _eOesSubscribeReportType::OES_SUB_RPT_TYPE_ORDER_INSERT
-    e.value("OES_SUB_RPT_TYPE_ORDER_INSERT", _eOesSubscribeReportType::OES_SUB_RPT_TYPE_ORDER_INSERT);
-    // _eOesSubscribeReportType::OES_SUB_RPT_TYPE_ORDER_REPORT
-    e.value("OES_SUB_RPT_TYPE_ORDER_REPORT", _eOesSubscribeReportType::OES_SUB_RPT_TYPE_ORDER_REPORT);
-    // _eOesSubscribeReportType::OES_SUB_RPT_TYPE_TRADE_REPORT
-    e.value("OES_SUB_RPT_TYPE_TRADE_REPORT", _eOesSubscribeReportType::OES_SUB_RPT_TYPE_TRADE_REPORT);
-    // _eOesSubscribeReportType::OES_SUB_RPT_TYPE_FUND_TRSF_REPORT
-    e.value("OES_SUB_RPT_TYPE_FUND_TRSF_REPORT", _eOesSubscribeReportType::OES_SUB_RPT_TYPE_FUND_TRSF_REPORT);
-    // _eOesSubscribeReportType::OES_SUB_RPT_TYPE_CASH_ASSET_VARIATION
-    e.value("OES_SUB_RPT_TYPE_CASH_ASSET_VARIATION", _eOesSubscribeReportType::OES_SUB_RPT_TYPE_CASH_ASSET_VARIATION);
-    // _eOesSubscribeReportType::OES_SUB_RPT_TYPE_HOLDING_VARIATION
-    e.value("OES_SUB_RPT_TYPE_HOLDING_VARIATION", _eOesSubscribeReportType::OES_SUB_RPT_TYPE_HOLDING_VARIATION);
-    // _eOesSubscribeReportType::OES_SUB_RPT_TYPE_MARKET_STATE
-    e.value("OES_SUB_RPT_TYPE_MARKET_STATE", _eOesSubscribeReportType::OES_SUB_RPT_TYPE_MARKET_STATE);
-    // _eOesSubscribeReportType::OES_SUB_RPT_TYPE_ALL
-    e.value("OES_SUB_RPT_TYPE_ALL", _eOesSubscribeReportType::OES_SUB_RPT_TYPE_ALL);
-    // _eOesSubscribeReportType::__MAX_OES_SUB_RPT_TYPE
-    e.value("__MAX_OES_SUB_RPT_TYPE", _eOesSubscribeReportType::__MAX_OES_SUB_RPT_TYPE);
-    e.export_values();
-    module_vnoes::objects.emplace("_eOesSubscribeReportType", e);
-}
-void generate_enum_eOesProtocolHintsType(pybind11::object & parent)
-{
-    // _eOesProtocolHintsType
-    pybind11::enum_<_eOesProtocolHintsType> e(parent, "_eOesProtocolHintsType", pybind11::arithmetic());
-    // _eOesProtocolHintsType::OES_PROT_HINTS_TYPE_DEFAULT
-    e.value("OES_PROT_HINTS_TYPE_DEFAULT", _eOesProtocolHintsType::OES_PROT_HINTS_TYPE_DEFAULT);
-    // _eOesProtocolHintsType::OES_PROT_HINTS_TYPE_COMPRESS
-    e.value("OES_PROT_HINTS_TYPE_COMPRESS", _eOesProtocolHintsType::OES_PROT_HINTS_TYPE_COMPRESS);
-    // _eOesProtocolHintsType::OES_PROT_HINTS_TYPE_NONE
-    e.value("OES_PROT_HINTS_TYPE_NONE", _eOesProtocolHintsType::OES_PROT_HINTS_TYPE_NONE);
-    // _eOesProtocolHintsType::__MAX_OES_PROT_HINTS_TYPE
-    e.value("__MAX_OES_PROT_HINTS_TYPE", _eOesProtocolHintsType::__MAX_OES_PROT_HINTS_TYPE);
-    e.export_values();
-    module_vnoes::objects.emplace("_eOesProtocolHintsType", e);
-}
-void generate_enum_eSSocketProtocolType(pybind11::object & parent)
-{
-    // _eSSocketProtocolType
-    pybind11::enum_<_eSSocketProtocolType> e(parent, "_eSSocketProtocolType", pybind11::arithmetic());
-    // _eSSocketProtocolType::SPK_SOCKET_PROTOCOL_TCP
-    e.value("SPK_SOCKET_PROTOCOL_TCP", _eSSocketProtocolType::SPK_SOCKET_PROTOCOL_TCP);
-    // _eSSocketProtocolType::SPK_SOCKET_PROTOCOL_IPC
-    e.value("SPK_SOCKET_PROTOCOL_IPC", _eSSocketProtocolType::SPK_SOCKET_PROTOCOL_IPC);
-    // _eSSocketProtocolType::SPK_SOCKET_PROTOCOL_UDP_UCAST
-    e.value("SPK_SOCKET_PROTOCOL_UDP_UCAST", _eSSocketProtocolType::SPK_SOCKET_PROTOCOL_UDP_UCAST);
-    // _eSSocketProtocolType::SPK_SOCKET_PROTOCOL_UDP_MCAST
-    e.value("SPK_SOCKET_PROTOCOL_UDP_MCAST", _eSSocketProtocolType::SPK_SOCKET_PROTOCOL_UDP_MCAST);
-    // _eSSocketProtocolType::SPK_SOCKET_PROTOCOL_PGM
-    e.value("SPK_SOCKET_PROTOCOL_PGM", _eSSocketProtocolType::SPK_SOCKET_PROTOCOL_PGM);
-    // _eSSocketProtocolType::SPK_SOCKET_PROTOCOL_EPGM
-    e.value("SPK_SOCKET_PROTOCOL_EPGM", _eSSocketProtocolType::SPK_SOCKET_PROTOCOL_EPGM);
-    // _eSSocketProtocolType::__MAX_SPK_SOCKET_PROTOCOL
-    e.value("__MAX_SPK_SOCKET_PROTOCOL", _eSSocketProtocolType::__MAX_SPK_SOCKET_PROTOCOL);
-    e.export_values();
-    module_vnoes::objects.emplace("_eSSocketProtocolType", e);
-}
-void generate_enum_eGeneralClientClusterType(pybind11::object & parent)
-{
-    // _eGeneralClientClusterType
-    pybind11::enum_<_eGeneralClientClusterType> e(parent, "_eGeneralClientClusterType", pybind11::arithmetic());
-    // _eGeneralClientClusterType::GENERAL_CLI_CLUSTER_UNDEFINED
-    e.value("GENERAL_CLI_CLUSTER_UNDEFINED", _eGeneralClientClusterType::GENERAL_CLI_CLUSTER_UNDEFINED);
-    // _eGeneralClientClusterType::GENERAL_CLI_CLUSTER_REPLICA_SET
-    e.value("GENERAL_CLI_CLUSTER_REPLICA_SET", _eGeneralClientClusterType::GENERAL_CLI_CLUSTER_REPLICA_SET);
-    // _eGeneralClientClusterType::GENERAL_CLI_CLUSTER_PEER_NODES
-    e.value("GENERAL_CLI_CLUSTER_PEER_NODES", _eGeneralClientClusterType::GENERAL_CLI_CLUSTER_PEER_NODES);
-    // _eGeneralClientClusterType::__MAX_GENERAL_CLI_CLUSTER_TYPE
-    e.value("__MAX_GENERAL_CLI_CLUSTER_TYPE", _eGeneralClientClusterType::__MAX_GENERAL_CLI_CLUSTER_TYPE);
-    e.export_values();
-    module_vnoes::objects.emplace("_eGeneralClientClusterType", e);
-}
-void generate_enum_eGeneralClientEncryptType(pybind11::object & parent)
-{
-    // _eGeneralClientEncryptType
-    pybind11::enum_<_eGeneralClientEncryptType> e(parent, "_eGeneralClientEncryptType", pybind11::arithmetic());
-    // _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_NONE
-    e.value("GENERAL_CLI_ENCRYPT_NONE", _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_NONE);
-    // _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_MD5
-    e.value("GENERAL_CLI_ENCRYPT_MD5", _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_MD5);
-    // _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_SHA
-    e.value("GENERAL_CLI_ENCRYPT_SHA", _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_SHA);
-    // _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_DES
-    e.value("GENERAL_CLI_ENCRYPT_DES", _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_DES);
-    // _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_AES
-    e.value("GENERAL_CLI_ENCRYPT_AES", _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_AES);
-    // _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_RSA
-    e.value("GENERAL_CLI_ENCRYPT_RSA", _eGeneralClientEncryptType::GENERAL_CLI_ENCRYPT_RSA);
-    // _eGeneralClientEncryptType::__GENERAL_CLI_ENCRYPT_MASK_DIGESTED
-    e.value("__GENERAL_CLI_ENCRYPT_MASK_DIGESTED", _eGeneralClientEncryptType::__GENERAL_CLI_ENCRYPT_MASK_DIGESTED);
-    // _eGeneralClientEncryptType::__GENERAL_CLI_ENCRYPT_MASK_ENCRYPTED
-    e.value("__GENERAL_CLI_ENCRYPT_MASK_ENCRYPTED", _eGeneralClientEncryptType::__GENERAL_CLI_ENCRYPT_MASK_ENCRYPTED);
-    e.export_values();
-    module_vnoes::objects.emplace("_eGeneralClientEncryptType", e);
-}
-void generate_enum_eOesApiChannelType(pybind11::object & parent)
-{
-    // _eOesApiChannelType
-    pybind11::enum_<_eOesApiChannelType> e(parent, "_eOesApiChannelType", pybind11::arithmetic());
-    // _eOesApiChannelType::OESAPI_CHANNEL_TYPE_ORDER
-    e.value("OESAPI_CHANNEL_TYPE_ORDER", _eOesApiChannelType::OESAPI_CHANNEL_TYPE_ORDER);
-    // _eOesApiChannelType::OESAPI_CHANNEL_TYPE_REPORT
-    e.value("OESAPI_CHANNEL_TYPE_REPORT", _eOesApiChannelType::OESAPI_CHANNEL_TYPE_REPORT);
-    // _eOesApiChannelType::OESAPI_CHANNEL_TYPE_QUERY
-    e.value("OESAPI_CHANNEL_TYPE_QUERY", _eOesApiChannelType::OESAPI_CHANNEL_TYPE_QUERY);
-    e.export_values();
-    module_vnoes::objects.emplace("_eOesApiChannelType", e);
-}
-void generate_enum_eMdsExchangeId(pybind11::object & parent)
-{
-    // _eMdsExchangeId
-    pybind11::enum_<_eMdsExchangeId> e(parent, "_eMdsExchangeId", pybind11::arithmetic());
-    // _eMdsExchangeId::MDS_EXCH_UNDEFINE
-    e.value("MDS_EXCH_UNDEFINE", _eMdsExchangeId::MDS_EXCH_UNDEFINE);
-    // _eMdsExchangeId::MDS_EXCH_SSE
-    e.value("MDS_EXCH_SSE", _eMdsExchangeId::MDS_EXCH_SSE);
-    // _eMdsExchangeId::MDS_EXCH_SZSE
-    e.value("MDS_EXCH_SZSE", _eMdsExchangeId::MDS_EXCH_SZSE);
-    // _eMdsExchangeId::__MAX_MDS_EXCH
-    e.value("__MAX_MDS_EXCH", _eMdsExchangeId::__MAX_MDS_EXCH);
-    // _eMdsExchangeId::__MAX_MDS_EXCH_ALIGNED4
-    e.value("__MAX_MDS_EXCH_ALIGNED4", _eMdsExchangeId::__MAX_MDS_EXCH_ALIGNED4);
-    // _eMdsExchangeId::__MAX_MDS_EXCH_ALIGNED8
-    e.value("__MAX_MDS_EXCH_ALIGNED8", _eMdsExchangeId::__MAX_MDS_EXCH_ALIGNED8);
-    e.export_values();
-    module_vnoes::objects.emplace("_eMdsExchangeId", e);
-}
-void generate_enum_eMdsMsgSource(pybind11::object & parent)
-{
-    // _eMdsMsgSource
-    pybind11::enum_<_eMdsMsgSource> e(parent, "_eMdsMsgSource", pybind11::arithmetic());
-    // _eMdsMsgSource::MDS_MSGSRC_UNDEFINED
-    e.value("MDS_MSGSRC_UNDEFINED", _eMdsMsgSource::MDS_MSGSRC_UNDEFINED);
-    // _eMdsMsgSource::MDS_MSGSRC_EZEI_TCP
-    e.value("MDS_MSGSRC_EZEI_TCP", _eMdsMsgSource::MDS_MSGSRC_EZEI_TCP);
-    // _eMdsMsgSource::MDS_MSGSRC_EZEI_UDP
-    e.value("MDS_MSGSRC_EZEI_UDP", _eMdsMsgSource::MDS_MSGSRC_EZEI_UDP);
-    // _eMdsMsgSource::MDS_MSGSRC_VDE_LEVEL2
-    e.value("MDS_MSGSRC_VDE_LEVEL2", _eMdsMsgSource::MDS_MSGSRC_VDE_LEVEL2);
-    // _eMdsMsgSource::MDS_MSGSRC_VDE_LEVEL1
-    e.value("MDS_MSGSRC_VDE_LEVEL1", _eMdsMsgSource::MDS_MSGSRC_VDE_LEVEL1);
-    // _eMdsMsgSource::MDS_MSGSRC_SZSE_MDGW_BINARY
-    e.value("MDS_MSGSRC_SZSE_MDGW_BINARY", _eMdsMsgSource::MDS_MSGSRC_SZSE_MDGW_BINARY);
-    // _eMdsMsgSource::MDS_MSGSRC_SZSE_MDGW_STEP
-    e.value("MDS_MSGSRC_SZSE_MDGW_STEP", _eMdsMsgSource::MDS_MSGSRC_SZSE_MDGW_STEP);
-    // _eMdsMsgSource::MDS_MSGSRC_MDS_TCP
-    e.value("MDS_MSGSRC_MDS_TCP", _eMdsMsgSource::MDS_MSGSRC_MDS_TCP);
-    // _eMdsMsgSource::MDS_MSGSRC_MDS_UDP
-    e.value("MDS_MSGSRC_MDS_UDP", _eMdsMsgSource::MDS_MSGSRC_MDS_UDP);
-    // _eMdsMsgSource::MDS_MSGSRC_FILE_MKTDT
-    e.value("MDS_MSGSRC_FILE_MKTDT", _eMdsMsgSource::MDS_MSGSRC_FILE_MKTDT);
-    // _eMdsMsgSource::MDS_MSGSRC_SSE_MDGW_BINARY
-    e.value("MDS_MSGSRC_SSE_MDGW_BINARY", _eMdsMsgSource::MDS_MSGSRC_SSE_MDGW_BINARY);
-    // _eMdsMsgSource::MDS_MSGSRC_SSE_MDGW_STEP
-    e.value("MDS_MSGSRC_SSE_MDGW_STEP", _eMdsMsgSource::MDS_MSGSRC_SSE_MDGW_STEP);
-    // _eMdsMsgSource::__MAX_MDS_MSGSRC
-    e.value("__MAX_MDS_MSGSRC", _eMdsMsgSource::__MAX_MDS_MSGSRC);
-    // _eMdsMsgSource::MDS_MSGSRC_MDGW_BINARY
-    e.value("MDS_MSGSRC_MDGW_BINARY", _eMdsMsgSource::MDS_MSGSRC_MDGW_BINARY);
-    // _eMdsMsgSource::MDS_MSGSRC_MDGW_STEP
-    e.value("MDS_MSGSRC_MDGW_STEP", _eMdsMsgSource::MDS_MSGSRC_MDGW_STEP);
-    e.export_values();
-    module_vnoes::objects.emplace("_eMdsMsgSource", e);
+    module_vnoes::objects.emplace("_eOesLotType", e);
 }
