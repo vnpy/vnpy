@@ -4,11 +4,14 @@ dist: xenial  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
 
 cache: pip
 
-env:
-  - VNPY_BUILD_OES=0
-
 git:
   depth: 1
+
+env:
+  - >
+    VNPY_BUILD_PARALLEL=1
+    VNPY_BUILD_CTP=1
+    VNPY_BUILD_OES=1
 
 python:
   - "3.7"
@@ -21,9 +24,10 @@ services:
 before_script:
   - psql -d postgresql://postgres:${VNPY_TEST_POSTGRESQL_PASSWORD}@localhost -c "create database vnpy;"
   - mysql -u root --password=${VNPY_TEST_MYSQL_PASSWORD} -e 'CREATE DATABASE vnpy;'
+  - source ci/env.sh;
 
 script:
-  - cd tests; source travis_env.sh;
+  - cd tests;
   - python test_all.py
 
 matrix:
@@ -92,5 +96,6 @@ matrix:
         - bash ./install_osx.sh
       before_script: []
       script:
-        - cd tests; source travis_env.sh;
+        - source ci/env.sh;
+        - cd tests; 
         - VNPY_TEST_ONLY_SQLITE=1 python3 test_all.py
