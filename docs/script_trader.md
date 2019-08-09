@@ -10,7 +10,7 @@ ScriptTrader模块提供了交互式的量化分析和程序化交易功能，�
 ## Jupyter模式
 
 ### 加载启动
-Jupyter模式是基于脚本引擎(ScriptEngine)驱动的。首先打开Jupyter notebook后，然后加载组件、初始化脚本引擎。其中：
+Jupyter模式是基于脚本引擎（ScriptEngine）驱动的。首先打开Jupyter notebook后，然后加载组件、初始化脚本引擎。其中：
 ```
 from vnpy.app.script_trader import init_cli_trading
 from vnpy.gateway.ctp import CtpGateway
@@ -241,10 +241,10 @@ trades = engine.get_trades(vt_orderid = your_vt_orderid,use_df = True)
 ### 交易委托
 
 以委托买入为例，engine.buy()函数入参包括：
-- vt_symbol：本地合约代码(字符串格式)
-- price：报单价格(字符串格式);
-- volume：报单数量(字符串格式);
-- order_type：OrderType枚举常量，默认为限价单(OrderType.LIMIT)，同时支持停止单（OrderType.STOP）、FAK（OrderType.FAK）、FOK（OrderType.FOK）、市价单（OrderType.MARKET），不同交易所支持报单方式不完全一致。
+- vt_symbol：本地合约代码（字符串格式）
+- price：报单价格（浮点数类型）;
+- volume：报单数量（浮点数类型）;
+- order_type：OrderType枚举常量，默认为限价单（OrderType.LIMIT），同时支持停止单（OrderType.STOP）、FAK（OrderType.FAK）、FOK（OrderType.FOK）、市价单（OrderType.MARKET），不同交易所支持报单方式不完全一致。
 ```
 engine.buy(vt_symbol = "rb1910.SHFE",price = "3200",volume = "1",order_type=OrderType.LIMIT)
 ```
