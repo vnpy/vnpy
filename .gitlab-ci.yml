@@ -1,0 +1,142 @@
+# This file is a template, and might need editing before it works on your project.
+# Official language image. Look for the different tagged releases at:
+# https://hub.docker.com/r/library/python/tags/
+image: registry.cn-shanghai.aliyuncs.com/vnpy-ci/gcc-7-python-3.7:latest
+
+.services:
+  services: &services
+    - postgres:latest
+    - mysql:latest
+    - mongo:latest
+
+# Change pip's cache directory to be inside the project directory since we can
+# only cache local items.
+variables: &variables
+  GIT_DEPTH: "1"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  POSTGRES_DB: &db_name "vnpy"
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: &db_password "1234"
+  VNPY_TEST_POSTGRESQL_PASSWORD: *db_password
+  MYSQL_DATABASE: *db_name
+  MYSQL_ROOT_PASSWORD: *db_password
+  VNPY_TEST_MYSQL_PASSWORD: *db_password
+  VNPY_BUILD_PARALLEL: "auto"
+
+# Pip's cache doesn't store the python packages
+# https://pip.pypa.io/en/stable/reference/pip_install/#caching
+#
+# If you want to also cache the installed packages, you have to install
+# them in a virtualenv and cache it as well.
+.default_cache:
+  cache:
+    <<: &cache
+      key: "pip_and_venv"
+      untracked: false
+      policy: pull
+      paths:
+        - .cache/pip
+        - venv/
+
+
+
+before_script:
+  - echo $PWD
+  - python -V
+  - gcc --version
+  - free
+  - date
+  
+  # venv
+  - pip install virtualenv
+  - virtualenv venv
+  - source venv/bin/activate
+
+  # some envs
+  - source ci/env.sh
+
+.scripts:
+  script:
+    - &install_scripts |
+      date
+      python -m pip --version
+      python -m pip install --upgrade pip wheel setuptools
+      python -m pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+      bash ci/gitlab_pre_install.sh
+
+      date
+      bash ./install.sh
+      date
+
+    - &test_scripts |
+      date
+      cd tests
+      python test_all.py
+      date
+##################################
+# stages
+
+stages:  # I use anchors for IDE hints only
+  - &single_module single_module
+  - &build_all build_all
+
+
+###########################################
+## jobs:
+flake8:
+  stage: *single_module
+  image: python:3.7
+  cache:
+    key: 'flake8'
+    paths:
+      - .cache/pip
+      - venv/
+  script:
+    - pip install flake8
+    - flake8
+
+ctp:
+  <<: &test_single_module
+    stage: *single_module
+    image: registry.cn-shanghai.aliyuncs.com/vnpy-ci/gcc-8-python-3.7:latest
+    services: *services
+    cache:
+      <<: *cache
+    script:
+      - *install_scripts
+      - *test_scripts
+  variables:
+    <<: *variables
+    VNPY_BUILD_CTP: 1
+
+oes:
+  <<: *test_single_module
+  variables:
+    <<: *variables
+    VNPY_BUILD_OES: 1
+
+no_building:
+  <<: *test_single_module
+  cache:
+    <<: *cache
+    policy: pull-push
+  variables:
+    <<: *variables
+    VNPY_BUILD_OES: 0
+    VNPY_BUILD_CTP: 0
+
+build-all-gcc8:
+  stage: *build_all
+  variables:
+    <<: *variables
+  image: registry.cn-shanghai.aliyuncs.com/vnpy-ci/gcc-8-python-3.7:latest
+  services: *services
+  cache:
+    key: "build-all"
+    paths: []
+  script:
+    - unset VNPY_BUILD_CTP
+    - unset VNPY_BUILD_OES
+    - *install_scripts
+    - *test_scripts
+

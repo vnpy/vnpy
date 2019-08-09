@@ -74,7 +74,8 @@ PRODUCT_XTP2VT = {
     XTP_TICKER_TYPE.XTP_TICKER_TYPE_INDEX: Product.INDEX,
     XTP_TICKER_TYPE.XTP_TICKER_TYPE_FUND: Product.FUND,
     XTP_TICKER_TYPE.XTP_TICKER_TYPE_BOND: Product.BOND,
-    XTP_TICKER_TYPE.XTP_TICKER_TYPE_OPTION: Product.OPTION
+    XTP_TICKER_TYPE.XTP_TICKER_TYPE_OPTION: Product.OPTION,
+    XTP_TICKER_TYPE.XTP_TICKER_TYPE_UNKNOWN: Product.EQUITY,
 }
 
 # DIRECTION_VT2XTP = {
@@ -240,7 +241,7 @@ class XtpQuoteApi(API.QuoteSpi):
         self.server_ip = server_ip
         self.server_port = server_port
 
-        if quote_protocol == "CTP":
+        if quote_protocol == "TCP":
             self.quote_protocol = XTP_PROTOCOL_TYPE.XTP_PROTOCOL_TCP
         else:
             self.quote_protocol = XTP_PROTOCOL_TYPE.XTP_PROTOCOL_UDP

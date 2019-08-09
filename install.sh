@@ -2,6 +2,7 @@
 
 python=$1
 prefix=$2
+shift 2
 
 [[ -z $python ]] && python=python
 [[ -z $prefix ]] && prefix=/usr
@@ -9,14 +10,22 @@ prefix=$2
 $python -m pip install --upgrade pip setuptools wheel
 
 # Get and build ta-lib
-pushd /tmp
-wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
-tar -xf ta-lib-0.4.0-src.tar.gz
-cd ta-lib
-./configure --prefix=$prefix
-make -j
-sudo make install
-popd
+function install-ta-lib()
+{
+    pushd /tmp
+    wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+    tar -xf ta-lib-0.4.0-src.tar.gz
+    cd ta-lib
+    ./configure --prefix=$prefix
+    make -j
+    make install
+    popd
+}
+function ta-lib-exists()
+{
+    ta-lib-config --libs > /dev/null
+}
+ta-lib-exists || install-ta-lib
 
 # old versions of ta-lib imports numpy in setup.py
 $python -m pip install numpy
@@ -30,7 +39,7 @@ $python -m pip install https://vnpy-pip.oss-cn-shanghai.aliyuncs.com/colletion/i
 $python -m pip install -r requirements.txt
 
 # Install local Chinese language environment
-sudo locale-gen zh_CN.GB18030
+locale-gen zh_CN.GB18030
 
 # Install vn.py
-$python -m pip install .
+$python -m pip install . $@
