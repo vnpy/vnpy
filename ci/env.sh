@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# databases
 [[ -z ${VNPY_TEST_MYSQL_DATABASE} ]] && VNPY_TEST_MYSQL_DATABASE=vnpy
 [[ -z ${VNPY_TEST_MYSQL_HOST} ]] && VNPY_TEST_MYSQL_HOST=127.0.0.1
 [[ -z ${VNPY_TEST_MYSQL_PORT} ]] && VNPY_TEST_MYSQL_PORT=3306
@@ -28,3 +29,14 @@ export VNPY_TEST_POSTGRESQL_PASSWORD
 export VNPY_TEST_MONGODB_DATABASE
 export VNPY_TEST_MONGODB_HOST
 export VNPY_TEST_MONGODB_PORT
+
+# ext_modules:
+# disable all building first
+[[ -z ${VNPY_BUILD_CTP} ]] && VNPY_BUILD_CTP=0
+[[ -z ${VNPY_BUILD_OES} ]] && VNPY_BUILD_OES=0
+export VNPY_BUILD_CTP
+export VNPY_BUILD_OES
+
+# build option
+[[ -z ${VNPY_BUILD_PARALLEL} ]] && VNPY_BUILD_PARALLEL=auto
+export VNPY_BUILD_PARALLEL

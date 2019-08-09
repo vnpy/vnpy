@@ -12,9 +12,7 @@ c2py generate \
     --no-clear-pyi-output-dir \
     --no-callback-pattern ".*" \
     --ignore-pattern ".*(spk_struct|STimeval).*" \
-    --string-encoding-windows .936 \
-    --string-encoding-linux zh_CN.GB18030 \
-    --enforce-version 0.5.1
+    --enforce-version 0.5.4
 
 #####################################
 ## of unsupported functions: 5

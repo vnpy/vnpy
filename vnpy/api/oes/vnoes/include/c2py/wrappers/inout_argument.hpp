@@ -27,7 +27,7 @@ namespace c2py
         {
             constexpr auto method = method_constant::value;
             //using func_t = ct::function_type_t<decltype(method)>;
-            //using args_t = wrap<ct::args_t<func_t>, list>;
+            //using args_t = ct::args_t<func_t, list>;
             //using ret_t = ct::return_type_t<func_t>;
             auto stdmethod = std::function<ct::function_type_t<decltype(method)>>(method);
             if constexpr (std::is_void_v<ret_t>)
@@ -78,7 +78,7 @@ namespace c2py
 
         constexpr auto method = method_constant::value;
         using func_t = ct::function_type_t<decltype(method)>;
-        using args_t = wrap<ct::args_t<func_t>, list>;
+        using args_t = ct::args_t<func_t, list>;
 
         if constexpr (check_not_out_of_bound<index, size<args_t>::value>())
         {

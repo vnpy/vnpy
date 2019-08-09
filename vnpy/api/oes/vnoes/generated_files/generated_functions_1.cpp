@@ -15,6 +15,86 @@
 #include "mds_api/mds_api.h"
 
 
+void generate_class_decltype_OesTrdCnfm_userInfo_(pybind11::object & parent)
+{
+    // decltype(_OesTrdCnfm::userInfo)
+    pybind11::class_<decltype(_OesTrdCnfm::userInfo)> c(parent, "decltype(userInfo)");
+    if constexpr (std::is_default_constructible_v<decltype(_OesTrdCnfm::userInfo)>)
+        c.def(pybind11::init<>());
+    // decltype(_OesTrdCnfm::userInfo)::u64
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesTrdCnfm::userInfo), "u64", u64);
+    // decltype(_OesTrdCnfm::userInfo)::i64
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesTrdCnfm::userInfo), "i64", i64);
+    // decltype(_OesTrdCnfm::userInfo)::u32
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesTrdCnfm::userInfo), "u32", u32);
+    // decltype(_OesTrdCnfm::userInfo)::i32
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesTrdCnfm::userInfo), "i32", i32);
+    // decltype(_OesTrdCnfm::userInfo)::c8
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, decltype(_OesTrdCnfm::userInfo), "c8", c8);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, decltype(_OesTrdCnfm::userInfo), c);
+    module_vnoes::objects.emplace("decltype(_OesTrdCnfm::userInfo)", c);
+}
+void generate_class_OesLotWinningBaseInfo(pybind11::object & parent)
+{
+    // _OesLotWinningBaseInfo
+    pybind11::class_<_OesLotWinningBaseInfo> c(parent, "_OesLotWinningBaseInfo");
+    if constexpr (std::is_default_constructible_v<_OesLotWinningBaseInfo>)
+        c.def(pybind11::init<>());
+    // _OesLotWinningBaseInfo::invAcctId
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLotWinningBaseInfo, "invAcctId", invAcctId);
+    // _OesLotWinningBaseInfo::securityId
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLotWinningBaseInfo, "securityId", securityId);
+    // _OesLotWinningBaseInfo::mktId
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLotWinningBaseInfo, "mktId", mktId);
+    // _OesLotWinningBaseInfo::lotType
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLotWinningBaseInfo, "lotType", lotType);
+    // _OesLotWinningBaseInfo::rejReason
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLotWinningBaseInfo, "rejReason", rejReason);
+    // _OesLotWinningBaseInfo::__LOT_WINNING_BASE_INFO_filler
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLotWinningBaseInfo, "__LOT_WINNING_BASE_INFO_filler", __LOT_WINNING_BASE_INFO_filler);
+    // _OesLotWinningBaseInfo::lotDate
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLotWinningBaseInfo, "lotDate", lotDate);
+    // _OesLotWinningBaseInfo::securityName
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLotWinningBaseInfo, "securityName", securityName);
+    // _OesLotWinningBaseInfo::assignNum
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLotWinningBaseInfo, "assignNum", assignNum);
+    // _OesLotWinningBaseInfo::lotQty
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLotWinningBaseInfo, "lotQty", lotQty);
+    // _OesLotWinningBaseInfo::lotPrice
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLotWinningBaseInfo, "lotPrice", lotPrice);
+    // _OesLotWinningBaseInfo::lotAmt
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesLotWinningBaseInfo, "lotAmt", lotAmt);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesLotWinningBaseInfo, c);
+    module_vnoes::objects.emplace("_OesLotWinningBaseInfo", c);
+}
+void generate_class_OesFundTrsfBaseInfo(pybind11::object & parent)
+{
+    // _OesFundTrsfBaseInfo
+    pybind11::class_<_OesFundTrsfBaseInfo> c(parent, "_OesFundTrsfBaseInfo");
+    if constexpr (std::is_default_constructible_v<_OesFundTrsfBaseInfo>)
+        c.def(pybind11::init<>());
+    // _OesFundTrsfBaseInfo::clSeqNo
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "clSeqNo", clSeqNo);
+    // _OesFundTrsfBaseInfo::direct
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "direct", direct);
+    // _OesFundTrsfBaseInfo::isAllotOnly
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "isAllotOnly", isAllotOnly);
+    // _OesFundTrsfBaseInfo::__FUND_TRSF_BASE_filler
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "__FUND_TRSF_BASE_filler", __FUND_TRSF_BASE_filler);
+    // _OesFundTrsfBaseInfo::cashAcctId
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "cashAcctId", cashAcctId);
+    // _OesFundTrsfBaseInfo::trdPasswd
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "trdPasswd", trdPasswd);
+    // _OesFundTrsfBaseInfo::trsfPasswd
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "trsfPasswd", trsfPasswd);
+    // _OesFundTrsfBaseInfo::occurAmt
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "occurAmt", occurAmt);
+    // _OesFundTrsfBaseInfo::userInfo
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesFundTrsfBaseInfo, "userInfo", userInfo);
+    generate_class_decltype_OesFundTrsfBaseInfo_userInfo_(c);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesFundTrsfBaseInfo, c);
+    module_vnoes::objects.emplace("_OesFundTrsfBaseInfo", c);
+}
 void generate_class_decltype_OesFundTrsfBaseInfo_userInfo_(pybind11::object & parent)
 {
     // decltype(_OesFundTrsfBaseInfo::userInfo)
@@ -424,167 +504,4 @@ void generate_class_OesEtfBaseInfo(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfBaseInfo, "netRedemLimit", netRedemLimit);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesEtfBaseInfo, c);
     module_vnoes::objects.emplace("_OesEtfBaseInfo", c);
-}
-void generate_class_OesEtfComponentBaseInfo(pybind11::object & parent)
-{
-    // _OesEtfComponentBaseInfo
-    pybind11::class_<_OesEtfComponentBaseInfo> c(parent, "_OesEtfComponentBaseInfo");
-    if constexpr (std::is_default_constructible_v<_OesEtfComponentBaseInfo>)
-        c.def(pybind11::init<>());
-    // _OesEtfComponentBaseInfo::fundId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "fundId", fundId);
-    // _OesEtfComponentBaseInfo::securityId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "securityId", securityId);
-    // _OesEtfComponentBaseInfo::mktId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "mktId", mktId);
-    // _OesEtfComponentBaseInfo::subFlag
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "subFlag", subFlag);
-    // _OesEtfComponentBaseInfo::securityType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "securityType", securityType);
-    // _OesEtfComponentBaseInfo::subSecurityType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "subSecurityType", subSecurityType);
-    // _OesEtfComponentBaseInfo::prevClose
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "prevClose", prevClose);
-    // _OesEtfComponentBaseInfo::qty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "qty", qty);
-    // _OesEtfComponentBaseInfo::premiumRate
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "premiumRate", premiumRate);
-    // _OesEtfComponentBaseInfo::creationSubCash
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "creationSubCash", creationSubCash);
-    // _OesEtfComponentBaseInfo::redemptionCashSub
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesEtfComponentBaseInfo, "redemptionCashSub", redemptionCashSub);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesEtfComponentBaseInfo, c);
-    module_vnoes::objects.emplace("_OesEtfComponentBaseInfo", c);
-}
-void generate_class_OesOptionBaseInfo(pybind11::object & parent)
-{
-    // _OesOptionBaseInfo
-    pybind11::class_<_OesOptionBaseInfo> c(parent, "_OesOptionBaseInfo");
-    if constexpr (std::is_default_constructible_v<_OesOptionBaseInfo>)
-        c.def(pybind11::init<>());
-    // _OesOptionBaseInfo::securityId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "securityId", securityId);
-    // _OesOptionBaseInfo::mktId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "mktId", mktId);
-    // _OesOptionBaseInfo::securityType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "securityType", securityType);
-    // _OesOptionBaseInfo::subSecurityType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "subSecurityType", subSecurityType);
-    // _OesOptionBaseInfo::contractType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "contractType", contractType);
-    // _OesOptionBaseInfo::openFlag
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "openFlag", openFlag);
-    // _OesOptionBaseInfo::optionType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "optionType", optionType);
-    // _OesOptionBaseInfo::suspFlag
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "suspFlag", suspFlag);
-    // _OesOptionBaseInfo::temporarySuspFlag
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "temporarySuspFlag", temporarySuspFlag);
-    // _OesOptionBaseInfo::contractMultiplierUnit
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "contractMultiplierUnit", contractMultiplierUnit);
-    // _OesOptionBaseInfo::excPrice
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "excPrice", excPrice);
-    // _OesOptionBaseInfo::startDate
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "startDate", startDate);
-    // _OesOptionBaseInfo::endDate
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "endDate", endDate);
-    // _OesOptionBaseInfo::execDate
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "execDate", execDate);
-    // _OesOptionBaseInfo::expDate
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "expDate", expDate);
-    // _OesOptionBaseInfo::closePrice
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "closePrice", closePrice);
-    // _OesOptionBaseInfo::settlPrice
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "settlPrice", settlPrice);
-    // _OesOptionBaseInfo::roundLot
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "roundLot", roundLot);
-    // _OesOptionBaseInfo::tickSize
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "tickSize", tickSize);
-    // _OesOptionBaseInfo::ceilPrice
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "ceilPrice", ceilPrice);
-    // _OesOptionBaseInfo::floorPrice
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "floorPrice", floorPrice);
-    // _OesOptionBaseInfo::marginUnit
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "marginUnit", marginUnit);
-    // _OesOptionBaseInfo::leavesQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "leavesQty", leavesQty);
-    // _OesOptionBaseInfo::lmtOrdMaxQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "lmtOrdMaxQty", lmtOrdMaxQty);
-    // _OesOptionBaseInfo::lmtOrdMinQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "lmtOrdMinQty", lmtOrdMinQty);
-    // _OesOptionBaseInfo::mktOrdMaxQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "mktOrdMaxQty", mktOrdMaxQty);
-    // _OesOptionBaseInfo::mktOrdMinQty
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "mktOrdMinQty", mktOrdMinQty);
-    // _OesOptionBaseInfo::underlyingSecurityId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "underlyingSecurityId", underlyingSecurityId);
-    // _OesOptionBaseInfo::underlyingMktId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "underlyingMktId", underlyingMktId);
-    // _OesOptionBaseInfo::underlyingSecuType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "underlyingSecuType", underlyingSecuType);
-    // _OesOptionBaseInfo::closeEndDateFlag
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "closeEndDateFlag", closeEndDateFlag);
-    // _OesOptionBaseInfo::__OPTION_BASE_filler1
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "__OPTION_BASE_filler1", __OPTION_BASE_filler1);
-    // _OesOptionBaseInfo::underlyingClosePrice
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "underlyingClosePrice", underlyingClosePrice);
-    // _OesOptionBaseInfo::securityName
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesOptionBaseInfo, "securityName", securityName);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesOptionBaseInfo, c);
-    module_vnoes::objects.emplace("_OesOptionBaseInfo", c);
-}
-void generate_class_OesCashAssetBaseInfo(pybind11::object & parent)
-{
-    // _OesCashAssetBaseInfo
-    pybind11::class_<_OesCashAssetBaseInfo> c(parent, "_OesCashAssetBaseInfo");
-    if constexpr (std::is_default_constructible_v<_OesCashAssetBaseInfo>)
-        c.def(pybind11::init<>());
-    // _OesCashAssetBaseInfo::cashAcctId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "cashAcctId", cashAcctId);
-    // _OesCashAssetBaseInfo::custId
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "custId", custId);
-    // _OesCashAssetBaseInfo::currType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "currType", currType);
-    // _OesCashAssetBaseInfo::cashType
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "cashType", cashType);
-    // _OesCashAssetBaseInfo::cashAcctStatus
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "cashAcctStatus", cashAcctStatus);
-    // _OesCashAssetBaseInfo::isFundTrsfDisabled
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "isFundTrsfDisabled", isFundTrsfDisabled);
-    // _OesCashAssetBaseInfo::__CASH_ASSET_BASE_filler
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "__CASH_ASSET_BASE_filler", __CASH_ASSET_BASE_filler);
-    // _OesCashAssetBaseInfo::beginningBal
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "beginningBal", beginningBal);
-    // _OesCashAssetBaseInfo::beginningAvailableBal
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "beginningAvailableBal", beginningAvailableBal);
-    // _OesCashAssetBaseInfo::beginningDrawableBal
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "beginningDrawableBal", beginningDrawableBal);
-    // _OesCashAssetBaseInfo::disableBal
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "disableBal", disableBal);
-    // _OesCashAssetBaseInfo::reversalAmt
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "reversalAmt", reversalAmt);
-    // _OesCashAssetBaseInfo::manualFrzAmt
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "manualFrzAmt", manualFrzAmt);
-    // _OesCashAssetBaseInfo::totalDepositAmt
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "totalDepositAmt", totalDepositAmt);
-    // _OesCashAssetBaseInfo::totalWithdrawAmt
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "totalWithdrawAmt", totalWithdrawAmt);
-    // _OesCashAssetBaseInfo::withdrawFrzAmt
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "withdrawFrzAmt", withdrawFrzAmt);
-    // _OesCashAssetBaseInfo::totalSellAmt
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "totalSellAmt", totalSellAmt);
-    // _OesCashAssetBaseInfo::totalBuyAmt
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "totalBuyAmt", totalBuyAmt);
-    // _OesCashAssetBaseInfo::buyFrzAmt
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "buyFrzAmt", buyFrzAmt);
-    // _OesCashAssetBaseInfo::totalFeeAmt
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "totalFeeAmt", totalFeeAmt);
-    // _OesCashAssetBaseInfo::feeFrzAmt
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "feeFrzAmt", feeFrzAmt);
-    // _OesCashAssetBaseInfo::marginAmt
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "marginAmt", marginAmt);
-    // _OesCashAssetBaseInfo::marginFrzAmt
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnoes, _OesCashAssetBaseInfo, "marginFrzAmt", marginFrzAmt);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnoes, _OesCashAssetBaseInfo, c);
-    module_vnoes::objects.emplace("_OesCashAssetBaseInfo", c);
 }
