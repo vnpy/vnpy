@@ -176,6 +176,12 @@
     <ClCompile Include="generated_files\generated_functions_11.cpp" />
     <ClCompile Include="generated_files\generated_functions_12.cpp" />
     <ClCompile Include="generated_files\generated_functions_13.cpp" />
+    <ClCompile Include="generated_files\generated_functions_14.cpp" />
+    <ClCompile Include="generated_files\generated_functions_15.cpp" />
+    <ClCompile Include="generated_files\generated_functions_16.cpp" />
+    <ClCompile Include="generated_files\generated_functions_17.cpp" />
+    <ClCompile Include="generated_files\generated_functions_18.cpp" />
+    <ClCompile Include="generated_files\generated_functions_19.cpp" />
     <ClCompile Include="generated_files\generated_functions_2.cpp" />
     <ClCompile Include="generated_files\generated_functions_3.cpp" />
     <ClCompile Include="generated_files\generated_functions_4.cpp" />

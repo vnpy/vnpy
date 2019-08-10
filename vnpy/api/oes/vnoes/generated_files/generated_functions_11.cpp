@@ -15,1602 +15,478 @@
 #include "mds_api/mds_api.h"
 
 
-void generate_enum_eMdsMdProductType(pybind11::object & parent)
+void generate_enum_eOesLotRejReason(pybind11::object & parent)
 {
-    // _eMdsMdProductType
-    pybind11::enum_<_eMdsMdProductType> e(parent, "_eMdsMdProductType", pybind11::arithmetic());
-    // _eMdsMdProductType::MDS_MD_PRODUCT_TYPE_STOCK
-    e.value("MDS_MD_PRODUCT_TYPE_STOCK", _eMdsMdProductType::MDS_MD_PRODUCT_TYPE_STOCK);
-    // _eMdsMdProductType::MDS_MD_PRODUCT_TYPE_INDEX
-    e.value("MDS_MD_PRODUCT_TYPE_INDEX", _eMdsMdProductType::MDS_MD_PRODUCT_TYPE_INDEX);
-    // _eMdsMdProductType::MDS_MD_PRODUCT_TYPE_OPTION
-    e.value("MDS_MD_PRODUCT_TYPE_OPTION", _eMdsMdProductType::MDS_MD_PRODUCT_TYPE_OPTION);
-    // _eMdsMdProductType::__MAX_MDS_MD_PRODUCT_TYPE
-    e.value("__MAX_MDS_MD_PRODUCT_TYPE", _eMdsMdProductType::__MAX_MDS_MD_PRODUCT_TYPE);
-    // _eMdsMdProductType::MDS_SECURITY_TYPE_STOCK
-    e.value("MDS_SECURITY_TYPE_STOCK", _eMdsMdProductType::MDS_SECURITY_TYPE_STOCK);
-    // _eMdsMdProductType::MDS_SECURITY_TYPE_INDEX
-    e.value("MDS_SECURITY_TYPE_INDEX", _eMdsMdProductType::MDS_SECURITY_TYPE_INDEX);
-    // _eMdsMdProductType::MDS_SECURITY_TYPE_OPTION
-    e.value("MDS_SECURITY_TYPE_OPTION", _eMdsMdProductType::MDS_SECURITY_TYPE_OPTION);
-    // _eMdsMdProductType::__MAX_MDS_SECURITY_TYPE
-    e.value("__MAX_MDS_SECURITY_TYPE", _eMdsMdProductType::__MAX_MDS_SECURITY_TYPE);
+    // _eOesLotRejReason
+    pybind11::enum_<_eOesLotRejReason> e(parent, "_eOesLotRejReason", pybind11::arithmetic());
+    // _eOesLotRejReason::OES_LOT_REJ_REASON_DUPLICATE
+    e.value("OES_LOT_REJ_REASON_DUPLICATE", _eOesLotRejReason::OES_LOT_REJ_REASON_DUPLICATE);
+    // _eOesLotRejReason::OES_LOT_REJ_REASON_INVALID_DUPLICATE
+    e.value("OES_LOT_REJ_REASON_INVALID_DUPLICATE", _eOesLotRejReason::OES_LOT_REJ_REASON_INVALID_DUPLICATE);
+    // _eOesLotRejReason::OES_LOT_REJ_REASON_OFFLINE_FIRST
+    e.value("OES_LOT_REJ_REASON_OFFLINE_FIRST", _eOesLotRejReason::OES_LOT_REJ_REASON_OFFLINE_FIRST);
+    // _eOesLotRejReason::OES_LOT_REJ_REASON_BAD_RECORD
+    e.value("OES_LOT_REJ_REASON_BAD_RECORD", _eOesLotRejReason::OES_LOT_REJ_REASON_BAD_RECORD);
+    // _eOesLotRejReason::OES_LOT_REJ_REASON_UNKNOW
+    e.value("OES_LOT_REJ_REASON_UNKNOW", _eOesLotRejReason::OES_LOT_REJ_REASON_UNKNOW);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsMdProductType", e);
+    module_vnoes::objects.emplace("_eOesLotRejReason", e);
 }
-void generate_enum_eMdsMdStreamType(pybind11::object & parent)
+void generate_enum_eOesOrdStatus(pybind11::object & parent)
 {
-    // _eMdsMdStreamType
-    pybind11::enum_<_eMdsMdStreamType> e(parent, "_eMdsMdStreamType", pybind11::arithmetic());
-    // _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L1_SNAPSHOT
-    e.value("MDS_MD_STREAM_TYPE_L1_SNAPSHOT", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L1_SNAPSHOT);
-    // _eMdsMdStreamType::MDS_MD_STREAM_TYPE_INDEX
-    e.value("MDS_MD_STREAM_TYPE_INDEX", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_INDEX);
-    // _eMdsMdStreamType::MDS_MD_STREAM_TYPE_OPTION
-    e.value("MDS_MD_STREAM_TYPE_OPTION", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_OPTION);
-    // _eMdsMdStreamType::MDS_MD_STREAM_TYPE_SZSE_TRADE_STATS
-    e.value("MDS_MD_STREAM_TYPE_SZSE_TRADE_STATS", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_SZSE_TRADE_STATS);
-    // _eMdsMdStreamType::MDS_MD_STREAM_TYPE_SSE_L1_BOND
-    e.value("MDS_MD_STREAM_TYPE_SSE_L1_BOND", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_SSE_L1_BOND);
-    // _eMdsMdStreamType::MDS_MD_STREAM_TYPE_SSE_L1_FUND
-    e.value("MDS_MD_STREAM_TYPE_SSE_L1_FUND", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_SSE_L1_FUND);
-    // _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_SNAPSHOT
-    e.value("MDS_MD_STREAM_TYPE_L2_SNAPSHOT", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_SNAPSHOT);
-    // _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_SNAPSHOT
-    e.value("MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_SNAPSHOT", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_SNAPSHOT);
-    // _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_SNAPSHOT_INCREMENTAL
-    e.value("MDS_MD_STREAM_TYPE_L2_SNAPSHOT_INCREMENTAL", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_SNAPSHOT_INCREMENTAL);
-    // _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_INCREMENTAL
-    e.value("MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_INCREMENTAL", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_INCREMENTAL);
-    // _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_MARKET_OVERVIEW
-    e.value("MDS_MD_STREAM_TYPE_L2_MARKET_OVERVIEW", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_L2_MARKET_OVERVIEW);
-    // _eMdsMdStreamType::__MAX_MDS_MD_STREAM_TYPE
-    e.value("__MAX_MDS_MD_STREAM_TYPE", _eMdsMdStreamType::__MAX_MDS_MD_STREAM_TYPE);
-    // _eMdsMdStreamType::MDS_MD_STREAM_TYPE_BOND
-    e.value("MDS_MD_STREAM_TYPE_BOND", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_BOND);
-    // _eMdsMdStreamType::MDS_MD_STREAM_TYPE_FUND
-    e.value("MDS_MD_STREAM_TYPE_FUND", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_FUND);
-    // _eMdsMdStreamType::MDS_MD_STREAM_TYPE_OTHERS
-    e.value("MDS_MD_STREAM_TYPE_OTHERS", _eMdsMdStreamType::MDS_MD_STREAM_TYPE_OTHERS);
+    // _eOesOrdStatus
+    pybind11::enum_<_eOesOrdStatus> e(parent, "_eOesOrdStatus", pybind11::arithmetic());
+    // _eOesOrdStatus::OES_ORD_STATUS_UNDEFINE
+    e.value("OES_ORD_STATUS_UNDEFINE", _eOesOrdStatus::OES_ORD_STATUS_UNDEFINE);
+    // _eOesOrdStatus::OES_ORD_STATUS_NEW
+    e.value("OES_ORD_STATUS_NEW", _eOesOrdStatus::OES_ORD_STATUS_NEW);
+    // _eOesOrdStatus::OES_ORD_STATUS_DECLARED
+    e.value("OES_ORD_STATUS_DECLARED", _eOesOrdStatus::OES_ORD_STATUS_DECLARED);
+    // _eOesOrdStatus::OES_ORD_STATUS_PARTIALLY_FILLED
+    e.value("OES_ORD_STATUS_PARTIALLY_FILLED", _eOesOrdStatus::OES_ORD_STATUS_PARTIALLY_FILLED);
+    // _eOesOrdStatus::__OES_ORD_STATUS_FINAL_MIN
+    e.value("__OES_ORD_STATUS_FINAL_MIN", _eOesOrdStatus::__OES_ORD_STATUS_FINAL_MIN);
+    // _eOesOrdStatus::OES_ORD_STATUS_CANCEL_DONE
+    e.value("OES_ORD_STATUS_CANCEL_DONE", _eOesOrdStatus::OES_ORD_STATUS_CANCEL_DONE);
+    // _eOesOrdStatus::OES_ORD_STATUS_PARTIALLY_CANCELED
+    e.value("OES_ORD_STATUS_PARTIALLY_CANCELED", _eOesOrdStatus::OES_ORD_STATUS_PARTIALLY_CANCELED);
+    // _eOesOrdStatus::OES_ORD_STATUS_CANCELED
+    e.value("OES_ORD_STATUS_CANCELED", _eOesOrdStatus::OES_ORD_STATUS_CANCELED);
+    // _eOesOrdStatus::OES_ORD_STATUS_FILLED
+    e.value("OES_ORD_STATUS_FILLED", _eOesOrdStatus::OES_ORD_STATUS_FILLED);
+    // _eOesOrdStatus::__OES_ORD_STATUS_VALID_MAX
+    e.value("__OES_ORD_STATUS_VALID_MAX", _eOesOrdStatus::__OES_ORD_STATUS_VALID_MAX);
+    // _eOesOrdStatus::__OES_ORD_STATUS_INVALID_MIN
+    e.value("__OES_ORD_STATUS_INVALID_MIN", _eOesOrdStatus::__OES_ORD_STATUS_INVALID_MIN);
+    // _eOesOrdStatus::OES_ORD_STATUS_INVALID_OES
+    e.value("OES_ORD_STATUS_INVALID_OES", _eOesOrdStatus::OES_ORD_STATUS_INVALID_OES);
+    // _eOesOrdStatus::OES_ORD_STATUS_INVALID_SH_F
+    e.value("OES_ORD_STATUS_INVALID_SH_F", _eOesOrdStatus::OES_ORD_STATUS_INVALID_SH_F);
+    // _eOesOrdStatus::OES_ORD_STATUS_INVALID_SH_E
+    e.value("OES_ORD_STATUS_INVALID_SH_E", _eOesOrdStatus::OES_ORD_STATUS_INVALID_SH_E);
+    // _eOesOrdStatus::OES_ORD_STATUS_INVALID_SH_COMM
+    e.value("OES_ORD_STATUS_INVALID_SH_COMM", _eOesOrdStatus::OES_ORD_STATUS_INVALID_SH_COMM);
+    // _eOesOrdStatus::OES_ORD_STATUS_INVALID_SZ_F
+    e.value("OES_ORD_STATUS_INVALID_SZ_F", _eOesOrdStatus::OES_ORD_STATUS_INVALID_SZ_F);
+    // _eOesOrdStatus::OES_ORD_STATUS_INVALID_SZ_E
+    e.value("OES_ORD_STATUS_INVALID_SZ_E", _eOesOrdStatus::OES_ORD_STATUS_INVALID_SZ_E);
+    // _eOesOrdStatus::OES_ORD_STATUS_INVALID_SZ_REJECT
+    e.value("OES_ORD_STATUS_INVALID_SZ_REJECT", _eOesOrdStatus::OES_ORD_STATUS_INVALID_SZ_REJECT);
+    // _eOesOrdStatus::OES_ORD_STATUS_INVALID_SZ_TRY_AGAIN
+    e.value("OES_ORD_STATUS_INVALID_SZ_TRY_AGAIN", _eOesOrdStatus::OES_ORD_STATUS_INVALID_SZ_TRY_AGAIN);
+    // _eOesOrdStatus::__OES_ORD_STATUS_INVALID_MAX
+    e.value("__OES_ORD_STATUS_INVALID_MAX", _eOesOrdStatus::__OES_ORD_STATUS_INVALID_MAX);
+    // _eOesOrdStatus::OES_ORD_STATUS_NORMAL
+    e.value("OES_ORD_STATUS_NORMAL", _eOesOrdStatus::OES_ORD_STATUS_NORMAL);
+    // _eOesOrdStatus::OES_ORD_STATUS_DECLARING
+    e.value("OES_ORD_STATUS_DECLARING", _eOesOrdStatus::OES_ORD_STATUS_DECLARING);
+    // _eOesOrdStatus::__OES_ORD_STATUS_INVALID_OES
+    e.value("__OES_ORD_STATUS_INVALID_OES", _eOesOrdStatus::__OES_ORD_STATUS_INVALID_OES);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsMdStreamType", e);
+    module_vnoes::objects.emplace("_eOesOrdStatus", e);
 }
-void generate_enum_eMdsMdLevel(pybind11::object & parent)
+void generate_enum_eOesOrdType(pybind11::object & parent)
 {
-    // _eMdsMdLevel
-    pybind11::enum_<_eMdsMdLevel> e(parent, "_eMdsMdLevel", pybind11::arithmetic());
-    // _eMdsMdLevel::MDS_MD_LEVEL_0
-    e.value("MDS_MD_LEVEL_0", _eMdsMdLevel::MDS_MD_LEVEL_0);
-    // _eMdsMdLevel::MDS_MD_LEVEL_1
-    e.value("MDS_MD_LEVEL_1", _eMdsMdLevel::MDS_MD_LEVEL_1);
-    // _eMdsMdLevel::MDS_MD_LEVEL_2
-    e.value("MDS_MD_LEVEL_2", _eMdsMdLevel::MDS_MD_LEVEL_2);
-    // _eMdsMdLevel::__MAX_MDS_MD_LEVEL
-    e.value("__MAX_MDS_MD_LEVEL", _eMdsMdLevel::__MAX_MDS_MD_LEVEL);
+    // _eOesOrdType
+    pybind11::enum_<_eOesOrdType> e(parent, "_eOesOrdType", pybind11::arithmetic());
+    // _eOesOrdType::OES_ORD_TYPE_LMT
+    e.value("OES_ORD_TYPE_LMT", _eOesOrdType::OES_ORD_TYPE_LMT);
+    // _eOesOrdType::OES_ORD_TYPE_LMT_FOK
+    e.value("OES_ORD_TYPE_LMT_FOK", _eOesOrdType::OES_ORD_TYPE_LMT_FOK);
+    // _eOesOrdType::__OES_ORD_TYPE_LMT_MAX
+    e.value("__OES_ORD_TYPE_LMT_MAX", _eOesOrdType::__OES_ORD_TYPE_LMT_MAX);
+    // _eOesOrdType::OES_ORD_TYPE_MTL_BEST_5
+    e.value("OES_ORD_TYPE_MTL_BEST_5", _eOesOrdType::OES_ORD_TYPE_MTL_BEST_5);
+    // _eOesOrdType::OES_ORD_TYPE_MTL_BEST
+    e.value("OES_ORD_TYPE_MTL_BEST", _eOesOrdType::OES_ORD_TYPE_MTL_BEST);
+    // _eOesOrdType::OES_ORD_TYPE_MTL_SAMEPARTY_BEST
+    e.value("OES_ORD_TYPE_MTL_SAMEPARTY_BEST", _eOesOrdType::OES_ORD_TYPE_MTL_SAMEPARTY_BEST);
+    // _eOesOrdType::__OES_ORD_TYPE_MTL_MAX
+    e.value("__OES_ORD_TYPE_MTL_MAX", _eOesOrdType::__OES_ORD_TYPE_MTL_MAX);
+    // _eOesOrdType::OES_ORD_TYPE_FAK_BEST_5
+    e.value("OES_ORD_TYPE_FAK_BEST_5", _eOesOrdType::OES_ORD_TYPE_FAK_BEST_5);
+    // _eOesOrdType::OES_ORD_TYPE_FAK
+    e.value("OES_ORD_TYPE_FAK", _eOesOrdType::OES_ORD_TYPE_FAK);
+    // _eOesOrdType::__OES_ORD_TYPE_FAK_MAX
+    e.value("__OES_ORD_TYPE_FAK_MAX", _eOesOrdType::__OES_ORD_TYPE_FAK_MAX);
+    // _eOesOrdType::OES_ORD_TYPE_FOK
+    e.value("OES_ORD_TYPE_FOK", _eOesOrdType::OES_ORD_TYPE_FOK);
+    // _eOesOrdType::__OES_ORD_TYPE_FOK_MAX
+    e.value("__OES_ORD_TYPE_FOK_MAX", _eOesOrdType::__OES_ORD_TYPE_FOK_MAX);
+    // _eOesOrdType::__OES_ORD_TYPE_MAX
+    e.value("__OES_ORD_TYPE_MAX", _eOesOrdType::__OES_ORD_TYPE_MAX);
+    // _eOesOrdType::__OES_ORD_TYPE_MAX_ALIGNED
+    e.value("__OES_ORD_TYPE_MAX_ALIGNED", _eOesOrdType::__OES_ORD_TYPE_MAX_ALIGNED);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsMdLevel", e);
+    module_vnoes::objects.emplace("_eOesOrdType", e);
 }
-void generate_enum_eMdsL2PriceLevelOperator(pybind11::object & parent)
+void generate_enum_eOesOrdTypeSh(pybind11::object & parent)
 {
-    // _eMdsL2PriceLevelOperator
-    pybind11::enum_<_eMdsL2PriceLevelOperator> e(parent, "_eMdsL2PriceLevelOperator", pybind11::arithmetic());
-    // _eMdsL2PriceLevelOperator::MDS_L2_PX_OPERATOR_ADD
-    e.value("MDS_L2_PX_OPERATOR_ADD", _eMdsL2PriceLevelOperator::MDS_L2_PX_OPERATOR_ADD);
-    // _eMdsL2PriceLevelOperator::MDS_L2_PX_OPERATOR_UPDATE
-    e.value("MDS_L2_PX_OPERATOR_UPDATE", _eMdsL2PriceLevelOperator::MDS_L2_PX_OPERATOR_UPDATE);
-    // _eMdsL2PriceLevelOperator::MDS_L2_PX_OPERATOR_DELETE
-    e.value("MDS_L2_PX_OPERATOR_DELETE", _eMdsL2PriceLevelOperator::MDS_L2_PX_OPERATOR_DELETE);
-    // _eMdsL2PriceLevelOperator::__MAX_MDS_L2_PX_OPERATOR
-    e.value("__MAX_MDS_L2_PX_OPERATOR", _eMdsL2PriceLevelOperator::__MAX_MDS_L2_PX_OPERATOR);
+    // _eOesOrdTypeSh
+    pybind11::enum_<_eOesOrdTypeSh> e(parent, "_eOesOrdTypeSh", pybind11::arithmetic());
+    // _eOesOrdTypeSh::OES_ORD_TYPE_SH_LMT
+    e.value("OES_ORD_TYPE_SH_LMT", _eOesOrdTypeSh::OES_ORD_TYPE_SH_LMT);
+    // _eOesOrdTypeSh::OES_ORD_TYPE_SH_LMT_FOK
+    e.value("OES_ORD_TYPE_SH_LMT_FOK", _eOesOrdTypeSh::OES_ORD_TYPE_SH_LMT_FOK);
+    // _eOesOrdTypeSh::OES_ORD_TYPE_SH_MTL_BEST_5
+    e.value("OES_ORD_TYPE_SH_MTL_BEST_5", _eOesOrdTypeSh::OES_ORD_TYPE_SH_MTL_BEST_5);
+    // _eOesOrdTypeSh::OES_ORD_TYPE_SH_MTL_BEST
+    e.value("OES_ORD_TYPE_SH_MTL_BEST", _eOesOrdTypeSh::OES_ORD_TYPE_SH_MTL_BEST);
+    // _eOesOrdTypeSh::OES_ORD_TYPE_SH_MTL_SAMEPARTY_BEST
+    e.value("OES_ORD_TYPE_SH_MTL_SAMEPARTY_BEST", _eOesOrdTypeSh::OES_ORD_TYPE_SH_MTL_SAMEPARTY_BEST);
+    // _eOesOrdTypeSh::OES_ORD_TYPE_SH_FAK_BEST_5
+    e.value("OES_ORD_TYPE_SH_FAK_BEST_5", _eOesOrdTypeSh::OES_ORD_TYPE_SH_FAK_BEST_5);
+    // _eOesOrdTypeSh::OES_ORD_TYPE_SH_FOK
+    e.value("OES_ORD_TYPE_SH_FOK", _eOesOrdTypeSh::OES_ORD_TYPE_SH_FOK);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsL2PriceLevelOperator", e);
+    module_vnoes::objects.emplace("_eOesOrdTypeSh", e);
 }
-void generate_enum_eMdsL2TradeExecType(pybind11::object & parent)
+void generate_enum_eOesOrdTypeSz(pybind11::object & parent)
 {
-    // _eMdsL2TradeExecType
-    pybind11::enum_<_eMdsL2TradeExecType> e(parent, "_eMdsL2TradeExecType", pybind11::arithmetic());
-    // _eMdsL2TradeExecType::MDS_L2_TRADE_EXECTYPE_CANCELED
-    e.value("MDS_L2_TRADE_EXECTYPE_CANCELED", _eMdsL2TradeExecType::MDS_L2_TRADE_EXECTYPE_CANCELED);
-    // _eMdsL2TradeExecType::MDS_L2_TRADE_EXECTYPE_TRADE
-    e.value("MDS_L2_TRADE_EXECTYPE_TRADE", _eMdsL2TradeExecType::MDS_L2_TRADE_EXECTYPE_TRADE);
+    // _eOesOrdTypeSz
+    pybind11::enum_<_eOesOrdTypeSz> e(parent, "_eOesOrdTypeSz", pybind11::arithmetic());
+    // _eOesOrdTypeSz::OES_ORD_TYPE_SZ_LMT
+    e.value("OES_ORD_TYPE_SZ_LMT", _eOesOrdTypeSz::OES_ORD_TYPE_SZ_LMT);
+    // _eOesOrdTypeSz::OES_ORD_TYPE_SZ_LMT_FOK
+    e.value("OES_ORD_TYPE_SZ_LMT_FOK", _eOesOrdTypeSz::OES_ORD_TYPE_SZ_LMT_FOK);
+    // _eOesOrdTypeSz::OES_ORD_TYPE_SZ_MTL_BEST
+    e.value("OES_ORD_TYPE_SZ_MTL_BEST", _eOesOrdTypeSz::OES_ORD_TYPE_SZ_MTL_BEST);
+    // _eOesOrdTypeSz::OES_ORD_TYPE_SZ_MTL_SAMEPARTY_BEST
+    e.value("OES_ORD_TYPE_SZ_MTL_SAMEPARTY_BEST", _eOesOrdTypeSz::OES_ORD_TYPE_SZ_MTL_SAMEPARTY_BEST);
+    // _eOesOrdTypeSz::OES_ORD_TYPE_SZ_FAK_BEST_5
+    e.value("OES_ORD_TYPE_SZ_FAK_BEST_5", _eOesOrdTypeSz::OES_ORD_TYPE_SZ_FAK_BEST_5);
+    // _eOesOrdTypeSz::OES_ORD_TYPE_SZ_FAK
+    e.value("OES_ORD_TYPE_SZ_FAK", _eOesOrdTypeSz::OES_ORD_TYPE_SZ_FAK);
+    // _eOesOrdTypeSz::OES_ORD_TYPE_SZ_FOK
+    e.value("OES_ORD_TYPE_SZ_FOK", _eOesOrdTypeSz::OES_ORD_TYPE_SZ_FOK);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsL2TradeExecType", e);
+    module_vnoes::objects.emplace("_eOesOrdTypeSz", e);
 }
-void generate_enum_eMdsL2TradeBSFlag(pybind11::object & parent)
+void generate_enum_eOesBuySellType(pybind11::object & parent)
 {
-    // _eMdsL2TradeBSFlag
-    pybind11::enum_<_eMdsL2TradeBSFlag> e(parent, "_eMdsL2TradeBSFlag", pybind11::arithmetic());
-    // _eMdsL2TradeBSFlag::MDS_L2_TRADE_BSFLAG_BUY
-    e.value("MDS_L2_TRADE_BSFLAG_BUY", _eMdsL2TradeBSFlag::MDS_L2_TRADE_BSFLAG_BUY);
-    // _eMdsL2TradeBSFlag::MDS_L2_TRADE_BSFLAG_SELL
-    e.value("MDS_L2_TRADE_BSFLAG_SELL", _eMdsL2TradeBSFlag::MDS_L2_TRADE_BSFLAG_SELL);
-    // _eMdsL2TradeBSFlag::MDS_L2_TRADE_BSFLAG_UNKNOWN
-    e.value("MDS_L2_TRADE_BSFLAG_UNKNOWN", _eMdsL2TradeBSFlag::MDS_L2_TRADE_BSFLAG_UNKNOWN);
+    // _eOesBuySellType
+    pybind11::enum_<_eOesBuySellType> e(parent, "_eOesBuySellType", pybind11::arithmetic());
+    // _eOesBuySellType::OES_BS_TYPE_UNDEFINE
+    e.value("OES_BS_TYPE_UNDEFINE", _eOesBuySellType::OES_BS_TYPE_UNDEFINE);
+    // _eOesBuySellType::OES_BS_TYPE_BUY
+    e.value("OES_BS_TYPE_BUY", _eOesBuySellType::OES_BS_TYPE_BUY);
+    // _eOesBuySellType::OES_BS_TYPE_SELL
+    e.value("OES_BS_TYPE_SELL", _eOesBuySellType::OES_BS_TYPE_SELL);
+    // _eOesBuySellType::OES_BS_TYPE_CREATION
+    e.value("OES_BS_TYPE_CREATION", _eOesBuySellType::OES_BS_TYPE_CREATION);
+    // _eOesBuySellType::OES_BS_TYPE_REDEMPTION
+    e.value("OES_BS_TYPE_REDEMPTION", _eOesBuySellType::OES_BS_TYPE_REDEMPTION);
+    // _eOesBuySellType::OES_BS_TYPE_CREDIT_BUY
+    e.value("OES_BS_TYPE_CREDIT_BUY", _eOesBuySellType::OES_BS_TYPE_CREDIT_BUY);
+    // _eOesBuySellType::OES_BS_TYPE_CREDIT_SELL
+    e.value("OES_BS_TYPE_CREDIT_SELL", _eOesBuySellType::OES_BS_TYPE_CREDIT_SELL);
+    // _eOesBuySellType::OES_BS_TYPE_SUBSCRIPTION
+    e.value("OES_BS_TYPE_SUBSCRIPTION", _eOesBuySellType::OES_BS_TYPE_SUBSCRIPTION);
+    // _eOesBuySellType::OES_BS_TYPE_ALLOTMENT
+    e.value("OES_BS_TYPE_ALLOTMENT", _eOesBuySellType::OES_BS_TYPE_ALLOTMENT);
+    // _eOesBuySellType::__OES_BS_TYPE_MAX_SPOT
+    e.value("__OES_BS_TYPE_MAX_SPOT", _eOesBuySellType::__OES_BS_TYPE_MAX_SPOT);
+    // _eOesBuySellType::__OES_BS_TYPE_MIN_OPTION
+    e.value("__OES_BS_TYPE_MIN_OPTION", _eOesBuySellType::__OES_BS_TYPE_MIN_OPTION);
+    // _eOesBuySellType::OES_BS_TYPE_BUY_OPEN
+    e.value("OES_BS_TYPE_BUY_OPEN", _eOesBuySellType::OES_BS_TYPE_BUY_OPEN);
+    // _eOesBuySellType::OES_BS_TYPE_BUY_CLOSE
+    e.value("OES_BS_TYPE_BUY_CLOSE", _eOesBuySellType::OES_BS_TYPE_BUY_CLOSE);
+    // _eOesBuySellType::OES_BS_TYPE_SELL_OPEN
+    e.value("OES_BS_TYPE_SELL_OPEN", _eOesBuySellType::OES_BS_TYPE_SELL_OPEN);
+    // _eOesBuySellType::OES_BS_TYPE_SELL_CLOSE
+    e.value("OES_BS_TYPE_SELL_CLOSE", _eOesBuySellType::OES_BS_TYPE_SELL_CLOSE);
+    // _eOesBuySellType::OES_BS_TYPE_COVERED_OPEN
+    e.value("OES_BS_TYPE_COVERED_OPEN", _eOesBuySellType::OES_BS_TYPE_COVERED_OPEN);
+    // _eOesBuySellType::OES_BS_TYPE_COVERED_CLOSE
+    e.value("OES_BS_TYPE_COVERED_CLOSE", _eOesBuySellType::OES_BS_TYPE_COVERED_CLOSE);
+    // _eOesBuySellType::OES_BS_TYPE_OPTION_EXERCISE
+    e.value("OES_BS_TYPE_OPTION_EXERCISE", _eOesBuySellType::OES_BS_TYPE_OPTION_EXERCISE);
+    // _eOesBuySellType::OES_BS_TYPE_UNDERLYING_FREEZE
+    e.value("OES_BS_TYPE_UNDERLYING_FREEZE", _eOesBuySellType::OES_BS_TYPE_UNDERLYING_FREEZE);
+    // _eOesBuySellType::OES_BS_TYPE_UNDERLYING_UNFREEZE
+    e.value("OES_BS_TYPE_UNDERLYING_UNFREEZE", _eOesBuySellType::OES_BS_TYPE_UNDERLYING_UNFREEZE);
+    // _eOesBuySellType::__OES_BS_TYPE_MAX_OPTION
+    e.value("__OES_BS_TYPE_MAX_OPTION", _eOesBuySellType::__OES_BS_TYPE_MAX_OPTION);
+    // _eOesBuySellType::OES_BS_TYPE_CANCEL
+    e.value("OES_BS_TYPE_CANCEL", _eOesBuySellType::OES_BS_TYPE_CANCEL);
+    // _eOesBuySellType::__OES_BS_TYPE_MAX_TRADING
+    e.value("__OES_BS_TYPE_MAX_TRADING", _eOesBuySellType::__OES_BS_TYPE_MAX_TRADING);
+    // _eOesBuySellType::__OES_BS_TYPE_MIN_MGR
+    e.value("__OES_BS_TYPE_MIN_MGR", _eOesBuySellType::__OES_BS_TYPE_MIN_MGR);
+    // _eOesBuySellType::OES_BS_TYPE_SSE_DESIGNATION
+    e.value("OES_BS_TYPE_SSE_DESIGNATION", _eOesBuySellType::OES_BS_TYPE_SSE_DESIGNATION);
+    // _eOesBuySellType::OES_BS_TYPE_SSE_RECALL_DESIGNATION
+    e.value("OES_BS_TYPE_SSE_RECALL_DESIGNATION", _eOesBuySellType::OES_BS_TYPE_SSE_RECALL_DESIGNATION);
+    // _eOesBuySellType::OES_BS_TYPE_SZSE_DESIGNATION
+    e.value("OES_BS_TYPE_SZSE_DESIGNATION", _eOesBuySellType::OES_BS_TYPE_SZSE_DESIGNATION);
+    // _eOesBuySellType::OES_BS_TYPE_SZSE_CANCEL_DESIGNATION
+    e.value("OES_BS_TYPE_SZSE_CANCEL_DESIGNATION", _eOesBuySellType::OES_BS_TYPE_SZSE_CANCEL_DESIGNATION);
+    // _eOesBuySellType::__OES_BS_TYPE_MAX_MGR
+    e.value("__OES_BS_TYPE_MAX_MGR", _eOesBuySellType::__OES_BS_TYPE_MAX_MGR);
+    // _eOesBuySellType::__OES_BS_TYPE_MAX
+    e.value("__OES_BS_TYPE_MAX", _eOesBuySellType::__OES_BS_TYPE_MAX);
+    // _eOesBuySellType::OES_BS_TYPE_B
+    e.value("OES_BS_TYPE_B", _eOesBuySellType::OES_BS_TYPE_B);
+    // _eOesBuySellType::OES_BS_TYPE_S
+    e.value("OES_BS_TYPE_S", _eOesBuySellType::OES_BS_TYPE_S);
+    // _eOesBuySellType::OES_BS_TYPE_KB
+    e.value("OES_BS_TYPE_KB", _eOesBuySellType::OES_BS_TYPE_KB);
+    // _eOesBuySellType::OES_BS_TYPE_KS
+    e.value("OES_BS_TYPE_KS", _eOesBuySellType::OES_BS_TYPE_KS);
+    // _eOesBuySellType::OES_BS_TYPE_CB
+    e.value("OES_BS_TYPE_CB", _eOesBuySellType::OES_BS_TYPE_CB);
+    // _eOesBuySellType::OES_BS_TYPE_CS
+    e.value("OES_BS_TYPE_CS", _eOesBuySellType::OES_BS_TYPE_CS);
+    // _eOesBuySellType::OES_BS_TYPE_BO
+    e.value("OES_BS_TYPE_BO", _eOesBuySellType::OES_BS_TYPE_BO);
+    // _eOesBuySellType::OES_BS_TYPE_BC
+    e.value("OES_BS_TYPE_BC", _eOesBuySellType::OES_BS_TYPE_BC);
+    // _eOesBuySellType::OES_BS_TYPE_SO
+    e.value("OES_BS_TYPE_SO", _eOesBuySellType::OES_BS_TYPE_SO);
+    // _eOesBuySellType::OES_BS_TYPE_SC
+    e.value("OES_BS_TYPE_SC", _eOesBuySellType::OES_BS_TYPE_SC);
+    // _eOesBuySellType::OES_BS_TYPE_CO
+    e.value("OES_BS_TYPE_CO", _eOesBuySellType::OES_BS_TYPE_CO);
+    // _eOesBuySellType::OES_BS_TYPE_CC
+    e.value("OES_BS_TYPE_CC", _eOesBuySellType::OES_BS_TYPE_CC);
+    // _eOesBuySellType::OES_BS_TYPE_TE
+    e.value("OES_BS_TYPE_TE", _eOesBuySellType::OES_BS_TYPE_TE);
+    // _eOesBuySellType::OES_BS_TYPE_UF
+    e.value("OES_BS_TYPE_UF", _eOesBuySellType::OES_BS_TYPE_UF);
+    // _eOesBuySellType::OES_BS_TYPE_UU
+    e.value("OES_BS_TYPE_UU", _eOesBuySellType::OES_BS_TYPE_UU);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsL2TradeBSFlag", e);
+    module_vnoes::objects.emplace("_eOesBuySellType", e);
 }
-void generate_enum_eMdsL2OrderSideT(pybind11::object & parent)
+void generate_enum_eOesOrdDir(pybind11::object & parent)
 {
-    // _eMdsL2OrderSideT
-    pybind11::enum_<_eMdsL2OrderSideT> e(parent, "_eMdsL2OrderSideT", pybind11::arithmetic());
-    // _eMdsL2OrderSideT::MDS_L2_ORDER_SIDE_BUY
-    e.value("MDS_L2_ORDER_SIDE_BUY", _eMdsL2OrderSideT::MDS_L2_ORDER_SIDE_BUY);
-    // _eMdsL2OrderSideT::MDS_L2_ORDER_SIDE_SELL
-    e.value("MDS_L2_ORDER_SIDE_SELL", _eMdsL2OrderSideT::MDS_L2_ORDER_SIDE_SELL);
-    // _eMdsL2OrderSideT::MDS_L2_ORDER_SIDE_BORROW
-    e.value("MDS_L2_ORDER_SIDE_BORROW", _eMdsL2OrderSideT::MDS_L2_ORDER_SIDE_BORROW);
-    // _eMdsL2OrderSideT::MDS_L2_ORDER_SIDE_LEND
-    e.value("MDS_L2_ORDER_SIDE_LEND", _eMdsL2OrderSideT::MDS_L2_ORDER_SIDE_LEND);
+    // _eOesOrdDir
+    pybind11::enum_<_eOesOrdDir> e(parent, "_eOesOrdDir", pybind11::arithmetic());
+    // _eOesOrdDir::OES_ORD_DIR_BUY
+    e.value("OES_ORD_DIR_BUY", _eOesOrdDir::OES_ORD_DIR_BUY);
+    // _eOesOrdDir::OES_ORD_DIR_SELL
+    e.value("OES_ORD_DIR_SELL", _eOesOrdDir::OES_ORD_DIR_SELL);
+    // _eOesOrdDir::__OES_ORD_DIR_MAX
+    e.value("__OES_ORD_DIR_MAX", _eOesOrdDir::__OES_ORD_DIR_MAX);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsL2OrderSideT", e);
+    module_vnoes::objects.emplace("_eOesOrdDir", e);
 }
-void generate_enum_eMdsL2OrderType(pybind11::object & parent)
+void generate_enum_eOesEtfTrdCnfmType(pybind11::object & parent)
 {
-    // _eMdsL2OrderType
-    pybind11::enum_<_eMdsL2OrderType> e(parent, "_eMdsL2OrderType", pybind11::arithmetic());
-    // _eMdsL2OrderType::MDS_L2_ORDER_TYPE_MKT
-    e.value("MDS_L2_ORDER_TYPE_MKT", _eMdsL2OrderType::MDS_L2_ORDER_TYPE_MKT);
-    // _eMdsL2OrderType::MDS_L2_ORDER_TYPE_LMT
-    e.value("MDS_L2_ORDER_TYPE_LMT", _eMdsL2OrderType::MDS_L2_ORDER_TYPE_LMT);
-    // _eMdsL2OrderType::MDS_L2_ORDER_TYPE_SAMEPARTY_BEST
-    e.value("MDS_L2_ORDER_TYPE_SAMEPARTY_BEST", _eMdsL2OrderType::MDS_L2_ORDER_TYPE_SAMEPARTY_BEST);
+    // _eOesEtfTrdCnfmType
+    pybind11::enum_<_eOesEtfTrdCnfmType> e(parent, "_eOesEtfTrdCnfmType", pybind11::arithmetic());
+    // _eOesEtfTrdCnfmType::OES_ETF_TRDCNFM_TYPE_NONE
+    e.value("OES_ETF_TRDCNFM_TYPE_NONE", _eOesEtfTrdCnfmType::OES_ETF_TRDCNFM_TYPE_NONE);
+    // _eOesEtfTrdCnfmType::OES_ETF_TRDCNFM_TYPE_ETF_FIRST
+    e.value("OES_ETF_TRDCNFM_TYPE_ETF_FIRST", _eOesEtfTrdCnfmType::OES_ETF_TRDCNFM_TYPE_ETF_FIRST);
+    // _eOesEtfTrdCnfmType::OES_ETF_TRDCNFM_TYPE_CMPOENT
+    e.value("OES_ETF_TRDCNFM_TYPE_CMPOENT", _eOesEtfTrdCnfmType::OES_ETF_TRDCNFM_TYPE_CMPOENT);
+    // _eOesEtfTrdCnfmType::OES_ETF_TRDCNFM_TYPE_CASH
+    e.value("OES_ETF_TRDCNFM_TYPE_CASH", _eOesEtfTrdCnfmType::OES_ETF_TRDCNFM_TYPE_CASH);
+    // _eOesEtfTrdCnfmType::OES_ETF_TRDCNFM_TYPE_ETF_LAST
+    e.value("OES_ETF_TRDCNFM_TYPE_ETF_LAST", _eOesEtfTrdCnfmType::OES_ETF_TRDCNFM_TYPE_ETF_LAST);
+    // _eOesEtfTrdCnfmType::__OES_ETF_TRDCNFM_TYPE_MAX
+    e.value("__OES_ETF_TRDCNFM_TYPE_MAX", _eOesEtfTrdCnfmType::__OES_ETF_TRDCNFM_TYPE_MAX);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsL2OrderType", e);
+    module_vnoes::objects.emplace("_eOesEtfTrdCnfmType", e);
 }
-void generate_enum_eMdsClientType(pybind11::object & parent)
+void generate_enum_eOesEtfSubFlag(pybind11::object & parent)
 {
-    // _eMdsClientType
-    pybind11::enum_<_eMdsClientType> e(parent, "_eMdsClientType", pybind11::arithmetic());
-    // _eMdsClientType::MDS_CLIENT_TYPE_UNDEFINED
-    e.value("MDS_CLIENT_TYPE_UNDEFINED", _eMdsClientType::MDS_CLIENT_TYPE_UNDEFINED);
-    // _eMdsClientType::MDS_CLIENT_TYPE_INVESTOR
-    e.value("MDS_CLIENT_TYPE_INVESTOR", _eMdsClientType::MDS_CLIENT_TYPE_INVESTOR);
-    // _eMdsClientType::MDS_CLIENT_TYPE_VIRTUAL
-    e.value("MDS_CLIENT_TYPE_VIRTUAL", _eMdsClientType::MDS_CLIENT_TYPE_VIRTUAL);
+    // _eOesEtfSubFlag
+    pybind11::enum_<_eOesEtfSubFlag> e(parent, "_eOesEtfSubFlag", pybind11::arithmetic());
+    // _eOesEtfSubFlag::OES_ETF_SUBFLAG_FORBID_SUB
+    e.value("OES_ETF_SUBFLAG_FORBID_SUB", _eOesEtfSubFlag::OES_ETF_SUBFLAG_FORBID_SUB);
+    // _eOesEtfSubFlag::OES_ETF_SUBFLAG_ALLOW_SUB
+    e.value("OES_ETF_SUBFLAG_ALLOW_SUB", _eOesEtfSubFlag::OES_ETF_SUBFLAG_ALLOW_SUB);
+    // _eOesEtfSubFlag::OES_ETF_SUBFLAG_MUST_SUB
+    e.value("OES_ETF_SUBFLAG_MUST_SUB", _eOesEtfSubFlag::OES_ETF_SUBFLAG_MUST_SUB);
+    // _eOesEtfSubFlag::OES_ETF_SUBFLAG_SZ_REFUND_SUB
+    e.value("OES_ETF_SUBFLAG_SZ_REFUND_SUB", _eOesEtfSubFlag::OES_ETF_SUBFLAG_SZ_REFUND_SUB);
+    // _eOesEtfSubFlag::OES_ETF_SUBFLAG_SZ_MUST_SUB
+    e.value("OES_ETF_SUBFLAG_SZ_MUST_SUB", _eOesEtfSubFlag::OES_ETF_SUBFLAG_SZ_MUST_SUB);
+    // _eOesEtfSubFlag::OES_ETF_SUBFLAG_OTHER_REFUND_SUB
+    e.value("OES_ETF_SUBFLAG_OTHER_REFUND_SUB", _eOesEtfSubFlag::OES_ETF_SUBFLAG_OTHER_REFUND_SUB);
+    // _eOesEtfSubFlag::OES_ETF_SUBFLAG_OTHER_MUST_SUB
+    e.value("OES_ETF_SUBFLAG_OTHER_MUST_SUB", _eOesEtfSubFlag::OES_ETF_SUBFLAG_OTHER_MUST_SUB);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsClientType", e);
+    module_vnoes::objects.emplace("_eOesEtfSubFlag", e);
 }
-void generate_enum_eMdsClientStatus(pybind11::object & parent)
+void generate_enum_eOesExecType(pybind11::object & parent)
 {
-    // _eMdsClientStatus
-    pybind11::enum_<_eMdsClientStatus> e(parent, "_eMdsClientStatus", pybind11::arithmetic());
-    // _eMdsClientStatus::MDS_CLIENT_STATUS_UNACTIVATED
-    e.value("MDS_CLIENT_STATUS_UNACTIVATED", _eMdsClientStatus::MDS_CLIENT_STATUS_UNACTIVATED);
-    // _eMdsClientStatus::MDS_CLIENT_STATUS_ACTIVATED
-    e.value("MDS_CLIENT_STATUS_ACTIVATED", _eMdsClientStatus::MDS_CLIENT_STATUS_ACTIVATED);
-    // _eMdsClientStatus::MDS_CLIENT_STATUS_PAUSE
-    e.value("MDS_CLIENT_STATUS_PAUSE", _eMdsClientStatus::MDS_CLIENT_STATUS_PAUSE);
-    // _eMdsClientStatus::MDS_CLIENT_STATUS_SUSPENDED
-    e.value("MDS_CLIENT_STATUS_SUSPENDED", _eMdsClientStatus::MDS_CLIENT_STATUS_SUSPENDED);
-    // _eMdsClientStatus::MDS_CLIENT_STATUS_CANCELLED
-    e.value("MDS_CLIENT_STATUS_CANCELLED", _eMdsClientStatus::MDS_CLIENT_STATUS_CANCELLED);
+    // _eOesExecType
+    pybind11::enum_<_eOesExecType> e(parent, "_eOesExecType", pybind11::arithmetic());
+    // _eOesExecType::OES_EXECTYPE_UNDEFINE
+    e.value("OES_EXECTYPE_UNDEFINE", _eOesExecType::OES_EXECTYPE_UNDEFINE);
+    // _eOesExecType::OES_EXECTYPE_INSERT
+    e.value("OES_EXECTYPE_INSERT", _eOesExecType::OES_EXECTYPE_INSERT);
+    // _eOesExecType::OES_EXECTYPE_CONFIRMED
+    e.value("OES_EXECTYPE_CONFIRMED", _eOesExecType::OES_EXECTYPE_CONFIRMED);
+    // _eOesExecType::OES_EXECTYPE_CANCELLED
+    e.value("OES_EXECTYPE_CANCELLED", _eOesExecType::OES_EXECTYPE_CANCELLED);
+    // _eOesExecType::OES_EXECTYPE_AUTO_CANCELLED
+    e.value("OES_EXECTYPE_AUTO_CANCELLED", _eOesExecType::OES_EXECTYPE_AUTO_CANCELLED);
+    // _eOesExecType::OES_EXECTYPE_REJECT
+    e.value("OES_EXECTYPE_REJECT", _eOesExecType::OES_EXECTYPE_REJECT);
+    // _eOesExecType::OES_EXECTYPE_TRADE
+    e.value("OES_EXECTYPE_TRADE", _eOesExecType::OES_EXECTYPE_TRADE);
+    // _eOesExecType::__OES_EXECTYPE_MAX
+    e.value("__OES_EXECTYPE_MAX", _eOesExecType::__OES_EXECTYPE_MAX);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsClientStatus", e);
+    module_vnoes::objects.emplace("_eOesExecType", e);
 }
-void generate_enum_eMdsMsgType(pybind11::object & parent)
+void generate_enum_eOesCurrType(pybind11::object & parent)
 {
-    // _eMdsMsgType
-    pybind11::enum_<_eMdsMsgType> e(parent, "_eMdsMsgType", pybind11::arithmetic());
-    // _eMdsMsgType::MDS_MSGTYPE_HEARTBEAT
-    e.value("MDS_MSGTYPE_HEARTBEAT", _eMdsMsgType::MDS_MSGTYPE_HEARTBEAT);
-    // _eMdsMsgType::MDS_MSGTYPE_TEST_REQUEST
-    e.value("MDS_MSGTYPE_TEST_REQUEST", _eMdsMsgType::MDS_MSGTYPE_TEST_REQUEST);
-    // _eMdsMsgType::MDS_MSGTYPE_LOGOUT
-    e.value("MDS_MSGTYPE_LOGOUT", _eMdsMsgType::MDS_MSGTYPE_LOGOUT);
-    // _eMdsMsgType::MDS_MSGTYPE_MARKET_DATA_REQUEST
-    e.value("MDS_MSGTYPE_MARKET_DATA_REQUEST", _eMdsMsgType::MDS_MSGTYPE_MARKET_DATA_REQUEST);
-    // _eMdsMsgType::MDS_MSGTYPE_COMPRESSED_PACKETS
-    e.value("MDS_MSGTYPE_COMPRESSED_PACKETS", _eMdsMsgType::MDS_MSGTYPE_COMPRESSED_PACKETS);
-    // _eMdsMsgType::__MDS_MSGTYPE_SESSION_MAX
-    e.value("__MDS_MSGTYPE_SESSION_MAX", _eMdsMsgType::__MDS_MSGTYPE_SESSION_MAX);
-    // _eMdsMsgType::MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH
-    e.value("MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH", _eMdsMsgType::MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH);
-    // _eMdsMsgType::MDS_MSGTYPE_INDEX_SNAPSHOT_FULL_REFRESH
-    e.value("MDS_MSGTYPE_INDEX_SNAPSHOT_FULL_REFRESH", _eMdsMsgType::MDS_MSGTYPE_INDEX_SNAPSHOT_FULL_REFRESH);
-    // _eMdsMsgType::MDS_MSGTYPE_OPTION_SNAPSHOT_FULL_REFRESH
-    e.value("MDS_MSGTYPE_OPTION_SNAPSHOT_FULL_REFRESH", _eMdsMsgType::MDS_MSGTYPE_OPTION_SNAPSHOT_FULL_REFRESH);
-    // _eMdsMsgType::MDS_MSGTYPE_TRADING_SESSION_STATUS
-    e.value("MDS_MSGTYPE_TRADING_SESSION_STATUS", _eMdsMsgType::MDS_MSGTYPE_TRADING_SESSION_STATUS);
-    // _eMdsMsgType::MDS_MSGTYPE_SECURITY_STATUS
-    e.value("MDS_MSGTYPE_SECURITY_STATUS", _eMdsMsgType::MDS_MSGTYPE_SECURITY_STATUS);
-    // _eMdsMsgType::__MDS_MSGTYPE_L1_MAX
-    e.value("__MDS_MSGTYPE_L1_MAX", _eMdsMsgType::__MDS_MSGTYPE_L1_MAX);
-    // _eMdsMsgType::MDS_MSGTYPE_L2_MARKET_DATA_SNAPSHOT
-    e.value("MDS_MSGTYPE_L2_MARKET_DATA_SNAPSHOT", _eMdsMsgType::MDS_MSGTYPE_L2_MARKET_DATA_SNAPSHOT);
-    // _eMdsMsgType::MDS_MSGTYPE_L2_BEST_ORDERS_SNAPSHOT
-    e.value("MDS_MSGTYPE_L2_BEST_ORDERS_SNAPSHOT", _eMdsMsgType::MDS_MSGTYPE_L2_BEST_ORDERS_SNAPSHOT);
-    // _eMdsMsgType::MDS_MSGTYPE_L2_TRADE
-    e.value("MDS_MSGTYPE_L2_TRADE", _eMdsMsgType::MDS_MSGTYPE_L2_TRADE);
-    // _eMdsMsgType::MDS_MSGTYPE_L2_ORDER
-    e.value("MDS_MSGTYPE_L2_ORDER", _eMdsMsgType::MDS_MSGTYPE_L2_ORDER);
-    // _eMdsMsgType::MDS_MSGTYPE_L2_MARKET_DATA_INCREMENTAL
-    e.value("MDS_MSGTYPE_L2_MARKET_DATA_INCREMENTAL", _eMdsMsgType::MDS_MSGTYPE_L2_MARKET_DATA_INCREMENTAL);
-    // _eMdsMsgType::MDS_MSGTYPE_L2_BEST_ORDERS_INCREMENTAL
-    e.value("MDS_MSGTYPE_L2_BEST_ORDERS_INCREMENTAL", _eMdsMsgType::MDS_MSGTYPE_L2_BEST_ORDERS_INCREMENTAL);
-    // _eMdsMsgType::MDS_MSGTYPE_L2_MARKET_OVERVIEW
-    e.value("MDS_MSGTYPE_L2_MARKET_OVERVIEW", _eMdsMsgType::MDS_MSGTYPE_L2_MARKET_OVERVIEW);
-    // _eMdsMsgType::MDS_MSGTYPE_L2_VIRTUAL_AUCTION_PRICE
-    e.value("MDS_MSGTYPE_L2_VIRTUAL_AUCTION_PRICE", _eMdsMsgType::MDS_MSGTYPE_L2_VIRTUAL_AUCTION_PRICE);
-    // _eMdsMsgType::__MDS_MSGTYPE_L2_MAX
-    e.value("__MDS_MSGTYPE_L2_MAX", _eMdsMsgType::__MDS_MSGTYPE_L2_MAX);
-    // _eMdsMsgType::MDS_MSGTYPE_CMD_CHANGE_PASSWORD
-    e.value("MDS_MSGTYPE_CMD_CHANGE_PASSWORD", _eMdsMsgType::MDS_MSGTYPE_CMD_CHANGE_PASSWORD);
-    // _eMdsMsgType::__MDS_MSGTYPE_CMD_MAX
-    e.value("__MDS_MSGTYPE_CMD_MAX", _eMdsMsgType::__MDS_MSGTYPE_CMD_MAX);
-    // _eMdsMsgType::MDS_MSGTYPE_QRY_MARKET_DATA_SNAPSHOT
-    e.value("MDS_MSGTYPE_QRY_MARKET_DATA_SNAPSHOT", _eMdsMsgType::MDS_MSGTYPE_QRY_MARKET_DATA_SNAPSHOT);
-    // _eMdsMsgType::MDS_MSGTYPE_QRY_SECURITY_STATUS
-    e.value("MDS_MSGTYPE_QRY_SECURITY_STATUS", _eMdsMsgType::MDS_MSGTYPE_QRY_SECURITY_STATUS);
-    // _eMdsMsgType::MDS_MSGTYPE_QRY_TRADING_SESSION_STATUS
-    e.value("MDS_MSGTYPE_QRY_TRADING_SESSION_STATUS", _eMdsMsgType::MDS_MSGTYPE_QRY_TRADING_SESSION_STATUS);
-    // _eMdsMsgType::MDS_MSGTYPE_QRY_STOCK_STATIC_INFO
-    e.value("MDS_MSGTYPE_QRY_STOCK_STATIC_INFO", _eMdsMsgType::MDS_MSGTYPE_QRY_STOCK_STATIC_INFO);
-    // _eMdsMsgType::MDS_MSGTYPE_QRY_SNAPSHOT_LIST
-    e.value("MDS_MSGTYPE_QRY_SNAPSHOT_LIST", _eMdsMsgType::MDS_MSGTYPE_QRY_SNAPSHOT_LIST);
-    // _eMdsMsgType::__MDS_MSGTYPE_QRY_MAX
-    e.value("__MDS_MSGTYPE_QRY_MAX", _eMdsMsgType::__MDS_MSGTYPE_QRY_MAX);
+    // _eOesCurrType
+    pybind11::enum_<_eOesCurrType> e(parent, "_eOesCurrType", pybind11::arithmetic());
+    // _eOesCurrType::OES_CURR_TYPE_RMB
+    e.value("OES_CURR_TYPE_RMB", _eOesCurrType::OES_CURR_TYPE_RMB);
+    // _eOesCurrType::OES_CURR_TYPE_HKD
+    e.value("OES_CURR_TYPE_HKD", _eOesCurrType::OES_CURR_TYPE_HKD);
+    // _eOesCurrType::OES_CURR_TYPE_USD
+    e.value("OES_CURR_TYPE_USD", _eOesCurrType::OES_CURR_TYPE_USD);
+    // _eOesCurrType::__OES_CURR_TYPE_MAX
+    e.value("__OES_CURR_TYPE_MAX", _eOesCurrType::__OES_CURR_TYPE_MAX);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsMsgType", e);
+    module_vnoes::objects.emplace("_eOesCurrType", e);
 }
-void generate_enum_eMdsSubscribeMode(pybind11::object & parent)
+void generate_enum_eOesFeeType(pybind11::object & parent)
 {
-    // _eMdsSubscribeMode
-    pybind11::enum_<_eMdsSubscribeMode> e(parent, "_eMdsSubscribeMode", pybind11::arithmetic());
-    // _eMdsSubscribeMode::MDS_SUB_MODE_SET
-    e.value("MDS_SUB_MODE_SET", _eMdsSubscribeMode::MDS_SUB_MODE_SET);
-    // _eMdsSubscribeMode::MDS_SUB_MODE_APPEND
-    e.value("MDS_SUB_MODE_APPEND", _eMdsSubscribeMode::MDS_SUB_MODE_APPEND);
-    // _eMdsSubscribeMode::MDS_SUB_MODE_DELETE
-    e.value("MDS_SUB_MODE_DELETE", _eMdsSubscribeMode::MDS_SUB_MODE_DELETE);
-    // _eMdsSubscribeMode::__MAX_MDS_SUB_MODE
-    e.value("__MAX_MDS_SUB_MODE", _eMdsSubscribeMode::__MAX_MDS_SUB_MODE);
+    // _eOesFeeType
+    pybind11::enum_<_eOesFeeType> e(parent, "_eOesFeeType", pybind11::arithmetic());
+    // _eOesFeeType::OES_FEE_TYPE_EXCHANGE_STAMP
+    e.value("OES_FEE_TYPE_EXCHANGE_STAMP", _eOesFeeType::OES_FEE_TYPE_EXCHANGE_STAMP);
+    // _eOesFeeType::OES_FEE_TYPE_EXCHANGE_TRANSFER
+    e.value("OES_FEE_TYPE_EXCHANGE_TRANSFER", _eOesFeeType::OES_FEE_TYPE_EXCHANGE_TRANSFER);
+    // _eOesFeeType::OES_FEE_TYPE_EXCHANGE_SETTLEMENT
+    e.value("OES_FEE_TYPE_EXCHANGE_SETTLEMENT", _eOesFeeType::OES_FEE_TYPE_EXCHANGE_SETTLEMENT);
+    // _eOesFeeType::OES_FEE_TYPE_EXCHANGE_TRADE_RULE
+    e.value("OES_FEE_TYPE_EXCHANGE_TRADE_RULE", _eOesFeeType::OES_FEE_TYPE_EXCHANGE_TRADE_RULE);
+    // _eOesFeeType::OES_FEE_TYPE_EXCHANGE_EXCHANGE
+    e.value("OES_FEE_TYPE_EXCHANGE_EXCHANGE", _eOesFeeType::OES_FEE_TYPE_EXCHANGE_EXCHANGE);
+    // _eOesFeeType::OES_FEE_TYPE_EXCHANGE_ADMINFER
+    e.value("OES_FEE_TYPE_EXCHANGE_ADMINFER", _eOesFeeType::OES_FEE_TYPE_EXCHANGE_ADMINFER);
+    // _eOesFeeType::OES_FEE_TYPE_EXCHANGE_OTHER
+    e.value("OES_FEE_TYPE_EXCHANGE_OTHER", _eOesFeeType::OES_FEE_TYPE_EXCHANGE_OTHER);
+    // _eOesFeeType::__OES_FEE_TYPE_EXCHANGE_MAX
+    e.value("__OES_FEE_TYPE_EXCHANGE_MAX", _eOesFeeType::__OES_FEE_TYPE_EXCHANGE_MAX);
+    // _eOesFeeType::OES_FEE_TYPE_BROKER_BACK_END
+    e.value("OES_FEE_TYPE_BROKER_BACK_END", _eOesFeeType::OES_FEE_TYPE_BROKER_BACK_END);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsSubscribeMode", e);
+    module_vnoes::objects.emplace("_eOesFeeType", e);
 }
-void generate_enum_eMdsMktSubscribeFlag(pybind11::object & parent)
+void generate_enum_eOesCalcFeeMode(pybind11::object & parent)
 {
-    // _eMdsMktSubscribeFlag
-    pybind11::enum_<_eMdsMktSubscribeFlag> e(parent, "_eMdsMktSubscribeFlag", pybind11::arithmetic());
-    // _eMdsMktSubscribeFlag::MDS_MKT_SUB_FLAG_DEFAULT
-    e.value("MDS_MKT_SUB_FLAG_DEFAULT", _eMdsMktSubscribeFlag::MDS_MKT_SUB_FLAG_DEFAULT);
-    // _eMdsMktSubscribeFlag::MDS_MKT_SUB_FLAG_ALL
-    e.value("MDS_MKT_SUB_FLAG_ALL", _eMdsMktSubscribeFlag::MDS_MKT_SUB_FLAG_ALL);
-    // _eMdsMktSubscribeFlag::MDS_MKT_SUB_FLAG_DISABLE
-    e.value("MDS_MKT_SUB_FLAG_DISABLE", _eMdsMktSubscribeFlag::MDS_MKT_SUB_FLAG_DISABLE);
-    // _eMdsMktSubscribeFlag::__MAX_MDS_MKT_SUB_FLAG
-    e.value("__MAX_MDS_MKT_SUB_FLAG", _eMdsMktSubscribeFlag::__MAX_MDS_MKT_SUB_FLAG);
+    // _eOesCalcFeeMode
+    pybind11::enum_<_eOesCalcFeeMode> e(parent, "_eOesCalcFeeMode", pybind11::arithmetic());
+    // _eOesCalcFeeMode::OES_CALC_FEE_MODE_AMOUNT
+    e.value("OES_CALC_FEE_MODE_AMOUNT", _eOesCalcFeeMode::OES_CALC_FEE_MODE_AMOUNT);
+    // _eOesCalcFeeMode::OES_CALC_FEE_MODE_QTY
+    e.value("OES_CALC_FEE_MODE_QTY", _eOesCalcFeeMode::OES_CALC_FEE_MODE_QTY);
+    // _eOesCalcFeeMode::OES_CALC_FEE_MODE_ORD
+    e.value("OES_CALC_FEE_MODE_ORD", _eOesCalcFeeMode::OES_CALC_FEE_MODE_ORD);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsMktSubscribeFlag", e);
+    module_vnoes::objects.emplace("_eOesCalcFeeMode", e);
 }
-void generate_enum_eMdsSubscribedTickType(pybind11::object & parent)
+void generate_enum_eOesFundTrsfDirect(pybind11::object & parent)
 {
-    // _eMdsSubscribedTickType
-    pybind11::enum_<_eMdsSubscribedTickType> e(parent, "_eMdsSubscribedTickType", pybind11::arithmetic());
-    // _eMdsSubscribedTickType::MDS_TICK_TYPE_LATEST_SIMPLIFIED
-    e.value("MDS_TICK_TYPE_LATEST_SIMPLIFIED", _eMdsSubscribedTickType::MDS_TICK_TYPE_LATEST_SIMPLIFIED);
-    // _eMdsSubscribedTickType::MDS_TICK_TYPE_LATEST_TIMELY
-    e.value("MDS_TICK_TYPE_LATEST_TIMELY", _eMdsSubscribedTickType::MDS_TICK_TYPE_LATEST_TIMELY);
-    // _eMdsSubscribedTickType::MDS_TICK_TYPE_ALL_INCREMENTS
-    e.value("MDS_TICK_TYPE_ALL_INCREMENTS", _eMdsSubscribedTickType::MDS_TICK_TYPE_ALL_INCREMENTS);
-    // _eMdsSubscribedTickType::__MAX_MDS_TICK_TYPE
-    e.value("__MAX_MDS_TICK_TYPE", _eMdsSubscribedTickType::__MAX_MDS_TICK_TYPE);
+    // _eOesFundTrsfDirect
+    pybind11::enum_<_eOesFundTrsfDirect> e(parent, "_eOesFundTrsfDirect", pybind11::arithmetic());
+    // _eOesFundTrsfDirect::OES_FUND_TRSF_DIRECT_IN
+    e.value("OES_FUND_TRSF_DIRECT_IN", _eOesFundTrsfDirect::OES_FUND_TRSF_DIRECT_IN);
+    // _eOesFundTrsfDirect::OES_FUND_TRSF_DIRECT_OUT
+    e.value("OES_FUND_TRSF_DIRECT_OUT", _eOesFundTrsfDirect::OES_FUND_TRSF_DIRECT_OUT);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsSubscribedTickType", e);
+    module_vnoes::objects.emplace("_eOesFundTrsfDirect", e);
 }
-void generate_enum_eMdsSubscribedTickExpireType(pybind11::object & parent)
+void generate_enum_eOesFundTrsfType(pybind11::object & parent)
 {
-    // _eMdsSubscribedTickExpireType
-    pybind11::enum_<_eMdsSubscribedTickExpireType> e(parent, "_eMdsSubscribedTickExpireType", pybind11::arithmetic());
-    // _eMdsSubscribedTickExpireType::MDS_TICK_EXPIRE_TYPE_NONE
-    e.value("MDS_TICK_EXPIRE_TYPE_NONE", _eMdsSubscribedTickExpireType::MDS_TICK_EXPIRE_TYPE_NONE);
-    // _eMdsSubscribedTickExpireType::MDS_TICK_EXPIRE_TYPE_IMMEDIATE
-    e.value("MDS_TICK_EXPIRE_TYPE_IMMEDIATE", _eMdsSubscribedTickExpireType::MDS_TICK_EXPIRE_TYPE_IMMEDIATE);
-    // _eMdsSubscribedTickExpireType::MDS_TICK_EXPIRE_TYPE_TIMELY
-    e.value("MDS_TICK_EXPIRE_TYPE_TIMELY", _eMdsSubscribedTickExpireType::MDS_TICK_EXPIRE_TYPE_TIMELY);
-    // _eMdsSubscribedTickExpireType::MDS_TICK_EXPIRE_TYPE_TIMEOUT
-    e.value("MDS_TICK_EXPIRE_TYPE_TIMEOUT", _eMdsSubscribedTickExpireType::MDS_TICK_EXPIRE_TYPE_TIMEOUT);
-    // _eMdsSubscribedTickExpireType::__MAX_MDS_TICK_EXPIRE_TYPE
-    e.value("__MAX_MDS_TICK_EXPIRE_TYPE", _eMdsSubscribedTickExpireType::__MAX_MDS_TICK_EXPIRE_TYPE);
+    // _eOesFundTrsfType
+    pybind11::enum_<_eOesFundTrsfType> e(parent, "_eOesFundTrsfType", pybind11::arithmetic());
+    // _eOesFundTrsfType::OES_FUND_TRSF_TYPE_OES_BANK
+    e.value("OES_FUND_TRSF_TYPE_OES_BANK", _eOesFundTrsfType::OES_FUND_TRSF_TYPE_OES_BANK);
+    // _eOesFundTrsfType::OES_FUND_TRSF_TYPE_OES_COUNTER
+    e.value("OES_FUND_TRSF_TYPE_OES_COUNTER", _eOesFundTrsfType::OES_FUND_TRSF_TYPE_OES_COUNTER);
+    // _eOesFundTrsfType::OES_FUND_TRSF_TYPE_COUNTER_BANK
+    e.value("OES_FUND_TRSF_TYPE_COUNTER_BANK", _eOesFundTrsfType::OES_FUND_TRSF_TYPE_COUNTER_BANK);
+    // _eOesFundTrsfType::__OES_FUND_TRSF_TYPE_MAX
+    e.value("__OES_FUND_TRSF_TYPE_MAX", _eOesFundTrsfType::__OES_FUND_TRSF_TYPE_MAX);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsSubscribedTickExpireType", e);
+    module_vnoes::objects.emplace("_eOesFundTrsfType", e);
 }
-void generate_enum_eMdsSubscribeDataType(pybind11::object & parent)
+void generate_enum_eOesFundTrsfStatus(pybind11::object & parent)
 {
-    // _eMdsSubscribeDataType
-    pybind11::enum_<_eMdsSubscribeDataType> e(parent, "_eMdsSubscribeDataType", pybind11::arithmetic());
-    // _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_DEFAULT
-    e.value("MDS_SUB_DATA_TYPE_DEFAULT", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_DEFAULT);
-    // _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L1_SNAPSHOT
-    e.value("MDS_SUB_DATA_TYPE_L1_SNAPSHOT", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L1_SNAPSHOT);
-    // _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_SNAPSHOT
-    e.value("MDS_SUB_DATA_TYPE_L2_SNAPSHOT", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_SNAPSHOT);
-    // _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_BEST_ORDERS
-    e.value("MDS_SUB_DATA_TYPE_L2_BEST_ORDERS", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_BEST_ORDERS);
-    // _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_TRADE
-    e.value("MDS_SUB_DATA_TYPE_L2_TRADE", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_TRADE);
-    // _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_ORDER
-    e.value("MDS_SUB_DATA_TYPE_L2_ORDER", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_ORDER);
-    // _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_MARKET_OVERVIEW
-    e.value("MDS_SUB_DATA_TYPE_L2_MARKET_OVERVIEW", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_L2_MARKET_OVERVIEW);
-    // _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_TRADING_SESSION_STATUS
-    e.value("MDS_SUB_DATA_TYPE_TRADING_SESSION_STATUS", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_TRADING_SESSION_STATUS);
-    // _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_SECURITY_STATUS
-    e.value("MDS_SUB_DATA_TYPE_SECURITY_STATUS", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_SECURITY_STATUS);
-    // _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_INDEX_SNAPSHOT
-    e.value("MDS_SUB_DATA_TYPE_INDEX_SNAPSHOT", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_INDEX_SNAPSHOT);
-    // _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_OPTION_SNAPSHOT
-    e.value("MDS_SUB_DATA_TYPE_OPTION_SNAPSHOT", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_OPTION_SNAPSHOT);
-    // _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_NONE
-    e.value("MDS_SUB_DATA_TYPE_NONE", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_NONE);
-    // _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_ALL
-    e.value("MDS_SUB_DATA_TYPE_ALL", _eMdsSubscribeDataType::MDS_SUB_DATA_TYPE_ALL);
-    // _eMdsSubscribeDataType::__MAX_MDS_SUB_DATA_TYPE
-    e.value("__MAX_MDS_SUB_DATA_TYPE", _eMdsSubscribeDataType::__MAX_MDS_SUB_DATA_TYPE);
+    // _eOesFundTrsfStatus
+    pybind11::enum_<_eOesFundTrsfStatus> e(parent, "_eOesFundTrsfStatus", pybind11::arithmetic());
+    // _eOesFundTrsfStatus::OES_FUND_TRSF_STS_UNDECLARED
+    e.value("OES_FUND_TRSF_STS_UNDECLARED", _eOesFundTrsfStatus::OES_FUND_TRSF_STS_UNDECLARED);
+    // _eOesFundTrsfStatus::OES_FUND_TRSF_STS_DECLARED
+    e.value("OES_FUND_TRSF_STS_DECLARED", _eOesFundTrsfStatus::OES_FUND_TRSF_STS_DECLARED);
+    // _eOesFundTrsfStatus::OES_FUND_TRSF_STS_WAIT_DONE
+    e.value("OES_FUND_TRSF_STS_WAIT_DONE", _eOesFundTrsfStatus::OES_FUND_TRSF_STS_WAIT_DONE);
+    // _eOesFundTrsfStatus::OES_FUND_TRSF_STS_DONE
+    e.value("OES_FUND_TRSF_STS_DONE", _eOesFundTrsfStatus::OES_FUND_TRSF_STS_DONE);
+    // _eOesFundTrsfStatus::__OES_FUND_TRSF_STS_ROLLBACK_MIN
+    e.value("__OES_FUND_TRSF_STS_ROLLBACK_MIN", _eOesFundTrsfStatus::__OES_FUND_TRSF_STS_ROLLBACK_MIN);
+    // _eOesFundTrsfStatus::OES_FUND_TRSF_STS_UNDECLARED_ROLLBACK
+    e.value("OES_FUND_TRSF_STS_UNDECLARED_ROLLBACK", _eOesFundTrsfStatus::OES_FUND_TRSF_STS_UNDECLARED_ROLLBACK);
+    // _eOesFundTrsfStatus::OES_FUND_TRSF_STS_DECLARED_ROLLBACK
+    e.value("OES_FUND_TRSF_STS_DECLARED_ROLLBACK", _eOesFundTrsfStatus::OES_FUND_TRSF_STS_DECLARED_ROLLBACK);
+    // _eOesFundTrsfStatus::__OES_FUND_TRSF_STS_INVALID_MIN
+    e.value("__OES_FUND_TRSF_STS_INVALID_MIN", _eOesFundTrsfStatus::__OES_FUND_TRSF_STS_INVALID_MIN);
+    // _eOesFundTrsfStatus::OES_FUND_TRSF_STS_INVALID_OES
+    e.value("OES_FUND_TRSF_STS_INVALID_OES", _eOesFundTrsfStatus::OES_FUND_TRSF_STS_INVALID_OES);
+    // _eOesFundTrsfStatus::OES_FUND_TRSF_STS_INVALID_COUNTER
+    e.value("OES_FUND_TRSF_STS_INVALID_COUNTER", _eOesFundTrsfStatus::OES_FUND_TRSF_STS_INVALID_COUNTER);
+    // _eOesFundTrsfStatus::OES_FUND_TRSF_STS_SUSPENDED
+    e.value("OES_FUND_TRSF_STS_SUSPENDED", _eOesFundTrsfStatus::OES_FUND_TRSF_STS_SUSPENDED);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsSubscribeDataType", e);
+    module_vnoes::objects.emplace("_eOesFundTrsfStatus", e);
 }
-void generate_enum_eMdsSubscribedChannelNo(pybind11::object & parent)
+void generate_enum_eOesAcctType(pybind11::object & parent)
 {
-    // _eMdsSubscribedChannelNo
-    pybind11::enum_<_eMdsSubscribedChannelNo> e(parent, "_eMdsSubscribedChannelNo", pybind11::arithmetic());
-    // _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_DEFAULT
-    e.value("MDS_CHANNEL_NO_DEFAULT", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_DEFAULT);
-    // _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_ONE
-    e.value("MDS_CHANNEL_NO_ONE", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_ONE);
-    // _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_TWO
-    e.value("MDS_CHANNEL_NO_TWO", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_TWO);
-    // _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_THREE
-    e.value("MDS_CHANNEL_NO_THREE", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_THREE);
-    // _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_FOUR
-    e.value("MDS_CHANNEL_NO_FOUR", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_FOUR);
-    // _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_ALL
-    e.value("MDS_CHANNEL_NO_ALL", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_ALL);
-    // _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_NONE
-    e.value("MDS_CHANNEL_NO_NONE", _eMdsSubscribedChannelNo::MDS_CHANNEL_NO_NONE);
+    // _eOesAcctType
+    pybind11::enum_<_eOesAcctType> e(parent, "_eOesAcctType", pybind11::arithmetic());
+    // _eOesAcctType::OES_ACCT_TYPE_NORMAL
+    e.value("OES_ACCT_TYPE_NORMAL", _eOesAcctType::OES_ACCT_TYPE_NORMAL);
+    // _eOesAcctType::OES_ACCT_TYPE_CREDIT
+    e.value("OES_ACCT_TYPE_CREDIT", _eOesAcctType::OES_ACCT_TYPE_CREDIT);
+    // _eOesAcctType::OES_ACCT_TYPE_OPTION
+    e.value("OES_ACCT_TYPE_OPTION", _eOesAcctType::OES_ACCT_TYPE_OPTION);
+    // _eOesAcctType::__OES_ACCT_TYPE_MAX
+    e.value("__OES_ACCT_TYPE_MAX", _eOesAcctType::__OES_ACCT_TYPE_MAX);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsSubscribedChannelNo", e);
+    module_vnoes::objects.emplace("_eOesAcctType", e);
 }
-void generate_enum_eMdsProtocolHintsType(pybind11::object & parent)
+void generate_enum_eOesCashType(pybind11::object & parent)
 {
-    // _eMdsProtocolHintsType
-    pybind11::enum_<_eMdsProtocolHintsType> e(parent, "_eMdsProtocolHintsType", pybind11::arithmetic());
-    // _eMdsProtocolHintsType::MDS_PROT_HINTS_TYPE_DEFAULT
-    e.value("MDS_PROT_HINTS_TYPE_DEFAULT", _eMdsProtocolHintsType::MDS_PROT_HINTS_TYPE_DEFAULT);
-    // _eMdsProtocolHintsType::MDS_PROT_HINTS_TYPE_COMPRESS
-    e.value("MDS_PROT_HINTS_TYPE_COMPRESS", _eMdsProtocolHintsType::MDS_PROT_HINTS_TYPE_COMPRESS);
-    // _eMdsProtocolHintsType::MDS_PROT_HINTS_TYPE_NONE
-    e.value("MDS_PROT_HINTS_TYPE_NONE", _eMdsProtocolHintsType::MDS_PROT_HINTS_TYPE_NONE);
-    // _eMdsProtocolHintsType::__MAX_MDS_PROT_HINTS_TYPE
-    e.value("__MAX_MDS_PROT_HINTS_TYPE", _eMdsProtocolHintsType::__MAX_MDS_PROT_HINTS_TYPE);
+    // _eOesCashType
+    pybind11::enum_<_eOesCashType> e(parent, "_eOesCashType", pybind11::arithmetic());
+    // _eOesCashType::OES_CASH_TYPE_SPOT
+    e.value("OES_CASH_TYPE_SPOT", _eOesCashType::OES_CASH_TYPE_SPOT);
+    // _eOesCashType::OES_CASH_TYPE_CREDIT
+    e.value("OES_CASH_TYPE_CREDIT", _eOesCashType::OES_CASH_TYPE_CREDIT);
+    // _eOesCashType::OES_CASH_TYPE_OPTION
+    e.value("OES_CASH_TYPE_OPTION", _eOesCashType::OES_CASH_TYPE_OPTION);
+    // _eOesCashType::__OES_CASH_TYPE_MAX
+    e.value("__OES_CASH_TYPE_MAX", _eOesCashType::__OES_CASH_TYPE_MAX);
+    // _eOesCashType::OES_CASH_TYPE_CRE
+    e.value("OES_CASH_TYPE_CRE", _eOesCashType::OES_CASH_TYPE_CRE);
+    // _eOesCashType::OES_CASH_TYPE_OPT
+    e.value("OES_CASH_TYPE_OPT", _eOesCashType::OES_CASH_TYPE_OPT);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsProtocolHintsType", e);
+    module_vnoes::objects.emplace("_eOesCashType", e);
 }
-void generate_enum_eMdsApiChannelType(pybind11::object & parent)
+void generate_enum_eOesAcctStatus(pybind11::object & parent)
 {
-    // _eMdsApiChannelType
-    pybind11::enum_<_eMdsApiChannelType> e(parent, "_eMdsApiChannelType", pybind11::arithmetic());
-    // _eMdsApiChannelType::MDSAPI_CHANNEL_TYPE_TCP
-    e.value("MDSAPI_CHANNEL_TYPE_TCP", _eMdsApiChannelType::MDSAPI_CHANNEL_TYPE_TCP);
-    // _eMdsApiChannelType::MDSAPI_CHANNEL_TYPE_UDP
-    e.value("MDSAPI_CHANNEL_TYPE_UDP", _eMdsApiChannelType::MDSAPI_CHANNEL_TYPE_UDP);
-    // _eMdsApiChannelType::MDSAPI_CHANNEL_TYPE_QUERY
-    e.value("MDSAPI_CHANNEL_TYPE_QUERY", _eMdsApiChannelType::MDSAPI_CHANNEL_TYPE_QUERY);
+    // _eOesAcctStatus
+    pybind11::enum_<_eOesAcctStatus> e(parent, "_eOesAcctStatus", pybind11::arithmetic());
+    // _eOesAcctStatus::OES_ACCT_STATUS_NORMAL
+    e.value("OES_ACCT_STATUS_NORMAL", _eOesAcctStatus::OES_ACCT_STATUS_NORMAL);
+    // _eOesAcctStatus::OES_ACCT_STATUS_DISABLED
+    e.value("OES_ACCT_STATUS_DISABLED", _eOesAcctStatus::OES_ACCT_STATUS_DISABLED);
+    // _eOesAcctStatus::OES_ACCT_STATUS_LOCKED
+    e.value("OES_ACCT_STATUS_LOCKED", _eOesAcctStatus::OES_ACCT_STATUS_LOCKED);
     e.export_values();
-    module_vnoes::objects.emplace("_eMdsApiChannelType", e);
-}
-void generate_vnoes_enums(pybind11::module & parent)
-{
-    generate_enum_eOesExchangeId(parent);
-    generate_enum_eOesMarketId(parent);
-    generate_enum_eOesPlatformId(parent);
-    generate_enum_eOesMarketState(parent);
-    generate_enum_eOesTrdSessType(parent);
-    generate_enum_eOesProductType(parent);
-    generate_enum_eOesSecurityType(parent);
-    generate_enum_eOesSubSecurityType(parent);
-    generate_enum_eOesSecurityLevel(parent);
-    generate_enum_eOesSecurityRiskLevel(parent);
-    generate_enum_eOesSecuritySuspFlag(parent);
-    generate_enum_eOesLotType(parent);
-    generate_enum_eOesLotRejReason(parent);
-    generate_enum_eOesOrdStatus(parent);
-    generate_enum_eOesOrdType(parent);
-    generate_enum_eOesOrdTypeSh(parent);
-    generate_enum_eOesOrdTypeSz(parent);
-    generate_enum_eOesBuySellType(parent);
-    generate_enum_eOesOrdDir(parent);
-    generate_enum_eOesEtfTrdCnfmType(parent);
-    generate_enum_eOesEtfSubFlag(parent);
-    generate_enum_eOesExecType(parent);
-    generate_enum_eOesCurrType(parent);
-    generate_enum_eOesFeeType(parent);
-    generate_enum_eOesCalcFeeMode(parent);
-    generate_enum_eOesFundTrsfDirect(parent);
-    generate_enum_eOesFundTrsfType(parent);
-    generate_enum_eOesFundTrsfStatus(parent);
-    generate_enum_eOesAcctType(parent);
-    generate_enum_eOesCashType(parent);
-    generate_enum_eOesAcctStatus(parent);
-    generate_enum_eOesTradingPermission(parent);
-    generate_enum_eOesTradingLimit(parent);
-    generate_enum_eOesQualificationClass(parent);
-    generate_enum_eOesInvestorClass(parent);
-    generate_enum_eOesCustType(parent);
-    generate_enum_eOesOwnerType(parent);
-    generate_enum_eOesClientType(parent);
-    generate_enum_eOesClientStatus(parent);
-    generate_enum_eOesOptContractType(parent);
-    generate_enum_eOesOptInvLevel(parent);
-    generate_enum_eOpenFlagType(parent);
-    generate_enum_eOesOptionOpenFlag(parent);
-    generate_enum_eOesPositionEff(parent);
-    generate_enum_eOesOptionType(parent);
-    generate_enum_eSMsgProtocolType(parent);
-    generate_enum_eSMsgFlag(parent);
-    generate_enum_eOesMsgType(parent);
-    generate_enum_eOesSubscribeReportType(parent);
-    generate_enum_eOesProtocolHintsType(parent);
-    generate_enum_eSSocketProtocolType(parent);
-    generate_enum_eGeneralClientClusterType(parent);
-    generate_enum_eGeneralClientEncryptType(parent);
-    generate_enum_eOesApiChannelType(parent);
-    generate_enum_eMdsExchangeId(parent);
-    generate_enum_eMdsMsgSource(parent);
-    generate_enum_eMdsMdProductType(parent);
-    generate_enum_eMdsMdStreamType(parent);
-    generate_enum_eMdsMdLevel(parent);
-    generate_enum_eMdsL2PriceLevelOperator(parent);
-    generate_enum_eMdsL2TradeExecType(parent);
-    generate_enum_eMdsL2TradeBSFlag(parent);
-    generate_enum_eMdsL2OrderSideT(parent);
-    generate_enum_eMdsL2OrderType(parent);
-    generate_enum_eMdsClientType(parent);
-    generate_enum_eMdsClientStatus(parent);
-    generate_enum_eMdsMsgType(parent);
-    generate_enum_eMdsSubscribeMode(parent);
-    generate_enum_eMdsMktSubscribeFlag(parent);
-    generate_enum_eMdsSubscribedTickType(parent);
-    generate_enum_eMdsSubscribedTickExpireType(parent);
-    generate_enum_eMdsSubscribeDataType(parent);
-    generate_enum_eMdsSubscribedChannelNo(parent);
-    generate_enum_eMdsProtocolHintsType(parent);
-    generate_enum_eMdsApiChannelType(parent);
-}
-void generate_vnoes_functions(pybind11::module & parent)
-{
-    parent.def("__SPlatform_GetErrno",
-        &__SPlatform_GetErrno,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("__SPlatform_GetNegErrno",
-        &__SPlatform_GetNegErrno,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("__SPlatform_SetErrno",
-        &__SPlatform_SetErrno,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("__SPlatform_IsErrEagain",
-        &__SPlatform_IsErrEagain,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("__SPlatform_IsErrEconnaborted",
-        &__SPlatform_IsErrEconnaborted,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("__SPlatform_IsErrEtimeout",
-        &__SPlatform_IsErrEtimeout,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("__SPlatform_IsErrEpipe",
-        &__SPlatform_IsErrEpipe,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("__SPlatform_IsErrEintr",
-        &__SPlatform_IsErrEintr,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("__SPlatform_IsErrEbadmsg",
-        &__SPlatform_IsErrEbadmsg,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("__SPlatform_IsNegEagain",
-        &__SPlatform_IsNegEagain,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("__SPlatform_IsNegEconnaborted",
-        &__SPlatform_IsNegEconnaborted,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("__SPlatform_IsNegEtimeout",
-        &__SPlatform_IsNegEtimeout,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("__SPlatform_IsNegEpipe",
-        &__SPlatform_IsNegEpipe,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("__SPlatform_IsNegEintr",
-        &__SPlatform_IsNegEintr,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("__SPlatform_IsNegEbadmsg",
-        &__SPlatform_IsNegEbadmsg,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SendOrderReq",
-        &OesApi_SendOrderReq,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SendOrderCancelReq",
-        &OesApi_SendOrderCancelReq,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SendBatchOrdersReq2",
-        &OesApi_SendBatchOrdersReq2,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SendFundTransferReq",
-        &OesApi_SendFundTransferReq,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SendChangePasswordReq",
-        &OesApi_SendChangePasswordReq,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_WaitReportMsg",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_WaitReportMsg
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_RecvReportMsg",
-        &OesApi_RecvReportMsg,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetApiVersion",
-        &OesApi_GetApiVersion,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetTradingDay",
-        &OesApi_GetTradingDay,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetClientOverview",
-        &OesApi_GetClientOverview,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QuerySingleOrder",
-        &OesApi_QuerySingleOrder,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QuerySingleCashAsset",
-        &OesApi_QuerySingleCashAsset,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QuerySingleStkHolding",
-        &OesApi_QuerySingleStkHolding,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QuerySingleOptHolding",
-        &OesApi_QuerySingleOptHolding,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryOrder",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryOrder
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryTrade",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryTrade
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryCashAsset",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryCashAsset
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryStkHolding",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryStkHolding
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryOptHolding",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryOptHolding
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryLotWinning",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryLotWinning
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryCustInfo",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryCustInfo
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryInvAcct",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryInvAcct
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryCommissionRate",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryCommissionRate
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryFundTransferSerial",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryFundTransferSerial
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryIssue",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryIssue
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryStock",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryStock
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryEtf",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryEtf
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryEtfComponent",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryEtfComponent
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryOption",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryOption
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryMarketState",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_QueryMarketState
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_QueryCounterCash",
-        &OesApi_QueryCounterCash,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_Logon",
-        &OesApi_Logon,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_LogonReplicaSet",
-        &OesApi_LogonReplicaSet,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_LogonPeerNodes",
-        &OesApi_LogonPeerNodes,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SendReportSynchronization",
-        &OesApi_SendReportSynchronization,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SendHeartbeat",
-        &OesApi_SendHeartbeat,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_TestOrdChannel",
-        &OesApi_TestOrdChannel,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_TestOrdChannel2",
-        &OesApi_TestOrdChannel2,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_TestRptChannel",
-        &OesApi_TestRptChannel,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_TestRptChannel2",
-        &OesApi_TestRptChannel2,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_Logout",
-        &OesApi_Logout,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_Destory",
-        &OesApi_Destory,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_InitAll",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_InitAll
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::inout_argument_transform, 8>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_InitAllByConvention",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_InitAllByConvention
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::inout_argument_transform, 3>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_InitAllByCfgStruct",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_InitAllByCfgStruct
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::inout_argument_transform, 3>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_LogoutAll",
-        &OesApi_LogoutAll,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_DestoryAll",
-        &OesApi_DestoryAll,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_InitLogger",
-        &OesApi_InitLogger,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_ResetThreadLoggerName",
-        &OesApi_ResetThreadLoggerName,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_InitOrdChannel",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_InitOrdChannel
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::inout_argument_transform, 4>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_InitOrdChannel2",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_InitOrdChannel2
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::inout_argument_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_InitRptChannel",
-        &OesApi_InitRptChannel,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_InitRptChannel2",
-        &OesApi_InitRptChannel2,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_InitQryChannel",
-        &OesApi_InitQryChannel,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_InitQryChannel2",
-        &OesApi_InitQryChannel2,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_ParseAddrListString",
-        &OesApi_ParseAddrListString,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_ParseConfigFromFile",
-        &OesApi_ParseConfigFromFile,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_ParseAllConfig",
-        &OesApi_ParseAllConfig,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_InitChannelGroup",
-        &OesApi_InitChannelGroup,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_DestoryChannelGroup",
-        &OesApi_DestoryChannelGroup,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_AddToChannelGroup",
-        &OesApi_AddToChannelGroup,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_DeleteFromChannelGroup",
-        &OesApi_DeleteFromChannelGroup,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetFromChannelGroup",
-        &OesApi_GetFromChannelGroup,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetFromChannelGroupBySocket",
-        &OesApi_GetFromChannelGroupBySocket,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_ForeachInChannelGroup",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &OesApi_ForeachInChannelGroup
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 1>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SetThreadUsername",
-        &OesApi_SetThreadUsername,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetThreadUsername",
-        &OesApi_GetThreadUsername,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SetThreadPassword",
-        &OesApi_SetThreadPassword,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SetThreadEnvId",
-        &OesApi_SetThreadEnvId,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetThreadEnvId",
-        &OesApi_GetThreadEnvId,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SetThreadSubscribeEnvId",
-        &OesApi_SetThreadSubscribeEnvId,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetThreadSubscribeEnvId",
-        &OesApi_GetThreadSubscribeEnvId,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SetCustomizedIpAndMac",
-        &OesApi_SetCustomizedIpAndMac,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SetCustomizedIp",
-        &OesApi_SetCustomizedIp,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SetCustomizedMac",
-        &OesApi_SetCustomizedMac,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetCustomizedIp",
-        &OesApi_GetCustomizedIp,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetCustomizedMac",
-        &OesApi_GetCustomizedMac,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SetCustomizedDriverId",
-        &OesApi_SetCustomizedDriverId,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetCustomizedDriverId",
-        &OesApi_GetCustomizedDriverId,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetClEnvId",
-        &OesApi_GetClEnvId,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetLastRecvTime",
-        &OesApi_GetLastRecvTime,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetLastSendTime",
-        &OesApi_GetLastSendTime,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_HasMoreCachedData",
-        &OesApi_HasMoreCachedData,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_IsValidOrdChannel",
-        &OesApi_IsValidOrdChannel,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_IsValidRptChannel",
-        &OesApi_IsValidRptChannel,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_IsValidQryChannel",
-        &OesApi_IsValidQryChannel,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_IsValidChannelGroup",
-        &OesApi_IsValidChannelGroup,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetLastError",
-        &OesApi_GetLastError,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_SetLastError",
-        &OesApi_SetLastError,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetErrorMsg",
-        &OesApi_GetErrorMsg,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesApi_GetErrorMsg2",
-        &OesApi_GetErrorMsg2,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("OesHelper_ExtractOrdReportFromTrd",
-        &OesHelper_ExtractOrdReportFromTrd,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_Logon",
-        &MdsApi_Logon,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_LogonReplicaSet",
-        &MdsApi_LogonReplicaSet,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_LogonPeerNodes",
-        &MdsApi_LogonPeerNodes,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SyncSubscribeOnLogon",
-        &MdsApi_SyncSubscribeOnLogon,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SubscribeMarketData",
-        &MdsApi_SubscribeMarketData,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SubscribeByString",
-        &MdsApi_SubscribeByString,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SubscribeByString2",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &MdsApi_SubscribeByString2
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::string_array_transform, 1>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SubscribeByStringAndPrefixes",
-        &MdsApi_SubscribeByStringAndPrefixes,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SubscribeByStringAndPrefixes2",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &MdsApi_SubscribeByStringAndPrefixes2
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::string_array_transform, 1>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SendHeartbeat",
-        &MdsApi_SendHeartbeat,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SendTestRequest",
-        &MdsApi_SendTestRequest,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_Logout",
-        &MdsApi_Logout,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_Destory",
-        &MdsApi_Destory,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_WaitOnMsg",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &MdsApi_WaitOnMsg
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_WaitOnMsgCompressible",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &MdsApi_WaitOnMsgCompressible
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_GetApiVersion",
-        &MdsApi_GetApiVersion,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_QueryMktDataSnapshot",
-        &MdsApi_QueryMktDataSnapshot,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_QuerySecurityStatus",
-        &MdsApi_QuerySecurityStatus,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_QueryTrdSessionStatus",
-        &MdsApi_QueryTrdSessionStatus,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_QueryStockStaticInfo",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &MdsApi_QueryStockStaticInfo
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_QuerySnapshotList",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &MdsApi_QuerySnapshotList
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 4>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_QuerySnapshotList2",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &MdsApi_QuerySnapshotList2
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 4>,
-                c2py::indexed_transform_holder<c2py::string_array_transform, 1>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SendChangePasswordReq",
-        &MdsApi_SendChangePasswordReq,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_ConnectToUdpMcast",
-        &MdsApi_ConnectToUdpMcast,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_WaitOnUdpMsg",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &MdsApi_WaitOnUdpMsg
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 2>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_InitAll",
-        &MdsApi_InitAll,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_InitAllByConvention",
-        &MdsApi_InitAllByConvention,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_InitAllByCfgStruct",
-        &MdsApi_InitAllByCfgStruct,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_LogoutAll",
-        &MdsApi_LogoutAll,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_DestoryAll",
-        &MdsApi_DestoryAll,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_InitLogger",
-        &MdsApi_InitLogger,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_ResetThreadLoggerName",
-        &MdsApi_ResetThreadLoggerName,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_InitTcpChannel",
-        &MdsApi_InitTcpChannel,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_InitTcpChannel2",
-        &MdsApi_InitTcpChannel2,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_InitQryChannel",
-        &MdsApi_InitQryChannel,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_InitQryChannel2",
-        &MdsApi_InitQryChannel2,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_InitUdpChannel",
-        &MdsApi_InitUdpChannel,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_InitUdpChannel2",
-        &MdsApi_InitUdpChannel2,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_ParseAddrListString",
-        &MdsApi_ParseAddrListString,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_ParseConfigFromFile",
-        &MdsApi_ParseConfigFromFile,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_ParseAllConfig",
-        &MdsApi_ParseAllConfig,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_InitChannelGroup",
-        &MdsApi_InitChannelGroup,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_DestoryChannelGroup",
-        &MdsApi_DestoryChannelGroup,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_AddToChannelGroup",
-        &MdsApi_AddToChannelGroup,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_DeleteFromChannelGroup",
-        &MdsApi_DeleteFromChannelGroup,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_GetFromChannelGroup",
-        &MdsApi_GetFromChannelGroup,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_GetFromChannelGroupBySocket",
-        &MdsApi_GetFromChannelGroupBySocket,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_ForeachInChannelGroup",
-        c2py::apply_function_transform<
-            c2py::function_constant<
-                &MdsApi_ForeachInChannelGroup
-            >, 
-            brigand::list<
-                c2py::indexed_transform_holder<c2py::c_function_callback_transform, 1>
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SetThreadUsername",
-        &MdsApi_SetThreadUsername,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_GetThreadUsername",
-        &MdsApi_GetThreadUsername,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SetThreadPassword",
-        &MdsApi_SetThreadPassword,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SetCustomizedIp",
-        &MdsApi_SetCustomizedIp,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SetCustomizedMac",
-        &MdsApi_SetCustomizedMac,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_GetCustomizedIp",
-        &MdsApi_GetCustomizedIp,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_GetCustomizedMac",
-        &MdsApi_GetCustomizedMac,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SetCustomizedDriverId",
-        &MdsApi_SetCustomizedDriverId,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_GetCustomizedDriverId",
-        &MdsApi_GetCustomizedDriverId,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_GetLastRecvTime",
-        &MdsApi_GetLastRecvTime,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_GetLastSendTime",
-        &MdsApi_GetLastSendTime,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_HasMoreCachedData",
-        &MdsApi_HasMoreCachedData,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_IsValidTcpChannel",
-        &MdsApi_IsValidTcpChannel,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_IsValidQryChannel",
-        &MdsApi_IsValidQryChannel,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_IsValidUdpChannel",
-        &MdsApi_IsValidUdpChannel,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_IsValidChannelGroup",
-        &MdsApi_IsValidChannelGroup,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_GetLastError",
-        &MdsApi_GetLastError,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_SetLastError",
-        &MdsApi_SetLastError,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_GetErrorMsg",
-        &MdsApi_GetErrorMsg,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsApi_GetErrorMsg2",
-        &MdsApi_GetErrorMsg2,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsHelper_SetTickTypeOnSubscribeByString",
-        &MdsHelper_SetTickTypeOnSubscribeByString,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsHelper_ClearSubscribeRequestEntries",
-        &MdsHelper_ClearSubscribeRequestEntries,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsHelper_SetSubscribeRequestMode",
-        &MdsHelper_SetSubscribeRequestMode,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsHelper_SetSubscribeRequestTickType",
-        &MdsHelper_SetSubscribeRequestTickType,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsHelper_SetSubscribeRequestDataTypes",
-        &MdsHelper_SetSubscribeRequestDataTypes,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsHelper_SetSubscribeRequestSubFlag",
-        &MdsHelper_SetSubscribeRequestSubFlag,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    parent.def("MdsHelper_AddSubscribeRequestEntry",
-        &MdsHelper_AddSubscribeRequestEntry,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
+    module_vnoes::objects.emplace("_eOesAcctStatus", e);
 }

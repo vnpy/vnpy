@@ -60,6 +60,24 @@
     <ClCompile Include="generated_files\generated_functions_13.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="generated_files\generated_functions_14.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated_files\generated_functions_15.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated_files\generated_functions_16.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated_files\generated_functions_17.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated_files\generated_functions_18.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated_files\generated_functions_19.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="generated_files\generated_functions.h">
