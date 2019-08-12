@@ -170,7 +170,7 @@ class ArbitrageAlgo(AlgoTemplate):
     def hedge(self):
         """"""
         tick = self.get_tick(self.passive_vt_symbol)
-        volume = -self.active_pos - self.passive_pos
+        volume = self.active_pos - self.passive_pos
 
         if volume > 0:
             self.passive_vt_orderid = self.buy(
