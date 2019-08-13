@@ -87,8 +87,8 @@ DIRECTION_VT2XTP = {
     (Direction.SHORT, Offset.CLOSE): XTP_SIDE_REPAY_MARGIN,
     (Direction.SHORT, Offset.OPEN): XTP_SIDE_SHORT_SELL,
     (Direction.LONG, Offset.CLOSE): XTP_SIDE_REPAY_STOCK,
-    (Direction.SHORT, Offset.NONE): XTP_SIDE_BUY,
-    (Direction.LONG, Offset.NONE): XTP_SIDE_SELL,
+    (Direction.SHORT, Offset.NONE): XTP_SIDE_SELL,
+    (Direction.LONG, Offset.NONE): XTP_SIDE_BUY,
 }
 DIRECTION_XTP2VT = {v: k for k, v in DIRECTION_VT2XTP.items()}
 
