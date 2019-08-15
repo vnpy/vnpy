@@ -31,7 +31,7 @@ from .object import (
     HistoryRequest
 )
 from .setting import SETTINGS
-from .utility import get_folder_path, TRADER_DIR
+from ..utility.path import TRADER_DIR, get_folder_path
 
 
 class MainEngine:

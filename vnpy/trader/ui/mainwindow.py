@@ -25,7 +25,7 @@ from .widget import (
     GlobalDialog
 )
 from ..engine import MainEngine
-from ..utility import get_icon_path, TRADER_DIR
+from ...utility.path import TRADER_DIR, get_icon_path
 
 
 class MainWindow(QtWidgets.QMainWindow):

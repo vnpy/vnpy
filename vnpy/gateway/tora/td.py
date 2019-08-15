@@ -25,7 +25,7 @@ from vnpy.trader.constant import Direction, Exchange, Offset, OrderType, Status
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import AccountData, CancelRequest, ContractData, OrderData, OrderRequest, \
     PositionData, TradeData
-from vnpy.trader.utility import get_folder_path
+from vnpy.utility.path import get_folder_path
 from .constant import DIRECTION_TORA2VT, DIRECTION_VT2TORA, EXCHANGE_TORA2VT, EXCHANGE_VT2TORA, \
     ORDER_STATUS_TORA2VT, ORDER_TYPE_TORA2VT, ORDER_TYPE_VT2TORA, PRODUCT_TORA2VT
 from .error_codes import get_error_msg

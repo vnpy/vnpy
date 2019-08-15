@@ -9,7 +9,7 @@ from PyQt5 import QtGui, QtWidgets, QtCore
 
 from .mainwindow import MainWindow
 from ..setting import SETTINGS
-from ..utility import get_icon_path
+from vnpy.utility.path import get_icon_path
 
 
 def excepthook(exctype, value, tb):

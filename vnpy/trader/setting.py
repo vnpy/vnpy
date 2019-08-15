@@ -4,7 +4,7 @@ Global setting of VN Trader.
 
 from logging import CRITICAL
 
-from .utility import load_json
+from vnpy.utility.path import load_json
 
 SETTINGS = {
     "font.family": "Arial",

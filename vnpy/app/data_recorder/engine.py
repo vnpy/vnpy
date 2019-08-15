@@ -13,7 +13,8 @@ from vnpy.trader.object import (
     ContractData
 )
 from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT
-from vnpy.trader.utility import load_json, save_json, BarGenerator
+from vnpy.utility.bar_generator import BarGenerator
+from vnpy.utility.path import load_json, save_json
 from vnpy.trader.database import database_manager
 
 

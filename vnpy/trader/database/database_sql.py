@@ -17,7 +17,7 @@ from peewee import (
 
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.object import BarData, TickData
-from vnpy.trader.utility import get_file_path
+from vnpy.utility.path import get_file_path
 from .database import BaseDatabaseManager, Driver
 
 

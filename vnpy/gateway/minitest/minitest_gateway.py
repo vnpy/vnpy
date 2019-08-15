@@ -56,7 +56,7 @@ from vnpy.trader.object import (
     CancelRequest,
     SubscribeRequest,
 )
-from vnpy.trader.utility import get_folder_path
+from vnpy.utility.path import get_folder_path
 from vnpy.trader.event import EVENT_TIMER
 
 from .vnminimd import MdApi

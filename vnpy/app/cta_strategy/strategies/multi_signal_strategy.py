@@ -4,11 +4,11 @@ from vnpy.app.cta_strategy import (
     BarData,
     TradeData,
     OrderData,
-    BarGenerator,
-    ArrayManager,
     CtaSignal,
     TargetPosTemplate
 )
+from vnpy.utility.bar_generator import BarGenerator
+from vnpy.utility.array_manager import ArrayManager
 
 
 class RsiSignal(CtaSignal):

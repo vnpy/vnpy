@@ -38,7 +38,7 @@ from vnpy.api.tap.vntap.ITapTrade import (
 from vnpy.api.tap.error_codes import error_map
 
 from vnpy.event import EventEngine
-from vnpy.trader.utility import get_folder_path
+from vnpy.utility.path import get_folder_path
 from vnpy.trader.constant import Exchange, Product, Direction, Status, OrderType
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (

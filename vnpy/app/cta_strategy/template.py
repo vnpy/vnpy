@@ -5,7 +5,7 @@ from typing import Any, Callable
 
 from vnpy.trader.constant import Interval, Direction, Offset
 from vnpy.trader.object import BarData, TickData, OrderData, TradeData
-from vnpy.trader.utility import virtual
+from vnpy.utility.functools import virtual
 
 from .base import StopOrder, EngineType
 

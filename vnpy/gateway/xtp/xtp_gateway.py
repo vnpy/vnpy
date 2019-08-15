@@ -51,8 +51,7 @@ from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (CancelRequest, OrderRequest, SubscribeRequest,
                                 TickData, ContractData, OrderData, TradeData,
                                 PositionData, AccountData)
-from vnpy.trader.utility import get_folder_path
-
+from vnpy.utility.path import get_folder_path
 
 API = XTP.API
 

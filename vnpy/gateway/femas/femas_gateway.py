@@ -52,7 +52,7 @@ from vnpy.trader.object import (
     TickData,
     TradeData,
 )
-from vnpy.trader.utility import get_folder_path
+from vnpy.utility.path import get_folder_path
 
 USTP_FTDC_PD_Long = "2"
 USTP_FTDC_PD_Short = "3"

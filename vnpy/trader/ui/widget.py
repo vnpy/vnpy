@@ -21,7 +21,7 @@ from ..event import (
     EVENT_LOG
 )
 from ..object import OrderRequest, SubscribeRequest
-from ..utility import load_json, save_json
+from vnpy.utility.path import load_json, save_json
 from ..setting import SETTING_FILENAME, SETTINGS
 
 
