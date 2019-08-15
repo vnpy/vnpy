@@ -1,7 +1,7 @@
 from typing import Callable
 
 from vnpy.trader.constant import Interval
-from vnpy.trader.object import TickData, BarData
+from vnpy.trader.object import BarData, TickData
 
 
 class BarGenerator:
