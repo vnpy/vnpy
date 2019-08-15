@@ -512,7 +512,7 @@ class XtpTraderApi(API.TraderSpi):
         self.margin_trading = False
         self.option_trading = False
 
-        # 
+        #
         self.short_positions = {}
 
     def connect(
@@ -791,13 +791,13 @@ class XtpTraderApi(API.TraderSpi):
         """"""
         pass
 
-    def OnQueryCreditDebtInfo(self, debt_info: XTPCrdDebtInfo, error_info: XTPRspInfoStruct, 
+    def OnQueryCreditDebtInfo(self, debt_info: XTPCrdDebtInfo, error_info: XTPRspInfoStruct,
                               request_id: int, is_last: bool, session_id: int) -> Any:
         """"""
         if debt_info.debt_type == 1:
             symbol = debt_info.ticker
             exchange = MARKET_XTP2VT[debt_info.market]
-            
+
             position = self.short_positions.get(symbol, None)
             if not position:
                 position = PositionData(
@@ -809,7 +809,7 @@ class XtpTraderApi(API.TraderSpi):
                 self.short_positions[symbol] = position
 
             position.volume += debt_info.remain_qty
-        
+
         if is_last:
             for position in self.short_positions.values():
                 self.gateway.on_position(position)

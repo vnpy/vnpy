@@ -119,7 +119,7 @@ def round_to(value: float, target: float):
 
 class BarGenerator:
     """
-    For: 
+    For:
     1. generating 1 minute bar data from tick data
     2. generateing x minute bar/x hour bar data from 1 minute data
 
