@@ -147,7 +147,7 @@ class RestClient(object):
         """
         Add a new request.
         :param method: GET, POST, PUT, DELETE, QUERY
-        :param path: 
+        :param path:
         :param callback: callback function if 2xx status, type: (dict, Request)
         :param params: dict for query string
         :param data: Http body. If it is a dict, it will be converted to form-data. Otherwise, it will be converted to bytes.
@@ -296,7 +296,7 @@ class RestClient(object):
         """
         Add a new request.
         :param method: GET, POST, PUT, DELETE, QUERY
-        :param path: 
+        :param path:
         :param params: dict for query string
         :param data: dict for body
         :param headers: dict for headers

@@ -222,7 +222,7 @@ class QuoteApi(ITapQuoteAPINotify):
 
     def OnAPIReady(self):
         """
-        Callback when API is ready for sending requests or queries. 
+        Callback when API is ready for sending requests or queries.
         """
         self.api.QryCommodity()
 
@@ -400,7 +400,7 @@ class TradeApi(ITapTradeAPINotify):
 
     def OnAPIReady(self, code: int):
         """
-        Callback when API is ready for sending requests or queries. 
+        Callback when API is ready for sending requests or queries.
         """
         self.api.QryCommodity()
 

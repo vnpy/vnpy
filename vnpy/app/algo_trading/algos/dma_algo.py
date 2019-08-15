@@ -14,7 +14,7 @@ class DmaAlgo(AlgoTemplate):
         "vt_symbol": "",
         "direction": [Direction.LONG.value, Direction.SHORT.value],
         "order_type": [
-            OrderType.MARKET.value, 
+            OrderType.MARKET.value,
             OrderType.LIMIT.value,
             OrderType.STOP.value,
             OrderType.FAK.value,
@@ -74,7 +74,7 @@ class DmaAlgo(AlgoTemplate):
                     self.order_type,
                     self.offset
                 )
-                
+
             else:
                 self.vt_orderid = self.sell(
                     self.vt_symbol,
@@ -96,4 +96,4 @@ class DmaAlgo(AlgoTemplate):
 
     def on_trade(self, trade: TradeData):
         """"""
-        pass   
+        pass
