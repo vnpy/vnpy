@@ -1,0 +1,84 @@
+# English translations for vnpy package.
+# Copyright (C) 2019 THE vnpy'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the vnpy package.
+# Automatically generated, 2019.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: vnpy 2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-08-15 19:40+0800\n"
+"PO-Revision-Date: 2019-08-15 19:31+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_gateway.py:104
+#, fuzzy
+msgid "成功连接到交易服务器"
+msgstr "成功连接到交易服务器"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_gateway.py:112
+msgid "无法连接到交易服务器，请检查你的配置"
+msgstr "无法连接到交易服务器，请检查你的配置"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_gateway.py:119
+msgid "成功连接到行情服务器"
+msgstr "成功连接到行情服务器"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_gateway.py:122
+msgid "无法连接到行情服务器，请检查你的配置"
+msgstr "无法连接到行情服务器，请检查你的配置"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_md.py:84
+msgid "正在尝试重新连接到行情服务器。"
+msgstr "正在尝试重新连接到行情服务器。"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_md.py:130
+msgid "与行情服务器的连接已断开。"
+msgstr "与行情服务器的连接已断开。"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_td.py:167
+msgid "正在尝试重新连接到交易服务器。"
+msgstr "正在尝试重新连接到交易服务器。"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_td.py:198
+msgid "与交易服务器的连接已断开。"
+msgstr "与交易服务器的连接已断开。"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_td.py:344
+msgid "无法初始化交易下单通道(td_ord_server)"
+msgstr "无法初始化交易下单通道(td_ord_server)"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_td.py:347
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_td.py:350
+msgid "无法初始化交易查询通道(td_qry_server)"
+msgstr "无法初始化交易查询通道(td_qry_server)"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_td.py:419
+msgid "正在重新连接到交易下单通道"
+msgstr "正在重新连接到交易下单通道"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_td.py:423
+msgid "成功重新连接到交易下单通道"
+msgstr "成功重新连接到交易下单通道"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_td.py:636
+msgid "下单失败"
+msgstr "下单失败"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_td.py:638
+msgid "下单时连接发现连接已断开，正在尝试重连"
+msgstr "下单时连接发现连接已断开，正在尝试重连"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_td.py:660
+msgid "撤单失败"
+msgstr "撤单失败"
+
+#: C:\vnpy_projects\vnpy2\vnpy\gateway\oes\oes_td.py:662
+msgid "撤单时连接发现连接已断开，正在尝试重连"
+msgstr "撤单时连接发现连接已断开，正在尝试重连"

@@ -2,7 +2,6 @@ import time
 from copy import copy
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from gettext import gettext as _
 from threading import Lock, Thread
 # noinspection PyUnresolvedReferences
 from typing import Any, Callable, Dict
@@ -25,6 +24,8 @@ from vnpy.trader.constant import Direction, Exchange, Offset, OrderType, Product
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import AccountData, CancelRequest, ContractData, OrderData, OrderRequest, \
     PositionData, TradeData
+
+from vnpy.trader.translation import gettext as _
 
 EXCHANGE_OES2VT = {
     eOesMarketIdT.OES_MKT_SH_ASHARE: Exchange.SSE,

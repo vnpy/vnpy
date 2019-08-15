@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-vnpy_source_path: Path = Path(__file__).parents[1]
+vnpy_source_path: Path = Path(__file__).parent.parent
 
 
 def _get_trader_dir(temp_name: str):

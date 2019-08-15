@@ -4,6 +4,7 @@ Global setting of VN Trader.
 
 from logging import CRITICAL
 
+from vnpy.trader.translation import Language, set_language
 from vnpy.utility.path import load_json
 
 SETTINGS = {
@@ -32,11 +33,20 @@ SETTINGS = {
     "database.user": "root",
     "database.password": "",
     "database.authentication_source": "admin",  # for mongodb
+
+    "language": "Chinese",  # "chinese" or "english", case no sensitive
 }
 
 # Load global setting from json file.
 SETTING_FILENAME = "vt_setting.json"
 SETTINGS.update(load_json(SETTING_FILENAME))
+
+LANGUAGE_MAP = {
+    'chinese': Language.CHINESE,
+    'english': Language.ENGLISH,
+}
+
+set_language(LANGUAGE_MAP.get(SETTINGS['language'].lower(), Language.ENGLISH))
 
 
 def get_settings(prefix: str = ""):

@@ -1,7 +1,6 @@
 import time
 from copy import copy
 from datetime import datetime
-from gettext import gettext as _
 from threading import Thread
 # noinspection PyUnresolvedReferences
 from typing import Any, Callable, Dict
@@ -19,6 +18,7 @@ from vnpy.trader.constant import Exchange
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import SubscribeRequest, TickData
 from .error_code import error_to_str
+from vnpy.trader.translation import gettext as _
 
 EXCHANGE_MDS2VT = {
     eMdsExchangeIdT.MDS_EXCH_SSE: Exchange.SSE,
