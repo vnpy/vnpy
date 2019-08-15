@@ -13,9 +13,9 @@ EVENT_TIMER = "eTimer"
 
 class Event:
     """
-    Event object consists of a type string which is used 
-    by event engine for distributing event, and a data 
-    object which contains the real data. 
+    Event object consists of a type string which is used
+    by event engine for distributing event, and a data
+    object which contains the real data.
     """
 
     def __init__(self, type: str, data: Any = None):
@@ -30,7 +30,7 @@ HandlerType = Callable[[Event], None]
 
 class EventEngine:
     """
-    Event engine distributes event object based on its type 
+    Event engine distributes event object based on its type
     to those handlers registered.
 
     It also generates timer event by every interval seconds,
@@ -64,7 +64,7 @@ class EventEngine:
     def _process(self, event: Event):
         """
         First ditribute event to those handlers registered listening
-        to this type. 
+        to this type.
 
         Then distrubute event to those general handlers which listens
         to all types.
@@ -108,7 +108,7 @@ class EventEngine:
 
     def register(self, type: str, handler: HandlerType):
         """
-        Register a new handler function for a specific event type. Every 
+        Register a new handler function for a specific event type. Every
         function can only be registered once for each event type.
         """
         handler_list = self._handlers[type]
@@ -129,7 +129,7 @@ class EventEngine:
 
     def register_general(self, handler: HandlerType):
         """
-        Register a new handler function for all event types. Every 
+        Register a new handler function for all event types. Every
         function can only be registered once for each event type.
         """
         if handler not in self._general_handlers:
