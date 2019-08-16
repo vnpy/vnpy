@@ -1,15 +1,13 @@
 """"""
 
-import importlib
-import os
 import traceback
 from collections import defaultdict
-from pathlib import Path
 from typing import Any, Callable
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 
+from vnpy.app.cta_strategy.loader import StrategyLoader
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
@@ -731,42 +729,13 @@ class CtaEngine(BaseEngine):
         """
         Load strategy class from source code.
         """
-        path1 = Path(__file__).parent.joinpath("strategies")
-        self.load_strategy_class_from_folder(
-            path1, "vnpy.app.cta_strategy.strategies")
-
-        path2 = Path.cwd().joinpath("strategies")
-        self.load_strategy_class_from_folder(path2, "strategies")
-
-    def load_strategy_class_from_folder(self, path: Path, module_name: str = ""):
-        """
-        Load strategy class from certain folder.
-        """
-        for dirpath, dirnames, filenames in os.walk(str(path)):
-            for filename in filenames:
-                if filename.endswith(".py"):
-                    strategy_module_name = ".".join(
-                        [module_name, filename.replace(".py", "")])
-                elif filename.endswith(".pyd"):
-                    strategy_module_name = ".".join(
-                        [module_name, filename.split(".")[0]])
-
-                self.load_strategy_class_from_module(strategy_module_name)
-
-    def load_strategy_class_from_module(self, module_name: str):
-        """
-        Load strategy class from module file.
-        """
-        try:
-            module = importlib.import_module(module_name)
-
-            for name in dir(module):
-                value = getattr(module, name)
-                if (isinstance(value, type) and issubclass(value, CtaTemplate) and value is not CtaTemplate):
-                    self.classes[value.__name__] = value
-        except:  # noqa
-            msg = f"策略文件{module_name}加载失败，触发异常：\n{traceback.format_exc()}"
+        loader = StrategyLoader()
+        loader.load_all()
+        for failure in loader.failures:
+            detail = "\n".join(traceback.format_tb(failure.exception.__traceback__))
+            msg = f"策略文件{failure.module_name}加载失败，触发异常：\n{detail}"
             self.write_log(msg)
+        self.classes.update(loader.classes)
 
     def load_strategy_data(self):
         """
