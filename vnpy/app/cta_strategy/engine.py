@@ -96,7 +96,7 @@ class CtaEngine(BaseEngine):
         self.rq_client = None
         self.rq_symbols = set()
 
-        self.vt_tradeids = set()    # for filtering duplicate trade
+        self.unique_vt_orderid = set()    # for filtering duplicate trade
 
         self.offset_converter = OffsetConverter(self.main_engine)
 
@@ -197,9 +197,9 @@ class CtaEngine(BaseEngine):
         trade = event.data
 
         # Filter duplicate trade push
-        if trade.vt_tradeid in self.vt_tradeids:
+        if trade.vt_orderid in self.unique_vt_orderid:
             return
-        self.vt_tradeids.add(trade.vt_tradeid)
+        self.unique_vt_orderid.add(trade.vt_orderid)
 
         self.offset_converter.update_trade(trade)
 
