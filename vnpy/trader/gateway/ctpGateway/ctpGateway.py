@@ -1062,9 +1062,7 @@ class CtpTdApi(TdApi):
             exchange = self.symbolExchangeDict.get(pos.symbol, EXCHANGE_UNKNOWN)
 
             # 获取size
-            if pos.symbol not in self.symbolSizeDict:
-                return
-            size = self.symbolSizeDict[pos.symbol]
+            size = self.symbolSizeDict.get(pos.symbol,10)
 
             # 针对上期所持仓的今昨分条返回（有昨仓、无今仓），读取昨仓数据
             if exchange in [EXCHANGE_SHFE, EXCHANGE_INE]:
