@@ -440,6 +440,16 @@ class ArrayManager(object):
             return up, down
         return up[-1], down[-1]
 
+    def aroon(self, n, array=False):
+        """
+        Aroon indicator.
+        """
+        aroon_up, aroon_down = talib.AROON(self.high, self.low, n)
+
+        if array:
+            return aroon_up, aroon_down
+        return aroon_up[-1], aroon_down[-1]
+
 
 def virtual(func: "callable"):
     """
