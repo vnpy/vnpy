@@ -3,13 +3,13 @@
 
 void getInt(dict d, string key, int *value)
 {
-	if (d.has_key(key))		
+	if (d.has_key(key))
 	{
-		object o = d[key];	
-		extract<int> x(o);	
-		if (x.check())		
+		object o = d[key];
+		extract<int> x(o);
+		if (x.check())
 		{
-			*value = x();	
+			*value = x();
 		}
 	}
 }
@@ -37,7 +37,7 @@ void getStr(dict d, string key, char *value)
 		{
 			string s = x();
 			const char *buffer = s.c_str();
-		
+
 #ifdef _MSC_VER //WIN32
 			strcpy_s(value, strlen(buffer) + 1, buffer);
 #elif __GNUC__
@@ -69,11 +69,11 @@ void getChar(dict d, string key, char *value)
 
 void TdApi::OnFrontConnected()
 {
-	
+
 	Task task = Task();
 	task.task_name = ONFRONTCONNECTED;
 	this->task_queue.push(task);
-	
+
 };
 
 void TdApi::OnFrontDisconnected(int nReason)
@@ -94,99 +94,119 @@ void TdApi::OnHeartBeatWarning(int nTimeLapse)
 
 void TdApi::OnRspAuthenticate(CThostFtdcRspAuthenticateField *pRspAuthenticateField, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-
-	Task task = Task();
-	task.task_name = ONRSPAUTHENTICATE;
-
-	if (pRspAuthenticateField)
+	try
 	{
-		task.task_data = *pRspAuthenticateField;
-	}
-	else
-	{
-		CThostFtdcRspAuthenticateField empty_data = CThostFtdcRspAuthenticateField();
-		memset(&empty_data, 0, sizeof(empty_data));
-		task.task_data = empty_data;
-	}
+		Task task = Task();
+		task.task_name = ONRSPAUTHENTICATE;
 
-	if (pRspInfo)
-	{
-		task.task_error = *pRspInfo;
-	}
-	else
-	{
-		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
-		memset(&empty_error, 0, sizeof(empty_error));
-		task.task_error = empty_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
-	
+		if (pRspAuthenticateField)
+		{
+			task.task_data = *pRspAuthenticateField;
+		}
+		else
+		{
+			CThostFtdcRspAuthenticateField empty_data = CThostFtdcRspAuthenticateField();
+			memset(&empty_data, 0, sizeof(empty_data));
+			task.task_data = empty_data;
+		}
 
+		if (pRspInfo)
+		{
+			task.task_error = *pRspInfo;
+		}
+		else
+		{
+			CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+			memset(&empty_error, 0, sizeof(empty_error));
+			task.task_error = empty_error;
+		}
+		task.task_id = nRequestID;
+		task.task_last = bIsLast;
+		this->task_queue.push(task);
+
+	}
+	catch (std::exception e)
+	{
+		cout << "TdApi OnRspAuthenticate exception: " << e.what() << endl;
+	}
 };
 
 void TdApi::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-	Task task = Task();
-	task.task_name = ONRSPUSERLOGIN;
+	try
+	{
+		Task task = Task();
+		task.task_name = ONRSPUSERLOGIN;
 
-	if (pRspUserLogin)
-	{
-		task.task_data = *pRspUserLogin;
-	}
-	else
-	{
-		CThostFtdcRspUserLoginField empty_data = CThostFtdcRspUserLoginField();
-		memset(&empty_data, 0, sizeof(empty_data));
-		task.task_data = empty_data;
-	}
+		if (pRspUserLogin)
+		{
+			task.task_data = *pRspUserLogin;
+		}
+		else
+		{
+			CThostFtdcRspUserLoginField empty_data = CThostFtdcRspUserLoginField();
+			memset(&empty_data, 0, sizeof(empty_data));
+			task.task_data = empty_data;
+		}
 
-	if (pRspInfo)
-	{
-		task.task_error = *pRspInfo;
-	}
-	else
-	{
-		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
-		memset(&empty_error, 0, sizeof(empty_error));
-		task.task_error = empty_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
+		if (pRspInfo)
+		{
+			task.task_error = *pRspInfo;
+		}
+		else
+		{
+			CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+			memset(&empty_error, 0, sizeof(empty_error));
+			task.task_error = empty_error;
+		}
+		task.task_id = nRequestID;
+		task.task_last = bIsLast;
+		this->task_queue.push(task);
 	
+	}
+	catch (std::exception e)
+	{
+		cout << "TdApi OnRspUserLogin exception: " << e.what() << endl;
+	}
+
 };
 
 void TdApi::OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-	Task task = Task();
-	task.task_name = ONRSPUSERLOGOUT;
+	try
+	{
+		Task task = Task();
+		task.task_name = ONRSPUSERLOGOUT;
 
-	if (pUserLogout)
-	{
-		task.task_data = *pUserLogout;
-	}
-	else
-	{
-		CThostFtdcUserLogoutField empty_data = CThostFtdcUserLogoutField();
-		memset(&empty_data, 0, sizeof(empty_data));
-		task.task_data = empty_data;
-	}
+		if (pUserLogout)
+		{
+			task.task_data = *pUserLogout;
+		}
+		else
+		{
+			CThostFtdcUserLogoutField empty_data = CThostFtdcUserLogoutField();
+			memset(&empty_data, 0, sizeof(empty_data));
+			task.task_data = empty_data;
+		}
 
-	if (pRspInfo)
-	{
-		task.task_error = *pRspInfo;
+		if (pRspInfo)
+		{
+			task.task_error = *pRspInfo;
+		}
+		else
+		{
+			CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+			memset(&empty_error, 0, sizeof(empty_error));
+			task.task_error = empty_error;
+		}
+		task.task_id = nRequestID;
+		task.task_last = bIsLast;
+		this->task_queue.push(task);
 	}
-	else
+	catch (std::exception e)
 	{
-		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
-		memset(&empty_error, 0, sizeof(empty_error));
-		task.task_error = empty_error;
+		cout << "TdApi OnRspUserLogout exception: " << e.what() << endl;
 	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
 };
 
 void TdApi::OnRspUserPasswordUpdate(CThostFtdcUserPasswordUpdateField *pUserPasswordUpdate, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
@@ -3509,6 +3529,8 @@ void TdApi::processTask()
 
 		try
 		{
+			//cout << "processTask: " << task.task_name << endl;
+
 			switch (task.task_name)
 			{
 			case ONFRONTCONNECTED:
@@ -4261,6 +4283,7 @@ void TdApi::processTask()
 				break;
 			}
 			}
+			//cout << "ProcessTask finished" << endl;
 		}
 		catch (std::exception & e)
 		{
@@ -7516,178 +7539,203 @@ void TdApi::processRspQueryCFMMCTradingAccountToken(Task task)
 };
 
 void TdApi::processRtnFromBankToFutureByBank(Task task)
-{
-	PyLock lock;
-	CThostFtdcRspTransferField task_data = any_cast<CThostFtdcRspTransferField>(task.task_data);
-	dict data;
-    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-    data["BankAccType"] = task_data.BankAccType;
-    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-    data["BankPwdFlag"] = task_data.BankPwdFlag;
-    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-    data["BankSecuAccType"] = task_data.BankSecuAccType;
-    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-    data["BrokerFee"] = task_data.BrokerFee;
-    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-    data["CustFee"] = task_data.CustFee;
-    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-    data["CustType"] = task_data.CustType;
-    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-    data["ErrorID"] = task_data.ErrorID;
-    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-    data["FeePayFlag"] = task_data.FeePayFlag;
-    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-    data["FutureSerial"] = task_data.FutureSerial;
-    data["IdCardType"] = task_data.IdCardType;
-    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-    data["InstallID"] = task_data.InstallID;
-    data["LastFragment"] = task_data.LastFragment;
-    data["LongCustomerName"] = task_data.LongCustomerName;
-    data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-    data["PlateSerial"] = task_data.PlateSerial;
-    data["RequestID"] = task_data.RequestID;
-    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-    data["SessionID"] = task_data.SessionID;
-    data["TID"] = task_data.TID;
-    data["TradeAmount"] = task_data.TradeAmount;
-    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-    data["TransferStatus"] = task_data.TransferStatus;
-    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+{	
 
+	try
+	{
+		PyLock lock;
+		CThostFtdcRspTransferField task_data = any_cast<CThostFtdcRspTransferField>(task.task_data);
+		dict data;
+		
+		data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+		data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+		data["BankAccType"] = task_data.BankAccType;
+		data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+		data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+		data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+		data["BankPwdFlag"] = task_data.BankPwdFlag;
+		data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+		data["BankSecuAccType"] = task_data.BankSecuAccType;
+		data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+		data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+		data["BrokerFee"] = task_data.BrokerFee;
+		data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+		data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+		data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+		data["CustFee"] = task_data.CustFee;
+		data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+		data["CustType"] = task_data.CustType;
+		data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+		data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+		data["ErrorID"] = task_data.ErrorID;
+		data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+		
+		data["FeePayFlag"] = task_data.FeePayFlag;
+		data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+		data["FutureSerial"] = task_data.FutureSerial;
+		data["IdCardType"] = task_data.IdCardType;
+		data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+		data["InstallID"] = task_data.InstallID;
+		data["LastFragment"] = task_data.LastFragment;
+		data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+		data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+		data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+		data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+		data["PlateSerial"] = task_data.PlateSerial;
+		data["RequestID"] = task_data.RequestID;
+		data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+		data["SessionID"] = task_data.SessionID;
+		data["TID"] = task_data.TID;
+		data["TradeAmount"] = task_data.TradeAmount;
+		data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+		data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+		data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+		data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+		data["TransferStatus"] = task_data.TransferStatus;
+		data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+		data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+		
 
-	this->onRtnFromBankToFutureByBank(data);
+		this->onRtnFromBankToFutureByBank(data);
+	}
+	catch (std::exception & e)
+	{
+		cout << "TdApi processRtnFromBankToFutureByBank exception: " << e.what() << endl;
+	}
+
 };
 
 void TdApi::processRtnFromFutureToBankByBank(Task task)
 {
-	PyLock lock;
-	CThostFtdcRspTransferField task_data = any_cast<CThostFtdcRspTransferField>(task.task_data);
-	dict data;
-    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-    data["BankAccType"] = task_data.BankAccType;
-    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-    data["BankPwdFlag"] = task_data.BankPwdFlag;
-    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-    data["BankSecuAccType"] = task_data.BankSecuAccType;
-    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-    data["BrokerFee"] = task_data.BrokerFee;
-    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-    data["CustFee"] = task_data.CustFee;
-    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-    data["CustType"] = task_data.CustType;
-    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-    data["ErrorID"] = task_data.ErrorID;
-    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-    data["FeePayFlag"] = task_data.FeePayFlag;
-    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-    data["FutureSerial"] = task_data.FutureSerial;
-    data["IdCardType"] = task_data.IdCardType;
-    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-    data["InstallID"] = task_data.InstallID;
-    data["LastFragment"] = task_data.LastFragment;
-    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
-    data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-    data["PlateSerial"] = task_data.PlateSerial;
-    data["RequestID"] = task_data.RequestID;
-    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-    data["SessionID"] = task_data.SessionID;
-    data["TID"] = task_data.TID;
-    data["TradeAmount"] = task_data.TradeAmount;
-    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-    data["TransferStatus"] = task_data.TransferStatus;
-    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+	try
+	{
+		PyLock lock;
+		CThostFtdcRspTransferField task_data = any_cast<CThostFtdcRspTransferField>(task.task_data);
+		dict data;
+		data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+		data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+		data["BankAccType"] = task_data.BankAccType;
+		data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+		data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+		data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+		data["BankPwdFlag"] = task_data.BankPwdFlag;
+		data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+		data["BankSecuAccType"] = task_data.BankSecuAccType;
+		data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+		data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+		data["BrokerFee"] = task_data.BrokerFee;
+		data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+		data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+		data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+		data["CustFee"] = task_data.CustFee;
+		data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+		data["CustType"] = task_data.CustType;
+		data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+		data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+		data["ErrorID"] = task_data.ErrorID;
+		data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+		data["FeePayFlag"] = task_data.FeePayFlag;
+		data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+		data["FutureSerial"] = task_data.FutureSerial;
+		data["IdCardType"] = task_data.IdCardType;
+		data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+		data["InstallID"] = task_data.InstallID;
+		data["LastFragment"] = task_data.LastFragment;
+		data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+		data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+		data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+		data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+		data["PlateSerial"] = task_data.PlateSerial;
+		data["RequestID"] = task_data.RequestID;
+		data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+		data["SessionID"] = task_data.SessionID;
+		data["TID"] = task_data.TID;
+		data["TradeAmount"] = task_data.TradeAmount;
+		data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+		data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+		data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+		data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+		data["TransferStatus"] = task_data.TransferStatus;
+		data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+		data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
 
 
-	this->onRtnFromFutureToBankByBank(data);
+		this->onRtnFromFutureToBankByBank(data);
+	}
+	catch (std::exception & e)
+	{
+		cout << "TdApi processRtnFromBankToFutureByBank exception: " << e.what() << endl;
+	}
 };
 
 void TdApi::processRtnRepealFromBankToFutureByBank(Task task)
 {
-	PyLock lock;
-	CThostFtdcRspRepealField task_data = any_cast<CThostFtdcRspRepealField>(task.task_data);
-	dict data;
-    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-    data["BankAccType"] = task_data.BankAccType;
-    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-    data["BankPwdFlag"] = task_data.BankPwdFlag;
-    data["BankRepealFlag"] = task_data.BankRepealFlag;
-    data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
-    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-    data["BankSecuAccType"] = task_data.BankSecuAccType;
-    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-    data["BrokerFee"] = task_data.BrokerFee;
-    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-    data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
-    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-    data["CustFee"] = task_data.CustFee;
-    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-    data["CustType"] = task_data.CustType;
-    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-    data["ErrorID"] = task_data.ErrorID;
-    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-    data["FeePayFlag"] = task_data.FeePayFlag;
-    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-    data["FutureRepealSerial"] = task_data.FutureRepealSerial;
-    data["FutureSerial"] = task_data.FutureSerial;
-    data["IdCardType"] = task_data.IdCardType;
-    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-    data["InstallID"] = task_data.InstallID;
-    data["LastFragment"] = task_data.LastFragment;
-    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
-     data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-    data["PlateRepealSerial"] = task_data.PlateRepealSerial;
-    data["PlateSerial"] = task_data.PlateSerial;
-    data["RepealedTimes"] = task_data.RepealedTimes;
-    data["RepealTimeInterval"] = task_data.RepealTimeInterval;
-    data["RequestID"] = task_data.RequestID;
-    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-    data["SessionID"] = task_data.SessionID;
-    data["TID"] = task_data.TID;
-    data["TradeAmount"] = task_data.TradeAmount;
-    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-    data["TransferStatus"] = task_data.TransferStatus;
-    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+	try
+	{ 
+		PyLock lock;
+		CThostFtdcRspRepealField task_data = any_cast<CThostFtdcRspRepealField>(task.task_data);
+		dict data;
+		data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+		data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+		data["BankAccType"] = task_data.BankAccType;
+		data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+		data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+		data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+		data["BankPwdFlag"] = task_data.BankPwdFlag;
+		data["BankRepealFlag"] = task_data.BankRepealFlag;
+		data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
+		data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+		data["BankSecuAccType"] = task_data.BankSecuAccType;
+		data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+		data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+		data["BrokerFee"] = task_data.BrokerFee;
+		data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+		data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+		data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
+		data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+		data["CustFee"] = task_data.CustFee;
+		data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+		data["CustType"] = task_data.CustType;
+		data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+		data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+		data["ErrorID"] = task_data.ErrorID;
+		data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+		data["FeePayFlag"] = task_data.FeePayFlag;
+		data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+		data["FutureRepealSerial"] = task_data.FutureRepealSerial;
+		data["FutureSerial"] = task_data.FutureSerial;
+		data["IdCardType"] = task_data.IdCardType;
+		data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+		data["InstallID"] = task_data.InstallID;
+		data["LastFragment"] = task_data.LastFragment;
+		data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+		data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+		data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+		data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+		data["PlateRepealSerial"] = task_data.PlateRepealSerial;
+		data["PlateSerial"] = task_data.PlateSerial;
+		data["RepealedTimes"] = task_data.RepealedTimes;
+		data["RepealTimeInterval"] = task_data.RepealTimeInterval;
+		data["RequestID"] = task_data.RequestID;
+		data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+		data["SessionID"] = task_data.SessionID;
+		data["TID"] = task_data.TID;
+		data["TradeAmount"] = task_data.TradeAmount;
+		data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+		data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+		data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+		data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+		data["TransferStatus"] = task_data.TransferStatus;
+		data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+		data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
 
 
-	this->onRtnRepealFromBankToFutureByBank(data);
+		this->onRtnRepealFromBankToFutureByBank(data);
+	}
+	catch (std::exception & e)
+	{
+		cout << "TdApi processRtnFromBankToFutureByBank exception: " << e.what() << endl;
+	}
 };
 
 void TdApi::processRtnRepealFromFutureToBankByBank(Task task)
@@ -8808,7 +8856,7 @@ void TdApi::processRtnChangeAccountByBank(Task task)
 
 void TdApi::createFtdcTraderApi(string pszFlowPath)
 {
-	
+
 	this->api = CThostFtdcTraderApi::CreateFtdcTraderApi(pszFlowPath.c_str());
 	this->api->RegisterSpi(this);
 	cout << "Api Version:" << this->api->GetApiVersion() << " ------" << endl;
@@ -8912,7 +8960,7 @@ void TdApi::subscribePublicTopic(int nType)
 
 int TdApi::reqAuthenticate(dict req, int nRequestID)
 {
-	
+
 	CThostFtdcReqAuthenticateField myreq = CThostFtdcReqAuthenticateField();
 	printf("reqAuthenticate\n");
 	memset(&myreq, 0, sizeof(myreq));
@@ -8928,7 +8976,7 @@ int TdApi::reqAuthenticate(dict req, int nRequestID)
 
 int TdApi::reqUserLogin(dict req, int nRequestID)
 {
-	
+
 	CThostFtdcReqUserLoginField myreq = CThostFtdcReqUserLoginField();
 	printf("reqUserLogin\n");
 	memset(&myreq, 0, sizeof(myreq));
@@ -10259,7 +10307,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 {
 	virtual void onFrontConnected()
 	{
-		
+
 		//����python�����е��ûص�������������ǰ����Ҫ�Ȼ�ȡȫ����GIL����ֹ����������
 		PyLock lock;
 		printf("TdApiWrap:onFrontConnected\n");
@@ -10271,6 +10319,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onFrontConnected Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10285,6 +10334,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onFrontDisconnected Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10299,6 +10349,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onHeartBeatWarning Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10312,6 +10363,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspAuthenticate Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10324,6 +10376,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspUserLogin Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10336,6 +10389,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspUserLogout Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10348,6 +10402,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspUserPasswordUpdate Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10360,6 +10415,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspTradingAccountPasswordUpdate Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10372,6 +10428,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspUserAuthMethod Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10384,6 +10441,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspGenUserCaptcha Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10396,6 +10454,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspGenUserText Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10408,6 +10467,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspOrderInsert Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10420,6 +10480,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspParkedOrderInsert Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10432,6 +10493,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspParkedOrderAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10444,6 +10506,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspOrderAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10456,6 +10519,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQueryMaxOrderVolume Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10468,6 +10532,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspSettlementInfoConfirm Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10480,6 +10545,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspRemoveParkedOrder Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10492,6 +10558,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspRemoveParkedOrderAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10504,6 +10571,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspExecOrderInsert Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10516,6 +10584,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspExecOrderAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10528,6 +10597,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspForQuoteInsert Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10540,6 +10610,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQuoteInsert Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10552,6 +10623,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQuoteAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10564,6 +10636,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspBatchOrderAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10576,6 +10649,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspOptionSelfCloseInsert Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10588,6 +10662,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspOptionSelfCloseAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10600,6 +10675,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspCombActionInsert Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10612,6 +10688,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryOrder Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10624,6 +10701,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryTrade Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10636,6 +10714,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryInvestorPosition Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10648,6 +10727,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryTradingAccount Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10660,6 +10740,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryInvestor Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10672,6 +10753,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryTradingCode Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10684,6 +10766,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryInstrumentMarginRate Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10696,6 +10779,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryInstrumentCommissionRate Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10708,6 +10792,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryExchange Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10720,6 +10805,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryProduct Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10732,6 +10818,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryInstrument Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10744,6 +10831,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryDepthMarketData Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10756,6 +10844,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQrySettlementInfo Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10768,6 +10857,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryTransferBank Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10780,6 +10870,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryInvestorPositionDetail Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10792,6 +10883,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryNotice Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10804,6 +10896,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQrySettlementInfoConfirm Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10816,6 +10909,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryInvestorPositionCombineDetail Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10828,6 +10922,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryCFMMCTradingAccountKey Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10840,6 +10935,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryEWarrantOffset Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10852,6 +10948,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryInvestorProductGroupMargin Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10864,6 +10961,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryExchangeMarginRate Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10876,6 +10974,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryExchangeMarginRateAdjust Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10888,6 +10987,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryExchangeRate Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10900,6 +11000,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQrySecAgentACIDMap Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10912,6 +11013,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryProductExchRate Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10924,7 +11026,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
-			PyErr_Print();
+		    printf("TdApiWrap:onRspQryProductGroup Exception\n");
+		  	PyErr_Print();
 		}
 	};
 
@@ -10936,6 +11039,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryMMInstrumentCommissionRate Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10948,6 +11052,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryMMOptionInstrCommRate Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10960,6 +11065,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryInstrumentOrderCommRate Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10972,6 +11078,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQrySecAgentTradingAccount Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10984,6 +11091,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQrySecAgentCheckMode Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -10996,6 +11104,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQrySecAgentTradeInfo Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11008,6 +11117,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryOptionInstrTradeCost Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11020,6 +11130,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryOptionInstrCommRate Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11032,6 +11143,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryExecOrder Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11044,6 +11156,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryForQuote Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11056,6 +11169,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryQuote Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11068,6 +11182,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryOptionSelfClose Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11080,6 +11195,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryInvestUnit Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11092,6 +11208,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryCombInstrumentGuard Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11104,6 +11221,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryCombAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11116,6 +11234,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryTransferSerial Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11128,6 +11247,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryAccountregister Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11140,6 +11260,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspError Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11152,6 +11273,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnOrder Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11164,6 +11286,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnTrade Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11176,6 +11299,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnOrderInsert Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11188,6 +11312,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnOrderAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11200,6 +11325,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnInstrumentStatus Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11212,6 +11338,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnBulletin Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11224,6 +11351,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnTradingNotice Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11236,6 +11364,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnErrorConditionalOrder Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11248,6 +11377,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnExecOrder Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11260,6 +11390,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnExecOrderInsert Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11272,6 +11403,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnExecOrderAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11284,6 +11416,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnForQuoteInsert Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11296,6 +11429,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnQuote Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11308,6 +11442,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnQuoteInsert Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11320,6 +11455,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnQuoteAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11332,6 +11468,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnForQuoteRsp Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11344,6 +11481,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnCFMMCTradingAccountToken Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11356,6 +11494,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnBatchOrderAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11368,6 +11507,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnOptionSelfClose Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11380,6 +11520,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnOptionSelfCloseInsert Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11392,6 +11533,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnOptionSelfCloseAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11404,6 +11546,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnCombAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11416,6 +11559,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnCombActionInsert Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11428,6 +11572,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryContractBank Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11440,6 +11585,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryParkedOrder Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11452,6 +11598,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryParkedOrderAction Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11464,6 +11611,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryTradingNotice Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11476,6 +11624,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryBrokerTradingParams Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11488,6 +11637,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryBrokerTradingAlgos Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11500,6 +11650,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQueryCFMMCTradingAccountToken Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11510,8 +11661,13 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		{
 			this->get_override("onRtnFromBankToFutureByBank")(data);
 		}
+		catch (std::exception & e)
+		{
+			cout << "onRtnFromBankToFutureByBank exception: " << e.what() << endl;
+		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnFromBankToFutureByBank Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11522,8 +11678,13 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		{
 			this->get_override("onRtnFromFutureToBankByBank")(data);
 		}
+		catch (std::exception & e)
+		{
+			cout << "onRtnFromFutureToBankByBank exception: " << e.what() << endl;
+		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnFromFutureToBankByBank Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11534,8 +11695,13 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		{
 			this->get_override("onRtnRepealFromBankToFutureByBank")(data);
 		}
+		catch (std::exception & e)
+		{
+			cout << "onRtnRepealFromBankToFutureByBank exception: " << e.what() << endl;
+		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnRepealFromBankToFutureByBank Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11546,8 +11712,13 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		{
 			this->get_override("onRtnRepealFromFutureToBankByBank")(data);
 		}
+		catch (std::exception & e)
+		{
+			cout << "onRtnRepealFromFutureToBankByBank exception: " << e.what() << endl;
+		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnRepealFromFutureToBankByBank Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11560,6 +11731,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnFromBankToFutureByFuture Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11572,6 +11744,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnFromFutureToBankByFuture Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11584,6 +11757,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnRepealFromBankToFutureByFutureManual Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11596,6 +11770,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnRepealFromFutureToBankByFutureManual Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11608,6 +11783,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnQueryBankBalanceByFuture Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11620,6 +11796,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnBankToFutureByFuture Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11632,6 +11809,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnFutureToBankByFuture Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11644,6 +11822,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnRepealBankToFutureByFutureManual Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11656,6 +11835,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onErrRtnRepealFutureToBankByFutureManual Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11668,6 +11848,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQryInvestorProductGroupMargin Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11680,6 +11861,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnRepealFromBankToFutureByFuture Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11692,6 +11874,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnRepealFromFutureToBankByFuture Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11704,6 +11887,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspFromBankToFutureByFuture Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11716,6 +11900,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspFromFutureToBankByFuture Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11728,6 +11913,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRspQueryBankAccountMoneyByFuture Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11740,6 +11926,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnOpenAccountByBank Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11752,6 +11939,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnCancelAccountByBank Exception\n");
 			PyErr_Print();
 		}
 	};
@@ -11764,6 +11952,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 		catch (error_already_set const &)
 		{
+		    printf("TdApiWrap:onRtnChangeAccountByBank Exception\n");
 			PyErr_Print();
 		}
 	};
