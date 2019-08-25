@@ -1,5 +1,5 @@
 # encoding: UTF-8
-
+print('load vnpy/languange')
 # 默认设置
 from .chinese import text, constant
 

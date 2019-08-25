@@ -22,8 +22,9 @@ from vnpy.trader.gateway.ctpGateway.language import text
 from vnpy.trader.gateway.ctpGateway.ctpDataType import *
 from vnpy.trader.vtFunction import getJsonPath,getShortSymbol,roundToPriceTick
 from vnpy.trader.app.ctaStrategy.ctaBase import MARKET_DAY_ONLY,NIGHT_MARKET_SQ1,NIGHT_MARKET_SQ2,NIGHT_MARKET_SQ3,NIGHT_MARKET_ZZ,NIGHT_MARKET_DL
-
-from datetime import datetime,timedelta
+from vnpy.amqp.consumer import subscriber
+from vnpy.trader.vtUtility import BarGenerator
+from datetime import datetime, timedelta
 
 # 通达信行情相关
 from threading import Thread
@@ -109,12 +110,13 @@ class CtpGateway(VtGateway):
         self.mdApi = None     # 行情API
         self.tdApi = None     # 交易API
         self.tdxApi = None    # 通达信指数行情API
-        self.redisApi = None  # redis行情API
+        self.rabbitApi = None  # rabbitMQ 订阅行情API
+
+        self.md_only = False    # 只使用行情,不交易
 
         self.mdConnected = False        # 行情API连接状态，登录完成后为True
         self.tdConnected = False        # 交易API连接状态
         self.tdxConnected = False       # 通达信指数行情API得连接状态
-        self.redisConnected = False     # redis行情API的连接状态
 
         self.qryEnabled = False         # 是否要启动循环查询
 
@@ -124,7 +126,7 @@ class CtpGateway(VtGateway):
         self.debug_tick = False
         self.debug = False
 
-        self.tdx_pool_count = 2         # 通达信连接池内连接数
+        self.tdx_pool_count = 1         # 通达信连接池内连接数
 
         self.combiner_conf_dict = {}    # 保存合成器配置
         # 自定义价差/加比的tick合成器
@@ -168,6 +170,7 @@ class CtpGateway(VtGateway):
             tdAddress = str(setting['tdAddress'])
             mdAddress = str(setting['mdAddress'])
 
+            self.md_only = setting.get('md_only', False)
             self.debug_tick = setting.get('debug_tick',False)
             self.debug = setting.get('debug',False)
 
@@ -184,21 +187,17 @@ class CtpGateway(VtGateway):
                 appID = EMPTY_STRING
 
             # 获取redis行情配置
-            redis_conf = setting.get('redis', None)
-            if redis_conf is not None and isinstance(redis_conf, dict):
-                if self.redisApi is None:
-                    self.writeLog(u'RedisApi接口未实例化，创建实例')
-                    self.redisApi = RedisMdApi(self)  # Redis行情API
+            rabbit_conf = setting.get('rabbit', None)
+            if rabbit_conf is not None and isinstance(rabbit_conf, dict):
+                if self.rabbitApi is None:
+                    self.writeLog(u'rabbitApi接口未实例化，创建实例')
+                    self.rabbitApi = SubMdApi(self)  # rabbit行情API
+                    self.rabbitApi.connect(rabbit_conf)
                 else:
-                    self.writeLog(u'Redis行情接口已实例化')
-
-                ip_list = redis_conf.get('ip_list', None)
-                if ip_list is not None and len(ip_list) > 0:
-                    self.writeLog(u'使用配置文件的redis服务器清单:{}'.format(ip_list))
-                    self.redisApi.ip_list = copy.copy(ip_list)
+                    self.writeLog(u'rabbitApi行情接口已实例化')
 
             # 如果没有初始化restApi，就初始化tdxApi
-            if self.redisApi is None and self.tdxApi is None:
+            if self.rabbitApi is None and self.tdxApi is None:
                 self.writeLog(u'通达信接口未实例化，创建实例')
                 self.tdxApi = TdxMdApi(self)  # 通达信行情API
 
@@ -232,9 +231,11 @@ class CtpGateway(VtGateway):
         # 创建行情和交易接口对象
         self.writeLog(u'连接行情服务器')
         self.mdApi.connect(userID, password, brokerID, mdAddress)
-        self.writeLog(u'连接交易服务器')
-        self.tdApi.connect(userID, password, brokerID, tdAddress, authCode, userProductInfo,appID=appID)
+        if not self.md_only:
+            self.writeLog(u'连接交易服务器')
+            self.tdApi.connect(userID, password, brokerID, tdAddress, authCode, userProductInfo,appID=appID)
 
+        self.writeLog(u'初始化并启动查询')
         self.setQryEnabled(True)
         # 初始化并启动查询
         self.initQuery()
@@ -247,10 +248,8 @@ class CtpGateway(VtGateway):
                     self.writeLog(u'有指数订阅，连接通达信行情服务器')
                     self.tdxApi.connect(self.tdx_pool_count)
                     self.tdxApi.subscribe(req)
-                elif self.redisApi is not None:
-                    self.writeLog(u'有指数订阅，连接Redis行情服务器')
-                    self.redisApi.connect()
-                    self.redisApi.subscribe(req)
+                elif self.rabbitApi is not None:
+                    self.rabbitApi.subscribe(req)
             else:
                 self.mdApi.subscribe(req)
 
@@ -316,15 +315,29 @@ class CtpGateway(VtGateway):
                     subscribeReq.symbol = subscribeReq.symbol.upper()
                     if self.tdxApi:
                         self.tdxApi.subscribe(subscribeReq)
-                    elif self.redisApi:
-                        self.redisApi.subscribe(subscribeReq)
+                    elif self.rabbitApi:
+                        self.rabbitApi.subscribe(subscribeReq)
                 else:
                     self.mdApi.subscribe(subscribeReq)
 
             # Allow the strategies to start before the connection
             self.subscribedSymbols.add(subscribeReq)
+            if subscribeReq.is_bar:
+                self.subscribeBar(subscribeReq)
         except Exception as ex:
             self.writeError(u'订阅合约异常:{},{}'.format(str(ex),traceback.format_exc()))
+
+    def subscribeBar(self,subscribeReq):
+        """订阅1分钟行情"""
+
+        symbol = subscribeReq.symbol
+        if symbol in self.klines:
+            return
+
+        # 创建1分钟bar产生器
+        self.writeLog(u'创建:{}的一分钟行情'.format(symbol))
+        bg = BarGenerator(onBar=self.onBar)
+        self.klines.update({symbol:bg})
 
     # ----------------------------------------------------------------------
     def sendOrder(self, orderReq):
@@ -359,10 +372,10 @@ class CtpGateway(VtGateway):
         if self.tdxApi is not None:
             self.tdxApi.checkStatus()
 
-        if self.tdApi is None or self.mdApi is None:
+        if (not self.md_only and self.tdApi is None) or self.mdApi is None:
             return False
 
-        if not self.tdConnected or not self.mdConnected:
+        if (not self.md_only and not self.tdConnected ) or not self.mdConnected:
             return False
 
         return True
@@ -391,6 +404,13 @@ class CtpGateway(VtGateway):
             tmp1.close()
             self.tdxConnected = False
 
+        if self.rabbitApi is not None:
+            self.writeLog(u'断开rabbit订阅行情API')
+            tmpl = self.rabbitApi
+            self.rabbitApi.connect_status = False
+            self.rabbitApi = None
+            tmpl.close()
+
         self.writeLog(u'CTP Gateway 主动断开连接')
 
     #----------------------------------------------------------------------
@@ -412,12 +432,17 @@ class CtpGateway(VtGateway):
         self.qryCount += 1
 
         if self.qryCount > self.qryTrigger:
+            if self.debug:
+                self.writeLog(u'执行定时查询')
             # 清空倒计时
             self.qryCount = 0
 
             # 执行查询函数
             function = self.qryFunctionList[self.qryNextFunction]
-            function()
+            try:
+                function()
+            except Exception as ex:
+                self.writeError(u'调用查询函数异常:{},tb:{}'.format(str(ex),traceback.format_exc()))
 
             # 计算下次查询函数的索引，如果超过了列表长度，则重新设为0
             self.qryNextFunction += 1
@@ -497,7 +522,8 @@ class CtpMdApi(MdApi):
     def onHeartBeatWarning(self, n):
         """心跳报警"""
         # 因为API的心跳报警比较常被触发，且与API工作关系不大，因此选择忽略
-        pass
+        if self.gateway.debug:
+            self.writeLog('onRspUserLogin')
 
     #----------------------------------------------------------------------
     def onRspError(self, error, n, last):
@@ -511,8 +537,8 @@ class CtpMdApi(MdApi):
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
-        if getattr(self.gateway,'debug',False):
-            print('onRspUserLogin')
+        if self.gateway.debug:
+            self.writeLog('onRspUserLogin')
 
         # 如果登录成功，推送日志信息
         if error['ErrorID'] == 0:
@@ -520,7 +546,8 @@ class CtpMdApi(MdApi):
             self.gateway.mdConnected = True
             self.writeLog(text.DATA_SERVER_LOGIN)
             # 重新订阅之前订阅的合约
-
+            if self.gateway.debug and len(self.subscribedSymbols) > 0:
+                self.writeLog(u'重新订阅合约')
             for subscribeReq in self.subscribedSymbols:
                 self.subscribe(subscribeReq)
 
@@ -556,12 +583,15 @@ class CtpMdApi(MdApi):
     def onRspSubMarketData(self, data, error, n, last):
         """订阅合约回报"""
         # 通常不在乎订阅错误，选择忽略
+        if self.gateway.debug:
+            self.writeLog('onRspSubMarketData')
 
     #----------------------------------------------------------------------
     def onRspUnSubMarketData(self, data, error, n, last):
         """退订合约回报"""
         # 同上
-        pass
+        if self.gateway.debug:
+            self.writeLog('onRspUnSubMarketData')
 
     #----------------------------------------------------------------------
     def onRtnDepthMarketData(self, data):
@@ -571,114 +601,118 @@ class CtpMdApi(MdApi):
         #    self.writeLog(u'忽略成交量为0的无效单合约tick数据:')
         #    self.writeLog(data)
         #    return
+        try:
 
-        if not self.connectionStatus:
-            self.connectionStatus = True
+            if not self.connectionStatus:
+                self.connectionStatus = True
 
-        if not self.gateway.mdConnected:
-            self.gateway.mdConnected = True
+            if not self.gateway.mdConnected:
+                self.gateway.mdConnected = True
 
-        tick = VtTickData()
-        tick.gatewayName = self.gatewayName
+            tick = VtTickData()
+            tick.gatewayName = self.gatewayName
 
-        tick.symbol = data['InstrumentID']
-        tick.exchange = exchangeMapReverse.get(data['ExchangeID'], u'未知')
-        tick.vtSymbol = tick.symbol #'.'.join([tick.symbol, EXCHANGE_UNKNOWN])
+            tick.symbol = data['InstrumentID']
+            tick.exchange = exchangeMapReverse.get(data['ExchangeID'], u'未知')
+            tick.vtSymbol = tick.symbol #'.'.join([tick.symbol, EXCHANGE_UNKNOWN])
 
-        tick.lastPrice = data['LastPrice']
-        tick.volume = data['Volume']
-        tick.openInterest = data['OpenInterest']
-        #tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
-        # =》 Python 3
-        tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec'])])
+            tick.lastPrice = data['LastPrice']
+            tick.volume = data['Volume']
+            tick.openInterest = data['OpenInterest']
+            #tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
+            # =》 Python 3
+            tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec'])])
 
-        # 取当前时间
-        dt = datetime.now()
+            # 取当前时间
+            dt = datetime.now()
 
-        # 不处理开盘前的tick数据
-        if dt.hour in [8,20] and dt.minute < 59:
-            return
-        if tick.exchange is EXCHANGE_CFFEX and dt.hour == 9 and dt.minute < 14:
-            return
+            # 不处理开盘前的tick数据
+            if dt.hour in [8,20] and dt.minute < 59:
+                return
+            if tick.exchange is EXCHANGE_CFFEX and dt.hour == 9 and dt.minute < 14:
+                return
 
-        # 日期，取系统时间的日期
-        tick.date = dt.strftime('%Y-%m-%d')
-        # 生成dateteime
-        tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y-%m-%d %H:%M:%S.%f')
-        # 生成TradingDay
+            # 日期，取系统时间的日期
+            tick.date = dt.strftime('%Y-%m-%d')
+            # 生成dateteime
+            tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y-%m-%d %H:%M:%S.%f')
+            # 生成TradingDay
 
-        # 正常日盘时间
-        tick.tradingDay = tick.date
+            # 正常日盘时间
+            tick.tradingDay = tick.date
 
-        # 修正夜盘的tradingDay
-        if tick.datetime.hour >= 20:
-            # 周一~周四晚上20点之后的tick，交易日属于第二天
-            if tick.datetime.isoweekday() in [1,2,3,4]:
-                trading_day = tick.datetime + timedelta(days=1)
-                tick.tradingDay = trading_day.strftime('%Y-%m-%d')
-            # 周五晚上20点之后的tick，交易日属于下周一
-            elif tick.datetime.isoweekday() == 5:
-                trading_day = tick.datetime + timedelta(days=3)
-                tick.tradingDay = trading_day.strftime('%Y-%m-%d')
-        elif tick.datetime.hour < 3:
-            # 周六凌晨的tick，交易日属于下周一
-            if tick.datetime.isoweekday() == 6:
-                trading_day = tick.datetime + timedelta(days=2)
-                tick.tradingDay = trading_day.strftime('%Y-%m-%d')
+            # 修正夜盘的tradingDay
+            if tick.datetime.hour >= 20:
+                # 周一~周四晚上20点之后的tick，交易日属于第二天
+                if tick.datetime.isoweekday() in [1,2,3,4]:
+                    trading_day = tick.datetime + timedelta(days=1)
+                    tick.tradingDay = trading_day.strftime('%Y-%m-%d')
+                # 周五晚上20点之后的tick，交易日属于下周一
+                elif tick.datetime.isoweekday() == 5:
+                    trading_day = tick.datetime + timedelta(days=3)
+                    tick.tradingDay = trading_day.strftime('%Y-%m-%d')
+            elif tick.datetime.hour < 3:
+                # 周六凌晨的tick，交易日属于下周一
+                if tick.datetime.isoweekday() == 6:
+                    trading_day = tick.datetime + timedelta(days=2)
+                    tick.tradingDay = trading_day.strftime('%Y-%m-%d')
 
-        tick.openPrice = data['OpenPrice']
-        tick.highPrice = data['HighestPrice']
-        tick.lowPrice = data['LowestPrice']
-        tick.preClosePrice = data['PreClosePrice']
+            tick.openPrice = data['OpenPrice']
+            tick.highPrice = data['HighestPrice']
+            tick.lowPrice = data['LowestPrice']
+            tick.preClosePrice = data['PreClosePrice']
 
-        tick.upperLimit = data['UpperLimitPrice']
-        tick.lowerLimit = data['LowerLimitPrice']
+            tick.upperLimit = data['UpperLimitPrice']
+            tick.lowerLimit = data['LowerLimitPrice']
 
-        # CTP只有一档行情
-        tick.bidPrice1 = data['BidPrice1']
-        tick.bidVolume1 = data['BidVolume1']
-        tick.askPrice1 = data['AskPrice1']
-        tick.askVolume1 = data['AskVolume1']
+            # CTP只有一档行情
+            tick.bidPrice1 = data['BidPrice1']
+            tick.bidVolume1 = data['BidVolume1']
+            tick.askPrice1 = data['AskPrice1']
+            tick.askVolume1 = data['AskVolume1']
 
-        if data.get('BidPrice2',None) !=None:
-            tick.bidPrice2 = data.get('BidPrice2')
-        if data.get('BidPrice3', None) != None:
-            tick.bidPrice3 = data.get('BidPrice3')
-        if data.get('BidPrice4', None) != None:
-            tick.bidPrice4 = data.get('BidPrice4')
-        if data.get('BidPrice5', None) != None:
-            tick.bidPrice5 = data.get('BidPrice5')
+            if data.get('BidPrice2',None) !=None:
+                tick.bidPrice2 = data.get('BidPrice2')
+            if data.get('BidPrice3', None) != None:
+                tick.bidPrice3 = data.get('BidPrice3')
+            if data.get('BidPrice4', None) != None:
+                tick.bidPrice4 = data.get('BidPrice4')
+            if data.get('BidPrice5', None) != None:
+                tick.bidPrice5 = data.get('BidPrice5')
 
-        if data.get('AskPrice2',None) !=None:
-            tick.AskPrice2 = data.get('AskPrice2')
-        if data.get('AskPrice3', None) != None:
-            tick.AskPrice3 = data.get('AskPrice3')
-        if data.get('AskPrice4', None) != None:
-            tick.AskPrice4 = data.get('AskPrice4')
-        if data.get('AskPrice5', None) != None:
-            tick.AskPrice5 = data.get('AskPrice5')
+            if data.get('AskPrice2',None) !=None:
+                tick.AskPrice2 = data.get('AskPrice2')
+            if data.get('AskPrice3', None) != None:
+                tick.AskPrice3 = data.get('AskPrice3')
+            if data.get('AskPrice4', None) != None:
+                tick.AskPrice4 = data.get('AskPrice4')
+            if data.get('AskPrice5', None) != None:
+                tick.AskPrice5 = data.get('AskPrice5')
 
-        if data.get('BidVolume2',None) !=None:
-            tick.bidVolume2 = data.get('BidVolume2')
-        if data.get('BidVolume3', None) != None:
-            tick.bidVolume3 = data.get('BidVolume3')
-        if data.get('BidVolume4', None) != None:
-            tick.bidVolume4 = data.get('BidVolume4')
-        if data.get('BidVolume5', None) != None:
-            tick.bidVolume5 = data.get('BidVolume5')
+            if data.get('BidVolume2',None) !=None:
+                tick.bidVolume2 = data.get('BidVolume2')
+            if data.get('BidVolume3', None) != None:
+                tick.bidVolume3 = data.get('BidVolume3')
+            if data.get('BidVolume4', None) != None:
+                tick.bidVolume4 = data.get('BidVolume4')
+            if data.get('BidVolume5', None) != None:
+                tick.bidVolume5 = data.get('BidVolume5')
 
-        if data.get('AskVolume2',None) !=None:
-            tick.AskVolume2 = data.get('AskVolume2')
-        if data.get('AskVolume3', None) != None:
-            tick.AskVolume3 = data.get('AskVolume3')
-        if data.get('AskVolume4', None) != None:
-            tick.AskVolume4 = data.get('AskVolume4')
-        if data.get('AskVolume5', None) != None:
-            tick.AskVolume5 = data.get('AskVolume5')
+            if data.get('AskVolume2',None) !=None:
+                tick.AskVolume2 = data.get('AskVolume2')
+            if data.get('AskVolume3', None) != None:
+                tick.AskVolume3 = data.get('AskVolume3')
+            if data.get('AskVolume4', None) != None:
+                tick.AskVolume4 = data.get('AskVolume4')
+            if data.get('AskVolume5', None) != None:
+                tick.AskVolume5 = data.get('AskVolume5')
 
-        self.gateway.onTick(tick)
+            self.gateway.onTick(tick)
 
-        self.gateway.onCustomerTick(tick)
+            self.gateway.onCustomerTick(tick)
+
+        except Exception as ex:
+            self.gateway.writeError(u'深度行情回报异常:{},trace:{}'.format(str(ex),traceback.format_exc()))
 
     # ----------------------------------------------------------------------
     def onRspSubForQuoteRsp(self, data, error, n, last):
@@ -731,7 +765,6 @@ class CtpMdApi(MdApi):
         # 这里的设计是，如果尚未登录就调用了订阅方法
         # 则先保存订阅请求，登录完成后会自动订阅
 
-
         if self.connectionStatus and  not self.loginStatus:
             self.login()
 
@@ -751,6 +784,7 @@ class CtpMdApi(MdApi):
             req['UserID'] = self.userID
             req['Password'] = self.password
             req['BrokerID'] = self.brokerID
+
             self.reqID += 1
             self.reqUserLogin(req, self.reqID)
         else:
@@ -828,10 +862,12 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onHeartBeatWarning(self, n):
         """"""
-
+        pass
     #----------------------------------------------------------------------
     def onRspAuthenticate(self, data, error, n, last):
         """验证客户端回报"""
+        if self.gateway.debug:
+            self.writeLog(u'验证回报:{},error:{}'.format(data,error))
         if error['ErrorID'] == 0:
             self.authStatus = True
             self.writeLog(text.TRADING_SERVER_AUTHENTICATED)
@@ -843,6 +879,8 @@ class CtpTdApi(TdApi):
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
         # 如果登录成功，推送日志信息
+        if self.gateway.debug:
+            self.writeLog(u'登陆回报:{},error:{}'.format(data,error))
         if error['ErrorID'] == 0:
             self.tradingDay = str(data['TradingDay'])
             self.frontID = str(data['FrontID'])
@@ -857,6 +895,8 @@ class CtpTdApi(TdApi):
             req['BrokerID'] = self.brokerID
             req['InvestorID'] = self.userID
             self.reqID += 1
+            if self.gateway.debug:
+                self.writeLog(u'提交结算信息确认')
             self.reqSettlementInfoConfirm(req, self.reqID)
 
             # 提交合约更新请求
@@ -875,6 +915,8 @@ class CtpTdApi(TdApi):
 
     def resentReqQryInstrument(self):
         # 查询合约代码
+        if self.gateway.debug:
+            self.writeLog(u'提交合约更新请求')
         self.reqID += 1
         self.reqQryInstrument({}, self.reqID)
 
@@ -906,7 +948,7 @@ class CtpTdApi(TdApi):
         """"""
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onRspOrderInsert(self, data, error, n, last):
         """发单返回（柜台）"""
         # 推送委托信息
@@ -1031,11 +1073,15 @@ class CtpTdApi(TdApi):
     def onRspQryInvestorPosition(self, data, error, n, last):
         """持仓查询回报"""
 
-        if self.gateway.debug and data.get('InstrumentID') == 'pp1909':
-            self.gateway.writeLog(u'data:\n{}'.format(self.gateway.printDict(data)))
-            self.gateway.writeLog('n:{},last:{}'.format(n,last))
+        if self.gateway.debug :
+            #self.gateway.writeLog(u'data:\n{}\n'.format(self.gateway.printDict(data)))
+            self.gateway.writeLog('{},pos:{},yd:{},td:{},oc:{},pp:{},psp:{}'
+                                  .format(data['InstrumentID'],data['Position'], data['YdPosition'], data['TodayPosition'],
+                                          data['OpenCost'], data['PositionProfit'],data['PreSettlementPrice']))
+            #self.gateway.writeLog('n:{},last:{}'.format(n,last))
 
         if not data['InstrumentID']:
+            self.gateway.writeLog(u'没有持仓')
             return
 
         if not self.gateway.tdConnected:
@@ -1062,6 +1108,8 @@ class CtpTdApi(TdApi):
             exchange = self.symbolExchangeDict.get(pos.symbol, EXCHANGE_UNKNOWN)
 
             # 获取size
+            if pos.symbol not in self.symbolSizeDict:
+                self.gateway.writeLog(u'合约:{}不在合约size字典中'.format(pos.symbol))
             size = self.symbolSizeDict.get(pos.symbol,10)
 
             # 针对上期所持仓的今昨分条返回（有昨仓、无今仓），读取昨仓数据
@@ -1098,7 +1146,7 @@ class CtpTdApi(TdApi):
                     # 汇总收益：上一收益 + 上-交易日收益 + 当日持仓收益
                     pos.positionProfit = pos.positionProfit + pre_profit + data['PositionProfit']
 
-                    if self.gateway.debug and pos.symbol == 'pp1909':
+                    if self.gateway.debug:
                         self.gateway.writeLog(
                             u'symbol:{} direction:{} pos:{} yd_pos:{}, price:{},open_cost:{},pre_set_price:{}, size:{},pre_profit:{},profit:{}'
                             .format(pos.symbol, pos.direction, pos.position, pos.ydPosition, pos.price, open_cost_price,
@@ -1125,10 +1173,13 @@ class CtpTdApi(TdApi):
             if last:
                 # 遍历推送
                 for pos in list(self.posDict.values()):
+                    if self.gateway.debug:
+                        self.gateway.writeLog('onPosition')
                     self.gateway.onPosition(pos)
 
                 # 清空缓存
                 self.posDict.clear()
+
         except Exception as ex:
             self.gateway.writeError('onRspQryInvestorPosition exception:{}'.format(str(ex)))
             self.gateway.writeError('trace {}'.format(traceback.format_exc()))
@@ -1208,58 +1259,61 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryInstrument(self, data, error, n, last):
         """合约查询回报"""
+        if self.gateway.debug:
+            self.writeLog(u'合约查询回报')
+        try:
+            self.gateway.mdConnected = True
+            contract = VtContractData()
+            contract.gatewayName = self.gatewayName
 
-        self.gateway.mdConnected = True
-        contract = VtContractData()
-        contract.gatewayName = self.gatewayName
+            contract.symbol = data['InstrumentID']
+            contract.exchange = exchangeMapReverse[data['ExchangeID']]
+            contract.vtSymbol = contract.symbol #'.'.join([contract.symbol, contract.exchange])
+            contract.name = data['InstrumentName']  #.decode('GBK')
 
-        contract.symbol = data['InstrumentID']
-        contract.exchange = exchangeMapReverse[data['ExchangeID']]
-        contract.vtSymbol = contract.symbol #'.'.join([contract.symbol, contract.exchange])
-        contract.name = data['InstrumentName']  #.decode('GBK')
+            self.gateway.symbol_name_map.update({contract.symbol:contract.name})
 
-        self.gateway.symbol_name_map.update({contract.symbol:contract.name})
+            # 合约数值
+            contract.size = data['VolumeMultiple']
+            contract.priceTick = data['PriceTick']
+            contract.strikePrice = data['StrikePrice']
+            contract.underlyingSymbol = data['UnderlyingInstrID']
+            contract.longMarginRatio = data['LongMarginRatio']
+            contract.shortMarginRatio = data['ShortMarginRatio']
 
-        # 合约数值
-        contract.size = data['VolumeMultiple']
-        contract.priceTick = data['PriceTick']
-        contract.strikePrice = data['StrikePrice']
-        contract.underlyingSymbol = data['UnderlyingInstrID']
-        contract.longMarginRatio = data['LongMarginRatio']
-        contract.shortMarginRatio = data['ShortMarginRatio']
+            contract.productClass = productClassMapReverse.get(data['ProductClass'], PRODUCT_UNKNOWN)
 
-        contract.productClass = productClassMapReverse.get(data['ProductClass'], PRODUCT_UNKNOWN)
+            # 期权类型
+            if data['OptionsType'] == '1':
+                contract.optionType = OPTION_CALL
+            elif data['OptionsType'] == '2':
+                contract.optionType = OPTION_PUT
 
-        # 期权类型
-        if data['OptionsType'] == '1':
-            contract.optionType = OPTION_CALL
-        elif data['OptionsType'] == '2':
-            contract.optionType = OPTION_PUT
+            # 缓存代码和交易所的印射关系
+            self.symbolExchangeDict[contract.symbol] = contract.exchange
+            self.symbolSizeDict[contract.symbol] = contract.size
 
-        # 缓存代码和交易所的印射关系
-        self.symbolExchangeDict[contract.symbol] = contract.exchange
-        self.symbolSizeDict[contract.symbol] = contract.size
+            idx_contract = copy.copy(contract)
+            if self.gateway.debug:
+                self.gateway.writeLog(u'更新合约基本信息:{}'.format(contract.symbol))
+            # 推送
+            self.gateway.onContract(contract)
 
-        idx_contract = copy.copy(contract)
+            # 生成指数合约信息
+            short_symbol= getShortSymbol(idx_contract.symbol).upper()    # 短合约名称
+            # 只推送普通合约的指数
+            if short_symbol!= idx_contract.symbol.upper() and len(short_symbol)<=2 and contract.optionType==EMPTY_UNICODE:
+                idx_contract.symbol = '{}99'.format(short_symbol)
+                idx_contract.vtSymbol = idx_contract.symbol
+                idx_contract.name = u'{}指数'.format(short_symbol.upper())
+                #self.writeLog(u'更新指数{}的合约信息,size:{}, longMarginRatio:{},shortMarginRatio{}'
+                #              .format(idx_contract.vtSymbol,idx_contract.size, idx_contract.longMarginRatio,contract.shortMarginRatio))
+                self.gateway.onContract(idx_contract)
 
-        # 推送
-        self.gateway.onContract(contract)
-
-        # 生成指数合约信息
-        short_symbol= getShortSymbol(idx_contract.symbol).upper()    # 短合约名称
-        # 只推送普通合约的指数
-        if short_symbol!= idx_contract.symbol.upper() and len(short_symbol)<=2 and contract.optionType==EMPTY_UNICODE:
-            idx_contract.symbol = '{}99'.format(short_symbol)
-            idx_contract.vtSymbol = idx_contract.symbol
-            idx_contract.name = u'{}指数'.format(short_symbol.upper())
-            #self.writeLog(u'更新指数{}的合约信息,size:{}, longMarginRatio:{},shortMarginRatio{}'
-            #              .format(idx_contract.vtSymbol,idx_contract.size, idx_contract.longMarginRatio,contract.shortMarginRatio))
-
-            self.gateway.onContract(idx_contract)
-
-        if last:
-            self.writeLog(text.CONTRACT_DATA_RECEIVED)
-
+            if last:
+                self.writeLog(text.CONTRACT_DATA_RECEIVED)
+        except Exception as ex:
+            self.gateway.writeError(u'onRspQryInstrument exception:{},trace:{}'.format(str(ex), traceback.format_exc()))
     #----------------------------------------------------------------------
     def onRspQryDepthMarketData(self, data, error, n, last):
         """"""
@@ -1268,7 +1322,9 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQrySettlementInfo(self, data, error, n, last):
         """查询结算信息回报"""
-        pass
+        if self.gateway.debug:
+            self.writeLog(u'结算信息回报')
+
     #----------------------------------------------------------------------
     def onRspQryTransferBank(self, data, error, n, last):
         """"""
@@ -1656,7 +1712,8 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRtnFromBankToFutureByBank(self, data):
         """"""
-        pass
+        if self.gateway.debug:
+            self.writeLog(u'onRtnFromBankToFutureByBank')
 
     #----------------------------------------------------------------------
     def onRtnFromFutureToBankByBank(self, data):
@@ -1801,7 +1858,7 @@ class CtpTdApi(TdApi):
 
     # ----------------------------------------------------------------------
     def login(self):
-        """登录服务器"""
+        """登录交易服务器"""
         # 如果填入了用户名密码等，则登录
         self.writeLog(u'登录交易服务器')
         if self.userID and self.password and self.brokerID:
@@ -1809,7 +1866,11 @@ class CtpTdApi(TdApi):
             req['UserID'] = self.userID
             req['Password'] = self.password
             req['BrokerID'] = self.brokerID
+            if len(self.userProductInfo)>0:
+                req['UserProductInfo'] = self.userProductInfo
             self.reqID += 1
+            if self.gateway.debug:
+                self.writeLog(u'登录参数:{}'.format(req))
             self.reqUserLogin(req, self.reqID)
 
     # ----------------------------------------------------------------------
@@ -1825,18 +1886,23 @@ class CtpTdApi(TdApi):
                 req['UserProductInfo'] = self.userProductInfo
             req['AppID'] = self.appID
             self.reqID +=1
-            self.writeLog(u'提交验证...')
+            if self.gateway.debug:
+                self.writeLog(u'提交验证...:{}'.format(req))
             self.reqAuthenticate(req, self.reqID)
 
     # ----------------------------------------------------------------------
     def qryAccount(self):
         """查询账户"""
+        if self.gateway.debug:
+            self.writeLog(u'查询账号资金')
         self.reqID += 1
         self.reqQryTradingAccount({}, self.reqID)
 
     # ----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
+        if self.gateway.debug:
+            self.writeLog(u'查询持仓"')
         self.reqID += 1
         req = {}
         req['BrokerID'] = self.brokerID
@@ -1960,19 +2026,21 @@ class TdxMdApi():
                         {"ip": "113.105.142.136", "port": 443, "name": "扩展市场东莞主站"},
                         {"ip": "113.105.142.133", "port": 443, "name": "港股期货东莞电信"},
 
-
                         {"ip": "119.97.185.5", "port": 7727, "name": "扩展市场武汉主站1"},
                         {"ip": "119.97.185.7", "port": 7727, "name": "港股期货武汉主站1"},
                         {"ip": "119.97.185.9", "port": 7727, "name": "港股期货武汉主站2"},
+                        {"ip": "59.175.238.38", "port": 7727, "name": "扩展市场武汉主站3"},
 
                         {"ip": "202.103.36.71", "port": 443, "name": "扩展市场武汉主站2"},
 
                         {"ip": "47.92.127.181", "port": 7727, "name": "扩展市场北京主站"},
                         {"ip": "106.14.95.149", "port": 7727, "name": "扩展市场上海双线"},
+                        {"ip": '218.80.248.229', 'port': 7721 ,"name":"备用服务器1"},
+                        {"ip": '124.74.236.94', 'port': 7721, "name": "备用服务器2"},
                         ]
 
-        #  调出 {'ip': '218.80.248.229', 'port': 7721},
-        # {"ip": "59.175.238.38", "port": 7727, "name": "扩展市场武汉主站3"},
+        #  调出
+        #
         self.api_ip_dict = {}  # API 的连接服务器配置
         self.api_dict = {}  # API 的连接会话对象字典
         self.last_tick_dt = {} # 记录该会话对象的最后一个tick时间
@@ -2057,7 +2125,7 @@ class TdxMdApi():
         self.writeLog(u'未能有效选择，默认第一个')
         return valid_ip_list[0].get('ip'),valid_ip_list[0].get('port')
 
-    def connect(self,n=3):
+    def connect(self,n=1):
         """
         连接通达讯行情服务器
         :param n:
@@ -2104,6 +2172,7 @@ class TdxMdApi():
                 return
 
         # 更新 symbol_exchange_dict , symbol_market_dict
+        self.writeLog(u'查询合约')
         self.qryInstrument()
 
         #self.req_thread = Thread(target=self.addReq)
@@ -2143,6 +2212,7 @@ class TdxMdApi():
 
     def close(self):
         """退出API"""
+        self.writeLog(u'退出tdx API')
         self.connection_status = False
 
         if self.pool is not None:
@@ -2183,7 +2253,7 @@ class TdxMdApi():
             self.close()
             self.pool = None
             self.api_dict = {}
-            pool_cout = getattr(self.gateway,'tdx_pool_count',3)
+            pool_cout = getattr(self.gateway,'tdx_pool_count',1)
             self.connect(pool_cout)
 
         #self.writeLog(u'tdx接口状态正常')
@@ -2194,14 +2264,16 @@ class TdxMdApi():
         :return:
         """
         if not self.connection_status:
+            self.writeError(u'tdx连接状态为断开，不能查询和更新合约信息')
             return
 
         if self.has_qry_instrument:
+            self.writeError(u'已经查询过一次合约信息，不再查询')
             return
 
         api = self.api_dict.get(0)
         if api is None:
-            self.writeLog(u'取不到api连接，更新合约信息失败')
+            self.writeError(u'取不到api连接，更新合约信息失败')
             return
 
         # 取得所有的合约信息
@@ -2227,7 +2299,8 @@ class TdxMdApi():
                 self.symbol_exchange_dict[tdx_symbol] = EXCHANGE_DCE
             elif tdx_market_id == 30:   # 上期所+能源
                 self.symbol_exchange_dict[tdx_symbol] = EXCHANGE_SHFE
-
+            elif tdx_market_id == 60:   # 主力合约
+                self.writeLog(u'主力合约:{}'.format(tdx_contract))
         self.has_qry_instrument = True
 
     def run(self, i):
@@ -2245,7 +2318,7 @@ class TdxMdApi():
                 self.processReq(req,i)
             except Exception as ex:
                 self.writeLog(u'tdx[{}] exception:{},{}'.format(i,str(ex),traceback.format_exc()))
-        """
+       
         # 版本2：
         try:
             api_count = len(self.api_dict)
@@ -2283,6 +2356,188 @@ class TdxMdApi():
             self.writeError(u'tdx[{}] pool.run exception:{},{}'.format(i, str(ex), traceback.format_exc()))
 
         self.writeError(u'tdx[{}] {}退出'.format(i,datetime.now()))
+         """
+        # 版本3 ：直接查询板块
+        try:
+            api_count = len(self.api_dict)
+            last_dt = datetime.now()
+            self.writeLog(u'开始运行tdx[{}],{}'.format(i,last_dt))
+            while self.connection_status:
+                if len(self.registed_symbol_set) > 0:
+                    try:
+                        self.process_index_req(0)
+                    except BrokenPipeError as bex:
+                        self.writeError(u'BrokenPipeError{},重试重连tdx[{}]'.format(str(bex),0))
+                        self.reconnect(0)
+                        sleep(5)
+                        break
+                    except Exception as ex:
+                        self.writeError(u'tdx[{}] exception:{},{}'.format(0, str(ex), traceback.format_exc()))
+                        self.writeError(u'重试重连tdx[{}]'.format(0))
+                        print(u'重试重连tdx[{}]'.format(0),file=sys.stderr)
+                        self.reconnect(0)
+
+                sleep(self.req_interval)
+                dt = datetime.now()
+                if last_dt.minute != dt.minute:
+                    self.writeLog('tdx[{}] check point. {}, process symbols:{}'.format(i,dt,self.registed_symbol_set))
+                    last_dt = dt
+        except Exception as ex:
+            self.writeError(u'tdx[{}] pool.run exception:{},{}'.format(i, str(ex), traceback.format_exc()))
+
+        self.writeError(u'tdx[{}] {}退出'.format(i,datetime.now()))
+
+    def process_index_req(self, i):
+        """处理板块获取指数行情tick"""
+        api = self.api_dict.get(i, None)
+        if api is None:
+            self.writeLog(u'tdx[{}] Api is None'.format(i))
+            raise Exception(u'tdx[{}] Api is None'.format(i))
+
+        # 获取通达信指数板块所有行情
+        rt_list = api.get_instrument_quote_list(42, 3, 0, 100)
+
+        if rt_list is None or len(rt_list) == 0:
+            self.writeLog(u'tdx[{}]: rt_list为空'.format(i))
+            return
+
+        # 记录该接口的行情最后更新时间
+        self.last_tick_dt[i] = datetime.now()
+
+        for d in list(rt_list):
+            tdx_symbol = d.get('code', None)
+            if tdx_symbol not in self.registed_symbol_set and tdx_symbol is not None:
+                if self.gateway.debug:
+                    self.writeLog(u'{}没有订阅'.format(tdx_symbol))
+                continue
+
+            if self.gateway.debug:
+                self.writeLog(u'处理tick:{}'.format(tdx_symbol))
+            tick = VtTickData()
+            tick.gatewayName = self.gatewayName
+
+            tick.symbol = self.symbol_vn_dict.get(tdx_symbol,None)
+            if tick.symbol is None:
+                self.writeLog(u'self.symbol_vn_dict 取不到映射得:{}'.format(tdx_symbol))
+                continue
+            tick.symbol = tick.symbol.upper()
+            tick.exchange = self.symbol_exchange_dict.get(tdx_symbol)
+            tick.vtSymbol = tick.symbol
+
+            tick.preClosePrice = float(d.get('ZuoJie', 0.0))
+            tick.highPrice = float(d.get('ZuiGao', 0.0))
+            tick.openPrice = float(d.get('JinKai', 0.0))
+            tick.lowPrice = float(d.get('ZuiDi', 0.0))
+            tick.lastPrice = float(d.get('MaiChu', 0.0))
+
+            tick.volume = d.get('XianLiang',0)
+            tick.openInterest = d.get('ChiCangLiang')
+
+            tick.datetime = datetime.now()
+            # 修正毫秒
+            last_tick = self.symbol_tick_dict.get(tick.symbol, None)
+            if (last_tick is not None) and tick.datetime.replace(microsecond=0) == last_tick.datetime:
+                # 与上一个tick的时间（去除毫秒后）相同,修改为500毫秒
+                tick.datetime = tick.datetime.replace(microsecond=500)
+                tick.time = tick.datetime.strftime('%H:%M:%S.%f')[0:12]
+            else:
+                tick.datetime = tick.datetime.replace(microsecond=0)
+                tick.time = tick.datetime.strftime('%H:%M:%S.%f')[0:12]
+
+            tick.date = tick.datetime.strftime('%Y-%m-%d')
+
+            # 修正时间
+            if tick.datetime.hour >= 20:
+                if tick.datetime.isoweekday() == 5:
+                    # 交易日是星期下周一
+                    tick.tradingDay = tick.datetime + timedelta(days=3)
+                else:
+                    # 第二天
+                    tick.tradingDay = tick.datetime + timedelta(days=1)
+            elif tick.datetime.hour < 8 and tick.datetime.isoweekday() == 6:
+                # 交易日是星期一
+                tick.tradingDay = tick.datetime + timedelta(days=2)
+            else:
+                tick.tradingDay = tick.datetime
+            tick.tradingDay = tick.tradingDay.strftime('%Y-%m-%d')
+
+            # 指数没有涨停和跌停，就用昨日收盘价正负10%
+            tick.upperLimit = tick.preClosePrice * 1.1
+            tick.lowerLimit = tick.preClosePrice * 0.9
+
+            # CTP只有一档行情
+            tick.bidPrice1 = float(d.get('MaiRuJia',0.0))
+            tick.bidVolume1 = int(d.get('MaiRuLiang',0))
+            tick.askPrice1 = float(d.get('MaiChuJia',0.0))
+            tick.askVolume1 = int(d.get('MaiChuLiang',0))
+
+            short_symbol = tick.vtSymbol
+            short_symbol = short_symbol.replace('99', '').upper()
+
+            # 排除非交易时间得tick
+            if tick.exchange is EXCHANGE_CFFEX:
+                if tick.datetime.hour not in [9,10,11,13,14,15]:
+                    continue
+                if tick.datetime.hour == 9 and tick.datetime.minute < 15:
+                    continue
+                # 排除早盘 11:30~12:00
+                if tick.datetime.hour == 11 and tick.datetime.minute >= 30:
+                    continue
+                if tick.datetime.hour == 15 and tick.datetime.minute >= 15:
+                    continue
+            else:  # 大商所/郑商所，上期所，上海能源
+                # 排除非开盘小时
+                if tick.datetime.hour in [3,4,5,6,7,8,12,15,16,17,18,19,20]:
+                    continue
+                # 排除早盘 10:15~10:30
+                if tick.datetime.hour == 10 and 15 <= tick.datetime.minute < 30:
+                    continue
+                # 排除早盘 11:30~12:00
+                if tick.datetime.hour == 11 and tick.datetime.minute >= 30:
+                    continue
+                # 排除午盘 13:00 ~13:30
+                if tick.datetime.hour == 13 and tick.datetime.minute < 30:
+                    continue
+                # 排除凌晨2:30~3:00
+                if tick.datetime.hour == 2 and tick.datetime.minute >= 30:
+                    continue
+
+                # 排除大商所/郑商所夜盘数据
+                if short_symbol in NIGHT_MARKET_ZZ:
+                    if tick.datetime.hour == 23 and tick.datetime.minute>=30:
+                        continue
+                    if tick.datetime.hour in [0,1,2]:
+                        continue
+
+                # 排除上期所夜盘数据 23:00 收盘
+                if short_symbol in NIGHT_MARKET_SQ3 or short_symbol in NIGHT_MARKET_DL:
+                    if tick.datetime.hour in [23,0,1,2]:
+                        continue
+                # 排除上期所夜盘数据 1:00 收盘
+                if short_symbol in NIGHT_MARKET_SQ2:
+                    if tick.datetime.hour in [1,2]:
+                        continue
+
+            # 排除日盘合约在夜盘得数据
+            if short_symbol in MARKET_DAY_ONLY and (tick.datetime.hour < 9 or tick.datetime.hour > 16):
+                #self.writeLog(u'排除日盘合约{}在夜盘得数据'.format(short_symbol))
+                continue
+
+            if self.gateway.debug_tick:
+                self.writeLog('tdx {},{},{},{},{},{},{},{},{},{},{},{},{},{}'.format(tick.gatewayName, tick.symbol,
+                                                                             tick.exchange, tick.vtSymbol,
+                                                                             tick.datetime, tick.tradingDay,
+                                                                             tick.openPrice, tick.highPrice,
+                                                                             tick.lowPrice, tick.preClosePrice,
+                                                                             tick.bidPrice1,
+                                                                             tick.bidVolume1, tick.askPrice1,
+                                                                             tick.askVolume1))
+
+
+            self.symbol_tick_dict[tick.symbol] = tick
+
+            self.gateway.onTick(tick)
+            self.gateway.onCustomerTick(tick)
 
     def processReq(self, req, i):
         """
@@ -2325,7 +2580,7 @@ class TdxMdApi():
             tick.symbol = self.symbol_vn_dict.get(symbol,None)
             if tick.symbol is None:
                 self.writeLog(u'self.symbol_vn_dict 取不到映射得:{}'.format(symbol))
-                return
+                continue
             tick.symbol = tick.symbol.upper()
             tick.exchange = self.symbol_exchange_dict.get(symbol)
             tick.vtSymbol = tick.symbol
@@ -2383,51 +2638,51 @@ class TdxMdApi():
             # 排除非交易时间得tick
             if tick.exchange is EXCHANGE_CFFEX:
                 if tick.datetime.hour not in [9,10,11,13,14,15]:
-                    return
+                    continue
                 if tick.datetime.hour == 9 and tick.datetime.minute < 15:
-                    return
+                    continue
                 # 排除早盘 11:30~12:00
                 if tick.datetime.hour == 11 and tick.datetime.minute >= 30:
-                    return
+                    continue
                 if tick.datetime.hour == 15 and tick.datetime.minute >= 15:
-                    return
+                    continue
             else:  # 大商所/郑商所，上期所，上海能源
                 # 排除非开盘小时
                 if tick.datetime.hour in [3,4,5,6,7,8,12,15,16,17,18,19,20]:
-                    return
+                    continue
                 # 排除早盘 10:15~10:30
                 if tick.datetime.hour == 10 and 15 <= tick.datetime.minute < 30:
-                    return
+                    continue
                 # 排除早盘 11:30~12:00
                 if tick.datetime.hour == 11 and tick.datetime.minute >= 30:
-                    return
+                    continue
                 # 排除午盘 13:00 ~13:30
                 if tick.datetime.hour == 13 and tick.datetime.minute < 30:
-                    return
+                    continue
                 # 排除凌晨2:30~3:00
                 if tick.datetime.hour == 2 and tick.datetime.minute >= 30:
-                    return
+                    continue
 
                 # 排除大商所/郑商所夜盘数据
                 if short_symbol in NIGHT_MARKET_ZZ:
                     if tick.datetime.hour == 23 and tick.datetime.minute>=30:
-                        return
+                        continue
                     if tick.datetime.hour in [0,1,2]:
-                        return
+                        continue
 
                 # 排除上期所夜盘数据 23:00 收盘
                 if short_symbol in NIGHT_MARKET_SQ3 or short_symbol in NIGHT_MARKET_DL:
                     if tick.datetime.hour in [23,0,1,2]:
-                        return
+                        continue
                 # 排除上期所夜盘数据 1:00 收盘
                 if short_symbol in NIGHT_MARKET_SQ2:
                     if tick.datetime.hour in [1,2]:
-                        return
+                        continue
 
             # 排除日盘合约在夜盘得数据
             if short_symbol in MARKET_DAY_ONLY and (tick.datetime.hour < 9 or tick.datetime.hour > 16):
                 #self.writeLog(u'排除日盘合约{}在夜盘得数据'.format(short_symbol))
-                return
+                continue
 
             if self.gateway.debug_tick:
                 self.writeLog('tdx {},{},{},{},{},{},{},{},{},{},{},{},{},{}'.format(tick.gatewayName, tick.symbol,
@@ -2456,465 +2711,99 @@ class TdxMdApi():
     def writeError(self,content):
         self.gateway.writeError(content)
 
-class RedisMdApi():
+class SubMdApi():
     """
-    Redis数据行情API实现
-    通过线程，查询订阅的行情，更新合约的数据
-
+    RabbitMQ Subscriber 数据行情接收API
     """
-
     def __init__(self, gateway):
-        """Constructor"""
-        self.EventType = "RedisQuotation"
-        self.gateway = gateway  # gateway对象
-        self.gatewayName = gateway.gatewayName  # gateway对象名称
+        self.gateway = gateway
+        self.gatewayName = gateway.gatewayName
 
-        self.req_interval = 0.5  # 操作请求间隔500毫秒
-        self.connection_status = False  # 连接状态
+        self.symbol_tick_dict = {}          # 合约与最后一个Tick得字典
+        self.registed_symbol_set = set()    # 订阅的合约记录集
 
-        self.symbol_tick_dict = {}  # Redis合约与最后一个Tick得字典
-        self.registed_symbol_set = set()
+        self.sub = None
+        self.setting = {}
+        self.connect_status = False
+        self.thread = None
 
-        # Redis服务器列表
-        self.ip_list = [{'ip': '192.168.1.211', 'port': 6379},
-                        {'ip': '192.168.1.212', 'port': 6379},
-                        {'ip': '192.168.0.203', 'port': 6379}
-                        ]
-        self.best_ip = {'ip': None, 'port': None}  # 最佳服务器
-
-        self.last_tick_dt = None  # 记录该会话对象的最后一个tick时间
-
-        # 查询线程
-        self.quotation_thread = None
-
-    # ----------------------------------------------------------------------
-    def ping(self, ip, port=6379):
-        """
-        ping行情服务器
-        :param ip:
-        :param port:
-        :param type_:
-        :return:
-        """
-        __time1 = datetime.now()
+    def connect(self, setting={}):
+        """连接"""
+        self.setting = setting
         try:
-            r = redis.Redis(host=ip, port=port, db=0, socket_connect_timeout=2)
-            r.set('ping', ip)
-            _timestamp = datetime.now() - __time1
-            self.writeLog('Redis服务器{}:{},耗时:{}'.format(ip, port, _timestamp))
-            return _timestamp
-        except:
-            self.writeError(u'Redis ping服务器，异常的响应{}'.format(ip))
-            return timedelta(9, 9, 0)
+            self.sub = subscriber(
+                host=self.setting.get('host', 'localhost'),
+                port=self.setting.get('port',5672),
+                user=self.setting.get('user', 'admin'),
+                password=self.setting.get('password', 'admin'),
+                exchange=self.setting.get('exchange', 'x_fanout_md_tick'))
 
-    # ----------------------------------------------------------------------
-    def select_best_ip(self):
-        """
-        选择行情服务器
-        :return:
-        """
-        self.writeLog(u'选择Redis行情服务器')
-
-        data_future = [self.ping(x['ip'], x['port']) for x in self.ip_list]
-
-        best_future_ip = self.ip_list[data_future.index(min(data_future))]
-
-        self.writeLog(u'选取 {}:{}'.format(
-            best_future_ip['ip'], best_future_ip['port']))
-        return best_future_ip
-
-    def connect(self):
-        """
-        连接Redis行情服务器
-        :return:
-        """
-        if self.connection_status:
-            return
-
-        self.writeLog(u'开始连接Redis行情服务器')
-
-        try:
-            # 选取最佳服务器
-            if self.best_ip['ip'] is None and self.best_ip['port'] is None:
-                self.best_ip = self.select_best_ip()
-
-            # 创建Redis连接对象实例
-            pool = redis.ConnectionPool(host=self.best_ip['ip'], port=self.best_ip['port'])
-            self.redis = redis.Redis(connection_pool=pool)
-
-            self.redis.set('Connect', self.best_ip['ip'])
-            self.writeLog(u'连接Redis服务器{}:{}成功'.format(self.best_ip['ip'], self.best_ip['port']))
-
-            self.last_tick_dt = datetime.now()
-            self.connection_status = True
-
-            # 查询线程
-            self.quotation_thread = Thread(target=self.run, name="QuotationEngine.%s" % self.EventType)
-            self.quotation_thread.setDaemon(False)
-            # 调用run方法
-            self.quotation_thread.start()
-        except Exception as ex:
-            self.writeLog(u'连接Redis服务器{}:{}异常:{},{}'.format(self.best_ip['ip'], self.best_ip['port'],
-                                                            str(ex), traceback.format_exc()))
-            return
-
-    def reconnect(self, i):
-        """
-        重连
-        :param i:
-        :return:
-        """
-        self.writeLog(u'开始重连redis服务器')
-        try:
-            # 选取最佳服务器
-            self.best_ip = self.select_best_ip()
-
-            # 创建Redis连接对象实例
-            pool = redis.ConnectionPool(host=self.best_ip['ip'], port=self.best_ip['port'])
-            self.redis = redis.Redis(connection_pool=pool)
-            self.redis.set('Connect', self.best_ip['ip'])
-            self.writeLog(u'重新连接Redis服务器{}:{}成功'.format(self.best_ip['ip'], self.best_ip['port']))
-
-            self.last_tick_dt = datetime.now()
-            self.connection_status = True
-
-            # 查询线程
-            self.quotation_thread = Thread(target=self.run, name="QuotationEngine.%s" % self.EventType)
-            self.quotation_thread.setDaemon(False)
-            # 调用run方法
-            self.quotation_thread.start()
+            self.sub.set_callback(self.on_message)
+            self.thread = Thread(target=self.sub.start)
+            self.thread.start()
+            self.connect_status = True
 
         except Exception as ex:
-            self.writeLog(u'重新连接Redis服务器{}:{}异常:{},{}'.format(self.best_ip['ip'], self.best_ip['port'],
-                                                              str(ex), traceback.format_exc()))
-            return
+            self.gateway.writeError(u'连接RabbitMQ {} 异常:{}'.format(self.setting, str(ex)))
+            self.gateway.writeError(traceback.format_exc())
+            self.connect_status = False
+
+    def reconnect(self):
+        pass
+
+    def on_message(self, chan, method_frame, _header_frame, body, userdata=None):
+        # print(" [x] %r" % body)
+        try:
+            str_tick = body.decode('utf-8')
+            d = json.loads(str_tick)
+            symbol = d.get('vtSymbol', None)
+            str_datetime = d.get('datetime', None)
+            if symbol not in self.registed_symbol_set or str_datetime is None:
+                return
+            if '.' in str_datetime:
+                dt = datetime.strptime(str_datetime,'%Y-%m-%d %H:%M:%S.%f')
+            else:
+                dt = datetime.strptime(str_datetime,'%Y-%m-%d %H:%M:%S')
+            d.update({'datetime': dt})
+            d.pop('rawData',None)
+            tick = VtTickData()
+            tick.__dict__.update(d)
+
+            self.symbol_tick_dict[symbol] = tick
+            self.gateway.onTick(tick)
+            self.gateway.onCustomerTick(tick)
+
+        except Exception as ex:
+            self.gateway.writeError(u'RabbitMQ on_message 异常:{}'.format(str(ex)))
+            self.gateway.writeError(traceback.format_exc())
 
     def close(self):
         """退出API"""
+        self.gateway.writeLog(u'退出rabbit行情订阅API')
         self.connection_status = False
+
+        try:
+            if self.sub:
+                self.gateway.writeLog(u'关闭订阅器')
+                self.sub.close()
+
+            if self.thread is not None:
+                self.gateway.writeLog(u'关闭订阅器接收线程')
+                self.thread.join()
+        except:
+            pass
 
     # ----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅合约"""
-
         # 这里的设计是，如果尚未登录就调用了订阅方法
         # 则先保存订阅请求，登录完成后会自动订阅
         vn_symbol = str(subscribeReq.symbol)
         vn_symbol = vn_symbol.upper()
 
-        if vn_symbol[-2:] != '99':
-            self.writeLog(u'Redis行情订阅: {}不是指数合约，不能订阅'.format(vn_symbol))
-            return
-
-        redis_symbol_0 = vn_symbol.upper() + '.2'
-        redis_symbol_1 = vn_symbol.upper() + '.3'
-        self.writeLog(u'Redis行情订阅: {}=>{} & {}'.format(vn_symbol, redis_symbol_0, redis_symbol_1))
-
-        if redis_symbol_0 not in self.registed_symbol_set:
-            self.registed_symbol_set.add(redis_symbol_0)
-        if redis_symbol_1 not in self.registed_symbol_set:
-            self.registed_symbol_set.add(redis_symbol_1)
-
-        self.checkStatus()
-
-    def checkStatus(self):
-        """检查连接状态"""
-
-        if len(self.registed_symbol_set) == 0:
-            return
-
-        # 若还没有启动连接，就启动连接
-        if self.last_tick_dt is None:
-            over_time = False
-        else:
-            over_time = ((datetime.now() - self.last_tick_dt).total_seconds() > 60)
-
-        if not self.connection_status or over_time is True:
-            self.writeLog(u'Redis服务器{}:{} 还没有连接，启动连接'.format(self.best_ip['ip'], self.best_ip['port']))
-            self.close()
-            self.connect()
-
-    def run(self):
-        """
-        :return:
-        """
-        try:
-            last_dt = datetime.now()
-            self.writeLog(u'开始运行Redis行情服务器, {}'.format(last_dt))
-            lastResult = dict()
-            while self.connection_status:
-                if len(self.registed_symbol_set)==0:
-                    continue
-                # 从Redis中读取指数数据
-                symbols = sorted(list(self.registed_symbol_set))
-                results = self.redis.mget(symbols)
-
-                # 只有当Tick发生改变时才推送到Gateway
-                # 比较2个源的数据, 选择最新&正确的那个
-                # 1. 每个源判断接收到的数据是否异常, 异常则抛弃
-                #    - 波动幅度>10%
-                #    - 价格异常
-                # 2. 只有1个源有数据, 就选择那个源
-                # 3. 如果2个源都有数据, 就选择时间更新的那个源
-                for i in range(0, len(symbols), 2):
-                    # 解码Redis返回值
-                    rt_tick_dict0 = None
-                    rt_tick_dict1 = None
-
-                    if results[i] is not None and len(results[i]) > 0:
-                        try:
-                            rt_tick_dict0 = json.loads(str(results[i], 'utf-8'))
-                            if len(rt_tick_dict0) == 0:
-                                self.writeLog(u'redis[{}]: rt_list0 为空, {}'.format(symbols[i], results[i]))
-                                rt_tick_dict0 = None
-                            elif symbols[i] in lastResult and lastResult[symbols[i]] is not None:
-                                if str(rt_tick_dict0) != str(lastResult[symbols[i]]):
-                                    change_percent = abs(float(lastResult[symbols[i]]['LastPrice']) - float(rt_tick_dict0['LastPrice'])) / float(lastResult[symbols[i]]['LastPrice']) * 100
-                                    if change_percent >= 10:
-                                        self.writeLog(u'redis[{}]: rt_list0 数据异常, 变动>10%: {}% ({}, {})'.format(symbols[i],
-                                                                    change_percent, lastResult[symbols[i]]['LastPrice'], rt_tick_dict0['LastPrice']))
-                                        rt_tick_dict0 = None
-                                else:
-                                    # 无变动, 不需要更新
-                                    rt_tick_dict0 = None
-                            else:
-                                lastResult[symbols[i]] = rt_tick_dict0
-                        except Exception as ex:
-                            self.writeError(u'Redis行情服务器 run() exception:{},{}, rt_list0:{}不正确'.format(str(ex),
-                                                                                                    traceback.format_exc(),results[i]))
-                    if results[i+1] is not None and len(results[i+1]) > 0:
-                        try:
-                            rt_tick_dict1 = json.loads(str(results[i + 1], 'utf-8'))
-                            if len(rt_tick_dict1) == 0:
-                                self.writeLog(u'redis[{}]: rt_list1 为空, {}'.format(symbols[i+1], results[i+1]))
-                                rt_tick_dict1 = None
-
-                            elif symbols[i+1] in lastResult and lastResult[symbols[i+1]] is not None:
-                                if str(rt_tick_dict1) != str(lastResult[symbols[i+1]]):
-                                    change_percent = abs(float(lastResult[symbols[i+1]]['LastPrice']) - float(rt_tick_dict1['LastPrice'])) / float(lastResult[symbols[i+1]]['LastPrice']) * 100
-                                    if change_percent >= 10:
-                                        self.writeLog(u'redis[{}]: rt_list1 数据异常, 变动>10%: {}% ({}, {})'.format(symbols[i+1],
-                                                                    change_percent, lastResult[symbols[i+1]]['LastPrice'], rt_tick_dict1['LastPrice']))
-                                        rt_tick_dict1 = None
-                                else:
-                                    # 无变动, 不需要更新
-                                    rt_tick_dict1 = None
-                            else:
-                                lastResult[symbols[i + 1]] = rt_tick_dict1
-
-                        except Exception as ex:
-                            self.writeError(u'Redis行情服务器 run() exception:{},{}, rt_list1:{}不正确'
-                                            .format(str(ex), traceback.format_exc(),results[i+1]))
-
-                    # 选择非空&时间较新的数据
-                    if rt_tick_dict0 is None and rt_tick_dict1 is None:
-                        continue
-
-                    rt_tick_dict = None
-                    if rt_tick_dict1 is None:
-                        rt_tick_dict = rt_tick_dict0
-                    elif rt_tick_dict0 is None:
-                        rt_tick_dict = rt_tick_dict1
-                    else:
-                        millionseconds = str(rt_tick_dict0.get('UpdateMillisec',EMPTY_STRING))
-                        if len(millionseconds) > 6:
-                            millionseconds = millionseconds[0:6]
-                        tick_time = '{}.{}'.format(rt_tick_dict0['UpdateTime'], millionseconds)
-                        rt_tick0_dt = datetime.strptime(rt_tick_dict0['TradingDay'] + ' ' + tick_time, '%Y%m%d %H:%M:%S.%f')
-
-                        millionseconds = str(rt_tick_dict1.get('UpdateMillisec',EMPTY_STRING))
-                        if len(millionseconds) > 6:
-                            millionseconds = millionseconds[0:6]
-                        tick_time = '{}.{}'.format(rt_tick_dict1['UpdateTime'], millionseconds)
-                        rt_tick1_dt = datetime.strptime(rt_tick_dict1['TradingDay'] + ' ' + tick_time, '%Y%m%d %H:%M:%S.%f')
-
-                        if rt_tick0_dt < rt_tick1_dt:
-                            rt_tick_dict = rt_tick_dict1
-                        else:
-                            rt_tick_dict = rt_tick_dict0
-
-                    self.processReq(symbols[i][0:-2], rt_tick_dict)
-
-                # 等待下次查询 (500ms)
-                # self.writeLog(u'redis[{}] sleep'.format(i))
-                sleep(self.req_interval)
-                dt = datetime.now()
-                if last_dt.minute != dt.minute:
-                    self.writeLog('Redis行情服务器 check point. {}, process symbols:{}'.format(dt, symbols))
-                    last_dt = dt
-        except Exception as ex:
-            self.writeError(u'Redis行情服务器 run() exception:{},{}'.format(str(ex), traceback.format_exc()))
-
-        self.writeError(u'Redis行情服务器在{}退出'.format(datetime.now()))
-
-    def processReq(self, symbol, tick_dict):
-        """
-        处理行情信息ticker请求
-        :param symbol:
-        :param req:
-        :return:
-        """
-        if not isinstance(tick_dict,dict):
-            self.writeLog(u'行情tick不是dict：{}'.format(tick_dict))
-            return
-
-        self.last_tick_dt = datetime.now()
-
-        # 忽略成交量为0的无效单合约tick数据
-        if int(tick_dict.get('Volume', 0)) <= 0:
-            self.writeLog(u'Redis服务器{}:{} 忽略成交量为0的无效合约tick数据: {}'
-                          .format(self.best_ip['ip'], self.best_ip['port'], tick_dict))
-
-        tick = VtTickData()
-        tick.gatewayName = self.gatewayName
-
-        tick.symbol = symbol
-        if tick.symbol is None:
-            return
-        tick.exchange = tick_dict.get('ExchangeID')
-        tick.vtSymbol = tick.symbol
-
-        short_symbol = tick.vtSymbol
-        short_symbol = short_symbol.replace('99', '').upper()
-
-        # 使用本地时间
-        tick.datetime = datetime.now()
-        # 修正毫秒
-        last_tick = self.symbol_tick_dict.get(symbol, None)
-        if (last_tick is not None) and tick.datetime.replace(microsecond=0) == last_tick.datetime:
-            # 与上一个tick的时间（去除毫秒后）相同,修改为500毫秒
-            tick.datetime = tick.datetime.replace(microsecond=500)
-            tick.time = tick.datetime.strftime('%H:%M:%S.%f')[0:12]
-        else:
-            tick.datetime = tick.datetime.replace(microsecond=0)
-            tick.time = tick.datetime.strftime('%H:%M:%S.%f')[0:12]
-
-        tick.date = tick.datetime.strftime('%Y-%m-%d')
-
-        # 生成TradingDay
-        # 正常日盘时间
-        tick.tradingDay = tick.date
-
-        # 修正夜盘的tradingDay
-        if tick.datetime.hour >= 20:
-            # 周一~周四晚上20点之后的tick，交易日属于第二天
-            if tick.datetime.isoweekday() in [1, 2, 3, 4]:
-                trading_day = tick.datetime + timedelta(days=1)
-                tick.tradingDay = trading_day.strftime('%Y-%m-%d')
-            # 周五晚上20点之后的tick，交易日属于下周一
-            elif tick.datetime.isoweekday() == 5:
-                trading_day = tick.datetime + timedelta(days=3)
-                tick.tradingDay = trading_day.strftime('%Y-%m-%d')
-        elif tick.datetime.hour < 3:
-            # 周六凌晨的tick，交易日属于下周一
-            if tick.datetime.isoweekday() == 6:
-                trading_day = tick.datetime + timedelta(days=2)
-                tick.tradingDay = trading_day.strftime('%Y-%m-%d')
-
-        # 排除非交易时间得tick
-        if tick.exchange is EXCHANGE_CFFEX:
-            if tick.datetime.hour not in [9, 10, 11, 13, 14, 15]:
-                return
-            if tick.datetime.hour == 9 and tick.datetime.minute < 15:
-                return
-            if tick.datetime.hour == 15 and tick.datetime.minute >= 15:
-                return
-        else:  # 大商所/郑商所，上期所，上海能源
-            # 排除非开盘小时
-            if tick.datetime.hour in [3, 4, 5, 6, 7, 8, 12, 15, 16, 17, 18, 19, 20]:
-                return
-            # 排除早盘 10:15~10:30
-            if tick.datetime.hour == 10 and 15 <= tick.datetime.minute < 30:
-                return
-            # 排除早盘 11:30~12:00
-            if tick.datetime.hour == 11 and tick.datetime.minute >= 30:
-                return
-            # 排除午盘 13:00 ~13:30
-            if tick.datetime.hour == 13 and tick.datetime.minute < 30:
-                return
-            # 排除凌晨2:30~3:00
-            if tick.datetime.hour == 2 and tick.datetime.minute >= 30:
-                return
-
-            # 排除大商所/郑商所夜盘数据
-            if  short_symbol in NIGHT_MARKET_ZZ:
-                if tick.datetime.hour == 23 and tick.datetime.minute >= 30:
-                    return
-                if tick.datetime.hour in [0, 1, 2]:
-                    return
-
-            # 排除上期所夜盘数据 23:00 收盘
-            if  short_symbol in NIGHT_MARKET_DL or short_symbol in NIGHT_MARKET_SQ3:
-                if tick.datetime.hour in [23, 0, 1, 2]:
-                    return
-            # 排除上期所夜盘数据 1:00 收盘
-            if short_symbol in NIGHT_MARKET_SQ2:
-                if tick.datetime.hour in [1, 2]:
-                    return
-
-        # 排除日盘合约在夜盘得数据
-        if short_symbol in MARKET_DAY_ONLY and (tick.datetime.hour < 9 or tick.datetime.hour > 16):
-            self.writeLog(u'Redis服务器{}:{} 排除日盘合约{}在夜盘得数据, {}'.format(self.best_ip['ip'],
-                                                                     self.best_ip['port'], short_symbol, tick_dict))
-            return
-
-        # 设置指数价格
-        tick.preClosePrice = float(tick_dict.get('PreClosePrice', 0))
-        tick.highPrice = float(tick_dict.get('HighestPrice', 0))
-        tick.openPrice = float(tick_dict.get('OpenPrice', 0))
-        tick.lowPrice = float(tick_dict.get('LowestPrice', 0))
-        tick.lastPrice = float(tick_dict.get('LastPrice', 0))
-
-        tick.volume = int(tick_dict.get('Volume', 0))
-        tick.openInterest = int(tick_dict.get('OpenInterest', 0))
-        tick.lastVolume = 0  # 最新成交量
-        tick.upperLimit = float(tick_dict.get('UpperLimitPrice', 0))
-        tick.lowerLimit = float(tick_dict.get('LowerLimitPrice', 0))
-
-        # CTP只有一档行情
-        if tick_dict.get('BidPrice1', 'nan') == 'nan': # 上期所有时会返回nan
-            tick.bidPrice1 = tick.lastPrice
-        else:
-            tick.bidPrice1 = float(tick_dict.get('BidPrice1', 0))
-        tick.bidVolume1 = int(tick_dict.get('BidVolume1', 0))
-        if tick_dict.get('AskPrice1', 'nan') == 'nan': # 上期所有时会返回nan
-            tick.askPrice1 = tick.lastPrice
-        else:
-            tick.askPrice1 = float(tick_dict.get('AskPrice1', 0))
-        tick.askVolume1 = int(tick_dict.get('AskVolume1', 0))
-
-        tick.preOpenInterest = int(tick_dict.get('PreOpenInterest', 0))  # 昨持仓量
-
-        if self.gateway.debug_tick:
-            self.writeLog('Redis服务器{}[{}]:\n gateway:{},symbol:{},exch:{},vtsymbol:{},\n dt:{},td:{},' 
-                      'lastPrice:{},volume:{},'
-                      'openPirce:{},highprice:{},lowPrice:{},preClosePrice:{},\nbid1:{},bv1:{},ask1:{},av1:{}'
-                      .format(self.best_ip['ip'],
-                            self.best_ip['port'],
-                            tick.gatewayName, tick.symbol,
-                            tick.exchange, tick.vtSymbol,
-                            tick.datetime, tick.tradingDay,
-                            tick.lastPrice,tick.volume,
-                            tick.openPrice, tick.highPrice,
-                            tick.lowPrice, tick.preClosePrice,
-                            tick.bidPrice1,
-                            tick.bidVolume1, tick.askPrice1,
-                            tick.askVolume1))
-
-        self.symbol_tick_dict[symbol] = tick
-        self.gateway.onTick(tick)
-        self.gateway.onCustomerTick(tick)
-
-    # ----------------------------------------------------------------------
-    def writeLog(self, content):
-        """发出日志"""
-        log = VtLogData()
-        log.gatewayName = self.gatewayName
-        log.logContent = content
-        self.gateway.onLog(log)
-
-    def writeError(self, content):
-        self.writeLog(content)
+        if vn_symbol not in self.registed_symbol_set:
+            self.registed_symbol_set.add(vn_symbol)
+            self.gateway.writeLog(u'RabbitMQ行情订阅 {}'.format(str(vn_symbol)))
 
 class TickCombiner(object):
     """
@@ -3113,15 +3002,15 @@ def test():
     gateway = CtpGateway(eventEngine)
     gateway.debug_tick = True
     gateway.connect()
+    print('测试连接完成')
+    gateway.connect()
 
-    # gateway.connect()
-    auto_subscribe_symbols = ['m1909']
+    auto_subscribe_symbols = ['rr2001']
     for symbol in auto_subscribe_symbols:
         print(u'自动订阅合约:{}'.format(symbol))
         sub = VtSubscribeReq()
         sub.symbol = symbol
         gateway.subscribe(sub)
-    gateway.connect()
 
     sys.exit(app.exec_())
 

@@ -13,15 +13,15 @@ from vnpy.trader.vtConstant import *
 ########################################################################
 class CtaTemplate(object):
     """CTA策略模板"""
-    
+
     # 策略类的名称和作者
     className = 'CtaTemplate'
     author = EMPTY_UNICODE
-    
+
     # MongoDB数据库的名称，K线数据库默认为1分钟
     tickDbName = TICK_DB_NAME
     barDbName = MINUTE_DB_NAME
-    
+
     # 策略的基本参数
     name = 'StrategyName'           # 策略实例名称
     vtSymbol = EMPTY_STRING        # 交易的合约vt系统代码
@@ -30,7 +30,7 @@ class CtaTemplate(object):
 
     productClass = EMPTY_STRING    # 产品类型（只有IB接口需要）
     currency = EMPTY_STRING        # 货币（只有IB接口需要）
-    
+
     # 策略的基本变量，由引擎管理
     inited = False                 # 是否进行了初始化
     trading = False                # 是否启动交易，由引擎管理
@@ -45,7 +45,7 @@ class CtaTemplate(object):
                  'symbol',
                  'shortSymbol',
                  'backtesting']
-    
+
     # 变量列表，保存了变量的名称
     varList = ['inited',
                'trading',
@@ -71,17 +71,17 @@ class CtaTemplate(object):
             for key in self.paramList:
                 if key in setting:
                     d[key] = setting[key]
-    
+
     # ----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
         raise NotImplementedError
-    
+
     # ----------------------------------------------------------------------
     def onStart(self):
         """启动策略（必须由用户继承实现）"""
         raise NotImplementedError
-    
+
     # ----------------------------------------------------------------------
     def onStop(self):
         """停止策略（必须由用户继承实现）"""
@@ -106,24 +106,27 @@ class CtaTemplate(object):
     def onTrade(self, trade):
         """收到成交推送（必须由用户继承实现）"""
         raise NotImplementedError
-    
+
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
         raise NotImplementedError
-    
+
     # ----------------------------------------------------------------------
-    def buy(self, price, volume, stop=False ,orderTime=None, grid=None):
+    def buy(self, price, volume, stop=False ,orderTime=None, grid=None, symbol=None):
         """买开"""
+        if symbol is None:
+            symbol = self.vtSymbol
         if orderTime is None:
             orderTime = datetime.now()
 
-        orderID = self.sendOrder(CTAORDER_BUY, price, volume, stop)
+        orderID = self.sendOrder(orderType=CTAORDER_BUY, price=price, volume=volume, symbol=symbol, stop=stop)
         if orderID !='':
             self.entrust = 1                            # 委托状态
             d = {'DIRECTION': DIRECTION_LONG, 'OFFSET': OFFSET_OPEN,
                  'Volume': volume, 'TradedVolume': EMPTY_INT,
-                 'Price': price, 'OrderTime': orderTime}
+                 'Price': price, 'OrderTime': orderTime,
+                 'Symbol': symbol}
             if grid is not None:
                 d['Grid'] = grid
 
@@ -132,20 +135,23 @@ class CtaTemplate(object):
         else:
             # 交易停止时发单返回空字符串
             return ''
-    
+
     # ----------------------------------------------------------------------
-    def sell(self, price, volume, stop=False, orderTime=None, grid=None):
+    def sell(self, price, volume, stop=False, orderTime=None, grid=None, symbol=None):
         """卖平"""
+        if symbol is None:
+            symbol = self.vtSymbol
         if orderTime is None:
             orderTime = datetime.now()
 
-        orderID = self.sendOrder(CTAORDER_SELL, price, volume, stop)
+        orderID = self.sendOrder(orderType=CTAORDER_SELL, price=price, volume=volume, symbol=symbol, stop=stop)
         if orderID !='':
             self.entrust = -1                           # 置当前策略的委托单状态
             # 记录委托单
             d = {'DIRECTION': DIRECTION_SHORT,'OFFSET': OFFSET_CLOSE,
                  'Volume': volume, 'TradedVolume': EMPTY_INT,
-                 'Price': price, 'OrderTime': orderTime}
+                 'Price': price, 'OrderTime': orderTime,
+                 'Symbol': symbol}
             if grid is not None:
                 d['Grid'] = grid
             self.uncompletedOrders[orderID] = d
@@ -155,17 +161,21 @@ class CtaTemplate(object):
             return ''
 
     # ----------------------------------------------------------------------
-    def short(self, price, volume, stop=False, orderTime=None, grid = None):
+    def short(self, price, volume, stop=False, orderTime=None, grid = None, symbol=None):
         """卖开"""
+        if symbol is None:
+            symbol = self.vtSymbol
+
         if orderTime is None:
             orderTime = datetime.now()
 
-        orderID = self.sendOrder(CTAORDER_SHORT, price, volume, stop)
+        orderID = self.sendOrder(orderType=CTAORDER_SHORT, price=price, volume=volume, symbol=symbol, stop=stop)
         if orderID !='':
             self.entrust = -1                           # 委托状态
             d = {'DIRECTION': DIRECTION_SHORT, 'OFFSET': OFFSET_OPEN,
                  'Volume': volume, 'TradedVolume': EMPTY_INT,
-                 'Price': price, 'OrderTime':  orderTime }
+                 'Price': price, 'OrderTime':  orderTime,
+                 'Symbol': symbol }
             if grid is not None:
                 d['Grid'] = grid
             self.uncompletedOrders[orderID] = d
@@ -173,22 +183,25 @@ class CtaTemplate(object):
         else:
             # 交易停止时发单返回空字符串
             return ''
- 
+
     # ----------------------------------------------------------------------
-    def cover(self, price, volume, stop=False, orderTime=None, grid = None):
+    def cover(self, price, volume, stop=False, orderTime=None, grid=None , symbol=None):
         """买平"""
 
+        if symbol is None:
+            symbol = self.vtSymbol
         if orderTime is None:
             orderTime = datetime.now()
 
-        orderID = self.sendOrder(CTAORDER_COVER, price, volume, stop)
+        orderID = self.sendOrder(orderType=CTAORDER_COVER, price=price, volume=volume, symbol=symbol, stop=stop)
 
         if orderID !='':
             self.entrust = 1                           # 置当前策略的委托单状态
             # 记录委托单
             d ={'DIRECTION': DIRECTION_LONG, 'OFFSET': OFFSET_CLOSE,
                  'Volume': volume, 'TradedVolume': EMPTY_INT,
-                 'Price': price, 'OrderTime': orderTime}
+                 'Price': price, 'OrderTime': orderTime,
+                 'Symbol': symbol}
             if grid is not None:
                 d['Grid'] = grid
             self.uncompletedOrders[orderID] = d
@@ -198,19 +211,21 @@ class CtaTemplate(object):
             return ''
 
     # ----------------------------------------------------------------------
-    def sendOrder(self, orderType, price, volume, stop=False):
+    def sendOrder(self, orderType, price, volume, symbol=None, stop=False):
         """发送委托"""
+        if symbol is None:
+            symbol = self.vtSymbol
         if self.trading:
             # 如果stop为True，则意味着发本地停止单
             if stop:
-                vtOrderID = self.ctaEngine.sendStopOrder(self.vtSymbol, orderType, price, volume, self)
+                vtOrderID = self.ctaEngine.sendStopOrder(symbol, orderType, price, volume, self)
             else:
-                vtOrderID = self.ctaEngine.sendOrder(self.vtSymbol, orderType, price, volume, self) 
+                vtOrderID = self.ctaEngine.sendOrder(symbol, orderType, price, volume, self)
             return vtOrderID
         else:
             # 交易停止时发单返回空字符串
             return ''
-        
+
     #----------------------------------------------------------------------
     def cancelOrder(self, vtOrderID):
         """撤单"""
@@ -223,22 +238,22 @@ class CtaTemplate(object):
             self.ctaEngine.cancelStopOrder(vtOrderID)
         else:
             self.ctaEngine.cancelOrder(vtOrderID)
-    
+
     #----------------------------------------------------------------------
     def insertTick(self, tick):
         """向数据库中插入tick数据"""
         self.ctaEngine.insertData(self.tickDbName, self.vtSymbol, tick)
-    
+
     #----------------------------------------------------------------------
     def insertBar(self, bar):
         """向数据库中插入bar数据"""
         self.ctaEngine.insertData(self.barDbName, self.vtSymbol, bar)
-        
+
     #----------------------------------------------------------------------
     def loadTick(self, days):
         """读取tick数据"""
         return self.ctaEngine.loadTick(self.tickDbName, self.vtSymbol, days)
-    
+
     #----------------------------------------------------------------------
     def loadBar(self, days):
         """读取bar数据"""
@@ -427,14 +442,14 @@ class MatrixTemplate(CtaTemplate):
     def cancelForceClose(self):
         """
         取消强制平仓
-        :return: 
+        :return:
         """
         pass
 
     def forceCloseAllPos(self):
         """
         策略实现上层调度，强制平所有仓位，不再开仓
-        :return: 
+        :return:
         """
         pass
 
@@ -443,14 +458,14 @@ class MatrixTemplate(CtaTemplate):
         策略实现上层调度，强制开仓
         :param longPos: 对应开仓的多单[{"price": 2560, volume": 77, "symbol": "RB99", "margin": -953, "direction": "long" }]
         :param shortPos: 对应开仓的空单[{"price": 2560, volume": 77, "symbol": "RB99", "margin": -953, "direction": "short" }]
-        :return: 
+        :return:
         """
         pass
 
     def cancelAllOrders(self):
         """
         撤销所有委托
-        :return: 
+        :return:
         """
         pass
 

@@ -53,6 +53,8 @@ class MainEngine(object):
         # 创建事件引擎
         self.eventEngine = eventEngine
         self.eventEngine.start()
+        self.logger = None
+        self.createLogger()
 
         # 创建数据引擎
         self.dataEngine = DataEngine(self, self.eventEngine)
@@ -81,9 +83,7 @@ class MainEngine(object):
 
         self.save_contract_counter = 0
 
-        self.logger = None
 
-        self.createLogger()
 
         self.spd_id = 1             # 自定义套利的委托编号
         self.algo_order_dict = {}   # 记录算法交易的委托编号，便于通过算法引擎撤单
@@ -166,6 +166,7 @@ class MainEngine(object):
 
             # 接口连接后自动执行数据库连接的任务
             self.dbConnect()
+
             return True
         else:
             self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
@@ -380,7 +381,7 @@ class MainEngine(object):
                 self.writeError(u'未找到算法配置和委托单,不能撤单:{}'.format(cancelOrderReq.orderID))
                 return
 
-            if cancelOrderReq.orderID not in self.algoEngine.algoDict:
+            if cancelOrderReq.orderID not in self.algoEngine.algo_dict:
                 self.writeError(u'算法实例不存在，不能撤单')
                 return
 
@@ -541,7 +542,7 @@ class MainEngine(object):
         self.eventEngine.put(event)
 
         # 写入本地log日志
-        if self.logger is not None:
+        if self.logger:
             self.logger.error(content)
         else:
             self.createLogger()
@@ -579,7 +580,7 @@ class MainEngine(object):
         if self.logger is not None:
             self.logger.warning(content)
         else:
-            print(content,file=sys.stderr)
+            print(content, file=sys.stderr)
             self.createLogger()
 
         # 发出邮件
@@ -666,7 +667,9 @@ class MainEngine(object):
     # ----------------------------------------------------------------------
     def dbConnect(self):
         """连接MongoDB数据库"""
+
         if not self.dbClient:
+            self.writeLog(u'连接mongodb数据库')
             # 读取MongoDB的设置
             host, port, logging = loadMongoSetting()
 
@@ -829,15 +832,17 @@ class MainEngine(object):
                 db = self.dbClient[dbName]
                 collection = db[collectionName]
                 if replace:
-                    collection.replace_one(flt, d, upsert)
+                    rtn = collection.replace_one(flt, d, upsert)
                 else:
-                    collection.update_one(flt, {'$set':d}, upsert)
-
+                    rtn = collection.update_one(flt, {'$set':d}, upsert)
+                return rtn
             else:
                 self.writeLog(text.DATA_UPDATE_FAILED)
                 if self.db_has_connected:
                     self.writeLog(u'重新尝试连接数据库')
                     self.dbConnect()
+
+                return None
 
         except AutoReconnect as ex:
             self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
@@ -850,6 +855,7 @@ class MainEngine(object):
                 self.dbConnect()
         except Exception as ex:
             self.writeError(u'dbUpdate exception:{}'.format(str(ex)))
+        return None
 
     def dbDelete(self,dbName, collectionName, flt):
         """
@@ -1001,6 +1007,11 @@ class DataEngine(object):
         # 已订阅合约代码
         self.subscribedSymbols = set()
 
+        # 主力合约列表
+        self.mi_contracts = []
+
+        self.getMiContracts()
+
     # ----------------------------------------------------------------------
     def updateContract(self, event):
         """更新合约数据"""
@@ -1018,20 +1029,28 @@ class DataEngine(object):
     # ----------------------------------------------------------------------
     def getContract(self, vtSymbol):
         """查询合约对象"""
-        try:
-            if vtSymbol in self.contractDict.keys():
-                return self.contractDict[vtSymbol]
-
-            return None
-        except Exception as ex:
-            print(str(ex),file=sys.stderr)
-            return None
+        return self.contractDict.get(vtSymbol, None)
 
     # ----------------------------------------------------------------------
     def getAllContracts(self):
         """查询所有合约对象（返回列表）"""
         return list(self.contractDict.values())
 
+    def getMiContracts(self):
+        """ 从数据库中查询所有主力合约( [{}, {}]"""
+        if len(self.mi_contracts) == 0:
+            cursor = self.mainEngine.dbQuery(CONTRACT_DB_NAME,MI_SYMBOL_COL_NAME,{})
+            for d in cursor:
+                symbol = d.get('symbol')
+                c = self.getContract(symbol)
+                if c:
+                    if 'size' not in d:
+                        d.update({symbol: c.size})
+                    if 'priceTick' not in d:
+                        d.update({'priceTick': c.priceTick})
+                self.mi_contracts.append(d)
+
+        return self.mi_contracts
     # ----------------------------------------------------------------------
     def saveContracts(self):
         """保存所有合约对象到硬盘"""

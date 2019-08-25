@@ -132,7 +132,7 @@ class VtBarData(VtBaseData):
         self.time = EMPTY_STRING            # 时间
         self.datetime = None                # python的datetime时间对象
 
-        self.volume = EMPTY_FLOAT             # 成交量
+        self.volume = EMPTY_FLOAT           # 成交量
         self.openInterest = EMPTY_INT       # 持仓量
 
 

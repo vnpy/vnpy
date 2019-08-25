@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-print('laod vtConstant.py')
+print('load vtConstant.py')
 
 # 默认空值
 EMPTY_STRING = ''
@@ -24,9 +24,9 @@ SERVICE_DB_NAME = 'Service'         # 运行服务信息记录库
 ALGO_INFO_COL = 'algo_info'         # 算法引擎实例
 
 ALGOTRADING_DB_NAME = 'AlgoTrading'             # AlgoTrading数据库名
-SETTING_COLLECTION_NAME = 'algo_setting'        # 算法配置集合名
-HISTORY_COLLECTION_NAME = 'algo_history'        # 算法历史集合名
-RUNNING_COLLECTION_NAME = 'algo_running'        # 正在运行的算法实例
+ALGO_SETTING_COL_NAME = 'algo_setting'        # 算法配置集合名
+ALGO_HISTORY_COL_NAME = 'algo_history'        # 算法历史集合名
+ALGO_RUNNING_COL_NAME = 'algo_running'        # 正在运行的算法实例
 
 STRATEGY_DB_NAME = 'Strategy'            # 策略（交易方案/交易计划）
 TRADING_PROPOSAL_COL_NAME = 'trading_proposal'   # 交易方案
@@ -34,6 +34,11 @@ TRADING_PLAN_COL_NAME = 'trading_plan'   # 交易计划
 
 ACCOUNT_DB_NAME = 'Account'              # 账号的数据库
 ACCOUNT_INFO_COL_NAME = 'account_info'   # 账号信息表
+
+CONTRACT_DB_NAME = 'Contract'            # 合约信息的数据库
+ALL_SYMBOL_COL_NAME = 'all_symbols'      # 所有合约信息
+MI_SYMBOL_COL_NAME = 'mi_symbols'        # 主力合约信息
+INDEX_SYMBOL_COL_NAME = 'index_symbols'  # 指数合约信息
 
 from vnpy.trader.language import constant
 

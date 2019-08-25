@@ -50,7 +50,7 @@ class BacktestingEngine(object):
     4.增加csv 读取tick合并价差的回测模式
     5.增加EventEngine，并对newBar增加发送OnBar事件，供外部的回测主体显示Bar线。
     """
-    
+
     TICK_MODE = 'tick'              # 数据模式，逐Tick回测
     BAR_MODE = 'bar'                # 数据模式，逐Bar回测
 
@@ -66,7 +66,7 @@ class BacktestingEngine(object):
         # 本地停止单编号计数
         self.stopOrderCount = 0
         # stopOrderID = STOPORDERPREFIX + str(stopOrderCount)
-        
+
         # 本地停止单字典
         # key为stopOrderID，value为stopOrder对象
         self.stopOrderDict = {}             # 停止单撤销后不会从本字典中删除
@@ -87,16 +87,16 @@ class BacktestingEngine(object):
 
         self.slippage = 0           # 回测时假设的滑点
         self.rate = 0               # 回测时假设的佣金比例（适用于百分比佣金）
-        self.size = 1               # 合约大小，默认为1        
+        self.size = 1               # 合约大小，默认为1
         self.priceTick = 0          # 价格最小变动
 
         self.dbClient = None        # 数据库客户端
         self.dbCursor = None        # 数据库指针
-        
+
         self.historyData = []       # 历史数据的列表，回测用
         self.initData = []          # 初始化用的数据
         self.backtestingData = []   # 回测用的数据
-        
+
         self.dbName = ''            # 回测数据库名
         self.symbol = ''            # 回测集合名
         self.margin_rate = 0.11     # 回测合约的保证金比率
@@ -104,7 +104,7 @@ class BacktestingEngine(object):
         self.dataStartDate = None       # 回测数据开始日期，datetime对象
         self.dataEndDate = None         # 回测数据结束日期，datetime对象
         self.strategyStartDate = None   # 策略启动日期（即前面的数据用于初始化），datetime对象
-        
+
         self.limitOrderDict = OrderedDict()         # 限价单字典
         self.workingLimitOrderDict = OrderedDict()  # 活动限价单字典，用于进行撮合用
         self.limitOrderCount = 0                    # 限价单编号
@@ -119,7 +119,7 @@ class BacktestingEngine(object):
         self.shortPosition = []             # 空单持仓
 
         self.logList = []                   # 日志记录
-        
+
         # 当前最新数据，用于模拟成交用
         self.tick = None
         self.bar = None
@@ -232,7 +232,7 @@ class BacktestingEngine(object):
         initTimeDelta = timedelta(initDays)
 
         self.strategyStartDate = self.dataStartDate + initTimeDelta
-        
+
     # ----------------------------------------------------------------------
     def setEndDate(self, endDate=''):
         """设置回测的结束日期"""
@@ -268,8 +268,8 @@ class BacktestingEngine(object):
     def qryMarginRate(self,symbol):
         """
         根据合约symbol，返回其保证金比率
-        :param symbol: 
-        :return: 
+        :param symbol:
+        :return:
         """
         return self.margin_rate
 
@@ -317,8 +317,8 @@ class BacktestingEngine(object):
     def setStrategyName(self, strategy_name):
         """
         设置策略的运行实例名称
-        :param strategy_name: 
-        :return: 
+        :param strategy_name:
+        :return:
         """
         self.strategy_name = strategy_name
 
@@ -327,7 +327,7 @@ class BacktestingEngine(object):
         """
         设置策略的日净值记录csv保存文件名（含路径）
         :param report_file: 保存文件名（含路径）
-        :return: 
+        :return:
         """
         self.daily_report_name = report_file
     #----------------------------------------------------------------------
@@ -1706,7 +1706,7 @@ class BacktestingEngine(object):
                 else:
                     leg2Ticks[dtStr] = tick
 
-            leg1CsvReadFile = file(leg1File, 'rb')
+            leg1CsvReadFile = open(leg1File, 'rb')
             # reader = csv.DictReader((line.replace('\0',' ') for line in leg1CsvReadFile), delimiter=",")
             reader = csv.DictReader(leg1CsvReadFile, delimiter=",")
             self.writeCtaLog(u'加载{0}'.format(leg1File))
@@ -2715,7 +2715,7 @@ class BacktestingEngine(object):
 
         self.limitOrderCount += 1
         orderID = str(self.limitOrderCount)
-        
+
         order = VtOrderData()
         order.vtSymbol = vtSymbol
         order.price = self.roundToPriceTick(price)
@@ -2727,7 +2727,7 @@ class BacktestingEngine(object):
 
         # added by IncenseLee
         order.gatewayName = self.gatewayName
-        
+
         # CTA委托类型映射
         if orderType == CTAORDER_BUY:
             order.direction = DIRECTION_LONG
@@ -2740,7 +2740,7 @@ class BacktestingEngine(object):
             order.offset = OFFSET_OPEN
         elif orderType == CTAORDER_COVER:
             order.direction = DIRECTION_LONG
-            order.offset = OFFSET_CLOSE     
+            order.offset = OFFSET_CLOSE
 
         # modified by IncenseLee
         key = u'{0}.{1}'.format(order.gatewayName, orderID)
@@ -2750,7 +2750,7 @@ class BacktestingEngine(object):
 
         self.writeCtaLog(u'{},{},p:{},v:{},ref:{}'.format(vtSymbol, orderType, price, volume,key))
         return key
-    
+
     #----------------------------------------------------------------------
     def cancelOrder(self, vtOrderID):
         """撤单"""
@@ -2787,7 +2787,7 @@ class BacktestingEngine(object):
 
         self.stopOrderCount += 1
         stopOrderID = STOPORDERPREFIX + str(self.stopOrderCount)
-        
+
         so = StopOrder()
         so.vtSymbol = vtSymbol
         so.price = self.roundToPriceTick(price)
@@ -2795,7 +2795,7 @@ class BacktestingEngine(object):
         so.strategy = strategy
         so.stopOrderID = stopOrderID
         so.status = STOPORDER_WAITING
-        
+
         # added by IncenseLee
         so.gatewayName = STOPORDERPREFIX[0:-1]
         so.orderId = str(self.stopOrderCount)
@@ -2811,14 +2811,14 @@ class BacktestingEngine(object):
             so.offset = OFFSET_OPEN
         elif orderType == CTAORDER_COVER:
             so.direction = DIRECTION_LONG
-            so.offset = OFFSET_CLOSE           
-        
+            so.offset = OFFSET_CLOSE
+
         # 保存stopOrder对象到字典中
         self.stopOrderDict[stopOrderID] = so
         self.workingStopOrderDict[stopOrderID] = so
-        
+
         return stopOrderID
-    
+
     #----------------------------------------------------------------------
     def cancelStopOrder(self, stopOrderID):
         """撤销停止单"""
@@ -2827,7 +2827,7 @@ class BacktestingEngine(object):
             so = self.workingStopOrderDict[stopOrderID]
             so.status = STOPORDER_CANCELLED
             del self.workingStopOrderDict[stopOrderID]
-            
+
     #----------------------------------------------------------------------
     def crossLimitOrder(self):
         """基于最新数据撮合限价单"""
@@ -2853,7 +2853,7 @@ class BacktestingEngine(object):
             # 判断是否会成交
             buyCross = order.direction == DIRECTION_LONG and order.price >= buyCrossPrice and (vtSymbol.lower() == order.vtSymbol.lower() or symbol.lower() == order.vtSymbol.lower())
             sellCross = order.direction == DIRECTION_SHORT and order.price <= sellCrossPrice and (vtSymbol.lower() == order.vtSymbol.lower() or symbol.lower() == order.vtSymbol.lower())
-            
+
             # 如果发生了成交
             if buyCross or sellCross:
                 # 推送成交数据
@@ -2868,7 +2868,7 @@ class BacktestingEngine(object):
                 trade.vtOrderID = order.orderID
                 trade.direction = order.direction
                 trade.offset = order.offset
-                
+
                 # 以买入为例：
                 # 1. 假设当根K线的OHLC分别为：100, 125, 90, 110
                 # 2. 假设在上一根K线结束(也是当前K线开始)的时刻，策略发出的委托为限价105
@@ -2885,12 +2885,12 @@ class BacktestingEngine(object):
                     else:
                         trade.price = min(order.price, sellBestCrossPrice)
                     self.strategy.pos -= order.totalVolume
-                
+
                 trade.volume = order.totalVolume
                 trade.tradeTime = str(self.dt)
                 trade.dt = self.dt
                 self.strategy.onTrade(trade)
-                
+
                 self.tradeDict[tradeID] = trade
                 self.writeCtaLog(u'TradeId:{0}'.format(tradeID))
 
@@ -2908,7 +2908,7 @@ class BacktestingEngine(object):
                 order.status = STATUS_ALLTRADED
 
                 self.strategy.onOrder(order)
-                
+
                 # 从字典中删除该限价单
                 try:
                     del self.workingLimitOrderDict[orderID]
@@ -2918,7 +2918,7 @@ class BacktestingEngine(object):
         # 实时计算模式
         if self.calculateMode == self.REALTIME_MODE:
             self.realtimeCalculate()
-                
+
     #----------------------------------------------------------------------
     def crossStopOrder(self):
         """基于最新数据撮合停止单"""
@@ -2942,7 +2942,7 @@ class BacktestingEngine(object):
             # 判断是否会成交
             buyCross = so.direction == DIRECTION_LONG and so.price <= buyCrossPrice and (vtSymbol.lower() == so.vtSymbol.lower() or symbol.lower() == order.vtSymbol.lower())
             sellCross = so.direction == DIRECTION_SHORT and so.price >= sellCrossPrice and (vtSymbol.lower() == so.vtSymbol.lower() or symbol.lower() == order.vtSymbol.lower())
-            
+
             # 如果发生了成交
             if buyCross or sellCross:
                 # 推送成交数据
@@ -2952,28 +2952,28 @@ class BacktestingEngine(object):
                 trade.vtSymbol = so.vtSymbol
                 trade.tradeID = tradeID
                 trade.vtTradeID = tradeID
-                
+
                 if buyCross:
                     self.strategy.pos += so.volume
                     trade.price = max(bestCrossPrice, so.price)
                 else:
                     self.strategy.pos -= so.volume
-                    trade.price = min(bestCrossPrice, so.price)                
-                
+                    trade.price = min(bestCrossPrice, so.price)
+
                 self.limitOrderCount += 1
                 orderID = str(self.limitOrderCount)
                 trade.orderID = orderID
                 trade.vtOrderID = orderID
-                
+
                 trade.direction = so.direction
                 trade.offset = so.offset
                 trade.volume = so.volume
                 trade.tradeTime = str(self.dt)
                 trade.dt = self.dt
                 self.strategy.onTrade(trade)
-                
+
                 self.tradeDict[tradeID] = trade
-                
+
                 # 更新持仓缓存数据
                 posBuffer = self.posBufferDict.get(trade.vtSymbol, None)
                 if not posBuffer:
@@ -2984,7 +2984,7 @@ class BacktestingEngine(object):
 
                 # 推送委托数据
                 so.status = STOPORDER_TRIGGERED
-                
+
                 order = VtOrderData()
                 order.vtSymbol = so.vtSymbol
                 order.symbol = so.vtSymbol
@@ -2999,9 +2999,9 @@ class BacktestingEngine(object):
                 order.orderTime = trade.tradeTime
                 order.gatewayName = so.gatewayName
                 self.strategy.onOrder(order)
-                
+
                 self.limitOrderDict[orderID] = order
-                
+
                 # 从字典中删除该限价单
                 try:
                     del self.workingStopOrderDict[stopOrderID]
@@ -3030,12 +3030,12 @@ class BacktestingEngine(object):
     def insertData(self, dbName, collectionName, data):
         """考虑到回测中不允许向数据库插入数据，防止实盘交易中的一些代码出错"""
         pass
-    
+
     #----------------------------------------------------------------------
     def loadBar(self, dbName, collectionName, startDate):
         """直接返回初始化数据列表中的Bar"""
         return self.initData
-    
+
     #----------------------------------------------------------------------
     def loadTick(self, dbName, collectionName, startDate):
         """直接返回初始化数据列表中的Tick"""
@@ -3792,7 +3792,7 @@ class BacktestingEngine(object):
 
         """
         self.output(u'计算回测结果')
-        
+
         # 首先基于回测后的成交记录，计算每笔交易的盈亏
         resultDict = OrderedDict()  # 交易结果记录
         longTrade = []              # 未平仓的多头交易
@@ -3879,7 +3879,7 @@ class BacktestingEngine(object):
 
                     self.writeCtaLog(u'-------------')
 
-            # 空头交易        
+            # 空头交易
             else:
                 # 如果尚无多头交易
                 if not longTrade:
@@ -3952,7 +3952,7 @@ class BacktestingEngine(object):
         if not resultDict:
             self.output(u'无交易结果')
             return {}
-        
+
         # 然后基于每笔交易的结果，我们可以计算具体的盈亏曲线和最大回撤等
 
         """
@@ -4582,5 +4582,4 @@ def optimize(strategyClass, setting, targetName,
     return (str(setting), targetValue)
 
 
-    
-    
+

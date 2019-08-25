@@ -80,6 +80,7 @@ class SpreadTradeManager(QtWidgets.QWidget):
 
         self.spinOrderVolume = QtWidgets.QSpinBox()
         self.spinOrderVolume.setMinimum(0)
+        self.spinClosePrice.setDecimals(4)
         self.spinOrderVolume.setMaximum(1000)
 
         grid.addWidget(Label(u'委托数量'), 5, 0)

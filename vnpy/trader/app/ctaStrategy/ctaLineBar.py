@@ -684,6 +684,7 @@ class CtaLineBar(object):
             lastBar.low = min(lastBar.low, bar.low)
             lastBar.volume = lastBar.volume + bar.volume
             lastBar.dayVolume = bar.dayVolume
+            lastBar.openInterest = bar.openInterest
 
             lastBar.mid3 = round((lastBar.close + lastBar.high + lastBar.low) / 3, self.round_n)
             lastBar.mid4 = round((2 * lastBar.close + lastBar.high + lastBar.low) / 4, self.round_n)
@@ -1477,7 +1478,7 @@ class CtaLineBar(object):
                     self.ma13_count = -1
                 elif self.lineMa1[-1] > self.lineMa3[-1]:
                     self.ma13_count += 1
- 
+
     def rt_countMa(self):
         """
         实时计算MA得值
@@ -1517,7 +1518,7 @@ class CtaLineBar(object):
                 # 计算斜率
                 if len(barMa) > 2 and barMa[-2] != 0:
                     self._rt_Ma3Atan = round(math.atan((barMa[-1] / barMa[-2] - 1) * 100) * 180 / math.pi, 3)
-   
+
     def getRuntimeMa(self, ma_num):
         """
         获取实时MA的值
@@ -4571,6 +4572,7 @@ class CtaMinuteBar(CtaLineBar):
             lastBar.low = min(lastBar.low, bar.low)
             lastBar.volume = lastBar.volume + bar.volume
             lastBar.dayVolume = bar.dayVolume
+            lastBar.openInterest = bar.openInterest
 
             lastBar.mid3 = round((lastBar.close + lastBar.high + lastBar.low) / 4, self.round_n)
             lastBar.mid4 = round((2 * lastBar.close + lastBar.high + lastBar.low) / 4, self.round_n)
@@ -4707,7 +4709,6 @@ class CtaMinuteBar(CtaLineBar):
             lastBar.mid5 = round((2 * lastBar.close + lastBar.open + lastBar.high + lastBar.low) / 5, self.round_n)
             # 实时计算
             self.runtime_recount()
-
 
 class CtaHourBar(CtaLineBar):
     """
@@ -4851,6 +4852,7 @@ class CtaHourBar(CtaLineBar):
             lastBar.low = min(lastBar.low, bar.low)
             lastBar.volume = lastBar.volume + bar.volume
             lastBar.dayVolume = bar.dayVolume
+            lastBar.openInterest = bar.openInterest
 
             lastBar.mid3 = round((lastBar.close + lastBar.high + lastBar.low) / 4, self.round_n)
             lastBar.mid4 = round((2 * lastBar.close + lastBar.high + lastBar.low) / 4, self.round_n)
@@ -5128,7 +5130,7 @@ class CtaDayBar(CtaLineBar):
             lastBar.low = min(lastBar.low, bar.low)
             lastBar.volume = lastBar.volume + bar.volume
             lastBar.dayVolume = lastBar.volume
-
+            lastBar.openInterest = bar.openInterest
             lastBar.mid3 = round((lastBar.close + lastBar.high + lastBar.low) / 3, self.round_n)
             lastBar.mid4 = round((2 * lastBar.close + lastBar.high + lastBar.low) / 4, self.round_n)
             lastBar.mid5 = round((2 * lastBar.close + lastBar.open + lastBar.high + lastBar.low) / 5, self.round_n)
@@ -5378,6 +5380,7 @@ class CtaWeekBar(CtaLineBar):
             lastBar.low = min(lastBar.low, bar.low)
             lastBar.volume = lastBar.volume + bar.volume
             lastBar.dayVolume = lastBar.volume
+            lastBar.openInterest = bar.openInterest
 
             lastBar.mid3 = round((lastBar.close + lastBar.high + lastBar.low) / 3, self.round_n)
             lastBar.mid4 = round((2 * lastBar.close + lastBar.high + lastBar.low) / 4, self.round_n)

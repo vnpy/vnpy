@@ -30,6 +30,8 @@ import re
 import csv
 import copy
 import decimal
+from threading import Thread
+from concurrent.futures import ThreadPoolExecutor
 
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
@@ -133,7 +135,11 @@ class CtaEngine(object):
         # 登记vtSymbol对应的最新价
         self.price_dict = {}
 
-    def create_fund_kline(self, name,load_trade=False):
+        # 策略初始化执行线程dict
+        self.thread_init_executor = ThreadPoolExecutor(max_workers=8)   # strategy_name : Thread
+        self.thread_init_task = []
+
+    def create_fund_kline(self, name, load_trade=False):
         """
         创建资金曲线
         :param: name 账号的ID，或者策略的实例name
@@ -234,7 +240,7 @@ class CtaEngine(object):
             req.direction = DIRECTION_SHORT
 
             # 只有上期所才要考虑平今平昨
-            if contract.exchange not in  [EXCHANGE_SHFE,EXCHANGE_SHFE]:
+            if contract.exchange not in [EXCHANGE_CFFEX, EXCHANGE_SHFE, EXCHANGE_INE]:
                 req.offset = OFFSET_CLOSE
             else:
                 # 获取持仓缓存数据
@@ -273,7 +279,7 @@ class CtaEngine(object):
             req.direction = DIRECTION_LONG
 
             # 只有上期所，能源所才要考虑平今平昨
-            if contract.exchange not in [EXCHANGE_SHFE,EXCHANGE_INE]:
+            if contract.exchange not in [EXCHANGE_CFFEX, EXCHANGE_SHFE, EXCHANGE_INE]:
                 req.offset = OFFSET_CLOSE
             else:
                 # 获取持仓缓存数据
@@ -1350,6 +1356,8 @@ class CtaEngine(object):
                     symbols.append(leg2_symbol)
 
         for symbol in symbols:
+            if len(symbol)==0:
+                continue
             self.writeCtaLog(u'添加合约{}与策略{}的匹配目录'.format(symbol,strategy.name))
             if symbol in self.tickStrategyDict:
                 l = self.tickStrategyDict[symbol]
@@ -1364,46 +1372,49 @@ class CtaEngine(object):
             self.subscribe(strategy=strategy, symbol=symbol)
 
         # 自动初始化
-        if 'auto_init' in setting:
-            if setting['auto_init'] == True:
-                self.writeCtaLog(u'自动初始化策略：{}'.format(name))
-                try:
-                    self.initStrategy(name=name)
-                except Exception as ex:
-                    self.writeCtaCritical(u'初始化策略：{} 异常,{},{}'.format(name,str(ex),traceback.format_exc()))
-                    return False
-
-        if 'auto_start' in setting:
-            if setting['auto_start'] == True:
-                self.writeCtaLog(u'自动启动策略：{}'.format(name))
-                try:
-                    self.startStrategy(name=name)
-                except Exception as ex:
-                    self.writeCtaCritical(u'自动启动策略：{} 异常,{},{}'.format(name, str(ex), traceback.format_exc()))
-                    return False
+        if setting.get('auto_init', False):
+            self.writeCtaLog(u'自动初始化策略：{}'.format(name))
+            try:
+                self.initStrategy(name=name,force=False,auto_start= setting.get('auto_start',False))
+            except Exception as ex:
+                self.writeCtaCritical(u'初始化策略：{} 异常,{},{}'.format(name,str(ex),traceback.format_exc()))
+                return False
 
         # 激活策略实例的资金曲线
-        if globalSetting.get('activate_strategy_fund_kline',False):
+        if globalSetting.get('activate_strategy_fund_kline', False):
             self.create_fund_kline(name, load_trade=True)
 
         return True
 
-    def initStrategy(self, name, force=False):
+    def initStrategy(self, name, force=False, auto_start=False):
         """初始化策略"""
         if name in self.strategyDict:
-            strategy = self.strategyDict[name]
-
-            if not strategy.inited or force == True:
-                self.callStrategyFunc(strategy, strategy.onInit, force)
-                # strategy.onInit(force=force)
-                # strategy.inited = True
-            else:
-                self.writeCtaLog(u'请勿重复初始化策略实例：%s' % name)
-            return True
-
+            self.writeCtaLog(u'创建策略{}初始化线程，强制初始化?:{},自动启动?{}'.format(name, force, auto_start))
+            # thread = Thread(target=self.thread_init_strategy, args=(name, force, auto_start))
+            # self.init_thread[name] = thread
+            # thread.start()
+            task = self.thread_init_executor.submit(self.thread_init_strategy, name, force, auto_start)
+            self.thread_init_task.append(task)
         else:
             self.writeCtaError(u'策略实例不存在：%s' % name)
             return False
+
+    def thread_init_strategy(self, name, force=False, auto_start=False):
+        """线程方式执行初始化策略"""
+        self.writeCtaLog(u'开始策略{}异步初始化任务'.format(name))
+        if name in self.strategyDict:
+            strategy = self.strategyDict[name]
+            if not strategy.inited or force:
+                print('call strategyFunc: {}.onInit()'.format(name))
+                self.callStrategyFunc(strategy, strategy.onInit, force)
+            else:
+                self.writeCtaLog(u'请勿重复初始化策略实例：%s' % name)
+        else:
+            self.writeCtaError(u'策略实例不存在：%s' % name)
+
+        if auto_start:
+            self.startStrategy(name)
+        self.writeCtaLog(u'执行策略{}异步初始化完毕'.format(name))
 
     def startStrategy(self, name):
         """启动策略"""
@@ -1698,7 +1709,7 @@ class CtaEngine(object):
         """
         对调度转移的剩余仓位，进行清仓
         要考虑涨跌停的情况哦。
-        :return: 
+        :return:
         """
         # 针对国内期货市场，初步判断是否在交易时间内
         if self.is_trade_off():
@@ -2178,7 +2189,7 @@ class CtaEngine(object):
         """
         读取策略配置文件，CTA_setting.json
         逐一运行
-        :return: 
+        :return:
         """
         try:
             with open(self.settingfilePath,'r',encoding='UTF-8') as f:
@@ -2202,14 +2213,14 @@ class CtaEngine(object):
             # 获取策略实例
             strategy = self.strategyDict[name]
             varDict = OrderedDict()
-            
+
             for key in strategy.varList:
                 if hasattr(strategy,key):
                     varDict[key] = strategy.__getattribute__(key)
-            
+
             return varDict
         else:
-            self.writeCtaLog(u'策略实例不存在：' + name)    
+            self.writeCtaLog(u'策略实例不存在：' + name)
             return None
 
     def getStrategyParam(self, name):
@@ -2218,14 +2229,14 @@ class CtaEngine(object):
             # 获取策略实例
             strategy = self.strategyDict[name]
             paramDict = OrderedDict()
-            
+
             for key in strategy.paramList:
                 if hasattr(strategy, key):
                     paramDict[key] = strategy.__getattribute__(key)
-            
+
             return paramDict
         else:
-            self.writeCtaLog(u'策略实例不存在：' + name)    
+            self.writeCtaLog(u'策略实例不存在：' + name)
             return None
 
     def getStategyPos(self, name, strategy=None):
@@ -2355,10 +2366,10 @@ class CtaEngine(object):
     def updateStrategySetting(self,strategy_name,setting_key,setting_value):
         """
         更新策略的某项设置
-        :param strategy_name: 
-        :param setting_key: 
-        :param setting_value: 
-        :return: 
+        :param strategy_name:
+        :param setting_key:
+        :param setting_value:
+        :return:
         """
         setting_dict = None
         strategy = None
@@ -2385,7 +2396,7 @@ class CtaEngine(object):
         """
         获取策略的配置参数
         :param name: 策略实例名称
-        :return: 
+        :return:
         """
 
         if name in self.settingDict:
@@ -2418,7 +2429,7 @@ class CtaEngine(object):
             strategy.inited = False
 
             # 发出日志
-            content =u'策略{}触发异常已停止.{},{}'.format(strategy.name,str(ex),traceback.format_exc())
+            content =u'策略{} 调用触发异常已停止.{},{}'.format(strategy.name,str(ex),traceback.format_exc())
             self.writeCtaCritical(content)
             self.mainEngine.writeCritical(content)
 
@@ -2592,8 +2603,8 @@ class CtaEngine(object):
     def qrySize(self,vtSymbol):
         """
         查询合约的大小
-        :param vtSymbol: 
-        :return: 
+        :param vtSymbol:
+        :return:
         """
         c = self.mainEngine.getContract(vtSymbol)
         if c is None:
@@ -2611,8 +2622,8 @@ class CtaEngine(object):
     def qryMarginRate(self, vtSymbol):
         """
         提供给策略查询品种的保证金比率
-        :param vtSymbol: 
-        :return: 
+        :param vtSymbol:
+        :return:
         """
         c = self.mainEngine.getContract(vtSymbol)
         if c is None:
@@ -2625,6 +2636,32 @@ class CtaEngine(object):
             else:
                 self.writeCtaError(u'合约{}的多头保证金率:{},空头保证金率:{}'.format(vtSymbol,c.longMarginRatio,c.shortMarginRatio))
                 return 0.1
+
+    def qryPriceTick(self, vtSymbol):
+        """查询合约最小跳动"""
+        c = self.mainEngine.getContract(vtSymbol)
+        if c is None:
+            return 0.1
+        else:
+            return c.priceTick
+
+    def qryMiContracts(self, trading_day):
+        """查询所有期货主力合约"""
+        return self.mainEngine.dataEngine.getMiContracts()
+
+    def qryUpperLimit(self, vtSymbol):
+        """查询合约得涨停价"""
+        t = self.tickDict.get(vtSymbol, None)
+        if t:
+            return getattr(t, 'upperLimit', None)
+        return None
+
+    def qryLowerLimit(self, vtSymbol):
+        """查询合约得跌停价"""
+        t = self.tickDict.get(vtSymbol, None)
+        if t:
+            return getattr(t, 'lowerLimit', None)
+        return None
 
     def is_trade_off(self):
         """

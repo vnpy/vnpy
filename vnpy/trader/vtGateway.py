@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+print('load vtGateway.py')
 import time,os,sys,copy
 from datetime import datetime
 
@@ -33,7 +34,7 @@ class VtGateway(object):
         """市场行情推送"""
         # 通用事件
         event1 = Event(type_=EVENT_TICK)
-        event1.dict_['data'] = tick
+        event1.dict_['data'] = copy.copy(tick)
         self.eventEngine.put(event1)
 
         if tick.lastPrice is not None and tick.lastPrice != 0:
@@ -43,8 +44,13 @@ class VtGateway(object):
 
         # 特定合约代码的事件
         event2 = Event(type_=EVENT_TICK+tick.vtSymbol)
-        event2.dict_['data'] = tick
+        event2.dict_['data'] = copy.copy(tick)
         self.eventEngine.put(event2)
+
+        # 推送Bar
+        kline = self.klines.get(tick.vtSymbol,None)
+        if kline:
+            kline.updateTick(tick)
 
     def onBar(self,bar,type=EVENT_BAR):
         """市场行情推送"""
