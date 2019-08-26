@@ -155,6 +155,8 @@ CStockReqOrderModifyField = {
     "ErrorDescription": "string",
 }
 
+CStockRspOrderInsertField = CStockRspOrderModifyField
+
 CStockReqOrderCancelField = {
     "UserId": "string",
     "UserType": "string",
@@ -553,6 +555,10 @@ CStockRtnCapitalField = {
     "SellInterest": "double",
     "SellNeedAddMargin": "double",
 }
+
+CStockRspPositionField = CStockRtnPositionField
+
+CStockRspTradeField = CStockRtnTradeField
 
 CStockReqGetQuestionField = {
     "Unused": "int",

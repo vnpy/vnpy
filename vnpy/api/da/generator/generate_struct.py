@@ -54,7 +54,12 @@ class StructGenerator:
 
     def process_typedef(self, line: str):
         """处理类型定义"""
-        print("typdef注意", line)  # 一共三行，手动处理
+        line = line.replace("\t", " ")
+        words = line.split(" ")
+        name = words[1]
+        value = words[2]
+        new_line = f"{name} = {value}\n\n"
+        self.f_struct.write(new_line)
         
     def process_declare(self, line: str):
         """处理声明"""
