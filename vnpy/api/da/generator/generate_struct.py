@@ -5,10 +5,11 @@ import importlib
 class StructGenerator:
     """Struct生成器"""
 
-    def __init__(self, filename: str, prefix: str):
+    def __init__(self, filename: str, prefix: str, sub_name: str):
         """Constructor"""
         self.filename = filename
         self.prefix = prefix
+        self.sub_name = sub_name
         self.typedefs = {}
 
         self.load_constant()
@@ -25,7 +26,7 @@ class StructGenerator:
     def run(self):
         """运行生成"""
         self.f_cpp = open(self.filename, "r")
-        self.f_struct = open(f"{self.prefix}_struct.py", "w")
+        self.f_struct = open(f"{self.prefix}_{self.sub_name}_struct.py", "w")
 
         for line in self.f_cpp:
             self.process_line(line)
@@ -40,7 +41,9 @@ class StructGenerator:
         line = line.replace(";", "")
         line = line.replace("\n", "")
 
-        if line.startswith("struct"):
+        if line.startswith("typedef"):
+            self.process_typedef(line)
+        elif line.startswith("struct"):
             self.process_declare(line)
         elif line.startswith("{"):
             self.process_start(line)
@@ -49,6 +52,10 @@ class StructGenerator:
         elif "\t" in line and "///" not in line:
             self.process_member(line)
 
+    def process_typedef(self, line: str):
+        """处理类型定义"""
+        print("typdef注意", line)  # 一共三行，手动处理
+        
     def process_declare(self, line: str):
         """处理声明"""
         words = line.split(" ")
@@ -70,8 +77,7 @@ class StructGenerator:
     def process_member(self, line: str):
         """处理成员"""
         words = line.split("\t")
-        words = [word for word in words if word]
-
+        words = [word.replace(" ", "") for word in words if word]
         py_type = self.typedefs[words[0]]
         name = words[1]
 
@@ -80,5 +86,11 @@ class StructGenerator:
 
 
 if __name__ == "__main__":
-    generator = StructGenerator("../include/ctp/ThostFtdcUserApiStruct.h", "ctp")
-    generator.run()
+    generator_future = StructGenerator("../include/da/DAFutureStruct.h", "da", "future")
+    generator_future.run()
+
+    generator_stock = StructGenerator("../include/da/DAStockStruct.h", "da", "stock")
+    generator_stock.run()
+
+    generator_market = StructGenerator("../include/da/DAMarketStruct.h", "da", "market")
+    generator_market.run()

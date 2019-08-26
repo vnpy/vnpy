@@ -322,7 +322,7 @@ struct CStockRspTradeField
 struct CStockQryInstrumentField
 {
 	TDAIntType			PageIndex;							// 查询多少条,每次返回的条数
-	TDAStringType       ExchangeNo;							// 交易所代码，如果填写值，查询一个交易所的合约
+	TDAStringType		ExchangeNo;							// 交易所代码，如果填写值，查询一个交易所的合约
 	TDAStringType		ErrorDescription;					// 错误信息
 };
 // 查询合约返回
