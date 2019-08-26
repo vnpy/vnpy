@@ -69,7 +69,17 @@ class SyncWrapper:
 
 
 def wrap_as_sync(co: Coroutine):
+    """
+    run a coroutine in ANY context, and return its result.
+    """
     return SyncWrapper(co)
+
+
+def create_async_task(co: Coroutine):
+    """
+    start a coroutine asynchronously in ANY context, ignoring its result.
+    """
+    loop.create_task(co)
 
 
 async_executor: "AsyncExecutor" = AsyncExecutor()

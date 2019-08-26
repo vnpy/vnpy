@@ -1,13 +1,16 @@
+import asyncio
 import json
-import ssl
-import sys
-import traceback
 import socket
+import sys
+import threading
+import traceback
 from datetime import datetime
-from threading import Lock, Thread
-from time import sleep
+from typing import Optional
 
+import aiohttp
 import websocket
+
+from vnpy.api.asyncio.async_executor import create_async_task, loop, wrap_as_sync
 
 
 class WebsocketClient(object):
@@ -38,31 +41,35 @@ class WebsocketClient(object):
         """Constructor"""
         self.host = None
 
-        self._ws_lock = Lock()
-        self._ws = None
+        self._ws_lock = threading.Lock()
+        self._ws: Optional[aiohttp.ClientWebSocketResponse] = None
 
-        self._worker_thread = None
-        self._ping_thread = None
         self._active = False
 
         self.proxy_host = None
         self.proxy_port = None
-        self.ping_interval = 60     # seconds
-        self.header = {}
+        self.ping_interval = 60  # seconds
+        self.headers = {}
 
         # For debugging
         self._last_sent_text = None
         self._last_received_text = None
 
-    def init(self, host: str, proxy_host: str = "", proxy_port: int = 0, ping_interval: int = 60, header: dict = None):
+    def init(self,
+             host: str,
+             proxy_host: str = "",
+             proxy_port: int = 0,
+             ping_interval: int = 60,
+             headers: dict = None,
+             ):
         """
         :param ping_interval: unit: seconds, type: int
         """
         self.host = host
         self.ping_interval = ping_interval  # seconds
 
-        if header:
-            self.header = header
+        if headers:
+            self.headers = headers
 
         if proxy_host and proxy_port:
             self.proxy_host = proxy_host
@@ -77,18 +84,15 @@ class WebsocketClient(object):
         """
 
         self._active = True
-        self._worker_thread = Thread(target=self._run)
-        self._worker_thread.start()
-
-        self._ping_thread = Thread(target=self._run_ping)
-        self._ping_thread.start()
+        create_async_task(self._run())
+        create_async_task(self._run_ping())
 
     def stop(self):
         """
         Stop the client.
         """
         self._active = False
-        self._disconnect()
+        wrap_as_sync(self._disconnect())()
 
     def join(self):
         """
@@ -96,8 +100,7 @@ class WebsocketClient(object):
 
         This function cannot be called from worker thread or callback function.
         """
-        self._ping_thread.join()
-        self._worker_thread.join()
+        pass
 
     def send_packet(self, packet: dict):
         """
@@ -107,74 +110,81 @@ class WebsocketClient(object):
         """
         text = json.dumps(packet)
         self._record_last_sent_text(text)
-        return self._send_text(text)
+        return wrap_as_sync(self._send_text(text))()
 
-    def _send_text(self, text: str):
+    async def _send_text(self, text: str):
         """
         Send a text string to server.
         """
         ws = self._ws
         if ws:
-            ws.send(text, opcode=websocket.ABNF.OPCODE_TEXT)
+            await ws.send_str(text)
 
-    def _send_binary(self, data: bytes):
+    async def _send_binary(self, data: bytes):
         """
         Send bytes data to server.
         """
         ws = self._ws
         if ws:
-            ws._send_binary(data)
+            await ws.send_bytes(data)
 
-    def _create_connection(self, *args, **kwargs):
-        """"""
-        return websocket.create_connection(*args, **kwargs)
-
-    def _ensure_connection(self):
+    async def _ensure_connection(self):
         """"""
         triggered = False
         with self._ws_lock:
             if self._ws is None:
-                self._ws = self._create_connection(
+                self._session = aiohttp.ClientSession(loop=loop)
+                # noinspection PyTypeChecker
+                self._ws: aiohttp.ClientWebSocketResponse = await self._session.ws_connect(
                     self.host,
-                    sslopt={"cert_reqs": ssl.CERT_NONE},
-                    http_proxy_host=self.proxy_host,
-                    http_proxy_port=self.proxy_port,
-                    header=self.header
+                    proxy=f'http://{self.proxy_host}:{self.proxy_port}',
+                    headers=self.headers,
                 )
                 triggered = True
         if triggered:
             self.on_connected()
 
-    def _disconnect(self):
+    async def _disconnect(self):
         """
         """
         triggered = False
         with self._ws_lock:
             if self._ws:
+                session = self._session
                 ws: websocket.WebSocket = self._ws
                 self._ws = None
 
                 triggered = True
         if triggered:
-            ws.close()
+            await ws.close()
+            await session.close()
             self.on_disconnected()
 
-    def _run(self):
+    async def _run(self):
         """
         Keep running till stop is called.
         """
         try:
             while self._active:
                 try:
-                    self._ensure_connection()
+                    await self._ensure_connection()
                     ws = self._ws
                     if ws:
-                        text = ws.recv()
+                        msg = await ws.receive()
+                        type = msg.type
+                        text = msg.data
+                        if (type == aiohttp.WSMsgType.PING
+                            or type == aiohttp.WSMsgType.PONG
+                        ):
+                            continue
 
                         # ws object is closed when recv function is blocking
                         if not text:
-                            self._disconnect()
-                            continue
+                            if text is None:
+                                await self._disconnect()
+                                continue
+                            else:
+                                raise Exception(f"Unknown ws packet({type}):{text}")
 
                         self._record_last_received_text(text)
 
@@ -188,17 +198,17 @@ class WebsocketClient(object):
                 # ws is closed before recv function is called
                 # For socket.error, see Issue #1608
                 except (websocket.WebSocketConnectionClosedException, socket.error):
-                    self._disconnect()
+                    await self._disconnect()
 
                 # other internal exception raised in on_packet
                 except:  # noqa
                     et, ev, tb = sys.exc_info()
                     self.on_error(et, ev, tb)
-                    self._disconnect()
+                    await self._disconnect()
         except:  # noqa
             et, ev, tb = sys.exc_info()
             self.on_error(et, ev, tb)
-        self._disconnect()
+        await self._disconnect()
 
     @staticmethod
     def unpack_data(data: str):
@@ -209,28 +219,28 @@ class WebsocketClient(object):
         """
         return json.loads(data)
 
-    def _run_ping(self):
+    async def _run_ping(self):
         """"""
         while self._active:
             try:
-                self._ping()
+                await self._ping()
             except:  # noqa
                 et, ev, tb = sys.exc_info()
                 self.on_error(et, ev, tb)
 
                 # self._run() will reconnect websocket
-                sleep(1)
+                await asyncio.sleep(1)
 
             for i in range(self.ping_interval):
                 if not self._active:
                     break
-                sleep(1)
+                await asyncio.sleep(1)
 
-    def _ping(self):
+    async def _ping(self):
         """"""
         ws = self._ws
         if ws:
-            ws.send("ping", websocket.ABNF.OPCODE_PING)
+            await ws.ping(b"ping")
 
     @staticmethod
     def on_connected():

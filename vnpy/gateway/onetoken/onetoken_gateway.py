@@ -533,7 +533,7 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
 
         host = f"{TRADE_WEBSOCKET_HOST}/{self.exchange}/{self.account}"
 
-        self.init(host, proxy_host, proxy_port, header=header)
+        self.init(host, proxy_host, proxy_port, headers=header)
 
     def subscribe_info(self):
         """

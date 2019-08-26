@@ -8,7 +8,7 @@ from typing import Any, Callable, Optional, Union
 import aiohttp
 import requests
 
-from vnpy.api.asyncio.async_executor import loop, wrap_as_sync
+from vnpy.api.asyncio.async_executor import loop, wrap_as_sync, create_async_task
 
 
 class RequestStatus(Enum):
@@ -161,7 +161,7 @@ class RestClient(object):
             on_error,
             extra,
         )
-        loop.create_task(self._process_request(request))
+        create_async_task(self._process_request(request))
         return request
 
     def sign(self, request: Request):
