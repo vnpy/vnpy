@@ -4,6 +4,8 @@ dataclasses; python_version<="3.6"
 qdarkstyle
 requests
 websocket-client
+aiohttp
+aiohttp-socks
 peewee
 pymysql
 psycopg2

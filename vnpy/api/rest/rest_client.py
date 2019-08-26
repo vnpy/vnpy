@@ -1,12 +1,14 @@
 import sys
+import sys
 import traceback
 from datetime import datetime
 from enum import Enum
-from multiprocessing.dummy import Pool
-from queue import Empty, Queue
 from typing import Any, Callable, Optional, Union
 
+import aiohttp
 import requests
+
+from vnpy.api.asyncio.async_executor import loop, wrap_as_sync
 
 
 class RequestStatus(Enum):
@@ -45,14 +47,14 @@ class Request(object):
         self.on_error = on_error
         self.extra = extra
 
-        self.response = None
+        self.response: Optional[aiohttp.ClientResponse] = None
         self.status = RequestStatus.ready
 
     def __str__(self):
         if self.response is None:
             status_code = "terminated"
         else:
-            status_code = self.response.status_code
+            status_code = self.response.status
 
         return (
             "request : {} {} {} because {}: \n"
@@ -87,12 +89,11 @@ class RestClient(object):
         """
         """
         self.url_base = ''  # type: str
-        self._active = False
 
-        self._queue = Queue()
-        self._pool = None  # type: Pool
+        self.requests_proxies = None
+        self.aiohttp_proxy = None
 
-        self.proxies = None
+        self._session: Optional[aiohttp.ClientSession] = None
 
     def init(self, url_base: str, proxy_host: str = "", proxy_port: int = 0):
         """
@@ -103,34 +104,26 @@ class RestClient(object):
 
         if proxy_host and proxy_port:
             proxy = f"{proxy_host}:{proxy_port}"
-            self.proxies = {"http": proxy, "https": proxy}
+            self.requests_proxies = {"http": proxy, "https": proxy}
+            self.aiohttp_proxy = f'http://{proxy}'
 
-    def _create_session(self):
-        """"""
-        return requests.session()
+        self._session = aiohttp.ClientSession(loop=loop)
 
-    def start(self, n: int = 3):
-        """
-        Start rest client with session count n.
-        """
-        if self._active:
-            return
-
-        self._active = True
-        self._pool = Pool(n)
-        self._pool.apply_async(self._run)
+    def start(self, _):
+        pass
 
     def stop(self):
         """
-        Stop rest client immediately.
+        Since low level implementation is aiohttp, stop() will wait until connection is closed().
+        :note: this funciton blocks now!
         """
-        self._active = False
+        wrap_as_sync(self._session.close())()
 
     def join(self):
         """
-        Wait till all requests are processed.
+        Since low level implementation is aiohttp, join() is useless.
         """
-        self._queue.join()
+        pass
 
     def add_request(
         self,
@@ -168,24 +161,8 @@ class RestClient(object):
             on_error,
             extra,
         )
-        self._queue.put(request)
+        loop.create_task(self._process_request(request))
         return request
-
-    def _run(self):
-        try:
-            session = self._create_session()
-            while self._active:
-                try:
-                    request = self._queue.get(timeout=1)
-                    try:
-                        self._process_request(request, session)
-                    finally:
-                        self._queue.task_done()
-                except Empty:
-                    pass
-        except Exception:
-            et, ev, tb = sys.exc_info()
-            self.on_error(et, ev, tb, None)
 
     def sign(self, request: Request):
         """
@@ -233,8 +210,8 @@ class RestClient(object):
         )
         return text
 
-    def _process_request(
-        self, request: Request, session: requests.Session
+    async def _process_request(
+        self, request: Request,
     ):
         """
         Sending request to server and get result.
@@ -244,16 +221,17 @@ class RestClient(object):
 
             url = self.make_full_url(request.path)
 
-            response = session.request(
-                request.method,
-                url,
+            response: aiohttp.ClientResponse = await self._session.request(
+                method=request.method,
+                url=url,
                 headers=request.headers,
                 params=request.params,
                 data=request.data,
-                proxies=self.proxies,
+                proxy=self.aiohttp_proxy,
             )
+            response.json = wrap_as_sync(response.json())
             request.response = response
-            status_code = response.status_code
+            status_code = response.status
             if status_code // 100 == 2:  # 2xx codes are all successful
                 if status_code == 204:
                     json_body = None
@@ -319,6 +297,6 @@ class RestClient(object):
             headers=request.headers,
             params=request.params,
             data=request.data,
-            proxies=self.proxies,
+            proxies=self.requests_proxies,
         )
         return response
