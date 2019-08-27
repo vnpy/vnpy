@@ -10,7 +10,8 @@ from typing import Optional
 import aiohttp
 import websocket
 
-from vnpy.api.asyncio.async_executor import create_async_task, loop, wrap_as_sync
+from vnpy.api.asyncio.async_executor import create_async_task, loop, wrap_as_sync, start_asyncio, \
+    stop_asyncio, wait_for_async_task
 
 
 class WebsocketClient(object):
@@ -51,6 +52,8 @@ class WebsocketClient(object):
         self.ping_interval = 60  # seconds
         self.headers = {}
 
+        self._stop_task : Optional[asyncio.Task] = None
+
         # For debugging
         self._last_sent_text = None
         self._last_received_text = None
@@ -82,7 +85,7 @@ class WebsocketClient(object):
 
         Please don't send packet untill on_connected fucntion is called.
         """
-
+        start_asyncio()
         self._active = True
         create_async_task(self._run())
         create_async_task(self._run_ping())
@@ -92,15 +95,15 @@ class WebsocketClient(object):
         Stop the client.
         """
         self._active = False
-        wrap_as_sync(self._disconnect())()
+        self._stop_task = create_async_task(self._disconnect())
+        stop_asyncio()
 
     def join(self):
         """
-        Wait till all threads finish.
-
-        This function cannot be called from worker thread or callback function.
+        Wait until all worker exit.
         """
-        pass
+        if self._stop_task:
+            wait_for_async_task(self._stop_task)
 
     def send_packet(self, packet: dict):
         """

@@ -1,4 +1,4 @@
-import sys
+import asyncio
 import sys
 import traceback
 from datetime import datetime
@@ -8,7 +8,8 @@ from typing import Any, Callable, Optional, Union
 import aiohttp
 import requests
 
-from vnpy.api.asyncio.async_executor import loop, wrap_as_sync, create_async_task
+from vnpy.api.asyncio.async_executor import create_async_task, loop, start_asyncio, stop_asyncio, \
+    wait_for_async_task, wrap_as_sync
 
 
 class RequestStatus(Enum):
@@ -94,6 +95,7 @@ class RestClient(object):
         self.aiohttp_proxy = None
 
         self._session: Optional[aiohttp.ClientSession] = None
+        self._stop_task: Optional[asyncio.Task] = None
 
     def init(self, url_base: str, proxy_host: str = "", proxy_port: int = 0):
         """
@@ -110,20 +112,22 @@ class RestClient(object):
         self._session = aiohttp.ClientSession(loop=loop)
 
     def start(self, _):
-        pass
+        """"""
+        start_asyncio()
 
     def stop(self):
         """
-        Since low level implementation is aiohttp, stop() will wait until connection is closed().
-        :note: this funciton blocks now!
+        Stop the client.
         """
-        wrap_as_sync(self._session.close())()
+        self._stop_task: asyncio.Task = create_async_task(self._session.close())
+        stop_asyncio()
 
     def join(self):
         """
-        Since low level implementation is aiohttp, join() is useless.
+        Wait until all worker exit.
         """
-        pass
+        if self._stop_task:
+            wait_for_async_task(self._stop_task)
 
     def add_request(
         self,

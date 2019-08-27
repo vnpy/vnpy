@@ -5,35 +5,28 @@ and call async_executor.stop() at cleanup.
 call async_executor.join() if you want to wait until it exit.
 """
 import asyncio
-from threading import Thread
-from typing import Coroutine
+import threading
+from typing import Coroutine, Iterable, Union
 
 
 class AsyncExecutor:
 
     def __init__(self):
         self.loop = asyncio.new_event_loop()
-        self._thread = Thread(target=self._exec)
-
-        self.alive = False
+        self._thread = threading.Thread(target=self._exec)
 
     def start(self):
-        self.alive = True
         self._thread.start()
 
     def stop(self):
-        self.alive = False
+        self.loop.stop()
 
     def join(self):
         self._thread.join()
 
-    async def _run(self):
-        while self.alive:
-            await asyncio.sleep(1)
-
     def _exec(self):
-        # run_forever seems not working well?
-        self.loop.run_until_complete(self._run())
+        self.loop.call_soon(lambda: None)
+        self.loop.run_forever()
 
 
 class SyncWrapper:
@@ -60,7 +53,7 @@ class SyncWrapper:
         self.result = task.result()
 
     def schedule_new_coroutine(self):
-        thread = Thread(target=self.run)
+        thread = threading.Thread(target=self.run)
         thread.start()
         thread.join()
 
@@ -79,8 +72,33 @@ def create_async_task(co: Coroutine):
     """
     start a coroutine asynchronously in ANY context, ignoring its result.
     """
-    loop.create_task(co)
+    return loop.create_task(co)
 
 
+def wait_for_async_task(task: asyncio.Task):
+    return wrap_as_sync(asyncio.wait([task], loop=loop))()
+
+
+def start_asyncio():
+    global ref_count
+    with ref_count_lock:
+        if ref_count == 0:
+            async_executor.start()
+        ref_count = ref_count + 1
+
+
+def stop_asyncio():
+    global ref_count
+    with ref_count_lock:
+        ref_count = ref_count - 1
+        if ref_count == 0:
+            async_executor.stop()
+
+
+def join_asyncio():
+    async_executor.join()
+
+ref_count = 0
+ref_count_lock = threading.Lock()
 async_executor: "AsyncExecutor" = AsyncExecutor()
 loop = async_executor.loop
