@@ -155,7 +155,7 @@ CFutureReqOrderModifyField = {
     "ErrorDescription": "string",
 }
 
-CFutureRspOrderInsertField = CFutureRspOrderModifyField
+CFutureRspOrderModifyField = CFutureRspOrderInsertField
 
 CFutureReqOrderCancelField = {
     "UserId": "string",
@@ -599,9 +599,9 @@ CFutureRtnCapitalField = {
     "SellNeedAddMargin": "double",
 }
 
-CFutureRtnOrderField = CFutureRtnPositionField
+CFutureRtnPositionField = CFutureRtnOrderField
 
-CFutureRspTradeField = CFutureRtnTradeField
+CFutureRtnTradeField = CFutureRspTradeField
 
 CFutureReqGetQuestionField = {
     "Unused": "int",
@@ -656,7 +656,7 @@ CFutureQryTotalPositionField = {
     "ErrorDescription": "string",
 }
 
-CFutureRtnOrderField = CFutureRspTotalPositionField
+CFutureRspTotalPositionField = CFutureRtnOrderField
 
 CFutureQryStrategyField = {
     "ExchangeNo": "string",

@@ -58,7 +58,7 @@ class StructGenerator:
         words = line.split(" ")
         name = words[1]
         value = words[2]
-        new_line = f"{name} = {value}\n\n"
+        new_line = f"{value} = {name}\n\n"
         self.f_struct.write(new_line)
         
     def process_declare(self, line: str):

@@ -14,9 +14,9 @@ class IFutureEvent
 {
 	//状态函数
 public:
-	virtual void OnFrontConnected() {};
-	virtual void OnFrontDisconnected(int iReason) {};
-	virtual void OnHeartBeatWarning(int iTimeLapse) {};
+	virtual void OnFrontConnected(){};
+	virtual void OnFrontDisconnected(int iReason){};
+	virtual void OnHeartBeatWarning(int iTimeLapse){};
 
 	//请求函数
 public:
@@ -54,8 +54,8 @@ public:
 	virtual void OnRspQryInstrument(CFutureRspInstrumentField *pRspInstrument, CFutureRspInfoField *pRspInfo, int iRequestID, bool bIsLast) {}
 	virtual void OnRspQryExchangeTime(CFutureRspExchangeTimeField *pRspExchangeTime, CFutureRspInfoField *pRspInfo, int iRequestID, bool bIsLast) {}
 	virtual void OnRspQryCommodityTime(CFutureRspCommodityTimeField *pRspCommodityTime, CFutureRspInfoField *pRspInfo, int iRequestID, bool bIsLast) {}
-	virtual void OnRspQryTotalPosition(CFutureRspTotalPositionField* pRspTotalPosition, CFutureRspInfoField *pRspInfo, int iRequestID, bool bIsLast) {}
-	virtual void OnRspQryStrategyDetail(CFutureRspStrategyDetailField* pRspStrategyDetail, CFutureRspInfoField *pRspInfo, int iRequestID, bool bIsLast) {}
+	virtual void OnRspQryTotalPosition(CFutureRspTotalPositionField *pRspTotalPosition, CFutureRspInfoField *pRspInfo, int iRequestID, bool bIsLast) {}
+	virtual void OnRspQryStrategyDetail(CFutureRspStrategyDetailField *pRspStrategyDetail, CFutureRspInfoField *pRspInfo, int iRequestID, bool bIsLast) {}
 };
 
 class DA_API_EXPORT CFutureApi
@@ -63,12 +63,12 @@ class DA_API_EXPORT CFutureApi
 	// 静态函数
 public:
 	static const char *GetVersion();
-	static CFutureApi *CreateFutureApi(bool bRecordLog, const char* lpszLogFileName = "Future.log");
+	static CFutureApi *CreateFutureApi(bool bRecordLog, const char *lpszLogFileName = "Future.log");
 
 	// 构造函数
 public:
-	CFutureApi() {};
-	virtual ~CFutureApi() {};
+	CFutureApi(){};
+	virtual ~CFutureApi(){};
 
 	// 初始化函数
 public:
@@ -90,7 +90,7 @@ public:
 	virtual bool ReqOrderModify(CFutureReqOrderModifyField *pReqOrderModify, int iRequestID) = 0;
 	virtual bool ReqOrderCancel(CFutureReqOrderCancelField *pReqOrderCancel, int iRequestID) = 0;
 	virtual bool ReqPasswordUpdate(CFutureReqPasswordUpdateField *pReqPasswordUpdate, int iRequestID) = 0;
-	
+
 	// 查询函数
 public:
 	virtual bool ReqQryOrder(CFutureQryOrderField *pQryOrder, int iRequestID) = 0;
@@ -108,4 +108,3 @@ public:
 	virtual bool ReqQryTotalPosition(CFutureQryTotalPositionField *pQryTotalPosition, int iRequestID) = 0;
 	virtual bool ReqQryStrategyDetail(CFutureQryStrategyDetailField *pQryStrategyDetail, int iRequestID) = 0;
 };
-

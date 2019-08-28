@@ -12,13 +12,13 @@
 
 class IMarketEvent
 {
-	//×´Ì¬º¯Êý
+	//×´Ì¬ï¿½ï¿½ï¿½ï¿½
 public:
 	virtual void OnFrontConnected() {};
 	virtual void OnFrontDisconnected(int iReason) {};
 	virtual void OnHeartBeatWarning(int iTimeLapse) {};
 
-	//ÇëÇóº¯Êý
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 public:
 	virtual void OnRspRawData(const char* rawData) {}
 	virtual void OnRspUserLogin(CMarketRspInfoField *pRspInfo, int iRequestID, bool bIsLast) {};
@@ -29,17 +29,17 @@ public:
 
 class DA_API_EXPORT CMarketApi
 {
-	// ¾²Ì¬º¯Êý
+	// ï¿½ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½
 public:
 	static const char *GetVersion();
 	static CMarketApi *CreateMarketApi(bool bRecordLog, const char* lpszLogFileName = "Market.log");
 
-	// ¹¹Ôìº¯Êý
+	// ï¿½ï¿½ï¿½ìº¯ï¿½ï¿½
 public:
 	CMarketApi() {};
 	virtual ~CMarketApi() {};
 
-	// ³õÊ¼»¯º¯Êý
+	// ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 public:
 	virtual bool Init() = 0;
 	virtual void Release() = 0;
@@ -47,11 +47,11 @@ public:
 	virtual void RegisterSpi(IMarketEvent *pIMarketEvent) = 0;
 	virtual void RegisterNameServer(const char *pszNsAddress) = 0;
 
-	// ÇëÇóº¯Êý
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 public:
 	virtual bool ReqUserLogin(CMarketReqUserLoginField *pReqUserLoginField, int iRequestID) = 0;
-	virtual bool ReqBrokerData(CMarketReqBrokerDataField* pReqBrokerDataField, int iRequestID) = 0;
-	virtual bool ReqMarketData(CMarketReqMarketDataField* pReqMarketDataField, int iRequestID) = 0;
+	virtual bool ReqBrokerData(CMarketReqBrokerDataField *pReqBrokerDataField, int iRequestID) = 0;
+	virtual bool ReqMarketData(CMarketReqMarketDataField *pReqMarketDataField, int iRequestID) = 0;
 };
 
 
