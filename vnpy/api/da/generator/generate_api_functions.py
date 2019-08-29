@@ -103,7 +103,7 @@ class ApiGenerator:
                         args_list.append("int reqid")
                     elif type_ == "bool":
                         args_list.append("bool last")
-                    elif type_ == "CMarketRspInfoField":
+                    elif "RspInfoField" in type_:
                         args_list.append("const dict &error")
                     else:
                         args_list.append("const dict &data")
@@ -143,7 +143,7 @@ class ApiGenerator:
                         args.append(field)
                     elif type_ == "char*":
                         args.append(f"string({field})")
-                    elif type_ == "CMarketRspInfoField":
+                    elif "RspInfoField" in type_:
                         args.append("error")
 
                         f.write("\tdict error;\n")
@@ -220,7 +220,7 @@ class ApiGenerator:
                     elif type_ == "bool":
                         args.append("bool last")
                         bind_args.append("last")
-                    elif type_ == "CMarketRspInfoField":
+                    elif "RspInfoField" in type_:
                         args.append("const dict &error")
                         bind_args.append("error")
                     else:

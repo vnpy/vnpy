@@ -30,6 +30,12 @@
     <ClInclude Include="..\..\include\da\DADataType.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\vnda.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="vndastock.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

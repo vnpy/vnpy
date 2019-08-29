@@ -25,61 +25,61 @@ void StockApi::OnRspNeedVerify(bool bFirstLogin, bool bHasSetQA)
 void StockApi::OnRspUserLogin(CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
 {
 	gil_scoped_acquire acquire;
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspUserLogin(data, iRequestID, bIsLast);
+	this->onRspUserLogin(error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspUserLogout(CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
 {
 	gil_scoped_acquire acquire;
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspUserLogout(data, iRequestID, bIsLast);
+	this->onRspUserLogout(error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspVerifyCode(CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
 {
 	gil_scoped_acquire acquire;
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspVerifyCode(data, iRequestID, bIsLast);
+	this->onRspVerifyCode(error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspSafeVerify(CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
 {
 	gil_scoped_acquire acquire;
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspSafeVerify(data, iRequestID, bIsLast);
+	this->onRspSafeVerify(error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspSetVerifyQA(CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
 {
 	gil_scoped_acquire acquire;
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspSetVerifyQA(data, iRequestID, bIsLast);
+	this->onRspSetVerifyQA(error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspAccount(CStockRspAccountField *pRspAccount, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -135,13 +135,13 @@ void StockApi::OnRspAccount(CStockRspAccountField *pRspAccount, CStockRspInfoFie
 		data["CanTradeStockAU"] = toUtf(pRspAccount->CanTradeStockAU);
 		data["NyFlag"] = toUtf(pRspAccount->NyFlag);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspAccount(data, data, iRequestID, bIsLast);
+	this->onRspAccount(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspQuestion(CStockRspQuestionField *pRspQuestion, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -155,13 +155,13 @@ void StockApi::OnRspQuestion(CStockRspQuestionField *pRspQuestion, CStockRspInfo
 		data["QuestionCN"] = toUtf(pRspQuestion->QuestionCN);
 		data["QuestionEN"] = toUtf(pRspQuestion->QuestionEN);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspQuestion(data, data, iRequestID, bIsLast);
+	this->onRspQuestion(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspOrderInsert(CStockRspOrderInsertField *pRspOrderInsert, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -203,13 +203,13 @@ void StockApi::OnRspOrderInsert(CStockRspOrderInsertField *pRspOrderInsert, CSto
 		data["ExchangeTime"] = toUtf(pRspOrderInsert->ExchangeTime);
 		data["CancelTime"] = toUtf(pRspOrderInsert->CancelTime);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspOrderInsert(data, data, iRequestID, bIsLast);
+	this->onRspOrderInsert(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspOrderModify(CStockRspOrderModifyField *pRspOrderModify, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -251,13 +251,13 @@ void StockApi::OnRspOrderModify(CStockRspOrderModifyField *pRspOrderModify, CSto
 		data["ExchangeTime"] = toUtf(pRspOrderModify->ExchangeTime);
 		data["CancelTime"] = toUtf(pRspOrderModify->CancelTime);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspOrderModify(data, data, iRequestID, bIsLast);
+	this->onRspOrderModify(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspOrderCancel(CStockRspOrderCancelField *pRspOrderCancel, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -287,13 +287,13 @@ void StockApi::OnRspOrderCancel(CStockRspOrderCancelField *pRspOrderCancel, CSto
 		data["ErrorCode"] = toUtf(pRspOrderCancel->ErrorCode);
 		data["IsRiskOrder"] = toUtf(pRspOrderCancel->IsRiskOrder);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspOrderCancel(data, data, iRequestID, bIsLast);
+	this->onRspOrderCancel(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspPasswordUpdate(CStockRspPasswordUpdateField *pRspPasswordUpdate, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -306,13 +306,13 @@ void StockApi::OnRspPasswordUpdate(CStockRspPasswordUpdateField *pRspPasswordUpd
 		data["OldPassword"] = toUtf(pRspPasswordUpdate->OldPassword);
 		data["NewPassword"] = toUtf(pRspPasswordUpdate->NewPassword);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspPasswordUpdate(data, data, iRequestID, bIsLast);
+	this->onRspPasswordUpdate(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRtnTrade(CStockRtnTradeField *pRtnTrade, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -344,13 +344,13 @@ void StockApi::OnRtnTrade(CStockRtnTradeField *pRtnTrade, CStockRspInfoField *pR
 		data["AddReduce"] = toUtf(pRtnTrade->AddReduce);
 		data["ErrorDescription"] = toUtf(pRtnTrade->ErrorDescription);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRtnTrade(data, data, iRequestID, bIsLast);
+	this->onRtnTrade(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRtnOrder(CStockRtnOrderField *pRtnOrder, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -382,13 +382,13 @@ void StockApi::OnRtnOrder(CStockRtnOrderField *pRtnOrder, CStockRspInfoField *pR
 		data["CurrPrice"] = pRtnOrder->CurrPrice;
 		data["FloatProfit"] = pRtnOrder->FloatProfit;
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRtnOrder(data, data, iRequestID, bIsLast);
+	this->onRtnOrder(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRtnCapital(CStockRtnCapitalField *pRtnCapital, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -444,13 +444,13 @@ void StockApi::OnRtnCapital(CStockRtnCapitalField *pRtnCapital, CStockRspInfoFie
 		data["SellInterest"] = pRtnCapital->SellInterest;
 		data["SellNeedAddMargin"] = pRtnCapital->SellNeedAddMargin;
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRtnCapital(data, data, iRequestID, bIsLast);
+	this->onRtnCapital(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRtnPosition(CStockRtnPositionField *pRtnPosition, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -483,13 +483,13 @@ void StockApi::OnRtnPosition(CStockRtnPositionField *pRtnPosition, CStockRspInfo
 		data["SellFrozenMoney"] = pRtnPosition->SellFrozenMoney;
 		data["OpenPrice"] = pRtnPosition->OpenPrice;
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRtnPosition(data, data, iRequestID, bIsLast);
+	this->onRtnPosition(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspQryTick(CStockRspTickField *pRspTick, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -505,13 +505,13 @@ void StockApi::OnRspQryTick(CStockRspTickField *pRspTick, CStockRspInfoField *pR
 		data["DotNum"] = toUtf(pRspTick->DotNum);
 		data["LowerTick"] = toUtf(pRspTick->LowerTick);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspQryTick(data, data, iRequestID, bIsLast);
+	this->onRspQryTick(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspQryOrder(CStockRspOrderField *pRspOrder, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -553,13 +553,13 @@ void StockApi::OnRspQryOrder(CStockRspOrderField *pRspOrder, CStockRspInfoField 
 		data["ExchangeTime"] = toUtf(pRspOrder->ExchangeTime);
 		data["CancelTime"] = toUtf(pRspOrder->CancelTime);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspQryOrder(data, data, iRequestID, bIsLast);
+	this->onRspQryOrder(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspQryTrade(CStockRspTradeField *pRspTrade, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -591,13 +591,13 @@ void StockApi::OnRspQryTrade(CStockRspTradeField *pRspTrade, CStockRspInfoField 
 		data["AddReduce"] = toUtf(pRspTrade->AddReduce);
 		data["ErrorDescription"] = toUtf(pRspTrade->ErrorDescription);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspQryTrade(data, data, iRequestID, bIsLast);
+	this->onRspQryTrade(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspQryCapital(CStockRspCapitalField *pRspCapital, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -649,13 +649,13 @@ void StockApi::OnRspQryCapital(CStockRspCapitalField *pRspCapital, CStockRspInfo
 		data["RiskRate"] = toUtf(pRspCapital->RiskRate);
 		data["ErrorDescription"] = toUtf(pRspCapital->ErrorDescription);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspQryCapital(data, data, iRequestID, bIsLast);
+	this->onRspQryCapital(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspQryVersion(CStockRspVersionField *pRspVersion, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -670,13 +670,13 @@ void StockApi::OnRspQryVersion(CStockRspVersionField *pRspVersion, CStockRspInfo
 		data["VersionContent_CN"] = toUtf(pRspVersion->VersionContent_CN);
 		data["VersionContent_US"] = toUtf(pRspVersion->VersionContent_US);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspQryVersion(data, data, iRequestID, bIsLast);
+	this->onRspQryVersion(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspQryPosition(CStockRspPositionField *pRspPosition, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -709,13 +709,13 @@ void StockApi::OnRspQryPosition(CStockRspPositionField *pRspPosition, CStockRspI
 		data["SellFrozenMoney"] = pRspPosition->SellFrozenMoney;
 		data["OpenPrice"] = pRspPosition->OpenPrice;
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspQryPosition(data, data, iRequestID, bIsLast);
+	this->onRspQryPosition(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspQryCurrency(CStockRspCurrencyField *pRspCurrency, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -730,13 +730,13 @@ void StockApi::OnRspQryCurrency(CStockRspCurrencyField *pRspCurrency, CStockRspI
 		data["CurrencyName"] = toUtf(pRspCurrency->CurrencyName);
 		data["CurrencyNameEN"] = toUtf(pRspCurrency->CurrencyNameEN);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspQryCurrency(data, data, iRequestID, bIsLast);
+	this->onRspQryCurrency(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspQryExchange(CStockRspExchangeField *pRspExchange, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -750,13 +750,13 @@ void StockApi::OnRspQryExchange(CStockRspExchangeField *pRspExchange, CStockRspI
 		data["SettleType"] = toUtf(pRspExchange->SettleType);
 		data["NameEN"] = toUtf(pRspExchange->NameEN);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspQryExchange(data, data, iRequestID, bIsLast);
+	this->onRspQryExchange(data, error, iRequestID, bIsLast);
 };
 
 void StockApi::OnRspQryInstrument(CStockRspInstrumentField *pRspInstrument, CStockRspInfoField *pRspInfo, int iRequestID, bool bIsLast) 
@@ -815,12 +815,12 @@ void StockApi::OnRspQryInstrument(CStockRspInstrumentField *pRspInstrument, CSto
 		data["CallPutFlag"] = toUtf(pRspInstrument->CallPutFlag);
 		data["Publisher"] = toUtf(pRspInstrument->Publisher);
 	}
-	dict data;
+	dict error;
 	if (pRspInfo)
 	{
-		data["ErrorID"] = pRspInfo->ErrorID;
-		data["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
+		error["ErrorID"] = pRspInfo->ErrorID;
+		error["ErrorMsg"] = toUtf(pRspInfo->ErrorMsg);
 	}
-	this->onRspQryInstrument(data, data, iRequestID, bIsLast);
+	this->onRspQryInstrument(data, error, iRequestID, bIsLast);
 };
 

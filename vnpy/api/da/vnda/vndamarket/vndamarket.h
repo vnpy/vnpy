@@ -42,7 +42,7 @@ public:
 	void OnRspRawData(const char* rawData);
 	void OnRspUserLogin(CMarketRspInfoField *pRspInfo, int iRequestID, bool bIsLast);
 	void OnRspTradeDate(CMarketRspTradeDateField *pRspTradeDate, CMarketRspInfoField *pRspInfo, int iRequestID, bool bIsLast);
-		void OnRspBrokerData(CMarketRspBrokerDataField *pRspBrokerData, CMarketRspInfoField *pRspInfo, int iRequestID, bool bIsLast);
+	void OnRspBrokerData(CMarketRspBrokerDataField *pRspBrokerData, CMarketRspInfoField *pRspInfo, int iRequestID, bool bIsLast);
 	void OnRspMarketData(CMarketRspMarketDataField *pRspMarketData, CMarketRspInfoField *pRspInfo, int iRequestID, bool bIsLast);
 
 	//-------------------------------------------------------------------------------------

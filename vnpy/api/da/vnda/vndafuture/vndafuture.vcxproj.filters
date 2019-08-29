@@ -30,6 +30,12 @@
     <ClInclude Include="..\..\include\da\DAFutureApi.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\vnda.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="vndafuture.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
