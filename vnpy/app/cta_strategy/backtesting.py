@@ -1100,8 +1100,14 @@ class DailyResult:
         # Holding pnl is the pnl from holding position at day start
         self.start_pos = start_pos
         self.end_pos = start_pos
-        self.holding_pnl = self.start_pos * \
-            (self.close_price - self.pre_close) * size
+        
+        # The First Day
+        if self.pre_close == 0:
+            self.holding_pnl = 0
+        # THe second day and past
+        else:
+            self.holding_pnl = self.start_pos * \
+                (1 / self.pre_close - 1 / self.close_price) * size * self.pre_close
 
         # Trading pnl is the pnl from new trade during the day
         self.trade_count = len(self.trades)
@@ -1112,14 +1118,14 @@ class DailyResult:
             else:
                 pos_change = -trade.volume
 
-            turnover = trade.price * trade.volume * size
+            turnover = trade.volume * size 
 
             self.trading_pnl += pos_change * \
-                (self.close_price - trade.price) * size
+                (1 / trade.price - 1 / self.close_price) * size * trade.price 
             self.end_pos += pos_change
             self.turnover += turnover
             self.commission += turnover * rate
-            self.slippage += trade.volume * size * slippage
+            self.slippage += trade.volume * size * slippage / trade.price
 
         # Net pnl takes account of commission and slippage cost
         self.total_pnl = self.trading_pnl + self.holding_pnl
