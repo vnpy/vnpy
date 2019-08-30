@@ -164,7 +164,7 @@ class OkexfRestApi(RestClient):
     OKEXF REST API
     """
 
-    def __init__(self, gateway: BaseGateway):
+    def __init__(self, gateway: "OkexfGateway"):
         """"""
         super(OkexfRestApi, self).__init__()
 
@@ -407,8 +407,8 @@ class OkexfRestApi(RestClient):
                     direction=Direction.SHORT,
                     volume=int(pos_data["short_qty"]),
                     frozen=float(pos_data["short_qty"]) - float(pos_data["short_avail_qty"]),
-                    price=float(["short_avg_cost"]),
-                    pnl=float(["realised_pnl"]),
+                    price=float(pos_data["short_avg_cost"]),
+                    pnl=float(pos_data["realised_pnl"]),
                     gateway_name=self.gateway_name,
                 )
                 self.gateway.on_position(pos)
