@@ -358,52 +358,72 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def cci(self, n, array=False):
+    def cci(self, n, log=False, array=False):
         """
         Commodity Channel Index (CCI).
         """
-        result = talib.CCI(self.high, self.low, self.close, n)
+        if log:
+            result = talib.CCI(np.log(self.high), np.log(self.low), np.log(self.close), n)
+        else:   
+            result = talib.CCI(self.high, self.low, self.close, n)
+
         if array:
             return result
         return result[-1]
 
-    def atr(self, n, array=False):
+    def atr(self, n, log=False, array=False):
         """
         Average True Range (ATR).
         """
-        result = talib.ATR(self.high, self.low, self.close, n)
+        if log:
+            result = talib.ATR(np.log(self.high), np.log(self.low), np.log(self.close), n)
+        else:
+            result = talib.ATR(self.high, self.low, self.close, n)
+
         if array:
             return result
         return result[-1]
 
-    def rsi(self, n, array=False):
+    def rsi(self, n, log=False, array=False):
         """
         Relative Strenght Index (RSI).
         """
-        result = talib.RSI(self.close, n)
+        if log:
+            result = talib.RSI(self.close, n)
+        else:
+            result = talib.RSI(np.log(self.close), n)
         if array:
             return result
         return result[-1]
 
-    def macd(self, fast_period, slow_period, signal_period, array=False):
+    def macd(self, fast_period, slow_period, signal_period, log=False, array=False):
         """
         MACD.
         """
-        macd, signal, hist = talib.MACD(
-            self.close, fast_period, slow_period, signal_period
-        )
+        if log:
+            macd, signal, hist = talib.MACD(
+                np.log(self.close), fast_period, slow_period, signal_period
+            )
+        else:
+            macd, signal, hist = talib.MACD(
+                self.close, fast_period, slow_period, signal_period
+            )
         if array:
             return macd, signal, hist
         return macd[-1], signal[-1], hist[-1]
 
-    def adx(self, n, array=False):
+    def adx(self, n, log=False, array=False):
         """
         ADX.
         """
-        result = talib.ADX(self.high, self.low, self.close, n)
+        if log:
+            result = talib.ADX(np.log(self.high), np.log(self.low), np.log(self.close), n)
+        else:
+            result = talib.ADX(self.high, self.low, self.close, n)
         if array:
             return result
         return result[-1]
+        
 
     def boll(self, n, dev, array=False):
         """
