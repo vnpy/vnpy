@@ -37,37 +37,39 @@ from vnpy.trader.utility import get_folder_path
 from vnpy.trader.event import EVENT_TIMER
 
 
-# STATUS_DA2VT = {
-#     THOST_FTDC_OAS_Submitted: Status.SUBMITTING,
-#     THOST_FTDC_OAS_Accepted: Status.SUBMITTING,
-#     THOST_FTDC_OAS_Rejected: Status.REJECTED,
-#     THOST_FTDC_OST_NoTradeQueueing: Status.NOTTRADED,
-#     THOST_FTDC_OST_PartTradedQueueing: Status.PARTTRADED,
-#     THOST_FTDC_OST_AllTraded: Status.ALLTRADED,
-#     THOST_FTDC_OST_Canceled: Status.CANCELLED
-# }
+STATUS_DA2VT = {
+    "1": Status.SUBMITTING,,
+    "2": Status.NOTTRADED,
+    "3": Status.PARTTRADED,
+    "4": Status.ALLTRADED,
+    "5": Status.CANCELLED,
+    "6": Status.CANCELLED,
+    "7": Status.REJECTED,
+    "8": Status.SUBMITTING,
+    "9": Status.SUBMITTING,
+    "A": Status.SUBMITTING,
+}
 
-# DIRECTION_VT2DA = {
-#     Direction.LONG: THOST_FTDC_D_Buy,
-#     Direction.SHORT: THOST_FTDC_D_Sell
-# }
-# DIRECTION_DA2VT = {v: k for k, v in DIRECTION_VT2DA.items()}
-# DIRECTION_DA2VT[THOST_FTDC_PD_Long] = Direction.LONG
-# DIRECTION_DA2VT[THOST_FTDC_PD_Short] = Direction.SHORT
+DIRECTION_VT2DA = {
+    Direction.LONG: "1",
+    Direction.SHORT: "2"
+}
+DIRECTION_DA2VT = {v: k for k, v in DIRECTION_VT2DA.items()}
 
-# ORDERTYPE_VT2DA = {
-#     OrderType.LIMIT: THOST_FTDC_OPT_LimitPrice,
-#     OrderType.MARKET: THOST_FTDC_OPT_AnyPrice
-# }
-# ORDERTYPE_DA2VT = {v: k for k, v in ORDERTYPE_VT2DA.items()}
 
-# OFFSET_VT2DA = {
-#     Offset.OPEN: THOST_FTDC_OF_Open,
-#     Offset.CLOSE: THOST_FTDC_OFEN_Close,
-#     Offset.CLOSETODAY: THOST_FTDC_OFEN_CloseToday,
-#     Offset.CLOSEYESTERDAY: THOST_FTDC_OFEN_CloseYesterday,
-# }
-# OFFSET_DA2VT = {v: k for k, v in OFFSET_VT2DA.items()}
+ORDERTYPE_VT2DA = {
+    OrderType.LIMIT: "1",
+    OrderType.MARKET: "2"
+}
+ORDERTYPE_DA2VT = {v: k for k, v in ORDERTYPE_VT2DA.items()}
+
+OFFSET_VT2DA = {
+    Offset.OPEN: "1",
+    Offset.CLOSE: "2",
+    Offset.CLOSETODAY: "3",
+    Offset.CLOSEYESTERDAY: "4",
+}
+OFFSET_DA2VT = {v: k for k, v in OFFSET_VT2DA.items()}
 
 EXCHANGE_DA2VT = {
     "APEX": Exchange.APEX,
@@ -522,38 +524,75 @@ class DaFutureApi(FutureApi):
         if last:
             self.gateway.write_log("合约信息查询成功")
 
-    def onRtnOrder(self, data: dict):
+    def onRspQryOrder(self, data: dict, error: dict, reqid: int, last: bool):
         """
-        Callback of order status update.
+        Callback of order query.
         """
-        symbol = data["InstrumentID"]
-        exchange = symbol_exchange_map.get(symbol, "")
-        if not exchange:
-            self.order_data.append(data)
-            return
-
-        frontid = data["FrontID"]
-        sessionid = data["SessionID"]
-        order_ref = data["OrderRef"]
-        orderid = f"{frontid}_{sessionid}_{order_ref}"
-
         order = OrderData(
-            symbol=symbol,
-            exchange=exchange,
-            orderid=orderid,
-            type=ORDERTYPE_DA2VT[data["OrderPriceType"]],
-            direction=DIRECTION_DA2VT[data["Direction"]],
-            offset=OFFSET_DA2VT[data["CombOffsetFlag"]],
-            price=data["LimitPrice"],
-            volume=data["VolumeTotalOriginal"],
-            traded=data["VolumeTraded"],
-            status=STATUS_DA2VT[data["OrderStatus"]],
-            time=data["InsertTime"],
+            symbol=data["TreatyCode"],
+            exchange=EXCHANGE_DA2VT[data["ExchangeCode"]],
+            orderid=data["LocalNo"],
+            type=ORDERTYPE_DA2VT[data["PriceType"]],
+            direction=DIRECTION_DA2VT[data["BuySale"]],
+            offset=OFFSET_DA2VT[data["AddReduce"]],
+            price=float(data["OrderPrice"]),
+            volume=int(data["OrderNumber"]),
+            traded=int(data["FilledNumber"]),
+            status=STATUS_DA2VT[data["OrderState"]],
+            time=data["OrderTime"],
             gateway_name=self.gateway_name
         )
         self.gateway.on_order(order)
 
-        self.sysid_orderid_map[data["OrderSysID"]] = orderid
+    def onRspQryTrade(self, data: dict, error: dict, reqid: int, last: bool):
+        """
+        Callback of trade query.
+        """
+        trade = TradeData(
+            symbol=data["TreatyCode"],
+            exchange=EXCHANGE_DA2VT[data["ExchangeCode"]],
+            orderid=data["LocalNo"],
+            tradeid=data["FilledNo"]
+            direction=DIRECTION_DA2VT[data["BuySale"]],
+            offset=OFFSET_DA2VT[data["AddReduce"]],
+            price=float(data["FilledPrice"]),
+            volume=int(data["FilledNumber"]),
+            time=data["FilledTime"],
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_trade(trade)
+
+    def onRspQryCapital(self, data: dict, error: dict, reqid: int, last: bool):
+        """
+        Callback of trade query.
+        """
+        account = AccountData(
+            accountid=data["UserId"],
+            balance=float(data["TodayBalance"])
+            frozen=float(data["FreezenMoney"]),
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_account(account)
+
+    def onRspQryPosition(self, data: dict, error: dict, reqid: int, last: bool):
+        """
+        Callback of trade query.
+        """
+        position = PositionData(
+            symbol=data["ContCode"],
+            exchange=EXCHANGE_DA2VT[data["ExchangeNo"]],
+            direction=DIRECTION_DA2VT[data["Direct"]],
+            volume=data["HoldVol"],
+            price=data["HoldPrice"],
+            gateway_name=self.gateway_name
+        )   
+        self.gateway.on_position(position)
+
+    def onRtnOrder(self, data: dict):
+        """
+        Callback of order status update.
+        """
+        pass
 
     def onRtnTrade(self, data: dict):
         """
@@ -580,6 +619,18 @@ class DaFutureApi(FutureApi):
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)
+
+    def update_trade(self, data: dict):
+        """"""
+        pass
+
+    def update_account(self, data: dict):
+        """"""
+        pass
+
+    def update_position(self, data: dict):
+        """"""
+        pass
 
     def connect(
         self,
@@ -711,22 +762,28 @@ class DaFutureApi(FutureApi):
         Query account balance data.
         """
         self.reqid += 1
-        self.reqQryTradingAccount({}, self.reqid)
+        self.reqQryCapital({}, self.reqid)
+    
+    def query_order(self):
+        """
+        Query account balance data.
+        """
+        self.reqid += 1
+        self.reqQryOrder({}, self.reqid)
+
+    def query_trade(self):
+        """
+        Query account balance data.
+        """
+        self.reqid += 1
+        self.reqQryTrade({}, self.reqid)
 
     def query_position(self):
         """
         Query position holding data.
         """
-        if not symbol_exchange_map:
-            return
-
-        req = {
-            "BrokerID": self.brokerid,
-            "InvestorID": self.userid
-        }
-
         self.reqid += 1
-        self.reqQryInvestorPosition(req, self.reqid)
+        self.reqQryPosition({}, self.reqid)
     
     def query_contract(self, exchange, page=1):
         """
