@@ -7,7 +7,7 @@ from copy import copy
 import wmi
 
 from vnpy.api.da import (
-    MarketApi, 
+    MarketApi,
     FutureApi,
     DAF_SUB_Append,
     DAF_TYPE_Future
@@ -33,8 +33,6 @@ from vnpy.trader.object import (
     CancelRequest,
     SubscribeRequest,
 )
-from vnpy.trader.utility import get_folder_path
-from vnpy.trader.event import EVENT_TIMER
 
 
 STATUS_DA2VT = {
@@ -73,15 +71,7 @@ OFFSET_DA2VT = {v: k for k, v in OFFSET_VT2DA.items()}
 
 EXCHANGE_DA2VT = {
     "APEX": Exchange.APEX,
-    # "SGXQ": Exchange.SGX,
-    # "NYMEX": Exchange.NYMEX,
-    # "LME": Exchange.LME,
-    # "CME_CBT": Exchange.CBOT,
-    # "HKEX": Exchange.HKFE,
-    "CME": Exchange.CME,
-    # "TOCOM": Exchange.TOCOM,
-    # "KRX": Exchange.KRX,
-    # "ICE": Exchange.ICE
+    "CME": Exchange.CME
 }
 EXCHANGE_VT2DA = {v: k for k, v in EXCHANGE_DA2VT.items()}
 
@@ -90,10 +80,10 @@ PRODUCT_DA2VT = {
     "O": Product.OPTION,
 }
 
-# OPTIONTYPE_DA2VT = {
-#     THOST_FTDC_CP_CallOptions: OptionType.CALL,
-#     THOST_FTDC_CP_PutOptions: OptionType.PUT
-# }
+OPTIONTYPE_DA2VT = {
+    "R": OptionType.CALL,
+    "F": OptionType.PUT
+}
 
 
 symbol_name_map = {}
@@ -278,8 +268,7 @@ class DaMarketApi(MarketApi):
 
         # If not connected, then start connection first.
         if not self.connect_status:
-            # path = get_folder_path(self.gateway_name.lower())
-            self.createMarketApi(True, "market_log.txt")
+            self.createMarketApi(False, "market_log.txt")
 
             self.registerNameServer(address)
             self.init()
@@ -315,9 +304,9 @@ class DaMarketApi(MarketApi):
             if not da_exchange:
                 self.gateway.write_log(f"不支持的交易所{req.exchange.value}")
                 return
-            
+
             da_code = f"{da_exchange},{req.symbol}"
-            
+
             da_req = {
                 "MarketType": DAF_TYPE_Future,
                 "SubscMode": DAF_SUB_Append,
@@ -325,7 +314,7 @@ class DaMarketApi(MarketApi):
                 "MarketTrcode": da_code,
             }
             self.reqid += 1
-            i = self.reqMarketData(da_req, self.reqid)
+            self.reqMarketData(da_req, self.reqid)
 
         self.subscribed[req.symbol] = req
 
@@ -382,7 +371,7 @@ class DaFutureApi(FutureApi):
             # 查询可交易合约
             for exchange in EXCHANGE_DA2VT.values():
                 self.query_contract(exchange)
-            
+
             # 查询账户信息
             self.query_account()
             self.query_position()
@@ -392,7 +381,7 @@ class DaFutureApi(FutureApi):
         else:
             self.login_failed = True
             self.gateway.write_error("交易服务器登录失败", error)
-    
+
     def onRspNeedVerify(self, firstLogin: bool, hasSetQA: bool):
         """"""
         print("on rsp need verify", firstLogin, hasSetQA)
@@ -410,7 +399,7 @@ class DaFutureApi(FutureApi):
             order.time = data["OrderTime"]
 
             self.order_info[order.orderid] = (data["OrderNo"], data["SystemNo"])
-        
+
         self.gateway.on_order(copy(order))
 
     def onRspOrderCancel(self, data: dict, error: dict, reqid: int, last: bool):
@@ -447,6 +436,11 @@ class DaFutureApi(FutureApi):
                 pricetick=data["UpperTick"],
                 gateway_name=self.gateway_name
             )
+
+            if product == Product.OPTION:
+                contract.option_type = OPTIONTYPE_DA2VT[data["OptionType"]]
+                contract.option_strike = to_float(data["OptionStrikePrice"])
+                contract.option_expiry = datetime.strptime(data["LastTradeDay"], "%Y%m%d")
 
             symbol_name_map[contract.vt_symbol] = contract.name
             symbol_currency_map[contract.symbol] = data["CommodityFCurrencyNo"]
@@ -539,7 +533,7 @@ class DaFutureApi(FutureApi):
                 volume=data["BuyHoldNumber"],
                 price=data["BuyHoldOpenPrice"],
                 gateway_name=self.gateway_name
-            )   
+            )
             self.gateway.on_position(long_position)
 
             short_position = PositionData(
@@ -567,7 +561,7 @@ class DaFutureApi(FutureApi):
             return
 
         order.traded = data["FilledNumber"]
-        
+
         if data["IsCanceled"] == "1":
             order.status = Status.CANCELLED
         elif order.traded == order.volume:
@@ -584,7 +578,7 @@ class DaFutureApi(FutureApi):
         Callback of trade status update.
         """
         self.update_trade(data)
-    
+
     def onRtnCapital(self, data: dict, error: dict, reqid: int, last: bool):
         """
         Callback of capital status update.
@@ -611,7 +605,7 @@ class DaFutureApi(FutureApi):
             volume=data["BuyHoldNumber"],
             price=data["BuyHoldOpenPrice"],
             gateway_name=self.gateway_name
-        )   
+        )
         self.gateway.on_position(long_position)
 
         short_position = PositionData(
@@ -637,10 +631,9 @@ class DaFutureApi(FutureApi):
         self.userid = userid
         self.password = password
         self.auth_code = auth_code
-        
+
         if not self.connect_status:
-            #path = get_folder_path(self.gateway_name.lower())
-            self.createFutureApi(True, "future_log.txt")
+            self.createFutureApi(False, "future_log.txt")
 
             self.registerNameServer(address)
             self.init()
@@ -691,7 +684,7 @@ class DaFutureApi(FutureApi):
 
         currency = symbol_currency_map[req.symbol]
         account_no = currency_account_map[currency]
-        
+
         da_req = {
             "UserId": self.userid,
             "AccountNo": account_no,
@@ -746,7 +739,7 @@ class DaFutureApi(FutureApi):
         """
         self.reqid += 1
         self.reqQryCapital({}, self.reqid)
-    
+
     def query_order(self):
         """
         Query account balance data.
@@ -771,7 +764,7 @@ class DaFutureApi(FutureApi):
 
         self.reqid += 1
         self.reqQryTotalPosition(da_req, self.reqid)
-    
+
     def query_contract(self, exchange, page=1):
         """
         Query contract data.
@@ -831,4 +824,3 @@ def to_float(data: str) -> float:
         return 0.0
     else:
         return float(data)
-        
