@@ -213,7 +213,7 @@ class BaseGateway(ABC):
     def send_orders(self, reqs: Sequence[OrderRequest]):
         """
         Send a batch of orders to server.
-        Use a for loop of send_order function by default. 
+        Use a for loop of send_order function by default.
         Reimplement this function if batch order supported on server.
         """
         vt_orderids = []
@@ -227,7 +227,7 @@ class BaseGateway(ABC):
     def cancel_orders(self, reqs: Sequence[CancelRequest]):
         """
         Cancel a batch of orders to server.
-        Use a for loop of cancel_order function by default. 
+        Use a for loop of cancel_order function by default.
         Reimplement this function if batch cancel supported on server.
         """
         for req in reqs:

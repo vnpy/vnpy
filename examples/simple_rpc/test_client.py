@@ -7,7 +7,7 @@ from vnpy.rpc import RpcClient
 
 class TestClient(RpcClient):
     """
-    Test RpcClient   
+    Test RpcClient
     """
 
     def __init__(self):

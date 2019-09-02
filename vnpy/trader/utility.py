@@ -119,7 +119,7 @@ def round_to(value: float, target: float):
 
 class BarGenerator:
     """
-    For: 
+    For:
     1. generating 1 minute bar data from tick data
     2. generateing x minute bar/x hour bar data from 1 minute data
 
@@ -439,6 +439,16 @@ class ArrayManager(object):
         if array:
             return up, down
         return up[-1], down[-1]
+
+    def aroon(self, n, array=False):
+        """
+        Aroon indicator.
+        """
+        aroon_up, aroon_down = talib.AROON(self.high, self.low, n)
+
+        if array:
+            return aroon_up, aroon_down
+        return aroon_up[-1], aroon_down[-1]
 
 
 def virtual(func: "callable"):
