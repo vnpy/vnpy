@@ -281,10 +281,7 @@ class OkexsRestApi(RestClient):
         )
 
     def query_accounts(self):
-        """
-        :note: This API not functioning well currently. Due to API replies empty data.
-        :return:
-        """
+        """"""
         self.add_request(
             "GET",
             "/api/swap/v3/accounts",
@@ -355,13 +352,14 @@ class OkexsRestApi(RestClient):
         for info in data['info']:
             account = _parse_account_info(info, gateway_name=self.gateway_name)
             self.gateway.on_account(account)
+
         self.gateway.write_log("账户资金查询成功")
 
     def on_query_position(self, datas, request):
         """"""
         for data in datas:
             holdings = data['holding']
-            assert 'crossed' == data['margin_mode'], _("只支持全仓模式")
+            
             for holding in holdings:
                 symbol = holding["instrument_id"].upper()
                 pos = _parse_position_holding(holding, symbol=symbol,
