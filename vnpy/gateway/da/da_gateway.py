@@ -454,26 +454,27 @@ class DaFutureApi(FutureApi):
         """
         Callback of order query.
         """
-        order = OrderData(
-            symbol=data["TreatyCode"],
-            exchange=EXCHANGE_DA2VT[data["ExchangeCode"]],
-            orderid=data["LocalNo"],
-            type=ORDERTYPE_DA2VT[data["PriceType"]],
-            direction=DIRECTION_DA2VT[data["BuySale"]],
-            offset=OFFSET_DA2VT[data["AddReduce"]],
-            price=float(data["OrderPrice"]),
-            volume=int(data["OrderNumber"]),
-            traded=int(data["FilledNumber"]),
-            status=STATUS_DA2VT[data["OrderState"]],
-            time=data["OrderTime"],
-            gateway_name=self.gateway_name
-        )
+        if data["TreatyCode"]:
+            order = OrderData(
+                symbol=data["TreatyCode"],
+                exchange=EXCHANGE_DA2VT[data["ExchangeCode"]],
+                orderid=data["LocalNo"],
+                type=ORDERTYPE_DA2VT[data["PriceType"]],
+                direction=DIRECTION_DA2VT[data["BuySale"]],
+                offset=OFFSET_DA2VT[data["AddReduce"]],
+                price=float(data["OrderPrice"]),
+                volume=int(data["OrderNumber"]),
+                traded=int(data["FilledNumber"]),
+                status=STATUS_DA2VT[data["OrderState"]],
+                time=data["OrderTime"],
+                gateway_name=self.gateway_name
+            )
 
-        self.local_no = max(self.local_no, int(data["LocalNo"]))
-        self.orders[order.orderid] = order
-        self.order_info[order.orderid] = (data["OrderNo"], data["SystemNo"])
+            self.local_no = max(self.local_no, int(data["LocalNo"]))
+            self.orders[order.orderid] = order
+            self.order_info[order.orderid] = (data["OrderNo"], data["SystemNo"])
 
-        self.gateway.on_order(copy(order))
+            self.gateway.on_order(copy(order))
 
         if last:
             self.gateway.write_log("委托信息查询成功")
@@ -482,7 +483,8 @@ class DaFutureApi(FutureApi):
         """
         Callback of trade query.
         """
-        self.update_trade(data)
+        if data["TreatyCode"]:
+            self.update_trade(data)
 
         if last:
             self.gateway.write_log("成交信息查询成功")
