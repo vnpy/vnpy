@@ -20,7 +20,8 @@ from vnpy.trader.ui import MainWindow, create_qapp
 # from vnpy.gateway.huobi import HuobiGateway
 # from vnpy.gateway.bitfinex import BitfinexGateway
 # from vnpy.gateway.onetoken import OnetokenGateway
-# from vnpy.gateway.okexf import OkexfGateway
+from vnpy.gateway.okexf import OkexfGateway
+from vnpy.gateway.okexs import OkexsGateway
 # from vnpy.gateway.xtp import XtpGateway
 # from vnpy.gateway.hbdm import HbdmGateway
 # from vnpy.gateway.tap import TapGateway
@@ -50,7 +51,7 @@ def main():
     # main_engine.add_gateway(CtpGateway)
     # main_engine.add_gateway(CtptestGateway)
     # main_engine.add_gateway(MiniGateway)
-    #
+    # main_engine.add_gateway(SoptGateway)
     # main_engine.add_gateway(MinitestGateway)
     # main_engine.add_gateway(FemasGateway)
     # main_engine.add_gateway(IbGateway)
@@ -68,6 +69,7 @@ def main():
     # main_engine.add_gateway(TapGateway)
     # main_engine.add_gateway(ToraGateway)
     # main_engine.add_gateway(AlpacaGateway)
+    main_engine.add_gateway(OkexsGateway)
     main_engine.add_gateway(DaGateway)
 
     main_engine.add_app(CtaStrategyApp)
