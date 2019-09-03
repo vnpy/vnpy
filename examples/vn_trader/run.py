@@ -11,14 +11,14 @@ from vnpy.trader.ui import MainWindow, create_qapp
 # from vnpy.gateway.ctp import CtpGateway
 # from vnpy.gateway.ctptest import CtptestGateway
 # from vnpy.gateway.mini import MiniGateway
-from vnpy.gateway.sopt import SoptGateway
+# from vnpy.gateway.sopt import SoptGateway
 # from vnpy.gateway.minitest import MinitestGateway
 # from vnpy.gateway.femas import FemasGateway
 # from vnpy.gateway.tiger import TigerGateway
 # from vnpy.gateway.oes import OesGateway
-from vnpy.gateway.okex import OkexGateway
+# from vnpy.gateway.okex import OkexGateway
 # from vnpy.gateway.huobi import HuobiGateway
-from vnpy.gateway.bitfinex import BitfinexGateway
+# from vnpy.gateway.bitfinex import BitfinexGateway
 # from vnpy.gateway.onetoken import OnetokenGateway
 from vnpy.gateway.okexf import OkexfGateway
 from vnpy.gateway.okexs import OkexsGateway
@@ -27,6 +27,7 @@ from vnpy.gateway.okexs import OkexsGateway
 # from vnpy.gateway.tap import TapGateway
 # from vnpy.gateway.tora import ToraGateway
 # from vnpy.gateway.alpaca import AlpacaGateway
+from vnpy.gateway.da import DaGateway
 
 from vnpy.app.cta_strategy import CtaStrategyApp
 # from vnpy.app.csv_loader import CsvLoaderApp
@@ -69,6 +70,7 @@ def main():
     # main_engine.add_gateway(ToraGateway)
     # main_engine.add_gateway(AlpacaGateway)
     main_engine.add_gateway(OkexsGateway)
+    main_engine.add_gateway(DaGateway)
 
     main_engine.add_app(CtaStrategyApp)
     main_engine.add_app(CtaBacktesterApp)
