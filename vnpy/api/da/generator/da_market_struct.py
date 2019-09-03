@@ -117,4 +117,3 @@ CMarketRspTradeDateField = {
     "TradeDate": "string",
     "TradeProduct": "string",
 }
-

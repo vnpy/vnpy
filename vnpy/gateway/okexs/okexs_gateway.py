@@ -359,7 +359,7 @@ class OkexsRestApi(RestClient):
         """"""
         for data in datas:
             holdings = data['holding']
-            
+
             for holding in holdings:
                 symbol = holding["instrument_id"].upper()
                 pos = _parse_position_holding(holding, symbol=symbol,

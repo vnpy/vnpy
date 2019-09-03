@@ -444,7 +444,7 @@ class DaFutureApi(FutureApi):
 
             symbol_name_map[contract.vt_symbol] = contract.name
             symbol_currency_map[contract.symbol] = data["CommodityFCurrencyNo"]
-            
+
             self.gateway.on_contract(contract)
 
         if last:

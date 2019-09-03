@@ -41,7 +41,7 @@ class DataTypeGenerator:
             self.process_define(line)
         elif line.startswith("typedef"):
             self.process_typedef(line)
-            
+
     def process_define(self, line: str):
         """处理常量定义"""
         words = line.split(" ")
@@ -62,7 +62,7 @@ class DataTypeGenerator:
         """处理类型定义"""
         words = line.split(" ")
         words = [word for word in words if word]
-        
+
         name = words[2]
         typedef = TYPE_CPP2PY[words[1]]
 

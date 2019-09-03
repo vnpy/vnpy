@@ -53,7 +53,7 @@ class ApiGenerator:
         line = line.replace("\n", "")
         line = line.replace("\t", "")
         line = line.replace("{}", "")
-        
+
         if "virtual void On" in line:
             self.process_callback(line)
         elif "virtual bool Req" in line:
@@ -130,7 +130,8 @@ class ApiGenerator:
                 line = self.lines[name]
                 on_name = name.replace("On", "on")
 
-                f.write(line.replace("virtual void ", f"void {self.class_name}::") + "\n")
+                f.write(line.replace("virtual void ",
+                                     f"void {self.class_name}::") + "\n")
                 f.write("{\n")
                 f.write("\tgil_scoped_acquire acquire;\n")
 
@@ -149,13 +150,15 @@ class ApiGenerator:
                         f.write("\tdict error;\n")
                         f.write("\tif (pRspInfo)\n")
                         f.write("\t{\n")
-                        
+
                         struct_fields = self.structs[type_]
                         for struct_field, struct_type in struct_fields.items():
                             if struct_type == "string":
-                                f.write(f"\t\terror[\"{struct_field}\"] = toUtf({field}->{struct_field});\n")
+                                f.write(
+                                    f"\t\terror[\"{struct_field}\"] = toUtf({field}->{struct_field});\n")
                             else:
-                                f.write(f"\t\terror[\"{struct_field}\"] = {field}->{struct_field};\n")
+                                f.write(
+                                    f"\t\terror[\"{struct_field}\"] = {field}->{struct_field};\n")
 
                         f.write("\t}\n")
                     else:
@@ -164,13 +167,15 @@ class ApiGenerator:
                         f.write("\tdict data;\n")
                         f.write(f"\tif ({field})\n")
                         f.write("\t{\n")
-                        
+
                         struct_fields = self.structs[type_]
                         for struct_field, struct_type in struct_fields.items():
                             if struct_type == "string":
-                                f.write(f"\t\tdata[\"{struct_field}\"] = toUtf({field}->{struct_field});\n")
+                                f.write(
+                                    f"\t\tdata[\"{struct_field}\"] = toUtf({field}->{struct_field});\n")
                             else:
-                                f.write(f"\t\tdata[\"{struct_field}\"] = {field}->{struct_field};\n")
+                                f.write(
+                                    f"\t\tdata[\"{struct_field}\"] = {field}->{struct_field};\n")
 
                         f.write("\t}\n")
 
@@ -260,11 +265,14 @@ class ApiGenerator:
 
 
 if __name__ == "__main__":
-    market_generator = ApiGenerator("../include/da/DAMarketApi.h", "da", "market", "MarketApi")
+    market_generator = ApiGenerator(
+        "../include/da/DAMarketApi.h", "da", "market", "MarketApi")
     market_generator.run()
 
-    future_generator = ApiGenerator("../include/da/DAFutureApi.h", "da", "future", "FutureApi")
+    future_generator = ApiGenerator(
+        "../include/da/DAFutureApi.h", "da", "future", "FutureApi")
     future_generator.run()
 
-    stock_generator = ApiGenerator("../include/da/DAStockApi.h", "da", "stock", "StockApi")
+    stock_generator = ApiGenerator(
+        "../include/da/DAStockApi.h", "da", "stock", "StockApi")
     stock_generator.run()

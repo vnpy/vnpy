@@ -607,4 +607,3 @@ CStockReqVerifyCodeField = {
     "VerifyCode": "string",
     "ErrorDescription": "string",
 }
-

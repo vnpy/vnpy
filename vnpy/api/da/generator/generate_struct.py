@@ -60,7 +60,7 @@ class StructGenerator:
         value = words[2]
         new_line = f"{value} = {name}\n\n"
         self.f_struct.write(new_line)
-        
+
     def process_declare(self, line: str):
         """处理声明"""
         words = line.split(" ")
@@ -91,11 +91,14 @@ class StructGenerator:
 
 
 if __name__ == "__main__":
-    generator_future = StructGenerator("../include/da/DAFutureStruct.h", "da", "future")
+    generator_future = StructGenerator(
+        "../include/da/DAFutureStruct.h", "da", "future")
     generator_future.run()
 
-    generator_stock = StructGenerator("../include/da/DAStockStruct.h", "da", "stock")
+    generator_stock = StructGenerator(
+        "../include/da/DAStockStruct.h", "da", "stock")
     generator_stock.run()
 
-    generator_market = StructGenerator("../include/da/DAMarketStruct.h", "da", "market")
+    generator_market = StructGenerator(
+        "../include/da/DAMarketStruct.h", "da", "market")
     generator_market.run()
