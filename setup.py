@@ -182,9 +182,10 @@ parallel = os.environ.get('VNPY_BUILD_PARALLEL', None)
 if parallel:
     if parallel == 'auto':
         parallel = os.cpu_count()
-    from ci.parallel_build_distutils import patch_distutils
+    if parallel != 'no':
+        from ci.parallel_build_distutils import patch_distutils
 
-    patch_distutils(int(parallel))
+        patch_distutils(int(parallel))
 
 setup(
     name="vnpy",
