@@ -65,9 +65,7 @@ TIMEDELTA_MAP = {
     Interval.DAILY: timedelta(days=1),
 }
 
-cancelDict = {}  # orderid:cancelreq
-orderDict = {}  # sysid:order
-orderSysDict = {}  # orderid:sysid
+sys_order_map = {}
 symbol_name_map = {}
 
 
@@ -296,30 +294,23 @@ class CoinbaseWebsocketApi(WebsocketClient):
         """
         Call back when order is received by Coinbase
         """
-        client_oid = packet['client_oid']
+        orderid = packet['client_oid']
         sysid = packet['order_id']
 
         order = OrderData(
             symbol=packet['product_id'],
             exchange=Exchange.COINBASE,
             type=ORDERTYPE_COINBASE2VT[packet['order_type']],
-            orderid=sysid,
+            orderid=orderid,
             direction=DIRECTION_COINBASE2VT[packet['side']],
             price=float(packet['price']),
             volume=float(packet['size']),
             time=packet['time'],
+            status=Status.NOTTRADED,
             gateway_name=self.gateway_name,
         )
 
-        order.traded = 0
-        order.status = Status.NOTTRADED
-
-        orderSysDict[client_oid] = sysid
-        orderDict[sysid] = order
-
-        if client_oid in cancelDict:
-            req = cancelDict[client_oid]
-            self.gateway.cancel_order(req)
+        sys_order_map[sysid] = order
 
         self.gateway.on_order(copy(order))
 
@@ -327,9 +318,10 @@ class CoinbaseWebsocketApi(WebsocketClient):
         """
         Call back when the order is on the orderbook
         """
-        orderid = packet['order_id']
-        order = orderDict.get(orderid)
-        order.traded = float(order.volume) - float(packet['remaining_size'])
+        sysid = packet['order_id']
+        order = sys_order_map[sysid]
+
+        order.traded = order.volume - float(packet['remaining_size'])
         if order.traded:
             order.status = Status.PARTTRADED
 
@@ -339,8 +331,10 @@ class CoinbaseWebsocketApi(WebsocketClient):
         """
         Call back when the order is done
         """
-        order = orderDict.get(packet['order_id'], None)
-        if not order:
+        sysid = packet['order_id']
+        order = sys_order_map[sysid]
+
+        if order.status == Status.CANCELLED:
             return
 
         order.traded = order.volume - float(packet['remaining_size'])
@@ -354,10 +348,10 @@ class CoinbaseWebsocketApi(WebsocketClient):
 
     def on_order_match(self, packet: dict):
         """"""
-        if packet['maker_order_id'] in orderDict:
-            order = orderDict[packet['maker_order_id']]
+        if packet['maker_order_id'] in sys_order_map:
+            order = sys_order_map[packet['maker_order_id']]
         else:
-            order = orderDict[packet['taker_order_id']]
+            order = sys_order_map[packet['taker_order_id']]
 
         trade = TradeData(
             symbol=packet['product_id'],
@@ -634,8 +628,7 @@ class CoinbaseRestApi(RestClient):
             )
             self.gateway.on_order(copy(order))
 
-            orderDict[order.orderid] = order
-            orderSysDict[order.orderid] = order.orderid
+            sys_order_map[order.orderid] = order
 
         self.gateway.write_log(u'委托信息查询成功')
 
@@ -663,6 +656,8 @@ class CoinbaseRestApi(RestClient):
     def send_order(self, req: OrderRequest):
         """"""
         orderid = str(uuid.uuid1())
+        order = req.create_order_data(orderid, self.gateway_name)
+        self.gateway.on_order(order)
 
         data = {
             "size": req.volume,
@@ -675,7 +670,6 @@ class CoinbaseRestApi(RestClient):
         if req.type == OrderType.LIMIT:
             data['price'] = req.price
 
-        order = req.create_order_data(orderid, self.gateway_name)
         self.add_request(
             "POST",
             "/orders",
@@ -687,7 +681,6 @@ class CoinbaseRestApi(RestClient):
             on_error=self.on_send_order_error,
         )
 
-        self.gateway.on_order(order)
         return order.vt_orderid
 
     def on_send_order_failed(self, status_code: str, request: Request):
@@ -734,16 +727,30 @@ class CoinbaseRestApi(RestClient):
         """"""
         orderid = req.orderid
 
+        # For open orders from previous trading session, use sysid to cancel
+        if orderid in sys_order_map:
+            path = f"/orders/{orderid}"
+        # For open orders from currenct trading session, use client_oid to cancel
+        else:
+            path = f"/orders/client:{orderid}"
+
         self.add_request(
             "DELETE",
-            f"/orders/client:{orderid}",
+            path,
             callback=self.on_cancel_order,
             on_failed=self.on_cancel_order_failed,
         )
 
     def on_cancel_order(self, data, request):
-        """Websocket will push a new order status"""
-        pass
+        """
+        Callback when order cancelled
+        """
+        sysid = data[0]
+        order = sys_order_map[sysid]
+
+        if order.status != Status.CANCELLED:
+            order.status = Status.CANCELLED
+            self.gateway.on_order(copy(order))
 
     def on_cancel_order_failed(self, status_code: str, request: Request):
         """
