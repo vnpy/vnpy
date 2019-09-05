@@ -54,9 +54,9 @@ ORDERTYPE_VT2COINBASE = {
 ORDERTYPE_COINBASE2VT = {v: k for k, v in ORDERTYPE_VT2COINBASE.items()}
 
 INTERVAL_VT2COINBASE = {
-    Interval.MINUTE: "1m",
-    Interval.HOUR: "1h",
-    Interval.DAILY: "1d",
+    Interval.MINUTE: 60,
+    Interval.HOUR: 3600,
+    Interval.DAILY: 86400,
 }
 
 TIMEDELTA_MAP = {
@@ -145,7 +145,7 @@ class CoinbaseGateway(BaseGateway):
 
     def query_account(self):
         """"""
-        return self.rest_api.query_account()
+        self.rest_api.query_account()
 
     def query_position(self):
         """
@@ -157,7 +157,7 @@ class CoinbaseGateway(BaseGateway):
         """
         Query bar history data.
         """
-        pass
+        return self.rest_api.query_history(req)
 
     def close(self):
         """"""
@@ -651,7 +651,7 @@ class CoinbaseRestApi(RestClient):
                 size=1,
                 min_volume=float(d['base_min_size']),
                 net_position=True,
-                history_data=False,
+                history_data=True,
                 gateway_name=self.gateway_name,
             )
 
@@ -783,6 +783,84 @@ class CoinbaseRestApi(RestClient):
         sys.stderr.write(
             self.exception_detail(exception_type, exception_value, tb, request)
         )
+
+    def query_history(self, req: HistoryRequest):
+        """"""
+        history = []
+        count = 300
+        start = req.start
+        path = f"/products/{req.symbol}/candles"
+        time_delta = TIMEDELTA_MAP[req.interval]
+
+        while True:
+            # Break if start time later than end time
+            if start > req.end:
+                break
+
+            # Calculate start and end time for this query
+            start_time = start.isoformat()
+
+            end = start + time_delta * count
+            end = min(end, req.end)
+            end_time = end.isoformat()
+
+            # Create query params
+            params = {
+                "start": start_time,
+                "end": end_time,
+                "granularity": INTERVAL_VT2COINBASE[req.interval],
+            }
+
+            # Get response from server
+            resp = self.request(
+                "GET",
+                path,
+                params=params
+            )
+
+            # Break if request failed with other status code
+            if resp.status_code // 100 != 2:
+                msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
+                self.gateway.write_log(msg)
+                break
+            else:
+                data = resp.json()
+                if not data:
+                    msg = f"获取历史数据为空，开始时间：{start_time}，数量：{count}"
+                    break
+
+                # Reverse data list
+                data.reverse()
+                buf = []
+
+                for l in data[1:]:
+                    dt = datetime.fromtimestamp(l[0])
+                    o, h, l, c, v = l[1:]
+                    bar = BarData(
+                        symbol=req.symbol,
+                        exchange=req.exchange,
+                        datetime=dt,
+                        interval=req.interval,
+                        volume=v,
+                        open_price=o,
+                        high_price=h,
+                        low_price=l,
+                        close_price=c,
+                        gateway_name=self.gateway_name
+                    )
+                    buf.append(bar)
+
+                history.extend(buf)
+
+                begin = buf[0].datetime
+                end = buf[-1].datetime
+                msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
+                self.gateway.write_log(msg)
+
+                # Update start time
+                start = bar.datetime + TIMEDELTA_MAP[req.interval]
+
+        return history
 
 
 def get_auth_header(
