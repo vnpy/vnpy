@@ -28,6 +28,7 @@ from vnpy.gateway.okexs import OkexsGateway
 # from vnpy.gateway.tora import ToraGateway
 # from vnpy.gateway.alpaca import AlpacaGateway
 from vnpy.gateway.da import DaGateway
+from vnpy.gateway.coinbase import CoinbaseGateway
 
 from vnpy.app.cta_strategy import CtaStrategyApp
 # from vnpy.app.csv_loader import CsvLoaderApp
@@ -69,8 +70,9 @@ def main():
     # main_engine.add_gateway(TapGateway)
     # main_engine.add_gateway(ToraGateway)
     # main_engine.add_gateway(AlpacaGateway)
-    main_engine.add_gateway(OkexsGateway)
-    main_engine.add_gateway(DaGateway)
+    # main_engine.add_gateway(OkexsGateway)
+    # main_engine.add_gateway(DaGateway)
+    main_engine.add_gateway(CoinbaseGateway)
 
     main_engine.add_app(CtaStrategyApp)
     main_engine.add_app(CtaBacktesterApp)
