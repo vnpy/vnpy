@@ -9,7 +9,6 @@ pymysql
 psycopg2
 mongoengine
 numpy
-pandas==0.24
 matplotlib
 seaborn
 futu-api
@@ -19,3 +18,4 @@ ta-lib
 ibapi
 deap
 pyzmq
+sortedcontainers
