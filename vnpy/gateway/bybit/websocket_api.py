@@ -10,11 +10,9 @@ from typing import Any, Callable, Dict, TYPE_CHECKING
 from sortedcontainers import SortedSet
 
 from vnpy.api.websocket import WebsocketClient
-from vnpy.trader.constant import Direction, Exchange, Product, OrderType
-from vnpy.trader.object import AccountData, ContractData, PositionData, SubscribeRequest, \
-    TickData, TradeData
-from .common import (DIRECTION_BYBIT2VT, generate_timestamp,
-                     sign, local_tz, utc_tz, parse_datetime)
+from vnpy.trader.constant import (Exchange, Product)
+from vnpy.trader.object import (AccountData, ContractData, SubscribeRequest, TickData, TradeData)
+from .common import (DIRECTION_BYBIT2VT, generate_timestamp, local_tz, parse_datetime, sign, utc_tz)
 
 if TYPE_CHECKING:
     from vnpy.gateway.bybit import BybitGateway
@@ -115,7 +113,6 @@ class BybitWebsocketApi(WebsocketClient):
 
     def on_packet(self, packet: dict):
         """"""
-        processed = False
         success = packet.get('success', None)
         topic = packet.get('topic', None)
         if success is not None:
@@ -338,7 +335,6 @@ class BybitWebsocketApi(WebsocketClient):
 
     def _ping(self):
         super()._ping()
-        ws = self._ws
         self.send_packet({'op': 'ping'})
 
 

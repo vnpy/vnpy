@@ -118,6 +118,7 @@ class Exchange(Enum):
     BYBIT = "BYBIT"         # bybit.com
     COINBASE = "COINBASE"
 
+
 class Currency(Enum):
     """
     Currency.

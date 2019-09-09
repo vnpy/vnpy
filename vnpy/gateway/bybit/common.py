@@ -49,8 +49,8 @@ INTERVAL_VT2BYBIT = {
 INTERVAL_VT2BYBIT_INT = {
     Interval.MINUTE: 1,
     Interval.HOUR: 60,
-    Interval.DAILY: 60*24,
-    Interval.WEEKLY: 60*24*7,
+    Interval.DAILY: 60 * 24,
+    Interval.WEEKLY: 60 * 24 * 7,
 }
 TIMEDELTA_MAP = {
     Interval.MINUTE: timedelta(minutes=1),

@@ -1,19 +1,19 @@
 """"""
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Any, Tuple
+from typing import Any, Dict, List, Tuple
 
 from vnpy.event import Event
 from vnpy.gateway.bybit.rest_api import BybitRestApi, HistoryDataNextInfo
 from vnpy.gateway.bybit.websocket_api import BybitWebsocketApi
-from vnpy.trader.constant import (Exchange, OrderType, Interval)
+from vnpy.trader.constant import (Exchange, Interval, OrderType)
 from vnpy.trader.event import EVENT_TIMER
 from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.object import (CancelRequest, HistoryRequest, OrderData, OrderRequest,
-                                PositionData, SubscribeRequest, TickData, BarData)
-from .common import DIRECTION_BYBIT2VT, OPPOSITE_DIRECTION, ORDER_TYPE_BYBIT2VT, \
-    STOP_ORDER_STATUS_BYBIT2VT, parse_datetime, STATUS_BYBIT2VT, INTERVAL_VT2BYBIT, local_tz, \
-    utc_tz, INTERVAL_VT2BYBIT_INT
+from vnpy.trader.object import (BarData, CancelRequest, HistoryRequest, OrderData, OrderRequest,
+                                PositionData, SubscribeRequest, TickData)
+from .common import (DIRECTION_BYBIT2VT, INTERVAL_VT2BYBIT_INT, OPPOSITE_DIRECTION,
+                     ORDER_TYPE_BYBIT2VT, STATUS_BYBIT2VT, STOP_ORDER_STATUS_BYBIT2VT, local_tz,
+                     parse_datetime, utc_tz)
 
 
 @dataclass()
@@ -97,10 +97,10 @@ class BybitGateway(BaseGateway):
         self.rest_api.query_position()
 
     def query_first_history(self,
-                          symbol: str,
-                          interval: Interval,
-                          start: datetime,
-                          ) -> Tuple[List[BarData], "HistoryDataNextInfo"]:
+                            symbol: str,
+                            interval: Interval,
+                            start: datetime,
+                            ) -> Tuple[List[BarData], "HistoryDataNextInfo"]:
 
         # datetime for a bar is close_time
         # we got open_time from API.
