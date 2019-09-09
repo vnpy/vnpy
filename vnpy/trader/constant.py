@@ -116,7 +116,7 @@ class Exchange(Enum):
     BITFINEX = "BITFINEX"
     BINANCE = "BINANCE"
     BYBIT = "BYBIT"         # bybit.com
-
+    COINBASE = "COINBASE"
 
 class Currency(Enum):
     """
