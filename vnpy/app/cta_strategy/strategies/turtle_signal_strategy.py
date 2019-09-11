@@ -32,7 +32,7 @@ class TurtleSignalStrategy(CtaTemplate):
     short_stop = 0
 
     parameters = ["entry_window", "exit_window", "atr_window", "fixed_size"]
-    variables = ["entry_up", "entry_down", "exit_up", "exit_down", "atr_value"]
+    variables = ["entry_up", "entry_down", "exit_up", "exit_down", "atr_value", "long_entry", "short_entry", "long_stop", "short_stop"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
