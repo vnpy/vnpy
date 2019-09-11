@@ -8,15 +8,12 @@ import hmac
 import sys
 import time
 import re
-import hmac
-import hashlib
 from copy import copy
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
 from vnpy.event import Event
-from urllib import parse
 from time import sleep
 
 from vnpy.trader.constant import (
@@ -175,7 +172,6 @@ class BitstampGateway(BaseGateway):
             data = self.rest_api_v1.get_callback_data(i)
             self.rest_api.update_trade(i, data)
 
-
     def query_account(self):
         """"""
         self.rest_api.query_account_balance()
@@ -294,11 +290,11 @@ class BitstampRestApiV1(RestClient):
         # Sign
         # nonce = str(int(round(time.time() * 1000000)))
 
-        if request.params:
-            query = urlencode(request.params)
-            path = request.path + "?" + query
-        else:
-            path = request.path
+        # if request.params:
+        #     query = urlencode(request.params)
+        #     path = request.path + "?" + query
+        # else:
+        #     path = request.path
 
         if request.data:
             request.data = urlencode(request.data)
@@ -414,7 +410,7 @@ class BitstampHistoryApi(RestClient):
         print(f"History {req}")
 
         history = []
-        limit = 1000
+        # limit = 1000
         step = int(INTERVAL_VT2BITSTAMP[req.interval])
         symbol = SYMBOL_BITSTAMP2VT[req.symbol]
         base, quote = symbol.split("/")
@@ -607,11 +603,11 @@ class BitstampRestApi(RestClient):
         # Sign
         # nonce = str(int(round(time.time() * 1000000)))
 
-        if request.params:
-            query = urlencode(request.params)
-            path = request.path + "?" + query
-        else:
-            path = request.path
+        # if request.params:
+        #     query = urlencode(request.params)
+        #     path = request.path + "?" + query
+        # else:
+        #     path = request.path
 
         if request.data:
             request.data = urlencode(request.data)
@@ -660,8 +656,6 @@ class BitstampRestApi(RestClient):
 
         self.on_trade(data)
 
-
-
     def on_trade(self, data):
         """"""
         # self.trade_id += 1
@@ -669,10 +663,10 @@ class BitstampRestApi(RestClient):
         for d in data:
             if int(d["type"]) == 2:  # 交易记录
                 btc = d["btc"]
-                usd = d["usd"]
+                # usd = d["usd"]
                 btcusd = d["btc_usd"]
                 tradetime = d["datetime"]
-                fee = d["fee"]
+                # fee = d["fee"]
                 tradeid = d["id"]
                 orderid = d["order_id"]
 
@@ -720,7 +714,7 @@ class BitstampRestApi(RestClient):
         if status == "Finished":
 
             btc_volume = sum(float(x["btc"]) for x in data["transactions"])
-            usd_volume = sum(float(x["usd"]) for x in data["transactions"])
+            # usd_volume = sum(float(x["usd"]) for x in data["transactions"])
 
             if btc_volume == order.volume:
                 order.status = Status.ALLTRADED
@@ -744,7 +738,6 @@ class BitstampRestApi(RestClient):
             self.query_account_balance()
             """更新线上交易记录"""
             self.user_transactions()
-
 
     def open_orders(self, symbol="all"):
         """
@@ -994,7 +987,7 @@ class BitstampRestApi(RestClient):
             # notional = float(data.get("usd_balance", 0)),
             notional=float(data.get("btc_balance", 0)),
             # notional=float(data.get("usd_balance", 0)),
-            #last_notional = round( (d.get("currentQty", 0.0) / d.get("lastPrice", 0.0)) if ( not d.get("lastPrice", 0.0) and not d.get("currentQty", 0.0)) else 0, 8),
+            # last_notional = round( (d.get("currentQty", 0.0) / d.get("lastPrice", 0.0)) if ( not d.get("lastPrice", 0.0) and not d.get("currentQty", 0.0)) else 0, 8),
             gateway_name=self.gateway_name,
 
         )
