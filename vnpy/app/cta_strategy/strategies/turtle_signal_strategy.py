@@ -80,10 +80,9 @@ class TurtleSignalStrategy(CtaTemplate):
 
         self.entry_up, self.entry_down = self.am.donchian(self.entry_window)
         self.exit_up, self.exit_down = self.am.donchian(self.exit_window)
+        self.atr_value = self.am.atr(self.atr_window)
 
         if not self.pos:
-            self.atr_value = self.am.atr(self.atr_window)
-
             self.long_entry = 0
             self.short_entry = 0
             self.long_stop = 0
