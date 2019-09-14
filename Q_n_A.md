@@ -123,6 +123,7 @@
 
 #5、碰到的问题：version `GLIBCXX_3.4.21' not found
     conda install libgcc
+    若出现更高版本需求，参见第10点
 
 #6、碰到的问题：在3.5 env下安装RqPlus时，报错:talib/common.c:242:28: fatal error: ta-lib/ta_defs.h: No such file or directory
     locate ta_defs.h
@@ -148,3 +149,63 @@ pip install autobahn
 pip install twisted
 若出现找不到rc.exe， 请先使用vs x86&x64界面，激活py35后，再运行
 pip install pyOpenSSL
+
+# 10、升级gcc
+    使用奇正MOM的CTP API时，提示`GLIBCXX_3.4.22' not found，当前centos最高版本是 3.4.21，通过yum不能升级，需要手工下载升级。
+    
+    wget http://ftp.de.debian.org/debian/pool/main/g/gcc-9/libstdc++6_9.2.1-8_amd64.deb
+解压
+
+    ar -x libstdc++6_9.2.1-8_amd64.deb    
+    （就是 ar 命令，不是tar）    
+    tar -xvf data.tar.xz
+
+安装
+    
+    删除： rm /usr/lib64/libstdc++.so.6    
+    拷贝： cp usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28 /usr/lib64/    
+    连接： ln /usr/lib64/libstdc++.so.6.0.28    /usr/lib64/libstdc++.so.6
+结果
+
+    strings /usr/lib64/libstdc++.so.6 | grep GLIBCXX
+    
+    GLIBCXX_3.4
+    GLIBCXX_3.4.1
+    GLIBCXX_3.4.2
+    GLIBCXX_3.4.3
+    GLIBCXX_3.4.4
+    GLIBCXX_3.4.5
+    GLIBCXX_3.4.6
+    GLIBCXX_3.4.7
+    GLIBCXX_3.4.8
+    GLIBCXX_3.4.9
+    GLIBCXX_3.4.10
+    GLIBCXX_3.4.11
+    GLIBCXX_3.4.12
+    GLIBCXX_3.4.13
+    GLIBCXX_3.4.14
+    GLIBCXX_3.4.15
+    GLIBCXX_3.4.16
+    GLIBCXX_3.4.17
+    GLIBCXX_3.4.18
+    GLIBCXX_3.4.19
+    GLIBCXX_3.4.20
+    GLIBCXX_3.4.21
+    GLIBCXX_3.4.22
+    GLIBCXX_3.4.23
+    GLIBCXX_3.4.24
+    GLIBCXX_3.4.25
+    GLIBCXX_DEBUG_MESSAGE_LENGTH
+
+# 11、升级glibc
+    使用奇正MOM的CTP API时，提示`GLIBC_2.18' not found，当前centos最高版本是 3.4.21，通过yum不能升级，需要手工下载升级。
+    
+    root 用户登录
+    wget http://ftp.gnu.org/gnu/glibc/glibc-2.18.tar.gz
+    tar –zxvf glibc-2.18.tar.gz
+    cd glibc-2.18
+    mkdir build
+    cd build
+    ../configure --prefix=/usr --disable-profile --enable-add-ons --with-headers=/usr/include --with-binutils=/usr/bin
+    make –j4
+    make install
