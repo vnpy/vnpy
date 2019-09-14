@@ -5,6 +5,7 @@ from vnpy.event import EventEngine, Event
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.event import EVENT_TICK, EVENT_POSITION
 from vnpy.trader.utility import load_json, save_json
+from vnpy.trader.object import TickData, ContractData
 
 from .base import LegData, SpreadData
 
@@ -156,3 +157,43 @@ class SpreadDataEngine:
             self.symbol_spread_map[leg.vt_symbol].remove(spread)
 
         self.write_log("价差删除成功：{}".format(name))
+
+
+class SpreadAlgoEngine:
+    """"""
+
+    def __init__(self, spread_engine: SpreadEngine):
+        """"""
+        self.spread_engine: SpreadEngine = spread_engine
+        self.main_engine: MainEngine = spread_engine.main_engine
+        self.event_engine: EventEngine = spread_engine.event_engine
+
+        self.write_log = spread_engine.write_log
+
+    def put_event(self, algo) -> None:
+        """"""
+        pass
+
+    def send_order(
+        self,
+        algo,
+        vt_symbol,
+        price,
+        volume,
+        direction,
+        offset
+    ) -> List[str]:
+        """"""
+        pass
+
+    def cancel_order(self, algo, vt_orderid) -> None:
+        """"""
+        pass
+
+    def get_tick(self, vt_symbol: str) -> TickData:
+        """"""
+        return self.main_engine.get_tick(vt_symbol)
+
+    def get_contract(self, vt_symbol: str) -> ContractData:
+        """"""
+        return self.main_engine.get_contract(vt_symbol)
