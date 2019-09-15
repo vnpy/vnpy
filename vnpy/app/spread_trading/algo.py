@@ -87,7 +87,7 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
             spread_order_volume = max(spread_order_volume, spread_volume_left)
 
         # Calculate active leg order volume
-        leg_order_volume = self.spread.caculate_leg_volume(
+        leg_order_volume = self.spread.calculate_leg_volume(
             self.spread.active_leg.vt_symbol,
             spread_order_volume
         )
@@ -114,7 +114,7 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
         # Calculate passive leg target volume and do hedge
         for leg in self.spread.passive_legs:
             passive_traded = self.leg_orders[leg.vt_symbol]
-            passive_target = self.spread.caculate_leg_volume(
+            passive_target = self.spread.calculate_leg_volume(
                 leg.vt_symbol,
                 hedge_volume
             )

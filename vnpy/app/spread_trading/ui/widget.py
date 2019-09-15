@@ -209,7 +209,6 @@ class SpreadAlgoDialog(QtWidgets.QDialog):
         )
 
         float_validator = QtGui.QDoubleValidator()
-        float_validator.setBottom(0)
 
         self.price_line = QtWidgets.QLineEdit()
         self.price_line.setValidator(float_validator)

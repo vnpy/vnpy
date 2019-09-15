@@ -84,27 +84,8 @@ class SpreadDataEngine:
         """"""
         self.load_setting()
         self.register_event()
-        self.test()
 
         self.write_log("价差数据引擎启动成功")
-
-    def test(self):
-        """"""
-        name = "test"
-        leg_settings = [
-            {
-                "vt_symbol": "XBTUSD.BITMEX",
-                "price_multiplier": 1,
-                "trading_multiplier": 1
-            },
-            {
-                "vt_symbol": "XBTZ19.BITMEX",
-                "price_multiplier": -1,
-                "trading_multiplier": -1
-            }
-        ]
-        active_symbol = "XBTUSD.BITMEX"
-        self.add_spread(name, leg_settings, active_symbol, True)
 
     def load_setting(self) -> None:
         """"""
