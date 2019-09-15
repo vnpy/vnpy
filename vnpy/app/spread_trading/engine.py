@@ -274,7 +274,8 @@ class SpreadAlgoEngine:
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
-        self.event_engine.register(EVENT_SPREAD_DATA, self.process_spread_event)
+        self.event_engine.register(
+            EVENT_SPREAD_DATA, self.process_spread_event)
 
     def process_spread_event(self, event: Event):
         """"""
@@ -311,7 +312,7 @@ class SpreadAlgoEngine:
 
     def process_timer_event(self, event: Event):
         """"""
-        buf = self.algos.values()
+        buf = list(self.algos.values())
 
         for algo in buf:
             if not algo.is_active():

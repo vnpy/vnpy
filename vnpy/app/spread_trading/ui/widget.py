@@ -52,8 +52,7 @@ class SpreadManager(QtWidgets.QWidget):
             self.event_engine
         )
         self.algo_monitor = SpreadAlgoMonitor(
-            self.main_engine,
-            self.event_engine
+            self.spread_engine
         )
 
         add_spread_button = QtWidgets.QPushButton("创建价差")
@@ -163,6 +162,28 @@ class SpreadAlgoMonitor(BaseMonitor):
         "count": {"display": "计数", "cell": BaseCell, "update": True},
         "status": {"display": "状态", "cell": EnumCell, "update": True},
     }
+
+    def __init__(self, spread_engine: SpreadEngine):
+        """"""
+        super().__init__(spread_engine.main_engine, spread_engine.event_engine)
+
+        self.spread_engine = spread_engine
+
+    def init_ui(self):
+        """
+        Connect signal.
+        """
+        super().init_ui()
+
+        self.setToolTip("双击单元格停止算法")
+        self.itemDoubleClicked.connect(self.stop_algo)
+
+    def stop_algo(self, cell):
+        """
+        Stop algo if cell double clicked.
+        """
+        algo = cell.get_data()
+        self.spread_engine.stop_algo(algo.algoid)
 
 
 class SpreadAlgoDialog(QtWidgets.QDialog):

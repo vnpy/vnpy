@@ -103,7 +103,7 @@ class SpreadAlgoTemplate:
         if self.is_active():
             self.cancel_all_order()
             self.status = Status.CANCELLED
-            self.put_algo_event()
+            self.put_event()
 
     def update_tick(self, tick: TickData):
         """"""
@@ -138,7 +138,7 @@ class SpreadAlgoTemplate:
 
     def put_event(self):
         """"""
-        self.algo_engine.put_event(self)
+        self.algo_engine.put_algo_event(self)
 
     def write_log(self, msg: str):
         """"""
