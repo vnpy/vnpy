@@ -56,9 +56,13 @@ class SpreadManager(QtWidgets.QWidget):
             self.event_engine
         )
 
+        add_spread_button = QtWidgets.QPushButton("创建价差")
+        add_spread_button.clicked.connect(self.add_spread)
+
         vbox1 = QtWidgets.QVBoxLayout()
         vbox1.addWidget(self.algo_dialog)
         vbox1.addStretch()
+        vbox1.addWidget(add_spread_button)
 
         vbox2 = QtWidgets.QVBoxLayout()
         vbox2.addWidget(self.data_monitor)
@@ -76,6 +80,11 @@ class SpreadManager(QtWidgets.QWidget):
         self.spread_engine.start()
 
         self.showMaximized()
+
+    def add_spread(self):
+        """"""
+        dialog = SpreadDataDialog(self.spread_engine)
+        dialog.exec_()
 
 
 class SpreadDataMonitor(BaseMonitor):
@@ -221,3 +230,125 @@ class SpreadAlgoDialog(QtWidgets.QDialog):
         self.spread_engine.start_algo(
             name, direction, price, volume, payup, interval
         )
+
+
+class SpreadDataDialog(QtWidgets.QDialog):
+    """"""
+
+    def __init__(self, spread_engine: SpreadEngine):
+        """"""
+        super().__init__()
+
+        self.spread_engine: SpreadEngine = spread_engine
+
+        self.leg_widgets = []
+
+        self.init_ui()
+
+    def init_ui(self):
+        """"""
+        self.setWindowTitle("创建价差")
+
+        self.name_line = QtWidgets.QLineEdit()
+        self.active_line = QtWidgets.QLineEdit()
+
+        self.grid = QtWidgets.QGridLayout()
+
+        button_add = QtWidgets.QPushButton("创建价差")
+        button_add.clicked.connect(self.add_spread)
+
+        Label = QtWidgets.QLabel
+
+        grid = QtWidgets.QGridLayout()
+        grid.addWidget(Label("价差名称"), 0, 0)
+        grid.addWidget(self.name_line, 0, 1, 1, 3)
+        grid.addWidget(Label("主动腿代码"), 1, 0)
+        grid.addWidget(self.active_line, 1, 1, 1, 3)
+
+        grid.addWidget(Label(""), 2, 0)
+        grid.addWidget(Label("本地代码"), 3, 1)
+        grid.addWidget(Label("价格乘数"), 3, 2)
+        grid.addWidget(Label("交易乘数"), 3, 3)
+
+        int_validator = QtGui.QIntValidator()
+
+        leg_count = 5
+        for i in range(leg_count):
+            symbol_line = QtWidgets.QLineEdit()
+
+            price_line = QtWidgets.QLineEdit()
+            price_line.setValidator(int_validator)
+
+            trading_line = QtWidgets.QLineEdit()
+            trading_line.setValidator(int_validator)
+
+            grid.addWidget(Label("腿{}".format(i + 1)), 4 + i, 0)
+            grid.addWidget(symbol_line, 4 + i, 1)
+            grid.addWidget(price_line, 4 + i, 2)
+            grid.addWidget(trading_line, 4 + i, 3)
+
+            d = {
+                "symbol": symbol_line,
+                "price": price_line,
+                "trading": trading_line
+            }
+            self.leg_widgets.append(d)
+
+        grid.addWidget(Label(""), 4 + leg_count, 0,)
+        grid.addWidget(button_add, 5 + leg_count, 0, 1, 4)
+
+        self.setLayout(grid)
+
+    def add_spread(self):
+        """"""
+        spread_name = self.name_line.text()
+        if not spread_name:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "创建失败",
+                "请输入价差名称",
+                QtWidgets.QMessageBox.Ok
+            )
+            return
+
+        active_symbol = self.active_line.text()
+
+        leg_settings = {}
+        for d in self.leg_widgets:
+            try:
+                vt_symbol = d["symbol"].text()
+                price_multiplier = int(d["price"].text())
+                trading_multiplier = int(d["trading"].text())
+
+                leg_settings[vt_symbol] = {
+                    "vt_symbol": vt_symbol,
+                    "price_multiplier": price_multiplier,
+                    "trading_multiplier": trading_multiplier
+                }
+            except ValueError:
+                pass
+
+        if len(leg_settings) < 2:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "创建失败",
+                "价差最少需要2条腿",
+                QtWidgets.QMessageBox.Ok
+            )
+            return
+
+        if active_symbol not in leg_settings:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "创建失败",
+                "各条腿中找不到主动腿代码",
+                QtWidgets.QMessageBox.Ok
+            )
+            return
+
+        self.spread_engine.add_spread(
+            spread_name,
+            list(leg_settings.values()),
+            active_symbol
+        )
+        self.accept()
