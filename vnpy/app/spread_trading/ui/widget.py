@@ -4,7 +4,8 @@ Widget for spread trading.
 
 from vnpy.event import EventEngine, Event
 from vnpy.trader.engine import MainEngine
-from vnpy.trader.ui import QtWidgets, QtCore
+from vnpy.trader.constant import Direction
+from vnpy.trader.ui import QtWidgets, QtCore, QtGui
 from vnpy.trader.ui.widget import (
     BaseMonitor, BaseCell,
     BidCell, AskCell,
@@ -40,6 +41,8 @@ class SpreadManager(QtWidgets.QWidget):
         """"""
         self.setWindowTitle("价差交易")
 
+        self.algo_dialog = SpreadAlgoDialog(self.spread_engine)
+
         self.data_monitor = SpreadDataMonitor(
             self.main_engine,
             self.event_engine
@@ -53,12 +56,17 @@ class SpreadManager(QtWidgets.QWidget):
             self.event_engine
         )
 
-        vbox = QtWidgets.QVBoxLayout()
-        vbox.addWidget(self.data_monitor)
-        vbox.addWidget(self.log_monitor)
+        vbox1 = QtWidgets.QVBoxLayout()
+        vbox1.addWidget(self.algo_dialog)
+        vbox1.addStretch()
+
+        vbox2 = QtWidgets.QVBoxLayout()
+        vbox2.addWidget(self.data_monitor)
+        vbox2.addWidget(self.log_monitor)
 
         hbox = QtWidgets.QHBoxLayout()
-        hbox.addLayout(vbox)
+        hbox.addLayout(vbox1)
+        hbox.addLayout(vbox2)
         hbox.addWidget(self.algo_monitor)
 
         self.setLayout(hbox)
@@ -146,3 +154,70 @@ class SpreadAlgoMonitor(BaseMonitor):
         "count": {"display": "计数", "cell": BaseCell, "update": True},
         "status": {"display": "状态", "cell": EnumCell, "update": True},
     }
+
+
+class SpreadAlgoDialog(QtWidgets.QDialog):
+    """"""
+
+    def __init__(self, spread_engine: SpreadEngine):
+        """"""
+        super().__init__()
+
+        self.spread_engine: SpreadEngine = spread_engine
+
+        self.init_ui()
+
+    def init_ui(self):
+        """"""
+        self.setWindowTitle("启动算法")
+
+        self.name_line = QtWidgets.QLineEdit()
+
+        self.direction_combo = QtWidgets.QComboBox()
+        self.direction_combo.addItems(
+            [Direction.LONG.value, Direction.SHORT.value]
+        )
+
+        float_validator = QtGui.QDoubleValidator()
+        float_validator.setBottom(0)
+
+        self.price_line = QtWidgets.QLineEdit()
+        self.price_line.setValidator(float_validator)
+
+        self.volume_line = QtWidgets.QLineEdit()
+        self.volume_line.setValidator(float_validator)
+
+        int_validator = QtGui.QIntValidator()
+
+        self.payup_line = QtWidgets.QLineEdit()
+        self.payup_line.setValidator(int_validator)
+
+        self.interval_line = QtWidgets.QLineEdit()
+        self.interval_line.setValidator(int_validator)
+
+        button_start = QtWidgets.QPushButton("启动")
+        button_start.clicked.connect(self.start_algo)
+
+        form = QtWidgets.QFormLayout()
+        form.addRow("价差", self.name_line)
+        form.addRow("方向", self.direction_combo)
+        form.addRow("价格", self.price_line)
+        form.addRow("数量", self.volume_line)
+        form.addRow("超价", self.payup_line)
+        form.addRow("间隔", self.interval_line)
+        form.addRow(button_start)
+
+        self.setLayout(form)
+
+    def start_algo(self):
+        """"""
+        name = self.name_line.text()
+        direction = Direction(self.direction_combo.currentText())
+        price = float(self.price_line.text())
+        volume = float(self.volume_line.text())
+        payup = int(self.payup_line.text())
+        interval = int(self.interval_line.text())
+
+        self.spread_engine.start_algo(
+            name, direction, price, volume, payup, interval
+        )

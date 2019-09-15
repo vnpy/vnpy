@@ -19,10 +19,15 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
         spread: SpreadData,
         direction: Direction,
         price: float,
-        volume: float
+        volume: float,
+        payup: int,
+        interval: int
     ):
         """"""
-        super().__init__(algo_engine, algoid, spread, direction, price, volume)
+        super().__init__(
+            algo_engine, algoid, spread, direction,
+            price, volume, payup, interval
+        )
 
         self.cancel_interval: int = 2
         self.timer_count: int = 0

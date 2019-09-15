@@ -39,6 +39,12 @@ class SpreadEngine(BaseEngine):
         self.data_engine: SpreadDataEngine = SpreadDataEngine(self)
         self.algo_engine: SpreadAlgoEngine = SpreadAlgoEngine(self)
 
+        self.add_spread = self.data_engine.add_spread
+        self.remove_spread = self.data_engine.remove_spread
+
+        self.start_algo = self.algo_engine.start_algo
+        self.stop_algo = self.algo_engine.stop_algo
+
     def start(self):
         """"""
         if self.active:
@@ -268,6 +274,7 @@ class SpreadAlgoEngine:
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
+        self.event_engine.register(EVENT_SPREAD_DATA, self.process_spread_event)
 
     def process_spread_event(self, event: Event):
         """"""

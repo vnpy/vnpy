@@ -51,7 +51,7 @@ class SpreadAlgoTemplate:
         self.traded_volume: float = 0           # Volume traded (Abs value)
 
         self.leg_traded: Dict[str, float] = defaultdict(int)
-        self.leg_orders: Dict[str, List[str]] = defaultdict[list]
+        self.leg_orders: Dict[str, List[str]] = defaultdict(list)
 
     def is_active(self):
         """"""
