@@ -5,7 +5,7 @@ from vnpy.trader.app import BaseApp
 from .engine import SpreadEngine, APP_NAME
 
 
-class AlgoTradingApp(BaseApp):
+class SpreadTradingApp(BaseApp):
     """"""
 
     app_name = APP_NAME

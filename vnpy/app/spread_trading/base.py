@@ -6,6 +6,12 @@ from vnpy.trader.object import TickData, PositionData
 from vnpy.trader.constant import Direction
 
 
+EVENT_SPREAD_DATA = "eSpreadData"
+EVENT_SPREAD_LOG = "eSpreadLog"
+EVENT_SPREAD_ALGO = "eSpreadAlgo"
+EVENT_SPREAD_STRATEGY = "eSpreadStrategy"
+
+
 class LegData:
     """"""
 
@@ -69,12 +75,25 @@ class SpreadData:
         self.active_leg: LegData = None
         self.passive_legs: List[LegData] = []
 
+        self.price_formula: str = ""
+        self.trading_formula: str = ""
+
         for leg in legs:
             self.legs[leg.vt_symbol] = leg
             if leg.vt_symbol == active_symbol:
                 self.active_leg = leg
             else:
                 self.passive_legs.append(leg)
+
+            if leg.price_multiplier > 0:
+                self.price_formula += f"+{leg.trading_multiplier}*{leg.vt_symbol}"
+            else:
+                self.price_formula += f"{leg.trading_multiplier}*{leg.vt_symbol}"
+
+            if leg.trading_multiplier > 0:
+                self.trading_formula += f"+{leg.trading_multiplier}*{leg.vt_symbol}"
+            else:
+                self.trading_formula += f"{leg.trading_multiplier}*{leg.vt_symbol}"
 
         # Spread data
         self.bid_price: float = 0
@@ -154,3 +173,21 @@ class SpreadData:
         self.ask_price = 0
         self.bid_volume = 0
         self.ask_volume = 0
+
+    def calculate_leg_volume(self, vt_symbol: str, spread_volume: float) -> float:
+        """"""
+        leg = self.legs[vt_symbol]
+        leg_volume = spread_volume * leg.trading_multiplier
+        return leg_volume
+
+    def calculate_spread_volume(self, vt_symbol: str, leg_volume: float) -> float:
+        """"""
+        leg = self.legs[vt_symbol]
+        spread_volume = leg_volume / leg.trading_multiplier
+
+        if spread_volume > 0:
+            spread_volume = floor(spread_volume)
+        else:
+            spread_volume = ceil(spread_volume)
+
+        return spread_volume

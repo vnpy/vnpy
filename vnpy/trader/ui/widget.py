@@ -156,6 +156,9 @@ class TimeCell(BaseCell):
         """
         Time format is 12:12:12.5
         """
+        if content is None:
+            return
+            
         timestamp = content.strftime("%H:%M:%S")
 
         millisecond = int(content.microsecond / 1000)

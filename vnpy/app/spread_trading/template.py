@@ -4,11 +4,10 @@ from typing import Dict, List
 from math import floor, ceil
 
 from vnpy.trader.object import TickData, TradeData, OrderData, ContractData
-from vnpy.trader.constant import Direction, Status, Offset
+from vnpy.trader.constant import Direction, Status
 from vnpy.trader.utility import virtual
 
 from .base import SpreadData
-from .engine import SpreadAlgoEngine
 
 
 class SpreadAlgoTemplate:
@@ -19,31 +18,37 @@ class SpreadAlgoTemplate:
 
     def __init__(
         self,
-        algo_engine: SpreadAlgoEngine,
+        algo_engine,
         algoid: str,
         spread: SpreadData,
         direction: Direction,
         price: float,
         volume: float,
-        payup: int
+        payup: int,
+        interval: int
     ):
         """"""
-        self.algo_engine: SpreadAlgoEngine = algo_engine
+        self.algo_engine = algo_engine
         self.algoid: str = algoid
+
         self.spread: SpreadData = spread
+        self.spread_name: str = spread.name
 
         self.direction: Direction = direction
         self.price: float = price
         self.volume: float = volume
         self.payup: int = payup
+        self.interval = interval
 
         if direction == Direction.LONG:
             self.target = volume
         else:
             self.target = -volume
 
-        self.status: Status = Status.NOTTRADED
-        self.traded: float = 0
+        self.status: Status = Status.NOTTRADED  # Algo status
+        self.count: int = 0                     # Timer count
+        self.traded: float = 0                  # Volume traded
+        self.traded_volume: float = 0           # Volume traded (Abs value)
 
         self.leg_traded: Dict[str, float] = defaultdict(int)
         self.leg_orders: Dict[str, List[str]] = defaultdict[list]
@@ -55,12 +60,50 @@ class SpreadAlgoTemplate:
         else:
             return False
 
+    def check_order_finished(self):
+        """"""
+        finished = True
+
+        for leg in self.spread.legs.values():
+            vt_orderids = self.leg_orders[leg.vt_symbol]
+
+            if vt_orderids:
+                finished = False
+                break
+
+        return finished
+
+    def check_hedge_finished(self):
+        """"""
+        active_symbol = self.spread.active_leg.vt_symbol
+        active_traded = self.leg_traded[active_symbol]
+
+        spread_volume = self.spread.calculate_spread_volume(
+            active_symbol, active_traded
+        )
+
+        finished = True
+
+        for leg in self.spread.passive_legs:
+            passive_symbol = leg.vt_symbol
+
+            leg_target = self.spread.calculate_leg_volume(
+                passive_symbol, spread_volume
+            )
+            leg_traded = self.leg_traded[passive_symbol]
+
+            if leg_traded != leg_target:
+                finished = False
+                break
+
+        return finished
+
     def stop(self):
         """"""
         if self.is_active():
-            self.cancel_leg_order()
+            self.cancel_all_order()
             self.status = Status.CANCELLED
-            self.put_event()
+            self.put_algo_event()
 
     def update_tick(self, tick: TickData):
         """"""
@@ -86,7 +129,12 @@ class SpreadAlgoTemplate:
 
     def update_timer(self):
         """"""
-        self.on_timer()
+        self.count += 1
+        if self.count < self.interval:
+            return
+        self.count = 0
+
+        self.on_interval()
 
     def put_event(self):
         """"""
@@ -94,7 +142,7 @@ class SpreadAlgoTemplate:
 
     def write_log(self, msg: str):
         """"""
-        self.algo_engine.write_log(msg)
+        self.algo_engine.write_algo_log(msg)
 
     def send_long_order(self, vt_symbol: str, price: float, volume: float):
         """"""
@@ -153,6 +201,8 @@ class SpreadAlgoTemplate:
                 else:
                     self.traded = max(self.traded, adjusted_leg_traded)
 
+        self.traded_volume = abs(self.traded)
+
         if self.traded == self.target:
             self.status = Status.ALLTRADED
         elif not self.traded:
@@ -184,6 +234,6 @@ class SpreadAlgoTemplate:
         pass
 
     @virtual
-    def on_timer(self):
+    def on_interval(self):
         """"""
         pass
