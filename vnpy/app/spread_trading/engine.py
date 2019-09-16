@@ -11,15 +11,15 @@ from vnpy.trader.event import (
 from vnpy.trader.utility import load_json, save_json
 from vnpy.trader.object import (
     TickData, ContractData, LogData,
-    SubscribeRequest, OrderRequest, CancelRequest
+    SubscribeRequest, OrderRequest
 )
 from vnpy.trader.constant import Direction, Offset, OrderType
-from vnpy.trader.converter import OffsetConverter, PositionHolding
+from vnpy.trader.converter import OffsetConverter
 
 from .base import (
     LegData, SpreadData,
     EVENT_SPREAD_DATA, EVENT_SPREAD_ALGO,
-    EVENT_SPREAD_LOG, EVENT_SPREAD_STRATEGY
+    EVENT_SPREAD_LOG
 )
 from .template import SpreadAlgoTemplate
 from .algo import SpreadTakerAlgo
@@ -333,7 +333,8 @@ class SpreadAlgoEngine:
         price: float,
         volume: float,
         payup: int,
-        interval: int
+        interval: int,
+        lock: bool
     ) -> str:
         # Find spread object
         spread = self.spreads.get(spread_name, None)
@@ -355,7 +356,8 @@ class SpreadAlgoEngine:
             price,
             volume,
             payup,
-            interval
+            interval,
+            lock
         )
         self.algos[algoid] = algo
 
@@ -420,13 +422,13 @@ class SpreadAlgoEngine:
             offset = Offset.CLOSE
 
         original_req = OrderRequest(
-            contract.symbol,
-            contract.exchange,
-            direction,
-            offset,
-            OrderType.LIMIT,
-            price,
-            volume
+            symbol=contract.symbol,
+            exchange=contract.exchange,
+            direction=direction,
+            offset=offset,
+            type=OrderType.LIMIT,
+            price=price,
+            volume=volume
         )
 
         # Convert with offset converter

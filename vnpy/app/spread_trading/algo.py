@@ -1,5 +1,4 @@
 from typing import Any
-from math import floor, ceil
 
 from vnpy.trader.constant import Direction
 from vnpy.trader.object import (TickData, OrderData, TradeData)
@@ -35,6 +34,10 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
 
     def on_tick(self, tick: TickData):
         """"""
+        # Return if tick not inited
+        if not self.spread.bid_volume or not self.spread.ask_volume:
+            return
+
         # Return if there are any existing orders
         if not self.check_order_finished():
             return
@@ -114,7 +117,7 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
 
         # Calculate passive leg target volume and do hedge
         for leg in self.spread.passive_legs:
-            passive_traded = self.leg_orders[leg.vt_symbol]
+            passive_traded = self.leg_traded[leg.vt_symbol]
             passive_target = self.spread.calculate_leg_volume(
                 leg.vt_symbol,
                 hedge_volume
@@ -133,6 +136,6 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
         if leg_volume > 0:
             price = leg_tick.ask_price_1 + leg_contract.pricetick * self.payup
             self.send_long_order(leg.vt_symbol, price, abs(leg_volume))
-        else:
+        elif leg_volume < 0:
             price = leg_tick.bid_price_1 - leg_contract.pricetick * self.payup
             self.send_short_order(leg.vt_symbol, price, abs(leg_volume))

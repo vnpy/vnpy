@@ -55,6 +55,8 @@ class SpreadAlgoTemplate:
         self.leg_traded: Dict[str, float] = defaultdict(int)
         self.leg_orders: Dict[str, List[str]] = defaultdict(list)
 
+        self.write_log("算法已启动")
+
     def is_active(self):
         """"""
         if self.status not in [Status.CANCELLED, Status.ALLTRADED]:
@@ -105,6 +107,7 @@ class SpreadAlgoTemplate:
         if self.is_active():
             self.cancel_all_order()
             self.status = Status.CANCELLED
+            self.write_log("算法已停止")
             self.put_event()
 
     def update_tick(self, tick: TickData):
@@ -118,14 +121,25 @@ class SpreadAlgoTemplate:
         else:
             self.leg_traded[trade.vt_symbol] -= trade.volume
 
+        msg = "委托成交，{}，{}，{}@{}".format(
+            trade.vt_symbol,
+            trade.direction,
+            trade.volume,
+            trade.price
+        )
+        self.write_log(msg)
+
         self.calculate_traded()
+        self.put_event()
 
         self.on_trade(trade)
 
     def update_order(self, order: OrderData):
         """"""
         if not order.is_active():
-            self.leg_orders[order.vt_symbol].remove(order.vt_orderid)
+            vt_orderids = self.leg_orders[order.vt_symbol]
+            if order.vt_orderid in vt_orderids:
+                vt_orderids.remove(order.vt_orderid)
 
         self.on_order(order)
 
@@ -144,7 +158,7 @@ class SpreadAlgoTemplate:
 
     def write_log(self, msg: str):
         """"""
-        self.algo_engine.write_algo_log(msg)
+        self.algo_engine.write_algo_log(self, msg)
 
     def send_long_order(self, vt_symbol: str, price: float, volume: float):
         """"""
@@ -173,10 +187,18 @@ class SpreadAlgoTemplate:
 
         self.leg_orders[vt_symbol].extend(vt_orderids)
 
+        msg = "发出委托，{}，{}，{}@{}".format(
+            vt_symbol,
+            direction,
+            volume,
+            price
+        )
+        self.write_log(msg)
+
     def cancel_leg_order(self, vt_symbol: str):
         """"""
         for vt_orderid in self.leg_orders[vt_symbol]:
-            self.algo_engine.cancel_order(vt_orderid)
+            self.algo_engine.cancel_order(self, vt_orderid)
 
     def cancel_all_order(self):
         """"""
@@ -201,8 +223,10 @@ class SpreadAlgoTemplate:
             else:
                 if adjusted_leg_traded > 0:
                     self.traded = min(self.traded, adjusted_leg_traded)
-                else:
+                elif adjusted_leg_traded < 0:
                     self.traded = max(self.traded, adjusted_leg_traded)
+                else:
+                    self.traded = 0
 
         self.traded_volume = abs(self.traded)
 

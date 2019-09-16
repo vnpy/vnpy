@@ -117,6 +117,7 @@ class Exchange(Enum):
     BINANCE = "BINANCE"
     COINBASE = "COINBASE"
 
+
 class Currency(Enum):
     """
     Currency.

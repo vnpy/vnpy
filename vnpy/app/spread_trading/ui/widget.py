@@ -9,9 +9,8 @@ from vnpy.trader.ui import QtWidgets, QtCore, QtGui
 from vnpy.trader.ui.widget import (
     BaseMonitor, BaseCell,
     BidCell, AskCell,
-    TimeCell, MsgCell,
-    PnlCell, DirectionCell,
-    EnumCell,
+    TimeCell, PnlCell,
+    DirectionCell, EnumCell,
 )
 
 from ..engine import (
@@ -19,8 +18,7 @@ from ..engine import (
     APP_NAME,
     EVENT_SPREAD_DATA,
     EVENT_SPREAD_LOG,
-    EVENT_SPREAD_ALGO,
-    EVENT_SPREAD_STRATEGY
+    EVENT_SPREAD_ALGO
 )
 
 
@@ -153,7 +151,7 @@ class SpreadAlgoMonitor(BaseMonitor):
     headers = {
         "algoid": {"display": "算法", "cell": BaseCell, "update": False},
         "spread_name": {"display": "价差", "cell": BaseCell, "update": False},
-        "direction": {"display": "方向", "cell": EnumCell, "update": False},
+        "direction": {"display": "方向", "cell": DirectionCell, "update": False},
         "price": {"display": "价格", "cell": BaseCell, "update": False},
         "payup": {"display": "超价", "cell": BaseCell, "update": False},
         "volume": {"display": "数量", "cell": BaseCell, "update": False},
@@ -239,7 +237,7 @@ class SpreadAlgoDialog(QtWidgets.QDialog):
         form.addRow("数量", self.volume_line)
         form.addRow("超价", self.payup_line)
         form.addRow("间隔", self.interval_line)
-        form.addRow("锁仓", self.lock_line)
+        form.addRow("锁仓", self.lock_combo)
         form.addRow(button_start)
 
         self.setLayout(form)

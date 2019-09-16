@@ -158,7 +158,7 @@ class TimeCell(BaseCell):
         """
         if content is None:
             return
-            
+
         timestamp = content.strftime("%H:%M:%S")
 
         millisecond = int(content.microsecond / 1000)
