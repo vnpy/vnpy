@@ -25,7 +25,8 @@ class SpreadAlgoTemplate:
         price: float,
         volume: float,
         payup: int,
-        interval: int
+        interval: int,
+        lock: bool
     ):
         """"""
         self.algo_engine = algo_engine
@@ -39,6 +40,7 @@ class SpreadAlgoTemplate:
         self.volume: float = volume
         self.payup: int = payup
         self.interval = interval
+        self.lock = lock
 
         if direction == Direction.LONG:
             self.target = volume
@@ -166,6 +168,7 @@ class SpreadAlgoTemplate:
             price,
             volume,
             direction,
+            self.lock
         )
 
         self.leg_orders[vt_symbol].extend(vt_orderids)

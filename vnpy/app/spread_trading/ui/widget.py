@@ -227,6 +227,11 @@ class SpreadAlgoDialog(QtWidgets.QDialog):
         button_start = QtWidgets.QPushButton("启动")
         button_start.clicked.connect(self.start_algo)
 
+        self.lock_combo = QtWidgets.QComboBox()
+        self.lock_combo.addItems(
+            ["否", "是"]
+        )
+
         form = QtWidgets.QFormLayout()
         form.addRow("价差", self.name_line)
         form.addRow("方向", self.direction_combo)
@@ -234,6 +239,7 @@ class SpreadAlgoDialog(QtWidgets.QDialog):
         form.addRow("数量", self.volume_line)
         form.addRow("超价", self.payup_line)
         form.addRow("间隔", self.interval_line)
+        form.addRow("锁仓", self.lock_line)
         form.addRow(button_start)
 
         self.setLayout(form)
@@ -247,8 +253,14 @@ class SpreadAlgoDialog(QtWidgets.QDialog):
         payup = int(self.payup_line.text())
         interval = int(self.interval_line.text())
 
+        lock_str = self.lock_combo.currentText()
+        if lock_str == "是":
+            lock = True
+        else:
+            lock = False
+
         self.spread_engine.start_algo(
-            name, direction, price, volume, payup, interval
+            name, direction, price, volume, payup, interval, lock
         )
 
 
