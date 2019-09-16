@@ -15,20 +15,9 @@ EVENT_SPREAD_STRATEGY = "eSpreadStrategy"
 class LegData:
     """"""
 
-    def __init__(
-        self,
-        vt_symbol: str,
-        price_multiplier: float,
-        trading_multiplier: float
-    ):
+    def __init__(self, vt_symbol: str):
         """"""
         self.vt_symbol: str = vt_symbol
-
-        # For calculating spread price
-        self.price_multiplier: float = price_multiplier
-
-        # For calculating spread pos and sending orders
-        self.trading_multiplier: float = trading_multiplier
 
         # Price and position data
         self.bid_price: float = 0
@@ -66,6 +55,8 @@ class SpreadData:
         self,
         name: str,
         legs: List[LegData],
+        price_multipliers: Dict[str, int],
+        trading_multipliers: Dict[str, int],
         active_symbol: str
     ):
         """"""
@@ -74,6 +65,12 @@ class SpreadData:
         self.legs: Dict[str, LegData] = {}
         self.active_leg: LegData = None
         self.passive_legs: List[LegData] = []
+
+        # For calculating spread price
+        self.price_multipliers: Dict[str: int] = price_multipliers
+
+        # For calculating spread pos and sending orders
+        self.trading_multipliers: Dict[str: int] = trading_multipliers
 
         self.price_formula: str = ""
         self.trading_formula: str = ""
@@ -85,15 +82,17 @@ class SpreadData:
             else:
                 self.passive_legs.append(leg)
 
-            if leg.price_multiplier > 0:
-                self.price_formula += f"+{leg.trading_multiplier}*{leg.vt_symbol}"
+            price_multiplier = self.price_multipliers[leg.vt_symbol]
+            if price_multiplier > 0:
+                self.price_formula += f"+{price_multiplier}*{leg.vt_symbol}"
             else:
-                self.price_formula += f"{leg.trading_multiplier}*{leg.vt_symbol}"
+                self.price_formula += f"{price_multiplier}*{leg.vt_symbol}"
 
-            if leg.trading_multiplier > 0:
-                self.trading_formula += f"+{leg.trading_multiplier}*{leg.vt_symbol}"
+            trading_multiplier = self.trading_multipliers[leg.vt_symbol]
+            if trading_multiplier > 0:
+                self.trading_formula += f"+{trading_multiplier}*{leg.vt_symbol}"
             else:
-                self.trading_formula += f"{leg.trading_multiplier}*{leg.vt_symbol}"
+                self.trading_formula += f"{trading_multiplier}*{leg.vt_symbol}"
 
         # Spread data
         self.bid_price: float = 0
@@ -116,24 +115,27 @@ class SpreadData:
                 return
 
             # Calculate price
-            if leg.price_multiplier > 0:
-                self.bid_price += leg.bid_price * leg.price_multiplier
-                self.ask_price += leg.ask_price * leg.price_multiplier
+            price_multiplier = self.price_multipliers[leg.vt_symbol]
+            if price_multiplier > 0:
+                self.bid_price += leg.bid_price * price_multiplier
+                self.ask_price += leg.ask_price * price_multiplier
             else:
-                self.bid_price += leg.ask_price * leg.price_multiplier
-                self.ask_price += leg.bid_price * leg.price_multiplier
+                self.bid_price += leg.ask_price * price_multiplier
+                self.ask_price += leg.bid_price * price_multiplier
 
             # Calculate volume
-            if leg.trading_multiplier > 0:
+            trading_multiplier = self.trading_multipliers[leg.vt_symbol]
+
+            if trading_multiplier > 0:
                 adjusted_bid_volume = floor(
-                    leg.bid_volume / leg.trading_multiplier)
+                    leg.bid_volume / trading_multiplier)
                 adjusted_ask_volume = floor(
-                    leg.ask_volume / leg.trading_multiplier)
+                    leg.ask_volume / trading_multiplier)
             else:
                 adjusted_bid_volume = floor(
-                    leg.ask_volume / abs(leg.trading_multiplier))
+                    leg.ask_volume / abs(trading_multiplier))
                 adjusted_ask_volume = floor(
-                    leg.bid_volume / abs(leg.trading_multiplier))
+                    leg.bid_volume / abs(trading_multiplier))
 
             # For the first leg, just initialize
             if not n:
@@ -152,7 +154,8 @@ class SpreadData:
         self.net_pos = 0
 
         for n, leg in enumerate(self.legs.values()):
-            adjusted_net_pos = leg.net_pos / leg.trading_multiplier
+            trading_multiplier = self.trading_multipliers[leg.vt_symbol]
+            adjusted_net_pos = leg.net_pos / trading_multiplier
 
             if adjusted_net_pos > 0:
                 adjusted_net_pos = floor(adjusted_net_pos)
@@ -177,13 +180,15 @@ class SpreadData:
     def calculate_leg_volume(self, vt_symbol: str, spread_volume: float) -> float:
         """"""
         leg = self.legs[vt_symbol]
-        leg_volume = spread_volume * leg.trading_multiplier
+        trading_multiplier = self.trading_multipliers[leg.vt_symbol]
+        leg_volume = spread_volume * trading_multiplier
         return leg_volume
 
     def calculate_spread_volume(self, vt_symbol: str, leg_volume: float) -> float:
         """"""
         leg = self.legs[vt_symbol]
-        spread_volume = leg_volume / leg.trading_multiplier
+        trading_multiplier = self.trading_multipliers[leg.vt_symbol]
+        spread_volume = leg_volume / trading_multiplier
 
         if spread_volume > 0:
             spread_volume = floor(spread_volume)

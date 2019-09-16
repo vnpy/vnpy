@@ -107,10 +107,13 @@ class SpreadDataEngine:
         for spread in self.spreads.values():
             leg_settings = []
             for leg in spread.legs.values():
+                price_multiplier = spread.price_multipliers[leg.vt_symbol]
+                trading_multiplier = spread.trading_multipliers[leg.vt_symbol]
+
                 leg_setting = {
                     "vt_symbol": leg.vt_symbol,
-                    "price_multiplier": leg.price_multiplier,
-                    "trading_multiplier": leg.trading_multiplier
+                    "price_multiplier": price_multiplier,
+                    "trading_multiplier": trading_multiplier
                 }
                 leg_settings.append(leg_setting)
 
@@ -185,21 +188,28 @@ class SpreadDataEngine:
             return
 
         legs: List[LegData] = []
+        price_multipliers: Dict[str, int] = {}
+        trading_multipliers: Dict[str, int] = {}
+
         for leg_setting in leg_settings:
             vt_symbol = leg_setting["vt_symbol"]
 
             leg = self.legs.get(vt_symbol, None)
             if not leg:
-                leg = LegData(
-                    vt_symbol,
-                    leg_setting["price_multiplier"],
-                    leg_setting["trading_multiplier"]
-                )
+                leg = LegData(vt_symbol)
                 self.legs[vt_symbol] = leg
 
             legs.append(leg)
+            price_multipliers[vt_symbol] = leg_setting["price_multiplier"]
+            trading_multipliers[vt_symbol] = leg_setting["trading_multiplier"]
 
-        spread = SpreadData(name, legs, active_symbol)
+        spread = SpreadData(
+            name,
+            legs,
+            price_multipliers,
+            trading_multipliers,
+            active_symbol
+        )
         self.spreads[name] = spread
 
         for leg in spread.legs.values():
@@ -221,6 +231,7 @@ class SpreadDataEngine:
         for leg in spread.legs:
             self.symbol_spread_map[leg.vt_symbol].remove(spread)
 
+        self.save_setting()
         self.write_log("价差删除成功：{}".format(name))
 
 

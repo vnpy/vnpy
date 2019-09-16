@@ -211,7 +211,9 @@ class SpreadAlgoTemplate:
 
         for n, leg in enumerate(self.spread.legs.values()):
             leg_traded = self.leg_traded[leg.vt_symbol]
-            adjusted_leg_traded = leg_traded / leg.trading_multiplier
+            trading_multiplier = self.spread.trading_multipliers[
+                leg.vt_symbol]
+            adjusted_leg_traded = leg_traded / trading_multiplier
 
             if adjusted_leg_traded > 0:
                 adjusted_leg_traded = floor(adjusted_leg_traded)
