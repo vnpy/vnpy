@@ -1,6 +1,7 @@
 """"""
 
 import traceback
+from typing import Optional
 
 from vnpy.event import Event, EventEngine
 from vnpy.rpc import RpcServer
@@ -24,7 +25,7 @@ class RpcEngine(BaseEngine):
         self.rep_address = "tcp://*:2014"
         self.pub_address = "tcp://*:4102"
 
-        self.server = None
+        self.server: Optional[RpcServer] = None
 
         self.init_server()
         self.load_setting()
@@ -96,6 +97,7 @@ class RpcEngine(BaseEngine):
             return False
 
         self.server.stop()
+        self.server.join()
         self.write_log("RPC服务已停止")
         return True
 

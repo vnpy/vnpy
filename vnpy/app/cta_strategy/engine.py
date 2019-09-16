@@ -521,8 +521,23 @@ class CtaEngine(BaseEngine):
         end = datetime.now()
         start = end - timedelta(days)
 
-        # Query bars from RQData by default, if not found, load from database.
-        bars = self.query_bar_from_rq(symbol, exchange, interval, start, end)
+        # Query bars from gateway if available
+        contract = self.main_engine.get_contract(vt_symbol)
+
+        if contract and contract.history_data:
+            req = HistoryRequest(
+                symbol=symbol,
+                exchange=exchange,
+                interval=interval,
+                start=start,
+                end=end
+            )
+            bars = self.main_engine.query_history(req, contract.gateway_name)
+
+        # Try to query bars from RQData, if not found, load from database.
+        else:
+            bars = self.query_bar_from_rq(symbol, exchange, interval, start, end)
+
         if not bars:
             bars = database_manager.load_bar_data(
                 symbol=symbol,

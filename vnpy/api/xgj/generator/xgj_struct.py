@@ -4909,4 +4909,3 @@ CThostFtdcDepartmentUserField = {
 CThostFtdcQueryFreqField = {
     "QueryFreq": "int",
 }
-
