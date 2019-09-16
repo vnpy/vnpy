@@ -18,10 +18,11 @@ from vnpy.trader.converter import OffsetConverter
 
 from .base import (
     LegData, SpreadData,
-    EVENT_SPREAD_DATA, EVENT_SPREAD_ALGO,
-    EVENT_SPREAD_LOG
+    EVENT_SPREAD_DATA, EVENT_SPREAD_POS,
+    EVENT_SPREAD_ALGO, EVENT_SPREAD_LOG,
+    EVENT_SPREAD_STRATEGY
 )
-from .template import SpreadAlgoTemplate
+from .template import SpreadAlgoTemplate, SpreadStrategyTemplate
 from .algo import SpreadTakerAlgo
 
 
@@ -129,6 +130,7 @@ class SpreadDataEngine:
     def register_event(self) -> None:
         """"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
+        self.event_engine.register(EVENT_TRADE, self.process_trade_event)
         self.event_engine.register(EVENT_POSITION, self.process_position_event)
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
 
@@ -143,8 +145,7 @@ class SpreadDataEngine:
 
         for spread in self.symbol_spread_map[tick.vt_symbol]:
             spread.calculate_price()
-
-        self.put_data_event(spread)
+            self.put_data_event(spread)
 
     def process_position_event(self, event: Event) -> None:
         """"""
@@ -157,8 +158,20 @@ class SpreadDataEngine:
 
         for spread in self.symbol_spread_map[position.vt_symbol]:
             spread.calculate_pos()
+            self.put_pos_event(spread)
 
-        self.put_data_event(spread)
+    def process_trade_event(self, event: Event) -> None:
+        """"""
+        trade = event.data
+
+        leg = self.legs.get(trade.vt_symbol, None)
+        if not leg:
+            return
+        leg.update_trade(trade)
+
+        for spread in self.symbol_spread_map[trade.vt_symbol]:
+            spread.calculate_pos()
+            self.put_pos_event(spread)
 
     def process_contract_event(self, event: Event) -> None:
         """"""
@@ -173,6 +186,11 @@ class SpreadDataEngine:
     def put_data_event(self, spread: SpreadData) -> None:
         """"""
         event = Event(EVENT_SPREAD_DATA, spread)
+        self.event_engine.put(event)
+
+    def put_pos_event(self, spread: SpreadData) -> None:
+        """"""
+        event = Event(EVENT_SPREAD_POS, spread)
         self.event_engine.put(event)
 
     def add_spread(
@@ -483,3 +501,108 @@ class SpreadAlgoEngine:
     def get_contract(self, vt_symbol: str) -> ContractData:
         """"""
         return self.main_engine.get_contract(vt_symbol)
+
+
+class SpreadStrategyEngine:
+    """"""
+
+    def __init__(self, spread_engine: SpreadEngine):
+        """"""
+        self.spread_engine: SpreadEngine = spread_engine
+        self.main_engine: MainEngine = spread_engine.main_engine
+        self.event_engine: EventEngine = spread_engine.event_engine
+
+        self.write_log = spread_engine.write_log
+
+        self.strategies: Dict[str: SpreadStrategyTemplate] = {}
+
+        self.order_strategy_map: dict[str: SpreadStrategyTemplate] = {}
+        self.name_strategy_map: dict[str: SpreadStrategyTemplate] = defaultdict(
+            list)
+
+        self.vt_tradeids: Set = set()
+
+    def start(self):
+        """"""
+        self.load_setting()
+        self.register_event()
+
+        self.write_log("价差策略引擎启动成功")
+
+    def load_setting(self):
+        """"""
+        pass
+
+    def save_setting(self):
+        """"""
+        pass
+
+    def register_event(self):
+        """"""
+        ee = self.event_engine
+        ee.register(EVENT_ORDER, self.process_order_event)
+        ee.register(EVENT_TRADE, self.process_trade_event)
+        ee.register(EVENT_SPREAD_DATA, self.process_spread_data_event)
+        ee.register(EVENT_SPREAD_POS, self.process_spread_pos_event)
+        ee.register(EVENT_SPREAD_ALGO, self.process_spread_algo_event)
+
+    def process_spread_data_event(self, event: Event):
+        """"""
+        pass
+
+    def process_spread_pos_event(self, event: Event):
+        """"""
+        pass
+
+    def process_spread_algo_event(self, event: Event):
+        """"""
+        pass
+
+    def process_order_event(self, event: Event):
+        """"""
+        pass
+
+    def process_trade_event(self, event: Event):
+        """"""
+        pass
+
+    def start_algo(
+        self,
+        strategy: SpreadStrategyTemplate,
+        direction: Direction,
+        price: float,
+        volume: float,
+        payup: int,
+        interval: int,
+        lock: bool
+    ) -> str:
+        """"""
+        pass
+
+    def stop_algo(self, algoid: str):
+        """"""
+        pass
+
+    def send_order(
+        self,
+        strategy: SpreadStrategyTemplate,
+        vt_symbol: str,
+        price: float,
+        volume: float,
+        direction: Direction,
+        offset: Offset
+    ) -> str:
+        pass
+
+    def cancel_order(self, vt_orderid: str):
+        """"""
+        pass
+
+    def put_strategy_event(self, strategy: SpreadStrategyTemplate):
+        """"""
+        pass
+
+    def write_strategy_log(self, strategy: SpreadStrategyTemplate, msg: str):
+        """"""
+        pass
+        

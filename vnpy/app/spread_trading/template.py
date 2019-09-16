@@ -4,7 +4,7 @@ from typing import Dict, List
 from math import floor, ceil
 
 from vnpy.trader.object import TickData, TradeData, OrderData, ContractData
-from vnpy.trader.constant import Direction, Status
+from vnpy.trader.constant import Direction, Status, Offset
 from vnpy.trader.utility import virtual
 
 from .base import SpreadData
@@ -12,7 +12,7 @@ from .base import SpreadData
 
 class SpreadAlgoTemplate:
     """
-    Template for writing spread trading algos.
+    Template for implementing spread trading algos.
     """
     algo_name = "AlgoTemplate"
 
@@ -266,3 +266,154 @@ class SpreadAlgoTemplate:
     def on_interval(self):
         """"""
         pass
+
+
+class SpreadStrategyTemplate:
+    """
+    Template for implementing spread trading strategies.
+    """
+    strategy_name = "StrategyTemplate"
+
+    def __init__(
+        self,
+        strategy_engine,
+        strategy_id: str,
+        spread: SpreadData
+    ):
+        """"""
+        self.strategy_engine = strategy_engine
+        self.strategy_id = strategy_id
+        self.spread = spread
+
+    @virtual
+    def on_spread_data(self):
+        """"""
+        pass
+
+    @virtual
+    def on_spread_pos(self):
+        """"""
+        pass
+
+    @virtual
+    def on_spread_algo(self, algo: SpreadAlgoTemplate):
+        """"""
+        pass
+
+    @virtual
+    def on_order(self, order: OrderData):
+        """"""
+        pass
+
+    @virtual
+    def on_trade(self, trade: TradeData):
+        """"""
+        pass
+
+    def start_algo(
+        self,
+        direction: Direction,
+        price: float,
+        volume: float,
+        payup: int,
+        interval: int,
+        lock: bool
+    ) -> str:
+        """"""
+        pass
+
+    def start_long_algo(
+        self,
+        price: float,
+        volume: float,
+        payup: int,
+        interval: int,
+        lock: bool
+    ) -> str:
+        """"""
+        return self.start_algo(Direction.LONG, price, volume, payup, interval, lock)
+
+    def start_short_algo(
+        self,
+        price: float,
+        volume: float,
+        payup: int,
+        interval: int,
+        lock: bool
+    ) -> str:
+        """"""
+        return self.start_algo(Direction.SHORT, price, volume, payup, interval, lock)
+
+    def stop_algo(self, algoid: str):
+        """"""
+        pass
+
+    def buy(self, vt_symbol: str, price: float, volume: float):
+        """"""
+        return self.send_order(vt_symbol, price, volume, Direction.LONG, Offset.OPEN)
+
+    def sell(self, vt_symbol: str, price: float, volume: float):
+        """"""
+        return self.send_order(vt_symbol, price, volume, Direction.SHORT, Offset.CLOSE)
+
+    def short(self, vt_symbol: str, price: float, volume: float):
+        """"""
+        return self.send_order(vt_symbol, price, volume, Direction.SHORT, Offset.OPEN)
+
+    def cover(self, vt_symbol: str, price: float, volume: float):
+        """"""
+        return self.send_order(vt_symbol, price, volume, Direction.LONG, Offset.CLOSE)
+
+    def send_order(
+        self,
+        vt_symbol: str,
+        price: float,
+        volume: float,
+        direction: Direction,
+        offset: Offset
+    ):
+        """"""
+        pass
+
+    def cancel_order(self, vt_orderid: str):
+        """"""
+        pass
+
+    def put_event(self):
+        """"""
+        pass
+
+    def write_log(self, msg: str):
+        """"""
+        pass
+
+    def get_spread_tick(self) -> TickData:
+        """"""
+        return self.spread.to_tick()
+
+    def get_spread_pos(self) -> float:
+        """"""
+        return self.spread.net_pos
+
+    def get_leg_tick(self, vt_symbol: str) -> TickData:
+        """"""
+        leg = self.spread.legs.get(vt_symbol, None)
+
+        if not leg:
+            return None
+
+        return leg.tick
+
+    def get_leg_pos(self, vt_symbol: str, direction: Direction = Direction.NET) -> float:
+        """"""
+        leg = self.spread.legs.get(vt_symbol, None)
+
+        if not leg:
+            return None
+
+        if direction == Direction.NET:
+            return leg.net_pos
+        elif direction == Direction.LONG:
+            return leg.long_pos
+        else:
+            return leg.short_pos
