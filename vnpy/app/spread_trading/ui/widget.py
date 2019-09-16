@@ -17,6 +17,7 @@ from ..engine import (
     SpreadEngine,
     APP_NAME,
     EVENT_SPREAD_DATA,
+    EVENT_SPREAD_POS,
     EVENT_SPREAD_LOG,
     EVENT_SPREAD_ALGO
 )
@@ -104,6 +105,13 @@ class SpreadDataMonitor(BaseMonitor):
         "net_pos": {"display": "净仓", "cell": PnlCell, "update": True},
         "datetime": {"display": "时间", "cell": TimeCell, "update": True},
     }
+
+    def register_event(self):
+        """
+        Register event handler into event engine.
+        """
+        super().register_event()
+        self.event_engine.register(EVENT_SPREAD_POS, self.signal.emit)
 
 
 class SpreadLogMonitor(QtWidgets.QTextEdit):

@@ -2,11 +2,12 @@ from typing import Dict, List
 from math import floor, ceil
 from datetime import datetime
 
-from vnpy.trader.object import TickData, PositionData
-from vnpy.trader.constant import Direction
+from vnpy.trader.object import TickData, PositionData, TradeData
+from vnpy.trader.constant import Direction, Offset, Exchange
 
 
 EVENT_SPREAD_DATA = "eSpreadData"
+EVENT_SPREAD_POS = "eSpreadPos"
 EVENT_SPREAD_LOG = "eSpreadLog"
 EVENT_SPREAD_ALGO = "eSpreadAlgo"
 EVENT_SPREAD_STRATEGY = "eSpreadStrategy"
@@ -29,12 +30,17 @@ class LegData:
         self.short_pos: float = 0
         self.net_pos: float = 0
 
+        # Tick data buf
+        self.tick: TickData = None
+
     def update_tick(self, tick: TickData):
         """"""
         self.bid_price = tick.bid_price_1
         self.ask_price = tick.ask_price_1
         self.bid_volume = tick.bid_volume_1
         self.ask_volume = tick.ask_volume_1
+
+        self.tick = tick
 
     def update_position(self, position: PositionData):
         """"""
@@ -46,6 +52,21 @@ class LegData:
             else:
                 self.short_pos = position.volume
             self.net_pos = self.long_pos - self.short_pos
+
+    def update_trade(self, trade: TradeData):
+        """"""
+        if trade.direction == Direction.LONG:
+            if trade.offset == Offset.OPEN:
+                self.long_pos += trade.volume
+            else:
+                self.short_pos -= trade.volume
+        else:
+            if trade.offset == Offset.OPEN:
+                self.short_pos += trade.volume
+            else:
+                self.long_pos -= trade.volume
+
+        self.net_pos = self.long_pos - self.net_pos
 
 
 class SpreadData:
@@ -196,3 +217,19 @@ class SpreadData:
             spread_volume = ceil(spread_volume)
 
         return spread_volume
+
+    def to_tick(self):
+        """"""
+        tick = TickData(
+            symbol=self.name,
+            exchange=Exchange.LOCAL,
+            datetime=self.datetime,
+            name=self.name,
+            last_price=(self.bid_price + self.ask_price) / 2,
+            bid_price_1=self.bid_price,
+            ask_price_1=self.ask_price,
+            bid_volume_1=self.bid_volume,
+            ask_volume_1=self.ask_volume,
+            gateway_name="SPREAD"
+        )
+        return tick
