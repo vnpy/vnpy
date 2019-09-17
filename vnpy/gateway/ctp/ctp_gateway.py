@@ -717,6 +717,10 @@ class CtpTdApi(TdApi):
         """
         self.order_ref += 1
 
+        if req.offset not in OFFSET_VT2CTP:
+            self.gateway.write_log("请选择开平方向")
+            return ""
+
         ctp_req = {
             "InstrumentID": req.symbol,
             "ExchangeID": req.exchange.value,
