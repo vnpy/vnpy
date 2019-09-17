@@ -34,6 +34,7 @@ class SpreadManager(QtWidgets.QWidget):
 
         self.main_engine = main_engine
         self.event_engine = event_engine
+
         self.spread_engine = main_engine.get_engine(APP_NAME)
 
         self.init_ui()
@@ -43,8 +44,8 @@ class SpreadManager(QtWidgets.QWidget):
         self.setWindowTitle("价差交易")
 
         self.algo_dialog = SpreadAlgoWidget(self.spread_engine)
-        algo_tab = self.create_tab("交易", self.algo_dialog)
-        algo_tab.setMaximumWidth(300)
+        algo_group = self.create_group("交易", self.algo_dialog)
+        algo_group.setMaximumWidth(300)
 
         self.data_monitor = SpreadDataMonitor(
             self.main_engine,
@@ -63,13 +64,13 @@ class SpreadManager(QtWidgets.QWidget):
         )
 
         grid = QtWidgets.QGridLayout()
-        grid.addWidget(self.create_tab("价差", self.data_monitor), 0, 0)
-        grid.addWidget(self.create_tab("日志", self.log_monitor), 1, 0)
-        grid.addWidget(self.create_tab("算法", self.algo_monitor), 0, 1)
-        grid.addWidget(self.create_tab("策略", self.strategy_monitor), 1, 1)
+        grid.addWidget(self.create_group("价差", self.data_monitor), 0, 0)
+        grid.addWidget(self.create_group("日志", self.log_monitor), 1, 0)
+        grid.addWidget(self.create_group("算法", self.algo_monitor), 0, 1)
+        grid.addWidget(self.create_group("策略", self.strategy_monitor), 1, 1)
 
         hbox = QtWidgets.QHBoxLayout()
-        hbox.addWidget(algo_tab)
+        hbox.addWidget(algo_group)
         hbox.addLayout(grid)
 
         self.setLayout(hbox)
@@ -77,14 +78,20 @@ class SpreadManager(QtWidgets.QWidget):
     def show(self):
         """"""
         self.spread_engine.start()
-
+        self.algo_dialog.update_class_combo()
         self.showMaximized()
 
-    def create_tab(self, title: str, widget: QtWidgets.QWidget):
+    def create_group(self, title: str, widget: QtWidgets.QWidget):
         """"""
-        tab = QtWidgets.QTabWidget()
-        tab.addTab(widget, title)
-        return tab
+        group = QtWidgets.QGroupBox()
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(widget)
+
+        group.setLayout(vbox)
+        group.setTitle(title)
+
+        return group
 
 
 class SpreadDataMonitor(BaseMonitor):
@@ -145,7 +152,7 @@ class SpreadLogMonitor(QtWidgets.QTextEdit):
     def process_log_event(self, event: Event):
         """"""
         log = event.data
-        msg = f"{log.time.strftime('%H:%M:%S')}：{log.msg}"
+        msg = f"{log.time.strftime('%H:%M:%S')}\t{log.msg}"
         self.append(msg)
 
 
@@ -205,7 +212,6 @@ class SpreadAlgoWidget(QtWidgets.QFrame):
         self.strategy_engine: SpreadStrategyEngine = spread_engine.strategy_engine
 
         self.init_ui()
-        self.update_class_combo()
 
     def init_ui(self):
         """"""
@@ -314,7 +320,8 @@ class SpreadAlgoWidget(QtWidgets.QFrame):
 
     def remove_spread(self):
         """"""
-        pass
+        dialog = SpreadRemoveDialog(self.spread_engine)
+        dialog.exec_()
 
     def update_class_combo(self):
         """"""
@@ -470,7 +477,44 @@ class SpreadDataDialog(QtWidgets.QDialog):
         self.accept()
 
 
-class SpreadStrategyMonitor(QtWidgets.QScrollArea):
+class SpreadRemoveDialog(QtWidgets.QDialog):
+    """"""
+
+    def __init__(self, spread_engine: SpreadEngine):
+        """"""
+        super().__init__()
+
+        self.spread_engine: SpreadEngine = spread_engine
+
+        self.init_ui()
+
+    def init_ui(self):
+        """"""
+        self.setWindowTitle("移除价差")
+        self.setMinimumWidth(300)
+
+        self.name_combo = QtWidgets.QComboBox()
+        spreads = self.spread_engine.get_all_spreads()
+        for spread in spreads:
+            self.name_combo.addItem(spread.name)
+
+        button_remove = QtWidgets.QPushButton("移除")
+        button_remove.clicked.connect(self.remove_spread)
+
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addWidget(self.name_combo)
+        hbox.addWidget(button_remove)
+
+        self.setLayout(hbox)
+
+    def remove_spread(self):
+        """"""
+        spread_name = self.name_combo.currentText()
+        self.spread_engine.remove_spread(spread_name)
+        self.accept()
+
+
+class SpreadStrategyMonitor(QtWidgets.QWidget):
     """"""
 
     signal_strategy = QtCore.pyqtSignal(Event)
@@ -495,8 +539,13 @@ class SpreadStrategyMonitor(QtWidgets.QScrollArea):
         scroll_widget = QtWidgets.QWidget()
         scroll_widget.setLayout(self.scroll_layout)
 
-        self.setWidgetResizable(True)
-        self.setWidget(scroll_widget)
+        scroll_area = QtWidgets.QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(scroll_widget)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(scroll_area)
+        self.setLayout(vbox)
 
     def register_event(self):
         """"""
@@ -517,9 +566,14 @@ class SpreadStrategyMonitor(QtWidgets.QScrollArea):
             manager = self.managers[strategy_name]
             manager.update_data(data)
         else:
-            manager = SpreadStrategyWidget(self.strategy_engine, data)
+            manager = SpreadStrategyWidget(self, self.strategy_engine, data)
             self.scroll_layout.insertWidget(0, manager)
             self.managers[strategy_name] = manager
+
+    def remove_strategy(self, strategy_name):
+        """"""
+        manager = self.managers.pop(strategy_name)
+        manager.deleteLater()
 
 
 class SpreadStrategyWidget(QtWidgets.QFrame):
@@ -529,12 +583,14 @@ class SpreadStrategyWidget(QtWidgets.QFrame):
 
     def __init__(
         self,
+        strategy_monitor: SpreadStrategyMonitor,
         strategy_engine: SpreadStrategyEngine,
         data: dict
     ):
         """"""
         super().__init__()
 
+        self.strategy_monitor = strategy_monitor
         self.strategy_engine = strategy_engine
 
         self.strategy_name = data["strategy_name"]
@@ -629,7 +685,7 @@ class SpreadStrategyWidget(QtWidgets.QFrame):
 
         # Only remove strategy gui manager if it has been removed from engine
         if result:
-            self.spread_manager.remove_strategy(self.strategy_name)
+            self.strategy_monitor.remove_strategy(self.strategy_name)
 
 
 class StrategyDataMonitor(QtWidgets.QTableWidget):
@@ -698,11 +754,11 @@ class SettingEditor(QtWidgets.QDialog):
         """"""
         form = QtWidgets.QFormLayout()
 
-        # Add vt_symbol and name edit if add new strategy
+        # Add spread_name and name edit if add new strategy
         if self.class_name:
             self.setWindowTitle(f"添加策略：{self.class_name}")
             button_text = "添加"
-            parameters = {"strategy_name": "", "vt_symbol": ""}
+            parameters = {"strategy_name": "", "spread_name": ""}
             parameters.update(self.parameters)
         else:
             self.setWindowTitle(f"参数编辑：{self.strategy_name}")

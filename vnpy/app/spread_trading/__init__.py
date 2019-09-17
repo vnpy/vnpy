@@ -1,8 +1,19 @@
 from pathlib import Path
 
 from vnpy.trader.app import BaseApp
+from vnpy.trader.object import (
+    OrderData,
+    TradeData
+)
 
-from .engine import SpreadEngine, APP_NAME
+from .engine import (
+    SpreadEngine,
+    APP_NAME,
+    SpreadData,
+    LegData,
+    SpreadStrategyTemplate,
+    SpreadAlgoTemplate
+)
 
 
 class SpreadTradingApp(BaseApp):

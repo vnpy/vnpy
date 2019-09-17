@@ -48,6 +48,8 @@ class SpreadEngine(BaseEngine):
 
         self.add_spread = self.data_engine.add_spread
         self.remove_spread = self.data_engine.remove_spread
+        self.get_spread = self.data_engine.get_spread
+        self.get_all_spreads = self.data_engine.get_all_spreads
 
         self.start_algo = self.algo_engine.start_algo
         self.stop_algo = self.algo_engine.stop_algo
@@ -60,6 +62,13 @@ class SpreadEngine(BaseEngine):
 
         self.data_engine.start()
         self.algo_engine.start()
+        self.strategy_engine.start()
+
+    def stop(self):
+        """"""
+        self.data_engine.stop()
+        self.algo_engine.stop()
+        self.strategy_engine.stop()
 
     def write_log(self, msg: str):
         """"""
@@ -93,6 +102,10 @@ class SpreadDataEngine:
         self.register_event()
 
         self.write_log("价差数据引擎启动成功")
+
+    def stop(self):
+        """"""
+        pass
 
     def load_setting(self) -> None:
         """"""
@@ -251,11 +264,20 @@ class SpreadDataEngine:
 
         spread = self.spreads.pop(name)
 
-        for leg in spread.legs:
+        for leg in spread.legs.values():
             self.symbol_spread_map[leg.vt_symbol].remove(spread)
 
         self.save_setting()
-        self.write_log("价差删除成功：{}".format(name))
+        self.write_log("价差移除成功：{}，重启后生效".format(name))
+
+    def get_spread(self, name: str) -> SpreadData:
+        """"""
+        spread = self.spreads.get(name, None)
+        return spread
+
+    def get_all_spreads(self) -> List[SpreadData]:
+        """"""
+        return list(self.spreads.values())
 
 
 class SpreadAlgoEngine:
@@ -288,6 +310,11 @@ class SpreadAlgoEngine:
         self.register_event()
 
         self.write_log("价差算法引擎启动成功")
+
+    def stop(self):
+        """"""
+        for algo in self.algos.values():
+            self.stop_algo(algo)
 
     def register_event(self):
         """"""
@@ -533,9 +560,10 @@ class SpreadStrategyEngine:
 
         self.vt_tradeids: Set = set()
 
+        self.load_strategy_class()
+
     def start(self):
         """"""
-        self.load_strategy_class()
         self.load_strategy_setting()
         self.register_event()
 
@@ -551,7 +579,7 @@ class SpreadStrategyEngine:
         """
         path1 = Path(__file__).parent.joinpath("strategies")
         self.load_strategy_class_from_folder(
-            path1, "vnpy.app.cta_strategy.strategies")
+            path1, "vnpy.app.spread_trading.strategies")
 
         path2 = Path.cwd().joinpath("strategies")
         self.load_strategy_class_from_folder(path2, "strategies")
@@ -642,7 +670,8 @@ class SpreadStrategyEngine:
         strategies = self.spread_strategy_map[spread.name]
 
         for strategy in strategies:
-            self.call_strategy_func(strategy, strategy.on_spread_data)
+            if strategy.inited:
+                self.call_strategy_func(strategy, strategy.on_spread_data)
 
     def process_spread_pos_event(self, event: Event):
         """"""
@@ -650,7 +679,8 @@ class SpreadStrategyEngine:
         strategies = self.spread_strategy_map[spread.name]
 
         for strategy in strategies:
-            self.call_strategy_func(strategy, strategy.on_spread_pos)
+            if strategy.inited:
+                self.call_strategy_func(strategy, strategy.on_spread_pos)
 
     def process_spread_algo_event(self, event: Event):
         """"""
@@ -671,7 +701,7 @@ class SpreadStrategyEngine:
     def process_trade_event(self, event: Event):
         """"""
         trade = event.data
-        strategy = self.trade_strategy_map.get(trade.vt_orderid, None)
+        strategy = self.order_strategy_map.get(trade.vt_orderid, None)
 
         if strategy:
             self.call_strategy_func(strategy, strategy.on_trade, trade)
@@ -692,7 +722,7 @@ class SpreadStrategyEngine:
             strategy.inited = False
 
             msg = f"触发异常已停止\n{traceback.format_exc()}"
-            self.write_log(msg, strategy)
+            self.write_strategy_log(strategy, msg)
 
     def add_strategy(
         self, class_name: str, strategy_name: str, spread_name: str, setting: dict
@@ -709,7 +739,12 @@ class SpreadStrategyEngine:
             self.write_log(f"创建策略失败，找不到策略类{class_name}")
             return
 
-        strategy = strategy_class(self, strategy_name, spread_name, setting)
+        spread = self.spread_engine.get_spread(spread_name)
+        if not spread:
+            self.write_log(f"创建策略失败，找不到价差{spread_name}")
+            return
+
+        strategy = strategy_class(self, strategy_name, spread, setting)
         self.strategies[strategy_name] = strategy
 
         # Add vt_symbol to strategy map.
@@ -720,6 +755,37 @@ class SpreadStrategyEngine:
         self.update_strategy_setting(strategy_name, setting)
 
         self.put_strategy_event(strategy)
+
+    def edit_strategy(self, strategy_name: str, setting: dict):
+        """
+        Edit parameters of a strategy.
+        """
+        strategy = self.strategies[strategy_name]
+        strategy.update_setting(setting)
+
+        self.update_strategy_setting(strategy_name, setting)
+        self.put_strategy_event(strategy)
+
+    def remove_strategy(self, strategy_name: str):
+        """
+        Remove a strategy.
+        """
+        strategy = self.strategies[strategy_name]
+        if strategy.trading:
+            self.write_log(f"策略{strategy.strategy_name}移除失败，请先停止")
+            return
+
+        # Remove setting
+        self.remove_strategy_setting(strategy_name)
+
+        # Remove from symbol strategy map
+        strategies = self.spread_strategy_map[strategy.spread_name]
+        strategies.remove(strategy)
+
+        # Remove from strategies
+        self.strategies.pop(strategy_name)
+
+        return True
 
     def init_strategy(self, strategy_name: str):
         """"""
@@ -758,27 +824,47 @@ class SpreadStrategyEngine:
             return
 
         self.call_strategy_func(strategy, strategy.on_stop)
-        strategy.trading = False
-
+        
         strategy.stop_all_algos()
         strategy.cancel_all_orders()
+
+        strategy.trading = False
 
         self.put_strategy_event(strategy)
 
     def init_all_strategies(self):
         """"""
-        for strategy in self.strategies.values():
+        for strategy in self.strategies.keys():
             self.init_strategy(strategy)
 
     def start_all_strategies(self):
         """"""
-        for strategy in self.strategies.values():
+        for strategy in self.strategies.keys():
             self.start_strategy(strategy)
 
     def stop_all_strategies(self):
         """"""
-        for strategy in self.strategies.values():
+        for strategy in self.strategies.keys():
             self.stop_strategy(strategy)
+
+    def get_strategy_class_parameters(self, class_name: str):
+        """
+        Get default parameters of a strategy class.
+        """
+        strategy_class = self.classes[class_name]
+
+        parameters = {}
+        for name in strategy_class.parameters:
+            parameters[name] = getattr(strategy_class, name)
+
+        return parameters
+
+    def get_strategy_parameters(self, strategy_name):
+        """
+        Get parameters of a strategy.
+        """
+        strategy = self.strategies[strategy_name]
+        return strategy.get_parameters()
 
     def start_algo(
         self,
@@ -864,7 +950,8 @@ class SpreadStrategyEngine:
         """"""
         order = self.main_engine.get_order(vt_orderid)
         if not order:
-            self.write_strategy_log(strategy, "撤单失败，找不到委托{}".format(vt_orderid))
+            self.write_strategy_log(
+                strategy, "撤单失败，找不到委托{}".format(vt_orderid))
             return
 
         req = order.create_cancel_request()
@@ -876,7 +963,8 @@ class SpreadStrategyEngine:
 
     def put_strategy_event(self, strategy: SpreadStrategyTemplate):
         """"""
-        event = Event(EVENT_SPREAD_STRATEGY, strategy)
+        data = strategy.get_data()
+        event = Event(EVENT_SPREAD_STRATEGY, data)
         self.event_engine.put(event)
 
     def write_strategy_log(self, strategy: SpreadStrategyTemplate, msg: str):

@@ -147,11 +147,11 @@ class SpreadAlgoTemplate:
     def update_timer(self):
         """"""
         self.count += 1
-        if self.count < self.interval:
-            return
-        self.count = 0
+        if self.count > self.interval:
+            self.count = 0
+            self.on_interval()
 
-        self.on_interval()
+        self.put_event()
 
     def put_event(self):
         """"""
@@ -358,7 +358,7 @@ class SpreadStrategyTemplate:
         Callback when algo status is updated.
         """
         if not algo.is_active() and algo.algoid in self.algoids:
-            self.algoids.pop(algo.algoid)
+            self.algoids.remove(algo.algoid)
 
         self.on_spread_algo(algo)
 
@@ -367,7 +367,7 @@ class SpreadStrategyTemplate:
         Callback when order status is updated.
         """
         if not order.is_active() and order.vt_orderid in self.vt_orderids:
-            self.vt_orderids.pop(order.vt_orderid)
+            self.vt_orderids.remove(order.vt_orderid)
 
         self.on_order(order)
 
@@ -461,7 +461,7 @@ class SpreadStrategyTemplate:
         volume: float,
         payup: int,
         interval: int,
-        lock: bool
+        lock: bool = False
     ) -> str:
         """"""
         return self.start_algo(Direction.LONG, price, volume, payup, interval, lock)
@@ -472,7 +472,7 @@ class SpreadStrategyTemplate:
         volume: float,
         payup: int,
         interval: int,
-        lock: bool
+        lock: bool = False
     ) -> str:
         """"""
         return self.start_algo(Direction.SHORT, price, volume, payup, interval, lock)

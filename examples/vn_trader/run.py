@@ -75,7 +75,7 @@ def main():
     # main_engine.add_gateway(DaGateway)
     main_engine.add_gateway(CoinbaseGateway)
 
-    # main_engine.add_app(CtaStrategyApp)
+    main_engine.add_app(CtaStrategyApp)
     # main_engine.add_app(CtaBacktesterApp)
     # main_engine.add_app(CsvLoaderApp)
     # main_engine.add_app(AlgoTradingApp)
