@@ -558,7 +558,7 @@ class BitfinexWebsocketApi(WebsocketClient):
 
                 # ASK
                 ask_keys = ask.keys()
-                askPriceList = sorted(ask_keys, reverse=True)
+                askPriceList = sorted(ask_keys)
 
                 tick.ask_price_1 = askPriceList[0]
                 tick.ask_price_2 = askPriceList[1]
