@@ -1,7 +1,8 @@
 
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, List, Set
 from math import floor, ceil
+from copy import copy
 
 from vnpy.trader.object import TickData, TradeData, OrderData, ContractData
 from vnpy.trader.constant import Direction, Status, Offset
@@ -272,42 +273,158 @@ class SpreadStrategyTemplate:
     """
     Template for implementing spread trading strategies.
     """
-    strategy_name = "StrategyTemplate"
+
+    author: str = ""
+    parameters: List[str] = []
+    variables: List[str] = []
 
     def __init__(
         self,
         strategy_engine,
-        strategy_id: str,
-        spread: SpreadData
+        strategy_name: str,
+        spread: SpreadData,
+        setting: dict
     ):
         """"""
         self.strategy_engine = strategy_engine
-        self.strategy_id = strategy_id
+        self.strategy_name = strategy_name
         self.spread = spread
+        self.spread_name = spread.name
+
+        self.inited = False
+        self.trading = False
+
+        self.variables = copy(self.variables)
+        self.variables.insert(0, "inited")
+        self.variables.insert(1, "trading")
+
+        self.vt_orderids: Set[str] = set()
+        self.algoids: Set[str] = set()
+
+        self.update_setting(setting)
+
+    def update_setting(self, setting: dict):
+        """
+        Update strategy parameter wtih value in setting dict.
+        """
+        for name in self.parameters:
+            if name in setting:
+                setattr(self, name, setting[name])
+
+    @classmethod
+    def get_class_parameters(cls):
+        """
+        Get default parameters dict of strategy class.
+        """
+        class_parameters = {}
+        for name in cls.parameters:
+            class_parameters[name] = getattr(cls, name)
+        return class_parameters
+
+    def get_parameters(self):
+        """
+        Get strategy parameters dict.
+        """
+        strategy_parameters = {}
+        for name in self.parameters:
+            strategy_parameters[name] = getattr(self, name)
+        return strategy_parameters
+
+    def get_variables(self):
+        """
+        Get strategy variables dict.
+        """
+        strategy_variables = {}
+        for name in self.variables:
+            strategy_variables[name] = getattr(self, name)
+        return strategy_variables
+
+    def get_data(self):
+        """
+        Get strategy data.
+        """
+        strategy_data = {
+            "strategy_name": self.strategy_name,
+            "spread_name": self.spread_name,
+            "class_name": self.__class__.__name__,
+            "author": self.author,
+            "parameters": self.get_parameters(),
+            "variables": self.get_variables(),
+        }
+        return strategy_data
+
+    def update_spread_algo(self, algo: SpreadAlgoTemplate):
+        """
+        Callback when algo status is updated.
+        """
+        if not algo.is_active() and algo.algoid in self.algoids:
+            self.algoids.pop(algo.algoid)
+
+        self.on_spread_algo(algo)
+
+    def update_order(self, order: OrderData):
+        """
+        Callback when order status is updated.
+        """
+        if not order.is_active() and order.vt_orderid in self.vt_orderids:
+            self.vt_orderids.pop(order.vt_orderid)
+
+        self.on_order(order)
+
+    @virtual
+    def on_init(self):
+        """
+        Callback when strategy is inited.
+        """
+        pass
+
+    @virtual
+    def on_start(self):
+        """
+        Callback when strategy is started.
+        """
+        pass
+
+    @virtual
+    def on_stop(self):
+        """
+        Callback when strategy is stopped.
+        """
+        pass
 
     @virtual
     def on_spread_data(self):
-        """"""
+        """
+        Callback when spread price is updated.
+        """
         pass
 
     @virtual
     def on_spread_pos(self):
-        """"""
+        """
+        Callback when spread position is updated.
+        """
         pass
 
     @virtual
     def on_spread_algo(self, algo: SpreadAlgoTemplate):
-        """"""
+        """
+        Callback when algo status is updated.
+        """
         pass
 
     @virtual
     def on_order(self, order: OrderData):
-        """"""
+        """
+        Callback when order status is updated.
+        """
         pass
 
     @virtual
     def on_trade(self, trade: TradeData):
-        """"""
+        """
+        Callback when new trade data is received.
+        """
         pass
 
     def start_algo(
@@ -320,7 +437,23 @@ class SpreadStrategyTemplate:
         lock: bool
     ) -> str:
         """"""
-        pass
+        if not self.trading:
+            return ""
+
+        algoid: str = self.strategy_engine.start_algo(
+            self,
+            self.spread_name,
+            direction,
+            price,
+            volume,
+            payup,
+            interval,
+            lock
+        )
+
+        self.algoids.add(algoid)
+
+        return algoid
 
     def start_long_algo(
         self,
@@ -346,23 +479,31 @@ class SpreadStrategyTemplate:
 
     def stop_algo(self, algoid: str):
         """"""
-        pass
+        if not self.trading:
+            return
 
-    def buy(self, vt_symbol: str, price: float, volume: float):
-        """"""
-        return self.send_order(vt_symbol, price, volume, Direction.LONG, Offset.OPEN)
+        self.strategy_engine.stop_algo(self, algoid)
 
-    def sell(self, vt_symbol: str, price: float, volume: float):
+    def stop_all_algos(self):
         """"""
-        return self.send_order(vt_symbol, price, volume, Direction.SHORT, Offset.CLOSE)
+        for algoid in self.algoids:
+            self.stop_algo(algoid)
 
-    def short(self, vt_symbol: str, price: float, volume: float):
+    def buy(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
         """"""
-        return self.send_order(vt_symbol, price, volume, Direction.SHORT, Offset.OPEN)
+        return self.send_order(vt_symbol, price, volume, Direction.LONG, Offset.OPEN, lock)
 
-    def cover(self, vt_symbol: str, price: float, volume: float):
+    def sell(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
         """"""
-        return self.send_order(vt_symbol, price, volume, Direction.LONG, Offset.CLOSE)
+        return self.send_order(vt_symbol, price, volume, Direction.SHORT, Offset.CLOSE, lock)
+
+    def short(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
+        """"""
+        return self.send_order(vt_symbol, price, volume, Direction.SHORT, Offset.OPEN, lock)
+
+    def cover(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
+        """"""
+        return self.send_order(vt_symbol, price, volume, Direction.LONG, Offset.CLOSE, lock)
 
     def send_order(
         self,
@@ -370,22 +511,47 @@ class SpreadStrategyTemplate:
         price: float,
         volume: float,
         direction: Direction,
-        offset: Offset
-    ):
+        offset: Offset,
+        lock: bool
+    ) -> List[str]:
         """"""
-        pass
+        if not self.trading:
+            return []
+
+        vt_orderids: List[str] = self.strategy_engine.send_order(
+            self,
+            vt_symbol,
+            price,
+            volume,
+            direction,
+            offset,
+            lock
+        )
+
+        for vt_orderid in vt_orderids:
+            self.vt_orderids.add(vt_orderid)
+
+        return vt_orderids
 
     def cancel_order(self, vt_orderid: str):
         """"""
-        pass
+        if not self.trading:
+            return
+
+        self.strategy_engine.cancel_order(self, vt_orderid)
+
+    def cancel_all_orders(self):
+        """"""
+        for vt_orderid in self.vt_orderids:
+            self.cancel_order(vt_orderid)
 
     def put_event(self):
         """"""
-        pass
+        self.strategy_engine.put_strategy_event(self)
 
     def write_log(self, msg: str):
         """"""
-        pass
+        self.strategy_engine.write_strategy_log(self, msg)
 
     def get_spread_tick(self) -> TickData:
         """"""
@@ -417,3 +583,10 @@ class SpreadStrategyTemplate:
             return leg.long_pos
         else:
             return leg.short_pos
+
+    def send_email(self, msg: str):
+        """
+        Send email to default receiver.
+        """
+        if self.inited:
+            self.strategy_engine.send_email(msg, self)
