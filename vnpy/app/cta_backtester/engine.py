@@ -354,18 +354,24 @@ class BacktesterEngine(BaseEngine):
 
         contract = self.main_engine.get_contract(vt_symbol)
 
-        # If history data provided in gateway, then query
-        if contract and contract.history_data:
-            data = self.main_engine.query_history(req, contract.gateway_name)
-        # Otherwise use RQData to query data
-        else:
-            data = rqdata_client.query_history(req)
+        try:
+            # If history data provided in gateway, then query
+            if contract and contract.history_data:
+                data = self.main_engine.query_history(
+                    req, contract.gateway_name
+                )
+            # Otherwise use RQData to query data
+            else:
+                data = rqdata_client.query_history(req)
 
-        if data:
-            database_manager.save_bar_data(data)
-            self.write_log(f"{vt_symbol}-{interval}历史数据下载完成")
-        else:
-            self.write_log(f"数据下载失败，无法获取{vt_symbol}的历史数据")
+            if data:
+                database_manager.save_bar_data(data)
+                self.write_log(f"{vt_symbol}-{interval}历史数据下载完成")
+            else:
+                self.write_log(f"数据下载失败，无法获取{vt_symbol}的历史数据")
+        except Exception:
+            msg = f"数据下载失败，触发异常：\n{traceback.format_exc()}"
+            self.write_log(msg)
 
         # Clear thread object handler.
         self.thread = None
