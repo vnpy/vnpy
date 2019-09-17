@@ -15,11 +15,13 @@ from vnpy.trader.ui.widget import (
 
 from ..engine import (
     SpreadEngine,
+    SpreadStrategyEngine,
     APP_NAME,
     EVENT_SPREAD_DATA,
     EVENT_SPREAD_POS,
     EVENT_SPREAD_LOG,
-    EVENT_SPREAD_ALGO
+    EVENT_SPREAD_ALGO,
+    EVENT_SPREAD_STRATEGY
 )
 
 
@@ -40,7 +42,9 @@ class SpreadManager(QtWidgets.QWidget):
         """"""
         self.setWindowTitle("价差交易")
 
-        self.algo_dialog = SpreadAlgoDialog(self.spread_engine)
+        self.algo_dialog = SpreadAlgoWidget(self.spread_engine)
+        algo_tab = self.create_tab("交易", self.algo_dialog)
+        algo_tab.setMaximumWidth(300)
 
         self.data_monitor = SpreadDataMonitor(
             self.main_engine,
@@ -54,22 +58,19 @@ class SpreadManager(QtWidgets.QWidget):
             self.spread_engine
         )
 
-        add_spread_button = QtWidgets.QPushButton("创建价差")
-        add_spread_button.clicked.connect(self.add_spread)
+        self.strategy_monitor = SpreadStrategyMonitor(
+            self.spread_engine
+        )
 
-        vbox1 = QtWidgets.QVBoxLayout()
-        vbox1.addWidget(self.algo_dialog)
-        vbox1.addStretch()
-        vbox1.addWidget(add_spread_button)
-
-        vbox2 = QtWidgets.QVBoxLayout()
-        vbox2.addWidget(self.data_monitor)
-        vbox2.addWidget(self.log_monitor)
+        grid = QtWidgets.QGridLayout()
+        grid.addWidget(self.create_tab("价差", self.data_monitor), 0, 0)
+        grid.addWidget(self.create_tab("日志", self.log_monitor), 1, 0)
+        grid.addWidget(self.create_tab("算法", self.algo_monitor), 0, 1)
+        grid.addWidget(self.create_tab("策略", self.strategy_monitor), 1, 1)
 
         hbox = QtWidgets.QHBoxLayout()
-        hbox.addLayout(vbox1)
-        hbox.addLayout(vbox2)
-        hbox.addWidget(self.algo_monitor)
+        hbox.addWidget(algo_tab)
+        hbox.addLayout(grid)
 
         self.setLayout(hbox)
 
@@ -79,10 +80,11 @@ class SpreadManager(QtWidgets.QWidget):
 
         self.showMaximized()
 
-    def add_spread(self):
+    def create_tab(self, title: str, widget: QtWidgets.QWidget):
         """"""
-        dialog = SpreadDataDialog(self.spread_engine)
-        dialog.exec_()
+        tab = QtWidgets.QTabWidget()
+        tab.addTab(widget, title)
+        return tab
 
 
 class SpreadDataMonitor(BaseMonitor):
@@ -96,14 +98,14 @@ class SpreadDataMonitor(BaseMonitor):
 
     headers = {
         "name": {"display": "名称", "cell": BaseCell, "update": False},
-        "price_formula": {"display": "定价", "cell": BaseCell, "update": False},
-        "trading_formula": {"display": "交易", "cell": BaseCell, "update": False},
         "bid_volume": {"display": "买量", "cell": BidCell, "update": True},
         "bid_price": {"display": "买价", "cell": BidCell, "update": True},
         "ask_price": {"display": "卖价", "cell": AskCell, "update": True},
         "ask_volume": {"display": "卖量", "cell": AskCell, "update": True},
         "net_pos": {"display": "净仓", "cell": PnlCell, "update": True},
         "datetime": {"display": "时间", "cell": TimeCell, "update": True},
+        "price_formula": {"display": "定价", "cell": BaseCell, "update": False},
+        "trading_formula": {"display": "交易", "cell": BaseCell, "update": False},
     }
 
     def register_event(self):
@@ -143,7 +145,7 @@ class SpreadLogMonitor(QtWidgets.QTextEdit):
     def process_log_event(self, event: Event):
         """"""
         log = event.data
-        msg = f"{log.time}：{log.msg}"
+        msg = f"{log.time.strftime('%H:%M:%S')}：{log.msg}"
         self.append(msg)
 
 
@@ -192,7 +194,7 @@ class SpreadAlgoMonitor(BaseMonitor):
         self.spread_engine.stop_algo(algo.algoid)
 
 
-class SpreadAlgoDialog(QtWidgets.QDialog):
+class SpreadAlgoWidget(QtWidgets.QFrame):
     """"""
 
     def __init__(self, spread_engine: SpreadEngine):
@@ -200,12 +202,16 @@ class SpreadAlgoDialog(QtWidgets.QDialog):
         super().__init__()
 
         self.spread_engine: SpreadEngine = spread_engine
+        self.strategy_engine: SpreadStrategyEngine = spread_engine.strategy_engine
 
         self.init_ui()
+        self.update_class_combo()
 
     def init_ui(self):
         """"""
         self.setWindowTitle("启动算法")
+        self.setFrameShape(self.Box)
+        self.setLineWidth(1)
 
         self.name_line = QtWidgets.QLineEdit()
 
@@ -238,6 +244,26 @@ class SpreadAlgoDialog(QtWidgets.QDialog):
             ["否", "是"]
         )
 
+        self.class_combo = QtWidgets.QComboBox()
+
+        add_button = QtWidgets.QPushButton("添加策略")
+        add_button.clicked.connect(self.add_strategy)
+
+        init_button = QtWidgets.QPushButton("全部初始化")
+        init_button.clicked.connect(self.strategy_engine.init_all_strategies)
+
+        start_button = QtWidgets.QPushButton("全部启动")
+        start_button.clicked.connect(self.strategy_engine.start_all_strategies)
+
+        stop_button = QtWidgets.QPushButton("全部停止")
+        stop_button.clicked.connect(self.strategy_engine.stop_all_strategies)
+
+        add_spread_button = QtWidgets.QPushButton("创建价差")
+        add_spread_button.clicked.connect(self.add_spread)
+
+        remove_spread_button = QtWidgets.QPushButton("移除价差")
+        remove_spread_button.clicked.connect(self.remove_spread)
+
         form = QtWidgets.QFormLayout()
         form.addRow("价差", self.name_line)
         form.addRow("方向", self.direction_combo)
@@ -248,7 +274,19 @@ class SpreadAlgoDialog(QtWidgets.QDialog):
         form.addRow("锁仓", self.lock_combo)
         form.addRow(button_start)
 
-        self.setLayout(form)
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addLayout(form)
+        vbox.addStretch()
+        vbox.addWidget(self.class_combo)
+        vbox.addWidget(add_button)
+        vbox.addWidget(init_button)
+        vbox.addWidget(start_button)
+        vbox.addWidget(stop_button)
+        vbox.addStretch()
+        vbox.addWidget(add_spread_button)
+        vbox.addWidget(remove_spread_button)
+
+        self.setLayout(vbox)
 
     def start_algo(self):
         """"""
@@ -268,6 +306,46 @@ class SpreadAlgoDialog(QtWidgets.QDialog):
         self.spread_engine.start_algo(
             name, direction, price, volume, payup, interval, lock
         )
+
+    def add_spread(self):
+        """"""
+        dialog = SpreadDataDialog(self.spread_engine)
+        dialog.exec_()
+
+    def remove_spread(self):
+        """"""
+        pass
+
+    def update_class_combo(self):
+        """"""
+        self.class_combo.addItems(
+            self.strategy_engine.get_all_strategy_class_names()
+        )
+
+    def remove_strategy(self, strategy_name):
+        """"""
+        manager = self.managers.pop(strategy_name)
+        manager.deleteLater()
+
+    def add_strategy(self):
+        """"""
+        class_name = str(self.class_combo.currentText())
+        if not class_name:
+            return
+
+        parameters = self.strategy_engine.get_strategy_class_parameters(
+            class_name)
+        editor = SettingEditor(parameters, class_name=class_name)
+        n = editor.exec_()
+
+        if n == editor.Accepted:
+            setting = editor.get_setting()
+            spread_name = setting.pop("spread_name")
+            strategy_name = setting.pop("strategy_name")
+
+            self.strategy_engine.add_strategy(
+                class_name, strategy_name, spread_name, setting
+            )
 
 
 class SpreadDataDialog(QtWidgets.QDialog):
@@ -354,12 +432,12 @@ class SpreadDataDialog(QtWidgets.QDialog):
         leg_settings = {}
         for d in self.leg_widgets:
             try:
-                vt_symbol = d["symbol"].text()
+                spread_name = d["symbol"].text()
                 price_multiplier = int(d["price"].text())
                 trading_multiplier = int(d["trading"].text())
 
-                leg_settings[vt_symbol] = {
-                    "vt_symbol": vt_symbol,
+                leg_settings[spread_name] = {
+                    "spread_name": spread_name,
                     "price_multiplier": price_multiplier,
                     "trading_multiplier": trading_multiplier
                 }
@@ -390,3 +468,287 @@ class SpreadDataDialog(QtWidgets.QDialog):
             active_symbol
         )
         self.accept()
+
+
+class SpreadStrategyMonitor(QtWidgets.QScrollArea):
+    """"""
+
+    signal_strategy = QtCore.pyqtSignal(Event)
+
+    def __init__(self, spread_engine: SpreadEngine):
+        super().__init__()
+
+        self.strategy_engine = spread_engine.strategy_engine
+        self.main_engine = spread_engine.main_engine
+        self.event_engine = spread_engine.event_engine
+
+        self.managers = {}
+
+        self.init_ui()
+        self.register_event()
+
+    def init_ui(self):
+        """"""
+        self.scroll_layout = QtWidgets.QVBoxLayout()
+        self.scroll_layout.addStretch()
+
+        scroll_widget = QtWidgets.QWidget()
+        scroll_widget.setLayout(self.scroll_layout)
+
+        self.setWidgetResizable(True)
+        self.setWidget(scroll_widget)
+
+    def register_event(self):
+        """"""
+        self.signal_strategy.connect(self.process_strategy_event)
+
+        self.event_engine.register(
+            EVENT_SPREAD_STRATEGY, self.signal_strategy.emit
+        )
+
+    def process_strategy_event(self, event):
+        """
+        Update strategy status onto its monitor.
+        """
+        data = event.data
+        strategy_name = data["strategy_name"]
+
+        if strategy_name in self.managers:
+            manager = self.managers[strategy_name]
+            manager.update_data(data)
+        else:
+            manager = SpreadStrategyWidget(self.strategy_engine, data)
+            self.scroll_layout.insertWidget(0, manager)
+            self.managers[strategy_name] = manager
+
+
+class SpreadStrategyWidget(QtWidgets.QFrame):
+    """
+    Manager for a strategy
+    """
+
+    def __init__(
+        self,
+        strategy_engine: SpreadStrategyEngine,
+        data: dict
+    ):
+        """"""
+        super().__init__()
+
+        self.strategy_engine = strategy_engine
+
+        self.strategy_name = data["strategy_name"]
+        self._data = data
+
+        self.init_ui()
+
+    def init_ui(self):
+        """"""
+        self.setFixedHeight(300)
+        self.setFrameShape(self.Box)
+        self.setLineWidth(1)
+
+        init_button = QtWidgets.QPushButton("初始化")
+        init_button.clicked.connect(self.init_strategy)
+
+        start_button = QtWidgets.QPushButton("启动")
+        start_button.clicked.connect(self.start_strategy)
+
+        stop_button = QtWidgets.QPushButton("停止")
+        stop_button.clicked.connect(self.stop_strategy)
+
+        edit_button = QtWidgets.QPushButton("编辑")
+        edit_button.clicked.connect(self.edit_strategy)
+
+        remove_button = QtWidgets.QPushButton("移除")
+        remove_button.clicked.connect(self.remove_strategy)
+
+        strategy_name = self._data["strategy_name"]
+        spread_name = self._data["spread_name"]
+        class_name = self._data["class_name"]
+        author = self._data["author"]
+
+        label_text = (
+            f"{strategy_name}  -  {spread_name}  ({class_name} by {author})"
+        )
+        label = QtWidgets.QLabel(label_text)
+        label.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.parameters_monitor = StrategyDataMonitor(self._data["parameters"])
+        self.variables_monitor = StrategyDataMonitor(self._data["variables"])
+
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addWidget(init_button)
+        hbox.addWidget(start_button)
+        hbox.addWidget(stop_button)
+        hbox.addWidget(edit_button)
+        hbox.addWidget(remove_button)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(label)
+        vbox.addLayout(hbox)
+        vbox.addWidget(self.parameters_monitor)
+        vbox.addWidget(self.variables_monitor)
+        self.setLayout(vbox)
+
+    def update_data(self, data: dict):
+        """"""
+        self._data = data
+
+        self.parameters_monitor.update_data(data["parameters"])
+        self.variables_monitor.update_data(data["variables"])
+
+    def init_strategy(self):
+        """"""
+        self.strategy_engine.init_strategy(self.strategy_name)
+
+    def start_strategy(self):
+        """"""
+        self.strategy_engine.start_strategy(self.strategy_name)
+
+    def stop_strategy(self):
+        """"""
+        self.strategy_engine.stop_strategy(self.strategy_name)
+
+    def edit_strategy(self):
+        """"""
+        strategy_name = self._data["strategy_name"]
+
+        parameters = self.strategy_engine.get_strategy_parameters(
+            strategy_name)
+        editor = SettingEditor(parameters, strategy_name=strategy_name)
+        n = editor.exec_()
+
+        if n == editor.Accepted:
+            setting = editor.get_setting()
+            self.strategy_engine.edit_strategy(strategy_name, setting)
+
+    def remove_strategy(self):
+        """"""
+        result = self.strategy_engine.remove_strategy(self.strategy_name)
+
+        # Only remove strategy gui manager if it has been removed from engine
+        if result:
+            self.spread_manager.remove_strategy(self.strategy_name)
+
+
+class StrategyDataMonitor(QtWidgets.QTableWidget):
+    """
+    Table monitor for parameters and variables.
+    """
+
+    def __init__(self, data: dict):
+        """"""
+        super().__init__()
+
+        self._data = data
+        self.cells = {}
+
+        self.init_ui()
+
+    def init_ui(self):
+        """"""
+        labels = list(self._data.keys())
+        self.setColumnCount(len(labels))
+        self.setHorizontalHeaderLabels(labels)
+
+        self.setRowCount(1)
+        self.verticalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.Stretch
+        )
+        self.verticalHeader().setVisible(False)
+        self.setEditTriggers(self.NoEditTriggers)
+
+        for column, name in enumerate(self._data.keys()):
+            value = self._data[name]
+
+            cell = QtWidgets.QTableWidgetItem(str(value))
+            cell.setTextAlignment(QtCore.Qt.AlignCenter)
+
+            self.setItem(0, column, cell)
+            self.cells[name] = cell
+
+    def update_data(self, data: dict):
+        """"""
+        for name, value in data.items():
+            cell = self.cells[name]
+            cell.setText(str(value))
+
+
+class SettingEditor(QtWidgets.QDialog):
+    """
+    For creating new strategy and editing strategy parameters.
+    """
+
+    def __init__(
+        self, parameters: dict, strategy_name: str = "", class_name: str = ""
+    ):
+        """"""
+        super(SettingEditor, self).__init__()
+
+        self.parameters = parameters
+        self.strategy_name = strategy_name
+        self.class_name = class_name
+
+        self.edits = {}
+
+        self.init_ui()
+
+    def init_ui(self):
+        """"""
+        form = QtWidgets.QFormLayout()
+
+        # Add vt_symbol and name edit if add new strategy
+        if self.class_name:
+            self.setWindowTitle(f"添加策略：{self.class_name}")
+            button_text = "添加"
+            parameters = {"strategy_name": "", "vt_symbol": ""}
+            parameters.update(self.parameters)
+        else:
+            self.setWindowTitle(f"参数编辑：{self.strategy_name}")
+            button_text = "确定"
+            parameters = self.parameters
+
+        for name, value in parameters.items():
+            type_ = type(value)
+
+            edit = QtWidgets.QLineEdit(str(value))
+            if type_ is int:
+                validator = QtGui.QIntValidator()
+                edit.setValidator(validator)
+            elif type_ is float:
+                validator = QtGui.QDoubleValidator()
+                edit.setValidator(validator)
+
+            form.addRow(f"{name} {type_}", edit)
+
+            self.edits[name] = (edit, type_)
+
+        button = QtWidgets.QPushButton(button_text)
+        button.clicked.connect(self.accept)
+        form.addRow(button)
+
+        self.setLayout(form)
+
+    def get_setting(self):
+        """"""
+        setting = {}
+
+        if self.class_name:
+            setting["class_name"] = self.class_name
+
+        for name, tp in self.edits.items():
+            edit, type_ = tp
+            value_text = edit.text()
+
+            if type_ == bool:
+                if value_text == "True":
+                    value = True
+                else:
+                    value = False
+            else:
+                value = type_(value_text)
+
+            setting[name] = value
+
+        return setting

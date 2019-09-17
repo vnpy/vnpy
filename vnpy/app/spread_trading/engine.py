@@ -4,7 +4,7 @@ import os
 from typing import List, Dict, Set, Callable, Any, Type
 from collections import defaultdict
 from copy import copy
-from path import Path
+from pathlib import Path
 
 from vnpy.event import EventEngine, Event
 from vnpy.trader.engine import BaseEngine, MainEngine
@@ -585,6 +585,10 @@ class SpreadStrategyEngine:
         except:  # noqa
             msg = f"策略文件{module_name}加载失败，触发异常：\n{traceback.format_exc()}"
             self.write_log(msg)
+
+    def get_all_strategy_class_names(self):
+        """"""
+        return list(self.classes.keys())
 
     def load_strategy_setting(self):
         """
