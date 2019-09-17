@@ -5,7 +5,7 @@ from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import MainWindow, create_qapp
 
 # from vnpy.gateway.binance import BinanceGateway
-# from vnpy.gateway.bitmex import BitmexGateway
+from vnpy.gateway.bitmex import BitmexGateway
 # from vnpy.gateway.futu import FutuGateway
 # from vnpy.gateway.ib import IbGateway
 # from vnpy.gateway.ctp import CtpGateway
@@ -38,6 +38,7 @@ from vnpy.app.cta_backtester import CtaBacktesterApp
 # from vnpy.app.risk_manager import RiskManagerApp
 from vnpy.app.script_trader import ScriptTraderApp
 from vnpy.app.rpc_service import RpcServiceApp
+from vnpy.app.spread_trading import SpreadTradingApp
 
 
 def main():
@@ -57,7 +58,7 @@ def main():
     # main_engine.add_gateway(FemasGateway)
     # main_engine.add_gateway(IbGateway)
     # main_engine.add_gateway(FutuGateway)
-    # main_engine.add_gateway(BitmexGateway)
+    main_engine.add_gateway(BitmexGateway)
     # main_engine.add_gateway(TigerGateway)
     # main_engine.add_gateway(OesGateway)
     # main_engine.add_gateway(OkexGateway)
@@ -75,13 +76,14 @@ def main():
     main_engine.add_gateway(CoinbaseGateway)
 
     main_engine.add_app(CtaStrategyApp)
-    main_engine.add_app(CtaBacktesterApp)
+    # main_engine.add_app(CtaBacktesterApp)
     # main_engine.add_app(CsvLoaderApp)
     # main_engine.add_app(AlgoTradingApp)
     # main_engine.add_app(DataRecorderApp)
     # main_engine.add_app(RiskManagerApp)
-    main_engine.add_app(ScriptTraderApp)
-    main_engine.add_app(RpcServiceApp)
+    # main_engine.add_app(ScriptTraderApp)
+    # main_engine.add_app(RpcServiceApp)
+    main_engine.add_app(SpreadTradingApp)
 
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()

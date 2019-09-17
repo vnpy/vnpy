@@ -471,7 +471,10 @@ class BitmexRestApi(RestClient):
         headers = request.response.headers
 
         self.rate_limit_remaining = int(headers["x-ratelimit-remaining"])
-        self.rate_limit_sleep = int(headers.get("Retry-After", 0)) + 1      # 1 extra second sleep
+
+        self.rate_limit_sleep = int(headers.get("Retry-After", 0))
+        if self.rate_limit_sleep:
+            self.rate_limit_sleep += 1      # 1 extra second sleep
 
     def reset_rate_limit(self):
         """

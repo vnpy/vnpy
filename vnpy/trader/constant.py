@@ -117,6 +117,10 @@ class Exchange(Enum):
     BINANCE = "BINANCE"
     COINBASE = "COINBASE"
 
+    # Special Function
+    LOCAL = "LOCAL"         # For local generated data
+
+
 class Currency(Enum):
     """
     Currency.
