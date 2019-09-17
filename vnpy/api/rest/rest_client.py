@@ -374,7 +374,7 @@ class RestClient(object):
                 request.response = response
                 status_code = response.status_code
 
-                if not stream: # normal API:
+                if not stream:  # normal API:
                     # just call callback with all contents received.
                     if status_code // 100 == 2:  # 2xx codes are all successful
                         if status_code == 204:
@@ -388,7 +388,7 @@ class RestClient(object):
                             request.on_failed(status_code, request)
                         else:
                             self.on_failed(status_code, request)
-                else: # streaming API:
+                else:  # streaming API:
                     if request.on_connected:
                         request.on_connected(request)
                     # split response by lines, and call one callback for each line.

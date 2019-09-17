@@ -1,5 +1,4 @@
 from copy import copy
-from copy import copy
 from dataclasses import dataclass
 from functools import partial
 from http.client import IncompleteRead, RemoteDisconnected

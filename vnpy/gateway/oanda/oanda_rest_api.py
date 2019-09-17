@@ -1,5 +1,3 @@
-import json
-import sys
 from dataclasses import dataclass
 from datetime import datetime
 from threading import Lock
@@ -11,10 +9,9 @@ from vnpy.api.rest import Request
 from vnpy.gateway.oanda.oanda_api_base import OandaApiBase
 from vnpy.trader.constant import Direction, Exchange, Interval, Offset, Product, Status
 from vnpy.trader.object import AccountData, BarData, CancelRequest, ContractData, OrderRequest, \
-    PositionData, OrderData
-from .oanda_common import (INTERVAL_VT2OANDA, ORDER_TYPE_VT2OANDA,
-                           STATUS_OANDA2VT, parse_time, INTERVAL_VT2OANDA_DELTA, parse_datetime,
-                           utc_tz, local_tz)
+    PositionData
+from .oanda_common import (INTERVAL_VT2OANDA, INTERVAL_VT2OANDA_DELTA, ORDER_TYPE_VT2OANDA,
+                           STATUS_OANDA2VT, local_tz, parse_datetime, parse_time, utc_tz)
 
 if TYPE_CHECKING:
     from vnpy.gateway.oanda import OandaGateway
@@ -122,7 +119,6 @@ class OandaRestApi(OandaApiBase):
         order.time = parse_time(datetime.now().isoformat())
 
         # Only add price for limit order.
-        str_price = str(req.price)
         data["type"] = ORDER_TYPE_VT2OANDA[req.type]
         data["price"] = str(req.price)
         self.gateway.orders[order.orderid] = order
@@ -240,7 +236,7 @@ class OandaRestApi(OandaApiBase):
 
     def on_send_order(self, raw_data: dict, request: Request):
         """"""
-        order: OrderData = request.extra
+        # order: OrderData = request.extra
         # creation = raw_data.get('orderCreateTransaction', None)
         # if creation is not None:
         #     order.status = Status.NOTTRADED
@@ -314,7 +310,7 @@ class OandaRestApi(OandaApiBase):
             gateway_name=self.gateway_name,
             accountid=account_id,
             balance=NAV - pnl,
-            frozen=0, # no frozen
+            frozen=0,  # no frozen
         )
         self.gateway.on_account(account)
 
@@ -347,15 +343,16 @@ class OandaRestApi(OandaApiBase):
 
     def parse_position_data(self, pos_data) -> Tuple[PositionData, PositionData]:
         symbol = pos_data['instrument']
-        pos_long, pos_short = [PositionData(
-            gateway_name=self.gateway_name,
-            symbol=symbol,
-            exchange=Exchange.OANDA,
-            direction=direction,
-            volume=int(data['units']),
-            price=float(data.get('averagePrice', 0.0)),
-            pnl=float(data.get('unrealizedPL', 0.0)),
-        )
+        pos_long, pos_short = [
+            PositionData(
+                gateway_name=self.gateway_name,
+                symbol=symbol,
+                exchange=Exchange.OANDA,
+                direction=direction,
+                volume=int(data['units']),
+                price=float(data.get('averagePrice', 0.0)),
+                pnl=float(data.get('unrealizedPL', 0.0)),
+            )
             for direction, data in (
                 (Direction.LONG, pos_data['long']),
                 (Direction.SHORT, pos_data['short'])

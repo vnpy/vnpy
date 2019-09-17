@@ -6,7 +6,7 @@ from vnpy.trader.constant import Direction, Interval, OrderType, Status
 
 if TYPE_CHECKING:
     # noinspection PyUnresolvedReferences
-    from vnpy.gateway.oanda import OandaGateway
+    from vnpy.gateway.oanda import OandaGateway  # noqa
 
 STATUS_OANDA2VT = {
     "PENDING": Status.NOTTRADED,

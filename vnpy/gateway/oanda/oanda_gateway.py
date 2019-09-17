@@ -5,22 +5,19 @@ todo:
 """
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Any, Tuple, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from vnpy.event import Event
-from vnpy.trader.constant import (Exchange, OrderType, Interval, Direction, Offset, Status)
+from vnpy.trader.constant import (Direction, Exchange, Interval, Offset, OrderType, Status)
 from vnpy.trader.event import EVENT_TIMER
 from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.object import (CancelRequest, HistoryRequest, OrderData, OrderRequest,
-                                PositionData, SubscribeRequest, TickData, BarData)
-from .oanda_common import DIRECTION_OANDA2VT, OPPOSITE_DIRECTION, ORDER_TYPE_OANDA2VT, \
-    STOP_ORDER_STATUS_OANDA2VT, parse_datetime, STATUS_OANDA2VT, INTERVAL_VT2OANDA, local_tz, \
-    utc_tz, INTERVAL_VT2OANDA_INT, parse_time, INTERVAL_VT2OANDA_DELTA
-from .oanda_rest_api import OandaRestApi, HistoryDataNextInfo
+from vnpy.trader.object import (BarData, CancelRequest, HistoryRequest, OrderData, OrderRequest,
+                                SubscribeRequest)
+from .oanda_common import INTERVAL_VT2OANDA_DELTA, ORDER_TYPE_OANDA2VT, local_tz, parse_time, utc_tz
+from .oanda_rest_api import HistoryDataNextInfo, OandaRestApi
 from .oanda_stream_api import OandaStreamApi
 
-
-_ = lambda x:x  # noqa
+_ = lambda x: x  # noqa
 
 
 @dataclass()
@@ -99,10 +96,10 @@ class OandaGateway(BaseGateway):
         self.rest_api.query_positions()
 
     def query_first_history(self,
-                          symbol: str,
-                          interval: Interval,
-                          start: datetime,
-                          ) -> Tuple[List[BarData], "HistoryDataNextInfo"]:
+                            symbol: str,
+                            interval: Interval,
+                            start: datetime,
+                            ) -> Tuple[List[BarData], "HistoryDataNextInfo"]:
 
         # datetime for a bar is close_time
         # we got open_time from API.
@@ -205,4 +202,3 @@ class OandaGateway(BaseGateway):
         )
         self.orders[order_id] = order
         return order
-

@@ -1,22 +1,11 @@
 import json
 import sys
-from dataclasses import dataclass
-from datetime import datetime
-from threading import Lock
-from typing import Dict, List, Optional, TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 
-from requests import ConnectionError
-
-from vnpy.api.rest import Request
-from vnpy.trader.constant import Direction, Exchange, Interval, Offset, Product, Status
-from vnpy.trader.object import AccountData, BarData, CancelRequest, ContractData, OrderRequest, \
-    PositionData, OrderData
-from .oanda_common import (INTERVAL_VT2OANDA, ORDER_TYPE_VT2OANDA,
-                           STATUS_OANDA2VT, parse_time, INTERVAL_VT2OANDA_DELTA, parse_datetime)
+from vnpy.api.rest import Request, RestClient
 
 if TYPE_CHECKING:
     from vnpy.gateway.oanda import OandaGateway
-from vnpy.api.rest import RestClient
 
 _ = lambda x: x  # noqa
 
@@ -25,6 +14,7 @@ class OandaApiBase(RestClient):
     """
     Oanda Base API
     """
+
     def __init__(self, gateway: "OandaGateway"):
         super().__init__()
         self.gateway = gateway
@@ -62,4 +52,3 @@ class OandaApiBase(RestClient):
         sys.stderr.write(
             self.exception_detail(exception_type, exception_value, tb, request)
         )
-
