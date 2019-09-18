@@ -64,6 +64,7 @@ EXCHANGE_VT2IB = {
     Exchange.ICE: "ICE",
     Exchange.SEHK: "SEHK",
     Exchange.HKFE: "HKFE",
+    Exchange.CFE: "CFE"
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}
 

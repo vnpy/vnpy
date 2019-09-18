@@ -101,6 +101,7 @@ class Exchange(Enum):
     SGX = "SGX"             # Singapore Global Exchange
     CBOT = "CBT"            # Chicago Board of Trade
     CBOE = "CBOE"           # Chicago Board Options Exchange
+    CFE = "CFE"             # CBOE Futures Exchange
     DME = "DME"             # Dubai Mercantile Exchange
     EUREX = "EUX"           # Eurex Exchange
     APEX = "APEX"           # Asia Pacific Exchange
