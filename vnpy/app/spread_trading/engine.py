@@ -211,6 +211,24 @@ class SpreadDataEngine:
         event = Event(EVENT_SPREAD_POS, spread)
         self.event_engine.put(event)
 
+    def get_leg(self, vt_symbol: str) -> LegData:
+        """"""
+        leg = self.legs.get(vt_symbol, None)
+
+        if not leg:
+            leg = LegData(vt_symbol)
+            self.legs[vt_symbol] = leg
+
+            # Subscribe market data
+            contract = self.main_engine.get_contract(vt_symbol)
+            req = SubscribeRequest(
+                contract.symbol,
+                contract.exchange
+            )
+            self.main_engine.subscribe(req, contract.gateway_name)
+
+        return leg
+
     def add_spread(
         self,
         name: str,
@@ -229,11 +247,7 @@ class SpreadDataEngine:
 
         for leg_setting in leg_settings:
             vt_symbol = leg_setting["vt_symbol"]
-
-            leg = self.legs.get(vt_symbol, None)
-            if not leg:
-                leg = LegData(vt_symbol)
-                self.legs[vt_symbol] = leg
+            leg = self.get_leg(vt_symbol)
 
             legs.append(leg)
             price_multipliers[vt_symbol] = leg_setting["price_multiplier"]
@@ -824,7 +838,7 @@ class SpreadStrategyEngine:
             return
 
         self.call_strategy_func(strategy, strategy.on_stop)
-        
+
         strategy.stop_all_algos()
         strategy.cancel_all_orders()
 
