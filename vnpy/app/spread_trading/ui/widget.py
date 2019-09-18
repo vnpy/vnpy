@@ -439,12 +439,12 @@ class SpreadDataDialog(QtWidgets.QDialog):
         leg_settings = {}
         for d in self.leg_widgets:
             try:
-                spread_name = d["symbol"].text()
+                vt_symbol = d["symbol"].text()
                 price_multiplier = int(d["price"].text())
                 trading_multiplier = int(d["trading"].text())
 
-                leg_settings[spread_name] = {
-                    "spread_name": spread_name,
+                leg_settings[vt_symbol] = {
+                    "vt_symbol": vt_symbol,
                     "price_multiplier": price_multiplier,
                     "trading_multiplier": trading_multiplier
                 }
