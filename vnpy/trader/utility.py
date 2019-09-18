@@ -5,6 +5,7 @@ General utility functions.
 import json
 from pathlib import Path
 from typing import Callable
+from decimal import Decimal
 
 import numpy as np
 import talib
@@ -109,11 +110,13 @@ def save_json(filename: str, data: dict):
         )
 
 
-def round_to(value: float, target: float):
+def round_to(value: float, target: float) -> float:
     """
     Round price to price tick value.
     """
-    rounded = int(round(value / target)) * target
+    value = Decimal(str(value))
+    target = Decimal(str(target))
+    rounded = float(int(round(value / target)) * target)
     return rounded
 
 
