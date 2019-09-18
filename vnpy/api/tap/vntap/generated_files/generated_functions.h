@@ -2,7 +2,7 @@
 #include "config.h"
 
 #include <pybind11/pybind11.h>
-#include <autocxxpy/autocxxpy.hpp>
+#include <c2py/c2py.hpp>
 
 #include "iTapTradeAPI.h"
 #include "TapQuoteAPI.h"
@@ -13,6 +13,7 @@
 
 void generate_vntap(pybind11::module & parent);
 void generate_sub_namespace_ITapTrade(pybind11::module & parent);
+void generate_ITapTrade_sub_namespace(pybind11::module & parent);
 void generate_class_ITapTrade_TapAPIApplicationInfo(pybind11::object & parent);
 void generate_class_ITapTrade_TapAPICommodity(pybind11::object & parent);
 void generate_class_ITapTrade_TapAPIContract(pybind11::object & parent);
@@ -79,7 +80,15 @@ void generate_class_ITapTrade_TapAPIFillLocalRemoveReq(pybind11::object & parent
 void generate_class_ITapTrade_TapAPITradingCalendarQryRsp(pybind11::object & parent);
 void generate_class_ITapTrade_ITapTradeAPINotify(pybind11::object & parent);
 void generate_class_ITapTrade_ITapTradeAPI(pybind11::object & parent);
+void generate_ITapTrade_classes(pybind11::module & parent);
+void generate_ITapTrade_enums(pybind11::module & parent);
+void generate_ITapTrade_functions_0(pybind11::module & parent);
+void generate_ITapTrade_functions(pybind11::module & parent);
+void generate_ITapTrade_variables(pybind11::module & parent);
+void generate_ITapTrade_typedefs(pybind11::module & parent);
 void generate_caster_ITapTrade(pybind11::object & parent);
+void generate_ITapTrade_caster(pybind11::module & parent);
+void generate_vntap_sub_namespace(pybind11::module & parent);
 void generate_class_TapAPIApplicationInfo(pybind11::object & parent);
 void generate_class_TapAPICommodity(pybind11::object & parent);
 void generate_class_TapAPIContract(pybind11::object & parent);
@@ -92,6 +101,13 @@ void generate_class_TapAPIQuoteContractInfo(pybind11::object & parent);
 void generate_class_TapAPIQuoteWhole(pybind11::object & parent);
 void generate_class_ITapQuoteAPINotify(pybind11::object & parent);
 void generate_class_ITapQuoteAPI(pybind11::object & parent);
+void generate_vntap_classes(pybind11::module & parent);
+void generate_vntap_enums(pybind11::module & parent);
+void generate_vntap_functions_0(pybind11::module & parent);
+void generate_vntap_functions(pybind11::module & parent);
+void generate_vntap_variables(pybind11::module & parent);
+void generate_vntap_typedefs(pybind11::module & parent);
 void generate_caster_(pybind11::object & parent);
+void generate_vntap_caster(pybind11::module & parent);
 
 

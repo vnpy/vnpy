@@ -132,7 +132,7 @@ class PnlCell(BaseCell):
 
     def set_content(self, content: Any, data: Any):
         """
-        Cell color is set based on whether pnl is 
+        Cell color is set based on whether pnl is
         positive or negative.
         """
         super(PnlCell, self).set_content(content, data)
@@ -156,6 +156,9 @@ class TimeCell(BaseCell):
         """
         Time format is 12:12:12.5
         """
+        if content is None:
+            return
+
         timestamp = content.strftime("%H:%M:%S")
 
         millisecond = int(content.microsecond / 1000)
@@ -993,7 +996,7 @@ class AboutDialog(QtWidgets.QDialog):
         text = """
             Developed by Traders, for Traders.
             License：MIT
-            
+
             Website：www.vnpy.com
             Github：www.github.com/vnpy/vnpy
 

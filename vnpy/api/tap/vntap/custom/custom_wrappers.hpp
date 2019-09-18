@@ -1,10 +1,10 @@
 #pragma once
 
-#include <autocxxpy/callback_wrapper.hpp>
+#include <c2py/callback_wrapper.hpp>
 
 #include "iTapTradeAPI.h"
 
-namespace autocxxpy
+namespace c2py
 {
     // TapAPIOrderInfoNotice
     struct FixedTapAPIOrderInfoNotice : ITapTrade::TapAPIOrderInfoNotice

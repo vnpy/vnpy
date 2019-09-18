@@ -8,7 +8,7 @@ CTA策略模块主要由7部分构成，如下图：
 - base：定义了CTA模块中用到的一些基础设置，如引擎类型（回测/实盘）、回测模式（K线/Tick）、本地停止单的定义以及停止单状态（等待中/已撤销/已触发）。
   
 - template：定义了CTA策略模板（包含信号生成和委托管理）、CTA信号（仅负责信号生成）、目标仓位算法（仅负责委托管理，适用于拆分巨型委托，降低冲击成本）。
-- strategies: 官方提供的cta策略示例，包含从最基础的双均线策略，到通道突破类型的布林带策略，到跨时间周期策略，再到把信号生成和委托管理独立开来的多信号策略。
+- strategies: 官方提供的cta策略示例，包含从最基础的双均线策略，到通道突破类型的布林带策略，到跨时间周期策略，再到把信号生成和委托管理独立开来的多信号策略。(用户自定义的策略也可以放在strategies文件夹内运行)
 - backesting：包含回测引擎和参数优化。其中回测引擎定义了数据载入、委托撮合机制、计算与统计相关盈利指标、结果绘图等函数。
 - converter：定义了针对上期所品种平今/平昨模式的委托转换模块；对于其他品种用户也可以通过可选参数lock切换至锁仓模式。
 - engine：定义了CTA策略实盘引擎，其中包括：RQData客户端初始化和数据载入、策略的初始化和启动、推送Tick订阅行情到策略中、挂撤单操作、策略的停止和移除等。
@@ -18,35 +18,11 @@ CTA策略模块主要由7部分构成，如下图：
 
 &nbsp;
 
-## 历史数据
+## 数据加载
 
-### 回测历史数据
-在开始策略回测之前，必须保证数据库内有充足的历史数据。故vnpy提供了历史数据一键下载的功能。
-下载数据功能主要是基于RQData的get_price()函数实现的。
-```
-get_price(
-    order_book_ids, start_date='2013-01-04', end_date='2014-01-04',
-    frequency='1d', fields=None, adjust_type='pre', skip_suspended =False,
-    market='cn'
-)
-```
-
-
-在使用前要保证RQData初始化完毕，然后填写以下4个字段信息：
-- 本地代码：格式为合约品种+交易所，如IF88.CFFEX、rb88.SHFE；然后在底层通过RqdataClient的to_rq_symbol()函数转换成符合RQData格式，对应RQData中get_price()函数的order_book_ids字段。
-- K线周期：可以填1m、60m、1d，对应get_price()函数的frequency字段。
-- 开始日期：格式为yy/mm/dd，如2017/4/21，对应get_price()函数的start_date字段。（点击窗口右侧箭头按钮可改变日期大小）
-- 结束日期：格式为yy/mm/dd，如2019/4/22，对应get_price()函数的end_date字段。（点击窗口右侧箭头按钮可改变日期大小）
-  
-填写完字段信息后，点击下方“下载数据”按钮启动下载程序，下载成功如图所示。
-
-
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/data_loader.png)
-
-### 实盘历史数据
 在实盘中，RQData通过实时载入数据进行策略的初始化。该功能主要在CTA实盘引擎engine.py内实现。
 下面介绍具体流程：
-- 配置json文件：在用户目录下.vntrader文件夹找到vt_setting.json，输入RQData的账号和密码，如图。
+- 在菜单栏点击“配置”，进入全局配置页面输入RQData账号密码；或者直接配置json文件，即在用户目录下.vntrader文件夹找到vt_setting.json，如图。
   
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_strategy/RQData_setting.png "enter image title here")
 
@@ -114,7 +90,8 @@ get_price(
 &nbsp;
 
 ## 策略开发
-CTA策略模板提供完整的信号生成和委托管理功能，用户可以基于该模板自行开发策略。新策略可以放在根目录下vnpy\app\cta_strategy\strategies文件夹内，也可以放在用户运行的文件内（VN Station模式）。注意：策略文件命名是以下划线模式，如boll_channel_strategy.py；而策略类命名采用的是驼峰式，如BollChannelStrategy。
+CTA策略模板提供完整的信号生成和委托管理功能，用户可以基于该模板自行开发策略。新策略可以放在用户运行的文件内（推荐），如在c:\users\administrator.vntrader目录下创建strategies文件夹；可以放在根目录下vnpy\app\cta_strategy\strategies文件夹内。
+注意：策略文件命名是以下划线模式，如boll_channel_strategy.py；而策略类命名采用的是驼峰式，如BollChannelStrategy。
 
 下面通过BollChannelStrategy策略示例，来展示策略开发的具体步骤：
 
@@ -164,7 +141,7 @@ CTA策略模板提供完整的信号生成和委托管理功能，用户可以�
 ### 策略的初始化、启动、停止
 通过“CTA策略”组件的相关功能按钮实现。
 
-注意：函数load_bar(10)，代表策略初始化需要载入10个交易日的历史数据。该历史数据可以是Tick数据，也可以是K线数据。
+注意：函数load_bar(10)，代表策略初始化需要载入10个交易日的历史数据。该历史数据可以是Tick数据，也可以是K线数据。在策略初始化时候，会调用K线时间序列管理器计算并缓存相关的计算指标，但是并不触发交易。
 
 ```
     def on_init(self):
@@ -918,6 +895,7 @@ def optimize(
 ### 初始化策略
 - 调用策略类的on_init()回调函数,并且载入历史数据；
 - 恢复上次退出之前的策略状态；
+- 从.vntrader/cta_strategy_data.json内读取策略参数，最新的技术指标，以及持仓数量；
 - 调用接口的subcribe()函数订阅指定行情信息；
 - 策略初始化状态变成True，并且更新到日志上。
   
@@ -999,6 +977,7 @@ def optimize(
 - 调用策略类的on_stop()函数停止策略；
 - 更新策略启动状态为False；
 - 对所有为成交的委托（市价单/限价单/本地停止单）进行撤单操作；
+- 把策略参数，最新的技术指标，以及持仓数量保存到.vntrader/cta_strategy_data.json内；
 - 在图形化界面更新策略状态。
 
 ```
@@ -1018,6 +997,9 @@ def optimize(
 
         # Cancel all orders of the strategy
         self.cancel_all(strategy)
+
+        # Sync strategy variables to data file
+        self.sync_strategy_data(strategy)
 
         # Update GUI
         self.put_strategy_event(strategy)

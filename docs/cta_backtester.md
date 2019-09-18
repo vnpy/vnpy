@@ -1,5 +1,5 @@
 # CTA回测模块
-CTA回测模块是基于PyQt5和pyqtgraph的图形化回测工具。启动VN Trader后，在菜单栏中点击“功能-> CTA回测”即可进入该图形化回测界面，如下图。CTA回测模块主要实现3个功能：历史行情数据的下载、策略回测、参数优化。
+CTA回测模块是基于PyQt5和pyqtgraph的图形化回测工具。启动VN Trader后，在菜单栏中点击“功能-> CTA回测”即可进入该图形化回测界面，如下图。CTA回测模块主要实现3个功能：历史行情数据的下载、策略回测、参数优化、K线图表买卖点展示。
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/cta_backtester.png)
 
@@ -35,7 +35,10 @@ CTA回测模块是基于PyQt5和pyqtgraph的图形化回测工具。启动VN Tra
 
 ## 下载数据
 在开始策略回测之前，必须保证数据库内有充足的历史数据。故vnpy提供了历史数据一键下载的功能。
-下载数据功能主要是基于RQData的get_price()函数实现的。
+
+### RQData
+RQData提供国内股票、ETF、期货以及期权的历史数据。
+其下载数据功能主要是基于RQData的get_price()函数实现的。
 ```
 get_price(
     order_book_ids, start_date='2013-01-04', end_date='2014-01-04',
@@ -47,7 +50,7 @@ get_price(
 
 在使用前要保证RQData初始化完毕，然后填写以下4个字段信息：
 - 本地代码：格式为合约品种+交易所，如IF88.CFFEX、rb88.SHFE；然后在底层通过RqdataClient的to_rq_symbol()函数转换成符合RQData格式，对应RQData中get_price()函数的order_book_ids字段。
-- K线周期：可以填1m、60m、1d，对应get_price()函数的frequency字段。
+- K线周期：可以填1m、1h、d、w，对应get_price()函数的frequency字段。
 - 开始日期：格式为yy/mm/dd，如2017/4/21，对应get_price()函数的start_date字段。（点击窗口右侧箭头按钮可改变日期大小）
 - 结束日期：格式为yy/mm/dd，如2019/4/22，对应get_price()函数的end_date字段。（点击窗口右侧箭头按钮可改变日期大小）
   
@@ -56,13 +59,152 @@ get_price(
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/data_loader.png)
 
+&nbsp;
 
+### IB
+
+盈透证券提供外盘股票、期货、期权的历史数据。
+下载前必须连接好IB接口，因为其下载数据功能主要是基于IbGateway类query_history()函数实现的。
+
+```
+    def query_history(self, req: HistoryRequest):
+        """"""
+        self.history_req = req
+
+        self.reqid += 1
+
+        ib_contract = Contract()
+        ib_contract.conId = str(req.symbol)
+        ib_contract.exchange = EXCHANGE_VT2IB[req.exchange]
+
+        if req.end:
+            end = req.end
+            end_str = end.strftime("%Y%m%d %H:%M:%S")
+        else:
+            end = datetime.now()
+            end_str = ""
+
+        delta = end - req.start
+        days = min(delta.days, 180)     # IB only provides 6-month data
+        duration = f"{days} D"
+        bar_size = INTERVAL_VT2IB[req.interval]
+
+        if req.exchange == Exchange.IDEALPRO:
+            bar_type = "MIDPOINT"
+        else:
+            bar_type = "TRADES"
+
+        self.client.reqHistoricalData(
+            self.reqid,
+            ib_contract,
+            end_str,
+            duration,
+            bar_size,
+            bar_type,
+            1,
+            1,
+            False,
+            []
+        )
+
+        self.history_condition.acquire()    # Wait for async data return
+        self.history_condition.wait()
+        self.history_condition.release()
+
+        history = self.history_buf
+        self.history_buf = []       # Create new buffer list
+        self.history_req = None
+
+        return history
+```
+&nbsp;
+
+### BITMEX
+
+BITMEX交易所提供数字货币历史数据。
+由于仿真环境与实盘环境行情差异比较大，故需要用实盘账号登录BIMEX接口来下载真实行情数据，其下载数据功能主要是基于BitmexGateway类query_history()函数实现的。
+
+```
+    def query_history(self, req: HistoryRequest):
+        """"""
+        if not self.check_rate_limit():
+            return
+
+        history = []
+        count = 750
+        start_time = req.start.isoformat()
+
+        while True:
+            # Create query params
+            params = {
+                "binSize": INTERVAL_VT2BITMEX[req.interval],
+                "symbol": req.symbol,
+                "count": count,
+                "startTime": start_time
+            }
+
+            # Add end time if specified
+            if req.end:
+                params["endTime"] = req.end.isoformat()
+
+            # Get response from server
+            resp = self.request(
+                "GET",
+                "/trade/bucketed",
+                params=params
+            )
+
+            # Break if request failed with other status code
+            if resp.status_code // 100 != 2:
+                msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
+                self.gateway.write_log(msg)
+                break
+            else:
+                data = resp.json()
+                if not data:
+                    msg = f"获取历史数据为空，开始时间：{start_time}，数量：{count}"
+                    break
+
+                for d in data:
+                    dt = datetime.strptime(
+                        d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                    bar = BarData(
+                        symbol=req.symbol,
+                        exchange=req.exchange,
+                        datetime=dt,
+                        interval=req.interval,
+                        volume=d["volume"],
+                        open_price=d["open"],
+                        high_price=d["high"],
+                        low_price=d["low"],
+                        close_price=d["close"],
+                        gateway_name=self.gateway_name
+                    )
+                    history.append(bar)
+
+                begin = data[0]["timestamp"]
+                end = data[-1]["timestamp"]
+                msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
+                self.gateway.write_log(msg)
+
+                # Break if total data count less than 750 (latest date collected)
+                if len(data) < 750:
+                    break
+
+                # Update start time
+                start_time = bar.datetime + TIMEDELTA_MAP[req.interval]
+
+        return history
+```
 
 &nbsp;
 
 ## 策略回测
 下载完历史数据后，需要配置以下字段：交易策略、手续费率、交易滑点、合约乘数、价格跳动、回测资金。
 这些字段主要对应BacktesterEngine类的run_backtesting函数。
+
+若数据库已存在历史数据，无需重复下载，直接从本地数据库中导入数据进行回测。注意，vt_symbol的格式为品种代码.交易所的形式，如IF1908.CFFEX，导入时会自动将其分割为品种和交易所两部分
+
 ```
 def run_backtesting(
     self, class_name: str, vt_symbol: str, interval: str, start: datetime, 
@@ -70,8 +212,7 @@ def run_backtesting(
     capital: int, setting: dict
 )：
 ```
-如果没有RqData用于下载历史数据（一般情况），则可以通过完整填写所有字段，从本地已连接的数据库中导入数据进行回测
-注：本地代码应以品种代码.交易所的形式（导入时会自动将其分割为品种和交易所两部分）
+
 
 点击下方的“开始回测”按钮可以开始回测：
 首先会弹出如图所示的参数配置窗口，用于调整策略参数。该设置对应的是run_backtesting()函数的setting字典。
@@ -99,6 +240,21 @@ def run_backtesting(
 以下四个图分别是代表账号净值、净值回撤、每日盈亏、盈亏分布。
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/show_result_chat.png)
+
+
+&nbsp;
+### K线图
+K线图是基于PyQtGraph开发的，整个模块由以下五大组件构成：
+
+- BarManager：K线序列数据管理工具
+- ChartItem：基础图形类，继承实现后可以绘制K线、成交量、技术指标等
+- DatetimeAxis：针对K线时间戳设计的定制坐标轴
+- ChartCursor：十字光标控件，用于显示特定位置的数据细节
+- ChartWidget：包含以上所有部分，提供单一函数入口的绘图组件
+  
+在回测完毕后，点击“K线图表”按钮即可显示历史K线行情数据（默认1分钟），并且标识有具体的买卖点位，如下图。
+
+![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/bar_chart.png)
 
 
 &nbsp;

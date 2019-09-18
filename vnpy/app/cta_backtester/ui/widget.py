@@ -332,7 +332,7 @@ class BacktesterManager(QtWidgets.QWidget):
         end_date = self.end_date_edit.date()
 
         start = datetime(start_date.year(), start_date.month(), start_date.day())
-        end = datetime(end_date.year(), end_date.month(), end_date.day())
+        end = datetime(end_date.year(), end_date.month(), end_date.day(), 23, 59, 59)
 
         self.backtester_engine.start_downloading(
             vt_symbol,
@@ -1013,13 +1013,13 @@ class CandleChartDialog(QtWidgets.QDialog):
     def update_trades(self, trades: list):
         """"""
         trade_data = []
-        
+
         for trade in trades:
             ix = self.dt_ix_map[trade.datetime]
 
             scatter = {
-                "pos": (ix, trade.price), 
-                "data": 1, 
+                "pos": (ix, trade.price),
+                "data": 1,
                 "size": 14,
                 "pen": pg.mkPen((255, 255, 255))
             }
@@ -1030,11 +1030,11 @@ class CandleChartDialog(QtWidgets.QDialog):
             else:
                 scatter["symbol"] = "t"
                 scatter["brush"] = pg.mkBrush((0, 0, 255))
-            
+
             trade_data.append(scatter)
 
         self.trade_scatter.setData(trade_data)
-        
+
     def clear_data(self):
         """"""
         self.updated = False
@@ -1042,7 +1042,7 @@ class CandleChartDialog(QtWidgets.QDialog):
 
         self.dt_ix_map.clear()
         self.trade_scatter.clear()
-    
+
     def is_updated(self):
         """"""
         return self.updated
