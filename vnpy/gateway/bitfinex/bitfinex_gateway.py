@@ -145,7 +145,7 @@ class BitfinexGateway(BaseGateway):
     def process_timer_event(self, event: Event):
         """"""
         self.timer_count += 1
-        
+
         if self.timer_count < self.resubscribe_interval:
             return
 
