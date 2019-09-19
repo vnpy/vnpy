@@ -239,7 +239,7 @@ class RpcClient:
 
     def join(self):
         # Wait for RpcClient thread to exit
-        if self.__thread.isAlive():
+        if self.__thread and self.__thread.is_alive():
             self.__thread.join()
         self.__thread = None
 
