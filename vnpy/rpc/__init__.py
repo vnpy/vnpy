@@ -1,3 +1,4 @@
+from zmq.backend.cython.constants import NOBLOCK
 import signal
 import threading
 import traceback
@@ -7,10 +8,11 @@ from typing import Any, Callable
 
 import zmq
 
-_ = lambda x: x
+
+def _(x): return x
 
 # Achieve Ctrl-c interrupt recv
-from zmq.backend.cython.constants import NOBLOCK
+
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -100,7 +102,7 @@ class RpcServer:
 
     def join(self):
         # Wait for RpcServer thread to exit
-        if self.__thread.isAlive():
+        if self.__thread and self.__thread.is_alive():
             self.__thread.join()
         self.__thread = None
 
