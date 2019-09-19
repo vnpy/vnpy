@@ -221,11 +221,12 @@ class SpreadDataEngine:
 
             # Subscribe market data
             contract = self.main_engine.get_contract(vt_symbol)
-            req = SubscribeRequest(
-                contract.symbol,
-                contract.exchange
-            )
-            self.main_engine.subscribe(req, contract.gateway_name)
+            if contract:
+                req = SubscribeRequest(
+                    contract.symbol,
+                    contract.exchange
+                )
+                self.main_engine.subscribe(req, contract.gateway_name)
 
         return leg
 
