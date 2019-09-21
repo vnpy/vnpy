@@ -91,14 +91,16 @@ class BacktesterEngine(BaseEngine):
         """
         for dirpath, dirnames, filenames in os.walk(path):
             for filename in filenames:
+                # Load python source code file
                 if filename.endswith(".py"):
                     strategy_module_name = ".".join(
                         [module_name, filename.replace(".py", "")])
+                    self.load_strategy_class_from_module(strategy_module_name)
+                # Load compiled pyd binary file
                 elif filename.endswith(".pyd"):
                     strategy_module_name = ".".join(
                         [module_name, filename.split(".")[0]])
-
-                self.load_strategy_class_from_module(strategy_module_name)
+                    self.load_strategy_class_from_module(strategy_module_name)
 
     def load_strategy_class_from_module(self, module_name: str):
         """
