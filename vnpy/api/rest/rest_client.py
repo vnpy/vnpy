@@ -8,7 +8,8 @@ from datetime import datetime
 from enum import Enum
 from multiprocessing.dummy import Pool
 from threading import Lock
-from typing import Any, Callable, List, Optional, Union
+from types import TracebackType
+from typing import Any, Callable, List, Optional, Type, Union
 
 import requests
 
@@ -41,6 +42,7 @@ class Request(object):
         on_failed: Callable = None,
         on_error: Callable = None,
         extra: Any = None,
+        client: "RestClient" = None,
     ):
         """"""
         self.method = method
@@ -54,8 +56,9 @@ class Request(object):
         self.on_error = on_error
         self.extra = extra
 
-        self.response = None
+        self.response: Optional[requests.Response] = None
         self.status = RequestStatus.ready
+        self.client: "RestClient" = client
 
     def __str__(self):
         if self.response is None:
@@ -64,20 +67,22 @@ class Request(object):
             status_code = self.response.status_code
 
         return (
-            "request : {} {} {} because {}: \n"
-            "headers: {}\n"
-            "params: {}\n"
-            "data: {}\n"
-            "response:"
-            "{}\n".format(
-                self.method,
-                self.path,
-                self.status.name,
-                status_code,
-                self.headers,
-                self.params,
-                self.data,
-                "" if self.response is None else self.response.text,
+            "request: {method} {path} {http_code}: \n"
+            "full_url: {full_url}\n"
+            "status: {status}\n"
+            "headers: {headers}\n"
+            "params: {params}\n"
+            "data: {data}\n"
+            "response: {response}\n".format(
+                full_url=self.client.make_full_url(self.path),
+                status=self.status.name,
+                method=self.method,
+                path=self.path,
+                http_code=status_code,
+                headers=self.headers,
+                params=self.params,
+                data=self.data,
+                response="" if self.response is None else self.response.text,
             )
         )
 
@@ -119,6 +124,10 @@ class RestClient(object):
         self._tasks: List[multiprocessing.pool.AsyncResult] = []
         self._sessions_lock = Lock()
         self._sessions: List[requests.Session] = []
+
+    @property
+    def alive(self):
+        return self._active
 
     def init(self,
              url_base: str,
@@ -172,12 +181,12 @@ class RestClient(object):
         self,
         method: str,
         path: str,
-        callback: Callable,
+        callback: Callable[[dict, "Request"], Any],
         params: dict = None,
         data: Union[dict, str, bytes] = None,
         headers: dict = None,
-        on_failed: Callable = None,
-        on_error: Callable = None,
+        on_failed: Callable[[int, "Request"], Any] = None,
+        on_error: Callable[[Type, Exception, TracebackType, "Request"], Any] = None,
         extra: Any = None,
     ):
         """
@@ -188,7 +197,7 @@ class RestClient(object):
         :param params: dict for query string
         :param data: Http body. If it is a dict, it will be converted to form-data. Otherwise, it will be converted to bytes.
         :param headers: dict for headers
-        :param on_failed: callback function if Non-2xx status, type, type: (code, dict, Request)
+        :param on_failed: callback function if Non-2xx status, type, type: (code, Request)
         :param on_error: callback function when catching Python exception, type: (etype, evalue, tb, Request)
         :param extra: Any extra data which can be used when handling callback
         :return: Request
@@ -203,6 +212,7 @@ class RestClient(object):
             on_failed=on_failed,
             on_error=on_error,
             extra=extra,
+            client=self,
         )
         task = pool.apply_async(
             self._process_request,
@@ -275,6 +285,14 @@ class RestClient(object):
         )
         return text
 
+    def is_request_success(self, data: dict, request: "Request"):
+        """
+        check if a request succeed
+        default behavior is returning True
+        :return True if succeed.
+        """
+        return True
+
     def _log(self, msg, *args):
         logger = self.logger
         if logger:
@@ -315,21 +333,28 @@ class RestClient(object):
 
                 # check result & call corresponding callbacks
                 status_code = response.status_code
-                if status_code // 100 == 2:  # 2xx codes are all successful
-                    if status_code == 204:
-                        json_body = None
-                    else:
-                        json_body = response.json()
 
-                    request.callback(json_body, request)
-                    request.status = RequestStatus.success
-                else:
-                    request.status = RequestStatus.failed
+                success = False
+                json_body: Optional[dict] = None
+                try:
+                    if status_code // 100 == 2:  # 2xx codes are all successful
+                        if status_code == 204:
+                            json_body = None
+                        else:
+                            json_body = response.json()
 
-                    if request.on_failed:
-                        request.on_failed(status_code, request)
+                        if self.is_request_success(json_body, request):
+                            success = True
+                finally:
+                    if success:
+                        request.status = RequestStatus.success
+                        request.callback(json_body, request)
                     else:
-                        self.on_failed(status_code, request)
+                        request.status = RequestStatus.failed
+                        if request.on_failed:
+                            request.on_failed(status_code, request)
+                        else:
+                            self.on_failed(status_code, request)
         except Exception:
             request.status = RequestStatus.error
             t, v, tb = sys.exc_info()
@@ -368,7 +393,8 @@ class RestClient(object):
             path,
             params,
             data,
-            headers
+            headers,
+            client=self,
         )
         request = self.sign(request)
 

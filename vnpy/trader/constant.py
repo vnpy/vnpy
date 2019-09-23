@@ -117,6 +117,7 @@ class Exchange(Enum):
     HUOBI = "HUOBI"
     BITFINEX = "BITFINEX"
     BINANCE = "BINANCE"
+    BYBIT = "BYBIT"         # bybit.com
     COINBASE = "COINBASE"
 
     # Special Function
