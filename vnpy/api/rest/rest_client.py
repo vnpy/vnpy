@@ -1,7 +1,9 @@
+import logging
 import multiprocessing
 import os
 import sys
 import traceback
+import uuid
 from datetime import datetime
 from enum import Enum
 from multiprocessing.dummy import Pool
@@ -9,6 +11,8 @@ from threading import Lock
 from typing import Any, Callable, List, Optional, Union
 
 import requests
+
+from vnpy.trader.utility import get_file_logger
 
 
 class RequestStatus(Enum):
@@ -105,21 +109,35 @@ class RestClient(object):
         """
         """
         self.url_base = ''  # type: str
-        self._active = False
+        self.logger: Optional[logging.Logger] = None
 
         self.proxies = None
+
+        self._active = False
 
         self._tasks_lock = Lock()
         self._tasks: List[multiprocessing.pool.AsyncResult] = []
         self._sessions_lock = Lock()
         self._sessions: List[requests.Session] = []
 
-    def init(self, url_base: str, proxy_host: str = "", proxy_port: int = 0):
+    def init(self,
+             url_base: str,
+             proxy_host: str = "",
+             proxy_port: int = 0,
+             log_path: Optional[str] = None,
+             ):
         """
         Init rest client with url_base which is the API root address.
         e.g. 'https://www.bitmex.com/api/v1/'
+        :param url_base:
+        :param proxy_host:
+        :param proxy_port:
+        :param log_path: optional. file to save log.
         """
         self.url_base = url_base
+        if log_path is not None:
+            self.logger = get_file_logger(log_path)
+            self.logger.setLevel(logging.DEBUG)
 
         if proxy_host and proxy_port:
             proxy = f"{proxy_host}:{proxy_port}"
@@ -257,6 +275,11 @@ class RestClient(object):
         )
         return text
 
+    def _log(self, msg, *args):
+        logger = self.logger
+        if logger:
+            logger.debug(msg, *args)
+
     def _process_request(
         self, request: Request
     ):
@@ -265,19 +288,32 @@ class RestClient(object):
         """
         try:
             with self._get_session() as session:
+                # sign
                 request = self.sign(request)
 
+                # send request
                 url = self.make_full_url(request.path)
+                uid = uuid.uuid4()
 
+                method = request.method
+                headers = request.headers
+                params = request.params
+                data = request.data
+                self._log("[%s] sending request %s %s, headers:%s, params:%s, data:%s",
+                          uid, method, url,
+                          headers, params, data)
                 response = session.request(
-                    request.method,
+                    method,
                     url,
-                    headers=request.headers,
-                    params=request.params,
-                    data=request.data,
+                    headers=headers,
+                    params=params,
+                    data=data,
                     proxies=self.proxies,
                 )
                 request.response = response
+                self._log("[%s] received response from %s:%s", uid, method, url)
+
+                # check result & call corresponding callbacks
                 status_code = response.status_code
                 if status_code // 100 == 2:  # 2xx codes are all successful
                     if status_code == 204:
