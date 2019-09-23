@@ -3,14 +3,19 @@ General utility functions.
 """
 
 import json
+import logging
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Dict
+from decimal import Decimal
 
 import numpy as np
 import talib
 
 from .object import BarData, TickData
 from .constant import Exchange, Interval
+
+
+log_formatter = logging.Formatter('[%(asctime)s] %(message)s')
 
 
 def extract_vt_symbol(vt_symbol: str):
@@ -109,11 +114,13 @@ def save_json(filename: str, data: dict):
         )
 
 
-def round_to(value: float, target: float):
+def round_to(value: float, target: float) -> float:
     """
     Round price to price tick value.
     """
-    rounded = int(round(value / target)) * target
+    value = Decimal(str(value))
+    target = Decimal(str(target))
+    rounded = float(int(round(value / target)) * target)
     return rounded
 
 
@@ -458,3 +465,25 @@ def virtual(func: "callable"):
     that can be (re)implemented by subclasses.
     """
     return func
+
+
+file_handlers: Dict[str, logging.FileHandler] = {}
+
+
+def _get_file_logger_handler(filename: str):
+    handler = file_handlers.get(filename, None)
+    if handler is None:
+        handler = logging.FileHandler(filename)
+        file_handlers[filename] = handler  # Am i need a lock?
+    return handler
+
+
+def get_file_logger(filename: str):
+    """
+    return a logger that writes records into a file.
+    """
+    logger = logging.getLogger(filename)
+    handler = _get_file_logger_handler(filename)  # get singleton handler.
+    handler.setFormatter(log_formatter)
+    logger.addHandler(handler)  # each handler will be added only once.
+    return logger

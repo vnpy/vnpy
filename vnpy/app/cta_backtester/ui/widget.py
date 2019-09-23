@@ -332,7 +332,7 @@ class BacktesterManager(QtWidgets.QWidget):
         end_date = self.end_date_edit.date()
 
         start = datetime(start_date.year(), start_date.month(), start_date.day())
-        end = datetime(end_date.year(), end_date.month(), end_date.day())
+        end = datetime(end_date.year(), end_date.month(), end_date.day(), 23, 59, 59)
 
         self.backtester_engine.start_downloading(
             vt_symbol,

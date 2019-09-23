@@ -491,7 +491,7 @@ class MiniTdApi(TdApi):
 
     def onRspQryInvestorPosition(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
-        if data:
+        if data and data["InstrumentID"] in symbol_exchange_map:
             # Get buffered position object
             key = f"{data['InstrumentID'], data['PosiDirection']}"
             position = self.positions.get(key, None)
