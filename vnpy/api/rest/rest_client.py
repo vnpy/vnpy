@@ -1,14 +1,17 @@
 import json
+import logging
 import multiprocessing
 import os
 import sys
 import traceback
+import uuid
 from datetime import datetime
 from enum import Enum
 from multiprocessing.dummy import Pool
 from threading import Lock, Thread
 from types import TracebackType
 from typing import Any, Callable, List, Optional, Type, Union
+from vnpy.trader.utility import get_file_logger
 
 import requests
 
@@ -131,6 +134,7 @@ class RestClient(object):
         """
         self.url_base = ''  # type: str
         self._active = False
+        self.logger: Optional[logging.Logger] = None
 
         self.proxies = None
 
@@ -146,12 +150,25 @@ class RestClient(object):
     def alive(self):
         return self._active
 
-    def init(self, url_base: str, proxy_host: str = "", proxy_port: int = 0):
+    def init(self,
+             url_base: str,
+             proxy_host: str = "",
+             proxy_port: int = 0,
+             log_path: Optional[str] = None,
+             ):
         """
         Init rest client with url_base which is the API root address.
         e.g. 'https://www.bitmex.com/api/v1/'
+        :param url_base:
+        :param proxy_host:
+        :param proxy_port:
+        :param log_path: optional. file to save log.
         """
         self.url_base = url_base
+
+        if log_path is not None:
+            self.logger = get_file_logger(log_path)
+            self.logger.setLevel(logging.DEBUG)
 
         if proxy_host and proxy_port:
             proxy = f"{proxy_host}:{proxy_port}"
@@ -349,6 +366,11 @@ class RestClient(object):
         self._process_request(request)
         self._clean_finished_streams()
 
+    def _log(self, msg, *args):
+        logger = self.logger
+        if logger:
+            logger.debug(msg, *args)
+
     def _process_request(
         self, request: Request
     ):
@@ -358,22 +380,33 @@ class RestClient(object):
         try:
             with self._get_session() as session:
                 request = self.sign(request)
-
                 url = self.make_full_url(request.path)
 
+                # send request
+                uid = uuid.uuid4()
                 stream = request.stream
+                method = request.method
+                headers = request.headers
+                params = request.params
+                data = request.data
+                self._log("[%s] sending request %s %s, headers:%s, params:%s, data:%s",
+                          uid, method, url,
+                          headers, params, data)
                 response = session.request(
-                    request.method,
+                    method,
                     url,
-                    headers=request.headers,
-                    params=request.params,
-                    data=request.data,
+                    headers=headers,
+                    params=params,
+                    data=data,
                     proxies=self.proxies,
                     stream=stream,
                 )
                 request.response = response
                 status_code = response.status_code
 
+                self._log("[%s] received response from %s:%s", uid, method, url)
+
+                # check result & call corresponding callbacks
                 if not stream:  # normal API:
                     # just call callback with all contents received.
                     if status_code // 100 == 2:  # 2xx codes are all successful
