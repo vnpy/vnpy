@@ -111,6 +111,8 @@ class Exchange(Enum):
     EUNX = "EUNX"           # Euronext Exchange
     KRX = "KRX"             # Korean Exchange
 
+    OANDA = "OANDA"         # oanda.com
+
     # CryptoCurrency
     BITMEX = "BITMEX"
     OKEX = "OKEX"
