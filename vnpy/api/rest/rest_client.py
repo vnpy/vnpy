@@ -1,19 +1,16 @@
-import logging
+import json
 import multiprocessing
 import os
 import sys
 import traceback
-import uuid
 from datetime import datetime
 from enum import Enum
 from multiprocessing.dummy import Pool
-from threading import Lock
+from threading import Lock, Thread
 from types import TracebackType
 from typing import Any, Callable, List, Optional, Type, Union
 
 import requests
-
-from vnpy.trader.utility import get_file_logger
 
 
 class RequestStatus(Enum):
@@ -24,6 +21,11 @@ class RequestStatus(Enum):
 
 
 pool: multiprocessing.pool.Pool = Pool(os.cpu_count() * 20)
+
+CALLBACK_TYPE = Callable[[dict, "Request"], Any]
+ON_FAILED_TYPE = Callable[[int, "Request"], Any]
+ON_ERROR_TYPE = Callable[[Type, Exception, TracebackType, "Request"], Any]
+CONNECTED_TYPE = Callable[["Request"], Any]
 
 
 class Request(object):
@@ -38,9 +40,11 @@ class Request(object):
         params: dict,
         data: Union[dict, str, bytes],
         headers: dict,
-        callback: Callable = None,
-        on_failed: Callable = None,
-        on_error: Callable = None,
+        callback: CALLBACK_TYPE = None,
+        on_failed: ON_FAILED_TYPE = None,
+        on_error: ON_ERROR_TYPE = None,
+        stream: bool = False,
+        on_connected: CONNECTED_TYPE = None,  # for streaming request
         extra: Any = None,
         client: "RestClient" = None,
     ):
@@ -51,6 +55,10 @@ class Request(object):
         self.params = params
         self.data = data
         self.headers = headers
+
+        self.stream = stream
+        self.on_connected = on_connected
+        self.processing_line: Optional[str] = ''
 
         self.on_failed = on_failed
         self.on_error = on_error
@@ -65,6 +73,14 @@ class Request(object):
             status_code = "terminated"
         else:
             status_code = self.response.status_code
+
+        if self.stream:
+            response = self.processing_line
+        else:
+            if self.response is None:
+                response = None
+            else:
+                response = self.response.text
 
         return (
             "request: {method} {path} {http_code}: \n"
@@ -82,7 +98,7 @@ class Request(object):
                 headers=self.headers,
                 params=self.params,
                 data=self.data,
-                response="" if self.response is None else self.response.text,
+                response=response,
             )
         )
 
@@ -114,39 +130,28 @@ class RestClient(object):
         """
         """
         self.url_base = ''  # type: str
-        self.logger: Optional[logging.Logger] = None
+        self._active = False
 
         self.proxies = None
-
-        self._active = False
 
         self._tasks_lock = Lock()
         self._tasks: List[multiprocessing.pool.AsyncResult] = []
         self._sessions_lock = Lock()
         self._sessions: List[requests.Session] = []
 
+        self._streams_lock = Lock()
+        self._streams: List[Thread] = []
+
     @property
     def alive(self):
         return self._active
 
-    def init(self,
-             url_base: str,
-             proxy_host: str = "",
-             proxy_port: int = 0,
-             log_path: Optional[str] = None,
-             ):
+    def init(self, url_base: str, proxy_host: str = "", proxy_port: int = 0):
         """
         Init rest client with url_base which is the API root address.
         e.g. 'https://www.bitmex.com/api/v1/'
-        :param url_base:
-        :param proxy_host:
-        :param proxy_port:
-        :param log_path: optional. file to save log.
         """
         self.url_base = url_base
-        if log_path is not None:
-            self.logger = get_file_logger(log_path)
-            self.logger.setLevel(logging.DEBUG)
 
         if proxy_host and proxy_port:
             proxy = f"{proxy_host}:{proxy_port}"
@@ -177,16 +182,55 @@ class RestClient(object):
         for task in self._tasks:
             task.wait()
 
+    def add_streaming_request(
+        self,
+        method: str,
+        path: str,
+        callback: CALLBACK_TYPE,
+        params: dict = None,
+        data: Union[dict, str, bytes] = None,
+        headers: dict = None,
+        on_connected: CONNECTED_TYPE = None,
+        on_failed: ON_FAILED_TYPE = None,
+        on_error: ON_ERROR_TYPE = None,
+        extra: Any = None,
+    ):
+        """
+        See add_request for usage.
+        """
+        request = Request(
+            method=method,
+            path=path,
+            params=params,
+            data=data,
+            headers=headers,
+            callback=callback,
+            on_failed=on_failed,
+            on_error=on_error,
+            extra=extra,
+            client=self,
+            stream=True,
+            on_connected=on_connected,
+        )
+        # stream task should not push to thread pool
+        # because it is usually no return.
+        th = Thread(
+            target=self._process_stream_request,
+            args=[request, ],
+        )
+        th.start()
+        return request
+
     def add_request(
         self,
         method: str,
         path: str,
-        callback: Callable[[dict, "Request"], Any],
+        callback: CALLBACK_TYPE,
         params: dict = None,
         data: Union[dict, str, bytes] = None,
         headers: dict = None,
-        on_failed: Callable[[int, "Request"], Any] = None,
-        on_error: Callable[[Type, Exception, TracebackType, "Request"], Any] = None,
+        on_failed: ON_FAILED_TYPE = None,
+        on_error: ON_ERROR_TYPE = None,
         extra: Any = None,
     ):
         """
@@ -231,6 +275,11 @@ class RestClient(object):
         with self._tasks_lock:
             not_finished_tasks = [i for i in self._tasks if not i.ready()]
             self._tasks = not_finished_tasks
+
+    def _clean_finished_streams(self):
+        with self._streams_lock:
+            not_finished_streams = [i for i in self._streams if i.is_alive()]
+            self._streams = not_finished_streams
 
     def _get_session(self):
         with self._sessions_lock:
@@ -293,10 +342,12 @@ class RestClient(object):
         """
         return True
 
-    def _log(self, msg, *args):
-        logger = self.logger
-        if logger:
-            logger.debug(msg, *args)
+    def _process_stream_request(self, request: Request):
+        """
+        Sending request to server and get result.
+        """
+        self._process_request(request)
+        self._clean_finished_streams()
 
     def _process_request(
         self, request: Request
@@ -306,55 +357,47 @@ class RestClient(object):
         """
         try:
             with self._get_session() as session:
-                # sign
                 request = self.sign(request)
 
-                # send request
                 url = self.make_full_url(request.path)
-                uid = uuid.uuid4()
 
-                method = request.method
-                headers = request.headers
-                params = request.params
-                data = request.data
-                self._log("[%s] sending request %s %s, headers:%s, params:%s, data:%s",
-                          uid, method, url,
-                          headers, params, data)
+                stream = request.stream
                 response = session.request(
-                    method,
+                    request.method,
                     url,
-                    headers=headers,
-                    params=params,
-                    data=data,
+                    headers=request.headers,
+                    params=request.params,
+                    data=request.data,
                     proxies=self.proxies,
+                    stream=stream,
                 )
                 request.response = response
-                self._log("[%s] received response from %s:%s", uid, method, url)
-
-                # check result & call corresponding callbacks
                 status_code = response.status_code
 
-                success = False
-                json_body: Optional[dict] = None
-                try:
+                if not stream:  # normal API:
+                    # just call callback with all contents received.
                     if status_code // 100 == 2:  # 2xx codes are all successful
                         if status_code == 204:
                             json_body = None
                         else:
                             json_body = response.json()
-
-                        if self.is_request_success(json_body, request):
-                            success = True
-                finally:
-                    if success:
-                        request.status = RequestStatus.success
-                        request.callback(json_body, request)
+                        self._process_json_body(json_body, request)
                     else:
-                        request.status = RequestStatus.failed
                         if request.on_failed:
+                            request.status = RequestStatus.failed
                             request.on_failed(status_code, request)
                         else:
                             self.on_failed(status_code, request)
+                else:  # streaming API:
+                    if request.on_connected:
+                        request.on_connected(request)
+                    # split response by lines, and call one callback for each line.
+                    for line in response.iter_lines(chunk_size=None):
+                        if line:
+                            request.processing_line = line
+                            json_body = json.loads(line)
+                            self._process_json_body(json_body, request)
+                    request.status = RequestStatus.success
         except Exception:
             request.status = RequestStatus.error
             t, v, tb = sys.exc_info()
@@ -362,6 +405,18 @@ class RestClient(object):
                 request.on_error(t, v, tb, request)
             else:
                 self.on_error(t, v, tb, request)
+
+    def _process_json_body(self, json_body: Optional[dict], request: "Request"):
+        status_code = request.response.status_code
+        if self.is_request_success(json_body, request):
+            request.status = RequestStatus.success
+            request.callback(json_body, request)
+        else:
+            request.status = RequestStatus.failed
+            if request.on_failed:
+                request.on_failed(status_code, request)
+            else:
+                self.on_failed(status_code, request)
 
     def make_full_url(self, path: str):
         """
