@@ -121,6 +121,7 @@ class Exchange(Enum):
     BINANCE = "BINANCE"
     BYBIT = "BYBIT"         # bybit.com
     COINBASE = "COINBASE"
+    GATEIO = "GATEIO"
 
     # Special Function
     LOCAL = "LOCAL"         # For local generated data
