@@ -123,6 +123,8 @@ class BitstampGateway(BaseGateway):
                               session, proxy_host, proxy_port)
         self.ws_api.connect(proxy_host, proxy_port)
 
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
+
     def subscribe(self, req: SubscribeRequest):
         """"""
         self.ws_api.subscribe(req)
@@ -145,12 +147,16 @@ class BitstampGateway(BaseGateway):
 
     def query_history(self, req: HistoryRequest):
         """"""
-        return self.rest_api.query_history(req)
+        pass
 
     def close(self):
         """"""
         self.rest_api.stop()
         self.ws_api.stop()
+
+    def process_timer_event(self, event):
+        """"""
+        self.rest_api.query_account()
 
 
 class BitstampRestApi(RestClient):
@@ -378,7 +384,7 @@ class BitstampRestApi(RestClient):
                 size=1,
                 pricetick=pricetick,
                 min_volume=min_volume,
-                history_data=True,
+                history_data=False,
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_contract(contract)
@@ -389,14 +395,6 @@ class BitstampRestApi(RestClient):
         self.gateway.write_log("合约信息查询成功")
 
         self.query_order()
-
-    def query_history(self):
-        """"""
-        self.add_request(
-            method="GET",
-            path="/trading-pairs-info/",
-            callback=self.on_query_contract,
-        )
 
     def cancel_order(self, req: CancelRequest):
         """"""
