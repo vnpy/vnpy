@@ -216,6 +216,7 @@ class BitstampRestApi(RestClient):
         # so use this offset dict instead.
         if not request.data:
             request.data = {"offset": "1"}
+
         payload_str = urlencode(request.data)
 
         message = "BITSTAMP " + self.key + \
@@ -252,7 +253,9 @@ class BitstampRestApi(RestClient):
         self, request: Request
     ):
         """
-        Sending request to server and get result.
+        Bistamp API server does not support keep-alive connection.
+        So when using session.request will cause header related error.
+        Reimplement this method to use requests.request instead.
         """
         try:
             request = self.sign(request)
@@ -387,6 +390,14 @@ class BitstampRestApi(RestClient):
 
         self.query_order()
 
+    def query_history(self):
+        """"""
+        self.add_request(
+            method="GET",
+            path="/trading-pairs-info/",
+            callback=self.on_query_contract,
+        )
+
     def cancel_order(self, req: CancelRequest):
         """"""
         path = "/cancel_order/"
@@ -405,18 +416,20 @@ class BitstampRestApi(RestClient):
 
     def on_cancel_order(self, data, request):
         """"""
+        error = data.get("error", "")
+        if error:
+            self.gateway.write_log(error)
+            return
+
         cancel_request = request.extra
         local_orderid = cancel_request.orderid
         order = self.order_manager.get_order_with_local_orderid(local_orderid)
 
-        if "error" in data:
-            order.status = Status.REJECTED
-        else:
+        if order.is_active:
             order.status = Status.CANCELLED
+            self.order_manager.on_order(order)
 
-            self.gateway.write_log(f"撤单成功：{order.orderid}")
-
-        self.order_manager.on_order(order)
+        self.gateway.write_log(f"撤单成功：{order.orderid}")
 
     def on_cancel_order_error(self, data, request):
         """"""
@@ -593,11 +606,13 @@ class BitstampWebsocketApi(WebsocketClient):
 
         self.gateway.on_tick(copy(tick))
 
-        buy_orderid = data["buy_order_id"]
-        sell_orderid = data["sell_order_id"]
+        # Order status check
+        buy_orderid = str(data["buy_order_id"])
+        sell_orderid = str(data["sell_order_id"])
 
         for sys_orderid in [buy_orderid, sell_orderid]:
-            order = self.order_manager.get_order_with_sys_orderid(sys_orderid)
+            order = self.order_manager.get_order_with_sys_orderid(
+                sys_orderid)
 
             if order:
                 order.traded += data["amount"]
@@ -608,6 +623,19 @@ class BitstampWebsocketApi(WebsocketClient):
                     order.status = Status.ALLTRADED
 
                 self.order_manager.on_order(copy(order))
+
+                trade = TradeData(
+                    symbol=order.symbol,
+                    exchange=order.exchange,
+                    orderid=order.orderid,
+                    tradeid=data["id"],
+                    direction=order.direction,
+                    price=data["price"],
+                    volume=data["amount"],
+                    time=tick.datetime.strftime("%H:%M:%S"),
+                    gateway_name=self.gateway_name
+                )
+                self.gateway.on_trade(trade)
 
     def on_market_depth(self, packet):
         """"""
@@ -641,8 +669,9 @@ class BitstampWebsocketApi(WebsocketClient):
         if event != "order_deleted":
             return
 
-        sys_orderid = data["id"]
+        sys_orderid = str(data["id"])
         order = self.order_manager.get_order_with_sys_orderid(sys_orderid)
-        if order:
+
+        if order and order.is_active():
             order.status = Status.CANCELLED
             self.order_manager.on_order(copy(order))
