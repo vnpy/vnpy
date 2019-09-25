@@ -7,14 +7,15 @@ import hashlib
 import hmac
 import sys
 import time
-import re
 import uuid
 from copy import copy
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
-from typing import Dict, Set
+from typing import Dict
 
-from vnpy.api.rest import Request, RestClient
+import requests
+
+from vnpy.api.rest import Request, RestClient, RequestStatus
 from vnpy.api.websocket import WebsocketClient
 
 from vnpy.trader.constant import (
@@ -31,7 +32,6 @@ from vnpy.trader.object import (
     OrderData,
     TradeData,
     BarData,
-    PositionData,
     AccountData,
     ContractData,
     OrderRequest,
@@ -82,6 +82,7 @@ TIMEDELTA_MAP = {
 
 
 symbol_name_map = {}
+name_symbol_map = {}
 
 
 class BitstampGateway(BaseGateway):
@@ -199,7 +200,6 @@ class BitstampRestApi(RestClient):
 
         self.query_contract()
         self.query_account()
-        self.query_order()
 
     def sign(self, request: Request):
         """
@@ -244,10 +244,53 @@ class BitstampRestApi(RestClient):
             "X-Auth-Version": "v2",
             "Content-Type": content_type
         }
-        print(payload_str)
         request.data = payload_str
 
         return request
+
+    def _process_request(
+        self, request: Request
+    ):
+        """
+        Sending request to server and get result.
+        """
+        try:
+            request = self.sign(request)
+
+            url = self.make_full_url(request.path)
+
+            response = requests.request(
+                request.method,
+                url,
+                headers=request.headers,
+                params=request.params,
+                data=request.data,
+                proxies=self.proxies,
+            )
+            request.response = response
+            status_code = response.status_code
+            if status_code // 100 == 2:  # 2xx codes are all successful
+                if status_code == 204:
+                    json_body = None
+                else:
+                    json_body = response.json()
+
+                request.callback(json_body, request)
+                request.status = RequestStatus.success
+            else:
+                request.status = RequestStatus.failed
+
+                if request.on_failed:
+                    request.on_failed(status_code, request)
+                else:
+                    self.on_failed(status_code, request)
+        except Exception:
+            request.status = RequestStatus.error
+            t, v, tb = sys.exc_info()
+            if request.on_error:
+                request.on_error(t, v, tb, request)
+            else:
+                self.on_error(t, v, tb, request)
 
     def query_order(self):
         """"""
@@ -266,19 +309,21 @@ class BitstampRestApi(RestClient):
             local_orderid = self.order_manager.get_local_orderid(sys_orderid)
 
             direction = DIRECTION_BITSTAMP2VT[d["type"]]
+            name = d["currency_pair"]
+            symbol = name_symbol_map[name]
 
             order = OrderData(
                 orderid=local_orderid,
-                symbol=d["currency_pair"],
+                symbol=symbol,
                 exchange=Exchange.BITSTAMP,
                 price=float(d["price"]),
                 volume=float(d["amount"]),
                 traded=float(0),
                 direction=direction,
+                status=Status.NOTTRADED,
                 time=d["datetime"],
                 gateway_name=self.gateway_name,
             )
-
             self.order_manager.on_order(order)
 
         self.gateway.write_log("委托信息查询成功")
@@ -336,8 +381,11 @@ class BitstampRestApi(RestClient):
             self.gateway.on_contract(contract)
 
             symbol_name_map[contract.symbol] = contract.name
+            name_symbol_map[contract.name] = contract.symbol
 
         self.gateway.write_log("合约信息查询成功")
+
+        self.query_order()
 
     def cancel_order(self, req: CancelRequest):
         """"""
@@ -366,7 +414,7 @@ class BitstampRestApi(RestClient):
         else:
             order.status = Status.CANCELLED
 
-            self.gateway.write_log(f"委托撤单成功：{order.orderid}")
+            self.gateway.write_log(f"撤单成功：{order.orderid}")
 
         self.order_manager.on_order(order)
 
@@ -412,16 +460,22 @@ class BitstampRestApi(RestClient):
 
     def on_send_order(self, data, request):
         """"""
-        print("on_send", data)
         order = request.extra
 
-        if ["reason"] in data:
+        status = data.get("status", None)
+        if status and status == "error":
             order.status = Status.REJECTED
             self.order_manager.on_order(order)
+
+            msg = data["reason"]["__all__"][0]
+            self.gateway.write_log(msg)
             return
 
         sys_orderid = data["id"]
         self.order_manager.update_orderid_map(order.orderid, sys_orderid)
+
+        order.status = Status.NOTTRADED
+        self.order_manager.on_order(order)
 
     def on_send_order_error(
         self, exception_type: type, exception_value: Exception, tb, request: Request
@@ -441,7 +495,7 @@ class BitstampRestApi(RestClient):
         reason = data["reason"]
         code = data["code"]
 
-        msg = f"{request.path} 请求失败，状态码：{status_code}，信息： {reason} code: {code}"
+        msg = f"{request.path} 请求失败，状态码：{status_code}，错误信息：{reason}，错误代码: {code}"
         self.gateway.write_log(msg)
 
     def on_error(
