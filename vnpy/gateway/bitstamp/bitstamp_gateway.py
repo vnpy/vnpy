@@ -1,6 +1,5 @@
 """
 Author: Wudi
-bitstamp合约接口
 """
 
 import hashlib
@@ -9,7 +8,7 @@ import sys
 import time
 import uuid
 from copy import copy
-from datetime import datetime, timedelta
+from datetime import datetime
 from urllib.parse import urlencode
 from typing import Dict
 
@@ -23,15 +22,13 @@ from vnpy.trader.constant import (
     Exchange,
     OrderType,
     Product,
-    Status,
-    Interval
+    Status
 )
 from vnpy.trader.gateway import BaseGateway, LocalOrderManager
 from vnpy.trader.object import (
     TickData,
     OrderData,
     TradeData,
-    BarData,
     AccountData,
     ContractData,
     OrderRequest,
@@ -46,38 +43,9 @@ from vnpy.trader.event import EVENT_TIMER
 REST_HOST = "https://www.bitstamp.net/api/v2"
 WEBSOCKET_HOST = "wss://ws.bitstamp.net"
 
-STATUS_BITSTAMP2VT = {
-    "ACTIVE": Status.NOTTRADED,
-    "PARTIALLY FILLED": Status.PARTTRADED,
-    "EXECUTED": Status.ALLTRADED,
-    "CANCELED": Status.CANCELLED,
-}
-
-ORDERTYPE_VT2BITSTAMP = {
-    OrderType.LIMIT: "EXCHANGE LIMIT",
-    OrderType.MARKET: "EXCHANGE MARKET",
-}
-
-DIRECTION_VT2BITSTAMP = {
-    Direction.LONG: "Buy",
-    Direction.SHORT: "Sell",
-}
-
 DIRECTION_BITSTAMP2VT = {
     "0": Direction.LONG,
     "1": Direction.SHORT,
-}
-
-INTERVAL_VT2BITSTAMP = {
-    Interval.MINUTE: "60",
-    Interval.HOUR: "3600",
-    Interval.DAILY: "86400",
-}
-
-TIMEDELTA_MAP = {
-    Interval.MINUTE: timedelta(minutes=1),
-    Interval.HOUR: timedelta(hours=1),
-    Interval.DAILY: timedelta(days=1),
 }
 
 
@@ -94,7 +62,6 @@ class BitstampGateway(BaseGateway):
         "key": "",
         "secret": "",
         "username": "",
-        "session": 3,
         "proxy_host": "127.0.0.1",
         "proxy_port": 1080,
     }
@@ -115,12 +82,10 @@ class BitstampGateway(BaseGateway):
         key = setting["key"]
         secret = setting["secret"]
         username = setting["username"]
-        session = setting["session"]
         proxy_host = setting["proxy_host"]
         proxy_port = setting["proxy_port"]
 
-        self.rest_api.connect(key, secret, username,
-                              session, proxy_host, proxy_port)
+        self.rest_api.connect(key, secret, username, proxy_host, proxy_port)
         self.ws_api.connect(proxy_host, proxy_port)
 
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
@@ -184,7 +149,6 @@ class BitstampRestApi(RestClient):
         key: str,
         secret: str,
         username: str,
-        session: int,
         proxy_host: str,
         proxy_port: int,
     ):
@@ -200,7 +164,7 @@ class BitstampRestApi(RestClient):
         )
 
         self.init(REST_HOST, proxy_host, proxy_port)
-        self.start(session)
+        self.start(3)
 
         self.gateway.write_log("REST API启动成功")
 
