@@ -51,6 +51,7 @@ class AlgoEngine(BaseEngine):
         from .algos.grid_algo import GridAlgo
         from .algos.dma_algo import DmaAlgo
         from .algos.arbitrage_algo import ArbitrageAlgo
+        from .algos.moneywap_algo import MoneywapAlgo
 
         self.add_algo_template(TwapAlgo)
         self.add_algo_template(IcebergAlgo)
@@ -60,6 +61,7 @@ class AlgoEngine(BaseEngine):
         self.add_algo_template(GridAlgo)
         self.add_algo_template(DmaAlgo)
         self.add_algo_template(ArbitrageAlgo)
+        self.add_algo_template(MoneywapAlgo)
 
     def add_algo_template(self, template: AlgoTemplate):
         """"""
