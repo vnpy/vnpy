@@ -110,6 +110,8 @@ class Exchange(Enum):
     TOCOM = "TOCOM"         # Tokyo Commodity Exchange
     EUNX = "EUNX"           # Euronext Exchange
     KRX = "KRX"             # Korean Exchange
+    TSE = "TSE"             # Taiwan Stock Exchange
+    TFE = "TFE"             # Taiwan Futures Exchange
 
     # CryptoCurrency
     BITMEX = "BITMEX"
