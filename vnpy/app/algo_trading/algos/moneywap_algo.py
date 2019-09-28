@@ -50,14 +50,13 @@ class MoneywapAlgo(AlgoTemplate):
         self.offset = Offset(setting["offset"])
 
         # Variables
-        #self.order_volume = self.volume / (self.time / self.interval)
         tick = self.get_tick(self.vt_symbol)
         if tick and self.direction == Direction.LONG:
-            self.price = tick.ask_price_5
+            self.price = tick.ask_price_1
         if tick and self.direction == Direction.SHORT:
-            self.price = tick.bid_price_5
+            self.price = tick.bid_price_1
 
-        self.volume = self.total_amt // 1000 // self.price  # 總數量
+        self.volume = self.total_amt // self.price  # 總數量
         self.interval = self.time // self.volume
         self.order_volume = 1
         self.timer_count = 0

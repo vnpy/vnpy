@@ -18,7 +18,6 @@ from vnpy.trader.constant import (
     Product,
     OptionType,
     Status,
-    OrderType,
     Offset
 )
 from vnpy.trader.event import EVENT_TIMER
@@ -27,7 +26,6 @@ from vnpy.trader.object import (
     TickData,
     OrderData,
     TradeData,
-    AccountData,
     ContractData,
     PositionData,
     SubscribeRequest,
@@ -317,17 +315,18 @@ class SinopacGateway(BaseGateway):
         self.api.get_stock_account_unreal_profitloss().update()
         data = self.api.get_stock_account_unreal_profitloss().data()["summary"]
         for item in data:
+            volume = float(item['real_qty']) / 1000
+            total_qty = float(item['real_qty']) / 1000
+            yd_qty = float(item['qty']) / 1000
             pos = PositionData(
                 symbol=f"{item['stock']} {item['stocknm']}",
                 exchange=EXCHANGE_SINOPAC2VT.get('TSE', Exchange.TSE),
-                direction=Direction.LONG if float(
-                    item['real_qty']) >= 0 else Direction.SHORT,
-                volume=float(item['real_qty']) / 1000,
-                frozen=float(item['real_qty']) / 1000 -
-                float(item['qty']) / 1000,
+                direction=Direction.LONG if yd_qty >= 0 else Direction.SHORT,
+                volume=volume,
+                frozen=total_qty - yd_qty,
                 price=float(item['avgprice']),
                 pnl=float(item['unreal']),
-                yd_volume=float(item['qty']) / 1000,
+                yd_volume=yd_qty,
                 gateway_name=self.gateway_name
             )
             self.on_position(pos)
