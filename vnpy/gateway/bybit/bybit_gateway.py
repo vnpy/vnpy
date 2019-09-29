@@ -172,7 +172,6 @@ class BybitGateway(BaseGateway):
             self.rest_api.query_stop_orders()
 
     def write_log(self, msg: str):
-        print(msg)
         return super().write_log(msg)
 
     def parse_order_data(self, data: dict, time_key: str = 'updated_at'):
