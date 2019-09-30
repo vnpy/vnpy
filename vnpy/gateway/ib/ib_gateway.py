@@ -509,9 +509,9 @@ class IbApi(EWrapper):
             gateway_name=self.gateway_name,
         )
 
-        self.gateway.on_contract(contract)
-
-        self.contracts[contract.vt_symbol] = contract
+        if contract.vt_symbol not in self.contracts:
+            self.gateway.on_contract(contract)
+            self.contracts[contract.vt_symbol] = contract
 
     def execDetails(
         self, reqId: int, contract: Contract, execution: Execution
