@@ -49,8 +49,12 @@ class RqdataClient:
         if not self.username or not self.password:
             return False
 
-        rqdata_init(self.username, self.password,
-                    ('rqdatad-pro.ricequant.com', 16011))
+        rqdata_init(
+            self.username, 
+            self.password,
+            ('rqdatad-pro.ricequant.com', 16011),
+            use_pool=True
+        )
 
         try:
             df = rqdata_all_instruments(date=datetime.now())
