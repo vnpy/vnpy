@@ -155,9 +155,16 @@ class CtptestGateway(BaseGateway):
         auth_code = setting["授权编码"]
         product_info = setting["产品信息"]
 
-        if not td_address.startswith("tcp://"):
+        if (
+            (not td_address.startswith("tcp://")) and 
+            (not td_address.startswith("ssl://"))
+        ):
             td_address = "tcp://" + td_address
-        if not md_address.startswith("tcp://"):
+
+        if (
+            (not md_address.startswith("tcp://")) and
+            (not md_address.startswith("ssl://"))
+        ):
             md_address = "tcp://" + md_address
 
         self.td_api.connect(td_address, userid, password, brokerid, auth_code, appid, product_info)
