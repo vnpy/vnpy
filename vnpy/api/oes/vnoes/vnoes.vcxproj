@@ -70,26 +70,26 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir);$(ProjectDir)include;$(ProjectDir)include\oes;C:\Python37\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)include;$(ProjectDir)include\oes;C:\Python37\include;C:\Python373\include;C:\vnstudio\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;C:\Python373\libs;C:\vnstudio\libs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)</OutDir>
     <TargetExt>.pyd</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(ProjectDir);$(ProjectDir)include;$(ProjectDir)include\oes;C:\Python37\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)include;$(ProjectDir)include\oes;C:\Python37\include;C:\Python373\include;C:\vnstudio\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;C:\Python373\libs;C:\vnstudio\libs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)</OutDir>
     <TargetExt>.pyd</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir);$(ProjectDir)include;$(ProjectDir)include\oes;C:\Python37\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)include;$(ProjectDir)include\oes;C:\Python37\include;C:\Python373\include;C:\vnstudio\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;C:\Python373\libs;C:\vnstudio\libs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)</OutDir>
     <TargetExt>.pyd</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir);$(ProjectDir)include;$(ProjectDir)include\oes;C:\Python37\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)include;$(ProjectDir)include\oes;C:\Python37\include;C:\Python373\include;C:\vnstudio\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;C:\Python373\libs;C:\vnstudio\libs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)</OutDir>
     <TargetExt>.pyd</TargetExt>
   </PropertyGroup>
@@ -102,7 +102,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4819</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -119,7 +119,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4819</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -138,7 +138,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4819</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -159,7 +159,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4819</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -172,6 +172,16 @@
   <ItemGroup>
     <ClCompile Include="generated_files\generated_functions_0.cpp" />
     <ClCompile Include="generated_files\generated_functions_1.cpp" />
+    <ClCompile Include="generated_files\generated_functions_10.cpp" />
+    <ClCompile Include="generated_files\generated_functions_11.cpp" />
+    <ClCompile Include="generated_files\generated_functions_12.cpp" />
+    <ClCompile Include="generated_files\generated_functions_13.cpp" />
+    <ClCompile Include="generated_files\generated_functions_14.cpp" />
+    <ClCompile Include="generated_files\generated_functions_15.cpp" />
+    <ClCompile Include="generated_files\generated_functions_16.cpp" />
+    <ClCompile Include="generated_files\generated_functions_17.cpp" />
+    <ClCompile Include="generated_files\generated_functions_18.cpp" />
+    <ClCompile Include="generated_files\generated_functions_19.cpp" />
     <ClCompile Include="generated_files\generated_functions_2.cpp" />
     <ClCompile Include="generated_files\generated_functions_3.cpp" />
     <ClCompile Include="generated_files\generated_functions_4.cpp" />
@@ -179,8 +189,8 @@
     <ClCompile Include="generated_files\generated_functions_6.cpp" />
     <ClCompile Include="generated_files\generated_functions_7.cpp" />
     <ClCompile Include="generated_files\generated_functions_8.cpp" />
+    <ClCompile Include="generated_files\generated_functions_9.cpp" />
     <ClCompile Include="generated_files\module.cpp" />
-    <ClCompile Include="include\autocxxpy\dummpy.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="generated_files\config.h" />
@@ -390,6 +400,28 @@
     <ClInclude Include="include\brigand\types\type.hpp" />
     <ClInclude Include="include\brigand\types\voidp.hpp" />
     <ClInclude Include="include\brigand\version.hpp" />
+    <ClInclude Include="include\c2py\additional_init.hpp" />
+    <ClInclude Include="include\c2py\base\check.h" />
+    <ClInclude Include="include\c2py\base\type.h" />
+    <ClInclude Include="include\c2py\brigand.hpp" />
+    <ClInclude Include="include\c2py\c2py.hpp" />
+    <ClInclude Include="include\c2py\callback_wrapper.hpp" />
+    <ClInclude Include="include\c2py\calling_wrapper.hpp" />
+    <ClInclude Include="include\c2py\casters.hpp" />
+    <ClInclude Include="include\c2py\class.hpp" />
+    <ClInclude Include="include\c2py\config\config.hpp" />
+    <ClInclude Include="include\c2py\cross_assign.hpp" />
+    <ClInclude Include="include\c2py\dispatcher.hpp" />
+    <ClInclude Include="include\c2py\property_helper.hpp" />
+    <ClInclude Include="include\c2py\utils\algorithm.hpp" />
+    <ClInclude Include="include\c2py\utils\extract.hpp" />
+    <ClInclude Include="include\c2py\utils\functional.hpp" />
+    <ClInclude Include="include\c2py\utils\type_traits.hpp" />
+    <ClInclude Include="include\c2py\wrappers\c_function_callback.hpp" />
+    <ClInclude Include="include\c2py\wrappers\inout_argument.hpp" />
+    <ClInclude Include="include\c2py\wrappers\output_argument.hpp" />
+    <ClInclude Include="include\c2py\wrappers\string_array.hpp" />
+    <ClInclude Include="include\c2py\wrappers\utils.hpp" />
     <ClInclude Include="include\oes\mds_api\errors\mds_errors.h" />
     <ClInclude Include="include\oes\mds_api\mds_api.h" />
     <ClInclude Include="include\oes\mds_api\parser\json_parser\mds_json_parser.h" />

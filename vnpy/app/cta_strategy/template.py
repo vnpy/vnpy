@@ -33,7 +33,7 @@ class CtaTemplate(ABC):
         self.trading = False
         self.pos = 0
 
-        # Copy a new variables list here to avoid duplicate insert when multiple 
+        # Copy a new variables list here to avoid duplicate insert when multiple
         # strategy instances are created with the same strategy class.
         self.variables = copy(self.variables)
         self.variables.insert(0, "inited")

@@ -12,7 +12,7 @@
 
 ### 脚本模式
 
-在文件夹tests\trader中找到run.py文件。按住“Shift” + 鼠标右键进入cmd窗口，输入下面命令进入如图VN Trader
+在文件夹example\trader中找到run.py文件(不是vnstudio下的，需要在github上单独下载）。按住“Shift” + 鼠标右键进入cmd窗口，输入下面命令进入如图VN Trader
 ```
 python run.py 
 ```
@@ -21,40 +21,18 @@ python run.py
 &nbsp;
 
 ## 连接接口
-### simnow仿真
-### simnow
+### SimNow仿真
+
 以SinNow仿真交易账号登陆CTP接口为例：点击菜单栏的“系统”->“连接CTP”后，弹出如上图所示CTP接口的配置对话框，输入以下内容后即可登录：
 - 用户名username：111111 （6位纯数字账号）
 - 密码password：1111111  （需要修改一次密码用于盘后测试）
 - 经纪商编号brokerid：9999 （SimNow默认经纪商编号）
-- 交易服务器地址td_address：180.168.146.187:10030 （盘后测试）
-- 行情服务器地址md_address：180.168.146.187:10031 （盘后测试）
-- auth_code和product_info主要用于19年中的CTP接入验证，目前留空即可
-注意：若使用期货实盘账户，需要问清楚其brokerid、auth_code和product_info; 并且仿真交易需要另外申请开通。
+- 交易服务器地址td_address：218.202.237.33 :10102 （盘中测试）
+- 行情服务器地址md_address：218.202.237.33 :10112 （盘中测试）
+- 授权码auth_code：0000000000000000（16个0）
+- 名称app_id：simnow_client_test
 
 连接成功以后，日志组件会立刻输出陆成功相关信息，同时用户也可以看到账号信息，持仓信息，合约查询等相关信息。
-### 穿透式接口连接（新版）
-#### 仿真用户
-以中信期货为例：如果最后不上实盘，以在生产环境下仿真为目的，则不用提交任何表格，在官网申请注册仿真账号，打开官网公告找到相应接入参数。打开vnstation后，点击菜单栏的“系统”->“连接CTP”后，弹出如上图所示CTP接口的配置对话框，输入以下内容后即可登录（appid和authcode在仿真环境下是全统一的）：
-- 用户名username：[申请的仿真账号]
-- 密码password：[仿真密码]  #最好修改一次
-- 经纪商编号brokerid：66666  #中信期货的
-- 交易服务器地址td_address：tcp://ctpfz1-front1.citicsf.com:51305
-- 行情服务器地址md_address：tcp://ctpfz1-front1.citicsf.com:51313
-- appid(产品名称）:client_xxx_1.0.1  #xxx部分非自定义，必须写xxx
-- authcode（授权码）：0D6V7N1CIBWUT1CT
-#### 实盘用户
-
-### 中信期货（穿透式最新教程）
-####仿真
-以中信为例，如果完全是以仿真为目的，则不用向期货公司提交任何穿透式申请表，直接在期货公司官网注册一个仿真账号，使用期货公司提供的仿真环境即可，在连接时，必须import的是ctp（6.3.15版本），不可以是ctptest（6.3.13版本）
-- 用户名username：[你的账户] 
-- 密码password：[你的密码]  （最好修改一下密码）
-- 经纪商编号brokerid：66666 （中信的）
-- 交易服务器地址td_address：tcp://ctpfz1-front1.citicsf.com:51305
-- 行情服务器地址md_address：tcp://ctpfz1-front1.citicsf.com:51313
-- auth_code(授权码): 0D6V7N1CIBWUT1CT
-- appid: client_xxx_1.0.1(注意，必须写xxx，仿真不允许自定义)
 
 &nbsp;
 
@@ -63,7 +41,7 @@ python run.py
 
 此时行情组件会显示最新行情信息；交易组件会显示合约名称，并且在下方显示深度行情报价：如最新价、买一价、卖一价。（数字货币品种可以显示十档行情）
 
-注：订阅行情填写的代码格式可以由菜单栏的”帮助“->“查询合约”里查到（需先连接）
+注意：订阅行情填写的代码格式可以由菜单栏的”帮助“->“查询合约”里查到
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract.png "enter image title here")
 
 
@@ -161,4 +139,18 @@ python run.py
 vn.py官方提供了开箱即用的量化交易应用模块，在菜单栏中点击“功能”，即显示应用模块，如下图：
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/application.png "enter image title here")
+
+&nbsp;
+
+## 全局配置
+
+在菜单栏中点击“配置”，可以进行全局配置：如配置GUI界面字体的大小，类型，数据库种类，RQData的账户密码（用于初始化RQData客户端，下载历史数据，或者盘起载入数据来初始化策略），设置email来发送信息。
+
+其email的设置如下：
+email.server: SMTP邮件服务器地址
+email.port: SMTP邮件服务器端口号
+email.username: 邮箱用户名
+email.password: 邮箱密码
+email.sender: 发送者邮箱
+email.receiver: 接收者邮箱
 

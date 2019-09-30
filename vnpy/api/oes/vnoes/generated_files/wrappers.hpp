@@ -2,7 +2,7 @@
 #include "config.h"
 
 #include <pybind11/pybind11.h>
-#include <autocxxpy/autocxxpy.hpp>
+#include <c2py/c2py.hpp>
 
 #include "generated_functions.h"
 

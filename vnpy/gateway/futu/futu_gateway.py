@@ -347,8 +347,8 @@ class FutuGateway(BaseGateway):
                 direction=Direction.LONG,
                 volume=row["qty"],
                 frozen=(float(row["qty"]) - float(row["can_sell_qty"])),
-                price=float(row["pl_val"]),
-                pnl=float(row["cost_price"]),
+                price=float(row["cost_price"]),
+                pnl=float(row["pl_val"]),
                 gateway_name=self.gateway_name,
             )
 

@@ -54,6 +54,9 @@
     <ClInclude Include="generated_files\generated_functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="generated_files\config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="generated_files\generated_functions_0.cpp">
@@ -75,6 +78,27 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated_files\generated_functions_5.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated_files\generated_functions_6.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated_files\generated_functions_7.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated_files\generated_functions_8.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated_files\generated_functions_9.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated_files\generated_functions_10.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated_files\generated_functions_11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

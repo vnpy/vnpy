@@ -43,7 +43,11 @@ from vnpy.trader.constant import (
     Interval
 )
 
-ORDERTYPE_VT2IB = {OrderType.LIMIT: "LMT", OrderType.MARKET: "MKT"}
+ORDERTYPE_VT2IB = {
+    OrderType.LIMIT: "LMT", 
+    OrderType.MARKET: "MKT",
+    OrderType.STOP: "STP"
+}
 ORDERTYPE_IB2VT = {v: k for k, v in ORDERTYPE_VT2IB.items()}
 
 DIRECTION_VT2IB = {Direction.LONG: "BUY", Direction.SHORT: "SELL"}
@@ -60,6 +64,7 @@ EXCHANGE_VT2IB = {
     Exchange.ICE: "ICE",
     Exchange.SEHK: "SEHK",
     Exchange.HKFE: "HKFE",
+    Exchange.CFE: "CFE"
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}
 
@@ -500,6 +505,7 @@ class IbApi(EWrapper):
             pricetick=contractDetails.minTick,
             net_position=True,
             history_data=True,
+            stop_supported=True,
             gateway_name=self.gateway_name,
         )
 
@@ -649,8 +655,12 @@ class IbApi(EWrapper):
         ib_order.clientId = self.clientid
         ib_order.action = DIRECTION_VT2IB[req.direction]
         ib_order.orderType = ORDERTYPE_VT2IB[req.type]
-        ib_order.lmtPrice = req.price
         ib_order.totalQuantity = req.volume
+
+        if req.type == OrderType.LIMIT:
+            ib_order.lmtPrice = req.price
+        elif req.type == OrderType.STOP:
+            ib_order.auxPrice = req.price
 
         self.client.placeOrder(self.orderid, ib_contract, ib_order)
         self.client.reqIds(1)

@@ -5,10 +5,10 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.0.6-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.0.7-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
-    <img src ="https://img.shields.io/travis/com/vnpy/vnpy/master.svg"/>
+    <img src ="https://img.shields.io/circleci/build/github/vnpy/vnpy?token=4d11df68295c8cc02a2bede46094991364190bbc"/>
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
 
@@ -32,55 +32,69 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * 国内市场
 
-        * CTP(ctp)：国内期货、期权
+        * CTP（ctp）：国内期货、期权
 
-        * CTP Mini(mini)：国内期货、期权
+        * CTP Mini（mini）：国内期货、期权
 
-        * 飞马(femas)：国内期货
+        * CTP证券（sopt）：ETF期权
 
-        * 宽睿(oes)：国内证券（A股）
+        * 飞马（femas）：国内期货
 
-        * 中泰XTP(xtp)：国内证券（A股）
+        * 宽睿（oes）：国内证券（A股）
 
-        * 华鑫奇点(tora)：国内证券（A股）
+        * 中泰XTP（xtp）：国内证券（A股）
+
+        * 华鑫奇点（tora）：国内证券（A股）
+
+        * 鑫管家（xgj）：期货资管
+
+        * 融航（rohon）：期货资管
 
     * 海外市场
-     
-        * 富途证券(futu)：港股、美股
 
-        * 老虎证券(tiger)：全球证券、期货、期权、外汇等
+        * 富途证券（futu）：港股、美股
 
-        * Interactive Brokers(ib)：全球证券、期货、期权、外汇等
+        * 老虎证券（tiger）：全球证券、期货、期权、外汇等
 
-        * 易盛9.0外盘(tap)：全球期货
+        * Interactive Brokers（ib）：全球证券、期货、期权、外汇等
+
+        * 易盛9.0外盘（tap）：全球期货
+
+        * 直达期货（da）：全球期货
 
     * 数字货币
 
-        * BitMEX(bitmex)：数字货币期货、期权、永续合约
+        * BitMEX（bitmex）：数字货币期货、期权、永续合约
 
-        * OKEX合约(okexf)：数字货币期货
+        * OKEX永续（okexs）：数字货币永续合约
 
-        * 火币合约(hbdm)：数字货币期货
+        * OKEX合约（okexf）：数字货币期货
 
-        * 币安(binance)：数字货币现货
+        * 火币合约（hbdm）：数字货币期货
 
-        * OKEX(okex)：数字货币现货
+        * 币安（binance）：数字货币现货
 
-        * 火币(huobi)：数字货币现货
+        * OKEX（okex）：数字货币现货
 
-        * Bitfinex(bitfinex)：数字货币现货
+        * 火币（huobi）：数字货币现货
 
-        * 1Token(onetoken)：数字货币券商（现货、期货）
+        * Bitfinex（bitfinex）：数字货币现货
+
+        * Coinbase（coinbase）：数字货币现货
+
+        * 1Token（onetoken）：数字货币券商（现货、期货）
 
     * 特殊应用
     
-        * RPC服务(rpc)：跨进程通讯接口，用于分布式架构
+        * RPC服务（rpc）：跨进程通讯接口，用于分布式架构
 
 3. 开箱即用的各类量化策略交易应用（vnpy.app）：
 
     * cta_strategy：CTA策略引擎模块，在保持易用性的同时，允许用户针对CTA类策略运行过程中委托的报撤行为进行细粒度控制（降低交易滑点、实现高频策略）
 
     * cta_backtester：CTA策略回测模块，无需使用Jupyter Notebook，直接使用图形界面直接进行策略回测分析、参数优化等相关工作
+
+    * spread_trading：价差交易模块，支持自定义价差，实时计算价差行情和持仓，支持半自动价差算法交易以及全自动价差策略交易两种模式
 
     * algo_trading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等等，支持常用算法配置保存
 
@@ -108,7 +122,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.0.4](https://download.vnpy.com/vnstudio-2.0.4-r.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.0.7](https://download.vnpy.com/vnstudio-2.0.7.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 
@@ -153,24 +167,24 @@ from vnpy.gateway.ctp import CtpGateway
 from vnpy.app.cta_strategy import CtaStrategyApp
 from vnpy.app.cta_backtester import CtaBacktesterApp
 
-def main():
+def main（）:
     """Start VN Trader"""
-    qapp = create_qapp()
+    qapp = create_qapp（）
 
-    event_engine = EventEngine()
-    main_engine = MainEngine(event_engine)
+    event_engine = EventEngine（）
+    main_engine = MainEngine（event_engine）
     
-    main_engine.add_gateway(CtpGateway)
-    main_engine.add_app(CtaStrategyApp)
-    main_engine.add_app(CtaBacktesterApp)
+    main_engine.add_gateway（CtpGateway）
+    main_engine.add_app（CtaStrategyApp）
+    main_engine.add_app（CtaBacktesterApp）
 
-    main_window = MainWindow(main_engine, event_engine)
-    main_window.showMaximized()
+    main_window = MainWindow（main_engine, event_engine）
+    main_window.showMaximized（）
 
-    qapp.exec()
+    qapp.exec（）
 
 if __name__ == "__main__":
-    main()
+    main（）
 ```
 
 在该目录下打开CMD（按住Shift->点击鼠标右键->在此处打开命令窗口/PowerShell）后运行下列命令启动VN Trader：
@@ -179,14 +193,14 @@ if __name__ == "__main__":
 
 ## 贡献代码
 
-vn.py使用Github托管其源代码，如果希望贡献代码请使用github的PR(Pull Request)的流程:
+vn.py使用Github托管其源代码，如果希望贡献代码请使用github的PR（Pull Request）的流程:
 
-1. [创建 Issue](https://github.com/vnpy/vnpy/issues/new) - 对于较大的改动(如新功能，大型重构等)最好先开issue讨论一下，较小的improvement(如文档改进，bugfix等)直接发PR即可
+1. [创建 Issue](https://github.com/vnpy/vnpy/issues/new) - 对于较大的改动（如新功能，大型重构等）最好先开issue讨论一下，较小的improvement（如文档改进，bugfix等）直接发PR即可
 
 2. Fork [vn.py](https://github.com/vnpy/vnpy) - 点击右上角**Fork**按钮
 
 3. Clone你自己的fork: ```git clone https://github.com/$userid/vnpy.git```
-	* 如果你的fork已经过时，需要手动sync：[https://help.github.com/articles/syncing-a-fork/](https://help.github.com/articles/syncing-a-fork/)
+	* 如果你的fork已经过时，需要手动sync：[同步方法](https://help.github.com/articles/syncing-a-fork/)
 
 4. 从**dev**创建你自己的feature branch: ```git checkout -b $my_feature_branch dev```
 

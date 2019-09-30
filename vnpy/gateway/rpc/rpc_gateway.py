@@ -101,6 +101,7 @@ class RpcGateway(BaseGateway):
     def close(self):
         """"""
         self.client.stop()
+        self.client.join()
 
     def client_callback(self, topic: str, event: Event):
         """"""
