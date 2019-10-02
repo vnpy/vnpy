@@ -1,52 +1,33 @@
-﻿# C++源代码
-ipch/
-Release/
-
-*.sdf
-*.suo
-*.exp
-*.pdb
-*.cd
-
-# Python编译文件
+# Python
 *.pyc
+*.egg-info/
 
-# WingIDE文件
+# Jupyter
+.ipynb_checkpoints
+
+# IDE
+.vscode
+.idea
 *.wpr
 *.wpu
+.vs
+x64
 
-# 压缩文件
-*.zip
-
-# API的.con文件
-*.con
-
-# visual studio
-*.opensdf
-
-# 本地持久化文件
-*.vn
-
-
-
-# 其他文件
-*.dump
-*.vssettings
-*.klg
-*.lkc
-
-<<<<<<< HEAD
-# 不想同步的
+# Temp
+build
+dist
 *.local
-*.temp
-*.vt
-*.dat
-=======
-vn.ctp/build/*
-vn.lts/build/*
-.idea
->>>>>>> 65aac25731772259bf2d4049e7adbe92750ea01d
 
-vn.trader/ctaAlgo/data/*
-vn.trader/build/*
-vn.trader/dist/*
+# vn.py
+.vntrader
+
+# Visual Studio intermediate files
+*.exp
+*.iobj
+*.ipdb
+*.pdb
+
+# Documents
+_build
+_static
+_templates
