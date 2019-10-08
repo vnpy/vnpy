@@ -228,6 +228,14 @@ class SpreadDataEngine:
                 )
                 self.main_engine.subscribe(req, contract.gateway_name)
 
+            # Initialize leg position
+            for direction in Direction:
+                vt_positionid = f"{vt_symbol}.{direction.value}"
+                position = self.main_engine.get_position(vt_positionid)
+
+                if position:
+                    leg.update_position(position)
+
         return leg
 
     def add_spread(
