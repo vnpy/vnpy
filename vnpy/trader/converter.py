@@ -70,7 +70,7 @@ class OffsetConverter:
 
         if lock:
             return holding.convert_order_request_lock(req)
-        elif req.exchange == Exchange.SHFE:
+        elif req.exchange in [Exchange.SHFE, Exchange.INE]:
             return holding.convert_order_request_shfe(req)
         else:
             return [req]
