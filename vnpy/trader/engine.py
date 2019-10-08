@@ -9,7 +9,7 @@ from datetime import datetime
 from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
-from typing import Any, Sequence
+from typing import Any, Sequence, Type
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -63,7 +63,7 @@ class MainEngine:
         self.engines[engine.engine_name] = engine
         return engine
 
-    def add_gateway(self, gateway_class: BaseGateway):
+    def add_gateway(self, gateway_class: Type[BaseGateway]):
         """
         Add gateway.
         """
@@ -77,7 +77,7 @@ class MainEngine:
 
         return gateway
 
-    def add_app(self, app_class: BaseApp):
+    def add_app(self, app_class: Type[BaseApp]):
         """
         Add app.
         """
@@ -293,7 +293,7 @@ class LogEngine(BaseEngine):
 
     def add_file_handler(self):
         """
-        Add file output of log. 
+        Add file output of log.
         """
         today_date = datetime.now().strftime("%Y%m%d")
         filename = f"vt_{today_date}.log"

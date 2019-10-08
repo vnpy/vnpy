@@ -74,7 +74,8 @@ PRODUCT_XTP2VT = {
     XTP_TICKER_TYPE.XTP_TICKER_TYPE_INDEX: Product.INDEX,
     XTP_TICKER_TYPE.XTP_TICKER_TYPE_FUND: Product.FUND,
     XTP_TICKER_TYPE.XTP_TICKER_TYPE_BOND: Product.BOND,
-    XTP_TICKER_TYPE.XTP_TICKER_TYPE_OPTION: Product.OPTION
+    XTP_TICKER_TYPE.XTP_TICKER_TYPE_OPTION: Product.OPTION,
+    XTP_TICKER_TYPE.XTP_TICKER_TYPE_UNKNOWN: Product.EQUITY,
 }
 
 # DIRECTION_VT2XTP = {
@@ -86,8 +87,8 @@ DIRECTION_VT2XTP = {
     (Direction.SHORT, Offset.CLOSE): XTP_SIDE_REPAY_MARGIN,
     (Direction.SHORT, Offset.OPEN): XTP_SIDE_SHORT_SELL,
     (Direction.LONG, Offset.CLOSE): XTP_SIDE_REPAY_STOCK,
-    (Direction.SHORT, Offset.NONE): XTP_SIDE_BUY,
-    (Direction.LONG, Offset.NONE): XTP_SIDE_SELL,
+    (Direction.SHORT, Offset.NONE): XTP_SIDE_SELL,
+    (Direction.LONG, Offset.NONE): XTP_SIDE_BUY,
 }
 DIRECTION_XTP2VT = {v: k for k, v in DIRECTION_VT2XTP.items()}
 
@@ -240,7 +241,7 @@ class XtpQuoteApi(API.QuoteSpi):
         self.server_ip = server_ip
         self.server_port = server_port
 
-        if quote_protocol == "CTP":
+        if quote_protocol == "TCP":
             self.quote_protocol = XTP_PROTOCOL_TYPE.XTP_PROTOCOL_TCP
         else:
             self.quote_protocol = XTP_PROTOCOL_TYPE.XTP_PROTOCOL_UDP
@@ -511,7 +512,7 @@ class XtpTraderApi(API.TraderSpi):
         self.margin_trading = False
         self.option_trading = False
 
-        # 
+        #
         self.short_positions = {}
 
     def connect(
@@ -790,13 +791,13 @@ class XtpTraderApi(API.TraderSpi):
         """"""
         pass
 
-    def OnQueryCreditDebtInfo(self, debt_info: XTPCrdDebtInfo, error_info: XTPRspInfoStruct, 
+    def OnQueryCreditDebtInfo(self, debt_info: XTPCrdDebtInfo, error_info: XTPRspInfoStruct,
                               request_id: int, is_last: bool, session_id: int) -> Any:
         """"""
         if debt_info.debt_type == 1:
             symbol = debt_info.ticker
             exchange = MARKET_XTP2VT[debt_info.market]
-            
+
             position = self.short_positions.get(symbol, None)
             if not position:
                 position = PositionData(
@@ -808,7 +809,7 @@ class XtpTraderApi(API.TraderSpi):
                 self.short_positions[symbol] = position
 
             position.volume += debt_info.remain_qty
-        
+
         if is_last:
             for position in self.short_positions.values():
                 self.gateway.on_position(position)

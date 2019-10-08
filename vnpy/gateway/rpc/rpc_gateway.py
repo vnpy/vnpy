@@ -50,7 +50,7 @@ class RpcGateway(BaseGateway):
     def send_order(self, req: OrderRequest):
         """"""
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
-        self.client.send_order(req, gateway_name)
+        return self.client.send_order(req, gateway_name)
 
     def cancel_order(self, req: CancelRequest):
         """"""
@@ -101,6 +101,7 @@ class RpcGateway(BaseGateway):
     def close(self):
         """"""
         self.client.stop()
+        self.client.join()
 
     def client_callback(self, topic: str, event: Event):
         """"""

@@ -259,7 +259,7 @@ class OnetokenRestApi(RestClient):
             symbol = instrument_data["name"]
             contract = ContractData(
                 symbol=symbol,
-                exchange=Exchange.OKEX,  # todo
+                exchange=Exchange(instrument_data['symbol'].split('/')[0].upper()),
                 name=symbol,
                 product=Product.SPOT,  # todo
                 size=float(instrument_data["min_amount"]),

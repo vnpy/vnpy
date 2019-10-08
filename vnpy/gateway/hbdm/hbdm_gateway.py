@@ -9,6 +9,7 @@ import json
 import zlib
 import hashlib
 import hmac
+import sys
 from copy import copy
 from datetime import datetime
 from threading import Lock
@@ -62,6 +63,9 @@ ORDERTYPE_VT2HBDM = {
 ORDERTYPE_HBDM2VT = {v: k for k, v in ORDERTYPE_VT2HBDM.items()}
 ORDERTYPE_HBDM2VT[1] = OrderType.LIMIT
 ORDERTYPE_HBDM2VT[3] = OrderType.MARKET
+ORDERTYPE_HBDM2VT[4] = OrderType.MARKET
+ORDERTYPE_HBDM2VT[5] = OrderType.STOP
+ORDERTYPE_HBDM2VT[6] = OrderType.LIMIT
 
 DIRECTION_VT2HBDM = {
     Direction.LONG: "buy",
@@ -365,7 +369,7 @@ class HbdmRestApi(RestClient):
             else:
                 for d in data["data"]:
                     dt = datetime.fromtimestamp(d["id"])
-                    
+
                     bar = BarData(
                         symbol=req.symbol,
                         exchange=req.exchange,
@@ -616,7 +620,7 @@ class HbdmRestApi(RestClient):
         for d in data["data"]["trades"]:
             dt = datetime.fromtimestamp(d["create_date"] / 1000)
             time = dt.strftime("%H:%M:%S")
-            
+
             trade = TradeData(
                 tradeid=d["match_id"],
                 orderid=d["order_id"],
@@ -743,7 +747,7 @@ class HbdmRestApi(RestClient):
         Callback when sending order caused exception.
         """
         orders = request.extra
-        
+
         for order in orders:
             order.status = Status.REJECTED
             self.gateway.on_order(order)
@@ -752,11 +756,24 @@ class HbdmRestApi(RestClient):
         if not issubclass(exception_type, ConnectionError):
             self.on_error(exception_type, exception_value, tb, request)
 
+    def on_error(
+        self, exception_type: type, exception_value: Exception, tb, request: Request
+    ):
+        """
+        Callback to handler request exception.
+        """
+        msg = f"触发异常，状态码：{exception_type}，信息：{exception_value}"
+        self.gateway.write_log(msg)
+
+        sys.stderr.write(
+            self.exception_detail(exception_type, exception_value, tb, request)
+        )
+
     def check_error(self, data: dict, func: str = ""):
         """"""
         if data["status"] != "error":
             return False
-        
+
         error_code = data["err_code"]
         error_msg = data["err_msg"]
 
@@ -781,17 +798,17 @@ class HbdmWebsocketApiBase(WebsocketClient):
         self.req_id = 0
 
     def connect(
-        self, 
-        key: str, 
-        secret: str, 
-        url: str, 
-        proxy_host: str, 
+        self,
+        key: str,
+        secret: str,
+        url: str,
+        proxy_host: str,
         proxy_port: int
     ):
         """"""
         self.key = key
         self.secret = secret
-        
+
         host, path = _split_url(url)
         self.sign_host = host
         self.path = path
@@ -808,7 +825,7 @@ class HbdmWebsocketApiBase(WebsocketClient):
             "type": "api",
             "cid": str(self.req_id),
         }
-        params.update(create_signature(self.key, "GET", self.sign_host, self.path, self.secret))        
+        params.update(create_signature(self.key, "GET", self.sign_host, self.path, self.secret))
         return self.send_packet(params)
 
     def on_login(self, packet):
@@ -818,7 +835,7 @@ class HbdmWebsocketApiBase(WebsocketClient):
     @staticmethod
     def unpack_data(data):
         """"""
-        return json.loads(zlib.decompress(data, 31)) 
+        return json.loads(zlib.decompress(data, 31))
 
     def on_packet(self, packet):
         """"""
@@ -837,17 +854,17 @@ class HbdmWebsocketApiBase(WebsocketClient):
             return self.on_login()
         else:
             self.on_data(packet)
-    
-    def on_data(self, packet): 
+
+    def on_data(self, packet):
         """"""
         print("data : {}".format(packet))
 
-    def on_error_msg(self, packet): 
+    def on_error_msg(self, packet):
         """"""
         msg = packet["err-msg"]
         if msg == "invalid pong":
             return
-        
+
         self.gateway.write_log(packet["err-msg"])
 
 
@@ -886,7 +903,7 @@ class HbdmTradeWebsocketApi(HbdmWebsocketApiBase):
         op = packet.get("op", None)
         if op != "notify":
             return
-        
+
         topic = packet["topic"]
         if "orders" in topic:
             self.on_order(packet)
@@ -916,7 +933,7 @@ class HbdmTradeWebsocketApi(HbdmWebsocketApiBase):
             gateway_name=self.gateway_name
         )
         self.gateway.on_order(order)
-        
+
         # Push trade event
         trades = data["trade"]
         if not trades:
@@ -937,7 +954,7 @@ class HbdmTradeWebsocketApi(HbdmWebsocketApiBase):
                 volume=d["trade_volume"],
                 time=time,
                 gateway_name=self.gateway_name,
-            )    
+            )
             self.gateway.on_trade(trade)
 
 
@@ -960,7 +977,7 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
 
         for ws_symbol in self.ticks.keys():
             self.subscribe_data(ws_symbol)
-        
+
     def subscribe(self, req: SubscribeRequest):
         """"""
         contract_type = symbol_type_map.get(req.symbol, "")
@@ -981,25 +998,25 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
             datetime=datetime.now(),
             gateway_name=self.gateway_name,
         )
-        self.ticks[ws_symbol] = tick            
+        self.ticks[ws_symbol] = tick
 
         self.subscribe_data(ws_symbol)
-    
+
     def subscribe_data(self, ws_symbol: str):
         """"""
         # Subscribe to market depth update
         self.req_id += 1
         req = {
             "sub": f"market.{ws_symbol}.depth.step0",
-            "id": str(self.req_id)     
+            "id": str(self.req_id)
         }
         self.send_packet(req)
-        
+
         # Subscribe to market detail update
         self.req_id += 1
         req = {
             "sub": f"market.{ws_symbol}.detail",
-            "id": str(self.req_id)     
+            "id": str(self.req_id)
         }
         self.send_packet(req)
 
@@ -1026,7 +1043,7 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
         if "bids" not in tick_data or "asks" not in tick_data:
             print(data)
             return
-        
+
         bids = tick_data["bids"]
         for n in range(5):
             price, volume = bids[n]
@@ -1047,7 +1064,7 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
         ws_symbol = data["ch"].split(".")[1]
         tick = self.ticks[ws_symbol]
         tick.datetime = datetime.fromtimestamp(data["ts"] / 1000)
-        
+
         tick_data = data["tick"]
         tick.open_price = tick_data["open"]
         tick.high_price = tick_data["high"]
@@ -1086,16 +1103,16 @@ def create_signature(api_key, method, host, path, secret_key, get_params=None):
         sorted_params.extend(list(get_params.items()))
         sorted_params = list(sorted(sorted_params))
     encode_params = urllib.parse.urlencode(sorted_params)
-    
+
     payload = [method, host, path, encode_params]
     payload = "\n".join(payload)
     payload = payload.encode(encoding="UTF8")
-    
+
     secret_key = secret_key.encode(encoding="UTF8")
-    
+
     digest = hmac.new(secret_key, payload, digestmod=hashlib.sha256).digest()
     signature = base64.b64encode(digest)
-    
+
     params = dict(sorted_params)
     params["Signature"] = signature.decode("UTF8")
     return params

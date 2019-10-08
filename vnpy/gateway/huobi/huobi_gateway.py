@@ -9,6 +9,7 @@ import json
 import zlib
 import hashlib
 import hmac
+import sys
 from copy import copy
 from datetime import datetime
 
@@ -372,7 +373,7 @@ class HuobiRestApi(RestClient):
             name = f"{base_currency.upper()}/{quote_currency.upper()}"
             pricetick = 1 / pow(10, d["price-precision"])
             min_volume = 1 / pow(10, d["amount-precision"])
-            
+
             contract = ContractData(
                 symbol=d["symbol"],
                 exchange=Exchange.HUOBI,
@@ -432,20 +433,33 @@ class HuobiRestApi(RestClient):
         cancel_request = request.extra
         local_orderid = cancel_request.orderid
         order = self.order_manager.get_order_with_local_orderid(local_orderid)
-        
+
         if self.check_error(data, "撤单"):
             order.status = Status.REJECTED
         else:
             order.status = Status.CANCELLED
             self.gateway.write_log(f"委托撤单成功：{order.orderid}")
-        
+
         self.order_manager.on_order(order)
-        
+
+    def on_error(
+        self, exception_type: type, exception_value: Exception, tb, request: Request
+    ):
+        """
+        Callback to handler request exception.
+        """
+        msg = f"触发异常，状态码：{exception_type}，信息：{exception_value}"
+        self.gateway.write_log(msg)
+
+        sys.stderr.write(
+            self.exception_detail(exception_type, exception_value, tb, request)
+        )
+
     def check_error(self, data: dict, func: str = ""):
         """"""
         if data["status"] != "error":
             return False
-        
+
         error_code = data["err-code"]
         error_msg = data["err-msg"]
 
@@ -469,17 +483,17 @@ class HuobiWebsocketApiBase(WebsocketClient):
         self.path = ""
 
     def connect(
-        self, 
-        key: str, 
-        secret: str, 
-        url: str, 
-        proxy_host: str, 
+        self,
+        key: str,
+        secret: str,
+        url: str,
+        proxy_host: str,
         proxy_port: int
     ):
         """"""
         self.key = key
         self.secret = secret
-        
+
         host, path = _split_url(url)
         self.sign_host = host
         self.path = path
@@ -490,7 +504,7 @@ class HuobiWebsocketApiBase(WebsocketClient):
     def login(self):
         """"""
         params = {"op": "auth"}
-        params.update(create_signature(self.key, "GET", self.sign_host, self.path, self.secret))        
+        params.update(create_signature(self.key, "GET", self.sign_host, self.path, self.secret))
         return self.send_packet(params)
 
     def on_login(self, packet):
@@ -500,7 +514,7 @@ class HuobiWebsocketApiBase(WebsocketClient):
     @staticmethod
     def unpack_data(data):
         """"""
-        return json.loads(zlib.decompress(data, 31)) 
+        return json.loads(zlib.decompress(data, 31))
 
     def on_packet(self, packet):
         """"""
@@ -519,17 +533,17 @@ class HuobiWebsocketApiBase(WebsocketClient):
             return self.on_login()
         else:
             self.on_data(packet)
-    
-    def on_data(self, packet): 
+
+    def on_data(self, packet):
         """"""
         print("data : {}".format(packet))
 
-    def on_error_msg(self, packet): 
+    def on_error_msg(self, packet):
         """"""
         msg = packet["err-msg"]
         if msg == "invalid pong":
             return
-        
+
         self.gateway.write_log(packet["err-msg"])
 
 
@@ -572,7 +586,7 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
         op = packet.get("op", None)
         if op != "notify":
             return
-        
+
         topic = packet["topic"]
         if "orders" in topic:
             self.on_order(packet["data"])
@@ -580,19 +594,19 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
     def on_order(self, data: dict):
         """"""
         sys_orderid = str(data["order-id"])
-        
+
         order = self.order_manager.get_order_with_sys_orderid(sys_orderid)
         if not order:
             self.order_manager.add_push_data(sys_orderid, data)
             return
-        
+
         traded_volume = float(data["filled-amount"])
 
         # Push order event
         order.traded += traded_volume
         order.status = STATUS_HUOBI2VT.get(data["order-state"], None)
         self.order_manager.on_order(order)
-        
+
         # Push trade event
         if not traded_volume:
             return
@@ -607,7 +621,7 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
             volume=float(data["filled-amount"]),
             time=datetime.now().strftime("%H:%M:%S"),
             gateway_name=self.gateway_name,
-        )    
+        )
         self.gateway.on_trade(trade)
 
 
@@ -628,7 +642,7 @@ class HuobiDataWebsocketApi(HuobiWebsocketApiBase):
     def on_connected(self):
         """"""
         self.gateway.write_log("行情Websocket API连接成功")
-        
+
     def subscribe(self, req: SubscribeRequest):
         """"""
         symbol = req.symbol
@@ -641,21 +655,21 @@ class HuobiDataWebsocketApi(HuobiWebsocketApiBase):
             datetime=datetime.now(),
             gateway_name=self.gateway_name,
         )
-        self.ticks[symbol] = tick            
-            
+        self.ticks[symbol] = tick
+
         # Subscribe to market depth update
         self.req_id += 1
         req = {
             "sub": f"market.{symbol}.depth.step0",
-            "id": str(self.req_id)     
+            "id": str(self.req_id)
         }
         self.send_packet(req)
-        
+
         # Subscribe to market detail update
         self.req_id += 1
         req = {
             "sub": f"market.{symbol}.detail",
-            "id": str(self.req_id)     
+            "id": str(self.req_id)
         }
         self.send_packet(req)
 
@@ -677,7 +691,7 @@ class HuobiDataWebsocketApi(HuobiWebsocketApiBase):
         symbol = data["ch"].split(".")[1]
         tick = self.ticks[symbol]
         tick.datetime = datetime.fromtimestamp(data["ts"] / 1000)
-        
+
         bids = data["tick"]["bids"]
         for n in range(5):
             price, volume = bids[n]
@@ -698,7 +712,7 @@ class HuobiDataWebsocketApi(HuobiWebsocketApiBase):
         symbol = data["ch"].split(".")[1]
         tick = self.ticks[symbol]
         tick.datetime = datetime.fromtimestamp(data["ts"] / 1000)
-        
+
         tick_data = data["tick"]
         tick.open_price = float(tick_data["open"])
         tick.high_price = float(tick_data["high"])
@@ -737,16 +751,16 @@ def create_signature(api_key, method, host, path, secret_key, get_params=None):
         sorted_params.extend(list(get_params.items()))
         sorted_params = list(sorted(sorted_params))
     encode_params = urllib.parse.urlencode(sorted_params)
-    
+
     payload = [method, host, path, encode_params]
     payload = "\n".join(payload)
     payload = payload.encode(encoding="UTF8")
-    
+
     secret_key = secret_key.encode(encoding="UTF8")
-    
+
     digest = hmac.new(secret_key, payload, digestmod=hashlib.sha256).digest()
     signature = base64.b64encode(digest)
-    
+
     params = dict(sorted_params)
     params["Signature"] = signature.decode("UTF8")
     return params

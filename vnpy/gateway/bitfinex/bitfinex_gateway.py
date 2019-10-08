@@ -7,10 +7,12 @@ import hmac
 import sys
 import time
 from copy import copy
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
+from vnpy.event import Event
+from vnpy.trader.event import EVENT_TIMER
 
 from vnpy.trader.constant import (
     Direction,
@@ -18,18 +20,21 @@ from vnpy.trader.constant import (
     OrderType,
     Product,
     Status,
+    Interval
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     TickData,
     OrderData,
     TradeData,
+    BarData,
     PositionData,
     AccountData,
     ContractData,
     OrderRequest,
     CancelRequest,
     SubscribeRequest,
+    HistoryRequest
 )
 
 BASE_URL = "https://api.bitfinex.com/"
@@ -57,6 +62,18 @@ DIRECTION_BITFINEX2VT = {
     "Sell": Direction.SHORT,
 }
 
+INTERVAL_VT2BITFINEX = {
+    Interval.MINUTE: "1m",
+    Interval.HOUR: "1h",
+    Interval.DAILY: "1D",
+}
+
+TIMEDELTA_MAP = {
+    Interval.MINUTE: timedelta(minutes=1),
+    Interval.HOUR: timedelta(hours=1),
+    Interval.DAILY: timedelta(days=1),
+}
+
 
 class BitfinexGateway(BaseGateway):
     """
@@ -77,6 +94,9 @@ class BitfinexGateway(BaseGateway):
         """Constructor"""
         super(BitfinexGateway, self).__init__(event_engine, "BITFINEX")
 
+        self.timer_count = 0
+        self.resubscribe_interval = 60
+
         self.rest_api = BitfinexRestApi(self)
         self.ws_api = BitfinexWebsocketApi(self)
 
@@ -89,8 +109,9 @@ class BitfinexGateway(BaseGateway):
         proxy_port = setting["proxy_port"]
 
         self.rest_api.connect(key, secret, session, proxy_host, proxy_port)
-
         self.ws_api.connect(key, secret, proxy_host, proxy_port)
+
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
     def subscribe(self, req: SubscribeRequest):
         """"""
@@ -112,10 +133,24 @@ class BitfinexGateway(BaseGateway):
         """"""
         pass
 
+    def query_history(self, req: HistoryRequest):
+        """"""
+        return self.rest_api.query_history(req)
+
     def close(self):
         """"""
         self.rest_api.stop()
         self.ws_api.stop()
+
+    def process_timer_event(self, event: Event):
+        """"""
+        self.timer_count += 1
+
+        if self.timer_count < self.resubscribe_interval:
+            return
+
+        self.timer_count = 0
+        self.ws_api.resubscribe()
 
 
 class BitfinexRestApi(RestClient):
@@ -214,6 +249,7 @@ class BitfinexRestApi(RestClient):
                 size=1,
                 pricetick=1 / pow(10, d["price_precision"]),
                 min_volume=float(d["minimum_order_size"]),
+                history_data=True,
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_contract(contract)
@@ -239,6 +275,78 @@ class BitfinexRestApi(RestClient):
         sys.stderr.write(
             self.exception_detail(exception_type, exception_value, tb, request)
         )
+
+    def query_history(self, req: HistoryRequest):
+        """"""
+        history = []
+        limit = 5000
+
+        interval = INTERVAL_VT2BITFINEX[req.interval]
+        path = f"/v2/candles/trade:{interval}:t{req.symbol}/hist"
+
+        start_time = req.start
+
+        while True:
+            # Create query params
+            params = {
+                "limit": 5000,
+                "start": datetime.timestamp(start_time) * 1000,
+                "sort": 1
+            }
+
+            # Get response from server
+            resp = self.request(
+                "GET",
+                path,
+                params=params
+            )
+
+            # Break if request failed with other status code
+            if resp.status_code // 100 != 2:
+                msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
+                self.gateway.write_log(msg)
+                break
+            else:
+                data = resp.json()
+                if not data:
+                    msg = f"获取历史数据为空，开始时间：{start_time}"
+                    break
+
+                buf = []
+
+                for l in data:
+                    ts, o, h, l, c, v = l
+                    dt = datetime.fromtimestamp(ts / 1000)
+
+                    bar = BarData(
+                        symbol=req.symbol,
+                        exchange=req.exchange,
+                        datetime=dt,
+                        interval=req.interval,
+                        volume=v,
+                        open_price=o,
+                        high_price=h,
+                        low_price=l,
+                        close_price=c,
+                        gateway_name=self.gateway_name
+                    )
+                    buf.append(bar)
+
+                history.extend(buf)
+
+                begin = buf[0].datetime
+                end = buf[-1].datetime
+                msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
+                self.gateway.write_log(msg)
+
+                # Break if total data count less than 5000 (latest date collected)
+                if len(data) < limit:
+                    break
+
+                # Update start time
+                start_time = bar.datetime + TIMEDELTA_MAP[req.interval]
+
+        return history
 
 
 class BitfinexWebsocketApi(WebsocketClient):
@@ -267,11 +375,12 @@ class BitfinexWebsocketApi(WebsocketClient):
         self.accounts = {}
         self.orders = {}
         self.trades = set()
-        self.tickDict = {}
-        self.bidDict = {}
-        self.askDict = {}
-        self.orderLocalDict = {}
-        self.channelDict = {}       # channel_id : (Channel, Symbol)
+        self.ticks = {}
+        self.bids = {}
+        self.asks = {}
+        self.channels = {}       # channel_id : (Channel, Symbol)
+
+        self.subscribed = {}
 
     def connect(
         self, key: str, secret: str, proxy_host: str, proxy_port: int
@@ -286,12 +395,16 @@ class BitfinexWebsocketApi(WebsocketClient):
         """
         Subscribe to tick data upate.
         """
+        if req.symbol not in self.subscribed:
+            self.subscribed[req.symbol] = req
+
         d = {
             "event": "subscribe",
             "channel": "book",
             "symbol": req.symbol,
         }
         self.send_packet(d)
+
         d = {
             "event": "subscribe",
             "channel": "ticker",
@@ -300,6 +413,11 @@ class BitfinexWebsocketApi(WebsocketClient):
         self.send_packet(d)
 
         return int(round(time.time() * 1000))
+
+    def resubscribe(self):
+        """"""
+        for req in self.subscribed.values():
+            self.subscribe(req)
 
     def _gen_unqiue_cid(self):
         self.order_id += 1
@@ -371,7 +489,7 @@ class BitfinexWebsocketApi(WebsocketClient):
 
         if data["event"] == "subscribed":
             symbol = str(data["symbol"].replace("t", ""))
-            self.channelDict[data["chanId"]] = (data["channel"], symbol)
+            self.channels[data["chanId"]] = (data["channel"], symbol)
 
     def on_update(self, data):
         """"""
@@ -388,12 +506,12 @@ class BitfinexWebsocketApi(WebsocketClient):
     def on_data_update(self, data):
         """"""
         channel_id = data[0]
-        channel, symbol = self.channelDict[channel_id]
+        channel, symbol = self.channels[channel_id]
         symbol = str(symbol.replace("t", ""))
 
         # Get the Tick object
-        if symbol in self.tickDict:
-            tick = self.tickDict[symbol]
+        if symbol in self.ticks:
+            tick = self.ticks[symbol]
         else:
             tick = TickData(
                 symbol=symbol,
@@ -403,7 +521,7 @@ class BitfinexWebsocketApi(WebsocketClient):
                 gateway_name=self.gateway_name,
             )
 
-            self.tickDict[symbol] = tick
+            self.ticks[symbol] = tick
 
         l_data1 = data[1]
 
@@ -417,8 +535,8 @@ class BitfinexWebsocketApi(WebsocketClient):
 
         # Update deep quote
         elif channel == "book":
-            bid = self.bidDict.setdefault(symbol, {})
-            ask = self.askDict.setdefault(symbol, {})
+            bid = self.bids.setdefault(symbol, {})
+            ask = self.asks.setdefault(symbol, {})
 
             if len(l_data1) > 3:
                 for price, count, amount in l_data1:
@@ -466,7 +584,7 @@ class BitfinexWebsocketApi(WebsocketClient):
 
                 # ASK
                 ask_keys = ask.keys()
-                askPriceList = sorted(ask_keys, reverse=True)
+                askPriceList = sorted(ask_keys)
 
                 tick.ask_price_1 = askPriceList[0]
                 tick.ask_price_2 = askPriceList[1]
@@ -492,7 +610,6 @@ class BitfinexWebsocketApi(WebsocketClient):
     def on_wallet(self, data):
         """"""
         if str(data[0]) == "exchange":
-            print("wallet", data)
             accountid = str(data[1])
             account = self.accounts.get(accountid, None)
             if not account:

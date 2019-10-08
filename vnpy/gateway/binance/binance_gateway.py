@@ -7,7 +7,7 @@ import hashlib
 import hmac
 import time
 from copy import copy
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from threading import Lock
 
@@ -18,7 +18,8 @@ from vnpy.trader.constant import (
     Exchange,
     Product,
     Status,
-    OrderType
+    OrderType,
+    Interval
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
@@ -27,9 +28,11 @@ from vnpy.trader.object import (
     TradeData,
     AccountData,
     ContractData,
+    BarData,
     OrderRequest,
     CancelRequest,
-    SubscribeRequest
+    SubscribeRequest,
+    HistoryRequest
 )
 from vnpy.trader.event import EVENT_TIMER
 from vnpy.event import Event
@@ -58,6 +61,18 @@ DIRECTION_VT2BINANCE = {
     Direction.SHORT: "SELL"
 }
 DIRECTION_BINANCE2VT = {v: k for k, v in DIRECTION_VT2BINANCE.items()}
+
+INTERVAL_VT2BINANCE = {
+    Interval.MINUTE: "1m",
+    Interval.HOUR: "1h",
+    Interval.DAILY: "1d",
+}
+
+TIMEDELTA_MAP = {
+    Interval.MINUTE: timedelta(minutes=1),
+    Interval.HOUR: timedelta(hours=1),
+    Interval.DAILY: timedelta(days=1),
+}
 
 
 class Security(Enum):
@@ -126,6 +141,10 @@ class BinanceGateway(BaseGateway):
         """"""
         pass
 
+    def query_history(self, req: HistoryRequest):
+        """"""
+        return self.rest_api.query_history(req)
+
     def close(self):
         """"""
         self.rest_api.stop()
@@ -167,13 +186,16 @@ class BinanceRestApi(RestClient):
         """
         Generate BINANCE signature.
         """
+        security = request.data["security"]
+        if security == Security.NONE:
+            request.data = None
+            return request
+
         if request.params:
             path = request.path + "?" + urllib.parse.urlencode(request.params)
         else:
             request.params = dict()
             path = request.path
-
-        security = request.data["security"]
 
         if security == Security.SIGNED:
             timestamp = int(time.time() * 1000)
@@ -184,7 +206,6 @@ class BinanceRestApi(RestClient):
                 timestamp += abs(self.time_offset)
 
             request.params["timestamp"] = timestamp
-            # request.params["recv_window"] = self.recv_window
 
             query = urllib.parse.urlencode(sorted(request.params.items()))
             signature = hmac.new(self.secret, query.encode(
@@ -204,7 +225,7 @@ class BinanceRestApi(RestClient):
             "X-MBX-APIKEY": self.key
         }
 
-        if security == Security.SIGNED or security == Security.API_KEY:
+        if security in [Security.SIGNED, Security.API_KEY]:
             request.headers = headers
 
         return request
@@ -454,6 +475,7 @@ class BinanceRestApi(RestClient):
                 size=1,
                 min_volume=min_volume,
                 product=Product.SPOT,
+                history_data=True,
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_contract(contract)
@@ -507,6 +529,82 @@ class BinanceRestApi(RestClient):
         """"""
         pass
 
+    def query_history(self, req: HistoryRequest):
+        """"""
+        history = []
+        limit = 1000
+        start_time = int(datetime.timestamp(req.start))
+
+        while True:
+            # Create query params
+            params = {
+                "symbol": req.symbol,
+                "interval": INTERVAL_VT2BINANCE[req.interval],
+                "limit": limit,
+                "startTime": start_time * 1000,         # convert to millisecond
+            }
+
+            # Add end time if specified
+            if req.end:
+                end_time = int(datetime.timestamp(req.end))
+                params["endTime"] = end_time * 1000     # convert to millisecond
+
+            # Get response from server
+            resp = self.request(
+                "GET",
+                "/api/v1/klines",
+                data={"security": Security.NONE},
+                params=params
+            )
+
+            # Break if request failed with other status code
+            if resp.status_code // 100 != 2:
+                msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
+                self.gateway.write_log(msg)
+                break
+            else:
+                data = resp.json()
+                if not data:
+                    msg = f"获取历史数据为空，开始时间：{start_time}"
+                    self.gateway.write_log(msg)
+                    break
+
+                buf = []
+
+                for l in data:
+                    dt = datetime.fromtimestamp(l[0] / 1000)    # convert to second
+
+                    bar = BarData(
+                        symbol=req.symbol,
+                        exchange=req.exchange,
+                        datetime=dt,
+                        interval=req.interval,
+                        volume=float(l[5]),
+                        open_price=float(l[1]),
+                        high_price=float(l[2]),
+                        low_price=float(l[3]),
+                        close_price=float(l[4]),
+                        gateway_name=self.gateway_name
+                    )
+                    buf.append(bar)
+
+                history.extend(buf)
+
+                begin = buf[0].datetime
+                end = buf[-1].datetime
+                msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
+                self.gateway.write_log(msg)
+
+                # Break if total data count less than limit (latest date collected)
+                if len(data) < limit:
+                    break
+
+                # Update start time
+                start_dt = bar.datetime + TIMEDELTA_MAP[req.interval]
+                start_time = int(datetime.timestamp(start_dt))
+
+        return history
+
 
 class BinanceTradeWebsocketApi(WebsocketClient):
     """"""
@@ -531,7 +629,7 @@ class BinanceTradeWebsocketApi(WebsocketClient):
         """"""
         if packet["e"] == "outboundAccountInfo":
             self.on_account(packet)
-        else:
+        elif packet["e"] == "executionReport":
             self.on_order(packet)
 
     def on_account(self, packet):
@@ -543,7 +641,7 @@ class BinanceTradeWebsocketApi(WebsocketClient):
                 frozen=float(d["l"]),
                 gateway_name=self.gateway_name
             )
-            
+
             if account.balance:
                 self.gateway.on_account(account)
 

@@ -13,7 +13,7 @@ from ibapi.contract import Contract, ContractDetails
 from ibapi.execution import Execution
 from ibapi.order import Order
 from ibapi.order_state import OrderState
-from ibapi.ticktype import TickType
+from ibapi.ticktype import TickType, TickTypeEnum
 from ibapi.wrapper import EWrapper
 from ibapi.errors import BAD_LENGTH
 from ibapi.common import BarData as IbBarData
@@ -43,7 +43,11 @@ from vnpy.trader.constant import (
     Interval
 )
 
-ORDERTYPE_VT2IB = {OrderType.LIMIT: "LMT", OrderType.MARKET: "MKT"}
+ORDERTYPE_VT2IB = {
+    OrderType.LIMIT: "LMT", 
+    OrderType.MARKET: "MKT",
+    OrderType.STOP: "STP"
+}
 ORDERTYPE_IB2VT = {v: k for k, v in ORDERTYPE_VT2IB.items()}
 
 DIRECTION_VT2IB = {Direction.LONG: "BUY", Direction.SHORT: "SELL"}
@@ -60,15 +64,19 @@ EXCHANGE_VT2IB = {
     Exchange.ICE: "ICE",
     Exchange.SEHK: "SEHK",
     Exchange.HKFE: "HKFE",
+    Exchange.CFE: "CFE"
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}
 
 STATUS_IB2VT = {
-    "Submitted": Status.NOTTRADED,
-    "Filled": Status.ALLTRADED,
-    "Cancelled": Status.CANCELLED,
+    "ApiPending": Status.SUBMITTING,
     "PendingSubmit": Status.SUBMITTING,
     "PreSubmitted": Status.NOTTRADED,
+    "Submitted": Status.NOTTRADED,
+    "ApiCancelled": Status.CANCELLED,
+    "Cancelled": Status.CANCELLED,
+    "Filled": Status.ALLTRADED,
+    "Inactive": Status.REJECTED,
 }
 
 PRODUCT_VT2IB = {
@@ -312,7 +320,7 @@ class IbApi(EWrapper):
         """
         super(IbApi, self).tickString(reqId, tickType, value)
 
-        if tickType != "45":
+        if tickType != TickTypeEnum.LAST_TIMESTAMP:
             return
 
         tick = self.ticks[reqId]
@@ -353,8 +361,12 @@ class IbApi(EWrapper):
 
         orderid = str(orderId)
         order = self.orders.get(orderid, None)
-        order.status = STATUS_IB2VT[status]
         order.traded = filled
+
+        # To filter PendingCancel status
+        order_status = STATUS_IB2VT.get(status, None)
+        if order_status:
+            order.status = order_status
 
         self.gateway.on_order(copy(order))
 
@@ -434,7 +446,16 @@ class IbApi(EWrapper):
             accountName,
         )
 
-        if not contract.exchange:
+        if contract.exchange:
+            exchange = EXCHANGE_IB2VT.get(contract.exchange, None)
+        elif contract.primaryExchange:
+            exchange = EXCHANGE_IB2VT.get(contract.primaryExchange, None)
+        else:
+            exchange = Exchange.SMART   # Use smart routing for default
+
+        if not exchange:
+            msg = f"存在不支持的交易所持仓{contract.conId} {contract.exchange} {contract.primaryExchange}"
+            self.gateway.write_log(msg)
             return
 
         ib_size = contract.multiplier
@@ -444,7 +465,7 @@ class IbApi(EWrapper):
 
         pos = PositionData(
             symbol=contract.conId,
-            exchange=EXCHANGE_IB2VT.get(contract.exchange, contract.exchange),
+            exchange=exchange,
             direction=Direction.NET,
             volume=position,
             price=price,
@@ -484,12 +505,13 @@ class IbApi(EWrapper):
             pricetick=contractDetails.minTick,
             net_position=True,
             history_data=True,
+            stop_supported=True,
             gateway_name=self.gateway_name,
         )
 
-        self.gateway.on_contract(contract)
-
-        self.contracts[contract.vt_symbol] = contract
+        if contract.vt_symbol not in self.contracts:
+            self.gateway.on_contract(contract)
+            self.contracts[contract.vt_symbol] = contract
 
     def execDetails(
         self, reqId: int, contract: Contract, execution: Execution
@@ -633,8 +655,12 @@ class IbApi(EWrapper):
         ib_order.clientId = self.clientid
         ib_order.action = DIRECTION_VT2IB[req.direction]
         ib_order.orderType = ORDERTYPE_VT2IB[req.type]
-        ib_order.lmtPrice = req.price
         ib_order.totalQuantity = req.volume
+
+        if req.type == OrderType.LIMIT:
+            ib_order.lmtPrice = req.price
+        elif req.type == OrderType.STOP:
+            ib_order.auxPrice = req.price
 
         self.client.placeOrder(self.orderid, ib_contract, ib_order)
         self.client.reqIds(1)
