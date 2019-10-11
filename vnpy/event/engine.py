@@ -1,5 +1,6 @@
 """
 Event-driven framework of vn.py framework.
+vn.py框架的事件驱动框架。
 """
 
 from collections import defaultdict
@@ -16,6 +17,9 @@ class Event:
     Event object consists of a type string which is used
     by event engine for distributing event, and a data
     object which contains the real data.
+
+    事件对象由事件引擎用于分发事件的类型字符串和包含实际数据的数据对象组成。
+
     """
 
     def __init__(self, type: str, data: Any = None):
@@ -35,12 +39,16 @@ class EventEngine:
 
     It also generates timer event by every interval seconds,
     which can be used for timing purpose.
+    事件引擎根据事件对象的类型将其分配给已注册的处理程序。
+    它还每间隔数秒生成一次计时器事件，可用于计时目的。（数秒自己定义）
+
     """
 
     def __init__(self, interval: int = 1):
         """
         Timer event is generated every 1 second by default, if
         interval not specified.
+        如果未指定时间间隔，则默认情况下每1秒生成一次计时器事件。
         """
         self._interval = interval
         self._queue = Queue()
@@ -68,6 +76,10 @@ class EventEngine:
 
         Then distrubute event to those general handlers which listens
         to all types.
+
+        首先将事件分发给已注册侦听此类型的处理程序。
+        然后甚至分发给那些侦听所有类型的常规处理程序。
+
         """
         if event.type in self._handlers:
             [handler(event) for handler in self._handlers[event.type]]
@@ -103,6 +115,7 @@ class EventEngine:
     def put(self, event: Event):
         """
         Put an event object into event queue.
+        将事件对象放入事件队列。
         """
         self._queue.put(event)
 
@@ -110,6 +123,7 @@ class EventEngine:
         """
         Register a new handler function for a specific event type. Every
         function can only be registered once for each event type.
+        为特定事件类型注册新的处理函数。对于每种事件类型，每个功能只能注册一次。
         """
         handler_list = self._handlers[type]
         if handler not in handler_list:
@@ -118,6 +132,7 @@ class EventEngine:
     def unregister(self, type: str, handler: HandlerType):
         """
         Unregister an existing handler function from event engine.
+        从事件引擎中注销现有的处理函数。
         """
         handler_list = self._handlers[type]
 
@@ -131,6 +146,7 @@ class EventEngine:
         """
         Register a new handler function for all event types. Every
         function can only be registered once for each event type.
+        为所有事件类型注册一个新的处理函数。对于每种事件类型，每个功能只能注册一次。
         """
         if handler not in self._general_handlers:
             self._general_handlers.append(handler)
@@ -138,6 +154,7 @@ class EventEngine:
     def unregister_general(self, handler: HandlerType):
         """
         Unregister an existing general handler function.
+        注销现有的常规处理函数。
         """
         if handler in self._general_handlers:
             self._general_handlers.remove(handler)
