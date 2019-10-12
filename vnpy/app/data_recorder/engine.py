@@ -1,4 +1,6 @@
-""""""
+"""
+注册EVENT_TICK、EVENT_CONTRACT，当有EVENT_TICK的时候，调用process_contract_event函数（其实就是record_tick函数）， 将task put到queue 通过run函数，从self.queue获得task（Tick、Bar),调用database_manager的方法储存数据
+"""
 
 from threading import Thread
 from queue import Queue, Empty
@@ -15,7 +17,6 @@ from vnpy.trader.object import (
 from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT
 from vnpy.trader.utility import load_json, save_json, BarGenerator
 from vnpy.trader.database import database_manager
-
 
 APP_NAME = "DataRecorder"
 
@@ -45,8 +46,8 @@ class RecorderEngine(BaseEngine):
         self.put_event()
 
     def load_setting(self):
-        """"""
         setting = load_json(self.setting_filename)
+        """"""
         self.tick_recordings = setting.get("tick", {})
         self.bar_recordings = setting.get("bar", {})
 
@@ -59,7 +60,7 @@ class RecorderEngine(BaseEngine):
         save_json(self.setting_filename, setting)
 
     def run(self):
-        """"""
+        """调用database_manager的方法储存数据"""
         while self.active:
             try:
                 task = self.queue.get(timeout=1)
@@ -86,7 +87,9 @@ class RecorderEngine(BaseEngine):
         self.thread.start()
 
     def add_bar_recording(self, vt_symbol: str):
-        """"""
+        """
+        将symbol数据写入bar_recordings["symbol"]这个字典，订阅合约，调用save_setting进行保存(里面有tick_recordings，bar_recordings字典)，然后调用put_event(实质为调用Eventengine的self._queue.put(event))，将事件放入队列。
+        """
         if vt_symbol in self.bar_recordings:
             self.write_log(f"已在K线记录列表中：{vt_symbol}")
             return
@@ -161,7 +164,7 @@ class RecorderEngine(BaseEngine):
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
 
     def process_tick_event(self, event: Event):
-        """"""
+        """ 调用下面的record_tick方法(其实就是将task put到queue)"""
         tick = event.data
 
         if tick.vt_symbol in self.tick_recordings:
@@ -207,9 +210,10 @@ class RecorderEngine(BaseEngine):
         self.event_engine.put(event)
 
     def record_tick(self, tick: TickData):
-        """"""
+        """ 将task put到queue, 不过这里为什么要用self.queue，不是调用put_event?"""
+        #TODO 这里为什么要用self.queue，不是调用put_event?
         task = ("tick", copy(tick))
-        self.queue.put(task)
+        self.queue.put(task) # 表面上看上去是一样的
 
     def record_bar(self, bar: BarData):
         """"""
@@ -217,7 +221,7 @@ class RecorderEngine(BaseEngine):
         self.queue.put(task)
 
     def get_bar_generator(self, vt_symbol: str):
-        """"""
+        """从bar_generators这个字典通过symbol取出bg的实例"""
         bg = self.bar_generators.get(vt_symbol, None)
 
         if not bg:
