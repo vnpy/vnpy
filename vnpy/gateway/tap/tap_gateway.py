@@ -464,6 +464,7 @@ class TradeApi(ITapTradeAPINotify):
                 product=Product.FUTURES,
                 size=commodity_info.size,
                 pricetick=commodity_info.pricetick,
+                net_position=True,
                 gateway_name=self.gateway.gateway_name
             )
             self.gateway.on_contract(contract)
