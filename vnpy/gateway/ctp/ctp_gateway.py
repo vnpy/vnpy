@@ -500,8 +500,8 @@ class CtpTdApi(TdApi):
                 )
                 self.positions[key] = position
 
-            # For SHFE position data update
-            if position.exchange == Exchange.SHFE:
+            # For SHFE and INE position data update
+            if position.exchange in [Exchange.SHFE, Exchange.INE]:
                 if data["YdPosition"] and not data["TodayPosition"]:
                     position.yd_volume = data["Position"]
             # For other exchange position data update
