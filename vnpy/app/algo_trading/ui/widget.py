@@ -520,7 +520,8 @@ class LogMonitor(QtWidgets.QTableWidget):
 
     def process_log_event(self, event):
         """"""
-        msg = event.data
+        log = event.data
+        msg = log.msg
         timestamp = datetime.now().strftime("%H:%M:%S")
 
         timestamp_cell = QtWidgets.QTableWidgetItem(timestamp)
