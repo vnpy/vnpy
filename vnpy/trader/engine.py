@@ -1,4 +1,10 @@
 """
+所有的gateway都放在self.gateways字典里面，对应vnpy UI界面的连接菜单的内容。
+ Subscribe逻辑：
+1.add_gateway生成一个self.gateways字典
+2.调用get_gateway函数取出CtpGateway实例
+3.调用CtpGateway实例的subscribe函数
+4.底层API通过sambol,exchange的形式subscribe
 """
 
 import logging
@@ -37,6 +43,7 @@ from .utility import get_folder_path, TRADER_DIR
 class MainEngine:
     """
     Acts as the core of VN Trader.
+    充当VN Trader的核心。
     """
 
     def __init__(self, event_engine: EventEngine = None):
@@ -52,12 +59,13 @@ class MainEngine:
         self.apps = {}
         self.exchanges = []
 
-        os.chdir(TRADER_DIR)    # Change working directory
-        self.init_engines()     # Initialize function engines
+        os.chdir(TRADER_DIR)  # Change working directory
+        self.init_engines()  # Initialize function engines
 
     def add_engine(self, engine_class: Any):
         """
         Add function engine.
+        添加功能引擎
         """
         engine = engine_class(self, self.event_engine)
         self.engines[engine.engine_name] = engine
@@ -66,16 +74,25 @@ class MainEngine:
     def add_gateway(self, gateway_class: Type[BaseGateway]):
         """
         Add gateway.
+        添加交易所方法
+        这个函数的作用是传入CTPGateway，将传入的CTPGateway实例化（将event_engine作为参数，将存入self.gateways这个字典中，最后返回CTPGateway实例）
         """
+        #  这里得到一个gateway_class（是CTPGateway之类，不是BaseGateway）的实例，实例的参数是init MainEngine的时候传入的event_engine
+
+        # 调用上面的实例的gateway_name属性，并作为字典的键 37
         gateway = gateway_class(self.event_engine)
+        # 这里得到了gateways字典，在下面的get_gateway函数要用，取出gateway。
         self.gateways[gateway.gateway_name] = gateway
 
         # Add gateway supported exchanges into engine
+        # 取出gateway的exchanges类属性（列表，非实例属性），
+
         for exchange in gateway.exchanges:
+            # 如果类的exchanges，不在当前实例的exchanges里面，则添加进来。
             if exchange not in self.exchanges:
                 self.exchanges.append(exchange)
 
-        return gateway
+        return gateway  # 返回CTPGateway
 
     def add_app(self, app_class: Type[BaseApp]):
         """
@@ -98,7 +115,11 @@ class MainEngine:
     def write_log(self, msg: str, source: str = ""):
         """
         Put log event with specific message.
+        推送特定消息的日志事件。
+
         """
+
+        # LogData继承自BaseData，BaseData有gateway_name，所以这里可以传gateway_name，得到LogData对象。
         log = LogData(msg=msg, gateway_name=source)
         event = Event(EVENT_LOG, log)
         self.event_engine.put(event)
@@ -106,6 +127,7 @@ class MainEngine:
     def get_gateway(self, gateway_name: str):
         """
         Return gateway object by name.
+        作用是传入CtpGateway，从字典中取出CtpGateway实例，再返回这个实例
         """
         gateway = self.gateways.get(gateway_name, None)
         if not gateway:
@@ -159,8 +181,15 @@ class MainEngine:
     def subscribe(self, req: SubscribeRequest, gateway_name: str):
         """
         Subscribe tick data update of a specific gateway.
+
+        作用：根据传入的CtpGateway，调用get_gateway函数取出CtpGateway实例，然后订阅行情。
+
         """
+        # 得到CTPGateway实例
         gateway = self.get_gateway(gateway_name)
+
+        # 调用CTPGateway实例的subscribe方法，而self.md_api.subscribe(req)的方法就是self.md_api.subscribe(req)，即底层API，而传入的参数是SubscribeRequest（一个类），应该是{self.symbol}.{self.exchange.value}这样的形式。
+
         if gateway:
             gateway.subscribe(req)
 
@@ -229,10 +258,10 @@ class BaseEngine(ABC):
     """
 
     def __init__(
-        self,
-        main_engine: MainEngine,
-        event_engine: EventEngine,
-        engine_name: str,
+            self,
+            main_engine: MainEngine,
+            event_engine: EventEngine,
+            engine_name: str,
     ):
         """"""
         self.main_engine = main_engine
@@ -531,7 +560,7 @@ class EmailEngine(BaseEngine):
                 msg = self.queue.get(block=True, timeout=1)
 
                 with smtplib.SMTP_SSL(
-                    SETTINGS["email.server"], SETTINGS["email.port"]
+                        SETTINGS["email.server"], SETTINGS["email.port"]
                 ) as smtp:
                     smtp.login(
                         SETTINGS["email.username"], SETTINGS["email.password"]
