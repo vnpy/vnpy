@@ -50,9 +50,10 @@ class EventEngine:
         interval not specified.
         如果未指定时间间隔，则默认情况下每1秒生成一次计时器事件。
         """
+        ### 作用：初始化事件管理器
         self._interval = interval
-        self._queue = Queue()
-        self._active = False
+        self._queue = Queue()  # 县城队列
+        self._active = False  # 事件驱动开关
         self._thread = Thread(target=self._run)
         self._timer = Thread(target=self._run_timer)
         self._handlers = defaultdict(list)
@@ -61,6 +62,7 @@ class EventEngine:
     def _run(self):
         """
         Get event from queue and then process it.
+        从队列中获取事件，然后对其进行处理
         """
         while self._active:
             try:
