@@ -97,6 +97,7 @@ class CtaTemplate(ABC):
     def on_init(self):
         """
         Callback when strategy is inited.
+        初始化策略
         """
         pass
 
@@ -104,6 +105,7 @@ class CtaTemplate(ABC):
     def on_start(self):
         """
         Callback when strategy is started.
+        启动策略
         """
         pass
 
@@ -111,6 +113,7 @@ class CtaTemplate(ABC):
     def on_stop(self):
         """
         Callback when strategy is stopped.
+        停止策略
         """
         pass
 
@@ -118,6 +121,7 @@ class CtaTemplate(ABC):
     def on_tick(self, tick: TickData):
         """
         Callback of new tick data update.
+        推送tick数据
         """
         pass
 
@@ -125,6 +129,7 @@ class CtaTemplate(ABC):
     def on_bar(self, bar: BarData):
         """
         Callback of new bar data update.
+        推送bar数据
         """
         pass
 
@@ -132,6 +137,7 @@ class CtaTemplate(ABC):
     def on_trade(self, trade: TradeData):
         """
         Callback of new trade data update.
+        成交数据推送
         """
         pass
 
@@ -139,6 +145,7 @@ class CtaTemplate(ABC):
     def on_order(self, order: OrderData):
         """
         Callback of new order data update.
+        订单数据更新
         """
         pass
 
@@ -146,6 +153,7 @@ class CtaTemplate(ABC):
     def on_stop_order(self, stop_order: StopOrder):
         """
         Callback of stop order update.
+        停止单数据更新
         """
         pass
 
@@ -184,6 +192,7 @@ class CtaTemplate(ABC):
     ):
         """
         Send a new order.
+        下单函数
         """
         if self.trading:
             vt_orderids = self.cta_engine.send_order(
@@ -196,6 +205,7 @@ class CtaTemplate(ABC):
     def cancel_order(self, vt_orderid: str):
         """
         Cancel an existing order.
+        根据订单id取消订单
         """
         if self.trading:
             self.cta_engine.cancel_order(self, vt_orderid)
@@ -203,6 +213,7 @@ class CtaTemplate(ABC):
     def cancel_all(self):
         """
         Cancel all orders sent by strategy.
+        取消所有订单
         """
         if self.trading:
             self.cta_engine.cancel_all(self)
@@ -210,12 +221,14 @@ class CtaTemplate(ABC):
     def write_log(self, msg: str):
         """
         Write a log message.
+        输出日志
         """
         self.cta_engine.write_log(msg, self)
 
     def get_engine_type(self):
         """
         Return whether the cta_engine is backtesting or live trading.
+        判断是实盘还是回测
         """
         return self.cta_engine.get_engine_type()
 
@@ -227,6 +240,7 @@ class CtaTemplate(ABC):
     ):
         """
         Load historical bar data for initializing strategy.
+        加载历史柱线数据以初始化策略。
         """
         if not callback:
             callback = self.on_bar
