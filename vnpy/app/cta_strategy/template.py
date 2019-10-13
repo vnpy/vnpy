@@ -18,11 +18,11 @@ class CtaTemplate(ABC):
     variables = []
 
     def __init__(
-        self,
-        cta_engine: Any,
-        strategy_name: str,
-        vt_symbol: str,
-        setting: dict,
+            self,
+            cta_engine: Any,
+            strategy_name: str,
+            vt_symbol: str,
+            setting: dict,
     ):
         """"""
         self.cta_engine = cta_engine
@@ -92,6 +92,7 @@ class CtaTemplate(ABC):
         }
         return strategy_data
 
+    # 下面的函数被定义为虚函数，作用就是下面的函数可以被子类的方法随意修改
     @virtual
     def on_init(self):
         """
@@ -173,13 +174,13 @@ class CtaTemplate(ABC):
         return self.send_order(Direction.LONG, Offset.CLOSE, price, volume, stop, lock)
 
     def send_order(
-        self,
-        direction: Direction,
-        offset: Offset,
-        price: float,
-        volume: float,
-        stop: bool = False,
-        lock: bool = False
+            self,
+            direction: Direction,
+            offset: Offset,
+            price: float,
+            volume: float,
+            stop: bool = False,
+            lock: bool = False
     ):
         """
         Send a new order.
@@ -219,10 +220,10 @@ class CtaTemplate(ABC):
         return self.cta_engine.get_engine_type()
 
     def load_bar(
-        self,
-        days: int,
-        interval: Interval = Interval.MINUTE,
-        callback: Callable = None,
+            self,
+            days: int,
+            interval: Interval = Interval.MINUTE,
+            callback: Callable = None,
     ):
         """
         Load historical bar data for initializing strategy.
