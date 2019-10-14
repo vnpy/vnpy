@@ -131,7 +131,11 @@ class RiskManagerEngine(BaseEngine):
         self.event_engine.put(event)
 
     def check_risk(self, req: OrderRequest, gateway_name: str):
-        """"""
+        """
+        检查风险
+        作用：轮训每个指令如果不满足就不操作
+        """
+        #TODO 风控模块轮训扩展
         if not self.active:
             return True
 
