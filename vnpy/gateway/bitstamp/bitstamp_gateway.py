@@ -8,7 +8,7 @@ import sys
 import time
 import uuid
 from copy import copy
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from typing import Dict
 
@@ -22,7 +22,8 @@ from vnpy.trader.constant import (
     Exchange,
     OrderType,
     Product,
-    Status
+    Status,
+    Interval
 )
 from vnpy.trader.gateway import BaseGateway, LocalOrderManager
 from vnpy.trader.object import (
@@ -31,6 +32,7 @@ from vnpy.trader.object import (
     TradeData,
     AccountData,
     ContractData,
+    BarData,
     OrderRequest,
     CancelRequest,
     SubscribeRequest,
@@ -46,6 +48,18 @@ WEBSOCKET_HOST = "wss://ws.bitstamp.net"
 DIRECTION_BITSTAMP2VT = {
     "0": Direction.LONG,
     "1": Direction.SHORT,
+}
+
+INTERVAL_VT2BITSTAMP = {
+    Interval.MINUTE: 60,
+    Interval.HOUR: 3600,
+    Interval.DAILY: 86400,
+}
+
+TIMEDELTA_MAP = {
+    Interval.MINUTE: timedelta(minutes=1),
+    Interval.HOUR: timedelta(hours=1),
+    Interval.DAILY: timedelta(days=1),
 }
 
 
@@ -100,7 +114,7 @@ class BitstampGateway(BaseGateway):
 
     def cancel_order(self, req: CancelRequest):
         """"""
-        self.rest_api.cancel_order(req)
+        self.order_manager.cancel_order(req)
 
     def query_account(self):
         """"""
@@ -112,7 +126,74 @@ class BitstampGateway(BaseGateway):
 
     def query_history(self, req: HistoryRequest):
         """"""
-        pass
+        history = []
+        limit = 1000
+        step = INTERVAL_VT2BITSTAMP[req.interval]
+        base = req.symbol[:3].upper()
+        quote = req.symbol[3:].upper()
+        start_time = int(datetime.timestamp(req.start))
+
+        while True:
+            # Calculate end time and check if download task finished
+            end_time = start_time + INTERVAL_VT2BITSTAMP[req.interval] * limit
+            if int(datetime.timestamp(req.end)) < end_time:
+                break
+
+            # Create query params
+            params = {
+                "exchange": "bitstamp",
+                "base": base,
+                "quote": quote,
+                "start": start_time,
+                "end": end_time,
+                "scale": step
+            }
+
+            # Get response from server
+            resp = requests.get(
+                "https://api.blockchain.info/price/bar-series",
+                params
+            )
+
+            # Break if request failed with other status code
+            if resp.status_code // 100 != 2:
+                msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
+                self.write_log(msg)
+                break
+            else:
+                data = resp.json()
+                if not data:
+                    msg = f"获取历史数据为空，开始时间：{req.start}"
+                    self.write_log(msg)
+                    break
+
+                buf = []
+                for d in data:
+                    bar = BarData(
+                        symbol=req.symbol,
+                        exchange=req.exchange,
+                        datetime=datetime.fromtimestamp(d["start"]),
+                        interval=req.interval,
+                        volume=d["volume"],
+                        open_price=d["open"],
+                        high_price=d["high"],
+                        low_price=d["low"],
+                        close_price=d["close"],
+                        gateway_name=self.gateway_name
+                    )
+                    buf.append(bar)
+
+                history.extend(buf)
+
+                begin = buf[0].datetime
+                end = buf[-1].datetime
+                msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
+                self.write_log(msg)
+
+                # Update start time
+                start_time = int(datetime.timestamp(end)) + INTERVAL_VT2BITSTAMP[req.interval]
+
+        return history
 
     def close(self):
         """"""
@@ -348,7 +429,7 @@ class BitstampRestApi(RestClient):
                 size=1,
                 pricetick=pricetick,
                 min_volume=min_volume,
-                history_data=False,
+                history_data=True,
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_contract(contract)

@@ -50,7 +50,7 @@ class RqdataClient:
             return False
 
         rqdata_init(
-            self.username, 
+            self.username,
             self.password,
             ('rqdatad-pro.ricequant.com', 16011),
             use_pool=True

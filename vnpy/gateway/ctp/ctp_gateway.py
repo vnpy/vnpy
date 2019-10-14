@@ -156,14 +156,14 @@ class CtpGateway(BaseGateway):
         product_info = setting["产品信息"]
 
         if (
-            (not td_address.startswith("tcp://")) and 
-            (not td_address.startswith("ssl://"))
+            (not td_address.startswith("tcp://"))
+            and (not td_address.startswith("ssl://"))
         ):
             td_address = "tcp://" + td_address
 
         if (
-            (not md_address.startswith("tcp://")) and
-            (not md_address.startswith("ssl://"))
+            (not md_address.startswith("tcp://"))
+            and (not md_address.startswith("ssl://"))
         ):
             md_address = "tcp://" + md_address
 
@@ -500,8 +500,8 @@ class CtpTdApi(TdApi):
                 )
                 self.positions[key] = position
 
-            # For SHFE position data update
-            if position.exchange == Exchange.SHFE:
+            # For SHFE and INE position data update
+            if position.exchange in [Exchange.SHFE, Exchange.INE]:
                 if data["YdPosition"] and not data["TodayPosition"]:
                     position.yd_volume = data["Position"]
             # For other exchange position data update
