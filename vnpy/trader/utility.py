@@ -515,12 +515,10 @@ def virtual(func: "callable"):
     any base class should use this or @abstractmethod to decorate all functions
     that can be (re)implemented by subclasses.
     将功能标记为“虚拟”，这意味着该功能可以被覆盖。
-    任何基类都应使用此方法或@abstract方法来装饰可以由子类（重新）实现的所有函数。
-
-
-
+    任何基类都应使用此方法或@abstractmethod方法来装饰可以由子类（重新）实现的所有函数。
     """
     # 虚函数的作用，用专业术语来解释就是实现多态性（Polymorphism），多态性是将接口与实现进行分离；用形象的语言来解释就是实现以共同的方法，但因个体差异而采用不同的策略
+    # 和@abstractmethod作用一样，目的标记成虚方法
     return func
 
 
