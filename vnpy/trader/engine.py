@@ -43,7 +43,7 @@ from .utility import get_folder_path, TRADER_DIR
 class MainEngine:
     """
     Acts as the core of VN Trader.
-    充当VN Trader的核心。
+    VN Trader的核心。
     """
 
     def __init__(self, event_engine: EventEngine = None):
