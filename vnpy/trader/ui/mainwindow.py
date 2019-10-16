@@ -1,5 +1,6 @@
 """
 Implements main window of VN Trader.
+vnpy的主要UI窗口
 """
 
 import webbrowser
