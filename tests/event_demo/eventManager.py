@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Created on Tue Nov 13 13:51:31 2018
 
@@ -6,11 +7,9 @@ Created on Tue Nov 13 13:51:31 2018
 # 系统模块
 from queue import Queue, Empty
 from threading import *
-
-
 ########################################################################
 class EventManager:
-    # ----------------------------------------------------------------------
+    #----------------------------------------------------------------------
     def __init__(self):
         """初始化事件管理器"""
         # 事件对象列表
@@ -18,26 +17,24 @@ class EventManager:
         # 事件管理器开关
         self.__active = False
         # 事件处理线程
-        self.__thread = Thread(target=self.__Run)
+        self.__thread = Thread(target = self.__Run)
         self.count = 0
         # 这里的__handlers是一个字典，用来保存对应的事件的响应函数
         # 其中每个键对应的值是一个列表，列表中保存了对该事件监听的响应函数，一对多
         self.__handlers = {}
-
-    # ----------------------------------------------------------------------
+    #----------------------------------------------------------------------
     def __Run(self):
         """引擎运行"""
         print('{}_run'.format(self.count))
         while self.__active == True:
             try:
                 # 获取事件的阻塞时间设为1秒
-                event = self.__eventQueue.get(block=True, timeout=1)
+                event = self.__eventQueue.get(block = True, timeout = 1)
                 self.__EventProcess(event)
             except Empty:
                 pass
             self.count += 1
-
-    # ----------------------------------------------------------------------
+    #----------------------------------------------------------------------
     def __EventProcess(self, event):
         """处理事件"""
         print('{}_EventProcess'.format(self.count))
@@ -47,8 +44,7 @@ class EventManager:
             for handler in self.__handlers[event.type_]:
                 handler(event)
         self.count += 1
-
-    # ----------------------------------------------------------------------
+    #----------------------------------------------------------------------
     def Start(self):
         """启动"""
         print('{}_Start'.format(self.count))
@@ -57,8 +53,7 @@ class EventManager:
         # 启动事件处理线程
         self.__thread.start()
         self.count += 1
-
-    # ----------------------------------------------------------------------
+    #----------------------------------------------------------------------
     def Stop(self):
         """停止"""
         print('{}_Stop'.format(self.count))
@@ -67,8 +62,7 @@ class EventManager:
         # 等待事件处理线程退出
         self.__thread.join()
         self.count += 1
-
-    # ----------------------------------------------------------------------
+    #----------------------------------------------------------------------
     def AddEventListener(self, type_, handler):
         """绑定事件和监听器处理函数"""
         print('{}_AddEventListener'.format(self.count))
@@ -78,15 +72,12 @@ class EventManager:
         except KeyError:
             handlerList = []
             self.__handlers[type_] = handlerList
-
     # 若要注册的处理器不在该事件的处理器列表中，则注册该事件
     if handler not in handlerList:
         handlerList.append(handler)
     print(self.__handlers)
     self.count += 1
-
-
-# ----------------------------------------------------------------------
+#----------------------------------------------------------------------
 def RemoveEventListener(self, type_, handler):
     """移除监听器的处理函数"""
     print('{}_RemoveEventListener'.format(self.count))
@@ -101,21 +92,15 @@ def RemoveEventListener(self, type_, handler):
     except KeyError:
         pass
     self.count += 1
-
-
-# ----------------------------------------------------------------------
+#----------------------------------------------------------------------
 def SendEvent(self, event):
     """发送事件，向事件队列中存入事件"""
     print('{}_SendEvent'.format(self.count))
     self.__eventQueue.put(event)
     self.count += 1
-
-
 ########################################################################
 """事件对象"""
-
-
 class Event:
     def __init__(self, type_=None):
-        self.type_ = type_  # 事件类型
-        self.dict = {}  # 字典用于保存具体的事件数据
+        self.type_ = type_      # 事件类型
+        self.dict = {}          # 字典用于保存具体的事件数据
