@@ -45,6 +45,8 @@ class CtaTemplate(ABC):
     def update_setting(self, setting: dict):
         """
         Update strategy parameter wtih value in setting dict.
+        作用：往对象里插入属性值
+        返回 name=name
         """
         for name in self.parameters:
             if name in setting:
@@ -54,6 +56,8 @@ class CtaTemplate(ABC):
     def get_class_parameters(cls):
         """
         Get default parameters dict of strategy class.
+        作用：获取对象的属性值
+
         """
         class_parameters = {}
         for name in cls.parameters:
@@ -270,6 +274,7 @@ class CtaTemplate(ABC):
     def sync_data(self):
         """
         Sync strategy variables value into disk storage.
+        将策略变量值同步到磁盘存储中
         """
         if self.trading:
             self.cta_engine.sync_strategy_data(self)
