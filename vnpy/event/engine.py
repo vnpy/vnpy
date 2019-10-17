@@ -2,7 +2,10 @@
 Event-driven framework of vn.py framework.
 vn.py框架的事件驱动框架。
 """
-
+##############################################
+# 1.事件的注册和取消，使用者可以根据自己的需求来设置引擎需要关心那些事件
+# 2.事件对于的处理方法的挂钩。显然，一个事件可以由多个方法来处理，也可以一个方法处理多个事件。
+# 3.不断监听事件的发生与否，如果发生就进行相应的处理，也就是调用设置好的函数。
 from collections import defaultdict
 from queue import Empty, Queue
 from threading import Thread
@@ -29,6 +32,7 @@ class Event:
 
 
 # Defines handler function to be used in event engine.
+# 定义要在事件引擎中使用的处理函数。
 HandlerType = Callable[[Event], None]
 
 
@@ -52,7 +56,7 @@ class EventEngine:
         """
         ### 作用：初始化事件管理器
         self._interval = interval
-        self._queue = Queue()  # 县城队列
+        self._queue = Queue()  # 线程队列
         self._active = False  # 事件驱动开关
         self._thread = Thread(target=self._run)
         self._timer = Thread(target=self._run_timer)
@@ -160,3 +164,18 @@ class EventEngine:
         """
         if handler in self._general_handlers:
             self._general_handlers.remove(handler)
+
+
+if __name__ == "__main__":
+    from vnpy.event import EventEngine
+
+    EVENT_TIMER = "eTimer"
+
+
+    def func(event):
+        print("hello timer!")
+
+
+    ee = EventEngine()
+    ee.register(EVENT_TIMER, func)
+    ee.start()

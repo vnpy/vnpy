@@ -1,7 +1,7 @@
 """
 注册EVENT_TICK、EVENT_CONTRACT，当有EVENT_TICK的时候，调用process_contract_event函数（其实就是record_tick函数）， 将task put到queue 通过run函数，从self.queue获得task（Tick、Bar),调用database_manager的方法储存数据
 """
-
+# 数据采集功能，收集交易K线和tick数据
 from threading import Thread
 from queue import Queue, Empty
 from copy import copy

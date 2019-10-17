@@ -369,7 +369,7 @@ class BacktestingEngine:
             return_drawdown_ratio = 0
         else:
             # Calculate balance related time series data
-            df["balance"] = df["net_pnl"].cumsum() + self.capital  #TODO 计算总盈亏
+            df["balance"] = df["net_pnl"].cumsum() + self.capital  #TODO 计算总盈亏，不断累加
             df["return"] = np.log(df["balance"] / df["balance"].shift(1)).fillna(0)
             df["highlevel"] = (
                 df["balance"].rolling(
