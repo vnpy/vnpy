@@ -285,6 +285,7 @@ class OrderRequest:
     def create_order_data(self, orderid: str, gateway_name: str):
         """
         Create order data from request.
+        根据请求创建订单数据
         """
         order = OrderData(
             symbol=self.symbol,
