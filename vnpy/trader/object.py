@@ -189,6 +189,26 @@ class PositionData(BaseData):
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
         self.vt_positionid = f"{self.vt_symbol}.{self.direction.value}"
 
+@dataclass
+class FundingData(BaseData):
+    """
+    Positon data is used for tracking each individual position holding.
+    """
+
+    symbol: str
+    exchange: Exchange
+    name: str
+    time: datetime
+
+    funding_rate: float = 0
+    indicative_funding_rate: float = 0
+    fair_price: float = 0
+    indicative_settle_price: float = 0
+
+    def __post_init__(self):
+        """"""
+        self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
+
 
 @dataclass
 class AccountData(BaseData):

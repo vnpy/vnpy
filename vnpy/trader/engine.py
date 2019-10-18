@@ -20,7 +20,8 @@ from .event import (
     EVENT_POSITION,
     EVENT_ACCOUNT,
     EVENT_CONTRACT,
-    EVENT_LOG
+    EVENT_LOG,
+    EVENT_FUNDING
 )
 from .gateway import BaseGateway
 from .object import (
@@ -334,6 +335,7 @@ class OmsEngine(BaseEngine):
         self.positions = {}
         self.accounts = {}
         self.contracts = {}
+        self.funding = {}
 
         self.active_orders = {}
 
@@ -355,6 +357,8 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_all_accounts = self.get_all_accounts
         self.main_engine.get_all_contracts = self.get_all_contracts
         self.main_engine.get_all_active_orders = self.get_all_active_orders
+        self.main_engine.get_funding = self.get_funding
+
 
     def register_event(self):
         """"""
@@ -364,11 +368,18 @@ class OmsEngine(BaseEngine):
         self.event_engine.register(EVENT_POSITION, self.process_position_event)
         self.event_engine.register(EVENT_ACCOUNT, self.process_account_event)
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
+        self.event_engine.register(EVENT_FUNDING, self.process_funding_event)
+
 
     def process_tick_event(self, event: Event):
         """"""
         tick = event.data
         self.ticks[tick.vt_symbol] = tick
+
+    def process_funding_event(self, event: Event):
+        """"""
+        funding = event.data
+        self.funding[funding.vt_symbol] = funding
 
     def process_order_event(self, event: Event):
         """"""
@@ -407,6 +418,12 @@ class OmsEngine(BaseEngine):
         Get latest market tick data by vt_symbol.
         """
         return self.ticks.get(vt_symbol, None)
+
+    def get_funding(self, vt_symbol):
+        """
+        Get latest market tick data by vt_symbol.
+        """
+        return self.funding.get(vt_symbol, None)
 
     def get_order(self, vt_orderid):
         """

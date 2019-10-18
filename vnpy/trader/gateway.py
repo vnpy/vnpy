@@ -15,11 +15,13 @@ from .event import (
     EVENT_ACCOUNT,
     EVENT_CONTRACT,
     EVENT_LOG,
+    EVENT_FUNDING
 )
 from .object import (
     TickData,
     OrderData,
     TradeData,
+    FundingData,
     PositionData,
     AccountData,
     ContractData,
@@ -119,6 +121,10 @@ class BaseGateway(ABC):
         """
         self.on_event(EVENT_POSITION, position)
         self.on_event(EVENT_POSITION + position.vt_symbol, position)
+
+    def on_funding(self, funding: FundingData):
+        self.on_event(EVENT_FUNDING, funding)
+        self.on_event(EVENT_FUNDING + funding.vt_symbol, funding)
 
     def on_account(self, account: AccountData):
         """

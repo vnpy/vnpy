@@ -36,7 +36,8 @@ from vnpy.trader.object import (
     OrderRequest,
     CancelRequest,
     SubscribeRequest,
-    HistoryRequest
+    HistoryRequest,
+    FundingData
 )
 
 REST_HOST = "https://www.bitmex.com/api/v1"
@@ -527,13 +528,16 @@ class BitmexWebsocketApi(WebsocketClient):
             "order": self.on_order,
             "position": self.on_position,
             "margin": self.on_account,
-            "instrument": self.on_contract,
+            # "instrument": self.on_contract,
+            "instrument": self.on_instrument,
+
         }
 
         self.ticks = {}
         self.accounts = {}
         self.orders = {}
         self.trades = set()
+        self.funding = {}
 
     def connect(
         self, key: str, secret: str, server: str, proxy_host: str, proxy_port: int
@@ -573,6 +577,7 @@ class BitmexWebsocketApi(WebsocketClient):
 
     def on_packet(self, packet: dict):
         """"""
+        # print(f"packet data {packet}")
         if "error" in packet:
             self.gateway.write_log("Websocket API报错：%s" % packet["error"])
 
@@ -643,6 +648,8 @@ class BitmexWebsocketApi(WebsocketClient):
         """"""
         symbol = d["symbol"]
         tick = self.ticks.get(symbol, None)
+
+
         if not tick:
             return
 
@@ -762,6 +769,14 @@ class BitmexWebsocketApi(WebsocketClient):
 
         self.gateway.on_account(copy(account))
 
+    def on_instrument(self, d):
+
+        if ("tickSize" in d) and (d["lotSize"] is not None):
+            self.on_contract(d)
+        if "indicativeFundingRate" in d or "fundingRate" in d or "fairPrice" in d:
+            print(f"instrument {d}")
+            self.on_funding(d)
+
     def on_contract(self, d):
         """"""
         if "tickSize" not in d:
@@ -784,3 +799,37 @@ class BitmexWebsocketApi(WebsocketClient):
         )
 
         self.gateway.on_contract(contract)
+
+    def on_funding(self, d):
+        """"""
+        symbol = d["symbol"]
+        if symbol not in ["XBTUSD", "ETHUSD"]:
+            return
+
+        funding = self.funding.get(symbol, None)
+        if not funding:
+            funding = FundingData(
+                symbol=d["symbol"],
+                exchange=Exchange.BITMEX,
+                time=datetime.strptime(d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                name=d["symbol"],
+                funding_rate=d["fundingRate"],
+                indicative_funding_rate=d["indicativeFundingRate"],
+                fair_price=d["fairPrice"],
+                indicative_settle_price=d["indicativeSettlePrice"],
+                gateway_name=self.gateway_name,
+
+            )
+            self.funding[d["symbol"]] = funding
+        if "fundingRate" in d:
+            funding.funding_rate = d["fundingRate"]
+        if "indicativeFundingRate" in d:
+            funding.indicative_funding_rate = d["indicativeFundingRate"]
+        if "fairPrice" in d:
+            print(f"show fairPrice {d}")
+            funding.fair_price = d["fairPrice"]
+            funding.indicative_settle_price = d["indicativeSettlePrice"]
+
+        funding.datetime = datetime.strptime(
+            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        self.gateway.on_funding(copy(funding))
