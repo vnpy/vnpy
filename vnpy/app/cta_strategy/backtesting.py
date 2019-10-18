@@ -114,6 +114,7 @@ class BacktestingEngine:
         self.pricetick = 0
         self.capital = 1_000_000
         self.mode = BacktestingMode.BAR
+        self.inverse = False
 
         self.strategy_class = None
         self.strategy = None
@@ -177,6 +178,7 @@ class BacktestingEngine:
         capital: int = 0,
         end: datetime = None,
         mode: BacktestingMode = BacktestingMode.BAR,
+        inverse: bool = False
     ):
         """"""
         self.mode = mode
@@ -191,14 +193,10 @@ class BacktestingEngine:
         self.symbol, exchange_str = self.vt_symbol.split(".")
         self.exchange = Exchange(exchange_str)
 
-        if capital:
-            self.capital = capital
-
-        if end:
-            self.end = end
-
-        if mode:
-            self.mode = mode
+        self.capital = capital
+        self.end = end
+        self.mode = mode
+        self.inverse = inverse
 
     def add_strategy(self, strategy_class: type, setting: dict):
         """"""
@@ -314,7 +312,12 @@ class BacktestingEngine:
 
         for daily_result in self.daily_results.values():
             daily_result.calculate_pnl(
-                pre_close, start_pos, self.size, self.rate, self.slippage
+                pre_close,
+                start_pos,
+                self.size,
+                self.rate,
+                self.slippage,
+                self.inverse
             )
 
             pre_close = daily_result.close_price
@@ -1093,6 +1096,7 @@ class DailyResult:
         size: int,
         rate: float,
         slippage: float,
+        inverse: bool
     ):
         """"""
         self.pre_close = pre_close
@@ -1100,8 +1104,13 @@ class DailyResult:
         # Holding pnl is the pnl from holding position at day start
         self.start_pos = start_pos
         self.end_pos = start_pos
-        self.holding_pnl = self.start_pos * \
-            (self.close_price - self.pre_close) * size
+
+        if not inverse:     # For normal contract
+            self.holding_pnl = self.start_pos * \
+                (self.close_price - self.pre_close) * size
+        else:               # For crypto currency inverse contract
+            self.holding_pnl = self.start_pos * \
+                (1 / self.pre_close - 1 / self.close_price) * size
 
         # Trading pnl is the pnl from new trade during the day
         self.trade_count = len(self.trades)
@@ -1112,14 +1121,23 @@ class DailyResult:
             else:
                 pos_change = -trade.volume
 
-            turnover = trade.price * trade.volume * size
-
-            self.trading_pnl += pos_change * \
-                (self.close_price - trade.price) * size
             self.end_pos += pos_change
+
+            # For normal contract
+            if not inverse:
+                turnover = trade.volume * size * trade.price
+                self.trading_pnl += pos_change * \
+                    (self.close_price - trade.price) * size
+                self.slippage += trade.volume * size * slippage
+            # For crypto currency inverse contract
+            else:
+                turnover = trade.volume * size / trade.price
+                self.trading_pnl += pos_change * \
+                    (1 / trade.price - 1 / self.close_price) * size
+                self.slippage += trade.volume * size * slippage / (trade.price ** 2)
+
             self.turnover += turnover
             self.commission += turnover * rate
-            self.slippage += trade.volume * size * slippage
 
         # Net pnl takes account of commission and slippage cost
         self.total_pnl = self.trading_pnl + self.holding_pnl
