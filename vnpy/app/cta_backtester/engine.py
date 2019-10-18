@@ -133,6 +133,7 @@ class BacktesterEngine(BaseEngine):
         size: int,
         pricetick: float,
         capital: int,
+        inverse: bool,
         setting: dict
     ):
         """"""
@@ -151,7 +152,8 @@ class BacktesterEngine(BaseEngine):
             slippage=slippage,
             size=size,
             pricetick=pricetick,
-            capital=capital
+            capital=capital,
+            inverse=inverse
         )
 
         strategy_class = self.classes[class_name]
@@ -184,6 +186,7 @@ class BacktesterEngine(BaseEngine):
         size: int,
         pricetick: float,
         capital: int,
+        inverse: bool,
         setting: dict
     ):
         if self.thread:
@@ -204,6 +207,7 @@ class BacktesterEngine(BaseEngine):
                 size,
                 pricetick,
                 capital,
+                inverse,
                 setting
             )
         )
@@ -240,6 +244,7 @@ class BacktesterEngine(BaseEngine):
         size: int,
         pricetick: float,
         capital: int,
+        inverse: bool,
         optimization_setting: OptimizationSetting,
         use_ga: bool
     ):
@@ -263,7 +268,8 @@ class BacktesterEngine(BaseEngine):
             slippage=slippage,
             size=size,
             pricetick=pricetick,
-            capital=capital
+            capital=capital,
+            inverse=inverse
         )
 
         strategy_class = self.classes[class_name]
@@ -303,6 +309,7 @@ class BacktesterEngine(BaseEngine):
         size: int,
         pricetick: float,
         capital: int,
+        inverse: bool,
         optimization_setting: OptimizationSetting,
         use_ga: bool
     ):
@@ -324,6 +331,7 @@ class BacktesterEngine(BaseEngine):
                 size,
                 pricetick,
                 capital,
+                inverse,
                 optimization_setting,
                 use_ga
             )

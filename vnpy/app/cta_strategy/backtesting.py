@@ -1157,7 +1157,8 @@ def optimize(
     pricetick: float,
     capital: int,
     end: datetime,
-    mode: BacktestingMode
+    mode: BacktestingMode,
+    inverse: bool
 ):
     """
     Function for running in multiprocessing.pool
@@ -1174,7 +1175,8 @@ def optimize(
         pricetick=pricetick,
         capital=capital,
         end=end,
-        mode=mode
+        mode=mode,
+        inverse=inverse
     )
 
     engine.add_strategy(strategy_class, setting)
