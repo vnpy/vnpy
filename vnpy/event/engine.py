@@ -56,22 +56,25 @@ class EventEngine:
         """
         ### 作用：初始化事件管理器
         self._interval = interval
-        self._queue = Queue()  # 线程队列
-        self._active = False  # 事件驱动开关
-        self._thread = Thread(target=self._run)
-        self._timer = Thread(target=self._run_timer)
-        self._handlers = defaultdict(list)
+        self._queue = Queue()  # 事件队列
+        self._active = False  # 事件引擎开关
+        self._thread = Thread(target=self._run)  # 事件处理线程
+        self._timer = Thread(target=self._run_timer)  # 计时器用于触发计时器事件
+        # 这里的_handlers是一个字典，用来保存对应的事件调用关系
+        # 其中每个键对应的值是一个列表，列表中保存了对该事件进行监听的函数功能
+        self._handlers = defaultdict(list)  # 一个字典
         self._general_handlers = []
 
     def _run(self):
         """
         Get event from queue and then process it.
-        从队列中获取事件，然后对其进行处理
+        从队列中循环获取事件，然后对其进行处理
         """
         while self._active:
             try:
+                # 每1秒从队列里获取一次事件
                 event = self._queue.get(block=True, timeout=1)
-                self._process(event)
+                self._process(event)  # 生成一个变量
             except Empty:
                 pass
 
@@ -87,36 +90,42 @@ class EventEngine:
         然后甚至分发给那些侦听所有类型的常规处理程序。
 
         """
+        # 检查是否存在对该事件进行监听处理函数
         if event.type in self._handlers:
+            # 若存在，则按顺序将事件传递给处理函数执行
             [handler(event) for handler in self._handlers[event.type]]
-
+        # 检查是否存在常规线程的处理函数
         if self._general_handlers:
+            # 同上
             [handler(event) for handler in self._general_handlers]
 
     def _run_timer(self):
         """
         Sleep by interval second(s) and then generate a timer event.
+        以间隔秒为单位休眠，然后生成一个计时器事件
         """
         while self._active:
-            sleep(self._interval)
-            event = Event(EVENT_TIMER)
-            self.put(event)
+            sleep(self._interval)  # 阻塞时间，默认设置1秒，可以在初始化的时候更改
+            event = Event(EVENT_TIMER)  # 创建计时器事件
+            self.put(event)  # 向队列中存入计时器事件
 
     def start(self):
         """
         Start event engine to process events and generate timer events.
+        启动事件引擎以处理事件并生成计时器事件
         """
-        self._active = True
-        self._thread.start()
-        self._timer.start()
+        self._active = True  # 将事件引擎设置为启动
+        self._thread.start()  # 启动事件引擎
+        self._timer.start()  # 启动计时器，默认为1秒
 
     def stop(self):
         """
         Stop event engine.
+        停止事件引擎
         """
-        self._active = False
-        self._timer.join()
-        self._thread.join()
+        self._active = False  # 将引擎设置为停止
+        self._timer.join()  # 停止计时器
+        self._thread.join()  # 停止事件引擎线程
 
     def put(self, event: Event):
         """
@@ -131,20 +140,24 @@ class EventEngine:
         function can only be registered once for each event type.
         为特定事件类型注册新的处理函数。对于每种事件类型，每个功能只能注册一次。
         """
+
+        # 获取该事件类型对应的处理函数列表
         handler_list = self._handlers[type]
+        # 如果不在列表中，则添加进去
         if handler not in handler_list:
             handler_list.append(handler)
 
     def unregister(self, type: str, handler: HandlerType):
         """
         Unregister an existing handler function from event engine.
-        从事件引擎中注销现有的处理函数。
+        从事件引擎中注销现有事件的处理函数。
         """
-        handler_list = self._handlers[type]
 
+        handler_list = self._handlers[type]
+        # 如果存在该事件，则移除
         if handler in handler_list:
             handler_list.remove(handler)
-
+        # 如果不存在该事件，则移除该事件类型
         if not handler_list:
             self._handlers.pop(type)
 
