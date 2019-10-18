@@ -1099,7 +1099,12 @@ class DailyResult:
         inverse: bool
     ):
         """"""
-        self.pre_close = pre_close
+        # If no pre_close provided on the first day,
+        # use value 1 to avoid zero division error
+        if pre_close:
+            self.pre_close = pre_close
+        else:
+            self.pre_close = 1
 
         # Holding pnl is the pnl from holding position at day start
         self.start_pos = start_pos
