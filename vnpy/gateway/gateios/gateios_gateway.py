@@ -49,7 +49,7 @@ TIMEDELTA_MAP = {
 }
 
 
-class GateiofGateway(BaseGateway):
+class GateiosGateway(BaseGateway):
     """
     VN Trader Gateway for Gate.io future connection.
     """
@@ -69,8 +69,8 @@ class GateiofGateway(BaseGateway):
         super().__init__(event_engine, "GATEIOS")
         self.order_manager = LocalOrderManager(self)
 
-        self.ws_api = GateiofWebsocketApi(self)
-        self.rest_api = GateiofRestApi(self)
+        self.ws_api = GateiosWebsocketApi(self)
+        self.rest_api = GateiosRestApi(self)
 
     def connect(self, setting: dict):
         """"""
@@ -128,9 +128,9 @@ class GateiofGateway(BaseGateway):
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
 
-class GateiofRestApi(RestClient):
+class GateiosRestApi(RestClient):
     """
-    Gateiof REST API
+    Gateios REST API
     """
 
     def __init__(self, gateway: BaseGateway):
@@ -455,7 +455,6 @@ class GateiofRestApi(RestClient):
         self.gateway.on_order(order)
 
         msg = f"委托失败，状态码：{status_code}，信息：{request.response.text}"
-
         self.gateway.write_log(msg)
 
     def on_send_order_error(
@@ -478,40 +477,28 @@ class GateiofRestApi(RestClient):
         local_orderid = cancel_request.orderid
         order = self.order_manager.get_order_with_local_orderid(local_orderid)
 
-        if self.check_error(data, "撤单"):
-            order.status = Status.REJECTED
+        if data["status"] == "error":
+            error_code = data["err_code"]
+            error_msg = data["err_msg"]
+            self.gateway.write_log(f"撤单失败，错误代码：{error_code}，信息：{error_msg}")
         else:
             order.status = Status.CANCELLED
-            self.gateway.write_log(f"委托撤单成功：{order.orderid}")
-
-        self.order_manager.on_order(order)
+            self.order_manager.on_order(order)
 
     def on_cancel_order_failed(self, status_code: str, request: Request):
         """
         Callback when canceling order failed on server.
         """
-
         msg = f"撤单失败，状态码：{status_code}，信息：{request.response.text}"
         self.gateway.write_log(msg)
 
-    def check_error(self, data: dict, func: str = ""):
-        """"""
-        if data["status"] != "error":
-            return False
 
-        error_code = data["err_code"]
-        error_msg = data["err_msg"]
-
-        self.gateway.write_log(f"{func}请求出错，代码：{error_code}，信息：{error_msg}")
-        return True
-
-
-class GateiofWebsocketApi(WebsocketClient):
+class GateiosWebsocketApi(WebsocketClient):
     """"""
 
     def __init__(self, gateway):
         """"""
-        super(GateiofWebsocketApi, self).__init__()
+        super(GateiosWebsocketApi, self).__init__()
 
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
@@ -545,7 +532,7 @@ class GateiofWebsocketApi(WebsocketClient):
             self.init(WEBSOCKET_HOST, proxy_host, proxy_port)
         else:
             self.init(TESTNET_WEBSOCKET_HOST, proxy_host, proxy_port)
-        
+
         self.start()
 
     def on_connected(self):
@@ -553,14 +540,14 @@ class GateiofWebsocketApi(WebsocketClient):
         self.gateway.write_log("Websocket API连接成功")
 
         for symbol in self.symbols:
-            update_order = self.construct_req(
+            update_order = self.generate_req(
                 channel="futures.orders",
                 event="subscribe",
                 pay_load=[self.account_id, symbol]
             )
             self.send_packet(update_order)
 
-            update_position = self.construct_req(
+            update_position = self.generate_req(
                 channel="futures.position_closes",
                 event="subscribe",
                 pay_load=[self.account_id, symbol]
@@ -580,27 +567,19 @@ class GateiofWebsocketApi(WebsocketClient):
         )
         self.ticks[req.symbol] = tick
 
-        self.subscribe_data(req.symbol)
-
-    def subscribe_data(self, symbol: str):
-        """"""
-        update_tick = self.construct_req(
+        tick_req = self.generate_req(
             channel="futures.tickers",
             event="subscribe",
-            pay_load=[symbol]
+            pay_load=[req.symbol]
         )
-        self.send_packet(update_tick)
+        self.send_packet(tick_req)
 
-        update_depth = self.construct_req(
+        depth_req = self.generate_req(
             channel="futures.order_book",
             event="subscribe",
-            pay_load=[symbol, "5", "0"]
+            pay_load=[req.symbol, "5", "0"]
         )
-        self.send_packet(update_depth)
-
-    def update_info(self, symbol: str, account_id: str):
-        """"""
-        
+        self.send_packet(depth_req)
 
     def on_disconnected(self):
         """"""
@@ -608,7 +587,6 @@ class GateiofWebsocketApi(WebsocketClient):
 
     def on_packet(self, packet: dict):
         """"""
-
         timestamp = packet["time"]
         channel = packet["channel"]
         event = packet["event"]
@@ -619,14 +597,14 @@ class GateiofWebsocketApi(WebsocketClient):
             self.gateway.write_log("Websocket API报错：%s" % error)
             return
 
+        print(packet)
+
         if channel == "futures.tickers":
             if event == "update":
                 self.on_tick(result, timestamp)
-
         elif channel == "futures.order_book":
             if event == "all":
                 self.on_depth(result, timestamp)
-
         elif channel == "futures.orders":
             if event == "update":
                 self.on_order(result, timestamp)
@@ -639,11 +617,10 @@ class GateiofWebsocketApi(WebsocketClient):
         sys.stderr.write(self.exception_detail(
             exception_type, exception_value, tb))
 
-    def construct_req(self, channel: str, event: str, pay_load: list):
+    def generate_req(self, channel: str, event: str, pay_load: list):
         """"""
         expires = int(time.time())
-        signature = generate_websocket_sign(
-            self.secret, channel, event, expires)
+        signature = generate_websocket_sign(self.secret, channel, event, expires)
 
         req = {
             "time": expires,
@@ -661,7 +638,6 @@ class GateiofWebsocketApi(WebsocketClient):
 
     def on_tick(self, l: list, t: int):
         """"""
-
         d = l[0]
         symbol = d["contract"]
         tick = self.ticks.get(symbol, None)

@@ -1,1 +1,1 @@
-from .gateiof_gateway import GateiofGateway
+from .gateios_gateway import GateiosGateway
