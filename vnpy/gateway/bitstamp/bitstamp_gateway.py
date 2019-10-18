@@ -114,7 +114,7 @@ class BitstampGateway(BaseGateway):
 
     def cancel_order(self, req: CancelRequest):
         """"""
-        self.order_manager.cancel_order(req)
+        self.rest_api.cancel_order(req)
 
     def query_account(self):
         """"""

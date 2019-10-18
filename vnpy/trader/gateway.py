@@ -287,6 +287,10 @@ class LocalOrderManager:
         # Cancel request buf
         self.cancel_request_buf = {}    # local_orderid:req
 
+        # Hook cancel order function
+        self._cancel_order = gateway.cancel_order
+        gateway.cancel_order = self.cancel_order
+
     def new_local_orderid(self):
         """
         Generate a new local orderid.
@@ -369,7 +373,7 @@ class LocalOrderManager:
             self.cancel_request_buf[req.orderid] = req
             return
 
-        self.gateway.cancel_order(req)
+        self._cancel_order(req)
 
     def check_cancel_request(self, local_orderid: str):
         """
