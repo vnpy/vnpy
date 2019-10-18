@@ -668,8 +668,6 @@ class BitmexWebsocketApi(WebsocketClient):
             tick.__setattr__("ask_price_%s" % (n + 1), price)
             tick.__setattr__("ask_volume_%s" % (n + 1), volume)
 
-        tick.datetime = datetime.strptime(
-            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
         self.gateway.on_tick(copy(tick))
 
     def on_trade(self, d):
