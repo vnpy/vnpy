@@ -10,6 +10,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import urlencode
+from typing import List
 
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
@@ -22,6 +23,7 @@ from vnpy.trader.object import (AccountData, BarData, CancelRequest,
                                 ContractData, HistoryRequest, OrderData,
                                 OrderRequest, PositionData, SubscribeRequest,
                                 TickData, TradeData)
+
 
 TESTNET_REST_HOST = "https://fx-api-testnet.gateio.ws/"
 REST_HOST = "https://api.gateio.ws"
@@ -55,7 +57,6 @@ class GateiofGateway(BaseGateway):
     default_setting = {
         "API Key": "",
         "Secret Key": "",
-        "会话数": 3,
         "服务器": ["REAL", "TESTNET"],
         "代理地址": "",
         "代理端口": "",
@@ -65,7 +66,7 @@ class GateiofGateway(BaseGateway):
 
     def __init__(self, event_engine):
         """Constructor"""
-        super(GateiofGateway, self).__init__(event_engine, "GATEIO")
+        super().__init__(event_engine, "GATEIOS")
         self.order_manager = LocalOrderManager(self)
 
         self.ws_api = GateiofWebsocketApi(self)
@@ -75,7 +76,6 @@ class GateiofGateway(BaseGateway):
         """"""
         key = setting["API Key"]
         secret = setting["Secret Key"]
-        session_number = setting["会话数"]
         server = setting["服务器"]
         proxy_host = setting["代理地址"]
         proxy_port = setting["代理端口"]
@@ -85,13 +85,9 @@ class GateiofGateway(BaseGateway):
         else:
             proxy_port = 0
 
-        self.rest_api.connect(key, secret, session_number, server,
-                              proxy_host, proxy_port)
-        self.ws_api.connect(key, secret, server, proxy_host, proxy_port)
+        self.rest_api.connect(key, secret, server, proxy_host, proxy_port)
 
-        self.query_account()
-        self.query_position()
-        self.cycle_query()
+        self.init_query()
 
     def subscribe(self, req: SubscribeRequest):
         """"""
@@ -103,7 +99,7 @@ class GateiofGateway(BaseGateway):
 
     def cancel_order(self, req: CancelRequest):
         """"""
-        self.rest_api.cancel_order(req)
+        self.order_manager.cancel_order(req)
 
     def query_account(self):
         """"""
@@ -124,17 +120,11 @@ class GateiofGateway(BaseGateway):
 
     def process_timer_event(self, event: Event):
         """"""
-        if self.rest_api.cycle_query:
-            self.count += 1
-            if self.count < 3:
-                return
+        self.query_account()
+        self.query_position()
 
-            self.query_account()
-            self.query_position()
-
-    def cycle_query(self):
+    def init_query(self):
         """"""
-        self.count = 0
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
 
@@ -150,28 +140,22 @@ class GateiofRestApi(RestClient):
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
         self.order_manager = gateway.order_manager
-        self.ws_api = self.gateway.ws_api
+        self.ws_api = gateway.ws_api
 
         self.key = ""
         self.secret = ""
         self.account_id = ""
+        self.server = ""
+        self.proxy_host = ""
+        self.proxy_port = 0
 
-        self.order_count = 10000
-        self.trade_count = 0
-        self.order_count_lock = Lock()
-        self.connect_date = 0
-
-        self.contracts = []
-
-        self.cycle_query = False
-        self.contract_query = False
+        self.symbols = []
 
     def sign(self, request):
         """
         Generate HBDM signature.
         """
-
-        headers_with_signature = generate_sign(
+        request.headers = generate_sign(
             self.key,
             self.secret,
             request.method,
@@ -179,14 +163,6 @@ class GateiofRestApi(RestClient):
             get_params=request.params,
             get_data=request.data
         )
-
-        request.headers = headers_with_signature
-
-        # if request.params:
-        #     query = urlencode(request.params)
-        #     path = request.path + "?" + query
-        # else:
-        #     path = request.path
 
         if not request.data:
             request.data = ""
@@ -197,7 +173,6 @@ class GateiofRestApi(RestClient):
         self,
         key: str,
         secret: str,
-        session_number: int,
         server: str,
         proxy_host: str,
         proxy_port: int
@@ -207,6 +182,9 @@ class GateiofRestApi(RestClient):
         """
         self.key = key
         self.secret = secret
+        self.server = server
+        self.proxy_host = proxy_host
+        self.proxy_port = proxy_port
 
         self.connect_date = int(datetime.now().strftime("%y%m%d"))
 
@@ -215,7 +193,7 @@ class GateiofRestApi(RestClient):
         else:
             self.init(TESTNET_REST_HOST, proxy_host, proxy_port)
 
-        self.start(session_number)
+        self.start(3)
 
         self.gateway.write_log("REST API启动成功")
 
@@ -237,7 +215,7 @@ class GateiofRestApi(RestClient):
 
     def query_order(self):
         """"""
-        for contract in self.contracts:
+        for contract in self.symbols:
             params = {
                 "contract": contract,
                 "status": "open",
@@ -249,14 +227,6 @@ class GateiofRestApi(RestClient):
                 callback=self.on_query_order,
                 params=params
             )
-
-    def query_trade(self):
-        """"""
-        self.add_request(
-            method="GET",
-            path="/api/v4/futures/my_trades",
-            callback=self.on_query_trade
-        )
 
     def query_contract(self):
         """"""
@@ -315,22 +285,13 @@ class GateiofRestApi(RestClient):
 
         return history
 
-    def new_local_orderid(self):
-        """"""
-        with self.order_count_lock:
-            self.order_count += 1
-            local_orderid = f"{self.connect_date}{self.order_count}"
-            return local_orderid
-
     def send_order(self, req: OrderRequest):
         """"""
-        local_orderid = self.new_local_orderid()
-
+        local_orderid = self.order_manager.new_local_orderid()
         order = req.create_order_data(
             local_orderid,
             self.gateway_name
         )
-
         order.time = datetime.now().strftime("%H:%M:%S")
 
         if req.direction == Direction.SHORT:
@@ -386,18 +347,16 @@ class GateiofRestApi(RestClient):
         )
         self.gateway.on_account(account)
 
-        if not self.contract_query:
+        if not self.symbols:
             self.query_contract()
 
     def on_query_position(self, data, request):
         """"""
         for d in data:
-            volume = float(d["size"])
-
             position = PositionData(
                 symbol=d["contract"],
                 exchange=Exchange.GATEIO,
-                volume=volume,
+                volume=float(d["size"]),
                 direction=Direction.NET,
                 price=float(d["entry_price"]),
                 pnl=float(d["unrealised_pnl"]),
@@ -405,49 +364,9 @@ class GateiofRestApi(RestClient):
             )
             self.gateway.on_position(position)
 
-    def on_query_trade(self, data, request):
-        """"""
-        data = list(
-            reversed(data)
-        )
-
-        for d in data:
-            local_orderid = self.new_local_orderid()
-            self.trade_count += 1
-
-            volume = d["size"]
-            if volume > 0:
-                direction = Direction.LONG
-            else:
-                direction = Direction.SHORT
-
-            dt = datetime.fromtimestamp(d["create_time"]).strftime("%H:%M:%S")
-
-            trade = TradeData(
-                symbol=d["contract"],
-                exchange=Exchange.GATEIO,
-                orderid=local_orderid,
-                tradeid=str(self.trade_count).rjust(8, "0"),
-                direction=direction,
-                price=d["price"],
-                volume=abs(volume),
-                time=dt,
-                gateway_name=self.gateway_name,
-            )
-            self.gateway.on_trade(trade)
-
-        self.gateway.write_log("成交查询成功")
-        self.ws_api.trade_count = self.trade_count
-        self.query_order()
-
     def on_query_order(self, data, request):
-
         """"""
-        if not data:
-            return
-
         for d in data:
-
             local_orderid = self.new_local_orderid()
             sys_orderid = str(d["id"])
 
@@ -461,8 +380,8 @@ class GateiofRestApi(RestClient):
                 direction = Direction.LONG
             else:
                 direction = Direction.SHORT
-            
-            dt = datetime.fromtimestamp(d["create_time"]).strftime("%H:%M:%S")
+
+            dt = datetime.fromtimestamp(d["create_time"])
 
             order = OrderData(
                 orderid=local_orderid,
@@ -473,7 +392,7 @@ class GateiofRestApi(RestClient):
                 type=OrderType.LIMIT,
                 direction=direction,
                 status=STATUS_GATEIO2VT[d["status"]],
-                time=dt,
+                time=dt.strftime("%H:%M:%S"),
                 gateway_name=self.gateway_name,
             )
             self.order_manager.on_order(order)
@@ -484,7 +403,7 @@ class GateiofRestApi(RestClient):
         """"""
         for d in data:
             symbol = d["name"]
-            self.contracts.append(symbol)
+            self.symbols.append(symbol)
 
             contract = ContractData(
                 symbol=symbol,
@@ -501,23 +420,22 @@ class GateiofRestApi(RestClient):
 
         self.gateway.write_log("合约信息查询成功")
 
-        self.contract_query = True
-
-        self.query_trade()
-        self.update_info(self.contracts, self.account_id)
-
-    def update_info(self, symbols, account_id):
-        """"""
-        self.cycle_query = True
-
-        for symbol in symbols:                                               
-            self.ws_api.update_info(symbol, account_id)
+        # Connect websocket api after account id and contract symbols collected
+        self.ws_api.connect(
+            self.key,
+            self.secret,
+            self.server,
+            self.proxy_host,
+            self.proxy_port,
+            self.account_id,
+            self.symbols
+        )
 
     def on_send_order(self, data, request):
         """"""
         order = request.extra
         order.status = STATUS_GATEIO2VT[data["status"]]
-        
+
         if order.status == Status.ALLTRADED:
             order.traded = order.volume
 
@@ -602,8 +520,9 @@ class GateiofWebsocketApi(WebsocketClient):
         self.key = ""
         self.secret = ""
         self.account_id = ""
-        self.trade_count = 0
+        self.symbols = []
 
+        self.trade_count = 0
         self.ticks = {}
 
     def connect(
@@ -612,21 +531,41 @@ class GateiofWebsocketApi(WebsocketClient):
         secret: str,
         server: str,
         proxy_host: str,
-        proxy_port: int
+        proxy_port: int,
+        account_id: str,
+        symbols: List[str]
     ):
         """"""
         self.key = key
         self.secret = secret
+        self.account_id = account_id
+        self.symbols = symbols
 
         if server == "REAL":
             self.init(WEBSOCKET_HOST, proxy_host, proxy_port)
         else:
             self.init(TESTNET_WEBSOCKET_HOST, proxy_host, proxy_port)
+        
         self.start()
 
     def on_connected(self):
         """"""
         self.gateway.write_log("Websocket API连接成功")
+
+        for symbol in self.symbols:
+            update_order = self.construct_req(
+                channel="futures.orders",
+                event="subscribe",
+                pay_load=[self.account_id, symbol]
+            )
+            self.send_packet(update_order)
+
+            update_position = self.construct_req(
+                channel="futures.position_closes",
+                event="subscribe",
+                pay_load=[self.account_id, symbol]
+            )
+            self.send_packet(update_position)
 
     def subscribe(self, req: SubscribeRequest):
         """
@@ -661,20 +600,7 @@ class GateiofWebsocketApi(WebsocketClient):
 
     def update_info(self, symbol: str, account_id: str):
         """"""
-
-        update_order = self.construct_req(
-            channel="futures.orders",
-            event="subscribe",
-            pay_load=[account_id, symbol]
-        )
-        self.send_packet(update_order)
-
-        update_position = self.construct_req(
-            channel="futures.position_closes",
-            event="subscribe",
-            pay_load=[account_id, symbol]
-        )
-        self.send_packet(update_position)
+        
 
     def on_disconnected(self):
         """"""
@@ -809,7 +735,7 @@ class GateiofWebsocketApi(WebsocketClient):
                 price=float(d["fill_price"]),
                 volume=order.volume,
                 time=order.time,
-                gateway_name=self.gateway_name,                
+                gateway_name=self.gateway_name,
             )
             self.gateway.on_trade(trade)
 
@@ -841,7 +767,7 @@ def generate_sign(key, secret, method, path, get_params=None, get_data=None):
         "Timestamp": str(timestamp),
         "SIGN": signature
     }
-        
+
     return headers
 
 
