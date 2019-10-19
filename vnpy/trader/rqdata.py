@@ -57,7 +57,7 @@ class RqdataClient:
         )
 
         try:
-            df = rqdata_all_instruments(date=datetime.now())
+            df = rqdata_all_instruments()
             for ix, row in df.iterrows():
                 self.symbols.add(row['order_book_id'])
         except (RuntimeError, AuthenticationFailed):
