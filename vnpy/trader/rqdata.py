@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import List
 
 from rqdatac import init as rqdata_init

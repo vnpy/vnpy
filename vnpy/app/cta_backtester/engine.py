@@ -45,8 +45,6 @@ class BacktesterEngine(BaseEngine):
         # Optimization result
         self.result_values = None
 
-        self.load_strategy_class()
-
     def init_engine(self):
         """"""
         self.write_log("初始化CTA回测引擎")
@@ -55,6 +53,7 @@ class BacktesterEngine(BaseEngine):
         # Redirect log from backtesting engine outside.
         self.backtesting_engine.output = self.write_log
 
+        self.load_strategy_class()
         self.write_log("策略文件加载完成")
 
         self.init_rqdata()
