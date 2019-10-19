@@ -38,13 +38,37 @@ HandlerType = Callable[[Event], None]
 
 class EventEngine:
     """
-    Event engine distributes event object based on its type
-    to those handlers registered.
+    事件驱动引擎
+    事件驱动引擎中所有的变量都设置为了私有，这是为了防止不小心
+    从外部修改了这些变量的值或状态，导致bug。
 
-    It also generates timer event by every interval seconds,
-    which can be used for timing purpose.
-    事件引擎根据事件对象的类型将其分配给已注册的处理程序。
-    它还每间隔数秒生成一次计时器事件，可用于计时目的。（数秒自己定义）
+    变量说明
+    __queue：私有变量，事件队列
+    __active：私有变量，事件引擎开关
+    __thread：私有变量，事件处理线程
+    __timer：私有变量，计时器
+    __handlers：私有变量，事件处理函数字典
+
+
+    方法说明
+    __run: 私有方法，事件处理线程连续运行用
+    __process: 私有方法，处理事件，调用注册在引擎中的监听函数
+    __onTimer：私有方法，计时器固定事件间隔触发后，向事件队列中存入计时器事件
+    start: 公共方法，启动引擎
+    stop：公共方法，停止引擎
+    register：公共方法，向引擎中注册监听函数
+    unregister：公共方法，向引擎中注销监听函数
+    put：公共方法，向事件队列中存入新的事件
+
+    事件监听函数必须定义为输入参数仅为一个event对象，即：
+
+    函数
+    def func(event)
+        ...
+
+    对象方法
+    def method(self, event)
+        ...
 
     """
 
@@ -55,7 +79,7 @@ class EventEngine:
         如果未指定时间间隔，则默认情况下每1秒生成一次计时器事件。
         """
         ### 作用：初始化事件管理器
-        self._interval = interval
+        self._interval = interval  # 事件周期
         self._queue = Queue()  # 事件队列
         self._active = False  # 事件引擎开关
         self._thread = Thread(target=self._run)  # 事件处理线程
@@ -63,6 +87,7 @@ class EventEngine:
         # 这里的_handlers是一个字典，用来保存对应的事件调用关系
         # 其中每个键对应的值是一个列表，列表中保存了对该事件进行监听的函数功能
         self._handlers = defaultdict(list)  # 一个字典
+        # _general_handlers是一个列表，用来保存通用回调函数（所有事件均调用）
         self._general_handlers = []
 
     def _run(self):
@@ -94,6 +119,11 @@ class EventEngine:
         if event.type in self._handlers:
             # 若存在，则按顺序将事件传递给处理函数执行
             [handler(event) for handler in self._handlers[event.type]]
+
+            # 以上语句为Python列表解析方式的写法，对应的常规循环写法为：
+            # for handler in self._handlers[event.type]:
+                # handler(event)
+
         # 检查是否存在常规线程的处理函数
         if self._general_handlers:
             # 同上
