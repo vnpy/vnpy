@@ -42,8 +42,7 @@ from .utility import get_folder_path, TRADER_DIR
 
 class MainEngine:
     """
-    Acts as the core of VN Trader.
-    VN Trader的核心。
+    主引擎，负责对API的调度
     """
 
     def __init__(self, event_engine: EventEngine = None):
@@ -52,15 +51,15 @@ class MainEngine:
             self.event_engine = event_engine
         else:
             self.event_engine = EventEngine()
-        self.event_engine.start()
+        self.event_engine.start()  # 事件驱动引擎启动，默认阻塞事件为1秒
 
-        self.gateways = {}
-        self.engines = {}
-        self.apps = {}
-        self.exchanges = []
+        self.gateways = {}  # 一个gateways字典
+        self.engines = {}  # 一个engines字典
+        self.apps = {}  # 一个app字典
+        self.exchanges = []  # 交易所列表
 
-        os.chdir(TRADER_DIR)  # Change working directory
-        self.init_engines()  # Initialize function engines
+        os.chdir(TRADER_DIR)  # Change working directory，更改工作目录
+        self.init_engines()  # Initialize function engines，初始化功能引擎
 
     def add_engine(self, engine_class: Any):
         """
@@ -74,12 +73,12 @@ class MainEngine:
     def add_gateway(self, gateway_class: Type[BaseGateway]):
         """
         Add gateway.
-        添加交易所方法
+        添加交易所方法，底层机构
         这个函数的作用是传入CTPGateway，将传入的CTPGateway实例化（将event_engine作为参数，将存入self.gateways这个字典中，最后返回CTPGateway实例）
         """
         #  这里得到一个gateway_class（是CTPGateway之类，不是BaseGateway）的实例，实例的参数是init MainEngine的时候传入的event_engine
 
-        # 调用上面的实例的gateway_name属性，并作为字典的键 37
+        # 调用上面的实例的gateway_name属性，并作为字典的键
         gateway = gateway_class(self.event_engine)
         # 这里得到了gateways字典，在下面的get_gateway函数要用，取出gateway。
         self.gateways[gateway.gateway_name] = gateway
@@ -97,6 +96,7 @@ class MainEngine:
     def add_app(self, app_class: Type[BaseApp]):
         """
         Add app.
+        添加上层应用
         """
         app = app_class()
         self.apps[app.app_name] = app
