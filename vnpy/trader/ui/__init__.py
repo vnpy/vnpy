@@ -27,6 +27,7 @@ def excepthook(exctype, value, tb):
 def create_qapp(app_name: str = "VN Trader"):
     """
     Create Qt Application.
+    创建PyQt应用对象
     """
     sys.excepthook = excepthook
 
