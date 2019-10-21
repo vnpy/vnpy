@@ -1,61 +1,116 @@
 """"""
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Dict, List, Tuple
+import hashlib
+import hmac
+import time
+import sys
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Callable
+from threading import Lock
+from copy import copy
 
-from vnpy.event import Event
-from vnpy.gateway.bybit.rest_api import BybitRestApi, HistoryDataNextInfo
-from vnpy.gateway.bybit.websocket_api import BybitWebsocketApi
-from vnpy.trader.constant import (Exchange, Interval, OrderType)
+from requests import ConnectionError
+
+from vnpy.api.websocket import WebsocketClient
+from vnpy.api.rest import Request, RestClient
+from vnpy.trader.constant import (
+    Exchange,
+    Interval,
+    OrderType,
+    Product,
+    Status,
+    Direction
+)
+from vnpy.trader.object import (
+    AccountData,
+    BarData,
+    TickData,
+    OrderData,
+    TradeData,
+    ContractData,
+    PositionData,
+    HistoryRequest,
+    SubscribeRequest,
+    CancelRequest,
+    OrderRequest
+)
 from vnpy.trader.event import EVENT_TIMER
-from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.object import (BarData, CancelRequest, HistoryRequest, OrderData, OrderRequest,
-                                PositionData, SubscribeRequest, TickData)
-from .common import (DIRECTION_BYBIT2VT, INTERVAL_VT2BYBIT_INT, OPPOSITE_DIRECTION,
-                     ORDER_TYPE_BYBIT2VT, STATUS_BYBIT2VT, STOP_ORDER_STATUS_BYBIT2VT, local_tz,
-                     parse_datetime, utc_tz)
+from vnpy.trader.gateway import BaseGateway, LocalOrderManager
 
 
-@dataclass()
-class HistoryDataInfo:
-    bars: List[BarData]
-    extra: Any
+STATUS_BYBIT2VT = {
+    "Created": Status.NOTTRADED,
+    "New": Status.NOTTRADED,
+    "PartiallyFilled": Status.PARTTRADED,
+    "Filled": Status.ALLTRADED,
+    "Cancelled": Status.CANCELLED,
+    "Rejected": Status.REJECTED,
+}
+
+DIRECTION_VT2BYBIT = {Direction.LONG: "Buy", Direction.SHORT: "Sell"}
+DIRECTION_BYBIT2VT = {v: k for k, v in DIRECTION_VT2BYBIT.items()}
+
+OPPOSITE_DIRECTION = {
+    Direction.LONG: Direction.SHORT,
+    Direction.SHORT: Direction.LONG,
+}
+
+ORDER_TYPE_VT2BYBIT = {
+    OrderType.LIMIT: "Limit",
+    OrderType.MARKET: "Market",
+}
+ORDER_TYPE_BYBIT2VT = {v: k for k, v in ORDER_TYPE_VT2BYBIT.items()}
+
+INTERVAL_VT2BYBIT = {
+    Interval.MINUTE: "1",
+    Interval.HOUR: "60",
+    Interval.DAILY: "D",
+    Interval.WEEKLY: "W",
+}
+
+TIMEDELTA_MAP = {
+    Interval.MINUTE: timedelta(minutes=1),
+    Interval.HOUR: timedelta(hours=1),
+    Interval.DAILY: timedelta(days=1),
+    Interval.WEEKLY: timedelta(days=7),
+}
+
+
+REST_HOST = "https://api.bybit.com"
+WEBSOCKET_HOST = "wss://stream.bybit.com/realtime"
+
+TESTNET_REST_HOST = "https://api-testnet.bybit.com"
+TESTNET_WEBSOCKET_HOST = "wss://stream-testnet.bybit.com/realtime"
 
 
 class BybitGateway(BaseGateway):
     """
-    VN Trader Gateway for BitMEX connection.
+    VN Trader Gateway for ByBit connection.
     """
 
     default_setting = {
-        "APIKey": "",
-        "PrivateKey": "",
-        "会话数": 3,
+        "ID": "",
+        "Secret": "",
         "服务器": ["REAL", "TESTNET"],
         "代理地址": "",
         "代理端口": "",
     }
-    HISTORY_RECORD_PER_REQUEST = 200  # # of records per history request
 
     exchanges = [Exchange.BYBIT]
 
     def __init__(self, event_engine):
         """Constructor"""
-        super(BybitGateway, self).__init__(event_engine, "BYBIT")
+        super().__init__(event_engine, "BYBIT")
+
+        self.connect_time = datetime.now().strftime("%y%m%d%H%M%S")
+        self.order_manager = LocalOrderManager(self, self.connect_time)
 
         self.rest_api = BybitRestApi(self)
         self.ws_api = BybitWebsocketApi(self)
-
-        self.ticks: Dict[str, TickData] = {}
-        self.orders: Dict[str, OrderData] = {}
-        self.local2sys_map: Dict[str, str] = {}
-        event_engine.register(EVENT_TIMER, self.process_timer_event)
 
     def connect(self, setting: dict):
         """"""
         key = setting["ID"]
         secret = setting["Secret"]
-        session_number = setting["会话数"]
         server = setting["服务器"]
         proxy_host = setting["代理地址"]
         proxy_port = setting["代理端口"]
@@ -65,13 +120,10 @@ class BybitGateway(BaseGateway):
         else:
             proxy_port = 0
 
-        self.rest_api.connect(key, secret, session_number,
-                              server, proxy_host, proxy_port)
-
+        self.rest_api.connect(key, secret, server, proxy_host, proxy_port)
         self.ws_api.connect(key, secret, server, proxy_host, proxy_port)
-        self.rest_api.query_orders()
-        self.query_contracts()
-        self.query_account()
+
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
     def subscribe(self, req: SubscribeRequest):
         """"""
@@ -85,211 +137,730 @@ class BybitGateway(BaseGateway):
         """"""
         self.rest_api.cancel_order(req)
 
-    def query_contracts(self):
-        self.rest_api.query_contracts()
-
     def query_account(self):
         """"""
-        self.rest_api.query_position()
+        pass
 
     def query_position(self):
         """"""
         self.rest_api.query_position()
 
-    def query_first_history(self,
-                            symbol: str,
-                            interval: Interval,
-                            start: datetime,
-                            ) -> Tuple[List[BarData], "HistoryDataNextInfo"]:
-
-        # datetime for a bar is close_time
-        # we got open_time from API.
-        adjustment = INTERVAL_VT2BYBIT_INT[interval]
-
-        utc_time = start.replace(tzinfo=local_tz).astimezone(tz=utc_tz)
-        return self.rest_api.query_history(
-            symbol=symbol,
-            interval=interval,
-
-            # todo: vnpy: shall all datetime object use tzinfo?
-            start=int(utc_time.timestamp()) - adjustment,
-        )
-
-    def query_next_history(self,
-                           next_info: Any,
-                           ):
-        data: "HistoryDataNextInfo" = next_info
-        return self.rest_api.query_history(
-            symbol=data.symbol,
-            interval=data.interval,
-            start=data.end,
-        )
-
     def query_history(self, req: HistoryRequest):
-        """
-        todo: vnpy: download in parallel
-        todo: vnpy: use yield to simplify logic
-        :raises RequestFailedException: if server reply an error.
-                Any Exception might be raised from requests.request: network error.
-        """
-        # todo: this function: test rate limit
-        history = []
-
-        symbol = req.symbol
-        interval = req.interval
-        start = req.start
-
-        bars, next_info = self.query_first_history(
-            symbol=symbol,
-            interval=interval,
-            start=start,
-        )
-        msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{bars[0].datetime} - {bars[-1].datetime}"
-        self.write_log(msg)
-        history.extend(bars)
-        while True:
-            bars, next_info = self.query_next_history(next_info)
-
-            msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{bars[0].datetime} - {bars[-1].datetime}"
-            self.write_log(msg)
-
-            # Break if total data count less than <count> (latest date collected)
-            if len(bars) < self.HISTORY_RECORD_PER_REQUEST:
-                break
-            history.extend(bars)
-        return history
+        """"""
+        return self.rest_api.query_history(req)
 
     def close(self):
         """"""
         self.rest_api.stop()
         self.ws_api.stop()
 
-    def process_timer_event(self, event: Event):
+    def process_timer_event(self, event):
         """"""
-        self.rest_api.increase_rate_limit()
-        if self.rest_api.alive:
-            self.query_account()
-            self.rest_api.query_stop_orders()
+        self.query_position()
 
-    def write_log(self, msg: str):
-        return super().write_log(msg)
 
-    def parse_order_data(self, data: dict, time_key: str = 'updated_at'):
+class BybitRestApi(RestClient):
+    """
+    ByBit REST API
+    """
+
+    def __init__(self, gateway: BybitGateway):
+        """"""
+        super().__init__()
+
+        self.gateway = gateway
+        self.gateway_name = gateway.gateway_name
+        self.order_manager = gateway.order_manager
+
+        self.key = ""
+        self.secret = b""
+
+        self.order_count = 1_000_000
+        self.order_count_lock = Lock()
+        self.connect_time = 0
+
+    def sign(self, request: Request):
         """
-        Parse order data from json dict.
-        todo: gateway: put this function to another place.
-        :note: this method will not fill 'time' record. Fill it by yourself.
+        Generate ByBit signature.
         """
-        # prefer local_id as order_id
-        order_id = data["order_link_id"]
-        sys_id = data['order_id']
-        if not order_id:
-            order_id = sys_id
+        if request.method == "GET":
+            api_params = request.params
+            if api_params is None:
+                api_params = request.params = {}
+        else:
+            api_params = request.data
+            if api_params is None:
+                api_params = request.data = {}
 
-        # saving mapping from order_id to sys_id
-        self.local2sys_map[order_id] = sys_id
+        api_params["api_key"] = self.key
+        api_params["recv_window"] = 30 * 1000
+        api_params["timestamp"] = generate_timestamp(-5)
 
-        order = self.orders.get(order_id, None)
-        time = parse_datetime(data[time_key])
+        data2sign = "&".join(
+            [f"{k}={v}" for k, v in sorted(api_params.items())])
+        signature = sign(self.secret, data2sign.encode())
+        api_params["sign"] = signature
 
-        # filter outdated order
-        if order is not None and time < order.time:  # string cmp is ok here.
-            return None
+        return request
 
-        # if order not exist(created outside this client)
-        # create it.
-        if order is None:
-            order = OrderData(
-                symbol=data["symbol"],
-                exchange=Exchange.BYBIT,
-                type=ORDER_TYPE_BYBIT2VT[data["order_type"]],
-                orderid=order_id,
-                direction=DIRECTION_BYBIT2VT[data["side"]],
-                price=data["price"],
-                volume=data["qty"],
-                time=time,
-                gateway_name=self.gateway_name,
-            )
-            self.orders[order.orderid] = order
-        order.traded = data.get("cum_exec_qty", order.traded)
-        if 'order_status' in data:
-            order.status = STATUS_BYBIT2VT[data["order_status"]]
-        return order
-
-    def parse_stop_order_data(self, data):
+    def connect(
+        self,
+        key: str,
+        secret: str,
+        server: str,
+        proxy_host: str,
+        proxy_port: int,
+    ):
         """
-        Parse order data from json dict.
-        todo: put this function to another place.
-        :note: this method will not fill 'time' record. Fill it by yourself.
+        Initialize connection to REST server.
         """
-        # prefer local_id as order_id
-        order_id = data["order_link_id"]
-        sys_id = data['stop_order_id']
-        if not order_id:
-            order_id = sys_id
+        self.key = key
+        self.secret = secret.encode()
 
-        # saving mapping from order_id to sys_id
-        self.local2sys_map[order_id] = sys_id
-
-        order = self.orders.get(order_id, None)
-
-        # if order not exist(created outside this client)
-        # create it.
-        if not order:
-            order = OrderData(
-                symbol=data["symbol"],
-                exchange=Exchange.BYBIT,
-                type=OrderType.STOP,
-                orderid=order_id,
-                direction=DIRECTION_BYBIT2VT[data["side"]],
-                price=data["price"],
-                volume=data["qty"],
-                time=parse_datetime(data['updated_at']),  # this should be filled manually
-                gateway_name=self.gateway_name,
-            )
-            self.orders[order.orderid] = order
-            if 'stop_order_status' in data:
-                # status = STATUS_BYBIT2VT.get(data["order_status"], None)
-                # if status is None:
-                #     status = STOP_ORDER_STATUS_BYBIT2VT[data["order_status"]]
-                # order.status = status
-                order.status = STOP_ORDER_STATUS_BYBIT2VT[data["stop_order_status"]]
-        return order
-
-    def orderid2sys(self, order_id: str):
-        """
-        Convert order_id to sys_id
-        """
-        return self.local2sys_map[order_id]
-
-    def parse_position_data(self, data):
-        position = PositionData(
-            gateway_name=self.gateway_name,
-            symbol=data["symbol"],
-            exchange=Exchange.BYBIT,
-            direction=DIRECTION_BYBIT2VT[data['side']],
-            volume=data['size'],
-            price=data['entry_price']
+        self.connect_time = (
+            int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
         )
 
-        # clear opposite direction if necessary
-        if position.volume:
-            pos2 = PositionData(
-                gateway_name=position.gateway_name,
-                symbol=position.symbol,
-                exchange=Exchange.BYBIT,
-                direction=OPPOSITE_DIRECTION[position.direction],
-                volume=0,
-                price=0,
-            )
-            return position, pos2
-        return position, None
+        if server == "REAL":
+            self.init(REST_HOST, proxy_host, proxy_port)
+        else:
+            self.init(TESTNET_REST_HOST, proxy_host, proxy_port)
 
-    def on_order(self, order: OrderData):
+        self.start(3)
+        self.gateway.write_log("REST API启动成功")
+
+        self.query_contract()
+        self.query_order()
+        self.query_position()
+
+    def send_order(self, req: OrderRequest):
+        """"""
+        order_id = self.order_manager.new_local_orderid()
+
+        symbol = req.symbol
+        data = {
+            "symbol": symbol,
+            "side": DIRECTION_VT2BYBIT[req.direction],
+            "qty": int(req.volume),
+            "order_link_id": order_id,
+            "time_in_force": "GoodTillCancel"
+        }
+
+        order = req.create_order_data(order_id, self.gateway_name)
+        order.time = str(datetime.now().isoformat())
+
+        # Only add price for limit order.
+        data["order_type"] = ORDER_TYPE_VT2BYBIT[req.type]
+        data["price"] = req.price
+        self.add_request(
+            "POST",
+            "/open-api/order/create",
+            callback=self.on_send_order,
+            data=data,
+            extra=order,
+            on_failed=self.on_send_order_failed,
+            on_error=self.on_send_order_error,
+        )
+
+        self.order_manager.on_order(order)
+        return order.vt_orderid
+
+    def on_send_order_failed(self, status_code: int, request: Request):
         """
-        Since WebSocket and RestClient will push the same orders asynchronously and separately
-        outdated orders should be filtered.
-        Outdated orders is filtered by parse_xxx_order_data(), returning None.
+        Callback when sending order failed on server.
         """
-        if order is not None:
-            super().on_order(order)
+        order = request.extra
+        order.status = Status.REJECTED
+        self.order_manager.on_order(order)
+
+        data = request.response.json()
+        error_msg = data["ret_msg"]
+        error_code = data["ret_code"]
+        msg = f"委托失败，错误代码:{error_code},  错误信息：{error_msg}"
+        self.gateway.write_log(msg)
+
+    def on_send_order_error(
+        self, exception_type: type, exception_value: Exception, tb, request: Request
+    ):
+        """
+        Callback when sending order caused exception.
+        """
+        order = request.extra
+        order.status = Status.REJECTED
+        self.order_manager.on_order(order)
+
+        # Record exception if not ConnectionError
+        if not issubclass(exception_type, ConnectionError):
+            self.on_error(exception_type, exception_value, tb, request)
+
+    def on_send_order(self, data: dict, request: Request):
+        """"""
+        if self.check_error("委托下单", data):
+            return
+
+        result = data["result"]
+        self.order_manager.update_orderid_map(
+            result["order_link_id"],
+            result["order_id"]
+        )
+
+    def cancel_order(self, req: CancelRequest):
+        """"""
+        sys_orderid = self.order_manager.get_sys_orderid(req.orderid)
+        data = {
+            "order_id": sys_orderid,
+            "symbol": req.symbol,
+        }
+
+        self.add_request(
+            "POST",
+            path="/open-api/order/cancel",
+            data=data,
+            callback=self.on_cancel_order
+        )
+
+    def on_cancel_order_error(
+        self, exception_type: type, exception_value: Exception, tb, request: Request
+    ):
+        """
+        Callback when cancelling order failed on server.
+        """
+        # Record exception if not ConnectionError
+        if not issubclass(exception_type, ConnectionError):
+            self.on_error(exception_type, exception_value, tb, request)
+
+    def on_cancel_order(self, data: dict, request: Request):
+        """"""
+        if self.check_error("委托下单", data):
+            return
+
+    def on_failed(self, status_code: int, request: Request):
+        """
+        Callback to handle request failed.
+        """
+        data = request.response.json()
+
+        error_msg = data["ret_msg"]
+        error_code = data["ret_code"]
+
+        msg = f"请求失败，状态码：{request.status}，错误代码：{error_code}, 信息：{error_msg}"
+
+        self.gateway.write_log(msg)
+
+    def on_error(
+        self, exception_type: type, exception_value: Exception, tb, request: Request
+    ):
+        """
+        Callback to handler request exception.
+        """
+        msg = f"触发异常，状态码：{exception_type}，信息：{exception_value}"
+        self.gateway.write_log(msg)
+
+        sys.stderr.write(
+            self.exception_detail(exception_type, exception_value, tb, request)
+        )
+
+    def query_contract(self):
+        """"""
+        self.add_request(
+            "GET",
+            "/v2/public/symbols",
+            self.on_query_contract
+        )
+
+    def check_error(self, name: str, data: dict):
+        """"""
+        if data["ret_code"]:
+            error_code = data["ret_code"]
+            error_msg = data["ret_msg"]
+            msg = f"{name}失败，错误代码：{error_code}，信息：{error_msg}"
+            self.gateway.write_log(msg)
+            return True
+
+        return False
+
+    def on_query_contract(self, data: dict, request: Request):
+        """"""
+        if self.check_error("查询合约", data):
+            return
+
+        for d in data["result"]:
+            contract = ContractData(
+                symbol=d["name"],
+                exchange=Exchange.BYBIT,
+                name=d["name"],
+                product=Product.FUTURES,
+                size=1,
+                pricetick=d["price_filter"]["tick_size"],
+                min_volume=d["lot_size_filter"]["qty_step"],
+                net_position=True,
+                history_data=True,
+                gateway_name=self.gateway_name
+            )
+            self.gateway.on_contract(contract)
+
+        self.gateway.write_log("合约信息查询成功")
+
+    def query_position(self):
+        """"""
+        self.add_request(
+            "GET",
+            "/position/list",
+            self.on_query_position
+        )
+
+    def on_query_position(self, data: dict, request: Request):
+        """"""
+        if self.check_error("查询持仓", data):
+            return
+
+        for d in data["result"]:
+            if d["side"] == "Buy":
+                volume = d["size"]
+            else:
+                volume = -d["size"]
+
+            position = PositionData(
+                symbol=d["symbol"],
+                exchange=Exchange.BYBIT,
+                direction=Direction.NET,
+                volume=volume,
+                price=d["entry_price"],
+                gateway_name=self.gateway_name
+            )
+            self.gateway.on_position(position)
+
+            account = AccountData(
+                accountid=d["symbol"].replace("USD", ""),
+                balance=d["wallet_balance"],
+                frozen=d["order_margin"],
+                gateway_name=self.gateway_name,
+            )
+            self.gateway.on_account(account)
+
+    def query_order(self, page: int = 1):
+        """"""
+        params = {
+            "limit": 50,
+            "page": page,
+            "order_status": "Created,New,PartiallyFilled"
+        }
+
+        self.add_request(
+            "GET",
+            "/open-api/order/list",
+            callback=self.on_query_order,
+            params=params
+        )
+
+    def on_query_order(self, data: dict, request: Request):
+        """"""
+        if self.check_error("查询委托", data):
+            return
+
+        result = data["result"]
+        if not result:
+            self.gateway.write_log("委托信息查询成功")
+            return
+
+        for d in result["data"]:
+            sys_orderid = d["order_id"]
+
+            # Use sys_orderid as local_orderid when
+            # order placed from other source
+            local_orderid = d["order_link_id"]
+            if not local_orderid:
+                local_orderid = sys_orderid
+
+            self.order_manager.update_orderid_map(
+                local_orderid,
+                sys_orderid
+            )
+
+            order = OrderData(
+                symbol=d["symbol"],
+                exchange=Exchange.BYBIT,
+                orderid=local_orderid,
+                type=ORDER_TYPE_BYBIT2VT[d["order_type"]],
+                direction=DIRECTION_BYBIT2VT[d["side"]],
+                price=d["price"],
+                volume=d["qty"],
+                traded=d["cum_exec_qty"],
+                status=STATUS_BYBIT2VT[d["order_status"]],
+                time=d["created_at"],
+                gateway_name=self.gateway_name
+            )
+            self.order_manager.on_order(order)
+
+        if result["current_page"] != result["last_page"]:
+            self.query_order(result["current_page"] + 1)
+        else:
+            self.gateway.write_log("委托信息查询成功")
+
+    def query_history(self, req: HistoryRequest) -> List[BarData]:
+        """"""
+        history = []
+        count = 200
+        start_time = int(req.start.timestamp())
+
+        while True:
+            # Create query params
+            params = {
+                "symbol": req.symbol,
+                "interval": INTERVAL_VT2BYBIT[req.interval],
+                "from": start_time,
+                "limit": count
+            }
+
+            # Get response from server
+            resp = self.request(
+                "GET",
+                "/v2/public/kline/list",
+                params=params
+            )
+
+            # Break if request failed with other status code
+            if resp.status_code // 100 != 2:
+                msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
+                self.gateway.write_log(msg)
+                break
+            else:
+                data = resp.json()
+                if not data:
+                    msg = f"获取历史数据为空，开始时间：{start_time}，数量：{count}"
+                    break
+
+                buf = []
+                for d in data["result"]:
+                    dt = datetime.fromtimestamp(d["open_time"])
+                    bar = BarData(
+                        symbol=req.symbol,
+                        exchange=req.exchange,
+                        datetime=dt,
+                        interval=req.interval,
+                        volume=int(d["volume"]),
+                        open_price=float(d["open"]),
+                        high_price=float(d["high"]),
+                        low_price=float(d["low"]),
+                        close_price=float(d["close"]),
+                        gateway_name=self.gateway_name
+                    )
+                    buf.append(bar)
+
+                history.extend(buf)
+
+                begin = buf[0].datetime
+                end = buf[-1].datetime
+                msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
+                self.gateway.write_log(msg)
+
+                # Break if last data collected
+                if len(buf) < count:
+                    break
+
+                # Update start time
+                start_time = int((bar.datetime + TIMEDELTA_MAP[req.interval]).timestamp())
+
+        return history
+
+
+class BybitWebsocketApi(WebsocketClient):
+    """"""
+
+    def __init__(self, gateway: BybitGateway):
+        """"""
+        super().__init__()
+
+        self.gateway = gateway
+        self.gateway_name = gateway.gateway_name
+        self.order_manager = gateway.order_manager
+
+        self.key = ""
+        self.secret = b""
+        self.server: str = ""  # REAL or TESTNET
+
+        self.callbacks: Dict[str, Callable] = {}
+        self.ticks: Dict[str, TickData] = {}
+        self.subscribed: Dict[str, SubscribeRequest] = {}
+
+        self.symbol_bids: Dict[str, dict] = {}
+        self.symbol_asks: Dict[str, dict] = {}
+
+    def connect(
+        self, key: str, secret: str, server: str, proxy_host: str, proxy_port: int
+    ):
+        """"""
+        self.key = key
+        self.secret = secret.encode()
+        self.proxy_host = proxy_host
+        self.proxy_port = proxy_port
+        self.server = server
+
+        if self.server == "REAL":
+            url = WEBSOCKET_HOST
+        else:
+            url = TESTNET_WEBSOCKET_HOST
+
+        self.init(url, self.proxy_host, self.proxy_port)
+        self.start()
+
+    def login(self):
+        """"""
+        expires = generate_timestamp(30)
+        msg = f"GET/realtime{int(expires)}"
+        signature = sign(self.secret, msg.encode())
+
+        req = {
+            "op": "auth",
+            "args": [self.key, expires, signature]
+        }
+        self.send_packet(req)
+
+    def subscribe(self, req: SubscribeRequest):
+        """
+        Subscribe to tick data upate.
+        """
+        self.subscribed[req.symbol] = req
+
+        tick = TickData(
+            symbol=req.symbol,
+            exchange=req.exchange,
+            datetime=datetime.now(),
+            name=req.symbol,
+            gateway_name=self.gateway_name
+        )
+        self.ticks[req.symbol] = tick
+
+        self.subscribe_topic(
+            f"instrument_info.100ms.{req.symbol}", self.on_tick)
+        self.subscribe_topic(f"orderBookL2_25.{req.symbol}", self.on_depth)
+
+    def subscribe_topic(self, topic: str, callback: Callable[[str, dict], Any]):
+        """
+        Subscribe to all private topics.
+        """
+        self.callbacks[topic] = callback
+
+        req = {
+            "op": "subscribe",
+            "args": [topic],
+        }
+        self.send_packet(req)
+
+    def on_connected(self):
+        """"""
+        self.gateway.write_log("Websocket API连接成功")
+        self.login()
+
+    def on_disconnected(self):
+        """"""
+        self.gateway.write_log("Websocket API连接断开")
+
+    def on_packet(self, packet: dict):
+        """"""
+        if "topic" not in packet:
+            op = packet["request"]["op"]
+            if op == "auth":
+                self.on_login(packet)
+        else:
+            channel = packet["topic"]
+            callback = self.callbacks[channel]
+            callback(packet)
+
+    def on_error(self, exception_type: type, exception_value: Exception, tb):
+        """"""
+        msg = f"触发异常，状态码：{exception_type}，信息：{exception_value}"
+        self.gateway.write_log(msg)
+
+        sys.stderr.write(self.exception_detail(
+            exception_type, exception_value, tb))
+
+    def on_login(self, packet: dict):
+        """"""
+        success = packet.get("success", False)
+        if success:
+            self.gateway.write_log("Websocket API登录成功")
+
+            self.subscribe_topic("order", self.on_order)
+            self.subscribe_topic("execution", self.on_trade)
+            self.subscribe_topic("position", self.on_position)
+
+            for req in self.subscribed.values():
+                self.subscribe(req)
+        else:
+            self.gateway.write_log("Websocket API登录失败")
+
+    def on_tick(self, packet: dict):
+        """"""
+        topic = packet["topic"]
+        type_ = packet["type"]
+        data = packet["data"]
+        timestamp = packet["timestamp_e6"]
+
+        symbol = topic.replace("instrument_info.100ms.", "")
+        tick = self.ticks[symbol]
+
+        if type_ == "snapshot":
+            tick.last_price = data["last_price_e4"] / 10000
+            tick.volume = data["volume_24h"]
+        else:
+            update = data["update"][0]
+
+            if "last_price_e4" in update:
+                tick.last_price = update["last_price_e4"] / 10000
+
+            if "volume_24h" in update:
+                tick.volume = update["volume_24h"]
+
+        tick.datetime = datetime.fromtimestamp(timestamp / 1_000_000)
+        self.gateway.on_tick(copy(tick))
+
+    def on_depth(self, packet: dict):
+        """"""
+        topic = packet["topic"]
+        type_ = packet["type"]
+        data = packet["data"]
+        timestamp = packet["timestamp_e6"]
+
+        # Update depth data into dict buf
+        symbol = topic.replace("orderBookL2_25.", "")
+        tick = self.ticks[symbol]
+        bids = self.symbol_bids.setdefault(symbol, {})
+        asks = self.symbol_asks.setdefault(symbol, {})
+
+        if type_ == "snapshot":
+            for d in data:
+                price = float(d["price"])
+
+                if d["side"] == "Buy":
+                    bids[price] = d
+                else:
+                    asks[price] = d
+        else:
+            for d in data["delete"]:
+                price = float(d["price"])
+                if d["side"] == "Buy":
+                    bids.pop(price)
+                else:
+                    asks.pop(price)
+
+            for d in (data["update"] + data["insert"]):
+                price = float(d["price"])
+                if d["side"] == "Buy":
+                    bids[price] = d
+                else:
+                    asks[price] = d
+
+        # Calculate 1-5 bid/ask depth
+        bid_keys = list(bids.keys())
+        bid_keys.sort(reverse=True)
+
+        ask_keys = list(asks.keys())
+        ask_keys.sort()
+
+        for i in range(5):
+            n = i + 1
+
+            bid_price = bid_keys[i]
+            bid_data = bids[bid_price]
+            ask_price = ask_keys[i]
+            ask_data = asks[ask_price]
+
+            setattr(tick, f"bid_price_{n}", bid_price)
+            setattr(tick, f"bid_volume_{n}", bid_data["size"])
+            setattr(tick, f"ask_price_{n}", ask_price)
+            setattr(tick, f"ask_volume_{n}", ask_data["size"])
+
+        tick.datetime = datetime.fromtimestamp(timestamp / 1_000_000)
+        self.gateway.on_tick(copy(tick))
+
+    def on_trade(self, packet: dict):
+        """"""
+        for d in packet["data"]:
+            order_id = d["order_link_id"]
+            if not order_id:
+                order_id = d["order_id"]
+
+            trade = TradeData(
+                symbol=d["symbol"],
+                exchange=Exchange.BYBIT,
+                orderid=order_id,
+                tradeid=d["exec_id"],
+                direction=DIRECTION_BYBIT2VT[d["side"]],
+                price=d["price"],
+                volume=d["exec_qty"],
+                time=d["trade_time"],
+                gateway_name=self.gateway_name,
+            )
+
+            self.gateway.on_trade(trade)
+
+    def on_order(self, packet: dict):
+        """"""
+        for d in packet["data"]:
+            sys_orderid = d["order_id"]
+            order = self.order_manager.get_order_with_sys_orderid(sys_orderid)
+
+            if order:
+                order.traded = d["cum_exec_qty"]
+                order.status = STATUS_BYBIT2VT[d["order_status"]]
+            else:
+                # Use sys_orderid as local_orderid when
+                # order placed from other source
+                local_orderid = d["order_link_id"]
+                if not local_orderid:
+                    local_orderid = sys_orderid
+
+                self.order_manager.update_orderid_map(
+                    local_orderid,
+                    sys_orderid
+                )
+
+                order = OrderData(
+                    symbol=d["symbol"],
+                    exchange=Exchange.BYBIT,
+                    orderid=local_orderid,
+                    type=ORDER_TYPE_BYBIT2VT[d["order_type"]],
+                    direction=DIRECTION_BYBIT2VT[d["side"]],
+                    price=d["price"],
+                    volume=d["qty"],
+                    traded=d["cum_exec_qty"],
+                    status=STATUS_BYBIT2VT[d["order_status"]],
+                    time=d["timestamp"],
+                    gateway_name=self.gateway_name
+                )
+
+            self.order_manager.on_order(order)
+
+    def on_position(self, packet: dict):
+        """"""
+        for d in packet["data"]:
+            if d["side"] == "Buy":
+                volume = d["size"]
+            else:
+                volume = -d["size"]
+
+            position = PositionData(
+                symbol=d["symbol"],
+                exchange=Exchange.BYBIT,
+                direction=Direction.NET,
+                volume=volume,
+                price=d["entry_price"],
+                gateway_name=self.gateway_name
+            )
+            self.gateway.on_position(position)
+
+
+def generate_timestamp(expire_after: float = 30) -> int:
+    """
+    :param expire_after: expires in seconds.
+    :return: timestamp in milliseconds
+    """
+    return int(time.time() * 1000 + expire_after * 1000)
+
+
+def sign(secret: bytes, data: bytes) -> str:
+    """"""
+    return hmac.new(
+        secret, data, digestmod=hashlib.sha256
+    ).hexdigest()

@@ -265,12 +265,12 @@ class LocalOrderManager:
     Management tool to support use local order id for trading.
     """
 
-    def __init__(self, gateway: BaseGateway):
+    def __init__(self, gateway: BaseGateway, order_prefix: str = ""):
         """"""
         self.gateway = gateway
 
         # For generating local orderid
-        self.order_prefix = ""
+        self.order_prefix = order_prefix
         self.order_count = 0
         self.orders = {}        # local_orderid:order
 
@@ -296,7 +296,7 @@ class LocalOrderManager:
         Generate a new local orderid.
         """
         self.order_count += 1
-        local_orderid = str(self.order_count).rjust(8, "0")
+        local_orderid = self.order_prefix + str(self.order_count).rjust(8, "0")
         return local_orderid
 
     def get_local_orderid(self, sys_orderid: str):

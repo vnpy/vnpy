@@ -37,10 +37,10 @@ class BacktesterManager(QtWidgets.QWidget):
 
         self.target_display = ""
 
-        self.init_strategy_settings()
         self.init_ui()
         self.register_event()
         self.backtester_engine.init_engine()
+        self.init_strategy_settings()
 
     def init_strategy_settings(self):
         """"""
@@ -50,13 +50,14 @@ class BacktesterManager(QtWidgets.QWidget):
             setting = self.backtester_engine.get_default_setting(class_name)
             self.settings[class_name] = setting
 
+        self.class_combo.addItems(self.class_names)
+
     def init_ui(self):
         """"""
         self.setWindowTitle("CTA回测")
 
         # Setting Part
         self.class_combo = QtWidgets.QComboBox()
-        self.class_combo.addItems(self.class_names)
 
         self.symbol_line = QtWidgets.QLineEdit("IF88.CFFEX")
 

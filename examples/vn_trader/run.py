@@ -31,6 +31,7 @@ from vnpy.gateway.da import DaGateway
 from vnpy.gateway.coinbase import CoinbaseGateway
 from vnpy.gateway.bitstamp import BitstampGateway
 from vnpy.gateway.gateios import GateiosGateway
+from vnpy.gateway.bybit import BybitGateway
 
 from vnpy.app.cta_strategy import CtaStrategyApp
 # from vnpy.app.csv_loader import CsvLoaderApp
@@ -52,7 +53,7 @@ def main():
     main_engine = MainEngine(event_engine)
 
     # main_engine.add_gateway(BinanceGateway)
-    main_engine.add_gateway(CtpGateway)
+    # main_engine.add_gateway(CtpGateway)
     # main_engine.add_gateway(CtptestGateway)
     # main_engine.add_gateway(MiniGateway)
     # main_engine.add_gateway(SoptGateway)
@@ -60,12 +61,12 @@ def main():
     # main_engine.add_gateway(FemasGateway)
     # main_engine.add_gateway(IbGateway)
     # main_engine.add_gateway(FutuGateway)
-    main_engine.add_gateway(BitmexGateway)
+    # main_engine.add_gateway(BitmexGateway)
     # main_engine.add_gateway(TigerGateway)
     # main_engine.add_gateway(OesGateway)
     # main_engine.add_gateway(OkexGateway)
     # main_engine.add_gateway(HuobiGateway)
-    main_engine.add_gateway(BitfinexGateway)
+    # main_engine.add_gateway(BitfinexGateway)
     # main_engine.add_gateway(OnetokenGateway)
     # main_engine.add_gateway(OkexfGateway)
     # main_engine.add_gateway(HbdmGateway)
@@ -76,8 +77,9 @@ def main():
     # main_engine.add_gateway(OkexsGateway)
     # main_engine.add_gateway(DaGateway)
     # main_engine.add_gateway(CoinbaseGateway)
-    main_engine.add_gateway(BitstampGateway)
-    main_engine.add_gateway(GateiosGateway)
+    # main_engine.add_gateway(BitstampGateway)
+    # main_engine.add_gateway(GateiosGateway)
+    main_engine.add_gateway(BybitGateway)
 
     main_engine.add_app(CtaStrategyApp)
     main_engine.add_app(CtaBacktesterApp)
