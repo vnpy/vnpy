@@ -49,6 +49,7 @@ def main():
 
     main_engine = MainEngine(event_engine)
 
+    ##### 底层接口，交易所方法
     # main_engine.add_gateway(BinanceGateway)
     # main_engine.add_gateway(CtpGateway)
     # main_engine.add_gateway(CtptestGateway)
@@ -75,16 +76,18 @@ def main():
     # main_engine.add_gateway(DaGateway)
     main_engine.add_gateway(CoinbaseGateway)
 
-    main_engine.add_app(CtaStrategyApp)
-    main_engine.add_app(CtaBacktesterApp)
-    # main_engine.add_app(CsvLoaderApp)
-    # main_engine.add_app(AlgoTradingApp)
+    #### 中层接口
+    main_engine.add_app(CtaStrategyApp)  # CTA策略引擎
+    main_engine.add_app(CtaBacktesterApp)  # CTA回测引擎
+    # main_engine.add_app(CsvLoaderApp)  # CSV载入引擎
+    # main_engine.add_app(AlgoTradingApp)  # 算法交易引擎
     # main_engine.add_app(DataRecorderApp)
     # main_engine.add_app(RiskManagerApp)
     # main_engine.add_app(ScriptTraderApp)
     # main_engine.add_app(RpcServiceApp)
-    main_engine.add_app(SpreadTradingApp)
+    main_engine.add_app(SpreadTradingApp)  # 价差交易引擎
 
+    #### 上层应用，UI引擎
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()
 
