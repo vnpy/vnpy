@@ -8,7 +8,7 @@ from vnpy.trader.object import TickData, TradeData, OrderData, ContractData
 from vnpy.trader.constant import Direction, Status, Offset
 from vnpy.trader.utility import virtual
 
-from .base import SpreadData
+from .base import SpreadData, calculate_inverse_volume
 
 
 class SpreadAlgoTemplate:
@@ -177,6 +177,11 @@ class SpreadAlgoTemplate:
         direction: Direction,
     ):
         """"""
+        # For inverse contract:
+        # contract trading volume = coin trading volume * trading price
+        if self.spread.is_inverse(vt_symbol):
+            volume = volume * price
+
         vt_orderids = self.algo_engine.send_order(
             self,
             vt_symbol,

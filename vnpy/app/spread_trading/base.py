@@ -268,6 +268,11 @@ class SpreadData:
         )
         return tick
 
+    def is_inverse(self, vt_symbol: str) -> bool:
+        """"""
+        inverse_contract = self.inverse_contracts[vt_symbol]
+        return inverse_contract
+
 
 def calculate_inverse_volume(original_volume: float, price: float) -> float:
     """"""
