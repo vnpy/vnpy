@@ -117,10 +117,21 @@ class SpreadAlgoTemplate:
 
     def update_trade(self, trade: TradeData):
         """"""
-        if trade.direction == Direction.LONG:
-            self.leg_traded[trade.vt_symbol] += trade.volume
+        # For inverse contract:
+        # record coin trading volume as leg trading volume,
+        # not contract volume!
+        if self.spread.is_inverse(trade.vt_symbol):
+            trade_volume = calculate_inverse_volume(
+                trade.volume,
+                trade.price
+            )
         else:
-            self.leg_traded[trade.vt_symbol] -= trade.volume
+            trade_volume = trade.volume
+
+        if trade.direction == Direction.LONG:
+            self.leg_traded[trade.vt_symbol] += trade_volume
+        else:
+            self.leg_traded[trade.vt_symbol] -= trade_volume
 
         msg = "委托成交，{}，{}，{}@{}".format(
             trade.vt_symbol,
