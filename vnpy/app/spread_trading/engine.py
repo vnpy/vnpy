@@ -194,8 +194,12 @@ class SpreadDataEngine:
     def process_contract_event(self, event: Event) -> None:
         """"""
         contract = event.data
+        leg = self.legs.get(contract.vt_symbol, None)
 
-        if contract.vt_symbol in self.legs:
+        if leg:
+            # Update contract size data
+            leg.size = contract.size
+
             req = SubscribeRequest(
                 contract.symbol, contract.exchange
             )
@@ -222,6 +226,8 @@ class SpreadDataEngine:
             # Subscribe market data
             contract = self.main_engine.get_contract(vt_symbol)
             if contract:
+                leg.size = contract.size
+
                 req = SubscribeRequest(
                     contract.symbol,
                     contract.exchange

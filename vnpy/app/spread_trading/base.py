@@ -35,6 +35,9 @@ class LegData:
         # Tick data buf
         self.tick: TickData = None
 
+        # Contract size
+        self.size: float = 0
+
     def update_tick(self, tick: TickData):
         """"""
         self.bid_price = tick.bid_price_1
@@ -160,9 +163,9 @@ class SpreadData:
                 leg_ask_volume = leg.ask_volume
             else:
                 leg_bid_volume = calculate_inverse_volume(
-                    leg.bid_volume, leg.bid_price)
+                    leg.bid_volume, leg.bid_price, leg.size)
                 leg_ask_volume = calculate_inverse_volume(
-                    leg.ask_volume, leg.ask_price)
+                    leg.ask_volume, leg.ask_price, leg.size)
 
             if trading_multiplier > 0:
                 adjusted_bid_volume = floor(
@@ -202,7 +205,8 @@ class SpreadData:
             if not inverse_contract:
                 net_pos = leg.net_pos
             else:
-                net_pos = calculate_inverse_volume(leg.net_pos, leg.last_price)
+                net_pos = calculate_inverse_volume(
+                    leg.net_pos, leg.last_price, leg.size)
 
             adjusted_net_pos = net_pos / trading_multiplier
 
@@ -273,9 +277,18 @@ class SpreadData:
         inverse_contract = self.inverse_contracts[vt_symbol]
         return inverse_contract
 
+    def get_leg_size(self, vt_symbol: str) -> float:
+        """"""
+        leg = self.legs[vt_symbol]
+        return leg.size
 
-def calculate_inverse_volume(original_volume: float, price: float) -> float:
+
+def calculate_inverse_volume(
+    original_volume: float,
+    price: float,
+    size: float,
+) -> float:
     """"""
     if not price:
         return 0
-    return original_volume / price
+    return original_volume * size / price

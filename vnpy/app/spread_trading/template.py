@@ -121,9 +121,12 @@ class SpreadAlgoTemplate:
         # record coin trading volume as leg trading volume,
         # not contract volume!
         if self.spread.is_inverse(trade.vt_symbol):
+            size = self.spread.get_leg_size(trade.vt_symbol)
+
             trade_volume = calculate_inverse_volume(
                 trade.volume,
-                trade.price
+                trade.price,
+                size
             )
         else:
             trade_volume = trade.volume
@@ -189,9 +192,10 @@ class SpreadAlgoTemplate:
     ):
         """"""
         # For inverse contract:
-        # contract trading volume = coin trading volume * trading price
+        # calculate contract trading volume from coin trading volume
         if self.spread.is_inverse(vt_symbol):
-            volume = volume * price
+            size = self.spread.get_leg_size(vt_symbol)
+            volume = volume * price / size
 
         vt_orderids = self.algo_engine.send_order(
             self,
