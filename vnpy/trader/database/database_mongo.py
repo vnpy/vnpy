@@ -269,7 +269,7 @@ class DbOrderData(Document):
 
     symbol: str = StringField()
     exchange: str = StringField()
-    orderid: str = StringField()
+    orderid: str = StringField(unique=True)
 
     type: str = StringField()
     direction: str = StringField()
@@ -281,14 +281,7 @@ class DbOrderData(Document):
     time: str = StringField()
     update_date: datetime = DateTimeField(default=datetime.now)
 
-    meta = {
-        "indexes": [
-            {
-                "fields": "orderid",
-                "unique": True,
-            }
-        ]
-    }
+    meta = {}
 
     @staticmethod
     def from_order(order: OrderData):
@@ -341,7 +334,7 @@ class DbTradeData(Document):
     symbol: str = StringField()
     exchange: str = StringField()
     orderid: str = StringField()
-    tradeid: str = StringField()
+    tradeid: str = StringField(unique=True)
 
     direction: str = StringField()
     offset: str = StringField()
@@ -350,14 +343,7 @@ class DbTradeData(Document):
     time: str = StringField()
     update_date: datetime = DateTimeField(default=datetime.now)
 
-    meta = {
-        "indexes": [
-            {
-                "fields": "tradeid",
-                "unique": True,
-            }
-        ]
-    }
+    meta = {}
 
     @staticmethod
     def from_trade(trade: TradeData):
