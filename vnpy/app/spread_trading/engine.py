@@ -253,6 +253,7 @@ class SpreadDataEngine:
         legs: List[LegData] = []
         price_multipliers: Dict[str, int] = {}
         trading_multipliers: Dict[str, int] = {}
+        inverse_contracts: Dict[str, bool] = {}
 
         for leg_setting in leg_settings:
             vt_symbol = leg_setting["vt_symbol"]
@@ -261,13 +262,15 @@ class SpreadDataEngine:
             legs.append(leg)
             price_multipliers[vt_symbol] = leg_setting["price_multiplier"]
             trading_multipliers[vt_symbol] = leg_setting["trading_multiplier"]
+            inverse_contracts[vt_symbol] = leg_setting.get("inverse_contracts", False)
 
         spread = SpreadData(
             name,
             legs,
             price_multipliers,
             trading_multipliers,
-            active_symbol
+            active_symbol,
+            inverse_contracts
         )
         self.spreads[name] = spread
 

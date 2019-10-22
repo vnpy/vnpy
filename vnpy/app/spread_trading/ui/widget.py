@@ -392,6 +392,7 @@ class SpreadDataDialog(QtWidgets.QDialog):
         grid.addWidget(Label("本地代码"), 3, 1)
         grid.addWidget(Label("价格乘数"), 3, 2)
         grid.addWidget(Label("交易乘数"), 3, 3)
+        grid.addWidget(Label("合约模式"), 3, 4)
 
         int_validator = QtGui.QIntValidator()
 
@@ -405,15 +406,20 @@ class SpreadDataDialog(QtWidgets.QDialog):
             trading_line = QtWidgets.QLineEdit()
             trading_line.setValidator(int_validator)
 
+            inverse_combo = QtWidgets.QComboBox()
+            inverse_combo.addItems(["正向", "反向"])
+
             grid.addWidget(Label("腿{}".format(i + 1)), 4 + i, 0)
             grid.addWidget(symbol_line, 4 + i, 1)
             grid.addWidget(price_line, 4 + i, 2)
             grid.addWidget(trading_line, 4 + i, 3)
+            grid.addWidget(inverse_combo, 4 + i, 4)
 
             d = {
                 "symbol": symbol_line,
                 "price": price_line,
-                "trading": trading_line
+                "trading": trading_line,
+                "inverse": inverse_combo
             }
             self.leg_widgets.append(d)
 
@@ -443,10 +449,16 @@ class SpreadDataDialog(QtWidgets.QDialog):
                 price_multiplier = int(d["price"].text())
                 trading_multiplier = int(d["trading"].text())
 
+                if d["inverse"].currentText() == "正向":
+                    inverse_contract = False
+                else:
+                    inverse_contract = True
+
                 leg_settings[vt_symbol] = {
                     "vt_symbol": vt_symbol,
                     "price_multiplier": price_multiplier,
-                    "trading_multiplier": trading_multiplier
+                    "trading_multiplier": trading_multiplier,
+                    "inverse_contract": inverse_contract
                 }
             except ValueError:
                 pass

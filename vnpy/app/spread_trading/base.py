@@ -78,7 +78,8 @@ class SpreadData:
         legs: List[LegData],
         price_multipliers: Dict[str, int],
         trading_multipliers: Dict[str, int],
-        active_symbol: str
+        active_symbol: str,
+        inverse_contracts: Dict[str, bool]
     ):
         """"""
         self.name: str = name
@@ -88,10 +89,13 @@ class SpreadData:
         self.passive_legs: List[LegData] = []
 
         # For calculating spread price
-        self.price_multipliers: Dict[str: int] = price_multipliers
+        self.price_multipliers: Dict[str, int] = price_multipliers
 
         # For calculating spread pos and sending orders
-        self.trading_multipliers: Dict[str: int] = trading_multipliers
+        self.trading_multipliers: Dict[str, int] = trading_multipliers
+
+        # For inverse derivative contracts of crypto market
+        self.inverse_contracts: Dict[str, bool] = inverse_contracts
 
         self.price_formula: str = ""
         self.trading_formula: str = ""
