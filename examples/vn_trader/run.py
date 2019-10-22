@@ -77,7 +77,7 @@ def main():
     # main_engine.add_gateway(OkexsGateway)
     # main_engine.add_gateway(DaGateway)
     # main_engine.add_gateway(CoinbaseGateway)
-    # main_engine.add_gateway(BitstampGateway)
+    main_engine.add_gateway(BitstampGateway)
     # main_engine.add_gateway(GateiosGateway)
     main_engine.add_gateway(BybitGateway)
 

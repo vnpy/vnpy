@@ -150,17 +150,27 @@ class SpreadData:
 
             # Calculate volume
             trading_multiplier = self.trading_multipliers[leg.vt_symbol]
+            inverse_contract = self.inverse_contracts[leg.vt_symbol]
+
+            if not inverse_contract:
+                leg_bid_volume = leg.bid_volume
+                leg_ask_volume = leg.ask_volume
+            else:
+                leg_bid_volume = calculate_inverse_volume(
+                    leg.bid_volume, leg.bid_price)
+                leg_ask_volume = calculate_inverse_volume(
+                    leg.ask_volume, leg.ask_price)
 
             if trading_multiplier > 0:
                 adjusted_bid_volume = floor(
-                    leg.bid_volume / trading_multiplier)
+                    leg_bid_volume / trading_multiplier)
                 adjusted_ask_volume = floor(
-                    leg.ask_volume / trading_multiplier)
+                    leg_ask_volume / trading_multiplier)
             else:
                 adjusted_bid_volume = floor(
-                    leg.ask_volume / abs(trading_multiplier))
+                    leg_bid_volume / abs(trading_multiplier))
                 adjusted_ask_volume = floor(
-                    leg.bid_volume / abs(trading_multiplier))
+                    leg_ask_volume / abs(trading_multiplier))
 
             # For the first leg, just initialize
             if not n:
@@ -247,3 +257,10 @@ class SpreadData:
             gateway_name="SPREAD"
         )
         return tick
+
+
+def calculate_inverse_volume(original_volume: float, price: float) -> float:
+    """"""
+    if not price:
+        return 0
+    return original_volume / price
