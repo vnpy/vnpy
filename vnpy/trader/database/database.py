@@ -5,7 +5,7 @@ from typing import Optional, Sequence, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from vnpy.trader.constant import Interval, Exchange  # noqa
-    from vnpy.trader.object import BarData, TickData  # noqa
+    from vnpy.trader.object import BarData, TickData, OrderData, TradeData  # noqa
 
 
 class Driver(Enum):
@@ -49,6 +49,20 @@ class BaseDatabaseManager(ABC):
     def save_tick_data(
         self,
         datas: Sequence["TickData"],
+    ):
+        pass
+
+    @abstractmethod
+    def save_order_data(
+        self,
+        datas: Sequence["OrderData"],
+    ):
+        pass
+
+    @abstractmethod
+    def save_trade_data(
+        self,
+        datas: Sequence["TradeData"],
     ):
         pass
 

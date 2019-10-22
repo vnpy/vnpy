@@ -4,8 +4,8 @@ from typing import Optional, Sequence
 
 from mongoengine import DateTimeField, Document, FloatField, StringField, connect
 
-from vnpy.trader.constant import Exchange, Interval
-from vnpy.trader.object import BarData, TickData
+from vnpy.trader.constant import Exchange, Interval, OrderType, Direction, Offset, Status
+from vnpy.trader.object import BarData, TickData, OrderData, TradeData
 from .database import BaseDatabaseManager, Driver
 
 
@@ -260,6 +260,145 @@ class DbTickData(Document):
         return tick
 
 
+class DbOrderData(Document):
+    """
+    Order data for database storage.
+
+    Index is defined unique with orderid
+    """
+
+    symbol: str = StringField()
+    exchange: str = StringField()
+    orderid: str = StringField()
+
+    type: str = StringField()
+    direction: str = StringField()
+    offset: str = StringField()
+    price: float = FloatField()
+    volume: float = FloatField()
+    traded: float = FloatField()
+    status: str = StringField()
+    time: str = StringField()
+    update_date: datetime = DateTimeField(default=datetime.now)
+
+    meta = {
+        "indexes": [
+            {
+                "fields": "orderid",
+                "unique": True,
+            }
+        ]
+    }
+
+    @staticmethod
+    def from_order(order: OrderData):
+        """
+        Generate DbBarData object from BarData.
+        """
+        db_order = DbBarData()
+
+        db_order.symbol = order.symbol
+        db_order.exchange = order.exchange.value
+        db_order.orderid = order.orderid
+        db_order.type = order.type.value
+        db_order.direction = order.direction.value
+        db_order.offset = order.offset.value
+        db_order.price = order.price
+        db_order.volume = order.volume
+        db_order.traded = order.traded
+        db_order.status = order.status.value
+        db_order.time = order.time
+
+        return db_order
+
+    def to_order(self):
+        """
+        Generate OrderData object from DbOrderData.
+        """
+        order = OrderData(
+            symbol=self.symbol,
+            exchange=Exchange(self.exchange),
+            orderid=self.orderid,
+            type=OrderType(self.type),
+            direction=Direction(self.direction),
+            offset=Offset(self.offset),
+            price=self.price,
+            volume=self.volume,
+            traded=self.traded,
+            status=Status(self.status),
+            gateway_name="DB",
+        )
+        return order
+
+
+class DbTradeData(Document):
+    """
+    Trade data for database storage.
+
+    Index is defined unique with tradeid
+    """
+
+    symbol: str = StringField()
+    exchange: str = StringField()
+    orderid: str = StringField()
+    tradeid: str = StringField()
+
+    direction: str = StringField()
+    offset: str = StringField()
+    price: float = FloatField()
+    volume: float = FloatField()
+    time: str = StringField()
+    update_date: datetime = DateTimeField(default=datetime.now)
+
+    meta = {
+        "indexes": [
+            {
+                "fields": "tradeid",
+                "unique": True,
+            }
+        ]
+    }
+
+    @staticmethod
+    def from_trade(trade: TradeData):
+        """
+        Generate DbBarData object from BarData.
+        """
+        db_trade = DbTradeData()
+
+        db_trade.symbol = trade.symbol
+        db_trade.exchange = trade.exchange.value
+        db_trade.orderid = trade.orderid
+        db_trade.tradeid = trade.tradeid
+
+        db_trade.direction = trade.direction.value
+        db_trade.offset = trade.offset.value
+        db_trade.price = trade.price
+        db_trade.volume = trade.volume
+        db_trade.time = trade.time
+
+        return db_trade
+
+    def to_trade(self):
+        """
+        Generate TradeData object from DbTradeData.
+        """
+        trade = TradeData(
+            symbol=self.symbol,
+            exchange=Exchange(self.exchange),
+            orderid=self.orderid,
+            tradeid=self.tradeid,
+            direction=Direction(self.direction),
+            offset=Offset(self.offset),
+            price=self.price,
+            volume=self.volume,
+            time=self.time,
+            gateway_name="DB",
+        )
+
+        return trade
+
+
 class MongoManager(BaseDatabaseManager):
 
     def load_bar_data(
@@ -318,6 +457,28 @@ class MongoManager(BaseDatabaseManager):
             (
                 DbTickData.objects(
                     symbol=d.symbol, exchange=d.exchange.value, datetime=d.datetime
+                ).update_one(upsert=True, **updates)
+            )
+
+    def save_order_data(self, datas: Sequence["OrderData"]):
+        for d in datas:
+            updates = self.to_update_param(d)
+            updates.pop("set__gateway_name")
+            updates.pop("set__vt_symbol")
+            (
+                DbOrderData.objects(
+                    orderid=d.orderid
+                ).update_one(upsert=True, **updates)
+            )
+
+    def save_trade_data(self, datas: Sequence["TradeData"]):
+        for d in datas:
+            updates = self.to_update_param(d)
+            updates.pop("set__gateway_name")
+            updates.pop("set__vt_symbol")
+            (
+                DbTradeData.objects(
+                    tradeid=d.tradeid
                 ).update_one(upsert=True, **updates)
             )
 

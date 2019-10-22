@@ -15,8 +15,8 @@ from peewee import (
     chunked,
 )
 
-from vnpy.trader.constant import Exchange, Interval
-from vnpy.trader.object import BarData, TickData
+from vnpy.trader.constant import Exchange, Interval, OrderType, Direction, Offset, Status
+from vnpy.trader.object import BarData, TickData, OrderData, TradeData
 from vnpy.trader.utility import get_file_path
 from .database import BaseDatabaseManager, Driver
 
@@ -30,8 +30,8 @@ def init(driver: Driver, settings: dict):
     assert driver in init_funcs
 
     db = init_funcs[driver](settings)
-    bar, tick = init_models(db, driver)
-    return SqlManager(bar, tick)
+    bar, tick, order, trade = init_models(db, driver)
+    return SqlManager(bar, tick, order, trade)
 
 
 def init_sqlite(settings: dict):
@@ -319,16 +319,181 @@ def init_models(db: Database, driver: Driver):
                     for c in chunked(dicts, 50):
                         DbTickData.insert_many(c).on_conflict_replace().execute()
 
+    class DbOrderData(ModelBase):
+        """
+        Order data for database storage.
+
+        Index is defined unique with (orderid)
+        """
+
+        id = AutoField()
+
+        symbol: str = CharField()
+        exchange: str = CharField()
+        orderid: str = CharField(unique=True)
+
+        type: str = CharField()
+        direction: str = CharField()
+        offset: str = CharField()
+        price: float = FloatField()
+        volume: float = FloatField()
+        traded: float = FloatField()
+        status: str = CharField()
+        time: str = CharField()
+        update_date: datetime = DateTimeField(default=datetime.now)
+
+        class Meta:
+            database = db
+
+        @staticmethod
+        def from_order(order: OrderData):
+            """
+            Generate DbOrderData object from OrderData.
+            """
+            db_order = DbOrderData()
+
+            db_order.symbol = order.symbol
+            db_order.exchange = order.exchange.value
+            db_order.orderid = order.orderid
+            db_order.type = order.type.value
+            db_order.direction = order.direction.value
+            db_order.offset = order.offset.value
+            db_order.price = order.price
+            db_order.volume = order.volume
+            db_order.traded = order.traded
+            db_order.status = order.status.value
+            db_order.time = order.time
+
+            return db_order
+
+        def to_order(self):
+            """
+            Generate OrderData object from DbOrderData.
+            """
+            order = OrderData(
+                symbol=self.symbol,
+                exchange=Exchange(self.exchange),
+                orderid=self.orderid,
+                type=OrderType(self.type),
+                direction=Direction(self.direction),
+                offset=Offset(self.offset),
+                price=self.price,
+                volume=self.volume,
+                traded=self.traded,
+                status=Status(self.status),
+                gateway_name="DB",
+            )
+
+            return order
+
+        @staticmethod
+        def save_all(objs: List["DbOrderData"]):
+            dicts = [i.to_dict() for i in objs]
+            with db.atomic():
+                if driver is Driver.POSTGRESQL:
+                    for order in dicts:
+                        DbOrderData.insert(order).on_conflict(
+                            update=order,
+                            conflict_target=(
+                                DbOrderData.orderid
+                            ),
+                        ).execute()
+                else:
+                    for c in chunked(dicts, 50):
+                        DbOrderData.insert_many(c).on_conflict_replace().execute()
+
+    class DbTradeData(ModelBase):
+        """
+        Trade data for database storage.
+
+        Index is defined unique with (tradeid)
+        """
+
+        id = AutoField()
+
+        symbol: str = CharField()
+        exchange: str = CharField()
+        orderid: str = CharField()
+        tradeid: str = CharField(unique=True)
+
+        direction: str = CharField()
+        offset: str = CharField()
+        price: float = FloatField()
+        volume: float = FloatField()
+        time: str = CharField()
+        update_date: datetime = DateTimeField(default=datetime.now)
+
+        class Meta:
+            database = db
+
+        @staticmethod
+        def from_trade(trade: TradeData):
+            """
+            Generate DbTradeData object from TradeData.
+            """
+            db_trade = DbTradeData()
+
+            db_trade.symbol = trade.symbol
+            db_trade.exchange = trade.exchange.value
+            db_trade.orderid = trade.orderid
+            db_trade.tradeid = trade.tradeid
+
+            db_trade.direction = trade.direction.value
+            db_trade.offset = trade.offset.value
+            db_trade.price = trade.price
+            db_trade.volume = trade.volume
+            db_trade.time = trade.time
+
+            return db_trade
+
+        def to_trade(self):
+            """
+            Generate TradeData object from DbTradeData.
+            """
+            trade = TradeData(
+                symbol=self.symbol,
+                exchange=Exchange(self.exchange),
+                orderid=self.orderid,
+                tradeid=self.tradeid,
+                direction=Direction(self.direction),
+                offset=Offset(self.offset),
+                price=self.price,
+                volume=self.volume,
+                time=self.time,
+                gateway_name="DB",
+            )
+
+            return trade
+
+        @staticmethod
+        def save_all(objs: List["DbTradeData"]):
+            dicts = [i.to_dict() for i in objs]
+            with db.atomic():
+                if driver is Driver.POSTGRESQL:
+                    for trade in dicts:
+                        DbTradeData.insert(trade).on_conflict(
+                            update=trade,
+                            conflict_target=(
+                                DbTradeData.tradeid
+                            ),
+                        ).execute()
+                else:
+                    for c in chunked(dicts, 50):
+                        DbTradeData.insert_many(c).on_conflict_replace().execute()
+
     db.connect()
-    db.create_tables([DbBarData, DbTickData])
-    return DbBarData, DbTickData
+    db.create_tables([DbBarData, DbTickData, DbOrderData, DbTradeData])
+    return DbBarData, DbTickData, DbOrderData, DbTradeData
 
 
 class SqlManager(BaseDatabaseManager):
 
-    def __init__(self, class_bar: Type[Model], class_tick: Type[Model]):
+    def __init__(self, class_bar: Type[Model], class_tick: Type[Model], class_order: Type[Model],
+                 class_trade: Type[Model]):
         self.class_bar = class_bar
         self.class_tick = class_tick
+        self.class_order = class_order
+        self.class_trade = class_trade
 
     def load_bar_data(
         self,
@@ -376,6 +541,14 @@ class SqlManager(BaseDatabaseManager):
     def save_tick_data(self, datas: Sequence[TickData]):
         ds = [self.class_tick.from_tick(i) for i in datas]
         self.class_tick.save_all(ds)
+
+    def save_order_data(self, datas: Sequence["OrderData"]):
+        ds = [self.class_order.from_order(i) for i in datas]
+        self.class_order.save_all(ds)
+
+    def save_trade_data(self, datas: Sequence["TradeData"]):
+        ds = [self.class_trade.from_trade(i) for i in datas]
+        self.class_trade.save_all(ds)
 
     def get_newest_bar_data(
         self, symbol: str, exchange: "Exchange", interval: "Interval"
