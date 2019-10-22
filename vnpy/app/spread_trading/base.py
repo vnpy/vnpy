@@ -30,6 +30,8 @@ class LegData:
         self.short_pos: float = 0
         self.net_pos: float = 0
 
+        self.last_price: float = 0
+
         # Tick data buf
         self.tick: TickData = None
 
@@ -39,6 +41,7 @@ class LegData:
         self.ask_price = tick.ask_price_1
         self.bid_volume = tick.bid_volume_1
         self.ask_volume = tick.ask_volume_1
+        self.last_price = tick.last_price
 
         self.tick = tick
 
@@ -194,7 +197,14 @@ class SpreadData:
             leg_short_pos = 0
 
             trading_multiplier = self.trading_multipliers[leg.vt_symbol]
-            adjusted_net_pos = leg.net_pos / trading_multiplier
+            inverse_contract = self.inverse_contracts[leg.vt_symbol]
+
+            if not inverse_contract:
+                net_pos = leg.net_pos
+            else:
+                net_pos = calculate_inverse_volume(leg.net_pos, leg.last_price)
+
+            adjusted_net_pos = net_pos / trading_multiplier
 
             if adjusted_net_pos > 0:
                 adjusted_net_pos = floor(adjusted_net_pos)
