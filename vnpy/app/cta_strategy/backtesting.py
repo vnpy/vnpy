@@ -6,7 +6,7 @@ from functools import lru_cache
 from time import time
 import multiprocessing
 import random
-
+from empyrical import sortino_ratio
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -419,7 +419,7 @@ class BacktestingEngine:
                 sharpe_ratio = 0
 
             return_drawdown_ratio = -total_return / max_ddpercent
-
+            sortino_info = sortino_ratio(df['return'])
         # Output
         if output:
             self.output("-" * 30)
@@ -453,6 +453,7 @@ class BacktestingEngine:
             self.output(f"日均收益率：\t{daily_return:,.2f}%")
             self.output(f"收益标准差：\t{return_std:,.2f}%")
             self.output(f"Sharpe Ratio：\t{sharpe_ratio:,.2f}")
+            self.output(f"sortino_info：\t{sortino_info:,.2f}")            
             self.output(f"收益回撤比：\t{return_drawdown_ratio:,.2f}")
 
         statistics = {
@@ -480,6 +481,7 @@ class BacktestingEngine:
             "daily_return": daily_return,
             "return_std": return_std,
             "sharpe_ratio": sharpe_ratio,
+            'sortino_info': sortino_info,
             "return_drawdown_ratio": return_drawdown_ratio,
         }
 
