@@ -471,7 +471,10 @@ class BitmexRestApi(RestClient):
         headers = request.response.headers
 
         self.rate_limit_remaining = int(headers["x-ratelimit-remaining"])
-        self.rate_limit_sleep = int(headers.get("Retry-After", 0)) + 1      # 1 extra second sleep
+
+        self.rate_limit_sleep = int(headers.get("Retry-After", 0))
+        if self.rate_limit_sleep:
+            self.rate_limit_sleep += 1      # 1 extra second sleep
 
     def reset_rate_limit(self):
         """
@@ -665,8 +668,6 @@ class BitmexWebsocketApi(WebsocketClient):
             tick.__setattr__("ask_price_%s" % (n + 1), price)
             tick.__setattr__("ask_volume_%s" % (n + 1), volume)
 
-        tick.datetime = datetime.strptime(
-            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
         self.gateway.on_tick(copy(tick))
 
     def on_trade(self, d):

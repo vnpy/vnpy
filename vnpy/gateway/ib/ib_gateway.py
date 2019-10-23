@@ -13,7 +13,7 @@ from ibapi.contract import Contract, ContractDetails
 from ibapi.execution import Execution
 from ibapi.order import Order
 from ibapi.order_state import OrderState
-from ibapi.ticktype import TickType
+from ibapi.ticktype import TickType, TickTypeEnum
 from ibapi.wrapper import EWrapper
 from ibapi.errors import BAD_LENGTH
 from ibapi.common import BarData as IbBarData
@@ -64,15 +64,19 @@ EXCHANGE_VT2IB = {
     Exchange.ICE: "ICE",
     Exchange.SEHK: "SEHK",
     Exchange.HKFE: "HKFE",
+    Exchange.CFE: "CFE"
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}
 
 STATUS_IB2VT = {
-    "Submitted": Status.NOTTRADED,
-    "Filled": Status.ALLTRADED,
-    "Cancelled": Status.CANCELLED,
+    "ApiPending": Status.SUBMITTING,
     "PendingSubmit": Status.SUBMITTING,
     "PreSubmitted": Status.NOTTRADED,
+    "Submitted": Status.NOTTRADED,
+    "ApiCancelled": Status.CANCELLED,
+    "Cancelled": Status.CANCELLED,
+    "Filled": Status.ALLTRADED,
+    "Inactive": Status.REJECTED,
 }
 
 PRODUCT_VT2IB = {
@@ -316,7 +320,7 @@ class IbApi(EWrapper):
         """
         super(IbApi, self).tickString(reqId, tickType, value)
 
-        if tickType != "45":
+        if tickType != TickTypeEnum.LAST_TIMESTAMP:
             return
 
         tick = self.ticks[reqId]
@@ -357,8 +361,12 @@ class IbApi(EWrapper):
 
         orderid = str(orderId)
         order = self.orders.get(orderid, None)
-        order.status = STATUS_IB2VT[status]
         order.traded = filled
+
+        # To filter PendingCancel status
+        order_status = STATUS_IB2VT.get(status, None)
+        if order_status:
+            order.status = order_status
 
         self.gateway.on_order(copy(order))
 
@@ -501,9 +509,9 @@ class IbApi(EWrapper):
             gateway_name=self.gateway_name,
         )
 
-        self.gateway.on_contract(contract)
-
-        self.contracts[contract.vt_symbol] = contract
+        if contract.vt_symbol not in self.contracts:
+            self.gateway.on_contract(contract)
+            self.contracts[contract.vt_symbol] = contract
 
     def execDetails(
         self, reqId: int, contract: Contract, execution: Execution

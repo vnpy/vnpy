@@ -45,8 +45,6 @@ class BacktesterEngine(BaseEngine):
         # Optimization result
         self.result_values = None
 
-        self.load_strategy_class()
-
     def init_engine(self):
         """"""
         self.write_log("初始化CTA回测引擎")
@@ -55,6 +53,7 @@ class BacktesterEngine(BaseEngine):
         # Redirect log from backtesting engine outside.
         self.backtesting_engine.output = self.write_log
 
+        self.load_strategy_class()
         self.write_log("策略文件加载完成")
 
         self.init_rqdata()
@@ -91,14 +90,16 @@ class BacktesterEngine(BaseEngine):
         """
         for dirpath, dirnames, filenames in os.walk(path):
             for filename in filenames:
+                # Load python source code file
                 if filename.endswith(".py"):
                     strategy_module_name = ".".join(
                         [module_name, filename.replace(".py", "")])
+                    self.load_strategy_class_from_module(strategy_module_name)
+                # Load compiled pyd binary file
                 elif filename.endswith(".pyd"):
                     strategy_module_name = ".".join(
                         [module_name, filename.split(".")[0]])
-
-                self.load_strategy_class_from_module(strategy_module_name)
+                    self.load_strategy_class_from_module(strategy_module_name)
 
     def load_strategy_class_from_module(self, module_name: str):
         """
@@ -131,6 +132,7 @@ class BacktesterEngine(BaseEngine):
         size: int,
         pricetick: float,
         capital: int,
+        inverse: bool,
         setting: dict
     ):
         """"""
@@ -149,7 +151,8 @@ class BacktesterEngine(BaseEngine):
             slippage=slippage,
             size=size,
             pricetick=pricetick,
-            capital=capital
+            capital=capital,
+            inverse=inverse
         )
 
         strategy_class = self.classes[class_name]
@@ -182,6 +185,7 @@ class BacktesterEngine(BaseEngine):
         size: int,
         pricetick: float,
         capital: int,
+        inverse: bool,
         setting: dict
     ):
         if self.thread:
@@ -202,6 +206,7 @@ class BacktesterEngine(BaseEngine):
                 size,
                 pricetick,
                 capital,
+                inverse,
                 setting
             )
         )
@@ -238,6 +243,7 @@ class BacktesterEngine(BaseEngine):
         size: int,
         pricetick: float,
         capital: int,
+        inverse: bool,
         optimization_setting: OptimizationSetting,
         use_ga: bool
     ):
@@ -261,7 +267,8 @@ class BacktesterEngine(BaseEngine):
             slippage=slippage,
             size=size,
             pricetick=pricetick,
-            capital=capital
+            capital=capital,
+            inverse=inverse
         )
 
         strategy_class = self.classes[class_name]
@@ -301,6 +308,7 @@ class BacktesterEngine(BaseEngine):
         size: int,
         pricetick: float,
         capital: int,
+        inverse: bool,
         optimization_setting: OptimizationSetting,
         use_ga: bool
     ):
@@ -322,6 +330,7 @@ class BacktesterEngine(BaseEngine):
                 size,
                 pricetick,
                 capital,
+                inverse,
                 optimization_setting,
                 use_ga
             )
@@ -354,18 +363,24 @@ class BacktesterEngine(BaseEngine):
 
         contract = self.main_engine.get_contract(vt_symbol)
 
-        # If history data provided in gateway, then query
-        if contract and contract.history_data:
-            data = self.main_engine.query_history(req, contract.gateway_name)
-        # Otherwise use RQData to query data
-        else:
-            data = rqdata_client.query_history(req)
+        try:
+            # If history data provided in gateway, then query
+            if contract and contract.history_data:
+                data = self.main_engine.query_history(
+                    req, contract.gateway_name
+                )
+            # Otherwise use RQData to query data
+            else:
+                data = rqdata_client.query_history(req)
 
-        if data:
-            database_manager.save_bar_data(data)
-            self.write_log(f"{vt_symbol}-{interval}历史数据下载完成")
-        else:
-            self.write_log(f"数据下载失败，无法获取{vt_symbol}的历史数据")
+            if data:
+                database_manager.save_bar_data(data)
+                self.write_log(f"{vt_symbol}-{interval}历史数据下载完成")
+            else:
+                self.write_log(f"数据下载失败，无法获取{vt_symbol}的历史数据")
+        except Exception:
+            msg = f"数据下载失败，触发异常：\n{traceback.format_exc()}"
+            self.write_log(msg)
 
         # Clear thread object handler.
         self.thread = None

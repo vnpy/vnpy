@@ -37,10 +37,10 @@ class BacktesterManager(QtWidgets.QWidget):
 
         self.target_display = ""
 
-        self.init_strategy_settings()
         self.init_ui()
         self.register_event()
         self.backtester_engine.init_engine()
+        self.init_strategy_settings()
 
     def init_strategy_settings(self):
         """"""
@@ -50,13 +50,14 @@ class BacktesterManager(QtWidgets.QWidget):
             setting = self.backtester_engine.get_default_setting(class_name)
             self.settings[class_name] = setting
 
+        self.class_combo.addItems(self.class_names)
+
     def init_ui(self):
         """"""
         self.setWindowTitle("CTA回测")
 
         # Setting Part
         self.class_combo = QtWidgets.QComboBox()
-        self.class_combo.addItems(self.class_names)
 
         self.symbol_line = QtWidgets.QLineEdit("IF88.CFFEX")
 
@@ -83,6 +84,9 @@ class BacktesterManager(QtWidgets.QWidget):
         self.size_line = QtWidgets.QLineEdit("300")
         self.pricetick_line = QtWidgets.QLineEdit("0.2")
         self.capital_line = QtWidgets.QLineEdit("1000000")
+
+        self.inverse_combo = QtWidgets.QComboBox()
+        self.inverse_combo.addItems(["正向", "反向"])
 
         backtesting_button = QtWidgets.QPushButton("开始回测")
         backtesting_button.clicked.connect(self.start_backtesting)
@@ -136,6 +140,7 @@ class BacktesterManager(QtWidgets.QWidget):
         form.addRow("合约乘数", self.size_line)
         form.addRow("价格跳动", self.pricetick_line)
         form.addRow("回测资金", self.capital_line)
+        form.addRow("合约模式", self.inverse_combo)
 
         left_vbox = QtWidgets.QVBoxLayout()
         left_vbox.addLayout(form)
@@ -248,6 +253,11 @@ class BacktesterManager(QtWidgets.QWidget):
         pricetick = float(self.pricetick_line.text())
         capital = float(self.capital_line.text())
 
+        if self.inverse_combo.currentText() == "正向":
+            inverse = False
+        else:
+            inverse = True
+
         old_setting = self.settings[class_name]
         dialog = BacktestingSettingEditor(class_name, old_setting)
         i = dialog.exec()
@@ -268,6 +278,7 @@ class BacktesterManager(QtWidgets.QWidget):
             size,
             pricetick,
             capital,
+            inverse,
             new_setting
         )
 
@@ -298,6 +309,11 @@ class BacktesterManager(QtWidgets.QWidget):
         pricetick = float(self.pricetick_line.text())
         capital = float(self.capital_line.text())
 
+        if self.inverse_combo.currentText() == "正向":
+            inverse = False
+        else:
+            inverse = True
+
         parameters = self.settings[class_name]
         dialog = OptimizationSettingEditor(class_name, parameters)
         i = dialog.exec()
@@ -318,6 +334,7 @@ class BacktesterManager(QtWidgets.QWidget):
             size,
             pricetick,
             capital,
+            inverse,
             optimization_setting,
             use_ga
         )
@@ -332,7 +349,7 @@ class BacktesterManager(QtWidgets.QWidget):
         end_date = self.end_date_edit.date()
 
         start = datetime(start_date.year(), start_date.month(), start_date.day())
-        end = datetime(end_date.year(), end_date.month(), end_date.day())
+        end = datetime(end_date.year(), end_date.month(), end_date.day(), 23, 59, 59)
 
         self.backtester_engine.start_downloading(
             vt_symbol,

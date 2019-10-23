@@ -38,6 +38,7 @@ from vnpy.trader.constant import (
 from vnpy.trader.utility import load_json, save_json, extract_vt_symbol, round_to
 from vnpy.trader.database import database_manager
 from vnpy.trader.rqdata import rqdata_client
+from vnpy.trader.converter import OffsetConverter
 
 from .base import (
     APP_NAME,
@@ -50,7 +51,6 @@ from .base import (
     STOPORDER_PREFIX
 )
 from .template import CtaTemplate
-from .converter import OffsetConverter
 
 
 STOP_STATUS_MAP = {
@@ -91,7 +91,7 @@ class CtaEngine(BaseEngine):
         self.stop_order_count = 0   # for generating stop_orderid
         self.stop_orders = {}       # stop_orderid: stop_order
 
-        self.init_executor = ThreadPoolExecutor(max_workers=3)
+        self.init_executor = ThreadPoolExecutor(max_workers=1)
 
         self.rq_client = None
         self.rq_symbols = set()
