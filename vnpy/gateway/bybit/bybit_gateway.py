@@ -845,7 +845,7 @@ class BybitWebsocketApi(WebsocketClient):
                 exchange=Exchange.BYBIT,
                 direction=Direction.NET,
                 volume=volume,
-                price=d["entry_price"],
+                price=float(d["entry_price"]),
                 gateway_name=self.gateway_name
             )
             self.gateway.on_position(position)
