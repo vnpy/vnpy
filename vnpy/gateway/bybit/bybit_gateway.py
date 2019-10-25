@@ -787,7 +787,7 @@ class BybitWebsocketApi(WebsocketClient):
                 orderid=order_id,
                 tradeid=d["exec_id"],
                 direction=DIRECTION_BYBIT2VT[d["side"]],
-                price=d["price"],
+                price=float(d["price"]),
                 volume=d["exec_qty"],
                 time=d["trade_time"],
                 gateway_name=self.gateway_name,
@@ -822,7 +822,7 @@ class BybitWebsocketApi(WebsocketClient):
                     orderid=local_orderid,
                     type=ORDER_TYPE_BYBIT2VT[d["order_type"]],
                     direction=DIRECTION_BYBIT2VT[d["side"]],
-                    price=d["price"],
+                    price=float(d["price"]),
                     volume=d["qty"],
                     traded=d["cum_exec_qty"],
                     status=STATUS_BYBIT2VT[d["order_status"]],
@@ -845,7 +845,7 @@ class BybitWebsocketApi(WebsocketClient):
                 exchange=Exchange.BYBIT,
                 direction=Direction.NET,
                 volume=volume,
-                price=d["entry_price"],
+                price=float(d["entry_price"]),
                 gateway_name=self.gateway_name
             )
             self.gateway.on_position(position)
