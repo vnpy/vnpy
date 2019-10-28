@@ -58,7 +58,9 @@ STATUS_HBDM2VT = {
 
 ORDERTYPE_VT2HBDM = {
     OrderType.MARKET: "opponent",
-    OrderType.LIMIT: "limit"
+    OrderType.LIMIT: "limit",
+    OrderType.FOK: "fok",
+    OrderType.FAK: "ioc"
 }
 ORDERTYPE_HBDM2VT = {v: k for k, v in ORDERTYPE_VT2HBDM.items()}
 ORDERTYPE_HBDM2VT[1] = OrderType.LIMIT
