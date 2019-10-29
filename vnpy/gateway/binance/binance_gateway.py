@@ -107,8 +107,6 @@ class BinanceGateway(BaseGateway):
         self.market_ws_api = BinanceDataWebsocketApi(self)
         self.rest_api = BinanceRestApi(self)
 
-        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
-
     def connect(self, setting: dict):
         """"""
         key = setting["key"]
@@ -120,6 +118,8 @@ class BinanceGateway(BaseGateway):
         self.rest_api.connect(key, secret, session_number,
                               proxy_host, proxy_port)
         self.market_ws_api.connect(proxy_host, proxy_port)
+
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
     def subscribe(self, req: SubscribeRequest):
         """"""
