@@ -1,10 +1,9 @@
 from typing import Dict, List
-from math import floor, ceil
 from datetime import datetime
 
 from vnpy.trader.object import TickData, PositionData, TradeData
 from vnpy.trader.constant import Direction, Offset, Exchange
-from vnpy.trader.utility import floor_to
+from vnpy.trader.utility import floor_to, ceil_to
 
 
 EVENT_SPREAD_DATA = "eSpreadData"
@@ -222,10 +221,10 @@ class SpreadData:
             adjusted_net_pos = net_pos / trading_multiplier
 
             if adjusted_net_pos > 0:
-                adjusted_net_pos = floor(adjusted_net_pos)
+                adjusted_net_pos = floor_to(adjusted_net_pos, self.min_volume)
                 leg_long_pos = adjusted_net_pos
             else:
-                adjusted_net_pos = ceil(adjusted_net_pos)
+                adjusted_net_pos = ceil_to(adjusted_net_pos, self.min_volume)
                 leg_short_pos = abs(adjusted_net_pos)
 
             if not n:
@@ -261,9 +260,9 @@ class SpreadData:
         spread_volume = leg_volume / trading_multiplier
 
         if spread_volume > 0:
-            spread_volume = floor(spread_volume)
+            spread_volume = floor_to(spread_volume, self.min_volume)
         else:
-            spread_volume = ceil(spread_volume)
+            spread_volume = ceil_to(spread_volume, self.min_volume)
 
         return spread_volume
 

@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import Callable, Dict
 from decimal import Decimal
-from math import floor
+from math import floor, ceil
 
 import numpy as np
 import talib
@@ -132,6 +132,16 @@ def floor_to(value: float, target: float) -> float:
     value = Decimal(str(value))
     target = Decimal(str(target))
     result = float(int(floor(value / target)) * target)
+    return result
+
+
+def ceil_to(value: float, target: float) -> float:
+    """
+    Similar to math.ceil function, but to target float number.
+    """
+    value = Decimal(str(value))
+    target = Decimal(str(target))
+    result = float(int(ceil(value / target)) * target)
     return result
 
 
