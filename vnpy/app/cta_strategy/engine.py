@@ -91,7 +91,7 @@ class CtaEngine(BaseEngine):
         self.stop_order_count = 0   # for generating stop_orderid
         self.stop_orders = {}       # stop_orderid: stop_order
 
-        self.init_executor = ThreadPoolExecutor(max_workers=1)
+        self.init_executor = ThreadPoolExecutor(max_workers=3)
 
         self.rq_client = None
         self.rq_symbols = set()
