@@ -128,11 +128,13 @@ class SpreadDataEngine:
             for leg in spread.legs.values():
                 price_multiplier = spread.price_multipliers[leg.vt_symbol]
                 trading_multiplier = spread.trading_multipliers[leg.vt_symbol]
+                inverse_contract = spread.inverse_contracts[leg.vt_symbol]
 
                 leg_setting = {
                     "vt_symbol": leg.vt_symbol,
                     "price_multiplier": price_multiplier,
-                    "trading_multiplier": trading_multiplier
+                    "trading_multiplier": trading_multiplier,
+                    "inverse_contract": inverse_contract
                 }
                 leg_settings.append(leg_setting)
 
@@ -268,7 +270,7 @@ class SpreadDataEngine:
             legs.append(leg)
             price_multipliers[vt_symbol] = leg_setting["price_multiplier"]
             trading_multipliers[vt_symbol] = leg_setting["trading_multiplier"]
-            inverse_contracts[vt_symbol] = leg_setting.get("inverse_contracts", False)
+            inverse_contracts[vt_symbol] = leg_setting.get("inverse_contract", False)
 
         spread = SpreadData(
             name,

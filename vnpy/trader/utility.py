@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 from typing import Callable, Dict
 from decimal import Decimal
+from math import floor
 
 import numpy as np
 import talib
@@ -122,6 +123,16 @@ def round_to(value: float, target: float) -> float:
     target = Decimal(str(target))
     rounded = float(int(round(value / target)) * target)
     return rounded
+
+
+def floor_to(value: float, target: float) -> float:
+    """
+    Similar to math.floor function, but to target float number.
+    """
+    value = Decimal(str(value))
+    target = Decimal(str(target))
+    result = float(int(floor(value / target)) * target)
+    return result
 
 
 class BarGenerator:

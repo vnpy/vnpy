@@ -4,6 +4,7 @@ from datetime import datetime
 
 from vnpy.trader.object import TickData, PositionData, TradeData
 from vnpy.trader.constant import Direction, Offset, Exchange
+from vnpy.trader.utility import floor_to
 
 
 EVENT_SPREAD_DATA = "eSpreadData"
@@ -94,6 +95,8 @@ class SpreadData:
         self.active_leg: LegData = None
         self.passive_legs: List[LegData] = []
 
+        self.min_volume = 0.1
+
         # For calculating spread price
         self.price_multipliers: Dict[str, int] = price_multipliers
 
@@ -168,15 +171,23 @@ class SpreadData:
                     leg.ask_volume, leg.ask_price, leg.size)
 
             if trading_multiplier > 0:
-                adjusted_bid_volume = floor(
-                    leg_bid_volume / trading_multiplier)
-                adjusted_ask_volume = floor(
-                    leg_ask_volume / trading_multiplier)
+                adjusted_bid_volume = floor_to(
+                    leg_bid_volume / trading_multiplier,
+                    self.min_volume
+                )
+                adjusted_ask_volume = floor_to(
+                    leg_ask_volume / trading_multiplier,
+                    self.min_volume
+                )
             else:
-                adjusted_bid_volume = floor(
-                    leg_bid_volume / abs(trading_multiplier))
-                adjusted_ask_volume = floor(
-                    leg_ask_volume / abs(trading_multiplier))
+                adjusted_bid_volume = floor_to(
+                    leg_bid_volume / abs(trading_multiplier),
+                    self.min_volume
+                )
+                adjusted_ask_volume = floor_to(
+                    leg_ask_volume / abs(trading_multiplier),
+                    self.min_volume
+                )
 
             # For the first leg, just initialize
             if not n:
