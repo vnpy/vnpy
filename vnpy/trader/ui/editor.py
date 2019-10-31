@@ -6,12 +6,14 @@ from PyQt5 import QtWidgets, Qsci, QtGui
 
 class CodeEditor(QtWidgets.QMainWindow):
     """"""
+    NEW_FILE_NAME = "Untitled"
 
     def __init__(self):
         """"""
         super().__init__()
 
-        self.editors: [str, Qsci.QsciScintilla] = {}
+        self.new_file_count = 1
+        self.editor_path_map: Dict[Qsci.QsciScintilla, str] = {}
 
         self.init_ui()
 
@@ -122,20 +124,27 @@ class CodeEditor(QtWidgets.QMainWindow):
 
         return editor
 
-    def open_editor(self, file_path: str):
+    def open_editor(self, file_path: str = ""):
         """"""
-        if file_path in self.editors:
-            editor = self.editors[file_path]
-            editor.show()
-            return
+        # Show editor tab if file already opened
+        if file_path:
+            for editor, path in self.editor_path_map.items():
+                if file_path == path:
+                    editor.show()
+                    return
 
+        # Otherwise create new editor
         editor = self.new_editor()
-        self.editors[file_path] = editor
+        self.editor_path_map[editor] = file_path
 
-        buf = open(file_path, encoding="UTF8").read()
-        editor.setText(buf)
+        if file_path:
+            buf = open(file_path, encoding="UTF8").read()
+            editor.setText(buf)
+            file_name = Path(file_path).name
+        else:
+            file_name = f"{self.NEW_FILE_NAME}-{self.new_file_count}"
+            self.new_file_count += 1
 
-        file_name = Path(file_path).name
         i = self.tab.addTab(editor, file_name)
         self.tab.setCurrentIndex(i)
 
@@ -155,31 +164,34 @@ class CodeEditor(QtWidgets.QMainWindow):
 
     def new_file(self):
         """"""
-        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
-            self, "新建", "", "Python(*.py)")
-
-        if file_path:
-            open(file_path, "a").close()
-            self.open_editor(file_path)
+        self.open_editor("")
 
     def save_file(self):
         """"""
-        pass
+        editor = self.get_active_editor()
+        file_path = self.editor_path_map[editor]
+
+        if self.NEW_FILE_NAME in file_path:
+            file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
+                self, "保存", "", "Python(*.py)")
+
+        if file_path:
+            self.editor_path_map[editor] = file_path
+
+            with open(file_path, "w") as f:
+                f.write(editor.text())
 
     def copy(self):
         """"""
-        editor = self.get_active_editor()
-        editor.copy()
+        self.get_active_editor().copy()
 
     def paste(self):
         """"""
-        editor = self.get_active_editor()
-        editor.paste()
+        self.get_active_editor.paste()
 
     def cut(self):
         """"""
-        editor = self.get_active_editor()
-        editor.cut()
+        self.get_active_editor.cut()
 
     def show_shortcut(self):
         """"""
@@ -195,9 +207,7 @@ class CodeEditor(QtWidgets.QMainWindow):
 
     def get_active_editor(self):
         """"""
-        for editor in self.editors.values():
-            if editor.isVisible():
-                return editor
+        return self.tab.currentWidget()
 
 
 if __name__ == "__main__":
