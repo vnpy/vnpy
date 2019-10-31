@@ -278,6 +278,7 @@ class PositionHolding:
         # If no td_volume, we close opposite yd position first
         # then open new position
         else:
+            close_volume = min(req.volume, yd_available)
             open_volume = max(0, req.volume - yd_available)
             req_list = []
 
@@ -287,6 +288,7 @@ class PositionHolding:
                     req_yd.offset = Offset.CLOSEYESTERDAY
                 else:
                     req_yd.offset = Offset.CLOSE
+                req_yd.volume = close_volume
                 req_list.append(req_yd)
 
             if open_volume:
