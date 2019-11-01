@@ -4,6 +4,7 @@ import traceback
 from datetime import datetime
 from threading import Thread
 from pathlib import Path
+from inspect import getfile
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
@@ -115,6 +116,12 @@ class BacktesterEngine(BaseEngine):
         except:  # noqa
             msg = f"策略文件{module_name}加载失败，触发异常：\n{traceback.format_exc()}"
             self.write_log(msg)
+
+    def reload_strategy_class(self):
+        """"""
+        self.classes.clear()
+        self.load_strategy_class()
+        self.write_log("策略文件重载刷新完成")
 
     def get_strategy_class_names(self):
         """"""
@@ -425,3 +432,9 @@ class BacktesterEngine(BaseEngine):
     def get_history_data(self):
         """"""
         return self.backtesting_engine.history_data
+
+    def get_strategy_class_file(self, class_name: str):
+        """"""
+        strategy_class = self.classes[class_name]
+        file_path = getfile(strategy_class)
+        return file_path
