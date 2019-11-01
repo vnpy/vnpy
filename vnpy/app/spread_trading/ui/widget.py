@@ -228,7 +228,7 @@ class SpreadAlgoWidget(QtWidgets.QFrame):
         )
 
         self.offset_combo = QtWidgets.QComboBox()
-        self.offset_combo.addItem(
+        self.offset_combo.addItems(
             [Offset.NONE.value, Offset.OPEN.value, Offset.CLOSE.value]
         )
 

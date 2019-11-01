@@ -136,7 +136,7 @@ class SpreadData:
         self.active_leg: LegData = None
         self.passive_legs: List[LegData] = []
 
-        self.min_volume = 0.1
+        self.min_volume = 0.001
 
         # For calculating spread price
         self.price_multipliers: Dict[str, int] = price_multipliers

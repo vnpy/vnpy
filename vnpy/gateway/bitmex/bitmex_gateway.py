@@ -744,6 +744,10 @@ class BitmexWebsocketApi(WebsocketClient):
             gateway_name=self.gateway_name,
         )
 
+        # avgEntryPrice may be None instead of 0 sometimes
+        if position.price is None:
+            position.price = 0
+
         self.gateway.on_position(position)
 
     def on_account(self, d):
