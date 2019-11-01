@@ -8,6 +8,14 @@ class CodeEditor(QtWidgets.QMainWindow):
     """"""
     NEW_FILE_NAME = "Untitled"
 
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        """"""
+        if not cls._instance:
+            cls._instance = QtWidgets.QMainWindow.__new__(cls, *args, **kwargs)
+        return cls._instance
+
     def __init__(self, main_engine=None, event_engine=None):
         """"""
         super().__init__()
@@ -441,8 +449,6 @@ if __name__ == "__main__":
     from vnpy.trader.ui import create_qapp
 
     app = create_qapp()
-
     editor = CodeEditor()
     editor.show()
-
     app.exec_()

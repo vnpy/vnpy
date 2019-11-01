@@ -143,7 +143,7 @@ class MainWindow(QtWidgets.QMainWindow):
             help_menu,
             "代码编辑",
             "editor.ico",
-            partial(self.open_widget, CodeEditor, "editor"),
+            partial(self.open_widget, CodeEditor, "editor")
         )
         self.add_toolbar_action(
             "代码编辑",
