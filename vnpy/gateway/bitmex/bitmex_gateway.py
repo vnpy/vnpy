@@ -740,6 +740,7 @@ class BitmexWebsocketApi(WebsocketClient):
             exchange=Exchange.BITMEX,
             direction=Direction.NET,
             volume=d.get("currentQty", 0),
+            price=d.get("avgEntryPrice", 0),
             gateway_name=self.gateway_name,
         )
 
