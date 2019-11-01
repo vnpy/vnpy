@@ -199,8 +199,8 @@ class SpreadDataEngine:
         leg = self.legs.get(contract.vt_symbol, None)
 
         if leg:
-            # Update contract size data
-            leg.size = contract.size
+            # Update contract data
+            leg.update_contract(contract)
 
             req = SubscribeRequest(
                 contract.symbol, contract.exchange
@@ -228,7 +228,7 @@ class SpreadDataEngine:
             # Subscribe market data
             contract = self.main_engine.get_contract(vt_symbol)
             if contract:
-                leg.size = contract.size
+                leg.update_contract(contract)
 
                 req = SubscribeRequest(
                     contract.symbol,

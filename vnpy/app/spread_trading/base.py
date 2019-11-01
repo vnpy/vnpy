@@ -1,7 +1,7 @@
 from typing import Dict, List
 from datetime import datetime
 
-from vnpy.trader.object import TickData, PositionData, TradeData
+from vnpy.trader.object import TickData, PositionData, TradeData, ContractData
 from vnpy.trader.constant import Direction, Offset, Exchange
 from vnpy.trader.utility import floor_to, ceil_to
 
@@ -31,12 +31,19 @@ class LegData:
         self.net_pos: float = 0
 
         self.last_price: float = 0
+        self.net_pos_price: float = 0       # Average entry price of net position
 
         # Tick data buf
         self.tick: TickData = None
 
-        # Contract size
+        # Contract data
         self.size: float = 0
+        self.net_position: bool = False
+
+    def update_contract(self, contract: ContractData):
+        """"""
+        self.size = contract.size
+        self.net_position = contract.net_position
 
     def update_tick(self, tick: TickData):
         """"""
@@ -52,6 +59,7 @@ class LegData:
         """"""
         if position.direction == Direction.NET:
             self.net_pos = position.volume
+            self.net_pos_price = position.price
         else:
             if position.direction == Direction.LONG:
                 self.long_pos = position.volume
@@ -61,18 +69,52 @@ class LegData:
 
     def update_trade(self, trade: TradeData):
         """"""
-        if trade.direction == Direction.LONG:
-            if trade.offset == Offset.OPEN:
-                self.long_pos += trade.volume
-            else:
-                self.short_pos -= trade.volume
-        else:
-            if trade.offset == Offset.OPEN:
-                self.short_pos += trade.volume
-            else:
-                self.long_pos -= trade.volume
+        # Only update net pos for contract with net position mode
+        if self.net_position:
+            trade_cost = trade.volume * trade.price
+            old_cost = self.net_pos * self.net_pos_price
 
-        self.net_pos = self.long_pos - self.net_pos
+            if trade.direction == Direction.LONG:
+                new_pos = self.net_pos + trade.volume
+
+                if self.net_pos >= 0:
+                    new_cost = old_cost + trade_cost
+                    self.net_pos_price = new_cost / new_pos
+                else:
+                    # If all previous short position closed
+                    if not new_pos:
+                        self.net_pos_price = 0
+                    # If only part short position closed
+                    elif new_pos > 0:
+                        self.net_pos_price = trade.price
+            else:
+                new_pos = self.net_pos - trade.volume
+
+                if self.net_pos <= 0:
+                    new_cost = old_cost - trade_cost
+                    self.net_pos_price = new_cost / new_pos
+                else:
+                    # If all previous long position closed
+                    if not new_pos:
+                        self.net_pos_price = 0
+                    # If only part long position closed
+                    elif new_pos < 0:
+                        self.net_pos_price = trade.price
+
+            self.net_pos = new_pos
+        else:
+            if trade.direction == Direction.LONG:
+                if trade.offset == Offset.OPEN:
+                    self.long_pos += trade.volume
+                else:
+                    self.short_pos -= trade.volume
+            else:
+                if trade.offset == Offset.OPEN:
+                    self.short_pos += trade.volume
+                else:
+                    self.long_pos -= trade.volume
+
+            self.net_pos = self.long_pos - self.net_pos
 
 
 class SpreadData:
@@ -216,7 +258,7 @@ class SpreadData:
                 net_pos = leg.net_pos
             else:
                 net_pos = calculate_inverse_volume(
-                    leg.net_pos, leg.last_price, leg.size)
+                    leg.net_pos, leg.net_pos_price, leg.size)
 
             adjusted_net_pos = net_pos / trading_multiplier
 
