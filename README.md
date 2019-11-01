@@ -167,24 +167,24 @@ from vnpy.gateway.ctp import CtpGateway
 from vnpy.app.cta_strategy import CtaStrategyApp
 from vnpy.app.cta_backtester import CtaBacktesterApp
 
-def main（）:
+def main():
     """Start VN Trader"""
-    qapp = create_qapp（）
+    qapp = create_qapp()
 
-    event_engine = EventEngine（）
-    main_engine = MainEngine（event_engine）
+    event_engine = EventEngine()
+    main_engine = MainEngine(event_engine)
     
-    main_engine.add_gateway（CtpGateway）
-    main_engine.add_app（CtaStrategyApp）
-    main_engine.add_app（CtaBacktesterApp）
+    main_engine.add_gateway(CtpGateway)
+    main_engine.add_app(CtaStrategyApp)
+    main_engine.add_app(CtaBacktesterApp)
 
-    main_window = MainWindow（main_engine, event_engine）
-    main_window.showMaximized（）
+    main_window = MainWindow(main_engine, event_engine)
+    main_window.showMaximized()
 
-    qapp.exec（）
+    qapp.exec()
 
 if __name__ == "__main__":
-    main（）
+    main()
 ```
 
 在该目录下打开CMD（按住Shift->点击鼠标右键->在此处打开命令窗口/PowerShell）后运行下列命令启动VN Trader：
