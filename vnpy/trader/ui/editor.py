@@ -8,7 +8,7 @@ class CodeEditor(QtWidgets.QMainWindow):
     """"""
     NEW_FILE_NAME = "Untitled"
 
-    def __init__(self):
+    def __init__(self, main_engine=None, event_engine=None):
         """"""
         super().__init__()
 
@@ -296,6 +296,13 @@ class CodeEditor(QtWidgets.QMainWindow):
 
         event.accept()
 
+    def show(self):
+        """"""
+        if not self.tab.count():
+            self.open_editor()
+
+        self.showMaximized()
+
     def update_path_label(self):
         """"""
         editor = self.get_active_editor()
@@ -436,7 +443,6 @@ if __name__ == "__main__":
     app = create_qapp()
 
     editor = CodeEditor()
-    editor.open_editor()
-    editor.showMaximized()
+    editor.show()
 
     app.exec_()
