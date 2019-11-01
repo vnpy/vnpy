@@ -23,11 +23,12 @@ class SpreadAlgoTemplate:
         algoid: str,
         spread: SpreadData,
         direction: Direction,
+        offset: Offset,
         price: float,
         volume: float,
         payup: int,
         interval: int,
-        lock: bool
+        lock: bool,
     ):
         """"""
         self.algo_engine = algo_engine
@@ -36,6 +37,7 @@ class SpreadAlgoTemplate:
         self.spread: SpreadData = spread
         self.spread_name: str = spread.name
 
+        self.offset: Offset = offset
         self.direction: Direction = direction
         self.price: float = price
         self.volume: float = volume
@@ -195,7 +197,12 @@ class SpreadAlgoTemplate:
         # calculate contract trading volume from coin trading volume
         if self.spread.is_inverse(vt_symbol):
             size = self.spread.get_leg_size(vt_symbol)
-            volume = volume * price / size
+
+            if self.offset == Offset.CLOSE:
+                leg = self.spread.legs[vt_symbol]
+                volume = volume * leg.net_pos_price / size
+            else:
+                volume = volume * price / size
 
         vt_orderids = self.algo_engine.send_order(
             self,
@@ -454,7 +461,8 @@ class SpreadStrategyTemplate:
         volume: float,
         payup: int,
         interval: int,
-        lock: bool
+        lock: bool,
+        offset: Offset
     ) -> str:
         """"""
         if not self.trading:
@@ -464,6 +472,7 @@ class SpreadStrategyTemplate:
             self,
             self.spread_name,
             direction,
+            offset,
             price,
             volume,
             payup,
@@ -481,10 +490,14 @@ class SpreadStrategyTemplate:
         volume: float,
         payup: int,
         interval: int,
-        lock: bool = False
+        lock: bool = False,
+        offset: Offset = Offset.NONE
     ) -> str:
         """"""
-        return self.start_algo(Direction.LONG, price, volume, payup, interval, lock)
+        return self.start_algo(
+            Direction.LONG, price, volume,
+            payup, interval, lock, offset
+        )
 
     def start_short_algo(
         self,
@@ -492,10 +505,14 @@ class SpreadStrategyTemplate:
         volume: float,
         payup: int,
         interval: int,
-        lock: bool = False
+        lock: bool = False,
+        offset: Offset = Offset.NONE
     ) -> str:
         """"""
-        return self.start_algo(Direction.SHORT, price, volume, payup, interval, lock)
+        return self.start_algo(
+            Direction.SHORT, price, volume,
+            payup, interval, lock, offset
+        )
 
     def stop_algo(self, algoid: str):
         """"""

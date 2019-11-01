@@ -1,6 +1,6 @@
 from typing import Any
 
-from vnpy.trader.constant import Direction
+from vnpy.trader.constant import Direction, Offset
 from vnpy.trader.object import (TickData, OrderData, TradeData)
 
 from .template import SpreadAlgoTemplate
@@ -17,6 +17,7 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
         algoid: str,
         spread: SpreadData,
         direction: Direction,
+        offset: Offset,
         price: float,
         volume: float,
         payup: int,
@@ -25,8 +26,9 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
     ):
         """"""
         super().__init__(
-            algo_engine, algoid, spread, direction,
-            price, volume, payup, interval, lock
+            algo_engine, algoid, spread,
+            direction, offset, price, volume,
+            payup, interval, lock
         )
 
         self.cancel_interval: int = 2

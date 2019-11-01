@@ -4,7 +4,7 @@ Widget for spread trading.
 
 from vnpy.event import EventEngine, Event
 from vnpy.trader.engine import MainEngine
-from vnpy.trader.constant import Direction
+from vnpy.trader.constant import Direction, Offset
 from vnpy.trader.ui import QtWidgets, QtCore, QtGui
 from vnpy.trader.ui.widget import (
     BaseMonitor, BaseCell,
@@ -169,6 +169,7 @@ class SpreadAlgoMonitor(BaseMonitor):
         "algoid": {"display": "算法", "cell": BaseCell, "update": False},
         "spread_name": {"display": "价差", "cell": BaseCell, "update": False},
         "direction": {"display": "方向", "cell": DirectionCell, "update": False},
+        "offset": {"display": "开平", "cell": EnumCell, "update": False},
         "price": {"display": "价格", "cell": BaseCell, "update": False},
         "payup": {"display": "超价", "cell": BaseCell, "update": False},
         "volume": {"display": "数量", "cell": BaseCell, "update": False},
@@ -226,6 +227,11 @@ class SpreadAlgoWidget(QtWidgets.QFrame):
             [Direction.LONG.value, Direction.SHORT.value]
         )
 
+        self.offset_combo = QtWidgets.QComboBox()
+        self.offset_combo.addItem(
+            [Offset.NONE.value, Offset.OPEN.value, Offset.CLOSE.value]
+        )
+
         float_validator = QtGui.QDoubleValidator()
 
         self.price_line = QtWidgets.QLineEdit()
@@ -273,6 +279,7 @@ class SpreadAlgoWidget(QtWidgets.QFrame):
         form = QtWidgets.QFormLayout()
         form.addRow("价差", self.name_line)
         form.addRow("方向", self.direction_combo)
+        form.addRow("开平", self.offset_combo)
         form.addRow("价格", self.price_line)
         form.addRow("数量", self.volume_line)
         form.addRow("超价", self.payup_line)
@@ -298,6 +305,7 @@ class SpreadAlgoWidget(QtWidgets.QFrame):
         """"""
         name = self.name_line.text()
         direction = Direction(self.direction_combo.currentText())
+        offset = Offset(self.offset_combo.currentText())
         price = float(self.price_line.text())
         volume = float(self.volume_line.text())
         payup = int(self.payup_line.text())
@@ -310,7 +318,7 @@ class SpreadAlgoWidget(QtWidgets.QFrame):
             lock = False
 
         self.spread_engine.start_algo(
-            name, direction, price, volume, payup, interval, lock
+            name, direction, offset, price, volume, payup, interval, lock
         )
 
     def add_spread(self):
