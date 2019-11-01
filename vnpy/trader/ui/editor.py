@@ -47,6 +47,8 @@ class CodeEditor(QtWidgets.QMainWindow):
         file_menu = bar.addMenu("文件")
         self.add_menu_action(file_menu, "新建文件", self.new_file, "Ctrl+N")
         self.add_menu_action(file_menu, "打开文件", self.open_file, "Ctrl+O")
+        self.add_menu_action(file_menu, "关闭文件", self.close_editor, "Ctrl+W")
+        file_menu.addSeparator()
         self.add_menu_action(file_menu, "保存", self.save_file, "Ctrl+S")
         self.add_menu_action(
             file_menu,
@@ -171,7 +173,19 @@ class CodeEditor(QtWidgets.QMainWindow):
 
     def close_editor(self):
         """"""
-        pass
+        i = self.tab.currentIndex()
+
+        # Close editor if last file closed
+        if not i:
+            self.close()
+        # Otherwise only close current tab
+        else:
+            self.save_file()
+
+            editor = self.get_active_editor()
+            self.editor_path_map.pop(editor)
+
+            self.tab.removeTab(i)
 
     def open_file(self):
         """"""
@@ -193,7 +207,6 @@ class CodeEditor(QtWidgets.QMainWindow):
         if self.NEW_FILE_NAME in file_path:
             file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
                 self, "保存", "", "Python(*.py)")
-            file_path = str(Path(file_path))
 
         self.save_editor_text(editor, file_path)
 
@@ -215,7 +228,7 @@ class CodeEditor(QtWidgets.QMainWindow):
             file_name = Path(file_path).name
             self.tab.setTabText(i, file_name)
 
-            with open(file_path, "w") as f:
+            with open(file_path, "w", encoding="UTF8") as f:
                 f.write(editor.text())
 
         self.update_path_label()
@@ -418,13 +431,12 @@ class FindDialog(QtWidgets.QDialog):
 
 
 if __name__ == "__main__":
-    import sys
     from vnpy.trader.ui import create_qapp
 
     app = create_qapp()
 
     editor = CodeEditor()
+    editor.open_editor()
     editor.showMaximized()
-    editor.open_editor(sys.argv[0])
 
     app.exec_()
