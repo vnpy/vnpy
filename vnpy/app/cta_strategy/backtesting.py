@@ -392,6 +392,9 @@ class BacktestingEngine:
             end_balance = df["balance"].iloc[-1]
             max_drawdown = df["drawdown"].min()
             max_ddpercent = df["ddpercent"].min()
+            max_drawdown_end = df["drawdown"].idxmin()
+            max_drawdown_start = df["balance"][:max_drawdown_end].argmax()
+            max_drawdown_duration = (max_drawdown_end - max_drawdown_start).days
 
             total_net_pnl = df["net_pnl"].sum()
             daily_net_pnl = total_net_pnl / total_days
@@ -437,6 +440,7 @@ class BacktestingEngine:
             self.output(f"年化收益：\t{annual_return:,.2f}%")
             self.output(f"最大回撤: \t{max_drawdown:,.2f}")
             self.output(f"百分比最大回撤: {max_ddpercent:,.2f}%")
+            self.output(f"最长回撤天数: \t{max_drawdown_duration}")
 
             self.output(f"总盈亏：\t{total_net_pnl:,.2f}")
             self.output(f"总手续费：\t{total_commission:,.2f}")
@@ -465,6 +469,7 @@ class BacktestingEngine:
             "end_balance": end_balance,
             "max_drawdown": max_drawdown,
             "max_ddpercent": max_ddpercent,
+            "max_drawdown_duration": max_drawdown_duration,
             "total_net_pnl": total_net_pnl,
             "daily_net_pnl": daily_net_pnl,
             "total_commission": total_commission,
