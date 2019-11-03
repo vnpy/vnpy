@@ -171,8 +171,14 @@ class CtaTemplate(ABC):
     def sell(self, price: float, volume: float, stop: bool = False, lock: bool = False):
         """
         Send sell order to close a long position.
-        卖出平仓
+        卖出平多
+        :param price: 价格
+        :param volume: 数量
+        :param stop: 是否为停止单
+        :param lock: 是否锁仓
+        :return:
         """
+
         return self.send_order(Direction.SHORT, Offset.CLOSE, price, volume, stop, lock)
 
     def short(self, price: float, volume: float, stop: bool = False, lock: bool = False):
