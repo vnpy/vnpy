@@ -16,25 +16,24 @@ class TurtleStrategy(CtaTemplate):
     """"""
     author = "用Python的交易员"
 
-    entry_window = 100  # 入场通道窗口数
-    exit_window = 200  # 出场通道的窗口数
-    atr_window = 20  # ATR的窗口数
-    risk_level = 50000  # 一个参数用来计算买入数量
+    entry_window = 20
+    exit_window = 10
+    atr_window = 20
+    risk_level = 50000
 
+    trading_size = 0
+    entry_up = 0
+    entry_down = 0
+    exit_up = 0
+    exit_down = 0
+    atr_value = 0
 
-    trading_size = 0  # 买入数量
-    entry_up = 0  # 进入唐奇安通道的上轨
-    entry_down = 0  # 进入唐奇安通道的下轨
-    exit_up = 0  # 退出唐奇安上轨
-    exit_down = 0  # 退出唐奇安下轨
-    atr_value = 0  # ATR的值
+    long_entry = 0
+    short_entry = 0
+    long_stop = 0
+    short_stop = 0
 
-    long_entry = 0  # 多头入场价格
-    short_entry = 0  # 空头入场价格
-    long_stop = 0  # 多头止损价格
-    short_stop = 0  # 空头止损价格
-
-    parameters = ["entry_window", "exit_window", "atr_window",]
+    parameters = ["entry_window", "exit_window", "atr_window", "fixed_size"]
     variables = ["entry_up", "entry_down", "exit_up", "exit_down", "atr_value"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
@@ -77,21 +76,18 @@ class TurtleStrategy(CtaTemplate):
 
     def on_hour_bar(self, bar: BarData):
         """"""
-        self.cancel_all()  # 撤销所有订单
+        self.cancel_all()
 
         self.am.update_bar(bar)
         if not self.am.inited:
             return
 
-        self.entry_up, self.entry_down = self.am.donchian(self.entry_window)  # 计算入场上下轨
-        self.exit_up, self.exit_down = self.am.donchian(self.exit_window)  # 计算出场上下轨
+        self.entry_up, self.entry_down = self.am.donchian(self.entry_window)
+        self.exit_up, self.exit_down = self.am.donchian(self.exit_window)
 
-        if not self.pos:  # 空仓情况
+        if not self.pos:
             self.atr_value = self.am.atr(self.atr_window)
-
-            # self.trading_size = self.risk_level / self.atr_value  # 原始数据
-            self.trading_size = 250
-            # print("买入数量：{}".format(self.trading_size))
+            self.trading_size = self.risk_level / self.atr_value
 
             self.long_entry = 0
             self.short_entry = 0
@@ -99,8 +95,6 @@ class TurtleStrategy(CtaTemplate):
             self.short_stop = 0
 
             self.buy(self.entry_up, self.trading_size, True)
-            # print("时间:{},买入数量：{}".format(bar.datetime, self.trading_size))
-
             self.short(self.entry_down, self.trading_size, True)
         elif self.pos > 0:
             sell_price = max(self.long_stop, self.exit_down)
