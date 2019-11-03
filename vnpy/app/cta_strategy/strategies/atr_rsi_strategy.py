@@ -81,7 +81,6 @@ class AtrRsiStrategy(CtaTemplate):
         am.update_bar(bar)
         if not am.inited:
             return
-        ac= self.cta_engine.mait_e
 
         atr_array = am.atr(self.atr_length, array=True)
         self.atr_value = atr_array[-1]
