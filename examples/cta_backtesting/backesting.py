@@ -1,7 +1,8 @@
-from vnpy.app.cta_strategy.backtesting import BacktestingEngine, OptimizationSetting
+# from vnpy.app.cta_strategy.backtesting import BacktestingEngine, OptimizationSetting
 from vnpy.app.cta_strategy.strategies.atr_rsi_strategy import AtrRsiStrategy
 from datetime import datetime
 from examples.cta_backtesting.turtle_strategy import TurtleStrategy
+from backtesting_yue import BacktestingEngine,OptimizationSetting
 engine = BacktestingEngine()
 engine.set_parameters(
     vt_symbol="BTCUSD.BITFINEX",
