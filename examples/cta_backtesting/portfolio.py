@@ -1,9 +1,9 @@
 
-from vnpy.app.cta_strategy.backtesting import BacktestingEngine, OptimizationSetting
+# from vnpy.app.cta_strategy.backtesting import BacktestingEngine, OptimizationSetting
 from vnpy.app.cta_strategy.strategies.atr_rsi_strategy import AtrRsiStrategy
 from vnpy.app.cta_strategy.strategies.boll_channel_strategy import BollChannelStrategy
 from datetime import datetime
-
+from tests.basktesting_yue.backtesting_yue import BacktestingEngine,OptimizationSetting
 
 def run_backtesting(strategy_class, setting, vt_symbol, interval, start, end, rate, slippage, size, pricetick, capital):
     engine = BacktestingEngine()
