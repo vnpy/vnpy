@@ -164,24 +164,34 @@ class CtaTemplate(ABC):
     def buy(self, price: float, volume: float, stop: bool = False, lock: bool = False):
         """
         Send buy order to open a long position.
+        买入开仓
         """
         return self.send_order(Direction.LONG, Offset.OPEN, price, volume, stop, lock)
 
     def sell(self, price: float, volume: float, stop: bool = False, lock: bool = False):
         """
         Send sell order to close a long position.
+        卖出平多
+        :param price: 价格
+        :param volume: 数量
+        :param stop: 是否为停止单
+        :param lock: 是否锁仓
+        :return:
         """
+
         return self.send_order(Direction.SHORT, Offset.CLOSE, price, volume, stop, lock)
 
     def short(self, price: float, volume: float, stop: bool = False, lock: bool = False):
         """
         Send short order to open as short position.
+        卖出开空
         """
         return self.send_order(Direction.SHORT, Offset.OPEN, price, volume, stop, lock)
 
     def cover(self, price: float, volume: float, stop: bool = False, lock: bool = False):
         """
         Send cover order to close a short position.
+        买入平空
         """
         return self.send_order(Direction.LONG, Offset.CLOSE, price, volume, stop, lock)
 
