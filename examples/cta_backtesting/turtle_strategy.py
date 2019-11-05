@@ -16,8 +16,8 @@ class TurtleStrategy(CtaTemplate):
     """"""
     author = "用Python的交易员"
 
-    entry_window = 100  # 入场通道窗口数
-    exit_window = 100  # 出场通道的窗口数
+    entry_window = 20  # 入场通道窗口数
+    exit_window = 10  # 出场通道的窗口数
     atr_window = 20  # ATR的窗口数
     risk_level = 50000  # 一个参数用来计算买入数量
 
@@ -76,21 +76,19 @@ class TurtleStrategy(CtaTemplate):
 
     def on_hour_bar(self, bar: BarData):
         """"""
-        self.cancel_all()  # 撤销所有订单
+        self.cancel_all()
 
         self.am.update_bar(bar)
         if not self.am.inited:
             return
 
-        self.entry_up, self.entry_down = self.am.donchian(self.entry_window)  # 计算入场上下轨
-        self.exit_up, self.exit_down = self.am.donchian(self.exit_window)  # 计算出场上下轨
+        self.entry_up, self.entry_down = self.am.donchian(self.entry_window)
+        self.exit_up, self.exit_down = self.am.donchian(self.exit_window)
 
-        if not self.pos:  # 空仓情况
+        if not self.pos:
             self.atr_value = self.am.atr(self.atr_window)
 
-            # self.trading_size = self.risk_level / self.atr_value  # 原始数据
-            self.trading_size = 800
-            # print("买入数量：{}".format(self.trading_size))
+            self.trading_size = self.risk_level / self.atr_value
 
             self.long_entry = 0
             self.short_entry = 0
@@ -98,8 +96,6 @@ class TurtleStrategy(CtaTemplate):
             self.short_stop = 0
 
             self.buy(self.entry_up, self.trading_size, True)
-            # print("时间:{},买入数量：{}".format(bar.datetime, self.trading_size))
-
             self.short(self.entry_down, self.trading_size, True)
         elif self.pos > 0:
             sell_price = max(self.long_stop, self.exit_down)
