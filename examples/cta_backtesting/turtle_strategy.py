@@ -90,7 +90,7 @@ class TurtleStrategy(CtaTemplate):
 
             # self.trading_size = self.risk_level / self.atr_value  # 原始数据
             self.trading_size = 1000
-            print("买入数量：{}".format(self.trading_size))
+            # print("买入数量：{}".format(self.trading_size))
 
             self.long_entry = 0
             self.short_entry = 0
