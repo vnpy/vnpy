@@ -76,19 +76,20 @@ class TurtleStrategy(CtaTemplate):
 
     def on_hour_bar(self, bar: BarData):
         """"""
-        self.cancel_all()
+        self.cancel_all() # 撤销所有订单
 
         self.am.update_bar(bar)
         if not self.am.inited:
             return
 
-        self.entry_up, self.entry_down = self.am.donchian(self.entry_window)
-        self.exit_up, self.exit_down = self.am.donchian(self.exit_window)
+        self.entry_up, self.entry_down = self.am.donchian(self.entry_window)  # 计算入场上下轨
+        self.exit_up, self.exit_down = self.am.donchian(self.exit_window)  # 计算出场上下轨
 
-        if not self.pos:
+        if not self.pos:  # 空仓情况
             self.atr_value = self.am.atr(self.atr_window)
 
             self.trading_size = self.risk_level / self.atr_value
+            print("买入数量：｛｝".format(self.trading_size))
 
             self.long_entry = 0
             self.short_entry = 0
@@ -129,3 +130,4 @@ class TurtleStrategy(CtaTemplate):
         Callback of stop order update.
         """
         pass
+
