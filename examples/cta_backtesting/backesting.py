@@ -7,13 +7,13 @@ engine = BacktestingEngine()
 engine.set_parameters(
     vt_symbol="BTCUSD.BITFINEX",
     interval="1m",
-    start=datetime(2018, 8, 1),
-    end=datetime(2019, 8, 1),
+    start=datetime(2019, 1, 1),
+    end=datetime(2019, 10, 1),
     rate=0.3 / 1000,
     slippage=0.2,
-    size=300,
+    size=1,
     pricetick=0.2,
-    capital=1_000_000,
+    capital=1000,
 )
 engine.add_strategy(TurtleStrategy, {})
 
