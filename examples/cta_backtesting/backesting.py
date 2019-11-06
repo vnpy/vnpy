@@ -7,8 +7,8 @@ engine = BacktestingEngine()
 engine.set_parameters(
     vt_symbol="BTCUSD.BITFINEX",
     interval="1m",
-    start=datetime(2017, 8, 1),
-    end=datetime(2018, 8, 1),
+    start=datetime(2018, 8, 1),
+    end=datetime(2019, 8, 1),
     rate=0.3 / 1000,
     slippage=0.2,
     size=300,
