@@ -1,5 +1,5 @@
 from vnpy.app.cta_strategy.backtesting import BacktestingEngine, OptimizationSetting
-from vnpy.app.cta_strategy.strategies.atr_rsi_strategy import AtrRsiStrategy
+
 from datetime import datetime
 from examples.cta_backtesting.turtle_strategy import TurtleStrategy
 # from backtesting_yue import BacktestingEngine,OptimizationSetting
@@ -26,7 +26,8 @@ engine.show_chart()
 
 setting = OptimizationSetting()
 setting.set_target("sharpe_ratio")
-setting.add_parameter("atr_length", 3, 39, 1)
-setting.add_parameter("atr_ma_length", 10, 30, 1)
+setting.add_parameter("entry_window", 10, 1000, 100)
+setting.add_parameter("exit_window", 10, 1000, 100)
+setting.add_parameter("atr_window", 10, 1000, 100)
 
 engine.run_ga_optimization(setting)
