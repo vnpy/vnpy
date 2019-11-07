@@ -93,7 +93,7 @@ class OesMdMessageLoop:
                 gateway_name=self.gateway.gateway_name,
                 symbol=symbol,
                 exchange=self.symbol_to_exchange[symbol],
-                datetime=datetime.utcnow()
+                datetime=datetime.now()
             )
             self.last_tick[symbol] = tick
             return tick
@@ -173,7 +173,7 @@ class OesMdMessageLoop:
         data = d.trade
         symbol = data.SecurityID
         tick = self._get_last_tick(symbol)
-        tick.datetime = datetime.utcnow()
+        tick.datetime = datetime.now()
         tick.volume = data.TradeQty
         tick.last_price = data.TradePrice / 10000
         self.gateway.on_tick(copy(tick))
