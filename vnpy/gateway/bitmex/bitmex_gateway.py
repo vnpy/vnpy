@@ -703,9 +703,15 @@ class BitmexWebsocketApi(WebsocketClient):
 
     def on_order(self, d):
         """"""
+        # Filter order data which cannot be processed properly
         if "ordStatus" not in d:
             return
 
+        side = d.get("side", "")
+        if not side:
+            return
+
+        # Update local order data
         sysid = d["orderID"]
         order = self.orders.get(sysid, None)
         if not order:
@@ -714,14 +720,12 @@ class BitmexWebsocketApi(WebsocketClient):
             else:
                 orderid = sysid
 
-            # time = d["timestamp"][11:19]
-
             order = OrderData(
                 symbol=d["symbol"],
                 exchange=Exchange.BITMEX,
                 type=ORDERTYPE_BITMEX2VT[d["ordType"]],
                 orderid=orderid,
-                direction=DIRECTION_BITMEX2VT[d["side"]],
+                direction=DIRECTION_BITMEX2VT[side],
                 price=d["price"],
                 volume=d["orderQty"],
                 time=d["timestamp"][11:19],
