@@ -533,6 +533,7 @@ class BitmexWebsocketApi(WebsocketClient):
         self.ticks = {}
         self.accounts = {}
         self.orders = {}
+        self.positions = {}
         self.trades = set()
 
     def connect(
@@ -735,20 +736,27 @@ class BitmexWebsocketApi(WebsocketClient):
 
     def on_position(self, d):
         """"""
-        position = PositionData(
-            symbol=d["symbol"],
-            exchange=Exchange.BITMEX,
-            direction=Direction.NET,
-            volume=d.get("currentQty", 0),
-            price=d.get("avgEntryPrice", 0),
-            gateway_name=self.gateway_name,
-        )
+        symbol = d["symbol"]
 
-        # avgEntryPrice may be None instead of 0 sometimes
-        if position.price is None:
-            position.price = 0
+        position = self.positions.get(symbol, None)
+        if not position:
+            position = PositionData(
+                symbol=d["symbol"],
+                exchange=Exchange.BITMEX,
+                direction=Direction.NET,
+                gateway_name=self.gateway_name,
+            )
+            self.positions[symbol] = position
 
-        self.gateway.on_position(position)
+        volume = d.get("currentQty", None)
+        if volume is not None:
+            position.volume = volume
+
+        price = d.get("avgEntryPrice", None)
+        if price is not None:
+            position.price = price
+
+        self.gateway.on_position(copy(position))
 
     def on_account(self, d):
         """"""
