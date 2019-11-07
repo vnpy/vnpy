@@ -116,6 +116,7 @@ class SpreadDataEngine:
                 spread_setting["name"],
                 spread_setting["leg_settings"],
                 spread_setting["active_symbol"],
+                spread_setting.get("min_volume", 1),
                 save=False
             )
 
@@ -251,6 +252,7 @@ class SpreadDataEngine:
         name: str,
         leg_settings: List[Dict],
         active_symbol: str,
+        min_volume: float,
         save: bool = True
     ) -> None:
         """"""
@@ -278,7 +280,8 @@ class SpreadDataEngine:
             price_multipliers,
             trading_multipliers,
             active_symbol,
-            inverse_contracts
+            inverse_contracts,
+            min_volume
         )
         self.spreads[name] = spread
 

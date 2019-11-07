@@ -129,7 +129,8 @@ class SpreadData:
         price_multipliers: Dict[str, int],
         trading_multipliers: Dict[str, int],
         active_symbol: str,
-        inverse_contracts: Dict[str, bool]
+        inverse_contracts: Dict[str, bool],
+        min_volume: float
     ):
         """"""
         self.name: str = name
@@ -138,7 +139,7 @@ class SpreadData:
         self.active_leg: LegData = None
         self.passive_legs: List[LegData] = []
 
-        self.min_volume = 0.001
+        self.min_volume: float = min_volume
 
         # For calculating spread price
         self.price_multipliers: Dict[str, int] = price_multipliers

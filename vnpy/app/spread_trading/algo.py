@@ -119,9 +119,6 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
             active_traded
         )
 
-        self.write_log(
-            f"active {active_leg.vt_symbol} traded: {active_traded} hedge_volume: {hedge_volume}")
-
         # Calculate passive leg target volume and do hedge
         for leg in self.spread.passive_legs:
             passive_traded = self.leg_traded[leg.vt_symbol]
@@ -131,8 +128,6 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
                 leg.vt_symbol,
                 hedge_volume
             )
-            self.write_log(
-                f"hedge {leg.vt_symbol} traded: {passive_traded} target: {passive_target}")
 
             leg_order_volume = passive_target - passive_traded
             if leg_order_volume:
