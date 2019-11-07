@@ -257,9 +257,6 @@ class BacktestingEngine:
             start = end + interval_delta
             end += (progress_delta + interval_delta)
 
-            if data:
-                print(data[0].datetime, data[-1].datetime)
-
         self.output(f"历史数据加载完成，数据量：{len(self.history_data)}")
 
     def run_backtesting(self):
