@@ -552,7 +552,8 @@ class BacktestingEngine:
                 self.pricetick,
                 self.capital,
                 self.end,
-                self.mode
+                self.mode,
+                self.inverse
             )))
             results.append(result)
 
@@ -612,6 +613,7 @@ class BacktestingEngine:
         global ga_capital
         global ga_end
         global ga_mode
+        global ga_inverse
 
         ga_target_name = target_name
         ga_strategy_class = self.strategy_class
@@ -626,6 +628,7 @@ class BacktestingEngine:
         ga_capital = self.capital
         ga_end = self.end
         ga_mode = self.mode
+        ga_inverse = self.inverse
 
         # Set up genetic algorithem
         toolbox = base.Toolbox()
@@ -1217,7 +1220,8 @@ def _ga_optimize(parameter_values: tuple):
         ga_pricetick,
         ga_capital,
         ga_end,
-        ga_mode
+        ga_mode,
+        ga_inverse
     )
     return (result[1],)
 

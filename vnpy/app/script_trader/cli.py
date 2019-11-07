@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Type
 
 from vnpy.event import EventEngine, Event
 from vnpy.trader.engine import MainEngine
@@ -14,7 +14,7 @@ def process_log_event(event: Event):
     print(f"{log.time}\t{log.msg}")
 
 
-def init_cli_trading(gateways: Sequence[BaseGateway]):
+def init_cli_trading(gateways: Sequence[Type[BaseGateway]]):
     """"""
     event_engine = EventEngine()
     event_engine.register(EVENT_LOG, process_log_event)

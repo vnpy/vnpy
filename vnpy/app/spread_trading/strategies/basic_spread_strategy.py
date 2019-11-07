@@ -87,6 +87,8 @@ class BasicSpreadStrategy(SpreadStrategyTemplate):
 
         # No position
         if not self.spread_pos:
+            self.stop_close_algos()
+
             # Start open algos
             if not self.buy_algoid:
                 self.buy_algoid = self.start_long_algo(
@@ -98,37 +100,26 @@ class BasicSpreadStrategy(SpreadStrategyTemplate):
                     self.short_price, self.max_pos, self.payup, self.interval
                 )
 
-            # Stop close algos
-            if self.sell_algoid:
-                self.stop_algo(self.sell_algoid)
-
-            if self.cover_algoid:
-                self.stop_algo(self.cover_algoid)
-
         # Long position
         elif self.spread_pos > 0:
+            self.stop_open_algos()
+
             # Start sell close algo
             if not self.sell_algoid:
                 self.sell_algoid = self.start_short_algo(
                     self.sell_price, self.spread_pos, self.payup, self.interval
                 )
 
-            # Stop buy open algo
-            if self.buy_algoid:
-                self.stop_algo(self.buy_algoid)
-
         # Short position
         elif self.spread_pos < 0:
+            self.stop_open_algos()
+
             # Start cover close algo
             if not self.cover_algoid:
                 self.cover_algoid = self.start_long_algo(
                     self.cover_price, abs(
                         self.spread_pos), self.payup, self.interval
                 )
-
-            # Stop short open algo
-            if self.short_algoid:
-                self.stop_algo(self.short_algoid)
 
         self.put_event()
 
@@ -166,3 +157,19 @@ class BasicSpreadStrategy(SpreadStrategyTemplate):
         Callback when new trade data is received.
         """
         pass
+
+    def stop_open_algos(self):
+        """"""
+        if self.buy_algoid:
+            self.stop_algo(self.buy_algoid)
+
+        if self.short_algoid:
+            self.stop_algo(self.short_algoid)
+
+    def stop_close_algos(self):
+        """"""
+        if self.sell_algoid:
+            self.stop_algo(self.sell_algoid)
+
+        if self.cover_algoid:
+            self.stop_algo(self.cover_algoid)

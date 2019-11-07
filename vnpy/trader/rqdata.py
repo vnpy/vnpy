@@ -53,7 +53,7 @@ class RqdataClient:
             self.username,
             self.password,
             ('rqdatad-pro.ricequant.com', 16011),
-            use_pool=True
+            use_pool=True,
         )
 
         try:
