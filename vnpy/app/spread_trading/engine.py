@@ -142,7 +142,8 @@ class SpreadDataEngine:
             spread_setting = {
                 "name": spread.name,
                 "leg_settings": leg_settings,
-                "active_symbol": spread.active_leg.vt_symbol
+                "active_symbol": spread.active_leg.vt_symbol,
+                "min_volume": spread.min_volume
             }
             setting.append(spread_setting)
 
@@ -272,7 +273,8 @@ class SpreadDataEngine:
             legs.append(leg)
             price_multipliers[vt_symbol] = leg_setting["price_multiplier"]
             trading_multipliers[vt_symbol] = leg_setting["trading_multiplier"]
-            inverse_contracts[vt_symbol] = leg_setting.get("inverse_contract", False)
+            inverse_contracts[vt_symbol] = leg_setting.get(
+                "inverse_contract", False)
 
         spread = SpreadData(
             name,
@@ -727,7 +729,8 @@ class SpreadStrategyEngine:
         strategy = self.algo_strategy_map.get(algo.algoid, None)
 
         if strategy:
-            self.call_strategy_func(strategy, strategy.update_spread_algo, algo)
+            self.call_strategy_func(
+                strategy, strategy.update_spread_algo, algo)
 
     def process_order_event(self, event: Event):
         """"""
