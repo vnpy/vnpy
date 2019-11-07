@@ -879,7 +879,7 @@ class BacktestingEngine:
             self.trades[trade.vt_tradeid] = trade
 
             # Update stop order.
-            stop_order.vt_orderid = order.vt_orderid
+            stop_order.vt_orderids.append(order.vt_orderid)
             stop_order.status = StopOrderStatus.TRIGGERED
 
             self.active_stop_orders.pop(stop_order.stop_orderid)
