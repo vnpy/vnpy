@@ -116,7 +116,7 @@ class LegData:
                 else:
                     self.long_pos -= trade.volume
 
-            self.net_pos = self.long_pos - self.net_pos
+            self.net_pos = self.long_pos - self.short_pos
 
 
 class SpreadData:
