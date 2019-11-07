@@ -16,8 +16,8 @@ class TurtleStrategy(CtaTemplate):
     """"""
     author = "用Python的交易员"
 
-    entry_window = 20  # 入场通道窗口数
-    exit_window = 10  # 出场通道的窗口数
+    entry_window = 30  # 入场通道窗口数
+    exit_window = 100  # 出场通道的窗口数
     atr_window = 20  # ATR的窗口数
     risk_level = 50000  # 一个参数用来计算买入数量
 
@@ -98,7 +98,7 @@ class TurtleStrategy(CtaTemplate):
             self.short_stop = 0
 
             self.buy(self.entry_up, self.trading_size, True)
-            print("时间:{},买入数量：{}".format(bar.datetime, self.trading_size))
+            # print("时间:{},买入数量：{}".format(bar.datetime, self.trading_size))
 
             self.short(self.entry_down, self.trading_size, True)
         elif self.pos > 0:
