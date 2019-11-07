@@ -5,7 +5,7 @@ General utility functions.
 import json
 from pathlib import Path
 from typing import Callable
-from decimal import Decimal
+from decimal import Decimal  # 使用定点数和浮点数的小数运算
 
 import numpy as np
 import talib
@@ -117,6 +117,15 @@ def round_to(value: float, target: float) -> float:
     value = Decimal(str(value))
     target = Decimal(str(target))
     rounded = float(int(round(value / target)) * target)
+    return rounded
+
+
+def round_to_nan(value: float, target: float):
+    """
+    Round price to price tick value.
+    """
+    tmp = float(target)
+    rounded = int(round(np.nan_to_num(value) / tmp)) * tmp
     return rounded
 
 
