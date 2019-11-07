@@ -392,10 +392,14 @@ class IbApi(EWrapper):
             type=ORDERTYPE_IB2VT[ib_order.orderType],
             orderid=orderid,
             direction=DIRECTION_IB2VT[ib_order.action],
-            price=ib_order.lmtPrice,
             volume=ib_order.totalQuantity,
             gateway_name=self.gateway_name,
         )
+
+        if order.type == OrderType.LIMIT:
+            order.price = ib_order.lmtPrice
+        elif order.type == OrderType.STOP:
+            order.price = ib_order.auxPrice
 
         self.orders[orderid] = order
         self.gateway.on_order(copy(order))
