@@ -1,12 +1,11 @@
 
 from collections import defaultdict
 from typing import Dict, List, Set
-from math import floor, ceil
 from copy import copy
 
 from vnpy.trader.object import TickData, TradeData, OrderData, ContractData
 from vnpy.trader.constant import Direction, Status, Offset
-from vnpy.trader.utility import virtual
+from vnpy.trader.utility import virtual, floor_to, ceil_to, round_to
 
 from .base import SpreadData, calculate_inverse_volume
 
@@ -204,6 +203,10 @@ class SpreadAlgoTemplate:
             else:
                 volume = volume * price / size
 
+        # Round order volume to min_volume of contract
+        leg = self.spread.legs[vt_symbol]
+        volume = round_to(volume, leg.min_volume)
+
         vt_orderids = self.algo_engine.send_order(
             self,
             vt_symbol,
@@ -241,12 +244,17 @@ class SpreadAlgoTemplate:
             leg_traded = self.leg_traded[leg.vt_symbol]
             trading_multiplier = self.spread.trading_multipliers[
                 leg.vt_symbol]
+
             adjusted_leg_traded = leg_traded / trading_multiplier
+            adjusted_leg_traded = round_to(
+                adjusted_leg_traded, self.spread.min_volume)
 
             if adjusted_leg_traded > 0:
-                adjusted_leg_traded = floor(adjusted_leg_traded)
+                adjusted_leg_traded = floor_to(
+                    adjusted_leg_traded, self.spread.min_volume)
             else:
-                adjusted_leg_traded = ceil(adjusted_leg_traded)
+                adjusted_leg_traded = ceil_to(
+                    adjusted_leg_traded, self.spread.min_volume)
 
             if not n:
                 self.traded = adjusted_leg_traded

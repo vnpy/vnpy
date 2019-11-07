@@ -39,11 +39,13 @@ class LegData:
         # Contract data
         self.size: float = 0
         self.net_position: bool = False
+        self.min_volume: float = 0
 
     def update_contract(self, contract: ContractData):
         """"""
         self.size = contract.size
         self.net_position = contract.net_position
+        self.min_volume = contract.min_volume
 
     def update_tick(self, tick: TickData):
         """"""
