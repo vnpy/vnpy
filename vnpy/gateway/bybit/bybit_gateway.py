@@ -247,8 +247,7 @@ class BybitRestApi(RestClient):
         }
 
         order = req.create_order_data(order_id, self.gateway_name)
-        order.time = str(datetime.now().isoformat())
-
+        
         # Only add price for limit order.
         data["order_type"] = ORDER_TYPE_VT2BYBIT[req.type]
         data["price"] = req.price
