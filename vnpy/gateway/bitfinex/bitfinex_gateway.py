@@ -396,12 +396,12 @@ class BitfinexWebsocketApi(WebsocketClient):
         self.subscribed = {}
 
     def connect(
-        self, 
-        key: str, 
-        secret: str, 
-        proxy_host: str, 
+        self,
+        key: str,
+        secret: str,
+        proxy_host: str,
         proxy_port: int,
-        margin: bool 
+        margin: bool
     ):
         """"""
         self.key = key

@@ -32,7 +32,7 @@ class DataAnalysis:
         self.orignal = pd.DataFrame()
 
         self.index_1to1 = []
-        self.index_2to2 = []   
+        self.index_2to2 = []
         self.index_3to1 = []
         self.index_2to1 = []
         self.index_4to1 = []
@@ -42,10 +42,10 @@ class DataAnalysis:
 
     def load_history(
         self,
-        symbol: str, 
-        exchange: Exchange, 
-        interval: Interval, 
-        start: datetime, 
+        symbol: str,
+        exchange: Exchange,
+        interval: Interval,
+        start: datetime,
         end: datetime,
         rate: float = 0.0,
         index_1to1: list = None,
@@ -57,9 +57,9 @@ class DataAnalysis:
         window_volatility: int = 20,
 
     ):
-        """""" 
+        """"""
         output("开始加载历史数据")
-        
+
         self.window_volatility = window_volatility
         self.window_index = window_index
         self.rate = rate
@@ -69,23 +69,23 @@ class DataAnalysis:
         self.index_2to1 = index_2to1
         self.index_4to1 = index_4to1
 
-        # Load history data from database  
-        bars = database_manager.load_bar_data(    
-            symbol=symbol, 
-            exchange=exchange, 
-            interval=interval, 
-            start=start, 
+        # Load history data from database
+        bars = database_manager.load_bar_data(
+            symbol=symbol,
+            exchange=exchange,
+            interval=interval,
+            start=start,
             end=end,
 
         )
 
         output(f"历史数据加载完成，数据量：{len(bars)}")
-        
+
         # Generate history data in DataFrame
         t = []
         o = []
         h = []
-        l = []
+        l = []  # noqa
         c = []
         v = []
 
@@ -96,12 +96,12 @@ class DataAnalysis:
             low_price = bar.low_price
             close_price = bar.close_price
             volume = bar.volume
-            
+
             t.append(time)
             o.append(open_price)
             h.append(high_price)
             l.append(low_price)
-            c.append(close_price)  
+            c.append(close_price)
             v.append(volume)
 
         self.orignal["open"] = o
@@ -110,22 +110,22 @@ class DataAnalysis:
         self.orignal["close"] = c
         self.orignal["volume"] = v
         self.orignal.index = t
-   
+
     def base_analysis(self, df: DataFrame = None):
         """"""
         if df is None:
             df = self.orignal
-       
+
         if df is None:
             output("数据为空，请输入数据")
 
         close_price = df["close"]
 
         output("第一步:画出行情图，检查数据断点")
-        
+
         close_price.plot(figsize=(20, 8), title="close_price")
         plt.show()
-    
+
         random_test(close_price)
         stability_test(close_price)
         autocorrelation_test(close_price)
@@ -158,7 +158,7 @@ class DataAnalysis:
         df["relative_vol"].hist(bins=200, figsize=(20, 6), grid=False)
         plt.show()
 
-        statitstic_info(df["relative_vol"])  
+        statitstic_info(df["relative_vol"])
 
     def growth_analysis(self, df: DataFrame = None):
         """
@@ -173,8 +173,8 @@ class DataAnalysis:
 
         df["g%"].hist(bins=200, figsize=(20, 6), grid=False)
         plt.show()
-        
-        statitstic_info(df["g%"])  
+
+        statitstic_info(df["g%"])
 
     def calculate_index(self, df: DataFrame = None):
         """"""
@@ -184,20 +184,20 @@ class DataAnalysis:
             for i in self.index_1to1:
                 func = getattr(talib, i)
                 df[i] = func(
-                    np.array(df["close"]), 
+                    np.array(df["close"]),
                     self.window_index
                 )
 
         if self.index_3to1:
             for i in self.index_3to1:
                 func = getattr(talib, i)
-                df[i] = func(        
+                df[i] = func(
                     np.array(df["high"]),
                     np.array(df["low"]),
                     np.array(df["close"]),
                     self.window_index
                 )
-                
+
         if self.index_2to2:
             for i in self.index_2to2:
                 func = getattr(talib, i)
@@ -210,7 +210,7 @@ class DataAnalysis:
                 down = i + "_DOWN"
                 df[up] = result_up
                 df[down] = result_down
-        
+
         if self.index_2to1:
             for i in self.index_2to1:
                 func = getattr(talib, i)
@@ -223,13 +223,13 @@ class DataAnalysis:
         if self.index_4to1:
             for i in self.index_4to1:
                 func = getattr(talib, i)
-                df[i] = func(  
-                    np.array(df["open"]),      
+                df[i] = func(
+                    np.array(df["open"]),
                     np.array(df["high"]),
                     np.array(df["low"]),
                     np.array(df["close"]),
                 )
-             
+
         return df
 
     def multi_time_frame_analysis(self, intervals: list = None, df: DataFrame = None):
@@ -245,10 +245,10 @@ class DataAnalysis:
             output("请先加载数据")
             return
 
-        for interval in intervals: 
-            output("------------------------------------------------")  
+        for interval in intervals:
+            output("------------------------------------------------")
             output(f"合成{interval}周期K先并开始数据分析")
-              
+
             data = pd.DataFrame()
             data["open"] = df["open"].resample(interval, how="first")
             data["high"] = df["high"].resample(interval, how="max")
@@ -260,25 +260,27 @@ class DataAnalysis:
             self.results[interval] = result
 
     def show_chart(self, data, boll_wide):
-        """"""      
+        """"""
         data["boll_up"] = data["SMA"] + data["STDDEV"] * boll_wide
         data["boll_down"] = data["SMA"] - data["STDDEV"] * boll_wide
 
         up_signal = []
         down_signal = []
-        len_data = len(data["close"]) 
+        len_data = len(data["close"])
         for i in range(1, len_data):
-            if data.iloc[i]["close"] > data.iloc[i]["boll_up"]and data.iloc[i-1]["close"] < data.iloc[i - 1]["boll_up"]:
+            if data.iloc[i]["close"] > data.iloc[i]["boll_up"]and data.iloc[i - 1]["close"] < data.iloc[i - 1]["boll_up"]:
                 up_signal.append(i)
 
-            elif data.iloc[i]["close"] < data.iloc[i]["boll_down"] and data.iloc[i-1]["close"] > data.iloc[i - 1]["boll_down"]:
+            elif data.iloc[i]["close"] < data.iloc[i]["boll_down"] and data.iloc[i - 1]["close"] > data.iloc[i - 1]["boll_down"]:
                 down_signal.append(i)
 
-        fig = plt.figure(figsize=(20, 8))
+        plt.figure(figsize=(20, 8))
         close = data["close"]
         plt.plot(close, lw=1)
-        plt.plot(close, '^', markersize=5, color='r', label='UP signal', markevery=up_signal)
-        plt.plot(close, 'v', markersize=5, color='g', label='DOWN signal', markevery=down_signal)
+        plt.plot(close, '^', markersize=5, color='r',
+                 label='UP signal', markevery=up_signal)
+        plt.plot(close, 'v', markersize=5, color='g',
+                 label='DOWN signal', markevery=down_signal)
         plt.plot(data["boll_up"], lw=0.5, color="r")
         plt.plot(data["boll_down"], lw=0.5, color="g")
         plt.legend()
@@ -327,7 +329,7 @@ def autocorrelation_test(close_price):
 def statitstic_info(df):
     """"""
     mean = round(df.mean(), 4)
-    median = round(df.median(), 4)    
+    median = round(df.median(), 4)
     output(f"样本平均数：{mean}, 中位数: {median}")
 
     skew = round(df.skew(), 4)
@@ -339,14 +341,14 @@ def statitstic_info(df):
         skew_attribute = "分布偏左"
     else:
         skew_attribute = "分布偏右"
-        
+
     if kurt == 0:
         kurt_attribute = "正态分布"
     elif kurt > 0:
         kurt_attribute = "分布陡峭"
     else:
         kurt_attribute = "分布平缓"
-    
+
     output(f"偏度为：{skew}，属于{skew_attribute}；峰度为：{kurt}，属于{kurt_attribute}\n")
 
 
