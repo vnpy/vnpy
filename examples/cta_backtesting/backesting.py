@@ -22,7 +22,7 @@ engine.run_backtesting()
 df = engine.calculate_result()
 engine.calculate_statistics()
 engine.show_chart()
-# exit()
+exit()
 
 setting = OptimizationSetting()
 setting.set_target("sharpe_ratio")
