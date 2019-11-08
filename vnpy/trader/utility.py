@@ -4,6 +4,7 @@ General utility functions.
 
 import json
 import logging
+import sys
 from pathlib import Path
 from typing import Callable, Dict
 from decimal import Decimal
@@ -58,6 +59,7 @@ def _get_trader_dir(temp_name: str):
 
 
 TRADER_DIR, TEMP_DIR = _get_trader_dir(".vntrader")
+sys.path.append(str(TRADER_DIR))
 
 
 def get_file_path(filename: str):
