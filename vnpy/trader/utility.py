@@ -480,6 +480,43 @@ class ArrayManager(object):
             return aroon_up, aroon_down
         return aroon_up[-1], aroon_down[-1]
 
+    def aroonosc(self, n, array=False):
+        """
+        Aroon Oscillator.
+        """
+        result = talib.AROONOSC(self.high, self.low, n)
+
+        if array:
+            return result
+        return result[-1]
+
+    def ultosc(self, array=False):
+        """
+        Ultimate Oscillator.
+        """
+        result = talib.ULTOSC(self.high, self.low, self.close)
+        if array:
+            return result
+        return result[-1]
+
+    def mfi(self, n, array=False):
+        """
+        Money Flow Index.
+        """
+        result = talib.MFI(self.high, self.low, self.close, self.volume, n)
+        if array:
+            return result
+        return result[-1]
+
+    def sma_ohlc(self, n, array=False):
+        """
+        Simple moving average for open, high, low, close.
+        """
+        medio = (self.open + self.high + self.low + self.close) / 4
+        result = talib.SMA(medio, n)
+        if array:
+            return result
+        return result[-1]
 
 def virtual(func: "callable"):
     """
