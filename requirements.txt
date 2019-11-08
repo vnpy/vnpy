@@ -19,3 +19,4 @@ ibapi
 deap
 pyzmq
 wmi
+QScintilla

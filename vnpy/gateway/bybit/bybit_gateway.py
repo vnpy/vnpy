@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import time
 import sys
+import pytz
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Callable
 from threading import Lock
@@ -80,6 +81,9 @@ WEBSOCKET_HOST = "wss://stream.bybit.com/realtime"
 
 TESTNET_REST_HOST = "https://api-testnet.bybit.com"
 TESTNET_WEBSOCKET_HOST = "wss://stream-testnet.bybit.com/realtime"
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
+UTC_TZ = pytz.utc
 
 
 class BybitGateway(BaseGateway):
@@ -247,7 +251,6 @@ class BybitRestApi(RestClient):
         }
 
         order = req.create_order_data(order_id, self.gateway_name)
-        order.time = str(datetime.now().isoformat())
 
         # Only add price for limit order.
         data["order_type"] = ORDER_TYPE_VT2BYBIT[req.type]
@@ -712,7 +715,8 @@ class BybitWebsocketApi(WebsocketClient):
             if "volume_24h" in update:
                 tick.volume = update["volume_24h"]
 
-        tick.datetime = datetime.fromtimestamp(timestamp / 1_000_000)
+        local_dt = datetime.fromtimestamp(timestamp / 1_000_000)
+        tick.datetime = local_dt.astimezone(UTC_TZ)
         self.gateway.on_tick(copy(tick))
 
     def on_depth(self, packet: dict):
@@ -771,7 +775,8 @@ class BybitWebsocketApi(WebsocketClient):
             setattr(tick, f"ask_price_{n}", ask_price)
             setattr(tick, f"ask_volume_{n}", ask_data["size"])
 
-        tick.datetime = datetime.fromtimestamp(timestamp / 1_000_000)
+        local_dt = datetime.fromtimestamp(timestamp / 1_000_000)
+        tick.datetime = local_dt.astimezone(UTC_TZ)
         self.gateway.on_tick(copy(tick))
 
     def on_trade(self, packet: dict):
@@ -787,7 +792,7 @@ class BybitWebsocketApi(WebsocketClient):
                 orderid=order_id,
                 tradeid=d["exec_id"],
                 direction=DIRECTION_BYBIT2VT[d["side"]],
-                price=d["price"],
+                price=float(d["price"]),
                 volume=d["exec_qty"],
                 time=d["trade_time"],
                 gateway_name=self.gateway_name,
@@ -804,6 +809,7 @@ class BybitWebsocketApi(WebsocketClient):
             if order:
                 order.traded = d["cum_exec_qty"]
                 order.status = STATUS_BYBIT2VT[d["order_status"]]
+                order.time = d["timestamp"]
             else:
                 # Use sys_orderid as local_orderid when
                 # order placed from other source
@@ -822,7 +828,7 @@ class BybitWebsocketApi(WebsocketClient):
                     orderid=local_orderid,
                     type=ORDER_TYPE_BYBIT2VT[d["order_type"]],
                     direction=DIRECTION_BYBIT2VT[d["side"]],
-                    price=d["price"],
+                    price=float(d["price"]),
                     volume=d["qty"],
                     traded=d["cum_exec_qty"],
                     status=STATUS_BYBIT2VT[d["order_status"]],
@@ -845,7 +851,7 @@ class BybitWebsocketApi(WebsocketClient):
                 exchange=Exchange.BYBIT,
                 direction=Direction.NET,
                 volume=volume,
-                price=d["entry_price"],
+                price=float(d["entry_price"]),
                 gateway_name=self.gateway_name
             )
             self.gateway.on_position(position)

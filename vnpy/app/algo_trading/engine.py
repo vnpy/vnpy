@@ -96,7 +96,10 @@ class AlgoEngine(BaseEngine):
 
     def process_timer_event(self, event: Event):
         """"""
-        for algo in self.algos.values():
+        # Generate a list of algos first to avoid dict size change
+        algos = list(self.algos.values())
+
+        for algo in algos:
             algo.update_timer()
 
     def process_trade_event(self, event: Event):
