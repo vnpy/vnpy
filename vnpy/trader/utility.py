@@ -508,15 +508,6 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def sma_ohlc(self, n, array=False):
-        """
-        Simple moving average for open, high, low, close.
-        """
-        medio = (self.open + self.high + self.low + self.close) / 4
-        result = talib.SMA(medio, n)
-        if array:
-            return result
-        return result[-1]
 
 def virtual(func: "callable"):
     """
