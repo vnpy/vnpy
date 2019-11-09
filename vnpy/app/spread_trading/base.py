@@ -347,3 +347,8 @@ def calculate_inverse_volume(
     if not price:
         return 0
     return original_volume * size / price
+
+
+class BacktestingMode(Enum):
+    BAR = 1
+    TICK = 2
