@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from typing import Callable, Type, Dict, List
 from functools import lru_cache
 
@@ -756,4 +756,3 @@ def load_tick_data(
     return database_manager.load_tick_data(
         spread.name, Exchange.LOCAL, start, end
     )
-
