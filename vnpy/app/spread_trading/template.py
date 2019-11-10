@@ -1,10 +1,12 @@
 
 from collections import defaultdict
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Callable
 from copy import copy
 
-from vnpy.trader.object import TickData, TradeData, OrderData, ContractData
-from vnpy.trader.constant import Direction, Status, Offset
+from vnpy.trader.object import (
+    TickData, TradeData, OrderData, ContractData, BarData
+)
+from vnpy.trader.constant import Direction, Status, Offset, Interval
 from vnpy.trader.utility import virtual, floor_to, ceil_to, round_to
 
 from .base import SpreadData, calculate_inverse_volume
@@ -435,6 +437,20 @@ class SpreadStrategyTemplate:
         pass
 
     @virtual
+    def on_spread_tick(self, tick: TickData):
+        """
+        Callback when new spread tick data is generated.
+        """
+        pass
+
+    @virtual
+    def on_spread_bar(self, bar: BarData):
+        """
+        Callback when new spread bar data is generated.
+        """
+        pass
+
+    @virtual
     def on_spread_pos(self):
         """
         Callback when spread position is updated.
@@ -635,3 +651,23 @@ class SpreadStrategyTemplate:
         """
         if self.inited:
             self.strategy_engine.send_email(msg, self)
+
+    def load_bar(
+        self,
+        days: int,
+        interval: Interval = Interval.MINUTE,
+        callback: Callable = None,
+    ):
+        """
+        Load historical bar data for initializing strategy.
+        """
+        if not callback:
+            callback = self.on_spread_bar
+
+        self.strategy_engine.load_bar(self.spread, days, interval, callback)
+
+    def load_tick(self, days: int):
+        """
+        Load historical tick data for initializing strategy.
+        """
+        self.strategy_engine.load_tick(self.spread, days, self.on_spread_tick)

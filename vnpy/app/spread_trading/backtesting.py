@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import date, datetime, timedelta
-from typing import Callable
+from typing import Callable, Type, Dict, List
 from functools import lru_cache
 
 import numpy as np
@@ -14,7 +14,7 @@ from vnpy.trader.database import database_manager
 from vnpy.trader.object import TradeData, BarData, TickData
 from vnpy.trader.utility import round_to
 
-from .template import SpreadStrategyTemplate
+from .template import SpreadStrategyTemplate, SpreadAlgoTemplate
 from .base import SpreadData, BacktestingMode
 
 sns.set_style("whitegrid")
@@ -38,8 +38,8 @@ class BacktestingEngine:
         self.capital = 1_000_000
         self.mode = BacktestingMode.BAR
 
-        self.strategy_class = None
-        self.strategy = None
+        self.strategy_class: Type[SpreadStrategyTemplate] = None
+        self.strategy: SpreadStrategyTemplate = None
         self.tick: TickData = None
         self.bar: BarData = None
         self.datetime = None
@@ -138,7 +138,8 @@ class BacktestingEngine:
                 self.spread,
                 self.interval,
                 self.start,
-                self.end
+                self.end,
+                self.pricetick
             )
         else:
             self.history_datas = load_tick_data(
@@ -208,8 +209,7 @@ class BacktestingEngine:
                 start_pos,
                 self.size,
                 self.rate,
-                self.slippage,
-                self.inverse
+                self.slippage
             )
 
             pre_close = daily_result.close_price
@@ -427,10 +427,9 @@ class BacktestingEngine:
         """"""
         self.bar = bar
         self.datetime = bar.datetime
+        self.cross_algo()
 
-        self.cross_limit_order()
-        self.cross_stop_order()
-        self.strategy.on_bar(bar)
+        self.strategy.on_spread_bar(bar)
 
         self.update_daily_close(bar.close_price)
 
@@ -438,44 +437,39 @@ class BacktestingEngine:
         """"""
         self.tick = tick
         self.datetime = tick.datetime
+        self.cross_algo()
 
-        self.cross_limit_order()
-        self.cross_stop_order()
-        self.strategy.on_tick(tick)
+        self.spread.bid_price = tick.bid_price_1
+        self.spread.bid_volume = tick.bid_volume_1
+        self.spread.ask_price = tick.ask_price_1
+        self.spread.ask_volume = tick.ask_volume_1
+
+        self.strategy.on_spread_data()
 
         self.update_daily_close(tick.last_price)
 
-    def cross_limit_order(self):
+    def cross_algo(self):
         """
         Cross limit order with last bar/tick data.
         """
         if self.mode == BacktestingMode.BAR:
-            long_cross_price = self.bar.low_price
-            short_cross_price = self.bar.high_price
-            long_best_price = self.bar.open_price
-            short_best_price = self.bar.open_price
+            long_cross_price = self.bar.close_price
+            short_cross_price = self.bar.close_price
         else:
             long_cross_price = self.tick.ask_price_1
             short_cross_price = self.tick.bid_price_1
-            long_best_price = long_cross_price
-            short_best_price = short_cross_price
 
-        for order in list(self.active_limit_orders.values()):
-            # Push order update with status "not traded" (pending).
-            if order.status == Status.SUBMITTING:
-                order.status = Status.NOTTRADED
-                self.strategy.on_order(order)
-
+        for algo in list(self.active_algos.values()):
             # Check whether limit orders can be filled.
             long_cross = (
-                order.direction == Direction.LONG
-                and order.price >= long_cross_price
+                algo.direction == Direction.LONG
+                and algo.price >= long_cross_price
                 and long_cross_price > 0
             )
 
             short_cross = (
-                order.direction == Direction.SHORT
-                and order.price <= short_cross_price
+                algo.direction == Direction.SHORT
+                and algo.price <= short_cross_price
                 and short_cross_price > 0
             )
 
@@ -483,49 +477,49 @@ class BacktestingEngine:
                 continue
 
             # Push order udpate with status "all traded" (filled).
-            order.traded = order.volume
-            order.status = Status.ALLTRADED
-            self.strategy.on_order(order)
+            algo.traded = algo.volume
+            algo.status = Status.ALLTRADED
+            self.strategy.update_spread_algo(algo)
 
-            self.active_limit_orders.pop(order.vt_orderid)
+            self.active_algos.pop(algo.algoid)
 
             # Push trade update
             self.trade_count += 1
 
             if long_cross:
-                trade_price = min(order.price, long_best_price)
-                pos_change = order.volume
+                trade_price = long_cross_price
+                pos_change = algo.volume
             else:
-                trade_price = max(order.price, short_best_price)
-                pos_change = -order.volume
+                trade_price = short_cross_price
+                pos_change = -algo.volume
 
             trade = TradeData(
-                symbol=order.symbol,
-                exchange=order.exchange,
-                orderid=order.orderid,
+                symbol=self.spread.name,
+                exchange=Exchange.LOCAL,
+                orderid=algo.algoid,
                 tradeid=str(self.trade_count),
-                direction=order.direction,
-                offset=order.offset,
+                direction=algo.direction,
+                offset=algo.offset,
                 price=trade_price,
-                volume=order.volume,
+                volume=algo.volume,
                 time=self.datetime.strftime("%H:%M:%S"),
                 gateway_name=self.gateway_name,
             )
             trade.datetime = self.datetime
 
-            self.strategy.pos += pos_change
-            self.strategy.on_trade(trade)
+            self.spread.net_pos += pos_change
+            self.strategy.on_spread_pos()
 
             self.trades[trade.vt_tradeid] = trade
 
     def load_bar(
-        self, spread: str, days: int, interval: Interval, callback: Callable
+        self, spread: SpreadData, days: int, interval: Interval, callback: Callable
     ):
         """"""
         self.days = days
         self.callback = callback
 
-    def load_tick(self, spread: str, days: int, callback: Callable):
+    def load_tick(self, spread: SpreadData, days: int, callback: Callable):
         """"""
         self.days = days
         self.callback = callback
@@ -543,14 +537,39 @@ class BacktestingEngine:
         lock: bool
     ) -> str:
         """"""
-        pass
+        self.algo_count += 1
+        algoid = str(self.algo_count)
+
+        algo = SpreadAlgoTemplate(
+            self,
+            algoid,
+            self.spread,
+            direction,
+            offset,
+            price,
+            volume,
+            payup,
+            interval,
+            lock
+        )
+
+        self.algos[algoid] = algo
+        self.active_algos[algoid] = algo
+
+        return algoid
 
     def stop_algo(
         self,
+        strategy: SpreadStrategyTemplate,
         algoid: str
     ):
         """"""
-        pass
+        if algoid not in self.active_algos:
+            return
+        algo = self.active_algos.pop(algoid)
+
+        algo.status = Status.CANCELLED
+        self.strategy.update_spread_algo(algo)
 
     def send_order(
         self,
@@ -563,23 +582,15 @@ class BacktestingEngine:
         lock: bool
     ):
         """"""
-        price = round_to(price, self.pricetick)
-        if stop:
-            vt_orderid = self.send_stop_order(direction, offset, price, volume)
-        else:
-            vt_orderid = self.send_limit_order(direction, offset, price, volume)
-        return [vt_orderid]
+        pass
 
     def cancel_order(self, strategy: SpreadStrategyTemplate, vt_orderid: str):
         """
         Cancel order by vt_orderid.
         """
-        if vt_orderid.startswith(STOPORDER_PREFIX):
-            self.cancel_stop_order(strategy, vt_orderid)
-        else:
-            self.cancel_limit_order(strategy, vt_orderid)
+        pass
 
-    def write_log(self, msg: str, strategy: SpreadStrategyTemplate = None):
+    def write_strategy_log(self, strategy: SpreadStrategyTemplate, msg: str):
         """
         Write log message.
         """
@@ -596,6 +607,10 @@ class BacktestingEngine:
         """
         Put an event to update strategy status.
         """
+        pass
+
+    def write_algo_log(self, algo: SpreadAlgoTemplate, msg: str):
+        """"""
         pass
 
 
@@ -633,8 +648,7 @@ class DailyResult:
         start_pos: float,
         size: int,
         rate: float,
-        slippage: float,
-        inverse: bool
+        slippage: float
     ):
         """"""
         # If no pre_close provided on the first day,
@@ -648,12 +662,7 @@ class DailyResult:
         self.start_pos = start_pos
         self.end_pos = start_pos
 
-        if not inverse:     # For normal contract
-            self.holding_pnl = self.start_pos * \
-                (self.close_price - self.pre_close) * size
-        else:               # For crypto currency inverse contract
-            self.holding_pnl = self.start_pos * \
-                (1 / self.pre_close - 1 / self.close_price) * size
+        self.holding_pnl = self.start_pos * (self.close_price - self.pre_close) * size
 
         # Trading pnl is the pnl from new trade during the day
         self.trade_count = len(self.trades)
@@ -666,18 +675,10 @@ class DailyResult:
 
             self.end_pos += pos_change
 
-            # For normal contract
-            if not inverse:
-                turnover = trade.volume * size * trade.price
-                self.trading_pnl += pos_change * \
-                    (self.close_price - trade.price) * size
-                self.slippage += trade.volume * size * slippage
-            # For crypto currency inverse contract
-            else:
-                turnover = trade.volume * size / trade.price
-                self.trading_pnl += pos_change * \
-                    (1 / trade.price - 1 / self.close_price) * size
-                self.slippage += trade.volume * size * slippage / (trade.price ** 2)
+            turnover = trade.volume * size * trade.price
+            self.trading_pnl += pos_change * \
+                (self.close_price - trade.price) * size
+            self.slippage += trade.volume * size * slippage
 
             self.turnover += turnover
             self.commission += turnover * rate
@@ -687,30 +688,72 @@ class DailyResult:
         self.net_pnl = self.total_pnl - self.commission - self.slippage
 
 
-
 @lru_cache(maxsize=999)
 def load_bar_data(
-    symbol: str,
-    exchange: Exchange,
+    spread: SpreadData,
     interval: Interval,
     start: datetime,
-    end: datetime
+    end: datetime,
+    pricetick: float
 ):
     """"""
-    return database_manager.load_bar_data(
-        symbol, exchange, interval, start, end
-    )
+    # Load bar data of each spread leg
+    leg_bars: Dict[str, Dict] = {}
+
+    for vt_symbol in spread.legs.keys():
+        symbol, exchange_str = vt_symbol.split(".")
+        exchange = Exchange(exchange_str)
+
+        bar_data: List[BarData] = database_manager.load_bar_data(
+            symbol, exchange, interval, start, end
+        )
+
+        bars: Dict[datetime, BarData] = {bar.datetime: bar for bar in bar_data}
+        leg_bars[vt_symbol] = bars
+
+    # Calculate spread bar data
+    spread_bars: List[BarData] = []
+
+    for dt in bars.keys():
+        spread_price = 0
+        spread_available = True
+
+        for leg in spread.legs.values():
+            leg_bar = leg_bars[leg.vt_symbol].get(dt, None)
+
+            if leg_bar:
+                price_multiplier = spread.price_multipliers[leg.vt_symbol]
+                spread_price += price_multiplier * leg_bar.close_price
+            else:
+                spread_available = False
+
+        if spread_available:
+            spread_price = round_to(spread_price, pricetick)
+
+            spread_bar = BarData(
+                symbol=spread.name,
+                exchange=exchange.LOCAL,
+                datetime=dt,
+                interval=interval,
+                open_price=spread_price,
+                high_price=spread_price,
+                low_price=spread_price,
+                close_price=spread_price,
+                gateway_name=BacktestingEngine.gateway_name,
+            )
+            spread_bars.append(spread_bar)
+
+    return spread_bars
 
 
 @lru_cache(maxsize=999)
 def load_tick_data(
-    symbol: str,
-    exchange: Exchange,
+    spread: SpreadData,
     start: datetime,
     end: datetime
 ):
     """"""
     return database_manager.load_tick_data(
-        symbol, exchange, start, end
+        spread.name, Exchange.LOCAL, start, end
     )
 

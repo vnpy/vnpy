@@ -1,5 +1,6 @@
 from typing import Dict, List
 from datetime import datetime
+from enum import Enum
 
 from vnpy.trader.object import TickData, PositionData, TradeData, ContractData
 from vnpy.trader.constant import Direction, Offset, Exchange
