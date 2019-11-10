@@ -104,6 +104,7 @@ class RBraekStrategy(CtaTemplate):
 
     trailing_long = 0.4  # 多头止损比例
     trailing_short = 0.4  # 空头止损比例
+    multiplier = 3  # 反转卖出的价格乘数
 
     buy_break = 0  # 突破买入价
     sell_setup = 0  # 观察卖出价
@@ -163,3 +164,92 @@ class RBraekStrategy(CtaTemplate):
         am.update_bar(bar)  # 更新K线
         if not am.inited:
             return
+
+        self.bars.append(bar)
+        if len(self.bars) <= 2:  # 检查K线的数量
+            return
+        else:
+            self.bars.pop(0)
+            print("当前的self.bar.pop是：{}".format(self.bars.pop(0)))
+        last_bar = self.bars[-2]
+        print("当前的last_bar是：{}".format(last_bar))
+
+        # 新交易日
+        if last_bar.datetime.date() != bar.datetime.date():
+            print("last_bar.datetime.date是:{}".format(last_bar.datetime.date()))
+            print("bar.datetime.date是:{}".format(bar.datetime.date()))
+            print("二者不相等，继续后面的动作")
+            if self.day_open:
+                print("day_open是{}".format(self.day_open))
+                # 开始计算指标
+
+                # 观察买入价
+                self.buy_setup = self.day_low - self.setup_coef * (self.day_high - self.day_close)
+
+                #  观察卖出价
+                self.sell_setup = self.day_high + self.setup_coef * (self.day_close - self.day_low)
+
+                #  反转买入价
+                self.buy_enter = (self.enter_coef_1 / 2) * (
+                        self.day_high + self.day_low) - self.enter_coef_2 * self.day_high
+
+                # 反转卖出价
+                self.sell_enter = (self.enter_coef_1 / 2) * (
+                        self.day_high + self.day_low) - self.enter_coef_2 * self.day_low
+
+                # 突破买入价
+                self.buy_break = self.buy_setup + self.break_coef * (self.sell_setup - self.buy_setup)
+
+                # 突破卖出价
+                self.sell_break = self.sell_setup - self.break_coef * (self.sell_setup - self.buy_setup)
+
+                #  为变量赋值,注意不能放在if self.day_open前面
+                self.day_open = bar.open_price  # 开盘价
+                self.day_high = bar.high_price  # 最高价
+                self.day_low = bar.low_price  # 最低价
+                self.day_close = bar.close_price  # 收盘价
+
+        # 今日
+        else:
+            self.day_high = max(self.day_high, bar.high_price)
+            self.day_low = min(self.day_low, bar.low_price)
+            self.day_low = bar.close_price
+
+        if not self.sell_setup:
+            return
+
+        self.tend_high, self.tend_low = am.donchian(self.donchian_window)
+        print("tend_high：{},tend_low：{}".format(self.tend_high, self.tend_low))
+
+        # 日内策略，在某一时间退出
+        if bar.datetime.time() < self.exit_time:  # 在交易时间内
+            if self.pos == 0:
+                self.intra_trade_high = bar.high_price
+                self.intra_trade_low = bar.low_price
+
+                # 买入条件
+                if self.tend_high > self.sell_setup:  # x分钟最高价大于观察卖出价
+                    long_entry = max(self.buy_break, self.day_high)
+                    self.buy(long_entry, self.fixed_size, stop=True)  # 趋势行情，取突破买入价和最高价的最大值，作为停止单买入条件
+                    self.short(self.sell_enter, self.multiplier * self.fixed_size, stop=True)  # 反转行情
+
+                # 做空条件
+                elif self.tend_low < self.buy_setup:  # x分钟的最低价小于惯出买入价
+                    shorr_entry = min(self.sell_break, self.day_low)
+                    self.short(shorr_entry, self.fixed_size, stop=True)
+                    self.buy(self.buy_enter, self.multiplier * self.fixed_size, stop=True)
+
+            elif self.pos > 0:  # 有多头持仓
+                self.intra_trade_high = max(self.intra_trade_high, bar.high_price)
+                long_stop = self.intra_trade_high * (1 - self.trailing_long / 100)  # 按照百分比止损的价格，多头
+                self.sell(long_stop, abs(self.pos), stop=True)  # 止损价格
+            elif self.pos < 0:  # 有空头持仓
+                self.intra_trade_low = min(self.intra_trade_low, bar.low_price)
+                short_stop = self.intra_trade_low * (1 + self.trailing_short / 100)
+                self.cover(short_stop, abs(self.pos), stop=True)
+        # 关闭现有头寸,防止订单没有全部取消成功
+        else:
+            if self.pos > 0:
+                self.sell(bar.close_price * 0.99, abs(self.pos))
+            elif self.pos < 0:
+                self.cover(bar.close_price, abs(self.pos))
