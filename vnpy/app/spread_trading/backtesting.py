@@ -1,7 +1,6 @@
 from collections import defaultdict
 from datetime import date, datetime
-from typing import Callable, Type, Dict, List
-from functools import lru_cache
+from typing import Callable, Type
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,12 +9,10 @@ from pandas import DataFrame
 
 from vnpy.trader.constant import (Direction, Offset, Exchange,
                                   Interval, Status)
-from vnpy.trader.database import database_manager
 from vnpy.trader.object import TradeData, BarData, TickData
-from vnpy.trader.utility import round_to
 
 from .template import SpreadStrategyTemplate, SpreadAlgoTemplate
-from .base import SpreadData, BacktestingMode
+from .base import SpreadData, BacktestingMode, load_bar_data, load_tick_data
 
 sns.set_style("whitegrid")
 
@@ -686,73 +683,3 @@ class DailyResult:
         # Net pnl takes account of commission and slippage cost
         self.total_pnl = self.trading_pnl + self.holding_pnl
         self.net_pnl = self.total_pnl - self.commission - self.slippage
-
-
-@lru_cache(maxsize=999)
-def load_bar_data(
-    spread: SpreadData,
-    interval: Interval,
-    start: datetime,
-    end: datetime,
-    pricetick: float
-):
-    """"""
-    # Load bar data of each spread leg
-    leg_bars: Dict[str, Dict] = {}
-
-    for vt_symbol in spread.legs.keys():
-        symbol, exchange_str = vt_symbol.split(".")
-        exchange = Exchange(exchange_str)
-
-        bar_data: List[BarData] = database_manager.load_bar_data(
-            symbol, exchange, interval, start, end
-        )
-
-        bars: Dict[datetime, BarData] = {bar.datetime: bar for bar in bar_data}
-        leg_bars[vt_symbol] = bars
-
-    # Calculate spread bar data
-    spread_bars: List[BarData] = []
-
-    for dt in bars.keys():
-        spread_price = 0
-        spread_available = True
-
-        for leg in spread.legs.values():
-            leg_bar = leg_bars[leg.vt_symbol].get(dt, None)
-
-            if leg_bar:
-                price_multiplier = spread.price_multipliers[leg.vt_symbol]
-                spread_price += price_multiplier * leg_bar.close_price
-            else:
-                spread_available = False
-
-        if spread_available:
-            spread_price = round_to(spread_price, pricetick)
-
-            spread_bar = BarData(
-                symbol=spread.name,
-                exchange=exchange.LOCAL,
-                datetime=dt,
-                interval=interval,
-                open_price=spread_price,
-                high_price=spread_price,
-                low_price=spread_price,
-                close_price=spread_price,
-                gateway_name=BacktestingEngine.gateway_name,
-            )
-            spread_bars.append(spread_bar)
-
-    return spread_bars
-
-
-@lru_cache(maxsize=999)
-def load_tick_data(
-    spread: SpreadData,
-    start: datetime,
-    end: datetime
-):
-    """"""
-    return database_manager.load_tick_data(
-        spread.name, Exchange.LOCAL, start, end
-    )

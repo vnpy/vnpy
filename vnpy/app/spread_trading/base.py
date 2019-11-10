@@ -1,10 +1,14 @@
 from typing import Dict, List
 from datetime import datetime
 from enum import Enum
+from functools import lru_cache
 
-from vnpy.trader.object import TickData, PositionData, TradeData, ContractData
-from vnpy.trader.constant import Direction, Offset, Exchange
-from vnpy.trader.utility import floor_to, ceil_to
+from vnpy.trader.object import (
+    TickData, PositionData, TradeData, ContractData, BarData
+)
+from vnpy.trader.constant import Direction, Offset, Exchange, Interval
+from vnpy.trader.utility import floor_to, ceil_to, round_to, extract_vt_symbol
+from vnpy.trader.database import database_manager
 
 
 EVENT_SPREAD_DATA = "eSpreadData"
@@ -353,3 +357,73 @@ def calculate_inverse_volume(
 class BacktestingMode(Enum):
     BAR = 1
     TICK = 2
+
+
+@lru_cache(maxsize=999)
+def load_bar_data(
+    spread: SpreadData,
+    interval: Interval,
+    start: datetime,
+    end: datetime,
+    pricetick: float = 0
+):
+    """"""
+    # Load bar data of each spread leg
+    leg_bars: Dict[str, Dict] = {}
+
+    for vt_symbol in spread.legs.keys():
+        symbol, exchange = extract_vt_symbol(vt_symbol)
+
+        bar_data: List[BarData] = database_manager.load_bar_data(
+            symbol, exchange, interval, start, end
+        )
+
+        bars: Dict[datetime, BarData] = {bar.datetime: bar for bar in bar_data}
+        leg_bars[vt_symbol] = bars
+
+    # Calculate spread bar data
+    spread_bars: List[BarData] = []
+
+    for dt in bars.keys():
+        spread_price = 0
+        spread_available = True
+
+        for leg in spread.legs.values():
+            leg_bar = leg_bars[leg.vt_symbol].get(dt, None)
+
+            if leg_bar:
+                price_multiplier = spread.price_multipliers[leg.vt_symbol]
+                spread_price += price_multiplier * leg_bar.close_price
+            else:
+                spread_available = False
+
+        if spread_available:
+            if pricetick:
+                spread_price = round_to(spread_price, pricetick)
+
+            spread_bar = BarData(
+                symbol=spread.name,
+                exchange=exchange.LOCAL,
+                datetime=dt,
+                interval=interval,
+                open_price=spread_price,
+                high_price=spread_price,
+                low_price=spread_price,
+                close_price=spread_price,
+                gateway_name="SPREAD",
+            )
+            spread_bars.append(spread_bar)
+
+    return spread_bars
+
+
+@lru_cache(maxsize=999)
+def load_tick_data(
+    spread: SpreadData,
+    start: datetime,
+    end: datetime
+):
+    """"""
+    return database_manager.load_tick_data(
+        spread.name, Exchange.LOCAL, start, end
+    )
