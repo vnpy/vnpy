@@ -628,8 +628,6 @@ class CtaEngine(BaseEngine):
         """
         strategy = self.strategies[strategy_name]
 
-        print(datetime.now(), strategy_name, strategy.vt_symbol)
-
         if strategy.inited:
             self.write_log(f"{strategy_name}已经完成初始化，禁止重复操作")
             return

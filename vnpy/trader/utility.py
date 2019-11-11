@@ -4,6 +4,7 @@ General utility functions.
 
 import json
 import logging
+import sys
 from pathlib import Path
 from typing import Callable, Dict
 from decimal import Decimal
@@ -58,6 +59,7 @@ def _get_trader_dir(temp_name: str):
 
 
 TRADER_DIR, TEMP_DIR = _get_trader_dir(".vntrader")
+sys.path.append(str(TRADER_DIR))
 
 
 def get_file_path(filename: str):
@@ -477,6 +479,34 @@ class ArrayManager(object):
         if array:
             return aroon_up, aroon_down
         return aroon_up[-1], aroon_down[-1]
+
+    def aroonosc(self, n, array=False):
+        """
+        Aroon Oscillator.
+        """
+        result = talib.AROONOSC(self.high, self.low, n)
+
+        if array:
+            return result
+        return result[-1]
+
+    def ultosc(self, array=False):
+        """
+        Ultimate Oscillator.
+        """
+        result = talib.ULTOSC(self.high, self.low, self.close)
+        if array:
+            return result
+        return result[-1]
+
+    def mfi(self, n, array=False):
+        """
+        Money Flow Index.
+        """
+        result = talib.MFI(self.high, self.low, self.close, self.volume, n)
+        if array:
+            return result
+        return result[-1]
 
 
 def virtual(func: "callable"):

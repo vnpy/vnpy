@@ -541,7 +541,7 @@ class BybitRestApi(RestClient):
                         exchange=req.exchange,
                         datetime=dt,
                         interval=req.interval,
-                        volume=int(d["volume"]),
+                        volume=float(d["volume"]),
                         open_price=float(d["open"]),
                         high_price=float(d["high"]),
                         low_price=float(d["low"]),
