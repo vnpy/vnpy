@@ -103,22 +103,16 @@ class RBreakStrategy(CtaTemplate):
 
         # New Day
         if last_bar.datetime.date() != bar.datetime.date():
-            print("last_bar.datetime.date是:{}".format(last_bar.datetime.date()))
-            print("bar.datetime.date是:{}".format(bar.datetime.date()))
-            print("二者不相等，继续后面的动作")
             if self.day_open:
                 self.buy_setup = self.day_low - self.setup_coef * (self.day_high - self.day_close)  # 观察买入价
                 self.sell_setup = self.day_high + self.setup_coef * (self.day_close - self.day_low)  # 观察卖出价
 
                 self.buy_enter = (self.enter_coef_1 / 2) * (
                         self.day_high + self.day_low) - self.enter_coef_2 * self.day_high  # 反转买入价
-
                 self.sell_enter = (self.enter_coef_1 / 2) * (
                         self.day_high + self.day_low) - self.enter_coef_2 * self.day_low  # 反转卖出价
 
-
                 self.buy_break = self.buy_setup + self.break_coef * (self.sell_setup - self.buy_setup)  # 突破买入价
-
                 self.sell_break = self.sell_setup - self.break_coef * (self.sell_setup - self.buy_setup)  # 突破卖出价
 
             self.day_open = bar.open_price
