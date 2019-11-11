@@ -187,6 +187,8 @@ class BybitRestApi(RestClient):
         """
         Generate ByBit signature.
         """
+        request.headers = {"Referer": "vn.py"}
+
         if request.method == "GET":
             api_params = request.params
             if api_params is None:
