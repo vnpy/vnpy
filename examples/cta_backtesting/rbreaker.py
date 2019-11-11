@@ -20,7 +20,7 @@ class RBraekStrategy(CtaTemplate):
     break_coef = 0.2  # 突破卖出价参数 d
     enter_coef_1 = 1.07  # 入场参数1
     enter_coef_2 = 0.07  # 入场参数2
-    fixed_size = 10  # 买入手数
+    fixed_size = 1  # 买入手数
     donchian_window = 30  # 唐奇安通道参数
 
     trailing_long = 0.4  # 多头止损比例
@@ -44,7 +44,7 @@ class RBraekStrategy(CtaTemplate):
     tend_high = 0
     tend_low = 0
 
-    exit_time = time(hour=23, minute=55)  # 清仓时间
+    exit_time = time(hour=14, minute=55)  # 清仓时间
 
     parameters = ['setup_coef',
                   'break_coef',
@@ -102,10 +102,7 @@ class RBraekStrategy(CtaTemplate):
             self.bars.pop(0)
             # print("当前的self.bar.pop是：{}".format(self.bars.pop(0)))
         last_bar = self.bars[-2]
-        # print("当前的last_bar是：{}".format(last_bar))
-        # print(last_bar.datetime.date())
-        # print(bar.datetime.date())
-        # exit()
+        print("当前的last_bar是：{}".format(last_bar))
 
         # 新交易日
         if last_bar.datetime.date() != bar.datetime.date():
@@ -146,13 +143,13 @@ class RBraekStrategy(CtaTemplate):
         else:
             self.day_high = max(self.day_high, bar.high_price)
             self.day_low = min(self.day_low, bar.low_price)
-            self.day_close = bar.close_price
+            self.day_low = bar.close_price
 
         if not self.sell_setup:
             return
 
         self.tend_high, self.tend_low = am.donchian(self.donchian_window)
-        # print("tend_high：{},tend_low：{}".format(self.tend_high, self.tend_low))
+        print("tend_high：{},tend_low：{}".format(self.tend_high, self.tend_low))
 
         # 日内策略，在某一时间退出
         if bar.datetime.time() < self.exit_time:  # 在交易时间内
@@ -167,7 +164,7 @@ class RBraekStrategy(CtaTemplate):
                     self.short(self.sell_enter, self.multiplier * self.fixed_size, stop=True)  # 反转行情
 
                 # 做空条件
-                elif self.tend_low < self.buy_setup:  # x分钟的最低价小于观察买入价
+                elif self.tend_low < self.buy_setup:  # x分钟的最低价小于惯出买入价
                     shorr_entry = min(self.sell_break, self.day_low)
                     self.short(shorr_entry, self.fixed_size, stop=True)
                     self.buy(self.buy_enter, self.multiplier * self.fixed_size, stop=True)
@@ -180,7 +177,7 @@ class RBraekStrategy(CtaTemplate):
                 self.intra_trade_low = min(self.intra_trade_low, bar.low_price)
                 short_stop = self.intra_trade_low * (1 + self.trailing_short / 100)
                 self.cover(short_stop, abs(self.pos), stop=True)
-        # 关闭现有头寸
+        # 关闭现有头寸,防止订单没有全部取消成功
         else:
             if self.pos > 0:
                 self.sell(bar.close_price * 0.99, abs(self.pos))
