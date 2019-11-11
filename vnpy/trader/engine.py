@@ -50,7 +50,7 @@ class MainEngine:
         if event_engine:
             self.event_engine = event_engine
         else:
-            self.event_engine = EventEngine()
+            self.event_engine = EventEngine()  # 如果时间引擎不存在则创建一个
         self.event_engine.start()  # 事件驱动引擎启动，默认阻塞事件为1秒
 
         self.gateways = {}  # 一个gateways字典
@@ -58,7 +58,7 @@ class MainEngine:
         self.apps = {}  # 一个app字典
         self.exchanges = []  # 交易所列表
 
-        os.chdir(TRADER_DIR)  # Change working directory，更改工作目录
+        os.chdir(TRADER_DIR)  # Change working directory，更改工作目录，加入c\用户名\.vntrader 目录
         self.init_engines()  # Initialize function engines，初始化功能引擎
 
     def add_engine(self, engine_class: Any):
