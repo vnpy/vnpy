@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.0.7-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.0.8-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/circleci/build/github/vnpy/vnpy?token=4d11df68295c8cc02a2bede46094991364190bbc"/>
@@ -62,15 +62,21 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 直达期货（da）：全球期货
 
+        * OANDA（oanda）：外汇、CFD
+
     * 数字货币
 
         * BitMEX（bitmex）：数字货币期货、期权、永续合约
+
+        * Bybit（bybit）：数字货币永续合约
 
         * OKEX永续（okexs）：数字货币永续合约
 
         * OKEX合约（okexf）：数字货币期货
 
         * 火币合约（hbdm）：数字货币期货
+
+        * Gate.io永续（gateios）：数字货币永续合约
 
         * 币安（binance）：数字货币现货
 
@@ -81,6 +87,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
         * Bitfinex（bitfinex）：数字货币现货
 
         * Coinbase（coinbase）：数字货币现货
+
+        * Bitstamp（bitstamp）：数字货币现货
 
         * 1Token（onetoken）：数字货币券商（现货、期货）
 
