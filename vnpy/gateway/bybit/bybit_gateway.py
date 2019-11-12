@@ -550,6 +550,9 @@ class BybitRestApi(RestClient):
                     )
                     buf.append(bar)
 
+                if not buf:
+                    continue
+
                 history.extend(buf)
 
                 begin = buf[0].datetime
