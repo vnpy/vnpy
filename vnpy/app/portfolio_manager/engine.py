@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Dict, List, Set
 from collections import defaultdict
+from copy import copy
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
@@ -16,6 +17,8 @@ from vnpy.trader.utility import load_json, save_json
 APP_NAME = "PortfolioManager"
 
 EVENT_PORTFOLIO_UPDATE = "ePortfioUpdate"
+EVENT_PORTFOLIO_ORDER = "ePortfioUpdate"
+EVENT_PORTFOLIO_TRADE = "ePortfioUpdate"
 
 
 class PortfolioEngine(BaseEngine):
@@ -84,6 +87,13 @@ class PortfolioEngine(BaseEngine):
         if not order.is_active():
             self.active_orders.remove(order.vt_orderid)
 
+        strategy: PortfolioStrategy = self.order_strategy_map[order.vt_orderid]
+        strategy_order = copy(order)
+        strategy_order.gateway_name = strategy.name
+
+        event = Event(EVENT_PORTFOLIO_ORDER, strategy_order)
+        self.event_engine.put(event)
+
     def process_trade_event(self, event: Event):
         """"""
         trade: TradeData = event.data
@@ -98,6 +108,11 @@ class PortfolioEngine(BaseEngine):
             )
 
             self.put_strategy_event(strategy.name)
+
+            strategy_trade = copy(trade)
+            strategy_trade.gateway_name = strategy.name
+            event = Event(EVENT_PORTFOLIO_TRADE, strategy_trade)
+            self.event_engine.put(event)
 
     def process_tick_event(self, event: Event):
         """"""

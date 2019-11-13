@@ -5,7 +5,7 @@ from vnpy.trader.app import BaseApp
 from .engine import PortfolioEngine, APP_NAME
 
 
-class DataRecorderApp(BaseApp):
+class PortfolioManagerApp(BaseApp):
     """"""
     app_name = APP_NAME
     app_module = __module__
