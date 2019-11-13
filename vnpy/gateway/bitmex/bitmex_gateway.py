@@ -707,14 +707,15 @@ class BitmexWebsocketApi(WebsocketClient):
         if "ordStatus" not in d:
             return
 
-        side = d.get("side", "")
-        if not side:
-            return
-
         # Update local order data
         sysid = d["orderID"]
         order = self.orders.get(sysid, None)
         if not order:
+            # Filter data with no trading side info
+            side = d.get("side", "")
+            if not side:
+                return
+
             if d["clOrdID"]:
                 orderid = d["clOrdID"]
             else:
