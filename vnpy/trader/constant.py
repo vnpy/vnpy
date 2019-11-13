@@ -110,6 +110,9 @@ class Exchange(Enum):
     TOCOM = "TOCOM"         # Tokyo Commodity Exchange
     EUNX = "EUNX"           # Euronext Exchange
     KRX = "KRX"             # Korean Exchange
+    ECBOT = 'ECBOT'         # Electronic Trading Platform for CBOT
+    CMECRYPTO = 'CMECRYPTO' # Cryptocurrency Exchange from CME Group
+    OSE = 'OSE.JPN'         # Osaka Securities Exchange
 
     OANDA = "OANDA"         # oanda.com
 
