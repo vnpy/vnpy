@@ -41,24 +41,26 @@ class PortfolioManager(QtWidgets.QWidget):
         trade_monitor = PortfolioTradeMonitor(
             self.main_engine, self.event_engine)
 
-        trading_widget = StrategyTradingWidget(self.portfolio_engine)
-        management_widget = StrategyManagementWidget(
+        self.trading_widget = StrategyTradingWidget(self.portfolio_engine)
+        self.management_widget = StrategyManagementWidget(
             self.portfolio_engine,
-            trading_widget,
+            self.trading_widget,
         )
 
         vbox = QtWidgets.QVBoxLayout()
-        vbox.addWidget(management_widget)
+        vbox.addWidget(self.management_widget)
         vbox.addWidget(self.create_group("策略", strategy_monitor))
+        vbox.addWidget(self.trading_widget)
         vbox.addWidget(self.create_group("委托", order_monitor))
         vbox.addWidget(self.create_group("成交", trade_monitor))
-        vbox.addWidget(trading_widget)
 
         self.setLayout(vbox)
 
     def show(self):
         """"""
-        self.portfolio_engine.load_setting()
+        self.portfolio_engine.init_engine()
+        self.management_widget.update_combo()
+
         self.showMaximized()
 
     def create_group(self, title: str, widget: QtWidgets.QWidget):
@@ -91,6 +93,7 @@ class PortfolioStrategyMonitor(BaseMonitor):
         "open_price": {"display": "持仓价格", "cell": BaseCell, "update": True},
         "last_price": {"display": "最新价格", "cell": BaseCell, "update": True},
         "pos_pnl": {"display": "持仓盈亏", "cell": PnlCell, "update": True},
+        "realized_pnl": {"display": "平仓盈亏", "cell": PnlCell, "update": True},
         "create_time": {"display": "创建时间", "cell": BaseCell, "update": False},
     }
 
@@ -104,7 +107,7 @@ class PortfolioTradeMonitor(BaseMonitor):
     data_key = ""
 
     headers = {
-        "gateway_name": {"display": "接口名称", "cell": BaseCell, "update": False},
+        "gateway_name": {"display": "策略名称", "cell": BaseCell, "update": False},
         "tradeid": {"display": "成交号 ", "cell": BaseCell, "update": False},
         "orderid": {"display": "委托号", "cell": BaseCell, "update": False},
         "symbol": {"display": "代码", "cell": BaseCell, "update": False},
@@ -127,7 +130,7 @@ class PortfolioOrderMonitor(BaseMonitor):
     sorting = True
 
     headers = {
-        "gateway_name": {"display": "接口名称", "cell": BaseCell, "update": False},
+        "gateway_name": {"display": "策略名称", "cell": BaseCell, "update": False},
         "orderid": {"display": "委托号", "cell": BaseCell, "update": False},
         "symbol": {"display": "代码", "cell": BaseCell, "update": False},
         "exchange": {"display": "交易所", "cell": EnumCell, "update": False},
@@ -249,7 +252,7 @@ class StrategyTradingWidget(QtWidgets.QWidget):
 
     def cancel_all(self):
         """"""
-        name = self.name_line.text()
+        name = self.name_combo.currentText()
         self.portfolio_engine.cancel_all(name)
 
     def update_combo(self):

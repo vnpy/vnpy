@@ -5,7 +5,9 @@ from copy import copy
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
-from vnpy.trader.event import EVENT_TRADE, EVENT_ORDER, EVENT_TICK, EVENT_CONTRACT
+from vnpy.trader.event import (
+    EVENT_TRADE, EVENT_ORDER, EVENT_TICK, EVENT_CONTRACT, EVENT_TIMER
+)
 from vnpy.trader.constant import Direction, Offset, OrderType
 from vnpy.trader.object import (
     OrderRequest, CancelRequest, SubscribeRequest,
@@ -29,12 +31,22 @@ class PortfolioEngine(BaseEngine):
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
+        self.inited = False
+
         self.strategies: Dict[str, PortfolioStrategy] = {}
         self.symbol_strategy_map: Dict[str, List] = defaultdict(list)
         self.order_strategy_map: Dict[str, PortfolioStrategy] = {}
         self.active_orders: Set[str] = set()
 
         self.register_event()
+
+    def init_engine(self):
+        """"""
+        if self.inited:
+            return
+        self.inited = True
+
+        self.load_setting()
 
     def load_setting(self):
         """"""
@@ -76,6 +88,12 @@ class PortfolioEngine(BaseEngine):
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
+
+    def process_timer_event(self, event: Event):
+        """"""
+        if self.inited:
+            self.save_setting()
 
     def process_contract_event(self, event: Event):
         """"""
@@ -120,6 +138,8 @@ class PortfolioEngine(BaseEngine):
             strategy_trade.gateway_name = strategy.name
             event = Event(EVENT_PORTFOLIO_TRADE, strategy_trade)
             self.event_engine.put(event)
+
+            self.save_setting()
 
     def process_tick_event(self, event: Event):
         """"""
@@ -245,7 +265,7 @@ class PortfolioEngine(BaseEngine):
     def cancel_all(self, name: str):
         """"""
         for vt_orderid in self.active_orders:
-            strategy = self.order_symbol_map[vt_orderid]
+            strategy = self.order_strategy_map[vt_orderid]
             if strategy.name == name:
                 self.cancel_order(vt_orderid)
 
@@ -308,10 +328,46 @@ class PortfolioStrategy:
         trade_price: float
     ):
         """"""
+        old_cost = self.net_pos * self.open_price
+
         if trade_direction == Direction.LONG:
-            self.net_pos += trade_volume
+            new_pos = self.net_pos + trade_volume
+
+            # Open new long position
+            if self.net_pos >= 0:
+                new_cost = old_cost + trade_volume * trade_price
+                self.open_price = new_cost / new_pos
+            # Close short position
+            else:
+                close_volume = min(trade_volume, abs(self.net_pos))
+                realized_pnl = (trade_price - self.open_price) * \
+                    close_volume * (-1)
+                self.realized_pnl += realized_pnl
+
+                if new_pos > 0:
+                    self.open_price = trade_price
+
+            # Update net pos
+            self.net_pos = new_pos
+
         else:
-            self.net_pos -= trade_volume
+            new_pos = self.net_pos - trade_volume
+
+            # Open new short position
+            if self.net_pos <= 0:
+                new_cost = old_cost - trade_volume * trade_price
+                self.open_price = new_cost / new_pos
+            # Close long position
+            else:
+                close_volume = min(trade_volume, abs(self.net_pos))
+                realized_pnl = (trade_price - self.open_price) * close_volume
+                self.realized_pnl += realized_pnl
+
+                if new_pos < 0:
+                    self.open_price = trade_price
+
+            # Update net pos
+            self.net_pos = new_pos
 
         self.calculate_pnl()
 
