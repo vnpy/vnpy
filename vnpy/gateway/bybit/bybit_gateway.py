@@ -187,6 +187,8 @@ class BybitRestApi(RestClient):
         """
         Generate ByBit signature.
         """
+        request.headers = {"Referer": "vn.py"}
+
         if request.method == "GET":
             api_params = request.params
             if api_params is None:
@@ -529,8 +531,16 @@ class BybitRestApi(RestClient):
                 break
             else:
                 data = resp.json()
-                if not data:
+
+                ret_msg = data["ret_msg"]
+                if ret_msg != "ok":
+                    msg = f"获取历史数据出错，错误信息：{ret_msg}"
+                    self.gateway.write_log(msg)
+                    break
+
+                if not data["result"]:
                     msg = f"获取历史数据为空，开始时间：{start_time}，数量：{count}"
+                    self.gateway.write_log(msg)
                     break
 
                 buf = []
