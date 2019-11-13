@@ -102,13 +102,13 @@ class RBraekStrategy(CtaTemplate):
             self.bars.pop(0)
             # print("当前的self.bar.pop是：{}".format(self.bars.pop(0)))
         last_bar = self.bars[-2]
-        print("当前的last_bar是：{}".format(last_bar))
+        # print("当前的last_bar是：{}".format(last_bar))
 
         # 新交易日
         if last_bar.datetime.date() != bar.datetime.date():
-            # print("last_bar.datetime.date是:{}".format(last_bar.datetime.date()))
-            # print("bar.datetime.date是:{}".format(bar.datetime.date()))
-            # print("二者不相等，继续后面的动作")
+            print("last_bar.datetime.date是:{}".format(last_bar.datetime.date()))
+            print("bar.datetime.date是:{}".format(bar.datetime.date()))
+            print("二者不相等，继续后面的动作")
             if self.day_open:
                 # print("day_open是{}".format(self.day_open))
                 # 开始计算指标
@@ -143,7 +143,7 @@ class RBraekStrategy(CtaTemplate):
         else:
             self.day_high = max(self.day_high, bar.high_price)
             self.day_low = min(self.day_low, bar.low_price)
-            self.day_low = bar.close_price
+            self.day_close = bar.close_price
 
         if not self.sell_setup:
             return
@@ -164,7 +164,7 @@ class RBraekStrategy(CtaTemplate):
                     self.short(self.sell_enter, self.multiplier * self.fixed_size, stop=True)  # 反转行情
 
                 # 做空条件
-                elif self.tend_low < self.buy_setup:  # x分钟的最低价小于惯出买入价
+                elif self.tend_low < self.buy_setup:  # x分钟的最低价小于观察买入价
                     shorr_entry = min(self.sell_break, self.day_low)
                     self.short(shorr_entry, self.fixed_size, stop=True)
                     self.buy(self.buy_enter, self.multiplier * self.fixed_size, stop=True)
