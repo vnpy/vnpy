@@ -45,6 +45,7 @@ class PortfolioManager(QtWidgets.QWidget):
         self.management_widget = StrategyManagementWidget(
             self.portfolio_engine,
             self.trading_widget,
+            strategy_monitor
         )
 
         vbox = QtWidgets.QVBoxLayout()
@@ -96,6 +97,15 @@ class PortfolioStrategyMonitor(BaseMonitor):
         "realized_pnl": {"display": "平仓盈亏", "cell": PnlCell, "update": True},
         "create_time": {"display": "创建时间", "cell": BaseCell, "update": False},
     }
+
+    def remove_strategy(self, name: str):
+        """"""
+        if name not in self.cells:
+            return
+
+        row_cells = self.cells.pop(name)
+        row = self.row(row_cells["net_pos"])
+        self.removeRow(row)
 
 
 class PortfolioTradeMonitor(BaseMonitor):
@@ -269,13 +279,15 @@ class StrategyManagementWidget(QtWidgets.QWidget):
     def __init__(
         self,
         portfolio_engine: PortfolioEngine,
-        trading_widget: StrategyTradingWidget
+        trading_widget: StrategyTradingWidget,
+        strategy_monitor: PortfolioStrategyMonitor
     ):
         """"""
         super().__init__()
 
         self.portfolio_engine = portfolio_engine
         self.trading_widget = trading_widget
+        self.strategy_monitor = strategy_monitor
 
         self.init_ui()
         self.update_combo()
@@ -361,6 +373,8 @@ class StrategyManagementWidget(QtWidgets.QWidget):
             )
 
             self.update_combo()
+
+            self.strategy_monitor.remove_strategy(name)
         else:
             QtWidgets.QMessageBox.warning(
                 self,
