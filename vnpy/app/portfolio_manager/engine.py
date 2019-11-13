@@ -5,11 +5,11 @@ from copy import copy
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
-from vnpy.trader.event import EVENT_TRADE, EVENT_ORDER, EVENT_TICK
+from vnpy.trader.event import EVENT_TRADE, EVENT_ORDER, EVENT_TICK, EVENT_CONTRACT
 from vnpy.trader.constant import Direction, Offset, OrderType
 from vnpy.trader.object import (
     OrderRequest, CancelRequest, SubscribeRequest,
-    OrderData, TradeData, TickData
+    OrderData, TradeData, TickData, ContractData
 )
 from vnpy.trader.utility import load_json, save_json
 
@@ -17,8 +17,8 @@ from vnpy.trader.utility import load_json, save_json
 APP_NAME = "PortfolioManager"
 
 EVENT_PORTFOLIO_UPDATE = "ePortfioUpdate"
-EVENT_PORTFOLIO_ORDER = "ePortfioUpdate"
-EVENT_PORTFOLIO_TRADE = "ePortfioUpdate"
+EVENT_PORTFOLIO_ORDER = "ePortfioOrder"
+EVENT_PORTFOLIO_TRADE = "ePortfioTrade"
 
 
 class PortfolioEngine(BaseEngine):
@@ -35,7 +35,6 @@ class PortfolioEngine(BaseEngine):
         self.active_orders: Set[str] = set()
 
         self.register_event()
-        self.load_setting()
 
     def load_setting(self):
         """"""
@@ -57,7 +56,7 @@ class PortfolioEngine(BaseEngine):
         """"""
         setting: dict = {}
 
-        for strategy in self.strategies:
+        for strategy in self.strategies.values():
             setting[strategy.name] = {
                 "name": strategy.name,
                 "vt_symbol": strategy.vt_symbol,
@@ -76,6 +75,14 @@ class PortfolioEngine(BaseEngine):
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
+        self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
+
+    def process_contract_event(self, event: Event):
+        """"""
+        contract: ContractData = event.data
+
+        if contract.vt_symbol in self.symbol_strategy_map:
+            self.subscribe_data(contract.vt_symbol)
 
     def process_order_event(self, event: Event):
         """"""
@@ -102,9 +109,9 @@ class PortfolioEngine(BaseEngine):
             trade.vt_orderid)
         if strategy:
             strategy.update_trade(
-                trade.trade_direction,
-                trade.trade_volume,
-                trade.trade_price
+                trade.direction,
+                trade.volume,
+                trade.price
             )
 
             self.put_strategy_event(strategy.name)
@@ -128,7 +135,7 @@ class PortfolioEngine(BaseEngine):
         self,
         name: str,
         vt_symbol: str,
-        size: int,
+        size: int = 0,
         net_pos: int = 0,
         open_price: float = 0,
         last_price: float = 0,
@@ -138,6 +145,12 @@ class PortfolioEngine(BaseEngine):
         """"""
         if name in self.strategies:
             return False
+
+        if not size:
+            contract = self.main_engine.get_contract(vt_symbol)
+            if not contract:
+                return False
+            size = contract.size
 
         strategy = PortfolioStrategy(
             name,
@@ -152,8 +165,12 @@ class PortfolioEngine(BaseEngine):
 
         self.strategies[strategy.name] = strategy
         self.symbol_strategy_map[strategy.vt_symbol].append(strategy)
+        self.save_setting()
 
         self.subscribe_data(vt_symbol)
+        self.put_strategy_event(name)
+
+        return True
 
     def remove_strategy(self, name: str):
         """"""
@@ -237,6 +254,10 @@ class PortfolioEngine(BaseEngine):
         strategy = self.strategies[name]
         event = Event(EVENT_PORTFOLIO_UPDATE, strategy)
         self.event_engine.put(event)
+
+    def stop(self):
+        """"""
+        self.save_setting()
 
 
 class PortfolioStrategy:

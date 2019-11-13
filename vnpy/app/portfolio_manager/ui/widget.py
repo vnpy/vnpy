@@ -1,12 +1,10 @@
-from vnpy.event import EventEngine, Event
+from vnpy.event import EventEngine
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.constant import Direction, Offset
-from vnpy.trader.ui import QtWidgets, QtCore, QtGui
+from vnpy.trader.ui import QtWidgets, QtGui
 from vnpy.trader.ui.widget import (
     BaseMonitor, BaseCell,
-    BidCell, AskCell,
-    TimeCell, PnlCell,
-    DirectionCell, EnumCell,
+    PnlCell, DirectionCell, EnumCell,
 )
 
 from ..engine import (
@@ -43,10 +41,18 @@ class PortfolioManager(QtWidgets.QWidget):
         trade_monitor = PortfolioTradeMonitor(
             self.main_engine, self.event_engine)
 
+        trading_widget = StrategyTradingWidget(self.portfolio_engine)
+        management_widget = StrategyManagementWidget(
+            self.portfolio_engine,
+            trading_widget,
+        )
+
         vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(management_widget)
         vbox.addWidget(self.create_group("策略", strategy_monitor))
         vbox.addWidget(self.create_group("委托", order_monitor))
         vbox.addWidget(self.create_group("成交", trade_monitor))
+        vbox.addWidget(trading_widget)
 
         self.setLayout(vbox)
 
@@ -151,3 +157,220 @@ class PortfolioOrderMonitor(BaseMonitor):
         order = cell.get_data()
         req = order.create_cancel_request()
         self.main_engine.cancel_order(req, order.gateway_name)
+
+
+class StrategyTradingWidget(QtWidgets.QWidget):
+    """"""
+
+    def __init__(self, portfolio_engine: PortfolioEngine):
+        """"""
+        super().__init__()
+
+        self.portfolio_engine = portfolio_engine
+        self.init_ui()
+        self.update_combo()
+
+    def init_ui(self):
+        """"""
+        self.name_combo = QtWidgets.QComboBox()
+
+        self.direction_combo = QtWidgets.QComboBox()
+        self.direction_combo.addItems(
+            [Direction.LONG.value, Direction.SHORT.value])
+
+        self.offset_combo = QtWidgets.QComboBox()
+        self.offset_combo.addItems([offset.value for offset in Offset])
+
+        double_validator = QtGui.QDoubleValidator()
+        double_validator.setBottom(0)
+
+        self.price_line = QtWidgets.QLineEdit()
+        self.price_line.setValidator(double_validator)
+
+        self.volume_line = QtWidgets.QLineEdit()
+        self.volume_line.setValidator(double_validator)
+
+        for w in [
+            self.name_combo,
+            self.price_line,
+            self.volume_line,
+            self.direction_combo,
+            self.offset_combo
+        ]:
+            w.setFixedWidth(150)
+
+        send_button = QtWidgets.QPushButton("委托")
+        send_button.clicked.connect(self.send_order)
+        send_button.setFixedWidth(70)
+
+        cancel_button = QtWidgets.QPushButton("全撤")
+        cancel_button.clicked.connect(self.cancel_all)
+        cancel_button.setFixedWidth(70)
+
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addWidget(QtWidgets.QLabel("策略名称"))
+        hbox.addWidget(self.name_combo)
+        hbox.addWidget(QtWidgets.QLabel("方向"))
+        hbox.addWidget(self.direction_combo)
+        hbox.addWidget(QtWidgets.QLabel("开平"))
+        hbox.addWidget(self.offset_combo)
+        hbox.addWidget(QtWidgets.QLabel("价格"))
+        hbox.addWidget(self.price_line)
+        hbox.addWidget(QtWidgets.QLabel("数量"))
+        hbox.addWidget(self.volume_line)
+        hbox.addWidget(send_button)
+        hbox.addWidget(cancel_button)
+        hbox.addStretch()
+
+        self.setLayout(hbox)
+
+    def send_order(self):
+        """"""
+        name = self.name_combo.currentText()
+
+        price_text = self.price_line.text()
+        volume_text = self.volume_line.text()
+
+        if not price_text or not volume_text:
+            return
+
+        price = float(price_text)
+        volume = float(volume_text)
+        direction = Direction(self.direction_combo.currentText())
+        offset = Offset(self.offset_combo.currentText())
+
+        self.portfolio_engine.send_order(
+            name,
+            price,
+            volume,
+            direction,
+            offset
+        )
+
+    def cancel_all(self):
+        """"""
+        name = self.name_line.text()
+        self.portfolio_engine.cancel_all(name)
+
+    def update_combo(self):
+        """"""
+        strategy_names = list(self.portfolio_engine.strategies.keys())
+
+        self.name_combo.clear()
+        self.name_combo.addItems(strategy_names)
+
+
+class StrategyManagementWidget(QtWidgets.QWidget):
+    """"""
+
+    def __init__(
+        self,
+        portfolio_engine: PortfolioEngine,
+        trading_widget: StrategyTradingWidget
+    ):
+        """"""
+        super().__init__()
+
+        self.portfolio_engine = portfolio_engine
+        self.trading_widget = trading_widget
+
+        self.init_ui()
+        self.update_combo()
+
+    def init_ui(self):
+        """"""
+        self.name_line = QtWidgets.QLineEdit()
+        self.symbol_line = QtWidgets.QLineEdit()
+        self.remove_combo = QtWidgets.QComboBox()
+
+        for w in [
+            self.name_line,
+            self.symbol_line,
+            self.remove_combo
+        ]:
+            w.setFixedWidth(150)
+
+        add_button = QtWidgets.QPushButton("创建策略")
+        add_button.clicked.connect(self.add_strategy)
+
+        remove_button = QtWidgets.QPushButton("移除策略")
+        remove_button.clicked.connect(self.remove_strategy)
+
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addWidget(QtWidgets.QLabel("策略名称"))
+        hbox.addWidget(self.name_line)
+        hbox.addWidget(QtWidgets.QLabel("交易合约"))
+        hbox.addWidget(self.symbol_line)
+        hbox.addWidget(add_button)
+        hbox.addStretch()
+        hbox.addWidget(self.remove_combo)
+        hbox.addWidget(remove_button)
+
+        self.setLayout(hbox)
+
+    def add_strategy(self):
+        """"""
+        name = self.name_line.text()
+        vt_symbol = self.symbol_line.text()
+
+        if not name or not vt_symbol:
+            QtWidgets.QMessageBox.information(
+                self,
+                "提示",
+                "请输入策略名称和交易合约",
+                QtWidgets.QMessageBox.Ok
+            )
+
+        result = self.portfolio_engine.add_strategy(name, vt_symbol)
+
+        if result:
+            QtWidgets.QMessageBox.information(
+                self,
+                "提示",
+                "策略创建成功",
+                QtWidgets.QMessageBox.Ok
+            )
+
+            self.update_combo()
+        else:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "提示",
+                "策略创建失败，存在重名或找不到合约",
+                QtWidgets.QMessageBox.Ok
+            )
+
+    def remove_strategy(self):
+        """"""
+        name = self.remove_combo.currentText()
+
+        if not name:
+            return
+
+        result = self.portfolio_engine.remove_strategy(name)
+
+        if result:
+            QtWidgets.QMessageBox.information(
+                self,
+                "提示",
+                "策略移除成功",
+                QtWidgets.QMessageBox.Ok
+            )
+
+            self.update_combo()
+        else:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "提示",
+                "策略移除失败，不存在该策略",
+                QtWidgets.QMessageBox.Ok
+            )
+
+    def update_combo(self):
+        """"""
+        strategy_names = list(self.portfolio_engine.strategies.keys())
+
+        self.remove_combo.clear()
+        self.remove_combo.addItems(strategy_names)
+
+        self.trading_widget.update_combo()
