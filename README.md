@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.0.7-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.0.8-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/circleci/build/github/vnpy/vnpy?token=4d11df68295c8cc02a2bede46094991364190bbc"/>
@@ -62,15 +62,21 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 直达期货（da）：全球期货
 
+        * OANDA（oanda）：外汇、CFD
+
     * 数字货币
 
         * BitMEX（bitmex）：数字货币期货、期权、永续合约
+
+        * Bybit（bybit）：数字货币永续合约
 
         * OKEX永续（okexs）：数字货币永续合约
 
         * OKEX合约（okexf）：数字货币期货
 
         * 火币合约（hbdm）：数字货币期货
+
+        * Gate.io永续（gateios）：数字货币永续合约
 
         * 币安（binance）：数字货币现货
 
@@ -82,10 +88,12 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * Coinbase（coinbase）：数字货币现货
 
+        * Bitstamp（bitstamp）：数字货币现货
+
         * 1Token（onetoken）：数字货币券商（现货、期货）
 
     * 特殊应用
-    
+
         * RPC服务（rpc）：跨进程通讯接口，用于分布式架构
 
 3. 开箱即用的各类量化策略交易应用（vnpy.app）：
@@ -118,7 +126,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 8. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容。
 
-9.  官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
+9. 官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
 
 ## 环境准备
 
@@ -138,7 +146,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     bash install.sh
 
-
 ## 使用指南
 
 1. 在[SimNow](http://www.simnow.com.cn/)注册CTP仿真账号，并在[该页面](http://www.simnow.com.cn/product.action)获取经纪商代码以及交易行情服务器地址。
@@ -154,7 +161,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 * 在VN Trader的运行过程中请勿关闭VN Station（会自动退出）
 * 如需要灵活配置量化交易应用组件，请使用**VN Trader Pro**
 
-
 ## 脚本运行
 
 除了基于VN Station的图形化启动方式外，也可以在任意目录下创建run.py，写入以下示例代码：
@@ -167,24 +173,24 @@ from vnpy.gateway.ctp import CtpGateway
 from vnpy.app.cta_strategy import CtaStrategyApp
 from vnpy.app.cta_backtester import CtaBacktesterApp
 
-def main（）:
+def main():
     """Start VN Trader"""
-    qapp = create_qapp（）
+    qapp = create_qapp()
 
-    event_engine = EventEngine（）
-    main_engine = MainEngine（event_engine）
+    event_engine = EventEngine()
+    main_engine = MainEngine(event_engine)
     
-    main_engine.add_gateway（CtpGateway）
-    main_engine.add_app（CtaStrategyApp）
-    main_engine.add_app（CtaBacktesterApp）
+    main_engine.add_gateway(CtpGateway)
+    main_engine.add_app(CtaStrategyApp)
+    main_engine.add_app(CtaBacktesterApp)
 
-    main_window = MainWindow（main_engine, event_engine）
-    main_window.showMaximized（）
+    main_window = MainWindow(main_engine, event_engine)
+    main_window.showMaximized()
 
-    qapp.exec（）
+    qapp.exec()
 
 if __name__ == "__main__":
-    main（）
+    main()
 ```
 
 在该目录下打开CMD（按住Shift->点击鼠标右键->在此处打开命令窗口/PowerShell）后运行下列命令启动VN Trader：
@@ -227,8 +233,6 @@ vn.py使用Github托管其源代码，如果希望贡献代码请使用github的
 
 长期维护捐赠清单，请在留言中注明是项目捐赠以及捐赠人的名字。
 
-
-
 ## 其他内容
 
 * [获取帮助](https://github.com/vnpy/vnpy/blob/dev/docs/SUPPORT.md)
@@ -236,12 +240,6 @@ vn.py使用Github托管其源代码，如果希望贡献代码请使用github的
 * [Issue模板](https://github.com/vnpy/vnpy/blob/dev/docs/ISSUE_TEMPLATE.md)
 * [PR模板](https://github.com/vnpy/vnpy/blob/dev/docs/PULL_REQUEST_TEMPLATE.md)
 
-
-
 ## 版权说明
 
 MIT
-  
-
-
-

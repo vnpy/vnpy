@@ -93,7 +93,7 @@ class OesMdMessageLoop:
                 gateway_name=self.gateway.gateway_name,
                 symbol=symbol,
                 exchange=self.symbol_to_exchange[symbol],
-                datetime=datetime.utcnow()
+                datetime=datetime.now()
             )
             self.last_tick[symbol] = tick
             return tick
@@ -144,8 +144,10 @@ class OesMdMessageLoop:
 
         for i in range(min(data.BidPriceLevel, 5)):
             tick.__dict__['bid_price_' + str(i + 1)] = data.BidLevels[i].Price / 10000
+            tick.__dict__['bid_volume_' + str(i + 1)] = data.BidLevels[i].QrderQty / 100
         for i in range(min(data.OfferPriceLevel, 5)):
             tick.__dict__['ask_price_' + str(i + 1)] = data.OfferLevels[i].Price / 10000
+            tick.__dict__['ask_volume_' + str(i + 1)] = data.OfferLevels[i].QrderQty / 100
         self.gateway.on_tick(copy(tick))
 
     def on_init_tick(self, d: MdsMktRspMsgBodyT):
@@ -160,8 +162,10 @@ class OesMdMessageLoop:
 
         for i in range(5):
             tick.__dict__['bid_price_' + str(i + 1)] = data.BidLevels[i].Price / 10000
+            tick.__dict__['bid_volume_' + str(i + 1)] = data.BidLevels[i].QrderQty / 100
         for i in range(5):
             tick.__dict__['ask_price_' + str(i + 1)] = data.OfferLevels[i].Price / 10000
+            tick.__dict__['ask_volume_' + str(i + 1)] = data.OfferLevels[i].QrderQty / 100
         self.gateway.on_tick(copy(tick))
 
     def on_l2_trade(self, d: MdsMktRspMsgBodyT):
@@ -169,7 +173,7 @@ class OesMdMessageLoop:
         data = d.trade
         symbol = data.SecurityID
         tick = self._get_last_tick(symbol)
-        tick.datetime = datetime.utcnow()
+        tick.datetime = datetime.now()
         tick.volume = data.TradeQty
         tick.last_price = data.TradePrice / 10000
         self.gateway.on_tick(copy(tick))

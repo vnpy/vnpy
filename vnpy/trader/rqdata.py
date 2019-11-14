@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import List
 
 from rqdatac import init as rqdata_init
@@ -57,7 +57,7 @@ class RqdataClient:
         )
 
         try:
-            df = rqdata_all_instruments(date=datetime.now())
+            df = rqdata_all_instruments()
             for ix, row in df.iterrows():
                 self.symbols.add(row['order_book_id'])
         except (RuntimeError, AuthenticationFailed):
