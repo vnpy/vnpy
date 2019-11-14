@@ -43,7 +43,8 @@ def check_extension_build_flag(ext_modules, key: str, module: Extension):
         elif value == '0':
             ext_modules = list(set(ext_modules) - {module})
         else:
-            raise ValueError(f"Flag {key} should be '0' or '1', but {repr(value)} got.")
+            raise ValueError(
+                f"Flag {key} should be '0' or '1', but {repr(value)} got.")
     return ext_modules
 
 
@@ -73,7 +74,9 @@ def get_install_requires():
         "rqdatac",
         "ta-lib",
         "ibapi",
-        "deap"
+        "deap",
+        "pyzmq",
+        "QScintilla"
     ]
     if not is_psycopg2_exists():
         install_requires.append("psycopg2-binary")
@@ -171,9 +174,12 @@ def get_ext_modules():
     else:
         ext_modules = [vnctptd, vnctpmd, vnoes]
 
-    ext_modules = check_extension_build_flag(ext_modules, "VNPY_BUILD_OES", vnoes)
-    ext_modules = check_extension_build_flag(ext_modules, "VNPY_BUILD_CTP", vnctptd)
-    ext_modules = check_extension_build_flag(ext_modules, "VNPY_BUILD_CTP", vnctpmd)
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_OES", vnoes)
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_CTP", vnctptd)
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_CTP", vnctpmd)
 
     return ext_modules
 
