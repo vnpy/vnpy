@@ -20,7 +20,7 @@ class RBraekStrategy(CtaTemplate):
     break_coef = 0.2  # 突破卖出价参数 d
     enter_coef_1 = 1.07  # 入场参数1
     enter_coef_2 = 0.07  # 入场参数2
-    fixed_size = 1  # 买入手数
+    fixed_size = 10  # 买入手数
     donchian_window = 30  # 唐奇安通道参数
 
     trailing_long = 0.4  # 多头止损比例
@@ -44,7 +44,7 @@ class RBraekStrategy(CtaTemplate):
     tend_high = 0
     tend_low = 0
 
-    exit_time = time(hour=14, minute=55)  # 清仓时间
+    exit_time = time(hour=23, minute=55)  # 清仓时间
 
     parameters = ['setup_coef',
                   'break_coef',
@@ -106,9 +106,9 @@ class RBraekStrategy(CtaTemplate):
 
         # 新交易日
         if last_bar.datetime.date() != bar.datetime.date():
-            print("last_bar.datetime.date是:{}".format(last_bar.datetime.date()))
-            print("bar.datetime.date是:{}".format(bar.datetime.date()))
-            print("二者不相等，继续后面的动作")
+            # print("last_bar.datetime.date是:{}".format(last_bar.datetime.date()))
+            # print("bar.datetime.date是:{}".format(bar.datetime.date()))
+            # print("二者不相等，继续后面的动作")
             if self.day_open:
                 # print("day_open是{}".format(self.day_open))
                 # 开始计算指标
@@ -149,7 +149,7 @@ class RBraekStrategy(CtaTemplate):
             return
 
         self.tend_high, self.tend_low = am.donchian(self.donchian_window)
-        print("tend_high：{},tend_low：{}".format(self.tend_high, self.tend_low))
+        # print("tend_high：{},tend_low：{}".format(self.tend_high, self.tend_low))
 
         # 日内策略，在某一时间退出
         if bar.datetime.time() < self.exit_time:  # 在交易时间内
@@ -177,7 +177,7 @@ class RBraekStrategy(CtaTemplate):
                 self.intra_trade_low = min(self.intra_trade_low, bar.low_price)
                 short_stop = self.intra_trade_low * (1 + self.trailing_short / 100)
                 self.cover(short_stop, abs(self.pos), stop=True)
-        # 关闭现有头寸,防止订单没有全部取消成功
+        # 在非交易时间关闭寸头
         else:
             if self.pos > 0:
                 self.sell(bar.close_price * 0.99, abs(self.pos))
