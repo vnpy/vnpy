@@ -6,7 +6,6 @@ from copy import copy
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
-from vnpy.trader.constant import Exchange
 from vnpy.trader.object import (
     SubscribeRequest,
     TickData,
@@ -16,7 +15,6 @@ from vnpy.trader.object import (
 from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT
 from vnpy.trader.utility import load_json, save_json, BarGenerator
 from vnpy.trader.database import database_manager
-from vnpy.app.spread_trading.base import EVENT_SPREAD_DATA, SpreadData
 
 
 APP_NAME = "DataRecorder"
@@ -93,22 +91,18 @@ class RecorderEngine(BaseEngine):
             self.write_log(f"已在K线记录列表中：{vt_symbol}")
             return
 
-        if Exchange.LOCAL.value not in vt_symbol:
-            contract = self.main_engine.get_contract(vt_symbol)
-            if not contract:
-                self.write_log(f"找不到合约：{vt_symbol}")
-                return
+        contract = self.main_engine.get_contract(vt_symbol)
+        if not contract:
+            self.write_log(f"找不到合约：{vt_symbol}")
+            return
 
-            self.bar_recordings[vt_symbol] = {
-                "symbol": contract.symbol,
-                "exchange": contract.exchange.value,
-                "gateway_name": contract.gateway_name
-            }
+        self.bar_recordings[vt_symbol] = {
+            "symbol": contract.symbol,
+            "exchange": contract.exchange.value,
+            "gateway_name": contract.gateway_name
+        }
 
-            self.subscribe(contract)
-        else:
-            self.tick_recordings[vt_symbol] = {}
-
+        self.subscribe(contract)
         self.save_setting()
         self.put_event()
 
@@ -120,24 +114,18 @@ class RecorderEngine(BaseEngine):
             self.write_log(f"已在Tick记录列表中：{vt_symbol}")
             return
 
-        # For normal contract
-        if Exchange.LOCAL.value not in vt_symbol:
-            contract = self.main_engine.get_contract(vt_symbol)
-            if not contract:
-                self.write_log(f"找不到合约：{vt_symbol}")
-                return
+        contract = self.main_engine.get_contract(vt_symbol)
+        if not contract:
+            self.write_log(f"找不到合约：{vt_symbol}")
+            return
 
-            self.tick_recordings[vt_symbol] = {
-                "symbol": contract.symbol,
-                "exchange": contract.exchange.value,
-                "gateway_name": contract.gateway_name
-            }
+        self.tick_recordings[vt_symbol] = {
+            "symbol": contract.symbol,
+            "exchange": contract.exchange.value,
+            "gateway_name": contract.gateway_name
+        }
 
-            self.subscribe(contract)
-        # No need to subscribe for spread data
-        else:
-            self.tick_recordings[vt_symbol] = {}
-
+        self.subscribe(contract)
         self.save_setting()
         self.put_event()
 
@@ -171,22 +159,17 @@ class RecorderEngine(BaseEngine):
         """"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
-        self.event_engine.register(
-            EVENT_SPREAD_DATA, self.process_spread_event)
 
-    def update_tick(self, tick: TickData):
+    def process_tick_event(self, event: Event):
         """"""
+        tick = event.data
+
         if tick.vt_symbol in self.tick_recordings:
             self.record_tick(tick)
 
         if tick.vt_symbol in self.bar_recordings:
             bg = self.get_bar_generator(tick.vt_symbol)
             bg.update_tick(tick)
-
-    def process_tick_event(self, event: Event):
-        """"""
-        tick = event.data
-        self.update_tick(tick)
 
     def process_contract_event(self, event: Event):
         """"""
@@ -195,15 +178,6 @@ class RecorderEngine(BaseEngine):
 
         if (vt_symbol in self.tick_recordings or vt_symbol in self.bar_recordings):
             self.subscribe(contract)
-
-    def process_spread_event(self, event: Event):
-        """"""
-        spread: SpreadData = event.data
-        tick = spread.to_tick()
-
-        # Filter not inited spread data
-        if tick.datetime:
-            self.update_tick(tick)
 
     def write_log(self, msg: str):
         """"""
