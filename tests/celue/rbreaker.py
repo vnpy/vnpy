@@ -253,3 +253,15 @@ class RBraekStrategy(CtaTemplate):
                 self.sell(bar.close_price * 0.99, abs(self.pos))
             elif self.pos < 0:
                 self.cover(bar.close_price, abs(self.pos))
+
+        self.put_event()
+
+    def on_order(self, order: OrderData):
+        pass
+
+    def on_trade(self, trade: TradeData):
+        pass
+
+    def on_stop_order(self, stop_order: StopOrder):
+        pass
+
