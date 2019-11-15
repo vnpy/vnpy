@@ -547,7 +547,7 @@ class SpreadStrategyTemplate:
 
     def stop_all_algos(self):
         """"""
-        for algoid in self.algoids:
+        for algoid in list(self.algoids):
             self.stop_algo(algoid)
 
     def buy(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:

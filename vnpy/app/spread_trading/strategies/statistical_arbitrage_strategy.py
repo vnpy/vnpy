@@ -94,6 +94,8 @@ class StatisticalArbitrageStrategy(SpreadStrategyTemplate):
         """
         Callback when spread bar data is generated.
         """
+        self.stop_all_algos()
+
         self.am.update_bar(bar)
         if not self.am.inited:
             return
