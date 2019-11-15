@@ -42,7 +42,7 @@ class RBreakStrategy(CtaTemplate):
     tend_high = 0
     tend_low = 0
 
-    exit_time = time(hour=14, minute=55)
+    exit_time = time(hour=23, minute=55)
 
     parameters = ["setup_coef", "break_coef", "enter_coef_1", "enter_coef_2", "fixed_size", "donchian_window"]
     variables = ["buy_break", "sell_setup", "sell_enter", "buy_enter", "buy_setup", "sell_break"]

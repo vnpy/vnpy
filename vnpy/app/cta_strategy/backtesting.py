@@ -31,6 +31,9 @@ sns.set_style("whitegrid")
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
 
+# 年总交易日,数字货币为365
+TRADING_DAY = 365  # 365，252
+
 
 class OptimizationSetting:
     """
@@ -401,7 +404,7 @@ class BacktestingEngine:
 
             if return_std:
                 sharpe_ratio = (
-                        daily_return / return_std * np.sqrt(240)
+                        daily_return / return_std * np.sqrt(TRADING_DAY)
                 )  # TODO 数字货币这里要修改成360，因为是360个交易日
             else:
                 sharpe_ratio = 0
