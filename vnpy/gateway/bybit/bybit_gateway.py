@@ -532,8 +532,9 @@ class BybitRestApi(RestClient):
             else:
                 data = resp.json()
 
-                ret_msg = data["ret_msg"]
-                if ret_msg != "ok":
+                ret_code = data["ret_code"]
+                if ret_code:
+                    ret_msg = data["ret_msg"]
                     msg = f"获取历史数据出错，错误信息：{ret_msg}"
                     self.gateway.write_log(msg)
                     break
