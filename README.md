@@ -93,7 +93,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
         * 1Token（onetoken）：数字货币券商（现货、期货）
 
     * 特殊应用
-    
+
         * RPC服务（rpc）：跨进程通讯接口，用于分布式架构
 
 3. 开箱即用的各类量化策略交易应用（vnpy.app）：
@@ -126,7 +126,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 8. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容。
 
-9.  官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
+9. 官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
 
 ## 环境准备
 
@@ -146,7 +146,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     bash install.sh
 
-
 ## 使用指南
 
 1. 在[SimNow](http://www.simnow.com.cn/)注册CTP仿真账号，并在[该页面](http://www.simnow.com.cn/product.action)获取经纪商代码以及交易行情服务器地址。
@@ -161,7 +160,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 * 在VN Trader的运行过程中请勿关闭VN Station（会自动退出）
 * 如需要灵活配置量化交易应用组件，请使用**VN Trader Pro**
-
 
 ## 脚本运行
 
@@ -235,8 +233,6 @@ vn.py使用Github托管其源代码，如果希望贡献代码请使用github的
 
 长期维护捐赠清单，请在留言中注明是项目捐赠以及捐赠人的名字。
 
-
-
 ## 其他内容
 
 * [获取帮助](https://github.com/vnpy/vnpy/blob/dev/docs/SUPPORT.md)
@@ -244,12 +240,6 @@ vn.py使用Github托管其源代码，如果希望贡献代码请使用github的
 * [Issue模板](https://github.com/vnpy/vnpy/blob/dev/docs/ISSUE_TEMPLATE.md)
 * [PR模板](https://github.com/vnpy/vnpy/blob/dev/docs/PULL_REQUEST_TEMPLATE.md)
 
-
-
 ## 版权说明
 
 MIT
-  
-
-
-
