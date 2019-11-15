@@ -25,7 +25,7 @@ engine.run_backtesting()
 df = engine.calculate_result()
 engine.calculate_statistics()
 engine.show_chart()
-
+exit()
 setting = OptimizationSetting()
 setting.set_target("return_drawdown_ratio")
 setting.add_parameter("donchian_window", 10, 1000, 100)
