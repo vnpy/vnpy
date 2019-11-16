@@ -672,7 +672,7 @@ class DailyResult:
 
             self.end_pos += pos_change
 
-            turnover = trade.volume * size * trade.price
+            turnover = trade.volume * size * abs(trade.price)
             self.trading_pnl += pos_change * \
                 (self.close_price - trade.price) * size
             self.slippage += trade.volume * size * slippage
