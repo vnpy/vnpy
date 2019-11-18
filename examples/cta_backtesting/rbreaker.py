@@ -102,7 +102,10 @@ class RBraekStrategy(CtaTemplate):
             self.bars.pop(0)
             # print("当前的self.bar.pop是：{}".format(self.bars.pop(0)))
         last_bar = self.bars[-2]
-        # print("当前的last_bar是：{}".format(last_bar))
+        print("当前的last_bar是：{}".format(last_bar))
+        print(last_bar.datetime.date())
+        print(bar.datetime.date())
+        exit()
 
         # 新交易日
         if last_bar.datetime.date() != bar.datetime.date():
@@ -177,7 +180,7 @@ class RBraekStrategy(CtaTemplate):
                 self.intra_trade_low = min(self.intra_trade_low, bar.low_price)
                 short_stop = self.intra_trade_low * (1 + self.trailing_short / 100)
                 self.cover(short_stop, abs(self.pos), stop=True)
-        # 在非交易时间关闭寸头
+        # 关闭现有头寸
         else:
             if self.pos > 0:
                 self.sell(bar.close_price * 0.99, abs(self.pos))
