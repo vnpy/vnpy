@@ -12,7 +12,7 @@ from vnpy.app.cta_strategy import (
 
 
 class RBraekStrategy(CtaTemplate):
-    """"""
+    """根据分享会策略改造"""
 
     author = "Guo"
 
@@ -136,7 +136,7 @@ class RBraekStrategy(CtaTemplate):
                 # 突破卖出价
                 self.sell_break = self.sell_setup - self.break_coef * (self.sell_setup - self.buy_setup)
 
-            #  为变量赋值,注意不能放在if self.day_open前面
+            #  记录盘中的四个价格，用于明天开盘计算第一根bar
             self.day_open = bar.open_price  # 开盘价
             self.day_high = bar.high_price  # 最高价
             self.day_low = bar.low_price  # 最低价
