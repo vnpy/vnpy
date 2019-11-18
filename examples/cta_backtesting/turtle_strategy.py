@@ -16,8 +16,8 @@ class TurtleStrategy(CtaTemplate):
     """"""
     author = "用Python的交易员"
 
-    entry_window = 30  # 入场通道窗口数
-    exit_window = 100  # 出场通道的窗口数
+    entry_window = 100  # 入场通道窗口数
+    exit_window = 200  # 出场通道的窗口数
     atr_window = 20  # ATR的窗口数
     risk_level = 50000  # 一个参数用来计算买入数量
 

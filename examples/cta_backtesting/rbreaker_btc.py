@@ -11,7 +11,7 @@ from vnpy.app.cta_strategy import (
 )
 
 
-class RBraekStrategy(CtaTemplate):
+class RBraekStrategyBtc(CtaTemplate):
     """根据分享会策略改造"""
 
     author = "Guo"
@@ -20,7 +20,7 @@ class RBraekStrategy(CtaTemplate):
     break_coef = 0.2  # 突破卖出价参数 d
     enter_coef_1 = 1.07  # 入场参数1
     enter_coef_2 = 0.07  # 入场参数2
-    fixed_size = 10  # 买入手数
+    fixed_size = 1  # 买入手数
     donchian_window = 30  # 唐奇安通道参数
 
     trailing_long = 0.4  # 多头止损比例
@@ -64,7 +64,7 @@ class RBraekStrategy(CtaTemplate):
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
-        super(RBraekStrategy, self).__init__(cta_engine, strategy_name, vt_symbol, setting)
+        super().__init__(cta_engine, strategy_name, vt_symbol, setting)
         self.bg = BarGenerator(self.on_bar)
         self.am = ArrayManager()
         self.bars = []

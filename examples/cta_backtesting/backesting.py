@@ -18,7 +18,7 @@ engine.set_parameters(
     pricetick=0.2,
     capital=1000,
 )
-engine.add_strategy(RBraekStrategy, {})
+engine.add_strategy(TurtleStrategy, {})
 
 engine.load_data()
 engine.run_backtesting()
