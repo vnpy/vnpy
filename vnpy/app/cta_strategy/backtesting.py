@@ -16,7 +16,7 @@ from deap import creator, base, tools, algorithms
 from vnpy.trader.constant import Direction, Offset, Exchange, Interval, Status
 from vnpy.trader.database import database_manager
 from vnpy.trader.object import OrderData, TradeData, BarData, TickData
-from vnpy.trader.utility import round_to, round_to_nan
+from vnpy.trader.utility import round_to
 
 from .base import (
     BacktestingMode,
@@ -902,7 +902,7 @@ class BacktestingEngine:
             lock: bool,
     ):
         """"""
-        price = round_to_nan(price, self.pricetick)
+        price = round_to(price, self.pricetick)
         if stop:
             vt_orderid = self.send_stop_order(direction, offset, price, volume)
         else:
