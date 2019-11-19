@@ -43,9 +43,9 @@ from vnpy.app.spread_trading import SpreadTradingApp
 
 def main():
     """"""
-    qapp = create_qapp()
+    qapp = create_qapp()  # 创建PYTQ的应用程序
 
-    event_engine = EventEngine()
+    event_engine = EventEngine()  # 创建时间引擎
 
     main_engine = MainEngine(event_engine)
 
