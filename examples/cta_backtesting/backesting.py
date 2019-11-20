@@ -12,13 +12,13 @@ engine.set_parameters(
     interval="1m",
     start=datetime(2019, 1, 1),
     end=datetime(2019, 10, 1),
-    rate=0.3 / 1000,
+    rate=0.05 / 100,
     slippage=0.2,
     size=1,
     pricetick=0.2,
     capital=1000,
 )
-engine.add_strategy(TurtleStrategy, {})
+engine.add_strategy(RBraekStrategy, {})
 
 engine.load_data()
 engine.run_backtesting()
