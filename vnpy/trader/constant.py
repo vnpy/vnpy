@@ -111,13 +111,18 @@ class Exchange(Enum):
     EUNX = "EUNX"           # Euronext Exchange
     KRX = "KRX"             # Korean Exchange
 
+    OANDA = "OANDA"         # oanda.com
+
     # CryptoCurrency
     BITMEX = "BITMEX"
     OKEX = "OKEX"
     HUOBI = "HUOBI"
     BITFINEX = "BITFINEX"
     BINANCE = "BINANCE"
+    BYBIT = "BYBIT"         # bybit.com
     COINBASE = "COINBASE"
+    GATEIO = "GATEIO"
+    BITSTAMP = "BITSTAMP"
 
     # Special Function
     LOCAL = "LOCAL"         # For local generated data

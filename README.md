@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.0.7-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.0.8-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/circleci/build/github/vnpy/vnpy?token=4d11df68295c8cc02a2bede46094991364190bbc"/>
@@ -62,15 +62,21 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 直达期货（da）：全球期货
 
+        * OANDA（oanda）：外汇、CFD
+
     * 数字货币
 
         * BitMEX（bitmex）：数字货币期货、期权、永续合约
+
+        * Bybit（bybit）：数字货币永续合约
 
         * OKEX永续（okexs）：数字货币永续合约
 
         * OKEX合约（okexf）：数字货币期货
 
         * 火币合约（hbdm）：数字货币期货
+
+        * Gate.io永续（gateios）：数字货币永续合约
 
         * 币安（binance）：数字货币现货
 
@@ -82,10 +88,12 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * Coinbase（coinbase）：数字货币现货
 
+        * Bitstamp（bitstamp）：数字货币现货
+
         * 1Token（onetoken）：数字货币券商（现货、期货）
 
     * 特殊应用
-    
+
         * RPC服务（rpc）：跨进程通讯接口，用于分布式架构
 
 3. 开箱即用的各类量化策略交易应用（vnpy.app）：
@@ -99,6 +107,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
     * algo_trading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等等，支持常用算法配置保存
 
     * script_trader：脚本策略模块，针对多标的组合类交易策略设计，同时也可以直接在命令行中实现REPL指令形式的交易，不支持回测功能
+
+    * portfolio_manager：投资组合模块，面向各类基本面交易策略，以独立的策略子账户为基础，提供交易仓位的自动跟踪以及盈亏实时统计功能
 
     * rpc_service：RPC服务模块，允许将某一VN Trader进程启动为服务端，作为统一的行情和交易路由通道，允许多客户端同时连接，实现多进程分布式系统
 
@@ -118,11 +128,11 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 8. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容。
 
-9.  官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
+9. 官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.0.7](https://download.vnpy.com/vnstudio-2.0.7.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.0.8](https://download.vnpy.com/vnstudio-2.0.8.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 
@@ -137,7 +147,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 **Ubuntu**
 
     bash install.sh
-
 
 ## 使用指南
 
@@ -154,7 +163,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 * 在VN Trader的运行过程中请勿关闭VN Station（会自动退出）
 * 如需要灵活配置量化交易应用组件，请使用**VN Trader Pro**
 
-
 ## 脚本运行
 
 除了基于VN Station的图形化启动方式外，也可以在任意目录下创建run.py，写入以下示例代码：
@@ -167,24 +175,24 @@ from vnpy.gateway.ctp import CtpGateway
 from vnpy.app.cta_strategy import CtaStrategyApp
 from vnpy.app.cta_backtester import CtaBacktesterApp
 
-def main（）:
+def main():
     """Start VN Trader"""
-    qapp = create_qapp（）
+    qapp = create_qapp()
 
-    event_engine = EventEngine（）
-    main_engine = MainEngine（event_engine）
+    event_engine = EventEngine()
+    main_engine = MainEngine(event_engine)
     
-    main_engine.add_gateway（CtpGateway）
-    main_engine.add_app（CtaStrategyApp）
-    main_engine.add_app（CtaBacktesterApp）
+    main_engine.add_gateway(CtpGateway)
+    main_engine.add_app(CtaStrategyApp)
+    main_engine.add_app(CtaBacktesterApp)
 
-    main_window = MainWindow（main_engine, event_engine）
-    main_window.showMaximized（）
+    main_window = MainWindow(main_engine, event_engine)
+    main_window.showMaximized()
 
-    qapp.exec（）
+    qapp.exec()
 
 if __name__ == "__main__":
-    main（）
+    main()
 ```
 
 在该目录下打开CMD（按住Shift->点击鼠标右键->在此处打开命令窗口/PowerShell）后运行下列命令启动VN Trader：
@@ -227,8 +235,6 @@ vn.py使用Github托管其源代码，如果希望贡献代码请使用github的
 
 长期维护捐赠清单，请在留言中注明是项目捐赠以及捐赠人的名字。
 
-
-
 ## 其他内容
 
 * [获取帮助](https://github.com/vnpy/vnpy/blob/dev/docs/SUPPORT.md)
@@ -236,12 +242,6 @@ vn.py使用Github托管其源代码，如果希望贡献代码请使用github的
 * [Issue模板](https://github.com/vnpy/vnpy/blob/dev/docs/ISSUE_TEMPLATE.md)
 * [PR模板](https://github.com/vnpy/vnpy/blob/dev/docs/PULL_REQUEST_TEMPLATE.md)
 
-
-
 ## 版权说明
 
 MIT
-  
-
-
-
