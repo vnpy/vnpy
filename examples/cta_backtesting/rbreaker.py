@@ -102,10 +102,10 @@ class RBraekStrategy(CtaTemplate):
             self.bars.pop(0)
             # print("当前的self.bar.pop是：{}".format(self.bars.pop(0)))
         last_bar = self.bars[-2]
-        print("当前的last_bar是：{}".format(last_bar))
-        print(last_bar.datetime.date())
-        print(bar.datetime.date())
-        exit()
+        # print("当前的last_bar是：{}".format(last_bar))
+        # print(last_bar.datetime.date())
+        # print(bar.datetime.date())
+        # exit()
 
         # 新交易日
         if last_bar.datetime.date() != bar.datetime.date():
