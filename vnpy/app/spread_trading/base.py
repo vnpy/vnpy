@@ -2,6 +2,7 @@ from typing import Dict, List
 from datetime import datetime
 from enum import Enum
 from functools import lru_cache
+from mezmorize import Cache
 
 from vnpy.trader.object import (
     TickData, PositionData, TradeData, ContractData, BarData
@@ -10,6 +11,7 @@ from vnpy.trader.constant import Direction, Offset, Exchange, Interval
 from vnpy.trader.utility import floor_to, ceil_to, round_to, extract_vt_symbol
 from vnpy.trader.database import database_manager
 
+file_cache = Cache(CACHE_TYPE='filesystem', CACHE_DIR='cache')
 
 EVENT_SPREAD_DATA = "eSpreadData"
 EVENT_SPREAD_POS = "eSpreadPos"
@@ -360,6 +362,7 @@ class BacktestingMode(Enum):
 
 
 @lru_cache(maxsize=999)
+@file_cache.memoize()
 def load_bar_data(
     spread: SpreadData,
     interval: Interval,
@@ -418,6 +421,7 @@ def load_bar_data(
 
 
 @lru_cache(maxsize=999)
+@file_cache.memoize()
 def load_tick_data(
     spread: SpreadData,
     start: datetime,

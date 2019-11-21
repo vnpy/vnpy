@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 from typing import Callable
 from itertools import product
 from functools import lru_cache
+from mezmorize import Cache
 from time import time
 import multiprocessing
 import random
@@ -33,6 +34,7 @@ sns.set_style("whitegrid")
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
 
+file_cache = Cache(CACHE_TYPE='filesystem', CACHE_DIR='cache')
 
 class OptimizationSetting:
     """
@@ -1206,6 +1208,7 @@ def optimize(
 
 
 @lru_cache(maxsize=1000000)
+@file_cache.memoize()
 def _ga_optimize(parameter_values: tuple):
     """"""
     setting = dict(parameter_values)
@@ -1235,6 +1238,7 @@ def ga_optimize(parameter_values: list):
 
 
 @lru_cache(maxsize=999)
+@file_cache.memoize()
 def load_bar_data(
     symbol: str,
     exchange: Exchange,
@@ -1249,6 +1253,7 @@ def load_bar_data(
 
 
 @lru_cache(maxsize=999)
+@file_cache.memoize()
 def load_tick_data(
     symbol: str,
     exchange: Exchange,

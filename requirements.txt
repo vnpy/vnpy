@@ -21,3 +21,4 @@ deap
 pyzmq
 wmi
 QScintilla
+mezmorize
