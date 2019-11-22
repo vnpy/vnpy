@@ -5,6 +5,7 @@ from examples.cta_backtesting.turtle_strategy import TurtleStrategy
 # from examples.cta_backtesting.bbreak import RBreakStrategy
 from examples.cta_backtesting.rbreaker import RBraekStrategy
 from examples.cta_backtesting.basking import BacktestingEngine, OptimizationSetting
+from vnpy.app.cta_strategy.strategies.boll_channel_strategy import BollChannelStrategy
 
 engine = BacktestingEngine()
 engine.set_parameters(
@@ -18,7 +19,7 @@ engine.set_parameters(
     pricetick=0.2,
     capital=1000,
 )
-engine.add_strategy(TurtleStrategy, {})
+engine.add_strategy(BollChannelStrategy, {})
 
 engine.load_data()
 engine.run_backtesting()
