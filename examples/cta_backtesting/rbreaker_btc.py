@@ -11,7 +11,7 @@ from vnpy.app.cta_strategy import (
 )
 
 
-class RBraekStrategyBtc(CtaTemplate):
+class RBBtcraekStrategy(CtaTemplate):
     """根据分享会策略改造"""
 
     author = "Guo"
