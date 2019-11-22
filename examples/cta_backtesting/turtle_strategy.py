@@ -21,6 +21,7 @@ class TurtleStrategy(CtaTemplate):
     atr_window = 20  # ATR的窗口数
     risk_level = 50000  # 一个参数用来计算买入数量
 
+
     trading_size = 0  # 买入数量
     entry_up = 0  # 进入唐奇安通道的上轨
     entry_down = 0  # 进入唐奇安通道的下轨
@@ -88,8 +89,8 @@ class TurtleStrategy(CtaTemplate):
         if not self.pos:  # 空仓情况
             self.atr_value = self.am.atr(self.atr_window)
 
-            self.trading_size = self.risk_level / self.atr_value  # 原始数据
-            # self.trading_size = 1000
+            # self.trading_size = self.risk_level / self.atr_value  # 原始数据
+            self.trading_size = 250
             # print("买入数量：{}".format(self.trading_size))
 
             self.long_entry = 0
