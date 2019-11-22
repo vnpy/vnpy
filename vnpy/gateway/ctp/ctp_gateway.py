@@ -25,6 +25,7 @@ from vnpy.api.ctp import (
     THOST_FTDC_OFEN_CloseToday,
     THOST_FTDC_PC_Futures,
     THOST_FTDC_PC_Options,
+    THOST_FTDC_PC_SpotOption,
     THOST_FTDC_PC_Combination,
     THOST_FTDC_CP_CallOptions,
     THOST_FTDC_CP_PutOptions,
@@ -105,6 +106,7 @@ EXCHANGE_CTP2VT = {
 PRODUCT_CTP2VT = {
     THOST_FTDC_PC_Futures: Product.FUTURES,
     THOST_FTDC_PC_Options: Product.OPTION,
+    THOST_FTDC_PC_SpotOption: Product.OPTION,
     THOST_FTDC_PC_Combination: Product.SPREAD
 }
 
