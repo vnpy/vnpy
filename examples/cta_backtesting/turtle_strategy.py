@@ -33,7 +33,7 @@ class TurtleStrategy(CtaTemplate):
     long_stop = 0  # 多头止损价格
     short_stop = 0  # 空头止损价格
 
-    parameters = ["entry_window", "exit_window", "atr_window", "fixed_size"]
+    parameters = ["entry_window", "exit_window", "atr_window",]
     variables = ["entry_up", "entry_down", "exit_up", "exit_down", "atr_value"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
@@ -88,8 +88,8 @@ class TurtleStrategy(CtaTemplate):
         if not self.pos:  # 空仓情况
             self.atr_value = self.am.atr(self.atr_window)
 
-            # self.trading_size = self.risk_level / self.atr_value  # 原始数据
-            self.trading_size = 1000
+            self.trading_size = self.risk_level / self.atr_value  # 原始数据
+            # self.trading_size = 1000
             # print("买入数量：{}".format(self.trading_size))
 
             self.long_entry = 0
