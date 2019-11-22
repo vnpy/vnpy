@@ -1,9 +1,10 @@
 # from vnpy.app.cta_strategy.backtesting import BacktestingEngine, OptimizationSetting
-
 from datetime import datetime
 from examples.cta_backtesting.turtle_strategy import TurtleStrategy
 # from examples.cta_backtesting.bbreak import RBreakStrategy
 from examples.cta_backtesting.rbreaker import RBraekStrategy
+from examples.cta_backtesting.boll_demo_strategy_22 import BollStrategyMultiplier
+from examples.cta_backtesting.guo_boll_channel_strategy import GuoBollChannelStrategy
 from examples.cta_backtesting.basking import BacktestingEngine, OptimizationSetting
 
 engine = BacktestingEngine()
@@ -12,13 +13,13 @@ engine.set_parameters(
     interval="1m",
     start=datetime(2019, 1, 1),
     end=datetime(2019, 10, 1),
-    rate=0.05 / 100,
+    rate=3 / 1000,
     slippage=0.2,
     size=1,
     pricetick=0.2,
     capital=1000,
 )
-engine.add_strategy(RBraekStrategy, {})
+engine.add_strategy(GuoBollChannelStrategy, {})
 
 engine.load_data()
 engine.run_backtesting()
