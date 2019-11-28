@@ -592,6 +592,7 @@ class CtpTdApi(TdApi):
 
             # For option only
             if contract.product == Product.OPTION:
+                contract.option_portfolio = data["ProductID"]
                 contract.option_underlying = data["UnderlyingInstrID"]
                 contract.option_type = OPTIONTYPE_CTP2VT.get(data["OptionsType"], None)
                 contract.option_strike = data["StrikePrice"]
