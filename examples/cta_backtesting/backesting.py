@@ -6,6 +6,7 @@ from examples.cta_backtesting.turtle_strategy import TurtleStrategy
 from examples.cta_backtesting.rbreaker import RBraekStrategy
 from examples.cta_backtesting.basking import BacktestingEngine, OptimizationSetting
 
+
 engine = BacktestingEngine()
 engine.set_parameters(
     vt_symbol="BTCUSD.BITFINEX",
@@ -18,7 +19,7 @@ engine.set_parameters(
     pricetick=0.2,
     capital=1000,
 )
-engine.add_strategy(RBraekStrategy, {})
+engine.add_strategy(TurtleStrategy, {})
 
 engine.load_data()
 engine.run_backtesting()
