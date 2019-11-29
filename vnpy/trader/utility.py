@@ -3,21 +3,15 @@ General utility functions.
 """
 
 import json
-import logging
-import sys
 from pathlib import Path
-from typing import Callable, Dict
+from typing import Callable
 from decimal import Decimal
-from math import floor, ceil
 
 import numpy as np
 import talib
 
 from .object import BarData, TickData
 from .constant import Exchange, Interval
-
-
-log_formatter = logging.Formatter('[%(asctime)s] %(message)s')
 
 
 def extract_vt_symbol(vt_symbol: str):
@@ -59,7 +53,6 @@ def _get_trader_dir(temp_name: str):
 
 
 TRADER_DIR, TEMP_DIR = _get_trader_dir(".vntrader")
-sys.path.append(str(TRADER_DIR))
 
 
 def get_file_path(filename: str):
@@ -134,26 +127,6 @@ def round_to_nan(value: float, target: float):
     rounded = int(round(np.nan_to_num(value) / tmp)) * tmp
     return rounded
 
-
-
-def floor_to(value: float, target: float) -> float:
-    """
-    Similar to math.floor function, but to target float number.
-    """
-    value = Decimal(str(value))
-    target = Decimal(str(target))
-    result = float(int(floor(value / target)) * target)
-    return result
-
-
-def ceil_to(value: float, target: float) -> float:
-    """
-    Similar to math.ceil function, but to target float number.
-    """
-    value = Decimal(str(value))
-    target = Decimal(str(target))
-    result = float(int(ceil(value / target)) * target)
-    return result
 
 
 class BarGenerator:
@@ -489,34 +462,6 @@ class ArrayManager(object):
             return aroon_up, aroon_down
         return aroon_up[-1], aroon_down[-1]
 
-    def aroonosc(self, n, array=False):
-        """
-        Aroon Oscillator.
-        """
-        result = talib.AROONOSC(self.high, self.low, n)
-
-        if array:
-            return result
-        return result[-1]
-
-    def ultosc(self, array=False):
-        """
-        Ultimate Oscillator.
-        """
-        result = talib.ULTOSC(self.high, self.low, self.close)
-        if array:
-            return result
-        return result[-1]
-
-    def mfi(self, n, array=False):
-        """
-        Money Flow Index.
-        """
-        result = talib.MFI(self.high, self.low, self.close, self.volume, n)
-        if array:
-            return result
-        return result[-1]
-
 
 def virtual(func: "callable"):
     """
@@ -529,25 +474,3 @@ def virtual(func: "callable"):
     # 虚函数的作用，用专业术语来解释就是实现多态性（Polymorphism），多态性是将接口与实现进行分离；用形象的语言来解释就是实现以共同的方法，但因个体差异而采用不同的策略
     # 和@abstractmethod作用一样，目的标记成虚方法
     return func
-
-
-file_handlers: Dict[str, logging.FileHandler] = {}
-
-
-def _get_file_logger_handler(filename: str):
-    handler = file_handlers.get(filename, None)
-    if handler is None:
-        handler = logging.FileHandler(filename)
-        file_handlers[filename] = handler  # Am i need a lock?
-    return handler
-
-
-def get_file_logger(filename: str):
-    """
-    return a logger that writes records into a file.
-    """
-    logger = logging.getLogger(filename)
-    handler = _get_file_logger_handler(filename)  # get singleton handler.
-    handler.setFormatter(log_formatter)
-    logger.addHandler(handler)  # each handler will be added only once.
-    return logger
