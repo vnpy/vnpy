@@ -15,3 +15,12 @@ class CtaBacktesterApp(BaseApp):
     engine_class = BacktesterEngine
     widget_name = "BacktesterManager"
     icon_name = "backtester.ico"
+
+
+def test_cta():
+    cta = CtaBacktesterApp
+    print("app_name:{}".format(cta.app_name))
+
+# 调试
+if __name__ == "__main__":
+    test_cta()
