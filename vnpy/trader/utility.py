@@ -9,8 +9,6 @@ from pathlib import Path
 from typing import Callable, Dict
 from decimal import Decimal
 from math import floor, ceil
-from typing import Callable
-from decimal import Decimal  # 使用定点数和浮点数的小数运算
 
 import numpy as np
 import talib
@@ -128,15 +126,6 @@ def round_to(value: float, target: float) -> float:
     rounded = float(int(round(value / target)) * target)
     return rounded
 
-def round_to_nan(value: float, target: float):
-    """
-    Round price to price tick value.
-    """
-    tmp = float(target)
-    rounded = int(round(np.nan_to_num(value) / tmp)) * tmp
-    return rounded
-
-
 
 def floor_to(value: float, target: float) -> float:
     """
@@ -158,15 +147,6 @@ def ceil_to(value: float, target: float) -> float:
     return result
 
 
-def round_to_nan(value: float, target: float):
-    """
-    Round price to price tick value.
-    """
-    tmp = float(target)
-    rounded = int(round(np.nan_to_num(value) / tmp)) * tmp
-    return rounded
-
-
 class BarGenerator:
     """
     For:
@@ -179,11 +159,11 @@ class BarGenerator:
     """
 
     def __init__(
-            self,
-            on_bar: Callable,
-            window: int = 0,
-            on_window_bar: Callable = None,
-            interval: Interval = Interval.MINUTE
+        self,
+        on_bar: Callable,
+        window: int = 0,
+        on_window_bar: Callable = None,
+        interval: Interval = Interval.MINUTE
     ):
         """Constructor"""
         self.bar = None
@@ -534,11 +514,7 @@ def virtual(func: "callable"):
     mark a function as "virtual", which means that this function can be override.
     any base class should use this or @abstractmethod to decorate all functions
     that can be (re)implemented by subclasses.
-    将功能标记为“虚拟”，这意味着该功能可以被覆盖。
-    任何基类都应使用此方法或@abstractmethod方法来装饰可以由子类（重新）实现的所有函数。
     """
-    # 虚函数的作用，用专业术语来解释就是实现多态性（Polymorphism），多态性是将接口与实现进行分离；用形象的语言来解释就是实现以共同的方法，但因个体差异而采用不同的策略
-    # 和@abstractmethod作用一样，目的标记成虚方法
     return func
 
 
