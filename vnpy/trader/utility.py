@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Callable, Dict
 from decimal import Decimal
 from math import floor, ceil
+from typing import Callable
+from decimal import Decimal  # 使用定点数和浮点数的小数运算
 
 import numpy as np
 import talib
@@ -154,6 +156,15 @@ def ceil_to(value: float, target: float) -> float:
     target = Decimal(str(target))
     result = float(int(ceil(value / target)) * target)
     return result
+
+
+def round_to_nan(value: float, target: float):
+    """
+    Round price to price tick value.
+    """
+    tmp = float(target)
+    rounded = int(round(np.nan_to_num(value) / tmp)) * tmp
+    return rounded
 
 
 class BarGenerator:
