@@ -5,13 +5,15 @@ import json
 import random
 from vnpy.amqp.producer import rpc_client
 
+
 def cb_function(*args):
     print('resp call back')
     for arg in args:
         print(u'{}'.format(arg))
 
+
 if __name__ == '__main__':
-    import datetime
+
     import time
     c = rpc_client(host='localhost', user='admin', password='admin')
 
@@ -25,9 +27,9 @@ if __name__ == '__main__':
         params.update({'p1': counter})
         mission.update({'params': params})
         msg = json.dumps(mission)
-        print(u'[x] rpc call :{}'.format(msg))
+        print(f'[x] rpc call :{msg}')
 
-        c.call(msg,str(uuid1()), cb_function)
+        c.call(msg, str(uuid1()), cb_function)
         counter += 1
 
         if counter > 100:

@@ -12,7 +12,7 @@ if __name__ == '__main__':
     while True:
         time.sleep(10)
         mission = {}
-        mission.update({'id':str(uuid1())})
+        mission.update({'id': str(uuid1())})
         mission.update({'templateName': u'TWAP 时间加权平均'})
         mission.update({'direction': Direction.LONG})
         mission.update({'vtSymbol': '518880'})

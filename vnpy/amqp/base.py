@@ -1,13 +1,11 @@
 # encoding: UTF-8
-
 import pika
 
-class base_broker():
 
+class base_broker():
     def __init__(self, host='localhost', port=5672, user='guest', password='guest',
                  channel_number=1):
         """
-
         :param host: 连接rabbitmq的服务器地址（或者群集地址）
         :param port: 端口
         :param user: 用户名
@@ -26,11 +24,9 @@ class base_broker():
 
         # 创建连接
         self.connection = pika.BlockingConnection(
-                pika.ConnectionParameters(host=self.host, port=self.port,
-                                          credentials=self.credentials,
-                                          heartbeat=0, socket_timeout=5,
-                )
-            )
+            pika.ConnectionParameters(host=self.host, port=self.port,
+                                      credentials=self.credentials,
+                                      heartbeat=0, socket_timeout=5))
 
         # 创建一个频道，或者指定频段数字编号
         self.channel = self.connection.channel(
@@ -43,7 +39,7 @@ class base_broker():
         """
         try:
             self.connection.close()
-        except:
+        except Exception:
             pass
 
         self.connection = pika.BlockingConnection(

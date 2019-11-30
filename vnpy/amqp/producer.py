@@ -1,15 +1,15 @@
 # encoding: UTF-8
 # 消息生产者类（集合）
-import sys
+
 import json
 import pika
-import random
 import traceback
 from threading import Thread
 from uuid import uuid1
 from vnpy.amqp.base import base_broker
 
-#########  模式1：发送者 #########
+
+#  模式1：发送者
 class sender(base_broker):
     def __init__(self, host='localhost', port=5672, user='admin', password='admin',
                  exchange='x', queue_name='', routing_key='default'):
@@ -61,7 +61,8 @@ class sender(base_broker):
     def exit(self):
         self.connection.close()
 
-#########  模式2：工作队列,任务发布者 #########
+
+#  模式2：工作队列,任务发布者
 class task_creator(base_broker):
     def __init__(self, host='localhost', port=5672, user='admin', password='admin',
                  channel_number=1, queue_name='task_queue', routing_key='default',
@@ -76,7 +77,7 @@ class task_creator(base_broker):
 
         # 通过channel，创建/使用一个queue。
         queue = self.channel.queue_declare(self.queue_name, durable=True).method.queue
-        print(u'create/use queue:{}')
+        print(f'create/use queue:{queue}')
         # 通过channel，创建/使用一个网关
         # exchange_type: direct
         # passive: 只是检查其是否存在
@@ -110,7 +111,8 @@ class task_creator(base_broker):
     def exit(self):
         self.connection.close()
 
-#########  3、发布 / 订阅（Pub/Sub）模式，发布者 #########
+
+# 3、发布 / 订阅（Pub/Sub）模式，发布者
 class publisher(base_broker):
 
     def __init__(self, host='localhost', port=5672, user='admin', password='admin',
@@ -167,11 +169,12 @@ class publisher(base_broker):
     def exit(self):
         self.connection.close()
 
-#########  4、路由模式：发布者 #########
+
+#  4、路由模式：发布者
 class publisher_routing(base_broker):
 
     def __init__(self, host='localhost', port=5672, user='admin', password='admin',
-                 channel_number=1, queue_name='', routing_key='default',  exchange='x_direct'):
+                 channel_number=1, queue_name='', routing_key='default', exchange='x_direct'):
         super().__init__(host, port, user, password, channel_number)
 
         self.queue_name = queue_name
@@ -209,7 +212,8 @@ class publisher_routing(base_broker):
     def exit(self):
         self.connection.close()
 
-#########  5、主题模式：发布者 #########
+
+#  5、主题模式：发布者
 class publisher_topic(base_broker):
 
     def __init__(self, host='localhost', port=5672, user='admin', password='admin',
@@ -252,7 +256,7 @@ class publisher_topic(base_broker):
         self.connection.close()
 
 
-#########  6、RPC模式（调用者) #########
+#  6、RPC模式（调用者)
 class rpc_client(base_broker):
     # 发送：
     #   exchange: x_rpc
@@ -269,7 +273,6 @@ class rpc_client(base_broker):
         super().__init__(host, port, user, password, channel_number=1)
 
         self.exchange = exchange
-        #self.queue_name = queue_name
         self.routing_key = routing_key
 
         # 通过channel，创建/使用一个网关
@@ -318,7 +321,7 @@ class rpc_client(base_broker):
         cb = self.cb_dict.pop(props.correlation_id, None)
         if cb:
             try:
-               cb(body)
+                cb(body)
             except Exception as ex:
                 print('on_respone exception when call cb.{}'.format(str(ex)))
                 traceback.print_exc()
@@ -377,8 +380,9 @@ class rpc_client(base_broker):
             self.connection.close()
             if self.thread:
                 self.thread.join()
-        except:
+        except Exception:
             pass
+
 
 if __name__ == '__main__':
     import datetime

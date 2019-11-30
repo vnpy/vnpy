@@ -98,7 +98,7 @@ class EventEngine:
                 execute_ms = (int(round(t2 * 1000))) - (int(round(t1 * 1000)))
                 if execute_ms > self._over_ms:
                     print(f'运行 general {event.type} {handler_name} 耗时:{execute_ms}ms > {self._over_ms}ms',
-                        file=sys.stderr)
+                          file=sys.stderr)
 
     def _process(self, event: Event):
         """

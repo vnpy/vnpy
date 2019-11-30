@@ -9,6 +9,7 @@ from typing import Any, Callable
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
+from logging import INFO, ERROR, DEBUG
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
@@ -893,14 +894,14 @@ class CtaEngine(BaseEngine):
         event = Event(EVENT_CTA_STRATEGY, data)
         self.event_engine.put(event)
 
-    def write_log(self, msg: str, strategy: CtaTemplate = None):
+    def write_log(self, msg: str, strategy: CtaTemplate = None, level: int = INFO):
         """
         Create cta engine log event.
         """
         if strategy:
             msg = f"{strategy.strategy_name}: {msg}"
 
-        log = LogData(msg=msg, gateway_name="CtaStrategy")
+        log = LogData(msg=msg, gateway_name="CtaStrategy", level=level)
         event = Event(type=EVENT_CTA_LOG, data=log)
         self.event_engine.put(event)
 

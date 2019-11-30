@@ -1,14 +1,13 @@
 # encoding: UTF-8
- # 消息消费者类（集合）
+# 消息消费者类（集合）
 import json
 import pika
 import random
 import traceback
 from vnpy.amqp.base import base_broker
 
-from threading import Thread
 
-#########  模式1：接收者 #########
+#   模式1：接收者
 class receiver(base_broker):
 
     def __init__(self, host='localhost', port=5672, user='admin', password='admin', exchange='x',
@@ -48,7 +47,8 @@ class receiver(base_broker):
             print(e)
             self.start()
 
-#########  模式2：（执行）接收者#########
+
+#  模式2：（执行）接收者
 class worker(base_broker):
 
     def __init__(self, host='localhost', port=5672, user='admin', password='admin', exchange='x_work_queue',
@@ -63,7 +63,7 @@ class worker(base_broker):
                                       exchange_type='direct',
                                       durable=True)
 
-        self.queue = self.channel.queue_declare(queue=queue,durable=True).method.queue
+        self.queue = self.channel.queue_declare(queue=queue, durable=True).method.queue
         print('worker use exchange:{},queue:{}'.format(exchange, self.queue))
         self.channel.queue_bind(queue=self.queue, exchange=exchange,
                                 routing_key=self.routing_key)          # 队列名采用服务端分配的临时队列
@@ -91,7 +91,8 @@ class worker(base_broker):
             print(str(e))
             traceback.print_exc()
 
-######### 模式3：发布 / 订阅（Pub/Sub）模式, 订阅者#########
+
+# 模式3：发布 / 订阅（Pub/Sub）模式, 订阅者
 class subscriber(base_broker):
 
     def __init__(self, host='localhost', port=5672, user='admin', password='admin',
@@ -115,7 +116,7 @@ class subscriber(base_broker):
         # 缺省回调函数地址
         self.cb_func = self.callback
 
-    def set_callback(self,cb_func):
+    def set_callback(self, cb_func):
         self.cb_func = cb_func
 
     def callback(self, chan, method_frame, _header_frame, body, userdata=None):
@@ -134,9 +135,9 @@ class subscriber(base_broker):
         except Exception as ex:
             print('subscriber exception:{}'.format(str(ex)))
             traceback.print_exc()
-            #self.start()
 
-######### 模式4： 路由模式 #########
+
+# 模式4： 路由模式
 class subscriber_routing(base_broker):
 
     def __init__(self, host='localhost', port=5672, user='admin', password='admin',
@@ -174,7 +175,7 @@ class subscriber_routing(base_broker):
             self.start()
 
 
-######### 模式5：主题模式 #########
+#  模式5：主题模式
 class subscriber_topic(base_broker):
 
     def __init__(self, host='localhost', port=5672, user='admin', password='admin',
@@ -211,7 +212,8 @@ class subscriber_topic(base_broker):
             print(e)
             self.start()
 
-######### 模式6：RPC模式 （服务端) #########
+
+# 模式6：RPC模式 （服务端)
 class rpc_server(base_broker):
     # 接收:
     #  exchange: x_rpc
@@ -323,10 +325,11 @@ class rpc_server(base_broker):
             print(e)
             self.start()
 
+
 if __name__ == '__main__':
 
     import sys
-    if len(sys.argv) >=2:
+    if len(sys.argv) >= 2:
         print(sys.argv)
     from time import sleep
     c = subscriber(user='admin', password='admin')
@@ -335,5 +338,3 @@ if __name__ == '__main__':
 
     while True:
         sleep(1)
-
-

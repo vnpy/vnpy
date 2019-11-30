@@ -1,21 +1,21 @@
-import os, sys, copy
-# 将repostory的目录i，作为根目录，添加到系统环境中。
-ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-sys.path.append(ROOT_PATH)
+# encoding: UTF-8
+
+import copy
+import argparse
+from .consumer import rpc_server
 
 routing_key = 'default'
 
-from vnpy.amqp.consumer import rpc_server
 
-import argparse
+def test_func01(p1, p2, p3):
+    print(f'test_func01:{p1} {p2} {p3}')
+    return p1 + p2 + p3
 
-def test_func01(p1,p2,p3):
-    print('test_func01:', p1, p2, p3)
-    return p1+p2+p3
 
 def test_func02(p1, p2=0):
-    print('test_func02:', p1, p2)
+    print(f'test_func02:{p1} {p2}')
     return str(p1 + p2)
+
 
 def get_strategy_names():
     print(u'{}'.format(routing_key))

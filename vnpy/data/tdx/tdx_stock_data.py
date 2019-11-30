@@ -10,7 +10,11 @@
 #   https://rainx.gitbooks.io/pytdx/content/pytdx_hq.html
 # 华富资产
 
-import sys, os, pickle, bz2, traceback
+import sys
+import os
+import pickle
+import bz2
+import traceback
 from datetime import datetime, timedelta
 from logging import ERROR, INFO
 from pytdx.hq import TdxHq_API
@@ -21,15 +25,16 @@ from vnpy.data.tdx.tdx_common import PERIOD_MAPPING, get_tdx_market_code
 
 # 每个周期包含多少分钟
 NUM_MINUTE_MAPPING = {}
-NUM_MINUTE_MAPPING['1min']   = 1
-NUM_MINUTE_MAPPING['5min']   = 5
-NUM_MINUTE_MAPPING['15min']  = 15
-NUM_MINUTE_MAPPING['30min']  = 30
-NUM_MINUTE_MAPPING['1hour']  = 60
-NUM_MINUTE_MAPPING['1day']   = 60*5.5       # 股票，收盘时间是15：00，开盘是9：30
+NUM_MINUTE_MAPPING['1min'] = 1
+NUM_MINUTE_MAPPING['5min'] = 5
+NUM_MINUTE_MAPPING['15min'] = 15
+NUM_MINUTE_MAPPING['30min'] = 30
+NUM_MINUTE_MAPPING['1hour'] = 60
+NUM_MINUTE_MAPPING['1day'] = 60 * 5.5       # 股票，收盘时间是15：00，开盘是9：30
 
 # 常量
 QSIZE = 800
+
 
 class TdxStockData(object):
     best_ip = None
@@ -69,7 +74,7 @@ class TdxStockData(object):
         """
         # 创建api连接对象实例
         try:
-            if self.api is None or self.connection_status == False:
+            if self.api is None or not self.connection_status:
                 self.write_log(u'开始连接通达信股票行情服务器')
                 self.api = TdxHq_API(heartbeat=True, auto_retry=True, raise_exception=True)
 
@@ -88,7 +93,7 @@ class TdxStockData(object):
 
     def disconnect(self):
         if self.api is not None:
-            self.api= None
+            self.api = None
 
     # ----------------------------------------------------------------------
     def get_bars(self, symbol, period, callback, bar_is_completed=False, bar_freq=1, start_dt=None):
@@ -102,10 +107,10 @@ class TdxStockData(object):
 
         # 新版一劳永逸偷懒写法zzz
         if '.' in symbol:
-            tdx_code,market_str = symbol.split('.')
-            market_code = 1 if market_str.upper()== 'XSHG' else 0
-            self.symbol_exchange_dict.update({tdx_code:symbol})  # tdx合约与vn交易所的字典
-            self.symbol_market_dict.update({tdx_code:market_code})  # tdx合约与tdx市场的字典
+            tdx_code, market_str = symbol.split('.')
+            market_code = 1 if market_str.upper() == 'XSHG' else 0
+            self.symbol_exchange_dict.update({tdx_code: symbol})  # tdx合约与vn交易所的字典
+            self.symbol_market_dict.update({tdx_code: market_code})  # tdx合约与tdx市场的字典
         else:
             market_code = get_tdx_market_code(symbol)
             tdx_code = symbol
@@ -118,12 +123,13 @@ class TdxStockData(object):
         ret_bars = []
 
         if period not in PERIOD_MAPPING.keys():
-            self.write_log(u'{} 周期{}不在下载清单中: {}'.format(datetime.now(), period, list(PERIOD_MAPPING.keys())), level=ERROR)
+            self.write_error(u'{} 周期{}不在下载清单中: {}'
+                             .format(datetime.now(), period, list(PERIOD_MAPPING.keys())))
             # print(u'{} 周期{}不在下载清单中: {}'.format(datetime.now(), period, list(PERIOD_MAPPING.keys())))
-            return False,ret_bars
+            return False, ret_bars
 
         if self.api is None:
-            return False,ret_bars
+            return False, ret_bars
 
         tdx_period = PERIOD_MAPPING.get(period)
 
@@ -137,14 +143,16 @@ class TdxStockData(object):
         if qry_start_date > end_date:
             qry_start_date = end_date
 
-        self.write_log('{}开始下载tdx股票:{} {}数据, {} to {}.'.format(datetime.now(), tdx_code, tdx_period, qry_start_date, end_date))
+        self.write_log('{}开始下载tdx股票:{} {}数据, {} to {}.'
+                       .format(datetime.now(), tdx_code, tdx_period, qry_start_date, end_date))
 
         try:
             _start_date = end_date
             _bars = []
             _pos = 0
             while _start_date > qry_start_date:
-                _res = self.api.get_security_bars(category=PERIOD_MAPPING[period],
+                _res = self.api.get_security_bars(
+                    category=PERIOD_MAPPING[period],
                     market=market_code,
                     code=tdx_code,
                     start=_pos,
@@ -169,20 +177,19 @@ class TdxStockData(object):
             data = data.assign(ticker=symbol)
             data['symbol'] = symbol
             data = data.drop(
-                ['year', 'month', 'day', 'hour', 'minute', 'price',  'ticker'],
+                ['year', 'month', 'day', 'hour', 'minute', 'price', 'ticker'],
                 errors='ignore',
                 axis=1)
             data = data.rename(
                 index=str,
-                columns={'amount': 'volume',
-                })
+                columns={'amount': 'volume'})
             if len(data) == 0:
                 print('{} Handling {}, len2={}..., continue'.format(
                     str(datetime.now()), tdx_code, len(data)))
                 return False, ret_bars
 
             # 通达信是以bar的结束时间标记的，vnpy是以bar开始时间标记的,所以要扣减bar本身的分钟数
-            data['datetime'] = data['datetime'].apply(lambda x:x-timedelta(minutes=NUM_MINUTE_MAPPING.get(period,1)))
+            data['datetime'] = data['datetime'].apply(lambda x: x - timedelta(minutes=NUM_MINUTE_MAPPING.get(period, 1)))
             data['trading_date'] = data['datetime'].apply(lambda x: (x.strftime('%Y-%m-%d')))
             data['date'] = data['datetime'].apply(lambda x: (x.strftime('%Y-%m-%d')))
             data['time'] = data['datetime'].apply(lambda x: (x.strftime('%H:%M:%S')))
@@ -202,7 +209,8 @@ class TdxStockData(object):
                     add_bar.close = float(row['close'])
                     add_bar.volume = float(row['volume'])
                 except Exception as ex:
-                    self.write_error('error when convert bar:{},ex:{},t:{}'.format(row, str(ex), traceback.format_exc()))
+                    self.write_error('error when convert bar:{},ex:{},t:{}'
+                                     .format(row, str(ex), traceback.format_exc()))
                     # print('error when convert bar:{},ex:{},t:{}'.format(row, str(ex), traceback.format_exc()))
                     return False
 
@@ -224,9 +232,9 @@ class TdxStockData(object):
                             freq = NUM_MINUTE_MAPPING[period] - int((index - current_datetime).total_seconds() / 60)
                     callback(add_bar, bar_is_completed, freq)
 
-            return True,ret_bars
+            return True, ret_bars
         except Exception as ex:
-            self.write_error('exception in get:{},{},{}'.format(tdx_code,str(ex), traceback.format_exc()))
+            self.write_error('exception in get:{},{},{}'.format(tdx_code, str(ex), traceback.format_exc()))
             # print('exception in get:{},{},{}'.format(tdx_symbol,str(ex), traceback.format_exc()))
             self.write_log(u'重置连接')
             TdxStockData.api = None
@@ -236,7 +244,7 @@ class TdxStockData(object):
     def save_cache(self, cache_folder, cache_symbol, cache_date, data_list):
         """保存文件到缓存"""
 
-        os.makedirs(cache_folder,exist_ok=True)
+        os.makedirs(cache_folder, exist_ok=True)
 
         if not os.path.exists(cache_folder):
             self.write_error('缓存目录不存在:{},不能保存'.format(cache_folder))
@@ -332,16 +340,17 @@ class TdxStockData(object):
                 _pos += min(q_size, len(_res))
 
                 if _res is not None and len(_res) > 0:
-                    self.write_log(u'分段取{}分笔数据:{} ~{}, {}条,累计:{}条'.format(date, _res[0]['time'],_res[-1]['time'], len(_res),_pos))
+                    self.write_log(u'分段取{}分笔数据:{} ~{}, {}条,累计:{}条'
+                                   .format(date, _res[0]['time'], _res[-1]['time'], len(_res), _pos))
                 else:
-                     break
+                    break
 
                 if len(_datas) >= max_data_size:
                     break
 
             if len(_datas) == 0:
                 self.write_error(u'{}分笔成交数据获取为空'.format(date))
-                return False,_datas
+                return False, _datas
 
             for d in _datas:
                 dt = datetime.strptime(str(date) + ' ' + d.get('time'), '%Y%m%d %H:%M')
@@ -351,7 +360,7 @@ class TdxStockData(object):
                     if last_dt < dt + timedelta(seconds=59):
                         last_dt = last_dt + timedelta(seconds=1)
                 d.update({'datetime': last_dt})
-                d.update({'volume': d.pop('vol',0)})
+                d.update({'volume': d.pop('vol', 0)})
                 d.update({'trading_date': last_dt.strftime('%Y-%m-%d')})
 
             _datas = sorted(_datas, key=lambda s: s['datetime'])
@@ -366,16 +375,17 @@ class TdxStockData(object):
             self.write_error('exception in get_transaction_data:{},{},{}'.format(symbol, str(ex), traceback.format_exc()))
             return False, ret_datas
 
+
 if __name__ == "__main__":
     class T(object):
-        def write_log(self,content, level=INFO):
+        def write_log(self, content, level=INFO):
             if level == INFO:
                 print(content)
             else:
-                print(content,file=sys.stderr)
+                print(content, file=sys.stderr)
 
-        def display_bar(self,bar, bar_is_completed=True, freq=1):
-            print(u'{} {}'.format(bar.vtSymbol,bar.datetime))
+        def display_bar(self, bar, bar_is_completed=True, freq=1):
+            print(u'{} {}'.format(bar.vtSymbol, bar.datetime))
 
     t1 = T()
     t2 = T()
@@ -383,12 +393,12 @@ if __name__ == "__main__":
     api_01 = TdxStockData(t1)
 
     # 获取历史分钟线
-    #api_01.get_bars('002024', period='1hour', callback=t1.display_bar)
+    # api_01.get_bars('002024', period='1hour', callback=t1.display_bar)
 
     # api.get_bars(symbol, period='5min', callback=display_bar)
     # api.get_bars(symbol, period='1day', callback=display_bar)
-    #api_02 = TdxData(t2)
-    #api_02.get_bars('601390', period='1day', callback=t1.display_bar)
+    # api_02 = TdxData(t2)
+    # api_02.get_bars('601390', period='1day', callback=t1.display_bar)
 
     # 获取历史分时数据
     # ret,result = api_01.get_history_transaction_data('RB99', '20190909')
@@ -399,4 +409,3 @@ if __name__ == "__main__":
     ret, result = api_01.get_history_transaction_data('600410', '20190925')
     for r in result[0:10] + result[-10:]:
         print(r)
-

@@ -42,6 +42,7 @@ def func_time(over_ms: int = 0):
         return wrapper
     return run
 
+
 @lru_cache()
 def get_underlying_symbol(symbol: str):
     """
@@ -71,6 +72,7 @@ def get_underlying_symbol(symbol: str):
         return symbol
 
     return underlying_symbol.group(1)
+
 
 @lru_cache()
 def get_full_symbol(symbol: str):
