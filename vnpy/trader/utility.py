@@ -126,6 +126,15 @@ def round_to(value: float, target: float) -> float:
     rounded = float(int(round(value / target)) * target)
     return rounded
 
+def round_to_nan(value: float, target: float):
+    """
+    Round price to price tick value.
+    """
+    tmp = float(target)
+    rounded = int(round(np.nan_to_num(value) / tmp)) * tmp
+    return rounded
+
+
 
 def floor_to(value: float, target: float) -> float:
     """
