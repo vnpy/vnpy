@@ -5,11 +5,14 @@ General utility functions.
 import json
 import logging
 import sys
+import re
 from pathlib import Path
 from typing import Callable, Dict
 from decimal import Decimal
 from math import floor, ceil
-
+from time import time
+from datetime import datetime, timedelta
+from functools import wraps, lru_cache
 import numpy as np
 import talib
 
@@ -18,6 +21,102 @@ from .constant import Exchange, Interval
 
 
 log_formatter = logging.Formatter('[%(asctime)s] %(message)s')
+
+
+def func_time(over_ms: int = 0):
+    """
+    简单记录执行时间
+    :param :over_ms 超过多少毫秒, 提示信息
+    :return:
+    """
+    def run(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            start = time()
+            result = func(*args, **kwargs)
+            end = time()
+            execute_ms = (int(round(end * 1000))) - (int(round(start * 1000)))
+            if execute_ms > over_ms:
+                print('{} took {} ms'.format(func.__qualname__, execute_ms))
+            return result
+        return wrapper
+    return run
+
+@lru_cache()
+def get_underlying_symbol(symbol: str):
+    """
+    取得合约的短号.  rb2005 => rb
+    :param symbol:
+    :return: 短号
+    """
+    # 套利合约
+    if symbol.find(' ') != -1:
+        # 排除SP SPC SPD
+        s = symbol.split(' ')
+        if len(s) < 2:
+            return symbol
+        symbol = s[1]
+
+        # 只提取leg1合约
+        if symbol.find('&') != -1:
+            s = symbol.split('&')
+            if len(s) < 2:
+                return symbol
+            symbol = s[0]
+
+    p = re.compile(r"([A-Z]+)[0-9]+", re.I)
+    underlying_symbol = p.match(symbol)
+
+    if underlying_symbol is None:
+        return symbol
+
+    return underlying_symbol.group(1)
+
+@lru_cache()
+def get_full_symbol(symbol: str):
+    """
+    获取全路径得合约名称, MA005 => MA2005, j2005 => j2005
+    """
+    if symbol.endswith('SPD'):
+        return symbol
+
+    underlying_symbol = get_underlying_symbol(symbol)
+    if underlying_symbol == symbol:
+        return symbol
+
+    symbol_month = symbol.replace(underlying_symbol, '')
+    if len(symbol_month) == 3:
+        if symbol_month[0] == '0':
+            # 支持2020年合约
+            return '{0}2{1}'.format(underlying_symbol, symbol_month)
+        else:
+            return '{0}1{1}'.format(underlying_symbol, symbol_month)
+    else:
+        return symbol
+
+
+def get_trading_date(dt: datetime = None):
+    """
+    根据输入的时间，返回交易日的日期
+    :param dt:
+    :return:
+    """
+    if dt is None:
+        dt = datetime.now()
+
+    if dt.isoweekday() in [6, 7]:
+        # 星期六,星期天=>星期一
+        return (dt + timedelta(days=8 - dt.isoweekday())).strftime('%Y-%m-%d')
+
+    if dt.hour >= 20:
+        if dt.isoweekday() == 5:
+            # 星期五=》星期一
+            return (dt + timedelta(days=3)).strftime('%Y-%m-%d')
+        else:
+            # 第二天
+            return (dt + timedelta(days=1)).strftime('%Y-%m-%d')
+    else:
+        return dt.strftime('%Y-%m-%d')
 
 
 def extract_vt_symbol(vt_symbol: str):
