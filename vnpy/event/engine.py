@@ -1,11 +1,11 @@
 """
 Event-driven framework of vn.py framework.
 """
-
+import sys
 from collections import defaultdict
 from queue import Empty, Queue
 from threading import Thread
-from time import sleep
+from time import sleep, time
 from typing import Any, Callable
 
 EVENT_TIMER = "eTimer"
@@ -37,14 +37,20 @@ class EventEngine:
     which can be used for timing purpose.
     """
 
-    def __init__(self, interval: int = 1):
+    def __init__(self, interval: int = 1, debug: bool = False, over_ms: int = 500):
         """
         Timer event is generated every 1 second by default, if
         interval not specified.
+        增强模式：
+            debug: performance debug
+            over_ms: over micro seconds for each handler execution.
+            add try catch handel event exception
         """
         self._interval = interval
         self._queue = Queue()
         self._active = False
+        self._debug = debug
+        self._over_ms = over_ms
         self._thread = Thread(target=self._run)
         self._timer = Thread(target=self._run_timer)
         self._handlers = defaultdict(list)
@@ -57,9 +63,42 @@ class EventEngine:
         while self._active:
             try:
                 event = self._queue.get(block=True, timeout=1)
-                self._process(event)
+                self._process(event) if not self._debug else self._process_debug(event)
             except Empty:
                 pass
+
+    def _process_debug(self, event: Event):
+        """
+        process event with debug mode:
+        1.performance
+        2.try catch exception
+
+        """
+        for handler in self._handlers[event.type]:
+            t1 = time()
+            handler_name = str(handler.__qualname__)
+            try:
+                handler(event)
+            except Exception as ex:
+                print(f'运行 {event.type} {handler_name} 异常:{str(ex)}',
+                      file=sys.stderr)
+                continue
+            t2 = time()
+            execute_ms = (int(round(t2 * 1000))) - (int(round(t1 * 1000)))
+            if execute_ms > self._over_ms:
+                print(f'运行{event.type} {handler_name} 耗时:{execute_ms}ms >{self._over_ms}ms',
+                      file=sys.stderr)
+
+        if self._general_handlers:
+            for handler in self._general_handlers:
+                t1 = time()
+                handler_name = str(handler.__qualname__)
+                handler(event)
+                t2 = time()
+                execute_ms = (int(round(t2 * 1000))) - (int(round(t1 * 1000)))
+                if execute_ms > self._over_ms:
+                    print(f'运行 general {event.type} {handler_name} 耗时:{execute_ms}ms > {self._over_ms}ms',
+                        file=sys.stderr)
 
     def _process(self, event: Event):
         """
