@@ -33,6 +33,9 @@ class TickData(BaseData):
     symbol: str
     exchange: Exchange
     datetime: datetime
+    date: str = ""      # '%Y-%m-%d'
+    time: str = ""      # '%H:%M:%S.%f'
+    trading_day: str = ""  # '%Y-%m-%d'
 
     name: str = ""
     volume: float = 0
@@ -84,9 +87,10 @@ class BarData(BaseData):
 
     symbol: str
     exchange: Exchange
-    datetime: datetime
+    datetime: datetime  # bar的开始时间
+    trading_day: str = ""  # '%Y-%m-%d'
 
-    interval: Interval = None
+    interval: Interval = None  # constant.py Internal 1m, 1h, 1d, 1w .etc
     volume: float = 0
     open_interest: float = 0
     open_price: float = 0
