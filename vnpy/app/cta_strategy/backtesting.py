@@ -538,7 +538,7 @@ class BacktestingEngine:
             return
 
         # Use multiprocessing pool for running backtesting with different setting
-        pool = multiprocessing.Pool(multiprocessing.cpu_count())
+        pool = multiprocessing.Pool(multiprocessing.cpu_count(), maxtasksperchild=1)
 
         results = []
         for setting in settings:
