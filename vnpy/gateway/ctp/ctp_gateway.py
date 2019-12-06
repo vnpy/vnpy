@@ -58,7 +58,10 @@ from vnpy.trader.object import (
     CancelRequest,
     SubscribeRequest,
 )
-from vnpy.trader.utility import get_folder_path
+from vnpy.trader.utility import (
+    get_folder_path,
+    get_trading_date
+)
 from vnpy.trader.event import EVENT_TIMER
 
 
@@ -292,11 +295,21 @@ class CtpMdApi(MdApi):
             return
 
         timestamp = f"{data['ActionDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f")
+
+        # 不处理开盘前的tick数据
+        if dt.hour in [8, 20] and dt.minute < 59:
+            return
+        if exchange is Exchange.CFFEX and dt.hour == 9 and dt.minute < 14:
+            return
 
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
-            datetime=datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f"),
+            datetime=dt,
+            date=dt.strftime('%Y-%m-%d'),
+            time=dt.strftime('%H:%M:%S.%f'),
+            trading_day=get_trading_date(dt),
             name=symbol_name_map[symbol],
             volume=data["Volume"],
             open_interest=data["OpenInterest"],
@@ -376,6 +389,7 @@ class CtpMdApi(MdApi):
         Subscribe to tick data update.
         """
         if self.login_status:
+            self.gateway.write_log(f'订阅:{req.exchange} {req.symbol}')
             self.subscribeMarketData(req.symbol)
         self.subscribed.add(req.symbol)
 
