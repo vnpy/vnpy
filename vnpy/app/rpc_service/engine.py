@@ -1,7 +1,7 @@
 """"""
 
 import traceback
-from typing import Optional
+from typing import Optional, Callable
 
 from vnpy.event import Event, EventEngine
 from vnpy.rpc import RpcServer
@@ -55,6 +55,11 @@ class RpcEngine(BaseEngine):
         self.server.register(self.main_engine.get_all_accounts)
         self.server.register(self.main_engine.get_all_contracts)
         self.server.register(self.main_engine.get_all_active_orders)
+
+    def register(self, func: Callable):
+        """ 扩展注册接口"""
+        if self.server:
+            self.server.register(func)
 
     def load_setting(self):
         """"""
