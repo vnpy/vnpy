@@ -118,6 +118,9 @@ class FemasGateway(BaseGateway):
         "brokerid": "",
         "td_address": "",
         "md_address": "",
+        "appid": "",
+        "auth_code ": "",
+        "product_info": "",
     }
 
     exchanges = list(EXCHANGE_FEMAS2VT.values())
@@ -142,7 +145,11 @@ class FemasGateway(BaseGateway):
         if not md_address.startswith("tcp://"):
             md_address = "tcp://" + md_address
 
-        self.td_api.connect(td_address, userid, password, brokerid)
+        appid = setting["appid"]
+        auth_code = setting["auth_code "]
+        product_info = setting["product_info"]
+
+        self.td_api.connect(td_address, userid, password, brokerid, auth_code, appid, product_info)
         self.md_api.connect(md_address, userid, password, brokerid)
 
         self.init_query()
@@ -180,7 +187,7 @@ class FemasGateway(BaseGateway):
         """
         当有错误的时候就输出错误，并返回True
         """
-        error_id = error["ErrorID"]
+        error_id = error
         if error_id:
             error_msg = error["ErrorMsg"]
             self.write_error(msg, error_id, error_msg)
@@ -218,6 +225,9 @@ class FemasMdApi(MdApi):
 
         self.connect_status = False
         self.login_status = False
+        self.auth_staus = False
+        self.login_failed = False
+
         self.subscribed = set()
 
         self.userid = ""
@@ -360,10 +370,14 @@ class FemasTdApi(TdApi):
         self.connect_status = False
         self.login_status = False
         self.login_failed = False
+        self.login_status = False
 
         self.userid = ""
         self.password = ""
         self.brokerid = 0
+        self.auth_code = ""
+        self.appid = ""
+        self.product_info = ""
 
         self.order_data = []
         self.trade_data = []
@@ -374,16 +388,29 @@ class FemasTdApi(TdApi):
         """"""
         self.gateway.write_log("交易服务器连接成功")
 
-        self.login()
+        if self.auth_code:
+            self.authenticate()
+        else:
+            self.login()
 
     def onFrontDisconnected(self, reason: int):
         """"""
         self.login_status = False
         self.gateway.write_log(f"交易服务器连接断开，原因{reason}")
 
+    def onRspDSUserCertification(self, data: dict, error: dict, reqid: int, last: bool):
+        """"""
+        if not error:
+            self.auth_staus = True
+            self.gateway.write_log("交易服务器授权验证成功")
+            self.login()
+        else:
+            self.gateway.write_error("交易服务器授权验证失败", error)
+
     def onRspUserLogin(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
-        if not error["ErrorID"]:
+
+        if not error:
             if data["MaxOrderLocalID"]:
                 self.localid = int(data["MaxOrderLocalID"])
 
@@ -391,7 +418,7 @@ class FemasTdApi(TdApi):
             self.gateway.write_log("交易服务器登录成功")
 
             self.reqid += 1
-            self.reqQryInstrument({}, self.reqid)
+            # self.reqQryInstrument({}, self.reqid)
         else:
             self.login_failed = True
 
@@ -586,7 +613,16 @@ class FemasTdApi(TdApi):
         )
         self.gateway.on_trade(trade)
 
-    def connect(self, address: str, userid: str, password: str, brokerid: int):
+    def connect(
+        self,
+        address: str,
+        userid: str,
+        password: str,
+        brokerid: int,
+        auth_code: str,
+        appid: str,
+        product_info: str
+    ):
         """
         Start connection to server.
         """
@@ -594,6 +630,9 @@ class FemasTdApi(TdApi):
         self.password = password
         self.brokerid = brokerid
         self.address = address
+        self.auth_code = auth_code
+        self.appid = appid
+        self.product_info = product_info
 
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
@@ -608,8 +647,23 @@ class FemasTdApi(TdApi):
 
             self.connect_status = True
         else:
-            if not self.login_status:
-                self.login()
+            self.authenticate()
+
+    def authenticate(self):
+        """
+        Authenticate with auth_code and appid.
+        """
+        req = {
+            "AppID": self.appid,
+            "AuthCode": self.auth_code,
+            "EncryptType": "1",
+        }
+
+        if self.product_info:
+            req["UserProductInfo"] = self.product_info
+
+        self.reqid += 1
+        self.reqDSUserCertification(req, self.reqid)
 
     def login(self):
         """
@@ -622,7 +676,11 @@ class FemasTdApi(TdApi):
             "UserID": self.userid,
             "Password": self.password,
             "BrokerID": self.brokerid,
+            "AppID": self.appid
         }
+
+        if self.product_info:
+            req["UserProductInfo"] = self.product_info
 
         self.reqid += 1
         self.reqUserLogin(req, self.reqid)

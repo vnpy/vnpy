@@ -104,7 +104,6 @@ class BidCell(BaseCell):
         """"""
         super(BidCell, self).__init__(content, data)
 
-        self.setForeground(COLOR_BLACK)
         self.setForeground(COLOR_BID)
 
 
@@ -117,7 +116,6 @@ class AskCell(BaseCell):
         """"""
         super(AskCell, self).__init__(content, data)
 
-        self.setForeground(COLOR_BLACK)
         self.setForeground(COLOR_ASK)
 
 

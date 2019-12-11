@@ -122,7 +122,7 @@ class ApiGenerator:
                         args_list.append("int reqid")
                     elif type_ == "bool":
                         args_list.append("bool last")
-                    elif type_ == "CThostFtdcRspInfoField":
+                    elif type_ == "CUstpFtdcRspInfoField":
                         args_list.append("const dict &error")
                     else:
                         args_list.append("const dict &data")
@@ -159,7 +159,7 @@ class ApiGenerator:
                         f.write(f"\ttask.task_id = {field};\n")
                     elif type_ == "bool":
                         f.write(f"\ttask.task_last = {field};\n")
-                    elif type_ == "CThostFtdcRspInfoField":
+                    elif type_ == "CUstpFtdcRspInfoField":
                         f.write(f"\tif ({field})\n")
                         f.write("\t{\n")
                         f.write(f"\t\t{type_} *task_error = new {type_}();\n")
@@ -209,7 +209,7 @@ class ApiGenerator:
                         args.append("task->task_id")
                     elif type_ == "bool":
                         args.append("task->task_last")
-                    elif type_ == "CThostFtdcRspInfoField":
+                    elif type_ == "CUstpFtdcRspInfoField":
                         args.append("error")
 
                         f.write("\tdict error;\n")
@@ -296,7 +296,7 @@ class ApiGenerator:
                     elif type_ == "bool":
                         args.append("bool last")
                         bind_args.append("last")
-                    elif type_ == "CThostFtdcRspInfoField":
+                    elif type_ == "CUstpFtdcRspInfoField":
                         args.append("const dict &error")
                         bind_args.append("error")
                     else:
