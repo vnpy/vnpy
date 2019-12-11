@@ -1,0 +1,17 @@
+.def("reqUserLogin", &MdApi::reqUserLogin)
+.def("reqUserLogout", &MdApi::reqUserLogout)
+
+.def("onFrontConnected", &MdApi::onFrontConnected)
+.def("onFrontDisconnected", &MdApi::onFrontDisconnected)
+.def("onHeartBeatWarning", &MdApi::onHeartBeatWarning)
+.def("onPackageStart", &MdApi::onPackageStart)
+.def("onPackageEnd", &MdApi::onPackageEnd)
+.def("onRspError", &MdApi::onRspError)
+.def("onRspUserLogin", &MdApi::onRspUserLogin)
+.def("onRspUserLogout", &MdApi::onRspUserLogout)
+.def("onRtnDepthMarketData", &MdApi::onRtnDepthMarketData)
+.def("onRspSubMarketData", &MdApi::onRspSubMarketData)
+.def("onRspUnSubMarketData", &MdApi::onRspUnSubMarketData)
+.def("onRspGetMarketTopic", &MdApi::onRspGetMarketTopic)
+.def("onRspGetMarketData", &MdApi::onRspGetMarketData)
+;
