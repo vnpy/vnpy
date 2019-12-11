@@ -595,7 +595,12 @@ class CtpTdApi(TdApi):
 
             # For option only
             if contract.product == Product.OPTION:
-                contract.option_portfolio = data["ProductID"]
+                # Remove C/P suffix of CZCE option product name
+                if contract.exchange == Exchange.CZCE:
+                    contract.option_portfolio = data["ProductID"][:-1]
+                else:
+                    contract.option_portfolio = data["ProductID"]
+
                 contract.option_underlying = data["UnderlyingInstrID"]
                 contract.option_type = OPTIONTYPE_CTP2VT.get(data["OptionsType"], None)
                 contract.option_strike = data["StrikePrice"]
