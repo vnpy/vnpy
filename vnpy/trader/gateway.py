@@ -213,7 +213,7 @@ class BaseGateway(ABC):
     def send_orders(self, reqs: Sequence[OrderRequest]):
         """
         Send a batch of orders to server.
-        Use a for loop of send_order function by default. 
+        Use a for loop of send_order function by default.
         Reimplement this function if batch order supported on server.
         """
         vt_orderids = []
@@ -227,7 +227,7 @@ class BaseGateway(ABC):
     def cancel_orders(self, reqs: Sequence[CancelRequest]):
         """
         Cancel a batch of orders to server.
-        Use a for loop of cancel_order function by default. 
+        Use a for loop of cancel_order function by default.
         Reimplement this function if batch cancel supported on server.
         """
         for req in reqs:
@@ -265,12 +265,12 @@ class LocalOrderManager:
     Management tool to support use local order id for trading.
     """
 
-    def __init__(self, gateway: BaseGateway):
+    def __init__(self, gateway: BaseGateway, order_prefix: str = ""):
         """"""
         self.gateway = gateway
 
         # For generating local orderid
-        self.order_prefix = ""
+        self.order_prefix = order_prefix
         self.order_count = 0
         self.orders = {}        # local_orderid:order
 
@@ -287,12 +287,16 @@ class LocalOrderManager:
         # Cancel request buf
         self.cancel_request_buf = {}    # local_orderid:req
 
+        # Hook cancel order function
+        self._cancel_order = gateway.cancel_order
+        gateway.cancel_order = self.cancel_order
+
     def new_local_orderid(self):
         """
         Generate a new local orderid.
         """
         self.order_count += 1
-        local_orderid = str(self.order_count).rjust(8, "0")
+        local_orderid = self.order_prefix + str(self.order_count).rjust(8, "0")
         return local_orderid
 
     def get_local_orderid(self, sys_orderid: str):
@@ -369,7 +373,7 @@ class LocalOrderManager:
             self.cancel_request_buf[req.orderid] = req
             return
 
-        self.gateway.cancel_order(req)
+        self._cancel_order(req)
 
     def check_cancel_request(self, local_orderid: str):
         """

@@ -122,6 +122,8 @@ class ApiGenerator:
                         args_list.append("int reqid")
                     elif type_ == "bool":
                         args_list.append("bool last")
+                    elif type_ == "char*":
+                        args_list.append("string data")
                     elif type_ == "CThostFtdcRspInfoField":
                         args_list.append("const dict &error")
                     else:

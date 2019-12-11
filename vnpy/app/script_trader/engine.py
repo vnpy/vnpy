@@ -141,19 +141,19 @@ class ScriptEngine(BaseEngine):
                 )
                 self.main_engine.subscribe(req, contract.gateway_name)
 
-    def buy(self, vt_symbol: str, price: str, volume: str, order_type: OrderType = OrderType.LIMIT) -> str:
+    def buy(self, vt_symbol: str, price: float, volume: float, order_type: OrderType = OrderType.LIMIT) -> str:
         """"""
         return self.send_order(vt_symbol, price, volume, Direction.LONG, Offset.OPEN, order_type)
 
-    def sell(self, vt_symbol: str, price: str, volume: str, order_type: OrderType = OrderType.LIMIT) -> str:
+    def sell(self, vt_symbol: str, price: float, volume: float, order_type: OrderType = OrderType.LIMIT) -> str:
         """"""
         return self.send_order(vt_symbol, price, volume, Direction.SHORT, Offset.CLOSE, order_type)
 
-    def short(self, vt_symbol: str, price: str, volume: str, order_type: OrderType = OrderType.LIMIT) -> str:
+    def short(self, vt_symbol: str, price: float, volume: float, order_type: OrderType = OrderType.LIMIT) -> str:
         """"""
         return self.send_order(vt_symbol, price, volume, Direction.SHORT, Offset.OPEN, order_type)
 
-    def cover(self, vt_symbol: str, price: str, volume: str, order_type: OrderType = OrderType.LIMIT) -> str:
+    def cover(self, vt_symbol: str, price: float, volume: float, order_type: OrderType = OrderType.LIMIT) -> str:
         """"""
         return self.send_order(vt_symbol, price, volume, Direction.LONG, Offset.CLOSE, order_type)
 
@@ -236,7 +236,7 @@ class ScriptEngine(BaseEngine):
         """"""
         return get_data(self.main_engine.get_position, arg=vt_positionid, use_df=use_df)
 
-    def get_all_positions(self, use_df: bool = False) -> Sequence[AccountData]:
+    def get_all_positions(self, use_df: bool = False) -> Sequence[PositionData]:
         """"""
         return get_data(self.main_engine.get_all_positions, use_df=use_df)
 

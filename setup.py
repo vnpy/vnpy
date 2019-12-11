@@ -23,31 +23,6 @@ import sys
 
 from setuptools import Extension, find_packages, setup
 
-with open("vnpy/__init__.py", "rb") as f:
-    version_line = re.search(
-        r"__version__\s+=\s+(.*)", f.read().decode("utf-8")
-    ).group(1)
-    version = str(ast.literal_eval(version_line))
-
-if platform.uname().system == "Windows":
-    compiler_flags = [
-        "/MP", "/std:c++17",  # standard
-        "/O2", "/Ob2", "/Oi", "/Ot", "/Oy", "/GL",  # Optimization
-        "/bigobj",  # Better compatibility
-        "/wd4819",  # 936 code page
-        "/D_CRT_SECURE_NO_WARNINGS",  # suppress warning of unsafe functions like fopen, strcpy, etc
-    ]
-    extra_link_args = []
-    runtime_library_dirs = None
-else:
-    compiler_flags = [
-        "-std=c++17",  # standard
-        "-O3",  # Optimization
-        "-Wno-delete-incomplete", "-Wno-sign-compare",
-    ]
-    extra_link_args = ["-lstdc++"]
-    runtime_library_dirs = ["$ORIGIN"]
-
 
 def gather_autocxxpy_generated_files(root: str):
     fs = [os.path.join(root, "module.cpp")]
@@ -60,83 +35,17 @@ def gather_autocxxpy_generated_files(root: str):
     return fs
 
 
-vnctpmd = Extension(
-    "vnpy.api.ctp.vnctpmd",
-    [
-        "vnpy/api/ctp/vnctp/vnctpmd/vnctpmd.cpp",
-    ],
-    include_dirs=["vnpy/api/ctp/include",
-                  "vnpy/api/ctp/vnctp", ],
-    define_macros=[],
-    undef_macros=[],
-    library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
-    libraries=["thostmduserapi_se", "thosttraderapi_se", ],
-    extra_compile_args=compiler_flags,
-    extra_link_args=extra_link_args,
-    runtime_library_dirs=runtime_library_dirs,
-    depends=[],
-    language="cpp",
-)
-vnctptd = Extension(
-    "vnpy.api.ctp.vnctptd",
-    [
-        "vnpy/api/ctp/vnctp/vnctptd/vnctptd.cpp",
-    ],
-    include_dirs=["vnpy/api/ctp/include",
-                  "vnpy/api/ctp/vnctp", ],
-    define_macros=[],
-    undef_macros=[],
-    library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
-    libraries=["thostmduserapi_se", "thosttraderapi_se", ],
-    extra_compile_args=compiler_flags,
-    extra_link_args=extra_link_args,
-    runtime_library_dirs=runtime_library_dirs,
-    depends=[],
-    language="cpp",
-)
-vnoes = Extension(
-    name="vnpy.api.oes.vnoes",
-    sources=gather_autocxxpy_generated_files(
-        "vnpy/api/oes/vnoes/generated_files/",
-    ),
-    include_dirs=["vnpy/api/oes/vnoes/include",
-                  "vnpy/api/oes/vnoes/include/oes", ],
-    define_macros=[("BRIGAND_NO_BOOST_SUPPORT", "1")],
-    undef_macros=[],
-    library_dirs=["vnpy/api/oes/vnoes/libs"],
-    libraries=["oes_api"],
-    extra_compile_args=compiler_flags,
-    extra_link_args=extra_link_args,
-    runtime_library_dirs=runtime_library_dirs,
-    depends=[],
-    language="cpp",
-)
-
-if platform.system() == "Windows":
-    # use pre-built pyd for windows ( support python 3.7 only )
-    ext_modules = []
-elif platform.system() == "Darwin":
-    ext_modules = []
-else:
-    ext_modules = [vnctptd, vnctpmd]
-
-
-def check_extension_build_flag(key: str, module: Extension):
+def check_extension_build_flag(ext_modules, key: str, module: Extension):
     value = os.environ.get(key, None)
     if value is not None:
-        global ext_modules
         if value == '1':
             ext_modules = list(set(ext_modules) | {module})
         elif value == '0':
             ext_modules = list(set(ext_modules) - {module})
         else:
-            raise ValueError(f"Flag {key} should be '0' or '1', but {repr(value)} got.")
-
-
-check_extension_build_flag("VNPY_BUILD_OES", vnoes)
-
-
-pkgs = find_packages()
+            raise ValueError(
+                f"Flag {key} should be '0' or '1', but {repr(value)} got.")
+    return ext_modules
 
 
 def is_psycopg2_exists():
@@ -147,34 +56,146 @@ def is_psycopg2_exists():
         return False
 
 
-install_requires = [
-    "PyQt5",
-    "qdarkstyle",
-    "requests",
-    "websocket-client",
-    "peewee",
-    "pymysql",
-    "mongoengine",
-    "numpy",
-    "pandas",
-    "matplotlib",
-    "seaborn",
-    "futu-api",
-    "tigeropen",
-    "rqdatac",
-    "ta-lib",
-    "ibapi",
-    "deap"
-]
-if not is_psycopg2_exists():
-    install_requires.append("psycopg2-binary")
+def get_install_requires():
+    install_requires = [
+        "PyQt5",
+        "qdarkstyle",
+        "requests",
+        "websocket-client",
+        "peewee",
+        "pymysql",
+        "mongoengine",
+        "numpy",
+        "pandas",
+        "matplotlib",
+        "seaborn",
+        "futu-api",
+        "tigeropen",
+        "rqdatac",
+        "ta-lib",
+        "ibapi",
+        "deap",
+        "pyzmq",
+        "QScintilla"
+    ]
+    if not is_psycopg2_exists():
+        install_requires.append("psycopg2-binary")
 
-if sys.version_info.minor < 7:
-    install_requires.append("dataclasses")
+    if sys.version_info.minor < 7:
+        install_requires.append("dataclasses")
+    return install_requires
+
+
+def get_version_string():
+    global version
+    with open("vnpy/__init__.py", "rb") as f:
+        version_line = re.search(
+            r"__version__\s+=\s+(.*)", f.read().decode("utf-8")
+        ).group(1)
+        return str(ast.literal_eval(version_line))
+
+
+def get_ext_modules():
+    if platform.uname().system == "Windows":
+        compiler_flags = [
+            "/MP", "/std:c++17",  # standard
+            "/O2", "/Ob2", "/Oi", "/Ot", "/Oy", "/GL",  # Optimization
+            "/bigobj",  # Better compatibility
+            "/wd4819",  # 936 code page
+            "/D_CRT_SECURE_NO_WARNINGS",
+            # suppress warning of unsafe functions like fopen, strcpy, etc
+        ]
+        extra_link_args = []
+        runtime_library_dirs = None
+    else:
+        compiler_flags = [
+            "-std=c++17",  # standard
+            "-O3",  # Optimization
+            "-Wno-delete-incomplete", "-Wno-sign-compare",
+        ]
+        extra_link_args = ["-lstdc++"]
+        runtime_library_dirs = ["$ORIGIN"]
+    vnctpmd = Extension(
+        "vnpy.api.ctp.vnctpmd",
+        [
+            "vnpy/api/ctp/vnctp/vnctpmd/vnctpmd.cpp",
+        ],
+        include_dirs=["vnpy/api/ctp/include",
+                      "vnpy/api/ctp/vnctp", ],
+        define_macros=[],
+        undef_macros=[],
+        library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
+        libraries=["thostmduserapi_se", "thosttraderapi_se", ],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        depends=[],
+        language="cpp",
+    )
+    vnctptd = Extension(
+        "vnpy.api.ctp.vnctptd",
+        [
+            "vnpy/api/ctp/vnctp/vnctptd/vnctptd.cpp",
+        ],
+        include_dirs=["vnpy/api/ctp/include",
+                      "vnpy/api/ctp/vnctp", ],
+        define_macros=[],
+        undef_macros=[],
+        library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
+        libraries=["thostmduserapi_se", "thosttraderapi_se", ],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        depends=[],
+        language="cpp",
+    )
+    vnoes = Extension(
+        name="vnpy.api.oes.vnoes",
+        sources=gather_autocxxpy_generated_files(
+            "vnpy/api/oes/vnoes/generated_files/",
+        ),
+        include_dirs=["vnpy/api/oes/vnoes/include",
+                      "vnpy/api/oes/vnoes/include/oes", ],
+        define_macros=[("BRIGAND_NO_BOOST_SUPPORT", "1")],
+        undef_macros=[],
+        library_dirs=["vnpy/api/oes/vnoes/libs"],
+        libraries=["oes_api"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        depends=[],
+        language="cpp",
+    )
+    if platform.system() == "Windows":
+        # use pre-built pyd for windows ( support python 3.7 only )
+        ext_modules = []
+    elif platform.system() == "Darwin":
+        ext_modules = []
+    else:
+        ext_modules = [vnctptd, vnctpmd, vnoes]
+
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_OES", vnoes)
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_CTP", vnctptd)
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_CTP", vnctpmd)
+
+    return ext_modules
+
+
+parallel = os.environ.get('VNPY_BUILD_PARALLEL', None)
+if parallel:
+    if parallel == 'auto':
+        parallel = os.cpu_count()
+    if parallel != 'no':
+        from ci.parallel_build_distutils import patch_distutils
+
+        patch_distutils(int(parallel))
 
 setup(
     name="vnpy",
-    version=version,
+    version=get_version_string(),
     author="vn.py team",
     author_email="vn.py@foxmail.com",
     license="MIT",
@@ -183,7 +204,7 @@ setup(
     long_description=__doc__,
     keywords='quant quantitative investment trading algotrading',
     include_package_data=True,
-    packages=pkgs,
+    packages=find_packages(exclude=["tests", "ci", "tests.*"]),
     package_data={"": [
         "*.ico",
         "*.ini",
@@ -191,7 +212,7 @@ setup(
         "*.so",
         "*.pyd",
     ]},
-    install_requires=install_requires,
+    install_requires=get_install_requires(),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Operating System :: Microsoft :: Windows :: Windows 7",
@@ -209,5 +230,5 @@ setup(
         "Natural Language :: Chinese (Simplified)",
         "Natural Language :: Chinese (Simplified)"
     ],
-    ext_modules=ext_modules
+    ext_modules=get_ext_modules(),
 )

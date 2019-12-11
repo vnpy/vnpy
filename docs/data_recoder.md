@@ -5,7 +5,7 @@
 - 后台会自动调用行情API接口的suscribe()函数自动订阅行情；
 - 行情信息通过database_manager模块的save_bar_data()函数/save_tick_data()函数载入到数据库中。
   
-注意：目前vnpy支持的数据库为SQLite/ MySQL/ PostgreSQL/ MongoDB。若用户使用MongoDB，则行情记录数据直接载入到MongoDB中。
+注意：目前vnpy支持的数据库为SQLite/ MySQL/ PostgreSQL/ MongoDB。其在VnTrader的菜单栏选择“配置”进入“全局配置”界面来选择数据库(默认为SQLite), 或者在用户目录下的.vntrader/vt_setting.json里面直接配置。若用户使用MongoDB，则行情记录数据直接载入到MongoDB中。
 
 &nbsp;
 
@@ -53,7 +53,7 @@
 下面介绍行情收录的具体原理：若无合约记录的历史，用户需要先添加行情记录任务，如连接CTP接口后记录rb1905.SHFE的tick数据，然后调用add_tick_recording()函数执行下面工作：
 1) 先创建tick_recordings字典；
 2) 调用接口的suscribe()函数订阅行情；
-3 )保存该tick_recordings字典到json文件上；
+3) 保存该tick_recordings字典到json文件上；
 4) 推送行情记录事件。
 
 ```

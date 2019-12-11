@@ -107,8 +107,6 @@ class BinanceGateway(BaseGateway):
         self.market_ws_api = BinanceDataWebsocketApi(self)
         self.rest_api = BinanceRestApi(self)
 
-        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
-
     def connect(self, setting: dict):
         """"""
         key = setting["key"]
@@ -120,6 +118,8 @@ class BinanceGateway(BaseGateway):
         self.rest_api.connect(key, secret, session_number,
                               proxy_host, proxy_port)
         self.market_ws_api.connect(proxy_host, proxy_port)
+
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
     def subscribe(self, req: SubscribeRequest):
         """"""
@@ -543,7 +543,7 @@ class BinanceRestApi(RestClient):
                 "limit": limit,
                 "startTime": start_time * 1000,         # convert to millisecond
             }
-            
+
             # Add end time if specified
             if req.end:
                 end_time = int(datetime.timestamp(req.end))
@@ -570,7 +570,7 @@ class BinanceRestApi(RestClient):
                     break
 
                 buf = []
-                
+
                 for l in data:
                     dt = datetime.fromtimestamp(l[0] / 1000)    # convert to second
 
@@ -629,7 +629,7 @@ class BinanceTradeWebsocketApi(WebsocketClient):
         """"""
         if packet["e"] == "outboundAccountInfo":
             self.on_account(packet)
-        else:
+        elif packet["e"] == "executionReport":
             self.on_order(packet)
 
     def on_account(self, packet):
@@ -641,7 +641,7 @@ class BinanceTradeWebsocketApi(WebsocketClient):
                 frozen=float(d["l"]),
                 gateway_name=self.gateway_name
             )
-            
+
             if account.balance:
                 self.gateway.on_account(account)
 

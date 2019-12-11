@@ -3,14 +3,21 @@ General utility functions.
 """
 
 import json
+import logging
+import sys
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Dict
+from decimal import Decimal
+from math import floor, ceil
 
 import numpy as np
 import talib
 
 from .object import BarData, TickData
 from .constant import Exchange, Interval
+
+
+log_formatter = logging.Formatter('[%(asctime)s] %(message)s')
 
 
 def extract_vt_symbol(vt_symbol: str):
@@ -52,6 +59,7 @@ def _get_trader_dir(temp_name: str):
 
 
 TRADER_DIR, TEMP_DIR = _get_trader_dir(".vntrader")
+sys.path.append(str(TRADER_DIR))
 
 
 def get_file_path(filename: str):
@@ -109,17 +117,39 @@ def save_json(filename: str, data: dict):
         )
 
 
-def round_to(value: float, target: float):
+def round_to(value: float, target: float) -> float:
     """
     Round price to price tick value.
     """
-    rounded = int(round(value / target)) * target
+    value = Decimal(str(value))
+    target = Decimal(str(target))
+    rounded = float(int(round(value / target)) * target)
     return rounded
+
+
+def floor_to(value: float, target: float) -> float:
+    """
+    Similar to math.floor function, but to target float number.
+    """
+    value = Decimal(str(value))
+    target = Decimal(str(target))
+    result = float(int(floor(value / target)) * target)
+    return result
+
+
+def ceil_to(value: float, target: float) -> float:
+    """
+    Similar to math.ceil function, but to target float number.
+    """
+    value = Decimal(str(value))
+    target = Decimal(str(target))
+    result = float(int(ceil(value / target)) * target)
+    return result
 
 
 class BarGenerator:
     """
-    For: 
+    For:
     1. generating 1 minute bar data from tick data
     2. generateing x minute bar/x hour bar data from 1 minute data
 
@@ -440,6 +470,44 @@ class ArrayManager(object):
             return up, down
         return up[-1], down[-1]
 
+    def aroon(self, n, array=False):
+        """
+        Aroon indicator.
+        """
+        aroon_up, aroon_down = talib.AROON(self.high, self.low, n)
+
+        if array:
+            return aroon_up, aroon_down
+        return aroon_up[-1], aroon_down[-1]
+
+    def aroonosc(self, n, array=False):
+        """
+        Aroon Oscillator.
+        """
+        result = talib.AROONOSC(self.high, self.low, n)
+
+        if array:
+            return result
+        return result[-1]
+
+    def ultosc(self, array=False):
+        """
+        Ultimate Oscillator.
+        """
+        result = talib.ULTOSC(self.high, self.low, self.close)
+        if array:
+            return result
+        return result[-1]
+
+    def mfi(self, n, array=False):
+        """
+        Money Flow Index.
+        """
+        result = talib.MFI(self.high, self.low, self.close, self.volume, n)
+        if array:
+            return result
+        return result[-1]
+
 
 def virtual(func: "callable"):
     """
@@ -448,3 +516,25 @@ def virtual(func: "callable"):
     that can be (re)implemented by subclasses.
     """
     return func
+
+
+file_handlers: Dict[str, logging.FileHandler] = {}
+
+
+def _get_file_logger_handler(filename: str):
+    handler = file_handlers.get(filename, None)
+    if handler is None:
+        handler = logging.FileHandler(filename)
+        file_handlers[filename] = handler  # Am i need a lock?
+    return handler
+
+
+def get_file_logger(filename: str):
+    """
+    return a logger that writes records into a file.
+    """
+    logger = logging.getLogger(filename)
+    handler = _get_file_logger_handler(filename)  # get singleton handler.
+    handler.setFormatter(log_formatter)
+    logger.addHandler(handler)  # each handler will be added only once.
+    return logger

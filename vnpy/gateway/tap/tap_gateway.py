@@ -222,7 +222,7 @@ class QuoteApi(ITapQuoteAPINotify):
 
     def OnAPIReady(self):
         """
-        Callback when API is ready for sending requests or queries. 
+        Callback when API is ready for sending requests or queries.
         """
         self.api.QryCommodity()
 
@@ -400,7 +400,7 @@ class TradeApi(ITapTradeAPINotify):
 
     def OnAPIReady(self, code: int):
         """
-        Callback when API is ready for sending requests or queries. 
+        Callback when API is ready for sending requests or queries.
         """
         self.api.QryCommodity()
 
@@ -449,32 +449,34 @@ class TradeApi(ITapTradeAPINotify):
         if not info or not exchange or not commodity_info:
             return
 
-        symbol = info.CommodityNo + info.ContractNo1
+        if info.CommodityType == "F":
+            symbol = info.CommodityNo + info.ContractNo1
 
-        if commodity_info.name:
-            name = f"{commodity_info.name} {info.ContractNo1}"
-        else:
-            name = symbol
+            if commodity_info.name:
+                name = f"{commodity_info.name} {info.ContractNo1}"
+            else:
+                name = symbol
 
-        contract = ContractData(
-            symbol=symbol,
-            exchange=exchange,
-            name=name,
-            product=Product.FUTURES,
-            size=commodity_info.size,
-            pricetick=commodity_info.pricetick,
-            gateway_name=self.gateway.gateway_name
-        )
-        self.gateway.on_contract(contract)
+            contract = ContractData(
+                symbol=symbol,
+                exchange=exchange,
+                name=name,
+                product=Product.FUTURES,
+                size=commodity_info.size,
+                pricetick=commodity_info.pricetick,
+                net_position=True,
+                gateway_name=self.gateway.gateway_name
+            )
+            self.gateway.on_contract(contract)
 
-        contract_info = ContractInfo(
-            name=contract.name,
-            exchange_no=info.ExchangeNo,
-            contract_no=info.ContractNo1,
-            commodity_type=info.CommodityType,
-            commodity_no=info.CommodityNo,
-        )
-        contract_infos[(contract.symbol, contract.exchange)] = contract_info
+            contract_info = ContractInfo(
+                name=contract.name,
+                exchange_no=info.ExchangeNo,
+                contract_no=info.ContractNo1,
+                commodity_type=info.CommodityType,
+                commodity_no=info.CommodityNo,
+            )
+            contract_infos[(contract.symbol, contract.exchange)] = contract_info
 
         if isLast == "Y":
             self.gateway.write_log("查询交易合约信息成功")

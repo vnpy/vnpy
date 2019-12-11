@@ -15,7 +15,7 @@ VNStudio是vn.py团队自行打包的一键安装版本，整合了：
 - vn.py框架和其他相关库
 - VN Station量化工作站（vn.py框架的图形化管理工具）
 
-下载地址：[vnstudio-2.0.3.exe](https://download.vnpy.com/vnstudio-2.0.3.exe)
+下载地址：[vnstudio-2.0.6.exe](https://download.vnpy.com/vnstudio-2.0.6.exe)
 
 &nbsp;
 
@@ -25,8 +25,10 @@ VNStudio是vn.py团队自行打包的一键安装版本，整合了：
 一路点击“下一步”即可完成VNStudio安装，安装完成后可以查看相关运行目录：
 
 - VNStudio默认安装路径为C:\vnstudio；
+- VNStudio默认json配置文件和数据库路径为C:\Users\Administrator\.vntrader
 - VN Station量化工作站运行目录为C:\vnstudio\Scripts\vnstation.exe；
 - vnpy运行目录在C:\vnstudio\Lib\site-packages\vnpy（进入该目录后，用户可以修改vnpy的相关功能）
+
 
 &nbsp;
 
@@ -44,7 +46,7 @@ VNStudio是vn.py团队自行打包的一键安装版本，整合了：
 
 窗口下方有5个选项：
 - VN Trade Lite：直接运行VN Trader (只有CTP接口)
-- VN Trader Pro：先选择保存相关临时文件的目录，再运行VN Trader (接口任选)
+- VN Trader Pro：先选择保存相关临时文件的目录，再运行VN Trader (接口和上层应用模块任选)
 - Jupyter Notebook：先选择保存相关临时文件的目录，再运行Jupyter Notebook
 - 提问求助：提出相关问题，管理员会每天定时回复
 - 后台更新：一键更新VN Station
@@ -73,7 +75,9 @@ VNStudio是vn.py团队自行打包的一键安装版本，整合了：
 
 #### 2.下载并解压vnpy
 
-Windows用户选择zip压缩版本。下载地址如下：[vnpy releases](https://github.com/vnpy/vnpy/releases)
+进入vnpy的github主页[vnpy](https://github.com/vnpy/vnpy)。
+在左方的Branch选项，master对应是最新的稳定版本，dev对应的是最新测试版本；
+然后在主页右方绿色的clone or download选项，选择Download ZIP来下载压缩版本到本地电脑。
 
 &nbsp;
 

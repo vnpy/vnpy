@@ -471,7 +471,10 @@ class BitmexRestApi(RestClient):
         headers = request.response.headers
 
         self.rate_limit_remaining = int(headers["x-ratelimit-remaining"])
-        self.rate_limit_sleep = int(headers.get("Retry-After", 0)) + 1      # 1 extra second sleep
+
+        self.rate_limit_sleep = int(headers.get("Retry-After", 0))
+        if self.rate_limit_sleep:
+            self.rate_limit_sleep += 1      # 1 extra second sleep
 
     def reset_rate_limit(self):
         """
@@ -530,6 +533,7 @@ class BitmexWebsocketApi(WebsocketClient):
         self.ticks = {}
         self.accounts = {}
         self.orders = {}
+        self.positions = {}
         self.trades = set()
 
     def connect(
@@ -665,8 +669,6 @@ class BitmexWebsocketApi(WebsocketClient):
             tick.__setattr__("ask_price_%s" % (n + 1), price)
             tick.__setattr__("ask_volume_%s" % (n + 1), volume)
 
-        tick.datetime = datetime.strptime(
-            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
         self.gateway.on_tick(copy(tick))
 
     def on_trade(self, d):
@@ -701,25 +703,30 @@ class BitmexWebsocketApi(WebsocketClient):
 
     def on_order(self, d):
         """"""
+        # Filter order data which cannot be processed properly
         if "ordStatus" not in d:
             return
 
+        # Update local order data
         sysid = d["orderID"]
         order = self.orders.get(sysid, None)
         if not order:
+            # Filter data with no trading side info
+            side = d.get("side", "")
+            if not side:
+                return
+
             if d["clOrdID"]:
                 orderid = d["clOrdID"]
             else:
                 orderid = sysid
-
-            # time = d["timestamp"][11:19]
 
             order = OrderData(
                 symbol=d["symbol"],
                 exchange=Exchange.BITMEX,
                 type=ORDERTYPE_BITMEX2VT[d["ordType"]],
                 orderid=orderid,
-                direction=DIRECTION_BITMEX2VT[d["side"]],
+                direction=DIRECTION_BITMEX2VT[side],
                 price=d["price"],
                 volume=d["orderQty"],
                 time=d["timestamp"][11:19],
@@ -734,15 +741,27 @@ class BitmexWebsocketApi(WebsocketClient):
 
     def on_position(self, d):
         """"""
-        position = PositionData(
-            symbol=d["symbol"],
-            exchange=Exchange.BITMEX,
-            direction=Direction.NET,
-            volume=d.get("currentQty", 0),
-            gateway_name=self.gateway_name,
-        )
+        symbol = d["symbol"]
 
-        self.gateway.on_position(position)
+        position = self.positions.get(symbol, None)
+        if not position:
+            position = PositionData(
+                symbol=d["symbol"],
+                exchange=Exchange.BITMEX,
+                direction=Direction.NET,
+                gateway_name=self.gateway_name,
+            )
+            self.positions[symbol] = position
+
+        volume = d.get("currentQty", None)
+        if volume is not None:
+            position.volume = volume
+
+        price = d.get("avgEntryPrice", None)
+        if price is not None:
+            position.price = price
+
+        self.gateway.on_position(copy(position))
 
     def on_account(self, d):
         """"""
