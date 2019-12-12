@@ -55,9 +55,9 @@ void MdApi::OnRspError(CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIs
 	task.task_name = ONRSPERROR;
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -76,9 +76,9 @@ void MdApi::OnRspUserLogin(CUstpFtdcRspUserLoginField *pRspUserLogin, CUstpFtdcR
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -97,9 +97,9 @@ void MdApi::OnRspUserLogout(CUstpFtdcRspUserLogoutField *pRspUserLogout, CUstpFt
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -131,9 +131,9 @@ void MdApi::OnRspSubMarketData(CUstpFtdcSpecificInstrumentField *pSpecificInstru
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -152,9 +152,9 @@ void MdApi::OnRspUnSubMarketData(CUstpFtdcSpecificInstrumentField *pSpecificInst
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -173,9 +173,9 @@ void MdApi::OnRspGetMarketTopic(CUstpFtdcRspMarketTopicField *pRspMarketTopic, C
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -194,14 +194,15 @@ void MdApi::OnRspGetMarketData(CUstpFtdcRspDepthMarketDataField *pRspDepthMarket
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
 	this->task_queue.push(task);
 };
+
 
 
 
