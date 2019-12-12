@@ -15,38 +15,6 @@
 
 #include "USTPFtdcUserApiDataType.h"
 
-///系统用户登录请求
-struct CUstpFtdcReqUserLoginField
-{
-	///交易日
-	TUstpFtdcDateType	TradingDay;
-	///交易用户代码
-	TUstpFtdcUserIDType	UserID;
-	///经纪公司编号
-	TUstpFtdcBrokerIDType	BrokerID;
-	///密码
-	TUstpFtdcPasswordType	Password;
-	///用户端产品信息
-	TUstpFtdcProductInfoType	UserProductInfo;
-	///接口端产品信息
-	TUstpFtdcProductInfoType	InterfaceProductInfo;
-	///协议信息
-	TUstpFtdcProtocolInfoType	ProtocolInfo;
-	///IP地址
-	TUstpFtdcIPAddressType	IPAddress;
-	///Mac地址
-	TUstpFtdcMacAddressType	MacAddress;
-	///数据中心代码
-	TUstpFtdcDataCenterIDType	DataCenterID;
-	///客户端运行文件大小
-	TUstpFtdcFileSizeType	UserProductFileSize;
-	///客户认证类型
-	TUstpFtdcAuthenticate2TypeType	Authenticate2Type;
-	///客户认证密码
-	TUstpFtdcAuthenticate2PasswordType	Authenticate2Password;
-	///开发厂商终端编码
-	TUstpFtdcTerminalCodeType	TerminalCode;
-};
 ///系统用户登录应答
 struct CUstpFtdcRspUserLoginField
 {
@@ -204,48 +172,6 @@ struct CUstpFtdcMemDbField
 {
 	///内存表名
 	TUstpFtdcMemTableNameType	MemTableName;
-};
-///用户请求出入金
-struct CUstpFtdcstpUserDepositField
-{
-	///经纪公司编号
-	TUstpFtdcBrokerIDType	BrokerID;
-	///用户代码
-	TUstpFtdcUserIDType	UserID;
-	///投资者编号
-	TUstpFtdcInvestorIDType	InvestorID;
-	///金额
-	TUstpFtdcMoneyType	Amount;
-	///出入金方向
-	TUstpFtdcAccountDirectionType	AmountDirection;
-	///用户本地报单号
-	TUstpFtdcUserOrderLocalIDType	UserOrderLocalID;
-};
-///用户主次席出入金
-struct CUstpFtdcstpTransferMoneyField
-{
-	///经纪公司编号
-	TUstpFtdcBrokerIDType	BrokerID;
-	///用户代码
-	TUstpFtdcUserIDType	UserID;
-	///投资者编号
-	TUstpFtdcInvestorIDType	InvestorID;
-	///金额
-	TUstpFtdcMoneyType	Amount;
-	///出入金方向
-	TUstpFtdcAccountDirectionType	AmountDirection;
-	///用户本地报单号
-	TUstpFtdcUserOrderLocalIDType	UserOrderLocalID;
-	///银行机构代码
-	TUstpFtdcBankIDType	BankID;
-	///银行转账密码
-	TUstpFtdcBankPasswdType	BankPasswd;
-	///主席转账密码
-	TUstpFtdcAccountPasswdType	AccountPasswd;
-	///币种
-	TUstpFtdcCurrencyIDType	Currency;
-	///次席资金流水号
-	TUstpFtdcTransSerialType	SerialNo;
 };
 ///响应信息
 struct CUstpFtdcRspInfoField
@@ -828,6 +754,82 @@ struct CUstpFtdcInvestorMarginField
 	TUstpFtdcRatioType	ShortMarginAmt;
 	///投机套保标志
 	TUstpFtdcHedgeFlagType	HedgeFlag;
+};
+///系统用户登录请求
+struct CUstpFtdcReqUserLoginField
+{
+	///交易日
+	TUstpFtdcDateType	TradingDay;
+	///交易用户代码
+	TUstpFtdcUserIDType	UserID;
+	///经纪公司编号
+	TUstpFtdcBrokerIDType	BrokerID;
+	///密码
+	TUstpFtdcPasswordType	Password;
+	///用户端产品信息
+	TUstpFtdcProductInfoType	UserProductInfo;
+	///接口端产品信息
+	TUstpFtdcProductInfoType	InterfaceProductInfo;
+	///协议信息
+	TUstpFtdcProtocolInfoType	ProtocolInfo;
+	///IP地址
+	TUstpFtdcIPAddressType	IPAddress;
+	///Mac地址
+	TUstpFtdcMacAddressType	MacAddress;
+	///数据中心代码
+	TUstpFtdcDataCenterIDType	DataCenterID;
+	///客户端运行文件大小
+	TUstpFtdcFileSizeType	UserProductFileSize;
+	///客户认证类型
+	TUstpFtdcAuthenticate2TypeType	Authenticate2Type;
+	///客户认证密码
+	TUstpFtdcAuthenticate2PasswordType	Authenticate2Password;
+	///开发厂商终端编码
+	TUstpFtdcTerminalCodeType	TerminalCode;
+	///密码加密类型
+	TUstpFtdcPasswordEncryptType	PasswordEncrypt;
+};
+///用户请求出入金
+struct CUstpFtdcstpUserDepositField
+{
+	///经纪公司编号
+	TUstpFtdcBrokerIDType	BrokerID;
+	///用户代码
+	TUstpFtdcUserIDType	UserID;
+	///投资者编号
+	TUstpFtdcInvestorIDType	InvestorID;
+	///金额
+	TUstpFtdcMoneyType	Amount;
+	///出入金方向
+	TUstpFtdcAccountDirectionType	AmountDirection;
+	///用户本地报单号
+	TUstpFtdcUserOrderLocalIDType	UserOrderLocalID;
+};
+///用户主次席出入金
+struct CUstpFtdcstpTransferMoneyField
+{
+	///经纪公司编号
+	TUstpFtdcBrokerIDType	BrokerID;
+	///用户代码
+	TUstpFtdcUserIDType	UserID;
+	///投资者编号
+	TUstpFtdcInvestorIDType	InvestorID;
+	///金额
+	TUstpFtdcMoneyType	Amount;
+	///出入金方向
+	TUstpFtdcAccountDirectionType	AmountDirection;
+	///用户本地报单号
+	TUstpFtdcUserOrderLocalIDType	UserOrderLocalID;
+	///银行机构代码
+	TUstpFtdcBankIDType	BankID;
+	///银行转账密码
+	TUstpFtdcBankPasswdType	BankPasswd;
+	///主席转账密码
+	TUstpFtdcAccountPasswdType	AccountPasswd;
+	///币种
+	TUstpFtdcCurrencyIDType	Currency;
+	///次席资金流水号
+	TUstpFtdcTransSerialType	SerialNo;
 };
 ///成交
 struct CUstpFtdcTradeField
@@ -1517,7 +1519,7 @@ struct CUstpFtdcInputMarginCombActionField
 	///用户本地编号
 	TUstpFtdcUserOrderLocalIDType	UserActionLocalID;
 	///组合合约代码
-	TUstpFtdcInstrumentIDType	CombInstrumentID;
+	TUstpFtdcCombInstrumentIDType	CombInstrumentID;
 	///组合数量
 	TUstpFtdcVolumeType	CombVolume;
 	///组合动作方向
@@ -1531,7 +1533,7 @@ struct CUstpFtdcInputMarginCombActionField
 	///组合操作状态
 	TUstpFtdcCombActionStatusType	CombActionStatus;
 };
-///交易编码组合持仓查询
+///投资者组合持仓查询
 struct CUstpFtdcQryInvestorCombPositionField
 {
 	///经纪公司编号
@@ -1543,9 +1545,11 @@ struct CUstpFtdcQryInvestorCombPositionField
 	///投机套保标志
 	TUstpFtdcHedgeFlagType	HedgeFlag;
 	///组合合约代码
-	TUstpFtdcInstrumentIDType	CombInstrumentID;
+	TUstpFtdcCombInstrumentIDType	CombInstrumentID;
+	///客户编码
+	TUstpFtdcClientIDType	ClientID;
 };
-///交易编码组合持仓查询应答
+///投资者组合持仓查询应答
 struct CUstpFtdcRspInvestorCombPositionField
 {
 	///经纪公司编号
@@ -1561,7 +1565,7 @@ struct CUstpFtdcRspInvestorCombPositionField
 	///客户编码
 	TUstpFtdcClientIDType	ClientID;
 	///组合合约代码
-	TUstpFtdcInstrumentIDType	CombInstrumentID;
+	TUstpFtdcCombInstrumentIDType	CombInstrumentID;
 	///单腿1合约代码
 	TUstpFtdcInstrumentIDType	Leg1InstrumentID;
 	///单腿2合约代码
@@ -1579,7 +1583,7 @@ struct CUstpFtdcMarginCombinationLegField
 	///交易所代码
 	TUstpFtdcExchangeIDType	ExchangeID;
 	///组合合约代码
-	TUstpFtdcInstrumentIDType	CombInstrumentID;
+	TUstpFtdcCombInstrumentIDType	CombInstrumentID;
 	///单腿编号
 	TUstpFtdcLegIDType	LegID;
 	///单腿合约代码
@@ -1591,7 +1595,7 @@ struct CUstpFtdcMarginCombinationLegField
 	///优先级
 	TUstpFtdcPriorityType	Priority;
 };
-///交易编码单腿持仓查询
+///投资者单腿持仓查询
 struct CUstpFtdcQryInvestorLegPositionField
 {
 	///经纪公司编号
@@ -1604,8 +1608,10 @@ struct CUstpFtdcQryInvestorLegPositionField
 	TUstpFtdcHedgeFlagType	HedgeFlag;
 	///单腿合约代码
 	TUstpFtdcInstrumentIDType	LegInstrumentID;
+	///客户编码
+	TUstpFtdcClientIDType	ClientID;
 };
-///交易编码单腿持仓查询应答
+///投资者单腿持仓查询应答
 struct CUstpFtdcRspInvestorLegPositionField
 {
 	///经纪公司编号
@@ -1944,6 +1950,146 @@ struct CUstpFtdcRspDepthMarketDataField
 	TUstpFtdcVolumeType	TotalBidVolume;
 	///总卖出量
 	TUstpFtdcVolumeType	TotalAskVolume;
+};
+///穿透监管客户信息
+struct CUstpFtdcDSUserInfoField
+{
+	///用户AppID
+	TUstpFtdcDSAppIDType	AppID;
+	///用户授权码
+	TUstpFtdcDSAuthorizationCodeType	AuthCode;
+	///密钥加密类型
+	TUstpFtdcDSKeyEncryptType	EncryptType;
+};
+///穿透监管客户认证请求信息
+struct CUstpFtdcDSUserCertReqDataField
+{
+	///用户AppID
+	TUstpFtdcDSAppIDType	AppID;
+	///用户认证请求信息
+	TUstpFtdcDSStreamDataType	UserCertReqData;
+	///用户证书信息分片的总片数
+	TUstpFtdcDSSeqeneceType	TotalNum;
+	///用户证书信息分片的第几片
+	TUstpFtdcDSSeqeneceType	CurrentNum;
+};
+///穿透监管客户认证响应信息
+struct CUstpFtdcDSUserCertRspDataField
+{
+	///AppID
+	TUstpFtdcDSAppIDType	AppID;
+	///AppID类型
+	TUstpFtdcDSAppIDTypeType	AppIDType;
+	///用户认证返回信息
+	TUstpFtdcDSStreamDataType	UserCertRspData;
+	///用户证书返回信息分片的总片数
+	TUstpFtdcDSSeqeneceType	TotalNum;
+	///用户证书返回信息分片的第几片
+	TUstpFtdcDSSeqeneceType	CurrentNum;
+};
+///穿透监管客户信息采集信息
+struct CUstpFtdcDSLocalSystemDataField
+{
+	///用户AppID
+	TUstpFtdcDSAppIDType	AppID;
+	///异常标识
+	TUstpFtdcDSExceptionFlagType	ExceptionFlag;
+	///用户信息采集结果
+	TUstpFtdcDSLocalSystemDataType	LocalSystemData;
+};
+///穿透监管中继验证客户信息
+struct CUstpFtdcDSProxyCheckUserInfoField
+{
+	///用户AppID
+	TUstpFtdcDSAppIDType	AppID;
+	///用户授权码
+	TUstpFtdcDSAuthorizationCodeType	AuthCode;
+	///密钥加密类型
+	TUstpFtdcDSKeyEncryptType	EncryptType;
+};
+///穿透监管中继处接收到的终端认证信息
+struct CUstpFtdcDSProxyUserCertInField
+{
+	///穿透监管中继处接收到的终端认证信息
+	TUstpFtdcDSProxyCertStreamDataType	UserCertReqInfo;
+};
+///穿透监管中继处接终端认证返回信息
+struct CUstpFtdcDSProxyUserCertOutField
+{
+	///穿透监管中继处证书认证的返回结果
+	TUstpFtdcDSProxyCertStreamDataType	UserCertRspInfo;
+	///中继处返回数据已使用长度信息
+	TUstpFtdcDSBufLenType	UserCertRspInfoLen;
+};
+///穿透监管中继提交信息
+struct CUstpFtdcDSProxySubmitDataField
+{
+	///AppID
+	TUstpFtdcDSAppIDType	AppID;
+	///客户终端公网IP
+	TUstpFtdcDSPubNetIPType	TerminalPubNetIP;
+	///客户终端公网端口号
+	TUstpFtdcDSPubNetPortType	TerminalPubNetPort;
+	///客户终端登入时间
+	TUstpFtdcDSLoginTimeType	TerminalLoginTime;
+	///异常标识
+	TUstpFtdcDSExceptionFlagType	ExceptionFlag;
+	///RealyID
+	TUstpFtdcDSAppIDType	RelayID;
+	///终端采集信息
+	TUstpFtdcDSLocalSystemDataType	TerminalSystemData;
+};
+///查询保证金优惠参数请求
+struct CUstpFtdcReqQryMarginPrefParamField
+{
+	///经纪公司编号
+	TUstpFtdcBrokerIDType	BrokerID;
+	///交易所代码
+	TUstpFtdcExchangeIDType	ExchangeID;
+	///组合合约代码
+	TUstpFtdcCombInstrumentIDType	CombInstrumentID;
+	///组合合约名称
+	TUstpFtdcCombInstrumentIDType	CombInstrumentName;
+};
+///查询保证金优惠参数应答
+struct CUstpFtdcRspQryMarginPrefParamField
+{
+	///经纪公司编号
+	TUstpFtdcBrokerIDType	BrokerID;
+	///交易所代码
+	TUstpFtdcExchangeIDType	ExchangeID;
+	///组合合约代码
+	TUstpFtdcCombInstrumentIDType	CombInstrumentID;
+	///组合合约名称
+	TUstpFtdcCombInstrumentIDType	CombInstrumentName;
+	///组合类型
+	TUstpFtdcArbiTypeType	CombType;
+	///投机套保标志
+	TUstpFtdcHedgeFlagType	HedgeFlag;
+	///腿1合约代码
+	TUstpFtdcInstrumentIDType	Leg1InstrumentID;
+	///腿1品种代码
+	TUstpFtdcProductIDType	Leg1ProductID;
+	///腿1方向
+	TUstpFtdcDirectionType	Leg1Direction;
+	///腿1投机套保标志
+	TUstpFtdcHedgeFlagType	Leg1HedgeFlag;
+	///腿1昨结算价
+	TUstpFtdcPriceType	Leg1SettlementPrice;
+	///腿2合约代码
+	TUstpFtdcInstrumentIDType	Leg2InstrumentID;
+	///腿2品种代码
+	TUstpFtdcProductIDType	Leg2ProductID;
+	///腿2方向
+	TUstpFtdcDirectionType	Leg2Direction;
+	///腿2投机套保标志
+	TUstpFtdcHedgeFlagType	Leg2HedgeFlag;
+	///腿2昨结算价
+	TUstpFtdcPriceType	Leg2SettlementPrice;
+	///优先级
+	TUstpFtdcPriorityType	Priority;
+	///是否交易期间优惠
+	TUstpFtdcIsActiveType	TradeEna;
 };
 
 
