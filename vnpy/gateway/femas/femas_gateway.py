@@ -1,6 +1,7 @@
 """"""
 
 from datetime import datetime
+from time import sleep
 
 from vnpy.api.femas import (
     MdApi,
@@ -187,7 +188,7 @@ class FemasGateway(BaseGateway):
         """
         当有错误的时候就输出错误，并返回True
         """
-        error_id = error
+        error_id = error["ErrorID"]
         if error_id:
             error_msg = error["ErrorMsg"]
             self.write_error(msg, error_id, error_msg)
@@ -268,8 +269,8 @@ class FemasMdApi(MdApi):
 
     def onRspSubMarketData(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
-        if self.gateway.if_error_write_error("行情订阅失败", error):
-            return
+        if error:
+            self.gateway.if_error_write_error("行情订阅失败", error)
 
     def onRtnDepthMarketData(self, data: dict):
         """
@@ -373,6 +374,7 @@ class FemasTdApi(TdApi):
         self.login_status = False
 
         self.userid = ""
+        self.investorid = ""
         self.password = ""
         self.brokerid = 0
         self.auth_code = ""
@@ -400,7 +402,7 @@ class FemasTdApi(TdApi):
 
     def onRspDSUserCertification(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
-        if not error:
+        if not error["ErrorID"]:
             self.auth_staus = True
             self.gateway.write_log("交易服务器授权验证成功")
             self.login()
@@ -409,41 +411,47 @@ class FemasTdApi(TdApi):
 
     def onRspUserLogin(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
-
-        if not error:
+        if not error["ErrorID"]:
             if data["MaxOrderLocalID"]:
                 self.localid = int(data["MaxOrderLocalID"])
 
             self.login_status = True
             self.gateway.write_log("交易服务器登录成功")
-
             self.reqid += 1
-            # self.reqQryInstrument({}, self.reqid)
+
+            self.query_investorid(self.reqid)
         else:
             self.login_failed = True
 
             self.gateway.if_error_write_error("交易服务器登录失败", error)
 
+    def onRspQryUserInvestor(self, data: dict, error: dict, reqid: int, last: bool):
+        """"""
+        self.investorid = data['InvestorID']
+
+        sleep(2)
+        self.reqid += 1
+        self.reqQryInstrument({}, self.reqid)
+
     def onRspOrderInsert(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         if self.gateway.if_error_write_error("交易委托失败", error):
-            return
 
-        orderid = data["UserOrderLocalID"]
-        symbol = data["InstrumentID"]
-        exchange = symbol_exchange_map[symbol]
-        order = OrderData(
-            symbol=symbol,
-            exchange=exchange,
-            orderid=orderid,
-            direction=DIRECTION_FEMAS2VT[data["Direction"]],
-            offset=OFFSET_FEMAS2VT[data["OffsetFlag"]],
-            price=data["LimitPrice"],
-            volume=data["Volume"],
-            status=Status.REJECTED,
-            gateway_name=self.gateway_name,
-        )
-        self.gateway.on_order(order)
+            orderid = data["UserOrderLocalID"]
+            symbol = data["InstrumentID"]
+            exchange = symbol_exchange_map[symbol]
+            order = OrderData(
+                symbol=symbol,
+                exchange=exchange,
+                orderid=orderid,
+                direction=DIRECTION_FEMAS2VT[data["Direction"]],
+                offset=OFFSET_FEMAS2VT[data["OffsetFlag"]],
+                price=data["LimitPrice"],
+                volume=data["Volume"],
+                status=Status.REJECTED,
+                gateway_name=self.gateway_name,
+            )
+            self.gateway.on_order(order)
 
     def onRspOrderAction(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
@@ -520,6 +528,7 @@ class FemasTdApi(TdApi):
         """
         # Femas gateway provides no ProductClass data, so need to determine
         # product type using other logic.
+
         option_type = OPTIONTYPE_FEMAS2VT.get(data["OptionsType"], None)
         if option_type:
             product = Product.OPTION
@@ -685,6 +694,15 @@ class FemasTdApi(TdApi):
         self.reqid += 1
         self.reqUserLogin(req, self.reqid)
 
+    def query_investorid(self, reqid):
+        """"""
+        req = {
+            "BrokerID": self.brokerid,
+            "UserID": self.userid,
+        }
+
+        self.reqQryUserInvestor(req, reqid)
+
     def send_order(self, req: OrderRequest):
         """
         Send new order.
@@ -696,7 +714,7 @@ class FemasTdApi(TdApi):
             "InstrumentID": req.symbol,
             "ExchangeID": str(req.exchange).split(".")[1],
             "BrokerID": self.brokerid,
-            "InvestorID": self.userid,
+            "InvestorID": self.investorid,
             "UserID": self.userid,
             "LimitPrice": req.price,
             "Volume": int(req.volume),
@@ -743,7 +761,7 @@ class FemasTdApi(TdApi):
             "UserOrderActionLocalID": orderid,
             "ActionFlag": USTP_FTDC_AF_Delete,
             "BrokerID": self.brokerid,
-            "InvestorID": self.userid,
+            "InvestorID": self.investorid,
             "UserID": self.userid,
         }
 
@@ -754,12 +772,16 @@ class FemasTdApi(TdApi):
         """
         Query account balance data.
         """
+        if not self.investorid:
+            self.query_investorid()
+
         req = {
             "BrokerID": self.brokerid,
-            "InvestorID": self.userid,
+            "InvestorID": self.investorid,
             "UserID": self.userid,
         }
         self.reqid += 1
+
         self.reqQryInvestorAccount(req, self.reqid)
 
     def query_position(self):
@@ -771,7 +793,7 @@ class FemasTdApi(TdApi):
 
         req = {
             "BrokerID": self.brokerid,
-            "InvestorID": self.userid,
+            "InvestorID": self.investorid,
             "UserID": self.userid,
         }
 
