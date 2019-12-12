@@ -1121,4 +1121,3 @@ CUstpFtdcRspQryMarginPrefParamField = {
     "Priority": "int",
     "TradeEna": "char",
 }
-
