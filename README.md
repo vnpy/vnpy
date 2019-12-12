@@ -108,6 +108,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * script_trader：脚本策略模块，针对多标的组合类交易策略设计，同时也可以直接在命令行中实现REPL指令形式的交易，不支持回测功能
 
+    * portfolio_manager：投资组合模块，面向各类基本面交易策略，以独立的策略子账户为基础，提供交易仓位的自动跟踪以及盈亏实时统计功能
+
     * rpc_service：RPC服务模块，允许将某一VN Trader进程启动为服务端，作为统一的行情和交易路由通道，允许多客户端同时连接，实现多进程分布式系统
 
     * csv_loader：CSV历史数据加载器，用于加载CSV格式文件中的历史数据到平台数据库中，用于策略的回测研究以及实盘初始化等功能，支持自定义数据表头格式
@@ -130,7 +132,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.0.7](https://download.vnpy.com/vnstudio-2.0.7.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.0.8](https://download.vnpy.com/vnstudio-2.0.8.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 

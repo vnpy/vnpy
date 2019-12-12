@@ -1,5 +1,6 @@
 # Python
 *.pyc
+*.pyo
 *.egg-info/
 
 # Jupyter

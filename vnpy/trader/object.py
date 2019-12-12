@@ -244,6 +244,7 @@ class ContractData(BaseData):
     option_underlying: str = ""     # vt_symbol of underlying contract
     option_type: OptionType = None
     option_expiry: datetime = None
+    option_portfolio: str = ""
 
     def __post_init__(self):
         """"""
