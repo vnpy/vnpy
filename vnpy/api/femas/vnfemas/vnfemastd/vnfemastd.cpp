@@ -70,9 +70,9 @@ void TdApi::OnRspError(CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIs
 	task.task_name = ONRSPERROR;
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -91,9 +91,9 @@ void TdApi::OnRspUserLogin(CUstpFtdcRspUserLoginField *pRspUserLogin, CUstpFtdcR
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -112,9 +112,9 @@ void TdApi::OnRspUserLogout(CUstpFtdcRspUserLogoutField *pRspUserLogout, CUstpFt
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -133,9 +133,9 @@ void TdApi::OnRspUserPasswordUpdate(CUstpFtdcUserPasswordUpdateField *pUserPassw
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -154,9 +154,9 @@ void TdApi::OnRspOrderInsert(CUstpFtdcInputOrderField *pInputOrder, CUstpFtdcRsp
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -175,9 +175,9 @@ void TdApi::OnRspOrderAction(CUstpFtdcOrderActionField *pOrderAction, CUstpFtdcR
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -196,9 +196,9 @@ void TdApi::OnRspQuoteInsert(CUstpFtdcInputQuoteField *pInputQuote, CUstpFtdcRsp
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -217,9 +217,9 @@ void TdApi::OnRspQuoteAction(CUstpFtdcQuoteActionField *pQuoteAction, CUstpFtdcR
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -238,9 +238,9 @@ void TdApi::OnRspForQuote(CUstpFtdcReqForQuoteField *pReqForQuote, CUstpFtdcRspI
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -259,9 +259,9 @@ void TdApi::OnRspMarginCombAction(CUstpFtdcInputMarginCombActionField *pInputMar
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -280,9 +280,9 @@ void TdApi::OnRspUserDeposit(CUstpFtdcstpUserDepositField *pstpUserDeposit, CUst
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -340,9 +340,9 @@ void TdApi::OnErrRtnOrderInsert(CUstpFtdcInputOrderField *pInputOrder, CUstpFtdc
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	this->task_queue.push(task);
 };
@@ -359,9 +359,9 @@ void TdApi::OnErrRtnOrderAction(CUstpFtdcOrderActionField *pOrderAction, CUstpFt
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	this->task_queue.push(task);
 };
@@ -417,9 +417,9 @@ void TdApi::OnErrRtnQuoteInsert(CUstpFtdcInputQuoteField *pInputQuote, CUstpFtdc
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	this->task_queue.push(task);
 };
@@ -436,9 +436,9 @@ void TdApi::OnErrRtnQuoteAction(CUstpFtdcQuoteActionField *pQuoteAction, CUstpFt
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	this->task_queue.push(task);
 };
@@ -507,9 +507,9 @@ void TdApi::OnRspQueryUserLogin(CUstpFtdcRspUserLoginField *pRspUserLogin, CUstp
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -528,9 +528,9 @@ void TdApi::OnRspQryOrder(CUstpFtdcOrderField *pOrder, CUstpFtdcRspInfoField *pR
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -549,9 +549,9 @@ void TdApi::OnRspQryTrade(CUstpFtdcTradeField *pTrade, CUstpFtdcRspInfoField *pR
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -570,9 +570,9 @@ void TdApi::OnRspQryUserInvestor(CUstpFtdcRspUserInvestorField *pRspUserInvestor
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -591,9 +591,9 @@ void TdApi::OnRspQryTradingCode(CUstpFtdcRspTradingCodeField *pRspTradingCode, C
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -612,9 +612,9 @@ void TdApi::OnRspQryInvestorAccount(CUstpFtdcRspInvestorAccountField *pRspInvest
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -633,9 +633,9 @@ void TdApi::OnRspQryInstrument(CUstpFtdcRspInstrumentField *pRspInstrument, CUst
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -654,9 +654,9 @@ void TdApi::OnRspQryExchange(CUstpFtdcRspExchangeField *pRspExchange, CUstpFtdcR
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -675,9 +675,9 @@ void TdApi::OnRspQryInvestorPosition(CUstpFtdcRspInvestorPositionField *pRspInve
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -696,9 +696,9 @@ void TdApi::OnRspQryComplianceParam(CUstpFtdcRspComplianceParamField *pRspCompli
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -717,9 +717,9 @@ void TdApi::OnRspQryInvestorFee(CUstpFtdcInvestorFeeField *pInvestorFee, CUstpFt
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -738,9 +738,9 @@ void TdApi::OnRspQryInvestorMargin(CUstpFtdcInvestorMarginField *pInvestorMargin
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -759,9 +759,9 @@ void TdApi::OnRspQryInvestorCombPosition(CUstpFtdcRspInvestorCombPositionField *
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -780,9 +780,9 @@ void TdApi::OnRspQryInvestorLegPosition(CUstpFtdcRspInvestorLegPositionField *pR
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -801,9 +801,9 @@ void TdApi::OnRspQryInstrumentGroup(CUstpFtdcRspInstrumentGroupField *pRspInstru
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -822,9 +822,9 @@ void TdApi::OnRspQryClientMarginCombType(CUstpFtdcRspClientMarginCombTypeField *
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -843,9 +843,9 @@ void TdApi::OnRspExecOrderInsert(CUstpFtdcInputExecOrderField *pInputExecOrder, 
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -864,9 +864,9 @@ void TdApi::OnRspExecOrderAction(CUstpFtdcInputExecOrderActionField *pInputExecO
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -898,9 +898,9 @@ void TdApi::OnErrRtnExecOrderInsert(CUstpFtdcInputExecOrderField *pInputExecOrde
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	this->task_queue.push(task);
 };
@@ -917,9 +917,9 @@ void TdApi::OnErrRtnExecOrderAction(CUstpFtdcInputExecOrderActionField *pInputEx
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	this->task_queue.push(task);
 };
@@ -949,9 +949,9 @@ void TdApi::OnRspQrySystemTime(CUstpFtdcRspQrySystemTimeField *pRspQrySystemTime
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -970,9 +970,9 @@ void TdApi::OnRspQryMarginPrefParam(CUstpFtdcRspQryMarginPrefParamField *pRspQry
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -991,9 +991,9 @@ void TdApi::OnRspDSUserCertification(CUstpFtdcDSUserCertRspDataField *pDSUserCer
 	}
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
@@ -1006,14 +1006,16 @@ void TdApi::OnRspDSProxySubmitInfo(CUstpFtdcRspInfoField *pRspInfo, int nRequest
 	task.task_name = ONRSPDSPROXYSUBMITINFO;
 	if (pRspInfo)
 	{
-		CUstpFtdcRspInfoField *task_data = new CUstpFtdcRspInfoField();
-		*task_data = *pRspInfo;
-		task.task_data = task_data;
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
 	}
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
 	this->task_queue.push(task);
 };
+
+
 
 
 
