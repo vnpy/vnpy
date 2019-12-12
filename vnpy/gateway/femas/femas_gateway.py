@@ -55,8 +55,6 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.utility import get_folder_path
 
-USTP_FTDC_PD_Long = "2"
-USTP_FTDC_PD_Short = "3"
 
 STATUS_FEMAS2VT = {
     USTP_FTDC_CAS_Submitted: Status.SUBMITTING,
@@ -72,6 +70,7 @@ DIRECTION_VT2FEMAS = {
     Direction.LONG: USTP_FTDC_D_Buy,
     Direction.SHORT: USTP_FTDC_D_Sell,
 }
+DIRECTION_FEMAS2VT = {v: k for k, v in DIRECTION_VT2FEMAS.items()}
 
 ORDERTYPE_VT2FEMAS = {
     OrderType.LIMIT: USTP_FTDC_OPT_LimitPrice,
@@ -85,10 +84,6 @@ OFFSET_VT2FEMAS = {
     Offset.CLOSEYESTERDAY: USTP_FTDC_OF_CloseToday,
 }
 OFFSET_FEMAS2VT = {v: k for k, v in OFFSET_VT2FEMAS.items()}
-
-DIRECTION_FEMAS2VT = {v: k for k, v in DIRECTION_VT2FEMAS.items()}
-DIRECTION_FEMAS2VT[USTP_FTDC_PD_Long] = Direction.LONG
-DIRECTION_FEMAS2VT[USTP_FTDC_PD_Short] = Direction.SHORT
 
 EXCHANGE_FEMAS2VT = {
     "CFFEX": Exchange.CFFEX,
@@ -114,14 +109,14 @@ class FemasGateway(BaseGateway):
     """
 
     default_setting = {
-        "userid": "",
-        "password": "",
-        "brokerid": "",
-        "td_address": "",
-        "md_address": "",
-        "appid": "",
-        "auth_code ": "",
-        "product_info": "",
+        "用户名": "",
+        "密码": "",
+        "经纪商代码": "",
+        "交易服务器": "",
+        "行情服务器": "",
+        "产品名称": "",
+        "授权编码": "",
+        "产品信息": "",
     }
 
     exchanges = list(EXCHANGE_FEMAS2VT.values())
@@ -135,20 +130,20 @@ class FemasGateway(BaseGateway):
 
     def connect(self, setting: dict):
         """"""
-        userid = setting["userid"]
-        password = setting["password"]
-        brokerid = setting["brokerid"]
-        td_address = setting["td_address"]
-        md_address = setting["md_address"]
+        userid = setting["用户名"]
+        password = setting["密码"]
+        brokerid = setting["经纪商代码"]
+        td_address = setting["交易服务器"]
+        md_address = setting["行情服务器"]
 
         if not td_address.startswith("tcp://"):
             td_address = "tcp://" + td_address
         if not md_address.startswith("tcp://"):
             md_address = "tcp://" + md_address
 
-        appid = setting["appid"]
-        auth_code = setting["auth_code "]
-        product_info = setting["product_info"]
+        appid = setting["产品名称"]
+        auth_code = setting["授权编码"]
+        product_info = setting["产品信息"]
 
         self.td_api.connect(td_address, userid, password, brokerid, auth_code, appid, product_info)
         self.md_api.connect(md_address, userid, password, brokerid)
