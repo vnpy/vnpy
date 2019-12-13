@@ -9,8 +9,7 @@ from vnpy.trader.object import OrderRequest, ContractData
 from ..base import APP_NAME, EVENT_OPTION_NEW_PORTFOLIO
 from ..engine import OptionEngine, PRICING_MODELS
 from .monitor import (
-    OptionMarketMonitor, OptionGreeksMonitor, OptionChainMonitor,
-    MonitorCell
+    OptionMarketMonitor, OptionGreeksMonitor, MonitorCell
 )
 
 
@@ -30,7 +29,6 @@ class OptionManager(QtWidgets.QWidget):
 
         self.market_monitor: OptionMarketMonitor = None
         self.greeks_monitor: OptionGreeksMonitor = None
-        self.chain_monitor: OptionChainMonitor = None
 
         self.docks: List[QtWidgets.QDockWidget] = []
 
@@ -61,16 +59,16 @@ class OptionManager(QtWidgets.QWidget):
         ]:
             button.setEnabled(False)
 
-        vbox = QtWidgets.QVBoxLayout()
-        vbox.addWidget(QtWidgets.QLabel("期权产品"))
-        vbox.addWidget(self.portfolio_combo)
-        vbox.addWidget(self.portfolio_button)
-        vbox.addWidget(self.market_button)
-        vbox.addWidget(self.greeks_button)
-        vbox.addWidget(self.manual_button)
-        vbox.addWidget(self.chain_button)
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addWidget(QtWidgets.QLabel("期权产品"))
+        hbox.addWidget(self.portfolio_combo)
+        hbox.addWidget(self.portfolio_button)
+        hbox.addWidget(self.market_button)
+        hbox.addWidget(self.greeks_button)
+        hbox.addWidget(self.manual_button)
+        hbox.addWidget(self.chain_button)
 
-        self.setLayout(vbox)
+        self.setLayout(hbox)
 
     def register_event(self):
         """"""

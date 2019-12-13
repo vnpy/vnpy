@@ -17,15 +17,7 @@ EVENT_OPTION_NEW_PORTFOLIO = "eOptionNewPortfolio"
 
 CHAIN_UNDERLYING_MAP = {
     "IO.CFFEX": "IF",
-    "HO.CFFEX": "IH",
-    "i_o.DCE": "i",
-    "m_o.DCE": "m",
-    "c_o.DCE": "c",
-    "cu_o.SHFE": "cu",
-    "ru_o.SHFE": "ru",
-    "SR.CZCE": "SR",
-    "CF.CZCE": "CF",
-    "TA.CZCE": "TA",
+    "HO.CFFEX": "IH"
 }
 
 
