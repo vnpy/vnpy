@@ -372,9 +372,8 @@ class FemasTdApi(TdApi):
         self.appid = ""
         self.product_info = ""
 
-        self.order_data = []
-        self.trade_data = []
         self.positions = {}
+        self.tradeids = set()
 
     def onFrontConnected(self):
         """"""
@@ -408,8 +407,7 @@ class FemasTdApi(TdApi):
             self.login_status = True
             self.gateway.write_log("交易服务器登录成功")
 
-            self.reqid += 1
-            self.query_investor(self.reqid)
+            self.query_investor()
         else:
             self.login_failed = True
 
@@ -418,13 +416,17 @@ class FemasTdApi(TdApi):
     def onRspQryUserInvestor(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         self.investorid = data['InvestorID']
+        self.gateway.write_log("投资者代码查询成功")
 
-        sleep(2)
+        sleep(1)    # Wait 1 second due to flow control
         self.reqid += 1
         self.reqQryInstrument({}, self.reqid)
 
     def onRspOrderInsert(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
+        if not error["ErrorID"]:
+            return
+
         orderid = data["UserOrderLocalID"]
         symbol = data["InstrumentID"]
         exchange = symbol_exchange_map[symbol]
@@ -446,6 +448,9 @@ class FemasTdApi(TdApi):
 
     def onRspOrderAction(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
+        if not error["ErrorID"]:
+            return
+
         self.gateway.write_error("交易撤单失败", error)
 
     def onRspQueryMaxOrderVolume(self, data: dict, error: dict, reqid: int, last: bool):
@@ -557,31 +562,14 @@ class FemasTdApi(TdApi):
         if last:
             self.gateway.write_log("合约信息查询成功")
 
-            for data in self.order_data:
-                self.onRtnOrder(data)
-            self.order_data.clear()
-
-            for data in self.trade_data:
-                self.onRtnTrade(data)
-            self.trade_data.clear()
-
     def onRtnOrder(self, data: dict):
         """
         Callback of order status update.
         """
-        self.localid = max(self.localid, int(data["UserOrderLocalID"]))
-
-        symbol = data["InstrumentID"]
-        exchange = symbol_exchange_map.get(symbol, "")
-        if not exchange:
-            self.order_data.append(data)
-            return
-
-        orderid = data["UserOrderLocalID"]
         order = OrderData(
-            symbol=symbol,
-            exchange=exchange,
-            orderid=orderid,
+            symbol=data["InstrumentID"],
+            exchange=EXCHANGE_FEMAS2VT[data["ExchangeID"]],
+            orderid=data["UserOrderLocalID"],
             direction=DIRECTION_FEMAS2VT[data["Direction"]],
             offset=OFFSET_FEMAS2VT[data["OffsetFlag"]],
             price=data["LimitPrice"],
@@ -591,23 +579,25 @@ class FemasTdApi(TdApi):
             time=data["InsertTime"],
             gateway_name=self.gateway_name,
         )
+
+        self.localid = max(self.localid, int(order.orderid))
         self.gateway.on_order(order)
 
     def onRtnTrade(self, data: dict):
         """
         Callback of trade status update.
         """
-        symbol = data["InstrumentID"]
-        exchange = symbol_exchange_map.get(symbol, "")
-        if not exchange:
-            self.trade_data.append(data)
+        # Filter duplicate trade data push
+        tradeid = data["TradeID"]
+        if tradeid in self.tradeids:
             return
+        self.tradeids.add(tradeid)
 
         trade = TradeData(
-            symbol=symbol,
-            exchange=exchange,
+            symbol=data["InstrumentID"],
+            exchange=EXCHANGE_FEMAS2VT[data["ExchangeID"]],
             orderid=data["UserOrderLocalID"],
-            tradeid=data["TradeID"],
+            tradeid=tradeid,
             direction=DIRECTION_FEMAS2VT[data["Direction"]],
             offset=OFFSET_FEMAS2VT[data["OffsetFlag"]],
             price=data["TradePrice"],
@@ -615,6 +605,7 @@ class FemasTdApi(TdApi):
             time=data["TradeTime"],
             gateway_name=self.gateway_name,
         )
+
         self.gateway.on_trade(trade)
 
     def connect(
@@ -689,19 +680,25 @@ class FemasTdApi(TdApi):
         self.reqid += 1
         self.reqUserLogin(req, self.reqid)
 
-    def query_investor(self, reqid):
+    def query_investor(self):
         """"""
+        self.reqid += 1
+
         req = {
             "BrokerID": self.brokerid,
             "UserID": self.userid,
         }
 
-        self.reqQryUserInvestor(req, reqid)
+        self.reqQryUserInvestor(req, self.reqid)
 
     def send_order(self, req: OrderRequest):
         """
         Send new order.
         """
+        if req.offset not in OFFSET_VT2FEMAS:
+            self.gateway.write_log("请选择开平方向")
+            return ""
+
         self.localid += 1
         orderid = str(self.localid).rjust(12, "0")
 
@@ -768,7 +765,7 @@ class FemasTdApi(TdApi):
         Query account balance data.
         """
         if not self.investorid:
-            self.query_investor()
+            return
 
         req = {
             "BrokerID": self.brokerid,
