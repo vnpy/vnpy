@@ -350,8 +350,6 @@ class ChainData:
 
     def update_underlying_tick(self):
         """"""
-        self.calculate_underlying_adjustment()
-
         for option in self.options.values():
             option.update_underlying_tick(self.underlying_adjustment)
 
