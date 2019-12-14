@@ -95,10 +95,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.pyd</TargetExt>
-    <IncludePath>C:\Users\yazha\Desktop\TestFemas\vnpy-master\vnpy\api\femas\include\pybind11;C:\vnstudio3\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\femas;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Miniconda3\include\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Miniconda3\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\femas;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Miniconda3\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\</OutDir>
-    <ReferencePath>C:\vnstudio3\libs;C:\Users\yazha\Desktop\TestFemas\vnpy-master\vnpy\api\femas\include\pybind11;$(ReferencePath)</ReferencePath>
+    <ReferencePath>$(ReferencePath)</ReferencePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -179,7 +179,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\vnstudio3\libs;C:\Users\yazha\Desktop\TestFemas\vnpy-master\vnpy\api\femas\include\pybind11;$(SolutionDir)..\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Miniconda3\libs;$(SolutionDir)..\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>USTPmduserapiAF.lib;USTPtraderapiAF.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
