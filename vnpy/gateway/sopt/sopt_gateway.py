@@ -217,7 +217,7 @@ class SoptMdApi(MdApi):
 
     def __init__(self, gateway):
         """Constructor"""
-        super(SoptMdApi, self).__init__()
+        super().__init__()
 
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
@@ -357,9 +357,7 @@ class SoptTdApi(TdApi):
 
     def __init__(self, gateway):
         """Constructor"""
-        super(SoptTdApi, self).__init__()
-
-        self.test = []
+        super().__init__()
 
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
