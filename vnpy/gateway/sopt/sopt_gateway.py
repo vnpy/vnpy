@@ -2,6 +2,7 @@
 """
 
 from datetime import datetime
+from time import sleep
 
 from vnpy.api.sopt import (
     MdApi,
@@ -319,6 +320,13 @@ class SoptMdApi(MdApi):
             self.registerFront(address)
             self.init()
             self.connect_status = True
+
+            # Sleep 1 second and check trigger callback manually
+            # (temp fix of the bug of Huaxi futures SOPT system)
+            sleep(1)
+            if not self.login_status:
+                self.onFrontConnected()
+
         # If already connected, then login immediately.
         elif not self.login_status:
             self.login()
