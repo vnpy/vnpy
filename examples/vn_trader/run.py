@@ -36,13 +36,14 @@ from vnpy.gateway.femas import FemasGateway
 # from vnpy.app.cta_strategy import CtaStrategyApp
 # from vnpy.app.csv_loader import CsvLoaderApp
 # from vnpy.app.algo_trading import AlgoTradingApp
-from vnpy.app.cta_backtester import CtaBacktesterApp
+# from vnpy.app.cta_backtester import CtaBacktesterApp
 # from vnpy.app.data_recorder import DataRecorderApp
 # from vnpy.app.risk_manager import RiskManagerApp
 # from vnpy.app.script_trader import ScriptTraderApp
 # from vnpy.app.rpc_service import RpcServiceApp
 # from vnpy.app.spread_trading import SpreadTradingApp
-from vnpy.app.portfolio_manager import PortfolioManagerApp
+# from vnpy.app.portfolio_manager import PortfolioManagerApp
+from vnpy.app.option_master import OptionMasterApp
 
 
 def main():
@@ -83,7 +84,7 @@ def main():
     # main_engine.add_gateway(BybitGateway)
 
     # main_engine.add_app(CtaStrategyApp)
-    main_engine.add_app(CtaBacktesterApp)
+    # main_engine.add_app(CtaBacktesterApp)
     # main_engine.add_app(CsvLoaderApp)
     # main_engine.add_app(AlgoTradingApp)
     # main_engine.add_app(DataRecorderApp)
@@ -91,7 +92,8 @@ def main():
     # main_engine.add_app(ScriptTraderApp)
     # main_engine.add_app(RpcServiceApp)
     # main_engine.add_app(SpreadTradingApp)
-    main_engine.add_app(PortfolioManagerApp)
+    # main_engine.add_app(PortfolioManagerApp)
+    main_engine.add_app(OptionMasterApp)
 
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()
