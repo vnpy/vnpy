@@ -303,6 +303,27 @@ class SoptMdApi(MdApi):
             ask_volume_1=data["AskVolume1"],
             gateway_name=self.gateway_name
         )
+
+        tick.bid_price_2 = adjust_price(data["BidPrice2"])
+        tick.bid_price_3 = adjust_price(data["BidPrice3"])
+        tick.bid_price_4 = adjust_price(data["BidPrice4"])
+        tick.bid_price_5 = adjust_price(data["BidPrice5"])
+
+        tick.ask_price_2 = adjust_price(data["AskPrice2"])
+        tick.ask_price_3 = adjust_price(data["AskPrice3"])
+        tick.ask_price_4 = adjust_price(data["AskPrice4"])
+        tick.ask_price_5 = adjust_price(data["AskPrice5"])
+
+        tick.bid_volume_2 = adjust_price(data["BidVolume2"])
+        tick.bid_volume_3 = adjust_price(data["BidVolume3"])
+        tick.bid_volume_4 = adjust_price(data["BidVolume4"])
+        tick.bid_volume_5 = adjust_price(data["BidVolume5"])
+
+        tick.ask_volume_2 = adjust_price(data["AskVolume2"])
+        tick.ask_volume_3 = adjust_price(data["AskVolume3"])
+        tick.ask_volume_4 = adjust_price(data["AskVolume4"])
+        tick.ask_volume_5 = adjust_price(data["AskVolume5"])
+
         self.gateway.on_tick(tick)
 
     def connect(self, address: str, userid: str, password: str, brokerid: int):
@@ -559,7 +580,7 @@ class SoptTdApi(TdApi):
 
             # For option only
             if contract.product == Product.OPTION:
-                contract.option_portfolio = data["UnderlyingInstrID"]
+                contract.option_portfolio = data["UnderlyingInstrID"] + "_O"
                 contract.option_underlying = (
                     data["UnderlyingInstrID"]
                     + "-"
