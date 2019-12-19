@@ -245,6 +245,7 @@ class ContractData(BaseData):
     option_type: OptionType = None
     option_expiry: datetime = None
     option_portfolio: str = ""
+    option_index: str = ""          # for identifying options with same strike price
 
     def __post_init__(self):
         """"""

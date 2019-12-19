@@ -551,6 +551,7 @@ class FemasTdApi(TdApi):
             contract.option_underlying = data["UnderlyingInstrID"]
             contract.option_type = OPTIONTYPE_FEMAS2VT.get(data["OptionsType"], None)
             contract.option_strike = data["StrikePrice"]
+            contract.option_index = str(data["StrikePrice"])
             contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d")
 
         self.gateway.on_contract(contract)
