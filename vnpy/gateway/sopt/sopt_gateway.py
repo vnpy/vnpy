@@ -591,6 +591,9 @@ class SoptTdApi(TdApi):
                 contract.option_strike = data["StrikePrice"]
                 contract.option_index = str(data["StrikePrice"])
                 contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d")
+                contract.option_index = get_option_index(
+                    contract.option_strike, data["InstrumentCode"]
+                )
 
             self.gateway.on_contract(contract)
 
@@ -830,3 +833,22 @@ class SoptTdApi(TdApi):
         """"""
         if self.connect_status:
             self.exit()
+
+
+def get_option_index(strike_price: float, exchange_instrument_id: str) -> str:
+    """"""
+    exchange_instrument_id = exchange_instrument_id.replace(" ", "")
+
+    if "M" in exchange_instrument_id:
+        n = exchange_instrument_id.index("M")
+    elif "A" in exchange_instrument_id:
+        n = exchange_instrument_id.index("A")
+    elif "B" in exchange_instrument_id:
+        n = exchange_instrument_id.index("B")
+    else:
+        return str(strike_price)
+
+    index = exchange_instrument_id[n:]
+    option_index = f"{strike_price:.3f}-{index}"
+
+    return option_index
