@@ -130,7 +130,6 @@ class Exchange(Enum):
     LOCAL = "LOCAL"         # For local generated data
 
 
-
 class Currency(Enum):
     """
     Currency.
