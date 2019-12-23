@@ -9,7 +9,7 @@ from ..engine import (
     EVENT_BACKTESTER_OPTIMIZATION_FINISHED,
     OptimizationSetting
 )
-from vnpy.trader.constant import Interval, Direction
+from vnpy.trader.constant import Interval, Direction, Offset
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtCore, QtWidgets, QtGui
 from vnpy.trader.ui.widget import BaseMonitor, BaseCell, DirectionCell, EnumCell
@@ -1075,11 +1075,17 @@ class CandleChartDialog(QtWidgets.QDialog):
             }
 
             if trade.direction == Direction.LONG:
-                scatter["symbol"] = "t1"
-                scatter["brush"] = pg.mkBrush((255, 255, 0))
+                scatter_symbol = "t1"   # Up arrow
             else:
-                scatter["symbol"] = "t"
-                scatter["brush"] = pg.mkBrush((0, 0, 255))
+                scatter_symbol = "t"    # Down arrow
+
+            if trade.offset == Offset.OPEN:
+                scatter_brush = pg.mkBrush((255, 255, 0))   # Yellow
+            else:
+                scatter_brush = pg.mkBrush((0, 0, 255))     # Blue
+
+            scatter["symbol"] = scatter_symbol
+            scatter["brush"] = scatter_brush
 
             trade_data.append(scatter)
 
