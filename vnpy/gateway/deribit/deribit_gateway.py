@@ -152,7 +152,7 @@ class DeribitWebsocketApi(WebsocketClient):
         self.callbacks = {
             "ticker": self.on_ticker,
             "book": self.on_orderbook,
-            "user": self.on_user_change,
+            "user": self.on_user_update,
         }
 
         self.ticks = {}
@@ -189,9 +189,8 @@ class DeribitWebsocketApi(WebsocketClient):
         params = {
             "channels": [
                 f"ticker.{symbol}.100ms",
-                f"user.changes.{symbol}.raw",
                 f"book.{symbol}.none.10.100ms",
-                f"user.portfolio.{symbol}"
+                f"user.changes.{symbol}.raw"
             ],
             "access_token": self.access_token
         }
@@ -367,7 +366,7 @@ class DeribitWebsocketApi(WebsocketClient):
         # Subscribe to account update
         params = {
             "channels": [
-                "user.portfolio.btc"
+                "user.portfolio.btc",
                 "user.portfolio.eth"
             ],
             "access_token": self.access_token
@@ -487,8 +486,12 @@ class DeribitWebsocketApi(WebsocketClient):
 
         self.gateway.on_order(copy(order))
 
-    def on_user_change(self, packet: dict):
+    def on_user_update(self, packet: dict):
         """"""
+        if "portfolio" in packet["params"]["channel"]:
+            self._on_account(packet)
+            return
+
         data = packet["params"]["data"]
 
         trades = data["trades"]
@@ -580,10 +583,9 @@ class DeribitWebsocketApi(WebsocketClient):
     def _on_account(self, packet: dict):
         """"""
         data = packet["params"]["data"]
-        currency = data["channel"].split(".")[-1]
 
         account = AccountData(
-            accountid=currency,
+            accountid=data["currency"],
             balance=data["balance"],
             frozen=data["balance"] - data["available_funds"],
             gateway_name=self.gateway_name,
