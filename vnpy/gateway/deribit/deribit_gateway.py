@@ -1,3 +1,5 @@
+from typing import Callable
+
 from vnpy.trader.object import (
     TickData,
     OrderData,
@@ -12,6 +14,7 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.constant import (
     Direction,
+    Offset,
     Exchange,
     OrderType,
     Product,
@@ -22,12 +25,11 @@ from vnpy.trader.gateway import BaseGateway
 from vnpy.api.websocket import WebsocketClient
 from vnpy.event import Event
 
-from time import sleep
 from datetime import datetime
 from copy import copy
 
-WEBSOCKET_HOST = 'wss：//www.deribit.com/ws/api/v2'
-SANDBOX_WEBSOCKET_HOST = 'wss://testapp.deribit.com/ws/api/v2'
+
+WEBSOCKET_HOST = "wss://www.deribit.com/ws/api/v2"
 
 PRODUCT_DERIBIT2VT = {
     "future": Product.FUTURES,
@@ -56,11 +58,10 @@ class DeribitGateway(BaseGateway):
     """"""
 
     default_setting = {
-        "user_id": "",
+        "key": "",
         "secret": "",
         "proxy_host": "",
-        "proxy_port": "",
-        "server": ["SAND_BOX", "REAL"],
+        "proxy_port": ""
     }
 
     exchanges = [Exchange.DERIBIT]
@@ -73,11 +74,10 @@ class DeribitGateway(BaseGateway):
 
     def connect(self, setting: dict):
         """"""
-        key = setting["user_id"]
+        key = setting["key"]
         secret = setting["secret"]
         proxy_host = setting["proxy_host"]
         proxy_port = setting["proxy_port"]
-        server = setting['server']
 
         if proxy_port.isdigit():
             proxy_port = int(proxy_port)
@@ -87,7 +87,6 @@ class DeribitGateway(BaseGateway):
         self.ws_api.connect(
             key,
             secret,
-            server,
             proxy_host,
             proxy_port,
         )
@@ -112,20 +111,12 @@ class DeribitGateway(BaseGateway):
         """
         Query holding positions.
         """
-        self.ws_api.query_position()
+        pass
 
     def query_history(self, req: HistoryRequest):
         """
         Query bar history data.
         """
-        pass
-
-    def init_query(self):
-        """"""
-        pass
-
-    def process_timer_event(self, event: Event):
-        """"""
         pass
 
     def close(self):
@@ -147,8 +138,15 @@ class DeribitWebsocketApi(WebsocketClient):
         self.secret = ""
         self.access_token = ""
 
-        self.id = 1
-        self.id_callback = {}
+        self.reqid = 1
+        self.reqid_callback_map = {}
+        self.reqid_currency_map = {}
+        self.reqid_order_map = {}
+
+        self.connect_time = 0
+        self.order_count = 1000000
+        self.local_sys_map = {}
+        self.sys_local_map = {}
 
         self.callbacks = {
             "ticker": self.on_ticker,
@@ -158,55 +156,28 @@ class DeribitWebsocketApi(WebsocketClient):
 
         self.ticks = {}
 
-        self.asks = {}
-        self.bids = {}
-
-        self.query_ins_done = False
-        self.query_pos_done = False
-        self.query_acc_done = False
-
     def connect(
         self,
         key: str,
         secret: str,
-        server: str,
         proxy_host: str,
         proxy_port: int
     ):
         """"""
-        self.gateway.write_log("开始连接ws接口")
         self.key = key
-        self.secret = secret.encode()
+        self.secret = secret
 
-        if server == "REAL":
-            self.init(WEBSOCKET_HOST, proxy_host, proxy_port)
-        else:
-            self.init(SANDBOX_WEBSOCKET_HOST, proxy_host, proxy_port)
+        self.connect_time = (
+            int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
+        )
 
+        self.init(WEBSOCKET_HOST, proxy_host, proxy_port)
         self.start()
-        sleep(5)
-
-        self.init_query()
-
-        self.gateway.write_log("Deribit接口连接成功")
-
-    def init_query(self):
-        """"""
-        self.query_instrument()
-        self.wait_instrument()
-
-        self.get_access_token()
-        self.wait_access_token()
-
-        self.query_position()
-        self.wait_position()
-
-        self.query_account()
-        self.wait_account()
 
     def subscribe(self, req: SubscribeRequest):
         """"""
         symbol = req.symbol
+
         self.ticks[symbol] = TickData(
             gateway_name=self.gateway_name,
             symbol=symbol,
@@ -214,258 +185,273 @@ class DeribitWebsocketApi(WebsocketClient):
             datetime=datetime.now(),
         )
 
-        channels = [
-            "ticker." + symbol + ".raw",
-            "user.changes." + symbol + ".raw",
-            "book." + symbol + ".raw",
-        ]
-        msg = {
-            "jsonrpc": "2.0",
-            "method": "private/subscribe",
-            "id": self.id,
-            "params": {
-                "channels": channels,
-                "access_token": self.access_token}
+        params = {
+            "channels": [
+                f"ticker.{symbol}.100ms",
+                f"user.changes.{symbol}.raw",
+                f"book.{symbol}.none.10.100ms",
+                f"user.portfolio.{symbol}"
+            ],
+            "access_token": self.access_token
         }
-        self.id += 1
 
-        self.send_packet(msg)
+        self.send_request("private/subscribe", params)
 
     def send_order(self, req: OrderRequest):
         """"""
-        orderid = self.id
+        self.order_count += 1
+        orderid = str(self.connect_time + self.order_count)
+
         order = req.create_order_data(orderid, self.gateway_name)
         self.gateway.on_order(order)
 
         side = DIRECTION_VT2DERIBIT[req.direction]
-        symbol = req.symbol
-        order_type = ORDERTYPE_VT2DERIBIT[req.type]
+        method = "private/" + side
 
-        msg = {
-            "jsonrpc": "2.0",
-            "id": self.id,
-            "method": "private/" + side,
-            "params": {
-                "instrument_name": symbol,
-                "amount": req.volume,
-                "type": order_type,
-                "label": orderid,
-            }
+        params = {
+            "instrument_name": req.symbol,
+            "amount": int(req.volume),
+            "type": ORDERTYPE_VT2DERIBIT[req.type],
+            "label": orderid,
+            "price": req.price
         }
-        self.id += 1
 
-        if req.type == OrderType.LIMIT:
-            msg['params']['price'] = req.price
+        if req.offset == Offset.CLOSE:
+            params["reduce_only"] = True
 
-        self.send_packet(msg)
+        reqid = self.send_request(
+            method,
+            params,
+            self.on_send_order
+        )
+        self.reqid_order_map[reqid] = order
 
         return order.vt_orderid
 
     def cancel_order(self, req: CancelRequest):
         """"""
-        msg = {
-            "jsonrpc": "2.0",
-            "id": self.id,
-            "method": "private/cancel",
-            "params": {
-                "order_id": req.orderid,
-                "access_token": self.access_token,
-            }
-        }
-        self.id_callback[self.id] = self.on_cancel_order
-        self.id += 1
+        sys_id = self.local_sys_map[req.orderid]
 
-        self.send_packet(msg)
+        params = {
+            "order_id": sys_id,
+            "access_token": self.access_token,
+        }
+
+        self.send_request(
+            "private/cancel",
+            params,
+            self.on_cancel_order
+        )
 
     def get_access_token(self):
         """
         use the access key and secret to get access token
         """
-        msg = {
-            "jsonrpc": "2.0",
-            "id": self.id,
-            "method": "public/auth",
-            "params": {
-                "grant_type": "client_credentials",
-                "client_id": self.key,
-                "client_secret": self.secret.decode()
-            }
+        params = {
+            "grant_type": "client_credentials",
+            "client_id": self.key,
+            "client_secret": self.secret
         }
-        self.id_callback[self.id] = self.on_access_token
-        self.id += 1
 
-        self.send_packet(msg)
+        self.send_request(
+            "public/auth",
+            params,
+            self.on_access_token
+        )
 
     def query_instrument(self):
         """"""
-        msg_btc = {
-            "jsonrpc": "2.0",
-            "id": self.id,
-            "method": "public/get_instruments",
-            "params": {
-                "currency": "BTC",
+        for currency in ["BTC", "ETH"]:
+            params = {
+                "currency": currency,
                 "expired": False,
             }
-        }
-        self.id_callback[self.id] = self.on_query_instrument
-        self.id += 1
 
-        msg_eth = {
-            "jsonrpc": "2.0",
-            "id": self.id,
-            "method": "public/get_instruments",
-            "params": {
-                "currency": "ETH",
-                "expired": False
-            }
-        }
-        self.id_callback[self.id] = self.on_query_instrument
-        self.id += 1
-
-        self.send_packet(msg_btc)
-        self.send_packet(msg_eth)
+            self.send_request(
+                "public/get_instruments",
+                params,
+                self.on_query_instrument
+            )
 
     def query_account(self):
         """"""
-        for curr in ['BTC', 'ETH']:
-            msg = {
-                "jsonrpc": "2.0",
-                "id": self.id,
-                "method": "private/get_deposits",
-                "params": {
-                    "currency": curr,
-                    "access_token": self.access_token}
+        for currency in ["BTC", "ETH"]:
+            params = {
+                "currency": currency,
+                "access_token": self.access_token
             }
-            self.send_packet(msg)
 
-            self.id_callback[self.id] = self.on_query_account
-            self.id += 1
+            self.send_request(
+                "private/get_account_summary",
+                params,
+                self.on_query_account
+            )
 
     def query_position(self):
         """"""
-        for kind in ['future', 'option']:
-            for curr in ['BTC', 'ETH']:
-                msg = {
-                    "jsonrpc": "2.0",
-                    "id": self.id,
-                    "method": "private/get_positions",
-                    "params": {
-                        "currency": curr,
-                        "kind": kind,
-                        "access_token": self.access_token,
-                    }
-                }
-                self.send_packet(msg)
+        for currency in ["BTC", "ETH"]:
+            params = {
+                "currency": currency,
+                "access_token": self.access_token
+            }
 
-                self.id_callback[self.id] = self.on_query_position
-                self.id += 1
+            self.send_request(
+                "private/get_positions",
+                params,
+                self.on_query_position
+            )
+
+    def on_connected(self):
+        """
+        Callback when websocket is connected successfully.
+        """
+        self.gateway.write_log("服务器连接成功")
+
+        self.get_access_token()
+        self.query_instrument()
+
+    def on_disconnected(self):
+        """
+        Callback when websocket connection is lost.
+        """
+        self.gateway.write_log("服务器连接断开")
 
     def on_packet(self, packet: dict):
         """
         callback when data is received and unpacked
         """
-        if 'id' in packet.keys():
-            packet_id = packet['id']
-            if packet_id in self.id_callback.keys():
-                callback = self.id_callback[packet_id]
+        if "id" in packet:
+            packet_id = packet["id"]
+
+            if packet_id in self.reqid_callback_map.keys():
+                callback = self.reqid_callback_map[packet_id]
                 callback(packet)
-        elif 'params' in packet.keys():
+
+        elif "params" in packet:
             channel = packet["params"]["channel"]
             kind = channel.split(".")[0]
+
             callback = self.callbacks[kind]
             callback(packet)
 
     def on_access_token(self, packet: dict):
         """"""
-        data = packet['result']
-        self.access_token = data['access_token']
+        data = packet["result"]
+        self.access_token = data["access_token"]
 
-    def on_query_instrument(self, packet: list):
+        self.gateway.write_log("服务器登录成功")
+
+        self.query_position()
+        self.query_account()
+
+        # Subscribe to account update
+        params = {
+            "channels": [
+                "user.portfolio.btc"
+                "user.portfolio.eth"
+            ],
+            "access_token": self.access_token
+        }
+
+        self.send_request("private/subscribe", params)
+
+    def on_query_instrument(self, packet: dict):
         """"""
-        data = packet['result']
-        for d in data:
-            product = PRODUCT_DERIBIT2VT[d['kind']]
-            if product == Product.FUTURES:
-                contract = ContractData(
-                    symbol=d['instrument_name'],
-                    exchange=Exchange.DERIBIT,
-                    name=d['instrument_name'],
-                    product=product,
-                    pricetick=d['tick_size'],
-                    size=d['contract_size'],
-                    min_volume=d['min_trade_amount'],
-                    net_position=True,
-                    history_data=False,
-                    gateway_name=self.gateway_name,
-                )
-            else:
-                expiry = datetime.fromtimestamp(d['expiration_timestamp'] / 1000)
-                option_type = OPTIONTYPE_DERIBIT2VT[d['option_type']]
-                contract = ContractData(
-                    symbol=d['instrument_name'],
-                    exchange=Exchange.DERIBIT,
-                    name=d['instrument_name'],
-                    product=product,
-                    pricetick=d['tick_size'],
-                    size=d['contract_size'],
-                    min_volume=d['min_trade_amount'],
-                    option_strike=d['strike'],
-                    option_underlying=d['base_currency'],
-                    option_type=option_type,
-                    option_expiry=expiry,
-                    gateway_name=self.gateway_name,
+        currency = self.reqid_currency_map[packet["id"]]
+
+        for d in packet["result"]:
+            contract = ContractData(
+                symbol=d["instrument_name"],
+                exchange=Exchange.DERIBIT,
+                name=d["instrument_name"],
+                product=PRODUCT_DERIBIT2VT[d["kind"]],
+                pricetick=d["tick_size"],
+                size=d["contract_size"],
+                min_volume=d["min_trade_amount"],
+                net_position=True,
+                history_data=False,
+                gateway_name=self.gateway_name,
+            )
+
+            if contract.product == Product.OPTION:
+                contract.option_strike = d["strike"]
+                contract.option_underlying = d["base_currency"]
+                contract.option_type = OPTIONTYPE_DERIBIT2VT[d["option_type"]]
+                contract.option_expiry = datetime.fromtimestamp(
+                    d["expiration_timestamp"] / 1000
                 )
 
             self.gateway.on_contract(contract)
 
-        self.query_ins_done = True
+        self.gateway.write_log(f"{currency}合约信息查询成功")
 
-    def on_query_position(self, packet: list):
+    def on_query_position(self, packet: dict):
         """"""
-        data = packet['result']
+        data = packet["result"]
+        currency = self.reqid_currency_map[packet["id"]]
+
         for pos in data:
             position = PositionData(
-                symbol=pos['instrument_name'],
+                symbol=pos["instrument_name"],
                 exchange=Exchange.DERIBIT,
                 direction=Direction.NET,
-                volume=pos['size'],
-                pnl=float(pos['floating_profit_loss']),
+                volume=pos["size"],
+                pnl=float(pos["floating_profit_loss"]),
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_position(position)
 
-        self.query_pos_done = True
+        self.gateway.write_log(f"{currency}持仓查询成功")
 
     def on_query_account(self, packet: dict):
         """"""
-        data = packet['result']
-        data = data['data']
-        for account in data:
-            Account = AccountData(
-                gateway_name=self.gateway_name,
-                accountid=account['address'],
-                balance=account['amount'],
-            )
-            self.gateway.on_account(copy(Account))
+        data = packet["result"]
+        currency = data["currency"]
 
-        self.query_acc_done = True
+        account = AccountData(
+            accountid=currency,
+            balance=data["balance"],
+            frozen=data["balance"] - data["available_funds"],
+            gateway_name=self.gateway_name,
+        )
+        self.gateway.on_account(account)
+
+        self.gateway.write_log(f"{currency}资金查询成功")
+
+    def on_send_order(self, packet: dict):
+        """"""
+        error = packet.get("error", None)
+        if not error:
+            return
+
+        msg = error["message"]
+        reason = error["data"]["reason"]
+        code = error["code"]
+
+        self.gateway.write_log(
+            f"委托失败，代码：{code}，类型：{msg}，原因：{reason}"
+        )
+
+        order = self.reqid_order_map[packet["id"]]
+        order.status = Status.REJECTED
+        self.gateway.on_order(order)
 
     def on_cancel_order(self, packet: dict):
         """"""
-        data = packet['result']
-        orderid = data['label']
+        data = packet["result"]
+        orderid = data["label"]
 
         order = OrderData(
-            symbol=data['instrument_name'],
+            symbol=data["instrument_name"],
             exchange=Exchange.DERIBIT,
-            type=ORDERTYPE_DERIBIT2VT[data['order_type']],
+            type=ORDERTYPE_DERIBIT2VT[data["order_type"]],
             orderid=orderid,
-            direction=DIRECTION_DERIBIT2VT[data['direction']],
-            price=float(data['price']),
-            volume=float(data['amount']),
-            traded=float(data['filled_amount']),
-            time=str(datetime.fromtimestamp(data['last_update_timestamp'] / 1000)),
-            status=STATUS_DERIBIT2VT[data['order_state']],
+            direction=DIRECTION_DERIBIT2VT[data["direction"]],
+            price=float(data["price"]),
+            volume=float(data["amount"]),
+            traded=float(data["filled_amount"]),
+            time=str(datetime.fromtimestamp(data["last_update_timestamp"] / 1000)),
+            status=STATUS_DERIBIT2VT[data["order_state"]],
             gateway_name=self.gateway_name,
         )
 
@@ -473,11 +459,11 @@ class DeribitWebsocketApi(WebsocketClient):
 
     def on_user_change(self, packet: dict):
         """"""
-        data = packet['params']['data']
+        data = packet["params"]["data"]
 
-        trades = data['trades']
-        positions = data['positions']
-        orders = data['orders']
+        trades = data["trades"]
+        positions = data["positions"]
+        orders = data["orders"]
 
         if orders:
             for order in orders:
@@ -485,7 +471,7 @@ class DeribitWebsocketApi(WebsocketClient):
 
         if trades:
             for trade in trades:
-                self._on_trade(trade, orders[0]['order_id'])
+                self._on_trade(trade, orders[0]["order_id"])
 
         if positions:
             for position in positions:
@@ -493,35 +479,48 @@ class DeribitWebsocketApi(WebsocketClient):
 
     def _on_order(self, data: dict):
         """"""
-        orderid = data['label']
+        if data["label"]:
+            local_id = data["label"]
+        else:
+            local_id = data["order_id"]
+
+        sys_id = data["order_id"]
+        self.local_sys_map[local_id] = sys_id
+        self.sys_local_map[sys_id] = local_id
 
         order = OrderData(
-            symbol=data['instrument_name'],
+            symbol=data["instrument_name"],
             exchange=Exchange.DERIBIT,
-            type=ORDERTYPE_DERIBIT2VT[data['order_type']],
-            orderid=orderid,
-            direction=DIRECTION_DERIBIT2VT[data['direction']],
-            price=float(data['price']),
-            volume=float(data['amount']),
-            traded=float(data['filled_amount']),
-            time=str(datetime.fromtimestamp(data['last_update_timestamp'] / 1000)),
-            status=STATUS_DERIBIT2VT[data['order_state']],
+            type=ORDERTYPE_DERIBIT2VT[data["order_type"]],
+            orderid=local_id,
+            direction=DIRECTION_DERIBIT2VT[data["direction"]],
+            price=float(data["price"]),
+            volume=float(data["amount"]),
+            traded=float(data["filled_amount"]),
+            time=str(datetime.fromtimestamp(data["last_update_timestamp"] / 1000)),
+            status=STATUS_DERIBIT2VT[data["order_state"]],
             gateway_name=self.gateway_name,
         )
 
-        self.gateway.on_order(copy(order))
+        if data["reduce_only"]:
+            order.offset = Offset.CLOSE
+
+        self.gateway.on_order(order)
 
     def _on_trade(self, data: list, orderid):
         """"""
+        sys_id = data["order_id"]
+        local_id = self.sys_local_map[sys_id]
+
         trade = TradeData(
-            symbol=data['instrument_name'],
+            symbol=data["instrument_name"],
             exchange=Exchange.DERIBIT,
-            orderid=orderid,
-            tradeid=data['trade_id'],
-            direction=DIRECTION_DERIBIT2VT[data['direction']],
-            price=float(data['price']),
-            volume=float(data['amount']),
-            time=str(datetime.fromtimestamp(data['timestamp'] / 1000)),
+            orderid=local_id,
+            tradeid=data["trade_id"],
+            direction=DIRECTION_DERIBIT2VT[data["direction"]],
+            price=float(data["price"]),
+            volume=float(data["amount"]),
+            time=str(datetime.fromtimestamp(data["timestamp"] / 1000)),
             gateway_name=self.gateway_name,
         )
 
@@ -530,142 +529,91 @@ class DeribitWebsocketApi(WebsocketClient):
     def _on_position(self, data: dict):
         """"""
         pos = PositionData(
-            symbol=data['instrument_name'],
+            symbol=data["instrument_name"],
             exchange=Exchange.DERIBIT,
             direction=Direction.NET,
-            volume=data['size'],
-            price=data['settlement_price'],
-            pnl=float(data['floating_profit_loss']),
+            volume=data["size"],
+            price=data["average_price"],
+            pnl=float(data["floating_profit_loss"]),
             gateway_name=self.gateway_name,
         )
 
         self.gateway.on_position(pos)
 
+    def _on_account(self, packet: dict):
+        """"""
+        data = packet["params"]["data"]
+        currency = data["channel"].split(".")[-1]
+
+        account = AccountData(
+            accountid=currency,
+            balance=data["balance"],
+            frozen=data["balance"] - data["available_funds"],
+            gateway_name=self.gateway_name,
+        )
+        self.gateway.on_account(account)
+
     def on_ticker(self, packet: dict):
         """"""
-        data = packet['params']['data']
-        symbol = data['instrument_name']
+        data = packet["params"]["data"]
+
+        symbol = data["instrument_name"]
         tick = self.ticks.get(symbol, None)
         if not tick:
             return
 
-        tick.bid_price_1 = data['best_bid_price']
-        tick.bid_volume_1 = data['best_bid_amount']
-        tick.ask_price_1 = data['best_ask_price']
-        tick.ask_volume_1 = data['best_ask_amount']
-        tick.high_price = data['stats']['high']
-        tick.low_price = data['stats']['low']
-        tick.volume = data['stats']['volume']
-        tick.datetime = datetime.fromtimestamp(data['timestamp'] / 1000)
+        tick.last_price = data["last_price"]
+        tick.high_price = data["stats"]["high"]
+        tick.low_price = data["stats"]["low"]
+        tick.volume = data["stats"]["volume"]
+        tick.datetime = datetime.fromtimestamp(data["timestamp"] / 1000)
 
         self.gateway.on_tick(copy(tick))
 
     def on_orderbook(self, packet: dict):
         """"""
-        data = packet['params']['data']
-        if 'prev_change_id' not in data.keys():
-            self.on_book_snapshot(packet)
-        else:
-            self.on_book_change(packet)
+        data = packet["params"]["data"]
 
-    def on_book_snapshot(self, packet: dict):
-        """"""
-        ins = packet['params']['data']['instrument_name']
-        asks = packet['params']['data']['asks']
-        bids = packet['params']['data']['bids']
+        symbol = data["instrument_name"]
+        bids = data["bids"]
+        asks = data["asks"]
 
-        self.asks[ins] = {}
-        self.bids[ins] = {}
-        Asks = self.asks[ins]
-        Bids = self.bids[ins]
+        tick = self.ticks[symbol]
+        for i in range(5):
+            ix = i + 1
 
-        for ask in asks:
-            Asks[ask[1]] = ask[2]
+            bp, bv = bids[i]
+            ap, av = asks[i]
 
-        for bid in bids:
-            Bids[bid[1]] = bid[2]
-
-    def on_book_change(self, packet: dict):
-        """"""
-        ins = packet['params']['data']['instrument_name']
-        asks = packet['params']['data']['asks']
-        bids = packet['params']['data']['bids']
-
-        Asks = self.asks[ins]
-        Bids = self.bids[ins]
-
-        if(len(asks)):
-            for ask in asks:
-                if ask[0] == 'new':
-                    Asks[ask[1]] = ask[2]
-                elif ask[0] == 'delete':
-                    del Asks[ask[1]]
-                else:
-                    Asks[ask[1]] = ask[2]
-
-        if(len(bids)):
-            for bid in bids:
-                if bid[0] == 'new':
-                    Bids[bid[1]] = bid[2]
-                elif bid[0] == 'delete':
-                    del Bids[bid[1]]
-                else:
-                    Bids[bid[1]] = bid[2]
-
-        tick = self.ticks[ins]
-
-        bids_keys = Bids.keys()
-        bids_keys = sorted(bids_keys, reverse=True)
-        tick.bid_price_1 = bids_keys[0]
-        tick.bid_price_2 = bids_keys[1]
-        tick.bid_price_3 = bids_keys[2]
-        tick.bid_price_4 = bids_keys[3]
-        tick.bid_price_5 = bids_keys[4]
-        tick.bid_volume_1 = Bids[bids_keys[0]]
-        tick.bid_volume_2 = Bids[bids_keys[1]]
-        tick.bid_volume_3 = Bids[bids_keys[2]]
-        tick.bid_volume_4 = Bids[bids_keys[3]]
-        tick.bid_volume_5 = Bids[bids_keys[4]]
-
-        asks_keys = Asks.keys()
-        asks_keys = sorted(asks_keys)
-        tick.ask_price_1 = asks_keys[0]
-        tick.ask_price_2 = asks_keys[1]
-        tick.ask_price_3 = asks_keys[2]
-        tick.ask_price_4 = asks_keys[3]
-        tick.ask_price_5 = asks_keys[4]
-        tick.ask_volume_1 = Asks[asks_keys[0]]
-        tick.ask_volume_2 = Asks[asks_keys[1]]
-        tick.ask_volume_3 = Asks[asks_keys[2]]
-        tick.ask_volume_4 = Asks[asks_keys[3]]
-        tick.ask_volume_5 = Asks[asks_keys[4]]
-
-        tick.datetime = datetime.fromtimestamp(packet['params']['data']['timestamp'] / 1000)
+            setattr(tick, f"bid_price_{ix}", bp)
+            setattr(tick, f"bid_volume_{ix}", bv)
+            setattr(tick, f"ask_price_{ix}", ap)
+            setattr(tick, f"ask_volume_{ix}", av)
 
         self.gateway.on_tick(copy(tick))
 
-    def wait_access_token(self):
+    def send_request(
+        self,
+        method: str,
+        params: dict,
+        callback: Callable = None
+    ):
         """"""
-        while not self.access_token:
-            sleep(0.5)
+        self.reqid += 1
 
-    def wait_instrument(self):
-        """"""
-        while not self.query_ins_done:
-            sleep(0.5)
+        msg = {
+            "jsonrpc": "2.0",
+            "id": self.reqid,
+            "method": method,
+            "params": params
+        }
 
-        self.gateway.write_log("合约信息查询成功")
+        self.send_packet(msg)
 
-    def wait_position(self):
-        """"""
-        while not self.query_pos_done:
-            sleep(0.5)
+        if callback:
+            self.reqid_callback_map[self.reqid] = callback
 
-        self.gateway.write_log("持仓查询成功")
+        if "currency" in params:
+            self.reqid_currency_map[self.reqid] = params["currency"]
 
-    def wait_account(self):
-        """"""
-        while not self.query_acc_done:
-            sleep(0.5)
-
-        self.gateway.write_log("账户查询成功")
+        return self.reqid
