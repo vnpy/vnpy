@@ -387,7 +387,7 @@ class ArrayManager(object):
         if array:
             return result
         return result[-1]
-    
+
     def wma(self, n, array=False):
         """
         WMA.
@@ -587,7 +587,7 @@ class ArrayManager(object):
         if array:
             return result
         return result[-1]
-    
+
     def willr(self, n, array=False):
         """
         WILLR.
@@ -595,7 +595,7 @@ class ArrayManager(object):
         result = talib.WILLR(self.high, self.low, self.close, n)
         if array:
             return result
-        return result[-1] 
+        return result[-1]
 
     def ultosc(self, array=False):
         """

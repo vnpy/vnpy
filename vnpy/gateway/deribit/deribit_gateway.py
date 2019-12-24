@@ -23,7 +23,6 @@ from vnpy.trader.constant import (
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.api.websocket import WebsocketClient
-from vnpy.event import Event
 
 from datetime import datetime
 from copy import copy
@@ -393,7 +392,9 @@ class DeribitWebsocketApi(WebsocketClient):
             )
 
             if contract.product == Product.OPTION:
+                contract.option_portfolio = d["base_currency"]
                 contract.option_strike = d["strike"]
+                contract.option_index = str(d["strike"])
                 contract.option_underlying = d["base_currency"]
                 contract.option_type = OPTIONTYPE_DERIBIT2VT[d["option_type"]]
                 contract.option_expiry = datetime.fromtimestamp(
@@ -443,7 +444,7 @@ class DeribitWebsocketApi(WebsocketClient):
         currency = self.reqid_currency_map[packet["id"]]
 
         for d in data:
-            self._on_order(d)
+            self.on_order(d)
 
         self.gateway.write_log(f"{currency}委托查询成功")
 
@@ -489,7 +490,7 @@ class DeribitWebsocketApi(WebsocketClient):
     def on_user_update(self, packet: dict):
         """"""
         if "portfolio" in packet["params"]["channel"]:
-            self._on_account(packet)
+            self.on_account(packet)
             return
 
         data = packet["params"]["data"]
@@ -500,17 +501,17 @@ class DeribitWebsocketApi(WebsocketClient):
 
         if orders:
             for order in orders:
-                self._on_order(order)
+                self.on_order(order)
 
         if trades:
             for trade in trades:
-                self._on_trade(trade, orders[0]["order_id"])
+                self.on_trade(trade, orders[0]["order_id"])
 
         if positions:
             for position in positions:
-                self._on_position(position)
+                self.on_position(position)
 
-    def _on_order(self, data: dict):
+    def on_order(self, data: dict):
         """"""
         if data["label"]:
             local_id = data["label"]
@@ -547,7 +548,7 @@ class DeribitWebsocketApi(WebsocketClient):
             if order.is_active():
                 self.cancel_order(req)
 
-    def _on_trade(self, data: list, orderid):
+    def on_trade(self, data: list, orderid):
         """"""
         sys_id = data["order_id"]
         local_id = self.sys_local_map[sys_id]
@@ -566,7 +567,7 @@ class DeribitWebsocketApi(WebsocketClient):
 
         self.gateway.on_trade(trade)
 
-    def _on_position(self, data: dict):
+    def on_position(self, data: dict):
         """"""
         pos = PositionData(
             symbol=data["instrument_name"],
@@ -580,7 +581,7 @@ class DeribitWebsocketApi(WebsocketClient):
 
         self.gateway.on_position(pos)
 
-    def _on_account(self, packet: dict):
+    def on_account(self, packet: dict):
         """"""
         data = packet["params"]["data"]
 
