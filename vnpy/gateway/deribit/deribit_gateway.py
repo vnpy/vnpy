@@ -147,6 +147,7 @@ class DeribitWebsocketApi(WebsocketClient):
         self.order_count = 1000000
         self.local_sys_map = {}
         self.sys_local_map = {}
+        self.cancel_requests = {}
 
         self.callbacks = {
             "ticker": self.on_ticker,
@@ -230,6 +231,10 @@ class DeribitWebsocketApi(WebsocketClient):
 
     def cancel_order(self, req: CancelRequest):
         """"""
+        if req.orderid not in self.local_sys_map:
+            self.cancel_requests[req.orderid] = req
+            return
+
         sys_id = self.local_sys_map[req.orderid]
 
         params = {
@@ -531,6 +536,13 @@ class DeribitWebsocketApi(WebsocketClient):
             order.offset = Offset.CLOSE
 
         self.gateway.on_order(order)
+
+        # Send cancel requests if necessary
+        if order.orderid in self.cancel_requests:
+            req = self.cancel_requests.pop(order.orderid)
+
+            if order.is_active():
+                self.cancel_order(req)
 
     def _on_trade(self, data: list, orderid):
         """"""
