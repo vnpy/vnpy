@@ -301,6 +301,20 @@ class DeribitWebsocketApi(WebsocketClient):
                 self.on_query_position
             )
 
+    def query_order(self):
+        """"""
+        for currency in ["BTC", "ETH"]:
+            params = {
+                "currency": currency,
+                "access_token": self.access_token
+            }
+
+            self.send_request(
+                "private/get_open_orders_by_currency",
+                params,
+                self.on_query_order
+            )
+
     def on_connected(self):
         """
         Callback when websocket is connected successfully.
@@ -343,6 +357,7 @@ class DeribitWebsocketApi(WebsocketClient):
 
         self.query_position()
         self.query_account()
+        self.query_order()
 
         # Subscribe to account update
         params = {
@@ -417,6 +432,16 @@ class DeribitWebsocketApi(WebsocketClient):
         self.gateway.on_account(account)
 
         self.gateway.write_log(f"{currency}资金查询成功")
+
+    def on_query_order(self, packet: dict):
+        """"""
+        data = packet["result"]
+        currency = self.reqid_currency_map[packet["id"]]
+
+        for d in data:
+            self._on_order(d)
+
+        self.gateway.write_log(f"{currency}委托查询成功")
 
     def on_send_order(self, packet: dict):
         """"""
