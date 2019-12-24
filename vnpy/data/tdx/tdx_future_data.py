@@ -26,7 +26,7 @@ from pytdx.exhq import TdxExHq_API
 from vnpy.trader.constant import Exchange
 from vnpy.trader.object import BarData
 from vnpy.trader.utility import (get_underlying_symbol, get_full_symbol, get_trading_date, load_json, save_json)
-from vnpy.data.tdx.tdx_common import (TDX_FUTURE_HOSTS, PERIOD_MAPPING)
+from vnpy.data.tdx.tdx_common import (lru_cache, TDX_FUTURE_HOSTS, PERIOD_MAPPING)
 
 
 # 每个周期包含多少分钟 (估算值, 没考虑夜盘和10:15的影响)
@@ -78,7 +78,7 @@ def save_cache_ip(best_ip: dict):
     config_file_name = os.path.abspath(os.path.join(os.path.dirname(__file__), 'tdx_config.json'))
     save_json(filename=config_file_name, data=best_ip)
 
-
+@lru_cache()
 def get_tdx_marketid(symbol):
     """普通合约/指数合约=》tdx合约所在市场id"""
     underlying_symbol = get_underlying_symbol(symbol)
@@ -153,7 +153,9 @@ class TdxFutureData(object):
             return
 
     # ----------------------------------------------------------------------
-    def ping(self, ip, port=7709):
+    def ping(self,
+             ip: str,
+             port: int = 7709):
         """
         ping行情服务器
         :param ip:
@@ -219,7 +221,12 @@ class TdxFutureData(object):
                 self.symbol_market_dict.update({tdx_symbol: tdx_market_id})
 
     # ----------------------------------------------------------------------
-    def get_bars(self, symbol, period, callback, bar_is_completed=False, bar_freq=1, start_dt=None):
+    def get_bars(self,
+                 symbol: str,
+                 period: str,
+                 callback,
+                 bar_freq: int = 1,
+                 start_dt: datetime = None):
         """
         返回k线数据
         symbol：合约
@@ -238,7 +245,7 @@ class TdxFutureData(object):
             self.write_error(u'{} 周期{}不在下载清单中: {}'.format(datetime.now(), period, list(PERIOD_MAPPING.keys())))
             return False, ret_bars
 
-        # tdx_period = PERIOD_MAPPING.get(period)
+        tdx_period = PERIOD_MAPPING.get(period)
 
         if start_dt is None:
             self.write_log(u'没有设置开始时间，缺省为10天前')
@@ -258,7 +265,7 @@ class TdxFutureData(object):
             _pos = 0
             while _start_date > qry_start_date:
                 _res = self.api.get_instrument_bars(
-                    PERIOD_MAPPING[period],
+                    tdx_period,
                     self.symbol_market_dict.get(tdx_index_symbol, 0),
                     tdx_symbol,
                     _pos,
@@ -334,10 +341,10 @@ class TdxFutureData(object):
                     add_bar.date = row['date']
                     add_bar.time = row['time']
                     add_bar.trading_date = row['trading_date']
-                    add_bar.open = float(row['open'])
-                    add_bar.high = float(row['high'])
-                    add_bar.low = float(row['low'])
-                    add_bar.close = float(row['close'])
+                    add_bar.open_price = float(row['open'])
+                    add_bar.high_price = float(row['high'])
+                    add_bar.low_price = float(row['low'])
+                    add_bar.close_price = float(row['close'])
                     add_bar.volume = float(row['volume'])
                     add_bar.openInterest = float(row['open_interest'])
                 except Exception as ex:
@@ -372,7 +379,7 @@ class TdxFutureData(object):
             self.connect(is_reconnect=True)
             return False, ret_bars
 
-    def get_price(self, symbol):
+    def get_price(self, symbol: str):
         """获取最新价格"""
         tdx_symbol = symbol.upper().replace('_', '')
 
@@ -508,7 +515,7 @@ class TdxFutureData(object):
             _datas = []
             _pos = 0
 
-            while(True):
+            while True:
                 _res = self.api.get_transaction_data(
                     market=self.symbol_market_dict.get(tdx_index_symbol, 0),
                     code=symbol,
@@ -601,18 +608,22 @@ class TdxFutureData(object):
 
         return None
 
-    def get_history_transaction_data(self, symbol, date, cache_folder=None):
+    def get_history_transaction_data(self,
+                                     symbol: str,
+                                     trading_date,
+                                     cache_folder:str = None):
         """获取当某一交易日的历史成交记录"""
         ret_datas = []
-        if isinstance(date, datetime):
-            date = date.strftime('%Y%m%d')
-        if isinstance(date, str):
-            date = int(date)
+        # trading_date, 转换为数字类型得日期
+        if isinstance(trading_date, datetime):
+            trading_date = trading_date.strftime('%Y%m%d')
+        if isinstance(trading_date, str):
+            trading_date = int(trading_date.replace('-', ''))
 
         self.connect()
 
         cache_symbol = symbol
-        cache_date = str(date)
+        cache_date = str(trading_date)
 
         max_data_size = sys.maxsize
         symbol = symbol.upper()
@@ -634,18 +645,18 @@ class TdxFutureData(object):
                 self.write_log(u'使用缓存文件')
                 return True, buffer_data
 
-        self.write_log(u'开始下载{} 历史{}分笔数据'.format(date, symbol))
+        self.write_log(u'开始下载{} 历史{}分笔数据'.format(trading_date, symbol))
         cur_trading_date = get_trading_date()
-        if date == int(cur_trading_date.replace('-', '')):
+        if trading_date == int(cur_trading_date.replace('-', '')):
             return self.get_transaction_data(symbol)
         try:
             _datas = []
             _pos = 0
 
-            while(True):
+            while True:
                 _res = self.api.get_history_transaction_data(
                     market=self.symbol_market_dict.get(tdx_index_symbol, 0),
-                    date=date,
+                    trading_date=trading_date,
                     code=symbol,
                     start=_pos,
                     count=q_size)
@@ -689,7 +700,7 @@ class TdxFutureData(object):
                     break
 
             if len(_datas) == 0:
-                self.write_error(u'{}分笔成交数据获取为空'.format(date))
+                self.write_error(u'{}分笔成交数据获取为空'.format(trading_date))
                 return False, _datas
 
             # 缓存文件
@@ -708,20 +719,8 @@ class TdxFutureData(object):
             return False, ret_datas
 
 
-class FakeStrategy(object):
-
-    def write_log(self, content, level=INFO):
-        if level == INFO:
-            print(content)
-        else:
-            print(content, file=sys.stderr)
-
-    def display_bar(self, bar, bar_is_completed=True, freq=1):
-        print(u'{} {}'.format(bar.vtSymbol, bar.datetime))
-
-
 if __name__ == "__main__":
-
+    from .tdx_common import FakeStrategy
     t1 = FakeStrategy()
     t2 = FakeStrategy()
     # 创建API对象
@@ -780,6 +779,6 @@ if __name__ == "__main__":
     #     print(r)
 
     # 获取历史分时数据
-    ret, result = api_01.get_history_transaction_data('J99', '20191009')
+    ret, result = api_01.get_history_transaction_data('rb1905', '20190109')
     for r in result[0:10] + result[-10:]:
         print(r)

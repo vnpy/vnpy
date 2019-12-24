@@ -1,6 +1,11 @@
 # encoding: UTF-8
 
+import sys
+import os
+import pickle
+import bz2
 from functools import lru_cache
+from logging import INFO, ERROR
 
 
 @lru_cache()
@@ -58,3 +63,37 @@ TDX_FUTURE_HOSTS = [
     {"ip": '218.80.248.229', 'port': 7721, "name": "备用服务器1"},
     {"ip": '124.74.236.94', 'port': 7721, "name": "备用服务器2"},
     {'ip': '58.246.109.27', 'port': 7721, "name": "备用服务器3"}]
+
+
+def get_cache_config(config_file_name):
+    """获取本地缓存的配置地址信息"""
+    config_file_name = os.path.abspath(os.path.join(os.path.dirname(__file__), config_file_name))
+    config = {}
+    if not os.path.exists(config_file_name):
+        return config
+    with bz2.BZ2File(config_file_name, 'rb') as f:
+        config = pickle.load(f)
+        return config
+    return config
+
+def save_cache_config(data: dict, config_file_name ):
+    """保存本地缓存的配置地址信息"""
+    config_file_name = os.path.abspath(os.path.join(os.path.dirname(__file__), config_file_name))
+
+    with bz2.BZ2File(config_file_name, 'wb') as f:
+        pickle.dump(data, f)
+
+
+class FakeStrategy(object):
+    """制作一个假得策略，用于测试"""
+    def write_log(self, content, level=INFO):
+        if level == INFO:
+            print(content)
+        else:
+            print(content, file=sys.stderr)
+    def write_error(self, content):
+
+        self.write_log(content, level=ERROR)
+
+    def display_bar(self, bar, bar_is_completed=True, freq=1):
+        print(u'{} {}'.format(bar.vtSymbol, bar.datetime))
