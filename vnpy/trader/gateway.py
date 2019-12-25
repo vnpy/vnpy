@@ -5,6 +5,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Sequence
 from copy import copy
+from logging import INFO
 
 from vnpy.event import Event, EventEngine
 from .event import (
@@ -140,11 +141,11 @@ class BaseGateway(ABC):
         """
         self.on_event(EVENT_CONTRACT, contract)
 
-    def write_log(self, msg: str):
+    def write_log(self, msg: str, level: int = INFO):
         """
         Write a log event from gateway.
         """
-        log = LogData(msg=msg, gateway_name=self.gateway_name)
+        log = LogData(msg=msg, level=level, gateway_name=self.gateway_name)
         self.on_log(log)
 
     @abstractmethod

@@ -112,6 +112,9 @@ class DbTickData(Document):
     symbol: str = StringField()
     exchange: str = StringField()
     datetime: datetime = DateTimeField()
+    date: str = StringField()
+    time: str = StringField()
+    trading_day: str = StringField()
 
     name: str = StringField()
     volume: float = FloatField()
@@ -170,6 +173,9 @@ class DbTickData(Document):
         db_tick.symbol = tick.symbol
         db_tick.exchange = tick.exchange.value
         db_tick.datetime = tick.datetime
+        db_tick.date = tick.date
+        db_tick.time = tick.time
+        db_tick.trading_day = tick.trading_day
         db_tick.name = tick.name
         db_tick.volume = tick.volume
         db_tick.open_interest = tick.open_interest
@@ -218,6 +224,9 @@ class DbTickData(Document):
             symbol=self.symbol,
             exchange=Exchange(self.exchange),
             datetime=self.datetime,
+            date=self.date,
+            time=self.time,
+            trading_day=self.trading_day,
             name=self.name,
             volume=self.volume,
             open_interest=self.open_interest,
@@ -269,6 +278,7 @@ class MongoManager(BaseDatabaseManager):
         interval: Interval,
         start: datetime,
         end: datetime,
+        **kwargs
     ) -> Sequence[BarData]:
         s = DbBarData.objects(
             symbol=symbol,
@@ -281,7 +291,7 @@ class MongoManager(BaseDatabaseManager):
         return data
 
     def load_tick_data(
-        self, symbol: str, exchange: Exchange, start: datetime, end: datetime
+        self, symbol: str, exchange: Exchange, start: datetime, end: datetime, **kwargs
     ) -> Sequence[TickData]:
         s = DbTickData.objects(
             symbol=symbol,

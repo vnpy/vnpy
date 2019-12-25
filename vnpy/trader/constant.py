@@ -5,6 +5,13 @@ General constant string used in VN Trader.
 from enum import Enum
 
 
+class Color(Enum):
+    """ Kline color """
+    RED = 'Red'
+    BLUE = 'Blue'
+    EQUAL = 'Equal'
+
+
 class Direction(Enum):
     """
     Direction of order/trade/position.
@@ -141,7 +148,9 @@ class Interval(Enum):
     """
     Interval of bar data.
     """
+    SECOND = "1s"
     MINUTE = "1m"
     HOUR = "1h"
     DAILY = "d"
     WEEKLY = "w"
+    RENKO = 'renko'

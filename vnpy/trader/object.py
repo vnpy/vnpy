@@ -104,6 +104,20 @@ class BarData(BaseData):
 
 
 @dataclass
+class RenkoBarData(BarData):
+    """
+    Renko bar data of a certain trading period.
+    """
+    seconds: int = 0            # 当前Bar的秒数（针对RenkoBar)
+    high_seconds: int = -1      # 当前Bar的上限秒数
+    low_seconds: int = -1       # 当前bar的下限秒数
+    height: float = 3           # 当前Bar的高度限制（针对RenkoBar和RangeBar类）
+    up_band: float = 0          # 高位区域的基线
+    down_band: float = 0        # 低位区域的基线
+    low_time = None             # 最后一次进入低位区域的时间
+    high_time = None            # 最后一次进入高位区域的时间
+
+@dataclass
 class OrderData(BaseData):
     """
     Order data contains information for tracking lastest status

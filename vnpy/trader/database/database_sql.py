@@ -337,6 +337,7 @@ class SqlManager(BaseDatabaseManager):
         interval: Interval,
         start: datetime,
         end: datetime,
+        **kwargs
     ) -> Sequence[BarData]:
         s = (
             self.class_bar.select()
@@ -353,7 +354,7 @@ class SqlManager(BaseDatabaseManager):
         return data
 
     def load_tick_data(
-        self, symbol: str, exchange: Exchange, start: datetime, end: datetime
+        self, symbol: str, exchange: Exchange, start: datetime, end: datetime, **kwargs
     ) -> Sequence[TickData]:
         s = (
             self.class_tick.select()

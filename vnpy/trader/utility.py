@@ -19,7 +19,6 @@ import talib
 from .object import BarData, TickData
 from .constant import Exchange, Interval
 
-
 log_formatter = logging.Formatter('[%(asctime)s] %(message)s')
 
 
@@ -72,6 +71,30 @@ def get_underlying_symbol(symbol: str):
         return symbol
 
     return underlying_symbol.group(1)
+
+
+@lru_cache()
+def get_stock_exchange(code, vn=True):
+    """根据股票代码，获取交易所"""
+    # vn：取EXCHANGE_SSE 和 EXCHANGE_SZSE
+    code = str(code)
+    if len(code) < 6:
+        return ''
+
+    market_id = 0  # 缺省深圳
+    code = str(code)
+    if code[0] in ['5', '6', '9'] or code[:3] in ["009", "126", "110", "201", "202", "203", "204"]:
+        market_id = 1  # 上海
+    try:
+        from vnpy.trader.constant import Exchange
+        if vn:
+            return Exchange.SSE.value if market_id == 1 else Exchange.SZSE.value
+        else:
+            return 'XSHG' if market_id == 1 else 'XSHE'
+    except Exception as ex:
+        print(u'加载数据异常:{}'.format(str(ex)))
+
+    return ''
 
 
 @lru_cache()
@@ -140,6 +163,11 @@ def _get_trader_dir(temp_name: str):
     """
     Get path where trader is running in.
     """
+    # by incenselee
+    # 原方法，当前目录必须自建.vntrader子目录，否则在用户得目录下创建
+    # 为兼容多账号管理，取消此方法。
+    return Path.cwd(), Path.cwd()
+
     cwd = Path.cwd()
     temp_path = cwd.joinpath(temp_name)
 
@@ -161,6 +189,7 @@ def _get_trader_dir(temp_name: str):
 
 TRADER_DIR, TEMP_DIR = _get_trader_dir(".vntrader")
 sys.path.append(str(TRADER_DIR))
+print(f'sys.path append: {str(TRADER_DIR)}')
 
 
 def get_file_path(filename: str):

@@ -159,11 +159,19 @@ class MultiprocessHandler(logging. FileHandler):
             self.handleError(record)
 
 
-def setup_logger(filename, name=None, debug=False, force=False, backtesing=False):
+def setup_logger(file_name: str,
+                 name: str = None,
+                 log_level: int = logging.DEBUG,
+                 force: bool = False,
+                 backtesing: bool = False):
     """
     设置日志文件，包括路径
     自动在后面添加 "_日期.log"
-    :param logger_file_name:
+    :param file_name: 日志文件名
+    :param name: logger 名
+    :param log_level: 日志级别
+    :param force: 是否强制更新日志名称
+    :param backtesing: 是否为回测(回测输出的格式不同）
     :return:
     """
 
@@ -171,21 +179,21 @@ def setup_logger(filename, name=None, debug=False, force=False, backtesing=False
     global _fileHandler
     global _logger_filename
 
-    if _logger is not None and _logger_filename == filename and not force:
+    if _logger is not None and _logger_filename == file_name and not force:
         return _logger
 
-    if _logger_filename != filename or force:
+    if _logger_filename != file_name or force:
         if force:
-            _logger_filename = filename
+            _logger_filename = file_name
 
         # 定义日志输出格式
         fmt = logging.Formatter(RECORD_FORMAT if not backtesing else BACKTEST_FORMAT)
         if name is None:
-            names = filename.replace('.log', '').split('/')
+            names = file_name.replace('.log', '').split('/')
             name = names[-1]
 
         logger = logging.getLogger(name)
-        if debug:
+        if log_level == logging.DEBUG:
             logger.setLevel(logging.DEBUG)
             stream_handler = logging.StreamHandler(sys.stdout)
             stream_handler.setLevel(logging.DEBUG)
@@ -193,26 +201,26 @@ def setup_logger(filename, name=None, debug=False, force=False, backtesing=False
             if not logger.hasHandlers():
                 logger.addHandler(stream_handler)
 
-        fileHandler = MultiprocessHandler(filename, encoding='utf8', interval='D')
-        if debug:
-            fileHandler.setLevel(logging.DEBUG)
-        else:
-            fileHandler.setLevel(logging.WARNING)
-
+        # 创建文件日志
+        fileHandler = MultiprocessHandler(file_name, encoding='utf8', interval='D')
+        fileHandler.setLevel(log_level)
         fileHandler.setFormatter(fmt)
         logger.addHandler(fileHandler)
 
-        if debug:
-            logger.setLevel(logging.DEBUG)
-        else:
-            logger.setLevel(logging.WARNING)
+        # 设置logger的级别
+        logger.setLevel(log_level)
 
         return logger
 
     return _logger
 
 
-def get_logger(name=None):
+def get_logger(name: str = None):
+    """
+    根据name获取logger
+    :param name:
+    :return:
+    """
     global _logger
 
     if _logger is None:
@@ -227,6 +235,7 @@ def get_logger(name=None):
 
 # -------------------测试代码------------
 def single_func(para):
+    """ 测试单进程"""
     setup_logger('logs/MyLog{}'.format(para))
     logger = get_logger()
     if para > 5:
@@ -240,6 +249,7 @@ def single_func(para):
 
 
 def multi_func():
+    """测试多进程"""
     # 启动多进程
     pool = multiprocessing.Pool(multiprocessing.cpu_count())
     setup_logger('logs/MyLog')

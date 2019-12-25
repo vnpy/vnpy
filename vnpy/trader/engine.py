@@ -33,6 +33,9 @@ from .object import (
 from .setting import SETTINGS
 from .utility import get_folder_path, TRADER_DIR
 
+# 专有的logger文件
+from .util_logger import setup_logger
+
 
 class MainEngine:
     """
@@ -238,6 +241,37 @@ class BaseEngine(ABC):
         self.main_engine = main_engine
         self.event_engine = event_engine
         self.engine_name = engine_name
+
+        self.logger = None
+
+    def create_logger(self, logger_name: str = 'base_engine'):
+        """
+        创建engine独有的日志
+        :param logger_name: 日志名，缺省为engine的名称
+        :return:
+        """
+        log_path = get_folder_path("log")
+        log_filename = os.path.abspath(os.path.join(log_path, logger_name))
+        print(u'create logger:{}'.format(log_filename))
+        self.logger = setup_logger(file_name=log_filename, name=logger_name,
+                                   log_level=SETTINGS.get('log.level', logging.DEBUG))
+
+    def write_log(self, msg: str, source: str = "", level: int = logging.DEBUG):
+        """
+        写入日志
+        :param msg: 日志内容
+        :param source: 来源
+        :param level: 日志级别
+        :return:
+        """
+        if self.logger:
+            if len(source) > 0:
+                msg = f'[{source}]{msg}'
+            self.logger.log(level, msg)
+        else:
+            log = LogData(msg=msg, level=level)
+            event = Event(EVENT_LOG, log)
+            self.event_engine.put(event)
 
     def close(self):
         """"""
