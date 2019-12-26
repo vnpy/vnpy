@@ -61,7 +61,7 @@ def main():
     # main_engine.add_gateway(MiniGateway)
     # main_engine.add_gateway(SoptGateway)
     # main_engine.add_gateway(MinitestGateway)
-    # main_engine.add_gateway(FemasGateway)
+    main_engine.add_gateway(FemasGateway)
     # main_engine.add_gateway(IbGateway)
     # main_engine.add_gateway(FutuGateway)
     # main_engine.add_gateway(BitmexGateway)
