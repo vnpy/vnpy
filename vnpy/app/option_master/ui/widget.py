@@ -4,7 +4,8 @@ from vnpy.event import EventEngine, Event
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtWidgets, QtCore, QtGui
 from vnpy.trader.constant import Direction, Offset, OrderType
-from vnpy.trader.object import OrderRequest, ContractData
+from vnpy.trader.object import OrderRequest, ContractData, TickData
+from vnpy.trader.event import EVENT_TICK
 
 from ..base import APP_NAME, EVENT_OPTION_NEW_PORTFOLIO
 from ..engine import OptionEngine, PRICING_MODELS
@@ -114,8 +115,8 @@ class OptionManager(QtWidgets.QWidget):
 
         self.market_monitor.itemDoubleClicked.connect(self.manual_trader.update_symbol)
 
-        self.market_button.clicked.connect(self.market_monitor.show)
-        self.greeks_button.clicked.connect(self.greeks_monitor.show)
+        self.market_button.clicked.connect(self.market_monitor.showMaximized)
+        self.greeks_button.clicked.connect(self.greeks_monitor.showMaximized)
         self.manual_button.clicked.connect(self.manual_trader.show)
         self.chain_button.clicked.connect(self.calculate_underlying_adjustment)
 
@@ -242,6 +243,7 @@ class PortfolioDialog(QtWidgets.QDialog):
 
 class OptionManualTrader(QtWidgets.QWidget):
     """"""
+    signal_tick = QtCore.pyqtSignal(TickData)
 
     def __init__(self, option_engine: OptionEngine, portfolio_name: str):
         """"""
@@ -249,8 +251,10 @@ class OptionManualTrader(QtWidgets.QWidget):
 
         self.option_engine = option_engine
         self.main_engine: MainEngine = option_engine.main_engine
+        self.event_engine: EventEngine = option_engine.event_engine
 
         self.contracts: Dict[str, ContractData] = {}
+        self.vt_symbol = ""
 
         self.init_ui()
         self.init_contracts()
@@ -259,7 +263,9 @@ class OptionManualTrader(QtWidgets.QWidget):
         """"""
         self.setWindowTitle("期权交易")
 
+        # Trading Area
         self.symbol_line = QtWidgets.QLineEdit()
+        self.symbol_line.returnPressed.connect(self._update_symbol)
 
         float_validator = QtGui.QDoubleValidator()
         float_validator.setBottom(0)
@@ -291,22 +297,88 @@ class OptionManualTrader(QtWidgets.QWidget):
         cancel_button = QtWidgets.QPushButton("全撤")
         cancel_button.clicked.connect(self.cancel_all)
 
-        form = QtWidgets.QFormLayout()
-        form.addRow("代码", self.symbol_line)
-        form.addRow("方向", self.direction_combo)
-        form.addRow("开平", self.offset_combo)
-        form.addRow("价格", self.price_line)
-        form.addRow("数量", self.volume_line)
-        form.addRow(order_button)
-        form.addRow(cancel_button)
+        form1 = QtWidgets.QFormLayout()
+        form1.addRow("代码", self.symbol_line)
+        form1.addRow("方向", self.direction_combo)
+        form1.addRow("开平", self.offset_combo)
+        form1.addRow("价格", self.price_line)
+        form1.addRow("数量", self.volume_line)
+        form1.addRow(order_button)
+        form1.addRow(cancel_button)
 
-        self.setLayout(form)
+        # Depth Area
+        bid_color = "rgb(255,174,201)"
+        ask_color = "rgb(160,255,160)"
+
+        self.bp1_label = self.create_label(bid_color)
+        self.bp2_label = self.create_label(bid_color)
+        self.bp3_label = self.create_label(bid_color)
+        self.bp4_label = self.create_label(bid_color)
+        self.bp5_label = self.create_label(bid_color)
+
+        self.bv1_label = self.create_label(
+            bid_color, alignment=QtCore.Qt.AlignRight)
+        self.bv2_label = self.create_label(
+            bid_color, alignment=QtCore.Qt.AlignRight)
+        self.bv3_label = self.create_label(
+            bid_color, alignment=QtCore.Qt.AlignRight)
+        self.bv4_label = self.create_label(
+            bid_color, alignment=QtCore.Qt.AlignRight)
+        self.bv5_label = self.create_label(
+            bid_color, alignment=QtCore.Qt.AlignRight)
+
+        self.ap1_label = self.create_label(ask_color)
+        self.ap2_label = self.create_label(ask_color)
+        self.ap3_label = self.create_label(ask_color)
+        self.ap4_label = self.create_label(ask_color)
+        self.ap5_label = self.create_label(ask_color)
+
+        self.av1_label = self.create_label(
+            ask_color, alignment=QtCore.Qt.AlignRight)
+        self.av2_label = self.create_label(
+            ask_color, alignment=QtCore.Qt.AlignRight)
+        self.av3_label = self.create_label(
+            ask_color, alignment=QtCore.Qt.AlignRight)
+        self.av4_label = self.create_label(
+            ask_color, alignment=QtCore.Qt.AlignRight)
+        self.av5_label = self.create_label(
+            ask_color, alignment=QtCore.Qt.AlignRight)
+
+        self.lp_label = self.create_label()
+        self.return_label = self.create_label(alignment=QtCore.Qt.AlignRight)
+
+        min_width = 70
+        self.lp_label.setMinimumWidth(min_width)
+        self.return_label.setMinimumWidth(min_width)
+
+        form2 = QtWidgets.QFormLayout()
+        form2.addRow(self.ap5_label, self.av5_label)
+        form2.addRow(self.ap4_label, self.av4_label)
+        form2.addRow(self.ap3_label, self.av3_label)
+        form2.addRow(self.ap2_label, self.av2_label)
+        form2.addRow(self.ap1_label, self.av1_label)
+        form2.addRow(self.lp_label, self.return_label)
+        form2.addRow(self.bp1_label, self.bv1_label)
+        form2.addRow(self.bp2_label, self.bv2_label)
+        form2.addRow(self.bp3_label, self.bv3_label)
+        form2.addRow(self.bp4_label, self.bv4_label)
+        form2.addRow(self.bp5_label, self.bv5_label)
+
+        # Set layout
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addLayout(form1)
+        hbox.addLayout(form2)
+        self.setLayout(hbox)
 
     def init_contracts(self):
         """"""
         contracts = self.main_engine.get_all_contracts()
         for contract in contracts:
             self.contracts[contract.symbol] = contract
+
+    def connect_signal(self):
+        """"""
+        self.signal_tick.connect(self.update_tick)
 
     def send_order(self):
         """"""
@@ -347,4 +419,113 @@ class OptionManualTrader(QtWidgets.QWidget):
         """"""
         if not cell.vt_symbol:
             return
-        self.symbol_line.setText(cell.vt_symbol.split(".")[0])
+
+        symbol = cell.vt_symbol.split(".")[0]
+        self.symbol_line.setText(symbol)
+        self._update_symbol()
+
+    def _update_symbol(self):
+        """"""
+        symbol = self.symbol_line.text()
+        contract = self.contracts.get(symbol, None)
+
+        if contract and contract.vt_symbol == self.vt_symbol:
+            return
+
+        if self.vt_symbol:
+            self.event_engine.unregister(EVENT_TICK + self.vt_symbol, self.process_tick_event)
+            self.clear_data()
+            self.vt_symbol = ""
+
+        if not contract:
+            return
+
+        vt_symbol = contract.vt_symbol
+        self.vt_symbol = vt_symbol
+
+        tick = self.main_engine.get_tick(vt_symbol)
+        if tick:
+            self.update_tick(tick)
+
+        self.event_engine.unregister(EVENT_TICK + vt_symbol, self.process_tick_event)
+
+    def create_label(self, color: str = "", alignment: int = QtCore.Qt.AlignLeft):
+        """
+        Create label with certain font color.
+        """
+        label = QtWidgets.QLabel("-")
+        if color:
+            label.setStyleSheet(f"color:{color}")
+        label.setAlignment(alignment)
+        return label
+
+    def process_tick_event(self, event: Event):
+        """"""
+        tick = event.data
+
+        if tick.vt_symbol != self.vt_symbol:
+            return
+
+        self.signal_tick.emit(tick)
+
+    def update_tick(self, tick: TickData):
+        """"""
+        self.lp_label.setText(str(tick.last_price))
+        self.bp1_label.setText(str(tick.bid_price_1))
+        self.bv1_label.setText(str(tick.bid_volume_1))
+        self.ap1_label.setText(str(tick.ask_price_1))
+        self.av1_label.setText(str(tick.ask_volume_1))
+
+        if tick.pre_close:
+            r = (tick.last_price / tick.pre_close - 1) * 100
+            self.return_label.setText(f"{r:.2f}%")
+
+        if tick.bid_price_2:
+            self.bp2_label.setText(str(tick.bid_price_2))
+            self.bv2_label.setText(str(tick.bid_volume_2))
+            self.ap2_label.setText(str(tick.ask_price_2))
+            self.av2_label.setText(str(tick.ask_volume_2))
+
+            self.bp3_label.setText(str(tick.bid_price_3))
+            self.bv3_label.setText(str(tick.bid_volume_3))
+            self.ap3_label.setText(str(tick.ask_price_3))
+            self.av3_label.setText(str(tick.ask_volume_3))
+
+            self.bp4_label.setText(str(tick.bid_price_4))
+            self.bv4_label.setText(str(tick.bid_volume_4))
+            self.ap4_label.setText(str(tick.ask_price_4))
+            self.av4_label.setText(str(tick.ask_volume_4))
+
+            self.bp5_label.setText(str(tick.bid_price_5))
+            self.bv5_label.setText(str(tick.bid_volume_5))
+            self.ap5_label.setText(str(tick.ask_price_5))
+            self.av5_label.setText(str(tick.ask_volume_5))
+
+    def clear_data(self):
+        """"""
+        self.lp_label.setText("-")
+        self.return_label.setText("-")
+        self.bp1_label.setText("-")
+        self.bv1_label.setText("-")
+        self.ap1_label.setText("-")
+        self.av1_label.setText("-")
+
+        self.bp2_label.setText("-")
+        self.bv2_label.setText("-")
+        self.ap2_label.setText("-")
+        self.av2_label.setText("-")
+
+        self.bp3_label.setText("-")
+        self.bv3_label.setText("-")
+        self.ap3_label.setText("-")
+        self.av3_label.setText("-")
+
+        self.bp4_label.setText("-")
+        self.bv4_label.setText("-")
+        self.ap4_label.setText("-")
+        self.av4_label.setText("-")
+
+        self.bp5_label.setText("-")
+        self.bv5_label.setText("-")
+        self.ap5_label.setText("-")
+        self.av5_label.setText("-")
