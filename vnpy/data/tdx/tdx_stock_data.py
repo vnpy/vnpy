@@ -41,7 +41,6 @@ NUM_MINUTE_MAPPING['1day'] = 60 * 5.5  # 股票，收盘时间是15：00，开�
 # 常量
 QSIZE = 800
 
-
 STOCK_CONFIG_FILE = 'tdx_stock_config.pkb2'
 
 # 通达信 <=> 交易所代码 映射
@@ -61,8 +60,6 @@ RQ_TDX_STOCK_MARKET_MAP = {v: k for k, v in TDX_RQ_STOCK_MARKET_MAP.items()}
 
 class TdxStockData(object):
 
-
-    # ----------------------------------------------------------------------
     def __init__(self, strategy=None):
         """
         构造函数
@@ -172,6 +169,7 @@ class TdxStockData(object):
             results.extend(result)
 
         return results
+
     # ----------------------------------------------------------------------
     def get_bars(self,
                  symbol: str,
@@ -184,7 +182,7 @@ class TdxStockData(object):
         symbol：股票 000001.XG
         period: 周期: 1min,5min,15min,30min,1hour,1day,
         """
-        if self.api is None:
+        if not self.api:
             self.connect()
         ret_bars = []
         if self.api is None:
@@ -375,7 +373,11 @@ class TdxStockData(object):
         :param cache_folder:
         :return:
         """
+        if not self.api:
+            self.connect()
+
         ret_datas = []
+
         # trading_date ，转为为查询数字类型
         if isinstance(trading_date, datetime):
             trading_date = trading_date.strftime('%Y%m%d')
@@ -429,7 +431,7 @@ class TdxStockData(object):
                     # 获取历史交易记录
                     _res = self.api.get_history_transaction_data(
                         market=self.symbol_market_dict[symbol],
-                        trading_date=trading_date,
+                        date=trading_date,
                         code=symbol,
                         start=_pos,
                         count=q_size)
@@ -474,45 +476,3 @@ class TdxStockData(object):
             self.write_error(
                 'exception in get_transaction_data:{},{},{}'.format(symbol, str(ex), traceback.format_exc()))
             return False, ret_datas
-
-
-if __name__ == "__main__":
-    from tdx_common import FakeStrategy
-    import json
-    t1 = FakeStrategy()
-    t2 = FakeStrategy()
-    # 创建API对象
-    api_01 = TdxStockData(t1)
-
-    # 获取市场下股票
-    for market_id in range(2):
-        print('get market_id:{}'.format(market_id))
-        security_list = api_01.get_security_list(market_id)
-        if len(security_list) == 0:
-            continue
-        for security in security_list:
-            if security.get('code', '').startswith('12') or u'转债' in security.get('name', ''):
-                str_security = json.dumps(security, indent=1, ensure_ascii=False)
-                print('market_id:{},{}'.format(market_id, str_security))
-
-        # str_markets = json.dumps(security_list, indent=1, ensure_ascii=False)
-        # print(u'{}'.format(str_markets))
-
-
-    # 获取历史分钟线
-    # api_01.get_bars('002024', period='1hour', callback=t1.display_bar)
-
-    # api.get_bars(symbol, period='5min', callback=display_bar)
-    # api.get_bars(symbol, period='1day', callback=display_bar)
-    # api_02 = TdxData(t2)
-    # api_02.get_bars('601390', period='1day', callback=t1.display_bar)
-
-    # 获取历史分时数据
-    # ret,result = api_01.get_history_transaction_data('RB99', '20190909')
-    # for r in result[0:10] + result[-10:]:
-    #    print(r)
-
-    # 获取历史分时数据
-    ret, result = api_01.get_history_transaction_data('600410', '20190925')
-    for r in result[0:10] + result[-10:]:
-        print(r)
