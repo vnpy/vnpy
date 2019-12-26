@@ -29,7 +29,7 @@ class MonitorCell(QtWidgets.QTableWidgetItem):
         self.setTextAlignment(QtCore.Qt.AlignCenter)
 
 
-class StrikeCell(MonitorCell):
+class IndexCell(MonitorCell):
     """"""
 
     def __init__(self, text: str = "", vt_symbol: str = ""):
@@ -87,6 +87,24 @@ class MonitorTable(QtWidgets.QTableWidget):
         """"""
         super().__init__()
 
+        self.init_menu()
+
+    def init_menu(self):
+        """
+        Create right click menu.
+        """
+        self.menu = QtWidgets.QMenu(self)
+
+        resize_action = QtWidgets.QAction("调整列宽", self)
+        resize_action.triggered.connect(self.resizeColumnsToContents)
+        self.menu.addAction(resize_action)
+
+    def contextMenuEvent(self, event):
+        """
+        Show menu with right click.
+        """
+        self.menu.popup(QtGui.QCursor.pos())
+
 
 class OptionMarketMonitor(MonitorTable):
     """"""
@@ -95,11 +113,13 @@ class OptionMarketMonitor(MonitorTable):
     signal_position = QtCore.pyqtSignal(Event)
 
     headers: List[Dict] = [
-        {"name": "vt_symbol", "display": "代码", "cell": MonitorCell},
+        {"name": "symbol", "display": "代码", "cell": MonitorCell},
         {"name": "theo_vega", "display": "Vega", "cell": GreeksCell},
         {"name": "theo_theta", "display": "Theta", "cell": GreeksCell},
         {"name": "theo_gamma", "display": "Gamma", "cell": GreeksCell},
         {"name": "theo_delta", "display": "Delta", "cell": GreeksCell},
+        {"name": "open_interest", "display": "持仓量", "cell": MonitorCell},
+        {"name": "volume", "display": "成交量", "cell": MonitorCell},
         {"name": "bid_impv", "display": "买隐波", "cell": BidCell},
         {"name": "bid_volume", "display": "买量", "cell": BidCell},
         {"name": "bid_price", "display": "买价", "cell": BidCell},
@@ -140,7 +160,7 @@ class OptionMarketMonitor(MonitorTable):
         # Set table row and column numbers
         row_count = 0
         for chain in portfolio.chains.values():
-            row_count += (1 + len(chain.strike_prices))
+            row_count += (1 + len(chain.indexes))
         self.setRowCount(row_count)
 
         column_count = len(self.headers) * 2 + 1
@@ -165,12 +185,12 @@ class OptionMarketMonitor(MonitorTable):
             self.setItem(
                 current_row,
                 strike_column,
-                StrikeCell(chain.chain_symbol.split(".")[0])
+                IndexCell(chain.chain_symbol.split(".")[0])
             )
 
-            for strike_price in chain.strike_prices:
-                call = chain.calls[strike_price]
-                put = chain.puts[strike_price]
+            for index in chain.indexes:
+                call = chain.calls[index]
+                put = chain.puts[index]
 
                 current_row += 1
 
@@ -206,18 +226,11 @@ class OptionMarketMonitor(MonitorTable):
                 self.cells[put.vt_symbol] = put_cells
 
                 # Strike cell
-                strike_cell = StrikeCell(str(call.strike_price))
-                self.setItem(current_row, strike_column, strike_cell)
+                index_cell = IndexCell(str(call.chain_index))
+                self.setItem(current_row, strike_column, index_cell)
 
             # Move to next row
             current_row += 1
-
-        # Additional table adjustment
-        horizontal_header = self.horizontalHeader()
-        horizontal_header.setSectionResizeMode(horizontal_header.Fixed)
-        horizontal_header.setSectionResizeMode(strike_column, horizontal_header.ResizeToContents)
-        horizontal_header.setSectionResizeMode(0, horizontal_header.ResizeToContents)
-        horizontal_header.setSectionResizeMode(self.columnCount() - 1, horizontal_header.ResizeToContents)
 
     def register_event(self):
         """"""
@@ -276,6 +289,8 @@ class OptionMarketMonitor(MonitorTable):
         option_cells["bid_volume"].setText(str(tick.bid_volume_1))
         option_cells["ask_price"].setText(str(tick.ask_price_1))
         option_cells["ask_volume"].setText(str(tick.ask_volume_1))
+        option_cells["volume"].setText(str(tick.volume))
+        option_cells["open_interest"].setText(str(tick.open_interest))
 
     def update_impv(self, vt_symbol: str):
         """"""
@@ -311,7 +326,7 @@ class OptionMarketMonitor(MonitorTable):
 
     def resizeEvent(self, event: QtGui.QResizeEvent):
         """"""
-        self.scroll_to_middle()
+        self.resizeColumnsToContents()
         event.accept()
 
 
@@ -364,13 +379,13 @@ class OptionGreeksMonitor(MonitorTable):
         # Set table row and column numbers
         row_count = 1
         for chain in portfolio.chains.values():
-            row_count += (1 + len(chain.strike_prices) * 2)
+            row_count += (1 + len(chain.indexes) * 2)
         self.setRowCount(row_count)
 
-        column_count = len(self.headers) + 1
+        column_count = len(self.headers) + 2
         self.setColumnCount(column_count)
 
-        labels = ["代码"] + [d["display"] for d in self.headers]
+        labels = ["类别", "代码"] + [d["display"] for d in self.headers]
         self.setHorizontalHeaderLabels(labels)
 
         # Init cells
@@ -391,19 +406,34 @@ class OptionGreeksMonitor(MonitorTable):
         option_symbols.sort()
         row_names.extend(option_symbols)
 
+        type_map = {}
+        type_map[self.portfolio_name] = "组合"
+
+        for symbol in underlying_symbols:
+            type_map[symbol] = "标的"
+
+        for symbol in chain_symbols:
+            type_map[symbol] = "期权链"
+
+        for symbol in option_symbols:
+            type_map[symbol] = "期权"
+
         for row, row_name in enumerate(row_names):
             if not row_name:
                 continue
 
             row_cells = {}
 
+            type_cell = MonitorCell(type_map[row_name])
+            self.setItem(row, 0, type_cell)
+
             name = row_name.split(".")[0]
             name_cell = MonitorCell(name)
-            self.setItem(row, 0, name_cell)
+            self.setItem(row, 1, name_cell)
 
             for column, d in enumerate(self.headers):
                 cell = d["cell"]()
-                self.setItem(row, column + 1, cell)
+                self.setItem(row, column + 2, cell)
                 row_cells[d["name"]] = cell
             self.cells[row_name] = row_cells
 
