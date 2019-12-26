@@ -31,7 +31,6 @@ ta-lib-exists || install-ta-lib
 $python -m pip install numpy
 
 # Install extra packages
-$python -m pip install --pre --extra-index-url https://rquser:ricequant99@py.ricequant.com/simple/ rqdatac
 $python -m pip install ta-lib
 $python -m pip install https://vnpy-pip.oss-cn-shanghai.aliyuncs.com/colletion/ibapi-9.75.1-py3-none-any.whl
 
