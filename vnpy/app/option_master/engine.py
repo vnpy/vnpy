@@ -22,12 +22,15 @@ from .base import (
     EVENT_OPTION_LOG, EVENT_OPTION_NEW_PORTFOLIO,
     InstrumentData, PortfolioData
 )
-from .pricing import black, binomial
+from .pricing import (
+    black_76_cython, binomial_tree_cython, black_scholes_cython
+)
 
 
 PRICING_MODELS = {
-    "Black76": black,
-    "Binomial": binomial
+    "Black-76 欧式期货期权": black_76_cython,
+    "Black-Scholes 欧式股票期权": black_scholes_cython,
+    "二叉树 美式期货期权": binomial_tree_cython
 }
 
 
@@ -278,3 +281,4 @@ class OptionEngine(BaseEngine):
     def set_timer_trigger(self, timer_trigger: int):
         """"""
         self.timer_trigger = timer_trigger
+
