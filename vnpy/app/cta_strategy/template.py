@@ -223,6 +223,7 @@ class CtaTemplate(ABC):
         days: int,
         interval: Interval = Interval.MINUTE,
         callback: Callable = None,
+        use_database: bool = False
     ):
         """
         Load historical bar data for initializing strategy.
@@ -230,7 +231,13 @@ class CtaTemplate(ABC):
         if not callback:
             callback = self.on_bar
 
-        self.cta_engine.load_bar(self.vt_symbol, days, interval, callback)
+        self.cta_engine.load_bar(
+            self.vt_symbol,
+            days,
+            interval,
+            callback,
+            use_database
+        )
 
     def load_tick(self, days: int):
         """

@@ -30,6 +30,8 @@ def create_qapp(app_name: str = "VN Trader"):
     """
     sys.excepthook = excepthook
 
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
+
     qapp = QtWidgets.QApplication([])
     qapp.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
 

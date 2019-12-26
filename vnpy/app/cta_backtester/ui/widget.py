@@ -2,6 +2,15 @@ import numpy as np
 import pyqtgraph as pg
 from datetime import datetime, timedelta
 
+from vnpy.trader.constant import Interval, Direction, Offset
+from vnpy.trader.engine import MainEngine
+from vnpy.trader.ui import QtCore, QtWidgets, QtGui
+from vnpy.trader.ui.widget import BaseMonitor, BaseCell, DirectionCell, EnumCell
+from vnpy.trader.ui.editor import CodeEditor
+from vnpy.event import Event, EventEngine
+from vnpy.chart import ChartWidget, CandleItem, VolumeItem
+from vnpy.trader.utility import load_json, save_json
+
 from ..engine import (
     APP_NAME,
     EVENT_BACKTESTER_LOG,
@@ -9,17 +18,12 @@ from ..engine import (
     EVENT_BACKTESTER_OPTIMIZATION_FINISHED,
     OptimizationSetting
 )
-from vnpy.trader.constant import Interval, Direction
-from vnpy.trader.engine import MainEngine
-from vnpy.trader.ui import QtCore, QtWidgets, QtGui
-from vnpy.trader.ui.widget import BaseMonitor, BaseCell, DirectionCell, EnumCell
-from vnpy.trader.ui.editor import CodeEditor
-from vnpy.event import Event, EventEngine
-from vnpy.chart import ChartWidget, CandleItem, VolumeItem
 
 
 class BacktesterManager(QtWidgets.QWidget):
     """"""
+
+    setting_filename = "cta_backtester_setting.json"
 
     signal_log = QtCore.pyqtSignal(Event)
     signal_backtesting_finished = QtCore.pyqtSignal(Event)
@@ -215,6 +219,32 @@ class BacktesterManager(QtWidgets.QWidget):
         # Code Editor
         self.editor = CodeEditor(self.main_engine, self.event_engine)
 
+        # Load setting
+        setting = load_json(self.setting_filename)
+        if not setting:
+            return
+
+        self.class_combo.setCurrentIndex(
+            self.class_combo.findText(setting["class_name"])
+        )
+
+        self.symbol_line.setText(setting["vt_symbol"])
+
+        self.interval_combo.setCurrentIndex(
+            self.interval_combo.findText(setting["interval"])
+        )
+
+        self.rate_line.setText(str(setting["rate"]))
+        self.slippage_line.setText(str(setting["slippage"]))
+        self.size_line.setText(str(setting["size"]))
+        self.pricetick_line.setText(str(setting["pricetick"]))
+        self.capital_line.setText(str(setting["capital"]))
+
+        if not setting["inverse"]:
+            self.inverse_combo.setCurrentIndex(0)
+        else:
+            self.inverse_combo.setCurrentIndex(1)
+
     def register_event(self):
         """"""
         self.signal_log.connect(self.process_log_event)
@@ -276,6 +306,21 @@ class BacktesterManager(QtWidgets.QWidget):
         else:
             inverse = True
 
+        # Save backtesting parameters
+        backtesting_setting = {
+            "class_name": class_name,
+            "vt_symbol": vt_symbol,
+            "interval": interval,
+            "rate": rate,
+            "slippage": slippage,
+            "size": size,
+            "pricetick": pricetick,
+            "capital": capital,
+            "inverse": inverse,
+        }
+        save_json(self.setting_filename, backtesting_setting)
+
+        # Get strategy setting
         old_setting = self.settings[class_name]
         dialog = BacktestingSettingEditor(class_name, old_setting)
         i = dialog.exec()
@@ -1075,11 +1120,17 @@ class CandleChartDialog(QtWidgets.QDialog):
             }
 
             if trade.direction == Direction.LONG:
-                scatter["symbol"] = "t1"
-                scatter["brush"] = pg.mkBrush((255, 255, 0))
+                scatter_symbol = "t1"   # Up arrow
             else:
-                scatter["symbol"] = "t"
-                scatter["brush"] = pg.mkBrush((0, 0, 255))
+                scatter_symbol = "t"    # Down arrow
+
+            if trade.offset == Offset.OPEN:
+                scatter_brush = pg.mkBrush((255, 255, 0))   # Yellow
+            else:
+                scatter_brush = pg.mkBrush((0, 0, 255))     # Blue
+
+            scatter["symbol"] = scatter_symbol
+            scatter["brush"] = scatter_brush
 
             trade_data.append(scatter)
 

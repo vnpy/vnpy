@@ -11395,6 +11395,13 @@ struct CThostFtdcAppAuthenticationCodeField
 	TThostFtdcAppTypeType	AppType;
 };
 
+///查询频率，每秒查询比数
+struct CThostFtdcQueryFreqField
+{
+	///查询频率
+	TThostFtdcQueryFreqType	QueryFreq;
+};
+
 
 }
 
