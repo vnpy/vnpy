@@ -16,6 +16,7 @@ EVENT_OPTION_NEW_PORTFOLIO = "eOptionNewPortfolio"
 
 
 CHAIN_UNDERLYING_MAP = {
+    "510050_O.SSE": "510050",
     "IO.CFFEX": "IF",
     "HO.CFFEX": "IH"
 }
@@ -85,6 +86,7 @@ class OptionData(InstrumentData):
 
         # Option contract features
         self.strike_price: float = contract.option_strike
+        self.chain_index: str = contract.option_index
 
         self.option_type: int = 0
         if contract.option_type == OptionType.CALL:
@@ -288,8 +290,9 @@ class ChainData:
 
         self.portfolio: PortfolioData = None
 
-        self.strike_prices: List[float] = []
+        self.indexes: List[float] = []
         self.atm_price: float = 0
+        self.atm_index: str = ""
         self.underlying_adjustment: float = 0
         self.days_to_expiry: int = 0
 
@@ -298,15 +301,15 @@ class ChainData:
         self.options[option.vt_symbol] = option
 
         if option.option_type > 0:
-            self.calls[option.strike_price] = option
+            self.calls[option.chain_index] = option
         else:
-            self.puts[option.strike_price] = option
+            self.puts[option.chain_index] = option
 
         option.set_chain(self)
 
-        if option.strike_price not in self.strike_prices:
-            self.strike_prices.append(option.strike_price)
-            self.strike_prices.sort()
+        if option.chain_index not in self.indexes:
+            self.indexes.append(option.chain_index)
+            self.indexes.sort()
 
         self.days_to_expiry = option.days_to_expiry
 
@@ -404,22 +407,23 @@ class ChainData:
         atm_distance = 0
         atm_price = 0
 
-        for strike_price in self.strike_prices:
-            price_distance = abs(underlying_price - strike_price)
+        for call in self.calls.values():
+            price_distance = abs(underlying_price - call.strike_price)
 
             if not atm_distance or price_distance < atm_distance:
                 atm_distance = price_distance
-                atm_price = strike_price
+                atm_price = call.strike_price
 
         self.atm_price = atm_price
+        self.atm_index = call.chain_index
 
     def calculate_underlying_adjustment(self):
         """"""
         if not self.atm_price:
             return
 
-        atm_call = self.calls[self.atm_price]
-        atm_put = self.puts[self.atm_price]
+        atm_call = self.calls[self.atm_index]
+        atm_put = self.puts[self.atm_index]
 
         synthetic_price = atm_call.mid_price - atm_put.mid_price + self.atm_price
         self.underlying_adjustment = synthetic_price - self.underlying.mid_price
