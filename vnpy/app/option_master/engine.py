@@ -23,14 +23,14 @@ from .base import (
     InstrumentData, PortfolioData
 )
 from .pricing import (
-    black_76_cython, binomial_tree_cython, black_scholes_cython
+    black_76, binomial_tree, black_scholes
 )
 
 
 PRICING_MODELS = {
-    "Black-76 欧式期货期权": black_76_cython,
-    "Black-Scholes 欧式股票期权": black_scholes_cython,
-    "二叉树 美式期货期权": binomial_tree_cython
+    "Black-76 欧式期货期权": black_76,
+    "Black-Scholes 欧式股票期权": black_scholes,
+    "二叉树 美式期货期权": binomial_tree
 }
 
 
