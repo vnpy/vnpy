@@ -120,6 +120,21 @@ def get_full_symbol(symbol: str):
         return symbol
 
 
+def get_real_symbol_by_exchange(full_symbol, vn_exchange):
+    """根据交易所，返回真实合约"""
+    if vn_exchange == Exchange.CFFEX:
+        return full_symbol.upper()
+
+    if vn_exchange in [Exchange.DCE,  Exchange.SHFE,  Exchange.INE]:
+        return full_symbol.lower()
+
+    if vn_exchange == Exchange.CZCE:
+        underlying_symbol = get_underlying_symbol(full_symbol).upper()
+        yearmonth_len = len(full_symbol) - len(underlying_symbol) - 1
+        return underlying_symbol.upper() + full_symbol[-yearmonth_len:]
+
+    return full_symbol
+
 def get_trading_date(dt: datetime = None):
     """
     根据输入的时间，返回交易日的日期
