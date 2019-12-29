@@ -289,27 +289,6 @@ void TdApi::OnRspUserDeposit(CUstpFtdcstpUserDepositField *pstpUserDeposit, CUst
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRspTransferMoney(CUstpFtdcstpTransferMoneyField *pstpTransferMoney, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-	Task task = Task();
-	task.task_name = ONRSPTRANSFERMONEY;
-	if (pstpTransferMoney)
-	{
-		CUstpFtdcstpTransferMoneyField *task_data = new CUstpFtdcstpTransferMoneyField();
-		*task_data = *pstpTransferMoney;
-		task.task_data = task_data;
-	}
-	if (pRspInfo)
-	{
-		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
-		*task_error = *pRspInfo;
-		task.task_error = task_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
-};
-
 void TdApi::OnRtnFlowMessageCancel(CUstpFtdcFlowMessageCancelField *pFlowMessageCancel)
 {
 	Task task = Task();
@@ -979,6 +958,67 @@ void TdApi::OnRspQrySystemTime(CUstpFtdcRspQrySystemTimeField *pRspQrySystemTime
 	this->task_queue.push(task);
 };
 
+void TdApi::OnRspQryMarginPrefParam(CUstpFtdcRspQryMarginPrefParamField *pRspQryMarginPrefParam, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYMARGINPREFPARAM;
+	if (pRspQryMarginPrefParam)
+	{
+		CUstpFtdcRspQryMarginPrefParamField *task_data = new CUstpFtdcRspQryMarginPrefParamField();
+		*task_data = *pRspQryMarginPrefParam;
+		task.task_data = task_data;
+	}
+	if (pRspInfo)
+	{
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspDSUserCertification(CUstpFtdcDSUserCertRspDataField *pDSUserCertRspData, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPDSUSERCERTIFICATION;
+	if (pDSUserCertRspData)
+	{
+		CUstpFtdcDSUserCertRspDataField *task_data = new CUstpFtdcDSUserCertRspDataField();
+		*task_data = *pDSUserCertRspData;
+		task.task_data = task_data;
+	}
+	if (pRspInfo)
+	{
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspDSProxySubmitInfo(CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPDSPROXYSUBMITINFO;
+	if (pRspInfo)
+	{
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+
+
+
+
 
 
 
@@ -1102,12 +1142,6 @@ void TdApi::processTask()
 			case ONRSPUSERDEPOSIT:
 			{
 				this->processRspUserDeposit(&task);
-				break;
-			}
-
-			case ONRSPTRANSFERMONEY:
-			{
-				this->processRspTransferMoney(&task);
 				break;
 			}
 
@@ -1332,6 +1366,26 @@ void TdApi::processTask()
 				this->processRspQrySystemTime(&task);
 				break;
 			}
+
+			case ONRSPQRYMARGINPREFPARAM:
+			{
+				this->processRspQryMarginPrefParam(&task);
+				break;
+			}
+
+			case ONRSPDSUSERCERTIFICATION:
+			{
+				this->processRspDSUserCertification(&task);
+				break;
+			}
+
+			case ONRSPDSPROXYSUBMITINFO:
+			{
+				this->processRspDSProxySubmitInfo(&task);
+				break;
+			}
+
+
 			}
 		}
 	}
@@ -1386,12 +1440,12 @@ void TdApi::processRspError(Task *task)
 {
 	gil_scoped_acquire acquire;
 	dict error;
-	if (task->task_data)
+	if (task->task_error)
 	{
-		CUstpFtdcRspInfoField *task_data = (CUstpFtdcRspInfoField*)task->task_data;
-		error["ErrorID"] = task_data->ErrorID;
-		error["ErrorMsg"] = toUtf(task_data->ErrorMsg);
-		delete task->task_data;
+		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
+		error["ErrorID"] = task_error->ErrorID;
+		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
+		delete task->task_error;
 	}
 	this->onRspError(error, task->task_id, task->task_last);
 };
@@ -1590,7 +1644,7 @@ void TdApi::processRspQuoteInsert(Task *task)
 		delete task->task_data;
 	}
 	dict error;
-	if (task->task_data)
+	if (task->task_error)
 	{
 		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
 		error["ErrorID"] = task_error->ErrorID;
@@ -1622,7 +1676,7 @@ void TdApi::processRspQuoteAction(Task *task)
 		delete task->task_data;
 	}
 	dict error;
-	if (task->task_data)
+	if (task->task_error)
 	{
 		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
 		error["ErrorID"] = task_error->ErrorID;
@@ -1690,7 +1744,7 @@ void TdApi::processRspMarginCombAction(Task *task)
 		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
 		error["ErrorID"] = task_error->ErrorID;
 		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
-		delete task->task_data;
+		delete task->task_error;
 	}
 	this->onRspMarginCombAction(data, error, task->task_id, task->task_last);
 };
@@ -1719,37 +1773,6 @@ void TdApi::processRspUserDeposit(Task *task)
 		delete task->task_error;
 	}
 	this->onRspUserDeposit(data, error, task->task_id, task->task_last);
-};
-
-void TdApi::processRspTransferMoney(Task *task)
-{
-	gil_scoped_acquire acquire;
-	dict data;
-	if (task->task_data)
-	{
-		CUstpFtdcstpTransferMoneyField *task_data = (CUstpFtdcstpTransferMoneyField*)task->task_data;
-		data["BrokerID"] = toUtf(task_data->BrokerID);
-		data["UserID"] = toUtf(task_data->UserID);
-		data["InvestorID"] = toUtf(task_data->InvestorID);
-		data["Amount"] = task_data->Amount;
-		data["AmountDirection"] = task_data->AmountDirection;
-		data["UserOrderLocalID"] = toUtf(task_data->UserOrderLocalID);
-		data["BankID"] = toUtf(task_data->BankID);
-		data["BankPasswd"] = toUtf(task_data->BankPasswd);
-		data["AccountPasswd"] = toUtf(task_data->AccountPasswd);
-		data["Currency"] = toUtf(task_data->Currency);
-		data["SerialNo"] = toUtf(task_data->SerialNo);
-		delete task->task_data;
-	}
-	dict error;
-	if (task->task_error)
-	{
-		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
-		error["ErrorID"] = task_error->ErrorID;
-		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
-		delete task->task_error;
-	}
-	this->onRspTransferMoney(data, error, task->task_id, task->task_last);
 };
 
 void TdApi::processRtnFlowMessageCancel(Task *task)
@@ -2426,11 +2449,11 @@ void TdApi::processRspQryInvestorAccount(Task *task)
 	gil_scoped_acquire acquire;
 	dict data;
 	if (task->task_data)
-	{   
+	{
 		CUstpFtdcRspInvestorAccountField *task_data = (CUstpFtdcRspInvestorAccountField*)task->task_data;
-		data["AccountID"] = toUtf(task_data->AccountID);
 		data["BrokerID"] = toUtf(task_data->BrokerID);
 		data["InvestorID"] = toUtf(task_data->InvestorID);
+		data["AccountID"] = toUtf(task_data->AccountID);
 		data["PreBalance"] = task_data->PreBalance;
 		data["Deposit"] = task_data->Deposit;
 		data["Withdraw"] = task_data->Withdraw;
@@ -2766,7 +2789,7 @@ void TdApi::processRspQryInstrumentGroup(Task *task)
 		delete task->task_data;
 	}
 	dict error;
-	if (task->task_data)
+	if (task->task_error)
 	{
 		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
 		error["ErrorID"] = task_error->ErrorID;
@@ -2931,7 +2954,7 @@ void TdApi::processErrRtnExecOrderInsert(Task *task)
 		delete task->task_data;
 	}
 	dict error;
-	if (task->task_data)
+	if (task->task_error)
 	{
 		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
 		error["ErrorID"] = task_error->ErrorID;
@@ -3019,6 +3042,85 @@ void TdApi::processRspQrySystemTime(Task *task)
 	}
 	this->onRspQrySystemTime(data, error, task->task_id, task->task_last);
 };
+
+void TdApi::processRspQryMarginPrefParam(Task *task)
+{
+	gil_scoped_acquire acquire;
+	dict data;
+	if (task->task_data)
+	{
+		CUstpFtdcRspQryMarginPrefParamField *task_data = (CUstpFtdcRspQryMarginPrefParamField*)task->task_data;
+		data["BrokerID"] = toUtf(task_data->BrokerID);
+		data["ExchangeID"] = toUtf(task_data->ExchangeID);
+		data["CombInstrumentID"] = toUtf(task_data->CombInstrumentID);
+		data["CombInstrumentName"] = toUtf(task_data->CombInstrumentName);
+		data["CombType"] = task_data->CombType;
+		data["HedgeFlag"] = task_data->HedgeFlag;
+		data["Leg1InstrumentID"] = toUtf(task_data->Leg1InstrumentID);
+		data["Leg1ProductID"] = toUtf(task_data->Leg1ProductID);
+		data["Leg1Direction"] = task_data->Leg1Direction;
+		data["Leg1HedgeFlag"] = task_data->Leg1HedgeFlag;
+		data["Leg1SettlementPrice"] = task_data->Leg1SettlementPrice;
+		data["Leg2InstrumentID"] = toUtf(task_data->Leg2InstrumentID);
+		data["Leg2ProductID"] = toUtf(task_data->Leg2ProductID);
+		data["Leg2Direction"] = task_data->Leg2Direction;
+		data["Leg2HedgeFlag"] = task_data->Leg2HedgeFlag;
+		data["Leg2SettlementPrice"] = task_data->Leg2SettlementPrice;
+		data["Priority"] = task_data->Priority;
+		data["TradeEna"] = task_data->TradeEna;
+		delete task->task_data;
+	}
+	dict error;
+	if (task->task_error)
+	{
+		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
+		error["ErrorID"] = task_error->ErrorID;
+		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
+		delete task->task_error;
+	}
+	this->onRspQryMarginPrefParam(data, error, task->task_id, task->task_last);
+};
+
+void TdApi::processRspDSUserCertification(Task *task)
+{
+	gil_scoped_acquire acquire;
+	dict data;
+	if (task->task_data)
+	{
+		CUstpFtdcDSUserCertRspDataField *task_data = (CUstpFtdcDSUserCertRspDataField*)task->task_data;
+		data["AppID"] = toUtf(task_data->AppID);
+		data["AppIDType"] = task_data->AppIDType;
+		data["UserCertRspData"] = toUtf(task_data->UserCertRspData);
+		data["TotalNum"] = task_data->TotalNum;
+		data["CurrentNum"] = task_data->CurrentNum;
+		delete task->task_data;
+	}
+	dict error;
+	if (task->task_error)
+	{
+		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
+		error["ErrorID"] = task_error->ErrorID;
+		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
+		delete task->task_error;
+	}
+	this->onRspDSUserCertification(data, error, task->task_id, task->task_last);
+};
+
+void TdApi::processRspDSProxySubmitInfo(Task *task)
+{
+	gil_scoped_acquire acquire;
+	dict error;
+	if (task->task_error)
+	{
+		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
+		error["ErrorID"] = task_error->ErrorID;
+		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
+		delete task->task_error;
+	}
+	this->onRspDSProxySubmitInfo(error, task->task_id, task->task_last);
+};
+
+
 
 
 
@@ -3110,6 +3212,7 @@ int TdApi::reqUserLogin(const dict &req, int reqid)
 	getChar(req, "Authenticate2Type", &myreq.Authenticate2Type);
 	getString(req, "Authenticate2Password", myreq.Authenticate2Password);
 	getString(req, "TerminalCode", myreq.TerminalCode);
+	getString(req, "PasswordEncrypt", myreq.PasswordEncrypt);
 	int i = this->api->ReqUserLogin(&myreq, reqid);
 	return i;
 };
@@ -3140,31 +3243,33 @@ int TdApi::reqOrderInsert(const dict &req, int reqid)
 {
 	CUstpFtdcInputOrderField myreq = CUstpFtdcInputOrderField();
 	memset(&myreq, 0, sizeof(myreq));
-
-	getInt(req, "IsAutoSuspend", &myreq.IsAutoSuspend);
-	getString(req, "UserOrderLocalID", myreq.UserOrderLocalID);
-	getInt(req, "Volume", &myreq.Volume);
-	getChar(req, "TimeCondition", &myreq.TimeCondition);
-	getString(req, "OrderSysID", myreq.OrderSysID);
-	getString(req, "InstrumentID", myreq.InstrumentID);
-	getString(req, "ExchangeID", myreq.ExchangeID);
-	getInt(req, "MinVolume", &myreq.MinVolume);
-	getChar(req, "ForceCloseReason", &myreq.ForceCloseReason);
-	getString(req, "UserID", myreq.UserID);
 	getString(req, "BrokerID", myreq.BrokerID);
-	getString(req, "GTDDate", myreq.GTDDate);
-	getString(req, "BusinessUnit", myreq.BusinessUnit);
-	getString(req, "UserCustom", myreq.UserCustom);
+	getString(req, "ExchangeID", myreq.ExchangeID);
+	getString(req, "OrderSysID", myreq.OrderSysID);
 	getString(req, "InvestorID", myreq.InvestorID);
-	getChar(req, "VolumeCondition", &myreq.VolumeCondition);
-	getDouble(req, "LimitPrice", &myreq.LimitPrice);
-
+	getString(req, "UserID", myreq.UserID);
+	getInt(req, "SeatNo", &myreq.SeatNo);
+	getString(req, "InstrumentID", myreq.InstrumentID);
+	getString(req, "UserOrderLocalID", myreq.UserOrderLocalID);
 	getChar(req, "OrderPriceType", &myreq.OrderPriceType);
 	getChar(req, "Direction", &myreq.Direction);
-
 	getChar(req, "OffsetFlag", &myreq.OffsetFlag);
 	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
-
+	getDouble(req, "LimitPrice", &myreq.LimitPrice);
+	getInt(req, "Volume", &myreq.Volume);
+	getChar(req, "TimeCondition", &myreq.TimeCondition);
+	getString(req, "GTDDate", myreq.GTDDate);
+	getChar(req, "VolumeCondition", &myreq.VolumeCondition);
+	getInt(req, "MinVolume", &myreq.MinVolume);
+	getDouble(req, "StopPrice", &myreq.StopPrice);
+	getChar(req, "ForceCloseReason", &myreq.ForceCloseReason);
+	getInt(req, "IsAutoSuspend", &myreq.IsAutoSuspend);
+	getString(req, "BusinessUnit", myreq.BusinessUnit);
+	getString(req, "UserCustom", myreq.UserCustom);
+	getInt(req, "BusinessLocalID", &myreq.BusinessLocalID);
+	getString(req, "ActionDay", myreq.ActionDay);
+	getChar(req, "ArbiType", &myreq.ArbiType);
+	getString(req, "ClientID", myreq.ClientID);
 	int i = this->api->ReqOrderInsert(&myreq, reqid);
 	return i;
 };
@@ -3293,25 +3398,6 @@ int TdApi::reqUserDeposit(const dict &req, int reqid)
 	getChar(req, "AmountDirection", &myreq.AmountDirection);
 	getString(req, "UserOrderLocalID", myreq.UserOrderLocalID);
 	int i = this->api->ReqUserDeposit(&myreq, reqid);
-	return i;
-};
-
-int TdApi::reqTransferMoney(const dict &req, int reqid)
-{
-	CUstpFtdcstpTransferMoneyField myreq = CUstpFtdcstpTransferMoneyField();
-	memset(&myreq, 0, sizeof(myreq));
-	getString(req, "BrokerID", myreq.BrokerID);
-	getString(req, "UserID", myreq.UserID);
-	getString(req, "InvestorID", myreq.InvestorID);
-	getDouble(req, "Amount", &myreq.Amount);
-	getChar(req, "AmountDirection", &myreq.AmountDirection);
-	getString(req, "UserOrderLocalID", myreq.UserOrderLocalID);
-	getString(req, "BankID", myreq.BankID);
-	getString(req, "BankPasswd", myreq.BankPasswd);
-	getString(req, "AccountPasswd", myreq.AccountPasswd);
-	getString(req, "Currency", myreq.Currency);
-	getString(req, "SerialNo", myreq.SerialNo);
-	int i = this->api->ReqTransferMoney(&myreq, reqid);
 	return i;
 };
 
@@ -3464,6 +3550,7 @@ int TdApi::reqQryInvestorCombPosition(const dict &req, int reqid)
 	getString(req, "InvestorID", myreq.InvestorID);
 	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
 	getString(req, "CombInstrumentID", myreq.CombInstrumentID);
+	getString(req, "ClientID", myreq.ClientID);
 	int i = this->api->ReqQryInvestorCombPosition(&myreq, reqid);
 	return i;
 };
@@ -3477,6 +3564,7 @@ int TdApi::reqQryInvestorLegPosition(const dict &req, int reqid)
 	getString(req, "InvestorID", myreq.InvestorID);
 	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
 	getString(req, "LegInstrumentID", myreq.LegInstrumentID);
+	getString(req, "ClientID", myreq.ClientID);
 	int i = this->api->ReqQryInvestorLegPosition(&myreq, reqid);
 	return i;
 };
@@ -3556,6 +3644,46 @@ int TdApi::reqQrySystemTime(const dict &req, int reqid)
 	return i;
 };
 
+int TdApi::reqQryMarginPrefParam(const dict &req, int reqid)
+{
+	CUstpFtdcReqQryMarginPrefParamField myreq = CUstpFtdcReqQryMarginPrefParamField();
+	memset(&myreq, 0, sizeof(myreq));
+	getString(req, "BrokerID", myreq.BrokerID);
+	getString(req, "ExchangeID", myreq.ExchangeID);
+	getString(req, "CombInstrumentID", myreq.CombInstrumentID);
+	getString(req, "CombInstrumentName", myreq.CombInstrumentName);
+	int i = this->api->ReqQryMarginPrefParam(&myreq, reqid);
+	return i;
+};
+
+int TdApi::reqDSUserCertification(const dict &req, int reqid)
+{
+	CUstpFtdcDSUserInfoField myreq = CUstpFtdcDSUserInfoField();
+	memset(&myreq, 0, sizeof(myreq));
+	getString(req, "AppID", myreq.AppID);
+	getString(req, "AuthCode", myreq.AuthCode);
+	getChar(req, "EncryptType", &myreq.EncryptType);
+	int i = this->api->ReqDSUserCertification(&myreq, reqid);
+	return i;
+};
+
+int TdApi::reqDSProxySubmitInfo(const dict &req, int reqid)
+{
+	CUstpFtdcDSProxySubmitDataField myreq = CUstpFtdcDSProxySubmitDataField();
+	memset(&myreq, 0, sizeof(myreq));
+	getString(req, "AppID", myreq.AppID);
+	getString(req, "TerminalPubNetIP", myreq.TerminalPubNetIP);
+	getString(req, "TerminalPubNetPort", myreq.TerminalPubNetPort);
+	getString(req, "TerminalLoginTime", myreq.TerminalLoginTime);
+	getChar(req, "ExceptionFlag", &myreq.ExceptionFlag);
+	getString(req, "RelayID", myreq.RelayID);
+	getString(req, "TerminalSystemData", myreq.TerminalSystemData);
+	int i = this->api->ReqDSProxySubmitInfo(&myreq, reqid);
+	return i;
+};
+
+
+
 
 ///-------------------------------------------------------------------------------------
 ///Boost.Python·â×°
@@ -3571,6 +3699,18 @@ public:
 		try
 		{
 			PYBIND11_OVERLOAD(void, TdApi, onFrontConnected);
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
+	};
+
+	void onQryFrontConnected() override
+	{
+		try
+		{
+			PYBIND11_OVERLOAD(void, TdApi, onQryFrontConnected);
 		}
 		catch (const error_already_set &e)
 		{
@@ -3638,11 +3778,11 @@ public:
 		}
 	};
 
-	void onRspError(const dict &data, int reqid, bool last) override
+	void onRspError(const dict &error, int reqid, bool last) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onRspError, data, reqid, last);
+			PYBIND11_OVERLOAD(void, TdApi, onRspError, error, reqid, last);
 		}
 		catch (const error_already_set &e)
 		{
@@ -3654,9 +3794,7 @@ public:
 	{
 		try
 		{
-			
 			PYBIND11_OVERLOAD(void, TdApi, onRspUserLogin, data, error, reqid, last);
-
 		}
 		catch (const error_already_set &e)
 		{
@@ -3772,18 +3910,6 @@ public:
 		}
 	};
 
-	void onRspTransferMoney(const dict &data, const dict &error, int reqid, bool last) override
-	{
-		try
-		{
-			PYBIND11_OVERLOAD(void, TdApi, onRspTransferMoney, data, error, reqid, last);
-		}
-		catch (const error_already_set &e)
-		{
-			cout << e.what() << endl;
-		}
-	};
-
 	void onRtnFlowMessageCancel(const dict &data) override
 	{
 		try
@@ -3824,7 +3950,7 @@ public:
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onErrRtnOrderInsert, data, data);
+			PYBIND11_OVERLOAD(void, TdApi, onErrRtnOrderInsert, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -3836,7 +3962,7 @@ public:
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onErrRtnOrderAction, data, data);
+			PYBIND11_OVERLOAD(void, TdApi, onErrRtnOrderAction, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -3884,7 +4010,7 @@ public:
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onErrRtnQuoteInsert, data, data);
+			PYBIND11_OVERLOAD(void, TdApi, onErrRtnQuoteInsert, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -3896,7 +4022,7 @@ public:
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onErrRtnQuoteAction, data, data);
+			PYBIND11_OVERLOAD(void, TdApi, onErrRtnQuoteAction, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -3956,7 +4082,6 @@ public:
 	{
 		try
 		{
-			
 			PYBIND11_OVERLOAD(void, TdApi, onRspQueryUserLogin, data, error, reqid, last);
 		}
 		catch (const error_already_set &e)
@@ -4185,7 +4310,7 @@ public:
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onErrRtnExecOrderInsert, data, data);
+			PYBIND11_OVERLOAD(void, TdApi, onErrRtnExecOrderInsert, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -4197,7 +4322,7 @@ public:
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onErrRtnExecOrderAction, data, data);
+			PYBIND11_OVERLOAD(void, TdApi, onErrRtnExecOrderAction, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -4229,6 +4354,46 @@ public:
 		}
 	};
 
+	void onRspQryMarginPrefParam(const dict &data, const dict &error, int reqid, bool last) override
+	{
+		try
+		{
+			PYBIND11_OVERLOAD(void, TdApi, onRspQryMarginPrefParam, data, error, reqid, last);
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
+	};
+
+	void onRspDSUserCertification(const dict &data, const dict &error, int reqid, bool last) override
+	{
+		try
+		{
+			PYBIND11_OVERLOAD(void, TdApi, onRspDSUserCertification, data, error, reqid, last);
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
+	};
+
+	void onRspDSProxySubmitInfo(const dict &error, int reqid, bool last) override
+	{
+		try
+		{
+			PYBIND11_OVERLOAD(void, TdApi, onRspDSProxySubmitInfo, error, reqid, last);
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
+	};
+
+
+
+
+
 };
 
 
@@ -4244,8 +4409,8 @@ PYBIND11_MODULE(vnfemastd, m)
 		.def("exit", &TdApi::exit)
 		.def("getTradingDay", &TdApi::getTradingDay)
 		.def("registerFront", &TdApi::registerFront)
-		.def("subscribePublicTopic", &TdApi::subscribePublicTopic)
 		.def("subscribePrivateTopic", &TdApi::subscribePrivateTopic)
+		.def("subscribePublicTopic", &TdApi::subscribePublicTopic)
 		.def("subscribeUserTopic", &TdApi::subscribeUserTopic)
 		.def("reqUserLogin", &TdApi::reqUserLogin)
 		.def("reqUserLogout", &TdApi::reqUserLogout)
@@ -4257,7 +4422,6 @@ PYBIND11_MODULE(vnfemastd, m)
 		.def("reqForQuote", &TdApi::reqForQuote)
 		.def("reqMarginCombAction", &TdApi::reqMarginCombAction)
 		.def("reqUserDeposit", &TdApi::reqUserDeposit)
-		.def("reqTransferMoney", &TdApi::reqTransferMoney)
 		.def("reqQryOrder", &TdApi::reqQryOrder)
 		.def("reqQryTrade", &TdApi::reqQryTrade)
 		.def("reqQryUserInvestor", &TdApi::reqQryUserInvestor)
@@ -4276,6 +4440,9 @@ PYBIND11_MODULE(vnfemastd, m)
 		.def("reqExecOrderInsert", &TdApi::reqExecOrderInsert)
 		.def("reqExecOrderAction", &TdApi::reqExecOrderAction)
 		.def("reqQrySystemTime", &TdApi::reqQrySystemTime)
+		.def("reqQryMarginPrefParam", &TdApi::reqQryMarginPrefParam)
+		.def("reqDSUserCertification", &TdApi::reqDSUserCertification)
+		.def("reqDSProxySubmitInfo", &TdApi::reqDSProxySubmitInfo)
 
 		.def("onFrontConnected", &TdApi::onFrontConnected)
 		.def("onQryFrontConnected", &TdApi::onQryFrontConnected)
@@ -4295,7 +4462,6 @@ PYBIND11_MODULE(vnfemastd, m)
 		.def("onRspForQuote", &TdApi::onRspForQuote)
 		.def("onRspMarginCombAction", &TdApi::onRspMarginCombAction)
 		.def("onRspUserDeposit", &TdApi::onRspUserDeposit)
-		.def("onRspTransferMoney", &TdApi::onRspTransferMoney)
 		.def("onRtnFlowMessageCancel", &TdApi::onRtnFlowMessageCancel)
 		.def("onRtnTrade", &TdApi::onRtnTrade)
 		.def("onRtnOrder", &TdApi::onRtnOrder)
@@ -4333,7 +4499,10 @@ PYBIND11_MODULE(vnfemastd, m)
 		.def("onErrRtnExecOrderAction", &TdApi::onErrRtnExecOrderAction)
 		.def("onRtnTransferMoney", &TdApi::onRtnTransferMoney)
 		.def("onRspQrySystemTime", &TdApi::onRspQrySystemTime)
+		.def("onRspQryMarginPrefParam", &TdApi::onRspQryMarginPrefParam)
+		.def("onRspDSUserCertification", &TdApi::onRspDSUserCertification)
+		.def("onRspDSProxySubmitInfo", &TdApi::onRspDSProxySubmitInfo)
 		;
 
-		;
+
 }

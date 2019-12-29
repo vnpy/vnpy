@@ -25,8 +25,6 @@ using namespace pybind11;
 #define ONRSPUNSUBMARKETDATA 10
 #define ONRSPGETMARKETTOPIC 11
 #define ONRSPGETMARKETDATA 12
-#define ONRSPSUBSCRIBETOPIC 13
-#define ONRSPQRYTOPIC 14
 
 
 
@@ -86,6 +84,7 @@ public:
 	///@param nSequenceNo 报文序号
 	virtual void OnPackageEnd(int nTopicID, int nSequenceNo);
 
+
 	///错误应答
 	virtual void OnRspError(CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
@@ -95,12 +94,6 @@ public:
 	///用户退出应答
 	virtual void OnRspUserLogout(CUstpFtdcRspUserLogoutField *pRspUserLogout, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
-	///订阅主题应答
-	virtual void OnRspSubscribeTopic(CUstpFtdcDisseminationField *pDissemination, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
-
-	///主题查询应答
-	virtual void OnRspQryTopic(CUstpFtdcDisseminationField *pDissemination, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
-
 	///深度行情通知
 	virtual void OnRtnDepthMarketData(CUstpFtdcDepthMarketDataField *pDepthMarketData);
 
@@ -109,6 +102,12 @@ public:
 
 	///退订合约的相关信息
 	virtual void OnRspUnSubMarketData(CUstpFtdcSpecificInstrumentField *pSpecificInstrument, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+
+	///获取行情主题信息应答
+	virtual void OnRspGetMarketTopic(CUstpFtdcRspMarketTopicField *pRspMarketTopic, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+
+	///获取行情快照应答
+	virtual void OnRspGetMarketData(CUstpFtdcRspDepthMarketDataField *pRspDepthMarketData, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
 
 	//-------------------------------------------------------------------------------------
@@ -123,21 +122,25 @@ public:
 
 	void processHeartBeatWarning(Task *task);
 
+	void processPackageStart(Task *task);
+
+	void processPackageEnd(Task *task);
+
+	void processRspError(Task *task);
+
 	void processRspUserLogin(Task *task);
 
 	void processRspUserLogout(Task *task);
 
-	void processRspError(Task *task);
-
-	void processRspSubscribeTopic(Task *task);
-
-	void processRspQryTopic(Task *task);
+	void processRtnDepthMarketData(Task *task);
 
 	void processRspSubMarketData(Task *task);
 
 	void processRspUnSubMarketData(Task *task);
 
-	void processRtnDepthMarketData(Task *task);
+	void processRspGetMarketTopic(Task *task);
+
+	void processRspGetMarketData(Task *task);
 
 	//-------------------------------------------------------------------------------------
 	//data：回调函数的数据字典
@@ -153,21 +156,26 @@ public:
 
 	virtual void onHeartBeatWarning(int reqid) {};
 
+	virtual void onPackageStart(int reqid) {};
+
+	virtual void onPackageEnd(int reqid) {};
+
+	virtual void onRspError(const dict &data, int reqid, bool last) {};
+
 	virtual void onRspUserLogin(const dict &data, const dict &error, int reqid, bool last) {};
 
 	virtual void onRspUserLogout(const dict &data, const dict &error, int reqid, bool last) {};
 
-	virtual void onRspError(const dict &error, int reqid, bool last) {};
+	virtual void onRtnDepthMarketData(const dict &data) {};
 
-	virtual void onRspSubscribeTopic(const dict &data, const dict &error, int reqid, bool last) {};
-
-	virtual void onRspQryTopic(const dict &data, const dict &error, int reqid, bool last) {};
 
 	virtual void onRspSubMarketData(const dict &data, const dict &error, int reqid, bool last) {};
 
 	virtual void onRspUnSubMarketData(const dict &data, const dict &error, int reqid, bool last) {};
 
-	virtual void onRtnDepthMarketData(const dict &data) {};
+	virtual void onRspGetMarketTopic(const dict &data, const dict &error, int reqid, bool last) {};
+
+	virtual void onRspGetMarketData(const dict &data, const dict &error, int reqid, bool last) {};
 
 	//-------------------------------------------------------------------------------------
 	//req:主动函数的请求字典
@@ -200,9 +208,8 @@ public:
 
 	void setHeartbeatTimeout(int timeout);
 
-	int reqUserLogin(const dict &req, int nRequestID);
+	int reqUserLogin(const dict &req, int reqid);
 
-	int reqUserLogout(const dict &req, int nRequestID);
-
+	int reqUserLogout(const dict &req, int reqid);
 
 };

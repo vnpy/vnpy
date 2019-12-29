@@ -287,7 +287,7 @@ class SpreadData:
         if long_pos > 0:
             self.net_pos = long_pos
         else:
-            self.net_pos = short_pos
+            self.net_pos = -short_pos
 
     def clear_price(self):
         """"""

@@ -23,7 +23,7 @@
     <ProjectGuid>{F00054FF-282F-4826-848E-D58BFB9E9D9F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>vnfemasmd</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectName>vnfemasmd</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -98,7 +98,7 @@
     <IncludePath>C:\Miniconda3\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\femas;$(IncludePath)</IncludePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <TargetExt>.pyd</TargetExt>
-    <LibraryPath>C:\Miniconda3\include\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Miniconda3\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -160,7 +160,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
