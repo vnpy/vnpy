@@ -27,7 +27,8 @@ from vnpy.data.tdx.tdx_common import (
     PERIOD_MAPPING,
     get_tdx_market_code,
     get_cache_config,
-    save_cache_config)
+    save_cache_config,
+    TDX_STOCK_CONFIG)
 
 # 每个周期包含多少分钟
 NUM_MINUTE_MAPPING = {}
@@ -41,7 +42,6 @@ NUM_MINUTE_MAPPING['1day'] = 60 * 5.5  # 股票，收盘时间是15：00，开�
 # 常量
 QSIZE = 800
 
-STOCK_CONFIG_FILE = 'tdx_stock_config.pkb2'
 
 # 通达信 <=> 交易所代码 映射
 TDX_VN_STOCK_MARKET_MAP = {
@@ -74,7 +74,7 @@ class TdxStockData(object):
         self.symbol_exchange_dict = {}  # tdx合约与vn交易所的字典
         self.symbol_market_dict = {}  # tdx合约与tdx市场的字典
 
-        self.config = get_cache_config(STOCK_CONFIG_FILE)
+        self.config = get_cache_config(TDX_STOCK_CONFIG)
         self.symbol_dict = self.config.get('symbol_dict', {})
         self.cache_time = self.config.get('cache_time', datetime.now() - timedelta(days=7))
 
@@ -115,7 +115,7 @@ class TdxStockData(object):
                     from pytdx.util.best_ip import select_best_ip
                     self.best_ip = select_best_ip()
                     self.config.update({'best_ip': self.best_ip})
-                    save_cache_config(self.config, STOCK_CONFIG_FILE)
+                    save_cache_config(self.config, TDX_STOCK_CONFIG)
 
                 self.api.connect(self.best_ip.get('ip'), self.best_ip.get('port'))
                 self.write_log(f'创建tdx连接, : {self.best_ip}')
@@ -143,7 +143,7 @@ class TdxStockData(object):
                     self.symbol_dict.update({f'{tdx_symbol}_{market_id}': security})
 
         self.config.update({'symbol_dict': self.symbol_dict, 'cache_time': datetime.now()})
-        save_cache_config(data=self.config, config_file_name=STOCK_CONFIG_FILE)
+        save_cache_config(data=self.config, config_file_name=TDX_STOCK_CONFIG)
 
     def get_security_list(self, market_id: int = 0):
         """

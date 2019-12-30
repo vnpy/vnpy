@@ -37,7 +37,8 @@ from vnpy.data.tdx.tdx_common import (
     get_future_contracts,
     save_future_contracts,
     get_cache_json,
-    save_cache_json)
+    save_cache_json,
+    TDX_FUTURE_CONFIG)
 
 # 每个周期包含多少分钟 (估算值, 没考虑夜盘和10:15的影响)
 NUM_MINUTE_MAPPING: Dict[str, int] = {}
@@ -76,7 +77,6 @@ QSIZE = 500
 ALL_MARKET_BEGIN_HOUR = 8
 ALL_MARKET_END_HOUR = 16
 
-TDX_FUTURE_CONFIG = 'tdx_future_config.json'
 
 @lru_cache()
 def get_tdx_marketid(symbol):

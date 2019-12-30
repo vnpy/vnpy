@@ -8,6 +8,10 @@ from functools import lru_cache
 from logging import INFO, ERROR
 from vnpy.trader.utility import load_json, save_json
 
+# 期货的配置文件
+TDX_FUTURE_CONFIG = 'tdx_future_config.json'
+# 股票的配置文件
+TDX_STOCK_CONFIG = 'tdx_stock_config.pkb2'
 
 @lru_cache()
 def get_tdx_market_code(code):
