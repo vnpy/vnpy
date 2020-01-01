@@ -13,11 +13,10 @@ import os
 import pickle
 import bz2
 import copy
-import json
 import traceback
 
 from datetime import datetime, timedelta, time
-from logging import ERROR, INFO
+from logging import ERROR
 from typing import Dict
 
 from pandas import to_datetime
@@ -729,7 +728,8 @@ class TdxFutureData(object):
 
         mi_contract_quote_list = self.get_mi_contracts2()
 
-        self.write_log(u'一共获取:{}个主力合约:{}'.format(len(mi_contract_quote_list), [c.get('code') for c in mi_contract_quote_list]))
+        self.write_log(
+            u'一共获取:{}个主力合约:{}'.format(len(mi_contract_quote_list), [c.get('code') for c in mi_contract_quote_list]))
         should_save = False
         # 逐一更新主力合约数据
         for mi_contract in mi_contract_quote_list:
@@ -743,10 +743,11 @@ class TdxFutureData(object):
             mi_symbol = get_real_symbol_by_exchange(full_symbol, vn_exchange)
 
             # 更新登记 短合约：真实主力合约
-            self.write_log('{},{},{},{},{}'.format(tdx_market_id, full_symbol, underlying_symbol, mi_symbol, vn_exchange))
+            self.write_log(
+                '{},{},{},{},{}'.format(tdx_market_id, full_symbol, underlying_symbol, mi_symbol, vn_exchange))
             if underlying_symbol in self.future_contracts:
                 info = self.future_contracts.get(underlying_symbol)
-                if mi_symbol > info.get('mi_symbol') :
+                if mi_symbol > info.get('mi_symbol'):
                     self.write_log(u'主力合约变化:{} =>{}'.format(info.get('mi_symbol'), mi_symbol))
                     info.update({'mi_symbol': mi_symbol, 'full_symbol': full_symbol})
                     self.future_contracts.update({underlying_symbol: info})

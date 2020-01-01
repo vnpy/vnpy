@@ -13,6 +13,7 @@ TDX_FUTURE_CONFIG = 'tdx_future_config.json'
 # 股票的配置文件
 TDX_STOCK_CONFIG = 'tdx_stock_config.pkb2'
 
+
 @lru_cache()
 def get_tdx_market_code(code):
     # 获取通达信股票的market code
@@ -73,6 +74,7 @@ TDX_FUTURE_HOSTS = [
 def get_future_contracts():
     """获取期货合约信息"""
     return get_cache_json('future_contracts.json')
+
 
 def save_future_contracts(future_contracts_dict: dict):
     """保存期货合约信息"""
