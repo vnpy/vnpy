@@ -496,7 +496,7 @@ class BacktestingEngine:
             "return_drawdown_ratio": return_drawdown_ratio,
         }
         for key,value in statistics.items():
-            if value == np.inf:
+            if value in (np.inf,-np.inf):
                 value = 0
             statistics[key] = np.nan_to_num(value)
         return statistics
