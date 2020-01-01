@@ -495,7 +495,8 @@ class BacktestingEngine:
             "sharpe_ratio": sharpe_ratio,
             "return_drawdown_ratio": return_drawdown_ratio,
         }
-
+        for key,value in statistics.items():
+            statistics[key] = np.nan_to_num(value)
         return statistics
 
     def show_chart(self, df: DataFrame = None):
