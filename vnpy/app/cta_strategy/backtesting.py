@@ -396,8 +396,13 @@ class BacktestingEngine:
             max_drawdown = df["drawdown"].min()
             max_ddpercent = df["ddpercent"].min()
             max_drawdown_end = df["drawdown"].idxmin()
-            max_drawdown_start = df["balance"][:max_drawdown_end].argmax()
-            max_drawdown_duration = (max_drawdown_end - max_drawdown_start).days
+            if isinstance(max_drawdown_end,datetime):
+                max_drawdown_start = df["balance"][:max_drawdown_end].idxmax()
+                max_drawdown_duration = (max_drawdown_end - max_drawdown_start).days
+            else:
+                max_drawdown_start = 0
+                max_drawdown_end = 0
+                max_drawdown_duration = 0
 
             total_net_pnl = df["net_pnl"].sum()
             daily_net_pnl = total_net_pnl / total_days
