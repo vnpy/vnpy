@@ -1,11 +1,12 @@
 """
 
 """
-
+import os
+import sys
 from abc import ABC, abstractmethod
 from typing import Any, Sequence
 from copy import copy
-from logging import INFO
+from logging import INFO, DEBUG, ERROR
 
 from vnpy.event import Event, EventEngine
 from .event import (
@@ -30,6 +31,9 @@ from .object import (
     SubscribeRequest,
     HistoryRequest
 )
+
+from vnpy.trader.utility import get_folder_path
+from vnpy.trader.util_logger import setup_logger
 
 
 class BaseGateway(ABC):
@@ -81,6 +85,21 @@ class BaseGateway(ABC):
         """"""
         self.event_engine = event_engine
         self.gateway_name = gateway_name
+        self.logger = None
+
+        self.create_logger()
+
+    def create_logger(self):
+        """
+        创建engine独有的日志
+        :return:
+        """
+        log_path = get_folder_path("log")
+        log_filename = os.path.abspath(os.path.join(log_path, self.gateway_name))
+        print(u'create logger:{}'.format(log_filename))
+        from vnpy.trader.setting import SETTINGS
+        self.logger = setup_logger(file_name=log_filename, name=self.gateway_name,
+                                   log_level=SETTINGS.get('log.level', DEBUG))
 
     def on_event(self, type: str, data: Any = None):
         """
@@ -141,12 +160,29 @@ class BaseGateway(ABC):
         """
         self.on_event(EVENT_CONTRACT, contract)
 
-    def write_log(self, msg: str, level: int = INFO):
+    def write_log(self, msg: str, level: int = INFO, on_log: bool = False):
         """
         Write a log event from gateway.
         """
-        log = LogData(msg=msg, level=level, gateway_name=self.gateway_name)
-        self.on_log(log)
+        if self.logger:
+            self.logger.log(level, msg)
+
+        if on_log:
+            log = LogData(msg=msg, level=level, gateway_name=self.gateway_name)
+            self.on_log(log)
+
+    def write_error(self, msg: str, error: dict = {}):
+        """
+        write error log
+        :param msg:
+        :return:
+        """
+        if len(error) > 0:
+            error_id = error.get("ErrorID", '')
+            error_msg = error.get("ErrorMsg", '')
+            msg = f"{msg}，代码：{error_id}，信息：{error_msg}"
+        self.write_log(msg, level=ERROR, on_log=True)
+        print(msg, file=sys.stderr)
 
     @abstractmethod
     def connect(self, setting: dict):
@@ -273,7 +309,7 @@ class LocalOrderManager:
         # For generating local orderid
         self.order_prefix = order_prefix
         self.order_count = 0
-        self.orders = {}        # local_orderid:order
+        self.orders = {}  # local_orderid:order
 
         # Map between local and system orderid
         self.local_sys_orderid_map = {}
@@ -286,7 +322,7 @@ class LocalOrderManager:
         self.push_data_callback = None
 
         # Cancel request buf
-        self.cancel_request_buf = {}    # local_orderid:req
+        self.cancel_request_buf = {}  # local_orderid:req
 
         # Hook cancel order function
         self._cancel_order = gateway.cancel_order

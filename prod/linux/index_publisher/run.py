@@ -14,9 +14,8 @@ print(f'append {ROOT_PATH} into sys.path')
 from vnpy.event import EventEngine
 from vnpy.trader.setting import SETTINGS
 from vnpy.trader.engine import MainEngine
-from vnpy.trader.utility import load_json
 from vnpy.gateway.ctp import CtpGateway
-from vnpy.app.tick_recorder import TickRecorderApp
+from vnpy.app.index_tick_publisher import IndexTickPublisherApp
 from vnpy.app.cta_strategy.base import EVENT_CTA_LOG
 
 
@@ -25,7 +24,9 @@ SETTINGS["log.level"] = INFO
 SETTINGS["log.console"] = True
 
 
-ctp_setting = load_json('connect_ctp.json')
+rebbit_setting = {
+    "host": "192.168.1.211"
+}
 
 
 def run_child():
@@ -37,18 +38,16 @@ def run_child():
     event_engine = EventEngine()
     main_engine = MainEngine(event_engine)
     main_engine.add_gateway(CtpGateway)
-    main_engine.add_app(TickRecorderApp)
+    publisher_engine = main_engine.add_app(IndexTickPublisherApp)
     main_engine.write_log("主引擎创建成功")
 
     log_engine = main_engine.get_engine("log")
     event_engine.register(EVENT_CTA_LOG, log_engine.process_log_event)
     main_engine.write_log("注册日志事件监听")
 
-    main_engine.connect(ctp_setting, "CTP")
-    main_engine.write_log("连接CTP接口")
-
     sleep(10)
-
+    main_engine.write_log("启动连接tdx & rabbit")
+    publisher_engine.connect(rebbit_setting)
     while True:
         sleep(1)
 

@@ -28,6 +28,7 @@ def func_time(over_ms: int = 0):
     :param :over_ms 超过多少毫秒, 提示信息
     :return:
     """
+
     def run(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -38,7 +39,9 @@ def func_time(over_ms: int = 0):
             if execute_ms > over_ms:
                 print('{} took {} ms'.format(func.__qualname__, execute_ms))
             return result
+
         return wrapper
+
     return run
 
 
@@ -125,7 +128,7 @@ def get_real_symbol_by_exchange(full_symbol, vn_exchange):
     if vn_exchange == Exchange.CFFEX:
         return full_symbol.upper()
 
-    if vn_exchange in [Exchange.DCE,  Exchange.SHFE,  Exchange.INE]:
+    if vn_exchange in [Exchange.DCE, Exchange.SHFE, Exchange.INE]:
         return full_symbol.lower()
 
     if vn_exchange == Exchange.CZCE:
@@ -134,6 +137,7 @@ def get_real_symbol_by_exchange(full_symbol, vn_exchange):
         return underlying_symbol.upper() + full_symbol[-yearmonth_len:]
 
     return full_symbol
+
 
 def get_trading_date(dt: datetime = None):
     """
@@ -304,11 +308,11 @@ class BarGenerator:
     """
 
     def __init__(
-        self,
-        on_bar: Callable,
-        window: int = 0,
-        on_window_bar: Callable = None,
-        interval: Interval = Interval.MINUTE
+            self,
+            on_bar: Callable,
+            window: int = 0,
+            on_window_bar: Callable = None,
+            interval: Interval = Interval.MINUTE
     ):
         """Constructor"""
         self.bar = None

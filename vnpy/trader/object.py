@@ -33,8 +33,8 @@ class TickData(BaseData):
     symbol: str
     exchange: Exchange
     datetime: datetime
-    date: str = ""      # '%Y-%m-%d'
-    time: str = ""      # '%H:%M:%S.%f'
+    date: str = ""  # '%Y-%m-%d'
+    time: str = ""  # '%H:%M:%S.%f'
     trading_day: str = ""  # '%Y-%m-%d'
 
     name: str = ""
@@ -108,14 +108,15 @@ class RenkoBarData(BarData):
     """
     Renko bar data of a certain trading period.
     """
-    seconds: int = 0            # 当前Bar的秒数（针对RenkoBar)
-    high_seconds: int = -1      # 当前Bar的上限秒数
-    low_seconds: int = -1       # 当前bar的下限秒数
-    height: float = 3           # 当前Bar的高度限制（针对RenkoBar和RangeBar类）
-    up_band: float = 0          # 高位区域的基线
-    down_band: float = 0        # 低位区域的基线
-    low_time = None             # 最后一次进入低位区域的时间
-    high_time = None            # 最后一次进入高位区域的时间
+    seconds: int = 0  # 当前Bar的秒数（针对RenkoBar)
+    high_seconds: int = -1  # 当前Bar的上限秒数
+    low_seconds: int = -1  # 当前bar的下限秒数
+    height: float = 3  # 当前Bar的高度限制（针对RenkoBar和RangeBar类）
+    up_band: float = 0  # 高位区域的基线
+    down_band: float = 0  # 低位区域的基线
+    low_time = None  # 最后一次进入低位区域的时间
+    high_time = None  # 最后一次进入高位区域的时间
+
 
 @dataclass
 class OrderData(BaseData):
@@ -252,15 +253,15 @@ class ContractData(BaseData):
     product: Product
     size: int
     pricetick: float
-    margin_rate: float = 0.1        # 保证金比率
+    margin_rate: float = 0.1  # 保证金比率
 
-    min_volume: float = 1           # minimum trading volume of the contract
-    stop_supported: bool = False    # whether server supports stop order
-    net_position: bool = False      # whether gateway uses net position volume
-    history_data: bool = False      # whether gateway provides bar history data
+    min_volume: float = 1  # minimum trading volume of the contract
+    stop_supported: bool = False  # whether server supports stop order
+    net_position: bool = False  # whether gateway uses net position volume
+    history_data: bool = False  # whether gateway provides bar history data
 
     option_strike: float = 0
-    option_underlying: str = ""     # vt_symbol of underlying contract
+    option_underlying: str = ""  # vt_symbol of underlying contract
     option_type: OptionType = None
     option_expiry: datetime = None
 
