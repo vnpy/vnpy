@@ -42,9 +42,10 @@ from vnpy.trader.constant import (
     OptionType,
     Interval
 )
+from vnpy.trader.utility import load_json, save_json
 
 ORDERTYPE_VT2IB = {
-    OrderType.LIMIT: "LMT", 
+    OrderType.LIMIT: "LMT",
     OrderType.MARKET: "MKT",
     OrderType.STOP: "STP"
 }
@@ -196,6 +197,8 @@ class IbGateway(BaseGateway):
 class IbApi(EWrapper):
     """"""
 
+    data_filename = "ib_contracts_data.json"
+
     def __init__(self, gateway: BaseGateway):
         """"""
         super(IbApi, self).__init__()
@@ -214,6 +217,7 @@ class IbApi(EWrapper):
         self.contracts = {}
 
         self.tick_exchange = {}
+        self.contracts_data = {}
 
         self.history_req = None
         self.history_condition = Condition()
@@ -222,12 +226,50 @@ class IbApi(EWrapper):
         self.client = IbClient(self)
         self.thread = Thread(target=self.client.run)
 
+    def load_contracts_data(self):
+        """"""
+        self.contracts_data = load_json(self.data_filename)
+        self.subscribe_inicio(self.contracts_data)
+
+    def subscribe_inicio(self, data: dict = None):
+        """"""
+        if not self.status:
+            return
+
+        if data:
+            for vt_symbol, name in data.items():
+                con_id = vt_symbol.split(".")[0]
+                exchange = vt_symbol.split(".")[1]
+
+                ib_contract = Contract()
+                ib_contract.conId = con_id
+                ib_contract.exchange = exchange
+
+                # Get contract data from TWS.
+                self.reqid += 1
+                self.client.reqContractDetails(self.reqid, ib_contract)
+
+                # Subscribe tick data and create tick object buffer.
+                self.reqid += 1
+                self.client.reqMktData(self.reqid, ib_contract, "", False, False, [])
+
+                tick = TickData(
+                    name=name,
+                    symbol=con_id,
+                    exchange=EXCHANGE_IB2VT[exchange],
+                    datetime=datetime.now(),
+                    gateway_name=self.gateway_name,
+                )
+                self.ticks[self.reqid] = tick
+                self.tick_exchange[self.reqid] = EXCHANGE_IB2VT[exchange]
+
     def connectAck(self):  # pylint: disable=invalid-name
         """
         Callback when connection is established.
         """
         self.status = True
         self.gateway.write_log("IB TWS连接成功")
+        self.load_contracts_data()
 
     def connectionClosed(self):  # pylint: disable=invalid-name
         """
@@ -312,9 +354,9 @@ class IbApi(EWrapper):
 
         self.gateway.on_tick(copy(tick))
 
-    def tickString(
+    def tickString(  # pylint: disable=invalid-name
         self, reqId: TickerId, tickType: TickType, value: str
-    ):  # pylint: disable=invalid-name
+    ):
         """
         Callback of tick string update.
         """
@@ -517,9 +559,19 @@ class IbApi(EWrapper):
             self.gateway.on_contract(contract)
             self.contracts[contract.vt_symbol] = contract
 
-    def execDetails(
+            self.update_contracts_data(contract)
+
+    def update_contracts_data(self, data):
+        """"""
+        vt_symbol = data.vt_symbol
+        name = data.name
+
+        self.contracts_data[vt_symbol] = name
+        save_json(self.data_filename, self.contracts_data)
+
+    def execDetails(  # pylint: disable=invalid-name
         self, reqId: int, contract: Contract, execution: Execution
-    ):  # pylint: disable=invalid-name
+    ):
         """
         Callback of trade data update.
         """
@@ -700,7 +752,7 @@ class IbApi(EWrapper):
             end_str = ""
 
         delta = end - req.start
-        days = min(delta.days, 180)     # IB only provides 6-month data
+        days = min(delta.days, 180)  # IB only provides 6-month data
         duration = f"{days} D"
         bar_size = INTERVAL_VT2IB[req.interval]
 
@@ -722,12 +774,12 @@ class IbApi(EWrapper):
             []
         )
 
-        self.history_condition.acquire()    # Wait for async data return
+        self.history_condition.acquire()  # Wait for async data return
         self.history_condition.wait()
         self.history_condition.release()
 
         history = self.history_buf
-        self.history_buf = []       # Create new buffer list
+        self.history_buf = []  # Create new buffer list
         self.history_req = None
 
         return history
@@ -735,7 +787,6 @@ class IbApi(EWrapper):
 
 class IbClient(EClient):
     """"""
-
     def run(self):
         """
         Reimplement the original run message loop of eclient.
