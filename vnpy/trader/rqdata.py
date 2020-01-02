@@ -49,14 +49,14 @@ class RqdataClient:
         if not self.username or not self.password:
             return False
 
-        rqdata_init(
-            self.username,
-            self.password,
-            ('rqdatad-pro.ricequant.com', 16011),
-            use_pool=True,
-        )
-
         try:
+            rqdata_init(
+                self.username,
+                self.password,
+                ('rqdatad-pro.ricequant.com', 16011),
+                use_pool=True,
+            )
+
             df = rqdata_all_instruments()
             for ix, row in df.iterrows():
                 self.symbols.add(row['order_book_id'])
