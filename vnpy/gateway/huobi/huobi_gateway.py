@@ -21,7 +21,8 @@ from vnpy.trader.constant import (
     Exchange,
     Product,
     Status,
-    OrderType
+    OrderType,
+    Interval
 )
 from vnpy.trader.gateway import BaseGateway, LocalOrderManager
 from vnpy.trader.object import (
@@ -30,9 +31,11 @@ from vnpy.trader.object import (
     TradeData,
     AccountData,
     ContractData,
+    BarData,
     OrderRequest,
     CancelRequest,
-    SubscribeRequest
+    SubscribeRequest,
+    HistoryRequest
 )
 from vnpy.trader.event import EVENT_TIMER
 
@@ -58,6 +61,11 @@ ORDERTYPE_VT2HUOBI = {
 }
 ORDERTYPE_HUOBI2VT = {v: k for k, v in ORDERTYPE_VT2HUOBI.items()}
 
+INTERVAL_VT2HUOBI = {
+    Interval.MINUTE: "1min",
+    Interval.HOUR: "60min",
+    Interval.DAILY: "1day"
+}
 
 huobi_symbols = set()
 symbol_name_map = {}
@@ -128,6 +136,10 @@ class HuobiGateway(BaseGateway):
     def query_position(self):
         """"""
         pass
+
+    def query_history(self, req: HistoryRequest):
+        """"""
+        return self.rest_api.query_history(req)
 
     def close(self):
         """"""
@@ -249,6 +261,58 @@ class HuobiRestApi(RestClient):
             path="/v1/common/symbols",
             callback=self.on_query_contract
         )
+
+    def query_history(self, req: HistoryRequest):
+        """"""
+        # Create query params
+        params = {
+            "symbol": req.symbobol,
+            "period": INTERVAL_VT2HUOBI[req.interval],
+            "size": 2000
+        }
+
+        # Get response from server
+        resp = self.request(
+            "GET",
+            "/market/history/kline",
+            params=params
+        )
+
+        # Break if request failed with other status code
+        history = []
+
+        if resp.status_code // 100 != 2:
+            msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
+            self.gateway.write_log(msg)
+        else:
+            data = resp.json()
+            if not data:
+                msg = f"获取历史数据为空"
+                self.gateway.write_log(msg)
+            else:
+                for d in data["data"]:
+                    dt = datetime.fromtimestamp(d["id"])
+
+                    bar = BarData(
+                        symbol=req.symbol,
+                        exchange=req.exchange,
+                        datetime=dt,
+                        interval=req.interval,
+                        volume=d["vol"],
+                        open_price=d["open"],
+                        high_price=d["high"],
+                        low_price=d["low"],
+                        close_price=d["close"],
+                        gateway_name=self.gateway_name
+                    )
+                    history.append(bar)
+
+                begin = history[0].datetime
+                end = history[-1].datetime
+                msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
+                self.gateway.write_log(msg)
+
+        return history
 
     def send_order(self, req: OrderRequest):
         """"""
@@ -382,6 +446,7 @@ class HuobiRestApi(RestClient):
                 size=1,
                 min_volume=min_volume,
                 product=Product.SPOT,
+                history_data=True,
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_contract(contract)
