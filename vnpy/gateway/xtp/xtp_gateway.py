@@ -828,7 +828,7 @@ class XtpTraderApi(API.TraderSpi):
             pricetick=option_info.price_tick,
             gateway_name=self.gateway_name,
             option_portfolio=option_info.underlying_security_id,
-            option_underlying=option_info.underlying_security_id,
+            option_underlying=f'{option_info.underlying_security_id}@{option_info.delivery_month}',
             option_type=OPTIONTYPE_XTP2VT[option_info.call_or_put],
             option_strike=option_info.exercise_price,
             option_index=str(option_info.exercise_price),
