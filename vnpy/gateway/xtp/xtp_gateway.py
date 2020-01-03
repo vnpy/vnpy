@@ -659,7 +659,6 @@ class XtpTraderApi(API.TraderSpi):
     def query_option_auction_info(self, query_param: XTPQueryOptionAuctionInfoReq):
         self.reqid += 1
         self.api.QueryOptionAuctionInfo(query_param, self.session_id, self.reqid)
-        pass
 
     def check_error(self, func_name: str, error_info: XTPRspInfoStruct):
         """"""
