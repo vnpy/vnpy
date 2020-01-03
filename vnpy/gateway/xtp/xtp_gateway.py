@@ -26,6 +26,7 @@ from vnpy.api.xtp.vnxtp import (
     XTPQueryETFComponentRsp,
     XTPQueryIPOTickerRsp,
     XTPQueryIPOQuotaRsp,
+    XTPQueryOptionAuctionInfoReq,
     XTPQueryOptionAuctionInfoRsp,
     XTP_EXCHANGE_TYPE,
     XTP_LOG_LEVEL,
@@ -42,11 +43,12 @@ from vnpy.api.xtp.vnxtp import (
     XTP_TICKER_TYPE,
     XTP_MARKET_TYPE,
     XTP_PRICE_TYPE,
-    XTP_ORDER_STATUS_TYPE
+    XTP_ORDER_STATUS_TYPE,
+    XTP_OPT_CALL_OR_PUT_TYPE,
 )
 from vnpy.event import EventEngine
-from vnpy.trader.event import EVENT_TIMER
-from vnpy.trader.constant import Exchange, Product, Direction, OrderType, Status, Offset
+from vnpy.trader.event import EVENT_TIMER, EVENT_CONTRACT
+from vnpy.trader.constant import Exchange, Product, Direction, OrderType, Status, Offset, OptionType
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (CancelRequest, OrderRequest, SubscribeRequest,
                                 TickData, ContractData, OrderData, TradeData,
@@ -106,6 +108,11 @@ STATUS_XTP2VT = {
     XTP_ORDER_STATUS_TYPE.XTP_ORDER_STATUS_NOTRADEQUEUEING: Status.NOTTRADED,
     XTP_ORDER_STATUS_TYPE.XTP_ORDER_STATUS_CANCELED: Status.CANCELLED,
     XTP_ORDER_STATUS_TYPE.XTP_ORDER_STATUS_REJECTED: Status.REJECTED,
+}
+
+OPTIONTYPE_XTP2VT = {
+    XTP_OPT_CALL_OR_PUT_TYPE.XTP_OPT_CALL: OptionType.CALL,
+    XTP_OPT_CALL_OR_PUT_TYPE.XTP_OPT_PUT: OptionType.PUT
 }
 
 
@@ -202,6 +209,20 @@ class XtpGateway(BaseGateway):
     def _async_callback_exception_handler(self, e: AsyncDispatchException):
         error_str = f"发生内部错误：\n" f"位置：{e.instance}.{e.function_name}" f"详细信息：{e.what}"
         print(error_str)
+
+    def on_contract(self, contract: ContractData):
+        """
+        Contract event push.
+        """
+
+        if contract.product == Product.OPTION:
+            xtp_req = XTPQueryOptionAuctionInfoReq()
+            xtp_req.market = MARKET_VT2XTP[contract.exchange]
+            xtp_req.ticker = contract.symbol
+            self.trader_api.query_option_auction_info(xtp_req)
+            return
+
+        self.on_event(EVENT_CONTRACT, contract)
 
 
 class XtpQuoteApi(API.QuoteSpi):
@@ -432,6 +453,10 @@ class XtpQuoteApi(API.QuoteSpi):
         if self.check_error("查询合约", error_info):
             return
 
+        if ticker_info.ticker_type not in PRODUCT_XTP2VT:
+            # 当前不支持的ticker类型，不作处理
+            return
+
         contract = ContractData(
             symbol=ticker_info.ticker,
             exchange=EXCHANGE_XTP2VT[ticker_info.exchange_id],
@@ -631,6 +656,11 @@ class XtpTraderApi(API.TraderSpi):
             self.reqid += 1
             self.api.QueryCreditDebtInfo(self.session_id, self.reqid)
 
+    def query_option_auction_info(self, query_param: XTPQueryOptionAuctionInfoReq):
+        self.reqid += 1
+        self.api.QueryOptionAuctionInfo(query_param, self.session_id, self.reqid)
+        pass
+
     def check_error(self, func_name: str, error_info: XTPRspInfoStruct):
         """"""
         if error_info and error_info.error_id:
@@ -787,9 +817,25 @@ class XtpTraderApi(API.TraderSpi):
         pass
 
     def OnQueryOptionAuctionInfo(self, option_info: XTPQueryOptionAuctionInfoRsp, error_info: XTPRspInfoStruct,
-                                 is_last: bool, session_id: int) -> Any:
+                                 request_id: int, is_last: bool, session_id: int) -> Any:
         """"""
-        pass
+        contract = ContractData(
+            symbol=option_info.ticker,
+            exchange=MARKET_XTP2VT[option_info.security_id_source],
+            name=option_info.contract_id,
+            product=Product.OPTION,
+            size=option_info.contract_unit,
+            pricetick=option_info.price_tick,
+            gateway_name=self.gateway_name,
+            option_portfolio=option_info.underlying_security_id,
+            option_underlying=option_info.underlying_security_id,
+            option_type=OPTIONTYPE_XTP2VT[option_info.call_or_put],
+            option_strike=option_info.exercise_price,
+            option_index=str(option_info.exercise_price),
+            option_expiry=datetime.strptime(str(option_info.exercise_begin_date), "%Y%m%d")
+        )
+        self.gateway.on_event(EVENT_CONTRACT, contract)
+
 
     def OnQueryCreditDebtInfo(self, debt_info: XTPCrdDebtInfo, error_info: XTPRspInfoStruct,
                               request_id: int, is_last: bool, session_id: int) -> Any:

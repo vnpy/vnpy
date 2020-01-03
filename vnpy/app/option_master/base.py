@@ -17,8 +17,11 @@ EVENT_OPTION_NEW_PORTFOLIO = "eOptionNewPortfolio"
 
 CHAIN_UNDERLYING_MAP = {
     "510050_O.SSE": "510050",
+    "510050.SSE": "510050",
+    "510300.SSE": "510300",
+    "159919.SZSE": "159919",
     "IO.CFFEX": "IF",
-    "HO.CFFEX": "IH"
+    "HO.CFFEX": "IH",
 }
 
 
