@@ -8,7 +8,11 @@
 ###Fork版本主要改进如下
 1. 事件引擎，增加运行效率调试功能
 2. 增加rabbitMQ通信组件
-3. 增加tdx 免费数据源
+3. 增加tdx 免费数据源,包括
+    
+     - 提供主力合约/指数合约的信息获取
+     - 提供期货/股票数据bar 和分笔成交数据下载
+     - 提供每日增量更新期货数据=> csv文件，可配合NFS+Celery，实现分布式回测
 4. 增加App: tick_recorder, 直接异步写入csv文件
 5. 增加App: index_tick_publisher, 订阅通达信指数行情=》rabbit_mq 推送
 6. 增强ctp_gateway，包括:
