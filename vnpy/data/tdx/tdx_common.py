@@ -126,4 +126,4 @@ class FakeStrategy(object):
         self.write_log(content, level=ERROR)
 
     def display_bar(self, bar, bar_is_completed=True, freq=1):
-        print(u'{} {}'.format(bar.vtSymbol, bar.datetime))
+        print(u'{} {}'.format(bar.vt_symbol, bar.datetime))

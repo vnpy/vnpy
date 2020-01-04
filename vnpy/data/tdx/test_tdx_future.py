@@ -1,7 +1,7 @@
 # flake8: noqa
 import os
 import sys
-
+import json
 vnpy_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 if vnpy_root not in sys.path:
     sys.path.append(vnpy_root)
@@ -22,7 +22,7 @@ str_markets = json.dumps(markets, indent=1, ensure_ascii=False)
 print(u'{}'.format(str_markets))
 
 # 获取所有的期货合约明细
-api_01.qryInstrument()
+# api_01.qry_instrument()
 
 # 获取某个合约得最新价
 # price = api_01.get_price('rb2005')
@@ -59,8 +59,19 @@ corr = df.corr()
 print(corr)
 corr_rate = round(abs(corr.iloc[0, 1]) * 100, 2)
 """
-# api.get_bars(symbol, period='5min', callback=display_bar)
-# api_01.get_bars('IF99', period='1day', callback=t1.display_bar)
+# 获取bar，并通过回调方式，提高给策略，逐一onbar
+# api_01.get_bars('IF99', period='1min', callback=t1.display_bar, bar_freq=1)
+
+# 获取bar，只返回 list[dict]
+result, bars = api_01.get_bars('IF99', period='1min', return_bar=False)
+if result:
+    print('前十根bar')
+    for bar in bars[0:10]:
+        print(bar)
+    print('后十根bar')
+    for bar in bars[-10:]:
+        print(bar)
+
 # result,datas = api_01.get_transaction_data(symbol='ni1905')
 # api_02 = TdxFutureData(t2)
 # api_02.get_bars('IF99', period='1min', callback=t1.display_bar)

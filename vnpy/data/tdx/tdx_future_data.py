@@ -17,7 +17,7 @@ import traceback
 
 from datetime import datetime, timedelta, time
 from logging import ERROR
-from typing import Dict
+from typing import Dict, Callable
 
 from pandas import to_datetime
 from pytdx.exhq import TdxExHq_API
@@ -91,7 +91,7 @@ def get_tdx_marketid(symbol):
 class TdxFutureData(object):
 
     # ----------------------------------------------------------------------
-    def __init__(self, strategy, best_ip={}):
+    def __init__(self, strategy=None, best_ip={}):
         """
         构造函数
         :param strategy: 上层策略，主要用与使用write_log（）
@@ -195,8 +195,17 @@ class TdxFutureData(object):
         save_cache_json(best_future_ip, TDX_FUTURE_CONFIG)
         return best_future_ip
 
-    # ----------------------------------------------------------------------
-    def qryInstrument(self):
+    def _get_vn_exchange(self, symbol):
+        """获取"""
+        underlying_symbol = get_underlying_symbol(symbol).upper()
+        info = self.future_contracts.get(underlying_symbol, None)
+        if info:
+            return Exchange(info.get('exchange'))
+        else:
+            market_id = get_tdx_marketid(symbol)
+            return Tdx_Vn_Exchange_Map.get(str(market_id), Exchange.INE)
+
+    def qry_instrument(self):
         """
         查询/更新合约信息
         :return:
@@ -225,19 +234,29 @@ class TdxFutureData(object):
     def get_bars(self,
                  symbol: str,
                  period: str,
-                 callback,
+                 callback: Callable = None,
                  bar_freq: int = 1,
-                 start_dt: datetime = None):
+                 start_dt: datetime = None,
+                 end_dt: datetime = None,
+                 return_bar=True):
         """
         返回k线数据
         symbol：合约
         period: 周期: 1min,3min,5min,15min,30min,1day,3day,1hour,2hour,4hour,6hour,12hour
+        callback: 逐一bar去驱动回调函数, 只有 return_bar = True时才回调
+        bar_freq: 回调时的参数
+        start_dt: 取数据的开始时间
+        end_dt: 取数据的结束时间
+        return_bar: 返回 第二个数据内容，True:BarData, False:dict
         """
 
         ret_bars = []
         tdx_symbol = symbol.upper().replace('_', '')
         tdx_symbol = tdx_symbol.replace('99', 'L9')
-        tdx_index_symbol = get_underlying_symbol(symbol) + 'L9'
+        underlying_symbol = get_underlying_symbol(symbol).upper()
+        tdx_index_symbol = underlying_symbol + 'L9'
+        vn_exchange = self._get_vn_exchange(underlying_symbol)
+
         self.connect()
         if self.api is None:
             return False, ret_bars
@@ -253,7 +272,11 @@ class TdxFutureData(object):
             qry_start_date = datetime.now() - timedelta(days=10)
         else:
             qry_start_date = start_dt
-        end_date = datetime.combine(datetime.now() + timedelta(days=1), time(ALL_MARKET_END_HOUR, 0))
+        if end_dt is None:
+            self.write_log(u'没有设置结束时间，缺省为当日')
+            end_date = datetime.combine(datetime.now() + timedelta(days=1), time(ALL_MARKET_END_HOUR, 0))
+        else:
+            end_date = end_dt
         if qry_start_date > end_date:
             qry_start_date = end_date
         self.write_log('{}开始下载tdx:{} {}数据, {} to {}.'
@@ -290,12 +313,6 @@ class TdxFutureData(object):
             data = data.assign(datetime=to_datetime(data['datetime']))
             data = data.assign(ticker=symbol)
             data['instrument_id'] = data['ticker']
-            # if future['market'] == 28 or future['market'] == 47:
-            #     # 大写字母: 郑州商品 or 中金所期货
-            #     data['instrument_id'] = data['ticker']
-            # else:
-            #     data['instrument_id'] = data['ticker'].apply(lambda x: x.lower())
-
             data['symbol'] = symbol
             data = data.drop(
                 ['year', 'month', 'day', 'hour', 'minute', 'price', 'amount', 'ticker'],
@@ -312,11 +329,11 @@ class TdxFutureData(object):
                     str(datetime.now()), tdx_symbol, len(data)))
                 return False, ret_bars
 
-            data['total_turnover'] = data['volume']
+            data['total_turnover'] = data['volume'] * data['close']
             data["limit_down"] = 0
             data["limit_up"] = 999999
-            data['trading_date'] = data['datetime']
-            data['trading_date'] = data['trading_date'].apply(lambda x: (x.strftime('%Y-%m-%d')))
+            data['trading_day'] = data['datetime']
+            data['trading_day'] = data['trading_day'].apply(lambda x: (x.strftime('%Y-%m-%d')))
             monday_ts = data['datetime'].dt.weekday == 0  # 星期一
             night_ts1 = data['datetime'].dt.hour > ALL_MARKET_END_HOUR
             night_ts2 = data['datetime'].dt.hour < ALL_MARKET_BEGIN_HOUR
@@ -326,52 +343,54 @@ class TdxFutureData(object):
             monday_ts2 = monday_ts & night_ts2  # 星期一的夜盘(00:00~04:00), 再减两天
             data.loc[monday_ts2, 'datetime'] -= timedelta(days=2)
             # data['datetime'] -= timedelta(minutes=1) # 直接给Strategy使用, RiceQuant格式, 不需要减1分钟
-            data['dt_datetime'] = data['datetime']
+            # data['dt_datetime'] = data['datetime']
             data['date'] = data['datetime'].apply(lambda x: (x.strftime('%Y-%m-%d')))
             data['time'] = data['datetime'].apply(lambda x: (x.strftime('%H:%M:%S')))
-            data['datetime'] = data['datetime'].apply(lambda x: float(x.strftime('%Y%m%d%H%M%S')))
-            data = data.set_index('dt_datetime', drop=False)
-            # data = data[int(last_date.strftime('%Y%m%d%H%M%S')):int(end_date.strftime('%Y%m%d%H%M%S'))]
-            # data = data[str(last_date):str(end_date)]
+            # data['datetime'] = data['datetime'].apply(lambda x: float(x.strftime('%Y%m%d%H%M%S')))
+            data = data.set_index('datetime', drop=False)
+            if return_bar:
+                self.write_log('dataframe => [bars]')
+                for index, row in data.iterrows():
+                    add_bar = BarData(gateway_name='tdx',
+                                      symbol=symbol,
+                                      exchange=vn_exchange,
+                                      datetime=index)
+                    try:
+                        add_bar.date = row['date']
+                        add_bar.time = row['time']
+                        add_bar.trading_day = row['trading_day']
+                        add_bar.open_price = float(row['open'])
+                        add_bar.high_price = float(row['high'])
+                        add_bar.low_price = float(row['low'])
+                        add_bar.close_price = float(row['close'])
+                        add_bar.volume = float(row['volume'])
+                        add_bar.openInterest = float(row['open_interest'])
+                    except Exception as ex:
+                        self.write_error(
+                            'error when convert bar:{},ex:{},t:{}'.format(row, str(ex), traceback.format_exc()))
+                        # print('error when convert bar:{},ex:{},t:{}'.format(row, str(ex), traceback.format_exc()))
+                        return False, ret_bars
 
-            for index, row in data.iterrows():
-                add_bar = BarData()
-                try:
-                    add_bar.symbol = row['symbol']
-                    add_bar.datetime = index
-                    add_bar.date = row['date']
-                    add_bar.time = row['time']
-                    add_bar.trading_date = row['trading_date']
-                    add_bar.open_price = float(row['open'])
-                    add_bar.high_price = float(row['high'])
-                    add_bar.low_price = float(row['low'])
-                    add_bar.close_price = float(row['close'])
-                    add_bar.volume = float(row['volume'])
-                    add_bar.openInterest = float(row['open_interest'])
-                except Exception as ex:
-                    self.write_error(
-                        'error when convert bar:{},ex:{},t:{}'.format(row, str(ex), traceback.format_exc()))
-                    # print('error when convert bar:{},ex:{},t:{}'.format(row, str(ex), traceback.format_exc()))
-                    return False
+                    if start_dt is not None and index < start_dt:
+                        continue
+                    ret_bars.append(add_bar)
 
-                if start_dt is not None and index < start_dt:
-                    continue
-                ret_bars.append(add_bar)
-
-                if callback is not None:
-                    freq = bar_freq
-                    bar_is_completed = True
-                    if period != '1min' and index == data['dt_datetime'][-1]:
-                        # 最后一个bar，可能是不完整的，强制修改
-                        # - 5min修改后freq基本正确
-                        # - 1day在VNPY合成时不关心已经收到多少Bar, 所以影响也不大
-                        # - 但其它分钟周期因为不好精确到每个品种, 修改后的freq可能有错
-                        if index > current_datetime:
-                            bar_is_completed = False
-                            # 根据秒数算的话，要+1，例如13:31,freq=31，第31根bar
-                            freq = NUM_MINUTE_MAPPING[period] - int((index - current_datetime).total_seconds() / 60)
-                    callback(add_bar, bar_is_completed, freq)
-
+                    if callback is not None:
+                        freq = bar_freq
+                        bar_is_completed = True
+                        if period != '1min' and index == data['datetime'][-1]:
+                            # 最后一个bar，可能是不完整的，强制修改
+                            # - 5min修改后freq基本正确
+                            # - 1day在VNPY合成时不关心已经收到多少Bar, 所以影响也不大
+                            # - 但其它分钟周期因为不好精确到每个品种, 修改后的freq可能有错
+                            if index > current_datetime:
+                                bar_is_completed = False
+                                # 根据秒数算的话，要+1，例如13:31,freq=31，第31根bar
+                                freq = NUM_MINUTE_MAPPING[period] - int((index - current_datetime).total_seconds() / 60)
+                        callback(add_bar, bar_is_completed, freq)
+            else:
+                self.write_log('dataframe => [ dict ]')
+                ret_bars = list(data.T.to_dict().values())
             return True, ret_bars
         except Exception as ex:
             self.write_error('exception in get:{},{},{}'.format(tdx_symbol, str(ex), traceback.format_exc()))
