@@ -1,7 +1,6 @@
 # flake8: noqa
 """
 下载通达信指数合约1分钟bar => vnpy项目目录/bar_data/
-
 """
 import os
 import sys
@@ -29,24 +28,7 @@ api_01 = TdxFutureData()
 # 更新本地合约缓存信息
 api_01.update_mi_contracts()
 
-
-def bar_to_dict(bar_data: BarData):
-    d = OrderedDict({
-        'datetime': bar_data.datetime,
-        'symbol': bar_data.symbol,
-        'vt_symbol': bar_data.vt_symbol,
-        'exchange': bar_data.exchange.value,
-        'open': bar_data.open_price,
-        'close': bar_data.close_price,
-        'high': bar_data.high_price,
-        'low': bar_data.low_price,
-        'volume': bar_data.volume,
-        'open_interest': bar_data.open_interest,
-        'trading_day': bar_data.trading_day
-    })
-    return d
-
-
+# 逐一指数合约下载并更新
 for underlying_symbol in api_01.future_contracts.keys():
     index_symbol = underlying_symbol + '99'
     print(f'开始更新:{index_symbol}')

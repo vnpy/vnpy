@@ -25,6 +25,7 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.event import (
     EVENT_TICK,
+    EVENT_BAR,
     EVENT_ORDER,
     EVENT_TRADE,
     EVENT_POSITION
@@ -37,7 +38,7 @@ from vnpy.trader.constant import (
     Offset,
     Status
 )
-from vnpy.trader.utility import load_json, save_json, extract_vt_symbol, round_to, get_folder_path
+from vnpy.trader.utility import load_json, save_json, extract_vt_symbol, round_to, get_folder_path, get_underlying_symbol
 from vnpy.trader.util_logger import setup_logger, logging
 from vnpy.trader.converter import OffsetConverter
 
@@ -49,7 +50,9 @@ from .base import (
     EngineType,
     StopOrder,
     StopOrderStatus,
-    STOPORDER_PREFIX
+    STOPORDER_PREFIX,
+    MARKET_DAY_ONLY
+
 )
 from .template import CtaTemplate
 
@@ -70,6 +73,8 @@ class CtaEngine(BaseEngine):
     2、使用免费的tdx源，替代rqdata源
     3、取消初始化数据时，从全局的cta_strategy_data中恢复数据，改为策略自己初始化恢复数据
     4、支持多合约订阅和多合约交易. 扩展的合约在setting中配置，由策略进行订阅
+    5、支持先启动策略，后连接gateway
+    6、支持指定gateway的交易。主引擎可接入多个gateway
     """
 
     engine_type = EngineType.LIVE  # live trading engine
@@ -91,7 +96,12 @@ class CtaEngine(BaseEngine):
 
         self.strategy_loggers = {}  # strategy_name: logger
 
+        # 未能订阅的symbols,支持策略启动时，并未接入gateway
+        # gateway_name.vt_symbol: set() of (strategy_name, is_bar)
+        self.pending_subcribe_symbol_map = defaultdict(set)
+
         self.symbol_strategy_map = defaultdict(list)  # vt_symbol: strategy list
+        self.bar_strategy_map = defaultdict(list)  # vt_symbol: strategy list
         self.strategy_symbol_map = defaultdict(set)  # strategy_name: vt_symbol set
 
         self.orderid_strategy_map = {}  # vt_orderid: strategy
@@ -116,19 +126,26 @@ class CtaEngine(BaseEngine):
         self.write_log("CTA策略引擎初始化成功")
 
     def close(self):
-        """"""
+        """停止所属有的策略"""
         self.stop_all_strategies()
 
     def register_event(self):
-        """"""
+        """注册事件"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
+        self.event_engine.register(EVENT_BAR, self.process_bar_event)
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
         self.event_engine.register(EVENT_POSITION, self.process_position_event)
 
     def process_tick_event(self, event: Event):
-        """"""
+        """处理tick到达事件"""
         tick = event.data
+
+        key = f'{tick.gateway_name}.{tick.vt_symbol}'
+        v = self.pending_subcribe_symbol_map.pop(key, None)
+        if v:
+            # 这里不做tick/bar的判断了，因为基本有tick就有bar
+            self.write_log(f'{key} tick已经到达,移除未订阅记录:{v}')
 
         strategies = self.symbol_strategy_map[tick.vt_symbol]
         if not strategies:
@@ -139,6 +156,10 @@ class CtaEngine(BaseEngine):
         for strategy in strategies:
             if strategy.inited:
                 self.call_strategy_func(strategy, strategy.on_tick, tick)
+
+    def process_bar_event(self, event: Event):
+        """处理bar到达事件"""
+        pass
 
     def process_order_event(self, event: Event):
         """"""
@@ -209,6 +230,43 @@ class CtaEngine(BaseEngine):
 
         self.offset_converter.update_position(position)
 
+    def check_unsubscribed_symbols(self):
+        """检查未订阅合约"""
+
+        for key in self.pending_subcribe_symbol_map.keys():
+            # gateway_name.symbol.exchange = > gateway_name, vt_symbol
+            keys = key.split('.')
+            gateway_name = keys[0]
+            vt_symbol = '.'.join(keys[1:])
+
+            contract = self.main_engine.get_contract(vt_symbol)
+            is_bar = True if vt_symbol in self.bar_strategy_map else False
+            if contract:
+                # 获取合约的缩写号
+                underlying_symbol = get_underlying_symbol(vt_symbol)
+                dt = datetime.now()
+                # 若为中金所的合约，白天才提交订阅请求
+                if underlying_symbol in MARKET_DAY_ONLY and not (9 < dt.hour < 16):
+                    continue
+
+                self.write_log(f'重新提交合约{vt_symbol}订阅请求')
+                for strategy_name, is_bar in list(self.pending_subcribe_symbol_map[vt_symbol]):
+                    self.subscribe_symbol(strategy_name=strategy_name,
+                                          vt_symbol=vt_symbol,
+                                          gateway_name=gateway_name,
+                                          is_bar=is_bar)
+            else:
+                try:
+                    self.write_log(f'找不到合约{vt_symbol}信息，尝试请求所有接口')
+                    symbol, exchange = extract_vt_symbol(vt_symbol)
+                    req = SubscribeRequest(symbol=symbol, exchange=exchange)
+                    req.is_bar = is_bar
+                    self.main_engine.subscribe(req, gateway_name)
+
+                except Exception as ex:
+                    self.write_error(u'重新订阅{}.{}异常:{},{}'.format(gateway_name, vt_symbol, str(ex), traceback.format_exc()))
+                    return
+
     def check_stop_order(self, tick: TickData):
         """"""
         for stop_order in list(self.stop_orders.values()):
@@ -278,7 +336,8 @@ class CtaEngine(BaseEngine):
             price: float,
             volume: float,
             type: OrderType,
-            lock: bool
+            lock: bool,
+            gateway_name: str = None
     ):
         """
         Send a new order to server.
@@ -294,15 +353,19 @@ class CtaEngine(BaseEngine):
             volume=volume,
         )
 
+        # 如果没有指定网关，则使用合约信息内的网关
+        if contract.gateway_name and not gateway_name:
+            gateway_name = contract.gateway_name
+
         # Convert with offset converter
-        req_list = self.offset_converter.convert_order_request(original_req, lock)
+        req_list = self.offset_converter.convert_order_request(original_req, lock, gateway_name)
 
         # Send Orders
         vt_orderids = []
 
         for req in req_list:
             vt_orderid = self.main_engine.send_order(
-                req, contract.gateway_name)
+                req, gateway_name)
 
             # Check if sending order successful
             if not vt_orderid:
@@ -310,7 +373,7 @@ class CtaEngine(BaseEngine):
 
             vt_orderids.append(vt_orderid)
 
-            self.offset_converter.update_order_request(req, vt_orderid)
+            self.offset_converter.update_order_request(req, vt_orderid, gateway_name)
 
             # Save relationship between orderid and strategy.
             self.orderid_strategy_map[vt_orderid] = strategy
@@ -326,7 +389,8 @@ class CtaEngine(BaseEngine):
             offset: Offset,
             price: float,
             volume: float,
-            lock: bool
+            lock: bool,
+            gateway_name: str = None
     ):
         """
         Send a limit order to server.
@@ -339,7 +403,8 @@ class CtaEngine(BaseEngine):
             price,
             volume,
             OrderType.LIMIT,
-            lock
+            lock,
+            gateway_name
         )
 
     def send_server_stop_order(
@@ -350,7 +415,8 @@ class CtaEngine(BaseEngine):
             offset: Offset,
             price: float,
             volume: float,
-            lock: bool
+            lock: bool,
+            gateway_name: str = None
     ):
         """
         Send a stop order to server.
@@ -366,7 +432,8 @@ class CtaEngine(BaseEngine):
             price,
             volume,
             OrderType.STOP,
-            lock
+            lock,
+            gateway_name
         )
 
     def send_local_stop_order(
@@ -377,7 +444,8 @@ class CtaEngine(BaseEngine):
             offset: Offset,
             price: float,
             volume: float,
-            lock: bool
+            lock: bool,
+            gateway_name: str = None
     ):
         """
         Create a new local stop order.
@@ -393,7 +461,8 @@ class CtaEngine(BaseEngine):
             volume=volume,
             stop_orderid=stop_orderid,
             strategy_name=strategy.strategy_name,
-            lock=lock
+            lock=lock,
+            gateway_name = gateway_name
         )
 
         self.stop_orders[stop_orderid] = stop_order
@@ -451,7 +520,8 @@ class CtaEngine(BaseEngine):
             price: float,
             volume: float,
             stop: bool,
-            lock: bool
+            lock: bool,
+            gateway_name: str = None
     ):
         """
         该方法供策略使用，发送委托。
@@ -462,18 +532,19 @@ class CtaEngine(BaseEngine):
                            strategy_name=strategy.name,
                            level=logging.ERROR)
             return ""
-
+        if contract.gateway_name and not gateway_name:
+            gateway_name = contract.gateway_name
         # Round order price and volume to nearest incremental value
         price = round_to(price, contract.pricetick)
         volume = round_to(volume, contract.min_volume)
 
         if stop:
             if contract.stop_supported:
-                return self.send_server_stop_order(strategy, contract, direction, offset, price, volume, lock)
+                return self.send_server_stop_order(strategy, contract, direction, offset, price, volume, lock, gateway_name)
             else:
-                return self.send_local_stop_order(strategy, vt_symbol, direction, offset, price, volume, lock)
+                return self.send_local_stop_order(strategy, vt_symbol, direction, offset, price, volume, lock, gateway_name)
         else:
-            return self.send_limit_order(strategy, contract, direction, offset, price, volume, lock)
+            return self.send_limit_order(strategy, contract, direction, offset, price, volume, lock, gateway_name)
 
     def cancel_order(self, strategy: CtaTemplate, vt_orderid: str):
         """
@@ -494,7 +565,7 @@ class CtaEngine(BaseEngine):
         for vt_orderid in copy(vt_orderids):
             self.cancel_order(strategy, vt_orderid)
 
-    def subscribe_symbol(self, strategy_name: str, vt_symbol: str):
+    def subscribe_symbol(self, strategy_name: str, vt_symbol: str, gateway_name: str = '', is_bar: bool = False):
         """订阅合约"""
         strategy = self.strategies.get(strategy_name, None)
         if not strategy:
@@ -502,24 +573,41 @@ class CtaEngine(BaseEngine):
 
         contract = self.main_engine.get_contract(vt_symbol)
         if contract:
+            if contract.gateway_name and not gateway_name:
+                gateway_name = contract.gateway_name
             req = SubscribeRequest(
                 symbol=contract.symbol, exchange=contract.exchange)
-            self.main_engine.subscribe(req, contract.gateway_name)
+            self.main_engine.subscribe(req, gateway_name)
+        else:
+            self.write_log(msg=f"找不到合约{vt_symbol},添加到待订阅列表",
+                           strategy_name=strategy.name)
+            self.pending_subcribe_symbol_map[f'{gateway_name}.{vt_symbol}'].add((strategy_name, is_bar))
+            try:
+                self.write_log(f'找不到合约{vt_symbol}信息，尝试请求所有接口')
+                symbol, exchange = extract_vt_symbol(vt_symbol)
+                req = SubscribeRequest(symbol=symbol, exchange=exchange)
+                req.is_bar = is_bar
+                self.main_engine.subscribe(req, gateway_name)
 
+            except Exception as ex:
+                self.write_error(u'重新订阅{}异常:{},{}'.format(vt_symbol, str(ex), traceback.format_exc()))
+
+        # 如果是订阅bar
+        if is_bar:
+            strategies = self.bar_strategy_map[vt_symbol]
+            if strategy not in strategies:
+                strategies.append(strategy)
+                self.bar_strategy_map.update({vt_symbol: strategies})
+        else:
             # 添加 合约订阅 vt_symbol <=> 策略实例 strategy 映射.
             strategies = self.symbol_strategy_map[vt_symbol]
             strategies.append(strategy)
 
-            # 添加 策略名 strategy_name  <=> 合约订阅 vt_symbol 的映射
-            subscribe_symbol_set = self.strategy_symbol_map[strategy.name]
-            subscribe_symbol_set.add(contract.vt_symbol)
-            return True
+        # 添加 策略名 strategy_name  <=> 合约订阅 vt_symbol 的映射
+        subscribe_symbol_set = self.strategy_symbol_map[strategy.name]
+        subscribe_symbol_set.add(contract.vt_symbol)
 
-        else:
-            self.write_log(msg=f"行情订阅失败，找不到合约{vt_symbol}",
-                           strategy_name=strategy.name,
-                           level=logging.CRITICAL)
-            return False
+        return True
 
     @lru_cache()
     def get_size(self, vt_symbol: str):
@@ -558,6 +646,19 @@ class CtaEngine(BaseEngine):
             return tick.last_price
 
         return None
+
+    def get_account(self, vt_accountid: str):
+        """ 查询账号的资金"""
+        return self.main_engine.get_account(vt_accountid)
+
+    def get_position(self, vt_symbol: str, direction: Direction, gateway_name: str = ''):
+        """ 查询合约在账号的持仓,需要指定方向"""
+        vt_position_id = f"{gateway_name}.{vt_symbol}.{direction.value}"
+        return self.main_engine.get_position(vt_position_id)
+
+    def get_position_holding(self, vt_symbol: str, gateway_name: str = ''):
+        """ 查询合约在账号的持仓（包含多空）"""
+        return self.offset_converter.get_position_holding(vt_symbol, gateway_name)
 
     def get_engine_type(self):
         """"""

@@ -1276,6 +1276,7 @@ class TdxMdApi():
             self.gateway.on_tick(tick)
             self.gateway.on_custom_tick(tick)
 
+
 class SubMdApi():
     """
     RabbitMQ Subscriber 数据行情接收API
@@ -1360,7 +1361,7 @@ class SubMdApi():
                 self.gateway.write_log(u'关闭订阅器接收线程')
                 self.thread.join()
         except Exception as ex:
-            self.gateway.write_error(u'退出rabbitMQ行情api异常')
+            self.gateway.write_error(u'退出rabbitMQ行情api异常:{}'.format(str(ex)))
 
     # ----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
@@ -1453,22 +1454,22 @@ class TickCombiner(object):
 
         # 以下情况，基本为单腿涨跌停，不合成价差/价格比 Tick
         if (self.last_leg1_tick.ask_price_1 == 0 or self.last_leg1_tick.bid_price_1 == self.last_leg1_tick.upperLimit) \
-                and self.last_leg1_tick.askVolume1 == 0:
+                and self.last_leg1_tick.ask_volume_1 == 0:
             self.gateway.write_log(
                 u'leg1:{0}涨停{1}，不合成价差Tick'.format(self.last_leg1_tick.vtSymbol, self.last_leg1_tick.bid_price_1))
             return
         if (self.last_leg1_tick.bid_price_1 == 0 or self.last_leg1_tick.ask_price_1 == self.last_leg1_tick.lowerLimit) \
-                and self.last_leg1_tick.bidVolume1 == 0:
+                and self.last_leg1_tick.bid_volume_1 == 0:
             self.gateway.write_log(
                 u'leg1:{0}跌停{1}，不合成价差Tick'.format(self.last_leg1_tick.vtSymbol, self.last_leg1_tick.ask_price_1))
             return
         if (self.last_leg2_tick.ask_price_1 == 0 or self.last_leg2_tick.bid_price_1 == self.last_leg2_tick.upperLimit) \
-                and self.last_leg2_tick.askVolume1 == 0:
+                and self.last_leg2_tick.ask_volume_1 == 0:
             self.gateway.write_log(
                 u'leg2:{0}涨停{1}，不合成价差Tick'.format(self.last_leg2_tick.vtSymbol, self.last_leg2_tick.bid_price_1))
             return
         if (self.last_leg2_tick.bid_price_1 == 0 or self.last_leg2_tick.ask_price_1 == self.last_leg2_tick.lowerLimit) \
-                and self.last_leg2_tick.bidVolume1 == 0:
+                and self.last_leg2_tick.bid_volume_1 == 0:
             self.gateway.write_log(
                 u'leg2:{0}跌停{1}，不合成价差Tick'.format(self.last_leg2_tick.vtSymbol, self.last_leg2_tick.ask_price_1))
             return
@@ -1509,16 +1510,21 @@ class TickCombiner(object):
                                                  value=self.last_leg1_tick.pre_close * self.leg1_ratio - self.last_leg2_tick.pre_close * self.leg2_ratio)
             # 开盘价
             if self.last_leg2_tick.open_price > 0 and self.last_leg1_tick.open_price > 0:
-                spread_tick.openPrice = round_to(target=self.price_tick,
-                                                 value=self.last_leg1_tick.open_price * self.leg1_ratio - self.last_leg2_tick.open_price * self.leg2_ratio)
+                spread_tick.open_price = round_to(target=self.price_tick,
+                                                  value=self.last_leg1_tick.open_price * self.leg1_ratio - self.last_leg2_tick.open_price * self.leg2_ratio)
             # 最高价
-            self.spread_high = spread_tick.ask_price_1 if self.spread_high is None else max(self.spread_high,
-                                                                                            spread_tick.ask_price_1)
+            if self.spread_high:
+                self.spread_high = max(self.spread_high, spread_tick.ask_price_1)
+            else:
+                self.spread_high = spread_tick.ask_price_1
             spread_tick.high_price = self.spread_high
 
             # 最低价
-            self.spread_low = spread_tick.bid_price_1 if self.spread_low is None else min(self.spread_low,
-                                                                                          spread_tick.bid_price_1)
+            if self.spread_low:
+                self.spread_low = min(self.spread_low, spread_tick.bid_price_1)
+            else:
+                self.spread_low = spread_tick.bid_price_1
+
             spread_tick.low_price = self.spread_low
 
             self.gateway.on_tick(spread_tick)
@@ -1537,33 +1543,38 @@ class TickCombiner(object):
             ratio_tick.ask_price_1 = round_to(target=self.price_tick,
                                               value=100 * self.last_leg1_tick.ask_price_1 * self.leg1_ratio / (
                                                       self.last_leg2_tick.bid_price_1 * self.leg2_ratio))
-            ratio_tick.askVolume1 = min(self.last_leg1_tick.askVolume1, self.last_leg2_tick.bidVolume1)
+            ratio_tick.ask_volume_1 = min(self.last_leg1_tick.ask_volume_1, self.last_leg2_tick.bid_volume_1)
 
             ratio_tick.bid_price_1 = round_to(target=self.price_tick,
                                               value=100 * self.last_leg1_tick.bid_price_1 * self.leg1_ratio / (
                                                       self.last_leg2_tick.ask_price_1 * self.leg2_ratio))
-            ratio_tick.bidVolume1 = min(self.last_leg1_tick.bidVolume1, self.last_leg2_tick.askVolume1)
+            ratio_tick.bid_volume_1 = min(self.last_leg1_tick.bid_volume_1, self.last_leg2_tick.ask_volume_1)
             ratio_tick.lastPrice = round_to(target=self.price_tick,
                                             value=(ratio_tick.ask_price_1 + ratio_tick.bid_price_1) / 2)
 
             # 昨收盘价
-            if self.last_leg2_tick.preClosePrice > 0 and self.last_leg1_tick.preClosePrice > 0:
-                ratio_tick.preClosePrice = round_to(target=self.price_tick,
-                                                    value=100 * self.last_leg1_tick.preClosePrice * self.leg1_ratio / (
-                                                            self.last_leg2_tick.preClosePrice * self.leg2_ratio))
+            if self.last_leg2_tick.pre_close > 0 and self.last_leg1_tick.pre_close > 0:
+                ratio_tick.pre_close = round_to(target=self.price_tick,
+                                                value=100 * self.last_leg1_tick.pre_close * self.leg1_ratio / (
+                                                        self.last_leg2_tick.pre_close * self.leg2_ratio))
             # 开盘价
-            if self.last_leg2_tick.openPrice > 0 and self.last_leg1_tick.openPrice > 0:
-                ratio_tick.openPrice = round_to(target=self.price_tick,
-                                                value=100 * self.last_leg1_tick.openPrice * self.leg1_ratio / (
-                                                        self.last_leg2_tick.openPrice * self.leg2_ratio))
+            if self.last_leg2_tick.open_price > 0 and self.last_leg1_tick.open_price > 0:
+                ratio_tick.open_price = round_to(target=self.price_tick,
+                                                 value=100 * self.last_leg1_tick.open_price * self.leg1_ratio / (
+                                                         self.last_leg2_tick.open_price * self.leg2_ratio))
             # 最高价
-            self.ratio_high = ratio_tick.ask_price_1 if self.ratio_high is None else max(self.ratio_high,
-                                                                                         ratio_tick.ask_price_1)
+            if self.ratio_high:
+                self.ratio_high = max(self.ratio_high, ratio_tick.ask_price_1)
+            else:
+                self.ratio_high = ratio_tick.ask_price_1
             ratio_tick.high_price = self.spread_high
 
             # 最低价
-            self.ratio_low = ratio_tick.bid_price_1 if self.ratio_low is None else min(self.ratio_low,
-                                                                                       ratio_tick.bid_price_1)
+            if self.ratio_low:
+                self.ratio_low = min(self.ratio_low, ratio_tick.bid_price_1)
+            else:
+                self.ratio_low = ratio_tick.bid_price_1
+
             ratio_tick.low_price = self.spread_low
 
             self.gateway.on_tick(ratio_tick)

@@ -13,7 +13,9 @@ from vnpy.trader.constant import (Direction, Offset, Exchange)
 
 
 class OffsetConverter:
-    """"""
+    """
+    仓位转换
+    """
 
     def __init__(self, main_engine: MainEngine):
         """"""
@@ -25,7 +27,7 @@ class OffsetConverter:
         if not self.is_convert_required(position.vt_symbol):
             return
 
-        holding = self.get_position_holding(position.vt_symbol)
+        holding = self.get_position_holding(position.vt_symbol, position.gateway_name)
         holding.update_position(position)
 
     def update_trade(self, trade: TradeData):
@@ -33,7 +35,7 @@ class OffsetConverter:
         if not self.is_convert_required(trade.vt_symbol):
             return
 
-        holding = self.get_position_holding(trade.vt_symbol)
+        holding = self.get_position_holding(trade.vt_symbol, trade.gateway_name)
         holding.update_trade(trade)
 
     def update_order(self, order: OrderData):
@@ -41,32 +43,33 @@ class OffsetConverter:
         if not self.is_convert_required(order.vt_symbol):
             return
 
-        holding = self.get_position_holding(order.vt_symbol)
+        holding = self.get_position_holding(order.vt_symbol, order.gateway_name)
         holding.update_order(order)
 
-    def update_order_request(self, req: OrderRequest, vt_orderid: str):
+    def update_order_request(self, req: OrderRequest, vt_orderid: str, gateway_name: str = ''):
         """"""
         if not self.is_convert_required(req.vt_symbol):
             return
 
-        holding = self.get_position_holding(req.vt_symbol)
+        holding = self.get_position_holding(req.vt_symbol, gateway_name)
         holding.update_order_request(req, vt_orderid)
 
-    def get_position_holding(self, vt_symbol: str):
-        """"""
-        holding = self.holdings.get(vt_symbol, None)
+    def get_position_holding(self, vt_symbol: str, gateway_name: str = ''):
+        """获取持仓信息"""
+        k = f'{gateway_name}.{vt_symbol}'
+        holding = self.holdings.get(k, None)
         if not holding:
             contract = self.main_engine.get_contract(vt_symbol)
             holding = PositionHolding(contract)
-            self.holdings[vt_symbol] = holding
+            self.holdings[k] = holding
         return holding
 
-    def convert_order_request(self, req: OrderRequest, lock: bool):
+    def convert_order_request(self, req: OrderRequest, lock: bool, gateway_name: str = ''):
         """"""
         if not self.is_convert_required(req.vt_symbol):
             return [req]
 
-        holding = self.get_position_holding(req.vt_symbol)
+        holding = self.get_position_holding(req.vt_symbol, gateway_name)
 
         if lock:
             return holding.convert_order_request_lock(req)

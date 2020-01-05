@@ -121,7 +121,7 @@ class IndexTickPublisher(BaseEngine):
                 c -= 1
                 self.fail_ip_dict.update({k: c})
 
-        self.checkStatus()
+        self.check_status()
 
     # ----------------------------------------------------------------------
     def ping(self, ip, port=7709):
@@ -144,7 +144,7 @@ class IndexTickPublisher(BaseEngine):
                     self.write_log(u'该服务器IP {}无响应.'.format(ip))
                     return timedelta(seconds=10).total_seconds() * 1000
         except Exception as ex:
-            self.write_error(u'tdx ping服务器{}，异常的响应{}'.format(ip,str(ex)))
+            self.write_error(u'tdx ping服务器{}，异常的响应{}'.format(ip, str(ex)))
             return timedelta(seconds=10).total_seconds() * 1000
 
     def sort_ip_speed(self):
@@ -232,7 +232,7 @@ class IndexTickPublisher(BaseEngine):
 
         # 更新 symbol_exchange_dict , symbol_market_dict
         self.write_log(u'查询合约')
-        self.qryInstrument()
+        self.qry_instrument()
 
         self.conf.update(rabbit_config)
         self.create_publisher(self.conf)
@@ -277,7 +277,7 @@ class IndexTickPublisher(BaseEngine):
             self.write_log(u'退出rabbitMQ 发布器')
             self.pub.exit()
 
-    def checkStatus(self):
+    def check_status(self):
         # self.write_log(u'检查tdx接口状态')
 
         # 若还没有启动连接，就启动连接
@@ -290,7 +290,7 @@ class IndexTickPublisher(BaseEngine):
 
         # self.write_log(u'tdx接口状态正常')
 
-    def qryInstrument(self):
+    def qry_instrument(self):
         """
         查询/更新合约信息
         :return:

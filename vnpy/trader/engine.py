@@ -162,10 +162,16 @@ class MainEngine:
     def subscribe(self, req: SubscribeRequest, gateway_name: str):
         """
         Subscribe tick data update of a specific gateway.
+        如果没有指定gateway，那么所有的gateway都会接收改订阅请求
         """
-        gateway = self.get_gateway(gateway_name)
-        if gateway:
-            gateway.subscribe(req)
+        if gateway_name:
+            gateway = self.get_gateway(gateway_name)
+            if gateway:
+                gateway.subscribe(req)
+        else:
+            for gateway in self.gateways.items():
+                if gateway:
+                    gateway.subscribe(req)
 
     def send_order(self, req: OrderRequest, gateway_name: str):
         """

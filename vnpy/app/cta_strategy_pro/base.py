@@ -80,6 +80,7 @@ class StopOrder:
     lock: bool = False
     vt_orderids: list = field(default_factory=list)
     status: StopOrderStatus = StopOrderStatus.WAITING
+    gateway_name: str = None
 
 
 EVENT_CTA_LOG = "eCtaLog"

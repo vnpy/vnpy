@@ -206,7 +206,7 @@ class PositionData(BaseData):
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
-        self.vt_positionid = f"{self.vt_symbol}.{self.direction.value}"
+        self.vt_positionid = f"{self.gateway_name}.{self.vt_symbol}.{self.direction.value}"
 
 
 @dataclass
@@ -273,11 +273,12 @@ class ContractData(BaseData):
 @dataclass
 class SubscribeRequest:
     """
-    Request sending to specific gateway for subscribing tick data update.
+    Request sending to specific gateway for subscribing tick/bar data update.
     """
 
     symbol: str
     exchange: Exchange
+    is_bar: bool = False
 
     def __post_init__(self):
         """"""
