@@ -41,6 +41,7 @@ class Status(Enum):
     PARTTRADED = "部分成交"
     ALLTRADED = "全部成交"
     CANCELLED = "已撤销"
+    CANCELLING = "撤销中"
     REJECTED = "拒单"
 
 
