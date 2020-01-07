@@ -42,10 +42,9 @@ from vnpy.trader.constant import (
     OptionType,
     Interval
 )
-from vnpy.trader.utility import load_json, save_json
 
 ORDERTYPE_VT2IB = {
-    OrderType.LIMIT: "LMT",
+    OrderType.LIMIT: "LMT", 
     OrderType.MARKET: "MKT",
     OrderType.STOP: "STP"
 }
@@ -197,8 +196,6 @@ class IbGateway(BaseGateway):
 class IbApi(EWrapper):
     """"""
 
-    data_filename = "ib_contracts_data.json"
-
     def __init__(self, gateway: BaseGateway):
         """"""
         super(IbApi, self).__init__()
@@ -217,7 +214,6 @@ class IbApi(EWrapper):
         self.contracts = {}
 
         self.tick_exchange = {}
-        self.contracts_data = {}
 
         self.history_req = None
         self.history_condition = Condition()
@@ -226,50 +222,12 @@ class IbApi(EWrapper):
         self.client = IbClient(self)
         self.thread = Thread(target=self.client.run)
 
-    def load_contracts_data(self):
-        """"""
-        self.contracts_data = load_json(self.data_filename)
-        self.subscribe_inicio(self.contracts_data)
-
-    def subscribe_inicio(self, data: dict = None):
-        """"""
-        if not self.status:
-            return
-
-        if data:
-            for vt_symbol, name in data.items():
-                con_id = vt_symbol.split(".")[0]
-                exchange = vt_symbol.split(".")[1]
-
-                ib_contract = Contract()
-                ib_contract.conId = con_id
-                ib_contract.exchange = exchange
-
-                # Get contract data from TWS.
-                self.reqid += 1
-                self.client.reqContractDetails(self.reqid, ib_contract)
-
-                # Subscribe tick data and create tick object buffer.
-                self.reqid += 1
-                self.client.reqMktData(self.reqid, ib_contract, "", False, False, [])
-
-                tick = TickData(
-                    name=name,
-                    symbol=con_id,
-                    exchange=EXCHANGE_IB2VT[exchange],
-                    datetime=datetime.now(),
-                    gateway_name=self.gateway_name,
-                )
-                self.ticks[self.reqid] = tick
-                self.tick_exchange[self.reqid] = EXCHANGE_IB2VT[exchange]
-
     def connectAck(self):  # pylint: disable=invalid-name
         """
         Callback when connection is established.
         """
         self.status = True
         self.gateway.write_log("IB TWS连接成功")
-        self.load_contracts_data()
 
     def connectionClosed(self):  # pylint: disable=invalid-name
         """
@@ -326,7 +284,6 @@ class IbApi(EWrapper):
 
         # Update name into tick data.
         contract = self.contracts.get(tick.vt_symbol, None)
-
         if contract:
             tick.name = contract.name
 
@@ -355,9 +312,9 @@ class IbApi(EWrapper):
 
         self.gateway.on_tick(copy(tick))
 
-    def tickString(  # pylint: disable=invalid-name
+    def tickString(
         self, reqId: TickerId, tickType: TickType, value: str
-    ):
+    ):  # pylint: disable=invalid-name
         """
         Callback of tick string update.
         """
@@ -535,34 +492,19 @@ class IbApi(EWrapper):
         """
         super(IbApi, self).contractDetails(reqId, contractDetails)
 
-        con_id = contractDetails.contract.conId
-        sec_type = contractDetails.contract.secType
-        symbol = contractDetails.contract.symbol
-        right = contractDetails.contract.right
-        strike = contractDetails.contract.strike
-        expire = contractDetails.contract.lastTradeDateOrContractMonth
-        currency = contractDetails.contract.currency
-
+        ib_symbol = contractDetails.contract.conId
         ib_exchange = contractDetails.contract.exchange
         ib_size = contractDetails.contract.multiplier
-
-        if sec_type == "OPT":
-            local_symbol = f"{symbol}.{expire}-{right}-{strike}@{currency}"
-        elif sec_type == "FUT":
-            local_symbol = f"{symbol}.{expire}@{currency}"
-        elif sec_type == "CASH":
-            local_symbol = f"{symbol}/{currency}"
-        else:
-            local_symbol = f"{symbol}#{sec_type}@{currency}"
+        ib_product = contractDetails.contract.secType
 
         if not ib_size:
             ib_size = 1
 
         contract = ContractData(
-            symbol=local_symbol,
+            symbol=ib_symbol,
             exchange=EXCHANGE_IB2VT.get(ib_exchange, ib_exchange),
             name=contractDetails.longName,
-            product=PRODUCT_IB2VT[sec_type],
+            product=PRODUCT_IB2VT[ib_product],
             size=ib_size,
             pricetick=contractDetails.minTick,
             net_position=True,
@@ -570,24 +512,14 @@ class IbApi(EWrapper):
             stop_supported=True,
             gateway_name=self.gateway_name,
         )
-        contract.con_id = str(con_id)
 
         if contract.vt_symbol not in self.contracts:
             self.gateway.on_contract(contract)
             self.contracts[contract.vt_symbol] = contract
-            self.update_contracts_data(contract)
 
-    def update_contracts_data(self, data):
-        """"""
-        vt_symbol = data.vt_symbol
-        con_id = data.con_id
-
-        self.contracts_data[vt_symbol] = con_id
-        save_json(self.data_filename, self.contracts_data)
-
-    def execDetails(  # pylint: disable=invalid-name
+    def execDetails(
         self, reqId: int, contract: Contract, execution: Execution
-    ):
+    ):  # pylint: disable=invalid-name
         """
         Callback of trade data update.
         """
@@ -672,11 +604,6 @@ class IbApi(EWrapper):
     def subscribe(self, req: SubscribeRequest):
         """
         Subscribe tick data update.
-
-        Cash: GBP/USD
-        Option: GOOG.201710-C-400@USD
-        Future: IF.2001@CHN
-        Othres: AAPL#STK@USD
         """
         if not self.status:
             return
@@ -685,54 +612,9 @@ class IbApi(EWrapper):
             self.gateway.write_log(f"不支持的交易所{req.exchange}")
             return
 
-        data = str(req.symbol)
         ib_contract = Contract()
-        # ib_contract.conId = str(req.symbol)
+        ib_contract.conId = str(req.symbol)
         ib_contract.exchange = EXCHANGE_VT2IB[req.exchange]
-
-        # Cash
-        if "/" in data:
-            ib_contract.secType = "Cash"
-            ib_contract.symbol = data.split("/")[0]
-            ib_contract.currency = data.split("/")[1]
-
-        # Option
-        elif "-C-" in data:
-            after = data.split("-C-")[1]
-            before = data.split("-C-")[0]
-            ib_contract.strike = after.split("@")[0]
-            ib_contract.currency = after.split("@")[1]
-            ib_contract.symbol = before.split(".")[0]
-            ib_contract.lastTradeDateOrContractMonth = before.split(".")[1]
-            ib_contract.secType = "OPT"
-            ib_contract.right = "C"
-
-        elif "-P-" in data:
-            after = data.split("-P-")[1]
-            before = data.split("-P-")[0]
-            ib_contract.strike = after.split("@")[0]
-            ib_contract.currency = after.split("@")[1]
-            ib_contract.symbol = before.split(".")[0]
-            ib_contract.lastTradeDateOrContractMonth = before.split(".")[1]
-            ib_contract.secType = "OPT"
-            ib_contract.right = "P"
-
-        # Future
-        elif "." in data:
-            ib_contract.currency = data.split("@")[1]
-            before = data.split("@")[0]
-
-            ib_contract.symbol = before.split(".")[0]
-            ib_contract.lastTradeDateOrContractMonth = before.split(".")[1]
-            ib_contract.secType = "FUT"
-
-        # Others: stock, bond, etf, index, etc
-        elif "#" in data:
-            ib_contract.currency = data.split("@")[1]
-            before = data.split("@")[0]
-
-            ib_contract.symbol = before.split("#")[0]
-            ib_contract.secType = before.split("#")[1]
 
         # Get contract data from TWS.
         self.reqid += 1
@@ -769,14 +651,7 @@ class IbApi(EWrapper):
         self.orderid += 1
 
         ib_contract = Contract()
-
-        con_id = self.contracts_data.get(req.vt_symbol, None)
-
-        if not con_id:
-            self.gateway.write_log(f"无效合约代码：{req.symbol}")
-            return ""
-
-        ib_contract.conId = con_id
+        ib_contract.conId = str(req.symbol)
         ib_contract.exchange = EXCHANGE_VT2IB[req.exchange]
 
         ib_order = Order()
@@ -825,7 +700,7 @@ class IbApi(EWrapper):
             end_str = ""
 
         delta = end - req.start
-        days = min(delta.days, 180)  # IB only provides 6-month data
+        days = min(delta.days, 180)     # IB only provides 6-month data
         duration = f"{days} D"
         bar_size = INTERVAL_VT2IB[req.interval]
 
@@ -847,12 +722,12 @@ class IbApi(EWrapper):
             []
         )
 
-        self.history_condition.acquire()  # Wait for async data return
+        self.history_condition.acquire()    # Wait for async data return
         self.history_condition.wait()
         self.history_condition.release()
 
         history = self.history_buf
-        self.history_buf = []  # Create new buffer list
+        self.history_buf = []       # Create new buffer list
         self.history_req = None
 
         return history
@@ -860,6 +735,7 @@ class IbApi(EWrapper):
 
 class IbClient(EClient):
     """"""
+
     def run(self):
         """
         Reimplement the original run message loop of eclient.
