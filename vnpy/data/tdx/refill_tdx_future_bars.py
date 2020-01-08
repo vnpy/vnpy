@@ -20,7 +20,7 @@ from vnpy.data.tdx.tdx_future_data import *
 bar_data_folder = os.path.abspath(os.path.join(vnpy_root, 'bar_data'))
 
 # 开始日期（每年大概需要几分钟）
-start_date = '20160101'
+start_date = '20190101'
 
 # 创建API对象
 api_01 = TdxFutureData()
@@ -55,6 +55,8 @@ for underlying_symbol in api_01.future_contracts.keys():
                            start_dt=start_dt,
                            return_bar=False)
     # [dict] => dataframe
+    if not result or len(bars) == 0:
+        continue
     df_extern = pd.DataFrame(bars)
     df_extern.set_index('datetime', inplace=True)
 
@@ -74,4 +76,4 @@ for underlying_symbol in api_01.future_contracts.keys():
     print(data_df.tail())
     data_df.to_csv(bar_file_path, index=True)
     print(f'更新{index_symbol}数据 => 文件{bar_file_path}')
-
+    break
