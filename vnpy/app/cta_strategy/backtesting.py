@@ -495,10 +495,10 @@ class BacktestingEngine:
         }
 
         for key,value in statistics.items():
-            if value in (np.inf,-np.inf):
+            if value in (np.inf, -np.inf):
                 value = 0
             statistics[key] = np.nan_to_num(value)
-            
+
         return statistics
 
     def show_chart(self, df: DataFrame = None):

@@ -216,7 +216,11 @@ class WebsocketClient(object):
                         self.on_packet(data)
                 # ws is closed before recv function is called
                 # For socket.error, see Issue #1608
-                except (websocket.WebSocketConnectionClosedException, socket.error):
+                except (
+                    websocket.WebSocketConnectionClosedException,
+                    websocket.WebSocketBadStatusException,
+                    socket.error
+                ):
                     self._disconnect()
 
                 # other internal exception raised in on_packet

@@ -583,7 +583,7 @@ class SpreadAlgoEngine:
 class SpreadStrategyEngine:
     """"""
 
-    setting_filename = "spraed_trading_strategy.json"
+    setting_filename = "spread_trading_strategy.json"
 
     def __init__(self, spread_engine: SpreadEngine):
         """"""
