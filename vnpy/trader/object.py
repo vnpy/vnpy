@@ -137,6 +137,7 @@ class OrderData(BaseData):
     traded: float = 0
     status: Status = Status.SUBMITTING
     time: str = ""
+    cancel_time: str = ""
 
     def __post_init__(self):
         """"""
@@ -179,6 +180,8 @@ class TradeData(BaseData):
     price: float = 0
     volume: float = 0
     time: str = ""
+    datetime: datetime = None
+    strategy_name: str = ""
 
     def __post_init__(self):
         """"""

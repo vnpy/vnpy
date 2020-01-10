@@ -773,14 +773,14 @@ class TdxFutureData(object):
                     should_save = True
             else:
                 # 添加到新合约中
-                # todo 这里缺少size和price_tick
+                # 这里缺少size和price_tick, margin_rate，当ctp_gateway启动时，会自动补充和修正完毕
                 info = {
                     "underlying_symbol": underlying_symbol,
                     "mi_symbol": mi_symbol,
                     "full_symbol": full_symbol,
                     "exchange": vn_exchange.value
                 }
-                self.write_log(u'新合约:{}'.format(info))
+                self.write_log(u'新合约:{}, 需要待ctp连接后更新合约的size/price_tick/margin_rate'.format(info))
                 self.future_contracts.update({underlying_symbol: info})
                 should_save = True
 

@@ -1,6 +1,7 @@
 """"""
 
 import importlib
+import csv
 import os
 import sys
 import traceback
@@ -8,6 +9,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Callable
 from datetime import datetime, timedelta
+from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 from functools import lru_cache
@@ -38,7 +40,8 @@ from vnpy.trader.constant import (
     Offset,
     Status
 )
-from vnpy.trader.utility import load_json, save_json, extract_vt_symbol, round_to, get_folder_path, get_underlying_symbol
+from vnpy.trader.utility import load_json, save_json, extract_vt_symbol, round_to, get_folder_path, \
+    get_underlying_symbol
 from vnpy.trader.util_logger import setup_logger, logging
 from vnpy.trader.converter import OffsetConverter
 
@@ -125,6 +128,31 @@ class CtaEngine(BaseEngine):
         self.register_event()
         self.write_log("CTA策略引擎初始化成功")
 
+    def append_data(self, file_name: str, dict_data: dict, field_names: list = []):
+        """
+        添加数据到csv文件中
+        :param file_name:  csv的文件全路径
+        :param dict_data:  OrderedDict
+        :return:
+        """
+        dict_fieldnames = sorted(list(dict_data.keys())) if len(field_names) == 0 else field_names
+
+        try:
+            if not os.path.exists(file_name):
+                self.write_log(u'create csv file:{}'.format(file_name))
+                with open(file_name, 'a', encoding='utf8', newline='\n') as csvWriteFile:
+                    writer = csv.DictWriter(f=csvWriteFile, fieldnames=dict_fieldnames, dialect='excel')
+                    self.write_log(u'write csv header:{}'.format(dict_fieldnames))
+                    writer.writeheader()
+                    writer.writerow(dict_data)
+            else:
+                with open(file_name, 'a', encoding='utf8', newline='\n') as csvWriteFile:
+                    writer = csv.DictWriter(f=csvWriteFile, fieldnames=dict_fieldnames, dialect='excel',
+                                            extrasaction='ignore')
+                    writer.writerow(dict_data)
+        except Exception as ex:
+            self.write_error(u'append_data exception:{}'.format(str(ex)))
+
     def close(self):
         """停止所属有的策略"""
         self.stop_all_strategies()
@@ -210,10 +238,40 @@ class CtaEngine(BaseEngine):
             return
 
         # Update strategy pos before calling on_trade method
-        if trade.direction == Direction.LONG:
-            strategy.pos += trade.volume
-        else:
-            strategy.pos -= trade.volume
+        # 取消外部干预策略pos，由策略自行完成更新
+        # if trade.direction == Direction.LONG:
+        #     strategy.pos += trade.volume
+        # else:
+        #     strategy.pos -= trade.volume
+        # 根据策略名称，写入 data\straetgy_name_trade.csv文件
+        strategy_name = getattr(strategy, 'name')
+        trade_fields = ['time', 'symbol', 'exchange', 'vt_symbol', 'tradeid', 'vt_tradeid', 'orderid', 'vt_orderid',
+                        'direction', 'offset', 'price', 'volume', 'idx_price']
+        trade_dict = OrderedDict()
+        try:
+            for k in trade_fields:
+                if k == 'time':
+                    trade_dict[k] = datetime.now().strftime('%Y-%m-%d') + ' ' + getattr(trade, k, '')
+                if k in ['exchange', 'direction', 'offset']:
+                    trade_dict[k] = getattr(trade, k).value
+                else:
+                    trade_dict[k] = getattr(trade, k, '')
+
+            # 添加指数价格
+            symbol = trade_dict.get('symbol')
+            idx_symbol = get_underlying_symbol(symbol).upper() + '99.' + trade_dict.get('exchange')
+            idx_price = self.get_price(idx_symbol)
+            if idx_price:
+                trade_dict.update({'idx_price': idx_price})
+            else:
+                trade_dict.update({'idx_price': trade_dict.get('price')})
+
+            if strategy_name is not None:
+                trade_file = os.path.abspath(
+                    os.path.join(get_folder_path('data'), '{}_trade.csv'.format(strategy_name)))
+                self.append_data(file_name=trade_file, dict_data=trade_dict)
+        except Exception as ex:
+            self.write_error(u'写入交易记录csv出错：{},{}'.format(str(ex), traceback.format_exc()))
 
         self.call_strategy_func(strategy, strategy.on_trade, trade)
 
@@ -264,7 +322,8 @@ class CtaEngine(BaseEngine):
                     self.main_engine.subscribe(req, gateway_name)
 
                 except Exception as ex:
-                    self.write_error(u'重新订阅{}.{}异常:{},{}'.format(gateway_name, vt_symbol, str(ex), traceback.format_exc()))
+                    self.write_error(
+                        u'重新订阅{}.{}异常:{},{}'.format(gateway_name, vt_symbol, str(ex), traceback.format_exc()))
                     return
 
     def check_stop_order(self, tick: TickData):
@@ -407,6 +466,32 @@ class CtaEngine(BaseEngine):
             gateway_name
         )
 
+    def send_fak_order(
+            self,
+            strategy: CtaTemplate,
+            contract: ContractData,
+            direction: Direction,
+            offset: Offset,
+            price: float,
+            volume: float,
+            lock: bool,
+            gateway_name: str = None
+    ):
+        """
+        Send a limit order to server.
+        """
+        return self.send_server_order(
+            strategy,
+            contract,
+            direction,
+            offset,
+            price,
+            volume,
+            OrderType.FAK,
+            lock,
+            gateway_name
+        )
+
     def send_server_stop_order(
             self,
             strategy: CtaTemplate,
@@ -462,7 +547,7 @@ class CtaEngine(BaseEngine):
             stop_orderid=stop_orderid,
             strategy_name=strategy.strategy_name,
             lock=lock,
-            gateway_name = gateway_name
+            gateway_name=gateway_name
         )
 
         self.stop_orders[stop_orderid] = stop_order
@@ -521,6 +606,7 @@ class CtaEngine(BaseEngine):
             volume: float,
             stop: bool,
             lock: bool,
+            order_type: OrderType = OrderType.LIMIT,
             gateway_name: str = None
     ):
         """
@@ -540,9 +626,13 @@ class CtaEngine(BaseEngine):
 
         if stop:
             if contract.stop_supported:
-                return self.send_server_stop_order(strategy, contract, direction, offset, price, volume, lock, gateway_name)
+                return self.send_server_stop_order(strategy, contract, direction, offset, price, volume, lock,
+                                                   gateway_name)
             else:
-                return self.send_local_stop_order(strategy, vt_symbol, direction, offset, price, volume, lock, gateway_name)
+                return self.send_local_stop_order(strategy, vt_symbol, direction, offset, price, volume, lock,
+                                                  gateway_name)
+        if order_type == OrderType.FAK:
+            return self.send_fak_order(strategy, contract, direction, offset, price, volume, lock, gateway_name)
         else:
             return self.send_limit_order(strategy, contract, direction, offset, price, volume, lock, gateway_name)
 

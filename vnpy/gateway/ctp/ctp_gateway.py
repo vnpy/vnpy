@@ -3,7 +3,7 @@
 import traceback
 import json
 from datetime import datetime, timedelta
-from copy import copy
+from copy import copy,deepcopy
 
 from vnpy.api.ctp import (
     MdApi,
@@ -76,6 +76,7 @@ from vnpy.amqp.consumer import subscriber
 from vnpy.data.tdx.tdx_common import (
     TDX_FUTURE_HOSTS,
     get_future_contracts,
+    save_future_contracts,
     get_cache_json,
     save_cache_json,
     TDX_FUTURE_CONFIG)
@@ -137,7 +138,9 @@ OPTIONTYPE_CTP2VT = {
 symbol_exchange_map = {}
 symbol_name_map = {}
 symbol_size_map = {}
-
+index_contracts = {}
+# tdx 期货配置本地缓存
+future_contracts = get_future_contracts()
 
 class CtpGateway(BaseGateway):
     """
@@ -479,6 +482,7 @@ class CtpTdApi(TdApi):
         self.trade_data = []
         self.positions = {}
         self.sysid_orderid_map = {}
+        self.future_contract_changed = False
 
     def onFrontConnected(self):
         """"""
@@ -665,8 +669,39 @@ class CtpTdApi(TdApi):
             symbol_name_map[contract.symbol] = contract.name
             symbol_size_map[contract.symbol] = contract.size
 
+            if contract.product == Product.FUTURES:
+                # 生成指数合约信息
+                underlying_symbol = data["ProductID"]    # 短合约名称
+                underlying_symbol = underlying_symbol.upper()
+                # 只推送普通合约的指数
+                if len(underlying_symbol) <= 2:
+                    idx_contract = index_contracts.get(underlying_symbol, None)
+                    if idx_contract is None:
+                        idx_contract = deepcopy(contract)
+                        idx_contract.symbol = '{}99'.format(underlying_symbol)
+                        idx_contract.name = u'{}指数'.format(underlying_symbol)
+                        self.gateway.on_contract(idx_contract)
+
+                        # 获取data/tdx/future_contracts.json中的合约记录
+                        future_contract = future_contracts.get(underlying_symbol, {})
+                        mi_contract_symbol = future_contract.get('mi_symbol', '')
+                        margin_rate = float(future_contract.get('margin_rate', 0))
+                        mi_margin_rate = round(idx_contract.margin_rate, 4)
+                        if mi_contract_symbol == contract.symbol:
+                            if margin_rate != mi_margin_rate:
+                                self.gateway.write_log(f"{underlying_symbol}合约主力{mi_contract_symbol} 保证金{margin_rate}=>{mi_margin_rate}")
+                                future_contract.update({'margin_rate': mi_margin_rate})
+                                future_contract.update({'symbol_size': idx_contract.size})
+                                future_contract.update({'price_tick': idx_contract.pricetick})
+                                future_contracts.update({underlying_symbol: future_contract})
+                                self.future_contract_changed = True
+                                index_contracts.update({underlying_symbol: idx_contract})
         if last:
             self.gateway.write_log("合约信息查询成功")
+
+            if self.future_contract_changed:
+                self.gateway.write_log('更新vnpy/data/tdx/future_contracts.json')
+                save_future_contracts(future_contracts)
 
             for data in self.order_data:
                 self.onRtnOrder(data)
@@ -902,7 +937,6 @@ class CtpTdApi(TdApi):
         if self.connect_status:
             self.exit()
 
-
 class TdxMdApi():
     """
     通达信数据行情API实现
@@ -923,8 +957,7 @@ class TdxMdApi():
         self.symbol_vn_dict = {}  # tdx合约与vtSymbol的对应
         self.symbol_tick_dict = {}  # tdx合约与最后一个Tick得字典
 
-        # tdx 期货配置本地缓存
-        self.future_contracts = get_future_contracts()
+
 
         self.registered_symbol_set = set()
 
@@ -1180,7 +1213,7 @@ class TdxMdApi():
             underlying_symbol = get_underlying_symbol(vn_symbol)
 
             if exchange is None:
-                symbol_info = self.future_contracts.get(underlying_symbol, None)
+                symbol_info = future_contracts.get(underlying_symbol, None)
                 if not symbol_info:
                     continue
                 exchange_value = symbol_info.get('exchange', None)

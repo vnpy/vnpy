@@ -9,7 +9,7 @@ from typing import Any, Callable
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
-from logging import INFO, ERROR, DEBUG
+from logging import INFO
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine

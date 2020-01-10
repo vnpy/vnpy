@@ -22,11 +22,11 @@ str_markets = json.dumps(markets, indent=1, ensure_ascii=False)
 print(u'{}'.format(str_markets))
 
 # 获取所有的期货合约明细
-# api_01.qry_instrument()
+api_01.qry_instrument()
 
 # 获取某个合约得最新价
-# price = api_01.get_price('rb2005')
-# print('price={}'.format(price))
+price = api_01.get_price('rb2005')
+print('price={}'.format(price))
 
 
 # 获取主力合约

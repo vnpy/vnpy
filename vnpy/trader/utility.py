@@ -177,6 +177,10 @@ def generate_vt_symbol(symbol: str, exchange: Exchange):
     """
     return f"{symbol}.{exchange.value}"
 
+def format_number(n):
+    """格式化数字到字符串"""
+    rn = round(n, 2)  # 保留两位小数
+    return format(rn, ',')  # 加上千分符
 
 def _get_trader_dir(temp_name: str):
     """

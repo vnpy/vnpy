@@ -301,3 +301,4 @@ class PositionHolding:
                 req_list.append(req_open)
 
             return req_list
+

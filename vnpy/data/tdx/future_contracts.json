@@ -4,511 +4,575 @@
         "mi_symbol": "a2005",
         "full_symbol": "A2005",
         "exchange": "DCE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "AG": {
         "underlying_symbol": "AG",
         "mi_symbol": "ag2007",
         "full_symbol": "AG2007",
         "exchange": "SHFE",
-        "symbol_size": "15",
-        "price_tick": "1"
+        "margin_rate": 0.07,
+        "symbol_size": 15,
+        "price_tick": 1.0
     },
     "AL": {
         "underlying_symbol": "AL",
-        "mi_symbol": "al2002",
-        "full_symbol": "AL2002",
+        "mi_symbol": "al2003",
+        "full_symbol": "AL2003",
         "exchange": "SHFE",
-        "symbol_size": "5",
-        "price_tick": "5"
+        "margin_rate": 0.07,
+        "symbol_size": 5,
+        "price_tick": 5.0
     },
     "AP": {
         "underlying_symbol": "AP",
         "mi_symbol": "AP005",
         "full_symbol": "AP2005",
         "exchange": "CZCE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.08,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "AU": {
         "underlying_symbol": "AU",
         "mi_symbol": "au2006",
         "full_symbol": "AU2006",
         "exchange": "SHFE",
-        "symbol_size": "1000",
-        "price_tick": "0.05"
+        "margin_rate": 0.06,
+        "symbol_size": 1000,
+        "price_tick": 0.02
     },
     "B": {
         "underlying_symbol": "B",
         "mi_symbol": "b2003",
         "full_symbol": "B2003",
         "exchange": "DCE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "BB": {
         "underlying_symbol": "BB",
         "mi_symbol": "bb2012",
         "full_symbol": "BB2012",
         "exchange": "DCE",
-        "symbol_size": "500",
-        "price_tick": "0.05"
+        "margin_rate": 0.2,
+        "symbol_size": 500,
+        "price_tick": 0.05
     },
     "BU": {
         "underlying_symbol": "BU",
         "mi_symbol": "bu2006",
         "full_symbol": "BU2006",
         "exchange": "SHFE",
-        "symbol_size": "10",
-        "price_tick": "2"
+        "margin_rate": 0.09,
+        "symbol_size": 10,
+        "price_tick": 2.0
     },
     "C": {
         "underlying_symbol": "C",
         "mi_symbol": "c2005",
         "full_symbol": "C2005",
         "exchange": "DCE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "CF": {
         "underlying_symbol": "CF",
         "mi_symbol": "CF005",
         "full_symbol": "CF2005",
         "exchange": "CZCE",
-        "symbol_size": "5",
-        "price_tick": "5"
+        "margin_rate": 0.05,
+        "symbol_size": 5,
+        "price_tick": 5.0
     },
     "CJ": {
         "underlying_symbol": "CJ",
         "mi_symbol": "CJ005",
         "full_symbol": "CJ2005",
         "exchange": "CZCE",
-        "symbol_size": "5",
-        "price_tick": "5"
+        "margin_rate": 0.07,
+        "symbol_size": 5,
+        "price_tick": 5.0
     },
     "CS": {
         "underlying_symbol": "CS",
         "mi_symbol": "cs2005",
         "full_symbol": "CS2005",
         "exchange": "DCE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "CU": {
         "underlying_symbol": "CU",
         "mi_symbol": "cu2003",
         "full_symbol": "CU2003",
         "exchange": "SHFE",
-        "symbol_size": "5",
-        "price_tick": "10"
+        "margin_rate": 0.07,
+        "symbol_size": 5,
+        "price_tick": 10.0
     },
     "CY": {
         "underlying_symbol": "CY",
         "mi_symbol": "CY005",
         "full_symbol": "CY2005",
         "exchange": "CZCE",
-        "symbol_size": "5",
-        "price_tick": "5"
+        "margin_rate": 0.05,
+        "symbol_size": 5,
+        "price_tick": 5.0
     },
     "EB": {
         "underlying_symbol": "EB",
         "mi_symbol": "eb2005",
         "full_symbol": "EB2005",
         "exchange": "DCE",
-        "symbol_size": "5",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 5,
+        "price_tick": 1.0
     },
     "EG": {
         "underlying_symbol": "EG",
         "mi_symbol": "eg2005",
         "full_symbol": "EG2005",
         "exchange": "DCE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.06,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "FB": {
         "underlying_symbol": "FB",
         "mi_symbol": "fb2005",
         "full_symbol": "FB2005",
         "exchange": "DCE",
-        "symbol_size": "500",
-        "price_tick": "0.05"
+        "margin_rate": 0.1,
+        "symbol_size": 10,
+        "price_tick": 0.5
     },
     "FG": {
         "underlying_symbol": "FG",
         "mi_symbol": "FG005",
         "full_symbol": "FG2005",
         "exchange": "CZCE",
-        "symbol_size": "20",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 20,
+        "price_tick": 1.0
     },
     "FU": {
         "underlying_symbol": "FU",
         "mi_symbol": "fu2005",
         "full_symbol": "FU2005",
         "exchange": "SHFE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.1,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "HC": {
         "underlying_symbol": "HC",
         "mi_symbol": "hc2005",
         "full_symbol": "HC2005",
         "exchange": "SHFE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.08,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "I": {
         "underlying_symbol": "I",
         "mi_symbol": "i2005",
         "full_symbol": "I2005",
         "exchange": "DCE",
-        "symbol_size": "100",
-        "price_tick": "0.5"
+        "margin_rate": 0.08,
+        "symbol_size": 100,
+        "price_tick": 0.5
     },
     "IC": {
         "underlying_symbol": "IC",
         "mi_symbol": "IC2003",
         "full_symbol": "IC2003",
         "exchange": "CFFEX",
-        "symbol_size": "200",
-        "price_tick": "0.2"
+        "margin_rate": 0.12,
+        "symbol_size": 200,
+        "price_tick": 0.2
     },
     "IF": {
         "underlying_symbol": "IF",
         "mi_symbol": "IF2003",
         "full_symbol": "IF2003",
         "exchange": "CFFEX",
-        "symbol_size": "300",
-        "price_tick": "0.2"
+        "margin_rate": 0.1,
+        "symbol_size": 300,
+        "price_tick": 0.2
     },
     "IH": {
         "underlying_symbol": "IH",
         "mi_symbol": "IH2003",
         "full_symbol": "IH2003",
         "exchange": "CFFEX",
-        "symbol_size": "300",
-        "price_tick": "0.2"
+        "margin_rate": 0.1,
+        "symbol_size": 300,
+        "price_tick": 0.2
     },
     "J": {
         "underlying_symbol": "J",
         "mi_symbol": "j2005",
         "full_symbol": "J2005",
         "exchange": "DCE",
-        "symbol_size": "100",
-        "price_tick": "0.5"
+        "margin_rate": 0.08,
+        "symbol_size": 100,
+        "price_tick": 0.5
     },
     "JD": {
         "underlying_symbol": "JD",
         "mi_symbol": "jd2005",
         "full_symbol": "JD2005",
         "exchange": "DCE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.07,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "JM": {
         "underlying_symbol": "JM",
         "mi_symbol": "jm2005",
         "full_symbol": "JM2005",
         "exchange": "DCE",
-        "symbol_size": "60",
-        "price_tick": "0.5"
+        "margin_rate": 0.08,
+        "symbol_size": 60,
+        "price_tick": 0.5
     },
     "JR": {
         "underlying_symbol": "JR",
         "mi_symbol": "JR011",
         "full_symbol": "JR2011",
         "exchange": "CZCE",
-        "symbol_size": "20",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 20,
+        "price_tick": 1.0
     },
     "L": {
         "underlying_symbol": "L",
         "mi_symbol": "l2005",
         "full_symbol": "L2005",
         "exchange": "DCE",
-        "symbol_size": "5",
-        "price_tick": "5"
+        "margin_rate": 0.05,
+        "symbol_size": 5,
+        "price_tick": 5.0
     },
     "LR": {
         "underlying_symbol": "LR",
         "mi_symbol": "LR007",
         "full_symbol": "LR2007",
         "exchange": "CZCE",
-        "symbol_size": "20",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 20,
+        "price_tick": 1.0
     },
     "M": {
         "underlying_symbol": "M",
         "mi_symbol": "m2005",
         "full_symbol": "M2005",
         "exchange": "DCE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "MA": {
         "underlying_symbol": "MA",
         "mi_symbol": "MA005",
         "full_symbol": "MA2005",
         "exchange": "CZCE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.07,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "NI": {
         "underlying_symbol": "NI",
         "mi_symbol": "ni2003",
         "full_symbol": "NI2003",
         "exchange": "SHFE",
-        "symbol_size": "1",
-        "price_tick": "10"
+        "margin_rate": 0.1,
+        "symbol_size": 1,
+        "price_tick": 10.0
     },
     "NR": {
         "underlying_symbol": "NR",
         "mi_symbol": "nr2004",
         "full_symbol": "NR2004",
         "exchange": "INE",
-        "symbol_size": "10",
-        "price_tick": "5"
+        "margin_rate": 0.09,
+        "symbol_size": 10,
+        "price_tick": 5.0
     },
     "OI": {
         "underlying_symbol": "OI",
         "mi_symbol": "OI005",
         "full_symbol": "OI2005",
         "exchange": "CZCE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "P": {
         "underlying_symbol": "P",
         "mi_symbol": "p2005",
         "full_symbol": "P2005",
         "exchange": "DCE",
-        "symbol_size": "10",
-        "price_tick": "2"
+        "margin_rate": 0.05,
+        "symbol_size": 10,
+        "price_tick": 2.0
     },
     "PB": {
         "underlying_symbol": "PB",
-        "mi_symbol": "pb2002",
-        "full_symbol": "PB2002",
+        "mi_symbol": "pb2003",
+        "full_symbol": "PB2003",
         "exchange": "SHFE",
-        "symbol_size": "5",
-        "price_tick": "5"
+        "margin_rate": 0.07,
+        "symbol_size": 5,
+        "price_tick": 5.0
     },
     "PM": {
         "underlying_symbol": "PM",
         "mi_symbol": "PM011",
         "full_symbol": "PM2011",
         "exchange": "CZCE",
-        "symbol_size": "50",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 50,
+        "price_tick": 1.0
     },
     "PP": {
         "underlying_symbol": "PP",
         "mi_symbol": "pp2005",
         "full_symbol": "PP2005",
         "exchange": "DCE",
-        "symbol_size": "5",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 5,
+        "price_tick": 1.0
     },
     "RB": {
         "underlying_symbol": "RB",
         "mi_symbol": "rb2005",
         "full_symbol": "RB2005",
         "exchange": "SHFE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.08,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "RI": {
         "underlying_symbol": "RI",
         "mi_symbol": "RI011",
         "full_symbol": "RI2011",
         "exchange": "CZCE",
-        "symbol_size": "20",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 20,
+        "price_tick": 1.0
     },
     "RM": {
         "underlying_symbol": "RM",
         "mi_symbol": "RM005",
         "full_symbol": "RM2005",
         "exchange": "CZCE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.06,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "RR": {
         "underlying_symbol": "RR",
         "mi_symbol": "rr2005",
         "full_symbol": "RR2005",
         "exchange": "DCE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "RS": {
         "underlying_symbol": "RS",
         "mi_symbol": "RS011",
         "full_symbol": "RS2011",
         "exchange": "CZCE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.2,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "RU": {
         "underlying_symbol": "RU",
         "mi_symbol": "ru2005",
         "full_symbol": "RU2005",
         "exchange": "SHFE",
-        "symbol_size": "10",
-        "price_tick": "5"
+        "margin_rate": 0.09,
+        "symbol_size": 10,
+        "price_tick": 5.0
     },
     "SA": {
         "underlying_symbol": "SA",
         "mi_symbol": "SA005",
         "full_symbol": "SA2005",
         "exchange": "CZCE",
-        "symbol_size": "20",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 20,
+        "price_tick": 1.0
     },
     "SC": {
         "underlying_symbol": "SC",
         "mi_symbol": "sc2003",
         "full_symbol": "SC2003",
         "exchange": "INE",
-        "symbol_size": "1000",
-        "price_tick": "0.1"
+        "margin_rate": 0.07,
+        "symbol_size": 1000,
+        "price_tick": 0.1
     },
     "SF": {
         "underlying_symbol": "SF",
         "mi_symbol": "SF005",
         "full_symbol": "SF2005",
         "exchange": "CZCE",
-        "symbol_size": "5",
-        "price_tick": "2"
+        "margin_rate": 0.07,
+        "symbol_size": 5,
+        "price_tick": 2.0
     },
     "SM": {
         "underlying_symbol": "SM",
         "mi_symbol": "SM005",
         "full_symbol": "SM2005",
         "exchange": "CZCE",
-        "symbol_size": "5",
-        "price_tick": "2"
+        "margin_rate": 0.07,
+        "symbol_size": 5,
+        "price_tick": 2.0
     },
     "SN": {
         "underlying_symbol": "SN",
         "mi_symbol": "sn2006",
         "full_symbol": "SN2006",
         "exchange": "SHFE",
-        "symbol_size": "1",
-        "price_tick": "10"
+        "margin_rate": 0.08,
+        "symbol_size": 1,
+        "price_tick": 10.0
     },
     "SP": {
         "underlying_symbol": "SP",
         "mi_symbol": "sp2005",
         "full_symbol": "SP2005",
         "exchange": "SHFE",
-        "symbol_size": "10",
-        "price_tick": "2"
+        "margin_rate": 0.07,
+        "symbol_size": 10,
+        "price_tick": 2.0
     },
     "SR": {
         "underlying_symbol": "SR",
         "mi_symbol": "SR005",
         "full_symbol": "SR2005",
         "exchange": "CZCE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "SS": {
         "underlying_symbol": "SS",
         "mi_symbol": "ss2006",
         "full_symbol": "SS2006",
         "exchange": "SHFE",
-        "symbol_size": "5",
-        "price_tick": "5"
+        "margin_rate": 0.08,
+        "symbol_size": 5,
+        "price_tick": 5.0
     },
     "T": {
         "underlying_symbol": "T",
         "mi_symbol": "T2003",
         "full_symbol": "T2003",
         "exchange": "CFFEX",
-        "symbol_size": "10000",
-        "price_tick": "0.005"
+        "margin_rate": 0.02,
+        "symbol_size": 10000,
+        "price_tick": 0.005
     },
     "TA": {
         "underlying_symbol": "TA",
         "mi_symbol": "TA005",
         "full_symbol": "TA2005",
         "exchange": "CZCE",
-        "symbol_size": "5",
-        "price_tick": "2"
+        "margin_rate": 0.06,
+        "symbol_size": 5,
+        "price_tick": 2.0
     },
     "TF": {
         "underlying_symbol": "TF",
         "mi_symbol": "TF2003",
         "full_symbol": "TF2003",
         "exchange": "CFFEX",
-        "symbol_size": "10000",
-        "price_tick": "0.005"
+        "margin_rate": 0.012,
+        "symbol_size": 10000,
+        "price_tick": 0.005
     },
     "TS": {
         "underlying_symbol": "TS",
         "mi_symbol": "TS2003",
         "full_symbol": "TS2003",
         "exchange": "CFFEX",
-        "symbol_size": "20000",
-        "price_tick": "0.005"
+        "margin_rate": 0.005,
+        "symbol_size": 20000,
+        "price_tick": 0.005
     },
     "UR": {
         "underlying_symbol": "UR",
         "mi_symbol": "UR005",
         "full_symbol": "UR2005",
         "exchange": "CZCE",
-        "symbol_size": "20",
-        "price_tick": "1"
+        "margin_rate": 0.05,
+        "symbol_size": 20,
+        "price_tick": 1.0
     },
     "V": {
         "underlying_symbol": "V",
         "mi_symbol": "v2005",
         "full_symbol": "V2005",
         "exchange": "DCE",
-        "symbol_size": "5",
-        "price_tick": "5"
+        "margin_rate": 0.05,
+        "symbol_size": 5,
+        "price_tick": 5.0
     },
     "WH": {
         "underlying_symbol": "WH",
-        "mi_symbol": "WH005",
-        "full_symbol": "WH2005",
+        "mi_symbol": "WH011",
+        "full_symbol": "WH2011",
         "exchange": "CZCE",
-        "symbol_size": "20",
-        "price_tick": "1"
+        "margin_rate": 0.07,
+        "symbol_size": 20,
+        "price_tick": 1.0
     },
     "WR": {
         "underlying_symbol": "WR",
         "mi_symbol": "wr2012",
         "full_symbol": "WR2012",
         "exchange": "SHFE",
-        "symbol_size": "10",
-        "price_tick": "1"
+        "margin_rate": 0.08,
+        "symbol_size": 10,
+        "price_tick": 1.0
     },
     "Y": {
         "underlying_symbol": "Y",
         "mi_symbol": "y2005",
         "full_symbol": "Y2005",
         "exchange": "DCE",
-        "symbol_size": "10",
-        "price_tick": "2"
+        "margin_rate": 0.05,
+        "symbol_size": 10,
+        "price_tick": 2.0
     },
     "ZC": {
         "underlying_symbol": "ZC",
         "mi_symbol": "ZC005",
         "full_symbol": "ZC2005",
         "exchange": "CZCE",
-        "symbol_size": "100",
-        "price_tick": "0.2"
+        "margin_rate": 0.06,
+        "symbol_size": 100,
+        "price_tick": 0.2
     },
     "ZN": {
         "underlying_symbol": "ZN",
         "mi_symbol": "zn2003",
         "full_symbol": "ZN2003",
         "exchange": "SHFE",
-        "symbol_size": "5",
-        "price_tick": "5"
+        "margin_rate": 0.07,
+        "symbol_size": 5,
+        "price_tick": 5.0
     }
 }

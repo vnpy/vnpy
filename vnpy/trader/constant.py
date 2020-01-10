@@ -134,7 +134,7 @@ class Exchange(Enum):
 
     # Special Function
     LOCAL = "LOCAL"         # For local generated data
-
+    SPD = "SPD"      # Customer Spread data
 
 class Currency(Enum):
     """

@@ -10,4 +10,4 @@ python -m pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-a
 python -m pip install -r requirements.txt
 
 :: Install vn.py
-python -m pip install .
+:: python -m pip install .
