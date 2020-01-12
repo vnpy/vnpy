@@ -35,7 +35,8 @@ from .object import (
     TradeData,
     PositionData,
     AccountData,
-    ContractData
+    ContractData,
+    Exchange
 )
 from .setting import SETTINGS
 from .utility import get_folder_path, TRADER_DIR
@@ -70,7 +71,7 @@ class MainEngine:
         self.engines[engine.engine_name] = engine
         return engine
 
-    def add_gateway(self, gateway_class: Type[BaseGateway]) -> Type[BaseGateway]:
+    def add_gateway(self, gateway_class: Type[BaseGateway]) -> BaseGateway:
         """
         Add gateway.
         """
@@ -84,7 +85,7 @@ class MainEngine:
 
         return gateway
 
-    def add_app(self, app_class: Type[BaseApp]) -> Type[BaseGateway]:
+    def add_app(self, app_class: Type[BaseApp]) -> EventEngine:
         """
         Add app.
         """
@@ -110,7 +111,7 @@ class MainEngine:
         event = Event(EVENT_LOG, log)
         self.event_engine.put(event)
 
-    def get_gateway(self, gateway_name: str) -> Type[BaseGateway]:
+    def get_gateway(self, gateway_name: str) -> BaseGateway:
         """
         Return gateway object by name.
         """
@@ -149,7 +150,7 @@ class MainEngine:
         """
         return list(self.apps.values())
 
-    def get_all_exchanges(self) -> List[str]:
+    def get_all_exchanges(self) -> List[Exchange]:
         """
         Get all exchanges.
         """
