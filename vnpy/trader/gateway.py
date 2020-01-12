@@ -28,7 +28,8 @@ from .object import (
     CancelRequest,
     SubscribeRequest,
     HistoryRequest,
-    Exchange
+    Exchange,
+    BarData
 )
 
 
@@ -248,7 +249,7 @@ class BaseGateway(ABC):
         """
         pass
 
-    def query_history(self, req: HistoryRequest) -> None:
+    def query_history(self, req: HistoryRequest) -> List[BarData]:
         """
         Query bar history data.
         """
