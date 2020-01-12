@@ -18,7 +18,7 @@ class BaseData:
     and should inherit base data.
     """
 
-    gateway_name: str
+    gateway_name: str = ""
 
 
 @dataclass
@@ -30,9 +30,9 @@ class TickData(BaseData):
         * intraday market statistics.
     """
 
-    symbol: str
-    exchange: Exchange
-    datetime: datetime
+    symbol: str = ""
+    exchange: Exchange = ""
+    datetime: datetime = None
 
     name: str = ""
     volume: float = 0
@@ -71,7 +71,7 @@ class TickData(BaseData):
     ask_volume_4: float = 0
     ask_volume_5: float = 0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
 
@@ -82,9 +82,9 @@ class BarData(BaseData):
     Candlestick bar data of a certain trading period.
     """
 
-    symbol: str
-    exchange: Exchange
-    datetime: datetime
+    symbol: str = ""
+    exchange: Exchange = ""
+    datetime: datetime = None
 
     interval: Interval = None
     volume: float = 0
@@ -94,7 +94,7 @@ class BarData(BaseData):
     low_price: float = 0
     close_price: float = 0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
 
@@ -106,9 +106,9 @@ class OrderData(BaseData):
     of a specific order.
     """
 
-    symbol: str
-    exchange: Exchange
-    orderid: str
+    symbol: str = ""
+    exchange: Exchange = ""
+    orderid: str = ""
 
     type: OrderType = OrderType.LIMIT
     direction: Direction = ""
@@ -119,12 +119,12 @@ class OrderData(BaseData):
     status: Status = Status.SUBMITTING
     time: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
         self.vt_orderid = f"{self.gateway_name}.{self.orderid}"
 
-    def is_active(self):
+    def is_active(self) -> bool:
         """
         Check if the order is active.
         """
@@ -133,7 +133,7 @@ class OrderData(BaseData):
         else:
             return False
 
-    def create_cancel_request(self):
+    def create_cancel_request(self) -> str:
         """
         Create cancel request object from order.
         """
@@ -150,10 +150,10 @@ class TradeData(BaseData):
     can have several trade fills.
     """
 
-    symbol: str
-    exchange: Exchange
-    orderid: str
-    tradeid: str
+    symbol: str = ""
+    exchange: Exchange = ""
+    orderid: str = ""
+    tradeid: str = ""
     direction: Direction = ""
 
     offset: Offset = Offset.NONE
@@ -161,7 +161,7 @@ class TradeData(BaseData):
     volume: float = 0
     time: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
         self.vt_orderid = f"{self.gateway_name}.{self.orderid}"
@@ -174,9 +174,9 @@ class PositionData(BaseData):
     Positon data is used for tracking each individual position holding.
     """
 
-    symbol: str
-    exchange: Exchange
-    direction: Direction
+    symbol: str = ""
+    exchange: Exchange = ""
+    direction: Direction = ""
 
     volume: float = 0
     frozen: float = 0
@@ -184,7 +184,7 @@ class PositionData(BaseData):
     pnl: float = 0
     yd_volume: float = 0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
         self.vt_positionid = f"{self.vt_symbol}.{self.direction.value}"
@@ -197,12 +197,12 @@ class AccountData(BaseData):
     available.
     """
 
-    accountid: str
+    accountid: str = ""
 
     balance: float = 0
     frozen: float = 0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """"""
         self.available = self.balance - self.frozen
         self.vt_accountid = f"{self.gateway_name}.{self.accountid}"
@@ -214,10 +214,10 @@ class LogData(BaseData):
     Log data is used for recording log messages on GUI or in log files.
     """
 
-    msg: str
+    msg: str = ""
     level: int = INFO
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """"""
         self.time = datetime.now()
 
@@ -228,12 +228,12 @@ class ContractData(BaseData):
     Contract data contains basic information about each contract traded.
     """
 
-    symbol: str
-    exchange: Exchange
-    name: str
-    product: Product
-    size: int
-    pricetick: float
+    symbol: str = ""
+    exchange: Exchange = ""
+    name: str = ""
+    product: Product = ""
+    size: int = 0
+    pricetick: float = 0
 
     min_volume: float = 1           # minimum trading volume of the contract
     stop_supported: bool = False    # whether server supports stop order
@@ -242,12 +242,12 @@ class ContractData(BaseData):
 
     option_strike: float = 0
     option_underlying: str = ""     # vt_symbol of underlying contract
-    option_type: OptionType = None
+    option_type: OptionType = ""
     option_expiry: datetime = None
     option_portfolio: str = ""
     option_index: str = ""          # for identifying options with same strike price
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
 
@@ -258,10 +258,10 @@ class SubscribeRequest:
     Request sending to specific gateway for subscribing tick data update.
     """
 
-    symbol: str
-    exchange: Exchange
+    symbol: str = ""
+    exchange: Exchange = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
 
@@ -272,19 +272,19 @@ class OrderRequest:
     Request sending to specific gateway for creating a new order.
     """
 
-    symbol: str
-    exchange: Exchange
-    direction: Direction
-    type: OrderType
-    volume: float
+    symbol: str = ""
+    exchange: Exchange = ""
+    direction: Direction = ""
+    type: OrderType = ""
+    volume: float = 0
     price: float = 0
     offset: Offset = Offset.NONE
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
 
-    def create_order_data(self, orderid: str, gateway_name: str):
+    def create_order_data(self, orderid: str, gateway_name: str) -> OrderData:
         """
         Create order data from request.
         """
@@ -308,11 +308,11 @@ class CancelRequest:
     Request sending to specific gateway for canceling an existing order.
     """
 
-    orderid: str
-    symbol: str
-    exchange: Exchange
+    orderid: str = ""
+    symbol: str = ""
+    exchange: Exchange = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
 
@@ -323,12 +323,12 @@ class HistoryRequest:
     Request sending to specific gateway for querying history data.
     """
 
-    symbol: str
-    exchange: Exchange
-    start: datetime
+    symbol: str = ""
+    exchange: Exchange = ""
+    start: datetime = None
     end: datetime = None
     interval: Interval = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
