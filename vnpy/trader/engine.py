@@ -242,8 +242,15 @@ class BaseEngine(ABC):
     def close(self):
         """"""
         pass
+def singletion(cls):
+    instances = {}
+    def get_instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+    return get_instance
 
-
+@singletion
 class LogEngine(BaseEngine):
     """
     Processes log event and output with logging module.
@@ -251,7 +258,7 @@ class LogEngine(BaseEngine):
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
-        super(LogEngine, self).__init__(main_engine, event_engine, "log")
+        super().__init__(main_engine, event_engine, "log")
 
         if not SETTINGS["log.active"]:
             return
