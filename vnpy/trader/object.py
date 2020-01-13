@@ -133,7 +133,7 @@ class OrderData(BaseData):
         else:
             return False
 
-    def create_cancel_request(self) -> str:
+    def create_cancel_request(self) -> "CancelRequest":
         """
         Create cancel request object from order.
         """
