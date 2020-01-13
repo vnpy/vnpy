@@ -96,10 +96,6 @@ class RpcServer:
         # Stop RpcServer status
         self.__active = False
 
-        # Unbind socket address
-        self.__socket_pub.unbind(self.__socket_pub.LAST_ENDPOINT)
-        self.__socket_rep.unbind(self.__socket_rep.LAST_ENDPOINT)
-
     def join(self):
         # Wait for RpcServer thread to exit
         if self.__thread and self.__thread.is_alive():
@@ -111,6 +107,7 @@ class RpcServer:
         Run RpcServer functions
         """
         start = datetime.utcnow()
+
         while self.__active:
             # Use poll to wait event arrival, waiting time is 1 second (1000 milliseconds)
             cur = datetime.utcnow()
@@ -138,6 +135,10 @@ class RpcServer:
 
             # send callable response by Reply socket
             self.__socket_rep.send_pyobj(rep)
+
+        # Unbind socket address
+        self.__socket_pub.unbind(self.__socket_pub.LAST_ENDPOINT)
+        self.__socket_rep.unbind(self.__socket_rep.LAST_ENDPOINT)
 
     def publish(self, topic: str, data: Any):
         """
@@ -233,10 +234,6 @@ class RpcClient:
         # Stop RpcClient status
         self.__active = False
 
-        # Close socket
-        self.__socket_req.close()
-        self.__socket_sub.close()
-
     def join(self):
         # Wait for RpcClient thread to exit
         if self.__thread and self.__thread.is_alive():
@@ -248,6 +245,7 @@ class RpcClient:
         Run RpcClient function
         """
         pull_tolerance = int(KEEP_ALIVE_TOLERANCE.total_seconds() * 1000)
+
         while self.__active:
             if not self.__socket_sub.poll(pull_tolerance):
                 self._on_unexpected_disconnected()
@@ -261,6 +259,10 @@ class RpcClient:
             else:
                 # Process data by callable function
                 self.callback(topic, data)
+
+        # Close socket
+        self.__socket_req.close()
+        self.__socket_sub.close()
 
     @staticmethod
     def _on_unexpected_disconnected():
