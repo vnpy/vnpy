@@ -347,7 +347,7 @@ class LocalOrderManager:
         """
         self.push_data_buf[sys_orderid] = data
 
-    def get_order_with_sys_orderid(self, sys_orderid: str) -> Optional[str]:
+    def get_order_with_sys_orderid(self, sys_orderid: str) -> Optional[OrderData]:
         """"""
         local_orderid = self.sys_local_orderid_map.get(sys_orderid, None)
         if not local_orderid:
