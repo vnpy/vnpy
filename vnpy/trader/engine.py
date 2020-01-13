@@ -2,6 +2,7 @@
 """
 
 import logging
+from logging import Logger
 import smtplib
 import os
 from abc import ABC
@@ -9,7 +10,7 @@ from datetime import datetime
 from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
-from typing import Any, Sequence, Type, Dict, List
+from typing import Any, Sequence, Type, Dict, List, Optional
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -50,20 +51,20 @@ class MainEngine:
     def __init__(self, event_engine: EventEngine = None):
         """"""
         if event_engine:
-            self.event_engine = event_engine
+            self.event_engine: EventEngine = event_engine
         else:
             self.event_engine = EventEngine()
         self.event_engine.start()
 
-        self.gateways = {}
-        self.engines = {}
-        self.apps = {}
-        self.exchanges = []
+        self.gateways: Dict[str, BaseGateway] = {}
+        self.engines: Dict[str, BaseEngine] = {}
+        self.apps: Dict[str, BaseApp] = {}
+        self.exchanges: List[Exchange] = []
 
         os.chdir(TRADER_DIR)    # Change working directory
         self.init_engines()     # Initialize function engines
 
-    def add_engine(self, engine_class: Any) -> EventEngine:
+    def add_engine(self, engine_class: Any) -> "BaseEngine":
         """
         Add function engine.
         """
@@ -85,7 +86,7 @@ class MainEngine:
 
         return gateway
 
-    def add_app(self, app_class: Type[BaseApp]) -> EventEngine:
+    def add_app(self, app_class: Type[BaseApp]) -> "BaseEngine":
         """
         Add app.
         """
@@ -120,7 +121,7 @@ class MainEngine:
             self.write_log(f"找不到底层接口：{gateway_name}")
         return gateway
 
-    def get_engine(self, engine_name: str) -> EventEngine:
+    def get_engine(self, engine_name: str) -> "BaseEngine":
         """
         Return engine object by name.
         """
@@ -129,7 +130,7 @@ class MainEngine:
             self.write_log(f"找不到引擎：{engine_name}")
         return engine
 
-    def get_default_setting(self, gateway_name: str) -> Dict[str, Any]:
+    def get_default_setting(self, gateway_name: str) -> Optional[Dict[str, Any]]:
         """
         Get default setting dict of a specific gateway.
         """
@@ -144,7 +145,7 @@ class MainEngine:
         """
         return list(self.gateways.keys())
 
-    def get_all_apps(self) -> List[Type[BaseApp]]:
+    def get_all_apps(self) -> List[BaseApp]:
         """
         Get all app objects.
         """
@@ -206,7 +207,7 @@ class MainEngine:
         if gateway:
             gateway.cancel_orders(reqs)
 
-    def query_history(self, req: HistoryRequest, gateway_name: str) -> List[BarData]:
+    def query_history(self, req: HistoryRequest, gateway_name: str) -> Optional[List[BarData]]:
         """
         Send cancel order request to a specific gateway.
         """
@@ -264,9 +265,9 @@ class LogEngine(BaseEngine):
         if not SETTINGS["log.active"]:
             return
 
-        self.level = SETTINGS["log.level"]
+        self.level: int = SETTINGS["log.level"]
 
-        self.logger = logging.getLogger("VN Trader")
+        self.logger: Logger = logging.getLogger("VN Trader")
         self.logger.setLevel(self.level)
 
         self.formatter = logging.Formatter(
@@ -336,14 +337,14 @@ class OmsEngine(BaseEngine):
         """"""
         super(OmsEngine, self).__init__(main_engine, event_engine, "oms")
 
-        self.ticks = {}
-        self.orders = {}
-        self.trades = {}
-        self.positions = {}
-        self.accounts = {}
-        self.contracts = {}
+        self.ticks: Dict[str, TickData] = {}
+        self.orders: Dict[str, OrderData] = {}
+        self.trades: Dict[str, TradeData] = {}
+        self.positions: Dict[str, PositionData] = {}
+        self.accounts: Dict[str, AccountData] = {}
+        self.contracts: Dict[str, ContractData] = {}
 
-        self.active_orders = {}
+        self.active_orders: Dict[str, OrderData] = {}
 
         self.add_function()
         self.register_event()
@@ -410,37 +411,37 @@ class OmsEngine(BaseEngine):
         contract = event.data
         self.contracts[contract.vt_symbol] = contract
 
-    def get_tick(self, vt_symbol) -> TickData:
+    def get_tick(self, vt_symbol: str) -> Optional[TickData]:
         """
         Get latest market tick data by vt_symbol.
         """
         return self.ticks.get(vt_symbol, None)
 
-    def get_order(self, vt_orderid) -> OrderData:
+    def get_order(self, vt_orderid: str) -> Optional[OrderData]:
         """
         Get latest order data by vt_orderid.
         """
         return self.orders.get(vt_orderid, None)
 
-    def get_trade(self, vt_tradeid) -> TradeData:
+    def get_trade(self, vt_tradeid: str) -> Optional[TradeData]:
         """
         Get trade data by vt_tradeid.
         """
         return self.trades.get(vt_tradeid, None)
 
-    def get_position(self, vt_positionid) -> PositionData:
+    def get_position(self, vt_positionid: str) -> Optional[PositionData]:
         """
         Get latest position data by vt_positionid.
         """
         return self.positions.get(vt_positionid, None)
 
-    def get_account(self, vt_accountid) -> AccountData:
+    def get_account(self, vt_accountid: str) -> Optional[AccountData]:
         """
         Get latest account data by vt_accountid.
         """
         return self.accounts.get(vt_accountid, None)
 
-    def get_contract(self, vt_symbol) -> ContractData:
+    def get_contract(self, vt_symbol: str) -> Optional[ContractData]:
         """
         Get contract data by vt_symbol.
         """
@@ -508,9 +509,9 @@ class EmailEngine(BaseEngine):
         """"""
         super(EmailEngine, self).__init__(main_engine, event_engine, "email")
 
-        self.thread = Thread(target=self.run)
-        self.queue = Queue()
-        self.active = False
+        self.thread: Thread = Thread(target=self.run)
+        self.queue: Queue = Queue()
+        self.active: bool = False
 
         self.main_engine.send_email = self.send_email
 
