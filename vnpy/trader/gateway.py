@@ -3,7 +3,7 @@
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Sequence, Dict, List
+from typing import Any, Sequence, Dict, List, Optional
 from copy import copy
 
 from vnpy.event import Event, EventEngine
@@ -197,7 +197,7 @@ class BaseGateway(ABC):
             * if request is sent, OrderData.status should be set to Status.SUBMITTING
             * if request is failed to sent, OrderData.status should be set to Status.REJECTED
         * response on_order:
-        * return OrderData.vt_orderid
+        * return vt_orderid
 
         :return str vt_orderid for created OrderData
         """
@@ -274,20 +274,20 @@ class LocalOrderManager:
         # For generating local orderid
         self.order_prefix = order_prefix
         self.order_count = 0
-        self.orders = {}        # local_orderid:order
+        self.orders = {}        # local_orderid: order
 
         # Map between local and system orderid
         self.local_sys_orderid_map = {}
         self.sys_local_orderid_map = {}
 
         # Push order data buf
-        self.push_data_buf = {}  # sys_orderid:data
+        self.push_data_buf = {}  # sys_orderid: data
 
         # Callback for processing push order data
         self.push_data_callback = None
 
         # Cancel request buf
-        self.cancel_request_buf = {}    # local_orderid:req
+        self.cancel_request_buf = {}    # local_orderid: req
 
         # Hook cancel order function
         self._cancel_order = gateway.cancel_order
@@ -347,7 +347,7 @@ class LocalOrderManager:
         """
         self.push_data_buf[sys_orderid] = data
 
-    def get_order_with_sys_orderid(self, sys_orderid: str) -> str:
+    def get_order_with_sys_orderid(self, sys_orderid: str) -> Optional[str]:
         """"""
         local_orderid = self.sys_local_orderid_map.get(sys_orderid, None)
         if not local_orderid:
@@ -355,7 +355,7 @@ class LocalOrderManager:
         else:
             return self.get_order_with_local_orderid(local_orderid)
 
-    def get_order_with_local_orderid(self, local_orderid: str) -> str:
+    def get_order_with_local_orderid(self, local_orderid: str) -> OrderData:
         """"""
         order = self.orders[local_orderid]
         return copy(order)
