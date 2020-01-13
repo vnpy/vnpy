@@ -1,0 +1,41 @@
+  {
+    "BU99-1-TA99-1-BJ":
+    {
+      "name": "沥青/TA指数比",
+      "exchange": "SPD",
+      "leg1_symbol": "BU99",
+      "leg1_ratio": 1,
+      "leg2_symbol": "TA99",
+      "leg2_ratio": 1,
+      "is_ratio": true,
+      "size": 100,
+      "margin_rate": 0.2,
+      "price_tick": 0.01
+    },
+    "JM99-1-I99-1-BJ":
+    {
+       "name": "焦煤/铁矿指数比",
+      "exchange": "SPD",
+      "leg1_symbol": "JM99",
+      "leg1_ratio": 1,
+      "leg2_symbol": "I99",
+      "leg2_ratio": 1,
+      "price_tick": 0.01,
+      "is_ratio": true,
+      "size": 100,
+      "margin_rate": 0.2
+    },
+    "jm2005-1-i2005-1-BJ":
+    {
+       "name": "焦煤/铁矿主力比",
+        "exchange": "SPD",
+      "leg1_symbol": "jm2005",
+      "leg1_ratio": 1,
+      "leg2_symbol": "i2005",
+      "leg2_ratio": 1,
+      "price_tick": 0.01,
+      "is_ratio": true,
+      "size": 100,
+      "margin_rate": 0.2
+    }
+  }
