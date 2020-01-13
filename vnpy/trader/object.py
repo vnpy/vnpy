@@ -287,6 +287,8 @@ class SubscribeRequest:
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
 
+    def __eq__(self, other):
+        return self.vt_symbol == other.vt_symbol
 
 @dataclass
 class OrderRequest:

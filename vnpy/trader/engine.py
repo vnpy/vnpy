@@ -532,6 +532,44 @@ class OmsEngine(BaseEngine):
             ]
             return active_orders
 
+class CustomContract(object):
+    """
+    定制合约
+    # 适用于初始化系统时，补充到本地合约信息文件中 contracts.vt
+    # 适用于CTP网关，加载自定义的套利合约，做内部行情撮合
+    """
+    # 运行本地目录下，定制合约的配置文件（dict）
+    file_name = 'custom_contracts.json'
+
+    def __init__(self):
+        """构造函数"""
+        from vnpy.trader.utility import load_json
+        self.setting = load_json(self.file_name)  # 所有设置
+
+    def get_config(self):
+        """获取配置"""
+        return self.setting
+
+    def get_contracts(self):
+        """获取所有合约信息"""
+        d = {}
+        from vnpy.trader.object import ContractData, Exchange
+        for symbol, setting in self.setting.items():
+            gateway_name = setting.get('gateway_name', None)
+            if gateway_name is None:
+                gateway_name= SETTINGS.get('gateway_name','')
+            vn_exchange = Exchange(setting.get('exchange', 'LOCAL'))
+            contract = ContractData(
+                gateway_name=gateway_name,
+                symbol=symbol,
+                name=contract.symbol,
+                size=setting.get('size', 100),
+                pricetick=setting.get('price_tick', 0.01),
+                margin_rate=setting.get('margin_rate', 0.1)
+            )
+            d[contract.vt_symbol] = contract
+
+        return d
 
 class EmailEngine(BaseEngine):
     """

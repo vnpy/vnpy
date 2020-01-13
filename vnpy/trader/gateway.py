@@ -11,6 +11,7 @@ from logging import INFO, DEBUG, ERROR
 from vnpy.event import Event, EventEngine
 from .event import (
     EVENT_TICK,
+    EVENT_BAR,
     EVENT_ORDER,
     EVENT_TRADE,
     EVENT_POSITION,
@@ -20,6 +21,7 @@ from .event import (
 )
 from .object import (
     TickData,
+    BarData,
     OrderData,
     TradeData,
     PositionData,
@@ -60,6 +62,7 @@ class BaseGateway(ABC):
     ---
     ## callbacks must response manually:
     * on_tick
+    * on_bar
     * on_trade
     * on_order
     * on_position
@@ -89,6 +92,9 @@ class BaseGateway(ABC):
 
         self.create_logger()
 
+        # 所有订阅on_bar的都会添加
+        self.klines = {}
+
     def create_logger(self):
         """
         创建engine独有的日志
@@ -115,6 +121,17 @@ class BaseGateway(ABC):
         """
         self.on_event(EVENT_TICK, tick)
         self.on_event(EVENT_TICK + tick.vt_symbol, tick)
+
+        # 推送Bar
+        kline = self.klines.get(tick.vt_symbol, None)
+        if kline:
+            kline.update_tick(tick)
+
+    def on_bar(self, bar: BarData):
+        """市场行情推送"""
+        # bar, 或者 barDict
+        self.on_event(EVENT_BAR, bar)
+        self.write_log(f'on_bar Event:{bar.__dict__}')
 
     def on_trade(self, trade: TradeData):
         """

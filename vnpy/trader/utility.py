@@ -300,6 +300,10 @@ def ceil_to(value: float, target: float) -> float:
     return result
 
 
+def print_dict(d: dict):
+    """返回dict的字符串类型"""
+    return '\n'.join([f'{key}:{d[key]}' for key in sorted(d.keys())])
+
 class BarGenerator:
     """
     For:
