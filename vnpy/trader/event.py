@@ -4,10 +4,10 @@ Event type string used in VN Trader.
 
 from vnpy.event import EVENT_TIMER  # noqa
 
-EVENT_TICK = "eTick."
-EVENT_TRADE = "eTrade."
-EVENT_ORDER = "eOrder."
-EVENT_POSITION = "ePosition."
-EVENT_ACCOUNT = "eAccount."
-EVENT_CONTRACT = "eContract."
-EVENT_LOG = "eLog"
+EVENT_TICK: str = "eTick."
+EVENT_TRADE: str = "eTrade."
+EVENT_ORDER: str = "eOrder."
+EVENT_POSITION: str = "ePosition."
+EVENT_ACCOUNT: str = "eAccount."
+EVENT_CONTRACT: str = "eContract."
+EVENT_LOG: str = "eLog"
