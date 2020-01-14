@@ -316,7 +316,7 @@ class ArrayManager(object):
         self.low_array: ndarray = np.zeros(size)
         self.close_array: ndarray = np.zeros(size)
         self.volume_array: ndarray = np.zeros(size)
-        self.open_interest_array = np.zeros(size)
+        self.open_interest_array: ndarray = np.zeros(size)
 
     def update_bar(self, bar: BarData) -> None:
         """
