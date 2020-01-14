@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import List
+from typing import List, Dict, Optional
 
 from rqdatac import init as rqdata_init
 from rqdatac.services.basic import all_instruments as rqdata_all_instruments
@@ -11,13 +11,13 @@ from .constant import Exchange, Interval
 from .object import BarData, HistoryRequest
 
 
-INTERVAL_VT2RQ = {
+INTERVAL_VT2RQ: Dict[Interval, int] = {
     Interval.MINUTE: "1m",
     Interval.HOUR: "60m",
     Interval.DAILY: "1d",
 }
 
-INTERVAL_ADJUSTMENT_MAP = {
+INTERVAL_ADJUSTMENT_MAP: Dict[Interval, timedelta] = {
     Interval.MINUTE: timedelta(minutes=1),
     Interval.HOUR: timedelta(hours=1),
     Interval.DAILY: timedelta()         # no need to adjust for daily bar
@@ -31,13 +31,13 @@ class RqdataClient:
 
     def __init__(self):
         """"""
-        self.username = SETTINGS["rqdata.username"]
-        self.password = SETTINGS["rqdata.password"]
+        self.username: str = SETTINGS["rqdata.username"]
+        self.password: str = SETTINGS["rqdata.password"]
 
-        self.inited = False
-        self.symbols = set()
+        self.inited: bool = False
+        self.symbols: set = set()
 
-    def init(self, username="", password=""):
+    def init(self, username: str = "", password: str = "") -> bool:
         """"""
         if self.inited:
             return True
@@ -67,7 +67,7 @@ class RqdataClient:
         self.inited = True
         return True
 
-    def to_rq_symbol(self, symbol: str, exchange: Exchange):
+    def to_rq_symbol(self, symbol: str, exchange: Exchange) -> str:
         """
         CZCE product of RQData has symbol like "TA1905" while
         vt symbol is "TA905.CZCE" so need to add "1" in symbol.
@@ -104,7 +104,7 @@ class RqdataClient:
 
         return rq_symbol
 
-    def query_history(self, req: HistoryRequest):
+    def query_history(self, req: HistoryRequest) -> Optional[List[BarData]]:
         """
         Query history bar data from RQData.
         """
