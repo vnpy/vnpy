@@ -220,9 +220,15 @@ class AccountData(BaseData):
     """
 
     accountid: str
-
-    balance: float = 0
-    frozen: float = 0
+    pre_balance: float = 0   # 昨净值
+    balance: float = 0       # 当前净值
+    frozen: float = 0        # 冻结资金
+    currency: str = ""       # 币种
+    commission: float = 0    # 手续费
+    margin: float = 0        # 使用保证金
+    close_profit: float = 0  # 平仓盈亏
+    holding_profit: float = 0  # 持仓盈亏
+    trading_day: str = ""   # 当前交易日
 
     def __post_init__(self):
         """"""

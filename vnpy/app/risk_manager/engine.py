@@ -1,10 +1,13 @@
 """"""
 
+from copy import copy
 from collections import defaultdict
+from datetime import datetime
+from vnpy.trader.constant import Offset
 from vnpy.trader.object import OrderRequest, LogData
 from vnpy.event import Event, EventEngine, EVENT_TIMER
 from vnpy.trader.engine import BaseEngine, MainEngine
-from vnpy.trader.event import EVENT_TRADE, EVENT_ORDER, EVENT_LOG
+from vnpy.trader.event import EVENT_TRADE, EVENT_ORDER, EVENT_LOG, EVENT_ACCOUNT
 from vnpy.trader.constant import Status
 from vnpy.trader.utility import load_json, save_json
 
@@ -23,20 +26,28 @@ class RiskManagerEngine(BaseEngine):
         self.active = False
 
         self.order_flow_count = 0
-        self.order_flow_limit = 50
+        self.order_flow_limit = 500
 
         self.order_flow_clear = 1
         self.order_flow_timer = 0
 
-        self.order_size_limit = 100
+        self.order_size_limit = 1000
 
         self.trade_count = 0
-        self.trade_limit = 1000
+        self.trade_limit = 10000
 
-        self.order_cancel_limit = 500
+        self.order_cancel_limit = 5000
         self.order_cancel_counts = defaultdict(int)
 
-        self.active_order_limit = 50
+        self.active_order_limit = 500
+
+        # 总仓位相关(0~100+)
+        self.percent_limit = 100   # 仓位比例限制
+        self.last_over_time = None  # 启动风控后，最后一次超过仓位限制的时间
+
+        self.account_dict = {}              # 资金账号信息
+        self.gateway_dict = {}              # 记录gateway对应的仓位比例
+        self.currency_list = []             # 资金账号风控管理得币种
 
         self.load_setting()
         self.register_event()
@@ -66,7 +77,7 @@ class RiskManagerEngine(BaseEngine):
         self.trade_limit = setting["trade_limit"]
         self.active_order_limit = setting["active_order_limit"]
         self.order_cancel_limit = setting["order_cancel_limit"]
-
+        self.percent_limit = setting.get('percent_limit', 100)
         if self.active:
             self.write_log("交易风控功能启动")
         else:
@@ -82,6 +93,7 @@ class RiskManagerEngine(BaseEngine):
             "trade_limit": self.trade_limit,
             "active_order_limit": self.active_order_limit,
             "order_cancel_limit": self.order_cancel_limit,
+            "percent_limit": self.percent_limit
         }
         return setting
 
@@ -103,6 +115,7 @@ class RiskManagerEngine(BaseEngine):
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
+        self.event_engine.register(EVENT_ACCOUNT, self.process_account_event)
 
     def process_order_event(self, event: Event):
         """"""
@@ -123,6 +136,47 @@ class RiskManagerEngine(BaseEngine):
         if self.order_flow_timer >= self.order_flow_clear:
             self.order_flow_count = 0
             self.order_flow_timer = 0
+
+    def process_account_event(self, event):
+        """更新账号资金
+        add by Incense
+        """
+        account = event.data
+
+        # 如果有币种过滤，就进行过滤动作
+        if len(self.currency_list) > 0:
+            if account.currency not in self.currency_list:
+                return
+
+        # 净值为0得不做处理
+        if account.balance == 0:
+            return
+
+        # 保存在dict中
+        k = u'{}_{}'.format(account.vt_accountid, account.currency)
+        self.account_dict.update({k: copy(account)})
+
+        # 计算当前资金仓位
+        if account.balance == 0:
+            account_percent = 0
+        else:
+            account_percent = round((account.balance - account.available) * 100 / account.balance, 2)
+
+        if not self.active:
+            return
+
+        # 更新gateway对应的当前资金仓位
+        self.gateway_dict.update({account.gateway_name: account_percent})
+
+        # 判断资金仓位超出
+        if account_percent > self.percent_limit:
+            if self.last_over_time is None or (
+                    datetime.now() - self.last_over_time).total_seconds() > 60 * 10:
+                self.last_over_time = datetime.now()
+                msg = u'账号:{} 今净值:{},保证金占用{} 超过设定:{}' \
+                    .format(account.vt_accountid,
+                            account.balance, account_percent, self.percent_limit)
+                self.write_log(msg)
 
     def write_log(self, msg: str):
         """"""
@@ -168,6 +222,11 @@ class RiskManagerEngine(BaseEngine):
         if req.symbol in self.order_cancel_counts and self.order_cancel_counts[req.symbol] >= self.order_cancel_limit:
             self.write_log(
                 f"当日{req.symbol}撤单次数{self.order_cancel_counts[req.symbol]}，超过限制{self.order_cancel_limit}")
+            return False
+
+        # 开仓时，检查是否超过保证金比率
+        if req.offset == Offset.OPEN and self.gateway_dict.get(gateway_name, 0) > self.percent_limit:
+            self.write_log(f'当前资金仓位{self.gateway_dict[gateway_name]}超过仓位限制:{self.percent_limit}')
             return False
 
         # Add flow count if pass all checks

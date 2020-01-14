@@ -772,11 +772,19 @@ class CtpTdApi(TdApi):
 
         account = AccountData(
             accountid=data["AccountID"],
+            pre_balance=data['PreBalance'],
             balance=data["Balance"],
             frozen=data["FrozenMargin"] + data["FrozenCash"] + data["FrozenCommission"],
             gateway_name=self.gateway_name
         )
         account.available = data["Available"]
+        account.commission = data['Commission']
+        account.margin = data['CurrMargin']
+        account.close_profit = data['CloseProfit']
+        account.holding_profit = data['PositionProfit']
+        account.trading_day = str(data['TradingDay'])
+        if '-' not in account.trading_day and len(account.trading_day)== 8:
+            account.trading_day = account.trading_day[0:4] + '-' + account.trading_day[4:6] + '-' + account.trading_day[6:8]
 
         self.gateway.on_account(account)
 

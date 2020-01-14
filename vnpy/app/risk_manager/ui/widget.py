@@ -31,6 +31,7 @@ class RiskManager(QtWidgets.QDialog):
         self.trade_limit_spin = RiskManagerSpinBox()
         self.active_limit_spin = RiskManagerSpinBox()
         self.cancel_limit_spin = RiskManagerSpinBox()
+        self.percent_limit_spin = RiskManagerSpinBox()
 
         save_button = QtWidgets.QPushButton("保存")
         save_button.clicked.connect(self.save_setting)
@@ -44,6 +45,7 @@ class RiskManager(QtWidgets.QDialog):
         form.addRow("总成交上限（笔）", self.trade_limit_spin)
         form.addRow("活动委托上限（笔）", self.active_limit_spin)
         form.addRow("合约撤单上限（笔）", self.cancel_limit_spin)
+        form.addRow("资金仓位上限(%)", self.percent_limit_spin)
         form.addRow(save_button)
 
         self.setLayout(form)
@@ -68,6 +70,7 @@ class RiskManager(QtWidgets.QDialog):
             "trade_limit": self.trade_limit_spin.value(),
             "active_order_limit": self.active_limit_spin.value(),
             "order_cancel_limit": self.cancel_limit_spin.value(),
+            "percent_limit": self.percent_limit_spin.value(),
         }
 
         self.rm_engine.update_setting(setting)
@@ -89,6 +92,7 @@ class RiskManager(QtWidgets.QDialog):
         self.trade_limit_spin.setValue(setting["trade_limit"])
         self.active_limit_spin.setValue(setting["active_order_limit"])
         self.cancel_limit_spin.setValue(setting["order_cancel_limit"])
+        self.percent_limit_spin.setValue(setting.get('percent_limit', 100))
 
     def exec_(self):
         """"""

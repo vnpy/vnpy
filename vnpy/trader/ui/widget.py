@@ -480,9 +480,14 @@ class AccountMonitor(BaseMonitor):
 
     headers = {
         "accountid": {"display": "账号", "cell": BaseCell, "update": False},
-        "balance": {"display": "余额", "cell": BaseCell, "update": True},
+        "pre_balance": {"display": "昨净值", "cell": BaseCell, "update": False},
+        "balance": {"display": "净值", "cell": BaseCell, "update": True},
         "frozen": {"display": "冻结", "cell": BaseCell, "update": True},
+        "margin": {"display": "保证金", "cell": BaseCell, "update": True},
         "available": {"display": "可用", "cell": BaseCell, "update": True},
+        "commission": {"display": "手续费", "cell": BaseCell, "update": True},
+        "close_profit": {"display": "平仓收益", "cell": BaseCell, "update": True},
+        "holding_profit": {"display": "持仓收益", "cell": BaseCell, "update": True},
         "gateway_name": {"display": "接口", "cell": BaseCell, "update": False},
     }
 
