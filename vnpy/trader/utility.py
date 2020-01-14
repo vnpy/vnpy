@@ -316,6 +316,7 @@ class ArrayManager(object):
         self.low_array: ndarray = np.zeros(size)
         self.close_array: ndarray = np.zeros(size)
         self.volume_array: ndarray = np.zeros(size)
+        self.open_interest_array = np.zeros(size)
 
     def update_bar(self, bar: BarData) -> None:
         """
@@ -330,12 +331,14 @@ class ArrayManager(object):
         self.low_array[:-1] = self.low_array[1:]
         self.close_array[:-1] = self.close_array[1:]
         self.volume_array[:-1] = self.volume_array[1:]
+        self.open_interest_array[:-1] = self.open_interest_array[1:]
 
         self.open_array[-1] = bar.open_price
         self.high_array[-1] = bar.high_price
         self.low_array[-1] = bar.low_price
         self.close_array[-1] = bar.close_price
         self.volume_array[-1] = bar.volume
+        self.open_interest_array[-1] = bar.open_interest
 
     @property
     def open(self) -> ndarray:
@@ -371,6 +374,13 @@ class ArrayManager(object):
         Get trading volume time series.
         """
         return self.volume_array
+
+    @property
+    def open_interest(self) -> ndarray:
+        """
+        Get trading volume time series.
+        """
+        return self.open_interest_array
 
     def sma(self, n: int, array: bool = False) -> Tuple[List[float], float]:
         """
