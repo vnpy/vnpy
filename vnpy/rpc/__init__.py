@@ -18,7 +18,7 @@ def _(x): return x
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-KEEP_ALIVE_TOPIC: str = '_keep_alive'
+KEEP_ALIVE_TOPIC: str = "_keep_alive"
 KEEP_ALIVE_INTERVAL: timedelta = timedelta(seconds=1)
 KEEP_ALIVE_TOLERANCE: timedelta = timedelta(seconds=3)
 
