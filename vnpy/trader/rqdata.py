@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import List, Dict, Optional
+from typing import List, Optional
 
 from rqdatac import init as rqdata_init
 from rqdatac.services.basic import all_instruments as rqdata_all_instruments
@@ -11,13 +11,13 @@ from .constant import Exchange, Interval
 from .object import BarData, HistoryRequest
 
 
-INTERVAL_VT2RQ: Dict[Interval, int] = {
+INTERVAL_VT2RQ = {
     Interval.MINUTE: "1m",
     Interval.HOUR: "60m",
     Interval.DAILY: "1d",
 }
 
-INTERVAL_ADJUSTMENT_MAP: Dict[Interval, timedelta] = {
+INTERVAL_ADJUSTMENT_MAP = {
     Interval.MINUTE: timedelta(minutes=1),
     Interval.HOUR: timedelta(hours=1),
     Interval.DAILY: timedelta()         # no need to adjust for daily bar
