@@ -1,14 +1,12 @@
 from zmq.backend.cython.constants import NOBLOCK
 import signal
 import threading
-from threading import Thread, Lock
 import traceback
 from datetime import datetime, timedelta
 from functools import lru_cache
 from typing import Any, Callable, Dict
 
 import zmq
-from zmq import Context
 
 
 def _(x): return x
@@ -52,17 +50,17 @@ class RpcServer:
         self.__functions: Dict[str, Any] = {}
 
         # Zmq port related
-        self.__context: Context = zmq.Context()
+        self.__context: zmq.Context = zmq.Context()
 
         # Reply socket (Request–reply pattern)
-        self.__socket_rep: Context = self.__context.socket(zmq.REP)
+        self.__socket_rep: zmq.Socket = self.__context.socket(zmq.REP)
 
         # Publish socket (Publish–subscribe pattern)
-        self.__socket_pub: Context = self.__context.socket(zmq.PUB)
+        self.__socket_pub: zmq.Socket = self.__context.socket(zmq.PUB)
 
         # Worker thread related
         self.__active: bool = False                               # RpcServer status
-        self.__thread: Thread = None                                # RpcServer thread
+        self.__thread: threading.Thread = None                                # RpcServer thread
 
         self._register(KEEP_ALIVE_TOPIC, lambda n: n)
 
@@ -167,18 +165,18 @@ class RpcClient:
     def __init__(self):
         """Constructor"""
         # zmq port related
-        self.__context: Context = zmq.Context()
+        self.__context: zmq.Context = zmq.Context()
 
         # Request socket (Request–reply pattern)
-        self.__socket_req: Context = self.__context.socket(zmq.REQ)
+        self.__socket_req: zmq.Socket = self.__context.socket(zmq.REQ)
 
         # Subscribe socket (Publish–subscribe pattern)
-        self.__socket_sub: Context = self.__context.socket(zmq.SUB)
+        self.__socket_sub: zmq.Socket = self.__context.socket(zmq.SUB)
 
         # Worker thread relate, used to process data pushed from server
         self.__active: bool = False  # RpcClient status
-        self.__thread: Thread = None  # RpcClient thread
-        self.__lock: Lock = threading.Lock()
+        self.__thread: threading.Thread = None  # RpcClient thread
+        self.__lock: threading.Lock = threading.Lock()
 
         self._last_received_ping: datetime = datetime.utcnow()
 
