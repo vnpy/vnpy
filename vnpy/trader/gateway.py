@@ -3,7 +3,7 @@
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Sequence, Dict, List, Optional
+from typing import Any, Sequence, Dict, List, Optional, Callable
 from copy import copy
 
 from vnpy.event import Event, EventEngine
@@ -272,22 +272,22 @@ class LocalOrderManager:
         self.gateway = gateway
 
         # For generating local orderid
-        self.order_prefix = order_prefix
-        self.order_count = 0
-        self.orders = {}        # local_orderid: order
+        self.order_prefix: str = order_prefix
+        self.order_count: int = 0
+        self.orders: Dict[str, OrderData] = {}        # local_orderid: order
 
         # Map between local and system orderid
-        self.local_sys_orderid_map = {}
-        self.sys_local_orderid_map = {}
+        self.local_sys_orderid_map: Dict[str, str] = {}
+        self.sys_local_orderid_map: Dict[str, str] = {}
 
         # Push order data buf
-        self.push_data_buf = {}  # sys_orderid: data
+        self.push_data_buf: Dict[str, dict] = {}  # sys_orderid: data
 
         # Callback for processing push order data
-        self.push_data_callback = None
+        self.push_data_callback: Callable = None
 
         # Cancel request buf
-        self.cancel_request_buf = {}    # local_orderid: req
+        self.cancel_request_buf: Dict[str, CancelRequest] = {}    # local_orderid: req
 
         # Hook cancel order function
         self._cancel_order = gateway.cancel_order
