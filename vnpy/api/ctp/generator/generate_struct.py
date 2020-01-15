@@ -24,7 +24,7 @@ class StructGenerator:
 
     def run(self):
         """运行生成"""
-        self.f_cpp = open(self.filename, "r")
+        self.f_cpp = open(self.filename, "r", encoding='gbk')
         self.f_struct = open(f"{self.prefix}_struct.py", "w")
 
         for line in self.f_cpp:
@@ -80,5 +80,6 @@ class StructGenerator:
 
 
 if __name__ == "__main__":
-    generator = StructGenerator("../include/ctp/ThostFtdcUserApiStruct.h", "ctp")
+    generator = StructGenerator(
+        "../include/ctp/ThostFtdcUserApiStruct.h", "ctp")
     generator.run()

@@ -18,7 +18,7 @@ class DataTypeGenerator:
 
     def run(self):
         """主函数"""
-        self.f_cpp = open(self.filename, "r")
+        self.f_cpp = open(self.filename, "r", encode="gdb")
         self.f_define = open(f"{self.prefix}_constant.py", "w")
         self.f_typedef = open(f"{self.prefix}_typedef.py", "w")
 
@@ -72,5 +72,6 @@ class DataTypeGenerator:
 
 
 if __name__ == "__main__":
-    generator = DataTypeGenerator("../include/ctp/ThostFtdcUserApiDataType.h", "ctp")
+    generator = DataTypeGenerator(
+        "../include/ctp/ThostFtdcUserApiDataType.h", "ctp")
     generator.run()
