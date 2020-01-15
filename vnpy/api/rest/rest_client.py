@@ -52,23 +52,23 @@ class Request(object):
         client: "RestClient" = None,
     ):
         """"""
-        self.method = method
-        self.path = path
-        self.callback = callback
-        self.params = params
-        self.data = data
-        self.headers = headers
+        self.method: str = method
+        self.path: str = path
+        self.callback: Callable = callback
+        self.params: dict = params
+        self.data: Union[dict, str, bytes] = data
+        self.headers: dict = headers
 
-        self.stream = stream
-        self.on_connected = on_connected
+        self.stream: bool = stream
+        self.on_connected: Callable = on_connected
         self.processing_line: Optional[str] = ''
 
-        self.on_failed = on_failed
-        self.on_error = on_error
-        self.extra = extra
+        self.on_failed: Callable = on_failed
+        self.on_error: Callable = on_error
+        self.extra: Any = extra
 
         self.response: Optional[requests.Response] = None
-        self.status = RequestStatus.ready
+        self.status: RequestStatus = RequestStatus.ready
         self.client: "RestClient" = client
 
     def __str__(self):
@@ -119,8 +119,8 @@ class RestClient(object):
     class Session:
 
         def __init__(self, client: "RestClient", session: requests.Session):
-            self.client = client
-            self.session = session
+            self.client: "RestClient" = client
+            self.session: requests.Session = session
 
         def __enter__(self):
             return self.session
@@ -132,18 +132,18 @@ class RestClient(object):
     def __init__(self):
         """
         """
-        self.url_base = ''  # type: str
-        self._active = False
+        self.url_base: str = ""  # type: str
+        self._active: bool = False
         self.logger: Optional[logging.Logger] = None
 
         self.proxies = None
 
-        self._tasks_lock = Lock()
+        self._tasks_lock: Lock = Lock()
         self._tasks: List[multiprocessing.pool.AsyncResult] = []
-        self._sessions_lock = Lock()
+        self._sessions_lock: Lock = Lock()
         self._sessions: List[requests.Session] = []
 
-        self._streams_lock = Lock()
+        self._streams_lock: Lock = Lock()
         self._streams: List[Thread] = []
 
     @property
@@ -155,7 +155,7 @@ class RestClient(object):
              proxy_host: str = "",
              proxy_port: int = 0,
              log_path: Optional[str] = None,
-             ):
+             ) -> None:
         """
         Init rest client with url_base which is the API root address.
         e.g. 'https://www.bitmex.com/api/v1/'
@@ -174,11 +174,11 @@ class RestClient(object):
             proxy = f"{proxy_host}:{proxy_port}"
             self.proxies = {"http": proxy, "https": proxy}
 
-    def _create_session(self):
+    def _create_session(self) -> requests.Session:
         """"""
         return requests.session()
 
-    def start(self, n: int = 3):
+    def start(self, n: int = 3) -> None:
         """
         Start rest client with session count n.
         """
@@ -186,13 +186,13 @@ class RestClient(object):
             return
         self._active = True
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Stop rest client immediately.
         """
         self._active = False
 
-    def join(self):
+    def join(self) -> None:
         """
         Wait till all requests are processed.
         """
@@ -211,7 +211,7 @@ class RestClient(object):
         on_failed: ON_FAILED_TYPE = None,
         on_error: ON_ERROR_TYPE = None,
         extra: Any = None,
-    ):
+    ) -> Request:
         """
         See add_request for usage.
         """
@@ -249,7 +249,7 @@ class RestClient(object):
         on_failed: ON_FAILED_TYPE = None,
         on_error: ON_ERROR_TYPE = None,
         extra: Any = None,
-    ):
+    ) -> Request:
         """
         Add a new request.
         :param method: GET, POST, PUT, DELETE, QUERY
@@ -284,28 +284,28 @@ class RestClient(object):
         self._push_task(task)
         return request
 
-    def _push_task(self, task):
+    def _push_task(self, task) -> None:
         with self._tasks_lock:
             self._tasks.append(task)
 
-    def _clean_finished_tasks(self, result: None):
+    def _clean_finished_tasks(self, result: None) -> None:
         with self._tasks_lock:
             not_finished_tasks = [i for i in self._tasks if not i.ready()]
             self._tasks = not_finished_tasks
 
-    def _clean_finished_streams(self):
+    def _clean_finished_streams(self) -> None:
         with self._streams_lock:
             not_finished_streams = [i for i in self._streams if i.is_alive()]
             self._streams = not_finished_streams
 
-    def _get_session(self):
+    def _get_session(self) -> None:
         with self._sessions_lock:
             if self._sessions:
                 return self.Session(self, self._sessions.pop())
             else:
                 return self.Session(self, self._create_session())
 
-    def sign(self, request: Request):
+    def sign(self, request: Request) -> Request:
         """
         This function is called before sending any request out.
         Please implement signature method here.
@@ -313,7 +313,7 @@ class RestClient(object):
         """
         return request
 
-    def on_failed(self, status_code: int, request: Request):
+    def on_failed(self, status_code: int, request: Request) -> None:
         """
         Default on_failed handler for Non-2xx response.
         """
@@ -325,7 +325,7 @@ class RestClient(object):
         exception_value: Exception,
         tb,
         request: Optional[Request],
-    ):
+    ) -> None:
         """
         Default on_error handler for Python exception.
         """
@@ -340,7 +340,7 @@ class RestClient(object):
         exception_value: Exception,
         tb,
         request: Optional[Request],
-    ):
+    ) -> str:
         text = "[{}]: Unhandled RestClient Error:{}\n".format(
             datetime.now().isoformat(), exception_type
         )
@@ -351,7 +351,7 @@ class RestClient(object):
         )
         return text
 
-    def is_request_success(self, data: dict, request: "Request"):
+    def is_request_success(self, data: dict, request: Request) -> bool:
         """
         check if a request succeed
         default behavior is returning True
@@ -359,21 +359,21 @@ class RestClient(object):
         """
         return True
 
-    def _process_stream_request(self, request: Request):
+    def _process_stream_request(self, request: Request) -> bool:
         """
         Sending request to server and get result.
         """
         self._process_request(request)
         self._clean_finished_streams()
 
-    def _log(self, msg, *args):
+    def _log(self, msg, *args) -> bool:
         logger = self.logger
         if logger:
             logger.debug(msg, *args)
 
     def _process_request(
         self, request: Request
-    ):
+    ) -> None:
         """
         Sending request to server and get result.
         """
@@ -439,7 +439,7 @@ class RestClient(object):
             else:
                 self.on_error(t, v, tb, request)
 
-    def _process_json_body(self, json_body: Optional[dict], request: "Request"):
+    def _process_json_body(self, json_body: Optional[dict], request: Request) -> None:
         status_code = request.response.status_code
         if self.is_request_success(json_body, request):
             request.status = RequestStatus.success
@@ -451,7 +451,7 @@ class RestClient(object):
             else:
                 self.on_failed(status_code, request)
 
-    def make_full_url(self, path: str):
+    def make_full_url(self, path: str) -> str:
         """
         Make relative api path into full url.
         eg: make_full_url('/get') == 'http://xxxxx/get'
@@ -466,7 +466,7 @@ class RestClient(object):
         params: dict = None,
         data: dict = None,
         headers: dict = None,
-    ):
+    ) -> requests.Response:
         """
         Add a new request.
         :param method: GET, POST, PUT, DELETE, QUERY
