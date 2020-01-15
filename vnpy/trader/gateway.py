@@ -80,8 +80,8 @@ class BaseGateway(ABC):
 
     def __init__(self, event_engine: EventEngine, gateway_name: str):
         """"""
-        self.event_engine = event_engine
-        self.gateway_name = gateway_name
+        self.event_engine: EventEngine = event_engine
+        self.gateway_name: str = gateway_name
 
     def on_event(self, type: str, data: Any = None) -> None:
         """
@@ -269,7 +269,7 @@ class LocalOrderManager:
 
     def __init__(self, gateway: BaseGateway, order_prefix: str = ""):
         """"""
-        self.gateway = gateway
+        self.gateway: BaseGateway = gateway
 
         # For generating local orderid
         self.order_prefix: str = order_prefix
@@ -281,7 +281,7 @@ class LocalOrderManager:
         self.sys_local_orderid_map: Dict[str, str] = {}
 
         # Push order data buf
-        self.push_data_buf: Dict[str, dict] = {}  # sys_orderid: data
+        self.push_data_buf: Dict[str, Dict] = {}  # sys_orderid: data
 
         # Callback for processing push order data
         self.push_data_callback: Callable = None
@@ -290,7 +290,7 @@ class LocalOrderManager:
         self.cancel_request_buf: Dict[str, CancelRequest] = {}    # local_orderid: req
 
         # Hook cancel order function
-        self._cancel_order = gateway.cancel_order
+        self._cancel_order: Callable[CancelRequest] = gateway.cancel_order
         gateway.cancel_order = self.cancel_order
 
     def new_local_orderid(self) -> str:
@@ -347,7 +347,7 @@ class LocalOrderManager:
         """
         self.push_data_buf[sys_orderid] = data
 
-    def get_order_with_sys_orderid(self, sys_orderid: str) -> Optional[str]:
+    def get_order_with_sys_orderid(self, sys_orderid: str) -> Optional[OrderData]:
         """"""
         local_orderid = self.sys_local_orderid_map.get(sys_orderid, None)
         if not local_orderid:

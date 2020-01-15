@@ -4,7 +4,7 @@ import threading
 import traceback
 from datetime import datetime, timedelta
 from functools import lru_cache
-from typing import Any, Callable
+from typing import Any, Callable, Dict
 
 import zmq
 
@@ -16,9 +16,9 @@ def _(x): return x
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-KEEP_ALIVE_TOPIC = '_keep_alive'
-KEEP_ALIVE_INTERVAL = timedelta(seconds=1)
-KEEP_ALIVE_TOLERANCE = timedelta(seconds=3)
+KEEP_ALIVE_TOPIC: str = "_keep_alive"
+KEEP_ALIVE_INTERVAL: timedelta = timedelta(seconds=1)
+KEEP_ALIVE_TOLERANCE: timedelta = timedelta(seconds=3)
 
 
 class RemoteException(Exception):
@@ -26,7 +26,7 @@ class RemoteException(Exception):
     RPC remote exception
     """
 
-    def __init__(self, value):
+    def __init__(self, value: Any):
         """
         Constructor
         """
@@ -47,28 +47,28 @@ class RpcServer:
         Constructor
         """
         # Save functions dict: key is fuction name, value is fuction object
-        self.__functions = {}
+        self.__functions: Dict[str, Any] = {}
 
         # Zmq port related
-        self.__context = zmq.Context()
+        self.__context: zmq.Context = zmq.Context()
 
         # Reply socket (Request–reply pattern)
-        self.__socket_rep = self.__context.socket(zmq.REP)
+        self.__socket_rep: zmq.Socket = self.__context.socket(zmq.REP)
 
         # Publish socket (Publish–subscribe pattern)
-        self.__socket_pub = self.__context.socket(zmq.PUB)
+        self.__socket_pub: zmq.Socket = self.__context.socket(zmq.PUB)
 
         # Worker thread related
-        self.__active = False                               # RpcServer status
-        self.__thread = None                                # RpcServer thread
+        self.__active: bool = False                     # RpcServer status
+        self.__thread: threading.Thread = None          # RpcServer thread
 
         self._register(KEEP_ALIVE_TOPIC, lambda n: n)
 
-    def is_active(self):
+    def is_active(self) -> bool:
         """"""
         return self.__active
 
-    def start(self, rep_address: str, pub_address: str):
+    def start(self, rep_address: str, pub_address: str) -> None:
         """
         Start RpcServer
         """
@@ -86,7 +86,7 @@ class RpcServer:
         self.__thread = threading.Thread(target=self.run)
         self.__thread.start()
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Stop RpcServer
         """
@@ -96,21 +96,18 @@ class RpcServer:
         # Stop RpcServer status
         self.__active = False
 
-        # Unbind socket address
-        self.__socket_pub.unbind(self.__socket_pub.LAST_ENDPOINT)
-        self.__socket_rep.unbind(self.__socket_rep.LAST_ENDPOINT)
-
-    def join(self):
+    def join(self) -> None:
         # Wait for RpcServer thread to exit
         if self.__thread and self.__thread.is_alive():
             self.__thread.join()
         self.__thread = None
 
-    def run(self):
+    def run(self) -> None:
         """
         Run RpcServer functions
         """
         start = datetime.utcnow()
+
         while self.__active:
             # Use poll to wait event arrival, waiting time is 1 second (1000 milliseconds)
             cur = datetime.utcnow()
@@ -139,19 +136,23 @@ class RpcServer:
             # send callable response by Reply socket
             self.__socket_rep.send_pyobj(rep)
 
-    def publish(self, topic: str, data: Any):
+        # Unbind socket address
+        self.__socket_pub.unbind(self.__socket_pub.LAST_ENDPOINT)
+        self.__socket_rep.unbind(self.__socket_rep.LAST_ENDPOINT)
+
+    def publish(self, topic: str, data: Any) -> None:
         """
         Publish data
         """
         self.__socket_pub.send_pyobj([topic, data])
 
-    def register(self, func: Callable):
+    def register(self, func: Callable) -> None:
         """
         Register function
         """
         return self._register(func.__name__, func)
 
-    def _register(self, name: str, func: Callable):
+    def _register(self, name: str, func: Callable) -> None:
         """
         Register function
         """
@@ -164,18 +165,18 @@ class RpcClient:
     def __init__(self):
         """Constructor"""
         # zmq port related
-        self.__context = zmq.Context()
+        self.__context: zmq.Context = zmq.Context()
 
         # Request socket (Request–reply pattern)
-        self.__socket_req = self.__context.socket(zmq.REQ)
+        self.__socket_req: zmq.Socket = self.__context.socket(zmq.REQ)
 
         # Subscribe socket (Publish–subscribe pattern)
-        self.__socket_sub = self.__context.socket(zmq.SUB)
+        self.__socket_sub: zmq.Socket = self.__context.socket(zmq.SUB)
 
         # Worker thread relate, used to process data pushed from server
-        self.__active = False  # RpcClient status
-        self.__thread = None  # RpcClient thread
-        self.__lock = threading.Lock()
+        self.__active: bool = False                 # RpcClient status
+        self.__thread: threading.Thread = None      # RpcClient thread
+        self.__lock: threading.Lock = threading.Lock()
 
         self._last_received_ping: datetime = datetime.utcnow()
 
@@ -203,7 +204,7 @@ class RpcClient:
 
         return dorpc
 
-    def start(self, req_address: str, sub_address: str):
+    def start(self, req_address: str, sub_address: str) -> None:
         """
         Start RpcClient
         """
@@ -223,7 +224,7 @@ class RpcClient:
 
         self._last_received_ping = datetime.utcnow()
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Stop RpcClient
         """
@@ -233,21 +234,18 @@ class RpcClient:
         # Stop RpcClient status
         self.__active = False
 
-        # Close socket
-        self.__socket_req.close()
-        self.__socket_sub.close()
-
-    def join(self):
+    def join(self) -> None:
         # Wait for RpcClient thread to exit
         if self.__thread and self.__thread.is_alive():
             self.__thread.join()
         self.__thread = None
 
-    def run(self):
+    def run(self) -> None:
         """
         Run RpcClient function
         """
         pull_tolerance = int(KEEP_ALIVE_TOLERANCE.total_seconds() * 1000)
+
         while self.__active:
             if not self.__socket_sub.poll(pull_tolerance):
                 self._on_unexpected_disconnected()
@@ -262,18 +260,22 @@ class RpcClient:
                 # Process data by callable function
                 self.callback(topic, data)
 
+        # Close socket
+        self.__socket_req.close()
+        self.__socket_sub.close()
+
     @staticmethod
     def _on_unexpected_disconnected():
         print(_("RpcServer has no response over {tolerance} seconds, please check you connection."
                 .format(tolerance=KEEP_ALIVE_TOLERANCE.total_seconds())))
 
-    def callback(self, topic: str, data: Any):
+    def callback(self, topic: str, data: Any) -> None:
         """
         Callable function
         """
         raise NotImplementedError
 
-    def subscribe_topic(self, topic: str):
+    def subscribe_topic(self, topic: str) -> None:
         """
         Subscribe data
         """
