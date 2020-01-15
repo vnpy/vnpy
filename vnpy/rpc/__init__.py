@@ -59,8 +59,8 @@ class RpcServer:
         self.__socket_pub: zmq.Socket = self.__context.socket(zmq.PUB)
 
         # Worker thread related
-        self.__active: bool = False                               # RpcServer status
-        self.__thread: threading.Thread = None                                # RpcServer thread
+        self.__active: bool = False                     # RpcServer status
+        self.__thread: threading.Thread = None          # RpcServer thread
 
         self._register(KEEP_ALIVE_TOPIC, lambda n: n)
 
@@ -174,8 +174,8 @@ class RpcClient:
         self.__socket_sub: zmq.Socket = self.__context.socket(zmq.SUB)
 
         # Worker thread relate, used to process data pushed from server
-        self.__active: bool = False  # RpcClient status
-        self.__thread: threading.Thread = None  # RpcClient thread
+        self.__active: bool = False                 # RpcClient status
+        self.__thread: threading.Thread = None      # RpcClient thread
         self.__lock: threading.Lock = threading.Lock()
 
         self._last_received_ping: datetime = datetime.utcnow()
