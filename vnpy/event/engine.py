@@ -8,7 +8,7 @@ from threading import Thread
 from time import sleep
 from typing import Any, Callable, List
 
-EVENT_TIMER: str = "eTimer"
+EVENT_TIMER = "eTimer"
 
 
 class Event:
@@ -25,7 +25,7 @@ class Event:
 
 
 # Defines handler function to be used in event engine.
-HandlerType: Callable = Callable[[Event], None]
+HandlerType = Callable[[Event], None]
 
 
 class EventEngine:
