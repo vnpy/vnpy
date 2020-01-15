@@ -284,7 +284,7 @@ class LocalOrderManager:
         self.push_data_buf: Dict[str, Dict] = {}  # sys_orderid: data
 
         # Callback for processing push order data
-        self.push_data_callback: Callable[Dict] = None
+        self.push_data_callback: Callable = None
 
         # Cancel request buf
         self.cancel_request_buf: Dict[str, CancelRequest] = {}    # local_orderid: req
