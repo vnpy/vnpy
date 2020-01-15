@@ -10,9 +10,9 @@ from copy import copy
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from vnpy.event import Event, EventEngine
-from vnpy.trader.constant import Direction, Exchange, Offset, OrderType
-from vnpy.trader.engine import MainEngine
-from vnpy.trader.event import (
+from ..constant import Direction, Exchange, Offset, OrderType
+from ..engine import MainEngine
+from ..event import (
     EVENT_TICK,
     EVENT_TRADE,
     EVENT_ORDER,
@@ -20,9 +20,9 @@ from vnpy.trader.event import (
     EVENT_ACCOUNT,
     EVENT_LOG
 )
-from vnpy.trader.object import OrderRequest, SubscribeRequest
-from vnpy.trader.utility import load_json, save_json
-from vnpy.trader.setting import SETTING_FILENAME, SETTINGS
+from ..object import OrderRequest, SubscribeRequest
+from ..utility import load_json, save_json
+from ..setting import SETTING_FILENAME, SETTINGS
 
 
 COLOR_LONG: QtGui.QColor = QtGui.QColor("red")
