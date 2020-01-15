@@ -4,7 +4,6 @@ General utility functions.
 
 import json
 import logging
-from logging import Formatter, FileHandler, Logger
 import sys
 from pathlib import Path
 from typing import Callable, Dict, Any, Tuple, List
@@ -12,14 +11,13 @@ from decimal import Decimal
 from math import floor, ceil
 
 import numpy as np
-from numpy import ndarray
 import talib
 
 from .object import BarData, TickData
 from .constant import Exchange, Interval
 
 
-log_formatter: Formatter = logging.Formatter('[%(asctime)s] %(message)s')
+log_formatter: logging.Formatter = logging.Formatter('[%(asctime)s] %(message)s')
 
 
 def extract_vt_symbol(vt_symbol: str) -> Tuple[str, str]:
@@ -311,12 +309,12 @@ class ArrayManager(object):
         self.size: int = size
         self.inited: bool = False
 
-        self.open_array: ndarray = np.zeros(size)
-        self.high_array: ndarray = np.zeros(size)
-        self.low_array: ndarray = np.zeros(size)
-        self.close_array: ndarray = np.zeros(size)
-        self.volume_array: ndarray = np.zeros(size)
-        self.open_interest_array: ndarray = np.zeros(size)
+        self.open_array: np.ndarray = np.zeros(size)
+        self.high_array: np.ndarray = np.zeros(size)
+        self.low_array: np.ndarray = np.zeros(size)
+        self.close_array: np.ndarray = np.zeros(size)
+        self.volume_array: np.ndarray = np.zeros(size)
+        self.open_interest_array: np.ndarray = np.zeros(size)
 
     def update_bar(self, bar: BarData) -> None:
         """
@@ -341,42 +339,42 @@ class ArrayManager(object):
         self.open_interest_array[-1] = bar.open_interest
 
     @property
-    def open(self) -> ndarray:
+    def open(self) -> np.ndarray:
         """
         Get open price time series.
         """
         return self.open_array
 
     @property
-    def high(self) -> ndarray:
+    def high(self) -> np.ndarray:
         """
         Get high price time series.
         """
         return self.high_array
 
     @property
-    def low(self) -> ndarray:
+    def low(self) -> np.ndarray:
         """
         Get low price time series.
         """
         return self.low_array
 
     @property
-    def close(self) -> ndarray:
+    def close(self) -> np.ndarray:
         """
         Get close price time series.
         """
         return self.close_array
 
     @property
-    def volume(self) -> ndarray:
+    def volume(self) -> np.ndarray:
         """
         Get trading volume time series.
         """
         return self.volume_array
 
     @property
-    def open_interest(self) -> ndarray:
+    def open_interest(self) -> np.ndarray:
         """
         Get trading volume time series.
         """
@@ -790,10 +788,10 @@ def virtual(func: Callable) -> Callable:
     return func
 
 
-file_handlers: Dict[str, FileHandler] = {}
+file_handlers: Dict[str, logging.FileHandler] = {}
 
 
-def _get_file_logger_handler(filename: str) -> FileHandler:
+def _get_file_logger_handler(filename: str) -> logging.FileHandler:
     handler = file_handlers.get(filename, None)
     if handler is None:
         handler = logging.FileHandler(filename)
@@ -801,7 +799,7 @@ def _get_file_logger_handler(filename: str) -> FileHandler:
     return handler
 
 
-def get_file_logger(filename: str) -> Logger:
+def get_file_logger(filename: str) -> logging.Logger:
     """
     return a logger that writes records into a file.
     """
