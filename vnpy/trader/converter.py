@@ -97,7 +97,7 @@ class PositionHolding:
     def __init__(self, contract: ContractData):
         """"""
         self.vt_symbol: str = contract.vt_symbol
-        self.exchange: str = contract.exchange
+        self.exchange: Exchange = contract.exchange
 
         self.active_orders: Dict[str, OrderData] = {}
 
