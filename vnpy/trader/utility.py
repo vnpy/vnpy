@@ -6,7 +6,7 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Callable, Dict, Any, Tuple, List
+from typing import Callable, Dict, Tuple, Union
 from decimal import Decimal
 from math import floor, ceil
 
@@ -17,10 +17,10 @@ from .object import BarData, TickData
 from .constant import Exchange, Interval
 
 
-log_formatter: logging.Formatter = logging.Formatter('[%(asctime)s] %(message)s')
+log_formatter = logging.Formatter('[%(asctime)s] %(message)s')
 
 
-def extract_vt_symbol(vt_symbol: str) -> Tuple[str, str]:
+def extract_vt_symbol(vt_symbol: str) -> Tuple[str, Exchange]:
     """
     :return: (symbol, exchange)
     """
@@ -88,7 +88,7 @@ def get_icon_path(filepath: str, ico_name: str) -> str:
     return str(icon_path)
 
 
-def load_json(filename: str) -> Dict[str, Any]:
+def load_json(filename: str) -> dict:
     """
     Load data from json file in temp path.
     """
@@ -380,7 +380,7 @@ class ArrayManager(object):
         """
         return self.open_interest_array
 
-    def sma(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def sma(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         Simple moving average.
         """
@@ -389,7 +389,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def kama(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def kama(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         KAMA.
         """
@@ -398,7 +398,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def wma(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def wma(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         WMA.
         """
@@ -407,7 +407,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def apo(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def apo(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         APO.
         """
@@ -416,7 +416,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def cmo(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def cmo(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         CMO.
         """
@@ -425,7 +425,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def mom(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def mom(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         MOM.
         """
@@ -434,7 +434,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def ppo(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def ppo(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         PPO.
         """
@@ -443,7 +443,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def roc(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def roc(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         ROC.
         """
@@ -452,7 +452,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def rocr(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def rocr(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         ROCR.
         """
@@ -461,7 +461,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def rocp(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def rocp(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         ROCP.
         """
@@ -470,7 +470,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def rocr_100(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def rocr_100(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         ROCR100.
         """
@@ -479,7 +479,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def trix(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def trix(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         TRIX.
         """
@@ -488,7 +488,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def std(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def std(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         Standard deviation.
         """
@@ -497,7 +497,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def obv(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def obv(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         OBV.
         """
@@ -506,7 +506,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def cci(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def cci(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         Commodity Channel Index (CCI).
         """
@@ -515,7 +515,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def atr(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def atr(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         Average True Range (ATR).
         """
@@ -524,7 +524,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def natr(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def natr(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         NATR.
         """
@@ -533,7 +533,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def rsi(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def rsi(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         Relative Strenght Index (RSI).
         """
@@ -548,8 +548,8 @@ class ArrayManager(object):
         slow_period: int,
         signal_period: int,
         array: bool = False
-    ) -> Tuple[
-        Tuple[List[float], List[float], List[float]],
+    ) -> Union[
+        Tuple[np.ndarray, np.ndarray, np.ndarray],
         Tuple[float, float, float]
     ]:
         """
@@ -562,7 +562,7 @@ class ArrayManager(object):
             return macd, signal, hist
         return macd[-1], signal[-1], hist[-1]
 
-    def adx(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def adx(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         ADX.
         """
@@ -571,7 +571,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def adxr(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def adxr(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         ADXR.
         """
@@ -580,7 +580,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def dx(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def dx(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         DX.
         """
@@ -589,7 +589,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def minus_di(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def minus_di(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         MINUS_DI.
         """
@@ -598,7 +598,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def plus_di(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def plus_di(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         PLUS_DI.
         """
@@ -607,7 +607,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def willr(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def willr(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         WILLR.
         """
@@ -616,7 +616,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def ultosc(self, array: bool = False) -> Tuple[List[float], float]:
+    def ultosc(self, array: bool = False) -> Union[float, np.ndarray]:
         """
         Ultimate Oscillator.
         """
@@ -625,7 +625,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def trange(self, array: bool = False) -> Tuple[List[float], float]:
+    def trange(self, array: bool = False) -> Union[float, np.ndarray]:
         """
         TRANGE.
         """
@@ -639,8 +639,8 @@ class ArrayManager(object):
         n: int,
         dev: float,
         array: bool = False
-    ) -> Tuple[
-        Tuple[List[float], List[float]],
+    ) -> Union[
+        Tuple[np.ndarray, np.ndarray],
         Tuple[float, float]
     ]:
         """
@@ -659,8 +659,8 @@ class ArrayManager(object):
         n: int,
         dev: float,
         array: bool = False
-    ) -> Tuple[
-        Tuple[List[float], List[float]],
+    ) -> Union[
+        Tuple[np.ndarray, np.ndarray],
         Tuple[float, float]
     ]:
         """
@@ -679,8 +679,8 @@ class ArrayManager(object):
         n: int,
         dev: float,
         array: bool = False
-    ) -> Tuple[
-        Tuple[List[float], List[float]],
+    ) -> Union[
+        Tuple[np.ndarray, np.ndarray],
         Tuple[float, float]
     ]:
         """
@@ -698,8 +698,8 @@ class ArrayManager(object):
         n: int,
         dev: float,
         array: bool = False
-    ) -> Tuple[
-        Tuple[List[float], List[float]],
+    ) -> Union[
+        Tuple[np.ndarray, np.ndarray],
         Tuple[float, float]
     ]:
         """
@@ -711,7 +711,7 @@ class ArrayManager(object):
             return aroon_up, aroon_down
         return aroon_up[-1], aroon_down[-1]
 
-    def aroonosc(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def aroonosc(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         Aroon Oscillator.
         """
@@ -721,7 +721,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def minus_dm(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def minus_dm(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         MINUS_DM.
         """
@@ -731,7 +731,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def plus_dm(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def plus_dm(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         PLUS_DM.
         """
@@ -741,7 +741,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def mfi(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def mfi(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         Money Flow Index.
         """
@@ -750,7 +750,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def ad(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def ad(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         AD.
         """
@@ -759,7 +759,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def adosc(self, n: int, array: bool = False) -> Tuple[List[float], float]:
+    def adosc(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         ADOSC.
         """
@@ -768,7 +768,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def bop(self, array: bool = False) -> Tuple[List[float], float]:
+    def bop(self, array: bool = False) -> Union[float, np.ndarray]:
         """
         BOP.
         """
