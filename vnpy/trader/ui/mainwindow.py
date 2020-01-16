@@ -249,7 +249,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         dialog.exec_()
 
-    def closeEvent(self, event) -> None:
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """
         Call main engine close function before exit.
         """
