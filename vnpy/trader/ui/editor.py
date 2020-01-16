@@ -284,7 +284,7 @@ class CodeEditor(QtWidgets.QMainWindow):
         """"""
         return self.tab.currentWidget()
 
-    def closeEvent(self, event) -> None:  ##  1
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """"""
         for editor, path in self.editor_path_map.items():
             i = QtWidgets.QMessageBox.question(
