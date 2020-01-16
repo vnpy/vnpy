@@ -12,7 +12,7 @@ from ..setting import SETTINGS
 from ..utility import get_icon_path
 
 
-def excepthook(exctype, value, tb):
+def excepthook(exctype: type, value: Exception, tb) -> None:
     """
     Raise exception under debug mode, otherwise
     show exception detail with QMessageBox.
@@ -24,7 +24,7 @@ def excepthook(exctype, value, tb):
     dialog.exec_()
 
 
-def create_qapp(app_name: str = "VN Trader"):
+def create_qapp(app_name: str = "VN Trader") -> QtWidgets.QApplication:
     """
     Create Qt Application.
     """
@@ -56,11 +56,11 @@ class ExceptionDialog(QtWidgets.QDialog):
         """"""
         super().__init__()
 
-        self.msg = msg
+        self.msg: str = msg
 
         self.init_ui()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """"""
         self.setWindowTitle("触发异常")
         self.setFixedSize(600, 600)
@@ -89,11 +89,11 @@ class ExceptionDialog(QtWidgets.QDialog):
 
         self.setLayout(vbox)
 
-    def _copy_text(self):
+    def _copy_text(self) -> None:
         """"""
         self.msg_edit.selectAll()
         self.msg_edit.copy()
 
-    def _open_community(self):
+    def _open_community(self) -> None:
         """"""
         webbrowser.open("https://www.vnpy.com/forum/forum/2-ti-wen-qiu-zhu")
