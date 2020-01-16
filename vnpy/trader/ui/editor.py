@@ -244,27 +244,27 @@ class CodeEditor(QtWidgets.QMainWindow):
 
         self.update_path_label()
 
-    def copy(self):
+    def copy(self) -> None:
         """"""
         self.get_active_editor().copy()
 
-    def paste(self):
+    def paste(self) -> None:
         """"""
         self.get_active_editor().paste()
 
-    def undo(self):
+    def undo(self) -> None:
         """"""
         self.get_active_editor().undo()
 
-    def redo(self):
+    def redo(self) -> None:
         """"""
         self.get_active_editor().redo()
 
-    def cut(self):
+    def cut(self) -> None:
         """"""
         self.get_active_editor().cut()
 
-    def find(self):
+    def find(self) -> None:
         """"""
         dialog = FindDialog(
             self.get_active_editor(),
@@ -272,7 +272,7 @@ class CodeEditor(QtWidgets.QMainWindow):
         )
         dialog.exec_()
 
-    def replace(self):
+    def replace(self) -> None:
         """"""
         dialog = FindDialog(
             self.get_active_editor(),
@@ -280,11 +280,11 @@ class CodeEditor(QtWidgets.QMainWindow):
         )
         dialog.exec_()
 
-    def get_active_editor(self):
+    def get_active_editor(self) -> QtWidgets.QTabWidget:
         """"""
         return self.tab.currentWidget()
 
-    def closeEvent(self, event):
+    def closeEvent(self, event) -> None:  ##  1
         """"""
         for editor, path in self.editor_path_map.items():
             i = QtWidgets.QMessageBox.question(
@@ -307,14 +307,14 @@ class CodeEditor(QtWidgets.QMainWindow):
 
         event.accept()
 
-    def show(self):
+    def show(self) -> None:
         """"""
         if not self.tab.count():
             self.open_editor()
 
         self.showMaximized()
 
-    def update_path_label(self):
+    def update_path_label(self) -> None:
         """"""
         editor = self.get_active_editor()
         path = self.editor_path_map[editor]
@@ -338,7 +338,7 @@ class FindDialog(QtWidgets.QDialog):
 
         self.init_ui()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """"""
         find_label = QtWidgets.QLabel("查找")
         replace_label = QtWidgets.QLabel("替换")
@@ -395,7 +395,7 @@ class FindDialog(QtWidgets.QDialog):
             self.replace_line.setVisible(False)
             self.replace_button.setVisible(False)
 
-    def find_text(self):
+    def find_text(self) -> bool:
         """"""
         if not self.new_task:
             result = self.editor.findNext()
@@ -435,14 +435,14 @@ class FindDialog(QtWidgets.QDialog):
         else:
             self.new_task = True
 
-    def replace_text(self):
+    def replace_text(self) -> None:
         """"""
         new_text = self.replace_line.text()
 
         self.editor.replace(new_text)
         self.editor.findNext()
 
-    def reset_task(self):
+    def reset_task(self) -> None:
         """"""
         self.new_task = True
         self.replace_button.setEnabled(False)
