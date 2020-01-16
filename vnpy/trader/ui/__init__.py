@@ -3,6 +3,7 @@ import platform
 import sys
 import traceback
 import webbrowser
+import types
 
 import qdarkstyle
 from PyQt5 import QtGui, QtWidgets, QtCore
@@ -12,7 +13,7 @@ from ..setting import SETTINGS
 from ..utility import get_icon_path
 
 
-def excepthook(exctype: type, value: Exception, tb) -> None:
+def excepthook(exctype: type, value: Exception, tb: types.TracebackType) -> None:
     """
     Raise exception under debug mode, otherwise
     show exception detail with QMessageBox.

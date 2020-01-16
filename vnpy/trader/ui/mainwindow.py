@@ -42,7 +42,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.window_title: str = f"VN Trader [{TRADER_DIR}]"
 
-        self.connect_dialogs: Dict[str, ConnectDialog] = {}
         self.widgets: Dict[str, QtWidgets.QWidget] = {}
 
         self.init_ui()
@@ -243,10 +242,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         Open connect dialog for gateway connection.
         """
-        dialog = self.connect_dialogs.get(gateway_name, None)
-        if not dialog:
-            dialog = ConnectDialog(self.main_engine, gateway_name)
-
+        dialog = ConnectDialog(self.main_engine, gateway_name)
         dialog.exec_()
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:

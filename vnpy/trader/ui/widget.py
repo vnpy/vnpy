@@ -25,11 +25,11 @@ from ..utility import load_json, save_json
 from ..setting import SETTING_FILENAME, SETTINGS
 
 
-COLOR_LONG: QtGui.QColor = QtGui.QColor("red")
-COLOR_SHORT: QtGui.QColor = QtGui.QColor("green")
-COLOR_BID: QtGui.QColor = QtGui.QColor(255, 174, 201)
-COLOR_ASK: QtGui.QColor = QtGui.QColor(160, 255, 160)
-COLOR_BLACK: QtGui.QColor = QtGui.QColor("black")
+COLOR_LONG = QtGui.QColor("red")
+COLOR_SHORT = QtGui.QColor("green")
+COLOR_BID = QtGui.QColor(255, 174, 201)
+COLOR_ASK = QtGui.QColor(160, 255, 160)
+COLOR_BLACK = QtGui.QColor("black")
 
 
 class BaseCell(QtWidgets.QTableWidgetItem):
@@ -288,7 +288,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
             key = data.__getattribute__(self.data_key)
             self.cells[key] = row_cells
 
-    def update_old_row(self, data) -> None:
+    def update_old_row(self, data: Any) -> None:
         """
         Update an old row in table.
         """
@@ -330,7 +330,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
                         row_data.append("")
                 writer.writerow(row_data)
 
-    def contextMenuEvent(self, event) -> None:
+    def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
         """
         Show menu with right click.
         """
@@ -342,11 +342,11 @@ class TickMonitor(BaseMonitor):
     Monitor for tick data.
     """
 
-    event_type: str = EVENT_TICK
-    data_key: str = "vt_symbol"
-    sorting: bool = True
+    event_type = EVENT_TICK
+    data_key = "vt_symbol"
+    sorting = True
 
-    headers: Dict[str, dict] = {
+    headers = {
         "symbol": {"display": "代码", "cell": BaseCell, "update": False},
         "exchange": {"display": "交易所", "cell": EnumCell, "update": False},
         "name": {"display": "名称", "cell": BaseCell, "update": True},
@@ -369,11 +369,11 @@ class LogMonitor(BaseMonitor):
     Monitor for log data.
     """
 
-    event_type: str = EVENT_LOG
-    data_key: str = ""
-    sorting: bool = False
+    event_type = EVENT_LOG
+    data_key = ""
+    sorting = False
 
-    headers: Dict[str, dict] = {
+    headers = {
         "time": {"display": "时间", "cell": TimeCell, "update": False},
         "msg": {"display": "信息", "cell": MsgCell, "update": False},
         "gateway_name": {"display": "接口", "cell": BaseCell, "update": False},
@@ -385,9 +385,9 @@ class TradeMonitor(BaseMonitor):
     Monitor for trade data.
     """
 
-    event_type: str = EVENT_TRADE
-    data_key: str = ""
-    sorting: bool = True
+    event_type = EVENT_TRADE
+    data_key = ""
+    sorting = True
 
     headers: Dict[str, dict] = {
         "tradeid": {"display": "成交号 ", "cell": BaseCell, "update": False},
@@ -408,9 +408,9 @@ class OrderMonitor(BaseMonitor):
     Monitor for order data.
     """
 
-    event_type: str = EVENT_ORDER
-    data_key: str = "vt_orderid"
-    sorting: bool = True
+    event_type = EVENT_ORDER
+    data_key = "vt_orderid"
+    sorting = True
 
     headers: Dict[str, dict] = {
         "orderid": {"display": "委托号", "cell": BaseCell, "update": False},
@@ -450,11 +450,11 @@ class PositionMonitor(BaseMonitor):
     Monitor for position data.
     """
 
-    event_type: str = EVENT_POSITION
-    data_key: str = "vt_positionid"
-    sorting: bool = True
+    event_type = EVENT_POSITION
+    data_key = "vt_positionid"
+    sorting = True
 
-    headers: Dict[str, dict] = {
+    headers = {
         "symbol": {"display": "代码", "cell": BaseCell, "update": False},
         "exchange": {"display": "交易所", "cell": EnumCell, "update": False},
         "direction": {"display": "方向", "cell": DirectionCell, "update": False},
@@ -472,11 +472,11 @@ class AccountMonitor(BaseMonitor):
     Monitor for account data.
     """
 
-    event_type: str = EVENT_ACCOUNT
-    data_key: str = "vt_accountid"
-    sorting: bool = True
+    event_type = EVENT_ACCOUNT
+    data_key = "vt_accountid"
+    sorting = True
 
-    headers: Dict[str, dict] = {
+    headers = {
         "accountid": {"display": "账号", "cell": BaseCell, "update": False},
         "balance": {"display": "余额", "cell": BaseCell, "update": True},
         "frozen": {"display": "冻结", "cell": BaseCell, "update": True},
@@ -492,13 +492,13 @@ class ConnectDialog(QtWidgets.QDialog):
 
     def __init__(self, main_engine: MainEngine, gateway_name: str):
         """"""
-        super(ConnectDialog, self).__init__()
+        super().__init__()
 
         self.main_engine: MainEngine = main_engine
         self.gateway_name: str = gateway_name
         self.filename: str = f"connect_{gateway_name.lower()}.json"
 
-        self.widgets: Dict[str, Any] = {}
+        self.widgets: Dict[str, QtWidgets.QWidget] = {}
 
         self.init_ui()
 
@@ -572,7 +572,7 @@ class TradingWidget(QtWidgets.QWidget):
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
-        super(TradingWidget, self).__init__()
+        super().__init__()
 
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine
@@ -824,7 +824,7 @@ class TradingWidget(QtWidgets.QWidget):
         self.ap4_label.setText("")
         self.ap5_label.setText("")
 
-    def send_order(self) -> str:
+    def send_order(self) -> None:
         """
         Send new order manually.
         """
@@ -908,7 +908,7 @@ class ContractManager(QtWidgets.QWidget):
     }
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
-        super(ContractManager, self).__init__()
+        super().__init__()
 
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine
@@ -984,7 +984,7 @@ class AboutDialog(QtWidgets.QDialog):
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
-        super(AboutDialog, self).__init__()
+        super().__init__()
 
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine

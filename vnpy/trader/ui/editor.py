@@ -11,7 +11,7 @@ class CodeEditor(QtWidgets.QMainWindow):
     """"""
     NEW_FILE_NAME: str = "Untitled"
 
-    _instance: QtWidgets.QMainWindow = None
+    _instance: "CodeEditor" = None
 
     def __new__(cls, *args, **kwargs):
         """"""
@@ -280,7 +280,7 @@ class CodeEditor(QtWidgets.QMainWindow):
         )
         dialog.exec_()
 
-    def get_active_editor(self) -> QtWidgets.QTabWidget:
+    def get_active_editor(self) -> Qsci.QsciScintilla:
         """"""
         return self.tab.currentWidget()
 
@@ -395,7 +395,7 @@ class FindDialog(QtWidgets.QDialog):
             self.replace_line.setVisible(False)
             self.replace_button.setVisible(False)
 
-    def find_text(self) -> bool:
+    def find_text(self) -> None:
         """"""
         if not self.new_task:
             result = self.editor.findNext()
