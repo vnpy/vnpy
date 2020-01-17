@@ -396,12 +396,11 @@ class BacktestingEngine:
             max_drawdown = df["drawdown"].min()
             max_ddpercent = df["ddpercent"].min()
             max_drawdown_end = df["drawdown"].idxmin()
-            if isinstance(max_drawdown_end,date):
+
+            if isinstance(max_drawdown_end, date):
                 max_drawdown_start = df["balance"][:max_drawdown_end].idxmax()
                 max_drawdown_duration = (max_drawdown_end - max_drawdown_start).days
             else:
-                max_drawdown_start = ""
-                max_drawdown_end = ""
                 max_drawdown_duration = 0
 
             total_net_pnl = df["net_pnl"].sum()
@@ -495,10 +494,13 @@ class BacktestingEngine:
             "sharpe_ratio": sharpe_ratio,
             "return_drawdown_ratio": return_drawdown_ratio,
         }
-        for key,value in statistics.items():
-            if value in (np.inf,-np.inf):
+
+        # Filter potential error infinite value
+        for key, value in statistics.items():
+            if value in (np.inf, -np.inf):
                 value = 0
             statistics[key] = np.nan_to_num(value)
+
         return statistics
 
     def show_chart(self, df: DataFrame = None):
