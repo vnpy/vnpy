@@ -164,7 +164,7 @@ public:
 	/// Description:合约信息查询
 	virtual void OnRspQryInstrument(CHSRspQryInstrumentField *pRspQryInstrument, CHSRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
-	/// Description:备兑缺口查询
+	/// Description:备兑缺口查询7
 	virtual void OnRspQryCoveredShort(CHSRspQryCoveredShortField *pRspQryCoveredShort, CHSRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
 	/// Description:行权指派查询
@@ -197,7 +197,7 @@ public:
 	/// Description:持仓明细查询
 	virtual void OnRspQryPositionDetail(CHSRspQryPositionDetailField *pRspQryPositionDetail, CHSRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
-	// Description:汇率查询
+	/// Description:汇率查询
 	virtual void OnRspQryExchangeRate(CHSRspQryExchangeRateField *pRspQryExchangeRate, CHSRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
 	/// Description:经纪公司配置参数查询
@@ -312,16 +312,13 @@ public:
 
 	void processRtnLock(Task *task);
 
-
-
     //-------------------------------------------------------------------------------------
     //data：回调函数的数据字典
     //error：回调函数的错误字典
     //id：请求id
     //last：是否为最后返回
     //i：整数
-    //-------------------------------------------------------------------------------------
-    
+    //-------------------------------------------------------------------------------------    
 
 	virtual void onFrontConnected() {};
 
@@ -409,33 +406,27 @@ public:
 
 	virtual void onRtnLock(const dict &data) {};
 
-
-
     //-------------------------------------------------------------------------------------
     //req:主动函数的请求字典
     //-------------------------------------------------------------------------------------
 
-
-
-    void releaseApi(); //
+	void newTradeApi(string pszFlowPath);
 
     int init(string pszLicFile, string pszSafeLevel, string pszPwd, string pszSslFile, string pszSslPwd);
 
-    int join(); //
+    int join();
 
-	int exit(); //
+	int exit();
 
-	int rgisterSubModel(string pszSubModel); //
+	int rgisterSubModel(string pszSubModel);
 
-	int registerFront(string pszFrontAddress); //
+	int registerFront(string pszFrontAddress);
 
-	int registerFensServer(string pszFensAddress, string pszAccountID);//
+	int registerFensServer(string pszFensAddress, string pszAccountID);
 
-	///void registerSpi(CHSTradeSpi pSpi);
+	string getApiErrorMsg(int nErrorCode);
 
-	string getApiErrorMsg(int nErrorCode); //
-
-	int getTradingDate(); //
+	int getTradingDate();
 
 	int reqAuthenticate(const dict &req, int reqid);
 
@@ -508,6 +499,4 @@ public:
 	int reqQrySysConfig(const dict &req, int reqid);
 
 	int reqQryDepthMarketData(const dict &req, int reqid);
-
-
 };

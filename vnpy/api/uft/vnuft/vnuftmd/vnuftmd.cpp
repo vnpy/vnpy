@@ -223,6 +223,12 @@ void MdApi::processRtnDepthMarketData(Task *task)
 ///Ö÷¶¯º¯Êý
 ///-------------------------------------------------------------------------------------
 
+void MdApi::newMdApi(string pszFlowPath)
+{
+	this->api = NewMdApi(pszFlowPath.c_str());
+	this->api->RegisterSpi(this);
+};
+
 int MdApi::init(string pszLicFile, string pszSafeLevel, string pszPwd, string pszSslFile, string pszSslPwd)
 {
 	this->active = true;
@@ -288,7 +294,7 @@ int MdApi::reqDepthMarketDataCancel(const dict &req, int reqid)
 	getString(req, "InstrumentID", myreq.InstrumentID);
 
 	CHSReqDepthMarketDataField myreqs[1] = { myreq };
-	int i = this->api->ReqDepthMarketDataCancel(&myreqs, 1, reqid);
+	int i = this->api->ReqDepthMarketDataCancel(myreqs, 1, reqid);
 	return i;
 };
 
@@ -371,6 +377,7 @@ PYBIND11_MODULE(vnuftmd, m)
 	class_<MdApi, PyMdApi> mdapi(m, "MdApi", module_local());
 	mdapi
 		.def(init<>())
+		.def("newMdApi", &MdApi::newMdApi)
 		.def("init", &MdApi::init)
 		.def("join", &MdApi::join)
 		.def("exit", &MdApi::exit)

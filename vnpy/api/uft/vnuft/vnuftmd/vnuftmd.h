@@ -102,6 +102,8 @@ public:
 	//req:主动函数的请求字典
 	//-------------------------------------------------------------------------------------
 
+	void newMdApi(string pszFlowPath);
+
 	int init(string pszLicFile, string pszSafeLevel, string pszPwd, string pszSslFile, string pszSslPwd);
 
 	int join(); 

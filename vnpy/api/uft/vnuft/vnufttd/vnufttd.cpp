@@ -2447,11 +2447,10 @@ void TdApi::processRtnLock(Task *task)
 ///Ö÷¶¯º¯Êý
 ///-------------------------------------------------------------------------------------
 
-
-
-void TdApi::releaseApi()
+void TdApi::newTradeApi(string pszFlowPath)
 {
-	this->api->ReleaseApi();
+	this->api = NewTradeApi(pszFlowPath.c_str());
+	this->api->RegisterSpi(this);
 };
 
 int TdApi::init(string pszLicFile, string pszSafeLevel, string pszPwd, string pszSslFile, string pszSslPwd)
@@ -2483,17 +2482,20 @@ int TdApi::exit()
 
 int TdApi::rgisterSubModel(string pszSubModel)
 {
-	this->api->RegisterSubModel((char*)pszSubModel.c_str());
+	int i = this->api->RegisterSubModel((char*)pszSubModel.c_str());
+	return i;
 };
 
 int TdApi::registerFront(string pszFrontAddress)
 {
-	this->api->RegisterFront((char*)pszFrontAddress.c_str());
+	int i = this->api->RegisterFront((char*)pszFrontAddress.c_str());
+	return i;
 };
 
 int TdApi::registerFensServer(string pszFensAddress, string pszAccountID)
 {
-	this->api->RegisterFensServer((char*)pszFensAddress.c_str(), (char*)pszAccountID.c_str());
+	int i = this->api->RegisterFensServer((char*)pszFensAddress.c_str(), (char*)pszAccountID.c_str());
+	return i;
 };
 
 string TdApi::getApiErrorMsg(int nErrorCode)
@@ -2508,10 +2510,6 @@ int TdApi::getTradingDate()
 	return day;
 };
 
-
-
-
-//// ##
 int TdApi::reqAuthenticate(const dict &req, int reqid)
 {
 	CHSReqAuthenticateField myreq = CHSReqAuthenticateField();
@@ -3458,14 +3456,13 @@ PYBIND11_MODULE(vnufttd, m)
     class_<TdApi, PyTdApi> TdApi(m, "TdApi", module_local());
 	TdApi
 		.def(init<>())
-		.def("releaseApi", &TdApi::releaseApi)
+		.def("newTradeApi", &TdApi::newTradeApi)
 		.def("init", &TdApi::init)
 		.def("join", &TdApi::join)
 		.def("exit", &TdApi::exit)
 		.def("rgisterSubModel", &TdApi::rgisterSubModel)
 		.def("registerFront", &TdApi::registerFront)
 		.def("registerFensServer", &TdApi::registerFensServer)
-		///.def("registerSpi", &TdApi::registerSpi)
 		.def("getApiErrorMsg", &TdApi::getApiErrorMsg)
 		.def("getTradingDate", &TdApi::getTradingDate)
 
