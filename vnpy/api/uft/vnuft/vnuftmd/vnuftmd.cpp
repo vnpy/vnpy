@@ -1,4 +1,4 @@
-// vnctpmd.cpp : 定义 DLL 应用程序的导出函数。
+// vnuftmd.cpp : 定义 DLL 应用程序的导出函数。
 //
 
 #include "vnuftmd.h"
@@ -223,11 +223,6 @@ void MdApi::processRtnDepthMarketData(Task *task)
 ///主动函数
 ///-------------------------------------------------------------------------------------
 
-void MdApi::releaseApi()
-{
-	this->api->ReleaseApi();
-};
-
 int MdApi::init(string pszLicFile, string pszSafeLevel, string pszPwd, string pszSslFile, string pszSslPwd)
 {
 	this->active = true;
@@ -257,14 +252,15 @@ int MdApi::exit()
 
 int MdApi::registerFront(string pszFrontAddress)
 {
-	this->api->RegisterFront((char*)pszFrontAddress.c_str());
+	int i = this->api->RegisterFront((char*)pszFrontAddress.c_str());
+	return i;
 };
 
 int MdApi::registerFensServer(string pszFensAddress, string pszAccountID)
 {
-	this->api->RegisterFensServer((char*)pszFensAddress.c_str(), (char*)pszAccountID.c_str());
+	int i = this->api->RegisterFensServer((char*)pszFensAddress.c_str(), (char*)pszAccountID.c_str());
+	return i;
 };
-
 
 string MdApi::getApiErrorMsg(int nErrorCode)
 {
@@ -272,16 +268,15 @@ string MdApi::getApiErrorMsg(int nErrorCode)
 	return error;
 };
 
-
-
-
 int MdApi::reqDepthMarketDataSubscribe(const dict &req, int reqid)
 {
 	CHSReqDepthMarketDataField myreq = CHSReqDepthMarketDataField();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InstrumentID", myreq.InstrumentID);
-	int i = this->api->ReqDepthMarketDataSubscribe(&myreq, 1 ,reqid);
+
+	CHSReqDepthMarketDataField myreqs[1] = { myreq };
+	int i = this->api->ReqDepthMarketDataSubscribe(myreqs, 1 ,reqid);
 	return i;
 };
 
@@ -291,13 +286,15 @@ int MdApi::reqDepthMarketDataCancel(const dict &req, int reqid)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InstrumentID", myreq.InstrumentID);
-	int i = this->api->ReqDepthMarketDataCancel(&myreq, 1, reqid);
+
+	CHSReqDepthMarketDataField myreqs[1] = { myreq };
+	int i = this->api->ReqDepthMarketDataCancel(&myreqs, 1, reqid);
 	return i;
 };
 
 
 ///-------------------------------------------------------------------------------------
-///Boost.Python封装
+///Pybind11封装
 ///-------------------------------------------------------------------------------------
 
 class PyMdApi: public MdApi
@@ -374,7 +371,6 @@ PYBIND11_MODULE(vnuftmd, m)
 	class_<MdApi, PyMdApi> mdapi(m, "MdApi", module_local());
 	mdapi
 		.def(init<>())
-		.def("releaseApi", &MdApi::releaseApi)
 		.def("init", &MdApi::init)
 		.def("join", &MdApi::join)
 		.def("exit", &MdApi::exit)
@@ -383,8 +379,6 @@ PYBIND11_MODULE(vnuftmd, m)
 		.def("reqDepthMarketDataSubscribe", &MdApi::reqDepthMarketDataSubscribe)
 		.def("reqDepthMarketDataCancel", &MdApi::reqDepthMarketDataCancel)
 		.def("getApiErrorMsg", &MdApi::getApiErrorMsg)
-
-
 		.def("reqDepthMarketDataSubscribe", &MdApi::reqDepthMarketDataSubscribe)
 		.def("reqDepthMarketDataCancel", &MdApi::reqDepthMarketDataCancel)
 

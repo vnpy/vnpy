@@ -81,7 +81,6 @@ public:
 
 	void processRtnDepthMarketData(Task *task);
 
-
 	//-------------------------------------------------------------------------------------
 	//data：回调函数的数据字典
 	//error：回调函数的错误字典
@@ -102,8 +101,6 @@ public:
 	//-------------------------------------------------------------------------------------
 	//req:主动函数的请求字典
 	//-------------------------------------------------------------------------------------
-
-	void releaseApi();
 
 	int init(string pszLicFile, string pszSafeLevel, string pszPwd, string pszSslFile, string pszSslPwd);
 
