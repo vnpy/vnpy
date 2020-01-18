@@ -131,6 +131,16 @@ class TdxFutureData(object):
                 # 选取最佳服务器
                 if is_reconnect or len(self.best_ip) == 0:
                     self.best_ip = get_cache_json(TDX_FUTURE_CONFIG)
+                    last_datetime_str = self.best_ip.get('datetime', None)
+                    if last_datetime_str:
+                        try:
+                            last_datetime = datetime.strptime(last_datetime_str, '%Y-%m-%d %H:%M:%S')
+                            if (datetime.now() - last_datetime).total_seconds() > 60 * 60 * 2:
+                                self.best_ip = {}
+                        except Exception as ex:
+                            self.best_ip = {}
+                    else:
+                        self.best_ip = {}
 
                 if len(self.best_ip) == 0:
                     self.best_ip = self.select_best_ip()
@@ -192,6 +202,7 @@ class TdxFutureData(object):
 
         self.write_log(u'选取 {}:{}'.format(best_future_ip['ip'], best_future_ip['port']))
         # print(u'选取 {}:{}'.format(best_future_ip['ip'], best_future_ip['port']))
+        best_future_ip.update({'datetime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
         save_cache_json(best_future_ip, TDX_FUTURE_CONFIG)
         return best_future_ip
 
