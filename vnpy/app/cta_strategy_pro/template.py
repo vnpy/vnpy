@@ -119,6 +119,9 @@ class CtaTemplate(ABC):
         }
         return strategy_data
 
+    def on_timer(self):
+        pass
+
     @virtual
     def on_init(self):
         """

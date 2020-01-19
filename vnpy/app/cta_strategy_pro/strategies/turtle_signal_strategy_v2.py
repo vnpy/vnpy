@@ -12,7 +12,7 @@ from vnpy.app.cta_strategy_pro import (
 )
 
 
-class TurtleSignalStrategy(CtaTemplate):
+class TurtleSignalStrategy_v2(CtaTemplate):
     """"""
     author = "用Python的交易员"
 
@@ -21,6 +21,8 @@ class TurtleSignalStrategy(CtaTemplate):
     exit_window = 10
     atr_window = 20
     fixed_size = 1
+    invest_pos = 1
+    invest_percent = 10     # 投资比例
 
     entry_up = 0
     entry_down = 0
@@ -38,9 +40,13 @@ class TurtleSignalStrategy(CtaTemplate):
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
-        super(TurtleSignalStrategy, self).__init__(
+        super(TurtleSignalStrategy_v2, self).__init__(
             cta_engine, strategy_name, vt_symbol, setting
         )
+
+        # 获取合约乘数，保证金比例
+        self.symbol_size = self.cta_engine.get_size(self.vt_symbol)
+        self.symbol_margin_rate = self.cta_engine.get_margin_rate(self.vt_symbol)
 
         self.bg = BarGenerator(self.on_bar, window=self.x_minute)
         self.am = ArrayManager()
@@ -116,6 +122,15 @@ class TurtleSignalStrategy(CtaTemplate):
 
         self.put_event()
 
+    def update_invest_pos(self):
+        """计算获取投资仓位"""
+        # 获取账号资金
+        capital, available, cur_percent, percent_limit = self.cta_engine.get_account()
+        # 按照投资比例计算保证金
+        invest_margin = capital * self.invest_percent / 100
+        max_invest_pos = int(invest_margin / (self.cur_mi_price * self.symbol_size * self.symbol_margin_rate))
+        self.invest_pos = max(int(max_invest_pos / 4), 1)
+
     def on_trade(self, trade: TradeData):
         """
         Callback of new trade data update.
@@ -152,19 +167,21 @@ class TurtleSignalStrategy(CtaTemplate):
         if self.cur_mi_price <= price - self.atr_value/2:
             return
 
-        t = self.pos / self.fixed_size
+        self.update_invest_pos()
+
+        t = self.pos / self.invest_pos
 
         if t < 1:
-            self.buy(price, self.fixed_size, True)
+            self.buy(price, self.invest_pos, True)
 
         if t < 2:
-            self.buy(price + self.atr_value * 0.5, self.fixed_size, True)
+            self.buy(price + self.atr_value * 0.5, self.invest_pos, True)
 
         if t < 3:
-            self.buy(price + self.atr_value, self.fixed_size, True)
+            self.buy(price + self.atr_value, self.invest_pos, True)
 
         if t < 4:
-            self.buy(price + self.atr_value * 1.5, self.fixed_size, True)
+            self.buy(price + self.atr_value * 1.5, self.invest_pos, True)
 
     def send_short_orders(self, price):
         """"""
@@ -174,16 +191,18 @@ class TurtleSignalStrategy(CtaTemplate):
         if self.cur_mi_price >= price + self.atr_value / 2:
             return
 
-        t = self.pos / self.fixed_size
+        self.update_invest_pos()
+
+        t = self.pos / self.invest_pos
 
         if t > -1:
-            self.short(price, self.fixed_size, True)
+            self.short(price, self.invest_pos, True)
 
         if t > -2:
-            self.short(price - self.atr_value * 0.5, self.fixed_size, True)
+            self.short(price - self.atr_value * 0.5, self.invest_pos, True)
 
         if t > -3:
-            self.short(price - self.atr_value, self.fixed_size, True)
+            self.short(price - self.atr_value, self.invest_pos, True)
 
         if t > -4:
-            self.short(price - self.atr_value * 1.5, self.fixed_size, True)
+            self.short(price - self.atr_value * 1.5, self.invest_pos, True)

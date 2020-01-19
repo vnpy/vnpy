@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from vnpy.trader.app import BaseApp
-from vnpy.trader.constant import Direction
+from vnpy.trader.constant import Direction,Offset
 from vnpy.trader.object import TickData, BarData, TradeData, OrderData
 from vnpy.trader.utility import BarGenerator, ArrayManager
 
