@@ -302,3 +302,5 @@ class PositionHolding:
 
             return req_list
 
+    def to_str(self):
+        return f'Long:{self.long_pos},yd:{self.long_yd},td:{self.long_td}; Short:{self.short_pos},yd:{self.short_yd},td:{self.short_yd}'
