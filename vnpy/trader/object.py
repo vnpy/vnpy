@@ -128,6 +128,7 @@ class OrderData(BaseData):
     symbol: str
     exchange: Exchange
     orderid: str
+    sys_orderid: str = ""
 
     type: OrderType = OrderType.LIMIT
     direction: Direction = ""
@@ -174,6 +175,8 @@ class TradeData(BaseData):
     exchange: Exchange
     orderid: str
     tradeid: str
+    sys_orderid: str = ""
+
     direction: Direction = ""
 
     offset: Offset = Offset.NONE
@@ -181,7 +184,13 @@ class TradeData(BaseData):
     volume: float = 0
     time: str = ""
     datetime: datetime = None
-    strategy_name: str = ""
+    strategy_name: str = ""  # 策略名
+
+    # 股票使用
+    trade_amount: float = 0  # 成交金额
+    commission: float = 0  # 手续费(印花税+佣金+过户费）
+    holder_id: str = ""  # 股东代码
+    comment: str = ""  # 备注
 
     def __post_init__(self):
         """"""
@@ -205,6 +214,9 @@ class PositionData(BaseData):
     price: float = 0
     pnl: float = 0
     yd_volume: float = 0
+
+    # 股票相关
+    holder_id: str = ""  # 股东代码
 
     def __post_init__(self):
         """"""
@@ -237,6 +249,36 @@ class AccountData(BaseData):
 
 
 @dataclass
+class VtFundsFlowData(BaseData):
+    """历史资金流水数据类(股票专用）"""
+
+    # 账号代码相关
+    accountid: str  # 账户代码
+    exchange: Exchange = None
+
+    currency: str = ""       # 币种
+    trade_date: str = ""     # 成交日期
+    trade_price: float = 0   # 成交价格
+    trade_volume: float = 0  # 成交数量
+    trade_amount: float = 0  # 发生金额( 正数代表卖出，或者转入资金，获取分红等，负数代表买入股票或者出金)
+    fund_remain: float = 0   # 资金余额
+    contract_id: str = ""    # 合同编号
+    business_name: str = ""  # 业务名称
+    symbol: str = ""         # 合约代码（证券代码）
+    holder_id: str = ""      # 股东代码
+    direction: str = ""      # 买卖类别：转,买，卖..
+    comment: str = ""        # 备注
+
+    def __post_init__(self):
+        if self.exchange:
+            self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
+        else:
+            self.vt_symbol = self.symbol
+
+        self.vt_accountid = f"{self.gateway_name}.{self.accountid}"
+
+
+@dataclass
 class LogData(BaseData):
     """
     Log data is used for recording log messages on GUI or in log files.
@@ -244,6 +286,7 @@ class LogData(BaseData):
 
     msg: str
     level: int = INFO
+    additional_info: str = ""
 
     def __post_init__(self):
         """"""
