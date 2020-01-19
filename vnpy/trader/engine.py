@@ -55,6 +55,8 @@ class MainEngine:
         self.apps = {}
         self.exchanges = []
 
+        self.rm_engine = None
+
         os.chdir(TRADER_DIR)    # Change working directory
         self.init_engines()     # Initialize function engines
 
@@ -90,6 +92,9 @@ class MainEngine:
         self.apps[app.app_name] = app
 
         engine = self.add_engine(app.engine_class)
+        if app.app_name == "RiskManager":
+            self.rm_engine = engine
+
         return engine
 
     def init_engines(self):
@@ -376,6 +381,8 @@ class OmsEngine(BaseEngine):
         self.positions = {}
         self.accounts = {}
         self.contracts = {}
+        self.custom_contracts = {}
+        self.prices = {}
 
         self.active_orders = {}
 
@@ -386,6 +393,7 @@ class OmsEngine(BaseEngine):
         """Add query function to main engine."""
         self.main_engine.get_tick = self.get_tick
         self.main_engine.get_order = self.get_order
+        self.main_engine.get_price = self.get_price
         self.main_engine.get_trade = self.get_trade
         self.main_engine.get_position = self.get_position
         self.main_engine.get_account = self.get_account
@@ -397,6 +405,7 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_all_accounts = self.get_all_accounts
         self.main_engine.get_all_contracts = self.get_all_contracts
         self.main_engine.get_all_active_orders = self.get_all_active_orders
+        self.main_engine.get_all_custom_contracts = self.get_all_custom_contracts
 
     def register_event(self):
         """"""
@@ -411,6 +420,9 @@ class OmsEngine(BaseEngine):
         """"""
         tick = event.data
         self.ticks[tick.vt_symbol] = tick
+
+        if tick.last_price:
+            self.prices[tick.vt_symbol] = tick.last_price
 
     def process_order_event(self, event: Event):
         """"""
@@ -449,6 +461,14 @@ class OmsEngine(BaseEngine):
         Get latest market tick data by vt_symbol.
         """
         return self.ticks.get(vt_symbol, None)
+
+    def get_price(self, vt_symbol):
+        """
+        get the lastest price by vt_symbol
+        :param vt_symbol:
+        :return:
+        """
+        return self.prices.get(vt_symbol, None)
 
     def get_order(self, vt_orderid):
         """
@@ -531,6 +551,17 @@ class OmsEngine(BaseEngine):
                 if order.vt_symbol == vt_symbol
             ]
             return active_orders
+
+    def get_all_custom_contracts(self):
+        """
+        获取所有自定义合约
+        :return:
+        """
+        if len(self.custom_contracts) == 0:
+            c = CustomContract()
+            self.custom_contracts = c.get_contracts()
+        return self.custom_contracts
+
 
 class CustomContract(object):
     """
