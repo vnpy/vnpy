@@ -107,18 +107,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
         all_apps = self.main_engine.get_all_apps()
         for app in all_apps:
-            ui_module = import_module(app.app_module + ".ui")
-            widget_class = getattr(ui_module, app.widget_name)
+            try:
+                ui_module = import_module(app.app_module + ".ui")
+                widget_class = getattr(ui_module, app.widget_name)
 
-            func = partial(self.open_widget, widget_class, app.app_name)
-            icon_path = str(app.app_path.joinpath("ui", app.icon_name))
-            self.add_menu_action(
-                app_menu, app.display_name, icon_path, func
-            )
-            self.add_toolbar_action(
-                app.display_name, icon_path, func
-            )
-
+                func = partial(self.open_widget, widget_class, app.app_name)
+                icon_path = str(app.app_path.joinpath("ui", app.icon_name))
+                self.add_menu_action(
+                    app_menu, app.display_name, icon_path, func
+                )
+                self.add_toolbar_action(
+                    app.display_name, icon_path, func
+                )
+            except Exception as ex:
+                print(f'加载{app.app_module}出现异常:{str(ex)}')
         # Global setting editor
         action = QtWidgets.QAction("配置", self)
         action.triggered.connect(self.edit_global_setting)
