@@ -58,6 +58,7 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.utility import get_folder_path
 from vnpy.trader.event import EVENT_TIMER
+from vnpy.event import EventEngine
 
 
 STATUS_UFT2VT: Dict[str, Status] = {
@@ -136,7 +137,7 @@ class UftGateway(BaseGateway):
 
     exchanges: List[Exchange] = list(EXCHANGE_UFT2VT.values())
 
-    def __init__(self, event_engine):
+    def __init__(self, event_engine: EventEngine):
         """Constructor"""
         super().__init__(event_engine, "UFT")
 
@@ -173,39 +174,39 @@ class UftGateway(BaseGateway):
 
         self.init_query()
 
-    def subscribe(self, req: SubscribeRequest):
+    def subscribe(self, req: SubscribeRequest) -> None:
         """"""
         self.md_api.subscribe(req)
 
-    def send_order(self, req: OrderRequest):
+    def send_order(self, req: OrderRequest) -> str:
         """"""
         return self.td_api.send_order(req)
 
-    def cancel_order(self, req: CancelRequest):
+    def cancel_order(self, req: CancelRequest) -> None:
         """"""
         self.td_api.cancel_order(req)
 
-    def query_account(self):
+    def query_account(self) -> None:
         """"""
         self.td_api.query_account()
 
-    def query_position(self):
+    def query_position(self) -> None:
         """"""
         self.td_api.query_position()
 
-    def close(self):
+    def close(self) -> None:
         """"""
         self.td_api.close()
         self.md_api.close()
 
-    def write_error(self, msg: str, error: dict):
+    def write_error(self, msg: str, error: dict) -> None:
         """"""
         error_id = error["ErrorID"]
         error_msg = error["ErrorMsg"]
         msg = f"{msg}，代码：{error_id}，信息：{error_msg}"
         self.write_log(msg)
 
-    def process_timer_event(self, event):
+    def process_timer_event(self, event) -> None:
         """"""
         self.count += 1
         if self.count < 2:
@@ -216,7 +217,7 @@ class UftGateway(BaseGateway):
         func()
         self.query_functions.append(func)
 
-    def init_query(self):
+    def init_query(self) -> None:
         """"""
         self.count = 0
         self.query_functions = [self.query_account, self.query_position]
@@ -226,28 +227,28 @@ class UftGateway(BaseGateway):
 class UftMdApi(MdApi):
     """"""
 
-    def __init__(self, gateway):
+    def __init__(self, gateway: UftGateway):
         """Constructor"""
         super(UftMdApi, self).__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
+        self.gateway: UftGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
-        self.reqid = 0
+        self.reqid: int = 0
 
-        self.connect_status = False
-        self.subscribed = set()
+        self.connect_status: bool = False
+        self.subscribed: set = set()
 
-        self.userid = ""
-        self.password = ""
+        self.userid: str = ""
+        self.password: str = ""
 
-    def onFrontConnected(self):
+    def onFrontConnected(self) -> None:
         """
         Callback when front server is connected.
         """
         self.gateway.write_log("行情服务器连接成功")
 
-    def onFrontDisconnected(self, reason: int):
+    def onFrontDisconnected(self, reason: int) -> None:
         """
         Callback when front server is disconnected.
         """
@@ -265,7 +266,7 @@ class UftMdApi(MdApi):
 
         self.gateway.write_error("行情订阅失败", error)
 
-    def onRtnDepthMarketData(self, data: dict):
+    def onRtnDepthMarketData(self, data: dict) -> None:
         """
         Callback of tick data update.
         """
@@ -340,7 +341,7 @@ class UftMdApi(MdApi):
 
             self.registerFront(future_address)
             # self.registerFront(option_address)
-            result1 = self.init(
+            self.init(
                 "C:/Users/yazhang/Desktop/future.dat",
                 "",
                 "",
@@ -359,7 +360,7 @@ class UftMdApi(MdApi):
             self.connect_status = True
             self.login_status = True
 
-    def subscribe(self, req: SubscribeRequest):
+    def subscribe(self, req: SubscribeRequest) -> None:
         """
         Subscribe to tick data update.
         """
@@ -373,7 +374,7 @@ class UftMdApi(MdApi):
             self.reqDepthMarketDataSubscribe(uft_req, self.reqid)
         self.subscribed.add(req.symbol)
 
-    def close(self):
+    def close(self) -> None:
         """
         Close the connection.
         """
@@ -384,34 +385,34 @@ class UftMdApi(MdApi):
 class UftTdApi(TdApi):
     """"""
 
-    def __init__(self, gateway):
+    def __init__(self, gateway: UftGateway):
         """Constructor"""
         super(UftTdApi, self).__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
+        self.gateway: UftGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
-        self.reqid = 0
-        self.order_ref = 0
+        self.reqid: int = 0
+        self.order_ref: int = 0
 
-        self.connect_status = False
-        self.login_status = False
-        self.auth_staus = False
-        self.login_failed = False
+        self.connect_status: bool = False
+        self.login_status: bool = False
+        self.auth_staus: bool = False
+        self.login_failed: bool = False
 
-        self.userid = ""
-        self.password = ""
-        self.auth_code = ""
-        self.appid = ""
-        self.product_info = ""
+        self.userid: str = ""
+        self.password: str = ""
+        self.auth_code: str = ""
+        self.appid: str = ""
+        self.product_info: str = ""
 
-        self.frontid = 0
-        self.sessionid = 0
+        self.frontid: int = 0
+        self.sessionid: int = 0
 
-        self.order_data = []
-        self.trade_data = []
-        self.positions = {}
-        self.sysid_orderid_map = {}
+        self.order_data: List = []
+        self.trade_data: List = []
+        self.positions: Dict = {}
+        self.sysid_orderid_map: Dict = {}
 
     def onFrontConnected(self):
         """"""
@@ -427,7 +428,13 @@ class UftTdApi(TdApi):
         self.login_status = False
         self.gateway.write_log(f"交易服务器连接断开，原因{reason}")
 
-    def onRspAuthenticate(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspAuthenticate(
+        self,
+        data: dict,
+        error: dict,
+        reqid: int,
+        last: bool
+    ) -> None:
         """"""
         if not error["ErrorID"]:
             self.auth_staus = True
@@ -436,7 +443,13 @@ class UftTdApi(TdApi):
         else:
             self.gateway.write_error("交易服务器授权验证失败", error)
 
-    def onRspUserLogin(self, data: dict, error: dict, reqid: int, last: bool) -> None:
+    def onRspUserLogin(
+        self,
+        data: dict,
+        error: dict,
+        reqid: int,
+        last: bool
+    ) -> None:
         """"""
         if not error["ErrorID"]:
             self.sessionid = data["SessionID"]  # 获取session id
