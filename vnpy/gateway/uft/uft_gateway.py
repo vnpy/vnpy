@@ -65,7 +65,6 @@ STATUS_UFT2VT: Dict[str, Status] = {
     HS_OS_Reported: Status.SUBMITTING,
     HS_OS_ToBeReported: Status.SUBMITTING,
     HS_OS_Abandoned: Status.REJECTED,
-    # HS_OS_Abandoned: Status.NOTTRADED,
     HS_OS_PartsTraded: Status.PARTTRADED,
     HS_OS_Traded: Status.ALLTRADED,
     HS_OS_Canceled: Status.CANCELLED
@@ -237,7 +236,6 @@ class UftMdApi(MdApi):
         self.reqid: int = 0
 
         self.connect_status: bool = False
-        self.subscribed: set = set()
 
         self.userid: str = ""
         self.password: str = ""
@@ -275,12 +273,12 @@ class UftMdApi(MdApi):
         if not exchange:
             return
 
-        timestamp = f"{data['TradingDay']} {data['UpdateTime']}"
+        timestamp = f"{data['TradingDay']} {data['UpdateTime']}000"
 
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
-            datetime=datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f"),
+            datetime=datetime.strptime(timestamp, "%Y%m%d %H%M%S%f"),
             name=symbol_name_map[symbol],
             volume=data["TradeVolume"],
             open_interest=data["OpenInterest"],
@@ -319,6 +317,8 @@ class UftMdApi(MdApi):
             tick.ask_volume_4 = adjust_price(data["AskVolume4"])
             tick.ask_volume_5 = adjust_price(data["AskVolume5"])
 
+        print(TickData)
+
         self.gateway.on_tick(tick)
 
     def connect(
@@ -340,7 +340,7 @@ class UftMdApi(MdApi):
             self.newMdApi(str(path) + "\\Md")
 
             self.registerFront(future_address)
-            # self.registerFront(option_address)
+
             self.init(
                 "C:/Users/yazhang/Desktop/future.dat",
                 "",
@@ -372,7 +372,7 @@ class UftMdApi(MdApi):
             self.reqid += 1
 
             self.reqDepthMarketDataSubscribe(uft_req, self.reqid)
-        self.subscribed.add(req.symbol)
+
 
     def close(self) -> None:
         """
@@ -409,12 +409,12 @@ class UftTdApi(TdApi):
         self.frontid: int = 0
         self.sessionid: int = 0
 
-        self.order_data: List = []
-        self.trade_data: List = []
-        self.positions: Dict = {}
-        self.sysid_orderid_map: Dict = {}
+        self.order_data: List = [] #
+        self.trade_data: List = [] #
+        self.positions: Dict = {} # 
+        self.sysid_orderid_map: Dict = {} #
 
-    def onFrontConnected(self):
+    def onFrontConnected(self) -> None:
         """"""
         self.gateway.write_log("交易服务器连接成功")
 
@@ -423,7 +423,7 @@ class UftTdApi(TdApi):
         else:
             self.login()
 
-    def onFrontDisconnected(self, reason: int):
+    def onFrontDisconnected(self, reason: int) -> None:
         """"""
         self.login_status = False
         self.gateway.write_log(f"交易服务器连接断开，原因{reason}")
@@ -452,26 +452,29 @@ class UftTdApi(TdApi):
     ) -> None:
         """"""
         if not error["ErrorID"]:
-            self.sessionid = data["SessionID"]  # 获取session id
+            self.sessionid = data["SessionID"]
             self.login_status = True
             self.gateway.write_log("交易服务器登录成功")
+
+            self.reqid += 1
+            self.reqQryInstrument({}, self.reqid)
+
 
             self.query_order()
             self.query_trade()
         else:
             self.login_failed = True
-            print("登录具体报错： data：", data,"error:",error)
 
             self.gateway.write_error("交易服务器登录失败", error)
 
     def query_order(self) -> None:
         """"""
 
-        ## 可能输入空字典也行 ？？
+        ## 待测试？？
         uft_req = {
             "ExchangeID": "1",
             "InstrumentID": "2",
-            "OrderSysID": "3"  ##OrderSysID 在哪里获取？？
+            "OrderSysID": "3"  
         }
 
         self.reqid += 1
@@ -494,7 +497,6 @@ class UftTdApi(TdApi):
             self.order_data.append(data)
             return
 
-        # frontid = data["FrontID"]
         sessionid = data["SessionID"]
         order_ref = data["OrderRef"]
         orderid = f"{sessionid}_{order_ref}"
@@ -552,6 +554,7 @@ class UftTdApi(TdApi):
 
     def query_trade(self) -> None:
         """"""
+        ## 待测试？？
         uft_req = {
             "ExchangeID": "1",
             "InstrumentID": "2",
@@ -560,7 +563,13 @@ class UftTdApi(TdApi):
         self.reqid += 1
         self.reqQryTrade(uft_req, self.reqid)
 
-    def onRspErrorOrderInsert(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspErrorOrderInsert(
+        self, 
+        data: dict, 
+        error: dict, 
+        reqid: int, 
+        last: bool
+    ) -> None:
         """"""
         order_ref = data["OrderRef"]
         orderid = f"{self.sessionid}_{order_ref}"
@@ -583,25 +592,16 @@ class UftTdApi(TdApi):
 
         self.gateway.write_error("交易委托失败", error)
 
-    def onRspOrderAction(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspOrderAction(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """"""
         self.gateway.write_error("交易撤单失败", error)
 
-    def onRspQueryMaxOrderVolume(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspQueryMaxOrderVolume(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """"""
         pass
 
-    def onRspSettlementInfoConfirm(self, data: dict, error: dict, reqid: int, last: bool):
-        """
-        Callback of settlment info confimation.
-        """
-        self.gateway.write_log("结算信息确认成功")
-
-        self.reqid += 1
-        self.reqQryInstrument({}, self.reqid)
-
     def onRspQryPosition(
-        self, 
+        self,
         data: dict,
         error: dict,
         reqid: int,
@@ -691,6 +691,10 @@ class UftTdApi(TdApi):
         """
         Callback of instrument query.
         """
+        if not data and last:
+            self.gateway.write_log("合约信息查询成功")
+            return
+
         product = PRODUCT_UFT2VT.get(data["ProductType"], None)
         if product:
             contract = ContractData(
@@ -715,7 +719,7 @@ class UftTdApi(TdApi):
                 contract.option_type = OPTIONTYPE_UFT2VT.get(data["OptionsType"], None)
                 contract.option_strike = data["ExercisePrice"]
                 contract.option_index = str(data["ExercisePrice"])
-                contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d")
+                contract.option_expiry = datetime.strptime(str(data["ExpireDate"]), "%Y%m%d")
 
             self.gateway.on_contract(contract)
 
@@ -723,18 +727,7 @@ class UftTdApi(TdApi):
             symbol_name_map[contract.symbol] = contract.name
             symbol_size_map[contract.symbol] = contract.size
 
-        if last:
-            self.gateway.write_log("合约信息查询成功")
-
-            for data in self.order_data:
-                self.onRtnOrder(data)
-            self.order_data.clear()
-
-            for data in self.trade_data:
-                self.onRtnTrade(data)
-            self.trade_data.clear()
-
-    def onRtnOrder(self, data: dict):
+    def onRtnOrder(self, data: dict) -> None:
         """
         Callback of order status update.
         """
@@ -766,7 +759,7 @@ class UftTdApi(TdApi):
 
         self.sysid_orderid_map[data["OrderSysID"]] = orderid
 
-    def onRtnTrade(self, data: dict):
+    def onRtnTrade(self, data: dict) -> None:
         """
         Callback of trade status update.
         """
@@ -801,7 +794,7 @@ class UftTdApi(TdApi):
         auth_code: str,
         appid: str,
         product_info
-    ):
+    ) -> None:
         """
         Start connection to server.
         """
@@ -815,8 +808,6 @@ class UftTdApi(TdApi):
             path = get_folder_path(self.gateway_name.lower())
             self.newTradeApi(str(path) + "\\Td")
 
-            # self.subscribePrivateTopic(0)
-            # self.subscribePublicTopic(0)
             self.rgisterSubModel("1")  ## ??
 
             self.registerFront(future_address)
@@ -847,7 +838,7 @@ class UftTdApi(TdApi):
             req["UserProductInfo"] = self.product_info
 
         self.reqid += 1
-        self.reqAuthenticate(req, self.reqid)
+        d=self.reqAuthenticate(req, self.reqid)
 
     def login(self) -> None:
         """
@@ -859,13 +850,12 @@ class UftTdApi(TdApi):
         req = {
             "AccountID": self.userid,
             "Password": self.password,
-            "UserApplicationType": "1",
-            "UserApplicationInfo": "2", # 由经纪公司提供 ？？
-            "MacAddress": "3",  # 获取Mac地址？？
-            "IPAddress": "4",  # 获取IP地址？？
+            "UserApplicationType": "A",
+            "UserApplicationInfo": "",
+            "MacAddress": "",
+            "IPAddress": "",
 
         }
-        print(req)
 
         if self.product_info:
             req["UserProductInfo"] = self.product_info
@@ -911,12 +901,13 @@ class UftTdApi(TdApi):
         """
         sessionid, order_ref = req.orderid.split("_")
 
+        ## 待测试？？
         uft_req = {
-            # "OrderSysID": "1",  # 可能不需要？？
+            # "OrderSysID": "1", 
             "ExchangeID": req.exchange.value,
             "SessionID": int(sessionid),
             "OrderRef": order_ref,
-            # "OrderActionRef": "3" # 可能不需要？？
+            # "OrderActionRef": "3"
         }
 
         self.reqid += 1
@@ -936,7 +927,7 @@ class UftTdApi(TdApi):
         if not symbol_exchange_map:
             return
 
-        ## 非必填？？
+        ## 待测试？？
         uft_req = {
             "ExchangeID": "1",
             "InstrumentID": "2"
