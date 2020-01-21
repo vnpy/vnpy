@@ -373,7 +373,6 @@ class UftMdApi(MdApi):
 
             self.reqDepthMarketDataSubscribe(uft_req, self.reqid)
 
-
     def close(self) -> None:
         """
         Close the connection.
@@ -409,10 +408,10 @@ class UftTdApi(TdApi):
         self.frontid: int = 0
         self.sessionid: int = 0
 
-        self.order_data: List = [] #
-        self.trade_data: List = [] #
-        self.positions: Dict = {} # 
-        self.sysid_orderid_map: Dict = {} #
+        self.order_data: List = []  #
+        self.trade_data: List = []  #
+        self.positions: Dict = {}  #
+        self.sysid_orderid_map: Dict = {}  #
 
     def onFrontConnected(self) -> None:
         """"""
@@ -459,7 +458,6 @@ class UftTdApi(TdApi):
             self.reqid += 1
             self.reqQryInstrument({}, self.reqid)
 
-
             self.query_order()
             self.query_trade()
         else:
@@ -469,7 +467,6 @@ class UftTdApi(TdApi):
 
     def query_order(self) -> None:
         """"""
-
         ## 待测试？？
         uft_req = {
             "ExchangeID": "1",
@@ -564,10 +561,10 @@ class UftTdApi(TdApi):
         self.reqQryTrade(uft_req, self.reqid)
 
     def onRspErrorOrderInsert(
-        self, 
-        data: dict, 
-        error: dict, 
-        reqid: int, 
+        self,
+        data: dict,
+        error: dict,
+        reqid: int,
         last: bool
     ) -> None:
         """"""
@@ -838,7 +835,7 @@ class UftTdApi(TdApi):
             req["UserProductInfo"] = self.product_info
 
         self.reqid += 1
-        d=self.reqAuthenticate(req, self.reqid)
+        self.reqAuthenticate(req, self.reqid)
 
     def login(self) -> None:
         """
