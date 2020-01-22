@@ -25,8 +25,6 @@ from vnpy.api.uft import (
     HS_OS_CanceledWithPartsTraded,
     HS_D_Buy,
     HS_D_Sell,
-    HS_PT_Right,
-    HS_PT_Voluntary,
     HS_CT_Limit,
     HS_CT_Market,
     HS_OF_Open,
@@ -577,8 +575,6 @@ class UftTdApi(TdApi):
                 position.price = cost / (position.volume * size)
 
             position.frozen += data["CloseFrozenVolume"]
-
-
 
     def onRspQryTradingAccount(
         self,
