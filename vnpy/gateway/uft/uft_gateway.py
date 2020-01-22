@@ -6,6 +6,8 @@ from datetime import datetime
 from typing import Dict, List
 
 from vnpy.api.uft import (
+    FUTURES_LICENSE,
+    OPTION_LICENSE,
     MdApi,
     TdApi,
     HS_EI_CFFEX,
@@ -13,12 +15,14 @@ from vnpy.api.uft import (
     HS_EI_DCE,
     HS_EI_CZCE,
     HS_EI_INE,
+    HS_EI_SZSE,
+    HS_EI_SSE,
     HS_OS_Reported,
-    HS_OS_ToBeReported,
     HS_OS_Abandoned,
     HS_OS_PartsTraded,
     HS_OS_Traded,
     HS_OS_Canceled,
+    HS_OS_CanceledWithPartsTraded,
     HS_D_Buy,
     HS_D_Sell,
     HS_PT_Right,
@@ -62,12 +66,12 @@ from vnpy.event import EventEngine
 
 
 STATUS_UFT2VT: Dict[str, Status] = {
-    HS_OS_Reported: Status.SUBMITTING,
-    HS_OS_ToBeReported: Status.SUBMITTING,
+    HS_OS_Reported: Status.NOTTRADED,
     HS_OS_Abandoned: Status.REJECTED,
     HS_OS_PartsTraded: Status.PARTTRADED,
     HS_OS_Traded: Status.ALLTRADED,
-    HS_OS_Canceled: Status.CANCELLED
+    HS_OS_Canceled: Status.CANCELLED,
+    HS_OS_CanceledWithPartsTraded: Status.CANCELLED
 }
 
 DIRECTION_VT2UFT: Dict[Direction, str] = {
@@ -75,8 +79,8 @@ DIRECTION_VT2UFT: Dict[Direction, str] = {
     Direction.SHORT: HS_D_Sell
 }
 DIRECTION_UFT2VT: Dict[str, Direction] = {v: k for k, v in DIRECTION_VT2UFT.items()}
-DIRECTION_UFT2VT[HS_PT_Right] = Direction.LONG
-DIRECTION_UFT2VT[HS_PT_Voluntary] = Direction.SHORT
+# DIRECTION_UFT2VT[HS_PT_Right] = Direction.LONG
+# DIRECTION_UFT2VT[HS_PT_Voluntary] = Direction.SHORT
 
 ORDERTYPE_VT2UFT: Dict[OrderType, str] = {
     OrderType.LIMIT: HS_CT_Limit,
@@ -96,8 +100,11 @@ EXCHANGE_UFT2VT: Dict[str, Exchange] = {
     HS_EI_SHFE: Exchange.SHFE,
     HS_EI_CZCE: Exchange.CZCE,
     HS_EI_DCE: Exchange.DCE,
-    HS_EI_INE: Exchange.INE
+    HS_EI_INE: Exchange.INE,
+    HS_EI_SSE: Exchange.SSE,
+    HS_EI_SZSE: Exchange.SZSE,
 }
+EXCHANGE_VT2UFT: Dict[Exchange, str] = {v: k for k, v in EXCHANGE_UFT2VT.items()}
 
 PRODUCT_UFT2VT: Dict[str, Product] = {
     HS_PTYPE_Futures: Product.FUTURES,
@@ -114,7 +121,6 @@ OPTIONTYPE_UFT2VT: Dict[str, OptionType] = {
 MAX_FLOAT = sys.float_info.max
 
 
-symbol_exchange_map = {}
 symbol_name_map = {}
 symbol_size_map = {}
 
@@ -127,8 +133,8 @@ class UftGateway(BaseGateway):
     default_setting: Dict[str, str] = {
         "用户名": "",
         "密码": "",
-        "期货服务器": "",
-        "期权服务器": "",
+        "服务器地址": "",
+        "服务器类型": ["期货", "ETF期权"],
         "产品名称": "",
         "授权编码": "",
         "产品信息": ""
@@ -147,29 +153,31 @@ class UftGateway(BaseGateway):
         """"""
         userid = setting["用户名"]
         password = setting["密码"]
-        future_address = setting["期货服务器"]
-        option_address = setting["期权服务器"]
+        address = setting["服务器地址"]
+        server = setting["服务器类型"]
         appid = setting["产品名称"]
         auth_code = setting["授权编码"]
-        product_info = setting["产品信息"]
 
-        if (
-            (not future_address.startswith("tcp://"))
-            and (not future_address.startswith("ssl://"))
-        ):
-            future_address = "tcp://" + future_address
+        if not address.startswith("tcp://"):
+            address = "tcp://" + address
 
-        if (
-            (not option_address.startswith("tcp://"))
-            and (not option_address.startswith("ssl://"))
-        ):
-            option_address = "tcp://" + option_address
+        if server == "期货":
+            server_license = FUTURES_LICENSE
+        else:
+            server_license = OPTION_LICENSE
 
         self.td_api.connect(
-            future_address, option_address, userid,
-            password, auth_code, appid, product_info
+            address,
+            server_license,
+            userid,
+            password,
+            auth_code,
+            appid
         )
-        self.md_api.connect(future_address, option_address, userid, password)
+        self.md_api.connect(
+            address,
+            server_license
+        )
 
         self.init_query()
 
@@ -269,7 +277,7 @@ class UftMdApi(MdApi):
         Callback of tick data update.
         """
         symbol = data["InstrumentID"]
-        exchange = symbol_exchange_map.get(symbol, "")
+        exchange = EXCHANGE_UFT2VT[data["ExchangeID"]]
         if not exchange:
             return
 
@@ -317,60 +325,39 @@ class UftMdApi(MdApi):
             tick.ask_volume_4 = adjust_price(data["AskVolume4"])
             tick.ask_volume_5 = adjust_price(data["AskVolume5"])
 
-        print(TickData)
-
         self.gateway.on_tick(tick)
 
-    def connect(
-        self,
-        future_address: str,
-        option_address: str,
-        userid: str,
-        password: str
-    ) -> None:
+    def connect(self, address: str, server_license: str) -> None:
         """
         Start connection to server.
         """
-        self.userid = userid
-        self.password = password
-
-        # If not connected, then start connection first.
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
             self.newMdApi(str(path) + "\\Md")
 
-            self.registerFront(future_address)
+            self.registerFront(address)
 
             self.init(
-                "C:/Users/yazhang/Desktop/future.dat",
+                server_license,
                 "",
                 "",
                 "",
                 ""
             )
 
-            # result2 = self.init(
-            #     "C:/Users/yazhang/Desktop/option.dat",
-            #     "",
-            #     "",
-            #     "",
-            #     ""
-            # )
-
             self.connect_status = True
-            self.login_status = True
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """
         Subscribe to tick data update.
         """
-        if self.login_status:
+        if self.connect_status:
             uft_req = {
                 "ExchangeID": req.exchange.value,
                 "InstrumentID": req.symbol
             }
-            self.reqid += 1
 
+            self.reqid += 1
             self.reqDepthMarketDataSubscribe(uft_req, self.reqid)
 
     def close(self) -> None:
@@ -403,15 +390,11 @@ class UftTdApi(TdApi):
         self.password: str = ""
         self.auth_code: str = ""
         self.appid: str = ""
-        self.product_info: str = ""
 
         self.frontid: int = 0
         self.sessionid: int = 0
 
-        self.order_data: List = []  #
-        self.trade_data: List = []  #
-        self.positions: Dict = {}  #
-        self.sysid_orderid_map: Dict = {}  #
+        self.positions: Dict = {}
 
     def onFrontConnected(self) -> None:
         """"""
@@ -467,15 +450,8 @@ class UftTdApi(TdApi):
 
     def query_order(self) -> None:
         """"""
-        ## 待测试？？
-        uft_req = {
-            "ExchangeID": "1",
-            "InstrumentID": "2",
-            "OrderSysID": "3"  
-        }
-
         self.reqid += 1
-        self.reqQryOrder(uft_req, self.reqid)
+        self.reqQryOrder({}, self.reqid)
 
     def onRspQryOrder(
         self,
@@ -485,36 +461,11 @@ class UftTdApi(TdApi):
         last: bool
     ) -> None:
         """"""
-        if not data:
+        if not data and last:
+            self.gateway.write_log("委托信息查询成功")
             return
 
-        symbol = data["InstrumentID"]
-        exchange = symbol_exchange_map.get(symbol, "")
-        if not exchange:
-            self.order_data.append(data)
-            return
-
-        sessionid = data["SessionID"]
-        order_ref = data["OrderRef"]
-        orderid = f"{sessionid}_{order_ref}"
-
-        order = OrderData(
-            symbol=symbol,
-            exchange=exchange,
-            orderid=orderid,
-            type=ORDERTYPE_UFT2VT[data["OrderCommand"]],
-            direction=DIRECTION_UFT2VT[data["Direction"]],
-            offset=OFFSET_UFT2VT[data["OffsetFlag"]],
-            price=data["OrderPrice"],
-            volume=data["OrderVolume"],
-            traded=data["TradeVolume"],
-            status=STATUS_UFT2VT[data["OrderStatus"]],
-            time=data["InsertTime"],
-            gateway_name=self.gateway_name
-        )
-        self.gateway.on_order(order)
-
-        self.sysid_orderid_map[data["OrderSysID"]] = orderid
+        self.update_order(data)
 
     def onRspQryTrade(
         self,
@@ -524,41 +475,16 @@ class UftTdApi(TdApi):
         last: bool
     ) -> None:
         """"""
-        if not data:
+        if not data and last:
+            self.gateway.write_log("成交信息查询成功")
             return
 
-        symbol = data["InstrumentID"]
-        exchange = symbol_exchange_map.get(symbol, "")
-        if not exchange:
-            self.trade_data.append(data)
-            return
-
-        orderid = self.sysid_orderid_map[data["OrderSysID"]]
-
-        trade = TradeData(
-            symbol=symbol,
-            exchange=exchange,
-            orderid=orderid,
-            tradeid=data["TradeID"],
-            direction=DIRECTION_UFT2VT[data["Direction"]],
-            offset=OFFSET_UFT2VT[data["OffsetFlag"]],
-            price=data["TradePrice"],
-            volume=data["TradeVolume"],
-            time=data["TradeTime"],
-            gateway_name=self.gateway_name
-        )
-        self.gateway.on_trade(trade)
+        self.update_trade(data)
 
     def query_trade(self) -> None:
         """"""
-        ## 待测试？？
-        uft_req = {
-            "ExchangeID": "1",
-            "InstrumentID": "2",
-        }
-
         self.reqid += 1
-        self.reqQryTrade(uft_req, self.reqid)
+        self.reqQryTrade({}, self.reqid)
 
     def onRspErrorOrderInsert(
         self,
@@ -572,7 +498,7 @@ class UftTdApi(TdApi):
         orderid = f"{self.sessionid}_{order_ref}"
 
         symbol = data["InstrumentID"]
-        exchange = symbol_exchange_map[symbol]
+        exchange = EXCHANGE_UFT2VT[data["ExchangeID"]]
 
         order = OrderData(
             symbol=symbol,
@@ -591,7 +517,8 @@ class UftTdApi(TdApi):
 
     def onRspOrderAction(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """"""
-        self.gateway.write_error("交易撤单失败", error)
+        if error["ErrorID"]:
+            self.gateway.write_error("交易撤单失败", error)
 
     def onRspQueryMaxOrderVolume(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """"""
@@ -605,18 +532,22 @@ class UftTdApi(TdApi):
         last: bool
     ) -> None:
         """"""
-        if not data:
+        if not data and last:
+            for position in self.positions.values():
+                self.gateway.on_position(position)
+
+            self.positions.clear()
             return
 
         # Check if contract data received
-        if data["InstrumentID"] in symbol_exchange_map:
+        if data["InstrumentID"] in symbol_name_map:
             # Get buffered position object
             key = f"{data['InstrumentID'], data['Direction']}"
             position = self.positions.get(key, None)
             if not position:
                 position = PositionData(
                     symbol=data["InstrumentID"],
-                    exchange=symbol_exchange_map[data["InstrumentID"]],
+                    exchange=EXCHANGE_UFT2VT[data["ExchangeID"]],
                     direction=DIRECTION_UFT2VT[data["Direction"]],
                     gateway_name=self.gateway_name
                 )
@@ -645,17 +576,9 @@ class UftTdApi(TdApi):
                 cost += data["PositionCost"]
                 position.price = cost / (position.volume * size)
 
-            # Get frozen volume 有疑问 ？？
-            if position.direction == Direction.LONG:  ## 待处理？？
-                position.frozen += data["ShortFrozen"]
-            else:
-                position.frozen += data["LongFrozen"]
+            position.frozen += data["CloseFrozenVolume"]
 
-        if last:
-            for position in self.positions.values():
-                self.gateway.on_position(position)
 
-            self.positions.clear()
 
     def onRspQryTradingAccount(
         self,
@@ -665,7 +588,7 @@ class UftTdApi(TdApi):
         last: bool
     ) -> None:
         """"""
-        if "AccountID" not in data:
+        if not data:
             return
 
         account = AccountData(
@@ -674,7 +597,6 @@ class UftTdApi(TdApi):
             frozen=data["FrozenBalance"],
             gateway_name=self.gateway_name
         )
-        account.available = data["AvailableBalance"]
 
         self.gateway.on_account(account)
 
@@ -720,7 +642,6 @@ class UftTdApi(TdApi):
 
             self.gateway.on_contract(contract)
 
-            symbol_exchange_map[contract.symbol] = contract.exchange
             symbol_name_map[contract.symbol] = contract.name
             symbol_size_map[contract.symbol] = contract.size
 
@@ -728,12 +649,12 @@ class UftTdApi(TdApi):
         """
         Callback of order status update.
         """
-        symbol = data["InstrumentID"]
-        exchange = symbol_exchange_map.get(symbol, "")
-        if not exchange:
-            self.order_data.append(data)
-            return
+        self.update_order(data)
 
+    def update_order(self, data: dict) -> None:
+        """"""
+        symbol = data["InstrumentID"]
+        exchange = EXCHANGE_UFT2VT[data["ExchangeID"]]
         sessionid = data["SessionID"]
         order_ref = data["OrderRef"]
         orderid = f"{sessionid}_{order_ref}"
@@ -748,25 +669,27 @@ class UftTdApi(TdApi):
             price=data["OrderPrice"],
             volume=data["OrderVolume"],
             traded=data["TradeVolume"],
-            status=STATUS_UFT2VT[data["OrderStatus"]],
-            time=data["InsertTime"],
+            status=STATUS_UFT2VT.get(data["OrderStatus"], Status.SUBMITTING),
+            time=generate_time(data["InsertTime"]),
             gateway_name=self.gateway_name
         )
         self.gateway.on_order(order)
 
-        self.sysid_orderid_map[data["OrderSysID"]] = orderid
+        print("on_order", order.orderid, order.status, data["OrderStatus"])
 
     def onRtnTrade(self, data: dict) -> None:
         """
         Callback of trade status update.
         """
-        symbol = data["InstrumentID"]
-        exchange = symbol_exchange_map.get(symbol, "")
-        if not exchange:
-            self.trade_data.append(data)
-            return
+        self.update_trade(data)
 
-        orderid = self.sysid_orderid_map[data["OrderSysID"]]
+    def update_trade(self, data: dict) -> None:
+        """"""
+        symbol = data["InstrumentID"]
+        exchange = EXCHANGE_UFT2VT[data["ExchangeID"]]
+        sessionid = data["SessionID"]
+        order_ref = data["OrderRef"]
+        orderid = f"{sessionid}_{order_ref}"
 
         trade = TradeData(
             symbol=symbol,
@@ -777,20 +700,21 @@ class UftTdApi(TdApi):
             offset=OFFSET_UFT2VT[data["OffsetFlag"]],
             price=data["TradePrice"],
             volume=data["TradeVolume"],
-            time=data["TradeTime"],
+            time=generate_time(data["TradeTime"]),
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)
 
+        print("on_trade", trade.orderid, trade.volume)
+
     def connect(
         self,
-        future_address: str,
-        option_address: str,
+        address: str,
+        server_license: str,
         userid: str,
         password: str,
         auth_code: str,
-        appid: str,
-        product_info
+        appid: str
     ) -> None:
         """
         Start connection to server.
@@ -799,17 +723,16 @@ class UftTdApi(TdApi):
         self.password = password
         self.auth_code = auth_code
         self.appid = appid
-        self.product_info = product_info
 
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
             self.newTradeApi(str(path) + "\\Td")
 
-            self.rgisterSubModel("1")  ## ??
+            self.rgisterSubModel("1")  # ??
 
-            self.registerFront(future_address)
+            self.registerFront(address)
             self.init(
-                "C:/Users/yazhang/Desktop/future.dat",
+                server_license,
                 "",
                 "",
                 "",
@@ -831,9 +754,6 @@ class UftTdApi(TdApi):
             "AppID": self.appid
         }
 
-        if self.product_info:
-            req["UserProductInfo"] = self.product_info
-
         self.reqid += 1
         self.reqAuthenticate(req, self.reqid)
 
@@ -847,15 +767,12 @@ class UftTdApi(TdApi):
         req = {
             "AccountID": self.userid,
             "Password": self.password,
-            "UserApplicationType": "A",
+            "UserApplicationType": "V",
             "UserApplicationInfo": "",
             "MacAddress": "",
             "IPAddress": "",
 
         }
-
-        if self.product_info:
-            req["UserProductInfo"] = self.product_info
 
         self.reqid += 1
         self.reqUserLogin(req, self.reqid)
@@ -872,14 +789,14 @@ class UftTdApi(TdApi):
 
         uft_req = {
             "OrderRef": str(self.order_ref),
-            "ExchangeID": req.exchange.value,
+            "ExchangeID": EXCHANGE_VT2UFT[req.exchange],
             "InstrumentID": req.symbol,
-            "Direction": DIRECTION_VT2UFT.get(req.direction, ""),
-            "OffsetFlag": OFFSET_VT2UFT.get(req.offset, ""),
+            "Direction": DIRECTION_VT2UFT[req.direction],
+            "OffsetFlag": OFFSET_VT2UFT[req.offset],
             "HedgeType": "0",
             "OrderPrice": req.price,
             "OrderVolume": int(req.volume),
-            "OrderCommand": ORDERTYPE_VT2UFT.get(req.type, ""),
+            "OrderCommand": ORDERTYPE_VT2UFT[req.type],
             "SwapOrderFlag": "0"
         }
 
@@ -898,13 +815,11 @@ class UftTdApi(TdApi):
         """
         sessionid, order_ref = req.orderid.split("_")
 
-        ## 待测试？？
         uft_req = {
-            # "OrderSysID": "1", 
-            "ExchangeID": req.exchange.value,
+            # "InstrumentID": req.symbol,
+            # "ExchangeID": EXCHANGE_VT2UFT[req.exchange],
             "SessionID": int(sessionid),
-            "OrderRef": order_ref,
-            # "OrderActionRef": "3"
+            "OrderRef": order_ref
         }
 
         self.reqid += 1
@@ -921,17 +836,8 @@ class UftTdApi(TdApi):
         """
         Query position holding data.
         """
-        if not symbol_exchange_map:
-            return
-
-        ## 待测试？？
-        uft_req = {
-            "ExchangeID": "1",
-            "InstrumentID": "2"
-        }
-
         self.reqid += 1
-        self.reqQryPosition(uft_req, self.reqid)
+        self.reqQryPosition({}, self.reqid)
 
     def close(self):
         """"""
@@ -944,3 +850,12 @@ def adjust_price(price: float) -> float:
     if price == MAX_FLOAT:
         price = 0
     return price
+
+
+def generate_time(data: int) -> str:
+    """"""
+    buf = str(data)
+    hour = buf[:2]
+    minute = buf[2:4]
+    second = buf[4:]
+    return f"{hour}:{minute}:{second}"
