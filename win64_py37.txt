@@ -1,0 +1,9 @@
+conda create --name py37 python=3.7
+conda activate py37
+
+pip install PyQt5
+
+pip install http://conda.vnpy.com/pip/wheels/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
+pip install ta-lib
+
+pip install -r requirements.txt
