@@ -34,9 +34,11 @@ windows 10
     
     1) conda activate py37
     2) 进入项目目录后,例如c:\vnpy2, 运行命令：
-        celery -A vnpy.task.celery_app worker -P eventlet -l debug -f celery.log
+        celery worker -c 2 -A vnpy.task.celery_app  -P eventlet -l debug -f celery.log
         其中:
-        -A 代表运行的模块, worker，表明这是celery的worker， 
+        worker，表明这是celery的worker， 
+        -c 代表使用多少个cpu作为线程池
+        -A 代表worker运行的模块, 
         -P windows10下使用的协议
         -l (小写L），表示logging的级别， debug, info 等。
         -f 代表输出日志文件名
@@ -60,3 +62,6 @@ windows 10
                          'test_setting': test_setting,
                          'strategy_setting': strategy_setting},
                          task_id=task_id)    
+
+# 清除任务得例子
+    celery -A vnpy.task.celery_app purge

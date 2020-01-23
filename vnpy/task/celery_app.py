@@ -15,7 +15,6 @@ from celery.utils.log import get_task_logger
 
 logger = get_task_logger(__name__)
 
-
 # 添加项目目录
 vnpy_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -25,12 +24,13 @@ if vnpy_root not in sys.path:
 
 # 使用本地配置的
 from vnpy.trader.utility import load_json
+
 file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'celery_config.json'))
 celery_config = load_json(file_path)
 
 # 使用 redis
 # broker = celery_config.get('celery_broker','redis://192.168.0.202:6379')
-#backend = celery_config.get('celery_backend','redis://192.168.0.202:6379/0')
+# backend = celery_config.get('celery_backend','redis://192.168.0.202:6379/0')
 
 # 使用rabbitMQ
 broker = celery_config.get('celery_broker', 'amqp://admin:admin@192.168.0.202:5672//')
@@ -40,10 +40,11 @@ print(u'Celery 使用redis配置:\nbroker:{}\nbackend:{}'.format(broker, backend
 
 app = Celery('vnpy_task', broker=broker)
 
-# 动态导入task目录下子任务
-#app.conf.CELERY_IMPORTS = ['vnpy.task.celery_app.worker_started']
 
-#app.conf.update(
+# 动态导入task目录下子任务
+# app.conf.CELERY_IMPORTS = ['vnpy.task.celery_app.worker_started']
+
+# app.conf.update(
 #        CELERY_TASK_SERIALIZER='json',
 #        CELERY_RESULT_SERIALIZER='json',
 #        CELERY_ACCEPT_CONTENT=['json'],
@@ -56,11 +57,11 @@ def worker_started():
     """发送worker启动的通知"""
     try:
         import socket
-        from vnpy.trader.util_logger import setup_logger
-        logger = setup_logger(file_name='celery_worker')
-        logger.inf('celery worker started')
+        from vnpy.trader.util_wechat import send_wx_msg
+        send_wx_msg(u'{} Celery Worker 启动'.format(socket.gethostname()))
     except:
         pass
+
 
 @app.task(bind=True)
 def execute(self, func, *args, **kwargs):
