@@ -1,11 +1,13 @@
 """"""
 
-from typing import Dict, List
+from typing import Dict, List, Set
+from copy import copy
+from collections import defaultdict
 
 from vnpy.trader.object import (
     LogData, ContractData, TickData,
     OrderData, TradeData,
-    SubscribeRequest
+    SubscribeRequest, OrderRequest
 )
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
@@ -13,24 +15,28 @@ from vnpy.trader.event import (
     EVENT_TRADE, EVENT_TICK, EVENT_CONTRACT,
     EVENT_TIMER, EVENT_ORDER, EVENT_POSITION
 )
-from vnpy.trader.constant import Product
+from vnpy.trader.constant import (
+    Product, Offset, Direction, OrderType
+)
 from vnpy.trader.converter import OffsetConverter
-from vnpy.trader.utility import save_json, load_json
+from vnpy.trader.utility import round_to, save_json, load_json
 
 from .base import (
     APP_NAME, CHAIN_UNDERLYING_MAP,
     EVENT_OPTION_LOG, EVENT_OPTION_NEW_PORTFOLIO,
+    EVENT_OPTION_ALGO_PRICING, EVENT_OPTION_ALGO_TRADING,
     InstrumentData, PortfolioData
 )
 from .pricing import (
-    black_76, binomial_tree, black_scholes
+    black_76_cython, binomial_tree_cython, black_scholes_cython
 )
+from .algo import ElectronicEyeAlgo
 
 
 PRICING_MODELS = {
-    "Black-76 欧式期货期权": black_76,
-    "Black-Scholes 欧式股票期权": black_scholes,
-    "二叉树 美式期货期权": binomial_tree
+    "Black-76 欧式期货期权": black_76_cython,
+    "Black-Scholes 欧式股票期权": black_scholes_cython,
+    "二叉树 美式期货期权": binomial_tree_cython
 }
 
 
@@ -52,6 +58,9 @@ class OptionEngine(BaseEngine):
 
         self.offset_converter: OffsetConverter = OffsetConverter(main_engine)
         self.get_position_holding = self.offset_converter.get_position_holding
+
+        self.hedge_engine: OptionHedgeEngine = OptionHedgeEngine(self)
+        self.algo_engine: OptionAlgoEngine = OptionAlgoEngine(self)
 
         self.setting: Dict = {}
 
@@ -281,3 +290,330 @@ class OptionEngine(BaseEngine):
     def set_timer_trigger(self, timer_trigger: int):
         """"""
         self.timer_trigger = timer_trigger
+
+
+class OptionHedgeEngine:
+    """"""
+
+    def __init__(self, option_engine: OptionEngine):
+        """"""
+        self.option_engine: OptionEngine = option_engine
+        self.main_engine: MainEngine = option_engine.main_engine
+        self.event_engine: EventEngine = option_engine.event_engine
+
+        # Hedging parameters
+        self.portfolio_name: str = ""
+        self.vt_symbol: str = ""
+        self.timer_trigger = 5
+        self.delta_target = 0
+        self.delta_range = 0
+        self.hedge_payup = 1
+
+        self.active: bool = False
+        self.active_orderids: Set[str] = set()
+        self.timer_count = 0
+
+        self.register_event()
+
+    def register_event(self):
+        """"""
+        self.event_engine.register(EVENT_ORDER, self.process_order_event)
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
+
+    def process_order_event(self, event: Event):
+        """"""
+        order: OrderData = event.data
+
+        if order.vt_orderid not in self.active_orderids:
+            return
+
+        if not order.is_active():
+            self.active_orderids.remove(order.vt_orderid)
+
+    def process_timer_event(self, event: Event):
+        """"""
+        if not self.active:
+            return
+
+        self.timer_count += 1
+        if self.timer_count < self.timer_trigger:
+            return
+        self.timer_count = 0
+
+        self.run()
+
+    def start(
+        self,
+        portfolio_name: str,
+        vt_symbol: str,
+        timer_trigger: int,
+        delta_target: int,
+        delta_range: int,
+        hedge_payup: int
+    ):
+        """"""
+        if self.active:
+            return
+
+        self.portfolio_name = portfolio_name
+        self.vt_symbol = vt_symbol
+        self.timer_trigger = timer_trigger
+        self.delta_target = delta_target
+        self.delta_range = delta_range
+        self.hedge_payup = hedge_payup
+
+        self.active = True
+
+    def stop(self):
+        """"""
+        if not self.active:
+            return
+
+        self.active = False
+        self.timer_count = 0
+
+    def run(self):
+        """"""
+        if not self.check_order_finished():
+            self.cancel_all()
+            return
+
+        delta_max = self.delta_target + self.delta_range
+        delta_min = self.delta_target - self.delta_range
+
+        # Do nothing if portfolio delta is in the allowed range
+        portfolio = self.option_engine.get_portfolio(self.portfolio_name)
+        if delta_min <= portfolio.pos_delta <= delta_max:
+            return
+
+        # Calculate volume of contract to hedge
+        delta_to_hedge = self.delta_target - portfolio.pos_delta
+        instrument = self.option_engine.get_instrument(self.vt_symbol)
+        hedge_volume = delta_to_hedge / instrument.theo_delta
+
+        # Send hedge orders
+        tick = self.main_engine.get_tick(self.vt_symbol)
+        contract = self.main_engine.get_contract(self.vt_symbol)
+        holding = self.option_engine.get_position_holding(self.vt_symbol)
+
+        if hedge_volume > 0:
+            price = tick.ask_price_1 + contract.pricetick * self.hedge_payup
+            direction = Direction.LONG
+
+            if holding:
+                available = holding.short_pos - holding.short_pos_frozen
+            else:
+                available = 0
+        else:
+            price = tick.bid_price_1 - contract.pricetick * self.hedge_payup
+            direction = Direction.SHORT
+
+            if holding:
+                available = holding.long_pos - holding.long_pos_frozen
+            else:
+                available = 0
+
+        order_volume = abs(hedge_volume)
+
+        req = OrderRequest(
+            symbol=contract.symbol,
+            exchange=contract.exchange,
+            direction=direction,
+            type=OrderType.LIMIT,
+            volume=order_volume,
+            price=round_to(price, contract.pricetick),
+        )
+
+        # Close positon if opposite available is enough
+        if available > order_volume:
+            req.offset = Offset.CLOSE
+            vt_orderid = self.main_engine.send_order(req, contract.gateway_name)
+            self.active_orderids.add(vt_orderid)
+        # Open position if no oppsite available
+        elif not available:
+            req.offset = Offset.OPEN
+            vt_orderid = self.main_engine.send_order(req, contract.gateway_name)
+            self.active_orderids.add(vt_orderid)
+        # Else close all opposite available and open left volume
+        else:
+            close_req = copy(req)
+            close_req.offset = Offset.CLOSE
+            close_req.volume = available
+            close_orderid = self.main_engine.send_order(close_req, contract.gateway_name)
+            self.active_orderids.add(close_orderid)
+
+            open_req = copy(req)
+            open_req.offset = Offset.OPEN
+            open_req.volume = order_volume - available
+            open_orderid = self.main_engine.send_order(open_req, contract.gateway_name)
+            self.active_orderids.add(open_orderid)
+
+    def check_order_finished(self):
+        """"""
+        if self.active_orderids:
+            return False
+        else:
+            return True
+
+    def cancel_all(self):
+        """"""
+        for vt_orderid in self.active_orderids:
+            order: OrderData = self.main_engine.get_order(vt_orderid)
+            req = order.create_cancel_request()
+            self.main_engine.cancel_order(req, order.gateway_name)
+
+
+class OptionAlgoEngine:
+
+    def __init__(self, option_engine: OptionEngine):
+        """"""
+        self.option_engine = option_engine
+        self.main_engine = option_engine.main_engine
+        self.event_engine = option_engine.event_engine
+
+        self.algos: Dict[str, ElectronicEyeAlgo] = {}
+        self.active_algos: Dict[str, ElectronicEyeAlgo] = {}
+
+        self.underlying_algo_map: Dict[str, ElectronicEyeAlgo] = defaultdict(list)
+        self.order_algo_map: Dict[str, ElectronicEyeAlgo] = {}
+
+        self.register_event()
+
+    def init_engine(self, portfolio_name: str):
+        """"""
+        if self.algos:
+            return
+
+        portfolio = self.option_engine.get_portfolio(portfolio_name)
+
+        for option in portfolio.options.values():
+            algo = ElectronicEyeAlgo(self, option)
+            self.algos[option.vt_symbol] = algo
+
+    def register_event(self):
+        """"""
+        self.event_engine.register(EVENT_ORDER, self.process_order_event)
+        self.event_engine.register(EVENT_TRADE, self.process_trade_event)
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
+
+    def process_underlying_tick_event(self, event: Event):
+        """"""
+        tick: TickData = event.data
+
+        for algo in self.underlying_algo_map[tick.vt_symbol]:
+            algo.on_underlying_tick(algo)
+
+    def process_option_tick_event(self, event: Event):
+        """"""
+        tick: TickData = event.data
+
+        algo = self.algos[tick.vt_symbol]
+        algo.on_option_tick(algo)
+
+    def process_order_event(self, event: Event):
+        """"""
+        order: OrderData = event.data
+        algo = self.order_algo_map.get(order.vt_orderid, None)
+
+        if algo:
+            algo.on_order(order)
+
+    def process_trade_event(self, event: Event):
+        """"""
+        trade: TradeData = event.data
+        algo = self.order_algo_map.get(trade.vt_orderid, None)
+
+        if algo:
+            algo.on_trade(trade)
+
+    def process_timer_event(self, event: Event):
+        """"""
+        for algo in self.active_algos.values():
+            algo.on_timer()
+
+    def start_algo_pricing(self, vt_symbol: str, params: dict):
+        """"""
+        algo = self.algos[vt_symbol]
+
+        self.underlying_algo_map[algo.underlying.vt_symbol].append(algo)
+
+        self.event_engine.register(
+            EVENT_TICK + algo.option.vt_symbol,
+            self.process_tick_event
+        )
+        self.event_engine.register(
+            EVENT_TICK + algo.underlying.vt_symbol,
+            self.process_tick_event
+        )
+
+        algo.start_pricing(params)
+
+    def stop_algo_pricing(self, vt_symbol: str):
+        """"""
+        algo = self.algos[vt_symbol]
+
+        self.underlying_algo_map[algo.underlying.vt_symbol].remove(algo)
+
+        self.event_engine.unregister(
+            EVENT_TICK + algo.option.vt_symbol,
+            self.process_tick_event
+        )
+        self.event_engine.unregister(
+            EVENT_TICK + algo.underlying.vt_symbol,
+            self.process_tick_event
+        )
+
+        algo.stop_pricing()
+
+    def start_algo_trading(self, vt_symbol: str, params: dict):
+        """"""
+        algo = self.algos[vt_symbol]
+        algo.start_trading(params)
+
+    def stop_algo_trading(self, vt_symbol: str):
+        """"""
+        algo = self.algos[vt_symbol]
+        algo.stop_trading()
+
+    def send_order(
+        self,
+        algo: ElectronicEyeAlgo,
+        vt_symbol: str,
+        direction: Direction,
+        offset: Offset,
+        price: float,
+        volume: int
+    ) -> str:
+        """"""
+        contract = self.main_engine.get_contract(vt_symbol)
+
+        req = OrderRequest(
+            contract.symbol,
+            contract.exchange,
+            direction,
+            OrderType.LIMIT,
+            volume,
+            price,
+            offset
+        )
+
+        vt_orderid = self.main_engine.send_order(req, contract.gateway_name)
+        self.order_algo_map[vt_orderid] = algo
+
+        return vt_orderid
+
+    def cancel_order(self, vt_orderid: str):
+        """"""
+        order = self.main_engine.get_order(vt_orderid)
+        req = order.create_cancel_request()
+        self.main_engine.cancel_order(req, order.gateway_name)
+
+    def put_algo_pricing_event(self, algo: ElectronicEyeAlgo):
+        """"""
+        event = Event(EVENT_OPTION_ALGO_PRICING, algo)
+        self.event_engine.put(event)
+
+    def put_algo_trading_event(self, algo: ElectronicEyeAlgo):
+        """"""
+        event = Event(EVENT_OPTION_ALGO_TRADING, algo)
+        self.event_engine.put(event)
