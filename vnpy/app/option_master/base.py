@@ -13,12 +13,24 @@ APP_NAME = "OptionMaster"
 
 EVENT_OPTION_LOG = "eOptionLog"
 EVENT_OPTION_NEW_PORTFOLIO = "eOptionNewPortfolio"
+EVENT_OPTION_ALGO_PRICING = "eOptionAlgoPricing"
+EVENT_OPTION_ALGO_TRADING = "eOptionAlgoTrading"
 
 
 CHAIN_UNDERLYING_MAP = {
     "510050_O.SSE": "510050",
+    "510300_O.SSE": "510300",
+    "159919_O.SSE": "159919",
     "IO.CFFEX": "IF",
-    "HO.CFFEX": "IH"
+    "HO.CFFEX": "IH",
+    "i_o.DCE": "i",
+    "m_o.DCE": "m",
+    "c_o.DCE": "c",
+    "cu_o.SHFE": "cu",
+    "ru_o.SHFE": "ru",
+    "SR.CZCE": "SR",
+    "CF.CZCE": "CF",
+    "TA.CZCE": "TA",
 }
 
 
@@ -116,11 +128,9 @@ class OptionData(InstrumentData):
         self.bid_impv: float = 0
         self.ask_impv: float = 0
         self.mid_impv: float = 0
-
-        # Greeks related
         self.pricing_impv: float = 0
 
-        self.theo_price: float = 0
+        # Greeks related
         self.theo_delta: float = 0
         self.theo_gamma: float = 0
         self.theo_theta: float = 0
@@ -161,21 +171,20 @@ class OptionData(InstrumentData):
         )
 
         self.mid_impv = (self.ask_impv + self.bid_impv) / 2
-        self.pricing_impv = self.mid_impv
 
     def calculate_theo_greeks(self):
         """"""
         underlying_price = self.underlying.mid_price
-        if not underlying_price or not self.pricing_impv:
+        if not underlying_price or not self.mid_impv:
             return
         underlying_price += self.underlying_adjustment
 
-        self.theo_price, delta, gamma, theta, vega = self.calculate_greeks(
+        price, delta, gamma, theta, vega = self.calculate_greeks(
             underlying_price,
             self.strike_price,
             self.interest_rate,
             self.time_to_expiry,
-            self.pricing_impv,
+            self.mid_impv,
             self.option_type
         )
 
@@ -186,7 +195,9 @@ class OptionData(InstrumentData):
 
     def calculate_pos_greeks(self):
         """"""
-        self.pos_value = self.theo_price * self.size * self.net_pos
+        if self.tick:
+            self.pos_value = self.tick.last_price * self.size * self.net_pos
+
         self.pos_delta = self.theo_delta * self.net_pos
         self.pos_gamma = self.theo_gamma * self.net_pos
         self.pos_theta = self.theo_theta * self.net_pos
@@ -285,8 +296,8 @@ class ChainData:
         self.underlying: UnderlyingData = None
 
         self.options: Dict[str, OptionData] = {}
-        self.calls: Dict[float, OptionData] = {}
-        self.puts: Dict[float, OptionData] = {}
+        self.calls: Dict[str, OptionData] = {}
+        self.puts: Dict[str, OptionData] = {}
 
         self.portfolio: PortfolioData = None
 
@@ -345,6 +356,8 @@ class ChainData:
 
     def update_underlying_tick(self):
         """"""
+        self.calculate_underlying_adjustment()
+
         for option in self.options.values():
             option.update_underlying_tick(self.underlying_adjustment)
 
@@ -406,6 +419,7 @@ class ChainData:
 
         atm_distance = 0
         atm_price = 0
+        atm_index = ""
 
         for call in self.calls.values():
             price_distance = abs(underlying_price - call.strike_price)
@@ -413,9 +427,10 @@ class ChainData:
             if not atm_distance or price_distance < atm_distance:
                 atm_distance = price_distance
                 atm_price = call.strike_price
+                atm_index = call.chain_index
 
         self.atm_price = atm_price
-        self.atm_index = call.chain_index
+        self.atm_index = atm_index
 
     def calculate_underlying_adjustment(self):
         """"""
