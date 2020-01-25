@@ -46,6 +46,7 @@ from vnpy.gateway.uft import UftGateway
 # from vnpy.app.spread_trading import SpreadTradingApp
 # from vnpy.app.portfolio_manager import PortfolioManagerApp
 # from vnpy.app.option_master import OptionMasterApp
+from vnpy.app.chart_wizard import ChartWizardApp
 
 
 def main():
@@ -98,6 +99,7 @@ def main():
     # main_engine.add_app(SpreadTradingApp)
     # main_engine.add_app(PortfolioManagerApp)
     # main_engine.add_app(OptionMasterApp)
+    main_engine.add_app(ChartWizardApp)
 
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()

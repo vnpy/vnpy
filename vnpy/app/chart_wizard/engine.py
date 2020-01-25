@@ -21,6 +21,9 @@ class ChartWizardEngine(BaseEngine):
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
+        n = rqdata_client.init()
+        print(n)
+
     def query_history(
         self,
         vt_symbol: str,

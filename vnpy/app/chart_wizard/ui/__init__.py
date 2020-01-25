@@ -1,1 +1,1 @@
-from .widget import RiskManager
+from .widget import ChartWizardWidget

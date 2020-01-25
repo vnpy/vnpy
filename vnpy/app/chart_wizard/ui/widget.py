@@ -52,6 +52,8 @@ class ChartWizardWidget(QtWidgets.QWidget):
         vbox.addLayout(hbox)
         vbox.addWidget(self.mid_area)
 
+        self.setLayout(vbox)
+
     def create_chart(self) -> ChartWidget:
         """"""
         chart = ChartWidget()
@@ -79,11 +81,12 @@ class ChartWizardWidget(QtWidgets.QWidget):
         # Create new chart
         self.bgs[vt_symbol] = BarGenerator(self.on_bar)
 
-        chart = self.new_chart()
+        chart = self.create_chart()
         self.charts[vt_symbol] = chart
 
         sub_window = self.mid_area.addSubWindow(chart)
         sub_window.setWindowTitle(vt_symbol)
+        sub_window.show()
 
         # Query history data
         end = datetime.now()
@@ -115,8 +118,10 @@ class ChartWizardWidget(QtWidgets.QWidget):
     def process_history_event(self, event: Event) -> None:
         """"""
         history: List[BarData] = event.data
-        bar = history[0]
+        if not history:
+            return
 
+        bar = history[0]
         chart = self.charts[bar.vt_symbol]
         chart.update_history(history)
 
