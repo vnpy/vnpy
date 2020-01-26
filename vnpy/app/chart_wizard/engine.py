@@ -5,7 +5,7 @@ from threading import Thread
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.constant import Interval
-from vnpy.trader.object import HistoryRequest
+from vnpy.trader.object import HistoryRequest, ContractData
 from vnpy.trader.rqdata import rqdata_client
 
 
@@ -21,8 +21,7 @@ class ChartWizardEngine(BaseEngine):
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
-        n = rqdata_client.init()
-        print(n)
+        rqdata_client.init()
 
     def query_history(
         self,
@@ -46,7 +45,7 @@ class ChartWizardEngine(BaseEngine):
         end: datetime
     ) -> None:
         """"""
-        contract = self.main_engine.get_contract(vt_symbol)
+        contract: ContractData = self.main_engine.get_contract(vt_symbol)
 
         req = HistoryRequest(
             symbol=contract.symbol,
@@ -56,6 +55,10 @@ class ChartWizardEngine(BaseEngine):
             end=end
         )
 
-        data = rqdata_client.query_history(req)
+        if contract.history_data:
+            data = self.main_engine.query_history(req, contract.gateway_name)
+        else:
+            data = rqdata_client.query_history(req)
+
         event = Event(EVENT_CHART_HISTORY, data)
         self.event_engine.put(event)

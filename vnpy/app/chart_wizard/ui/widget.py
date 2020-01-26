@@ -1,3 +1,4 @@
+from copy import copy
 from typing import Dict, List
 from datetime import datetime, timedelta
 
@@ -6,7 +7,7 @@ from vnpy.chart import ChartWidget, CandleItem, VolumeItem
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtWidgets, QtCore
 from vnpy.trader.event import EVENT_TICK
-from vnpy.trader.object import TickData, BarData
+from vnpy.trader.object import TickData, BarData, SubscribeRequest
 from vnpy.trader.utility import BarGenerator
 from vnpy.trader.constant import Interval
 
@@ -36,7 +37,7 @@ class ChartWizardWidget(QtWidgets.QWidget):
         """"""
         self.setWindowTitle("K线图表")
 
-        self.mid_area: QtWidgets.QMdiArea = QtWidgets.QMdiArea()
+        self.tab: QtWidgets.QTabWidget = QtWidgets.QTabWidget()
         self.symbol_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit()
 
         self.button = QtWidgets.QPushButton("新建图表")
@@ -50,7 +51,7 @@ class ChartWizardWidget(QtWidgets.QWidget):
 
         vbox = QtWidgets.QVBoxLayout()
         vbox.addLayout(hbox)
-        vbox.addWidget(self.mid_area)
+        vbox.addWidget(self.tab)
 
         self.setLayout(vbox)
 
@@ -84,13 +85,11 @@ class ChartWizardWidget(QtWidgets.QWidget):
         chart = self.create_chart()
         self.charts[vt_symbol] = chart
 
-        sub_window = self.mid_area.addSubWindow(chart)
-        sub_window.setWindowTitle(vt_symbol)
-        sub_window.show()
+        self.tab.addTab(chart, vt_symbol)
 
         # Query history data
         end = datetime.now()
-        start = end - timedelta(days=10)
+        start = end - timedelta(days=5)
 
         self.chart_engine.query_history(
             vt_symbol,
@@ -115,6 +114,11 @@ class ChartWizardWidget(QtWidgets.QWidget):
         if bg:
             bg.update_tick(tick)
 
+            chart = self.charts[tick.vt_symbol]
+            bar = copy(bg.bar)
+            bar.datetime = bar.datetime.replace(second=0, microsecond=0)
+            chart.update_bar(bar)
+
     def process_history_event(self, event: Event) -> None:
         """"""
         history: List[BarData] = event.data
@@ -124,6 +128,15 @@ class ChartWizardWidget(QtWidgets.QWidget):
         bar = history[0]
         chart = self.charts[bar.vt_symbol]
         chart.update_history(history)
+
+        # Subscribe following data update
+        contract = self.main_engine.get_contract(bar.vt_symbol)
+        
+        req = SubscribeRequest(
+            contract.symbol,
+            contract.exchange
+        )
+        self.main_engine.subscribe(req, contract.gateway_name)
 
     def on_bar(self, bar: BarData):
         """"""
