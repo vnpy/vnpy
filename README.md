@@ -5,10 +5,10 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.0.9-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.1.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
-    <img src ="https://img.shields.io/circleci/build/github/vnpy/vnpy?token=4d11df68295c8cc02a2bede46094991364190bbc"/>
+    <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
 
@@ -39,6 +39,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
         * CTP证券（sopt）：ETF期权
 
         * 飞马（femas）：国内期货
+
+        * 恒生UFT（uft）：国内期货、ETF期权
 
         * 宽睿（oes）：国内证券（A股）
 
@@ -111,6 +113,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
     * algo_trading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等等，支持常用算法配置保存
 
     * script_trader：脚本策略模块，针对多标的组合类交易策略设计，同时也可以直接在命令行中实现REPL指令形式的交易，不支持回测功能
+
+    * chart_wizard：K线图表模块，基于RQData数据服务（期货）或者交易接口（数字货币）获取历史数据，并结合Tick推送显示实时行情变化
 
     * portfolio_manager：投资组合模块，面向各类基本面交易策略，以独立的策略子账户为基础，提供交易仓位的自动跟踪以及盈亏实时统计功能
 

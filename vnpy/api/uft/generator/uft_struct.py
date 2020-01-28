@@ -778,4 +778,3 @@ CHSDepthMarketDataField = {
     "InstrumentTradeStatus": "char",
     "OpenRestriction": "string",
 }
-

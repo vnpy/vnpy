@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict
 
 from vnpy.event import EventEngine, Event
 from vnpy.trader.engine import MainEngine

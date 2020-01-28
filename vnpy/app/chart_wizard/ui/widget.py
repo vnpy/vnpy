@@ -131,7 +131,7 @@ class ChartWizardWidget(QtWidgets.QWidget):
 
         # Subscribe following data update
         contract = self.main_engine.get_contract(bar.vt_symbol)
-        
+
         req = SubscribeRequest(
             contract.symbol,
             contract.exchange
