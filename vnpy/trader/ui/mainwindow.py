@@ -9,6 +9,7 @@ from typing import Callable, Dict, Tuple
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+import vnpy
 from vnpy.event import EventEngine
 from .widget import (
     TickMonitor,
@@ -40,7 +41,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine
 
-        self.window_title: str = f"VN Trader [{TRADER_DIR}]"
+        self.window_title: str = f"VN Trader {vnpy.__version__} [{TRADER_DIR}]"
 
         self.widgets: Dict[str, QtWidgets.QWidget] = {}
 
