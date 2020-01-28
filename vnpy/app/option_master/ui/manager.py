@@ -321,19 +321,37 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
 
     def start_algo_pricing(self, vt_symbol: str):
         """"""
-        pass
+        cells = self.cells[vt_symbol]
+
+        params = {}
+        for name in ["price_spread", "volatility_spread"]:
+            params[name] = cells[name].get_value()
+
+        self.algo_engine.start_algo_pricing(vt_symbol, params)
 
     def stop_algo_pricing(self, vt_symbol: str):
         """"""
-        pass
+        self.algo_engine.stop_algo_pricing(vt_symbol)
 
     def start_algo_trading(self, vt_symbol: str):
         """"""
-        pass
+        cells = self.cells[vt_symbol]
+
+        params = {}
+        for name in [
+            "long_allowed",
+            "short_allowed",
+            "max_pos",
+            "target_pos",
+            "max_order_size"
+        ]:
+            params[name] = cells[name].get_value()
+
+        self.algo_engine.start_algo_trading(vt_symbol, params)
 
     def stop_algo_trading(self, vt_symbol: str):
         """"""
-        pass
+        self.algo_engine.stop_algo_trading(vt_symbol)
 
     def show(self):
         """"""
