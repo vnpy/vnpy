@@ -6,8 +6,9 @@ from vnpy.event import Event
 from vnpy.trader.ui import QtWidgets, QtCore, QtGui
 from vnpy.trader.ui.widget import COLOR_BID, COLOR_ASK, COLOR_BLACK
 from vnpy.trader.event import (
-    EVENT_TICK, EVENT_TRADE, EVENT_POSITION
+    EVENT_TICK, EVENT_TRADE, EVENT_POSITION, EVENT_TIMER
 )
+from vnpy.trader.utility import round_to
 from ..engine import OptionEngine
 from ..base import UnderlyingData, OptionData, ChainData, PortfolioData
 
@@ -526,3 +527,86 @@ class OptionGreeksMonitor(MonitorTable):
             row_cells["pos_gamma"].setText(f"{row_data.pos_gamma:.0f}")
             row_cells["pos_theta"].setText(f"{row_data.pos_theta:.0f}")
             row_cells["pos_vega"].setText(f"{row_data.pos_vega:.0f}")
+
+
+class OptionChainMonitor(MonitorTable):
+    """"""
+    signal_timer = QtCore.pyqtSignal(Event)
+
+    def __init__(self, option_engine: OptionEngine, portfolio_name: str):
+        """"""
+        super().__init__()
+
+        self.option_engine = option_engine
+        self.event_engine = option_engine.event_engine
+        self.portfolio_name = portfolio_name
+
+        self.cells: Dict[str, Dict] = {}
+
+        self.init_ui()
+        self.register_event()
+
+    def init_ui(self):
+        """"""
+        self.setWindowTitle("期权链跟踪")
+        self.verticalHeader().setVisible(False)
+        self.setEditTriggers(self.NoEditTriggers)
+
+        # Store option and underlying symbols
+        portfolio = self.option_engine.get_portfolio(self.portfolio_name)
+
+        # Set table row and column numbers
+        self.setRowCount(len(portfolio.chains))
+
+        labels = ["期权链", "剩余交易日", "标的物", "升贴水"]
+        self.setColumnCount(len(labels))
+        self.setHorizontalHeaderLabels(labels)
+
+        # Init cells
+        chain_symbols = list(portfolio.chains.keys())
+        chain_symbols.sort()
+
+        for row, chain_symbol in enumerate(chain_symbols):
+            chain = portfolio.chains[chain_symbol]
+            adjustment_cell = MonitorCell()
+            underlying_cell = MonitorCell()
+
+            self.setItem(row, 0, MonitorCell(chain.chain_symbol.split(".")[0]))
+            self.setItem(row, 1, MonitorCell(str(chain.days_to_expiry)))
+            self.setItem(row, 2, underlying_cell)
+            self.setItem(row, 3, adjustment_cell)
+
+            self.cells[chain.chain_symbol] = {
+                "underlying": underlying_cell,
+                "adjustment": adjustment_cell
+            }
+
+        # Additional table adjustment
+        horizontal_header = self.horizontalHeader()
+        horizontal_header.setSectionResizeMode(horizontal_header.Stretch)
+
+    def register_event(self):
+        """"""
+        self.signal_timer.connect(self.process_timer_event)
+
+        self.event_engine.register(EVENT_TIMER, self.signal_timer.emit)
+
+    def process_timer_event(self, event: Event):
+        """"""
+        portfolio = self.option_engine.get_portfolio(self.portfolio_name)
+
+        for chain in portfolio.chains.values():
+            underlying: UnderlyingData = chain.underlying
+
+            underlying_symbol: str = underlying.vt_symbol.split(".")[0]
+
+            if chain.underlying_adjustment == float("inf"):
+                continue
+
+            adjustment = round_to(
+                chain.underlying_adjustment, underlying.pricetick
+            )
+
+            chain_cells = self.cells[chain.chain_symbol]
+            chain_cells["underlying"].setText(underlying_symbol)
+            chain_cells["adjustment"].setText(str(adjustment))

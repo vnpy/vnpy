@@ -10,8 +10,10 @@ from vnpy.trader.event import EVENT_TICK
 from ..base import APP_NAME, EVENT_OPTION_NEW_PORTFOLIO
 from ..engine import OptionEngine, PRICING_MODELS
 from .monitor import (
-    OptionMarketMonitor, OptionGreeksMonitor, MonitorCell
+    OptionMarketMonitor, OptionGreeksMonitor, OptionChainMonitor,
+    MonitorCell
 )
+from .chart import OptionVolatilityChart, ScenarioAnalysisChart
 
 
 class OptionManager(QtWidgets.QWidget):
@@ -30,8 +32,11 @@ class OptionManager(QtWidgets.QWidget):
 
         self.market_monitor: OptionMarketMonitor = None
         self.greeks_monitor: OptionGreeksMonitor = None
-
-        self.docks: List[QtWidgets.QDockWidget] = []
+        self.volatility_chart: OptionVolatilityChart = None
+        self.chain_monitor: OptionChainMonitor = None
+        self.manual_trader: OptionManualTrader = None
+        self.hedge_widget: OptionHedgeWidget = None
+        self.scenario_chart: ScenarioAnalysisChart = None
 
         self.init_ui()
         self.register_event()
@@ -49,14 +54,20 @@ class OptionManager(QtWidgets.QWidget):
 
         self.market_button = QtWidgets.QPushButton("T型报价")
         self.greeks_button = QtWidgets.QPushButton("持仓希腊值")
-        self.chain_button = QtWidgets.QPushButton("拟合升贴水")
+        self.chain_button = QtWidgets.QPushButton("升贴水监控")
         self.manual_button = QtWidgets.QPushButton("快速交易")
+        self.volatility_button = QtWidgets.QPushButton("波动率曲线")
+        self.hedge_button = QtWidgets.QPushButton("Delta对冲")
+        self.scenario_button = QtWidgets.QPushButton("情景分析")
 
         for button in [
             self.market_button,
             self.greeks_button,
             self.chain_button,
-            self.manual_button
+            self.manual_button,
+            self.volatility_button,
+            self.hedge_button,
+            self.scenario_button
         ]:
             button.setEnabled(False)
 
@@ -68,6 +79,9 @@ class OptionManager(QtWidgets.QWidget):
         hbox.addWidget(self.greeks_button)
         hbox.addWidget(self.manual_button)
         hbox.addWidget(self.chain_button)
+        hbox.addWidget(self.volatility_button)
+        hbox.addWidget(self.hedge_button)
+        hbox.addWidget(self.scenario_butto)
 
         self.setLayout(hbox)
 
@@ -111,29 +125,45 @@ class OptionManager(QtWidgets.QWidget):
         """"""
         self.market_monitor = OptionMarketMonitor(self.option_engine, self.portfolio_name)
         self.greeks_monitor = OptionGreeksMonitor(self.option_engine, self.portfolio_name)
+        self.volatility_chart = OptionVolatilityChart(self.option_engine, self.portfolio_name)
+        self.chain_monitor = OptionChainMonitor(self.option_engine, self.portfolio_name)
         self.manual_trader = OptionManualTrader(self.option_engine, self.portfolio_name)
+        self.hedge_widget = OptionHedgeWidget(self.option_engine, self.portfolio_name)
+        self.scenario_chart = ScenarioAnalysisChart(self.option_engine, self.portfolio_name)
 
         self.market_monitor.itemDoubleClicked.connect(self.manual_trader.update_symbol)
 
-        self.market_button.clicked.connect(self.market_monitor.showMaximized)
-        self.greeks_button.clicked.connect(self.greeks_monitor.showMaximized)
+        self.market_button.clicked.connect(self.market_monitor.show)
+        self.greeks_button.clicked.connect(self.greeks_monitor.show)
         self.manual_button.clicked.connect(self.manual_trader.show)
-        self.chain_button.clicked.connect(self.calculate_underlying_adjustment)
+        self.chain_button.clicked.connect(self.chain_monitor.show)
+        self.volatility_button.clicked.connect(self.volatility_chart.show)
+        self.scenario_button.clicked.connect(self.scenario_chart.show)
+        self.hedge_button.clicked.connect(self.hedge_widget.show)
 
         for button in [
             self.market_button,
             self.greeks_button,
             self.chain_button,
-            self.manual_button
+            self.manual_button,
+            self.volatility_button,
+            self.scenario_button,
+            self.hedge_button
         ]:
             button.setEnabled(True)
 
-    def calculate_underlying_adjustment(self):
+    def closeEvent(self, event: QtGui.QCloseEvent):
         """"""
-        portfolio = self.option_engine.get_portfolio(self.portfolio_name)
+        if self.portfolio_name:
+            self.market_monitor.close()
+            self.greeks_monitor.close()
+            self.volatility_chart.close()
+            self.chain_monitor.close()
+            self.manual_trader.close()
+            self.hedge_widget.close()
+            self.scenario_chart.close()
 
-        for chain in portfolio.chains.values():
-            chain.calculate_underlying_adjustment()
+        event.accept()
 
 
 class PortfolioDialog(QtWidgets.QDialog):
@@ -529,3 +559,126 @@ class OptionManualTrader(QtWidgets.QWidget):
         self.bv5_label.setText("-")
         self.ap5_label.setText("-")
         self.av5_label.setText("-")
+
+
+class OptionHedgeWidget(QtWidgets.QWidget):
+    """"""
+
+    def __init__(self, option_engine: OptionEngine, portfolio_name: str):
+        """"""
+        super().__init__()
+
+        self.option_engine = option_engine
+        self.portfolio_name = portfolio_name
+        self.hedge_engine = option_engine.hedge_engine
+
+        self.symbol_map: Dict[str, str] = {}
+
+        self.init_ui()
+
+    def init_ui(self):
+        """"""
+        self.setWindowTitle("Delta对冲")
+
+        underlying_symbols = []
+        portfolio = self.option_engine.get_portfolio(self.portfolio_name)
+
+        for chain in portfolio.chains.values():
+            underlying_symbol = chain.underlying.symbol
+            self.symbol_map[underlying_symbol] = chain.underlying.vt_symbol
+
+            if underlying_symbol not in underlying_symbols:
+                underlying_symbols.append(underlying_symbol)
+
+        underlying_symbols.sort()
+
+        self.symbol_combo = QtWidgets.QComboBox()
+        self.symbol_combo.addItems(underlying_symbols)
+
+        self.trigger_spin = QtWidgets.QSpinBox()
+        self.trigger_spin.setSuffix("秒")
+        self.trigger_spin.setMinimum(1)
+        self.trigger_spin.setValue(5)
+
+        self.target_spin = QtWidgets.QSpinBox()
+        self.target_spin.setMaximum(99999999)
+        self.target_spin.setMinimum(-99999999)
+        self.target_spin.setValue(0)
+
+        self.range_spin = QtWidgets.QSpinBox()
+        self.range_spin.setMinimum(0)
+        self.range_spin.setMaximum(9999999)
+        self.range_spin.setValue(12000)
+
+        self.payup_spin = QtWidgets.QSpinBox()
+        self.payup_spin.setMinimum(0)
+        self.payup_spin.setValue(3)
+
+        self.start_button = QtWidgets.QPushButton("启动")
+        self.start_button.clicked.connect(self.start)
+
+        self.stop_button = QtWidgets.QPushButton("停止")
+        self.stop_button.clicked.connect(self.stop)
+        self.stop_button.setEnabled(False)
+
+        form = QtWidgets.QFormLayout()
+        form.addRow("对冲合约", self.symbol_combo)
+        form.addRow("执行频率", self.trigger_spin)
+        form.addRow("Delta目标", self.target_spin)
+        form.addRow("对冲阈值", self.range_spin)
+        form.addRow("委托超价", self.payup_spin)
+        form.addRow(self.start_button)
+        form.addRow(self.stop_button)
+
+        self.setLayout(form)
+
+    def start(self):
+        """"""
+        symbol = self.symbol_combo.currentText()
+        vt_symbol = self.symbol_map[symbol]
+        timer_trigger = self.trigger_spin.value()
+        delta_target = self.target_spin.value()
+        delta_range = self.range_spin.value()
+        hedge_payup = self.payup_spin.value()
+
+        # Check delta of underlying
+        underlying = self.option_engine.get_instrument(vt_symbol)
+        min_range = int(underlying.theo_delta * 0.6)
+        if delta_range < min_range:
+            msg = f"Delta对冲阈值({delta_range})低于对冲合约"\
+                f"Delta值的60%({min_range})，可能导致来回频繁对冲！"
+
+            QtWidgets.QMessageBox.warning(
+                self,
+                "无法启动自动对冲",
+                msg,
+                QtWidgets.QMessageBox.Ok
+            )
+            return
+
+        self.hedge_engine.start(
+            self.portfolio_name,
+            vt_symbol,
+            timer_trigger,
+            delta_target,
+            delta_range,
+            hedge_payup
+        )
+
+        self.update_widget_status(False)
+
+    def stop(self):
+        """"""
+        self.hedge_engine.stop()
+
+        self.update_widget_status(True)
+
+    def update_widget_status(self, status: bool):
+        """"""
+        self.start_button.setEnabled(status)
+        self.symbol_combo.setEnabled(status)
+        self.target_spin.setEnabled(status)
+        self.range_spin.setEnabled(status)
+        self.payup_spin.setEnabled(status)
+        self.trigger_spin.setEnabled(status)
+        self.stop_button.setEnabled(not status)
