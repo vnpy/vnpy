@@ -13,6 +13,7 @@ from datetime import datetime
 from queue import Empty
 from threading import Thread, Condition
 from typing import Optional
+import shelve
 
 from ibapi import comm
 from ibapi.client import EClient
@@ -50,6 +51,8 @@ from vnpy.trader.constant import (
     OptionType,
     Interval
 )
+from vnpy.trader.utility import get_file_path
+
 
 ORDERTYPE_VT2IB = {
     OrderType.LIMIT: "LMT", 
@@ -149,7 +152,7 @@ class IbGateway(BaseGateway):
 
     def __init__(self, event_engine):
         """"""
-        super(IbGateway, self).__init__(event_engine, "IB")
+        super().__init__(event_engine, "IB")
 
         self.api = IbApi(self)
 
@@ -207,6 +210,8 @@ class IbGateway(BaseGateway):
 
 class IbApi(EWrapper):
     """"""
+    data_filename = "ib_contract_data.db"
+    data_filepath = str(get_file_path(data_filename))
 
     def __init__(self, gateway: BaseGateway):
         """"""
@@ -241,6 +246,8 @@ class IbApi(EWrapper):
         """
         self.status = True
         self.gateway.write_log("IB TWS连接成功")
+
+        self.load_contract_data()
 
     def connectionClosed(self):  # pylint: disable=invalid-name
         """
@@ -529,7 +536,9 @@ class IbApi(EWrapper):
 
         if contract.vt_symbol not in self.contracts:
             self.gateway.on_contract(contract)
+
             self.contracts[contract.vt_symbol] = contract
+            self.save_contract_data()
 
     def execDetails(
         self, reqId: int, contract: Contract, execution: Execution
@@ -710,9 +719,7 @@ class IbApi(EWrapper):
 
         self.reqid += 1
 
-        ib_contract = Contract()
-        ib_contract.conId = str(req.symbol)
-        ib_contract.exchange = EXCHANGE_VT2IB[req.exchange]
+        ib_contract = generate_ib_contract(req.symbol, req.exchange)
 
         if req.end:
             end = req.end
@@ -753,6 +760,23 @@ class IbApi(EWrapper):
         self.history_req = None
 
         return history
+
+    def load_contract_data(self):
+        """"""
+        f = shelve.open(self.data_filepath)
+        self.contracts = f.get("contracts", {})
+        f.close()
+
+        for contract in self.contracts.values():
+            self.gateway.on_contract(contract)
+
+        self.gateway.write_log("本地缓存合约信息加载成功")
+
+    def save_contract_data(self):
+        """"""
+        f = shelve.open(self.data_filepath)
+        f["contracts"] = self.contracts
+        f.close()
 
 
 class IbClient(EClient):
