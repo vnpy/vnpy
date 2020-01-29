@@ -141,7 +141,8 @@ class IbGateway(BaseGateway):
     default_setting = {
         "TWS地址": "127.0.0.1",
         "TWS端口": 7497,
-        "客户号": 1
+        "客户号": 1,
+        "交易账户": ""
     }
 
     exchanges = list(EXCHANGE_VT2IB.keys())
@@ -159,8 +160,9 @@ class IbGateway(BaseGateway):
         host = setting["TWS地址"]
         port = setting["TWS端口"]
         clientid = setting["客户号"]
+        account = setting["交易账户"]
 
-        self.api.connect(host, port, clientid)
+        self.api.connect(host, port, clientid, account)
 
     def close(self):
         """
@@ -218,6 +220,7 @@ class IbApi(EWrapper):
         self.reqid = 0
         self.orderid = 0
         self.clientid = 0
+        self.account = ""
         self.ticks = {}
         self.orders = {}
         self.accounts = {}
@@ -252,7 +255,8 @@ class IbApi(EWrapper):
         """
         super().nextValidId(orderId)
 
-        self.orderid = orderId
+        if not self.orderid:
+            self.orderid = orderId
 
     def currentTime(self, time: int):  # pylint: disable=invalid-name
         """
@@ -550,14 +554,18 @@ class IbApi(EWrapper):
 
         self.gateway.on_trade(trade)
 
-    def managedAccounts(self, accountsList: str):  # pylint: disable=invalid-name
+    def managedAccounts(self, accountsList: str):
         """
         Callback of all sub accountid.
         """
         super().managedAccounts(accountsList)
 
-        for account_code in accountsList.split(","):
-            self.client.reqAccountUpdates(True, account_code)
+        if not self.account:
+            for account_code in accountsList.split(","):
+                self.account = account_code
+
+        self.gateway.write_log(f"当前使用的交易账号为{self.account}")
+        self.client.reqAccountUpdates(True, self.account)
 
     def historicalData(self, reqId: int, ib_bar: IbBarData):
         """
@@ -588,7 +596,7 @@ class IbApi(EWrapper):
         self.history_condition.notify()
         self.history_condition.release()
 
-    def connect(self, host: str, port: int, clientid: int):
+    def connect(self, host: str, port: int, clientid: int, account: str):
         """
         Connect to TWS.
         """
@@ -596,6 +604,7 @@ class IbApi(EWrapper):
             return
 
         self.clientid = clientid
+        self.account = account
         self.client.connect(host, port, clientid)
         self.thread.start()
 
@@ -672,6 +681,7 @@ class IbApi(EWrapper):
         ib_order.action = DIRECTION_VT2IB[req.direction]
         ib_order.orderType = ORDERTYPE_VT2IB[req.type]
         ib_order.totalQuantity = req.volume
+        ib_order.account = self.account
 
         if req.type == OrderType.LIMIT:
             ib_order.lmtPrice = req.price
