@@ -1008,7 +1008,7 @@ class AboutDialog(QtWidgets.QDialog):
             Github：www.github.com/vnpy/vnpy
 
 
-            vn.py - {vnpy.__version__} 
+            vn.py - {vnpy.__version__}
             Python - {platform.python_version()}
             PyQt5 - {Qt.PYQT_VERSION_STR}
             Numpy - {np.__version__}
