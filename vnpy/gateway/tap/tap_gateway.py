@@ -389,6 +389,12 @@ class TradeApi(ITapTradeAPINotify):
         """
         self.gateway.write_log("交易服务器连接成功")
 
+    def OnDisconnect(self, reasonCode: int):
+        """
+        Callback when connection to TAP server is lost.
+        """
+        self.gateway.write_log(f"交易服务器连接断开，原因：{reasonCode}")
+
     def OnRspLogin(self, errorCode: int, info: TapAPITradeLoginRspInfo):
         """
         Callback of login request.
