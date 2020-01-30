@@ -504,6 +504,11 @@ class BacktestingEngine:
             )
             trade.datetime = self.datetime
 
+            if self.mode == BacktestingMode.BAR:
+                trade.value = self.bar.value
+            else:
+                trade.value = trade_price
+
             self.spread.net_pos += pos_change
             self.strategy.on_spread_pos()
 
@@ -672,7 +677,7 @@ class DailyResult:
 
             self.end_pos += pos_change
 
-            turnover = trade.volume * size * trade.price
+            turnover = trade.volume * size * trade.value
             self.trading_pnl += pos_change * \
                 (self.close_price - trade.price) * size
             self.slippage += trade.volume * size * slippage
