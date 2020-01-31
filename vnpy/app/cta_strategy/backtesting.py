@@ -29,9 +29,15 @@ from .base import (
 )
 from .template import CtaTemplate
 
+# Set seaborn style
 sns.set_style("whitegrid")
+
+# Set deap algo
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
+
+# Set multiprocess module to use spawn method to create new process
+multiprocessing.set_start_method("spawn")
 
 
 class OptimizationSetting:
