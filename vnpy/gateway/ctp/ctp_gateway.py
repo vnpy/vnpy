@@ -217,7 +217,7 @@ class CtpGateway(BaseGateway):
             self.combiner_conf_dict = c.get_config()
             if len(self.combiner_conf_dict) > 0:
                 self.write_log(u'加载的自定义价差/价比配置:{}'.format(self.combiner_conf_dict))
-        except Exception as ex:
+        except Exception as ex: # noqa
             pass
         if not self.td_api:
             self.td_api = CtpTdApi(self)
@@ -356,6 +356,7 @@ class CtpGateway(BaseGateway):
     def cancel_order(self, req: CancelRequest):
         """"""
         self.td_api.cancel_order(req)
+        return True
 
     def query_account(self):
         """"""
@@ -910,6 +911,12 @@ class CtpTdApi(TdApi):
 
         orderid = self.sysid_orderid_map[data["OrderSysID"]]
 
+        trade_date = data['TradeDate']
+        if '-' not in trade_date and len(trade_date) == 8:
+            trade_date = trade_date[0:4] + '-' + trade_date[4:6] + '-' + trade_date[6:8]
+        trade_time = data['TradeTime']
+        trade_datetime = datetime.strptime(f'{trade_date} {trade_time}', '%Y-%m-%d %H:%M:%S')
+
         trade = TradeData(
             symbol=symbol,
             exchange=exchange,
@@ -921,6 +928,7 @@ class CtpTdApi(TdApi):
             price=data["Price"],
             volume=data["Volume"],
             time=data["TradeTime"],
+            datetime=trade_datetime,
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)
