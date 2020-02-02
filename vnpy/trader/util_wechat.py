@@ -11,10 +11,8 @@ http://wxpusher.zjiecode.com/
 
 from threading import Lock, Thread
 import requests
-import json
 import sys
 import traceback
-from urllib.parse import urlencode
 from datetime import datetime
 
 global wechat_lock
@@ -58,7 +56,7 @@ class wechat_thread(Thread):
         try:
             response = requests.post(self.request_url, json=params).json()
             if not response.get('success', False):
-             print(response)
+                print(response)
         except Exception as e:
             print("{} wechat_thread sent failed! ex:{},trace:{}".format(datetime.now(), str(e), traceback.format_exc()),
                   file=sys.stderr)
@@ -74,7 +72,7 @@ def send_wx_msg(content=''):
 
     :return:
     """
-    if len(text) == 0:
+    if len(content) == 0:
         return
 
     t = wechat_thread(uid=UID, content=content)
