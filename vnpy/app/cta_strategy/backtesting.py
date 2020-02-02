@@ -36,9 +36,6 @@ sns.set_style("whitegrid")
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
 
-# Set multiprocess module to use spawn method to create new process
-multiprocessing.set_start_method("spawn")
-
 
 class OptimizationSetting:
     """
@@ -554,7 +551,9 @@ class BacktestingEngine:
             return
 
         # Use multiprocessing pool for running backtesting with different setting
-        pool = multiprocessing.Pool(multiprocessing.cpu_count())
+        # Force to use spawn method to create new process (instead of fork on Linux)
+        ctx = multiprocessing.get_context("spawn")
+        pool = ctx.Pool(multiprocessing.cpu_count())
 
         results = []
         for setting in settings:
