@@ -33,7 +33,7 @@ class TurtleSignalStrategy(CtaTemplate):
     long_stop = 0
     short_stop = 0
 
-    parameters = ["x_minuite", "entry_window", "exit_window", "atr_window", "fixed_size"]
+    parameters = ["x_minute", "entry_window", "exit_window", "atr_window", "fixed_size"]
     variables = ["entry_up", "entry_down", "exit_up", "exit_down", "atr_value"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
@@ -52,7 +52,7 @@ class TurtleSignalStrategy(CtaTemplate):
         Callback when strategy is inited.
         """
         self.write_log("策略初始化")
-        #self.load_bar(20)
+        # self.load_bar(20)
 
     def on_start(self):
         """

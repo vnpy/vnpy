@@ -57,8 +57,8 @@ class MainEngine:
 
         self.rm_engine = None
 
-        os.chdir(TRADER_DIR)    # Change working directory
-        self.init_engines()     # Initialize function engines
+        os.chdir(TRADER_DIR)  # Change working directory
+        self.init_engines()  # Initialize function engines
 
     def add_engine(self, engine_class: Any):
         """
@@ -176,7 +176,7 @@ class MainEngine:
             if gateway:
                 gateway.subscribe(req)
         else:
-            for gateway in self.gateways.items():
+            for gateway in self.gateways.values():
                 if gateway:
                     gateway.subscribe(req)
 
@@ -196,7 +196,8 @@ class MainEngine:
         """
         gateway = self.get_gateway(gateway_name)
         if gateway:
-            gateway.cancel_order(req)
+            return gateway.cancel_order(req)
+        return False
 
     def send_orders(self, reqs: Sequence[OrderRequest], gateway_name: str):
         """
@@ -245,10 +246,10 @@ class BaseEngine(ABC):
     """
 
     def __init__(
-        self,
-        main_engine: MainEngine,
-        event_engine: EventEngine,
-        engine_name: str,
+            self,
+            main_engine: MainEngine,
+            event_engine: EventEngine,
+            engine_name: str,
     ):
         """"""
         self.main_engine = main_engine
@@ -588,12 +589,13 @@ class CustomContract(object):
         for symbol, setting in self.setting.items():
             gateway_name = setting.get('gateway_name', None)
             if gateway_name is None:
-                gateway_name= SETTINGS.get('gateway_name','')
+                gateway_name = SETTINGS.get('gateway_name', '')
             vn_exchange = Exchange(setting.get('exchange', 'LOCAL'))
             contract = ContractData(
                 gateway_name=gateway_name,
                 symbol=symbol,
-                name=contract.symbol,
+                exchange=vn_exchange,
+                name=setting.get('name', symbol),
                 size=setting.get('size', 100),
                 pricetick=setting.get('price_tick', 0.01),
                 margin_rate=setting.get('margin_rate', 0.1)
@@ -601,6 +603,7 @@ class CustomContract(object):
             d[contract.vt_symbol] = contract
 
         return d
+
 
 class EmailEngine(BaseEngine):
     """
@@ -642,7 +645,7 @@ class EmailEngine(BaseEngine):
                 msg = self.queue.get(block=True, timeout=1)
 
                 with smtplib.SMTP_SSL(
-                    SETTINGS["email.server"], SETTINGS["email.port"]
+                        SETTINGS["email.server"], SETTINGS["email.port"]
                 ) as smtp:
                     smtp.login(
                         SETTINGS["email.username"], SETTINGS["email.password"]

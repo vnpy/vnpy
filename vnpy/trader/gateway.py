@@ -262,7 +262,7 @@ class BaseGateway(ABC):
         implementation should finish the tasks blow:
         * send request to server
         """
-        pass
+        return False
 
     def send_orders(self, reqs: Sequence[OrderRequest]):
         """

@@ -172,16 +172,19 @@ def extract_vt_symbol(vt_symbol: str):
     symbol, exchange_str = vt_symbol.split(".")
     return symbol, Exchange(exchange_str)
 
+
 def generate_vt_symbol(symbol: str, exchange: Exchange):
     """
     return vt_symbol
     """
     return f"{symbol}.{exchange.value}"
 
+
 def format_number(n):
     """格式化数字到字符串"""
     rn = round(n, 2)  # 保留两位小数
     return format(rn, ',')  # 加上千分符
+
 
 def _get_trader_dir(temp_name: str):
     """
@@ -212,8 +215,9 @@ def _get_trader_dir(temp_name: str):
 
 
 TRADER_DIR, TEMP_DIR = _get_trader_dir(".vntrader")
-sys.path.append(str(TRADER_DIR))
-print(f'sys.path append: {str(TRADER_DIR)}')
+if TRADER_DIR not in sys.path:
+    sys.path.append(str(TRADER_DIR))
+    print(f'sys.path append: {str(TRADER_DIR)}')
 
 
 def get_file_path(filename: str):
@@ -306,7 +310,7 @@ def print_dict(d: dict):
     return '\n'.join([f'{key}:{d[key]}' for key in sorted(d.keys())])
 
 
-def append_data(self, file_name: str, dict_data: dict, field_names: list = []):
+def append_data(file_name: str, dict_data: dict, field_names: list = []):
     """
     添加数据到csv文件中
     :param file_name:  csv的文件全路径
@@ -360,18 +364,253 @@ def import_module_by_str(import_module_name):
 
             comp = modules[-1]
             if not hasattr(mod, comp):
-                loaded_modules = '.'.join([loaded_modules,comp])
+                loaded_modules = '.'.join([loaded_modules, comp])
                 print('realod {}'.format(loaded_modules))
                 mod = reload(loaded_modules)
             else:
-                print('from {} import {}'.format(loaded_modules,comp))
+                print('from {} import {}'.format(loaded_modules, comp))
                 mod = getattr(mod, comp)
             return mod
 
     except Exception as ex:
-        print('import {} fail,{},{}'.format(import_module_name,str(ex),traceback.format_exc()))
+        print('import {} fail,{},{}'.format(import_module_name, str(ex), traceback.format_exc()))
 
         return None
+
+
+def save_df_to_excel(file_name, sheet_name, df):
+    """
+    保存dataframe到execl
+    :param file_name: 保存的excel文件名
+    :param sheet_name: 保存的sheet
+    :param df: dataframe
+    :return: True/False
+    """
+    if file_name is None or sheet_name is None or df is None:
+        return False
+
+    # ----------------------------- 扩展的功能 ---------
+    try:
+        import openpyxl
+        from openpyxl.utils.dataframe import dataframe_to_rows
+        # from openpyxl.drawing.image import Image
+    except: # noqa
+        print(u'can not import openpyxl', file=sys.stderr)
+
+    if 'openpyxl' not in sys.modules:
+        print(u'can not import openpyxl', file=sys.stderr)
+        return False
+
+    try:
+        ws = None
+
+        try:
+            # 读取文件
+            wb = openpyxl.load_workbook(file_name)
+        except: # noqa
+            # 创建一个excel workbook
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = sheet_name
+        try:
+            # 定位WorkSheet
+            if ws is None:
+                ws = wb[sheet_name]
+        except: # noqa
+            # 创建一个WorkSheet
+            ws = wb.create_sheet()
+            ws.title = sheet_name
+
+        rows = dataframe_to_rows(df)
+        for r_idx, row in enumerate(rows, 1):
+            for c_idx, value in enumerate(row, 1):
+                ws.cell(row=r_idx, column=c_idx, value=value)
+
+        # Save the workbook
+        wb.save(file_name)
+        wb.close()
+    except Exception as ex:
+        import traceback
+        print(u'save_df_to_excel exception:{}'.format(str(ex)), traceback.format_exc(), file=sys.stderr)
+
+
+def save_text_to_excel(file_name, sheet_name, text):
+    """
+    保存文本文件到excel
+    :param file_name:
+    :param sheet_name:
+    :param text:
+    :return:
+    """
+    if file_name is None or len(sheet_name) == 0 or len(text) == 0:
+        return False
+
+    # ----------------------------- 扩展的功能 ---------
+    try:
+        import openpyxl
+        # from openpyxl.utils.dataframe import dataframe_to_rows
+        # from openpyxl.drawing.image import Image
+    except: # noqa
+        print(u'can not import openpyxl', file=sys.stderr)
+
+    if 'openpyxl' not in sys.modules:
+        return False
+
+    try:
+        ws = None
+        try:
+            # 读取文件
+            wb = openpyxl.load_workbook(file_name)
+        except: # noqa
+            # 创建一个excel workbook
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = sheet_name
+        try:
+            # 定位WorkSheet
+            if ws is None:
+                ws = wb[sheet_name]
+        except: # noqa
+            # 创建一个WorkSheet
+            ws = wb.create_sheet()
+            ws.title = sheet_name
+
+        # 设置宽度，自动换行方式
+        ws.column_dimensions["A"].width = 120
+        ws['A2'].alignment = openpyxl.styles.Alignment(wrapText=True)
+        ws['A2'].value = text
+
+        # Save the workbook
+        wb.save(file_name)
+        wb.close()
+        return True
+    except Exception as ex:
+        import traceback
+        print(u'save_text_to_excel exception:{}'.format(str(ex)), traceback.format_exc(), file=sys.stderr)
+        return False
+
+
+def save_images_to_excel(file_name, sheet_name, image_names):
+    """
+    # 保存图形文件到excel
+    :param file_name: excel文件名
+    :param sheet_name: workSheet
+    :param image_names: 图像文件名列表
+    :return:
+    """
+    if file_name is None or len(sheet_name) == 0 or len(image_names) == 0:
+        return False
+    # ----------------------------- 扩展的功能 ---------
+    try:
+        import openpyxl
+        # from openpyxl.utils.dataframe import dataframe_to_rows
+        from openpyxl.drawing.image import Image
+    except Exception as ex:
+        print(f'can not import openpyxl:{str(ex)}', file=sys.stderr)
+
+    if 'openpyxl' not in sys.modules:
+        return False
+    try:
+        ws = None
+
+        try:
+            # 读取文件
+            wb = openpyxl.load_workbook(file_name)
+        except: # noqa
+            # 创建一个excel workbook
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = sheet_name
+        try:
+            # 定位WorkSheet
+            if ws is None:
+                ws = wb[sheet_name]
+        except Exception as ex:  # noqa
+            # 创建一个WorkSheet
+            ws = wb.create_sheet()
+            ws.title = sheet_name
+
+        i = 1
+
+        for image_name in image_names:
+            try:
+                # 加载图形文件
+                img1 = Image(image_name)
+
+                cell_id = 'A{0}'.format(i)
+                ws[cell_id].value = image_name
+                cell_id = 'A{0}'.format(i + 1)
+
+                i += 30
+
+                # 添加至对应的WorkSheet中
+                ws.add_image(img1, cell_id)
+            except Exception as ex:
+                print('exception loading image {}, {}'.format(image_name, str(ex)), file=sys.stderr)
+                return False
+
+        # Save the workbook
+        wb.save(file_name)
+        wb.close()
+        return True
+    except Exception as ex:
+        import traceback
+        print(u'save_images_to_excel exception:{}'.format(str(ex)), traceback.format_exc(), file=sys.stderr)
+        return False
+
+
+def display_dual_axis(df, columns1, columns2=[], invert_yaxis1=False, invert_yaxis2=False, file_name=None,
+                      sheet_name=None,
+                      image_name=None):
+    """
+    显示(保存)双Y轴的走势图
+    :param df: DataFrame
+    :param columns1:  y1轴
+    :param columns2: Y2轴
+    :param invert_yaxis1: Y1 轴反转
+    :param invert_yaxis2: Y2 轴翻转
+    :param file_name:   保存的excel 文件名称
+    :param sheet_name:  excel 的sheet
+    :param image_name:  保存的image 文件名
+    :return:
+    """
+
+    import matplotlib
+    import matplotlib.pyplot as plt
+    matplotlib.rcParams['figure.figsize'] = (20.0, 10.0)
+
+    df1 = df[columns1]
+    df1.index = list(range(len(df)))
+    fig, ax1 = plt.subplots()
+    if invert_yaxis1:
+        ax1.invert_yaxis()
+    ax1.plot(df1)
+
+    if len(columns2) > 0:
+        df2 = df[columns2]
+        df2.index = list(range(len(df)))
+        ax2 = ax1.twinx()
+        if invert_yaxis2:
+            ax2.invert_yaxis()
+        ax2.plot(df2)
+
+    # 修改x轴得label为时间
+    xt = ax1.get_xticks()
+    xt2 = [df.index[int(i)] for i in xt[1:-2]]
+    xt2.insert(0, '')
+    xt2.append('')
+    ax1.set_xticklabels(xt2)
+
+    # 是否保存图片到文件
+    if image_name is not None:
+        fig = plt.gcf()
+        fig.savefig(image_name, bbox_inches='tight')
+
+        # 插入图片到指定的excel文件sheet中并保存excel
+        if file_name is not None and sheet_name is not None:
+            save_images_to_excel(file_name, sheet_name, [image_name])
+    else:
+        plt.show()
 
 class BarGenerator:
     """

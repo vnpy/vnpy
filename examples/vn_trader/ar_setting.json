@@ -1,0 +1,16 @@
+{
+  "mongo_db":
+  {
+    "host": "192.168.0.207",
+    "port": 27017
+  },
+  "accounts":
+  {
+
+    "ctp":
+    {
+      "copy_history_trades": true,
+      "copy_history_orders": true
+    }
+  }
+}

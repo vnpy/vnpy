@@ -13,7 +13,7 @@
         "mi_symbol": "ag2007",
         "full_symbol": "AG2007",
         "exchange": "SHFE",
-        "margin_rate": 0.08,
+        "margin_rate": 0.07,
         "symbol_size": 15,
         "price_tick": 1.0
     },
@@ -22,7 +22,7 @@
         "mi_symbol": "al2003",
         "full_symbol": "AL2003",
         "exchange": "SHFE",
-        "margin_rate": 0.1,
+        "margin_rate": 0.07,
         "symbol_size": 5,
         "price_tick": 5.0
     },
@@ -31,7 +31,7 @@
         "mi_symbol": "AP005",
         "full_symbol": "AP2005",
         "exchange": "CZCE",
-        "margin_rate": 0.07,
+        "margin_rate": 0.08,
         "symbol_size": 10,
         "price_tick": 1.0
     },
@@ -40,7 +40,7 @@
         "mi_symbol": "au2006",
         "full_symbol": "AU2006",
         "exchange": "SHFE",
-        "margin_rate": 0.08,
+        "margin_rate": 0.06,
         "symbol_size": 1000,
         "price_tick": 0.02
     },
@@ -55,8 +55,8 @@
     },
     "BB": {
         "underlying_symbol": "BB",
-        "mi_symbol": "bb2012",
-        "full_symbol": "BB2012",
+        "mi_symbol": "bb2101",
+        "full_symbol": "BB2101",
         "exchange": "DCE",
         "margin_rate": 0.2,
         "symbol_size": 500,
@@ -67,7 +67,7 @@
         "mi_symbol": "bu2006",
         "full_symbol": "BU2006",
         "exchange": "SHFE",
-        "margin_rate": 0.1,
+        "margin_rate": 0.09,
         "symbol_size": 10,
         "price_tick": 2.0
     },
@@ -82,8 +82,8 @@
     },
     "CF": {
         "underlying_symbol": "CF",
-        "mi_symbol": "CF005",
-        "full_symbol": "CF2005",
+        "mi_symbol": "CF009",
+        "full_symbol": "CF2009",
         "exchange": "CZCE",
         "margin_rate": 0.05,
         "symbol_size": 5,
@@ -112,7 +112,7 @@
         "mi_symbol": "cu2003",
         "full_symbol": "CU2003",
         "exchange": "SHFE",
-        "margin_rate": 0.09,
+        "margin_rate": 0.07,
         "symbol_size": 5,
         "price_tick": 10.0
     },
@@ -139,7 +139,7 @@
         "mi_symbol": "eg2005",
         "full_symbol": "EG2005",
         "exchange": "DCE",
-        "margin_rate": 0.05,
+        "margin_rate": 0.06,
         "symbol_size": 10,
         "price_tick": 1.0
     },
@@ -148,9 +148,9 @@
         "mi_symbol": "fb2005",
         "full_symbol": "FB2005",
         "exchange": "DCE",
-        "margin_rate": 0.2,
-        "symbol_size": 500,
-        "price_tick": 0.05
+        "margin_rate": 0.1,
+        "symbol_size": 10,
+        "price_tick": 0.5
     },
     "FG": {
         "underlying_symbol": "FG",
@@ -166,7 +166,7 @@
         "mi_symbol": "fu2005",
         "full_symbol": "FU2005",
         "exchange": "SHFE",
-        "margin_rate": 0.2,
+        "margin_rate": 0.1,
         "symbol_size": 10,
         "price_tick": 1.0
     },
@@ -175,7 +175,7 @@
         "mi_symbol": "hc2005",
         "full_symbol": "HC2005",
         "exchange": "SHFE",
-        "margin_rate": 0.1,
+        "margin_rate": 0.08,
         "symbol_size": 10,
         "price_tick": 1.0
     },
@@ -184,7 +184,7 @@
         "mi_symbol": "i2005",
         "full_symbol": "I2005",
         "exchange": "DCE",
-        "margin_rate": 0.05,
+        "margin_rate": 0.08,
         "symbol_size": 100,
         "price_tick": 0.5
     },
@@ -193,7 +193,7 @@
         "mi_symbol": "IC2003",
         "full_symbol": "IC2003",
         "exchange": "CFFEX",
-        "margin_rate": 0.1,
+        "margin_rate": 0.12,
         "symbol_size": 200,
         "price_tick": 0.2
     },
@@ -220,7 +220,7 @@
         "mi_symbol": "j2005",
         "full_symbol": "J2005",
         "exchange": "DCE",
-        "margin_rate": 0.05,
+        "margin_rate": 0.08,
         "symbol_size": 100,
         "price_tick": 0.5
     },
@@ -229,7 +229,7 @@
         "mi_symbol": "jd2005",
         "full_symbol": "JD2005",
         "exchange": "DCE",
-        "margin_rate": 0.08,
+        "margin_rate": 0.07,
         "symbol_size": 10,
         "price_tick": 1.0
     },
@@ -238,14 +238,14 @@
         "mi_symbol": "jm2005",
         "full_symbol": "JM2005",
         "exchange": "DCE",
-        "margin_rate": 0.05,
+        "margin_rate": 0.08,
         "symbol_size": 60,
         "price_tick": 0.5
     },
     "JR": {
         "underlying_symbol": "JR",
-        "mi_symbol": "JR011",
-        "full_symbol": "JR2011",
+        "mi_symbol": "JR101",
+        "full_symbol": "JR2101",
         "exchange": "CZCE",
         "margin_rate": 0.05,
         "symbol_size": 20,
@@ -328,14 +328,14 @@
         "mi_symbol": "pb2003",
         "full_symbol": "PB2003",
         "exchange": "SHFE",
-        "margin_rate": 0.1,
+        "margin_rate": 0.07,
         "symbol_size": 5,
         "price_tick": 5.0
     },
     "PM": {
         "underlying_symbol": "PM",
-        "mi_symbol": "PM011",
-        "full_symbol": "PM2011",
+        "mi_symbol": "PM101",
+        "full_symbol": "PM2101",
         "exchange": "CZCE",
         "margin_rate": 0.05,
         "symbol_size": 50,
@@ -355,14 +355,14 @@
         "mi_symbol": "rb2005",
         "full_symbol": "RB2005",
         "exchange": "SHFE",
-        "margin_rate": 0.1,
+        "margin_rate": 0.08,
         "symbol_size": 10,
         "price_tick": 1.0
     },
     "RI": {
         "underlying_symbol": "RI",
-        "mi_symbol": "RI011",
-        "full_symbol": "RI2011",
+        "mi_symbol": "RI101",
+        "full_symbol": "RI2101",
         "exchange": "CZCE",
         "margin_rate": 0.05,
         "symbol_size": 20,
@@ -373,7 +373,7 @@
         "mi_symbol": "RM005",
         "full_symbol": "RM2005",
         "exchange": "CZCE",
-        "margin_rate": 0.05,
+        "margin_rate": 0.06,
         "symbol_size": 10,
         "price_tick": 1.0
     },
@@ -391,7 +391,7 @@
         "mi_symbol": "RS011",
         "full_symbol": "RS2011",
         "exchange": "CZCE",
-        "margin_rate": 0.05,
+        "margin_rate": 0.2,
         "symbol_size": 10,
         "price_tick": 1.0
     },
@@ -400,7 +400,7 @@
         "mi_symbol": "ru2005",
         "full_symbol": "RU2005",
         "exchange": "SHFE",
-        "margin_rate": 0.1,
+        "margin_rate": 0.09,
         "symbol_size": 10,
         "price_tick": 5.0
     },
@@ -418,7 +418,7 @@
         "mi_symbol": "sc2003",
         "full_symbol": "SC2003",
         "exchange": "INE",
-        "margin_rate": 0.05,
+        "margin_rate": 0.07,
         "symbol_size": 1000,
         "price_tick": 0.1
     },
@@ -427,7 +427,7 @@
         "mi_symbol": "SF005",
         "full_symbol": "SF2005",
         "exchange": "CZCE",
-        "margin_rate": 0.05,
+        "margin_rate": 0.07,
         "symbol_size": 5,
         "price_tick": 2.0
     },
@@ -436,7 +436,7 @@
         "mi_symbol": "SM005",
         "full_symbol": "SM2005",
         "exchange": "CZCE",
-        "margin_rate": 0.05,
+        "margin_rate": 0.07,
         "symbol_size": 5,
         "price_tick": 2.0
     },
@@ -445,7 +445,7 @@
         "mi_symbol": "sn2006",
         "full_symbol": "SN2006",
         "exchange": "SHFE",
-        "margin_rate": 0.09,
+        "margin_rate": 0.08,
         "symbol_size": 1,
         "price_tick": 10.0
     },
@@ -490,7 +490,7 @@
         "mi_symbol": "TA005",
         "full_symbol": "TA2005",
         "exchange": "CZCE",
-        "margin_rate": 0.05,
+        "margin_rate": 0.06,
         "symbol_size": 5,
         "price_tick": 2.0
     },
@@ -535,7 +535,7 @@
         "mi_symbol": "WH011",
         "full_symbol": "WH2011",
         "exchange": "CZCE",
-        "margin_rate": 0.05,
+        "margin_rate": 0.07,
         "symbol_size": 20,
         "price_tick": 1.0
     },
@@ -544,7 +544,7 @@
         "mi_symbol": "wr2012",
         "full_symbol": "WR2012",
         "exchange": "SHFE",
-        "margin_rate": 0.2,
+        "margin_rate": 0.08,
         "symbol_size": 10,
         "price_tick": 1.0
     },
@@ -562,7 +562,7 @@
         "mi_symbol": "ZC005",
         "full_symbol": "ZC2005",
         "exchange": "CZCE",
-        "margin_rate": 0.05,
+        "margin_rate": 0.06,
         "symbol_size": 100,
         "price_tick": 0.2
     },
@@ -571,7 +571,7 @@
         "mi_symbol": "zn2003",
         "full_symbol": "ZN2003",
         "exchange": "SHFE",
-        "margin_rate": 0.1,
+        "margin_rate": 0.07,
         "symbol_size": 5,
         "price_tick": 5.0
     }

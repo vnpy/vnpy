@@ -10,10 +10,9 @@ import traceback
 from collections import OrderedDict
 from datetime import datetime
 from dataclasses import dataclass, field
-
+from typing import List
 from vnpy.trader.utility import get_folder_path
-from vnpy.app.cta_strategy_pro.base import Direction
-from vnpy.app.cta_strategy_pro.template import CtaComponent
+from vnpy.app.cta_strategy_pro.base import Direction, CtaComponent
 
 """
 网格交易，用于套利单
@@ -35,37 +34,47 @@ TREND_GRID = 'trend'  # 趋势网格
 LOCK_GRID = 'lock'  # 对锁网格
 
 
-@dataclass
 class CtaGrid(object):
     """网格类
     它是网格交易的最小单元
     包括交易方向，开仓价格，平仓价格，止损价格，开仓状态，平仓状态
     """
-    id: str = str(uuid.uuid1())  # gid
 
-    direction: Direction = Direction.NET  # 交易方向（LONG：多，正套；SHORT：空，反套）
-    open_price: float = 0  # 开仓价格
-    close_price: float = 0  # 止盈价格
-    stop_price: float = 0  # 止损价格
+    def __init__(self,
+                 direction: Direction = None,
+                 open_price: float = 0,
+                 close_price: float = 0,
+                 stop_price: float = 0,
+                 vt_symbol: str = '',
+                 volume: float = 0,
+                 traded_volume: float = 0,
+                 order_status: bool = False,
+                 open_status: bool = False,
+                 close_status: bool = False,
+                 open_time: datetime = None,
+                 order_time: datetime = None,
+                 reuse_count: int = 0,
+                 type: str = ''
+                 ):
 
-    vt_symbol: str = ''  # 品种合约
-    volume: float = 0  # 开仓数量( 兼容数字货币 )
-
-    traded_volume: float = 0  # 已成交数量 开仓时，为开仓数量，平仓时，为平仓数量
-
-    order_status: bool = False  # 挂单状态: True,已挂单，False，未挂单
-    order_ids: list[str] = field(default_factory=list)  # order_id list
-    open_status: bool = False  # 开仓状态
-    close_status: bool = False  # 平仓状态
-
-    open_time: datetime = None  # 开仓时间
-    order_time: datetime = None  # 委托时间
-
-    lock_grid_ids: list[str] = field(default_factory=list)  # 锁单的网格，[gid,gid]
-    reuse_count: int = 0  # 重用次数（0， 平仓后是否删除）
-    type: str = ''  # 网格类型标签
-
-    snapshot: dict = field(default_factory=dict)  # 切片数据，如记录开仓点时的某些状态数据
+        self.id: str = str(uuid.uuid1())  # gid
+        self.direction = direction  # 交易方向（LONG：多，正套；SHORT：空，反套）
+        self.open_price = open_price  # 开仓价格
+        self.close_price = close_price  # 止盈价格
+        self.stop_price = stop_price  # 止损价格
+        self.vt_symbol = vt_symbol  # 品种合约
+        self.volume = volume  # 开仓数量( 兼容数字货币 )
+        self.traded_volume = traded_volume  # 已成交数量 开仓时，为开仓数量，平仓时，为平仓数量
+        self.order_status = order_status  # 挂单状态: True,已挂单，False，未挂单
+        self.order_ids = []  # order_id list
+        self.open_status = open_status  # 开仓状态
+        self.close_status = close_status  # 平仓状态
+        self.open_time = open_time  # 开仓时间
+        self.order_time = order_time  # 委托时间
+        self.lock_grid_ids = []  # 锁单的网格，[gid,gid]
+        self.reuse_count = reuse_count  # 重用次数（0， 平仓后是否删除）
+        self.type = type  # 网格类型标签
+        self.snapshot = {}  # 切片数据，如记录开仓点时的某些状态数据
 
     def to_json(self):
         """输出JSON"""
@@ -156,10 +165,10 @@ class CtaGridTrade(CtaComponent):
         vol，网格开仓数
         minDiff, 最小价格跳动
         """
-        super(CtaGridTrade).__init__(strategy=strategy)
+        super(CtaGridTrade, self).__init__(strategy=strategy)
 
         self.price_tick = kwargs.get('price_tick', 1)
-        self.jsonName = self.strategy.name  # 策略名称
+        self.json_name = self.strategy.strategy_name  # 策略名称
         self.max_lots = kwargs.get('max_lots', 10)  # 缺省网格数量
         self.grid_height = kwargs.get('grid_height', 10 * self.price_tick)  # 最小网格高度
         self.grid_win = kwargs.get('grid_win', 10 * self.price_tick)  # 最小止盈高度
@@ -176,7 +185,8 @@ class CtaGridTrade(CtaComponent):
         self.max_up_open_price = 0.0  # 上网格最高开仓价
         self.min_dn_open_price = 0.0  # 下网格最小开仓价
 
-        self.json_file_path = os.path.join(get_folder_path('data'), f'{self.jsonName}_Grids.json')  # 网格的路径
+        # 网格json文件的路径
+        self.json_file_path = os.path.join(get_folder_path('data'), f'{self.json_name}_Grids.json')
 
     def get_volume_rate(self, idx: int = 0):
         """获取网格索引对应的开仓数量比例"""
@@ -554,7 +564,7 @@ class CtaGridTrade(CtaComponent):
 
         if direction == Direction.SHORT:
             for x in self.up_grids[:]:
-                if x.id in id:
+                if x.id in ids:
                     self.write_log(u'清除上网格[open={},close={},stop={},volume={}]'
                                    .format(x.open_price, x.close_price, x.stop_price, x.volume))
                     self.up_grids.remove(x)
@@ -873,12 +883,12 @@ class CtaGridTrade(CtaComponent):
         grids_save_path = get_folder_path('data')
 
         # 确保json名字与策略一致
-        if self.jsonName != self.strategy.name:
-            self.write_log(u'JsonName {} 与 上层策略名{} 不一致.'.format(self.jsonName, self.strategy.name))
-            self.jsonName = self.strategy.name
+        if self.json_name != self.strategy.strategy_name:
+            self.write_log(u'JsonName {} 与 上层策略名{} 不一致.'.format(self.json_name, self.strategy.strategy_name))
+            self.json_name = self.strategy.strategy_name
 
         # 新版网格持久化文件
-        grid_json_file = os.path.join(grids_save_path, u'{}_Grids.json'.format(self.jsonName))
+        grid_json_file = os.path.join(grids_save_path, u'{}_Grids.json'.format(self.json_name))
         self.json_file_path = grid_json_file
 
         data = {}
@@ -907,12 +917,12 @@ class CtaGridTrade(CtaComponent):
         data = {}
         grids_save_path = get_folder_path('data')
 
-        if self.jsonName != self.strategy.name:
-            self.write_log(u'JsonName {} 与 上层策略名{} 不一致.'.format(self.jsonName, self.strategy.name))
-            self.jsonName = self.strategy.name
+        if self.json_name != self.strategy.strategy_name:
+            self.write_log(u'JsonName {} 与 上层策略名{} 不一致.'.format(self.json_name, self.strategy.strategy_name))
+            self.json_name = self.strategy.strategy_name
 
         # 若json文件不存在，就保存一个；若存在，就优先使用数据文件
-        grid_json_file = os.path.join(grids_save_path, u'{}_Grids.json'.format(self.jsonName))
+        grid_json_file = os.path.join(grids_save_path, u'{}_Grids.json'.format(self.json_name))
         if not os.path.exists(grid_json_file):
             data['up_grids'] = []
             data['dn_grids'] = []
@@ -970,7 +980,7 @@ class CtaGridTrade(CtaComponent):
 
         data_folder = get_folder_path('data')
 
-        self.jsonName = new_name
+        self.json_name = new_name
         # 旧文件
         old_json_file = os.path.join(data_folder, u'{0}_Grids.json'.format(old_name))
 

@@ -43,13 +43,17 @@ from vnpy.trader.constant import (
     Status
 )
 from vnpy.trader.utility import (
-    load_json, save_json,
+    load_json,
+    save_json,
     extract_vt_symbol,
-    round_to, get_folder_path,
+    round_to,
+    TRADER_DIR,
+    get_folder_path,
     get_underlying_symbol,
     append_data)
 
 from vnpy.trader.util_logger import setup_logger, logging
+from vnpy.trader.util_wechat import send_wx_msg
 from vnpy.trader.converter import OffsetConverter
 
 from .base import (
@@ -88,7 +92,6 @@ class CtaEngine(BaseEngine):
     6、支持指定gateway的交易。主引擎可接入多个gateway
     """
 
-    engine_type = EngineType.LIVE  # live trading engine
     engine_type = EngineType.LIVE  # live trading engine
 
     # 策略配置文件
@@ -264,13 +267,17 @@ class CtaEngine(BaseEngine):
         #     strategy.pos -= trade.volume
         # 根据策略名称，写入 data\straetgy_name_trade.csv文件
         strategy_name = getattr(strategy, 'name')
-        trade_fields = ['time', 'symbol', 'exchange', 'vt_symbol', 'tradeid', 'vt_tradeid', 'orderid', 'vt_orderid',
+        trade_fields = ['datetime', 'symbol', 'exchange', 'vt_symbol', 'tradeid', 'vt_tradeid', 'orderid', 'vt_orderid',
                         'direction', 'offset', 'price', 'volume', 'idx_price']
         trade_dict = OrderedDict()
         try:
             for k in trade_fields:
-                if k == 'time':
-                    trade_dict[k] = datetime.now().strftime('%Y-%m-%d') + ' ' + getattr(trade, k, '')
+                if k == 'datetime':
+                    dt = getattr(trade, 'datetime')
+                    if isinstance(dt, datetime):
+                        trade_dict[k] = dt.strftime('%Y-%m-%d %H:%M:%S')
+                    else:
+                        trade_dict[k] = datetime.now().strftime('%Y-%m-%d') + ' ' + getattr(trade, 'time', '')
                 if k in ['exchange', 'direction', 'offset']:
                     trade_dict[k] = getattr(trade, k).value
                 else:
@@ -586,12 +593,12 @@ class CtaEngine(BaseEngine):
         order = self.main_engine.get_order(vt_orderid)
         if not order:
             self.write_log(msg=f"撤单失败，找不到委托{vt_orderid}",
-                           strategy_Name=strategy.name,
+                           strategy_Name=strategy.strategy_name,
                            level=logging.ERROR)
-            return
+            return False
 
         req = order.create_cancel_request()
-        self.main_engine.cancel_order(req, order.gateway_name)
+        return self.main_engine.cancel_order(req, order.gateway_name)
 
     def cancel_local_stop_order(self, strategy: CtaTemplate, stop_orderid: str):
         """
@@ -599,7 +606,7 @@ class CtaEngine(BaseEngine):
         """
         stop_order = self.stop_orders.get(stop_orderid, None)
         if not stop_order:
-            return
+            return False
         strategy = self.strategies[stop_order.strategy_name]
 
         # Remove from relation map.
@@ -614,6 +621,7 @@ class CtaEngine(BaseEngine):
 
         self.call_strategy_func(strategy, strategy.on_stop_order, stop_order)
         self.put_stop_order_event(stop_order)
+        return True
 
     def send_order(
             self,
@@ -634,7 +642,7 @@ class CtaEngine(BaseEngine):
         contract = self.main_engine.get_contract(vt_symbol)
         if not contract:
             self.write_log(msg=f"委托失败，找不到合约：{vt_symbol}",
-                           strategy_name=strategy.name,
+                           strategy_name=strategy.strategy_name,
                            level=logging.ERROR)
             return ""
         if contract.gateway_name and not gateway_name:
@@ -659,9 +667,9 @@ class CtaEngine(BaseEngine):
         """
         """
         if vt_orderid.startswith(STOPORDER_PREFIX):
-            self.cancel_local_stop_order(strategy, vt_orderid)
+            return self.cancel_local_stop_order(strategy, vt_orderid)
         else:
-            self.cancel_server_order(strategy, vt_orderid)
+            return self.cancel_server_order(strategy, vt_orderid)
 
     def cancel_all(self, strategy: CtaTemplate):
         """
@@ -689,7 +697,7 @@ class CtaEngine(BaseEngine):
             self.main_engine.subscribe(req, gateway_name)
         else:
             self.write_log(msg=f"找不到合约{vt_symbol},添加到待订阅列表",
-                           strategy_name=strategy.name)
+                           strategy_name=strategy.strategy_name)
             self.pending_subcribe_symbol_map[f'{gateway_name}.{vt_symbol}'].add((strategy_name, is_bar))
             try:
                 self.write_log(f'找不到合约{vt_symbol}信息，尝试请求所有接口')
@@ -713,7 +721,7 @@ class CtaEngine(BaseEngine):
             strategies.append(strategy)
 
         # 添加 策略名 strategy_name  <=> 合约订阅 vt_symbol 的映射
-        subscribe_symbol_set = self.strategy_symbol_map[strategy.name]
+        subscribe_symbol_set = self.strategy_symbol_map[strategy.strategy_name]
         subscribe_symbol_set.add(contract.vt_symbol)
 
         return True
@@ -785,6 +793,16 @@ class CtaEngine(BaseEngine):
     def get_engine_type(self):
         """"""
         return self.engine_type
+
+    @lru_cache()
+    def get_data_path(self):
+        data_path = os.path.abspath(os.path.join(TRADER_DIR, 'data'))
+        return data_path
+
+    @lru_cache()
+    def get_logs_path(self):
+        log_path = os.path.abspath(os.path.join(TRADER_DIR, 'log'))
+        return log_path
 
     def call_strategy_func(
             self, strategy: CtaTemplate, func: Callable, params: Any = None
@@ -1389,3 +1407,17 @@ class CtaEngine(BaseEngine):
             subject = "CTA策略引擎"
 
         self.main_engine.send_email(subject, msg)
+
+    def send_wechat(self, msg: str, strategy: CtaTemplate = None):
+        """
+        send wechat message to default receiver
+        :param msg:
+        :param strategy:
+        :return:
+        """
+        if strategy:
+            subject = f"{strategy.strategy_name}"
+        else:
+            subject = "CTAPRO引擎"
+
+        send_wx_msg(content=f'{subject}:{msg}')

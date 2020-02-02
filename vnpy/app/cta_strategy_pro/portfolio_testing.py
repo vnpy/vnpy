@@ -14,29 +14,22 @@ import importlib
 import csv
 import copy
 import pandas as pd
-import re
 import traceback
-import decimal
 import numpy as np
 import random
 import logging
 
-from collections import OrderedDict,defaultdict
+from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 from functools import lru_cache
 from pathlib import Path
 from time import sleep
 
-cta_engine_path = os.path.abspath(os.path.dirname(__file__))
-vnpy_root = os.path.abspath(os.path.join(cta_engine_path, '..', '..', '..', '..'))
-
 from .base import (
-    BacktestingMode,
     EngineType,
     STOPORDER_PREFIX,
     StopOrder,
-    StopOrderStatus,
-    INTERVAL_DELTA_MAP
+    StopOrderStatus
 )
 from .template import CtaTemplate
 
@@ -44,6 +37,7 @@ from .cta_fund_kline import FundKline
 
 from vnpy.trader.object import (
     BarData,
+    RenkoBarData,
     OrderData,
     TradeData,
     ContractData
@@ -63,15 +57,13 @@ from vnpy.trader.utility import (
     get_underlying_symbol,
     round_to,
     extract_vt_symbol,
-    format_number
+    format_number,
+    import_module_by_str
 )
 
 from vnpy.trader.util_logger import setup_logger
 
-from vnpy.data.tdx.tdx_common import get_future_contracts
 
-
-########################################################################
 class PortfolioTestingEngine(object):
     """
     CTA组合回测引擎
@@ -114,7 +106,7 @@ class PortfolioTestingEngine(object):
         self.margin_rate = {}  # 回测合约的保证金比率
         self.price_dict = {}  # 登记vt_symbol对应的最新价
         self.contract_dict = {}  # 登记vt_symbol得对应合约信息
-        self.symbol_exchange_dict = {} # 登记symbol: exchange的对应关系
+        self.symbol_exchange_dict = {}  # 登记symbol: exchange的对应关系
 
         self.bar_csv_file = {}
         self.bar_df_dict = {}  # 历史数据的df，回测用
@@ -123,6 +115,10 @@ class PortfolioTestingEngine(object):
         self.data_start_date = None  # 回测数据开始日期，datetime对象 （用于截取数据）
         self.data_end_date = None  # 回测数据结束日期，datetime对象 （用于截取数据）
         self.strategy_start_date = None  # 策略启动日期（即前面的数据用于初始化），datetime对象
+
+        self.stop_order_count = 0  # 本地停止单编号
+        self.stop_orders = {}  # 本地停止单
+        self.active_stop_orders = {}  # 活动本地停止单
 
         self.limit_order_count = 0  # 限价单编号
         self.limit_orders = OrderedDict()  # 限价单字典
@@ -146,7 +142,7 @@ class PortfolioTestingEngine(object):
         self.gateway_name = u'BackTest'
 
         self.last_bar = {}  # 最新的bar
-        self.last_dt = None
+        self.last_dt = None  # 最新时间
 
         # csvFile相关
         self.bar_interval_seconds = 60  # csv文件，属于K线类型，K线的周期（秒数）,缺省是1分钟
@@ -246,7 +242,7 @@ class PortfolioTestingEngine(object):
         else:
             return None
 
-    def get_account(self):
+    def get_account(self, vt_accountid: str = ""):
         """返回账号的实时权益，可用资金，仓位比例,投资仓位比例上限"""
         if self.net_capital == 0.0:
             self.percent = 0.0
@@ -342,7 +338,7 @@ class PortfolioTestingEngine(object):
 
     def set_contract(self, symbol: str, exchange: Exchange, product: Product, name: str, size: int, price_tick: float):
         """设置合约信息"""
-        vt_symbol = '.'.join(symbol, exchange.value)
+        vt_symbol = '.'.join([symbol, exchange.value])
         if vt_symbol not in self.contract_dict:
             c = ContractData(
                 gateway_name=self.gateway_name,
@@ -358,6 +354,7 @@ class PortfolioTestingEngine(object):
             # self.set_margin_rate(vt_symbol, )
             self.set_price_tick(vt_symbol, price_tick)
             self.symbol_exchange_dict.update({symbol: exchange})
+
     @lru_cache()
     def get_contract(self, vt_symbol):
         """获取合约配置信息"""
@@ -383,25 +380,48 @@ class PortfolioTestingEngine(object):
         """
         self.daily_report_name = report_file
 
-    def load_csv_to_df(self, symbol, bar_file, data_start_date=None, data_end_date=None):
+    def load_csv_to_df(self, vt_symbol, bar_file, data_start_date=None, data_end_date=None):
         """回测数据初始化"""
-        self.output(u'loading {} from {}'.format(symbol, bar_file))
-        if symbol in self.bar_df_dict:
+        self.output(u'loading {} from {}'.format(vt_symbol, bar_file))
+        if vt_symbol in self.bar_df_dict:
             return True
 
         if not os.path.isfile(bar_file):
-            self.write_error(u'回测时，{}对应的csv bar文件{}不存在'.format(symbol, bar_file))
+            self.write_error(u'回测时，{}对应的csv bar文件{}不存在'.format(vt_symbol, bar_file))
             return False
 
         try:
-            symbol_df = pd.read_csv(bar_file).set_index("index").rename(index=pd.to_datetime)
+            data_types = {
+                "datetime": str,
+                "open": float,
+                "high": float,
+                "low": float,
+                "close": float,
+                "open_interest": float,
+                "volume": float,
+                "instrument_id": str,
+                "symbol": str,
+                "total_turnover": float,
+                "limit_down": float,
+                "limit_up": float,
+                "trading_day": str,
+                "date": str,
+                "time": str
+            }
+            # 加载csv文件 =》 dateframe
+            symbol_df = pd.read_csv(bar_file, dtype=data_types)
+            # 转换时间，str =》 datetime
+            symbol_df["datetime"] = pd.to_datetime(symbol_df["datetime"], format="%Y-%m-%d %H:%M:%S")
+            # 设置时间为索引
+            symbol_df = symbol_df.set_index("datetime")
 
             # 裁剪数据
             symbol_df = symbol_df.loc[self.test_start_date:self.test_end_date]
 
-            self.bar_df_dict.update({symbol: symbol_df})
+            self.bar_df_dict.update({vt_symbol: symbol_df})
         except Exception as ex:
-            self.write_error(u'回测时读取{} csv文件{}失败:{}'.format(symbol, bar_file, ex))
+            self.write_error(u'回测时读取{} csv文件{}失败:{}'.format(vt_symbol, bar_file, ex))
+            self.output(u'回测时读取{} csv文件{}失败:{}'.format(vt_symbol, bar_file, ex))
             return False
 
         return True
@@ -421,12 +441,25 @@ class PortfolioTestingEngine(object):
             self.set_name(test_settings.get('name'))
 
         self.debug = test_settings.get('debug', False)
-        # 创建日志
-        self.create_logger(debug=test_settings.get('debug', False))
+
         # 更新数据目录
-        self.data_path = os.path.abspath(os.path.join(vnpy_root, test_settings.get('data_path', 'data')))
+        if 'data_path' in test_settings:
+            self.data_path = test_settings.get('data_path')
+        else:
+            self.data_path = os.path.abspath(os.path.join(os.getcwd(), 'data'))
+
+        print(f'数据输出目录:{self.data_path}')
+
         # 更新日志目录
-        self.logs_path = os.path.abspath(os.path.join(vnpy_root, test_settings.get('logs_path', 'logs')))
+        if 'logs_path' in test_settings:
+            self.logs_path = os.path.abspath(os.path.join(test_settings.get('logs_path'), self.test_name))
+        else:
+            self.logs_path = os.path.abspath(os.path.join(os.getcwd(), 'log', self.test_name))
+        print(f'日志输出目录:{self.logs_path}')
+
+        # 创建日志
+        self.create_logger(debug=self.debug)
+
         # 设置资金
         if 'init_capital' in test_settings:
             self.write_log(u'设置期初资金:{}'.format(test_settings.get('init_capital')))
@@ -472,6 +505,8 @@ class PortfolioTestingEngine(object):
             # 创建资金K线
             self.create_fund_kline(self.test_name, use_renko=test_settings.get('use_renko', False))
 
+        self.load_strategy_class()
+
     def prepare_data(self, data_dict):
         """
         准备组合数据
@@ -491,11 +526,20 @@ class PortfolioTestingEngine(object):
 
             self.set_slippage(symbol, symbol_data.get('slippage', 0))
 
-            self.set_size(symbol, symbol_data.get('size', 10))
+            self.set_size(symbol, symbol_data.get('symbol_size', 10))
 
             self.set_margin_rate(symbol, symbol_data.get('margin_rate', 0.1))
 
             self.set_commission_rate(symbol, symbol_data.get('commission_rate', float(0.0001)))
+
+            self.set_contract(
+                symbol=symbol,
+                name=symbol,
+                exchange=Exchange(symbol_data.get('exchange', 'LOCAL')),
+                product=Product(symbol_data.get('product', "期货")),
+                size=symbol_data.get('symbol_size', 10),
+                price_tick=symbol_data.get('price_tick', 1)
+            )
 
             bar_file = symbol_data.get('bar_file', None)
 
@@ -545,15 +589,18 @@ class PortfolioTestingEngine(object):
         self.write_log(u'开始回测:{} ~ {}'.format(self.data_start_date, self.data_end_date))
 
         # 加载数据
-        for symbol in self.symbol_strategy_map.keys():
-            self.load_csv_to_df(symbol, self.bar_csv_file.get(symbol))
+        for vt_symbol in self.symbol_strategy_map.keys():
+            symbol, exchange = extract_vt_symbol(vt_symbol)
+            self.load_csv_to_df(vt_symbol, self.bar_csv_file.get(symbol))
 
             # 为套利合约提取主动 / 被动合约
-            if symbol.endswith('SPD') or symbol.endswith('SPD99'):
+            if exchange == Exchange.SPD:
                 try:
                     active_symbol, active_rate, passive_symbol, passive_rate, spd_type = symbol.split('-')
-                    self.load_csv_to_df(active_symbol, self.bar_csv_file.get(active_symbol))
-                    self.load_csv_to_df(passive_symbol, self.bar_csv_file.get(passive_symbol))
+                    active_vt_symbol = '.'.join([active_symbol, self.get_exchange(symbol=active_symbol)])
+                    passive_vt_symbol = '.'.join([passive_symbol, self.get_exchange(symbol=passive_symbol)])
+                    self.load_csv_to_df(active_vt_symbol, self.bar_csv_file.get(active_symbol))
+                    self.load_csv_to_df(passive_vt_symbol, self.bar_csv_file.get(passive_symbol))
                 except Exception as ex:
                     self.write_error(u'为套利合约提取主动/被动合约出现异常:{}'.format(str(ex)))
 
@@ -567,19 +614,33 @@ class PortfolioTestingEngine(object):
         gc_collect_days = 0
 
         try:
-            for (dt, symbol), bar_data in self.bar_df.iterrows():
-
-                if symbol.startwith('future_renko'):
+            for (dt, vt_symbol), bar_data in self.bar_df.iterrows():
+                symbol, exchange = extract_vt_symbol(vt_symbol)
+                if symbol.startswith('future_renko'):
                     bar_datetime = dt
+                    bar = RenkoBarData(
+                        gateway_name='backtesting',
+                        symbol=symbol,
+                        exchange=exchange,
+                        datetime=bar_datetime
+                    )
+                    bar.seconds = float(bar_data.get('seconds', 0))
+                    bar.high_seconds = float(bar_data.get('high_seconds', 0))  # 当前Bar的上限秒数
+                    bar.low_seconds = float(bar_data.get('low_seconds', 0))  # 当前bar的下限秒数
+                    bar.height = float(bar_data.get('height', 0))  # 当前Bar的高度限制
+                    bar.up_band = float(bar_data.get('up_band', 0))  # 高位区域的基线
+                    bar.down_band = float(bar_data.get('down_band', 0))  # 低位区域的基线
+                    bar.low_time = bar_data.get('low_time', None)  # 最后一次进入低位区域的时间
+                    bar.high_time = bar_data.get('high_time', None)  # 最后一次进入高位区域的时间
                 else:
                     bar_datetime = dt - timedelta(seconds=self.bar_interval_seconds)
 
-                bar = BarData(
-                    gateway_name='backtesting',
-                    symbol=symbol,
-                    exchange=Exchange.LOCAL,
-                    datetime=bar_datetime
-                )
+                    bar = BarData(
+                        gateway_name='backtesting',
+                        symbol=symbol,
+                        exchange=exchange,
+                        datetime=bar_datetime
+                    )
 
                 bar.open_price = float(bar_data['open'])
                 bar.close_price = float(bar_data['close'])
@@ -635,6 +696,7 @@ class PortfolioTestingEngine(object):
 
                 if self.net_capital < 0:
                     self.write_error(u'净值低于0，回测停止')
+                    self.output(u'净值低于0，回测停止')
                     return
 
             self.write_log(u'数据回放完成')
@@ -652,7 +714,8 @@ class PortfolioTestingEngine(object):
         """新的K线"""
         self.last_bar.update({bar.vt_symbol: bar})
         self.last_dt = bar.datetime
-        self.set_price(bar.vt_symbol, bar.close)
+        self.set_price(bar.vt_symbol, bar.close_price)
+        self.cross_stop_order(bar)  # 撮合停止单
         self.cross_limit_order(bar)  # 先撮合限价单
 
         # 更新资金曲线(只有持仓时，才更新)
@@ -660,11 +723,9 @@ class PortfolioTestingEngine(object):
         if fund_kline is not None and (len(self.long_position_list) > 0 or len(self.short_position_list) > 0):
             fund_kline.update_account(self.last_dt, self.net_capital)
 
-        self.set_price({bar.vt_symbol: bar.close})
-
         for strategy in self.symbol_strategy_map.get(bar.vt_symbol, []):
             # 更新策略的资金K线
-            fund_kline = self.fund_kline_dict.get(strategy.name, None)
+            fund_kline = self.fund_kline_dict.get(strategy.strategy_name, None)
             if fund_kline:
                 hold_pnl = fund_kline.get_hold_pnl()
                 if hold_pnl != 0:
@@ -677,7 +738,7 @@ class PortfolioTestingEngine(object):
             if not strategy.trading and self.strategy_start_date < bar.datetime:
                 strategy.trading = True
                 strategy.on_start()
-                self.output(u'{}策略启动交易'.format(strategy.name))
+                self.output(u'{}策略启动交易'.format(strategy.strategy_name))
 
     def load_strategy_class(self):
         """
@@ -724,7 +785,8 @@ class PortfolioTestingEngine(object):
             return True
         except:  # noqa
             msg = f"策略文件{module_name}加载失败，触发异常：\n{traceback.format_exc()}"
-            self.write_log(msg=msg, level=logging.CRITICAL)
+            self.write_error(msg)
+            self.output(msg)
             return False
 
     def load_strategy(self, strategy_name: str, strategy_setting: dict = None):
@@ -752,19 +814,25 @@ class PortfolioTestingEngine(object):
                 self.write_log(u'转换策略为全路径:{}'.format(class_name))
 
         # 获取策略类的定义
-        strategy_class = self.load_strategy_class_from_module(class_name)
+        strategy_class = import_module_by_str(class_name)
         if strategy_class is None:
             self.write_error(u'加载策略模块失败:{}'.format(class_name))
             return
 
         # 处理 vt_symbol
         vt_symbol = strategy_setting.get('vt_symbol')
-        symbol, exchange = extract_vt_symbol(vt_symbol)
+        if '.' in vt_symbol:
+            symbol, exchange = extract_vt_symbol(vt_symbol)
+        else:
+            symbol = vt_symbol
+            underly_symbol = get_underlying_symbol(symbol).upper()
+            exchange = self.get_exchange(f'{underly_symbol}99')
+            vt_symbol = '.'.join([symbol, exchange.value])
 
         # 在期货组合回测，中需要把一般配置的主力合约，更换为指数合约
         if '99' not in symbol and exchange != Exchange.SPD:
-            underly_symbol = get_underlying_symbol(symbol)
-            self.write_log(u'更新vt_symbol为指数合约:{}=>{}'.format(vt_symbol, underly_symbol + '99.'+ exchange.value))
+            underly_symbol = get_underlying_symbol(symbol).upper()
+            self.write_log(u'更新vt_symbol为指数合约:{}=>{}'.format(vt_symbol, underly_symbol + '99.' + exchange.value))
             vt_symbol = underly_symbol.upper() + '99.' + exchange.value
             strategy_setting.update({'vt_symbol': vt_symbol})
 
@@ -790,7 +858,7 @@ class PortfolioTestingEngine(object):
         strategy_setting.update({'backtesting': True})
 
         # 策略参数设置
-        setting = strategy_setting.get('setting',{})
+        setting = strategy_setting.get('setting', {})
 
         # 创建实例
         strategy = strategy_class(self, strategy_name, vt_symbol, setting)
@@ -799,7 +867,7 @@ class PortfolioTestingEngine(object):
         self.strategies.update({strategy_name: strategy})
 
         # 更新vt_symbol合约与策略的订阅关系
-        self.subscribe_symbol(strategy_name=strategy_name,vt_symbol=vt_symbol)
+        self.subscribe_symbol(strategy_name=strategy_name, vt_symbol=vt_symbol)
 
         if strategy_setting.get('auto_init', False):
             self.write_log(u'自动初始化策略')
@@ -812,7 +880,6 @@ class PortfolioTestingEngine(object):
         if self.acivte_fund_kline:
             # 创建策略实例的资金K线
             self.create_fund_kline(name=strategy_name, use_renko=False)
-
 
     def subscribe_symbol(self, strategy_name: str, vt_symbol: str, gateway_name: str = '', is_bar: bool = False):
         """订阅合约"""
@@ -844,7 +911,43 @@ class PortfolioTestingEngine(object):
                    order_type: OrderType = OrderType.LIMIT,
                    gateway_name: str = None):
         """发单"""
+        price_tick = self.get_price_tick(vt_symbol)
+        price = round_to(price, price_tick)
 
+        if stop:
+            return self.send_local_stop_order(
+                strategy=strategy,
+                vt_symbol=vt_symbol,
+                direction=direction,
+                offset=offset,
+                price=price,
+                volume=volume,
+                lock=lock,
+                gateway_name=gateway_name
+            )
+        else:
+            return self.send_limit_order(
+                strategy=strategy,
+                vt_symbol=vt_symbol,
+                direction=direction,
+                offset=offset,
+                price=price,
+                volume=volume,
+                lock=lock,
+                gateway_name=gateway_name
+            )
+
+    def send_limit_order(self,
+                         strategy: CtaTemplate,
+                         vt_symbol: str,
+                         direction: Direction,
+                         offset: Offset,
+                         price: float,
+                         volume: float,
+                         lock: bool,
+                         order_type: OrderType = OrderType.LIMIT,
+                         gateway_name: str = None
+                         ):
         self.limit_order_count += 1
         order_id = str(self.limit_order_count)
         symbol, exchange = extract_vt_symbol(vt_symbol)
@@ -869,62 +972,244 @@ class PortfolioTestingEngine(object):
         self.limit_orders[order.vt_orderid] = order
         self.order_strategy_dict.update({order.vt_orderid: strategy})
 
-        self.write_log(
-            u'{},{},{},p:{},v:{},ref:[{}]'.format(vt_symbol, direction, offset, price, volume, order.vt_orderid))
+        self.write_log(f'创建限价单:{order.__dict__}')
 
         return [order.vt_orderid]
 
-    def cancel_order(self, vt_orderid):
+    def send_local_stop_order(
+            self,
+            strategy: CtaTemplate,
+            vt_symbol: str,
+            direction: Direction,
+            offset: Offset,
+            price: float,
+            volume: float,
+            lock: bool,
+            gateway_name: str = None):
+
+        """"""
+        self.stop_order_count += 1
+
+        stop_order = StopOrder(
+            vt_symbol=vt_symbol,
+            direction=direction,
+            offset=offset,
+            price=price,
+            volume=volume,
+            stop_orderid=f"{STOPORDER_PREFIX}.{self.stop_order_count}",
+            strategy_name=strategy.strategy_name,
+        )
+        self.write_log(f'创建本地停止单:{stop_order.__dict__}')
+        self.order_strategy_dict.update({stop_order.stop_orderid: strategy})
+
+        self.active_stop_orders[stop_order.stop_orderid] = stop_order
+        self.stop_orders[stop_order.stop_orderid] = stop_order
+
+        return [stop_order.stop_orderid]
+
+    def cancel_order(self, strategy: CtaTemplate, vt_orderid: str):
         """撤单"""
+        if vt_orderid.startswith(STOPORDER_PREFIX):
+            return self.cancel_stop_order(strategy, vt_orderid)
+        else:
+            return self.cancel_limit_order(strategy, vt_orderid)
+
+    def cancel_limit_order(self, strategy: CtaTemplate, vt_orderid: str):
+        """限价单撤单"""
         if vt_orderid in self.active_limit_orders:
             order = self.active_limit_orders[vt_orderid]
-            strategy = self.order_strategy_dict.get(vt_orderid, None)
+            register_strategy = self.order_strategy_dict.get(vt_orderid, None)
+            if register_strategy.strategy_name != strategy.strategy_name:
+                return False
             order.status = Status.CANCELLED
             order.cancelTime = str(self.last_dt)
             self.active_limit_orders.pop(vt_orderid, None)
-            if strategy:
-                strategy.on_order(order)
+            strategy.on_order(order)
+            return True
+        return False
 
-    def cancel_orders(self, vt_symbol: str = None, offset: Offset = None):
+    def cancel_stop_order(self, strategy: CtaTemplate, vt_orderid: str):
+        """本地停止单撤单"""
+        if vt_orderid not in self.active_stop_orders:
+            return False
+        stop_order = self.active_stop_orders.pop(vt_orderid)
+
+        stop_order.status = StopOrderStatus.CANCELLED
+        strategy.on_stop_order(stop_order)
+        return True
+
+    def cancel_all(self, strategy):
+        """撤销某个策略的所有委托单"""
+        self.cancel_orders(strategy=strategy)
+
+    def cancel_orders(self, vt_symbol: str = None, offset: Offset = None, strategy: CtaTemplate = None):
         """撤销所有单"""
         # Symbol参数:指定合约的撤单；
         # OFFSET参数:指定Offset的撤单,缺省不填写时，为所有
+        # strategy参数： 指定某个策略的单子
+
         if len(self.active_limit_orders) > 0:
-            self.write_log(u'从所有订单中撤销{0}\{1}'.format(offset, vt_symbol if vt_symbol is not None else u'所有'))
+            self.write_log(u'从所有订单中,撤销：开平：{}，合约：{}，策略:{}'
+                           .format(offset,
+                                   vt_symbol if vt_symbol is not None else u'所有',
+                                   strategy.strategy_name if strategy else None))
 
         for vt_orderid in list(self.active_limit_orders.keys()):
             order = self.active_limit_orders.get(vt_orderid, None)
-            strategy = self.order_strategy_dict.get(vt_orderid, None)
-            if order is None or strategy is None:
+            order_strategy = self.order_strategy_dict.get(vt_orderid, None)
+            if order is None or order_strategy is None:
                 continue
 
             if offset is None:
-                offsetCond = True
+                offset_cond = True
             else:
-                offsetCond = order.offset == offset
+                offset_cond = order.offset == offset
 
             if vt_symbol is None:
                 symbol_cond = True
             else:
                 symbol_cond = order.vt_symbol == vt_symbol
-            if symbol_cond and offsetCond:
+
+            if strategy is None:
+                strategy_cond = True
+            else:
+                strategy_cond = strategy.strategy_name == order_strategy.strategy_name
+
+            if offset_cond and symbol_cond and strategy_cond:
                 self.write_log(
-                    u'撤销订单:{0},{1} {2}@{3}'.format(vt_orderid, order.direction, order.price, order.volume))
+                    u'撤销订单:{},{} {}@{}'.format(vt_orderid, order.direction, order.price, order.volume))
                 order.status = Status.CANCELLED
-                order.cancelTime = str(self.last_dt)
+                order.cancel_time = str(self.last_dt)
                 del self.active_limit_orders[vt_orderid]
                 if strategy:
-                    strategy.onOrder(order)
+                    strategy.on_order(order)
 
-    def send_stop_order(self, vt_symbol, orderType, price, volume, strategy):
-        """发停止单（本地实现）"""
+        for stop_orderid in list(self.active_stop_orders.keys()):
+            order = self.active_stop_orders.get(stop_orderid, None)
+            order_strategy = self.order_strategy_dict.get(stop_orderid, None)
+            if order is None or order_strategy is None:
+                continue
 
-        self.write_error(u'暂不支持本地停止单功能')
-        return ''
+            if offset is None:
+                offset_cond = True
+            else:
+                offset_cond = order.offset == offset
 
-    def cancel_stop_order(self, stopOrderID):
-        """撤销停止单"""
-        pass
+            if vt_symbol is None:
+                symbol_cond = True
+            else:
+                symbol_cond = order.vt_symbol == vt_symbol
+
+            if strategy is None:
+                strategy_cond = True
+            else:
+                strategy_cond = strategy.strategy_name == order_strategy.strategy_name
+
+            if offset_cond and symbol_cond and strategy_cond:
+                self.write_log(
+                    u'撤销本地停止单:{},{} {}@{}'.format(stop_orderid, order.direction, order.price, order.volume))
+                order.status = Status.CANCELLED
+                order.cancel_time = str(self.last_dt)
+                self.active_stop_orders.pop(stop_orderid, None)
+                if strategy:
+                    strategy.on_stop_order(order)
+
+    def cross_stop_order(self, bar):
+        """
+        Cross stop order with last bar/tick data.
+        """
+        vt_symbol = bar.vt_symbol
+        for stop_orderid in list(self.active_stop_orders.keys()):
+            stop_order = self.active_stop_orders[stop_orderid]
+            strategy = self.order_strategy_dict.get(stop_orderid, None)
+            if stop_order.vt_symbol != vt_symbol or stop_order is None or strategy is None:
+                continue
+            # 若买入方向停止单价格高于等于该价格，则会触发
+            long_cross_price = round_to(value=bar.low_price, target=self.get_price_tick(vt_symbol))
+            long_cross_price -= self.get_price_tick(vt_symbol)
+
+            # 若卖出方向停止单价格低于等于该价格，则会触发
+            short_cross_price = round_to(value=bar.high_price, target=self.get_price_tick(vt_symbol))
+            short_cross_price += self.get_price_tick(vt_symbol)
+
+            # 在当前时间点前发出的买入委托可能的最优成交价
+            long_best_price = round_to(value=bar.open_price,
+                                       target=self.get_price_tick(vt_symbol)) + self.get_price_tick(vt_symbol)
+
+            # 在当前时间点前发出的卖出委托可能的最优成交价
+            short_best_price = round_to(value=bar.open_price,
+                                        target=self.get_price_tick(vt_symbol)) - self.get_price_tick(vt_symbol)
+
+            # Check whether stop order can be triggered.
+            long_cross = (
+                    stop_order.direction == Direction.LONG
+                    and stop_order.price <= long_cross_price
+            )
+
+            short_cross = (
+                    stop_order.direction == Direction.SHORT
+                    and stop_order.price >= short_cross_price
+            )
+
+            if not long_cross and not short_cross:
+                continue
+
+            # Create order data.
+            self.limit_order_count += 1
+            symbol, exchange = extract_vt_symbol(vt_symbol)
+            order = OrderData(
+                symbol=symbol,
+                exchange=exchange,
+                orderid=str(self.limit_order_count),
+                direction=stop_order.direction,
+                offset=stop_order.offset,
+                price=stop_order.price,
+                volume=stop_order.volume,
+                status=Status.ALLTRADED,
+                gateway_name=self.gateway_name,
+            )
+            order.datetime = self.last_dt
+            self.write_log(f'停止单被触发:\n{stop_order.__dict__}\n=>委托单{order.__dict__}')
+            self.limit_orders[order.vt_orderid] = order
+
+            # Create trade data.
+            if long_cross:
+                trade_price = max(stop_order.price, long_best_price)
+            else:
+                trade_price = min(stop_order.price, short_best_price)
+
+            self.trade_count += 1
+
+            trade = TradeData(
+                symbol=order.symbol,
+                exchange=order.exchange,
+                orderid=order.orderid,
+                tradeid=str(self.trade_count),
+                direction=order.direction,
+                offset=order.offset,
+                price=trade_price,
+                volume=order.volume,
+                time=self.last_dt.strftime("%Y-%m-%d %H:%M:%S"),
+                datetime=self.last_dt,
+                gateway_name=self.gateway_name,
+            )
+            trade.strategy_name = strategy.strategy_name
+            trade.datetime = self.last_dt
+            self.write_log(f'停止单触发成交:{trade.__dict__}')
+            self.trade_dict[trade.vt_tradeid] = trade
+            self.trades[trade.vt_tradeid] = copy.copy(trade)
+
+            # Update stop order.
+            stop_order.vt_orderids.append(order.vt_orderid)
+            stop_order.status = StopOrderStatus.TRIGGERED
+
+            self.active_stop_orders.pop(stop_order.stop_orderid)
+
+            # Push update to strategy.
+            strategy.on_stop_order(stop_order)
+            strategy.on_order(order)
+            self.append_trade(trade)
+            strategy.on_trade(trade)
 
     def cross_limit_order(self, bar):
         """基于最新数据撮合限价单"""
@@ -932,9 +1217,8 @@ class PortfolioTestingEngine(object):
         vt_symbol = bar.vt_symbol
 
         # 遍历限价单字典中的所有限价单
-        workingLimitOrderDictClone = copy.deepcopy(self.active_limit_orders)
-        for orderID, order in list(workingLimitOrderDictClone.items()):
-
+        for vt_orderid in list(self.active_limit_orders.keys()):
+            order = self.active_limit_orders.get(vt_orderid, None)
             if order.vt_symbol != vt_symbol:
                 continue
 
@@ -943,25 +1227,25 @@ class PortfolioTestingEngine(object):
                 self.write_error(u'找不到vt_orderid:{}对应的策略'.format(order.vt_orderid))
                 continue
 
-            buyCrossPrice = round_to(value=bar.low,
-                                     target=self.get_price_tick(vt_symbol)) + self.get_price_tick(
+            buy_cross_price = round_to(value=bar.low_price,
+                                       target=self.get_price_tick(vt_symbol)) + self.get_price_tick(
                 vt_symbol)  # 若买入方向限价单价格高于该价格，则会成交
-            sellCrossPrice = round_to(value=bar.high,
-                                      target=self.get_price_tick(vt_symbol)) - self.get_price_tick(
+            sell_cross_price = round_to(value=bar.high_price,
+                                        target=self.get_price_tick(vt_symbol)) - self.get_price_tick(
                 vt_symbol)  # 若卖出方向限价单价格低于该价格，则会成交
-            buyBestCrossPrice = round_to(value=bar.open,
-                                         target=self.get_price_tick(vt_symbol)) + self.get_price_tick(
+            buy_best_cross_price = round_to(value=bar.open_price,
+                                            target=self.get_price_tick(vt_symbol)) + self.get_price_tick(
                 vt_symbol)  # 在当前时间点前发出的买入委托可能的最优成交价
-            sellBestCrossPrice = round_to(value=bar.open,
-                                          target=self.get_price_tick(vt_symbol)) - self.get_price_tick(
+            sell_best_cross_price = round_to(value=bar.open_price,
+                                             target=self.get_price_tick(vt_symbol)) - self.get_price_tick(
                 vt_symbol)  # 在当前时间点前发出的卖出委托可能的最优成交价
 
             # 判断是否会成交
-            buyCross = order.direction == Direction.LONG and order.price >= buyCrossPrice
-            sellCross = order.direction == Direction.SHORT and order.price <= sellCrossPrice
+            buy_cross = order.direction == Direction.LONG and order.price >= buy_cross_price
+            sell_cross = order.direction == Direction.SHORT and order.price <= sell_cross_price
 
             # 如果发生了成交
-            if buyCross or sellCross:
+            if buy_cross or sell_cross:
                 # 推送成交数据
                 self.trade_count += 1  # 成交编号自增1
 
@@ -976,27 +1260,29 @@ class PortfolioTestingEngine(object):
                     direction=order.direction,
                     offset=order.offset,
                     volume=order.volume,
-                    time=str(self.last_dt)
+                    time=self.last_dt.strftime("%Y-%m-%d %H:%M:%S"),
+                    datetime=self.last_dt
                 )
 
                 # 以买入为例：
                 # 1. 假设当根K线的OHLC分别为：100, 125, 90, 110
                 # 2. 假设在上一根K线结束(也是当前K线开始)的时刻，策略发出的委托为限价105
                 # 3. 则在实际中的成交价会是100而不是105，因为委托发出时市场的最优价格是100
-                if buyCross:
-                    trade_rice = min(order.price, buyBestCrossPrice)
+                if buy_cross:
+                    trade_price = min(order.price, buy_best_cross_price)
 
                 else:
-                    trade_price = max(order.price, sellBestCrossPrice)
+                    trade_price = max(order.price, sell_best_cross_price)
+                trade.price = trade_price
 
                 # 记录该合约来自哪个策略实例
-                trade.strategy = strategy.name
+                trade.strategy_name = strategy.strategy_name
 
-                strategy.onTrade(trade)
+                strategy.on_trade(trade)
 
                 for cov_trade in self.convert_spd_trade(trade):
                     self.trade_dict[cov_trade.vt_tradeid] = cov_trade
-                    self.trades[cov_trade.vt_tradeid] = cov_trade
+                    self.trades[cov_trade.vt_tradeid] = copy.copy(cov_trade)
                     self.write_log(u'vt_trade_id:{0}'.format(cov_trade.vt_tradeid))
 
                     # 更新持仓缓存数据
@@ -1005,16 +1291,16 @@ class PortfolioTestingEngine(object):
                         pos_buffer = PositionHolding(self.get_contract(vt_symbol))
                         self.pos_holding_dict[cov_trade.vt_symbol] = pos_buffer
                     pos_buffer.update_trade(cov_trade)
-                    self.write_log(u'{} : crossLimitOrder: TradeId:{},  posBuffer = {}'.format(cov_trade.strategy,
-                                                                                               cov_trade.tradeID,
-                                                                                               pos_buffer.toStr()))
+                    self.write_log(u'{} : crossLimitOrder: TradeId:{},  posBuffer = {}'.format(cov_trade.strategy_name,
+                                                                                               cov_trade.tradeid,
+                                                                                               pos_buffer.to_str()))
 
                     # 写入交易记录
                     self.append_trade(cov_trade)
 
                     # 更新资金曲线
                     if 'SPD' not in cov_trade.vt_symbol:
-                        fund_kline = self.get_fund_kline(cov_trade.strategy)
+                        fund_kline = self.get_fund_kline(cov_trade.strategy_name)
                         if fund_kline:
                             fund_kline.update_trade(cov_trade)
 
@@ -1025,10 +1311,7 @@ class PortfolioTestingEngine(object):
                 strategy.on_order(order)
 
                 # 从字典中删除该限价单
-                try:
-                    del self.active_limit_orders[orderID]
-                except Exception as ex:
-                    self.write_error(u'crossLimitOrder exception:{},{}'.format(str(ex), traceback.format_exc()))
+                self.active_limit_orders.pop(vt_orderid, None)
 
         # 实时计算模式
         self.realtime_calculate()
@@ -1057,7 +1340,8 @@ class PortfolioTestingEngine(object):
                                   strategy_name=trade.strategy_name,
                                   price=self.get_price(active_vt_symbol),
                                   volume=int(trade.volume * active_rate),
-                                  time=trade.time
+                                  time=trade.time,
+                                  datetime=trade.datetime
                                   )
 
             # 被动腿成交记录
@@ -1069,7 +1353,9 @@ class PortfolioTestingEngine(object):
                                   tradeid='spd_pas_' + str(trade.tradeid),
                                   direction=Direction.LONG if trade.direction == Direction.SHORT else Direction.SHORT,
                                   offset=trade.offset,
-                                  strategy_name=trade.strategy_name
+                                  strategy_name=trade.strategy_name,
+                                  time=trade.time,
+                                  datetime=trade.datetime
                                   )
 
             # 根据套利合约的类型+主合约的价格，反向推导出被动合约的价格
@@ -1126,7 +1412,7 @@ class PortfolioTestingEngine(object):
         if self.logs_path is not None:
             logs_folder = self.logs_path
         else:
-            logs_folder = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+            logs_folder = os.path.abspath(os.path.join(os.getcwd(), 'log'))
             self.logs_path = logs_folder
 
         if not os.path.exists(logs_folder):
@@ -1144,9 +1430,10 @@ class PortfolioTestingEngine(object):
         if strategy_name is None:
             filename = os.path.abspath(os.path.join(self.get_logs_path(), '{}'.format(
                 self.test_name if len(self.test_name) > 0 else 'portfolio_test')))
+            print(u'create logger:{}'.format(filename))
             self.logger = setup_logger(file_name=filename,
                                        name=self.test_name,
-                                       level=logging.DEBUG if debug else logging.ERROR,
+                                       log_level=logging.DEBUG if debug else logging.ERROR,
                                        backtesing=True)
         else:
             filename = os.path.abspath(
@@ -1154,10 +1441,10 @@ class PortfolioTestingEngine(object):
             print(u'create logger:{}'.format(filename))
             self.strategy_loggers[strategy_name] = setup_logger(file_name=filename,
                                                                 name=str(strategy_name),
-                                                                level=logging.DEBUG if debug else logging.ERROR,
+                                                                log_level=logging.DEBUG if debug else logging.ERROR,
                                                                 backtesing=True)
 
-    def write_log(self, content, strategy_name=None):
+    def write_log(self, msg: str, strategy_name: str = None, level: int = logging.DEBUG):
         """记录日志"""
         # log = str(self.datetime) + ' ' + content
         # self.logList.append(log)
@@ -1165,39 +1452,39 @@ class PortfolioTestingEngine(object):
         if strategy_name is None:
             # 写入本地log日志
             if self.logger:
-                self.logger.info(content)
+                self.logger.log(msg=msg, level=level)
             else:
-                self.create_logger()
+                self.create_logger(debug=self.debug)
         else:
             if strategy_name in self.strategy_loggers:
-                self.strategy_loggers[strategy_name].info(content)
+                self.strategy_loggers[strategy_name].log(msg=msg, level=level)
             else:
-                self.create_logger(strategy_name=strategy_name)
+                self.create_logger(strategy_name=strategy_name, debug=self.debug)
 
-    def write_error(self, content, strategy_name=None):
+    def write_error(self, msg, strategy_name=None):
         """记录异常"""
 
         if strategy_name is None:
             if self.logger:
-                self.logger.error(content)
+                self.logger.error(msg)
             else:
-                self.create_logger()
+                self.create_logger(debug=self.debug)
         else:
             if strategy_name in self.strategy_loggers:
-                self.strategy_loggers[strategy_name].error(content)
+                self.strategy_loggers[strategy_name].error(msg)
             else:
-                self.create_logger(strategy_name=strategy_name)
+                self.create_logger(strategy_name=strategy_name, debug=self.debug)
                 try:
-                    self.strategy_loggers[strategy_name].error(content)
+                    self.strategy_loggers[strategy_name].error(msg)
                 except Exception as ex:
                     print('{}'.format(datetime.now()), file=sys.stderr)
                     print('could not create cta logger for {},excption:{},trace:{}'.format(strategy_name, str(ex),
                                                                                            traceback.format_exc()))
-                    print(content, file=sys.stderr)
+                    print(msg, file=sys.stderr)
 
     def output(self, content):
         """输出内容"""
-        print(str(datetime.now()) + "\t" + content)
+        print(self.test_name + "\t" + content)
 
     def realtime_calculate(self):
         """实时计算交易结果
@@ -1244,14 +1531,15 @@ class PortfolioTestingEngine(object):
 
                     cur_short_pos_list = [s_pos.volume for s_pos in self.short_position_list]
 
-                    self.write_log(u'当前空单:{}'.format(cur_short_pos_list))
-
+                    self.write_log(u'{}当前空单:{}'.format(trade.vt_symbol, cur_short_pos_list))
+                    if len(cur_short_pos_list) > 3:
+                        a = 1
                     # 来自同一策略，同一合约才能撮合
                     pop_indexs = [i for i, val in enumerate(self.short_position_list) if
-                                  val.vt_symbol == trade.vt_symbol and val.strategy == trade.strategy]
+                                  val.vt_symbol == trade.vt_symbol and val.strategy_name == trade.strategy_name]
 
                     if len(pop_indexs) < 1:
-                        self.write_error(u'异常，{}没有对应symbol:{}的空单持仓'.format(trade.strategy, trade.vt_symbol))
+                        self.write_error(u'异常，{}没有对应symbol:{}的空单持仓'.format(trade.strategy_name, trade.vt_symbol))
                         raise Exception(u'realtimeCalculate2() Exception,没有对应symbol:{0}的空单持仓'.format(trade.vt_symbol))
                         return
 
@@ -1282,12 +1570,12 @@ class PortfolioTestingEngine(object):
 
                         t = OrderedDict()
                         t['gid'] = g_id
-                        t['strategy'] = open_trade.strategy
+                        t['strategy'] = open_trade.strategy_name
                         t['vt_symbol'] = open_trade.vt_symbol
-                        t['open_time'] = open_trade.tradeTime
+                        t['open_time'] = open_trade.time
                         t['open_price'] = open_trade.price
                         t['direction'] = u'Short'
-                        t['close_time'] = trade.tradeTime
+                        t['close_time'] = trade.time
                         t['close_price'] = trade.price
                         t['volume'] = open_trade.volume
                         t['profit'] = result.pnl
@@ -1298,7 +1586,8 @@ class PortfolioTestingEngine(object):
                         if not open_trade.vt_symbol.endswith('SPD'):
                             # 更新策略实例的累加盈亏
                             self.pnl_strategy_dict.update(
-                                {open_trade.strategy: self.pnl_strategy_dict.get(open_trade.strategy, 0) + result.pnl})
+                                {open_trade.strategy_name: self.pnl_strategy_dict.get(open_trade.strategy_name,
+                                                                                      0) + result.pnl})
 
                             msg = u'gid:{} {}[{}:开空tid={}:{}]-[{}.平空tid={},{},vol:{}],净盈亏pnl={},手续费:{}' \
                                 .format(g_id, open_trade.vt_symbol, open_trade.time, shortid, open_trade.price,
@@ -1343,12 +1632,12 @@ class PortfolioTestingEngine(object):
 
                         t = OrderedDict()
                         t['gid'] = g_id
-                        t['strategy'] = open_trade.strategy
+                        t['strategy'] = open_trade.strategy_name
                         t['vt_symbol'] = open_trade.vt_symbol
-                        t['open_time'] = open_trade.tradeTime
+                        t['open_time'] = open_trade.time
                         t['open_price'] = open_trade.price
                         t['direction'] = u'Short'
-                        t['close_time'] = trade.tradeTime
+                        t['close_time'] = trade.time
                         t['close_price'] = trade.price
                         t['volume'] = cover_volume
                         t['profit'] = result.pnl
@@ -1359,11 +1648,12 @@ class PortfolioTestingEngine(object):
                         if not (open_trade.vt_symbol.endswith('SPD') or open_trade.vt_symbol.endswith('SPD99')):
                             # 更新策略实例的累加盈亏
                             self.pnl_strategy_dict.update(
-                                {open_trade.strategy: self.pnl_strategy_dict.get(open_trade.strategy, 0) + result.pnl})
+                                {open_trade.strategy_name: self.pnl_strategy_dict.get(open_trade.strategy_name,
+                                                                                      0) + result.pnl})
 
                             msg = u'gid:{} {}[{}:开空tid={}:{}]-[{}.平空tid={},{},vol:{}],净盈亏pnl={},手续费:{}' \
-                                .format(g_id, open_trade.vt_symbol, open_trade.tradeTime, shortid, open_trade.price,
-                                        trade.tradeTime, vt_tradeid, trade.price,
+                                .format(g_id, open_trade.vt_symbol, open_trade.time, shortid, open_trade.price,
+                                        trade.time, vt_tradeid, trade.price,
                                         cover_volume, result.pnl, result.commission)
 
                             self.write_log(msg)
@@ -1409,12 +1699,18 @@ class PortfolioTestingEngine(object):
                         return
 
                     pop_indexs = [i for i, val in enumerate(self.long_position_list) if
-                                  val.vt_symbol == trade.vt_symbol and val.strategy == trade.strategy]
+                                  val.vt_symbol == trade.vt_symbol and val.strategy_name == trade.strategy_name]
                     if len(pop_indexs) < 1:
-                        self.write_error(f'没有{trade.strategy}对应的symbol{trade.vt_symbol}多单数据,')
+                        self.write_error(f'没有{trade.strategy_name}对应的symbol{trade.vt_symbol}多单数据,')
                         raise RuntimeError(
                             f'realtimeCalculate2() Exception,没有对应的symbol{trade.vt_symbol}多单数据,')
                         return
+
+                    cur_long_pos_list = [s_pos.volume for s_pos in self.long_position_list]
+
+                    self.write_log(u'{}当前多单:{}'.format(trade.vt_symbol, cur_long_pos_list))
+                    if len(cur_long_pos_list) > 3:
+                        a = 1
 
                     pop_index = pop_indexs[0]
                     open_trade = self.long_position_list.pop(pop_index)
@@ -1438,12 +1734,12 @@ class PortfolioTestingEngine(object):
 
                         t = OrderedDict()
                         t['gid'] = g_id
-                        t['strategy'] = open_trade.strategy
+                        t['strategy'] = open_trade.strategy_name
                         t['vt_symbol'] = open_trade.vt_symbol
-                        t['open_time'] = open_trade.tradeTime
+                        t['open_time'] = open_trade.time
                         t['open_price'] = open_trade.price
                         t['direction'] = u'Long'
-                        t['close_time'] = trade.tradeTime
+                        t['close_time'] = trade.time
                         t['close_price'] = trade.price
                         t['volume'] = open_trade.volume
                         t['profit'] = result.pnl
@@ -1454,12 +1750,13 @@ class PortfolioTestingEngine(object):
                         if not (open_trade.vt_symbol.endswith('SPD') or open_trade.vt_symbol.endswith('SPD99')):
                             # 更新策略实例的累加盈亏
                             self.pnl_strategy_dict.update(
-                                {open_trade.strategy: self.pnl_strategy_dict.get(open_trade.strategy, 0) + result.pnl})
+                                {open_trade.strategy_name: self.pnl_strategy_dict.get(open_trade.strategy_name,
+                                                                                      0) + result.pnl})
 
                             msg = u'gid:{} {}[{}:开多tid={}:{}]-[{}.平多tid={},{},vol:{}],净盈亏pnl={},手续费:{}' \
                                 .format(g_id, open_trade.vt_symbol,
-                                        open_trade.tradeTime, longid, open_trade.price,
-                                        trade.tradeTime, vt_tradeid, trade.price,
+                                        open_trade.time, longid, open_trade.price,
+                                        trade.time, vt_tradeid, trade.price,
                                         open_trade.volume, result.pnl, result.commission)
 
                             self.write_log(msg)
@@ -1497,12 +1794,12 @@ class PortfolioTestingEngine(object):
 
                         t = OrderedDict()
                         t['gid'] = g_id
-                        t['strategy'] = open_trade.strategy
+                        t['strategy'] = open_trade.strategy_name
                         t['vt_symbol'] = open_trade.vt_symbol
-                        t['open_time'] = open_trade.tradeTime
+                        t['open_time'] = open_trade.time
                         t['open_price'] = open_trade.price
                         t['direction'] = u'Long'
-                        t['close_time'] = trade.tradeTime
+                        t['close_time'] = trade.time
                         t['close_price'] = trade.price
                         t['volume'] = sell_volume
                         t['profit'] = result.pnl
@@ -1513,11 +1810,12 @@ class PortfolioTestingEngine(object):
                         if not (open_trade.vt_symbol.endswith('SPD') or open_trade.vt_symbol.endswith('SPD99')):
                             # 更新策略实例的累加盈亏
                             self.pnl_strategy_dict.update(
-                                {open_trade.strategy: self.pnl_strategy_dict.get(open_trade.strategy, 0) + result.pnl})
+                                {open_trade.strategy_name: self.pnl_strategy_dict.get(open_trade.strategy_name,
+                                                                                      0) + result.pnl})
 
                             msg = u'Gid:{} {}[{}:开多tid={}:{}]-[{}.平多tid={},{},vol:{}],净盈亏pnl={},手续费:{}' \
-                                .format(g_id, open_trade.vt_symbol, open_trade.tradeTime, longid, open_trade.price,
-                                        trade.tradeTime, vt_tradeid, trade.price, sell_volume, result.pnl,
+                                .format(g_id, open_trade.vt_symbol, open_trade.time, longid, open_trade.price,
+                                        trade.time, vt_tradeid, trade.price, sell_volume, result.pnl,
                                         result.commission)
 
                             self.write_log(msg)
@@ -1698,7 +1996,7 @@ class PortfolioTestingEngine(object):
             today_holding_profit += holding_profit
 
             # 计算每个策略实例的持仓盈亏
-            strategy_pnl.update({longpos.strategy: strategy_pnl.get(longpos.strategy, 0) + holding_profit})
+            strategy_pnl.update({longpos.strategy_name: strategy_pnl.get(longpos.strategy_name, 0) + holding_profit})
 
             positionMsg += "{},long,p={},v={},m={};".format(symbol, longpos.price, longpos.volume, holding_profit)
 
@@ -1709,7 +2007,7 @@ class PortfolioTestingEngine(object):
             symbol = shortpos.vt_symbol
             # 计算持仓浮盈浮亏/占用保证金
             holding_profit = 0
-            last_price = self.get_price(symbol, None)
+            last_price = self.get_price(symbol)
             if last_price is not None:
                 holding_profit = (shortpos.price - last_price) * shortpos.volume * self.get_size(symbol)
                 short_pos_occupy_money += last_price * abs(shortpos.volume) * self.get_size(
@@ -1718,7 +2016,7 @@ class PortfolioTestingEngine(object):
             # 账号的持仓盈亏
             today_holding_profit += holding_profit
             # 计算每个策略实例的持仓盈亏
-            strategy_pnl.update({shortpos.strategy: strategy_pnl.get(shortpos.strategy, 0) + holding_profit})
+            strategy_pnl.update({shortpos.strategy_name: strategy_pnl.get(shortpos.strategy_name, 0) + holding_profit})
 
             positionMsg += "{},short,p={},v={},m={};".format(symbol, shortpos.price, shortpos.volume, holding_profit)
 
@@ -1752,7 +2050,7 @@ class PortfolioTestingEngine(object):
             positionMsg))
 
     # ---------------------------------------------------------------------
-    def export_trade_result(self):
+    def export_trade_result(self, is_plot_daily=False):
         """
         导出交易结果（开仓-》平仓, 平仓收益）
         导出每日净值结果表
@@ -1762,7 +2060,6 @@ class PortfolioTestingEngine(object):
             self.write_log('no traded records')
             return
 
-        s = ''
         s = self.test_name.replace('&', '')
         s = s.replace(' ', '')
         trade_list_csv_file = os.path.abspath(os.path.join(self.get_logs_path(), '{}_trade_list.csv'.format(s)))
@@ -1799,6 +2096,16 @@ class PortfolioTestingEngine(object):
 
         for row in self.daily_list:
             writer2.writerow(row)
+
+        if is_plot_daily:
+            # 生成净值曲线图片
+            df = pd.DataFrame(self.daily_list)
+            df = df.set_index('date')
+            from vnpy.trader.utility import display_dual_axis
+            plot_file = os.path.abspath(os.path.join(self.get_logs_path(), '{}_plot.png'.format(s)))
+
+            # 双坐标输出，左侧坐标是净值（比率），右侧是各策略的实际资金收益曲线
+            display_dual_axis(df=df, columns1=['rate'], columns2=list(self.strategies.keys()), image_name=plot_file)
 
         return
 
@@ -1847,17 +2154,17 @@ class PortfolioTestingEngine(object):
             return {}, [], []
 
         capital_net_list = []
-        capitalList = []
+        capital_list = []
         for row in self.daily_list:
             capital_net_list.append(row['net'])
-            capitalList.append(row['capital'])
+            capital_list.append(row['capital'])
 
         capital = pd.Series(capital_net_list)
         log_returns = np.log(capital).diff().fillna(0)
         sharpe = (log_returns.mean() * 252) / (log_returns.std() * np.sqrt(252))
         d['sharpe'] = sharpe
 
-        return d, capital_net_list, capitalList
+        return d, capital_net_list, capital_list
 
     def show_backtesting_result(self, is_plot_daily=False):
         """显示回测结果"""
@@ -1869,17 +2176,17 @@ class PortfolioTestingEngine(object):
             return {}, ''
 
         # 导出交易清单
-        self.export_trade_result()
+        self.export_trade_result(is_plot_daily)
 
         result_info = OrderedDict()
 
         # 输出
         self.output('-' * 30)
-        result_info.update({u'第一笔交易': str(d['timeList'][0])})
-        self.output(u'第一笔交易：\t%s' % d['timeList'][0])
+        result_info.update({u'第一笔交易': str(d['time_list'][0])})
+        self.output(u'第一笔交易：\t%s' % d['time_list'][0])
 
-        result_info.update({u'最后一笔交易': str(d['timeList'][-1])})
-        self.output(u'最后一笔交易：\t%s' % d['timeList'][-1])
+        result_info.update({u'最后一笔交易': str(d['time_list'][-1])})
+        self.output(u'最后一笔交易：\t%s' % d['time_list'][-1])
 
         result_info.update({u'总交易次数': d['total_trade_count']})
         self.output(u'总交易次数：\t%s' % format_number(d['total_trade_count']))
@@ -1902,11 +2209,10 @@ class PortfolioTestingEngine(object):
         result_info.update({u'每笔最大亏损': d['min_pnl']})
         self.output(u'每笔最大亏损：\t%s' % format_number(d['min_pnl']))
 
-        result_info.update({u'净值最大回撤': min(d['drawdown_dist'])})
-        self.output(u'净值最大回撤: \t%s' % format_number(min(d['drawdown_dist'])))
+        result_info.update({u'净值最大回撤': min(d['drawdown_list'])})
+        self.output(u'净值最大回撤: \t%s' % format_number(min(d['drawdown_list'])))
 
         result_info.update({u'净值最大回撤率': self.daily_max_drawdown_rate})
-        # self.writeCtaNotification(u'净值最大回撤率: \t%s' % formatNumber(max(d['drawdownRateList'])))
         self.output(u'净值最大回撤率: \t%s' % format_number(self.daily_max_drawdown_rate))
 
         result_info.update({u'净值最大回撤时间': str(self.max_drawdown_rate_time)})
@@ -1927,8 +2233,8 @@ class PortfolioTestingEngine(object):
         result_info.update({u'最大资金占比': d['max_occupy_rate']})
         self.output(u'最大资金占比：\t%s' % format_number(d['max_occupy_rate']))
 
-        result_info.update({u'平均每笔盈利': d['capital'] / d['total_trade_count']})
-        self.output(u'平均每笔盈利：\t%s' % format_number(d['capital'] / d['total_trade_count']))
+        result_info.update({u'平均每笔盈利': d['profit'] / d['total_trade_count']})
+        self.output(u'平均每笔盈利：\t%s' % format_number(d['profit'] / d['total_trade_count']))
 
         result_info.update({u'平均每笔滑点成本': d['total_slippage'] / d['total_trade_count']})
         self.output(u'平均每笔滑点成本：\t%s' % format_number(d['total_slippage'] / d['total_trade_count']))
@@ -1970,10 +2276,7 @@ class PortfolioTestingEngine(object):
             for k in trade_fields:
                 d[k] = getattr(trade, k, '')
 
-            trade_folder = os.path.abspath(os.path.join(self.get_logs_path(), self.test_name))
-            if not os.path.exists(trade_folder):
-                os.makedirs(trade_folder)
-            trade_file = os.path.abspath(os.path.join(trade_folder, '{}_trade.csv'.format(strategy_name)))
+            trade_file = os.path.abspath(os.path.join(self.get_logs_path(), '{}_trade.csv'.format(strategy_name)))
             self.append_data(file_name=trade_file, dict_data=d)
         except Exception as ex:
             self.write_error(u'写入交易记录csv出错：{},{}'.format(str(ex), traceback.format_exc()))
@@ -2034,3 +2337,33 @@ class TradingResult(object):
                     - self.commission - self.slippage)  # 净盈亏
 
 
+def single_test(test_setting: dict, strategy_setting: dict):
+    """
+    单一回测
+    : test_setting, 组合回测所需的配置，包括合约信息，数据bar信息，回测时间，资金等。
+    ：strategy_setting, dict, 一个或多个策略配置
+    """
+    # 创建事件引擎
+    from vnpy.event.engine import EventEngine
+    event_engine = EventEngine()
+    event_engine.start()
+
+    # 创建组合回测引擎
+    engine = PortfolioTestingEngine(event_engine)
+
+    engine.prepare_env(test_setting)
+    try:
+        engine.run_portfolio_test(strategy_setting)
+        # 回测结果，保存
+        result_info = engine.show_backtesting_result(is_plot_daily=test_setting.get('is_plot_daily', False))
+
+    except Exception as ex:
+        print('组合回测异常{}'.format(str(ex)))
+        traceback.print_exc()
+        return False
+
+    if event_engine:
+        event_engine.stop()
+
+    print('测试结束')
+    return True

@@ -1,11 +1,11 @@
 """
 Defines constants and objects used in CtaStrategyPro App.
 """
-
+from abc import ABC
 from dataclasses import dataclass, field
 from enum import Enum
 from datetime import timedelta
-
+from logging import INFO, ERROR
 from vnpy.trader.constant import Direction, Offset, Interval
 
 APP_NAME = "CtaStrategyPro"
@@ -92,3 +92,30 @@ INTERVAL_DELTA_MAP = {
     Interval.HOUR: timedelta(hours=1),
     Interval.DAILY: timedelta(days=1),
 }
+
+class CtaComponent(ABC):
+    """ CTA策略基础组件"""
+
+    def __init__(self, strategy=None, **kwargs):
+        """
+        构造
+        :param strategy:
+        """
+        self.strategy = strategy
+
+    # ----------------------------------------------------------------------
+    def write_log(self, content: str):
+        """记录日志"""
+        if self.strategy:
+            self.strategy.write_log(msg=content, level=INFO)
+        else:
+            print(content)
+
+    # ----------------------------------------------------------------------
+    def write_error(self, content: str, level: int = ERROR):
+        """记录错误日志"""
+        if self.strategy:
+            self.strategy.write_log(msg=content, level=level)
+        else:
+            print(content, file=sys.stderr)
+

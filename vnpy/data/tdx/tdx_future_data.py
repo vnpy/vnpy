@@ -137,7 +137,7 @@ class TdxFutureData(object):
                             last_datetime = datetime.strptime(last_datetime_str, '%Y-%m-%d %H:%M:%S')
                             if (datetime.now() - last_datetime).total_seconds() > 60 * 60 * 2:
                                 self.best_ip = {}
-                        except Exception as ex:
+                        except Exception as ex: # noqa
                             self.best_ip = {}
                     else:
                         self.best_ip = {}
@@ -262,6 +262,8 @@ class TdxFutureData(object):
         """
 
         ret_bars = []
+        if '.' in symbol:
+            symbol = symbol.split('.')[0]
         tdx_symbol = symbol.upper().replace('_', '')
         tdx_symbol = tdx_symbol.replace('99', 'L9')
         underlying_symbol = get_underlying_symbol(symbol).upper()

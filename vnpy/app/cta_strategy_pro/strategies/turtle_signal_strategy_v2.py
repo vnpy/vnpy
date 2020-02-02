@@ -11,6 +11,8 @@ from vnpy.app.cta_strategy_pro import (
     ArrayManager,
 )
 
+from vnpy.trader.utility import round_to
+
 
 class TurtleSignalStrategy_v2(CtaTemplate):
     """"""
@@ -22,7 +24,7 @@ class TurtleSignalStrategy_v2(CtaTemplate):
     atr_window = 20
     fixed_size = 1
     invest_pos = 1
-    invest_percent = 10     # 投资比例
+    invest_percent = 10  # 投资比例
 
     entry_up = 0
     entry_down = 0
@@ -35,7 +37,7 @@ class TurtleSignalStrategy_v2(CtaTemplate):
     long_stop = 0
     short_stop = 0
 
-    parameters = ["x_minuite", "entry_window", "exit_window", "atr_window", "fixed_size"]
+    parameters = ["x_minute", "entry_window", "exit_window", "atr_window", "fixed_size"]
     variables = ["entry_up", "entry_down", "exit_up", "exit_down", "atr_value"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
@@ -47,6 +49,7 @@ class TurtleSignalStrategy_v2(CtaTemplate):
         # 获取合约乘数，保证金比例
         self.symbol_size = self.cta_engine.get_size(self.vt_symbol)
         self.symbol_margin_rate = self.cta_engine.get_margin_rate(self.vt_symbol)
+        self.symbol_price_tick = self.cta_engine.get_price_tick(self.vt_symbol)
 
         self.bg = BarGenerator(self.on_bar, window=self.x_minute)
         self.am = ArrayManager()
@@ -58,7 +61,7 @@ class TurtleSignalStrategy_v2(CtaTemplate):
         Callback when strategy is inited.
         """
         self.write_log("策略初始化")
-        #self.load_bar(20)
+        # self.load_bar(20)
 
     def on_start(self):
         """
@@ -98,8 +101,12 @@ class TurtleSignalStrategy_v2(CtaTemplate):
 
         self.exit_up, self.exit_down = self.am.donchian(self.exit_window)
 
+        if bar.datetime.strftime('%Y-%m-%d %H') == '2016-03-07 09':
+            a = 1  # noqa
+
         if not self.pos:
             self.atr_value = self.am.atr(self.atr_window)
+            self.atr_value = max(4 * self.symbol_price_tick, self.atr_value)
 
             self.long_entry = 0
             self.short_entry = 0
@@ -112,13 +119,17 @@ class TurtleSignalStrategy_v2(CtaTemplate):
             self.send_buy_orders(self.entry_up)
 
             sell_price = max(self.long_stop, self.exit_down)
-            self.sell(sell_price, abs(self.pos), True)
+            refs = self.sell(sell_price, abs(self.pos), True)
+            if len(refs) > 0:
+                self.write_log(f'平多委托编号:{refs}')
 
         elif self.pos < 0:
             self.send_short_orders(self.entry_down)
 
             cover_price = min(self.short_stop, self.exit_up)
-            ret = self.cover(cover_price, abs(self.pos), True)
+            refs = self.cover(cover_price, abs(self.pos), True)
+            if len(refs) > 0:
+                self.write_log(f'平空委托编号:{refs}')
 
         self.put_event()
 
@@ -161,48 +172,77 @@ class TurtleSignalStrategy_v2(CtaTemplate):
 
     def send_buy_orders(self, price):
         """"""
-        if self.pos >= 4:
-            return
 
-        if self.cur_mi_price <= price - self.atr_value/2:
+        if self.cur_mi_price <= price - self.atr_value / 2:
             return
 
         self.update_invest_pos()
 
-        t = self.pos / self.invest_pos
+        t = int(self.pos / self.invest_pos)
+
+        if t >= 4:
+            return
 
         if t < 1:
-            self.buy(price, self.invest_pos, True)
+            refs = self.buy(price, self.invest_pos, True)
+            if len(refs) > 0:
+                self.write_log(f'买入委托编号:{refs}')
 
-        if t < 2:
-            self.buy(price + self.atr_value * 0.5, self.invest_pos, True)
+        if t == 1 and self.cur_mi_price > price:
+            buy_price = round_to(price + self.atr_value * 0.5 , self.symbol_price_tick)
+            self.write_log(u'发出做多停止单，触发价格为: {}'.format(buy_price))
+            refs = self.buy(buy_price, self.invest_pos, True)
+            if len(refs) > 0:
+                self.write_log(f'买入委托编号:{refs}')
 
-        if t < 3:
-            self.buy(price + self.atr_value, self.invest_pos, True)
+        if t == 2 and self.cur_mi_price > price + self.atr_value * 0.5:
+            buy_price = round_to(price + self.atr_value, self.symbol_price_tick)
+            self.write_log(u'发出做多停止单，触发价格为: {}'.format(buy_price))
+            refs = self.buy(buy_price, self.invest_pos, True)
+            if len(refs) > 0:
+                self.write_log(f'买入委托编号:{refs}')
 
-        if t < 4:
-            self.buy(price + self.atr_value * 1.5, self.invest_pos, True)
+        if t == 3 and self.cur_mi_price > price + self.atr_value:
+            buy_price = round_to(price + self.atr_value * 1.5, self.symbol_price_tick)
+            self.write_log(u'发出做多停止单，触发价格为: {}'.format(buy_price))
+            refs = self.buy(buy_price, self.invest_pos, True)
+            if len(refs) > 0:
+                self.write_log(f'买入委托编号:{refs}')
 
     def send_short_orders(self, price):
         """"""
-        if self.pos <= -4:
-            return
-
         if self.cur_mi_price >= price + self.atr_value / 2:
             return
 
         self.update_invest_pos()
 
-        t = self.pos / self.invest_pos
+        t = int(self.pos / self.invest_pos)
+
+        if t <= -4:
+            return
 
         if t > -1:
-            self.short(price, self.invest_pos, True)
+            refs = self.short(price, self.invest_pos, True)
+            if len(refs) > 0:
+                self.write_log(f'卖出委托编号:{refs}')
 
-        if t > -2:
-            self.short(price - self.atr_value * 0.5, self.invest_pos, True)
+        if t == -1 and self.cur_mi_price < price:
+            short_price = round_to(price - self.atr_value * 0.5, self.symbol_price_tick)
+            self.write_log(u'发出做空停止单，触发价格为: {}'.format(short_price))
+            refs = self.short(short_price, self.invest_pos, True)
+            if len(refs) > 0:
+                self.write_log(f'卖出委托编号:{refs}')
 
-        if t > -3:
-            self.short(price - self.atr_value, self.invest_pos, True)
+        if t == -2 and self.cur_mi_price < price + self.atr_value * 0.5:
+            short_price = round_to(price - self.atr_value, self.symbol_price_tick)
+            self.write_log(u'发出做空停止单，触发价格为: {}'.format(short_price))
+            refs = self.short(short_price, self.invest_pos, True)
+            if len(refs) > 0:
+                self.write_log(f'卖出委托编号:{refs}')
 
-        if t > -4:
-            self.short(price - self.atr_value * 1.5, self.invest_pos, True)
+        if t == -3 and self.cur_mi_price < price + self.atr_value:
+            short_price = round_to(price - self.atr_value * 1.5, self.symbol_price_tick)
+            self.write_log(u'发出做空停止单，触发价格为: {}'.format(short_price))
+            refs = self.short(short_price, self.invest_pos, True)
+            if len(refs) > 0:
+                self.write_log(f'卖出委托编号:{refs}')

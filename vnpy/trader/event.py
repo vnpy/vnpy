@@ -26,4 +26,3 @@ EVENT_FUNDS_FLOW = 'eFundsFlow.'
 EVENT_ERROR = 'eError'
 EVENT_WARNING = 'eWarning'
 EVENT_CRITICAL = 'eCritical'
-

@@ -8,7 +8,7 @@ from logging import INFO
 
 from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
 
-ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
+ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED, Status.CANCELLING])
 
 
 @dataclass
@@ -232,15 +232,15 @@ class AccountData(BaseData):
     """
 
     accountid: str
-    pre_balance: float = 0   # 昨净值
-    balance: float = 0       # 当前净值
-    frozen: float = 0        # 冻结资金
-    currency: str = ""       # 币种
-    commission: float = 0    # 手续费
-    margin: float = 0        # 使用保证金
+    pre_balance: float = 0  # 昨净值
+    balance: float = 0  # 当前净值
+    frozen: float = 0  # 冻结资金
+    currency: str = ""  # 币种
+    commission: float = 0  # 手续费
+    margin: float = 0  # 使用保证金
     close_profit: float = 0  # 平仓盈亏
     holding_profit: float = 0  # 持仓盈亏
-    trading_day: str = ""   # 当前交易日
+    trading_day: str = ""  # 当前交易日
 
     def __post_init__(self):
         """"""
@@ -256,18 +256,18 @@ class VtFundsFlowData(BaseData):
     accountid: str  # 账户代码
     exchange: Exchange = None
 
-    currency: str = ""       # 币种
-    trade_date: str = ""     # 成交日期
-    trade_price: float = 0   # 成交价格
+    currency: str = ""  # 币种
+    trade_date: str = ""  # 成交日期
+    trade_price: float = 0  # 成交价格
     trade_volume: float = 0  # 成交数量
     trade_amount: float = 0  # 发生金额( 正数代表卖出，或者转入资金，获取分红等，负数代表买入股票或者出金)
-    fund_remain: float = 0   # 资金余额
-    contract_id: str = ""    # 合同编号
+    fund_remain: float = 0  # 资金余额
+    contract_id: str = ""  # 合同编号
     business_name: str = ""  # 业务名称
-    symbol: str = ""         # 合约代码（证券代码）
-    holder_id: str = ""      # 股东代码
-    direction: str = ""      # 买卖类别：转,买，卖..
-    comment: str = ""        # 备注
+    symbol: str = ""  # 合约代码（证券代码）
+    holder_id: str = ""  # 股东代码
+    direction: str = ""  # 买卖类别：转,买，卖..
+    comment: str = ""  # 备注
 
     def __post_init__(self):
         if self.exchange:
@@ -338,6 +338,7 @@ class SubscribeRequest:
 
     def __eq__(self, other):
         return self.vt_symbol == other.vt_symbol
+
 
 @dataclass
 class OrderRequest:

@@ -29,7 +29,7 @@ api_01 = TdxFutureData()
 api_01.update_mi_contracts()
 
 # 逐一指数合约下载并更新
-for underlying_symbol in ['RB', 'J']:  #api_01.future_contracts.keys():
+for underlying_symbol in api_01.future_contracts.keys():
     index_symbol = underlying_symbol + '99'
     print(f'开始更新:{index_symbol}')
     # csv数据文件名

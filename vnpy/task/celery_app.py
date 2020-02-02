@@ -3,7 +3,6 @@
 # Celery app
 # 该py脚本，为启动celery worker app
 # 在项目根目录下，运行 celery -A vnpy.task.celery worker
-import time
 from celery import Celery
 
 import sys
@@ -23,7 +22,7 @@ if vnpy_root not in sys.path:
     sys.path.append(vnpy_root)
 
 # 使用本地配置的
-from vnpy.trader.utility import load_json
+from vnpy.trader.utility import load_json  # noqa
 
 file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'celery_config.json'))
 celery_config = load_json(file_path)
@@ -40,17 +39,8 @@ print(u'Celery 使用redis配置:\nbroker:{}\nbackend:{}'.format(broker, backend
 
 app = Celery('vnpy_task', broker=broker)
 
-
 # 动态导入task目录下子任务
-# app.conf.CELERY_IMPORTS = ['vnpy.task.celery_app.worker_started']
-
-# app.conf.update(
-#        CELERY_TASK_SERIALIZER='json',
-#        CELERY_RESULT_SERIALIZER='json',
-#        CELERY_ACCEPT_CONTENT=['json'],
-#        CELERY_TIMEZONE='Asia/Shanghai',
-#        CELERY_ENABLE_UTC=True
-#                )
+app.conf.CELERY_IMPORTS = ['vnpy.task.celery_app.worker_started']
 
 
 def worker_started():
@@ -59,7 +49,7 @@ def worker_started():
         import socket
         from vnpy.trader.util_wechat import send_wx_msg
         send_wx_msg(u'{} Celery Worker 启动'.format(socket.gethostname()))
-    except:
+    except:  # noqa
         pass
 
 

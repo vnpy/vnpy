@@ -3,8 +3,6 @@
 # 通达信指数行情发布器
 # 华富资产
 
-import os
-import sys
 import copy
 import json
 import traceback

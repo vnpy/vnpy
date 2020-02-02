@@ -11,7 +11,6 @@ from vnpy.trader.event import EVENT_TRADE, EVENT_ORDER, EVENT_LOG, EVENT_ACCOUNT
 from vnpy.trader.constant import Status
 from vnpy.trader.utility import load_json, save_json
 
-
 APP_NAME = "RiskManager"
 
 
@@ -42,12 +41,12 @@ class RiskManagerEngine(BaseEngine):
         self.active_order_limit = 500
 
         # 总仓位相关(0~100+)
-        self.percent_limit = 100   # 仓位比例限制
+        self.percent_limit = 100  # 仓位比例限制
         self.last_over_time = None  # 启动风控后，最后一次超过仓位限制的时间
 
-        self.account_dict = {}              # 资金账号信息
-        self.gateway_dict = {}              # 记录gateway对应的仓位比例
-        self.currency_list = []             # 资金账号风控管理得币种
+        self.account_dict = {}  # 资金账号信息
+        self.gateway_dict = {}  # 记录gateway对应的仓位比例
+        self.currency_list = []  # 资金账号风控管理得币种
 
         self.load_setting()
         self.register_event()
@@ -177,6 +176,24 @@ class RiskManagerEngine(BaseEngine):
                     .format(account.vt_accountid,
                             account.balance, account_percent, self.percent_limit)
                 self.write_log(msg)
+
+    def get_account(self, vt_accountid: str = ""):
+        """获取账号的当前净值，可用资金，账号当前仓位百分比，允许的最大仓位百分比"""
+        if vt_accountid:
+            account = self.account_dict.get(vt_accountid, None)
+            if account:
+                return account.balance, \
+                       account.available, \
+                       round(account.frozen * 100 / (account.balance + 0.01), 2), \
+                       self.percent_limit
+        if len(self.account_dict.values()) > 0:
+            account = self.account_dict.values()[0]
+            return account.balance, \
+                   account.available, \
+                   round(account.frozen * 100 / (account.balance + 0.01), 2), \
+                   self.percent_limit
+        else:
+            return 0, 0, 0, 0
 
     def write_log(self, msg: str):
         """"""

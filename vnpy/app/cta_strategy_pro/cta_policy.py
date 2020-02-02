@@ -4,7 +4,7 @@ import os
 import json
 from datetime import datetime
 from collections import OrderedDict
-from vnpy.app.cta_strategy_pro.template import CtaComponent
+from vnpy.app.cta_strategy_pro.base import CtaComponent
 from vnpy.trader.utility import get_folder_path
 
 
@@ -18,12 +18,12 @@ class CtaPolicy(CtaComponent):
         构造
         :param strategy:
         """
-        super(CtaPolicy).__init__(strategy=strategy)
+        super(CtaPolicy,self).__init__(strategy=strategy, kwargs=kwargs)
 
         self.create_time = None
         self.save_time = None
 
-    def toJson(self):
+    def to_json(self):
         """
         将数据转换成dict
         datetime =》 string
@@ -36,7 +36,7 @@ class CtaPolicy(CtaComponent):
 
         return j
 
-    def fromJson(self, json_data):
+    def from_json(self, json_data):
         """
         将数据从json_data中恢复
        :param json_data:
@@ -67,7 +67,7 @@ class CtaPolicy(CtaComponent):
         从持久化文件中获取
         :return:
         """
-        json_file = os.path.abspath(os.path.join(get_folder_path('data'), u'{}_Policy.json'.format(self.strategy.name)))
+        json_file = os.path.abspath(os.path.join(get_folder_path('data'), u'{}_Policy.json'.format(self.strategy.strategy_name)))
 
         json_data = {}
         if os.path.exists(json_file):
@@ -80,7 +80,7 @@ class CtaPolicy(CtaComponent):
                 json_data = {}
 
             # 从持久化文件恢复数据
-            self.fromJson(json_data)
+            self.from_json(json_data)
 
     def save(self):
         """
@@ -88,14 +88,14 @@ class CtaPolicy(CtaComponent):
         :return:
         """
         json_file = os.path.abspath(
-            os.path.join(get_folder_path('data'), u'{}_Policy.json'.format(self.strategy.name)))
+            os.path.join(get_folder_path('data'), u'{}_Policy.json'.format(self.strategy.strategy_name)))
 
         try:
             # 修改为：回测时不保存
             if self.strategy and self.strategy.backtesting:
                 return
 
-            json_data = self.toJson()
+            json_data = self.to_json()
             json_data['save_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             with open(json_file, 'w') as f:
                 data = json.dumps(json_data, indent=4)
