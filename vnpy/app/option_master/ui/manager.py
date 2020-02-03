@@ -2,6 +2,8 @@ from typing import Dict, List, Tuple
 from copy import copy
 from functools import partial
 
+from scipy import interpolate
+
 from vnpy.event import Event
 from vnpy.trader.ui import QtWidgets, QtCore
 from vnpy.trader.event import EVENT_TICK, EVENT_TIMER
@@ -379,7 +381,7 @@ class VolatilityDoubleSpinBox(QtWidgets.QDoubleSpinBox):
         return self.value()
 
 
-class PricingVolatilityManager(QtWidgets.QTabWidget):
+class PricingVolatilityManager(QtWidgets.QWidget):
     """"""
 
     signal_timer = QtCore.pyqtSignal(Event)
@@ -403,6 +405,11 @@ class PricingVolatilityManager(QtWidgets.QTabWidget):
         """"""
         self.setWindowTitle("波动率管理")
 
+        tab = QtWidgets.QTabWidget()
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(tab)
+        self.setLayout(vbox)
+
         self.chain_symbols = list(self.portfolio.chains.keys())
         self.chain_symbols.sort()
 
@@ -418,7 +425,7 @@ class PricingVolatilityManager(QtWidgets.QTabWidget):
                 "行权价",
                 "中值隐波",
                 "定价隐波",
-                "拟合"
+                "执行拟合"
             ])
             table.horizontalHeader().setSectionResizeMode(
                 QtWidgets.QHeaderView.Stretch
@@ -434,14 +441,22 @@ class PricingVolatilityManager(QtWidgets.QTabWidget):
                     index=index
                 )
                 pricing_impv_spin = VolatilityDoubleSpinBox()
+                pricing_impv_spin.setAlignment(QtCore.Qt.AlignCenter)
                 pricing_impv_spin.valueChanged.connect(set_func)
 
                 check = QtWidgets.QCheckBox()
 
+                check_hbox = QtWidgets.QHBoxLayout()
+                check_hbox.addWidget(check)
+                check_hbox.setAlignment(QtCore.Qt.AlignCenter)
+
+                check_widget = QtWidgets.QWidget()
+                check_widget.setLayout(check_hbox)
+
                 table.setItem(row, 0, index_cell)
                 table.setItem(row, 1, mid_impv_cell)
                 table.setCellWidget(row, 2, pricing_impv_spin)
-                table.setCellWidget(row, 3, check)
+                table.setCellWidget(row, 3, check_widget)
 
                 cells = {
                     "mid_impv": mid_impv_cell,
@@ -455,6 +470,10 @@ class PricingVolatilityManager(QtWidgets.QTabWidget):
             button_reset = QtWidgets.QPushButton("重置")
             button_reset.clicked.connect(reset_func)
 
+            fit_func = partial(self.fit_pricing_impv, chain_symbol=chain_symbol)
+            button_fit = QtWidgets.QPushButton("拟合")
+            button_fit.clicked.connect(fit_func)
+
             increase_func = partial(self.increase_pricing_impv, chain_symbol=chain_symbol)
             button_increase = QtWidgets.QPushButton("+0.1%")
             button_increase.clicked.connect(increase_func)
@@ -465,6 +484,7 @@ class PricingVolatilityManager(QtWidgets.QTabWidget):
 
             hbox = QtWidgets.QHBoxLayout()
             hbox.addWidget(button_reset)
+            hbox.addWidget(button_fit)
             hbox.addWidget(button_increase)
             hbox.addWidget(button_decrease)
 
@@ -474,7 +494,7 @@ class PricingVolatilityManager(QtWidgets.QTabWidget):
 
             chain_widget = QtWidgets.QWidget()
             chain_widget.setLayout(vbox)
-            self.addTab(chain_widget, chain_symbol)
+            tab.addTab(chain_widget, chain_symbol)
 
             self.update_pricing_impv(chain_symbol)
 
@@ -510,6 +530,42 @@ class PricingVolatilityManager(QtWidgets.QTabWidget):
 
             call.pricing_impv = otm.mid_impv
             put.pricing_impv = otm.mid_impv
+
+        self.update_pricing_impv(chain_symbol)
+
+    def fit_pricing_impv(self, chain_symbol: str):
+        """
+        Fit pricing impv with cubic spline algo.
+        """
+        chain = self.portfolio.get_chain(chain_symbol)
+        atm_index = chain.atm_index
+
+        strike_prices = []
+        pricing_impvs = []
+
+        for index in chain.indexes:
+            call = chain.calls[index]
+            put = chain.puts[index]
+            cells = self.cells[(chain_symbol, index)]
+
+            if not cells["check"].isChecked():
+                if index >= atm_index:
+                    otm = call
+                else:
+                    otm = put
+
+                strike_prices.append(otm.strike_price)
+                pricing_impvs.append(otm.pricing_impv)
+
+        cs = interpolate.CubicSpline(strike_prices, pricing_impvs)
+
+        for index in chain.indexes:
+            call = chain.calls[index]
+            put = chain.puts[index]
+
+            new_impv = cs(call.strike_price)
+            call.pricing_impv = new_impv
+            put.pricing_impv = new_impv
 
         self.update_pricing_impv(chain_symbol)
 
