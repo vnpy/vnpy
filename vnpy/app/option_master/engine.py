@@ -44,6 +44,7 @@ class OptionEngine(BaseEngine):
     """"""
 
     setting_filename = "option_master_setting.json"
+    data_filename = "option_master_data.json"
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
@@ -76,18 +77,26 @@ class OptionEngine(BaseEngine):
         self.setting = load_json(self.setting_filename)
 
     def save_setting(self):
-        """"""
-        # Save underlying adjustment
+        """
+        Save underlying adjustment.
+        """
         adjustment_settings = {}
+        impv_settings = {}
 
         for portfolio in self.active_portfolios.values():
             adjustment_setting = {}
+            impv_setting = {}
             for chain in portfolio.chains.values():
                 adjustment_setting[chain.chain_symbol] = chain.underlying_adjustment
 
+                for call in chain.calls.values():
+                    impv_setting[(chain.chain_symbol, call.chain_index)] = call.pricing_impv
+
             adjustment_settings[portfolio.name] = adjustment_setting
+            impv_settings[portfolio.name] = impv_setting
 
         self.setting["underlying_adjustments"] = adjustment_settings
+        self.setting["pricing_impvs"] = impv_settings
 
         save_json(self.setting_filename, self.setting)
 
@@ -251,13 +260,30 @@ class OptionEngine(BaseEngine):
 
         # Load underlying adjustment from setting
         adjustment_settings = self.setting.get("underlying_adjustments", {})
-        adjustment_setting = adjustment_settings.get(portfolio_name)
+        adjustment_setting = adjustment_settings.get(portfolio_name, {})
 
         if adjustment_setting:
             for chain in portfolio.chains.values():
                 chain.underlying_adjustment = adjustment_setting.get(
                     chain.chain_symbol, 0
                 )
+
+        # Load pricing impv from setting
+        impv_settings = self.setting.get("underlying_adjustments", {})
+        impv_setting = impv_settings.get(portfolio_name, {})
+
+        if impv_setting:
+            for chain in portfolio.chains.values():
+                for index in chain.indexes:
+                    key = (chain.chain_symbol, index)
+                    pricing_impv = impv_setting.get(key, 0)
+
+                    if pricing_impv:
+                        call = chain.calls[index]
+                        call.pricing_impv = pricing_impv
+
+                        put = chain.puts[index]
+                        put.pricing_impv = pricing_impv
 
         return True
 
