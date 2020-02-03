@@ -539,11 +539,11 @@ class OptionAlgoEngine:
 
         self.event_engine.register(
             EVENT_TICK + algo.option.vt_symbol,
-            self.process_tick_event
+            self.process_option_tick_event
         )
         self.event_engine.register(
             EVENT_TICK + algo.underlying.vt_symbol,
-            self.process_tick_event
+            self.process_underlying_tick_event
         )
 
         algo.start_pricing(params)

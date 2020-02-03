@@ -325,11 +325,6 @@ class OptionMarketMonitor(MonitorTable):
             QtWidgets.QAbstractItemView.PositionAtCenter
         )
 
-    def resizeEvent(self, event: QtGui.QResizeEvent):
-        """"""
-        self.resizeColumnsToContents()
-        event.accept()
-
 
 class OptionGreeksMonitor(MonitorTable):
     """"""

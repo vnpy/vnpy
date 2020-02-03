@@ -128,14 +128,14 @@ class OptionVolatilityChart(QtWidgets.QWidget):
         self.call_curves[chain_symbol] = self.impv_chart.plot(
             symbolSize=symbol_size,
             symbol="t1",
-            name=symbol + " Call",
+            name=symbol + " 看涨",
             pen=pen,
             symbolBrush=color
         )
         self.put_curves[chain_symbol] = self.impv_chart.plot(
             symbolSize=symbol_size,
             symbol="t",
-            name=symbol + " Put",
+            name=symbol + " 看跌",
             pen=pen,
             symbolBrush=color
         )

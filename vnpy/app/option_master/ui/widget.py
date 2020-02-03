@@ -14,6 +14,7 @@ from .monitor import (
     MonitorCell
 )
 from .chart import OptionVolatilityChart, ScenarioAnalysisChart
+from .manager import ElectronicEyeManager, PricingVolatilityManager
 
 
 class OptionManager(QtWidgets.QWidget):
@@ -37,6 +38,8 @@ class OptionManager(QtWidgets.QWidget):
         self.manual_trader: OptionManualTrader = None
         self.hedge_widget: OptionHedgeWidget = None
         self.scenario_chart: ScenarioAnalysisChart = None
+        self.eye_manager: ElectronicEyeManager = None
+        self.pricing_manager: PricingVolatilityManager = None
 
         self.init_ui()
         self.register_event()
@@ -59,6 +62,8 @@ class OptionManager(QtWidgets.QWidget):
         self.volatility_button = QtWidgets.QPushButton("波动率曲线")
         self.hedge_button = QtWidgets.QPushButton("Delta对冲")
         self.scenario_button = QtWidgets.QPushButton("情景分析")
+        self.eye_button = QtWidgets.QPushButton("电子眼")
+        self.pricing_button = QtWidgets.QPushButton("波动率管理")
 
         for button in [
             self.market_button,
@@ -67,7 +72,9 @@ class OptionManager(QtWidgets.QWidget):
             self.manual_button,
             self.volatility_button,
             self.hedge_button,
-            self.scenario_button
+            self.scenario_button,
+            self.eye_button,
+            self.pricing_button
         ]:
             button.setEnabled(False)
 
@@ -81,7 +88,9 @@ class OptionManager(QtWidgets.QWidget):
         hbox.addWidget(self.chain_button)
         hbox.addWidget(self.volatility_button)
         hbox.addWidget(self.hedge_button)
-        hbox.addWidget(self.scenario_butto)
+        hbox.addWidget(self.scenario_button)
+        hbox.addWidget(self.pricing_button)
+        hbox.addWidget(self.eye_button)
 
         self.setLayout(hbox)
 
@@ -130,6 +139,8 @@ class OptionManager(QtWidgets.QWidget):
         self.manual_trader = OptionManualTrader(self.option_engine, self.portfolio_name)
         self.hedge_widget = OptionHedgeWidget(self.option_engine, self.portfolio_name)
         self.scenario_chart = ScenarioAnalysisChart(self.option_engine, self.portfolio_name)
+        self.eye_manager = ElectronicEyeManager(self.option_engine, self.portfolio_name)
+        self.pricing_manager = PricingVolatilityManager(self.option_engine, self.portfolio_name)
 
         self.market_monitor.itemDoubleClicked.connect(self.manual_trader.update_symbol)
 
@@ -140,6 +151,8 @@ class OptionManager(QtWidgets.QWidget):
         self.volatility_button.clicked.connect(self.volatility_chart.show)
         self.scenario_button.clicked.connect(self.scenario_chart.show)
         self.hedge_button.clicked.connect(self.hedge_widget.show)
+        self.eye_button.clicked.connect(self.eye_manager.show)
+        self.pricing_button.clicked.connect(self.pricing_manager.show)
 
         for button in [
             self.market_button,
@@ -148,7 +161,9 @@ class OptionManager(QtWidgets.QWidget):
             self.manual_button,
             self.volatility_button,
             self.scenario_button,
-            self.hedge_button
+            self.hedge_button,
+            self.eye_button,
+            self.pricing_button
         ]:
             button.setEnabled(True)
 
@@ -162,6 +177,8 @@ class OptionManager(QtWidgets.QWidget):
             self.manual_trader.close()
             self.hedge_widget.close()
             self.scenario_chart.close()
+            self.eye_manager.close()
+            self.pricing_manager.close()
 
         event.accept()
 

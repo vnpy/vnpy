@@ -167,7 +167,7 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
         self.cells: Dict[str, Dict] = {}
 
         self.init_ui()
-        # self.register_event()
+        self.register_event()
 
     def init_ui(self):
         """"""
@@ -249,7 +249,7 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
                     else:
                         cell = cell_type()
 
-                    call_cells[d["name"]] = cell
+                    put_cells[d["name"]] = cell
 
                     if isinstance(cell, QtWidgets.QTableWidgetItem):
                         self.setItem(current_row, column, cell)
@@ -287,7 +287,9 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
     def process_tick_event(self, event: Event):
         """"""
         tick = event.data
-        cells = self.cells[tick.vt_symbol]
+        cells = self.cells.get(tick.vt_symbol, None)
+        if not cells:
+            return
 
         cells["bid_price"].setText(str(tick.bid_price_1))
         cells["ask_price"].setText(str(tick.ask_price_1))
@@ -418,6 +420,9 @@ class PricingVolatilityManager(QtWidgets.QTabWidget):
                 "定价隐波",
                 "拟合"
             ])
+            table.horizontalHeader().setSectionResizeMode(
+                QtWidgets.QHeaderView.Stretch
+            )
 
             for row, index in enumerate(chain.indexes):
                 index_cell = IndexCell(index)
@@ -473,8 +478,8 @@ class PricingVolatilityManager(QtWidgets.QTabWidget):
 
             self.update_pricing_impv(chain_symbol)
 
-            self.default_foreground = index_cell.foreground()
-            self.default_background = index_cell.background()
+            self.default_foreground = mid_impv_cell.foreground()
+            self.default_background = mid_impv_cell.background()
 
     def register_event(self):
         """"""
