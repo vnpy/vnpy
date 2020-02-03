@@ -825,7 +825,12 @@ class CtaEngine(BaseEngine):
                            level=logging.CRITICAL)
 
     def add_strategy(
-            self, class_name: str, strategy_name: str, vt_symbol: str, setting: dict
+            self, class_name: str,
+            strategy_name: str,
+            vt_symbol: str,
+            setting: dict,
+            auto_init: bool = False,
+            auto_start: bool = False
     ):
         """
         Add a new strategy.
@@ -858,8 +863,8 @@ class CtaEngine(BaseEngine):
         self.put_strategy_event(strategy)
 
         # 判断设置中是否由自动初始化和自动启动项目
-        if setting.get('auto_init', False):
-            self.init_strategy(strategy_name, auto_start=setting.get('auto_start', False))
+        if auto_init:
+            self.init_strategy(strategy_name, auto_start=auto_start)
 
     def init_strategy(self, strategy_name: str, auto_start: bool = False):
         """
@@ -1315,10 +1320,12 @@ class CtaEngine(BaseEngine):
 
         for strategy_name, strategy_config in self.strategy_setting.items():
             self.add_strategy(
-                strategy_config["class_name"],
-                strategy_name,
-                strategy_config["vt_symbol"],
-                strategy_config["setting"]
+                class_name=strategy_config["class_name"],
+                strategy_name=strategy_name,
+                vt_symbol=strategy_config["vt_symbol"],
+                setting=strategy_config["setting"],
+                auto_init=strategy_config.get('auto_init', False),
+                auto_start=strategy_config.get('auto_start', False)
             )
 
     def update_strategy_setting(self, strategy_name: str, setting: dict):
@@ -1327,10 +1334,14 @@ class CtaEngine(BaseEngine):
         """
         strategy = self.strategies[strategy_name]
 
+        strategy_config = self.strategy_setting.get('strategy_name', {})
+
         self.strategy_setting[strategy_name] = {
             "class_name": strategy.__class__.__name__,
             "vt_symbol": strategy.vt_symbol,
-            "setting": setting,
+            "auto_init": strategy_config.get('auto_init', False),
+            "auto_start": strategy_config.get('auto_start', False),
+            "setting": setting
         }
         save_json(self.setting_filename, self.strategy_setting)
 

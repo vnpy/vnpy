@@ -854,11 +854,11 @@ class PortfolioTestingEngine(object):
         if 'auto_start' in strategy_setting:
             strategy_setting.update({'auto_start': False})
 
-        # 强制更新回测为True
-        strategy_setting.update({'backtesting': True})
-
         # 策略参数设置
         setting = strategy_setting.get('setting', {})
+
+        # 强制更新回测为True
+        setting.update({'backtesting': True})
 
         # 创建实例
         strategy = strategy_class(self, strategy_name, vt_symbol, setting)

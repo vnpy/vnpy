@@ -874,7 +874,7 @@ class CtaProTemplate(CtaTemplate):
 
         # 找出非主力合约的持仓网格
         for g in self.gt.get_opened_grids(direction=Direction.SHORT):
-            none_mi_symbol = g.snapshot.get('miSymbol')
+            none_mi_symbol = g.snapshot.get('mi_symbol')
             if none_mi_symbol is None or none_mi_symbol == self.vt_symbol:
                 continue
             if not g.open_status or g.order_status or g.volume - g.traded_volume <= 0:
