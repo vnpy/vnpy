@@ -145,19 +145,6 @@ VN_ENUMS = {
 }
 
 
-def vn_encoder(obj):
-    if type(obj) in VN_ENUMS.values():
-        return str(obj)
-    else:
-        s = {}
-        for (k, v) in obj.__dict__.items():
-            if type(v) in VN_ENUMS.values():
-                s[k] = vn_encoder(v)
-            else:
-                s[k] = str(v)
-        return s
-
-
 def enum_decoder(s: str):
     name, member = s.split(".")
     return getattr(VN_ENUMS[name], member)
@@ -165,19 +152,6 @@ def enum_decoder(s: str):
 
 def __init__(self, d: dict):
     self.__dict__ = d
-
-
-def vn_encoder(obj):
-    if type(obj) in VN_ENUMS.values():
-        return str(obj)
-    else:
-        s = {}
-        for (k, v) in obj.__dict__.items():
-            if type(v) in VN_ENUMS.values():
-                s[k] = vn_encoder(v)
-            else:
-                s[k] = str(v)
-        return s
 
 
 # 将json(或dict)格式转成指定的类
