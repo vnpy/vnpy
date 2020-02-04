@@ -67,17 +67,38 @@ class AlgoDoubleSpinBox(QtWidgets.QDoubleSpinBox):
         self.setEnabled(not active)
 
 
-class AlgoCheckBox(QtWidgets.QCheckBox):
+class AlgoDirectionCombo(QtWidgets.QComboBox):
     """"""
 
     def __init__(self):
         """"""
         super().__init__()
-        self.setStyleSheet("margin-left:10%; margin-right:10%;")
+
+        self.addItems([
+            "双向",
+            "做多",
+            "做空"
+        ])
 
     def get_value(self):
         """"""
-        return self.isChecked()
+        if self.currentText() == "双向":
+            value = {
+                "long_allowed": True,
+                "short_allowed": True
+            }
+        elif self.currentText() == "做多":
+            value = {
+                "long_allowed": True,
+                "short_allowed": False
+            }
+        else:
+            value = {
+                "long_allowed": False,
+                "short_allowed": True
+            }
+
+        return value
 
 
 class AlgoPricingButton(QtWidgets.QPushButton):
@@ -162,8 +183,7 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
         {"name": "max_pos", "display": "持仓\n上限", "cell": AlgoPositiveSpinBox},
         {"name": "target_pos", "display": "目标\n持仓", "cell": AlgoSpinBox},
         {"name": "max_order_size", "display": "最大\n委托", "cell": AlgoPositiveSpinBox},
-        {"name": "long_allowed", "display": "买入", "cell": AlgoCheckBox},
-        {"name": "short_allowed", "display": "卖出", "cell": AlgoCheckBox},
+        {"name": "direction", "display": "方向", "cell": AlgoDirectionCombo},
         {"name": "pricing_active", "display": "定价", "cell": AlgoPricingButton},
         {"name": "trading_active", "display": "交易", "cell": AlgoTradingButton},
 
@@ -369,10 +389,8 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
         """"""
         cells = self.cells[vt_symbol]
 
-        params = {}
+        params = cells["direction"].get_value()
         for name in [
-            "long_allowed",
-            "short_allowed",
             "max_pos",
             "target_pos",
             "max_order_size"
@@ -473,12 +491,18 @@ class PricingVolatilityManager(QtWidgets.QWidget):
                 pricing_impv_spin.valueChanged.connect(set_func)
 
                 check = QtWidgets.QCheckBox()
-                check.setStyleSheet("margin-left:20%; margin-right:20%;")
+
+                check_hbox = QtWidgets.QHBoxLayout()
+                check_hbox.setAlignment(QtCore.Qt.AlignCenter)
+                check_hbox.addWidget(check)
+
+                check_widget = QtWidgets.QWidget()
+                check_widget.setLayout(check_hbox)
 
                 table.setItem(row, 0, index_cell)
                 table.setItem(row, 1, mid_impv_cell)
                 table.setCellWidget(row, 2, pricing_impv_spin)
-                table.setCellWidget(row, 3, check)
+                table.setCellWidget(row, 3, check_widget)
 
                 cells = {
                     "mid_impv": mid_impv_cell,
@@ -522,6 +546,8 @@ class PricingVolatilityManager(QtWidgets.QWidget):
 
             self.default_foreground = mid_impv_cell.foreground()
             self.default_background = mid_impv_cell.background()
+
+            table.resizeRowsToContents()
 
     def register_event(self):
         """"""
