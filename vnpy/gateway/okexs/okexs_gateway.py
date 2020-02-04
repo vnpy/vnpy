@@ -721,7 +721,12 @@ class OkexsWebsocketApi(WebsocketClient):
         if not tick:
             return
 
-        tick.last_price = float(d["last"])
+        # Filter last price with 0 value
+        last_price = float(d["last"])
+        if not last_price:
+            return
+
+        tick.last_price = last_price
         tick.high_price = float(d["high_24h"])
         tick.low_price = float(d["low_24h"])
         tick.volume = float(d["volume_24h"])
