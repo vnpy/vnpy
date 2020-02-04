@@ -15,6 +15,7 @@ EVENT_OPTION_LOG = "eOptionLog"
 EVENT_OPTION_NEW_PORTFOLIO = "eOptionNewPortfolio"
 EVENT_OPTION_ALGO_PRICING = "eOptionAlgoPricing"
 EVENT_OPTION_ALGO_TRADING = "eOptionAlgoTrading"
+EVENT_OPTION_ALGO_STATUS = "eOptionAlgoStatus"
 
 
 CHAIN_UNDERLYING_MAP = {
@@ -174,6 +175,9 @@ class OptionData(InstrumentData):
 
     def calculate_theo_greeks(self):
         """"""
+        if not self.underlying:
+            return
+
         underlying_price = self.underlying.mid_price
         if not underlying_price or not self.mid_impv:
             return
@@ -202,6 +206,22 @@ class OptionData(InstrumentData):
         self.pos_gamma = self.theo_gamma * self.net_pos
         self.pos_theta = self.theo_theta * self.net_pos
         self.pos_vega = self.theo_vega * self.net_pos
+
+    def calculate_ref_price(self) -> float:
+        """"""
+        underlying_price = self.underlying.mid_price
+        underlying_price += self.underlying_adjustment
+
+        ref_price = self.calculate_price(
+            underlying_price,
+            self.strike_price,
+            self.interest_rate,
+            self.time_to_expiry,
+            self.pricing_impv,
+            self.option_type
+        )
+
+        return ref_price
 
     def update_tick(self, tick: TickData):
         """"""

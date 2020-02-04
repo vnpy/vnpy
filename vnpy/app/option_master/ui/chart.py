@@ -350,7 +350,7 @@ class ScenarioAnalysisChart(QtWidgets.QWidget):
                         option.option_type
                     )
 
-                    diff = new_price - option.theo_price
+                    diff = new_price - option.tick.last_price
                     multiplier = option.net_pos * option.size
 
                     portfolio_pnl += diff * multiplier

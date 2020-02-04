@@ -25,6 +25,7 @@ from .base import (
     APP_NAME, CHAIN_UNDERLYING_MAP,
     EVENT_OPTION_LOG, EVENT_OPTION_NEW_PORTFOLIO,
     EVENT_OPTION_ALGO_PRICING, EVENT_OPTION_ALGO_TRADING,
+    EVENT_OPTION_ALGO_STATUS,
     InstrumentData, PortfolioData
 )
 from .pricing import (
@@ -593,18 +594,21 @@ class OptionAlgoEngine:
 
     def stop_algo_pricing(self, vt_symbol: str):
         """"""
+        self.event_engine.unregister(
+            EVENT_TICK + vt_symbol,
+            self.process_option_tick_event
+        )
+
         algo = self.algos[vt_symbol]
 
-        self.underlying_algo_map[algo.underlying.vt_symbol].remove(algo)
+        buf = self.underlying_algo_map[algo.underlying.vt_symbol]
+        buf.remove(algo)
 
-        self.event_engine.unregister(
-            EVENT_TICK + algo.option.vt_symbol,
-            self.process_tick_event
-        )
-        self.event_engine.unregister(
-            EVENT_TICK + algo.underlying.vt_symbol,
-            self.process_tick_event
-        )
+        if not buf:
+            self.event_engine.unregister(
+                EVENT_TICK + algo.underlying.vt_symbol,
+                self.process_underlying_tick_event
+            )
 
         algo.stop_pricing()
 
@@ -659,4 +663,9 @@ class OptionAlgoEngine:
     def put_algo_trading_event(self, algo: ElectronicEyeAlgo):
         """"""
         event = Event(EVENT_OPTION_ALGO_TRADING, algo)
+        self.event_engine.put(event)
+
+    def put_algo_status_event(self, algo: ElectronicEyeAlgo):
+        """"""
+        event = Event(EVENT_OPTION_ALGO_STATUS, algo)
         self.event_engine.put(event)

@@ -22,6 +22,7 @@ class ElectronicEyeAlgo:
         self.option = option
         self.underlying = option.underlying
         self.pricetick = option.pricetick
+        self.vt_symbol = option.vt_symbol
 
         # Parameters
         self.pricing_active: bool = False
@@ -42,7 +43,7 @@ class ElectronicEyeAlgo:
         self.short_active_orderids: Set[str] = set()
 
         self.algo_spread: float = 0.0
-        self.theo_price: float = 0.0
+        self.ref_price: float = 0.0
         self.algo_bid_price: float = 0.0
         self.algo_ask_price: float = 0.0
         self.pricing_impv: float = 0.0
@@ -52,16 +53,11 @@ class ElectronicEyeAlgo:
         if self.pricing_active:
             return
 
-        if not self.price_spread:
-            return
-
-        if not self.volatility_spread:
-            return
-
         self.price_spread = params["price_spread"]
         self.volatility_spread = params["volatility_spread"]
 
         self.pricing_active = True
+        self.put_status_event()
         self.calculate_price()
 
     def stop_pricing(self):
@@ -76,11 +72,12 @@ class ElectronicEyeAlgo:
 
         # Clear parameters
         self.algo_spread = 0.0
-        self.theo_price = 0.0
+        self.ref_price = 0.0
         self.algo_bid_price = 0.0
         self.algo_ask_price = 0.0
         self.pricing_impv = 0.0
 
+        self.put_status_event()
         self.put_pricing_event()
 
     def start_trading(self, params: dict):
@@ -99,6 +96,9 @@ class ElectronicEyeAlgo:
 
         self.trading_active = True
 
+        self.put_trading_event()
+        self.put_status_event()
+
     def stop_trading(self):
         """"""
         if not self.trading_active:
@@ -109,6 +109,7 @@ class ElectronicEyeAlgo:
         self.cancel_long()
         self.cancel_short()
 
+        self.put_status_event()
         self.put_trading_event()
 
     def on_underlying_tick(self, tick: TickData):
@@ -240,9 +241,10 @@ class ElectronicEyeAlgo:
         """"""
         option = self.option
 
-        # Get mid price
+        # Get ref price
         self.pricing_impv = option.pricing_impv
-        self.theo_price = option.theo_price
+        ref_price = option.calculate_ref_price()
+        self.ref_price = round_to(ref_price, self.pricetick)
 
         # Calculate spread
         algo_spread = max(
@@ -252,9 +254,9 @@ class ElectronicEyeAlgo:
         half_spread = algo_spread / 2
 
         # Calculate bid/ask
-        self.algo_bid_price = round_to(self.theo_price - half_spread, self.pricetick)
-        self.algo_ask_price = round_to(self.theo_price + half_spread, self.pricetick)
-        self.algo_spread = self.algo_ask_price - self.algo_bid_price
+        self.algo_bid_price = round_to(ref_price - half_spread, self.pricetick)
+        self.algo_ask_price = round_to(ref_price + half_spread, self.pricetick)
+        self.algo_spread = round_to(algo_spread, self.pricetick)
 
         self.put_pricing_event()
 
@@ -311,3 +313,7 @@ class ElectronicEyeAlgo:
     def put_trading_event(self):
         """"""
         self.algo_engine.put_algo_trading_event(self)
+
+    def put_status_event(self):
+        """"""
+        self.algo_engine.put_algo_status_event(self)

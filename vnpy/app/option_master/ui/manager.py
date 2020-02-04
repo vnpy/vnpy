@@ -9,7 +9,11 @@ from vnpy.trader.ui import QtWidgets, QtCore
 from vnpy.trader.event import EVENT_TICK, EVENT_TIMER
 
 from ..engine import OptionEngine
-from ..base import EVENT_OPTION_ALGO_PRICING, EVENT_OPTION_ALGO_TRADING
+from ..base import (
+    EVENT_OPTION_ALGO_PRICING,
+    EVENT_OPTION_ALGO_TRADING,
+    EVENT_OPTION_ALGO_STATUS
+)
 from .monitor import (
     MonitorCell, IndexCell, BidCell, AskCell, PosCell,
     COLOR_WHITE, COLOR_BLACK
@@ -25,6 +29,7 @@ class AlgoSpinBox(QtWidgets.QSpinBox):
 
         self.setMaximum(999999)
         self.setMinimum(-999999)
+        self.setAlignment(QtCore.Qt.AlignCenter)
 
     def get_value(self):
         """"""
@@ -51,10 +56,15 @@ class AlgoDoubleSpinBox(QtWidgets.QDoubleSpinBox):
         self.setDecimals(1)
         self.setMaximum(9999.9)
         self.setMinimum(0)
+        self.setAlignment(QtCore.Qt.AlignCenter)
 
     def get_value(self):
         """"""
         return self.value()
+
+    def update_status(self, active: bool):
+        """"""
+        self.setEnabled(not active)
 
 
 class AlgoCheckBox(QtWidgets.QCheckBox):
@@ -63,6 +73,7 @@ class AlgoCheckBox(QtWidgets.QCheckBox):
     def __init__(self):
         """"""
         super().__init__()
+        self.setStyleSheet("margin-left:10%; margin-right:10%;")
 
     def get_value(self):
         """"""
@@ -131,6 +142,7 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
 
     signal_tick = QtCore.pyqtSignal(Event)
     signal_pricing = QtCore.pyqtSignal(Event)
+    signal_status = QtCore.pyqtSignal(Event)
     signal_trading = QtCore.pyqtSignal(Event)
 
     headers: List[Dict] = [
@@ -141,7 +153,7 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
         {"name": "algo_bid_price", "display": "目标\n买价", "cell": BidCell},
         {"name": "algo_ask_price", "display": "目标\n卖价", "cell": AskCell},
         {"name": "algo_spread", "display": "价差", "cell": MonitorCell},
-        {"name": "theo_price", "display": "理论价", "cell": MonitorCell},
+        {"name": "ref_price", "display": "理论价", "cell": MonitorCell},
         {"name": "pricing_impv", "display": "定价\n隐波", "cell": MonitorCell},
         {"name": "net_pos", "display": "净持仓", "cell": PosCell},
 
@@ -267,10 +279,13 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
             # Move to next row
             current_row += 1
 
+        self.resizeColumnsToContents()
+
     def register_event(self):
         """"""
         self.signal_pricing.connect(self.process_pricing_event)
         self.signal_trading.connect(self.process_trading_event)
+        self.signal_status.connect(self.process_status_event)
         self.signal_tick.connect(self.process_tick_event)
 
         self.event_engine.register(
@@ -280,6 +295,10 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
         self.event_engine.register(
             EVENT_OPTION_ALGO_TRADING,
             self.signal_trading.emit
+        )
+        self.event_engine.register(
+            EVENT_OPTION_ALGO_STATUS,
+            self.signal_status.emit
         )
         self.event_engine.register(
             EVENT_TICK,
@@ -298,22 +317,31 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
         cells["bid_volume"].setText(str(tick.bid_volume_1))
         cells["ask_volume"].setText(str(tick.ask_volume_1))
 
+    def process_status_event(self, event: Event):
+        """"""
+        algo = event.data
+        cells = self.cells[algo.vt_symbol]
+
+        cells["price_spread"].update_status(algo.pricing_active)
+        cells["volatility_spread"].update_status(algo.pricing_active)
+        cells["pricing_active"].update_status(algo.pricing_active)
+
     def process_pricing_event(self, event: Event):
         """"""
         algo = event.data
         cells = self.cells[algo.vt_symbol]
 
-        if algo.theo_price:
+        if algo.ref_price:
             cells["algo_bid_price"].setText(str(algo.algo_bid_price))
             cells["algo_ask_price"].setText(str(algo.algo_ask_price))
             cells["algo_spread"].setText(str(algo.algo_spread))
-            cells["theo_price"].setText(str(algo.theo_price))
-            cells["pricing_impv"].setText(str(algo.pricing_impv))
+            cells["ref_price"].setText(str(algo.ref_price))
+            cells["pricing_impv"].setText(f"{algo.pricing_impv * 100:.2f}")
         else:
             cells["algo_bid_price"].setText("")
             cells["algo_ask_price"].setText("")
             cells["algo_spread"].setText("")
-            cells["theo_price"].setText("")
+            cells["ref_price"].setText("")
             cells["pricing_impv"].setText("")
 
     def process_trading_event(self, event: Event):
@@ -321,7 +349,7 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
         algo = event.data
 
         cells = self.cells[algo.vt_symbol]
-        cells["net_pos"].setText(str(algo.net_pos))
+        cells["net_pos"].setText(str(algo.option.net_pos))
 
     def start_algo_pricing(self, vt_symbol: str):
         """"""
@@ -445,18 +473,12 @@ class PricingVolatilityManager(QtWidgets.QWidget):
                 pricing_impv_spin.valueChanged.connect(set_func)
 
                 check = QtWidgets.QCheckBox()
-
-                check_hbox = QtWidgets.QHBoxLayout()
-                check_hbox.addWidget(check)
-                check_hbox.setAlignment(QtCore.Qt.AlignCenter)
-
-                check_widget = QtWidgets.QWidget()
-                check_widget.setLayout(check_hbox)
+                check.setStyleSheet("margin-left:20%; margin-right:20%;")
 
                 table.setItem(row, 0, index_cell)
                 table.setItem(row, 1, mid_impv_cell)
                 table.setCellWidget(row, 2, pricing_impv_spin)
-                table.setCellWidget(row, 3, check_widget)
+                table.setCellWidget(row, 3, check)
 
                 cells = {
                     "mid_impv": mid_impv_cell,
