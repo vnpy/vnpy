@@ -124,6 +124,7 @@ class CtaTemplate(ABC):
                 "direction": "short",
                 "volume": abs(self.pos)
             })
+        return pos_list
 
     @virtual
     def on_timer(self):
