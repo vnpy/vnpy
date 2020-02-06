@@ -72,9 +72,14 @@ class MainEngine:
         """
         Add gateway.
         """
-        gateway = gateway_class(self.event_engine)
-        if gateway_name is None:
+        if gateway_name:
+            # 使用指定的gateway_name， 可以区分相同接口不同账号的gateway同时接入
+            gateway = gateway_class(self.event_engine, gateway_name=gateway_name)
+        else:
+            # 缺省使用了接口自己定义的gateway_name
+            gateway = gateway_class(self.event_engine)
             gateway_name = gateway.gateway_name
+
         self.gateways[gateway_name] = gateway
 
         # Add gateway supported exchanges into engine
