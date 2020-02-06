@@ -624,11 +624,11 @@ class BarGenerator:
     """
 
     def __init__(
-            self,
-            on_bar: Callable,
-            window: int = 0,
-            on_window_bar: Callable = None,
-            interval: Interval = Interval.MINUTE
+        self,
+        on_bar: Callable,
+        window: int = 0,
+        on_window_bar: Callable = None,
+        interval: Interval = Interval.MINUTE
     ):
         """Constructor"""
         self.bar = None
@@ -844,11 +844,119 @@ class ArrayManager(object):
             return result
         return result[-1]
 
+    def kama(self, n, array=False):
+        """
+        KAMA.
+        """
+        result = talib.KAMA(self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def wma(self, n, array=False):
+        """
+        WMA.
+        """
+        result = talib.WMA(self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def apo(self, n, array=False):
+        """
+        APO.
+        """
+        result = talib.APO(self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def cmo(self, n, array=False):
+        """
+        CMO.
+        """
+        result = talib.CMO(self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def mom(self, n, array=False):
+        """
+        MOM.
+        """
+        result = talib.MOM(self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def ppo(self, n, array=False):
+        """
+        PPO.
+        """
+        result = talib.PPO(self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def roc(self, n, array=False):
+        """
+        ROC.
+        """
+        result = talib.ROC(self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def rocr(self, n, array=False):
+        """
+        ROCR.
+        """
+        result = talib.ROCR(self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def rocp(self, n, array=False):
+        """
+        ROCP.
+        """
+        result = talib.ROCP(self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def rocr_100(self, n, array=False):
+        """
+        ROCR100.
+        """
+        result = talib.ROCR100(self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def trix(self, n, array=False):
+        """
+        TRIX.
+        """
+        result = talib.TRIX(self.close, n)
+        if array:
+            return result
+        return result[-1]
+
     def std(self, n, array=False):
         """
         Standard deviation
         """
         result = talib.STDDEV(self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def obv(self, n, array=False):
+        """
+        OBV.
+        """
+        result = talib.OBV(self.close, self.volume)
         if array:
             return result
         return result[-1]
@@ -867,6 +975,15 @@ class ArrayManager(object):
         Average True Range (ATR).
         """
         result = talib.ATR(self.high, self.low, self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def natr(self, n, array=False):
+        """
+        NATR.
+        """
+        result = talib.NATR(self.high, self.low, self.close, n)
         if array:
             return result
         return result[-1]
@@ -896,6 +1013,69 @@ class ArrayManager(object):
         ADX.
         """
         result = talib.ADX(self.high, self.low, self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def adxr(self, n, array=False):
+        """
+        ADXR.
+        """
+        result = talib.ADXR(self.high, self.low, self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def dx(self, n, array=False):
+        """
+        DX.
+        """
+        result = talib.DX(self.high, self.low, self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def minus_di(self, n, array=False):
+        """
+        MINUS_DI.
+        """
+        result = talib.MINUS_DI(self.high, self.low, self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def plus_di(self, n, array=False):
+        """
+        PLUS_DI.
+        """
+        result = talib.PLUS_DI(self.high, self.low, self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def willr(self, n, array=False):
+        """
+        WILLR.
+        """
+        result = talib.WILLR(self.high, self.low, self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def ultosc(self, array=False):
+        """
+        Ultimate Oscillator.
+        """
+        result = talib.ULTOSC(self.high, self.low, self.close)
+        if array:
+            return result
+        return result[-1]
+
+    def trange(self, array=False):
+        """
+        TRANGE.
+        """
+        result = talib.TRANGE(self.high, self.low, self.close)
         if array:
             return result
         return result[-1]
@@ -955,11 +1135,22 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def ultosc(self, array=False):
+    def minus_dm(self, n, array=False):
         """
-        Ultimate Oscillator.
+        MINUS_DM.
         """
-        result = talib.ULTOSC(self.high, self.low, self.close)
+        result = talib.MINUS_DM(self.high, self.low, n)
+
+        if array:
+            return result
+        return result[-1]
+
+    def plus_dm(self, n, array=False):
+        """
+        PLUS_DM.
+        """
+        result = talib.PLUS_DM(self.high, self.low, n)
+
         if array:
             return result
         return result[-1]
@@ -969,6 +1160,31 @@ class ArrayManager(object):
         Money Flow Index.
         """
         result = talib.MFI(self.high, self.low, self.close, self.volume, n)
+        if array:
+            return result
+        return result[-1]
+
+    def ad(self, n, array=False):
+        """
+        AD.
+        """
+        result = talib.AD(self.high, self.low, self.close, self.volume, n)
+        if array:
+            return result
+        return result[-1]
+
+    def adosc(self, n, array=False):
+        """
+        ADOSC.
+        """
+        result = talib.ADOSC(self.high, self.low, self.close, self.volume, n)
+        if array:
+            return result
+        return result[-1]
+
+    def bop(self, array=False):
+        result = talib.BOP(self.open, self.high, self.low, self.close)
+
         if array:
             return result
         return result[-1]

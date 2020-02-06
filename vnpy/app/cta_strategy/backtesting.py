@@ -885,7 +885,8 @@ class BacktestingEngine:
             stop_order.vt_orderids.append(order.vt_orderid)
             stop_order.status = StopOrderStatus.TRIGGERED
 
-            self.active_stop_orders.pop(stop_order.stop_orderid)
+            if stop_order.stop_orderid in self.active_stop_orders:
+                self.active_stop_orders.pop(stop_order.stop_orderid)
 
             # Push update to strategy.
             self.strategy.on_stop_order(stop_order)
@@ -895,7 +896,12 @@ class BacktestingEngine:
             self.strategy.on_trade(trade)
 
     def load_bar(
-        self, vt_symbol: str, days: int, interval: Interval, callback: Callable
+        self,
+        vt_symbol: str,
+        days: int,
+        interval: Interval,
+        callback: Callable,
+        use_database: bool
     ):
         """"""
         self.days = days

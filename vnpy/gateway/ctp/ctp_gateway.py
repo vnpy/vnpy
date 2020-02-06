@@ -1,5 +1,6 @@
 """
 """
+import sys
 import traceback
 import json
 from datetime import datetime, timedelta
@@ -27,6 +28,7 @@ from vnpy.api.ctp import (
     THOST_FTDC_OFEN_CloseToday,
     THOST_FTDC_PC_Futures,
     THOST_FTDC_PC_Options,
+    THOST_FTDC_PC_SpotOption,
     THOST_FTDC_PC_Combination,
     THOST_FTDC_CP_CallOptions,
     THOST_FTDC_CP_PutOptions,
@@ -131,6 +133,7 @@ EXCHANGE_CTP2VT = {
 PRODUCT_CTP2VT = {
     THOST_FTDC_PC_Futures: Product.FUTURES,
     THOST_FTDC_PC_Options: Product.OPTION,
+    THOST_FTDC_PC_SpotOption: Product.OPTION,
     THOST_FTDC_PC_Combination: Product.SPREAD
 }
 
@@ -138,6 +141,9 @@ OPTIONTYPE_CTP2VT = {
     THOST_FTDC_CP_CallOptions: OptionType.CALL,
     THOST_FTDC_CP_PutOptions: OptionType.PUT
 }
+
+MAX_FLOAT = sys.float_info.max
+
 
 symbol_exchange_map = {}
 symbol_name_map = {}
@@ -509,37 +515,37 @@ class CtpMdApi(MdApi):
             last_price=data["LastPrice"],
             limit_up=data["UpperLimitPrice"],
             limit_down=data["LowerLimitPrice"],
-            open_price=data["OpenPrice"],
-            high_price=data["HighestPrice"],
-            low_price=data["LowestPrice"],
-            pre_close=data["PreClosePrice"],
-            bid_price_1=data["BidPrice1"],
-            ask_price_1=data["AskPrice1"],
+            open_price=adjust_price(data["OpenPrice"]),
+            high_price=adjust_price(data["HighestPrice"]),
+            low_price=adjust_price(data["LowestPrice"]),
+            pre_close=adjust_price(data["PreClosePrice"]),
+            bid_price_1=adjust_price(data["BidPrice1"]),
+            ask_price_1=adjust_price(data["AskPrice1"]),
             bid_volume_1=data["BidVolume1"],
             ask_volume_1=data["AskVolume1"],
             gateway_name=self.gateway_name
         )
 
-        if data["BidPrice2"]:
-            tick.bid_price_2 = data["BidPrice2"]
-            tick.bid_price_3 = data["BidPrice3"]
-            tick.bid_price_4 = data["BidPrice4"]
-            tick.bid_price_5 = data["BidPrice5"]
+        if data["BidVolume2"] or data["AskVolume2"]:
+            tick.bid_price_2 = adjust_price(data["BidPrice2"])
+            tick.bid_price_3 = adjust_price(data["BidPrice3"])
+            tick.bid_price_4 = adjust_price(data["BidPrice4"])
+            tick.bid_price_5 = adjust_price(data["BidPrice5"])
 
-            tick.ask_price_2 = data["AskPrice2"]
-            tick.ask_price_3 = data["AskPrice3"]
-            tick.ask_price_4 = data["AskPrice4"]
-            tick.ask_price_5 = data["AskPrice5"]
+            tick.ask_price_2 = adjust_price(data["AskPrice2"])
+            tick.ask_price_3 = adjust_price(data["AskPrice3"])
+            tick.ask_price_4 = adjust_price(data["AskPrice4"])
+            tick.ask_price_5 = adjust_price(data["AskPrice5"])
 
-            tick.bid_volume_2 = data["BidVolume2"]
-            tick.bid_volume_3 = data["BidVolume3"]
-            tick.bid_volume_4 = data["BidVolume4"]
-            tick.bid_volume_5 = data["BidVolume5"]
+            tick.bid_volume_2 = adjust_price(data["BidVolume2"])
+            tick.bid_volume_3 = adjust_price(data["BidVolume3"])
+            tick.bid_volume_4 = adjust_price(data["BidVolume4"])
+            tick.bid_volume_5 = adjust_price(data["BidVolume5"])
 
-            tick.ask_volume_2 = data["AskVolume2"]
-            tick.ask_volume_3 = data["AskVolume3"]
-            tick.ask_volume_4 = data["AskVolume4"]
-            tick.ask_volume_5 = data["AskVolume5"]
+            tick.ask_volume_2 = adjust_price(data["AskVolume2"])
+            tick.ask_volume_3 = adjust_price(data["AskVolume3"])
+            tick.ask_volume_4 = adjust_price(data["AskVolume4"])
+            tick.ask_volume_5 = adjust_price(data["AskVolume5"])
 
         self.gateway.on_tick(tick)
         self.gateway.on_custom_tick(tick)
@@ -811,10 +817,17 @@ class CtpTdApi(TdApi):
 
             # For option only
             if contract.product == Product.OPTION:
-                contract.option_underlying = data["UnderlyingInstrID"],
-                contract.option_type = OPTIONTYPE_CTP2VT.get(data["OptionsType"], None),
-                contract.option_strike = data["StrikePrice"],
-                contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d"),
+                # Remove C/P suffix of CZCE option product name
+                if contract.exchange == Exchange.CZCE:
+                    contract.option_portfolio = data["ProductID"][:-1]
+                else:
+                    contract.option_portfolio = data["ProductID"]
+
+                contract.option_underlying = data["UnderlyingInstrID"]
+                contract.option_type = OPTIONTYPE_CTP2VT.get(data["OptionsType"], None)
+                contract.option_strike = data["StrikePrice"]
+                contract.option_index = str(data["StrikePrice"])
+                contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d")
 
             self.gateway.on_contract(contract)
 
@@ -1008,11 +1021,11 @@ class CtpTdApi(TdApi):
         """
         Send new order.
         """
-        self.order_ref += 1
-
         if req.offset not in OFFSET_VT2CTP:
             self.gateway.write_log("请选择开平方向")
             return ""
+
+        self.order_ref += 1
 
         ctp_req = {
             "InstrumentID": req.symbol,
@@ -1100,6 +1113,12 @@ class CtpTdApi(TdApi):
         if self.connect_status:
             self.exit()
 
+
+def adjust_price(price: float) -> float:
+    """"""
+    if price == MAX_FLOAT:
+        price = 0
+    return price
 
 class TdxMdApi():
     """

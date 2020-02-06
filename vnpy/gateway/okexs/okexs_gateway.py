@@ -32,7 +32,10 @@ STATUS_OKEXS2VT = {
     "0": Status.NOTTRADED,
     "1": Status.PARTTRADED,
     "2": Status.ALLTRADED,
+    "3": Status.SUBMITTING,
+    "4": Status.SUBMITTING,
     "-1": Status.CANCELLED,
+    "-2": Status.REJECTED
 }
 
 ORDERTYPE_OKEXS2VT = {
