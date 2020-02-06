@@ -1,6 +1,7 @@
 """"""
+from typing import Dict
 
-TYPE_CPP2PY = {
+TYPE_CPP2PY: Dict[str, str] = {
     "int": "int",
     "char": "char",
     "double": "double",
@@ -13,10 +14,10 @@ class DataTypeGenerator:
 
     def __init__(self, filename: str, prefix: str):
         """Constructor"""
-        self.filename = filename
-        self.prefix = prefix
+        self.filename: str = filename
+        self.prefix: str = prefix
 
-    def run(self):
+    def run(self) -> None:
         """主函数"""
         self.f_cpp = open(self.filename, "r")
         self.f_define = open(f"{self.prefix}_constant.py", "w")
@@ -31,7 +32,7 @@ class DataTypeGenerator:
 
         print("DataType生成完毕")
 
-    def process_line(self, line: str):
+    def process_line(self, line: str) -> None:
         """处理每行"""
         line = line.replace("\n", "")
         line = line.replace(";", "")
@@ -41,7 +42,7 @@ class DataTypeGenerator:
         elif line.startswith("typedef"):
             self.process_typedef(line)
 
-    def process_define(self, line: str):
+    def process_define(self, line: str) -> None:
         """处理常量定义"""
         words = line.split(" ")
         words = [word for word in words if word]
@@ -51,10 +52,13 @@ class DataTypeGenerator:
         name = words[1]
         value = words[2]
 
+        if "//" in value:
+            value = value.split("//")[0]
+
         new_line = f"{name} = {value}\n"
         self.f_define.write(new_line)
 
-    def process_typedef(self, line: str):
+    def process_typedef(self, line: str) -> None:
         """处理类型定义"""
         words = line.split(" ")
         words = [word for word in words if word != " "]
@@ -72,5 +76,5 @@ class DataTypeGenerator:
 
 
 if __name__ == "__main__":
-    generator = DataTypeGenerator("../include/ctp/ThostFtdcUserApiDataType.h", "ctp")
+    generator = DataTypeGenerator("../include/sgit/SgitFtdcUserApiDataType.h", "sgit")
     generator.run()
