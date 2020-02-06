@@ -3,7 +3,7 @@ import types
 from datetime import datetime
 from typing import Any, Type
 
-from vnpy.api.cfets import CfetsTdApi
+from vnpy.api.comstar import TdApi
 from vnpy.event import EventEngine
 from vnpy.trader.constant import Exchange, Product, Offset, OrderType, Direction, Status
 from vnpy.trader.gateway import BaseGateway
@@ -14,7 +14,7 @@ from vnpy.trader.object import (
     ContractData, TickData, OrderData, TradeData)
 
 
-class CfetsGateway(BaseGateway):
+class ComstarGateway(BaseGateway):
     """
     VN Trader Gateway for Cfets  service.
     """
@@ -35,7 +35,7 @@ class CfetsGateway(BaseGateway):
         self.orders = {}
         self.requests = {}
 
-        self.api = CfetsTdApi()
+        self.api = TdApi()
         self.api.callback = self.api_callback
 
     def connect(self, setting: dict):
