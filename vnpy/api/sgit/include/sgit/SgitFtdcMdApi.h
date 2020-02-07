@@ -74,7 +74,7 @@ public:
 	virtual void OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp) {};
 
 	///µ›—”Ωª∏Ó––«È
-	virtual void OnRtnDeferDeliveryQuot(CThostDeferDeliveryQuot* pQuot){};
+	virtual void OnRtnDeferDeliveryQuot(CThostDeferDeliveryQuot *pQuot){};
 
 };
 
