@@ -32,11 +32,11 @@ class AlgoSpinBox(QtWidgets.QSpinBox):
         self.setMinimum(-999999)
         self.setAlignment(QtCore.Qt.AlignCenter)
 
-    def get_value(self):
+    def get_value(self) -> int:
         """"""
         return self.value()
 
-    def update_status(self, active: bool):
+    def update_status(self, active: bool) -> None:
         """"""
         self.setEnabled(not active)
 
@@ -63,11 +63,11 @@ class AlgoDoubleSpinBox(QtWidgets.QDoubleSpinBox):
         self.setMinimum(0)
         self.setAlignment(QtCore.Qt.AlignCenter)
 
-    def get_value(self):
+    def get_value(self) -> float:
         """"""
         return self.value()
 
-    def update_status(self, active: bool):
+    def update_status(self, active: bool) -> None:
         """"""
         self.setEnabled(not active)
 
@@ -85,7 +85,7 @@ class AlgoDirectionCombo(QtWidgets.QComboBox):
             "做空"
         ])
 
-    def get_value(self):
+    def get_value(self) -> Dict[str, bool]:
         """"""
         if self.currentText() == "双向":
             value = {
@@ -105,7 +105,7 @@ class AlgoDirectionCombo(QtWidgets.QComboBox):
 
         return value
 
-    def update_status(self, active: bool):
+    def update_status(self, active: bool) -> None:
         """"""
         self.setEnabled(not active)
 
@@ -124,14 +124,14 @@ class AlgoPricingButton(QtWidgets.QPushButton):
         self.setText("N")
         self.clicked.connect(self.on_clicked)
 
-    def on_clicked(self):
+    def on_clicked(self) -> None:
         """"""
         if self.active:
             self.manager.stop_algo_pricing(self.vt_symbol)
         else:
             self.manager.start_algo_pricing(self.vt_symbol)
 
-    def update_status(self, active: bool):
+    def update_status(self, active: bool) -> None:
         """"""
         self.active = active
 
@@ -155,14 +155,14 @@ class AlgoTradingButton(QtWidgets.QPushButton):
         self.setText("N")
         self.clicked.connect(self.on_clicked)
 
-    def on_clicked(self):
+    def on_clicked(self) -> None:
         """"""
         if self.active:
             self.manager.stop_algo_trading(self.vt_symbol)
         else:
             self.manager.start_algo_trading(self.vt_symbol)
 
-    def update_status(self, active: bool):
+    def update_status(self, active: bool) -> None:
         """"""
         self.active = active
 
@@ -217,7 +217,7 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
         self.init_ui()
         self.register_event()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """"""
         self.setWindowTitle("电子眼")
         self.verticalHeader().setVisible(False)
@@ -315,7 +315,7 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
 
         self.resizeColumnsToContents()
 
-    def register_event(self):
+    def register_event(self) -> None:
         """"""
         self.signal_pricing.connect(self.process_pricing_event)
         self.signal_trading.connect(self.process_trading_event)
@@ -339,7 +339,7 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
             self.signal_tick.emit
         )
 
-    def process_tick_event(self, event: Event):
+    def process_tick_event(self, event: Event) -> None:
         """"""
         tick = event.data
         cells = self.cells.get(tick.vt_symbol, None)
@@ -351,7 +351,7 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
         cells["bid_volume"].setText(str(tick.bid_volume_1))
         cells["ask_volume"].setText(str(tick.ask_volume_1))
 
-    def process_status_event(self, event: Event):
+    def process_status_event(self, event: Event) -> None:
         """"""
         algo = event.data
         cells = self.cells[algo.vt_symbol]
@@ -366,7 +366,7 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
         cells["direction"].update_status(algo.trading_active)
         cells["trading_active"].update_status(algo.trading_active)
 
-    def process_pricing_event(self, event: Event):
+    def process_pricing_event(self, event: Event) -> None:
         """"""
         algo = event.data
         cells = self.cells[algo.vt_symbol]
@@ -384,7 +384,7 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
             cells["ref_price"].setText("")
             cells["pricing_impv"].setText("")
 
-    def process_trading_event(self, event: Event):
+    def process_trading_event(self, event: Event) -> None:
         """"""
         algo = event.data
         cells = self.cells[algo.vt_symbol]
@@ -394,28 +394,28 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
         else:
             cells["net_pos"].setText("")
 
-    def process_position_event(self, event: Event):
+    def process_position_event(self, event: Event) -> None:
         """"""
         algo = event.data
 
         cells = self.cells[algo.vt_symbol]
         cells["net_pos"].setText(str(algo.option.net_pos))
 
-    def start_algo_pricing(self, vt_symbol: str):
+    def start_algo_pricing(self, vt_symbol: str) -> None:
         """"""
         cells = self.cells[vt_symbol]
 
         params = {}
-        for name in ["price_spread", "volatility_spread"]:
-            params[name] = cells[name].get_value()
+        params["price_spread"] = cells["price_spread"].get_value()
+        params["volatility_spread"] = cells["volatility_spread"].get_value() / 100
 
         self.algo_engine.start_algo_pricing(vt_symbol, params)
 
-    def stop_algo_pricing(self, vt_symbol: str):
+    def stop_algo_pricing(self, vt_symbol: str) -> None:
         """"""
         self.algo_engine.stop_algo_pricing(vt_symbol)
 
-    def start_algo_trading(self, vt_symbol: str):
+    def start_algo_trading(self, vt_symbol: str) -> None:
         """"""
         cells = self.cells[vt_symbol]
 
@@ -429,7 +429,7 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
 
         self.algo_engine.start_algo_trading(vt_symbol, params)
 
-    def stop_algo_trading(self, vt_symbol: str):
+    def stop_algo_trading(self, vt_symbol: str) -> None:
         """"""
         self.algo_engine.stop_algo_trading(vt_symbol)
 
@@ -451,7 +451,7 @@ class ElectronicEyeManager(QtWidgets.QWidget):
         self.init_ui()
         self.register_event()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """"""
         self.setWindowTitle("期权电子眼")
 
@@ -528,26 +528,26 @@ class ElectronicEyeManager(QtWidgets.QWidget):
 
         self.setLayout(hbox)
 
-    def register_event(self):
+    def register_event(self) -> None:
         """"""
         self.signal_log.connect(self.process_log_event)
 
         self.event_Engine.register(EVENT_OPTION_ALGO_LOG, self.signal_log.emit)
 
-    def process_log_event(self, event: Event):
+    def process_log_event(self, event: Event) -> None:
         """"""
         log = event.data
         timestr = log.time.strftime("%H:%M:%S")
         msg = f"{timestr}  {log.msg}"
         self.log_monitor.append(msg)
 
-    def show(self):
+    def show(self) -> None:
         """"""
         self.algo_engine.init_engine(self.portfolio_name)
         self.algo_monitor.resizeColumnsToContents()
         super().showMaximized()
 
-    def set_price_spread_for_all(self):
+    def set_price_spread_for_all(self) -> None:
         """"""
         price_spread = self.price_spread_spin.get_value()
 
@@ -555,7 +555,7 @@ class ElectronicEyeManager(QtWidgets.QWidget):
             if cells["price_spread"].isEnabled():
                 cells["price_spread"].setValue(price_spread)
 
-    def set_volatility_spread_for_all(self):
+    def set_volatility_spread_for_all(self) -> None:
         """"""
         volatility_spread = self.volatility_spread_spin.get_value()
 
@@ -563,7 +563,7 @@ class ElectronicEyeManager(QtWidgets.QWidget):
             if cells["volatility_spread"].isEnabled():
                 cells["volatility_spread"].setValue(volatility_spread)
 
-    def set_direction_for_all(self):
+    def set_direction_for_all(self) -> None:
         """"""
         ix = self.direction_combo.currentIndex()
 
@@ -571,7 +571,7 @@ class ElectronicEyeManager(QtWidgets.QWidget):
             if cells["direction"].isEnabled():
                 cells["direction"].setCurrentIndex(ix)
 
-    def set_max_order_size_for_all(self):
+    def set_max_order_size_for_all(self) -> None:
         """"""
         size = self.max_order_size_spin.get_value()
 
@@ -579,7 +579,7 @@ class ElectronicEyeManager(QtWidgets.QWidget):
             if cells["max_order_size"].isEnabled():
                 cells["max_order_size"].setValue(size)
 
-    def set_target_pos_for_all(self):
+    def set_target_pos_for_all(self) -> None:
         """"""
         pos = self.target_pos_spin.get_value()
 
@@ -587,7 +587,7 @@ class ElectronicEyeManager(QtWidgets.QWidget):
             if cells["target_pos"].isEnabled():
                 cells["target_pos"].setValue(pos)
 
-    def set_max_pos_for_all(self):
+    def set_max_pos_for_all(self) -> None:
         """"""
         pos = self.max_pos_spin.get_value()
 
@@ -595,12 +595,12 @@ class ElectronicEyeManager(QtWidgets.QWidget):
             if cells["max_pos"].isEnabled():
                 cells["max_pos"].setValue(pos)
 
-    def stop_pricing_for_all(self):
+    def stop_pricing_for_all(self) -> None:
         """"""
         for vt_symbol in self.algo_monitor.cells.keys():
             self.algo_monitor.stop_algo_pricing(vt_symbol)
 
-    def stop_trading_for_all(self):
+    def stop_trading_for_all(self) -> None:
         """"""
         for vt_symbol in self.algo_monitor.cells.keys():
             self.algo_monitor.stop_algo_trading(vt_symbol)
@@ -618,7 +618,7 @@ class VolatilityDoubleSpinBox(QtWidgets.QDoubleSpinBox):
         self.setMaximum(200.0)
         self.setMinimum(0)
 
-    def get_value(self):
+    def get_value(self) -> float:
         """"""
         return self.value()
 
@@ -643,7 +643,7 @@ class PricingVolatilityManager(QtWidgets.QWidget):
         self.init_ui()
         self.register_event()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """"""
         self.setWindowTitle("波动率管理")
 
@@ -745,18 +745,18 @@ class PricingVolatilityManager(QtWidgets.QWidget):
 
             table.resizeRowsToContents()
 
-    def register_event(self):
+    def register_event(self) -> None:
         """"""
         self.signal_timer.connect(self.process_timer_event)
 
         self.event_engine.register(EVENT_TIMER, self.signal_timer.emit)
 
-    def process_timer_event(self, event: Event):
+    def process_timer_event(self, event: Event) -> None:
         """"""
         for chain_symbol in self.chain_symbols:
             self.update_mid_impv(chain_symbol)
 
-    def reset_pricing_impv(self, chain_symbol: str):
+    def reset_pricing_impv(self, chain_symbol: str) -> None:
         """
         Set pricing impv to the otm mid impv of each strike price.
         """
@@ -777,7 +777,7 @@ class PricingVolatilityManager(QtWidgets.QWidget):
 
         self.update_pricing_impv(chain_symbol)
 
-    def fit_pricing_impv(self, chain_symbol: str):
+    def fit_pricing_impv(self, chain_symbol: str) -> None:
         """
         Fit pricing impv with cubic spline algo.
         """
@@ -807,13 +807,13 @@ class PricingVolatilityManager(QtWidgets.QWidget):
             call = chain.calls[index]
             put = chain.puts[index]
 
-            new_impv = cs(call.strike_price)
+            new_impv = float(cs(call.strike_price))
             call.pricing_impv = new_impv
             put.pricing_impv = new_impv
 
         self.update_pricing_impv(chain_symbol)
 
-    def increase_pricing_impv(self, chain_symbol: str):
+    def increase_pricing_impv(self, chain_symbol: str) -> None:
         """
         Increase pricing impv of all options within a chain by 0.1%.
         """
@@ -824,7 +824,7 @@ class PricingVolatilityManager(QtWidgets.QWidget):
 
         self.update_pricing_impv(chain_symbol)
 
-    def decrease_pricing_impv(self, chain_symbol: str):
+    def decrease_pricing_impv(self, chain_symbol: str) -> None:
         """
         Decrease pricing impv of all options within a chain by 0.1%.
         """
@@ -835,7 +835,7 @@ class PricingVolatilityManager(QtWidgets.QWidget):
 
         self.update_pricing_impv(chain_symbol)
 
-    def set_pricing_impv(self, value: float, chain_symbol: str, index: str):
+    def set_pricing_impv(self, value: float, chain_symbol: str, index: str) -> None:
         """"""
         new_impv = value / 100
 
@@ -847,7 +847,7 @@ class PricingVolatilityManager(QtWidgets.QWidget):
         put = chain.puts[index]
         put.pricing_impv = new_impv
 
-    def update_pricing_impv(self, chain_symbol: str):
+    def update_pricing_impv(self, chain_symbol: str) -> None:
         """"""
         chain = self.portfolio.get_chain(chain_symbol)
         atm_index = chain.atm_index
@@ -862,7 +862,7 @@ class PricingVolatilityManager(QtWidgets.QWidget):
             cells = self.cells[(chain_symbol, index)]
             cells["pricing_impv"].setValue(value)
 
-    def update_mid_impv(self, chain_symbol: str):
+    def update_mid_impv(self, chain_symbol: str) -> None:
         """"""
         chain = self.portfolio.get_chain(chain_symbol)
         atm_index = chain.atm_index

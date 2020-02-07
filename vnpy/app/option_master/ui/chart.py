@@ -58,7 +58,7 @@ class OptionVolatilityChart(QtWidgets.QWidget):
         self.init_ui()
         self.register_event()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """"""
         self.setWindowTitle("波动率曲线")
 
@@ -103,13 +103,13 @@ class OptionVolatilityChart(QtWidgets.QWidget):
         vbox.addWidget(graphics_window)
         self.setLayout(vbox)
 
-    def register_event(self):
+    def register_event(self) -> None:
         """"""
         self.signal_timer.connect(self.process_timer_event)
 
         self.event_engine.register(EVENT_TIMER, self.signal_timer.emit)
 
-    def process_timer_event(self, event: Event):
+    def process_timer_event(self, event: Event) -> None:
         """"""
         self.timer_count += 1
         if self.timer_count < self.timer_trigger:
@@ -118,7 +118,7 @@ class OptionVolatilityChart(QtWidgets.QWidget):
 
         self.update_curve_data()
 
-    def add_impv_curve(self, chain_symbol: str):
+    def add_impv_curve(self, chain_symbol: str) -> None:
         """"""
         symbol_size = 14
         symbol = chain_symbol.split(".")[0]
@@ -147,7 +147,7 @@ class OptionVolatilityChart(QtWidgets.QWidget):
             symbolBrush=color
         )
 
-    def update_curve_data(self):
+    def update_curve_data(self) -> None:
         """"""
         portfolio: PortfolioData = self.option_engine.get_portfolio(self.portfolio_name)
 
@@ -179,7 +179,7 @@ class OptionVolatilityChart(QtWidgets.QWidget):
                 x=strike_prices
             )
 
-    def update_curve_visible(self):
+    def update_curve_visible(self) -> None:
         """"""
         # Remove old
         legend: pg.LegendItem = self.impv_chart.legend
@@ -213,7 +213,7 @@ class ScenarioAnalysisChart(QtWidgets.QWidget):
 
         self.init_ui()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """"""
         self.setWindowTitle("情景分析")
 
@@ -277,7 +277,7 @@ class ScenarioAnalysisChart(QtWidgets.QWidget):
 
         self.setLayout(vbox)
 
-    def run_analysis(self):
+    def run_analysis(self) -> None:
         """"""
         # Generate range
         portfolio = self.option_engine.get_portfolio(self.portfolio_name)
@@ -391,7 +391,7 @@ class ScenarioAnalysisChart(QtWidgets.QWidget):
         impv_changes: np.array,
         target_data: List[List[float]],
         target_name: str
-    ):
+    ) -> None:
         """"""
         self.ax.clear()
 

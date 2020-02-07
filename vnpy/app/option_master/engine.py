@@ -140,6 +140,7 @@ class OptionEngine(BaseEngine):
             "chain_adjustments": chain_adjustments,
             "pricing_impvs": pricing_impvs
         }
+
         save_json(self.data_filename, data)
 
     def register_event(self) -> None:
@@ -524,7 +525,7 @@ class OptionAlgoEngine:
 
         portfolio = self.option_engine.get_portfolio(portfolio_name)
 
-        for option in portfolio.options.values() -> None:
+        for option in portfolio.options.values():
             algo = ElectronicEyeAlgo(self, option)
             self.algos[option.vt_symbol] = algo
 

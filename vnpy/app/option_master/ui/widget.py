@@ -44,7 +44,7 @@ class OptionManager(QtWidgets.QWidget):
         self.init_ui()
         self.register_event()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """"""
         self.setWindowTitle("OptionMaster")
 
@@ -94,17 +94,17 @@ class OptionManager(QtWidgets.QWidget):
 
         self.setLayout(hbox)
 
-    def register_event(self):
+    def register_event(self) -> None:
         """"""
         self.signal_new_portfolio.connect(self.process_new_portfolio_event)
 
         self.event_engine.register(EVENT_OPTION_NEW_PORTFOLIO, self.signal_new_portfolio.emit)
 
-    def process_new_portfolio_event(self, event: Event):
+    def process_new_portfolio_event(self, event: Event) -> None:
         """"""
         self.update_portfolio_combo()
 
-    def update_portfolio_combo(self):
+    def update_portfolio_combo(self) -> None:
         """"""
         if not self.portfolio_combo.isEnabled():
             return
@@ -113,7 +113,7 @@ class OptionManager(QtWidgets.QWidget):
         portfolio_names = self.option_engine.get_portfolio_names()
         self.portfolio_combo.addItems(portfolio_names)
 
-    def open_portfolio_dialog(self):
+    def open_portfolio_dialog(self) -> None:
         """"""
         portfolio_name = self.portfolio_combo.currentText()
         if not portfolio_name:
@@ -130,7 +130,7 @@ class OptionManager(QtWidgets.QWidget):
 
             self.init_widgets()
 
-    def init_widgets(self):
+    def init_widgets(self) -> None:
         """"""
         self.market_monitor = OptionMarketMonitor(self.option_engine, self.portfolio_name)
         self.greeks_monitor = OptionGreeksMonitor(self.option_engine, self.portfolio_name)
@@ -167,7 +167,7 @@ class OptionManager(QtWidgets.QWidget):
         ]:
             button.setEnabled(True)
 
-    def closeEvent(self, event: QtGui.QCloseEvent):
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """"""
         if self.portfolio_name:
             self.market_monitor.close()
@@ -195,7 +195,7 @@ class PortfolioDialog(QtWidgets.QDialog):
 
         self.init_ui()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """"""
         self.setWindowTitle(f"{self.portfolio_name}组合配置")
 
@@ -261,7 +261,7 @@ class PortfolioDialog(QtWidgets.QDialog):
 
         self.setLayout(form)
 
-    def update_portfolio_setting(self):
+    def update_portfolio_setting(self) -> None:
         """"""
         model_name = self.model_name_combo.currentText()
         interest_rate = self.interest_rate_spin.value() / 100
@@ -306,7 +306,7 @@ class OptionManualTrader(QtWidgets.QWidget):
         self.init_ui()
         self.init_contracts()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """"""
         self.setWindowTitle("期权交易")
 
@@ -417,17 +417,17 @@ class OptionManualTrader(QtWidgets.QWidget):
         hbox.addLayout(form2)
         self.setLayout(hbox)
 
-    def init_contracts(self):
+    def init_contracts(self) -> None:
         """"""
         contracts = self.main_engine.get_all_contracts()
         for contract in contracts:
             self.contracts[contract.symbol] = contract
 
-    def connect_signal(self):
+    def connect_signal(self) -> None:
         """"""
         self.signal_tick.connect(self.update_tick)
 
-    def send_order(self):
+    def send_order(self) -> None:
         """"""
         symbol = self.symbol_line.text()
         contract = self.contracts.get(symbol, None)
@@ -456,13 +456,13 @@ class OptionManualTrader(QtWidgets.QWidget):
         )
         self.main_engine.send_order(req, contract.gateway_name)
 
-    def cancel_all(self):
+    def cancel_all(self) -> None:
         """"""
         for order in self.main_engine.get_all_active_orders():
             req = order.create_cancel_request()
             self.main_engine.cancel_order(req, order.gateway_name)
 
-    def update_symbol(self, cell: MonitorCell):
+    def update_symbol(self, cell: MonitorCell) -> None:
         """"""
         if not cell.vt_symbol:
             return
@@ -471,7 +471,7 @@ class OptionManualTrader(QtWidgets.QWidget):
         self.symbol_line.setText(symbol)
         self._update_symbol()
 
-    def _update_symbol(self):
+    def _update_symbol(self) -> None:
         """"""
         symbol = self.symbol_line.text()
         contract = self.contracts.get(symbol, None)
@@ -496,7 +496,11 @@ class OptionManualTrader(QtWidgets.QWidget):
 
         self.event_engine.unregister(EVENT_TICK + vt_symbol, self.process_tick_event)
 
-    def create_label(self, color: str = "", alignment: int = QtCore.Qt.AlignLeft):
+    def create_label(
+        self,
+        color: str = "",
+        alignment: int = QtCore.Qt.AlignLeft
+    ) -> QtWidgets.QLabel:
         """
         Create label with certain font color.
         """
@@ -506,7 +510,7 @@ class OptionManualTrader(QtWidgets.QWidget):
         label.setAlignment(alignment)
         return label
 
-    def process_tick_event(self, event: Event):
+    def process_tick_event(self, event: Event) -> None:
         """"""
         tick = event.data
 
@@ -515,7 +519,7 @@ class OptionManualTrader(QtWidgets.QWidget):
 
         self.signal_tick.emit(tick)
 
-    def update_tick(self, tick: TickData):
+    def update_tick(self, tick: TickData) -> None:
         """"""
         self.lp_label.setText(str(tick.last_price))
         self.bp1_label.setText(str(tick.bid_price_1))
@@ -548,7 +552,7 @@ class OptionManualTrader(QtWidgets.QWidget):
             self.ap5_label.setText(str(tick.ask_price_5))
             self.av5_label.setText(str(tick.ask_volume_5))
 
-    def clear_data(self):
+    def clear_data(self) -> None:
         """"""
         self.lp_label.setText("-")
         self.return_label.setText("-")
@@ -593,7 +597,7 @@ class OptionHedgeWidget(QtWidgets.QWidget):
 
         self.init_ui()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """"""
         self.setWindowTitle("Delta对冲")
 
@@ -649,7 +653,7 @@ class OptionHedgeWidget(QtWidgets.QWidget):
 
         self.setLayout(form)
 
-    def start(self):
+    def start(self) -> None:
         """"""
         symbol = self.symbol_combo.currentText()
         vt_symbol = self.symbol_map[symbol]
@@ -684,13 +688,13 @@ class OptionHedgeWidget(QtWidgets.QWidget):
 
         self.update_widget_status(False)
 
-    def stop(self):
+    def stop(self) -> None:
         """"""
         self.hedge_engine.stop()
 
         self.update_widget_status(True)
 
-    def update_widget_status(self, status: bool):
+    def update_widget_status(self, status: bool) -> None:
         """"""
         self.start_button.setEnabled(status)
         self.symbol_combo.setEnabled(status)
