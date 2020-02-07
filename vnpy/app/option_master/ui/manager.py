@@ -12,7 +12,8 @@ from ..engine import OptionEngine
 from ..base import (
     EVENT_OPTION_ALGO_PRICING,
     EVENT_OPTION_ALGO_TRADING,
-    EVENT_OPTION_ALGO_STATUS
+    EVENT_OPTION_ALGO_STATUS,
+    EVENT_OPTION_ALGO_LOG
 )
 from .monitor import (
     MonitorCell, IndexCell, BidCell, AskCell, PosCell,
@@ -34,6 +35,10 @@ class AlgoSpinBox(QtWidgets.QSpinBox):
     def get_value(self):
         """"""
         return self.value()
+
+    def update_status(self, active: bool):
+        """"""
+        self.setEnabled(not active)
 
 
 class AlgoPositiveSpinBox(AlgoSpinBox):
@@ -100,6 +105,10 @@ class AlgoDirectionCombo(QtWidgets.QComboBox):
 
         return value
 
+    def update_status(self, active: bool):
+        """"""
+        self.setEnabled(not active)
+
 
 class AlgoPricingButton(QtWidgets.QPushButton):
     """"""
@@ -144,21 +153,26 @@ class AlgoTradingButton(QtWidgets.QPushButton):
 
         self.active = False
         self.setText("N")
-        self.clicked.connect(self.change_status)
+        self.clicked.connect(self.on_clicked)
 
-    def change_status(self):
+    def on_clicked(self):
         """"""
         if self.active:
             self.manager.stop_algo_trading(self.vt_symbol)
-            self.active = False
-            self.setText("N")
         else:
             self.manager.start_algo_trading(self.vt_symbol)
-            self.active = True
+
+    def update_status(self, active: bool):
+        """"""
+        self.active = active
+
+        if active:
             self.setText("Y")
+        else:
+            self.setText("N")
 
 
-class ElectronicEyeManager(QtWidgets.QTableWidget):
+class ElectronicEyeMonitor(QtWidgets.QTableWidget):
     """"""
 
     signal_tick = QtCore.pyqtSignal(Event)
@@ -346,6 +360,12 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
         cells["volatility_spread"].update_status(algo.pricing_active)
         cells["pricing_active"].update_status(algo.pricing_active)
 
+        cells["max_pos"].update_status(algo.trading_active)
+        cells["target_pos"].update_status(algo.trading_active)
+        cells["max_order_size"].update_status(algo.trading_active)
+        cells["direction"].update_status(algo.trading_active)
+        cells["trading_active"].update_status(algo.trading_active)
+
     def process_pricing_event(self, event: Event):
         """"""
         algo = event.data
@@ -365,6 +385,16 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
             cells["pricing_impv"].setText("")
 
     def process_trading_event(self, event: Event):
+        """"""
+        algo = event.data
+        cells = self.cells[algo.vt_symbol]
+
+        if algo.trading_active:
+            cells["net_pos"].setText(str(algo.option.net_pos))
+        else:
+            cells["net_pos"].setText("")
+
+    def process_position_event(self, event: Event):
         """"""
         algo = event.data
 
@@ -403,10 +433,56 @@ class ElectronicEyeManager(QtWidgets.QTableWidget):
         """"""
         self.algo_engine.stop_algo_trading(vt_symbol)
 
+
+class ElectronicEyeManager(QtWidgets.QWidget):
+    """"""
+
+    signal_log = QtCore.pyqtSignal(Event)
+
+    def __init__(self, option_engine: OptionEngine, portfolio_name: str):
+        """"""
+        super().__init__()
+
+        self.option_engine = option_engine
+        self.event_Engine = option_engine.event_engine
+        self.algo_engine = option_engine.algo_engine
+        self.portfolio_name = portfolio_name
+
+        self.init_ui()
+        self.register_event()
+
+    def init_ui(self):
+        """"""
+        self.setWindowTitle("电子眼算法")
+
+        self.algo_monitor = ElectronicEyeMonitor(self.option_engine, self.portfolio_name)
+
+        self.log_monitor = QtWidgets.QTextEdit()
+        self.log_monitor.setReadOnly(True)
+        self.log_monitor.setMaximumWidth(400)
+
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addWidget(self.algo_monitor)
+        hbox.addWidget(self.log_monitor)
+        self.setLayout(hbox)
+
+    def register_event(self):
+        """"""
+        self.signal_log.connect(self.process_log_event)
+
+        self.event_Engine.register(EVENT_OPTION_ALGO_LOG, self.signal_log.emit)
+
+    def process_log_event(self, event: Event):
+        """"""
+        log = event.data
+        timestr = log.time.strftime("%H:%M:%S")
+        msg = f"{timestr}  {log.msg}"
+        self.log_monitor.append(msg)
+
     def show(self):
         """"""
         self.algo_engine.init_engine(self.portfolio_name)
-        self.resizeColumnsToContents()
+        self.algo_monitor.resizeColumnsToContents()
         super().showMaximized()
 
 

@@ -59,12 +59,10 @@ class ElectronicEyeAlgo:
         self.pricing_active = True
         self.put_status_event()
         self.calculate_price()
+        self.write_log("启动定价")
 
     def stop_pricing(self):
         """"""
-        if not self.pricing_active:
-            return
-
         if self.trading_active:
             return
 
@@ -79,25 +77,29 @@ class ElectronicEyeAlgo:
 
         self.put_status_event()
         self.put_pricing_event()
+        self.write_log("停止定价")
 
     def start_trading(self, params: dict):
         """"""
-        if not self.pricing_active:
-            return
-
-        if not self.max_order_size:
-            return
-
         self.long_allowed = params["long_allowed"]
         self.short_allowed = params["short_allowed"]
         self.max_pos = params["max_pos"]
         self.target_pos = params["target_pos"]
         self.max_order_size = params["max_order_size"]
 
+        if not self.pricing_active:
+            self.write_log("请先启动定价")
+            return
+
+        if not self.max_order_size:
+            self.write_log("请先设置最大委托数量")
+            return
+
         self.trading_active = True
 
         self.put_trading_event()
         self.put_status_event()
+        self.write_log("启动交易")
 
     def stop_trading(self):
         """"""
@@ -111,6 +113,7 @@ class ElectronicEyeAlgo:
 
         self.put_status_event()
         self.put_trading_event()
+        self.write_log("停止定价")
 
     def on_underlying_tick(self, tick: TickData):
         """"""
@@ -135,7 +138,7 @@ class ElectronicEyeAlgo:
 
     def on_trade(self, trade: TradeData):
         """"""
-        pass
+        self.write_log(f"委托成交，{trade.direction} {trade.offset} {trade.volume}@{trade.price}")
 
     def on_timer(self):
         """"""
@@ -161,6 +164,8 @@ class ElectronicEyeAlgo:
             price,
             volume
         )
+
+        self.write_log(f"发出委托，{direction} {offset} {volume}@{price}")
 
         return vt_orderid
 
@@ -317,3 +322,7 @@ class ElectronicEyeAlgo:
     def put_status_event(self):
         """"""
         self.algo_engine.put_algo_status_event(self)
+
+    def write_log(self, msg: str):
+        """"""
+        self.algo_engine.write_algo_log(self, msg)

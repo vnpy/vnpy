@@ -11,11 +11,11 @@ from .time import calculate_days_to_expiry, ANNUAL_DAYS
 
 APP_NAME = "OptionMaster"
 
-EVENT_OPTION_LOG = "eOptionLog"
 EVENT_OPTION_NEW_PORTFOLIO = "eOptionNewPortfolio"
 EVENT_OPTION_ALGO_PRICING = "eOptionAlgoPricing"
 EVENT_OPTION_ALGO_TRADING = "eOptionAlgoTrading"
 EVENT_OPTION_ALGO_STATUS = "eOptionAlgoStatus"
+EVENT_OPTION_ALGO_LOG = "eOptionAlgoLog"
 
 
 CHAIN_UNDERLYING_MAP = {

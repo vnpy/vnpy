@@ -23,9 +23,9 @@ from vnpy.trader.utility import round_to, save_json, load_json
 
 from .base import (
     APP_NAME, CHAIN_UNDERLYING_MAP,
-    EVENT_OPTION_LOG, EVENT_OPTION_NEW_PORTFOLIO,
+    EVENT_OPTION_NEW_PORTFOLIO,
     EVENT_OPTION_ALGO_PRICING, EVENT_OPTION_ALGO_TRADING,
-    EVENT_OPTION_ALGO_STATUS,
+    EVENT_OPTION_ALGO_STATUS, EVENT_OPTION_ALGO_LOG,
     InstrumentData, PortfolioData
 )
 from .pricing import (
@@ -224,12 +224,6 @@ class OptionEngine(BaseEngine):
             self.event_engine.put(event)
 
         return portfolio
-
-    def write_log(self, msg: str) -> None:
-        """"""
-        log = LogData(msg=msg, gateway_name=APP_NAME)
-        event = Event(EVENT_OPTION_LOG, log)
-        self.event_engine.put(event)
 
     def subscribe_data(self, vt_symbol: str) -> None:
         """"""
@@ -654,6 +648,13 @@ class OptionAlgoEngine:
         order = self.main_engine.get_order(vt_orderid)
         req = order.create_cancel_request()
         self.main_engine.cancel_order(req, order.gateway_name)
+
+    def write_algo_log(self, algo: ElectronicEyeAlgo, msg: str):
+        """"""
+        msg = f"[{algo.vt_symbol}] {msg}"
+        log = LogData(APP_NAME, msg)
+        event = Event(EVENT_OPTION_ALGO_LOG, log)
+        self.event_engine.put(event)
 
     def put_algo_pricing_event(self, algo: ElectronicEyeAlgo):
         """"""
