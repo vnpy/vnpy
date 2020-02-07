@@ -38,7 +38,6 @@ class StructGenerator:
 
     def process_line(self, line: str) -> None:
         """处理每行"""
-        line = line.replace(";", "")
         line = line.replace("\n", "")
 
         if line.startswith("struct"):
@@ -49,6 +48,9 @@ class StructGenerator:
             self.process_end(line)
         elif "\t" in line and "//" not in line:
             self.process_member(line)
+
+        elif ";" in line and "//" in line:
+            self.process_member_add(line)
 
     def process_declare(self, line: str) -> None:
         """处理声明"""
@@ -70,16 +72,33 @@ class StructGenerator:
 
     def process_member(self, line: str) -> None:
         """处理成员"""
+        line = line.replace(";", "")
         words = line.split("\t")
         words = [word for word in words if word]
 
         word = words[0]
         if " " in word:
             py_type = self.typedefs[word.split(" ")[0]]
-            name = word.split(" ")[1]
+            name = word.split(" ")[-1]
         else:
-
             py_type = self.typedefs[word]
+            name = words[1]
+
+        new_line = f"    \"{name}\": \"{py_type}\",\n"
+        self.f_struct.write(new_line)
+
+    def process_member_add(self, line: str) -> None:
+        """处理额外成员"""
+        line = line.replace(";", "")
+        line = line.replace("\t", "")
+        words = line.split(" ")
+        words = [word for word in words if word]
+
+        py_type = self.typedefs[words[0]]
+
+        if "//" in words[1]:
+            name = words[1].split("//")[0]
+        else:
             name = words[1]
 
         new_line = f"    \"{name}\": \"{py_type}\",\n"
