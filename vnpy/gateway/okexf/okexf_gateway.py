@@ -42,7 +42,7 @@ from vnpy.trader.object import (
     HistoryRequest
 )
 REST_HOST = "https://www.okex.com"
-WEBSOCKET_HOST = "wss://real.okex.com:10442/ws/v3"
+WEBSOCKET_HOST = "wss://real.okex.com:8443/ws/v3"
 
 STATUS_OKEXF2VT = {
     "0": Status.NOTTRADED,
