@@ -176,7 +176,7 @@ public:
 	//req:主动函数的请求字典
 	//-------------------------------------------------------------------------------------
 
-	void createFtdcMdApi(string pszFlowPath = ""); //1
+	void createFtdcMdApi(string pszFlowPath = "", bool bIsUsingUdp = false, bool bIsMulticast = false); //1
 
 	void getApiVersion();
 
