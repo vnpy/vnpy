@@ -1,5 +1,6 @@
 """"""
 import importlib
+from typing import Dict
 
 
 class ApiGenerator:
@@ -7,19 +8,19 @@ class ApiGenerator:
 
     def __init__(self, filename: str, prefix: str, name: str, class_name: str):
         """Constructor"""
-        self.filename = filename
-        self.prefix = prefix
-        self.name = name
-        self.class_name = class_name
+        self.filename: str = filename
+        self.prefix: str = prefix
+        self.name: str = name
+        self.class_name: str = class_name
 
-        self.callbacks = {}
-        self.functions = {}
-        self.lines = {}
+        self.callbacks: Dict[str, dict] = {}
+        self.functions: Dict[str, dict] = {}
+        self.lines: Dict[str, str] = {}
 
-        self.structs = {}
+        self.structs: Dict[str, str] = {}
         self.load_struct()
 
-    def load_struct(self):
+    def load_struct(self) -> None:
         """加载Struct"""
         module_name = f"{self.prefix}_struct"
         module = importlib.import_module(module_name)
@@ -28,7 +29,7 @@ class ApiGenerator:
             if "__" not in name:
                 self.structs[name] = getattr(module, name)
 
-    def run(self):
+    def run(self) -> None:
         """运行生成"""
         self.f_cpp = open(self.filename, "r")
 
@@ -51,7 +52,7 @@ class ApiGenerator:
 
         print("API生成成功")
 
-    def process_line(self, line: str):
+    def process_line(self, line: str) -> None:
         """处理每行"""
         line = line.replace(";", "")
         line = line.replace("\n", "")
@@ -63,7 +64,7 @@ class ApiGenerator:
         elif "virtual int Req" in line:
             self.process_function(line)
 
-    def process_callback(self, line: str):
+    def process_callback(self, line: str) -> None:
         """处理回掉函数"""
         name = line[line.index("On"):line.index("(")]
         self.lines[name] = line
@@ -71,14 +72,14 @@ class ApiGenerator:
         d = self.generate_arg_dict(line)
         self.callbacks[name] = d
 
-    def process_function(self, line: str):
+    def process_function(self, line: str) -> None:
         """处理主动函数"""
         name = line[line.index("Req"):line.index("(")]
 
         d = self.generate_arg_dict(line)
         self.functions[name] = d
 
-    def generate_arg_dict(self, line: str):
+    def generate_arg_dict(self, line: str) -> None:
         """生成参数字典"""
         args_str = line[line.index("(") + 1:line.index(")")]
         if not args_str:
@@ -92,7 +93,7 @@ class ApiGenerator:
             d[words[1].replace("*", "")] = words[0]
         return d
 
-    def generate_header_define(self):
+    def generate_header_define(self) -> None:
         """"""
         filename = f"{self.prefix}_{self.name}_header_define.h"
         with open(filename, "w") as f:
@@ -100,7 +101,7 @@ class ApiGenerator:
                 line = f"#define {name.upper()} {n}\n"
                 f.write(line)
 
-    def generate_header_process(self):
+    def generate_header_process(self) -> None:
         """"""
         filename = f"{self.prefix}_{self.name}_header_process.h"
         with open(filename, "w") as f:
@@ -109,7 +110,7 @@ class ApiGenerator:
                 line = f"void {name}(Task *task);\n\n"
                 f.write(line)
 
-    def generate_header_on(self):
+    def generate_header_on(self) -> None:
         """"""
         filename = f"{self.prefix}_{self.name}_header_on.h"
         with open(filename, "w") as f:
@@ -134,7 +135,7 @@ class ApiGenerator:
 
                 f.write(line)
 
-    def generate_header_function(self):
+    def generate_header_function(self) -> None:
         """"""
         filename = f"{self.prefix}_{self.name}_header_function.h"
         with open(filename, "w") as f:
@@ -143,7 +144,7 @@ class ApiGenerator:
                 line = f"int {name}(const dict &req, int reqid);\n\n"
                 f.write(line)
 
-    def generate_source_task(self):
+    def generate_source_task(self) -> None:
         """"""
         filename = f"{self.prefix}_{self.name}_source_task.cpp"
         with open(filename, "w") as f:
@@ -179,7 +180,7 @@ class ApiGenerator:
                 f.write(f"\tthis->task_queue.push(task);\n")
                 f.write("};\n\n")
 
-    def generate_source_switch(self):
+    def generate_source_switch(self) -> None:
         """"""
         filename = f"{self.prefix}_{self.name}_source_switch.cpp"
         with open(filename, "w") as f:
@@ -191,7 +192,7 @@ class ApiGenerator:
                 f.write(f"\tbreak;\n")
                 f.write("}\n\n")
 
-    def generate_source_process(self):
+    def generate_source_process(self) -> None:
         """"""
         filename = f"{self.prefix}_{self.name}_source_process.cpp"
         with open(filename, "w") as f:
@@ -256,7 +257,7 @@ class ApiGenerator:
                 f.write(f"\tthis->{on_name}({args_str});\n")
                 f.write("};\n\n")
 
-    def generate_source_function(self):
+    def generate_source_function(self) -> None:
         """"""
         filename = f"{self.prefix}_{self.name}_source_function.cpp"
         with open(filename, "w") as f:
@@ -282,7 +283,7 @@ class ApiGenerator:
                 f.write("\treturn i;\n")
                 f.write("};\n\n")
 
-    def generate_source_on(self):
+    def generate_source_on(self) -> None:
         """"""
         filename = f"{self.prefix}_{self.name}_source_on.cpp"
         with open(filename, "w") as f:
@@ -320,7 +321,7 @@ class ApiGenerator:
                 f.write("\t}\n")
                 f.write("};\n\n")
 
-    def generate_source_module(self):
+    def generate_source_module(self) -> None:
         """"""
         filename = f"{self.prefix}_{self.name}_source_module.cpp"
         with open(filename, "w") as f:
@@ -338,8 +339,8 @@ class ApiGenerator:
 
 
 if __name__ == "__main__":
-    md_generator = ApiGenerator("../include/ctp/ThostFtdcMdApi.h", "ctp", "md", "MdApi")
+    md_generator = ApiGenerator("../include/sgit/SgitFtdcMdApi.h", "sgit", "md", "MdApi")
     md_generator.run()
 
-    td_generator = ApiGenerator("../include/ctp/ThostFtdcTraderApi.h", "ctp", "td", "TdApi")
+    td_generator = ApiGenerator("../include/sgit/SgitFtdcTraderApi.h", "sgit", "td", "TdApi")
     td_generator.run()
