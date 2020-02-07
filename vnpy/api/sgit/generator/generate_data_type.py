@@ -44,7 +44,9 @@ class DataTypeGenerator:
 
     def process_define(self, line: str) -> None:
         """处理常量定义"""
+        line = line.replace("\t", " ")
         words = line.split(" ")
+
         words = [word for word in words if word]
         if len(words) < 3:
             return
