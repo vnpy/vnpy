@@ -48,10 +48,10 @@ class ElectronicEyeAlgo:
         self.algo_ask_price: float = 0.0
         self.pricing_impv: float = 0.0
 
-    def start_pricing(self, params: dict):
+    def start_pricing(self, params: dict) -> bool:
         """"""
         if self.pricing_active:
-            return
+            return False
 
         self.price_spread = params["price_spread"]
         self.volatility_spread = params["volatility_spread"]
@@ -61,10 +61,15 @@ class ElectronicEyeAlgo:
         self.calculate_price()
         self.write_log("启动定价")
 
-    def stop_pricing(self):
+        return True
+
+    def stop_pricing(self) -> bool:
         """"""
+        if not self.pricing_active:
+            return False
+
         if self.trading_active:
-            return
+            return False
 
         self.pricing_active = False
 
@@ -79,21 +84,26 @@ class ElectronicEyeAlgo:
         self.put_pricing_event()
         self.write_log("停止定价")
 
-    def start_trading(self, params: dict):
+        return True
+
+    def start_trading(self, params: dict) -> bool:
         """"""
+        if self.trading_active:
+            return False
+
+        if not self.pricing_active:
+            self.write_log("请先启动定价")
+            return False
+
         self.long_allowed = params["long_allowed"]
         self.short_allowed = params["short_allowed"]
         self.max_pos = params["max_pos"]
         self.target_pos = params["target_pos"]
         self.max_order_size = params["max_order_size"]
 
-        if not self.pricing_active:
-            self.write_log("请先启动定价")
-            return
-
         if not self.max_order_size:
             self.write_log("请先设置最大委托数量")
-            return
+            return False
 
         self.trading_active = True
 
@@ -101,10 +111,12 @@ class ElectronicEyeAlgo:
         self.put_status_event()
         self.write_log("启动交易")
 
-    def stop_trading(self):
+        return True
+
+    def stop_trading(self) -> bool:
         """"""
         if not self.trading_active:
-            return
+            return False
 
         self.trading_active = False
 
@@ -114,6 +126,8 @@ class ElectronicEyeAlgo:
         self.put_status_event()
         self.put_trading_event()
         self.write_log("停止定价")
+
+        return True
 
     def on_underlying_tick(self, tick: TickData):
         """"""

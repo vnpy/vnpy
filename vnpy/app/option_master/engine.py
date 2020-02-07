@@ -573,6 +573,10 @@ class OptionAlgoEngine:
         """"""
         algo = self.algos[vt_symbol]
 
+        result = algo.start_pricing(params)
+        if not result:
+            return
+
         self.underlying_algo_map[algo.underlying.vt_symbol].append(algo)
 
         self.event_engine.register(
@@ -584,16 +588,18 @@ class OptionAlgoEngine:
             self.process_underlying_tick_event
         )
 
-        algo.start_pricing(params)
-
     def stop_algo_pricing(self, vt_symbol: str):
         """"""
+        algo = self.algos[vt_symbol]
+
+        result = algo.stop_pricing()
+        if not result:
+            return
+
         self.event_engine.unregister(
             EVENT_TICK + vt_symbol,
             self.process_option_tick_event
         )
-
-        algo = self.algos[vt_symbol]
 
         buf = self.underlying_algo_map[algo.underlying.vt_symbol]
         buf.remove(algo)
@@ -603,8 +609,6 @@ class OptionAlgoEngine:
                 EVENT_TICK + algo.underlying.vt_symbol,
                 self.process_underlying_tick_event
             )
-
-        algo.stop_pricing()
 
     def start_algo_trading(self, vt_symbol: str, params: dict):
         """"""

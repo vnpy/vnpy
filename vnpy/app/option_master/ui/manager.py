@@ -453,7 +453,7 @@ class ElectronicEyeManager(QtWidgets.QWidget):
 
     def init_ui(self):
         """"""
-        self.setWindowTitle("电子眼算法")
+        self.setWindowTitle("期权电子眼")
 
         self.algo_monitor = ElectronicEyeMonitor(self.option_engine, self.portfolio_name)
 
@@ -461,9 +461,71 @@ class ElectronicEyeManager(QtWidgets.QWidget):
         self.log_monitor.setReadOnly(True)
         self.log_monitor.setMaximumWidth(400)
 
+        stop_pricing_button = QtWidgets.QPushButton("停止定价")
+        stop_pricing_button.clicked.connect(self.stop_pricing_for_all)
+
+        stop_trading_button = QtWidgets.QPushButton("停止交易")
+        stop_trading_button.clicked.connect(self.stop_trading_for_all)
+
+        self.price_spread_spin = AlgoDoubleSpinBox()
+        self.volatility_spread_spin = AlgoDoubleSpinBox()
+        self.direction_combo = AlgoDirectionCombo()
+        self.max_order_size_spin = AlgoPositiveSpinBox()
+        self.target_pos_spin = AlgoSpinBox()
+        self.max_pos_spin = AlgoPositiveSpinBox()
+
+        price_spread_button = QtWidgets.QPushButton("设置")
+        price_spread_button.clicked.connect(self.set_price_spread_for_all)
+
+        volatility_spread_button = QtWidgets.QPushButton("设置")
+        volatility_spread_button.clicked.connect(self.set_volatility_spread_for_all)
+
+        direction_button = QtWidgets.QPushButton("设置")
+        direction_button.clicked.connect(self.set_direction_for_all)
+
+        max_order_size_button = QtWidgets.QPushButton("设置")
+        max_order_size_button.clicked.connect(self.set_max_order_size_for_all)
+
+        target_pos_button = QtWidgets.QPushButton("设置")
+        target_pos_button.clicked.connect(self.set_target_pos_for_all)
+
+        max_pos_button = QtWidgets.QPushButton("设置")
+        max_pos_button.clicked.connect(self.set_max_pos_for_all)
+
+        QLabel = QtWidgets.QLabel
+        grid = QtWidgets.QGridLayout()
+        grid.addWidget(QLabel("价格价差"), 0, 0)
+        grid.addWidget(self.price_spread_spin, 0, 1)
+        grid.addWidget(price_spread_button, 0, 2)
+        grid.addWidget(QLabel("隐波价差"), 1, 0)
+        grid.addWidget(self.volatility_spread_spin, 1, 1)
+        grid.addWidget(volatility_spread_button, 1, 2)
+        grid.addWidget(QLabel("持仓上限"), 2, 0)
+        grid.addWidget(self.max_pos_spin, 2, 1)
+        grid.addWidget(max_pos_button, 2, 2)
+        grid.addWidget(QLabel("目标持仓"), 3, 0)
+        grid.addWidget(self.target_pos_spin, 3, 1)
+        grid.addWidget(target_pos_button, 3, 2)
+        grid.addWidget(QLabel("最大委托"), 4, 0)
+        grid.addWidget(self.max_order_size_spin, 4, 1)
+        grid.addWidget(max_order_size_button, 4, 2)
+        grid.addWidget(QLabel("方向"), 5, 0)
+        grid.addWidget(self.direction_combo, 5, 1)
+        grid.addWidget(direction_button, 5, 2)
+
+        hbox1 = QtWidgets.QHBoxLayout()
+        hbox1.addWidget(stop_pricing_button)
+        hbox1.addWidget(stop_trading_button)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addLayout(hbox1)
+        vbox.addLayout(grid)
+        vbox.addWidget(self.log_monitor)
+
         hbox = QtWidgets.QHBoxLayout()
         hbox.addWidget(self.algo_monitor)
-        hbox.addWidget(self.log_monitor)
+        hbox.addLayout(vbox)
+
         self.setLayout(hbox)
 
     def register_event(self):
@@ -484,6 +546,64 @@ class ElectronicEyeManager(QtWidgets.QWidget):
         self.algo_engine.init_engine(self.portfolio_name)
         self.algo_monitor.resizeColumnsToContents()
         super().showMaximized()
+
+    def set_price_spread_for_all(self):
+        """"""
+        price_spread = self.price_spread_spin.get_value()
+
+        for cells in self.algo_monitor.cells.values():
+            if cells["price_spread"].isEnabled():
+                cells["price_spread"].setValue(price_spread)
+
+    def set_volatility_spread_for_all(self):
+        """"""
+        volatility_spread = self.volatility_spread_spin.get_value()
+
+        for cells in self.algo_monitor.cells.values():
+            if cells["volatility_spread"].isEnabled():
+                cells["volatility_spread"].setValue(volatility_spread)
+
+    def set_direction_for_all(self):
+        """"""
+        ix = self.direction_combo.currentIndex()
+
+        for cells in self.algo_monitor.cells.values():
+            if cells["direction"].isEnabled():
+                cells["direction"].setCurrentIndex(ix)
+
+    def set_max_order_size_for_all(self):
+        """"""
+        size = self.max_order_size_spin.get_value()
+
+        for cells in self.algo_monitor.cells.values():
+            if cells["max_order_size"].isEnabled():
+                cells["max_order_size"].setValue(size)
+
+    def set_target_pos_for_all(self):
+        """"""
+        pos = self.target_pos_spin.get_value()
+
+        for cells in self.algo_monitor.cells.values():
+            if cells["target_pos"].isEnabled():
+                cells["target_pos"].setValue(pos)
+
+    def set_max_pos_for_all(self):
+        """"""
+        pos = self.max_pos_spin.get_value()
+
+        for cells in self.algo_monitor.cells.values():
+            if cells["max_pos"].isEnabled():
+                cells["max_pos"].setValue(pos)
+
+    def stop_pricing_for_all(self):
+        """"""
+        for vt_symbol in self.algo_monitor.cells.keys():
+            self.algo_monitor.stop_algo_pricing(vt_symbol)
+
+    def stop_trading_for_all(self):
+        """"""
+        for vt_symbol in self.algo_monitor.cells.keys():
+            self.algo_monitor.stop_algo_trading(vt_symbol)
 
 
 class VolatilityDoubleSpinBox(QtWidgets.QDoubleSpinBox):
