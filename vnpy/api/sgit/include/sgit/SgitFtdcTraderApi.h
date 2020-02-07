@@ -367,17 +367,17 @@ public:
 
 
 	/// 递延费方向和费率询回报
-	virtual void OnRspQryDeferFeeRate(CThostDeferFeeRateField* pDeferFeeRate,CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast){};
+	virtual void OnRspQryDeferFeeRate(CThostDeferFeeRateField *pDeferFeeRate,CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast){};
 	/// 递延费方向和费率更知
-	virtual void OnRtnDeferFeeRate(CThostDeferFeeRateField* pDeferFeeRate){};
+	virtual void OnRtnDeferFeeRate(CThostDeferFeeRateField *pDeferFeeRate){};
 
 	/// 递延交割/中立仓成交查询通知
-	virtual void OnRspQryDeferMidTrade(CThostDeferMidAppTradeField* pDeferMidAppMatch,CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast){};
+	virtual void OnRspQryDeferMidTrade(CThostDeferMidAppTradeField *pDeferMidAppMatch,CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast){};
 	/// 递延交割/中立仓成交通知
-	virtual void OnRtnDeferMidTrade(CThostDeferMidAppTradeField* pDeferMidAppMatch){};
+	virtual void OnRtnDeferMidTrade(CThostDeferMidAppTradeField *pDeferMidAppMatch){};
 
 	///持仓轧差通知
-	virtual void OnRtnPositionNetting(CThostFtdcPositionNettingField* pPositionNetting){};
+	virtual void OnRtnPositionNetting(CThostFtdcPositionNettingField *pPositionNetting){};
 };
 
 class FS_TRADER_API_EXPORT CThostFtdcTraderApi
