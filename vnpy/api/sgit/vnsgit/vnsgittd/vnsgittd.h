@@ -5,7 +5,7 @@
 
 #include "vnsgit.h"
 #include "pybind11/pybind11.h"
-#include "sgit/SgitFtdcMdApi.h"
+#include "sgit/SgitFtdcTraderApi.h"
 
 
 using namespace pybind11;
