@@ -69,22 +69,22 @@ class OptionEngine(BaseEngine):
         self.load_setting()
         self.register_event()
 
-    def close(self):
+    def close(self) -> None:
         """"""
         self.save_setting()
         self.save_data()
 
-    def load_setting(self):
+    def load_setting(self) -> None:
         """"""
         self.setting = load_json(self.setting_filename)
 
-    def save_setting(self):
+    def save_setting(self) -> None:
         """
         Save underlying adjustment.
         """
         save_json(self.setting_filename, self.setting)
 
-    def load_data(self):
+    def load_data(self) -> None:
         """"""
         data = load_json(self.data_filename)
 
@@ -118,7 +118,7 @@ class OptionEngine(BaseEngine):
                             put = chain.puts[index]
                             put.pricing_impv = pricing_impv
 
-    def save_data(self):
+    def save_data(self) -> None:
         """"""
         chain_adjustments = {}
         pricing_impvs = {}
@@ -325,7 +325,7 @@ class OptionEngine(BaseEngine):
         instrument = self.instruments[vt_symbol]
         return instrument
 
-    def set_timer_trigger(self, timer_trigger: int):
+    def set_timer_trigger(self, timer_trigger: int) -> None:
         """"""
         self.timer_trigger = timer_trigger
 
@@ -353,12 +353,12 @@ class OptionHedgeEngine:
 
         self.register_event()
 
-    def register_event(self):
+    def register_event(self) -> None:
         """"""
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
-    def process_order_event(self, event: Event):
+    def process_order_event(self, event: Event) -> None:
         """"""
         order: OrderData = event.data
 
@@ -368,7 +368,7 @@ class OptionHedgeEngine:
         if not order.is_active():
             self.active_orderids.remove(order.vt_orderid)
 
-    def process_timer_event(self, event: Event):
+    def process_timer_event(self, event: Event) -> None:
         """"""
         if not self.active:
             return
@@ -388,7 +388,7 @@ class OptionHedgeEngine:
         delta_target: int,
         delta_range: int,
         hedge_payup: int
-    ):
+    ) -> None:
         """"""
         if self.active:
             return
@@ -402,7 +402,7 @@ class OptionHedgeEngine:
 
         self.active = True
 
-    def stop(self):
+    def stop(self) -> None:
         """"""
         if not self.active:
             return
@@ -410,7 +410,7 @@ class OptionHedgeEngine:
         self.active = False
         self.timer_count = 0
 
-    def run(self):
+    def run(self) -> None:
         """"""
         if not self.check_order_finished():
             self.cancel_all()
@@ -486,14 +486,14 @@ class OptionHedgeEngine:
             open_orderid = self.main_engine.send_order(open_req, contract.gateway_name)
             self.active_orderids.add(open_orderid)
 
-    def check_order_finished(self):
+    def check_order_finished(self) -> None:
         """"""
         if self.active_orderids:
             return False
         else:
             return True
 
-    def cancel_all(self):
+    def cancel_all(self) -> None:
         """"""
         for vt_orderid in self.active_orderids:
             order: OrderData = self.main_engine.get_order(vt_orderid)
@@ -517,38 +517,38 @@ class OptionAlgoEngine:
 
         self.register_event()
 
-    def init_engine(self, portfolio_name: str):
+    def init_engine(self, portfolio_name: str) -> None:
         """"""
         if self.algos:
             return
 
         portfolio = self.option_engine.get_portfolio(portfolio_name)
 
-        for option in portfolio.options.values():
+        for option in portfolio.options.values() -> None:
             algo = ElectronicEyeAlgo(self, option)
             self.algos[option.vt_symbol] = algo
 
-    def register_event(self):
+    def register_event(self) -> None:
         """"""
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
-    def process_underlying_tick_event(self, event: Event):
+    def process_underlying_tick_event(self, event: Event) -> None:
         """"""
         tick: TickData = event.data
 
         for algo in self.underlying_algo_map[tick.vt_symbol]:
             algo.on_underlying_tick(algo)
 
-    def process_option_tick_event(self, event: Event):
+    def process_option_tick_event(self, event: Event) -> None:
         """"""
         tick: TickData = event.data
 
         algo = self.algos[tick.vt_symbol]
         algo.on_option_tick(algo)
 
-    def process_order_event(self, event: Event):
+    def process_order_event(self, event: Event) -> None:
         """"""
         order: OrderData = event.data
         algo = self.order_algo_map.get(order.vt_orderid, None)
@@ -556,7 +556,7 @@ class OptionAlgoEngine:
         if algo:
             algo.on_order(order)
 
-    def process_trade_event(self, event: Event):
+    def process_trade_event(self, event: Event) -> None:
         """"""
         trade: TradeData = event.data
         algo = self.order_algo_map.get(trade.vt_orderid, None)
@@ -564,12 +564,12 @@ class OptionAlgoEngine:
         if algo:
             algo.on_trade(trade)
 
-    def process_timer_event(self, event: Event):
+    def process_timer_event(self, event: Event) -> None:
         """"""
         for algo in self.active_algos.values():
             algo.on_timer()
 
-    def start_algo_pricing(self, vt_symbol: str, params: dict):
+    def start_algo_pricing(self, vt_symbol: str, params: dict) -> None:
         """"""
         algo = self.algos[vt_symbol]
 
@@ -588,7 +588,7 @@ class OptionAlgoEngine:
             self.process_underlying_tick_event
         )
 
-    def stop_algo_pricing(self, vt_symbol: str):
+    def stop_algo_pricing(self, vt_symbol: str) -> None:
         """"""
         algo = self.algos[vt_symbol]
 
@@ -610,12 +610,12 @@ class OptionAlgoEngine:
                 self.process_underlying_tick_event
             )
 
-    def start_algo_trading(self, vt_symbol: str, params: dict):
+    def start_algo_trading(self, vt_symbol: str, params: dict) -> None:
         """"""
         algo = self.algos[vt_symbol]
         algo.start_trading(params)
 
-    def stop_algo_trading(self, vt_symbol: str):
+    def stop_algo_trading(self, vt_symbol: str) -> None:
         """"""
         algo = self.algos[vt_symbol]
         algo.stop_trading()
@@ -647,30 +647,30 @@ class OptionAlgoEngine:
 
         return vt_orderid
 
-    def cancel_order(self, vt_orderid: str):
+    def cancel_order(self, vt_orderid: str) -> None:
         """"""
         order = self.main_engine.get_order(vt_orderid)
         req = order.create_cancel_request()
         self.main_engine.cancel_order(req, order.gateway_name)
 
-    def write_algo_log(self, algo: ElectronicEyeAlgo, msg: str):
+    def write_algo_log(self, algo: ElectronicEyeAlgo, msg: str) -> None:
         """"""
         msg = f"[{algo.vt_symbol}] {msg}"
         log = LogData(APP_NAME, msg)
         event = Event(EVENT_OPTION_ALGO_LOG, log)
         self.event_engine.put(event)
 
-    def put_algo_pricing_event(self, algo: ElectronicEyeAlgo):
+    def put_algo_pricing_event(self, algo: ElectronicEyeAlgo) -> None:
         """"""
         event = Event(EVENT_OPTION_ALGO_PRICING, algo)
         self.event_engine.put(event)
 
-    def put_algo_trading_event(self, algo: ElectronicEyeAlgo):
+    def put_algo_trading_event(self, algo: ElectronicEyeAlgo) -> None:
         """"""
         event = Event(EVENT_OPTION_ALGO_TRADING, algo)
         self.event_engine.put(event)
 
-    def put_algo_status_event(self, algo: ElectronicEyeAlgo):
+    def put_algo_status_event(self, algo: ElectronicEyeAlgo) -> None:
         """"""
         event = Event(EVENT_OPTION_ALGO_STATUS, algo)
         self.event_engine.put(event)

@@ -129,7 +129,7 @@ class ElectronicEyeAlgo:
 
         return True
 
-    def on_underlying_tick(self, tick: TickData):
+    def on_underlying_tick(self, tick: TickData) -> None:
         """"""
         if self.pricing_active:
             self.calculate_price()
@@ -137,12 +137,12 @@ class ElectronicEyeAlgo:
         if self.trading_active:
             self.do_trading()
 
-    def on_option_tick(self, tick: TickData):
+    def on_option_tick(self, tick: TickData) -> None:
         """"""
         if self.trading_active:
             self.do_trading()
 
-    def on_order(self, order: OrderData):
+    def on_order(self, order: OrderData) -> None:
         """"""
         if not order.is_active():
             if order.vt_orderid in self.long_active_orderids:
@@ -150,11 +150,11 @@ class ElectronicEyeAlgo:
             elif order.vt_orderid in self.short_active_orderids:
                 self.short_active_orderids.remove(order.vt_orderid)
 
-    def on_trade(self, trade: TradeData):
+    def on_trade(self, trade: TradeData) -> None:
         """"""
         self.write_log(f"委托成交，{trade.direction} {trade.offset} {trade.volume}@{trade.price}")
 
-    def on_timer(self):
+    def on_timer(self) -> None:
         """"""
         if self.long_active_orderids:
             self.cancel_long()
@@ -183,25 +183,25 @@ class ElectronicEyeAlgo:
 
         return vt_orderid
 
-    def buy(self, price: float, volume: int):
+    def buy(self, price: float, volume: int) -> None:
         """"""
         vt_orderid = self.send_order(Direction.LONG, Offset.OPEN, price, volume)
         self.long_active_orderids.add(vt_orderid)
 
-    def sell(self, price: float, volume: int):
+    def sell(self, price: float, volume: int) -> None:
         """"""
         self.send_order(Direction.SHORT, Offset.CLOSE, price, volume)
 
-    def short(self, price: float, volume: int):
+    def short(self, price: float, volume: int) -> None:
         """"""
         vt_orderid = self.send_order(Direction.SHORT, Offset.OPEN, price, volume)
         self.short_active_orderids.add(vt_orderid)
 
-    def cover(self, price: float, volume: int):
+    def cover(self, price: float, volume: int) -> None:
         """"""
         self.send_order(Direction.LONG, Offset.CLOSE, price, volume)
 
-    def send_long(self, price: float, volume: int):
+    def send_long(self, price: float, volume: int) -> None:
         """"""
         option = self.option
 
@@ -213,7 +213,7 @@ class ElectronicEyeAlgo:
             self.cover(price, option.short_pos)
             self.buy(price, volume - option.short_pos)
 
-    def send_short(self, price: float, volume: int):
+    def send_short(self, price: float, volume: int) -> None:
         """"""
         option = self.option
 
@@ -228,35 +228,35 @@ class ElectronicEyeAlgo:
         self.order_ask_price = price
         self.order_ask_volume = volume
 
-    def cancel_order(self, vt_orderid):
+    def cancel_order(self, vt_orderid: str) -> None:
         """"""
         self.algo_engine.cancel_order(vt_orderid)
 
-    def cancel_long(self):
+    def cancel_long(self) -> None:
         """"""
         for vt_orderid in self.long_active_orderids:
             self.cancel_order(vt_orderid)
 
-    def cancel_short(self):
+    def cancel_short(self) -> None:
         """"""
         for vt_orderid in self.short_active_orderids:
             self.cancel_order(vt_orderid)
 
-    def check_long_finished(self):
+    def check_long_finished(self) -> bool:
         """"""
         if not self.long_active_orderids:
             return True
 
         return False
 
-    def check_short_finished(self):
+    def check_short_finished(self) -> bool:
         """"""
         if not self.short_active_orderids:
             return True
 
         return False
 
-    def calculate_price(self):
+    def calculate_price(self) -> None:
         """"""
         option = self.option
 
@@ -279,7 +279,7 @@ class ElectronicEyeAlgo:
 
         self.put_pricing_event()
 
-    def do_trading(self):
+    def do_trading(self) -> None:
         """"""
         if self.long_allowed and self.check_long_finished():
             self.snipe_long()
@@ -287,7 +287,7 @@ class ElectronicEyeAlgo:
         if self.short_allowed and self.check_short_finished():
             self.snipe_short()
 
-    def snipe_long(self):
+    def snipe_long(self) -> None:
         """"""
         option = self.option
         tick = option.tick
@@ -306,7 +306,7 @@ class ElectronicEyeAlgo:
 
             self.send_long(self.algo_bid_price, volume)
 
-    def snipe_short(self):
+    def snipe_short(self) -> None:
         """"""
         option = self.option
         tick = option.tick
@@ -325,18 +325,18 @@ class ElectronicEyeAlgo:
 
             self.send_short(self.algo_ask_price, volume)
 
-    def put_pricing_event(self):
+    def put_pricing_event(self) -> None:
         """"""
         self.algo_engine.put_algo_pricing_event(self)
 
-    def put_trading_event(self):
+    def put_trading_event(self) -> None:
         """"""
         self.algo_engine.put_algo_trading_event(self)
 
-    def put_status_event(self):
+    def put_status_event(self) -> None:
         """"""
         self.algo_engine.put_algo_status_event(self)
 
-    def write_log(self, msg: str):
+    def write_log(self, msg: str) -> None:
         """"""
         self.algo_engine.write_algo_log(self, msg)
