@@ -456,9 +456,9 @@ CThostFtdcDepthMarketDataField = {
     "InstrumentNo": "int",
     "PacketNo": "int",
     "CenterChangeNo": "char",
-    "": "double",
-    "": "double",
-    "": "int",
+    "CodecPrice": "double",
+    "PriceTick": "double",
+    "VolumeMultiple": "int",
 }
 
 CThostFtdcInstrumentTradingRightField = {
@@ -4063,9 +4063,19 @@ CThostSubQuotField = {
 }
 
 CThostDeferDeliveryQuot = {
+    "InstrumentID": "string",
+    "AskVolume": "int",
+    "BidVolume": "int",
+    "MidAskVolume": "int",
+    "MidBidVolume": "int",
 }
 
 CThostDeferFeeRateField = {
+    "ExchangeID": "string",
+    "InstrumentID": "string",
+    "EffectDate": "string",
+    "PayDirection": "char",
+    "FeeRate": "double",
 }
 
 CThostDeferMidAppTradeField = {
@@ -4099,5 +4109,5 @@ CThostFtdcPositionNettingField = {
     "MarginNetting": "double",
 }
 
-}
+
 
