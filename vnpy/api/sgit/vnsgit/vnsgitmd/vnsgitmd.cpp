@@ -591,7 +591,7 @@ void MdApi::processRtnDeferDeliveryQuot(Task *task)
 ///主动函数
 ///-------------------------------------------------------------------------------------
 
-void MdApi::createFtdcMdApi(string pszFlowPath)
+void MdApi::createFtdcMdApi(string pszFlowPath) ///0
 {
 	this->api = CThostFtdcMdApi::CreateFtdcMdApi(pszFlowPath.c_str());
 	this->api->RegisterSpi(this);
