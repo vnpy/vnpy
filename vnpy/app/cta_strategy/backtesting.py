@@ -6,6 +6,7 @@ from functools import lru_cache
 from time import time
 import multiprocessing
 import random
+import traceback
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -282,7 +283,13 @@ class BacktestingEngine:
                     break
 
             self.datetime = data.datetime
-            self.callback(data)
+
+            try:
+                self.callback(data)
+            except Exception:
+                self.output("触发异常，回测终止")
+                self.output(traceback.format_exc())
+                return
 
         self.strategy.inited = True
         self.output("策略初始化完成")
@@ -293,7 +300,12 @@ class BacktestingEngine:
 
         # Use the rest of history data for running backtesting
         for data in self.history_data[ix:]:
-            func(data)
+            try:
+                func(data)
+            except Exception:
+                self.output("触发异常，回测终止")
+                self.output(traceback.format_exc())
+                return
 
         self.output("历史数据回放结束")
 
@@ -504,6 +516,7 @@ class BacktestingEngine:
                 value = 0
             statistics[key] = np.nan_to_num(value)
 
+        self.output("策略统计指标计算完成")
         return statistics
 
     def show_chart(self, df: DataFrame = None):
