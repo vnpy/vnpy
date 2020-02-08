@@ -11,14 +11,27 @@ from .time import calculate_days_to_expiry, ANNUAL_DAYS
 
 APP_NAME = "OptionMaster"
 
-EVENT_OPTION_LOG = "eOptionLog"
 EVENT_OPTION_NEW_PORTFOLIO = "eOptionNewPortfolio"
+EVENT_OPTION_ALGO_PRICING = "eOptionAlgoPricing"
+EVENT_OPTION_ALGO_TRADING = "eOptionAlgoTrading"
+EVENT_OPTION_ALGO_STATUS = "eOptionAlgoStatus"
+EVENT_OPTION_ALGO_LOG = "eOptionAlgoLog"
 
 
 CHAIN_UNDERLYING_MAP = {
     "510050_O.SSE": "510050",
+    "510300_O.SSE": "510300",
+    "159919_O.SSE": "159919",
     "IO.CFFEX": "IF",
-    "HO.CFFEX": "IH"
+    "HO.CFFEX": "IH",
+    "i_o.DCE": "i",
+    "m_o.DCE": "m",
+    "c_o.DCE": "c",
+    "cu_o.SHFE": "cu",
+    "ru_o.SHFE": "ru",
+    "SR.CZCE": "SR",
+    "CF.CZCE": "CF",
+    "TA.CZCE": "TA",
 }
 
 
@@ -43,16 +56,16 @@ class InstrumentData:
         self.tick: TickData = None
         self.portfolio: PortfolioData = None
 
-    def calculate_net_pos(self):
+    def calculate_net_pos(self) -> None:
         """"""
         self.net_pos = self.long_pos - self.short_pos
 
-    def update_tick(self, tick: TickData):
+    def update_tick(self, tick: TickData) -> None:
         """"""
         self.tick = tick
         self.mid_price = (tick.bid_price_1 + tick.ask_price_1) / 2
 
-    def update_trade(self, trade: TradeData):
+    def update_trade(self, trade: TradeData) -> None:
         """"""
         if trade.direction == Direction.LONG:
             if trade.offset == Offset.OPEN:
@@ -66,13 +79,13 @@ class InstrumentData:
                 self.long_pos -= trade.volume
         self.calculate_net_pos()
 
-    def update_holding(self, holding: PositionHolding):
+    def update_holding(self, holding: PositionHolding) -> None:
         """"""
         self.long_pos = holding.long_pos
         self.short_pos = holding.short_pos
         self.calculate_net_pos()
 
-    def set_portfolio(self, portfolio: "PortfolioData"):
+    def set_portfolio(self, portfolio: "PortfolioData") -> None:
         """"""
         self.portfolio = portfolio
 
@@ -116,11 +129,9 @@ class OptionData(InstrumentData):
         self.bid_impv: float = 0
         self.ask_impv: float = 0
         self.mid_impv: float = 0
-
-        # Greeks related
         self.pricing_impv: float = 0
 
-        self.theo_price: float = 0
+        # Greeks related
         self.theo_delta: float = 0
         self.theo_gamma: float = 0
         self.theo_theta: float = 0
@@ -132,7 +143,7 @@ class OptionData(InstrumentData):
         self.pos_theta: float = 0
         self.pos_vega: float = 0
 
-    def calculate_option_impv(self):
+    def calculate_option_impv(self) -> None:
         """"""
         if not self.tick:
             return
@@ -161,21 +172,23 @@ class OptionData(InstrumentData):
         )
 
         self.mid_impv = (self.ask_impv + self.bid_impv) / 2
-        self.pricing_impv = self.mid_impv
 
-    def calculate_theo_greeks(self):
+    def calculate_theo_greeks(self) -> None:
         """"""
+        if not self.underlying:
+            return
+
         underlying_price = self.underlying.mid_price
-        if not underlying_price or not self.pricing_impv:
+        if not underlying_price or not self.mid_impv:
             return
         underlying_price += self.underlying_adjustment
 
-        self.theo_price, delta, gamma, theta, vega = self.calculate_greeks(
+        price, delta, gamma, theta, vega = self.calculate_greeks(
             underlying_price,
             self.strike_price,
             self.interest_rate,
             self.time_to_expiry,
-            self.pricing_impv,
+            self.mid_impv,
             self.option_type
         )
 
@@ -184,25 +197,43 @@ class OptionData(InstrumentData):
         self.theo_theta = theta * self.size
         self.theo_vega = vega * self.size
 
-    def calculate_pos_greeks(self):
+    def calculate_pos_greeks(self) -> None:
         """"""
-        self.pos_value = self.theo_price * self.size * self.net_pos
+        if self.tick:
+            self.pos_value = self.tick.last_price * self.size * self.net_pos
+
         self.pos_delta = self.theo_delta * self.net_pos
         self.pos_gamma = self.theo_gamma * self.net_pos
         self.pos_theta = self.theo_theta * self.net_pos
         self.pos_vega = self.theo_vega * self.net_pos
 
-    def update_tick(self, tick: TickData):
+    def calculate_ref_price(self) -> float:
+        """"""
+        underlying_price = self.underlying.mid_price
+        underlying_price += self.underlying_adjustment
+
+        ref_price = self.calculate_price(
+            underlying_price,
+            self.strike_price,
+            self.interest_rate,
+            self.time_to_expiry,
+            self.pricing_impv,
+            self.option_type
+        )
+
+        return ref_price
+
+    def update_tick(self, tick: TickData) -> None:
         """"""
         super().update_tick(tick)
         self.calculate_option_impv()
 
-    def update_trade(self, trade: TradeData):
+    def update_trade(self, trade: TradeData) -> None:
         """"""
         super().update_trade(trade)
         self.calculate_pos_greeks()
 
-    def update_underlying_tick(self, underlying_adjustment: float):
+    def update_underlying_tick(self, underlying_adjustment: float) -> None:
         """"""
         self.underlying_adjustment = underlying_adjustment
 
@@ -210,19 +241,19 @@ class OptionData(InstrumentData):
         self.calculate_theo_greeks()
         self.calculate_pos_greeks()
 
-    def set_chain(self, chain: "ChainData"):
+    def set_chain(self, chain: "ChainData") -> None:
         """"""
         self.chain = chain
 
-    def set_underlying(self, underlying: "UnderlyingData"):
+    def set_underlying(self, underlying: "UnderlyingData") -> None:
         """"""
         self.underlying = underlying
 
-    def set_interest_rate(self, interest_rate: float):
+    def set_interest_rate(self, interest_rate: float) -> None:
         """"""
         self.interest_rate = interest_rate
 
-    def set_pricing_model(self, pricing_model: ModuleType):
+    def set_pricing_model(self, pricing_model: ModuleType) -> None:
         """"""
         self.calculate_greeks = pricing_model.calculate_greeks
         self.calculate_impv = pricing_model.calculate_impv
@@ -240,11 +271,11 @@ class UnderlyingData(InstrumentData):
         self.pos_delta: float = 0
         self.chains: Dict[str: ChainData] = {}
 
-    def add_chain(self, chain: "ChainData"):
+    def add_chain(self, chain: "ChainData") -> None:
         """"""
         self.chains[chain.chain_symbol] = chain
 
-    def update_tick(self, tick: TickData):
+    def update_tick(self, tick: TickData) -> None:
         """"""
         super().update_tick(tick)
 
@@ -254,13 +285,13 @@ class UnderlyingData(InstrumentData):
 
         self.calculate_pos_greeks()
 
-    def update_trade(self, trade: TradeData):
+    def update_trade(self, trade: TradeData) -> None:
         """"""
         super().update_trade(trade)
 
         self.calculate_pos_greeks()
 
-    def calculate_pos_greeks(self):
+    def calculate_pos_greeks(self) -> None:
         """"""
         self.pos_delta = self.theo_delta * self.net_pos
 
@@ -285,8 +316,8 @@ class ChainData:
         self.underlying: UnderlyingData = None
 
         self.options: Dict[str, OptionData] = {}
-        self.calls: Dict[float, OptionData] = {}
-        self.puts: Dict[float, OptionData] = {}
+        self.calls: Dict[str, OptionData] = {}
+        self.puts: Dict[str, OptionData] = {}
 
         self.portfolio: PortfolioData = None
 
@@ -296,7 +327,7 @@ class ChainData:
         self.underlying_adjustment: float = 0
         self.days_to_expiry: int = 0
 
-    def add_option(self, option: OptionData):
+    def add_option(self, option: OptionData) -> None:
         """"""
         self.options[option.vt_symbol] = option
 
@@ -313,7 +344,7 @@ class ChainData:
 
         self.days_to_expiry = option.days_to_expiry
 
-    def calculate_pos_greeks(self):
+    def calculate_pos_greeks(self) -> None:
         """"""
         # Clear data
         self.long_pos = 0
@@ -338,19 +369,21 @@ class ChainData:
 
         self.net_pos = self.long_pos - self.short_pos
 
-    def update_tick(self, tick: TickData):
+    def update_tick(self, tick: TickData) -> None:
         """"""
         option = self.options[tick.vt_symbol]
         option.update_tick(tick)
 
-    def update_underlying_tick(self):
+    def update_underlying_tick(self) -> None:
         """"""
+        self.calculate_underlying_adjustment()
+
         for option in self.options.values():
             option.update_underlying_tick(self.underlying_adjustment)
 
         self.calculate_pos_greeks()
 
-    def update_trade(self, trade: TradeData):
+    def update_trade(self, trade: TradeData) -> None:
         """"""
         option = self.options[trade.vt_symbol]
 
@@ -377,7 +410,7 @@ class ChainData:
 
         self.net_pos = self.long_pos - self.short_pos
 
-    def set_underlying(self, underlying: "UnderlyingData"):
+    def set_underlying(self, underlying: "UnderlyingData") -> None:
         """"""
         underlying.add_chain(self)
         self.underlying = underlying
@@ -385,27 +418,28 @@ class ChainData:
         for option in self.options.values():
             option.set_underlying(underlying)
 
-    def set_interest_rate(self, interest_rate: float):
+    def set_interest_rate(self, interest_rate: float) -> None:
         """"""
         for option in self.options.values():
             option.set_interest_rate(interest_rate)
 
-    def set_pricing_model(self, pricing_model: ModuleType):
+    def set_pricing_model(self, pricing_model: ModuleType) -> None:
         """"""
         for option in self.options.values():
             option.set_pricing_model(pricing_model)
 
-    def set_portfolio(self, portfolio: "PortfolioData"):
+    def set_portfolio(self, portfolio: "PortfolioData") -> None:
         """"""
         for option in self.options:
             option.set_portfolio(portfolio)
 
-    def calculate_atm_price(self):
+    def calculate_atm_price(self) -> None:
         """"""
         underlying_price = self.underlying.mid_price
 
         atm_distance = 0
         atm_price = 0
+        atm_index = ""
 
         for call in self.calls.values():
             price_distance = abs(underlying_price - call.strike_price)
@@ -413,11 +447,12 @@ class ChainData:
             if not atm_distance or price_distance < atm_distance:
                 atm_distance = price_distance
                 atm_price = call.strike_price
+                atm_index = call.chain_index
 
         self.atm_price = atm_price
-        self.atm_index = call.chain_index
+        self.atm_index = atm_index
 
-    def calculate_underlying_adjustment(self):
+    def calculate_underlying_adjustment(self) -> None:
         """"""
         if not self.atm_price:
             return
@@ -453,7 +488,7 @@ class PortfolioData:
         self.chains: Dict[str, ChainData] = {}
         self.underlyings: Dict[str, UnderlyingData] = {}
 
-    def calculate_pos_greeks(self):
+    def calculate_pos_greeks(self) -> None:
         """"""
         self.long_pos = 0
         self.short_pos = 0
@@ -479,7 +514,7 @@ class PortfolioData:
 
         self.net_pos = self.long_pos - self.short_pos
 
-    def update_tick(self, tick: TickData):
+    def update_tick(self, tick: TickData) -> None:
         """"""
         if tick.vt_symbol in self.options:
             option = self.options[tick.vt_symbol]
@@ -491,7 +526,7 @@ class PortfolioData:
             underlying.update_tick(tick)
             self.calculate_pos_greeks()
 
-    def update_trade(self, trade: TradeData):
+    def update_trade(self, trade: TradeData) -> None:
         """"""
         if trade.vt_symbol in self.options:
             option = self.options[trade.vt_symbol]
@@ -503,17 +538,17 @@ class PortfolioData:
             underlying.update_trade(trade)
             self.calculate_pos_greeks()
 
-    def set_interest_rate(self, interest_rate: float):
+    def set_interest_rate(self, interest_rate: float) -> None:
         """"""
         for chain in self.chains.values():
             chain.set_interest_rate(interest_rate)
 
-    def set_pricing_model(self, pricing_model: ModuleType):
+    def set_pricing_model(self, pricing_model: ModuleType) -> None:
         """"""
         for chain in self.chains.values():
             chain.set_pricing_model(pricing_model)
 
-    def set_chain_underlying(self, chain_symbol: str, contract: ContractData):
+    def set_chain_underlying(self, chain_symbol: str, contract: ContractData) -> None:
         """"""
         underlying = self.underlyings.get(contract.vt_symbol, None)
         if not underlying:
@@ -541,7 +576,7 @@ class PortfolioData:
 
         return chain
 
-    def add_option(self, contract: ContractData):
+    def add_option(self, contract: ContractData) -> None:
         """"""
         option = OptionData(contract)
         option.set_portfolio(self)
@@ -553,7 +588,7 @@ class PortfolioData:
         chain = self.get_chain(chain_symbol)
         chain.add_option(option)
 
-    def calculate_atm_price(self):
+    def calculate_atm_price(self) -> None:
         """"""
         for chain in self.chains.values():
             chain.calculate_atm_price()
