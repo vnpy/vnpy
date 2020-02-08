@@ -28,16 +28,22 @@ from .base import (
     EVENT_OPTION_ALGO_STATUS, EVENT_OPTION_ALGO_LOG,
     InstrumentData, PortfolioData
 )
-from .pricing import (
-    black_76_cython, binomial_tree_cython, black_scholes_cython
-)
+try:
+    from .pricing import black_76_cython as black_76
+    from .pricing import binomial_tree_cython as binomial_tree
+    from .pricing import black_scholes_cython as black_scholes
+except ImportError:
+    from .pricing import (
+        black_76, binomial_tree, black_scholes
+    )
+    print("Faile to import cython option pricing model, please rebuild with cython in cmd.")
 from .algo import ElectronicEyeAlgo
 
 
 PRICING_MODELS = {
-    "Black-76 欧式期货期权": black_76_cython,
-    "Black-Scholes 欧式股票期权": black_scholes_cython,
-    "二叉树 美式期货期权": binomial_tree_cython
+    "Black-76 欧式期货期权": black_76,
+    "Black-Scholes 欧式股票期权": black_scholes,
+    "二叉树 美式期货期权": binomial_tree
 }
 
 
