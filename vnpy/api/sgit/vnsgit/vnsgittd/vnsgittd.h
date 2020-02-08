@@ -981,8 +981,6 @@ public:
 
     void createFtdcTraderApi(string pszFlowPath = "");
 
-	string getApiVersion();
-
     void release();
 
     void init();
@@ -998,8 +996,6 @@ public:
     void subscribePrivateTopic(int nType);
 
     void subscribePublicTopic(int nType);
-
-	///1
 
 	int reqAuthenticate(const dict &req, int reqid);
 
