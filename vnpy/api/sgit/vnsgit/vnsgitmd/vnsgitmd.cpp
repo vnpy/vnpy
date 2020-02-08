@@ -597,6 +597,7 @@ void MdApi::createFtdcMdApi(string pszFlowPath) ///0
 	this->api->RegisterSpi(this);
 };
 
+
 void MdApi::release()
 {
 	this->api->Release();
@@ -672,7 +673,6 @@ int MdApi::unSubscribeForQuoteRsp(string instrumentID)
 };
 
 
-///1
 
 
 int MdApi::reqUserLogin(const dict &req, int reqid)
