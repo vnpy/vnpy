@@ -597,7 +597,6 @@ void MdApi::createFtdcMdApi(string pszFlowPath) ///0
 	this->api->RegisterSpi(this);
 };
 
-
 void MdApi::release()
 {
 	this->api->Release();
@@ -672,6 +671,11 @@ int MdApi::unSubscribeForQuoteRsp(string instrumentID)
 	return i;
 };
 
+int MdApi::setFastModel(bool bFastModel)
+{
+	int i = this->api->SetFastModel(bFastModel);
+	return i;
+};
 
 
 
@@ -892,8 +896,8 @@ PYBIND11_MODULE(vnctpmd, m)
 		.def("unSubscribeMarketData", &MdApi::unSubscribeMarketData)
 		.def("subscribeForQuoteRsp", &MdApi::subscribeForQuoteRsp)
 		.def("unSubscribeForQuoteRsp", &MdApi::unSubscribeForQuoteRsp)
+		.def("setFastModel", &MdApi::setFastModel)
 
-		///1 
 		.def("reqUserLogin", &MdApi::reqUserLogin)
 		.def("reqUserLogout", &MdApi::reqUserLogout)
 
