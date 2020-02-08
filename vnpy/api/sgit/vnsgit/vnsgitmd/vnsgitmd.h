@@ -198,11 +198,8 @@ public:
 
 	int unSubscribeForQuoteRsp(string ppInstrumentID);
 
-	int setFastModel(bool bFastModel = false); //7
+	int setFastModel(bool bFastModel = false); 
 
-	int InitLog(dict TThostFtdcBoolType); //8
-
-	///-----------------------
 
 	int reqUserLogin(const dict &req, int reqid);
 
