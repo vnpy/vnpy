@@ -300,10 +300,9 @@ class CtaLineBar(object):
         """移除Pickle dump()时不支持的Attribute"""
         state = self.__dict__.copy()
         # Remove the unpicklable entries.
+        remove_keys = ['strategy', 'cb_on_bar', 'cb_on_period']
         for key in self.__dict__.keys():
-            if 'strategy' in key:
-                del state[key]
-            if 'onBarFunc' in key:
+            if key in remove_keys:
                 del state[key]
         return state
 
@@ -1052,16 +1051,10 @@ class CtaLineBar(object):
             # K线的日期时间（去除秒）设为第一个Tick的时间
             self.cur_bar.datetime = self.cur_bar.datetime.replace(second=0, microsecond=0)
         self.cur_bar.time = self.cur_bar.datetime.strftime('%H:%M:%S')
-
-        # K线的日总交易量，k线内交易量
-        self.cur_bar.dayVolume = tick.volume
+        self.cur_bar.volume = tick.volume
         if self.cur_trading_day != self.cur_bar.trading_day or not self.line_bar:
-            # bar的交易日与记录的当前交易日不一致：即该bar为新的交易日,bar的交易量为当前的tick.volume
-            self.cur_bar.volume = tick.volume
+            # bar的交易日与记录的当前交易日不一致：
             self.cur_trading_day = self.cur_bar.trading_day
-        else:
-            # bar的交易日与记录的当前交易日一致, 交易量为tick的volume，减去上一根bar的日总交易量
-            self.cur_bar.volume = tick.volume - self.line_bar[-1].dayVolume
 
         self.is_first_tick = True  # 标识该Tick属于该Bar的第一个tick数据
 
@@ -1164,20 +1157,6 @@ class CtaLineBar(object):
             # 触发OnBar事件
             self.on_bar(lastBar)
 
-            # 存为Bar文件，For TradeBlazer   WJ
-            # barMsg = u"{},{},{},{},{},{},{}\n".format(lastBar.datetime.strftime('%Y/%m/%d %H:%M'), lastBar.open, lastBar.high,
-            #                                           lastbar.low_price, lastbar.close_price, lastBar.volume, lastbar.open_interest)
-            # self.write_log('drawLineBar: ' + barMsg)
-            # self.min1File.write(barMsg)
-            #
-            # # 存为Bar文件，For VNPY Min1 WJ
-            # # "datetime,close,date,high,instrument_id,limit_down,limit_up,low,open,open_interest,time,trading_date,total_turnover,volume,symbol\n"
-            # lastBar.datetime = lastBar.datetime + timedelta(seconds=60)
-            # barMsg = u"{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(lastBar.datetime.strftime('%Y%m%d%H%M%S'), lastbar.close_price, lastBar.datetime.strftime('%Y%m%d'),
-            #                                           lastBar.high, lastBar.symbol, 0, 99999, lastbar.low_price, lastBar.open, lastbar.open_interest, lastBar.datetime.strftime('%H%M%S'),
-            #                                           lastBar.trading_day, 100, lastBar.volume, lastBar.vt_symbol)
-            # self.min1File.write(barMsg)
-
         else:
             # 更新当前最后一个bar
             self.is_first_tick = False
@@ -1188,12 +1167,6 @@ class CtaLineBar(object):
             lastBar.close_price = tick.last_price
             lastBar.open_interest = tick.open_interest
             lastBar.volume += tick.volume
-            # 更新日内总交易量，和bar内交易量
-            lastBar.volume = tick.volume
-            if self.bar_len > 1 and lastBar.trading_day == self.line_bar[-2].trading_day:
-                lastBar.dayVolume = self.line_bar[-2].dayVolume + lastBar.volume
-            else:
-                lastBar.dataVolume = tick.volume
 
             # 更新Bar的颜色
             if lastBar.close_price > lastBar.open_price:
@@ -4492,14 +4465,7 @@ class CtaMinuteBar(CtaLineBar):
 
     def __getstate__(self):
         """移除Pickle dump()时不支持的Attribute"""
-        state = self.__dict__.copy()
-        # Remove the unpicklable entries.
-        for key in self.__dict__.keys():
-            if 'strategy' in key:
-                del state[key]
-            if 'onBarFunc' in key:
-                del state[key]
-        return state
+        return super().__getstate__()
 
     def __setstate__(self, state):
         """Pickle load()"""
@@ -4544,6 +4510,7 @@ class CtaMinuteBar(CtaLineBar):
 
         # 更新最后价格
         self.cur_price = bar.close_price
+        self.cur_datetime = bar.datetime
 
         bar_len = len(self.line_bar)
 
@@ -4727,13 +4694,6 @@ class CtaMinuteBar(CtaLineBar):
             lastBar.open_interest = tick.open_interest
             lastBar.volume += tick.volume
 
-            # 更新日内总交易量，和bar内交易量
-            if bar_len > 1 and lastBar.trading_day == self.line_bar[-2].trading_day:
-                lastBar.dayVolume = self.line_bar[-2].dayVolume + lastBar.volume
-            else:
-                # 针对第一个bar或者新交易日的tick volume更新
-                lastBar.dayVolume = tick.volume
-
             # 更新Bar的颜色
             if lastBar.close_price > lastBar.open_price:
                 lastBar.color = Color.RED
@@ -4765,14 +4725,7 @@ class CtaHourBar(CtaLineBar):
 
     def __getstate__(self):
         """移除Pickle dump()时不支持的Attribute"""
-        state = self.__dict__.copy()
-        # Remove the unpicklable entries.
-        for key in self.__dict__.keys():
-            if 'strategy' in key:
-                del state[key]
-            if 'onBarFunc' in key:
-                del state[key]
-        return state
+        return super().__getstate__()
 
     def __setstate__(self, state):
         """Pickle load()"""
@@ -4814,7 +4767,7 @@ class CtaHourBar(CtaLineBar):
 
         # 更新最后价格
         self.cur_price = bar.close_price
-
+        self.cur_datetime = bar.datetime
         bar_len = len(self.line_bar)
 
         if bar_len == 0:
@@ -4978,13 +4931,6 @@ class CtaHourBar(CtaLineBar):
 
             lastBar.volume += tick.volume
 
-            # 更新日内总交易量，和bar内交易量
-            if bar_len > 1 and lastBar.trading_day == self.line_bar[-2].trading_day:
-                lastBar.dayVolume = self.line_bar[-2].dayVolume + lastBar.volume
-            else:
-                # 针对第一个bar或者新交易日的tick volume更新
-                lastBar.dayVolume = tick.volume
-
             # 更新Bar的颜色
             if lastBar.close_price > lastBar.open_price:
                 lastBar.color = Color.RED
@@ -5018,14 +4964,7 @@ class CtaDayBar(CtaLineBar):
 
     def __getstate__(self):
         """移除Pickle dump()时不支持的Attribute"""
-        state = self.__dict__.copy()
-        # Remove the unpicklable entries.
-        for key in self.__dict__.keys():
-            if 'strategy' in key:
-                del state[key]
-            if 'onBarFunc' in key:
-                del state[key]
-        return state
+        return super().__getstate__()
 
     def __setstate__(self, state):
         """Pickle load()"""
@@ -5061,6 +5000,7 @@ class CtaDayBar(CtaLineBar):
         """
         # 更新最后价格
         self.cur_price = bar.close_price
+        self.cur_datetime = bar.datetime
 
         bar_len = len(self.line_bar)
 
@@ -5103,7 +5043,6 @@ class CtaDayBar(CtaLineBar):
             lastBar.high_price = max(lastBar.high_price, bar.high_price)
             lastBar.low_price = min(lastBar.low_price, bar.low_price)
             lastBar.volume = lastBar.volume + bar.volume
-            lastBar.dayVolume = lastBar.volume
             lastBar.open_interest = bar.open_interest
 
             # 实时计算
@@ -5226,11 +5165,7 @@ class CtaWeekBar(CtaLineBar):
 
     def __getstate__(self):
         """移除Pickle dump()时不支持的Attribute"""
-        state = self.__dict__.copy()
-        # Remove the unpicklable entries.
-        state.pop('strategy', None)
-        state.pop('cb_on_bar', None)
-        return state
+        return super().__getstate__()
 
     def __setstate__(self, state):
         """Pickle load()"""
@@ -5271,6 +5206,7 @@ class CtaWeekBar(CtaLineBar):
         """
         # 更新最后价格
         self.cur_price = bar.close_price
+        self.cur_datetime = bar.datetime
 
         bar_len = len(self.line_bar)
 
@@ -5390,7 +5326,6 @@ class CtaWeekBar(CtaLineBar):
             lastBar.open_interest = tick.open_interest
             # 更新日内总交易量，和bar内交易量
             lastBar.volume += tick.volume
-            lastBar.dayVolume = tick.volume
 
             # 更新Bar的颜色
             if lastBar.close_price > lastBar.open_price:
