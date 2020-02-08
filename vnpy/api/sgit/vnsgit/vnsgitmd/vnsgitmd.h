@@ -176,9 +176,7 @@ public:
 	//req:主动函数的请求字典
 	//-------------------------------------------------------------------------------------
 
-	void createFtdcMdApi(string pszFlowPath = "", bool bIsUsingUdp = false, bool bIsMulticast = false); //1
-
-	void getApiVersion();
+	void createFtdcMdApi(string pszFlowPath = "");
 
 	void release();
 
@@ -192,17 +190,13 @@ public:
 
 	void registerFront(string pszFrontAddress);
 
-	void registerNameServer(string pszNsAddress);
+	int subscribeMarketData(string ppInstrumentID);
 
-	void registerFensUserInfo(dict CThostFtdcFensUserInfoField); //2
+	int unSubscribeMarketData(string ppInstrumentID);
 
-	int subscribeMarketData(string ppInstrumentID[], int nCount, int flag = 0); //3
+	int subscribeForQuoteRsp(string ppInstrumentID);
 
-	int unSubscribeMarketData(string ppInstrumentID[], int nCount); //4
-
-	int subscribeForQuoteRsp(string ppInstrumentID[], int nCount); //5
-
-	int unSubscribeForQuoteRsp(string ppInstrumentID[], int nCount); //6
+	int unSubscribeForQuoteRsp(string ppInstrumentID);
 
 	int setFastModel(bool bFastModel = false); //7
 
