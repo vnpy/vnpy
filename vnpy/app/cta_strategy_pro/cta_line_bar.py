@@ -210,6 +210,8 @@ class CtaLineBar(object):
     def init_param_list(self):
         self.paramList.append('bar_interval')
         self.paramList.append('interval')
+        self.paramList.append('mode')
+
         self.paramList.append('para_pre_len')
         self.paramList.append('para_ma1_len')
         self.paramList.append('para_ma2_len')

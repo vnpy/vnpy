@@ -1219,3 +1219,59 @@ def get_file_logger(filename: str):
     handler.setFormatter(log_formatter)
     logger.addHandler(handler)  # each handler will be added only once.
     return logger
+
+
+def get_bars(csv_file: str,
+             symbol: str,
+             exchange: Exchange,
+             start_date: datetime = None,
+             end_date: datetime = None,):
+    """
+    获取bar
+    数据存储目录: 项目/bar_data
+    :param csv_file: csv文件路径
+    :param symbol: 合约
+    :param exchange 交易所
+    :param start_date: datetime
+    :param end_date: datetime
+    :return:
+    """
+    bars = []
+
+    import csv
+    with open(file=csv_file, mode='r', encoding='utf8', newline='\n') as f:
+        reader = csv.DictReader(f)
+
+        count = 0
+
+        for item in reader:
+
+            dt = datetime.strptime(item['datetime'], '%Y-%m-%d %H:%M:%S')
+            if start_date:
+                if dt < start_date:
+                    continue
+            if end_date:
+                if dt > end_date:
+                    break
+
+            bar = BarData(
+                symbol=symbol,
+                exchange=exchange,
+                datetime=dt,
+                interval=Interval.MINUTE,
+                volume=float(item['volume']),
+                open_price=float(item['open']),
+                high_price=float(item['high']),
+                low_price=float(item['low']),
+                close_price=float(item['close']),
+                open_interest=float(item['open_interest']),
+                trading_day=item['trading_day'],
+                gateway_name="Tdx",
+            )
+
+            bars.append(bar)
+
+            # do some statistics
+            count += 1
+
+    return bars

@@ -144,9 +144,10 @@ class CtaManager(QtWidgets.QWidget):
             setting = editor.get_setting()
             vt_symbol = setting.pop("vt_symbol")
             strategy_name = setting.pop("strategy_name")
-
+            auto_init = setting.pop("auto_init", False)
+            auto_start = setting.pop("auto_start", False)
             self.cta_engine.add_strategy(
-                class_name, strategy_name, vt_symbol, setting
+                class_name, strategy_name, vt_symbol, setting, auto_init, auto_start
             )
 
     def clear_log(self):
@@ -201,6 +202,9 @@ class StrategyManager(QtWidgets.QFrame):
         reload_button = QtWidgets.QPushButton("重载")
         reload_button.clicked.connect(self.reload_strategy)
 
+        save_button = QtWidgets.QPushButton("保存")
+        save_button.clicked.connect(self.save_strategy)
+
         strategy_name = self._data["strategy_name"]
         vt_symbol = self._data["vt_symbol"]
         class_name = self._data["class_name"]
@@ -222,6 +226,7 @@ class StrategyManager(QtWidgets.QFrame):
         hbox.addWidget(edit_button)
         hbox.addWidget(remove_button)
         hbox.addWidget(reload_button)
+        hbox.addWidget(save_button)
 
         vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(label)
@@ -272,6 +277,9 @@ class StrategyManager(QtWidgets.QFrame):
     def reload_strategy(self):
         """重新加载策略"""
         self.cta_engine.reload_strategy(self.strategy_name)
+
+    def save_strategy(self):
+        self.cta_engine.save_strategy_data(self.strategy_name)
 
 
 class DataMonitor(QtWidgets.QTableWidget):
@@ -403,8 +411,9 @@ class SettingEditor(QtWidgets.QDialog):
         if self.class_name:
             self.setWindowTitle(f"添加策略：{self.class_name}")
             button_text = "添加"
-            parameters = {"strategy_name": "", "vt_symbol": ""}
+            parameters = {"strategy_name": "", "vt_symbol": "", "auto_init": True, "auto_start": True}
             parameters.update(self.parameters)
+
         else:
             self.setWindowTitle(f"参数编辑：{self.strategy_name}")
             button_text = "确定"

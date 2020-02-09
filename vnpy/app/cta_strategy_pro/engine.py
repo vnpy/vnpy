@@ -133,7 +133,8 @@ class CtaEngine(BaseEngine):
         self.stop_order_count = 0  # for generating stop_orderid
         self.stop_orders = {}  # stop_orderid: stop_order
 
-        self.init_executor = ThreadPoolExecutor(max_workers=1)
+        self.thread_executor = ThreadPoolExecutor(max_workers=1)
+        self.thread_tasks = []
 
         self.vt_tradeids = set()  # for filtering duplicate trade
 
@@ -722,7 +723,7 @@ class CtaEngine(BaseEngine):
 
         # 添加 策略名 strategy_name  <=> 合约订阅 vt_symbol 的映射
         subscribe_symbol_set = self.strategy_symbol_map[strategy.strategy_name]
-        subscribe_symbol_set.add(contract.vt_symbol)
+        subscribe_symbol_set.add(vt_symbol)
 
         return True
 
@@ -777,7 +778,8 @@ class CtaEngine(BaseEngine):
             accounts = self.main_engine.get_all_accounts()
             if len(accounts) > 0:
                 account = accounts[0]
-                return account.balance, account.avaliable, round(account.frozen * 100 / (account.balance + 0.01), 2), 100
+                return account.balance, account.avaliable, round(account.frozen * 100 / (account.balance + 0.01),
+                                                                 2), 100
             else:
                 return 0, 0, 0, 0
 
@@ -858,7 +860,7 @@ class CtaEngine(BaseEngine):
         subscribe_symbol_set.add(vt_symbol)
 
         # Update to setting file.
-        self.update_strategy_setting(strategy_name, setting)
+        self.update_strategy_setting(strategy_name, setting, auto_init, auto_start)
 
         self.put_strategy_event(strategy)
 
@@ -870,7 +872,8 @@ class CtaEngine(BaseEngine):
         """
         Init a strategy.
         """
-        self.init_executor.submit(self._init_strategy, strategy_name, auto_start)
+        task = self.thread_executor.submit(self._init_strategy, strategy_name, auto_start)
+        self.thread_tasks.append(task)
 
     def _init_strategy(self, strategy_name: str, auto_start: bool = False):
         """
@@ -959,9 +962,12 @@ class CtaEngine(BaseEngine):
         风险警示： 该方法强行干预策略的配置
         """
         strategy = self.strategies[strategy_name]
+        auto_init = setting.pop('auto_init', False)
+        auto_start = setting.pop('auto_start', False)
+
         strategy.update_setting(setting)
 
-        self.update_strategy_setting(strategy_name, setting)
+        self.update_strategy_setting(strategy_name, setting, auto_init, auto_start)
         self.put_strategy_event(strategy)
 
     def remove_strategy(self, strategy_name: str):
@@ -1012,7 +1018,13 @@ class CtaEngine(BaseEngine):
         if strategy_name not in self.strategies or strategy_name not in self.strategy_setting:
             self.write_error(f"{strategy_name}不在运行策略中，不能重启")
             return False
-        old_strategy_config = copy(self.strategy_setting[strategy_name])
+
+        # 从本地配置文件中读取
+        if len(setting) == 0:
+            strategies_setting = load_json(self.setting_filename)
+            old_strategy_config = strategies_setting.get(strategy_name, {})
+        else:
+            old_strategy_config = copy(self.strategy_setting[strategy_name])
 
         class_name = old_strategy_config.get('class_name')
         if len(vt_symbol) == 0:
@@ -1035,10 +1047,97 @@ class CtaEngine(BaseEngine):
         self.add_strategy(class_name=class_name,
                           strategy_name=strategy_name,
                           vt_symbol=vt_symbol,
-                          setting=setting)
+                          setting=setting,
+                          auto_init=old_strategy_config.get('auto_init', False),
+                          auto_start=old_strategy_config.get('auto_start', False))
 
         self.write_log(f'重新运行策略{strategy_name}执行完毕')
         return True
+
+    def save_strategy_data(self, select_name: str):
+        """ save strategy data"""
+        has_executed = False
+        msg = ""
+        # 1.判断策略名称是否存在字典中
+        for strategy_name in list(self.strategies.keys()):
+            if select_name != 'ALL':
+                if strategy_name != select_name:
+                    continue
+            # 2.提取策略
+            strategy = self.strategies.get(strategy_name, None)
+            if not strategy:
+                continue
+
+            # 3.判断策略是否运行
+            if strategy.inited and strategy.trading:
+                task = self.thread_executor.submit(self.thread_save_strategy_data, strategy_name)
+                self.thread_tasks.append(task)
+                msg += f'{strategy_name}执行保存数据\n'
+                has_executed = True
+            else:
+                self.write_log(f'{strategy_name}未初始化/未启动交易，不进行保存数据')
+        return has_executed, msg
+
+    def thread_save_strategy_data(self, strategy_name):
+        """异步线程保存策略数据"""
+        strategy = self.strategies.get(strategy_name, None)
+        if strategy is None:
+            return
+        try:
+            # 保存策略数据
+            strategy.sync_data()
+        except Exception as ex:
+            self.write_error(u'保存策略{}数据异常:'.format(strategy_name, str(ex)))
+            self.write_error(traceback.format_exc())
+
+    def save_strategy_snapshot(self, select_name: str):
+        """
+        保存策略K线切片数据
+        :param select_name:
+        :return:
+        """
+        has_executed = False
+        msg = ""
+        # 1.判断策略名称是否存在字典中
+        for strategy_name in list(self.strategies.keys()):
+            if select_name != 'ALL':
+                if strategy_name != select_name:
+                    continue
+            # 2.提取策略
+            strategy = self.strategies.get(strategy_name, None)
+            if not strategy:
+                continue
+
+            if not hasattr(strategy, 'get_klines_snapshot'):
+                continue
+
+            # 3.判断策略是否运行
+            if strategy.inited and strategy.trading:
+                task = self.thread_executor.submit(self.thread_save_strategy_snapshot, strategy_name)
+                self.thread_tasks.append(task)
+                msg += f'{strategy_name}执行保存K线切片\n'
+                has_executed = True
+
+        return has_executed, msg
+
+    def thread_save_strategy_snapshot(self, strategy_name):
+        """异步线程保存策略切片"""
+        strategy = self.strategies.get(strategy_name, None)
+        if strategy is None:
+            return
+
+        try:
+            # 5.保存策略切片
+            snapshot = strategy.get_klines_snapshot()
+            if len(snapshot) == 0:
+                self.write_log(f'{strategy_name}返回得K线切片数据为空')
+                return
+
+            # 剩下工作：保存本地文件/数据库
+
+        except Exception as ex:
+            self.write_error(u'获取策略{}切片数据异常:'.format(strategy_name, str(ex)))
+            self.write_error(traceback.format_exc())
 
     def load_strategy_class(self):
         """
@@ -1209,7 +1308,7 @@ class CtaEngine(BaseEngine):
                         # SPD合约
                         spd_vt_symbol = pos.get('vt_symbol', None)
                         if spd_vt_symbol is not None and spd_vt_symbol.endswith('SPD'):
-                            spd_symbol,spd_exchange = extract_vt_symbol(spd_vt_symbol)
+                            spd_symbol, spd_exchange = extract_vt_symbol(spd_vt_symbol)
                             spd_setting = self.main_engine.get_all_custom_contracts().get(spd_symbol, None)
 
                             if spd_setting is None:
@@ -1225,7 +1324,7 @@ class CtaEngine(BaseEngine):
                             leg1_pos.update({'symbol': spd_setting.get('leg1_symbol')})
                             leg1_pos.update({'vt_symbol': spd_setting.get('leg1_symbol')})
                             leg1_pos.update({'direction': leg1_direction})
-                            leg1_pos.update({'volume': spd_setting.get('leg1_ratio', 1)*spd_volume})
+                            leg1_pos.update({'volume': spd_setting.get('leg1_ratio', 1) * spd_volume})
 
                             leg2_pos = {}
                             leg2_pos.update({'symbol': spd_setting.get('leg2_symbol')})
@@ -1288,7 +1387,12 @@ class CtaEngine(BaseEngine):
         Get parameters of a strategy.
         """
         strategy = self.strategies[strategy_name]
-        return strategy.get_parameters()
+        strategy_config = self.strategy_setting.get(strategy_name, {})
+        d = {}
+        d.update({'auto_init': strategy_config.get('auto_init', False)})
+        d.update({'auto_start': strategy_config.get('auto_start', False)})
+        d.update(strategy.get_parameters())
+        return d
 
     def init_all_strategies(self):
         """
@@ -1328,7 +1432,8 @@ class CtaEngine(BaseEngine):
                 auto_start=strategy_config.get('auto_start', False)
             )
 
-    def update_strategy_setting(self, strategy_name: str, setting: dict):
+    def update_strategy_setting(self, strategy_name: str, setting: dict, auto_init: bool = False,
+                                auto_start: bool = False):
         """
         Update setting file.
         """
@@ -1339,8 +1444,8 @@ class CtaEngine(BaseEngine):
         self.strategy_setting[strategy_name] = {
             "class_name": strategy.__class__.__name__,
             "vt_symbol": strategy.vt_symbol,
-            "auto_init": strategy_config.get('auto_init', False),
-            "auto_start": strategy_config.get('auto_start', False),
+            "auto_init": auto_init,
+            "auto_start": auto_start,
             "setting": setting
         }
         save_json(self.setting_filename, self.strategy_setting)

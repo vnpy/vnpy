@@ -526,6 +526,8 @@ class CtaProTemplate(CtaTemplate):
     增强模板
     """
 
+    backtesting = False
+
     # 逻辑过程日志
     dist_fieldnames = ['datetime', 'symbol', 'volume', 'price',
                        'operation', 'signal', 'stop_price', 'target_price',
@@ -551,8 +553,6 @@ class CtaProTemplate(CtaTemplate):
         self.cur_99_price = None  # 当前价（tick时，根据tick更新，onBar回测时，根据bar.close更新)
 
         self.cancel_seconds = 120  # 撤单时间(秒)
-
-        self.backtesting = False
 
         self.klines = {}  # K线字典: kline_name: kline
 
@@ -601,7 +601,11 @@ class CtaProTemplate(CtaTemplate):
         with bz2.BZ2File(file_name, 'wb') as f:
             klines = {}
             for kline_name in kline_names:
-                klines.update({kline_name: self.klines.get(kline_name, None)})
+                kline = self.klines.get(kline_name, None)
+                #if kline:
+                #    kline.strategy = None
+                #    kline.cb_on_bar = None
+                klines.update({kline_name: kline})
             pickle.dump(klines, f)
 
     def load_klines_from_cache(self, kline_names: list = []):
@@ -657,11 +661,11 @@ class CtaProTemplate(CtaTemplate):
                 'strategy': self.strategy_name,
                 'datetime': datetime.now()}
 
-            for kline_name in self.klines.keys():
+            for kline_name in sorted(self.klines.keys()):
                 d.update({kline_name: self.klines.get(kline_name).get_data()})
             return d
         except Exception as ex:
-            self.write_error(u'获取klines切片数据失败')
+            self.write_error(f'获取klines切片数据失败:{str(ex)}')
             return {}
 
     def init_position(self):
@@ -959,8 +963,9 @@ class CtaProTemplate(CtaTemplate):
         else:
             save_path = self.cta_engine.get_data_path()
         try:
-            if self.position:
+            if self.position and 'long_pos' not in dist_data:
                 dist_data.update({'long_pos': self.position.long_pos})
+            if self.position and 'short_pos' not in dist_data:
                 dist_data.update({'short_pos': self.position.short_pos})
 
             file_name = os.path.abspath(os.path.join(save_path, f'{self.strategy_name}_dist.csv'))

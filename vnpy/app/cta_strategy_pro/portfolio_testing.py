@@ -897,7 +897,7 @@ class PortfolioTestingEngine(object):
         """保存策略数据"""
         for strategy in self.strategies.values():
             self.write_log(u'save strategy data')
-            strategy.saveData()
+            strategy.save_data()
 
     def send_order(self,
                    strategy: CtaTemplate,
@@ -2274,7 +2274,10 @@ class PortfolioTestingEngine(object):
         d = OrderedDict()
         try:
             for k in trade_fields:
-                d[k] = getattr(trade, k, '')
+                if k in ['exchange', 'direction', 'offset']:
+                    d[k] = getattr(trade, k).value
+                else:
+                    d[k] = getattr(trade, k, '')
 
             trade_file = os.path.abspath(os.path.join(self.get_logs_path(), '{}_trade.csv'.format(strategy_name)))
             self.append_data(file_name=trade_file, dict_data=d)
