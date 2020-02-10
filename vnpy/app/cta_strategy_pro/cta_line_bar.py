@@ -1217,7 +1217,7 @@ class CtaLineBar(object):
             return
 
         if len(self.line_sar_sr_up) == 0 and len(self.line_sar_sr_down) == 0:
-            if self.line_bar[-2].close > self.line_bar[-5].close:
+            if self.line_bar[-2].close_price > self.line_bar[-5].close_price:
                 # 标记为上涨趋势
                 sr0 = min(self.low_array[0:])
                 af0 = 0
@@ -1695,20 +1695,20 @@ class CtaLineBar(object):
             # 3.1、计算TR1
 
             # 当前周期最高与最低的价差
-            high_low_spread = self.line_bar[i].high - self.line_bar[i].low
+            high_low_spread = self.line_bar[i].high_price - self.line_bar[i].low_price
             # 当前周期最高与昨收价的价差
-            high_preclose_spread = abs(self.line_bar[i].high - self.line_bar[i - 1].close)
+            high_preclose_spread = abs(self.line_bar[i].high_price - self.line_bar[i - 1].close_price)
             # 当前周期最低与昨收价的价差
-            low_preclose_spread = abs(self.line_bar[i].low - self.line_bar[i - 1].close)
+            low_preclose_spread = abs(self.line_bar[i].low_price - self.line_bar[i - 1].close_price)
 
             # 最大价差
             max_spread = max(high_low_spread, high_preclose_spread, low_preclose_spread)
             barTr1 = barTr1 + float(max_spread)
 
             # 今高与昨高的价差
-            high_prehigh_spread = self.line_bar[i].high - self.line_bar[i - 1].high
+            high_prehigh_spread = self.line_bar[i].high_price - self.line_bar[i - 1].high_price
             # 昨低与今低的价差
-            low_prelow_spread = self.line_bar[i - 1].low - self.line_bar[i].low
+            low_prelow_spread = self.line_bar[i - 1].low_price - self.line_bar[i].low_price
 
             # 3.2、计算周期内的做多价差之和
             if high_prehigh_spread > 0 and high_prehigh_spread > low_prelow_spread:
@@ -3502,7 +3502,7 @@ class CtaLineBar(object):
         # 收盘价 = 结算bar + 最后一个未结束得close
         close_list = self.close_array[-data_len:]
         close_list.append(self.line_bar[-1].close)
-        # close_list = [x.close for x in self.lineBar[-data_len:]]
+        # close_list = [x.close_price for x in self.lineBar[-data_len:]]
 
         # 计算最后得动态RSI值
         last_rsi = ta.RSI(self.close_array[-2 * self.para_skd_fast_len:], self.para_skd_fast_len)[-1]
@@ -3739,7 +3739,7 @@ class CtaLineBar(object):
             return
         # 3、获取前InputN周期(包含当前周期）的K线
         list_mid3 = [x.mid3 for x in self.line_bar[-ema_len * 4:-1]]
-        last_bar_mid3 = (self.line_bar[-1].close + self.line_bar[-1].high + self.line_bar[-1].low) / 3
+        last_bar_mid3 = (self.line_bar[-1].close_price + self.line_bar[-1].high_price + self.line_bar[-1].low_price) / 3
         list_mid3.append(last_bar_mid3)
         bar_mid3_ema10 = ta.EMA(np.array(list_mid3, dtype=float), ema_len)[-1]
         self._rt_yb = round(float(bar_mid3_ema10), self.round_n)
@@ -4501,9 +4501,6 @@ class CtaMinuteBar(CtaLineBar):
          :param bar_freq, bar对象得frequency
         :return:
         """
-        # self.write_log("addBar(): {}, o={}, h={}, l={}, c={}, v={}".format(bar.datetime.strftime("%Y%m%d %H:%M:%S"),
-        #     bar.open, bar.high, bar.low_price, bar.close_price, bar.volume
-        # ))
         if bar.trading_day is None:
             if self.is_7x24:
                 bar.trading_day = bar.datetime.strftime('%Y-%m-%d')
@@ -4690,7 +4687,7 @@ class CtaMinuteBar(CtaLineBar):
             self.barFirstTick = False
 
             # 更新最高价、最低价、收盘价、成交量
-            lastBar.high_price = max(lastBar.high, tick.last_price)
+            lastBar.high_price = max(lastBar.high_price, tick.last_price)
             lastBar.low_price = min(lastBar.low_price, tick.last_price)
             lastBar.close_price = tick.last_price
             lastBar.open_interest = tick.open_interest

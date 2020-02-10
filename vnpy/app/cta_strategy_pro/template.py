@@ -856,7 +856,8 @@ class CtaProTemplate(CtaTemplate):
             grid.snapshot.update({'mi_symbol': self.vt_symbol, 'open_price': self.cur_mi_price})
             self.gt.dn_grids.append(grid)
 
-            order_ids = self.buy(price=self.cur_mi_price, volume=grid.volume, vt_symbol=self.vt_symbol, grid=grid)
+            order_ids = self.buy(price=self.cur_mi_price + 5 * self.price_tick,
+                                 volume=grid.volume, vt_symbol=self.vt_symbol, grid=grid)
             if len(order_ids) > 0:
                 self.write_log(u'切换合约,委托买入主力合约:{},价格:{},数量:{}'
                                .format(self.vt_symbol, self.cur_mi_price, grid.volume))
