@@ -1239,8 +1239,8 @@ class CtaLineBar(object):
                 self.line_sar.append(sr0)
                 self.cur_sar_direction = 'down'
                 self.cur_sar_count = 0
-            self.line_sar_top.append(self.line_bar[-2].high)  # SAR的谷顶
-            self.line_sar_buttom.append(self.line_bar[-2].low)  # SAR的波底
+            self.line_sar_top.append(self.line_bar[-2].high_price)  # SAR的谷顶
+            self.line_sar_buttom.append(self.line_bar[-2].low_price)  # SAR的波底
         elif len(self.line_sar_sr_up) > 0:
             if self.low_array[-1] > self.line_sar_sr_up[-1]:
                 sr0 = self.line_sar_sr_up[-1]
@@ -1265,8 +1265,8 @@ class CtaLineBar(object):
                 self.cur_sar_direction = 'down'
                 # self.write_log('Up->Down: sr0={},ep0={},af0={},sr={}'.format(sr0, ep0, af0, sr0))
                 # self.write_log('lineSarTop={}, lineSarButtom={}, len={}'.format(self.lineSarTop[-1], self.lineSarButtom[-1],len(self.lineSarSrUp)))
-                self.line_sar_top.append(self.line_bar[-2].high)
-                self.line_sar_buttom.append(self.line_bar[-2].low)
+                self.line_sar_top.append(self.line_bar[-2].high_price)
+                self.line_sar_buttom.append(self.line_bar[-2].low_price)
                 self.line_sar_sr_up = []
                 self.line_sar_ep_up = []
                 self.line_sar_af_up = []
@@ -1305,8 +1305,8 @@ class CtaLineBar(object):
                 self.cur_sar_direction = 'up'
                 # self.write_log('Down->Up: sr0={},ep0={},af0={},sr={}'.format(sr0, ep0, af0, sr0))
                 # self.write_log('lineSarTop={}, lineSarButtom={}, len={}'.format(self.lineSarTop[-1], self.lineSarButtom[-1],len(self.lineSarSrDown)))
-                self.line_sar_top.append(self.line_bar[-2].high)
-                self.line_sar_buttom.append(self.line_bar[-2].low)
+                self.line_sar_top.append(self.line_bar[-2].high_price)
+                self.line_sar_buttom.append(self.line_bar[-2].low_price)
                 self.line_sar_sr_down = []
                 self.line_sar_ep_down = []
                 self.line_sar_af_down = []
@@ -3501,7 +3501,7 @@ class CtaLineBar(object):
 
         # 收盘价 = 结算bar + 最后一个未结束得close
         close_list = self.close_array[-data_len:]
-        close_list.append(self.line_bar[-1].close)
+        close_list.append(self.line_bar[-1].close_price)
         # close_list = [x.close_price for x in self.lineBar[-data_len:]]
 
         # 计算最后得动态RSI值
