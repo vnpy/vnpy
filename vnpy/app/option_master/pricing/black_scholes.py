@@ -14,9 +14,11 @@ def calculate_d1(
     v: float
 ) -> float:
     """Calculate option D1 value"""
-    d1: float = (log(s / k) + (r + 0.5 * pow(v, 2)) * t) / (v * sqrt(t))
+    try:
+        d1: float = (log(s / k) + (r + 0.5 * pow(v, 2)) * t) / (v * sqrt(t))
+    except ZeroDivisionError:
+        d1 = 0
     return d1
-
 
 def calculate_price(
     s: float,
