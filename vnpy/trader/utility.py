@@ -389,6 +389,15 @@ class ArrayManager(object):
             return result
         return result[-1]
 
+    def ema(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+        """
+        Exponential moving average.
+        """
+        result = talib.EMA(self.close, n)
+        if array:
+            return result
+        return result[-1]
+
     def kama(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         KAMA.
@@ -675,10 +684,7 @@ class ArrayManager(object):
         return up, down
 
     def donchian(
-        self,
-        n: int,
-        dev: float,
-        array: bool = False
+        self, n: int, array: bool = False
     ) -> Union[
         Tuple[np.ndarray, np.ndarray],
         Tuple[float, float]
