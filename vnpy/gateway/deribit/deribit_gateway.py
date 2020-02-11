@@ -620,10 +620,9 @@ class DeribitWebsocketApi(WebsocketClient):
 
         tick = self.ticks[symbol]
         for i in range(5):
-            if len(bids) < i +1 or len(asks) < i +1:
-                continue
             ix = i + 1
-
+            if len(bids) < ix or len(asks) < ix:
+                continue
             bp, bv = bids[i]
             ap, av = asks[i]
 
