@@ -846,6 +846,7 @@ class CtpTdApi(TdApi):
                         idx_contract = deepcopy(contract)
                         idx_contract.symbol = '{}99'.format(underlying_symbol)
                         idx_contract.name = u'{}指数'.format(underlying_symbol)
+                        idx_contract.vt_symbol = f'{idx_contract.symbol}.{idx_contract.exchange.value}'
                         self.gateway.on_contract(idx_contract)
 
                         # 获取data/tdx/future_contracts.json中的合约记录
