@@ -63,6 +63,7 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.utility import get_folder_path
 from vnpy.trader.event import EVENT_TIMER
+from vnpy.event import EventEngine
 
 
 STATUS_SGIT2VT: Dict[str, Status] = {
@@ -102,7 +103,15 @@ EXCHANGE_SGIT2VT: Dict[str, Exchange] = {
     "SHFE": Exchange.SHFE,
     "CZCE": Exchange.CZCE,
     "DCE": Exchange.DCE,
-    "INE": Exchange.INE
+    "INE": Exchange.INE,
+    "GOLD": Exchange.SGX,
+    "PAT": Exchange.SMART,
+    "LTS": Exchange.SMART,
+    "CME": Exchange.CME,
+    "LME": Exchange.LME,
+    "SGE": Exchange.SGX,
+    "HKEX": Exchange.HKFE,
+
 }
 
 PRODUCT_SGIT2VT: Dict[str, Product] = {
@@ -120,14 +129,14 @@ OPTIONTYPE_SGIT2VT: Dict[str, OptionType] = {
 MAX_FLOAT: float = sys.float_info.max
 
 
-symbol_exchange_map: Dict = {}
-symbol_name_map: Dict = {}
-symbol_size_map: Dict = {}
+symbol_exchange_map: Dict[str, Exchange] = {}
+symbol_name_map: Dict[str, str] = {}
+symbol_size_map: Dict[str, str] = {}
 
 
 class SgitGateway(BaseGateway):
     """
-    VN Trader Gateway for CTP .
+    VN Trader Gateway for SGIT .
     """
 
     default_setting: Dict[str, str] = {
@@ -143,9 +152,9 @@ class SgitGateway(BaseGateway):
 
     exchanges: List[Exchange] = list(EXCHANGE_SGIT2VT.values())
 
-    def __init__(self, event_engine):
+    def __init__(self, event_engine: EventEngine):
         """Constructor"""
-        super().__init__(event_engine, "CTP")
+        super().__init__(event_engine, "SGIT")
 
         self.td_api = SgitTsdApi(self)
         self.md_api = SgitMdApi(self)
@@ -231,38 +240,38 @@ class SgitGateway(BaseGateway):
 class SgitMdApi(MdApi):
     """"""
 
-    def __init__(self, gateway):
+    def __init__(self, gateway: SgitGateway):
         """Constructor"""
         super(SgitMdApi, self).__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
+        self.gateway: SgitGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
-        self.reqid = 0
+        self.reqid: int = 0
 
-        self.connect_status = False
-        self.login_status = False
-        self.subscribed = set()
+        self.connect_status: bool = False
+        self.login_status: bool = False
+        self.subscribed: set = set()
 
-        self.userid = ""
-        self.password = ""
-        self.brokerid = ""
+        self.userid: str = ""
+        self.password: str = ""
+        self.brokerid: str = ""
 
-    def onFrontConnected(self):
+    def onFrontConnected(self) -> None:
         """
         Callback when front server is connected.
         """
         self.gateway.write_log("行情服务器连接成功")
         self.login()
 
-    def onFrontDisconnected(self, reason: int):
+    def onFrontDisconnected(self, reason: int) -> None:
         """
         Callback when front server is disconnected.
         """
         self.login_status = False
         self.gateway.write_log(f"行情服务器连接断开，原因{reason}")
 
-    def onRspUserLogin(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspUserLogin(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """
         Callback when user is logged in.
         """
@@ -275,20 +284,20 @@ class SgitMdApi(MdApi):
         else:
             self.gateway.write_error("行情服务器登录失败", error)
 
-    def onRspError(self, error: dict, reqid: int, last: bool):
+    def onRspError(self, error: dict, reqid: int, last: bool) -> None:
         """
         Callback when error occured.
         """
         self.gateway.write_error("行情接口报错", error)
 
-    def onRspSubMarketData(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspSubMarketData(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """"""
         if not error or not error["ErrorID"]:
             return
 
         self.gateway.write_error("行情订阅失败", error)
 
-    def onRtnDepthMarketData(self, data: dict):
+    def onRtnDepthMarketData(self, data: dict) -> None:
         """
         Callback of tick data update.
         """
@@ -297,7 +306,7 @@ class SgitMdApi(MdApi):
         if not exchange:
             return
 
-        timestamp = f"{data['ActionDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
+        timestamp = f"{data['TradingDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
 
         tick = TickData(
             symbol=symbol,
@@ -343,7 +352,7 @@ class SgitMdApi(MdApi):
 
         self.gateway.on_tick(tick)
 
-    def connect(self, address: str, userid: str, password: str, brokerid: int):
+    def connect(self, address: str, userid: str, password: str, brokerid: int) -> None:
         """
         Start connection to server.
         """
@@ -364,7 +373,7 @@ class SgitMdApi(MdApi):
         elif not self.login_status:
             self.login()
 
-    def login(self):
+    def login(self) -> None:
         """
         Login onto server.
         """
@@ -377,7 +386,7 @@ class SgitMdApi(MdApi):
         self.reqid += 1
         self.reqUserLogin(req, self.reqid)
 
-    def subscribe(self, req: SubscribeRequest):
+    def subscribe(self, req: SubscribeRequest) -> None:
         """
         Subscribe to tick data update.
         """
@@ -385,7 +394,7 @@ class SgitMdApi(MdApi):
             self.subscribeMarketData(req.symbol)
         self.subscribed.add(req.symbol)
 
-    def close(self):
+    def close(self) -> None:
         """
         Close the connection.
         """
@@ -396,37 +405,35 @@ class SgitMdApi(MdApi):
 class SgitTsdApi(TdApi):
     """"""
 
-    def __init__(self, gateway):
+    def __init__(self, gateway: SgitGateway):
         """Constructor"""
         super(SgitTsdApi, self).__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
+        self.gateway: SgitGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
-        self.reqid = 0
-        self.order_ref = 0
+        self.reqid: int = 0
+        self.order_ref: int = 0
 
-        self.connect_status = False
-        self.login_status = False
-        self.auth_staus = False
-        self.login_failed = False
+        self.connect_status: bool = False
+        self.login_status: bool = False
+        self.auth_staus: bool = False
+        self.login_failed: bool = False
 
-        self.userid = ""
-        self.password = ""
-        self.brokerid = ""
-        self.auth_code = ""
-        self.appid = ""
-        self.product_info = ""
+        self.userid: str = ""
+        self.password: str = ""
+        self.brokerid: str = ""
+        self.auth_code: str = ""
+        self.appid: str = ""
+        self.product_info: str = ""
 
-        self.frontid = 0
-        self.sessionid = 0
+        self.order_data: List[dict] = []
+        self.trade_data: List[dict] = []
+        self.positions: Dict[str, PositionData] = {}
+        self.sysid_orderid_map: Dict[str, str] = {}
+        self.orderid_sysid_map: Dict[str, str] = {}
 
-        self.order_data = []
-        self.trade_data = []
-        self.positions = {}
-        self.sysid_orderid_map = {}
-
-    def onFrontConnected(self):
+    def onFrontConnected(self) -> None:
         """"""
         self.gateway.write_log("交易服务器连接成功")
 
@@ -435,12 +442,12 @@ class SgitTsdApi(TdApi):
         else:
             self.login()
 
-    def onFrontDisconnected(self, reason: int):
+    def onFrontDisconnected(self, reason: int) -> None:
         """"""
         self.login_status = False
         self.gateway.write_log(f"交易服务器连接断开，原因{reason}")
 
-    def onRspAuthenticate(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspAuthenticate(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """"""
         if not error['ErrorID']:
             self.auth_staus = True
@@ -449,11 +456,9 @@ class SgitTsdApi(TdApi):
         else:
             self.gateway.write_error("交易服务器授权验证失败", error)
 
-    def onRspUserLogin(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspUserLogin(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """"""
         if not error["ErrorID"]:
-            self.frontid = data["FrontID"]
-            self.sessionid = data["SessionID"]
             self.login_status = True
             self.gateway.write_log("交易服务器登录成功")
 
@@ -469,10 +474,12 @@ class SgitTsdApi(TdApi):
 
             self.gateway.write_error("交易服务器登录失败", error)
 
-    def onRspOrderInsert(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspOrderInsert(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """"""
         order_ref = data["OrderRef"]
-        orderid = f"{self.frontid}_{self.sessionid}_{order_ref}"
+        orderid = order_ref
+
+        self.order_ref = max(self.order_ref, int(order_ref))
 
         symbol = data["InstrumentID"]
         exchange = symbol_exchange_map[symbol]
@@ -490,17 +497,19 @@ class SgitTsdApi(TdApi):
         )
         self.gateway.on_order(order)
 
-        self.gateway.write_error("交易委托失败", error)
+        if error["ErrorID"] != 0:
+            self.gateway.write_error("交易委托失败", error)
 
-    def onRspOrderAction(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspOrderAction(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """"""
-        self.gateway.write_error("交易撤单失败", error)
+        if error["ErrorID"] != 0:
+            self.gateway.write_error("交易撤单失败", error)
 
-    def onRspQueryMaxOrderVolume(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspQueryMaxOrderVolume(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """"""
         pass
 
-    def onRspSettlementInfoConfirm(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspSettlementInfoConfirm(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """
         Callback of settlment info confimation.
         """
@@ -509,7 +518,7 @@ class SgitTsdApi(TdApi):
         self.reqid += 1
         self.reqQryInstrument({}, self.reqid)
 
-    def onRspQryInvestorPosition(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspQryInvestorPosition(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """"""
         if not data:
             return
@@ -563,7 +572,7 @@ class SgitTsdApi(TdApi):
 
             self.positions.clear()
 
-    def onRspQryTradingAccount(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspQryTradingAccount(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """"""
         if "AccountID" not in data:
             return
@@ -578,7 +587,7 @@ class SgitTsdApi(TdApi):
 
         self.gateway.on_account(account)
 
-    def onRspQryInstrument(self, data: dict, error: dict, reqid: int, last: bool):
+    def onRspQryInstrument(self, data: dict, error: dict, reqid: int, last: bool) -> None:
         """
         Callback of instrument query.
         """
@@ -625,7 +634,7 @@ class SgitTsdApi(TdApi):
                 self.onRtnTrade(data)
             self.trade_data.clear()
 
-    def onRtnOrder(self, data: dict):
+    def onRtnOrder(self, data: dict) -> None:
         """
         Callback of order status update.
         """
@@ -635,10 +644,8 @@ class SgitTsdApi(TdApi):
             self.order_data.append(data)
             return
 
-        frontid = data["FrontID"]
-        sessionid = data["SessionID"]
         order_ref = data["OrderRef"]
-        orderid = f"{frontid}_{sessionid}_{order_ref}"
+        orderid = order_ref
 
         order = OrderData(
             symbol=symbol,
@@ -657,8 +664,9 @@ class SgitTsdApi(TdApi):
         self.gateway.on_order(order)
 
         self.sysid_orderid_map[data["OrderSysID"]] = orderid
+        self.orderid_sysid_map[orderid] = data["OrderSysID"]
 
-    def onRtnTrade(self, data: dict):
+    def onRtnTrade(self, data: dict) -> None:
         """
         Callback of trade status update.
         """
@@ -682,6 +690,7 @@ class SgitTsdApi(TdApi):
             time=data["TradeTime"],
             gateway_name=self.gateway_name
         )
+
         self.gateway.on_trade(trade)
 
     def connect(
@@ -693,7 +702,7 @@ class SgitTsdApi(TdApi):
         auth_code: str,
         appid: str,
         product_info
-    ):
+    ) -> None:
         """
         Start connection to server.
         """
@@ -718,7 +727,7 @@ class SgitTsdApi(TdApi):
         else:
             self.authenticate()
 
-    def authenticate(self):
+    def authenticate(self) -> None:
         """
         Authenticate with auth_code and appid.
         """
@@ -735,7 +744,7 @@ class SgitTsdApi(TdApi):
         self.reqid += 1
         self.reqAuthenticate(req, self.reqid)
 
-    def login(self):
+    def login(self) -> None:
         """
         Login onto server.
         """
@@ -765,7 +774,7 @@ class SgitTsdApi(TdApi):
 
         self.order_ref += 1
 
-        ctp_req = {
+        sgit_req = {
             "InstrumentID": req.symbol,
             "ExchangeID": req.exchange.value,
             "LimitPrice": req.price,
@@ -787,51 +796,53 @@ class SgitTsdApi(TdApi):
         }
 
         if req.type == OrderType.FAK:
-            ctp_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
-            ctp_req["TimeCondition"] = THOST_FTDC_TC_IOC
-            ctp_req["VolumeCondition"] = THOST_FTDC_VC_AV
+            sgit_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
+            sgit_req["TimeCondition"] = THOST_FTDC_TC_IOC
+            sgit_req["VolumeCondition"] = THOST_FTDC_VC_AV
         elif req.type == OrderType.FOK:
-            ctp_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
-            ctp_req["TimeCondition"] = THOST_FTDC_TC_IOC
-            ctp_req["VolumeCondition"] = THOST_FTDC_VC_CV
+            sgit_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
+            sgit_req["TimeCondition"] = THOST_FTDC_TC_IOC
+            sgit_req["VolumeCondition"] = THOST_FTDC_VC_CV
 
         self.reqid += 1
-        self.reqOrderInsert(ctp_req, self.reqid)
 
-        orderid = f"{self.frontid}_{self.sessionid}_{self.order_ref}"
+        self.reqOrderInsert(sgit_req, self.reqid)
+
+        orderid = self.order_ref
         order = req.create_order_data(orderid, self.gateway_name)
+
         self.gateway.on_order(order)
 
         return order.vt_orderid
 
-    def cancel_order(self, req: CancelRequest):
+    def cancel_order(self, req: CancelRequest) -> None:
         """
         Cancel existing order.
         """
-        frontid, sessionid, order_ref = req.orderid.split("_")
+        order_ref = req.orderid
+        sysid = self.orderid_sysid_map[req.orderid]
 
-        ctp_req = {
+        sgit_req = {
             "InstrumentID": req.symbol,
             "ExchangeID": req.exchange.value,
             "OrderRef": order_ref,
-            "FrontID": int(frontid),
-            "SessionID": int(sessionid),
             "ActionFlag": THOST_FTDC_AF_Delete,
             "BrokerID": self.brokerid,
-            "InvestorID": self.userid
+            "InvestorID": self.userid,
+            "OrderSysID": sysid
         }
 
         self.reqid += 1
-        self.reqOrderAction(ctp_req, self.reqid)
+        self.reqOrderAction(sgit_req, self.reqid)
 
-    def query_account(self):
+    def query_account(self) -> None:
         """
         Query account balance data.
         """
         self.reqid += 1
         self.reqQryTradingAccount({}, self.reqid)
 
-    def query_position(self):
+    def query_position(self) -> None:
         """
         Query position holding data.
         """
@@ -846,7 +857,7 @@ class SgitTsdApi(TdApi):
         self.reqid += 1
         self.reqQryInvestorPosition(req, self.reqid)
 
-    def close(self):
+    def close(self) -> None:
         """"""
         if self.connect_status:
             self.exit()

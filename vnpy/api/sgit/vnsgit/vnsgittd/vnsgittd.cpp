@@ -8312,16 +8312,16 @@ int TdApi::reqQueryBankAccountMoneyByFuture(const dict &req, int reqid)
 	return i;
 };
 
-int TdApi::reqMBLQuot(const dict &req, int reqid)
-{
-	CThostMBLQuotReq myreq = CThostMBLQuotReq();
-	memset(&myreq, 0, sizeof(myreq));
-	getString(req, "StartInstrumentID", myreq.StartInstrumentID);
-	getString(req, "EndInstrumentID", myreq.EndInstrumentID);
-	getChar(req, "Direction", &myreq.Direction);
-	int i = this->api->ReqMBLQuot(&myreq, reqid);
-	return i;
-};
+//int TdApi::reqMBLQuot(const dict &req, int reqid)
+//{
+//	CThostMBLQuotReq myreq = CThostMBLQuotReq();
+//	memset(&myreq, 0, sizeof(myreq));
+//	getString(req, "StartInstrumentID", myreq.StartInstrumentID);
+//	getString(req, "EndInstrumentID", myreq.EndInstrumentID);
+//	getChar(req, "Direction", &myreq.Direction);
+//	int i = this->api->ReqMBLQuot(&myreq, reqid);
+//	return i;
+//};
 
 int TdApi::reqQryDeferFeeRate(const dict &req, int reqid)
 {
@@ -9725,7 +9725,7 @@ public:
 };
 
 
-PYBIND11_MODULE(vnctptd, m)
+PYBIND11_MODULE(vnsgittd, m)
 {
 	class_<TdApi, PyTdApi> TdApi(m, "TdApi", module_local());
 	TdApi
@@ -9806,7 +9806,7 @@ PYBIND11_MODULE(vnctptd, m)
 		.def("reqFromBankToFutureByFuture", &TdApi::reqFromBankToFutureByFuture)
 		.def("reqFromFutureToBankByFuture", &TdApi::reqFromFutureToBankByFuture)
 		.def("reqQueryBankAccountMoneyByFuture", &TdApi::reqQueryBankAccountMoneyByFuture)
-		.def("reqMBLQuot", &TdApi::reqMBLQuot)
+		//.def("reqMBLQuot", &TdApi::reqMBLQuot)
 		.def("reqQryDeferFeeRate", &TdApi::reqQryDeferFeeRate)
 		.def("reqQryDeferMidAppTrade", &TdApi::reqQryDeferMidAppTrade)
 

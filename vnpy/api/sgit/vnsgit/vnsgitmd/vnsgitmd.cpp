@@ -880,7 +880,7 @@ public:
 };
 
 
-PYBIND11_MODULE(vnctpmd, m)
+PYBIND11_MODULE(vnsgitmd, m)
 {
 	class_<MdApi, PyMdApi> mdapi(m, "MdApi", module_local());
 	mdapi
