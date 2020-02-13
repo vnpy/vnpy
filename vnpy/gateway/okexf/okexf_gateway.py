@@ -13,6 +13,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import urlencode
+from typing import Dict
 
 from requests import ConnectionError
 
@@ -595,7 +596,7 @@ class OkexfWebsocketApi(WebsocketClient):
 
     def __init__(self, gateway):
         """"""
-        super(OkexfWebsocketApi, self).__init__()
+        super().__init__()
         self.ping_interval = 20     # OKEX use 30 seconds for ping
 
         self.gateway = gateway
@@ -608,6 +609,7 @@ class OkexfWebsocketApi(WebsocketClient):
         self.trade_count = 10000
         self.connect_time = 0
 
+        self.subscribed: Dict[str, SubscribeRequest] = {}
         self.callbacks = {}
         self.ticks = {}
 
@@ -636,6 +638,8 @@ class OkexfWebsocketApi(WebsocketClient):
         """
         Subscribe to tick data upate.
         """
+        self.subscribed[req.vt_symbol] = req
+
         tick = TickData(
             symbol=req.symbol,
             exchange=req.exchange,
@@ -768,6 +772,9 @@ class OkexfWebsocketApi(WebsocketClient):
         if success:
             self.gateway.write_log("Websocket API登录成功")
             self.subscribe_topic()
+
+            for req in list(self.subscribed.values()):
+                self.subscribe(req)
         else:
             self.gateway.write_log("Websocket API登录失败")
 
