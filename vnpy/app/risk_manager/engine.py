@@ -187,7 +187,7 @@ class RiskManagerEngine(BaseEngine):
                        round(account.frozen * 100 / (account.balance + 0.01), 2), \
                        self.percent_limit
         if len(self.account_dict.values()) > 0:
-            account = self.account_dict.values()[0]
+            account = list(self.account_dict.values())[0]
             return account.balance, \
                    account.available, \
                    round(account.frozen * 100 / (account.balance + 0.01), 2), \
