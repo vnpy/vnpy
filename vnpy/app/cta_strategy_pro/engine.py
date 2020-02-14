@@ -267,7 +267,7 @@ class CtaEngine(BaseEngine):
         # else:
         #     strategy.pos -= trade.volume
         # 根据策略名称，写入 data\straetgy_name_trade.csv文件
-        strategy_name = getattr(strategy, 'name')
+        strategy_name = getattr(strategy, 'strategy_name')
         trade_fields = ['datetime', 'symbol', 'exchange', 'vt_symbol', 'tradeid', 'vt_tradeid', 'orderid', 'vt_orderid',
                         'direction', 'offset', 'price', 'volume', 'idx_price']
         trade_dict = OrderedDict()
@@ -719,7 +719,8 @@ class CtaEngine(BaseEngine):
         else:
             # 添加 合约订阅 vt_symbol <=> 策略实例 strategy 映射.
             strategies = self.symbol_strategy_map[vt_symbol]
-            strategies.append(strategy)
+            if strategy not in strategies:
+                strategies.append(strategy)
 
         # 添加 策略名 strategy_name  <=> 合约订阅 vt_symbol 的映射
         subscribe_symbol_set = self.strategy_symbol_map[strategy.strategy_name]
