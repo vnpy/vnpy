@@ -81,7 +81,7 @@ class CtaGrid(object):
 
         j = OrderedDict()
         j['id'] = self.id
-        j['direction'] = self.direction
+        j['direction'] = self.direction.value if self.direction else ''
         j['open_price'] = self.open_price  # 开仓价格
         j['close_price'] = self.close_price  # 平仓价格
         j['stop_price'] = self.stop_price  # 止损价格
@@ -107,7 +107,8 @@ class CtaGrid(object):
         """从JSON恢复"""
         try:
             self.id = j.get('id', str(uuid.uuid1()))
-            self.direction = j.get('direction', Direction.NET)
+            s = j.get('direction', '')
+            self.direction = Direction(s) if len(s) > 0 else None
             self.close_price = j.get('close_price', 0)
             self.open_price = j.get('open_price', 0)
             self.stop_price = j.get('stop_price', 0)

@@ -759,7 +759,7 @@ class CtaProTemplate(CtaTemplate):
         if self.position.long_pos > 0:
             for g in self.gt.get_opened_grids(direction=Direction.LONG):
                 vt_symbol = g.snapshot.get('mi_symbol', self.vt_symbol)
-                open_price = g.snapshot.get('open_price', g.openPrice)
+                open_price = g.snapshot.get('open_price', g.open_price)
                 pos_list.append({'vt_symbol': vt_symbol,
                                  'direction': 'long',
                                  'volume': g.volume - g.traded_volume,
