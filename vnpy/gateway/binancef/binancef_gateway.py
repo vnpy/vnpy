@@ -10,6 +10,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from enum import Enum
 from threading import Lock
+from typing import Dict, List, Any
 
 from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
@@ -37,12 +38,15 @@ from vnpy.trader.object import (
 from vnpy.trader.event import EVENT_TIMER
 from vnpy.event import Event
 
+REST_HOST: str = "https://fapi.binance.com"
+WEBSOCKET_TRADE_HOST: str = "wss://fstream.binance.com/ws/"
+WEBSOCKET_DATA_HOST: str = "wss://fstream.binance.com/stream?streams="
 
-REST_HOST = "https://www.binance.com"
-WEBSOCKET_TRADE_HOST = "wss://stream.binance.com:9443/ws/"
-WEBSOCKET_DATA_HOST = "wss://stream.binance.com:9443/stream?streams="
+REST_TEST_HOST: str = "https://testnet.binancefuture.com"
+WEBSOCKET_TEST_TRADE_HOST: str = "wss://stream.binancefuture.com/ws/"
+WEBSOCKET_TEST_DATA_HOST: str = "wss://stream.binancefuture.com/stream?streams="
 
-STATUS_BINANCEF2VT = {
+STATUS_BINANCEF2VT: Dict[str, Status] = {
     "NEW": Status.NOTTRADED,
     "PARTIALLY_FILLED": Status.PARTTRADED,
     "FILLED": Status.ALLTRADED,
@@ -50,25 +54,25 @@ STATUS_BINANCEF2VT = {
     "REJECTED": Status.REJECTED
 }
 
-ORDERTYPE_VT2BINANCEF = {
+ORDERTYPE_VT2BINANCEF: Dict[OrderType, str] = {
     OrderType.LIMIT: "LIMIT",
     OrderType.MARKET: "MARKET"
 }
-ORDERTYPE_BINANCEF2VT = {v: k for k, v in ORDERTYPE_VT2BINANCEF.items()}
+ORDERTYPE_BINANCEF2VT: Dict[str, OrderType] = {v: k for k, v in ORDERTYPE_VT2BINANCEF.items()}
 
-DIRECTION_VT2BINANCEF = {
+DIRECTION_VT2BINANCEF: Dict[Direction, str] = {
     Direction.LONG: "BUY",
     Direction.SHORT: "SELL"
 }
-DIRECTION_BINANCEF2VT = {v: k for k, v in DIRECTION_VT2BINANCEF.items()}
+DIRECTION_BINANCEF2VT: Dict[str, Direction] = {v: k for k, v in DIRECTION_VT2BINANCEF.items()}
 
-INTERVAL_VT2BINANCEF = {
+INTERVAL_VT2BINANCEF: Dict[Interval, str] = {
     Interval.MINUTE: "1m",
     Interval.HOUR: "1h",
     Interval.DAILY: "1d",
 }
 
-TIMEDELTA_MAP = {
+TIMEDELTA_MAP: Dict[Interval, timedelta] = {
     Interval.MINUTE: timedelta(minutes=1),
     Interval.HOUR: timedelta(hours=1),
     Interval.DAILY: timedelta(days=1),
@@ -76,12 +80,12 @@ TIMEDELTA_MAP = {
 
 
 class Security(Enum):
-    NONE = 0
-    SIGNED = 1
-    API_KEY = 2
+    NONE: int = 0
+    SIGNED: int = 1
+    API_KEY: int = 2
 
 
-symbol_name_map = {}
+symbol_name_map: Dict = {}
 
 
 class BinancefGateway(BaseGateway):
@@ -89,15 +93,16 @@ class BinancefGateway(BaseGateway):
     VN Trader Gateway for Binance connection.
     """
 
-    default_setting = {
+    default_setting: Dict[str, Any] = {
         "key": "",
         "secret": "",
         "session_number": 3,
+        "environment": ["TEST", "REAL"],
         "proxy_host": "",
         "proxy_port": 0,
     }
 
-    exchanges = [Exchange.BINANCE]
+    exchanges: Exchange = [Exchange.BINANCE]
 
     def __init__(self, event_engine):
         """Constructor"""
