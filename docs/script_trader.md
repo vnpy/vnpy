@@ -246,7 +246,7 @@ trades = engine.get_trades(vt_orderid = your_vt_orderid,use_df = True)
 - volume：报单数量（浮点数类型）;
 - order_type：OrderType枚举常量，默认为限价单（OrderType.LIMIT），同时支持停止单（OrderType.STOP）、FAK（OrderType.FAK）、FOK（OrderType.FOK）、市价单（OrderType.MARKET），不同交易所支持报单方式不完全一致。
 ```
-engine.buy(vt_symbol = "rb1910.SHFE",price = "3200",volume = "1",order_type=OrderType.LIMIT)
+engine.buy(vt_symbol = "rb1910.SHFE", price = 3200, volume = 1, order_type=OrderType.LIMIT)
 ```
 
 执行交易委托后会返回本地委托号vt_orderid，撤单也是基于该本地委托号的
