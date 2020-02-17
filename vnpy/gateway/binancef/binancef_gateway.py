@@ -29,6 +29,7 @@ from vnpy.trader.object import (
     TradeData,
     AccountData,
     ContractData,
+    PositionData,
     BarData,
     OrderRequest,
     CancelRequest,
@@ -278,7 +279,7 @@ class BinancefRestApi(RestClient):
         data = {
             "security": Security.NONE
         }
-        path = "/api/v1/time"
+        path = "/fapi/v1/time"
 
         return self.add_request(
             "GET",
@@ -293,7 +294,7 @@ class BinancefRestApi(RestClient):
 
         self.add_request(
             method="GET",
-            path="/api/v3/account",
+            path="/fapi/v1/account",
             callback=self.on_query_account,
             data=data
         )
@@ -304,7 +305,7 @@ class BinancefRestApi(RestClient):
 
         self.add_request(
             method="GET",
-            path="/api/v3/openOrders",
+            path="/fapi/v1/openOrders",
             callback=self.on_query_order,
             data=data
         )
@@ -316,7 +317,7 @@ class BinancefRestApi(RestClient):
         }
         self.add_request(
             method="GET",
-            path="/api/v1/exchangeInfo",
+            path="/fapi/v1/exchangeInfo",
             callback=self.on_query_contract,
             data=data
         )
@@ -345,15 +346,15 @@ class BinancefRestApi(RestClient):
             "timeInForce": "GTC",
             "side": DIRECTION_VT2BINANCEF[req.direction],
             "type": ORDERTYPE_VT2BINANCEF[req.type],
-            "price": str(req.price),
-            "quantity": str(req.volume),
+            "price": float(req.price),
+            "quantity": int(req.volume),
             "newClientOrderId": orderid,
             "newOrderRespType": "ACK"
         }
 
-        self.add_request(
+        n=self.add_request(
             method="POST",
-            path="/api/v3/order",
+            path="/fapi/v1/order",
             callback=self.on_send_order,
             data=data,
             params=params,
@@ -361,6 +362,8 @@ class BinancefRestApi(RestClient):
             on_error=self.on_send_order_error,
             on_failed=self.on_send_order_failed
         )
+
+        print("委托:", n)
 
         return order.vt_orderid
 
@@ -377,7 +380,7 @@ class BinancefRestApi(RestClient):
 
         self.add_request(
             method="DELETE",
-            path="/api/v3/order",
+            path="/fapi/v1/order",
             callback=self.on_cancel_order,
             params=params,
             data=data,
@@ -392,7 +395,7 @@ class BinancefRestApi(RestClient):
 
         self.add_request(
             method="POST",
-            path="/api/v1/userDataStream",
+            path="/fapi/v1/listenKey",
             callback=self.on_start_user_stream,
             data=data
         )
@@ -413,7 +416,7 @@ class BinancefRestApi(RestClient):
 
         self.add_request(
             method="PUT",
-            path="/api/v1/userDataStream",
+            path="/fapi/v1/listenKey",
             callback=self.on_keep_user_stream,
             params=params,
             data=data
@@ -427,11 +430,12 @@ class BinancefRestApi(RestClient):
 
     def on_query_account(self, data: dict, request: Request) -> None:
         """"""
-        for account_data in data["balances"]:
+        print("on_query_account", data)
+        for asset in data["assets"]:
             account = AccountData(
-                accountid=account_data["asset"],
-                balance=float(account_data["free"]) + float(account_data["locked"]),
-                frozen=float(account_data["locked"]),
+                accountid=asset["asset"],
+                balance=float(asset["walletBalance"]),
+                frozen=float(asset["maintMargin"]),
                 gateway_name=self.gateway_name
             )
 
@@ -486,7 +490,7 @@ class BinancefRestApi(RestClient):
                 pricetick=pricetick,
                 size=1,
                 min_volume=min_volume,
-                product=Product.SPOT,
+                product=Product.FUTURES,
                 history_data=True,
                 gateway_name=self.gateway_name,
             )
@@ -537,7 +541,6 @@ class BinancefRestApi(RestClient):
             url = WEBSOCKET_TRADE_HOST + self.user_stream_key
         else:
             url = TESTNET_WEBSOCKET_TRADE_HOST + self.user_stream_key
-
 
         self.trade_ws_api.connect(url, self.proxy_host, self.proxy_port)
 
@@ -643,44 +646,58 @@ class BinancefTradeWebsocketApi(WebsocketClient):
 
     def on_packet(self, packet: dict):  # type: (dict)->None
         """"""
-        if packet["e"] == "outboundAccountInfo":
+        print("TradeWebsocketApi:", packet["e"])
+
+        if packet["e"] == "ACCOUNT_UPDATE":
             self.on_account(packet)
-        elif packet["e"] == "executionReport":
+        elif packet["e"] == "ORDER_TRADE_UPDATE":
             self.on_order(packet)
 
     def on_account(self, packet) -> None:
         """"""
-        for d in packet["B"]:
+        for acc_data in packet["a"]["B"]:
+            # print("acc_data", acc_data)
             account = AccountData(
-                accountid=d["a"],
-                balance=float(d["f"]) + float(d["l"]),
-                frozen=float(d["l"]),
+                accountid=acc_data["a"],
+                balance=float(acc_data["wb"]),
+                frozen=float(acc_data["wb"]) - float(acc_data["cw"]),
                 gateway_name=self.gateway_name
             )
 
             if account.balance:
                 self.gateway.on_account(account)
 
+        for pos_data in  packet["a"]["P"]:
+            # print("pos_data", pos_data)
+            position = PositionData(
+                symbol=pos_data["s"],
+                exchange=Exchange.BINANCE,
+                direction=Direction.NET,
+                volume=int(float(pos_data["pa"])),
+                frozen=float(pos_data["iw"]),
+                price=float(pos_data["ep"]),
+                pnl=float(pos_data["cr"]),
+                gateway_name=self.gateway_name,
+            )
+            self.gateway.on_position(position)
+
     def on_order(self, packet: dict):
         """"""
-        dt = datetime.fromtimestamp(packet["O"] / 1000)
+        dt = datetime.fromtimestamp(packet["E"] / 1000)
         time = dt.strftime("%Y-%m-%d %H:%M:%S")
 
-        if packet["C"] == "null":
-            orderid = packet["c"]
-        else:
-            orderid = packet["C"]
+        ord_data = packet["o"]
 
         order = OrderData(
-            symbol=packet["s"],
+            symbol=ord_data["s"],
             exchange=Exchange.BINANCE,
-            orderid=orderid,
-            type=ORDERTYPE_BINANCEF2VT[packet["o"]],
-            direction=DIRECTION_BINANCEF2VT[packet["S"]],
-            price=float(packet["p"]),
-            volume=float(packet["q"]),
-            traded=float(packet["z"]),
-            status=STATUS_BINANCEF2VT[packet["X"]],
+            orderid=str(ord_data["c"]),
+            type=ORDERTYPE_BINANCEF2VT[ord_data["o"]],
+            direction=DIRECTION_BINANCEF2VT[ord_data["S"]],
+            price=float(ord_data["p"]),
+            volume=float(ord_data["q"]),
+            traded=float(ord_data["z"]),
+            status=STATUS_BINANCEF2VT[ord_data["X"]],
             time=time,
             gateway_name=self.gateway_name
         )
@@ -688,20 +705,20 @@ class BinancefTradeWebsocketApi(WebsocketClient):
         self.gateway.on_order(order)
 
         # Push trade event
-        trade_volume = float(packet["l"])
+        trade_volume = float(ord_data["l"])
         if not trade_volume:
             return
 
-        trade_dt = datetime.fromtimestamp(packet["T"] / 1000)
+        trade_dt = datetime.fromtimestamp(ord_data["T"] / 1000)
         trade_time = trade_dt.strftime("%Y-%m-%d %H:%M:%S")
 
         trade = TradeData(
             symbol=order.symbol,
             exchange=order.exchange,
             orderid=order.orderid,
-            tradeid=packet["t"],
+            tradeid=ord_data["t"],
             direction=order.direction,
-            price=float(packet["L"]),
+            price=float(ord_data["L"]),
             volume=trade_volume,
             time=trade_time,
             gateway_name=self.gateway_name,
@@ -782,13 +799,13 @@ class BinancefDataWebsocketApi(WebsocketClient):
             tick.last_price = float(data['c'])
             tick.datetime = datetime.fromtimestamp(float(data['E']) / 1000)
         else:
-            bids = data["bids"]
+            bids = data["b"]
             for n in range(5):
                 price, volume = bids[n]
                 tick.__setattr__("bid_price_" + str(n + 1), float(price))
                 tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
 
-            asks = data["asks"]
+            asks = data["a"]
             for n in range(5):
                 price, volume = asks[n]
                 tick.__setattr__("ask_price_" + str(n + 1), float(price))
