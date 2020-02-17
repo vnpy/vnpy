@@ -10,7 +10,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from enum import Enum
 from threading import Lock
-from typing import Dict, List, Any
+from typing import Dict, List, Optional
 
 from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
@@ -37,7 +37,7 @@ from vnpy.trader.object import (
     HistoryRequest
 )
 from vnpy.trader.event import EVENT_TIMER
-from vnpy.event import Event
+from vnpy.event import Event, EventEngine
 
 REST_HOST: str = "https://fapi.binance.com"
 WEBSOCKET_TRADE_HOST: str = "wss://fstream.binance.com/ws/"
@@ -86,7 +86,7 @@ class Security(Enum):
     API_KEY: int = 2
 
 
-symbol_name_map: Dict = {}
+symbol_name_map: Dict[str, str] = {}
 
 
 class BinancefGateway(BaseGateway):
@@ -94,7 +94,7 @@ class BinancefGateway(BaseGateway):
     VN Trader Gateway for Binance connection.
     """
 
-    default_setting: Dict[str, Any] = {
+    default_setting: Dict[str, Optional[str, list]] = {
         "key": "",
         "secret": "",
         "session_number": 3,
@@ -105,7 +105,7 @@ class BinancefGateway(BaseGateway):
 
     exchanges: Exchange = [Exchange.BINANCE]
 
-    def __init__(self, event_engine):
+    def __init__(self, event_engine: EventEngine):
         """Constructor"""
         super().__init__(event_engine, "BINANCEF")
 
@@ -352,7 +352,7 @@ class BinancefRestApi(RestClient):
             "newOrderRespType": "ACK"
         }
 
-        n=self.add_request(
+        self.add_request(
             method="POST",
             path="/fapi/v1/order",
             callback=self.on_send_order,
@@ -362,8 +362,6 @@ class BinancefRestApi(RestClient):
             on_error=self.on_send_order_error,
             on_failed=self.on_send_order_failed
         )
-
-        print("委托:", n)
 
         return order.vt_orderid
 
@@ -430,7 +428,6 @@ class BinancefRestApi(RestClient):
 
     def on_query_account(self, data: dict, request: Request) -> None:
         """"""
-        print("on_query_account", data)
         for asset in data["assets"]:
             account = AccountData(
                 accountid=asset["asset"],
@@ -504,7 +501,7 @@ class BinancefRestApi(RestClient):
         """"""
         pass
 
-    def on_send_order_failed(self, status_code: str, request: Request):
+    def on_send_order_failed(self, status_code: str, request: Request) -> None:
         """
         Callback when sending order failed on server.
         """
@@ -517,7 +514,7 @@ class BinancefRestApi(RestClient):
 
     def on_send_order_error(
         self, exception_type: type, exception_value: Exception, tb, request: Request
-    ):
+    ) -> None:
         """
         Callback when sending order caused exception.
         """
@@ -529,11 +526,11 @@ class BinancefRestApi(RestClient):
         if not issubclass(exception_type, ConnectionError):
             self.on_error(exception_type, exception_value, tb, request)
 
-    def on_cancel_order(self, data, request):
+    def on_cancel_order(self, data: dict, request: Request) -> None:
         """"""
         pass
 
-    def on_start_user_stream(self, data, request) -> None:
+    def on_start_user_stream(self, data: dict, request: Request) -> None:
         """"""
         self.user_stream_key = data["listenKey"]
         self.keep_alive_count = 0
@@ -544,11 +541,11 @@ class BinancefRestApi(RestClient):
 
         self.trade_ws_api.connect(url, self.proxy_host, self.proxy_port)
 
-    def on_keep_user_stream(self, data, request):
+    def on_keep_user_stream(self, data: dict, request: Request) -> None:
         """"""
         pass
 
-    def query_history(self, req: HistoryRequest):
+    def query_history(self, req: HistoryRequest) -> List[OrderData]:
         """"""
         history = []
         limit = 1000
@@ -628,14 +625,14 @@ class BinancefRestApi(RestClient):
 class BinancefTradeWebsocketApi(WebsocketClient):
     """"""
 
-    def __init__(self, gateway):
+    def __init__(self, gateway: BinancefGateway):
         """"""
         super().__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
+        self.gateway: BinancefGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
-    def connect(self, url, proxy_host, proxy_port) -> None:
+    def connect(self, url: str, proxy_host: str, proxy_port: int) -> None:
         """"""
         self.init(url, proxy_host, proxy_port)
         self.start()
@@ -644,19 +641,16 @@ class BinancefTradeWebsocketApi(WebsocketClient):
         """"""
         self.gateway.write_log("交易Websocket API连接成功")
 
-    def on_packet(self, packet: dict):  # type: (dict)->None
+    def on_packet(self, packet: dict) -> None:  # type: (dict)->None
         """"""
-        print("TradeWebsocketApi:", packet["e"])
-
         if packet["e"] == "ACCOUNT_UPDATE":
             self.on_account(packet)
         elif packet["e"] == "ORDER_TRADE_UPDATE":
             self.on_order(packet)
 
-    def on_account(self, packet) -> None:
+    def on_account(self, packet: dict) -> None:
         """"""
         for acc_data in packet["a"]["B"]:
-            # print("acc_data", acc_data)
             account = AccountData(
                 accountid=acc_data["a"],
                 balance=float(acc_data["wb"]),
@@ -667,8 +661,7 @@ class BinancefTradeWebsocketApi(WebsocketClient):
             if account.balance:
                 self.gateway.on_account(account)
 
-        for pos_data in  packet["a"]["P"]:
-            # print("pos_data", pos_data)
+        for pos_data in packet["a"]["P"]:
             position = PositionData(
                 symbol=pos_data["s"],
                 exchange=Exchange.BINANCE,
@@ -681,7 +674,7 @@ class BinancefTradeWebsocketApi(WebsocketClient):
             )
             self.gateway.on_position(position)
 
-    def on_order(self, packet: dict):
+    def on_order(self, packet: dict) -> None:
         """"""
         dt = datetime.fromtimestamp(packet["E"] / 1000)
         time = dt.strftime("%Y-%m-%d %H:%M:%S")
@@ -729,26 +722,31 @@ class BinancefTradeWebsocketApi(WebsocketClient):
 class BinancefDataWebsocketApi(WebsocketClient):
     """"""
 
-    def __init__(self, gateway):
+    def __init__(self, gateway: BinancefGateway):
         """"""
         super().__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
+        self.gateway: BinancefGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
-        self.ticks = {}
+        self.ticks: Dict[str, TickData] = {}
 
-    def connect(self, proxy_host: str, proxy_port: int, server: str) -> None:
+    def connect(
+        self,
+        proxy_host: str,
+        proxy_port: int,
+        server: str
+    ) -> None:
         """"""
         self.proxy_host = proxy_host
         self.proxy_port = proxy_port
         self.server = server
 
-    def on_connected(self):
+    def on_connected(self) -> None:
         """"""
         self.gateway.write_log("行情Websocket API连接刷新")
 
-    def subscribe(self, req: SubscribeRequest):
+    def subscribe(self, req: SubscribeRequest) -> None:
         """"""
         if req.symbol not in symbol_name_map:
             self.gateway.write_log(f"找不到该合约代码{req.symbol}")
@@ -783,7 +781,7 @@ class BinancefDataWebsocketApi(WebsocketClient):
         self.init(url, self.proxy_host, self.proxy_port)
         self.start()
 
-    def on_packet(self, packet):
+    def on_packet(self, packet: dict) -> None:
         """"""
         stream = packet["stream"]
         data = packet["data"]
