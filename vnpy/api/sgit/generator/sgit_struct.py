@@ -4108,6 +4108,3 @@ CThostFtdcPositionNettingField = {
     "Price": "double",
     "MarginNetting": "double",
 }
-
-
-
