@@ -13,10 +13,11 @@ from copy import copy
 from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import urlencode
-from typing import Dict, List, Any
+from typing import Dict, List, Optional
 
 from requests import ConnectionError
 
+from vnpy.event.engine import EventEngine
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.constant import (
@@ -25,7 +26,6 @@ from vnpy.trader.constant import (
     OrderType,
     Product,
     Status,
-    Offset,
     Interval
 )
 from vnpy.trader.gateway import BaseGateway
@@ -42,10 +42,10 @@ from vnpy.trader.object import (
     SubscribeRequest,
     HistoryRequest
 )
-REST_HOST = "https://www.okex.com"
-WEBSOCKET_HOST = "wss://real.okex.com:10442/ws/v3"
+REST_HOST: str = "https://www.okex.com"
+WEBSOCKET_HOST: str = "wss://real.okex.com:10442/ws/v3"
 
-STATE_OKEXO2VT = {
+STATE_OKEXO2VT: Dict[str, Status] = {
     "0": Status.NOTTRADED,
     "-2": Status.NOTTRADED,
     "1": Status.PARTTRADED,
@@ -72,10 +72,7 @@ INTERVAL_VT2OKEXO: Dict[Interval, str] = {
     Interval.DAILY: "86400",
 }
 
-
-instruments = set()
-currencies = set()
-underlyings = set()
+underlyings: set = set()
 
 
 class OkexoGateway(BaseGateway):
@@ -83,11 +80,10 @@ class OkexoGateway(BaseGateway):
     VN Trader Gateway for OKEX connection.
     """
 
-    default_setting: Dict[str, Any] = {
+    default_setting: Dict[str, Optional[str, int]] = {
         "API Key": "",
         "Secret Key": "",
         "Passphrase": "",
-        "Leverage": 10,
         "会话数": 3,
         "代理地址": "",
         "代理端口": "",
@@ -95,14 +91,14 @@ class OkexoGateway(BaseGateway):
 
     exchanges: List[Exchange] = [Exchange.OKEX]
 
-    def __init__(self, event_engine):
+    def __init__(self, event_engine: EventEngine):
         """Constructor"""
         super(OkexoGateway, self).__init__(event_engine, "OKEXO")
 
         self.rest_api = OkexoRestApi(self)
         self.ws_api = OkexoWebsocketApi(self)
 
-        self.orders: Dict = {}
+        self.orders: Dict[str, OrderData] = {}
 
     def connect(self, setting: dict) -> None:
         """"""
@@ -110,7 +106,6 @@ class OkexoGateway(BaseGateway):
         secret = setting["Secret Key"]
         passphrase = setting["Passphrase"]
         session_number = setting["会话数"]
-        leverage = setting["Leverage"]
         proxy_host = setting["代理地址"]
         proxy_port = setting["代理端口"]
 
@@ -119,7 +114,7 @@ class OkexoGateway(BaseGateway):
         else:
             proxy_port = 0
 
-        self.rest_api.connect(key, secret, passphrase, leverage,
+        self.rest_api.connect(key, secret, passphrase, 
                               session_number, proxy_host, proxy_port)
         self.ws_api.connect(key, secret, passphrase, proxy_host, proxy_port)
 
@@ -177,7 +172,6 @@ class OkexoRestApi(RestClient):
         self.key: str = ""
         self.secret: str = ""
         self.passphrase: str = ""
-        self.leverage = 0
 
         self.order_count: int = 10000
         self.order_count_lock: Lock = Lock()
@@ -215,7 +209,6 @@ class OkexoRestApi(RestClient):
         key: str,
         secret: str,
         passphrase: str,
-        leverage: int,
         session_number: int,
         proxy_host: str,
         proxy_port: int,
@@ -226,7 +219,6 @@ class OkexoRestApi(RestClient):
         self.key = key
         self.secret = secret.encode()
         self.passphrase = passphrase
-        self.leverage = leverage
 
         self.connect_time = int(datetime.now().strftime("%y%m%d%H%M%S"))
 
