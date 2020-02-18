@@ -1,5 +1,5 @@
 """
-Author: qqqlyx
+Author: KeKe
 """
 
 import hashlib
