@@ -13,7 +13,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import urlencode
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional
 
 from requests import ConnectionError
 
@@ -618,7 +618,7 @@ class OkexoWebsocketApi(WebsocketClient):
         self.trade_count: int = 10000
         self.connect_time: int = 0
 
-        self.callbacks: Dict[str, Any] = {}
+        self.callbacks: Dict[str, callable] = {}
         self.ticks: Dict[str, TickData] = {}
 
     def connect(
