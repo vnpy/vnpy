@@ -13,7 +13,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import urlencode
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 from requests import ConnectionError
 
@@ -114,7 +114,7 @@ class OkexoGateway(BaseGateway):
         else:
             proxy_port = 0
 
-        self.rest_api.connect(key, secret, passphrase, 
+        self.rest_api.connect(key, secret, passphrase,
                               session_number, proxy_host, proxy_port)
         self.ws_api.connect(key, secret, passphrase, proxy_host, proxy_port)
 
@@ -166,8 +166,8 @@ class OkexoRestApi(RestClient):
         """"""
         super(OkexoRestApi, self).__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
+        self.gateway: OkexoGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
         self.key: str = ""
         self.secret: str = ""
@@ -212,7 +212,7 @@ class OkexoRestApi(RestClient):
         session_number: int,
         proxy_host: str,
         proxy_port: int,
-    ):
+    ) -> None:
         """
         Initialize connection to REST server.
         """
@@ -229,7 +229,7 @@ class OkexoRestApi(RestClient):
         self.query_time()
         self.query_underlying()
 
-    def _new_order_id(self):
+    def _new_order_id(self) -> int:
         with self.order_count_lock:
             self.order_count += 1
             return self.order_count
@@ -296,7 +296,6 @@ class OkexoRestApi(RestClient):
             callback=self.on_query_underlying
         )
 
-
     def query_contract(self) -> Request:
         """"""
         for underlying in underlyings:
@@ -342,7 +341,7 @@ class OkexoRestApi(RestClient):
                 callback=self.on_query_position
             )
 
-    def query_time(self)-> Request:
+    def query_time(self) -> Request:
         """"""
         self.add_request(
             "GET",
@@ -385,7 +384,7 @@ class OkexoRestApi(RestClient):
 
         self.gateway.write_log("期权合约信息查询成功")
         # Start websocket api after instruments data collected
-        self.gateway.ws_api.start() #1
+        self.gateway.ws_api.start()
 
         # and query pending orders
         self.query_account()
@@ -609,8 +608,8 @@ class OkexoWebsocketApi(WebsocketClient):
         super(OkexoWebsocketApi, self).__init__()
         self.ping_interval: int = 20     # OKEX use 30 seconds for ping
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
+        self.gateway: OkexoGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
         self.key: str = ""
         self.secret: str = ""
@@ -619,8 +618,8 @@ class OkexoWebsocketApi(WebsocketClient):
         self.trade_count: int = 10000
         self.connect_time: int = 0
 
-        self.callbacks: Dict = {}
-        self.ticks: Dict = {}
+        self.callbacks: Dict[str, Any] = {}
+        self.ticks: Dict[str, TickData] = {}
 
     def connect(
         self,
@@ -629,7 +628,7 @@ class OkexoWebsocketApi(WebsocketClient):
         passphrase: str,
         proxy_host: str,
         proxy_port: int
-    )-> None:
+    ) -> None:
         """"""
         self.key = key
         self.secret = secret.encode()
@@ -639,7 +638,7 @@ class OkexoWebsocketApi(WebsocketClient):
 
         self.init(WEBSOCKET_HOST, proxy_host, proxy_port)
 
-    def unpack_data(self, data): #  -> json.JSONDecoder:
+    def unpack_data(self, data) -> json.JSONDecoder:
         """"""
         return json.loads(zlib.decompress(data, -zlib.MAX_WBITS))
 
@@ -868,7 +867,7 @@ class OkexoWebsocketApi(WebsocketClient):
         )
         self.gateway.on_account(account)
 
-    def on_position(self, data: dict) -> dict:
+    def on_position(self, data: dict) -> None:
         """"""
         pos = PositionData(
             symbol=data["instrument_id"],
@@ -883,7 +882,7 @@ class OkexoWebsocketApi(WebsocketClient):
         self.gateway.on_position(pos)
 
 
-def generate_signature(msg: str, secret_key: str) ->bytes:
+def generate_signature(msg: str, secret_key: str) -> bytes:
     """OKEX V3 signature"""
     return base64.b64encode(hmac.new(secret_key, msg.encode(), hashlib.sha256).digest())
 
@@ -895,7 +894,7 @@ def get_timestamp() -> str:
     return timestamp + "Z"
 
 
-def utc_to_local(timestamp)-> datetime:
+def utc_to_local(timestamp) -> datetime:
     time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
     utc_time = time + timedelta(hours=8)
     return utc_time
