@@ -56,11 +56,11 @@ class ComstarGateway(BaseGateway):
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
         self.api.subscribe(req, gateway_name)
 
-    # 1表示阻塞, 0非阻塞
-    def send_order(self, req: OrderRequest, blocks=1):
+    def send_order(self, req: OrderRequest):
         """"""
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
-        return self.api.send_order(req, gateway_name, blocks)
+        # 1表示阻塞, 0非阻塞
+        return self.api.send_order(req, gateway_name, blocks=1)
 
     def cancel_order(self, req: CancelRequest):
         """"""
