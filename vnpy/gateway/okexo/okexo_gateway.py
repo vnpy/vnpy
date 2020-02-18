@@ -453,7 +453,6 @@ class OkexoRestApi(RestClient):
         """
         Callback when sending order failed on server.
         """
-
         order = request.extra
         order.status = Status.REJECTED
         order.time = datetime.now().strftime("%H:%M:%S.%f")
@@ -467,7 +466,6 @@ class OkexoRestApi(RestClient):
         """
         Callback when sending order caused exception.
         """
-
         order = request.extra
         order.status = Status.REJECTED
         self.gateway.on_order(order)
