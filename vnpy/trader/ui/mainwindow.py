@@ -45,6 +45,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.connect_dialogs = {}
         self.widgets = {}
 
+        self.trading_widget = None
+        self.position_widget = None
+        self.tick_widget = None
+
         self.init_ui()
 
     def init_ui(self):
@@ -55,12 +59,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.init_menu()
         self.load_window_setting("custom")
 
+        # 绑定行情双击 ~ 交易界面自动填写
+        if self.tick_widget and self.trading_widget:
+            self.tick_widget.itemDoubleClicked.connect(self.trading_widget.auto_fill_symbol)
+        if self.position_widget and self.trading_widget:
+            self.position_widget.itemDoubleClicked.connect(self.trading_widget.close_position)
+
     def init_dock(self):
         """"""
         self.trading_widget, trading_dock = self.create_dock(
             TradingWidget, "交易", QtCore.Qt.LeftDockWidgetArea
         )
-        tick_widget, tick_dock = self.create_dock(
+        self.tick_widget, tick_dock = self.create_dock(
             TickMonitor, "行情", QtCore.Qt.RightDockWidgetArea
         )
         order_widget, order_dock = self.create_dock(
@@ -78,7 +88,7 @@ class MainWindow(QtWidgets.QMainWindow):
         account_widget, account_dock = self.create_dock(
             AccountMonitor, "资金", QtCore.Qt.BottomDockWidgetArea
         )
-        position_widget, position_dock = self.create_dock(
+        self.position_widget, position_dock = self.create_dock(
             PositionMonitor, "持仓", QtCore.Qt.BottomDockWidgetArea
         )
 

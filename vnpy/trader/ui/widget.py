@@ -631,6 +631,8 @@ class TradingWidget(QtWidgets.QWidget):
         cancel_button = QtWidgets.QPushButton("全撤")
         cancel_button.clicked.connect(self.cancel_all)
 
+        self.checkFixed = QtWidgets.QCheckBox("价格")  # 价格固定选择框
+
         form1 = QtWidgets.QFormLayout()
         form1.addRow("交易所", self.exchange_combo)
         form1.addRow("代码", self.symbol_line)
@@ -638,7 +640,7 @@ class TradingWidget(QtWidgets.QWidget):
         form1.addRow("方向", self.direction_combo)
         form1.addRow("开平", self.offset_combo)
         form1.addRow("类型", self.order_type_combo)
-        form1.addRow("价格", self.price_line)
+        form1.addRow( self.checkFixed, self.price_line)
         form1.addRow("数量", self.volume_line)
         form1.addRow("接口", self.gateway_combo)
         form1.addRow(send_button)
@@ -724,6 +726,9 @@ class TradingWidget(QtWidgets.QWidget):
         tick = event.data
         if tick.vt_symbol != self.vt_symbol:
             return
+
+        if not self.checkFixed.isChecked():
+            self.price_line.setText(str(tick.last_price))
 
         self.lp_label.setText(str(tick.last_price))
         self.bp1_label.setText(str(tick.bid_price_1))
@@ -869,6 +874,64 @@ class TradingWidget(QtWidgets.QWidget):
             req = order.create_cancel_request()
             self.main_engine.cancel_order(req, order.gateway_name)
 
+    def auto_fill_symbol(self, cell):
+        """根据行情信息自动填写交易组件"""
+        try:
+            # 读取行情数据，cell是一个表格中的单元格对象
+            tick = cell.get_data()
+            if tick is None:
+                return
+
+            if tick.symbol:
+                self.symbol_line.setText(tick.symbol)
+
+            if tick.exchange:
+                self.exchange_combo.setCurrentText(tick.exchange.value)
+
+            # 自动填写gateway信息
+            if tick.gateway_name:
+                self.gateway_combo.setCurrentText(tick.gateway_name)
+
+            self.volume_line.setText(str(1))
+
+            self.set_vt_symbol()
+
+        except Exception as ex:
+            self.main_engine.write_log(u'tradingWg.autoFillSymbol exception:{}'.format(str(ex)))
+
+
+    #----------------------------------------------------------------------
+    def close_position(self, cell):
+        """根据持仓信息自动填写交易组件"""
+        try:
+            # 读取持仓数据，cell是一个表格中的单元格对象
+            pos = cell.get_data()
+            if pos is None:
+                return
+            if pos.symbol:
+                self.symbol_line.setText(pos.symbol)
+
+            if pos.exchange:
+                self.exchange_combo.setCurrentText(pos.exchange.value)
+
+            if pos.gateway_name:
+                self.gateway_combo.setCurrentText(pos.gateway_name)
+
+            self.set_vt_symbol()
+
+            self.order_type_combo.setCurrentText(OrderType.LIMIT.value)
+
+            self.offset_combo.setCurrentText(Offset.CLOSE.value)
+
+            self.volume_line.setText(str(pos.volume))
+
+            if pos.direction in [Direction.LONG, Direction.NET]:
+                self.direction_combo.setCurrentText(Direction.SHORT)
+            else:
+                self.direction_combo.setCurrentText(Direction.LONG)
+
+        except Exception as ex:
+            self.main_engine.write_log(u'tradingWg.closePosition exception:{}'.format(str(ex)))
 
 class ActiveOrderMonitor(OrderMonitor):
     """
