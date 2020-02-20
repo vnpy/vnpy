@@ -16,7 +16,7 @@ from vnpy.trader.object import (
 
 class ComstarGateway(BaseGateway):
     """
-    VN Trader Gateway for Cfets  service.
+    VN Trader Gateway for Comstar service.
     """
     default_setting = {
         "交易服务器": "",
@@ -29,7 +29,7 @@ class ComstarGateway(BaseGateway):
 
     def __init__(self, event_engine: EventEngine):
         """Constructor"""
-        super().__init__(event_engine, "CFETS")
+        super().__init__(event_engine, "COMSTAR")
 
         self.symbol_gateway_map = {}
         self.orders = {}
@@ -54,18 +54,27 @@ class ComstarGateway(BaseGateway):
     def subscribe(self, req: SubscribeRequest):
         """"""
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
-        self.api.subscribe(req, gateway_name)
+        data = vn_encoder(req)
+        # 清算速度
+        data['SettleType'] = 'T1'
+        self.api.subscribe(data, gateway_name)
 
     def send_order(self, req: OrderRequest):
         """"""
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
+        data = vn_encoder(req)
+        # 清算速度
+        data['SettleType'] = 'T1'
+        # 策略名称
+        data['StrategyName'] = ''
         # 1表示阻塞, 0非阻塞
-        return self.api.send_order(req, gateway_name, blocks=1)
+        return self.api.send_order(data, gateway_name, blocks=1)
 
     def cancel_order(self, req: CancelRequest):
         """"""
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
-        self.api.cancel_order(req, gateway_name)
+        data = vn_encoder(req)
+        self.api.cancel_order(data, gateway_name)
 
     def query_account(self):
         """"""
@@ -145,13 +154,13 @@ VN_ENUMS = {
 }
 
 
+def __init__(self, d: dict):
+    self.__dict__ = d
+
+
 def enum_decoder(s: str):
     name, member = s.split(".")
     return getattr(VN_ENUMS[name], member)
-
-
-def __init__(self, d: dict):
-    self.__dict__ = d
 
 
 # 将json(或dict)格式转成指定的类
@@ -164,9 +173,21 @@ def vn_decoder(d: dict, clz: Type):
     return revise(obj)
 
 
+def vn_encoder(obj):
+    if type(obj) in VN_ENUMS.values():
+        return str(obj)
+    else:
+        s = {}
+        for (k, v) in obj.__dict__.items():
+            if type(v) in VN_ENUMS.values():
+                s[k] = vn_encoder(v)
+            else:
+                s[k] = str(v)
+        return s
+
+
 def get_time(s: str):
     if "." in s:
-        hms, r = s.split(".")
-        return datetime.strptime(hms, "%Y%m%d %H:%M:%S")
+        return datetime.strptime(s, "%Y%m%d %H:%M:%S.%f")
     else:
         return None
