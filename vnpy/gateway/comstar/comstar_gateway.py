@@ -56,7 +56,7 @@ class ComstarGateway(BaseGateway):
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
         data = vn_encoder(req)
         # 清算速度
-        data['SettleType'] = 'T1'
+        data['settle_type'] = 'T1'
         self.api.subscribe(data, gateway_name)
 
     def send_order(self, req: OrderRequest):
@@ -64,9 +64,9 @@ class ComstarGateway(BaseGateway):
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
         data = vn_encoder(req)
         # 清算速度
-        data['SettleType'] = 'T1'
+        data['settle_type'] = 'T1'
         # 策略名称
-        data['StrategyName'] = ''
+        data['strategy_name'] = ''
         # 1表示阻塞, 0非阻塞
         return self.api.send_order(data, gateway_name, blocks=1)
 
