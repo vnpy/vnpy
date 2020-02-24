@@ -144,7 +144,6 @@ OPTIONTYPE_CTP2VT = {
 
 MAX_FLOAT = sys.float_info.max
 
-
 symbol_exchange_map = {}
 symbol_name_map = {}
 symbol_size_map = {}
@@ -223,7 +222,7 @@ class CtpGateway(BaseGateway):
             self.combiner_conf_dict = c.get_config()
             if len(self.combiner_conf_dict) > 0:
                 self.write_log(u'加载的自定义价差/价比配置:{}'.format(self.combiner_conf_dict))
-        except Exception as ex: # noqa
+        except Exception as ex:  # noqa
             pass
         if not self.td_api:
             self.td_api = CtpTdApi(self)
@@ -790,8 +789,14 @@ class CtpTdApi(TdApi):
         account.close_profit = data['CloseProfit']
         account.holding_profit = data['PositionProfit']
         account.trading_day = str(data['TradingDay'])
-        if '-' not in account.trading_day and len(account.trading_day)== 8:
-            account.trading_day = account.trading_day[0:4] + '-' + account.trading_day[4:6] + '-' + account.trading_day[6:8]
+        if '-' not in account.trading_day and len(account.trading_day) == 8:
+            account.trading_day = '-'.join(
+                [
+                    account.trading_day[0:4],
+                    account.trading_day[4:6],
+                    account.trading_day[6:8]
+                ]
+            )
 
         self.gateway.on_account(account)
 
@@ -1120,6 +1125,7 @@ def adjust_price(price: float) -> float:
     if price == MAX_FLOAT:
         price = 0
     return price
+
 
 class TdxMdApi():
     """
@@ -1745,38 +1751,58 @@ class TickCombiner(object):
             self.gateway.on_tick(spread_tick)
 
         if self.is_ratio:
-            ratio_tick = TickData(gateway_name=self.gateway_name,
-                                  symbol=self.symbol,
-                                  exchange=Exchange.SPD,
-                                  datetime=tick.datetime)
+            ratio_tick = TickData(
+                gateway_name=self.gateway_name,
+                symbol=self.symbol,
+                exchange=Exchange.SPD,
+                datetime=tick.datetime
+            )
 
             ratio_tick.trading_day = tick.trading_day
             ratio_tick.date = tick.date
             ratio_tick.time = tick.time
 
             # 比率tick
-            ratio_tick.ask_price_1 = round_to(target=self.price_tick,
-                                              value=100 * self.last_leg1_tick.ask_price_1 * self.leg1_ratio / (
-                                                      self.last_leg2_tick.bid_price_1 * self.leg2_ratio))
-            ratio_tick.ask_volume_1 = min(self.last_leg1_tick.ask_volume_1, self.last_leg2_tick.bid_volume_1)
+            ratio_tick.ask_price_1 = 100 * self.last_leg1_tick.ask_price_1 * self.leg1_ratio \
+                                     / (self.last_leg2_tick.bid_price_1 * self.leg2_ratio)  # noqa
+            ratio_tick.ask_price_1 = round_to(
+                target=self.price_tick,
+                value=ratio_tick.ask_price_1
+            )
 
-            ratio_tick.bid_price_1 = round_to(target=self.price_tick,
-                                              value=100 * self.last_leg1_tick.bid_price_1 * self.leg1_ratio / (
-                                                      self.last_leg2_tick.ask_price_1 * self.leg2_ratio))
+            ratio_tick.ask_volume_1 = min(self.last_leg1_tick.ask_volume_1, self.last_leg2_tick.bid_volume_1)
+            ratio_tick.bid_price_1 = 100 * self.last_leg1_tick.bid_price_1 * self.leg1_ratio \
+                                     / (self.last_leg2_tick.ask_price_1 * self.leg2_ratio)  # noqa
+            ratio_tick.bid_price_1 = round_to(
+                target=self.price_tick,
+                value=ratio_tick.bid_price_1
+            )
+
             ratio_tick.bid_volume_1 = min(self.last_leg1_tick.bid_volume_1, self.last_leg2_tick.ask_volume_1)
-            ratio_tick.lastPrice = round_to(target=self.price_tick,
-                                            value=(ratio_tick.ask_price_1 + ratio_tick.bid_price_1) / 2)
+            ratio_tick.last_price = (ratio_tick.ask_price_1 + ratio_tick.bid_price_1) / 2
+            ratio_tick.last_price = round_to(
+                target=self.price_tick,
+                value=ratio_tick.last_price
+            )
 
             # 昨收盘价
             if self.last_leg2_tick.pre_close > 0 and self.last_leg1_tick.pre_close > 0:
-                ratio_tick.pre_close = round_to(target=self.price_tick,
-                                                value=100 * self.last_leg1_tick.pre_close * self.leg1_ratio / (
-                                                        self.last_leg2_tick.pre_close * self.leg2_ratio))
+                ratio_tick.pre_close = 100 * self.last_leg1_tick.pre_close * self.leg1_ratio / (
+                            self.last_leg2_tick.pre_close * self.leg2_ratio)  # noqa
+                ratio_tick.pre_close = round_to(
+                    target=self.price_tick,
+                    value=ratio_tick.pre_close
+                )
+
             # 开盘价
             if self.last_leg2_tick.open_price > 0 and self.last_leg1_tick.open_price > 0:
-                ratio_tick.open_price = round_to(target=self.price_tick,
-                                                 value=100 * self.last_leg1_tick.open_price * self.leg1_ratio / (
-                                                         self.last_leg2_tick.open_price * self.leg2_ratio))
+                ratio_tick.open_price = 100 * self.last_leg1_tick.open_price * self.leg1_ratio / (
+                            self.last_leg2_tick.open_price * self.leg2_ratio)  # noqa
+                ratio_tick.open_price = round_to(
+                    target=self.price_tick,
+                    value=ratio_tick.open_price
+                )
+
             # 最高价
             if self.ratio_high:
                 self.ratio_high = max(self.ratio_high, ratio_tick.ask_price_1)

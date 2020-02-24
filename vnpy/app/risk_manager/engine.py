@@ -1,5 +1,5 @@
 """"""
-
+import logging
 from copy import copy
 from collections import defaultdict
 from datetime import datetime
@@ -182,20 +182,24 @@ class RiskManagerEngine(BaseEngine):
         if vt_accountid:
             account = self.account_dict.get(vt_accountid, None)
             if account:
-                return account.balance, \
-                       account.available, \
-                       round(account.frozen * 100 / (account.balance + 0.01), 2), \
-                       self.percent_limit
+                return (
+                    account.balance,
+                    account.available,
+                    round(account.frozen * 100 / (account.balance + 0.01), 2),
+                    self.percent_limit
+                )
         if len(self.account_dict.values()) > 0:
             account = list(self.account_dict.values())[0]
-            return account.balance, \
-                   account.available, \
-                   round(account.frozen * 100 / (account.balance + 0.01), 2), \
-                   self.percent_limit
+            return (
+                account.balance,
+                account.available,
+                round(account.frozen * 100 / (account.balance + 0.01), 2),
+                self.percent_limit
+            )
         else:
             return 0, 0, 0, 0
 
-    def write_log(self, msg: str):
+    def write_log(self, msg: str, source: str = "", level: int = logging.DEBUG):
         """"""
         log = LogData(msg=msg, gateway_name="RiskManager")
         event = Event(type=EVENT_LOG, data=log)

@@ -14,21 +14,31 @@
 
 '''
 
-import json
-import os
 import sys
 import copy
 import traceback
-import csv
+
 from datetime import datetime, timedelta
 from queue import Queue
 from threading import Thread
 from time import time
-from concurrent.futures import ThreadPoolExecutor
 
 from vnpy.event import Event, EventEngine
-from vnpy.trader.event import *
-from vnpy.trader.constant import Direction
+from vnpy.trader.event import (
+    EVENT_TIMER,
+    EVENT_ACCOUNT,
+    EVENT_ORDER,
+    EVENT_TRADE,
+    EVENT_POSITION,
+    EVENT_HISTORY_TRADE,
+    EVENT_HISTORY_ORDER,
+    EVENT_FUNDS_FLOW,
+    EVENT_STRATEGY_POS,
+    EVENT_ERROR,
+    EVENT_WARNING,
+    EVENT_CRITICAL,
+)
+# from vnpy.trader.constant import Direction
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.utility import get_trading_date, load_json, save_json
 from vnpy.data.mongo.mongo_data import MongoData
@@ -246,7 +256,7 @@ class AccountRecorder(BaseEngine):
                 self.save_setting()
 
         except Exception as ex:
-            self.main_engine.writeError(u'更新数据日期异常:{}'.format(str(ex)))
+            self.main_engine.write_error(u'更新数据日期异常:{}'.format(str(ex)))
             self.write_log(traceback.format_exc())
 
     def get_begin_day(self, gw_name: str, data_type: str):
@@ -393,7 +403,7 @@ class AccountRecorder(BaseEngine):
             price = self.main_engine.get_price(pos.vt_symbol)
             if price:
                 data.update({'cur_price': price})
-        except:
+        except:  # noqa
             pass
 
         self.update_data(db_name=ACCOUNT_DB_NAME, col_name=TODAY_POSITION_COL, fld=fld, data=data)
@@ -561,7 +571,7 @@ class AccountRecorder(BaseEngine):
                     self.write_log(u'运行 {}.{} 更新 耗时:{}ms >200ms,数据:{}'
                                    .format(db_name, col_name, execute_ms, d))
 
-            except Exception as ex:
+            except Exception as ex:  # noqa
                 pass
 
     # ----------------------------------------------------------------------

@@ -5,8 +5,6 @@ qdarkstyle
 requests
 websocket-client
 peewee
-pymysql
-psycopg2
 mongoengine
 numpy
 pandas>=0.24.2
@@ -21,3 +19,5 @@ deap
 pyzmq
 wmi
 QScintilla
+pytdx
+pykalman

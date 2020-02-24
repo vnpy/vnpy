@@ -2,7 +2,6 @@ from vnpy.app.cta_strategy_pro import (
     CtaTemplate,
     StopOrder,
     Direction,
-    Offset,
     TickData,
     BarData,
     TradeData,
@@ -112,7 +111,7 @@ class TurtleSignalStrategy(CtaTemplate):
             self.send_short_orders(self.entry_down)
 
             cover_price = min(self.short_stop, self.exit_up)
-            ret = self.cover(cover_price, abs(self.pos), True)
+            self.cover(cover_price, abs(self.pos), True)
 
         self.put_event()
 
@@ -149,7 +148,7 @@ class TurtleSignalStrategy(CtaTemplate):
         if self.pos >= 4:
             return
 
-        if self.cur_mi_price <= price - self.atr_value/2:
+        if self.cur_mi_price <= price - self.atr_value / 2:
             return
 
         t = self.pos / self.fixed_size

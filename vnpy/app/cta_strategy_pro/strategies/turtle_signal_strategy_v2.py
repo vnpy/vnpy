@@ -2,7 +2,6 @@ from vnpy.app.cta_strategy_pro import (
     CtaTemplate,
     StopOrder,
     Direction,
-    Offset,
     TickData,
     BarData,
     TradeData,
@@ -10,7 +9,6 @@ from vnpy.app.cta_strategy_pro import (
     BarGenerator,
     ArrayManager,
 )
-
 from vnpy.trader.utility import round_to
 
 
@@ -189,7 +187,7 @@ class TurtleSignalStrategy_v2(CtaTemplate):
                 self.write_log(f'买入委托编号:{refs}')
 
         if t == 1 and self.cur_mi_price > price:
-            buy_price = round_to(price + self.atr_value * 0.5 , self.symbol_price_tick)
+            buy_price = round_to(price + self.atr_value * 0.5, self.symbol_price_tick)
             self.write_log(u'发出做多停止单，触发价格为: {}'.format(buy_price))
             refs = self.buy(buy_price, self.invest_pos, True)
             if len(refs) > 0:

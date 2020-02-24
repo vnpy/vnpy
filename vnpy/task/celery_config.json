@@ -1,4 +1,4 @@
 {
-  "celery_broker": "amqp://admin:admin@192.168.0.202:5672//",
-  "celery_backend": "amqp://admin:admin@192.168.0.202:5672//"
+  "celery_broker": "amqp://admin:admin@127.0.0.1:5672//",
+  "celery_backend": "amqp://admin:admin@127.0.0.1:5672//"
 }

@@ -1,14 +1,13 @@
 """"""
 
 import importlib
-import csv
 import os
 import sys
 import traceback
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Callable
-from datetime import datetime, timedelta
+from datetime import datetime
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
@@ -19,10 +18,8 @@ from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
     OrderRequest,
     SubscribeRequest,
-    HistoryRequest,
     LogData,
     TickData,
-    BarData,
     ContractData
 )
 from vnpy.trader.event import (
@@ -37,8 +34,6 @@ from vnpy.trader.event import (
 from vnpy.trader.constant import (
     Direction,
     OrderType,
-    Interval,
-    Exchange,
     Offset,
     Status
 )
@@ -359,12 +354,8 @@ class CtaEngine(BaseEngine):
             if stop_order.vt_symbol != tick.vt_symbol:
                 continue
 
-            long_triggered = (
-                    stop_order.direction == Direction.LONG and tick.last_price >= stop_order.price
-            )
-            short_triggered = (
-                    stop_order.direction == Direction.SHORT and tick.last_price <= stop_order.price
-            )
+            long_triggered = stop_order.direction == Direction.LONG and tick.last_price >= stop_order.price
+            short_triggered = stop_order.direction == Direction.SHORT and tick.last_price <= stop_order.price
 
             if long_triggered or short_triggered:
                 strategy = self.strategies[stop_order.strategy_name]
@@ -1340,7 +1331,7 @@ class CtaEngine(BaseEngine):
                             pos_list.append(pos)
 
             except Exception as ex:
-                self.write_error(u'分解SPD失败')
+                self.write_error(f'分解SPD失败:{str(ex)}')
 
         # update local pos dict
         self.strategy_pos_dict.update({name: pos_list})
@@ -1439,16 +1430,21 @@ class CtaEngine(BaseEngine):
         Update setting file.
         """
         strategy = self.strategies[strategy_name]
-
-        strategy_config = self.strategy_setting.get('strategy_name', {})
-
-        self.strategy_setting[strategy_name] = {
+        # 原配置
+        old_config = self.strategy_setting.get('strategy_name', {})
+        new_config = {
             "class_name": strategy.__class__.__name__,
             "vt_symbol": strategy.vt_symbol,
             "auto_init": auto_init,
             "auto_start": auto_start,
             "setting": setting
         }
+
+        if old_config:
+            self.write_log(f'{strategy_name} 配置变更:\n{old_config} \n=> \n{new_config}')
+
+        self.strategy_setting[strategy_name] = new_config
+
         save_json(self.setting_filename, self.strategy_setting)
 
     def remove_strategy_setting(self, strategy_name: str):

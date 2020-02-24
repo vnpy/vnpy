@@ -7,6 +7,11 @@ from collections import OrderedDict
 from vnpy.app.cta_strategy_pro.base import CtaComponent
 from vnpy.trader.utility import get_folder_path
 
+TNS_STATUS_OBSERVATE = 'observate'
+TNS_STATUS_ORDERING = 'ordering'
+TNS_STATUS_OPENED = 'opened'
+TNS_STATUS_CLOSED = 'closed'
+
 
 class CtaPolicy(CtaComponent):
     """
@@ -18,7 +23,7 @@ class CtaPolicy(CtaComponent):
         构造
         :param strategy:
         """
-        super(CtaPolicy,self).__init__(strategy=strategy, kwargs=kwargs)
+        super().__init__(strategy=strategy, kwargs=kwargs)
 
         self.create_time = None
         self.save_time = None
@@ -67,7 +72,8 @@ class CtaPolicy(CtaComponent):
         从持久化文件中获取
         :return:
         """
-        json_file = os.path.abspath(os.path.join(get_folder_path('data'), u'{}_Policy.json'.format(self.strategy.strategy_name)))
+        json_file = os.path.abspath(
+            os.path.join(get_folder_path('data'), u'{}_Policy.json'.format(self.strategy.strategy_name)))
 
         json_data = {}
         if os.path.exists(json_file):

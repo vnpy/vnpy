@@ -12,6 +12,7 @@ import sys
 import traceback
 import talib as ta
 import numpy as np
+import csv
 
 from collections import OrderedDict
 from datetime import datetime, timedelta
@@ -27,7 +28,7 @@ from vnpy.app.cta_strategy_pro.base import (
     MARKET_ZJ)
 from vnpy.app.cta_strategy_pro.cta_period import CtaPeriod, Period
 from vnpy.trader.object import BarData, TickData
-from vnpy.trader.constant import Interval, Color, Exchange
+from vnpy.trader.constant import Interval, Color
 from vnpy.trader.utility import round_to, get_trading_date, get_underlying_symbol
 
 
@@ -1062,7 +1063,6 @@ class CtaLineBar(object):
 
         self.line_bar.append(self.cur_bar)  # 推入到lineBar队列
 
-    # ----------------------------------------------------------------------
     def generate_bar(self, tick: TickData):
         """生成 line Bar  """
 
@@ -1184,7 +1184,6 @@ class CtaLineBar(object):
         if not endtick:
             self.last_tick = tick
 
-    # ----------------------------------------------------------------------
     def __count_pre_high_low(self):
         """计算 K线的前周期最高和最低"""
 
@@ -1206,7 +1205,6 @@ class CtaLineBar(object):
             del self.line_pre_low[0]
         self.line_pre_low.append(preLow)
 
-    # ----------------------------------------------------------------------
     def __count_sar(self):
         """计算K线的SAR"""
 
@@ -1331,7 +1329,6 @@ class CtaLineBar(object):
         if len(self.line_sar) > self.max_hold_bars:
             del self.line_sar[0]
 
-    # ----------------------------------------------------------------------
     def __count_ma(self):
         """计算K线的MA1 和MA2"""
 
@@ -1486,7 +1483,8 @@ class CtaLineBar(object):
         if self.para_ma1_len > 0:
             count_len = min(self.bar_len, self.para_ma1_len)
             if count_len > 0:
-                close_ma_array = ta.MA(np.append(self.close_array[-count_len:], [self.line_bar[-1].close_price]), count_len)
+                close_ma_array = ta.MA(np.append(self.close_array[-count_len:], [self.line_bar[-1].close_price]),
+                                       count_len)
                 self._rt_ma1 = round(float(close_ma_array[-1]), self.round_n)
 
                 # 计算斜率
@@ -1497,7 +1495,8 @@ class CtaLineBar(object):
         if self.para_ma2_len > 0:
             count_len = min(self.bar_len, self.para_ma2_len)
             if count_len > 0:
-                close_ma_array = ta.MA(np.append(self.close_array[-count_len:], [self.line_bar[-1].close_price]), count_len)
+                close_ma_array = ta.MA(np.append(self.close_array[-count_len:], [self.line_bar[-1].close_price]),
+                                       count_len)
                 self._rt_ma2 = round(float(close_ma_array[-1]), self.round_n)
 
                 # 计算斜率
@@ -1508,7 +1507,8 @@ class CtaLineBar(object):
         if self.para_ma3_len > 0:
             count_len = min(self.bar_len, self.para_ma3_len)
             if count_len > 0:
-                close_ma_array = ta.MA(np.append(self.close_array[-count_len:], [self.line_bar[-1].close_price]), count_len)
+                close_ma_array = ta.MA(np.append(self.close_array[-count_len:], [self.line_bar[-1].close_price]),
+                                       count_len)
                 self._rt_ma3 = round(float(close_ma_array[-1]), self.round_n)
 
                 # 计算斜率
@@ -1558,7 +1558,6 @@ class CtaLineBar(object):
             return self.line_ma3_atan[-1]
         return self._rt_ma3_atan
 
-    # ----------------------------------------------------------------------
     def __count_ema(self):
         """计算K线的EMA1 和EMA2"""
 
@@ -1613,7 +1612,6 @@ class CtaLineBar(object):
                 del self.line_ema3[0]
             self.line_ema3.append(barEma3)
 
-    # ----------------------------------------------------------------------
     def rt_count_ema(self):
         """计算K线的EMA1 和EMA2"""
 
@@ -1827,7 +1825,7 @@ class CtaLineBar(object):
         if self.para_atr1_len > 0:
             count_len = min(self.bar_len, self.para_atr1_len)
             cur_atr1 = ta.ATR(self.high_array[-count_len * 2:], self.low_array[-count_len * 2:],
-                                   self.close_array[-count_len * 2:], count_len)
+                              self.close_array[-count_len * 2:], count_len)
             self.cur_atr1 = round(cur_atr1[-1], self.round_n)
             if len(self.line_atr1) > self.max_hold_bars:
                 del self.line_atr1[0]
@@ -1836,7 +1834,7 @@ class CtaLineBar(object):
         if self.para_atr2_len > 0:
             count_len = min(self.bar_len, self.para_atr2_len)
             cur_atr2 = ta.ATR(self.high_array[-count_len * 2:], self.low_array[-count_len * 2:],
-                                   self.close_array[-count_len * 2:], count_len)
+                              self.close_array[-count_len * 2:], count_len)
             self.cur_atr2 = round(cur_atr2[-1], self.round_n)
             if len(self.line_atr2) > self.max_hold_bars:
                 del self.line_atr2[0]
@@ -1844,8 +1842,8 @@ class CtaLineBar(object):
 
         if self.para_atr3_len > 0:
             count_len = min(self.bar_len, self.para_atr3_len)
-            cur_atr3 = ta.ATR(self.high_array[-count_len * 2 :], self.low_array[-count_len * 2:],
-                                   self.close_array[-count_len * 2:], count_len)
+            cur_atr3 = ta.ATR(self.high_array[-count_len * 2:], self.low_array[-count_len * 2:],
+                              self.close_array[-count_len * 2:], count_len)
             self.cur_atr3 = round(cur_atr3[-1], self.round_n)
 
             if len(self.line_atr3) > self.max_hold_bars:
@@ -1853,7 +1851,6 @@ class CtaLineBar(object):
 
             self.line_atr3.append(self.cur_atr3)
 
-    # ----------------------------------------------------------------------
     def __count_vol_ma(self):
         """计算平均成交量"""
 
@@ -1869,7 +1866,6 @@ class CtaLineBar(object):
             del self.line_vol_ma[0]
         self.line_vol_ma.append(avgVol)
 
-    # ----------------------------------------------------------------------
     def __count_rsi(self):
         """计算K线的RSI"""
         if self.para_rsi1_len <= 0 and self.para_rsi2_len <= 0:
@@ -3943,7 +3939,6 @@ class CtaLineBar(object):
             return self.line_bias3[-1]
         return self._rt_bias3
 
-    # ----------------------------------------------------------------------
     def write_log(self, content):
         """记录CTA日志"""
         self.strategy.write_log(u'[' + self.name + u']' + content)
@@ -4586,7 +4581,6 @@ class CtaMinuteBar(CtaLineBar):
             # 实时计算
             self.rt_executed = False
 
-    # ----------------------------------------------------------------------
     def generate_bar(self, tick):
         """
         生成 line Bar
@@ -4821,8 +4815,6 @@ class CtaHourBar(CtaLineBar):
             # 实时计算
             self.rt_executed = False
 
-        # ----------------------------------------------------------------------
-
     def generate_bar(self, tick):
         """
         生成 line Bar
@@ -5047,7 +5039,6 @@ class CtaDayBar(CtaLineBar):
             # 实时计算
             self.rt_executed = False
 
-    # ----------------------------------------------------------------------
     def generate_bar(self, tick):
         """
         生成 line Bar
@@ -5280,7 +5271,6 @@ class CtaWeekBar(CtaLineBar):
                                                 '%Y-%m-%d %H:%M:%S')
             return friday_night_dt
 
-    # ----------------------------------------------------------------------
     def generate_bar(self, tick):
         """
         生成 line Bar
@@ -5338,4 +5328,3 @@ class CtaWeekBar(CtaLineBar):
             self.rt_executed = False
 
         self.last_tick = tick
-

@@ -40,7 +40,7 @@ print(u'Celery 使用redis配置:\nbroker:{}\nbackend:{}'.format(broker, backend
 app = Celery('vnpy_task', broker=broker)
 
 # 动态导入task目录下子任务
-app.conf.CELERY_IMPORTS = ['vnpy.task.celery_app.worker_started']
+# app.conf.CELERY_IMPORTS = ['vnpy.task.celery_app.worker_started']
 
 
 def worker_started():

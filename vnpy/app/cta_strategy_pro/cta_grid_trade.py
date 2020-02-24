@@ -9,8 +9,6 @@ import traceback
 
 from collections import OrderedDict
 from datetime import datetime
-from dataclasses import dataclass, field
-from typing import List
 from vnpy.trader.utility import get_folder_path
 from vnpy.app.cta_strategy_pro.base import Direction, CtaComponent
 

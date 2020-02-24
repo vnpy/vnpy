@@ -394,7 +394,7 @@ def save_df_to_excel(file_name, sheet_name, df):
         import openpyxl
         from openpyxl.utils.dataframe import dataframe_to_rows
         # from openpyxl.drawing.image import Image
-    except: # noqa
+    except:  # noqa
         print(u'can not import openpyxl', file=sys.stderr)
 
     if 'openpyxl' not in sys.modules:
@@ -407,7 +407,7 @@ def save_df_to_excel(file_name, sheet_name, df):
         try:
             # 读取文件
             wb = openpyxl.load_workbook(file_name)
-        except: # noqa
+        except:  # noqa
             # 创建一个excel workbook
             wb = openpyxl.Workbook()
             ws = wb.active
@@ -416,7 +416,7 @@ def save_df_to_excel(file_name, sheet_name, df):
             # 定位WorkSheet
             if ws is None:
                 ws = wb[sheet_name]
-        except: # noqa
+        except:  # noqa
             # 创建一个WorkSheet
             ws = wb.create_sheet()
             ws.title = sheet_name
@@ -450,7 +450,7 @@ def save_text_to_excel(file_name, sheet_name, text):
         import openpyxl
         # from openpyxl.utils.dataframe import dataframe_to_rows
         # from openpyxl.drawing.image import Image
-    except: # noqa
+    except:  # noqa
         print(u'can not import openpyxl', file=sys.stderr)
 
     if 'openpyxl' not in sys.modules:
@@ -461,7 +461,7 @@ def save_text_to_excel(file_name, sheet_name, text):
         try:
             # 读取文件
             wb = openpyxl.load_workbook(file_name)
-        except: # noqa
+        except:  # noqa
             # 创建一个excel workbook
             wb = openpyxl.Workbook()
             ws = wb.active
@@ -470,7 +470,7 @@ def save_text_to_excel(file_name, sheet_name, text):
             # 定位WorkSheet
             if ws is None:
                 ws = wb[sheet_name]
-        except: # noqa
+        except:  # noqa
             # 创建一个WorkSheet
             ws = wb.create_sheet()
             ws.title = sheet_name
@@ -516,7 +516,7 @@ def save_images_to_excel(file_name, sheet_name, image_names):
         try:
             # 读取文件
             wb = openpyxl.load_workbook(file_name)
-        except: # noqa
+        except:  # noqa
             # 创建一个excel workbook
             wb = openpyxl.Workbook()
             ws = wb.active
@@ -612,6 +612,7 @@ def display_dual_axis(df, columns1, columns2=[], invert_yaxis1=False, invert_yax
     else:
         plt.show()
 
+
 class BarGenerator:
     """
     For:
@@ -624,11 +625,11 @@ class BarGenerator:
     """
 
     def __init__(
-        self,
-        on_bar: Callable,
-        window: int = 0,
-        on_window_bar: Callable = None,
-        interval: Interval = Interval.MINUTE
+            self,
+            on_bar: Callable,
+            window: int = 0,
+            on_window_bar: Callable = None,
+            interval: Interval = Interval.MINUTE
     ):
         """Constructor"""
         self.bar = None
@@ -1225,7 +1226,7 @@ def get_bars(csv_file: str,
              symbol: str,
              exchange: Exchange,
              start_date: datetime = None,
-             end_date: datetime = None,):
+             end_date: datetime = None, ):
     """
     获取bar
     数据存储目录: 项目/bar_data

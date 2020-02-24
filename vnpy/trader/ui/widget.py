@@ -24,7 +24,6 @@ from ..object import OrderRequest, SubscribeRequest
 from ..utility import load_json, save_json
 from ..setting import SETTING_FILENAME, SETTINGS
 
-
 COLOR_LONG = QtGui.QColor("red")
 COLOR_SHORT = QtGui.QColor("green")
 COLOR_BID = QtGui.QColor(255, 174, 201)
@@ -640,7 +639,7 @@ class TradingWidget(QtWidgets.QWidget):
         form1.addRow("方向", self.direction_combo)
         form1.addRow("开平", self.offset_combo)
         form1.addRow("类型", self.order_type_combo)
-        form1.addRow( self.checkFixed, self.price_line)
+        form1.addRow(self.checkFixed, self.price_line)
         form1.addRow("数量", self.volume_line)
         form1.addRow("接口", self.gateway_combo)
         form1.addRow(send_button)
@@ -899,8 +898,6 @@ class TradingWidget(QtWidgets.QWidget):
         except Exception as ex:
             self.main_engine.write_log(u'tradingWg.autoFillSymbol exception:{}'.format(str(ex)))
 
-
-    #----------------------------------------------------------------------
     def close_position(self, cell):
         """根据持仓信息自动填写交易组件"""
         try:
@@ -926,12 +923,13 @@ class TradingWidget(QtWidgets.QWidget):
             self.volume_line.setText(str(pos.volume))
 
             if pos.direction in [Direction.LONG, Direction.NET]:
-                self.direction_combo.setCurrentText(Direction.SHORT)
+                self.direction_combo.setCurrentText(Direction.SHORT.value)
             else:
-                self.direction_combo.setCurrentText(Direction.LONG)
+                self.direction_combo.setCurrentText(Direction.LONG.value)
 
         except Exception as ex:
             self.main_engine.write_log(u'tradingWg.closePosition exception:{}'.format(str(ex)))
+
 
 class ActiveOrderMonitor(OrderMonitor):
     """

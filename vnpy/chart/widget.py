@@ -1,5 +1,5 @@
 from typing import List, Dict, Type
-
+from collections import deque
 import pyqtgraph as pg
 
 from vnpy.trader.ui import QtGui, QtWidgets, QtCore
@@ -11,8 +11,7 @@ from .base import (
     to_int, NORMAL_FONT
 )
 from .axis import DatetimeAxis
-from .item import ChartItem
-
+from .item import ChartItem, CandleItem, VolumeItem
 
 pg.setConfigOptions(antialias=True)
 
@@ -21,10 +20,10 @@ class ChartWidget(pg.PlotWidget):
     """"""
     MIN_BAR_COUNT = 100
 
-    def __init__(self, parent: QtWidgets.QWidget = None):
+    def __init__(self, parent: QtWidgets.QWidget = None, title: str = "ChartWidget of vn.py"):
         """"""
         super().__init__(parent)
-
+        self.title = title
         self._manager: BarManager = BarManager()
 
         self._plots: Dict[str, pg.PlotItem] = {}
@@ -34,14 +33,14 @@ class ChartWidget(pg.PlotWidget):
         self._first_plot: pg.PlotItem = None
         self._cursor: ChartCursor = None
 
-        self._right_ix: int = 0                     # Index of most right data
-        self._bar_count: int = self.MIN_BAR_COUNT   # Total bar visible in chart
+        self._right_ix: int = 0  # Index of most right data
+        self._bar_count: int = self.MIN_BAR_COUNT  # Total bar visible in chart
 
         self._init_ui()
 
     def _init_ui(self) -> None:
         """"""
-        self.setWindowTitle("ChartWidget of vn.py")
+        self.setWindowTitle(self.title)
 
         self._layout = pg.GraphicsLayout()
         self._layout.setContentsMargins(10, 10, 10, 10)
@@ -59,11 +58,11 @@ class ChartWidget(pg.PlotWidget):
                 self, self._manager, self._plots, self._item_plot_map)
 
     def add_plot(
-        self,
-        plot_name: str,
-        minimum_height: int = 80,
-        maximum_height: int = None,
-        hide_x_axis: bool = False
+            self,
+            plot_name: str,
+            minimum_height: int = 80,
+            maximum_height: int = None,
+            hide_x_axis: bool = False
     ) -> None:
         """
         Add plot area.
@@ -111,20 +110,23 @@ class ChartWidget(pg.PlotWidget):
         self._layout.addItem(plot)
 
     def add_item(
-        self,
-        item_class: Type[ChartItem],
-        item_name: str,
-        plot_name: str
+            self,
+            item_class: Type[ChartItem],
+            item_name: str,
+            plot_name: str
     ):
         """
         Add chart item.
         """
+        # 创建显示的对象，蜡烛图，bar图，散点，线等
         item = item_class(self._manager)
         self._items[item_name] = item
 
+        # 获取设置的显示区域，例如主图/volume/附图等
         plot = self._plots.get(plot_name)
         plot.addItem(item)
 
+        # 绑定显示对象与显示区域关系
         self._item_plot_map[item] = plot
 
     def get_plot(self, plot_name: str) -> pg.PlotItem:
@@ -173,6 +175,7 @@ class ChartWidget(pg.PlotWidget):
         for item in self._items.values():
             item.update_bar(bar)
 
+        # 刷新显示区域的最高/最低值
         self._update_plot_limits()
 
         if self._right_ix >= (self._manager.get_count() - self._bar_count / 2):
@@ -306,11 +309,11 @@ class ChartCursor(QtCore.QObject):
     """"""
 
     def __init__(
-        self,
-        widget: ChartWidget,
-        manager: BarManager,
-        plots: Dict[str, pg.GraphicsObject],
-        item_plot_map: Dict[ChartItem, pg.GraphicsObject]
+            self,
+            widget: ChartWidget,
+            manager: BarManager,
+            plots: Dict[str, pg.GraphicsObject],
+            item_plot_map: Dict[ChartItem, pg.GraphicsObject]
     ):
         """"""
         super().__init__()
@@ -480,7 +483,9 @@ class ChartCursor(QtCore.QObject):
                     buf[plot] += ("\n\n" + item_info_text)
 
         for plot_name, plot in self._plots.items():
-            plot_info_text = buf[plot]
+            plot_info_text = buf.get(plot, None)
+            if not plot_info_text:
+                continue
             info = self._infos[plot_name]
             info.setText(plot_info_text)
             info.show()
@@ -532,3 +537,124 @@ class ChartCursor(QtCore.QObject):
 
         for label in list(self._y_labels.values()) + [self._x_label]:
             label.hide()
+
+
+class KlineWidget(ChartWidget):
+    """ k线widget，支持多widget；主图/volume/附图"""
+    clsId = 0
+
+    def __init__(self, parent: QtWidgets.QWidget = None,
+                 title: str = "kline",
+                 display_volume: bool = False,
+                 display_sub: bool = False):
+
+        super().__init__(parent, title)
+
+        KlineWidget.clsId += 1
+        self.windowId = str(KlineWidget.clsId)
+
+        # 所有K线上指标
+        self.main_color_pool = deque(['red', 'green', 'yellow', 'white'])
+        self.main_indicator_data = {}  # 主图指标数据（字典，key是指标，value是list）
+        self.main_indicator_colors = {}  # 主图指标颜色（字典，key是指标，value是list
+        self.main_indicator_plots = {}  # 主图指标的所有画布（字典，key是指标，value是plot)
+
+        self.display_volume = display_volume
+        self.display_sub = display_sub
+
+        # 所有副图上指标
+        self.sub_color_pool = deque(['red', 'green', 'yellow', 'white'])
+        self.sub_indicator_data = {}
+        self.sub_indicator_colors = {}
+        self.sub_indicator_plots = {}
+
+        self.main_plot_name = f'{self.windowId}_main'
+        self.volume_plot_name = f'{self.windowId}_volume'
+        self.sub_plot_name = f'{self.windowId}_sub'
+
+        self.main_plot = None
+        self.volume_plot = None
+        self.sub_plot = None
+        if self.display_volume or self.display_sub:
+            self.add_plot(self.main_plot_name, hide_x_axis=True)  # 主图
+            self.add_item(CandleItem, "candle", self.main_plot_name)  # 往主图区域，加入
+            if self.display_volume:
+                self.add_plot(self.volume_plot_name, maximum_height=60)  # volume 附图
+                self.add_item(VolumeItem, "volume", self.volume_plot_name)
+                self.volume_plot = self.get_plot(self.volume_plot_name)
+            if self.display_sub:
+                self.add_plot(self.sub_plot_name, maximum_height=180)  # 附图
+                self.sub_plot = self.get_plot(self.sub_plot_name)
+
+        else:
+            self.add_plot(self.main_plot_name, hide_x_axis=False)  # 主图
+            self.add_item(CandleItem, "candle", self.main_plot_name)  # 往主图区域，加入
+        self.add_cursor()
+        self.main_plot = self.get_plot(self.main_plot_name)
+
+    def add_indicator(self, indicator: str, is_main: bool = True):
+        """
+        新增指标信号图
+        :param indicator: 指标/信号的名称，如ma10，
+        :param is_main: 是否为主图
+        :return:
+        """
+        if is_main:
+
+            if indicator in self.main_indicator_plots:
+                self.main_plot.removeItem(self.main_indicator_plots[indicator])  # 存在该指标/信号，先移除原有画布
+
+            self.main_indicator_plots[indicator] = self.main_plot.plot()  # 为该指标/信号，创建新的主图画布，登记字典
+            self.main_indicator_colors[indicator] = self.main_color_pool[0]  # 登记该指标/信号使用的颜色
+            self.main_color_pool.append(self.main_color_pool.popleft())  # 调整剩余颜色
+            if indicator not in self.main_indicator_data:
+                self.main_indicator_data[indicator] = []
+        else:
+            if indicator in self.sub_indicator_plots:
+                self.sub_plot.removeItem(self.sub_indicator_plots[indicator])  # 若存在该指标/信号，先移除原有的附图画布
+            self.sub_indicator_plots[indicator] = self.sub_plot.plot()  # 为该指标/信号，创建新的主图画布，登记字典
+            self.sub_indicator_colors[indicator] = self.sub_color_pool[0]  # 登记该指标/信号使用的颜色
+            self.sub_color_pool.append(self.sub_color_pool.popleft())  # 调整剩余颜色
+            if indicator not in self.sub_indicator_data:
+                self.sub_indicator_data[indicator] = []
+
+    def clear_indicator(self, main=True):
+        """清空指标图形"""
+        # 清空信号图
+        if main:
+            for indicator in self.main_indicator_plots:
+                self.main_plot.removeItem(self.main_indicator_plots[indicator])
+            self.main_indicator_data = {}
+            self.main_indicator_plots = {}
+        else:
+            for indicator in self.sub_indicator_plots:
+                self.sub_plot.removeItem(self.sub_indicator_plots[indicator])
+            self.sub_indicator_data = {}
+            self.sub_indicator_plots = {}
+
+    def plot_indicator(self, datas: dict, is_main=True, clear=False):
+        """
+        刷新指标/信号图( 新数据）
+        :param datas: 所有数据
+        :param is_main: 是否为主图
+        :param clear: 是否要清除旧数据
+        :return:
+        """
+        if clear:
+            self.clear_indicator(is_main)  # 清除主图/副图
+
+        if is_main:
+            for indicator in datas:
+                self.add_indicator(indicator, is_main)  # 逐一添加主图信号/指标
+                self.main_indicator_data[indicator] = datas[indicator]  # 更新组件数据字典
+                # 调用该信号/指标画布(plotDataItem.setData())，更新数据，更新画笔颜色，更新名称
+                self.main_indicator_plots[indicator].setData(datas[indicator],
+                                                             pen=self.main_indicator_colors[indicator][0],
+                                                             name=indicator)
+        else:
+            for indicator in datas:
+                self.add_indicator(indicator, is_main)  # 逐一增加子图指标/信号
+                self.sub_indicator_data[indicator] = datas[indicator]  # 更新组件数据字典
+                # 调用该信号/指标画布(plotDataItem.setData())，更新数据，更新画笔颜色，更新名称
+                self.sub_indicator_plots[indicator].setData(datas[indicator],
+                                                            pen=self.sub_indicator_colors[indicator][0], name=indicator)

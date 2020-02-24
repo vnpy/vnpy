@@ -1,6 +1,7 @@
 """
 Defines constants and objects used in CtaStrategyPro App.
 """
+import sys
 from abc import ABC
 from dataclasses import dataclass, field
 from enum import Enum
@@ -93,6 +94,7 @@ INTERVAL_DELTA_MAP = {
     Interval.DAILY: timedelta(days=1),
 }
 
+
 class CtaComponent(ABC):
     """ CTA策略基础组件"""
 
@@ -103,7 +105,6 @@ class CtaComponent(ABC):
         """
         self.strategy = strategy
 
-    # ----------------------------------------------------------------------
     def write_log(self, content: str):
         """记录日志"""
         if self.strategy:
@@ -111,11 +112,9 @@ class CtaComponent(ABC):
         else:
             print(content)
 
-    # ----------------------------------------------------------------------
     def write_error(self, content: str, level: int = ERROR):
         """记录错误日志"""
         if self.strategy:
             self.strategy.write_log(msg=content, level=level)
         else:
             print(content, file=sys.stderr)
-
