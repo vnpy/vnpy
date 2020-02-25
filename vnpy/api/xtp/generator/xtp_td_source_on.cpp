@@ -1,8 +1,8 @@
-void onDisconnected(int reqid, int reqid) override
+void onDisconnected(int extra, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onDisconnected, reqid, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onDisconnected, extra, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -22,11 +22,11 @@ void onError(const dict &error) override
 	}
 };
 
-void onOrderEvent(const dict &data, const dict &error, int reqid) override
+void onOrderEvent(const dict &data, const dict &error, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onOrderEvent, data, error, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onOrderEvent, data, error, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -34,11 +34,11 @@ void onOrderEvent(const dict &data, const dict &error, int reqid) override
 	}
 };
 
-void onTradeEvent(const dict &data, int reqid) override
+void onTradeEvent(const dict &data, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onTradeEvent, data, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onTradeEvent, data, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -46,11 +46,11 @@ void onTradeEvent(const dict &data, int reqid) override
 	}
 };
 
-void onCancelOrderError(const dict &data, const dict &error, int reqid) override
+void onCancelOrderError(const dict &data, const dict &error, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onCancelOrderError, data, error, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onCancelOrderError, data, error, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -58,11 +58,11 @@ void onCancelOrderError(const dict &data, const dict &error, int reqid) override
 	}
 };
 
-void onQueryOrder(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryOrder(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryOrder, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryOrder, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -70,11 +70,11 @@ void onQueryOrder(const dict &data, const dict &error, int reqid, bool last, int
 	}
 };
 
-void onQueryTrade(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryTrade(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryTrade, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryTrade, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -82,11 +82,11 @@ void onQueryTrade(const dict &data, const dict &error, int reqid, bool last, int
 	}
 };
 
-void onQueryPosition(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryPosition(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryPosition, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryPosition, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -94,11 +94,11 @@ void onQueryPosition(const dict &data, const dict &error, int reqid, bool last, 
 	}
 };
 
-void onQueryAsset(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryAsset(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryAsset, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryAsset, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -106,11 +106,11 @@ void onQueryAsset(const dict &data, const dict &error, int reqid, bool last, int
 	}
 };
 
-void onQueryStructuredFund(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryStructuredFund(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryStructuredFund, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryStructuredFund, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -118,11 +118,11 @@ void onQueryStructuredFund(const dict &data, const dict &error, int reqid, bool 
 	}
 };
 
-void onQueryFundTransfer(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryFundTransfer(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryFundTransfer, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryFundTransfer, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -130,11 +130,11 @@ void onQueryFundTransfer(const dict &data, const dict &error, int reqid, bool la
 	}
 };
 
-void onFundTransfer(const dict &data, const dict &error, int reqid) override
+void onFundTransfer(const dict &data, const dict &error, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onFundTransfer, data, error, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onFundTransfer, data, error, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -142,11 +142,11 @@ void onFundTransfer(const dict &data, const dict &error, int reqid) override
 	}
 };
 
-void onQueryETF(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryETF(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryETF, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryETF, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -154,11 +154,11 @@ void onQueryETF(const dict &data, const dict &error, int reqid, bool last, int r
 	}
 };
 
-void onQueryETFBasket(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryETFBasket(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryETFBasket, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryETFBasket, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -166,11 +166,11 @@ void onQueryETFBasket(const dict &data, const dict &error, int reqid, bool last,
 	}
 };
 
-void onQueryIPOInfoList(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryIPOInfoList(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryIPOInfoList, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryIPOInfoList, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -178,11 +178,11 @@ void onQueryIPOInfoList(const dict &data, const dict &error, int reqid, bool las
 	}
 };
 
-void onQueryIPOQuotaInfo(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryIPOQuotaInfo(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryIPOQuotaInfo, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryIPOQuotaInfo, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -190,11 +190,11 @@ void onQueryIPOQuotaInfo(const dict &data, const dict &error, int reqid, bool la
 	}
 };
 
-void onQueryOptionAuctionInfo(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryOptionAuctionInfo(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryOptionAuctionInfo, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryOptionAuctionInfo, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -202,11 +202,11 @@ void onQueryOptionAuctionInfo(const dict &data, const dict &error, int reqid, bo
 	}
 };
 
-void onCreditCashRepay(const dict &data, const dict &error, int reqid) override
+void onCreditCashRepay(const dict &data, const dict &error, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onCreditCashRepay, data, error, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onCreditCashRepay, data, error, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -214,11 +214,11 @@ void onCreditCashRepay(const dict &data, const dict &error, int reqid) override
 	}
 };
 
-void onQueryCreditCashRepayInfo(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryCreditCashRepayInfo(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryCreditCashRepayInfo, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryCreditCashRepayInfo, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -226,11 +226,11 @@ void onQueryCreditCashRepayInfo(const dict &data, const dict &error, int reqid, 
 	}
 };
 
-void onQueryCreditFundInfo(const dict &data, const dict &error, int reqid, int reqid) override
+void onQueryCreditFundInfo(const dict &data, const dict &error, int reqid, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryCreditFundInfo, data, error, reqid, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryCreditFundInfo, data, error, reqid, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -238,11 +238,11 @@ void onQueryCreditFundInfo(const dict &data, const dict &error, int reqid, int r
 	}
 };
 
-void onQueryCreditDebtInfo(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryCreditDebtInfo(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryCreditDebtInfo, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryCreditDebtInfo, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -250,11 +250,11 @@ void onQueryCreditDebtInfo(const dict &data, const dict &error, int reqid, bool 
 	}
 };
 
-void onQueryCreditTickerDebtInfo(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryCreditTickerDebtInfo(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryCreditTickerDebtInfo, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryCreditTickerDebtInfo, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -262,11 +262,11 @@ void onQueryCreditTickerDebtInfo(const dict &data, const dict &error, int reqid,
 	}
 };
 
-void onQueryCreditAssetDebtInfo(const dict &data, const dict &error, int reqid, int reqid) override
+void onQueryCreditAssetDebtInfo(const dict &data, const dict &error, int reqid, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryCreditAssetDebtInfo, data, error, reqid, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryCreditAssetDebtInfo, data, error, reqid, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -274,11 +274,11 @@ void onQueryCreditAssetDebtInfo(const dict &data, const dict &error, int reqid, 
 	}
 };
 
-void onQueryCreditTickerAssignInfo(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+void onQueryCreditTickerAssignInfo(const dict &data, const dict &error, int reqid, bool last, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryCreditTickerAssignInfo, data, error, reqid, last, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryCreditTickerAssignInfo, data, error, reqid, last, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -286,11 +286,11 @@ void onQueryCreditTickerAssignInfo(const dict &data, const dict &error, int reqi
 	}
 };
 
-void onQueryCreditExcessStock(const dict &data, const dict &error, int reqid, int reqid) override
+void onQueryCreditExcessStock(const dict &data, const dict &error, int reqid, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, TdApi, onQueryCreditExcessStock, data, error, reqid, reqid);
+		PYBIND11_OVERLOAD(void, TdApi, onQueryCreditExcessStock, data, error, reqid, extra);
 	}
 	catch (const error_already_set &e)
 	{
