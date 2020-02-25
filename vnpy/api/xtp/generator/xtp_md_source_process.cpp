@@ -1,7 +1,7 @@
 void MdApi::processDisconnected(Task *task)
 {
 	gil_scoped_acquire acquire;
-	this->onDisconnected(task->task_int);
+	this->onDisconnected(task->task_extra);
 };
 
 void MdApi::processError(Task *task)
@@ -99,7 +99,7 @@ void MdApi::processDepthMarketData(Task *task)
 		data["r4"] = task_data->r4;
 		delete task_data;
 	}
-	this->onDepthMarketData(data, task->task_int, task->task_int, task->task_int, task->task_int, task->task_int, task->task_int);
+	this->onDepthMarketData(data, task->task_extra, task->task_extra, task->task_extra, task->task_extra, task->task_extra, task->task_extra);
 };
 
 void MdApi::processSubOrderBook(Task *task)
@@ -241,7 +241,7 @@ void MdApi::processSubscribeAllMarketData(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onSubscribeAllMarketData(task->task_int, error);
+	this->onSubscribeAllMarketData(task->task_extra, error);
 };
 
 void MdApi::processUnSubscribeAllMarketData(Task *task)
@@ -255,7 +255,7 @@ void MdApi::processUnSubscribeAllMarketData(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onUnSubscribeAllMarketData(task->task_int, error);
+	this->onUnSubscribeAllMarketData(task->task_extra, error);
 };
 
 void MdApi::processSubscribeAllOrderBook(Task *task)
@@ -269,7 +269,7 @@ void MdApi::processSubscribeAllOrderBook(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onSubscribeAllOrderBook(task->task_int, error);
+	this->onSubscribeAllOrderBook(task->task_extra, error);
 };
 
 void MdApi::processUnSubscribeAllOrderBook(Task *task)
@@ -283,7 +283,7 @@ void MdApi::processUnSubscribeAllOrderBook(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onUnSubscribeAllOrderBook(task->task_int, error);
+	this->onUnSubscribeAllOrderBook(task->task_extra, error);
 };
 
 void MdApi::processSubscribeAllTickByTick(Task *task)
@@ -297,7 +297,7 @@ void MdApi::processSubscribeAllTickByTick(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onSubscribeAllTickByTick(task->task_int, error);
+	this->onSubscribeAllTickByTick(task->task_extra, error);
 };
 
 void MdApi::processUnSubscribeAllTickByTick(Task *task)
@@ -311,7 +311,7 @@ void MdApi::processUnSubscribeAllTickByTick(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onUnSubscribeAllTickByTick(task->task_int, error);
+	this->onUnSubscribeAllTickByTick(task->task_extra, error);
 };
 
 void MdApi::processQueryAllTickers(Task *task)
@@ -378,7 +378,7 @@ void MdApi::processSubscribeAllOptionMarketData(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onSubscribeAllOptionMarketData(task->task_int, error);
+	this->onSubscribeAllOptionMarketData(task->task_extra, error);
 };
 
 void MdApi::processUnSubscribeAllOptionMarketData(Task *task)
@@ -392,7 +392,7 @@ void MdApi::processUnSubscribeAllOptionMarketData(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onUnSubscribeAllOptionMarketData(task->task_int, error);
+	this->onUnSubscribeAllOptionMarketData(task->task_extra, error);
 };
 
 void MdApi::processSubscribeAllOptionOrderBook(Task *task)
@@ -406,7 +406,7 @@ void MdApi::processSubscribeAllOptionOrderBook(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onSubscribeAllOptionOrderBook(task->task_int, error);
+	this->onSubscribeAllOptionOrderBook(task->task_extra, error);
 };
 
 void MdApi::processUnSubscribeAllOptionOrderBook(Task *task)
@@ -420,7 +420,7 @@ void MdApi::processUnSubscribeAllOptionOrderBook(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onUnSubscribeAllOptionOrderBook(task->task_int, error);
+	this->onUnSubscribeAllOptionOrderBook(task->task_extra, error);
 };
 
 void MdApi::processSubscribeAllOptionTickByTick(Task *task)
@@ -434,7 +434,7 @@ void MdApi::processSubscribeAllOptionTickByTick(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onSubscribeAllOptionTickByTick(task->task_int, error);
+	this->onSubscribeAllOptionTickByTick(task->task_extra, error);
 };
 
 void MdApi::processUnSubscribeAllOptionTickByTick(Task *task)
@@ -448,6 +448,6 @@ void MdApi::processUnSubscribeAllOptionTickByTick(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onUnSubscribeAllOptionTickByTick(task->task_int, error);
+	this->onUnSubscribeAllOptionTickByTick(task->task_extra, error);
 };
 
