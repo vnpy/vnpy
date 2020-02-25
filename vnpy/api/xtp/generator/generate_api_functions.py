@@ -14,6 +14,7 @@ type_dict = {
     "enum": "enum",
 }
 
+
 class ApiGenerator:
     """API生成器"""""
 
@@ -26,7 +27,7 @@ class ApiGenerator:
 
         self.callbacks: Dict[str, dict] = {}
         self.functions: Dict[str, dict] = {}
-        self.lines: Dict = {}
+        self.lines: Dict[str, str] = {}
 
         self.structs: Dict[str, dict] = {}
         self.enums: List[str] = []
@@ -120,18 +121,16 @@ class ApiGenerator:
             words = arg.split(" ")
             words = [word for word in words if word]
 
-            type_ = words[0]
+            type_ = words[-2]
 
-            # if type_ in self.enums.keys():
-            #     type_ = "int"
             if "int" in type_:
                 type_ = "int"
             elif type_ == "double":
                 type_ = "float"
-            elif "*" in words[0]:
-                type_ = words[0].replace("*", "")
+            elif "*" in words[-2]:
+                type_ = words[-2].replace("*", "")
 
-            name = words[1].replace("*", "")
+            name = words[-1].replace("*", "")
             if "[" in name:
                 name = name.split("[")[0]
 
@@ -155,31 +154,57 @@ class ApiGenerator:
                 line = f"void {name}(Task *task);\n\n"
                 f.write(line)
 
+    def length(self, d: Dict[str, str]):
+        """"""
+        return len(d.keys())
+
     def generate_header_on(self):
         """"""
         filename = f"{self.prefix}_{self.name}_header_on.h"
         with open(filename, "w") as f:
-            for name, d in self.callbacks.items():
+            for name, d in self.callbacks.items(): 
                 name = name.replace("On", "on")
 
                 args_list = []
-                for info, type_ in d.items():
-                    if type_ == "int":
-                        # if info == "request_id":
-                        args_list.append("int reqid")
-                        # else:
-                        #     args_list.append("int data")
+                length = self.length(d)
 
-                    elif type_ in self.enums:
-                        args_list.append("int data")
-                    elif type_ == "bool":
-                        args_list.append("bool last")
-                    elif type_ == "char":
-                        args_list.append("string data")
-                    elif type_ == "XTPRI":
-                        args_list.append("const dict &error")
-                    else:
-                        args_list.append("const dict &data")
+                if length == 1:
+                    for type_ in d.values():
+                        if type_ == "XTPRI":
+                            args_list.append("const dict &error")
+                        elif type_ == "int":
+                            args_list.append("int reqid")
+                elif length == 2:
+                    for type_ in d.values():
+                        if type_ == "XTPRI":
+                            args_list.append("const dict &error")
+                        elif type_ == "int":
+                            args_list.append("int extra")
+                        elif type_ in self.enums:
+                            args_list.append("int extra")
+                elif length == 3:
+                    for type_ in d.values():
+                        if type_ == "int":
+                            args_list.append("int extra")
+                        elif type_ == "bool":
+                            args_list.append("bool last")
+                        elif type_ == "XTPRI":
+                            args_list.append("const dict &error")
+                        else:
+                            args_list.append("const dict &data")
+                elif length == 4:
+                    args_list.append("const dict &data")
+                    args_list.append("const dict &error")
+                    args_list.append("int reqid")
+                    args_list.append("int extra")
+                elif length == 5:
+                    args_list.append("const dict &data")
+                    args_list.append("const dict &error")
+                    args_list.append("int reqid")
+                    args_list.append("bool last")
+                    args_list.append("int extra")
+                elif length > 5:
+                    args_list.append("const dict &data")
 
                 args_str = ", ".join(args_list)
                 line = f"virtual void {name}({args_str}) {{}};\n\n"
@@ -190,19 +215,26 @@ class ApiGenerator:
         """"""
         filename = f"{self.prefix}_{self.name}_header_function.h"
         with open(filename, "w") as f:
-            for key, value in self.functions.items():
-                if "request_id" in value:
-                    if len(value) == 2:
-                        content = "int session_id, int request_id"
-                    elif len(value) == 3:
-                        content = "const dict &req, int session_id, int request_id"
-                else:
-                    content = ""
-                    for k, v in value.items():
-                        if v in self.enums:
-                            v = "int"
-                        content = content + v + " " + k + ", "
-                    content = content[:-2]
+            for key, d in self.functions.items():
+
+                args_list = []
+
+                length = self.length(d)
+
+                if length < 3:
+                    for name_, type_ in d.items():
+                        args_list.append(f"int {name_}")
+                elif length == 3:
+                    for name_, type_ in d.items():
+                        if type_ == "int" or type_ in self.enums:
+                            args_list.append(f"int {name_}")
+                        elif type_ == "char":
+                            args_list.append(f"string {name_}")
+
+                        elif type_ in self.structs:
+                            args_list.append("const dict &req")
+
+                content = ", ".join(args_list)
 
                 name = key.replace("Query", "query")
                 line = f"int {name}({content});\n\n"
@@ -224,7 +256,6 @@ class ApiGenerator:
         last_part = " ".join(words) + ")"
         new_line = parts[0] + "(" + last_part
         return new_line
-        
 
     def generate_source_task(self):
         """"""
@@ -237,15 +268,14 @@ class ApiGenerator:
                 f.write("{\n")
                 f.write("\tTask task = Task();\n")
                 f.write(f"\ttask.task_name = {name.upper()};\n")
-
                 for field, type_ in d.items():
                     if "int" in type_:
                         if field == "request_id":
                             f.write(f"\ttask.task_id = {field};\n")
                         else:
-                            f.write(f"\ttask.task_int = {field};\n")
+                            f.write(f"\ttask.task_extra = {field};\n")
                     elif type_ in self.enums:
-                        f.write(f"\ttask.task_int = (int) {field};\n")
+                        f.write(f"\ttask.task_extra = (int) {field};\n")
                     elif type_ == "bool":
                         f.write(f"\ttask.task_last = {field};\n")
                     elif type_ == "XTPRI":
@@ -294,21 +324,17 @@ class ApiGenerator:
                 args = []
 
                 for field, type_ in d.items():
-                    if type_ == "int" or type_ == "char": #or type_ == "const":
+                    if type_ == "int":
                         if field == "request_id":
                             args.append("task->task_id")
                         else:
-                            args.append("task->task_int")
+                            args.append("task->task_extra")
+                    elif type_ in self.enums:
+                        args.append("task->task_extra")
                     elif type_ == "float":
-                        args.append("task->task_float")
-
-
+                        args.append("task->task_extra")
                     elif type_ == "bool":
                         args.append("task->task_last")
-
-                    elif type_ in self.enums:
-                        args.append("task->task_int")
-
                     elif type_ == "XTPRI":
                         args.append("error")
 
@@ -320,7 +346,6 @@ class ApiGenerator:
 
                         struct_fields = self.structs[type_]
                         for struct_field, struct_type in struct_fields.items():
-                            # struct_type = type_dict[struct_type]
                             if struct_type == "string":
                                 f.write(
                                     f"\t\terror[\"{struct_field}\"] = toUtf(task_error->{struct_field});\n")
@@ -362,39 +387,42 @@ class ApiGenerator:
             for name, d in self.functions.items():
                 req_name = name.replace("Query", "query")
 
-                if "request_id" in d:
-                    if len(d) == 2:
-                        content = "int session_id, int request_id"
-                    elif len(d) == 3:
-                        content = "const dict &req, int session_id, int request_id"
-                else:
-                    content = ""
-                    for k, v in d.items():
-                        if v in self.enums:
-                            v = "int"
-                        content = content + v + " " + k + ", "
-                    content = content[:-2]
+                args_list = []
+
+                length = self.length(d)
+
+                if length < 3:
+                    for name_, type_ in d.items():
+                        args_list.append(f"int {name_}")
+                elif length == 3:
+                    for name_, type_ in d.items():
+                        if type_ == "int" or type_ in self.enums:
+                            args_list.append(f"int {name_}")
+                        elif type_ == "char":
+                            args_list.append(f"string {name_}")
+
+                        elif type_ in self.structs:
+                            args_list.append("const dict &req")
+
+                content = ", ".join(args_list)
 
                 if list(d.values()):
                     type_ = list(d.values())[0]
-                # else:
-                #     pass
+                else:
+                    pass
 
                 f.write(
                     f"int {self.class_name}::{req_name}({content})\n")
                 f.write("{\n")
-
-
-
                 f.write(f"\t{type_} myreq = {type_}();\n")
                 f.write("\tmemset(&myreq, 0, sizeof(myreq));\n")
 
-                #if type_ != "char":
                 reqid = "reqid"
                 if type_ in self.enums:
                     c = {v: k for k, v in d.items()}[type_]
                 
                     reqid = f"({type_}) {c}"
+
                 elif type_ in self.structs:
                     reqid = "reqid"
                     struct_fields = self.structs[type_]
@@ -404,9 +432,6 @@ class ApiGenerator:
                         else:
                             line = f"\tget{struct_type.capitalize()}(req, \"{struct_field}\", &myreq.{struct_field});\n"
                         f.write(line)
-
-                # if not reqid:
-                #     reqid = "reqid"
 
                 f.write(f"\tint i = this->api->{name}(&myreq, {reqid});\n")
                 f.write("\treturn i;\n")
@@ -423,11 +448,15 @@ class ApiGenerator:
                 bind_args = ["void", self.class_name, on_name]
                 for field, type_ in d.items():
                     if type_ == "int":
-                        args.append("int reqid")
-                        bind_args.append("reqid")
+                        if field == "request_id":
+                            args.append("int reqid")
+                            bind_args.append("reqid")
+                        else:
+                            args.append("int extra")
+                            bind_args.append("extra")
                     elif type_ in self.enums:
-                        args.append("int data")
-                        bind_args.append("data")                        
+                        args.append("int extra")
+                        bind_args.append("extra")
                     elif type_ == "bool":
                         args.append("bool last")
                         bind_args.append("last")
@@ -471,8 +500,8 @@ class ApiGenerator:
 
 
 if __name__ == "__main__":
-    # md_generator = ApiGenerator("../include/xtp/xtp_quote_api.h", "xtp", "md", "MdApi")
-    # md_generator.run()
+    md_generator = ApiGenerator("../include/xtp/xtp_quote_api.h", "xtp", "md", "MdApi")
+    md_generator.run()
 
     td_generator = ApiGenerator("../include/xtp/xtp_trader_api.h", "xtp", "td", "TdApi")
     td_generator.run()
