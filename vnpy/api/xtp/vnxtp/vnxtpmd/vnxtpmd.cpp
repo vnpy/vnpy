@@ -69,7 +69,7 @@ void MdApi::OnUnSubMarketData(XTPST *ticker, XTPRI *error_info, bool is_last)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnDepthMarketData(XTPMD *market_data)
+void MdApi::OnDepthMarketData(XTPMD *market_data, int64_t bid1_qty[], int32_t bid1_count, int32_t max_bid1_count, int64_t ask1_qty[], int32_t ask1_count, int32_t max_ask1_count)
 {
 	Task task = Task();
 	task.task_name = ONDEPTHMARKETDATA;
@@ -79,6 +79,12 @@ void MdApi::OnDepthMarketData(XTPMD *market_data)
 		*task_data = *market_data;
 		task.task_data = task_data;
 	}
+	task.task_extra = bid1_qty;
+	task.task_extra = bid1_count;
+	task.task_extra = max_bid1_count;
+	task.task_extra = ask1_qty;
+	task.task_extra = ask1_count;
+	task.task_extra = max_ask1_count;
 	this->task_queue.push(task);
 };
 
@@ -188,7 +194,7 @@ void MdApi::OnTickByTick(XTPTBT *tbt_data)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnSubscribeAllMarketData(int exchange_id, XTPRI *error_info)
+void MdApi::OnSubscribeAllMarketData(XTP_EXCHANGE_TYPE exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONSUBSCRIBEALLMARKETDATA;
@@ -202,7 +208,7 @@ void MdApi::OnSubscribeAllMarketData(int exchange_id, XTPRI *error_info)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnUnSubscribeAllMarketData(int exchange_id, XTPRI *error_info)
+void MdApi::OnUnSubscribeAllMarketData(XTP_EXCHANGE_TYPE exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONUNSUBSCRIBEALLMARKETDATA;
@@ -216,7 +222,7 @@ void MdApi::OnUnSubscribeAllMarketData(int exchange_id, XTPRI *error_info)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnSubscribeAllOrderBook(int exchange_id, XTPRI *error_info)
+void MdApi::OnSubscribeAllOrderBook(XTP_EXCHANGE_TYPE exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONSUBSCRIBEALLORDERBOOK;
@@ -230,7 +236,7 @@ void MdApi::OnSubscribeAllOrderBook(int exchange_id, XTPRI *error_info)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnUnSubscribeAllOrderBook(int exchange_id, XTPRI *error_info)
+void MdApi::OnUnSubscribeAllOrderBook(XTP_EXCHANGE_TYPE exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONUNSUBSCRIBEALLORDERBOOK;
@@ -244,7 +250,7 @@ void MdApi::OnUnSubscribeAllOrderBook(int exchange_id, XTPRI *error_info)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnSubscribeAllTickByTick(int exchange_id, XTPRI *error_info)
+void MdApi::OnSubscribeAllTickByTick(XTP_EXCHANGE_TYPE exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONSUBSCRIBEALLTICKBYTICK;
@@ -258,7 +264,7 @@ void MdApi::OnSubscribeAllTickByTick(int exchange_id, XTPRI *error_info)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnUnSubscribeAllTickByTick(int exchange_id, XTPRI *error_info)
+void MdApi::OnUnSubscribeAllTickByTick(XTP_EXCHANGE_TYPE exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONUNSUBSCRIBEALLTICKBYTICK;
@@ -312,7 +318,7 @@ void MdApi::OnQueryTickersPriceInfo(XTPTPI* ticker_info, XTPRI *error_info, bool
 	this->task_queue.push(task);
 };
 
-void MdApi::OnSubscribeAllOptionMarketData(int exchange_id, XTPRI *error_info)
+void MdApi::OnSubscribeAllOptionMarketData(XTP_EXCHANGE_TYPE exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONSUBSCRIBEALLOPTIONMARKETDATA;
@@ -326,7 +332,7 @@ void MdApi::OnSubscribeAllOptionMarketData(int exchange_id, XTPRI *error_info)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnUnSubscribeAllOptionMarketData(int exchange_id, XTPRI *error_info)
+void MdApi::OnUnSubscribeAllOptionMarketData(XTP_EXCHANGE_TYPE exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONUNSUBSCRIBEALLOPTIONMARKETDATA;
@@ -340,7 +346,7 @@ void MdApi::OnUnSubscribeAllOptionMarketData(int exchange_id, XTPRI *error_info)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnSubscribeAllOptionOrderBook(int exchange_id, XTPRI *error_info)
+void MdApi::OnSubscribeAllOptionOrderBook(XTP_EXCHANGE_TYPE exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONSUBSCRIBEALLOPTIONORDERBOOK;
@@ -354,7 +360,7 @@ void MdApi::OnSubscribeAllOptionOrderBook(int exchange_id, XTPRI *error_info)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnUnSubscribeAllOptionOrderBook(int exchange_id, XTPRI *error_info)
+void MdApi::OnUnSubscribeAllOptionOrderBook(XTP_EXCHANGE_TYPE exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONUNSUBSCRIBEALLOPTIONORDERBOOK;
@@ -368,7 +374,7 @@ void MdApi::OnUnSubscribeAllOptionOrderBook(int exchange_id, XTPRI *error_info)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnSubscribeAllOptionTickByTick(int exchange_id, XTPRI *error_info)
+void MdApi::OnSubscribeAllOptionTickByTick(XTP_EXCHANGE_TYPE exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONSUBSCRIBEALLOPTIONTICKBYTICK;
@@ -382,7 +388,7 @@ void MdApi::OnSubscribeAllOptionTickByTick(int exchange_id, XTPRI *error_info)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnUnSubscribeAllOptionTickByTick(int exchange_id, XTPRI *error_info)
+void MdApi::OnUnSubscribeAllOptionTickByTick(XTP_EXCHANGE_TYPE exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONUNSUBSCRIBEALLOPTIONTICKBYTICK;
@@ -395,6 +401,7 @@ void MdApi::OnUnSubscribeAllOptionTickByTick(int exchange_id, XTPRI *error_info)
 	}
 	this->task_queue.push(task);
 };
+
 
 
 
