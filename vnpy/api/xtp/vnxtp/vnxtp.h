@@ -22,6 +22,7 @@ struct Task
     void *task_error;	//错误指针
     int task_id;		//请求id
     bool task_last;		//是否为最后返回
+	int task_extra;     // 其他信息
 };
 
 class TerminatedError : std::exception
