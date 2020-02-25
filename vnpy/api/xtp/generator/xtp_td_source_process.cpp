@@ -1,7 +1,7 @@
 void TdApi::processDisconnected(Task *task)
 {
 	gil_scoped_acquire acquire;
-	this->onDisconnected(task->task_int, task->task_int);
+	this->onDisconnected(task->task_extra, task->task_extra);
 };
 
 void TdApi::processError(Task *task)
@@ -57,7 +57,7 @@ void TdApi::processOrderEvent(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onOrderEvent(data, error, task->task_int);
+	this->onOrderEvent(data, error, task->task_extra);
 };
 
 void TdApi::processTradeEvent(Task *task)
@@ -86,7 +86,7 @@ void TdApi::processTradeEvent(Task *task)
 		data["branch_pbu"] = toUtf(task_data->branch_pbu);
 		delete task_data;
 	}
-	this->onTradeEvent(data, task->task_int);
+	this->onTradeEvent(data, task->task_extra);
 };
 
 void TdApi::processCancelOrderError(Task *task)
@@ -108,7 +108,7 @@ void TdApi::processCancelOrderError(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onCancelOrderError(data, error, task->task_int);
+	this->onCancelOrderError(data, error, task->task_extra);
 };
 
 void TdApi::processQueryOrder(Task *task)
@@ -150,7 +150,7 @@ void TdApi::processQueryOrder(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryOrder(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryOrder(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryTrade(Task *task)
@@ -187,7 +187,7 @@ void TdApi::processQueryTrade(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryTrade(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryTrade(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryPosition(Task *task)
@@ -224,7 +224,7 @@ void TdApi::processQueryPosition(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryPosition(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryPosition(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryAsset(Task *task)
@@ -267,7 +267,7 @@ void TdApi::processQueryAsset(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryAsset(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryAsset(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryStructuredFund(Task *task)
@@ -297,7 +297,7 @@ void TdApi::processQueryStructuredFund(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryStructuredFund(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryStructuredFund(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryFundTransfer(Task *task)
@@ -322,7 +322,7 @@ void TdApi::processQueryFundTransfer(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryFundTransfer(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryFundTransfer(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processFundTransfer(Task *task)
@@ -347,7 +347,7 @@ void TdApi::processFundTransfer(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onFundTransfer(data, error, task->task_int);
+	this->onFundTransfer(data, error, task->task_extra);
 };
 
 void TdApi::processQueryETF(Task *task)
@@ -378,7 +378,7 @@ void TdApi::processQueryETF(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryETF(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryETF(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryETFBasket(Task *task)
@@ -407,7 +407,7 @@ void TdApi::processQueryETFBasket(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryETFBasket(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryETFBasket(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryIPOInfoList(Task *task)
@@ -433,7 +433,7 @@ void TdApi::processQueryIPOInfoList(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryIPOInfoList(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryIPOInfoList(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryIPOQuotaInfo(Task *task)
@@ -455,7 +455,7 @@ void TdApi::processQueryIPOQuotaInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryIPOQuotaInfo(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryIPOQuotaInfo(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryOptionAuctionInfo(Task *task)
@@ -512,7 +512,7 @@ void TdApi::processQueryOptionAuctionInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryOptionAuctionInfo(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryOptionAuctionInfo(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processCreditCashRepay(Task *task)
@@ -535,7 +535,7 @@ void TdApi::processCreditCashRepay(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onCreditCashRepay(data, error, task->task_int);
+	this->onCreditCashRepay(data, error, task->task_extra);
 };
 
 void TdApi::processQueryCreditCashRepayInfo(Task *task)
@@ -561,7 +561,7 @@ void TdApi::processQueryCreditCashRepayInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditCashRepayInfo(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryCreditCashRepayInfo(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryCreditFundInfo(Task *task)
@@ -587,7 +587,7 @@ void TdApi::processQueryCreditFundInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditFundInfo(data, error, task->task_id, task->task_int);
+	this->onQueryCreditFundInfo(data, error, task->task_id, task->task_extra);
 };
 
 void TdApi::processQueryCreditDebtInfo(Task *task)
@@ -623,7 +623,7 @@ void TdApi::processQueryCreditDebtInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditDebtInfo(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryCreditDebtInfo(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryCreditTickerDebtInfo(Task *task)
@@ -647,7 +647,7 @@ void TdApi::processQueryCreditTickerDebtInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditTickerDebtInfo(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryCreditTickerDebtInfo(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryCreditAssetDebtInfo(Task *task)
@@ -661,7 +661,7 @@ void TdApi::processQueryCreditAssetDebtInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditAssetDebtInfo(task->task_float, error, task->task_id, task->task_int);
+	this->onQueryCreditAssetDebtInfo(task->task_extra, error, task->task_id, task->task_extra);
 };
 
 void TdApi::processQueryCreditTickerAssignInfo(Task *task)
@@ -687,7 +687,7 @@ void TdApi::processQueryCreditTickerAssignInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditTickerAssignInfo(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryCreditTickerAssignInfo(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryCreditExcessStock(Task *task)
@@ -711,6 +711,6 @@ void TdApi::processQueryCreditExcessStock(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditExcessStock(data, error, task->task_id, task->task_int);
+	this->onQueryCreditExcessStock(data, error, task->task_id, task->task_extra);
 };
 
