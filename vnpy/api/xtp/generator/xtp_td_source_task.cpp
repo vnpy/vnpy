@@ -1,4 +1,4 @@
-void TdApi::OnDisconnected(int session_id, int reason)
+void TdApi::OnDisconnected(uint64_t session_id, int reason) 
 {
 	Task task = Task();
 	task.task_name = ONDISCONNECTED;
@@ -7,7 +7,7 @@ void TdApi::OnDisconnected(int session_id, int reason)
 	this->task_queue.push(task);
 };
 
-void TdApi::OnError(XTPRI *error_info)
+void TdApi::OnError(XTPRI *error_info) 
 {
 	Task task = Task();
 	task.task_name = ONERROR;
@@ -20,7 +20,7 @@ void TdApi::OnError(XTPRI *error_info)
 	this->task_queue.push(task);
 };
 
-void TdApi::OnOrderEvent(XTPOrderInfo *order_info, XTPRI *error_info, int session_id)
+void TdApi::OnOrderEvent(XTPOrderInfo *order_info, XTPRI *error_info, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONORDEREVENT;
@@ -40,7 +40,7 @@ void TdApi::OnOrderEvent(XTPOrderInfo *order_info, XTPRI *error_info, int sessio
 	this->task_queue.push(task);
 };
 
-void TdApi::OnTradeEvent(XTPTradeReport *trade_info, int session_id)
+void TdApi::OnTradeEvent(XTPTradeReport *trade_info, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONTRADEEVENT;
@@ -54,7 +54,7 @@ void TdApi::OnTradeEvent(XTPTradeReport *trade_info, int session_id)
 	this->task_queue.push(task);
 };
 
-void TdApi::OnCancelOrderError(XTPOrderCancelInfo *cancel_info, XTPRI *error_info, int session_id)
+void TdApi::OnCancelOrderError(XTPOrderCancelInfo *cancel_info, XTPRI *error_info, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONCANCELORDERERROR;
@@ -74,7 +74,7 @@ void TdApi::OnCancelOrderError(XTPOrderCancelInfo *cancel_info, XTPRI *error_inf
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryOrder(XTPQueryOrderRsp *order_info, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryOrder(XTPQueryOrderRsp *order_info, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYORDER;
@@ -96,7 +96,7 @@ void TdApi::OnQueryOrder(XTPQueryOrderRsp *order_info, XTPRI *error_info, int re
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryTrade(XTPQueryTradeRsp *trade_info, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryTrade(XTPQueryTradeRsp *trade_info, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYTRADE;
@@ -118,7 +118,7 @@ void TdApi::OnQueryTrade(XTPQueryTradeRsp *trade_info, XTPRI *error_info, int re
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryPosition(XTPQueryStkPositionRsp *position, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryPosition(XTPQueryStkPositionRsp *position, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYPOSITION;
@@ -140,7 +140,7 @@ void TdApi::OnQueryPosition(XTPQueryStkPositionRsp *position, XTPRI *error_info,
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryAsset(XTPQueryAssetRsp *asset, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryAsset(XTPQueryAssetRsp *asset, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYASSET;
@@ -162,7 +162,7 @@ void TdApi::OnQueryAsset(XTPQueryAssetRsp *asset, XTPRI *error_info, int request
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryStructuredFund(XTPStructuredFundInfo *fund_info, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryStructuredFund(XTPStructuredFundInfo *fund_info, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYSTRUCTUREDFUND;
@@ -184,7 +184,7 @@ void TdApi::OnQueryStructuredFund(XTPStructuredFundInfo *fund_info, XTPRI *error
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryFundTransfer(XTPFundTransferNotice *fund_transfer_info, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryFundTransfer(XTPFundTransferNotice *fund_transfer_info, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYFUNDTRANSFER;
@@ -206,7 +206,7 @@ void TdApi::OnQueryFundTransfer(XTPFundTransferNotice *fund_transfer_info, XTPRI
 	this->task_queue.push(task);
 };
 
-void TdApi::OnFundTransfer(XTPFundTransferNotice *fund_transfer_info, XTPRI *error_info, int session_id)
+void TdApi::OnFundTransfer(XTPFundTransferNotice *fund_transfer_info, XTPRI *error_info, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONFUNDTRANSFER;
@@ -226,7 +226,7 @@ void TdApi::OnFundTransfer(XTPFundTransferNotice *fund_transfer_info, XTPRI *err
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryETF(XTPQueryETFBaseRsp *etf_info, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryETF(XTPQueryETFBaseRsp *etf_info, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYETF;
@@ -248,7 +248,7 @@ void TdApi::OnQueryETF(XTPQueryETFBaseRsp *etf_info, XTPRI *error_info, int requ
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryETFBasket(XTPQueryETFComponentRsp *etf_component_info, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryETFBasket(XTPQueryETFComponentRsp *etf_component_info, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYETFBASKET;
@@ -270,7 +270,7 @@ void TdApi::OnQueryETFBasket(XTPQueryETFComponentRsp *etf_component_info, XTPRI 
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryIPOInfoList(XTPQueryIPOTickerRsp *ipo_info, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryIPOInfoList(XTPQueryIPOTickerRsp *ipo_info, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYIPOINFOLIST;
@@ -292,7 +292,7 @@ void TdApi::OnQueryIPOInfoList(XTPQueryIPOTickerRsp *ipo_info, XTPRI *error_info
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryIPOQuotaInfo(XTPQueryIPOQuotaRsp *quota_info, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryIPOQuotaInfo(XTPQueryIPOQuotaRsp *quota_info, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYIPOQUOTAINFO;
@@ -314,7 +314,7 @@ void TdApi::OnQueryIPOQuotaInfo(XTPQueryIPOQuotaRsp *quota_info, XTPRI *error_in
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryOptionAuctionInfo(XTPQueryOptionAuctionInfoRsp *option_info, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryOptionAuctionInfo(XTPQueryOptionAuctionInfoRsp *option_info, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYOPTIONAUCTIONINFO;
@@ -336,7 +336,7 @@ void TdApi::OnQueryOptionAuctionInfo(XTPQueryOptionAuctionInfoRsp *option_info, 
 	this->task_queue.push(task);
 };
 
-void TdApi::OnCreditCashRepay(XTPCrdCashRepayRsp *cash_repay_info, XTPRI *error_info, int session_id)
+void TdApi::OnCreditCashRepay(XTPCrdCashRepayRsp *cash_repay_info, XTPRI *error_info, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONCREDITCASHREPAY;
@@ -356,7 +356,7 @@ void TdApi::OnCreditCashRepay(XTPCrdCashRepayRsp *cash_repay_info, XTPRI *error_
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryCreditCashRepayInfo(XTPCrdCashRepayInfo *cash_repay_info, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryCreditCashRepayInfo(XTPCrdCashRepayInfo *cash_repay_info, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYCREDITCASHREPAYINFO;
@@ -378,7 +378,7 @@ void TdApi::OnQueryCreditCashRepayInfo(XTPCrdCashRepayInfo *cash_repay_info, XTP
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryCreditFundInfo(XTPCrdFundInfo *fund_info, XTPRI *error_info, int request_id, int session_id)
+void TdApi::OnQueryCreditFundInfo(XTPCrdFundInfo *fund_info, XTPRI *error_info, int request_id, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYCREDITFUNDINFO;
@@ -399,7 +399,7 @@ void TdApi::OnQueryCreditFundInfo(XTPCrdFundInfo *fund_info, XTPRI *error_info, 
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryCreditDebtInfo(XTPCrdDebtInfo *debt_info, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryCreditDebtInfo(XTPCrdDebtInfo *debt_info, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYCREDITDEBTINFO;
@@ -421,7 +421,7 @@ void TdApi::OnQueryCreditDebtInfo(XTPCrdDebtInfo *debt_info, XTPRI *error_info, 
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryCreditTickerDebtInfo(XTPCrdDebtStockInfo *debt_info, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryCreditTickerDebtInfo(XTPCrdDebtStockInfo *debt_info, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYCREDITTICKERDEBTINFO;
@@ -443,7 +443,7 @@ void TdApi::OnQueryCreditTickerDebtInfo(XTPCrdDebtStockInfo *debt_info, XTPRI *e
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryCreditAssetDebtInfo(double remain_amount, XTPRI *error_info, int request_id, int session_id)
+void TdApi::OnQueryCreditAssetDebtInfo(double remain_amount, XTPRI *error_info, int request_id, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYCREDITASSETDEBTINFO;
@@ -464,7 +464,7 @@ void TdApi::OnQueryCreditAssetDebtInfo(double remain_amount, XTPRI *error_info, 
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryCreditTickerAssignInfo(XTPClientQueryCrdPositionStkInfo *assign_info, XTPRI *error_info, int request_id, bool is_last, int session_id)
+void TdApi::OnQueryCreditTickerAssignInfo(XTPClientQueryCrdPositionStkInfo *assign_info, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYCREDITTICKERASSIGNINFO;
@@ -486,7 +486,7 @@ void TdApi::OnQueryCreditTickerAssignInfo(XTPClientQueryCrdPositionStkInfo *assi
 	this->task_queue.push(task);
 };
 
-void TdApi::OnQueryCreditExcessStock(XTPClientQueryCrdSurplusStkRspInfo* stock_info, XTPRI *error_info, int request_id, int session_id)
+void TdApi::OnQueryCreditExcessStock(XTPClientQueryCrdSurplusStkRspInfo* stock_info, XTPRI *error_info, int request_id, uint64_t session_id) 
 {
 	Task task = Task();
 	task.task_name = ONQUERYCREDITEXCESSSTOCK;
