@@ -81,24 +81,25 @@ self.structs ={
     'XTP_MARKETDATA_TYPE': {}
 }
 
+
 self.functions ={
-    'QueryOrderByXTPID': {'uint64_t': 'const', 'session_id': 'int', 'request_id': 'int'},
-    'QueryOrders': {'XTPQueryOrderReq': 'const', 'session_id': 'int', 'request_id': 'int'},
-    'QueryTradesByXTPID': {'uint64_t': 'const', 'session_id': 'int', 'request_id': 'int'},
-    'QueryTrades': {'query_param': 'XTPQueryTraderReq', 'session_id': 'int', 'request_id': 'int'},
-    'QueryPosition': {'char': 'const', 'session_id': 'int', 'request_id': 'int'},
-    'QueryAsset': {'session_id': 'int', 'request_id': 'int'},
-    'QueryStructuredFund': {'query_param': 'XTPQueryStructuredFundInfoReq', 'session_id': 'int', 'request_id': 'int'},
-    'QueryFundTransfer': {'query_param': 'XTPQueryFundTransferLogReq', 'session_id': 'int', 'request_id': 'int'}
-   , 'QueryETF': {'query_param': 'XTPQueryETFBaseReq', 'session_id': 'int', 'request_id': 'int'},
-    'QueryETFTickerBasket': {'query_param': 'XTPQueryETFComponentReq', 'session_id': 'int', 'request_id': 'int'},
-    'QueryIPOInfoList': {'session_id': 'int', 'request_id': 'int'},
-    'QueryIPOQuotaInfo': {'session_id': 'int', 'request_id': 'int'},
-    'QueryOptionAuctionInfo': {'query_param': 'XTPQueryOptionAuctionInfoReq', 'session_id': 'int', 'request_id': 'int'},
-    'QueryCreditCashRepayInfo': {'session_id': 'int', 'request_id': 'int'},
-    'QueryCreditFundInfo': {'session_id': 'int', 'request_id': 'int'},
-    'QueryCreditDebtInfo': {'session_id': 'int', 'request_id': 'int'},
-    'QueryCreditTickerDebtInfo': {'query_param': 'XTPClientQueryCrdDebtStockReq', 'session_id': 'int', 'request_id': 'int'},
-    'QueryCreditAssetDebtInfo': {'session_id': 'int', 'request_id': 'int'},
-    'QueryCreditTickerAssignInfo': {'query_param': 'XTPClientQueryCrdPositionStockReq', 'session_id': 'int', 'request_id': 'int'},
-    'QueryCreditExcessStock': {'query_param': 'XTPClientQueryCrdSurplusStkReqInfo', 'session_id': 'int', 'request_id': 'int'}}
+ 'QueryOrderByXTPID': {'order_xtp_id': 'int', 'session_id': 'int', 'request_id': 'int'},
+ 'QueryOrders': {'query_param': 'XTPQueryOrderReq', 'session_id': 'int', 'request_id': 'int'},
+ 'QueryTradesByXTPID': {'order_xtp_id': 'int', 'session_id': 'int', 'request_id': 'int'},
+ 'QueryTrades': {'query_param': 'XTPQueryTraderReq', 'session_id': 'int', 'request_id': 'int'},
+ 'QueryPosition': {'ticker': 'char', 'session_id': 'int', 'request_id': 'int'},
+ 'QueryAsset': {'session_id': 'int', 'request_id': 'int'},
+ 'QueryStructuredFund': {'query_param': 'XTPQueryStructuredFundInfoReq', 'session_id': 'int', 'request_id': 'int'},
+ 'QueryFundTransfer': {'query_param': 'XTPQueryFundTransferLogReq', 'session_id': 'int', 'request_id': 'int'},
+ 'QueryETF': {'query_param': 'XTPQueryETFBaseReq', 'session_id': 'int', 'request_id': 'int'},
+ 'QueryETFTickerBasket': {'query_param': 'XTPQueryETFComponentReq', 'session_id': 'int', 'request_id': 'int'},
+ 'QueryIPOInfoList': {'session_id': 'int', 'request_id': 'int'},
+ 'QueryIPOQuotaInfo': {'session_id': 'int', 'request_id': 'int'},
+ 'QueryOptionAuctionInfo': {'query_param': 'XTPQueryOptionAuctionInfoReq', 'session_id': 'int', 'request_id': 'int'},
+ 'QueryCreditCashRepayInfo': {'session_id': 'int', 'request_id': 'int'},
+ 'QueryCreditFundInfo': {'session_id': 'int', 'request_id': 'int'},
+ 'QueryCreditDebtInfo': {'session_id': 'int', 'request_id': 'int'},
+ 'QueryCreditTickerDebtInfo': {'query_param': 'XTPClientQueryCrdDebtStockReq', 'session_id': 'int', 'request_id': 'int'},
+ 'QueryCreditAssetDebtInfo': {'session_id': 'int', 'request_id': 'int'},
+ 'QueryCreditTickerAssignInfo': {'query_param': 'XTPClientQueryCrdPositionStockReq', 'session_id': 'int', 'request_id': 'int'},
+ 'QueryCreditExcessStock': {'query_param': 'XTPClientQueryCrdSurplusStkReqInfo', 'session_id': 'int', 'request_id': 'int'}}
