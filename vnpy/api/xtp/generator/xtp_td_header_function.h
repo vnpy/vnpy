@@ -1,12 +1,12 @@
-int queryOrderByXTPID(const dict &req, int session_id, int request_id);
+int queryOrderByXTPID(int order_xtp_id, int session_id, int request_id);
 
 int queryOrders(const dict &req, int session_id, int request_id);
 
-int queryTradesByXTPID(const dict &req, int session_id, int request_id);
+int queryTradesByXTPID(int order_xtp_id, int session_id, int request_id);
 
 int queryTrades(const dict &req, int session_id, int request_id);
 
-int queryPosition(const dict &req, int session_id, int request_id);
+int queryPosition(string ticker, int session_id, int request_id);
 
 int queryAsset(int session_id, int request_id);
 
