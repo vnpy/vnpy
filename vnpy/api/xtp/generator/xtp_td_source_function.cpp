@@ -1,6 +1,6 @@
-int TdApi::queryOrderByXTPID(const dict &req, int session_id, int request_id)
+int TdApi::queryOrderByXTPID(int order_xtp_id, int session_id, int request_id)
 {
-	const myreq = const();
+	int myreq = int();
 	memset(&myreq, 0, sizeof(myreq));
 	int i = this->api->QueryOrderByXTPID(&myreq, reqid);
 	return i;
@@ -8,15 +8,18 @@ int TdApi::queryOrderByXTPID(const dict &req, int session_id, int request_id)
 
 int TdApi::queryOrders(const dict &req, int session_id, int request_id)
 {
-	const myreq = const();
+	XTPQueryOrderReq myreq = XTPQueryOrderReq();
 	memset(&myreq, 0, sizeof(myreq));
+	getString(req, "ticker", myreq.ticker);
+	getInt(req, "begin_time", &myreq.begin_time);
+	getInt(req, "end_time", &myreq.end_time);
 	int i = this->api->QueryOrders(&myreq, reqid);
 	return i;
 };
 
-int TdApi::queryTradesByXTPID(const dict &req, int session_id, int request_id)
+int TdApi::queryTradesByXTPID(int order_xtp_id, int session_id, int request_id)
 {
-	const myreq = const();
+	int myreq = int();
 	memset(&myreq, 0, sizeof(myreq));
 	int i = this->api->QueryTradesByXTPID(&myreq, reqid);
 	return i;
@@ -33,9 +36,9 @@ int TdApi::queryTrades(const dict &req, int session_id, int request_id)
 	return i;
 };
 
-int TdApi::queryPosition(const dict &req, int session_id, int request_id)
+int TdApi::queryPosition(string ticker, int session_id, int request_id)
 {
-	const myreq = const();
+	char myreq = char();
 	memset(&myreq, 0, sizeof(myreq));
 	int i = this->api->QueryPosition(&myreq, reqid);
 	return i;
