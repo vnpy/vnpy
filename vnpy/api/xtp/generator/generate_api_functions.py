@@ -262,7 +262,8 @@ class ApiGenerator:
         filename = f"{self.prefix}_{self.name}_source_task.cpp"
         with open(filename, "w") as f:
             for name, d in self.callbacks.items():
-                line = self.mod_insert(self.lines[name])
+                # line = self.mod_insert(self.lines[name])
+                line = self.lines[name]
                 f.write(line.replace("virtual void ",
                                      f"void {self.class_name}::") + "\n")
                 f.write("{\n")
