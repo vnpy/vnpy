@@ -12,8 +12,8 @@ void TdApi::OnDisconnected(int session_id, int reason)
 {
 	Task task = Task();
 	task.task_name = ONDISCONNECTED;
-	task.task_int = session_id;
-	task.task_int = reason;
+	task.task_extra = session_id;
+	task.task_extra = reason;
 	this->task_queue.push(task);
 };
 
@@ -46,7 +46,7 @@ void TdApi::OnOrderEvent(XTPOrderInfo *order_info, XTPRI *error_info, int sessio
 		*task_error = *error_info;
 		task.task_error = task_error;
 	}
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -60,7 +60,7 @@ void TdApi::OnTradeEvent(XTPTradeReport *trade_info, int session_id)
 		*task_data = *trade_info;
 		task.task_data = task_data;
 	}
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -80,7 +80,7 @@ void TdApi::OnCancelOrderError(XTPOrderCancelInfo *cancel_info, XTPRI *error_inf
 		*task_error = *error_info;
 		task.task_error = task_error;
 	}
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -102,7 +102,7 @@ void TdApi::OnQueryOrder(XTPQueryOrderRsp *order_info, XTPRI *error_info, int re
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -124,7 +124,7 @@ void TdApi::OnQueryTrade(XTPQueryTradeRsp *trade_info, XTPRI *error_info, int re
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -146,7 +146,7 @@ void TdApi::OnQueryPosition(XTPQueryStkPositionRsp *position, XTPRI *error_info,
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -168,7 +168,7 @@ void TdApi::OnQueryAsset(XTPQueryAssetRsp *asset, XTPRI *error_info, int request
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -190,7 +190,7 @@ void TdApi::OnQueryStructuredFund(XTPStructuredFundInfo *fund_info, XTPRI *error
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -212,7 +212,7 @@ void TdApi::OnQueryFundTransfer(XTPFundTransferNotice *fund_transfer_info, XTPRI
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -232,7 +232,7 @@ void TdApi::OnFundTransfer(XTPFundTransferNotice *fund_transfer_info, XTPRI *err
 		*task_error = *error_info;
 		task.task_error = task_error;
 	}
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -254,7 +254,7 @@ void TdApi::OnQueryETF(XTPQueryETFBaseRsp *etf_info, XTPRI *error_info, int requ
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -276,7 +276,7 @@ void TdApi::OnQueryETFBasket(XTPQueryETFComponentRsp *etf_component_info, XTPRI 
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -298,7 +298,7 @@ void TdApi::OnQueryIPOInfoList(XTPQueryIPOTickerRsp *ipo_info, XTPRI *error_info
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -320,7 +320,7 @@ void TdApi::OnQueryIPOQuotaInfo(XTPQueryIPOQuotaRsp *quota_info, XTPRI *error_in
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -342,7 +342,7 @@ void TdApi::OnQueryOptionAuctionInfo(XTPQueryOptionAuctionInfoRsp *option_info, 
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -362,7 +362,7 @@ void TdApi::OnCreditCashRepay(XTPCrdCashRepayRsp *cash_repay_info, XTPRI *error_
 		*task_error = *error_info;
 		task.task_error = task_error;
 	}
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -384,7 +384,7 @@ void TdApi::OnQueryCreditCashRepayInfo(XTPCrdCashRepayInfo *cash_repay_info, XTP
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -405,7 +405,7 @@ void TdApi::OnQueryCreditFundInfo(XTPCrdFundInfo *fund_info, XTPRI *error_info, 
 		task.task_error = task_error;
 	}
 	task.task_id = request_id;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -427,7 +427,7 @@ void TdApi::OnQueryCreditDebtInfo(XTPCrdDebtInfo *debt_info, XTPRI *error_info, 
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -449,7 +449,7 @@ void TdApi::OnQueryCreditTickerDebtInfo(XTPCrdDebtStockInfo *debt_info, XTPRI *e
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -470,7 +470,7 @@ void TdApi::OnQueryCreditAssetDebtInfo(double remain_amount, XTPRI *error_info, 
 		task.task_error = task_error;
 	}
 	task.task_id = request_id;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -492,7 +492,7 @@ void TdApi::OnQueryCreditTickerAssignInfo(XTPClientQueryCrdPositionStkInfo *assi
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -513,10 +513,9 @@ void TdApi::OnQueryCreditExcessStock(XTPClientQueryCrdSurplusStkRspInfo* stock_i
 		task.task_error = task_error;
 	}
 	task.task_id = request_id;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
-
 
 
 
@@ -683,6 +682,8 @@ void TdApi::processTask()
 				this->processQueryCreditExcessStock(&task);
 				break;
 			}
+
+
 			};
 
 		}
@@ -695,7 +696,7 @@ void TdApi::processTask()
 void TdApi::processDisconnected(Task *task)
 {
 	gil_scoped_acquire acquire;
-	this->onDisconnected(task->task_int, task->task_int);
+	this->onDisconnected(task->task_extra, task->task_extra);
 };
 
 void TdApi::processError(Task *task)
@@ -751,7 +752,7 @@ void TdApi::processOrderEvent(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onOrderEvent(data, error, task->task_int);
+	this->onOrderEvent(data, error, task->task_extra);
 };
 
 void TdApi::processTradeEvent(Task *task)
@@ -780,7 +781,7 @@ void TdApi::processTradeEvent(Task *task)
 		data["branch_pbu"] = toUtf(task_data->branch_pbu);
 		delete task_data;
 	}
-	this->onTradeEvent(data, task->task_int);
+	this->onTradeEvent(data, task->task_extra);
 };
 
 void TdApi::processCancelOrderError(Task *task)
@@ -802,7 +803,7 @@ void TdApi::processCancelOrderError(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onCancelOrderError(data, error, task->task_int);
+	this->onCancelOrderError(data, error, task->task_extra);
 };
 
 void TdApi::processQueryOrder(Task *task)
@@ -844,7 +845,7 @@ void TdApi::processQueryOrder(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryOrder(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryOrder(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryTrade(Task *task)
@@ -881,7 +882,7 @@ void TdApi::processQueryTrade(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryTrade(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryTrade(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryPosition(Task *task)
@@ -918,7 +919,7 @@ void TdApi::processQueryPosition(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryPosition(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryPosition(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryAsset(Task *task)
@@ -961,7 +962,7 @@ void TdApi::processQueryAsset(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryAsset(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryAsset(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryStructuredFund(Task *task)
@@ -991,7 +992,7 @@ void TdApi::processQueryStructuredFund(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryStructuredFund(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryStructuredFund(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryFundTransfer(Task *task)
@@ -1016,7 +1017,7 @@ void TdApi::processQueryFundTransfer(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryFundTransfer(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryFundTransfer(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processFundTransfer(Task *task)
@@ -1041,7 +1042,7 @@ void TdApi::processFundTransfer(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onFundTransfer(data, error, task->task_int);
+	this->onFundTransfer(data, error, task->task_extra);
 };
 
 void TdApi::processQueryETF(Task *task)
@@ -1072,7 +1073,7 @@ void TdApi::processQueryETF(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryETF(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryETF(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryETFBasket(Task *task)
@@ -1101,7 +1102,7 @@ void TdApi::processQueryETFBasket(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryETFBasket(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryETFBasket(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryIPOInfoList(Task *task)
@@ -1127,7 +1128,7 @@ void TdApi::processQueryIPOInfoList(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryIPOInfoList(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryIPOInfoList(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryIPOQuotaInfo(Task *task)
@@ -1149,7 +1150,7 @@ void TdApi::processQueryIPOQuotaInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryIPOQuotaInfo(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryIPOQuotaInfo(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryOptionAuctionInfo(Task *task)
@@ -1206,7 +1207,7 @@ void TdApi::processQueryOptionAuctionInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryOptionAuctionInfo(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryOptionAuctionInfo(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processCreditCashRepay(Task *task)
@@ -1229,7 +1230,7 @@ void TdApi::processCreditCashRepay(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onCreditCashRepay(data, error, task->task_int);
+	this->onCreditCashRepay(data, error, task->task_extra);
 };
 
 void TdApi::processQueryCreditCashRepayInfo(Task *task)
@@ -1255,7 +1256,7 @@ void TdApi::processQueryCreditCashRepayInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditCashRepayInfo(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryCreditCashRepayInfo(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryCreditFundInfo(Task *task)
@@ -1281,7 +1282,7 @@ void TdApi::processQueryCreditFundInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditFundInfo(data, error, task->task_id, task->task_int);
+	this->onQueryCreditFundInfo(data, error, task->task_id, task->task_extra);
 };
 
 void TdApi::processQueryCreditDebtInfo(Task *task)
@@ -1317,7 +1318,7 @@ void TdApi::processQueryCreditDebtInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditDebtInfo(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryCreditDebtInfo(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryCreditTickerDebtInfo(Task *task)
@@ -1341,7 +1342,7 @@ void TdApi::processQueryCreditTickerDebtInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditTickerDebtInfo(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryCreditTickerDebtInfo(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryCreditAssetDebtInfo(Task *task)
@@ -1355,7 +1356,7 @@ void TdApi::processQueryCreditAssetDebtInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditAssetDebtInfo(task->task_float, error, task->task_id, task->task_int);
+	this->onQueryCreditAssetDebtInfo(task->task_extra, error, task->task_id, task->task_extra);
 };
 
 void TdApi::processQueryCreditTickerAssignInfo(Task *task)
@@ -1381,7 +1382,7 @@ void TdApi::processQueryCreditTickerAssignInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditTickerAssignInfo(data, error, task->task_id, task->task_last, task->task_int);
+	this->onQueryCreditTickerAssignInfo(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
 void TdApi::processQueryCreditExcessStock(Task *task)
@@ -1405,8 +1406,9 @@ void TdApi::processQueryCreditExcessStock(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditExcessStock(data, error, task->task_id, task->task_int);
+	this->onQueryCreditExcessStock(data, error, task->task_id, task->task_extra);
 };
+
 
 
 
@@ -1481,17 +1483,28 @@ int TdApi::queryOrderByXTPID(const dict &req, int session_id, int request_id)
 	return i;
 };
 
+int TdApi::queryOrderByXTPID(int order_xtp_id, int session_id, int request_id)
+{
+	int myreq = int();
+	memset(&myreq, 0, sizeof(myreq));
+	int i = this->api->QueryOrderByXTPID(&myreq, reqid);
+	return i;
+};
+
 int TdApi::queryOrders(const dict &req, int session_id, int request_id)
 {
-	const myreq = const();
+	XTPQueryOrderReq myreq = XTPQueryOrderReq();
 	memset(&myreq, 0, sizeof(myreq));
+	getString(req, "ticker", myreq.ticker);
+	getInt(req, "begin_time", &myreq.begin_time);
+	getInt(req, "end_time", &myreq.end_time);
 	int i = this->api->QueryOrders(&myreq, reqid);
 	return i;
 };
 
-int TdApi::queryTradesByXTPID(const dict &req, int session_id, int request_id)
+int TdApi::queryTradesByXTPID(int order_xtp_id, int session_id, int request_id)
 {
-	const myreq = const();
+	int myreq = int();
 	memset(&myreq, 0, sizeof(myreq));
 	int i = this->api->QueryTradesByXTPID(&myreq, reqid);
 	return i;
@@ -1508,9 +1521,9 @@ int TdApi::queryTrades(const dict &req, int session_id, int request_id)
 	return i;
 };
 
-int TdApi::queryPosition(const dict &req, int session_id, int request_id)
+int TdApi::queryPosition(string ticker, int session_id, int request_id)
 {
-	const myreq = const();
+	char myreq = char();
 	memset(&myreq, 0, sizeof(myreq));
 	int i = this->api->QueryPosition(&myreq, reqid);
 	return i;
@@ -1654,6 +1667,8 @@ int TdApi::queryCreditExcessStock(const dict &req, int session_id, int request_i
 
 
 
+
+
 ///-------------------------------------------------------------------------------------
 ///Boost.Python封装
 ///-------------------------------------------------------------------------------------
@@ -1663,11 +1678,11 @@ class PyTdApi : public TdApi
 public:
 	using TdApi::TdApi;
 
-	void onDisconnected(int reqid, int reqid) override
+	void onDisconnected(int extra, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onDisconnected, reqid, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onDisconnected, extra, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1687,11 +1702,11 @@ public:
 		}
 	};
 
-	void onOrderEvent(const dict &data, const dict &error, int reqid) override
+	void onOrderEvent(const dict &data, const dict &error, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onOrderEvent, data, error, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onOrderEvent, data, error, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1699,11 +1714,11 @@ public:
 		}
 	};
 
-	void onTradeEvent(const dict &data, int reqid) override
+	void onTradeEvent(const dict &data, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onTradeEvent, data, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onTradeEvent, data, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1711,11 +1726,11 @@ public:
 		}
 	};
 
-	void onCancelOrderError(const dict &data, const dict &error, int reqid) override
+	void onCancelOrderError(const dict &data, const dict &error, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onCancelOrderError, data, error, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onCancelOrderError, data, error, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1723,11 +1738,11 @@ public:
 		}
 	};
 
-	void onQueryOrder(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryOrder(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryOrder, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryOrder, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1735,11 +1750,11 @@ public:
 		}
 	};
 
-	void onQueryTrade(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryTrade(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryTrade, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryTrade, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1747,11 +1762,11 @@ public:
 		}
 	};
 
-	void onQueryPosition(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryPosition(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryPosition, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryPosition, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1759,11 +1774,11 @@ public:
 		}
 	};
 
-	void onQueryAsset(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryAsset(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryAsset, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryAsset, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1771,11 +1786,11 @@ public:
 		}
 	};
 
-	void onQueryStructuredFund(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryStructuredFund(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryStructuredFund, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryStructuredFund, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1783,11 +1798,11 @@ public:
 		}
 	};
 
-	void onQueryFundTransfer(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryFundTransfer(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryFundTransfer, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryFundTransfer, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1795,11 +1810,11 @@ public:
 		}
 	};
 
-	void onFundTransfer(const dict &data, const dict &error, int reqid) override
+	void onFundTransfer(const dict &data, const dict &error, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onFundTransfer, data, error, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onFundTransfer, data, error, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1807,11 +1822,11 @@ public:
 		}
 	};
 
-	void onQueryETF(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryETF(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryETF, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryETF, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1819,11 +1834,11 @@ public:
 		}
 	};
 
-	void onQueryETFBasket(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryETFBasket(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryETFBasket, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryETFBasket, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1831,11 +1846,11 @@ public:
 		}
 	};
 
-	void onQueryIPOInfoList(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryIPOInfoList(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryIPOInfoList, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryIPOInfoList, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1843,11 +1858,11 @@ public:
 		}
 	};
 
-	void onQueryIPOQuotaInfo(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryIPOQuotaInfo(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryIPOQuotaInfo, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryIPOQuotaInfo, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1855,11 +1870,11 @@ public:
 		}
 	};
 
-	void onQueryOptionAuctionInfo(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryOptionAuctionInfo(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryOptionAuctionInfo, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryOptionAuctionInfo, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1867,11 +1882,11 @@ public:
 		}
 	};
 
-	void onCreditCashRepay(const dict &data, const dict &error, int reqid) override
+	void onCreditCashRepay(const dict &data, const dict &error, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onCreditCashRepay, data, error, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onCreditCashRepay, data, error, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1879,11 +1894,11 @@ public:
 		}
 	};
 
-	void onQueryCreditCashRepayInfo(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryCreditCashRepayInfo(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditCashRepayInfo, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditCashRepayInfo, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1891,11 +1906,11 @@ public:
 		}
 	};
 
-	void onQueryCreditFundInfo(const dict &data, const dict &error, int reqid, int reqid) override
+	void onQueryCreditFundInfo(const dict &data, const dict &error, int reqid, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditFundInfo, data, error, reqid, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditFundInfo, data, error, reqid, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1903,11 +1918,11 @@ public:
 		}
 	};
 
-	void onQueryCreditDebtInfo(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryCreditDebtInfo(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditDebtInfo, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditDebtInfo, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1915,11 +1930,11 @@ public:
 		}
 	};
 
-	void onQueryCreditTickerDebtInfo(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryCreditTickerDebtInfo(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditTickerDebtInfo, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditTickerDebtInfo, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1927,11 +1942,11 @@ public:
 		}
 	};
 
-	void onQueryCreditAssetDebtInfo(const dict &data, const dict &error, int reqid, int reqid) override
+	void onQueryCreditAssetDebtInfo(const dict &data, const dict &error, int reqid, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditAssetDebtInfo, data, error, reqid, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditAssetDebtInfo, data, error, reqid, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1939,11 +1954,11 @@ public:
 		}
 	};
 
-	void onQueryCreditTickerAssignInfo(const dict &data, const dict &error, int reqid, bool last, int reqid) override
+	void onQueryCreditTickerAssignInfo(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditTickerAssignInfo, data, error, reqid, last, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditTickerAssignInfo, data, error, reqid, last, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1951,11 +1966,11 @@ public:
 		}
 	};
 
-	void onQueryCreditExcessStock(const dict &data, const dict &error, int reqid, int reqid) override
+	void onQueryCreditExcessStock(const dict &data, const dict &error, int reqid, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditExcessStock, data, error, reqid, reqid);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditExcessStock, data, error, reqid, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -2031,6 +2046,7 @@ PYBIND11_MODULE(vnctptd, m)
 		.def("onQueryCreditTickerAssignInfo", &TdApi::onQueryCreditTickerAssignInfo)
 		.def("onQueryCreditExcessStock", &TdApi::onQueryCreditExcessStock)
 		;
+
 
 }
 
