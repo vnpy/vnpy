@@ -52,7 +52,6 @@ class StructGenerator:
 
     def fix_bug(self):
         r_struct = open("test_xtp_struct_quote.py", "r", encoding="UTF-8")
-        short2full = open("short2full.py", "r", encoding="UTF-8")
         w_sturct = open("xtp_struct_quote.py", "w", encoding="UTF-8")
 
         for line in r_struct:
@@ -65,12 +64,14 @@ class StructGenerator:
             else:
                 w_sturct.write(line)
 
+        w_sturct.write("XTPST = XTPSpecificTickerStruct\n")
+        w_sturct.write("XTPMD = XTPMarketDataStruct\n")
+        w_sturct.write("XTPQSI = XTPQuoteStaticInfo\n")
+        w_sturct.write("XTPOB = OrderBookStruct\n")
+        w_sturct.write("XTPTBT = XTPTickByTickStruct\n")
+        w_sturct.write("XTPTPI = XTPTickerPriceInfo\n")
+
         r_struct.close()
-
-        for l in short2full:
-            w_sturct.write(l)
-
-        short2full.close()
         w_sturct.close()
         os.remove("test_xtp_struct_quote.py")
         print("Struct生成成功")
@@ -81,9 +82,9 @@ class StructGenerator:
         line = line.replace("\n", "")
 
         if "///<" in line:
-            line = line.split("///<")[0]    
+            line = line.split("///<")[0]
             line = line.strip()
-            words = line.split("\t")            
+            words = line.split("\t")
             words = [word for word in words if word]
 
             if len(words) > 1:
@@ -116,7 +117,7 @@ class StructGenerator:
             end = "{"
 
             new_line = f"{name} = {end}\n"
-            self.f_struct.write(new_line)           
+            self.f_struct.write(new_line)
         
         
         # 普通部分
@@ -128,8 +129,6 @@ class StructGenerator:
             
             new_line = f"{name} = {end}\n"
             self.f_struct.write(new_line)
-            # print("full name--", name)
-            # self.full_name.append(name)
 
         elif line.startswith("{"):
             pass
@@ -137,13 +136,6 @@ class StructGenerator:
         elif line.startswith("}"):
             new_line = "}\n\n"
             self.f_struct.write(new_line)
-            # words = line.split(" ")
-            # print("short---",words)
-            # if len(words) == 2:
-            #     self.short_name.append(words[-1])
-            # else:
-            #     self.short_name.append("")
-
 
         # 内容部分
         elif ("\t" in line or "  " in line) and "//" not in line:
@@ -167,6 +159,7 @@ class StructGenerator:
 
             new_line = f"    \"{name}\": \"{py_type}\",\n"
             self.f_struct.write(new_line)
+
 
 if __name__ == "__main__":
     generator = StructGenerator("../include/xtp/xquote_api_struct.h", "xtp")
