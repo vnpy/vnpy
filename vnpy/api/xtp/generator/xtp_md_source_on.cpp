@@ -1,8 +1,8 @@
-void onDisconnected(int reqid) override
+void onDisconnected(int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, MdApi, onDisconnected, reqid);
+		PYBIND11_OVERLOAD(void, MdApi, onDisconnected, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -46,11 +46,11 @@ void onUnSubMarketData(const dict &data, const dict &error, bool last) override
 	}
 };
 
-void onDepthMarketData(const dict &data, int reqid, int reqid, int reqid, int reqid, int reqid, int reqid) override
+void onDepthMarketData(const dict &data, int extra, int extra, int extra, int extra, int extra, int extra) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, MdApi, onDepthMarketData, data, reqid, reqid, reqid, reqid, reqid, reqid);
+		PYBIND11_OVERLOAD(void, MdApi, onDepthMarketData, data, extra, extra, extra, extra, extra, extra);
 	}
 	catch (const error_already_set &e)
 	{
@@ -130,11 +130,11 @@ void onTickByTick(const dict &data) override
 	}
 };
 
-void onSubscribeAllMarketData(int data, const dict &error) override
+void onSubscribeAllMarketData(int extra, const dict &error) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllMarketData, data, error);
+		PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllMarketData, extra, error);
 	}
 	catch (const error_already_set &e)
 	{
@@ -142,11 +142,11 @@ void onSubscribeAllMarketData(int data, const dict &error) override
 	}
 };
 
-void onUnSubscribeAllMarketData(int data, const dict &error) override
+void onUnSubscribeAllMarketData(int extra, const dict &error) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllMarketData, data, error);
+		PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllMarketData, extra, error);
 	}
 	catch (const error_already_set &e)
 	{
@@ -154,11 +154,11 @@ void onUnSubscribeAllMarketData(int data, const dict &error) override
 	}
 };
 
-void onSubscribeAllOrderBook(int data, const dict &error) override
+void onSubscribeAllOrderBook(int extra, const dict &error) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOrderBook, data, error);
+		PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOrderBook, extra, error);
 	}
 	catch (const error_already_set &e)
 	{
@@ -166,11 +166,11 @@ void onSubscribeAllOrderBook(int data, const dict &error) override
 	}
 };
 
-void onUnSubscribeAllOrderBook(int data, const dict &error) override
+void onUnSubscribeAllOrderBook(int extra, const dict &error) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOrderBook, data, error);
+		PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOrderBook, extra, error);
 	}
 	catch (const error_already_set &e)
 	{
@@ -178,11 +178,11 @@ void onUnSubscribeAllOrderBook(int data, const dict &error) override
 	}
 };
 
-void onSubscribeAllTickByTick(int data, const dict &error) override
+void onSubscribeAllTickByTick(int extra, const dict &error) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllTickByTick, data, error);
+		PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllTickByTick, extra, error);
 	}
 	catch (const error_already_set &e)
 	{
@@ -190,11 +190,11 @@ void onSubscribeAllTickByTick(int data, const dict &error) override
 	}
 };
 
-void onUnSubscribeAllTickByTick(int data, const dict &error) override
+void onUnSubscribeAllTickByTick(int extra, const dict &error) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllTickByTick, data, error);
+		PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllTickByTick, extra, error);
 	}
 	catch (const error_already_set &e)
 	{
@@ -226,11 +226,11 @@ void onQueryTickersPriceInfo(const dict &data, const dict &error, bool last) ove
 	}
 };
 
-void onSubscribeAllOptionMarketData(int data, const dict &error) override
+void onSubscribeAllOptionMarketData(int extra, const dict &error) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOptionMarketData, data, error);
+		PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOptionMarketData, extra, error);
 	}
 	catch (const error_already_set &e)
 	{
@@ -238,11 +238,11 @@ void onSubscribeAllOptionMarketData(int data, const dict &error) override
 	}
 };
 
-void onUnSubscribeAllOptionMarketData(int data, const dict &error) override
+void onUnSubscribeAllOptionMarketData(int extra, const dict &error) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOptionMarketData, data, error);
+		PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOptionMarketData, extra, error);
 	}
 	catch (const error_already_set &e)
 	{
@@ -250,11 +250,11 @@ void onUnSubscribeAllOptionMarketData(int data, const dict &error) override
 	}
 };
 
-void onSubscribeAllOptionOrderBook(int data, const dict &error) override
+void onSubscribeAllOptionOrderBook(int extra, const dict &error) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOptionOrderBook, data, error);
+		PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOptionOrderBook, extra, error);
 	}
 	catch (const error_already_set &e)
 	{
@@ -262,11 +262,11 @@ void onSubscribeAllOptionOrderBook(int data, const dict &error) override
 	}
 };
 
-void onUnSubscribeAllOptionOrderBook(int data, const dict &error) override
+void onUnSubscribeAllOptionOrderBook(int extra, const dict &error) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOptionOrderBook, data, error);
+		PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOptionOrderBook, extra, error);
 	}
 	catch (const error_already_set &e)
 	{
@@ -274,11 +274,11 @@ void onUnSubscribeAllOptionOrderBook(int data, const dict &error) override
 	}
 };
 
-void onSubscribeAllOptionTickByTick(int data, const dict &error) override
+void onSubscribeAllOptionTickByTick(int extra, const dict &error) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOptionTickByTick, data, error);
+		PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOptionTickByTick, extra, error);
 	}
 	catch (const error_already_set &e)
 	{
@@ -286,11 +286,11 @@ void onSubscribeAllOptionTickByTick(int data, const dict &error) override
 	}
 };
 
-void onUnSubscribeAllOptionTickByTick(int data, const dict &error) override
+void onUnSubscribeAllOptionTickByTick(int extra, const dict &error) override
 {
 	try
 	{
-		PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOptionTickByTick, data, error);
+		PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOptionTickByTick, extra, error);
 	}
 	catch (const error_already_set &e)
 	{
