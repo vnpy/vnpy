@@ -40,6 +40,7 @@ using namespace XTP::API;
 #define ONUNSUBSCRIBEALLOPTIONTICKBYTICK 24
 
 
+
 ///-------------------------------------------------------------------------------------
 ///C++ SPI的回调函数方法实现
 ///-------------------------------------------------------------------------------------
@@ -285,6 +286,8 @@ public:
 
 
 
+
+
 	//-------------------------------------------------------------------------------------
 	//data：回调函数的数据字典
 	//error：回调函数的错误字典
@@ -301,47 +304,49 @@ public:
 
 	virtual void onUnSubMarketData(const dict &data, const dict &error, bool last) {};
 
-	virtual void onDepthMarketData(const dict &data, int reqid, int reqid, int reqid, int reqid, int reqid, int reqid) {};
+	virtual void onDepthMarketData(const dict &data) {};
 
 	virtual void onSubOrderBook(const dict &data, const dict &error, bool last) {};
 
 	virtual void onUnSubOrderBook(const dict &data, const dict &error, bool last) {};
 
-	virtual void onOrderBook(const dict &data) {};
+	virtual void onOrderBook() {};
 
 	virtual void onSubTickByTick(const dict &data, const dict &error, bool last) {};
 
 	virtual void onUnSubTickByTick(const dict &data, const dict &error, bool last) {};
 
-	virtual void onTickByTick(const dict &data) {};
+	virtual void onTickByTick() {};
 
-	virtual void onSubscribeAllMarketData(int data, const dict &error) {};
+	virtual void onSubscribeAllMarketData(int extra, const dict &error) {};
 
-	virtual void onUnSubscribeAllMarketData(int data, const dict &error) {};
+	virtual void onUnSubscribeAllMarketData(int extra, const dict &error) {};
 
-	virtual void onSubscribeAllOrderBook(int data, const dict &error) {};
+	virtual void onSubscribeAllOrderBook(int extra, const dict &error) {};
 
-	virtual void onUnSubscribeAllOrderBook(int data, const dict &error) {};
+	virtual void onUnSubscribeAllOrderBook(int extra, const dict &error) {};
 
-	virtual void onSubscribeAllTickByTick(int data, const dict &error) {};
+	virtual void onSubscribeAllTickByTick(int extra, const dict &error) {};
 
-	virtual void onUnSubscribeAllTickByTick(int data, const dict &error) {};
+	virtual void onUnSubscribeAllTickByTick(int extra, const dict &error) {};
 
 	virtual void onQueryAllTickers(const dict &data, const dict &error, bool last) {};
 
 	virtual void onQueryTickersPriceInfo(const dict &data, const dict &error, bool last) {};
 
-	virtual void onSubscribeAllOptionMarketData(int data, const dict &error) {};
+	virtual void onSubscribeAllOptionMarketData(int extra, const dict &error) {};
 
-	virtual void onUnSubscribeAllOptionMarketData(int data, const dict &error) {};
+	virtual void onUnSubscribeAllOptionMarketData(int extra, const dict &error) {};
 
-	virtual void onSubscribeAllOptionOrderBook(int data, const dict &error) {};
+	virtual void onSubscribeAllOptionOrderBook(int extra, const dict &error) {};
 
-	virtual void onUnSubscribeAllOptionOrderBook(int data, const dict &error) {};
+	virtual void onUnSubscribeAllOptionOrderBook(int extra, const dict &error) {};
 
-	virtual void onSubscribeAllOptionTickByTick(int data, const dict &error) {};
+	virtual void onSubscribeAllOptionTickByTick(int extra, const dict &error) {};
 
-	virtual void onUnSubscribeAllOptionTickByTick(int data, const dict &error) {};
+	virtual void onUnSubscribeAllOptionTickByTick(int extra, const dict &error) {};
+
+
 
 	//-------------------------------------------------------------------------------------
 	//req:主动函数的请求字典
@@ -371,7 +376,9 @@ public:
 
 	int queryAllTickers(int exchange_id);
 
-	int queryTickersPriceInfo(char ticker, int count, int exchange_id);
+	int queryTickersPriceInfo(string ticker, int count, int exchange_id);
 
 	int queryAllTickersPriceInfo();
+
+
 };
