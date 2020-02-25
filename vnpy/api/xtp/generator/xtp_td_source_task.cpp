@@ -2,8 +2,8 @@ void TdApi::OnDisconnected(int session_id, int reason)
 {
 	Task task = Task();
 	task.task_name = ONDISCONNECTED;
-	task.task_int = session_id;
-	task.task_int = reason;
+	task.task_extra = session_id;
+	task.task_extra = reason;
 	this->task_queue.push(task);
 };
 
@@ -36,7 +36,7 @@ void TdApi::OnOrderEvent(XTPOrderInfo *order_info, XTPRI *error_info, int sessio
 		*task_error = *error_info;
 		task.task_error = task_error;
 	}
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -50,7 +50,7 @@ void TdApi::OnTradeEvent(XTPTradeReport *trade_info, int session_id)
 		*task_data = *trade_info;
 		task.task_data = task_data;
 	}
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -70,7 +70,7 @@ void TdApi::OnCancelOrderError(XTPOrderCancelInfo *cancel_info, XTPRI *error_inf
 		*task_error = *error_info;
 		task.task_error = task_error;
 	}
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -92,7 +92,7 @@ void TdApi::OnQueryOrder(XTPQueryOrderRsp *order_info, XTPRI *error_info, int re
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -114,7 +114,7 @@ void TdApi::OnQueryTrade(XTPQueryTradeRsp *trade_info, XTPRI *error_info, int re
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -136,7 +136,7 @@ void TdApi::OnQueryPosition(XTPQueryStkPositionRsp *position, XTPRI *error_info,
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -158,7 +158,7 @@ void TdApi::OnQueryAsset(XTPQueryAssetRsp *asset, XTPRI *error_info, int request
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -180,7 +180,7 @@ void TdApi::OnQueryStructuredFund(XTPStructuredFundInfo *fund_info, XTPRI *error
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -202,7 +202,7 @@ void TdApi::OnQueryFundTransfer(XTPFundTransferNotice *fund_transfer_info, XTPRI
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -222,7 +222,7 @@ void TdApi::OnFundTransfer(XTPFundTransferNotice *fund_transfer_info, XTPRI *err
 		*task_error = *error_info;
 		task.task_error = task_error;
 	}
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -244,7 +244,7 @@ void TdApi::OnQueryETF(XTPQueryETFBaseRsp *etf_info, XTPRI *error_info, int requ
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -266,7 +266,7 @@ void TdApi::OnQueryETFBasket(XTPQueryETFComponentRsp *etf_component_info, XTPRI 
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -288,7 +288,7 @@ void TdApi::OnQueryIPOInfoList(XTPQueryIPOTickerRsp *ipo_info, XTPRI *error_info
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -310,7 +310,7 @@ void TdApi::OnQueryIPOQuotaInfo(XTPQueryIPOQuotaRsp *quota_info, XTPRI *error_in
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -332,7 +332,7 @@ void TdApi::OnQueryOptionAuctionInfo(XTPQueryOptionAuctionInfoRsp *option_info, 
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -352,7 +352,7 @@ void TdApi::OnCreditCashRepay(XTPCrdCashRepayRsp *cash_repay_info, XTPRI *error_
 		*task_error = *error_info;
 		task.task_error = task_error;
 	}
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -374,7 +374,7 @@ void TdApi::OnQueryCreditCashRepayInfo(XTPCrdCashRepayInfo *cash_repay_info, XTP
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -395,7 +395,7 @@ void TdApi::OnQueryCreditFundInfo(XTPCrdFundInfo *fund_info, XTPRI *error_info, 
 		task.task_error = task_error;
 	}
 	task.task_id = request_id;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -417,7 +417,7 @@ void TdApi::OnQueryCreditDebtInfo(XTPCrdDebtInfo *debt_info, XTPRI *error_info, 
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -439,7 +439,7 @@ void TdApi::OnQueryCreditTickerDebtInfo(XTPCrdDebtStockInfo *debt_info, XTPRI *e
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -460,7 +460,7 @@ void TdApi::OnQueryCreditAssetDebtInfo(double remain_amount, XTPRI *error_info, 
 		task.task_error = task_error;
 	}
 	task.task_id = request_id;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -482,7 +482,7 @@ void TdApi::OnQueryCreditTickerAssignInfo(XTPClientQueryCrdPositionStkInfo *assi
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
@@ -503,7 +503,7 @@ void TdApi::OnQueryCreditExcessStock(XTPClientQueryCrdSurplusStkRspInfo* stock_i
 		task.task_error = task_error;
 	}
 	task.task_id = request_id;
-	task.task_int = session_id;
+	task.task_extra = session_id;
 	this->task_queue.push(task);
 };
 
