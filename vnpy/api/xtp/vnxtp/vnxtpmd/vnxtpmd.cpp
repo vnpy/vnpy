@@ -12,7 +12,7 @@ void MdApi::OnDisconnected(int reason)
 {
 	Task task = Task();
 	task.task_name = ONDISCONNECTED;
-	task.task_int = reason;
+	task.task_extra = reason;
 	this->task_queue.push(task);
 };
 
@@ -69,7 +69,7 @@ void MdApi::OnUnSubMarketData(XTPST *ticker, XTPRI *error_info, bool is_last)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnDepthMarketData(XTPMD *market_data, int bid1_qty int bid1_count, int max_bid1_count, int ask1_qty int ask1_count, int max_ask1_count)
+void MdApi::OnDepthMarketData(XTPMD *market_data)
 {
 	Task task = Task();
 	task.task_name = ONDEPTHMARKETDATA;
@@ -79,12 +79,6 @@ void MdApi::OnDepthMarketData(XTPMD *market_data, int bid1_qty int bid1_count, i
 		*task_data = *market_data;
 		task.task_data = task_data;
 	}
-	task.task_int = bid1_qty;
-	task.task_int = bid1_count;
-	task.task_int = max_bid1_count;
-	task.task_int = ask1_qty;
-	task.task_int = ask1_count;
-	task.task_int = max_ask1_count;
 	this->task_queue.push(task);
 };
 
@@ -198,7 +192,7 @@ void MdApi::OnSubscribeAllMarketData(int exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONSUBSCRIBEALLMARKETDATA;
-	task.task_int = (int)exchange_id;
+	task.task_extra = (int)exchange_id;
 	if (error_info)
 	{
 		XTPRI *task_error = new XTPRI();
@@ -212,7 +206,7 @@ void MdApi::OnUnSubscribeAllMarketData(int exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONUNSUBSCRIBEALLMARKETDATA;
-	task.task_int = (int)exchange_id;
+	task.task_extra = (int)exchange_id;
 	if (error_info)
 	{
 		XTPRI *task_error = new XTPRI();
@@ -226,7 +220,7 @@ void MdApi::OnSubscribeAllOrderBook(int exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONSUBSCRIBEALLORDERBOOK;
-	task.task_int = (int)exchange_id;
+	task.task_extra = (int)exchange_id;
 	if (error_info)
 	{
 		XTPRI *task_error = new XTPRI();
@@ -240,7 +234,7 @@ void MdApi::OnUnSubscribeAllOrderBook(int exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONUNSUBSCRIBEALLORDERBOOK;
-	task.task_int = (int)exchange_id;
+	task.task_extra = (int)exchange_id;
 	if (error_info)
 	{
 		XTPRI *task_error = new XTPRI();
@@ -254,7 +248,7 @@ void MdApi::OnSubscribeAllTickByTick(int exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONSUBSCRIBEALLTICKBYTICK;
-	task.task_int = (int)exchange_id;
+	task.task_extra = (int)exchange_id;
 	if (error_info)
 	{
 		XTPRI *task_error = new XTPRI();
@@ -268,7 +262,7 @@ void MdApi::OnUnSubscribeAllTickByTick(int exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONUNSUBSCRIBEALLTICKBYTICK;
-	task.task_int = (int)exchange_id;
+	task.task_extra = (int)exchange_id;
 	if (error_info)
 	{
 		XTPRI *task_error = new XTPRI();
@@ -322,7 +316,7 @@ void MdApi::OnSubscribeAllOptionMarketData(int exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONSUBSCRIBEALLOPTIONMARKETDATA;
-	task.task_int = (int)exchange_id;
+	task.task_extra = (int)exchange_id;
 	if (error_info)
 	{
 		XTPRI *task_error = new XTPRI();
@@ -336,7 +330,7 @@ void MdApi::OnUnSubscribeAllOptionMarketData(int exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONUNSUBSCRIBEALLOPTIONMARKETDATA;
-	task.task_int = (int)exchange_id;
+	task.task_extra = (int)exchange_id;
 	if (error_info)
 	{
 		XTPRI *task_error = new XTPRI();
@@ -350,7 +344,7 @@ void MdApi::OnSubscribeAllOptionOrderBook(int exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONSUBSCRIBEALLOPTIONORDERBOOK;
-	task.task_int = (int)exchange_id;
+	task.task_extra = (int)exchange_id;
 	if (error_info)
 	{
 		XTPRI *task_error = new XTPRI();
@@ -364,7 +358,7 @@ void MdApi::OnUnSubscribeAllOptionOrderBook(int exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONUNSUBSCRIBEALLOPTIONORDERBOOK;
-	task.task_int = (int)exchange_id;
+	task.task_extra = (int)exchange_id;
 	if (error_info)
 	{
 		XTPRI *task_error = new XTPRI();
@@ -378,7 +372,7 @@ void MdApi::OnSubscribeAllOptionTickByTick(int exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONSUBSCRIBEALLOPTIONTICKBYTICK;
-	task.task_int = (int)exchange_id;
+	task.task_extra = (int)exchange_id;
 	if (error_info)
 	{
 		XTPRI *task_error = new XTPRI();
@@ -392,7 +386,7 @@ void MdApi::OnUnSubscribeAllOptionTickByTick(int exchange_id, XTPRI *error_info)
 {
 	Task task = Task();
 	task.task_name = ONUNSUBSCRIBEALLOPTIONTICKBYTICK;
-	task.task_int = (int)exchange_id;
+	task.task_extra = (int)exchange_id;
 	if (error_info)
 	{
 		XTPRI *task_error = new XTPRI();
@@ -401,6 +395,8 @@ void MdApi::OnUnSubscribeAllOptionTickByTick(int exchange_id, XTPRI *error_info)
 	}
 	this->task_queue.push(task);
 };
+
+
 
 
 
@@ -569,6 +565,8 @@ void MdApi::processTask()
 				this->processUnSubscribeAllOptionTickByTick(&task);
 				break;
 			}
+
+
 			};
 		}
 	}
@@ -580,7 +578,7 @@ void MdApi::processTask()
 void MdApi::processDisconnected(Task *task)
 {
 	gil_scoped_acquire acquire;
-	this->onDisconnected(task->task_int);
+	this->onDisconnected(task->task_extra);
 };
 
 void MdApi::processError(Task *task)
@@ -678,7 +676,7 @@ void MdApi::processDepthMarketData(Task *task)
 		data["r4"] = task_data->r4;
 		delete task_data;
 	}
-	this->onDepthMarketData(data, task->task_int, task->task_int, task->task_int, task->task_int, task->task_int, task->task_int);
+	this->onDepthMarketData(data, task->task_extra, task->task_extra, task->task_extra, task->task_extra, task->task_extra, task->task_extra);
 };
 
 void MdApi::processSubOrderBook(Task *task)
@@ -820,7 +818,7 @@ void MdApi::processSubscribeAllMarketData(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onSubscribeAllMarketData(task->task_int, error);
+	this->onSubscribeAllMarketData(task->task_extra, error);
 };
 
 void MdApi::processUnSubscribeAllMarketData(Task *task)
@@ -834,7 +832,7 @@ void MdApi::processUnSubscribeAllMarketData(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onUnSubscribeAllMarketData(task->task_int, error);
+	this->onUnSubscribeAllMarketData(task->task_extra, error);
 };
 
 void MdApi::processSubscribeAllOrderBook(Task *task)
@@ -848,7 +846,7 @@ void MdApi::processSubscribeAllOrderBook(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onSubscribeAllOrderBook(task->task_int, error);
+	this->onSubscribeAllOrderBook(task->task_extra, error);
 };
 
 void MdApi::processUnSubscribeAllOrderBook(Task *task)
@@ -862,7 +860,7 @@ void MdApi::processUnSubscribeAllOrderBook(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onUnSubscribeAllOrderBook(task->task_int, error);
+	this->onUnSubscribeAllOrderBook(task->task_extra, error);
 };
 
 void MdApi::processSubscribeAllTickByTick(Task *task)
@@ -876,7 +874,7 @@ void MdApi::processSubscribeAllTickByTick(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onSubscribeAllTickByTick(task->task_int, error);
+	this->onSubscribeAllTickByTick(task->task_extra, error);
 };
 
 void MdApi::processUnSubscribeAllTickByTick(Task *task)
@@ -890,7 +888,7 @@ void MdApi::processUnSubscribeAllTickByTick(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onUnSubscribeAllTickByTick(task->task_int, error);
+	this->onUnSubscribeAllTickByTick(task->task_extra, error);
 };
 
 void MdApi::processQueryAllTickers(Task *task)
@@ -957,7 +955,7 @@ void MdApi::processSubscribeAllOptionMarketData(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onSubscribeAllOptionMarketData(task->task_int, error);
+	this->onSubscribeAllOptionMarketData(task->task_extra, error);
 };
 
 void MdApi::processUnSubscribeAllOptionMarketData(Task *task)
@@ -971,7 +969,7 @@ void MdApi::processUnSubscribeAllOptionMarketData(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onUnSubscribeAllOptionMarketData(task->task_int, error);
+	this->onUnSubscribeAllOptionMarketData(task->task_extra, error);
 };
 
 void MdApi::processSubscribeAllOptionOrderBook(Task *task)
@@ -985,7 +983,7 @@ void MdApi::processSubscribeAllOptionOrderBook(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onSubscribeAllOptionOrderBook(task->task_int, error);
+	this->onSubscribeAllOptionOrderBook(task->task_extra, error);
 };
 
 void MdApi::processUnSubscribeAllOptionOrderBook(Task *task)
@@ -999,7 +997,7 @@ void MdApi::processUnSubscribeAllOptionOrderBook(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onUnSubscribeAllOptionOrderBook(task->task_int, error);
+	this->onUnSubscribeAllOptionOrderBook(task->task_extra, error);
 };
 
 void MdApi::processSubscribeAllOptionTickByTick(Task *task)
@@ -1013,7 +1011,7 @@ void MdApi::processSubscribeAllOptionTickByTick(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onSubscribeAllOptionTickByTick(task->task_int, error);
+	this->onSubscribeAllOptionTickByTick(task->task_extra, error);
 };
 
 void MdApi::processUnSubscribeAllOptionTickByTick(Task *task)
@@ -1027,8 +1025,10 @@ void MdApi::processUnSubscribeAllOptionTickByTick(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onUnSubscribeAllOptionTickByTick(task->task_int, error);
+	this->onUnSubscribeAllOptionTickByTick(task->task_extra, error);
 };
+
+
 
 
 
@@ -1126,11 +1126,11 @@ int MdApi::queryAllTickers(int exchange_id)
 	return i;
 };
 
-int MdApi::queryTickersPriceInfo(char ticker, int count, int exchange_id)
+int MdApi::queryTickersPriceInfo(string ticker, int count, int exchange_id)
 {
 	char myreq = char();
 	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryTickersPriceInfo(&myreq, (XTP_EXCHANGE_TYPE) exchange_id);
+	int i = this->api->QueryTickersPriceInfo(&myreq, reqid);
 	return i;
 };
 
@@ -1138,9 +1138,10 @@ int MdApi::queryAllTickersPriceInfo()
 {
 	char myreq = char();
 	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryAllTickersPriceInfo();
+	int i = this->api->QueryAllTickersPriceInfo(&myreq, reqid);
 	return i;
 };
+
 
 
 ///-------------------------------------------------------------------------------------
@@ -1152,11 +1153,11 @@ class PyMdApi : public MdApi
 public:
 	using MdApi::MdApi;
 
-	void onDisconnected(int reqid) override
+	void onDisconnected(int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onDisconnected, reqid);
+			PYBIND11_OVERLOAD(void, MdApi, onDisconnected, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1200,11 +1201,11 @@ public:
 		}
 	};
 
-	void onDepthMarketData(const dict &data, int reqid, int reqid, int reqid, int reqid, int reqid, int reqid) override
+	void onDepthMarketData(const dict &data, int extra, int extra, int extra, int extra, int extra, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onDepthMarketData, data, reqid, reqid, reqid, reqid, reqid, reqid);
+			PYBIND11_OVERLOAD(void, MdApi, onDepthMarketData, data, extra, extra, extra, extra, extra, extra);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1284,11 +1285,11 @@ public:
 		}
 	};
 
-	void onSubscribeAllMarketData(int data, const dict &error) override
+	void onSubscribeAllMarketData(int extra, const dict &error) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllMarketData, data, error);
+			PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllMarketData, extra, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1296,11 +1297,11 @@ public:
 		}
 	};
 
-	void onUnSubscribeAllMarketData(int data, const dict &error) override
+	void onUnSubscribeAllMarketData(int extra, const dict &error) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllMarketData, data, error);
+			PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllMarketData, extra, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1308,11 +1309,11 @@ public:
 		}
 	};
 
-	void onSubscribeAllOrderBook(int data, const dict &error) override
+	void onSubscribeAllOrderBook(int extra, const dict &error) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOrderBook, data, error);
+			PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOrderBook, extra, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1320,11 +1321,11 @@ public:
 		}
 	};
 
-	void onUnSubscribeAllOrderBook(int data, const dict &error) override
+	void onUnSubscribeAllOrderBook(int extra, const dict &error) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOrderBook, data, error);
+			PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOrderBook, extra, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1332,11 +1333,11 @@ public:
 		}
 	};
 
-	void onSubscribeAllTickByTick(int data, const dict &error) override
+	void onSubscribeAllTickByTick(int extra, const dict &error) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllTickByTick, data, error);
+			PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllTickByTick, extra, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1344,11 +1345,11 @@ public:
 		}
 	};
 
-	void onUnSubscribeAllTickByTick(int data, const dict &error) override
+	void onUnSubscribeAllTickByTick(int extra, const dict &error) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllTickByTick, data, error);
+			PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllTickByTick, extra, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1380,11 +1381,11 @@ public:
 		}
 	};
 
-	void onSubscribeAllOptionMarketData(int data, const dict &error) override
+	void onSubscribeAllOptionMarketData(int extra, const dict &error) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOptionMarketData, data, error);
+			PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOptionMarketData, extra, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1392,11 +1393,11 @@ public:
 		}
 	};
 
-	void onUnSubscribeAllOptionMarketData(int data, const dict &error) override
+	void onUnSubscribeAllOptionMarketData(int extra, const dict &error) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOptionMarketData, data, error);
+			PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOptionMarketData, extra, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1404,11 +1405,11 @@ public:
 		}
 	};
 
-	void onSubscribeAllOptionOrderBook(int data, const dict &error) override
+	void onSubscribeAllOptionOrderBook(int extra, const dict &error) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOptionOrderBook, data, error);
+			PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOptionOrderBook, extra, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1416,11 +1417,11 @@ public:
 		}
 	};
 
-	void onUnSubscribeAllOptionOrderBook(int data, const dict &error) override
+	void onUnSubscribeAllOptionOrderBook(int extra, const dict &error) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOptionOrderBook, data, error);
+			PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOptionOrderBook, extra, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1428,11 +1429,11 @@ public:
 		}
 	};
 
-	void onSubscribeAllOptionTickByTick(int data, const dict &error) override
+	void onSubscribeAllOptionTickByTick(int extra, const dict &error) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOptionTickByTick, data, error);
+			PYBIND11_OVERLOAD(void, MdApi, onSubscribeAllOptionTickByTick, extra, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1440,18 +1441,17 @@ public:
 		}
 	};
 
-	void onUnSubscribeAllOptionTickByTick(int data, const dict &error) override
+	void onUnSubscribeAllOptionTickByTick(int extra, const dict &error) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOptionTickByTick, data, error);
+			PYBIND11_OVERLOAD(void, MdApi, onUnSubscribeAllOptionTickByTick, extra, error);
 		}
 		catch (const error_already_set &e)
 		{
 			cout << e.what() << endl;
 		}
 	};
-
 
 
 
@@ -1474,6 +1474,7 @@ PYBIND11_MODULE(vnctpmd, m)
 		.def("unSubscribeMarketData", &MdApi::unSubscribeMarketData)
 		.def("subscribeForQuoteRsp", &MdApi::subscribeForQuoteRsp)
 		.def("unSubscribeForQuoteRsp", &MdApi::unSubscribeForQuoteRsp)
+
 		.def("queryAllTickers", &MdApi::queryAllTickers)
 		.def("queryTickersPriceInfo", &MdApi::queryTickersPriceInfo)
 		.def("queryAllTickersPriceInfo", &MdApi::queryAllTickersPriceInfo)
@@ -1504,6 +1505,7 @@ PYBIND11_MODULE(vnctpmd, m)
 		.def("onSubscribeAllOptionTickByTick", &MdApi::onSubscribeAllOptionTickByTick)
 		.def("onUnSubscribeAllOptionTickByTick", &MdApi::onUnSubscribeAllOptionTickByTick)
 		;
+
 
 }
 
