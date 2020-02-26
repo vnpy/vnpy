@@ -1170,7 +1170,6 @@ int MdApi::unSubscribeAllMarketData(int exchange_id)
 	this->api->UnSubscribeAllMarketData((XTP_EXCHANGE_TYPE)exchange_id);
 };
 
-//1
 int MdApi::subscribeAllOrderBook(int exchange_id)
 {
 	this->api->SubscribeAllOrderBook((XTP_EXCHANGE_TYPE)exchange_id);
@@ -1181,7 +1180,6 @@ int MdApi::unSubscribeAllOrderBook(int exchange_id)
 	this->api->UnSubscribeAllOrderBook((XTP_EXCHANGE_TYPE)exchange_id);
 };
 
-//2
 int MdApi::subscribeAllTickByTick(int exchange_id)
 {
 	this->api->SubscribeAllTickByTick((XTP_EXCHANGE_TYPE)exchange_id);
@@ -1192,6 +1190,18 @@ int MdApi::unSubscribeAllTickByTick(int exchange_id)
 	this->api->UnSubscribeAllTickByTick((XTP_EXCHANGE_TYPE)exchange_id);
 };
 
+
+int MdApi::login(string ip, int port, string user, string password, int sock_type)
+{
+	this->api->QuoteApi::Login(ip.c_str(), port, user.c_str(), password.c_str(),(XTP_PROTOCOL_TYPE) sock_type );
+};
+
+
+int MdApi::logout()
+{
+	this->api->Logout();
+
+};
 
 
 int MdApi::queryAllTickers(int exchange_id)
@@ -1215,7 +1225,6 @@ int MdApi::queryAllTickersPriceInfo()
 	this->api->QueryAllTickersPriceInfo();
 
 };
-
 
 
 ///-------------------------------------------------------------------------------------
@@ -1539,15 +1548,26 @@ PYBIND11_MODULE(vnctpmd, m)
 		.def(init<>())
 		.def("createQuoteApi", &MdApi::createQuoteApi)
 		.def("release", &MdApi::release)
-		//.def("init", &MdApi::init)
-		//.def("join", &MdApi::join)
 		.def("exit", &MdApi::exit)
 		.def("getTradingDay", &MdApi::getTradingDay)
-		.def("registerFront", &MdApi::registerFront)
+		.def("getApiVersion", &MdApi::getApiVersion)
+		.def("getApiLastError", &MdApi::getApiLastError)
+		.def("setUDPBufferSize", &MdApi::setUDPBufferSize)
+		.def("setHeartBeatInterval", &MdApi::setHeartBeatInterval)
 		.def("subscribeMarketData", &MdApi::subscribeMarketData)
 		.def("unSubscribeMarketData", &MdApi::unSubscribeMarketData)
-		.def("subscribeForQuoteRsp", &MdApi::subscribeForQuoteRsp)
-		.def("unSubscribeForQuoteRsp", &MdApi::unSubscribeForQuoteRsp)
+		.def("subscribeOrderBook", &MdApi::subscribeOrderBook)
+		.def("unSubscribeOrderBook", &MdApi::unSubscribeOrderBook)
+		.def("subscribeTickByTick", &MdApi::subscribeTickByTick)
+		.def("unSubscribeTickByTick", &MdApi::unSubscribeTickByTick)
+		.def("subscribeAllMarketData", &MdApi::subscribeAllMarketData)
+		.def("unSubscribeAllMarketData", &MdApi::unSubscribeAllMarketData)
+		.def("subscribeAllOrderBook", &MdApi::subscribeAllOrderBook)
+		.def("unSubscribeAllOrderBook", &MdApi::unSubscribeAllOrderBook)
+		.def("subscribeAllTickByTick", &MdApi::subscribeAllTickByTick)
+		.def("unSubscribeAllTickByTick", &MdApi::unSubscribeAllTickByTick)
+		.def("login", &MdApi::login)
+		.def("logout", &MdApi::logout)
 
 		.def("queryAllTickers", &MdApi::queryAllTickers)
 		.def("queryTickersPriceInfo", &MdApi::queryTickersPriceInfo)
