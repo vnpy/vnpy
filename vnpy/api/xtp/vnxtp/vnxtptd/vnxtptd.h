@@ -408,7 +408,7 @@ public:
 
 	string getApiVersion();
 
-	XTPRI getApiLastError();
+	dict getApiLastError();
 
 	//1
 	int getClientIDByXTPID(int order_xtp_id);
@@ -430,7 +430,7 @@ public:
 
 	int insertOrder(const dict &req, int session_id);
 
-	int cancelOrder(int order_xtp_id, int session_id)
+	int cancelOrder(int order_xtp_id, int session_id);
 	//2
 
 	int queryOrderByXTPID(int order_xtp_id, int session_id, int request_id);
