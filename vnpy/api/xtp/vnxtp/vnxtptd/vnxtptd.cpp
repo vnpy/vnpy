@@ -1417,29 +1417,15 @@ void TdApi::processQueryCreditExcessStock(Task *task)
 ///主动函数
 ///-------------------------------------------------------------------------------------
 
-void TdApi::createFtdcTraderApi(string pszFlowPath)
+void TdApi::createTraderApi(int client_id, string save_file_path)
 {
-	this->api = CThostFtdcTraderApi::CreateFtdcTraderApi(pszFlowPath.c_str());
+	this->api = TraderApi::CreateTraderApi(client_id, save_file_path.c_str());
 	this->api->RegisterSpi(this);
 };
 
 void TdApi::release()
 {
 	this->api->Release();
-};
-
-void TdApi::init()
-{
-	this->active = true;
-	this->task_thread = thread(&TdApi::processTask, this);
-
-	this->api->Init();
-};
-
-int TdApi::join()
-{
-	int i = this->api->Join();
-	return i;
 };
 
 int TdApi::exit()
@@ -1460,53 +1446,121 @@ string TdApi::getTradingDay()
 	return day;
 };
 
-void TdApi::registerFront(string pszFrontAddress)
+string TdApi::getApiVersion()
 {
-	this->api->RegisterFront((char*)pszFrontAddress.c_str());
+	string version = this->api->GetApiVersion();
+	return version;
 };
 
-void TdApi::subscribePrivateTopic(int nType)
+XTPRI TdApi::getApiLastError()
 {
-	this->api->SubscribePrivateTopic((THOST_TE_RESUME_TYPE)nType);
+	XTPRI last_error = this->api->GetApiLastError();
+	dict error;
+	error["error_id"] = last_error->error_id;
+	error["error_msg"] = last_error->error_msg;
+	return error;
 };
 
-void TdApi::subscribePublicTopic(int nType)
+// 修改方法
+//dict error;
+//if (task->task_error)
+//{
+//	XTPRI *task_error = (XTPRI*)task->task_error;
+//	error["error_id"] = task_error->error_id;
+//	error["error_msg"] = toUtf(task_error->error_msg);
+// 11111
+
+int TdApi::getClientIDByXTPID(int order_xtp_id)
 {
-	this->api->SubscribePublicTopic((THOST_TE_RESUME_TYPE)nType);
+	this->api->GetClientIDByXTPID(order_xtp_id);
 };
 
-int TdApi::queryOrderByXTPID(const dict &req, int session_id, int request_id)
+string TdApi::getAccountByXTPID(int order_xtp_id)
 {
-	const myreq = const();
+	string account = this->api->GetAccountByXTPID(order_xtp_id);
+	return account;
+};
+
+void TdApi::subscribePublicTopic(int resume_type)
+{
+	this->api->SubscribePublicTopic((XTP_TE_RESUME_TYPE) resume_type);
+}
+
+
+void TdApi::setSoftwareVersion(string version)
+{
+	this->api->SetSoftwareVersion(version.c_str());
+}
+
+void TdApi::setSoftwareKey(string key)
+{
+	this->api->SetSoftwareKey( key.c_str());
+}
+
+void TdApi::setHeartBeatInterval(int interval)
+{
+	this->api->SetHeartBeatInterval(interval);
+}
+
+int TdApi::login(string ip, int port, string user, string password, int sock_type)
+{
+	this->api->TraderApi::Login(ip.c_str(), port, user.c_str(), password.c_str(), (XTP_PROTOCOL_TYPE)sock_type);
+};
+
+
+int TdApi::logout(int session_id)
+{
+	this->api->Logout(session_id);
+
+};
+
+
+int TdApi::insertOrder(const dict &req, int session_id)
+{
+	XTPOrderInsertInfo myreq = XTPOrderInsertInfo();
 	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryOrderByXTPID(&myreq, reqid);
+	myreq.order_xtp_id = getIntValue(req, "order_xtp_id");
+	myreq.order_client_id = getIntValue(req, "order_client_id");
+	getString(req, "ticker", myreq.ticker);
+	myreq.market = (XTP_MARKET_TYPE) getIntValue(req, "market");
+	getDouble(req, "price", &myreq.price);
+	getDouble(req, "stop_price", &myreq.stop_price);
+	myreq.quantity = getIntValue(req, "quantity");
+	myreq.price_type = (XTP_PRICE_TYPE) getIntValue(req, "price_type");
+	myreq.side = getIntValue(req, "side");
+	myreq.position_effect = getIntValue(req, "position_effect");
+	myreq.business_type = (XTP_BUSINESS_TYPE) getIntValue(req, "business_type");
+	int i = this->api->QueryOrders(&myreq, session_id);
 	return i;
 };
 
+int TdApi::cancelOrder(int order_xtp_id, int session_id)
+{
+	int i = this->api->CancelOrder(order_xtp_id, session_id);
+	return i;
+}
+
+//2
 int TdApi::queryOrderByXTPID(int order_xtp_id, int session_id, int request_id)
 {
-	int myreq = int();
-	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryOrderByXTPID(&myreq, reqid);
+	int i = this->api->QueryOrderByXTPID(order_xtp_id, session_id, request_id);
 	return i;
-};
+}
 
 int TdApi::queryOrders(const dict &req, int session_id, int request_id)
 {
 	XTPQueryOrderReq myreq = XTPQueryOrderReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "ticker", myreq.ticker);
-	getInt(req, "begin_time", &myreq.begin_time);
-	getInt(req, "end_time", &myreq.end_time);
-	int i = this->api->QueryOrders(&myreq, reqid);
+	myreq.begin_time = getIntValue(req, "begin_time");
+	myreq.end_time = getIntValue(req, "end_time");
+	int i = this->api->QueryOrders(&myreq, session_id, request_id);
 	return i;
 };
 
 int TdApi::queryTradesByXTPID(int order_xtp_id, int session_id, int request_id)
 {
-	int myreq = int();
-	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryTradesByXTPID(&myreq, reqid);
+	int i = this->api->QueryTradesByXTPID(order_xtp_id, session_id, request_id);
 	return i;
 };
 
@@ -1515,25 +1569,21 @@ int TdApi::queryTrades(const dict &req, int session_id, int request_id)
 	XTPQueryTraderReq myreq = XTPQueryTraderReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "ticker", myreq.ticker);
-	getInt(req, "begin_time", &myreq.begin_time);
-	getInt(req, "end_time", &myreq.end_time);
-	int i = this->api->QueryTrades(&myreq, reqid);
+	myreq.begin_time = getIntValue(req, "begin_time");
+	myreq.end_time = getIntValue(req, "end_time");
+	int i = this->api->QueryTrades(&myreq, session_id, request_id);
 	return i;
 };
 
 int TdApi::queryPosition(string ticker, int session_id, int request_id)
 {
-	char myreq = char();
-	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryPosition(&myreq, reqid);
+	int i = this->api->QueryPosition(ticker.c_str(), session_id, request_id);
 	return i;
 };
 
 int TdApi::queryAsset(int session_id, int request_id)
 {
-	int myreq = int();
-	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryAsset(&myreq, reqid);
+	int i = this->api->QueryAsset(session_id, request_id);
 	return i;
 };
 
@@ -1541,9 +1591,9 @@ int TdApi::queryStructuredFund(const dict &req, int session_id, int request_id)
 {
 	XTPQueryStructuredFundInfoReq myreq = XTPQueryStructuredFundInfoReq();
 	memset(&myreq, 0, sizeof(myreq));
-	getEnum(req, "exchange_id", &myreq.exchange_id);
+	myreq.exchange_id = (XTP_EXCHANGE_TYPE)getIntValue(req, "exchange_id");
 	getString(req, "sf_ticker", myreq.sf_ticker);
-	int i = this->api->QueryStructuredFund(&myreq, reqid);
+	int i = this->api->QueryStructuredFund(&myreq, session_id, request_id);
 	return i;
 };
 
@@ -1551,8 +1601,8 @@ int TdApi::queryFundTransfer(const dict &req, int session_id, int request_id)
 {
 	XTPQueryFundTransferLogReq myreq = XTPQueryFundTransferLogReq();
 	memset(&myreq, 0, sizeof(myreq));
-	getInt(req, "serial_id", &myreq.serial_id);
-	int i = this->api->QueryFundTransfer(&myreq, reqid);
+	myreq.serial_id = getIntValue(req, "serial_id");
+	int i = this->api->QueryFundTransfer(&myreq, session_id, request_id);
 	return i;
 };
 
@@ -1560,9 +1610,9 @@ int TdApi::queryETF(const dict &req, int session_id, int request_id)
 {
 	XTPQueryETFBaseReq myreq = XTPQueryETFBaseReq();
 	memset(&myreq, 0, sizeof(myreq));
-	getEnum(req, "market", &myreq.market);
+	myreq.market = (XTP_MARKET_TYPE)getIntValue(req, "market");
 	getString(req, "ticker", myreq.ticker);
-	int i = this->api->QueryETF(&myreq, reqid);
+	int i = this->api->QueryETF(&myreq, session_id, request_id);
 	return i;
 };
 
@@ -1570,25 +1620,21 @@ int TdApi::queryETFTickerBasket(const dict &req, int session_id, int request_id)
 {
 	XTPQueryETFComponentReq myreq = XTPQueryETFComponentReq();
 	memset(&myreq, 0, sizeof(myreq));
-	getEnum(req, "market", &myreq.market);
+	myreq.market = (XTP_MARKET_TYPE)getIntValue(req, "market");
 	getString(req, "ticker", myreq.ticker);
-	int i = this->api->QueryETFTickerBasket(&myreq, reqid);
+	int i = this->api->QueryETFTickerBasket(&myreq, session_id, request_id);
 	return i;
 };
 
 int TdApi::queryIPOInfoList(int session_id, int request_id)
 {
-	int myreq = int();
-	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryIPOInfoList(&myreq, reqid);
+	int i = this->api->QueryIPOInfoList(session_id, request_id);
 	return i;
 };
 
 int TdApi::queryIPOQuotaInfo(int session_id, int request_id)
 {
-	int myreq = int();
-	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryIPOQuotaInfo(&myreq, reqid);
+	int i = this->api->QueryIPOQuotaInfo(session_id, request_id);
 	return i;
 };
 
@@ -1596,17 +1642,15 @@ int TdApi::queryOptionAuctionInfo(const dict &req, int session_id, int request_i
 {
 	XTPQueryOptionAuctionInfoReq myreq = XTPQueryOptionAuctionInfoReq();
 	memset(&myreq, 0, sizeof(myreq));
-	getEnum(req, "market", &myreq.market);
+	myreq.market = (XTP_MARKET_TYPE)getIntValue(req, "market");
 	getString(req, "ticker", myreq.ticker);
-	int i = this->api->QueryOptionAuctionInfo(&myreq, reqid);
+	int i = this->api->QueryOptionAuctionInfo(&myreq, session_id, request_id);
 	return i;
 };
 
 int TdApi::queryCreditCashRepayInfo(int session_id, int request_id)
 {
-	int myreq = int();
-	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryCreditCashRepayInfo(&myreq, reqid);
+	int i = this->api->QueryCreditCashRepayInfo(session_id, request_id);
 	return i;
 };
 
@@ -1614,15 +1658,13 @@ int TdApi::queryCreditFundInfo(int session_id, int request_id)
 {
 	int myreq = int();
 	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryCreditFundInfo(&myreq, reqid);
+	int i = this->api->QueryCreditFundInfo(&myreq, request_id);
 	return i;
 };
 
 int TdApi::queryCreditDebtInfo(int session_id, int request_id)
 {
-	int myreq = int();
-	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryCreditDebtInfo(&myreq, reqid);
+	int i = this->api->QueryCreditDebtInfo(session_id, request_id);
 	return i;
 };
 
@@ -1630,17 +1672,15 @@ int TdApi::queryCreditTickerDebtInfo(const dict &req, int session_id, int reques
 {
 	XTPClientQueryCrdDebtStockReq myreq = XTPClientQueryCrdDebtStockReq();
 	memset(&myreq, 0, sizeof(myreq));
-	getEnum(req, "market", &myreq.market);
+	myreq.market = (XTP_MARKET_TYPE)getIntValue(req, "market");
 	getString(req, "ticker", myreq.ticker);
-	int i = this->api->QueryCreditTickerDebtInfo(&myreq, reqid);
+	int i = this->api->QueryCreditTickerDebtInfo(&myreq, session_id, request_id);
 	return i;
 };
 
 int TdApi::queryCreditAssetDebtInfo(int session_id, int request_id)
 {
-	int myreq = int();
-	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryCreditAssetDebtInfo(&myreq, reqid);
+	int i = this->api->QueryCreditAssetDebtInfo(session_id, request_id);
 	return i;
 };
 
@@ -1648,9 +1688,9 @@ int TdApi::queryCreditTickerAssignInfo(const dict &req, int session_id, int requ
 {
 	XTPClientQueryCrdPositionStockReq myreq = XTPClientQueryCrdPositionStockReq();
 	memset(&myreq, 0, sizeof(myreq));
-	getEnum(req, "market", &myreq.market);
+	myreq.market = (XTP_MARKET_TYPE)getIntValue(req, "market");
 	getString(req, "ticker", myreq.ticker);
-	int i = this->api->QueryCreditTickerAssignInfo(&myreq, reqid);
+	int i = this->api->QueryCreditTickerAssignInfo(&myreq, session_id, request_id);
 	return i;
 };
 
@@ -1658,13 +1698,11 @@ int TdApi::queryCreditExcessStock(const dict &req, int session_id, int request_i
 {
 	XTPClientQueryCrdSurplusStkReqInfo myreq = XTPClientQueryCrdSurplusStkReqInfo();
 	memset(&myreq, 0, sizeof(myreq));
-	getEnum(req, "market", &myreq.market);
+	myreq.market = (XTP_MARKET_TYPE)getIntValue(req, "market");
 	getString(req, "ticker", myreq.ticker);
-	int i = this->api->QueryCreditExcessStock(&myreq, reqid);
+	int i = this->api->QueryCreditExcessStock(&myreq, session_id, request_id);
 	return i;
 };
-
-
 
 
 
@@ -1989,15 +2027,22 @@ PYBIND11_MODULE(vnctptd, m)
 	class_<TdApi, PyTdApi> TdApi(m, "TdApi", module_local());
 	TdApi
 		.def(init<>())
-		.def("createFtdcTraderApi", &TdApi::createFtdcTraderApi)
+		.def("createTraderApi", &TdApi::createTraderApi)
 		.def("release", &TdApi::release)
-		.def("init", &TdApi::init)
-		.def("join", &TdApi::join)
 		.def("exit", &TdApi::exit)
 		.def("getTradingDay", &TdApi::getTradingDay)
-		.def("registerFront", &TdApi::registerFront)
+		.def("getApiVersion", &TdApi::getApiVersion)
+		.def("getApiLastError", &TdApi::getApiLastError)
+		.def("getClientIDByXTPID", &TdApi::getClientIDByXTPID)
+		.def("getAccountByXTPID", &TdApi::getAccountByXTPID)
 		.def("subscribePublicTopic", &TdApi::subscribePublicTopic)
-		.def("subscribePrivateTopic", &TdApi::subscribePrivateTopic)
+		.def("setSoftwareVersion", &TdApi::setSoftwareVersion)
+		.def("setSoftwareKey", &TdApi::setSoftwareKey)
+		.def("setHeartBeatInterval", &TdApi::setHeartBeatInterval)
+		.def("login", &TdApi::login)
+		.def("logout", &TdApi::logout)
+		.def("insertOrder", &TdApi::insertOrder)
+		.def("cancelOrder", &TdApi::cancelOrder)
 
 		.def("queryOrderByXTPID", &TdApi::queryOrderByXTPID)
 		.def("queryOrders", &TdApi::queryOrders)
