@@ -1074,7 +1074,7 @@ string MdApi::getApiVersion()
 	return version;
 };
 
-XTPRI MdApi::getApiLastError()
+dict MdApi::getApiLastError()
 {
 	XTPRI*last_error = this->api->GetApiLastError();
 	dict error;
