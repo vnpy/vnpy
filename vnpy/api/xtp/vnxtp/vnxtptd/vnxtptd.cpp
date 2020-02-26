@@ -1521,7 +1521,7 @@ int TdApi::insertOrder(const dict &req, int session_id)
 	myreq.side = getIntValue(req, "side");
 	myreq.position_effect = getIntValue(req, "position_effect");
 	myreq.business_type = (XTP_BUSINESS_TYPE) getIntValue(req, "business_type");
-	int i = this->api->QueryOrders(&myreq, session_id);
+	int i = this->api->InsertOrder(&myreq, session_id);
 	return i;
 };
 
