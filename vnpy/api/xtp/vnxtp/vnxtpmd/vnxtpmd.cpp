@@ -1170,39 +1170,50 @@ int MdApi::unSubscribeAllMarketData(int exchange_id)
 	this->api->UnSubscribeAllMarketData((XTP_EXCHANGE_TYPE)exchange_id);
 };
 
-
-
-
-int MdApi::unSubscribeForQuoteRsp(string instrumentID)
+//1
+int MdApi::subscribeAllOrderBook(int exchange_id)
 {
-	char* buffer = (char*)instrumentID.c_str();
-	char* myreq[1] = { buffer };;
-	int i = this->api->UnSubscribeForQuoteRsp(myreq, 1);
-	return i;
+	this->api->SubscribeAllOrderBook((XTP_EXCHANGE_TYPE)exchange_id);
 };
+
+int MdApi::unSubscribeAllOrderBook(int exchange_id)
+{
+	this->api->UnSubscribeAllOrderBook((XTP_EXCHANGE_TYPE)exchange_id);
+};
+
+//2
+int MdApi::subscribeAllTickByTick(int exchange_id)
+{
+	this->api->SubscribeAllTickByTick((XTP_EXCHANGE_TYPE)exchange_id);
+};
+
+int MdApi::unSubscribeAllTickByTick(int exchange_id)
+{
+	this->api->UnSubscribeAllTickByTick((XTP_EXCHANGE_TYPE)exchange_id);
+};
+
+
 
 int MdApi::queryAllTickers(int exchange_id)
 {
-	XTP_EXCHANGE_TYPE myreq = XTP_EXCHANGE_TYPE();
-	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryAllTickers(&myreq, (XTP_EXCHANGE_TYPE)exchange_id);
-	return i;
+
+	this->api->QueryAllTickers((XTP_EXCHANGE_TYPE) exchange_id);
+
 };
 
 int MdApi::queryTickersPriceInfo(string ticker, int count, int exchange_id)
 {
-	char myreq = char();
-	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryTickersPriceInfo(&myreq, reqid);
+	char* buffer = (char*)ticker.c_str();
+	char* myreq[1] = { buffer };
+	int i = this->api->UnSubscribeTickByTick(myreq, 1, (XTP_EXCHANGE_TYPE)exchange_id);
 	return i;
 };
 
+
 int MdApi::queryAllTickersPriceInfo()
 {
-	char myreq = char();
-	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryAllTickersPriceInfo(&myreq, reqid);
-	return i;
+	this->api->QueryAllTickersPriceInfo();
+
 };
 
 
