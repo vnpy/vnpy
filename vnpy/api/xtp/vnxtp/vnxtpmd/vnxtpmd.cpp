@@ -1045,29 +1045,15 @@ void MdApi::processUnSubscribeAllOptionTickByTick(Task *task)
 ///主动函数
 ///-------------------------------------------------------------------------------------
 
-void MdApi::createFtdcMdApi(string pszFlowPath)
+void MdApi::createQuoteApi(int client_id, string save_file_path)
 {
-	this->api = CThostFtdcMdApi::CreateFtdcMdApi(pszFlowPath.c_str());
+	this->api = QuoteApi::CreateQuoteApi(client_id, save_file_path.c_str());
 	this->api->RegisterSpi(this);
 };
 
 void MdApi::release()
 {
 	this->api->Release();
-};
-
-void MdApi::init()
-{
-	this->active = true;
-	this->task_thread = thread(&MdApi::processTask, this);
-
-	this->api->Init();
-};
-
-int MdApi::join()
-{
-	int i = this->api->Join();
-	return i;
 };
 
 int MdApi::exit()
@@ -1088,34 +1074,104 @@ string MdApi::getTradingDay()
 	return day;
 };
 
-void MdApi::registerFront(string pszFrontAddress)
+string MdApi::getApiVersion()
 {
-	this->api->RegisterFront((char*)pszFrontAddress.c_str());
+	string version = this->api->GetApiVersion();
+	return version;
 };
 
-int MdApi::subscribeMarketData(string instrumentID)
+XTPRI MdApi::getApiLastError()
 {
-	char* buffer = (char*)instrumentID.c_str();
+	XTPRI last_error = this->api->GetApiLastError();
+	dict error;
+	error["error_id"] = last_error->error_id;
+	error["error_msg"] = last_error->error_msg;
+	return error;
+};
+
+// 修改方法
+//dict error;
+//if (task->task_error)
+//{
+//	XTPRI *task_error = (XTPRI*)task->task_error;
+//	error["error_id"] = task_error->error_id;
+//	error["error_msg"] = toUtf(task_error->error_msg);
+// 11111
+
+void MdApi::setUDPBufferSize(int buff_size)
+{
+	this->api->SetUDPBufferSize(buff_size);
+};
+
+
+void MdApi::setHeartBeatInterval(int interval)
+{
+	this->api->SetHeartBeatInterval(interval);
+};
+
+
+int MdApi::subscribeMarketData(string ticker, int count, int exchange_id)
+{
+	char* buffer = (char*)ticker.c_str();
 	char* myreq[1] = { buffer };
-	int i = this->api->SubscribeMarketData(myreq, 1);
+	int i = this->api->SubscribeMarketData(myreq, 1,(XTP_EXCHANGE_TYPE) exchange_id);
 	return i;
 };
 
-int MdApi::unSubscribeMarketData(string instrumentID)
+int MdApi::unSubscribeMarketData(string ticker, int count, int exchange_id)
 {
-	char* buffer = (char*)instrumentID.c_str();
-	char* myreq[1] = { buffer };;
-	int i = this->api->UnSubscribeMarketData(myreq, 1);
-	return i;
-};
-
-int MdApi::subscribeForQuoteRsp(string instrumentID)
-{
-	char* buffer = (char*)instrumentID.c_str();
+	char* buffer = (char*)ticker.c_str();
 	char* myreq[1] = { buffer };
-	int i = this->api->SubscribeForQuoteRsp(myreq, 1);
+	int i = this->api->UnSubscribeMarketData(myreq, 1, (XTP_EXCHANGE_TYPE)exchange_id);
 	return i;
 };
+
+
+int MdApi::subscribeOrderBook(string ticker, int count, int exchange_id)
+{
+	char* buffer = (char*)ticker.c_str();
+	char* myreq[1] = { buffer };
+	int i = this->api->SubscribeOrderBook(myreq, 1, (XTP_EXCHANGE_TYPE)exchange_id);
+	return i;
+};
+
+int MdApi::unSubscribeOrderBook(string ticker, int count, int exchange_id)
+{
+	char* buffer = (char*)ticker.c_str();
+	char* myreq[1] = { buffer };
+	int i = this->api->UnSubscribeOrderBook(myreq, 1, (XTP_EXCHANGE_TYPE)exchange_id);
+	return i;
+};
+
+int MdApi::subscribeTickByTick(string ticker, int count, int exchange_id)
+{
+	char* buffer = (char*)ticker.c_str();
+	char* myreq[1] = { buffer };
+	int i = this->api->SubscribeTickByTick(myreq, 1, (XTP_EXCHANGE_TYPE)exchange_id);
+	return i;
+};
+
+int MdApi::unSubscribeTickByTick(string ticker, int count, int exchange_id)
+{
+	char* buffer = (char*)ticker.c_str();
+	char* myreq[1] = { buffer };
+	int i = this->api->UnSubscribeTickByTick(myreq, 1, (XTP_EXCHANGE_TYPE)exchange_id);
+	return i;
+};
+
+
+int MdApi::subscribeAllMarketData(int exchange_id)
+{
+	this->api->SubscribeAllMarketData((XTP_EXCHANGE_TYPE)exchange_id);
+};
+
+int MdApi::unSubscribeAllMarketData(int exchange_id)
+{
+	this->api->UnSubscribeAllMarketData((XTP_EXCHANGE_TYPE)exchange_id);
+};
+
+
+
 
 int MdApi::unSubscribeForQuoteRsp(string instrumentID)
 {
@@ -1470,10 +1526,10 @@ PYBIND11_MODULE(vnctpmd, m)
 	class_<MdApi, PyMdApi> mdapi(m, "MdApi", module_local());
 	mdapi
 		.def(init<>())
-		.def("createFtdcMdApi", &MdApi::createFtdcMdApi)
+		.def("createQuoteApi", &MdApi::createQuoteApi)
 		.def("release", &MdApi::release)
-		.def("init", &MdApi::init)
-		.def("join", &MdApi::join)
+		//.def("init", &MdApi::init)
+		//.def("join", &MdApi::join)
 		.def("exit", &MdApi::exit)
 		.def("getTradingDay", &MdApi::getTradingDay)
 		.def("registerFront", &MdApi::registerFront)
