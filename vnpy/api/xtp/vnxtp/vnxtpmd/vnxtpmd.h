@@ -352,23 +352,38 @@ public:
 	//req:主动函数的请求字典
 	//-------------------------------------------------------------------------------------
 
-	void createFtdcMdApi(string pszFlowPath = "");
+	void createQuoteApi(int client_id, string save_file_path);
 
 	void release();
-
-	void init();
-
-	int join();
 
 	int exit();
 
 	string getTradingDay();
 
-	void registerFront(string pszFrontAddress);
+	string getApiVersion();
 
-	int subscribeMarketData(string instrumentID);
+	XTPRI getApiLastError();
 
-	int unSubscribeMarketData(string instrumentID);
+	void setUDPBufferSize(int buff_size);
+
+	void setHeartBeatInterval(int interval);
+
+	int subscribeMarketData(string ticker, int count, int exchange_id);
+
+	int unSubscribeMarketData(string ticker, int count, int exchange_id);
+
+	int subscribeOrderBook(string ticker, int count, int exchange_id);
+
+	int unSubscribeOrderBook(string ticker, int count, int exchange_id);
+
+	int subscribeTickByTick(string ticker, int count, int exchange_id);
+
+	int unSubscribeTickByTick(string ticker, int count, int exchange_id);
+
+	int subscribeAllMarketData(int exchange_id);
+
+	int unSubscribeAllMarketData(int exchange_id);
+
 
 	int subscribeForQuoteRsp(string instrumentID);
 
