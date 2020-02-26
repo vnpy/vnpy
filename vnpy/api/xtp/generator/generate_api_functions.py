@@ -430,9 +430,29 @@ class ApiGenerator:
                     for struct_field, struct_type in struct_fields.items():
                         if struct_type == "string":
                             line = f"\tgetString(req, \"{struct_field}\", myreq.{struct_field});\n"
+                        elif struct_type == "int":
+                            line = f"\tmyreq.{struct_field} = getIntValue(req, \"{struct_field}\");\n"
+                        elif struct_type == "enum":
+                            if struct_field == "market":
+                                line = f"\tmyreq.{struct_field} = (XTP_MARKET_TYPE) getIntValue(req, \"{struct_field}\");\n"
+
+                            elif struct_field == "exchange_id":
+                                line = f"\tmyreq.{struct_field} = (XTP_EXCHANGE_TYPE) getIntValue(req, \"{struct_field}\");\n"
+                            # line = f"\tmyreq.{struct_field} = getIntValue(req, \"{struct_field}\");\n"
                         else:
                             line = f"\tget{struct_type.capitalize()}(req, \"{struct_field}\", &myreq.{struct_field});\n"
                         f.write(line)
+                
+                words = []
+                a = content.split(",")[1:]
+                if not a:
+                    reqid = ""
+                else:
+                    for i in a:
+                        if "int" in i:
+                            words.append(i.replace("int", "").strip())
+                
+                    reqid = ", ".join(words)
 
                 f.write(f"\tint i = this->api->{name}(&myreq, {reqid});\n")
                 f.write("\treturn i;\n")
