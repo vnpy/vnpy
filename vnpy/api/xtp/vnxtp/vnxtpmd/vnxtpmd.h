@@ -384,10 +384,25 @@ public:
 
 	int unSubscribeAllMarketData(int exchange_id);
 
+	int subscribeAllOrderBook(int exchange_id);
 
-	int subscribeForQuoteRsp(string instrumentID);
+	int unSubscribeAllOrderBook(int exchange_id);
 
-	int unSubscribeForQuoteRsp(string instrumentID);
+	int subscribeAllTickByTick(int exchange_id);
+
+	int unSubscribeAllTickByTick(int exchange_id);
+
+	//1
+
+	int login(string ip, int port, string user, string password, int sock_type);
+
+	int logout();
+
+
+
+	//int subscribeForQuoteRsp(string instrumentID);
+
+	//int unSubscribeForQuoteRsp(string instrumentID);
 
 	int queryAllTickers(int exchange_id);
 
