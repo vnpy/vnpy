@@ -741,7 +741,7 @@ void TdApi::processOrderEvent(Task *task)
 		data["order_local_id"] = toUtf(task_data->order_local_id);
 		data["order_status"] = task_data->order_status;
 		data["order_submit_status"] = task_data->order_submit_status;
-		data["order_type"] = toUtf(task_data->order_type);
+		data["order_type"] = task_data->order_type;
 		delete task_data;
 	}
 	dict error;
@@ -774,7 +774,7 @@ void TdApi::processTradeEvent(Task *task)
 		data["trade_amount"] = task_data->trade_amount;
 		data["report_index"] = task_data->report_index;
 		data["order_exch_id"] = toUtf(task_data->order_exch_id);
-		data["trade_type"] = toUtf(task_data->trade_type);
+		data["trade_type"] = task_data->trade_type;
 		data["side"] = task_data->side;
 		data["position_effect"] = task_data->position_effect;
 		data["business_type"] = task_data->business_type;
@@ -834,7 +834,7 @@ void TdApi::processQueryOrder(Task *task)
 		data["order_local_id"] = toUtf(task_data->order_local_id);
 		data["order_status"] = task_data->order_status;
 		data["order_submit_status"] = task_data->order_submit_status;
-		data["order_type"] = toUtf(task_data->order_type);
+		data["order_type"] = task_data->order_type;
 		delete task_data;
 	}
 	dict error;
@@ -867,7 +867,7 @@ void TdApi::processQueryTrade(Task *task)
 		data["trade_amount"] = task_data->trade_amount;
 		data["report_index"] = task_data->report_index;
 		data["order_exch_id"] = toUtf(task_data->order_exch_id);
-		data["trade_type"] = toUtf(task_data->trade_type);
+		data["trade_type"] = task_data->trade_type;
 		data["side"] = task_data->side;
 		data["position_effect"] = task_data->position_effect;
 		data["business_type"] = task_data->business_type;
@@ -1452,23 +1452,14 @@ string TdApi::getApiVersion()
 	return version;
 };
 
-XTPRI TdApi::getApiLastError()
+dict TdApi::getApiLastError()
 {
-	XTPRI last_error = this->api->GetApiLastError();
+	XTPRI*last_error = this->api->GetApiLastError();
 	dict error;
 	error["error_id"] = last_error->error_id;
 	error["error_msg"] = last_error->error_msg;
 	return error;
 };
-
-// 修改方法
-//dict error;
-//if (task->task_error)
-//{
-//	XTPRI *task_error = (XTPRI*)task->task_error;
-//	error["error_id"] = task_error->error_id;
-//	error["error_msg"] = toUtf(task_error->error_msg);
-// 11111
 
 int TdApi::getClientIDByXTPID(int order_xtp_id)
 {
