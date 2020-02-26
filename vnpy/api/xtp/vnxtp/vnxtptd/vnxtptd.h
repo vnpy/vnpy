@@ -398,23 +398,40 @@ public:
     //req:主动函数的请求字典
     //-------------------------------------------------------------------------------------
 
-    void createFtdcTraderApi(string pszFlowPath = "");
+	void createTraderApi(int client_id, string save_file_path);
 
-    void release();
+	void release();
 
-    void init();
+	int exit();
 
-    int join();
+	string getTradingDay();
 
-    int exit();
+	string getApiVersion();
 
-    string getTradingDay();
+	XTPRI getApiLastError();
 
-    void registerFront(string pszFrontAddress);
+	//1
+	int getClientIDByXTPID(int order_xtp_id);
 
-    void subscribePrivateTopic(int nType);
+	string getAccountByXTPID(int order_xtp_id);
 
-    void subscribePublicTopic(int nType);
+	void subscribePublicTopic(int resume_type);
+
+	void setSoftwareVersion(string version);
+
+	void setSoftwareKey(string key);
+
+	void setHeartBeatInterval(int interval);
+
+	int login(string ip, int port, string user, string password, int sock_type);
+
+	int logout(int session_id);
+
+
+	int insertOrder(const dict &req, int session_id);
+
+	int cancelOrder(int order_xtp_id, int session_id)
+	//2
 
 	int queryOrderByXTPID(int order_xtp_id, int session_id, int request_id);
 
