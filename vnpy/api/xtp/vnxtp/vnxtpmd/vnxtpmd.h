@@ -392,17 +392,9 @@ public:
 
 	int unSubscribeAllTickByTick(int exchange_id);
 
-	//1
-
 	int login(string ip, int port, string user, string password, int sock_type);
 
 	int logout();
-
-
-
-	//int subscribeForQuoteRsp(string instrumentID);
-
-	//int unSubscribeForQuoteRsp(string instrumentID);
 
 	int queryAllTickers(int exchange_id);
 
