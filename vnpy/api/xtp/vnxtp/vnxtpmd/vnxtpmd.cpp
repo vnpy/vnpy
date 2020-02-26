@@ -69,7 +69,7 @@ void MdApi::OnUnSubMarketData(XTPST *ticker, XTPRI *error_info, bool is_last)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnDepthMarketData(XTPMD *market_data, int64_t bid1_qty[], int32_t bid1_count, int32_t max_bid1_count, int64_t ask1_qty[], int32_t ask1_count, int32_t max_ask1_count)
+void MdApi::OnDepthMarketData(XTPMD *market_data)
 {
 	Task task = Task();
 	task.task_name = ONDEPTHMARKETDATA;
@@ -79,12 +79,6 @@ void MdApi::OnDepthMarketData(XTPMD *market_data, int64_t bid1_qty[], int32_t bi
 		*task_data = *market_data;
 		task.task_data = task_data;
 	}
-	task.task_extra = bid1_qty;
-	task.task_extra = bid1_count;
-	task.task_extra = max_bid1_count;
-	task.task_extra = ask1_qty;
-	task.task_extra = ask1_count;
-	task.task_extra = max_ask1_count;
 	this->task_queue.push(task);
 };
 
@@ -683,7 +677,7 @@ void MdApi::processDepthMarketData(Task *task)
 		data["r4"] = task_data->r4;
 		delete task_data;
 	}
-	this->onDepthMarketData(data, task->task_extra, task->task_extra, task->task_extra, task->task_extra, task->task_extra, task->task_extra);
+	this->onDepthMarketData(data);
 };
 
 void MdApi::processSubOrderBook(Task *task)
@@ -1082,7 +1076,7 @@ string MdApi::getApiVersion()
 
 XTPRI MdApi::getApiLastError()
 {
-	XTPRI last_error = this->api->GetApiLastError();
+	XTPRI*last_error = this->api->GetApiLastError();
 	dict error;
 	error["error_id"] = last_error->error_id;
 	error["error_msg"] = last_error->error_msg;
@@ -1284,11 +1278,11 @@ public:
 		}
 	};
 
-	void onDepthMarketData(const dict &data, int extra, int extra, int extra, int extra, int extra, int extra) override
+	void onDepthMarketData(const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onDepthMarketData, data, extra, extra, extra, extra, extra, extra);
+			PYBIND11_OVERLOAD(void, MdApi, onDepthMarketData, data);
 		}
 		catch (const error_already_set &e)
 		{
