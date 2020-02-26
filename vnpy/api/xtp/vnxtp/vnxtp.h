@@ -80,6 +80,20 @@ void getInt(const dict &d, const char *key, int *value)
     }
 };
 
+int getIntValue(const dict &d, const char *key)
+{
+	if (d.contains(key))
+	{
+		object o = d[key];
+		return o.cast<int>();
+	}
+	else
+	{
+		return 0;
+	}
+};
+
+
 
 //从字典中获取某个建值对应的浮点数，并赋值到请求结构体对象的值上
 void getDouble(const dict &d, const char *key, double *value)
@@ -118,6 +132,8 @@ void getString(const pybind11::dict &d, const char *key, string_literal<size> &v
         strcpy(value, buf);
     }
 };
+
+
 
 //将GBK编码的字符串转换为UTF8
 inline string toUtf(const string &gb2312)
