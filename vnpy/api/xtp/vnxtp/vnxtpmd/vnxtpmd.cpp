@@ -69,7 +69,7 @@ void MdApi::OnUnSubMarketData(XTPST *ticker, XTPRI *error_info, bool is_last)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnDepthMarketData(XTPMD *market_data)
+void MdApi::OnDepthMarketData(XTPMD *market_data, int64_t bid1_qty[], int32_t bid1_count, int32_t max_bid1_count, int64_t ask1_qty[], int32_t ask1_count, int32_t max_ask1_count)
 {
 	Task task = Task();
 	task.task_name = ONDEPTHMARKETDATA;
@@ -1083,14 +1083,6 @@ dict MdApi::getApiLastError()
 	return error;
 };
 
-// 修改方法
-//dict error;
-//if (task->task_error)
-//{
-//	XTPRI *task_error = (XTPRI*)task->task_error;
-//	error["error_id"] = task_error->error_id;
-//	error["error_msg"] = toUtf(task_error->error_msg);
-// 11111
 
 void MdApi::setUDPBufferSize(int buff_size)
 {
@@ -1108,7 +1100,7 @@ int MdApi::subscribeMarketData(string ticker, int count, int exchange_id)
 {
 	char* buffer = (char*)ticker.c_str();
 	char* myreq[1] = { buffer };
-	int i = this->api->SubscribeMarketData(myreq, 1,(XTP_EXCHANGE_TYPE) exchange_id);
+	int i = this->api->SubscribeMarketData(myreq, 1, (XTP_EXCHANGE_TYPE)exchange_id);
 	return i;
 };
 
@@ -1156,52 +1148,60 @@ int MdApi::unSubscribeTickByTick(string ticker, int count, int exchange_id)
 
 int MdApi::subscribeAllMarketData(int exchange_id)
 {
-	this->api->SubscribeAllMarketData((XTP_EXCHANGE_TYPE)exchange_id);
+	int i = this->api->SubscribeAllMarketData((XTP_EXCHANGE_TYPE)exchange_id);
+	return i;
 };
 
 int MdApi::unSubscribeAllMarketData(int exchange_id)
 {
-	this->api->UnSubscribeAllMarketData((XTP_EXCHANGE_TYPE)exchange_id);
+	int i = this->api->UnSubscribeAllMarketData((XTP_EXCHANGE_TYPE)exchange_id);
+	return i;
 };
 
 int MdApi::subscribeAllOrderBook(int exchange_id)
 {
-	this->api->SubscribeAllOrderBook((XTP_EXCHANGE_TYPE)exchange_id);
+	int i = this->api->SubscribeAllOrderBook((XTP_EXCHANGE_TYPE)exchange_id);
+	return i;
 };
 
 int MdApi::unSubscribeAllOrderBook(int exchange_id)
 {
-	this->api->UnSubscribeAllOrderBook((XTP_EXCHANGE_TYPE)exchange_id);
+	int i = this->api->UnSubscribeAllOrderBook((XTP_EXCHANGE_TYPE)exchange_id);
+	return i;
 };
 
 int MdApi::subscribeAllTickByTick(int exchange_id)
 {
-	this->api->SubscribeAllTickByTick((XTP_EXCHANGE_TYPE)exchange_id);
+	int i = this->api->SubscribeAllTickByTick((XTP_EXCHANGE_TYPE)exchange_id);
+	return i;
 };
 
 int MdApi::unSubscribeAllTickByTick(int exchange_id)
 {
-	this->api->UnSubscribeAllTickByTick((XTP_EXCHANGE_TYPE)exchange_id);
+	int i = this->api->UnSubscribeAllTickByTick((XTP_EXCHANGE_TYPE)exchange_id);
+	return i;
 };
 
 
 int MdApi::login(string ip, int port, string user, string password, int sock_type)
 {
-	this->api->QuoteApi::Login(ip.c_str(), port, user.c_str(), password.c_str(),(XTP_PROTOCOL_TYPE) sock_type );
+	int i = this->api->Login(ip.c_str(), port, user.c_str(), password.c_str(), (XTP_PROTOCOL_TYPE)sock_type);
+	return i;
 };
 
 
 int MdApi::logout()
 {
-	this->api->Logout();
-
+	int i = this->api->Logout();
+	return i;
 };
 
 
 int MdApi::queryAllTickers(int exchange_id)
 {
 
-	this->api->QueryAllTickers((XTP_EXCHANGE_TYPE) exchange_id);
+	int i = this->api->QueryAllTickers((XTP_EXCHANGE_TYPE)exchange_id);
+	return i;
 
 };
 
@@ -1216,7 +1216,8 @@ int MdApi::queryTickersPriceInfo(string ticker, int count, int exchange_id)
 
 int MdApi::queryAllTickersPriceInfo()
 {
-	this->api->QueryAllTickersPriceInfo();
+	int i = this->api->QueryAllTickersPriceInfo();
+	return i;
 
 };
 
