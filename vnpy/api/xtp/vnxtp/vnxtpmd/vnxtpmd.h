@@ -310,13 +310,13 @@ public:
 
 	virtual void onUnSubOrderBook(const dict &data, const dict &error, bool last) {};
 
-	virtual void onOrderBook() {};
+	virtual void onOrderBook(const dict &data) {};
 
 	virtual void onSubTickByTick(const dict &data, const dict &error, bool last) {};
 
 	virtual void onUnSubTickByTick(const dict &data, const dict &error, bool last) {};
 
-	virtual void onTickByTick() {};
+	virtual void onTickByTick(const dict &data) {};
 
 	virtual void onSubscribeAllMarketData(int extra, const dict &error) {};
 
@@ -362,7 +362,7 @@ public:
 
 	string getApiVersion();
 
-	XTPRI getApiLastError();
+	dict getApiLastError();
 
 	void setUDPBufferSize(int buff_size);
 
