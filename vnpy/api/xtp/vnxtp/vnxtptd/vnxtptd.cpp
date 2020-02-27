@@ -1457,12 +1457,13 @@ dict TdApi::getApiLastError()
 	return error;
 };
 
-int TdApi::getClientIDByXTPID(int order_xtp_id)
+int TdApi::getClientIDByXTPID(long long order_xtp_id)
 {
-	this->api->GetClientIDByXTPID(order_xtp_id);
+	int i = this->api->GetClientIDByXTPID(order_xtp_id);
+	return i;
 };
 
-string TdApi::getAccountByXTPID(int order_xtp_id)
+string TdApi::getAccountByXTPID(long long order_xtp_id)
 {
 	string account = this->api->GetAccountByXTPID(order_xtp_id);
 	return account;
@@ -1489,20 +1490,21 @@ void TdApi::setHeartBeatInterval(int interval)
 	this->api->SetHeartBeatInterval(interval);
 }
 
-int TdApi::login(string ip, int port, string user, string password, int sock_type)
+long long TdApi::login(string ip, int port, string user, string password, int sock_type)
 {
-	this->api->TraderApi::Login(ip.c_str(), port, user.c_str(), password.c_str(), (XTP_PROTOCOL_TYPE)sock_type);
+	long long i = this->api->Login(ip.c_str(), port, user.c_str(), password.c_str(), (XTP_PROTOCOL_TYPE)sock_type);
+	return i;
 };
 
 
-int TdApi::logout(int session_id)
+int TdApi::logout(long long session_id)
 {
-	this->api->Logout(session_id);
-
+	int i = this->api->Logout(session_id);
+	return i;
 };
 
 
-int TdApi::insertOrder(const dict &req, int session_id)
+long long TdApi::insertOrder(const dict &req, long long session_id)
 {
 	XTPOrderInsertInfo myreq = XTPOrderInsertInfo();
 	memset(&myreq, 0, sizeof(myreq));
@@ -1517,24 +1519,24 @@ int TdApi::insertOrder(const dict &req, int session_id)
 	myreq.side = getIntValue(req, "side");
 	myreq.position_effect = getIntValue(req, "position_effect");
 	myreq.business_type = (XTP_BUSINESS_TYPE)getIntValue(req, "business_type");
-	int i = this->api->InsertOrder(&myreq, session_id);
+	long long i = this->api->InsertOrder(&myreq, session_id);
 	return i;
 };
 
-int TdApi::cancelOrder(int order_xtp_id, int session_id)
+long long TdApi::cancelOrder(long long order_xtp_id, long long session_id)
 {
-	int i = this->api->CancelOrder(order_xtp_id, session_id);
+	long long i = this->api->CancelOrder(order_xtp_id, session_id);
 	return i;
 }
 
 //2
-int TdApi::queryOrderByXTPID(int order_xtp_id, int session_id, int request_id)
+int TdApi::queryOrderByXTPID(long long order_xtp_id, long long session_id, int request_id)
 {
 	int i = this->api->QueryOrderByXTPID(order_xtp_id, session_id, request_id);
 	return i;
 }
 
-int TdApi::queryOrders(const dict &req, int session_id, int request_id)
+int TdApi::queryOrders(const dict &req, long long session_id, int request_id)
 {
 	XTPQueryOrderReq myreq = XTPQueryOrderReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -1545,13 +1547,13 @@ int TdApi::queryOrders(const dict &req, int session_id, int request_id)
 	return i;
 };
 
-int TdApi::queryTradesByXTPID(int order_xtp_id, int session_id, int request_id)
+int TdApi::queryTradesByXTPID(long long order_xtp_id, long long session_id, int request_id)
 {
 	int i = this->api->QueryTradesByXTPID(order_xtp_id, session_id, request_id);
 	return i;
 };
 
-int TdApi::queryTrades(const dict &req, int session_id, int request_id)
+int TdApi::queryTrades(const dict &req, long long session_id, int request_id)
 {
 	XTPQueryTraderReq myreq = XTPQueryTraderReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -1562,19 +1564,19 @@ int TdApi::queryTrades(const dict &req, int session_id, int request_id)
 	return i;
 };
 
-int TdApi::queryPosition(string ticker, int session_id, int request_id)
+int TdApi::queryPosition(string ticker, long long session_id, int request_id)
 {
 	int i = this->api->QueryPosition(ticker.c_str(), session_id, request_id);
 	return i;
 };
 
-int TdApi::queryAsset(int session_id, int request_id)
+int TdApi::queryAsset(long long session_id, int request_id)
 {
 	int i = this->api->QueryAsset(session_id, request_id);
 	return i;
 };
 
-int TdApi::queryStructuredFund(const dict &req, int session_id, int request_id)
+int TdApi::queryStructuredFund(const dict &req, long long session_id, int request_id)
 {
 	XTPQueryStructuredFundInfoReq myreq = XTPQueryStructuredFundInfoReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -1584,7 +1586,7 @@ int TdApi::queryStructuredFund(const dict &req, int session_id, int request_id)
 	return i;
 };
 
-int TdApi::queryFundTransfer(const dict &req, int session_id, int request_id)
+int TdApi::queryFundTransfer(const dict &req, long long session_id, int request_id)
 {
 	XTPQueryFundTransferLogReq myreq = XTPQueryFundTransferLogReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -1593,7 +1595,7 @@ int TdApi::queryFundTransfer(const dict &req, int session_id, int request_id)
 	return i;
 };
 
-int TdApi::queryETF(const dict &req, int session_id, int request_id)
+int TdApi::queryETF(const dict &req, long long session_id, int request_id)
 {
 	XTPQueryETFBaseReq myreq = XTPQueryETFBaseReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -1603,7 +1605,7 @@ int TdApi::queryETF(const dict &req, int session_id, int request_id)
 	return i;
 };
 
-int TdApi::queryETFTickerBasket(const dict &req, int session_id, int request_id)
+int TdApi::queryETFTickerBasket(const dict &req, long long session_id, int request_id)
 {
 	XTPQueryETFComponentReq myreq = XTPQueryETFComponentReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -1613,19 +1615,19 @@ int TdApi::queryETFTickerBasket(const dict &req, int session_id, int request_id)
 	return i;
 };
 
-int TdApi::queryIPOInfoList(int session_id, int request_id)
+int TdApi::queryIPOInfoList(long long session_id, int request_id)
 {
 	int i = this->api->QueryIPOInfoList(session_id, request_id);
 	return i;
 };
 
-int TdApi::queryIPOQuotaInfo(int session_id, int request_id)
+int TdApi::queryIPOQuotaInfo(long long session_id, int request_id)
 {
 	int i = this->api->QueryIPOQuotaInfo(session_id, request_id);
 	return i;
 };
 
-int TdApi::queryOptionAuctionInfo(const dict &req, int session_id, int request_id)
+int TdApi::queryOptionAuctionInfo(const dict &req, long long session_id, int request_id)
 {
 	XTPQueryOptionAuctionInfoReq myreq = XTPQueryOptionAuctionInfoReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -1635,25 +1637,25 @@ int TdApi::queryOptionAuctionInfo(const dict &req, int session_id, int request_i
 	return i;
 };
 
-int TdApi::queryCreditCashRepayInfo(int session_id, int request_id)
+int TdApi::queryCreditCashRepayInfo(long long session_id, int request_id)
 {
 	int i = this->api->QueryCreditCashRepayInfo(session_id, request_id);
 	return i;
 };
 
-int TdApi::queryCreditFundInfo(int session_id, int request_id)
+int TdApi::queryCreditFundInfo(long long session_id, int request_id)
 {
 	int i = this->api->QueryCreditFundInfo(session_id, request_id);
 	return i;
 };
 
-int TdApi::queryCreditDebtInfo(int session_id, int request_id)
+int TdApi::queryCreditDebtInfo(long long session_id, int request_id)
 {
 	int i = this->api->QueryCreditDebtInfo(session_id, request_id);
 	return i;
 };
 
-int TdApi::queryCreditTickerDebtInfo(const dict &req, int session_id, int request_id)
+int TdApi::queryCreditTickerDebtInfo(const dict &req, long long session_id, int request_id)
 {
 	XTPClientQueryCrdDebtStockReq myreq = XTPClientQueryCrdDebtStockReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -1663,13 +1665,13 @@ int TdApi::queryCreditTickerDebtInfo(const dict &req, int session_id, int reques
 	return i;
 };
 
-int TdApi::queryCreditAssetDebtInfo(int session_id, int request_id)
+int TdApi::queryCreditAssetDebtInfo(long long session_id, int request_id)
 {
 	int i = this->api->QueryCreditAssetDebtInfo(session_id, request_id);
 	return i;
 };
 
-int TdApi::queryCreditTickerAssignInfo(const dict &req, int session_id, int request_id)
+int TdApi::queryCreditTickerAssignInfo(const dict &req, long long session_id, int request_id)
 {
 	XTPClientQueryCrdPositionStockReq myreq = XTPClientQueryCrdPositionStockReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -1679,7 +1681,7 @@ int TdApi::queryCreditTickerAssignInfo(const dict &req, int session_id, int requ
 	return i;
 };
 
-int TdApi::queryCreditExcessStock(const dict &req, int session_id, int request_id)
+int TdApi::queryCreditExcessStock(const dict &req, long long session_id, int request_id)
 {
 	XTPClientQueryCrdSurplusStkReqInfo myreq = XTPClientQueryCrdSurplusStkReqInfo();
 	memset(&myreq, 0, sizeof(myreq));
