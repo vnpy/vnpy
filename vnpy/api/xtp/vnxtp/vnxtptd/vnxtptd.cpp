@@ -13,7 +13,7 @@ void TdApi::OnDisconnected(uint64_t session_id, int reason)
 	Task task = Task();
 	task.task_name = ONDISCONNECTED;
 	task.task_extra = session_id;
-	task.task_extra = reason;
+	task.task_extra_1 = reason;
 	this->task_queue.push(task);
 };
 
@@ -457,18 +457,14 @@ void TdApi::OnQueryCreditAssetDebtInfo(double remain_amount, XTPRI *error_info, 
 {
 	Task task = Task();
 	task.task_name = ONQUERYCREDITASSETDEBTINFO;
-	if (remain_amount)
-	{
-		float *task_data = new float();
-		*task_data = *remain_amount;
-		task.task_data = task_data;
-	}
+
 	if (error_info)
 	{
 		XTPRI *task_error = new XTPRI();
 		*task_error = *error_info;
 		task.task_error = task_error;
 	}
+	task.task_extra_double = remain_amount;
 	task.task_id = request_id;
 	task.task_extra = session_id;
 	this->task_queue.push(task);
@@ -696,7 +692,7 @@ void TdApi::processTask()
 void TdApi::processDisconnected(Task *task)
 {
 	gil_scoped_acquire acquire;
-	this->onDisconnected(task->task_extra, task->task_extra);
+	this->onDisconnected(task->task_extra, task->task_extra_1);
 };
 
 void TdApi::processError(Task *task)
@@ -1356,7 +1352,7 @@ void TdApi::processQueryCreditAssetDebtInfo(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	this->onQueryCreditAssetDebtInfo(task->task_extra, error, task->task_id, task->task_extra);
+	this->onQueryCreditAssetDebtInfo(task->task_extra_double, error, task->task_id, task->task_extra);
 };
 
 void TdApi::processQueryCreditTickerAssignInfo(Task *task)
@@ -1647,9 +1643,7 @@ int TdApi::queryCreditCashRepayInfo(int session_id, int request_id)
 
 int TdApi::queryCreditFundInfo(int session_id, int request_id)
 {
-	int myreq = int();
-	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QueryCreditFundInfo(&myreq, request_id);
+	int i = this->api->QueryCreditFundInfo(session_id, request_id);
 	return i;
 };
 
@@ -1707,11 +1701,11 @@ class PyTdApi : public TdApi
 public:
 	using TdApi::TdApi;
 
-	void onDisconnected(int extra, int extra) override
+	void onDisconnected(int extra, int extra_1) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onDisconnected, extra, extra);
+			PYBIND11_OVERLOAD(void, TdApi, onDisconnected, extra, extra_1);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1971,11 +1965,11 @@ public:
 		}
 	};
 
-	void onQueryCreditAssetDebtInfo(const dict &data, const dict &error, int reqid, int extra) override
+	void onQueryCreditAssetDebtInfo(double extra_double, const dict &error, int reqid, int extra) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditAssetDebtInfo, data, error, reqid, extra);
+			PYBIND11_OVERLOAD(void, TdApi, onQueryCreditAssetDebtInfo, extra_double, error, reqid, extra);
 		}
 		catch (const error_already_set &e)
 		{
