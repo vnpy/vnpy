@@ -342,13 +342,13 @@ public:
     //i£ºÕûÊý
     //-------------------------------------------------------------------------------------
     
-	virtual void onDisconnected(int extra, int extra) {};
+	virtual void onDisconnected(int extra, int extra_1) {};
 
 	virtual void onError(const dict &error) {};
 
 	virtual void onOrderEvent(const dict &data, const dict &error, int extra) {};
 
-	virtual void onTradeEvent(int extra) {};
+	virtual void onTradeEvent(const dict &data, int extra) {};
 
 	virtual void onCancelOrderError(const dict &data, const dict &error, int extra) {};
 
@@ -386,7 +386,7 @@ public:
 
 	virtual void onQueryCreditTickerDebtInfo(const dict &data, const dict &error, int reqid, bool last, int extra) {};
 
-	virtual void onQueryCreditAssetDebtInfo(const dict &data, const dict &error, int reqid, int extra) {};
+	virtual void onQueryCreditAssetDebtInfo(double extra_double, const dict &error, int reqid, int extra) {};
 
 	virtual void onQueryCreditTickerAssignInfo(const dict &data, const dict &error, int reqid, bool last, int extra) {};
 
