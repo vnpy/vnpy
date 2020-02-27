@@ -12,7 +12,7 @@ void TdApi::OnDisconnected(uint64_t session_id, int reason)
 {
 	Task task = Task();
 	task.task_name = ONDISCONNECTED;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	task.task_extra_1 = reason;
 	this->task_queue.push(task);
 };
@@ -46,7 +46,7 @@ void TdApi::OnOrderEvent(XTPOrderInfo *order_info, XTPRI *error_info, uint64_t s
 		*task_error = *error_info;
 		task.task_error = task_error;
 	}
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -60,7 +60,7 @@ void TdApi::OnTradeEvent(XTPTradeReport *trade_info, uint64_t session_id)
 		*task_data = *trade_info;
 		task.task_data = task_data;
 	}
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -80,7 +80,7 @@ void TdApi::OnCancelOrderError(XTPOrderCancelInfo *cancel_info, XTPRI *error_inf
 		*task_error = *error_info;
 		task.task_error = task_error;
 	}
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -102,7 +102,7 @@ void TdApi::OnQueryOrder(XTPQueryOrderRsp *order_info, XTPRI *error_info, int re
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -124,7 +124,7 @@ void TdApi::OnQueryTrade(XTPQueryTradeRsp *trade_info, XTPRI *error_info, int re
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -146,7 +146,7 @@ void TdApi::OnQueryPosition(XTPQueryStkPositionRsp *position, XTPRI *error_info,
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -168,7 +168,7 @@ void TdApi::OnQueryAsset(XTPQueryAssetRsp *asset, XTPRI *error_info, int request
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -190,7 +190,7 @@ void TdApi::OnQueryStructuredFund(XTPStructuredFundInfo *fund_info, XTPRI *error
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -212,7 +212,7 @@ void TdApi::OnQueryFundTransfer(XTPFundTransferNotice *fund_transfer_info, XTPRI
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -232,7 +232,7 @@ void TdApi::OnFundTransfer(XTPFundTransferNotice *fund_transfer_info, XTPRI *err
 		*task_error = *error_info;
 		task.task_error = task_error;
 	}
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -254,7 +254,7 @@ void TdApi::OnQueryETF(XTPQueryETFBaseRsp *etf_info, XTPRI *error_info, int requ
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -276,7 +276,7 @@ void TdApi::OnQueryETFBasket(XTPQueryETFComponentRsp *etf_component_info, XTPRI 
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -298,7 +298,7 @@ void TdApi::OnQueryIPOInfoList(XTPQueryIPOTickerRsp *ipo_info, XTPRI *error_info
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -320,7 +320,7 @@ void TdApi::OnQueryIPOQuotaInfo(XTPQueryIPOQuotaRsp *quota_info, XTPRI *error_in
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -342,7 +342,7 @@ void TdApi::OnQueryOptionAuctionInfo(XTPQueryOptionAuctionInfoRsp *option_info, 
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -362,7 +362,7 @@ void TdApi::OnCreditCashRepay(XTPCrdCashRepayRsp *cash_repay_info, XTPRI *error_
 		*task_error = *error_info;
 		task.task_error = task_error;
 	}
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -384,7 +384,7 @@ void TdApi::OnQueryCreditCashRepayInfo(XTPCrdCashRepayInfo *cash_repay_info, XTP
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -405,7 +405,7 @@ void TdApi::OnQueryCreditFundInfo(XTPCrdFundInfo *fund_info, XTPRI *error_info, 
 		task.task_error = task_error;
 	}
 	task.task_id = request_id;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -427,7 +427,7 @@ void TdApi::OnQueryCreditDebtInfo(XTPCrdDebtInfo *debt_info, XTPRI *error_info, 
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -449,7 +449,7 @@ void TdApi::OnQueryCreditTickerDebtInfo(XTPCrdDebtStockInfo *debt_info, XTPRI *e
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -466,7 +466,7 @@ void TdApi::OnQueryCreditAssetDebtInfo(double remain_amount, XTPRI *error_info, 
 	}
 	task.task_extra_double = remain_amount;
 	task.task_id = request_id;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -488,7 +488,7 @@ void TdApi::OnQueryCreditTickerAssignInfo(XTPClientQueryCrdPositionStkInfo *assi
 	}
 	task.task_id = request_id;
 	task.task_last = is_last;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -509,7 +509,7 @@ void TdApi::OnQueryCreditExcessStock(XTPClientQueryCrdSurplusStkRspInfo* stock_i
 		task.task_error = task_error;
 	}
 	task.task_id = request_id;
-	task.task_extra = session_id;
+	task.task_extra_long = session_id;
 	this->task_queue.push(task);
 };
 
@@ -1470,7 +1470,7 @@ string TdApi::getAccountByXTPID(int order_xtp_id)
 
 void TdApi::subscribePublicTopic(int resume_type)
 {
-	this->api->SubscribePublicTopic((XTP_TE_RESUME_TYPE) resume_type);
+	this->api->SubscribePublicTopic((XTP_TE_RESUME_TYPE)resume_type);
 }
 
 
@@ -1481,7 +1481,7 @@ void TdApi::setSoftwareVersion(string version)
 
 void TdApi::setSoftwareKey(string key)
 {
-	this->api->SetSoftwareKey( key.c_str());
+	this->api->SetSoftwareKey(key.c_str());
 }
 
 void TdApi::setHeartBeatInterval(int interval)
@@ -1509,14 +1509,14 @@ int TdApi::insertOrder(const dict &req, int session_id)
 	myreq.order_xtp_id = getIntValue(req, "order_xtp_id");
 	myreq.order_client_id = getIntValue(req, "order_client_id");
 	getString(req, "ticker", myreq.ticker);
-	myreq.market = (XTP_MARKET_TYPE) getIntValue(req, "market");
+	myreq.market = (XTP_MARKET_TYPE)getIntValue(req, "market");
 	getDouble(req, "price", &myreq.price);
 	getDouble(req, "stop_price", &myreq.stop_price);
 	myreq.quantity = getIntValue(req, "quantity");
-	myreq.price_type = (XTP_PRICE_TYPE) getIntValue(req, "price_type");
+	myreq.price_type = (XTP_PRICE_TYPE)getIntValue(req, "price_type");
 	myreq.side = getIntValue(req, "side");
 	myreq.position_effect = getIntValue(req, "position_effect");
-	myreq.business_type = (XTP_BUSINESS_TYPE) getIntValue(req, "business_type");
+	myreq.business_type = (XTP_BUSINESS_TYPE)getIntValue(req, "business_type");
 	int i = this->api->InsertOrder(&myreq, session_id);
 	return i;
 };
