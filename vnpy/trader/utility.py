@@ -246,7 +246,7 @@ def get_icon_path(filepath: str, ico_name: str):
     return str(icon_path)
 
 
-def load_json(filename: str):
+def load_json(filename: str, auto_save : bool = True):
     """
     Load data from json file in temp path.
     """
@@ -257,7 +257,8 @@ def load_json(filename: str):
             data = json.load(f)
         return data
     else:
-        save_json(filename, {})
+        if auto_save:
+            save_json(filename, {})
         return {}
 
 
