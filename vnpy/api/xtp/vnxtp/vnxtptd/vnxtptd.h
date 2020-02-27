@@ -50,26 +50,26 @@ class TdApi : public TraderSpi
 {
 private:
 	TraderApi* api;            //API对象
-    thread task_thread;                    //工作线程指针（向python中推送数据）
-    TaskQueue task_queue;                //任务队列
-    bool active = false;                //工作状态
+	thread task_thread;                    //工作线程指针（向python中推送数据）
+	TaskQueue task_queue;                //任务队列
+	bool active = false;                //工作状态
 
 public:
-    TdApi()
-    {
-    };
+	TdApi()
+	{
+	};
 
-    ~TdApi()
-    {
-        if (this->active)
-        {
-            this->exit();
-        }
-    };
+	~TdApi()
+	{
+		if (this->active)
+		{
+			this->exit();
+		}
+	};
 
-    //-------------------------------------------------------------------------------------
-    //API回调函数
-    //-------------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------------
+	//API回调函数
+	//-------------------------------------------------------------------------------------
 
 			///当客户端的某个连接与交易后台通信连接断开时，该方法被调用。
 			///@param reason 错误原因，请与错误代码表对应
@@ -276,10 +276,10 @@ public:
 	virtual void OnQueryCreditExcessStock(XTPClientQueryCrdSurplusStkRspInfo* stock_info, XTPRI *error_info, int request_id, uint64_t session_id);
 
 
-    //-------------------------------------------------------------------------------------
-    //task：任务
-    //-------------------------------------------------------------------------------------
-    void processTask();
+	//-------------------------------------------------------------------------------------
+	//task：任务
+	//-------------------------------------------------------------------------------------
+	void processTask();
 
 	void processDisconnected(Task *task);
 
@@ -334,14 +334,14 @@ public:
 
 
 
-    //-------------------------------------------------------------------------------------
-    //data：回调函数的数据字典
-    //error：回调函数的错误字典
-    //id：请求id
-    //last：是否为最后返回
-    //i：整数
-    //-------------------------------------------------------------------------------------
-    
+	//-------------------------------------------------------------------------------------
+	//data：回调函数的数据字典
+	//error：回调函数的错误字典
+	//id：请求id
+	//last：是否为最后返回
+	//i：整数
+	//-------------------------------------------------------------------------------------
+
 	virtual void onDisconnected(int extra, int extra_1) {};
 
 	virtual void onError(const dict &error) {};
@@ -394,9 +394,9 @@ public:
 
 
 
-    //-------------------------------------------------------------------------------------
-    //req:主动函数的请求字典
-    //-------------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------------
+	//req:主动函数的请求字典
+	//-------------------------------------------------------------------------------------
 
 	void createTraderApi(int client_id, string save_file_path);
 
@@ -411,9 +411,9 @@ public:
 	dict getApiLastError();
 
 	//1
-	int getClientIDByXTPID(int order_xtp_id);
+	int getClientIDByXTPID(long long order_xtp_id);
 
-	string getAccountByXTPID(int order_xtp_id);
+	string getAccountByXTPID(long long order_xtp_id);
 
 	void subscribePublicTopic(int resume_type);
 
@@ -423,55 +423,55 @@ public:
 
 	void setHeartBeatInterval(int interval);
 
-	int login(string ip, int port, string user, string password, int sock_type);
+	long long login(string ip, int port, string user, string password, int sock_type);
 
-	int logout(int session_id);
+	int logout(long long session_id);
 
 
-	int insertOrder(const dict &req, int session_id);
+	long long insertOrder(const dict &req, long long session_id);
 
-	int cancelOrder(int order_xtp_id, int session_id);
+	long long cancelOrder(long long order_xtp_id, long long session_id);
 	//2
 
-	int queryOrderByXTPID(int order_xtp_id, int session_id, int request_id);
+	int queryOrderByXTPID(long long order_xtp_id, long long session_id, int request_id);
 
-	int queryOrders(const dict &req, int session_id, int request_id);
+	int queryOrders(const dict &req, long long session_id, int request_id);
 
-	int queryTradesByXTPID(int order_xtp_id, int session_id, int request_id);
+	int queryTradesByXTPID(long long order_xtp_id, long long session_id, int request_id);
 
-	int queryTrades(const dict &req, int session_id, int request_id);
+	int queryTrades(const dict &req, long long session_id, int request_id);
 
-	int queryPosition(string ticker, int session_id, int request_id);
+	int queryPosition(string ticker, long long session_id, int request_id);
 
-	int queryAsset(int session_id, int request_id);
+	int queryAsset(long long session_id, int request_id);
 
-	int queryStructuredFund(const dict &req, int session_id, int request_id);
+	int queryStructuredFund(const dict &req, long long session_id, int request_id);
 
-	int queryFundTransfer(const dict &req, int session_id, int request_id);
+	int queryFundTransfer(const dict &req, long long session_id, int request_id);
 
-	int queryETF(const dict &req, int session_id, int request_id);
+	int queryETF(const dict &req, long long session_id, int request_id);
 
-	int queryETFTickerBasket(const dict &req, int session_id, int request_id);
+	int queryETFTickerBasket(const dict &req, long long session_id, int request_id);
 
-	int queryIPOInfoList(int session_id, int request_id);
+	int queryIPOInfoList(long long session_id, int request_id);
 
-	int queryIPOQuotaInfo(int session_id, int request_id);
+	int queryIPOQuotaInfo(long long session_id, int request_id);
 
-	int queryOptionAuctionInfo(const dict &req, int session_id, int request_id);
+	int queryOptionAuctionInfo(const dict &req, long long session_id, int request_id);
 
-	int queryCreditCashRepayInfo(int session_id, int request_id);
+	int queryCreditCashRepayInfo(long long session_id, int request_id);
 
-	int queryCreditFundInfo(int session_id, int request_id);
+	int queryCreditFundInfo(long long session_id, int request_id);
 
-	int queryCreditDebtInfo(int session_id, int request_id);
+	int queryCreditDebtInfo(long long session_id, int request_id);
 
-	int queryCreditTickerDebtInfo(const dict &req, int session_id, int request_id);
+	int queryCreditTickerDebtInfo(const dict &req, long long session_id, int request_id);
 
-	int queryCreditAssetDebtInfo(int session_id, int request_id);
+	int queryCreditAssetDebtInfo(long long session_id, int request_id);
 
-	int queryCreditTickerAssignInfo(const dict &req, int session_id, int request_id);
+	int queryCreditTickerAssignInfo(const dict &req, long long session_id, int request_id);
 
-	int queryCreditExcessStock(const dict &req, int session_id, int request_id);
+	int queryCreditExcessStock(const dict &req, long long session_id, int request_id);
 
 
 
