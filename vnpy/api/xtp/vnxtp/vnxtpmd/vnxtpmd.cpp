@@ -1536,7 +1536,7 @@ public:
 };
 
 
-PYBIND11_MODULE(vnctpmd, m)
+PYBIND11_MODULE(vnxtpmd, m)
 {
 	class_<MdApi, PyMdApi> mdapi(m, "MdApi", module_local());
 	mdapi
