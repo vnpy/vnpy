@@ -1492,22 +1492,25 @@ class GridKline(QtWidgets.QWidget):
                 # 加载交易信号
                 trade_list_file = kline_setting.get('trade_list_file', None)
                 if trade_list_file and os.path.exists(trade_list_file):
+                    print(f'loading {trade_list_file}')
                     df_trade = pd.read_csv(trade_list_file)
                     self.kline_dict[kline_name].add_signals(df_trade)
 
                 # 加载tns
                 tns_file = kline_setting.get('tns_file', None)
                 if tns_file and os.path.exists(tns_file):
+                    print(f'loading {tns_file}')
                     df_tns = pd.read_csv(tns_file)
                     self.kline_dict[kline_name].add_trans_df(df_tns)
 
                 # 加载policy 逻辑记录
                 dist_file = kline_setting.get('dist_file', None)
                 if dist_file and os.path.exists(dist_file):
+                    print(f'loading {dist_file}')
                     df_markup = pd.read_csv(dist_file)
                     df_markup = df_markup[['datetime', 'price', 'operation']]
                     df_markup.rename(columns={'operation': 'markup'}, inplace=True)
-                    self.kline_dict['m30'].add_markups(df_markup=df_markup,
+                    self.kline_dict[kline_name].add_markups(df_markup=df_markup,
                                                        include_list=kline_setting.get('dist_include_list', []),
                                                        exclude_list=['buy', 'short', 'sell', 'cover'])
 

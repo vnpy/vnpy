@@ -261,7 +261,7 @@ class CtaGridTrade(CtaComponent):
                         opened_volume = grid.volume
                     else:
                         pending_close_list = pending_close_list + u'[{}{}->{},sp:{},v:{}/{}];' \
-                            .format(t, grid.open_price, grid.close_price, grid.volume, grid.stop_price,
+                            .format(t, grid.open_price, grid.close_price, grid.stop_price, grid.volume,
                                     grid.traded_volume)
                         opened_volume = grid.volume - grid.traded_volume
 

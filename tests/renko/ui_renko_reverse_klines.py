@@ -36,7 +36,9 @@ if __name__ == '__main__':
                     ],
                     "sub_indicators": [
                         "atr"
-                    ]
+                    ],
+                    "dist_file": "log/renko_reverse_v1_J99_dist.csv",
+                    "dist_include_list": ["M15 new signal"]
                 },
             "Renko_K3":
                 {
@@ -53,8 +55,10 @@ if __name__ == '__main__':
                     "sub_indicators": [
                         "sk",
                         "sd",
-                    ]
-
+                    ],
+                    "trade_list_file": "log/renko_reverse_test_0229_1638_J99_trade_list.csv",
+                    "dist_file": "log/renko_reverse_v1_J99_dist.csv",
+                    "dist_include_list": ["new signal"]
                 }
         }
         display_multi_grid(kline_settings)

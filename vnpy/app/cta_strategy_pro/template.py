@@ -890,7 +890,7 @@ class CtaProTemplate(CtaTemplate):
             return
         none_mi_price = max(none_mi_tick.last_price, none_mi_tick.bid_price_1)
 
-        grid = copy.copy(none_mi_grid)
+        grid = copy(none_mi_grid)
 
         # 委托卖出非主力合约
         vt_orderids = self.sell(price=none_mi_price, volume=none_mi_grid.volume, vt_symbol=none_mi_symbol,
@@ -953,7 +953,7 @@ class CtaProTemplate(CtaTemplate):
             return
         none_mi_price = max(none_mi_tick.last_price, none_mi_tick.bid_price_1)
 
-        grid = copy.copy(none_mi_grid)
+        grid = copy(none_mi_grid)
         # 委托平空非主力合约
         vt_orderids = self.cover(price=none_mi_price, volume=none_mi_grid.volume, vt_symbol=self.vt_symbol,
                                  grid=none_mi_grid)
@@ -1244,7 +1244,7 @@ class CtaProFutureTemplate(CtaProTemplate):
         old_order = self.active_orders[order.vt_orderid]
         self.write_log(u'{} 委托信息:{}'.format(order.vt_orderid, old_order))
         old_order['traded'] = order.traded
-        order_vt_symbol = copy.copy(old_order['vt_symbol'])
+        order_vt_symbol = copy(old_order['vt_symbol'])
         order_volume = old_order['volume'] - old_order['traded']
         if order_volume <= 0:
             msg = u'{} {}{}需重新开仓数量为{}，不再开仓' \
@@ -1393,7 +1393,7 @@ class CtaProFutureTemplate(CtaProTemplate):
         self.write_log(u'{} 订单信息:{}'.format(order.vt_orderid, old_order))
         old_order['traded'] = order.traded
         # order_time = old_order['order_time']
-        order_symbol = copy.copy(old_order['symbol'])
+        order_symbol = copy(old_order['symbol'])
         order_volume = old_order['volume'] - old_order['traded']
         if order_volume <= 0:
             msg = u'{} {}{}重新平仓数量为{}，不再平仓' \
@@ -1709,7 +1709,7 @@ class CtaProFutureTemplate(CtaProTemplate):
             self.save_dist(dist_record)
 
             # 创建一个对锁网格
-            lock_grid = copy.copy(grid)
+            lock_grid = copy(grid)
             # 网格类型, => 锁仓格
             lock_grid.type = LOCK_GRID
             lock_grid.id = str(uuid.uuid1())
@@ -1798,7 +1798,7 @@ class CtaProFutureTemplate(CtaProTemplate):
             dist_record['operation'] = 'add long lock[short]'
             self.save_dist(dist_record)
             # 创建一个对锁网格
-            lock_grid = copy.copy(grid)
+            lock_grid = copy(grid)
             # 网格类型, => 锁仓格
             lock_grid.type = LOCK_GRID
             lock_grid.id = str(uuid.uuid1())
@@ -1912,7 +1912,7 @@ class CtaProFutureTemplate(CtaProTemplate):
                 elif g.volume > open_volume:
                     self.write_log(u'第一个网格持仓数量大于需求:g.volume:{},open_volume:{}'
                                    .format(g.volume, open_volume))
-                    remain_grid = copy.copy(g)
+                    remain_grid = copy(g)
                     g.volume = open_volume
                     remain_grid.volume -= open_volume
                     remain_grid.id = uuid.uuid1()
@@ -1958,7 +1958,7 @@ class CtaProFutureTemplate(CtaProTemplate):
                 elif g.volume > open_volume:
                     self.write_log(u'第一个空单网格持仓数量大于需求:g.volume:{},open_volume:{}'
                                    .format(g.volume, open_volume))
-                    remain_grid = copy.copy(g)
+                    remain_grid = copy(g)
                     g.volume = open_volume
                     remain_grid.volume -= open_volume
                     remain_grid.id = uuid.uuid1()
