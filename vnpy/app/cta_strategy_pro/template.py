@@ -574,6 +574,7 @@ class CtaProTemplate(CtaTemplate):
     cur_99_price = None  # 当前价（tick时，根据tick更新，onBar回测时，根据bar.close更新)
 
     last_minute = None  # 最后的分钟,用于on_tick内每分钟处理的逻辑
+    order_type = OrderType.LIMIT
     cancel_seconds = 120  # 撤单时间(秒)
 
     # 资金相关
@@ -893,7 +894,10 @@ class CtaProTemplate(CtaTemplate):
         grid = copy(none_mi_grid)
 
         # 委托卖出非主力合约
-        vt_orderids = self.sell(price=none_mi_price, volume=none_mi_grid.volume, vt_symbol=none_mi_symbol,
+        vt_orderids = self.sell(price=none_mi_price,
+                                volume=none_mi_grid.volume,
+                                vt_symbol=none_mi_symbol,
+                                order_type=self.order_type,
                                 grid=none_mi_grid)
         if len(vt_orderids) > 0:
             self.write_log(f'切换合约,委托卖出非主力合约{none_mi_symbol}持仓:{none_mi_grid.volume}')
@@ -904,7 +908,10 @@ class CtaProTemplate(CtaTemplate):
             self.gt.dn_grids.append(grid)
 
             vt_orderids = self.buy(price=self.cur_mi_price + 5 * self.price_tick,
-                                   volume=grid.volume, vt_symbol=self.vt_symbol, grid=grid)
+                                   volume=grid.volume,
+                                   vt_symbol=self.vt_symbol,
+                                   order_type=self.order_type,
+                                   grid=grid)
             if len(vt_orderids) > 0:
                 self.write_log(u'切换合约,委托买入主力合约:{},价格:{},数量:{}'
                                .format(self.vt_symbol, self.cur_mi_price, grid.volume))
@@ -955,7 +962,10 @@ class CtaProTemplate(CtaTemplate):
 
         grid = copy(none_mi_grid)
         # 委托平空非主力合约
-        vt_orderids = self.cover(price=none_mi_price, volume=none_mi_grid.volume, vt_symbol=self.vt_symbol,
+        vt_orderids = self.cover(price=none_mi_price,
+                                 volume=none_mi_grid.volume,
+                                 vt_symbol=self.vt_symbol,
+                                 order_type=self.order_type,
                                  grid=none_mi_grid)
         if len(vt_orderids) > 0:
             self.write_log(f'委托平空非主力合约{none_mi_symbol}持仓:{none_mi_grid.volume}')
@@ -964,7 +974,11 @@ class CtaProTemplate(CtaTemplate):
             grid.id = str(uuid.uuid1())
             grid.snapshot.update({'mi_symbol': self.vt_symbol, 'open_price': self.cur_mi_price})
             self.gt.up_grids.append(grid)
-            vt_orderids = self.short(price=self.cur_mi_price, volume=grid.volume, vt_symbol=self.vt_symbol, grid=grid)
+            vt_orderids = self.short(price=self.cur_mi_price,
+                                     volume=grid.volume,
+                                     vt_symbol=self.vt_symbol,
+                                     order_type=self.order_type,
+                                     grid=grid)
             if len(vt_orderids) > 0:
                 self.write_log(f'委托做空主力合约:{self.vt_symbol},价格:{self.cur_mi_price},数量:{grid.volume}')
                 self.gt.save()
@@ -1048,7 +1062,6 @@ class CtaProTemplate(CtaTemplate):
 class CtaProFutureTemplate(CtaProTemplate):
     """期货交易增强版模板"""
 
-    order_type = OrderType.LIMIT
     activate_fak = False
     activate_today_lock = False
 
