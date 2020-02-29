@@ -4,6 +4,7 @@ import uuid
 import bz2
 import pickle
 import traceback
+import zlib
 
 from abc import ABC
 from copy import copy
@@ -704,9 +705,12 @@ class CtaProTemplate(CtaTemplate):
             d = {
                 'strategy': self.strategy_name,
                 'datetime': datetime.now()}
-
+            klines = {}
             for kline_name in sorted(self.klines.keys()):
-                d.update({kline_name: self.klines.get(kline_name).get_data()})
+                klines.update({kline_name: self.klines.get(kline_name).get_data()})
+            kline_names = list(klines.keys())
+            binary_data = zlib.compress(pickle.dumps(klines))
+            d.update({'kline_names': kline_names, 'klines': binary_data, 'zlib': True})
             return d
         except Exception as ex:
             self.write_error(f'获取klines切片数据失败:{str(ex)}')
@@ -1070,7 +1074,7 @@ class CtaProFutureTemplate(CtaProTemplate):
             self.write_log(u'load_policy(),初始化Policy')
 
             self.policy.load()
-            self.write_log(u'Policy:{}'.format(self.policy.toJson()))
+            self.write_log(u'Policy:{}'.format(self.policy.to_json()))
 
     def on_start(self):
         """启动策略（必须由用户继承实现）"""
@@ -1175,50 +1179,47 @@ class CtaProFutureTemplate(CtaProTemplate):
         self.write_log(u'{},委托单:{}全部完成'.format(order.time, order.vt_orderid))
         order_info = self.active_orders[order.vt_orderid]
 
-        # 平空仓完成(cover)
-        if order_info['direction'] == Direction.LONG.value and order.offset != Offset.OPEN:
-            self.write_log(u'{}平空仓完成(cover),委托价格:{}'.format(order.vt_symbol, order.price))
-            # 通过vt_orderid，找到对应的网格
-            grid = order_info.get('grid', None)
-            if grid is not None:
-                # 移除当前委托单
-                if order.vt_orderid in grid.order_ids:
-                    grid.order_ids.remove(order.vt_orderid)
+        # 通过vt_orderid，找到对应的网格
+        grid = order_info.get('grid', None)
+        if grid is not None:
+            # 移除当前委托单
+            if order.vt_orderid in grid.order_ids:
+                grid.order_ids.remove(order.vt_orderid)
 
-                # 网格的所有委托单已经执行完毕
-                if len(grid.order_ids) == 0:
-                    grid.order_status = False
-                    grid.traded_volume = 0
+            # 网格的所有委托单已经执行完毕
+            if len(grid.order_ids) == 0:
+                grid.order_status = False
+                grid.traded_volume = 0
 
-                    # 平仓完毕（cover， sell）
-                    if order.offset != Offset.OPEN:
-                        grid.open_status = False
-                        grid.close_status = True
+                # 平仓完毕（cover， sell）
+                if order.offset != Offset.OPEN:
+                    grid.open_status = False
+                    grid.close_status = True
 
-                        self.write_log(f'{grid.direction.value}单已平仓完毕,order_price:{order.price}'
-                                       + f',volume:{order.volume}')
+                    self.write_log(f'{grid.direction.value}单已平仓完毕,order_price:{order.price}'
+                                   + f',volume:{order.volume}')
 
-                        self.write_log(f'移除网格:{grid.to_json()}')
-                        self.gt.remove_grids_by_ids(direction=grid.direction, ids=[grid.id])
+                    self.write_log(f'移除网格:{grid.to_json()}')
+                    self.gt.remove_grids_by_ids(direction=grid.direction, ids=[grid.id])
 
-                    # 开仓完毕( buy, short)
-                    else:
-                        grid.open_status = True
-                        self.write_log(f'{grid.direction.value}单已开仓完毕,order_price:{order.price}'
-                                       + f',volume:{order.volume}')
-
-                    # 网格的所有委托单部分执行完毕
+                # 开仓完毕( buy, short)
                 else:
-                    old_traded_volume = grid.traded_volume
-                    grid.traded_volume += order.volume
+                    grid.open_status = True
+                    self.write_log(f'{grid.direction.value}单已开仓完毕,order_price:{order.price}'
+                                   + f',volume:{order.volume}')
 
-                    self.write_log(f'{grid.direction.value}单部分{order.offset}仓，'
-                                   + f'网格volume:{grid.volume}, traded_volume:{old_traded_volume}=>{grid.traded_volume}')
+                # 网格的所有委托单部分执行完毕
+            else:
+                old_traded_volume = grid.traded_volume
+                grid.traded_volume += order.volume
 
-                    self.write_log(f'剩余委托单号:{grid.order_ids}')
+                self.write_log(f'{grid.direction.value}单部分{order.offset}仓，'
+                               + f'网格volume:{grid.volume}, traded_volume:{old_traded_volume}=>{grid.traded_volume}')
 
-                # 在策略得活动订单中，移除
-            self.active_orders.pop(order.vt_orderid, None)
+                self.write_log(f'剩余委托单号:{grid.order_ids}')
+
+        # 在策略得活动订单中，移除
+        self.active_orders.pop(order.vt_orderid, None)
 
     def on_order_open_canceled(self, order: OrderData):
         """
@@ -1657,7 +1658,7 @@ class CtaProFutureTemplate(CtaProTemplate):
         :param 平仓网格
         :return:
         """
-        self.write_log(u'执行事务平多仓位:{}'.format(grid.toJson()))
+        self.write_log(u'执行事务平多仓位:{}'.format(grid.to_json()))
 
         # 平仓网格得合约
         sell_symbol = grid.snapshot.get('mi_symbol', self.vt_symbol)
@@ -1748,7 +1749,7 @@ class CtaProFutureTemplate(CtaProTemplate):
         :param 平仓网格
         :return:
         """
-        self.write_log(u'执行事务平空仓位:{}'.format(grid.toJson()))
+        self.write_log(u'执行事务平空仓位:{}'.format(grid.to_json()))
         # 平仓网格得合约
         cover_symbol = grid.snapshot.get('mi_symbol', self.vt_symbol)
         # vt_symbol => holding position
@@ -1849,7 +1850,7 @@ class CtaProFutureTemplate(CtaProTemplate):
             symbol = g.snapshot.get('mi_symbol', self.vt_symbol)
 
             if g.order_status or g.order_ids:
-                self.write_log(u'当前对锁格:{}存在委托,不纳入计算'.format(g.toJson()))
+                self.write_log(u'当前对锁格:{}存在委托,不纳入计算'.format(g.to_json()))
                 continue
 
             if symbol != open_symbol:
@@ -1874,7 +1875,7 @@ class CtaProFutureTemplate(CtaProTemplate):
         for g in locked_short_grids:
             symbol = g.snapshot.get('mi_symbol', self.vt_symbol)
             if g.order_status or g.order_ids:
-                self.write_log(u'当前对锁格:{}存在委托,不进行解锁'.format(g.toJson()))
+                self.write_log(u'当前对锁格:{}存在委托,不进行解锁'.format(g.to_json()))
                 continue
             if symbol != open_symbol:
                 self.write_log(u'不处理symbol不一致: 委托请求:{}, Grid mi Symbol:{}'.format(open_symbol, symbol))
@@ -2037,7 +2038,7 @@ class CtaProFutureTemplate(CtaProTemplate):
             volume = g.volume - g.traded_volume
             locked_long_dict.update({vt_symbol: locked_long_dict.get(vt_symbol, 0) + volume})
             if g.orderStatus or g.order_ids:
-                self.write_log(u'当前对锁格:{}存在委托,不进行解锁'.format(g.toJson()))
+                self.write_log(u'当前对锁格:{}存在委托,不进行解锁'.format(g.to_json()))
                 return
 
         locked_long_volume = sum(locked_long_dict.values(), 0)
@@ -2054,14 +2055,14 @@ class CtaProFutureTemplate(CtaProTemplate):
             volume = g.volume - g.traded_volume
             locked_short_dict.update({vt_symbol: locked_short_dict.get(vt_symbol, 0) + volume})
             if g.orderStatus or g.order_ids:
-                self.write_log(u'当前对锁格:{}存在委托,不进行解锁'.format(g.toJson()))
+                self.write_log(u'当前对锁格:{}存在委托,不进行解锁'.format(g.to_json()))
                 return
 
         locked_short_volume = sum(locked_short_dict.values(), 0)
 
         # debug info
-        self.write_log(u'多单对锁格:{}'.format([g.toJson() for g in locked_long_grids]))
-        self.write_log(u'空单对锁格:{}'.format([g.toJson() for g in locked_short_grids]))
+        self.write_log(u'多单对锁格:{}'.format([g.to_json() for g in locked_long_grids]))
+        self.write_log(u'空单对锁格:{}'.format([g.to_json() for g in locked_short_grids]))
 
         if locked_long_volume != locked_short_volume:
             self.write_error(u'对锁格多空数量不一致,不能解锁.\n多:{},\n空:{}'

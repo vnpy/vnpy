@@ -77,8 +77,11 @@ class BackTestingEngine(object):
         # 绑定事件引擎
         self.event_engine = event_engine
 
+        self.mode = 'bar'  # 'bar': 根据1分钟k线进行回测， 'tick'，根据分笔tick进行回测
+
         # 引擎类型为回测
         self.engine_type = EngineType.BACKTESTING
+        self.contract_type = 'future'  # future, stock, digital
 
         # 回测策略相关
         self.classes = {}  # 策略类，class_name: stategy_class
@@ -128,6 +131,8 @@ class BackTestingEngine(object):
 
         self.long_position_list = []  # 多单持仓
         self.short_position_list = []  # 空单持仓
+
+        self.holdings = {}     # 多空持仓
 
         # 当前最新数据，用于模拟成交用
         self.gateway_name = u'BackTest'
@@ -357,6 +362,30 @@ class BackTestingEngine(object):
     def get_exchange(self, symbol: str):
         return self.symbol_exchange_dict.get(symbol, Exchange.LOCAL)
 
+    def get_position_holding(self, vt_symbol: str, gateway_name: str = ''):
+        """ 查询合约在账号的持仓（包含多空）"""
+        k = f'{gateway_name}.{vt_symbol}'
+        holding = self.holdings.get(k, None)
+        if not holding:
+            symbol, exchange = extract_vt_symbol(vt_symbol)
+            if self.contract_type== 'future':
+                product = Product.FUTURES
+            elif self.contract_type == 'stock':
+                product = Product.EQUITY
+            else:
+                product = Product.SPOT
+            contract = ContractData(gateway_name=gateway_name,
+                                    name=vt_symbol,
+                                    product=product,
+                                    symbol=symbol,
+                                    exchange=exchange,
+                                    size=self.get_size(vt_symbol),
+                                    pricetick=self.get_price_tick(vt_symbol),
+                                    margin_rate=self.get_margin_rate(vt_symbol))
+            holding = PositionHolding(contract)
+            self.holdings[k] = holding
+        return holding
+
     def set_name(self, test_name):
         """
         设置组合的运行实例名称
@@ -386,6 +415,12 @@ class BackTestingEngine(object):
         self.output('back_testing prepare_env')
         if 'name' in test_settings:
             self.set_name(test_settings.get('name'))
+
+        self.mode = test_settings.get('mode', 'bar')
+        self.output(f'采用{self.mode}方式回测')
+
+        self.contract_type = test_settings.get('contract_type', 'future')
+        self.output(f'测试合约主要为{self.contract_type}')
 
         self.debug = test_settings.get('debug', False)
 
@@ -441,6 +476,9 @@ class BackTestingEngine(object):
         if 'symbol_datas' in test_settings:
             self.write_log(u'准备数据')
             self.prepare_data(test_settings.get('symbol_datas'))
+
+        if self.mode == 'tick':
+            self.tick_path = test_settings.get('tick_path', None)
 
         # 设置bar文件的时间间隔秒数
         if 'bar_interval_seconds' in test_settings:
@@ -639,14 +677,18 @@ class BackTestingEngine(object):
         vt_symbol = strategy_setting.get('vt_symbol')
         if '.' in vt_symbol:
             symbol, exchange = extract_vt_symbol(vt_symbol)
-        else:
+        elif self.contract_type == 'future':
             symbol = vt_symbol
             underly_symbol = get_underlying_symbol(symbol).upper()
             exchange = self.get_exchange(f'{underly_symbol}99')
             vt_symbol = '.'.join([symbol, exchange.value])
+        else:
+            symbol = vt_symbol
+            exchange = Exchange.LOCAL
+            vt_symbol = '.'.join([symbol, exchange.value])
 
         # 在期货组合回测，中需要把一般配置的主力合约，更换为指数合约
-        if '99' not in symbol and exchange != Exchange.SPD:
+        if '99' not in symbol and exchange != Exchange.SPD and self.contract_type == 'future':
             underly_symbol = get_underlying_symbol(symbol).upper()
             self.write_log(u'更新vt_symbol为指数合约:{}=>{}'.format(vt_symbol, underly_symbol + '99.' + exchange.value))
             vt_symbol = underly_symbol.upper() + '99.' + exchange.value
@@ -1025,6 +1067,8 @@ class BackTestingEngine(object):
             strategy.on_stop_order(stop_order)
             strategy.on_order(order)
             self.append_trade(trade)
+            holding = self.get_position_holding(vt_symbol=trade.vt_symbol)
+            holding.update_trade(trade)
             strategy.on_trade(trade)
 
     def cross_limit_order(self, bar: BarData = None, tick: TickData = None):
@@ -1854,10 +1898,28 @@ class BackTestingEngine(object):
             self.daily_max_drawdown_rate = drawdown_rate
             self.max_drawdown_rate_time = data['date']
 
-        self.write_log(u'{}:  net={}, capital={} max={} margin={} commission={}， pos: {}'
-                       .format(data['date'], data['net'], c, m,
-                               today_holding_profit, commission,
-                               positionMsg))
+        msg = u'{}:  net={}, capital={} max={} margin={} commission={}， pos: {}'\
+            .format(data['date'],
+                    data['net'], c, m,
+                    today_holding_profit,
+                    commission,
+                    positionMsg)
+
+        if not self.debug:
+            self.output(msg)
+        else:
+            self.write_log(msg)
+
+        # 今仓 =》 昨仓
+        for holding in self.holdings.values():
+            if holding.long_td > 0:
+                self.write_log(f'{holding.vt_symbol} 多单今仓{holding.long_td},昨仓:{holding.long_yd}=> 昨仓:{holding.long_pos}')
+                holding.long_td = 0
+                holding.long_yd = holding.long_pos
+            if holding.short_td > 0:
+                self.write_log(f'{holding.vt_symbol} 空单今仓{holding.short_td},昨仓:{holding.short_yd}=> 昨仓:{holding.short_pos}')
+                holding.short_td = 0
+                holding.short_yd = holding.short_pos
 
     # ---------------------------------------------------------------------
     def export_trade_result(self):

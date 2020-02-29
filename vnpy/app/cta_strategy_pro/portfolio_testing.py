@@ -50,8 +50,6 @@ class PortfolioTestingEngine(BackTestingEngine):
         """Constructor"""
         super().__init__(event_engine)
 
-        self.mode = 'bar'  # 'bar': 根据1分钟k线进行回测， 'tick'，根据分笔tick进行回测
-
         self.bar_csv_file = {}
         self.bar_df_dict = {}  # 历史数据的df，回测用
         self.bar_df = None  # 历史数据的df，时间+symbol作为组合索引
@@ -116,83 +114,8 @@ class PortfolioTestingEngine(BackTestingEngine):
         self.bar_df_dict.clear()
 
     def prepare_env(self, test_settings):
-        self.output('prepare_env')
-
-        if 'name' in test_settings:
-            self.set_name(test_settings.get('name'))
-
-        self.mode = test_settings.get('mode', 'bar')
-        self.output(f'采用{self.mode}方式回测')
-
-        self.debug = test_settings.get('debug', False)
-
-        # 更新数据目录
-        if 'data_path' in test_settings:
-            self.data_path = test_settings.get('data_path')
-        else:
-            self.data_path = os.path.abspath(os.path.join(os.getcwd(), 'data'))
-
-        self.output(f'数据输出目录:{self.data_path}')
-
-        # 更新日志目录
-        if 'logs_path' in test_settings:
-            self.logs_path = os.path.abspath(os.path.join(test_settings.get('logs_path'), self.test_name))
-        else:
-            self.logs_path = os.path.abspath(os.path.join(os.getcwd(), 'log', self.test_name))
-        self.output(f'日志输出目录:{self.logs_path}')
-
-        # 创建日志
-        self.create_logger(debug=self.debug)
-
-        # 设置资金
-        if 'init_capital' in test_settings:
-            self.write_log(u'设置期初资金:{}'.format(test_settings.get('init_capital')))
-            self.set_init_capital(test_settings.get('init_capital'))
-
-        # 缺省使用保证金方式。
-        self.use_margin = test_settings.get('use_margin', True)
-
-        # 设置最大资金使用比例
-        if 'percent_limit' in test_settings:
-            self.write_log(u'设置最大资金使用比例:{}%'.format(test_settings.get('percent_limit')))
-            self.percent_limit = test_settings.get('percent_limit')
-
-        if 'start_date' in test_settings:
-            if 'strategy_start_date' not in test_settings:
-                init_days = test_settings.get('init_days', 10)
-                self.write_log(u'设置回测开始日期:{}，数据加载日数:{}'.format(test_settings.get('start_date'), init_days))
-                self.set_test_start_date(test_settings.get('start_date'), init_days)
-            else:
-                start_date = test_settings.get('start_date')
-                strategy_start_date = test_settings.get('strategy_start_date')
-                self.write_log(u'使用指定的数据开始日期：{}和策略启动日期:{}'.format(start_date, strategy_start_date))
-                self.test_start_date = start_date
-                self.data_start_date = datetime.strptime(start_date.replace('-', ''), '%Y%m%d')
-                self.strategy_start_date = datetime.strptime(strategy_start_date.replace('-', ''), '%Y%m%d')
-
-        if 'end_date' in test_settings:
-            self.write_log(u'设置回测结束日期:{}'.format(test_settings.get('end_date')))
-            self.set_test_end_date(test_settings.get('end_date'))
-
-        # 设置bar文件的时间间隔秒数
-        if 'bar_interval_seconds' in test_settings:
-            self.write_log(u'设置bar文件的时间间隔秒数：{}'.format(test_settings.get('bar_interval_seconds')))
-            self.bar_interval_seconds = test_settings.get('bar_interval_seconds')
-
-        # 准备数据
-        if 'symbol_datas' in test_settings:
-            self.write_log(u'准备数据')
-            self.prepare_data(test_settings.get('symbol_datas'))
-
-        if self.mode == 'tick':
-            self.tick_path = test_settings.get('tick_path', None)
-
-        self.acivte_fund_kline = test_settings.get('acivte_fund_kline', False)
-        if self.acivte_fund_kline:
-            # 创建资金K线
-            self.create_fund_kline(self.test_name, use_renko=test_settings.get('use_renko', False))
-
-        self.load_strategy_class()
+        self.output('portfolio prepare_env')
+        super().prepare_env(test_settings)
 
     def prepare_data(self, data_dict):
         """
@@ -458,7 +381,7 @@ class PortfolioTestingEngine(BackTestingEngine):
                 continue
 
             try:
-                for (dt, vt_symbol), bar_data in combined_df.iterrows():
+                for (dt, vt_symbol), tick_data in combined_df.iterrows():
                     symbol, exchange = extract_vt_symbol(vt_symbol)
                     tick = TickData(
                         gateway_name='backtesting',
@@ -468,8 +391,8 @@ class PortfolioTestingEngine(BackTestingEngine):
                         date=dt.strftime('%Y-%m-%d'),
                         time=dt.strftime('%H:%M:%S.%f'),
                         trading_day=test_day.strftime('%Y-%m-%d'),
-                        last_price=bar_data['price'],
-                        volume=bar_data['volume']
+                        last_price=tick_data['price'],
+                        volume=tick_data['volume']
                     )
 
                     self.new_tick(tick)
