@@ -2009,7 +2009,7 @@ public:
 };
 
 
-PYBIND11_MODULE(vnctptd, m)
+PYBIND11_MODULE(vnxtptd, m)
 {
 	class_<TdApi, PyTdApi> TdApi(m, "TdApi", module_local());
 	TdApi
