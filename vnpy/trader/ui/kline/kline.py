@@ -13,6 +13,7 @@ Support By 量投科技(http://www.quantdo.com.cn/)
 
 # Qt相关和十字光标
 import sys
+import os
 import traceback
 import copy
 import numpy as np
@@ -1411,3 +1412,134 @@ class KLineWidget(KeyWraper):
         self.plot_all(redraw=True, xMin=0, xMax=len(self.datas))
         self.crosshair.signal.emit((None, None))
         print('finished load Data')
+
+
+class GridKline(QtWidgets.QWidget):
+    """多kline"""
+
+    def __init__(self, parent=None, kline_settings={}):
+        self.parent = parent
+        super(GridKline, self).__init__(parent)
+
+        self.kline_settings = kline_settings
+        self.kline_names = list(self.kline_settings.keys())
+        self.kline_dict = {}
+
+        self.initUI()
+
+    def initUI(self):
+        gridLayout = QtWidgets.QGridLayout()
+
+        for kline_name, kline_setting in self.kline_settings.items():
+            canvas = KLineWidget(display_vol=False, display_sub=True)
+            canvas.show()
+            canvas.KLtitle.setText(f'{kline_name}', size='18pt')
+            canvas.title = f'{kline_name}'
+            main_indicators = kline_setting.get('main_indicators', [])
+            for main_indicator in main_indicators:
+                canvas.add_indicator(indicator=main_indicator, is_main=True)
+            sub_indicators = kline_setting.get('sub_indicators', [])
+            for sub_indicator in sub_indicators:
+                canvas.add_indicator(indicator=sub_indicator, is_main=False)
+
+            self.kline_dict[kline_name] = canvas
+            # 注册重定向事件
+            canvas.relocate_notify_func = self.onRelocate
+
+        # 将所有Kline放到画板
+        kline_names = list(self.kline_names)
+        widgets = len(kline_names)
+        row = 0
+        for i in range(0, widgets):
+            if len(kline_names) == 0:
+                break
+            for column in [1, 2]:
+                if len(kline_names) == 0:
+                    break
+                kline_name = kline_names.pop(0)
+                gridLayout.addWidget(self.kline_dict[kline_name], row, column)
+                if len(kline_names) == 0:
+                    break
+            row += 1
+
+        self.setLayout(gridLayout)
+
+        self.show()
+
+        self.load_multi_kline()
+
+    # ----------------------------------------------------------------------
+    def load_multi_kline(self):
+        """加载多周期窗口"""
+
+        try:
+            for kline_name, kline_setting in self.kline_settings.items():
+                canvas = self.kline_dict.get(kline_name, None)
+                if canvas is None:
+                    continue
+
+                # 加载K线
+                data_file = kline_setting.get('data_file', None)
+                if not data_file:
+                    continue
+                df = pd.read_csv(data_file)
+                df = df.set_index(pd.DatetimeIndex(df['datetime']))
+                canvas.loadData(df,
+                                main_indicators=kline_setting.get('main_indicators', []),
+                                sub_indicators=kline_setting.get('sub_indicators', [])
+                                )
+
+                # 加载交易信号
+                trade_list_file = kline_setting.get('trade_list_file', None)
+                if trade_list_file and os.path.exists(trade_list_file):
+                    df_trade = pd.read_csv(trade_list_file)
+                    self.kline_dict[kline_name].add_signals(df_trade)
+
+                # 加载tns
+                tns_file = kline_setting.get('tns_file', None)
+                if tns_file and os.path.exists(tns_file):
+                    df_tns = pd.read_csv(tns_file)
+                    self.kline_dict[kline_name].add_trans_df(df_tns)
+
+                # 加载policy 逻辑记录
+                dist_file = kline_setting.get('dist_file', None)
+                if dist_file and os.path.exists(dist_file):
+                    df_markup = pd.read_csv(dist_file)
+                    df_markup = df_markup[['datetime', 'price', 'operation']]
+                    df_markup.rename(columns={'operation': 'markup'}, inplace=True)
+                    self.kline_dict['m30'].add_markups(df_markup=df_markup,
+                                                       include_list=kline_setting.get('dist_include_list', []),
+                                                       exclude_list=['buy', 'short', 'sell', 'cover'])
+
+        except Exception as ex:
+            traceback.print_exc()
+            QtWidgets.QMessageBox.warning(self, 'Exception', u'Load data Exception',
+                                          QtWidgets.QMessageBox.Cancel,
+                                          QtWidgets.QMessageBox.NoButton)
+
+            return
+
+    def onRelocate(self, window_id, t_value, count_k):
+        """
+        重定位所有周期的时间
+        :param window_id:
+        :param t_value:
+        :return:
+        """
+        for kline_name in self.kline_names:
+            try:
+                canvas = self.kline_dict.get(kline_name, None)
+                if canvas is not None:
+                    canvas.relocate(window_id, t_value, count_k)
+            except Exception as ex:
+                traceback.print_exc()
+
+
+def display_multi_grid(kline_settings={}):
+    """显示多图"""
+    from vnpy.trader.ui import create_qapp
+    qApp = create_qapp()
+
+    w = GridKline(kline_settings=kline_settings)
+    w.showMaximized()
+    sys.exit(qApp.exec_())
