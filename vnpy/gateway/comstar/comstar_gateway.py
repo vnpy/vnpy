@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Sequence
 
-from vnpy.api.comstar import TdApi
+from vnpy.gateway.comstar.comstar_api import TdApi
 from vnpy.event import EventEngine
 from vnpy.trader.constant import Exchange, Product, Offset, OrderType, Direction, Status
 from vnpy.trader.gateway import BaseGateway
