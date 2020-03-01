@@ -743,7 +743,7 @@ class OkexfWebsocketApi(WebsocketClient):
         # Subscribe to account update
         channels = []
         for currency in currencies:
-            if currency not in ["USD","USDT"]:
+            if currency not in ["USD", "USDT"]:
                 channel = f"futures/account:{currency}"
                 channels.append(channel)
 
