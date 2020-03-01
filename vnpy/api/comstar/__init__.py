@@ -1,1 +1,0 @@
-from .comstar_api import TdApi
