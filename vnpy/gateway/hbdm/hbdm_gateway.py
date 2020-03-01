@@ -44,9 +44,9 @@ from vnpy.trader.object import (
 from vnpy.trader.event import EVENT_TIMER
 
 
-REST_HOST = "https://api.hbdm.com"
-WEBSOCKET_DATA_HOST = "wss://www.hbdm.com/ws"               # Market Data
-WEBSOCKET_TRADE_HOST = "wss://api.hbdm.com/notification"    # Account and Order
+REST_HOST = "https://api.btcgateway.pro"
+WEBSOCKET_DATA_HOST = "wss://www.btcgateway.pro/ws"               # Market Data
+WEBSOCKET_TRADE_HOST = "wss://api.btcgateway.pro/notification"    # Account and Order
 
 STATUS_HBDM2VT = {
     3: Status.NOTTRADED,

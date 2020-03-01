@@ -6,9 +6,11 @@ from vnpy.trader.event import (
 from vnpy.trader.constant import (Direction, Offset, OrderType)
 from vnpy.trader.object import (SubscribeRequest, OrderRequest, LogData)
 from vnpy.trader.utility import load_json, save_json, round_to
-
+from pathlib import Path
 from .template import AlgoTemplate
-
+import os
+import importlib
+import traceback
 
 APP_NAME = "AlgoTrading"
 
@@ -51,6 +53,28 @@ class AlgoEngine(BaseEngine):
         from .algos.grid_algo import GridAlgo
         from .algos.dma_algo import DmaAlgo
         from .algos.arbitrage_algo import ArbitrageAlgo
+
+        # 加载run当前目录下的alogs的目录下的文件
+        path = Path.cwd().joinpath("algos")
+        module_name = "algos"
+        for dirpath, dirnames, filenames in os.walk(str(path)):
+            for filename in filenames:
+                if filename.endswith(".py"):
+                    strategy_module_name = ".".join(
+                        [module_name, filename.replace(".py", "")])
+                elif filename.endswith(".pyd"):
+                    strategy_module_name = ".".join(
+                        [module_name, filename.split(".")[0]])
+                try:
+                    module = importlib.import_module(strategy_module_name)
+
+                    for name in dir(module):
+                        value = getattr(module, name)
+                        if isinstance(value, type) and issubclass(value, AlgoTemplate) and value is not AlgoTemplate:
+                            self.add_algo_template(value)
+                except:  # noqa
+                    msg = f"策略文件{module_name}加载失败，触发异常：\n{traceback.format_exc()}"
+                    self.write_log(msg)
 
         self.add_algo_template(TwapAlgo)
         self.add_algo_template(IcebergAlgo)
@@ -117,6 +141,13 @@ class AlgoEngine(BaseEngine):
         algo = self.orderid_algo_map.get(order.vt_orderid, None)
         if algo:
             algo.update_order(order)
+
+    def start_all_strategy(self):
+        self.algo_settings = load_json(self.setting_filename)
+
+        # 必须包含key和value，setting_name作为key
+        for setting_name, setting in self.algo_settings.items():
+            self.start_algo(setting)
 
     def start_algo(self, setting: dict):
         """"""
