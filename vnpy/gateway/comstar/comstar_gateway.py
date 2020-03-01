@@ -49,6 +49,14 @@ class ComstarGateway(BaseGateway):
 
     def send_order(self, req: OrderRequest):
         """"""
+        if req.type not in {OrderType.LIMIT, OrderType.FAK}:
+            self.write_log("仅支持限价单和FAK单")
+            return ""
+
+        if req.offset not in {Offset.NONE, Offset.OPEN}:
+            self.write_log("仅支持开仓")
+            return ""
+
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
         data = vn_encode(req)
         # 清算速度
@@ -207,6 +215,7 @@ def parse_order(data: dict) -> OrderData:
         orderid=data['orderid'],
         type=enum_decode(data['type']),
         direction=enum_decode(data['direction']),
+        offset=enum_decode(data['offset']),
         price=float(data['price']),
         volume=float(data['volume']),
         traded=float(data['traded']),
@@ -227,6 +236,7 @@ def parse_trade(data: dict) -> TradeData:
         orderid=data['orderid'],
         tradeid=data['tradeid'],
         direction=enum_decode(data['direction']),
+        offset=enum_decode(data['offset']),
         price=float(data['price']),
         volume=float(data['volume']),
         time=data['time'],
@@ -271,8 +281,11 @@ def enum_decode(s: str):
     """
     从字符串解析成VN_ENUMS里的enum
     """
-    name, member = s.split(".")
-    return getattr(VN_ENUMS[name], member)
+    if "." in s:
+        name, member = s.split(".")
+        return getattr(VN_ENUMS[name], member)
+    else:
+        return None
 
 
 def vn_encode(obj: object) -> str or dict:
