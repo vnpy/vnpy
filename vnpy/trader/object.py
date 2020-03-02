@@ -279,6 +279,7 @@ class OrderRequest:
     volume: float
     price: float = 0
     offset: Offset = Offset.NONE
+    reference: str = ""
 
     def __post_init__(self):
         """"""

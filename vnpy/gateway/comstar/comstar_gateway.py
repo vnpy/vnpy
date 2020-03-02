@@ -65,7 +65,7 @@ class ComstarGateway(BaseGateway):
         # 清算速度
         data['settle_type'] = settle_type
         # 策略名称
-        data['strategy_name'] = ''
+        data['strategy_name'] = req.reference
         # 1表示阻塞, 0非阻塞
         return self.api.send_order(data, gateway_name, blocks=1)
 
