@@ -566,14 +566,7 @@ class CtaProTemplate(CtaTemplate):
     symbol_size = 10  # 商品得合约乘数
     margin_rate = 0.1  # 商品的保证金
 
-    cur_datetime = None  # 当前Tick时间
-    cur_mi_tick = None  # 最新的主力合约tick( vt_symbol)
-    cur_99_tick = None  # 最新得指数合约tick( idx_symbol)
-
-    cur_mi_price = None  # 当前价（主力合约 vt_symbol)
-    cur_99_price = None  # 当前价（tick时，根据tick更新，onBar回测时，根据bar.close更新)
-
-    last_minute = None  # 最后的分钟,用于on_tick内每分钟处理的逻辑
+    # 委托类型
     order_type = OrderType.LIMIT
     cancel_seconds = 120  # 撤单时间(秒)
 
@@ -582,12 +575,7 @@ class CtaProTemplate(CtaTemplate):
     max_invest_margin = 0  # 资金上限 0，不限制
     max_invest_pos = 0  # 单向头寸数量上限 0，不限制
 
-    position = None  # 仓位组件
-    policy = None  # 事务执行组件
-    gt = None  # 网格交易组件
-
-    klines = {}  # K线字典: kline_name: kline
-
+    # 是否回测状态
     backtesting = False
 
     # 逻辑过程日志
@@ -597,6 +585,20 @@ class CtaProTemplate(CtaTemplate):
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
+        self.position = None  # 仓位组件
+        self.policy = None  # 事务执行组件
+        self.gt = None  # 网格交易组件
+        self.klines = {}  # K线组件字典: kline_name: kline
+
+        self.cur_datetime = None  # 当前Tick时间
+        self.cur_mi_tick = None  # 最新的主力合约tick( vt_symbol)
+        self.cur_99_tick = None  # 最新得指数合约tick( idx_symbol)
+
+        self.cur_mi_price = None  # 当前价（主力合约 vt_symbol)
+        self.cur_99_price = None  # 当前价（tick时，根据tick更新，onBar回测时，根据bar.close更新)
+
+        self.last_minute = None  # 最后的分钟,用于on_tick内每分钟处理的逻辑
+
         super(CtaProTemplate, self).__init__(
             cta_engine, strategy_name, vt_symbol, setting
         )
