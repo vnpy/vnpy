@@ -619,13 +619,13 @@ class DeribitWebsocketApi(WebsocketClient):
         asks = data["asks"]
         tick = self.ticks[symbol]
 
-        for i in range(min(len(bids), 5):
+        for i in range(min(len(bids), 5)):
             ix = i + 1
             bp, bv = bids[i]
             setattr(tick, f"bid_price_{ix}", bp)
             setattr(tick, f"bid_volume_{ix}", bv)
 
-        for i in range(min(len(asks), 5):
+        for i in range(min(len(asks), 5)):
             ix = i + 1
             ap, av = asks[i]
             setattr(tick, f"ask_price_{ix}", ap)
