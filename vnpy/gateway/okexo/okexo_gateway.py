@@ -13,7 +13,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import urlencode
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from requests import ConnectionError
 
@@ -43,7 +43,7 @@ from vnpy.trader.object import (
     HistoryRequest
 )
 REST_HOST: str = "https://www.okex.com"
-WEBSOCKET_HOST: str = "wss://real.okex.com:10442/ws/v3"
+WEBSOCKET_HOST: str = "wss://real.okex.com:8443/ws/v3"
 
 STATE_OKEXO2VT: Dict[str, Status] = {
     "0": Status.NOTTRADED,
@@ -80,7 +80,7 @@ class OkexoGateway(BaseGateway):
     VN Trader Gateway for OKEX connection.
     """
 
-    default_setting: Dict[str, Optional[str, int]] = {
+    default_setting = {
         "API Key": "",
         "Secret Key": "",
         "Passphrase": "",
@@ -93,7 +93,7 @@ class OkexoGateway(BaseGateway):
 
     def __init__(self, event_engine: EventEngine):
         """Constructor"""
-        super(OkexoGateway, self).__init__(event_engine, "OKEXO")
+        super().__init__(event_engine, "OKEXO")
 
         self.rest_api = OkexoRestApi(self)
         self.ws_api = OkexoWebsocketApi(self)
@@ -164,7 +164,7 @@ class OkexoRestApi(RestClient):
 
     def __init__(self, gateway: "OkexoGateway"):
         """"""
-        super(OkexoRestApi, self).__init__()
+        super().__init__()
 
         self.gateway: OkexoGateway = gateway
         self.gateway_name: str = gateway.gateway_name
@@ -389,7 +389,7 @@ class OkexoRestApi(RestClient):
         # and query pending orders
         self.query_account()
         self.query_position()
-        self.query_order() 
+        self.query_order()
 
     def on_query_account(self, data: dict, request: Request) -> None:
         """"""
@@ -603,7 +603,8 @@ class OkexoWebsocketApi(WebsocketClient):
 
     def __init__(self, gateway):
         """"""
-        super(OkexoWebsocketApi, self).__init__()
+        super().__init__()
+
         self.ping_interval: int = 20     # OKEX use 30 seconds for ping
 
         self.gateway: OkexoGateway = gateway
