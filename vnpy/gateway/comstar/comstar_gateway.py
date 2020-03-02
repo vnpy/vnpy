@@ -42,9 +42,10 @@ class ComstarGateway(BaseGateway):
     def subscribe(self, req: SubscribeRequest):
         """"""
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
+        _, settle_type = req.symbol.split("_")
         data = vn_encode(req)
         # 清算速度
-        data['settle_type'] = 'T1'
+        data['settle_type'] = settle_type
         self.api.subscribe(data, gateway_name)
 
     def send_order(self, req: OrderRequest):
@@ -58,9 +59,11 @@ class ComstarGateway(BaseGateway):
             return ""
 
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
+        _, settle_type = req.symbol.split("_")
+
         data = vn_encode(req)
         # 清算速度
-        data['settle_type'] = 'T1'
+        data['settle_type'] = settle_type
         # 策略名称
         data['strategy_name'] = ''
         # 1表示阻塞, 0非阻塞
@@ -136,10 +139,12 @@ class UserApi(TdApi):
 
     def on_all_contracts(self, contracts: Sequence[dict]):
         for data in contracts:
-            contract = parse_contract(data)
-            self.gateway.symbol_gateway_map[contract.vt_symbol] = contract.gateway_name
-            contract.gateway_name = self.gateway_name
-            self.gateway.on_contract(contract)
+            for settle_type in ("T0", "T1"):
+                contract = parse_contract(data, settle_type)
+                self.gateway.symbol_gateway_map[contract.vt_symbol] = contract.gateway_name
+                contract.gateway_name = self.gateway_name
+
+                self.gateway.on_contract(contract)
         self.gateway.write_log("合约信息查询成功")
 
     def on_all_orders(self, orders: Sequence[dict]):
@@ -210,7 +215,7 @@ def parse_order(data: dict) -> OrderData:
     从api收到的data里解析出OrderData
     """
     order = OrderData(
-        symbol=data['symbol'],
+        symbol=f"{data['symbol']}_{data['settle_type']}",
         exchange=enum_decode(data['exchange']),
         orderid=data['orderid'],
         type=enum_decode(data['type']),
@@ -231,7 +236,7 @@ def parse_trade(data: dict) -> TradeData:
     从api收到的data里解析出TradeData
     """
     trade = TradeData(
-        symbol=data['symbol'],
+        symbol=f"{data['symbol']}_{data['settle_type']}",
         exchange=enum_decode(data['exchange']),
         orderid=data['orderid'],
         tradeid=data['tradeid'],
@@ -245,12 +250,12 @@ def parse_trade(data: dict) -> TradeData:
     return trade
 
 
-def parse_contract(data: dict) -> ContractData:
+def parse_contract(data: dict, settle_type: str) -> ContractData:
     """
     从api收到的data里解析出ContractData
     """
     contract = ContractData(
-        symbol=data['symbol'],
+        symbol=f"{data['symbol']}_{settle_type}",
         exchange=enum_decode(data['exchange']),
         name=data['name'],
         product=enum_decode(data['product']),
