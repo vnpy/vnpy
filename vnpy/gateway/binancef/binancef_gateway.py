@@ -10,7 +10,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from enum import Enum
 from threading import Lock
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
@@ -94,7 +94,7 @@ class BinancefGateway(BaseGateway):
     VN Trader Gateway for Binance connection.
     """
 
-    default_setting: Dict[str, Optional[str, list]] = {
+    default_setting = {
         "key": "",
         "secret": "",
         "session_number": 3,
@@ -270,6 +270,7 @@ class BinancefRestApi(RestClient):
 
         self.query_time()
         self.query_account()
+        self.query_position()
         self.query_order()
         self.query_contract()
         self.start_user_stream()
@@ -296,6 +297,17 @@ class BinancefRestApi(RestClient):
             method="GET",
             path="/fapi/v1/account",
             callback=self.on_query_account,
+            data=data
+        )
+
+    def query_position(self) -> Request:
+        """"""
+        data = {"security": Security.SIGNED}
+
+        self.add_request(
+            method="GET",
+            path="/fapi/v1/positionRisk",
+            callback=self.on_query_position,
             data=data
         )
 
@@ -441,6 +453,24 @@ class BinancefRestApi(RestClient):
 
         self.gateway.write_log("账户资金查询成功")
 
+    def on_query_position(self, data: dict, request: Request) -> None:
+        """"""
+        for d in data:
+            position = PositionData(
+                symbol=d["symbol"],
+                exchange=Exchange.BINANCE,
+                direction=Direction.NET,
+                volume=int(float(d["positionAmt"])),
+                price=float(d["entryPrice"]),
+                pnl=float(d["unRealizedProfit"]),
+                gateway_name=self.gateway_name,
+            )
+
+            if position.volume:
+                self.gateway.on_position(position)
+
+        self.gateway.write_log("持仓信息查询成功")
+
     def on_query_order(self, data: dict, request: Request) -> None:
         """"""
         for d in data:
@@ -534,6 +564,7 @@ class BinancefRestApi(RestClient):
         """"""
         self.user_stream_key = data["listenKey"]
         self.keep_alive_count = 0
+
         if self.server == "REAL":
             url = WEBSOCKET_TRADE_HOST + self.user_stream_key
         else:
@@ -667,7 +698,6 @@ class BinancefTradeWebsocketApi(WebsocketClient):
                 exchange=Exchange.BINANCE,
                 direction=Direction.NET,
                 volume=int(float(pos_data["pa"])),
-                frozen=float(pos_data["iw"]),
                 price=float(pos_data["ep"]),
                 pnl=float(pos_data["cr"]),
                 gateway_name=self.gateway_name,
@@ -772,7 +802,7 @@ class BinancefDataWebsocketApi(WebsocketClient):
         for ws_symbol in self.ticks.keys():
             channels.append(ws_symbol + "@ticker")
             channels.append(ws_symbol + "@depth5")
-        
+
         if self.server == "REAL":
             url = WEBSOCKET_DATA_HOST + "/".join(channels)
         else:
