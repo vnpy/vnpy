@@ -809,13 +809,13 @@ class OkexfWebsocketApi(WebsocketClient):
         asks = d["asks"]
         for n, buf in enumerate(bids):
             price, volume, _, __ = buf
-            tick.__setattr__("bid_price_%s" % (n + 1), price)
-            tick.__setattr__("bid_volume_%s" % (n + 1), volume)
+            tick.__setattr__("bid_price_%s" % (n + 1), float(price))
+            tick.__setattr__("bid_volume_%s" % (n + 1), int(volume))
 
         for n, buf in enumerate(asks):
             price, volume, _, __ = buf
-            tick.__setattr__("ask_price_%s" % (n + 1), price)
-            tick.__setattr__("ask_volume_%s" % (n + 1), volume)
+            tick.__setattr__("ask_price_%s" % (n + 1), float(price))
+            tick.__setattr__("ask_volume_%s" % (n + 1), int(volume))
 
         tick.datetime = utc_to_local(d["timestamp"])
         self.gateway.on_tick(copy(tick))
