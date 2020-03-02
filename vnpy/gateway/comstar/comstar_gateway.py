@@ -41,9 +41,15 @@ class ComstarGateway(BaseGateway):
 
     def subscribe(self, req: SubscribeRequest):
         """"""
+        # 标准格式: 180406_T0 或 180406_T1, 不足用""填
+        symbol, settle_type, *_ = req.symbol.split("_") + [""]
+        if settle_type not in {'T0', 'T1'}:
+            self.write_log("请输入清算速度T0或T1")
+            return
+
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
-        _, settle_type = req.symbol.split("_")
         data = vn_encode(req)
+        data['symbol'] = symbol
         # 清算速度
         data['settle_type'] = settle_type
         self.api.subscribe(data, gateway_name)
@@ -58,10 +64,15 @@ class ComstarGateway(BaseGateway):
             self.write_log("仅支持开仓")
             return ""
 
-        gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
-        _, settle_type = req.symbol.split("_")
+        # 标准格式: 180406_T0 或 180406_T1, 不足用""填
+        symbol, settle_type, *_ = req.symbol.split("_") + [""]
+        if settle_type not in {'T0', 'T1'}:
+            self.write_log("请输入清算速度T0或T1")
+            return
 
+        gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
         data = vn_encode(req)
+        data['symbol'] = symbol
         # 清算速度
         data['settle_type'] = settle_type
         # 策略名称
@@ -175,7 +186,7 @@ def parse_tick(data: dict) -> TickData:
     因为TickData只有5档行情, 所以没有填充最后一档私有行情
     """
     tick = TickData(
-        symbol=data['symbol'],
+        symbol=f"{data['symbol']}_{data['settle_type']}",
         exchange=enum_decode(data['exchange']),
         datetime=parse_datetime(data['datetime']),
         name=data['name'],
