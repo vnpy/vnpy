@@ -35,6 +35,7 @@ from vnpy.trader.ui import MainWindow, create_qapp
 # from vnpy.gateway.deribit import DeribitGateway
 # from vnpy.gateway.uft import UftGateway
 from vnpy.gateway.okexo import OkexoGateway
+from vnpy.gateway.binancef import BinancefGateway
 
 # from vnpy.app.cta_strategy import CtaStrategyApp
 # from vnpy.app.csv_loader import CsvLoaderApp
@@ -46,7 +47,7 @@ from vnpy.gateway.okexo import OkexoGateway
 # from vnpy.app.rpc_service import RpcServiceApp
 # from vnpy.app.spread_trading import SpreadTradingApp
 # from vnpy.app.portfolio_manager import PortfolioManagerApp
-from vnpy.app.option_master import OptionMasterApp
+# from vnpy.app.option_master import OptionMasterApp
 # from vnpy.app.chart_wizard import ChartWizardApp
 # from vnpy.app.excel_rtd import ExcelRtdApp
 
@@ -90,6 +91,7 @@ def main():
     # main_engine.add_gateway(BybitGateway)
     # main_engine.add_gateway(DeribitGateway)
     main_engine.add_gateway(OkexoGateway)
+    main_engine.add_gateway(BinancefGateway)
 
     # main_engine.add_app(CtaStrategyApp)
     # main_engine.add_app(CtaBacktesterApp)
@@ -101,7 +103,7 @@ def main():
     # main_engine.add_app(RpcServiceApp)
     # main_engine.add_app(SpreadTradingApp)
     # main_engine.add_app(PortfolioManagerApp)
-    main_engine.add_app(OptionMasterApp)
+    # main_engine.add_app(OptionMasterApp)
     # main_engine.add_app(ChartWizardApp)
     # main_engine.add_app(ExcelRtdApp)
 

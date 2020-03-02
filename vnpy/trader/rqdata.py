@@ -128,10 +128,15 @@ class RqdataClient:
         # For querying night trading period data
         end += timedelta(1)
 
+        # Only query open interest for futures contract
+        fields = ["open", "high", "low", "close", "volume"]
+        if not symbol.isdigit():
+            fields.append("open_interest")
+
         df = rqdata_get_price(
             rq_symbol,
             frequency=rq_interval,
-            fields=["open", "high", "low", "close", "volume", "open_interest"],
+            fields=fields,
             start_date=start,
             end_date=end,
             adjust_type="none"
@@ -151,9 +156,10 @@ class RqdataClient:
                     low_price=row["low"],
                     close_price=row["close"],
                     volume=row["volume"],
-                    open_interest=row["open_interest"],
+                    open_interest=row.get("open_interest", 0),
                     gateway_name="RQ"
                 )
+
                 data.append(bar)
 
         return data
