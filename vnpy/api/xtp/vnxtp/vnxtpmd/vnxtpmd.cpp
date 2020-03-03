@@ -1043,6 +1043,14 @@ void MdApi::createQuoteApi(int client_id, string save_file_path)
 {
 	this->api = QuoteApi::CreateQuoteApi(client_id, save_file_path.c_str());
 	this->api->RegisterSpi(this);
+
+};
+
+
+void MdApi::init()
+{
+	this->active = true;
+	this->task_thread = thread(&MdApi::processTask, this);
 };
 
 void MdApi::release()
@@ -1542,6 +1550,7 @@ PYBIND11_MODULE(vnxtpmd, m)
 	mdapi
 		.def(init<>())
 		.def("createQuoteApi", &MdApi::createQuoteApi)
+		.def("init", &MdApi::init)
 		.def("release", &MdApi::release)
 		.def("exit", &MdApi::exit)
 		.def("getTradingDay", &MdApi::getTradingDay)
