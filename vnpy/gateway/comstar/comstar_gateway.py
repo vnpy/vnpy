@@ -45,7 +45,7 @@ class ComstarGateway(BaseGateway):
         symbol, settle_type, *_ = req.symbol.split("_") + [""]
         if settle_type not in {'T0', 'T1'}:
             self.write_log("请输入清算速度T0或T1")
-            return
+            return ""
 
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
         data = vn_encode(req)
@@ -68,7 +68,7 @@ class ComstarGateway(BaseGateway):
         symbol, settle_type, *_ = req.symbol.split("_") + [""]
         if settle_type not in {'T0', 'T1'}:
             self.write_log("请输入清算速度T0或T1")
-            return
+            return ""
 
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
         data = vn_encode(req)
