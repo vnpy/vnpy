@@ -402,6 +402,9 @@ public:
 
 	void release();
 
+
+	void init();
+
 	int exit();
 
 	string getTradingDay();
@@ -410,7 +413,6 @@ public:
 
 	dict getApiLastError();
 
-	//1
 	int getClientIDByXTPID(long long order_xtp_id);
 
 	string getAccountByXTPID(long long order_xtp_id);

@@ -152,6 +152,8 @@ void TdApi::OnQueryPosition(XTPQueryStkPositionRsp *position, XTPRI *error_info,
 
 void TdApi::OnQueryAsset(XTPQueryAssetRsp *asset, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id)
 {
+	cout << "01-> C++的回调函数将数据保存到队列中 void TdApi::OnQueryAsset"
+		<< endl;
 	Task task = Task();
 	task.task_name = ONQUERYASSET;
 	if (asset)
@@ -169,6 +171,8 @@ void TdApi::OnQueryAsset(XTPQueryAssetRsp *asset, XTPRI *error_info, int request
 	task.task_id = request_id;
 	task.task_last = is_last;
 	task.task_extra_long = session_id;
+	cout << &task
+		<< endl;
 	this->task_queue.push(task);
 };
 
@@ -526,9 +530,13 @@ void TdApi::processTask()
 		while (this->active)
 		{
 			Task task = this->task_queue.pop();
+			//cout << "processing task data :" << task.task_name << endl;
 
 			switch (task.task_name)
 			{
+				//cout<<"01.6-> switch (task.task_name)"
+				//	<< task.task_name
+				//	<< endl;
 			case ONDISCONNECTED:
 			{
 				this->processDisconnected(&task);
@@ -578,7 +586,10 @@ void TdApi::processTask()
 			}
 
 			case ONQUERYASSET:
-			{
+			{	
+				cout << "02-> 工作线程从队列中取出数据 case ONQUERYASSET:"
+					<< &task
+					<< endl;
 				this->processQueryAsset(&task);
 				break;
 			}
@@ -920,6 +931,9 @@ void TdApi::processQueryPosition(Task *task)
 
 void TdApi::processQueryAsset(Task *task)
 {
+	cout << "03 -> 转化为python对象后，进行推送task void TdApi::processQueryAsset"
+		<< task
+		<< endl;
 	gil_scoped_acquire acquire;
 	dict data;
 	if (task->task_data)
@@ -1419,6 +1433,12 @@ void TdApi::createTraderApi(int client_id, string save_file_path)
 	this->api->RegisterSpi(this);
 };
 
+void TdApi::init()
+{
+	this->active = true;
+	this->task_thread = thread(&TdApi::processTask, this);
+};
+
 void TdApi::release()
 {
 	this->api->Release();
@@ -1571,7 +1591,10 @@ int TdApi::queryPosition(string ticker, long long session_id, int request_id)
 };
 
 int TdApi::queryAsset(long long session_id, int request_id)
-{
+{	
+	cout<<" 00 ->主动函数 int TdApi::queryAsset" 
+		<< endl;
+		
 	int i = this->api->QueryAsset(session_id, request_id);
 	return i;
 };
@@ -1800,7 +1823,9 @@ public:
 	};
 
 	void onQueryAsset(const dict &data, const dict &error, int reqid, bool last, int extra) override
-	{
+	{	
+		cout<<"04-> Boost.Python封装 void onQueryAsset"
+			<< endl;
 		try
 		{
 			PYBIND11_OVERLOAD(void, TdApi, onQueryAsset, data, error, reqid, last, extra);
@@ -2015,6 +2040,7 @@ PYBIND11_MODULE(vnxtptd, m)
 	TdApi
 		.def(init<>())
 		.def("createTraderApi", &TdApi::createTraderApi)
+		.def("init", &TdApi::init)
 		.def("release", &TdApi::release)
 		.def("exit", &TdApi::exit)
 		.def("getTradingDay", &TdApi::getTradingDay)

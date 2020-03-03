@@ -356,6 +356,8 @@ public:
 
 	void release();
 
+	void init();
+
 	int exit();
 
 	string getTradingDay();
