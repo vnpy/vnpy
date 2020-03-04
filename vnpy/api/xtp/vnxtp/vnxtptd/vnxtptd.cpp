@@ -733,13 +733,13 @@ void TdApi::processOrderEvent(Task *task)
 		data["order_cancel_client_id"] = task_data->order_cancel_client_id;
 		data["order_cancel_xtp_id"] = task_data->order_cancel_xtp_id;
 		data["ticker"] = toUtf(task_data->ticker);
-		data["market"] = task_data->market;
+		data["market"] = (int)task_data->market;
 		data["price"] = task_data->price;
 		data["quantity"] = task_data->quantity;
-		data["price_type"] = task_data->price_type;
+		data["price_type"] = (int)task_data->price_type;
 		data["side"] = task_data->side;
 		data["position_effect"] = task_data->position_effect;
-		data["business_type"] = task_data->business_type;
+		data["business_type"] = (int)task_data->business_type;
 		data["qty_traded"] = task_data->qty_traded;
 		data["qty_left"] = task_data->qty_left;
 		data["insert_time"] = task_data->insert_time;
@@ -747,8 +747,8 @@ void TdApi::processOrderEvent(Task *task)
 		data["cancel_time"] = task_data->cancel_time;
 		data["trade_amount"] = task_data->trade_amount;
 		data["order_local_id"] = toUtf(task_data->order_local_id);
-		data["order_status"] = task_data->order_status;
-		data["order_submit_status"] = task_data->order_submit_status;
+		data["order_status"] = (int)task_data->order_status;
+		data["order_submit_status"] = (int)task_data->order_submit_status;
 		data["order_type"] = task_data->order_type;
 		delete task_data;
 	}
@@ -773,7 +773,7 @@ void TdApi::processTradeEvent(Task *task)
 		data["order_xtp_id"] = task_data->order_xtp_id;
 		data["order_client_id"] = task_data->order_client_id;
 		data["ticker"] = toUtf(task_data->ticker);
-		data["market"] = task_data->market;
+		data["market"] = (int)task_data->market;
 		data["local_order_id"] = task_data->local_order_id;
 		data["exec_id"] = toUtf(task_data->exec_id);
 		data["price"] = task_data->price;
@@ -785,7 +785,7 @@ void TdApi::processTradeEvent(Task *task)
 		data["trade_type"] = task_data->trade_type;
 		data["side"] = task_data->side;
 		data["position_effect"] = task_data->position_effect;
-		data["business_type"] = task_data->business_type;
+		data["business_type"] = (int)task_data->business_type;
 		data["branch_pbu"] = toUtf(task_data->branch_pbu);
 		delete task_data;
 	}
@@ -826,13 +826,13 @@ void TdApi::processQueryOrder(Task *task)
 		data["order_cancel_client_id"] = task_data->order_cancel_client_id;
 		data["order_cancel_xtp_id"] = task_data->order_cancel_xtp_id;
 		data["ticker"] = toUtf(task_data->ticker);
-		data["market"] = task_data->market;
+		data["market"] = (int)task_data->market;
 		data["price"] = task_data->price;
 		data["quantity"] = task_data->quantity;
-		data["price_type"] = task_data->price_type;
+		data["price_type"] = (int)task_data->price_type;
 		data["side"] = task_data->side;
 		data["position_effect"] = task_data->position_effect;
-		data["business_type"] = task_data->business_type;
+		data["business_type"] = (int)task_data->business_type;
 		data["qty_traded"] = task_data->qty_traded;
 		data["qty_left"] = task_data->qty_left;
 		data["insert_time"] = task_data->insert_time;
@@ -840,8 +840,8 @@ void TdApi::processQueryOrder(Task *task)
 		data["cancel_time"] = task_data->cancel_time;
 		data["trade_amount"] = task_data->trade_amount;
 		data["order_local_id"] = toUtf(task_data->order_local_id);
-		data["order_status"] = task_data->order_status;
-		data["order_submit_status"] = task_data->order_submit_status;
+		data["order_status"] = (int)task_data->order_status;
+		data["order_submit_status"] = (int)task_data->order_submit_status;
 		data["order_type"] = task_data->order_type;
 		delete task_data;
 	}
@@ -866,7 +866,7 @@ void TdApi::processQueryTrade(Task *task)
 		data["order_xtp_id"] = task_data->order_xtp_id;
 		data["order_client_id"] = task_data->order_client_id;
 		data["ticker"] = toUtf(task_data->ticker);
-		data["market"] = task_data->market;
+		data["market"] = (int)task_data->market;
 		data["local_order_id"] = task_data->local_order_id;
 		data["exec_id"] = toUtf(task_data->exec_id);
 		data["price"] = task_data->price;
@@ -878,7 +878,7 @@ void TdApi::processQueryTrade(Task *task)
 		data["trade_type"] = task_data->trade_type;
 		data["side"] = task_data->side;
 		data["position_effect"] = task_data->position_effect;
-		data["business_type"] = task_data->business_type;
+		data["business_type"] = (int)task_data->business_type;
 		data["branch_pbu"] = toUtf(task_data->branch_pbu);
 		delete task_data;
 	}
@@ -902,14 +902,14 @@ void TdApi::processQueryPosition(Task *task)
 		XTPQueryStkPositionRsp *task_data = (XTPQueryStkPositionRsp*)task->task_data;
 		data["ticker"] = toUtf(task_data->ticker);
 		data["ticker_name"] = toUtf(task_data->ticker_name);
-		data["market"] = task_data->market;
+		data["market"] = (int)task_data->market;
 		data["total_qty"] = task_data->total_qty;
 		data["sellable_qty"] = task_data->sellable_qty;
 		data["avg_price"] = task_data->avg_price;
 		data["unrealized_pnl"] = task_data->unrealized_pnl;
 		data["yesterday_position"] = task_data->yesterday_position;
 		data["purchase_redeemable_qty"] = task_data->purchase_redeemable_qty;
-		data["position_direction"] = task_data->position_direction;
+		data["position_direction"] = (int)task_data->position_direction;
 		data["reserved1"] = task_data->reserved1;
 		data["executable_option"] = task_data->executable_option;
 		data["lockable_position"] = task_data->lockable_position;
@@ -932,85 +932,48 @@ void TdApi::processQueryPosition(Task *task)
 
 void TdApi::processQueryAsset(Task *task)
 {
-	cout << "03 -> 转化为python对象后，进行推送task void TdApi::processQueryAsset, task 名称"
-		<< task
-		<< endl;
-		
 	gil_scoped_acquire acquire;
 	dict data;
 	if (task->task_data)
-
 	{
-		cout << "031 -> task->task_data";
 		XTPQueryAssetRsp *task_data = (XTPQueryAssetRsp*)task->task_data;
-		cout << "1";
 		data["total_asset"] = task_data->total_asset;
-		cout << "2";
 		data["buying_power"] = task_data->buying_power;
-		cout << "3";
 		data["security_asset"] = task_data->security_asset;
-		cout << "4";
 		data["fund_buy_amount"] = task_data->fund_buy_amount;
-		cout << "5";
 		data["fund_buy_fee"] = task_data->fund_buy_fee;
-		cout << "6";
 		data["fund_sell_amount"] = task_data->fund_sell_amount;
-		cout << "7";
 		data["fund_sell_fee"] = task_data->fund_sell_fee;
-		cout << "8";
 		data["withholding_amount"] = task_data->withholding_amount;
-		cout << "9";
-		data["account_type"] = task_data->account_type;
+		data["account_type"] = (int)task_data->account_type;
 		cout << "10";
 		data["frozen_margin"] = task_data->frozen_margin;
-		cout << "11";
 		data["frozen_exec_cash"] = task_data->frozen_exec_cash;
-		cout << "12";
 		data["frozen_exec_fee"] = task_data->frozen_exec_fee;
-		cout << "13";
 		data["pay_later"] = task_data->pay_later;
-		cout << "14";
 		data["preadva_pay"] = task_data->preadva_pay;
-		cout << "15";
 		data["orig_banlance"] = task_data->orig_banlance;
-		cout << "16";
 		data["banlance"] = task_data->banlance;
-		cout << "17";
 		data["deposit_withdraw"] = task_data->deposit_withdraw;
-		cout << "18";
 		data["trade_netting"] = task_data->trade_netting;
-		cout << "19";
 		data["captial_asset"] = task_data->captial_asset;
-		cout << "20";
 		data["force_freeze_amount"] = task_data->force_freeze_amount;
-		cout << "21";
 		data["preferred_amount"] = task_data->preferred_amount;
-		cout << "22";
 		data["repay_stock_aval_banlance"] = task_data->repay_stock_aval_banlance;
-		cout << "23";
 		data["unknown"] = task_data->unknown;
-		cout << "24";
 		delete task_data;
-		cout << "25";
-
 	}
-	cout << "034";
 	dict error;
-	cout << "035";
+	cout << "11";
 	if (task->task_error)
 	{
-		cout << "036 -> task->task_error";
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	cout << "033 ->处理完成后，输出字典data："
-		<< &data;
-		
+	cout << "12";
 	this->onQueryAsset(data, error, task->task_id, task->task_last, task->task_extra);
-	cout <<"----输出完成"
-		<< endl;
 };
 
 void TdApi::processQueryStructuredFund(Task *task)
@@ -1020,12 +983,12 @@ void TdApi::processQueryStructuredFund(Task *task)
 	if (task->task_data)
 	{
 		XTPStructuredFundInfo *task_data = (XTPStructuredFundInfo*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
+		data["exchange_id"] = (int)task_data->exchange_id;
 		data["sf_ticker"] = toUtf(task_data->sf_ticker);
 		data["sf_ticker_name"] = toUtf(task_data->sf_ticker_name);
 		data["ticker"] = toUtf(task_data->ticker);
 		data["ticker_name"] = toUtf(task_data->ticker_name);
-		data["split_merge_status"] = task_data->split_merge_status;
+		data["split_merge_status"] = (int)task_data->split_merge_status;
 		data["ratio"] = task_data->ratio;
 		data["min_split_qty"] = task_data->min_split_qty;
 		data["min_merge_qty"] = task_data->min_merge_qty;
@@ -1051,9 +1014,9 @@ void TdApi::processQueryFundTransfer(Task *task)
 	{
 		XTPFundTransferNotice *task_data = (XTPFundTransferNotice*)task->task_data;
 		data["serial_id"] = task_data->serial_id;
-		data["transfer_type"] = task_data->transfer_type;
+		data["transfer_type"] = (int)task_data->transfer_type;
 		data["amount"] = task_data->amount;
-		data["oper_status"] = task_data->oper_status;
+		data["oper_status"] = (int)task_data->oper_status;
 		data["transfer_time"] = task_data->transfer_time;
 		delete task_data;
 	}
@@ -1076,9 +1039,9 @@ void TdApi::processFundTransfer(Task *task)
 	{
 		XTPFundTransferNotice *task_data = (XTPFundTransferNotice*)task->task_data;
 		data["serial_id"] = task_data->serial_id;
-		data["transfer_type"] = task_data->transfer_type;
+		data["transfer_type"] = (int)task_data->transfer_type;
 		data["amount"] = task_data->amount;
-		data["oper_status"] = task_data->oper_status;
+		data["oper_status"] = (int)task_data->oper_status;
 		data["transfer_time"] = task_data->transfer_time;
 		delete task_data;
 	}
@@ -1100,7 +1063,7 @@ void TdApi::processQueryETF(Task *task)
 	if (task->task_data)
 	{
 		XTPQueryETFBaseRsp *task_data = (XTPQueryETFBaseRsp*)task->task_data;
-		data["market"] = task_data->market;
+		data["market"] = (int)task_data->market;
 		data["etf"] = toUtf(task_data->etf);
 		data["subscribe_redemption_ticker"] = toUtf(task_data->subscribe_redemption_ticker);
 		data["unit"] = task_data->unit;
@@ -1131,13 +1094,13 @@ void TdApi::processQueryETFBasket(Task *task)
 	if (task->task_data)
 	{
 		XTPQueryETFComponentRsp *task_data = (XTPQueryETFComponentRsp*)task->task_data;
-		data["market"] = task_data->market;
+		data["market"] = (int)task_data->market;
 		data["ticker"] = toUtf(task_data->ticker);
 		data["component_ticker"] = toUtf(task_data->component_ticker);
 		data["component_name"] = toUtf(task_data->component_name);
 		data["quantity"] = task_data->quantity;
-		data["component_market"] = task_data->component_market;
-		data["replace_type"] = task_data->replace_type;
+		data["component_market"] = (int)task_data->component_market;
+		data["replace_type"] = (int)task_data->replace_type;
 		data["premium_ratio"] = task_data->premium_ratio;
 		data["amount"] = task_data->amount;
 		delete task_data;
@@ -1160,7 +1123,7 @@ void TdApi::processQueryIPOInfoList(Task *task)
 	if (task->task_data)
 	{
 		XTPQueryIPOTickerRsp *task_data = (XTPQueryIPOTickerRsp*)task->task_data;
-		data["market"] = task_data->market;
+		data["market"] = (int)task_data->market;
 		data["ticker"] = toUtf(task_data->ticker);
 		data["ticker_name"] = toUtf(task_data->ticker_name);
 		data["price"] = task_data->price;
@@ -1186,7 +1149,7 @@ void TdApi::processQueryIPOQuotaInfo(Task *task)
 	if (task->task_data)
 	{
 		XTPQueryIPOQuotaRsp *task_data = (XTPQueryIPOQuotaRsp*)task->task_data;
-		data["market"] = task_data->market;
+		data["market"] = (int)task_data->market;
 		data["quantity"] = task_data->quantity;
 		delete task_data;
 	}
@@ -1209,19 +1172,19 @@ void TdApi::processQueryOptionAuctionInfo(Task *task)
 	{
 		XTPQueryOptionAuctionInfoRsp *task_data = (XTPQueryOptionAuctionInfoRsp*)task->task_data;
 		data["ticker"] = toUtf(task_data->ticker);
-		data["security_id_source"] = task_data->security_id_source;
+		data["security_id_source"] = (int)task_data->security_id_source;
 		data["symbol"] = toUtf(task_data->symbol);
 		data["contract_id"] = toUtf(task_data->contract_id);
 		data["underlying_security_id"] = toUtf(task_data->underlying_security_id);
-		data["underlying_security_id_source"] = task_data->underlying_security_id_source;
+		data["underlying_security_id_source"] = (int)task_data->underlying_security_id_source;
 		data["list_date"] = task_data->list_date;
 		data["last_trade_date"] = task_data->last_trade_date;
-		data["ticker_type"] = task_data->ticker_type;
+		data["ticker_type"] = (int)task_data->ticker_type;
 		data["day_trading"] = task_data->day_trading;
-		data["call_or_put"] = task_data->call_or_put;
+		data["call_or_put"] = (int)task_data->call_or_put;
 		data["delivery_day"] = task_data->delivery_day;
 		data["delivery_month"] = task_data->delivery_month;
-		data["exercise_type"] = task_data->exercise_type;
+		data["exercise_type"] = (int)task_data->exercise_type;
 		data["exercise_begin_date"] = task_data->exercise_begin_date;
 		data["exercise_end_date"] = task_data->exercise_end_date;
 		data["exercise_price"] = task_data->exercise_price;
@@ -1289,7 +1252,7 @@ void TdApi::processQueryCreditCashRepayInfo(Task *task)
 	{
 		XTPCrdCashRepayInfo *task_data = (XTPCrdCashRepayInfo*)task->task_data;
 		data["xtp_id"] = task_data->xtp_id;
-		data["status"] = task_data->status;
+		data["status"] = (int)task_data->status;
 		data["request_amount"] = task_data->request_amount;
 		data["cash_repay_amount"] = task_data->cash_repay_amount;
 		data["position_effect"] = task_data->position_effect;
@@ -1345,7 +1308,7 @@ void TdApi::processQueryCreditDebtInfo(Task *task)
 		data["position_id"] = task_data->position_id;
 		data["order_xtp_id"] = task_data->order_xtp_id;
 		data["debt_status"] = task_data->debt_status;
-		data["market"] = task_data->market;
+		data["market"] = (int)task_data->market;
 		data["ticker"] = toUtf(task_data->ticker);
 		data["order_date"] = task_data->order_date;
 		data["end_date"] = task_data->end_date;
@@ -1376,7 +1339,7 @@ void TdApi::processQueryCreditTickerDebtInfo(Task *task)
 	if (task->task_data)
 	{
 		XTPCrdDebtStockInfo *task_data = (XTPCrdDebtStockInfo*)task->task_data;
-		data["market"] = task_data->market;
+		data["market"] = (int)task_data->market;
 		data["ticker"] = toUtf(task_data->ticker);
 		data["remain_quantity"] = task_data->remain_quantity;
 		data["order_withhold_quantity"] = task_data->order_withhold_quantity;
@@ -1414,7 +1377,7 @@ void TdApi::processQueryCreditTickerAssignInfo(Task *task)
 	if (task->task_data)
 	{
 		XTPClientQueryCrdPositionStkInfo *task_data = (XTPClientQueryCrdPositionStkInfo*)task->task_data;
-		data["market"] = task_data->market;
+		data["market"] = (int)task_data->market;
 		data["ticker"] = toUtf(task_data->ticker);
 		data["limit_qty"] = task_data->limit_qty;
 		data["yesterday_qty"] = task_data->yesterday_qty;
@@ -1440,7 +1403,7 @@ void TdApi::processQueryCreditExcessStock(Task *task)
 	if (task->task_data)
 	{
 		XTPClientQueryCrdSurplusStkRspInfo *task_data = (XTPClientQueryCrdSurplusStkRspInfo*)task->task_data;
-		data["market"] = task_data->market;
+		data["market"] = (int)task_data->market;
 		data["ticker"] = toUtf(task_data->ticker);
 		data["transferable_quantity"] = task_data->transferable_quantity;
 		data["transferred_quantity"] = task_data->transferred_quantity;
@@ -1456,8 +1419,6 @@ void TdApi::processQueryCreditExcessStock(Task *task)
 	}
 	this->onQueryCreditExcessStock(data, error, task->task_id, task->task_extra);
 };
-
-
 
 
 
