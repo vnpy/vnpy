@@ -402,7 +402,6 @@ public:
 
 	void release();
 
-
 	void init();
 
 	int exit();
@@ -429,11 +428,9 @@ public:
 
 	int logout(long long session_id);
 
-
 	long long insertOrder(const dict &req, long long session_id);
 
 	long long cancelOrder(long long order_xtp_id, long long session_id);
-	//2
 
 	int queryOrderByXTPID(long long order_xtp_id, long long session_id, int request_id);
 
