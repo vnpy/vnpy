@@ -370,6 +370,9 @@ class ApiGenerator:
                             if struct_type == "string":
                                 f.write(
                                     f"\t\tdata[\"{struct_field}\"] = toUtf(task_data->{struct_field});\n")
+                            elif struct_type == "enum":
+                                f.write(
+                                    f"\t\tdata[\"{struct_field}\"] = (int) task_data->{struct_field};\n")                                
                             else:
                                 f.write(
                                     f"\t\tdata[\"{struct_field}\"] = task_data->{struct_field};\n")
