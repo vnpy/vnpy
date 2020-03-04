@@ -169,8 +169,6 @@ void TdApi::OnQueryAsset(XTPQueryAssetRsp *asset, XTPRI *error_info, int request
 	task.task_id = request_id;
 	task.task_last = is_last;
 	task.task_extra_long = session_id;
-	cout << &task
-		<< endl;
 	this->task_queue.push(task);
 };
 
@@ -936,7 +934,6 @@ void TdApi::processQueryAsset(Task *task)
 		data["fund_sell_fee"] = task_data->fund_sell_fee;
 		data["withholding_amount"] = task_data->withholding_amount;
 		data["account_type"] = (int)task_data->account_type;
-		cout << "10";
 		data["frozen_margin"] = task_data->frozen_margin;
 		data["frozen_exec_cash"] = task_data->frozen_exec_cash;
 		data["frozen_exec_fee"] = task_data->frozen_exec_fee;
