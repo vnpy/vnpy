@@ -703,7 +703,7 @@ void TdApi::processError(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onError(error);
@@ -720,7 +720,7 @@ void TdApi::processOrderEvent(Task *task)
 		data["order_client_id"] = task_data->order_client_id;
 		data["order_cancel_client_id"] = task_data->order_cancel_client_id;
 		data["order_cancel_xtp_id"] = task_data->order_cancel_xtp_id;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["ticker"] = task_data->ticker;
 		data["market"] = (int)task_data->market;
 		data["price"] = task_data->price;
 		data["quantity"] = task_data->quantity;
@@ -734,7 +734,7 @@ void TdApi::processOrderEvent(Task *task)
 		data["update_time"] = task_data->update_time;
 		data["cancel_time"] = task_data->cancel_time;
 		data["trade_amount"] = task_data->trade_amount;
-		data["order_local_id"] = toUtf(task_data->order_local_id);
+		data["order_local_id"] = task_data->order_local_id;
 		data["order_status"] = (int)task_data->order_status;
 		data["order_submit_status"] = (int)task_data->order_submit_status;
 		data["order_type"] = task_data->order_type;
@@ -745,7 +745,7 @@ void TdApi::processOrderEvent(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onOrderEvent(data, error, task->task_extra);
@@ -760,21 +760,21 @@ void TdApi::processTradeEvent(Task *task)
 		XTPTradeReport *task_data = (XTPTradeReport*)task->task_data;
 		data["order_xtp_id"] = task_data->order_xtp_id;
 		data["order_client_id"] = task_data->order_client_id;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["ticker"] = task_data->ticker;
 		data["market"] = (int)task_data->market;
 		data["local_order_id"] = task_data->local_order_id;
-		data["exec_id"] = toUtf(task_data->exec_id);
+		data["exec_id"] = task_data->exec_id;
 		data["price"] = task_data->price;
 		data["quantity"] = task_data->quantity;
 		data["trade_time"] = task_data->trade_time;
 		data["trade_amount"] = task_data->trade_amount;
 		data["report_index"] = task_data->report_index;
-		data["order_exch_id"] = toUtf(task_data->order_exch_id);
+		data["order_exch_id"] = task_data->order_exch_id;
 		data["trade_type"] = task_data->trade_type;
 		data["side"] = task_data->side;
 		data["position_effect"] = task_data->position_effect;
 		data["business_type"] = (int)task_data->business_type;
-		data["branch_pbu"] = toUtf(task_data->branch_pbu);
+		data["branch_pbu"] = task_data->branch_pbu;
 		delete task_data;
 	}
 	this->onTradeEvent(data, task->task_extra);
@@ -796,7 +796,7 @@ void TdApi::processCancelOrderError(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onCancelOrderError(data, error, task->task_extra);
@@ -813,7 +813,7 @@ void TdApi::processQueryOrder(Task *task)
 		data["order_client_id"] = task_data->order_client_id;
 		data["order_cancel_client_id"] = task_data->order_cancel_client_id;
 		data["order_cancel_xtp_id"] = task_data->order_cancel_xtp_id;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["ticker"] = task_data->ticker;
 		data["market"] = (int)task_data->market;
 		data["price"] = task_data->price;
 		data["quantity"] = task_data->quantity;
@@ -827,7 +827,7 @@ void TdApi::processQueryOrder(Task *task)
 		data["update_time"] = task_data->update_time;
 		data["cancel_time"] = task_data->cancel_time;
 		data["trade_amount"] = task_data->trade_amount;
-		data["order_local_id"] = toUtf(task_data->order_local_id);
+		data["order_local_id"] = task_data->order_local_id;
 		data["order_status"] = (int)task_data->order_status;
 		data["order_submit_status"] = (int)task_data->order_submit_status;
 		data["order_type"] = task_data->order_type;
@@ -838,7 +838,7 @@ void TdApi::processQueryOrder(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryOrder(data, error, task->task_id, task->task_last, task->task_extra);
@@ -853,21 +853,21 @@ void TdApi::processQueryTrade(Task *task)
 		XTPQueryTradeRsp *task_data = (XTPQueryTradeRsp*)task->task_data;
 		data["order_xtp_id"] = task_data->order_xtp_id;
 		data["order_client_id"] = task_data->order_client_id;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["ticker"] = task_data->ticker;
 		data["market"] = (int)task_data->market;
 		data["local_order_id"] = task_data->local_order_id;
-		data["exec_id"] = toUtf(task_data->exec_id);
+		data["exec_id"] = task_data->exec_id;
 		data["price"] = task_data->price;
 		data["quantity"] = task_data->quantity;
 		data["trade_time"] = task_data->trade_time;
 		data["trade_amount"] = task_data->trade_amount;
 		data["report_index"] = task_data->report_index;
-		data["order_exch_id"] = toUtf(task_data->order_exch_id);
+		data["order_exch_id"] = task_data->order_exch_id;
 		data["trade_type"] = task_data->trade_type;
 		data["side"] = task_data->side;
 		data["position_effect"] = task_data->position_effect;
 		data["business_type"] = (int)task_data->business_type;
-		data["branch_pbu"] = toUtf(task_data->branch_pbu);
+		data["branch_pbu"] = task_data->branch_pbu;
 		delete task_data;
 	}
 	dict error;
@@ -875,7 +875,7 @@ void TdApi::processQueryTrade(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryTrade(data, error, task->task_id, task->task_last, task->task_extra);
@@ -888,8 +888,8 @@ void TdApi::processQueryPosition(Task *task)
 	if (task->task_data)
 	{
 		XTPQueryStkPositionRsp *task_data = (XTPQueryStkPositionRsp*)task->task_data;
-		data["ticker"] = toUtf(task_data->ticker);
-		data["ticker_name"] = toUtf(task_data->ticker_name);
+		data["ticker"] = task_data->ticker;
+		data["ticker_name"] = task_data->ticker_name;
 		data["market"] = (int)task_data->market;
 		data["total_qty"] = task_data->total_qty;
 		data["sellable_qty"] = task_data->sellable_qty;
@@ -912,7 +912,7 @@ void TdApi::processQueryPosition(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryPosition(data, error, task->task_id, task->task_last, task->task_extra);
@@ -955,7 +955,7 @@ void TdApi::processQueryAsset(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryAsset(data, error, task->task_id, task->task_last, task->task_extra);
@@ -969,10 +969,10 @@ void TdApi::processQueryStructuredFund(Task *task)
 	{
 		XTPStructuredFundInfo *task_data = (XTPStructuredFundInfo*)task->task_data;
 		data["exchange_id"] = (int)task_data->exchange_id;
-		data["sf_ticker"] = toUtf(task_data->sf_ticker);
-		data["sf_ticker_name"] = toUtf(task_data->sf_ticker_name);
-		data["ticker"] = toUtf(task_data->ticker);
-		data["ticker_name"] = toUtf(task_data->ticker_name);
+		data["sf_ticker"] = task_data->sf_ticker;
+		data["sf_ticker_name"] = task_data->sf_ticker_name;
+		data["ticker"] = task_data->ticker;
+		data["ticker_name"] = task_data->ticker_name;
 		data["split_merge_status"] = (int)task_data->split_merge_status;
 		data["ratio"] = task_data->ratio;
 		data["min_split_qty"] = task_data->min_split_qty;
@@ -985,7 +985,7 @@ void TdApi::processQueryStructuredFund(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryStructuredFund(data, error, task->task_id, task->task_last, task->task_extra);
@@ -1010,7 +1010,7 @@ void TdApi::processQueryFundTransfer(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryFundTransfer(data, error, task->task_id, task->task_last, task->task_extra);
@@ -1035,7 +1035,7 @@ void TdApi::processFundTransfer(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onFundTransfer(data, error, task->task_extra);
@@ -1049,8 +1049,8 @@ void TdApi::processQueryETF(Task *task)
 	{
 		XTPQueryETFBaseRsp *task_data = (XTPQueryETFBaseRsp*)task->task_data;
 		data["market"] = (int)task_data->market;
-		data["etf"] = toUtf(task_data->etf);
-		data["subscribe_redemption_ticker"] = toUtf(task_data->subscribe_redemption_ticker);
+		data["etf"] = task_data->etf;
+		data["subscribe_redemption_ticker"] = task_data->subscribe_redemption_ticker;
 		data["unit"] = task_data->unit;
 		data["subscribe_status"] = task_data->subscribe_status;
 		data["redemption_status"] = task_data->redemption_status;
@@ -1066,7 +1066,7 @@ void TdApi::processQueryETF(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryETF(data, error, task->task_id, task->task_last, task->task_extra);
@@ -1080,9 +1080,9 @@ void TdApi::processQueryETFBasket(Task *task)
 	{
 		XTPQueryETFComponentRsp *task_data = (XTPQueryETFComponentRsp*)task->task_data;
 		data["market"] = (int)task_data->market;
-		data["ticker"] = toUtf(task_data->ticker);
-		data["component_ticker"] = toUtf(task_data->component_ticker);
-		data["component_name"] = toUtf(task_data->component_name);
+		data["ticker"] = task_data->ticker;
+		data["component_ticker"] = task_data->component_ticker;
+		data["component_name"] = task_data->component_name;
 		data["quantity"] = task_data->quantity;
 		data["component_market"] = (int)task_data->component_market;
 		data["replace_type"] = (int)task_data->replace_type;
@@ -1095,7 +1095,7 @@ void TdApi::processQueryETFBasket(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryETFBasket(data, error, task->task_id, task->task_last, task->task_extra);
@@ -1109,8 +1109,8 @@ void TdApi::processQueryIPOInfoList(Task *task)
 	{
 		XTPQueryIPOTickerRsp *task_data = (XTPQueryIPOTickerRsp*)task->task_data;
 		data["market"] = (int)task_data->market;
-		data["ticker"] = toUtf(task_data->ticker);
-		data["ticker_name"] = toUtf(task_data->ticker_name);
+		data["ticker"] = task_data->ticker;
+		data["ticker_name"] = task_data->ticker_name;
 		data["price"] = task_data->price;
 		data["unit"] = task_data->unit;
 		data["qty_upper_limit"] = task_data->qty_upper_limit;
@@ -1121,7 +1121,7 @@ void TdApi::processQueryIPOInfoList(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryIPOInfoList(data, error, task->task_id, task->task_last, task->task_extra);
@@ -1143,7 +1143,7 @@ void TdApi::processQueryIPOQuotaInfo(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryIPOQuotaInfo(data, error, task->task_id, task->task_last, task->task_extra);
@@ -1156,11 +1156,11 @@ void TdApi::processQueryOptionAuctionInfo(Task *task)
 	if (task->task_data)
 	{
 		XTPQueryOptionAuctionInfoRsp *task_data = (XTPQueryOptionAuctionInfoRsp*)task->task_data;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["ticker"] = task_data->ticker;
 		data["security_id_source"] = (int)task_data->security_id_source;
-		data["symbol"] = toUtf(task_data->symbol);
-		data["contract_id"] = toUtf(task_data->contract_id);
-		data["underlying_security_id"] = toUtf(task_data->underlying_security_id);
+		data["symbol"] = task_data->symbol;
+		data["contract_id"] = task_data->contract_id;
+		data["underlying_security_id"] = task_data->underlying_security_id;
 		data["underlying_security_id_source"] = (int)task_data->underlying_security_id_source;
 		data["list_date"] = task_data->list_date;
 		data["last_trade_date"] = task_data->last_trade_date;
@@ -1200,7 +1200,7 @@ void TdApi::processQueryOptionAuctionInfo(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryOptionAuctionInfo(data, error, task->task_id, task->task_last, task->task_extra);
@@ -1223,7 +1223,7 @@ void TdApi::processCreditCashRepay(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onCreditCashRepay(data, error, task->task_extra);
@@ -1249,7 +1249,7 @@ void TdApi::processQueryCreditCashRepayInfo(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryCreditCashRepayInfo(data, error, task->task_id, task->task_last, task->task_extra);
@@ -1275,7 +1275,7 @@ void TdApi::processQueryCreditFundInfo(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryCreditFundInfo(data, error, task->task_id, task->task_extra);
@@ -1289,12 +1289,12 @@ void TdApi::processQueryCreditDebtInfo(Task *task)
 	{
 		XTPCrdDebtInfo *task_data = (XTPCrdDebtInfo*)task->task_data;
 		data["debt_type"] = task_data->debt_type;
-		data["debt_id"] = toUtf(task_data->debt_id);
+		data["debt_id"] = task_data->debt_id;
 		data["position_id"] = task_data->position_id;
 		data["order_xtp_id"] = task_data->order_xtp_id;
 		data["debt_status"] = task_data->debt_status;
 		data["market"] = (int)task_data->market;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["ticker"] = task_data->ticker;
 		data["order_date"] = task_data->order_date;
 		data["end_date"] = task_data->end_date;
 		data["orig_end_date"] = task_data->orig_end_date;
@@ -1311,7 +1311,7 @@ void TdApi::processQueryCreditDebtInfo(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryCreditDebtInfo(data, error, task->task_id, task->task_last, task->task_extra);
@@ -1325,7 +1325,7 @@ void TdApi::processQueryCreditTickerDebtInfo(Task *task)
 	{
 		XTPCrdDebtStockInfo *task_data = (XTPCrdDebtStockInfo*)task->task_data;
 		data["market"] = (int)task_data->market;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["ticker"] = task_data->ticker;
 		data["remain_quantity"] = task_data->remain_quantity;
 		data["order_withhold_quantity"] = task_data->order_withhold_quantity;
 		delete task_data;
@@ -1335,7 +1335,7 @@ void TdApi::processQueryCreditTickerDebtInfo(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryCreditTickerDebtInfo(data, error, task->task_id, task->task_last, task->task_extra);
@@ -1349,7 +1349,7 @@ void TdApi::processQueryCreditAssetDebtInfo(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryCreditAssetDebtInfo(task->task_extra_double, error, task->task_id, task->task_extra);
@@ -1363,7 +1363,7 @@ void TdApi::processQueryCreditTickerAssignInfo(Task *task)
 	{
 		XTPClientQueryCrdPositionStkInfo *task_data = (XTPClientQueryCrdPositionStkInfo*)task->task_data;
 		data["market"] = (int)task_data->market;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["ticker"] = task_data->ticker;
 		data["limit_qty"] = task_data->limit_qty;
 		data["yesterday_qty"] = task_data->yesterday_qty;
 		data["left_qty"] = task_data->left_qty;
@@ -1375,7 +1375,7 @@ void TdApi::processQueryCreditTickerAssignInfo(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryCreditTickerAssignInfo(data, error, task->task_id, task->task_last, task->task_extra);
@@ -1389,7 +1389,7 @@ void TdApi::processQueryCreditExcessStock(Task *task)
 	{
 		XTPClientQueryCrdSurplusStkRspInfo *task_data = (XTPClientQueryCrdSurplusStkRspInfo*)task->task_data;
 		data["market"] = (int)task_data->market;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["ticker"] = task_data->ticker;
 		data["transferable_quantity"] = task_data->transferable_quantity;
 		data["transferred_quantity"] = task_data->transferred_quantity;
 		delete task_data;
@@ -1399,7 +1399,7 @@ void TdApi::processQueryCreditExcessStock(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryCreditExcessStock(data, error, task->task_id, task->task_extra);
