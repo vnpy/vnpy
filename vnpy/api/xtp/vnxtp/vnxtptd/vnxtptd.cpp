@@ -152,8 +152,8 @@ void TdApi::OnQueryPosition(XTPQueryStkPositionRsp *position, XTPRI *error_info,
 
 void TdApi::OnQueryAsset(XTPQueryAssetRsp *asset, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id)
 {
-	cout << "01-> C++的回调函数将数据保存到队列中 void TdApi::OnQueryAsset"
-		<< endl;
+	cout << "01-> C++的回调函数将数据保存到队列中 void TdApi::OnQueryAsset, task";
+
 	Task task = Task();
 	task.task_name = ONQUERYASSET;
 	if (asset)
@@ -527,6 +527,7 @@ void TdApi::processTask()
 {
 	try
 	{
+		cout << "start process" << endl;
 		while (this->active)
 		{
 			Task task = this->task_queue.pop();
@@ -587,7 +588,7 @@ void TdApi::processTask()
 
 			case ONQUERYASSET:
 			{	
-				cout << "02-> 工作线程从队列中取出数据 case ONQUERYASSET:"
+				cout << "02-> 工作线程从队列中取出数据 case ONQUERYASSET， task："
 					<< &task
 					<< endl;
 				this->processQueryAsset(&task);
@@ -931,48 +932,85 @@ void TdApi::processQueryPosition(Task *task)
 
 void TdApi::processQueryAsset(Task *task)
 {
-	cout << "03 -> 转化为python对象后，进行推送task void TdApi::processQueryAsset"
+	cout << "03 -> 转化为python对象后，进行推送task void TdApi::processQueryAsset, task 名称"
 		<< task
 		<< endl;
+		
 	gil_scoped_acquire acquire;
 	dict data;
 	if (task->task_data)
+
 	{
+		cout << "031 -> task->task_data";
 		XTPQueryAssetRsp *task_data = (XTPQueryAssetRsp*)task->task_data;
+		cout << "1";
 		data["total_asset"] = task_data->total_asset;
+		cout << "2";
 		data["buying_power"] = task_data->buying_power;
+		cout << "3";
 		data["security_asset"] = task_data->security_asset;
+		cout << "4";
 		data["fund_buy_amount"] = task_data->fund_buy_amount;
+		cout << "5";
 		data["fund_buy_fee"] = task_data->fund_buy_fee;
+		cout << "6";
 		data["fund_sell_amount"] = task_data->fund_sell_amount;
+		cout << "7";
 		data["fund_sell_fee"] = task_data->fund_sell_fee;
+		cout << "8";
 		data["withholding_amount"] = task_data->withholding_amount;
+		cout << "9";
 		data["account_type"] = task_data->account_type;
+		cout << "10";
 		data["frozen_margin"] = task_data->frozen_margin;
+		cout << "11";
 		data["frozen_exec_cash"] = task_data->frozen_exec_cash;
+		cout << "12";
 		data["frozen_exec_fee"] = task_data->frozen_exec_fee;
+		cout << "13";
 		data["pay_later"] = task_data->pay_later;
+		cout << "14";
 		data["preadva_pay"] = task_data->preadva_pay;
+		cout << "15";
 		data["orig_banlance"] = task_data->orig_banlance;
+		cout << "16";
 		data["banlance"] = task_data->banlance;
+		cout << "17";
 		data["deposit_withdraw"] = task_data->deposit_withdraw;
+		cout << "18";
 		data["trade_netting"] = task_data->trade_netting;
+		cout << "19";
 		data["captial_asset"] = task_data->captial_asset;
+		cout << "20";
 		data["force_freeze_amount"] = task_data->force_freeze_amount;
+		cout << "21";
 		data["preferred_amount"] = task_data->preferred_amount;
+		cout << "22";
 		data["repay_stock_aval_banlance"] = task_data->repay_stock_aval_banlance;
+		cout << "23";
 		data["unknown"] = task_data->unknown;
+		cout << "24";
 		delete task_data;
+		cout << "25";
+
 	}
+	cout << "034";
 	dict error;
+	cout << "035";
 	if (task->task_error)
 	{
+		cout << "036 -> task->task_error";
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
+	cout << "033 ->处理完成后，输出字典data："
+		<< &data;
+		
 	this->onQueryAsset(data, error, task->task_id, task->task_last, task->task_extra);
+	cout <<"----输出完成"
+		<< endl;
 };
 
 void TdApi::processQueryStructuredFund(Task *task)
@@ -1434,9 +1472,13 @@ void TdApi::createTraderApi(int client_id, string save_file_path)
 };
 
 void TdApi::init()
+
 {
+	cout << "init called" << endl;
 	this->active = true;
+	cout << "init active" << endl;
 	this->task_thread = thread(&TdApi::processTask, this);
+	cout << "start thread" << endl;
 };
 
 void TdApi::release()
@@ -1592,7 +1634,7 @@ int TdApi::queryPosition(string ticker, long long session_id, int request_id)
 
 int TdApi::queryAsset(long long session_id, int request_id)
 {	
-	cout<<" 00 ->主动函数 int TdApi::queryAsset" 
+	cout<<"00 ->主动函数 int TdApi::queryAsset" 
 		<< endl;
 		
 	int i = this->api->QueryAsset(session_id, request_id);
