@@ -603,7 +603,7 @@ void MdApi::processSubMarketData(Task *task)
 	if (task->task_data)
 	{
 		XTPST *task_data = (XTPST*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
+		data["exchange_id"] = (int)task_data->exchange_id;
 		data["ticker"] = toUtf(task_data->ticker);
 		delete task_data;
 	}
@@ -625,7 +625,7 @@ void MdApi::processUnSubMarketData(Task *task)
 	if (task->task_data)
 	{
 		XTPST *task_data = (XTPST*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
+		data["exchange_id"] = (int)task_data->exchange_id;
 		data["ticker"] = toUtf(task_data->ticker);
 		delete task_data;
 	}
@@ -647,7 +647,7 @@ void MdApi::processDepthMarketData(Task *task)
 	if (task->task_data)
 	{
 		XTPMD *task_data = (XTPMD*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
+		data["exchange_id"] = (int)task_data->exchange_id;
 		data["ticker"] = toUtf(task_data->ticker);
 		data["last_price"] = task_data->last_price;
 		data["pre_close_price"] = task_data->pre_close_price;
@@ -673,7 +673,7 @@ void MdApi::processDepthMarketData(Task *task)
 		data["ask_qty"] = task_data->ask_qty;
 		data["trades_count"] = task_data->trades_count;
 		data["ticker_status"] = toUtf(task_data->ticker_status);
-		data["data_type"] = task_data->data_type;
+		data["data_type"] = (int)task_data->data_type;
 		data["r4"] = task_data->r4;
 		delete task_data;
 	}
@@ -687,7 +687,7 @@ void MdApi::processSubOrderBook(Task *task)
 	if (task->task_data)
 	{
 		XTPST *task_data = (XTPST*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
+		data["exchange_id"] = (int)task_data->exchange_id;
 		data["ticker"] = toUtf(task_data->ticker);
 		delete task_data;
 	}
@@ -709,7 +709,7 @@ void MdApi::processUnSubOrderBook(Task *task)
 	if (task->task_data)
 	{
 		XTPST *task_data = (XTPST*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
+		data["exchange_id"] = (int)task_data->exchange_id;
 		data["ticker"] = toUtf(task_data->ticker);
 		delete task_data;
 	}
@@ -731,7 +731,7 @@ void MdApi::processOrderBook(Task *task)
 	if (task->task_data)
 	{
 		XTPOB *task_data = (XTPOB*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
+		data["exchange_id"] = (int)task_data->exchange_id;
 		data["ticker"] = toUtf(task_data->ticker);
 		data["last_price"] = task_data->last_price;
 		data["qty"] = task_data->qty;
@@ -754,7 +754,7 @@ void MdApi::processSubTickByTick(Task *task)
 	if (task->task_data)
 	{
 		XTPST *task_data = (XTPST*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
+		data["exchange_id"] = (int)task_data->exchange_id;
 		data["ticker"] = toUtf(task_data->ticker);
 		delete task_data;
 	}
@@ -776,7 +776,7 @@ void MdApi::processUnSubTickByTick(Task *task)
 	if (task->task_data)
 	{
 		XTPST *task_data = (XTPST*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
+		data["exchange_id"] = (int)task_data->exchange_id;
 		data["ticker"] = toUtf(task_data->ticker);
 		delete task_data;
 	}
@@ -798,11 +798,11 @@ void MdApi::processTickByTick(Task *task)
 	if (task->task_data)
 	{
 		XTPTBT *task_data = (XTPTBT*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
+		data["exchange_id"] = (int)task_data->exchange_id;
 		data["ticker"] = toUtf(task_data->ticker);
 		data["seq"] = task_data->seq;
 		data["data_time"] = task_data->data_time;
-		data["type"] = task_data->type;
+		data["type"] = (int)task_data->type;
 		delete task_data;
 	}
 	this->onTickByTick(data);
@@ -899,10 +899,10 @@ void MdApi::processQueryAllTickers(Task *task)
 	if (task->task_data)
 	{
 		XTPQSI *task_data = (XTPQSI*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
+		data["exchange_id"] = (int)task_data->exchange_id;
 		data["ticker"] = toUtf(task_data->ticker);
 		data["ticker_name"] = toUtf(task_data->ticker_name);
-		data["ticker_type"] = task_data->ticker_type;
+		data["ticker_type"] = (int)task_data->ticker_type;
 		data["pre_close_price"] = task_data->pre_close_price;
 		data["upper_limit_price"] = task_data->upper_limit_price;
 		data["lower_limit_price"] = task_data->lower_limit_price;
@@ -929,7 +929,7 @@ void MdApi::processQueryTickersPriceInfo(Task *task)
 	if (task->task_data)
 	{
 		XTPTPI *task_data = (XTPTPI*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
+		data["exchange_id"] = (int)task_data->exchange_id;
 		data["ticker"] = toUtf(task_data->ticker);
 		data["last_price"] = task_data->last_price;
 		delete task_data;
@@ -1028,10 +1028,6 @@ void MdApi::processUnSubscribeAllOptionTickByTick(Task *task)
 	}
 	this->onUnSubscribeAllOptionTickByTick(task->task_extra, error);
 };
-
-
-
-
 
 
 
