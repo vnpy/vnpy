@@ -152,8 +152,6 @@ void TdApi::OnQueryPosition(XTPQueryStkPositionRsp *position, XTPRI *error_info,
 
 void TdApi::OnQueryAsset(XTPQueryAssetRsp *asset, XTPRI *error_info, int request_id, bool is_last, uint64_t session_id)
 {
-	cout << "01-> C++的回调函数将数据保存到队列中 void TdApi::OnQueryAsset, task";
-
 	Task task = Task();
 	task.task_name = ONQUERYASSET;
 	if (asset)
@@ -527,17 +525,12 @@ void TdApi::processTask()
 {
 	try
 	{
-		cout << "start process" << endl;
 		while (this->active)
 		{
 			Task task = this->task_queue.pop();
-			//cout << "processing task data :" << task.task_name << endl;
 
 			switch (task.task_name)
 			{
-				//cout<<"01.6-> switch (task.task_name)"
-				//	<< task.task_name
-				//	<< endl;
 			case ONDISCONNECTED:
 			{
 				this->processDisconnected(&task);
@@ -588,9 +581,6 @@ void TdApi::processTask()
 
 			case ONQUERYASSET:
 			{	
-				cout << "02-> 工作线程从队列中取出数据 case ONQUERYASSET， task："
-					<< &task
-					<< endl;
 				this->processQueryAsset(&task);
 				break;
 			}
@@ -964,7 +954,6 @@ void TdApi::processQueryAsset(Task *task)
 		delete task_data;
 	}
 	dict error;
-	cout << "11";
 	if (task->task_error)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
@@ -972,7 +961,6 @@ void TdApi::processQueryAsset(Task *task)
 		error["error_msg"] = toUtf(task_error->error_msg);
 		delete task_error;
 	}
-	cout << "12";
 	this->onQueryAsset(data, error, task->task_id, task->task_last, task->task_extra);
 };
 
@@ -1435,11 +1423,8 @@ void TdApi::createTraderApi(int client_id, string save_file_path)
 void TdApi::init()
 
 {
-	cout << "init called" << endl;
 	this->active = true;
-	cout << "init active" << endl;
 	this->task_thread = thread(&TdApi::processTask, this);
-	cout << "start thread" << endl;
 };
 
 void TdApi::release()
@@ -1594,10 +1579,7 @@ int TdApi::queryPosition(string ticker, long long session_id, int request_id)
 };
 
 int TdApi::queryAsset(long long session_id, int request_id)
-{	
-	cout<<"00 ->主动函数 int TdApi::queryAsset" 
-		<< endl;
-		
+{		
 	int i = this->api->QueryAsset(session_id, request_id);
 	return i;
 };
@@ -1827,8 +1809,6 @@ public:
 
 	void onQueryAsset(const dict &data, const dict &error, int reqid, bool last, int extra) override
 	{	
-		cout<<"04-> Boost.Python封装 void onQueryAsset"
-			<< endl;
 		try
 		{
 			PYBIND11_OVERLOAD(void, TdApi, onQueryAsset, data, error, reqid, last, extra);
