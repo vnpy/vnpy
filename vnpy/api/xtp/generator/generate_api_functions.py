@@ -347,12 +347,8 @@ class ApiGenerator:
 
                         struct_fields = self.structs[type_]
                         for struct_field, struct_type in struct_fields.items():
-                            if struct_type == "string":
-                                f.write(
-                                    f"\t\terror[\"{struct_field}\"] = toUtf(task_error->{struct_field});\n")
-                            else:
-                                f.write(
-                                    f"\t\terror[\"{struct_field}\"] = task_error->{struct_field};\n")
+                            f.write(
+                                f"\t\terror[\"{struct_field}\"] = task_error->{struct_field};\n")
 
                         f.write("\t\tdelete task_error;\n")
                         f.write("\t}\n")
@@ -367,10 +363,7 @@ class ApiGenerator:
 
                         struct_fields = self.structs[type_]
                         for struct_field, struct_type in struct_fields.items():
-                            if struct_type == "string":
-                                f.write(
-                                    f"\t\tdata[\"{struct_field}\"] = toUtf(task_data->{struct_field});\n")
-                            elif struct_type == "enum":
+                            if struct_type == "enum":
                                 f.write(
                                     f"\t\tdata[\"{struct_field}\"] = (int) task_data->{struct_field};\n")                                
                             else:
