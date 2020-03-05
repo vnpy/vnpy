@@ -676,7 +676,7 @@ class UftTdApi(TdApi):
             self.orders[orderid] = order
         else:
             order.traded = data["OrderVolume"]
-            order.status = STATUS_UFT2VT.get(data["OrderStatus"], Status.SUBMITTING),
+            order.status = STATUS_UFT2VT.get(data["OrderStatus"], Status.SUBMITTING)
 
         self.gateway.on_order(order)
 
