@@ -392,7 +392,8 @@ class UftTdApi(TdApi):
         self.frontid: int = 0
         self.sessionid: int = 0
 
-        self.positions: Dict = {}
+        self.positions: Dict[str, PositionData] = {}
+        self.orders: Dict[str, OrderData] = {}
 
     def onFrontConnected(self) -> None:
         """"""
@@ -492,6 +493,8 @@ class UftTdApi(TdApi):
         last: bool
     ) -> None:
         """"""
+        self.gateway.write_error("委托下单失败", error)
+
         order_ref = data["OrderRef"]
         orderid = f"{self.sessionid}_{order_ref}"
 
@@ -504,7 +507,7 @@ class UftTdApi(TdApi):
             orderid=orderid,
             direction=DIRECTION_UFT2VT[data["Direction"]],
             offset=OFFSET_UFT2VT.get(data["OffsetFlag"], Offset.NONE),
-            price=data["LimitPrice"],
+            price=data["OrderPrice"],
             volume=data["OrderVolume"],
             status=Status.REJECTED,
             gateway_name=self.gateway_name
@@ -649,29 +652,33 @@ class UftTdApi(TdApi):
 
     def update_order(self, data: dict) -> None:
         """"""
-        symbol = data["InstrumentID"]
-        exchange = EXCHANGE_UFT2VT[data["ExchangeID"]]
         sessionid = data["SessionID"]
         order_ref = data["OrderRef"]
         orderid = f"{sessionid}_{order_ref}"
 
-        order = OrderData(
-            symbol=symbol,
-            exchange=exchange,
-            orderid=orderid,
-            type=ORDERTYPE_UFT2VT[data["OrderCommand"]],
-            direction=DIRECTION_UFT2VT[data["Direction"]],
-            offset=OFFSET_UFT2VT[data["OffsetFlag"]],
-            price=data["OrderPrice"],
-            volume=data["OrderVolume"],
-            traded=data["TradeVolume"],
-            status=STATUS_UFT2VT.get(data["OrderStatus"], Status.SUBMITTING),
-            time=generate_time(data["InsertTime"]),
-            gateway_name=self.gateway_name
-        )
-        self.gateway.on_order(order)
+        order = self.orders.get(orderid, None)
 
-        print("on_order", order.orderid, order.status, data["OrderStatus"])
+        if not order:
+            order = OrderData(
+                symbol=data["InstrumentID"],
+                exchange=EXCHANGE_UFT2VT[data["ExchangeID"]],
+                orderid=orderid,
+                type=ORDERTYPE_UFT2VT[data["OrderCommand"]],
+                direction=DIRECTION_UFT2VT[data["Direction"]],
+                offset=OFFSET_UFT2VT[data["OffsetFlag"]],
+                price=data["OrderPrice"],
+                volume=data["OrderVolume"],
+                traded=data["TradeVolume"],
+                status=STATUS_UFT2VT.get(data["OrderStatus"], Status.SUBMITTING),
+                time=generate_time(data["InsertTime"]),
+                gateway_name=self.gateway_name
+            )
+            self.orders[orderid] = order
+        else:
+            order.traded = data["OrderVolume"]
+            order.status = STATUS_UFT2VT.get(data["OrderStatus"], Status.SUBMITTING),
+
+        self.gateway.on_order(order)
 
     def onRtnTrade(self, data: dict) -> None:
         """
@@ -687,6 +694,17 @@ class UftTdApi(TdApi):
         order_ref = data["OrderRef"]
         orderid = f"{sessionid}_{order_ref}"
 
+        order = self.orders.get(orderid, None)
+        if order:
+            order.traded += data["TradeVolume"]
+
+            if order.traded < order.volume:
+                order.status = Status.PARTTRADED
+            else:
+                order.status = Status.ALLTRADED
+
+            self.gateway.on_order(order)
+
         trade = TradeData(
             symbol=symbol,
             exchange=exchange,
@@ -700,8 +718,6 @@ class UftTdApi(TdApi):
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)
-
-        print("on_trade", trade.orderid, trade.volume)
 
     def connect(
         self,
@@ -763,7 +779,7 @@ class UftTdApi(TdApi):
         req = {
             "AccountID": self.userid,
             "Password": self.password,
-            "UserApplicationType": "V",
+            "UserApplicationType": "q",
             "UserApplicationInfo": "",
             "MacAddress": "",
             "IPAddress": "",
@@ -851,6 +867,9 @@ def adjust_price(price: float) -> float:
 def generate_time(data: int) -> str:
     """"""
     buf = str(data)
+    if len(buf) < 6:
+        buf = "0" + buf
+
     hour = buf[:2]
     minute = buf[2:4]
     second = buf[4:]

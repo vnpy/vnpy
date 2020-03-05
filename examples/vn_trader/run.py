@@ -33,9 +33,9 @@ from vnpy.trader.ui import MainWindow, create_qapp
 # from vnpy.gateway.gateios import GateiosGateway
 # from vnpy.gateway.bybit import BybitGateway
 # from vnpy.gateway.deribit import DeribitGateway
-# from vnpy.gateway.uft import UftGateway
-from vnpy.gateway.okexo import OkexoGateway
-from vnpy.gateway.binancef import BinancefGateway
+from vnpy.gateway.uft import UftGateway
+# from vnpy.gateway.okexo import OkexoGateway
+# from vnpy.gateway.binancef import BinancefGateway
 
 # from vnpy.app.cta_strategy import CtaStrategyApp
 # from vnpy.app.csv_loader import CsvLoaderApp
@@ -67,7 +67,7 @@ def main():
     # main_engine.add_gateway(SoptGateway)
     # main_engine.add_gateway(MinitestGateway)
     # main_engine.add_gateway(FemasGateway)
-    # main_engine.add_gateway(UftGateway)
+    main_engine.add_gateway(UftGateway)
     # main_engine.add_gateway(IbGateway)
     # main_engine.add_gateway(FutuGateway)
     # main_engine.add_gateway(BitmexGateway)
@@ -90,8 +90,8 @@ def main():
     # main_engine.add_gateway(GateiosGateway)
     # main_engine.add_gateway(BybitGateway)
     # main_engine.add_gateway(DeribitGateway)
-    main_engine.add_gateway(OkexoGateway)
-    main_engine.add_gateway(BinancefGateway)
+    # main_engine.add_gateway(OkexoGateway)
+    # main_engine.add_gateway(BinancefGateway)
 
     # main_engine.add_app(CtaStrategyApp)
     # main_engine.add_app(CtaBacktesterApp)
