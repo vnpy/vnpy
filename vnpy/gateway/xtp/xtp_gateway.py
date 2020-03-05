@@ -1,6 +1,5 @@
-from typing import Any, Sequence, Dict, List
+from typing import Any, Dict, List
 from datetime import datetime
-from threading import Thread
 
 from vnpy.api.xtp import MdApi, TdApi
 from vnpy.event import EventEngine
@@ -145,10 +144,8 @@ class XtpGateway(BaseGateway):
         quote_protocol = setting["行情协议"]
         software_key = setting["授权码"]
 
-        self.md_api.connect(userid, password, client_id,
-                               quote_ip, quote_port, quote_protocol)
-        self.td_api.connect(userid, password, client_id,
-                                trader_ip, trader_port, software_key)
+        self.md_api.connect(userid, password, client_id, quote_ip, quote_port, quote_protocol)
+        self.td_api.connect(userid, password, client_id, trader_ip, trader_port, software_key)
         self.init_query()
 
     def close(self) -> None:
@@ -200,6 +197,7 @@ class XtpGateway(BaseGateway):
         msg = f"{msg}，代码：{error_id}，信息：{error_msg}"
         self.write_log(msg)
 
+
 class XtpMdApi(MdApi):
 
     def __init__(self, gateway: BaseGateway):
@@ -214,7 +212,7 @@ class XtpMdApi(MdApi):
         self.client_id: int = 0
         self.server_ip: str = ""
         self.server_port: int = 0
-        self.protocol :int = 0
+        self.protocol: int = 0
         self.session_id: int = 0
 
         self.connect_status: bool = False
@@ -236,7 +234,6 @@ class XtpMdApi(MdApi):
             self.gateway.write_log(f"交易服务器登录成功，会话编号：{self.session_id}")
         else:
             self.gateway.write_log("行情服务器登录失败")
-
 
     def onError(self, error: dict) -> None:
         """"""
@@ -386,7 +383,6 @@ class XtpMdApi(MdApi):
         """"""
         pass
 
-
     def connect(
         self,
         userid: str,
@@ -497,12 +493,12 @@ class XtpTdApi(TdApi):
         if error["error_id"]:
             self.gateway.write_error("交易委托失败", error)
         
-        symbol=data["ticker"]
+        symbol = data["ticker"]
         if len(symbol) == 8:
             direction = DIRECTION_OPTION_XTP2VT[data["side"]]
             offset = OFFSET_XTP2VT[data["position_effect"]]
         else:
-            direction, offset = DIRECTION_XTP2VT[data["side"]]
+            direction, offset = DIRECTION_STOCK_XTP2VT[data["side"]]
 
         order = OrderData(
             symbol=symbol,
@@ -523,11 +519,15 @@ class XtpTdApi(TdApi):
 
     def onTradeEvent(self, data: dict, session: int) -> None:
         """"""
-        print("onTradeEvent", data, error)
-        direction, offset = DIRECTION_XTP2VT[data["side"]]
+        symbol = data["ticker"]
+        if len(symbol) == 8:
+            direction = DIRECTION_OPTION_XTP2VT[data["side"]]
+            offset = OFFSET_XTP2VT[data["position_effect"]]
+        else:
+            direction, offset = DIRECTION_STOCK_XTP2VT[data["side"]]
 
         trade = TradeData(
-            symbol=data["ticker"],
+            symbol=symbol,
             exchange=MARKET_XTP2VT[data["market"]],
             orderid=str(data["order_xtp_id"]),
             tradeid=str(data["exec_id"]),
@@ -756,7 +756,6 @@ class XtpTdApi(TdApi):
                 "price_type": ORDERTYPE_VT2XTP[req.type],
                 "business_type": BUSINESS_VT2XTP[req.offset]
             }
-
 
         orderid = self.insertOrder(xtp_req, self.session_id)
 
