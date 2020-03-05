@@ -12,7 +12,7 @@ void MdApi::processError(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onError(error);
@@ -25,8 +25,8 @@ void MdApi::processSubMarketData(Task *task)
 	if (task->task_data)
 	{
 		XTPST *task_data = (XTPST*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["exchange_id"] = (int) task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
 		delete task_data;
 	}
 	dict error;
@@ -34,7 +34,7 @@ void MdApi::processSubMarketData(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onSubMarketData(data, error, task->task_last);
@@ -47,8 +47,8 @@ void MdApi::processUnSubMarketData(Task *task)
 	if (task->task_data)
 	{
 		XTPST *task_data = (XTPST*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["exchange_id"] = (int) task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
 		delete task_data;
 	}
 	dict error;
@@ -56,7 +56,7 @@ void MdApi::processUnSubMarketData(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onUnSubMarketData(data, error, task->task_last);
@@ -69,8 +69,8 @@ void MdApi::processDepthMarketData(Task *task)
 	if (task->task_data)
 	{
 		XTPMD *task_data = (XTPMD*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["exchange_id"] = (int) task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
 		data["last_price"] = task_data->last_price;
 		data["pre_close_price"] = task_data->pre_close_price;
 		data["open_price"] = task_data->open_price;
@@ -94,8 +94,8 @@ void MdApi::processDepthMarketData(Task *task)
 		data["bid_qty"] = task_data->bid_qty;
 		data["ask_qty"] = task_data->ask_qty;
 		data["trades_count"] = task_data->trades_count;
-		data["ticker_status"] = toUtf(task_data->ticker_status);
-		data["data_type"] = task_data->data_type;
+		data["ticker_status"] = task_data->ticker_status;
+		data["data_type"] = (int) task_data->data_type;
 		data["r4"] = task_data->r4;
 		delete task_data;
 	}
@@ -109,8 +109,8 @@ void MdApi::processSubOrderBook(Task *task)
 	if (task->task_data)
 	{
 		XTPST *task_data = (XTPST*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["exchange_id"] = (int) task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
 		delete task_data;
 	}
 	dict error;
@@ -118,7 +118,7 @@ void MdApi::processSubOrderBook(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onSubOrderBook(data, error, task->task_last);
@@ -131,8 +131,8 @@ void MdApi::processUnSubOrderBook(Task *task)
 	if (task->task_data)
 	{
 		XTPST *task_data = (XTPST*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["exchange_id"] = (int) task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
 		delete task_data;
 	}
 	dict error;
@@ -140,7 +140,7 @@ void MdApi::processUnSubOrderBook(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onUnSubOrderBook(data, error, task->task_last);
@@ -153,8 +153,8 @@ void MdApi::processOrderBook(Task *task)
 	if (task->task_data)
 	{
 		XTPOB *task_data = (XTPOB*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["exchange_id"] = (int) task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
 		data["last_price"] = task_data->last_price;
 		data["qty"] = task_data->qty;
 		data["turnover"] = task_data->turnover;
@@ -176,8 +176,8 @@ void MdApi::processSubTickByTick(Task *task)
 	if (task->task_data)
 	{
 		XTPST *task_data = (XTPST*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["exchange_id"] = (int) task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
 		delete task_data;
 	}
 	dict error;
@@ -185,7 +185,7 @@ void MdApi::processSubTickByTick(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onSubTickByTick(data, error, task->task_last);
@@ -198,8 +198,8 @@ void MdApi::processUnSubTickByTick(Task *task)
 	if (task->task_data)
 	{
 		XTPST *task_data = (XTPST*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["exchange_id"] = (int) task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
 		delete task_data;
 	}
 	dict error;
@@ -207,7 +207,7 @@ void MdApi::processUnSubTickByTick(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onUnSubTickByTick(data, error, task->task_last);
@@ -220,11 +220,11 @@ void MdApi::processTickByTick(Task *task)
 	if (task->task_data)
 	{
 		XTPTBT *task_data = (XTPTBT*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["exchange_id"] = (int) task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
 		data["seq"] = task_data->seq;
 		data["data_time"] = task_data->data_time;
-		data["type"] = task_data->type;
+		data["type"] = (int) task_data->type;
 		delete task_data;
 	}
 	this->onTickByTick(data);
@@ -238,7 +238,7 @@ void MdApi::processSubscribeAllMarketData(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onSubscribeAllMarketData(task->task_extra, error);
@@ -252,7 +252,7 @@ void MdApi::processUnSubscribeAllMarketData(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onUnSubscribeAllMarketData(task->task_extra, error);
@@ -266,7 +266,7 @@ void MdApi::processSubscribeAllOrderBook(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onSubscribeAllOrderBook(task->task_extra, error);
@@ -280,7 +280,7 @@ void MdApi::processUnSubscribeAllOrderBook(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onUnSubscribeAllOrderBook(task->task_extra, error);
@@ -294,7 +294,7 @@ void MdApi::processSubscribeAllTickByTick(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onSubscribeAllTickByTick(task->task_extra, error);
@@ -308,7 +308,7 @@ void MdApi::processUnSubscribeAllTickByTick(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onUnSubscribeAllTickByTick(task->task_extra, error);
@@ -321,10 +321,10 @@ void MdApi::processQueryAllTickers(Task *task)
 	if (task->task_data)
 	{
 		XTPQSI *task_data = (XTPQSI*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
-		data["ticker"] = toUtf(task_data->ticker);
-		data["ticker_name"] = toUtf(task_data->ticker_name);
-		data["ticker_type"] = task_data->ticker_type;
+		data["exchange_id"] = (int) task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
+		data["ticker_name"] = task_data->ticker_name;
+		data["ticker_type"] = (int) task_data->ticker_type;
 		data["pre_close_price"] = task_data->pre_close_price;
 		data["upper_limit_price"] = task_data->upper_limit_price;
 		data["lower_limit_price"] = task_data->lower_limit_price;
@@ -338,7 +338,7 @@ void MdApi::processQueryAllTickers(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryAllTickers(data, error, task->task_last);
@@ -351,8 +351,8 @@ void MdApi::processQueryTickersPriceInfo(Task *task)
 	if (task->task_data)
 	{
 		XTPTPI *task_data = (XTPTPI*)task->task_data;
-		data["exchange_id"] = task_data->exchange_id;
-		data["ticker"] = toUtf(task_data->ticker);
+		data["exchange_id"] = (int) task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
 		data["last_price"] = task_data->last_price;
 		delete task_data;
 	}
@@ -361,7 +361,7 @@ void MdApi::processQueryTickersPriceInfo(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onQueryTickersPriceInfo(data, error, task->task_last);
@@ -375,7 +375,7 @@ void MdApi::processSubscribeAllOptionMarketData(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onSubscribeAllOptionMarketData(task->task_extra, error);
@@ -389,7 +389,7 @@ void MdApi::processUnSubscribeAllOptionMarketData(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onUnSubscribeAllOptionMarketData(task->task_extra, error);
@@ -403,7 +403,7 @@ void MdApi::processSubscribeAllOptionOrderBook(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onSubscribeAllOptionOrderBook(task->task_extra, error);
@@ -417,7 +417,7 @@ void MdApi::processUnSubscribeAllOptionOrderBook(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onUnSubscribeAllOptionOrderBook(task->task_extra, error);
@@ -431,7 +431,7 @@ void MdApi::processSubscribeAllOptionTickByTick(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onSubscribeAllOptionTickByTick(task->task_extra, error);
@@ -445,7 +445,7 @@ void MdApi::processUnSubscribeAllOptionTickByTick(Task *task)
 	{
 		XTPRI *task_error = (XTPRI*)task->task_error;
 		error["error_id"] = task_error->error_id;
-		error["error_msg"] = toUtf(task_error->error_msg);
+		error["error_msg"] = task_error->error_msg;
 		delete task_error;
 	}
 	this->onUnSubscribeAllOptionTickByTick(task->task_extra, error);

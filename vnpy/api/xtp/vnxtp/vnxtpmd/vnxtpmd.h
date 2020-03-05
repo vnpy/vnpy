@@ -284,10 +284,6 @@ public:
 	void processUnSubscribeAllOptionTickByTick(Task *task);
 
 
-
-
-
-
 	//-------------------------------------------------------------------------------------
 	//data：回调函数的数据字典
 	//error：回调函数的错误字典
