@@ -1430,15 +1430,23 @@ void TdApi::release()
 };
 
 int TdApi::exit()
-{
+{	
+	cout<< "01";
 	this->active = false;
+	cout << "02";
 	this->task_queue.terminate();
+	cout << "03";
 	this->task_thread.join();
+	cout << "04";
 
 	this->api->RegisterSpi(NULL);
+	cout << "05";
 	this->api->Release();
+	cout << "06";
 	this->api = NULL;
+	cout << "07";
 	return 1;
+	cout << "08";
 };
 
 string TdApi::getTradingDay()
