@@ -538,6 +538,9 @@ class ConnectDialog(QtWidgets.QDialog):
                     saved_value = loaded_setting[field_name]
                     widget.setText(str(saved_value))
 
+                if "密码" in field_name:
+                    widget.setEchoMode(QtWidgets.QLineEdit.Password)
+
             form.addRow(f"{field_name} <{field_type.__name__}>", widget)
             self.widgets[field_name] = (widget, field_type)
 
