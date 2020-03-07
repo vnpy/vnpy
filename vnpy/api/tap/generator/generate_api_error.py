@@ -27,17 +27,15 @@ class DataTypeGenerator:
         """处理每行"""
         line = line.replace("\n", "")
         line = line.replace(";", "")
-        # print(line)
 
         # MD
         if self.name == "md":
             if line.startswith("const int"):
                 self.process_int(line)
+        # TD
         elif self.name == "td":
             if line.startswith("    const int"):
                 self.process_int(line)
-
-
 
     def process_int(self, line: str) -> None:
         """处理类型定义"""
@@ -50,49 +48,10 @@ class DataTypeGenerator:
         new_line = f"{name} = {value}\n"
         self.f_define.write(new_line)
 
-    # def process_char_td(self, line: str) -> None:
-    #     words = line.split(" ")
-    #     words = [word for word in words if word != ""]
-
-    #     name = words[-1]
-
-    #     if "[" in name:
-    #         name = name.split("[")[0]
-    #         new_line = f"{name} = \"string\"\n"
-    #     else:
-    #         new_line = f"{name} = \"char\"\n"
-
-    #     self.f_typedef.write(new_line)
-
-    # def process_const_md(self, line: str) -> None:
-    #     """"""
-    #     sectors = line.split("=")
-    #     value = sectors[1].strip()
-
-    #     words = sectors[0].split(" ")
-    #     words = [word for word in words if word != ""]
-    #     # name = words[1].strip()
-    #     print(value, words)
-
-    #     # new_line = f"{name} = {value}\n"
-    #     # self.f_define.write(new_line)
-
-    # def process_const_td(self, line: str):
-    #     sectors = line.split("=")
-    #     value = sectors[1].replace("\'", "\"").strip()
-
-    #     words = sectors[0].split(" ")
-    #     words = [word for word in words if word != ""]
-
-    #     name = words[-1].strip()
-
-    #     new_line = f"{name} = {value}\n"
-    #     self.f_define.write(new_line)
-
 
 if __name__ == "__main__":
-    # md_generator = DataTypeGenerator("../include/tap/TapAPIError.h", "tap", "md")
-    # md_generator.run()
+    md_generator = DataTypeGenerator("../include/tap/TapAPIError.h", "tap", "md")
+    md_generator.run()
 
     td_generator = DataTypeGenerator("../include/tap/iTapAPIError.h", "tap", "td")
     td_generator.run()
