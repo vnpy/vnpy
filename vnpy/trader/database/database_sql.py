@@ -427,6 +427,28 @@ class SqlManager(BaseDatabaseManager):
             return s.to_tick()
         return None
 
+    def get_bar_data_statistics(self) -> List:
+        """"""
+        s = (
+            self.class_bar.select().group_by(
+                self.class_bar.symbol,
+                self.class_bar.exchange,
+                self.class_bar.interval
+            )
+        )
+
+        result = []
+
+        for data in s:
+            result.append({
+                "symbol": data.symbol,
+                "exchange": data.exchange,
+                "interval": data.interval,
+                "count": int(str(data))
+            })
+
+        return result
+
     def clean(self, symbol: str):
         self.class_bar.delete().where(self.class_bar.symbol == symbol).execute()
         self.class_tick.delete().where(self.class_tick.symbol == symbol).execute()
