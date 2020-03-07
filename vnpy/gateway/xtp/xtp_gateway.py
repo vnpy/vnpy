@@ -84,7 +84,7 @@ PRODUCT_XTP2VT: Dict[int, Product] = {
     3: Product.BOND,
     4: Product.OPTION,
     5: Product.EQUITY,
-    6: Product.OPTION
+    6: Product.BOND
 }
 
 OFFSET_VT2XTP: Dict[Offset, int] = {
@@ -402,7 +402,6 @@ class XtpMdApi(MdApi):
 
         # Create API object
         if not self.connect_status:
-            
             path = str(get_folder_path(self.gateway_name.lower()))
             self.createQuoteApi(self.client_id, path)
 
@@ -492,7 +491,7 @@ class XtpTdApi(TdApi):
         print("onOrderEvent", data, error)
         if error["error_id"]:
             self.gateway.write_error("交易委托失败", error)
-        
+
         symbol = data["ticker"]
         if len(symbol) == 8:
             direction = DIRECTION_OPTION_XTP2VT[data["side"]]

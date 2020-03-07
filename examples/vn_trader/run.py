@@ -13,7 +13,7 @@ from vnpy.trader.ui import MainWindow, create_qapp
 # from vnpy.gateway.mini import MiniGateway
 # from vnpy.gateway.sopt import SoptGateway
 # from vnpy.gateway.minitest import MinitestGateway
-from vnpy.gateway.femas import FemasGateway
+# from vnpy.gateway.femas import FemasGateway
 # from vnpy.gateway.tiger import TigerGateway
 # from vnpy.gateway.oes import OesGateway
 # from vnpy.gateway.okex import OkexGateway
@@ -22,7 +22,7 @@ from vnpy.gateway.femas import FemasGateway
 # from vnpy.gateway.onetoken import OnetokenGateway
 # from vnpy.gateway.okexf import OkexfGateway
 # from vnpy.gateway.okexs import OkexsGateway
-# from vnpy.gateway.xtp import XtpGateway
+from vnpy.gateway.xtp import XtpGateway
 # from vnpy.gateway.hbdm import HbdmGateway
 # from vnpy.gateway.tap import TapGateway
 # from vnpy.gateway.tora import ToraGateway
@@ -32,7 +32,7 @@ from vnpy.gateway.femas import FemasGateway
 # from vnpy.gateway.bitstamp import BitstampGateway
 # from vnpy.gateway.gateios import GateiosGateway
 # from vnpy.gateway.bybit import BybitGateway
-from vnpy.gateway.deribit import DeribitGateway
+# from vnpy.gateway.deribit import DeribitGateway
 
 # from vnpy.app.cta_strategy import CtaStrategyApp
 # from vnpy.app.csv_loader import CsvLoaderApp
@@ -61,7 +61,7 @@ def main():
     # main_engine.add_gateway(MiniGateway)
     # main_engine.add_gateway(SoptGateway)
     # main_engine.add_gateway(MinitestGateway)
-    main_engine.add_gateway(FemasGateway)
+    # main_engine.add_gateway(FemasGateway)
     # main_engine.add_gateway(IbGateway)
     # main_engine.add_gateway(FutuGateway)
     # main_engine.add_gateway(BitmexGateway)
@@ -73,7 +73,7 @@ def main():
     # main_engine.add_gateway(OnetokenGateway)
     # main_engine.add_gateway(OkexfGateway)
     # main_engine.add_gateway(HbdmGateway)
-    # main_engine.add_gateway(XtpGateway)
+    main_engine.add_gateway(XtpGateway)
     # main_engine.add_gateway(TapGateway)
     # main_engine.add_gateway(ToraGateway)
     # main_engine.add_gateway(AlpacaGateway)
@@ -83,7 +83,7 @@ def main():
     # main_engine.add_gateway(BitstampGateway)
     # main_engine.add_gateway(GateiosGateway)
     # main_engine.add_gateway(BybitGateway)
-    main_engine.add_gateway(DeribitGateway)
+    # main_engine.add_gateway(DeribitGateway)
 
     # main_engine.add_app(CtaStrategyApp)
     # main_engine.add_app(CtaBacktesterApp)
