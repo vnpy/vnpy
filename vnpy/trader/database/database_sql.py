@@ -394,6 +394,23 @@ class SqlManager(BaseDatabaseManager):
             return s.to_bar()
         return None
 
+    def get_oldest_bar_data(
+        self, symbol: str, exchange: "Exchange", interval: "Interval"
+    ) -> Optional["BarData"]:
+        s = (
+            self.class_bar.select()
+                .where(
+                (self.class_bar.symbol == symbol)
+                & (self.class_bar.exchange == exchange.value)
+                & (self.class_bar.interval == interval.value)
+            )
+            .order_by(self.class_bar.datetime.asc())
+            .first()
+        )
+        if s:
+            return s.to_bar()
+        return None
+
     def get_newest_tick_data(
         self, symbol: str, exchange: "Exchange"
     ) -> Optional["TickData"]:

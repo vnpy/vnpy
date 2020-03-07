@@ -333,6 +333,18 @@ class MongoManager(BaseDatabaseManager):
             return s.to_bar()
         return None
 
+    def get_oldest_bar_data(
+        self, symbol: str, exchange: "Exchange", interval: "Interval"
+    ) -> Optional["BarData"]:
+        s = (
+            DbBarData.objects(symbol=symbol, exchange=exchange.value)
+            .order_by("+datetime")
+            .first()
+        )
+        if s:
+            return s.to_bar()
+        return None
+
     def get_newest_tick_data(
         self, symbol: str, exchange: "Exchange"
     ) -> Optional["TickData"]:
