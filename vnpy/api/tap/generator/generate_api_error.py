@@ -1,7 +1,7 @@
 """"""
 
 
-class DataTypeGenerator:
+class ErrorTypeGenerator:
     """DataType生成器"""
 
     def __init__(self, filename: str, prefix: str, name: str) -> None:
@@ -21,7 +21,7 @@ class DataTypeGenerator:
         self.f_cpp.close()
         self.f_define.close()
 
-        print(f"{self.name}_DataType生成完毕")
+        print(f"{self.name}_ErrorType生成完毕")
 
     def process_line(self, line: str) -> None:
         """处理每行"""
@@ -50,8 +50,8 @@ class DataTypeGenerator:
 
 
 if __name__ == "__main__":
-    md_generator = DataTypeGenerator("../include/tap/TapAPIError.h", "tap", "md")
+    md_generator = ErrorTypeGenerator("../include/tap/TapAPIError.h", "tap", "md")
     md_generator.run()
 
-    td_generator = DataTypeGenerator("../include/tap/iTapAPIError.h", "tap", "td")
+    td_generator = ErrorTypeGenerator("../include/tap/iTapAPIError.h", "tap", "td")
     td_generator.run()
