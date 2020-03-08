@@ -55,7 +55,9 @@ class CommenTypeGenerator:
                 self.process_declare(line)
             elif "{" in line:
                 self.process_start(line)
-            elif line.startswith("}") or line.startswith("    }"):
+            elif line.startswith("}") and self.name == "md":
+                self.process_end(line)
+            elif line.startswith("    }") and self.name == "td":
                 self.process_end(line)
             elif "///<" in line:
                 self.process_member(line)
