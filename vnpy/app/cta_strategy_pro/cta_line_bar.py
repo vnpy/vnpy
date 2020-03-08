@@ -202,7 +202,7 @@ class CtaLineBar(object):
                     self.write_log(u'导入卡尔曼过滤器失败,需先安装 pip install pykalman')
                     self.para_active_kf = False
 
-    def registerEvent(self, event_type, cb_func):
+    def register_event(self, event_type, cb_func):
         """注册事件回调函数"""
         self.cb_dict.update({event_type: cb_func})
         if event_type == self.CB_ON_PERIOD:
@@ -643,7 +643,7 @@ class CtaLineBar(object):
 
         # 更新curPeriod的High，low
         if self.cur_period is not None:
-            self.cur_period.onPrice(self.cur_tick.last_price)
+            self.cur_period.update_price(self.cur_tick.last_price)
 
     def add_bar(self, bar: BarData, bar_is_completed: bool = False, bar_freq: int = 1):
         """

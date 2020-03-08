@@ -196,7 +196,7 @@ class BackTestingEngine(object):
         self.data_path = None
 
         self.fund_kline_dict = {}
-        self.acivte_fund_kline = False
+        self.active_fund_kline = False
 
     def create_fund_kline(self, name, use_renko=False):
         """
@@ -334,7 +334,8 @@ class BackTestingEngine(object):
     def get_price_tick(self, vt_symbol: str):
         return self.price_tick.get(vt_symbol, 1)
 
-    def set_contract(self, symbol: str, exchange: Exchange, product: Product, name: str, size: int, price_tick: float):
+    def set_contract(self, symbol: str, exchange: Exchange, product: Product, name: str, size: int,
+                     price_tick: float, margin_rate: float = 0.1):
         """设置合约信息"""
         vt_symbol = '.'.join([symbol, exchange.value])
         if vt_symbol not in self.contract_dict:
@@ -345,11 +346,12 @@ class BackTestingEngine(object):
                 name=name,
                 product=product,
                 size=size,
-                pricetick=price_tick
+                pricetick=price_tick,
+                margin_rate=margin_rate
             )
             self.contract_dict.update({vt_symbol: c})
             self.set_size(vt_symbol, size)
-            # self.set_margin_rate(vt_symbol, )
+            self.set_margin_rate(vt_symbol, margin_rate)
             self.set_price_tick(vt_symbol, price_tick)
             self.symbol_exchange_dict.update({symbol: exchange})
 
@@ -486,8 +488,8 @@ class BackTestingEngine(object):
             self.bar_interval_seconds = test_settings.get('bar_interval_seconds')
 
         # 资金曲线
-        self.acivte_fund_kline = test_settings.get('acivte_fund_kline', False)
-        if self.acivte_fund_kline:
+        self.active_fund_kline = test_settings.get('active_fund_kline', False)
+        if self.active_fund_kline:
             # 创建资金K线
             self.create_fund_kline(self.test_name, use_renko=test_settings.get('use_renko', False))
 
@@ -515,8 +517,8 @@ class BackTestingEngine(object):
             self.set_slippage(symbol, symbol_data.get('slippage', 0))
 
             self.set_size(symbol, symbol_data.get('symbol_size', 10))
-
-            self.set_margin_rate(symbol, symbol_data.get('margin_rate', 0.1))
+            margin_rate = symbol_data.get('margin_rate', 0.1)
+            self.set_margin_rate(symbol, margin_rate)
 
             self.set_commission_rate(symbol, symbol_data.get('commission_rate', float(0.0001)))
 
@@ -526,7 +528,8 @@ class BackTestingEngine(object):
                 exchange=Exchange(symbol_data.get('exchange', 'LOCAL')),
                 product=Product(symbol_data.get('product', "期货")),
                 size=symbol_data.get('symbol_size', 10),
-                price_tick=symbol_data.get('price_tick', 1)
+                price_tick=symbol_data.get('price_tick', 1),
+                margin_rate=margin_rate
             )
 
     def new_tick(self, tick):
@@ -735,7 +738,7 @@ class BackTestingEngine(object):
             self.write_log(u'自动启动策略')
             strategy.on_start()
 
-        if self.acivte_fund_kline:
+        if self.active_fund_kline:
             # 创建策略实例的资金K线
             self.create_fund_kline(name=strategy_name, use_renko=False)
 

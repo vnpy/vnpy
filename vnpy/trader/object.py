@@ -249,7 +249,7 @@ class AccountData(BaseData):
 
 
 @dataclass
-class VtFundsFlowData(BaseData):
+class FundsFlowData(BaseData):
     """历史资金流水数据类(股票专用）"""
 
     # 账号代码相关
@@ -353,6 +353,7 @@ class OrderRequest:
     volume: float
     price: float = 0
     offset: Offset = Offset.NONE
+    strategy_name: str = ""
 
     def __post_init__(self):
         """"""

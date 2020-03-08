@@ -1150,10 +1150,22 @@ class CtaProFutureTemplate(CtaProTemplate):
         self.save_dist(dist_record)
         self.pos = self.position.pos
 
+    def fix_order(self, order: OrderData):
+        """修正order被拆单得情况"""
+        order_info = self.active_orders.get(order.vt_orderid, None)
+        if order_info:
+            volume = order_info.get('volume')
+            if volume != order.volume:
+                self.write_log(f'调整{order.vt_orderid} volume:{volume}=>{order.volume}')
+                order_info.update({'volume': order.volume})
+
     def on_order(self, order: OrderData):
         """报单更新"""
         # 未执行的订单中，存在是异常，删除
         self.write_log(u'{}报单更新，{}'.format(self.cur_datetime, order.__dict__))
+
+        # 修正order被拆单得情况"
+        self.fix_order(order)
 
         if order.vt_orderid in self.active_orders:
 
@@ -1543,7 +1555,7 @@ class CtaProFutureTemplate(CtaProTemplate):
 
         for vt_orderid in list(self.active_orders.keys()):
             order_info = self.active_orders[vt_orderid]
-            order_symbol = order_info.get('symbol', self.vt_symbol)
+            order_vt_symbol = order_info.get('vt_symbol', self.vt_symbol)
             order_time = order_info['order_time']
             order_volume = order_info['volume'] - order_info['traded']
             # order_price = order_info['price']
@@ -1555,7 +1567,7 @@ class CtaProFutureTemplate(CtaProTemplate):
             over_seconds = (dt - order_time).total_seconds()
 
             # 只处理未成交的限价委托单
-            if order_status in [Status.NOTTRADED] and (order_type == OrderType.LIMIT or '.SPD' in order_symbol):
+            if order_status in [Status.NOTTRADED] and (order_type == OrderType.LIMIT or '.SPD' in order_vt_symbol):
                 if over_seconds > self.cancel_seconds or force:  # 超过设置的时间还未成交
                     self.write_log(u'超时{}秒未成交，取消委托单：vt_orderid:{},order:{}'
                                    .format(over_seconds, vt_orderid, order_info))
@@ -1586,10 +1598,10 @@ class CtaProFutureTemplate(CtaProTemplate):
                                     u'网格volume:{},order_volume:{}不一致，修正'.format(order_grid.volume, order_volume))
                                 order_grid.volume = order_volume
 
-                            self.write_log(u'重新提交{}开空委托,开空价{}，v:{}'.format(order_symbol, short_price, order_volume))
+                            self.write_log(u'重新提交{}开空委托,开空价{}，v:{}'.format(order_vt_symbol, short_price, order_volume))
                             vt_orderids = self.short(price=short_price,
                                                      volume=order_volume,
-                                                     vt_symbol=order_symbol,
+                                                     vt_symbol=order_vt_symbol,
                                                      order_type=order_type,
                                                      order_time=self.cur_datetime,
                                                      grid=order_grid)
@@ -1606,10 +1618,10 @@ class CtaProFutureTemplate(CtaProTemplate):
                                     u'网格volume:{},order_volume:{}不一致，修正'.format(order_grid.volume, order_volume))
                                 order_grid.volume = order_volume
 
-                            self.write_log(u'重新提交{}开多委托,开多价{}，v:{}'.format(order_symbol, buy_price, order_volume))
+                            self.write_log(u'重新提交{}开多委托,开多价{}，v:{}'.format(order_vt_symbol, buy_price, order_volume))
                             vt_orderids = self.buy(price=buy_price,
                                                    volume=order_volume,
-                                                   vt_symbol=order_symbol,
+                                                   vt_symbol=order_vt_symbol,
                                                    order_type=order_type,
                                                    order_time=self.cur_datetime,
                                                    grid=order_grid)
@@ -1623,10 +1635,10 @@ class CtaProFutureTemplate(CtaProTemplate):
                         # 属于平多委托单
                         if order_info['direction'] == Direction.SHORT:
                             sell_price = self.cur_mi_price - self.price_tick
-                            self.write_log(u'重新提交{}平多委托,{}，v:{}'.format(order_symbol, sell_price, order_volume))
+                            self.write_log(u'重新提交{}平多委托,{}，v:{}'.format(order_vt_symbol, sell_price, order_volume))
                             vt_orderids = self.sell(price=sell_price,
                                                     volume=order_volume,
-                                                    vt_symbol=order_symbol,
+                                                    vt_symbol=order_vt_symbol,
                                                     order_type=order_type,
                                                     order_time=self.cur_datetime,
                                                     grid=order_grid)
@@ -1637,10 +1649,10 @@ class CtaProFutureTemplate(CtaProTemplate):
                         # 属于平空委托单
                         else:
                             cover_price = self.cur_mi_price + self.price_tick
-                            self.write_log(u'重新提交{}平空委托,委托价{}，v:{}'.format(order_symbol, cover_price, order_volume))
+                            self.write_log(u'重新提交{}平空委托,委托价{}，v:{}'.format(order_vt_symbol, cover_price, order_volume))
                             vt_orderids = self.cover(price=cover_price,
                                                      volume=order_volume,
-                                                     vt_symbol=order_symbol,
+                                                     vt_symbol=order_vt_symbol,
                                                      order_type=order_type,
                                                      order_time=self.cur_datetime,
                                                      grid=order_grid)

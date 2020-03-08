@@ -96,8 +96,7 @@ class CtaEngine(BaseEngine):
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
-        super(CtaEngine, self).__init__(
-            main_engine, event_engine, APP_NAME)
+        super().__init__(main_engine, event_engine, APP_NAME)
 
         self.engine_config = {}
 
@@ -428,6 +427,7 @@ class CtaEngine(BaseEngine):
             type=type,
             price=price,
             volume=volume,
+            strategy_name=strategy.strategy_name
         )
 
         # 如果没有指定网关，则使用合约信息内的网关
@@ -748,6 +748,10 @@ class CtaEngine(BaseEngine):
             return 0.1
 
         return contract.pricetick
+
+    def get_tick(self, vt_symbol: str):
+        """获取合约得最新tick"""
+        return self.main_engine.get_tick(vt_symbol)
 
     def get_price(self, vt_symbol: str):
         """查询合约的最新价格"""

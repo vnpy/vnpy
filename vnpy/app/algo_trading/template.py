@@ -174,7 +174,10 @@ class AlgoTemplate:
 
     def write_log(self, msg: str):
         """"""
-        self.algo_engine.write_log(msg, self)
+        self.algo_engine.write_log(msg, self.algo_name)
+
+    def write_error(self, msg: str):
+        self.algo_engine.write_error(msg, self.algo_name)
 
     def put_parameters_event(self):
         """"""
@@ -182,7 +185,7 @@ class AlgoTemplate:
         for name in self.default_setting.keys():
             parameters[name] = getattr(self, name)
 
-        self.algo_engine.put_parameters_event(self, parameters)
+        self.algo_engine.put_parameters_event(algo=self, parameters=parameters)
 
     def put_variables_event(self):
         """"""

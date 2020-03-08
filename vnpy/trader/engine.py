@@ -24,6 +24,7 @@ from .event import (
 )
 from .gateway import BaseGateway
 from .object import (
+    Exchange,
     CancelRequest,
     LogData,
     OrderRequest,
@@ -56,6 +57,7 @@ class MainEngine:
         self.exchanges = []
 
         self.rm_engine = None
+        self.algo_engine = None
 
         os.chdir(TRADER_DIR)  # Change working directory
         self.init_engines()  # Initialize function engines
@@ -99,6 +101,8 @@ class MainEngine:
         engine = self.add_engine(app.engine_class)
         if app.app_name == "RiskManager":
             self.rm_engine = engine
+        elif app.app_name == "AlgoTrading":
+            self.algo_engine == engine
 
         return engine
 
@@ -188,7 +192,14 @@ class MainEngine:
     def send_order(self, req: OrderRequest, gateway_name: str):
         """
         Send new order request to a specific gateway.
+        扩展支持自定义套利合约。 由cta_strategy_pro发出算法单委托，由算法引擎进行处理
         """
+        # 自定义套利合约，交给算法引擎处理
+        if self.algo_engine and req.exchange == Exchange.SPD:
+            return self.algo_engine.send_algo_order(
+                req=req,
+                gateway_name=gateway_name)
+
         gateway = self.get_gateway(gateway_name)
         if gateway:
             return gateway.send_order(req)
@@ -206,6 +217,7 @@ class MainEngine:
 
     def send_orders(self, reqs: Sequence[OrderRequest], gateway_name: str):
         """
+        批量发单
         """
         gateway = self.get_gateway(gateway_name)
         if gateway:
@@ -461,6 +473,7 @@ class OmsEngine(BaseEngine):
         """"""
         contract = event.data
         self.contracts[contract.vt_symbol] = contract
+        self.contracts[contract.symbol] = contract
 
     def get_tick(self, vt_symbol):
         """
@@ -595,7 +608,7 @@ class CustomContract(object):
             gateway_name = setting.get('gateway_name', None)
             if gateway_name is None:
                 gateway_name = SETTINGS.get('gateway_name', '')
-            vn_exchange = Exchange(setting.get('exchange', 'LOCAL'))
+            vn_exchange = Exchange(setting.get('exchange', 'SPD'))
             contract = ContractData(
                 gateway_name=gateway_name,
                 symbol=symbol,

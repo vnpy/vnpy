@@ -65,14 +65,19 @@ class OffsetConverter:
         return holding
 
     def convert_order_request(self, req: OrderRequest, lock: bool, gateway_name: str = ''):
-        """"""
+        """转换委托单"""
+        # 合约是净仓，不具有多空，不需要转换
         if not self.is_convert_required(req.vt_symbol):
             return [req]
 
+        # 获取当前持仓信息
         holding = self.get_position_holding(req.vt_symbol, gateway_name)
 
         if lock:
+            # 锁仓转换
             return holding.convert_order_request_lock(req)
+
+        # 平今/平昨拆分
         elif req.exchange in [Exchange.SHFE, Exchange.INE]:
             return holding.convert_order_request_shfe(req)
         else:
@@ -231,7 +236,7 @@ class PositionHolding:
             self.short_pos_frozen = self.short_td_frozen + self.short_yd_frozen
 
     def convert_order_request_shfe(self, req: OrderRequest):
-        """"""
+        """上期所，委托单拆分"""
         if req.offset == Offset.OPEN:
             return [req]
 
