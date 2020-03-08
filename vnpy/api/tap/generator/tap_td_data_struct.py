@@ -465,7 +465,7 @@ TapAPIBillQryReq = {
 TapAPIBillQryRsp = {
     "Reqdata": "dict",
     "BillLen": "int",
-    "BillText[1]": "char",
+    "BillText": "char",
 }
 
 TapAPIHisOrderQryReq = {
