@@ -55,7 +55,7 @@ class CommenTypeGenerator:
                 self.process_declare(line)
             elif "{" in line:
                 self.process_start(line)
-            elif "}" in line and "@" not in line:
+            elif line.startswith("}") or line.startswith("    }"):
                 self.process_end(line)
             elif "///<" in line:
                 self.process_member(line)
