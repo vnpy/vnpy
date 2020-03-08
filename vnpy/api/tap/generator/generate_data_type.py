@@ -85,6 +85,8 @@ class DataTypeGenerator:
             name = words[1]
             if "//" in name:
                 name = name.split("//")[0]
+            if "[" in name:
+                name = name.split("[")[0]
 
             type_ = words[0]
             if "//" in type_:
@@ -122,6 +124,8 @@ class DataTypeGenerator:
             words = [word for word in words if word != ""]
 
         name = words[1].strip()
+        if "[" in name:
+            name = name.split("[")[0]
         py_type = self.typedefs.get(words[0].strip(), "dict")
         new_line = f"    \"{name}\": \"{py_type}\",\n"
         self.f_struct.write(new_line)
