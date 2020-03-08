@@ -12,7 +12,7 @@ class DataTypeGenerator:
         self.name: str = name
         self.typedefs = {}
 
-    def load_constant(self):
+    def load_constant(self) -> None:
         """"""
         module_names = ["tap_td_commen_typedef", "tap_md_commen_typedef"]
         for module_name in module_names:
@@ -25,7 +25,8 @@ class DataTypeGenerator:
     def run(self) -> None:
         """主函数"""
         self.f_cpp = open(self.filename, "r", encoding="UTF-8")
-        self.f_define = open(f"{self.prefix}_{self.name}_data_constant.py", "w", encoding="UTF-8")
+        if self.name == "td":
+            self.f_define = open(f"{self.prefix}_{self.name}_data_constant.py", "w", encoding="UTF-8")
         self.f_typedef = open(f"{self.prefix}_{self.name}_data_typedef.py", "w", encoding="UTF-8")
         self.f_struct = open(f"{self.prefix}_{self.name}_data_struct.py", "w", encoding="UTF-8")
 
@@ -35,7 +36,8 @@ class DataTypeGenerator:
             self.process_line(line)
 
         self.f_cpp.close()
-        self.f_define.close()
+        if self.name == "td":
+            self.f_define.close()
         self.f_typedef.close()
         self.f_struct.close()
 
@@ -75,7 +77,7 @@ class DataTypeGenerator:
             elif "#" not in line and "!" not in line and "=" not in line and "*" not in line and "(" not in line and "namespace" not in line and "TapTradeAPI" not in line and len(line) != 0:
                 self.process_special(line)
 
-    def process_special(self, line: str):
+    def process_special(self, line: str) -> None:
         words = line.split(" ")
         words = [word for word in words if word != ""]
 
@@ -92,7 +94,7 @@ class DataTypeGenerator:
             new_line = f"    \"{name}\": \"{py_type}\",\n"
             self.f_struct.write(new_line)
 
-    def process_declare(self, line: str):
+    def process_declare(self, line: str) -> None:
         """处理声明"""
         words = line.split(" ")
         name = words[-1]
@@ -105,7 +107,7 @@ class DataTypeGenerator:
         """处理开始"""
         pass
 
-    def process_end(self, line: str):
+    def process_end(self, line: str) -> None:
         """处理结束"""
         new_line = "}\n\n"
         self.f_struct.write(new_line)
@@ -148,7 +150,7 @@ class DataTypeGenerator:
         self.f_typedef.write(new_line)
         self.typedefs[name] = py_type
 
-    def process_const(self, line: str):
+    def process_const(self, line: str) -> None:
         sectors = line.split("=")
         value = sectors[1].replace("\'", "\"").strip()
 
