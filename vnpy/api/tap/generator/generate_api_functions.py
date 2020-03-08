@@ -21,12 +21,17 @@ class ApiGenerator:
 
     def load_struct(self):
         """加载Struct"""
-        module_name = f"{self.prefix}_struct"
-        module = importlib.import_module(module_name)
+        if self.name == "md":
+            module_names = ["tap_td_data_struct", "tap_td_commen_struct"]
+        elif self.name == "td":
+            module_names = ["tap_md_data_struct", "tap_md_commen_struct"]
+        
+        for module_name in module_names:
+            module = importlib.import_module(module_name)
 
-        for name in dir(module):
-            if "__" not in name:
-                self.structs[name] = getattr(module, name)
+            for name in dir(module):
+                if "__" not in name:
+                    self.structs[name] = getattr(module, name)
 
     def run(self):
         """运行生成"""
@@ -58,9 +63,10 @@ class ApiGenerator:
         line = line.replace("\t", "")
         line = line.replace("{}", "")
 
-        if "virtual void On" in line:
+        if "virtual void TAP_CDECL On" in line:
             self.process_callback(line)
-        elif "virtual int Req" in line:
+        # Just for td
+        elif "virtual ITapTrade::TAPIINT32 TAP_CDECL Qry" in line:
             self.process_function(line)
 
     def process_callback(self, line: str):
@@ -338,8 +344,8 @@ class ApiGenerator:
 
 
 if __name__ == "__main__":
-    md_generator = ApiGenerator("../include/ctp/ThostFtdcMdApi.h", "ctp", "md", "MdApi")
+    md_generator = ApiGenerator("../include/tap/TapQuoteAPI.h", "ctp", "md", "MdApi")
     md_generator.run()
 
-    td_generator = ApiGenerator("../include/ctp/ThostFtdcTraderApi.h", "ctp", "td", "TdApi")
-    td_generator.run()
+    # td_generator = ApiGenerator("../include/tap/iTapTradeAPI.h", "ctp", "td", "TdApi")
+    # td_generator.run()
