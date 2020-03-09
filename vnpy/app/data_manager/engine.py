@@ -98,12 +98,31 @@ class ManagerEngine(BaseEngine):
             "symbol",
             "exchange",
             "datetime",
-            "open_"
+            "open",
+            "high",
+            "low",
+            "close",
+            "volume",
+            "open_interest"
         ]
 
         with open(file_path, "w") as f:
-            writer = csv.DictWriter(f,)
-            buf = [line.replace("\0", "") for line in f]
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+
+            for bar in bars:
+                d = {
+                    "symbol": bar.symbol,
+                    "exchange": bar.exchange.value,
+                    "datetime": bar.datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                    "open": bar.open_price,
+                    "high": bar.high_price,
+                    "low": bar.low_price,
+                    "close": bar.close_price,
+                    "volume": bar.volume,
+                    "open_interest": bar.open_interest,
+                }
+                writer.writerow(d)
 
     def get_bar_data_available(self) -> List[Dict]:
         """"""
