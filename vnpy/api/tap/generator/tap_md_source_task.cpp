@@ -32,12 +32,6 @@ void MdApi::TAP_CDECL OnRspQryCommodity(TAPIUINT32 sessionID, TAPIINT32 errorCod
 	Task task = Task();
 	task.task_name = ONRSPQRYCOMMODITY;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -54,12 +48,6 @@ void MdApi::TAP_CDECL OnRspQryContract(TAPIUINT32 sessionID, TAPIINT32 errorCode
 	Task task = Task();
 	task.task_name = ONRSPQRYCONTRACT;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -76,12 +64,6 @@ void MdApi::TAP_CDECL OnRspSubscribeQuote(TAPIUINT32 sessionID, TAPIINT32 errorC
 	Task task = Task();
 	task.task_name = ONRSPSUBSCRIBEQUOTE;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -98,12 +80,6 @@ void MdApi::TAP_CDECL OnRspUnSubscribeQuote(TAPIUINT32 sessionID, TAPIINT32 erro
 	Task task = Task();
 	task.task_name = ONRSPUNSUBSCRIBEQUOTE;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
