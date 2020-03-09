@@ -169,6 +169,9 @@ TapAPIOrderCancelReq = {
     "OrderNo": "string",
 }
 
+TapAPIOrderDeactivateReq = TapAPIOrderCancelReq
+TapAPIOrderActivateReq = TapAPIOrderCancelReq
+TapAPIOrderDeleteReq = TapAPIOrderCancelReq
 TapAPIOrderQryReq = {
     "AccountNo": "string",
     "ExchangeNo": "string",
@@ -601,6 +604,7 @@ TapAPIHisOrderProcessQryReq = {
     "OrderNo": "string",
 }
 
+TapAPIHisOrderProcessQryRsp = TapAPIHisOrderQryRsp
 TapAPIHisPositionQryReq = {
     "AccountNo": "string",
     "AccountAttributeNo": "dict",
@@ -836,6 +840,7 @@ TapAPIOrderMarketDeleteReq = {
     "OrderSellNo": "string",
 }
 
+TapAPIOrderMarketDeleteRsp = TapAPIOrderMarketInsertRsp
 TapAPIOrderLocalRemoveReq = {
     "ServerFlag": "char",
     "OrderNo": "string",
@@ -885,18 +890,21 @@ TapAPIOrderLocalInputReq = {
     "IsAddOne": "char",
 }
 
+TapAPIOrderLocalInputRsp = TapAPIOrderInfo
 TapAPIOrderLocalModifyReq = {
     "req": "dict",
     "ServerFlag": "char",
     "OrderNo": "string",
 }
 
+TapAPIOrderLocalModifyRsp = TapAPIOrderInfo
 TapAPIOrderLocalTransferReq = {
     "AccountNo": "string",
     "ServerFlag": "char",
     "OrderNo": "string",
 }
 
+TapAPIOrderLocalTransferRsp = TapAPIOrderInfo
 TapAPIFillLocalInputReq = {
     "AccountNo": "string",
     "ExchangeNo": "string",
@@ -923,11 +931,13 @@ TapAPIFillLocalInputReq = {
     "ClosePositionPrice": "double",
 }
 
+TapAPIFillLocalInputRsp = TapAPIFillLocalInputReq
 TapAPIFillLocalRemoveReq = {
     "ServerFlag": "char",
     "MatchNo": "string",
 }
 
+TapAPIFillLocalRemoveRsp = TapAPIFillLocalRemoveReq
 TapAPITradingCalendarQryRsp = {
     "CurrTradeDate": "string",
     "LastSettlementDate": "string",
