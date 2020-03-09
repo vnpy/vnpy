@@ -20,7 +20,6 @@ class ApiGenerator:
         self.typedefs = {}
         self.load_constant()
         self.load_struct()
-        
 
     def load_constant(self) -> None:
         """"""
@@ -38,9 +37,6 @@ class ApiGenerator:
 
     def load_struct(self):
         """加载Struct"""
-        # if self.name == "md":
-        #     module_names = ["tap_td_data_struct", "tap_td_commen_struct"]
-        # elif self.name == "td":
         module_names = ["tap_md_data_struct", "tap_md_commen_struct", "tap_td_data_struct", "tap_td_commen_struct"]
 
         for module_name in module_names:
