@@ -1,6 +1,6 @@
 """"""
 from datetime import datetime
-from typing import List, Optional, Sequence, Type
+from typing import List, Dict, Optional, Sequence, Type
 
 from peewee import (
     AutoField,
@@ -427,7 +427,7 @@ class SqlManager(BaseDatabaseManager):
             return s.to_tick()
         return None
 
-    def get_bar_data_statistics(self) -> List:
+    def get_bar_data_statistics(self) -> List[Dict]:
         """"""
         s = (
             self.class_bar.select().group_by(
