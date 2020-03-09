@@ -142,6 +142,10 @@ class DataTypeGenerator:
         self.f_typedef.write(new_line)
         self.typedefs[name] = py_type
 
+        if py_type == "dict":
+            short2full = f"{name} = {words[-2]}\n"
+            self.f_struct.write(short2full)
+
     def process_typedef_td(self, line: str) -> None:
         """处理类型定义"""
         words = line.split(" ")
@@ -153,6 +157,10 @@ class DataTypeGenerator:
 
         self.f_typedef.write(new_line)
         self.typedefs[name] = py_type
+
+        if py_type == "dict":
+            short2full = f"{name} = {words[-2]}\n"
+            self.f_struct.write(short2full)
 
     def process_const(self, line: str) -> None:
         sectors = line.split("=")
