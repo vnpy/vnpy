@@ -38,10 +38,10 @@ class ApiGenerator:
 
     def load_struct(self):
         """加载Struct"""
-        if self.name == "md":
-            module_names = ["tap_td_data_struct", "tap_td_commen_struct"]
-        elif self.name == "td":
-            module_names = ["tap_md_data_struct", "tap_md_commen_struct"]
+        # if self.name == "md":
+        #     module_names = ["tap_td_data_struct", "tap_td_commen_struct"]
+        # elif self.name == "td":
+        module_names = ["tap_md_data_struct", "tap_md_commen_struct", "tap_td_data_struct", "tap_td_commen_struct"]
 
         for module_name in module_names:
             module = importlib.import_module(module_name)
@@ -70,14 +70,14 @@ class ApiGenerator:
         self.generate_header_on()
         self.generate_header_function()
 
-        # self.generate_source_task()
-        # self.generate_source_switch()
-        # self.generate_source_process()
+        self.generate_source_task()
+        self.generate_source_switch()
+        self.generate_source_process()
         # self.generate_source_function()
         # self.generate_source_on()
         # self.generate_source_module()
 
-        print("API生成成功")
+        print(f"{self.name}_API生成成功")
 
     def process_line(self, line: str):
         """处理每行"""
@@ -153,24 +153,29 @@ class ApiGenerator:
         """"""
         filename = f"{self.prefix}_{self.name}_header_on.h"
         with open(filename, "w") as f:
-            for name, d in self.callbacks.items():
-                name = name.replace("On", "on")
+            for function_name, d in self.callbacks.items():
+                function_name = function_name.replace("On", "on")
 
                 args_list = []
-                for type_ in d.values():
-                    if type_ == "int":
-                        args_list.append("int reqid")
-                    elif type_ == "bool":
-                        args_list.append("bool last")
-                    elif type_ == "char*":
-                        args_list.append("string data")
-                    elif type_ == "CThostFtdcRspInfoField":
-                        args_list.append("const dict &error")
+                for name, type_ in d.items():
+                    if type_ == "unsigned int":
+                        args_list.append("unsigned int session")
+                    elif type_ == "int":
+                        if name == "errorCode":
+                            args_list.append("int error")
+                        elif name == "reasonCode":
+                            args_list.append("int reason")
+                        else:
+                            args_list.append(f"int {name}")
+                    elif type_ == "char":
+                        args_list.append("char last")
+                    elif type_ == "string":
+                        args_list.append(f"string {name}")
                     else:
                         args_list.append("const dict &data")
 
                 args_str = ", ".join(args_list)
-                line = f"virtual void {name}({args_str}) {{}};\n\n"
+                line = f"virtual void {function_name}({args_str}) {{}};\n\n"
 
                 f.write(line)
 
@@ -178,9 +183,18 @@ class ApiGenerator:
         """"""
         filename = f"{self.prefix}_{self.name}_header_function.h"
         with open(filename, "w") as f:
-            for name in self.functions.keys():
-                name = name.replace("Req", "req")
-                line = f"int {name}(const dict &req, int reqid);\n\n"
+            for function_name, d in self.functions.items():
+                function_name = function_name.replace("Qry", "qry")
+
+                args_list = []
+                for name, type_ in d.items():
+                    if type_ == "unsigned int":
+                        args_list.append("unsigned int session")
+                    else:
+                        args_list.append("const dict &data")
+
+                args_str = ", ".join(args_list)
+                line = f"int {function_name}({args_str});\n\n"
                 f.write(line)
 
     def generate_source_task(self):
@@ -197,17 +211,21 @@ class ApiGenerator:
                 f.write(f"\ttask.task_name = {name.upper()};\n")
 
                 for field, type_ in d.items():
-                    if type_ == "int":
+                    if type_ == "unsigned int":
                         f.write(f"\ttask.task_id = {field};\n")
-                    elif type_ == "bool":
+                    if type_ == "int":
+                        f.write(f"\ttask.task_int = {field};\n")
+                    elif type_ == "char":
                         f.write(f"\ttask.task_last = {field};\n")
-                    elif type_ == "CThostFtdcRspInfoField":
-                        f.write(f"\tif ({field})\n")
-                        f.write("\t{\n")
-                        f.write(f"\t\t{type_} *task_error = new {type_}();\n")
-                        f.write(f"\t\t*task_error = *{field};\n")
-                        f.write(f"\t\ttask.task_error = task_error;\n")
-                        f.write("\t}\n")
+                    elif type_ == "string":
+                        f.write(f"\ttask.task_string = {field};\n")
+                    # elif type_ == "CThostFtdcRspInfoField":
+                    #     f.write(f"\tif ({field})\n")
+                    #     f.write("\t{\n")
+                    #     f.write(f"\t\t{type_} *task_error = new {type_}();\n")
+                    #     f.write(f"\t\t*task_error = *{field};\n")
+                    #     f.write(f"\t\ttask.task_error = task_error;\n")
+                    #     f.write("\t}\n")
                     else:
                         f.write(f"\tif ({field})\n")
                         f.write("\t{\n")
@@ -242,59 +260,49 @@ class ApiGenerator:
                 f.write(
                     f"void {self.class_name}::{process_name}(Task *task)\n")
                 f.write("{\n")
-                f.write("\tgil_scoped_acquire acquire;\n")
+                if len(d.keys()) == 0:
+                    f.write(f"\tthis->{on_name}();\n")
+                    f.write("};\n\n")
 
-                args = []
+                else:
 
-                for field, type_ in d.items():
-                    if type_ == "int":
-                        args.append("task->task_id")
-                    elif type_ == "bool":
-                        args.append("task->task_last")
-                    elif type_ == "CThostFtdcRspInfoField":
-                        args.append("error")
+                    f.write("\tgil_scoped_acquire acquire;\n")
 
-                        f.write("\tdict error;\n")
-                        f.write("\tif (task->task_error)\n")
-                        f.write("\t{\n")
-                        f.write(
-                            f"\t\t{type_} *task_error = ({type_}*)task->task_error;\n")
+                    args = []
 
-                        struct_fields = self.structs[type_]
-                        for struct_field, struct_type in struct_fields.items():
-                            if struct_type == "string":
-                                f.write(
-                                    f"\t\terror[\"{struct_field}\"] = toUtf(task_error->{struct_field});\n")
-                            else:
-                                f.write(
-                                    f"\t\terror[\"{struct_field}\"] = task_error->{struct_field};\n")
+                    for field, type_ in d.items():
+                        if type_ == "unsigned int":
+                            args.append("task->task_id")
+                        elif type_ == "int":
+                            args.append("task->task_int")
+                        elif type_ == "string":
+                            args.append("task->task_string")
+                        elif type_ == "char":
+                            args.append("task->task_last")
+                        else:
+                            args.append("data")
 
-                        f.write("\t\tdelete task_error;\n")
-                        f.write("\t}\n")
-                    else:
-                        args.append("data")
+                            f.write("\tdict data;\n")
+                            f.write("\tif (task->task_data)\n")
+                            f.write("\t{\n")
+                            f.write(
+                                f"\t\t{type_} *task_data = ({type_}*)task->task_data;\n")
 
-                        f.write("\tdict data;\n")
-                        f.write("\tif (task->task_data)\n")
-                        f.write("\t{\n")
-                        f.write(
-                            f"\t\t{type_} *task_data = ({type_}*)task->task_data;\n")
+                            struct_fields = self.structs[type_]
+                            for struct_field, struct_type in struct_fields.items():
+                                if struct_type == "string":
+                                    f.write(
+                                        f"\t\tdata[\"{struct_field}\"] = toUtf(task_data->{struct_field});\n")
+                                else:
+                                    f.write(
+                                        f"\t\tdata[\"{struct_field}\"] = task_data->{struct_field};\n")
 
-                        struct_fields = self.structs[type_]
-                        for struct_field, struct_type in struct_fields.items():
-                            if struct_type == "string":
-                                f.write(
-                                    f"\t\tdata[\"{struct_field}\"] = toUtf(task_data->{struct_field});\n")
-                            else:
-                                f.write(
-                                    f"\t\tdata[\"{struct_field}\"] = task_data->{struct_field};\n")
+                            f.write("\t\tdelete task_data;\n")
+                            f.write("\t}\n")
 
-                        f.write("\t\tdelete task_data;\n")
-                        f.write("\t}\n")
-
-                args_str = ", ".join(args)
-                f.write(f"\tthis->{on_name}({args_str});\n")
-                f.write("};\n\n")
+                    args_str = ", ".join(args)
+                    f.write(f"\tthis->{on_name}({args_str});\n")
+                    f.write("};\n\n")
 
     def generate_source_function(self):
         """"""
@@ -378,8 +386,8 @@ class ApiGenerator:
 
 
 if __name__ == "__main__":
-    md_generator = ApiGenerator("../include/tap/TapQuoteAPI.h", "ctp", "md", "MdApi")
+    md_generator = ApiGenerator("../include/tap/TapQuoteAPI.h", "tap", "md", "MdApi")
     md_generator.run()
 
-    # td_generator = ApiGenerator("../include/tap/iTapTradeAPI.h", "ctp", "td", "TdApi")
-    # td_generator.run()
+    td_generator = ApiGenerator("../include/tap/iTapTradeAPI.h", "tap", "td", "TdApi")
+    td_generator.run()
