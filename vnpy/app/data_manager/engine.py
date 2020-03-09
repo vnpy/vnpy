@@ -1,12 +1,11 @@
 import csv
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine
 from vnpy.trader.constant import Interval, Exchange
 from vnpy.trader.object import BarData
 from vnpy.trader.database import database_manager
-from vnpy.trader.utility import extract_vt_symbol
 
 
 APP_NAME = "DataManager"
@@ -26,7 +25,8 @@ class ManagerEngine(BaseEngine):
     def import_data_from_csv(
         self,
         file_path: str,
-        vt_symbol: str,
+        symbol: str,
+        exchange: Exchange,
         interval: Interval,
         datetime_head: str,
         open_head: str,
@@ -36,7 +36,7 @@ class ManagerEngine(BaseEngine):
         volume_head: str,
         open_interest_head: str,
         datetime_format: str
-    ) -> None:
+    ) -> Tuple:
         """"""
         with open(file_path, "rt") as f:
             buf = [line.replace("\0", "") for line in f]
@@ -46,7 +46,6 @@ class ManagerEngine(BaseEngine):
         bars = []
         start = None
         count = 0
-        symbol, exchange = extract_vt_symbol(vt_symbol)
 
         for item in reader:
             if datetime_format:
