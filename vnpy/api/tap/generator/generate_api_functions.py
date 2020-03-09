@@ -69,9 +69,9 @@ class ApiGenerator:
         self.generate_source_task()
         self.generate_source_switch()
         self.generate_source_process()
-        # self.generate_source_function()
-        # self.generate_source_on()
-        # self.generate_source_module()
+        self.generate_source_function()
+        self.generate_source_on()
+        self.generate_source_module()
 
         print(f"{self.name}_API生成成功")
 
@@ -93,10 +93,53 @@ class ApiGenerator:
         """处理回掉函数"""
         name = line[line.index("On"):line.index("(")]
         line = line.replace("        ", "")
-        self.lines[name] = line
+        new_line = self.standard_format(line)
+        self.lines[name] = new_line
 
         d = self.generate_arg_dict(line)
         self.callbacks[name] = d
+
+    def standard_format(self, line: str):
+        """"""
+        line = line.split("=")[0]
+        line = line.replace("virtual void TAP_CDECL", "virtual void")
+        header = line.split("(")[0]
+
+        args_str = line[line.index("(") + 1:line.index(")")]
+        if not args_str:
+            f_content = ""
+        else:
+            args = args_str.split(",")
+            content = ""
+            for arg in args:
+                words = arg.split(" ")
+                if len(words) > 2:
+                    tap_type = words[-2]
+                    name = words[-1]
+
+                    if "::" in tap_type:
+                        tap_type = tap_type.split("::")[1]
+
+                    cpp_type = self.typedefs.get(tap_type, "dict")
+                    if cpp_type == "dict":
+                        cpp_type = tap_type
+
+                    item = f"{cpp_type} {name}, "
+                    content = content + item
+                elif len(words) == 2:
+                    tap_type = words[0]
+                    name = words[1]
+
+                    if "::" in tap_type:
+                        tap_type = tap_type.split("::")[1]
+                    cpp_type = self.typedefs[tap_type]
+
+                    item = f"{cpp_type} {name}, "
+                    content = content + item
+            f_content = content[:-2]
+
+        new_line = f"{header}({f_content})"
+        return new_line
 
     def process_function(self, line: str):
         """处理主动函数"""
@@ -215,13 +258,6 @@ class ApiGenerator:
                         f.write(f"\ttask.task_last = {field};\n")
                     elif type_ == "string":
                         f.write(f"\ttask.task_string = {field};\n")
-                    # elif type_ == "CThostFtdcRspInfoField":
-                    #     f.write(f"\tif ({field})\n")
-                    #     f.write("\t{\n")
-                    #     f.write(f"\t\t{type_} *task_error = new {type_}();\n")
-                    #     f.write(f"\t\t*task_error = *{field};\n")
-                    #     f.write(f"\t\ttask.task_error = task_error;\n")
-                    #     f.write("\t}\n")
                     else:
                         f.write(f"\tif ({field})\n")
                         f.write("\t{\n")
@@ -259,13 +295,9 @@ class ApiGenerator:
                 if len(d.keys()) == 0:
                     f.write(f"\tthis->{on_name}();\n")
                     f.write("};\n\n")
-
                 else:
-
                     f.write("\tgil_scoped_acquire acquire;\n")
-
                     args = []
-
                     for field, type_ in d.items():
                         if type_ == "unsigned int":
                             args.append("task->task_id")
@@ -277,7 +309,6 @@ class ApiGenerator:
                             args.append("task->task_last")
                         else:
                             args.append("data")
-
                             f.write("\tdict data;\n")
                             f.write("\tif (task->task_data)\n")
                             f.write("\t{\n")
@@ -305,26 +336,34 @@ class ApiGenerator:
         filename = f"{self.prefix}_{self.name}_source_function.cpp"
         with open(filename, "w") as f:
             for name, d in self.functions.items():
-                req_name = name.replace("Req", "req")
-                type_ = list(d.values())[0]
+                req_name = name.replace("Qry", "qry")
 
-                f.write(
-                    f"int {self.class_name}::{req_name}(const dict &req, int reqid)\n")
-                f.write("{\n")
-                f.write(f"\t{type_} myreq = {type_}();\n")
-                f.write("\tmemset(&myreq, 0, sizeof(myreq));\n")
+                length = len(d.keys())
+                if length == 1:
+                    f.write(f"int {self.class_name}::{req_name}(unsigned int session)\n")
+                    f.write("{\n")
+                    f.write(f"\tint i = this->api->{name}(session);\n")
+                    f.write("\treturn i;\n")
+                    f.write("};\n\n")
+                else:
+                    type_ = list(d.values())[1]
+                    f.write(
+                        f"int {self.class_name}::{req_name}(unsigned int session, const dict &req)\n")
+                    f.write("{\n")
+                    f.write(f"\t{type_} myreq = {type_}();\n")
+                    f.write("\tmemset(&myreq, 0, sizeof(myreq));\n")
 
-                struct_fields = self.structs[type_]
-                for struct_field, struct_type in struct_fields.items():
-                    if struct_type == "string":
-                        line = f"\tgetString(req, \"{struct_field}\", myreq.{struct_field});\n"
-                    else:
-                        line = f"\tget{struct_type.capitalize()}(req, \"{struct_field}\", &myreq.{struct_field});\n"
-                    f.write(line)
+                    struct_fields = self.structs[type_]
+                    for struct_field, struct_type in struct_fields.items():
+                        if struct_type == "string":
+                            line = f"\tgetString(req, \"{struct_field}\", myreq.{struct_field});\n"
+                        else:
+                            line = f"\tget{struct_type.capitalize()}(req, \"{struct_field}\", &myreq.{struct_field});\n"
+                        f.write(line)
 
-                f.write(f"\tint i = this->api->{name}(&myreq, reqid);\n")
-                f.write("\treturn i;\n")
-                f.write("};\n\n")
+                    f.write(f"\tint i = this->api->{name}(session, &myreq);\n")
+                    f.write("\treturn i;\n")
+                    f.write("};\n\n")
 
     def generate_source_on(self):
         """"""
@@ -336,15 +375,22 @@ class ApiGenerator:
                 args = []
                 bind_args = ["void", self.class_name, on_name]
                 for field, type_ in d.items():
-                    if type_ == "int":
-                        args.append("int reqid")
-                        bind_args.append("reqid")
-                    elif type_ == "bool":
+                    if type_ == "unsigned int":
+                        args.append("int session")
+                        bind_args.append("session")
+                    elif type_ == "char":
                         args.append("bool last")
                         bind_args.append("last")
-                    elif type_ == "CThostFtdcRspInfoField":
-                        args.append("const dict &error")
-                        bind_args.append("error")
+                    elif type_ == "int":
+                        if field == "errorCode":
+                            args.append("int error")
+                            bind_args.append("error")
+                        else:
+                            args.append(f"int {field}")
+                            bind_args.append(f"{field}")
+                    elif type_ == "string":
+                        args.append(f"string {field}")
+                        bind_args.append(f"{field}")
                     else:
                         args.append("const dict &data")
                         bind_args.append("data")
@@ -369,7 +415,7 @@ class ApiGenerator:
         filename = f"{self.prefix}_{self.name}_source_module.cpp"
         with open(filename, "w") as f:
             for name in self.functions.keys():
-                name = name.replace("Req", "req")
+                name = name.replace("Qry", "qry")
                 f.write(f".def(\"{name}\", &{self.class_name}::{name})\n")
 
             f.write("\n")
