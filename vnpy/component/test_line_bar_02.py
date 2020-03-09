@@ -18,7 +18,7 @@ os.environ["VNPY_TESTING"] = "1"
 
 from vnpy.trader.constant import Interval, Exchange
 from vnpy.trader.object import BarData
-from vnpy.app.cta_strategy_pro.cta_line_bar import (
+from vnpy.component.cta_line_bar import (
  CtaLineBar,
  CtaMinuteBar,
  CtaHourBar,

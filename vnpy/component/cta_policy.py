@@ -4,7 +4,7 @@ import os
 import json
 from datetime import datetime
 from collections import OrderedDict
-from vnpy.app.cta_strategy_pro.base import CtaComponent
+from vnpy.component.base import CtaComponent
 from vnpy.trader.utility import get_folder_path
 
 TNS_STATUS_OBSERVATE = 'observate'

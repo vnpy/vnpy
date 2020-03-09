@@ -20,15 +20,15 @@ class CtaPeriod(object):
 
     def __init__(self, mode: Period, price: float, pre_mode: Period = Period.INIT, dt: datetime = None):
         """初始化函数"""
-        self.open = price         # 开始价格
-        self.close = price        # 结束价格
-        self.high = price         # 最高价格
-        self.low = price          # 最低价格
+        self.open = price  # 开始价格
+        self.close = price  # 结束价格
+        self.high = price  # 最高价格
+        self.low = price  # 最低价格
 
-        self.mode = mode          # 周期模式 XXX
+        self.mode = mode  # 周期模式 XXX
         self.pre_mode = pre_mode  # 上一周期
 
-        self.datetime = dt if dt else datetime.now()    # 周期的开始时间
+        self.datetime = dt if dt else datetime.now()  # 周期的开始时间
 
     def update_price(self, price):
         """更新周期的价格"""

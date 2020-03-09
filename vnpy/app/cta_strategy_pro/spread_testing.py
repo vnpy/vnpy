@@ -12,7 +12,7 @@ import os
 import gc
 import pandas as pd
 import traceback
-import random
+
 import bz2
 import pickle
 
@@ -21,15 +21,12 @@ from time import sleep
 
 from vnpy.trader.object import (
     TickData,
-    BarData,
-    RenkoBarData,
 )
 from vnpy.trader.constant import (
     Exchange,
 )
 
 from vnpy.trader.utility import (
-    get_trading_date,
     extract_vt_symbol,
     get_underlying_symbol,
     import_module_by_str
@@ -45,6 +42,7 @@ VN_EXCHANGE_TICKFOLDER_MAP = {
     Exchange.CFFEX.value: 'ZJ',
     Exchange.INE.value: 'SQ'
 }
+
 
 class SpreadTestingEngine(BackTestingEngine):
     """
@@ -231,7 +229,6 @@ class SpreadTestingEngine(BackTestingEngine):
                     tick_date.strftime('%Y%m%d'),
                     '{}{}_{}.csv'.format(underly_symbol.upper(), symbol[-2:], tick_date.strftime('%Y%m%d'))))
 
-
         ticks = []
         if not os.path.isfile(file_path):
             self.write_log(u'{0}文件不存在'.format(file_path))
@@ -307,8 +304,8 @@ class SpreadTestingEngine(BackTestingEngine):
         for vt_symbol in list(self.symbol_strategy_map.keys()):
             symbol, exchange = extract_vt_symbol(vt_symbol)
             tick_list = self.load_csv_file(tick_folder=self.tick_path,
-                                            vt_symbol=vt_symbol,
-                                            tick_date=test_day)
+                                           vt_symbol=vt_symbol,
+                                           tick_date=test_day)
             if not tick_list or len(tick_list) == 0:
                 continue
 

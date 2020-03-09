@@ -60,11 +60,10 @@ from .base import (
     StopOrder,
     StopOrderStatus,
     STOPORDER_PREFIX,
-    MARKET_DAY_ONLY
-
 )
 from .template import CtaTemplate
-from .cta_position import CtaPosition
+from vnpy.component.base import MARKET_DAY_ONLY
+from vnpy.component.cta_position import CtaPosition
 
 STOP_STATUS_MAP = {
     Status.SUBMITTING: StopOrderStatus.WAITING,

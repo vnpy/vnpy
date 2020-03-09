@@ -16,17 +16,16 @@ import csv
 
 from collections import OrderedDict
 from datetime import datetime, timedelta
-
 from pykalman import KalmanFilter
 
-from vnpy.app.cta_strategy_pro.base import (
+from vnpy.component.base import (
     Direction,
     Area,
     MARKET_DAY_ONLY,
     NIGHT_MARKET_23,
     NIGHT_MARKET_SQ2,
     MARKET_ZJ)
-from vnpy.app.cta_strategy_pro.cta_period import CtaPeriod, Period
+from vnpy.component.cta_period import CtaPeriod, Period
 from vnpy.trader.object import BarData, TickData
 from vnpy.trader.constant import Interval, Color
 from vnpy.trader.utility import round_to, get_trading_date, get_underlying_symbol

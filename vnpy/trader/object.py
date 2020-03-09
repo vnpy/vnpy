@@ -118,6 +118,7 @@ class RenkoBarData(BarData):
     low_time = None  # 最后一次进入低位区域的时间
     high_time = None  # 最后一次进入高位区域的时间
 
+
 @dataclass
 class OrderData(BaseData):
     """

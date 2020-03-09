@@ -16,8 +16,8 @@ from vnpy.trader.object import BarData, TickData, OrderData, TradeData
 from vnpy.trader.utility import virtual, append_data, extract_vt_symbol, get_underlying_symbol
 
 from .base import StopOrder, EngineType
-from .cta_grid_trade import CtaGrid, CtaGridTrade, LOCK_GRID
-from .cta_position import CtaPosition
+from vnpy.component.cta_grid_trade import CtaGrid, CtaGridTrade, LOCK_GRID
+from vnpy.component.cta_position import CtaPosition
 
 
 class CtaTemplate(ABC):

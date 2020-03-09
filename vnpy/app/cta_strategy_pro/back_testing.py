@@ -132,7 +132,7 @@ class BackTestingEngine(object):
         self.long_position_list = []  # 多单持仓
         self.short_position_list = []  # 空单持仓
 
-        self.holdings = {}     # 多空持仓
+        self.holdings = {}  # 多空持仓
 
         # 当前最新数据，用于模拟成交用
         self.gateway_name = u'BackTest'
@@ -370,7 +370,7 @@ class BackTestingEngine(object):
         holding = self.holdings.get(k, None)
         if not holding:
             symbol, exchange = extract_vt_symbol(vt_symbol)
-            if self.contract_type== 'future':
+            if self.contract_type == 'future':
                 product = Product.FUTURES
             elif self.contract_type == 'stock':
                 product = Product.EQUITY
@@ -1901,7 +1901,7 @@ class BackTestingEngine(object):
             self.daily_max_drawdown_rate = drawdown_rate
             self.max_drawdown_rate_time = data['date']
 
-        msg = u'{}:  net={}, capital={} max={} margin={} commission={}， pos: {}'\
+        msg = u'{}:  net={}, capital={} max={} margin={} commission={}， pos: {}' \
             .format(data['date'],
                     data['net'], c, m,
                     today_holding_profit,
@@ -1916,11 +1916,13 @@ class BackTestingEngine(object):
         # 今仓 =》 昨仓
         for holding in self.holdings.values():
             if holding.long_td > 0:
-                self.write_log(f'{holding.vt_symbol} 多单今仓{holding.long_td},昨仓:{holding.long_yd}=> 昨仓:{holding.long_pos}')
+                self.write_log(
+                    f'{holding.vt_symbol} 多单今仓{holding.long_td},昨仓:{holding.long_yd}=> 昨仓:{holding.long_pos}')
                 holding.long_td = 0
                 holding.long_yd = holding.long_pos
             if holding.short_td > 0:
-                self.write_log(f'{holding.vt_symbol} 空单今仓{holding.short_td},昨仓:{holding.short_yd}=> 昨仓:{holding.short_pos}')
+                self.write_log(
+                    f'{holding.vt_symbol} 空单今仓{holding.short_td},昨仓:{holding.short_yd}=> 昨仓:{holding.short_pos}')
                 holding.short_td = 0
                 holding.short_yd = holding.short_pos
 

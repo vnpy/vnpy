@@ -10,7 +10,7 @@ import traceback
 from collections import OrderedDict
 from datetime import datetime
 from vnpy.trader.utility import get_folder_path
-from vnpy.app.cta_strategy_pro.base import Direction, CtaComponent
+from vnpy.component.base import Direction, CtaComponent
 
 """
 网格交易，用于套利单

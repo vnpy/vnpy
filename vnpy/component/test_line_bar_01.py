@@ -17,7 +17,7 @@ os.environ["VNPY_TESTING"] = "1"
 from vnpy.trader.constant import Interval, Exchange
 from vnpy.data.tdx.tdx_common import FakeStrategy
 from vnpy.data.tdx.tdx_future_data import TdxFutureData
-from vnpy.app.cta_strategy_pro.cta_line_bar import CtaLineBar
+from vnpy.component.cta_line_bar import CtaLineBar
 from vnpy.trader.object import TickData
 from vnpy.trader.utility import get_trading_date
 

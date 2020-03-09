@@ -1,8 +1,7 @@
 # encoding: UTF-8
 
 import sys
-
-from vnpy.app.cta_strategy_pro.base import Direction, CtaComponent
+from vnpy.component.base import Direction, CtaComponent
 
 
 class CtaPosition(CtaComponent):

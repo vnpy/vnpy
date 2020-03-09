@@ -33,8 +33,8 @@ class CtaSpreadTemplate(CtaTemplate):
 
     backtesting = False
     cancel_seconds = 120
-    allow_trading_open = True     # 允许开仓
-    force_trading_close = False   # 强制平仓
+    allow_trading_open = True  # 允许开仓
+    force_trading_close = False  # 强制平仓
 
     # 逻辑过程日志
     dist_fieldnames = ['datetime', 'symbol', 'volume', 'price',
@@ -815,7 +815,7 @@ class CtaSpreadTemplate(CtaTemplate):
                         # 开空委托单
                         if order_info['direction'] == Direction.SHORT:
                             short_price = self.cta_engine.get_price(order_vt_symbol) \
-                                          - self.cta_engine.get_price_tick(order_vt_symbol)
+                                          - self.cta_engine.get_price_tick(order_vt_symbol)  # noqa
 
                             self.write_log(u'重新提交{}开空委托,开空价{}，v:{}'
                                            .format(order_vt_symbol, short_price, order_volume))
@@ -834,7 +834,7 @@ class CtaSpreadTemplate(CtaTemplate):
                         else:
 
                             buy_price = self.cta_engine.get_price(order_vt_symbol) \
-                                        + self.cta_engine.get_price_tick(order_vt_symbol)
+                                        + self.cta_engine.get_price_tick(order_vt_symbol)  # noqa
                             self.write_log(u'重新提交{}开多委托,开多价{}，v:{}'
                                            .format(order_vt_symbol, buy_price, order_volume))
                             vt_orderids = self.buy(price=buy_price,
@@ -869,8 +869,9 @@ class CtaSpreadTemplate(CtaTemplate):
                         # 属于平空委托单
                         else:
                             cover_price = self.cta_engine.get_price(order_vt_symbol) \
-                                          + self.cta_engine.get_price_tick(order_vt_symbol)
-                            self.write_log(u'重新提交{}平空委托,委托价{}，v:{}'.format(order_vt_symbol, cover_price, order_volume))
+                                          + self.cta_engine.get_price_tick(order_vt_symbol)  # noqa
+                            self.write_log(u'重新提交{}平空委托,委托价{}，v:{}'
+                                           .format(order_vt_symbol, cover_price, order_volume))
                             vt_orderids = self.cover(price=cover_price,
                                                      volume=order_volume,
                                                      vt_symbol=order_vt_symbol,
@@ -975,11 +976,11 @@ class CtaSpreadTemplate(CtaTemplate):
 
         # 开空主动腿
         act_vt_orderids = self.short(vt_symbol=self.act_vt_symbol,
-                                 price=self.cur_act_tick.bid_price1,
-                                 volume=grid.volume * self.act_vol_ratio,
-                                 order_type=self.order_type,
-                                 order_time=self.cur_datetime,
-                                 grid=grid)
+                                     price=self.cur_act_tick.bid_price1,
+                                     volume=grid.volume * self.act_vol_ratio,
+                                     order_type=self.order_type,
+                                     order_time=self.cur_datetime,
+                                     grid=grid)
         if not act_vt_orderids:
             self.write_error(f'spd_short，{self.act_vt_symbol}开空仓{grid.volume * self.act_vol_ratio}手失败，'
                              f'委托价:{self.cur_act_tick.bid_price1}')
@@ -987,11 +988,11 @@ class CtaSpreadTemplate(CtaTemplate):
 
         # 开多被动腿
         pas_vt_orderids = self.buy(vt_symbol=self.pas_vt_symbol,
-                                     price=self.cur_pas_tick.ask_price1,
-                                     volume=grid.volume * self.pas_vol_ratio,
-                                     order_type=self.order_type,
-                                     order_time=self.cur_datetime,
-                                     grid=grid)
+                                   price=self.cur_pas_tick.ask_price1,
+                                   volume=grid.volume * self.pas_vol_ratio,
+                                   order_type=self.order_type,
+                                   order_time=self.cur_datetime,
+                                   grid=grid)
         if not pas_vt_orderids:
             self.write_error(f'spd_short，{self.pas_vt_symbol}开多仓{grid.volume * self.pas_vol_ratio}手失败，'
                              f'委托价:{self.cur_pas_tick.ask_price1}')
@@ -1034,11 +1035,11 @@ class CtaSpreadTemplate(CtaTemplate):
 
         # 开多主动腿
         act_vt_orderids = self.buy(vt_symbol=self.act_vt_symbol,
-                                     price=self.cur_act_tick.ask_price1,
-                                     volume=grid.volume * self.act_vol_ratio,
-                                     order_type=self.order_type,
-                                     order_time=self.cur_datetime,
-                                     grid=grid)
+                                   price=self.cur_act_tick.ask_price1,
+                                   volume=grid.volume * self.act_vol_ratio,
+                                   order_type=self.order_type,
+                                   order_time=self.cur_datetime,
+                                   grid=grid)
         if not act_vt_orderids:
             self.write_error(f'spd_short，{self.act_vt_symbol}开多仓{grid.volume * self.act_vol_ratio}手失败，'
                              f'委托价:{self.cur_act_tick.ask_price1}')
@@ -1046,11 +1047,11 @@ class CtaSpreadTemplate(CtaTemplate):
 
         # 开空被动腿
         pas_vt_orderids = self.short(vt_symbol=self.pas_vt_symbol,
-                                   price=self.cur_pas_tick.bid_price1,
-                                   volume=grid.volume * self.pas_vol_ratio,
-                                   order_type=self.order_type,
-                                   order_time=self.cur_datetime,
-                                   grid=grid)
+                                     price=self.cur_pas_tick.bid_price1,
+                                     volume=grid.volume * self.pas_vol_ratio,
+                                     order_type=self.order_type,
+                                     order_time=self.cur_datetime,
+                                     grid=grid)
         if not pas_vt_orderids:
             self.write_error(f'spd_short，{self.pas_vt_symbol}开空仓{grid.volume * self.pas_vol_ratio}手失败，'
                              f'委托价:{self.cur_pas_tick.bid_price1}')
@@ -1105,11 +1106,11 @@ class CtaSpreadTemplate(CtaTemplate):
 
         # 主动腿多单平仓
         act_vt_orderids = self.sell(vt_symbol=self.act_vt_symbol,
-                                     price=self.cur_act_tick.bid_price1,
-                                     volume=grid.volume * self.act_vol_ratio,
-                                     order_type=self.order_type,
-                                     order_time=self.cur_datetime,
-                                     grid=grid)
+                                    price=self.cur_act_tick.bid_price1,
+                                    volume=grid.volume * self.act_vol_ratio,
+                                    order_type=self.order_type,
+                                    order_time=self.cur_datetime,
+                                    grid=grid)
         if not act_vt_orderids:
             self.write_error(f'spd_sell，{self.act_vt_symbol}多单平仓{grid.volume * self.act_vol_ratio}手失败，'
                              f'委托价:{self.cur_act_tick.bid_price1}')
@@ -1117,11 +1118,11 @@ class CtaSpreadTemplate(CtaTemplate):
 
         # 被动腿空单平仓
         pas_vt_orderids = self.cover(vt_symbol=self.pas_vt_symbol,
-                                   price=self.cur_pas_tick.ask_price1,
-                                   volume=grid.volume * self.pas_vol_ratio,
-                                   order_type=self.order_type,
-                                   order_time=self.cur_datetime,
-                                   grid=grid)
+                                     price=self.cur_pas_tick.ask_price1,
+                                     volume=grid.volume * self.pas_vol_ratio,
+                                     order_type=self.order_type,
+                                     order_time=self.cur_datetime,
+                                     grid=grid)
         if not pas_vt_orderids:
             self.write_error(f'spd_sell，{self.pas_vt_symbol}空单平仓{grid.volume * self.pas_vol_ratio}手失败，'
                              f'委托价:{self.cur_pas_tick.ask_price1}')
@@ -1181,11 +1182,11 @@ class CtaSpreadTemplate(CtaTemplate):
 
         # 被动腿多单平仓
         pas_vt_orderids = self.sell(vt_symbol=self.pas_vt_symbol,
-                                   price=self.cur_pas_tick.bid_price1,
-                                   volume=grid.volume * self.pas_vol_ratio,
-                                   order_type=self.order_type,
-                                   order_time=self.cur_datetime,
-                                   grid=grid)
+                                    price=self.cur_pas_tick.bid_price1,
+                                    volume=grid.volume * self.pas_vol_ratio,
+                                    order_type=self.order_type,
+                                    order_time=self.cur_datetime,
+                                    grid=grid)
         if not pas_vt_orderids:
             self.write_error(f'spd_cover，{self.pas_vt_symbol}多单平仓{grid.volume * self.pas_vol_ratio}手失败，'
                              f'委托价:{self.cur_pas_tick.bid_price1}')
