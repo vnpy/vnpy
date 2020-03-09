@@ -1,12 +1,12 @@
 import csv
 from datetime import datetime
-from typing import List, Dict, Tuple
+from typing import List, Dict
 
 from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine
-from vnpy.trader.constant import Interval
+from vnpy.trader.constant import Interval, Exchange
 from vnpy.trader.object import BarData
 from vnpy.trader.database import database_manager
-from vnpy.trader.utility import extract_vt_symbol, generate_vt_symbol
+from vnpy.trader.utility import extract_vt_symbol
 
 
 APP_NAME = "DataManager"
@@ -86,13 +86,14 @@ class ManagerEngine(BaseEngine):
     def output_data_to_csv(
         self,
         file_path: str,
-        vt_symbol: str,
+        symbol: str,
+        exchange: Exchange,
         interval: Interval,
         start: datetime,
         end: datetime
     ) -> None:
         """"""
-        bars = self.load_bar_data(vt_symbol, interval, start, end)
+        bars = self.load_bar_data(symbol, exchange, interval, start, end)
 
         fieldnames = [
             "symbol",
@@ -107,7 +108,7 @@ class ManagerEngine(BaseEngine):
         ]
 
         with open(file_path, "w") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
             writer.writeheader()
 
             for bar in bars:
@@ -130,12 +131,12 @@ class ManagerEngine(BaseEngine):
 
         for d in data:
             oldest_bar = database_manager.get_oldest_bar_data(
-                d["symbol"], d["exchange"], d["interval"]
+                d["symbol"], Exchange(d["exchange"]), d["interval"]
             )
             d["start"] = oldest_bar.datetime
 
             newest_bar = database_manager.get_newest_bar_data(
-                d["symbol"], d["exchange"], d["interval"]
+                d["symbol"], Exchange(d["exchange"]), d["interval"]
             )
             d["end"] = newest_bar.datetime
 
@@ -143,14 +144,13 @@ class ManagerEngine(BaseEngine):
 
     def load_bar_data(
         self,
-        vt_symbol: str,
+        symbol: str,
+        exchange: Exchange,
         interval: Interval,
         start: datetime,
         end: datetime
     ) -> List[BarData]:
         """"""
-        symbol, exchange = extract_vt_symbol(vt_symbol)
-
         bars = database_manager.load_bar_data(
             symbol,
             exchange,
