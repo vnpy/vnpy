@@ -17,7 +17,24 @@ class ApiGenerator:
         self.lines = {}
 
         self.structs = {}
+        self.typedefs = {}
+        self.load_constant()
         self.load_struct()
+        
+
+    def load_constant(self) -> None:
+        """"""
+        if self.name == "md":
+            module_names = ["tap_md_commen_typedef", "tap_md_data_typedef"]
+        elif self.name == "td":
+            module_names = ["tap_td_commen_typedef", "tap_td_data_typedef"]
+
+        for module_name in module_names:
+            module = importlib.import_module(module_name)
+
+            for name in dir(module):
+                if "__" not in name:
+                    self.typedefs[name] = getattr(module, name)
 
     def load_struct(self):
         """加载Struct"""
@@ -25,7 +42,7 @@ class ApiGenerator:
             module_names = ["tap_td_data_struct", "tap_td_commen_struct"]
         elif self.name == "td":
             module_names = ["tap_md_data_struct", "tap_md_commen_struct"]
-        
+
         for module_name in module_names:
             module = importlib.import_module(module_name)
 
@@ -35,24 +52,30 @@ class ApiGenerator:
 
     def run(self):
         """运行生成"""
-        self.f_cpp = open(self.filename, "r")
+        self.f_cpp = open(self.filename, "r", encoding="UTF-8")
 
         for line in self.f_cpp:
             self.process_line(line)
 
         self.f_cpp.close()
+        # print("self.callbacks=",self.callbacks,"\n\n")
+        # print("self.functions=", self.functions,"\n\n")
+        # print("self.lines=", self.lines,"\n\n")
+
+        # print("self.structs=", self.structs,"\n\n")
+        # print("self.typedefs=", self.typedefs,"\n\n")
 
         self.generate_header_define()
         self.generate_header_process()
         self.generate_header_on()
         self.generate_header_function()
 
-        self.generate_source_task()
-        self.generate_source_switch()
-        self.generate_source_process()
-        self.generate_source_function()
-        self.generate_source_on()
-        self.generate_source_module()
+        # self.generate_source_task()
+        # self.generate_source_switch()
+        # self.generate_source_process()
+        # self.generate_source_function()
+        # self.generate_source_on()
+        # self.generate_source_module()
 
         print("API生成成功")
 
@@ -65,13 +88,15 @@ class ApiGenerator:
 
         if "virtual void TAP_CDECL On" in line:
             self.process_callback(line)
-        # Just for td
         elif "virtual ITapTrade::TAPIINT32 TAP_CDECL Qry" in line:
+            self.process_function(line)
+        elif "virtual TAPIINT32 TAP_CDECL Qry" in line:
             self.process_function(line)
 
     def process_callback(self, line: str):
         """处理回掉函数"""
         name = line[line.index("On"):line.index("(")]
+        line = line.replace("        ", "")
         self.lines[name] = line
 
         d = self.generate_arg_dict(line)
@@ -79,7 +104,7 @@ class ApiGenerator:
 
     def process_function(self, line: str):
         """处理主动函数"""
-        name = line[line.index("Req"):line.index("(")]
+        name = line[line.index("Qry"):line.index("(")]
 
         d = self.generate_arg_dict(line)
         self.functions[name] = d
@@ -95,7 +120,16 @@ class ApiGenerator:
         for arg in args:
             words = arg.split(" ")
             words = [word for word in words if word]
-            d[words[1].replace("*", "")] = words[0]
+
+            tap_type = words[-2].replace("*", "")
+            name = words[-1].replace("*", "")
+            if "::" in tap_type:
+                tap_type = tap_type.split("::")[1]
+
+            cpp_type = self.typedefs.get(tap_type, tap_type)
+            if cpp_type == "dict":
+                cpp_type = tap_type
+            d[name] = cpp_type
         return d
 
     def generate_header_define(self):
