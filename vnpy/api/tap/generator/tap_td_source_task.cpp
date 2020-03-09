@@ -34,12 +34,6 @@ void TdApi::TAP_CDECL OnRspRequestVertificateCode(ITapTrade::TAPIUINT32 sessionI
 	Task task = Task();
 	task.task_name = ONRSPREQUESTVERTIFICATECODE;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	if (rsp)
 	{
@@ -80,12 +74,6 @@ void TdApi::TAP_CDECL OnRspChangePassword(ITapTrade::TAPIUINT32 sessionID, ITapT
 	Task task = Task();
 	task.task_name = ONRSPCHANGEPASSWORD;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	this->task_queue.push(task);
 };
@@ -95,12 +83,6 @@ void TdApi::TAP_CDECL OnRspAuthPassword(ITapTrade::TAPIUINT32 sessionID, ITapTra
 	Task task = Task();
 	task.task_name = ONRSPAUTHPASSWORD;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	this->task_queue.push(task);
 };
@@ -110,12 +92,6 @@ void TdApi::TAP_CDECL OnRspQryTradingDate(ITapTrade::TAPIUINT32 sessionID, ITapT
 	Task task = Task();
 	task.task_name = ONRSPQRYTRADINGDATE;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	if (info)
 	{
@@ -131,12 +107,6 @@ void TdApi::TAP_CDECL OnRspSetReservedInfo(ITapTrade::TAPIUINT32 sessionID, ITap
 	Task task = Task();
 	task.task_name = ONRSPSETRESERVEDINFO;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_string = info;
 	this->task_queue.push(task);
@@ -147,19 +117,7 @@ void TdApi::TAP_CDECL OnRspQryAccount(ITapTrade::TAPIUINT32 sessionID, ITapTrade
 	Task task = Task();
 	task.task_name = ONRSPQRYACCOUNT;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_id = errorCode;
-	if (errorCode)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *errorCode;
-		task.task_data = task_data;
-	}
 	task.task_last = isLast;
 	if (info)
 	{
@@ -175,12 +133,6 @@ void TdApi::TAP_CDECL OnRspQryFund(ITapTrade::TAPIUINT32 sessionID, ITapTrade::T
 	Task task = Task();
 	task.task_name = ONRSPQRYFUND;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -210,12 +162,6 @@ void TdApi::TAP_CDECL OnRspQryExchange(ITapTrade::TAPIUINT32 sessionID, ITapTrad
 	Task task = Task();
 	task.task_name = ONRSPQRYEXCHANGE;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -232,12 +178,6 @@ void TdApi::TAP_CDECL OnRspQryCommodity(ITapTrade::TAPIUINT32 sessionID, ITapTra
 	Task task = Task();
 	task.task_name = ONRSPQRYCOMMODITY;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -254,12 +194,6 @@ void TdApi::TAP_CDECL OnRspQryContract(ITapTrade::TAPIUINT32 sessionID, ITapTrad
 	Task task = Task();
 	task.task_name = ONRSPQRYCONTRACT;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -289,12 +223,6 @@ void TdApi::TAP_CDECL OnRspOrderAction(ITapTrade::TAPIUINT32 sessionID, ITapTrad
 	Task task = Task();
 	task.task_name = ONRSPORDERACTION;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	if (info)
 	{
@@ -323,12 +251,6 @@ void TdApi::TAP_CDECL OnRspQryOrder(ITapTrade::TAPIUINT32 sessionID, ITapTrade::
 	Task task = Task();
 	task.task_name = ONRSPQRYORDER;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -345,12 +267,6 @@ void TdApi::TAP_CDECL OnRspQryOrderProcess(ITapTrade::TAPIUINT32 sessionID, ITap
 	Task task = Task();
 	task.task_name = ONRSPQRYORDERPROCESS;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -367,12 +283,6 @@ void TdApi::TAP_CDECL OnRspQryFill(ITapTrade::TAPIUINT32 sessionID, ITapTrade::T
 	Task task = Task();
 	task.task_name = ONRSPQRYFILL;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -402,12 +312,6 @@ void TdApi::TAP_CDECL OnRspQryPosition(ITapTrade::TAPIUINT32 sessionID, ITapTrad
 	Task task = Task();
 	task.task_name = ONRSPQRYPOSITION;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -437,12 +341,6 @@ void TdApi::TAP_CDECL OnRspQryPositionSummary(TAPIUINT32 sessionID, TAPIINT32 er
 	Task task = Task();
 	task.task_name = ONRSPQRYPOSITIONSUMMARY;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -485,12 +383,6 @@ void TdApi::TAP_CDECL OnRspQryCurrency(ITapTrade::TAPIUINT32 sessionID, ITapTrad
 	Task task = Task();
 	task.task_name = ONRSPQRYCURRENCY;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -507,12 +399,6 @@ void TdApi::TAP_CDECL OnRspQryTradeMessage(ITapTrade::TAPIUINT32 sessionID, ITap
 	Task task = Task();
 	task.task_name = ONRSPQRYTRADEMESSAGE;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -542,12 +428,6 @@ void TdApi::TAP_CDECL OnRspQryHisOrder(ITapTrade::TAPIUINT32 sessionID, ITapTrad
 	Task task = Task();
 	task.task_name = ONRSPQRYHISORDER;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -564,12 +444,6 @@ void TdApi::TAP_CDECL OnRspQryHisOrderProcess(ITapTrade::TAPIUINT32 sessionID, I
 	Task task = Task();
 	task.task_name = ONRSPQRYHISORDERPROCESS;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -586,12 +460,6 @@ void TdApi::TAP_CDECL OnRspQryHisMatch(ITapTrade::TAPIUINT32 sessionID, ITapTrad
 	Task task = Task();
 	task.task_name = ONRSPQRYHISMATCH;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -608,12 +476,6 @@ void TdApi::TAP_CDECL OnRspQryHisPosition(ITapTrade::TAPIUINT32 sessionID, ITapT
 	Task task = Task();
 	task.task_name = ONRSPQRYHISPOSITION;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -630,12 +492,6 @@ void TdApi::TAP_CDECL OnRspQryHisDelivery(ITapTrade::TAPIUINT32 sessionID, ITapT
 	Task task = Task();
 	task.task_name = ONRSPQRYHISDELIVERY;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -652,12 +508,6 @@ void TdApi::TAP_CDECL OnRspQryAccountCashAdjust(ITapTrade::TAPIUINT32 sessionID,
 	Task task = Task();
 	task.task_name = ONRSPQRYACCOUNTCASHADJUST;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -674,12 +524,6 @@ void TdApi::TAP_CDECL OnRspQryBill(ITapTrade::TAPIUINT32 sessionID, ITapTrade::T
 	Task task = Task();
 	task.task_name = ONRSPQRYBILL;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -696,12 +540,6 @@ void TdApi::TAP_CDECL OnRspQryAccountFeeRent(ITapTrade::TAPIUINT32 sessionID, IT
 	Task task = Task();
 	task.task_name = ONRSPQRYACCOUNTFEERENT;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -718,12 +556,6 @@ void TdApi::TAP_CDECL OnRspQryAccountMarginRent(ITapTrade::TAPIUINT32 sessionID,
 	Task task = Task();
 	task.task_name = ONRSPQRYACCOUNTMARGINRENT;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	task.task_last = isLast;
 	if (info)
@@ -740,12 +572,6 @@ void TdApi::TAP_CDECL OnRspHKMarketOrderInsert(ITapTrade::TAPIUINT32 sessionID, 
 	Task task = Task();
 	task.task_name = ONRSPHKMARKETORDERINSERT;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	if (info)
 	{
@@ -761,12 +587,6 @@ void TdApi::TAP_CDECL OnRspHKMarketOrderDelete(ITapTrade::TAPIUINT32 sessionID, 
 	Task task = Task();
 	task.task_name = ONRSPHKMARKETORDERDELETE;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	if (info)
 	{
@@ -795,12 +615,6 @@ void TdApi::TAP_CDECL OnRspOrderLocalRemove(ITapTrade::TAPIUINT32 sessionID, ITa
 	Task task = Task();
 	task.task_name = ONRSPORDERLOCALREMOVE;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	if (info)
 	{
@@ -816,12 +630,6 @@ void TdApi::TAP_CDECL OnRspOrderLocalInput(ITapTrade::TAPIUINT32 sessionID, ITap
 	Task task = Task();
 	task.task_name = ONRSPORDERLOCALINPUT;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	if (info)
 	{
@@ -837,12 +645,6 @@ void TdApi::TAP_CDECL OnRspOrderLocalModify(ITapTrade::TAPIUINT32 sessionID, ITa
 	Task task = Task();
 	task.task_name = ONRSPORDERLOCALMODIFY;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	if (info)
 	{
@@ -858,12 +660,6 @@ void TdApi::TAP_CDECL OnRspOrderLocalTransfer(ITapTrade::TAPIUINT32 sessionID, I
 	Task task = Task();
 	task.task_name = ONRSPORDERLOCALTRANSFER;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	if (info)
 	{
@@ -879,12 +675,6 @@ void TdApi::TAP_CDECL OnRspFillLocalInput(ITapTrade::TAPIUINT32 sessionID, ITapT
 	Task task = Task();
 	task.task_name = ONRSPFILLLOCALINPUT;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	if (info)
 	{
@@ -900,12 +690,6 @@ void TdApi::TAP_CDECL OnRspFillLocalRemove(ITapTrade::TAPIUINT32 sessionID, ITap
 	Task task = Task();
 	task.task_name = ONRSPFILLLOCALREMOVE;
 	task.task_id = sessionID;
-	if (sessionID)
-	{
-		unsigned int *task_data = new unsigned int();
-		*task_data = *sessionID;
-		task.task_data = task_data;
-	}
 	task.task_int = errorCode;
 	if (info)
 	{
