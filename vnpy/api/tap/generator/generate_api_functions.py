@@ -209,7 +209,7 @@ class ApiGenerator:
                 for field, type_ in d.items():
                     if type_ == "unsigned int":
                         f.write(f"\ttask.task_id = {field};\n")
-                    if type_ == "int":
+                    elif type_ == "int":
                         f.write(f"\ttask.task_int = {field};\n")
                     elif type_ == "char":
                         f.write(f"\ttask.task_last = {field};\n")
