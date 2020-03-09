@@ -712,7 +712,8 @@ class XtpTdApi(TdApi):
 
         else:
             error = self.getApiLastError()
-            msg = f"交易服务器登录失败，原因：{error.error_msg}"
+            print(error)
+            msg = f"交易服务器登录失败，原因：{error['error_msg']}"
 
         self.gateway.write_log(msg)
 
