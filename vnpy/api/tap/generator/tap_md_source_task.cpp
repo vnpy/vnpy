@@ -1,4 +1,4 @@
-void MdApi::TAP_CDECL OnRspLogin(TAPIINT32 errorCode, const TapAPIQuotLoginRspInfo *info) = 0
+void MdApi::OnRspLogin(int errorCode, TapAPIQuotLoginRspInfo *info)
 {
 	Task task = Task();
 	task.task_name = ONRSPLOGIN;
@@ -12,14 +12,14 @@ void MdApi::TAP_CDECL OnRspLogin(TAPIINT32 errorCode, const TapAPIQuotLoginRspIn
 	this->task_queue.push(task);
 };
 
-void MdApi::TAP_CDECL OnAPIReady() = 0
+void MdApi::OnAPIReady()
 {
 	Task task = Task();
 	task.task_name = ONAPIREADY;
 	this->task_queue.push(task);
 };
 
-void MdApi::TAP_CDECL OnDisconnect(TAPIINT32 reasonCode) = 0
+void MdApi::OnDisconnect(int reasonCode)
 {
 	Task task = Task();
 	task.task_name = ONDISCONNECT;
@@ -27,7 +27,7 @@ void MdApi::TAP_CDECL OnDisconnect(TAPIINT32 reasonCode) = 0
 	this->task_queue.push(task);
 };
 
-void MdApi::TAP_CDECL OnRspQryCommodity(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFLAG isLast, const TapAPIQuoteCommodityInfo *info) = 0
+void MdApi::OnRspQryCommodity(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteCommodityInfo *info)
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYCOMMODITY;
@@ -43,7 +43,7 @@ void MdApi::TAP_CDECL OnRspQryCommodity(TAPIUINT32 sessionID, TAPIINT32 errorCod
 	this->task_queue.push(task);
 };
 
-void MdApi::TAP_CDECL OnRspQryContract(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFLAG isLast, const TapAPIQuoteContractInfo *info) = 0
+void MdApi::OnRspQryContract(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteContractInfo *info)
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYCONTRACT;
@@ -59,7 +59,7 @@ void MdApi::TAP_CDECL OnRspQryContract(TAPIUINT32 sessionID, TAPIINT32 errorCode
 	this->task_queue.push(task);
 };
 
-void MdApi::TAP_CDECL OnRspSubscribeQuote(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFLAG isLast, const TapAPIQuoteWhole *info) = 0
+void MdApi::OnRspSubscribeQuote(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteWhole *info)
 {
 	Task task = Task();
 	task.task_name = ONRSPSUBSCRIBEQUOTE;
@@ -75,7 +75,7 @@ void MdApi::TAP_CDECL OnRspSubscribeQuote(TAPIUINT32 sessionID, TAPIINT32 errorC
 	this->task_queue.push(task);
 };
 
-void MdApi::TAP_CDECL OnRspUnSubscribeQuote(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFLAG isLast, const TapAPIContract *info) = 0
+void MdApi::OnRspUnSubscribeQuote(unsigned int sessionID, int errorCode, char isLast, TapAPIContract *info)
 {
 	Task task = Task();
 	task.task_name = ONRSPUNSUBSCRIBEQUOTE;
@@ -91,7 +91,7 @@ void MdApi::TAP_CDECL OnRspUnSubscribeQuote(TAPIUINT32 sessionID, TAPIINT32 erro
 	this->task_queue.push(task);
 };
 
-void MdApi::TAP_CDECL OnRtnQuote(const TapAPIQuoteWhole *info) = 0
+void MdApi::OnRtnQuote(TapAPIQuoteWhole *info)
 {
 	Task task = Task();
 	task.task_name = ONRTNQUOTE;
