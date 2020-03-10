@@ -5,7 +5,17 @@ from .base import APP_NAME, StopOrder
 
 from .engine import CtaEngine
 
-from .template import CtaTemplate, CtaSignal, TargetPosTemplate, CtaProTemplate, CtaProFutureTemplate
+from .template import (
+    Direction,
+    Offset,
+    Status,
+    TickData,
+    BarData,
+    TradeData,
+    OrderData,
+    CtaTemplate, CtaSignal, TargetPosTemplate, CtaProTemplate, CtaProFutureTemplate)  # noqa
+from vnpy.trader.utility import BarGenerator, ArrayManager  # noqa
+
 from .template_spread import CtaSpreadTemplate
 
 

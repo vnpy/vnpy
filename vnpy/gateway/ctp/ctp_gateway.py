@@ -84,7 +84,7 @@ from vnpy.data.tdx.tdx_common import (
     get_cache_json,
     save_cache_json,
     TDX_FUTURE_CONFIG)
-from vnpy.app.cta_strategy_pro.base import (
+from vnpy.component.base import (
     MARKET_DAY_ONLY, NIGHT_MARKET_23, NIGHT_MARKET_SQ2
 )
 

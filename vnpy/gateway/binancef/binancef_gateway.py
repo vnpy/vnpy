@@ -10,6 +10,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from enum import Enum
 from threading import Lock
+from typing import Dict, List
 
 from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
@@ -28,6 +29,7 @@ from vnpy.trader.object import (
     TradeData,
     AccountData,
     ContractData,
+    PositionData,
     BarData,
     OrderRequest,
     CancelRequest,
@@ -35,14 +37,17 @@ from vnpy.trader.object import (
     HistoryRequest
 )
 from vnpy.trader.event import EVENT_TIMER
-from vnpy.event import Event
+from vnpy.event import Event, EventEngine
 
+REST_HOST: str = "https://fapi.binance.com"
+WEBSOCKET_TRADE_HOST: str = "wss://fstream.binance.com/ws/"
+WEBSOCKET_DATA_HOST: str = "wss://fstream.binance.com/stream?streams="
 
-REST_HOST = "https://www.binance.com"
-WEBSOCKET_TRADE_HOST = "wss://stream.binance.com:9443/ws/"
-WEBSOCKET_DATA_HOST = "wss://stream.binance.com:9443/stream?streams="
+TESTNET_RESTT_HOST: str = "https://testnet.binancefuture.com"
+TESTNET_WEBSOCKET_TRADE_HOST: str = "wss://stream.binancefuture.com/ws/"
+TESTNET_WEBSOCKET_DATA_HOST: str = "wss://stream.binancefuture.com/stream?streams="
 
-STATUS_BINANCE2VT = {
+STATUS_BINANCEF2VT: Dict[str, Status] = {
     "NEW": Status.NOTTRADED,
     "PARTIALLY_FILLED": Status.PARTTRADED,
     "FILLED": Status.ALLTRADED,
@@ -50,25 +55,25 @@ STATUS_BINANCE2VT = {
     "REJECTED": Status.REJECTED
 }
 
-ORDERTYPE_VT2BINANCE = {
+ORDERTYPE_VT2BINANCEF: Dict[OrderType, str] = {
     OrderType.LIMIT: "LIMIT",
     OrderType.MARKET: "MARKET"
 }
-ORDERTYPE_BINANCE2VT = {v: k for k, v in ORDERTYPE_VT2BINANCE.items()}
+ORDERTYPE_BINANCEF2VT: Dict[str, OrderType] = {v: k for k, v in ORDERTYPE_VT2BINANCEF.items()}
 
-DIRECTION_VT2BINANCE = {
+DIRECTION_VT2BINANCEF: Dict[Direction, str] = {
     Direction.LONG: "BUY",
     Direction.SHORT: "SELL"
 }
-DIRECTION_BINANCE2VT = {v: k for k, v in DIRECTION_VT2BINANCE.items()}
+DIRECTION_BINANCEF2VT: Dict[str, Direction] = {v: k for k, v in DIRECTION_VT2BINANCEF.items()}
 
-INTERVAL_VT2BINANCE = {
+INTERVAL_VT2BINANCEF: Dict[Interval, str] = {
     Interval.MINUTE: "1m",
     Interval.HOUR: "1h",
     Interval.DAILY: "1d",
 }
 
-TIMEDELTA_MAP = {
+TIMEDELTA_MAP: Dict[Interval, timedelta] = {
     Interval.MINUTE: timedelta(minutes=1),
     Interval.HOUR: timedelta(hours=1),
     Interval.DAILY: timedelta(days=1),
@@ -76,15 +81,15 @@ TIMEDELTA_MAP = {
 
 
 class Security(Enum):
-    NONE = 0
-    SIGNED = 1
-    API_KEY = 2
+    NONE: int = 0
+    SIGNED: int = 1
+    API_KEY: int = 2
 
 
-symbol_name_map = {}
+symbol_name_map: Dict[str, str] = {}
 
 
-class BinanceGateway(BaseGateway):
+class BinancefGateway(BaseGateway):
     """
     VN Trader Gateway for Binance connection.
     """
@@ -93,96 +98,98 @@ class BinanceGateway(BaseGateway):
         "key": "",
         "secret": "",
         "session_number": 3,
+        "server": ["TESTNET", "REAL"],
         "proxy_host": "",
         "proxy_port": 0,
     }
 
-    exchanges = [Exchange.BINANCE]
+    exchanges: Exchange = [Exchange.BINANCE]
 
-    def __init__(self, event_engine, gateway_name="BINANCE"):
+    def __init__(self, event_engine: EventEngine, gateway_name="BINANCEF"):
         """Constructor"""
         super().__init__(event_engine, gateway_name)
 
-        self.trade_ws_api = BinanceTradeWebsocketApi(self)
-        self.market_ws_api = BinanceDataWebsocketApi(self)
-        self.rest_api = BinanceRestApi(self)
+        self.trade_ws_api = BinancefTradeWebsocketApi(self)
+        self.market_ws_api = BinancefDataWebsocketApi(self)
+        self.rest_api = BinancefRestApi(self)
 
-    def connect(self, setting: dict):
+    def connect(self, setting: dict) -> None:
         """"""
         key = setting["key"]
         secret = setting["secret"]
         session_number = setting["session_number"]
+        server = setting["server"]
         proxy_host = setting["proxy_host"]
         proxy_port = setting["proxy_port"]
 
-        self.rest_api.connect(key, secret, session_number,
+        self.rest_api.connect(key, secret, session_number, server,
                               proxy_host, proxy_port)
-        self.market_ws_api.connect(proxy_host, proxy_port)
+        self.market_ws_api.connect(proxy_host, proxy_port, server)
 
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
-    def subscribe(self, req: SubscribeRequest):
+    def subscribe(self, req: SubscribeRequest) -> None:
         """"""
         self.market_ws_api.subscribe(req)
 
-    def send_order(self, req: OrderRequest):
+    def send_order(self, req: OrderRequest) -> str:
         """"""
         return self.rest_api.send_order(req)
 
-    def cancel_order(self, req: CancelRequest):
+    def cancel_order(self, req: CancelRequest) -> Request:
         """"""
         self.rest_api.cancel_order(req)
 
-    def query_account(self):
+    def query_account(self) -> None:
         """"""
         pass
 
-    def query_position(self):
+    def query_position(self) -> None:
         """"""
         pass
 
-    def query_history(self, req: HistoryRequest):
+    def query_history(self, req: HistoryRequest) -> List[BarData]:
         """"""
         return self.rest_api.query_history(req)
 
-    def close(self):
+    def close(self) -> None:
         """"""
         self.rest_api.stop()
         self.trade_ws_api.stop()
         self.market_ws_api.stop()
 
-    def process_timer_event(self, event: Event):
+    def process_timer_event(self, event: Event) -> None:
         """"""
         self.rest_api.keep_user_stream()
 
 
-class BinanceRestApi(RestClient):
+class BinancefRestApi(RestClient):
     """
     BINANCE REST API
     """
 
-    def __init__(self, gateway: BinanceGateway):
+    def __init__(self, gateway: BinancefGateway):
         """"""
         super().__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
+        self.gateway: BinancefGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
-        self.trade_ws_api = self.gateway.trade_ws_api
+        self.trade_ws_api: BinancefTradeWebsocketApi = self.gateway.trade_ws_api
 
-        self.key = ""
-        self.secret = ""
+        self.key: str = ""
+        self.secret: str = ""
 
-        self.user_stream_key = ""
-        self.keep_alive_count = 0
-        self.recv_window = 5000
-        self.time_offset = 0
+        self.user_stream_key: str = ""
+        self.keep_alive_count: int = 0
+        self.recv_window: int = 5000
+        self.time_offset: int = 0
 
-        self.order_count = 1_000_000
-        self.order_count_lock = Lock()
-        self.connect_time = 0
+        self.order_count: int = 1_000_000
+        self.order_count_lock: Lock = Lock()
+        self.connect_time: int = 0
 
-    def sign(self, request):
+    def sign(self, request: Request) -> Request:
         """
         Generate BINANCE signature.
         """
@@ -235,9 +242,10 @@ class BinanceRestApi(RestClient):
         key: str,
         secret: str,
         session_number: int,
+        server: str,
         proxy_host: str,
         proxy_port: int
-    ):
+    ) -> None:
         """
         Initialize connection to REST server.
         """
@@ -245,28 +253,34 @@ class BinanceRestApi(RestClient):
         self.secret = secret.encode()
         self.proxy_port = proxy_port
         self.proxy_host = proxy_host
+        self.server = server
 
         self.connect_time = (
             int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
         )
 
-        self.init(REST_HOST, proxy_host, proxy_port)
+        if self.server == "REAL":
+            self.init(REST_HOST, proxy_host, proxy_port)
+        else:
+            self.init(TESTNET_RESTT_HOST, proxy_host, proxy_port)
+
         self.start(session_number)
 
         self.gateway.write_log("REST API启动成功")
 
         self.query_time()
         self.query_account()
+        self.query_position()
         self.query_order()
         self.query_contract()
         self.start_user_stream()
 
-    def query_time(self):
+    def query_time(self) -> Request:
         """"""
         data = {
             "security": Security.NONE
         }
-        path = "/api/v1/time"
+        path = "/fapi/v1/time"
 
         return self.add_request(
             "GET",
@@ -275,47 +289,58 @@ class BinanceRestApi(RestClient):
             data=data
         )
 
-    def query_account(self):
+    def query_account(self) -> Request:
         """"""
         data = {"security": Security.SIGNED}
 
         self.add_request(
             method="GET",
-            path="/api/v3/account",
+            path="/fapi/v1/account",
             callback=self.on_query_account,
             data=data
         )
 
-    def query_order(self):
+    def query_position(self) -> Request:
         """"""
         data = {"security": Security.SIGNED}
 
         self.add_request(
             method="GET",
-            path="/api/v3/openOrders",
+            path="/fapi/v1/positionRisk",
+            callback=self.on_query_position,
+            data=data
+        )
+
+    def query_order(self) -> Request:
+        """"""
+        data = {"security": Security.SIGNED}
+
+        self.add_request(
+            method="GET",
+            path="/fapi/v1/openOrders",
             callback=self.on_query_order,
             data=data
         )
 
-    def query_contract(self):
+    def query_contract(self) -> Request:
         """"""
         data = {
             "security": Security.NONE
         }
         self.add_request(
             method="GET",
-            path="/api/v1/exchangeInfo",
+            path="/fapi/v1/exchangeInfo",
             callback=self.on_query_contract,
             data=data
         )
 
-    def _new_order_id(self):
+    def _new_order_id(self) -> int:
         """"""
         with self.order_count_lock:
             self.order_count += 1
             return self.order_count
 
-    def send_order(self, req: OrderRequest):
+    def send_order(self, req: OrderRequest) -> str:
         """"""
         orderid = str(self.connect_time + self._new_order_id())
         order = req.create_order_data(
@@ -331,17 +356,17 @@ class BinanceRestApi(RestClient):
         params = {
             "symbol": req.symbol,
             "timeInForce": "GTC",
-            "side": DIRECTION_VT2BINANCE[req.direction],
-            "type": ORDERTYPE_VT2BINANCE[req.type],
-            "price": str(req.price),
-            "quantity": str(req.volume),
+            "side": DIRECTION_VT2BINANCEF[req.direction],
+            "type": ORDERTYPE_VT2BINANCEF[req.type],
+            "price": float(req.price),
+            "quantity": int(req.volume),
             "newClientOrderId": orderid,
             "newOrderRespType": "ACK"
         }
 
         self.add_request(
             method="POST",
-            path="/api/v3/order",
+            path="/fapi/v1/order",
             callback=self.on_send_order,
             data=data,
             params=params,
@@ -352,7 +377,7 @@ class BinanceRestApi(RestClient):
 
         return order.vt_orderid
 
-    def cancel_order(self, req: CancelRequest):
+    def cancel_order(self, req: CancelRequest) -> Request:
         """"""
         data = {
             "security": Security.SIGNED
@@ -365,14 +390,14 @@ class BinanceRestApi(RestClient):
 
         self.add_request(
             method="DELETE",
-            path="/api/v3/order",
+            path="/fapi/v1/order",
             callback=self.on_cancel_order,
             params=params,
             data=data,
             extra=req
         )
 
-    def start_user_stream(self):
+    def start_user_stream(self) -> Request:
         """"""
         data = {
             "security": Security.API_KEY
@@ -380,12 +405,12 @@ class BinanceRestApi(RestClient):
 
         self.add_request(
             method="POST",
-            path="/api/v1/userDataStream",
+            path="/fapi/v1/listenKey",
             callback=self.on_start_user_stream,
             data=data
         )
 
-    def keep_user_stream(self):
+    def keep_user_stream(self) -> Request:
         """"""
         self.keep_alive_count += 1
         if self.keep_alive_count < 1800:
@@ -401,25 +426,25 @@ class BinanceRestApi(RestClient):
 
         self.add_request(
             method="PUT",
-            path="/api/v1/userDataStream",
+            path="/fapi/v1/listenKey",
             callback=self.on_keep_user_stream,
             params=params,
             data=data
         )
 
-    def on_query_time(self, data, request):
+    def on_query_time(self, data: dict, request: Request) -> None:
         """"""
         local_time = int(time.time() * 1000)
         server_time = int(data["serverTime"])
         self.time_offset = local_time - server_time
 
-    def on_query_account(self, data, request):
+    def on_query_account(self, data: dict, request: Request) -> None:
         """"""
-        for account_data in data["balances"]:
+        for asset in data["assets"]:
             account = AccountData(
-                accountid=account_data["asset"],
-                balance=float(account_data["free"]) + float(account_data["locked"]),
-                frozen=float(account_data["locked"]),
+                accountid=asset["asset"],
+                balance=float(asset["walletBalance"]),
+                frozen=float(asset["maintMargin"]),
                 gateway_name=self.gateway_name
             )
 
@@ -428,7 +453,25 @@ class BinanceRestApi(RestClient):
 
         self.gateway.write_log("账户资金查询成功")
 
-    def on_query_order(self, data, request):
+    def on_query_position(self, data: dict, request: Request) -> None:
+        """"""
+        for d in data:
+            position = PositionData(
+                symbol=d["symbol"],
+                exchange=Exchange.BINANCE,
+                direction=Direction.NET,
+                volume=int(float(d["positionAmt"])),
+                price=float(d["entryPrice"]),
+                pnl=float(d["unRealizedProfit"]),
+                gateway_name=self.gateway_name,
+            )
+
+            if position.volume:
+                self.gateway.on_position(position)
+
+        self.gateway.write_log("持仓信息查询成功")
+
+    def on_query_order(self, data: dict, request: Request) -> None:
         """"""
         for d in data:
             dt = datetime.fromtimestamp(d["time"] / 1000)
@@ -440,10 +483,10 @@ class BinanceRestApi(RestClient):
                 exchange=Exchange.BINANCE,
                 price=float(d["price"]),
                 volume=float(d["origQty"]),
-                type=ORDERTYPE_BINANCE2VT[d["type"]],
-                direction=DIRECTION_BINANCE2VT[d["side"]],
+                type=ORDERTYPE_BINANCEF2VT[d["type"]],
+                direction=DIRECTION_BINANCEF2VT[d["side"]],
                 traded=float(d["executedQty"]),
-                status=STATUS_BINANCE2VT.get(d["status"], None),
+                status=STATUS_BINANCEF2VT.get(d["status"], None),
                 time=time,
                 gateway_name=self.gateway_name,
             )
@@ -451,8 +494,13 @@ class BinanceRestApi(RestClient):
 
         self.gateway.write_log("委托信息查询成功")
 
-    def on_query_contract(self, data, request):
-        """"""
+    def on_query_contract(self, data: dict, request: Request) -> None:
+        """处理合约配置"""
+        import json
+        rate_limits = data.get('rateLimits')
+        rate_limits = json.dumps(rate_limits, indent=2)
+        self.gateway.write_log(f'速率限制:{rate_limits}')
+
         for d in data["symbols"]:
             base_currency = d["baseAsset"]
             quote_currency = d["quoteAsset"]
@@ -474,7 +522,7 @@ class BinanceRestApi(RestClient):
                 pricetick=pricetick,
                 size=1,
                 min_volume=min_volume,
-                product=Product.SPOT,
+                product=Product.FUTURES,
                 history_data=True,
                 gateway_name=self.gateway_name,
             )
@@ -484,11 +532,11 @@ class BinanceRestApi(RestClient):
 
         self.gateway.write_log("合约信息查询成功")
 
-    def on_send_order(self, data, request):
+    def on_send_order(self, data: dict, request: Request) -> None:
         """"""
         pass
 
-    def on_send_order_failed(self, status_code: str, request: Request):
+    def on_send_order_failed(self, status_code: str, request: Request) -> None:
         """
         Callback when sending order failed on server.
         """
@@ -501,7 +549,7 @@ class BinanceRestApi(RestClient):
 
     def on_send_order_error(
         self, exception_type: type, exception_value: Exception, tb, request: Request
-    ):
+    ) -> None:
         """
         Callback when sending order caused exception.
         """
@@ -513,23 +561,27 @@ class BinanceRestApi(RestClient):
         if not issubclass(exception_type, ConnectionError):
             self.on_error(exception_type, exception_value, tb, request)
 
-    def on_cancel_order(self, data, request):
+    def on_cancel_order(self, data: dict, request: Request) -> None:
         """"""
         pass
 
-    def on_start_user_stream(self, data, request):
+    def on_start_user_stream(self, data: dict, request: Request) -> None:
         """"""
         self.user_stream_key = data["listenKey"]
         self.keep_alive_count = 0
-        url = WEBSOCKET_TRADE_HOST + self.user_stream_key
+
+        if self.server == "REAL":
+            url = WEBSOCKET_TRADE_HOST + self.user_stream_key
+        else:
+            url = TESTNET_WEBSOCKET_TRADE_HOST + self.user_stream_key
 
         self.trade_ws_api.connect(url, self.proxy_host, self.proxy_port)
 
-    def on_keep_user_stream(self, data, request):
+    def on_keep_user_stream(self, data: dict, request: Request) -> None:
         """"""
         pass
 
-    def query_history(self, req: HistoryRequest):
+    def query_history(self, req: HistoryRequest) -> List[OrderData]:
         """"""
         history = []
         limit = 1000
@@ -539,7 +591,7 @@ class BinanceRestApi(RestClient):
             # Create query params
             params = {
                 "symbol": req.symbol,
-                "interval": INTERVAL_VT2BINANCE[req.interval],
+                "interval": INTERVAL_VT2BINANCEF[req.interval],
                 "limit": limit,
                 "startTime": start_time * 1000,         # convert to millisecond
             }
@@ -606,65 +658,74 @@ class BinanceRestApi(RestClient):
         return history
 
 
-class BinanceTradeWebsocketApi(WebsocketClient):
+class BinancefTradeWebsocketApi(WebsocketClient):
     """"""
 
-    def __init__(self, gateway):
+    def __init__(self, gateway: BinancefGateway):
         """"""
         super().__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
+        self.gateway: BinancefGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
-    def connect(self, url, proxy_host, proxy_port):
+    def connect(self, url: str, proxy_host: str, proxy_port: int) -> None:
         """"""
         self.init(url, proxy_host, proxy_port)
         self.start()
 
-    def on_connected(self):
+    def on_connected(self) -> None:
         """"""
         self.gateway.write_log("交易Websocket API连接成功")
 
-    def on_packet(self, packet: dict):  # type: (dict)->None
+    def on_packet(self, packet: dict) -> None:  # type: (dict)->None
         """"""
-        if packet["e"] == "outboundAccountInfo":
+        if packet["e"] == "ACCOUNT_UPDATE":
             self.on_account(packet)
-        elif packet["e"] == "executionReport":
+        elif packet["e"] == "ORDER_TRADE_UPDATE":
             self.on_order(packet)
 
-    def on_account(self, packet):
+    def on_account(self, packet: dict) -> None:
         """"""
-        for d in packet["B"]:
+        for acc_data in packet["a"]["B"]:
             account = AccountData(
-                accountid=d["a"],
-                balance=float(d["f"]) + float(d["l"]),
-                frozen=float(d["l"]),
+                accountid=acc_data["a"],
+                balance=float(acc_data["wb"]),
+                frozen=float(acc_data["wb"]) - float(acc_data["cw"]),
                 gateway_name=self.gateway_name
             )
 
             if account.balance:
                 self.gateway.on_account(account)
 
-    def on_order(self, packet: dict):
+        for pos_data in packet["a"]["P"]:
+            position = PositionData(
+                symbol=pos_data["s"],
+                exchange=Exchange.BINANCE,
+                direction=Direction.NET,
+                volume=int(float(pos_data["pa"])),
+                price=float(pos_data["ep"]),
+                pnl=float(pos_data["cr"]),
+                gateway_name=self.gateway_name,
+            )
+            self.gateway.on_position(position)
+
+    def on_order(self, packet: dict) -> None:
         """"""
-        dt = datetime.fromtimestamp(packet["O"] / 1000)
+        dt = datetime.fromtimestamp(packet["E"] / 1000)
         time = dt.strftime("%Y-%m-%d %H:%M:%S")
 
-        if packet["C"] == "null":
-            orderid = packet["c"]
-        else:
-            orderid = packet["C"]
+        ord_data = packet["o"]
 
         order = OrderData(
-            symbol=packet["s"],
+            symbol=ord_data["s"],
             exchange=Exchange.BINANCE,
-            orderid=orderid,
-            type=ORDERTYPE_BINANCE2VT[packet["o"]],
-            direction=DIRECTION_BINANCE2VT[packet["S"]],
-            price=float(packet["p"]),
-            volume=float(packet["q"]),
-            traded=float(packet["z"]),
-            status=STATUS_BINANCE2VT[packet["X"]],
+            orderid=str(ord_data["c"]),
+            type=ORDERTYPE_BINANCEF2VT[ord_data["o"]],
+            direction=DIRECTION_BINANCEF2VT[ord_data["S"]],
+            price=float(ord_data["p"]),
+            volume=float(ord_data["q"]),
+            traded=float(ord_data["z"]),
+            status=STATUS_BINANCEF2VT[ord_data["X"]],
             time=time,
             gateway_name=self.gateway_name
         )
@@ -672,20 +733,20 @@ class BinanceTradeWebsocketApi(WebsocketClient):
         self.gateway.on_order(order)
 
         # Push trade event
-        trade_volume = float(packet["l"])
+        trade_volume = float(ord_data["l"])
         if not trade_volume:
             return
 
-        trade_dt = datetime.fromtimestamp(packet["T"] / 1000)
+        trade_dt = datetime.fromtimestamp(ord_data["T"] / 1000)
         trade_time = trade_dt.strftime("%Y-%m-%d %H:%M:%S")
 
         trade = TradeData(
             symbol=order.symbol,
             exchange=order.exchange,
             orderid=order.orderid,
-            tradeid=packet["t"],
+            tradeid=ord_data["t"],
             direction=order.direction,
-            price=float(packet["L"]),
+            price=float(ord_data["L"]),
             volume=trade_volume,
             time=trade_time,
             gateway_name=self.gateway_name,
@@ -693,28 +754,34 @@ class BinanceTradeWebsocketApi(WebsocketClient):
         self.gateway.on_trade(trade)
 
 
-class BinanceDataWebsocketApi(WebsocketClient):
+class BinancefDataWebsocketApi(WebsocketClient):
     """"""
 
-    def __init__(self, gateway):
+    def __init__(self, gateway: BinancefGateway):
         """"""
         super().__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
+        self.gateway: BinancefGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
-        self.ticks = {}
+        self.ticks: Dict[str, TickData] = {}
 
-    def connect(self, proxy_host: str, proxy_port: int):
+    def connect(
+        self,
+        proxy_host: str,
+        proxy_port: int,
+        server: str
+    ) -> None:
         """"""
         self.proxy_host = proxy_host
         self.proxy_port = proxy_port
+        self.server = server
 
-    def on_connected(self):
+    def on_connected(self) -> None:
         """"""
         self.gateway.write_log("行情Websocket API连接刷新")
 
-    def subscribe(self, req: SubscribeRequest):
+    def subscribe(self, req: SubscribeRequest) -> None:
         """"""
         if req.symbol not in symbol_name_map:
             self.gateway.write_log(f"找不到该合约代码{req.symbol}")
@@ -741,11 +808,15 @@ class BinanceDataWebsocketApi(WebsocketClient):
             channels.append(ws_symbol + "@ticker")
             channels.append(ws_symbol + "@depth5")
 
-        url = WEBSOCKET_DATA_HOST + "/".join(channels)
+        if self.server == "REAL":
+            url = WEBSOCKET_DATA_HOST + "/".join(channels)
+        else:
+            url = TESTNET_WEBSOCKET_DATA_HOST + "/".join(channels)
+
         self.init(url, self.proxy_host, self.proxy_port)
         self.start()
 
-    def on_packet(self, packet):
+    def on_packet(self, packet: dict) -> None:
         """"""
         stream = packet["stream"]
         data = packet["data"]
@@ -761,13 +832,13 @@ class BinanceDataWebsocketApi(WebsocketClient):
             tick.last_price = float(data['c'])
             tick.datetime = datetime.fromtimestamp(float(data['E']) / 1000)
         else:
-            bids = data["bids"]
+            bids = data["b"]
             for n in range(5):
                 price, volume = bids[n]
                 tick.__setattr__("bid_price_" + str(n + 1), float(price))
                 tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
 
-            asks = data["asks"]
+            asks = data["a"]
             for n in range(5):
                 price, volume = asks[n]
                 tick.__setattr__("ask_price_" + str(n + 1), float(price))
