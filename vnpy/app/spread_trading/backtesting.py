@@ -461,13 +461,11 @@ class BacktestingEngine:
             long_cross = (
                 algo.direction == Direction.LONG
                 and algo.price >= long_cross_price
-                and long_cross_price > 0
             )
 
             short_cross = (
                 algo.direction == Direction.SHORT
                 and algo.price <= short_cross_price
-                and short_cross_price > 0
             )
 
             if not long_cross and not short_cross:
