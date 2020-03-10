@@ -83,7 +83,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\</OutDir>
     <TargetExt>.pyd</TargetExt>
-    <IncludePath>$(SolutionDir);$(SolutionDir)..\include;C:\vnstudio4\include;$(SolutionDir)..\include\tap;$(IncludePath)</IncludePath>
+    <IncludePath>C:\vnstudio4\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\tap;$(IncludePath)</IncludePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <LibraryPath>C:\vnstudio4\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
