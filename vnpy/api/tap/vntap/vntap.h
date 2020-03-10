@@ -19,9 +19,12 @@ struct Task
 {
     int task_name;		//回调函数名称对应的常量
     void *task_data;	//数据指针
-    void *task_error;	//错误指针
-    int task_id;		//请求id
-    bool task_last;		//是否为最后返回
+    int task_error;	//错误指针
+	unsigned int task_id;		//请求id
+    char task_last;		//是否为最后返回
+
+	int task_int; // 其他int 请求
+	string task_string; // 其他 string请求
 };
 
 class TerminatedError : std::exception
