@@ -14,7 +14,7 @@ import websocket
 from vnpy.trader.utility import get_file_logger
 
 
-class WebsocketClient(object):
+class WebsocketClient:
     """
     Websocket API
 

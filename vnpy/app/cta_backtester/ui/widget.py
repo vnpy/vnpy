@@ -1,6 +1,8 @@
+import csv
+from datetime import datetime, timedelta
+
 import numpy as np
 import pyqtgraph as pg
-from datetime import datetime, timedelta
 
 from vnpy.trader.constant import Interval, Direction, Offset
 from vnpy.trader.engine import MainEngine
@@ -917,6 +919,7 @@ class OptimizationResultMonitor(QtWidgets.QDialog):
         self.setWindowTitle("参数优化结果")
         self.resize(1100, 500)
 
+        # Creat table to show result
         table = QtWidgets.QTableWidget()
 
         table.setColumnCount(2)
@@ -943,10 +946,39 @@ class OptimizationResultMonitor(QtWidgets.QDialog):
             table.setItem(n, 0, setting_cell)
             table.setItem(n, 1, target_cell)
 
+        # Create layout
+        button = QtWidgets.QPushButton("保存")
+        button.clicked.connect(self.save_csv)
+
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addStretch()
+        hbox.addWidget(button)
+
         vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(table)
+        vbox.addLayout(hbox)
 
         self.setLayout(vbox)
+
+    def save_csv(self) -> None:
+        """
+        Save table data into a csv file
+        """
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self, "保存数据", "", "CSV(*.csv)")
+
+        if not path:
+            return
+
+        with open(path, "w") as f:
+            writer = csv.writer(f, lineterminator="\n")
+
+            writer.writerow(["参数", self.target_display])
+
+            for tp in self.result_values:
+                setting, target_value, _ = tp
+                row_data = [str(setting), str(target_value)]
+                writer.writerow(row_data)
 
 
 class BacktestingTradeMonitor(BaseMonitor):

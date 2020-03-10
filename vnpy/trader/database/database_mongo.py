@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Sequence
+from typing import Optional, Sequence, List
 
 from mongoengine import DateTimeField, Document, FloatField, StringField, connect
 
@@ -333,6 +333,18 @@ class MongoManager(BaseDatabaseManager):
             return s.to_bar()
         return None
 
+    def get_oldest_bar_data(
+        self, symbol: str, exchange: "Exchange", interval: "Interval"
+    ) -> Optional["BarData"]:
+        s = (
+            DbBarData.objects(symbol=symbol, exchange=exchange.value)
+            .order_by("+datetime")
+            .first()
+        )
+        if s:
+            return s.to_bar()
+        return None
+
     def get_newest_tick_data(
         self, symbol: str, exchange: "Exchange"
     ) -> Optional["TickData"]:
@@ -344,6 +356,30 @@ class MongoManager(BaseDatabaseManager):
         if s:
             return s.to_tick()
         return None
+
+    def get_bar_data_statistics(self) -> List:
+        """"""
+        s = (
+            DbBarData.objects.aggregate({
+                "$group": {
+                    "_id": {
+                        "symbol": "$symbol",
+                        "exchange": "$exchange",
+                        "interval": "$interval",
+                    },
+                    "count": {"$sum": 1}
+                }
+            })
+        )
+
+        result = []
+
+        for d in s:
+            data = d["_id"]
+            data["count"] = d["count"]
+            result.append(data)
+
+        return result
 
     def clean(self, symbol: str):
         DbTickData.objects(symbol=symbol).delete()

@@ -266,7 +266,7 @@ class HuobiRestApi(RestClient):
         """"""
         # Create query params
         params = {
-            "symbol": req.symbobol,
+            "symbol": req.symbol,
             "period": INTERVAL_VT2HUOBI[req.interval],
             "size": 2000
         }

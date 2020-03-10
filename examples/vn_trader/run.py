@@ -33,6 +33,9 @@ from vnpy.gateway.xtp import XtpGateway
 # from vnpy.gateway.gateios import GateiosGateway
 # from vnpy.gateway.bybit import BybitGateway
 # from vnpy.gateway.deribit import DeribitGateway
+from vnpy.gateway.uft import UftGateway
+# from vnpy.gateway.okexo import OkexoGateway
+# from vnpy.gateway.binancef import BinancefGateway
 
 # from vnpy.app.cta_strategy import CtaStrategyApp
 # from vnpy.app.csv_loader import CsvLoaderApp
@@ -44,7 +47,10 @@ from vnpy.gateway.xtp import XtpGateway
 # from vnpy.app.rpc_service import RpcServiceApp
 # from vnpy.app.spread_trading import SpreadTradingApp
 # from vnpy.app.portfolio_manager import PortfolioManagerApp
-from vnpy.app.option_master import OptionMasterApp
+# from vnpy.app.option_master import OptionMasterApp
+# from vnpy.app.chart_wizard import ChartWizardApp
+# from vnpy.app.excel_rtd import ExcelRtdApp
+from vnpy.app.data_manager import DataManagerApp
 
 
 def main():
@@ -62,6 +68,7 @@ def main():
     # main_engine.add_gateway(SoptGateway)
     # main_engine.add_gateway(MinitestGateway)
     # main_engine.add_gateway(FemasGateway)
+    main_engine.add_gateway(UftGateway)
     # main_engine.add_gateway(IbGateway)
     # main_engine.add_gateway(FutuGateway)
     # main_engine.add_gateway(BitmexGateway)
@@ -84,6 +91,8 @@ def main():
     # main_engine.add_gateway(GateiosGateway)
     # main_engine.add_gateway(BybitGateway)
     # main_engine.add_gateway(DeribitGateway)
+    # main_engine.add_gateway(OkexoGateway)
+    # main_engine.add_gateway(BinancefGateway)
 
     # main_engine.add_app(CtaStrategyApp)
     # main_engine.add_app(CtaBacktesterApp)
@@ -95,7 +104,10 @@ def main():
     # main_engine.add_app(RpcServiceApp)
     # main_engine.add_app(SpreadTradingApp)
     # main_engine.add_app(PortfolioManagerApp)
-    main_engine.add_app(OptionMasterApp)
+    # main_engine.add_app(OptionMasterApp)
+    # main_engine.add_app(ChartWizardApp)
+    # main_engine.add_app(ExcelRtdApp)
+    main_engine.add_app(DataManagerApp)
 
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()

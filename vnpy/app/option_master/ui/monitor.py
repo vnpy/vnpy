@@ -6,8 +6,9 @@ from vnpy.event import Event
 from vnpy.trader.ui import QtWidgets, QtCore, QtGui
 from vnpy.trader.ui.widget import COLOR_BID, COLOR_ASK, COLOR_BLACK
 from vnpy.trader.event import (
-    EVENT_TICK, EVENT_TRADE, EVENT_POSITION
+    EVENT_TICK, EVENT_TRADE, EVENT_POSITION, EVENT_TIMER
 )
+from vnpy.trader.utility import round_to
 from ..engine import OptionEngine
 from ..base import UnderlyingData, OptionData, ChainData, PortfolioData
 
@@ -89,7 +90,7 @@ class MonitorTable(QtWidgets.QTableWidget):
 
         self.init_menu()
 
-    def init_menu(self):
+    def init_menu(self) -> None:
         """
         Create right click menu.
         """
@@ -99,7 +100,7 @@ class MonitorTable(QtWidgets.QTableWidget):
         resize_action.triggered.connect(self.resizeColumnsToContents)
         self.menu.addAction(resize_action)
 
-    def contextMenuEvent(self, event):
+    def contextMenuEvent(self, event) -> None:
         """
         Show menu with right click.
         """
@@ -144,7 +145,7 @@ class OptionMarketMonitor(MonitorTable):
         self.init_ui()
         self.register_event()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """"""
         self.setWindowTitle("T型报价")
         self.verticalHeader().setVisible(False)
@@ -232,7 +233,7 @@ class OptionMarketMonitor(MonitorTable):
             # Move to next row
             current_row += 1
 
-    def register_event(self):
+    def register_event(self) -> None:
         """"""
         self.signal_tick.connect(self.process_tick_event)
         self.signal_trade.connect(self.process_trade_event)
@@ -242,7 +243,7 @@ class OptionMarketMonitor(MonitorTable):
         self.event_engine.register(EVENT_TRADE, self.signal_trade.emit)
         self.event_engine.register(EVENT_POSITION, self.signal_position.emit)
 
-    def process_tick_event(self, event: Event):
+    def process_tick_event(self, event: Event) -> None:
         """"""
         tick = event.data
 
@@ -256,17 +257,17 @@ class OptionMarketMonitor(MonitorTable):
                 self.update_impv(vt_symbol)
                 self.update_greeks(vt_symbol)
 
-    def process_trade_event(self, event: Event):
+    def process_trade_event(self, event: Event) -> None:
         """"""
         trade = event.data
         self.update_pos(trade.vt_symbol)
 
-    def process_position_event(self, event: Event):
+    def process_position_event(self, event: Event) -> None:
         """"""
         position = event.data
         self.update_pos(position.vt_symbol)
 
-    def update_pos(self, vt_symbol: str):
+    def update_pos(self, vt_symbol: str) -> None:
         """"""
         option_cells = self.cells.get(vt_symbol, None)
         if not option_cells:
@@ -276,7 +277,7 @@ class OptionMarketMonitor(MonitorTable):
 
         option_cells["net_pos"].setText(str(option.net_pos))
 
-    def update_price(self, vt_symbol: str):
+    def update_price(self, vt_symbol: str) -> None:
         """"""
         option_cells = self.cells.get(vt_symbol, None)
         if not option_cells:
@@ -291,7 +292,7 @@ class OptionMarketMonitor(MonitorTable):
         option_cells["volume"].setText(str(tick.volume))
         option_cells["open_interest"].setText(str(tick.open_interest))
 
-    def update_impv(self, vt_symbol: str):
+    def update_impv(self, vt_symbol: str) -> None:
         """"""
         option_cells = self.cells.get(vt_symbol, None)
         if not option_cells:
@@ -301,7 +302,7 @@ class OptionMarketMonitor(MonitorTable):
         option_cells["bid_impv"].setText(f"{option.bid_impv * 100:.2f}")
         option_cells["ask_impv"].setText(f"{option.ask_impv * 100:.2f}")
 
-    def update_greeks(self, vt_symbol: str):
+    def update_greeks(self, vt_symbol: str) -> None:
         """"""
         option_cells = self.cells.get(vt_symbol, None)
         if not option_cells:
@@ -313,20 +314,6 @@ class OptionMarketMonitor(MonitorTable):
         option_cells["theo_gamma"].setText(f"{option.theo_gamma:.0f}")
         option_cells["theo_theta"].setText(f"{option.theo_theta:.0f}")
         option_cells["theo_vega"].setText(f"{option.theo_vega:.0f}")
-
-    def scroll_to_middle(self):
-        """"""
-        strike_column = len(self.headers)
-        item = self.item(0, int(strike_column))
-        self.scrollToItem(
-            item,
-            QtWidgets.QAbstractItemView.PositionAtCenter
-        )
-
-    def resizeEvent(self, event: QtGui.QResizeEvent):
-        """"""
-        self.resizeColumnsToContents()
-        event.accept()
 
 
 class OptionGreeksMonitor(MonitorTable):
@@ -362,7 +349,7 @@ class OptionGreeksMonitor(MonitorTable):
         self.init_ui()
         self.register_event()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """"""
         self.setWindowTitle("希腊值风险")
         self.verticalHeader().setVisible(False)
@@ -441,7 +428,7 @@ class OptionGreeksMonitor(MonitorTable):
 
         self.resizeColumnToContents(0)
 
-    def register_event(self):
+    def register_event(self) -> None:
         """"""
         self.signal_tick.connect(self.process_tick_event)
         self.signal_trade.connect(self.process_trade_event)
@@ -451,7 +438,7 @@ class OptionGreeksMonitor(MonitorTable):
         self.event_engine.register(EVENT_TRADE, self.signal_trade.emit)
         self.event_engine.register(EVENT_POSITION, self.signal_position.emit)
 
-    def process_tick_event(self, event: Event):
+    def process_tick_event(self, event: Event) -> None:
         """"""
         tick = event.data
 
@@ -460,7 +447,7 @@ class OptionGreeksMonitor(MonitorTable):
 
         self.update_underlying_tick(tick.vt_symbol)
 
-    def process_trade_event(self, event: Event):
+    def process_trade_event(self, event: Event) -> None:
         """"""
         trade = event.data
         if trade.vt_symbol not in self.cells:
@@ -468,7 +455,7 @@ class OptionGreeksMonitor(MonitorTable):
 
         self.update_pos(trade.vt_symbol)
 
-    def process_position_event(self, event: Event):
+    def process_position_event(self, event: Event) -> None:
         """"""
         position = event.data
         if position.vt_symbol not in self.cells:
@@ -476,7 +463,7 @@ class OptionGreeksMonitor(MonitorTable):
 
         self.update_pos(position.vt_symbol)
 
-    def update_underlying_tick(self, vt_symbol: str):
+    def update_underlying_tick(self, vt_symbol: str) -> None:
         """"""
         underlying = self.option_engine.get_instrument(vt_symbol)
         self.update_row(vt_symbol, underlying)
@@ -490,7 +477,7 @@ class OptionGreeksMonitor(MonitorTable):
         portfolio = underlying.portfolio
         self.update_row(portfolio.name, portfolio)
 
-    def update_pos(self, vt_symbol: str):
+    def update_pos(self, vt_symbol: str) -> None:
         """"""
         instrument = self.option_engine.get_instrument(vt_symbol)
         self.update_row(vt_symbol, instrument)
@@ -503,7 +490,7 @@ class OptionGreeksMonitor(MonitorTable):
         portfolio = instrument.portfolio
         self.update_row(portfolio.name, portfolio)
 
-    def update_row(self, row_name: str, row_data: ROW_DATA):
+    def update_row(self, row_name: str, row_data: ROW_DATA) -> None:
         """"""
         row_cells = self.cells[row_name]
         row = self.row(row_cells["long_pos"])
@@ -525,3 +512,86 @@ class OptionGreeksMonitor(MonitorTable):
             row_cells["pos_gamma"].setText(f"{row_data.pos_gamma:.0f}")
             row_cells["pos_theta"].setText(f"{row_data.pos_theta:.0f}")
             row_cells["pos_vega"].setText(f"{row_data.pos_vega:.0f}")
+
+
+class OptionChainMonitor(MonitorTable):
+    """"""
+    signal_timer = QtCore.pyqtSignal(Event)
+
+    def __init__(self, option_engine: OptionEngine, portfolio_name: str):
+        """"""
+        super().__init__()
+
+        self.option_engine = option_engine
+        self.event_engine = option_engine.event_engine
+        self.portfolio_name = portfolio_name
+
+        self.cells: Dict[str, Dict] = {}
+
+        self.init_ui()
+        self.register_event()
+
+    def init_ui(self) -> None:
+        """"""
+        self.setWindowTitle("期权链跟踪")
+        self.verticalHeader().setVisible(False)
+        self.setEditTriggers(self.NoEditTriggers)
+
+        # Store option and underlying symbols
+        portfolio = self.option_engine.get_portfolio(self.portfolio_name)
+
+        # Set table row and column numbers
+        self.setRowCount(len(portfolio.chains))
+
+        labels = ["期权链", "剩余交易日", "标的物", "升贴水"]
+        self.setColumnCount(len(labels))
+        self.setHorizontalHeaderLabels(labels)
+
+        # Init cells
+        chain_symbols = list(portfolio.chains.keys())
+        chain_symbols.sort()
+
+        for row, chain_symbol in enumerate(chain_symbols):
+            chain = portfolio.chains[chain_symbol]
+            adjustment_cell = MonitorCell()
+            underlying_cell = MonitorCell()
+
+            self.setItem(row, 0, MonitorCell(chain.chain_symbol.split(".")[0]))
+            self.setItem(row, 1, MonitorCell(str(chain.days_to_expiry)))
+            self.setItem(row, 2, underlying_cell)
+            self.setItem(row, 3, adjustment_cell)
+
+            self.cells[chain.chain_symbol] = {
+                "underlying": underlying_cell,
+                "adjustment": adjustment_cell
+            }
+
+        # Additional table adjustment
+        horizontal_header = self.horizontalHeader()
+        horizontal_header.setSectionResizeMode(horizontal_header.Stretch)
+
+    def register_event(self) -> None:
+        """"""
+        self.signal_timer.connect(self.process_timer_event)
+
+        self.event_engine.register(EVENT_TIMER, self.signal_timer.emit)
+
+    def process_timer_event(self, event: Event) -> None:
+        """"""
+        portfolio = self.option_engine.get_portfolio(self.portfolio_name)
+
+        for chain in portfolio.chains.values():
+            underlying: UnderlyingData = chain.underlying
+
+            underlying_symbol: str = underlying.vt_symbol.split(".")[0]
+
+            if chain.underlying_adjustment == float("inf"):
+                continue
+
+            adjustment = round_to(
+                chain.underlying_adjustment, underlying.pricetick
+            )
+
+            chain_cells = self.cells[chain.chain_symbol]
+            chain_cells["underlying"].setText(underlying_symbol)
+            chain_cells["adjustment"].setText(str(adjustment))

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Sequence, TYPE_CHECKING
+from typing import Optional, Sequence, List, Dict, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from vnpy.trader.constant import Interval, Exchange  # noqa
@@ -66,6 +66,19 @@ class BaseDatabaseManager(ABC):
         pass
 
     @abstractmethod
+    def get_oldest_bar_data(
+        self,
+        symbol: str,
+        exchange: "Exchange",
+        interval: "Interval"
+    ) -> Optional["BarData"]:
+        """
+        If there is data in database, return the one with smallest datetime(oldest one)
+        otherwise, return None
+        """
+        pass
+
+    @abstractmethod
     def get_newest_tick_data(
         self,
         symbol: str,
@@ -74,6 +87,17 @@ class BaseDatabaseManager(ABC):
         """
         If there is data in database, return the one with greatest datetime(newest one)
         otherwise, return None
+        """
+        pass
+
+    @abstractmethod
+    def get_bar_data_statistics(
+        self,
+        symbol: str,
+        exchange: "Exchange",
+    ) -> List[Dict]:
+        """
+        Return data avaible in database with a list of symbol/exchange/interval/count.
         """
         pass
 

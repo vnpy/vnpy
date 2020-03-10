@@ -645,8 +645,7 @@ class BybitWebsocketApi(WebsocketClient):
         )
         self.ticks[req.symbol] = tick
 
-        self.subscribe_topic(
-            f"instrument_info.100ms.{req.symbol}", self.on_tick)
+        self.subscribe_topic(f"instrument_info.100ms.{req.symbol}", self.on_tick)
         self.subscribe_topic(f"orderBookL2_25.{req.symbol}", self.on_depth)
 
     def subscribe_topic(self, topic: str, callback: Callable[[str, dict], Any]):
@@ -715,12 +714,18 @@ class BybitWebsocketApi(WebsocketClient):
         tick = self.ticks[symbol]
 
         if type_ == "snapshot":
+            if not data["last_price_e4"]:           # Filter last price with 0 value
+                return
+
             tick.last_price = data["last_price_e4"] / 10000
             tick.volume = data["volume_24h"]
         else:
             update = data["update"][0]
 
             if "last_price_e4" in update:
+                if not update["last_price_e4"]:     # Filter last price with 0 value
+                    return
+
                 tick.last_price = update["last_price_e4"] / 10000
 
             if "volume_24h" in update:
