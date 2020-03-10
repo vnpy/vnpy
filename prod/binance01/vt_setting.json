@@ -1,0 +1,23 @@
+{
+    "font.family": "Arial",
+    "font.size": 12,
+    "log.active": true,
+    "log.level": 10,
+    "log.console": true,
+    "log.file": true,
+    "email.server": "smtp.qq.com",
+    "email.port": 465,
+    "email.username": "",
+    "email.password": "",
+    "email.sender": "",
+    "email.receiver": "",
+    "rqdata.username": "",
+    "rqdata.password": "",
+    "database.driver": "sqlite",
+    "database.database": "database.db",
+    "database.host": "localhost",
+    "database.port": 3306,
+    "database.user": "root",
+    "database.password": "",
+    "database.authentication_source": "admin"
+}
