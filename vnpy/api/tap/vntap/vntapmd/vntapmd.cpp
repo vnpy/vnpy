@@ -408,14 +408,18 @@ void MdApi::processRtnQuote(Task *task)
 ///主动函数
 ///-------------------------------------------------------------------------------------
 
-void createTapQuoteAPI(const dict &data, int &iResult)
+void MdApi::createTapQuoteAPI(const dict &req, int &iResult)
 {
-	this->api->CreateTapQuoteAPI();
+	TapAPIApplicationInfo myreq = TapAPIApplicationInfo();
+	memset(&myreq, 0, sizeof(myreq));
+	getString(req, "AuthCode", myreq.AuthCode);
+	getString(req, "KeyOperationLogPath", myreq.KeyOperationLogPath);
+	this->api->CreateTapQuoteAPI(&myreq, iResult);
 };
 
-void release()
+void MdApi::release()
 {
-	this->api->FreeTapQuoteAPI();
+	this->api->FreeTapQuoteAPI(NULL);
 };
 
 void MdApi::init()
@@ -562,6 +566,8 @@ PYBIND11_MODULE(vntapmd, m)
 	class_<MdApi, PyMdApi> mdapi(m, "MdApi", module_local());
 	mdapi
 		.def(init<>())
+		.def("createTapQuoteAPI", &MdApi::createTapQuoteAPI)
+		.def("release", &MdApi::release)
 		.def("setAPINotify", &MdApi::setAPINotify)
 		.def("init", &MdApi::init)
 		.def("exit", &MdApi::exit)
