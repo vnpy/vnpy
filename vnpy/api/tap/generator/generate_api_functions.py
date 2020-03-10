@@ -376,10 +376,10 @@ class ApiGenerator:
                 bind_args = ["void", self.class_name, on_name]
                 for field, type_ in d.items():
                     if type_ == "unsigned int":
-                        args.append("int session")
+                        args.append("unsigned int session")
                         bind_args.append("session")
                     elif type_ == "char":
-                        args.append("bool last")
+                        args.append("char last")
                         bind_args.append("last")
                     elif type_ == "int":
                         if field == "errorCode":
