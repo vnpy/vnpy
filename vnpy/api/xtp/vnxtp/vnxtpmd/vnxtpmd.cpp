@@ -1071,22 +1071,15 @@ void MdApi::release()
 
 int MdApi::exit()
 {
-	cout << "01";
-	this->active = false;
-	cout << "02";
-	this->task_queue.terminate();
-	cout << "03";
-	this->task_thread.join();
-	cout << "04";
-
 	this->api->RegisterSpi(NULL);
-	cout << "05";
 	this->api->Release();
-	cout << "06";
 	this->api = NULL;
-	cout << "07";
+
+	this->active = false;
+	this->task_queue.terminate();
+	this->task_thread.join();
+
 	return 1;
-	cout << "08";
 };
 
 string MdApi::getTradingDay()
