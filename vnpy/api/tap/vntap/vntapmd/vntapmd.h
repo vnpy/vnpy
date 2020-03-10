@@ -191,11 +191,11 @@ public:
 
 	int disconnect();
 
-	int subscribeQuote(TAPIUINT32 *sessionID, const dict &data); //3
+	int subscribeQuote(unsigned int *sessionID, const dict &data); //3
 
-	int subscribeQuote(TAPIUINT32 *sessionID, const dict &data); //4
+	int subscribeQuote(unsigned int *sessionID, const dict &data); //4
 
-	int qryCommodity(unsigned int session);
+	int qryCommodity(unsigned int *session);
 
-	int qryContract(unsigned int session, const dict &data);
+	int qryContract(unsigned int *session, const dict &data);
 };
