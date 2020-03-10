@@ -807,7 +807,9 @@ public:
     //-------------------------------------------------------------------------------------
     //req:主动函数的请求字典
     //-------------------------------------------------------------------------------------
-	void createTapQuoteAPI(const dict &data, int &iResult);
+	void CreateITapTradeAPI(const dict &req, int &iResult);
+
+	void release();
 
 	int setAPINotify(ITapTradeAPINotify *pSpi); //1
 
@@ -815,7 +817,7 @@ public:
 
 	int exit();
 
-	void release();
+
 
 	int setHostAddress(TAPICHAR *IP, TAPIUINT16 port, bool bSSL = false); //2
 
