@@ -1,203 +1,115 @@
-﻿// vntapmd.cpp : 定义 DLL 应用程序的导出函数。
+﻿
+// vntapmd.cpp : 定义 DLL 应用程序的导出函数。
 //
 
-#include "stdafx.h"
-
-// vnctpmd.cpp : 定义 DLL 应用程序的导出函数。
-//
-
-#include "vnctpmd.h"
+#include "vntapmd.h"
 
 
 ///-------------------------------------------------------------------------------------
 ///C++的回调函数将数据保存到队列中
 ///-------------------------------------------------------------------------------------
 
-void MdApi::OnFrontConnected()
+void MdApi::OnRspLogin(int errorCode, TapAPIQuotLoginRspInfo *info)
 {
 	Task task = Task();
-	task.task_name = ONFRONTCONNECTED;
-	this->task_queue.push(task);
-};
-
-void MdApi::OnFrontDisconnected(int nReason)
-{
-	Task task = Task();
-	task.task_name = ONFRONTDISCONNECTED;
-	task.task_id = nReason;
-	this->task_queue.push(task);
-};
-
-void MdApi::OnHeartBeatWarning(int nTimeLapse)
-{
-	Task task = Task();
-	task.task_name = ONHEARTBEATWARNING;
-	task.task_id = nTimeLapse;
-	this->task_queue.push(task);
-};
-
-void MdApi::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-	Task task = Task();
-	task.task_name = ONRSPUSERLOGIN;
-	if (pRspUserLogin)
+	task.task_name = ONRSPLOGIN;
+	task.task_int = errorCode;
+	if (info)
 	{
-		CThostFtdcRspUserLoginField *task_data = new CThostFtdcRspUserLoginField();
-		*task_data = *pRspUserLogin;
-		task.task_data = task_data;
-	}
-	if (pRspInfo)
-	{
-		CThostFtdcRspInfoField *task_error = new CThostFtdcRspInfoField();
-		*task_error = *pRspInfo;
-		task.task_error = task_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
-};
-
-void MdApi::OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-	Task task = Task();
-	task.task_name = ONRSPUSERLOGOUT;
-	if (pUserLogout)
-	{
-		CThostFtdcUserLogoutField *task_data = new CThostFtdcUserLogoutField();
-		*task_data = *pUserLogout;
-		task.task_data = task_data;
-	}
-	if (pRspInfo)
-	{
-		CThostFtdcRspInfoField *task_error = new CThostFtdcRspInfoField();
-		*task_error = *pRspInfo;
-		task.task_error = task_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
-};
-
-void MdApi::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-	Task task = Task();
-	task.task_name = ONRSPERROR;
-	if (pRspInfo)
-	{
-		CThostFtdcRspInfoField *task_error = new CThostFtdcRspInfoField();
-		*task_error = *pRspInfo;
-		task.task_error = task_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
-};
-
-void MdApi::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-	Task task = Task();
-	task.task_name = ONRSPSUBMARKETDATA;
-	if (pSpecificInstrument)
-	{
-		CThostFtdcSpecificInstrumentField *task_data = new CThostFtdcSpecificInstrumentField();
-		*task_data = *pSpecificInstrument;
-		task.task_data = task_data;
-	}
-	if (pRspInfo)
-	{
-		CThostFtdcRspInfoField *task_error = new CThostFtdcRspInfoField();
-		*task_error = *pRspInfo;
-		task.task_error = task_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
-};
-
-void MdApi::OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-	Task task = Task();
-	task.task_name = ONRSPUNSUBMARKETDATA;
-	if (pSpecificInstrument)
-	{
-		CThostFtdcSpecificInstrumentField *task_data = new CThostFtdcSpecificInstrumentField();
-		*task_data = *pSpecificInstrument;
-		task.task_data = task_data;
-	}
-	if (pRspInfo)
-	{
-		CThostFtdcRspInfoField *task_error = new CThostFtdcRspInfoField();
-		*task_error = *pRspInfo;
-		task.task_error = task_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
-};
-
-void MdApi::OnRspSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-	Task task = Task();
-	task.task_name = ONRSPSUBFORQUOTERSP;
-	if (pSpecificInstrument)
-	{
-		CThostFtdcSpecificInstrumentField *task_data = new CThostFtdcSpecificInstrumentField();
-		*task_data = *pSpecificInstrument;
-		task.task_data = task_data;
-	}
-	if (pRspInfo)
-	{
-		CThostFtdcRspInfoField *task_error = new CThostFtdcRspInfoField();
-		*task_error = *pRspInfo;
-		task.task_error = task_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
-};
-
-void MdApi::OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-	Task task = Task();
-	task.task_name = ONRSPUNSUBFORQUOTERSP;
-	if (pSpecificInstrument)
-	{
-		CThostFtdcSpecificInstrumentField *task_data = new CThostFtdcSpecificInstrumentField();
-		*task_data = *pSpecificInstrument;
-		task.task_data = task_data;
-	}
-	if (pRspInfo)
-	{
-		CThostFtdcRspInfoField *task_error = new CThostFtdcRspInfoField();
-		*task_error = *pRspInfo;
-		task.task_error = task_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
-};
-
-void MdApi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
-{
-	Task task = Task();
-	task.task_name = ONRTNDEPTHMARKETDATA;
-	if (pDepthMarketData)
-	{
-		CThostFtdcDepthMarketDataField *task_data = new CThostFtdcDepthMarketDataField();
-		*task_data = *pDepthMarketData;
+		TapAPIQuotLoginRspInfo *task_data = new TapAPIQuotLoginRspInfo();
+		*task_data = *info;
 		task.task_data = task_data;
 	}
 	this->task_queue.push(task);
 };
 
-void MdApi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
+void MdApi::OnAPIReady()
 {
 	Task task = Task();
-	task.task_name = ONRTNFORQUOTERSP;
-	if (pForQuoteRsp)
+	task.task_name = ONAPIREADY;
+	this->task_queue.push(task);
+};
+
+void MdApi::OnDisconnect(int reasonCode)
+{
+	Task task = Task();
+	task.task_name = ONDISCONNECT;
+	task.task_int = reasonCode;
+	this->task_queue.push(task);
+};
+
+void MdApi::OnRspQryCommodity(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteCommodityInfo *info)
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYCOMMODITY;
+	task.task_id = sessionID;
+	task.task_int = errorCode;
+	task.task_last = isLast;
+	if (info)
 	{
-		CThostFtdcForQuoteRspField *task_data = new CThostFtdcForQuoteRspField();
-		*task_data = *pForQuoteRsp;
+		TapAPIQuoteCommodityInfo *task_data = new TapAPIQuoteCommodityInfo();
+		*task_data = *info;
+		task.task_data = task_data;
+	}
+	this->task_queue.push(task);
+};
+
+void MdApi::OnRspQryContract(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteContractInfo *info)
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYCONTRACT;
+	task.task_id = sessionID;
+	task.task_int = errorCode;
+	task.task_last = isLast;
+	if (info)
+	{
+		TapAPIQuoteContractInfo *task_data = new TapAPIQuoteContractInfo();
+		*task_data = *info;
+		task.task_data = task_data;
+	}
+	this->task_queue.push(task);
+};
+
+void MdApi::OnRspSubscribeQuote(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteWhole *info)
+{
+	Task task = Task();
+	task.task_name = ONRSPSUBSCRIBEQUOTE;
+	task.task_id = sessionID;
+	task.task_int = errorCode;
+	task.task_last = isLast;
+	if (info)
+	{
+		TapAPIQuoteWhole *task_data = new TapAPIQuoteWhole();
+		*task_data = *info;
+		task.task_data = task_data;
+	}
+	this->task_queue.push(task);
+};
+
+void MdApi::OnRspUnSubscribeQuote(unsigned int sessionID, int errorCode, char isLast, TapAPIContract *info)
+{
+	Task task = Task();
+	task.task_name = ONRSPUNSUBSCRIBEQUOTE;
+	task.task_id = sessionID;
+	task.task_int = errorCode;
+	task.task_last = isLast;
+	if (info)
+	{
+		TapAPIContract *task_data = new TapAPIContract();
+		*task_data = *info;
+		task.task_data = task_data;
+	}
+	this->task_queue.push(task);
+};
+
+void MdApi::OnRtnQuote(TapAPIQuoteWhole *info)
+{
+	Task task = Task();
+	task.task_name = ONRTNQUOTE;
+	if (info)
+	{
+		TapAPIQuoteWhole *task_data = new TapAPIQuoteWhole();
+		*task_data = *info;
 		task.task_data = task_data;
 	}
 	this->task_queue.push(task);
@@ -219,77 +131,55 @@ void MdApi::processTask()
 
 			switch (task.task_name)
 			{
-			case ONFRONTCONNECTED:
+			case ONRSPLOGIN:
 			{
-				this->processFrontConnected(&task);
+				this->processRspLogin(&task);
 				break;
 			}
 
-			case ONFRONTDISCONNECTED:
+			case ONAPIREADY:
 			{
-				this->processFrontDisconnected(&task);
+				this->processAPIReady(&task);
 				break;
 			}
 
-			case ONHEARTBEATWARNING:
+			case ONDISCONNECT:
 			{
-				this->processHeartBeatWarning(&task);
+				this->processDisconnect(&task);
 				break;
 			}
 
-			case ONRSPUSERLOGIN:
+			case ONRSPQRYCOMMODITY:
 			{
-				this->processRspUserLogin(&task);
+				this->processRspQryCommodity(&task);
 				break;
 			}
 
-			case ONRSPUSERLOGOUT:
+			case ONRSPQRYCONTRACT:
 			{
-				this->processRspUserLogout(&task);
+				this->processRspQryContract(&task);
 				break;
 			}
 
-			case ONRSPERROR:
+			case ONRSPSUBSCRIBEQUOTE:
 			{
-				this->processRspError(&task);
+				this->processRspSubscribeQuote(&task);
 				break;
 			}
 
-			case ONRSPSUBMARKETDATA:
+			case ONRSPUNSUBSCRIBEQUOTE:
 			{
-				this->processRspSubMarketData(&task);
+				this->processRspUnSubscribeQuote(&task);
 				break;
 			}
 
-			case ONRSPUNSUBMARKETDATA:
+			case ONRTNQUOTE:
 			{
-				this->processRspUnSubMarketData(&task);
+				this->processRtnQuote(&task);
 				break;
 			}
 
-			case ONRSPSUBFORQUOTERSP:
-			{
-				this->processRspSubForQuoteRsp(&task);
-				break;
-			}
 
-			case ONRSPUNSUBFORQUOTERSP:
-			{
-				this->processRspUnSubForQuoteRsp(&task);
-				break;
-			}
-
-			case ONRTNDEPTHMARKETDATA:
-			{
-				this->processRtnDepthMarketData(&task);
-				break;
-			}
-
-			case ONRTNFORQUOTERSP:
-			{
-				this->processRtnForQuoteRsp(&task);
-				break;
-			}
 			};
 		}
 	}
@@ -298,363 +188,259 @@ void MdApi::processTask()
 	}
 };
 
-void MdApi::processFrontConnected(Task *task)
-{
-	gil_scoped_acquire acquire;
-	this->onFrontConnected();
-};
-
-void MdApi::processFrontDisconnected(Task *task)
-{
-	gil_scoped_acquire acquire;
-	this->onFrontDisconnected(task->task_id);
-};
-
-void MdApi::processHeartBeatWarning(Task *task)
-{
-	gil_scoped_acquire acquire;
-	this->onHeartBeatWarning(task->task_id);
-};
-
-void MdApi::processRspUserLogin(Task *task)
+void MdApi::processRspLogin(Task *task)
 {
 	gil_scoped_acquire acquire;
 	dict data;
 	if (task->task_data)
 	{
-		CThostFtdcRspUserLoginField *task_data = (CThostFtdcRspUserLoginField*)task->task_data;
-		data["TradingDay"] = toUtf(task_data->TradingDay);
-		data["LoginTime"] = toUtf(task_data->LoginTime);
-		data["BrokerID"] = toUtf(task_data->BrokerID);
-		data["UserID"] = toUtf(task_data->UserID);
-		data["SystemName"] = toUtf(task_data->SystemName);
-		data["FrontID"] = task_data->FrontID;
-		data["SessionID"] = task_data->SessionID;
-		data["MaxOrderRef"] = toUtf(task_data->MaxOrderRef);
-		data["SHFETime"] = toUtf(task_data->SHFETime);
-		data["DCETime"] = toUtf(task_data->DCETime);
-		data["CZCETime"] = toUtf(task_data->CZCETime);
-		data["FFEXTime"] = toUtf(task_data->FFEXTime);
-		data["INETime"] = toUtf(task_data->INETime);
-		delete task->task_data;
+		TapAPIQuotLoginRspInfo *task_data = (TapAPIQuotLoginRspInfo*)task->task_data;
+		data["UserNo"] = toUtf(task_data->UserNo);
+		data["UserType"] = task_data->UserType;
+		data["UserName"] = toUtf(task_data->UserName);
+		data["QuoteTempPassword"] = toUtf(task_data->QuoteTempPassword);
+		data["ReservedInfo"] = toUtf(task_data->ReservedInfo);
+		data["LastLoginIP"] = toUtf(task_data->LastLoginIP);
+		data["LastLoginProt"] = task_data->LastLoginProt;
+		data["LastLoginTime"] = toUtf(task_data->LastLoginTime);
+		data["LastLogoutTime"] = toUtf(task_data->LastLogoutTime);
+		data["TradeDate"] = toUtf(task_data->TradeDate);
+		data["LastSettleTime"] = toUtf(task_data->LastSettleTime);
+		data["StartTime"] = toUtf(task_data->StartTime);
+		data["InitTime"] = toUtf(task_data->InitTime);
+		delete task_data;
 	}
-	dict error;
-	if (task->task_error)
-	{
-		CThostFtdcRspInfoField *task_error = (CThostFtdcRspInfoField*)task->task_error;
-		error["ErrorID"] = task_error->ErrorID;
-		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
-		delete task->task_error;
-	}
-	this->onRspUserLogin(data, error, task->task_id, task->task_last);
+	this->onRspLogin(task->task_int, data);
 };
 
-void MdApi::processRspUserLogout(Task *task)
+void MdApi::processAPIReady(Task *task)
+{
+	this->onAPIReady();
+};
+
+void MdApi::processDisconnect(Task *task)
+{
+	gil_scoped_acquire acquire;
+	this->onDisconnect(task->task_int);
+};
+
+void MdApi::processRspQryCommodity(Task *task)
 {
 	gil_scoped_acquire acquire;
 	dict data;
 	if (task->task_data)
 	{
-		CThostFtdcUserLogoutField *task_data = (CThostFtdcUserLogoutField*)task->task_data;
-		data["BrokerID"] = toUtf(task_data->BrokerID);
-		data["UserID"] = toUtf(task_data->UserID);
-		delete task->task_data;
+		TapAPIQuoteCommodityInfo *task_data = (TapAPIQuoteCommodityInfo*)task->task_data;
+		data["Commodity"] = task_data->Commodity;
+		data["CommodityName"] = toUtf(task_data->CommodityName);
+		data["CommodityEngName"] = toUtf(task_data->CommodityEngName);
+		data["ContractSize"] = task_data->ContractSize;
+		data["CommodityTickSize"] = task_data->CommodityTickSize;
+		data["CommodityDenominator"] = task_data->CommodityDenominator;
+		data["CmbDirect"] = task_data->CmbDirect;
+		data["CommodityContractLen"] = task_data->CommodityContractLen;
+		data["IsDST"] = task_data->IsDST;
+		data["RelateCommodity1"] = task_data->RelateCommodity1;
+		data["RelateCommodity2"] = task_data->RelateCommodity2;
+		delete task_data;
 	}
-	dict error;
-	if (task->task_error)
-	{
-		CThostFtdcRspInfoField *task_error = (CThostFtdcRspInfoField*)task->task_error;
-		error["ErrorID"] = task_error->ErrorID;
-		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
-		delete task->task_error;
-	}
-	this->onRspUserLogout(data, error, task->task_id, task->task_last);
+	this->onRspQryCommodity(task->task_id, task->task_int, task->task_last, data);
 };
 
-void MdApi::processRspError(Task *task)
-{
-	gil_scoped_acquire acquire;
-	dict error;
-	if (task->task_error)
-	{
-		CThostFtdcRspInfoField *task_error = (CThostFtdcRspInfoField*)task->task_error;
-		error["ErrorID"] = task_error->ErrorID;
-		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
-		delete task->task_error;
-	}
-	this->onRspError(error, task->task_id, task->task_last);
-};
-
-void MdApi::processRspSubMarketData(Task *task)
+void MdApi::processRspQryContract(Task *task)
 {
 	gil_scoped_acquire acquire;
 	dict data;
 	if (task->task_data)
 	{
-		CThostFtdcSpecificInstrumentField *task_data = (CThostFtdcSpecificInstrumentField*)task->task_data;
-		data["InstrumentID"] = toUtf(task_data->InstrumentID);
-		delete task->task_data;
+		TapAPIQuoteContractInfo *task_data = (TapAPIQuoteContractInfo*)task->task_data;
+		data["Contract"] = task_data->Contract;
+		data["ContractType"] = task_data->ContractType;
+		data["QuoteUnderlyingContract"] = toUtf(task_data->QuoteUnderlyingContract);
+		data["ContractName"] = toUtf(task_data->ContractName);
+		data["ContractExpDate"] = toUtf(task_data->ContractExpDate);
+		data["LastTradeDate"] = toUtf(task_data->LastTradeDate);
+		data["FirstNoticeDate"] = toUtf(task_data->FirstNoticeDate);
+		delete task_data;
 	}
-	dict error;
-	if (task->task_error)
-	{
-		CThostFtdcRspInfoField *task_error = (CThostFtdcRspInfoField*)task->task_error;
-		error["ErrorID"] = task_error->ErrorID;
-		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
-		delete task->task_error;
-	}
-	this->onRspSubMarketData(data, error, task->task_id, task->task_last);
+	this->onRspQryContract(task->task_id, task->task_int, task->task_last, data);
 };
 
-void MdApi::processRspUnSubMarketData(Task *task)
+void MdApi::processRspSubscribeQuote(Task *task)
 {
 	gil_scoped_acquire acquire;
 	dict data;
 	if (task->task_data)
 	{
-		CThostFtdcSpecificInstrumentField *task_data = (CThostFtdcSpecificInstrumentField*)task->task_data;
-		data["InstrumentID"] = toUtf(task_data->InstrumentID);
-		delete task->task_data;
+		TapAPIQuoteWhole *task_data = (TapAPIQuoteWhole*)task->task_data;
+		data["Contract"] = task_data->Contract;
+		data["CurrencyNo"] = toUtf(task_data->CurrencyNo);
+		data["TradingState"] = task_data->TradingState;
+		data["DateTimeStamp"] = toUtf(task_data->DateTimeStamp);
+		data["QPreClosingPrice"] = task_data->QPreClosingPrice;
+		data["QPreSettlePrice"] = task_data->QPreSettlePrice;
+		data["QPrePositionQty"] = task_data->QPrePositionQty;
+		data["QOpeningPrice"] = task_data->QOpeningPrice;
+		data["QLastPrice"] = task_data->QLastPrice;
+		data["QHighPrice"] = task_data->QHighPrice;
+		data["QLowPrice"] = task_data->QLowPrice;
+		data["QHisHighPrice"] = task_data->QHisHighPrice;
+		data["QHisLowPrice"] = task_data->QHisLowPrice;
+		data["QLimitUpPrice"] = task_data->QLimitUpPrice;
+		data["QLimitDownPrice"] = task_data->QLimitDownPrice;
+		data["QTotalQty"] = task_data->QTotalQty;
+		data["QTotalTurnover"] = task_data->QTotalTurnover;
+		data["QPositionQty"] = task_data->QPositionQty;
+		data["QAveragePrice"] = task_data->QAveragePrice;
+		data["QClosingPrice"] = task_data->QClosingPrice;
+		data["QSettlePrice"] = task_data->QSettlePrice;
+		data["QLastQty"] = task_data->QLastQty;
+		data["QBidPrice"] = task_data->QBidPrice;
+		data["QBidQty"] = task_data->QBidQty;
+		data["QAskPrice"] = task_data->QAskPrice;
+		data["QAskQty"] = task_data->QAskQty;
+		data["QImpliedBidPrice"] = task_data->QImpliedBidPrice;
+		data["QImpliedBidQty"] = task_data->QImpliedBidQty;
+		data["QImpliedAskPrice"] = task_data->QImpliedAskPrice;
+		data["QImpliedAskQty"] = task_data->QImpliedAskQty;
+		data["QPreDelta"] = task_data->QPreDelta;
+		data["QCurrDelta"] = task_data->QCurrDelta;
+		data["QInsideQty"] = task_data->QInsideQty;
+		data["QOutsideQty"] = task_data->QOutsideQty;
+		data["QTurnoverRate"] = task_data->QTurnoverRate;
+		data["Q5DAvgQty"] = task_data->Q5DAvgQty;
+		data["QPERatio"] = task_data->QPERatio;
+		data["QTotalValue"] = task_data->QTotalValue;
+		data["QNegotiableValue"] = task_data->QNegotiableValue;
+		data["QPositionTrend"] = task_data->QPositionTrend;
+		data["QChangeSpeed"] = task_data->QChangeSpeed;
+		data["QChangeRate"] = task_data->QChangeRate;
+		data["QChangeValue"] = task_data->QChangeValue;
+		data["QSwing"] = task_data->QSwing;
+		data["QTotalBidQty"] = task_data->QTotalBidQty;
+		data["QTotalAskQty"] = task_data->QTotalAskQty;
+		data["UnderlyContract"] = task_data->UnderlyContract;
+		delete task_data;
 	}
-	dict error;
-	if (task->task_error)
-	{
-		CThostFtdcRspInfoField *task_error = (CThostFtdcRspInfoField*)task->task_error;
-		error["ErrorID"] = task_error->ErrorID;
-		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
-		delete task->task_error;
-	}
-	this->onRspUnSubMarketData(data, error, task->task_id, task->task_last);
+	this->onRspSubscribeQuote(task->task_id, task->task_int, task->task_last, data);
 };
 
-void MdApi::processRspSubForQuoteRsp(Task *task)
+void MdApi::processRspUnSubscribeQuote(Task *task)
 {
 	gil_scoped_acquire acquire;
 	dict data;
 	if (task->task_data)
 	{
-		CThostFtdcSpecificInstrumentField *task_data = (CThostFtdcSpecificInstrumentField*)task->task_data;
-		data["InstrumentID"] = toUtf(task_data->InstrumentID);
-		delete task->task_data;
+		TapAPIContract *task_data = (TapAPIContract*)task->task_data;
+		data["Commodity"] = task_data->Commodity;
+		data["ContractNo1"] = toUtf(task_data->ContractNo1);
+		data["StrikePrice1"] = toUtf(task_data->StrikePrice1);
+		data["CallOrPutFlag1"] = task_data->CallOrPutFlag1;
+		data["ContractNo2"] = toUtf(task_data->ContractNo2);
+		data["StrikePrice2"] = toUtf(task_data->StrikePrice2);
+		data["CallOrPutFlag2"] = task_data->CallOrPutFlag2;
+		delete task_data;
 	}
-	dict error;
-	if (task->task_error)
-	{
-		CThostFtdcRspInfoField *task_error = (CThostFtdcRspInfoField*)task->task_error;
-		error["ErrorID"] = task_error->ErrorID;
-		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
-		delete task->task_error;
-	}
-	this->onRspSubForQuoteRsp(data, error, task->task_id, task->task_last);
+	this->onRspUnSubscribeQuote(task->task_id, task->task_int, task->task_last, data);
 };
 
-void MdApi::processRspUnSubForQuoteRsp(Task *task)
+void MdApi::processRtnQuote(Task *task)
 {
 	gil_scoped_acquire acquire;
 	dict data;
 	if (task->task_data)
 	{
-		CThostFtdcSpecificInstrumentField *task_data = (CThostFtdcSpecificInstrumentField*)task->task_data;
-		data["InstrumentID"] = toUtf(task_data->InstrumentID);
-		delete task->task_data;
+		TapAPIQuoteWhole *task_data = (TapAPIQuoteWhole*)task->task_data;
+		data["Contract"] = task_data->Contract;
+		data["CurrencyNo"] = toUtf(task_data->CurrencyNo);
+		data["TradingState"] = task_data->TradingState;
+		data["DateTimeStamp"] = toUtf(task_data->DateTimeStamp);
+		data["QPreClosingPrice"] = task_data->QPreClosingPrice;
+		data["QPreSettlePrice"] = task_data->QPreSettlePrice;
+		data["QPrePositionQty"] = task_data->QPrePositionQty;
+		data["QOpeningPrice"] = task_data->QOpeningPrice;
+		data["QLastPrice"] = task_data->QLastPrice;
+		data["QHighPrice"] = task_data->QHighPrice;
+		data["QLowPrice"] = task_data->QLowPrice;
+		data["QHisHighPrice"] = task_data->QHisHighPrice;
+		data["QHisLowPrice"] = task_data->QHisLowPrice;
+		data["QLimitUpPrice"] = task_data->QLimitUpPrice;
+		data["QLimitDownPrice"] = task_data->QLimitDownPrice;
+		data["QTotalQty"] = task_data->QTotalQty;
+		data["QTotalTurnover"] = task_data->QTotalTurnover;
+		data["QPositionQty"] = task_data->QPositionQty;
+		data["QAveragePrice"] = task_data->QAveragePrice;
+		data["QClosingPrice"] = task_data->QClosingPrice;
+		data["QSettlePrice"] = task_data->QSettlePrice;
+		data["QLastQty"] = task_data->QLastQty;
+		data["QBidPrice"] = task_data->QBidPrice;
+		data["QBidQty"] = task_data->QBidQty;
+		data["QAskPrice"] = task_data->QAskPrice;
+		data["QAskQty"] = task_data->QAskQty;
+		data["QImpliedBidPrice"] = task_data->QImpliedBidPrice;
+		data["QImpliedBidQty"] = task_data->QImpliedBidQty;
+		data["QImpliedAskPrice"] = task_data->QImpliedAskPrice;
+		data["QImpliedAskQty"] = task_data->QImpliedAskQty;
+		data["QPreDelta"] = task_data->QPreDelta;
+		data["QCurrDelta"] = task_data->QCurrDelta;
+		data["QInsideQty"] = task_data->QInsideQty;
+		data["QOutsideQty"] = task_data->QOutsideQty;
+		data["QTurnoverRate"] = task_data->QTurnoverRate;
+		data["Q5DAvgQty"] = task_data->Q5DAvgQty;
+		data["QPERatio"] = task_data->QPERatio;
+		data["QTotalValue"] = task_data->QTotalValue;
+		data["QNegotiableValue"] = task_data->QNegotiableValue;
+		data["QPositionTrend"] = task_data->QPositionTrend;
+		data["QChangeSpeed"] = task_data->QChangeSpeed;
+		data["QChangeRate"] = task_data->QChangeRate;
+		data["QChangeValue"] = task_data->QChangeValue;
+		data["QSwing"] = task_data->QSwing;
+		data["QTotalBidQty"] = task_data->QTotalBidQty;
+		data["QTotalAskQty"] = task_data->QTotalAskQty;
+		data["UnderlyContract"] = task_data->UnderlyContract;
+		delete task_data;
 	}
-	dict error;
-	if (task->task_error)
-	{
-		CThostFtdcRspInfoField *task_error = (CThostFtdcRspInfoField*)task->task_error;
-		error["ErrorID"] = task_error->ErrorID;
-		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
-		delete task->task_error;
-	}
-	this->onRspUnSubForQuoteRsp(data, error, task->task_id, task->task_last);
+	this->onRtnQuote(data);
 };
 
-void MdApi::processRtnDepthMarketData(Task *task)
-{
-	gil_scoped_acquire acquire;
-	dict data;
-	if (task->task_data)
-	{
-		CThostFtdcDepthMarketDataField *task_data = (CThostFtdcDepthMarketDataField*)task->task_data;
-		data["TradingDay"] = toUtf(task_data->TradingDay);
-		data["InstrumentID"] = toUtf(task_data->InstrumentID);
-		data["ExchangeID"] = toUtf(task_data->ExchangeID);
-		data["ExchangeInstID"] = toUtf(task_data->ExchangeInstID);
-		data["LastPrice"] = task_data->LastPrice;
-		data["PreSettlementPrice"] = task_data->PreSettlementPrice;
-		data["PreClosePrice"] = task_data->PreClosePrice;
-		data["PreOpenInterest"] = task_data->PreOpenInterest;
-		data["OpenPrice"] = task_data->OpenPrice;
-		data["HighestPrice"] = task_data->HighestPrice;
-		data["LowestPrice"] = task_data->LowestPrice;
-		data["Volume"] = task_data->Volume;
-		data["Turnover"] = task_data->Turnover;
-		data["OpenInterest"] = task_data->OpenInterest;
-		data["ClosePrice"] = task_data->ClosePrice;
-		data["SettlementPrice"] = task_data->SettlementPrice;
-		data["UpperLimitPrice"] = task_data->UpperLimitPrice;
-		data["LowerLimitPrice"] = task_data->LowerLimitPrice;
-		data["PreDelta"] = task_data->PreDelta;
-		data["CurrDelta"] = task_data->CurrDelta;
-		data["UpdateTime"] = toUtf(task_data->UpdateTime);
-		data["UpdateMillisec"] = task_data->UpdateMillisec;
-		data["BidPrice1"] = task_data->BidPrice1;
-		data["BidVolume1"] = task_data->BidVolume1;
-		data["AskPrice1"] = task_data->AskPrice1;
-		data["AskVolume1"] = task_data->AskVolume1;
-		data["BidPrice2"] = task_data->BidPrice2;
-		data["BidVolume2"] = task_data->BidVolume2;
-		data["AskPrice2"] = task_data->AskPrice2;
-		data["AskVolume2"] = task_data->AskVolume2;
-		data["BidPrice3"] = task_data->BidPrice3;
-		data["BidVolume3"] = task_data->BidVolume3;
-		data["AskPrice3"] = task_data->AskPrice3;
-		data["AskVolume3"] = task_data->AskVolume3;
-		data["BidPrice4"] = task_data->BidPrice4;
-		data["BidVolume4"] = task_data->BidVolume4;
-		data["AskPrice4"] = task_data->AskPrice4;
-		data["AskVolume4"] = task_data->AskVolume4;
-		data["BidPrice5"] = task_data->BidPrice5;
-		data["BidVolume5"] = task_data->BidVolume5;
-		data["AskPrice5"] = task_data->AskPrice5;
-		data["AskVolume5"] = task_data->AskVolume5;
-		data["AveragePrice"] = task_data->AveragePrice;
-		data["ActionDay"] = toUtf(task_data->ActionDay);
-		delete task->task_data;
-	}
-	this->onRtnDepthMarketData(data);
-};
-
-void MdApi::processRtnForQuoteRsp(Task *task)
-{
-	gil_scoped_acquire acquire;
-	dict data;
-	if (task->task_data)
-	{
-		CThostFtdcForQuoteRspField *task_data = (CThostFtdcForQuoteRspField*)task->task_data;
-		data["TradingDay"] = toUtf(task_data->TradingDay);
-		data["InstrumentID"] = toUtf(task_data->InstrumentID);
-		data["ForQuoteSysID"] = toUtf(task_data->ForQuoteSysID);
-		data["ForQuoteTime"] = toUtf(task_data->ForQuoteTime);
-		data["ActionDay"] = toUtf(task_data->ActionDay);
-		data["ExchangeID"] = toUtf(task_data->ExchangeID);
-		delete task->task_data;
-	}
-	this->onRtnForQuoteRsp(data);
-};
 
 ///-------------------------------------------------------------------------------------
 ///主动函数
 ///-------------------------------------------------------------------------------------
 
-void MdApi::createFtdcMdApi(string pszFlowPath)
-{
-	this->api = CThostFtdcMdApi::CreateFtdcMdApi(pszFlowPath.c_str());
-	this->api->RegisterSpi(this);
-};
-
-void MdApi::release()
-{
-	this->api->Release();
-};
 
 void MdApi::init()
 {
 	this->active = true;
 	this->task_thread = thread(&MdApi::processTask, this);
-
-	this->api->Init();
 };
 
-int MdApi::join()
-{
-	int i = this->api->Join();
-	return i;
-};
 
 int MdApi::exit()
 {
 	this->active = false;
 	this->task_queue.terminate();
 	this->task_thread.join();
-
-	this->api->RegisterSpi(NULL);
-	this->api->Release();
-	this->api = NULL;
-	return 1;
 };
 
-string MdApi::getTradingDay()
-{
-	string day = this->api->GetTradingDay();
-	return day;
-};
 
-void MdApi::registerFront(string pszFrontAddress)
+int MdApi::qryCommodity(unsigned int session)
 {
-	this->api->RegisterFront((char*)pszFrontAddress.c_str());
-};
-
-int MdApi::subscribeMarketData(string instrumentID)
-{
-	char* buffer = (char*)instrumentID.c_str();
-	char* myreq[1] = { buffer };
-	int i = this->api->SubscribeMarketData(myreq, 1);
+	int i = this->api->QryCommodity(session);
 	return i;
 };
 
-int MdApi::unSubscribeMarketData(string instrumentID)
+int MdApi::qryContract(unsigned int session, const dict &req)
 {
-	char* buffer = (char*)instrumentID.c_str();
-	char* myreq[1] = { buffer };;
-	int i = this->api->UnSubscribeMarketData(myreq, 1);
-	return i;
-};
-
-int MdApi::subscribeForQuoteRsp(string instrumentID)
-{
-	char* buffer = (char*)instrumentID.c_str();
-	char* myreq[1] = { buffer };
-	int i = this->api->SubscribeForQuoteRsp(myreq, 1);
-	return i;
-};
-
-int MdApi::unSubscribeForQuoteRsp(string instrumentID)
-{
-	char* buffer = (char*)instrumentID.c_str();
-	char* myreq[1] = { buffer };;
-	int i = this->api->UnSubscribeForQuoteRsp(myreq, 1);
-	return i;
-};
-
-int MdApi::reqUserLogin(const dict &req, int reqid)
-{
-	CThostFtdcReqUserLoginField myreq = CThostFtdcReqUserLoginField();
+	TapAPICommodity myreq = TapAPICommodity();
 	memset(&myreq, 0, sizeof(myreq));
-	getString(req, "TradingDay", myreq.TradingDay);
-	getString(req, "BrokerID", myreq.BrokerID);
-	getString(req, "UserID", myreq.UserID);
-	getString(req, "Password", myreq.Password);
-	getString(req, "UserProductInfo", myreq.UserProductInfo);
-	getString(req, "InterfaceProductInfo", myreq.InterfaceProductInfo);
-	getString(req, "ProtocolInfo", myreq.ProtocolInfo);
-	getString(req, "MacAddress", myreq.MacAddress);
-	getString(req, "OneTimePassword", myreq.OneTimePassword);
-	getString(req, "ClientIPAddress", myreq.ClientIPAddress);
-	getString(req, "LoginRemark", myreq.LoginRemark);
-	int i = this->api->ReqUserLogin(&myreq, reqid);
+	getString(req, "ExchangeNo", myreq.ExchangeNo);
+	getChar(req, "CommodityType", &myreq.CommodityType);
+	getString(req, "CommodityNo", myreq.CommodityNo);
+	int i = this->api->QryContract(session, &myreq);
 	return i;
 };
 
-int MdApi::reqUserLogout(const dict &req, int reqid)
-{
-	CThostFtdcUserLogoutField myreq = CThostFtdcUserLogoutField();
-	memset(&myreq, 0, sizeof(myreq));
-	getString(req, "BrokerID", myreq.BrokerID);
-	getString(req, "UserID", myreq.UserID);
-	int i = this->api->ReqUserLogout(&myreq, reqid);
-	return i;
-};
 
 
 ///-------------------------------------------------------------------------------------
@@ -666,11 +452,11 @@ class PyMdApi : public MdApi
 public:
 	using MdApi::MdApi;
 
-	void onFrontConnected() override
+	void onRspLogin(int error, const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onFrontConnected);
+			PYBIND11_OVERLOAD(void, MdApi, onRspLogin, error, data);
 		}
 		catch (const error_already_set &e)
 		{
@@ -678,11 +464,11 @@ public:
 		}
 	};
 
-	void onFrontDisconnected(int reqid) override
+	void onAPIReady() override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onFrontDisconnected, reqid);
+			PYBIND11_OVERLOAD(void, MdApi, onAPIReady);
 		}
 		catch (const error_already_set &e)
 		{
@@ -690,11 +476,11 @@ public:
 		}
 	};
 
-	void onHeartBeatWarning(int reqid) override
+	void onDisconnect(int reasonCode) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onHeartBeatWarning, reqid);
+			PYBIND11_OVERLOAD(void, MdApi, onDisconnect, reasonCode);
 		}
 		catch (const error_already_set &e)
 		{
@@ -702,11 +488,11 @@ public:
 		}
 	};
 
-	void onRspUserLogin(const dict &data, const dict &error, int reqid, bool last) override
+	void onRspQryCommodity(int session, int error, bool last, const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspUserLogin, data, error, reqid, last);
+			PYBIND11_OVERLOAD(void, MdApi, onRspQryCommodity, session, error, last, data);
 		}
 		catch (const error_already_set &e)
 		{
@@ -714,11 +500,11 @@ public:
 		}
 	};
 
-	void onRspUserLogout(const dict &data, const dict &error, int reqid, bool last) override
+	void onRspQryContract(int session, int error, bool last, const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspUserLogout, data, error, reqid, last);
+			PYBIND11_OVERLOAD(void, MdApi, onRspQryContract, session, error, last, data);
 		}
 		catch (const error_already_set &e)
 		{
@@ -726,11 +512,11 @@ public:
 		}
 	};
 
-	void onRspError(const dict &error, int reqid, bool last) override
+	void onRspSubscribeQuote(int session, int error, bool last, const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspError, error, reqid, last);
+			PYBIND11_OVERLOAD(void, MdApi, onRspSubscribeQuote, session, error, last, data);
 		}
 		catch (const error_already_set &e)
 		{
@@ -738,11 +524,11 @@ public:
 		}
 	};
 
-	void onRspSubMarketData(const dict &data, const dict &error, int reqid, bool last) override
+	void onRspUnSubscribeQuote(int session, int error, bool last, const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspSubMarketData, data, error, reqid, last);
+			PYBIND11_OVERLOAD(void, MdApi, onRspUnSubscribeQuote, session, error, last, data);
 		}
 		catch (const error_already_set &e)
 		{
@@ -750,59 +536,11 @@ public:
 		}
 	};
 
-	void onRspUnSubMarketData(const dict &data, const dict &error, int reqid, bool last) override
+	void onRtnQuote(const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspUnSubMarketData, data, error, reqid, last);
-		}
-		catch (const error_already_set &e)
-		{
-			cout << e.what() << endl;
-		}
-	};
-
-	void onRspSubForQuoteRsp(const dict &data, const dict &error, int reqid, bool last) override
-	{
-		try
-		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspSubForQuoteRsp, data, error, reqid, last);
-		}
-		catch (const error_already_set &e)
-		{
-			cout << e.what() << endl;
-		}
-	};
-
-	void onRspUnSubForQuoteRsp(const dict &data, const dict &error, int reqid, bool last) override
-	{
-		try
-		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspUnSubForQuoteRsp, data, error, reqid, last);
-		}
-		catch (const error_already_set &e)
-		{
-			cout << e.what() << endl;
-		}
-	};
-
-	void onRtnDepthMarketData(const dict &data) override
-	{
-		try
-		{
-			PYBIND11_OVERLOAD(void, MdApi, onRtnDepthMarketData, data);
-		}
-		catch (const error_already_set &e)
-		{
-			cout << e.what() << endl;
-		}
-	};
-
-	void onRtnForQuoteRsp(const dict &data) override
-	{
-		try
-		{
-			PYBIND11_OVERLOAD(void, MdApi, onRtnForQuoteRsp, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRtnQuote, data);
 		}
 		catch (const error_already_set &e)
 		{
@@ -812,37 +550,32 @@ public:
 };
 
 
-PYBIND11_MODULE(vnctpmd, m)
+PYBIND11_MODULE(vntapmd, m)
 {
 	class_<MdApi, PyMdApi> mdapi(m, "MdApi", module_local());
 	mdapi
 		.def(init<>())
-		.def("createFtdcMdApi", &MdApi::createFtdcMdApi)
-		.def("release", &MdApi::release)
+		.def("setAPINotify", &MdApi::setAPINotify)
 		.def("init", &MdApi::init)
-		.def("join", &MdApi::join)
 		.def("exit", &MdApi::exit)
-		.def("getTradingDay", &MdApi::getTradingDay)
-		.def("registerFront", &MdApi::registerFront)
-		.def("subscribeMarketData", &MdApi::subscribeMarketData)
-		.def("unSubscribeMarketData", &MdApi::unSubscribeMarketData)
-		.def("subscribeForQuoteRsp", &MdApi::subscribeForQuoteRsp)
-		.def("unSubscribeForQuoteRsp", &MdApi::unSubscribeForQuoteRsp)
-		.def("reqUserLogin", &MdApi::reqUserLogin)
-		.def("reqUserLogout", &MdApi::reqUserLogout)
+		.def("setHostAddress", &MdApi::setHostAddress)
+		.def("login", &MdApi::login)
+		.def("disconnect", &MdApi::disconnect)
+		.def("subscribeQuote", &MdApi::subscribeQuote)
+		.def("subscribeQuote", &MdApi::subscribeQuote)
 
-		.def("onFrontConnected", &MdApi::onFrontConnected)
-		.def("onFrontDisconnected", &MdApi::onFrontDisconnected)
-		.def("onHeartBeatWarning", &MdApi::onHeartBeatWarning)
-		.def("onRspUserLogin", &MdApi::onRspUserLogin)
-		.def("onRspUserLogout", &MdApi::onRspUserLogout)
-		.def("onRspError", &MdApi::onRspError)
-		.def("onRspSubMarketData", &MdApi::onRspSubMarketData)
-		.def("onRspUnSubMarketData", &MdApi::onRspUnSubMarketData)
-		.def("onRspSubForQuoteRsp", &MdApi::onRspSubForQuoteRsp)
-		.def("onRspUnSubForQuoteRsp", &MdApi::onRspUnSubForQuoteRsp)
-		.def("onRtnDepthMarketData", &MdApi::onRtnDepthMarketData)
-		.def("onRtnForQuoteRsp", &MdApi::onRtnForQuoteRsp)
+		.def("qryCommodity", &MdApi::qryCommodity)
+		.def("qryContract", &MdApi::qryContract)
+
+		.def("onRspLogin", &MdApi::onRspLogin)
+		.def("onAPIReady", &MdApi::onAPIReady)
+		.def("onDisconnect", &MdApi::onDisconnect)
+		.def("onRspQryCommodity", &MdApi::onRspQryCommodity)
+		.def("onRspQryContract", &MdApi::onRspQryContract)
+		.def("onRspSubscribeQuote", &MdApi::onRspSubscribeQuote)
+		.def("onRspUnSubscribeQuote", &MdApi::onRspUnSubscribeQuote)
+		.def("onRtnQuote", &MdApi::onRtnQuote)
 		;
+
 }
 
