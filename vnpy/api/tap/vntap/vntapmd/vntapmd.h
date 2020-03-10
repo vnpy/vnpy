@@ -59,7 +59,7 @@ public:
 	* @attention	该回调返回成功，说明用户登录成功。但是不代表API准备完毕。需要等到OnAPIReady才能进行查询与订阅请求。
 	* @ingroup G_Q_Login
 	*/
-	virtual void OnRspLogin(int errorCode, const TapAPIQuotLoginRspInfo *info);
+	virtual void OnRspLogin(int errorCode, TapAPIQuotLoginRspInfo *info);
 	/**
 	* @brief	通知用户API准备就绪。
 	* @details	只有用户回调收到此就绪通知时才能进行后续的各种行情数据查询操作。\n
@@ -85,7 +85,7 @@ public:
 	* @attention  不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_Q_Commodity
 	*/
-	virtual void OnRspQryCommodity(unsigned int sessionID, int errorCode, char isLast, const TapAPIQuoteCommodityInfo *info);
+	virtual void OnRspQryCommodity(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteCommodityInfo *info);
 	/**
 	* @brief 返回系统中合约信息
 	* @param[in] sessionID 请求的会话ID；
@@ -95,7 +95,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_Q_Contract
 	*/
-	virtual void OnRspQryContract(unsigned int sessionID, int errorCode, char isLast, const TapAPIQuoteContractInfo *info);
+	virtual void OnRspQryContract(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteContractInfo *info);
 	/**
 	* @brief	返回订阅行情的全文。
 	* @details	此回调接口用来返回订阅行情的全文。全文为当前时间的行情信息。
@@ -106,7 +106,7 @@ public:
 	* @attention  不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_Q_Quote
 	*/
-	virtual void OnRspSubscribeQuote(unsigned int sessionID, int errorCode, char isLast, const TapAPIQuoteWhole *info);
+	virtual void OnRspSubscribeQuote(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteWhole *info);
 	/**
 	* @brief 退订指定合约的行情的结果回调
 	* @param[in] sessionID 请求的会话ID；
@@ -116,7 +116,7 @@ public:
 	* @attention  不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_Q_Quote
 	*/
-	virtual void OnRspUnSubscribeQuote(unsigned int sessionID, int errorCode, char isLast, const TapAPIContract *info);
+	virtual void OnRspUnSubscribeQuote(unsigned int sessionID, int errorCode, char isLast, TapAPIContract *info);
 	/**
 	* @brief	返回订阅行情的变化内容。
 	* @details	此回调接口用来通知用户行情信息产生了变化，并向用户提交新的行情全文。
@@ -124,7 +124,7 @@ public:
 	* @attention 不要修改和删除Quote指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_Q_Quote
 	*/
-	virtual void OnRtnQuote(const TapAPIQuoteWhole *info);	
+	virtual void OnRtnQuote(TapAPIQuoteWhole *info);
 
 
 
