@@ -667,14 +667,29 @@ void MdApi::processDepthMarketData(Task *task)
 		data["qty"] = task_data->qty;
 		data["turnover"] = task_data->turnover;
 		data["avg_price"] = task_data->avg_price;
-		data["bid"] = task_data->bid;
-		data["ask"] = task_data->ask;
-		data["bid_qty"] = task_data->bid_qty;
-		data["ask_qty"] = task_data->ask_qty;
 		data["trades_count"] = task_data->trades_count;
 		data["ticker_status"] = task_data->ticker_status;
 		data["data_type"] = (int)task_data->data_type;
 		data["r4"] = task_data->r4;
+
+		pybind11::list ask;
+		pybind11::list bid;
+		pybind11::list ask_qty;
+		pybind11::list bid_qty;
+
+		for (int i = 0; i < 10; i++)
+		{
+			ask.append(task_data->ask[i]);
+			bid.append(task_data->bid[i]);
+			ask_qty.append(task_data->ask_qty[i]);
+			bid_qty.append(task_data->bid_qty[i]);
+		}
+
+		data["ask"] = ask;
+		data["bid"] = bid;
+		data["bid_qty"] = bid_qty;
+		data["ask_qty"] = ask_qty;
+
 		delete task_data;
 	}
 	this->onDepthMarketData(data);
