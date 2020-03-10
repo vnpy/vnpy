@@ -285,10 +285,9 @@ class OptionMarketMonitor(MonitorTable):
 
         option = self.option_engine.get_instrument(vt_symbol)
         tick = option.tick
-
-        option_cells["bid_price"].setText(str(tick.bid_price_1))
+        option_cells["bid_price"].setText(f'{tick.bid_price_1:0.4f}')
         option_cells["bid_volume"].setText(str(tick.bid_volume_1))
-        option_cells["ask_price"].setText(str(tick.ask_price_1))
+        option_cells["ask_price"].setText(f'{tick.ask_price_1:0.4f}')
         option_cells["ask_volume"].setText(str(tick.ask_volume_1))
         option_cells["volume"].setText(str(tick.volume))
         option_cells["open_interest"].setText(str(tick.open_interest))
