@@ -3,9 +3,9 @@
 #include "stdafx.h"
 #endif
 
-#include "vnctp.h"
+#include "vntap.h"
 #include "pybind11/pybind11.h"
-#include "ctp/ThostFtdcTraderApi.h"
+#include "tap/iTapTradeAPI.h"
 
 
 using namespace pybind11;
