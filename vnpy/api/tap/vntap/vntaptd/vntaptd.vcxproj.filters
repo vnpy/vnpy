@@ -48,7 +48,7 @@
     <ClInclude Include="..\vntap.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\vntap0\vnctptd\vnctptd.h">
+    <ClInclude Include="vntaptd.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
