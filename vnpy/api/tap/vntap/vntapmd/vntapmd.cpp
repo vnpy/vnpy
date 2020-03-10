@@ -414,7 +414,8 @@ void MdApi::createTapQuoteAPI(const dict &req, int &iResult)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AuthCode", myreq.AuthCode);
 	getString(req, "KeyOperationLogPath", myreq.KeyOperationLogPath);
-	this->api->CreateTapQuoteAPI(&myreq, iResult);
+	this->api=CreateTapQuoteAPI(&myreq, iResult);
+	this->api->SetAPINotify(this);
 };
 
 void MdApi::release()
@@ -434,6 +435,54 @@ void MdApi::exit()
 	this->active = false;
 	this->task_queue.terminate();
 	this->task_thread.join();
+
+	this->api->SetAPINotify(NULL);
+	this->api->FreeTapQuoteAPI(NULL);
+	this->api = NULL;
+	return 1;
+};
+
+int MdApi::setHostAddress(char *IP, unsigned short port)
+{
+	int i = this->api->SetHostAddress(IP, port);
+	return i;
+};
+
+int MdApi::login(const dict &req)
+{
+	TapAPIQuoteLoginAuth myreq = TapAPIQuoteLoginAuth();
+	memset(&myreq, 0, sizeof(myreq));
+	getString(req, "UserNo", myreq.UserNo);
+	getChar(req, "ISModifyPassword", &myreq.ISModifyPassword);
+	getString(req, "Password", myreq.Password);
+	getString(req, "NewPassword", myreq.NewPassword);
+	getString(req, "QuoteTempPassword", myreq.QuoteTempPassword);
+	getChar(req, "ISDDA", &myreq.ISDDA);
+	getString(req, "DDASerialNo", myreq.DDASerialNo);
+	int i = this->api->Login(&myreq);
+	return i;
+};
+
+int MdApi::disconnect()
+{
+	int i = this->api->Disconnect();
+	return i;
+};
+
+int MdApi::subscribeQuote(unsigned int *session, const dict &req)
+{
+	TapAPIContract myreq = TapAPIContract();
+	memset(&myreq, 0, sizeof(myreq));
+	// getDict
+	getString(req, "ContractNo1", myreq.ContractNo1);
+	getString(req, "StrikePrice1", myreq.StrikePrice1);
+	getChar(req, "CallOrPutFlag1", &myreq.CallOrPutFlag1);
+	getString(req, "ContractNo2", myreq.ContractNo2);
+	getString(req, "StrikePrice2", myreq.StrikePrice2);
+	getChar(req, "CallOrPutFlag2", &myreq.CallOrPutFlag2);
+
+	int i = this->api->SubscribeQuote(session, &myreq);
+	return i;
 };
 
 
@@ -499,7 +548,7 @@ public:
 		}
 	};
 
-	void onRspQryCommodity(int session, int error, bool last, const dict &data) override
+	void onRspQryCommodity(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -511,7 +560,7 @@ public:
 		}
 	};
 
-	void onRspQryContract(int session, int error, bool last, const dict &data) override
+	void onRspQryContract(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -523,7 +572,7 @@ public:
 		}
 	};
 
-	void onRspSubscribeQuote(int session, int error, bool last, const dict &data) override
+	void onRspSubscribeQuote(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -535,7 +584,7 @@ public:
 		}
 	};
 
-	void onRspUnSubscribeQuote(int session, int error, bool last, const dict &data) override
+	void onRspUnSubscribeQuote(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -568,13 +617,11 @@ PYBIND11_MODULE(vntapmd, m)
 		.def(init<>())
 		.def("createTapQuoteAPI", &MdApi::createTapQuoteAPI)
 		.def("release", &MdApi::release)
-		.def("setAPINotify", &MdApi::setAPINotify)
 		.def("init", &MdApi::init)
 		.def("exit", &MdApi::exit)
 		.def("setHostAddress", &MdApi::setHostAddress)
 		.def("login", &MdApi::login)
 		.def("disconnect", &MdApi::disconnect)
-		.def("subscribeQuote", &MdApi::subscribeQuote)
 		.def("subscribeQuote", &MdApi::subscribeQuote)
 
 		.def("qryCommodity", &MdApi::qryCommodity)
