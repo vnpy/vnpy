@@ -34,7 +34,7 @@ void onDisconnect(int reasonCode) override
 	}
 };
 
-void onRspQryCommodity(int session, int error, bool last, const dict &data) override
+void onRspQryCommodity(unsigned int session, int error, char last, const dict &data) override
 {
 	try
 	{
@@ -46,7 +46,7 @@ void onRspQryCommodity(int session, int error, bool last, const dict &data) over
 	}
 };
 
-void onRspQryContract(int session, int error, bool last, const dict &data) override
+void onRspQryContract(unsigned int session, int error, char last, const dict &data) override
 {
 	try
 	{
@@ -58,7 +58,7 @@ void onRspQryContract(int session, int error, bool last, const dict &data) overr
 	}
 };
 
-void onRspSubscribeQuote(int session, int error, bool last, const dict &data) override
+void onRspSubscribeQuote(unsigned int session, int error, char last, const dict &data) override
 {
 	try
 	{
@@ -70,7 +70,7 @@ void onRspSubscribeQuote(int session, int error, bool last, const dict &data) ov
 	}
 };
 
-void onRspUnSubscribeQuote(int session, int error, bool last, const dict &data) override
+void onRspUnSubscribeQuote(unsigned int session, int error, char last, const dict &data) override
 {
 	try
 	{
