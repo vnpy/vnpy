@@ -179,27 +179,21 @@ public:
 	//req:主动函数的请求字典
 	//-------------------------------------------------------------------------------------
 
-	void createFtdcMdApi(string pszFlowPath = "");
-
-	void release();
+	int setAPINotify(string pszFlowPath = ""); //1
 
 	void init();
 
-	int join();
+	void exit();
 
-	int exit();
+	int setHostAddress(const TAPICHAR *IP, unsigned short port); //2
 
-	string getTradingDay();
+	int login(const dict &data);
 
-	void registerFront(string pszFrontAddress);
+	int disconnect();
 
-	int subscribeMarketData(string instrumentID);
+	int subscribeQuote(TAPIUINT32 *sessionID, const dict &data); //3
 
-	int unSubscribeMarketData(string instrumentID);
-
-	int subscribeForQuoteRsp(string instrumentID);
-
-	int unSubscribeForQuoteRsp(string instrumentID);
+	int subscribeQuote(TAPIUINT32 *sessionID, const dict &data); //4
 
 	int qryCommodity(unsigned int session);
 
