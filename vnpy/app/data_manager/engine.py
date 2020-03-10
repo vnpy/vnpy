@@ -135,12 +135,12 @@ class ManagerEngine(BaseEngine):
 
         for d in data:
             oldest_bar = database_manager.get_oldest_bar_data(
-                d["symbol"], Exchange(d["exchange"]), d["interval"]
+                d["symbol"], Exchange(d["exchange"]), Interval(d["interval"])
             )
             d["start"] = oldest_bar.datetime
 
             newest_bar = database_manager.get_newest_bar_data(
-                d["symbol"], Exchange(d["exchange"]), d["interval"]
+                d["symbol"], Exchange(d["exchange"]), Interval(d["interval"])
             )
             d["end"] = newest_bar.datetime
 
