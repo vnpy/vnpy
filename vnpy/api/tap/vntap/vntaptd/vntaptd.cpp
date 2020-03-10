@@ -2637,23 +2637,11 @@ void TdApi::createFtdcTraderApi(string pszFlowPath)
 	this->api->RegisterSpi(this);
 };
 
-void TdApi::release()
-{
-	this->api->Release();
-};
 
-void TdApi::init()
+int TdApi::init()
 {
 	this->active = true;
 	this->task_thread = thread(&TdApi::processTask, this);
-
-	this->api->Init();
-};
-
-int TdApi::join()
-{
-	int i = this->api->Join();
-	return i;
 };
 
 int TdApi::exit()
