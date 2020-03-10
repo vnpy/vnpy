@@ -408,6 +408,15 @@ void MdApi::processRtnQuote(Task *task)
 ///主动函数
 ///-------------------------------------------------------------------------------------
 
+void createTapQuoteAPI(const dict &data, int &iResult)
+{
+	this->api->CreateTapQuoteAPI();
+};
+
+void release()
+{
+	this->api->FreeTapQuoteAPI();
+};
 
 void MdApi::init()
 {
@@ -416,7 +425,7 @@ void MdApi::init()
 };
 
 
-int MdApi::exit()
+void MdApi::exit()
 {
 	this->active = false;
 	this->task_queue.terminate();
@@ -424,13 +433,13 @@ int MdApi::exit()
 };
 
 
-int MdApi::qryCommodity(unsigned int session)
+int MdApi::qryCommodity(unsigned int *session)
 {
 	int i = this->api->QryCommodity(session);
 	return i;
 };
 
-int MdApi::qryContract(unsigned int session, const dict &req)
+int MdApi::qryContract(unsigned int *session, const dict &req)
 {
 	TapAPICommodity myreq = TapAPICommodity();
 	memset(&myreq, 0, sizeof(myreq));
@@ -440,8 +449,6 @@ int MdApi::qryContract(unsigned int session, const dict &req)
 	int i = this->api->QryContract(session, &myreq);
 	return i;
 };
-
-
 
 ///-------------------------------------------------------------------------------------
 ///Boost.Python封装
