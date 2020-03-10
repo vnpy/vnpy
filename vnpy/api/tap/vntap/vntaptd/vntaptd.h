@@ -807,100 +807,103 @@ public:
     //-------------------------------------------------------------------------------------
     //req:主动函数的请求字典
     //-------------------------------------------------------------------------------------
+	void createTapQuoteAPI(const dict &data, int &iResult);
+
 	int setAPINotify(ITapTradeAPINotify *pSpi); //1
 
 	int init();
 
 	int exit();
 
-	int setHostAddress(const TAPICHAR *IP, TAPIUINT16 port, bool bSSL = false); //2
+	void release();
 
-	int login(const TapAPITradeLoginAuth *loginAuth); //3
+	int setHostAddress(TAPICHAR *IP, TAPIUINT16 port, bool bSSL = false); //2
 
-	int requestVertificateCode(TAPIUINT32 *sessionID, TAPISTR_40 ContactInfo); //4
+	int login(TapAPITradeLoginAuth *loginAuth); //3
+
+	int requestVertificateCode(unsigned int *sessionID, string ContactInfo); //4
 
 	int setVertificateCode(TAPISTR_10 VertificateCode); //5
 
 	int disconnect();
 
-	int changePassword(TAPIUINT32 *sessionID, const ITapTrade::TapAPIChangePasswordReq *req);
+	int changePassword(unsigned int *sessionID, TapAPIChangePasswordReq *req);
 
-	int authPassword(TAPIUINT32 *sessionID, const ITapTrade::TapAPIAuthPasswordReq *req); //6
+	int authPassword(unsigned int *sessionID, TapAPIAuthPasswordReq *req); //6
 
 	int haveCertainRight(TAPIRightIDType rightID);
 
-	int setReservedInfo(TAPIUINT32 *sessionID, const ITapTrade::TAPISTR_50 info);
+	int setReservedInfo(unsigned int *sessionID, string info);
 
-	int insertOrder(TAPIUINT32 *sessionID, TAPISTR_50 *ClientOrderNo, const TapAPINewOrder *order); //7
+	int insertOrder(unsigned int *sessionID, string *ClientOrderNo, TapAPINewOrder *order); //7
 
-	int cancelOrder(TAPIUINT32 *sessionID, const TapAPIOrderCancelReq *order); //8
+	int cancelOrder(unsigned int *sessionID, TapAPIOrderCancelReq *order); //8
 
-	int amendOrder(TAPIUINT32 *sessionID, const TapAPIAmendOrder *order); //9
+	int amendOrder(unsigned int *sessionID, TapAPIAmendOrder *order); //9
 
-	int activateOrder(TAPIUINT32 * sessionID, const TapAPIOrderActivateReq * order);
+	int activateOrder(unsigned int * sessionID, TapAPIOrderActivateReq * order);
 
-	int insertHKMarketOrder(TAPIUINT32 *sessionID, TAPISTR_50 *ClientBuyOrderNo, TAPISTR_50 *ClientSellOrderNo, const TapAPIOrderMarketInsertReq *order);
+	int insertHKMarketOrder(unsigned int *sessionID, string *ClientBuyOrderNo, string *ClientSellOrderNo, TapAPIOrderMarketInsertReq *order);
 
-	int cancelHKMarketOrder(TAPIUINT32 *sessionID, const TapAPIOrderMarketDeleteReq *order);
+	int cancelHKMarketOrder(unsigned int *sessionID, TapAPIOrderMarketDeleteReq *order);
 
-	int orderLocalRemove(TAPIUINT32 *sessionID, const TapAPIOrderLocalRemoveReq *order);
+	int orderLocalRemove(unsigned int *sessionID, TapAPIOrderLocalRemoveReq *order);
 
-	int orderLocalInput(TAPIUINT32 *sessionID, const TapAPIOrderLocalInputReq *order);
+	int orderLocalInput(unsigned int *sessionID, TapAPIOrderLocalInputReq *order);
 
-	int orderLocalModify(TAPIUINT32 *sessionID, const TapAPIOrderLocalModifyReq *order);
+	int orderLocalModify(unsigned int *sessionID, TapAPIOrderLocalModifyReq *order);
 
-	int orderLocalTransfer(TAPIUINT32 *sessionID, const TapAPIOrderLocalTransferReq *order);
+	int orderLocalTransfer(unsigned int *sessionID, TapAPIOrderLocalTransferReq *order);
 
-	int fillLocalInput(TAPIUINT32 *sessionID, const TapAPIFillLocalInputReq *fill);
+	int fillLocalInput(unsigned int *sessionID, TapAPIFillLocalInputReq *fill);
 
-	int fillLocalRemove(TAPIUINT32 *sessionID, const TapAPIFillLocalRemoveReq *fill);
-
+	int fillLocalRemove(unsigned int *sessionID, TapAPIFillLocalRemoveReq *fill);
 
 
 
 	int qryTradingDate(unsigned int session);
 
-	int qryAccount(unsigned int session, const dict &data);
+	int qryAccount(unsigned int *session, const dict &data);
 
-	int qryFund(unsigned int session, const dict &data);
+	int qryFund(unsigned int *session, const dict &data);
 
-	int qryExchange(unsigned int session);
+	int qryExchange(unsigned int *session);
 
-	int qryCommodity(unsigned int session);
+	int qryCommodity(unsigned int *session);
 
-	int qryContract(unsigned int session, const dict &data);
+	int qryContract(unsigned int *session, const dict &data);
 
-	int qryOrder(unsigned int session, const dict &data);
+	int qryOrder(unsigned int *session, const dict &data);
 
-	int qryOrderProcess(unsigned int session, const dict &data);
+	int qryOrderProcess(unsigned int *session, const dict &data);
 
-	int qryFill(unsigned int session, const dict &data);
+	int qryFill(unsigned int *session, const dict &data);
 
-	int qryPosition(unsigned int session, const dict &data);
+	int qryPosition(unsigned int *session, const dict &data);
 
-	int qryPositionSummary(unsigned int session, const dict &data);
+	int qryPositionSummary(unsigned int *session, const dict &data);
 
-	int qryCurrency(unsigned int session);
+	int qryCurrency(unsigned int *session);
 
-	int qryAccountCashAdjust(unsigned int session, const dict &data);
+	int qryAccountCashAdjust(unsigned int *session, const dict &data);
 
-	int qryTradeMessage(unsigned int session, const dict &data);
+	int qryTradeMessage(unsigned int *session, const dict &data);
 
-	int qryBill(unsigned int session, const dict &data);
+	int qryBill(unsigned int *session, const dict &data);
 
-	int qryHisOrder(unsigned int session, const dict &data);
+	int qryHisOrder(unsigned int *session, const dict &data);
 
-	int qryHisOrderProcess(unsigned int session, const dict &data);
+	int qryHisOrderProcess(unsigned int *session, const dict &data);
 
-	int qryHisMatch(unsigned int session, const dict &data);
+	int qryHisMatch(unsigned int *session, const dict &data);
 
-	int qryHisPosition(unsigned int session, const dict &data);
+	int qryHisPosition(unsigned int *session, const dict &data);
 
-	int qryHisDelivery(unsigned int session, const dict &data);
+	int qryHisDelivery(unsigned int *session, const dict &data);
 
-	int qryAccountFeeRent(unsigned int session, const dict &data);
+	int qryAccountFeeRent(unsigned int *session, const dict &data);
 
-	int qryAccountMarginRent(unsigned int session, const dict &data);
+	int qryAccountMarginRent(unsigned int *session, const dict &data);
 
 
 };
