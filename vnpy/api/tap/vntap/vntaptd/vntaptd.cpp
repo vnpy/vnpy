@@ -2631,6 +2631,23 @@ void TdApi::processRspFillLocalRemove(Task *task)
 ///主动函数
 ///-------------------------------------------------------------------------------------
 
+void TdApi::CreateITapTradeAPI(const dict &req, int &iResult)
+{
+	TapAPIApplicationInfo myreq = TapAPIApplicationInfo();
+	memset(&myreq, 0, sizeof(myreq));
+	getString(req, "AuthCode", myreq.AuthCode);
+	getString(req, "KeyOperationLogPath", myreq.KeyOperationLogPath);
+	this->api->CreateITapTradeAPI(&myreq, iResult);
+};
+
+void TdApi::release()
+{
+	this->api->FreeTapQuoteAPI(NULL);
+};
+
+
+
+
 void TdApi::createFtdcTraderApi(string pszFlowPath)
 {
 	this->api = CThostFtdcTraderApi::CreateFtdcTraderApi(pszFlowPath.c_str());
@@ -2957,7 +2974,7 @@ public:
 		}
 	};
 
-	void onRtnContactInfo(int error, bool last, string ContactInfo) override
+	void onRtnContactInfo(int error, char last, string ContactInfo) override
 	{
 		try
 		{
@@ -2969,7 +2986,7 @@ public:
 		}
 	};
 
-	void onRspRequestVertificateCode(int session, int error, const dict &data) override
+	void onRspRequestVertificateCode(unsigned int session, int error, const dict &data) override
 	{
 		try
 		{
@@ -3017,7 +3034,7 @@ public:
 		}
 	};
 
-	void onRspChangePassword(int session, int error) override
+	void onRspChangePassword(unsigned int session, int error) override
 	{
 		try
 		{
@@ -3029,7 +3046,7 @@ public:
 		}
 	};
 
-	void onRspAuthPassword(int session, int error) override
+	void onRspAuthPassword(unsigned int session, int error) override
 	{
 		try
 		{
@@ -3041,7 +3058,7 @@ public:
 		}
 	};
 
-	void onRspQryTradingDate(int session, int error, const dict &data) override
+	void onRspQryTradingDate(unsigned int session, int error, const dict &data) override
 	{
 		try
 		{
@@ -3053,7 +3070,7 @@ public:
 		}
 	};
 
-	void onRspSetReservedInfo(int session, int error, string info) override
+	void onRspSetReservedInfo(unsigned int session, int error, string info) override
 	{
 		try
 		{
@@ -3065,11 +3082,11 @@ public:
 		}
 	};
 
-	void onRspQryAccount(int session, int session, bool last, const dict &data) override
+	void onRspQryAccount(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, TdApi, onRspQryAccount, session, session, last, data);
+			PYBIND11_OVERLOAD(void, TdApi, onRspQryAccount, session, error, last, data);
 		}
 		catch (const error_already_set &e)
 		{
@@ -3077,7 +3094,7 @@ public:
 		}
 	};
 
-	void onRspQryFund(int session, int error, bool last, const dict &data) override
+	void onRspQryFund(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3101,7 +3118,7 @@ public:
 		}
 	};
 
-	void onRspQryExchange(int session, int error, bool last, const dict &data) override
+	void onRspQryExchange(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3113,7 +3130,7 @@ public:
 		}
 	};
 
-	void onRspQryCommodity(int session, int error, bool last, const dict &data) override
+	void onRspQryCommodity(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3125,7 +3142,7 @@ public:
 		}
 	};
 
-	void onRspQryContract(int session, int error, bool last, const dict &data) override
+	void onRspQryContract(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3149,7 +3166,7 @@ public:
 		}
 	};
 
-	void onRspOrderAction(int session, int error, const dict &data) override
+	void onRspOrderAction(unsigned int session, int error, const dict &data) override
 	{
 		try
 		{
@@ -3173,7 +3190,7 @@ public:
 		}
 	};
 
-	void onRspQryOrder(int session, int error, bool last, const dict &data) override
+	void onRspQryOrder(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3185,7 +3202,7 @@ public:
 		}
 	};
 
-	void onRspQryOrderProcess(int session, int error, bool last, const dict &data) override
+	void onRspQryOrderProcess(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3197,7 +3214,7 @@ public:
 		}
 	};
 
-	void onRspQryFill(int session, int error, bool last, const dict &data) override
+	void onRspQryFill(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3221,7 +3238,7 @@ public:
 		}
 	};
 
-	void onRspQryPosition(int session, int error, bool last, const dict &data) override
+	void onRspQryPosition(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3245,7 +3262,7 @@ public:
 		}
 	};
 
-	void onRspQryPositionSummary(int session, int error, bool last, const dict &data) override
+	void onRspQryPositionSummary(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3281,7 +3298,7 @@ public:
 		}
 	};
 
-	void onRspQryCurrency(int session, int error, bool last, const dict &data) override
+	void onRspQryCurrency(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3293,7 +3310,7 @@ public:
 		}
 	};
 
-	void onRspQryTradeMessage(int session, int error, bool last, const dict &data) override
+	void onRspQryTradeMessage(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3317,7 +3334,7 @@ public:
 		}
 	};
 
-	void onRspQryHisOrder(int session, int error, bool last, const dict &data) override
+	void onRspQryHisOrder(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3329,7 +3346,7 @@ public:
 		}
 	};
 
-	void onRspQryHisOrderProcess(int session, int error, bool last, const dict &data) override
+	void onRspQryHisOrderProcess(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3341,7 +3358,7 @@ public:
 		}
 	};
 
-	void onRspQryHisMatch(int session, int error, bool last, const dict &data) override
+	void onRspQryHisMatch(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3353,7 +3370,7 @@ public:
 		}
 	};
 
-	void onRspQryHisPosition(int session, int error, bool last, const dict &data) override
+	void onRspQryHisPosition(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3365,7 +3382,7 @@ public:
 		}
 	};
 
-	void onRspQryHisDelivery(int session, int error, bool last, const dict &data) override
+	void onRspQryHisDelivery(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3377,7 +3394,7 @@ public:
 		}
 	};
 
-	void onRspQryAccountCashAdjust(int session, int error, bool last, const dict &data) override
+	void onRspQryAccountCashAdjust(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3389,7 +3406,7 @@ public:
 		}
 	};
 
-	void onRspQryBill(int session, int error, bool last, const dict &data) override
+	void onRspQryBill(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3401,7 +3418,7 @@ public:
 		}
 	};
 
-	void onRspQryAccountFeeRent(int session, int error, bool last, const dict &data) override
+	void onRspQryAccountFeeRent(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3413,7 +3430,7 @@ public:
 		}
 	};
 
-	void onRspQryAccountMarginRent(int session, int error, bool last, const dict &data) override
+	void onRspQryAccountMarginRent(unsigned int session, int error, char last, const dict &data) override
 	{
 		try
 		{
@@ -3425,7 +3442,7 @@ public:
 		}
 	};
 
-	void onRspHKMarketOrderInsert(int session, int error, const dict &data) override
+	void onRspHKMarketOrderInsert(unsigned int session, int error, const dict &data) override
 	{
 		try
 		{
@@ -3437,7 +3454,7 @@ public:
 		}
 	};
 
-	void onRspHKMarketOrderDelete(int session, int error, const dict &data) override
+	void onRspHKMarketOrderDelete(unsigned int session, int error, const dict &data) override
 	{
 		try
 		{
@@ -3461,7 +3478,7 @@ public:
 		}
 	};
 
-	void onRspOrderLocalRemove(int session, int error, const dict &data) override
+	void onRspOrderLocalRemove(unsigned int session, int error, const dict &data) override
 	{
 		try
 		{
@@ -3473,7 +3490,7 @@ public:
 		}
 	};
 
-	void onRspOrderLocalInput(int session, int error, const dict &data) override
+	void onRspOrderLocalInput(unsigned int session, int error, const dict &data) override
 	{
 		try
 		{
@@ -3485,7 +3502,7 @@ public:
 		}
 	};
 
-	void onRspOrderLocalModify(int session, int error, const dict &data) override
+	void onRspOrderLocalModify(unsigned int session, int error, const dict &data) override
 	{
 		try
 		{
@@ -3497,7 +3514,7 @@ public:
 		}
 	};
 
-	void onRspOrderLocalTransfer(int session, int error, const dict &data) override
+	void onRspOrderLocalTransfer(unsigned int session, int error, const dict &data) override
 	{
 		try
 		{
@@ -3509,7 +3526,7 @@ public:
 		}
 	};
 
-	void onRspFillLocalInput(int session, int error, const dict &data) override
+	void onRspFillLocalInput(unsigned int session, int error, const dict &data) override
 	{
 		try
 		{
@@ -3521,7 +3538,7 @@ public:
 		}
 	};
 
-	void onRspFillLocalRemove(int session, int error, const dict &data) override
+	void onRspFillLocalRemove(unsigned int session, int error, const dict &data) override
 	{
 		try
 		{
@@ -3532,8 +3549,6 @@ public:
 			cout << e.what() << endl;
 		}
 	};
-
-
 
 
 };
