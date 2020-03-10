@@ -90,7 +90,7 @@ class ManagerEngine(BaseEngine):
         interval: Interval,
         start: datetime,
         end: datetime
-    ) -> None:
+    ) -> bool:
         """"""
         bars = self.load_bar_data(symbol, exchange, interval, start, end)
 
@@ -106,23 +106,28 @@ class ManagerEngine(BaseEngine):
             "open_interest"
         ]
 
-        with open(file_path, "w") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
-            writer.writeheader()
+        try:
+            with open(file_path, "w") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
+                writer.writeheader()
 
-            for bar in bars:
-                d = {
-                    "symbol": bar.symbol,
-                    "exchange": bar.exchange.value,
-                    "datetime": bar.datetime.strftime("%Y-%m-%d %H:%M:%S"),
-                    "open": bar.open_price,
-                    "high": bar.high_price,
-                    "low": bar.low_price,
-                    "close": bar.close_price,
-                    "volume": bar.volume,
-                    "open_interest": bar.open_interest,
-                }
-                writer.writerow(d)
+                for bar in bars:
+                    d = {
+                        "symbol": bar.symbol,
+                        "exchange": bar.exchange.value,
+                        "datetime": bar.datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                        "open": bar.open_price,
+                        "high": bar.high_price,
+                        "low": bar.low_price,
+                        "close": bar.close_price,
+                        "volume": bar.volume,
+                        "open_interest": bar.open_interest,
+                    }
+                    writer.writerow(d)
+
+            return True
+        except PermissionError:
+            return False
 
     def get_bar_data_available(self) -> List[Dict]:
         """"""

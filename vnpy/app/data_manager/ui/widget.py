@@ -232,7 +232,7 @@ class ManagerWidget(QtWidgets.QWidget):
         if not path:
             return
 
-        self.engine.output_data_to_csv(
+        result = self.engine.output_data_to_csv(
             path,
             symbol,
             exchange,
@@ -240,6 +240,13 @@ class ManagerWidget(QtWidgets.QWidget):
             start,
             end
         )
+
+        if not result:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "导出失败！",
+                "该文件已在其他程序中打开，请关闭相关程序后再尝试导出数据。"
+            )
 
     def show_data(
         self,
