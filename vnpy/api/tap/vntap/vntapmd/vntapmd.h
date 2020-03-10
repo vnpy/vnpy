@@ -3,26 +3,22 @@
 #include "stdafx.h"
 #endif
 
-#include "vnctp.h"
+#include "vntap.h"
 #include "pybind11/pybind11.h"
-#include "ctp/ThostFtdcMdApi.h"
+#include "tap/TapQuoteAPI.h"
 
 
 using namespace pybind11;
 
 //常量
-#define ONFRONTCONNECTED 0
-#define ONFRONTDISCONNECTED 1
-#define ONHEARTBEATWARNING 2
-#define ONRSPUSERLOGIN 3
-#define ONRSPUSERLOGOUT 4
-#define ONRSPERROR 5
-#define ONRSPSUBMARKETDATA 6
-#define ONRSPUNSUBMARKETDATA 7
-#define ONRSPSUBFORQUOTERSP 8
-#define ONRSPUNSUBFORQUOTERSP 9
-#define ONRTNDEPTHMARKETDATA 10
-#define ONRTNFORQUOTERSP 11
+#define ONRSPLOGIN 0
+#define ONAPIREADY 1
+#define ONDISCONNECT 2
+#define ONRSPQRYCOMMODITY 3
+#define ONRSPQRYCONTRACT 4
+#define ONRSPSUBSCRIBEQUOTE 5
+#define ONRSPUNSUBSCRIBEQUOTE 6
+#define ONRTNQUOTE 7
 
 
 ///-------------------------------------------------------------------------------------
@@ -30,10 +26,10 @@ using namespace pybind11;
 ///-------------------------------------------------------------------------------------
 
 //API的继承实现
-class MdApi : public CThostFtdcMdSpi
+class MdApi : public ITapQuoteAPINotify
 {
 private:
-	CThostFtdcMdApi* api;				//API对象
+	ITapQuoteAPI* api;				//API对象
 	thread task_thread;					//工作线程指针（向python中推送数据）
 	TaskQueue task_queue;			    //任务队列
 	bool active = false;				//工作状态
@@ -54,50 +50,83 @@ public:
 	//-------------------------------------------------------------------------------------
 	//API回调函数
 	//-------------------------------------------------------------------------------------
+	/**
+	* @brief	系统登录过程回调。
+	* @details	此函数为Login()登录函数的回调，调用Login()成功后建立了链路连接，然后API将向服务器发送登录认证信息，
+	*			登录期间的数据发送情况和登录的回馈信息传递到此回调函数中。
+	* @param[in] errorCode 返回错误码,0表示成功。
+	* @param[in] info 登陆应答信息，如果errorCode!=0，则info=NULL。
+	* @attention	该回调返回成功，说明用户登录成功。但是不代表API准备完毕。需要等到OnAPIReady才能进行查询与订阅请求。
+	* @ingroup G_Q_Login
+	*/
+	virtual void OnRspLogin(int errorCode, const TapAPIQuotLoginRspInfo *info);
+	/**
+	* @brief	通知用户API准备就绪。
+	* @details	只有用户回调收到此就绪通知时才能进行后续的各种行情数据查询操作。\n
+	*			此回调函数是API能否正常工作的标志。
+	* @attention  就绪后才可以进行后续正常操作
+	* @ingroup G_Q_Login
+	*/
+	virtual void OnAPIReady();
+	/**
+	* @brief	API和服务失去连接的回调
+	* @details	在API使用过程中主动或者被动与服务器服务失去连接后都会触发此回调通知用户与服务器的连接已经断开。
+	* @param[in] reasonCode 断开原因代码。具体原因请参见错误码列表 \n
+	* @ingroup G_Q_Disconnect
+	*/
+	virtual void OnDisconnect(int reasonCode);
+	/**
+	* @brief	返回所有品种信息。
+	* @details	此回调接口用于向用户返回得到的所有品种信息。
+	* @param[in] sessionID 请求的会话ID
+	* @param[in] errorCode 错误码，当errorCode!=0时,info为NULL；
+	* @param[in] isLast 标示是否是最后一批数据；
+	* @param[in] info 返回的信息数组的起始指针。
+	* @attention  不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
+	* @ingroup G_Q_Commodity
+	*/
+	virtual void OnRspQryCommodity(unsigned int sessionID, int errorCode, char isLast, const TapAPIQuoteCommodityInfo *info);
+	/**
+	* @brief 返回系统中合约信息
+	* @param[in] sessionID 请求的会话ID；
+	* @param[in] errorCode 错误码，当errorCode!=0时,info为NULL；
+	* @param[in] isLast 标示是否是最后一批数据；
+	* @param[in] info		指向返回的信息结构体。当errorCode不为0时，info为空。
+	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
+	* @ingroup G_Q_Contract
+	*/
+	virtual void OnRspQryContract(unsigned int sessionID, int errorCode, char isLast, const TapAPIQuoteContractInfo *info);
+	/**
+	* @brief	返回订阅行情的全文。
+	* @details	此回调接口用来返回订阅行情的全文。全文为当前时间的行情信息。
+	* @param[in] sessionID 请求的会话ID；
+	* @param[in] isLast 标示是否是最后一批数据；
+	* @param[in] errorCode 错误码，当errorCode!=0时,info为NULL；
+	* @param[in] info		指向返回的信息结构体。当errorCode不为0时，info为空。
+	* @attention  不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
+	* @ingroup G_Q_Quote
+	*/
+	virtual void OnRspSubscribeQuote(unsigned int sessionID, int errorCode, char isLast, const TapAPIQuoteWhole *info);
+	/**
+	* @brief 退订指定合约的行情的结果回调
+	* @param[in] sessionID 请求的会话ID；
+	* @param[in] errorCode 错误码，当errorCode!=0时,info为NULL；
+	* @param[in] isLast 标示是否是最后一批数据；
+	* @param[in] info		指向返回的信息结构体。当errorCode不为0时，info为空。
+	* @attention  不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
+	* @ingroup G_Q_Quote
+	*/
+	virtual void OnRspUnSubscribeQuote(unsigned int sessionID, int errorCode, char isLast, const TapAPIContract *info);
+	/**
+	* @brief	返回订阅行情的变化内容。
+	* @details	此回调接口用来通知用户行情信息产生了变化，并向用户提交新的行情全文。
+	* @param[in] info 最新的行情全文内容
+	* @attention 不要修改和删除Quote指示的数据；函数调用结束，参数不再有效。
+	* @ingroup G_Q_Quote
+	*/
+	virtual void OnRtnQuote(const TapAPIQuoteWhole *info);	
 
-	///当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
-	virtual void OnFrontConnected() ;
 
-	///当客户端与交易后台通信连接断开时，该方法被调用。当发生这个情况后，API会自动重新连接，客户端可不做处理。
-	///@param nReason 错误原因
-	///        0x1001 网络读失败
-	///        0x1002 网络写失败
-	///        0x2001 接收心跳超时
-	///        0x2002 发送心跳失败
-	///        0x2003 收到错误报文
-	virtual void OnFrontDisconnected(int nReason) ;
-
-	///心跳超时警告。当长时间未收到报文时，该方法被调用。
-	///@param nTimeLapse 距离上次接收报文的时间
-	virtual void OnHeartBeatWarning(int nTimeLapse) ;
-
-
-	///登录请求响应
-	virtual void OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///登出请求响应
-	virtual void OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///错误应答
-	virtual void OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///订阅行情应答
-	virtual void OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///取消订阅行情应答
-	virtual void OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///订阅询价应答
-	virtual void OnRspSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///取消订阅询价应答
-	virtual void OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///深度行情通知
-	virtual void OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData) ;
-
-	///询价通知
-	virtual void OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp) ;
 
 	//-------------------------------------------------------------------------------------
 	//task：任务
@@ -105,29 +134,21 @@ public:
 
 	void processTask();
 
-	void processFrontConnected(Task *task);
+	void processRspLogin(Task *task);
 
-	void processFrontDisconnected(Task *task);
+	void processAPIReady(Task *task);
 
-	void processHeartBeatWarning(Task *task);
+	void processDisconnect(Task *task);
 
-	void processRspUserLogin(Task *task);
+	void processRspQryCommodity(Task *task);
 
-	void processRspUserLogout(Task *task);
+	void processRspQryContract(Task *task);
 
-	void processRspError(Task *task);
+	void processRspSubscribeQuote(Task *task);
 
-	void processRspSubMarketData(Task *task);
+	void processRspUnSubscribeQuote(Task *task);
 
-	void processRspUnSubMarketData(Task *task);
-
-	void processRspSubForQuoteRsp(Task *task);
-
-	void processRspUnSubForQuoteRsp(Task *task);
-
-	void processRtnDepthMarketData(Task *task);
-
-	void processRtnForQuoteRsp(Task *task);
+	void processRtnQuote(Task *task);
 
 
 	//-------------------------------------------------------------------------------------
@@ -138,29 +159,21 @@ public:
 	//i：整数
 	//-------------------------------------------------------------------------------------
 
-	virtual void onFrontConnected() {};
+	virtual void onRspLogin(int error, const dict &data) {};
 
-	virtual void onFrontDisconnected(int reqid) {};
+	virtual void onAPIReady() {};
 
-	virtual void onHeartBeatWarning(int reqid) {};
+	virtual void onDisconnect(int reason) {};
 
-	virtual void onRspUserLogin(const dict &data, const dict &error, int reqid, bool last) {};
+	virtual void onRspQryCommodity(unsigned int session, int error, char last, const dict &data) {};
 
-	virtual void onRspUserLogout(const dict &data, const dict &error, int reqid, bool last) {};
+	virtual void onRspQryContract(unsigned int session, int error, char last, const dict &data) {};
 
-	virtual void onRspError(const dict &error, int reqid, bool last) {};
+	virtual void onRspSubscribeQuote(unsigned int session, int error, char last, const dict &data) {};
 
-	virtual void onRspSubMarketData(const dict &data, const dict &error, int reqid, bool last) {};
+	virtual void onRspUnSubscribeQuote(unsigned int session, int error, char last, const dict &data) {};
 
-	virtual void onRspUnSubMarketData(const dict &data, const dict &error, int reqid, bool last) {};
-
-	virtual void onRspSubForQuoteRsp(const dict &data, const dict &error, int reqid, bool last) {};
-
-	virtual void onRspUnSubForQuoteRsp(const dict &data, const dict &error, int reqid, bool last) {};
-
-	virtual void onRtnDepthMarketData(const dict &data) {};
-
-	virtual void onRtnForQuoteRsp(const dict &data) {};
+	virtual void onRtnQuote(const dict &data) {};
 
 	//-------------------------------------------------------------------------------------
 	//req:主动函数的请求字典
@@ -188,7 +201,7 @@ public:
 
 	int unSubscribeForQuoteRsp(string instrumentID);
 
-	int reqUserLogin(const dict &req, int reqid);
+	int qryCommodity(unsigned int session);
 
-	int reqUserLogout(const dict &req, int reqid);
+	int qryContract(unsigned int session, const dict &data);
 };
