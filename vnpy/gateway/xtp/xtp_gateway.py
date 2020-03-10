@@ -28,8 +28,8 @@ from vnpy.trader.utility import get_folder_path
 
 
 MARKET_XTP2VT: Dict[int, Exchange] = {
-    1: Exchange.SSE,
-    2: Exchange.SZSE,
+    1: Exchange.SZSE,
+    2: Exchange.SSE
 }
 MARKET_VT2XTP: Dict[Exchange, int] = {v: k for k, v in MARKET_XTP2VT.items()}
 
@@ -54,6 +54,13 @@ DIRECTION_OPTION_XTP2VT: Dict[int, Direction] = {
     2: Direction.SHORT
 }
 DIRECTION_OPTION_VT2XTP: Dict[Direction, int] = {v: k for k, v in DIRECTION_OPTION_XTP2VT.items()}
+
+POSITION_DIRECTION_XTP2VT = {
+    0: Direction.NET,
+    1: Direction.LONG,
+    2: Direction.SHORT,
+    3: Direction.SHORT
+}
 
 ORDERTYPE_XTP2VT: Dict[int, OrderType] = {
     1: OrderType.LIMIT,
@@ -84,7 +91,7 @@ PRODUCT_XTP2VT: Dict[int, Product] = {
     3: Product.BOND,
     4: Product.OPTION,
     5: Product.EQUITY,
-    6: Product.BOND
+    6: Product.OPTION
 }
 
 OFFSET_VT2XTP: Dict[Offset, int] = {
@@ -488,7 +495,6 @@ class XtpTdApi(TdApi):
 
     def onOrderEvent(self, data: dict, error: dict, session: int) -> None:
         """"""
-        print("onOrderEvent", data, error)
         if error["error_id"]:
             self.gateway.write_error("交易委托失败", error)
 
@@ -570,7 +576,7 @@ class XtpTdApi(TdApi):
         position = PositionData(
             symbol=data["ticker"],
             exchange=MARKET_XTP2VT[data["market"]],
-            direction=Direction.LONG,
+            direction=POSITION_DIRECTION_XTP2VT[data["position_direction"]],
             volume=data["total_qty"],
             frozen=data["locked_position"],
             price=data["avg_price"],
@@ -712,7 +718,6 @@ class XtpTdApi(TdApi):
 
         else:
             error = self.getApiLastError()
-            print(error)
             msg = f"交易服务器登录失败，原因：{error['error_msg']}"
 
         self.gateway.write_log(msg)
