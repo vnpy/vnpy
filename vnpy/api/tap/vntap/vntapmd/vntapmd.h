@@ -179,23 +179,23 @@ public:
 	//req:主动函数的请求字典
 	//-------------------------------------------------------------------------------------
 
-	int setAPINotify(string pszFlowPath = ""); //1
+	void createTapQuoteAPI(const dict &req, int &iResult);
+
+	void release();
 
 	void init();
 
 	void exit();
 
-	int setHostAddress(const TAPICHAR *IP, unsigned short port); //2
+	int setHostAddress(char *IP, unsigned short port); //2
 
-	int login(const dict &data);
+	int login(const dict &req);
 
 	int disconnect();
 
-	int subscribeQuote(unsigned int *sessionID, const dict &data); //3
-
-	int subscribeQuote(unsigned int *sessionID, const dict &data); //4
+	int subscribeQuote(unsigned int *session, const dict &req); //3
 
 	int qryCommodity(unsigned int *session);
 
-	int qryContract(unsigned int *session, const dict &data);
+	int qryContract(unsigned int *session, const dict &req);
 };
