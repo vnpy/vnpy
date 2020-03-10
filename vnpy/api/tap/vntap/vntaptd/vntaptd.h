@@ -141,7 +141,7 @@ public:
 	* @attention    该函数回调，则说明授权在一个月之内到期。否则不产生该回调。
 	* @ingroup G_T_Login
 	*/
-	virtual void OnExpriationDate(TAPIDATE date, int days);
+	virtual void OnExpriationDate(string date, int days);
 
 	/**
 	* @brief    通知用户API准备就绪。
@@ -589,6 +589,9 @@ public:
     //-------------------------------------------------------------------------------------
     //task：任务
     //-------------------------------------------------------------------------------------
+
+	void processTask();
+
 	void processConnect(Task *task);
 
 	void processRspLogin(Task *task);
