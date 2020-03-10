@@ -2683,7 +2683,7 @@ int TdApi::qryTradingDate(unsigned int session)
 	return i;
 };
 
-int TdApi::qryAccount(unsigned int session, const dict &req)
+int TdApi::qryAccount(unsigned int *session, const dict &req)
 {
 	TapAPIAccQryReq myreq = TapAPIAccQryReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2691,7 +2691,7 @@ int TdApi::qryAccount(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryFund(unsigned int session, const dict &req)
+int TdApi::qryFund(unsigned int *session, const dict &req)
 {
 	TapAPIFundReq myreq = TapAPIFundReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2700,19 +2700,19 @@ int TdApi::qryFund(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryExchange(unsigned int session)
+int TdApi::qryExchange(unsigned int *session)
 {
 	int i = this->api->QryExchange(session);
 	return i;
 };
 
-int TdApi::qryCommodity(unsigned int session)
+int TdApi::qryCommodity(unsigned int *session)
 {
 	int i = this->api->QryCommodity(session);
 	return i;
 };
 
-int TdApi::qryContract(unsigned int session, const dict &req)
+int TdApi::qryContract(unsigned int *session, const dict &req)
 {
 	TapAPICommodity myreq = TapAPICommodity();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2723,7 +2723,7 @@ int TdApi::qryContract(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryOrder(unsigned int session, const dict &req)
+int TdApi::qryOrder(unsigned int *session, const dict &req)
 {
 	TapAPIOrderQryReq myreq = TapAPIOrderQryReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2745,7 +2745,7 @@ int TdApi::qryOrder(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryOrderProcess(unsigned int session, const dict &req)
+int TdApi::qryOrderProcess(unsigned int *session, const dict &req)
 {
 	TapAPIOrderProcessQryReq myreq = TapAPIOrderProcessQryReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2755,7 +2755,7 @@ int TdApi::qryOrderProcess(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryFill(unsigned int session, const dict &req)
+int TdApi::qryFill(unsigned int *session, const dict &req)
 {
 	TapAPIFillQryReq myreq = TapAPIFillQryReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2778,7 +2778,7 @@ int TdApi::qryFill(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryPosition(unsigned int session, const dict &req)
+int TdApi::qryPosition(unsigned int *session, const dict &req)
 {
 	TapAPIPositionQryReq myreq = TapAPIPositionQryReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2787,7 +2787,7 @@ int TdApi::qryPosition(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryPositionSummary(unsigned int session, const dict &req)
+int TdApi::qryPositionSummary(unsigned int *session, const dict &req)
 {
 	TapAPIPositionQryReq myreq = TapAPIPositionQryReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2796,13 +2796,13 @@ int TdApi::qryPositionSummary(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryCurrency(unsigned int session)
+int TdApi::qryCurrency(unsigned int *session)
 {
 	int i = this->api->QryCurrency(session);
 	return i;
 };
 
-int TdApi::qryAccountCashAdjust(unsigned int session, const dict &req)
+int TdApi::qryAccountCashAdjust(unsigned int *session, const dict &req)
 {
 	TapAPIAccountCashAdjustQryReq myreq = TapAPIAccountCashAdjustQryReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2815,7 +2815,7 @@ int TdApi::qryAccountCashAdjust(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryTradeMessage(unsigned int session, const dict &req)
+int TdApi::qryTradeMessage(unsigned int *session, const dict &req)
 {
 	TapAPITradeMessageReq myreq = TapAPITradeMessageReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2827,7 +2827,7 @@ int TdApi::qryTradeMessage(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryBill(unsigned int session, const dict &req)
+int TdApi::qryBill(unsigned int *session, const dict &req)
 {
 	TapAPIBillQryReq myreq = TapAPIBillQryReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2839,7 +2839,7 @@ int TdApi::qryBill(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryHisOrder(unsigned int session, const dict &req)
+int TdApi::qryHisOrder(unsigned int *session, const dict &req)
 {
 	TapAPIHisOrderQryReq myreq = TapAPIHisOrderQryReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2851,7 +2851,7 @@ int TdApi::qryHisOrder(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryHisOrderProcess(unsigned int session, const dict &req)
+int TdApi::qryHisOrderProcess(unsigned int *session, const dict &req)
 {
 	TapAPIHisOrderProcessQryReq myreq = TapAPIHisOrderProcessQryReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2861,7 +2861,7 @@ int TdApi::qryHisOrderProcess(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryHisMatch(unsigned int session, const dict &req)
+int TdApi::qryHisMatch(unsigned int *session, const dict &req)
 {
 	TapAPIHisMatchQryReq myreq = TapAPIHisMatchQryReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2874,7 +2874,7 @@ int TdApi::qryHisMatch(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryHisPosition(unsigned int session, const dict &req)
+int TdApi::qryHisPosition(unsigned int *session, const dict &req)
 {
 	TapAPIHisPositionQryReq myreq = TapAPIHisPositionQryReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2887,7 +2887,7 @@ int TdApi::qryHisPosition(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryHisDelivery(unsigned int session, const dict &req)
+int TdApi::qryHisDelivery(unsigned int *session, const dict &req)
 {
 	TapAPIHisDeliveryQryReq myreq = TapAPIHisDeliveryQryReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2900,7 +2900,7 @@ int TdApi::qryHisDelivery(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryAccountFeeRent(unsigned int session, const dict &req)
+int TdApi::qryAccountFeeRent(unsigned int *session, const dict &req)
 {
 	TapAPIAccountFeeRentQryReq myreq = TapAPIAccountFeeRentQryReq();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2909,7 +2909,7 @@ int TdApi::qryAccountFeeRent(unsigned int session, const dict &req)
 	return i;
 };
 
-int TdApi::qryAccountMarginRent(unsigned int session, const dict &req)
+int TdApi::qryAccountMarginRent(unsigned int *session, const dict &req)
 {
 	TapAPIAccountMarginRentQryReq myreq = TapAPIAccountMarginRentQryReq();
 	memset(&myreq, 0, sizeof(myreq));
