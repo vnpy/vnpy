@@ -2776,15 +2776,28 @@ int TdApi::insertOrder(unsigned int *sessionID, string *ClientOrderNo, const dic
 
 	getInt(req, "RefInt", &myreq.RefInt);
 	getDouble(req, "RefDouble", &myreq.RefDouble);
-	getString(req, "RefString", myreq.IRefString);
+	getString(req, "RefString", myreq.RefString);
 
-	getString(req, "ClientID", myreq.IClientID);
+	getString(req, "ClientID", myreq.ClientID);
 	getChar(req, "TacticsType", &myreq.TacticsType);
 	getChar(req, "TriggerCondition", &myreq.TriggerCondition);
 	getChar(req, "TriggerPriceType", &myreq.TriggerPriceType);
 	getChar(req, "AddOneIsValid", &myreq.AddOneIsValid);
 
 	int i = this->api->InsertOrder(sessionID, ClientOrderNo, &myreq);
+	return i;
+}
+
+int TdApi::cancelOrder(unsigned int *sessionID, const dict &req)
+{
+	TapAPIOrderCancelReq myreq = TapAPIOrderCancelReq();
+	memset(&myreq, 0, sizeof(myreq));
+	getInt(req, "RefInt", &myreq.RefInt);
+	getDouble(req, "RefDouble", &myreq.RefDouble);
+	getString(req, "RefString", myreq.RefString);
+	getChar(req, "ServerFlag", &myreq.ServerFlag);
+	getString(req, "OrderNo", myreq.OrderNo);
+	int i = this->api->CancelOrder(sessionID,&myreq);
 	return i;
 }
 
