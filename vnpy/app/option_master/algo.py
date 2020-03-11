@@ -125,7 +125,7 @@ class ElectronicEyeAlgo:
 
         self.put_status_event()
         self.put_trading_event()
-        self.write_log("停止定价")
+        self.write_log("停止交易")
 
         return True
 

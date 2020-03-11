@@ -45,7 +45,7 @@ class ObjectRtd(RTD):
         """
         Update value in excel cell.
         """
-        new_value = str(getattr(data, self.field, "N/A"))
+        new_value = getattr(data, self.field, "N/A")
 
         if new_value != self.value:
             self.value = new_value

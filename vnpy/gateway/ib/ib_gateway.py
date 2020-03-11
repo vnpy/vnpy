@@ -345,7 +345,7 @@ class IbApi(EWrapper):
             return
 
         tick = self.ticks[reqId]
-        tick.datetime = datetime.fromtimestamp(value)
+        tick.datetime = datetime.fromtimestamp(int(value))
 
         self.gateway.on_tick(copy(tick))
 
