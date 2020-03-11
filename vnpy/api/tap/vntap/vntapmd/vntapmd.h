@@ -187,7 +187,13 @@ public:
 
 	void exit();
 
-	int setHostAddress(char *IP, unsigned short port); //2
+	string getTapQuoteAPIVersion();
+
+	int setTapQuoteAPIDataPath(string path);
+
+	int setTapQuoteAPILogLevel(string level);
+
+	int setHostAddress(string IP, unsigned short port); //2
 
 	int login(const dict &req);
 
