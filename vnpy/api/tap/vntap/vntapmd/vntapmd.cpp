@@ -441,20 +441,24 @@ void MdApi::exit()
 	this->api = NULL;
 };
 
-char MdApi::getTapQuoteAPIVersion()
+string MdApi::getTapQuoteAPIVersion()
 {
 	GetTapQuoteAPIVersion();
 };
 
-int setTapQuoteAPIDataPath(char *path)
+int MdApi::setTapQuoteAPIDataPath(string path)
 {
-	SetTapQuoteAPIDataPath(char *path);
+	SetTapQuoteAPIDataPath(path.c_str());
 };
 
-
-int MdApi::setHostAddress(char *IP, unsigned short port)
+int MdApi::setTapQuoteAPILogLevel(string level)
 {
-	int i = this->api->SetHostAddress(IP, port);
+	SetTapQuoteAPILogLevel(level);
+}
+
+int MdApi::setHostAddress(string IP, unsigned short port)
+{
+	int i = this->api->SetHostAddress(IP.c_str(), port);
 	return i;
 };
 
