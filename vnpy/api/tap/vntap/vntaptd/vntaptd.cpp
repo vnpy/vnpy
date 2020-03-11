@@ -2637,29 +2637,21 @@ void TdApi::CreateITapTradeAPI(const dict &req, int &iResult)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AuthCode", myreq.AuthCode);
 	getString(req, "KeyOperationLogPath", myreq.KeyOperationLogPath);
-	this->api->CreateITapTradeAPI(&myreq, iResult);
+	this->api = CreateITapTradeAPI(&myreq, iResult); // 创建API接口对象
+	this->api->SetAPINotify(this);  //注册回调函数对象
 };
 
 void TdApi::release()
 {
-	this->api->FreeTapQuoteAPI(NULL);
+	FreeITapTradeAPI(NULL);
 };
 
-
-
-
-void TdApi::createFtdcTraderApi(string pszFlowPath)
-{
-	this->api = CThostFtdcTraderApi::CreateFtdcTraderApi(pszFlowPath.c_str());
-	this->api->RegisterSpi(this);
-};
-
-
-int TdApi::init()
+void TdApi::init()
 {
 	this->active = true;
 	this->task_thread = thread(&TdApi::processTask, this);
 };
+
 
 int TdApi::exit()
 {
@@ -2667,33 +2659,17 @@ int TdApi::exit()
 	this->task_queue.terminate();
 	this->task_thread.join();
 
-	this->api->RegisterSpi(NULL);
-	this->api->Release();
+	this->api->SetAPINotify(NULL);
+	FreeITapTradeAPI(NULL);
 	this->api = NULL;
 	return 1;
 };
 
-string TdApi::getTradingDay()
-{
-	string day = this->api->GetTradingDay();
-	return day;
-};
 
-void TdApi::registerFront(string pszFrontAddress)
-{
-	this->api->RegisterFront((char*)pszFrontAddress.c_str());
-};
 
-void TdApi::subscribePrivateTopic(int nType)
-{
-	this->api->SubscribePrivateTopic((THOST_TE_RESUME_TYPE)nType);
-};
 
-void TdApi::subscribePublicTopic(int nType)
-{
-	this->api->SubscribePublicTopic((THOST_TE_RESUME_TYPE)nType);
-};
 
+//-----------------------------------------
 int TdApi::qryTradingDate(unsigned int session)
 {
 	int i = this->api->QryTradingDate(session);
