@@ -2735,6 +2735,31 @@ int TdApi::haveCertainRight(int rightID)
 	int i = this->api->HaveCertainRight(rightID);
 	return i;
 }
+
+
+int insertOrder(unsigned int *sessionID, string *ClientOrderNo, const dict &req)
+{
+	TapAPINewOrder myreq = TapAPINewOrder();
+	memset(&myreq, 0, sizeof(myreq));
+	getString(req, "AccountNo", myreq.AccountNo);
+	getString(req, "ExchangeNo", myreq.ExchangeNo);
+	getChar(req, "CommodityType", &myreq.CommodityType);
+	getString(req, "CommodityNo", myreq.CommodityNo);
+	getString(req, "ContractNo", myreq.ContractNo);
+	getString(req, "StrikePrice", myreq.StrikePrice);
+	getChar(req, "CallOrPutFlag", &myreq.CallOrPutFlag);
+	getString(req, "ContractNo2", myreq.ContractNo2);
+	getString(req, "StrikePrice2", myreq.StrikePrice2);
+	getChar(req, "CallOrPutFlag2", &myreq.CallOrPutFlag2);
+
+
+
+	getChar(req, "PasswordType", &myreq.PasswordType);
+	getString(req, "Password", myreq.Password);
+	int i = this->api->InsertOrder(sessionID, ClientOrderNo, &myreq);
+	return i;
+}
+
 //-----------------------------------------
 int TdApi::qryTradingDate(unsigned int *session)
 {
