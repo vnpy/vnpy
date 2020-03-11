@@ -811,11 +811,20 @@ public:
 
 	void release();
 
-	int setAPINotify(ITapTradeAPINotify *pSpi); //1
-
-	int init();
+	void init();
 
 	int exit();
+
+	string getITapTradeAPIVersion();
+
+	int setTapQuoteAPIDataPath(string path);
+
+	int setTapQuoteAPILogLevel(string level);
+
+
+	int setAPINotify(ITapTradeAPINotify *pSpi); //1
+
+
 
 
 
