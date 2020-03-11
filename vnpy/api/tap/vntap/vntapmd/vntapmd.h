@@ -185,7 +185,7 @@ public:
 
 	void init();
 
-	void exit();
+	int exit();
 
 	string getTapQuoteAPIVersion();
 
