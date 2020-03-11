@@ -2737,7 +2737,7 @@ int TdApi::haveCertainRight(int rightID)
 }
 
 
-int insertOrder(unsigned int *sessionID, string *ClientOrderNo, const dict &req)
+int TdApi::insertOrder(unsigned int *sessionID, string *ClientOrderNo, const dict &req)
 {
 	TapAPINewOrder myreq = TapAPINewOrder();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2765,11 +2765,25 @@ int insertOrder(unsigned int *sessionID, string *ClientOrderNo, const dict &req)
 	getString(req, "InquiryNo", myreq.InquiryNo);
 	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
 
+	getDouble(req, "OrderPrice", &myreq.OrderPrice);
+	getDouble(req, "OrderPrice2", &myreq.OrderPrice2);
+	getDouble(req, "StopPrice", &myreq.StopPrice);
+	getInt(req, "OrderQty", &myreq.OrderQty);
+	getInt(req, "OrderMinQty", &myreq.OrderMinQty);
 
+	getInt(req, "MinClipSize", &myreq.MinClipSize);
+	getInt(req, "MaxClipSize", &myreq.MaxClipSize);
 
+	getInt(req, "RefInt", &myreq.RefInt);
+	getDouble(req, "RefDouble", &myreq.RefDouble);
+	getString(req, "RefString", myreq.IRefString);
 
-	getChar(req, "PasswordType", &myreq.PasswordType);
-	getString(req, "Password", myreq.Password);
+	getString(req, "ClientID", myreq.IClientID);
+	getChar(req, "TacticsType", &myreq.TacticsType);
+	getChar(req, "TriggerCondition", &myreq.TriggerCondition);
+	getChar(req, "TriggerPriceType", &myreq.TriggerPriceType);
+	getChar(req, "AddOneIsValid", &myreq.AddOneIsValid);
+
 	int i = this->api->InsertOrder(sessionID, ClientOrderNo, &myreq);
 	return i;
 }
