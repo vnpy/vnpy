@@ -10,10 +10,12 @@ import requests
 
 
 class RequestStatus(Enum):
-    ready = 0  # Request created
-    success = 1  # Request successful (status code 2xx)
-    failed = 2  # Request failed (status code not 2xx)
-    error = 3  # Exception raised
+    """"""
+
+    ready = 0       # Request created
+    success = 1     # Request successful (status code 2xx)
+    failed = 2      # Request failed (status code not 2xx)
+    error = 3       # Exception raised
 
 
 class Request(object):
@@ -34,21 +36,22 @@ class Request(object):
         extra: Any = None,
     ):
         """"""
-        self.method = method
-        self.path = path
-        self.callback = callback
-        self.params = params
-        self.data = data
-        self.headers = headers
+        self.method: str = method
+        self.path: str = path
+        self.callback: Callable = callback
+        self.params: dict = params
+        self.data: Union[dict, str, bytes] = data
+        self.headers: dict = headers
 
-        self.on_failed = on_failed
-        self.on_error = on_error
-        self.extra = extra
+        self.on_failed: Callable = on_failed
+        self.on_error: Callable = on_error
+        self.extra: Any = extra
 
-        self.response = None
-        self.status = RequestStatus.ready
+        self.response: requests.Response = None
+        self.status: RequestStatus = RequestStatus.ready
 
     def __str__(self):
+        """"""
         if self.response is None:
             status_code = "terminated"
         else:
@@ -83,20 +86,24 @@ class RestClient(object):
     """
 
     def __init__(self):
-        """
-        """
-        self.url_base = ''  # type: str
-        self._active = False
+        """"""
+        self.url_base: str = ""
+        self._active: bool = False
 
-        self._queue = Queue()
-        self._pool = None  # type: Pool
+        self._queue: Queue = Queue()
+        self._pool: Pool = None
 
-        self.proxies = None
+        self.proxies: dict = None
 
-    def init(self, url_base: str, proxy_host: str = "", proxy_port: int = 0):
+    def init(
+        self,
+        url_base: str,
+        proxy_host: str = "",
+        proxy_port: int = 0
+    ) -> None:
         """
         Init rest client with url_base which is the API root address.
-        e.g. 'https://www.bitmex.com/api/v1/'
+        e.g. "https://www.bitmex.com/api/v1/"
         """
         self.url_base = url_base
 
@@ -104,11 +111,7 @@ class RestClient(object):
             proxy = f"{proxy_host}:{proxy_port}"
             self.proxies = {"http": proxy, "https": proxy}
 
-    def _create_session(self):
-        """"""
-        return requests.session()
-
-    def start(self, n: int = 3):
+    def start(self, n: int = 3) -> None:
         """
         Start rest client with session count n.
         """
@@ -119,13 +122,13 @@ class RestClient(object):
         self._pool = Pool(n)
         self._pool.apply_async(self._run)
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Stop rest client immediately.
         """
         self._active = False
 
-    def join(self):
+    def join(self) -> None:
         """
         Wait till all requests are processed.
         """
@@ -142,7 +145,7 @@ class RestClient(object):
         on_failed: Callable = None,
         on_error: Callable = None,
         extra: Any = None,
-    ):
+    ) -> Request:
         """
         Add a new request.
         :param method: GET, POST, PUT, DELETE, QUERY
@@ -170,9 +173,10 @@ class RestClient(object):
         self._queue.put(request)
         return request
 
-    def _run(self):
+    def _run(self) -> None:
+        """"""
         try:
-            session = self._create_session()
+            session = requests.session()
             while self._active:
                 try:
                     request = self._queue.get(timeout=1)
@@ -186,7 +190,7 @@ class RestClient(object):
             et, ev, tb = sys.exc_info()
             self.on_error(et, ev, tb, None)
 
-    def sign(self, request: Request):
+    def sign(self, request: Request) -> None:
         """
         This function is called before sending any request out.
         Please implement signature method here.
@@ -194,7 +198,7 @@ class RestClient(object):
         """
         return request
 
-    def on_failed(self, status_code: int, request: Request):
+    def on_failed(self, status_code: int, request: Request) -> None:
         """
         Default on_failed handler for Non-2xx response.
         """
@@ -206,7 +210,7 @@ class RestClient(object):
         exception_value: Exception,
         tb,
         request: Optional[Request],
-    ):
+    ) -> None:
         """
         Default on_error handler for Python exception.
         """
@@ -221,7 +225,7 @@ class RestClient(object):
         exception_value: Exception,
         tb,
         request: Optional[Request],
-    ):
+    ) -> None:
         text = "[{}]: Unhandled RestClient Error:{}\n".format(
             datetime.now().isoformat(), exception_type
         )
@@ -234,7 +238,7 @@ class RestClient(object):
 
     def _process_request(
         self, request: Request, session: requests.Session
-    ):
+    ) -> None:
         """
         Sending request to server and get result.
         """
@@ -276,10 +280,10 @@ class RestClient(object):
             else:
                 self.on_error(t, v, tb, request)
 
-    def make_full_url(self, path: str):
+    def make_full_url(self, path: str) -> str:
         """
         Make relative api path into full url.
-        eg: make_full_url('/get') == 'http://xxxxx/get'
+        eg: make_full_url("/get") == "http://xxxxx/get"
         """
         url = self.url_base + path
         return url
@@ -291,11 +295,11 @@ class RestClient(object):
         params: dict = None,
         data: dict = None,
         headers: dict = None,
-    ):
+    ) -> requests.Response:
         """
         Add a new request.
         :param method: GET, POST, PUT, DELETE, QUERY
-        :param path: 
+        :param path: url path for query
         :param params: dict for query string
         :param data: dict for body
         :param headers: dict for headers
