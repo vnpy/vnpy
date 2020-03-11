@@ -835,9 +835,9 @@ public:
 
 	int haveCertainRight(int rightID);
 
-	int insertOrder(unsigned int *sessionID, string *ClientOrderNo, TapAPINewOrder *order); //7
+	int insertOrder(unsigned int *sessionID, string *ClientOrderNo, const dict &req); //4
 
-	int cancelOrder(unsigned int *sessionID, TapAPIOrderCancelReq *order); //8
+	int cancelOrder(unsigned int *sessionID, const dict &req); //8
 
 
 
