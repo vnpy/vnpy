@@ -430,7 +430,7 @@ void MdApi::init()
 };
 
 
-void MdApi::exit()
+int MdApi::exit()
 {
 	this->active = false;
 	this->task_queue.terminate();
@@ -439,6 +439,7 @@ void MdApi::exit()
 	this->api->SetAPINotify(NULL);
 	FreeTapQuoteAPI(NULL);
 	this->api = NULL;
+	return 1;
 };
 
 string MdApi::getTapQuoteAPIVersion()
