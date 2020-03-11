@@ -2752,6 +2752,20 @@ int insertOrder(unsigned int *sessionID, string *ClientOrderNo, const dict &req)
 	getString(req, "StrikePrice2", myreq.StrikePrice2);
 	getChar(req, "CallOrPutFlag2", &myreq.CallOrPutFlag2);
 
+	getChar(req, "OrderType", &myreq.OrderType);
+	getChar(req, "OrderSource", &myreq.OrderSource);
+	getChar(req, "TimeInForce", &myreq.TimeInForce);
+	getString(req, "ExpireTime", myreq.ExpireTime);
+
+
+	getChar(req, "IsRiskOrder", &myreq.IsRiskOrder);
+	getChar(req, "OrderSide", &myreq.OrderSide);
+	getChar(req, "PositionEffect", &myreq.PositionEffect);
+	getChar(req, "PositionEffect2", &myreq.PositionEffect2);
+	getString(req, "InquiryNo", myreq.InquiryNo);
+	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
+
+
 
 
 	getChar(req, "PasswordType", &myreq.PasswordType);
