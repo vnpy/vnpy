@@ -2637,7 +2637,7 @@ void TdApi::CreateITapTradeAPI(const dict &req, int &iResult)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AuthCode", myreq.AuthCode);
 	getString(req, "KeyOperationLogPath", myreq.KeyOperationLogPath);
-	this->api = CreateITapTradeAPI(&myreq, iResult); // 创建API接口对象
+	this->api = (ITapTradeAPI*) CreateITapTradeAPI(&myreq, iResult); // 创建API接口对象
 	this->api->SetAPINotify(this);  //注册回调函数对象
 };
 
@@ -2665,12 +2665,78 @@ int TdApi::exit()
 	return 1;
 };
 
+string TdApi::getITapTradeAPIVersion()
+{
+	GetITapTradeAPIVersion();
+};
+
+int TdApi::setITapTradeAPIDataPath(string path)
+{
+	SetITapTradeAPIDataPath(path.c_str());
+};
+
+int TdApi::setITapTradeAPILogLevel(string level)
+{
+	SetITapTradeAPILogLevel(level);
+}
 
 
+int TdApi::setHostAddress(string IP, unsigned short port)
+{
+	int i = this->api->SetHostAddress(IP.c_str(), port);
+	return i;
+};
+
+int TdApi::login(const dict &req)
+{
+	TapAPITradeLoginAuth myreq = TapAPITradeLoginAuth();
+	memset(&myreq, 0, sizeof(myreq));
+	getString(req, "UserNo", myreq.UserNo);
+	getChar(req, "ISModifyPassword", &myreq.ISModifyPassword);
+	getString(req, "Password", myreq.Password);
+	getString(req, "NewPassword", myreq.NewPassword);
+	int i = this->api->Login(&myreq);
+	return i;
+};
+
+int TdApi::requestVertificateCode(unsigned int *sessionID, string ContactInfo)
+{
+	int i = this->api->RequestVertificateCode(sessionID, ContactInfo);
+	return i;
+};
+
+int TdApi::setVertificateCode(string VertificateCode)
+{
+	int i = this->api->SetVertificateCode(VertificateCode);
+	return i;
+}
+
+int TdApi::disconnect()
+{
+	int i = this->api->Disconnect();
+	return i;
+};
 
 
+int TdApi::authPassword(unsigned int *sessionID, const dict &req)
+{
+	TapAPIAuthPasswordReq myreq = TapAPIAuthPasswordReq();
+	memset(&myreq, 0, sizeof(myreq));
+	getString(req, "AccountNo", myreq.AccountNo);
+	getChar(req, "PasswordType", &myreq.PasswordType);
+	getString(req, "Password", myreq.Password);
+	int i = this->api->AuthPassword(sessionID, &myreq);
+	return i;
+};
+
+
+int TdApi::haveCertainRight(int rightID)
+{
+	int i = this->api->HaveCertainRight(rightID);
+	return i;
+}
 //-----------------------------------------
-int TdApi::qryTradingDate(unsigned int session)
+int TdApi::qryTradingDate(unsigned int *session)
 {
 	int i = this->api->QryTradingDate(session);
 	return i;
