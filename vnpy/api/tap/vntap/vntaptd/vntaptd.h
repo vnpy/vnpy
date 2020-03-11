@@ -821,12 +821,9 @@ public:
 
 	int setITapTradeAPILogLevel(string level); //1
 
-	//------------
-	// int setAPINotify(ITapTradeAPINotify *pSpi); 
-
 	int setHostAddress(string IP, unsigned short port);
 
-	int login(const dict &req); //3
+	int login(const dict &req);
 
 	int requestVertificateCode(unsigned int *sessionID, string ContactInfo); //2
 
@@ -834,38 +831,15 @@ public:
 
 	int disconnect();
 
-	//int changePassword(unsigned int *sessionID, TapAPIChangePasswordReq *req);
-
 	int authPassword(unsigned int *sessionID, const dict &req);
 
 	int haveCertainRight(int rightID);
-
-	//int setReservedInfo(unsigned int *sessionID, string info);
 
 	int insertOrder(unsigned int *sessionID, string *ClientOrderNo, TapAPINewOrder *order); //7
 
 	int cancelOrder(unsigned int *sessionID, TapAPIOrderCancelReq *order); //8
 
 
-	//int amendOrder(unsigned int *sessionID, TapAPIAmendOrder *order); //9
-
-	//int activateOrder(unsigned int * sessionID, TapAPIOrderActivateReq * order);
-
-	//int insertHKMarketOrder(unsigned int *sessionID, string *ClientBuyOrderNo, string *ClientSellOrderNo, TapAPIOrderMarketInsertReq *order);
-
-	//int cancelHKMarketOrder(unsigned int *sessionID, TapAPIOrderMarketDeleteReq *order);
-
-	//int orderLocalRemove(unsigned int *sessionID, TapAPIOrderLocalRemoveReq *order);
-
-	//int orderLocalInput(unsigned int *sessionID, TapAPIOrderLocalInputReq *order);
-
-	//int orderLocalModify(unsigned int *sessionID, TapAPIOrderLocalModifyReq *order);
-
-	//int orderLocalTransfer(unsigned int *sessionID, TapAPIOrderLocalTransferReq *order);
-
-	//int fillLocalInput(unsigned int *sessionID, TapAPIFillLocalInputReq *fill);
-
-	//int fillLocalRemove(unsigned int *sessionID, TapAPIFillLocalRemoveReq *fill);
 
 
 
@@ -913,5 +887,30 @@ public:
 
 	int qryAccountMarginRent(unsigned int *session, const dict &data);
 
+	//------------
+	// int setAPINotify(ITapTradeAPINotify *pSpi); 
 
+	//int changePassword(unsigned int *sessionID, TapAPIChangePasswordReq *req);
+
+	//int setReservedInfo(unsigned int *sessionID, string info);
+
+	//int amendOrder(unsigned int *sessionID, TapAPIAmendOrder *order); //9
+
+	//int activateOrder(unsigned int * sessionID, TapAPIOrderActivateReq * order);
+
+	//int insertHKMarketOrder(unsigned int *sessionID, string *ClientBuyOrderNo, string *ClientSellOrderNo, TapAPIOrderMarketInsertReq *order);
+
+	//int cancelHKMarketOrder(unsigned int *sessionID, TapAPIOrderMarketDeleteReq *order);
+
+	//int orderLocalRemove(unsigned int *sessionID, TapAPIOrderLocalRemoveReq *order);
+
+	//int orderLocalInput(unsigned int *sessionID, TapAPIOrderLocalInputReq *order);
+
+	//int orderLocalModify(unsigned int *sessionID, TapAPIOrderLocalModifyReq *order);
+
+	//int orderLocalTransfer(unsigned int *sessionID, TapAPIOrderLocalTransferReq *order);
+
+	//int fillLocalInput(unsigned int *sessionID, TapAPIFillLocalInputReq *fill);
+
+	//int fillLocalRemove(unsigned int *sessionID, TapAPIFillLocalRemoveReq *fill);
 };
