@@ -162,7 +162,7 @@ class ApiGenerator:
         """"""
         filename = f"{self.prefix}_{self.name}_header_on.h"
         with open(filename, "w") as f:
-            for name, d in self.callbacks.items(): 
+            for name, d in self.callbacks.items():
                 name = name.replace("On", "on")
 
                 args_list = []
@@ -365,7 +365,7 @@ class ApiGenerator:
                         for struct_field, struct_type in struct_fields.items():
                             if struct_type == "enum":
                                 f.write(
-                                    f"\t\tdata[\"{struct_field}\"] = (int) task_data->{struct_field};\n")                                
+                                    f"\t\tdata[\"{struct_field}\"] = (int) task_data->{struct_field};\n")
                             else:
                                 f.write(
                                     f"\t\tdata[\"{struct_field}\"] = task_data->{struct_field};\n")
@@ -417,7 +417,6 @@ class ApiGenerator:
                 reqid = "reqid"
                 if type_ in self.enums:
                     c = {v: k for k, v in d.items()}[type_]
-                
                     reqid = f"({type_}) {c}"
 
                 elif type_ in self.structs:
@@ -438,7 +437,7 @@ class ApiGenerator:
                         else:
                             line = f"\tget{struct_type.capitalize()}(req, \"{struct_field}\", &myreq.{struct_field});\n"
                         f.write(line)
-                
+
                 words = []
                 a = content.split(",")[1:]
                 if not a:
@@ -447,7 +446,7 @@ class ApiGenerator:
                     for i in a:
                         if "int" in i:
                             words.append(i.replace("int", "").strip())
-                
+
                     reqid = ", ".join(words)
 
                 f.write(f"\tint i = this->api->{name}(&myreq, {reqid});\n")

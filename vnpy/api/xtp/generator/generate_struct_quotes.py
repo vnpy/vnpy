@@ -1,6 +1,5 @@
 """"""
 import importlib
-from typing import Dict, List
 import os
 
 type_dict = {
@@ -14,6 +13,7 @@ type_dict = {
     "bool": "bool",
     # "XTPRI": "enum"
 }
+
 
 class StructGenerator:
     """Struct生成器"""
@@ -31,7 +31,7 @@ class StructGenerator:
         module = importlib.import_module(module_name)
 
         for name in dir(module):
-            if "__" not in name:               
+            if "__" not in name:
                 self.typedefs[name] = getattr(module, name)
 
     def run(self):
@@ -91,9 +91,9 @@ class StructGenerator:
                 type_ = words[0]
                 py_type = self.typedefs[type_]
                 name = words[1].strip()
-        
+
             else:
-                words = words[0].split()  
+                words = words[0].split()
                 type_ = words[0]
                 py_type = self.typedefs[type_]
                 name = words[1].strip()
@@ -101,14 +101,13 @@ class StructGenerator:
             new_line = f"    \"{name}\": \"{py_type}\",\n"
             self.f_struct.write(new_line)
 
-
-        elif (line.startswith("  ")  or line.startswith("\t")) and \
-            (line.endswith("{") or line.endswith("}")):
+        elif (line.startswith("  ") or line.startswith("\t")) and \
+             (line.endswith("{") or line.endswith("}")):
             pass
 
         elif line.startswith("            ") or line.startswith("\t\t") or line.startswith("        "):
             pass
-        
+
         elif line.startswith("typedef struct"):
             content = line.split()
 
@@ -118,15 +117,14 @@ class StructGenerator:
 
             new_line = f"{name} = {end}\n"
             self.f_struct.write(new_line)
-        
-        
+
         # 普通部分
         elif line.startswith("struct") or line.startswith("enum"):
             content = line.split()
             name = content[1].replace("\n", "")
             name = name.replace("\t", "")
             end = "{"
-            
+
             new_line = f"{name} = {end}\n"
             self.f_struct.write(new_line)
 
@@ -140,16 +138,15 @@ class StructGenerator:
         # 内容部分
         elif ("\t" in line or "  " in line) and "//" not in line:
             line = line.strip()
-            words = line.split("\t")            
+            words = line.split("\t")
             words = [word for word in words if word]
 
             if len(words) > 1:
                 type_ = words[0]
                 py_type = self.typedefs.get(type_, "enum")
                 name = words[1].strip()
-        
             else:
-                words = words[0].split()  
+                words = words[0].split()
                 type_ = words[0]
                 py_type = self.typedefs.get(type_, "enum")
                 name = words[1].strip()
@@ -164,5 +161,3 @@ class StructGenerator:
 if __name__ == "__main__":
     generator = StructGenerator("../include/xtp/xquote_api_struct.h", "xtp")
     generator.run()
-
-

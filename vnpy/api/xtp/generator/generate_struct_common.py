@@ -87,7 +87,6 @@ class StructGenerator:
 
         elif line.startswith("}"):
             words = line.split(" ")
-            
             new_line = "}\n\n"
             self.f_struct.write(new_line)
 

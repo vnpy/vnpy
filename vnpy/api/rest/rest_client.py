@@ -4,9 +4,15 @@ from datetime import datetime
 from enum import Enum
 from multiprocessing.dummy import Pool
 from queue import Empty, Queue
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional, Union, Type
+from types import TracebackType
 
 import requests
+
+
+CALLBACK_TYPE = Callable[[dict, "Request"], Any]
+ON_FAILED_TYPE = Callable[[int, "Request"], Any]
+ON_ERROR_TYPE = Callable[[Type, Exception, TracebackType, "Request"], Any]
 
 
 class RequestStatus(Enum):
@@ -30,21 +36,21 @@ class Request(object):
         params: dict,
         data: Union[dict, str, bytes],
         headers: dict,
-        callback: Callable = None,
-        on_failed: Callable = None,
-        on_error: Callable = None,
+        callback: CALLBACK_TYPE = None,
+        on_failed: ON_FAILED_TYPE = None,
+        on_error: ON_ERROR_TYPE = None,
         extra: Any = None,
     ):
         """"""
         self.method: str = method
         self.path: str = path
-        self.callback: Callable = callback
+        self.callback: CALLBACK_TYPE = callback
         self.params: dict = params
         self.data: Union[dict, str, bytes] = data
         self.headers: dict = headers
 
-        self.on_failed: Callable = on_failed
-        self.on_error: Callable = on_error
+        self.on_failed: ON_FAILED_TYPE = on_failed
+        self.on_error: ON_ERROR_TYPE = on_error
         self.extra: Any = extra
 
         self.response: requests.Response = None
@@ -138,18 +144,18 @@ class RestClient(object):
         self,
         method: str,
         path: str,
-        callback: Callable,
+        callback: CALLBACK_TYPE,
         params: dict = None,
         data: Union[dict, str, bytes] = None,
         headers: dict = None,
-        on_failed: Callable = None,
-        on_error: Callable = None,
+        on_failed: ON_FAILED_TYPE = None,
+        on_error: ON_ERROR_TYPE = None,
         extra: Any = None,
     ) -> Request:
         """
         Add a new request.
         :param method: GET, POST, PUT, DELETE, QUERY
-        :param path: 
+        :param path: url path for query
         :param callback: callback function if 2xx status, type: (dict, Request)
         :param params: dict for query string
         :param data: Http body. If it is a dict, it will be converted to form-data. Otherwise, it will be converted to bytes.
