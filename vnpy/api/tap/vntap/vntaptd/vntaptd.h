@@ -817,62 +817,59 @@ public:
 
 	string getITapTradeAPIVersion();
 
-	int setTapQuoteAPIDataPath(string path);
+	int setITapTradeAPIDataPath(string path);
 
-	int setTapQuoteAPILogLevel(string level);
+	int setITapTradeAPILogLevel(string level); //1
 
+	//------------
+	// int setAPINotify(ITapTradeAPINotify *pSpi); 
 
-	int setAPINotify(ITapTradeAPINotify *pSpi); //1
+	int setHostAddress(string IP, unsigned short port);
 
+	int login(const dict &req); //3
 
+	int requestVertificateCode(unsigned int *sessionID, string ContactInfo); //2
 
-
-
-	int setHostAddress(TAPICHAR *IP, TAPIUINT16 port, bool bSSL = false); //2
-
-	int login(TapAPITradeLoginAuth *loginAuth); //3
-
-	int requestVertificateCode(unsigned int *sessionID, string ContactInfo); //4
-
-	int setVertificateCode(TAPISTR_10 VertificateCode); //5
+	int setVertificateCode(string VertificateCode); //3
 
 	int disconnect();
 
-	int changePassword(unsigned int *sessionID, TapAPIChangePasswordReq *req);
+	//int changePassword(unsigned int *sessionID, TapAPIChangePasswordReq *req);
 
-	int authPassword(unsigned int *sessionID, TapAPIAuthPasswordReq *req); //6
+	int authPassword(unsigned int *sessionID, const dict &req);
 
-	int haveCertainRight(TAPIRightIDType rightID);
+	int haveCertainRight(int rightID);
 
-	int setReservedInfo(unsigned int *sessionID, string info);
+	//int setReservedInfo(unsigned int *sessionID, string info);
 
 	int insertOrder(unsigned int *sessionID, string *ClientOrderNo, TapAPINewOrder *order); //7
 
 	int cancelOrder(unsigned int *sessionID, TapAPIOrderCancelReq *order); //8
 
-	int amendOrder(unsigned int *sessionID, TapAPIAmendOrder *order); //9
 
-	int activateOrder(unsigned int * sessionID, TapAPIOrderActivateReq * order);
+	//int amendOrder(unsigned int *sessionID, TapAPIAmendOrder *order); //9
 
-	int insertHKMarketOrder(unsigned int *sessionID, string *ClientBuyOrderNo, string *ClientSellOrderNo, TapAPIOrderMarketInsertReq *order);
+	//int activateOrder(unsigned int * sessionID, TapAPIOrderActivateReq * order);
 
-	int cancelHKMarketOrder(unsigned int *sessionID, TapAPIOrderMarketDeleteReq *order);
+	//int insertHKMarketOrder(unsigned int *sessionID, string *ClientBuyOrderNo, string *ClientSellOrderNo, TapAPIOrderMarketInsertReq *order);
 
-	int orderLocalRemove(unsigned int *sessionID, TapAPIOrderLocalRemoveReq *order);
+	//int cancelHKMarketOrder(unsigned int *sessionID, TapAPIOrderMarketDeleteReq *order);
 
-	int orderLocalInput(unsigned int *sessionID, TapAPIOrderLocalInputReq *order);
+	//int orderLocalRemove(unsigned int *sessionID, TapAPIOrderLocalRemoveReq *order);
 
-	int orderLocalModify(unsigned int *sessionID, TapAPIOrderLocalModifyReq *order);
+	//int orderLocalInput(unsigned int *sessionID, TapAPIOrderLocalInputReq *order);
 
-	int orderLocalTransfer(unsigned int *sessionID, TapAPIOrderLocalTransferReq *order);
+	//int orderLocalModify(unsigned int *sessionID, TapAPIOrderLocalModifyReq *order);
 
-	int fillLocalInput(unsigned int *sessionID, TapAPIFillLocalInputReq *fill);
+	//int orderLocalTransfer(unsigned int *sessionID, TapAPIOrderLocalTransferReq *order);
 
-	int fillLocalRemove(unsigned int *sessionID, TapAPIFillLocalRemoveReq *fill);
+	//int fillLocalInput(unsigned int *sessionID, TapAPIFillLocalInputReq *fill);
+
+	//int fillLocalRemove(unsigned int *sessionID, TapAPIFillLocalRemoveReq *fill);
 
 
 
-	int qryTradingDate(unsigned int session);
+	int qryTradingDate(unsigned int *session);
 
 	int qryAccount(unsigned int *session, const dict &data);
 
