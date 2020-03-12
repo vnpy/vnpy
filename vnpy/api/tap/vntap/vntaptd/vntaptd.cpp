@@ -2701,7 +2701,7 @@ int TdApi::login(const dict &req)
 
 int TdApi::requestVertificateCode(unsigned int *sessionID, string ContactInfo)
 {
-	int i = this->api->RequestVertificateCode(sessionID, ContactInfo);
+	int i = this->api->RequestVertificateCode(sessionID, (char*)ContactInfo.c_str());
 	return i;
 };
 
