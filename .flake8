@@ -1,7 +1,5 @@
 [flake8]
-exclude = __pycache__,__init__.py,ib,talib,uic
+exclude = venv,build,__pycache__,__init__.py,ib,talib,uic
 ignore =
     E501 line too long, fixed by black
     W503 line break before binary operator
-    W293 blank line contains whitespace
-    W291 trailing whitespace

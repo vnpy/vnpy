@@ -16,7 +16,7 @@ class RsiSignal(CtaSignal):
 
     def __init__(self, rsi_window: int, rsi_level: float):
         """Constructor"""
-        super(RsiSignal, self).__init__()
+        super().__init__()
 
         self.rsi_window = rsi_window
         self.rsi_level = rsi_level
@@ -55,7 +55,7 @@ class CciSignal(CtaSignal):
 
     def __init__(self, cci_window: int, cci_level: float):
         """"""
-        super(CciSignal, self).__init__()
+        super().__init__()
 
         self.cci_window = cci_window
         self.cci_level = cci_level
@@ -94,7 +94,7 @@ class MaSignal(CtaSignal):
 
     def __init__(self, fast_window: int, slow_window: int):
         """"""
-        super(MaSignal, self).__init__()
+        super().__init__()
 
         self.fast_window = fast_window
         self.slow_window = slow_window
@@ -151,9 +151,7 @@ class MultiSignalStrategy(TargetPosTemplate):
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
-        super(MultiSignalStrategy, self).__init__(
-            cta_engine, strategy_name, vt_symbol, setting
-        )
+        super().__init__(cta_engine, strategy_name, vt_symbol, setting)
 
         self.rsi_signal = RsiSignal(self.rsi_window, self.rsi_level)
         self.cci_signal = CciSignal(self.cci_window, self.cci_level)

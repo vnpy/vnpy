@@ -90,7 +90,8 @@ class CsvLoaderWidget(QtWidgets.QWidget):
 
     def select_file(self):
         """"""
-        result: str = QtWidgets.QFileDialog.getOpenFileName(self)
+        result: str = QtWidgets.QFileDialog.getOpenFileName(
+            self, filter="CSV (*.csv)")
         filename = result[0]
         if filename:
             self.file_edit.setText(filename)

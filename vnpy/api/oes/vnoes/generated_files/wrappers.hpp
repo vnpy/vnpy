@@ -1,14 +1,13 @@
 #pragma once
+#include "config.h"
 
 #include <pybind11/pybind11.h>
-#include <autocxxpy/autocxxpy.hpp>
+#include <c2py/c2py.hpp>
 
-#include "class_generators.h"
+#include "generated_functions.h"
 
 #include "oes_api/oes_api.h"
 #include "mds_api/mds_api.h"
-#include "mds_api/parser/json_parser/mds_json_parser.h"
-#include "custom/wrapper.hpp"
 
 
 

@@ -56,6 +56,9 @@ class CtaManager(QtWidgets.QWidget):
         stop_button = QtWidgets.QPushButton("全部停止")
         stop_button.clicked.connect(self.cta_engine.stop_all_strategies)
 
+        clear_button = QtWidgets.QPushButton("清空日志")
+        clear_button.clicked.connect(self.clear_log)
+
         self.scroll_layout = QtWidgets.QVBoxLayout()
         self.scroll_layout.addStretch()
 
@@ -80,6 +83,7 @@ class CtaManager(QtWidgets.QWidget):
         hbox1.addWidget(init_button)
         hbox1.addWidget(start_button)
         hbox1.addWidget(stop_button)
+        hbox1.addWidget(clear_button)
 
         grid = QtWidgets.QGridLayout()
         grid.addWidget(scroll_area, 0, 0, 2, 1)
@@ -145,6 +149,10 @@ class CtaManager(QtWidgets.QWidget):
                 class_name, strategy_name, vt_symbol, setting
             )
 
+    def clear_log(self):
+        """"""
+        self.log_monitor.setRowCount(0)
+
     def show(self):
         """"""
         self.showMaximized()
@@ -171,24 +179,26 @@ class StrategyManager(QtWidgets.QFrame):
 
     def init_ui(self):
         """"""
-        self.setMaximumHeight(300)
+        self.setFixedHeight(300)
         self.setFrameShape(self.Box)
         self.setLineWidth(1)
 
-        init_button = QtWidgets.QPushButton("初始化")
-        init_button.clicked.connect(self.init_strategy)
+        self.init_button = QtWidgets.QPushButton("初始化")
+        self.init_button.clicked.connect(self.init_strategy)
 
-        start_button = QtWidgets.QPushButton("启动")
-        start_button.clicked.connect(self.start_strategy)
+        self.start_button = QtWidgets.QPushButton("启动")
+        self.start_button.clicked.connect(self.start_strategy)
+        self.start_button.setEnabled(False)
 
-        stop_button = QtWidgets.QPushButton("停止")
-        stop_button.clicked.connect(self.stop_strategy)
+        self.stop_button = QtWidgets.QPushButton("停止")
+        self.stop_button.clicked.connect(self.stop_strategy)
+        self.stop_button.setEnabled(False)
 
-        edit_button = QtWidgets.QPushButton("编辑")
-        edit_button.clicked.connect(self.edit_strategy)
+        self.edit_button = QtWidgets.QPushButton("编辑")
+        self.edit_button.clicked.connect(self.edit_strategy)
 
-        remove_button = QtWidgets.QPushButton("移除")
-        remove_button.clicked.connect(self.remove_strategy)
+        self.remove_button = QtWidgets.QPushButton("移除")
+        self.remove_button.clicked.connect(self.remove_strategy)
 
         strategy_name = self._data["strategy_name"]
         vt_symbol = self._data["vt_symbol"]
@@ -205,11 +215,11 @@ class StrategyManager(QtWidgets.QFrame):
         self.variables_monitor = DataMonitor(self._data["variables"])
 
         hbox = QtWidgets.QHBoxLayout()
-        hbox.addWidget(init_button)
-        hbox.addWidget(start_button)
-        hbox.addWidget(stop_button)
-        hbox.addWidget(edit_button)
-        hbox.addWidget(remove_button)
+        hbox.addWidget(self.init_button)
+        hbox.addWidget(self.start_button)
+        hbox.addWidget(self.stop_button)
+        hbox.addWidget(self.edit_button)
+        hbox.addWidget(self.remove_button)
 
         vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(label)
@@ -224,6 +234,26 @@ class StrategyManager(QtWidgets.QFrame):
 
         self.parameters_monitor.update_data(data["parameters"])
         self.variables_monitor.update_data(data["variables"])
+
+        # Update button status
+        variables = data["variables"]
+        inited = variables["inited"]
+        trading = variables["trading"]
+
+        if not inited:
+            return
+        self.init_button.setEnabled(False)
+
+        if trading:
+            self.start_button.setEnabled(False)
+            self.stop_button.setEnabled(True)
+            self.edit_button.setEnabled(False)
+            self.remove_button.setEnabled(False)
+        else:
+            self.start_button.setEnabled(True)
+            self.stop_button.setEnabled(False)
+            self.edit_button.setEnabled(True)
+            self.remove_button.setEnabled(True)
 
     def init_strategy(self):
         """"""

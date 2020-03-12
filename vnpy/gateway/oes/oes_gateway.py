@@ -1,4 +1,3 @@
-# encoding: UTF-8
 """
 Author: nanoric
 """
@@ -12,7 +11,7 @@ from vnpy.trader.object import (CancelRequest, OrderRequest,
                                 SubscribeRequest)
 from vnpy.trader.utility import get_file_path
 from .oes_md import OesMdApi
-from .oes_td import OesTdApi
+from .oes_td import OesTdApi, EXCHANGE_VT2OES
 from .utils import config_template
 
 
@@ -37,7 +36,11 @@ class OesGateway(BaseGateway):
         "username": "",
         "password": "",
         "hdd_serial": "",
+        "customize_ip": "",
+        "customize_mac": "",
     }
+
+    exchanges = list(EXCHANGE_VT2OES.keys())
 
     def __init__(self, event_engine):
         """Constructor"""
@@ -55,7 +58,8 @@ class OesGateway(BaseGateway):
     def connect(self, setting: dict):
         """"""
         if not setting['password'].startswith("md5:"):
-            setting['password'] = "md5:" + hashlib.md5(setting['password'].encode()).hexdigest()
+            setting['password'] = "md5:" + \
+                hashlib.md5(setting['password'].encode()).hexdigest()
 
         username = setting['username']
         password = setting['password']
@@ -80,13 +84,17 @@ class OesGateway(BaseGateway):
 
         self.md_api.tcp_server = setting['md_tcp_server']
         self.md_api.qry_server = setting['md_qry_server']
-        Thread(target=self._connect_md_sync, args=(config_path, username, password)).start()
+        Thread(target=self._connect_md_sync, args=(
+            config_path, username, password)).start()
 
         self.td_api.ord_server = setting['td_ord_server']
         self.td_api.rpt_server = setting['td_rpt_server']
         self.td_api.qry_server = setting['td_qry_server']
         self.td_api.hdd_serial = setting['hdd_serial']
-        Thread(target=self._connect_td_sync, args=(config_path, username, password)).start()
+        self.td_api.customize_ip = setting['customize_ip']
+        self.td_api.customize_mac = setting['customize_mac']
+        Thread(target=self._connect_td_sync, args=(
+            config_path, username, password)).start()
 
     def _connect_td_sync(self, config_path, username, password):
         self.td_api.config_path = config_path

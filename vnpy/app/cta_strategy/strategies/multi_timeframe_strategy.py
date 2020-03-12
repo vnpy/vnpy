@@ -36,9 +36,7 @@ class MultiTimeframeStrategy(CtaTemplate):
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
-        super(MultiTimeframeStrategy, self).__init__(
-            cta_engine, strategy_name, vt_symbol, setting
-        )
+        super().__init__(cta_engine, strategy_name, vt_symbol, setting)
 
         self.rsi_long = 50 + self.rsi_signal
         self.rsi_short = 50 - self.rsi_signal

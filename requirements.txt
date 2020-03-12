@@ -1,14 +1,24 @@
-PyQt5<5.12
+six==1.13.0
+PyQt5
+pyqtgraph
 dataclasses; python_version<="3.6"
 qdarkstyle
 requests
 websocket-client
 peewee
+pymysql
+psycopg2
+mongoengine
 numpy
-pandas
+pandas==0.24.2
 matplotlib
 seaborn
 futu-api
 tigeropen
+rqdatac
 ta-lib
 ibapi
+deap
+pyzmq
+wmi
+QScintilla
