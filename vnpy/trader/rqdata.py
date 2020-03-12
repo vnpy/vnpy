@@ -55,7 +55,7 @@ class RqdataClient:
                 self.password,
                 ('rqdatad-pro.ricequant.com', 16011),
                 use_pool=True,
-                max_pool_size=3
+                max_pool_size=1
             )
 
             df = rqdata_all_instruments()
