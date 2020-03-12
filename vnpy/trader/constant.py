@@ -129,6 +129,8 @@ class Exchange(Enum):
     # Special Function
     LOCAL = "LOCAL"         # For local generated data
 
+    # ib simulation
+    IBKRATS ='IBKRATS'
 
 class Currency(Enum):
     """

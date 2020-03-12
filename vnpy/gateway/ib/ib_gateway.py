@@ -7,7 +7,6 @@ XAUUSD-USD-CMDTY  SMART
 ES-202002-USD-FUT  GLOBEX
 """
 
-
 from copy import copy
 from datetime import datetime
 from queue import Empty
@@ -53,9 +52,8 @@ from vnpy.trader.constant import (
 )
 from vnpy.trader.utility import get_file_path
 
-
 ORDERTYPE_VT2IB = {
-    OrderType.LIMIT: "LMT", 
+    OrderType.LIMIT: "LMT",
     OrderType.MARKET: "MKT",
     OrderType.STOP: "STP"
 }
@@ -75,7 +73,8 @@ EXCHANGE_VT2IB = {
     Exchange.ICE: "ICE",
     Exchange.SEHK: "SEHK",
     Exchange.HKFE: "HKFE",
-    Exchange.CFE: "CFE"
+    Exchange.CFE: "CFE",
+    Exchange.IBKRATS:'IBKRATS'
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}
 
@@ -278,7 +277,7 @@ class IbApi(EWrapper):
         self.gateway.write_log(msg)
 
     def error(
-        self, reqId: TickerId, errorCode: int, errorString: str
+            self, reqId: TickerId, errorCode: int, errorString: str
     ):  # pylint: disable=invalid-name
         """
         Callback of error caused by specific request.
@@ -289,7 +288,7 @@ class IbApi(EWrapper):
         self.gateway.write_log(msg)
 
     def tickPrice(  # pylint: disable=invalid-name
-        self, reqId: TickerId, tickType: TickType, price: float, attrib: TickAttrib
+            self, reqId: TickerId, tickType: TickType, price: float, attrib: TickAttrib
     ):
         """
         Callback of tick price update.
@@ -317,7 +316,7 @@ class IbApi(EWrapper):
         self.gateway.on_tick(copy(tick))
 
     def tickSize(
-        self, reqId: TickerId, tickType: TickType, size: int
+            self, reqId: TickerId, tickType: TickType, size: int
     ):  # pylint: disable=invalid-name
         """
         Callback of tick volume update.
@@ -334,7 +333,7 @@ class IbApi(EWrapper):
         self.gateway.on_tick(copy(tick))
 
     def tickString(
-        self, reqId: TickerId, tickType: TickType, value: str
+            self, reqId: TickerId, tickType: TickType, value: str
     ):  # pylint: disable=invalid-name
         """
         Callback of tick string update.
@@ -350,18 +349,18 @@ class IbApi(EWrapper):
         self.gateway.on_tick(copy(tick))
 
     def orderStatus(  # pylint: disable=invalid-name
-        self,
-        orderId: OrderId,
-        status: str,
-        filled: float,
-        remaining: float,
-        avgFillPrice: float,
-        permId: int,
-        parentId: int,
-        lastFillPrice: float,
-        clientId: int,
-        whyHeld: str,
-        mktCapPrice: float,
+            self,
+            orderId: OrderId,
+            status: str,
+            filled: float,
+            remaining: float,
+            avgFillPrice: float,
+            permId: int,
+            parentId: int,
+            lastFillPrice: float,
+            clientId: int,
+            whyHeld: str,
+            mktCapPrice: float,
     ):
         """
         Callback of order status update.
@@ -392,11 +391,11 @@ class IbApi(EWrapper):
         self.gateway.on_order(copy(order))
 
     def openOrder(  # pylint: disable=invalid-name
-        self,
-        orderId: OrderId,
-        ib_contract: Contract,
-        ib_order: Order,
-        orderState: OrderState,
+            self,
+            orderId: OrderId,
+            ib_contract: Contract,
+            ib_order: Order,
+            orderState: OrderState,
     ):
         """
         Callback when opening new order.
@@ -426,7 +425,7 @@ class IbApi(EWrapper):
         self.gateway.on_order(copy(order))
 
     def updateAccountValue(  # pylint: disable=invalid-name
-        self, key: str, val: str, currency: str, accountName: str
+            self, key: str, val: str, currency: str, accountName: str
     ):
         """
         Callback of account update.
@@ -447,15 +446,15 @@ class IbApi(EWrapper):
         setattr(account, name, float(val))
 
     def updatePortfolio(  # pylint: disable=invalid-name
-        self,
-        contract: Contract,
-        position: float,
-        marketPrice: float,
-        marketValue: float,
-        averageCost: float,
-        unrealizedPNL: float,
-        realizedPNL: float,
-        accountName: str,
+            self,
+            contract: Contract,
+            position: float,
+            marketPrice: float,
+            marketValue: float,
+            averageCost: float,
+            unrealizedPNL: float,
+            realizedPNL: float,
+            accountName: str,
     ):
         """
         Callback of position update.
@@ -476,7 +475,7 @@ class IbApi(EWrapper):
         elif contract.primaryExchange:
             exchange = EXCHANGE_IB2VT.get(contract.primaryExchange, None)
         else:
-            exchange = Exchange.SMART   # Use smart routing for default
+            exchange = Exchange.SMART  # Use smart routing for default
 
         if not exchange:
             msg = f"存在不支持的交易所持仓{contract.conId} {contract.exchange} {contract.primaryExchange}"
@@ -484,9 +483,9 @@ class IbApi(EWrapper):
             return
 
         ib_size = contract.multiplier
-        if not ib_size:
+        if not ib_size or ib_size == "":
             ib_size = 1
-        price = averageCost / ib_size
+        price = averageCost / float(ib_size)
 
         pos = PositionData(
             symbol=contract.conId,
@@ -541,7 +540,7 @@ class IbApi(EWrapper):
             self.save_contract_data()
 
     def execDetails(
-        self, reqId: int, contract: Contract, execution: Execution
+            self, reqId: int, contract: Contract, execution: Execution
     ):  # pylint: disable=invalid-name
         """
         Callback of trade data update.
@@ -729,7 +728,7 @@ class IbApi(EWrapper):
             end_str = ""
 
         delta = end - req.start
-        days = min(delta.days, 180)     # IB only provides 6-month data
+        days = min(delta.days, 180)  # IB only provides 6-month data
         duration = f"{days} D"
         bar_size = INTERVAL_VT2IB[req.interval]
 
@@ -751,12 +750,12 @@ class IbApi(EWrapper):
             []
         )
 
-        self.history_condition.acquire()    # Wait for async data return
+        self.history_condition.acquire()  # Wait for async data return
         self.history_condition.wait()
         self.history_condition.release()
 
         history = self.history_buf
-        self.history_buf = []       # Create new buffer list
+        self.history_buf = []  # Create new buffer list
         self.history_req = None
 
         return history
