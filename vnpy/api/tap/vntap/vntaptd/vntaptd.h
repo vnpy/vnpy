@@ -835,12 +835,9 @@ public:
 
 	int haveCertainRight(int rightID);
 
-	int insertOrder(unsigned int *sessionID, string *ClientOrderNo, const dict &req); //4
+	int insertOrder(unsigned int *sessionID, string ClientOrderNo, const dict &req); //4
 
 	int cancelOrder(unsigned int *sessionID, const dict &req); //8
-
-
-
 
 
 	int qryTradingDate(unsigned int *session);
