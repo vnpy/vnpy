@@ -2631,7 +2631,7 @@ void TdApi::processRspFillLocalRemove(Task *task)
 ///主动函数
 ///-------------------------------------------------------------------------------------
 
-void TdApi::CreateITapTradeAPI(const dict &req, int &iResult)
+void TdApi::createITapTradeAPI(const dict &req, int &iResult)
 {
 	TapAPIApplicationInfo myreq = TapAPIApplicationInfo();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2667,7 +2667,8 @@ int TdApi::exit()
 
 string TdApi::getITapTradeAPIVersion()
 {
-	GetITapTradeAPIVersion();
+	string i = GetITapTradeAPIVersion();
+	return i;
 };
 
 int TdApi::setITapTradeAPIDataPath(string path)
@@ -2681,7 +2682,6 @@ int TdApi::setITapTradeAPILogLevel(string level)
 	int i = SetITapTradeAPILogLevel((char)level.c_str());
 	return i;
 }
-
 
 int TdApi::setHostAddress(string IP, unsigned short port)
 {
@@ -2759,7 +2759,6 @@ int TdApi::insertOrder(unsigned int *sessionID, string ClientOrderNo, const dict
 	getChar(req, "TimeInForce", &myreq.TimeInForce);
 	getString(req, "ExpireTime", myreq.ExpireTime);
 
-
 	getChar(req, "IsRiskOrder", &myreq.IsRiskOrder);
 	getChar(req, "OrderSide", &myreq.OrderSide);
 	getChar(req, "PositionEffect", &myreq.PositionEffect);
@@ -2770,11 +2769,11 @@ int TdApi::insertOrder(unsigned int *sessionID, string ClientOrderNo, const dict
 	getDouble(req, "OrderPrice", &myreq.OrderPrice);
 	getDouble(req, "OrderPrice2", &myreq.OrderPrice2);
 	getDouble(req, "StopPrice", &myreq.StopPrice);
-	getInt(req, "OrderQty", &myreq.OrderQty);
-	getInt(req, "OrderMinQty", &myreq.OrderMinQty);
+	getUnsignedInt(req, "OrderQty", &myreq.OrderQty);
+	getUnsignedInt(req, "OrderMinQty", &myreq.OrderMinQty);
 
-	getInt(req, "MinClipSize", &myreq.MinClipSize);
-	getInt(req, "MaxClipSize", &myreq.MaxClipSize);
+	getUnsignedInt(req, "MinClipSize", &myreq.MinClipSize);
+	getUnsignedInt(req, "MaxClipSize", &myreq.MaxClipSize);
 
 	getInt(req, "RefInt", &myreq.RefInt);
 	getDouble(req, "RefDouble", &myreq.RefDouble);
@@ -2933,7 +2932,7 @@ int TdApi::qryAccountCashAdjust(unsigned int *session, const dict &req)
 {
 	TapAPIAccountCashAdjustQryReq myreq = TapAPIAccountCashAdjustQryReq();
 	memset(&myreq, 0, sizeof(myreq));
-	getUnsigned int(req, "SerialID", &myreq.SerialID);
+	getUnsignedInt(req, "SerialID", &myreq.SerialID);
 	getString(req, "AccountNo", myreq.AccountNo);
 	getString(req, "AccountAttributeNo", myreq.AccountAttributeNo);
 	getString(req, "BeginDate", myreq.BeginDate);
@@ -3044,7 +3043,6 @@ int TdApi::qryAccountMarginRent(unsigned int *session, const dict &req)
 	getString(req, "ExchangeNo", myreq.ExchangeNo);
 	getChar(req, "CommodityType", &myreq.CommodityType);
 	getString(req, "CommodityNo", myreq.CommodityNo);
-	getString(req, "ContractNo", myreq.ContractNo);
 	int i = this->api->QryAccountMarginRent(session, &myreq);
 	return i;
 };
@@ -3669,7 +3667,7 @@ PYBIND11_MODULE(vntaptd, m)
 	class_<TdApi, PyTdApi> TdApi(m, "TdApi", module_local());
 	TdApi
 		.def(init<>())
-		.def("CreateITapTradeAPI", &TdApi::CreateITapTradeAPI)
+		.def("CreateITapTradeAPI", &TdApi::createITapTradeAPI)
 		.def("release", &TdApi::release)
 		.def("init", &TdApi::init)
 		.def("exit", &TdApi::exit)
