@@ -82,6 +82,15 @@ void getInt(const dict &d, const char *key, int *value)
     }
 };
 
+void getUnsignedInt(const dict &d, const char *key, unsigned int *value)
+{
+	if (d.contains(key))		//检查字典中是否存在该键值
+	{
+		object o = d[key];		//获取该键值
+		*value = o.cast<unsigned int>();
+	}
+};
+
 
 //从字典中获取某个建值对应的浮点数，并赋值到请求结构体对象的值上
 void getDouble(const dict &d, const char *key, double *value)
