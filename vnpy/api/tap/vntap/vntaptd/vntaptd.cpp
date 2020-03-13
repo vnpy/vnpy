@@ -2672,12 +2672,14 @@ string TdApi::getITapTradeAPIVersion()
 
 int TdApi::setITapTradeAPIDataPath(string path)
 {
-	SetITapTradeAPIDataPath(path.c_str());
+	int i = SetITapTradeAPIDataPath(path.c_str());
+	return i;
 };
 
 int TdApi::setITapTradeAPILogLevel(string level)
 {
-	SetITapTradeAPILogLevel(level);
+	int i = SetITapTradeAPILogLevel((char)level.c_str());
+	return i;
 }
 
 
@@ -2707,7 +2709,7 @@ int TdApi::requestVertificateCode(unsigned int *sessionID, string ContactInfo)
 
 int TdApi::setVertificateCode(string VertificateCode)
 {
-	int i = this->api->SetVertificateCode(VertificateCode);
+	int i = this->api->SetVertificateCode((char*)VertificateCode.c_str());
 	return i;
 }
 
