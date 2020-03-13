@@ -825,9 +825,9 @@ public:
 
 	int login(const dict &req);
 
-	int requestVertificateCode(unsigned int *sessionID, string ContactInfo); //2
+	int requestVertificateCode(unsigned int *sessionID, string ContactInfo);
 
-	int setVertificateCode(string VertificateCode); //3
+	int setVertificateCode(string VertificateCode);
 
 	int disconnect();
 
@@ -835,9 +835,9 @@ public:
 
 	int haveCertainRight(int rightID);
 
-	int insertOrder(unsigned int *sessionID, string ClientOrderNo, const dict &req); //4
+	int insertOrder(unsigned int *sessionID, string ClientOrderNo, const dict &req); //1
 
-	int cancelOrder(unsigned int *sessionID, const dict &req); //8
+	int cancelOrder(unsigned int *sessionID, const dict &req); //2
 
 
 	int qryTradingDate(unsigned int *session);
@@ -864,7 +864,7 @@ public:
 
 	int qryCurrency(unsigned int *session);
 
-	int qryAccountCashAdjust(unsigned int *session, const dict &data);
+	int qryAccountCashAdjust(unsigned int *session, const dict &data); //3
 
 	int qryTradeMessage(unsigned int *session, const dict &data);
 
