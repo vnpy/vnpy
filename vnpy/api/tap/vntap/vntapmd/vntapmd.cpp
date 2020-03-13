@@ -414,7 +414,7 @@ void MdApi::createTapQuoteAPI(const dict &req, int &iResult)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AuthCode", myreq.AuthCode);
 	getString(req, "KeyOperationLogPath", myreq.KeyOperationLogPath);
-	this =  CreateTapQuoteAPI(&myreq, iResult); // 创建API接口对象
+	this ->api = (ITapQuoteAPI*) CreateTapQuoteAPI(&myreq, iResult); // 创建API接口对象
 	this->api->SetAPINotify(this);  //注册回调函数对象
 };
 
@@ -444,17 +444,20 @@ int MdApi::exit()
 
 string MdApi::getTapQuoteAPIVersion()
 {
-	GetTapQuoteAPIVersion();
+	string i = GetTapQuoteAPIVersion();
+	return i;
 };
 
 int MdApi::setTapQuoteAPIDataPath(string path)
 {
-	SetTapQuoteAPIDataPath(path.c_str());
+	int i = SetTapQuoteAPIDataPath(path.c_str());
+	return i;
 };
 
 int MdApi::setTapQuoteAPILogLevel(string level)
 {
-	SetTapQuoteAPILogLevel(level);
+	int i = SetTapQuoteAPILogLevel((char)level.c_str());
+	return i;
 }
 
 int MdApi::setHostAddress(string IP, unsigned short port)
