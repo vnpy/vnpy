@@ -819,7 +819,7 @@ public:
 
 	int setITapTradeAPIDataPath(string path);
 
-	int setITapTradeAPILogLevel(string level); //1
+	int setITapTradeAPILogLevel(string level); 
 
 	int setHostAddress(string IP, unsigned short port);
 
