@@ -2739,7 +2739,7 @@ int TdApi::haveCertainRight(int rightID)
 }
 
 
-int TdApi::insertOrder(unsigned int *sessionID, string *ClientOrderNo, const dict &req)
+int TdApi::insertOrder(unsigned int *sessionID, string ClientOrderNo, const dict &req)
 {
 	TapAPINewOrder myreq = TapAPINewOrder();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2786,7 +2786,7 @@ int TdApi::insertOrder(unsigned int *sessionID, string *ClientOrderNo, const dic
 	getChar(req, "TriggerPriceType", &myreq.TriggerPriceType);
 	getChar(req, "AddOneIsValid", &myreq.AddOneIsValid);
 
-	int i = this->api->InsertOrder(sessionID, ClientOrderNo, &myreq);
+	int i = this->api->InsertOrder(sessionID, (char*)ClientOrderNo.c_str(), &myreq);
 	return i;
 }
 
@@ -3669,30 +3669,22 @@ PYBIND11_MODULE(vntaptd, m)
 	class_<TdApi, PyTdApi> TdApi(m, "TdApi", module_local());
 	TdApi
 		.def(init<>())
-		.def("setAPINotify", &TdApi::setAPINotify)
+		.def("CreateITapTradeAPI", &TdApi::CreateITapTradeAPI)
+		.def("release", &TdApi::release)
 		.def("init", &TdApi::init)
 		.def("exit", &TdApi::exit)
+		.def("getITapTradeAPIVersion", &TdApi::getITapTradeAPIVersion)
+		.def("setITapTradeAPIDataPath", &TdApi::setITapTradeAPIDataPath)
+		.def("setITapTradeAPILogLevel", &TdApi::setITapTradeAPILogLevel)
 		.def("setHostAddress", &TdApi::setHostAddress)
 		.def("login", &TdApi::login)
 		.def("requestVertificateCode", &TdApi::requestVertificateCode)
 		.def("setVertificateCode", &TdApi::setVertificateCode)
 		.def("disconnect", &TdApi::disconnect)
-		.def("changePassword", &TdApi::changePassword)
 		.def("authPassword", &TdApi::authPassword)
 		.def("haveCertainRight", &TdApi::haveCertainRight)
-		.def("setReservedInfo", &TdApi::setReservedInfo)
 		.def("insertOrder", &TdApi::insertOrder)
 		.def("cancelOrder", &TdApi::cancelOrder)
-		.def("amendOrder", &TdApi::amendOrder)
-		.def("activateOrder", &TdApi::activateOrder)
-		.def("insertHKMarketOrder", &TdApi::insertHKMarketOrder)
-		.def("cancelHKMarketOrder", &TdApi::cancelHKMarketOrder)
-		.def("orderLocalRemove", &TdApi::orderLocalRemove)
-		.def("orderLocalInput", &TdApi::orderLocalInput)
-		.def("orderLocalModify", &TdApi::orderLocalModify)
-		.def("orderLocalTransfer", &TdApi::orderLocalTransfer)
-		.def("fillLocalInput", &TdApi::fillLocalInput)
-		.def("fillLocalRemove", &TdApi::fillLocalRemove)
 
 		.def("qryTradingDate", &TdApi::qryTradingDate)
 		.def("qryAccount", &TdApi::qryAccount)
