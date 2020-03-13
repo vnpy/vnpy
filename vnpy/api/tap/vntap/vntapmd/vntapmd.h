@@ -191,7 +191,7 @@ public:
 
 	int setTapQuoteAPIDataPath(string path);
 
-	int setTapQuoteAPILogLevel(string level);
+	int setTapQuoteAPILogLevel(char level); //1
 
 	int setHostAddress(string IP, unsigned short port); //2
 
