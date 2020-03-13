@@ -807,7 +807,7 @@ public:
     //-------------------------------------------------------------------------------------
     //req:主动函数的请求字典
     //-------------------------------------------------------------------------------------
-	void CreateITapTradeAPI(const dict &req, int &iResult);
+	void createITapTradeAPI(const dict &req, int &iResult);
 
 	void release();
 
