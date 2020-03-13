@@ -76,7 +76,8 @@ class ComstarGateway(BaseGateway):
         # 清算速度
         data['settle_type'] = settle_type
         # 策略名称
-        data['strategy_name'] = req.reference
+        data['strategy_name'] = data.pop('reference')
+
         # 1表示阻塞, 0非阻塞
         return self.api.send_order(data, gateway_name, blocks=1)
 
@@ -84,6 +85,9 @@ class ComstarGateway(BaseGateway):
         """"""
         gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
         data = vn_encode(req)
+        symbol, settle_type, *_ = req.symbol.split("_") + [""]
+        data['symbol'] = symbol
+        data['settle_type'] = settle_type
         self.api.cancel_order(data, gateway_name)
 
     def query_account(self):
