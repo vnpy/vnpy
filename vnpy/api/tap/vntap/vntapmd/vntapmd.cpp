@@ -454,9 +454,9 @@ int MdApi::setTapQuoteAPIDataPath(string path)
 	return i;
 };
 
-int MdApi::setTapQuoteAPILogLevel(string level)
+int MdApi::setTapQuoteAPILogLevel(char level)
 {
-	int i = SetTapQuoteAPILogLevel((char)level.c_str());
+	int i = SetTapQuoteAPILogLevel(level);
 	return i;
 }
 
@@ -637,6 +637,9 @@ PYBIND11_MODULE(vntapmd, m)
 		.def("release", &MdApi::release)
 		.def("init", &MdApi::init)
 		.def("exit", &MdApi::exit)
+		.def("getTapQuoteAPIVersion", &MdApi::getTapQuoteAPIVersion)
+		.def("setTapQuoteAPIDataPath", &MdApi::setTapQuoteAPIDataPath)
+		.def("setTapQuoteAPILogLevel", &MdApi::setTapQuoteAPILogLevel)
 		.def("setHostAddress", &MdApi::setHostAddress)
 		.def("login", &MdApi::login)
 		.def("disconnect", &MdApi::disconnect)
