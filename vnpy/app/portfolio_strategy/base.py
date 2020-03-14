@@ -13,5 +13,5 @@ class EngineType(Enum):
     BACKTESTING = "回测"
 
 
-EVENT_CTA_LOG = "eCtaLog"
-EVENT_CTA_STRATEGY = "eCtaStrategy"
+EVENT_PORTFOLIO_LOG = "ePortfolioLog"
+EVENT_PORTFOLIO_STRATEGY = "ePortfolioStrategy"

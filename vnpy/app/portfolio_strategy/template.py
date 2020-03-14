@@ -124,7 +124,7 @@ class StrategyTemplate(ABC):
         pass
 
     @virtual
-    def on_bars(self, bars: List[BarData]) -> None:
+    def on_bars(self, bars: Dict[str, BarData]) -> None:
         """
         Callback of new bar data update.
         """
