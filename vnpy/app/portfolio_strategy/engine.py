@@ -5,7 +5,7 @@ import os
 import traceback
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Set, Type, Any, Callable
+from typing import Dict, List, Set, Tuple, Type, Any, Callable
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 
@@ -234,7 +234,31 @@ class StrategyEngine(BaseEngine):
 
     def load_bars(self, strategy: StrategyTemplate, days: int, interval: Interval):
         """"""
-        pass
+        vt_symbols = strategy.vt_symbols
+        dts: Set[datetime] = set()
+        bar_data: Dict[Tuple, BarData] = {}
+
+        # Load data from rqdata/gateway/database
+        for vt_symbol in vt_symbols:
+            data = self.load_bar(vt_symbol, days, interval)
+
+            for bar in data:
+                dts.add(bar.datetime)
+                bar_data[(bar.datetime, vt_symbol)] = bar
+
+        # Convert data structure and push to strategy
+        dts = list(dts)
+        dts.sort()
+
+        for dt in dts:
+            bars = {}
+
+            for vt_symbol in vt_symbols:
+                bar = bar_data.get((dt, vt_symbol), None)
+                if bar:
+                    bars[vt_symbol] = bar
+
+            self.call_strategy_func(strategy, strategy.on_bars, bars)
 
     def load_bar(self, vt_symbol: str, days: int, interval: Interval) -> List[BarData]:
         """"""

@@ -1,1 +1,1 @@
-from .widget import StrategyManager
+from .widget import PortfolioStrategyManager
