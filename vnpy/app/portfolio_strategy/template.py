@@ -150,32 +150,33 @@ class StrategyTemplate(ABC):
         elif order.vt_orderid in self.active_orderids:
             self.active_orderids.remove(order.vt_orderid)
 
-    def buy(self, price: float, volume: float, lock: bool = False) -> List[str]:
+    def buy(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
         """
         Send buy order to open a long position.
         """
-        return self.send_order(Direction.LONG, Offset.OPEN, price, volume, lock)
+        return self.send_order(vt_symbol, Direction.LONG, Offset.OPEN, price, volume, lock)
 
-    def sell(self, price: float, volume: float, lock: bool = False) -> List[str]:
+    def sell(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
         """
         Send sell order to close a long position.
         """
-        return self.send_order(Direction.SHORT, Offset.CLOSE, price, volume, lock)
+        return self.send_order(vt_symbol, Direction.SHORT, Offset.CLOSE, price, volume, lock)
 
-    def short(self, price: float, volume: float, lock: bool = False) -> List[str]:
+    def short(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
         """
         Send short order to open as short position.
         """
-        return self.send_order(Direction.SHORT, Offset.OPEN, price, volume, lock)
+        return self.send_order(vt_symbol, Direction.SHORT, Offset.OPEN, price, volume, lock)
 
-    def cover(self, price: float, volume: float, lock: bool = False) -> List[str]:
+    def cover(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
         """
         Send cover order to close a short position.
         """
-        return self.send_order(Direction.LONG, Offset.CLOSE, price, volume, lock)
+        return self.send_order(vt_symbol, Direction.LONG, Offset.CLOSE, price, volume, lock)
 
     def send_order(
         self,
+        vt_symbol: str,
         direction: Direction,
         offset: Offset,
         price: float,
@@ -187,7 +188,7 @@ class StrategyTemplate(ABC):
         """
         if self.trading:
             vt_orderids = self.strategy_engine.send_order(
-                self, direction, offset, price, volume, lock
+                self, vt_symbol, direction, offset, price, volume, lock
             )
             return vt_orderids
         else:
@@ -204,7 +205,7 @@ class StrategyTemplate(ABC):
         """
         Cancel all orders sent by strategy.
         """
-        for vt_orderid in self.active_orderids:
+        for vt_orderid in list(self.active_orderids):
             self.cancel_order(vt_orderid)
 
     def get_pos(self, vt_symbol: str) -> int:

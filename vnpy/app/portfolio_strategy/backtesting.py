@@ -146,8 +146,7 @@ class BacktestingEngine:
                 end = min(end, self.end)  # Make sure end time stays within set range
 
                 data = load_bar_data(
-                    self.symbol,
-                    self.exchange,
+                    vt_symbol,
                     self.interval,
                     start,
                     end
@@ -165,7 +164,7 @@ class BacktestingEngine:
                 start = end + interval_delta
                 end += (progress_delta + interval_delta)
 
-                self.output(f"{vt_symbol}历史数据加载完成，数据量：{len(self.history_data)}")
+            self.output(f"{vt_symbol}历史数据加载完成，数据量：{len(self.history_data)}")
 
         self.output("所有历史数据加载完成")
 
@@ -234,10 +233,9 @@ class BacktestingEngine:
             daily_result.calculate_pnl(
                 pre_closes,
                 start_poses,
-                self.size,
-                self.rate,
-                self.slippage,
-                self.inverse
+                self.sizes,
+                self.rates,
+                self.slippages,
             )
 
             pre_closes = daily_result.pre_closes
@@ -249,7 +247,7 @@ class BacktestingEngine:
         for daily_result in self.daily_results.values():
             fields = [
                 "date", "trade_count", "turnover", 
-                "commission", "slippage", "trade_pnl", 
+                "commission", "slippage", "trading_pnl", 
                 "holding_pnl", "total_pnl", "net_pnl"
             ]
             for key in fields:
@@ -460,7 +458,7 @@ class BacktestingEngine:
 
     def update_daily_close(self, bars: Dict[str, BarData], dt: datetime) -> None:
         """"""
-        d = datetime.date()
+        d = dt.date()
 
         close_prices = {}
         for bar in bars.values():
@@ -489,7 +487,7 @@ class BacktestingEngine:
         self.cross_limit_order()
         self.strategy.on_bars(self.bars)
 
-        self.update_daily_close(self.bars)
+        self.update_daily_close(self.bars, dt)
 
     def cross_limit_order(self) -> None:
         """
@@ -524,7 +522,7 @@ class BacktestingEngine:
             if not long_cross and not short_cross:
                 continue
 
-            # Push order udpate with status "all traded" (filled).
+            # Push order update with status "all traded" (filled).
             order.traded = order.volume
             order.status = Status.ALLTRADED
             self.strategy.update_order(order)
@@ -556,7 +554,7 @@ class BacktestingEngine:
             self.strategy.update_trade(trade)
             self.trades[trade.vt_tradeid] = trade
 
-    def load_bar(
+    def load_bars(
         self,
         strategy: StrategyTemplate,
         days: int,
@@ -582,8 +580,8 @@ class BacktestingEngine:
         self.limit_order_count += 1
 
         order = OrderData(
-            symbol=self.symbol,
-            exchange=self.exchange,
+            symbol=symbol,
+            exchange=exchange,
             orderid=str(self.limit_order_count),
             direction=direction,
             offset=offset,
@@ -732,6 +730,10 @@ class ContractDailyResult:
         self.total_pnl = self.trading_pnl + self.holding_pnl
         self.net_pnl = self.total_pnl - self.commission - self.slippage
 
+    def update_close_price(self, close_price: float) -> None:
+        """"""
+        self.close_price = close_price
+
 
 class PortfolioDailyResult:
 
@@ -746,13 +748,13 @@ class PortfolioDailyResult:
         self.contract_results: Dict[str, ContractDailyResult] = {}
 
         for vt_symbol, close_price in close_prices.items():
-            self.contract_results[vt_symbol] = ContractDailyResult(date, close_prices)
+            self.contract_results[vt_symbol] = ContractDailyResult(date, close_price)
 
         self.trade_count: int = 0
         self.turnover: float = 0
         self.commission: float = 0
         self.slippage: float = 0
-        self.trade_pnl: float = 0
+        self.trading_pnl: float = 0
         self.holding_pnl: float = 0
         self.total_pnl: float = 0
         self.net_pnl: float = 0
@@ -762,7 +764,7 @@ class PortfolioDailyResult:
         contract_result = self.contract_results[trade.vt_symbol]
         contract_result.add_trade(trade)
 
-    def calculate_result(
+    def calculate_pnl(
         self,
         pre_closes: Dict[str, float],
         start_poses: Dict[str, float],
@@ -786,12 +788,20 @@ class PortfolioDailyResult:
             self.turnover += contract_result.turnover
             self.commission += contract_result.commission
             self.slippage += contract_result.slippage
-            self.trade_pnl += contract_result.trade_pnl
+            self.trading_pnl += contract_result.trading_pnl
             self.holding_pnl += contract_result.holding_pnl
             self.total_pnl += contract_result.total_pnl
             self.net_pnl += contract_result.net_pnl
 
             self.end_poses[vt_symbol] = contract_result.end_pos
+
+    def update_close_prices(self, close_prices: Dict[str, float]) -> None:
+        """"""
+        self.close_prices = close_prices
+
+        for vt_symbol, close_price in close_prices.items():
+            contract_result = self.contract_results[vt_symbol]
+            contract_result.update_close_price(close_price)
 
 
 @lru_cache(maxsize=999)
