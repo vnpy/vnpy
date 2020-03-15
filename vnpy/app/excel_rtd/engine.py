@@ -73,3 +73,8 @@ class RtdEngine(BaseEngine):
             contract.exchange
         )
         self.main_engine.subscribe(req, contract.gateway_name)
+
+    def close(self):
+        """"""
+        self.server.stop()
+        self.server.join()

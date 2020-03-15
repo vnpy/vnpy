@@ -388,8 +388,9 @@ class BinanceRestApi(RestClient):
     def keep_user_stream(self):
         """"""
         self.keep_alive_count += 1
-        if self.keep_alive_count < 1800:
+        if self.keep_alive_count < 600:
             return
+        self.keep_alive_count = 0
 
         data = {
             "security": Security.API_KEY
