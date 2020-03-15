@@ -1,7 +1,0 @@
-{
-    "brokerID": "guofu", 
-    "tdAddress": "tcp://211.147.74.221:30005", 
-    "password": "111111", 
-    "mdAddress": "tcp://211.147.74.221:30007", 
-    "userID": "t040"
-}

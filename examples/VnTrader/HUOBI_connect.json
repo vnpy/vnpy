@@ -1,6 +1,0 @@
-{
-	"exchange": "huobi",
-	"accessKey": "",
-	"secretKey": "",
-	"symbols": ["btcusdt","ethusdt","ethbtc"]
-}

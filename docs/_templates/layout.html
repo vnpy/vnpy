@@ -1,0 +1,140 @@
+{% extends 'basic/layout.html' %}
+
+{%- block extrahead %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ pathto('_static/custom.css', 1) }}" type="text/css" />
+  {% if theme_touch_icon %}
+    <link rel="apple-touch-icon" href="{{ pathto('_static/' ~ theme_touch_icon, 1) }}" />
+  {% endif %}
+  {% if theme_canonical_url %}
+    <link rel="canonical" href="{{ theme_canonical_url }}{{ pagename }}.html"/>
+  {% endif %}
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+{% endblock %}
+
+{# Disable base theme's top+bottom related navs; we have our own in sidebar #}
+{%- block relbar1 %}{% endblock %}
+{%- block relbar2 %}{% endblock %}
+
+{# Nav should appear before content, not after #}
+{%- block content %}
+<nav class="navbar navbar-default navbar-fixed-top topnav" role="navigation">
+    <div class="container topnav">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topnav-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand topnav" href="https://www.vnpy.com/">vn.py — By Traders, For Traders</a>
+        </div>
+        <div class="collapse navbar-collapse" id="topnav-collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/">主页</a>
+                </li>
+                <li>
+                    <a href="/forum/">社区</a>
+                </li>
+                <li>
+                    <a href="/docs/">文档</a>
+                </li>
+                <li>
+                    <a href="https://www.github.com/vnpy/vnpy" target="_blank">Github</a>
+                </li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container -->
+</nav>
+
+{%- macro sidebar() %}
+  {%- if render_sidebar %}
+  <div class="page-sidebar" role="navigation" aria-label="main navigation">
+    <div class="page-sidebarwrapper">
+      {%- block sidebarlogo %}
+      {%- if logo %}
+        <p class="logo">
+          <a href="{{ pathto(master_doc) }}"><img class="logo" src="{{ pathto('_static/' + logo, 1) }}" alt="Logo"/></a>
+        </p>
+      {%- endif %}
+      {%- endblock %}
+      {%- if sidebars != None %}
+        {#- new style sidebar: explicitly include/exclude templates #}
+        {%- for sidebartemplate in sidebars %}
+        {%- include sidebartemplate %}
+        {%- endfor %}
+      {%- endif %}
+    </div>
+  </div>
+  {%- endif %}
+{%- endmacro %}
+
+{%- if theme_fixed_sidebar|lower == 'true' %}
+  <div class="container">
+    {% if render_sidebar %}
+        <div class="col-xs-12 col-sm-4 col-md-4 col-lg-3">
+            {{ sidebar() }}
+        </div>
+    {% endif %}
+
+    {%- block document %}
+
+          <div class="col-xs-12 col-sm-8 col-md-8 col-lg-9 page-content" role="main">
+            <div class="paper">
+            {% block body %} {% endblock %}
+            </div>
+          </div>
+
+    {%- endblock %}
+
+    <div class="clearer"></div>
+  </div>
+{%- else %}
+{{ super() }}
+{%- endif %}
+{%- endblock %}
+
+{%- block footer %}
+<footer class="flaskbb-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+                    <p class="copyright text-muted small pull-left">
+                        © 2015 -
+                        <!--<script type="text/javascript">document.write(new Date().getFullYear());</script>-->
+                        2019
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        vn.py Team
+                    </p>
+                </div>
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+                    <p class="made-in text-muted small" style="text-align: center">
+                        By Traders, For Traders
+                    </p>
+                </div>
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+                    <p class="powered-by text-muted small pull-right">
+                        powered by <a href="https://flaskbb.org">FlaskBB</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+{% if theme_analytics_id %}
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', '{{ theme_analytics_id }}']);
+  _gaq.push(['_setDomainName', 'none']);
+  _gaq.push(['_setAllowLinker', true]);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+{% endif %}
+{%- endblock %}

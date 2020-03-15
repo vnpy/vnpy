@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT errors (error*)>
-<!ELEMENT error EMPTY>
-<!ATTLIST error
-	id	CDATA #REQUIRED
-	value CDATA #REQUIRED
-	prompt CDATA #REQUIRED
->
-

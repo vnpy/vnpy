@@ -1,67 +1,37 @@
-# C++源代码
-ipch/
-Release/
-
-*.sdf
-*.suo
-*.exp
-*.pdb
-*.cd
-*.o
-*.out
-
-# Python编译文件
+# Python
 *.pyc
 *.pyo
+*.egg-info/
 
-# WingIDE文件
+# Jupyter
+.ipynb_checkpoints
+
+# IDE
+.vscode
+.idea
 *.wpr
 *.wpu
+.vs
+x64
 
-# 压缩文件
-*.zip
-
-# API的.con文件
-*.con
-
-# visual studio
-*.opensdf
-
-# 本地持久化文件
-*.vn
-
-# 其他文件
-*.dump
-*.vssettings
-*.klg
-*.lkc
-
-# 不想同步的
-*.local
-*.temp
-*.vt
-*.log
-*.bak
-
-# 编译临时文件夹
-build/
-
-# CMake临时文件
-CMakeCache.txt
-CMakeFiles/
-build/cmake_install.cmake
-build/Makefile
-
-# 目录
-.idea
-.vscode
-.python-version
-.gitignore
-temp/
-.venv
-
-# setup.py install 临时文件
+# Temp
+build
 dist
-*.egg
-*.egg-info
+*.local
 
+# vn.py
+.vntrader
+
+# Visual Studio intermediate files
+*.exp
+*.iobj
+*.ipdb
+*.pdb
+
+# Documents
+_build
+_static
+_templates
+
+# Misc
+.DS_Store

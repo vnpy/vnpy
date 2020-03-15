@@ -1,59 +1,44 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-function check_result() {
-    if [ $? -ne 0 ]; then
-        echo " "
-        echo "do command failed for $1 !!!"
-        echo " "
-        exit 1
-    fi
+python=$1
+prefix=$2
+shift 2
+
+[[ -z $python ]] && python=python
+[[ -z $prefix ]] && prefix=/usr
+
+$python -m pip install --upgrade pip setuptools wheel
+
+# Get and build ta-lib
+function install-ta-lib()
+{
+    pushd /tmp
+    wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+    tar -xf ta-lib-0.4.0-src.tar.gz
+    cd ta-lib
+    ./configure --prefix=$prefix
+    make -j
+    make install
+    popd
 }
+function ta-lib-exists()
+{
+    ta-lib-config --libs > /dev/null
+}
+ta-lib-exists || install-ta-lib
 
-#Build ctp/lts/ib api
-echo "是否要安装'CTP'接口? (Do you need 'CTP' interface?)"
-read -p "Enter [y]n: " var1
-var1=${var1:-y}
-if [ "$var1" = "y" ]; then
-	pushd vnpy/api/ctp
-	bash build.sh
-	popd
-fi
+# old versions of ta-lib imports numpy in setup.py
+$python -m pip install numpy
 
-echo "是否要安装'LTS'接口? (Do you need 'LTS' interface?)"
-read -p "Enter [y]n: " var1
-var1=${var1:-y}
-if [ "$var1" = "y" ]; then
-	pushd vnpy/api/lts
-	bash build.sh
-	popd
-fi
+# Install extra packages
+$python -m pip install ta-lib
+$python -m pip install https://vnpy-pip.oss-cn-shanghai.aliyuncs.com/colletion/ibapi-9.75.1-py3-none-any.whl
 
-echo "是否要安装'XTP'接口? (Do you need 'XTP' interface?)"
-read -p "Enter [y]n: " var1
-var1=${var1:-y}
-if [ "$var1" = "y" ]; then
-	pushd vnpy/api/xtp
-	bash build.sh
-	popd
-fi
+# Install Python Modules
+$python -m pip install -r requirements.txt
 
-echo "是否要安装'IB'接口? (Do you need 'IB' interface?)"
-read -p "Enter [y]n: " var1
-var1=${var1:-y}
-if [ "$var1" = "y" ]; then
-	pushd vnpy/api/ib
-	bash build.sh
-	popd
-fi
+# Install local Chinese language environment
+locale-gen zh_CN.GB18030
 
-#Install Python Modules
-pip install -r requirements.txt
-
-#Install Ta-Lib
-conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
-conda config --set show_channel_urls yes
-conda install -c quantopian ta-lib=0.4.9
-
-#Install vn.py
-python setup.py install
-
+# Install vn.py
+$python -m pip install . $@
