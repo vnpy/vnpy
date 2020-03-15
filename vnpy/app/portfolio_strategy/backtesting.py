@@ -31,12 +31,12 @@ class BacktestingEngine:
         self.vt_symbols: List[str] = []
         self.start: datetime = None
         self.end: datetime = None
-        
+
         self.rate: float = 0
         self.slippage: float = 0
         self.size: float = 1
         self.pricetick: float = 0
-        
+
         self.capital: float = 1_000_000
 
         self.strategy: StrategyTemplate = None
@@ -617,12 +617,6 @@ class BacktestingEngine:
         """
         pass
 
-    def get_engine_type(self):
-        """
-        Return engine type.
-        """
-        return self.engine_type
-
     def put_strategy_event(self, strategy: StrategyTemplate):
         """
         Put an event to update strategy status.
@@ -654,31 +648,31 @@ class BacktestingEngine:
         return list(self.daily_results.values())
 
 
-class DailyResult:
+class ContractDailyResult:
     """"""
 
-    def __init__(self, date: date, close_price: float):
+    def __init__(self, result_date: date, close_price: float):
         """"""
-        self.date = date
-        self.close_price = close_price
-        self.pre_close = 0
+        self.date: date = result_date
+        self.close_price: float = close_price
+        self.pre_close: float = 0
 
-        self.trades = []
-        self.trade_count = 0
+        self.trades: List[TradeData] = []
+        self.trade_count: int = 0
 
-        self.start_pos = 0
-        self.end_pos = 0
+        self.start_pos: float = 0
+        self.end_pos: float = 0
 
-        self.turnover = 0
-        self.commission = 0
-        self.slippage = 0
+        self.turnover: float = 0
+        self.commission: float = 0
+        self.slippage: float = 0
 
-        self.trading_pnl = 0
-        self.holding_pnl = 0
-        self.total_pnl = 0
-        self.net_pnl = 0
+        self.trading_pnl: float = 0
+        self.holding_pnl: float = 0
+        self.total_pnl: float = 0
+        self.net_pnl: float = 0
 
-    def add_trade(self, trade: TradeData):
+    def add_trade(self, trade: TradeData) -> None:
         """"""
         self.trades.append(trade)
 
@@ -688,9 +682,8 @@ class DailyResult:
         start_pos: float,
         size: int,
         rate: float,
-        slippage: float,
-        inverse: bool
-    ):
+        slippage: float
+    ) -> None:
         """"""
         # If no pre_close provided on the first day,
         # use value 1 to avoid zero division error
@@ -703,12 +696,7 @@ class DailyResult:
         self.start_pos = start_pos
         self.end_pos = start_pos
 
-        if not inverse:     # For normal contract
-            self.holding_pnl = self.start_pos * \
-                (self.close_price - self.pre_close) * size
-        else:               # For crypto currency inverse contract
-            self.holding_pnl = self.start_pos * \
-                (1 / self.pre_close - 1 / self.close_price) * size
+        self.holding_pnl = self.start_pos * (self.close_price - self.pre_close) * size
 
         # Trading pnl is the pnl from new trade during the day
         self.trade_count = len(self.trades)
@@ -721,18 +709,9 @@ class DailyResult:
 
             self.end_pos += pos_change
 
-            # For normal contract
-            if not inverse:
-                turnover = trade.volume * size * trade.price
-                self.trading_pnl += pos_change * \
-                    (self.close_price - trade.price) * size
-                self.slippage += trade.volume * size * slippage
-            # For crypto currency inverse contract
-            else:
-                turnover = trade.volume * size / trade.price
-                self.trading_pnl += pos_change * \
-                    (1 / trade.price - 1 / self.close_price) * size
-                self.slippage += trade.volume * size * slippage / (trade.price ** 2)
+            turnover = trade.volume * size * trade.price
+            self.trading_pnl += pos_change * (self.close_price - trade.price) * size
+            self.slippage += trade.volume * size * slippage
 
             self.turnover += turnover
             self.commission += turnover * rate
@@ -740,6 +719,67 @@ class DailyResult:
         # Net pnl takes account of commission and slippage cost
         self.total_pnl = self.trading_pnl + self.holding_pnl
         self.net_pnl = self.total_pnl - self.commission - self.slippage
+
+
+class PortfolioDailyResult:
+
+    def __init__(self, result_date: date, close_prices: Dict[str, float]):
+        """"""
+        self.date: date = result_date
+        self.close_prices: Dict[str, float] = close_prices
+        self.pre_closes: Dict[str, float] = {}
+        self.start_poses: Dict[str, float] = {}
+        self.end_poses: Dict[str, float] = {}
+
+        self.contract_results: Dict[str, ContractDailyResult] = {}
+
+        for vt_symbol, close_price in close_prices.items():
+            self.contract_results[vt_symbol] = ContractDailyResult(date, close_prices)
+
+        self.trade_count: int = 0
+        self.turnover: float = 0
+        self.commission: float = 0
+        self.slippage: float = 0
+        self.trade_pnl: float = 0
+        self.holding_pnl: float = 0
+        self.total_pnl: float = 0
+        self.net_pnl: float = 0
+
+    def add_trade(self, trade: TradeData) -> None:
+        """"""
+        contract_result = self.contract_results[trade.vt_symbol]
+        contract_result.add_trade(trade)
+
+    def calculate_result(
+        self,
+        pre_closes: Dict[str, float],
+        start_poses: Dict[str, float],
+        sizes: Dict[str, float],
+        rates: Dict[str, float],
+        slippages: Dict[str, float],
+    ) -> None:
+        """"""
+        self.pre_closes = pre_closes
+
+        for vt_symbol, contract_result in self.contract_results.items():
+            contract_result.calculate_pnl(
+                pre_closes[vt_symbol],
+                start_poses[vt_symbol],
+                sizes[vt_symbol],
+                rates[vt_symbol],
+                slippages[vt_symbol]
+            )
+
+            self.trade_count += contract_result.trade_count
+            self.turnover += contract_result.turnover
+            self.commission += contract_result.commission
+            self.slippage += contract_result.slippage
+            self.trade_pnl += contract_result.trade_pnl
+            self.holding_pnl += contract_result.holding_pnl
+            self.total_pnl += contract_result.total_pnl
+            self.net_pnl += contract_result.net_pnl
+
+            self.end_poses[vt_symbol] = contract_result.end_pos
 
 
 @lru_cache(maxsize=999)
