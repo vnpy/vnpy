@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import date, datetime, timedelta
-from typing import Callable, Dict, List, Set, Tuple
+from typing import Dict, List, Set, Tuple
 from functools import lru_cache
 import traceback
 
@@ -9,10 +9,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pandas import DataFrame
 
-from vnpy.trader.constant import (Direction, Offset, Exchange,
-                                  Interval, Status)
+from vnpy.trader.constant import Direction, Offset, Interval, Status
 from vnpy.trader.database import database_manager
-from vnpy.trader.object import OrderData, TradeData, BarData, TickData
+from vnpy.trader.object import OrderData, TradeData, BarData
 from vnpy.trader.utility import round_to, extract_vt_symbol
 
 from .template import StrategyTemplate
@@ -238,7 +237,7 @@ class BacktestingEngine:
                 self.slippages,
             )
 
-            pre_closes = daily_result.pre_closes
+            pre_closes = daily_result.close_prices
             start_poses = daily_result.end_poses
 
         # Generate dataframe
@@ -246,12 +245,12 @@ class BacktestingEngine:
 
         for daily_result in self.daily_results.values():
             fields = [
-                "date", "trade_count", "turnover", 
-                "commission", "slippage", "trading_pnl", 
+                "date", "trade_count", "turnover",
+                "commission", "slippage", "trading_pnl",
                 "holding_pnl", "total_pnl", "net_pnl"
             ]
             for key in fields:
-                value = getattr(daily_result, key) 
+                value = getattr(daily_result, key)
                 results[key].append(value)
 
         self.daily_df = DataFrame.from_dict(results).set_index("date")
@@ -467,7 +466,7 @@ class BacktestingEngine:
         daily_result = self.daily_results.get(d, None)
 
         if daily_result:
-            daily_result.close_prices = close_prices
+            daily_result.update_close_prices(close_prices)
         else:
             self.daily_results[d] = PortfolioDailyResult(d, close_prices)
 
@@ -720,9 +719,9 @@ class ContractDailyResult:
             self.end_pos += pos_change
 
             turnover = trade.volume * size * trade.price
+
             self.trading_pnl += pos_change * (self.close_price - trade.price) * size
             self.slippage += trade.volume * size * slippage
-
             self.turnover += turnover
             self.commission += turnover * rate
 
@@ -736,6 +735,7 @@ class ContractDailyResult:
 
 
 class PortfolioDailyResult:
+    """"""
 
     def __init__(self, result_date: date, close_prices: Dict[str, float]):
         """"""
@@ -748,7 +748,7 @@ class PortfolioDailyResult:
         self.contract_results: Dict[str, ContractDailyResult] = {}
 
         for vt_symbol, close_price in close_prices.items():
-            self.contract_results[vt_symbol] = ContractDailyResult(date, close_price)
+            self.contract_results[vt_symbol] = ContractDailyResult(result_date, close_price)
 
         self.trade_count: int = 0
         self.turnover: float = 0
