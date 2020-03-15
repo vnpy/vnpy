@@ -67,7 +67,7 @@ class BacktestingEngine:
         self.daily_results = {}
         self.daily_df = None
 
-    def clear_data(self):
+    def clear_data(self) -> None:
         """
         Clear all data of last backtesting.
         """
@@ -97,7 +97,7 @@ class BacktestingEngine:
         priceticks: Dict[str, float],
         capital: int = 0,
         end: datetime = None
-    ):
+    ) -> None:
         """"""
         self.vt_symbols = vt_symbols
         self.interval = interval
@@ -111,13 +111,13 @@ class BacktestingEngine:
         self.end = end
         self.capital = capital
 
-    def add_strategy(self, strategy_class: type, setting: dict):
+    def add_strategy(self, strategy_class: type, setting: dict) -> None:
         """"""
         self.strategy = strategy_class(
             self, strategy_class.__name__, self.vt_symbols, setting
         )
 
-    def load_data(self):
+    def load_data(self) -> None:
         """"""
         self.output("开始加载历史数据")
 
@@ -169,7 +169,7 @@ class BacktestingEngine:
 
         self.output("所有历史数据加载完成")
 
-    def run_backtesting(self):
+    def run_backtesting(self) -> None:
         """"""
         self.strategy.on_init()
 
@@ -212,7 +212,7 @@ class BacktestingEngine:
 
         self.output("历史数据回放结束")
 
-    def calculate_result(self):
+    def calculate_result(self) -> None:
         """"""
         self.output("开始计算逐日盯市盈亏")
 
@@ -227,27 +227,33 @@ class BacktestingEngine:
             daily_result.add_trade(trade)
 
         # Calculate daily result by iteration.
-        pre_close = 0
-        start_pos = 0
+        pre_closes = {}
+        start_poses = {}
 
         for daily_result in self.daily_results.values():
             daily_result.calculate_pnl(
-                pre_close,
-                start_pos,
+                pre_closes,
+                start_poses,
                 self.size,
                 self.rate,
                 self.slippage,
                 self.inverse
             )
 
-            pre_close = daily_result.close_price
-            start_pos = daily_result.end_pos
+            pre_closes = daily_result.pre_closes
+            start_poses = daily_result.end_poses
 
         # Generate dataframe
         results = defaultdict(list)
 
         for daily_result in self.daily_results.values():
-            for key, value in daily_result.__dict__.items():
+            fields = [
+                "date", "trade_count", "turnover", 
+                "commission", "slippage", "trade_pnl", 
+                "holding_pnl", "total_pnl", "net_pnl"
+            ]
+            for key in fields:
+                value = getattr(daily_result, key) 
                 results[key].append(value)
 
         self.daily_df = DataFrame.from_dict(results).set_index("date")
@@ -255,7 +261,7 @@ class BacktestingEngine:
         self.output("逐日盯市盈亏计算完成")
         return self.daily_df
 
-    def calculate_statistics(self, df: DataFrame = None, output=True):
+    def calculate_statistics(self, df: DataFrame = None, output=True) -> None:
         """"""
         self.output("开始计算策略统计指标")
 
@@ -422,7 +428,7 @@ class BacktestingEngine:
         self.output("策略统计指标计算完成")
         return statistics
 
-    def show_chart(self, df: DataFrame = None):
+    def show_chart(self, df: DataFrame = None) -> None:
         """"""
         # Check DataFrame input exterior
         if df is None:
@@ -769,8 +775,8 @@ class PortfolioDailyResult:
 
         for vt_symbol, contract_result in self.contract_results.items():
             contract_result.calculate_pnl(
-                pre_closes[vt_symbol],
-                start_poses[vt_symbol],
+                pre_closes.get(vt_symbol, 0),
+                start_poses.get(vt_symbol, 0),
                 sizes[vt_symbol],
                 rates[vt_symbol],
                 slippages[vt_symbol]
