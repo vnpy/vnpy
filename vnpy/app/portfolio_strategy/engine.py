@@ -236,7 +236,7 @@ class StrategyEngine(BaseEngine):
         """"""
         vt_symbols = strategy.vt_symbols
         dts: Set[datetime] = set()
-        bar_data: Dict[Tuple, BarData] = {}
+        history_data: Dict[Tuple, BarData] = {}
 
         # Load data from rqdata/gateway/database
         for vt_symbol in vt_symbols:
@@ -244,7 +244,7 @@ class StrategyEngine(BaseEngine):
 
             for bar in data:
                 dts.add(bar.datetime)
-                bar_data[(bar.datetime, vt_symbol)] = bar
+                history_data[(bar.datetime, vt_symbol)] = bar
 
         # Convert data structure and push to strategy
         dts = list(dts)
@@ -254,9 +254,12 @@ class StrategyEngine(BaseEngine):
             bars = {}
 
             for vt_symbol in vt_symbols:
-                bar = bar_data.get((dt, vt_symbol), None)
+                bar = history_data.get((dt, vt_symbol), None)
                 if bar:
                     bars[vt_symbol] = bar
+                else:
+                    dt_str = dt.strftime("%Y-%m-%d %H:%M:%S")
+                    self.write_log(f"数据缺失：{dt_str} {vt_symbol}", strategy)
 
             self.call_strategy_func(strategy, strategy.on_bars, bars)
 
@@ -283,7 +286,7 @@ class StrategyEngine(BaseEngine):
             data = self.query_bar_from_rq(symbol, exchange, interval, start, end)
 
         if not data:
-            data = database_manager.load_bar_data(
+            data = database_manager.load_history_data(
                 symbol=symbol,
                 exchange=exchange,
                 interval=interval,

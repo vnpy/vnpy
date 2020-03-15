@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import date, datetime, timedelta
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Set, Tuple
 from functools import lru_cache
 import traceback
 
@@ -21,6 +21,13 @@ from .template import StrategyTemplate
 sns.set_style("whitegrid")
 
 
+INTERVAL_DELTA_MAP = {
+    Interval.MINUTE: timedelta(minutes=1),
+    Interval.HOUR: timedelta(hours=1),
+    Interval.DAILY: timedelta(days=1),
+}
+
+
 class BacktestingEngine:
     """"""
 
@@ -32,10 +39,10 @@ class BacktestingEngine:
         self.start: datetime = None
         self.end: datetime = None
 
-        self.rate: float = 0
-        self.slippage: float = 0
-        self.size: float = 1
-        self.pricetick: float = 0
+        self.rates: Dict[str, float] = 0
+        self.slippages: Dict[str, float] = 0
+        self.sizes: Dict[str, float] = 1
+        self.priceticks: Dict[str, float] = 0
 
         self.capital: float = 1_000_000
 
@@ -45,7 +52,8 @@ class BacktestingEngine:
 
         self.interval: Interval = None
         self.days: int = 0
-        self.history_data = []
+        self.history_data: Dict[Tuple, BarData] = {}
+        self.dts: Set[datetime] = set()
 
         self.limit_order_count = 0
         self.limit_orders = {}
@@ -76,16 +84,17 @@ class BacktestingEngine:
 
         self.logs.clear()
         self.daily_results.clear()
+        self.daily_df = None
 
     def set_parameters(
         self,
         vt_symbols: List[str],
         interval: Interval,
         start: datetime,
-        rate: float,
-        slippage: float,
-        size: float,
-        pricetick: float,
+        rates: Dict[str, float],
+        slippages: Dict[str, float],
+        sizes: Dict[str, float],
+        priceticks: Dict[str, float],
         capital: int = 0,
         end: datetime = None
     ):
@@ -93,14 +102,14 @@ class BacktestingEngine:
         self.vt_symbols = vt_symbols
         self.interval = interval
 
-        self.rate = rate
-        self.slippage = slippage
-        self.size = size
-        self.pricetick = pricetick
+        self.rates = rates
+        self.slippages = slippages
+        self.sizes = sizes
+        self.priceticks = priceticks
 
         self.start = start
         self.end = end
-        self.capital = capital  
+        self.capital = capital
 
     def add_strategy(self, strategy_class: type, setting: dict):
         """"""
@@ -119,21 +128,23 @@ class BacktestingEngine:
             self.output("起始日期必须小于结束日期")
             return
 
-        self.history_data.clear()       # Clear previously loaded history data
+        # Clear previously loaded history data
+        self.history_data.clear()
+        self.dts.clear()
 
         # Load 30 days of data each time and allow for progress update
         progress_delta = timedelta(days=30)
         total_delta = self.end - self.start
         interval_delta = INTERVAL_DELTA_MAP[self.interval]
 
-        start = self.start
-        end = self.start + progress_delta
-        progress = 0
+        for vt_symbol in self.vt_symbols:
+            start = self.start
+            end = self.start + progress_delta
+            progress = 0
 
-        while start < self.end:
-            end = min(end, self.end)  # Make sure end time stays within set range
+            while start < self.end:
+                end = min(end, self.end)  # Make sure end time stays within set range
 
-            if self.mode == BacktestingMode.BAR:
                 data = load_bar_data(
                     self.symbol,
                     self.exchange,
@@ -141,49 +152,43 @@ class BacktestingEngine:
                     start,
                     end
                 )
-            else:
-                data = load_tick_data(
-                    self.symbol,
-                    self.exchange,
-                    start,
-                    end
-                )
 
-            self.history_data.extend(data)
+                for bar in data:
+                    self.dts.add(bar.datetime)
+                    self.history_data[(bar.datetime, vt_symbol)] = bar
 
-            progress += progress_delta / total_delta
-            progress = min(progress, 1)
-            progress_bar = "#" * int(progress * 10)
-            self.output(f"加载进度：{progress_bar} [{progress:.0%}]")
+                progress += progress_delta / total_delta
+                progress = min(progress, 1)
+                progress_bar = "#" * int(progress * 10)
+                self.output(f"{vt_symbol}加载进度：{progress_bar} [{progress:.0%}]")
 
-            start = end + interval_delta
-            end += (progress_delta + interval_delta)
+                start = end + interval_delta
+                end += (progress_delta + interval_delta)
 
-        self.output(f"历史数据加载完成，数据量：{len(self.history_data)}")
+                self.output(f"{vt_symbol}历史数据加载完成，数据量：{len(self.history_data)}")
+
+        self.output("所有历史数据加载完成")
 
     def run_backtesting(self):
         """"""
-        if self.mode == BacktestingMode.BAR:
-            func = self.new_bar
-        else:
-            func = self.new_tick
-
         self.strategy.on_init()
+
+        # Generate sorted datetime list
+        dts = list(self.dts)
+        dts.sort()
 
         # Use the first [days] of history data for initializing strategy
         day_count = 0
         ix = 0
 
-        for ix, data in enumerate(self.history_data):
-            if self.datetime and data.datetime.day != self.datetime.day:
+        for ix, dt in enumerate(dts):
+            if self.datetime and dt.day != self.datetime.day:
                 day_count += 1
                 if day_count >= self.days:
                     break
 
-            self.datetime = data.datetime
-
             try:
-                self.callback(data)
+                self.new_bars(dt)
             except Exception:
                 self.output("触发异常，回测终止")
                 self.output(traceback.format_exc())
@@ -197,9 +202,9 @@ class BacktestingEngine:
         self.output("开始回放历史数据")
 
         # Use the rest of history data for running backtesting
-        for data in self.history_data[ix:]:
+        for dt in dts[ix:]:
             try:
-                func(data)
+                self.new_bars(dt)
             except Exception:
                 self.output("触发异常，回测终止")
                 self.output(traceback.format_exc())
@@ -447,43 +452,51 @@ class BacktestingEngine:
 
         plt.show()
 
-    def update_daily_close(self, price: float):
+    def update_daily_close(self, bars: Dict[str, BarData], dt: datetime) -> None:
         """"""
-        d = self.datetime.date()
+        d = datetime.date()
+
+        close_prices = {}
+        for bar in bars.values():
+            close_prices[bar.vt_symbol] = bar.close_price
 
         daily_result = self.daily_results.get(d, None)
-        if daily_result:
-            daily_result.close_price = price
-        else:
-            self.daily_results[d] = DailyResult(d, price)
 
-    def new_bar(self, bar: BarData):
+        if daily_result:
+            daily_result.close_prices = close_prices
+        else:
+            self.daily_results[d] = PortfolioDailyResult(d, close_prices)
+
+    def new_bars(self, dt: datetime) -> None:
         """"""
-        self.bar = bar
-        self.datetime = bar.datetime
+        self.datetime = dt
+
+        self.bars.clear()
+        for vt_symbol in self.vt_symbols:
+            bar = self.history_data.get((dt, vt_symbol), None)
+            if bar:
+                self.bars[vt_symbol] = bar
+            else:
+                dt_str = dt.strftime("%Y-%m-%d %H:%M:%S")
+                self.output(f"数据缺失：{dt_str} {vt_symbol}")
 
         self.cross_limit_order()
-        self.cross_stop_order()
-        self.strategy.on_bar(bar)
+        self.strategy.on_bars(self.bars)
 
-        self.update_daily_close(bar.close_price)
+        self.update_daily_close(self.bars)
 
-    def cross_limit_order(self):
+    def cross_limit_order(self) -> None:
         """
         Cross limit order with last bar/tick data.
         """
-        if self.mode == BacktestingMode.BAR:
-            long_cross_price = self.bar.low_price
-            short_cross_price = self.bar.high_price
-            long_best_price = self.bar.open_price
-            short_best_price = self.bar.open_price
-        else:
-            long_cross_price = self.tick.ask_price_1
-            short_cross_price = self.tick.bid_price_1
-            long_best_price = long_cross_price
-            short_best_price = short_cross_price
-
         for order in list(self.active_limit_orders.values()):
+            bar = self.bars[order.vt_symbol]
+
+            long_cross_price = bar.low_price
+            short_cross_price = bar.high_price
+            long_best_price = bar.open_price
+            short_best_price = bar.open_price
+
             # Push order update with status "not traded" (pending).
             if order.status == Status.SUBMITTING:
                 order.status = Status.NOTTRADED
@@ -517,10 +530,8 @@ class BacktestingEngine:
 
             if long_cross:
                 trade_price = min(order.price, long_best_price)
-                pos_change = order.volume
             else:
                 trade_price = max(order.price, short_best_price)
-                pos_change = -order.volume
 
             trade = TradeData(
                 symbol=order.symbol,
@@ -536,22 +547,17 @@ class BacktestingEngine:
             )
             trade.datetime = self.datetime
 
-            self.strategy.pos += pos_change
             self.strategy.update_trade(trade)
-
             self.trades[trade.vt_tradeid] = trade
 
     def load_bar(
         self,
-        vt_symbol: str,
+        strategy: StrategyTemplate,
         days: int,
-        interval: Interval,
-        callback: Callable,
-        use_database: bool
-    ):
+        interval: Interval
+    ) -> None:
         """"""
         self.days = days
-        self.callback = callback
 
     def send_order(
         self,
@@ -562,9 +568,9 @@ class BacktestingEngine:
         price: float,
         volume: float,
         lock: bool
-    ):
+    ) -> List[str]:
         """"""
-        price = round_to(price, self.pricetick)
+        price = round_to(price, self.priceticks[vt_symbol])
         symbol, exchange = extract_vt_symbol(vt_symbol)
 
         self.limit_order_count += 1
@@ -587,7 +593,7 @@ class BacktestingEngine:
 
         return [order.vt_orderid]
 
-    def cancel_order(self, strategy: StrategyTemplate, vt_orderid: str):
+    def cancel_order(self, strategy: StrategyTemplate, vt_orderid: str) -> None:
         """
         Cancel order by vt_orderid.
         """
@@ -598,50 +604,50 @@ class BacktestingEngine:
         order.status = Status.CANCELLED
         self.strategy.update_order(order)
 
-    def write_log(self, msg: str, strategy: StrategyTemplate = None):
+    def write_log(self, msg: str, strategy: StrategyTemplate = None) -> None:
         """
         Write log message.
         """
         msg = f"{self.datetime}\t{msg}"
         self.logs.append(msg)
 
-    def send_email(self, msg: str, strategy: StrategyTemplate = None):
+    def send_email(self, msg: str, strategy: StrategyTemplate = None) -> None:
         """
         Send email to default receiver.
         """
         pass
 
-    def sync_strategy_data(self, strategy: StrategyTemplate):
+    def sync_strategy_data(self, strategy: StrategyTemplate) -> None:
         """
         Sync strategy data into json file.
         """
         pass
 
-    def put_strategy_event(self, strategy: StrategyTemplate):
+    def put_strategy_event(self, strategy: StrategyTemplate) -> None:
         """
         Put an event to update strategy status.
         """
         pass
 
-    def output(self, msg):
+    def output(self, msg) -> None:
         """
         Output message of backtesting engine.
         """
         print(f"{datetime.now()}\t{msg}")
 
-    def get_all_trades(self):
+    def get_all_trades(self) -> List[TradeData]:
         """
         Return all trade data of current backtesting result.
         """
         return list(self.trades.values())
 
-    def get_all_orders(self):
+    def get_all_orders(self) -> List[OrderData]:
         """
         Return all limit order data of current backtesting result.
         """
         return list(self.limit_orders.values())
 
-    def get_all_daily_results(self):
+    def get_all_daily_results(self) -> List["PortfolioDailyResult"]:
         """
         Return all daily result data.
         """
@@ -784,14 +790,14 @@ class PortfolioDailyResult:
 
 @lru_cache(maxsize=999)
 def load_bar_data(
-    symbol: str,
-    exchange: Exchange,
+    vt_symbol: str,
     interval: Interval,
     start: datetime,
     end: datetime
 ):
     """"""
+    symbol, exchange = extract_vt_symbol(vt_symbol)
+
     return database_manager.load_bar_data(
         symbol, exchange, interval, start, end
     )
-
