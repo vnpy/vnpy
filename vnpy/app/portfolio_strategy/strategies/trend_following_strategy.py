@@ -1,23 +1,18 @@
-from vnpy.app.cta_strategy import (
-    CtaTemplate,
-    StopOrder,
-    TickData,
-    BarData,
-    TradeData,
-    OrderData,
-    BarGenerator,
-    ArrayManager,
-)
+from typing import List, Dict
+
+from vnpy.app.portfolio_strategy import StrategyTemplate, StrategyEngine
+from vnpy.trader.utility import BarGenerator, ArrayManager
+from vnpy.trader.object import TickData, BarData
 
 
-class AtrRsiStrategy(CtaTemplate):
+class TrendFollowingStrategy(StrategyTemplate):
     """"""
 
     author = "用Python的交易员"
 
-    atr_length = 22
-    atr_ma_length = 10
-    rsi_length = 5
+    atr_window = 22
+    atr_ma_window = 10
+    rsi_window = 5
     rsi_entry = 16
     trailing_percent = 0.8
     fixed_size = 1
@@ -31,9 +26,9 @@ class AtrRsiStrategy(CtaTemplate):
     intra_trade_low = 0
 
     parameters = [
-        "atr_length",
-        "atr_ma_length",
-        "rsi_length",
+        "atr_window",
+        "atr_ma_window",
+        "rsi_window",
         "rsi_entry",
         "trailing_percent",
         "fixed_size"
@@ -43,14 +38,20 @@ class AtrRsiStrategy(CtaTemplate):
         "atr_ma",
         "rsi_value",
         "rsi_buy",
-        "rsi_sell",
-        "intra_trade_high",
-        "intra_trade_low"
+        "rsi_sell"
     ]
 
-    def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
+    def __init__(
+        self,
+        strategy_engine: StrategyEngine,
+        strategy_name: str,
+        vt_symbols: List[str],
+        setting: dict
+    ):
         """"""
-        super().__init__(cta_engine, strategy_name, vt_symbol, setting)
+        super().__init__(strategy_engine, strategy_name, vt_symbols, setting)
+
+        self.vt_symbol = vt_symbols[0]
         self.bg = BarGenerator(self.on_bar)
         self.am = ArrayManager()
 
@@ -87,8 +88,14 @@ class AtrRsiStrategy(CtaTemplate):
         """
         Callback of new bar data update.
         """
+        bars = {bar.vt_symbol: bar}
+        self.on_bars(bars)
+
+    def on_bars(self, bars: Dict[str, BarData]):
+        """"""
         self.cancel_all()
 
+        bar = bars[self.vt_symbol]
         am = self.am
         am.update_bar(bar)
         if not am.inited:
@@ -99,7 +106,9 @@ class AtrRsiStrategy(CtaTemplate):
         self.atr_ma = atr_array[-self.atr_ma_length:].mean()
         self.rsi_value = am.rsi(self.rsi_length)
 
-        if self.pos == 0:
+        pos = self.get_pos(self.vt_symbol)
+
+        if pos == 0:
             self.intra_trade_high = bar.high_price
             self.intra_trade_low = bar.low_price
 
@@ -113,34 +122,18 @@ class AtrRsiStrategy(CtaTemplate):
             self.intra_trade_high = max(self.intra_trade_high, bar.high_price)
             self.intra_trade_low = bar.low_price
 
-            long_stop = self.intra_trade_high * \
-                (1 - self.trailing_percent / 100)
-            self.sell(long_stop, abs(self.pos), stop=True)
+            long_stop = self.intra_trade_high * (1 - self.trailing_percent / 100)
+
+            if bar.close_price <= long_stop:
+                self.sell(bar.close_price - 5, abs(self.pos))
 
         elif self.pos < 0:
             self.intra_trade_low = min(self.intra_trade_low, bar.low_price)
             self.intra_trade_high = bar.high_price
 
-            short_stop = self.intra_trade_low * \
-                (1 + self.trailing_percent / 100)
-            self.cover(short_stop, abs(self.pos), stop=True)
+            short_stop = self.intra_trade_low * (1 + self.trailing_percent / 100)
+
+            if bar.close_price >= short_stop:
+                self.cover(bar.close_price + 5, abs(self.pos))
 
         self.put_event()
-
-    def on_order(self, order: OrderData):
-        """
-        Callback of new order data update.
-        """
-        pass
-
-    def on_trade(self, trade: TradeData):
-        """
-        Callback of new trade data update.
-        """
-        self.put_event()
-
-    def on_stop_order(self, stop_order: StopOrder):
-        """
-        Callback of stop order update.
-        """
-        pass

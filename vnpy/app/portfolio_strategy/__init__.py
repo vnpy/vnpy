@@ -8,6 +8,7 @@ from vnpy.trader.utility import BarGenerator, ArrayManager
 from .base import APP_NAME
 from .engine import StrategyEngine
 from .template import StrategyTemplate
+from .backtesting import BacktestingEngine
 
 
 class PortfolioStrategyApp(BaseApp):
