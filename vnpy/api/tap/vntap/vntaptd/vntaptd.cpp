@@ -2631,7 +2631,7 @@ void TdApi::processRspFillLocalRemove(Task *task)
 ///主动函数
 ///-------------------------------------------------------------------------------------
 
-void TdApi::createITapTradeAPI(const dict &req, int &iResult)
+void TdApi::createITapTradeAPI(const dict &req, int iResult)
 {
 	TapAPIApplicationInfo myreq = TapAPIApplicationInfo();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2683,9 +2683,9 @@ int TdApi::setITapTradeAPILogLevel(string level)
 	return i;
 }
 
-int TdApi::setHostAddress(string IP, unsigned short port)
+int TdApi::setHostAddress(string IP, int port)
 {
-	int i = this->api->SetHostAddress(IP.c_str(), port);
+	int i = this->api->SetHostAddress(IP.c_str(), (unsigned short)port);
 	return i;
 };
 
@@ -2784,7 +2784,9 @@ int TdApi::insertOrder(int sessionID, string ClientOrderNo, const dict &req)
 	getChar(req, "TriggerCondition", &myreq.TriggerCondition);
 	getChar(req, "TriggerPriceType", &myreq.TriggerPriceType);
 	getChar(req, "AddOneIsValid", &myreq.AddOneIsValid);
-	int i = this->api->InsertOrder((unsigned int*)sessionID, (char*)ClientOrderNo.c_str(), &myreq);
+
+	typedef char    TAPISTR_50[51];
+	int i = this->api->InsertOrder((unsigned int*)sessionID, (TAPISTR_50*)ClientOrderNo.c_str(),  &myreq);
 	return i;
 }
 
