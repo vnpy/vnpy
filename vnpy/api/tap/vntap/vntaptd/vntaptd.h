@@ -807,7 +807,7 @@ public:
     //-------------------------------------------------------------------------------------
     //req:主动函数的请求字典
     //-------------------------------------------------------------------------------------
-	void createITapTradeAPI(const dict &req, int &iResult);
+	void createITapTradeAPI(const dict &req, int iResult);
 
 	void release();
 
@@ -821,7 +821,7 @@ public:
 
 	int setITapTradeAPILogLevel(string level);
 
-	int setHostAddress(string IP, unsigned short port);
+	int setHostAddress(string IP, int port);
 
 	int login(const dict &req);
 
