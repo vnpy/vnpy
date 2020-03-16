@@ -819,70 +819,69 @@ public:
 
 	int setITapTradeAPIDataPath(string path);
 
-	int setITapTradeAPILogLevel(string level); 
+	int setITapTradeAPILogLevel(string level);
 
 	int setHostAddress(string IP, unsigned short port);
 
 	int login(const dict &req);
 
-	int requestVertificateCode(unsigned int *sessionID, string ContactInfo);
+	int requestVertificateCode(int sessionID, string ContactInfo);
 
 	int setVertificateCode(string VertificateCode);
 
 	int disconnect();
 
-	int authPassword(unsigned int *sessionID, const dict &req);
+	int authPassword(int sessionID, const dict &req);
 
 	int haveCertainRight(int rightID);
 
-	int insertOrder(unsigned int *sessionID, string ClientOrderNo, const dict &req); //1
+	int insertOrder(int sessionID, string ClientOrderNo, const dict &req); //1
 
-	int cancelOrder(unsigned int *sessionID, const dict &req); //2
+	int cancelOrder(int sessionID, const dict &req); //2
 
+	int qryTradingDate(int session);
 
-	int qryTradingDate(unsigned int *session);
+	int qryAccount(int session, const dict &data);
 
-	int qryAccount(unsigned int *session, const dict &data);
+	int qryFund(int session, const dict &data);
 
-	int qryFund(unsigned int *session, const dict &data);
+	int qryExchange(int session);
 
-	int qryExchange(unsigned int *session);
+	int qryCommodity(int session);
 
-	int qryCommodity(unsigned int *session);
+	int qryContract(int session, const dict &data);
 
-	int qryContract(unsigned int *session, const dict &data);
+	int qryOrder(int session, const dict &data);
 
-	int qryOrder(unsigned int *session, const dict &data);
+	int qryOrderProcess(int session, const dict &data);
 
-	int qryOrderProcess(unsigned int *session, const dict &data);
+	int qryFill(int session, const dict &data);
 
-	int qryFill(unsigned int *session, const dict &data);
+	int qryPosition(int session, const dict &data);
 
-	int qryPosition(unsigned int *session, const dict &data);
+	int qryPositionSummary(int session, const dict &data);
 
-	int qryPositionSummary(unsigned int *session, const dict &data);
+	int qryCurrency(int session);
 
-	int qryCurrency(unsigned int *session);
+	int qryAccountCashAdjust(int session, const dict &data); //3
 
-	int qryAccountCashAdjust(unsigned int *session, const dict &data); //3
+	int qryTradeMessage(int session, const dict &data);
 
-	int qryTradeMessage(unsigned int *session, const dict &data);
+	int qryBill(int session, const dict &data);
 
-	int qryBill(unsigned int *session, const dict &data);
+	int qryHisOrder(int session, const dict &data);
 
-	int qryHisOrder(unsigned int *session, const dict &data);
+	int qryHisOrderProcess(int session, const dict &data);
 
-	int qryHisOrderProcess(unsigned int *session, const dict &data);
+	int qryHisMatch(int session, const dict &data);
 
-	int qryHisMatch(unsigned int *session, const dict &data);
+	int qryHisPosition(int session, const dict &data);
 
-	int qryHisPosition(unsigned int *session, const dict &data);
+	int qryHisDelivery(int session, const dict &data);
 
-	int qryHisDelivery(unsigned int *session, const dict &data);
+	int qryAccountFeeRent(int session, const dict &data);
 
-	int qryAccountFeeRent(unsigned int *session, const dict &data);
-
-	int qryAccountMarginRent(unsigned int *session, const dict &data);
+	int qryAccountMarginRent(int session, const dict &data);
 
 	//------------
 	// int setAPINotify(ITapTradeAPINotify *pSpi); 
