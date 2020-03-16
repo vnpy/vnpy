@@ -504,20 +504,20 @@ int MdApi::subscribeQuote(unsigned int *session, const dict &req)
 };
 
 
-int MdApi::qryCommodity(unsigned int *session)
+int MdApi::qryCommodity(int session)
 {
-	int i = this->api->QryCommodity(session);
+	int i = this->api->QryCommodity((unsigned int*)session);
 	return i;
 };
 
-int MdApi::qryContract(unsigned int *session, const dict &req)
+int MdApi::qryContract(int session, const dict &req)
 {
 	TapAPICommodity myreq = TapAPICommodity();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "ExchangeNo", myreq.ExchangeNo);
 	getChar(req, "CommodityType", &myreq.CommodityType);
 	getString(req, "CommodityNo", myreq.CommodityNo);
-	int i = this->api->QryContract(session, &myreq);
+	int i = this->api->QryContract((unsigned int*)session, &myreq);
 	return i;
 };
 
