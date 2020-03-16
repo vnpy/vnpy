@@ -2678,7 +2678,7 @@ int TdApi::setITapTradeAPIDataPath(string path)
 };
 
 int TdApi::setITapTradeAPILogLevel(string level)
-{
+{	
 	int i = SetITapTradeAPILogLevel((char)level.c_str());
 	return i;
 }
@@ -2740,7 +2740,7 @@ int TdApi::haveCertainRight(int rightID)
 
 
 int TdApi::insertOrder(unsigned int *sessionID, string ClientOrderNo, const dict &req)
-{
+{	
 	TapAPINewOrder myreq = TapAPINewOrder();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
@@ -2784,7 +2784,6 @@ int TdApi::insertOrder(unsigned int *sessionID, string ClientOrderNo, const dict
 	getChar(req, "TriggerCondition", &myreq.TriggerCondition);
 	getChar(req, "TriggerPriceType", &myreq.TriggerPriceType);
 	getChar(req, "AddOneIsValid", &myreq.AddOneIsValid);
-
 	int i = this->api->InsertOrder(sessionID, (char*)ClientOrderNo.c_str(), &myreq);
 	return i;
 }
@@ -3005,9 +3004,7 @@ int TdApi::qryHisPosition(unsigned int *session, const dict &req)
 	TapAPIHisPositionQryReq myreq = TapAPIHisPositionQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
-	getDict(req, "AccountAttributeNo", &myreq.AccountAttributeNo);
 	getString(req, "Date", myreq.Date);
-	getDict(req, "CountType", &myreq.CountType);
 	getChar(req, "SettleFlag", &myreq.SettleFlag);
 	int i = this->api->QryHisPosition(session, &myreq);
 	return i;
