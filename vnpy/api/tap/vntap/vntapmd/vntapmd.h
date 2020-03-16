@@ -191,7 +191,7 @@ public:
 
 	int setTapQuoteAPIDataPath(string path);
 
-	int setTapQuoteAPILogLevel(char level); //1
+	int setTapQuoteAPILogLevel(string level); //1
 
 	int setHostAddress(string IP, unsigned short port); //2
 
@@ -201,7 +201,7 @@ public:
 
 	int subscribeQuote(unsigned int *session, const dict &req); //3
 
-	int qryCommodity(unsigned int *session);
+	int qryCommodity(int session);
 
-	int qryContract(unsigned int *session, const dict &req);
+	int qryContract(int session, const dict &req);
 };
