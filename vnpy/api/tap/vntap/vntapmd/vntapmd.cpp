@@ -9,7 +9,7 @@
 ///C++的回调函数将数据保存到队列中
 ///-------------------------------------------------------------------------------------
 
-void MdApi::OnRspLogin(int errorCode, TapAPIQuotLoginRspInfo *info)
+void MdApi::OnRspLogin(TAPIINT32 errorCode, const TapAPIQuotLoginRspInfo *info)
 {
 	Task task = Task();
 	task.task_name = ONRSPLOGIN;
@@ -30,7 +30,7 @@ void MdApi::OnAPIReady()
 	this->task_queue.push(task);
 };
 
-void MdApi::OnDisconnect(int reasonCode)
+void MdApi::OnDisconnect(TAPIINT32 reasonCode)
 {
 	Task task = Task();
 	task.task_name = ONDISCONNECT;
@@ -38,7 +38,7 @@ void MdApi::OnDisconnect(int reasonCode)
 	this->task_queue.push(task);
 };
 
-void MdApi::OnRspQryCommodity(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteCommodityInfo *info)
+void MdApi::OnRspQryCommodity(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFLAG isLast, const TapAPIQuoteCommodityInfo *info)
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYCOMMODITY;
@@ -54,7 +54,7 @@ void MdApi::OnRspQryCommodity(unsigned int sessionID, int errorCode, char isLast
 	this->task_queue.push(task);
 };
 
-void MdApi::OnRspQryContract(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteContractInfo *info)
+void MdApi::OnRspQryContract(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFLAG isLast, const TapAPIQuoteContractInfo *info)
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYCONTRACT;
@@ -70,7 +70,7 @@ void MdApi::OnRspQryContract(unsigned int sessionID, int errorCode, char isLast,
 	this->task_queue.push(task);
 };
 
-void MdApi::OnRspSubscribeQuote(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteWhole *info)
+void MdApi::OnRspSubscribeQuote(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFLAG isLast, const TapAPIQuoteWhole *info)
 {
 	Task task = Task();
 	task.task_name = ONRSPSUBSCRIBEQUOTE;
@@ -86,7 +86,7 @@ void MdApi::OnRspSubscribeQuote(unsigned int sessionID, int errorCode, char isLa
 	this->task_queue.push(task);
 };
 
-void MdApi::OnRspUnSubscribeQuote(unsigned int sessionID, int errorCode, char isLast, TapAPIContract *info)
+void MdApi::OnRspUnSubscribeQuote(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFLAG isLast, const TapAPIContract *info)
 {
 	Task task = Task();
 	task.task_name = ONRSPUNSUBSCRIBEQUOTE;
@@ -102,7 +102,7 @@ void MdApi::OnRspUnSubscribeQuote(unsigned int sessionID, int errorCode, char is
 	this->task_queue.push(task);
 };
 
-void MdApi::OnRtnQuote(TapAPIQuoteWhole *info)
+void MdApi::OnRtnQuote(const TapAPIQuoteWhole *info)
 {
 	Task task = Task();
 	task.task_name = ONRTNQUOTE;
@@ -460,9 +460,9 @@ int MdApi::setTapQuoteAPILogLevel(string level)
 	return i;
 }
 
-int MdApi::setHostAddress(string IP, unsigned short port)
+int MdApi::setHostAddress(string IP, int port)
 {
-	int i = this->api->SetHostAddress(IP.c_str(), port);
+	int i = this->api->SetHostAddress(IP.c_str(), (unsigned short)port);
 	return i;
 };
 
