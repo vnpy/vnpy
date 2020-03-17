@@ -59,7 +59,7 @@ public:
 	* @attention	该回调返回成功，说明用户登录成功。但是不代表API准备完毕。需要等到OnAPIReady才能进行查询与订阅请求。
 	* @ingroup G_Q_Login
 	*/
-	virtual void OnRspLogin(int errorCode, TapAPIQuotLoginRspInfo *info);
+	virtual void TAP_CDECL OnRspLogin(TAPIINT32 errorCode, const TapAPIQuotLoginRspInfo *info);
 	/**
 	* @brief	通知用户API准备就绪。
 	* @details	只有用户回调收到此就绪通知时才能进行后续的各种行情数据查询操作。\n
@@ -67,14 +67,14 @@ public:
 	* @attention  就绪后才可以进行后续正常操作
 	* @ingroup G_Q_Login
 	*/
-	virtual void OnAPIReady();
+	virtual void TAP_CDECL OnAPIReady();
 	/**
 	* @brief	API和服务失去连接的回调
 	* @details	在API使用过程中主动或者被动与服务器服务失去连接后都会触发此回调通知用户与服务器的连接已经断开。
 	* @param[in] reasonCode 断开原因代码。具体原因请参见错误码列表 \n
 	* @ingroup G_Q_Disconnect
 	*/
-	virtual void OnDisconnect(int reasonCode);
+	virtual void TAP_CDECL OnDisconnect(TAPIINT32 reasonCode);
 	/**
 	* @brief	返回所有品种信息。
 	* @details	此回调接口用于向用户返回得到的所有品种信息。
@@ -85,7 +85,7 @@ public:
 	* @attention  不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_Q_Commodity
 	*/
-	virtual void OnRspQryCommodity(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteCommodityInfo *info);
+	virtual void TAP_CDECL OnRspQryCommodity(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFLAG isLast, const TapAPIQuoteCommodityInfo *info);
 	/**
 	* @brief 返回系统中合约信息
 	* @param[in] sessionID 请求的会话ID；
@@ -95,7 +95,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_Q_Contract
 	*/
-	virtual void OnRspQryContract(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteContractInfo *info);
+	virtual void TAP_CDECL OnRspQryContract(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFLAG isLast, const TapAPIQuoteContractInfo *info);
 	/**
 	* @brief	返回订阅行情的全文。
 	* @details	此回调接口用来返回订阅行情的全文。全文为当前时间的行情信息。
@@ -106,7 +106,7 @@ public:
 	* @attention  不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_Q_Quote
 	*/
-	virtual void OnRspSubscribeQuote(unsigned int sessionID, int errorCode, char isLast, TapAPIQuoteWhole *info);
+	virtual void TAP_CDECL OnRspSubscribeQuote(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFLAG isLast, const TapAPIQuoteWhole *info);
 	/**
 	* @brief 退订指定合约的行情的结果回调
 	* @param[in] sessionID 请求的会话ID；
@@ -116,7 +116,7 @@ public:
 	* @attention  不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_Q_Quote
 	*/
-	virtual void OnRspUnSubscribeQuote(unsigned int sessionID, int errorCode, char isLast, TapAPIContract *info);
+	virtual void TAP_CDECL OnRspUnSubscribeQuote(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFLAG isLast, const TapAPIContract *info);
 	/**
 	* @brief	返回订阅行情的变化内容。
 	* @details	此回调接口用来通知用户行情信息产生了变化，并向用户提交新的行情全文。
@@ -124,9 +124,7 @@ public:
 	* @attention 不要修改和删除Quote指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_Q_Quote
 	*/
-	virtual void OnRtnQuote(TapAPIQuoteWhole *info);
-
-
+	virtual void TAP_CDECL OnRtnQuote(const TapAPIQuoteWhole *info);
 
 	//-------------------------------------------------------------------------------------
 	//task：任务
@@ -193,7 +191,7 @@ public:
 
 	int setTapQuoteAPILogLevel(string level); //1
 
-	int setHostAddress(string IP, unsigned short port); //2
+	int setHostAddress(string IP, int port); //2
 
 	int login(const dict &req);
 
