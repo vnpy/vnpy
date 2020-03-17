@@ -420,7 +420,7 @@ void MdApi::createTapQuoteAPI(const dict &req, int &iResult)
 
 void MdApi::release()
 {
-	FreeTapQuoteAPI(NULL);
+	FreeTapQuoteAPI(this->api);
 };
 
 void MdApi::init()
@@ -437,7 +437,7 @@ int MdApi::exit()
 	this->task_thread.join();
 
 	this->api->SetAPINotify(NULL);
-	FreeTapQuoteAPI(NULL);
+	FreeTapQuoteAPI(this->api);
 	this->api = NULL;
 	return 1;
 };
