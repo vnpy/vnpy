@@ -2642,8 +2642,8 @@ void TdApi::createITapTradeAPI(const dict &req, int iResult)
 };
 
 void TdApi::release()
-{
-	FreeITapTradeAPI(NULL);
+{	
+	FreeITapTradeAPI(this->api);
 };
 
 void TdApi::init()
@@ -2660,7 +2660,7 @@ int TdApi::exit()
 	this->task_thread.join();
 
 	this->api->SetAPINotify(NULL);
-	FreeITapTradeAPI(NULL);
+	FreeITapTradeAPI(this ->api);
 	this->api = NULL;
 	return 1;
 };
