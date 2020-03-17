@@ -94,11 +94,7 @@ public:
     //API回调函数
     //-------------------------------------------------------------------------------------
 
-		/**
-		* @brief 连接成功回调通知
-		* @ingroup G_T_Login
-		*/
-	virtual void OnConnect();
+	virtual void TAP_CDECL OnConnect();
 	/**
 	* @brief    系统登录过程回调。
 	* @details    此函数为Login()登录函数的回调，调用Login()成功后建立了链路连接，然后API将向服务器发送登录认证信息，
@@ -108,7 +104,7 @@ public:
 	* @attention    该回调返回成功，说明用户登录成功。但是不代表API准备完毕。
 	* @ingroup G_T_Login
 	*/
-	virtual void OnRspLogin(int errorCode, TapAPITradeLoginRspInfo *loginRspInfo);
+	virtual void TAP_CDECL OnRspLogin(ITapTrade::TAPIINT32 errorCode, const ITapTrade::TapAPITradeLoginRspInfo *loginRspInfo);
 	/**
 	* @brief    二次认证联系方式通知。
 	* @details    登录完成后，如果需要二次认证（9.2.7后台），会收到联系方式的通知，可以选择通知消息的一个联系方式（邮箱或者电话）
@@ -119,7 +115,7 @@ public:
 	* @attention    该回调返回成功，说明需要二次认证，并且需要选择一个联系方式然后调用RequestVertificateCode。
 	* @ingroup G_T_Login
 	*/
-	virtual void OnRtnContactInfo(int errorCode, char isLast, string ContactInfo);
+	virtual void TAP_CDECL OnRtnContactInfo(ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TAPISTR_40 ContactInfo);
 
 	/**
 	* @brief    请求发送二次认证码应答。
@@ -131,7 +127,7 @@ public:
 	* @attention    该回调返回成功，说明需要二次认证，并且需要选择一个联系方式然后调用RequestVertificateCode。
 	* @ingroup G_T_Login
 	*/
-	virtual void OnRspRequestVertificateCode(unsigned int sessionID, int errorCode, TapAPIRequestVertificateCodeRsp *rsp);
+	virtual void TAP_CDECL OnRspRequestVertificateCode(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, const TapAPIRequestVertificateCodeRsp *rsp);
 
 	/**
 	* @brief    API到期提醒回调
@@ -141,7 +137,7 @@ public:
 	* @attention    该函数回调，则说明授权在一个月之内到期。否则不产生该回调。
 	* @ingroup G_T_Login
 	*/
-	virtual void OnExpriationDate(string date, int days);
+	virtual void TAP_CDECL OnExpriationDate(ITapTrade::TAPIDATE date, int days);
 
 	/**
 	* @brief    通知用户API准备就绪。
@@ -150,21 +146,21 @@ public:
 	* @attention 就绪后才可以进行后续正常操作
 	* @ingroup G_T_Login
 	*/
-	virtual void OnAPIReady(int errorCode);
+	virtual void TAP_CDECL OnAPIReady(ITapTrade::TAPIINT32 errorCode);
 	/**
 	* @brief    API和服务失去连接的回调
 	* @details    在API使用过程中主动或者被动与服务器服务失去连接后都会触发此回调通知用户与服务器的连接已经断开。
 	* @param[in] reasonCode 断开原因代码。
 	* @ingroup G_T_Disconnect
 	*/
-	virtual void OnDisconnect(int reasonCode);
+	virtual void TAP_CDECL OnDisconnect(ITapTrade::TAPIINT32 reasonCode);
 	/**
 	* @brief 通知用户密码修改结果
 	* @param[in] sessionID 修改密码的会话ID,和ChangePassword返回的会话ID对应。
 	* @param[in] errorCode 返回错误码，0表示成功。
 	* @ingroup G_T_UserInfo
 	*/
-	virtual void OnRspChangePassword(unsigned int sessionID, int errorCode);
+	virtual void TAP_CDECL OnRspChangePassword(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode);
 
 	/**
 	* @brief 认证账户密码反馈
@@ -172,7 +168,7 @@ public:
 	* @param[in] errorCode 返回错误码，0表示成功。
 	* @ingroup G_T_UserInfo
 	*/
-	virtual void OnRspAuthPassword(unsigned int sessionID, int errorCode);
+	virtual void TAP_CDECL OnRspAuthPassword(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode);
 
 	/**
 	* @brief    返回系统交易日期和当天LME到期日
@@ -183,7 +179,7 @@ public:
 	* @ingroup G_T_UserRight
 	*/
 
-	virtual void OnRspQryTradingDate(unsigned int sessionID, int errorCode, TapAPITradingCalendarQryRsp *info);
+	virtual void TAP_CDECL OnRspQryTradingDate(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, const ITapTrade::TapAPITradingCalendarQryRsp *info);
 	/**
 	* @brief 设置用户预留信息反馈
 	* @param[in] sessionID 设置用户预留信息的会话ID
@@ -193,7 +189,7 @@ public:
 	* @note 该接口暂未实现
 	* @ingroup G_T_UserInfo
 	*/
-	virtual void OnRspSetReservedInfo(unsigned int sessionID, int errorCode, string info);
+	virtual void TAP_CDECL OnRspSetReservedInfo(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, const ITapTrade::TAPISTR_50 info);
 
 
 	/**
@@ -206,7 +202,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_AccountInfo
 	*/
-	virtual void OnRspQryAccount(unsigned int sessionID, unsigned int errorCode, char isLast, TapAPIAccountInfo *info);
+	virtual void TAP_CDECL OnRspQryAccount(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIUINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIAccountInfo *info);
 	/**
 	* @brief 返回资金账户的资金信息
 	* @param[in] sessionID 请求的会话ID；
@@ -216,7 +212,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_AccountDetails
 	*/
-	virtual void OnRspQryFund(unsigned int sessionID, int errorCode, char isLast, TapAPIFundData *info);
+	virtual void TAP_CDECL OnRspQryFund(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIFundData *info);
 	/**
 	* @brief    用户资金变化通知
 	* @details    用户的委托成交后会引起资金数据的变化，因此需要向用户实时反馈。
@@ -225,7 +221,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_AccountDetails
 	*/
-	virtual void OnRtnFund(TapAPIFundData *info);
+	virtual void TAP_CDECL OnRtnFund(const ITapTrade::TapAPIFundData *info);
 	/**
 	* @brief 返回系统中的交易所信息
 	* @param[in] sessionID 请求的会话ID；
@@ -235,7 +231,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_TradeSystem
 	*/
-	virtual void OnRspQryExchange(unsigned int sessionID, int errorCode, char isLast, TapAPIExchangeInfo *info);
+	virtual void TAP_CDECL OnRspQryExchange(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIExchangeInfo *info);
 	/**
 	* @brief    返回系统中品种信息
 	* @details    此回调接口用于向用户返回得到的所有品种信息。
@@ -246,7 +242,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_Commodity
 	*/
-	virtual void OnRspQryCommodity(unsigned int sessionID, int errorCode, char isLast, TapAPICommodityInfo *info);
+	virtual void TAP_CDECL OnRspQryCommodity(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPICommodityInfo *info);
 	/**
 	* @brief 返回系统中合约信息
 	* @param[in] sessionID 请求的会话ID；
@@ -256,7 +252,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_Contract
 	*/
-	virtual void OnRspQryContract(unsigned int sessionID, int errorCode, char isLast, TapAPITradeContractInfo *info);
+	virtual void TAP_CDECL OnRspQryContract(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPITradeContractInfo *info);
 	/**
 	* @brief    返回新增合约信息
 	* @details    向用户推送新的合约。主要用来处理在交易时间段中服务器添加了新合约时，向用户发送这个合约的信息。
@@ -264,7 +260,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_Contract
 	*/
-	virtual void OnRtnContract(TapAPITradeContractInfo *info);
+	virtual void TAP_CDECL OnRtnContract(const ITapTrade::TapAPITradeContractInfo *info);
 	/**
 * @brief    订单操作应答
 * @details    下单、撤单、改单应答。下单都会有次应答回调，如果下单请求结构中没有填写合约或者资金账号，则仅返回错误号。
@@ -278,7 +274,7 @@ public:
 * @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 * @ingroup G_T_TradeActions
 */
-	virtual void OnRspOrderAction(unsigned int sessionID, int errorCode, TapAPIOrderActionRsp *info);
+	virtual void TAP_CDECL OnRspOrderAction(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, const ITapTrade::TapAPIOrderActionRsp *info);
 	/**
 	* @brief 返回新委托。新下的或者其他地方下的推送过来的。
 	* @details    服务器接收到客户下的委托内容后就会保存起来等待触发，同时向用户回馈一个
@@ -289,7 +285,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_TradeActions
 	*/
-	virtual void OnRtnOrder(TapAPIOrderInfoNotice *info);
+	virtual void TAP_CDECL OnRtnOrder(const ITapTrade::TapAPIOrderInfoNotice *info);
 	/**
 	* @brief    返回查询的委托信息
 	* @details    返回用户查询的委托的具体信息。
@@ -300,7 +296,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_TradeInfo
 	*/
-	virtual void OnRspQryOrder(unsigned int sessionID, int errorCode, char isLast, TapAPIOrderInfo *info);
+	virtual void TAP_CDECL OnRspQryOrder(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIOrderInfo *info);
 	/**
 	* @brief 返回查询的委托变化流程信息
 	* @param[in] sessionID 请求的会话ID；
@@ -310,7 +306,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_TradeInfo
 	*/
-	virtual void OnRspQryOrderProcess(unsigned int sessionID, int errorCode, char isLast, TapAPIOrderInfo *info);
+	virtual void TAP_CDECL OnRspQryOrderProcess(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIOrderInfo *info);
 	/**
 	* @brief 返回查询的成交信息
 	* @param[in] sessionID 请求的会话ID；
@@ -320,7 +316,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_TradeInfo
 	*/
-	virtual void OnRspQryFill(unsigned int sessionID, int errorCode, char isLast, TapAPIFillInfo *info);
+	virtual void TAP_CDECL OnRspQryFill(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIFillInfo *info);
 	/**
 	* @brief    推送来的成交信息
 	* @details    用户的委托成交后将向用户推送成交信息。
@@ -329,7 +325,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_TradeActions
 	*/
-	virtual void OnRtnFill(TapAPIFillInfo *info);
+	virtual void TAP_CDECL OnRtnFill(const ITapTrade::TapAPIFillInfo *info);
 	/**
 	* @brief 返回查询的持仓
 	* @param[in] sessionID 请求的会话ID；
@@ -339,7 +335,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_TradeInfo
 	*/
-	virtual void OnRspQryPosition(unsigned int sessionID, int errorCode, char isLast, TapAPIPositionInfo *info);
+	virtual void TAP_CDECL OnRspQryPosition(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIPositionInfo *info);
 	/**
 	* @brief 持仓变化推送通知
 	* @param[in] info        指向返回的信息结构体。当errorCode不为0时，info为空。
@@ -347,7 +343,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_TradeActions
 	*/
-	virtual void OnRtnPosition(TapAPIPositionInfo *info);
+	virtual void TAP_CDECL OnRtnPosition(const ITapTrade::TapAPIPositionInfo *info);
 	/**
 	* @brief 返回查询的持仓汇总
 	* @param[in] sessionID 请求的会话ID；
@@ -357,7 +353,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_TradeInfo
 	*/
-	virtual void OnRspQryPositionSummary(unsigned int sessionID, int errorCode, char isLast, TapAPIPositionSummary *info);
+	virtual void TAP_CDECL OnRspQryPositionSummary(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFLAG isLast, const TapAPIPositionSummary *info);
 
 	/**
 	* @brief 持仓汇总变化推送通知
@@ -366,7 +362,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_TradeActions
 	*/
-	virtual void OnRtnPositionSummary(TapAPIPositionSummary *info);
+	virtual void TAP_CDECL OnRtnPositionSummary(const TapAPIPositionSummary *info);
 	/**
 	* @brief 持仓盈亏通知
 	* @param[in] info        指向返回的信息结构体。当errorCode不为0时，info为空。
@@ -374,7 +370,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_TradeActions
 	*/
-	virtual void OnRtnPositionProfit(TapAPIPositionProfitNotice *info);
+	virtual void TAP_CDECL OnRtnPositionProfit(const ITapTrade::TapAPIPositionProfitNotice *info);
 
 
 	/**
@@ -386,7 +382,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_TradeSystem
 	*/
-	virtual void OnRspQryCurrency(unsigned int sessionID, int errorCode, char isLast, TapAPICurrencyInfo *info);
+	virtual void TAP_CDECL OnRspQryCurrency(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPICurrencyInfo *info);
 
 	/**
 	* @brief    交易消息通知
@@ -398,7 +394,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_AccountDetails
 	*/
-	virtual void OnRspQryTradeMessage(unsigned int sessionID, int errorCode, char isLast, TapAPITradeMessage *info);
+	virtual void TAP_CDECL OnRspQryTradeMessage(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPITradeMessage *info);
 	/**
 	* @brief    交易消息通知
 	* @details    用户在交易过程中可能因为资金、持仓、平仓的状态变动使账户处于某些危险状态，或者某些重要的信息需要向用户通知。
@@ -406,7 +402,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_AccountDetails
 	*/
-	virtual void OnRtnTradeMessage(TapAPITradeMessage *info);
+	virtual void TAP_CDECL OnRtnTradeMessage(const ITapTrade::TapAPITradeMessage *info);
 	/**
 	* @brief 历史委托查询应答
 	* @param[in] sessionID 请求的会话ID；
@@ -416,7 +412,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_HisInfo
 	*/
-	virtual void OnRspQryHisOrder(unsigned int sessionID, int errorCode, char isLast, TapAPIHisOrderQryRsp *info);
+	virtual void TAP_CDECL OnRspQryHisOrder(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIHisOrderQryRsp *info);
 	/**
 	* @brief 历史委托流程查询应答
 	* @param[in] sessionID 请求的会话ID；
@@ -426,7 +422,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_HisInfo
 	*/
-	virtual void OnRspQryHisOrderProcess(unsigned int sessionID, int errorCode, char isLast, TapAPIHisOrderProcessQryRsp *info);
+	virtual void TAP_CDECL OnRspQryHisOrderProcess(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIHisOrderProcessQryRsp *info);
 	/**
 	* @brief 历史成交查询应答
 	* @param[in] sessionID 请求的会话ID；
@@ -436,7 +432,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_HisInfo
 	*/
-	virtual void OnRspQryHisMatch(unsigned int sessionID, int errorCode, char isLast, TapAPIHisMatchQryRsp *info);
+	virtual void TAP_CDECL OnRspQryHisMatch(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIHisMatchQryRsp *info);
 	/**
 	* @brief 历史持仓查询应答
 	* @param[in] sessionID 请求的会话ID；
@@ -446,7 +442,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_HisInfo
 	*/
-	virtual void OnRspQryHisPosition(unsigned int sessionID, int errorCode, char isLast, TapAPIHisPositionQryRsp *info);
+	virtual void TAP_CDECL OnRspQryHisPosition(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIHisPositionQryRsp *info);
 	/**
 	* @brief 历史交割查询应答
 	* @param[in] sessionID 请求的会话ID；
@@ -456,7 +452,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_HisInfo
 	*/
-	virtual void OnRspQryHisDelivery(unsigned int sessionID, int errorCode, char isLast, TapAPIHisDeliveryQryRsp *info);
+	virtual void TAP_CDECL OnRspQryHisDelivery(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIHisDeliveryQryRsp *info);
 	/**
 	* @brief 资金调整查询应答
 	* @param[in] sessionID 请求的会话ID；
@@ -466,7 +462,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_HisInfo
 	*/
-	virtual void OnRspQryAccountCashAdjust(unsigned int sessionID, int errorCode, char isLast, TapAPIAccountCashAdjustQryRsp *info);
+	virtual void TAP_CDECL OnRspQryAccountCashAdjust(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIAccountCashAdjustQryRsp *info);
 	/**
 	* @brief 查询用户账单应答 Add:2013.12.11
 	* @param[in] sessionID 请求的会话ID；
@@ -475,7 +471,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_Bill
 	*/
-	virtual void OnRspQryBill(unsigned int sessionID, int errorCode, char isLast, TapAPIBillQryRsp *info);
+	virtual void TAP_CDECL OnRspQryBill(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIBillQryRsp *info);
 	/**
 	* @brief 查询账户手续费计算参数 Add:2017.01.14
 	* @param[in] sessionID 请求的会话ID；
@@ -484,7 +480,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_Rent
 	*/
-	virtual void OnRspQryAccountFeeRent(unsigned int sessionID, int errorCode, char isLast, TapAPIAccountFeeRentQryRsp *info);
+	virtual void TAP_CDECL OnRspQryAccountFeeRent(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIAccountFeeRentQryRsp *info);
 	/**
 	* @brief 查询账户保证金计算参数 Add:2017.01.14
 	* @param[in] sessionID 请求的会话ID；
@@ -493,7 +489,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_Rent
 	*/
-	virtual void OnRspQryAccountMarginRent(unsigned int sessionID, int errorCode, char isLast, TapAPIAccountMarginRentQryRsp *info);
+	virtual void TAP_CDECL OnRspQryAccountMarginRent(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIAccountMarginRentQryRsp *info);
 
 	/**
 	* @brief 港交所做市商双边报价应答 Add:2017.08.29
@@ -503,7 +499,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_HKMarket
 	*/
-	virtual void OnRspHKMarketOrderInsert(unsigned int sessionID, int errorCode, TapAPIOrderMarketInsertRsp *info);
+	virtual void TAP_CDECL OnRspHKMarketOrderInsert(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, const ITapTrade::TapAPIOrderMarketInsertRsp *info);
 
 	/**
 	* @brief 港交所做市商双边撤单应答 Add:2017.08.29
@@ -513,7 +509,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_HKMarket
 	*/
-	virtual void OnRspHKMarketOrderDelete(unsigned int sessionID, int errorCode, TapAPIOrderMarketDeleteRsp *info);
+	virtual void TAP_CDECL OnRspHKMarketOrderDelete(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, const ITapTrade::TapAPIOrderMarketDeleteRsp *info);
 
 	/**
 	* @brief 港交所询价通知 Add:2017.08.29
@@ -521,7 +517,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_HKMarket
 	*/
-	virtual void OnHKMarketQuoteNotice(TapAPIOrderQuoteMarketNotice *info);
+	virtual void TAP_CDECL OnHKMarketQuoteNotice(const ITapTrade::TapAPIOrderQuoteMarketNotice *info);
 
 
 	/**
@@ -532,7 +528,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_LocalAction
 	*/
-	virtual void OnRspOrderLocalRemove(unsigned int sessionID, int errorCode, TapAPIOrderLocalRemoveRsp *info);
+	virtual void TAP_CDECL OnRspOrderLocalRemove(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, const ITapTrade::TapAPIOrderLocalRemoveRsp *info);
 
 	/**
 	* @brief 订单录入应答 Add:2017.12.05
@@ -542,7 +538,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_LocalAction
 	*/
-	virtual void OnRspOrderLocalInput(unsigned int sessionID, int errorCode, TapAPIOrderLocalInputRsp *info);
+	virtual void TAP_CDECL OnRspOrderLocalInput(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, const ITapTrade::TapAPIOrderLocalInputRsp *info);
 
 	/**
 	* @brief 订单修改应答 Add:2017.12.05
@@ -552,7 +548,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_LocalAction
 	*/
-	virtual void OnRspOrderLocalModify(unsigned int sessionID, int errorCode, TapAPIOrderLocalModifyRsp *info);
+	virtual void TAP_CDECL OnRspOrderLocalModify(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, const ITapTrade::TapAPIOrderLocalModifyRsp *info);
 
 	/**
 	* @brief 订单转移应答 Add:2017.12.05
@@ -562,7 +558,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_LocalAction
 	*/
-	virtual void OnRspOrderLocalTransfer(unsigned int sessionID, int errorCode, TapAPIOrderLocalTransferRsp *info);
+	virtual void TAP_CDECL OnRspOrderLocalTransfer(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, const ITapTrade::TapAPIOrderLocalTransferRsp *info);
 
 	/**
 	* @brief 成交录入应答 Add:2017.12.05
@@ -572,7 +568,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_LocalAction
 	*/
-	virtual void OnRspFillLocalInput(unsigned int sessionID, int errorCode, TapAPIFillLocalInputRsp *info);
+	virtual void TAP_CDECL OnRspFillLocalInput(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, const ITapTrade::TapAPIFillLocalInputRsp *info);
 
 	/**
 	* @brief 订单删除应答 Add:2017.12.05
@@ -582,7 +578,7 @@ public:
 	* @attention 不要修改和删除info所指示的数据；函数调用结束，参数不再有效。
 	* @ingroup G_T_LocalAction
 	*/
-	virtual void OnRspFillLocalRemove(unsigned int sessionID, int errorCode, TapAPIFillLocalRemoveRsp *info);
+	virtual void TAP_CDECL OnRspFillLocalRemove(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT32 errorCode, const ITapTrade::TapAPIFillLocalRemoveRsp *info);
 
 
 
