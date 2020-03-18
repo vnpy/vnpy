@@ -247,11 +247,13 @@ class ScriptEngine(BaseEngine):
             return []
 
         start = datetime.strptime(start_date, "%Y%m%d")
+        end = datetime.now()
 
         req = HistoryRequest(
             symbol=contract.symbol,
             exchange=contract.exchange,
             start=start,
+            end=end,
             interval=interval
         )
 

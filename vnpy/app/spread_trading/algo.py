@@ -1,7 +1,8 @@
 from typing import Any
 
-from vnpy.trader.constant import Direction
+from vnpy.trader.constant import Direction, Offset
 from vnpy.trader.object import (TickData, OrderData, TradeData)
+from vnpy.trader.utility import round_to
 
 from .template import SpreadAlgoTemplate
 from .base import SpreadData
@@ -17,6 +18,7 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
         algoid: str,
         spread: SpreadData,
         direction: Direction,
+        offset: Offset,
         price: float,
         volume: float,
         payup: int,
@@ -25,8 +27,9 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
     ):
         """"""
         super().__init__(
-            algo_engine, algoid, spread, direction,
-            price, volume, payup, interval, lock
+            algo_engine, algoid, spread,
+            direction, offset, price, volume,
+            payup, interval, lock
         )
 
         self.cancel_interval: int = 2
@@ -109,6 +112,7 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
         # Calcualte spread volume to hedge
         active_leg = self.spread.active_leg
         active_traded = self.leg_traded[active_leg.vt_symbol]
+        active_traded = round_to(active_traded, self.spread.min_volume)
 
         hedge_volume = self.spread.calculate_spread_volume(
             active_leg.vt_symbol,
@@ -118,6 +122,8 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
         # Calculate passive leg target volume and do hedge
         for leg in self.spread.passive_legs:
             passive_traded = self.leg_traded[leg.vt_symbol]
+            passive_traded = round_to(passive_traded, self.spread.min_volume)
+
             passive_target = self.spread.calculate_leg_volume(
                 leg.vt_symbol,
                 hedge_volume

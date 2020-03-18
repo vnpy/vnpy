@@ -13,6 +13,7 @@ from copy import copy
 from datetime import datetime, timezone
 from threading import Lock
 from urllib.parse import urlencode
+from typing import Dict
 
 from requests import ConnectionError
 
@@ -26,13 +27,16 @@ from vnpy.trader.object import (AccountData, BarData, CancelRequest, ContractDat
 
 _ = lambda x: x  # noqa
 REST_HOST = "https://www.okex.com"
-WEBSOCKET_HOST = "wss://real.okex.com:10442/ws/v3"
+WEBSOCKET_HOST = "wss://real.okex.com:8443/ws/v3"
 
 STATUS_OKEXS2VT = {
     "0": Status.NOTTRADED,
     "1": Status.PARTTRADED,
     "2": Status.ALLTRADED,
+    "3": Status.SUBMITTING,
+    "4": Status.SUBMITTING,
     "-1": Status.CANCELLED,
+    "-2": Status.REJECTED
 }
 
 ORDERTYPE_OKEXS2VT = {
@@ -548,6 +552,7 @@ class OkexsWebsocketApi(WebsocketClient):
         self._last_trade_id = 10000
         self.connect_time = 0
 
+        self.subscribed: Dict[str, SubscribeRequest] = {}
         self.callbacks = {}
         self.ticks = {}
 
@@ -576,6 +581,8 @@ class OkexsWebsocketApi(WebsocketClient):
         """
         Subscribe to tick data upate.
         """
+        self.subscribed[req.vt_symbol] = req
+
         tick = TickData(
             symbol=req.symbol,
             exchange=req.exchange,
@@ -708,6 +715,9 @@ class OkexsWebsocketApi(WebsocketClient):
         if success:
             self.gateway.write_log("Websocket API登录成功")
             self.subscribe_topic()
+
+            for req in list(self.subscribed.values()):
+                self.subscribe(req)
         else:
             self.gateway.write_log("Websocket API登录失败")
 
@@ -718,7 +728,12 @@ class OkexsWebsocketApi(WebsocketClient):
         if not tick:
             return
 
-        tick.last_price = float(d["last"])
+        # Filter last price with 0 value
+        last_price = float(d["last"])
+        if not last_price:
+            return
+
+        tick.last_price = last_price
         tick.high_price = float(d["high_24h"])
         tick.low_price = float(d["low_24h"])
         tick.volume = float(d["volume_24h"])

@@ -1,14 +1,15 @@
 
 from collections import defaultdict
-from typing import Dict, List, Set
-from math import floor, ceil
+from typing import Dict, List, Set, Callable
 from copy import copy
 
-from vnpy.trader.object import TickData, TradeData, OrderData, ContractData
-from vnpy.trader.constant import Direction, Status, Offset
-from vnpy.trader.utility import virtual
+from vnpy.trader.object import (
+    TickData, TradeData, OrderData, ContractData, BarData
+)
+from vnpy.trader.constant import Direction, Status, Offset, Interval
+from vnpy.trader.utility import virtual, floor_to, ceil_to, round_to
 
-from .base import SpreadData
+from .base import SpreadData, calculate_inverse_volume
 
 
 class SpreadAlgoTemplate:
@@ -23,11 +24,12 @@ class SpreadAlgoTemplate:
         algoid: str,
         spread: SpreadData,
         direction: Direction,
+        offset: Offset,
         price: float,
         volume: float,
         payup: int,
         interval: int,
-        lock: bool
+        lock: bool,
     ):
         """"""
         self.algo_engine = algo_engine
@@ -36,6 +38,7 @@ class SpreadAlgoTemplate:
         self.spread: SpreadData = spread
         self.spread_name: str = spread.name
 
+        self.offset: Offset = offset
         self.direction: Direction = direction
         self.price: float = price
         self.volume: float = volume
@@ -117,10 +120,24 @@ class SpreadAlgoTemplate:
 
     def update_trade(self, trade: TradeData):
         """"""
-        if trade.direction == Direction.LONG:
-            self.leg_traded[trade.vt_symbol] += trade.volume
+        # For inverse contract:
+        # record coin trading volume as leg trading volume,
+        # not contract volume!
+        if self.spread.is_inverse(trade.vt_symbol):
+            size = self.spread.get_leg_size(trade.vt_symbol)
+
+            trade_volume = calculate_inverse_volume(
+                trade.volume,
+                trade.price,
+                size
+            )
         else:
-            self.leg_traded[trade.vt_symbol] -= trade.volume
+            trade_volume = trade.volume
+
+        if trade.direction == Direction.LONG:
+            self.leg_traded[trade.vt_symbol] += trade_volume
+        else:
+            self.leg_traded[trade.vt_symbol] -= trade_volume
 
         msg = "委托成交，{}，{}，{}@{}".format(
             trade.vt_symbol,
@@ -177,6 +194,21 @@ class SpreadAlgoTemplate:
         direction: Direction,
     ):
         """"""
+        # For inverse contract:
+        # calculate contract trading volume from coin trading volume
+        if self.spread.is_inverse(vt_symbol):
+            size = self.spread.get_leg_size(vt_symbol)
+
+            if self.offset == Offset.CLOSE:
+                leg = self.spread.legs[vt_symbol]
+                volume = volume * leg.net_pos_price / size
+            else:
+                volume = volume * price / size
+
+        # Round order volume to min_volume of contract
+        leg = self.spread.legs[vt_symbol]
+        volume = round_to(volume, leg.min_volume)
+
         vt_orderids = self.algo_engine.send_order(
             self,
             vt_symbol,
@@ -214,12 +246,17 @@ class SpreadAlgoTemplate:
             leg_traded = self.leg_traded[leg.vt_symbol]
             trading_multiplier = self.spread.trading_multipliers[
                 leg.vt_symbol]
+
             adjusted_leg_traded = leg_traded / trading_multiplier
+            adjusted_leg_traded = round_to(
+                adjusted_leg_traded, self.spread.min_volume)
 
             if adjusted_leg_traded > 0:
-                adjusted_leg_traded = floor(adjusted_leg_traded)
+                adjusted_leg_traded = floor_to(
+                    adjusted_leg_traded, self.spread.min_volume)
             else:
-                adjusted_leg_traded = ceil(adjusted_leg_traded)
+                adjusted_leg_traded = ceil_to(
+                    adjusted_leg_traded, self.spread.min_volume)
 
             if not n:
                 self.traded = adjusted_leg_traded
@@ -400,6 +437,20 @@ class SpreadStrategyTemplate:
         pass
 
     @virtual
+    def on_spread_tick(self, tick: TickData):
+        """
+        Callback when new spread tick data is generated.
+        """
+        pass
+
+    @virtual
+    def on_spread_bar(self, bar: BarData):
+        """
+        Callback when new spread bar data is generated.
+        """
+        pass
+
+    @virtual
     def on_spread_pos(self):
         """
         Callback when spread position is updated.
@@ -434,7 +485,8 @@ class SpreadStrategyTemplate:
         volume: float,
         payup: int,
         interval: int,
-        lock: bool
+        lock: bool,
+        offset: Offset
     ) -> str:
         """"""
         if not self.trading:
@@ -444,6 +496,7 @@ class SpreadStrategyTemplate:
             self,
             self.spread_name,
             direction,
+            offset,
             price,
             volume,
             payup,
@@ -461,10 +514,14 @@ class SpreadStrategyTemplate:
         volume: float,
         payup: int,
         interval: int,
-        lock: bool = False
+        lock: bool = False,
+        offset: Offset = Offset.NONE
     ) -> str:
         """"""
-        return self.start_algo(Direction.LONG, price, volume, payup, interval, lock)
+        return self.start_algo(
+            Direction.LONG, price, volume,
+            payup, interval, lock, offset
+        )
 
     def start_short_algo(
         self,
@@ -472,10 +529,14 @@ class SpreadStrategyTemplate:
         volume: float,
         payup: int,
         interval: int,
-        lock: bool = False
+        lock: bool = False,
+        offset: Offset = Offset.NONE
     ) -> str:
         """"""
-        return self.start_algo(Direction.SHORT, price, volume, payup, interval, lock)
+        return self.start_algo(
+            Direction.SHORT, price, volume,
+            payup, interval, lock, offset
+        )
 
     def stop_algo(self, algoid: str):
         """"""
@@ -486,7 +547,7 @@ class SpreadStrategyTemplate:
 
     def stop_all_algos(self):
         """"""
-        for algoid in self.algoids:
+        for algoid in list(self.algoids):
             self.stop_algo(algoid)
 
     def buy(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
@@ -590,3 +651,23 @@ class SpreadStrategyTemplate:
         """
         if self.inited:
             self.strategy_engine.send_email(msg, self)
+
+    def load_bar(
+        self,
+        days: int,
+        interval: Interval = Interval.MINUTE,
+        callback: Callable = None,
+    ):
+        """
+        Load historical bar data for initializing strategy.
+        """
+        if not callback:
+            callback = self.on_spread_bar
+
+        self.strategy_engine.load_bar(self.spread, days, interval, callback)
+
+    def load_tick(self, days: int):
+        """
+        Load historical tick data for initializing strategy.
+        """
+        self.strategy_engine.load_tick(self.spread, days, self.on_spread_tick)

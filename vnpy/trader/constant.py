@@ -98,6 +98,7 @@ class Exchange(Enum):
     ICE = "ICE"             # Intercontinental Exchange
     SEHK = "SEHK"           # Stock Exchange of Hong Kong
     HKFE = "HKFE"           # Hong Kong Futures Exchange
+    HKSE = "HKSE"           # Hong Kong Stock Exchange
     SGX = "SGX"             # Singapore Global Exchange
     CBOT = "CBT"            # Chicago Board of Trade
     CBOE = "CBOE"           # Chicago Board Options Exchange
@@ -111,13 +112,19 @@ class Exchange(Enum):
     EUNX = "EUNX"           # Euronext Exchange
     KRX = "KRX"             # Korean Exchange
 
+    OANDA = "OANDA"         # oanda.com
+
     # CryptoCurrency
     BITMEX = "BITMEX"
     OKEX = "OKEX"
     HUOBI = "HUOBI"
     BITFINEX = "BITFINEX"
     BINANCE = "BINANCE"
+    BYBIT = "BYBIT"         # bybit.com
     COINBASE = "COINBASE"
+    DERIBIT = "DERIBIT"
+    GATEIO = "GATEIO"
+    BITSTAMP = "BITSTAMP"
 
     # Special Function
     LOCAL = "LOCAL"         # For local generated data

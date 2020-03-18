@@ -198,6 +198,7 @@ class CoinbaseWebsocketApi(WebsocketClient):
         }
 
         self.orderbooks = {}
+        self.subscribed = {}
 
     def connect(
         self,
@@ -223,6 +224,10 @@ class CoinbaseWebsocketApi(WebsocketClient):
 
     def subscribe(self, req: SubscribeRequest):
         """"""
+        self.subscribed[req.symbol] = req
+        if not self._active:
+            return
+
         symbol = req.symbol
         exchange = req.exchange
 
@@ -258,6 +263,9 @@ class CoinbaseWebsocketApi(WebsocketClient):
         callback when connection is established
         """
         self.gateway.write_log("Websocket API连接成功")
+
+        for req in self.subscribed.values():
+            self.subscribe(req)
 
     def on_disconnected(self):
         """"""

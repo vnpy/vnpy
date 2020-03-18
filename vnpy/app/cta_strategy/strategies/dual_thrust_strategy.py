@@ -35,13 +35,11 @@ class DualThrustStrategy(CtaTemplate):
     short_entered = False
 
     parameters = ["k1", "k2", "fixed_size"]
-    variables = ["range", "long_entry", "short_entry", "exit_time"]
+    variables = ["range", "long_entry", "short_entry"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
-        super(DualThrustStrategy, self).__init__(
-            cta_engine, strategy_name, vt_symbol, setting
-        )
+        super().__init__(cta_engine, strategy_name, vt_symbol, setting)
 
         self.bg = BarGenerator(self.on_bar)
         self.am = ArrayManager()

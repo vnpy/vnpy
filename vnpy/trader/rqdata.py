@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta
-from typing import List
+from datetime import timedelta
+from typing import List, Optional
 
 from rqdatac import init as rqdata_init
 from rqdatac.services.basic import all_instruments as rqdata_all_instruments
@@ -31,13 +31,13 @@ class RqdataClient:
 
     def __init__(self):
         """"""
-        self.username = SETTINGS["rqdata.username"]
-        self.password = SETTINGS["rqdata.password"]
+        self.username: str = SETTINGS["rqdata.username"]
+        self.password: str = SETTINGS["rqdata.password"]
 
-        self.inited = False
-        self.symbols = set()
+        self.inited: bool = False
+        self.symbols: set = set()
 
-    def init(self, username="", password=""):
+    def init(self, username: str = "", password: str = "") -> bool:
         """"""
         if self.inited:
             return True
@@ -49,15 +49,16 @@ class RqdataClient:
         if not self.username or not self.password:
             return False
 
-        rqdata_init(
-            self.username,
-            self.password,
-            ('rqdatad-pro.ricequant.com', 16011),
-            use_pool=True,
-        )
-
         try:
-            df = rqdata_all_instruments(date=datetime.now())
+            rqdata_init(
+                self.username,
+                self.password,
+                ('rqdatad-pro.ricequant.com', 16011),
+                use_pool=True,
+                max_pool_size=3
+            )
+
+            df = rqdata_all_instruments()
             for ix, row in df.iterrows():
                 self.symbols.add(row['order_book_id'])
         except (RuntimeError, AuthenticationFailed):
@@ -66,7 +67,7 @@ class RqdataClient:
         self.inited = True
         return True
 
-    def to_rq_symbol(self, symbol: str, exchange: Exchange):
+    def to_rq_symbol(self, symbol: str, exchange: Exchange) -> str:
         """
         CZCE product of RQData has symbol like "TA1905" while
         vt symbol is "TA905.CZCE" so need to add "1" in symbol.
@@ -103,7 +104,7 @@ class RqdataClient:
 
         return rq_symbol
 
-    def query_history(self, req: HistoryRequest):
+    def query_history(self, req: HistoryRequest) -> Optional[List[BarData]]:
         """
         Query history bar data from RQData.
         """
@@ -127,10 +128,15 @@ class RqdataClient:
         # For querying night trading period data
         end += timedelta(1)
 
+        # Only query open interest for futures contract
+        fields = ["open", "high", "low", "close", "volume"]
+        if not symbol.isdigit():
+            fields.append("open_interest")
+
         df = rqdata_get_price(
             rq_symbol,
             frequency=rq_interval,
-            fields=["open", "high", "low", "close", "volume"],
+            fields=fields,
             start_date=start,
             end_date=end,
             adjust_type="none"
@@ -150,8 +156,10 @@ class RqdataClient:
                     low_price=row["low"],
                     close_price=row["close"],
                     volume=row["volume"],
+                    open_interest=row.get("open_interest", 0),
                     gateway_name="RQ"
                 )
+
                 data.append(bar)
 
         return data

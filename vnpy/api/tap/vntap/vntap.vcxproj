@@ -115,30 +115,30 @@
     <TargetExt>.pyd</TargetExt>
     <OutDir>$(SolutionDir)</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir);$(ProjectDir)include;C:\Python37\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)include;C:\Python37\include;C:\Python373\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;C:\Python373\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <TargetExt>.pyd</TargetExt>
     <OutDir>$(SolutionDir)</OutDir>
-    <IncludePath>$(ProjectDir);$(ProjectDir)include;C:\Python37\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)include;C:\Python37\include;C:\Python373\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;C:\Python373\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.pyd</TargetExt>
     <OutDir>$(SolutionDir)</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir);$(ProjectDir)include;C:\Python37\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)include;C:\Python37\include;C:\Python373\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;C:\Python373\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.pyd</TargetExt>
     <OutDir>$(SolutionDir)</OutDir>
-    <IncludePath>$(ProjectDir);$(ProjectDir)include;C:\Python37\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)include;C:\Python37\include;C:\Python373\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;C:\Python373\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

@@ -155,9 +155,16 @@ class CtptestGateway(BaseGateway):
         auth_code = setting["授权编码"]
         product_info = setting["产品信息"]
 
-        if not td_address.startswith("tcp://"):
+        if (
+            (not td_address.startswith("tcp://"))
+            and (not td_address.startswith("ssl://"))
+        ):
             td_address = "tcp://" + td_address
-        if not md_address.startswith("tcp://"):
+
+        if (
+            (not md_address.startswith("tcp://"))
+            and (not md_address.startswith("ssl://"))
+        ):
             md_address = "tcp://" + md_address
 
         self.td_api.connect(td_address, userid, password, brokerid, auth_code, appid, product_info)
@@ -478,46 +485,48 @@ class CtpTdApi(TdApi):
         if not data:
             return
 
-        # Get buffered position object
-        key = f"{data['InstrumentID'], data['PosiDirection']}"
-        position = self.positions.get(key, None)
-        if not position:
-            position = PositionData(
-                symbol=data["InstrumentID"],
-                exchange=symbol_exchange_map[data["InstrumentID"]],
-                direction=DIRECTION_CTP2VT[data["PosiDirection"]],
-                gateway_name=self.gateway_name
-            )
-            self.positions[key] = position
+        # Check if contract data received
+        if data["InstrumentID"] in symbol_exchange_map:
+            # Get buffered position object
+            key = f"{data['InstrumentID'], data['PosiDirection']}"
+            position = self.positions.get(key, None)
+            if not position:
+                position = PositionData(
+                    symbol=data["InstrumentID"],
+                    exchange=symbol_exchange_map[data["InstrumentID"]],
+                    direction=DIRECTION_CTP2VT[data["PosiDirection"]],
+                    gateway_name=self.gateway_name
+                )
+                self.positions[key] = position
 
-        # For SHFE position data update
-        if position.exchange == Exchange.SHFE:
-            if data["YdPosition"] and not data["TodayPosition"]:
-                position.yd_volume = data["Position"]
-        # For other exchange position data update
-        else:
-            position.yd_volume = data["Position"] - data["TodayPosition"]
+            # For SHFE position data update
+            if position.exchange == Exchange.SHFE:
+                if data["YdPosition"] and not data["TodayPosition"]:
+                    position.yd_volume = data["Position"]
+            # For other exchange position data update
+            else:
+                position.yd_volume = data["Position"] - data["TodayPosition"]
 
-        # Get contract size (spread contract has no size value)
-        size = symbol_size_map.get(position.symbol, 0)
+            # Get contract size (spread contract has no size value)
+            size = symbol_size_map.get(position.symbol, 0)
 
-        # Calculate previous position cost
-        cost = position.price * position.volume * size
+            # Calculate previous position cost
+            cost = position.price * position.volume * size
 
-        # Update new position volume
-        position.volume += data["Position"]
-        position.pnl += data["PositionProfit"]
+            # Update new position volume
+            position.volume += data["Position"]
+            position.pnl += data["PositionProfit"]
 
-        # Calculate average position price
-        if position.volume and size:
-            cost += data["PositionCost"]
-            position.price = cost / (position.volume * size)
+            # Calculate average position price
+            if position.volume and size:
+                cost += data["PositionCost"]
+                position.price = cost / (position.volume * size)
 
-        # Get frozen volume
-        if position.direction == Direction.LONG:
-            position.frozen += data["ShortFrozen"]
-        else:
-            position.frozen += data["LongFrozen"]
+            # Get frozen volume
+            if position.direction == Direction.LONG:
+                position.frozen += data["ShortFrozen"]
+            else:
+                position.frozen += data["LongFrozen"]
 
         if last:
             for position in self.positions.values():
@@ -718,6 +727,7 @@ class CtpTdApi(TdApi):
 
         ctp_req = {
             "InstrumentID": req.symbol,
+            "ExchangeID": req.exchange.value,
             "LimitPrice": req.price,
             "VolumeTotalOriginal": int(req.volume),
             "OrderPriceType": ORDERTYPE_VT2CTP.get(req.type, ""),
@@ -762,7 +772,7 @@ class CtpTdApi(TdApi):
 
         ctp_req = {
             "InstrumentID": req.symbol,
-            "Exchange": req.exchange,
+            "ExchangeID": req.exchange,
             "OrderRef": order_ref,
             "FrontID": int(frontid),
             "SessionID": int(sessionid),

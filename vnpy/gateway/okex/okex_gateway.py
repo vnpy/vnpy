@@ -40,7 +40,7 @@ from vnpy.trader.object import (
 )
 
 REST_HOST = "https://www.okex.com"
-WEBSOCKET_HOST = "wss://real.okex.com:10442/ws/v3"
+WEBSOCKET_HOST = "wss://real.okex.com:8443/ws/v3"
 
 STATUS_OKEX2VT = {
     "ordering": Status.SUBMITTING,

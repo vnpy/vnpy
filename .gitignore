@@ -1,5 +1,6 @@
 # Python
 *.pyc
+*.pyo
 *.egg-info/
 
 # Jupyter
@@ -31,3 +32,6 @@ dist
 _build
 _static
 _templates
+
+# Misc
+.DS_Store

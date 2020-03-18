@@ -90,9 +90,6 @@ public:
 	///用户请求出入金应答
 	virtual void OnRspUserDeposit(CUstpFtdcstpUserDepositField *pstpUserDeposit, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {};
 
-	///用户主次席出入金应答
-	virtual void OnRspTransferMoney(CUstpFtdcstpTransferMoneyField *pstpTransferMoney, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {};
-
 	///数据流回退通知
 	virtual void OnRtnFlowMessageCancel(CUstpFtdcFlowMessageCancelField *pFlowMessageCancel) {};
 
@@ -171,10 +168,10 @@ public:
 	///投资者保证金率查询应答
 	virtual void OnRspQryInvestorMargin(CUstpFtdcInvestorMarginField *pInvestorMargin, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {};
 
-	///交易编码组合持仓查询应答
+	///投资者组合持仓查询应答
 	virtual void OnRspQryInvestorCombPosition(CUstpFtdcRspInvestorCombPositionField *pRspInvestorCombPosition, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {};
 
-	///交易编码单腿持仓查询应答
+	///投资者单腿持仓查询应答
 	virtual void OnRspQryInvestorLegPosition(CUstpFtdcRspInvestorLegPositionField *pRspInvestorLegPosition, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {};
 
 	///合约组信息查询应答
@@ -203,6 +200,15 @@ public:
 
 	///系统时间查询应答
 	virtual void OnRspQrySystemTime(CUstpFtdcRspQrySystemTimeField *pRspQrySystemTime, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {};
+
+	///查询保证金优惠参数响应
+	virtual void OnRspQryMarginPrefParam(CUstpFtdcRspQryMarginPrefParamField *pRspQryMarginPrefParam, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {};
+
+	///穿透监管客户认证应答
+	virtual void OnRspDSUserCertification(CUstpFtdcDSUserCertRspDataField *pDSUserCertRspData, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {};
+
+	///穿透监管信息采集中继上传信息响应
+	virtual void OnRspDSProxySubmitInfo(CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {};
 };
 
 class TRADER_API_EXPORT CUstpFtdcTraderApi
@@ -315,6 +321,10 @@ public:
 	///@return -1 打开日志文件失败
 	virtual int OpenResponseLog(const char *pszRspLogFileName) = 0;
 
+	///穿透监管中继处用户证书认证 
+	virtual int RegisterDSProxyUserCert(CUstpFtdcDSProxyCheckUserInfoField *pDSProxyUserUserInfo, CUstpFtdcDSProxyUserCertInField *pDSProxyUserCertIn, CUstpFtdcDSProxyUserCertOutField *pDProxyUserCertOut, int nRequestID) = 0;	
+	   
+	
 
 	///风控前置系统用户登录请求
 	virtual int ReqUserLogin(CUstpFtdcReqUserLoginField *pReqUserLogin, int nRequestID) = 0;
@@ -345,9 +355,6 @@ public:
 
 	///用户请求出入金
 	virtual int ReqUserDeposit(CUstpFtdcstpUserDepositField *pstpUserDeposit, int nRequestID) = 0;
-
-	///用户主次席出入金请求
-	virtual int ReqTransferMoney(CUstpFtdcstpTransferMoneyField *pstpTransferMoney, int nRequestID) = 0;
 
 	///报单查询请求
 	virtual int ReqQryOrder(CUstpFtdcQryOrderField *pQryOrder, int nRequestID) = 0;
@@ -382,10 +389,10 @@ public:
 	///投资者保证金率查询请求
 	virtual int ReqQryInvestorMargin(CUstpFtdcQryInvestorMarginField *pQryInvestorMargin, int nRequestID) = 0;
 
-	///交易编码组合持仓查询请求
+	///投资者组合持仓查询请求
 	virtual int ReqQryInvestorCombPosition(CUstpFtdcQryInvestorCombPositionField *pQryInvestorCombPosition, int nRequestID) = 0;
 
-	///交易编码单腿持仓查询请求
+	///投资者单腿持仓查询请求
 	virtual int ReqQryInvestorLegPosition(CUstpFtdcQryInvestorLegPositionField *pQryInvestorLegPosition, int nRequestID) = 0;
 
 	///查询合约组信息
@@ -402,6 +409,15 @@ public:
 
 	///查询系统时间
 	virtual int ReqQrySystemTime(CUstpFtdcReqQrySystemTimeField *pReqQrySystemTime, int nRequestID) = 0;
+
+	///查询保证金优惠参数请求
+	virtual int ReqQryMarginPrefParam(CUstpFtdcReqQryMarginPrefParamField *pReqQryMarginPrefParam, int nRequestID) = 0;
+
+	///穿透监管客户认证请求
+	virtual int ReqDSUserCertification(CUstpFtdcDSUserInfoField *pDSUserInfo, int nRequestID) = 0;
+
+	///穿透监管信息采集中继上传信息
+	virtual int ReqDSProxySubmitInfo(CUstpFtdcDSProxySubmitDataField *pDSProxySubmitData, int nRequestID) = 0;
 protected:
 	~CUstpFtdcTraderApi(){};
 };

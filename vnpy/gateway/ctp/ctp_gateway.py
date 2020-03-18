@@ -1,7 +1,9 @@
 """
 """
 
+import sys
 from datetime import datetime
+from time import sleep
 
 from vnpy.api.ctp import (
     MdApi,
@@ -25,6 +27,7 @@ from vnpy.api.ctp import (
     THOST_FTDC_OFEN_CloseToday,
     THOST_FTDC_PC_Futures,
     THOST_FTDC_PC_Options,
+    THOST_FTDC_PC_SpotOption,
     THOST_FTDC_PC_Combination,
     THOST_FTDC_CP_CallOptions,
     THOST_FTDC_CP_PutOptions,
@@ -105,6 +108,7 @@ EXCHANGE_CTP2VT = {
 PRODUCT_CTP2VT = {
     THOST_FTDC_PC_Futures: Product.FUTURES,
     THOST_FTDC_PC_Options: Product.OPTION,
+    THOST_FTDC_PC_SpotOption: Product.OPTION,
     THOST_FTDC_PC_Combination: Product.SPREAD
 }
 
@@ -112,6 +116,8 @@ OPTIONTYPE_CTP2VT = {
     THOST_FTDC_CP_CallOptions: OptionType.CALL,
     THOST_FTDC_CP_PutOptions: OptionType.PUT
 }
+
+MAX_FLOAT = sys.float_info.max
 
 
 symbol_exchange_map = {}
@@ -155,9 +161,16 @@ class CtpGateway(BaseGateway):
         auth_code = setting["授权编码"]
         product_info = setting["产品信息"]
 
-        if not td_address.startswith("tcp://"):
+        if (
+            (not td_address.startswith("tcp://"))
+            and (not td_address.startswith("ssl://"))
+        ):
             td_address = "tcp://" + td_address
-        if not md_address.startswith("tcp://"):
+
+        if (
+            (not md_address.startswith("tcp://"))
+            and (not md_address.startswith("ssl://"))
+        ):
             md_address = "tcp://" + md_address
 
         self.td_api.connect(td_address, userid, password, brokerid, auth_code, appid, product_info)
@@ -296,16 +309,38 @@ class CtpMdApi(MdApi):
             last_price=data["LastPrice"],
             limit_up=data["UpperLimitPrice"],
             limit_down=data["LowerLimitPrice"],
-            open_price=data["OpenPrice"],
-            high_price=data["HighestPrice"],
-            low_price=data["LowestPrice"],
-            pre_close=data["PreClosePrice"],
-            bid_price_1=data["BidPrice1"],
-            ask_price_1=data["AskPrice1"],
+            open_price=adjust_price(data["OpenPrice"]),
+            high_price=adjust_price(data["HighestPrice"]),
+            low_price=adjust_price(data["LowestPrice"]),
+            pre_close=adjust_price(data["PreClosePrice"]),
+            bid_price_1=adjust_price(data["BidPrice1"]),
+            ask_price_1=adjust_price(data["AskPrice1"]),
             bid_volume_1=data["BidVolume1"],
             ask_volume_1=data["AskVolume1"],
             gateway_name=self.gateway_name
         )
+
+        if data["BidVolume2"] or data["AskVolume2"]:
+            tick.bid_price_2 = adjust_price(data["BidPrice2"])
+            tick.bid_price_3 = adjust_price(data["BidPrice3"])
+            tick.bid_price_4 = adjust_price(data["BidPrice4"])
+            tick.bid_price_5 = adjust_price(data["BidPrice5"])
+
+            tick.ask_price_2 = adjust_price(data["AskPrice2"])
+            tick.ask_price_3 = adjust_price(data["AskPrice3"])
+            tick.ask_price_4 = adjust_price(data["AskPrice4"])
+            tick.ask_price_5 = adjust_price(data["AskPrice5"])
+
+            tick.bid_volume_2 = adjust_price(data["BidVolume2"])
+            tick.bid_volume_3 = adjust_price(data["BidVolume3"])
+            tick.bid_volume_4 = adjust_price(data["BidVolume4"])
+            tick.bid_volume_5 = adjust_price(data["BidVolume5"])
+
+            tick.ask_volume_2 = adjust_price(data["AskVolume2"])
+            tick.ask_volume_3 = adjust_price(data["AskVolume3"])
+            tick.ask_volume_4 = adjust_price(data["AskVolume4"])
+            tick.ask_volume_5 = adjust_price(data["AskVolume5"])
+
         self.gateway.on_tick(tick)
 
     def connect(self, address: str, userid: str, password: str, brokerid: int):
@@ -471,54 +506,62 @@ class CtpTdApi(TdApi):
         """
         self.gateway.write_log("结算信息确认成功")
 
-        self.reqid += 1
-        self.reqQryInstrument({}, self.reqid)
+        while True:
+            self.reqid += 1
+            n = self.reqQryInstrument({}, self.reqid)
+
+            if not n:
+                break
+            else:
+                sleep(1)
 
     def onRspQryInvestorPosition(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         if not data:
             return
 
-        # Get buffered position object
-        key = f"{data['InstrumentID'], data['PosiDirection']}"
-        position = self.positions.get(key, None)
-        if not position:
-            position = PositionData(
-                symbol=data["InstrumentID"],
-                exchange=symbol_exchange_map[data["InstrumentID"]],
-                direction=DIRECTION_CTP2VT[data["PosiDirection"]],
-                gateway_name=self.gateway_name
-            )
-            self.positions[key] = position
+        # Check if contract data received
+        if data["InstrumentID"] in symbol_exchange_map:
+            # Get buffered position object
+            key = f"{data['InstrumentID'], data['PosiDirection']}"
+            position = self.positions.get(key, None)
+            if not position:
+                position = PositionData(
+                    symbol=data["InstrumentID"],
+                    exchange=symbol_exchange_map[data["InstrumentID"]],
+                    direction=DIRECTION_CTP2VT[data["PosiDirection"]],
+                    gateway_name=self.gateway_name
+                )
+                self.positions[key] = position
 
-        # For SHFE position data update
-        if position.exchange == Exchange.SHFE:
-            if data["YdPosition"] and not data["TodayPosition"]:
-                position.yd_volume = data["Position"]
-        # For other exchange position data update
-        else:
-            position.yd_volume = data["Position"] - data["TodayPosition"]
+            # For SHFE and INE position data update
+            if position.exchange in [Exchange.SHFE, Exchange.INE]:
+                if data["YdPosition"] and not data["TodayPosition"]:
+                    position.yd_volume = data["Position"]
+            # For other exchange position data update
+            else:
+                position.yd_volume = data["Position"] - data["TodayPosition"]
 
-        # Get contract size (spread contract has no size value)
-        size = symbol_size_map.get(position.symbol, 0)
+            # Get contract size (spread contract has no size value)
+            size = symbol_size_map.get(position.symbol, 0)
 
-        # Calculate previous position cost
-        cost = position.price * position.volume * size
+            # Calculate previous position cost
+            cost = position.price * position.volume * size
 
-        # Update new position volume
-        position.volume += data["Position"]
-        position.pnl += data["PositionProfit"]
+            # Update new position volume
+            position.volume += data["Position"]
+            position.pnl += data["PositionProfit"]
 
-        # Calculate average position price
-        if position.volume and size:
-            cost += data["PositionCost"]
-            position.price = cost / (position.volume * size)
+            # Calculate average position price
+            if position.volume and size:
+                cost += data["PositionCost"]
+                position.price = cost / (position.volume * size)
 
-        # Get frozen volume
-        if position.direction == Direction.LONG:
-            position.frozen += data["ShortFrozen"]
-        else:
-            position.frozen += data["LongFrozen"]
+            # Get frozen volume
+            if position.direction == Direction.LONG:
+                position.frozen += data["ShortFrozen"]
+            else:
+                position.frozen += data["LongFrozen"]
 
         if last:
             for position in self.positions.values():
@@ -559,10 +602,17 @@ class CtpTdApi(TdApi):
 
             # For option only
             if contract.product == Product.OPTION:
-                contract.option_underlying = data["UnderlyingInstrID"],
-                contract.option_type = OPTIONTYPE_CTP2VT.get(data["OptionsType"], None),
-                contract.option_strike = data["StrikePrice"],
-                contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d"),
+                # Remove C/P suffix of CZCE option product name
+                if contract.exchange == Exchange.CZCE:
+                    contract.option_portfolio = data["ProductID"][:-1]
+                else:
+                    contract.option_portfolio = data["ProductID"]
+
+                contract.option_underlying = data["UnderlyingInstrID"]
+                contract.option_type = OPTIONTYPE_CTP2VT.get(data["OptionsType"], None)
+                contract.option_strike = data["StrikePrice"]
+                contract.option_index = str(data["StrikePrice"])
+                contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d")
 
             self.gateway.on_contract(contract)
 
@@ -715,11 +765,11 @@ class CtpTdApi(TdApi):
         """
         Send new order.
         """
-        self.order_ref += 1
-
         if req.offset not in OFFSET_VT2CTP:
             self.gateway.write_log("请选择开平方向")
             return ""
+
+        self.order_ref += 1
 
         ctp_req = {
             "InstrumentID": req.symbol,
@@ -806,3 +856,10 @@ class CtpTdApi(TdApi):
         """"""
         if self.connect_status:
             self.exit()
+
+
+def adjust_price(price: float) -> float:
+    """"""
+    if price == MAX_FLOAT:
+        price = 0
+    return price

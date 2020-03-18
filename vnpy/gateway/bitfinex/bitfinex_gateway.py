@@ -53,6 +53,13 @@ ORDERTYPE_VT2BITFINEX = {
     OrderType.LIMIT: "EXCHANGE LIMIT",
     OrderType.MARKET: "EXCHANGE MARKET",
 }
+ORDERTYPE_BITFINEX2VT = {
+    "EXCHANGE LIMIT": OrderType.LIMIT,
+    "EXCHANGE MARKET": OrderType.MARKET,
+    "LIMIT": OrderType.LIMIT,
+    "MARKET": OrderType.MARKET
+}
+
 DIRECTION_VT2BITFINEX = {
     Direction.LONG: "Buy",
     Direction.SHORT: "Sell",
@@ -86,6 +93,7 @@ class BitfinexGateway(BaseGateway):
         "session": 3,
         "proxy_host": "127.0.0.1",
         "proxy_port": 1080,
+        "margin": ["False", "True"]
     }
 
     exchanges = [Exchange.BITFINEX]
@@ -108,8 +116,13 @@ class BitfinexGateway(BaseGateway):
         proxy_host = setting["proxy_host"]
         proxy_port = setting["proxy_port"]
 
+        if setting["margin"] == "True":
+            margin = True
+        else:
+            margin = False
+
         self.rest_api.connect(key, secret, session, proxy_host, proxy_port)
-        self.ws_api.connect(key, secret, proxy_host, proxy_port)
+        self.ws_api.connect(key, secret, proxy_host, proxy_port, margin)
 
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
@@ -212,7 +225,7 @@ class BitfinexRestApi(RestClient):
         secret: str,
         session: int,
         proxy_host: str,
-        proxy_port: int,
+        proxy_port: int
     ):
         """
         Initialize connection to REST server.
@@ -383,11 +396,17 @@ class BitfinexWebsocketApi(WebsocketClient):
         self.subscribed = {}
 
     def connect(
-        self, key: str, secret: str, proxy_host: str, proxy_port: int
+        self,
+        key: str,
+        secret: str,
+        proxy_host: str,
+        proxy_port: int,
+        margin: bool
     ):
         """"""
         self.key = key
         self.secret = secret.encode()
+        self.margin = margin
         self.init(WEBSOCKET_HOST, proxy_host, proxy_port)
         self.start()
 
@@ -432,9 +451,13 @@ class BitfinexWebsocketApi(WebsocketClient):
         else:
             amount = -req.volume
 
+        order_type = ORDERTYPE_VT2BITFINEX[req.type]
+        if self.margin:
+            order_type = order_type.replace("EXCHANGE ", "")
+
         o = {
             "cid": orderid,
-            "type": ORDERTYPE_VT2BITFINEX[req.type],
+            "type": order_type,
             "symbol": "t" + req.symbol,
             "amount": str(amount),
             "price": str(req.price),
@@ -609,19 +632,26 @@ class BitfinexWebsocketApi(WebsocketClient):
 
     def on_wallet(self, data):
         """"""
-        if str(data[0]) == "exchange":
-            accountid = str(data[1])
-            account = self.accounts.get(accountid, None)
-            if not account:
-                account = AccountData(
-                    accountid=accountid,
-                    gateway_name=self.gateway_name,
-                )
+        print(data)
+        # Exchange Mode
+        if not self.margin and str(data[0]) != "exchange":
+            return
+        # Margin Mode
+        elif self.margin and str(data[0]) != "margin":
+            return
 
-            account.balance = float(data[2])
-            account.available = 0.0
-            account.frozen = 0.0
-            self.gateway.on_account(copy(account))
+        accountid = str(data[1])
+        account = self.accounts.get(accountid, None)
+        if not account:
+            account = AccountData(
+                accountid=accountid,
+                gateway_name=self.gateway_name,
+            )
+
+        account.balance = float(data[2])
+        account.available = 0.0
+        account.frozen = 0.0
+        self.gateway.on_account(copy(account))
 
     def on_trade_update(self, data):
         """"""
@@ -776,6 +806,7 @@ class BitfinexWebsocketApi(WebsocketClient):
         order = OrderData(
             symbol=str(data[3].replace("t", "")),
             exchange=Exchange.BITFINEX,
+            type=ORDERTYPE_BITFINEX2VT[data[8]],
             orderid=orderid,
             status=Status.REJECTED,
             direction=direction,
@@ -808,6 +839,7 @@ class BitfinexWebsocketApi(WebsocketClient):
             symbol=str(data[3].replace("t", "")),
             exchange=Exchange.BITFINEX,
             orderid=orderid,
+            type=ORDERTYPE_BITFINEX2VT[data[8]],
             status=STATUS_BITFINEX2VT[order_status],
             direction=direction,
             price=float(data[16]),

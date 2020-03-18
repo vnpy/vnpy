@@ -31,16 +31,39 @@ void MdApi::OnHeartBeatWarning(int nTimeLapse)
 	this->task_queue.push(task);
 };
 
-
 void MdApi::OnPackageStart(int nTopicID, int nSequenceNo)
 {
-	//该函数忽略
+	Task task = Task();
+	task.task_name = ONPACKAGESTART;
+	task.task_id = nTopicID;
+	task.task_id = nSequenceNo;
+	this->task_queue.push(task);
 };
 
 void MdApi::OnPackageEnd(int nTopicID, int nSequenceNo)
 {
-	//该函数忽略
+	Task task = Task();
+	task.task_name = ONPACKAGEEND;
+	task.task_id = nTopicID;
+	task.task_id = nSequenceNo;
+	this->task_queue.push(task);
 };
+
+void MdApi::OnRspError(CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPERROR;
+	if (pRspInfo)
+	{
+		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
+		*task_error = *pRspInfo;
+		task.task_error = task_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
 void MdApi::OnRspUserLogin(CUstpFtdcRspUserLoginField *pRspUserLogin, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
 	Task task = Task();
@@ -57,20 +80,19 @@ void MdApi::OnRspUserLogin(CUstpFtdcRspUserLoginField *pRspUserLogin, CUstpFtdcR
 		*task_error = *pRspInfo;
 		task.task_error = task_error;
 	}
-
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
 	this->task_queue.push(task);
 };
 
-void MdApi::OnRspUserLogout(CUstpFtdcRspUserLogoutField *pUserLogout, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void MdApi::OnRspUserLogout(CUstpFtdcRspUserLogoutField *pRspUserLogout, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
 	Task task = Task();
 	task.task_name = ONRSPUSERLOGOUT;
-	if (pUserLogout)
+	if (pRspUserLogout)
 	{
 		CUstpFtdcRspUserLogoutField *task_data = new CUstpFtdcRspUserLogoutField();
-		*task_data = *pUserLogout;
+		*task_data = *pRspUserLogout;
 		task.task_data = task_data;
 	}
 	if (pRspInfo)
@@ -84,18 +106,16 @@ void MdApi::OnRspUserLogout(CUstpFtdcRspUserLogoutField *pUserLogout, CUstpFtdcR
 	this->task_queue.push(task);
 };
 
-void MdApi::OnRspError(CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void MdApi::OnRtnDepthMarketData(CUstpFtdcDepthMarketDataField *pDepthMarketData)
 {
 	Task task = Task();
-	task.task_name = ONRSPERROR;
-	if (pRspInfo)
+	task.task_name = ONRTNDEPTHMARKETDATA;
+	if (pDepthMarketData)
 	{
-		CUstpFtdcRspInfoField *task_error = new CUstpFtdcRspInfoField();
-		*task_error = *pRspInfo;
-		task.task_error = task_error;
+		CUstpFtdcDepthMarketDataField *task_data = new CUstpFtdcDepthMarketDataField();
+		*task_data = *pDepthMarketData;
+		task.task_data = task_data;
 	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
 	this->task_queue.push(task);
 };
 
@@ -141,14 +161,14 @@ void MdApi::OnRspUnSubMarketData(CUstpFtdcSpecificInstrumentField *pSpecificInst
 	this->task_queue.push(task);
 };
 
-void MdApi::OnRspSubscribeTopic(CUstpFtdcDisseminationField *pSpecificInstrument, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void MdApi::OnRspGetMarketTopic(CUstpFtdcRspMarketTopicField *pRspMarketTopic, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
 	Task task = Task();
-	task.task_name = ONRSPSUBSCRIBETOPIC;
-	if (pSpecificInstrument)
+	task.task_name = ONRSPGETMARKETTOPIC;
+	if (pRspMarketTopic)
 	{
-		CUstpFtdcDisseminationField *task_data = new CUstpFtdcDisseminationField();
-		*task_data = *pSpecificInstrument;
+		CUstpFtdcRspMarketTopicField *task_data = new CUstpFtdcRspMarketTopicField();
+		*task_data = *pRspMarketTopic;
 		task.task_data = task_data;
 	}
 	if (pRspInfo)
@@ -162,14 +182,14 @@ void MdApi::OnRspSubscribeTopic(CUstpFtdcDisseminationField *pSpecificInstrument
 	this->task_queue.push(task);
 };
 
-void MdApi::OnRspQryTopic(CUstpFtdcDisseminationField *pSpecificInstrument, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+void MdApi::OnRspGetMarketData(CUstpFtdcRspDepthMarketDataField *pRspDepthMarketData, CUstpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
 	Task task = Task();
-	task.task_name = ONRSPQRYTOPIC;
-	if (pSpecificInstrument)
+	task.task_name = ONRSPGETMARKETDATA;
+	if (pRspDepthMarketData)
 	{
-		CUstpFtdcDisseminationField *task_data = new CUstpFtdcDisseminationField();
-		*task_data = *pSpecificInstrument;
+		CUstpFtdcRspDepthMarketDataField *task_data = new CUstpFtdcRspDepthMarketDataField();
+		*task_data = *pRspDepthMarketData;
 		task.task_data = task_data;
 	}
 	if (pRspInfo)
@@ -183,18 +203,7 @@ void MdApi::OnRspQryTopic(CUstpFtdcDisseminationField *pSpecificInstrument, CUst
 	this->task_queue.push(task);
 };
 
-void MdApi::OnRtnDepthMarketData(CUstpFtdcDepthMarketDataField *pDepthMarketData)
-{
-	Task task = Task();
-	task.task_name = ONRTNDEPTHMARKETDATA;
-	if (pDepthMarketData)
-	{
-		CUstpFtdcDepthMarketDataField *task_data = new CUstpFtdcDepthMarketDataField();
-		*task_data = *pDepthMarketData;
-		task.task_data = task_data;
-	}
-	this->task_queue.push(task);
-};
+
 
 
 
@@ -212,59 +221,85 @@ void MdApi::processTask()
             
             switch (task.task_name)
             {
-            case ONFRONTCONNECTED:
-            {
-                this->processFrontConnected(&task);
-                break;
-            }
+			case ONFRONTCONNECTED:
+			{
+				this->processFrontConnected(&task);
+				break;
+			}
 
-            case ONFRONTDISCONNECTED:
-            {
-                this->processFrontDisconnected(&task);
-                break;
-            }
+			case ONFRONTDISCONNECTED:
+			{
+				this->processFrontDisconnected(&task);
+				break;
+			}
 
-            case ONHEARTBEATWARNING:
-            {
-                this->processHeartBeatWarning(&task);
-                break;
-            }
+			case ONHEARTBEATWARNING:
+			{
+				this->processHeartBeatWarning(&task);
+				break;
+			}
 
-            case ONRSPUSERLOGIN:
-            {
-                this->processRspUserLogin(&task);
-                break;
-            }
+			case ONPACKAGESTART:
+			{
+				this->processPackageStart(&task);
+				break;
+			}
 
-            case ONRSPUSERLOGOUT:
-            {
-                this->processRspUserLogout(&task);
-                break;
-            }
+			case ONPACKAGEEND:
+			{
+				this->processPackageEnd(&task);
+				break;
+			}
 
-            case ONRSPERROR:
-            {
-                this->processRspError(&task);
-                break;
-            }
+			case ONRSPERROR:
+			{
+				this->processRspError(&task);
+				break;
+			}
 
-            case ONRSPSUBMARKETDATA:
-            {
-                this->processRspSubMarketData(&task);
-                break;
-            }
+			case ONRSPUSERLOGIN:
+			{
+				this->processRspUserLogin(&task);
+				break;
+			}
 
-            case ONRSPUNSUBMARKETDATA:
-            {
-                this->processRspUnSubMarketData(&task);
-                break;
-            }
+			case ONRSPUSERLOGOUT:
+			{
+				this->processRspUserLogout(&task);
+				break;
+			}
 
-            case ONRTNDEPTHMARKETDATA:
-            {
-                this->processRtnDepthMarketData(&task);
-                break;
-            }
+			case ONRTNDEPTHMARKETDATA:
+			{
+				this->processRtnDepthMarketData(&task);
+				break;
+			}
+
+			case ONRSPSUBMARKETDATA:
+			{
+				this->processRspSubMarketData(&task);
+				break;
+			}
+
+			case ONRSPUNSUBMARKETDATA:
+			{
+				this->processRspUnSubMarketData(&task);
+				break;
+			}
+
+			case ONRSPGETMARKETTOPIC:
+			{
+				this->processRspGetMarketTopic(&task);
+				break;
+			}
+
+			case ONRSPGETMARKETDATA:
+			{
+				this->processRspGetMarketData(&task);
+				break;
+			}
+
+
 
             };
         }
@@ -292,6 +327,32 @@ void MdApi::processHeartBeatWarning(Task *task)
 	this->onHeartBeatWarning(task->task_id);
 };
 
+void MdApi::processPackageStart(Task *task)
+{
+	gil_scoped_acquire acquire;
+	this->onPackageStart(task->task_id);
+};
+
+void MdApi::processPackageEnd(Task *task)
+{
+	gil_scoped_acquire acquire;
+	this->onPackageEnd(task->task_id);
+};
+
+void MdApi::processRspError(Task *task)
+{
+	gil_scoped_acquire acquire;
+	dict error;
+	if (task->task_error)
+	{
+		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
+		error["ErrorID"] = task_error->ErrorID;
+		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
+		delete task->task_error;
+	}
+	this->onRspError(error, task->task_id, task->task_last);
+};
+
 void MdApi::processRspUserLogin(Task *task)
 {
 	gil_scoped_acquire acquire;
@@ -300,14 +361,18 @@ void MdApi::processRspUserLogin(Task *task)
 	{
 		CUstpFtdcRspUserLoginField *task_data = (CUstpFtdcRspUserLoginField*)task->task_data;
 		data["TradingDay"] = toUtf(task_data->TradingDay);
-		data["LoginTime"] = toUtf(task_data->LoginTime);
 		data["BrokerID"] = toUtf(task_data->BrokerID);
 		data["UserID"] = toUtf(task_data->UserID);
+		data["LoginTime"] = toUtf(task_data->LoginTime);
+		data["ExchangeTime"] = toUtf(task_data->ExchangeTime);
+		data["MaxOrderLocalID"] = toUtf(task_data->MaxOrderLocalID);
 		data["TradingSystemName"] = toUtf(task_data->TradingSystemName);
-		data["MaxOrderLocalID"] = task_data->MaxOrderLocalID;
-		data["PrivateFlowSize"] = task_data->PrivateFlowSize;
 		data["DataCenterID"] = task_data->DataCenterID;
+		data["PrivateFlowSize"] = task_data->PrivateFlowSize;
 		data["UserFlowSize"] = task_data->UserFlowSize;
+		data["ActionDay"] = toUtf(task_data->ActionDay);
+		data["FemasVersion"] = toUtf(task_data->FemasVersion);
+		data["FemasLifeCycle"] = task_data->FemasLifeCycle;
 		delete task->task_data;
 	}
 	dict error;
@@ -343,18 +408,73 @@ void MdApi::processRspUserLogout(Task *task)
 	this->onRspUserLogout(data, error, task->task_id, task->task_last);
 };
 
-void MdApi::processRspError(Task *task)
+void MdApi::processRtnDepthMarketData(Task *task)
 {
 	gil_scoped_acquire acquire;
-	dict error;
-	if (task->task_error)
+	dict data;
+	if (task->task_data)
 	{
-		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
-		error["ErrorID"] = task_error->ErrorID;
-		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
-		delete task->task_error;
+		CUstpFtdcDepthMarketDataField *task_data = (CUstpFtdcDepthMarketDataField*)task->task_data;
+		data["TradingDay"] = toUtf(task_data->TradingDay);
+		data["SettlementGroupID"] = toUtf(task_data->SettlementGroupID);
+		data["SettlementID"] = task_data->SettlementID;
+		data["PreSettlementPrice"] = task_data->PreSettlementPrice;
+		data["PreClosePrice"] = task_data->PreClosePrice;
+		data["PreOpenInterest"] = task_data->PreOpenInterest;
+		data["PreDelta"] = task_data->PreDelta;
+		data["OpenPrice"] = task_data->OpenPrice;
+		data["HighestPrice"] = task_data->HighestPrice;
+		data["LowestPrice"] = task_data->LowestPrice;
+		data["ClosePrice"] = task_data->ClosePrice;
+		data["UpperLimitPrice"] = task_data->UpperLimitPrice;
+		data["LowerLimitPrice"] = task_data->LowerLimitPrice;
+		data["SettlementPrice"] = task_data->SettlementPrice;
+		data["CurrDelta"] = task_data->CurrDelta;
+		data["LastPrice"] = task_data->LastPrice;
+		data["Volume"] = task_data->Volume;
+		data["Turnover"] = task_data->Turnover;
+		data["OpenInterest"] = task_data->OpenInterest;
+		data["BidPrice1"] = task_data->BidPrice1;
+		data["BidVolume1"] = task_data->BidVolume1;
+		data["AskPrice1"] = task_data->AskPrice1;
+		data["AskVolume1"] = task_data->AskVolume1;
+		data["BidPrice2"] = task_data->BidPrice2;
+		data["BidVolume2"] = task_data->BidVolume2;
+		data["BidPrice3"] = task_data->BidPrice3;
+		data["BidVolume3"] = task_data->BidVolume3;
+		data["AskPrice2"] = task_data->AskPrice2;
+		data["AskVolume2"] = task_data->AskVolume2;
+		data["AskPrice3"] = task_data->AskPrice3;
+		data["AskVolume3"] = task_data->AskVolume3;
+		data["BidPrice4"] = task_data->BidPrice4;
+		data["BidVolume4"] = task_data->BidVolume4;
+		data["BidPrice5"] = task_data->BidPrice5;
+		data["BidVolume5"] = task_data->BidVolume5;
+		data["AskPrice4"] = task_data->AskPrice4;
+		data["AskVolume4"] = task_data->AskVolume4;
+		data["AskPrice5"] = task_data->AskPrice5;
+		data["AskVolume5"] = task_data->AskVolume5;
+		data["InstrumentID"] = toUtf(task_data->InstrumentID);
+		data["UpdateTime"] = toUtf(task_data->UpdateTime);
+		data["UpdateMillisec"] = task_data->UpdateMillisec;
+		data["ActionDay"] = toUtf(task_data->ActionDay);
+		data["HisHighestPrice"] = task_data->HisHighestPrice;
+		data["HisLowestPrice"] = task_data->HisLowestPrice;
+		data["LatestVolume"] = task_data->LatestVolume;
+		data["InitVolume"] = task_data->InitVolume;
+		data["ChangeVolume"] = task_data->ChangeVolume;
+		data["BidImplyVolume"] = task_data->BidImplyVolume;
+		data["AskImplyVolume"] = task_data->AskImplyVolume;
+		data["AvgPrice"] = task_data->AvgPrice;
+		data["ArbiType"] = task_data->ArbiType;
+		data["InstrumentID_1"] = toUtf(task_data->InstrumentID_1);
+		data["InstrumentID_2"] = toUtf(task_data->InstrumentID_2);
+		data["InstrumentName"] = toUtf(task_data->InstrumentName);
+		data["TotalBidVolume"] = task_data->TotalBidVolume;
+		data["TotalAskVolume"] = task_data->TotalAskVolume;
+		delete task->task_data;
 	}
-	this->onRspError(error, task->task_id, task->task_last);
+	this->onRtnDepthMarketData(data);
 };
 
 void MdApi::processRspSubMarketData(Task *task)
@@ -375,7 +495,6 @@ void MdApi::processRspSubMarketData(Task *task)
 		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
 		delete task->task_error;
 	}
-	error["ErrorID"] = 0;
 	this->onRspSubMarketData(data, error, task->task_id, task->task_last);
 };
 
@@ -400,58 +519,108 @@ void MdApi::processRspUnSubMarketData(Task *task)
 	this->onRspUnSubMarketData(data, error, task->task_id, task->task_last);
 };
 
-void MdApi::processRtnDepthMarketData(Task *task)
+void MdApi::processRspGetMarketTopic(Task *task)
 {
 	gil_scoped_acquire acquire;
 	dict data;
 	if (task->task_data)
 	{
-		CUstpFtdcDepthMarketDataField *task_data = (CUstpFtdcDepthMarketDataField*)task->task_data;
+		CUstpFtdcRspMarketTopicField *task_data = (CUstpFtdcRspMarketTopicField*)task->task_data;
+		data["ExchangeID"] = toUtf(task_data->ExchangeID);
+		data["TopicID"] = task_data->TopicID;
+		delete task->task_data;
+	}
+	dict error;
+	if (task->task_error)
+	{
+		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
+		error["ErrorID"] = task_error->ErrorID;
+		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
+		delete task->task_error;
+	}
+	this->onRspGetMarketTopic(data, error, task->task_id, task->task_last);
+};
+
+void MdApi::processRspGetMarketData(Task *task)
+{
+	gil_scoped_acquire acquire;
+	dict data;
+	if (task->task_data)
+	{
+		CUstpFtdcRspDepthMarketDataField *task_data = (CUstpFtdcRspDepthMarketDataField*)task->task_data;
 		data["TradingDay"] = toUtf(task_data->TradingDay);
-		data["ActionDay"] = toUtf(task_data->ActionDay);
-		data["InstrumentID"] = toUtf(task_data->InstrumentID);
-		data["LastPrice"] = task_data->LastPrice;
+		data["SettlementGroupID"] = toUtf(task_data->SettlementGroupID);
+		data["SettlementID"] = task_data->SettlementID;
 		data["PreSettlementPrice"] = task_data->PreSettlementPrice;
 		data["PreClosePrice"] = task_data->PreClosePrice;
 		data["PreOpenInterest"] = task_data->PreOpenInterest;
+		data["PreDelta"] = task_data->PreDelta;
 		data["OpenPrice"] = task_data->OpenPrice;
 		data["HighestPrice"] = task_data->HighestPrice;
 		data["LowestPrice"] = task_data->LowestPrice;
+		data["ClosePrice"] = task_data->ClosePrice;
+		data["UpperLimitPrice"] = task_data->UpperLimitPrice;
+		data["LowerLimitPrice"] = task_data->LowerLimitPrice;
+		data["SettlementPrice"] = task_data->SettlementPrice;
+		data["CurrDelta"] = task_data->CurrDelta;
+		data["LastPrice"] = task_data->LastPrice;
 		data["Volume"] = task_data->Volume;
 		data["Turnover"] = task_data->Turnover;
 		data["OpenInterest"] = task_data->OpenInterest;
-		data["ClosePrice"] = task_data->ClosePrice;
-		data["SettlementPrice"] = task_data->SettlementPrice;
-		data["UpperLimitPrice"] = task_data->UpperLimitPrice;
-		data["LowerLimitPrice"] = task_data->LowerLimitPrice;
-		data["PreDelta"] = task_data->PreDelta;
-		data["CurrDelta"] = task_data->CurrDelta;
-		data["UpdateTime"] = toUtf(task_data->UpdateTime);
-		data["UpdateMillisec"] = task_data->UpdateMillisec;
 		data["BidPrice1"] = task_data->BidPrice1;
 		data["BidVolume1"] = task_data->BidVolume1;
 		data["AskPrice1"] = task_data->AskPrice1;
 		data["AskVolume1"] = task_data->AskVolume1;
 		data["BidPrice2"] = task_data->BidPrice2;
 		data["BidVolume2"] = task_data->BidVolume2;
-		data["AskPrice2"] = task_data->AskPrice2;
-		data["AskVolume2"] = task_data->AskVolume2;
 		data["BidPrice3"] = task_data->BidPrice3;
 		data["BidVolume3"] = task_data->BidVolume3;
+		data["AskPrice2"] = task_data->AskPrice2;
+		data["AskVolume2"] = task_data->AskVolume2;
 		data["AskPrice3"] = task_data->AskPrice3;
 		data["AskVolume3"] = task_data->AskVolume3;
 		data["BidPrice4"] = task_data->BidPrice4;
 		data["BidVolume4"] = task_data->BidVolume4;
-		data["AskPrice4"] = task_data->AskPrice4;
-		data["AskVolume4"] = task_data->AskVolume4;
 		data["BidPrice5"] = task_data->BidPrice5;
 		data["BidVolume5"] = task_data->BidVolume5;
+		data["AskPrice4"] = task_data->AskPrice4;
+		data["AskVolume4"] = task_data->AskVolume4;
 		data["AskPrice5"] = task_data->AskPrice5;
 		data["AskVolume5"] = task_data->AskVolume5;
+		data["InstrumentID"] = toUtf(task_data->InstrumentID);
+		data["UpdateTime"] = toUtf(task_data->UpdateTime);
+		data["UpdateMillisec"] = task_data->UpdateMillisec;
+		data["ActionDay"] = toUtf(task_data->ActionDay);
+		data["HisHighestPrice"] = task_data->HisHighestPrice;
+		data["HisLowestPrice"] = task_data->HisLowestPrice;
+		data["LatestVolume"] = task_data->LatestVolume;
+		data["InitVolume"] = task_data->InitVolume;
+		data["ChangeVolume"] = task_data->ChangeVolume;
+		data["BidImplyVolume"] = task_data->BidImplyVolume;
+		data["AskImplyVolume"] = task_data->AskImplyVolume;
+		data["AvgPrice"] = task_data->AvgPrice;
+		data["ArbiType"] = task_data->ArbiType;
+		data["InstrumentID_1"] = toUtf(task_data->InstrumentID_1);
+		data["InstrumentID_2"] = toUtf(task_data->InstrumentID_2);
+		data["InstrumentName"] = toUtf(task_data->InstrumentName);
+		data["TotalBidVolume"] = task_data->TotalBidVolume;
+		data["TotalAskVolume"] = task_data->TotalAskVolume;
 		delete task->task_data;
 	}
-	this->onRtnDepthMarketData(data);
+	dict error;
+	if (task->task_error)
+	{
+		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
+		error["ErrorID"] = task_error->ErrorID;
+		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
+		delete task->task_error;
+	}
+	this->onRspGetMarketData(data, error, task->task_id, task->task_last);
 };
+
+
+
+
 
 
 ///-------------------------------------------------------------------------------------
@@ -511,13 +680,20 @@ int MdApi::reqUserLogin(const dict &req, int reqid)
 	CUstpFtdcReqUserLoginField myreq = CUstpFtdcReqUserLoginField();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "TradingDay", myreq.TradingDay);
-	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "UserID", myreq.UserID);
+	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "Password", myreq.Password);
 	getString(req, "UserProductInfo", myreq.UserProductInfo);
 	getString(req, "InterfaceProductInfo", myreq.InterfaceProductInfo);
 	getString(req, "ProtocolInfo", myreq.ProtocolInfo);
+	getString(req, "IPAddress", myreq.IPAddress);
 	getString(req, "MacAddress", myreq.MacAddress);
+	getInt(req, "DataCenterID", &myreq.DataCenterID);
+	getInt(req, "UserProductFileSize", &myreq.UserProductFileSize);
+	getChar(req, "Authenticate2Type", &myreq.Authenticate2Type);
+	getString(req, "Authenticate2Password", myreq.Authenticate2Password);
+	getString(req, "TerminalCode", myreq.TerminalCode);
+	getString(req, "PasswordEncrypt", myreq.PasswordEncrypt);
 	int i = this->api->ReqUserLogin(&myreq, reqid);
 	return i;
 };
@@ -530,7 +706,9 @@ int MdApi::reqUserLogout(const dict &req, int reqid)
 	getString(req, "UserID", myreq.UserID);
 	int i = this->api->ReqUserLogout(&myreq, reqid);
 	return i;
-}
+};
+
+
 
 
 void MdApi::setHeartbeatTimeout(int timeout)
@@ -638,6 +816,42 @@ public:
 		}
 	};
 
+	void onPackageStart(int reqid) override
+	{
+		try
+		{
+			PYBIND11_OVERLOAD(void, MdApi, onPackageStart, reqid);
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
+	};
+
+	void onPackageEnd(int reqid) override
+	{
+		try
+		{
+			PYBIND11_OVERLOAD(void, MdApi, onPackageEnd, reqid);
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
+	};
+
+	void onRspError(const dict &data, int reqid, bool last) override
+	{
+		try
+		{
+			PYBIND11_OVERLOAD(void, MdApi, onRspError, data, reqid, last);
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
+	};
+
 	void onRspUserLogin(const dict &data, const dict &error, int reqid, bool last) override
 	{
 		try
@@ -662,11 +876,11 @@ public:
 		}
 	};
 
-	void onRspError(const dict &error, int reqid, bool last) override
+	void onRtnDepthMarketData(const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspError, error, reqid, last);
+			PYBIND11_OVERLOAD(void, MdApi, onRtnDepthMarketData, data);
 		}
 		catch (const error_already_set &e)
 		{
@@ -698,18 +912,31 @@ public:
 		}
 	};
 
-	
-	void onRtnDepthMarketData(const dict &data) override
+	void onRspGetMarketTopic(const dict &data, const dict &error, int reqid, bool last) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRtnDepthMarketData, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRspGetMarketTopic, data, error, reqid, last);
 		}
 		catch (const error_already_set &e)
 		{
 			cout << e.what() << endl;
 		}
 	};
+
+	void onRspGetMarketData(const dict &data, const dict &error, int reqid, bool last) override
+	{
+		try
+		{
+			PYBIND11_OVERLOAD(void, MdApi, onRspGetMarketData, data, error, reqid, last);
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
+	};
+
+
 
 	
 };
@@ -735,19 +962,20 @@ PYBIND11_MODULE(vnfemasmd, m)
 		.def("setHeartbeatTimeout", &MdApi::setHeartbeatTimeout)
 		.def("reqUserLogin", &MdApi::reqUserLogin)
 		.def("reqUserLogout", &MdApi::reqUserLogout)
+
 		.def("onFrontConnected", &MdApi::onFrontConnected)
 		.def("onFrontDisconnected", &MdApi::onFrontDisconnected)
 		.def("onHeartBeatWarning", &MdApi::onHeartBeatWarning)
+		.def("onPackageStart", &MdApi::onPackageStart)
+		.def("onPackageEnd", &MdApi::onPackageEnd)
+		.def("onRspError", &MdApi::onRspError)
 		.def("onRspUserLogin", &MdApi::onRspUserLogin)
 		.def("onRspUserLogout", &MdApi::onRspUserLogout)
-		.def("onRspError", &MdApi::onRspError)
-
+		.def("onRtnDepthMarketData", &MdApi::onRtnDepthMarketData)
 		.def("onRspSubMarketData", &MdApi::onRspSubMarketData)
 		.def("onRspUnSubMarketData", &MdApi::onRspUnSubMarketData)
-		.def("onRtnDepthMarketData", &MdApi::onRtnDepthMarketData)
-
-		.def("onRspSubscribeTopic", &MdApi::onRspSubscribeTopic)
-		.def("onRspQryTopic", &MdApi::onRspQryTopic)
-
+		.def("onRspGetMarketTopic", &MdApi::onRspGetMarketTopic)
+		.def("onRspGetMarketData", &MdApi::onRspGetMarketData)
 		;
+
 }

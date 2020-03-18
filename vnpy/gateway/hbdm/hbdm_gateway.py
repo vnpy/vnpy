@@ -59,6 +59,8 @@ STATUS_HBDM2VT = {
 ORDERTYPE_VT2HBDM = {
     OrderType.MARKET: "opponent",
     OrderType.LIMIT: "limit",
+    OrderType.FOK: "fok",
+    OrderType.FAK: "ioc"
 }
 ORDERTYPE_HBDM2VT = {v: k for k, v in ORDERTYPE_VT2HBDM.items()}
 ORDERTYPE_HBDM2VT[1] = OrderType.LIMIT
@@ -66,6 +68,10 @@ ORDERTYPE_HBDM2VT[3] = OrderType.MARKET
 ORDERTYPE_HBDM2VT[4] = OrderType.MARKET
 ORDERTYPE_HBDM2VT[5] = OrderType.STOP
 ORDERTYPE_HBDM2VT[6] = OrderType.LIMIT
+ORDERTYPE_HBDM2VT["lightning"] = OrderType.MARKET
+ORDERTYPE_HBDM2VT["optimal_5"] = OrderType.MARKET
+ORDERTYPE_HBDM2VT["optimal_10"] = OrderType.MARKET
+ORDERTYPE_HBDM2VT["optimal_20"] = OrderType.MARKET
 
 DIRECTION_VT2HBDM = {
     Direction.LONG: "buy",
@@ -284,41 +290,7 @@ class HbdmRestApi(RestClient):
             self.add_request(
                 method="POST",
                 path="/api/v1/contract_openorders",
-                callback=self.on_query_active_order,
-                data=data,
-                extra=currency
-            )
-
-            # History Orders
-            data = {
-                "symbol": currency,
-                "trade_type": 0,
-                "type": 2,
-                "status": 0,
-                "create_date": 7
-            }
-
-            self.add_request(
-                method="POST",
-                path="/api/v1/contract_hisorders",
-                callback=self.on_query_history_order,
-                data=data,
-                extra=currency
-            )
-
-    def query_trade(self):
-        """"""
-        for currency in self.currencies:
-            data = {
-                "symbol": currency,
-                "trade_type": 0,
-                "create_date": 7
-            }
-
-            self.add_request(
-                method="POST",
-                path="/api/v1/contract_matchresults",
-                callback=self.on_query_trade,
+                callback=self.on_query_order,
                 data=data,
                 extra=currency
             )
@@ -549,7 +521,7 @@ class HbdmRestApi(RestClient):
         for position in self.positions.values():
             self.gateway.on_position(position)
 
-    def on_query_active_order(self, data, request):
+    def on_query_order(self, data, request):
         """"""
         if self.check_error(data, "查询活动委托"):
             return
@@ -582,61 +554,6 @@ class HbdmRestApi(RestClient):
 
         self.gateway.write_log(f"{request.extra}活动委托信息查询成功")
 
-    def on_query_history_order(self, data, request):
-        """"""
-        if self.check_error(data, "查询历史委托"):
-            return
-
-        for d in data["data"]["orders"]:
-            timestamp = d["create_date"]
-            dt = datetime.fromtimestamp(timestamp / 1000)
-            time = dt.strftime("%H:%M:%S")
-
-            orderid = d["order_id"]
-
-            order = OrderData(
-                orderid=orderid,
-                symbol=d["contract_code"],
-                exchange=Exchange.HUOBI,
-                price=d["price"],
-                volume=d["volume"],
-                type=ORDERTYPE_HBDM2VT[d["order_price_type"]],
-                direction=DIRECTION_HBDM2VT[d["direction"]],
-                offset=OFFSET_HBDM2VT[d["offset"]],
-                traded=d["trade_volume"],
-                status=STATUS_HBDM2VT[d["status"]],
-                time=time,
-                gateway_name=self.gateway_name,
-            )
-            self.gateway.on_order(order)
-
-        self.gateway.write_log(f"{request.extra}历史委托信息查询成功")
-
-    def on_query_trade(self, data, request):
-        """"""
-        if self.check_error(data, "查询成交"):
-            return
-
-        for d in data["data"]["trades"]:
-            dt = datetime.fromtimestamp(d["create_date"] / 1000)
-            time = dt.strftime("%H:%M:%S")
-
-            trade = TradeData(
-                tradeid=d["match_id"],
-                orderid=d["order_id"],
-                symbol=d["contract_code"],
-                exchange=Exchange.HUOBI,
-                price=d["trade_price"],
-                volume=d["trade_volume"],
-                direction=DIRECTION_HBDM2VT[d["direction"]],
-                offset=OFFSET_HBDM2VT[d["offset"]],
-                time=time,
-                gateway_name=self.gateway_name,
-            )
-            self.gateway.on_trade(trade)
-
-        self.gateway.write_log(f"{request.extra}成交信息查询成功")
-
     def on_query_contract(self, data, request):  # type: (dict, Request)->None
         """"""
         if self.check_error(data, "查询合约"):
@@ -663,7 +580,6 @@ class HbdmRestApi(RestClient):
         self.gateway.write_log("合约信息查询成功")
 
         self.query_order()
-        self.query_trade()
 
     def on_send_order(self, data, request):
         """"""
@@ -1041,7 +957,6 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
 
         tick_data = data["tick"]
         if "bids" not in tick_data or "asks" not in tick_data:
-            print(data)
             return
 
         bids = tick_data["bids"]
