@@ -289,11 +289,14 @@ class BarGenerator:
         """
         Generate the bar data and call callback immediately.
         """
-        self.bar.datetime = self.bar.datetime.replace(
+        bar = self.bar
+        bar.datetime = bar.datetime.replace(
             second=0, microsecond=0
         )
-        self.on_bar(self.bar)
+        self.on_bar(bar)
+
         self.bar = None
+        return bar
 
 
 class ArrayManager(object):

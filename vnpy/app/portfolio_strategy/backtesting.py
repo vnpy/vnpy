@@ -141,6 +141,7 @@ class BacktestingEngine:
             end = self.start + progress_delta
             progress = 0
 
+            data_count = 0
             while start < self.end:
                 end = min(end, self.end)  # Make sure end time stays within set range
 
@@ -154,6 +155,7 @@ class BacktestingEngine:
                 for bar in data:
                     self.dts.add(bar.datetime)
                     self.history_data[(bar.datetime, vt_symbol)] = bar
+                    data_count += 1
 
                 progress += progress_delta / total_delta
                 progress = min(progress, 1)
@@ -163,7 +165,7 @@ class BacktestingEngine:
                 start = end + interval_delta
                 end += (progress_delta + interval_delta)
 
-            self.output(f"{vt_symbol}历史数据加载完成，数据量：{len(self.history_data)}")
+            self.output(f"{vt_symbol}历史数据加载完成，数据量：{data_count}")
 
         self.output("所有历史数据加载完成")
 
