@@ -509,7 +509,7 @@ class OkexRestApi(RestClient):
 
                 for l in data:
                     ts, o, h, l, c, v = l
-                    dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%fZ")
+                    dt = _parse_timestamp(ts)
                     bar = BarData(
                         symbol=req.symbol,
                         exchange=req.exchange,
