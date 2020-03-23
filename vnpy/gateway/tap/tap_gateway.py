@@ -713,17 +713,22 @@ class TradeApi(TdApi):
         self.setITapTradeAPILogLevel(LOGLEVEL_VT2TAP["APILOGLEVEL_NONE"])
 
         # Create API object
-        data = self.tapTradeAPIApplicationInfo()
-        data.AuthCode = auth_code
-        data.KeyOperationLogPath = str(path)
+        # data = self.tapTradeAPIApplicationInfo()
+        # data.AuthCode = auth_code
+        # data.KeyOperationLogPath = str(path)
 
-        self.api, iResult = self.createITapTradeAPI(data)
+        req = {
+            "AuthCode": auth_code,
+            "KeyOperationLogPath": str(path)
+        }
+
+        self.api = self.createITapTradeAPI(req, 0)
         if not self.api:
             self.gateway.write_log("交易API初始化失败")
             return
 
         # Set server address and port
-        self.setAPINotify(self)
+        # self.setAPINotify(self)
         self.setHostAddress(host, port, False)
 
         # Start connection
