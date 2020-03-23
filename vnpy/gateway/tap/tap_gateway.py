@@ -328,7 +328,7 @@ class QuoteApi(MdApi):
         """
         if self.api:
             self.setAPINotify(None)
-            FreeTapQuoteAPI(self.api)
+            self.freeTapQuoteAPI(self.api)
             # self.api = None
 
     def subscribe(self, req: SubscribeRequest):
@@ -373,13 +373,13 @@ class TradeApi(TdApi):
         self.local_sys_map = {}
         self.sys_server_map = {}
 
-    def onConnect(self):
+    def onConnect(self) -> None:
         """
         Callback when connection is established with TAP server.
         """
         self.gateway.write_log("交易服务器连接成功")
 
-    def onRspLogin(self, error: int, data: dict):
+    def onRspLogin(self, error: int, data: dict) -> None:
         """
         Callback of login request.
         """
@@ -388,7 +388,7 @@ class TradeApi(TdApi):
         else:
             self.gateway.write_log("交易服务器登录成功")
 
-    def onAPIReady(self, code: int):
+    def onAPIReady(self, code: int) -> None:
         """
         Callback when API is ready for sending requests or queries.
         """
@@ -400,7 +400,7 @@ class TradeApi(TdApi):
         error: int,
         last: str,
         data: dict,
-    ):
+    ) -> None:
         """
         Callback of commodity query with size and pricetick data.
         """
@@ -425,7 +425,7 @@ class TradeApi(TdApi):
         error: int,
         last: str,
         data: dict
-    ):
+    ) -> None:
         """
         Callback of contract query with detailed contract data.
         """
@@ -478,7 +478,7 @@ class TradeApi(TdApi):
         error: int,
         last: str,
         data: dict
-    ):
+    ) -> None:
         """
         Callback of account number query.
         """
@@ -496,7 +496,7 @@ class TradeApi(TdApi):
         error: int,
         last: str,
         data: dict
-    ):
+    ) -> None:
         """Callback of account fund query"""
         if error != ERROR_VT2TAP["TAPIERROR_SUCCEED"]:
             self.gateway.write_log(f"查询资金信息失败")
@@ -508,7 +508,7 @@ class TradeApi(TdApi):
             self.gateway.write_log("查询资金信息成功")
             self.query_position()
 
-    def onRtnFund(self, data: dict):
+    def onRtnFund(self, data: dict) -> None:
         """
         Callback of account fund update.
         """
@@ -520,7 +520,7 @@ class TradeApi(TdApi):
         error: int,
         last: str,
         data: dict
-    ):
+    ) -> None:
         """
         Callback of position summary query.
 
@@ -537,7 +537,7 @@ class TradeApi(TdApi):
             self.gateway.write_log(f"查询持仓信息成功")
             self.query_order()
 
-    def onRtnPositionSummary(self, data: dict):
+    def onRtnPositionSummary(self, data: dict) -> None:
         """
         Callback of position summary update.
         """
@@ -549,7 +549,7 @@ class TradeApi(TdApi):
         error: int,
         last: str,
         data: dict
-    ):
+    ) -> None:
         """
         Callback of today's order query.
         """
@@ -564,7 +564,7 @@ class TradeApi(TdApi):
             self.gateway.write_log(f"查询委托信息成功")
             self.query_trade()
 
-    def onRtnOrder(self, data: dict):
+    def onRtnOrder(self, data: dict) -> None:
         """
         Callback of order update.
         """
@@ -580,7 +580,7 @@ class TradeApi(TdApi):
         error: int,
         last: str,
         data: dict
-    ):
+    ) -> None:
         """
         Callback of today's order fill (trade) query.
         """
@@ -594,7 +594,7 @@ class TradeApi(TdApi):
         if last == "Y":
             self.gateway.write_log(f"查询成交信息成功")
 
-    def onRtnFill(self, data: dict):
+    def onRtnFill(self, data: dict) -> None:
         """
         Callback of trade update.
         """
@@ -605,7 +605,7 @@ class TradeApi(TdApi):
         session: int,
         error: int,
         data: dict
-    ):
+    ) -> None:
         """
         Callback of order action (cancel/amend) request.
         """
@@ -613,7 +613,7 @@ class TradeApi(TdApi):
             self.gateway.write_log(f"委托操作失败：{error_to_str(error)}")
             return
 
-    def update_account(self, data: dict):
+    def update_account(self, data: dict) -> None:
         """
         Convert TAP fund data structure into AccountData event and push it.
         """
@@ -627,7 +627,7 @@ class TradeApi(TdApi):
         )
         self.gateway.on_account(account)
 
-    def update_position(self, data: dict):
+    def update_position(self, data: dict) -> None:
         """
         Convert TAP position summary structure into PositionData event and push it.
         """
@@ -641,7 +641,7 @@ class TradeApi(TdApi):
         )
         self.gateway.on_position(position)
 
-    def update_order(self, data: dict):
+    def update_order(self, data: dict) -> None:
         """
         Convert TAP order data structure into OrderData event and push it.
         """
@@ -669,7 +669,7 @@ class TradeApi(TdApi):
             req = self.cancel_reqs.pop(data.ClientOrderNo)
             self.cancel_order(req)
 
-    def update_trade(self, data: dict):
+    def update_trade(self, data: dict) -> None:
         """
         Convert TAP fill data structure into TradeData event and push it.
         """
@@ -688,7 +688,14 @@ class TradeApi(TdApi):
         )
         self.gateway.on_trade(trade)
 
-    def connect(self, username: str, password: str, host: str, port: int, auth_code: str):
+    def connect(
+        self,
+        username: str,
+        password: str,
+        host: str,
+        port: int,
+        auth_code: str
+    ) -> None:
         """
         Starting connection to TAP server.
         """
@@ -720,7 +727,7 @@ class TradeApi(TdApi):
 
         self.Login(login_auth)
 
-    def send_order(self, req: OrderRequest):
+    def send_order(self, req: OrderRequest) -> str:
         """
         Send new order to TAP server.
         """
@@ -754,7 +761,7 @@ class TradeApi(TdApi):
 
         return order.vt_orderid
 
-    def cancel_order(self, req: CancelRequest):
+    def cancel_order(self, req: CancelRequest) -> None:
         """
         Cancel an existing order.
 
@@ -774,35 +781,35 @@ class TradeApi(TdApi):
 
         self.CancelOrder(cancel_req)
 
-    def query_account(self):
+    def query_account(self) -> None:
         """
         Query account number data (and account fund data will be auto queried in callback).
         """
         req = self.apAPIAccQryReq()
         self.QryAccount(req)
 
-    def query_position(self):
+    def query_position(self) -> None:
         """
         Query position summary.
         """
         req = self.tapAPIPositionQryReq()
         self.QryPositionSummary(req)
 
-    def query_order(self):
+    def query_order(self) -> None:
         """
         Query today order data.
         """
         req = self.tapAPIOrderQryReq()
         self.QryOrder(req)
 
-    def query_trade(self):
+    def query_trade(self) -> None:
         """
         Query today trade data.
         """
         req = self.tapAPIFillQryReq()
         self.QryFill(req)
 
-    def close(self):
+    def close(self) -> None:
         """
         Release TAP API resources.
         """
@@ -812,7 +819,7 @@ class TradeApi(TdApi):
             self.api = None
 
 
-def parse_datetime(dt_str: str):
+def parse_datetime(dt_str: str) -> datetime:
     """
     Convert timestamp string to datetime object.
     """
