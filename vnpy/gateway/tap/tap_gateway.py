@@ -369,9 +369,8 @@ class TradeApi(TdApi):
         """"""
         super().__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
-        self.api = None
+        self.gateway: TapGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
         self.account_no = ""        # required when sending order request
         self.cancel_reqs = {}       # waiting cancel order requests before OrderNo received
@@ -400,7 +399,7 @@ class TradeApi(TdApi):
         """
         Callback when API is ready for sending requests or queries.
         """
-        self.QryCommodity()
+        self.qryCommodity()
 
     def onRspQryCommodity(
         self,
@@ -724,8 +723,8 @@ class TradeApi(TdApi):
             return
 
         # Set server address and port
-        self.SetAPINotify(self)
-        self.SetHostAddress(host, port, False)
+        self.setAPINotify(self)
+        self.setHostAddress(host, port, False)
 
         # Start connection
         login_auth = self.tapAPITradeLoginAuth()
@@ -787,21 +786,21 @@ class TradeApi(TdApi):
         cancel_req.OrderNo = order_no
         cancel_req.ServerFlag = server_flag
 
-        self.CancelOrder(cancel_req)
+        self.cancelOrder(cancel_req)
 
     def query_account(self) -> None:
         """
         Query account number data (and account fund data will be auto queried in callback).
         """
         req = self.apAPIAccQryReq()
-        self.QryAccount(req)
+        self.qryAccount(req)
 
     def query_position(self) -> None:
         """
         Query position summary.
         """
         req = self.tapAPIPositionQryReq()
-        self.QryPositionSummary(req)
+        self.qryPositionSummary(req)
 
     def query_order(self) -> None:
         """
@@ -815,14 +814,14 @@ class TradeApi(TdApi):
         Query today trade data.
         """
         req = self.tapAPIFillQryReq()
-        self.QryFill(req)
+        self.qryFill(req)
 
     def close(self) -> None:
         """
         Release TAP API resources.
         """
         if self.api:
-            self.SetAPINotify(None)
+            self.setAPINotify(None)
             self.freeITapTradeAPI(self.api)
             self.api = None
 
