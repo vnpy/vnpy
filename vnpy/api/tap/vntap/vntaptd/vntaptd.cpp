@@ -3666,7 +3666,7 @@ PYBIND11_MODULE(vntaptd, m)
 	class_<TdApi, PyTdApi> TdApi(m, "TdApi", module_local());
 	TdApi
 		.def(init<>())
-		.def("CreateITapTradeAPI", &TdApi::createITapTradeAPI)
+		.def("createITapTradeAPI", &TdApi::createITapTradeAPI)
 		.def("release", &TdApi::release)
 		.def("init", &TdApi::init)
 		.def("exit", &TdApi::exit)
