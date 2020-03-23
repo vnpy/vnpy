@@ -90,6 +90,14 @@ LOGLEVEL_VT2TAP: Dict[str, str] = {
 commodity_infos: Dict[str, "CommodityInfo"] = {}
 contract_infos: Dict[Tuple[str, "Exchange"], "ContractInfo"] = {}
 
+FLAG_VT2TAP: Dict[str, str] = {
+    "APIYNFLAG_YES": "Y",
+    "APIYNFLAG_NO": "N",
+    "TAPI_CALLPUT_FLAG_CALL": "C",
+    "TAPI_CALLPUT_FLAG_PUT": "P",
+    "TAPI_CALLPUT_FLAG_NONE": "N"
+}
+
 
 class TapGateway(BaseGateway):
     """
@@ -317,8 +325,8 @@ class QuoteApi(MdApi):
         login_auth = self.tapAPIQuoteLoginAuth()
         login_auth.UserNo = username
         login_auth.Password = password
-        login_auth.ISDDA = APIYNFLAG_NO
-        login_auth.ISModifyPassword = APIYNFLAG_NO
+        login_auth.ISDDA = FLAG_VT2TAP["APIYNFLAG_NO"]
+        login_auth.ISModifyPassword = FLAG_VT2TAP["APIYNFLAG_NO"]
 
         self.Login(login_auth)
 
@@ -346,8 +354,8 @@ class QuoteApi(MdApi):
         tap_contract.Commodity.CommodityType = contract_info.commodity_type
         tap_contract.Commodity.CommodityNo = contract_info.commodity_no
         tap_contract.ContractNo1 = contract_info.contract_no
-        tap_contract.CallOrPutFlag1 = TAPI_CALLPUT_FLAG_NONE
-        tap_contract.CallOrPutFlag2 = TAPI_CALLPUT_FLAG_NONE
+        tap_contract.CallOrPutFlag1 = FLAG_VT2TAP["TAPI_CALLPUT_FLAG_NONE"]
+        tap_contract.CallOrPutFlag2 = FLAG_VT2TAP["TAPI_CALLPUT_FLAG_NONE"]
 
         self.SubscribeQuote(tap_contract)
 
@@ -723,7 +731,7 @@ class TradeApi(TdApi):
         login_auth = self.tapAPITradeLoginAuth()
         login_auth.UserNo = username
         login_auth.Password = password
-        login_auth.ISModifyPassword = APIYNFLAG_NO
+        login_auth.ISModifyPassword = FLAG_VT2TAP["APIYNFLAG_NO"]
 
         self.Login(login_auth)
 
