@@ -25,6 +25,7 @@ struct Task
 
 	int task_int; // 其他int 请求
 	string task_string; // 其他 string请求
+	void *task_extra;
 };
 
 class TerminatedError : std::exception
