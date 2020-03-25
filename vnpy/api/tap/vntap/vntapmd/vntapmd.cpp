@@ -487,37 +487,57 @@ int MdApi::disconnect()
 	return i;
 };
 
-int MdApi::subscribeQuote(unsigned int *session, const dict &req)
+int MdApi::subscribeQuote(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIContract myreq = TapAPIContract();
+	TapAPICommodity info = TapAPICommodity();
+
 	memset(&myreq, 0, sizeof(myreq));
-	// getDict
+	memset(&info, 0, sizeof(info));
+	cout << "02:"<< endl;
+	getString(req, "ExchangeNo", info.ExchangeNo);
+	cout << "03" << endl;
+	getChar(req, "CommodityType", &info.CommodityType);
+	cout << "04" << endl;
+	getString(req, "CommodityNo", info.CommodityNo);
+	cout << "05" << endl;
+
+	myreq.Commodity = info;
+
+	// begin
+	
 	getString(req, "ContractNo1", myreq.ContractNo1);
+	cout << "06" << endl;
 	getString(req, "StrikePrice1", myreq.StrikePrice1);
+	cout << "07" << endl;
 	getChar(req, "CallOrPutFlag1", &myreq.CallOrPutFlag1);
 	getString(req, "ContractNo2", myreq.ContractNo2);
 	getString(req, "StrikePrice2", myreq.StrikePrice2);
 	getChar(req, "CallOrPutFlag2", &myreq.CallOrPutFlag2);
-
-	int i = this->api->SubscribeQuote(session, &myreq);
+	cout << "08" << endl;
+	int i = this->api->SubscribeQuote(&session, &myreq);
+	cout << "09" << endl;
 	return i;
 };
 
 
-int MdApi::qryCommodity(int session)
+int MdApi::qryCommodity()
 {
-	int i = this->api->QryCommodity((unsigned int*)session);
+	TAPIUINT32 session;
+	int i = this->api->QryCommodity(&session);
 	return i;
 };
 
-int MdApi::qryContract(int session, const dict &req)
+int MdApi::qryContract(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPICommodity myreq = TapAPICommodity();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "ExchangeNo", myreq.ExchangeNo);
 	getChar(req, "CommodityType", &myreq.CommodityType);
 	getString(req, "CommodityNo", myreq.CommodityNo);
-	int i = this->api->QryContract((unsigned int*)session, &myreq);
+	int i = this->api->QryContract(&session, &myreq);
 	return i;
 };
 
