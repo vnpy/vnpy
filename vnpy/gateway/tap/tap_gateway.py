@@ -137,18 +137,18 @@ class TapGateway(BaseGateway):
         trade_port = setting["trade_port"]
         auth_code = setting["auth_code"]
 
-        self.td_api.connect(
-            trade_username,
-            trade_password,
-            trade_host,
-            trade_port,
-            auth_code
-        )
         self.md_api.connect(
             quote_username,
             quote_password,
             quote_host,
             quote_port,
+            auth_code
+        )
+        self.td_api.connect(
+            trade_username,
+            trade_password,
+            trade_host,
+            trade_port,
             auth_code
         )
 
@@ -177,15 +177,6 @@ class TapGateway(BaseGateway):
         """"""
         pass
 
-    # def _async_callback_exception_handler(self, e: AsyncDispatchException):
-    #     """"""
-    #     error_str = (f"发生内部错误，位置：\n{e.instance}.{e.function_name}，详细信息：\n"
-    #                  f"{e.what}\n"
-    #                  )
-    #     print(error_str)
-    #     self.write_log(error_str)
-
-
 class QuoteApi(MdApi):
     """
     Implementation of TAP quote api.
@@ -203,7 +194,7 @@ class QuoteApi(MdApi):
         Callback of login request.
         """
         if error != ERROR_VT2TAP["TAPIERROR_SUCCEED"]:
-            self.gateway.write_log(f"行情服务器登录失败：{error_to_str(error)}")
+            self.gateway.write_log(f"行情服务器登录失败：{error}")
         else:
             self.gateway.write_log("行情服务器登录成功")
 
@@ -211,7 +202,7 @@ class QuoteApi(MdApi):
         """
         Callback when API is ready for sending requests or queries.
         """
-        self.qryCommodity()
+        pass
 
     def onDisconnect(self, reason: int) -> None:
         """
@@ -229,8 +220,9 @@ class QuoteApi(MdApi):
         """
         Callback of subscribe market data request.
         """
+        print("onRspSubscribeQuote", error, data)
         if error != ERROR_VT2TAP["TAPIERROR_SUCCEED"]:
-            self.gateway.write_log(f"订阅行情失败：{error_to_str(error)}")
+            self.gateway.write_log(f"订阅行情失败：{error}")
         else:
             self.update_tick(data)
 
@@ -238,6 +230,7 @@ class QuoteApi(MdApi):
         """
         Callback of new data update.
         """
+        print("onRtnQuote")
         self.update_tick(data)
 
     def update_tick(self, data: dict) -> None:
@@ -255,37 +248,37 @@ class QuoteApi(MdApi):
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
-            datetime=parse_datetime(data.DateTimeStamp),
+            datetime=parse_datetime(data["DateTimeStamp"]),
             name=contract_info.name,
-            volume=data.QTotalQty,
-            last_price=data.QLastPrice,
-            last_volume=data.QLastQty,
-            limit_up=data.QLimitUpPrice,
-            limit_down=data.QLimitDownPrice,
-            open_price=data.QOpeningPrice,
-            high_price=data.QHighPrice,
-            low_price=data.QLowPrice,
-            pre_close=data.QPreClosingPrice,
-            bid_price_1=data.QBidPrice[0],
-            bid_price_2=data.QBidPrice[1],
-            bid_price_3=data.QBidPrice[2],
-            bid_price_4=data.QBidPrice[3],
-            bid_price_5=data.QBidPrice[4],
-            ask_price_1=data.QAskPrice[0],
-            ask_price_2=data.QAskPrice[1],
-            ask_price_3=data.QAskPrice[2],
-            ask_price_4=data.QAskPrice[3],
-            ask_price_5=data.QAskPrice[4],
-            bid_volume_1=data.QBidQty[0],
-            bid_volume_2=data.QBidQty[1],
-            bid_volume_3=data.QBidQty[2],
-            bid_volume_4=data.QBidQty[3],
-            bid_volume_5=data.QBidQty[4],
-            ask_volume_1=data.QAskQty[0],
-            ask_volume_2=data.QAskQty[1],
-            ask_volume_3=data.QAskQty[2],
-            ask_volume_4=data.QAskQty[3],
-            ask_volume_5=data.QAskQty[4],
+            volume=data["QTotalQty"],
+            last_price=data["QLastPrice"],
+            last_volume=data["QLastQty"],
+            limit_up=data["QLimitUpPrice"],
+            limit_down=data["QLimitDownPrice"],
+            open_price=data["QOpeningPrice"],
+            high_price=data["QHighPrice"],
+            low_price=data["QLowPrice"],
+            pre_close=data["QPreClosingPrice"],
+            bid_price_1=data["QBidPrice[0]"],
+            bid_price_2=data["QBidPrice[1]"],
+            bid_price_3=data["QBidPrice[2]"],
+            bid_price_4=data["QBidPrice[3]"],
+            bid_price_5=data["QBidPrice[4]"],
+            ask_price_1=data["QAskPrice[0]"],
+            ask_price_2=data["QAskPrice[1]"],
+            ask_price_3=data["QAskPrice[2]"],
+            ask_price_4=data["QAskPrice[3]"],
+            ask_price_5=data["QAskPrice[4]"],
+            bid_volume_1=data["QBidQty[0]"],
+            bid_volume_2=data["QBidQty[1]"],
+            bid_volume_3=data["QBidQty[2]"],
+            bid_volume_4=data["QBidQty[3]"],
+            bid_volume_5=data["QBidQty[4]"],
+            ask_volume_1=data["QAskQty[0]"],
+            ask_volume_2=data["QAskQty[1]"],
+            ask_volume_3=data["QAskQty[2]"],
+            ask_volume_4=data["QAskQty[3]"],
+            ask_volume_5=data["QAskQty[4]"],
             gateway_name=self.gateway_name,
         )
         self.gateway.on_tick(tick)
@@ -301,43 +294,37 @@ class QuoteApi(MdApi):
         """
         Starting connection to TAP server.
         """
+        self.init()
         # General API setting
         path = get_folder_path(self.gateway_name.lower())
         self.setTapQuoteAPIDataPath(str(path))
-
         self.setTapQuoteAPILogLevel(LOGLEVEL_VT2TAP["APILOGLEVEL_NONE"])
 
         # Create API object
-        data = self.tapAPIApplicationInfo()
-        data.AuthCode = auth_code
-        data.KeyOperationLogPath = str(path)
-
-        self.api, iResult = self.createTapQuoteAPI(data)
-        if not self.api:
-            self.gateway.write_log("行情API初始化失败")
-            return
+        req = {
+            "AuthCode": auth_code,
+            "KeyOperationLogPath": str(path)
+        }
+        self.createTapQuoteAPI(req, 0)
 
         # Set server address and port
-        self.setAPINotify(self)
         self.setHostAddress(host, port)
 
         # Start connection
-        login_auth = self.tapAPIQuoteLoginAuth()
-        login_auth.UserNo = username
-        login_auth.Password = password
-        login_auth.ISDDA = FLAG_VT2TAP["APIYNFLAG_NO"]
-        login_auth.ISModifyPassword = FLAG_VT2TAP["APIYNFLAG_NO"]
-
-        self.Login(login_auth)
+        data = {
+            "UserNo": username,
+            "Password": password,
+            "ISModifyPassword": FLAG_VT2TAP["APIYNFLAG_NO"],
+            "ISDDA": FLAG_VT2TAP["APIYNFLAG_NO"]
+        }
+        self.login(data)
 
     def close(self):
         """
         Release TAP API resources.
         """
-        if self.api:
-            self.setAPINotify(None)
-            self.freeTapQuoteAPI(self.api)
-            # self.api = None
+        self.exit()
+
 
     def subscribe(self, req: SubscribeRequest):
         """
@@ -349,15 +336,17 @@ class QuoteApi(MdApi):
                 f"找不到匹配的合约：{req.symbol}和{req.exchange.value}")
             return
 
-        tap_contract = self.tapAPIContract()
-        tap_contract.Commodity.ExchangeNo = EXCHANGE_VT2TAP[req.exchange]
-        tap_contract.Commodity.CommodityType = contract_info.commodity_type
-        tap_contract.Commodity.CommodityNo = contract_info.commodity_no
-        tap_contract.ContractNo1 = contract_info.contract_no
-        tap_contract.CallOrPutFlag1 = FLAG_VT2TAP["TAPI_CALLPUT_FLAG_NONE"]
-        tap_contract.CallOrPutFlag2 = FLAG_VT2TAP["TAPI_CALLPUT_FLAG_NONE"]
+        tap_contract = {
+            "ExchangeNo": EXCHANGE_VT2TAP[req.exchange],
+            "CommodityType": contract_info.commodity_type,
+            "CommodityNo": contract_info.commodity_no,
+            "ContractNo1": contract_info.contract_no,
+            "CallOrPutFlag1": FLAG_VT2TAP["TAPI_CALLPUT_FLAG_NONE"],
+            "CallOrPutFlag2": FLAG_VT2TAP["TAPI_CALLPUT_FLAG_NONE"]
+        }
 
-        self.SubscribeQuote(tap_contract)
+        n=self.subscribeQuote(tap_contract)
+        print("subscribe", tap_contract,";result:", n)
 
 
 class TradeApi(TdApi):
@@ -391,7 +380,7 @@ class TradeApi(TdApi):
         Callback of login request.
         """
         if error != ERROR_VT2TAP["TAPIERROR_SUCCEED"]:
-            self.gateway.write_log(f"交易服务器登录失败：{error_to_str(error)}")
+            self.gateway.write_log(f"交易服务器登录失败，错误码：{error}")
         else:
             self.gateway.write_log("交易服务器登录成功")
 
@@ -416,15 +405,16 @@ class TradeApi(TdApi):
             return
 
         commodity_info = CommodityInfo(
-            name=data.CommodityEngName,
-            size=int(data.ContractSize),
-            pricetick=data.CommodityTickSize
+            name=data["CommodityEngName"],
+            size=int(data["ContractSize"]),
+            pricetick=data["CommodityTickSize"]
         )
-        commodity_infos[data.CommodityNo] = commodity_info
+        commodity_infos[data["CommodityNo"]] = commodity_info
 
         if last == "Y":
             self.gateway.write_log("查询交易品种信息成功")
-            self.QryContract(None)
+            req = {}
+            self.qryContract(req)
 
     def onRspQryContract(
         self,
@@ -440,17 +430,17 @@ class TradeApi(TdApi):
             self.gateway.write_log("查询交易合约信息失败")
             return
 
-        exchange = EXCHANGE_TAP2VT.get(data.ExchangeNo, None)
-        commodity_info = commodity_infos.get(data.CommodityNo, None)
+        exchange = EXCHANGE_TAP2VT.get(data["ExchangeNo"], None)
+        commodity_info = commodity_infos.get(data["CommodityNo"], None)
 
         if not data or not exchange or not commodity_info:
             return
 
-        if data.CommodityType == "F":
-            symbol = data.CommodityNo + data.ContractNo1
+        if data["CommodityType"] == "F":
+            symbol = data["CommodityNo"] + data["ContractNo1"]
 
             if commodity_info.name:
-                name = f"{commodity_info.name} {data.ContractNo1}"
+                name = f"{commodity_info.name} {data['ContractNo1']}"
             else:
                 name = symbol
 
@@ -468,16 +458,20 @@ class TradeApi(TdApi):
 
             contract_info = ContractInfo(
                 name=contract.name,
-                exchange_no=data.ExchangeNo,
-                contract_no=data.ContractNo1,
-                commodity_type=data.CommodityType,
-                commodity_no=data.CommodityNo,
+                exchange_no=data["ExchangeNo"],
+                contract_no=data["ContractNo1"],
+                commodity_type=data["CommodityType"],
+                commodity_no=data["CommodityNo"],
             )
             contract_infos[(contract.symbol, contract.exchange)] = contract_info
 
         if last == "Y":
             self.gateway.write_log("查询交易合约信息成功")
             self.query_account()
+
+    def onRtnPositionProfit(self, data: dict) -> None:
+        """"""
+        pass
 
     def onRspQryAccount(
         self,
@@ -493,9 +487,10 @@ class TradeApi(TdApi):
             self.gateway.write_log(f"查询账号信息失败")
             return
 
-        req = self.tapAPIFundReq()
-        req.AccountNo = data.AccountNo
-        self.QryFund(req)
+        req = {
+            "AccountNo": data["AccountNo"]
+        }
+        self.qryFund(req)
 
     def onRspQryFund(
         self,
@@ -576,7 +571,7 @@ class TradeApi(TdApi):
         Callback of order update.
         """
         if data.ErrorCode != ERROR_VT2TAP["TAPIERROR_SUCCEED"]:
-            self.gateway.write_log(f"委托下单失败：{error_to_str(data.ErrorCode)}")
+            self.gateway.write_log(f"委托下单失败，错误码: {error}")
 
         if data.OrderInfo:
             self.update_order(data.OrderInfo)
@@ -617,19 +612,19 @@ class TradeApi(TdApi):
         Callback of order action (cancel/amend) request.
         """
         if error != ERROR_VT2TAP["TAPIERROR_SUCCEED"]:
-            self.gateway.write_log(f"委托操作失败：{error_to_str(error)}")
+            self.gateway.write_log(f"委托操作失败：{error}")
             return
 
     def update_account(self, data: dict) -> None:
         """
         Convert TAP fund data structure into AccountData event and push it.
         """
-        self.account_no = data.AccountNo
+        self.account_no = data["AccountNo"]
 
         account = AccountData(
-            accountid=data.AccountNo,
-            balance=data.Balance,
-            frozen=data.Balance - data.Available,
+            accountid=data["AccountNo"],
+            balance=data["Balance"],
+            frozen=data["Balance"] - data["Available"],
             gateway_name=self.gateway_name
         )
         self.gateway.on_account(account)
@@ -638,12 +633,13 @@ class TradeApi(TdApi):
         """
         Convert TAP position summary structure into PositionData event and push it.
         """
+        
         position = PositionData(
-            symbol=data.CommodityNo + data.ContractNo,
-            exchange=EXCHANGE_TAP2VT.get(data.ExchangeNo, None),
-            direction=DIRECTION_TAP2VT[data.MatchSide],
-            volume=data.PositionQty,
-            price=data.PositionPrice,
+            symbol=data["CommodityNo"] + data["ContractNo"],
+            exchange=EXCHANGE_TAP2VT.get(data["ExchangeNo"], None),
+            direction=DIRECTION_TAP2VT[data["MatchSide"]],
+            volume=data["PositionQty"],
+            price=data["PositionPrice"],
             gateway_name=self.gateway_name
         )
         self.gateway.on_position(position)
@@ -652,45 +648,45 @@ class TradeApi(TdApi):
         """
         Convert TAP order data structure into OrderData event and push it.
         """
-        self.local_sys_map[data.ClientOrderNo] = data.OrderNo
-        self.sys_local_map[data.OrderNo] = data.ClientOrderNo
-        self.sys_server_map[data.OrderNo] = data.ServerFlag
+        self.local_sys_map[data["ClientOrderNo"]] = data["OrderNo"]
+        self.sys_local_map[data["OrderNo"]] = data["ClientOrderNo"]
+        self.sys_server_map[data["OrderNo"]] = data["ServerFlag"]
 
         order = OrderData(
-            symbol=data.CommodityNo + data.ContractNo,
-            exchange=EXCHANGE_TAP2VT.get(data.ExchangeNo, None),
-            orderid=data.ClientOrderNo,
-            type=ORDERTYPE_TAP2VT.get(data.OrderType, data.OrderType),
-            direction=DIRECTION_TAP2VT[data.OrderSide],
-            price=data.OrderPrice,
-            volume=data.OrderQty,
-            traded=data.OrderMatchQty,
-            status=STATUS_TAP2VT.get(data.OrderState, Status.SUBMITTING),
-            time=data.OrderInsertTime,
+            symbol=data["CommodityNo"] + data["ContractNo"],
+            exchange=EXCHANGE_TAP2VT.get(data["ExchangeNo"], None),
+            orderid=data["ClientOrderNo"],
+            type=ORDERTYPE_TAP2VT.get(data["OrderType"], data["OrderType"]),
+            direction=DIRECTION_TAP2VT[data["OrderSide"]],
+            price=data["OrderPrice"],
+            volume=data["OrderQty"],
+            traded=data["OrderMatchQty"],
+            status=STATUS_TAP2VT.get(data["OrderState"], Status.SUBMITTING),
+            time=data["OrderInsertTime"],
             gateway_name=self.gateway_name
         )
         self.gateway.on_order(order)
 
         # Send waiting cancel request to server
-        if data.ClientOrderNo in self.cancel_reqs:
-            req = self.cancel_reqs.pop(data.ClientOrderNo)
+        if data["ClientOrderNo"] in self.cancel_reqs:
+            req = self.cancel_reqs.pop(data["ClientOrderNo"])
             self.cancel_order(req)
 
     def update_trade(self, data: dict) -> None:
         """
         Convert TAP fill data structure into TradeData event and push it.
         """
-        orderid = self.sys_local_map[data.OrderNo]
+        orderid = self.sys_local_map[data["OrderNo"]]
 
         trade = TradeData(
-            symbol=data.CommodityNo + data.ContractNo,
-            exchange=EXCHANGE_TAP2VT.get(data.ExchangeNo, None),
+            symbol=data["CommodityNo"] + data["ContractNo"],
+            exchange=EXCHANGE_TAP2VT.get(data["ExchangeNo"], None),
             orderid=orderid,
-            tradeid=data.MatchNo,
-            direction=DIRECTION_TAP2VT[data.MatchSide],
-            price=data.MatchPrice,
-            volume=data.MatchQty,
-            time=data.MatchDateTime,
+            tradeid=data["MatchNo"],
+            direction=DIRECTION_TAP2VT[data["MatchSide"]],
+            price=data["MatchPrice"],
+            volume=data["MatchQty"],
+            time=data["MatchDateTime"],
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)
@@ -706,38 +702,33 @@ class TradeApi(TdApi):
         """
         Starting connection to TAP server.
         """
+        self.init()
+
         # General API setting
         path = get_folder_path(self.gateway_name.lower())
         self.setITapTradeAPIDataPath(str(path))
-
         self.setITapTradeAPILogLevel(LOGLEVEL_VT2TAP["APILOGLEVEL_NONE"])
 
         # Create API object
-        # data = self.tapTradeAPIApplicationInfo()
-        # data.AuthCode = auth_code
-        # data.KeyOperationLogPath = str(path)
-
         req = {
             "AuthCode": auth_code,
             "KeyOperationLogPath": str(path)
         }
-
-        self.api = self.createITapTradeAPI(req, 0)
-        if not self.api:
-            self.gateway.write_log("交易API初始化失败")
-            return
+        self.createITapTradeAPI(req, 0)
+        
 
         # Set server address and port
-        # self.setAPINotify(self)
-        self.setHostAddress(host, port, False)
+        self.setHostAddress(host, port)
 
         # Start connection
-        login_auth = self.tapAPITradeLoginAuth()
-        login_auth.UserNo = username
-        login_auth.Password = password
-        login_auth.ISModifyPassword = FLAG_VT2TAP["APIYNFLAG_NO"]
+        data = {
+            "UserNo": username,
+            "Password": password,
+            "ISModifyPassword": FLAG_VT2TAP["APIYNFLAG_NO"],
+            "NoticeIgnoreFlag": "TAPI_NOTICE_IGNORE_POSITIONPROFIT"
+        }
+        self.login(data)
 
-        self.Login(login_auth)
 
     def send_order(self, req: OrderRequest) -> str:
         """
@@ -752,18 +743,19 @@ class TradeApi(TdApi):
             self.write_log(f"不支持的委托类型: {req.type.value}")
             return ""
 
-        order_req = self.tapAPINewOrder()
-        order_req.ExchangeNo = contract_info.exchange_no
-        order_req.CommodityNo = contract_info.commodity_no
-        order_req.CommodityType = contract_info.commodity_type
-        order_req.ContractNo = contract_info.contract_no
-        order_req.OrderType = ORDERTYPE_VT2TAP[req.type]
-        order_req.OrderSide = DIRECTION_VT2TAP[req.direction]
-        order_req.OrderPrice = req.price
-        order_req.OrderQty = int(req.volume)
-        order_req.AccountNo = self.account_no
+        order_req = {
+            "ExchangeNo" : contract_info["exchange_no"],
+            "CommodityNo" : contract_info["commodity_no"],
+            "CommodityType" : contract_info["commodity_type"],
+            "ContractNo" : contract_info["contract_no"],
+            "OrderType" : ORDERTYPE_VT2TAP[req.type],
+            "OrderSide" : DIRECTION_VT2TAP[req.direction],
+            "OrderPrice" : req.price,
+            "OrderQty" : int(req.volume),
+            "AccountNo" : self.account_no,
+        }
 
-        retv, session_id, order_id = self.insertOrder(order_req)
+        order_id = self.insertOrder(order_req)
 
         order = req.create_order_data(
             order_id,
@@ -787,9 +779,10 @@ class TradeApi(TdApi):
 
         server_flag = self.sys_server_map[order_no]
 
-        cancel_req = self.apAPIOrderCancelReq()
-        cancel_req.OrderNo = order_no
-        cancel_req.ServerFlag = server_flag
+        cancel_req = {
+            "OrderNo": order_no,
+            "ServerFlag": server_flag,
+        }
 
         self.cancelOrder(cancel_req)
 
@@ -797,38 +790,32 @@ class TradeApi(TdApi):
         """
         Query account number data (and account fund data will be auto queried in callback).
         """
-        req = self.apAPIAccQryReq()
-        self.qryAccount(req)
+        self.qryAccount({})
 
     def query_position(self) -> None:
         """
         Query position summary.
         """
-        req = self.tapAPIPositionQryReq()
-        self.qryPositionSummary(req)
+        self.qryPositionSummary({})
 
     def query_order(self) -> None:
         """
         Query today order data.
         """
-        req = self.tapAPIOrderQryReq()
-        self.QryOrder(req)
+        self.qryOrder({})
 
     def query_trade(self) -> None:
         """
         Query today trade data.
         """
-        req = self.tapAPIFillQryReq()
-        self.qryFill(req)
+        self.qryFill({})
 
     def close(self) -> None:
         """
         Release TAP API resources.
         """
-        if self.api:
-            self.setAPINotify(None)
-            self.freeITapTradeAPI(self.api)
-            self.api = None
+        self.exit()
+
 
 
 def parse_datetime(dt_str: str) -> datetime:
@@ -842,14 +829,14 @@ def parse_datetime(dt_str: str) -> datetime:
     return dt
 
 
-def error_to_str(err_code: int) -> str:
-    """
-    Convert error code to error message string.
-    """
-    try:
-        return error_map[err_code]
-    except KeyError:
-        return f"Unknown error({err_code})"
+# def error_to_str(err_code: int) -> str:
+#     """
+#     Convert error code to error message string.
+#     """
+#     try:
+#         return error_map[err_code]
+#     except KeyError:
+#         return f"Unknown error({err_code})"
 
 
 @dataclass
