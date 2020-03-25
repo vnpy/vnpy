@@ -124,7 +124,7 @@ void TdApi::OnRspSetReservedInfo(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAP
 };
 
 void TdApi::OnRspQryAccount(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIUINT32 errorCode, ITapTrade::TAPIYNFLAG isLast, const ITapTrade::TapAPIAccountInfo *info)
-{
+{	
 	Task task = Task();
 	task.task_name = ONRSPQRYACCOUNT;
 	task.task_id = sessionID;
@@ -385,6 +385,13 @@ void TdApi::OnRtnPositionProfit(const ITapTrade::TapAPIPositionProfitNotice *inf
 		TapAPIPositionProfitNotice *task_data = new TapAPIPositionProfitNotice();
 		*task_data = *info;
 		task.task_data = task_data;
+
+		if (info->Data)
+		{
+			TapAPIPositionProfit *task_extra = new TapAPIPositionProfit();
+			*task_extra = *info->Data; //1
+			task.task_extra = task_extra; //4
+		}
 	}
 	this->task_queue.push(task);
 };
@@ -725,7 +732,6 @@ void TdApi::processTask()
 		while (this->active)
 		{
 			Task task = this->task_queue.pop();
-
 			switch (task.task_name)
 			{
 			case ONCONNECT:
@@ -1039,6 +1045,7 @@ void TdApi::processTask()
 
 void TdApi::processConnect(Task *task)
 {
+	gil_scoped_acquire acquire;
 	this->onConnect();
 };
 
@@ -1760,13 +1767,27 @@ void TdApi::processRtnPositionProfit(Task *task)
 {
 	gil_scoped_acquire acquire;
 	dict data;
+
+	if (task->task_extra)
+	{
+		TapAPIPositionProfit *task_extra = (TapAPIPositionProfit*)task->task_extra;
+		data["PositionNo"] = toUtf(task_extra->PositionNo);
+		data["PositionStreamId"] = task_extra->PositionStreamId;
+		data["PositionProfit"] = task_extra->PositionProfit;
+		data["LMEPositionProfit"] = task_extra->LMEPositionProfit;
+		data["OptionMarketValue"] = task_extra->OptionMarketValue;
+		data["CalculatePrice"] = task_extra->CalculatePrice;
+		delete task_extra;
+	}
+
+
 	if (task->task_data)
 	{
 		TapAPIPositionProfitNotice *task_data = (TapAPIPositionProfitNotice*)task->task_data;
 		data["IsLast"] = task_data->IsLast;
-		data["Data"] = task_data->Data;
 		delete task_data;
 	}
+
 	this->onRtnPositionProfit(data);
 };
 
@@ -2701,9 +2722,10 @@ int TdApi::login(const dict &req)
 	return i;
 };
 
-int TdApi::requestVertificateCode(int sessionID, string ContactInfo)
+int TdApi::requestVertificateCode(string ContactInfo)
 {
-	int i = this->api->RequestVertificateCode((unsigned int*)sessionID, (char*)ContactInfo.c_str());
+	TAPIUINT32 session;
+	int i = this->api->RequestVertificateCode(&session, (char*)ContactInfo.c_str());
 	return i;
 };
 
@@ -2720,14 +2742,15 @@ int TdApi::disconnect()
 };
 
 
-int TdApi::authPassword(int sessionID, const dict &req)
+int TdApi::authPassword(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIAuthPasswordReq myreq = TapAPIAuthPasswordReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
 	getChar(req, "PasswordType", &myreq.PasswordType);
 	getString(req, "Password", myreq.Password);
-	int i = this->api->AuthPassword((unsigned int*)sessionID, &myreq);
+	int i = this->api->AuthPassword(&session, &myreq);
 	return i;
 };
 
@@ -2739,8 +2762,9 @@ int TdApi::haveCertainRight(int rightID)
 }
 
 
-int TdApi::insertOrder(int sessionID, string ClientOrderNo, const dict &req)
+int TdApi::insertOrder(string ClientOrderNo, const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPINewOrder myreq = TapAPINewOrder();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
@@ -2786,12 +2810,13 @@ int TdApi::insertOrder(int sessionID, string ClientOrderNo, const dict &req)
 	getChar(req, "AddOneIsValid", &myreq.AddOneIsValid);
 
 	typedef char    TAPISTR_50[51];
-	int i = this->api->InsertOrder((unsigned int*)sessionID, (TAPISTR_50*)ClientOrderNo.c_str(),  &myreq);
+	int i = this->api->InsertOrder(&session, (TAPISTR_50*)ClientOrderNo.c_str(), &myreq);
 	return i;
 }
 
-int TdApi::cancelOrder(int sessionID, const dict &req)
+int TdApi::cancelOrder(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIOrderCancelReq myreq = TapAPIOrderCancelReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getInt(req, "RefInt", &myreq.RefInt);
@@ -2799,59 +2824,68 @@ int TdApi::cancelOrder(int sessionID, const dict &req)
 	getString(req, "RefString", myreq.RefString);
 	getChar(req, "ServerFlag", &myreq.ServerFlag);
 	getString(req, "OrderNo", myreq.OrderNo);
-	int i = this->api->CancelOrder((unsigned int*)sessionID, &myreq);
+	int i = this->api->CancelOrder(&session, &myreq);
 	return i;
 }
 
 //-----------------------------------------
-int TdApi::qryTradingDate(int session)
+int TdApi::qryTradingDate()
 {
-	int i = this->api->QryTradingDate((unsigned int*)session);
+	TAPIUINT32 session;
+	int i = this->api->QryTradingDate(&session);
 	return i;
 };
 
-int TdApi::qryAccount(int session, const dict &req)
+int TdApi::qryAccount(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIAccQryReq myreq = TapAPIAccQryReq();
 	memset(&myreq, 0, sizeof(myreq));
-	int i = this->api->QryAccount((unsigned int*)session, &myreq);
+	int i = this->api->QryAccount(&session, &myreq);
 	return i;
+
 };
 
-int TdApi::qryFund(int session, const dict &req)
+int TdApi::qryFund(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIFundReq myreq = TapAPIFundReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
-	int i = this->api->QryFund((unsigned int*)session, &myreq);
+	int i = this->api->QryFund(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryExchange(int session)
+int TdApi::qryExchange()
 {
-	int i = this->api->QryExchange((unsigned int*)session);
+	TAPIUINT32 session;
+	int i = this->api->QryExchange(&session);
 	return i;
 };
 
-int TdApi::qryCommodity(int session)
+int TdApi::qryCommodity()
 {
-	int i = this->api->QryCommodity((unsigned int*)session);
+	TAPIUINT32 session;
+	int i = this->api->QryCommodity(&session);
 	return i;
 };
 
-int TdApi::qryContract(int session, const dict &req)
+int TdApi::qryContract(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPICommodity myreq = TapAPICommodity();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "ExchangeNo", myreq.ExchangeNo);
 	getChar(req, "CommodityType", &myreq.CommodityType);
 	getString(req, "CommodityNo", myreq.CommodityNo);
-	int i = this->api->QryContract((unsigned int*)session, &myreq);
+	int i = this->api->QryContract(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryOrder(int session, const dict &req)
+int TdApi::qryOrder(const dict &req)
 {
+
+	TAPIUINT32 session;
 	TapAPIOrderQryReq myreq = TapAPIOrderQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
@@ -2868,22 +2902,24 @@ int TdApi::qryOrder(int session, const dict &req)
 	getChar(req, "IsBackInput", &myreq.IsBackInput);
 	getChar(req, "IsDeleted", &myreq.IsDeleted);
 	getChar(req, "IsAddOne", &myreq.IsAddOne);
-	int i = this->api->QryOrder((unsigned int*)session, &myreq);
+	int i = this->api->QryOrder(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryOrderProcess(int session, const dict &req)
+int TdApi::qryOrderProcess(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIOrderProcessQryReq myreq = TapAPIOrderProcessQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getChar(req, "ServerFlag", &myreq.ServerFlag);
 	getString(req, "OrderNo", myreq.OrderNo);
-	int i = this->api->QryOrderProcess((unsigned int*)session, &myreq);
+	int i = this->api->QryOrderProcess(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryFill(int session, const dict &req)
+int TdApi::qryFill(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIFillQryReq myreq = TapAPIFillQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
@@ -2901,36 +2937,40 @@ int TdApi::qryFill(int session, const dict &req)
 	getString(req, "UpperNo", myreq.UpperNo);
 	getChar(req, "IsDeleted", &myreq.IsDeleted);
 	getChar(req, "IsAddOne", &myreq.IsAddOne);
-	int i = this->api->QryFill((unsigned int*)session, &myreq);
+	int i = this->api->QryFill(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryPosition(int session, const dict &req)
+int TdApi::qryPosition(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIPositionQryReq myreq = TapAPIPositionQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
-	int i = this->api->QryPosition((unsigned int*)session, &myreq);
+	int i = this->api->QryPosition(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryPositionSummary(int session, const dict &req)
+int TdApi::qryPositionSummary(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIPositionQryReq myreq = TapAPIPositionQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
-	int i = this->api->QryPositionSummary((unsigned int*)session, &myreq);
+	int i = this->api->QryPositionSummary(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryCurrency(int session)
+int TdApi::qryCurrency()
 {
-	int i = this->api->QryCurrency((unsigned int*)session);
+	TAPIUINT32 session;
+	int i = this->api->QryCurrency(&session);
 	return i;
 };
 
-int TdApi::qryAccountCashAdjust(int session, const dict &req)
+int TdApi::qryAccountCashAdjust(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIAccountCashAdjustQryReq myreq = TapAPIAccountCashAdjustQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getUnsignedInt(req, "SerialID", &myreq.SerialID);
@@ -2938,58 +2978,63 @@ int TdApi::qryAccountCashAdjust(int session, const dict &req)
 	getString(req, "AccountAttributeNo", myreq.AccountAttributeNo);
 	getString(req, "BeginDate", myreq.BeginDate);
 	getString(req, "EndDate", myreq.EndDate);
-	int i = this->api->QryAccountCashAdjust((unsigned int*)session, &myreq);
+	int i = this->api->QryAccountCashAdjust(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryTradeMessage(int session, const dict &req)
+int TdApi::qryTradeMessage(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPITradeMessageReq myreq = TapAPITradeMessageReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
 	getString(req, "AccountAttributeNo", myreq.AccountAttributeNo);
 	getString(req, "BenginSendDateTime", myreq.BenginSendDateTime);
 	getString(req, "EndSendDateTime", myreq.EndSendDateTime);
-	int i = this->api->QryTradeMessage((unsigned int*)session, &myreq);
+	int i = this->api->QryTradeMessage(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryBill(int session, const dict &req)
+int TdApi::qryBill(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIBillQryReq myreq = TapAPIBillQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "UserNo", myreq.UserNo);
 	getChar(req, "BillType", &myreq.BillType);
 	getString(req, "BillDate", myreq.BillDate);
 	getChar(req, "BillFileType", &myreq.BillFileType);
-	int i = this->api->QryBill((unsigned int*)session, &myreq);
+	int i = this->api->QryBill(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryHisOrder(int session, const dict &req)
+int TdApi::qryHisOrder(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIHisOrderQryReq myreq = TapAPIHisOrderQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
 	getString(req, "AccountAttributeNo", myreq.AccountAttributeNo);
 	getString(req, "BeginDate", myreq.BeginDate);
 	getString(req, "EndDate", myreq.EndDate);
-	int i = this->api->QryHisOrder((unsigned int*)session, &myreq);
+	int i = this->api->QryHisOrder(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryHisOrderProcess(int session, const dict &req)
+int TdApi::qryHisOrderProcess(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIHisOrderProcessQryReq myreq = TapAPIHisOrderProcessQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "Date", myreq.Date);
 	getString(req, "OrderNo", myreq.OrderNo);
-	int i = this->api->QryHisOrderProcess((unsigned int*)session, &myreq);
+	int i = this->api->QryHisOrderProcess(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryHisMatch(int session, const dict &req)
+int TdApi::qryHisMatch(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIHisMatchQryReq myreq = TapAPIHisMatchQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
@@ -2997,23 +3042,25 @@ int TdApi::qryHisMatch(int session, const dict &req)
 	getString(req, "BeginDate", myreq.BeginDate);
 	getString(req, "EndDate", myreq.EndDate);
 	getChar(req, "CountType", &myreq.CountType);
-	int i = this->api->QryHisMatch((unsigned int*)session, &myreq);
+	int i = this->api->QryHisMatch(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryHisPosition(int session, const dict &req)
+int TdApi::qryHisPosition(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIHisPositionQryReq myreq = TapAPIHisPositionQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
 	getString(req, "Date", myreq.Date);
 	getChar(req, "SettleFlag", &myreq.SettleFlag);
-	int i = this->api->QryHisPosition((unsigned int*)session, &myreq);
+	int i = this->api->QryHisPosition(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryHisDelivery(int session, const dict &req)
+int TdApi::qryHisDelivery(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIHisDeliveryQryReq myreq = TapAPIHisDeliveryQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
@@ -3021,32 +3068,32 @@ int TdApi::qryHisDelivery(int session, const dict &req)
 	getString(req, "BeginDate", myreq.BeginDate);
 	getString(req, "EndDate", myreq.EndDate);
 	getChar(req, "CountType", &myreq.CountType);
-	int i = this->api->QryHisDelivery((unsigned int*)session, &myreq);
+	int i = this->api->QryHisDelivery(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryAccountFeeRent(int session, const dict &req)
+int TdApi::qryAccountFeeRent(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIAccountFeeRentQryReq myreq = TapAPIAccountFeeRentQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
-	int i = this->api->QryAccountFeeRent((unsigned int*)session, &myreq);
+	int i = this->api->QryAccountFeeRent(&session, &myreq);
 	return i;
 };
 
-int TdApi::qryAccountMarginRent(int session, const dict &req)
+int TdApi::qryAccountMarginRent(const dict &req)
 {
+	TAPIUINT32 session;
 	TapAPIAccountMarginRentQryReq myreq = TapAPIAccountMarginRentQryReq();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
 	getString(req, "ExchangeNo", myreq.ExchangeNo);
 	getChar(req, "CommodityType", &myreq.CommodityType);
 	getString(req, "CommodityNo", myreq.CommodityNo);
-	int i = this->api->QryAccountMarginRent((unsigned int*)session, &myreq);
+	int i = this->api->QryAccountMarginRent(&session, &myreq);
 	return i;
 };
-
-
 
 ///-------------------------------------------------------------------------------------
 ///Boost.Python封装
