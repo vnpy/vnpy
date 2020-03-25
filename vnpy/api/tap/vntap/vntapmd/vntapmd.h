@@ -197,9 +197,9 @@ public:
 
 	int disconnect();
 
-	int subscribeQuote(unsigned int *session, const dict &req); //3
+	int subscribeQuote(const dict &req); //3
 
-	int qryCommodity(int session);
+	int qryCommodity();
 
-	int qryContract(int session, const dict &req);
+	int qryContract(const dict &req);
 };
