@@ -305,10 +305,6 @@ void MdApi::processRspSubscribeQuote(Task *task)
 		data["QClosingPrice"] = task_data->QClosingPrice;
 		data["QSettlePrice"] = task_data->QSettlePrice;
 		data["QLastQty"] = task_data->QLastQty;
-		data["QBidPrice"] = task_data->QBidPrice;
-		data["QBidQty"] = task_data->QBidQty;
-		data["QAskPrice"] = task_data->QAskPrice;
-		data["QAskQty"] = task_data->QAskQty;
 		data["QImpliedBidPrice"] = task_data->QImpliedBidPrice;
 		data["QImpliedBidQty"] = task_data->QImpliedBidQty;
 		data["QImpliedAskPrice"] = task_data->QImpliedAskPrice;
@@ -338,6 +334,25 @@ void MdApi::processRspSubscribeQuote(Task *task)
 		data["UnderlyContractNo2"] = toUtf(task_data->Contract.ContractNo2);
 		data["UnderlyStrikePrice2"] = toUtf(task_data->Contract.StrikePrice2);
 		data["UnderlyCallOrPutFlag2"] = task_data->Contract.CallOrPutFlag2;
+
+		pybind11::list QAskPrice;
+		pybind11::list QBidPrice;
+		pybind11::list QAskQty;
+		pybind11::list QBidQty;
+
+		for (int i = 0; i < 20; i++)
+		{
+			QAskPrice.append(task_data->QAskPrice[i]);
+			QBidPrice.append(task_data->QBidPrice[i]);
+			QAskQty.append(task_data->QAskQty[i]);
+			QBidQty.append(task_data->QBidQty[i]);
+		}
+
+		data["QAskPrice"] = QAskPrice;
+		data["QBidPrice"] = QBidPrice;
+		data["QBidQty"] = QBidQty;
+		data["QAskQty"] = QAskQty;
+
 		delete task_data;
 	}
 	this->onRspSubscribeQuote(task->task_id, task->task_int, task->task_last, data);
@@ -399,10 +414,6 @@ void MdApi::processRtnQuote(Task *task)
 		data["QClosingPrice"] = task_data->QClosingPrice;
 		data["QSettlePrice"] = task_data->QSettlePrice;
 		data["QLastQty"] = task_data->QLastQty;
-		data["QBidPrice"] = task_data->QBidPrice;
-		data["QBidQty"] = task_data->QBidQty;
-		data["QAskPrice"] = task_data->QAskPrice;
-		data["QAskQty"] = task_data->QAskQty;
 		data["QImpliedBidPrice"] = task_data->QImpliedBidPrice;
 		data["QImpliedBidQty"] = task_data->QImpliedBidQty;
 		data["QImpliedAskPrice"] = task_data->QImpliedAskPrice;
@@ -432,6 +443,25 @@ void MdApi::processRtnQuote(Task *task)
 		data["UnderlyContractNo2"] = toUtf(task_data->Contract.ContractNo2);
 		data["UnderlyStrikePrice2"] = toUtf(task_data->Contract.StrikePrice2);
 		data["UnderlyCallOrPutFlag2"] = task_data->Contract.CallOrPutFlag2;
+
+		pybind11::list QAskPrice;
+		pybind11::list QBidPrice;
+		pybind11::list QAskQty;
+		pybind11::list QBidQty;
+
+		for (int i = 0; i < 20; i++)
+		{
+			QAskPrice.append(task_data->QAskPrice[i]);
+			QBidPrice.append(task_data->QBidPrice[i]);
+			QAskQty.append(task_data->QAskQty[i]);
+			QBidQty.append(task_data->QBidQty[i]);
+		}
+
+		data["QAskPrice"] = QAskPrice;
+		data["QBidPrice"] = QBidPrice;
+		data["QBidQty"] = QBidQty;
+		data["QAskQty"] = QAskQty;
+
 		delete task_data;
 	}
 	this->onRtnQuote(data);
