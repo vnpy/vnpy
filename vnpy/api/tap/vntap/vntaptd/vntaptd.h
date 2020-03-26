@@ -831,7 +831,7 @@ public:
 
 	int haveCertainRight(int rightID);
 
-	int insertOrder(string ClientOrderNo, const dict &req); //1
+	pybind11::tuple insertOrder(const dict &req); //1
 
 	int cancelOrder(const dict &req); //2
 
