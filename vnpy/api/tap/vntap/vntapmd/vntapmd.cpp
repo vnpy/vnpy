@@ -72,7 +72,6 @@ void MdApi::OnRspQryContract(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFL
 
 void MdApi::OnRspSubscribeQuote(TAPIUINT32 sessionID, TAPIINT32 errorCode, TAPIYNFLAG isLast, const TapAPIQuoteWhole *info)
 {
-	cout << "01- void MdApi::OnRspSubscribeQuote" << endl;
 	Task task = Task();
 	task.task_name = ONRSPSUBSCRIBEQUOTE;
 	task.task_id = sessionID;
@@ -129,7 +128,6 @@ void MdApi::processTask()
 		while (this->active)
 		{
 			Task task = this->task_queue.pop();
-			cout << "task.name=" << task.task_name << endl;
 
 			switch (task.task_name)
 			{
@@ -559,29 +557,18 @@ int MdApi::subscribeQuote(const dict &req)
 
 	memset(&myreq, 0, sizeof(myreq));
 	memset(&info, 0, sizeof(info));
-	cout << "02:"<< endl;
 	getString(req, "ExchangeNo", info.ExchangeNo);
-	cout << "03" << endl;
 	getChar(req, "CommodityType", &info.CommodityType);
-	cout << "04" << endl;
 	getString(req, "CommodityNo", info.CommodityNo);
-	cout << "05" << endl;
-
 	myreq.Commodity = info;
 
-	// begin
-	
 	getString(req, "ContractNo1", myreq.ContractNo1);
-	cout << "06" << endl;
 	getString(req, "StrikePrice1", myreq.StrikePrice1);
-	cout << "07" << endl;
 	getChar(req, "CallOrPutFlag1", &myreq.CallOrPutFlag1);
 	getString(req, "ContractNo2", myreq.ContractNo2);
 	getString(req, "StrikePrice2", myreq.StrikePrice2);
 	getChar(req, "CallOrPutFlag2", &myreq.CallOrPutFlag2);
-	cout << "08" << endl;
 	int i = this->api->SubscribeQuote(&session, &myreq);
-	cout << "09" << endl;
 	return i;
 };
 
