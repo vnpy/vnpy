@@ -2762,9 +2762,10 @@ int TdApi::haveCertainRight(int rightID)
 }
 
 
-int TdApi::insertOrder(string ClientOrderNo, const dict &req)
+pybind11::tuple TdApi::insertOrder(const dict &req)
 {
 	TAPIUINT32 session;
+	TAPISTR_50 ClientOrderNo;
 	TapAPINewOrder myreq = TapAPINewOrder();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "AccountNo", myreq.AccountNo);
@@ -2809,9 +2810,14 @@ int TdApi::insertOrder(string ClientOrderNo, const dict &req)
 	getChar(req, "TriggerPriceType", &myreq.TriggerPriceType);
 	getChar(req, "AddOneIsValid", &myreq.AddOneIsValid);
 
+	cout << "CallOrPutFlag=" << &myreq.CallOrPutFlag << endl;
+	cout << "CallOrPutFlag=" << myreq.CallOrPutFlag << endl;
+
 	typedef char    TAPISTR_50[51];
-	int i = this->api->InsertOrder(&session, (TAPISTR_50*)ClientOrderNo.c_str(), &myreq);
-	return i;
+	int i = this->api->InsertOrder(&session, &ClientOrderNo, &myreq);
+
+	pybind11::tuple result = pybind11::make_tuple(i, session, ClientOrderNo);
+	return result;
 }
 
 int TdApi::cancelOrder(const dict &req)
