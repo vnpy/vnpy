@@ -230,7 +230,7 @@ class StrategyTemplate(ABC):
         """
         Load historical bar data for initializing strategy.
         """
-        self.strategy_engine.load_bars(self.vt_symbols, days, interval)
+        self.strategy_engine.load_bars(self, days, interval)
 
     def put_event(self) -> None:
         """

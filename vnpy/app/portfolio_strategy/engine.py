@@ -286,7 +286,7 @@ class StrategyEngine(BaseEngine):
             data = self.query_bar_from_rq(symbol, exchange, interval, start, end)
 
         if not data:
-            data = database_manager.load_history_data(
+            data = database_manager.load_bar_data(
                 symbol=symbol,
                 exchange=exchange,
                 interval=interval,
@@ -417,7 +417,7 @@ class StrategyEngine(BaseEngine):
         strategy.trading = False
 
         # Cancel all orders of the strategy
-        self.cancel_all(strategy)
+        strategy.cancel_all()
 
         # Sync strategy variables to data file
         self.sync_strategy_data(strategy)
