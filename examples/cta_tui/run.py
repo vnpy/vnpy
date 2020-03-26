@@ -10,7 +10,6 @@ from vnpy.trader.ui.widget import (
     PositionMonitor,
     AccountMonitor,
 )
-from vnpy.trader.object import Exchange
 from asciimatics.widgets import (
     Frame,
     MultiColumnListBox,
@@ -23,6 +22,7 @@ from asciimatics.widgets import (
     Widget,
     VerticalDivider,
 )
+from enum import Enum
 from asciimatics.scene import Scene
 from asciimatics.screen import Screen
 from asciimatics.exceptions import ResizeScreenError, NextScene, StopApplication
@@ -41,19 +41,176 @@ from vnpy.gateway.ctp import CtpGateway
 from vnpy.app.cta_strategy import CtaStrategyApp
 from vnpy.app.cta_strategy.base import EVENT_CTA_LOG
 
+from vnpy.trader.utility import load_json
+
+CTP_SETTING = load_json("connect_ctp.json")
 
 SETTINGS["log.active"] = True
 SETTINGS["log.level"] = INFO
 SETTINGS["log.console"] = True
+log_datas = []
 
-TICK_COLUMNS = ["<20", "<15", "30", "<15", "<15", "<15", "<15", "<15", "<15", "<15", "<15", "<15", "<30", "<15"]
-ACTIVE_ORDERS_COLUMNS = ["<20", "<15", "<15", "<15", "<15", "<15", "<15", "<30", "<15", "<15", "<15", "<30", "<15"]
-ORDERS_COLUMNS = ["<20", "<15", "<15", "<30", "<30", "<30", "<15", "<15", "<15", "<30", "<15", "<30", "<15"]
-TRADE_COLUMNS = ["<20", "<15", "<15", "<15", "<30", "<30", "<15", "<15", "<15", "<15", "<15", "<30", "<15"]
 
-from vnpy.trader.utility import load_json
+FRAME_NO = "mainwindows"
+TICK_LAYOUT = {
+    "name": "Quotes",
+    "monitor": TickMonitor,
+    "titles": [
+        "symbol",
+        "exchange",
+        "last_price",
+        "volume",
+        "open_price",
+        "high_price",
+        "low_price",
+        "bid_price_1",
+        "bid_volume_1",
+        "ask_price_1",
+        "ask_volume_1",
+        "datetime",
+        "gateway_name",
+        # "name",
+    ],
+    "data_key": "ticks",
+    "height": 10,
+    "columns": [
+        "<20",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<30",
+        "<15",
+        "<30",
+    ],
+}
+ACTIVE_ORDERS_LAYOUT = {
+    "name": "Active Orders",
+    "monitor": ActiveOrderMonitor,
+    "titles": ActiveOrderMonitor.headers.keys(),
+    "data_key": "active_orders",
+    "height": 10,
+    "columns": [
+        "<20",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<30",
+        "<15",
+        "<15",
+        "<15",
+        "<30",
+        "<15",
+    ],
+}
+ORDERS_LAYOUT = {
+    "name": "Orders",
+    "monitor": OrderMonitor,
+    "titles": OrderMonitor.headers.keys(),
+    "data_key": "orders",
+    "height": 10,
+    "columns": [
+        "<20",
+        "<15",
+        "<15",
+        "<30",
+        "<30",
+        "<30",
+        "<15",
+        "<15",
+        "<15",
+        "<30",
+        "<15",
+        "<30",
+        "<15",
+    ],
+}
+TRADE_LAYOUT = {
+    "name": "Trade",
+    "monitor": TradeMonitor,
+    "titles": TradeMonitor.headers.keys(),
+    "data_key": "trades",
+    "height": 10,
+    "columns": [
+        "<20",
+        "<15",
+        "<15",
+        "<15",
+        "<30",
+        "<30",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<30",
+        "<15",
+    ],
+}
+LOG_LAYOUT = {
+    "name": "Log",
+    "monitor": LogMonitor,
+    "titles": ["time", "gateway_name", "msg"],
+    "data_key": "logs",
+    "height": 20,
+    "columns": [
+        "<30",
+        "<30",
+        "<60",
+    ],
+}
+POSITION_LAYOUT = {
+    "name": "Position",
+    "monitor": PositionMonitor,
+    "titles": PositionMonitor.headers.keys(),
+    "data_key": "positions",
+    "height": 20,
+    "columns": [
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+    ],
+}
+ACCOUNT_LAYOUT = {
+    "name": "Account",
+    "monitor": AccountMonitor,
+    "titles": AccountMonitor.headers.keys(),
+    "data_key": "accounts",
+    "height": 20,
+    "columns": [
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+        "<15",
+    ],
+}
 
-CTP_SETTING = load_json("connect_ctp.json")
+def save_logs(event):
+    log_datas.append((datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"), event.data,))
 
 
 class MainView(Frame):
@@ -66,62 +223,86 @@ class MainView(Frame):
             hover_focus=True,
             can_scroll=True,
             title="VNPY Terminal UI",
-            reduce_cpu=True,
-            name="mainwindows",
+            name=FRAME_NO,
         )
+        self.set_theme("bright")
+        self.ticks = []
+        self.active_orders = []
+        self.orders = []
+        self.trades = []
+        self.logs = []
+        self.positions = []
+        self.accounts = []
+
         self.oms_engine = main_engine.engines["oms"]
         self.update_options()
-        self.tables = []
-
-        self.set_theme("bright")
-        # 信息区域
-        layout_tick = self.create_layout(
-            "行情",
-            TickMonitor,
-            15,
-            TICK_COLUMNS,
-            options=self.ticks,
-        )
-        layout_active_orders = self.create_layout(
-            "活动委托",
-            ActiveOrderMonitor,
-            5,
-            ACTIVE_ORDERS_COLUMNS,
-            options=self.active_orders,
-        )
-        layout_order = self.create_layout(
-            "委托",
-            OrderMonitor,
-            15,
-            ORDERS_COLUMNS,
-            options=self.orders,
-        )
-        layout_trade = self.create_layout(
-            "成交",
-            TradeMonitor,
-            15,
-            TRADE_COLUMNS,
-            options=self.trades,
-            fill_frame=True,
-        )
+        self.draw_header_layouts()
+        self.draw_content_layouts()
+        self.draw_footer_layouts()
         self.fix()
 
-    def update_options(self):
-        self.ticks = self.get_options(self.oms_engine.ticks, TickMonitor)
-        self.active_orders = self.get_options(self.oms_engine.active_orders, ActiveOrderMonitor)
-        self.orders = self.get_options(self.oms_engine.orders, OrderMonitor)
-        self.trades = self.get_options(self.oms_engine.trades, TradeMonitor)
+    def draw_content_layouts(self):
+        """"""
+        self.create_layout(TICK_LAYOUT)
+        self.create_layout(ACTIVE_ORDERS_LAYOUT,)
+        self.create_layout(ORDERS_LAYOUT)
+        self.create_layout(TRADE_LAYOUT)
+        # self.create_layout(LOG_LAYOUT)
 
-    def get_options(self, data, monitor):
+    def draw_header_layouts(self):
+        """"""
+        pass
+
+    def draw_footer_layouts(self):
+        """"""
+        footer_configs = [ACCOUNT_LAYOUT, POSITION_LAYOUT]
+        layout = Layout([1, 1])
+        self.add_layout(layout)
+
+        for index, config in enumerate(footer_configs):
+            layout.add_widget(VerticalDivider(), index)
+            layout.add_widget(Divider(), index)
+            layout.add_widget(Label(config["name"], align="^"), index)
+            layout.add_widget(Divider(), index)
+            box = MultiColumnListBox(
+                config["height"],
+                columns=config["columns"],
+                options=self.__dict__[config["data_key"]],
+                titles=config["titles"],
+                name=config["name"],
+                add_scroll_bar=True,
+            )
+            layout.add_widget(box, index)
+
+    def update_options(self):
+        self.ticks = self.get_options(self.oms_engine.ticks, TICK_LAYOUT["titles"])
+        self.active_orders = self.get_options(
+            self.oms_engine.active_orders, ACTIVE_ORDERS_LAYOUT["titles"]
+        )
+        self.orders = self.get_options(self.oms_engine.orders, ORDERS_LAYOUT["titles"])
+        self.trades = self.get_options(self.oms_engine.trades, TRADE_LAYOUT["titles"])
+        self.positions = self.get_options(
+            self.oms_engine.positions, POSITION_LAYOUT["titles"]
+        )
+        self.accounts = self.get_options(
+            self.oms_engine.accounts, ACCOUNT_LAYOUT["titles"]
+        )
+        # logs
+        self.logs = [
+            ([log_time, log_data.gateway_name, log_data.msg], index)
+            for index, (log_time, log_data) in enumerate(log_datas)
+        ]
+
+    def get_options(self, data, titles):
         options = []
         if len(data.values()) != 0:
             for index, tick in enumerate(data.values()):
                 row = []
-                for x in monitor.headers.keys():
+                for x in titles:
                     node = tick.__dict__[x]
-                    if type(node) == Exchange:
+                    if isinstance(node, Enum):
                         row.append(node.value)
-                    elif type(node) == datetime:
+                    elif isinstance(node, datetime):
                         row.append(node.strftime("%Y-%m-%d %H:%M:%S.%f"))
                     else:
                         row.append(str(node))
@@ -129,42 +310,28 @@ class MainView(Frame):
                 options.append((row, index))
         return options
 
-    def create_layout(
-        self, title, monitor, rows, columns_length=[], options=[], fill_frame=False
-    ):
+    def create_layout(self, config, fill_frame=False):
         """
         生成layout
         """
         layout = Layout([100], fill_frame)
         self.add_layout(layout)
         layout.add_widget(Divider())
-        layout.add_widget(Label(title, align="^"))
+        layout.add_widget(Label(config["name"], align="^"))
         layout.add_widget(Divider())
-
-        titles = monitor.headers.keys()
         box = MultiColumnListBox(
-            rows,
-            columns=columns_length,
-            options=options,
-            titles=titles,
-            name=title,
+            config["height"],
+            columns=config["columns"],
+            options=self.__dict__[config["data_key"]],
+            titles=config["titles"],
+            name=config["name"],
             add_scroll_bar=True,
         )
-        self.tables.append(box)
         layout.add_widget(box)
-        return Layout
+        return layout
 
     def _load_data(self, new_value=None):
         pass
-    
-    def _update(self, frame_no):
-        """
-        update data
-        """
-        self.update_options()
-        for table in self.tables:
-            table.update(frame_no)
-        super(MainView, self)._update(frame_no)
 
     @staticmethod
     def _quit():
@@ -193,6 +360,7 @@ def run_child():
 
     log_engine = main_engine.get_engine("log")
     event_engine.register(EVENT_CTA_LOG, log_engine.process_log_event)
+    event_engine.register(EVENT_CTA_LOG, save_logs)
     main_engine.write_log("注册日志事件监听")
 
     main_engine.connect(CTP_SETTING, "CTP")
