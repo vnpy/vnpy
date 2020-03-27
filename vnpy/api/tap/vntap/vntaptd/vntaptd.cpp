@@ -259,6 +259,13 @@ void TdApi::OnRspOrderAction(ITapTrade::TAPIUINT32 sessionID, ITapTrade::TAPIINT
 		TapAPIOrderActionRsp *task_data = new TapAPIOrderActionRsp();
 		*task_data = *info;
 		task.task_data = task_data;
+
+		if (info->OrderInfo)
+		{
+			TapAPIOrderInfo *task_extra = new TapAPIOrderInfo();
+			*task_extra = *info->OrderInfo; //1
+			task.task_extra = task_extra; //4
+		}
 	}
 	this->task_queue.push(task);
 };
@@ -272,6 +279,13 @@ void TdApi::OnRtnOrder(const ITapTrade::TapAPIOrderInfoNotice *info)
 		TapAPIOrderInfoNotice *task_data = new TapAPIOrderInfoNotice();
 		*task_data = *info;
 		task.task_data = task_data;
+
+		if (info->OrderInfo)
+		{
+			TapAPIOrderInfo *task_extra = new TapAPIOrderInfo();
+			*task_extra = *info->OrderInfo; //1
+			task.task_extra = task_extra; //4
+		}
 	}
 	this->task_queue.push(task);
 };
@@ -751,6 +765,7 @@ void TdApi::processTask()
 		while (this->active)
 		{
 			Task task = this->task_queue.pop();
+			cout << "task" <<task.task_name << endl;
 			switch (task.task_name)
 			{
 			case ONCONNECT:
@@ -1397,15 +1412,87 @@ void TdApi::processRspOrderAction(Task *task)
 {
 	gil_scoped_acquire acquire;
 	dict data;
+
+	if (task->task_extra)
+	{
+		TapAPIOrderInfo *task_extra = (TapAPIOrderInfo*)task->task_extra;
+		data["AccountNo"] = toUtf(task_extra->AccountNo);
+		data["ExchangeNo"] = toUtf(task_extra->ExchangeNo);
+		data["CommodityType"] = task_extra->CommodityType;
+		data["CommodityNo"] = toUtf(task_extra->CommodityNo);
+		data["ContractNo"] = toUtf(task_extra->ContractNo);
+		data["StrikePrice"] = toUtf(task_extra->StrikePrice);
+		data["CallOrPutFlag"] = task_extra->CallOrPutFlag;
+		data["ContractNo2"] = toUtf(task_extra->ContractNo2);
+		data["StrikePrice2"] = toUtf(task_extra->StrikePrice2);
+		data["CallOrPutFlag2"] = task_extra->CallOrPutFlag2;
+		data["OrderType"] = task_extra->OrderType;
+		data["OrderSource"] = task_extra->OrderSource;
+		data["TimeInForce"] = task_extra->TimeInForce;
+		data["ExpireTime"] = toUtf(task_extra->ExpireTime);
+		data["IsRiskOrder"] = task_extra->IsRiskOrder;
+		data["OrderSide"] = task_extra->OrderSide;
+		data["PositionEffect"] = task_extra->PositionEffect;
+		data["PositionEffect2"] = task_extra->PositionEffect2;
+		data["InquiryNo"] = toUtf(task_extra->InquiryNo);
+		data["HedgeFlag"] = task_extra->HedgeFlag;
+		data["OrderPrice"] = task_extra->OrderPrice;
+		data["OrderPrice2"] = task_extra->OrderPrice2;
+		data["StopPrice"] = task_extra->StopPrice;
+		data["OrderQty"] = task_extra->OrderQty;
+		data["OrderMinQty"] = task_extra->OrderMinQty;
+		data["RefInt"] = task_extra->RefInt;
+		data["RefDouble"] = task_extra->RefDouble;
+		data["RefString"] = toUtf(task_extra->RefString);
+		data["MinClipSize"] = task_extra->MinClipSize;
+		data["MaxClipSize"] = task_extra->MaxClipSize;
+		data["LicenseNo"] = toUtf(task_extra->LicenseNo);
+		data["ServerFlag"] = task_extra->ServerFlag;
+		data["OrderNo"] = toUtf(task_extra->OrderNo);
+		data["ClientOrderNo"] = toUtf(task_extra->ClientOrderNo);
+		data["ClientID"] = toUtf(task_extra->ClientID);
+		data["TacticsType"] = task_extra->TacticsType;
+		data["TriggerCondition"] = task_extra->TriggerCondition;
+		data["TriggerPriceType"] = task_extra->TriggerPriceType;
+		data["AddOneIsValid"] = task_extra->AddOneIsValid;
+		data["ClientLocalIP"] = toUtf(task_extra->ClientLocalIP);
+		data["ClientMac"] = toUtf(task_extra->ClientMac);
+		data["ClientIP"] = toUtf(task_extra->ClientIP);
+		data["OrderStreamID"] = task_extra->OrderStreamID;
+		data["UpperNo"] = toUtf(task_extra->UpperNo);
+		data["UpperChannelNo"] = toUtf(task_extra->UpperChannelNo);
+		data["OrderLocalNo"] = toUtf(task_extra->OrderLocalNo);
+		data["UpperStreamID"] = task_extra->UpperStreamID;
+		data["OrderSystemNo"] = toUtf(task_extra->OrderSystemNo);
+		data["OrderExchangeSystemNo"] = toUtf(task_extra->OrderExchangeSystemNo);
+		data["OrderParentSystemNo"] = toUtf(task_extra->OrderParentSystemNo);
+		data["OrderInsertUserNo"] = toUtf(task_extra->OrderInsertUserNo);
+		data["OrderInsertTime"] = toUtf(task_extra->OrderInsertTime);
+		data["OrderCommandUserNo"] = toUtf(task_extra->OrderCommandUserNo);
+		data["OrderUpdateUserNo"] = toUtf(task_extra->OrderUpdateUserNo);
+		data["OrderUpdateTime"] = toUtf(task_extra->OrderUpdateTime);
+		data["OrderState"] = task_extra->OrderState;
+		data["OrderMatchPrice"] = task_extra->OrderMatchPrice;
+		data["OrderMatchPrice2"] = task_extra->OrderMatchPrice2;
+		data["OrderMatchQty"] = task_extra->OrderMatchQty;
+		data["OrderMatchQty2"] = task_extra->OrderMatchQty2;
+		data["ErrorCode"] = task_extra->ErrorCode;
+		data["ErrorText"] = toUtf(task_extra->ErrorText);
+		data["IsBackInput"] = task_extra->IsBackInput;
+		data["IsDeleted"] = task_extra->IsDeleted;
+		data["IsAddOne"] = task_extra->IsAddOne;
+		delete task_extra;
+	}
+
 	if (task->task_data)
 	{
 		TapAPIOrderActionRsp *task_data = (TapAPIOrderActionRsp*)task->task_data;
 		data["ActionType"] = task_data->ActionType;
-		data["OrderInfo"] = task_data->OrderInfo;
 		delete task_data;
 	}
 	this->onRspOrderAction(task->task_id, task->task_int, data);
 };
+
 
 void TdApi::processRtnOrder(Task *task)
 {
