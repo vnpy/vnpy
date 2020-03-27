@@ -22,6 +22,7 @@ from asciimatics.widgets import (
     Widget,
     VerticalDivider,
 )
+import pickle
 from enum import Enum
 from asciimatics.scene import Scene
 from asciimatics.screen import Screen
@@ -48,34 +49,18 @@ CTP_SETTING = load_json("connect_ctp.json")
 SETTINGS["log.active"] = True
 SETTINGS["log.level"] = INFO
 SETTINGS["log.console"] = True
-log_datas = []
-
 
 FRAME_NO = "mainwindows"
 TICK_LAYOUT = {
-    "name": "Quotes",
+    "name": "行情信息",
     "monitor": TickMonitor,
-    "titles": [
-        "symbol",
-        "exchange",
-        "last_price",
-        "volume",
-        "open_price",
-        "high_price",
-        "low_price",
-        "bid_price_1",
-        "bid_volume_1",
-        "ask_price_1",
-        "ask_volume_1",
-        "datetime",
-        "gateway_name",
-        # "name",
-    ],
+    "titles": TickMonitor.headers.keys(),
     "data_key": "ticks",
-    "height": 10,
+    "height": 6,
     "columns": [
         "<20",
         "<15",
+        "<30",
         "<15",
         "<15",
         "<15",
@@ -87,15 +72,14 @@ TICK_LAYOUT = {
         "<15",
         "<30",
         "<15",
-        "<30",
     ],
 }
 ACTIVE_ORDERS_LAYOUT = {
-    "name": "Active Orders",
+    "name": "活动委托信息",
     "monitor": ActiveOrderMonitor,
     "titles": ActiveOrderMonitor.headers.keys(),
     "data_key": "active_orders",
-    "height": 10,
+    "height": 6,
     "columns": [
         "<20",
         "<15",
@@ -113,11 +97,11 @@ ACTIVE_ORDERS_LAYOUT = {
     ],
 }
 ORDERS_LAYOUT = {
-    "name": "Orders",
+    "name": "委托信息",
     "monitor": OrderMonitor,
     "titles": OrderMonitor.headers.keys(),
     "data_key": "orders",
-    "height": 10,
+    "height": 6,
     "columns": [
         "<20",
         "<15",
@@ -135,11 +119,11 @@ ORDERS_LAYOUT = {
     ],
 }
 TRADE_LAYOUT = {
-    "name": "Trade",
+    "name": "交易信息",
     "monitor": TradeMonitor,
     "titles": TradeMonitor.headers.keys(),
     "data_key": "trades",
-    "height": 10,
+    "height": 6,
     "columns": [
         "<20",
         "<15",
@@ -157,19 +141,15 @@ TRADE_LAYOUT = {
     ],
 }
 LOG_LAYOUT = {
-    "name": "Log",
+    "name": "日志信息",
     "monitor": LogMonitor,
-    "titles": ["time", "gateway_name", "msg"],
+    "titles": LogMonitor.headers.keys(),
     "data_key": "logs",
     "height": 20,
-    "columns": [
-        "<30",
-        "<30",
-        "<60",
-    ],
+    "columns": ["<30", "<40", "<30"],
 }
 POSITION_LAYOUT = {
-    "name": "Position",
+    "name": "持仓信息",
     "monitor": PositionMonitor,
     "titles": PositionMonitor.headers.keys(),
     "data_key": "positions",
@@ -189,7 +169,7 @@ POSITION_LAYOUT = {
     ],
 }
 ACCOUNT_LAYOUT = {
-    "name": "Account",
+    "name": "账户信息",
     "monitor": AccountMonitor,
     "titles": AccountMonitor.headers.keys(),
     "data_key": "accounts",
@@ -209,12 +189,9 @@ ACCOUNT_LAYOUT = {
     ],
 }
 
-def save_logs(event):
-    log_datas.append((datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"), event.data,))
-
 
 class MainView(Frame):
-    def __init__(self, screen, main_engine):
+    def __init__(self, screen, data, logs_data):
         super(MainView, self).__init__(
             screen,
             screen.height,
@@ -234,8 +211,7 @@ class MainView(Frame):
         self.positions = []
         self.accounts = []
 
-        self.oms_engine = main_engine.engines["oms"]
-        self.update_options()
+        self.update_options(data)
         self.draw_header_layouts()
         self.draw_content_layouts()
         self.draw_footer_layouts()
@@ -247,7 +223,6 @@ class MainView(Frame):
         self.create_layout(ACTIVE_ORDERS_LAYOUT,)
         self.create_layout(ORDERS_LAYOUT)
         self.create_layout(TRADE_LAYOUT)
-        # self.create_layout(LOG_LAYOUT)
 
     def draw_header_layouts(self):
         """"""
@@ -255,8 +230,8 @@ class MainView(Frame):
 
     def draw_footer_layouts(self):
         """"""
-        footer_configs = [ACCOUNT_LAYOUT, POSITION_LAYOUT]
-        layout = Layout([1, 1])
+        footer_configs = [LOG_LAYOUT, ACCOUNT_LAYOUT, POSITION_LAYOUT]
+        layout = Layout([1, 1, 1])
         self.add_layout(layout)
 
         for index, config in enumerate(footer_configs):
@@ -268,30 +243,38 @@ class MainView(Frame):
                 config["height"],
                 columns=config["columns"],
                 options=self.__dict__[config["data_key"]],
-                titles=config["titles"],
+                titles=[d["display"] for d in config["monitor"].headers.values()],
                 name=config["name"],
                 add_scroll_bar=True,
             )
             layout.add_widget(box, index)
 
-    def update_options(self):
-        self.ticks = self.get_options(self.oms_engine.ticks, TICK_LAYOUT["titles"])
-        self.active_orders = self.get_options(
-            self.oms_engine.active_orders, ACTIVE_ORDERS_LAYOUT["titles"]
-        )
-        self.orders = self.get_options(self.oms_engine.orders, ORDERS_LAYOUT["titles"])
-        self.trades = self.get_options(self.oms_engine.trades, TRADE_LAYOUT["titles"])
-        self.positions = self.get_options(
-            self.oms_engine.positions, POSITION_LAYOUT["titles"]
-        )
-        self.accounts = self.get_options(
-            self.oms_engine.accounts, ACCOUNT_LAYOUT["titles"]
-        )
-        # logs
-        self.logs = [
-            ([log_time, log_data.gateway_name, log_data.msg], index)
-            for index, (log_time, log_data) in enumerate(log_datas)
-        ]
+    def update_options(self, data):
+        if data:
+            self.ticks = self.get_options(
+                pickle.loads(data["ticks"]), TICK_LAYOUT["titles"]
+            )
+            self.active_orders = self.get_options(
+                pickle.loads(data["active_orders"]), ACTIVE_ORDERS_LAYOUT["titles"]
+            )
+            self.orders = self.get_options(
+                pickle.loads(data["orders"]), ORDERS_LAYOUT["titles"]
+            )
+            self.trades = self.get_options(
+                pickle.loads(data["trades"]), TRADE_LAYOUT["titles"]
+            )
+            self.positions = self.get_options(
+                pickle.loads(data["positions"]), POSITION_LAYOUT["titles"]
+            )
+            self.accounts = self.get_options(
+                pickle.loads(data["accounts"]), ACCOUNT_LAYOUT["titles"]
+            )
+            logs = []
+            for index, log in enumerate(logs_data):
+                log_time, log_data = pickle.loads(log)
+                logs.append(([log_time, log_data.msg, log_data.gateway_name], index))
+            self.logs = logs
+        self.save()
 
     def get_options(self, data, titles):
         options = []
@@ -323,7 +306,7 @@ class MainView(Frame):
             config["height"],
             columns=config["columns"],
             options=self.__dict__[config["data_key"]],
-            titles=config["titles"],
+            titles=[d["display"] for d in config["monitor"].headers.values()],
             name=config["name"],
             add_scroll_bar=True,
         )
@@ -331,25 +314,23 @@ class MainView(Frame):
         return layout
 
     def _load_data(self, new_value=None):
-        pass
+        self.update_options(new_value)
 
     @staticmethod
     def _quit():
         raise StopApplication("User pressed quit")
 
 
-def vnpy_tui(screen, scene, main_engine):
-    main_scene = MainView(screen, main_engine)
-    scenes = [
-        Scene([main_scene], -1, name="Main", clear=False),
-    ]
-    screen.play(scenes, stop_on_resize=True, start_scene=scene, allow_int=True)
-
-
-def run_child():
+def run_child(tui_data, logs_data):
     """
     Running in the child process.
     """
+
+    def save_logs(event):
+        logs_data.append(
+            pickle.dumps((datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"), event.data,))
+        )
+
     SETTINGS["log.file"] = True
 
     event_engine = EventEngine()
@@ -373,35 +354,32 @@ def run_child():
 
     cta_engine.init_all_strategies()
     sleep(5)  # Leave enough time to complete strategy initialization
+
     main_engine.write_log("CTA策略全部初始化")
     cta_engine.start_all_strategies()
 
     main_engine.write_log("CTA策略全部启动")
-    last_scene = None
+    oms_engine = main_engine.engines["oms"]
     while True:
-        try:
-            Screen.wrapper(
-                vnpy_tui, catch_interrupt=True, arguments=[last_scene, main_engine],
-            )
-            sys.exit(0)
-        except ResizeScreenError as e:
-            last_scene = e.scene
-        sleep(0.1)
+        tui_data["ticks"] = pickle.dumps(oms_engine.ticks)
+        tui_data["active_orders"] = pickle.dumps(oms_engine.active_orders)
+        tui_data["orders"] = pickle.dumps(oms_engine.orders)
+        tui_data["trades"] = pickle.dumps(oms_engine.trades)
+        tui_data["positions"] = pickle.dumps(oms_engine.positions)
+        tui_data["accounts"] = pickle.dumps(oms_engine.accounts)
+        sleep(0.5)
 
 
-def run_parent():
+def run_parent(tui_data, logs_data):
     """
     Running in the parent process.
     """
-    print("启动CTA策略守护父进程")
-
     # Chinese futures market trading period (day/night)
     DAY_START = time(8, 45)
     DAY_END = time(15, 30)
 
     NIGHT_START = time(20, 45)
     NIGHT_END = time(2, 45)
-
     child_process = None
     while True:
         # run cta child process
@@ -419,7 +397,9 @@ def run_parent():
         # Start child process in trading period
         if trading and child_process is None:
             print("启动子进程")
-            child_process = multiprocessing.Process(target=run_child)
+            child_process = multiprocessing.Process(
+                target=run_child, args=(tui_data, logs_data)
+            )
             child_process.start()
             print("子进程启动成功")
 
@@ -430,10 +410,44 @@ def run_parent():
             child_process.join()
             child_process = None
             print("子进程关闭成功")
+        sleep(1)
 
-        sleep(5)
+
+def terminal_ui(screen, scene, tui_data, logs_data):
+    main_scene = MainView(screen, data=tui_data, logs_data=logs_data)
+    scenes = [
+        Scene([main_scene], -1, name="Main", clear=False),
+    ]
+    screen.play(
+        scenes, stop_on_resize=True, start_scene=scene, allow_int=True, repeat=True
+    )
 
 
 if __name__ == "__main__":
-
-    run_parent()
+    with multiprocessing.Manager() as manager:
+        print("启动CTA策略守护父进程")
+        tui_data = manager.dict()
+        logs_data = manager.list()
+        main_scene = None
+        last_scene = None
+        print("启动守护主进程")
+        parent_process = multiprocessing.Process(
+            target=run_parent, args=(tui_data, logs_data)
+        )
+        parent_process.start()
+        print("子进程启动成功")
+        print("启动界面")
+        while True:
+            if tui_data:
+                try:
+                    main_scene = Screen.wrapper(
+                        terminal_ui,
+                        catch_interrupt=True,
+                        arguments=[last_scene, tui_data, logs_data],
+                    )
+                    sys.exit(0)
+                except ResizeScreenError as e:
+                    last_scene = e.scene
+            if main_scene:
+                main_scene.data = tui_data
+            sleep(1)
