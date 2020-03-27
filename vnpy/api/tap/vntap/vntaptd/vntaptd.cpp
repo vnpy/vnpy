@@ -765,7 +765,6 @@ void TdApi::processTask()
 		while (this->active)
 		{
 			Task task = this->task_queue.pop();
-			cout << "task" <<task.task_name << endl;
 			switch (task.task_name)
 			{
 			case ONCONNECT:
