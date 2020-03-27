@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Dict, Tuple
 
 from vnpy.api.tap import MdApi, TdApi
-
 from vnpy.event import EventEngine
 from vnpy.trader.utility import get_folder_path
 from vnpy.trader.constant import (
@@ -176,6 +175,7 @@ class TapGateway(BaseGateway):
     def query_position(self) -> None:
         """"""
         pass
+
 
 class QuoteApi(MdApi):
     """
@@ -710,7 +710,6 @@ class TradeApi(TdApi):
             "KeyOperationLogPath": str(path)
         }
         self.createITapTradeAPI(req, 0)
-        
 
         # Set server address and port
         self.setHostAddress(host, port)
@@ -738,15 +737,15 @@ class TradeApi(TdApi):
             return ""
 
         order_req = {
-            "AccountNo" : self.account_no,
-            "ExchangeNo" : contract_info.exchange_no,
-            "CommodityType" : contract_info.commodity_type,
-            "CommodityNo" : contract_info.commodity_no,
-            "ContractNo" : contract_info.contract_no,
-            "OrderType" : ORDERTYPE_VT2TAP[req.type],
-            "OrderSide" : DIRECTION_VT2TAP[req.direction],
-            "OrderPrice" : req.price,
-            "OrderQty" : int(req.volume),
+            "AccountNo": self.account_no,
+            "ExchangeNo": contract_info.exchange_no,
+            "CommodityType": contract_info.commodity_type,
+            "CommodityNo": contract_info.commodity_no,
+            "ContractNo": contract_info.contract_no,
+            "OrderType": ORDERTYPE_VT2TAP[req.type],
+            "OrderSide": DIRECTION_VT2TAP[req.direction],
+            "OrderPrice": req.price,
+            "OrderQty": int(req.volume),
         }
 
         error_id, sesion, order_id = self.insertOrder(order_req)
