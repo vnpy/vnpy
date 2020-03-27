@@ -5,6 +5,25 @@
 #include "vntaptd.h"
 
 
+
+//test3
+
+//用户名密码
+#define DEFAULT_USERNAME	("Q779375914")
+#define DEFAULT_PASSWORD	("123456")
+
+//下单
+#define DEFAULT_ACCOUNT_NO		(DEFAULT_USERNAME)
+#define DEFAULT_EXCHANGE_NO		("NYMEX")
+#define DEFAULT_COMMODITY_TYPE	(TAPI_COMMODITY_TYPE_FUTURES)
+#define DEFAULT_COMMODITY_NO	("CL")
+#define DEFAULT_CONTRACT_NO		("2001")
+#define DEFAULT_ORDER_TYPE		(TAPI_ORDER_TYPE_MARKET)
+#define DEFAULT_ORDER_SIDE		(TAPI_SIDE_BUY)
+#define DEFAULT_ORDER_PRICE		(0)
+#define DEFAULT_ORDER_QTY		(1)	
+
+
 ///-------------------------------------------------------------------------------------
 ///C++的回调函数将数据保存到队列中
 ///-------------------------------------------------------------------------------------
@@ -2766,13 +2785,52 @@ pybind11::tuple TdApi::insertOrder(const dict &req)
 {
 	TAPIUINT32 session;
 	TAPISTR_50 ClientOrderNo;
+
 	TapAPINewOrder myreq = TapAPINewOrder();
-	memset(&myreq, 0, sizeof(myreq));
-	getString(req, "AccountNo", myreq.AccountNo);
+
+
+
+	//memset(&myreq, 0, sizeof(myreq));
+
+	// test//
+	//strcpy(myreq.AccountNo, "Q779375914");
+	//strcpy(myreq.ExchangeNo, "HKEX");
+	//strcpy(myreq.CommodityNo, "2003");
+
+
+	//myreq.CommodityType = (TAPICHAR)"F";
+	//myreq.OrderType = (TAPICHAR)"2";
+	//myreq.OrderSide = (TAPICHAR)"B";
+
+	//myreq.OrderPrice = 23400;
+	//myreq.OrderQty = 1;
+
+	////myreq.AccountNo ="Q779375914";
+	////myreq.ExchangeNo = "HKEX";
+	////myreq.CommodityNo = "2003";
+
+
+	// test1
+	//strcpy(myreq.AccountNo, DEFAULT_ACCOUNT_NO);
+	//strcpy(myreq.ExchangeNo, DEFAULT_EXCHANGE_NO);
+	//myreq.CommodityType = DEFAULT_COMMODITY_TYPE;
+	//strcpy(myreq.CommodityNo, DEFAULT_COMMODITY_NO);
+	//strcpy(myreq.ContractNo, DEFAULT_CONTRACT_NO);
+
+	//myreq.OrderType = DEFAULT_ORDER_TYPE;
+	//myreq.OrderSource = TAPI_ORDER_SOURCE_PROGRAM;
+	//myreq.TimeInForce = TAPI_ORDER_TIMEINFORCE_GFD;
+
+	//myreq.OrderSide = DEFAULT_ORDER_SIDE; //a
+	////myreq.OrderPrice = DEFAULT_ORDER_PRICE; ######
+	//myreq.OrderQty = DEFAULT_ORDER_QTY;  //####
+
+	getString(req, "AccountNo", myreq.AccountNo);  
 	getString(req, "ExchangeNo", myreq.ExchangeNo);
 	getChar(req, "CommodityType", &myreq.CommodityType);
 	getString(req, "CommodityNo", myreq.CommodityNo);
 	getString(req, "ContractNo", myreq.ContractNo);
+
 	getString(req, "StrikePrice", myreq.StrikePrice);
 	getChar(req, "CallOrPutFlag", &myreq.CallOrPutFlag);
 	getString(req, "ContractNo2", myreq.ContractNo2);
@@ -2780,8 +2838,8 @@ pybind11::tuple TdApi::insertOrder(const dict &req)
 	getChar(req, "CallOrPutFlag2", &myreq.CallOrPutFlag2);
 
 	getChar(req, "OrderType", &myreq.OrderType);
-	getChar(req, "OrderSource", &myreq.OrderSource);
-	getChar(req, "TimeInForce", &myreq.TimeInForce);
+	getChar(req, "OrderSource", &myreq.OrderSource); 
+	getChar(req, "TimeInForce", &myreq.TimeInForce); 
 	getString(req, "ExpireTime", myreq.ExpireTime);
 
 	getChar(req, "IsRiskOrder", &myreq.IsRiskOrder);
@@ -2794,7 +2852,7 @@ pybind11::tuple TdApi::insertOrder(const dict &req)
 	getDouble(req, "OrderPrice", &myreq.OrderPrice);
 	getDouble(req, "OrderPrice2", &myreq.OrderPrice2);
 	getDouble(req, "StopPrice", &myreq.StopPrice);
-	getUnsignedInt(req, "OrderQty", &myreq.OrderQty);
+	getUnsignedInt(req, "OrderQty", &myreq.OrderQty); //c
 	getUnsignedInt(req, "OrderMinQty", &myreq.OrderMinQty);
 
 	getUnsignedInt(req, "MinClipSize", &myreq.MinClipSize);
@@ -2810,13 +2868,96 @@ pybind11::tuple TdApi::insertOrder(const dict &req)
 	getChar(req, "TriggerPriceType", &myreq.TriggerPriceType);
 	getChar(req, "AddOneIsValid", &myreq.AddOneIsValid);
 
-	cout << "CallOrPutFlag=" << &myreq.CallOrPutFlag << endl;
-	cout << "CallOrPutFlag=" << myreq.CallOrPutFlag << endl;
+	//cout << "@@struct" << &myreq << endl;
+	//cout << "struct.AccountNo=" << myreq.AccountNo << endl;
+	//cout << "struct.ExchangeNo=" << myreq.ExchangeNo << endl;
+	//cout << "struct.CommodityType=" << myreq.CommodityType << endl;
+	//cout << "struct.CommodityNo=" << myreq.CommodityNo << endl;
+	//cout << "struct.ContractNo=" << myreq.ContractNo << endl;
+	//cout << "struct.StrikePrice=" << myreq.StrikePrice << endl;
+	//cout << "struct.CallOrPutFlag=" << myreq.CallOrPutFlag << endl;
+	//cout << "struct.ContractNo2=" << myreq.ContractNo2 << endl;
+	//cout << "struct.StrikePrice2=" << myreq.StrikePrice2 << endl;
+	//cout << "struct.CallOrPutFlag2=" << myreq.CallOrPutFlag2 << endl;
+	//cout << "struct.OrderType=" << myreq.OrderType << endl;
+	//cout << "struct.OrderSource=" << myreq.OrderSource << endl;
+	//cout << "struct.TimeInForce=" << myreq.TimeInForce << endl;
+	//cout << "struct.ExpireTime=" << myreq.ExpireTime << endl;
+	//cout << "struct.IsRiskOrder=" << myreq.IsRiskOrder << endl;
+	//cout << "struct.OrderSide=" << myreq.OrderSide << endl;
+	//cout << "struct.PositionEffect=" << myreq.PositionEffect << endl;
+	//cout << "struct.PositionEffect2=" << myreq.PositionEffect2 << endl;
+	//cout << "struct.InquiryNo=" << myreq.InquiryNo << endl;
+	//cout << "struct.HedgeFlag=" << myreq.HedgeFlag << endl;
+	//cout << "struct.OrderPrice=" << myreq.OrderPrice << endl;
+	//cout << "struct.OrderPrice2=" << myreq.OrderPrice2 << endl;
+	//cout << "struct.StopPrice=" << myreq.StopPrice << endl;
+	//cout << "struct.OrderQty=" << myreq.OrderQty << endl;
+	//cout << "struct.OrderMinQty=" << myreq.OrderMinQty << endl;
+	//cout << "struct.MinClipSize=" << myreq.MinClipSize << endl;
+	//cout << "struct.MaxClipSize=" << myreq.MaxClipSize << endl;
+	//cout << "struct.RefInt=" << myreq.RefInt << endl;
+	//cout << "struct.RefDouble=" << myreq.RefDouble << endl;
+	//cout << "struct.RefString=" << myreq.RefString << endl;
+	//cout << "struct.ClientID=" << myreq.ClientID << endl;
+	//cout << "struct.TacticsType=" << myreq.TacticsType << endl;
+	//cout << "struct.TriggerCondition=" << myreq.TriggerCondition << endl;
+	//cout << "struct.TriggerPriceType=" << myreq.TriggerPriceType << endl;
+	////cout << "struct.AddOneIsValid=" << myreq.AddOneIsValid << endl;
 
-	typedef char    TAPISTR_50[51];
+
+	//test3
+
+	////TapAPINewOrder stNewOrder;
+	//TapAPINewOrder stNewOrder = TapAPINewOrder();
+	//memset(&stNewOrder, 0, sizeof(myreq));
+
+	//strcpy(stNewOrder.AccountNo, DEFAULT_ACCOUNT_NO); 
+	//strcpy(stNewOrder.ExchangeNo, DEFAULT_EXCHANGE_NO);
+	//stNewOrder.CommodityType = DEFAULT_COMMODITY_TYPE;
+	//strcpy(stNewOrder.CommodityNo, DEFAULT_COMMODITY_NO);
+	//strcpy(stNewOrder.ContractNo, DEFAULT_CONTRACT_NO);
+	//stNewOrder.OrderType = DEFAULT_ORDER_TYPE;
+	//stNewOrder.OrderSource = TAPI_ORDER_SOURCE_PROGRAM;
+	//stNewOrder.TimeInForce = TAPI_ORDER_TIMEINFORCE_GFD;
+
+	//stNewOrder.OrderSide = DEFAULT_ORDER_SIDE;
+	//getString(req, "AccountNo", stNewOrder.AccountNo);
+	//getString(req, "ExchangeNo", stNewOrder.ExchangeNo);
+	//getChar(req, "CommodityType", &stNewOrder.CommodityType);
+	//getString(req, "CommodityNo", stNewOrder.CommodityNo);
+	//getString(req, "ContractNo", stNewOrder.ContractNo);
+	//getChar(req, "OrderType", &stNewOrder.OrderType);
+	//getChar(req, "OrderSource", &stNewOrder.OrderSource);
+	//getChar(req, "TimeInForce", &stNewOrder.TimeInForce);
+	//getChar(req, "OrderSide", &stNewOrder.OrderSide);
+	//getUnsignedInt(req, "OrderQty", &stNewOrder.OrderQty);
+
+	//getDouble(req, "OrderPrice", &stNewOrder.OrderPrice); // #######
+	//
+	////stNewOrder.OrderPrice = DEFAULT_ORDER_PRICE;  ###3
+	////stNewOrder.OrderQty = DEFAULT_ORDER_QTY;
+	////TAPISTR_50 stClientOrderNo;
+	////memset(&stClientOrderNo, 0, sizeof(stClientOrderNo));
+
+	//typedef char    TAPISTR_50[51];
+
+	//cout << "stNewOrder.AccountNo= " << stNewOrder.AccountNo << endl;
+	//cout << "stNewOrder.ExchangeNo= " << stNewOrder.ExchangeNo << endl;
+	//cout << "stNewOrder.CommodityType= " << stNewOrder.CommodityType << endl;
+	//cout << "stNewOrder.CommodityNo= " << stNewOrder.CommodityNo << endl;
+	//cout << "stNewOrder.ContractNo= " << stNewOrder.ContractNo << endl;
+	//cout << "stNewOrder.OrderType= " << stNewOrder.OrderType << endl;
+	//cout << "stNewOrder.OrderSource= " << stNewOrder.OrderSource << endl;
+	//cout << "stNewOrder.TimeInForce= " << stNewOrder.TimeInForce << endl;
+	//cout << "stNewOrder.OrderSide= " << stNewOrder.OrderSide << endl;
+	//cout << "stNewOrder.OrderPrice= " << stNewOrder.OrderPrice << endl;
+	//cout << "stNewOrder.OrderQty= " << stNewOrder.OrderQty << endl;
+
 	int i = this->api->InsertOrder(&session, &ClientOrderNo, &myreq);
 
 	pybind11::tuple result = pybind11::make_tuple(i, session, ClientOrderNo);
+	cout << "---------------------result=" << i << ";clientorderno=" << ClientOrderNo << endl;
 	return result;
 }
 
