@@ -67,7 +67,7 @@ STATUS_TAP2VT: Dict[str, Status] = {
     "5": Status.PARTTRADED,
     "6": Status.ALLTRADED,
     "7": Status.CANCELLED,
-    "9": Status.REJECTED,
+    "9": Status.CANCELLED,
 }
 
 ORDERTYPE_TAP2VT: Dict[str, OrderType] = {
@@ -220,7 +220,6 @@ class QuoteApi(MdApi):
         """
         Callback of subscribe market data request.
         """
-        print("onRspSubscribeQuote", error, data)
         if error != ERROR_VT2TAP["TAPIERROR_SUCCEED"]:
             self.gateway.write_log(f"订阅行情失败：{error}")
         else:
@@ -230,15 +229,14 @@ class QuoteApi(MdApi):
         """
         Callback of new data update.
         """
-        print("onRtnQuote")
         self.update_tick(data)
 
     def update_tick(self, data: dict) -> None:
         """
         Convert TAP quote data structure into TickData event and push it.
         """
-        symbol = data.Contract.Commodity.CommodityNo + data.Contract.ContractNo1
-        exchange = EXCHANGE_TAP2VT[data.Contract.Commodity.ExchangeNo]
+        symbol = data["CommodityNo"] + data["ContractNo1"]
+        exchange = EXCHANGE_TAP2VT[data["ExchangeNo"]]
 
         contract_info = contract_infos.get((symbol, exchange), None)
         if not contract_info:
@@ -259,26 +257,26 @@ class QuoteApi(MdApi):
             high_price=data["QHighPrice"],
             low_price=data["QLowPrice"],
             pre_close=data["QPreClosingPrice"],
-            bid_price_1=data["QBidPrice[0]"],
-            bid_price_2=data["QBidPrice[1]"],
-            bid_price_3=data["QBidPrice[2]"],
-            bid_price_4=data["QBidPrice[3]"],
-            bid_price_5=data["QBidPrice[4]"],
-            ask_price_1=data["QAskPrice[0]"],
-            ask_price_2=data["QAskPrice[1]"],
-            ask_price_3=data["QAskPrice[2]"],
-            ask_price_4=data["QAskPrice[3]"],
-            ask_price_5=data["QAskPrice[4]"],
-            bid_volume_1=data["QBidQty[0]"],
-            bid_volume_2=data["QBidQty[1]"],
-            bid_volume_3=data["QBidQty[2]"],
-            bid_volume_4=data["QBidQty[3]"],
-            bid_volume_5=data["QBidQty[4]"],
-            ask_volume_1=data["QAskQty[0]"],
-            ask_volume_2=data["QAskQty[1]"],
-            ask_volume_3=data["QAskQty[2]"],
-            ask_volume_4=data["QAskQty[3]"],
-            ask_volume_5=data["QAskQty[4]"],
+            bid_price_1=data["QBidPrice"][0],
+            bid_price_2=data["QBidPrice"][1],
+            bid_price_3=data["QBidPrice"][2],
+            bid_price_4=data["QBidPrice"][3],
+            bid_price_5=data["QBidPrice"][4],
+            ask_price_1=data["QAskPrice"][0],
+            ask_price_2=data["QAskPrice"][1],
+            ask_price_3=data["QAskPrice"][2],
+            ask_price_4=data["QAskPrice"][3],
+            ask_price_5=data["QAskPrice"][4],
+            bid_volume_1=data["QBidQty"][0],
+            bid_volume_2=data["QBidQty"][1],
+            bid_volume_3=data["QBidQty"][2],
+            bid_volume_4=data["QBidQty"][3],
+            bid_volume_5=data["QBidQty"][4],
+            ask_volume_1=data["QAskQty"][0],
+            ask_volume_2=data["QAskQty"][1],
+            ask_volume_3=data["QAskQty"][2],
+            ask_volume_4=data["QAskQty"][3],
+            ask_volume_5=data["QAskQty"][4],
             gateway_name=self.gateway_name,
         )
         self.gateway.on_tick(tick)
@@ -325,7 +323,6 @@ class QuoteApi(MdApi):
         """
         self.exit()
 
-
     def subscribe(self, req: SubscribeRequest):
         """
         Subscribe to new market data update.
@@ -345,8 +342,7 @@ class QuoteApi(MdApi):
             "CallOrPutFlag2": FLAG_VT2TAP["TAPI_CALLPUT_FLAG_NONE"]
         }
 
-        n=self.subscribeQuote(tap_contract)
-        print("subscribe", tap_contract,";result:", n)
+        self.subscribeQuote(tap_contract)
 
 
 class TradeApi(TdApi):
@@ -570,11 +566,11 @@ class TradeApi(TdApi):
         """
         Callback of order update.
         """
-        if data.ErrorCode != ERROR_VT2TAP["TAPIERROR_SUCCEED"]:
-            self.gateway.write_log(f"委托下单失败，错误码: {error}")
+        if data["ErrorCode"] != ERROR_VT2TAP["TAPIERROR_SUCCEED"]:
+            self.gateway.write_log(f"委托下单失败，错误码: {data['ErrorCode']}")
+            return
 
-        if data.OrderInfo:
-            self.update_order(data.OrderInfo)
+        self.update_order(data)
 
     def onRspQryFill(
         self,
@@ -633,7 +629,6 @@ class TradeApi(TdApi):
         """
         Convert TAP position summary structure into PositionData event and push it.
         """
-        
         position = PositionData(
             symbol=data["CommodityNo"] + data["ContractNo"],
             exchange=EXCHANGE_TAP2VT.get(data["ExchangeNo"], None),
@@ -729,33 +724,36 @@ class TradeApi(TdApi):
         }
         self.login(data)
 
-
     def send_order(self, req: OrderRequest) -> str:
         """
         Send new order to TAP server.
         """
         contract_info = contract_infos.get((req.symbol, req.exchange), None)
         if not contract_info:
-            self.write_log(f"找不到匹配的合约：{req.symbol}和{req.exchange.value}")
+            self.gateway.write_log(f"找不到匹配的合约：{req.symbol}和{req.exchange.value}")
             return ""
 
         if req.type not in ORDERTYPE_VT2TAP:
-            self.write_log(f"不支持的委托类型: {req.type.value}")
+            self.gateway.write_log(f"不支持的委托类型: {req.type.value}")
             return ""
 
         order_req = {
-            "ExchangeNo" : contract_info["exchange_no"],
-            "CommodityNo" : contract_info["commodity_no"],
-            "CommodityType" : contract_info["commodity_type"],
-            "ContractNo" : contract_info["contract_no"],
+            "AccountNo" : self.account_no,
+            "ExchangeNo" : contract_info.exchange_no,
+            "CommodityType" : contract_info.commodity_type,
+            "CommodityNo" : contract_info.commodity_no,
+            "ContractNo" : contract_info.contract_no,
             "OrderType" : ORDERTYPE_VT2TAP[req.type],
             "OrderSide" : DIRECTION_VT2TAP[req.direction],
             "OrderPrice" : req.price,
             "OrderQty" : int(req.volume),
-            "AccountNo" : self.account_no,
         }
 
-        order_id = self.insertOrder(order_req)
+        error_id, sesion, order_id = self.insertOrder(order_req)
+
+        if not order_id:
+            self.gateway.write_log(f"委托请求失败，错误号：{error_id}")
+            return
 
         order = req.create_order_data(
             order_id,
@@ -817,7 +815,6 @@ class TradeApi(TdApi):
         self.exit()
 
 
-
 def parse_datetime(dt_str: str) -> datetime:
     """
     Convert timestamp string to datetime object.
@@ -827,16 +824,6 @@ def parse_datetime(dt_str: str) -> datetime:
     except ValueError:
         dt = datetime(1970, 1, 1)
     return dt
-
-
-# def error_to_str(err_code: int) -> str:
-#     """
-#     Convert error code to error message string.
-#     """
-#     try:
-#         return error_map[err_code]
-#     except KeyError:
-#         return f"Unknown error({err_code})"
 
 
 @dataclass
