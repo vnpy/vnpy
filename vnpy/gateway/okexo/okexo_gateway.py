@@ -369,7 +369,7 @@ class OkexoRestApi(RestClient):
                 exchange=Exchange.OKEX,
                 name=symbol,
                 product=Product.OPTION,
-                size=float(instrument_data["lot_size"]),
+                size=float(instrument_data["contract_val"]),
                 pricetick=float(instrument_data["tick_size"]),
                 option_strike=int(instrument_data["strike"]),
                 option_underlying=instrument_data["underlying"],
