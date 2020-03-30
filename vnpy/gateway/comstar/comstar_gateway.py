@@ -309,7 +309,7 @@ def parse_contract(data: dict, settle_type: str) -> ContractData:
     Convert json received from API to ContractData object.
     """
     contract = ContractData(
-        symbol=f"{data['symbo']}_{settle_type}",
+        symbol=f"{data['symbol']}_{settle_type}",
         exchange=enum_decode(data["exchange"]),
         name=data["name"],
         product=enum_decode(data["product"]),
