@@ -11,7 +11,7 @@ import hashlib
 import hmac
 import sys
 from copy import copy
-from datetime import datetime
+from datetime import datetime, timedelta
 from threading import Lock
 from typing import Sequence
 
@@ -95,6 +95,12 @@ CONTRACT_TYPE_MAP = {
     "this_week": "CW",
     "next_week": "NW",
     "quarter": "CQ"
+}
+
+TIMEDELTA_MAP = {
+    Interval.MINUTE: timedelta(minutes=1),
+    Interval.HOUR: timedelta(hours=1),
+    Interval.DAILY: timedelta(days=1),
 }
 
 
@@ -305,6 +311,11 @@ class HbdmRestApi(RestClient):
 
     def query_history(self, req: HistoryRequest):
         """"""
+        history = []
+        count = 2000
+        start = req.start
+        time_delta = TIMEDELTA_MAP[req.interval]
+
         # Convert symbol
         contract_type = symbol_type_map.get(req.symbol, "")
         buf = [i for i in req.symbol if not i.isdigit()]
@@ -313,32 +324,38 @@ class HbdmRestApi(RestClient):
         ws_contract_type = CONTRACT_TYPE_MAP[contract_type]
         ws_symbol = f"{symbol}_{ws_contract_type}"
 
-        # Create query params
-        params = {
-            "symbol": ws_symbol,
-            "period": INTERVAL_VT2HBDM[req.interval],
-            "size": 2000
-        }
+        while True:
+            # Calculate end time
+            end = start + time_delta * count
 
-        # Get response from server
-        resp = self.request(
-            "GET",
-            "/market/history/kline",
-            params=params
-        )
+            # Create query params
+            params = {
+                "symbol": ws_symbol,
+                "period": INTERVAL_VT2HBDM[req.interval],
+                "from": int(start.timestamp()),
+                "to": int(end.timestamp())
+            }
 
-        # Break if request failed with other status code
-        history = []
+            # Get response from server
+            resp = self.request(
+                "GET",
+                "/market/history/kline",
+                params=params
+            )
 
-        if resp.status_code // 100 != 2:
-            msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
-            self.gateway.write_log(msg)
-        else:
-            data = resp.json()
-            if not data:
-                msg = f"获取历史数据为空"
+            # Break if request failed with other status code
+            if resp.status_code // 100 != 2:
+                msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
                 self.gateway.write_log(msg)
+                break
             else:
+                data = resp.json()
+                if not data:
+                    msg = f"获取历史数据为空"
+                    self.gateway.write_log(msg)
+                    break
+
+                buf = []
                 for d in data["data"]:
                     dt = datetime.fromtimestamp(d["id"])
 
@@ -354,12 +371,21 @@ class HbdmRestApi(RestClient):
                         close_price=d["close"],
                         gateway_name=self.gateway_name
                     )
-                    history.append(bar)
+                    buf.append(bar)
 
-                begin = history[0].datetime
-                end = history[-1].datetime
+                history.extend(buf)
+
+                begin = buf[0].datetime
+                end = buf[-1].datetime
                 msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
                 self.gateway.write_log(msg)
+
+                # Update start time
+                start = bar.datetime
+
+                # Break if data end reached
+                if len(buf) < count:
+                    break
 
         return history
 
