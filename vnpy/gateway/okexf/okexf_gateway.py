@@ -249,13 +249,16 @@ class OkexfRestApi(RestClient):
             return ""
 
         orderid = f"a{self.connect_time}{self._new_order_id()}"
-
+        if "USDT" in req.symbol:
+            order_volume = str(float(req.volume))
+        else:
+            order_volume = str(int(req.volume))
         data = {
             "client_oid": orderid,
             "type": TYPE_VT2OKEXF[(req.offset, req.direction)],
             "instrument_id": req.symbol,
             "price": str(req.price),
-            "size": str(int(req.volume)),
+            "size": order_volume,
             "leverage": self.leverage,
         }
 
@@ -744,8 +747,9 @@ class OkexfWebsocketApi(WebsocketClient):
         channels = []
         for currency in currencies:
             if currency not in ["USD", "USDT"]:
-                channel = f"futures/account:{currency}"
-                channels.append(channel)
+            currency_channel= f"futures/account:{currency}"
+            usdt_channel= f"futures/account:{currency}-USDT"
+            channels.extend([currency_channel,usdt_channel])
 
         req = {
             "op": "subscribe",
