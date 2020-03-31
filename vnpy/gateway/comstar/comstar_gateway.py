@@ -74,8 +74,9 @@ class ComstarGateway(BaseGateway):
         data['settle_type'] = settle_type
         # 策略名称
         data['strategy_name'] = data.pop('reference')
-
-        return self.api.send_order(data, self.gateway_name)
+        order_id = self.api.send_order(data, self.gateway_name)
+        # api返回的是本地编号, 这里转成 vt_orderid
+        return f"{self.gateway_name}.{order_id}"
 
     def cancel_order(self, req: CancelRequest):
         """"""
@@ -112,7 +113,6 @@ class UserApi(TdApi):
     def __init__(self, gateway):
         """Constructor"""
         super().__init__()
-
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
 
