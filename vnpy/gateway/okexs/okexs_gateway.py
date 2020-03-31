@@ -42,6 +42,7 @@ STATUS_OKEXS2VT = {
 ORDERTYPE_OKEXS2VT = {
     "0": OrderType.LIMIT,
     "1": OrderType.MARKET,
+    "4": OrderType.MARKET,
 }
 
 TYPE_OKEXS2VT = {
