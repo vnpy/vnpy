@@ -73,11 +73,9 @@ class ComstarGateway(BaseGateway):
             return ""
 
         data = vn_encode(req)
-        data['symbol'] = symbol
-        # 清算速度
-        data['settle_type'] = settle_type
+        data["symbol"] = symbol
+        data["settle_type"] = settle_type
         self.api.subscribe(data, self.gateway_name)
-
 
     def send_order(self, req: OrderRequest):
         """"""
@@ -106,8 +104,8 @@ class ComstarGateway(BaseGateway):
         """"""
         data = vn_encode(req)
         symbol, settle_type, *_ = req.symbol.split("_") + [""]
-        data['symbol'] = symbol
-        data['settle_type'] = settle_type
+        data["symbol"] = symbol
+        data["settle_type"] = settle_type
         self.api.cancel_order(data, self.gateway_name)
 
     def query_account(self):
@@ -314,11 +312,11 @@ def parse_log(data: dict) -> LogData:
     从api收到的data里解析出LogData
     """
     log = LogData(
-        msg=data['msg'],
-        level=data['level'],
-        gateway_name=data['gateway_name']
+        msg=data["msg"],
+        level=data["level"],
+        gateway_name=data["gateway_name"]
     )
-    log.time = parse_datetime(data['time'])
+    log.time = parse_datetime(data["time"])
     return log
 
 
