@@ -25,7 +25,6 @@ from vnpy.trader.object import (
 
 from .comstar_api import TdApi
 
-
 VN_ENUMS = {
     "Exchange": Exchange,
     "Product": Product,
@@ -78,7 +77,6 @@ class ComstarGateway(BaseGateway):
         data['settle_type'] = settle_type
         self.api.subscribe(data, self.gateway_name)
 
-
     def send_order(self, req: OrderRequest):
         """"""
         if req.type not in {OrderType.LIMIT, OrderType.FAK}:
@@ -99,7 +97,6 @@ class ComstarGateway(BaseGateway):
         data["settle_type"] = settle_type
         data["strategy_name"] = data.pop("reference")
         order_id = self.api.send_order(data, self.gateway_name)
-        # api返回的是本地编号, 这里转成 vt_orderid
         return f"{self.gateway_name}.{order_id}"
 
     def cancel_order(self, req: CancelRequest):
