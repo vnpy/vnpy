@@ -250,7 +250,8 @@ class SpreadAlgoTemplate:
 
                 msg = "各腿剩余数量均不足最小下单量，算法执行结束"
                 self.write_log(msg)
-                return
+
+            return
 
         # Otherwise send order
         vt_orderids = self.algo_engine.send_order(
