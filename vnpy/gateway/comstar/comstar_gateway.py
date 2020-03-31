@@ -99,7 +99,6 @@ class ComstarGateway(BaseGateway):
 
         return self.api.send_order(data, self.gateway_name)
 
-
     def cancel_order(self, req: CancelRequest):
         """"""
         data = vn_encode(req)
