@@ -53,8 +53,6 @@ class ComstarGateway(BaseGateway):
     def __init__(self, event_engine: EventEngine):
         """Constructor"""
         super().__init__(event_engine, "COMSTAR")
-
-        self.symbol_gateway_map = {}
         self.api = UserApi(self)
 
     def connect(self, setting: dict):
@@ -74,12 +72,12 @@ class ComstarGateway(BaseGateway):
             self.write_log("请输入清算速度T0或T1")
             return ""
 
-        gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
         data = vn_encode(req)
-        data["symbol"] = symbol
-        data["settle_type"] = settle_type
+        data['symbol'] = symbol
+        # 清算速度
+        data['settle_type'] = settle_type
+        self.api.subscribe(data, self.gateway_name)
 
-        self.api.subscribe(data, gateway_name)
 
     def send_order(self, req: OrderRequest):
         """"""
@@ -96,22 +94,21 @@ class ComstarGateway(BaseGateway):
             self.write_log("请输入清算速度T0或T1")
             return ""
 
-        gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
         data = vn_encode(req)
         data["symbol"] = symbol
         data["settle_type"] = settle_type
         data["strategy_name"] = data.pop("reference")
 
-        return self.api.send_order(data, gateway_name, blocks=1)
+        return self.api.send_order(data, self.gateway_name)
+
 
     def cancel_order(self, req: CancelRequest):
         """"""
-        gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
         data = vn_encode(req)
         symbol, settle_type, *_ = req.symbol.split("_") + [""]
-        data["symbol"] = symbol
-        data["settle_type"] = settle_type
-        self.api.cancel_order(data, gateway_name)
+        data['symbol'] = symbol
+        data['settle_type'] = settle_type
+        self.api.cancel_order(data, self.gateway_name)
 
     def query_account(self):
         """"""
@@ -160,14 +157,7 @@ class UserApi(TdApi):
         self.gateway.on_trade(data)
 
     def on_log(self, log: dict):
-        """"""
-        data = LogData(
-            msg=log["msg"],
-            level=log["level"],
-            gateway_name=log["gateway_name"]
-        )
-        data.time = parse_datetime(log["time"])
-
+        data = parse_log(log)
         self.gateway.on_log(data)
 
     def on_login(self, data: dict):
@@ -187,9 +177,7 @@ class UserApi(TdApi):
         for data in contracts:
             for settle_type in ("T0", "T1"):
                 contract = parse_contract(data, settle_type)
-                self.gateway.symbol_gateway_map[contract.vt_symbol] = contract.gateway_name
                 contract.gateway_name = self.gateway_name
-
                 self.gateway.on_contract(contract)
 
         self.gateway.write_log("合约信息查询成功")
@@ -319,6 +307,19 @@ def parse_contract(data: dict, settle_type: str) -> ContractData:
         gateway_name=data["gateway_name"]
     )
     return contract
+
+
+def parse_log(data: dict) -> LogData:
+    """
+    从api收到的data里解析出LogData
+    """
+    log = LogData(
+        msg=data['msg'],
+        level=data['level'],
+        gateway_name=data['gateway_name']
+    )
+    log.time = parse_datetime(data['time'])
+    return log
 
 
 def parse_datetime(s: str) -> datetime:
