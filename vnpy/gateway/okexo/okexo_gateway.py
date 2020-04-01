@@ -378,6 +378,7 @@ class OkexoRestApi(RestClient):
                 option_portfolio=instrument_data["underlying"] + "_O",
                 option_index=instrument_data["strike"],
                 history_data=True,
+                net_position=True,
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_contract(contract)

@@ -797,10 +797,37 @@ class OkexsWebsocketApi(WebsocketClient):
         """"""
         holdings = data['holding']
         symbol = data['instrument_id']
+
+        long_position = PositionData(
+            symbol=symbol,
+            exchange=Exchange.OKEX,
+            direction=Direction.LONG,
+            gateway_name=self.gateway_name
+        )
+
+        short_position = PositionData(
+            symbol=symbol,
+            exchange=Exchange.OKEX,
+            direction=Direction.SHORT,
+            gateway_name=self.gateway_name
+        )
+
         for holding in holdings:
-            pos = _parse_position_holding(holding=holding, symbol=symbol,
-                                          gateway_name=self.gateway_name)
-            self.gateway.on_position(pos)
+            if holding["side"] == "long":
+                long_position = _parse_position_holding(
+                    holding=holding,
+                    symbol=symbol,
+                    gateway_name=self.gateway_name
+                )
+            else:
+                short_position = _parse_position_holding(
+                    holding=holding,
+                    symbol=symbol,
+                    gateway_name=self.gateway_name
+                )
+
+        self.gateway.on_position(long_position)
+        self.gateway.on_position(short_position)
 
 
 def generate_signature(msg: str, secret_key: str):
