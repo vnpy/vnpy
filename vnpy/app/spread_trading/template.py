@@ -318,7 +318,9 @@ class SpreadAlgoTemplate:
 
         self.traded_volume = abs(self.traded)
 
-        if self.traded >= self.target:
+        if self.target > 0 and self.traded >= self.target:
+            self.status = Status.ALLTRADED
+        elif self.target < 0 and self.traded <= self.target:
             self.status = Status.ALLTRADED
         elif not self.traded:
             self.status = Status.NOTTRADED
