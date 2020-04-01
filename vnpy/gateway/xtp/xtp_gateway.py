@@ -10,7 +10,8 @@ from vnpy.trader.constant import (
     Direction,
     OrderType,
     Status,
-    Offset
+    Offset,
+    OptionType
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
@@ -110,6 +111,11 @@ BUSINESS_VT2XTP: Dict[Any, int] = {
     Offset.OPEN: 4,
     Offset.CLOSE: 4,
     "OPTION": 10,
+}
+
+OPTIONTYPE_XTP2VT = {
+    1: OptionType.CALL,
+    2: OptionType.Put
 }
 
 symbol_name_map: Dict[str, str] = {}
@@ -631,7 +637,36 @@ class XtpTdApi(TdApi):
 
     def onQueryOptionAuctionInfo(self, data: dict, error: dict, last: bool, session: int) -> None:
         """"""
-        pass
+        contract = ContractData(
+            symbol=data["ticker"],
+            exchange=EXCHANGE_XTP2VT[data["exchange_id"],
+            name=data["symbol"],
+            product=Product.OPTION,
+            size=data["contract_unit"],
+            min_volume=data["qty_unit"]
+            pricetick=data["price_tick"],
+            gateway_name=self.gateway_name
+        )
+
+        contract.option_portfolio = data["underlying_security_id"] + "_O"
+        contract.option_underlying = (
+            data["underlying_security_id"]
+            + "-"
+            + str(data["delivery_month"])
+        )
+        contract.option_type = OPTIONTYPE_XTP2VT.get(data["call_or_put"], None)
+
+        contract.option_strike = data["exercise_price"]
+        contract.option_index = str(data["exercise_price"])
+        contract.option_expiry = datetime.strptime(data["delivery_day"], "%Y%m%d")
+        contract.option_index = get_option_index(
+            contract.option_strike, data["contract_id"]
+        )
+
+        self.gateway.on_contract(contract)
+
+        if last:
+            self.gateway.write_log("期权信息查询成功")
 
     def onQueryCreditDebtInfo(
         self,
@@ -708,7 +743,7 @@ class XtpTdApi(TdApi):
             self.login_status = True
             msg = f"交易服务器登录成功, 会话编号：{self.session_id}"
             self.init()
-
+            self.query_option_info()
         else:
             error = self.getApiLastError()
             msg = f"交易服务器登录失败，原因：{error['error_msg']}"
@@ -719,6 +754,11 @@ class XtpTdApi(TdApi):
         """"""
         if self.connect_status:
             self.exit()
+
+    def query_option_info(self) -> None:
+        """"""
+        self.reqid += 1
+        self.queryOptionAuctionInfo({}, self.session_id, self.reqid)
 
     def send_order(self, req: OrderRequest) -> str:
         """"""
@@ -785,3 +825,22 @@ class XtpTdApi(TdApi):
         if self.margin_trading:
             self.reqid += 1
             self.queryCreditDebtInfo(self.session_id, self.reqid)
+
+
+def get_option_index(strike_price: float, exchange_instrument_id: str) -> str:
+    """"""
+    exchange_instrument_id = exchange_instrument_id.replace(" ", "")
+
+    if "M" in exchange_instrument_id:
+        n = exchange_instrument_id.index("M")
+    elif "A" in exchange_instrument_id:
+        n = exchange_instrument_id.index("A")
+    elif "B" in exchange_instrument_id:
+        n = exchange_instrument_id.index("B")
+    else:
+        return str(strike_price)
+
+    index = exchange_instrument_id[n:]
+    option_index = f"{strike_price:.3f}-{index}"
+
+    return option_index
