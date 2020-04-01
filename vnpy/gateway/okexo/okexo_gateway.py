@@ -369,7 +369,7 @@ class OkexoRestApi(RestClient):
                 exchange=Exchange.OKEX,
                 name=symbol,
                 product=Product.OPTION,
-                size=float(instrument_data["lot_size"]),
+                size=float(instrument_data["contract_val"]),
                 pricetick=float(instrument_data["tick_size"]),
                 option_strike=int(instrument_data["strike"]),
                 option_underlying=instrument_data["underlying"],
@@ -806,13 +806,13 @@ class OkexoWebsocketApi(WebsocketClient):
         asks = data["asks"]
         for n, buf in enumerate(bids):
             price, volume, _, __ = buf
-            tick.__setattr__("bid_price_%s" % (n + 1), price)
-            tick.__setattr__("bid_volume_%s" % (n + 1), volume)
+            tick.__setattr__("bid_price_%s" % (n + 1), float(price))
+            tick.__setattr__("bid_volume_%s" % (n + 1), int(volume))
 
         for n, buf in enumerate(asks):
             price, volume, _, __ = buf
-            tick.__setattr__("ask_price_%s" % (n + 1), price)
-            tick.__setattr__("ask_volume_%s" % (n + 1), volume)
+            tick.__setattr__("ask_price_%s" % (n + 1), float(price))
+            tick.__setattr__("ask_volume_%s" % (n + 1), int(volume))
 
         tick.datetime = utc_to_local(data["timestamp"])
         self.gateway.on_tick(copy(tick))

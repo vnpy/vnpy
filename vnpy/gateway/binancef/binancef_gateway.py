@@ -577,7 +577,7 @@ class BinancefRestApi(RestClient):
         """"""
         pass
 
-    def query_history(self, req: HistoryRequest) -> List[OrderData]:
+    def query_history(self, req: HistoryRequest) -> List[BarData]:
         """"""
         history = []
         limit = 1000

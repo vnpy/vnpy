@@ -705,7 +705,6 @@ class ArrayManager(object):
     def aroon(
         self,
         n: int,
-        dev: float,
         array: bool = False
     ) -> Union[
         Tuple[np.ndarray, np.ndarray],

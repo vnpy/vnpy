@@ -106,6 +106,37 @@ class SpreadAlgoTemplate:
 
         return finished
 
+    def check_algo_finished(self) -> bool:
+        """"""
+        finished = True
+
+        for vt_symbol, leg in self.spread.legs.items():
+            leg_traded = self.leg_traded[vt_symbol]
+
+            trading_multiplier = self.spread.trading_multipliers[vt_symbol]
+            size = self.spread.get_leg_size(vt_symbol)
+
+            if self.spread.is_inverse(vt_symbol):
+                leg_target = calculate_inverse_volume(
+                    self.target * trading_multiplier,
+                    leg.last_price,
+                    size
+                )
+                min_change = calculate_inverse_volume(
+                    leg.min_volume,
+                    leg.last_price,
+                    size
+                )
+            else:
+                leg_target = self.target * trading_multiplier
+                min_change = leg.min_volume
+
+            leg_left = leg_target - leg_traded
+            if abs(leg_left) >= min_change:
+                finished = False
+
+        return finished
+
     def stop(self):
         """"""
         if self.is_active():
@@ -209,6 +240,20 @@ class SpreadAlgoTemplate:
         leg = self.spread.legs[vt_symbol]
         volume = round_to(volume, leg.min_volume)
 
+        # If new order volume is 0, then check if algo finished
+        if not volume:
+            finished = self.check_algo_finished()
+
+            if finished:
+                self.status = Status.ALLTRADED
+                self.put_event()
+
+                msg = "各腿剩余数量均不足最小下单量，算法执行结束"
+                self.write_log(msg)
+
+            return
+
+        # Otherwise send order
         vt_orderids = self.algo_engine.send_order(
             self,
             vt_symbol,
@@ -270,7 +315,7 @@ class SpreadAlgoTemplate:
 
         self.traded_volume = abs(self.traded)
 
-        if self.traded == self.target:
+        if self.traded >= self.target:
             self.status = Status.ALLTRADED
         elif not self.traded:
             self.status = Status.NOTTRADED
