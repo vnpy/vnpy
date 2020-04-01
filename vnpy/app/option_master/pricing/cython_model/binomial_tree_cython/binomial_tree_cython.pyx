@@ -259,9 +259,9 @@ def calculate_impv(
         # Calculate guessed implied volatility of next round
         v += dx
 
-    # Check end result to be non-negative
-    if v <= 0:
-        return 0
+        # Check new volatility to be non-negative
+        if v <= 0:
+            return 0
 
     # Round to 4 decimal places
     v = round(v, 4)
