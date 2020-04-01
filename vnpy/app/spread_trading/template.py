@@ -253,6 +253,9 @@ class SpreadAlgoTemplate:
 
             return
 
+        # Round order price to pricetick of contract
+        price = round_to(price, leg.pricetick)
+
         # Otherwise send order
         vt_orderids = self.algo_engine.send_order(
             self,

@@ -115,7 +115,7 @@ BUSINESS_VT2XTP: Dict[Any, int] = {
 
 OPTIONTYPE_XTP2VT = {
     1: OptionType.CALL,
-    2: OptionType.Put
+    2: OptionType.PUT
 }
 
 symbol_name_map: Dict[str, str] = {}
@@ -639,11 +639,11 @@ class XtpTdApi(TdApi):
         """"""
         contract = ContractData(
             symbol=data["ticker"],
-            exchange=EXCHANGE_XTP2VT[data["exchange_id"],
+            exchange=EXCHANGE_XTP2VT[data["exchange_id"]],
             name=data["symbol"],
             product=Product.OPTION,
             size=data["contract_unit"],
-            min_volume=data["qty_unit"]
+            min_volume=data["qty_unit"],
             pricetick=data["price_tick"],
             gateway_name=self.gateway_name
         )
