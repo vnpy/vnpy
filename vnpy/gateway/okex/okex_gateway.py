@@ -40,7 +40,7 @@ from vnpy.trader.object import (
 )
 
 REST_HOST = "https://www.okex.com"
-WEBSOCKET_HOST = "wss://real.okex.com:10442/ws/v3"
+WEBSOCKET_HOST = "wss://real.okex.com:8443/ws/v3"
 
 STATUS_OKEX2VT = {
     "ordering": Status.SUBMITTING,
@@ -509,7 +509,7 @@ class OkexRestApi(RestClient):
 
                 for l in data:
                     ts, o, h, l, c, v = l
-                    dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%fZ")
+                    dt = _parse_timestamp(ts)
                     bar = BarData(
                         symbol=req.symbol,
                         exchange=req.exchange,
@@ -723,9 +723,9 @@ class OkexWebsocketApi(WebsocketClient):
             return
 
         tick.last_price = float(d["last"])
-        tick.open = float(d["open_24h"])
-        tick.high = float(d["high_24h"])
-        tick.low = float(d["low_24h"])
+        tick.open_price = float(d["open_24h"])
+        tick.high_price = float(d["high_24h"])
+        tick.low_price = float(d["low_24h"])
         tick.volume = float(d["base_volume_24h"])
         tick.datetime = datetime.strptime(
             d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")

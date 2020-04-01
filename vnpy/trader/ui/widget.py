@@ -3,12 +3,16 @@ Basic widgets for VN Trader.
 """
 
 import csv
+import platform
 from enum import Enum
 from typing import Any, Dict
 from copy import copy
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, Qt
+import rqdatac
+import numpy as np
 
+import vnpy
 from vnpy.event import Event, EventEngine
 from ..constant import Direction, Exchange, Offset, OrderType
 from ..engine import MainEngine
@@ -534,6 +538,9 @@ class ConnectDialog(QtWidgets.QDialog):
                     saved_value = loaded_setting[field_name]
                     widget.setText(str(saved_value))
 
+                if "密码" in field_name:
+                    widget.setEchoMode(QtWidgets.QLineEdit.Password)
+
             form.addRow(f"{field_name} <{field_type.__name__}>", widget)
             self.widgets[field_name] = (widget, field_type)
 
@@ -995,13 +1002,20 @@ class AboutDialog(QtWidgets.QDialog):
         """"""
         self.setWindowTitle(f"关于VN Trader")
 
-        text = """
-            Developed by Traders, for Traders.
-            License：MIT
+        text = f"""
+            By Traders, For Traders.
 
+
+            License：MIT
             Website：www.vnpy.com
             Github：www.github.com/vnpy/vnpy
 
+
+            vn.py - {vnpy.__version__}
+            Python - {platform.python_version()}
+            PyQt5 - {Qt.PYQT_VERSION_STR}
+            Numpy - {np.__version__}
+            RQData - {rqdatac.__version__}
             """
 
         label = QtWidgets.QLabel()

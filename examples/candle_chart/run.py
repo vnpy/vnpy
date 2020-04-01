@@ -9,7 +9,7 @@ if __name__ == "__main__":
     app = create_qapp()
 
     bars = database_manager.load_bar_data(
-        "IF88",
+        "IF888",
         Exchange.CFFEX,
         interval=Interval.MINUTE,
         start=datetime(2019, 7, 1),

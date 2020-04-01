@@ -1,3 +1,5 @@
+six==1.13.0
+wheel
 PyQt5
 pyqtgraph
 dataclasses; python_version<="3.6"

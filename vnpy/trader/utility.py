@@ -289,11 +289,14 @@ class BarGenerator:
         """
         Generate the bar data and call callback immediately.
         """
-        self.bar.datetime = self.bar.datetime.replace(
-            second=0, microsecond=0
-        )
-        self.on_bar(self.bar)
+        bar = self.bar
+
+        if self.bar:
+            bar.datetime = bar.datetime.replace(second=0, microsecond=0)
+            self.on_bar(bar)
+
         self.bar = None
+        return bar
 
 
 class ArrayManager(object):
@@ -385,6 +388,15 @@ class ArrayManager(object):
         Simple moving average.
         """
         result = talib.SMA(self.close, n)
+        if array:
+            return result
+        return result[-1]
+
+    def ema(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+        """
+        Exponential moving average.
+        """
+        result = talib.EMA(self.close, n)
         if array:
             return result
         return result[-1]
@@ -675,10 +687,7 @@ class ArrayManager(object):
         return up, down
 
     def donchian(
-        self,
-        n: int,
-        dev: float,
-        array: bool = False
+        self, n: int, array: bool = False
     ) -> Union[
         Tuple[np.ndarray, np.ndarray],
         Tuple[float, float]
@@ -696,7 +705,6 @@ class ArrayManager(object):
     def aroon(
         self,
         n: int,
-        dev: float,
         array: bool = False
     ) -> Union[
         Tuple[np.ndarray, np.ndarray],

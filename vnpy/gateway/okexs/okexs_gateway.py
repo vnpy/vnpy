@@ -13,6 +13,7 @@ from copy import copy
 from datetime import datetime, timezone
 from threading import Lock
 from urllib.parse import urlencode
+from typing import Dict
 
 from requests import ConnectionError
 
@@ -26,7 +27,7 @@ from vnpy.trader.object import (AccountData, BarData, CancelRequest, ContractDat
 
 _ = lambda x: x  # noqa
 REST_HOST = "https://www.okex.com"
-WEBSOCKET_HOST = "wss://real.okex.com:10442/ws/v3"
+WEBSOCKET_HOST = "wss://real.okex.com:8443/ws/v3"
 
 STATUS_OKEXS2VT = {
     "0": Status.NOTTRADED,
@@ -41,6 +42,7 @@ STATUS_OKEXS2VT = {
 ORDERTYPE_OKEXS2VT = {
     "0": OrderType.LIMIT,
     "1": OrderType.MARKET,
+    "4": OrderType.MARKET,
 }
 
 TYPE_OKEXS2VT = {
@@ -333,7 +335,7 @@ class OkexsRestApi(RestClient):
                 exchange=Exchange.OKEX,
                 name=symbol,
                 product=Product.FUTURES,
-                size=int(instrument_data["size_increment"]),
+                size=float(instrument_data["contract_val"]),
                 pricetick=float(instrument_data["tick_size"]),
                 history_data=True,
                 gateway_name=self.gateway_name,
@@ -503,7 +505,7 @@ class OkexsRestApi(RestClient):
 
                 for l in data:
                     ts, o, h, l, c, v, _ = l
-                    dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%fZ")
+                    dt = _parse_timestamp(ts)
                     bar = BarData(
                         symbol=req.symbol,
                         exchange=req.exchange,
@@ -551,6 +553,7 @@ class OkexsWebsocketApi(WebsocketClient):
         self._last_trade_id = 10000
         self.connect_time = 0
 
+        self.subscribed: Dict[str, SubscribeRequest] = {}
         self.callbacks = {}
         self.ticks = {}
 
@@ -579,6 +582,8 @@ class OkexsWebsocketApi(WebsocketClient):
         """
         Subscribe to tick data upate.
         """
+        self.subscribed[req.vt_symbol] = req
+
         tick = TickData(
             symbol=req.symbol,
             exchange=req.exchange,
@@ -711,6 +716,9 @@ class OkexsWebsocketApi(WebsocketClient):
         if success:
             self.gateway.write_log("Websocket API登录成功")
             self.subscribe_topic()
+
+            for req in list(self.subscribed.values()):
+                self.subscribe(req)
         else:
             self.gateway.write_log("Websocket API登录失败")
 
@@ -721,7 +729,12 @@ class OkexsWebsocketApi(WebsocketClient):
         if not tick:
             return
 
-        tick.last_price = float(d["last"])
+        # Filter last price with 0 value
+        last_price = float(d["last"])
+        if not last_price:
+            return
+
+        tick.last_price = last_price
         tick.high_price = float(d["high_24h"])
         tick.low_price = float(d["low_24h"])
         tick.volume = float(d["volume_24h"])
@@ -740,13 +753,13 @@ class OkexsWebsocketApi(WebsocketClient):
         asks = d["asks"]
         for n, buf in enumerate(bids):
             price, volume, _, __ = buf
-            tick.__setattr__("bid_price_%s" % (n + 1), price)
-            tick.__setattr__("bid_volume_%s" % (n + 1), volume)
+            tick.__setattr__("bid_price_%s" % (n + 1), float(price))
+            tick.__setattr__("bid_volume_%s" % (n + 1), int(volume))
 
         for n, buf in enumerate(asks):
             price, volume, _, __ = buf
-            tick.__setattr__("ask_price_%s" % (n + 1), price)
-            tick.__setattr__("ask_volume_%s" % (n + 1), volume)
+            tick.__setattr__("ask_price_%s" % (n + 1), float(price))
+            tick.__setattr__("ask_volume_%s" % (n + 1), int(volume))
 
         tick.datetime = _parse_timestamp(d["timestamp"])
         self.gateway.on_tick(copy(tick))

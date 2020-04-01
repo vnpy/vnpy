@@ -115,47 +115,86 @@ def get_ext_modules():
         ]
         extra_link_args = ["-lstdc++"]
         runtime_library_dirs = ["$ORIGIN"]
+
     vnctpmd = Extension(
         "vnpy.api.ctp.vnctpmd",
         [
             "vnpy/api/ctp/vnctp/vnctpmd/vnctpmd.cpp",
         ],
         include_dirs=["vnpy/api/ctp/include",
-                      "vnpy/api/ctp/vnctp", ],
+                      "vnpy/api/ctp/vnctp"],
         define_macros=[],
         undef_macros=[],
         library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
-        libraries=["thostmduserapi_se", "thosttraderapi_se", ],
+        libraries=["thostmduserapi_se", "thosttraderapi_se"],
         extra_compile_args=compiler_flags,
         extra_link_args=extra_link_args,
         runtime_library_dirs=runtime_library_dirs,
         depends=[],
         language="cpp",
     )
+
     vnctptd = Extension(
         "vnpy.api.ctp.vnctptd",
         [
             "vnpy/api/ctp/vnctp/vnctptd/vnctptd.cpp",
         ],
         include_dirs=["vnpy/api/ctp/include",
-                      "vnpy/api/ctp/vnctp", ],
+                      "vnpy/api/ctp/vnctp"],
         define_macros=[],
         undef_macros=[],
         library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
-        libraries=["thostmduserapi_se", "thosttraderapi_se", ],
+        libraries=["thostmduserapi_se", "thosttraderapi_se"],
         extra_compile_args=compiler_flags,
         extra_link_args=extra_link_args,
         runtime_library_dirs=runtime_library_dirs,
         depends=[],
         language="cpp",
     )
+
+    vnsgitmd = Extension(
+        "vnpy.api.sgit.vnsgitmd",
+        [
+            "vnpy/api/sgit/vnsgit/vnsgitmd/vnsgitmd.cpp",
+        ],
+        include_dirs=["vnpy/api/sgit/include",
+                      "vnpy/api/sgit/vnsgit"],
+        define_macros=[],
+        undef_macros=[],
+        library_dirs=["vnpy/api/sgit/libs", "vnpy/api/sgit"],
+        libraries=["crypto", "sgitquotapi", "sgittradeapi", "ssl"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        depends=[],
+        language="cpp",
+    )
+
+    vnsgittd = Extension(
+        "vnpy.api.sgit.vnsgittd",
+        [
+            "vnpy/api/sgit/vnsgit/vnsgittd/vnsgittd.cpp",
+        ],
+        include_dirs=["vnpy/api/sgit/include",
+                      "vnpy/api/sgit/vnsgit"],
+        define_macros=[],
+        undef_macros=[],
+        library_dirs=["vnpy/api/sgit/libs", "vnpy/api/sgit"],
+        libraries=["crypto", "sgitquotapi", "sgittradeapi", "ssl"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        depends=[],
+        language="cpp",
+    )
+
     vnoes = Extension(
         name="vnpy.api.oes.vnoes",
         sources=gather_autocxxpy_generated_files(
             "vnpy/api/oes/vnoes/generated_files/",
         ),
         include_dirs=["vnpy/api/oes/vnoes/include",
-                      "vnpy/api/oes/vnoes/include/oes", ],
+                      "vnpy/api/oes/vnoes/include/oes"],
         define_macros=[("BRIGAND_NO_BOOST_SUPPORT", "1")],
         undef_macros=[],
         library_dirs=["vnpy/api/oes/vnoes/libs"],
@@ -172,7 +211,7 @@ def get_ext_modules():
     elif platform.system() == "Darwin":
         ext_modules = []
     else:
-        ext_modules = [vnctptd, vnctpmd, vnoes]
+        ext_modules = [vnctptd, vnctpmd, vnsgittd, vnsgitmd, vnoes]
 
     ext_modules = check_extension_build_flag(
         ext_modules, "VNPY_BUILD_OES", vnoes)
@@ -180,6 +219,10 @@ def get_ext_modules():
         ext_modules, "VNPY_BUILD_CTP", vnctptd)
     ext_modules = check_extension_build_flag(
         ext_modules, "VNPY_BUILD_CTP", vnctpmd)
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_sgit", vnsgittd)
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_sgit", vnsgitmd)
 
     return ext_modules
 

@@ -1,20 +1,21 @@
-from zmq.backend.cython.constants import NOBLOCK
+import os
 import signal
 import threading
 import traceback
 from datetime import datetime, timedelta
 from functools import lru_cache
 from typing import Any, Callable, Dict
+from pathlib import Path
 
 import zmq
+import zmq.auth
+from zmq.backend.cython.constants import NOBLOCK
+from zmq.auth.thread import ThreadAuthenticator
 
-
-def _(x): return x
 
 # Achieve Ctrl-c interrupt recv
-
-
 signal.signal(signal.SIGINT, signal.SIG_DFL)
+
 
 KEEP_ALIVE_TOPIC: str = "_keep_alive"
 KEEP_ALIVE_INTERVAL: timedelta = timedelta(seconds=1)
@@ -62,18 +63,45 @@ class RpcServer:
         self.__active: bool = False                     # RpcServer status
         self.__thread: threading.Thread = None          # RpcServer thread
 
+        # Authenticator used to ensure data security
+        self.__authenticator: ThreadAuthenticator = None
+
         self._register(KEEP_ALIVE_TOPIC, lambda n: n)
 
     def is_active(self) -> bool:
         """"""
         return self.__active
 
-    def start(self, rep_address: str, pub_address: str) -> None:
+    def start(
+        self, 
+        rep_address: str, 
+        pub_address: str,
+        server_secretkey_path: str = ""
+    ) -> None:
         """
         Start RpcServer
         """
         if self.__active:
             return
+
+        # Start authenticator
+        if server_secretkey_path:
+            self.__authenticator = ThreadAuthenticator(self.__context)
+            self.__authenticator.start()
+            self.__authenticator.configure_curve(
+                domain="*", 
+                location=zmq.auth.CURVE_ALLOW_ANY
+            )
+
+            publickey, secretkey = zmq.auth.load_certificate(server_secretkey_path)
+            
+            self.__socket_pub.curve_secretkey = secretkey
+            self.__socket_pub.curve_publickey = publickey
+            self.__socket_pub.curve_server = True
+
+            self.__socket_rep.curve_secretkey = secretkey
+            self.__socket_rep.curve_publickey = publickey
+            self.__socket_rep.curve_server = True
 
         # Bind socket address
         self.__socket_rep.bind(rep_address)
@@ -178,6 +206,9 @@ class RpcClient:
         self.__thread: threading.Thread = None      # RpcClient thread
         self.__lock: threading.Lock = threading.Lock()
 
+        # Authenticator used to ensure data security
+        self.__authenticator: ThreadAuthenticator = None
+
         self._last_received_ping: datetime = datetime.utcnow()
 
     @lru_cache(100)
@@ -204,12 +235,38 @@ class RpcClient:
 
         return dorpc
 
-    def start(self, req_address: str, sub_address: str) -> None:
+    def start(
+        self, 
+        req_address: str, 
+        sub_address: str,
+        client_secretkey_path: str = "",
+        server_publickey_path: str = ""
+    ) -> None:
         """
         Start RpcClient
         """
         if self.__active:
             return
+
+        # Start authenticator
+        if client_secretkey_path and server_publickey_path:
+            self.__authenticator = ThreadAuthenticator(self.__context)
+            self.__authenticator.start()
+            self.__authenticator.configure_curve(
+                domain="*", 
+                location=zmq.auth.CURVE_ALLOW_ANY
+            )
+
+            publickey, secretkey = zmq.auth.load_certificate(client_secretkey_path)
+            serverkey, _ = zmq.auth.load_certificate(server_publickey_path)
+            
+            self.__socket_sub.curve_secretkey = secretkey
+            self.__socket_sub.curve_publickey = publickey
+            self.__socket_sub.curve_serverkey = serverkey
+
+            self.__socket_req.curve_secretkey = secretkey
+            self.__socket_req.curve_publickey = publickey
+            self.__socket_req.curve_serverkey = serverkey
 
         # Connect zmq port
         self.__socket_req.connect(req_address)
@@ -266,8 +323,8 @@ class RpcClient:
 
     @staticmethod
     def _on_unexpected_disconnected():
-        print(_("RpcServer has no response over {tolerance} seconds, please check you connection."
-                .format(tolerance=KEEP_ALIVE_TOLERANCE.total_seconds())))
+        print("RpcServer has no response over {tolerance} seconds, please check you connection."
+                .format(tolerance=KEEP_ALIVE_TOLERANCE.total_seconds()))
 
     def callback(self, topic: str, data: Any) -> None:
         """
@@ -280,3 +337,14 @@ class RpcClient:
         Subscribe data
         """
         self.__socket_sub.setsockopt_string(zmq.SUBSCRIBE, topic)
+
+
+def generate_certificates(name: str) -> None:
+    """
+    Generate CURVE certificate files for zmq authenticator.
+    """
+    keys_path = Path.cwd().joinpath("certificates")
+    if not keys_path.exists():
+        os.mkdir(keys_path)
+
+    zmq.auth.create_certificates(keys_path, name)

@@ -9,7 +9,8 @@ from vnpy.trader.event import EVENT_CONTRACT
 from ..engine import (
     APP_NAME,
     EVENT_RECORDER_LOG,
-    EVENT_RECORDER_UPDATE
+    EVENT_RECORDER_UPDATE,
+    EVENT_RECORDER_EXCEPTION
 )
 
 
@@ -19,6 +20,7 @@ class RecorderManager(QtWidgets.QWidget):
     signal_log = QtCore.pyqtSignal(Event)
     signal_update = QtCore.pyqtSignal(Event)
     signal_contract = QtCore.pyqtSignal(Event)
+    signal_exception = QtCore.pyqtSignal(Event)
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         super().__init__()
@@ -104,12 +106,14 @@ class RecorderManager(QtWidgets.QWidget):
         self.signal_log.connect(self.process_log_event)
         self.signal_contract.connect(self.process_contract_event)
         self.signal_update.connect(self.process_update_event)
+        self.signal_exception.connect(self.process_exception_event)
 
         self.event_engine.register(EVENT_CONTRACT, self.signal_contract.emit)
         self.event_engine.register(
             EVENT_RECORDER_LOG, self.signal_log.emit)
         self.event_engine.register(
             EVENT_RECORDER_UPDATE, self.signal_update.emit)
+        self.event_engine.register(EVENT_RECORDER_EXCEPTION, self.signal_exception.emit)
 
     def process_log_event(self, event: Event):
         """"""
@@ -136,6 +140,11 @@ class RecorderManager(QtWidgets.QWidget):
 
         model = self.symbol_completer.model()
         model.setStringList(self.vt_symbols)
+
+    def process_exception_event(self, event: Event):
+        """"""
+        exc_info = event.data
+        raise exc_info[1].with_traceback(exc_info[2])
 
     def add_bar_recording(self):
         """"""

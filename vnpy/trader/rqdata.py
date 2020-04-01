@@ -55,7 +55,7 @@ class RqdataClient:
                 self.password,
                 ('rqdatad-pro.ricequant.com', 16011),
                 use_pool=True,
-                max_pool_size=3
+                max_pool_size=1
             )
 
             df = rqdata_all_instruments()
@@ -72,35 +72,53 @@ class RqdataClient:
         CZCE product of RQData has symbol like "TA1905" while
         vt symbol is "TA905.CZCE" so need to add "1" in symbol.
         """
+        # Equity
         if exchange in [Exchange.SSE, Exchange.SZSE]:
             if exchange == Exchange.SSE:
                 rq_symbol = f"{symbol}.XSHG"
             else:
                 rq_symbol = f"{symbol}.XSHE"
+        # Futures and Options
         else:
-            if exchange is not Exchange.CZCE:
-                return symbol.upper()
-
             for count, word in enumerate(symbol):
                 if word.isdigit():
                     break
 
-            # Check for index symbol
-            time_str = symbol[count:]
-            if time_str in ["88", "888", "99"]:
-                return symbol
-
-            # noinspection PyUnboundLocalVariable
             product = symbol[:count]
-            year = symbol[count]
-            month = symbol[count + 1:]
+            time_str = symbol[count:]
 
-            if year == "9":
-                year = "1" + year
+            # Futures
+            if time_str.isdigit():
+                if exchange is not Exchange.CZCE:
+                    return symbol.upper()
+
+                # Check for index symbol
+                if time_str in ["88", "888", "99"]:
+                    return symbol
+
+                year = symbol[count]
+                month = symbol[count + 1:]
+
+                if year == "9":
+                    year = "1" + year
+                else:
+                    year = "2" + year
+
+                rq_symbol = f"{product}{year}{month}".upper()
+            # Options
             else:
-                year = "2" + year
+                if exchange in [Exchange.CFFEX, Exchange.DCE, Exchange.SHFE]:
+                    rq_symbol = symbol.replace("-", "").upper()
+                elif exchange == Exchange.CZCE:
+                    year = symbol[count]
+                    suffix = symbol[count + 1:]
 
-            rq_symbol = f"{product}{year}{month}".upper()
+                    if year == "9":
+                        year = "1" + year
+                    else:
+                        year = "2" + year
+
+                    rq_symbol = f"{product}{year}{suffix}".upper()
 
         return rq_symbol
 
@@ -128,10 +146,15 @@ class RqdataClient:
         # For querying night trading period data
         end += timedelta(1)
 
+        # Only query open interest for futures contract
+        fields = ["open", "high", "low", "close", "volume"]
+        if not symbol.isdigit():
+            fields.append("open_interest")
+
         df = rqdata_get_price(
             rq_symbol,
             frequency=rq_interval,
-            fields=["open", "high", "low", "close", "volume", "open_interest"],
+            fields=fields,
             start_date=start,
             end_date=end,
             adjust_type="none"
@@ -151,9 +174,10 @@ class RqdataClient:
                     low_price=row["low"],
                     close_price=row["close"],
                     volume=row["volume"],
-                    open_interest=row["open_interest"],
+                    open_interest=row.get("open_interest", 0),
                     gateway_name="RQ"
                 )
+
                 data.append(bar)
 
         return data

@@ -509,6 +509,17 @@ class CtaEngine(BaseEngine):
         """"""
         return self.engine_type
 
+    def get_pricetick(self, strategy: CtaTemplate):
+        """
+        Return contract pricetick data.
+        """
+        contract = self.main_engine.get_contract(strategy.vt_symbol)
+
+        if contract:
+            return contract.pricetick
+        else:
+            return None
+
     def load_bar(
         self,
         vt_symbol: str,
@@ -767,6 +778,8 @@ class CtaEngine(BaseEngine):
                 elif filename.endswith(".pyd"):
                     strategy_module_name = ".".join(
                         [module_name, filename.split(".")[0]])
+                else:
+                    continue
 
                 self.load_strategy_class_from_module(strategy_module_name)
 
