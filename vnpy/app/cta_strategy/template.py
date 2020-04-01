@@ -218,6 +218,12 @@ class CtaTemplate(ABC):
         """
         return self.cta_engine.get_engine_type()
 
+    def get_pricetick(self):
+        """
+        Return pricetick data of trading contract.
+        """
+        return self.cta_engine.get_pricetick(self)
+
     def load_bar(
         self,
         days: int,

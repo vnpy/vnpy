@@ -1075,6 +1075,12 @@ class BacktestingEngine:
         """
         return self.engine_type
 
+    def get_pricetick(self, strategy: CtaTemplate):
+        """
+        Return contract pricetick data.
+        """
+        return self.pricetick
+
     def put_strategy_event(self, strategy: CtaTemplate):
         """
         Put an event to update strategy status.
