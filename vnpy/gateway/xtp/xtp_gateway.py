@@ -646,6 +646,9 @@ class XtpTdApi(TdApi):
 
     def onQueryOptionAuctionInfo(self, data: dict, error: dict, reqid: int, last: bool, session: int) -> None:
         """"""
+        if not data or not data["ticker"]:
+            return
+
         contract = ContractData(
             symbol=data["ticker"],
             exchange=MARKET_XTP2VT[data["security_id_source"]],
@@ -778,6 +781,10 @@ class XtpTdApi(TdApi):
             self.gateway.write_log(f"委托失败，不支持的委托类型{req.type.value}")
             return ""
 
+        if self.margin_trading and req.offset == Offset.NONE:
+            self.gateway.write_log(f"委托失败，两融交易需要选择开平方向")
+            return ""
+
         # check for option type
         if len(req.symbol) == 8:
             xtp_req = {
@@ -788,7 +795,7 @@ class XtpTdApi(TdApi):
                 "side": DIRECTION_OPTION_VT2XTP.get(req.direction, ""),
                 "position_effect": OFFSET_VT2XTP[req.offset],
                 "price_type": ORDERTYPE_VT2XTP[req.type],
-                "business_type": BUSINESS_VT2XTP["OPTION"]
+                "business_type": 10
             }
 
         # stock type
@@ -798,10 +805,15 @@ class XtpTdApi(TdApi):
                 "market": MARKET_VT2XTP[req.exchange],
                 "price": req.price,
                 "quantity": int(req.volume),
-                "side": DIRECTION_STOCK_VT2XTP.get((req.direction, req.offset), ""),
                 "price_type": ORDERTYPE_VT2XTP[req.type],
-                "business_type": BUSINESS_VT2XTP[req.offset]
             }
+
+            if self.margin_trading:
+                xtp_req["side"] = DIRECTION_STOCK_VT2XTP.get((req.direction, req.offset), "")
+                xtp_req["business_type"] = 4
+            else:
+                xtp_req["side"] = DIRECTION_STOCK_VT2XTP.get((req.direction, Offset.NONE), "")
+                xtp_req["business_type"] = 0
 
         orderid = self.insertOrder(xtp_req, self.session_id)
 
