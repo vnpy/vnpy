@@ -25,7 +25,7 @@ VNStudio是vn.py团队自行打包的一键安装版本，整合了：
 一路点击“下一步”即可完成VNStudio安装，安装完成后可以查看相关运行目录：
 
 - VNStudio默认安装路径为C:\vnstudio；
-- VNStudio默认json配置文件和数据库路径为C:\Users\Administrator\.vntrader
+- VNStudio默认json配置文件和数据库路径为C:\Users\Administrator\\.vntrader
 - VN Station量化工作站运行目录为C:\vnstudio\Scripts\vnstation.exe；
 - vnpy运行目录在C:\vnstudio\Lib\site-packages\vnpy（进入该目录后，用户可以修改vnpy的相关功能）
 
