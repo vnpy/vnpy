@@ -15,7 +15,7 @@ VNStudio是vn.py团队自行打包的一键安装版本，整合了：
 - vn.py框架和其他相关库
 - VN Station量化工作站（vn.py框架的图形化管理工具）
 
-下载地址：[vnstudio-2.0.6.exe](https://download.vnpy.com/vnstudio-2.0.6.exe)
+下载地址：[vnstudio-2.1.1.exe](https://download.vnpy.com/vnstudio-2.1.1.exe)
 
 &nbsp;
 
