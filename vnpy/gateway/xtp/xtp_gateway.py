@@ -119,7 +119,6 @@ OPTIONTYPE_XTP2VT = {
 }
 
 symbol_name_map: Dict[str, str] = {}
-symbol_exchange_map: Dict[str, Exchange] = {}
 
 
 class XtpGateway(BaseGateway):
@@ -213,11 +212,11 @@ class XtpGateway(BaseGateway):
 
 class XtpMdApi(MdApi):
 
-    def __init__(self, gateway: BaseGateway):
+    def __init__(self, gateway: XtpGateway):
         """"""
         super().__init__()
 
-        self.gateway: BaseGateway = gateway
+        self.gateway: XtpGateway = gateway
         self.gateway_name: str = gateway.gateway_name
 
         self.userid: str = ""
@@ -230,6 +229,9 @@ class XtpMdApi(MdApi):
 
         self.connect_status: bool = False
         self.login_status: bool = False
+
+        self.sse_inited: bool = False
+        self.szse_inited: bool = False
 
     def onDisconnected(self, reason: int) -> None:
         """"""
@@ -351,15 +353,22 @@ class XtpMdApi(MdApi):
             min_volume=data["buy_qty_unit"],
             gateway_name=self.gateway_name
         )
-        self.gateway.on_contract(contract)
+
+        if contract.product != Product.OPTION:
+            self.gateway.on_contract(contract)
 
         symbol_name_map[contract.vt_symbol] = contract.name
 
-        if contract.product != Product.INDEX:
-            symbol_exchange_map[contract.symbol] = contract.exchange
-
         if last:
             self.gateway.write_log(f"{contract.exchange.value}合约信息查询成功")
+
+            if contract.exchange == Exchange.SSE:
+                self.sse_inited = True
+            else:
+                self.szse_inited = True
+
+            if self.sse_inited and self.szse_inited:
+                self.gateway.td_api.query_option_info()
 
     def onQueryTickersPriceInfo(self, data: dict, error: dict, last: bool) -> None:
         """"""
@@ -453,11 +462,11 @@ class XtpMdApi(MdApi):
 
 class XtpTdApi(TdApi):
 
-    def __init__(self, gateway: BaseGateway):
+    def __init__(self, gateway: XtpGateway):
         """"""
         super().__init__()
 
-        self.gateway: BaseGateway = gateway
+        self.gateway: XtpGateway = gateway
         self.gateway_name: str = gateway.gateway_name
 
         self.userid: str = ""
@@ -635,11 +644,11 @@ class XtpTdApi(TdApi):
         """"""
         pass
 
-    def onQueryOptionAuctionInfo(self, data: dict, error: dict, last: bool, session: int) -> None:
+    def onQueryOptionAuctionInfo(self, data: dict, error: dict, reqid: int, last: bool, session: int) -> None:
         """"""
         contract = ContractData(
             symbol=data["ticker"],
-            exchange=EXCHANGE_XTP2VT[data["exchange_id"]],
+            exchange=MARKET_XTP2VT[data["security_id_source"]],
             name=data["symbol"],
             product=Product.OPTION,
             size=data["contract_unit"],
@@ -658,7 +667,7 @@ class XtpTdApi(TdApi):
 
         contract.option_strike = data["exercise_price"]
         contract.option_index = str(data["exercise_price"])
-        contract.option_expiry = datetime.strptime(data["delivery_day"], "%Y%m%d")
+        contract.option_expiry = datetime.strptime(str(data["delivery_day"]), "%Y%m%d")
         contract.option_index = get_option_index(
             contract.option_strike, data["contract_id"]
         )
@@ -743,7 +752,6 @@ class XtpTdApi(TdApi):
             self.login_status = True
             msg = f"交易服务器登录成功, 会话编号：{self.session_id}"
             self.init()
-            self.query_option_info()
         else:
             error = self.getApiLastError()
             msg = f"交易服务器登录失败，原因：{error['error_msg']}"
