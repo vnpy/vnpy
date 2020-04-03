@@ -372,7 +372,13 @@ class ChainData:
 
         if option.chain_index not in self.indexes:
             self.indexes.append(option.chain_index)
-            self.indexes.sort()
+
+            # Sort index by number if possible, otherwise by string
+            try:
+                float(option.chain_index)
+                self.indexes.sort(key=float)
+            except ValueError:
+                self.indexes.sort()
 
         self.days_to_expiry = option.days_to_expiry
 
