@@ -244,6 +244,7 @@ class OptionEngine(BaseEngine):
         model_name: str,
         interest_rate: float,
         chain_underlying_map: Dict[str, str],
+        inverse: bool = False
     ) -> None:
         """"""
         portfolio = self.get_portfolio(portfolio_name)
@@ -256,12 +257,14 @@ class OptionEngine(BaseEngine):
 
         pricing_model = PRICING_MODELS[model_name]
         portfolio.set_pricing_model(pricing_model)
+        portfolio.set_inverse(inverse)
 
         portfolio_settings = self.setting.setdefault("portfolio_settings", {})
         portfolio_settings[portfolio_name] = {
             "model_name": model_name,
             "interest_rate": interest_rate,
-            "chain_underlying_map": chain_underlying_map
+            "chain_underlying_map": chain_underlying_map,
+            "inverse": inverse
         }
         self.save_setting()
 

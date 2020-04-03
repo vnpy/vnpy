@@ -114,6 +114,7 @@ class OptionData(InstrumentData):
         self.time_to_expiry: float = self.days_to_expiry / ANNUAL_DAYS
 
         self.interest_rate: float = 0
+        self.inverse: bool = False
 
         # Option portfolio related
         self.underlying: UnderlyingData = None
@@ -153,8 +154,16 @@ class OptionData(InstrumentData):
             return
         underlying_price += self.underlying_adjustment
 
+        # Adjustment for crypto inverse option contract
+        if self.inverse:
+            ask_price = self.tick.ask_price_1 * underlying_price
+            bid_price = self.tick.bid_price_1 * underlying_price
+        else:
+            ask_price = self.tick.ask_price_1
+            bid_price = self.tick.bid_price_1
+
         self.ask_impv = self.calculate_impv(
-            self.tick.ask_price_1,
+            ask_price,
             underlying_price,
             self.strike_price,
             self.interest_rate,
@@ -163,7 +172,7 @@ class OptionData(InstrumentData):
         )
 
         self.bid_impv = self.calculate_impv(
-            self.tick.bid_price_1,
+            bid_price,
             underlying_price,
             self.strike_price,
             self.interest_rate,
@@ -197,6 +206,13 @@ class OptionData(InstrumentData):
         self.theo_theta = theta * self.size
         self.theo_vega = vega * self.size
 
+        # Adjustment for crypto inverse option contract
+        if self.inverse:
+            self.theo_delta /= underlying_price
+            self.theo_gamma /= underlying_price
+            self.theo_theta /= underlying_price
+            self.theo_vega /= underlying_price
+
     def calculate_pos_greeks(self) -> None:
         """"""
         if self.tick:
@@ -220,6 +236,10 @@ class OptionData(InstrumentData):
             self.pricing_impv,
             self.option_type
         )
+
+        # Adjustment for crypto inverse option contract
+        if self.inverse:
+            ref_price /= underlying_price
 
         return ref_price
 
@@ -252,6 +272,10 @@ class OptionData(InstrumentData):
     def set_interest_rate(self, interest_rate: float) -> None:
         """"""
         self.interest_rate = interest_rate
+
+    def set_inverse(self, inverse: bool) -> None:
+        """"""
+        self.inverse = inverse
 
     def set_pricing_model(self, pricing_model: ModuleType) -> None:
         """"""
@@ -326,6 +350,7 @@ class ChainData:
         self.atm_index: str = ""
         self.underlying_adjustment: float = 0
         self.days_to_expiry: int = 0
+        self.inverse: bool = False
 
     def add_option(self, option: OptionData) -> None:
         """"""
@@ -428,6 +453,13 @@ class ChainData:
         for option in self.options.values():
             option.set_pricing_model(pricing_model)
 
+    def set_inverse(self, inverse: bool) -> None:
+        """"""
+        self.inverse = inverse
+
+        for option in self.options.values():
+            option.set_inverse = inverse
+
     def set_portfolio(self, portfolio: "PortfolioData") -> None:
         """"""
         for option in self.options:
@@ -460,7 +492,15 @@ class ChainData:
         atm_call = self.calls[self.atm_index]
         atm_put = self.puts[self.atm_index]
 
-        synthetic_price = atm_call.mid_price - atm_put.mid_price + self.atm_price
+        # Adjustment for crypto inverse option contract
+        if self.inverse:
+            call_price = atm_call.mid_price * self.underlying.mid_price
+            put_price = atm_put.mid_price * self.underlying.mid_price
+        else:
+            call_price = atm_call.mid_price
+            put_price = atm_put.mid_price
+
+        synthetic_price = call_price - put_price + self.atm_price
         self.underlying_adjustment = synthetic_price - self.underlying.mid_price
 
 
@@ -547,6 +587,11 @@ class PortfolioData:
         """"""
         for chain in self.chains.values():
             chain.set_pricing_model(pricing_model)
+
+    def set_inverse(self, inverse: bool) -> None:
+        """"""
+        for chain in self.chains.values():
+            chain.set_inverse = inverse
 
     def set_chain_underlying(self, chain_symbol: str, contract: ContractData) -> None:
         """"""

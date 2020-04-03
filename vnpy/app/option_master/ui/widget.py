@@ -229,6 +229,18 @@ class PortfolioDialog(QtWidgets.QDialog):
 
         form.addRow("利率", self.interest_rate_spin)
 
+        # Inverse combo
+        self.inverse_combo = QtWidgets.QComboBox()
+        self.inverse_combo.addItems(["正向", "反向"])
+
+        inverse = portfolio_setting.get("inverse", False)
+        if inverse:
+            self.inverse_combo.setCurrentIndex(1)
+        else:
+            self.inverse_combo.setCurrentIndex(0)
+
+        form.addRow("合约", self.inverse_combo)
+
         # Underlying for each chain
         self.combos: Dict[str, QtWidgets.QComboBox] = {}
 
@@ -266,6 +278,11 @@ class PortfolioDialog(QtWidgets.QDialog):
         model_name = self.model_name_combo.currentText()
         interest_rate = self.interest_rate_spin.value() / 100
 
+        if self.inverse_combo.currentIndex() == 0:
+            inverse = False
+        else:
+            inverse = True
+
         chain_underlying_map = {}
         for chain_symbol, combo in self.combos.items():
             underlying_symbol = combo.currentText()
@@ -277,7 +294,8 @@ class PortfolioDialog(QtWidgets.QDialog):
             self.portfolio_name,
             model_name,
             interest_rate,
-            chain_underlying_map
+            chain_underlying_map,
+            inverse
         )
 
         result = self.option_engine.init_portfolio(self.portfolio_name)
