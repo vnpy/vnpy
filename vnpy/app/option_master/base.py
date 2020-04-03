@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Callable
 from types import ModuleType
 
@@ -32,6 +32,7 @@ CHAIN_UNDERLYING_MAP = {
     "SR.CZCE": "SR",
     "CF.CZCE": "CF",
     "TA.CZCE": "TA",
+    "BTC.DERIBIT": "BTC-PERPETUAL"
 }
 
 
@@ -246,6 +247,12 @@ class OptionData(InstrumentData):
     def update_tick(self, tick: TickData) -> None:
         """"""
         super().update_tick(tick)
+
+        if self.inverse:
+            current_dt = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            self.days_to_expiry = self.option_expiry - current_dt
+            self.time_to_expiry = self.days_to_expiry / timedelta(365)
+
         self.calculate_option_impv()
 
     def update_trade(self, trade: TradeData) -> None:
@@ -458,7 +465,7 @@ class ChainData:
         self.inverse = inverse
 
         for option in self.options.values():
-            option.set_inverse = inverse
+            option.set_inverse(inverse)
 
     def set_portfolio(self, portfolio: "PortfolioData") -> None:
         """"""
@@ -591,7 +598,7 @@ class PortfolioData:
     def set_inverse(self, inverse: bool) -> None:
         """"""
         for chain in self.chains.values():
-            chain.set_inverse = inverse
+            chain.set_inverse(inverse)
 
     def set_chain_underlying(self, chain_symbol: str, contract: ContractData) -> None:
         """"""

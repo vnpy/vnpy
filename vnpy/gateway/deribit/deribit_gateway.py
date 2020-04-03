@@ -392,14 +392,20 @@ class DeribitWebsocketApi(WebsocketClient):
             )
 
             if contract.product == Product.OPTION:
+                option_expiry = datetime.fromtimestamp(
+                    d["expiration_timestamp"] / 1000
+                )
+                option_underlying = "_".join([
+                    d["base_currency"],
+                    option_expiry.strftime("%Y%m%d")
+                ])
+
                 contract.option_portfolio = d["base_currency"]
                 contract.option_strike = d["strike"]
                 contract.option_index = str(d["strike"])
-                contract.option_underlying = d["base_currency"]
+                contract.option_underlying = option_underlying
                 contract.option_type = OPTIONTYPE_DERIBIT2VT[d["option_type"]]
-                contract.option_expiry = datetime.fromtimestamp(
-                    d["expiration_timestamp"] / 1000
-                )
+                contract.option_expiry = option_expiry
 
             self.gateway.on_contract(contract)
 
@@ -596,7 +602,7 @@ class DeribitWebsocketApi(WebsocketClient):
     def on_ticker(self, packet: dict):
         """"""
         data = packet["params"]["data"]
-
+        
         symbol = data["instrument_name"]
         tick = self.ticks.get(symbol, None)
         if not tick:
@@ -607,6 +613,18 @@ class DeribitWebsocketApi(WebsocketClient):
         tick.low_price = data["stats"]["low"]
         tick.volume = data["stats"]["volume"]
         tick.datetime = datetime.fromtimestamp(data["timestamp"] / 1000)
+
+        if tick.last_price is None:
+            tick.last_price = (tick.bid_price_1 + tick.ask_price_1) / 2
+
+        if tick.volume is None:
+            tick.volume = 0
+
+        if tick.high_price is None:
+            tick.high_price = 0
+
+        if tick.low_price is None:
+            tick.low_price = 0
 
         self.gateway.on_tick(copy(tick))
 
