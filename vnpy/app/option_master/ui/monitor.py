@@ -115,10 +115,10 @@ class OptionMarketMonitor(MonitorTable):
 
     headers: List[Dict] = [
         {"name": "symbol", "display": "代码", "cell": MonitorCell},
-        {"name": "theo_vega", "display": "Vega", "cell": GreeksCell},
-        {"name": "theo_theta", "display": "Theta", "cell": GreeksCell},
-        {"name": "theo_gamma", "display": "Gamma", "cell": GreeksCell},
-        {"name": "theo_delta", "display": "Delta", "cell": GreeksCell},
+        {"name": "cash_vega", "display": "Vega", "cell": GreeksCell},
+        {"name": "cash_theta", "display": "Theta", "cell": GreeksCell},
+        {"name": "cash_gamma", "display": "Gamma", "cell": GreeksCell},
+        {"name": "cash_delta", "display": "Delta", "cell": GreeksCell},
         {"name": "open_interest", "display": "持仓量", "cell": MonitorCell},
         {"name": "volume", "display": "成交量", "cell": MonitorCell},
         {"name": "bid_impv", "display": "买隐波", "cell": BidCell},
@@ -310,10 +310,10 @@ class OptionMarketMonitor(MonitorTable):
 
         option = self.option_engine.get_instrument(vt_symbol)
 
-        option_cells["theo_delta"].setText(f"{option.theo_delta:.0f}")
-        option_cells["theo_gamma"].setText(f"{option.theo_gamma:.0f}")
-        option_cells["theo_theta"].setText(f"{option.theo_theta:.0f}")
-        option_cells["theo_vega"].setText(f"{option.theo_vega:.0f}")
+        option_cells["cash_delta"].setText(f"{option.cash_delta:.0f}")
+        option_cells["cash_gamma"].setText(f"{option.cash_gamma:.0f}")
+        option_cells["cash_theta"].setText(f"{option.cash_theta:.0f}")
+        option_cells["cash_vega"].setText(f"{option.cash_vega:.0f}")
 
 
 class OptionGreeksMonitor(MonitorTable):

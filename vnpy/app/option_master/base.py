@@ -134,10 +134,10 @@ class OptionData(InstrumentData):
         self.pricing_impv: float = 0
 
         # Greeks related
-        self.theo_delta: float = 0
-        self.theo_gamma: float = 0
-        self.theo_theta: float = 0
-        self.theo_vega: float = 0
+        self.cash_delta: float = 0
+        self.cash_gamma: float = 0
+        self.cash_theta: float = 0
+        self.cash_vega: float = 0
 
         self.pos_value: float = 0
         self.pos_delta: float = 0
@@ -183,7 +183,7 @@ class OptionData(InstrumentData):
 
         self.mid_impv = (self.ask_impv + self.bid_impv) / 2
 
-    def calculate_theo_greeks(self) -> None:
+    def calculate_cash_greeks(self) -> None:
         """"""
         if not self.underlying:
             return
@@ -202,27 +202,27 @@ class OptionData(InstrumentData):
             self.option_type
         )
 
-        self.theo_delta = delta * self.size
-        self.theo_gamma = gamma * self.size
-        self.theo_theta = theta * self.size
-        self.theo_vega = vega * self.size
+        self.cash_delta = delta * self.size
+        self.cash_gamma = gamma * self.size
+        self.cash_theta = theta * self.size
+        self.cash_vega = vega * self.size
 
         # Adjustment for crypto inverse option contract
         if self.inverse:
-            self.theo_delta /= underlying_price
-            self.theo_gamma /= underlying_price
-            self.theo_theta /= underlying_price
-            self.theo_vega /= underlying_price
+            self.cash_delta /= underlying_price
+            self.cash_gamma /= underlying_price
+            self.cash_theta /= underlying_price
+            self.cash_vega /= underlying_price
 
     def calculate_pos_greeks(self) -> None:
         """"""
         if self.tick:
             self.pos_value = self.tick.last_price * self.size * self.net_pos
 
-        self.pos_delta = self.theo_delta * self.net_pos
-        self.pos_gamma = self.theo_gamma * self.net_pos
-        self.pos_theta = self.theo_theta * self.net_pos
-        self.pos_vega = self.theo_vega * self.net_pos
+        self.pos_delta = self.cash_delta * self.net_pos
+        self.pos_gamma = self.cash_gamma * self.net_pos
+        self.pos_theta = self.cash_theta * self.net_pos
+        self.pos_vega = self.cash_vega * self.net_pos
 
     def calculate_ref_price(self) -> float:
         """"""
@@ -265,7 +265,7 @@ class OptionData(InstrumentData):
         self.underlying_adjustment = underlying_adjustment
 
         self.calculate_option_impv()
-        self.calculate_theo_greeks()
+        self.calculate_cash_greeks()
         self.calculate_pos_greeks()
 
     def set_chain(self, chain: "ChainData") -> None:
@@ -298,7 +298,7 @@ class UnderlyingData(InstrumentData):
         """"""
         super().__init__(contract)
 
-        self.theo_delta: float = 0
+        self.cash_delta: float = 0
         self.pos_delta: float = 0
         self.chains: Dict[str: ChainData] = {}
 
@@ -310,7 +310,7 @@ class UnderlyingData(InstrumentData):
         """"""
         super().update_tick(tick)
 
-        self.theo_delta = self.size * self.mid_price / 100
+        self.cash_delta = self.size * self.mid_price / 100
         for chain in self.chains.values():
             chain.update_underlying_tick()
 
@@ -324,7 +324,7 @@ class UnderlyingData(InstrumentData):
 
     def calculate_pos_greeks(self) -> None:
         """"""
-        self.pos_delta = self.theo_delta * self.net_pos
+        self.pos_delta = self.cash_delta * self.net_pos
 
 
 class ChainData:

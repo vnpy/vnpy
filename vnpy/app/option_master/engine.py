@@ -437,7 +437,7 @@ class OptionHedgeEngine:
         # Calculate volume of contract to hedge
         delta_to_hedge = self.delta_target - portfolio.pos_delta
         instrument = self.option_engine.get_instrument(self.vt_symbol)
-        hedge_volume = delta_to_hedge / instrument.theo_delta
+        hedge_volume = delta_to_hedge / instrument.cash_delta
 
         # Send hedge orders
         tick = self.main_engine.get_tick(self.vt_symbol)
