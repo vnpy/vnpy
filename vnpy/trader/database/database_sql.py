@@ -13,6 +13,7 @@ from peewee import (
     PostgresqlDatabase,
     SqliteDatabase,
     chunked,
+    fn
 )
 
 from vnpy.trader.constant import Exchange, Interval
@@ -430,7 +431,12 @@ class SqlManager(BaseDatabaseManager):
     def get_bar_data_statistics(self) -> List[Dict]:
         """"""
         s = (
-            self.class_bar.select().group_by(
+            self.class_bar.select(
+                self.class_bar.symbol,
+                self.class_bar.exchange,
+                self.class_bar.interval,
+                fn.COUNT(self.class_bar.id).alias('ct')
+            ).group_by(
                 self.class_bar.symbol,
                 self.class_bar.exchange,
                 self.class_bar.interval
@@ -444,10 +450,27 @@ class SqlManager(BaseDatabaseManager):
                 "symbol": data.symbol,
                 "exchange": data.exchange,
                 "interval": data.interval,
-                "count": int(str(data))
+                "count": data.ct
             })
 
         return result
+
+    def delete_bar_data(
+        self,
+        symbol: str,
+        exchange: "Exchange",
+        interval: "Interval"
+    ) -> int:
+        """
+        Delete all bar data with given symbol + exchange + interval.
+        """
+        query = self.class_bar.delete().where(
+            (self.class_bar.symbol == symbol)
+            & (self.class_bar.exchange == exchange.value)
+            & (self.class_bar.interval == interval.value)
+        )
+        count = query.execute()
+        return count
 
     def clean(self, symbol: str):
         self.class_bar.delete().where(self.class_bar.symbol == symbol).execute()

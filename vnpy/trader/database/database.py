@@ -102,6 +102,18 @@ class BaseDatabaseManager(ABC):
         pass
 
     @abstractmethod
+    def delete_bar_data(
+        self,
+        symbol: str,
+        exchange: "Exchange",
+        interval: "Interval"
+    ) -> int:
+        """
+        Delete all bar data with given symbol + exchange + interval.
+        """
+        pass
+
+    @abstractmethod
     def clean(self, symbol: str):
         """
         delete all records for a symbol

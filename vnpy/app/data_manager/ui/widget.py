@@ -28,6 +28,7 @@ class ManagerWidget(QtWidgets.QWidget):
 
         self.init_tree()
         self.init_table()
+        self.init_child()
 
         refresh_button = QtWidgets.QPushButton("刷新")
         refresh_button.clicked.connect(self.refresh_tree)
@@ -61,6 +62,7 @@ class ManagerWidget(QtWidgets.QWidget):
             "开始时间",
             "结束时间",
             "",
+            "",
             ""
         ]
 
@@ -68,21 +70,19 @@ class ManagerWidget(QtWidgets.QWidget):
         self.tree.setColumnCount(len(labels))
         self.tree.setHeaderLabels(labels)
 
-        root = QtWidgets.QTreeWidgetItem(self.tree)
-        root.setText(0, "K线数据")
-        root.setExpanded(True)
-
+    def init_child(self) -> None:
+        """"""
         self.minute_child = QtWidgets.QTreeWidgetItem()
         self.minute_child.setText(0, "分钟线")
-        root.addChild(self.minute_child)
+        self.tree.addTopLevelItem(self.minute_child)
 
-        self.hour_child = QtWidgets.QTreeWidgetItem()
+        self.hour_child = QtWidgets.QTreeWidgetItem(self.tree)
         self.hour_child.setText(0, "小时线")
-        root.addChild(self.hour_child)
+        self.tree.addTopLevelItem(self.hour_child)
 
-        self.daily_child = QtWidgets.QTreeWidgetItem()
+        self.daily_child = QtWidgets.QTreeWidgetItem(self.tree)
         self.daily_child.setText(0, "日线")
-        root.addChild(self.daily_child)
+        self.tree.addTopLevelItem(self.daily_child)
 
     def init_table(self) -> None:
         """"""
@@ -104,8 +104,24 @@ class ManagerWidget(QtWidgets.QWidget):
             QtWidgets.QHeaderView.ResizeToContents
         )
 
+    def clear_tree(self) -> None:
+        """"""
+        for key, item in self.tree_items.items():
+            interval = key[2]
+
+            if interval == Interval.MINUTE.value:
+                self.minute_child.removeChild(item)
+            elif interval == Interval.HOUR.value:
+                self.hour_child.removeChild(item)
+            else:
+                self.daily_child.removeChild(item)
+
+        self.tree_items.clear()
+
     def refresh_tree(self) -> None:
         """"""
+        self.clear_tree()
+
         data = self.engine.get_bar_data_available()
 
         for d in data:
@@ -149,8 +165,18 @@ class ManagerWidget(QtWidgets.QWidget):
                 )
                 show_button.clicked.connect(show_func)
 
+                delete_button = QtWidgets.QPushButton("删除")
+                delete_func = partial(
+                    self.delete_data,
+                    d["symbol"],
+                    Exchange(d["exchange"]),
+                    Interval(d["interval"]),
+                )
+                delete_button.clicked.connect(delete_func)
+
                 self.tree.setItemWidget(item, 7, show_button)
                 self.tree.setItemWidget(item, 8, output_button)
+                self.tree.setItemWidget(item, 9, delete_button)
 
             item.setText(4, str(d["count"]))
             item.setText(5, d["start"].strftime("%Y-%m-%d %H:%M:%S"))
@@ -283,6 +309,37 @@ class ManagerWidget(QtWidgets.QWidget):
             self.table.setItem(row, 4, DataCell(str(bar.close_price)))
             self.table.setItem(row, 5, DataCell(str(bar.volume)))
             self.table.setItem(row, 6, DataCell(str(bar.open_interest)))
+
+    def delete_data(
+        self,
+        symbol: str,
+        exchange: Exchange,
+        interval: Interval
+    ) -> None:
+        """"""
+        n = QtWidgets.QMessageBox.warning(
+            self,
+            "删除确认",
+            f"请确认是否要删除{symbol} {exchange.value} {interval.value}的全部数据",
+            QtWidgets.QMessageBox.Ok,
+            QtWidgets.QMessageBox.Cancel
+        )
+
+        if n == QtWidgets.QMessageBox.Cancel:
+            return
+
+        count = self.engine.delete_bar_data(
+            symbol,
+            exchange,
+            interval
+        )
+
+        QtWidgets.QMessageBox.information(
+            self,
+            "删除成功",
+            f"已删除{symbol} {exchange.value} {interval.value}共计{count}条数据",
+            QtWidgets.QMessageBox.Ok
+        )
 
     def show(self) -> None:
         """"""
