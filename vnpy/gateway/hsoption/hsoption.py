@@ -13,10 +13,11 @@ from vnpy.trader.object import (
 FUNCTION_USER_LOGIN = 331100
 FUNCTION_QUERY_POSITION = 338023
 FUNCTION_QUERY_ACCOUNT = 338022
-FUNCTION_QUERY_ORDER = 338020 
+FUNCTION_QUERY_ORDER = 338020
 FUNCTION_QUERY_TRADE = 338021
 FUNCTION_SEND_ORDER = 338011
 FUNCTION_CANCEL_ORDER = 333012
+
 
 class HsoptionGateway(BaseGateway):
     """
@@ -26,9 +27,10 @@ class HsoptionGateway(BaseGateway):
     default_setting = {
         "用户名": "",
         "密码": "",
-        "经纪商代码": "",
-        "交易服务器": "",
-        "行情服务器": ""
+        "许可证": "",
+        # "经纪商代码": "",
+        # "交易服务器": "",
+        # "行情服务器": ""
     }
 
     exchanges = [Exchange.SSE, Exchange.SZSE]
@@ -40,10 +42,12 @@ class HsoptionGateway(BaseGateway):
         self.td_api = TdApi(self)
         self.md_api = None
 
-    def connect(self, setting: dict):
+    def connect(self, setting: dict) -> None:
         """"""
         userid = setting["用户名"]
         password = setting["密码"]
+        
+
         # brokerid = setting["经纪商代码"]
         # td_address = setting["交易服务器"]
         # md_address = setting["行情服务器"]
@@ -51,39 +55,39 @@ class HsoptionGateway(BaseGateway):
         self.td_api.connect(userid, password)
         self.md_api.connect(userid, password)
 
-    def subscribe(self, req: SubscribeRequest):
+    def subscribe(self, req: SubscribeRequest) -> None:
         """"""
         self.md_api.subscribe(req)
 
-    def send_order(self, req: OrderRequest):
+    def send_order(self, req: OrderRequest) -> str:
         """"""
         return self.td_api.send_order(req)
 
-    def cancel_order(self, req: CancelRequest):
+    def cancel_order(self, req: CancelRequest) -> None:
         """"""
         self.td_api.cancel_order(req)
 
-    def query_account(self):
+    def query_account(self) -> None:
         """"""
         self.td_api.query_account()
 
-    def query_position(self):
+    def query_position(self) -> None:
         """"""
         self.td_api.query_position()
 
-    def close(self):
+    def close(self) -> None:
         """"""
         self.td_api.close()
         self.md_api.close()
 
-    def write_error(self, msg: str, error: dict):
+    def write_error(self, msg: str, error: dict) -> None:
         """"""
         error_id = error["ErrorID"]
         error_msg = error["ErrorMsg"]
         msg = f"{msg}，代码：{error_id}，信息：{error_msg}"
         self.write_log(msg)
 
-    def process_timer_event(self, event):
+    def process_timer_event(self, event) -> None:
         """"""
         self.count += 1
         if self.count < 2:
@@ -94,12 +98,11 @@ class HsoptionGateway(BaseGateway):
         func()
         self.query_functions.append(func)
 
-    def init_query(self):
+    def init_query(self) -> None:
         """"""
         self.count = 0
         self.query_functions = [self.query_account, self.query_position]
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
-
 
 
 class TdApi:
@@ -227,6 +230,8 @@ class TdAsyncCallback:
     def OnRegister(self):
         """"""
         print("OnRegister")
+        if self.api.connect:
+            print("交易端口连接成功")
 
     def OnClose(self):
         """"""
