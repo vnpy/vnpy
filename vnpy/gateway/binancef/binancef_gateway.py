@@ -359,10 +359,11 @@ class BinancefRestApi(RestClient):
             "side": DIRECTION_VT2BINANCEF[req.direction],
             "type": ORDERTYPE_VT2BINANCEF[req.type],
             "price": float(req.price),
-            "quantity": int(req.volume),
+            "quantity": float(req.volume),
             "newClientOrderId": orderid,
-            "newOrderRespType": "ACK"
         }
+        if req.offset == Offset.CLOSE:
+            params["reduceOnly"] = True
 
         self.add_request(
             method="POST",
@@ -600,7 +601,7 @@ class BinancefRestApi(RestClient):
             # Get response from server
             resp = self.request(
                 "GET",
-                "/api/v1/klines",
+                "/fapi/v1/klines",
                 data={"security": Security.NONE},
                 params=params
             )
