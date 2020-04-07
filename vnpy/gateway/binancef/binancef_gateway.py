@@ -20,7 +20,8 @@ from vnpy.trader.constant import (
     Product,
     Status,
     OrderType,
-    Interval
+    Interval,
+    Offset
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (

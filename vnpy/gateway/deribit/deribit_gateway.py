@@ -602,7 +602,7 @@ class DeribitWebsocketApi(WebsocketClient):
     def on_ticker(self, packet: dict):
         """"""
         data = packet["params"]["data"]
-        
+
         symbol = data["instrument_name"]
         tick = self.ticks.get(symbol, None)
         if not tick:
