@@ -46,14 +46,15 @@ class HsoptionGateway(BaseGateway):
         """"""
         userid = setting["用户名"]
         password = setting["密码"]
+        licence = setting["许可证"]
         
 
         # brokerid = setting["经纪商代码"]
         # td_address = setting["交易服务器"]
         # md_address = setting["行情服务器"]
 
-        self.td_api.connect(userid, password)
-        self.md_api.connect(userid, password)
+        self.td_api.connect(userid, password, licence)
+        self.md_api.connect(userid, password, licence)
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
@@ -129,13 +130,18 @@ class TdApi:
             FUNCTION_CANCEL_ORDER: self.on_cancel_order,
         }
 
-    def connect(self, userid, password) -> bool:
+    def connect(
+        self,
+        userid: str,
+        password: str,
+        licence: str
+    ) -> bool:
         """"""
         self.userid = userid
         self.password = password
 
         self.config = py_t2sdk.pyCConfigInterface()
-        self.config.Load("citic.ini")
+        self.config.Load(licence)
 
         self.connection = py_t2sdk.pyConnectionInterface()
 
