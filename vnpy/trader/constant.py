@@ -91,6 +91,8 @@ class Exchange(Enum):
 
     # Global
     SMART = "SMART"         # Smart Router for US stocks
+    NYSE = "NYSE"           # New York Stock Exchnage
+    NASDAQ = "NASDAQ"       # Nasdaq Exchange
     NYMEX = "NYMEX"         # New York Mercantile Exchange
     COMEX = "COMEX"         # a division of theNew York Mercantile Exchange
     GLOBEX = "GLOBEX"       # Globex of CME
