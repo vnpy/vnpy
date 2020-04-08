@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.1.1-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.1.2-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
@@ -44,7 +44,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 宽睿（oes）：国内证券（A股）
 
-        * 中泰XTP（xtp）：国内证券（A股）
+        * 中泰XTP（xtp）：国内证券（A股）、ETF期权
 
         * 华鑫奇点（tora）：国内证券（A股）
 
@@ -69,6 +69,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
         * 直达期货（da）：全球期货
 
         * OANDA（oanda）：外汇、CFD
+
+        * Alpaca（alpaca）：美股（零佣金）
 
     * 数字货币
 
@@ -152,7 +154,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.1.1](https://download.vnpy.com/vnstudio-2.1.1.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.1.2](https://download.vnpy.com/vnstudio-2.1.2.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 
