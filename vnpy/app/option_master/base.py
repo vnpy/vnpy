@@ -32,7 +32,8 @@ CHAIN_UNDERLYING_MAP = {
     "SR.CZCE": "SR",
     "CF.CZCE": "CF",
     "TA.CZCE": "TA",
-    "BTC.DERIBIT": "BTC-PERPETUAL"
+    "BTC.DERIBIT": "BTC-PERPETUAL",
+    "BTC-USD.OKEX": "BTC-USD-SWAP"
 }
 
 
