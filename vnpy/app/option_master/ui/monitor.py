@@ -299,8 +299,8 @@ class OptionMarketMonitor(MonitorTable):
             return
 
         option = self.option_engine.get_instrument(vt_symbol)
-        option_cells["bid_impv"].setText(f"{option.bid_impv * 100:.2f}")
-        option_cells["ask_impv"].setText(f"{option.ask_impv * 100:.2f}")
+        option_cells["bid_impv"].setText(f"{option.bid_impv * 100:.3f}")
+        option_cells["ask_impv"].setText(f"{option.ask_impv * 100:.3f}")
 
     def update_greeks(self, vt_symbol: str) -> None:
         """"""
@@ -310,10 +310,10 @@ class OptionMarketMonitor(MonitorTable):
 
         option = self.option_engine.get_instrument(vt_symbol)
 
-        option_cells["cash_delta"].setText(f"{option.cash_delta:.0f}")
-        option_cells["cash_gamma"].setText(f"{option.cash_gamma:.0f}")
-        option_cells["cash_theta"].setText(f"{option.cash_theta:.0f}")
-        option_cells["cash_vega"].setText(f"{option.cash_vega:.0f}")
+        option_cells["cash_delta"].setText(f"{option.cash_delta:.6f}")
+        option_cells["cash_gamma"].setText(f"{option.cash_gamma:.6f}")
+        option_cells["cash_theta"].setText(f"{option.cash_theta:.6f}")
+        option_cells["cash_vega"].setText(f"{option.cash_vega:.6f}")
 
 
 class OptionGreeksMonitor(MonitorTable):
@@ -506,12 +506,12 @@ class OptionGreeksMonitor(MonitorTable):
         row_cells["long_pos"].setText(f"{row_data.long_pos}")
         row_cells["short_pos"].setText(f"{row_data.short_pos}")
         row_cells["net_pos"].setText(f"{row_data.net_pos}")
-        row_cells["pos_delta"].setText(f"{row_data.pos_delta:.0f}")
+        row_cells["pos_delta"].setText(f"{row_data.pos_delta:.6f}")
 
         if not isinstance(row_data, UnderlyingData):
-            row_cells["pos_gamma"].setText(f"{row_data.pos_gamma:.0f}")
-            row_cells["pos_theta"].setText(f"{row_data.pos_theta:.0f}")
-            row_cells["pos_vega"].setText(f"{row_data.pos_vega:.0f}")
+            row_cells["pos_gamma"].setText(f"{row_data.pos_gamma:.6f}")
+            row_cells["pos_theta"].setText(f"{row_data.pos_theta:.6f}")
+            row_cells["pos_vega"].setText(f"{row_data.pos_vega:.6f}")
 
 
 class OptionChainMonitor(MonitorTable):
