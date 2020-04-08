@@ -36,10 +36,14 @@ class ManagerWidget(QtWidgets.QWidget):
         import_button = QtWidgets.QPushButton("导入数据")
         import_button.clicked.connect(self.import_data)
 
+        update_button = QtWidgets.QPushButton("更新数据")
+        update_button.clicked.connect(self.update_data)
+
         hbox1 = QtWidgets.QHBoxLayout()
         hbox1.addWidget(refresh_button)
         hbox1.addStretch()
         hbox1.addWidget(import_button)
+        hbox1.addWidget(update_button)
 
         hbox2 = QtWidgets.QHBoxLayout()
         hbox2.addWidget(self.tree)
@@ -340,6 +344,38 @@ class ManagerWidget(QtWidgets.QWidget):
             f"已删除{symbol} {exchange.value} {interval.value}共计{count}条数据",
             QtWidgets.QMessageBox.Ok
         )
+
+    def update_data(self) -> None:
+        """"""
+        data = self.engine.get_bar_data_available()
+        total = len(data)
+        count = 0
+
+        dialog = QtWidgets.QProgressDialog(
+            "历史数据更新中",
+            "取消",
+            0,
+            100
+        )
+        dialog.setWindowTitle("更新进度")
+        dialog.setWindowModality(QtCore.Qt.WindowModal)
+        dialog.setValue(0)
+
+        for d in data:
+            if dialog.wasCanceled():
+                break
+
+            self.engine.download_bar_data(
+                d["symbol"],
+                Exchange(d["exchange"]),
+                Interval(d["interval"]),
+                d["end"]
+            )
+            count += 1
+            progress = int(round(count / total * 100, 0))
+            dialog.setValue(progress)
+
+        dialog.close()
 
     def show(self) -> None:
         """"""

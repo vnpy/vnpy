@@ -79,7 +79,7 @@ class RqdataClient:
             else:
                 rq_symbol = f"{symbol}.XSHE"
         # Futures and Options
-        else:
+        elif exchange in [Exchange.SHFE, Exchange.CFFEX, Exchange.DCE, Exchange.DCE, Exchange.INE]:
             for count, word in enumerate(symbol):
                 if word.isdigit():
                     break
@@ -119,6 +119,8 @@ class RqdataClient:
                         year = "2" + year
 
                     rq_symbol = f"{product}{year}{suffix}".upper()
+        else:
+            rq_symbol = f"{symbol}.{exchange.value}"
 
         return rq_symbol
 
