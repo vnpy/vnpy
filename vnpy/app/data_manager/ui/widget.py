@@ -1,6 +1,6 @@
 from typing import Tuple, Dict
 from functools import partial
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from vnpy.trader.ui import QtWidgets, QtCore
 from vnpy.trader.engine import MainEngine, EventEngine
@@ -39,11 +39,15 @@ class ManagerWidget(QtWidgets.QWidget):
         update_button = QtWidgets.QPushButton("更新数据")
         update_button.clicked.connect(self.update_data)
 
+        download_button = QtWidgets.QPushButton("下载数据")
+        download_button.clicked.connect(self.download_data)
+
         hbox1 = QtWidgets.QHBoxLayout()
         hbox1.addWidget(refresh_button)
         hbox1.addStretch()
         hbox1.addWidget(import_button)
         hbox1.addWidget(update_button)
+        hbox1.addWidget(download_button)
 
         hbox2 = QtWidgets.QHBoxLayout()
         hbox2.addWidget(self.tree)
@@ -377,6 +381,11 @@ class ManagerWidget(QtWidgets.QWidget):
 
         dialog.close()
 
+    def download_data(self) -> None:
+        """"""
+        dialog = DownloadDialog(self.engine)
+        dialog.exec_()
+
     def show(self) -> None:
         """"""
         self.showMaximized()
@@ -513,3 +522,65 @@ class ImportDialog(QtWidgets.QDialog):
         filename = result[0]
         if filename:
             self.file_edit.setText(filename)
+
+
+class DownloadDialog(QtWidgets.QDialog):
+    """"""
+
+    def __init__(self, engine: ManagerEngine, parent=None):
+        """"""
+        super().__init__()
+
+        self.engine = engine
+
+        self.setWindowTitle("下载历史数据")
+        self.setFixedWidth(300)
+
+        self.setWindowFlags(
+            (self.windowFlags() | QtCore.Qt.CustomizeWindowHint)
+            & ~QtCore.Qt.WindowMaximizeButtonHint)
+
+        self.symbol_edit = QtWidgets.QLineEdit()
+
+        self.exchange_combo = QtWidgets.QComboBox()
+        for i in Exchange:
+            self.exchange_combo.addItem(str(i.name), i)
+
+        self.interval_combo = QtWidgets.QComboBox()
+        for i in Interval:
+            self.interval_combo.addItem(str(i.name), i)
+
+        end_dt = datetime.now()
+        start_dt = end_dt - timedelta(days=3 * 365)
+
+        self.start_date_edit = QtWidgets.QDateEdit(
+            QtCore.QDate(
+                start_dt.year,
+                start_dt.month,
+                start_dt.day
+            )
+        )
+
+        button = QtWidgets.QPushButton("下载")
+        button.clicked.connect(self.download)
+
+        form = QtWidgets.QFormLayout()
+        form.addRow("代码", self.symbol_edit)
+        form.addRow("交易所", self.exchange_combo)
+        form.addRow("周期", self.interval_combo)
+        form.addRow("开始日期", self.start_date_edit)
+        form.addRow(button)
+
+        self.setLayout(form)
+
+    def download(self):
+        """"""
+        symbol = self.symbol_edit.text()
+        exchange = Exchange(self.exchange_combo.currentData())
+        interval = Interval(self.interval_combo.currentData())
+
+        start_date = self.start_date_edit.date()
+        start = datetime(start_date.year(), start_date.month(), start_date.day())
+
+        count = self.engine.download_bar_data(symbol, exchange, interval, start)
+        QtWidgets.QMessageBox.information(self, "下载结束", f"下载总数据量：{count}条")

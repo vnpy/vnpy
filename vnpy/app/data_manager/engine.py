@@ -187,7 +187,7 @@ class ManagerEngine(BaseEngine):
         exchange: Exchange,
         interval: str,
         start: datetime
-    ) -> None:
+    ) -> int:
         """
         Query bar data from RQData.
         """
@@ -216,3 +216,6 @@ class ManagerEngine(BaseEngine):
 
         if data:
             database_manager.save_bar_data(data)
+            return(len(data))
+
+        return 0
