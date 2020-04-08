@@ -239,16 +239,7 @@ class XtpMdApi(MdApi):
         self.login_status = False
         self.gateway.write_log(f"行情服务器连接断开, 原因{reason}")
 
-        n = self.login()
-
-        if n:
-            self.session_id = n
-            self.connect_status = True
-            self.login_status = True
-
-            self.gateway.write_log(f"交易服务器登录成功，会话编号：{self.session_id}")
-        else:
-            self.gateway.write_log("行情服务器登录失败")
+        self.login_server()
 
     def onError(self, error: dict) -> None:
         """"""
@@ -419,7 +410,6 @@ class XtpMdApi(MdApi):
         if not self.connect_status:
             path = str(get_folder_path(self.gateway_name.lower()))
             self.createQuoteApi(self.client_id, path)
-
             self.login_server()
 
     def login_server(self) -> None:
