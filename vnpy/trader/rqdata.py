@@ -1,6 +1,7 @@
 from datetime import timedelta
 from typing import List, Optional
 
+from numpy import ndarray
 from rqdatac import init as rqdata_init
 from rqdatac.services.basic import all_instruments as rqdata_all_instruments
 from rqdatac.services.get_price import get_price as rqdata_get_price
@@ -35,7 +36,7 @@ class RqdataClient:
         self.password: str = SETTINGS["rqdata.password"]
 
         self.inited: bool = False
-        self.symbols: set = set()
+        self.symbols: ndarray = None
 
     def init(self, username: str = "", password: str = "") -> bool:
         """"""
@@ -53,14 +54,13 @@ class RqdataClient:
             rqdata_init(
                 self.username,
                 self.password,
-                ('rqdatad-pro.ricequant.com', 16011),
+                ("rqdatad-pro.ricequant.com", 16011),
                 use_pool=True,
                 max_pool_size=1
             )
 
             df = rqdata_all_instruments()
-            for ix, row in df.iterrows():
-                self.symbols.add(row['order_book_id'])
+            self.symbols = df["order_book_id"].values
         except (RuntimeError, AuthenticationFailed):
             return False
 
