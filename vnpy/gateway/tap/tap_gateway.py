@@ -104,15 +104,15 @@ class TapGateway(BaseGateway):
     """
 
     default_setting = {
-        "quote_username": "",
-        "quote_password": "",
-        "quote_host": "",
-        "quote_port": 0,
-        "trade_username": "",
-        "trade_password": "",
-        "trade_host": "",
-        "trade_port": 0,
-        "auth_code": ""
+        "行情账号": "",
+        "行情密码": "",
+        "行情服务器": "",
+        "行情端口": 0,
+        "交易账号": "",
+        "交易密码": "",
+        "交易服务器": "",
+        "交易端口": 0,
+        "授权码": ""
     }
 
     exchanges = list(EXCHANGE_VT2TAP.keys())
@@ -126,15 +126,15 @@ class TapGateway(BaseGateway):
 
     def connect(self, setting: dict) -> None:
         """"""
-        quote_username = setting["quote_username"]
-        quote_password = setting["quote_password"]
-        quote_host = setting["quote_host"]
-        quote_port = setting["quote_port"]
-        trade_username = setting["trade_username"]
-        trade_password = setting["trade_password"]
-        trade_host = setting["trade_host"]
-        trade_port = setting["trade_port"]
-        auth_code = setting["auth_code"]
+        quote_username = setting["行情账号"]
+        quote_password = setting["行情密码"]
+        quote_host = setting["行情服务器"]
+        quote_port = setting["行情端口"]
+        trade_username = setting["交易账号"]
+        trade_password = setting["交易密码"]
+        trade_host = setting["交易服务器"]
+        trade_port = setting["交易端口"]
+        auth_code = setting["授权码"]
 
         self.md_api.connect(
             quote_username,
@@ -153,8 +153,7 @@ class TapGateway(BaseGateway):
 
     def close(self) -> None:
         """"""
-        self.td_api.close()
-        self.md_api.close()
+        pass
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
@@ -316,12 +315,6 @@ class QuoteApi(MdApi):
             "ISDDA": FLAG_VT2TAP["APIYNFLAG_NO"]
         }
         self.login(data)
-
-    def close(self):
-        """
-        Release TAP API resources.
-        """
-        self.exit()
 
     def subscribe(self, req: SubscribeRequest):
         """
@@ -806,12 +799,6 @@ class TradeApi(TdApi):
         Query today trade data.
         """
         self.qryFill({})
-
-    def close(self) -> None:
-        """
-        Release TAP API resources.
-        """
-        self.exit()
 
 
 def parse_datetime(dt_str: str) -> datetime:

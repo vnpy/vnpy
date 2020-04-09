@@ -28,4 +28,3 @@ TapAPIChangePasswordReq = {
     "OldPassword": "string",
     "NewPassword": "string",
 }
-

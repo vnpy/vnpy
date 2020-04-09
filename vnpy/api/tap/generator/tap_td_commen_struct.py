@@ -35,4 +35,3 @@ TapAPIAuthPasswordReq = {
     "PasswordType": "char",
     "Password": "string",
 }
-

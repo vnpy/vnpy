@@ -944,4 +944,3 @@ TapAPITradingCalendarQryRsp = {
     "PromptDate": "string",
     "LastPromptDate": "string",
 }
-
