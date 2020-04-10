@@ -755,6 +755,8 @@ class OkexsWebsocketApi(WebsocketClient):
             price, volume, _, __ = buf
             if "USDT" in tick.symbol:
                 volume = float(volume) / 100
+            else:
+                volume = int(volume)
             tick.__setattr__("bid_price_%s" % (n + 1), float(price))
             tick.__setattr__("bid_volume_%s" % (n + 1), volume)
 
@@ -762,6 +764,8 @@ class OkexsWebsocketApi(WebsocketClient):
             price, volume, _, __ = buf
             if "USDT" in tick.symbol:
                 volume = float(volume) / 100
+            else:
+                volume = int(volume)
             tick.__setattr__("ask_price_%s" % (n + 1), float(price))
             tick.__setattr__("ask_volume_%s" % (n + 1), volume)
 
