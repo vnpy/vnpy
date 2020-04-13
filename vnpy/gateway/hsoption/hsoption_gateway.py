@@ -389,7 +389,6 @@ class TdApi:
         self.op_station: str = ""
         self.connect_status: bool = False
         self.login_status: bool = False
-        self.contract_status: bool = False
         self.batch_no: int = 1000000
 
         self.batch_entrust_id: Dict[str, str] = {}
@@ -591,7 +590,6 @@ class TdApi:
         cout = 0
         for d in data:
             cout += 1
-            print(f"a{cout}:   ", d)
             hs_symbol = d["option_code"]
             hs_exchange = EXCHANGE_HSOPTION2VT[d["exchange_type"]]
             hs_name = d["option_name"]
