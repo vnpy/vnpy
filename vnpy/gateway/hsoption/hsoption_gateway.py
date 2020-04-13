@@ -4,6 +4,7 @@ from typing import Dict, List
 import requests
 from datetime import datetime
 from time import sleep
+import traceback
 
 from vnpy.api.t2sdk import py_t2sdk
 from vnpy.api.sopt import MdApi
@@ -268,7 +269,6 @@ class SoptMdApi(MdApi):
         """
         Callback of tick data update.
         """
-
         symbol = data["InstrumentID"]
         exchange = symbol_exchange_map.get(symbol, "")
 
@@ -281,7 +281,7 @@ class SoptMdApi(MdApi):
             symbol=symbol,
             exchange=exchange,
             datetime=datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f"),
-            name=symbol_name_map[symbol],
+            name=symbol_name_map.get(symbol, ""),
             volume=data["Volume"],
             open_interest=data["OpenInterest"],
             last_price=data["LastPrice"],
@@ -484,6 +484,40 @@ class TdApi:
             self.asset_prop = d["asset_prop"]
             self.sysnode_id = d["sysnode_id"]
 
+        # Generate ETF contract data
+        contract_1 = ContractData(
+            symbol="510050",
+            exchange=Exchange.SSE,
+            name="50ETF",
+            size=1,
+            pricetick=0.001,
+            product=Product.ETF,
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_contract(contract_1)
+
+        contract_2 = ContractData(
+            symbol="510300",
+            exchange=Exchange.SSE,
+            name="300ETF",
+            size=1,
+            pricetick=0.001,
+            product=Product.ETF,
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_contract(contract_2)
+
+        contract_3 = ContractData(
+            symbol="159919",
+            exchange=Exchange.SZSE,
+            name="300ETF",
+            size=1,
+            pricetick=0.001,
+            product=Product.ETF,
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_contract(contract_3)
+
         self.query_contract()
 
     def on_query_position(self, data: List[Dict[str, str]]) -> None:
@@ -599,40 +633,6 @@ class TdApi:
             self.gateway.write_log("合约信息查询失败")
             return
 
-        # Generate ETF contract data
-        contract_1 = ContractData(
-            symbol="510050",
-            exchange=Exchange.SSE,
-            name="50ETF",
-            size=1,
-            pricetick=0.001,
-            product=Product.ETF,
-            gateway_name=self.gateway_name
-        )
-        self.gateway.on_contract(contract_1)
-
-        contract_2 = ContractData(
-            symbol="510300",
-            exchange=Exchange.SSE,
-            name="300ETF",
-            size=1,
-            pricetick=0.001,
-            product=Product.ETF,
-            gateway_name=self.gateway_name
-        )
-        self.gateway.on_contract(contract_2)
-
-        contract_3 = ContractData(
-            symbol="159919",
-            exchange=Exchange.SZSE,
-            name="300ETF",
-            size=1,
-            pricetick=0.001,
-            product=Product.ETF,
-            gateway_name=self.gateway_name
-        )
-        self.gateway.on_contract(contract_3)
-
         # Process option contract
         for d in data:
             contract = ContractData(
@@ -660,8 +660,15 @@ class TdApi:
 
             self.gateway.on_contract(contract)
 
-        self.gateway.write_log("合约信息查询成功")
-        self.query_order()
+            symbol_exchange_map[contract.symbol] = contract.exchange
+            symbol_name_map[contract.symbol] = contract.name
+
+        if len(data) == 1000:
+            position_str = d["position_str"]
+            self.query_contract(position_str)
+        else:
+            self.gateway.write_log("合约信息查询成功")
+            self.query_order()
 
     def on_send_order(self, data: List[Dict[str, str]]) -> None:
         """"""
@@ -741,8 +748,11 @@ class TdApi:
 
     def on_callback(self, function: int, data: dict) -> None:
         """"""
-        func = self.callbacks[function]
-        func(data)
+        try:
+            func = self.callbacks[function]
+            func(data)
+        except Exception:
+            traceback.print_exc()
 
     def send_req(self, function: int, req: dict) -> int:
         """"""
@@ -870,12 +880,12 @@ class TdApi:
         ret, subscriber = self.connection.NewSubscriber(
             sub_callback,
             biz_name,
-            300000
+            5000
         )
         if ret != 0:
             error_msg = str(self.connection.GetMCLastError(), encoding="gbk")
             msg = f"订阅推送失败：{error_msg}"
-            self.td_api.gateway.write_log(msg)
+            self.gateway.write_log(msg)
             return
 
         # Set subscribe parameters
@@ -951,10 +961,14 @@ class TdApi:
         req["request_num"] = "10000"
         self.send_req(FUNCTION_QUERY_ORDER, req)
 
-    def query_contract(self) -> int:
+    def query_contract(self, position_str: str = None) -> int:
         """"""
         req = self.generate_req()
         req["request_num"] = "10000"
+
+        if position_str:
+            req["position_str"] = position_str
+
         self.send_req(FUNCTION_QUERY_CONTRACT, req)
 
     def subcribe_order(self) -> None:
