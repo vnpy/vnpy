@@ -43,9 +43,9 @@ from vnpy.trader.object import (
 from vnpy.trader.event import EVENT_TIMER
 
 
-REST_HOST = "https://api.KAISA.com"
-WEBSOCKET_DATA_HOST = "wss://www.KAISA.com/ws"               # Market Data
-WEBSOCKET_TRADE_HOST = "wss://api.KAISA.com/notification"    # Account and Order
+REST_HOST = "https://dev-kgl.jt00000.com/kgl-trade-service"
+# WEBSOCKET_DATA_HOST = "wss://www.KAISA.com/ws"               # Market Data
+# WEBSOCKET_TRADE_HOST = "wss://api.KAISA.com/notification"    # Account and Order
 
 STATUS_KAISA2VT = {
     3: Status.NOTTRADED,
@@ -263,6 +263,22 @@ class KaisaRestApi(RestClient):
         self.gateway.write_log("REST API启动成功")
 
         self.query_contract()
+        self.login()
+    
+    def login(self):
+        """"""
+        data = {
+            "channelType": "INTERNET",
+            "accountCode": self.key,
+            "password": self.secret
+        }
+        self.add_request(
+            method="POST",
+            path="/v1/account/login",
+            callback=self.on_login,
+            data=data
+        )
+
 
     def query_account(self):
         """"""
@@ -471,6 +487,10 @@ class KaisaRestApi(RestClient):
             data=data,
             extra=req
         )
+
+    def on_login(self, data, request):
+        """"""
+        self.gateway.write_log("账户登陆成功")
 
     def on_query_account(self, data, request):
         """"""
