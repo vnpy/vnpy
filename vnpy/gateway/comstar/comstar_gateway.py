@@ -78,12 +78,11 @@ class ComstarGateway(BaseGateway):
 
     def send_order(self, req: OrderRequest):
         """"""
+        # Offset is not supported for Comstar gateawy
+        req.offset = Offset.NONE
+
         if req.type not in {OrderType.LIMIT, OrderType.FAK}:
             self.write_log("仅支持限价单和FAK单")
-            return ""
-
-        if req.offset not in {Offset.NONE, Offset.OPEN}:
-            self.write_log("仅支持开仓")
             return ""
 
         symbol, settle_type, *_ = req.symbol.split("_") + [""]
@@ -260,7 +259,7 @@ def parse_order(data: dict) -> OrderData:
         orderid=data["orderid"],
         type=enum_decode(data["type"]),
         direction=enum_decode(data["direction"]),
-        offset=enum_decode(data["offset"]),
+        offset=Offset.NONE,
         price=float(data["price"]),
         volume=float(data["volume"]),
         traded=float(data["traded"]),
@@ -281,7 +280,7 @@ def parse_trade(data: dict) -> TradeData:
         orderid=data["orderid"],
         tradeid=data["tradeid"],
         direction=enum_decode(data["direction"]),
-        offset=enum_decode(data["offset"]),
+        offset=Offset.NONE,
         price=float(data["price"]),
         volume=float(data["volume"]),
         time=data["time"],
