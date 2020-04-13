@@ -737,7 +737,7 @@ class TdApi:
 
     def on_error(self, error: dict) -> None:
         """"""
-        print(f"触发错误：{str(error)}")
+        self.gateway.write_log(f"触发错误：{str(error)}")
 
     def on_callback(self, function: int, data: dict) -> None:
         """"""
