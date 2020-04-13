@@ -1,15 +1,16 @@
 import wmi
 import socket
-from typing import Dict, List
 import requests
 from datetime import datetime
 from time import sleep
+from typing import Dict, List
 
 from vnpy.api.ufto import py_t2sdk
 from vnpy.api.sopt import MdApi
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.utility import get_folder_path
 from vnpy.trader.event import EVENT_TIMER
+from vnpy.event import EventEngine
 from vnpy.trader.constant import (
     Direction,
     Offset,
@@ -35,16 +36,13 @@ EXCHANGE_HSOPTION2VT: Dict[str, Exchange] = {
     "1": Exchange.SSE,
     "2": Exchange.SZSE
 }
-EXCHANGE_VT2HSOPTION = {
-    Exchange.SSE: "1",
-    Exchange.SZSE: "2"
-}
+EXCHANGE_VT2HSOPTION: Dict[Exchange, str] = {v: k for k, v in EXCHANGE_HSOPTION2VT.items()}
 
 DIRECTION_VT2HSOPTION: Dict[Direction, str] = {
     Direction.LONG: "1",
     Direction.SHORT: "2",
 }
-DIRECTION_HSOPTION2VT = {v: k for k, v in DIRECTION_VT2HSOPTION.items()}
+DIRECTION_HSOPTION2VT: Dict[str, Direction] = {v: k for k, v in DIRECTION_VT2HSOPTION.items()}
 
 POS_DIRECTION_VT2HSOPTION: Dict[Direction, str] = {
     Direction.LONG: "0",
@@ -57,13 +55,11 @@ POS_DIRECTION_HSOPTION2VT: Dict[str, Direction] = {
     "2": Direction.SHORT
 }
 
-DIRECTION_HSOPTION2VT = {v: k for k, v in DIRECTION_VT2HSOPTION.items()}
-
 OFFSET_HSOPTION2VT: Dict[str, Offset] = {
     "O": Offset.OPEN,
     "C": Offset.CLOSE
 }
-OFFSET_VT2HSOPTION = {v: k for k, v in OFFSET_HSOPTION2VT.items()}
+OFFSET_VT2HSOPTION: Dict[Offset, str] = {v: k for k, v in OFFSET_HSOPTION2VT.items()}
 
 STATUS_HSOPTION2VT: Dict[str, Status] = {
     "2": Status.NOTTRADED,
@@ -73,22 +69,21 @@ STATUS_HSOPTION2VT: Dict[str, Status] = {
     "8": Status.ALLTRADED,
     "9": Status.REJECTED
 }
-STATUS_VT2HSOPTION = {v: k for k, v in STATUS_HSOPTION2VT.items()}
+STATUS_VT2HSOPTION: Dict[Status, str] = {v: k for k, v in STATUS_HSOPTION2VT.items()}
 
-ORDERTYPE_VT2HSOPTION = {
+ORDERTYPE_VT2HSOPTION: Dict[OrderType, str] = {
     OrderType.LIMIT: "0",
     OrderType.MARKET: "OPB"
 }
-ORDERTYPE_HSOPTION2VT = {v: k for k, v in ORDERTYPE_VT2HSOPTION.items()}
+ORDERTYPE_HSOPTION2VT: Dict[str, OrderType] = {v: k for k, v in ORDERTYPE_VT2HSOPTION.items()}
 
-OPTIONTYPE_HSOPTION2VT = {
+OPTIONTYPE_HSOPTION2VT: Dict[str, OptionType] = {
     "C": OptionType.CALL,
     "P": OptionType.PUT
 }
 
-symbol_exchange_map = {}
-symbol_name_map = {}
-symbol_size_map = {}
+symbol_exchange_map: Dict[str, Exchange] = {}
+symbol_name_map: Dict[str, str] = {}
 
 FUNCTION_USER_LOGIN = 331100
 FUNCTION_QUERY_POSITION = 338023
@@ -108,18 +103,18 @@ class HsoptionGateway(BaseGateway):
     VN Trader Gateway for Hundsun Option.
     """
 
-    default_setting = {
+    default_setting: Dict[str, str] = {
         "恒生用户名": "",
         "恒生密码": "",
-        "CTP用户名": "",
-        "CTP密码": "",
-        "CTP经纪商代码": "",
-        "CTP行情服务器": "",
+        "SOPT用户名": "",
+        "SOPT密码": "",
+        "SOPT经纪商代码": "",
+        "SOPT行情服务器": "",
     }
 
-    exchanges = [Exchange.SSE, Exchange.SZSE]
+    exchanges: List[Exchange] = [Exchange.SSE, Exchange.SZSE]
 
-    def __init__(self, event_engine):
+    def __init__(self, event_engine: EventEngine):
         """Constructor"""
         super().__init__(event_engine, "HSOPTION")
 
@@ -131,16 +126,16 @@ class HsoptionGateway(BaseGateway):
         hs_userid = setting["恒生用户名"]
         hs_password = setting["恒生密码"]
 
-        ctp_userid = setting["CTP用户名"]
-        ctp_password = setting["CTP密码"]
-        ctp_brokerid = setting["CTP经纪商代码"]
-        ctp_md_address = setting["CTP行情服务器"]
+        sopt_userid = setting["SOPT用户名"]
+        sopt_password = setting["SOPT密码"]
+        sopt_brokerid = setting["SOPT经纪商代码"]
+        sopt_md_address = setting["SOPT行情服务器"]
 
-        if not ctp_md_address.startswith("tcp://"):
-            ctp_md_address = "tcp://" + ctp_md_address
+        if not sopt_md_address.startswith("tcp://"):
+            sopt_md_address = "tcp://" + sopt_md_address
 
         self.md_api.connect(
-            ctp_md_address, ctp_userid, ctp_password, ctp_brokerid)
+            sopt_md_address, sopt_userid, sopt_password, sopt_brokerid)
         self.td_api.connect(hs_userid, hs_password)
 
         self.init_query()
@@ -201,18 +196,18 @@ class SoptMdApi(MdApi):
         """Constructor"""
         super().__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
+        self.gateway:HsoptionGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
-        self.reqid = 0
+        self.reqid: int = 0
 
-        self.connect_status = False
-        self.login_status = False
-        self.subscribed = set()
+        self.connect_status: bool = False
+        self.login_status: bool = False
+        self.subscribed: set = set()
 
-        self.userid = ""
-        self.password = ""
-        self.brokerid = ""
+        self.userid: str = ""
+        self.password: str = ""
+        self.brokerid: str = ""
 
     def onFrontConnected(self) -> None:
         """
@@ -264,7 +259,6 @@ class SoptMdApi(MdApi):
         """
         Callback of tick data update.
         """
-
         symbol = data["InstrumentID"]
         exchange = symbol_exchange_map.get(symbol, "")
 
@@ -395,6 +389,7 @@ class TdApi:
         self.op_station: str = ""
         self.connect_status: bool = False
         self.login_status: bool = False
+        self.contract_status: bool = False
         self.batch_no: int = 1000000
 
         self.batch_entrust_id: Dict[str, str] = {}
@@ -489,7 +484,6 @@ class TdApi:
             return
 
         for d in data:
-
             position = PositionData(
                 symbol=d["option_code"],
                 exchange=EXCHANGE_HSOPTION2VT[d["exchange_type"]],
@@ -520,67 +514,68 @@ class TdApi:
 
     def on_query_order(self, data: List[Dict[str, str]]) -> None:
         """"""
-        if not data:
-            self.gateway.write_log("委托查询完成")
-            return
+        # if not data:
+        #     self.gateway.write_log("委托查询完成")
+        #     return
+        if data:
+            for d in data:
+                t = d["entrust_time"].rjust(6, "0")
+                dt = ":".join([t[: 2], t[2: 4], t[4:]])
 
-        for d in data:
-            t = d["entrust_time"].rjust(6, "0")
-            dt = ":".join([t[: 2], t[2: 4], t[4:]])
+                batch_no = d["batch_no"]
+                self.batch_no = max(self.batch_no, int(batch_no))
+                self.batch_entrust_id[batch_no] = d["entrust_no"]
+                self.entrust_batch_id[d["entrust_no"]] = batch_no
 
-            batch_no = d["batch_no"]
-            self.batch_no = max(self.batch_no, int(batch_no))
-            self.batch_entrust_id[batch_no] = d["entrust_no"]
-            self.entrust_batch_id[d["entrust_no"]] = batch_no
+                order = OrderData(
+                    symbol=d["option_code"],
+                    exchange=EXCHANGE_HSOPTION2VT[d["exchange_type"]],
+                    direction=DIRECTION_HSOPTION2VT[d["entrust_bs"]],
+                    status=STATUS_HSOPTION2VT[d["entrust_status"]],
+                    orderid=batch_no,
+                    offset=OFFSET_HSOPTION2VT[d["entrust_oc"]],
+                    volume=int(float(d["entrust_amount"])),
+                    traded=int(float(d["business_amount"])),
+                    price=float(d["opt_entrust_price"]),
+                    time=dt,
+                    gateway_name=self.gateway_name
 
-            order = OrderData(
-                symbol=d["option_code"],
-                exchange=EXCHANGE_HSOPTION2VT[d["exchange_type"]],
-                direction=DIRECTION_HSOPTION2VT[d["entrust_bs"]],
-                status=STATUS_HSOPTION2VT[d["entrust_status"]],
-                orderid=batch_no,
-                offset=OFFSET_HSOPTION2VT[d["entrust_oc"]],
-                volume=int(float(d["entrust_amount"])),
-                traded=int(float(d["business_amount"])),
-                price=float(d["opt_entrust_price"]),
-                time=dt,
-                gateway_name=self.gateway_name
-
-            )
-            self.gateway.on_order(order)
-            self.orders[batch_no] = order
+                )
+                self.gateway.on_order(order)
+                self.orders[batch_no] = order
 
         self.gateway.write_log("委托查询完成")
+        self.gateway.write_log("成交查询完成")
 
     def on_query_trade(self, data: List[Dict[str, str]]) -> None:
         """"""
-        if not data:
-            self.gateway.write_log("成交查询完成")
-            return
+        # if not data:
+        #     self.gateway.write_log("成交查询完成")
+        #     return
+        if data:
+            for d in data:
+                price = float(d["opt_business_price"])
+                if price == 0:
+                    continue
 
-        for d in data:
-            price = float(d["opt_business_price"])
-            if price == 0:
-                continue
+                t = d["business_time"].rjust(6, "0")
+                dt = ":".join([t[: 2], t[2: 4], t[4:]])
 
-            t = d["business_time"].rjust(6, "0")
-            dt = ":".join([t[: 2], t[2: 4], t[4:]])
+                batch_no = self.entrust_batch_id[d["entrust_no"]]
 
-            batch_no = self.entrust_batch_id[d["entrust_no"]]
-
-            trade = TradeData(
-                orderid=batch_no,
-                tradeid=d["business_id"],
-                symbol=d["option_code"],
-                exchange=EXCHANGE_HSOPTION2VT[d["exchange_type"]],
-                direction=DIRECTION_HSOPTION2VT[d["entrust_bs"]],
-                offset=OFFSET_HSOPTION2VT[d["entrust_oc"]],
-                price=price,
-                volume=int(float(d["business_amount"])),
-                time=dt,
-                gateway_name=self.gateway_name
-            )
-            self.gateway.on_trade(trade)
+                trade = TradeData(
+                    orderid=batch_no,
+                    tradeid=d["business_id"],
+                    symbol=d["option_code"],
+                    exchange=EXCHANGE_HSOPTION2VT[d["exchange_type"]],
+                    direction=DIRECTION_HSOPTION2VT[d["entrust_bs"]],
+                    offset=OFFSET_HSOPTION2VT[d["entrust_oc"]],
+                    price=price,
+                    volume=int(float(d["business_amount"])),
+                    time=dt,
+                    gateway_name=self.gateway_name
+                )
+                self.gateway.on_trade(trade)
 
         self.gateway.write_log("成交查询完成")
 
@@ -593,11 +588,21 @@ class TdApi:
             self.gateway.write_log("合约查询失败")
             return
 
+        cout = 0
         for d in data:
+            cout += 1
+            print(f"a{cout}:   ", d)
+            hs_symbol = d["option_code"]
+            hs_exchange = EXCHANGE_HSOPTION2VT[d["exchange_type"]]
+            hs_name = d["option_name"]
+
+            symbol_exchange_map[hs_symbol] = hs_exchange
+            symbol_name_map[hs_symbol] = hs_name
+
             contract = ContractData(
-                symbol=d["option_code"],
-                exchange=EXCHANGE_HSOPTION2VT[d["exchange_type"]],
-                name=d["option_name"],
+                symbol=hs_symbol,
+                exchange=hs_exchange,
+                name=hs_name,
                 size=int(float(d["amount_per_hand"])),
                 pricetick=float(d["opt_price_step"]),
                 option_strike=float(d["exercise_price"]),
@@ -609,9 +614,13 @@ class TdApi:
             )
             self.gateway.on_contract(contract)
 
-        self.gateway.write_log("合约查询完成")
-        self.query_order()
-        self.query_trade()
+        if cout == 1000:
+            position_str = d["position_str"]
+            self.query_contract(position_str)
+        else:
+            self.gateway.write_log("合约查询完成")
+            self.query_order()
+            self.query_trade()
 
     def on_send_order(self, data: List[Dict[str, str]]) -> None:
         """"""
@@ -896,10 +905,13 @@ class TdApi:
         req["request_num"] = "10000"
         self.send_req(FUNCTION_QUERY_ORDER, req)
 
-    def query_contract(self) -> int:
+    def query_contract(self, position_str: str = None) -> int:
         """"""
         req = self.generate_req()
         req["request_num"] = "10000"
+
+        if position_str:
+            req["position_str"] = position_str
         self.send_req(FUNCTION_QUERY_CONTRACT, req)
 
     def subcribe_order(self) -> None:
@@ -976,7 +988,6 @@ class TdSubCallback:
 
     def __init__(self):
         """"""
-        self.api: TdApi = None
         global td_api
         self.td_api = td_api
 
