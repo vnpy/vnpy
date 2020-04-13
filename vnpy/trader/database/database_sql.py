@@ -435,7 +435,7 @@ class SqlManager(BaseDatabaseManager):
                 self.class_bar.symbol,
                 self.class_bar.exchange,
                 self.class_bar.interval,
-                fn.COUNT(self.class_bar.id).alias('ct')
+                fn.COUNT(self.class_bar.id).alias("count")
             ).group_by(
                 self.class_bar.symbol,
                 self.class_bar.exchange,
@@ -450,7 +450,7 @@ class SqlManager(BaseDatabaseManager):
                 "symbol": data.symbol,
                 "exchange": data.exchange,
                 "interval": data.interval,
-                "count": data.ct
+                "count": data.count
             })
 
         return result
