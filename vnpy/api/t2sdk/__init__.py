@@ -1,1 +1,1 @@
-from .py_t2sdk import py_t2sdk
+from . import py_t2sdk

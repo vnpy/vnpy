@@ -5,7 +5,7 @@ import requests
 from datetime import datetime
 from time import sleep
 
-from vnpy.api.ufto import py_t2sdk
+from vnpy.api.t2sdk import py_t2sdk
 from vnpy.api.sopt import MdApi
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.utility import get_folder_path
@@ -30,6 +30,7 @@ from vnpy.trader.object import (
     CancelRequest,
     SubscribeRequest,
 )
+
 
 EXCHANGE_HSOPTION2VT: Dict[str, Exchange] = {
     "1": Exchange.SSE,
@@ -66,7 +67,11 @@ OFFSET_HSOPTION2VT: Dict[str, Offset] = {
 OFFSET_VT2HSOPTION = {v: k for k, v in OFFSET_HSOPTION2VT.items()}
 
 STATUS_HSOPTION2VT: Dict[str, Status] = {
+    "0": Status.SUBMITTING,
+    "1": Status.SUBMITTING,
     "2": Status.NOTTRADED,
+    "3": Status.SUBMITTING,
+    "4": Status.PARTTRADED,
     "5": Status.CANCELLED,
     "6": Status.CANCELLED,
     "7": Status.PARTTRADED,
@@ -109,12 +114,12 @@ class HsoptionGateway(BaseGateway):
     """
 
     default_setting = {
-        "恒生用户名": "",
-        "恒生密码": "",
-        "CTP用户名": "",
-        "CTP密码": "",
-        "CTP经纪商代码": "",
-        "CTP行情服务器": "",
+        "交易用户名": "",
+        "交易密码": "",
+        "行情用户名": "",
+        "行情密码": "",
+        "行情经纪商代码": "",
+        "行情服务器": "",
     }
 
     exchanges = [Exchange.SSE, Exchange.SZSE]
@@ -128,20 +133,19 @@ class HsoptionGateway(BaseGateway):
 
     def connect(self, setting: dict) -> None:
         """"""
-        hs_userid = setting["恒生用户名"]
-        hs_password = setting["恒生密码"]
+        td_userid = setting["交易用户名"]
+        td_password = setting["交易密码"]
 
-        ctp_userid = setting["CTP用户名"]
-        ctp_password = setting["CTP密码"]
-        ctp_brokerid = setting["CTP经纪商代码"]
-        ctp_md_address = setting["CTP行情服务器"]
+        md_userid = setting["行情用户名"]
+        md_password = setting["行情密码"]
+        md_brokerid = setting["行情经纪商代码"]
+        md_address = setting["行情服务器"]
 
-        if not ctp_md_address.startswith("tcp://"):
-            ctp_md_address = "tcp://" + ctp_md_address
+        if not md_address.startswith("tcp://"):
+            md_address = "tcp://" + md_address
 
-        self.md_api.connect(
-            ctp_md_address, ctp_userid, ctp_password, ctp_brokerid)
-        self.td_api.connect(hs_userid, hs_password)
+        self.md_api.connect(md_address, md_userid, md_password, md_brokerid)
+        self.td_api.connect(td_userid, td_password)
 
         self.init_query()
 
@@ -485,7 +489,7 @@ class TdApi:
     def on_query_position(self, data: List[Dict[str, str]]) -> None:
         """"""
         if not data:
-            self.gateway.write_log("持仓查询失败")
+            self.gateway.write_log("持仓信息查询失败")
             return
 
         for d in data:
@@ -505,7 +509,7 @@ class TdApi:
     def on_query_account(self, data: List[Dict[str, str]]) -> None:
         """"""
         if not data:
-            self.gateway.write_log("账号资金查询失败")
+            self.gateway.write_log("账号资金信息查询失败")
             return
 
         for d in data:
@@ -521,7 +525,8 @@ class TdApi:
     def on_query_order(self, data: List[Dict[str, str]]) -> None:
         """"""
         if not data:
-            self.gateway.write_log("委托查询完成")
+            self.gateway.write_log("委托信息查询成功")
+            self.query_trade()
             return
 
         for d in data:
@@ -537,7 +542,7 @@ class TdApi:
                 symbol=d["option_code"],
                 exchange=EXCHANGE_HSOPTION2VT[d["exchange_type"]],
                 direction=DIRECTION_HSOPTION2VT[d["entrust_bs"]],
-                status=STATUS_HSOPTION2VT[d["entrust_status"]],
+                status=STATUS_HSOPTION2VT.get(d["entrust_status"], Status.SUBMITTING),
                 orderid=batch_no,
                 offset=OFFSET_HSOPTION2VT[d["entrust_oc"]],
                 volume=int(float(d["entrust_amount"])),
@@ -550,12 +555,13 @@ class TdApi:
             self.gateway.on_order(order)
             self.orders[batch_no] = order
 
-        self.gateway.write_log("委托查询完成")
+        self.gateway.write_log("委托信息查询成功")
+        self.query_trade()
 
     def on_query_trade(self, data: List[Dict[str, str]]) -> None:
         """"""
         if not data:
-            self.gateway.write_log("成交查询完成")
+            self.gateway.write_log("成交信息查询成功")
             return
 
         for d in data:
@@ -582,15 +588,16 @@ class TdApi:
             )
             self.gateway.on_trade(trade)
 
-        self.gateway.write_log("成交查询完成")
+        self.gateway.write_log("成交信息查询成功")
 
         self.subcribe_order()
         self.subcribe_trade()
 
     def on_query_contract(self, data: List[Dict[str, str]]) -> None:
         """"""
+        print("on query contract")
         if not data:
-            self.gateway.write_log("合约查询失败")
+            self.gateway.write_log("合约信息查询失败")
             return
 
         for d in data:
@@ -600,18 +607,27 @@ class TdApi:
                 name=d["option_name"],
                 size=int(float(d["amount_per_hand"])),
                 pricetick=float(d["opt_price_step"]),
-                option_strike=float(d["exercise_price"]),
-                option_underlying=d["stock_code"],
                 product=Product.OPTION,
-                option_type=OPTIONTYPE_HSOPTION2VT[d["option_type"]],
-                option_expiry=d["end_date"],
                 gateway_name=self.gateway_name
             )
-            self.gateway.on_contract(contract)
 
-        self.gateway.write_log("合约查询完成")
+            contract.option_portfolio = d["stock_code"] + "_O"
+            contract.option_underlying = (
+                d["stock_code"]
+                + "-"
+                + str(d["end_date"])
+            )
+            contract.option_type = OPTIONTYPE_HSOPTION2VT[d["option_type"]]
+            contract.option_strike = float(d["exercise_price"])
+            contract.option_expiry = datetime.strptime(d["end_date"], "%Y%m%d")
+            contract.option_index = get_option_index(
+                contract.option_strike, d["optcontract_id"]
+            )
+
+            self.gateway.on_contract(contract)
+        
+        self.gateway.write_log("合约信息查询成功")
         self.query_order()
-        self.query_trade()
 
     def on_send_order(self, data: List[Dict[str, str]]) -> None:
         """"""
@@ -648,7 +664,7 @@ class TdApi:
 
             batch_no = self.entrust_batch_id[entrust_no]
             order = self.orders[batch_no]
-            order.status = STATUS_HSOPTION2VT[d["entrust_status"]]
+            order.status = STATUS_HSOPTION2VT.get(d["entrust_status"], Status.SUBMITTING)
 
             self.gateway.on_order(order)
 
@@ -739,29 +755,32 @@ class TdApi:
 
     def generate_op_station(self):
         """"""
-        company = "SHWL"
+        company = "SHWN"
 
         f = requests.request("GET", "http://myip.dnsomatic.com")
         iip = f.text
 
         c = wmi.WMI()
 
-        for interface in c.Win32_NetworkAdapterConfiguration(IPEnabled=1):
-            mac = interface.MACAddress     # MAC地址
-            lip = interface.IPAddress[0]   # 公网IP
+        try:
+            for interface in c.Win32_NetworkAdapterConfiguration(IPEnabled=1):
+                mac = interface.MACAddress
+                lip = interface.IPAddress[0]
 
-        for processor in c.Win32_Processor():
-            cpu = processor.Processorid.strip()   # CPU编号
+            for processor in c.Win32_Processor():
+                cpu = processor.Processorid.strip()
 
-        for disk in c.Win32_DiskDrive():   # 硬盘编号
-            hd = disk.SerialNumber.strip()
+            for disk in c.Win32_DiskDrive():
+                hd = disk.SerialNumber.strip()
 
-        for disk in c.Win32_LogicalDisk(DriveType=3):   # 硬盘分区信息
-            pi = ",".join([disk.Caption, disk.Size])
+            for disk in c.Win32_LogicalDisk(DriveType=3):
+                pi = ",".join([disk.Caption, disk.Size])
 
-        pcn = socket.gethostname()         # 计算机名称
+            pcn = socket.gethostname()
 
-        op_station = f"TYJR-{company}-IIP.{iip}-LIP.{lip}-MAC.{mac}-HD.{hd}-PCN.{pcn}-CPU.{cpu}-PI.{pi}"
+            op_station = f"TYJR-{company}-IIP.{iip}-LIP.{lip}-MAC.{mac}-HD.{hd}-PCN.{pcn}-CPU.{cpu}-PI.{pi}"
+        except Exception:
+            op_station = ""
 
         return op_station
 
@@ -781,21 +800,21 @@ class TdApi:
         """
         Send new order.
         """
-        hs_req = self.generate_req()
-        hs_req["exchange_type"] = EXCHANGE_VT2HSOPTION[req.exchange]
-        hs_req["option_code"] = req.symbol
-        hs_req["entrust_amount"] = str(req.volume)
-        hs_req["opt_entrust_price"] = str(req.price)
-        hs_req["entrust_bs"] = DIRECTION_VT2HSOPTION[req.direction]
-        hs_req["entrust_oc"] = OFFSET_VT2HSOPTION[req.offset]
-        hs_req["covered_flag"] = ""
-        hs_req["entrust_prop"] = ORDERTYPE_VT2HSOPTION[req.type]
+        td_req = self.generate_req()
+        td_req["exchange_type"] = EXCHANGE_VT2HSOPTION[req.exchange]
+        td_req["option_code"] = req.symbol
+        td_req["entrust_amount"] = str(req.volume)
+        td_req["opt_entrust_price"] = str(req.price)
+        td_req["entrust_bs"] = DIRECTION_VT2HSOPTION[req.direction]
+        td_req["entrust_oc"] = OFFSET_VT2HSOPTION[req.offset]
+        td_req["covered_flag"] = ""
+        td_req["entrust_prop"] = ORDERTYPE_VT2HSOPTION[req.type]
 
         self.batch_no += 1
         batch_no = str(self.batch_no)
-        hs_req["batch_no"] = batch_no
+        td_req["batch_no"] = batch_no
 
-        self.send_req(FUNCTION_SEND_ORDER, hs_req)
+        self.send_req(FUNCTION_SEND_ORDER, td_req)
 
         order = req.create_order_data(batch_no, self.gateway_name)
         self.gateway.on_order(order)
@@ -817,10 +836,12 @@ class TdApi:
         ret, subscriber = self.connection.NewSubscriber(
             sub_callback,
             biz_name,
-            5000
+            300000
         )
         if ret != 0:
-            print(str(self.connection.GetMCLastError(), encoding="gbk"))
+            error_msg = str(self.connection.GetMCLastError(), encoding="gbk")
+            msg = f"订阅推送失败：{error_msg}"
+            self.td_api.gateway.write_log(msg)
             return
 
         # Set subscribe parameters
@@ -859,11 +880,11 @@ class TdApi:
             self.cancels[batch_no] = req
             return
 
-        hs_req = self.generate_req()
+        td_req = self.generate_req()
         entrust_no = self.batch_entrust_id[batch_no]
-        hs_req["entrust_no"] = entrust_no
+        td_req["entrust_no"] = entrust_no
 
-        self.send_req(FUNCTION_CANCEL_ORDER, hs_req)
+        self.send_req(FUNCTION_CANCEL_ORDER, td_req)
 
         if batch_no in self.cancels:
             del self.cancels[batch_no]
@@ -927,15 +948,15 @@ class TdAsyncCallback:
     def __init__(self):
         """"""
         global td_api
-        self.td_api = td_api
+        self.td_api: TdApi = td_api
 
     def OnRegister(self) -> None:
         """"""
-        print("OnRegister")
+        pass
 
     def OnClose(self) -> None:
         """"""
-        print("OnClose")
+        pass
 
     def OnReceivedBizMsg(self, hSend, sBuff, iLenght) -> None:
         """"""
@@ -950,10 +971,9 @@ class TdAsyncCallback:
             unpacker = py_t2sdk.pyIF2UnPacker()
             unpacker.Open(buf, len)
             data = unpack_data(unpacker)
-            unpacker.Release()
-
-            global td_api
             self.td_api.on_callback(function, data)
+
+            unpacker.Release()
         else:
             buf, len = biz_msg.GetContent()
             unpacker = py_t2sdk.pyIF2UnPacker()
@@ -961,12 +981,12 @@ class TdAsyncCallback:
 
             if unpacker:
                 data = unpack_data(unpacker)
-                unpacker.Release()
-
-                global td_api
                 self.td_api.on_error(data)
+                unpacker.Release()
             else:
-                print("unpacker 为空：", str(biz_msg.GetErrorInfo(), encoding="gbk"))
+                error_msg = str(biz_msg.GetErrorInfo(), encoding="gbk")
+                msg = f"请求失败，信息：{error_msg}"
+                self.td_api.gateway.write_log(msg)
 
         biz_msg.Release()
 
@@ -976,9 +996,8 @@ class TdSubCallback:
 
     def __init__(self):
         """"""
-        self.api: TdApi = None
         global td_api
-        self.td_api = td_api
+        self.td_api: TdApi = td_api
 
     def OnReceived(self, topic, sBuff, iLen) -> None:
         """"""
@@ -989,12 +1008,9 @@ class TdSubCallback:
         unpacker = py_t2sdk.pyIF2UnPacker()
         unpacker.Open(buf, len)
         data = unpack_data(unpacker)
-        unpacker.Release()
-
-        global td_api
-
         self.td_api.on_callback(topic, data)
 
+        unpacker.Release()
         biz_msg.Release()
 
 
@@ -1015,6 +1031,25 @@ def unpack_data(unpacker: py_t2sdk.pyIF2UnPacker) -> List[Dict[str, str]]:
         data.append(d)
 
     return data
+
+
+def get_option_index(strike_price: float, exchange_instrument_id: str) -> str:
+    """"""
+    exchange_instrument_id = exchange_instrument_id.replace(" ", "")
+
+    if "M" in exchange_instrument_id:
+        n = exchange_instrument_id.index("M")
+    elif "A" in exchange_instrument_id:
+        n = exchange_instrument_id.index("A")
+    elif "B" in exchange_instrument_id:
+        n = exchange_instrument_id.index("B")
+    else:
+        return str(strike_price)
+
+    index = exchange_instrument_id[n:]
+    option_index = f"{strike_price:.3f}-{index}"
+
+    return option_index
 
 
 td_api = None
