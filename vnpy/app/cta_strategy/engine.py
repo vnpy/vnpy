@@ -319,6 +319,8 @@ class CtaEngine(BaseEngine):
         vt_orderids = []
 
         for req in req_list:
+            req.reference = strategy.strategy_name      # Add strategy name as order reference
+
             vt_orderid = self.main_engine.send_order(
                 req, contract.gateway_name)
 

@@ -25,7 +25,7 @@ from vnpy.trader.object import (
     PositionData,
     AccountData
 )
-from vnpy.trader.utility import get_folder_path
+from vnpy.trader.utility import get_folder_path, round_to
 
 
 MARKET_XTP2VT: Dict[int, Exchange] = {
@@ -119,6 +119,7 @@ OPTIONTYPE_XTP2VT = {
 }
 
 symbol_name_map: Dict[str, str] = {}
+symbol_pricetick_map: Dict[str, float] = {}
 
 
 class XtpGateway(BaseGateway):
@@ -281,6 +282,19 @@ class XtpMdApi(MdApi):
         tick.bid_volume_1, tick.bid_volume_2, tick.bid_volume_3, tick.bid_volume_4, tick.bid_volume_5 = data["bid_qty"][0:5]
         tick.ask_volume_1, tick.ask_volume_2, tick.ask_volume_3, tick.ask_volume_4, tick.ask_volume_5 = data["ask_qty"][0:5]
 
+        pricetick = symbol_pricetick_map.get(tick.vt_symbol, 0)
+        if pricetick:
+            tick.bid_price_1 = round_to(tick.bid_price_1, pricetick)
+            tick.bid_price_2 = round_to(tick.bid_price_2, pricetick)
+            tick.bid_price_3 = round_to(tick.bid_price_3, pricetick)
+            tick.bid_price_4 = round_to(tick.bid_price_4, pricetick)
+            tick.bid_price_5 = round_to(tick.bid_price_5, pricetick)
+            tick.ask_price_1 = round_to(tick.ask_price_1, pricetick)
+            tick.ask_price_2 = round_to(tick.ask_price_2, pricetick)
+            tick.ask_price_3 = round_to(tick.ask_price_3, pricetick)
+            tick.ask_price_4 = round_to(tick.ask_price_4, pricetick)
+            tick.ask_price_5 = round_to(tick.ask_price_5, pricetick)
+
         tick.name = symbol_name_map.get(tick.vt_symbol, tick.symbol)
         self.gateway.on_tick(tick)
 
@@ -349,6 +363,7 @@ class XtpMdApi(MdApi):
             self.gateway.on_contract(contract)
 
         symbol_name_map[contract.vt_symbol] = contract.name
+        symbol_pricetick_map[contract.vt_symbol] = contract.pricetick
 
         if last:
             self.gateway.write_log(f"{contract.exchange.value}合约信息查询成功")
@@ -666,6 +681,7 @@ class XtpTdApi(TdApi):
         )
 
         self.gateway.on_contract(contract)
+        symbol_pricetick_map[contract.vt_symbol] = contract.pricetick
 
         if last:
             self.gateway.write_log("期权信息查询成功")
