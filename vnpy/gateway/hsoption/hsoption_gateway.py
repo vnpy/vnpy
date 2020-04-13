@@ -595,11 +595,45 @@ class TdApi:
 
     def on_query_contract(self, data: List[Dict[str, str]]) -> None:
         """"""
-        print("on query contract")
         if not data:
             self.gateway.write_log("合约信息查询失败")
             return
 
+        # Generate ETF contract data
+        contract_1 = ContractData(
+            symbol="510050",
+            exchange=Exchange.SSE,
+            name="50ETF",
+            size=1,
+            pricetick=0.001,
+            product=Product.ETF,
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_contract(contract_1)
+
+        contract_2 = ContractData(
+            symbol="510300",
+            exchange=Exchange.SSE,
+            name="300ETF",
+            size=1,
+            pricetick=0.001,
+            product=Product.ETF,
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_contract(contract_2)
+
+        contract_3 = ContractData(
+            symbol="159919",
+            exchange=Exchange.SZSE,
+            name="300ETF",
+            size=1,
+            pricetick=0.001,
+            product=Product.ETF,
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_contract(contract_3)
+
+        # Process option contract
         for d in data:
             contract = ContractData(
                 symbol=d["option_code"],
@@ -625,7 +659,7 @@ class TdApi:
             )
 
             self.gateway.on_contract(contract)
-        
+
         self.gateway.write_log("合约信息查询成功")
         self.query_order()
 
@@ -703,7 +737,7 @@ class TdApi:
 
     def on_error(self, error: dict) -> None:
         """"""
-        print("on error", error)
+        print(f"触发错误：{str(error)}")
 
     def on_callback(self, function: int, data: dict) -> None:
         """"""
