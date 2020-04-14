@@ -6,12 +6,12 @@ from scipy import interpolate
 
 from vnpy.event import Event
 from vnpy.trader.ui import QtWidgets, QtCore
-from vnpy.trader.event import EVENT_TICK, EVENT_TIMER
+from vnpy.trader.event import EVENT_TICK, EVENT_TIMER, EVENT_TRADE
+from vnpy.trader.object import TickData, TradeData
 
 from ..engine import OptionEngine
 from ..base import (
     EVENT_OPTION_ALGO_PRICING,
-    EVENT_OPTION_ALGO_TRADING,
     EVENT_OPTION_ALGO_STATUS,
     EVENT_OPTION_ALGO_LOG
 )
@@ -178,7 +178,7 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
     signal_tick = QtCore.pyqtSignal(Event)
     signal_pricing = QtCore.pyqtSignal(Event)
     signal_status = QtCore.pyqtSignal(Event)
-    signal_trading = QtCore.pyqtSignal(Event)
+    signal_trade = QtCore.pyqtSignal(Event)
 
     headers: List[Dict] = [
         {"name": "bid_volume", "display": "买量", "cell": BidCell},
@@ -209,6 +209,7 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
 
         self.option_engine = option_engine
         self.event_engine = option_engine.event_engine
+        self.main_engine = option_engine.main_engine
         self.algo_engine = option_engine.algo_engine
         self.portfolio_name = portfolio_name
 
@@ -315,20 +316,24 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
 
         self.resizeColumnsToContents()
 
+        # Update all net pos and tick cells
+        for vt_symbol in self.cells.keys():
+            self.update_net_pos(vt_symbol)
+
+            tick = self.main_engine.get_tick(vt_symbol)
+            if tick:
+                self.update_tick(tick)
+
     def register_event(self) -> None:
         """"""
         self.signal_pricing.connect(self.process_pricing_event)
-        self.signal_trading.connect(self.process_trading_event)
         self.signal_status.connect(self.process_status_event)
         self.signal_tick.connect(self.process_tick_event)
+        self.signal_trade.connect(self.process_trade_event)
 
         self.event_engine.register(
             EVENT_OPTION_ALGO_PRICING,
             self.signal_pricing.emit
-        )
-        self.event_engine.register(
-            EVENT_OPTION_ALGO_TRADING,
-            self.signal_trading.emit
         )
         self.event_engine.register(
             EVENT_OPTION_ALGO_STATUS,
@@ -338,10 +343,18 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
             EVENT_TICK,
             self.signal_tick.emit
         )
+        self.event_engine.register(
+            EVENT_TRADE,
+            self.signal_trade.emit
+        )
 
     def process_tick_event(self, event: Event) -> None:
         """"""
-        tick = event.data
+        tick: TickData = event.data
+        self.update_tick(tick)
+
+    def update_tick(self, tick: TickData) -> None:
+        """"""
         cells = self.cells.get(tick.vt_symbol, None)
         if not cells:
             return
@@ -384,22 +397,16 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
             cells["ref_price"].setText("")
             cells["pricing_impv"].setText("")
 
-    def process_trading_event(self, event: Event) -> None:
+    def process_trade_event(self, event: Event) -> None:
         """"""
-        algo = event.data
-        cells = self.cells[algo.vt_symbol]
+        trade: TradeData = event.data
+        self.update_net_pos(trade.vt_symbol)
 
-        if algo.trading_active:
-            cells["net_pos"].setText(str(algo.option.net_pos))
-        else:
-            cells["net_pos"].setText("")
-
-    def process_position_event(self, event: Event) -> None:
+    def update_net_pos(self, vt_symbol: str) -> None:
         """"""
-        algo = event.data
-
-        cells = self.cells[algo.vt_symbol]
-        cells["net_pos"].setText(str(algo.option.net_pos))
+        option = self.option_engine.get_instrument(vt_symbol)
+        cells = self.cells[vt_symbol]
+        cells["net_pos"].setText(str(option.net_pos))
 
     def start_algo_pricing(self, vt_symbol: str) -> None:
         """"""
