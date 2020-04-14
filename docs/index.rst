@@ -7,7 +7,6 @@ vn.py项目文档
    introduction.md
    install.md
    quickstart.md
-   csv_loader.md
    cta_strategy.md
    cta_backtester.md
    data_recoder.md

@@ -52,37 +52,34 @@ class DataTypeGenerator:
             name = line.split(" ")[2]
             typedef = "int"
             new_line = f"{name} = \"{typedef}\"\n"
-            self.f_typedef.write(new_line)           
+            self.f_typedef.write(new_line)
 
         elif line.startswith("typedef enum"):
             self.process_enum(line)
         elif line.startswith("}"):
             new_line = "}\n\n"
-            self.f_struct.write(new_line)            
+            self.f_struct.write(new_line)
         # 处理枚举值表头
         # elif line.startswith("typedef enum"):
         #     print(line)
 
         # 处理枚举值内容
         elif "//<" in line:
-        # elif line.startswith("	") or line.startswith("    "):
             if "=" in line:
                 name = line.split("=")[0].strip()
             elif "," in line:
                 name = line.split(",")[0].strip()
             else:
-                
                 name = line.split("///")[0].strip()
-            
-            py_type = "int"
 
+            py_type = "int"
             new_line = f"    \"{name}\": \"{py_type}\",\n"
             self.f_struct.write(new_line)
-    
+
     def process_comment(self, line: str):
         """处理注释"""
         line.replace("/", "#")
-    
+
     def process_enum(self, line: str):
         """处理枚举值"""
         content = line.replace("\n", " ")
@@ -92,14 +89,11 @@ class DataTypeGenerator:
         name = content[2]
 
         new_line = f"{name} = \"{type_}\"\n"
-
-
         self.f_typedef.write(new_line)
 
         end = "{"
         struct_line = f"{name} = {end}\n"
         self.f_struct.write(struct_line)
-        
 
     def process_define(self, line: str):
         """处理常量定义"""

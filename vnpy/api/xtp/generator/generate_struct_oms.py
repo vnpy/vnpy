@@ -44,10 +44,8 @@ class StructGenerator:
         for line in self.f_cpp:
             self.process_line(line)
 
-        self.f_cpp.close() 
+        self.f_cpp.close()
         self.f_struct.close()
-      
-        # print("Struct TEST生成成功")
 
         # 二次修改
         self.fix_bug()
@@ -77,7 +75,7 @@ class StructGenerator:
         w_sturct.close()
         os.remove("test_xtp_struct_oms.py")
         print("Struct生成成功")
-            
+
     def process_line(self, line: str):
         """处理每行"""
         line = line.replace(";", "")
@@ -137,7 +135,6 @@ class StructGenerator:
             name = content[1].replace("\n", "")
             name = name.replace("\t", "")
             end = "{"
-            
             new_line = f"{name} = {end}\n"
             self.f_struct.write(new_line)
 
@@ -159,34 +156,17 @@ class StructGenerator:
                 type_ = words[0]
                 py_type = self.typedefs[type_]
                 name = words[1].strip()
-        
             else:
                 words = words[0].split()
                 type_ = words[0]
                 py_type = self.typedefs[type_]
                 name = words[1].strip()
 
-            # if not name.islower():
-            #     print(name)
-
-            # # if name.endswith("]"):
-            # #     print(name)
-            # #     new_name = name.split("[")[0]
-                
-            # #     new_line = f"    \"{new_name}\": \"{py_type}\",\n"
-            # #     self.f_struct.write(new_line)
-            # # else:
-            
             new_line = f"    \"{name}\": \"{py_type}\",\n"
-            
             # print(new_line)
             self.f_struct.write(new_line)
-
-            
 
 
 if __name__ == "__main__":
     generator = StructGenerator("../include/xtp/xoms_api_struct.h", "xtp")
     generator.run()
-
-

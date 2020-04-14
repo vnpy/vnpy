@@ -105,6 +105,7 @@ class BacktesterEngine(BaseEngine):
         """
         try:
             module = importlib.import_module(module_name)
+            importlib.reload(module)
 
             for name in dir(module):
                 value = getattr(module, name)

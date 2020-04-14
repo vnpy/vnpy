@@ -163,4 +163,3 @@ XTP_CRD_CR_STATUS = {
     "XTP_CRD_CR_SUCCESS": "int",
     "XTP_CRD_CR_FAILED": "int",
 }
-

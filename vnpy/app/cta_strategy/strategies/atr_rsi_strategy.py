@@ -31,12 +31,21 @@ class AtrRsiStrategy(CtaTemplate):
     intra_trade_low = 0
 
     parameters = [
-        "atr_length", "atr_ma_length", "rsi_length",
-        "rsi_entry", "trailing_percent", "fixed_size"
+        "atr_length",
+        "atr_ma_length",
+        "rsi_length",
+        "rsi_entry",
+        "trailing_percent",
+        "fixed_size"
     ]
     variables = [
-        "atr_value", "atr_ma", "rsi_value", "rsi_buy",
-        "rsi_sell", "intra_trade_high", "intra_trade_low"
+        "atr_value",
+        "atr_ma",
+        "rsi_value",
+        "rsi_buy",
+        "rsi_sell",
+        "intra_trade_high",
+        "intra_trade_low"
     ]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):

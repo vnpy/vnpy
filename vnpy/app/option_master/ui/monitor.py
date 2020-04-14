@@ -115,10 +115,10 @@ class OptionMarketMonitor(MonitorTable):
 
     headers: List[Dict] = [
         {"name": "symbol", "display": "代码", "cell": MonitorCell},
-        {"name": "theo_vega", "display": "Vega", "cell": GreeksCell},
-        {"name": "theo_theta", "display": "Theta", "cell": GreeksCell},
-        {"name": "theo_gamma", "display": "Gamma", "cell": GreeksCell},
-        {"name": "theo_delta", "display": "Delta", "cell": GreeksCell},
+        {"name": "cash_vega", "display": "Vega", "cell": GreeksCell},
+        {"name": "cash_theta", "display": "Theta", "cell": GreeksCell},
+        {"name": "cash_gamma", "display": "Gamma", "cell": GreeksCell},
+        {"name": "cash_delta", "display": "Delta", "cell": GreeksCell},
         {"name": "open_interest", "display": "持仓量", "cell": MonitorCell},
         {"name": "volume", "display": "成交量", "cell": MonitorCell},
         {"name": "bid_impv", "display": "买隐波", "cell": BidCell},
@@ -157,6 +157,9 @@ class OptionMarketMonitor(MonitorTable):
         for option in portfolio.options.values():
             self.option_symbols.add(option.vt_symbol)
             self.underlying_option_map[option.underlying.vt_symbol].append(option.vt_symbol)
+
+        # Get greeks decimals precision
+        self.greeks_precision = f"{portfolio.precision}f"
 
         # Set table row and column numbers
         row_count = 0
@@ -310,10 +313,10 @@ class OptionMarketMonitor(MonitorTable):
 
         option = self.option_engine.get_instrument(vt_symbol)
 
-        option_cells["theo_delta"].setText(f"{option.theo_delta:.0f}")
-        option_cells["theo_gamma"].setText(f"{option.theo_gamma:.0f}")
-        option_cells["theo_theta"].setText(f"{option.theo_theta:.0f}")
-        option_cells["theo_vega"].setText(f"{option.theo_vega:.0f}")
+        option_cells["cash_delta"].setText(f"{option.cash_delta:.{self.greeks_precision}}")
+        option_cells["cash_gamma"].setText(f"{option.cash_gamma:.{self.greeks_precision}}")
+        option_cells["cash_theta"].setText(f"{option.cash_theta:.{self.greeks_precision}}")
+        option_cells["cash_vega"].setText(f"{option.cash_vega:.{self.greeks_precision}}")
 
 
 class OptionGreeksMonitor(MonitorTable):
@@ -361,6 +364,9 @@ class OptionGreeksMonitor(MonitorTable):
         for option in portfolio.options.values():
             self.option_symbols.add(option.vt_symbol)
             self.underlying_option_map[option.underlying.vt_symbol].append(option.vt_symbol)
+
+        # Get greeks decimals precision
+        self.greeks_precision = f"{portfolio.precision}f"
 
         # Set table row and column numbers
         row_count = 1
@@ -506,12 +512,12 @@ class OptionGreeksMonitor(MonitorTable):
         row_cells["long_pos"].setText(f"{row_data.long_pos}")
         row_cells["short_pos"].setText(f"{row_data.short_pos}")
         row_cells["net_pos"].setText(f"{row_data.net_pos}")
-        row_cells["pos_delta"].setText(f"{row_data.pos_delta:.0f}")
+        row_cells["pos_delta"].setText(f"{row_data.pos_delta:.{self.greeks_precision}}")
 
         if not isinstance(row_data, UnderlyingData):
-            row_cells["pos_gamma"].setText(f"{row_data.pos_gamma:.0f}")
-            row_cells["pos_theta"].setText(f"{row_data.pos_theta:.0f}")
-            row_cells["pos_vega"].setText(f"{row_data.pos_vega:.0f}")
+            row_cells["pos_gamma"].setText(f"{row_data.pos_gamma:.{self.greeks_precision}}")
+            row_cells["pos_theta"].setText(f"{row_data.pos_theta:.{self.greeks_precision}}")
+            row_cells["pos_vega"].setText(f"{row_data.pos_vega:.{self.greeks_precision}}")
 
 
 class OptionChainMonitor(MonitorTable):

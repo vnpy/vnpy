@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.1.1-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.1.2-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
@@ -44,7 +44,9 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 宽睿（oes）：国内证券（A股）
 
-        * 中泰XTP（xtp）：国内证券（A股）
+        * 中泰XTP（xtp）：国内证券（A股）、ETF期权
+
+        * 恒生期权（hsoption）：ETF期权
 
         * 华鑫奇点（tora）：国内证券（A股）
 
@@ -53,6 +55,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
         * 鑫管家（xgj）：期货资管
 
         * 融航（rohon）：期货资管
+
+        * 中汇亿达（comstar）：银行间市场
 
     * 海外市场
 
@@ -67,6 +71,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
         * 直达期货（da）：全球期货
 
         * OANDA（oanda）：外汇、CFD
+
+        * Alpaca（alpaca）：美股（零佣金）
 
     * 数字货币
 
@@ -116,6 +122,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * option_master：期权交易模块，针对国内期权市场设计，支持多种期权定价模型、隐含波动率曲面计算、希腊值风险跟踪等功能
 
+    * portfolio_strategy：组合策略模块，面向同时交易多合约的量化策略（Alpha、期权套利等），提供历史数据回测和实盘自动交易功能
+
     * algo_trading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等等，支持常用算法配置保存
 
     * script_trader：脚本策略模块，针对多标的组合类交易策略设计，同时也可以直接在命令行中实现REPL指令形式的交易，不支持回测功能
@@ -127,8 +135,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
     * rpc_service：RPC服务模块，允许将某一VN Trader进程启动为服务端，作为统一的行情和交易路由通道，允许多客户端同时连接，实现多进程分布式系统
 
     * data_manager：历史数据管理模块，通过树形目录查看数据库中已有的数据概况，选择任意时间段数据查看字段细节，支持CSV文件的数据导入和导出
-
-    * csv_loader：CSV历史数据加载器，用于加载CSV格式文件中的历史数据到平台数据库中，用于策略的回测研究以及实盘初始化等功能，支持自定义数据表头格式
 
     * data_recorder：行情记录模块，基于图形界面进行配置，根据需求实时录制Tick或者K线行情到数据库中，用于策略回测或者实盘初始化
 
@@ -150,7 +156,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.1.1](https://download.vnpy.com/vnstudio-2.1.1.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.1.2](https://download.vnpy.com/vnstudio-2.1.2.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 

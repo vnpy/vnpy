@@ -1,6 +1,6 @@
 from typing import Tuple, Dict
 from functools import partial
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from vnpy.trader.ui import QtWidgets, QtCore
 from vnpy.trader.engine import MainEngine, EventEngine
@@ -28,6 +28,7 @@ class ManagerWidget(QtWidgets.QWidget):
 
         self.init_tree()
         self.init_table()
+        self.init_child()
 
         refresh_button = QtWidgets.QPushButton("刷新")
         refresh_button.clicked.connect(self.refresh_tree)
@@ -35,10 +36,18 @@ class ManagerWidget(QtWidgets.QWidget):
         import_button = QtWidgets.QPushButton("导入数据")
         import_button.clicked.connect(self.import_data)
 
+        update_button = QtWidgets.QPushButton("更新数据")
+        update_button.clicked.connect(self.update_data)
+
+        download_button = QtWidgets.QPushButton("下载数据")
+        download_button.clicked.connect(self.download_data)
+
         hbox1 = QtWidgets.QHBoxLayout()
         hbox1.addWidget(refresh_button)
         hbox1.addStretch()
         hbox1.addWidget(import_button)
+        hbox1.addWidget(update_button)
+        hbox1.addWidget(download_button)
 
         hbox2 = QtWidgets.QHBoxLayout()
         hbox2.addWidget(self.tree)
@@ -61,6 +70,7 @@ class ManagerWidget(QtWidgets.QWidget):
             "开始时间",
             "结束时间",
             "",
+            "",
             ""
         ]
 
@@ -68,21 +78,19 @@ class ManagerWidget(QtWidgets.QWidget):
         self.tree.setColumnCount(len(labels))
         self.tree.setHeaderLabels(labels)
 
-        root = QtWidgets.QTreeWidgetItem(self.tree)
-        root.setText(0, "K线数据")
-        root.setExpanded(True)
-
+    def init_child(self) -> None:
+        """"""
         self.minute_child = QtWidgets.QTreeWidgetItem()
         self.minute_child.setText(0, "分钟线")
-        root.addChild(self.minute_child)
+        self.tree.addTopLevelItem(self.minute_child)
 
-        self.hour_child = QtWidgets.QTreeWidgetItem()
+        self.hour_child = QtWidgets.QTreeWidgetItem(self.tree)
         self.hour_child.setText(0, "小时线")
-        root.addChild(self.hour_child)
+        self.tree.addTopLevelItem(self.hour_child)
 
-        self.daily_child = QtWidgets.QTreeWidgetItem()
+        self.daily_child = QtWidgets.QTreeWidgetItem(self.tree)
         self.daily_child.setText(0, "日线")
-        root.addChild(self.daily_child)
+        self.tree.addTopLevelItem(self.daily_child)
 
     def init_table(self) -> None:
         """"""
@@ -104,8 +112,24 @@ class ManagerWidget(QtWidgets.QWidget):
             QtWidgets.QHeaderView.ResizeToContents
         )
 
+    def clear_tree(self) -> None:
+        """"""
+        for key, item in self.tree_items.items():
+            interval = key[2]
+
+            if interval == Interval.MINUTE.value:
+                self.minute_child.removeChild(item)
+            elif interval == Interval.HOUR.value:
+                self.hour_child.removeChild(item)
+            else:
+                self.daily_child.removeChild(item)
+
+        self.tree_items.clear()
+
     def refresh_tree(self) -> None:
         """"""
+        self.clear_tree()
+
         data = self.engine.get_bar_data_available()
 
         for d in data:
@@ -149,8 +173,18 @@ class ManagerWidget(QtWidgets.QWidget):
                 )
                 show_button.clicked.connect(show_func)
 
+                delete_button = QtWidgets.QPushButton("删除")
+                delete_func = partial(
+                    self.delete_data,
+                    d["symbol"],
+                    Exchange(d["exchange"]),
+                    Interval(d["interval"]),
+                )
+                delete_button.clicked.connect(delete_func)
+
                 self.tree.setItemWidget(item, 7, show_button)
                 self.tree.setItemWidget(item, 8, output_button)
+                self.tree.setItemWidget(item, 9, delete_button)
 
             item.setText(4, str(d["count"]))
             item.setText(5, d["start"].strftime("%Y-%m-%d %H:%M:%S"))
@@ -283,6 +317,74 @@ class ManagerWidget(QtWidgets.QWidget):
             self.table.setItem(row, 4, DataCell(str(bar.close_price)))
             self.table.setItem(row, 5, DataCell(str(bar.volume)))
             self.table.setItem(row, 6, DataCell(str(bar.open_interest)))
+
+    def delete_data(
+        self,
+        symbol: str,
+        exchange: Exchange,
+        interval: Interval
+    ) -> None:
+        """"""
+        n = QtWidgets.QMessageBox.warning(
+            self,
+            "删除确认",
+            f"请确认是否要删除{symbol} {exchange.value} {interval.value}的全部数据",
+            QtWidgets.QMessageBox.Ok,
+            QtWidgets.QMessageBox.Cancel
+        )
+
+        if n == QtWidgets.QMessageBox.Cancel:
+            return
+
+        count = self.engine.delete_bar_data(
+            symbol,
+            exchange,
+            interval
+        )
+
+        QtWidgets.QMessageBox.information(
+            self,
+            "删除成功",
+            f"已删除{symbol} {exchange.value} {interval.value}共计{count}条数据",
+            QtWidgets.QMessageBox.Ok
+        )
+
+    def update_data(self) -> None:
+        """"""
+        data = self.engine.get_bar_data_available()
+        total = len(data)
+        count = 0
+
+        dialog = QtWidgets.QProgressDialog(
+            "历史数据更新中",
+            "取消",
+            0,
+            100
+        )
+        dialog.setWindowTitle("更新进度")
+        dialog.setWindowModality(QtCore.Qt.WindowModal)
+        dialog.setValue(0)
+
+        for d in data:
+            if dialog.wasCanceled():
+                break
+
+            self.engine.download_bar_data(
+                d["symbol"],
+                Exchange(d["exchange"]),
+                Interval(d["interval"]),
+                d["end"]
+            )
+            count += 1
+            progress = int(round(count / total * 100, 0))
+            dialog.setValue(progress)
+
+        dialog.close()
+
+    def download_data(self) -> None:
+        """"""
+        dialog = DownloadDialog(self.engine)
+        dialog.exec_()
 
     def show(self) -> None:
         """"""
@@ -420,3 +522,65 @@ class ImportDialog(QtWidgets.QDialog):
         filename = result[0]
         if filename:
             self.file_edit.setText(filename)
+
+
+class DownloadDialog(QtWidgets.QDialog):
+    """"""
+
+    def __init__(self, engine: ManagerEngine, parent=None):
+        """"""
+        super().__init__()
+
+        self.engine = engine
+
+        self.setWindowTitle("下载历史数据")
+        self.setFixedWidth(300)
+
+        self.setWindowFlags(
+            (self.windowFlags() | QtCore.Qt.CustomizeWindowHint)
+            & ~QtCore.Qt.WindowMaximizeButtonHint)
+
+        self.symbol_edit = QtWidgets.QLineEdit()
+
+        self.exchange_combo = QtWidgets.QComboBox()
+        for i in Exchange:
+            self.exchange_combo.addItem(str(i.name), i)
+
+        self.interval_combo = QtWidgets.QComboBox()
+        for i in Interval:
+            self.interval_combo.addItem(str(i.name), i)
+
+        end_dt = datetime.now()
+        start_dt = end_dt - timedelta(days=3 * 365)
+
+        self.start_date_edit = QtWidgets.QDateEdit(
+            QtCore.QDate(
+                start_dt.year,
+                start_dt.month,
+                start_dt.day
+            )
+        )
+
+        button = QtWidgets.QPushButton("下载")
+        button.clicked.connect(self.download)
+
+        form = QtWidgets.QFormLayout()
+        form.addRow("代码", self.symbol_edit)
+        form.addRow("交易所", self.exchange_combo)
+        form.addRow("周期", self.interval_combo)
+        form.addRow("开始日期", self.start_date_edit)
+        form.addRow(button)
+
+        self.setLayout(form)
+
+    def download(self):
+        """"""
+        symbol = self.symbol_edit.text()
+        exchange = Exchange(self.exchange_combo.currentData())
+        interval = Interval(self.interval_combo.currentData())
+
+        start_date = self.start_date_edit.date()
+        start = datetime(start_date.year(), start_date.month(), start_date.day())
+
+        count = self.engine.download_bar_data(symbol, exchange, interval, start)
+        QtWidgets.QMessageBox.information(self, "下载结束", f"下载总数据量：{count}条")

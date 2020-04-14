@@ -350,7 +350,7 @@ class OkexfRestApi(RestClient):
                 exchange=Exchange.OKEX,
                 name=symbol,
                 product=Product.FUTURES,
-                size=int(instrument_data["trade_increment"]),
+                size=float(instrument_data["contract_val"]),
                 pricetick=float(instrument_data["tick_size"]),
                 history_data=True,
                 gateway_name=self.gateway_name,

@@ -45,12 +45,14 @@ class LegData:
         self.size: float = 0
         self.net_position: bool = False
         self.min_volume: float = 0
+        self.pricetick: float = 0
 
     def update_contract(self, contract: ContractData):
         """"""
         self.size = contract.size
         self.net_position = contract.net_position
         self.min_volume = contract.min_volume
+        self.pricetick = contract.pricetick
 
     def update_tick(self, tick: TickData):
         """"""
@@ -145,6 +147,7 @@ class SpreadData:
         self.passive_legs: List[LegData] = []
 
         self.min_volume: float = min_volume
+        self.pricetick: float = 0
 
         # For calculating spread price
         self.price_multipliers: Dict[str, int] = price_multipliers
@@ -177,6 +180,11 @@ class SpreadData:
             else:
                 self.trading_formula += f"{trading_multiplier}*{leg.vt_symbol}"
 
+            if not self.pricetick:
+                self.pricetick = leg.pricetick
+            else:
+                self.pricetick = min(self.pricetick, leg.pricetick)
+
         # Spread data
         self.bid_price: float = 0
         self.ask_price: float = 0
@@ -205,6 +213,10 @@ class SpreadData:
             else:
                 self.bid_price += leg.ask_price * price_multiplier
                 self.ask_price += leg.bid_price * price_multiplier
+
+            # Round price to pricetick
+            self.bid_price = round_to(self.bid_price, self.pricetick)
+            self.ask_price = round_to(self.ask_price, self.pricetick)
 
             # Calculate volume
             trading_multiplier = self.trading_multipliers[leg.vt_symbol]

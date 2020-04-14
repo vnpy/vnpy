@@ -62,6 +62,7 @@ class RpcServer:
         # Worker thread related
         self.__active: bool = False                     # RpcServer status
         self.__thread: threading.Thread = None          # RpcServer thread
+        self.__lock: threading.Lock = threading.Lock()
 
         # Authenticator used to ensure data security
         self.__authenticator: ThreadAuthenticator = None
@@ -172,7 +173,8 @@ class RpcServer:
         """
         Publish data
         """
-        self.__socket_pub.send_pyobj([topic, data])
+        with self.__lock:
+            self.__socket_pub.send_pyobj([topic, data])
 
     def register(self, func: Callable) -> None:
         """

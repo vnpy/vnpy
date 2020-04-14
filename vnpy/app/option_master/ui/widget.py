@@ -169,7 +169,7 @@ class OptionManager(QtWidgets.QWidget):
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """"""
-        if self.portfolio_name:
+        if self.market_monitor:
             self.market_monitor.close()
             self.greeks_monitor.close()
             self.volatility_chart.close()
@@ -215,7 +215,7 @@ class PortfolioDialog(QtWidgets.QDialog):
                 self.model_name_combo.findText(model_name)
             )
 
-        form.addRow("模型", self.model_name_combo)
+        form.addRow("定价模型", self.model_name_combo)
 
         # Interest rate spin
         self.interest_rate_spin = QtWidgets.QDoubleSpinBox()
@@ -227,7 +227,29 @@ class PortfolioDialog(QtWidgets.QDialog):
         interest_rate = portfolio_setting.get("interest_rate", 0.02)
         self.interest_rate_spin.setValue(interest_rate * 100)
 
-        form.addRow("利率", self.interest_rate_spin)
+        form.addRow("年化利率", self.interest_rate_spin)
+
+        # Inverse combo
+        self.inverse_combo = QtWidgets.QComboBox()
+        self.inverse_combo.addItems(["正向", "反向"])
+
+        inverse = portfolio_setting.get("inverse", False)
+        if inverse:
+            self.inverse_combo.setCurrentIndex(1)
+        else:
+            self.inverse_combo.setCurrentIndex(0)
+
+        form.addRow("合约模式", self.inverse_combo)
+
+        # Greeks decimals precision
+        self.precision_spin = QtWidgets.QSpinBox()
+        self.precision_spin.setMinimum(0)
+        self.precision_spin.setMaximum(10)
+
+        precision = portfolio_setting.get("precision", 0)
+        self.precision_spin.setValue(precision)
+
+        form.addRow("Greeks小数位", self.precision_spin)
 
         # Underlying for each chain
         self.combos: Dict[str, QtWidgets.QComboBox] = {}
@@ -266,6 +288,13 @@ class PortfolioDialog(QtWidgets.QDialog):
         model_name = self.model_name_combo.currentText()
         interest_rate = self.interest_rate_spin.value() / 100
 
+        if self.inverse_combo.currentIndex() == 0:
+            inverse = False
+        else:
+            inverse = True
+
+        precision = self.precision_spin.value()
+
         chain_underlying_map = {}
         for chain_symbol, combo in self.combos.items():
             underlying_symbol = combo.currentText()
@@ -277,7 +306,9 @@ class PortfolioDialog(QtWidgets.QDialog):
             self.portfolio_name,
             model_name,
             interest_rate,
-            chain_underlying_map
+            chain_underlying_map,
+            inverse,
+            precision
         )
 
         result = self.option_engine.init_portfolio(self.portfolio_name)
@@ -664,7 +695,7 @@ class OptionHedgeWidget(QtWidgets.QWidget):
 
         # Check delta of underlying
         underlying = self.option_engine.get_instrument(vt_symbol)
-        min_range = int(underlying.theo_delta * 0.6)
+        min_range = int(underlying.cash_delta * 0.6)
         if delta_range < min_range:
             msg = f"Delta对冲阈值({delta_range})低于对冲合约"\
                 f"Delta值的60%({min_range})，可能导致来回频繁对冲！"
