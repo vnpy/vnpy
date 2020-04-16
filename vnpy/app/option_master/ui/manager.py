@@ -258,8 +258,8 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
             )
 
             for index in chain.indexes:
-                call = chain.calls[index]
-                put = chain.puts[index]
+                call = chain.calls[str(index)]
+                put = chain.puts[str(index)]
 
                 current_row += 1
 
@@ -771,10 +771,12 @@ class PricingVolatilityManager(QtWidgets.QWidget):
         atm_index = chain.atm_index
 
         for index in chain.indexes:
-            call = chain.calls[index]
-            put = chain.puts[index]
+            if not atm_index:
+                continue
+            call = chain.calls[str(index)]
+            put = chain.puts[str(index)]
 
-            if index >= atm_index:
+            if index >= float(atm_index):
                 otm = call
             else:
                 otm = put
@@ -795,12 +797,14 @@ class PricingVolatilityManager(QtWidgets.QWidget):
         pricing_impvs = []
 
         for index in chain.indexes:
-            call = chain.calls[index]
-            put = chain.puts[index]
+            if not atm_index:
+                continue
+            call = chain.calls[str(index)]
+            put = chain.puts[str(index)]
             cells = self.cells[(chain_symbol, index)]
 
             if not cells["check"].isChecked():
-                if index >= atm_index:
+                if index >= float(atm_index):
                     otm = call
                 else:
                     otm = put
@@ -811,8 +815,8 @@ class PricingVolatilityManager(QtWidgets.QWidget):
         cs = interpolate.CubicSpline(strike_prices, pricing_impvs)
 
         for index in chain.indexes:
-            call = chain.calls[index]
-            put = chain.puts[index]
+            call = chain.calls[str(index)]
+            put = chain.puts[str(index)]
 
             new_impv = float(cs(call.strike_price))
             call.pricing_impv = new_impv
@@ -848,22 +852,23 @@ class PricingVolatilityManager(QtWidgets.QWidget):
 
         chain = self.portfolio.get_chain(chain_symbol)
 
-        call = chain.calls[index]
+        call = chain.calls[str(index)]
         call.pricing_impv = new_impv
 
-        put = chain.puts[index]
+        put = chain.puts[str(index)]
         put.pricing_impv = new_impv
 
     def update_pricing_impv(self, chain_symbol: str) -> None:
         """"""
         chain = self.portfolio.get_chain(chain_symbol)
         atm_index = chain.atm_index
-
         for index in chain.indexes:
-            if index >= atm_index:
-                otm = chain.calls[index]
+            if not atm_index:
+                continue
+            if index >= float(atm_index):
+                otm = chain.calls[str(index)]
             else:
-                otm = chain.puts[index]
+                otm = chain.puts[str(index)]
 
             value = round(otm.pricing_impv * 100, 1)
             cells = self.cells[(chain_symbol, index)]
@@ -875,10 +880,12 @@ class PricingVolatilityManager(QtWidgets.QWidget):
         atm_index = chain.atm_index
 
         for index in chain.indexes:
-            if index >= atm_index:
-                otm = chain.calls[index]
+            if not atm_index:
+                continue
+            if index >= float(atm_index):
+                otm = chain.calls[str(index)]
             else:
-                otm = chain.puts[index]
+                otm = chain.puts[str(index)]
 
             cells = self.cells[(chain_symbol, index)]
             cells["mid_impv"].setText(f"{otm.mid_impv:.1%}")
