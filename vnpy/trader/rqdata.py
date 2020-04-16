@@ -128,6 +128,9 @@ class RqdataClient:
         """
         Query history bar data from RQData.
         """
+        if self.symbols is None:
+            return None
+
         symbol = req.symbol
         exchange = req.exchange
         interval = req.interval
