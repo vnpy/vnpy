@@ -149,8 +149,8 @@ class OnetokenGateway(BaseGateway):
 
     def connect(self, setting: dict):
         """"""
-        key = setting["OT Key"]
-        secret = setting["OT Secret"]
+        key = setting["OT Key"].strip()
+        secret = setting["OT Secret"].strip()
         session_number = setting["会话数"]
         exchange = setting["交易所"].lower()
         account = setting["账户"]
@@ -274,9 +274,7 @@ class OnetokenRestApi(RestClient):
         self.exchange = exchange
         self.account = account
 
-        self.connect_time = (
-                int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
-        )
+        self.connect_time = int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
 
         self.init(REST_HOST, proxy_host, proxy_port)
 
@@ -335,9 +333,7 @@ class OnetokenRestApi(RestClient):
             self.gateway.on_contract(contract)
         self.gateway.write_log("合约信息查询成功")
 
-        # Start websocket api after instruments data collected
-        self.gateway.data_ws_api.start()
-        self.gateway.trade_ws_api.start()
+        self.get_info()
 
     def get_clientoid_prefix(self, contract):
         """
@@ -349,11 +345,32 @@ class OnetokenRestApi(RestClient):
             return self.exchange + "/" + contract + "-"
         return self.exchange + "/" + contract + "-" + self.exchange
 
+    def get_info(self):
+        self.add_request(
+            method="GET",
+            path="/v1/trade/{}/{}/info".format(self.exchange, self.account),
+            callback=self.on_get_info,
+            data={},
+            params={},
+            on_failed=self.on_get_info_fail,
+            on_error=self.on_get_info_error,
+        )
+
+    def on_get_info(self, data, request):
+        self.gateway.write_log(f"获取账户信息成功")
+        # Start websocket api after instruments data collected
+        self.gateway.data_ws_api.start()
+        self.gateway.trade_ws_api.start()
+
+    def on_get_info_fail(self, status_code: str, request: Request):
+        self.gateway.write_log(f"获取账户信息失败 {request.response.json()}")
+
+    def on_get_info_error(self, exception_type: type, exception_value: Exception, tb, request: Request):
+        self.gateway.write_log(f"获取账户信息失败 {exception_type} {exception_value} {tb} {request}")
+
     def send_order(self, req: OrderRequest):
         """"""
-        orderid = self.get_clientoid_prefix(
-            req.symbol) + str(self.connect_time + self._new_order_id())
-        # print(orderid)
+        orderid = self.get_clientoid_prefix(req.symbol) + str(self.connect_time + self._new_order_id())
 
         data = {
             "contract": self.exchange + "/" + req.symbol,
