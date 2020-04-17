@@ -2,7 +2,7 @@
 
 ## 更新SDK
 
-把  `https://github.com/1token-trade/vnpy/blob/dev-1token/vnpy/gateway/onetoken/onetoken_gateway.py` 复制到 `c:\vnstudio\lib\site-packages\vnpy\gateway\onetoken` 下面
+把  `https://raw.githubusercontent.com/1token-trade/vnpy/dev-1token/vnpy/gateway/onetoken/onetoken_gateway.py` 复制到 `c:\vnstudio\lib\site-packages\vnpy\gateway\onetoken` 下面
 
 ## 行情
 
