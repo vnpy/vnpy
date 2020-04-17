@@ -1,5 +1,9 @@
 # VNPY 1Token 文档
 
+## 更新SDK
+
+把  `https://github.com/1token-trade/vnpy/blob/dev-1token/vnpy/gateway/onetoken/onetoken_gateway.py` 复制到 `c:\vnstudio\lib\site-packages\vnpy\gateway\onetoken` 下面
+
 ## 行情
 
 我们提供了一个供测试的
