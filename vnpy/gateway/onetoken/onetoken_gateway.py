@@ -128,11 +128,11 @@ class OnetokenGateway(BaseGateway):
     default_setting = {
         "OT Key": "",
         "OT Secret": "",
-        "交易所": ["BINANCE", "BINANCEF", "BITMEX", "OKEX", "OKEF", "OKSWAP", "HUOBIP", "HUOBIF"],
+        "交易所": ["OKEX", "OKEF", "OKSWAP", "BINANCE", "BINANCEF", "BITMEX", "HUOBIP", "HUOBIF"],
         "账户": "",
         "会话数": 3,
-        "代理地址(在大陆留空)": "",
-        "代理端口(在大陆填0)": 0,
+        "代理地址": "",
+        "代理端口": 0,
     }
 
     exchanges = list(EXCHANGE_VT2ONETOKEN.keys())
@@ -154,8 +154,8 @@ class OnetokenGateway(BaseGateway):
         session_number = setting["会话数"]
         exchange = setting["交易所"].lower()
         account = setting["账户"]
-        proxy_host = setting["代理地址(在大陆留空)"]
-        proxy_port = setting["代理端口(在大陆填0)"]
+        proxy_host = setting["代理地址"]
+        proxy_port = setting["代理端口"]
 
         self.rest_api.connect(key, secret, session_number,
                               exchange, account, proxy_host, proxy_port)
@@ -324,7 +324,8 @@ class OnetokenRestApi(RestClient):
             symbol = instrument_data["name"]
             contract = ContractData(
                 symbol=symbol,
-                exchange=Exchange(exg_ot2vnpy(instrument_data['symbol'].split('/')[0])),
+                exchange=Exchange(exg_ot2vnpy(
+                    instrument_data['symbol'].split('/')[0])),
                 name=symbol,
                 product=Product.SPOT,  # todo
                 size=float(instrument_data["min_amount"]),
@@ -350,7 +351,8 @@ class OnetokenRestApi(RestClient):
 
     def send_order(self, req: OrderRequest):
         """"""
-        orderid = self.get_clientoid_prefix(req.symbol) + str(self.connect_time + self._new_order_id())
+        orderid = self.get_clientoid_prefix(
+            req.symbol) + str(self.connect_time + self._new_order_id())
         # print(orderid)
 
         data = {
@@ -476,7 +478,8 @@ class OnetokenDataWebsocketApi(WebsocketClient):
             gateway_name=self.gateway_name,
         )
 
-        contract_symbol = contract_vnpy2ot(req.exchange.value.lower(), req.symbol.lower())
+        contract_symbol = contract_vnpy2ot(
+            req.exchange.value.lower(), req.symbol.lower())
         self.ticks[contract_symbol] = tick
 
         req = {
