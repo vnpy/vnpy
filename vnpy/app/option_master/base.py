@@ -32,7 +32,8 @@ CHAIN_UNDERLYING_MAP = {
     "SR.CZCE": "SR",
     "CF.CZCE": "CF",
     "TA.CZCE": "TA",
-    "BTC.DERIBIT": "BTC-PERPETUAL"
+    "BTC.DERIBIT": "BTC-PERPETUAL",
+    "BTC-USD.OKEX": "BTC-USD-SWAP"
 }
 
 
@@ -541,6 +542,9 @@ class PortfolioData:
         self.chains: Dict[str, ChainData] = {}
         self.underlyings: Dict[str, UnderlyingData] = {}
 
+        # Greeks decimals precision
+        self.precision: int = 0
+
     def calculate_pos_greeks(self) -> None:
         """"""
         self.long_pos = 0
@@ -605,6 +609,10 @@ class PortfolioData:
         """"""
         for chain in self.chains.values():
             chain.set_inverse(inverse)
+
+    def set_precision(self, precision: int) -> None:
+        """"""
+        self.precision = precision
 
     def set_chain_underlying(self, chain_symbol: str, contract: ContractData) -> None:
         """"""

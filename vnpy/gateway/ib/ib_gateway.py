@@ -75,7 +75,9 @@ EXCHANGE_VT2IB = {
     Exchange.ICE: "ICE",
     Exchange.SEHK: "SEHK",
     Exchange.HKFE: "HKFE",
-    Exchange.CFE: "CFE"
+    Exchange.CFE: "CFE",
+    Exchange.NYSE: "NYSE",
+    Exchange.NASDAQ: "NASDAQ"
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}
 
@@ -483,13 +485,14 @@ class IbApi(EWrapper):
             self.gateway.write_log(msg)
             return
 
-        ib_size = contract.multiplier
-        if not ib_size:
+        try:
+            ib_size = int(contract.multiplier)
+        except ValueError:
             ib_size = 1
         price = averageCost / ib_size
 
         pos = PositionData(
-            symbol=contract.conId,
+            symbol=generate_symbol(contract),
             exchange=exchange,
             direction=Direction.NET,
             volume=position,

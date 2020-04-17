@@ -389,6 +389,23 @@ class MongoManager(BaseDatabaseManager):
 
         return result
 
+    def delete_bar_data(
+        self,
+        symbol: str,
+        exchange: "Exchange",
+        interval: "Interval"
+    ) -> int:
+        """
+        Delete all bar data with given symbol + exchange + interval.
+        """
+        count = DbBarData.objects(
+            symbol=symbol,
+            exchange=exchange.value,
+            interval=interval.value
+        ).delete()
+
+        return count
+
     def clean(self, symbol: str):
         DbTickData.objects(symbol=symbol).delete()
         DbBarData.objects(symbol=symbol).delete()

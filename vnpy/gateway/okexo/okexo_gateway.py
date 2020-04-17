@@ -26,7 +26,8 @@ from vnpy.trader.constant import (
     OrderType,
     Product,
     Status,
-    Interval
+    Interval,
+    OptionType
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
@@ -70,6 +71,10 @@ INTERVAL_VT2OKEXO: Dict[Interval, str] = {
     Interval.MINUTE: "60",
     Interval.HOUR: "3600",
     Interval.DAILY: "86400",
+}
+OPTIONTYPE_OKEXO2VT = {
+    "C": OptionType.CALL,
+    "P": OptionType.PUT
 }
 
 underlyings: set = set()
@@ -371,16 +376,21 @@ class OkexoRestApi(RestClient):
                 product=Product.OPTION,
                 size=float(instrument_data["contract_val"]),
                 pricetick=float(instrument_data["tick_size"]),
+                min_volume=float(instrument_data["lot_size"]),
                 option_strike=int(instrument_data["strike"]),
-                option_underlying=instrument_data["underlying"],
-                option_type=instrument_data["option_type"],
+                option_type=OPTIONTYPE_OKEXO2VT[instrument_data["option_type"]],
                 option_expiry=datetime.strptime(instrument_data["delivery"], "%Y-%m-%dT%H:%M:%S.%fZ"),
-                option_portfolio=instrument_data["underlying"] + "_O",
+                option_portfolio=instrument_data["underlying"],
                 option_index=instrument_data["strike"],
                 history_data=True,
                 net_position=True,
                 gateway_name=self.gateway_name,
             )
+            contract.option_underlying = "_".join([
+                contract.option_portfolio,
+                contract.option_expiry.strftime("%Y%m%d")
+            ])
+
             self.gateway.on_contract(contract)
 
         self.gateway.write_log("期权合约信息查询成功")

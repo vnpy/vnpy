@@ -9,9 +9,10 @@ import json
 import base64
 import zlib
 from copy import copy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from threading import Lock
 from urllib.parse import urlencode
+from typing import Dict
 
 from requests import ConnectionError
 
@@ -75,6 +76,9 @@ TIMEDELTA_MAP = {
 
 
 instruments = set()
+utc_tz = timezone.utc
+local_tz = datetime.now(timezone.utc).astimezone().tzinfo
+
 currencies = set()
 
 
@@ -559,6 +563,7 @@ class OkexWebsocketApi(WebsocketClient):
 
         self.callbacks = {}
         self.ticks = {}
+        self.subscribed: Dict[str, SubscribeRequest] = {}
 
     def connect(
         self,
@@ -586,6 +591,8 @@ class OkexWebsocketApi(WebsocketClient):
         """
         Subscribe to tick data upate.
         """
+        self.subscribed[req.vt_symbol] = req
+
         tick = TickData(
             symbol=req.symbol,
             exchange=req.exchange,
@@ -712,6 +719,9 @@ class OkexWebsocketApi(WebsocketClient):
         if success:
             self.gateway.write_log("Websocket API登录成功")
             self.subscribe_topic()
+
+            for req in list(self.subscribed.values()):
+                self.subscribe(req)
         else:
             self.gateway.write_log("Websocket API登录失败")
 
@@ -813,3 +823,11 @@ def get_timestamp():
     now = datetime.utcnow()
     timestamp = now.isoformat("T", "milliseconds")
     return timestamp + "Z"
+
+
+def _parse_timestamp(timestamp):
+    """parse timestamp into local time."""
+    time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    utc_time = time.replace(tzinfo=utc_tz)
+    local_time = utc_time.astimezone(local_tz)
+    return local_time
