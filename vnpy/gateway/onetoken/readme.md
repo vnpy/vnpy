@@ -16,3 +16,10 @@
 https://1token.trade/docs#/instruction/naming-rules?id=币币交易代码 </a>
 
 ![image](https://raw.githubusercontent.com/1token-trade/vnpy/dev-1token/vnpy/gateway/onetoken/quote.png)
+
+
+## 交易
+
+* 模拟账号对于client oid的支持 截止目前(2020-04-17) 还有一些问题, 预计1-2周修复, 所以直接交易会碰到一些异常,
+* 真实账号 填入 代码, 价格, 数量之后 可以正常下单
+![image](https://raw.githubusercontent.com/1token-trade/vnpy/dev-1token/vnpy/gateway/onetoken/trade.png)
