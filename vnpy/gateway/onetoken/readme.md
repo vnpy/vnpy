@@ -9,6 +9,8 @@
 * 输入测试 OT Secret: `NNXveWWx-TqbNNtMZ-xB6sska0-CVDQBP40`
 * 交易所选择 OKEX
 * 账号填写 mock-vnpyplay
+* 代理地址留空
+* 代理端口填0
 
 在左上角选择交易所, 填入交易对, 按回车键, 一切正常的话, 行情会添加在右侧图表里面
 
