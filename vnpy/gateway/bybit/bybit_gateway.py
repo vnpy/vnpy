@@ -396,8 +396,8 @@ class BybitRestApi(RestClient):
                 name=d["name"],
                 product=Product.FUTURES,
                 size=1,
-                pricetick=d["price_filter"]["tick_size"],
-                min_volume=d["lot_size_filter"]["qty_step"],
+                pricetick=float(d["price_filter"]["tick_size"]),
+                min_volume=d["lot_size_filter"]["min_trading_qty"],
                 net_position=True,
                 history_data=True,
                 gateway_name=self.gateway_name
