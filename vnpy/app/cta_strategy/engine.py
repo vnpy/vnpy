@@ -774,16 +774,9 @@ class CtaEngine(BaseEngine):
         """
         for dirpath, dirnames, filenames in os.walk(str(path)):
             for filename in filenames:
-                if filename.endswith(".py"):
-                    strategy_module_name = ".".join(
-                        [module_name, filename.replace(".py", "")])
-                elif filename.endswith(".pyd"):
-                    strategy_module_name = ".".join(
-                        [module_name, filename.split(".")[0]])
-                else:
-                    continue
-
-                self.load_strategy_class_from_module(strategy_module_name)
+                if filename.split(".")[-1] in ("py", "pyd", "so"):
+                    strategy_module_name = ".".join([module_name, filename.split(".")[0]])
+                    self.load_strategy_class_from_module(strategy_module_name)
 
     def load_strategy_class_from_module(self, module_name: str):
         """
