@@ -58,7 +58,8 @@ STATUS_BINANCEF2VT: Dict[str, Status] = {
 
 ORDERTYPE_VT2BINANCEF: Dict[OrderType, str] = {
     OrderType.LIMIT: "LIMIT",
-    OrderType.MARKET: "MARKET"
+    OrderType.MARKET: "MARKET",
+    OrderType.STOP: "STOP_MARKET"
 }
 ORDERTYPE_BINANCEF2VT: Dict[str, OrderType] = {v: k for k, v in ORDERTYPE_VT2BINANCEF.items()}
 
