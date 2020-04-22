@@ -523,7 +523,6 @@ class TdApi:
     def on_query_position(self, data: List[Dict[str, str]]) -> None:
         """"""
         if not data:
-            self.gateway.write_log("持仓信息查询失败")
             return
 
         for d in data:
@@ -543,7 +542,6 @@ class TdApi:
     def on_query_account(self, data: List[Dict[str, str]]) -> None:
         """"""
         if not data:
-            self.gateway.write_log("账号资金信息查询失败")
             return
 
         for d in data:
