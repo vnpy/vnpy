@@ -16,6 +16,7 @@ from urllib.parse import urlencode
 from typing import Dict
 
 from requests import ConnectionError
+import pytz
 
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
@@ -70,6 +71,8 @@ INTERVAL_VT2OKEXF = {
     Interval.HOUR: "3600",
     Interval.DAILY: "86400",
 }
+
+TZ_UTC = pytz.UTC
 
 
 instruments = set()
@@ -427,7 +430,7 @@ class OkexfRestApi(RestClient):
                 traded=int(order_data["filled_qty"]),
                 price=float(order_data["price"]),
                 volume=float(order_data["size"]),
-                time=utc_to_local(order_data["timestamp"]).strftime("%H:%M:%S"),
+                datetime=utc_to_local(order_data["timestamp"]),
                 status=STATUS_OKEXF2VT[order_data["status"]],
                 gateway_name=self.gateway_name,
             )
@@ -447,7 +450,7 @@ class OkexfRestApi(RestClient):
 
         order = request.extra
         order.status = Status.REJECTED
-        order.time = datetime.now().strftime("%H:%M:%S.%f")
+        order.datetime = datetime.now(TZ_UTC)
         self.gateway.on_order(order)
         msg = f"委托失败，状态码：{status_code}，信息：{request.response.text}"
         self.gateway.write_log(msg)
@@ -833,7 +836,7 @@ class OkexfWebsocketApi(WebsocketClient):
             price=float(d["price"]),
             volume=float(d["size"]),
             traded=float(d["filled_qty"]),
-            time=utc_to_local(d["timestamp"]).strftime("%H:%M:%S"),
+            datetime=utc_to_local(d["timestamp"]),
             status=STATUS_OKEXF2VT[d["status"]],
             gateway_name=self.gateway_name,
         )
@@ -855,7 +858,7 @@ class OkexfWebsocketApi(WebsocketClient):
             offset=order.offset,
             price=float(d["last_fill_px"]),
             volume=float(trade_volume),
-            time=order.time,
+            datetime=order.datetime,
             gateway_name=self.gateway_name,
         )
         self.gateway.on_trade(trade)
@@ -912,6 +915,6 @@ def get_timestamp():
 
 
 def utc_to_local(timestamp):
-    time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    utc_time = time + timedelta(hours=8)
-    return utc_time
+    dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    dt.replace(tzinfo=TZ_UTC)
+    return dt
