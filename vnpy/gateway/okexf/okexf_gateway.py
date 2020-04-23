@@ -72,7 +72,7 @@ INTERVAL_VT2OKEXF = {
     Interval.DAILY: "86400",
 }
 
-TZ_UTC = pytz.UTC
+UTC_TZ = pytz.UTC
 
 
 instruments = set()
@@ -450,7 +450,7 @@ class OkexfRestApi(RestClient):
 
         order = request.extra
         order.status = Status.REJECTED
-        order.datetime = datetime.now(TZ_UTC)
+        order.datetime = datetime.now(UTC_TZ)
         self.gateway.on_order(order)
         msg = f"委托失败，状态码：{status_code}，信息：{request.response.text}"
         self.gateway.write_log(msg)
@@ -916,5 +916,5 @@ def get_timestamp():
 
 def utc_to_local(timestamp):
     dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    dt = dt.replace(tzinfo=TZ_UTC)
+    dt = dt.replace(tzinfo=UTC_TZ)
     return dt
