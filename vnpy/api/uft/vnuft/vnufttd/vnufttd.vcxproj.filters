@@ -55,18 +55,31 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="..\..\include\uft\HSError.xml" />
+    <Library Include="..\..\libs\HsFutuSystemInfo.lib">
+      <Filter>资源文件</Filter>
+    </Library>
+    <Library Include="..\..\libs\HSMdApi.lib">
+      <Filter>资源文件</Filter>
+    </Library>
+    <Library Include="..\..\libs\HSTradeApi.lib">
+      <Filter>资源文件</Filter>
+    </Library>
+    <Library Include="..\..\libs\t2sdk.lib">
+      <Filter>资源文件</Filter>
+    </Library>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\HsFutuSystemInfo.dll" />
-    <None Include="..\..\HSMdApi.dll" />
-    <None Include="..\..\HSTradeApi.dll" />
-    <None Include="..\..\t2sdk.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="..\..\libs\HsFutuSystemInfo.lib" />
-    <Library Include="..\..\libs\HSMdApi.lib" />
-    <Library Include="..\..\libs\HSTradeApi.lib" />
-    <Library Include="..\..\libs\t2sdk.lib" />
+    <None Include="..\..\HSMdApi.dll">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\HSTradeApi.dll">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\t2sdk.dll">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\HsFutuSystemInfo.dll">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>
