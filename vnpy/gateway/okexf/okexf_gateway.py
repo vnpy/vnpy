@@ -10,7 +10,7 @@ import json
 import base64
 import zlib
 from copy import copy
-from datetime import datetime, timedelta
+from datetime import datetime
 from threading import Lock
 from urllib.parse import urlencode
 from typing import Dict
@@ -916,5 +916,5 @@ def get_timestamp():
 
 def utc_to_local(timestamp):
     dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    dt.replace(tzinfo=TZ_UTC)
+    dt = dt.replace(tzinfo=TZ_UTC)
     return dt
