@@ -2,6 +2,7 @@
 Widget for algo trading.
 """
 
+import csv
 from functools import partial
 from datetime import datetime
 
@@ -68,6 +69,12 @@ class AlgoWidget(QtWidgets.QWidget):
         start_algo_button.clicked.connect(self.start_algo)
         form.addRow(start_algo_button)
 
+        load_csv_button = QtWidgets.QPushButton("CSV启动")
+        load_csv_button.clicked.connect(self.load_csv)
+        form.addRow(load_csv_button)
+
+        form.addRow(QtWidgets.QLabel(""))
+        form.addRow(QtWidgets.QLabel(""))
         form.addRow(QtWidgets.QLabel(""))
 
         self.setting_name_line = QtWidgets.QLineEdit()
@@ -77,7 +84,78 @@ class AlgoWidget(QtWidgets.QWidget):
         save_setting_button.clicked.connect(self.save_setting)
         form.addRow(save_setting_button)
 
+        for button in [
+            start_algo_button,
+            load_csv_button,
+            save_setting_button
+        ]:
+            button.setFixedHeight(button.sizeHint().height() * 2)
+
         self.setLayout(form)
+
+    def load_csv(self):
+        """"""
+        # Get csv file path from dialog
+        path, type_ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            u"加载算法配置",
+            "",
+            "CSV(*.csv)"
+        )
+
+        if not path:
+            return
+
+        # Create csv DictReader
+        with open(path, "r") as f:
+            buf = [line for line in f]
+            reader = csv.DictReader(buf)
+
+        # Check whether the csv file has all fields
+        for field_name in self.widgets.keys():
+            if field_name not in reader.fieldnames:
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    "字段缺失",
+                    f"CSV文件缺失算法{self.template_name}所需字段{field_name}"
+                )
+                return
+
+        # Read setting
+        settings = []
+
+        for d in reader:
+            # Initialize algo setting with template name
+            setting = {
+                "template_name": self.template_name
+            }
+
+            # Read field from each dict of csv line
+            for field_name, tp in self.widgets.items():
+                field_type = tp[-1]
+                field_text = d[field_name]
+
+                if field_type == list:
+                    field_value = field_text
+                else:
+                    try:
+                        field_value = field_type(field_text)
+                    except ValueError:
+                        QtWidgets.QMessageBox.warning(
+                            self,
+                            "参数错误",
+                            f"{field_name}参数类型应为{field_type}，请检查！"
+                        )
+                        return
+
+                setting[field_name] = field_value
+
+            # Add setting into list
+            settings.append(setting)
+
+        # Only start algos if no exception/error occured
+        for setting in settings:
+            self.algo_engine.start_algo(setting)
 
     def get_setting(self):
         """
@@ -442,7 +520,8 @@ class LogMonitor(QtWidgets.QTableWidget):
 
     def process_log_event(self, event):
         """"""
-        msg = event.data
+        log = event.data
+        msg = log.msg
         timestamp = datetime.now().strftime("%H:%M:%S")
 
         timestamp_cell = QtWidgets.QTableWidgetItem(timestamp)

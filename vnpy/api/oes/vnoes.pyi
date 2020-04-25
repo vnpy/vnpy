@@ -1,10 +1,40 @@
 # noinspection PyUnresolvedReferences
-from typing import *
-# noinspection PyUnresolvedReferences
-from enum import Enum
+import typing
+if typing.TYPE_CHECKING:
+    from typing import *
+    # noinspection PyUnresolvedReferences
+    from enum import Enum
+    from .vnoes import *
 
 
-class OesOrdReqT:
+def set_async_callback_exception_handler(handler: Callable[[AsyncDispatchException], None]):
+    """
+    set a customize exception handler for async callback in this module(pyd)
+    \a handler should return True if it handles that exception,
+
+    :note: If the return value of \a handler is not True, exception will be re-thrown.
+    """
+    ...
+
+
+class AsyncDispatchException:
+    what: str
+    instance: object
+    function_name: str
+
+
+class _OesOrdReq():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     mktId: int
     ordType: int
@@ -15,29 +45,47 @@ class OesOrdReqT:
     ordQty: int
     ordPrice: int
     origClOrdId: int
-    userInfo: int
-    __ordReqOrigSendTime: STimeval32T  # unknown what to wrap in py
-    ...
-_OesOrdReq = OesOrdReqT
-
-
-class OesOrdCancelReqT:
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1629:5)"
+    __ordReqOrigSendTime: _spk_struct_timeval32
+    
+    
+class _OesOrdCancelReq():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     mktId: int
-    __ORD_CANCEL_BASE_INFO_filler1: Sequence[int]
+    __ORD_CANCEL_BASE_INFO_filler1: List[int]
     invAcctId: str
     securityId: str
     origClSeqNo: int
-    origClEnvId: int
-    __ORD_CANCEL_BASE_INFO_filler2: Sequence[int]
+    origClEnvId: str
+    __ORD_CANCEL_BASE_INFO_filler2: List[int]
     origClOrdId: int
-    userInfo: int
-    __ordReqOrigSendTime: STimeval32T  # unknown what to wrap in py
-    ...
-_OesOrdCancelReq = OesOrdCancelReqT
-
-
-class OesOrdRejectT:
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1645:5)"
+    __ordReqOrigSendTime: _spk_struct_timeval32
+    
+    
+class _OesOrdReject():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     mktId: int
     ordType: int
@@ -48,21 +96,30 @@ class OesOrdRejectT:
     ordQty: int
     ordPrice: int
     origClOrdId: int
-    userInfo: int
-    __ordReqOrigSendTime: STimeval32T  # unknown what to wrap in py
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1661:5)"
+    __ordReqOrigSendTime: _spk_struct_timeval32
     origClSeqNo: int
-    origClEnvId: int
-    clEnvId: int
+    origClEnvId: str
+    clEnvId: str
     clientId: int
     ordDate: int
     ordTime: int
     ordRejReason: int
     __filler: int
-    ...
-_OesOrdReject = OesOrdRejectT
-
-
-class OesOrdCnfmT:
+    
+    
+class _OesOrdCnfm():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     mktId: int
     ordType: int
@@ -73,12 +130,12 @@ class OesOrdCnfmT:
     ordQty: int
     ordPrice: int
     origClOrdId: int
-    userInfo: int
-    __ordReqOrigSendTime: STimeval32T  # unknown what to wrap in py
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1699:5)"
+    __ordReqOrigSendTime: _spk_struct_timeval32
     clOrdId: int
     clientId: int
-    clEnvId: int
-    origClEnvId: int
+    clEnvId: str
+    origClEnvId: str
     origClSeqNo: int
     ordDate: int
     ordTime: int
@@ -89,9 +146,11 @@ class OesOrdCnfmT:
     subSecurityType: int
     __platformId: int
     __tgwGrpNo: int
-    __declareFlag: int
-    __ORD_CNFM_BASE_INFO_filler: int
+    __tgwPartitionNo: int
+    productType: int
     exchOrdId: str
+    __declareFlag: int
+    __ORD_CNFM_BASE_INFO_filler: List[int]
     frzAmt: int
     frzInterest: int
     frzFee: int
@@ -106,23 +165,22 @@ class OesOrdCnfmT:
     branchId: int
     __rowNum: int
     __recNum: int
-    __ordReqOrigRecvTime: STimeval32T  # unknown what to wrap in py
-    __ordReqCollectedTime: STimeval32T  # unknown what to wrap in py
-    __ordReqActualDealTime: STimeval32T  # unknown what to wrap in py
-    __ordReqProcessedTime: STimeval32T  # unknown what to wrap in py
-    __ordCnfmOrigRecvTime: STimeval32T  # unknown what to wrap in py
-    __ordCnfmCollectedTime: STimeval32T  # unknown what to wrap in py
-    __ordCnfmActualDealTime: STimeval32T  # unknown what to wrap in py
-    __ordCnfmProcessedTime: STimeval32T  # unknown what to wrap in py
-    __ordDeclareTime: STimeval32T  # unknown what to wrap in py
-    __ordDeclareDoneTime: STimeval32T  # unknown what to wrap in py
-    __pushingTime: STimeval32T  # unknown what to wrap in py
-    ...
-_OesOrdCnfm = OesOrdCnfmT
-OesOrdItemT = OesOrdCnfmT
-
-
-class OesTrdBaseInfoT:
+    __ordReqOrigRecvTime: _spk_struct_timeval32
+    __ordReqCollectedTime: _spk_struct_timeval32
+    __ordReqActualDealTime: _spk_struct_timeval32
+    __ordReqProcessedTime: _spk_struct_timeval32
+    __ordCnfmOrigRecvTime: _spk_struct_timeval32
+    __ordCnfmCollectedTime: _spk_struct_timeval32
+    __ordCnfmActualDealTime: _spk_struct_timeval32
+    __ordCnfmProcessedTime: _spk_struct_timeval32
+    __ordDeclareTime: _spk_struct_timeval32
+    __ordDeclareDoneTime: _spk_struct_timeval32
+    __pushingTime: _spk_struct_timeval32
+    
+    
+class _OesTrdBaseInfo():
+    
+    
     exchTrdNum: int
     mktId: int
     trdSide: int
@@ -140,15 +198,26 @@ class OesTrdBaseInfoT:
     cumQty: int
     __rowNum: int
     __tgwGrpNo: int
-    __TRD_BASE_INFO_filler: Sequence[int]
+    __isTrsfInCashAvailable: int
+    __tgwPartitionNo: int
+    productType: int
     origOrdQty: int
     pbuId: int
     branchId: int
-    ...
-_OesTrdBaseInfo = OesTrdBaseInfoT
-
-
-class OesTrdCnfmT:
+    
+    
+class _OesTrdCnfm():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     exchTrdNum: int
     mktId: int
     trdSide: int
@@ -166,13 +235,15 @@ class OesTrdCnfmT:
     cumQty: int
     __rowNum: int
     __tgwGrpNo: int
-    __TRD_BASE_INFO_filler: Sequence[int]
+    __isTrsfInCashAvailable: int
+    __tgwPartitionNo: int
+    productType: int
     origOrdQty: int
     pbuId: int
     branchId: int
     clSeqNo: int
     clientId: int
-    clEnvId: int
+    clEnvId: str
     subSecurityType: int
     ordStatus: int
     ordType: int
@@ -182,92 +253,126 @@ class OesTrdCnfmT:
     cumAmt: int
     cumInterest: int
     cumFee: int
-    userInfo: int
-    __trdCnfmOrigRecvTime: STimeval32T  # unknown what to wrap in py
-    __trdCnfmCollectedTime: STimeval32T  # unknown what to wrap in py
-    __trdCnfmActualDealTime: STimeval32T  # unknown what to wrap in py
-    __trdCnfmProcessedTime: STimeval32T  # unknown what to wrap in py
-    __pushingTime: STimeval32T  # unknown what to wrap in py
-    ...
-OesTrdItemT = OesTrdCnfmT
-_OesTrdCnfm = OesTrdCnfmT
-
-
-class OesLotWinningBaseInfoT:
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:1903:5)"
+    __trdCnfmOrigRecvTime: _spk_struct_timeval32
+    __trdCnfmCollectedTime: _spk_struct_timeval32
+    __trdCnfmActualDealTime: _spk_struct_timeval32
+    __trdCnfmProcessedTime: _spk_struct_timeval32
+    __pushingTime: _spk_struct_timeval32
+    
+    
+class _OesLotWinningBaseInfo():
+    
+    
     invAcctId: str
     securityId: str
     mktId: int
     lotType: int
     rejReason: int
-    __LOT_WINNING_BASE_INFO_filler: int
+    __LOT_WINNING_BASE_INFO_filler: str
     lotDate: int
     securityName: str
     assignNum: int
     lotQty: int
     lotPrice: int
     lotAmt: int
-    ...
-_OesLotWinningBaseInfo = OesLotWinningBaseInfoT
-OesLotWinningItemT = OesLotWinningBaseInfoT
-
-
-class OesFundTrsfBaseInfoT:
+    
+    
+class _OesFundTrsfBaseInfo():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     direct: int
     isAllotOnly: int
-    __FUND_TRSF_BASE_filler: Sequence[int]
+    __FUND_TRSF_BASE_filler: List[int]
     cashAcctId: str
     trdPasswd: str
     trsfPasswd: str
     occurAmt: int
-    userInfo: int
-    ...
-_OesFundTrsfBaseInfo = OesFundTrsfBaseInfoT
-
-
-class OesFundTrsfReqT:
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:2027:5)"
+    
+    
+class _OesFundTrsfReq():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     direct: int
     isAllotOnly: int
-    __FUND_TRSF_BASE_filler: Sequence[int]
+    __FUND_TRSF_BASE_filler: List[int]
     cashAcctId: str
     trdPasswd: str
     trsfPasswd: str
     occurAmt: int
-    userInfo: int
-    ...
-_OesFundTrsfReq = OesFundTrsfReqT
-
-
-class OesFundTrsfRejectT:
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:2041:5)"
+    
+    
+class _OesFundTrsfReject():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     direct: int
     isAllotOnly: int
-    __FUND_TRSF_BASE_filler: Sequence[int]
+    __FUND_TRSF_BASE_filler: List[int]
     cashAcctId: str
     trdPasswd: str
     trsfPasswd: str
     occurAmt: int
-    userInfo: int
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:2055:5)"
     ordDate: int
     ordTime: int
     clientId: int
-    clEnvId: int
-    __filler: int
+    clEnvId: str
+    __filler: str
     rejReason: int
     errorInfo: str
-    ...
-_OesFundTrsfReject = OesFundTrsfRejectT
-
-
-class OesFundTrsfReportT:
+    
+    
+class _OesFundTrsfReport():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     clSeqNo: int
     clientId: int
-    clEnvId: int
+    clEnvId: str
     direct: int
     cashAcctId: str
     occurAmt: int
-    userInfo: int
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_base_model.h:2102:5)"
     fundTrsfId: int
     counterEntrustNo: int
     operDate: int
@@ -283,19 +388,19 @@ class OesFundTrsfReportT:
     __filler2: int
     allotSerialNo: str
     errorInfo: str
-    ...
-_OesFundTrsfReport = OesFundTrsfReportT
-OesFundTransferSerialItemT = OesFundTrsfReportT
-
-
-class OesIssueBaseInfoT:
+    
+    
+class _OesIssueBaseInfo():
+    
+    
     securityId: str
     mktId: int
     securityType: int
     subSecurityType: int
     isCancelAble: int
     isReApplyAble: int
-    __ISSUE_BASE_filler: Sequence[int]
+    productType: int
+    __ISSUE_BASE_filler: List[int]
     securityName: str
     underlyingSecurityId: str
     startDate: int
@@ -305,23 +410,27 @@ class OesIssueBaseInfoT:
     ordMaxQty: int
     ordMinQty: int
     issuePrice: int
+    upperLimitPrice: int
     ceilPrice: int
+    lowerLimitPrice: int
     floorPrice: int
-    ...
-_OesIssueBaseInfo = OesIssueBaseInfoT
-OesIssueItemT = OesIssueBaseInfoT
-
-
-class OesPriceLimitT:
+    
+    
+class _OesPriceLimit():
+    
+    
+    upperLimitPrice: int
     ceilPrice: int
+    lowerLimitPrice: int
     floorPrice: int
-    ...
-_OesPriceLimit = OesPriceLimitT
-
-
-class OesStockBaseInfoT:
+    
+    
+class _OesStockBaseInfo():
+    
+    
     securityId: str
     mktId: int
+    productType: int
     securityType: int
     subSecurityType: int
     securityLevel: int
@@ -331,28 +440,37 @@ class OesStockBaseInfoT:
     isDayTrading: int
     suspFlag: int
     temporarySuspFlag: int
-    __filter: Sequence[int]
+    __STOCK_BASE_filler: List[int]
     buyQtyUnit: int
-    sellQtyUnit: int
+    lmtBuyMaxQty: int
     buyOrdMaxQty: int
+    lmtBuyMinQty: int
     buyOrdMinQty: int
+    mktBuyMaxQty: int
+    mktBuyMinQty: int
+    sellQtyUnit: int
+    lmtSellMaxQty: int
     sellOrdMaxQty: int
+    lmtSellMinQty: int
     sellOrdMinQty: int
+    mktSellMaxQty: int
+    mktSellMinQty: int
+    priceTick: int
     priceUnit: int
     prevClose: int
     parPrice: int
     bondInterest: int
     repoExpirationDays: int
     cashHoldDays: int
-    priceLimit: Sequence[OesPriceLimitT]
+    priceLimit: List[_OesPriceLimit]
     securityName: str
     fundId: str
-    ...
-OesStockItemT = OesStockBaseInfoT
-_OesStockBaseInfo = OesStockBaseInfoT
-
-
-class OesEtfBaseInfoT:
+    __STOCK_BASE_reserve: str
+    
+    
+class _OesEtfBaseInfo():
+    
+    
     fundId: str
     securityId: str
     mktId: int
@@ -377,12 +495,11 @@ class OesEtfBaseInfoT:
     redemLimit: int
     netCreationLimit: int
     netRedemLimit: int
-    ...
-_OesEtfBaseInfo = OesEtfBaseInfoT
-OesEtfItemT = OesEtfBaseInfoT
-
-
-class OesEtfComponentBaseInfoT:
+    
+    
+class _OesEtfComponentBaseInfo():
+    
+    
     fundId: str
     securityId: str
     mktId: int
@@ -394,11 +511,11 @@ class OesEtfComponentBaseInfoT:
     premiumRate: int
     creationSubCash: int
     redemptionCashSub: int
-    ...
-_OesEtfComponentBaseInfo = OesEtfComponentBaseInfoT
-
-
-class OesOptionBaseInfoT:
+    
+    
+class _OesOptionBaseInfo():
+    
+    
     securityId: str
     mktId: int
     securityType: int
@@ -433,19 +550,18 @@ class OesOptionBaseInfoT:
     __OPTION_BASE_filler1: int
     underlyingClosePrice: int
     securityName: str
-    ...
-_OesOptionBaseInfo = OesOptionBaseInfoT
-OesOptionItemT = OesOptionBaseInfoT
-
-
-class OesCashAssetBaseInfoT:
+    
+    
+class _OesCashAssetBaseInfo():
+    
+    
     cashAcctId: str
     custId: str
     currType: int
     cashType: int
     cashAcctStatus: int
     isFundTrsfDisabled: int
-    __CASH_ASSET_BASE_filler: Sequence[int]
+    __CASH_ASSET_BASE_filler: List[int]
     beginningBal: int
     beginningAvailableBal: int
     beginningDrawableBal: int
@@ -462,11 +578,11 @@ class OesCashAssetBaseInfoT:
     feeFrzAmt: int
     marginAmt: int
     marginFrzAmt: int
-    ...
-_OesCashAssetBaseInfo = OesCashAssetBaseInfoT
-
-
-class OesCustBaseInfoT:
+    
+    
+class _OesCustBaseInfo():
+    
+    
     custId: str
     custType: int
     status: int
@@ -474,15 +590,14 @@ class OesCustBaseInfoT:
     originRiskLevel: int
     institutionFlag: int
     investorClass: int
-    __CUST_BASE_filler1: Sequence[int]
+    __CUST_BASE_filler1: List[int]
     branchId: int
     __CUST_BASE_filler2: int
-    ...
-_OesCustBaseInfo = OesCustBaseInfoT
-OesCustItemT = OesCustBaseInfoT
-
-
-class OesInvAcctBaseInfoT:
+    
+    
+class _OesInvAcctBaseInfo():
+    
+    
     invAcctId: str
     mktId: int
     acctType: int
@@ -490,22 +605,26 @@ class OesInvAcctBaseInfoT:
     ownerType: int
     optInvLevel: int
     isTradeDisabled: int
-    __INV_ACCT_BASE_filler: Sequence[int]
+    __INV_ACCT_BASE_filler: List[int]
     limits: int
     permissions: int
     pbuId: int
+    __INV_ACCT_BASE_filler2: int
     subscriptionQuota: int
-    ...
-_OesInvAcctBaseInfo = OesInvAcctBaseInfoT
-
-
-class OesStkHoldingBaseInfoT:
+    kcSubscriptionQuota: int
+    __INV_ACCT_BASE_reserve: str
+    
+    
+class _OesStkHoldingBaseInfo():
+    
+    
     invAcctId: str
     securityId: str
     mktId: int
     securityType: int
     subSecurityType: int
-    __HOLD_BASE_filler: Sequence[int]
+    productType: int
+    __HOLD_BASE_filler: List[int]
     originalHld: int
     originalCostAmt: int
     totalBuyHld: int
@@ -524,15 +643,15 @@ class OesStkHoldingBaseInfoT:
     unlockFrzHld: int
     coveredFrzHld: int
     coveredHld: int
-    ...
-_OesStkHoldingBaseInfo = OesStkHoldingBaseInfoT
-
-
-class OesOptHoldingBaseInfoT:
+    
+    
+class _OesOptHoldingBaseInfo():
+    
+    
     invAcctId: str
     securityId: str
     mktId: int
-    __HOLD_BASE_filler: Sequence[int]
+    __HOLD_BASE_filler: List[int]
     hldA: int
     hldB: int
     hldC: int
@@ -540,116 +659,105 @@ class OesOptHoldingBaseInfoT:
     hldRA: int
     hldRB: int
     hldRC: int
-    ...
-_OesOptHoldingBaseInfo = OesOptHoldingBaseInfoT
-
-
-class OesMarketStateInfoT:
+    
+    
+class _OesMarketStateInfo():
+    
+    
     exchId: int
     platformId: int
     mktId: int
     mktState: int
-    __filler: Sequence[int]
-    ...
-_OesMarketStateInfo = OesMarketStateInfoT
-OesMarketStateItemT = OesMarketStateInfoT
-
-
-class OesTradingPermissionEntryT:
+    __filler: List[int]
+    
+    
+class _OesTradingPermissionEntry():
+    
+    
     permissionNo: int
     isDisabled: int
-    counterAlias: int
-    __filler: Sequence[int]
+    counterAlias: str
+    __filler: List[int]
     permissionCode: int
-    applicableMarkets: Sequence[int]
+    applicableMarkets: List[int]
     permissionMemo: str
-    ...
-_OesTradingPermissionEntry = OesTradingPermissionEntryT
-
-
-class OesInputSourceInfoT:
-    sourceIp: str
-    sourceMac: str
-    sourceType: int
-    __filler: Sequence[int]
-    sourceDriverId: str
-    ...
-_OesInputSourceInfo = OesInputSourceInfoT
-
-
-class SMsgHeadT:
+    
+    
+class _SMsgHead():
+    
+    
     msgFlag: int
     msgId: int
     status: int
     detailStatus: int
     msgSize: int
-    ...
-_SMsgHead = SMsgHeadT
-
-
-class OesQryCursorT:
+    
+    
+class _OesQryCursor():
+    
+    
     seqNo: int
-    isEnd: int
-    __filler: Sequence[int]
+    isEnd: str
+    __filler: List[str]
     userInfo: int
-    ...
-_OesQryCursor = OesQryCursorT
-
-
-class OesQryReqHeadT:
+    
+    
+class _OesQryReqHead():
+    
+    
     maxPageSize: int
     lastPosition: int
-    ...
-_OesQryReqHead = OesQryReqHeadT
-
-
-class OesQryRspHeadT:
+    
+    
+class _OesQryRspHead():
+    
+    
     itemCount: int
     lastPosition: int
-    isEnd: int
-    __filler: Sequence[int]
+    isEnd: str
+    __filler: List[int]
     userInfo: int
-    ...
-_OesQryRspHead = OesQryRspHeadT
-
-
-class OesQryOrdFilterT:
+    
+    
+class _OesQryOrdFilter():
+    
+    
     custId: str
     invAcctId: str
     mktId: int
     isUnclosedOnly: int
-    clEnvId: int
+    clEnvId: str
     securityType: int
     bsType: int
-    __filler: Sequence[int]
+    __filler: List[int]
     clOrdId: int
     clSeqNo: int
     startTime: int
     endTime: int
     userInfo: int
-    ...
-_OesQryOrdFilter = OesQryOrdFilterT
-
-
-class OesQryOrdReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryOrdFilterT
-    ...
-_OesQryOrdReq = OesQryOrdReqT
-
-
-class OesQryOrdRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesOrdCnfmT]
-    ...
-_OesQryOrdRsp = OesQryOrdRspT
-
-
-class OesQryTrdFilterT:
+    
+    
+class _OesQryOrdReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryOrdFilter
+    
+    
+class _OesQryOrdRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesOrdCnfm]
+    
+    
+class _OesQryTrdFilter():
+    
+    
     custId: str
     invAcctId: str
     mktId: int
-    clEnvId: int
+    clEnvId: str
     securityType: int
     bsType: int
     __filler: int
@@ -658,40 +766,40 @@ class OesQryTrdFilterT:
     startTime: int
     endTime: int
     userInfo: int
-    ...
-_OesQryTrdFilter = OesQryTrdFilterT
-
-
-class OesQryTrdReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryTrdFilterT
-    ...
-_OesQryTrdReq = OesQryTrdReqT
-
-
-class OesQryTrdRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesTrdCnfmT]
-    ...
-_OesQryTrdRsp = OesQryTrdRspT
-
-
-class OesQryCashAssetFilterT:
+    
+    
+class _OesQryTrdReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryTrdFilter
+    
+    
+class _OesQryTrdRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesTrdCnfm]
+    
+    
+class _OesQryCashAssetFilter():
+    
+    
     custId: str
     cashAcctId: str
     userInfo: int
-    ...
-_OesQryCashAssetFilter = OesQryCashAssetFilterT
-
-
-class OesCashAssetItemT:
+    
+    
+class _OesCashAssetItem():
+    
+    
     cashAcctId: str
     custId: str
     currType: int
     cashType: int
     cashAcctStatus: int
     isFundTrsfDisabled: int
-    __CASH_ASSET_BASE_filler: Sequence[int]
+    __CASH_ASSET_BASE_filler: List[int]
     beginningBal: int
     beginningAvailableBal: int
     beginningDrawableBal: int
@@ -711,25 +819,25 @@ class OesCashAssetItemT:
     currentTotalBal: int
     currentAvailableBal: int
     currentDrawableBal: int
-    ...
-_OesCashAssetItem = OesCashAssetItemT
-
-
-class OesQryCashAssetReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryCashAssetFilterT
-    ...
-_OesQryCashAssetReq = OesQryCashAssetReqT
-
-
-class OesQryCashAssetRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesCashAssetItemT]
-    ...
-_OesQryCashAssetRsp = OesQryCashAssetRspT
-
-
-class OesCounterCashItemT:
+    
+    
+class _OesQryCashAssetReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryCashAssetFilter
+    
+    
+class _OesQryCashAssetRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesCashAssetItem]
+    
+    
+class _OesCounterCashItem():
+    
+    
     cashAcctId: str
     custId: str
     custName: str
@@ -738,47 +846,48 @@ class OesCounterCashItemT:
     cashAcctStatus: int
     currType: int
     isFundTrsfDisabled: int
-    __filler: Sequence[int]
+    __filler: List[int]
     counterAvailableBal: int
     counterDrawableBal: int
     counterCashUpdateTime: int
-    __reserve: Sequence[int]
-    ...
-_OesCounterCashItem = OesCounterCashItemT
-
-
-class OesQryCounterCashReqT:
+    __reserve: List[int]
+    
+    
+class _OesQryCounterCashReq():
+    
+    
     cashAcctId: str
-    ...
-_OesQryCounterCashReq = OesQryCounterCashReqT
-
-
-class OesQryCounterCashRspT:
-    counterCashItem: OesCounterCashItemT
-    ...
-_OesQryCounterCashRsp = OesQryCounterCashRspT
-
-
-class OesQryStkHoldingFilterT:
+    
+    
+class _OesQryCounterCashRsp():
+    
+    
+    counterCashItem: _OesCounterCashItem
+    
+    
+class _OesQryStkHoldingFilter():
+    
+    
     custId: str
     invAcctId: str
     securityId: str
     mktId: int
     securityType: int
-    __filler: Sequence[int]
+    productType: int
+    __filler: List[int]
     userInfo: int
-    ...
-_OesQryStkHoldingFilter = OesQryStkHoldingFilterT
-OesQryOptHoldingFilterT = OesQryStkHoldingFilterT
-
-
-class OesStkHoldingItemT:
+    
+    
+class _OesStkHoldingItem():
+    
+    
     invAcctId: str
     securityId: str
     mktId: int
     securityType: int
     subSecurityType: int
-    __HOLD_BASE_filler: Sequence[int]
+    productType: int
+    __HOLD_BASE_filler: List[int]
     originalHld: int
     originalCostAmt: int
     totalBuyHld: int
@@ -803,29 +912,29 @@ class OesStkHoldingItemT:
     coveredAvlHld: int
     sumHld: int
     costPrice: int
-    ...
-_OesStkHoldingItem = OesStkHoldingItemT
-
-
-class OesQryStkHoldingReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryStkHoldingFilterT
-    ...
-_OesQryStkHoldingReq = OesQryStkHoldingReqT
-
-
-class OesQryStkHoldingRspT:
-    qryHead: OesQryRspHeadT
-    qryItems: Sequence[OesStkHoldingItemT]
-    ...
-_OesQryStkHoldingRsp = OesQryStkHoldingRspT
-
-
-class OesOptHoldingItemT:
+    
+    
+class _OesQryStkHoldingReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryStkHoldingFilter
+    
+    
+class _OesQryStkHoldingRsp():
+    
+    
+    qryHead: _OesQryRspHead
+    qryItems: List[_OesStkHoldingItem]
+    
+    
+class _OesOptHoldingItem():
+    
+    
     invAcctId: str
     securityId: str
     mktId: int
-    __HOLD_BASE_filler: Sequence[int]
+    __HOLD_BASE_filler: List[int]
     hldA: int
     hldB: int
     hldC: int
@@ -833,56 +942,56 @@ class OesOptHoldingItemT:
     hldRA: int
     hldRB: int
     hldRC: int
-    ...
-_OesOptHoldingItem = OesOptHoldingItemT
-
-
-class OesQryOptHoldingReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryStkHoldingFilterT
-    ...
-_OesQryOptHoldingReq = OesQryOptHoldingReqT
-
-
-class OesQryOptHoldingRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesOptHoldingItemT]
-    ...
-_OesQryHoldRsp = OesQryOptHoldingRspT
-
-
-class OesQryCustFilterT:
+    
+    
+class _OesQryOptHoldingReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryStkHoldingFilter
+    
+    
+class _OesQryHoldRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesOptHoldingItem]
+    
+    
+class _OesQryCustFilter():
+    
+    
     custId: str
     userInfo: int
-    ...
-_OesQryCustFilter = OesQryCustFilterT
-
-
-class OesQryCustReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryCustFilterT
-    ...
-_OesQryCustReq = OesQryCustReqT
-
-
-class OesQryCustRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesCustBaseInfoT]
-    ...
-_OesQryCustRsp = OesQryCustRspT
-
-
-class OesQryInvAcctFilterT:
+    
+    
+class _OesQryCustReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryCustFilter
+    
+    
+class _OesQryCustRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesCustBaseInfo]
+    
+    
+class _OesQryInvAcctFilter():
+    
+    
     custId: str
     invAcctId: str
     mktId: int
-    __filler: Sequence[int]
+    __filler: List[int]
     userInfo: int
-    ...
-_OesQryInvAcctFilter = OesQryInvAcctFilterT
-
-
-class OesInvAcctItemT:
+    
+    
+class _OesInvAcctItem():
+    
+    
     invAcctId: str
     mktId: int
     acctType: int
@@ -890,31 +999,34 @@ class OesInvAcctItemT:
     ownerType: int
     optInvLevel: int
     isTradeDisabled: int
-    __INV_ACCT_BASE_filler: Sequence[int]
+    __INV_ACCT_BASE_filler: List[int]
     limits: int
     permissions: int
     pbuId: int
+    __INV_ACCT_BASE_filler2: int
     subscriptionQuota: int
+    kcSubscriptionQuota: int
+    __INV_ACCT_BASE_reserve: str
     custId: str
-    ...
-_OesInvAcctItem = OesInvAcctItemT
-
-
-class OesQryInvAcctReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryInvAcctFilterT
-    ...
-_OesQryInvAcctReq = OesQryInvAcctReqT
-
-
-class OesQryInvAcctRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesInvAcctItemT]
-    ...
-_OesQryInvAcctRsp = OesQryInvAcctRspT
-
-
-class OesInvAcctOverviewT:
+    
+    
+class _OesQryInvAcctReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryInvAcctFilter
+    
+    
+class _OesQryInvAcctRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesInvAcctItem]
+    
+    
+class _OesInvAcctOverview():
+    
+    
     invAcctId: str
     mktId: int
     acctType: int
@@ -922,14 +1034,15 @@ class OesInvAcctOverviewT:
     ownerType: int
     optInvLevel: int
     isTradeDisabled: int
-    __INV_ACCT_BASE_filler: Sequence[int]
+    __INV_ACCT_BASE_filler: List[int]
     limits: int
     permissions: int
     pbuId: int
     subscriptionQuota: int
     custId: str
     isValid: int
-    __filler: Sequence[int]
+    __filler: List[int]
+    kcSubscriptionQuota: int
     trdOrdCnt: int
     nonTrdOrdCnt: int
     cancelOrdCnt: int
@@ -937,11 +1050,11 @@ class OesInvAcctOverviewT:
     exchRejectOrdCnt: int
     trdCnt: int
     __reserve: int
-    ...
-_OesInvAcctOverview = OesInvAcctOverviewT
-
-
-class OesCashAcctOverviewT:
+    
+    
+class _OesCashAcctOverview():
+    
+    
     cashAcctId: str
     custId: str
     bankId: str
@@ -950,13 +1063,13 @@ class OesCashAcctOverviewT:
     cashAcctStatus: int
     currType: int
     isFundTrsfDisabled: int
-    __filler: Sequence[int]
+    __filler: List[int]
     __reserve: int
-    ...
-_OesCashAcctOverview = OesCashAcctOverviewT
-
-
-class OesCustOverviewT:
+    
+    
+class _OesCustOverview():
+    
+    
     custId: str
     custType: int
     status: int
@@ -964,40 +1077,40 @@ class OesCustOverviewT:
     originRiskLevel: int
     institutionFlag: int
     investorClass: int
-    __CUST_BASE_filler1: Sequence[int]
+    __CUST_BASE_filler1: List[int]
     branchId: int
     __CUST_BASE_filler2: int
     custName: str
-    spotCashAcct: OesCashAcctOverviewT
-    creditCashAcct: OesCashAcctOverviewT
-    optionCashAcct: OesCashAcctOverviewT
-    shSpotInvAcct: OesInvAcctOverviewT
-    shOptionInvAcct: OesInvAcctOverviewT
-    szSpotInvAcct: OesInvAcctOverviewT
-    szOptionInvAcct: OesInvAcctOverviewT
+    spotCashAcct: _OesCashAcctOverview
+    creditCashAcct: _OesCashAcctOverview
+    optionCashAcct: _OesCashAcctOverview
+    shSpotInvAcct: _OesInvAcctOverview
+    shOptionInvAcct: _OesInvAcctOverview
+    szSpotInvAcct: _OesInvAcctOverview
+    szOptionInvAcct: _OesInvAcctOverview
     __reserve: int
-    ...
-_OesCustOverview = OesCustOverviewT
-
-
-class OesClientOverviewT:
+    
+    
+class _OesClientOverview():
+    
+    
     clientId: int
     clientType: int
     clientStatus: int
     isApiForbidden: int
     isBlockTrader: int
-    __filler: Sequence[int]
+    __filler: List[int]
     logonTime: int
     clientName: str
     clientMemo: str
     sseStkPbuId: int
     sseOptPbuId: int
     sseQualificationClass: int
-    __filler2: Sequence[int]
+    __filler2: List[int]
     szseStkPbuId: int
     szseOptPbuId: int
     szseQualificationClass: int
-    __filler3: Sequence[int]
+    __filler3: List[int]
     currOrdConnected: int
     currRptConnected: int
     currQryConnected: int
@@ -1009,23 +1122,23 @@ class OesClientOverviewT:
     __reserve: int
     associatedCustCnt: int
     __filler4: int
-    custItems: Sequence[OesCustOverviewT]
-    ...
-_OesClientOverview = OesClientOverviewT
-
-
-class OesQryCommissionRateFilterT:
+    custItems: List[_OesCustOverview]
+    
+    
+class _OesQryCommissionRateFilter():
+    
+    
     custId: str
     mktId: int
     securityType: int
     bsType: int
-    __filler: Sequence[int]
+    __filler: List[int]
     userInfo: int
-    ...
-_OesQryCommissionRateFilter = OesQryCommissionRateFilterT
-
-
-class OesCommissionRateItemT:
+    
+    
+class _OesCommissionRateItem():
+    
+    
     custId: str
     securityId: str
     mktId: int
@@ -1039,155 +1152,156 @@ class OesCommissionRateItemT:
     feeRate: int
     minFee: int
     maxFee: int
-    ...
-_OesCommissionRateItem = OesCommissionRateItemT
-
-
-class OesQryCommissionRateReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryCommissionRateFilterT
-    ...
-_OesQryCommissionRateReq = OesQryCommissionRateReqT
-
-
-class OesQryCommissionRateRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesCommissionRateItemT]
-    ...
-_OesQryCommissionRateRsp = OesQryCommissionRateRspT
-
-
-class OesQryFundTransferSerialFilterT:
+    
+    
+class _OesQryCommissionRateReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryCommissionRateFilter
+    
+    
+class _OesQryCommissionRateRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesCommissionRateItem]
+    
+    
+class _OesQryFundTransferSerialFilter():
+    
+    
     custId: str
     cashAcctId: str
     clSeqNo: int
-    clEnvId: int
-    __filler: Sequence[int]
+    clEnvId: str
+    __filler: List[int]
     userInfo: int
-    ...
-_OesQryFundTransferSerialFilter = OesQryFundTransferSerialFilterT
-
-
-class OesQryFundTransferSerialReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryFundTransferSerialFilterT
-    ...
-_OesQryFundTransferSerialReq = OesQryFundTransferSerialReqT
-
-
-class OesQryFundTransferSerialRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesFundTrsfReportT]
-    ...
-_OesQryFundTransferSerialRsp = OesQryFundTransferSerialRspT
-
-
-class OesQryLotWinningFilterT:
+    
+    
+class _OesQryFundTransferSerialReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryFundTransferSerialFilter
+    
+    
+class _OesQryFundTransferSerialRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesFundTrsfReport]
+    
+    
+class _OesQryLotWinningFilter():
+    
+    
     custId: str
     invAcctId: str
     mktId: int
     lotType: int
-    __filler: Sequence[int]
+    __filler: List[int]
     startDate: int
     endDate: int
     userInfo: int
-    ...
-_OesQryLotWinningFilter = OesQryLotWinningFilterT
-
-
-class OesQryLotWinningReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryLotWinningFilterT
-    ...
-_OesQryLotWinningReq = OesQryLotWinningReqT
-
-
-class OesQryLotWinningRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesLotWinningBaseInfoT]
-    ...
-_OesQryLotWinningRsp = OesQryLotWinningRspT
-
-
-class OesQryIssueFilterT:
+    
+    
+class _OesQryLotWinningReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryLotWinningFilter
+    
+    
+class _OesQryLotWinningRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesLotWinningBaseInfo]
+    
+    
+class _OesQryIssueFilter():
+    
+    
     securityId: str
     mktId: int
-    __filler: Sequence[int]
+    productType: int
+    __filler: List[int]
     userInfo: int
-    ...
-_OesQryIssueFilter = OesQryIssueFilterT
-
-
-class OesQryIssueReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryIssueFilterT
-    ...
-_OesQryIssueReq = OesQryIssueReqT
-
-
-class OesQryIssueRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesIssueBaseInfoT]
-    ...
-_OesQryIssueRsp = OesQryIssueRspT
-
-
-class OesQryStockFilterT:
+    
+    
+class _OesQryIssueReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryIssueFilter
+    
+    
+class _OesQryIssueRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesIssueBaseInfo]
+    
+    
+class _OesQryStockFilter():
+    
+    
     securityId: str
     mktId: int
     securityType: int
     subSecurityType: int
-    __filler: Sequence[int]
+    __filler: List[int]
     userInfo: int
-    ...
-_OesQryStockFilter = OesQryStockFilterT
-
-
-class OesQryStockReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryStockFilterT
-    ...
-_OesQryStockReq = OesQryStockReqT
-
-
-class OesQryStockRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesStockBaseInfoT]
-    ...
-_OesQryStockRsp = OesQryStockRspT
-
-
-class OesQryEtfFilterT:
+    
+    
+class _OesQryStockReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryStockFilter
+    
+    
+class _OesQryStockRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesStockBaseInfo]
+    
+    
+class _OesQryEtfFilter():
+    
+    
     fundId: str
     mktId: int
-    __filler: Sequence[int]
+    __filler: List[int]
     userInfo: int
-    ...
-_OesQryEtfFilter = OesQryEtfFilterT
-
-
-class OesQryEtfReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryEtfFilterT
-    ...
-_OesQryEtfReq = OesQryEtfReqT
-
-
-class OesQryEtfRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesEtfBaseInfoT]
-    ...
-_OesQryEtfRsp = OesQryEtfRspT
-
-
-class OesQryEtfComponentFilterT:
+    
+    
+class _OesQryEtfReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryEtfFilter
+    
+    
+class _OesQryEtfRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesEtfBaseInfo]
+    
+    
+class _OesQryEtfComponentFilter():
+    
+    
     fundId: str
     userInfo: int
-    ...
-_OesQryEtfComponentFilter = OesQryEtfComponentFilterT
-
-
-class OesEtfComponentItemT:
+    
+    
+class _OesEtfComponentItem():
+    
+    
     securityId: str
     mktId: int
     subFlag: int
@@ -1199,377 +1313,390 @@ class OesEtfComponentItemT:
     creationSubCash: int
     redemptionCashSub: int
     fundId: str
-    ...
-_OesEtfComponentItem = OesEtfComponentItemT
-
-
-class OesQryEtfComponentReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryEtfComponentFilterT
-    ...
-_OesQryEtfComponentReq = OesQryEtfComponentReqT
-
-
-class OesQryEtfComponentRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesEtfComponentItemT]
-    ...
-_OesQryEtfComponentRsp = OesQryEtfComponentRspT
-
-
-class OesQryOptionFilterT:
+    
+    
+class _OesQryEtfComponentReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryEtfComponentFilter
+    
+    
+class _OesQryEtfComponentRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesEtfComponentItem]
+    
+    
+class _OesQryOptionFilter():
+    
+    
     securityId: str
     mktId: int
-    __filler: Sequence[int]
+    __filler: List[int]
     userInfo: int
-    ...
-_OesQryOptionFilter = OesQryOptionFilterT
-
-
-class OesQryOptionReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryOptionFilterT
-    ...
-_OesQryOptionReq = OesQryOptionReqT
-
-
-class OesQryOptionRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesOptionBaseInfoT]
-    ...
-_OesQryOptionRsp = OesQryOptionRspT
-
-
-class OesQryTradingDayRspT:
+    
+    
+class _OesQryOptionReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryOptionFilter
+    
+    
+class _OesQryOptionRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesOptionBaseInfo]
+    
+    
+class _OesQryTradingDayRsp():
+    
+    
     tradingDay: int
     __filler: int
-    ...
-_OesQryTradingDayRsp = OesQryTradingDayRspT
-
-
-class OesQryMarketStateFilterT:
+    
+    
+class _OesQryMarketStateFilter():
+    
+    
     exchId: int
     platformId: int
-    __filler: Sequence[int]
+    __filler: List[int]
     userInfo: int
-    ...
-_OesQryMarketStateFilter = OesQryMarketStateFilterT
-
-
-class OesQryMarketStateReqT:
-    reqHead: OesQryReqHeadT
-    qryFilter: OesQryMarketStateFilterT
-    ...
-_OesQryMarketStateReq = OesQryMarketStateReqT
-
-
-class OesQryMarketStateRspT:
-    rspHead: OesQryRspHeadT
-    qryItems: Sequence[OesMarketStateInfoT]
-    ...
-_OesQryMarketStateRsp = OesQryMarketStateRspT
-
-
-class OesQryReqMsgT:
-    qryOrd: OesQryOrdReqT
-    qryTrd: OesQryTrdReqT
-    qryCashAsset: OesQryCashAssetReqT
-    qryStkHolding: OesQryStkHoldingReqT
-    qryOptHolding: OesQryOptHoldingReqT
-    qryCust: OesQryCustReqT
-    qryInvAcct: OesQryInvAcctReqT
-    qryComms: OesQryCommissionRateReqT
-    qryFundTrsf: OesQryFundTransferSerialReqT
-    qryLotWinning: OesQryLotWinningReqT
-    qryIssue: OesQryIssueReqT
-    qryStock: OesQryStockReqT
-    qryEtf: OesQryEtfReqT
-    qryEtfComponent: OesQryEtfComponentReqT
-    qryOption: OesQryOptionReqT
-    qryMktState: OesQryMarketStateReqT
-    qryCounterCash: OesQryCounterCashReqT
-    ...
-_OesQryReqMsg = OesQryReqMsgT
-
-
-class OesQryRspMsgT:
-    ordRsp: OesQryOrdRspT
-    trdRsp: OesQryTrdRspT
-    cashAssetRsp: OesQryCashAssetRspT
-    stkHoldingRsp: OesQryStkHoldingRspT
-    optHoldingRsp: OesQryOptHoldingRspT
-    custRsp: OesQryCustRspT
-    invAcctRsp: OesQryInvAcctRspT
-    commsRateRsp: OesQryCommissionRateRspT
-    fundTrsfRsp: OesQryFundTransferSerialRspT
-    lotWinningRsp: OesQryLotWinningRspT
-    issueRsp: OesQryIssueRspT
-    stockRsp: OesQryStockRspT
-    etfRsp: OesQryEtfRspT
-    etfComponentRsp: OesQryEtfComponentRspT
-    optionRsp: OesQryOptionRspT
-    tradingDay: OesQryTradingDayRspT
-    mktStateRsp: OesQryMarketStateRspT
-    clientOverview: OesClientOverviewT
-    counterCashRsp: OesQryCounterCashRspT
-    ...
-_OesQryRspMsg = OesQryRspMsgT
-
-
-class OesLogonReqT:
-    encryptMethod: int
-    heartBtInt: int
-    username: str
-    password: str
-    applVerId: str
-    clientIp: str
-    clientMac: str
-    clEnvId: int
-    sourceType: int
-    __protocolHints: int
-    __filler: Sequence[int]
-    lastInMsgSeq: int
-    lastOutMsgSeq: int
-    clientDriverId: str
-    ...
-_OesLogonReq = OesLogonReqT
-
-
-class OesLogonRspT:
-    encryptMethod: int
-    heartBtInt: int
-    username: str
-    applVerId: str
-    minVerId: str
-    hostNum: int
-    isLeader: int
-    leaderHostNum: int
-    clEnvId: int
-    clientType: int
-    clientStatus: int
-    __protocolHints: int
-    __filler: int
-    lastInMsgSeq: int
-    lastOutMsgSeq: int
-    ...
-_OesLogonRsp = OesLogonRspT
-
-
-class OesReportSynchronizationReqT:
+    
+    
+class _OesQryMarketStateReq():
+    
+    
+    reqHead: _OesQryReqHead
+    qryFilter: _OesQryMarketStateFilter
+    
+    
+class _OesQryMarketStateRsp():
+    
+    
+    rspHead: _OesQryRspHead
+    qryItems: List[_OesMarketStateInfo]
+    
+    
+class _OesQryReqMsg():
+    
+    
+    qryOrd: _OesQryOrdReq
+    qryTrd: _OesQryTrdReq
+    qryCashAsset: _OesQryCashAssetReq
+    qryStkHolding: _OesQryStkHoldingReq
+    qryOptHolding: _OesQryOptHoldingReq
+    qryCust: _OesQryCustReq
+    qryInvAcct: _OesQryInvAcctReq
+    qryComms: _OesQryCommissionRateReq
+    qryFundTrsf: _OesQryFundTransferSerialReq
+    qryLotWinning: _OesQryLotWinningReq
+    qryIssue: _OesQryIssueReq
+    qryStock: _OesQryStockReq
+    qryEtf: _OesQryEtfReq
+    qryEtfComponent: _OesQryEtfComponentReq
+    qryOption: _OesQryOptionReq
+    qryMktState: _OesQryMarketStateReq
+    qryCounterCash: _OesQryCounterCashReq
+    
+    
+class _OesQryRspMsg():
+    
+    
+    ordRsp: _OesQryOrdRsp
+    trdRsp: _OesQryTrdRsp
+    cashAssetRsp: _OesQryCashAssetRsp
+    stkHoldingRsp: _OesQryStkHoldingRsp
+    optHoldingRsp: _OesQryHoldRsp
+    custRsp: _OesQryCustRsp
+    invAcctRsp: _OesQryInvAcctRsp
+    commsRateRsp: _OesQryCommissionRateRsp
+    fundTrsfRsp: _OesQryFundTransferSerialRsp
+    lotWinningRsp: _OesQryLotWinningRsp
+    issueRsp: _OesQryIssueRsp
+    stockRsp: _OesQryStockRsp
+    etfRsp: _OesQryEtfRsp
+    etfComponentRsp: _OesQryEtfComponentRsp
+    optionRsp: _OesQryOptionRsp
+    tradingDay: _OesQryTradingDayRsp
+    mktStateRsp: _OesQryMarketStateRsp
+    clientOverview: _OesClientOverview
+    counterCashRsp: _OesQryCounterCashRsp
+    
+    
+class _OesReportSynchronizationReq():
+    
+    
     lastRptSeqNum: int
-    subscribeEnvId: int
-    __filler: Sequence[int]
+    subscribeEnvId: str
+    __filler: List[int]
     subscribeRptTypes: int
-    ...
-_OesReportSynchronizationReq = OesReportSynchronizationReqT
-
-
-class OesReportSynchronizationRspT:
+    
+    
+class _OesReportSynchronizationRsp():
+    
+    
     lastRptSeqNum: int
-    subscribeEnvId: int
-    __filler: Sequence[int]
+    subscribeEnvId: str
+    __filler: List[int]
     subscribeRptTypes: int
-    ...
-_OesReportSynchronizationRsp = OesReportSynchronizationRspT
-
-
-class OesTestRequestReqT:
+    
+    
+class _OesTestRequestReq():
+    
+    
     testReqId: str
     sendTime: str
     __filler: str
-    ...
-_OesTestRequestReq = OesTestRequestReqT
-
-
-class OesTestRequestRspT:
+    
+    
+class _OesTestRequestRsp():
+    
+    
     testReqId: str
     origSendTime: str
     __filler1: str
     respTime: str
     __filler2: str
-    __recvTime: STimeval32T  # unknown what to wrap in py
-    __collectedTime: STimeval32T  # unknown what to wrap in py
-    __pushingTime: STimeval32T  # unknown what to wrap in py
-    ...
-_OesTestRequestRsp = OesTestRequestRspT
-
-
-class OesChangePasswordReqT:
+    __recvTime: _spk_struct_timeval32
+    __collectedTime: _spk_struct_timeval32
+    __pushingTime: _spk_struct_timeval32
+    
+    
+class _OesChangePasswordReq():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     encryptMethod: int
     __filler: int
     username: str
-    userInfo: int
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_packets.h:454:5)"
     oldPassword: str
     newPassword: str
-    ...
-_OesChangePasswordReq = OesChangePasswordReqT
-
-
-class OesChangePasswordRspT:
+    
+    
+class _OesChangePasswordRsp():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
     encryptMethod: int
     __filler: int
     username: str
-    userInfo: int
+    userInfo: "(anonymous union at vnoes/include/oes\oes_global/oes_packets.h:491:5)"
     clientId: int
-    clEnvId: int
-    __filler2: int
+    clEnvId: str
+    __filler2: str
     transDate: int
     transTime: int
     rejReason: int
-    ...
-_OesChangePasswordRsp = OesChangePasswordRspT
-
-
-class OesBatchOrdersHeadT:
+    
+    
+class _OesBatchOrdersHead():
+    
+    
     itemCount: int
     __filler: int
-    ...
-_OesBatchOrdersHead = OesBatchOrdersHeadT
-
-
-class OesBatchOrdersReqT:
-    batchHead: OesBatchOrdersHeadT
-    items: Sequence[OesOrdReqT]
-    ...
-_OesBatchOrdersReq = OesBatchOrdersReqT
-
-
-class OesRptMsgHeadT:
+    
+    
+class _OesBatchOrdersReq():
+    
+    
+    batchHead: _OesBatchOrdersHead
+    items: List[_OesOrdReq]
+    
+    
+class _OesRptMsgHead():
+    
+    
     rptSeqNum: int
     rptMsgType: int
     execType: int
     bodyLength: int
     ordRejReason: int
-    ...
-_OesRptMsgHead = OesRptMsgHeadT
-
-
-class OesRptMsgBodyT:
-    ordInsertRsp: OesOrdCnfmT
-    ordRejectRsp: OesOrdRejectT
-    ordCnfm: OesOrdCnfmT
-    trdCnfm: OesTrdCnfmT
-    fundTrsfRejectRsp: OesFundTrsfRejectT
-    fundTrsfCnfm: OesFundTrsfReportT
-    cashAssetRpt: OesCashAssetItemT
-    stkHoldingRpt: OesStkHoldingItemT
-    optHoldingRpt: OesOptHoldingItemT
-    ...
-_OesRptMsgBody = OesRptMsgBodyT
-
-
-class OesRptMsgT:
-    rptHead: OesRptMsgHeadT
-    rptBody: OesRptMsgBodyT
-    ...
-_OesRptMsg = OesRptMsgT
-
-
-class OesReqMsgBodyT:
-    ordReq: OesOrdReqT
-    ordCancelReq: OesOrdCancelReqT
-    batchOrdersReq: OesBatchOrdersReqT
-    fundTrsfReq: OesFundTrsfReqT
-    changePasswordReq: OesChangePasswordReqT
-    testRequestReq: OesTestRequestReqT
-    rptSyncReq: OesReportSynchronizationReqT
-    logonReq: OesLogonReqT
-    ...
-_OesReqMsgBody = OesReqMsgBodyT
-
-
-class OesRspMsgBodyT:
-    rptMsg: OesRptMsgT
-    mktStateRpt: OesMarketStateInfoT
-    changePasswordRsp: OesChangePasswordRspT
-    testRequestRsp: OesTestRequestRspT
-    reportSynchronizationRsp: OesReportSynchronizationRspT
-    logonRsp: OesLogonRspT
-    ...
-_OesRspMsgBody = OesRspMsgBodyT
-
-
-class SErrMsgT:
+    
+    
+class _OesRptMsgBody():
+    
+    
+    ordInsertRsp: _OesOrdCnfm
+    ordRejectRsp: _OesOrdReject
+    ordCnfm: _OesOrdCnfm
+    trdCnfm: _OesTrdCnfm
+    fundTrsfRejectRsp: _OesFundTrsfReject
+    fundTrsfCnfm: _OesFundTrsfReport
+    cashAssetRpt: _OesCashAssetItem
+    stkHoldingRpt: _OesStkHoldingItem
+    optHoldingRpt: _OesOptHoldingItem
+    
+    
+class _OesRptMsg():
+    
+    
+    rptHead: _OesRptMsgHead
+    rptBody: _OesRptMsgBody
+    
+    
+class _OesReqMsgBody():
+    
+    
+    ordReq: _OesOrdReq
+    ordCancelReq: _OesOrdCancelReq
+    batchOrdersReq: _OesBatchOrdersReq
+    fundTrsfReq: _OesFundTrsfReq
+    changePasswordReq: _OesChangePasswordReq
+    testRequestReq: _OesTestRequestReq
+    rptSyncReq: _OesReportSynchronizationReq
+    
+    
+class _OesRspMsgBody():
+    
+    
+    rptMsg: _OesRptMsg
+    mktStateRpt: _OesMarketStateInfo
+    changePasswordRsp: _OesChangePasswordRsp
+    testRequestRsp: _OesTestRequestRsp
+    reportSynchronizationRsp: _OesReportSynchronizationRsp
+    
+    
+class _SErrMsg():
+    
+    
     __index: int
     MODULE: int
     CODE: int
     __errCode: int
     __msgSize: int
     MSG: str
-    ...
-_SErrMsg = SErrMsgT
-
-
-class SDataBufferT:
-    dataSize: int
-    bufSize: int
-    buffer: char *const  # unknown what to wrap in py
-    __ref: Any
-    ...
-_SDataBuffer = SDataBufferT
-
-
-class _SDataBufferVar:
+    
+    
+class _SDataBuffer():
+    
+    
     dataSize: int
     bufSize: int
     buffer: str
     __ref: Any
-    ...
-
-
-class SSocketUriInfoT:
+    
+    
+class _SDataBufferVar():
+    
+    
+    dataSize: int
+    bufSize: int
+    buffer: str
+    __ref: Any
+    
+    
+class _SSocketUriInfo():
+    
+    
     uri: str
-    ...
-_SSocketUriInfo = SSocketUriInfoT
-
-
-class SSocketIpPortInfoT:
+    
+    
+class _SSocketIpPortInfo():
+    
+    
     port: int
     ip: str
-    ...
-_SSocketIpPortInfo = SSocketIpPortInfoT
-
-
-class SSocketChannelInfoT:
+    
+    
+class _SSocketChannelInfo():
+    
+    
+    socketFd: int
+    __socket_fd_filler: int
     remotePort: int
     protocolType: int
     _isNetByteOrder: int
     _isBroken: int
     _isSendBroken: int
     remoteAddr: str
-    ...
-_SSocketChannelInfo = SSocketChannelInfoT
-
-
-class SSocketOptionConfigT:
+    
+    
+class _SSocketOptionConfig():
+    
+    
     soRcvbuf: int
     soSndbuf: int
-    tcpNodelay: int
-    quickAck: int
-    mcastTtlNum: int
-    mcastLoopbackDisabled: int
+    tcpNodelay: str
+    quickAck: str
+    mcastTtlNum: str
+    mcastLoopbackDisabled: str
     soBacklog: int
     connTimeoutMs: int
     keepIdle: int
     keepIntvl: int
-    keepalive: int
-    keepCnt: int
-    __filler: Sequence[int]
+    keepalive: str
+    keepCnt: str
+    __filler: List[str]
     localSendingPort: int
     localSendingIp: str
     mcastInterfaceIp: str
-    ...
-_SSocketOptionConfig = SSocketOptionConfigT
-
-
-class SGeneralClientChannelT:
+    
+    
+class _SGeneralClientChannel():
+    
+    class decltype(__reserveData)():
+        
+        
+        buf: str
+        i8: List[str]
+        u8: List[int]
+        i16: List[int]
+        u16: List[int]
+        i32: List[int]
+        u32: List[int]
+        i64: List[int]
+        u64: List[int]
+        ptr: List[Any]
+        __padding: str
+        
+        
+    class decltype(__extData)():
+        
+        
+        buf: str
+        i8: List[str]
+        u8: List[int]
+        i16: List[int]
+        u16: List[int]
+        i32: List[int]
+        u32: List[int]
+        i64: List[int]
+        u64: List[int]
+        ptr: List[Any]
+        
+        
+    socketFd: int
+    __socket_fd_filler: int
     heartBtInt: int
     testReqInt: int
     protocolType: int
+    remoteSetNum: int
     remoteHostNum: int
     remoteIsLeader: int
     leaderHostNum: int
-    __filler1: Sequence[int]
+    __filler1: List[int]
     __codecBuf: _SDataBufferVar
     __recvBuf: _SDataBufferVar
     __pDataStartPoint: str
@@ -1582,102 +1709,96 @@ class SGeneralClientChannelT:
     firstInMsgSeq: int
     lastInMsgSeq: int
     nextInMsgSeq: int
-    lastRecvTime: struct timeval  # unknown what to wrap in py
-    channel: SSocketChannelInfoT
+    lastRecvTime: timeval
+    channel: _SSocketChannelInfo
     nextOutMsgSeq: int
     lastOutMsgSeq: int
-    lastSendTime: struct timeval  # unknown what to wrap in py
+    lastSendTime: timeval
     senderCompId: str
     targetCompId: str
     __magicNumber: int
     __magicSize: int
     __channelType: int
-    __clEnvId: int
+    __clEnvId: str
     __groupFlag: int
     __protocolHints: int
-    __filler: Sequence[int]
-    __reserveData: union (anonymous union at vnoes/include\sutil/net/spk_general_client_define.h:181:5)  # unknown what to wrap in py
-    __extData: union (anonymous union at vnoes/include\sutil/net/spk_general_client_define.h:197:5)  # unknown what to wrap in py
-    ...
-OesApiSessionInfoT = SGeneralClientChannelT
-_SGeneralClientChannel = SGeneralClientChannelT
-MdsApiSessionInfoT = SGeneralClientChannelT
-
-
-class SGeneralClientChannelGroupT:
+    __filler: List[int]
+    __reserveData: "(anonymous union at vnoes/include/oes\sutil/net/spk_general_client_define.h:185:5)"
+    __extData: "(anonymous union at vnoes/include/oes\sutil/net/spk_general_client_define.h:201:5)"
+    
+    
+class _SGeneralClientChannelGroup():
+    
+    
     channelCount: int
     __customFlag: int
-    channelList: Sequence[SGeneralClientChannelT]
+    channelList: List[_SGeneralClientChannel]
     __maxFd: int
+    __maxFdCnt: int
     __groupFlag: int
-    __filler: Sequence[int]
-    __fdSet: fd_set  # unknown what to wrap in py
-    ...
-MdsApiChannelGroupT = SGeneralClientChannelGroupT
-OesApiChannelGroupT = SGeneralClientChannelGroupT
-_SGeneralClientChannelGroup = SGeneralClientChannelGroupT
-
-
-class SGeneralClientAddrInfoT:
+    __filler: int
+    __fdArray: List[pollfd]
+    __fdSet: fd_set
+    
+    
+class _SGeneralClientAddrInfo():
+    
+    
     uri: str
     targetCompId: str
     username: str
     password: str
     hostNum: int
-    __filler: Sequence[int]
-    ...
-_SGeneralClientAddrInfo = SGeneralClientAddrInfoT
-OesApiAddrInfoT = SGeneralClientAddrInfoT
-MdsApiAddrInfoT = SGeneralClientAddrInfoT
-
-
-class SGeneralClientRemoteCfgT:
+    __filler: List[int]
+    
+    
+class _SGeneralClientRemoteCfg():
+    
+    
     addrCnt: int
     heartBtInt: int
     clusterType: int
-    clEnvId: int
-    __filler: Sequence[int]
+    clEnvId: str
+    __filler: List[int]
     senderCompId: str
     targetCompId: str
     username: str
     password: str
-    addrList: Sequence[SGeneralClientAddrInfoT]
-    socketOpt: SSocketOptionConfigT
-    ...
-_SGeneralClientRemoteCfg = SGeneralClientRemoteCfgT
-MdsApiRemoteCfgT = SGeneralClientRemoteCfgT
-OesApiRemoteCfgT = SGeneralClientRemoteCfgT
-
-
-class OesApiSubscribeInfoT:
-    clEnvId: int
-    __filler: Sequence[int]
+    addrList: List[_SGeneralClientAddrInfo]
+    socketOpt: _SSocketOptionConfig
+    
+    
+class _OesApiSubscribeInfo():
+    
+    
+    clEnvId: str
+    __filler: List[int]
     rptTypes: int
-    ...
-_OesApiSubscribeInfo = OesApiSubscribeInfoT
-
-
-class OesApiClientCfgT:
-    ordChannelCfg: SGeneralClientRemoteCfgT
-    rptChannelCfg: SGeneralClientRemoteCfgT
-    qryChannelCfg: SGeneralClientRemoteCfgT
-    subscribeInfo: OesApiSubscribeInfoT
-    ...
-_OesApiClientCfg = OesApiClientCfgT
-
-
-class OesApiClientEnvT:
-    ordChannel: SGeneralClientChannelT
-    rptChannel: SGeneralClientChannelT
-    qryChannel: SGeneralClientChannelT
-    ...
-_OesApiClientEnv = OesApiClientEnvT
-
-
-class MdsTradingSessionStatusMsgT:
+    
+    
+class _OesApiClientCfg():
+    
+    
+    ordChannelCfg: _SGeneralClientRemoteCfg
+    rptChannelCfg: _SGeneralClientRemoteCfg
+    qryChannelCfg: _SGeneralClientRemoteCfg
+    subscribeInfo: _OesApiSubscribeInfo
+    
+    
+class _OesApiClientEnv():
+    
+    
+    ordChannel: _SGeneralClientChannel
+    rptChannel: _SGeneralClientChannel
+    qryChannel: _SGeneralClientChannel
+    
+    
+class _MdsTradingSessionStatusMsg():
+    
+    
     exchId: int
-    securityType: int
-    __isRepeated: int
+    mdProductType: int
+    __isRepeated: str
     __filler1: int
     tradeDate: int
     updateTime: int
@@ -1685,22 +1806,22 @@ class MdsTradingSessionStatusMsgT:
     __mdsRecvTime: int
     TotNoRelatedSym: int
     TradingSessionID: str
-    __filler3: Sequence[int]
+    __filler3: List[int]
     __dataVersion: int
     __origTickSeq: int
-    __origNetTime: STimeval32T  # unknown what to wrap in py
-    __recvTime: STimeval32T  # unknown what to wrap in py
-    __collectedTime: STimeval32T  # unknown what to wrap in py
-    __processedTime: STimeval32T  # unknown what to wrap in py
-    __pushingTime: STimeval32T  # unknown what to wrap in py
-    ...
-_MdsTradingSessionStatusMsg = MdsTradingSessionStatusMsgT
-
-
-class MdsSecurityStatusMsgT:
+    __origNetTime: _spk_struct_timeval32
+    __recvTime: _spk_struct_timeval32
+    __collectedTime: _spk_struct_timeval32
+    __processedTime: _spk_struct_timeval32
+    __pushingTime: _spk_struct_timeval32
+    
+    
+class _MdsSecurityStatusMsg():
+    
+    
     exchId: int
-    securityType: int
-    __isRepeated: int
+    mdProductType: int
+    __isRepeated: str
     __filler1: int
     tradeDate: int
     updateTime: int
@@ -1715,28 +1836,28 @@ class MdsSecurityStatusMsgT:
     __origTickSeq: int
     NoSwitch: int
     __filler4: int
-    switches: Sequence[None]
-    __origNetTime: STimeval32T  # unknown what to wrap in py
-    __recvTime: STimeval32T  # unknown what to wrap in py
-    __collectedTime: STimeval32T  # unknown what to wrap in py
-    __processedTime: STimeval32T  # unknown what to wrap in py
-    __pushingTime: STimeval32T  # unknown what to wrap in py
-    ...
-_MdsSecurityStatusMsg = MdsSecurityStatusMsgT
-
-
-class MdsPriceLevelEntryT:
+    switches: List["(anonymous struct at vnoes/include/oes\mds_global/mds_base_model.h:579:5)"]
+    __origNetTime: _spk_struct_timeval32
+    __recvTime: _spk_struct_timeval32
+    __collectedTime: _spk_struct_timeval32
+    __processedTime: _spk_struct_timeval32
+    __pushingTime: _spk_struct_timeval32
+    
+    
+class _MdsPriceLevelEntry():
+    
+    
     Price: int
     NumberOfOrders: int
     OrderQty: int
-    ...
-_MdsPriceLevelEntry = MdsPriceLevelEntryT
-
-
-class MdsMktDataSnapshotHeadT:
+    
+    
+class _MdsMktDataSnapshotHead():
+    
+    
     exchId: int
-    securityType: int
-    __isRepeated: int
+    mdProductType: int
+    __isRepeated: str
     __origMdSource: int
     tradeDate: int
     updateTime: int
@@ -1746,16 +1867,17 @@ class MdsMktDataSnapshotHeadT:
     __channelNo: int
     __dataVersion: int
     __origTickSeq: int
-    __origNetTime: STimeval32T  # unknown what to wrap in py
-    __recvTime: STimeval32T  # unknown what to wrap in py
-    __collectedTime: STimeval32T  # unknown what to wrap in py
-    __processedTime: STimeval32T  # unknown what to wrap in py
-    __pushingTime: STimeval32T  # unknown what to wrap in py
-    ...
-_MdsMktDataSnapshotHead = MdsMktDataSnapshotHeadT
-
-
-class MdsIndexSnapshotBodyT:
+    __lastUpdateTime: int
+    __origNetTime: _spk_struct_timeval32
+    __recvTime: _spk_struct_timeval32
+    __collectedTime: _spk_struct_timeval32
+    __processedTime: _spk_struct_timeval32
+    __pushingTime: _spk_struct_timeval32
+    
+    
+class _MdsIndexSnapshotBody():
+    
+    
     SecurityID: str
     TradingPhaseCode: str
     __filler: str
@@ -1770,11 +1892,11 @@ class MdsIndexSnapshotBodyT:
     CloseIdx: int
     StockNum: int
     __filler1: int
-    ...
-_MdsIndexSnapshotBody = MdsIndexSnapshotBodyT
-
-
-class MdsStockSnapshotBodyT:
+    
+    
+class _MdsStockSnapshotBody():
+    
+    
     SecurityID: str
     TradingPhaseCode: str
     __filler: str
@@ -1790,21 +1912,30 @@ class MdsStockSnapshotBodyT:
     IOPV: int
     NAV: int
     TotalLongPosition: int
-    BidLevels: Sequence[MdsPriceLevelEntryT]
-    OfferLevels: Sequence[MdsPriceLevelEntryT]
-    ...
-_MdsStockSnapshotBody = MdsStockSnapshotBodyT
-
-
-class MdsL1SnapshotBodyT:
-    stock: MdsStockSnapshotBodyT
-    option: MdsStockSnapshotBodyT
-    index: MdsIndexSnapshotBodyT
-    ...
-_MdsL1SnapshotBody = MdsL1SnapshotBodyT
-
-
-class MdsL2StockSnapshotBodyT:
+    BidLevels: List[_MdsPriceLevelEntry]
+    OfferLevels: List[_MdsPriceLevelEntry]
+    
+    
+class _MdsL1SnapshotBody():
+    
+    
+    stock: _MdsStockSnapshotBody
+    option: _MdsStockSnapshotBody
+    index: _MdsIndexSnapshotBody
+    
+    
+class _MdsL1Snapshot():
+    
+    
+    head: _MdsMktDataSnapshotHead
+    stock: _MdsStockSnapshotBody
+    option: _MdsStockSnapshotBody
+    index: _MdsIndexSnapshotBody
+    
+    
+class _MdsL2StockSnapshotBody():
+    
+    
     SecurityID: str
     TradingPhaseCode: str
     __filler: str
@@ -1826,13 +1957,13 @@ class MdsL2StockSnapshotBodyT:
     WeightedAvgOfferPx: int
     BidPriceLevel: int
     OfferPriceLevel: int
-    BidLevels: Sequence[MdsPriceLevelEntryT]
-    OfferLevels: Sequence[MdsPriceLevelEntryT]
-    ...
-_MdsL2StockSnapshotBody = MdsL2StockSnapshotBodyT
-
-
-class MdsL2StockSnapshotIncrementalT:
+    BidLevels: List[_MdsPriceLevelEntry]
+    OfferLevels: List[_MdsPriceLevelEntry]
+    
+    
+class _MdsL2StockSnapshotIncremental():
+    
+    
     NumTrades: int
     TotalVolumeTraded: int
     TotalValueTraded: int
@@ -1849,32 +1980,34 @@ class MdsL2StockSnapshotIncrementalT:
     BestBidPrice: int
     HasContainedBestBidLevel: int
     NoBidLevel: int
-    __filler1: Sequence[int]
+    __hasDeletedAtBidTail: int
+    __filler1: int
     BestOfferPrice: int
     HasContainedBestOfferLevel: int
     NoOfferLevel: int
-    __filler2: Sequence[int]
-    PriceLevelOperator: Sequence[int]
-    PriceLevels: Sequence[MdsPriceLevelEntryT]
-    ...
-_MdsL2StockSnapshotIncremental = MdsL2StockSnapshotIncrementalT
-
-
-class MdsL2BestOrdersSnapshotBodyT:
+    __hasDeletedAtOfferTail: int
+    __filler2: int
+    PriceLevelOperator: List[int]
+    PriceLevels: List[_MdsPriceLevelEntry]
+    
+    
+class _MdsL2BestOrdersSnapshotBody():
+    
+    
     SecurityID: str
-    __filler: Sequence[int]
+    __filler: List[int]
     NoBidOrders: int
     NoOfferOrders: int
     TotalVolumeTraded: int
     BestBidPrice: int
     BestOfferPrice: int
-    BidOrderQty: Sequence[int]
-    OfferOrderQty: Sequence[int]
-    ...
-_MdsL2BestOrdersSnapshotBody = MdsL2BestOrdersSnapshotBodyT
-
-
-class MdsL2BestOrdersSnapshotIncrementalT:
+    BidOrderQty: List[int]
+    OfferOrderQty: List[int]
+    
+    
+class _MdsL2BestOrdersSnapshotIncremental():
+    
+    
     TotalVolumeTraded: int
     BestBidPrice: int
     HasContainedBestBidLevel: int
@@ -1886,63 +2019,50 @@ class MdsL2BestOrdersSnapshotIncrementalT:
     ContinualDeletedOfferOrders: int
     NoOfferOrders: int
     __filler2: int
-    OperatorEntryID: Sequence[int]
-    OrderQty: Sequence[int]
-    ...
-_MdsL2BestOrdersSnapshotIncremental = MdsL2BestOrdersSnapshotIncrementalT
-
-
-class MdsL2VirtualAuctionPriceT:
-    SecurityID: str
-    LeavesSide: int
-    __filler: Sequence[int]
-    Price: int
-    VirtualAuctionQty: int
-    LeavesQty: int
-    ...
-_MdsL2VirtualAuctionPrice = MdsL2VirtualAuctionPriceT
-
-
-class MdsL2MarketOverviewT:
+    OperatorEntryID: List[str]
+    OrderQty: List[int]
+    
+    
+class _MdsL2MarketOverview():
+    
+    
     OrigDate: int
     OrigTime: int
     __exchSendingTime: int
     __mdsRecvTime: int
-    ...
-_MdsL2MarketOverview = MdsL2MarketOverviewT
-
-
-class MdsL2SnapshotBodyT:
-    l2Stock: MdsL2StockSnapshotBodyT
-    l2StockIncremental: MdsL2StockSnapshotIncrementalT
-    l2BestOrders: MdsL2BestOrdersSnapshotBodyT
-    l2BestOrdersIncremental: MdsL2BestOrdersSnapshotIncrementalT
-    index: MdsIndexSnapshotBodyT
-    l2VirtualAuctionPrice: MdsL2VirtualAuctionPriceT
-    l2MarketOverview: MdsL2MarketOverviewT
-    ...
-_MdsL2SnapshotBody = MdsL2SnapshotBodyT
-
-
-class MdsMktDataSnapshotT:
-    head: MdsMktDataSnapshotHeadT
-    l2Stock: MdsL2StockSnapshotBodyT
-    l2StockIncremental: MdsL2StockSnapshotIncrementalT
-    l2BestOrders: MdsL2BestOrdersSnapshotBodyT
-    l2BestOrdersIncremental: MdsL2BestOrdersSnapshotIncrementalT
-    stock: MdsStockSnapshotBodyT
-    option: MdsStockSnapshotBodyT
-    index: MdsIndexSnapshotBodyT
-    l2VirtualAuctionPrice: MdsL2VirtualAuctionPriceT
-    l2MarketOverview: MdsL2MarketOverviewT
-    ...
-_MdsMktDataSnapshot = MdsMktDataSnapshotT
-
-
-class MdsL2TradeT:
+    
+    
+class _MdsL2SnapshotBody():
+    
+    
+    l2Stock: _MdsL2StockSnapshotBody
+    l2StockIncremental: _MdsL2StockSnapshotIncremental
+    l2BestOrders: _MdsL2BestOrdersSnapshotBody
+    l2BestOrdersIncremental: _MdsL2BestOrdersSnapshotIncremental
+    index: _MdsIndexSnapshotBody
+    l2MarketOverview: _MdsL2MarketOverview
+    
+    
+class _MdsMktDataSnapshot():
+    
+    
+    head: _MdsMktDataSnapshotHead
+    l2Stock: _MdsL2StockSnapshotBody
+    l2StockIncremental: _MdsL2StockSnapshotIncremental
+    l2BestOrders: _MdsL2BestOrdersSnapshotBody
+    l2BestOrdersIncremental: _MdsL2BestOrdersSnapshotIncremental
+    stock: _MdsStockSnapshotBody
+    option: _MdsStockSnapshotBody
+    index: _MdsIndexSnapshotBody
+    l2MarketOverview: _MdsL2MarketOverview
+    
+    
+class _MdsL2Trade():
+    
+    
     exchId: int
-    securityType: int
-    __isRepeated: int
+    mdProductType: int
+    __isRepeated: str
     __filler1: int
     tradeDate: int
     TransactTime: int
@@ -1950,9 +2070,9 @@ class MdsL2TradeT:
     ChannelNo: int
     ApplSeqNum: int
     SecurityID: str
-    ExecType: int
-    TradeBSFlag: int
-    __filler3: Sequence[int]
+    ExecType: str
+    TradeBSFlag: str
+    __filler3: List[int]
     __channelNo: int
     __origTickSeq: int
     TradePrice: int
@@ -1960,19 +2080,19 @@ class MdsL2TradeT:
     TradeMoney: int
     BidApplSeqNum: int
     OfferApplSeqNum: int
-    __origNetTime: STimeval32T  # unknown what to wrap in py
-    __recvTime: STimeval32T  # unknown what to wrap in py
-    __collectedTime: STimeval32T  # unknown what to wrap in py
-    __processedTime: STimeval32T  # unknown what to wrap in py
-    __pushingTime: STimeval32T  # unknown what to wrap in py
-    ...
-_MdsL2Trade = MdsL2TradeT
-
-
-class MdsL2OrderT:
+    __origNetTime: _spk_struct_timeval32
+    __recvTime: _spk_struct_timeval32
+    __collectedTime: _spk_struct_timeval32
+    __processedTime: _spk_struct_timeval32
+    __pushingTime: _spk_struct_timeval32
+    
+    
+class _MdsL2Order():
+    
+    
     exchId: int
-    securityType: int
-    __isRepeated: int
+    mdProductType: int
+    __isRepeated: str
     __filler1: int
     tradeDate: int
     TransactTime: int
@@ -1980,95 +2100,191 @@ class MdsL2OrderT:
     ChannelNo: int
     ApplSeqNum: int
     SecurityID: str
-    Side: int
-    OrderType: int
-    __filler3: Sequence[int]
+    Side: str
+    OrderType: str
+    __filler3: List[int]
     __channelNo: int
     __origTickSeq: int
     Price: int
     OrderQty: int
-    __origNetTime: STimeval32T  # unknown what to wrap in py
-    __recvTime: STimeval32T  # unknown what to wrap in py
-    __collectedTime: STimeval32T  # unknown what to wrap in py
-    __processedTime: STimeval32T  # unknown what to wrap in py
-    __pushingTime: STimeval32T  # unknown what to wrap in py
-    ...
-_MdsL2Order = MdsL2OrderT
-
-
-class MdsL2TickLostT:
+    __origNetTime: _spk_struct_timeval32
+    __recvTime: _spk_struct_timeval32
+    __collectedTime: _spk_struct_timeval32
+    __processedTime: _spk_struct_timeval32
+    __pushingTime: _spk_struct_timeval32
+    
+    
+class _MdsWholeMktMsgBody():
+    
+    
+    mktDataSnapshot: _MdsMktDataSnapshot
+    trade: _MdsL2Trade
+    order: _MdsL2Order
+    trdSessionStatus: _MdsTradingSessionStatusMsg
+    securityStatus: _MdsSecurityStatusMsg
+    
+    
+class _MdsStockStaticInfo():
+    
+    
+    securityId: str
     exchId: int
-    __filler3: Sequence[int]
-    tradeDate: int
-    lostTime: int
-    channelNo: int
-    beginApplSeqNum: int
-    endApplSeqNum: int
-    __origTickSeq: int
-    ...
-_MdsL2TickLost = MdsL2TickLostT
-
-
-class MdsQryMktDataSnapshotReqT:
-    exchId: int
-    securityType: int
-    __filler: Sequence[int]
+    mdProductType: int
+    oesSecurityType: int
+    subSecurityType: int
+    __filler: List[int]
     instrId: int
-    ...
-_MdsQryMktDataSnapshotReq = MdsQryMktDataSnapshotReqT
-MdsQrySecurityStatusReqT = MdsQryMktDataSnapshotReqT
-
-
-class MdsQryTrdSessionStatusReqT:
+    buyQtyUnit: int
+    lmtBuyMaxQty: int
+    buyOrdMaxQty: int
+    lmtBuyMinQty: int
+    buyOrdMinQty: int
+    mktBuyMaxQty: int
+    mktBuyMinQty: int
+    sellQtyUnit: int
+    lmtSellMaxQty: int
+    sellOrdMaxQty: int
+    lmtSellMinQty: int
+    sellOrdMinQty: int
+    mktSellMaxQty: int
+    mktSellMinQty: int
+    prevClose: int
+    priceTick: int
+    limitUpPrice: int
+    limitDownPrice: int
+    parPrice: int
+    bondInterest: int
+    securityName: str
+    __reserve: str
+    
+    
+class _MdsQryMktDataSnapshotReq():
+    
+    
     exchId: int
-    securityType: int
-    __filler: Sequence[int]
-    ...
-_MdsQryTrdSessionStatusReq = MdsQryTrdSessionStatusReqT
-
-
-class MdsLogonReqT:
-    encryptMethod: int
-    heartBtInt: int
-    username: str
-    password: str
-    applVerId: str
-    ...
-_MdsLogonReq = MdsLogonReqT
-
-
-class MdsLogonRspT:
-    encryptMethod: int
-    heartBtInt: int
-    username: str
-    applVerId: str
-    minVerId: str
-    hostNum: int
-    isLeader: int
-    leaderHostNum: int
-    __filler: Sequence[int]
-    ...
-_MdsLogonRsp = MdsLogonRspT
-
-
-class MdsMktDataRequestEntryT:
-    exchId: int
-    securityType: int
-    __filler: Sequence[int]
+    mdProductType: int
+    __filler: List[int]
     instrId: int
-    ...
-_MdsMktDataRequestEntry = MdsMktDataRequestEntryT
-
-
-class MdsMktDataRequestReqT:
+    
+    
+class _MdsQryTrdSessionStatusReq():
+    
+    
+    exchId: int
+    mdProductType: int
+    __filler: List[int]
+    
+    
+class _MdsQryReqHeadT():
+    
+    
+    maxPageSize: int
+    lastPosition: int
+    
+    
+class _MdsQryRspHeadT():
+    
+    
+    itemCount: int
+    lastPosition: int
+    isEnd: str
+    __filler: List[int]
+    userInfo: int
+    
+    
+class _MdsQryCursor():
+    
+    
+    seqNo: int
+    isEnd: str
+    __filler: List[str]
+    userInfo: int
+    
+    
+class _MdsQrySecurityCodeEntry():
+    
+    
+    instrId: int
+    exchId: int
+    mdProductType: int
+    __filler: List[int]
+    
+    
+class _MdsQryStockStaticInfoFilter():
+    
+    
+    securityId: str
+    exchId: int
+    oesSecurityType: int
+    subSecurityType: int
+    __filler: List[int]
+    instrId: int
+    userInfo: int
+    
+    
+class _MdsQryStockStaticInfoReq():
+    
+    
+    reqHead: _MdsQryReqHeadT
+    qryFilter: _MdsQryStockStaticInfoFilter
+    
+    
+class _MdsQryStockStaticInfoRsp():
+    
+    
+    rspHead: _MdsQryRspHeadT
+    qryItems: List[_MdsStockStaticInfo]
+    
+    
+class _MdsQrySnapshotListFilter():
+    
+    
+    exchId: int
+    mdProductType: int
+    oesSecurityType: int
+    subSecurityType: int
+    mdLevel: int
+    __filler: List[int]
+    userInfo: int
+    
+    
+class _MdsQrySnapshotListReq():
+    
+    
+    reqHead: _MdsQryReqHeadT
+    qryFilter: _MdsQrySnapshotListFilter
+    securityCodeCnt: int
+    __filler: int
+    securityCodeList: List[_MdsQrySecurityCodeEntry]
+    
+    
+class _MdsQrySnapshotListRsp():
+    
+    
+    rspHead: _MdsQryRspHeadT
+    qryItems: List[_MdsL1Snapshot]
+    
+    
+class _MdsMktDataRequestEntry():
+    
+    
+    exchId: int
+    mdProductType: int
+    __filler: List[int]
+    instrId: int
+    
+    
+class _MdsMktDataRequestReq():
+    
+    
     subMode: int
     tickType: int
-    sseStockFlag: int
-    sseIndexFlag: int
-    sseOptionFlag: int
-    szseStockFlag: int
-    szseIndexFlag: int
-    szseOptionFlag: int
+    sseStockFlag: str
+    sseIndexFlag: str
+    sseOptionFlag: str
+    szseStockFlag: str
+    szseIndexFlag: str
+    szseOptionFlag: str
     isRequireInitialMktData: int
     __channelNos: int
     tickExpireType: int
@@ -2076,25 +2292,24 @@ class MdsMktDataRequestReqT:
     dataTypes: int
     beginTime: int
     subSecurityCnt: int
-    ...
-_MdsMktDataRequestReq = MdsMktDataRequestReqT
-
-
-class MdsMktDataRequestReqBufT:
-    mktDataRequestReq: MdsMktDataRequestReqT
-    entries: Sequence[MdsMktDataRequestEntryT]
-    ...
-MdsApiSubscribeInfoT = MdsMktDataRequestReqBufT
-_MdsMktDataRequestReqBuf = MdsMktDataRequestReqBufT
-
-
-class MdsMktDataRequestRspT:
+    
+    
+class _MdsMktDataRequestReqBuf():
+    
+    
+    mktDataRequestReq: _MdsMktDataRequestReq
+    entries: List[_MdsMktDataRequestEntry]
+    
+    
+class _MdsMktDataRequestRsp():
+    
+    
     subMode: int
     tickType: int
     isRequireInitialMktData: int
     __channelNos: int
     tickExpireType: int
-    __filler: Sequence[int]
+    __filler: List[int]
     dataTypes: int
     beginTime: int
     sseStockSubscribed: int
@@ -2103,4500 +2318,1476 @@ class MdsMktDataRequestRspT:
     szseStockSubscribed: int
     szseIndexSubscribed: int
     szseOptionSubscribed: int
-    ...
-_MdsMktDataRequestRsp = MdsMktDataRequestRspT
-
-
-class MdsTestRequestReqT:
+    
+    
+class _MdsTestRequestReq():
+    
+    
     testReqId: str
     sendTime: str
     __filler: str
-    ...
-_MdsTestRequestReq = MdsTestRequestReqT
-
-
-class MdsTestRequestRspT:
+    
+    
+class _MdsTestRequestRsp():
+    
+    
     testReqId: str
     origSendTime: str
     __filler1: str
     respTime: str
     __filler2: str
-    __recvTime: STimeval32T  # unknown what to wrap in py
-    __collectedTime: STimeval32T  # unknown what to wrap in py
-    __pushingTime: STimeval32T  # unknown what to wrap in py
-    ...
-_MdsTestRequestRsp = MdsTestRequestRspT
-
-
-class MdsMktReqMsgBodyT:
-    wholeMktDataReqBuf: MdsMktDataRequestReqBufT
-    mktDataRequestReq: MdsMktDataRequestReqT
-    testRequestReq: MdsTestRequestReqT
-    logonReq: MdsLogonReqT
-    qryMktDataSnapshotReq: MdsQryMktDataSnapshotReqT
-    qrySecurityStatusReq: MdsQryMktDataSnapshotReqT
-    qryTrdSessionStatusReq: MdsQryTrdSessionStatusReqT
-    ...
-_MdsMktReqMsgBody = MdsMktReqMsgBodyT
-
-
-class MdsMktRspMsgBodyT:
-    mktDataRequestRsp: MdsMktDataRequestRspT
-    testRequestRsp: MdsTestRequestRspT
-    logonRsp: MdsLogonRspT
-    mktDataSnapshot: MdsMktDataSnapshotT
-    trade: MdsL2TradeT
-    order: MdsL2OrderT
-    tickLost: MdsL2TickLostT
-    trdSessionStatus: MdsTradingSessionStatusMsgT
-    securityStatus: MdsSecurityStatusMsgT
-    ...
-_MdsMktRspMsgBody = MdsMktRspMsgBodyT
-
-
-class MdsUdpPktHeadT:
+    __recvTime: _spk_struct_timeval32
+    __collectedTime: _spk_struct_timeval32
+    __pushingTime: _spk_struct_timeval32
+    
+    
+class _MdsChangePasswordReq():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
+    encryptMethod: int
+    __filler: int
+    username: str
+    userInfo: "(anonymous union at vnoes/include/oes\mds_global/mds_mkt_packets.h:859:5)"
+    oldPassword: str
+    newPassword: str
+    
+    
+class _MdsChangePasswordRsp():
+    
+    class decltype(userInfo)():
+        
+        
+        u64: int
+        i64: int
+        u32: List[int]
+        i32: List[int]
+        c8: str
+        
+        
+    encryptMethod: int
+    __filler: int
+    username: str
+    userInfo: "(anonymous union at vnoes/include/oes\mds_global/mds_mkt_packets.h:896:5)"
+    __filler2: int
+    transDate: int
+    transTime: int
+    rejReason: int
+    
+    
+class _MdsMktReqMsgBody():
+    
+    
+    wholeMktDataReqBuf: _MdsMktDataRequestReqBuf
+    mktDataRequestReq: _MdsMktDataRequestReq
+    testRequestReq: _MdsTestRequestReq
+    qryMktDataSnapshotReq: _MdsQryMktDataSnapshotReq
+    qrySecurityStatusReq: _MdsQryMktDataSnapshotReq
+    qryTrdSessionStatusReq: _MdsQryTrdSessionStatusReq
+    qryStockStaticInfoReq: _MdsQryStockStaticInfoReq
+    qrySnapshotListReq: _MdsQrySnapshotListReq
+    changePasswordReq: _MdsChangePasswordReq
+    
+    
+class _MdsMktRspMsgBody():
+    
+    
+    mktDataRequestRsp: _MdsMktDataRequestRsp
+    testRequestRsp: _MdsTestRequestRsp
+    mktDataSnapshot: _MdsMktDataSnapshot
+    trade: _MdsL2Trade
+    order: _MdsL2Order
+    trdSessionStatus: _MdsTradingSessionStatusMsg
+    securityStatus: _MdsSecurityStatusMsg
+    qryStockStaticInfoRsp: _MdsQryStockStaticInfoRsp
+    qrySnapshotListRsp: _MdsQrySnapshotListRsp
+    changePasswordRsp: _MdsChangePasswordRsp
+    
+    
+class _MdsUdpPktHead():
+    
+    
     msgCnt: int
     pktSiz: int
     pktSeq: int
-    ...
-_MdsUdpPktHead = MdsUdpPktHeadT
-
-
-class MdsApiClientCfgT:
-    tcpChannelCfg: SGeneralClientRemoteCfgT
-    qryChannelCfg: SGeneralClientRemoteCfgT
-    udpL1ChannelCfg: SGeneralClientRemoteCfgT
-    udpL2ChannelCfg: SGeneralClientRemoteCfgT
-    udpTradeChannelCfg: SGeneralClientRemoteCfgT
-    udpOrderChannelCfg: SGeneralClientRemoteCfgT
-    subscribeInfo: MdsMktDataRequestReqBufT
-    ...
-_MdsApiClientCfg = MdsApiClientCfgT
-
-
-class MdsApiClientEnvT:
-    tcpChannel: SGeneralClientChannelT
-    qryChannel: SGeneralClientChannelT
-    udpL1Channel: SGeneralClientChannelT
-    udpL2Channel: SGeneralClientChannelT
-    udpTradeChannel: SGeneralClientChannelT
-    udpOrderChannel: SGeneralClientChannelT
-    udpChannelGroup: SGeneralClientChannelGroupT
-    ...
-_MdsApiClientEnv = MdsApiClientEnvT
-
-
-class cast:
-    
-    def toOesOrdReqT(self, 
-            v: Any,
-        ) -> OesOrdReqT:
-        ...
-    
-    
-    def to_OesOrdReq(self, 
-            v: Any,
-        ) -> OesOrdReqT:
-        ...
-    
-    
-    def to(self, 
-            v: Any,
-        ) -> :
-        ...
-    
-    
-    def toOesOrdCancelReqT(self, 
-            v: Any,
-        ) -> OesOrdCancelReqT:
-        ...
-    
-    
-    def to_OesOrdCancelReq(self, 
-            v: Any,
-        ) -> OesOrdCancelReqT:
-        ...
-    
-    
-    def toOesOrdRejectT(self, 
-            v: Any,
-        ) -> OesOrdRejectT:
-        ...
-    
-    
-    def to_OesOrdReject(self, 
-            v: Any,
-        ) -> OesOrdRejectT:
-        ...
-    
-    
-    def toOesOrdCnfmT(self, 
-            v: Any,
-        ) -> OesOrdCnfmT:
-        ...
-    
-    
-    def to_OesOrdCnfm(self, 
-            v: Any,
-        ) -> OesOrdCnfmT:
-        ...
-    
-    
-    def toOesOrdItemT(self, 
-            v: Any,
-        ) -> OesOrdCnfmT:
-        ...
-    
-    
-    def toOesTrdBaseInfoT(self, 
-            v: Any,
-        ) -> OesTrdBaseInfoT:
-        ...
-    
-    
-    def to_OesTrdBaseInfo(self, 
-            v: Any,
-        ) -> OesTrdBaseInfoT:
-        ...
-    
-    
-    def toOesTrdCnfmT(self, 
-            v: Any,
-        ) -> OesTrdCnfmT:
-        ...
-    
-    
-    def toOesTrdItemT(self, 
-            v: Any,
-        ) -> OesTrdCnfmT:
-        ...
-    
-    
-    def to_OesTrdCnfm(self, 
-            v: Any,
-        ) -> OesTrdCnfmT:
-        ...
-    
-    
-    def toOesLotWinningBaseInfoT(self, 
-            v: Any,
-        ) -> OesLotWinningBaseInfoT:
-        ...
-    
-    
-    def to_OesLotWinningBaseInfo(self, 
-            v: Any,
-        ) -> OesLotWinningBaseInfoT:
-        ...
-    
-    
-    def toOesLotWinningItemT(self, 
-            v: Any,
-        ) -> OesLotWinningBaseInfoT:
-        ...
-    
-    
-    def toOesFundTrsfBaseInfoT(self, 
-            v: Any,
-        ) -> OesFundTrsfBaseInfoT:
-        ...
-    
-    
-    def to_OesFundTrsfBaseInfo(self, 
-            v: Any,
-        ) -> OesFundTrsfBaseInfoT:
-        ...
-    
-    
-    def toOesFundTrsfReqT(self, 
-            v: Any,
-        ) -> OesFundTrsfReqT:
-        ...
-    
-    
-    def to_OesFundTrsfReq(self, 
-            v: Any,
-        ) -> OesFundTrsfReqT:
-        ...
-    
-    
-    def toOesFundTrsfRejectT(self, 
-            v: Any,
-        ) -> OesFundTrsfRejectT:
-        ...
-    
-    
-    def to_OesFundTrsfReject(self, 
-            v: Any,
-        ) -> OesFundTrsfRejectT:
-        ...
-    
-    
-    def toOesFundTrsfReportT(self, 
-            v: Any,
-        ) -> OesFundTrsfReportT:
-        ...
-    
-    
-    def to_OesFundTrsfReport(self, 
-            v: Any,
-        ) -> OesFundTrsfReportT:
-        ...
-    
-    
-    def toOesFundTransferSerialItemT(self, 
-            v: Any,
-        ) -> OesFundTrsfReportT:
-        ...
-    
-    
-    def toOesIssueBaseInfoT(self, 
-            v: Any,
-        ) -> OesIssueBaseInfoT:
-        ...
-    
-    
-    def to_OesIssueBaseInfo(self, 
-            v: Any,
-        ) -> OesIssueBaseInfoT:
-        ...
-    
-    
-    def toOesIssueItemT(self, 
-            v: Any,
-        ) -> OesIssueBaseInfoT:
-        ...
-    
-    
-    def toOesPriceLimitT(self, 
-            v: Any,
-        ) -> OesPriceLimitT:
-        ...
-    
-    
-    def to_OesPriceLimit(self, 
-            v: Any,
-        ) -> OesPriceLimitT:
-        ...
-    
-    
-    def toOesStockBaseInfoT(self, 
-            v: Any,
-        ) -> OesStockBaseInfoT:
-        ...
-    
-    
-    def toOesStockItemT(self, 
-            v: Any,
-        ) -> OesStockBaseInfoT:
-        ...
-    
-    
-    def to_OesStockBaseInfo(self, 
-            v: Any,
-        ) -> OesStockBaseInfoT:
-        ...
-    
-    
-    def toOesEtfBaseInfoT(self, 
-            v: Any,
-        ) -> OesEtfBaseInfoT:
-        ...
-    
-    
-    def to_OesEtfBaseInfo(self, 
-            v: Any,
-        ) -> OesEtfBaseInfoT:
-        ...
-    
-    
-    def toOesEtfItemT(self, 
-            v: Any,
-        ) -> OesEtfBaseInfoT:
-        ...
-    
-    
-    def toOesEtfComponentBaseInfoT(self, 
-            v: Any,
-        ) -> OesEtfComponentBaseInfoT:
-        ...
-    
-    
-    def to_OesEtfComponentBaseInfo(self, 
-            v: Any,
-        ) -> OesEtfComponentBaseInfoT:
-        ...
-    
-    
-    def toOesOptionBaseInfoT(self, 
-            v: Any,
-        ) -> OesOptionBaseInfoT:
-        ...
-    
-    
-    def to_OesOptionBaseInfo(self, 
-            v: Any,
-        ) -> OesOptionBaseInfoT:
-        ...
-    
-    
-    def toOesOptionItemT(self, 
-            v: Any,
-        ) -> OesOptionBaseInfoT:
-        ...
-    
-    
-    def toOesCashAssetBaseInfoT(self, 
-            v: Any,
-        ) -> OesCashAssetBaseInfoT:
-        ...
-    
-    
-    def to_OesCashAssetBaseInfo(self, 
-            v: Any,
-        ) -> OesCashAssetBaseInfoT:
-        ...
-    
-    
-    def toOesCustBaseInfoT(self, 
-            v: Any,
-        ) -> OesCustBaseInfoT:
-        ...
-    
-    
-    def to_OesCustBaseInfo(self, 
-            v: Any,
-        ) -> OesCustBaseInfoT:
-        ...
-    
-    
-    def toOesCustItemT(self, 
-            v: Any,
-        ) -> OesCustBaseInfoT:
-        ...
-    
-    
-    def toOesInvAcctBaseInfoT(self, 
-            v: Any,
-        ) -> OesInvAcctBaseInfoT:
-        ...
-    
-    
-    def to_OesInvAcctBaseInfo(self, 
-            v: Any,
-        ) -> OesInvAcctBaseInfoT:
-        ...
-    
-    
-    def toOesStkHoldingBaseInfoT(self, 
-            v: Any,
-        ) -> OesStkHoldingBaseInfoT:
-        ...
-    
-    
-    def to_OesStkHoldingBaseInfo(self, 
-            v: Any,
-        ) -> OesStkHoldingBaseInfoT:
-        ...
-    
-    
-    def toOesOptHoldingBaseInfoT(self, 
-            v: Any,
-        ) -> OesOptHoldingBaseInfoT:
-        ...
-    
-    
-    def to_OesOptHoldingBaseInfo(self, 
-            v: Any,
-        ) -> OesOptHoldingBaseInfoT:
-        ...
-    
-    
-    def toOesMarketStateInfoT(self, 
-            v: Any,
-        ) -> OesMarketStateInfoT:
-        ...
-    
-    
-    def to_OesMarketStateInfo(self, 
-            v: Any,
-        ) -> OesMarketStateInfoT:
-        ...
-    
-    
-    def toOesMarketStateItemT(self, 
-            v: Any,
-        ) -> OesMarketStateInfoT:
-        ...
-    
-    
-    def toOesTradingPermissionEntryT(self, 
-            v: Any,
-        ) -> OesTradingPermissionEntryT:
-        ...
-    
-    
-    def to_OesTradingPermissionEntry(self, 
-            v: Any,
-        ) -> OesTradingPermissionEntryT:
-        ...
-    
-    
-    def toOesInputSourceInfoT(self, 
-            v: Any,
-        ) -> OesInputSourceInfoT:
-        ...
-    
-    
-    def to_OesInputSourceInfo(self, 
-            v: Any,
-        ) -> OesInputSourceInfoT:
-        ...
-    
-    
-    def toSMsgHeadT(self, 
-            v: Any,
-        ) -> SMsgHeadT:
-        ...
-    
-    
-    def to_SMsgHead(self, 
-            v: Any,
-        ) -> SMsgHeadT:
-        ...
-    
-    
-    def toOesQryCursorT(self, 
-            v: Any,
-        ) -> OesQryCursorT:
-        ...
-    
-    
-    def to_OesQryCursor(self, 
-            v: Any,
-        ) -> OesQryCursorT:
-        ...
-    
-    
-    def toOesQryReqHeadT(self, 
-            v: Any,
-        ) -> OesQryReqHeadT:
-        ...
-    
-    
-    def to_OesQryReqHead(self, 
-            v: Any,
-        ) -> OesQryReqHeadT:
-        ...
-    
-    
-    def toOesQryRspHeadT(self, 
-            v: Any,
-        ) -> OesQryRspHeadT:
-        ...
-    
-    
-    def to_OesQryRspHead(self, 
-            v: Any,
-        ) -> OesQryRspHeadT:
-        ...
-    
-    
-    def toOesQryOrdFilterT(self, 
-            v: Any,
-        ) -> OesQryOrdFilterT:
-        ...
-    
-    
-    def to_OesQryOrdFilter(self, 
-            v: Any,
-        ) -> OesQryOrdFilterT:
-        ...
-    
-    
-    def toOesQryOrdReqT(self, 
-            v: Any,
-        ) -> OesQryOrdReqT:
-        ...
-    
-    
-    def to_OesQryOrdReq(self, 
-            v: Any,
-        ) -> OesQryOrdReqT:
-        ...
-    
-    
-    def toOesQryOrdRspT(self, 
-            v: Any,
-        ) -> OesQryOrdRspT:
-        ...
-    
-    
-    def to_OesQryOrdRsp(self, 
-            v: Any,
-        ) -> OesQryOrdRspT:
-        ...
-    
-    
-    def toOesQryTrdFilterT(self, 
-            v: Any,
-        ) -> OesQryTrdFilterT:
-        ...
-    
-    
-    def to_OesQryTrdFilter(self, 
-            v: Any,
-        ) -> OesQryTrdFilterT:
-        ...
-    
-    
-    def toOesQryTrdReqT(self, 
-            v: Any,
-        ) -> OesQryTrdReqT:
-        ...
-    
-    
-    def to_OesQryTrdReq(self, 
-            v: Any,
-        ) -> OesQryTrdReqT:
-        ...
-    
-    
-    def toOesQryTrdRspT(self, 
-            v: Any,
-        ) -> OesQryTrdRspT:
-        ...
-    
-    
-    def to_OesQryTrdRsp(self, 
-            v: Any,
-        ) -> OesQryTrdRspT:
-        ...
-    
-    
-    def toOesQryCashAssetFilterT(self, 
-            v: Any,
-        ) -> OesQryCashAssetFilterT:
-        ...
-    
-    
-    def to_OesQryCashAssetFilter(self, 
-            v: Any,
-        ) -> OesQryCashAssetFilterT:
-        ...
-    
-    
-    def toOesCashAssetItemT(self, 
-            v: Any,
-        ) -> OesCashAssetItemT:
-        ...
-    
-    
-    def to_OesCashAssetItem(self, 
-            v: Any,
-        ) -> OesCashAssetItemT:
-        ...
-    
-    
-    def toOesQryCashAssetReqT(self, 
-            v: Any,
-        ) -> OesQryCashAssetReqT:
-        ...
-    
-    
-    def to_OesQryCashAssetReq(self, 
-            v: Any,
-        ) -> OesQryCashAssetReqT:
-        ...
-    
-    
-    def toOesQryCashAssetRspT(self, 
-            v: Any,
-        ) -> OesQryCashAssetRspT:
-        ...
-    
-    
-    def to_OesQryCashAssetRsp(self, 
-            v: Any,
-        ) -> OesQryCashAssetRspT:
-        ...
-    
-    
-    def toOesCounterCashItemT(self, 
-            v: Any,
-        ) -> OesCounterCashItemT:
-        ...
-    
-    
-    def to_OesCounterCashItem(self, 
-            v: Any,
-        ) -> OesCounterCashItemT:
-        ...
-    
-    
-    def toOesQryCounterCashReqT(self, 
-            v: Any,
-        ) -> OesQryCounterCashReqT:
-        ...
-    
-    
-    def to_OesQryCounterCashReq(self, 
-            v: Any,
-        ) -> OesQryCounterCashReqT:
-        ...
-    
-    
-    def toOesQryCounterCashRspT(self, 
-            v: Any,
-        ) -> OesQryCounterCashRspT:
-        ...
-    
-    
-    def to_OesQryCounterCashRsp(self, 
-            v: Any,
-        ) -> OesQryCounterCashRspT:
-        ...
-    
-    
-    def toOesQryStkHoldingFilterT(self, 
-            v: Any,
-        ) -> OesQryStkHoldingFilterT:
-        ...
-    
-    
-    def to_OesQryStkHoldingFilter(self, 
-            v: Any,
-        ) -> OesQryStkHoldingFilterT:
-        ...
-    
-    
-    def toOesQryOptHoldingFilterT(self, 
-            v: Any,
-        ) -> OesQryStkHoldingFilterT:
-        ...
-    
-    
-    def toOesStkHoldingItemT(self, 
-            v: Any,
-        ) -> OesStkHoldingItemT:
-        ...
-    
-    
-    def to_OesStkHoldingItem(self, 
-            v: Any,
-        ) -> OesStkHoldingItemT:
-        ...
-    
-    
-    def toOesQryStkHoldingReqT(self, 
-            v: Any,
-        ) -> OesQryStkHoldingReqT:
-        ...
-    
-    
-    def to_OesQryStkHoldingReq(self, 
-            v: Any,
-        ) -> OesQryStkHoldingReqT:
-        ...
-    
-    
-    def toOesQryStkHoldingRspT(self, 
-            v: Any,
-        ) -> OesQryStkHoldingRspT:
-        ...
-    
-    
-    def to_OesQryStkHoldingRsp(self, 
-            v: Any,
-        ) -> OesQryStkHoldingRspT:
-        ...
-    
-    
-    def toOesOptHoldingItemT(self, 
-            v: Any,
-        ) -> OesOptHoldingItemT:
-        ...
-    
-    
-    def to_OesOptHoldingItem(self, 
-            v: Any,
-        ) -> OesOptHoldingItemT:
-        ...
-    
-    
-    def toOesQryOptHoldingReqT(self, 
-            v: Any,
-        ) -> OesQryOptHoldingReqT:
-        ...
-    
-    
-    def to_OesQryOptHoldingReq(self, 
-            v: Any,
-        ) -> OesQryOptHoldingReqT:
-        ...
-    
-    
-    def toOesQryOptHoldingRspT(self, 
-            v: Any,
-        ) -> OesQryOptHoldingRspT:
-        ...
-    
-    
-    def to_OesQryHoldRsp(self, 
-            v: Any,
-        ) -> OesQryOptHoldingRspT:
-        ...
-    
-    
-    def toOesQryCustFilterT(self, 
-            v: Any,
-        ) -> OesQryCustFilterT:
-        ...
-    
-    
-    def to_OesQryCustFilter(self, 
-            v: Any,
-        ) -> OesQryCustFilterT:
-        ...
-    
-    
-    def toOesQryCustReqT(self, 
-            v: Any,
-        ) -> OesQryCustReqT:
-        ...
-    
-    
-    def to_OesQryCustReq(self, 
-            v: Any,
-        ) -> OesQryCustReqT:
-        ...
-    
-    
-    def toOesQryCustRspT(self, 
-            v: Any,
-        ) -> OesQryCustRspT:
-        ...
-    
-    
-    def to_OesQryCustRsp(self, 
-            v: Any,
-        ) -> OesQryCustRspT:
-        ...
-    
-    
-    def toOesQryInvAcctFilterT(self, 
-            v: Any,
-        ) -> OesQryInvAcctFilterT:
-        ...
-    
-    
-    def to_OesQryInvAcctFilter(self, 
-            v: Any,
-        ) -> OesQryInvAcctFilterT:
-        ...
-    
-    
-    def toOesInvAcctItemT(self, 
-            v: Any,
-        ) -> OesInvAcctItemT:
-        ...
-    
-    
-    def to_OesInvAcctItem(self, 
-            v: Any,
-        ) -> OesInvAcctItemT:
-        ...
-    
-    
-    def toOesQryInvAcctReqT(self, 
-            v: Any,
-        ) -> OesQryInvAcctReqT:
-        ...
-    
-    
-    def to_OesQryInvAcctReq(self, 
-            v: Any,
-        ) -> OesQryInvAcctReqT:
-        ...
-    
-    
-    def toOesQryInvAcctRspT(self, 
-            v: Any,
-        ) -> OesQryInvAcctRspT:
-        ...
-    
-    
-    def to_OesQryInvAcctRsp(self, 
-            v: Any,
-        ) -> OesQryInvAcctRspT:
-        ...
-    
-    
-    def toOesInvAcctOverviewT(self, 
-            v: Any,
-        ) -> OesInvAcctOverviewT:
-        ...
-    
-    
-    def to_OesInvAcctOverview(self, 
-            v: Any,
-        ) -> OesInvAcctOverviewT:
-        ...
-    
-    
-    def toOesCashAcctOverviewT(self, 
-            v: Any,
-        ) -> OesCashAcctOverviewT:
-        ...
-    
-    
-    def to_OesCashAcctOverview(self, 
-            v: Any,
-        ) -> OesCashAcctOverviewT:
-        ...
-    
-    
-    def toOesCustOverviewT(self, 
-            v: Any,
-        ) -> OesCustOverviewT:
-        ...
-    
-    
-    def to_OesCustOverview(self, 
-            v: Any,
-        ) -> OesCustOverviewT:
-        ...
-    
-    
-    def toOesClientOverviewT(self, 
-            v: Any,
-        ) -> OesClientOverviewT:
-        ...
-    
-    
-    def to_OesClientOverview(self, 
-            v: Any,
-        ) -> OesClientOverviewT:
-        ...
-    
-    
-    def toOesQryCommissionRateFilterT(self, 
-            v: Any,
-        ) -> OesQryCommissionRateFilterT:
-        ...
-    
-    
-    def to_OesQryCommissionRateFilter(self, 
-            v: Any,
-        ) -> OesQryCommissionRateFilterT:
-        ...
-    
-    
-    def toOesCommissionRateItemT(self, 
-            v: Any,
-        ) -> OesCommissionRateItemT:
-        ...
-    
-    
-    def to_OesCommissionRateItem(self, 
-            v: Any,
-        ) -> OesCommissionRateItemT:
-        ...
-    
-    
-    def toOesQryCommissionRateReqT(self, 
-            v: Any,
-        ) -> OesQryCommissionRateReqT:
-        ...
-    
-    
-    def to_OesQryCommissionRateReq(self, 
-            v: Any,
-        ) -> OesQryCommissionRateReqT:
-        ...
-    
-    
-    def toOesQryCommissionRateRspT(self, 
-            v: Any,
-        ) -> OesQryCommissionRateRspT:
-        ...
-    
-    
-    def to_OesQryCommissionRateRsp(self, 
-            v: Any,
-        ) -> OesQryCommissionRateRspT:
-        ...
-    
-    
-    def toOesQryFundTransferSerialFilterT(self, 
-            v: Any,
-        ) -> OesQryFundTransferSerialFilterT:
-        ...
-    
-    
-    def to_OesQryFundTransferSerialFilter(self, 
-            v: Any,
-        ) -> OesQryFundTransferSerialFilterT:
-        ...
-    
-    
-    def toOesQryFundTransferSerialReqT(self, 
-            v: Any,
-        ) -> OesQryFundTransferSerialReqT:
-        ...
-    
-    
-    def to_OesQryFundTransferSerialReq(self, 
-            v: Any,
-        ) -> OesQryFundTransferSerialReqT:
-        ...
-    
-    
-    def toOesQryFundTransferSerialRspT(self, 
-            v: Any,
-        ) -> OesQryFundTransferSerialRspT:
-        ...
-    
-    
-    def to_OesQryFundTransferSerialRsp(self, 
-            v: Any,
-        ) -> OesQryFundTransferSerialRspT:
-        ...
-    
-    
-    def toOesQryLotWinningFilterT(self, 
-            v: Any,
-        ) -> OesQryLotWinningFilterT:
-        ...
-    
-    
-    def to_OesQryLotWinningFilter(self, 
-            v: Any,
-        ) -> OesQryLotWinningFilterT:
-        ...
-    
-    
-    def toOesQryLotWinningReqT(self, 
-            v: Any,
-        ) -> OesQryLotWinningReqT:
-        ...
-    
-    
-    def to_OesQryLotWinningReq(self, 
-            v: Any,
-        ) -> OesQryLotWinningReqT:
-        ...
-    
-    
-    def toOesQryLotWinningRspT(self, 
-            v: Any,
-        ) -> OesQryLotWinningRspT:
-        ...
-    
-    
-    def to_OesQryLotWinningRsp(self, 
-            v: Any,
-        ) -> OesQryLotWinningRspT:
-        ...
-    
-    
-    def toOesQryIssueFilterT(self, 
-            v: Any,
-        ) -> OesQryIssueFilterT:
-        ...
-    
-    
-    def to_OesQryIssueFilter(self, 
-            v: Any,
-        ) -> OesQryIssueFilterT:
-        ...
-    
-    
-    def toOesQryIssueReqT(self, 
-            v: Any,
-        ) -> OesQryIssueReqT:
-        ...
-    
-    
-    def to_OesQryIssueReq(self, 
-            v: Any,
-        ) -> OesQryIssueReqT:
-        ...
-    
-    
-    def toOesQryIssueRspT(self, 
-            v: Any,
-        ) -> OesQryIssueRspT:
-        ...
-    
-    
-    def to_OesQryIssueRsp(self, 
-            v: Any,
-        ) -> OesQryIssueRspT:
-        ...
-    
-    
-    def toOesQryStockFilterT(self, 
-            v: Any,
-        ) -> OesQryStockFilterT:
-        ...
-    
-    
-    def to_OesQryStockFilter(self, 
-            v: Any,
-        ) -> OesQryStockFilterT:
-        ...
-    
-    
-    def toOesQryStockReqT(self, 
-            v: Any,
-        ) -> OesQryStockReqT:
-        ...
-    
-    
-    def to_OesQryStockReq(self, 
-            v: Any,
-        ) -> OesQryStockReqT:
-        ...
-    
-    
-    def toOesQryStockRspT(self, 
-            v: Any,
-        ) -> OesQryStockRspT:
-        ...
-    
-    
-    def to_OesQryStockRsp(self, 
-            v: Any,
-        ) -> OesQryStockRspT:
-        ...
-    
-    
-    def toOesQryEtfFilterT(self, 
-            v: Any,
-        ) -> OesQryEtfFilterT:
-        ...
-    
-    
-    def to_OesQryEtfFilter(self, 
-            v: Any,
-        ) -> OesQryEtfFilterT:
-        ...
-    
-    
-    def toOesQryEtfReqT(self, 
-            v: Any,
-        ) -> OesQryEtfReqT:
-        ...
-    
-    
-    def to_OesQryEtfReq(self, 
-            v: Any,
-        ) -> OesQryEtfReqT:
-        ...
-    
-    
-    def toOesQryEtfRspT(self, 
-            v: Any,
-        ) -> OesQryEtfRspT:
-        ...
-    
-    
-    def to_OesQryEtfRsp(self, 
-            v: Any,
-        ) -> OesQryEtfRspT:
-        ...
-    
-    
-    def toOesQryEtfComponentFilterT(self, 
-            v: Any,
-        ) -> OesQryEtfComponentFilterT:
-        ...
-    
-    
-    def to_OesQryEtfComponentFilter(self, 
-            v: Any,
-        ) -> OesQryEtfComponentFilterT:
-        ...
-    
-    
-    def toOesEtfComponentItemT(self, 
-            v: Any,
-        ) -> OesEtfComponentItemT:
-        ...
-    
-    
-    def to_OesEtfComponentItem(self, 
-            v: Any,
-        ) -> OesEtfComponentItemT:
-        ...
-    
-    
-    def toOesQryEtfComponentReqT(self, 
-            v: Any,
-        ) -> OesQryEtfComponentReqT:
-        ...
-    
-    
-    def to_OesQryEtfComponentReq(self, 
-            v: Any,
-        ) -> OesQryEtfComponentReqT:
-        ...
-    
-    
-    def toOesQryEtfComponentRspT(self, 
-            v: Any,
-        ) -> OesQryEtfComponentRspT:
-        ...
-    
-    
-    def to_OesQryEtfComponentRsp(self, 
-            v: Any,
-        ) -> OesQryEtfComponentRspT:
-        ...
-    
-    
-    def toOesQryOptionFilterT(self, 
-            v: Any,
-        ) -> OesQryOptionFilterT:
-        ...
-    
-    
-    def to_OesQryOptionFilter(self, 
-            v: Any,
-        ) -> OesQryOptionFilterT:
-        ...
-    
-    
-    def toOesQryOptionReqT(self, 
-            v: Any,
-        ) -> OesQryOptionReqT:
-        ...
-    
-    
-    def to_OesQryOptionReq(self, 
-            v: Any,
-        ) -> OesQryOptionReqT:
-        ...
-    
-    
-    def toOesQryOptionRspT(self, 
-            v: Any,
-        ) -> OesQryOptionRspT:
-        ...
-    
-    
-    def to_OesQryOptionRsp(self, 
-            v: Any,
-        ) -> OesQryOptionRspT:
-        ...
-    
-    
-    def toOesQryTradingDayRspT(self, 
-            v: Any,
-        ) -> OesQryTradingDayRspT:
-        ...
-    
-    
-    def to_OesQryTradingDayRsp(self, 
-            v: Any,
-        ) -> OesQryTradingDayRspT:
-        ...
-    
-    
-    def toOesQryMarketStateFilterT(self, 
-            v: Any,
-        ) -> OesQryMarketStateFilterT:
-        ...
-    
-    
-    def to_OesQryMarketStateFilter(self, 
-            v: Any,
-        ) -> OesQryMarketStateFilterT:
-        ...
-    
-    
-    def toOesQryMarketStateReqT(self, 
-            v: Any,
-        ) -> OesQryMarketStateReqT:
-        ...
-    
-    
-    def to_OesQryMarketStateReq(self, 
-            v: Any,
-        ) -> OesQryMarketStateReqT:
-        ...
-    
-    
-    def toOesQryMarketStateRspT(self, 
-            v: Any,
-        ) -> OesQryMarketStateRspT:
-        ...
-    
-    
-    def to_OesQryMarketStateRsp(self, 
-            v: Any,
-        ) -> OesQryMarketStateRspT:
-        ...
-    
-    
-    def toOesQryReqMsgT(self, 
-            v: Any,
-        ) -> OesQryReqMsgT:
-        ...
-    
-    
-    def to_OesQryReqMsg(self, 
-            v: Any,
-        ) -> OesQryReqMsgT:
-        ...
-    
-    
-    def toOesQryRspMsgT(self, 
-            v: Any,
-        ) -> OesQryRspMsgT:
-        ...
-    
-    
-    def to_OesQryRspMsg(self, 
-            v: Any,
-        ) -> OesQryRspMsgT:
-        ...
-    
-    
-    def toOesLogonReqT(self, 
-            v: Any,
-        ) -> OesLogonReqT:
-        ...
-    
-    
-    def to_OesLogonReq(self, 
-            v: Any,
-        ) -> OesLogonReqT:
-        ...
-    
-    
-    def toOesLogonRspT(self, 
-            v: Any,
-        ) -> OesLogonRspT:
-        ...
-    
-    
-    def to_OesLogonRsp(self, 
-            v: Any,
-        ) -> OesLogonRspT:
-        ...
-    
-    
-    def toOesReportSynchronizationReqT(self, 
-            v: Any,
-        ) -> OesReportSynchronizationReqT:
-        ...
-    
-    
-    def to_OesReportSynchronizationReq(self, 
-            v: Any,
-        ) -> OesReportSynchronizationReqT:
-        ...
-    
-    
-    def toOesReportSynchronizationRspT(self, 
-            v: Any,
-        ) -> OesReportSynchronizationRspT:
-        ...
-    
-    
-    def to_OesReportSynchronizationRsp(self, 
-            v: Any,
-        ) -> OesReportSynchronizationRspT:
-        ...
-    
-    
-    def toOesTestRequestReqT(self, 
-            v: Any,
-        ) -> OesTestRequestReqT:
-        ...
-    
-    
-    def to_OesTestRequestReq(self, 
-            v: Any,
-        ) -> OesTestRequestReqT:
-        ...
-    
-    
-    def toOesTestRequestRspT(self, 
-            v: Any,
-        ) -> OesTestRequestRspT:
-        ...
-    
-    
-    def to_OesTestRequestRsp(self, 
-            v: Any,
-        ) -> OesTestRequestRspT:
-        ...
-    
-    
-    def toOesChangePasswordReqT(self, 
-            v: Any,
-        ) -> OesChangePasswordReqT:
-        ...
-    
-    
-    def to_OesChangePasswordReq(self, 
-            v: Any,
-        ) -> OesChangePasswordReqT:
-        ...
-    
-    
-    def toOesChangePasswordRspT(self, 
-            v: Any,
-        ) -> OesChangePasswordRspT:
-        ...
-    
-    
-    def to_OesChangePasswordRsp(self, 
-            v: Any,
-        ) -> OesChangePasswordRspT:
-        ...
-    
-    
-    def toOesBatchOrdersHeadT(self, 
-            v: Any,
-        ) -> OesBatchOrdersHeadT:
-        ...
-    
-    
-    def to_OesBatchOrdersHead(self, 
-            v: Any,
-        ) -> OesBatchOrdersHeadT:
-        ...
-    
-    
-    def toOesBatchOrdersReqT(self, 
-            v: Any,
-        ) -> OesBatchOrdersReqT:
-        ...
-    
-    
-    def to_OesBatchOrdersReq(self, 
-            v: Any,
-        ) -> OesBatchOrdersReqT:
-        ...
-    
-    
-    def toOesRptMsgHeadT(self, 
-            v: Any,
-        ) -> OesRptMsgHeadT:
-        ...
-    
-    
-    def to_OesRptMsgHead(self, 
-            v: Any,
-        ) -> OesRptMsgHeadT:
-        ...
-    
-    
-    def toOesRptMsgBodyT(self, 
-            v: Any,
-        ) -> OesRptMsgBodyT:
-        ...
-    
-    
-    def to_OesRptMsgBody(self, 
-            v: Any,
-        ) -> OesRptMsgBodyT:
-        ...
-    
-    
-    def toOesRptMsgT(self, 
-            v: Any,
-        ) -> OesRptMsgT:
-        ...
-    
-    
-    def to_OesRptMsg(self, 
-            v: Any,
-        ) -> OesRptMsgT:
-        ...
-    
-    
-    def toOesReqMsgBodyT(self, 
-            v: Any,
-        ) -> OesReqMsgBodyT:
-        ...
-    
-    
-    def to_OesReqMsgBody(self, 
-            v: Any,
-        ) -> OesReqMsgBodyT:
-        ...
-    
-    
-    def toOesRspMsgBodyT(self, 
-            v: Any,
-        ) -> OesRspMsgBodyT:
-        ...
-    
-    
-    def to_OesRspMsgBody(self, 
-            v: Any,
-        ) -> OesRspMsgBodyT:
-        ...
-    
-    
-    def toSErrMsgT(self, 
-            v: Any,
-        ) -> SErrMsgT:
-        ...
-    
-    
-    def to_SErrMsg(self, 
-            v: Any,
-        ) -> SErrMsgT:
-        ...
-    
-    
-    def toSDataBufferT(self, 
-            v: Any,
-        ) -> SDataBufferT:
-        ...
-    
-    
-    def to_SDataBuffer(self, 
-            v: Any,
-        ) -> SDataBufferT:
-        ...
-    
-    
-    def to_SDataBufferVar(self, 
-            v: Any,
-        ) -> _SDataBufferVar:
-        ...
-    
-    
-    def toSSocketUriInfoT(self, 
-            v: Any,
-        ) -> SSocketUriInfoT:
-        ...
-    
-    
-    def to_SSocketUriInfo(self, 
-            v: Any,
-        ) -> SSocketUriInfoT:
-        ...
-    
-    
-    def toSSocketIpPortInfoT(self, 
-            v: Any,
-        ) -> SSocketIpPortInfoT:
-        ...
-    
-    
-    def to_SSocketIpPortInfo(self, 
-            v: Any,
-        ) -> SSocketIpPortInfoT:
-        ...
-    
-    
-    def toSSocketChannelInfoT(self, 
-            v: Any,
-        ) -> SSocketChannelInfoT:
-        ...
-    
-    
-    def to_SSocketChannelInfo(self, 
-            v: Any,
-        ) -> SSocketChannelInfoT:
-        ...
-    
-    
-    def toSSocketOptionConfigT(self, 
-            v: Any,
-        ) -> SSocketOptionConfigT:
-        ...
-    
-    
-    def to_SSocketOptionConfig(self, 
-            v: Any,
-        ) -> SSocketOptionConfigT:
-        ...
-    
-    
-    def toSGeneralClientChannelT(self, 
-            v: Any,
-        ) -> SGeneralClientChannelT:
-        ...
-    
-    
-    def toOesApiSessionInfoT(self, 
-            v: Any,
-        ) -> SGeneralClientChannelT:
-        ...
-    
-    
-    def to_SGeneralClientChannel(self, 
-            v: Any,
-        ) -> SGeneralClientChannelT:
-        ...
-    
-    
-    def toMdsApiSessionInfoT(self, 
-            v: Any,
-        ) -> SGeneralClientChannelT:
-        ...
-    
-    
-    def toSGeneralClientChannelGroupT(self, 
-            v: Any,
-        ) -> SGeneralClientChannelGroupT:
-        ...
-    
-    
-    def toMdsApiChannelGroupT(self, 
-            v: Any,
-        ) -> SGeneralClientChannelGroupT:
-        ...
-    
-    
-    def toOesApiChannelGroupT(self, 
-            v: Any,
-        ) -> SGeneralClientChannelGroupT:
-        ...
-    
-    
-    def to_SGeneralClientChannelGroup(self, 
-            v: Any,
-        ) -> SGeneralClientChannelGroupT:
-        ...
-    
-    
-    def toSGeneralClientAddrInfoT(self, 
-            v: Any,
-        ) -> SGeneralClientAddrInfoT:
-        ...
-    
-    
-    def to_SGeneralClientAddrInfo(self, 
-            v: Any,
-        ) -> SGeneralClientAddrInfoT:
-        ...
-    
-    
-    def toOesApiAddrInfoT(self, 
-            v: Any,
-        ) -> SGeneralClientAddrInfoT:
-        ...
-    
-    
-    def toMdsApiAddrInfoT(self, 
-            v: Any,
-        ) -> SGeneralClientAddrInfoT:
-        ...
-    
-    
-    def toSGeneralClientRemoteCfgT(self, 
-            v: Any,
-        ) -> SGeneralClientRemoteCfgT:
-        ...
-    
-    
-    def to_SGeneralClientRemoteCfg(self, 
-            v: Any,
-        ) -> SGeneralClientRemoteCfgT:
-        ...
-    
-    
-    def toMdsApiRemoteCfgT(self, 
-            v: Any,
-        ) -> SGeneralClientRemoteCfgT:
-        ...
-    
-    
-    def toOesApiRemoteCfgT(self, 
-            v: Any,
-        ) -> SGeneralClientRemoteCfgT:
-        ...
-    
-    
-    def toOesApiSubscribeInfoT(self, 
-            v: Any,
-        ) -> OesApiSubscribeInfoT:
-        ...
-    
-    
-    def to_OesApiSubscribeInfo(self, 
-            v: Any,
-        ) -> OesApiSubscribeInfoT:
-        ...
-    
-    
-    def toOesApiClientCfgT(self, 
-            v: Any,
-        ) -> OesApiClientCfgT:
-        ...
-    
-    
-    def to_OesApiClientCfg(self, 
-            v: Any,
-        ) -> OesApiClientCfgT:
-        ...
-    
-    
-    def toOesApiClientEnvT(self, 
-            v: Any,
-        ) -> OesApiClientEnvT:
-        ...
-    
-    
-    def to_OesApiClientEnv(self, 
-            v: Any,
-        ) -> OesApiClientEnvT:
-        ...
-    
-    
-    def toMdsTradingSessionStatusMsgT(self, 
-            v: Any,
-        ) -> MdsTradingSessionStatusMsgT:
-        ...
-    
-    
-    def to_MdsTradingSessionStatusMsg(self, 
-            v: Any,
-        ) -> MdsTradingSessionStatusMsgT:
-        ...
-    
-    
-    def toMdsSecurityStatusMsgT(self, 
-            v: Any,
-        ) -> MdsSecurityStatusMsgT:
-        ...
-    
-    
-    def to_MdsSecurityStatusMsg(self, 
-            v: Any,
-        ) -> MdsSecurityStatusMsgT:
-        ...
-    
-    
-    def toMdsPriceLevelEntryT(self, 
-            v: Any,
-        ) -> MdsPriceLevelEntryT:
-        ...
-    
-    
-    def to_MdsPriceLevelEntry(self, 
-            v: Any,
-        ) -> MdsPriceLevelEntryT:
-        ...
-    
-    
-    def toMdsMktDataSnapshotHeadT(self, 
-            v: Any,
-        ) -> MdsMktDataSnapshotHeadT:
-        ...
-    
-    
-    def to_MdsMktDataSnapshotHead(self, 
-            v: Any,
-        ) -> MdsMktDataSnapshotHeadT:
-        ...
-    
-    
-    def toMdsIndexSnapshotBodyT(self, 
-            v: Any,
-        ) -> MdsIndexSnapshotBodyT:
-        ...
-    
-    
-    def to_MdsIndexSnapshotBody(self, 
-            v: Any,
-        ) -> MdsIndexSnapshotBodyT:
-        ...
-    
-    
-    def toMdsStockSnapshotBodyT(self, 
-            v: Any,
-        ) -> MdsStockSnapshotBodyT:
-        ...
-    
-    
-    def to_MdsStockSnapshotBody(self, 
-            v: Any,
-        ) -> MdsStockSnapshotBodyT:
-        ...
-    
-    
-    def toMdsL1SnapshotBodyT(self, 
-            v: Any,
-        ) -> MdsL1SnapshotBodyT:
-        ...
-    
-    
-    def to_MdsL1SnapshotBody(self, 
-            v: Any,
-        ) -> MdsL1SnapshotBodyT:
-        ...
-    
-    
-    def toMdsL2StockSnapshotBodyT(self, 
-            v: Any,
-        ) -> MdsL2StockSnapshotBodyT:
-        ...
-    
-    
-    def to_MdsL2StockSnapshotBody(self, 
-            v: Any,
-        ) -> MdsL2StockSnapshotBodyT:
-        ...
-    
-    
-    def toMdsL2StockSnapshotIncrementalT(self, 
-            v: Any,
-        ) -> MdsL2StockSnapshotIncrementalT:
-        ...
-    
-    
-    def to_MdsL2StockSnapshotIncremental(self, 
-            v: Any,
-        ) -> MdsL2StockSnapshotIncrementalT:
-        ...
-    
-    
-    def toMdsL2BestOrdersSnapshotBodyT(self, 
-            v: Any,
-        ) -> MdsL2BestOrdersSnapshotBodyT:
-        ...
-    
-    
-    def to_MdsL2BestOrdersSnapshotBody(self, 
-            v: Any,
-        ) -> MdsL2BestOrdersSnapshotBodyT:
-        ...
-    
-    
-    def toMdsL2BestOrdersSnapshotIncrementalT(self, 
-            v: Any,
-        ) -> MdsL2BestOrdersSnapshotIncrementalT:
-        ...
-    
-    
-    def to_MdsL2BestOrdersSnapshotIncremental(self, 
-            v: Any,
-        ) -> MdsL2BestOrdersSnapshotIncrementalT:
-        ...
-    
-    
-    def toMdsL2VirtualAuctionPriceT(self, 
-            v: Any,
-        ) -> MdsL2VirtualAuctionPriceT:
-        ...
-    
-    
-    def to_MdsL2VirtualAuctionPrice(self, 
-            v: Any,
-        ) -> MdsL2VirtualAuctionPriceT:
-        ...
-    
-    
-    def toMdsL2MarketOverviewT(self, 
-            v: Any,
-        ) -> MdsL2MarketOverviewT:
-        ...
-    
-    
-    def to_MdsL2MarketOverview(self, 
-            v: Any,
-        ) -> MdsL2MarketOverviewT:
-        ...
-    
-    
-    def toMdsL2SnapshotBodyT(self, 
-            v: Any,
-        ) -> MdsL2SnapshotBodyT:
-        ...
-    
-    
-    def to_MdsL2SnapshotBody(self, 
-            v: Any,
-        ) -> MdsL2SnapshotBodyT:
-        ...
-    
-    
-    def toMdsMktDataSnapshotT(self, 
-            v: Any,
-        ) -> MdsMktDataSnapshotT:
-        ...
-    
-    
-    def to_MdsMktDataSnapshot(self, 
-            v: Any,
-        ) -> MdsMktDataSnapshotT:
-        ...
-    
-    
-    def toMdsL2TradeT(self, 
-            v: Any,
-        ) -> MdsL2TradeT:
-        ...
-    
-    
-    def to_MdsL2Trade(self, 
-            v: Any,
-        ) -> MdsL2TradeT:
-        ...
-    
-    
-    def toMdsL2OrderT(self, 
-            v: Any,
-        ) -> MdsL2OrderT:
-        ...
-    
-    
-    def to_MdsL2Order(self, 
-            v: Any,
-        ) -> MdsL2OrderT:
-        ...
-    
-    
-    def toMdsL2TickLostT(self, 
-            v: Any,
-        ) -> MdsL2TickLostT:
-        ...
-    
-    
-    def to_MdsL2TickLost(self, 
-            v: Any,
-        ) -> MdsL2TickLostT:
-        ...
-    
-    
-    def toMdsQryMktDataSnapshotReqT(self, 
-            v: Any,
-        ) -> MdsQryMktDataSnapshotReqT:
-        ...
-    
-    
-    def to_MdsQryMktDataSnapshotReq(self, 
-            v: Any,
-        ) -> MdsQryMktDataSnapshotReqT:
-        ...
-    
-    
-    def toMdsQrySecurityStatusReqT(self, 
-            v: Any,
-        ) -> MdsQryMktDataSnapshotReqT:
-        ...
-    
-    
-    def toMdsQryTrdSessionStatusReqT(self, 
-            v: Any,
-        ) -> MdsQryTrdSessionStatusReqT:
-        ...
-    
-    
-    def to_MdsQryTrdSessionStatusReq(self, 
-            v: Any,
-        ) -> MdsQryTrdSessionStatusReqT:
-        ...
-    
-    
-    def toMdsLogonReqT(self, 
-            v: Any,
-        ) -> MdsLogonReqT:
-        ...
-    
-    
-    def to_MdsLogonReq(self, 
-            v: Any,
-        ) -> MdsLogonReqT:
-        ...
-    
-    
-    def toMdsLogonRspT(self, 
-            v: Any,
-        ) -> MdsLogonRspT:
-        ...
-    
-    
-    def to_MdsLogonRsp(self, 
-            v: Any,
-        ) -> MdsLogonRspT:
-        ...
-    
-    
-    def toMdsMktDataRequestEntryT(self, 
-            v: Any,
-        ) -> MdsMktDataRequestEntryT:
-        ...
-    
-    
-    def to_MdsMktDataRequestEntry(self, 
-            v: Any,
-        ) -> MdsMktDataRequestEntryT:
-        ...
-    
-    
-    def toMdsMktDataRequestReqT(self, 
-            v: Any,
-        ) -> MdsMktDataRequestReqT:
-        ...
-    
-    
-    def to_MdsMktDataRequestReq(self, 
-            v: Any,
-        ) -> MdsMktDataRequestReqT:
-        ...
-    
-    
-    def toMdsMktDataRequestReqBufT(self, 
-            v: Any,
-        ) -> MdsMktDataRequestReqBufT:
-        ...
-    
-    
-    def toMdsApiSubscribeInfoT(self, 
-            v: Any,
-        ) -> MdsMktDataRequestReqBufT:
-        ...
-    
-    
-    def to_MdsMktDataRequestReqBuf(self, 
-            v: Any,
-        ) -> MdsMktDataRequestReqBufT:
-        ...
-    
-    
-    def toMdsMktDataRequestRspT(self, 
-            v: Any,
-        ) -> MdsMktDataRequestRspT:
-        ...
-    
-    
-    def to_MdsMktDataRequestRsp(self, 
-            v: Any,
-        ) -> MdsMktDataRequestRspT:
-        ...
-    
-    
-    def toMdsTestRequestReqT(self, 
-            v: Any,
-        ) -> MdsTestRequestReqT:
-        ...
-    
-    
-    def to_MdsTestRequestReq(self, 
-            v: Any,
-        ) -> MdsTestRequestReqT:
-        ...
-    
-    
-    def toMdsTestRequestRspT(self, 
-            v: Any,
-        ) -> MdsTestRequestRspT:
-        ...
-    
-    
-    def to_MdsTestRequestRsp(self, 
-            v: Any,
-        ) -> MdsTestRequestRspT:
-        ...
-    
-    
-    def toMdsMktReqMsgBodyT(self, 
-            v: Any,
-        ) -> MdsMktReqMsgBodyT:
-        ...
-    
-    
-    def to_MdsMktReqMsgBody(self, 
-            v: Any,
-        ) -> MdsMktReqMsgBodyT:
-        ...
-    
-    
-    def toMdsMktRspMsgBodyT(self, 
-            v: Any,
-        ) -> MdsMktRspMsgBodyT:
-        ...
-    
-    
-    def to_MdsMktRspMsgBody(self, 
-            v: Any,
-        ) -> MdsMktRspMsgBodyT:
-        ...
-    
-    
-    def toMdsUdpPktHeadT(self, 
-            v: Any,
-        ) -> MdsUdpPktHeadT:
-        ...
-    
-    
-    def to_MdsUdpPktHead(self, 
-            v: Any,
-        ) -> MdsUdpPktHeadT:
-        ...
-    
-    
-    def toMdsApiClientCfgT(self, 
-            v: Any,
-        ) -> MdsApiClientCfgT:
-        ...
-    
-    
-    def to_MdsApiClientCfg(self, 
-            v: Any,
-        ) -> MdsApiClientCfgT:
-        ...
-    
-    
-    def toMdsApiClientEnvT(self, 
-            v: Any,
-        ) -> MdsApiClientEnvT:
-        ...
-    
     
-    def to_MdsApiClientEnv(self, 
-            v: Any,
-        ) -> MdsApiClientEnvT:
-        ...
     
+class _MdsApiClientCfg():
+    
+    
+    tcpChannelCfg: _SGeneralClientRemoteCfg
+    qryChannelCfg: _SGeneralClientRemoteCfg
+    udpL1ChannelCfg: _SGeneralClientRemoteCfg
+    udpL2ChannelCfg: _SGeneralClientRemoteCfg
+    udpTick1ChannelCfg: _SGeneralClientRemoteCfg
+    udpTradeChannelCfg: _SGeneralClientRemoteCfg
+    udpTick2ChannelCfg: _SGeneralClientRemoteCfg
+    udpOrderChannelCfg: _SGeneralClientRemoteCfg
+    subscribeInfo: _MdsMktDataRequestReqBuf
+    
+    
+class _MdsApiClientEnv():
+    
+    
+    tcpChannel: _SGeneralClientChannel
+    qryChannel: _SGeneralClientChannel
+    udpL1Channel: _SGeneralClientChannel
+    udpL2Channel: _SGeneralClientChannel
+    udpTick1Channel: _SGeneralClientChannel
+    udpTradeChannel: _SGeneralClientChannel
+    udpTick2Channel: _SGeneralClientChannel
+    udpOrderChannel: _SGeneralClientChannel
+    udpChannelGroup: _SGeneralClientChannelGroup
+    
+    
+class _eOesExchangeId(Enum):
+    OES_EXCH_UNDEFINE: _eOesExchangeId
+    OES_EXCH_SSE: _eOesExchangeId
+    OES_EXCH_SZSE: _eOesExchangeId
+    __MAX_OES_EXCH: _eOesExchangeId
+    OES_EXCHANGE_TYPE_SSE: _eOesExchangeId
+    OES_EXCHANGE_TYPE_SZSE: _eOesExchangeId
+    __OES_EXCH_ID_MAX_ALIGNED4: _eOesExchangeId
+    __OES_EXCH_ID_MAX_ALIGNED8: _eOesExchangeId
+class _eOesMarketId(Enum):
+    OES_MKT_UNDEFINE: _eOesMarketId
+    OES_MKT_SH_ASHARE: _eOesMarketId
+    OES_MKT_SZ_ASHARE: _eOesMarketId
+    OES_MKT_SH_OPTION: _eOesMarketId
+    __OES_MKT_ID_MAX: _eOesMarketId
+    OES_MKT_ID_UNDEFINE: _eOesMarketId
+    OES_MKT_ID_SH_A: _eOesMarketId
+    OES_MKT_ID_SZ_A: _eOesMarketId
+    OES_MKT_ID_SH_OPT: _eOesMarketId
+    __OES_MKT_ID_MAX_ALIGNED4: _eOesMarketId
+    __OES_MKT_ID_MAX_ALIGNED8: _eOesMarketId
+class _eOesPlatformId(Enum):
+    OES_PLATFORM_UNDEFINE: _eOesPlatformId
+    OES_PLATFORM_CASH_AUCTION: _eOesPlatformId
+    OES_PLATFORM_FINANCIAL_SERVICES: _eOesPlatformId
+    OES_PLATFORM_NON_TRADE: _eOesPlatformId
+    OES_PLATFORM_DERIVATIVE_AUCTION: _eOesPlatformId
+    __OES_PLATFORM_ID_MAX: _eOesPlatformId
+    __OES_PLATFORM_ID_MAX_ALIGNED8: _eOesPlatformId
+class _eOesMarketState(Enum):
+    OES_MKT_STATE_UNDEFINE: _eOesMarketState
+    OES_MKT_STATE_PRE_OPEN: _eOesMarketState
+    OES_MKT_STATE_OPEN_UP_COMING: _eOesMarketState
+    OES_MKT_STATE_OPEN: _eOesMarketState
+    OES_MKT_STATE_HALT: _eOesMarketState
+    OES_MKT_STATE_CLOSE: _eOesMarketState
+    __OES_MKT_STATE_MAX: _eOesMarketState
+class _eOesTrdSessType(Enum):
+    OES_TRD_SESS_TYPE_O: _eOesTrdSessType
+    OES_TRD_SESS_TYPE_T: _eOesTrdSessType
+    OES_TRD_SESS_TYPE_C: _eOesTrdSessType
+    __OES_TRD_SESS_TYPE_MAX: _eOesTrdSessType
+class _eOesProductType(Enum):
+    OES_PRODUCT_TYPE_UNDEFINE: _eOesProductType
+    OES_PRODUCT_TYPE_EQUITY: _eOesProductType
+    OES_PRODUCT_TYPE_BOND_STD: _eOesProductType
+    OES_PRODUCT_TYPE_IPO: _eOesProductType
+    OES_PRODUCT_TYPE_ALLOTMENT: _eOesProductType
+    OES_PRODUCT_TYPE_OPTION: _eOesProductType
+    __OES_PRODUCT_TYPE_MAX: _eOesProductType
+class _eOesSecurityType(Enum):
+    OES_SECURITY_TYPE_UNDEFINE: _eOesSecurityType
+    OES_SECURITY_TYPE_STOCK: _eOesSecurityType
+    OES_SECURITY_TYPE_BOND: _eOesSecurityType
+    OES_SECURITY_TYPE_ETF: _eOesSecurityType
+    OES_SECURITY_TYPE_FUND: _eOesSecurityType
+    OES_SECURITY_TYPE_OPTION: _eOesSecurityType
+    __OES_SECURITY_TYPE_MAX: _eOesSecurityType
+    __OES_SECURITY_TYPE_NOT_SUPPORT: _eOesSecurityType
+class _eOesSubSecurityType(Enum):
+    OES_SUB_SECURITY_TYPE_UNDEFINE: _eOesSubSecurityType
+    __OES_SUB_SECURITY_TYPE_STOCK_MIN: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_STOCK_ASH: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_STOCK_SME: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_STOCK_GEM: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_STOCK_KSH: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_STOCK_KCDR: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_STOCK_CDR: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_STOCK_HLTCDR: _eOesSubSecurityType
+    __OES_SUB_SECURITY_TYPE_STOCK_MAX: _eOesSubSecurityType
+    __OES_SUB_SECURITY_TYPE_BOND_MIN: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_BOND_GBF: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_BOND_CBF: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_BOND_CPF: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_BOND_CCF: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_BOND_FBF: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_BOND_PRP: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_BOND_STD: _eOesSubSecurityType
+    __OES_SUB_SECURITY_TYPE_BOND_MAX: _eOesSubSecurityType
+    __OES_SUB_SECURITY_TYPE_ETF_MIN: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_ETF_SINGLE_MKT: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_ETF_CROSS_MKT: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_ETF_BOND: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_ETF_CURRENCY: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_ETF_CROSS_BORDER: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_ETF_GOLD: _eOesSubSecurityType
+    __OES_SUB_SECURITY_TYPE_ETF_MAX: _eOesSubSecurityType
+    __OES_SUB_SECURITY_TYPE_FUND_MIN: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_FUND_LOF: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_FUND_CEF: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_FUND_OEF: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_FUND_GRADED: _eOesSubSecurityType
+    __OES_SUB_SECURITY_TYPE_FUND_MAX: _eOesSubSecurityType
+    __OES_SUB_SECURITY_TYPE_OPTION_MIN: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_OPTION_ETF: _eOesSubSecurityType
+    OES_SUB_SECURITY_TYPE_OPTION_STOCK: _eOesSubSecurityType
+    __OES_SUB_SECURITY_TYPE_OPTION_MAX: _eOesSubSecurityType
+    __OES_SUB_SECURITY_TYPE_MAX: _eOesSubSecurityType
+class _eOesSecurityLevel(Enum):
+    OES_SECURITY_LEVEL_UNDEFINE: _eOesSecurityLevel
+    OES_SECURITY_LEVEL_N: _eOesSecurityLevel
+    OES_SECURITY_LEVEL_XST: _eOesSecurityLevel
+    OES_SECURITY_LEVEL_ST: _eOesSecurityLevel
+    OES_SECURITY_LEVEL_P: _eOesSecurityLevel
+    OES_SECURITY_LEVEL_T: _eOesSecurityLevel
+    OES_SECURITY_LEVEL_U: _eOesSecurityLevel
+    OES_SECURITY_LEVEL_B: _eOesSecurityLevel
+    __OES_SECURITY_LEVEL_MAX: _eOesSecurityLevel
+class _eOesSecurityRiskLevel(Enum):
+    OES_RISK_LEVEL_VERY_LOW: _eOesSecurityRiskLevel
+    OES_RISK_LEVEL_LOW: _eOesSecurityRiskLevel
+    OES_RISK_LEVEL_MEDIUM_LOW: _eOesSecurityRiskLevel
+    OES_RISK_LEVEL_MEDIUM: _eOesSecurityRiskLevel
+    OES_RISK_LEVEL_MEDIUM_HIGH: _eOesSecurityRiskLevel
+    OES_RISK_LEVEL_HIGH: _eOesSecurityRiskLevel
+    OES_RISK_LEVEL_VERY_HIGH: _eOesSecurityRiskLevel
+    __OES_RISK_LEVEL_MAX: _eOesSecurityRiskLevel
+class _eOesSecuritySuspFlag(Enum):
+    OES_SUSPFLAG_NONE: _eOesSecuritySuspFlag
+    OES_SUSPFLAG_EXCHANGE: _eOesSecuritySuspFlag
+    OES_SUSPFLAG_BROKER: _eOesSecuritySuspFlag
+    __OES_SUSPFLAG_OTHER: _eOesSecuritySuspFlag
+class _eOesLotType(Enum):
+    OES_LOT_TYPE_UNDEFINE: _eOesLotType
+    OES_LOT_TYPE_FAILED: _eOesLotType
+    OES_LOT_TYPE_ASSIGNMENT: _eOesLotType
+    OES_LOT_TYPE_LOTTERY: _eOesLotType
+    __OES_LOT_TYPE_MAX: _eOesLotType
+class _eOesLotRejReason(Enum):
+    OES_LOT_REJ_REASON_DUPLICATE: _eOesLotRejReason
+    OES_LOT_REJ_REASON_INVALID_DUPLICATE: _eOesLotRejReason
+    OES_LOT_REJ_REASON_OFFLINE_FIRST: _eOesLotRejReason
+    OES_LOT_REJ_REASON_BAD_RECORD: _eOesLotRejReason
+    OES_LOT_REJ_REASON_UNKNOW: _eOesLotRejReason
+class _eOesOrdStatus(Enum):
+    OES_ORD_STATUS_UNDEFINE: _eOesOrdStatus
+    OES_ORD_STATUS_NEW: _eOesOrdStatus
+    OES_ORD_STATUS_DECLARED: _eOesOrdStatus
+    OES_ORD_STATUS_PARTIALLY_FILLED: _eOesOrdStatus
+    __OES_ORD_STATUS_FINAL_MIN: _eOesOrdStatus
+    OES_ORD_STATUS_CANCEL_DONE: _eOesOrdStatus
+    OES_ORD_STATUS_PARTIALLY_CANCELED: _eOesOrdStatus
+    OES_ORD_STATUS_CANCELED: _eOesOrdStatus
+    OES_ORD_STATUS_FILLED: _eOesOrdStatus
+    __OES_ORD_STATUS_VALID_MAX: _eOesOrdStatus
+    __OES_ORD_STATUS_INVALID_MIN: _eOesOrdStatus
+    OES_ORD_STATUS_INVALID_OES: _eOesOrdStatus
+    OES_ORD_STATUS_INVALID_SH_F: _eOesOrdStatus
+    OES_ORD_STATUS_INVALID_SH_E: _eOesOrdStatus
+    OES_ORD_STATUS_INVALID_SH_COMM: _eOesOrdStatus
+    OES_ORD_STATUS_INVALID_SZ_F: _eOesOrdStatus
+    OES_ORD_STATUS_INVALID_SZ_E: _eOesOrdStatus
+    OES_ORD_STATUS_INVALID_SZ_REJECT: _eOesOrdStatus
+    OES_ORD_STATUS_INVALID_SZ_TRY_AGAIN: _eOesOrdStatus
+    __OES_ORD_STATUS_INVALID_MAX: _eOesOrdStatus
+    OES_ORD_STATUS_NORMAL: _eOesOrdStatus
+    OES_ORD_STATUS_DECLARING: _eOesOrdStatus
+    __OES_ORD_STATUS_INVALID_OES: _eOesOrdStatus
+class _eOesOrdType(Enum):
+    OES_ORD_TYPE_LMT: _eOesOrdType
+    OES_ORD_TYPE_LMT_FOK: _eOesOrdType
+    __OES_ORD_TYPE_LMT_MAX: _eOesOrdType
+    OES_ORD_TYPE_MTL_BEST_5: _eOesOrdType
+    OES_ORD_TYPE_MTL_BEST: _eOesOrdType
+    OES_ORD_TYPE_MTL_SAMEPARTY_BEST: _eOesOrdType
+    __OES_ORD_TYPE_MTL_MAX: _eOesOrdType
+    OES_ORD_TYPE_FAK_BEST_5: _eOesOrdType
+    OES_ORD_TYPE_FAK: _eOesOrdType
+    __OES_ORD_TYPE_FAK_MAX: _eOesOrdType
+    OES_ORD_TYPE_FOK: _eOesOrdType
+    __OES_ORD_TYPE_FOK_MAX: _eOesOrdType
+    __OES_ORD_TYPE_MAX: _eOesOrdType
+    __OES_ORD_TYPE_MAX_ALIGNED: _eOesOrdType
+class _eOesOrdTypeSh(Enum):
+    OES_ORD_TYPE_SH_LMT: _eOesOrdTypeSh
+    OES_ORD_TYPE_SH_LMT_FOK: _eOesOrdTypeSh
+    OES_ORD_TYPE_SH_MTL_BEST_5: _eOesOrdTypeSh
+    OES_ORD_TYPE_SH_MTL_BEST: _eOesOrdTypeSh
+    OES_ORD_TYPE_SH_MTL_SAMEPARTY_BEST: _eOesOrdTypeSh
+    OES_ORD_TYPE_SH_FAK_BEST_5: _eOesOrdTypeSh
+    OES_ORD_TYPE_SH_FOK: _eOesOrdTypeSh
+class _eOesOrdTypeSz(Enum):
+    OES_ORD_TYPE_SZ_LMT: _eOesOrdTypeSz
+    OES_ORD_TYPE_SZ_LMT_FOK: _eOesOrdTypeSz
+    OES_ORD_TYPE_SZ_MTL_BEST: _eOesOrdTypeSz
+    OES_ORD_TYPE_SZ_MTL_SAMEPARTY_BEST: _eOesOrdTypeSz
+    OES_ORD_TYPE_SZ_FAK_BEST_5: _eOesOrdTypeSz
+    OES_ORD_TYPE_SZ_FAK: _eOesOrdTypeSz
+    OES_ORD_TYPE_SZ_FOK: _eOesOrdTypeSz
+class _eOesBuySellType(Enum):
+    OES_BS_TYPE_UNDEFINE: _eOesBuySellType
+    OES_BS_TYPE_BUY: _eOesBuySellType
+    OES_BS_TYPE_SELL: _eOesBuySellType
+    OES_BS_TYPE_CREATION: _eOesBuySellType
+    OES_BS_TYPE_REDEMPTION: _eOesBuySellType
+    OES_BS_TYPE_CREDIT_BUY: _eOesBuySellType
+    OES_BS_TYPE_CREDIT_SELL: _eOesBuySellType
+    OES_BS_TYPE_SUBSCRIPTION: _eOesBuySellType
+    OES_BS_TYPE_ALLOTMENT: _eOesBuySellType
+    __OES_BS_TYPE_MAX_SPOT: _eOesBuySellType
+    __OES_BS_TYPE_MIN_OPTION: _eOesBuySellType
+    OES_BS_TYPE_BUY_OPEN: _eOesBuySellType
+    OES_BS_TYPE_BUY_CLOSE: _eOesBuySellType
+    OES_BS_TYPE_SELL_OPEN: _eOesBuySellType
+    OES_BS_TYPE_SELL_CLOSE: _eOesBuySellType
+    OES_BS_TYPE_COVERED_OPEN: _eOesBuySellType
+    OES_BS_TYPE_COVERED_CLOSE: _eOesBuySellType
+    OES_BS_TYPE_OPTION_EXERCISE: _eOesBuySellType
+    OES_BS_TYPE_UNDERLYING_FREEZE: _eOesBuySellType
+    OES_BS_TYPE_UNDERLYING_UNFREEZE: _eOesBuySellType
+    __OES_BS_TYPE_MAX_OPTION: _eOesBuySellType
+    OES_BS_TYPE_CANCEL: _eOesBuySellType
+    __OES_BS_TYPE_MAX_TRADING: _eOesBuySellType
+    __OES_BS_TYPE_MIN_MGR: _eOesBuySellType
+    OES_BS_TYPE_SSE_DESIGNATION: _eOesBuySellType
+    OES_BS_TYPE_SSE_RECALL_DESIGNATION: _eOesBuySellType
+    OES_BS_TYPE_SZSE_DESIGNATION: _eOesBuySellType
+    OES_BS_TYPE_SZSE_CANCEL_DESIGNATION: _eOesBuySellType
+    __OES_BS_TYPE_MAX_MGR: _eOesBuySellType
+    __OES_BS_TYPE_MAX: _eOesBuySellType
+    OES_BS_TYPE_B: _eOesBuySellType
+    OES_BS_TYPE_S: _eOesBuySellType
+    OES_BS_TYPE_KB: _eOesBuySellType
+    OES_BS_TYPE_KS: _eOesBuySellType
+    OES_BS_TYPE_CB: _eOesBuySellType
+    OES_BS_TYPE_CS: _eOesBuySellType
+    OES_BS_TYPE_BO: _eOesBuySellType
+    OES_BS_TYPE_BC: _eOesBuySellType
+    OES_BS_TYPE_SO: _eOesBuySellType
+    OES_BS_TYPE_SC: _eOesBuySellType
+    OES_BS_TYPE_CO: _eOesBuySellType
+    OES_BS_TYPE_CC: _eOesBuySellType
+    OES_BS_TYPE_TE: _eOesBuySellType
+    OES_BS_TYPE_UF: _eOesBuySellType
+    OES_BS_TYPE_UU: _eOesBuySellType
+class _eOesOrdDir(Enum):
+    OES_ORD_DIR_BUY: _eOesOrdDir
+    OES_ORD_DIR_SELL: _eOesOrdDir
+    __OES_ORD_DIR_MAX: _eOesOrdDir
+class _eOesEtfTrdCnfmType(Enum):
+    OES_ETF_TRDCNFM_TYPE_NONE: _eOesEtfTrdCnfmType
+    OES_ETF_TRDCNFM_TYPE_ETF_FIRST: _eOesEtfTrdCnfmType
+    OES_ETF_TRDCNFM_TYPE_CMPOENT: _eOesEtfTrdCnfmType
+    OES_ETF_TRDCNFM_TYPE_CASH: _eOesEtfTrdCnfmType
+    OES_ETF_TRDCNFM_TYPE_ETF_LAST: _eOesEtfTrdCnfmType
+    __OES_ETF_TRDCNFM_TYPE_MAX: _eOesEtfTrdCnfmType
+class _eOesEtfSubFlag(Enum):
+    OES_ETF_SUBFLAG_FORBID_SUB: _eOesEtfSubFlag
+    OES_ETF_SUBFLAG_ALLOW_SUB: _eOesEtfSubFlag
+    OES_ETF_SUBFLAG_MUST_SUB: _eOesEtfSubFlag
+    OES_ETF_SUBFLAG_SZ_REFUND_SUB: _eOesEtfSubFlag
+    OES_ETF_SUBFLAG_SZ_MUST_SUB: _eOesEtfSubFlag
+    OES_ETF_SUBFLAG_OTHER_REFUND_SUB: _eOesEtfSubFlag
+    OES_ETF_SUBFLAG_OTHER_MUST_SUB: _eOesEtfSubFlag
+class _eOesExecType(Enum):
+    OES_EXECTYPE_UNDEFINE: _eOesExecType
+    OES_EXECTYPE_INSERT: _eOesExecType
+    OES_EXECTYPE_CONFIRMED: _eOesExecType
+    OES_EXECTYPE_CANCELLED: _eOesExecType
+    OES_EXECTYPE_AUTO_CANCELLED: _eOesExecType
+    OES_EXECTYPE_REJECT: _eOesExecType
+    OES_EXECTYPE_TRADE: _eOesExecType
+    __OES_EXECTYPE_MAX: _eOesExecType
+class _eOesCurrType(Enum):
+    OES_CURR_TYPE_RMB: _eOesCurrType
+    OES_CURR_TYPE_HKD: _eOesCurrType
+    OES_CURR_TYPE_USD: _eOesCurrType
+    __OES_CURR_TYPE_MAX: _eOesCurrType
+class _eOesFeeType(Enum):
+    OES_FEE_TYPE_EXCHANGE_STAMP: _eOesFeeType
+    OES_FEE_TYPE_EXCHANGE_TRANSFER: _eOesFeeType
+    OES_FEE_TYPE_EXCHANGE_SETTLEMENT: _eOesFeeType
+    OES_FEE_TYPE_EXCHANGE_TRADE_RULE: _eOesFeeType
+    OES_FEE_TYPE_EXCHANGE_EXCHANGE: _eOesFeeType
+    OES_FEE_TYPE_EXCHANGE_ADMINFER: _eOesFeeType
+    OES_FEE_TYPE_EXCHANGE_OTHER: _eOesFeeType
+    __OES_FEE_TYPE_EXCHANGE_MAX: _eOesFeeType
+    OES_FEE_TYPE_BROKER_BACK_END: _eOesFeeType
+class _eOesCalcFeeMode(Enum):
+    OES_CALC_FEE_MODE_AMOUNT: _eOesCalcFeeMode
+    OES_CALC_FEE_MODE_QTY: _eOesCalcFeeMode
+    OES_CALC_FEE_MODE_ORD: _eOesCalcFeeMode
+class _eOesFundTrsfDirect(Enum):
+    OES_FUND_TRSF_DIRECT_IN: _eOesFundTrsfDirect
+    OES_FUND_TRSF_DIRECT_OUT: _eOesFundTrsfDirect
+class _eOesFundTrsfType(Enum):
+    OES_FUND_TRSF_TYPE_OES_BANK: _eOesFundTrsfType
+    OES_FUND_TRSF_TYPE_OES_COUNTER: _eOesFundTrsfType
+    OES_FUND_TRSF_TYPE_COUNTER_BANK: _eOesFundTrsfType
+    __OES_FUND_TRSF_TYPE_MAX: _eOesFundTrsfType
+class _eOesFundTrsfStatus(Enum):
+    OES_FUND_TRSF_STS_UNDECLARED: _eOesFundTrsfStatus
+    OES_FUND_TRSF_STS_DECLARED: _eOesFundTrsfStatus
+    OES_FUND_TRSF_STS_WAIT_DONE: _eOesFundTrsfStatus
+    OES_FUND_TRSF_STS_DONE: _eOesFundTrsfStatus
+    __OES_FUND_TRSF_STS_ROLLBACK_MIN: _eOesFundTrsfStatus
+    OES_FUND_TRSF_STS_UNDECLARED_ROLLBACK: _eOesFundTrsfStatus
+    OES_FUND_TRSF_STS_DECLARED_ROLLBACK: _eOesFundTrsfStatus
+    __OES_FUND_TRSF_STS_INVALID_MIN: _eOesFundTrsfStatus
+    OES_FUND_TRSF_STS_INVALID_OES: _eOesFundTrsfStatus
+    OES_FUND_TRSF_STS_INVALID_COUNTER: _eOesFundTrsfStatus
+    OES_FUND_TRSF_STS_SUSPENDED: _eOesFundTrsfStatus
+class _eOesAcctType(Enum):
+    OES_ACCT_TYPE_NORMAL: _eOesAcctType
+    OES_ACCT_TYPE_CREDIT: _eOesAcctType
+    OES_ACCT_TYPE_OPTION: _eOesAcctType
+    __OES_ACCT_TYPE_MAX: _eOesAcctType
+class _eOesCashType(Enum):
+    OES_CASH_TYPE_SPOT: _eOesCashType
+    OES_CASH_TYPE_CREDIT: _eOesCashType
+    OES_CASH_TYPE_OPTION: _eOesCashType
+    __OES_CASH_TYPE_MAX: _eOesCashType
+    OES_CASH_TYPE_CRE: _eOesCashType
+    OES_CASH_TYPE_OPT: _eOesCashType
+class _eOesAcctStatus(Enum):
+    OES_ACCT_STATUS_NORMAL: _eOesAcctStatus
+    OES_ACCT_STATUS_DISABLED: _eOesAcctStatus
+    OES_ACCT_STATUS_LOCKED: _eOesAcctStatus
+class _eOesTradingPermission(Enum):
+    OES_PERMIS_MARKET_ORDER: _eOesTradingPermission
+    OES_PERMIS_STRUCTURED_FUND: _eOesTradingPermission
+    OES_PERMIS_BOND_QUALIFIED_INVESTOR: _eOesTradingPermission
+    OES_PERMIS_XXX4: _eOesTradingPermission
+    OES_PERMIS_DELISTING: _eOesTradingPermission
+    OES_PERMIS_RISK_WARNING: _eOesTradingPermission
+    OES_PERMIS_SINGLE_MARKET_ETF: _eOesTradingPermission
+    OES_PERMIS_CROSS_BORDER_ETF: _eOesTradingPermission
+    OES_PERMIS_CROSS_MARKET_ETF: _eOesTradingPermission
+    OES_PERMIS_CURRENCY_ETF: _eOesTradingPermission
+    OES_PERMIS_STOCK_PLEDGE_REPURCHASE: _eOesTradingPermission
+    OES_PERMIS_PLEDGE_REPURCHASE: _eOesTradingPermission
+    OES_PERMIS_GEM: _eOesTradingPermission
+    OES_PERMIS_SH_HK_STOCK_CONNECT: _eOesTradingPermission
+    OES_PERMIS_SZ_HK_STOCK_CONNECT: _eOesTradingPermission
+    OES_PERMIS_HLTCDR: _eOesTradingPermission
+    OES_PERMIS_CDR: _eOesTradingPermission
+    OES_PERMIS_INNOVATION: _eOesTradingPermission
+    OES_PERMIS_KSH: _eOesTradingPermission
+    __OES_PERMIS_ALL: _eOesTradingPermission
+class _eOesTradingLimit(Enum):
+    OES_LIMIT_BUY: _eOesTradingLimit
+    OES_LIMIT_SELL: _eOesTradingLimit
+    OES_LIMIT_RECALL_DESIGNATION: _eOesTradingLimit
+    OES_LIMIT_DESIGNATION: _eOesTradingLimit
+    OES_LIMIT_REPO: _eOesTradingLimit
+    OES_LIMIT_REVERSE_REPO: _eOesTradingLimit
+    OES_LIMIT_SUBSCRIPTION: _eOesTradingLimit
+    OES_LIMIT_CREDIT_BUY: _eOesTradingLimit
+    OES_LIMIT_CREDIT_SELL: _eOesTradingLimit
+    __OES_LIMIT_ALL: _eOesTradingLimit
+class _eOesQualificationClass(Enum):
+    OES_QUALIFICATION_PUBLIC_INVESTOR: _eOesQualificationClass
+    OES_QUALIFICATION_QUALIFIED_INVESTOR: _eOesQualificationClass
+    OES_QUALIFICATION_QUALIFIED_INSTITUTIONAL: _eOesQualificationClass
+class _eOesInvestorClass(Enum):
+    OES_INVESTOR_CLASS_NORMAL: _eOesInvestorClass
+    OES_INVESTOR_CLASS_PROFESSIONAL_A: _eOesInvestorClass
+    OES_INVESTOR_CLASS_PROFESSIONAL_B: _eOesInvestorClass
+    OES_INVESTOR_CLASS_PROFESSIONAL_C: _eOesInvestorClass
+class _eOesCustType(Enum):
+    OES_CUST_TYPE_PERSONAL: _eOesCustType
+    OES_CUST_TYPE_INSTITUTION: _eOesCustType
+    OES_CUST_TYPE_PROPRIETARY: _eOesCustType
+    OES_CUST_TYPE_PRODUCT: _eOesCustType
+    OES_CUST_TYPE_MKT_MAKER: _eOesCustType
+    OES_CUST_TYPE_OTHERS: _eOesCustType
+    __OES_CUST_TYPE_MAX: _eOesCustType
+class _eOesOwnerType(Enum):
+    OES_OWNER_TYPE_PERSONAL: _eOesOwnerType
+    OES_OWNER_TYPE_EXCHANGE: _eOesOwnerType
+    OES_OWNER_TYPE_MEMBER: _eOesOwnerType
+    OES_OWNER_TYPE_INSTITUTION: _eOesOwnerType
+    OES_OWNER_TYPE_PROPRIETARY: _eOesOwnerType
+    OES_OWNER_TYPE_MKT_MAKER: _eOesOwnerType
+    OES_OWNER_TYPE_SETTLEMENT: _eOesOwnerType
+    __OES_OWNER_TYPE_MAX: _eOesOwnerType
+class _eOesClientType(Enum):
+    OES_CLIENT_TYPE_UNDEFINED: _eOesClientType
+    OES_CLIENT_TYPE_INVESTOR: _eOesClientType
+    OES_CLIENT_TYPE_VIRTUAL: _eOesClientType
+class _eOesClientStatus(Enum):
+    OES_CLIENT_STATUS_UNACTIVATED: _eOesClientStatus
+    OES_CLIENT_STATUS_ACTIVATED: _eOesClientStatus
+    OES_CLIENT_STATUS_PAUSE: _eOesClientStatus
+    OES_CLIENT_STATUS_SUSPENDED: _eOesClientStatus
+    OES_CLIENT_STATUS_CANCELLED: _eOesClientStatus
+class _eOesOptContractType(Enum):
+    OES_OPT_CONTRACT_TYPE_CALL: _eOesOptContractType
+    OES_OPT_CONTRACT_TYPE_PUT: _eOesOptContractType
+    __OES_OPT_CONTRACT_TYPE_MAX: _eOesOptContractType
+class _eOesOptInvLevel(Enum):
+    OES_OPT_INV_LEVEL_B: _eOesOptInvLevel
+    OES_OPT_INV_LEVEL_L: _eOesOptInvLevel
+    OES_OPT_INV_LEVEL_A: _eOesOptInvLevel
+    __OES_OPT_INV_LEVEL_MAX: _eOesOptInvLevel
+class _eOpenFlagType(Enum):
+    OPEN_FLAG_TYPE_ALLOW: _eOpenFlagType
+    OPEN_FLAG_TYPE_FORBID: _eOpenFlagType
+    __OPEN_FLAG_TYPE_MAX: _eOpenFlagType
+class _eOesOptionOpenFlag(Enum):
+    OES_OPTION_OPEN_FLAG_ALLOW: _eOesOptionOpenFlag
+    OES_OPTION_OPEN_FLAG_FORBID: _eOesOptionOpenFlag
+class _eOesPositionEff(Enum):
+    OES_POSITION_INVALID: _eOesPositionEff
+    OES_POSITION_OPEN: _eOesPositionEff
+    OES_POSITION_CLOSE: _eOesPositionEff
+class _eOesOptionType(Enum):
+    OES_OPTION_TYPE_E: _eOesOptionType
+    OES_OPTION_TYPE_A: _eOesOptionType
+    __OES_OPTION_TYPE_MAX: _eOesOptionType
+class _eSMsgProtocolType(Enum):
+    SMSG_PROTO_BINARY: _eSMsgProtocolType
+    SMSG_PROTO_JSON: _eSMsgProtocolType
+    SMSG_PROTO_FIX: _eSMsgProtocolType
+    SMSG_PROTO_PROTOBUF: _eSMsgProtocolType
+    __MAX_SMSG_PROTO_TYPE: _eSMsgProtocolType
+class _eSMsgFlag(Enum):
+    SMSG_MSGFLAG_NONE: _eSMsgFlag
+    SMSG_MSGFLAG_REQ: _eSMsgFlag
+    SMSG_MSGFLAG_RSP: _eSMsgFlag
+    SMSG_MSGFLAG_NESTED: _eSMsgFlag
+    SMSG_MSGFLAG_COMPRESSED: _eSMsgFlag
+    SMSG_MSGFLAG_MASK_RSPFLAG: _eSMsgFlag
+    SMSG_MSGFLAG_MASK_PROTOCOL: _eSMsgFlag
+class _eOesMsgType(Enum):
+    OESMSG_ORD_NEW_ORDER: _eOesMsgType
+    OESMSG_ORD_CANCEL_REQUEST: _eOesMsgType
+    OESMSG_ORD_BATCH_ORDERS: _eOesMsgType
+    __OESMSG_ORD_MAX: _eOesMsgType
+    __OESMSG_RPT_MIN: _eOesMsgType
+    OESMSG_RPT_MARKET_STATE: _eOesMsgType
+    OESMSG_RPT_REPORT_SYNCHRONIZATION: _eOesMsgType
+    OESMSG_RPT_BUSINESS_REJECT: _eOesMsgType
+    OESMSG_RPT_ORDER_INSERT: _eOesMsgType
+    OESMSG_RPT_ORDER_REPORT: _eOesMsgType
+    OESMSG_RPT_TRADE_REPORT: _eOesMsgType
+    OESMSG_RPT_FUND_TRSF_REJECT: _eOesMsgType
+    OESMSG_RPT_FUND_TRSF_REPORT: _eOesMsgType
+    OESMSG_RPT_CASH_ASSET_VARIATION: _eOesMsgType
+    OESMSG_RPT_STOCK_HOLDING_VARIATION: _eOesMsgType
+    OESMSG_RPT_OPTION_HOLDING_VARIATION: _eOesMsgType
+    OESMSG_RPT_SERVICE_STATE: _eOesMsgType
+    __OESMSG_RPT_MAX: _eOesMsgType
+    __OESMSG_NONTRD_MIN: _eOesMsgType
+    OESMSG_NONTRD_FUND_TRSF_REQ: _eOesMsgType
+    OESMSG_NONTRD_CHANGE_PASSWORD: _eOesMsgType
+    __OESMSG_NONTRD_MAX: _eOesMsgType
+    __OESMSG_QRYMSG_MIN: _eOesMsgType
+    OESMSG_QRYMSG_CLIENT_OVERVIEW: _eOesMsgType
+    OESMSG_QRYMSG_ORD: _eOesMsgType
+    OESMSG_QRYMSG_TRD: _eOesMsgType
+    OESMSG_QRYMSG_CASH_ASSET: _eOesMsgType
+    OESMSG_QRYMSG_STK_HLD: _eOesMsgType
+    OESMSG_QRYMSG_OPT_HLD: _eOesMsgType
+    OESMSG_QRYMSG_CUST: _eOesMsgType
+    OESMSG_QRYMSG_COMMISSION_RATE: _eOesMsgType
+    OESMSG_QRYMSG_FUND_TRSF: _eOesMsgType
+    OESMSG_QRYMSG_ETF: _eOesMsgType
+    OESMSG_QRYMSG_ETF_COMPONENT: _eOesMsgType
+    OESMSG_QRYMSG_OPTION: _eOesMsgType
+    OESMSG_QRYMSG_ISSUE: _eOesMsgType
+    OESMSG_QRYMSG_LOT_WINNING: _eOesMsgType
+    OESMSG_QRYMSG_TRADING_DAY: _eOesMsgType
+    OESMSG_QRYMSG_MARKET_STATE: _eOesMsgType
+    OESMSG_QRYMSG_COUNTER_CASH: _eOesMsgType
+    OESMSG_QRYMSG_INV_ACCT: _eOesMsgType
+    OESMSG_QRYMSG_STOCK: _eOesMsgType
+    __OESMSG_QRYMSG_MAX: _eOesMsgType
+    OESMSG_SESS_HEARTBEAT: _eOesMsgType
+    OESMSG_SESS_TEST_REQUEST: _eOesMsgType
+    OESMSG_SESS_LOGIN_EXTEND: _eOesMsgType
+    OESMSG_SESS_LOGOUT: _eOesMsgType
+    OESMSG_RPT_ORDER_REJECT: _eOesMsgType
+    OESMSG_QRYMSG_INV_ACCT_L001508: _eOesMsgType
+    OESMSG_QRYMSG_STOCK_L001508: _eOesMsgType
+class _eOesSubscribeReportType(Enum):
+    OES_SUB_RPT_TYPE_DEFAULT: _eOesSubscribeReportType
+    OES_SUB_RPT_TYPE_BUSINESS_REJECT: _eOesSubscribeReportType
+    OES_SUB_RPT_TYPE_ORDER_INSERT: _eOesSubscribeReportType
+    OES_SUB_RPT_TYPE_ORDER_REPORT: _eOesSubscribeReportType
+    OES_SUB_RPT_TYPE_TRADE_REPORT: _eOesSubscribeReportType
+    OES_SUB_RPT_TYPE_FUND_TRSF_REPORT: _eOesSubscribeReportType
+    OES_SUB_RPT_TYPE_CASH_ASSET_VARIATION: _eOesSubscribeReportType
+    OES_SUB_RPT_TYPE_HOLDING_VARIATION: _eOesSubscribeReportType
+    OES_SUB_RPT_TYPE_MARKET_STATE: _eOesSubscribeReportType
+    OES_SUB_RPT_TYPE_ALL: _eOesSubscribeReportType
+    __MAX_OES_SUB_RPT_TYPE: _eOesSubscribeReportType
+class _eOesProtocolHintsType(Enum):
+    OES_PROT_HINTS_TYPE_DEFAULT: _eOesProtocolHintsType
+    OES_PROT_HINTS_TYPE_COMPRESS: _eOesProtocolHintsType
+    OES_PROT_HINTS_TYPE_NONE: _eOesProtocolHintsType
+    __MAX_OES_PROT_HINTS_TYPE: _eOesProtocolHintsType
+class _eSSocketProtocolType(Enum):
+    SPK_SOCKET_PROTOCOL_TCP: _eSSocketProtocolType
+    SPK_SOCKET_PROTOCOL_IPC: _eSSocketProtocolType
+    SPK_SOCKET_PROTOCOL_UDP_UCAST: _eSSocketProtocolType
+    SPK_SOCKET_PROTOCOL_UDP_MCAST: _eSSocketProtocolType
+    SPK_SOCKET_PROTOCOL_PGM: _eSSocketProtocolType
+    SPK_SOCKET_PROTOCOL_EPGM: _eSSocketProtocolType
+    __MAX_SPK_SOCKET_PROTOCOL: _eSSocketProtocolType
+class _eGeneralClientClusterType(Enum):
+    GENERAL_CLI_CLUSTER_UNDEFINED: _eGeneralClientClusterType
+    GENERAL_CLI_CLUSTER_REPLICA_SET: _eGeneralClientClusterType
+    GENERAL_CLI_CLUSTER_PEER_NODES: _eGeneralClientClusterType
+    __MAX_GENERAL_CLI_CLUSTER_TYPE: _eGeneralClientClusterType
+class _eGeneralClientEncryptType(Enum):
+    GENERAL_CLI_ENCRYPT_NONE: _eGeneralClientEncryptType
+    GENERAL_CLI_ENCRYPT_MD5: _eGeneralClientEncryptType
+    GENERAL_CLI_ENCRYPT_SHA: _eGeneralClientEncryptType
+    GENERAL_CLI_ENCRYPT_DES: _eGeneralClientEncryptType
+    GENERAL_CLI_ENCRYPT_AES: _eGeneralClientEncryptType
+    GENERAL_CLI_ENCRYPT_RSA: _eGeneralClientEncryptType
+    __GENERAL_CLI_ENCRYPT_MASK_DIGESTED: _eGeneralClientEncryptType
+    __GENERAL_CLI_ENCRYPT_MASK_ENCRYPTED: _eGeneralClientEncryptType
+class _eOesApiChannelType(Enum):
+    OESAPI_CHANNEL_TYPE_ORDER: _eOesApiChannelType
+    OESAPI_CHANNEL_TYPE_REPORT: _eOesApiChannelType
+    OESAPI_CHANNEL_TYPE_QUERY: _eOesApiChannelType
+class _eMdsExchangeId(Enum):
+    MDS_EXCH_UNDEFINE: _eMdsExchangeId
+    MDS_EXCH_SSE: _eMdsExchangeId
+    MDS_EXCH_SZSE: _eMdsExchangeId
+    __MAX_MDS_EXCH: _eMdsExchangeId
+    __MAX_MDS_EXCH_ALIGNED4: _eMdsExchangeId
+    __MAX_MDS_EXCH_ALIGNED8: _eMdsExchangeId
+class _eMdsMsgSource(Enum):
+    MDS_MSGSRC_UNDEFINED: _eMdsMsgSource
+    MDS_MSGSRC_EZEI_TCP: _eMdsMsgSource
+    MDS_MSGSRC_EZEI_UDP: _eMdsMsgSource
+    MDS_MSGSRC_VDE_LEVEL2: _eMdsMsgSource
+    MDS_MSGSRC_VDE_LEVEL1: _eMdsMsgSource
+    MDS_MSGSRC_SZSE_MDGW_BINARY: _eMdsMsgSource
+    MDS_MSGSRC_SZSE_MDGW_STEP: _eMdsMsgSource
+    MDS_MSGSRC_MDS_TCP: _eMdsMsgSource
+    MDS_MSGSRC_MDS_UDP: _eMdsMsgSource
+    MDS_MSGSRC_FILE_MKTDT: _eMdsMsgSource
+    MDS_MSGSRC_SSE_MDGW_BINARY: _eMdsMsgSource
+    MDS_MSGSRC_SSE_MDGW_STEP: _eMdsMsgSource
+    __MAX_MDS_MSGSRC: _eMdsMsgSource
+    MDS_MSGSRC_MDGW_BINARY: _eMdsMsgSource
+    MDS_MSGSRC_MDGW_STEP: _eMdsMsgSource
+class _eMdsMdProductType(Enum):
+    MDS_MD_PRODUCT_TYPE_STOCK: _eMdsMdProductType
+    MDS_MD_PRODUCT_TYPE_INDEX: _eMdsMdProductType
+    MDS_MD_PRODUCT_TYPE_OPTION: _eMdsMdProductType
+    __MAX_MDS_MD_PRODUCT_TYPE: _eMdsMdProductType
+    MDS_SECURITY_TYPE_STOCK: _eMdsMdProductType
+    MDS_SECURITY_TYPE_INDEX: _eMdsMdProductType
+    MDS_SECURITY_TYPE_OPTION: _eMdsMdProductType
+    __MAX_MDS_SECURITY_TYPE: _eMdsMdProductType
+class _eMdsMdStreamType(Enum):
+    MDS_MD_STREAM_TYPE_L1_SNAPSHOT: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_INDEX: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_OPTION: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_SZSE_TRADE_STATS: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_SSE_L1_BOND: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_SSE_L1_FUND: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_L2_SNAPSHOT: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_SNAPSHOT: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_L2_SNAPSHOT_INCREMENTAL: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_L2_BEST_ORDERS_INCREMENTAL: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_L2_MARKET_OVERVIEW: _eMdsMdStreamType
+    __MAX_MDS_MD_STREAM_TYPE: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_BOND: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_FUND: _eMdsMdStreamType
+    MDS_MD_STREAM_TYPE_OTHERS: _eMdsMdStreamType
+class _eMdsMdLevel(Enum):
+    MDS_MD_LEVEL_0: _eMdsMdLevel
+    MDS_MD_LEVEL_1: _eMdsMdLevel
+    MDS_MD_LEVEL_2: _eMdsMdLevel
+    __MAX_MDS_MD_LEVEL: _eMdsMdLevel
+class _eMdsL2PriceLevelOperator(Enum):
+    MDS_L2_PX_OPERATOR_ADD: _eMdsL2PriceLevelOperator
+    MDS_L2_PX_OPERATOR_UPDATE: _eMdsL2PriceLevelOperator
+    MDS_L2_PX_OPERATOR_DELETE: _eMdsL2PriceLevelOperator
+    __MAX_MDS_L2_PX_OPERATOR: _eMdsL2PriceLevelOperator
+class _eMdsL2TradeExecType(Enum):
+    MDS_L2_TRADE_EXECTYPE_CANCELED: _eMdsL2TradeExecType
+    MDS_L2_TRADE_EXECTYPE_TRADE: _eMdsL2TradeExecType
+class _eMdsL2TradeBSFlag(Enum):
+    MDS_L2_TRADE_BSFLAG_BUY: _eMdsL2TradeBSFlag
+    MDS_L2_TRADE_BSFLAG_SELL: _eMdsL2TradeBSFlag
+    MDS_L2_TRADE_BSFLAG_UNKNOWN: _eMdsL2TradeBSFlag
+class _eMdsL2OrderSideT(Enum):
+    MDS_L2_ORDER_SIDE_BUY: _eMdsL2OrderSideT
+    MDS_L2_ORDER_SIDE_SELL: _eMdsL2OrderSideT
+    MDS_L2_ORDER_SIDE_BORROW: _eMdsL2OrderSideT
+    MDS_L2_ORDER_SIDE_LEND: _eMdsL2OrderSideT
+class _eMdsL2OrderType(Enum):
+    MDS_L2_ORDER_TYPE_MKT: _eMdsL2OrderType
+    MDS_L2_ORDER_TYPE_LMT: _eMdsL2OrderType
+    MDS_L2_ORDER_TYPE_SAMEPARTY_BEST: _eMdsL2OrderType
+class _eMdsClientType(Enum):
+    MDS_CLIENT_TYPE_UNDEFINED: _eMdsClientType
+    MDS_CLIENT_TYPE_INVESTOR: _eMdsClientType
+    MDS_CLIENT_TYPE_VIRTUAL: _eMdsClientType
+class _eMdsClientStatus(Enum):
+    MDS_CLIENT_STATUS_UNACTIVATED: _eMdsClientStatus
+    MDS_CLIENT_STATUS_ACTIVATED: _eMdsClientStatus
+    MDS_CLIENT_STATUS_PAUSE: _eMdsClientStatus
+    MDS_CLIENT_STATUS_SUSPENDED: _eMdsClientStatus
+    MDS_CLIENT_STATUS_CANCELLED: _eMdsClientStatus
+class _eMdsMsgType(Enum):
+    MDS_MSGTYPE_HEARTBEAT: _eMdsMsgType
+    MDS_MSGTYPE_TEST_REQUEST: _eMdsMsgType
+    MDS_MSGTYPE_LOGOUT: _eMdsMsgType
+    MDS_MSGTYPE_MARKET_DATA_REQUEST: _eMdsMsgType
+    MDS_MSGTYPE_COMPRESSED_PACKETS: _eMdsMsgType
+    __MDS_MSGTYPE_SESSION_MAX: _eMdsMsgType
+    MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH: _eMdsMsgType
+    MDS_MSGTYPE_INDEX_SNAPSHOT_FULL_REFRESH: _eMdsMsgType
+    MDS_MSGTYPE_OPTION_SNAPSHOT_FULL_REFRESH: _eMdsMsgType
+    MDS_MSGTYPE_TRADING_SESSION_STATUS: _eMdsMsgType
+    MDS_MSGTYPE_SECURITY_STATUS: _eMdsMsgType
+    __MDS_MSGTYPE_L1_MAX: _eMdsMsgType
+    MDS_MSGTYPE_L2_MARKET_DATA_SNAPSHOT: _eMdsMsgType
+    MDS_MSGTYPE_L2_BEST_ORDERS_SNAPSHOT: _eMdsMsgType
+    MDS_MSGTYPE_L2_TRADE: _eMdsMsgType
+    MDS_MSGTYPE_L2_ORDER: _eMdsMsgType
+    MDS_MSGTYPE_L2_MARKET_DATA_INCREMENTAL: _eMdsMsgType
+    MDS_MSGTYPE_L2_BEST_ORDERS_INCREMENTAL: _eMdsMsgType
+    MDS_MSGTYPE_L2_MARKET_OVERVIEW: _eMdsMsgType
+    MDS_MSGTYPE_L2_VIRTUAL_AUCTION_PRICE: _eMdsMsgType
+    __MDS_MSGTYPE_L2_MAX: _eMdsMsgType
+    MDS_MSGTYPE_CMD_CHANGE_PASSWORD: _eMdsMsgType
+    __MDS_MSGTYPE_CMD_MAX: _eMdsMsgType
+    MDS_MSGTYPE_QRY_MARKET_DATA_SNAPSHOT: _eMdsMsgType
+    MDS_MSGTYPE_QRY_SECURITY_STATUS: _eMdsMsgType
+    MDS_MSGTYPE_QRY_TRADING_SESSION_STATUS: _eMdsMsgType
+    MDS_MSGTYPE_QRY_STOCK_STATIC_INFO: _eMdsMsgType
+    MDS_MSGTYPE_QRY_SNAPSHOT_LIST: _eMdsMsgType
+    __MDS_MSGTYPE_QRY_MAX: _eMdsMsgType
+class _eMdsSubscribeMode(Enum):
+    MDS_SUB_MODE_SET: _eMdsSubscribeMode
+    MDS_SUB_MODE_APPEND: _eMdsSubscribeMode
+    MDS_SUB_MODE_DELETE: _eMdsSubscribeMode
+    __MAX_MDS_SUB_MODE: _eMdsSubscribeMode
+class _eMdsMktSubscribeFlag(Enum):
+    MDS_MKT_SUB_FLAG_DEFAULT: _eMdsMktSubscribeFlag
+    MDS_MKT_SUB_FLAG_ALL: _eMdsMktSubscribeFlag
+    MDS_MKT_SUB_FLAG_DISABLE: _eMdsMktSubscribeFlag
+    __MAX_MDS_MKT_SUB_FLAG: _eMdsMktSubscribeFlag
+class _eMdsSubscribedTickType(Enum):
+    MDS_TICK_TYPE_LATEST_SIMPLIFIED: _eMdsSubscribedTickType
+    MDS_TICK_TYPE_LATEST_TIMELY: _eMdsSubscribedTickType
+    MDS_TICK_TYPE_ALL_INCREMENTS: _eMdsSubscribedTickType
+    __MAX_MDS_TICK_TYPE: _eMdsSubscribedTickType
+class _eMdsSubscribedTickExpireType(Enum):
+    MDS_TICK_EXPIRE_TYPE_NONE: _eMdsSubscribedTickExpireType
+    MDS_TICK_EXPIRE_TYPE_IMMEDIATE: _eMdsSubscribedTickExpireType
+    MDS_TICK_EXPIRE_TYPE_TIMELY: _eMdsSubscribedTickExpireType
+    MDS_TICK_EXPIRE_TYPE_TIMEOUT: _eMdsSubscribedTickExpireType
+    __MAX_MDS_TICK_EXPIRE_TYPE: _eMdsSubscribedTickExpireType
+class _eMdsSubscribeDataType(Enum):
+    MDS_SUB_DATA_TYPE_DEFAULT: _eMdsSubscribeDataType
+    MDS_SUB_DATA_TYPE_L1_SNAPSHOT: _eMdsSubscribeDataType
+    MDS_SUB_DATA_TYPE_L2_SNAPSHOT: _eMdsSubscribeDataType
+    MDS_SUB_DATA_TYPE_L2_BEST_ORDERS: _eMdsSubscribeDataType
+    MDS_SUB_DATA_TYPE_L2_TRADE: _eMdsSubscribeDataType
+    MDS_SUB_DATA_TYPE_L2_ORDER: _eMdsSubscribeDataType
+    MDS_SUB_DATA_TYPE_L2_MARKET_OVERVIEW: _eMdsSubscribeDataType
+    MDS_SUB_DATA_TYPE_TRADING_SESSION_STATUS: _eMdsSubscribeDataType
+    MDS_SUB_DATA_TYPE_SECURITY_STATUS: _eMdsSubscribeDataType
+    MDS_SUB_DATA_TYPE_INDEX_SNAPSHOT: _eMdsSubscribeDataType
+    MDS_SUB_DATA_TYPE_OPTION_SNAPSHOT: _eMdsSubscribeDataType
+    MDS_SUB_DATA_TYPE_NONE: _eMdsSubscribeDataType
+    MDS_SUB_DATA_TYPE_ALL: _eMdsSubscribeDataType
+    __MAX_MDS_SUB_DATA_TYPE: _eMdsSubscribeDataType
+class _eMdsSubscribedChannelNo(Enum):
+    MDS_CHANNEL_NO_DEFAULT: _eMdsSubscribedChannelNo
+    MDS_CHANNEL_NO_ONE: _eMdsSubscribedChannelNo
+    MDS_CHANNEL_NO_TWO: _eMdsSubscribedChannelNo
+    MDS_CHANNEL_NO_THREE: _eMdsSubscribedChannelNo
+    MDS_CHANNEL_NO_FOUR: _eMdsSubscribedChannelNo
+    MDS_CHANNEL_NO_ALL: _eMdsSubscribedChannelNo
+    MDS_CHANNEL_NO_NONE: _eMdsSubscribedChannelNo
+class _eMdsProtocolHintsType(Enum):
+    MDS_PROT_HINTS_TYPE_DEFAULT: _eMdsProtocolHintsType
+    MDS_PROT_HINTS_TYPE_COMPRESS: _eMdsProtocolHintsType
+    MDS_PROT_HINTS_TYPE_NONE: _eMdsProtocolHintsType
+    __MAX_MDS_PROT_HINTS_TYPE: _eMdsProtocolHintsType
+class _eMdsApiChannelType(Enum):
+    MDSAPI_CHANNEL_TYPE_TCP: _eMdsApiChannelType
+    MDSAPI_CHANNEL_TYPE_UDP: _eMdsApiChannelType
+    MDSAPI_CHANNEL_TYPE_QUERY: _eMdsApiChannelType
+int8 = str
+uint8 = int
+int16 = int
+uint16 = int
+int32 = int
+uint32 = int
+int64 = int
+uint64 = int
+float32 = float
+float64 = float
+float128 = float
+eOesExchangeIdT = _eOesExchangeId
+eOesMarketIdT = _eOesMarketId
+eOesPlatformIdT = _eOesPlatformId
+eOesMarketStateT = _eOesMarketState
+eOesTrdSessTypeT = _eOesTrdSessType
+eOesProductTypeT = _eOesProductType
+eOesSecurityTypeT = _eOesSecurityType
+eOesSubSecurityTypeT = _eOesSubSecurityType
+eOesSecurityLevelT = _eOesSecurityLevel
+eOesSecurityRiskLevelT = _eOesSecurityRiskLevel
+eOesSecuritySuspFlagT = _eOesSecuritySuspFlag
+eOesLotTypeT = _eOesLotType
+eOesLotRejReasonT = _eOesLotRejReason
+eOesOrdStatusT = _eOesOrdStatus
+eOesOrdTypeT = _eOesOrdType
+eOesOrdTypeShT = _eOesOrdTypeSh
+eOesOrdTypeSzT = _eOesOrdTypeSz
+eOesBuySellTypeT = _eOesBuySellType
+eOesOrdDirT = _eOesOrdDir
+eOesEtfTrdCnfmTypeT = _eOesEtfTrdCnfmType
+eOesEtfSubFlagT = _eOesEtfSubFlag
+eOesExecTypeT = _eOesExecType
+eOesCurrTypeT = _eOesCurrType
+eOesFeeTypeT = _eOesFeeType
+eOesCalcFeeModeT = _eOesCalcFeeMode
+eOesFundTrsfDirectT = _eOesFundTrsfDirect
+eOesFundTrsfTypeT = _eOesFundTrsfType
+eOesFundTrsfStatusT = _eOesFundTrsfStatus
+eOesAcctTypeT = _eOesAcctType
+eOesCashTypeT = _eOesCashType
+eOesAcctStatusT = _eOesAcctStatus
+eOesTradingPermissionT = _eOesTradingPermission
+eOesTradingLimitT = _eOesTradingLimit
+eOesQualificationClassT = _eOesQualificationClass
+eOesInvestorClassT = _eOesInvestorClass
+eOesCustTypeT = _eOesCustType
+eOesOwnerTypeT = _eOesOwnerType
+eOesClientTypeT = _eOesClientType
+eOesClientStatusT = _eOesClientStatus
+eOesOptContractTypeT = _eOesOptContractType
+eOesOptInvLevelT = _eOesOptInvLevel
+eOpenFlagTypeT = _eOpenFlagType
+eOesOptionOpenFlagT = _eOesOptionOpenFlag
+eOesPositionEffT = _eOesPositionEff
+eOesOptionTypeT = _eOesOptionType
+OesOrdReqT = _OesOrdReq
+OesOrdCancelReqT = _OesOrdCancelReq
+OesOrdRejectT = _OesOrdReject
+OesOrdCnfmT = _OesOrdCnfm
+OesTrdBaseInfoT = _OesTrdBaseInfo
+OesTrdCnfmT = _OesTrdCnfm
+OesLotWinningBaseInfoT = _OesLotWinningBaseInfo
+OesFundTrsfBaseInfoT = _OesFundTrsfBaseInfo
+OesFundTrsfReqT = _OesFundTrsfReq
+OesFundTrsfRejectT = _OesFundTrsfReject
+OesFundTrsfReportT = _OesFundTrsfReport
+OesIssueBaseInfoT = _OesIssueBaseInfo
+OesPriceLimitT = _OesPriceLimit
+OesStockBaseInfoT = _OesStockBaseInfo
+OesEtfBaseInfoT = _OesEtfBaseInfo
+OesEtfComponentBaseInfoT = _OesEtfComponentBaseInfo
+OesOptionBaseInfoT = _OesOptionBaseInfo
+OesCashAssetBaseInfoT = _OesCashAssetBaseInfo
+OesCustBaseInfoT = _OesCustBaseInfo
+OesInvAcctBaseInfoT = _OesInvAcctBaseInfo
+OesStkHoldingBaseInfoT = _OesStkHoldingBaseInfo
+OesOptHoldingBaseInfoT = _OesOptHoldingBaseInfo
+OesMarketStateInfoT = _OesMarketStateInfo
+OesTradingPermissionEntryT = _OesTradingPermissionEntry
+eSMsgProtocolTypeT = _eSMsgProtocolType
+eSMsgFlagT = _eSMsgFlag
+SMsgHeadT = _SMsgHead
+OesQryCursorT = _OesQryCursor
+OesQryReqHeadT = _OesQryReqHead
+OesQryRspHeadT = _OesQryRspHead
+OesQryOrdFilterT = _OesQryOrdFilter
+OesOrdItemT = _OesOrdCnfm
+OesQryOrdReqT = _OesQryOrdReq
+OesQryOrdRspT = _OesQryOrdRsp
+OesQryTrdFilterT = _OesQryTrdFilter
+OesTrdItemT = _OesTrdCnfm
+OesQryTrdReqT = _OesQryTrdReq
+OesQryTrdRspT = _OesQryTrdRsp
+OesQryCashAssetFilterT = _OesQryCashAssetFilter
+OesCashAssetItemT = _OesCashAssetItem
+OesQryCashAssetReqT = _OesQryCashAssetReq
+OesQryCashAssetRspT = _OesQryCashAssetRsp
+OesCounterCashItemT = _OesCounterCashItem
+OesQryCounterCashReqT = _OesQryCounterCashReq
+OesQryCounterCashRspT = _OesQryCounterCashRsp
+OesQryStkHoldingFilterT = _OesQryStkHoldingFilter
+OesStkHoldingItemT = _OesStkHoldingItem
+OesQryStkHoldingReqT = _OesQryStkHoldingReq
+OesQryStkHoldingRspT = _OesQryStkHoldingRsp
+OesQryOptHoldingFilterT = _OesQryStkHoldingFilter
+OesOptHoldingItemT = _OesOptHoldingItem
+OesQryOptHoldingReqT = _OesQryOptHoldingReq
+OesQryOptHoldingRspT = _OesQryHoldRsp
+OesQryCustFilterT = _OesQryCustFilter
+OesCustItemT = _OesCustBaseInfo
+OesQryCustReqT = _OesQryCustReq
+OesQryCustRspT = _OesQryCustRsp
+OesQryInvAcctFilterT = _OesQryInvAcctFilter
+OesInvAcctItemT = _OesInvAcctItem
+OesQryInvAcctReqT = _OesQryInvAcctReq
+OesQryInvAcctRspT = _OesQryInvAcctRsp
+OesInvAcctOverviewT = _OesInvAcctOverview
+OesCashAcctOverviewT = _OesCashAcctOverview
+OesCustOverviewT = _OesCustOverview
+OesClientOverviewT = _OesClientOverview
+OesQryCommissionRateFilterT = _OesQryCommissionRateFilter
+OesCommissionRateItemT = _OesCommissionRateItem
+OesQryCommissionRateReqT = _OesQryCommissionRateReq
+OesQryCommissionRateRspT = _OesQryCommissionRateRsp
+OesQryFundTransferSerialFilterT = _OesQryFundTransferSerialFilter
+OesFundTransferSerialItemT = _OesFundTrsfReport
+OesQryFundTransferSerialReqT = _OesQryFundTransferSerialReq
+OesQryFundTransferSerialRspT = _OesQryFundTransferSerialRsp
+OesQryLotWinningFilterT = _OesQryLotWinningFilter
+OesLotWinningItemT = _OesLotWinningBaseInfo
+OesQryLotWinningReqT = _OesQryLotWinningReq
+OesQryLotWinningRspT = _OesQryLotWinningRsp
+OesQryIssueFilterT = _OesQryIssueFilter
+OesIssueItemT = _OesIssueBaseInfo
+OesQryIssueReqT = _OesQryIssueReq
+OesQryIssueRspT = _OesQryIssueRsp
+OesQryStockFilterT = _OesQryStockFilter
+OesStockItemT = _OesStockBaseInfo
+OesQryStockReqT = _OesQryStockReq
+OesQryStockRspT = _OesQryStockRsp
+OesQryEtfFilterT = _OesQryEtfFilter
+OesEtfItemT = _OesEtfBaseInfo
+OesQryEtfReqT = _OesQryEtfReq
+OesQryEtfRspT = _OesQryEtfRsp
+OesQryEtfComponentFilterT = _OesQryEtfComponentFilter
+OesEtfComponentItemT = _OesEtfComponentItem
+OesQryEtfComponentReqT = _OesQryEtfComponentReq
+OesQryEtfComponentRspT = _OesQryEtfComponentRsp
+OesQryOptionFilterT = _OesQryOptionFilter
+OesOptionItemT = _OesOptionBaseInfo
+OesQryOptionReqT = _OesQryOptionReq
+OesQryOptionRspT = _OesQryOptionRsp
+OesQryTradingDayRspT = _OesQryTradingDayRsp
+OesQryMarketStateFilterT = _OesQryMarketStateFilter
+OesMarketStateItemT = _OesMarketStateInfo
+OesQryMarketStateReqT = _OesQryMarketStateReq
+OesQryMarketStateRspT = _OesQryMarketStateRsp
+OesQryReqMsgT = _OesQryReqMsg
+OesQryRspMsgT = _OesQryRspMsg
+eOesMsgTypeT = _eOesMsgType
+eOesSubscribeReportTypeT = _eOesSubscribeReportType
+eOesProtocolHintsTypeT = _eOesProtocolHintsType
+OesReportSynchronizationReqT = _OesReportSynchronizationReq
+OesReportSynchronizationRspT = _OesReportSynchronizationRsp
+OesTestRequestReqT = _OesTestRequestReq
+OesTestRequestRspT = _OesTestRequestRsp
+OesChangePasswordReqT = _OesChangePasswordReq
+OesChangePasswordRspT = _OesChangePasswordRsp
+OesBatchOrdersHeadT = _OesBatchOrdersHead
+OesBatchOrdersReqT = _OesBatchOrdersReq
+OesRptMsgHeadT = _OesRptMsgHead
+OesRptMsgBodyT = _OesRptMsgBody
+OesRptMsgT = _OesRptMsg
+OesReqMsgBodyT = _OesReqMsgBody
+OesRspMsgBodyT = _OesRspMsgBody
+SErrMsgT = _SErrMsg
+SDataBufferT = _SDataBuffer
+eSSocketProtocolTypeT = _eSSocketProtocolType
+SSocketUriInfoT = _SSocketUriInfo
+SSocketIpPortInfoT = _SSocketIpPortInfo
+SSocketChannelInfoT = _SSocketChannelInfo
+SSocketOptionConfigT = _SSocketOptionConfig
+eGeneralClientClusterTypeT = _eGeneralClientClusterType
+eGeneralClientEncryptTypeT = _eGeneralClientEncryptType
+SGeneralClientChannelT = _SGeneralClientChannel
+SGeneralClientChannelGroupT = _SGeneralClientChannelGroup
+SGeneralClientAddrInfoT = _SGeneralClientAddrInfo
+SGeneralClientRemoteCfgT = _SGeneralClientRemoteCfg
+eOesApiChannelTypeT = _eOesApiChannelType
+OesApiSessionInfoT = _SGeneralClientChannel
+OesApiChannelGroupT = _SGeneralClientChannelGroup
+OesApiAddrInfoT = _SGeneralClientAddrInfo
+OesApiRemoteCfgT = _SGeneralClientRemoteCfg
+OesApiSubscribeInfoT = _OesApiSubscribeInfo
+OesApiClientCfgT = _OesApiClientCfg
+OesApiClientEnvT = _OesApiClientEnv
+F_OESAPI_ON_RPT_MSG_T = Callable[[_SGeneralClientChannel,_SMsgHead,Any,Any], int]
+F_OESAPI_ON_QRY_MSG_T = Callable[[_SGeneralClientChannel,_SMsgHead,Any,_OesQryCursor,Any], int]
+eMdsExchangeIdT = _eMdsExchangeId
+eMdsMsgSourceT = _eMdsMsgSource
+eMdsMdProductTypeT = _eMdsMdProductType
+eMdsMdStreamTypeT = _eMdsMdStreamType
+eMdsMdLevelT = _eMdsMdLevel
+eMdsL2PriceLevelOperatorT = _eMdsL2PriceLevelOperator
+eMdsL2TradeExecTypeT = _eMdsL2TradeExecType
+eMdsL2TradeBSFlagT = _eMdsL2TradeBSFlag
+eMdsL2OrderSideT = _eMdsL2OrderSideT
+eMdsL2OrderTypeT = _eMdsL2OrderType
+eMdsClientTypeT = _eMdsClientType
+eMdsClientStatusT = _eMdsClientStatus
+MdsTradingSessionStatusMsgT = _MdsTradingSessionStatusMsg
+MdsSecurityStatusMsgT = _MdsSecurityStatusMsg
+MdsPriceLevelEntryT = _MdsPriceLevelEntry
+MdsMktDataSnapshotHeadT = _MdsMktDataSnapshotHead
+MdsIndexSnapshotBodyT = _MdsIndexSnapshotBody
+MdsStockSnapshotBodyT = _MdsStockSnapshotBody
+MdsL1SnapshotBodyT = _MdsL1SnapshotBody
+MdsL1SnapshotT = _MdsL1Snapshot
+MdsL2StockSnapshotBodyT = _MdsL2StockSnapshotBody
+MdsL2StockSnapshotIncrementalT = _MdsL2StockSnapshotIncremental
+MdsL2BestOrdersSnapshotBodyT = _MdsL2BestOrdersSnapshotBody
+MdsL2BestOrdersSnapshotIncrementalT = _MdsL2BestOrdersSnapshotIncremental
+MdsL2MarketOverviewT = _MdsL2MarketOverview
+MdsL2SnapshotBodyT = _MdsL2SnapshotBody
+MdsMktDataSnapshotT = _MdsMktDataSnapshot
+MdsL2TradeT = _MdsL2Trade
+MdsL2OrderT = _MdsL2Order
+MdsWholeMktMsgBodyT = _MdsWholeMktMsgBody
+MdsStockStaticInfoT = _MdsStockStaticInfo
+MdsQryMktDataSnapshotReqT = _MdsQryMktDataSnapshotReq
+MdsQrySecurityStatusReqT = _MdsQryMktDataSnapshotReq
+MdsQryTrdSessionStatusReqT = _MdsQryTrdSessionStatusReq
+MdsQryReqHeadT = _MdsQryReqHeadT
+MdsQryRspHeadT = _MdsQryRspHeadT
+MdsQryCursorT = _MdsQryCursor
+MdsQrySecurityCodeEntryT = _MdsQrySecurityCodeEntry
+MdsQryStockStaticInfoFilterT = _MdsQryStockStaticInfoFilter
+MdsQryStockStaticInfoReqT = _MdsQryStockStaticInfoReq
+MdsQryStockStaticInfoRspT = _MdsQryStockStaticInfoRsp
+MdsQrySnapshotListFilterT = _MdsQrySnapshotListFilter
+MdsQrySnapshotListReqT = _MdsQrySnapshotListReq
+MdsQrySnapshotListRspT = _MdsQrySnapshotListRsp
+eMdsMsgTypeT = _eMdsMsgType
+eMdsSubscribeModeT = _eMdsSubscribeMode
+eMdsMktSubscribeFlagT = _eMdsMktSubscribeFlag
+eMdsSubscribedTickTypeT = _eMdsSubscribedTickType
+eMdsSubscribedTickExpireTypeT = _eMdsSubscribedTickExpireType
+eMdsSubscribeDataTypeT = _eMdsSubscribeDataType
+eMdsTickChannelNoT = _eMdsSubscribedChannelNo
+eMdsProtocolHintsTypeT = _eMdsProtocolHintsType
+MdsMktDataRequestEntryT = _MdsMktDataRequestEntry
+MdsMktDataRequestReqT = _MdsMktDataRequestReq
+MdsMktDataRequestReqBufT = _MdsMktDataRequestReqBuf
+MdsMktDataRequestRspT = _MdsMktDataRequestRsp
+MdsTestRequestReqT = _MdsTestRequestReq
+MdsTestRequestRspT = _MdsTestRequestRsp
+MdsChangePasswordReqT = _MdsChangePasswordReq
+MdsChangePasswordRspT = _MdsChangePasswordRsp
+MdsMktReqMsgBodyT = _MdsMktReqMsgBody
+MdsMktRspMsgBodyT = _MdsMktRspMsgBody
+MdsUdpPktHeadT = _MdsUdpPktHead
+eMdsApiChannelTypeT = _eMdsApiChannelType
+MdsApiSessionInfoT = _SGeneralClientChannel
+MdsApiChannelGroupT = _SGeneralClientChannelGroup
+MdsApiAddrInfoT = _SGeneralClientAddrInfo
+MdsApiRemoteCfgT = _SGeneralClientRemoteCfg
+MdsApiSubscribeInfoT = _MdsMktDataRequestReqBuf
+MdsApiClientCfgT = _MdsApiClientCfg
+MdsApiClientEnvT = _MdsApiClientEnv
+F_MDSAPI_ONMSG_T = Callable[[_SGeneralClientChannel,_SMsgHead,Any,Any], int]
+F_MDSAPI_ON_QRY_MSG_T = Callable[[_SGeneralClientChannel,_SMsgHead,Any,_MdsQryCursor,Any], int]
+OES_APPL_VER_ID: str
+OES_MIN_APPL_VER_ID: str
+OESAPI_CFG_DEFAULT_SECTION: str
+OESAPI_CFG_DEFAULT_SECTION_LOGGER: str
+OESAPI_CFG_DEFAULT_KEY_ORD_ADDR: str
+OESAPI_CFG_DEFAULT_KEY_RPT_ADDR: str
+OESAPI_CFG_DEFAULT_KEY_QRY_ADDR: str
+OESAPI_DEFAULT_STRING_DELIM: str
+MDS_APPL_VER_ID: str
+MDS_MIN_APPL_VER_ID: str
+MDSAPI_CFG_DEFAULT_SECTION: str
+MDSAPI_CFG_DEFAULT_SECTION_LOGGER: str
+MDSAPI_CFG_DEFAULT_KEY_TCP_ADDR: str
+MDSAPI_CFG_DEFAULT_KEY_QRY_ADDR: str
+MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L1: str
+MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L2: str
+MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK1: str
+MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK2: str
+MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_TRADE: str
+MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_ORDER: str
+MDSAPI_DEFAULT_STRING_DELIM: str
+def __SPlatform_GetErrno()->int:
+    ...
+def __SPlatform_GetNegErrno()->int:
+    ...
+def __SPlatform_SetErrno(err: int)->None:
+    ...
+def __SPlatform_IsErrEagain(err: int)->int:
+    ...
+def __SPlatform_IsErrEconnaborted(err: int)->int:
+    ...
+def __SPlatform_IsErrEtimeout(err: int)->int:
+    ...
+def __SPlatform_IsErrEpipe(err: int)->int:
+    ...
+def __SPlatform_IsErrEintr(err: int)->int:
+    ...
+def __SPlatform_IsErrEbadmsg(err: int)->int:
+    ...
+def __SPlatform_IsNegEagain(err: int)->int:
+    ...
+def __SPlatform_IsNegEconnaborted(err: int)->int:
+    ...
+def __SPlatform_IsNegEtimeout(err: int)->int:
+    ...
+def __SPlatform_IsNegEpipe(err: int)->int:
+    ...
+def __SPlatform_IsNegEintr(err: int)->int:
+    ...
+def __SPlatform_IsNegEbadmsg(err: int)->int:
+    ...
+def OesApi_SendOrderReq(pOrdChannel: _SGeneralClientChannel, pOrdReq: _OesOrdReq)->int:
+    ...
+def OesApi_SendOrderCancelReq(pOrdChannel: _SGeneralClientChannel, pCancelReq: _OesOrdCancelReq)->int:
+    ...
+def OesApi_SendBatchOrdersReq2(pOrdChannel: _SGeneralClientChannel, pOrdReqArray: _OesOrdReq, ordCount: int)->int:
+    ...
+def OesApi_SendFundTransferReq(pOrdChannel: _SGeneralClientChannel, pFundTrsfReq: _OesFundTrsfReq)->int:
+    ...
+def OesApi_SendChangePasswordReq(pOrdChannel: _SGeneralClientChannel, pChangePasswordReq: _OesChangePasswordReq, pOutChangePasswordRsp: _OesChangePasswordRsp)->int:
+    ...
+def OesApi_WaitReportMsg(pRptChannel: _SGeneralClientChannel, timeoutMs: int, pRptMsgCallback: List[str])->int:
+    ...
+def OesApi_RecvReportMsg(pRptChannel: _SGeneralClientChannel, pOutMsgHead: _SMsgHead, pOutMsgBody: _OesRspMsgBody, bufSize: int, timeoutMs: int)->int:
+    ...
+def OesApi_GetApiVersion()->str:
+    ...
+def OesApi_GetTradingDay(pQryChannel: _SGeneralClientChannel)->int:
+    ...
+def OesApi_GetClientOverview(pQryChannel: _SGeneralClientChannel, pClientOverview: _OesClientOverview)->int:
+    ...
+def OesApi_QuerySingleOrder(pQryChannel: _SGeneralClientChannel, clSeqNo: int, pOrdItem: _OesOrdCnfm)->int:
+    ...
+def OesApi_QuerySingleCashAsset(pQryChannel: _SGeneralClientChannel, pCashAcctId: str, pCashAssetItem: _OesCashAssetItem)->int:
+    ...
+def OesApi_QuerySingleStkHolding(pQryChannel: _SGeneralClientChannel, pInvAcctId: str, pSecurityId: str, pHoldingItem: _OesStkHoldingItem)->int:
+    ...
+def OesApi_QuerySingleOptHolding(pQryChannel: _SGeneralClientChannel, pInvAcctId: str, pSecurityId: str, pHoldingItem: _OesOptHoldingItem)->int:
+    ...
+def OesApi_QueryOrder(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryOrdFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryTrade(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryTrdFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryCashAsset(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryCashAssetFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryStkHolding(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryStkHoldingFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryOptHolding(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryStkHoldingFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryLotWinning(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryLotWinningFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryCustInfo(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryCustFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryInvAcct(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryInvAcctFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryCommissionRate(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryCommissionRateFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryFundTransferSerial(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryFundTransferSerialFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryIssue(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryIssueFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryStock(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryStockFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryEtf(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryEtfFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryEtfComponent(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryEtfComponentFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryOption(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryOptionFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryMarketState(pQryChannel: _SGeneralClientChannel, pQryFilter: _OesQryMarketStateFilter, pQryMsgCallback: List[str])->int:
+    ...
+def OesApi_QueryCounterCash(pQryChannel: _SGeneralClientChannel, pCashAcctId: str, pCounterCashItem: _OesCounterCashItem)->int:
+    ...
+def OesApi_Logon(pOutSessionInfo: _SGeneralClientChannel, channelType: _eOesApiChannelType, pUri: str, pUsername: str, pPassword: str, clEnvId: str, heartBtInt: int, pSocketOptions: _SSocketOptionConfig)->int:
+    ...
+def OesApi_LogonReplicaSet(pOutSessionInfo: _SGeneralClientChannel, channelType: _eOesApiChannelType, pUriList: str, pUsername: str, pPassword: str, clEnvId: str, heartBtInt: int, pSocketOptions: _SSocketOptionConfig)->int:
+    ...
+def OesApi_LogonPeerNodes(pOutSessionInfo: _SGeneralClientChannel, channelType: _eOesApiChannelType, pUriList: str, pUsername: str, pPassword: str, clEnvId: str, heartBtInt: int, pSocketOptions: _SSocketOptionConfig)->int:
+    ...
+def OesApi_SendReportSynchronization(pRptChannel: _SGeneralClientChannel, subscribeEnvId: str, subscribeRptTypes: int, lastRptSeqNum: int)->int:
+    ...
+def OesApi_SendHeartbeat(pSessionInfo: _SGeneralClientChannel)->int:
+    ...
+def OesApi_TestOrdChannel(pOrdChannel: _SGeneralClientChannel, pTestReqId: str, testReqIdSize: int)->int:
+    ...
+def OesApi_TestOrdChannel2(pOrdChannel: _SGeneralClientChannel, pTestReq: _OesTestRequestReq, pOutTestRsp: _OesTestRequestRsp)->int:
+    ...
+def OesApi_TestRptChannel(pRptChannel: _SGeneralClientChannel, pTestReqId: str, testReqIdSize: int)->int:
+    ...
+def OesApi_TestRptChannel2(pRptChannel: _SGeneralClientChannel, pTestReq: _OesTestRequestReq)->int:
+    ...
+def OesApi_Logout(pSessionInfo: _SGeneralClientChannel, isDestory: int)->int:
+    ...
+def OesApi_Destory(pSessionInfo: _SGeneralClientChannel)->None:
+    ...
+def OesApi_InitAll(pOutCliEnv: _OesApiClientEnv, pCfgFile: str, pLoggerSection: str, pCfgSection: str, pOrdAddrKey: str, pRptAddrKey: str, pQryAddrKey: str, lastRptSeqNum: int, pLastClSeqNo: int)->Tuple[int,int]:
+    return "retv","pLastClSeqNo"
+def OesApi_InitAllByConvention(pOutCliEnv: _OesApiClientEnv, pCfgFile: str, lastRptSeqNum: int, pLastClSeqNo: int)->Tuple[int,int]:
+    return "retv","pLastClSeqNo"
+def OesApi_InitAllByCfgStruct(pOutCliEnv: _OesApiClientEnv, pClientCfg: _OesApiClientCfg, lastRptSeqNum: int, pLastClSeqNo: int)->Tuple[int,int]:
+    return "retv","pLastClSeqNo"
+def OesApi_LogoutAll(pCliEnv: _OesApiClientEnv, isDestory: int)->None:
+    ...
+def OesApi_DestoryAll(pCliEnv: _OesApiClientEnv)->None:
+    ...
+def OesApi_InitLogger(pCfgFile: str, pLoggerSection: str)->int:
+    ...
+def OesApi_ResetThreadLoggerName(pLogSystemName: str)->int:
+    ...
+def OesApi_InitOrdChannel(pOrdChannel: _SGeneralClientChannel, pCfgFile: str, pCfgSection: str, pAddrKey: str, pLastClSeqNo: int)->Tuple[int,int]:
+    return "retv","pLastClSeqNo"
+def OesApi_InitOrdChannel2(pOrdChannel: _SGeneralClientChannel, pRemoteCfg: _SGeneralClientRemoteCfg, pLastClSeqNo: int)->Tuple[int,int]:
+    return "retv","pLastClSeqNo"
+def OesApi_InitRptChannel(pRptChannel: _SGeneralClientChannel, pCfgFile: str, pCfgSection: str, pAddrKey: str, lastRptSeqNum: int)->int:
+    ...
+def OesApi_InitRptChannel2(pRptChannel: _SGeneralClientChannel, pRemoteCfg: _SGeneralClientRemoteCfg, pSubscribeInfo: _OesApiSubscribeInfo, lastRptSeqNum: int)->int:
+    ...
+def OesApi_InitQryChannel(pQryChannel: _SGeneralClientChannel, pCfgFile: str, pCfgSection: str, pAddrKey: str)->int:
+    ...
+def OesApi_InitQryChannel2(pQryChannel: _SGeneralClientChannel, pRemoteCfg: _SGeneralClientRemoteCfg)->int:
+    ...
+def OesApi_ParseAddrListString(pUriList: str, pOutAddrList: _SGeneralClientAddrInfo, addrListLength: int)->int:
+    ...
+def OesApi_ParseConfigFromFile(pCfgFile: str, pSection: str, pAddrKey: str, pOutRemoteCfg: _SGeneralClientRemoteCfg, pOutSubscribeInfo: _OesApiSubscribeInfo)->int:
+    ...
+def OesApi_ParseAllConfig(pCfgFile: str, pOutApiCfg: _OesApiClientCfg)->int:
+    ...
+def OesApi_InitChannelGroup(pChannelGroup: _SGeneralClientChannelGroup)->int:
+    ...
+def OesApi_DestoryChannelGroup(pChannelGroup: _SGeneralClientChannelGroup)->int:
+    ...
+def OesApi_AddToChannelGroup(pChannelGroup: _SGeneralClientChannelGroup, pChannel: _SGeneralClientChannel)->int:
+    ...
+def OesApi_DeleteFromChannelGroup(pChannelGroup: _SGeneralClientChannelGroup, pTargetChanne: _SGeneralClientChannel)->int:
+    ...
+def OesApi_GetFromChannelGroup(pChannelGroup: _SGeneralClientChannelGroup, index: int)->_SGeneralClientChannel:
+    ...
+def OesApi_GetFromChannelGroupBySocket(pChannelGroup: _SGeneralClientChannelGroup, socketFd: int)->_SGeneralClientChannel:
+    ...
+def OesApi_ForeachInChannelGroup(pChannelGroup: _SGeneralClientChannelGroup, fnCallback: List[str])->int:
+    ...
+def OesApi_SetThreadUsername(pUsername: str)->None:
+    ...
+def OesApi_GetThreadUsername()->str:
+    ...
+def OesApi_SetThreadPassword(pPassword: str)->None:
+    ...
+def OesApi_SetThreadEnvId(clEnvId: str)->None:
+    ...
+def OesApi_GetThreadEnvId()->str:
+    ...
+def OesApi_SetThreadSubscribeEnvId(subscribeEnvId: str)->None:
+    ...
+def OesApi_GetThreadSubscribeEnvId()->str:
+    ...
+def OesApi_SetCustomizedIpAndMac(pIpStr: str, pMacStr: str)->int:
+    ...
+def OesApi_SetCustomizedIp(pIpStr: str)->int:
+    ...
+def OesApi_SetCustomizedMac(pMacStr: str)->int:
+    ...
+def OesApi_GetCustomizedIp()->str:
+    ...
+def OesApi_GetCustomizedMac()->str:
+    ...
+def OesApi_SetCustomizedDriverId(pDriverId: str)->int:
+    ...
+def OesApi_GetCustomizedDriverId()->str:
+    ...
+def OesApi_GetClEnvId(pChannel: _SGeneralClientChannel)->str:
+    ...
+def OesApi_GetLastRecvTime(pChannel: _SGeneralClientChannel)->int:
+    ...
+def OesApi_GetLastSendTime(pChannel: _SGeneralClientChannel)->int:
+    ...
+def OesApi_HasMoreCachedData(pRptChannel: _SGeneralClientChannel)->int:
+    ...
+def OesApi_IsValidOrdChannel(pOrdChannel: _SGeneralClientChannel)->int:
+    ...
+def OesApi_IsValidRptChannel(pRptChannel: _SGeneralClientChannel)->int:
+    ...
+def OesApi_IsValidQryChannel(pQryChannel: _SGeneralClientChannel)->int:
+    ...
+def OesApi_IsValidChannelGroup(pChannelGroup: _SGeneralClientChannelGroup)->int:
+    ...
+def OesApi_GetLastError()->int:
+    ...
+def OesApi_SetLastError(errCode: int)->None:
+    ...
+def OesApi_GetErrorMsg(errCode: int)->str:
+    ...
+def OesApi_GetErrorMsg2(status: int, detailStatus: int)->str:
+    ...
+def OesHelper_ExtractOrdReportFromTrd(pTrdReport: _OesTrdCnfm, pOutOrdReport: _OesOrdCnfm)->_OesOrdCnfm:
+    ...
+def MdsApi_Logon(pOutSessionInfo: _SGeneralClientChannel, channelType: _eMdsApiChannelType, pUri: str, pUsername: str, pPassword: str, heartBtInt: int, pSocketOptions: _SSocketOptionConfig)->int:
+    ...
+def MdsApi_LogonReplicaSet(pOutSessionInfo: _SGeneralClientChannel, channelType: _eMdsApiChannelType, pUriList: str, pUsername: str, pPassword: str, heartBtInt: int, pSocketOptions: _SSocketOptionConfig)->int:
+    ...
+def MdsApi_LogonPeerNodes(pOutSessionInfo: _SGeneralClientChannel, channelType: _eMdsApiChannelType, pUriList: str, pUsername: str, pPassword: str, heartBtInt: int, pSocketOptions: _SSocketOptionConfig)->int:
+    ...
+def MdsApi_SyncSubscribeOnLogon(pSessionInfo: _SGeneralClientChannel, pMktDataRequestReq: _MdsMktDataRequestReq, pEntries: _MdsMktDataRequestEntry)->int:
+    ...
+def MdsApi_SubscribeMarketData(pSessionInfo: _SGeneralClientChannel, pMktDataRequestReq: _MdsMktDataRequestReq, pEntries: _MdsMktDataRequestEntry)->int:
+    ...
+def MdsApi_SubscribeByString(pTcpChannel: _SGeneralClientChannel, pSecurityListStr: str, pDelim: str, exchangeId: _eMdsExchangeId, mdProductType: _eMdsMdProductType, subMode: _eMdsSubscribeMode, dataTypes: int)->int:
+    ...
+def MdsApi_SubscribeByString2(pTcpChannel: _SGeneralClientChannel, ppSecurityArray: List[str], exchangeId: _eMdsExchangeId, mdProductType: _eMdsMdProductType, subMode: _eMdsSubscribeMode, dataTypes: int)->int:
+    ...
+def MdsApi_SubscribeByStringAndPrefixes(pTcpChannel: _SGeneralClientChannel, pSecurityListStr: str, pDelim: str, pSseCodePrefixes: str, pSzseCodePrefixes: str, mdProductType: _eMdsMdProductType, subMode: _eMdsSubscribeMode, dataTypes: int)->int:
+    ...
+def MdsApi_SubscribeByStringAndPrefixes2(pTcpChannel: _SGeneralClientChannel, ppSecurityArray: List[str], pSseCodePrefixes: str, pSzseCodePrefixes: str, mdProductType: _eMdsMdProductType, subMode: _eMdsSubscribeMode, dataTypes: int)->int:
+    ...
+def MdsApi_SendHeartbeat(pSessionInfo: _SGeneralClientChannel)->int:
+    ...
+def MdsApi_SendTestRequest(pSessionInfo: _SGeneralClientChannel, pTestReqId: str, testReqIdSize: int)->int:
+    ...
+def MdsApi_Logout(pSessionInfo: _SGeneralClientChannel, isDestory: int)->int:
+    ...
+def MdsApi_Destory(pSessionInfo: _SGeneralClientChannel)->None:
+    ...
+def MdsApi_WaitOnMsg(pTcpChannel: _SGeneralClientChannel, timeoutMs: int, pOnMsgCallback: List[str])->int:
+    ...
+def MdsApi_WaitOnMsgCompressible(pTcpChannel: _SGeneralClientChannel, timeoutMs: int, pOnMsgCallback: List[str])->int:
+    ...
+def MdsApi_GetApiVersion()->str:
+    ...
+def MdsApi_QueryMktDataSnapshot(pQryChannel: _SGeneralClientChannel, exchangeId: _eMdsExchangeId, mdProductType: _eMdsMdProductType, instrId: int, pRspBuf: _MdsMktDataSnapshot)->int:
+    ...
+def MdsApi_QuerySecurityStatus(pQryChannel: _SGeneralClientChannel, exchangeId: _eMdsExchangeId, mdProductType: _eMdsMdProductType, instrId: int, pRspBuf: _MdsSecurityStatusMsg)->int:
+    ...
+def MdsApi_QueryTrdSessionStatus(pQryChannel: _SGeneralClientChannel, exchangeId: _eMdsExchangeId, mdProductType: _eMdsMdProductType, pRspBuf: _MdsTradingSessionStatusMsg)->int:
+    ...
+def MdsApi_QueryStockStaticInfo(pQryChannel: _SGeneralClientChannel, pQryFilter: _MdsQryStockStaticInfoFilter, pQryMsgCallback: List[str])->int:
+    ...
+def MdsApi_QuerySnapshotList(pQryChannel: _SGeneralClientChannel, pSecurityListStr: str, pDelim: str, pQryFilter: _MdsQrySnapshotListFilter, pQryMsgCallback: List[str])->int:
+    ...
+def MdsApi_QuerySnapshotList2(pQryChannel: _SGeneralClientChannel, ppSecurityArray: List[str], pQryFilter: _MdsQrySnapshotListFilter, pQryMsgCallback: List[str])->int:
+    ...
+def MdsApi_SendChangePasswordReq(pQryChannel: _SGeneralClientChannel, pChangePasswordReq: _MdsChangePasswordReq, pOutChangePasswordRsp: _MdsChangePasswordRsp)->int:
+    ...
+def MdsApi_ConnectToUdpMcast(pOutSessionInfo: _SGeneralClientChannel, pUri: str, pSocketOptions: _SSocketOptionConfig)->int:
+    ...
+def MdsApi_WaitOnUdpMsg(pUdpChannel: _SGeneralClientChannel, timeoutMs: int, pOnMsgCallback: List[str])->int:
+    ...
+def MdsApi_InitAll(pOutCliEnv: _MdsApiClientEnv, pCfgFile: str, pLoggerSection: str, pCfgSection: str, pTcpAddrKey: str, pQryAddrKey: str, pUdpL1AddrKey: str, pUdpL2AddrKey: str, pUdpTick1AddrKey: str, pUdpTick2AddrKey: str)->int:
+    ...
+def MdsApi_InitAllByConvention(pOutCliEnv: _MdsApiClientEnv, pCfgFile: str)->int:
+    ...
+def MdsApi_InitAllByCfgStruct(pOutCliEnv: _MdsApiClientEnv, pClientCfg: _MdsApiClientCfg)->int:
+    ...
+def MdsApi_LogoutAll(pCliEnv: _MdsApiClientEnv, isDestory: int)->None:
+    ...
+def MdsApi_DestoryAll(pCliEnv: _MdsApiClientEnv)->None:
+    ...
+def MdsApi_InitLogger(pCfgFile: str, pLoggerSection: str)->int:
+    ...
+def MdsApi_ResetThreadLoggerName(pLogSystemName: str)->int:
+    ...
+def MdsApi_InitTcpChannel(pTcpChannel: _SGeneralClientChannel, pCfgFile: str, pCfgSection: str, pAddrKey: str)->int:
+    ...
+def MdsApi_InitTcpChannel2(pTcpChannel: _SGeneralClientChannel, pRemoteCfg: _SGeneralClientRemoteCfg, pSubscribeInfo: _MdsMktDataRequestReqBuf)->int:
+    ...
+def MdsApi_InitQryChannel(pQryChannel: _SGeneralClientChannel, pCfgFile: str, pCfgSection: str, pAddrKey: str)->int:
+    ...
+def MdsApi_InitQryChannel2(pQryChannel: _SGeneralClientChannel, pRemoteCfg: _SGeneralClientRemoteCfg)->int:
+    ...
+def MdsApi_InitUdpChannel(pUdpChannel: _SGeneralClientChannel, pCfgFile: str, pCfgSection: str, pAddrKey: str)->int:
+    ...
+def MdsApi_InitUdpChannel2(pUdpChannel: _SGeneralClientChannel, pRemoteCfg: _SGeneralClientRemoteCfg)->int:
+    ...
+def MdsApi_ParseAddrListString(pUriList: str, pOutAddrList: _SGeneralClientAddrInfo, addrListLength: int)->int:
+    ...
+def MdsApi_ParseConfigFromFile(pCfgFile: str, pSection: str, pAddrKey: str, pOutRemoteCfg: _SGeneralClientRemoteCfg, pOutSubscribeInfo: _MdsMktDataRequestReqBuf)->int:
+    ...
+def MdsApi_ParseAllConfig(pCfgFile: str, pOutApiCfg: _MdsApiClientCfg)->int:
+    ...
+def MdsApi_InitChannelGroup(pChannelGroup: _SGeneralClientChannelGroup)->int:
+    ...
+def MdsApi_DestoryChannelGroup(pChannelGroup: _SGeneralClientChannelGroup)->int:
+    ...
+def MdsApi_AddToChannelGroup(pChannelGroup: _SGeneralClientChannelGroup, pChannel: _SGeneralClientChannel)->int:
+    ...
+def MdsApi_DeleteFromChannelGroup(pChannelGroup: _SGeneralClientChannelGroup, pTargetChanne: _SGeneralClientChannel)->int:
+    ...
+def MdsApi_GetFromChannelGroup(pChannelGroup: _SGeneralClientChannelGroup, index: int)->_SGeneralClientChannel:
+    ...
+def MdsApi_GetFromChannelGroupBySocket(pChannelGroup: _SGeneralClientChannelGroup, socketFd: int)->_SGeneralClientChannel:
+    ...
+def MdsApi_ForeachInChannelGroup(pChannelGroup: _SGeneralClientChannelGroup, fnCallback: List[str])->int:
+    ...
+def MdsApi_SetThreadUsername(pUsername: str)->None:
+    ...
+def MdsApi_GetThreadUsername()->str:
+    ...
+def MdsApi_SetThreadPassword(pPassword: str)->None:
+    ...
+def MdsApi_SetCustomizedIp(pIpStr: str)->int:
+    ...
+def MdsApi_SetCustomizedMac(pMacStr: str)->int:
+    ...
+def MdsApi_GetCustomizedIp()->str:
+    ...
+def MdsApi_GetCustomizedMac()->str:
+    ...
+def MdsApi_SetCustomizedDriverId(pDriverId: str)->int:
+    ...
+def MdsApi_GetCustomizedDriverId()->str:
+    ...
+def MdsApi_GetLastRecvTime(pSessionInfo: _SGeneralClientChannel)->int:
+    ...
+def MdsApi_GetLastSendTime(pSessionInfo: _SGeneralClientChannel)->int:
+    ...
+def MdsApi_HasMoreCachedData(pTcpChannel: _SGeneralClientChannel)->int:
+    ...
+def MdsApi_IsValidTcpChannel(pTcpChannel: _SGeneralClientChannel)->int:
+    ...
+def MdsApi_IsValidQryChannel(pQryChannel: _SGeneralClientChannel)->int:
+    ...
+def MdsApi_IsValidUdpChannel(pUdpChannel: _SGeneralClientChannel)->int:
+    ...
+def MdsApi_IsValidChannelGroup(pChannelGroup: _SGeneralClientChannelGroup)->int:
+    ...
+def MdsApi_GetLastError()->int:
+    ...
+def MdsApi_SetLastError(errCode: int)->None:
+    ...
+def MdsApi_GetErrorMsg(errCode: int)->str:
+    ...
+def MdsApi_GetErrorMsg2(status: int, detailStatus: int)->str:
+    ...
+def MdsHelper_SetTickTypeOnSubscribeByString(tickType: _eMdsSubscribedTickType)->None:
+    ...
+def MdsHelper_ClearSubscribeRequestEntries(pSubscribeInfo: _MdsMktDataRequestReqBuf)->None:
+    ...
+def MdsHelper_SetSubscribeRequestMode(pSubscribeInfo: _MdsMktDataRequestReqBuf, subMode: _eMdsSubscribeMode)->None:
+    ...
+def MdsHelper_SetSubscribeRequestTickType(pSubscribeInfo: _MdsMktDataRequestReqBuf, tickType: _eMdsSubscribedTickType)->None:
+    ...
+def MdsHelper_SetSubscribeRequestDataTypes(pSubscribeInfo: _MdsMktDataRequestReqBuf, dataTypes: int)->None:
+    ...
+def MdsHelper_SetSubscribeRequestSubFlag(pSubscribeInfo: _MdsMktDataRequestReqBuf, exchangeId: _eMdsExchangeId, mdProductType: _eMdsMdProductType, subFlag: _eMdsMktSubscribeFlag)->None:
+    ...
+def MdsHelper_AddSubscribeRequestEntry(pSubscribeInfo: _MdsMktDataRequestReqBuf, exchangeId: _eMdsExchangeId, mdProductType: _eMdsMdProductType, securityId: int)->int:
     ...
-
-
-def SPlatform_GetErrno(
-    )->int:
-    ...
-
-def SPlatform_GetNegErrno(
-    )->int:
-    ...
-
-def SPlatform_SetErrno(
-        err: int,
-    )->Any:
-    ...
-
-def SPlatform_IsErrEagain(
-        err: int,
-    )->int:
-    ...
-
-def SPlatform_IsErrEconnaborted(
-        err: int,
-    )->int:
-    ...
-
-def SPlatform_IsErrEtimeout(
-        err: int,
-    )->int:
-    ...
-
-def SPlatform_IsErrEpipe(
-        err: int,
-    )->int:
-    ...
-
-def SPlatform_IsErrEintr(
-        err: int,
-    )->int:
-    ...
-
-def SPlatform_IsErrEbadmsg(
-        err: int,
-    )->int:
-    ...
-
-def SPlatform_IsNegEagain(
-        err: int,
-    )->int:
-    ...
-
-def SPlatform_IsNegEconnaborted(
-        err: int,
-    )->int:
-    ...
-
-def SPlatform_IsNegEtimeout(
-        err: int,
-    )->int:
-    ...
-
-def SPlatform_IsNegEpipe(
-        err: int,
-    )->int:
-    ...
-
-def SPlatform_IsNegEintr(
-        err: int,
-    )->int:
-    ...
-
-def SPlatform_IsNegEbadmsg(
-        err: int,
-    )->int:
-    ...
-
-def OesApi_SendOrderReq(
-        pOrdChannel: SGeneralClientChannelT,
-        pOrdReq: OesOrdReqT,
-    )->int:
-    ...
-
-def OesApi_SendOrderCancelReq(
-        pOrdChannel: SGeneralClientChannelT,
-        pCancelReq: OesOrdCancelReqT,
-    )->int:
-    ...
-
-def OesApi_SendBatchOrdersReq2(
-        pOrdChannel: SGeneralClientChannelT,
-        pOrdReqArray: OesOrdReqT,
-        ordCount: int,
-    )->int:
-    ...
-
-def OesApi_SendFundTransferReq(
-        pOrdChannel: SGeneralClientChannelT,
-        pFundTrsfReq: OesFundTrsfReqT,
-    )->int:
-    ...
-
-def OesApi_SendChangePasswordReq(
-        pOrdChannel: SGeneralClientChannelT,
-        pChangePasswordReq: OesChangePasswordReqT,
-        pOutChangePasswordRsp: OesChangePasswordRspT,
-    )->int:
-    ...
-
-def OesApi_WaitReportMsg(
-        pRptChannel: SGeneralClientChannelT,
-        timeoutMs: int,
-        pRptMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,Any], int],
-    )->int:
-    ...
-
-def OesApi_GetApiVersion(
-    )->str:
-    ...
-
-def OesApi_GetTradingDay(
-        pQryChannel: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def OesApi_GetClientOverview(
-        pQryChannel: SGeneralClientChannelT,
-        pClientOverview: OesClientOverviewT,
-    )->int:
-    ...
-
-def OesApi_QuerySingleOrder(
-        pQryChannel: SGeneralClientChannelT,
-        clSeqNo: int,
-        pOrdItem: OesOrdCnfmT,
-    )->int:
-    ...
-
-def OesApi_QuerySingleCashAsset(
-        pQryChannel: SGeneralClientChannelT,
-        pCashAcctId: str,
-        pCashAssetItem: OesCashAssetItemT,
-    )->int:
-    ...
-
-def OesApi_QuerySingleStkHolding(
-        pQryChannel: SGeneralClientChannelT,
-        pInvAcctId: str,
-        pSecurityId: str,
-        pHoldingItem: OesStkHoldingItemT,
-    )->int:
-    ...
-
-def OesApi_QuerySingleOptHolding(
-        pQryChannel: SGeneralClientChannelT,
-        pInvAcctId: str,
-        pSecurityId: str,
-        pHoldingItem: OesOptHoldingItemT,
-    )->int:
-    ...
-
-def OesApi_QueryOrder(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryOrdFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryTrade(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryTrdFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryCashAsset(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryCashAssetFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryStkHolding(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryStkHoldingFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryOptHolding(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryStkHoldingFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryLotWinning(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryLotWinningFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryCustInfo(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryCustFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryInvAcct(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryInvAcctFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryCommissionRate(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryCommissionRateFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryFundTransferSerial(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryFundTransferSerialFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryIssue(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryIssueFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryStock(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryStockFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryEtf(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryEtfFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryEtfComponent(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryEtfComponentFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryOption(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryOptionFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryMarketState(
-        pQryChannel: SGeneralClientChannelT,
-        pQryFilter: OesQryMarketStateFilterT,
-        pQryMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,OesQryCursorT,Any], int],
-    )->int:
-    ...
-
-def OesApi_QueryCounterCash(
-        pQryChannel: SGeneralClientChannelT,
-        pCashAcctId: str,
-        pCounterCashItem: OesCounterCashItemT,
-    )->int:
-    ...
-
-def OesApi_Logon(
-        pOutSessionInfo: SGeneralClientChannelT,
-        channelType: eOesApiChannelTypeT,
-        pUri: str,
-        pUsername: str,
-        pPassword: str,
-        clEnvId: int,
-        heartBtInt: int,
-        pSocketOptions: SSocketOptionConfigT,
-    )->int:
-    ...
-
-def OesApi_LogonReplicaSet(
-        pOutSessionInfo: SGeneralClientChannelT,
-        channelType: eOesApiChannelTypeT,
-        pUriList: str,
-        pUsername: str,
-        pPassword: str,
-        clEnvId: int,
-        heartBtInt: int,
-        pSocketOptions: SSocketOptionConfigT,
-    )->int:
-    ...
-
-def OesApi_LogonPeerNodes(
-        pOutSessionInfo: SGeneralClientChannelT,
-        channelType: eOesApiChannelTypeT,
-        pUriList: str,
-        pUsername: str,
-        pPassword: str,
-        clEnvId: int,
-        heartBtInt: int,
-        pSocketOptions: SSocketOptionConfigT,
-    )->int:
-    ...
-
-def OesApi_SendReportSynchronization(
-        pRptChannel: SGeneralClientChannelT,
-        subscribeEnvId: int,
-        subscribeRptTypes: int,
-        lastRptSeqNum: int,
-    )->int:
-    ...
-
-def OesApi_SendHeartbeat(
-        pSessionInfo: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def OesApi_TestOrdChannel(
-        pOrdChannel: SGeneralClientChannelT,
-        pTestReqId: str,
-        testReqIdSize: int,
-    )->int:
-    ...
-
-def OesApi_TestOrdChannel2(
-        pOrdChannel: SGeneralClientChannelT,
-        pTestReq: OesTestRequestReqT,
-        pOutTestRsp: OesTestRequestRspT,
-    )->int:
-    ...
-
-def OesApi_TestRptChannel(
-        pRptChannel: SGeneralClientChannelT,
-        pTestReqId: str,
-        testReqIdSize: int,
-    )->int:
-    ...
-
-def OesApi_TestRptChannel2(
-        pRptChannel: SGeneralClientChannelT,
-        pTestReq: OesTestRequestReqT,
-    )->int:
-    ...
-
-def OesApi_Logout(
-        pSessionInfo: SGeneralClientChannelT,
-        isDestory: int,
-    )->int:
-    ...
-
-def OesApi_Destory(
-        pSessionInfo: SGeneralClientChannelT,
-    )->Any:
-    ...
-
-def OesApi_InitAll(
-        pOutCliEnv: OesApiClientEnvT,
-        pCfgFile: str,
-        pLoggerSection: str,
-        pCfgSection: str,
-        pOrdAddrKey: str,
-        pRptAddrKey: str,
-        pQryAddrKey: str,
-        lastRptSeqNum: int,
-        pLastClSeqNo: int,
-    )->int:
-    ...
-
-def OesApi_InitAllByConvention(
-        pOutCliEnv: OesApiClientEnvT,
-        pCfgFile: str,
-        lastRptSeqNum: int,
-        pLastClSeqNo: int,
-    )->int:
-    ...
-
-def OesApi_LogoutAll(
-        pCliEnv: OesApiClientEnvT,
-        isDestory: int,
-    )->Any:
-    ...
-
-def OesApi_DestoryAll(
-        pCliEnv: OesApiClientEnvT,
-    )->Any:
-    ...
-
-def OesApi_InitLogger(
-        pCfgFile: str,
-        pLoggerSection: str,
-    )->int:
-    ...
-
-def OesApi_ResetThreadLoggerName(
-        pLogSystemName: str,
-    )->int:
-    ...
-
-def OesApi_InitOrdChannel(
-        pOrdChannel: SGeneralClientChannelT,
-        pCfgFile: str,
-        pCfgSection: str,
-        pAddrKey: str,
-        pLastClSeqNo: int,
-    )->int:
-    ...
-
-def OesApi_InitOrdChannel2(
-        pOrdChannel: SGeneralClientChannelT,
-        pRemoteCfg: SGeneralClientRemoteCfgT,
-        pLastClSeqNo: int,
-    )->int:
-    ...
-
-def OesApi_InitRptChannel(
-        pRptChannel: SGeneralClientChannelT,
-        pCfgFile: str,
-        pCfgSection: str,
-        pAddrKey: str,
-        lastRptSeqNum: int,
-    )->int:
-    ...
-
-def OesApi_InitRptChannel2(
-        pRptChannel: SGeneralClientChannelT,
-        pRemoteCfg: SGeneralClientRemoteCfgT,
-        pSubscribeInfo: OesApiSubscribeInfoT,
-        lastRptSeqNum: int,
-    )->int:
-    ...
-
-def OesApi_InitQryChannel(
-        pQryChannel: SGeneralClientChannelT,
-        pCfgFile: str,
-        pCfgSection: str,
-        pAddrKey: str,
-    )->int:
-    ...
-
-def OesApi_InitQryChannel2(
-        pQryChannel: SGeneralClientChannelT,
-        pRemoteCfg: SGeneralClientRemoteCfgT,
-    )->int:
-    ...
-
-def OesApi_ParseAddrListString(
-        pUriList: str,
-        pOutAddrList: SGeneralClientAddrInfoT,
-        addrListLength: int,
-    )->int:
-    ...
-
-def OesApi_ParseConfigFromFile(
-        pCfgFile: str,
-        pSection: str,
-        pAddrKey: str,
-        pOutRemoteCfg: SGeneralClientRemoteCfgT,
-        pOutSubscribeInfo: OesApiSubscribeInfoT,
-    )->int:
-    ...
-
-def OesApi_ParseAllConfig(
-        pCfgFile: str,
-        pOutApiCfg: OesApiClientCfgT,
-    )->int:
-    ...
-
-def OesApi_InitChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-    )->int:
-    ...
-
-def OesApi_DestoryChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-    )->int:
-    ...
-
-def OesApi_AddToChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-        pChannel: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def OesApi_DeleteFromChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-        pTargetChanne: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def OesApi_GetFromChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-        index: int,
-    )->SGeneralClientChannelT:
-    ...
-
-def OesApi_GetFromChannelGroupBySocket(
-        pChannelGroup: SGeneralClientChannelGroupT,
-        socketFd: int,
-    )->SGeneralClientChannelT:
-    ...
-
-def OesApi_ForeachInChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-        fnCallback: Callable[[SGeneralClientChannelT], int],
-    )->int:
-    ...
-
-def OesApi_SetThreadUsername(
-        pUsername: str,
-    )->Any:
-    ...
-
-def OesApi_GetThreadUsername(
-    )->str:
-    ...
-
-def OesApi_SetThreadPassword(
-        pPassword: str,
-    )->Any:
-    ...
-
-def OesApi_SetThreadEnvId(
-        clEnvId: int,
-    )->Any:
-    ...
-
-def OesApi_GetThreadEnvId(
-    )->int:
-    ...
-
-def OesApi_SetCustomizedIpAndMac(
-        pIpStr: str,
-        pMacStr: str,
-    )->int:
-    ...
-
-def OesApi_GetCustomizedIp(
-    )->str:
-    ...
-
-def OesApi_GetCustomizedMac(
-    )->str:
-    ...
-
-def OesApi_SetCustomizedDriverId(
-        pDriverId: str,
-    )->int:
-    ...
-
-def OesApi_GetCustomizedDriverId(
-    )->str:
-    ...
-
-def OesApi_GetClEnvId(
-        pChannel: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def OesApi_GetLastRecvTime(
-        pChannel: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def OesApi_GetLastSendTime(
-        pChannel: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def OesApi_HasMoreCachedData(
-        pRptChannel: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def OesApi_IsValidOrdChannel(
-        pOrdChannel: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def OesApi_IsValidRptChannel(
-        pRptChannel: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def OesApi_IsValidQryChannel(
-        pQryChannel: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def OesApi_IsValidChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-    )->int:
-    ...
-
-def OesApi_GetLastError(
-    )->int:
-    ...
-
-def OesApi_SetLastError(
-        errCode: int,
-    )->Any:
-    ...
-
-def OesApi_GetErrorMsg(
-        errCode: int,
-    )->str:
-    ...
-
-def OesApi_GetErrorMsg2(
-        status: int,
-        detailStatus: int,
-    )->str:
-    ...
-
-def MdsApi_Logon(
-        pOutSessionInfo: SGeneralClientChannelT,
-        channelType: eMdsApiChannelTypeT,
-        pUri: str,
-        pUsername: str,
-        pPassword: str,
-        heartBtInt: int,
-        pSocketOptions: SSocketOptionConfigT,
-    )->int:
-    ...
-
-def MdsApi_LogonReplicaSet(
-        pOutSessionInfo: SGeneralClientChannelT,
-        channelType: eMdsApiChannelTypeT,
-        pUriList: str,
-        pUsername: str,
-        pPassword: str,
-        heartBtInt: int,
-        pSocketOptions: SSocketOptionConfigT,
-    )->int:
-    ...
-
-def MdsApi_LogonPeerNodes(
-        pOutSessionInfo: SGeneralClientChannelT,
-        channelType: eMdsApiChannelTypeT,
-        pUriList: str,
-        pUsername: str,
-        pPassword: str,
-        heartBtInt: int,
-        pSocketOptions: SSocketOptionConfigT,
-    )->int:
-    ...
-
-def MdsApi_SyncSubscribeOnLogon(
-        pSessionInfo: SGeneralClientChannelT,
-        pMktDataRequestReq: MdsMktDataRequestReqT,
-        pEntries: MdsMktDataRequestEntryT,
-    )->int:
-    ...
-
-def MdsApi_SubscribeMarketData(
-        pSessionInfo: SGeneralClientChannelT,
-        pMktDataRequestReq: MdsMktDataRequestReqT,
-        pEntries: MdsMktDataRequestEntryT,
-    )->int:
-    ...
-
-def MdsApi_SendHeartbeat(
-        pSessionInfo: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def MdsApi_SendTestRequest(
-        pSessionInfo: SGeneralClientChannelT,
-        pTestReqId: str,
-        testReqIdSize: int,
-    )->int:
-    ...
-
-def MdsApi_Logout(
-        pSessionInfo: SGeneralClientChannelT,
-        isDestory: int,
-    )->int:
-    ...
-
-def MdsApi_Destory(
-        pSessionInfo: SGeneralClientChannelT,
-    )->Any:
-    ...
-
-def MdsApi_WaitOnMsg(
-        pTcpChannel: SGeneralClientChannelT,
-        timeoutMs: int,
-        pOnMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,Any], int],
-    )->int:
-    ...
-
-def MdsApi_WaitOnMsgCompressible(
-        pTcpChannel: SGeneralClientChannelT,
-        timeoutMs: int,
-        pOnMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,Any], int],
-    )->int:
-    ...
-
-def MdsApi_GetApiVersion(
-    )->str:
-    ...
-
-def MdsApi_QueryMktDataSnapshot(
-        pQryChannel: SGeneralClientChannelT,
-        exchangeId: eMdsExchangeIdT,
-        securityType: eMdsSecurityTypeT,
-        instrId: int,
-        pRspBuf: MdsMktDataSnapshotT,
-    )->int:
-    ...
-
-def MdsApi_QuerySecurityStatus(
-        pQryChannel: SGeneralClientChannelT,
-        exchangeId: eMdsExchangeIdT,
-        securityType: eMdsSecurityTypeT,
-        instrId: int,
-        pRspBuf: MdsSecurityStatusMsgT,
-    )->int:
-    ...
-
-def MdsApi_QueryTrdSessionStatus(
-        pQryChannel: SGeneralClientChannelT,
-        exchangeId: eMdsExchangeIdT,
-        securityType: eMdsSecurityTypeT,
-        pRspBuf: MdsTradingSessionStatusMsgT,
-    )->int:
-    ...
-
-def MdsApi_ConnectToUdpMcast(
-        pOutSessionInfo: SGeneralClientChannelT,
-        pUri: str,
-        pSocketOptions: SSocketOptionConfigT,
-    )->int:
-    ...
-
-def MdsApi_WaitOnUdpMsg(
-        pUdpChannel: SGeneralClientChannelT,
-        timeoutMs: int,
-        pOnMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,Any], int],
-    )->int:
-    ...
-
-def MdsApi_InitAll(
-        pOutCliEnv: MdsApiClientEnvT,
-        pCfgFile: str,
-        pLoggerSection: str,
-        pCfgSection: str,
-        pTcpAddrKey: str,
-        pQryAddrKey: str,
-        pUdpL1AddrKey: str,
-        pUdpL2AddrKey: str,
-        pUdpTickTradeAddrKey: str,
-        pUdpTickOrderAddrKey: str,
-    )->int:
-    ...
-
-def MdsApi_InitAllByConvention(
-        pOutCliEnv: MdsApiClientEnvT,
-        pCfgFile: str,
-    )->int:
-    ...
-
-def MdsApi_LogoutAll(
-        pCliEnv: MdsApiClientEnvT,
-        isDestory: int,
-    )->Any:
-    ...
-
-def MdsApi_DestoryAll(
-        pCliEnv: MdsApiClientEnvT,
-    )->Any:
-    ...
-
-def MdsApi_InitLogger(
-        pCfgFile: str,
-        pLoggerSection: str,
-    )->int:
-    ...
-
-def MdsApi_ResetThreadLoggerName(
-        pLogSystemName: str,
-    )->int:
-    ...
-
-def MdsApi_InitTcpChannel(
-        pTcpChannel: SGeneralClientChannelT,
-        pCfgFile: str,
-        pCfgSection: str,
-        pAddrKey: str,
-    )->int:
-    ...
-
-def MdsApi_InitTcpChannel2(
-        pTcpChannel: SGeneralClientChannelT,
-        pRemoteCfg: SGeneralClientRemoteCfgT,
-        pSubscribeInfo: MdsMktDataRequestReqBufT,
-    )->int:
-    ...
-
-def MdsApi_InitQryChannel(
-        pQryChannel: SGeneralClientChannelT,
-        pCfgFile: str,
-        pCfgSection: str,
-        pAddrKey: str,
-    )->int:
-    ...
-
-def MdsApi_InitQryChannel2(
-        pQryChannel: SGeneralClientChannelT,
-        pRemoteCfg: SGeneralClientRemoteCfgT,
-    )->int:
-    ...
-
-def MdsApi_InitUdpChannel(
-        pUdpChannel: SGeneralClientChannelT,
-        pCfgFile: str,
-        pCfgSection: str,
-        pAddrKey: str,
-    )->int:
-    ...
-
-def MdsApi_InitUdpChannel2(
-        pUdpChannel: SGeneralClientChannelT,
-        pRemoteCfg: SGeneralClientRemoteCfgT,
-    )->int:
-    ...
-
-def MdsApi_ParseAddrListString(
-        pUriList: str,
-        pOutAddrList: SGeneralClientAddrInfoT,
-        addrListLength: int,
-    )->int:
-    ...
-
-def MdsApi_ParseConfigFromFile(
-        pCfgFile: str,
-        pSection: str,
-        pAddrKey: str,
-        pOutRemoteCfg: SGeneralClientRemoteCfgT,
-        pOutSubscribeInfo: MdsMktDataRequestReqBufT,
-    )->int:
-    ...
-
-def MdsApi_ParseAllConfig(
-        pCfgFile: str,
-        pOutApiCfg: MdsApiClientCfgT,
-    )->int:
-    ...
-
-def MdsApi_InitChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-    )->int:
-    ...
-
-def MdsApi_DestoryChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-    )->int:
-    ...
-
-def MdsApi_AddToChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-        pChannel: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def MdsApi_DeleteFromChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-        pTargetChanne: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def MdsApi_GetFromChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-        index: int,
-    )->SGeneralClientChannelT:
-    ...
-
-def MdsApi_GetFromChannelGroupBySocket(
-        pChannelGroup: SGeneralClientChannelGroupT,
-        socketFd: int,
-    )->SGeneralClientChannelT:
-    ...
-
-def MdsApi_ForeachInChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-        fnCallback: Callable[[SGeneralClientChannelT], int],
-    )->int:
-    ...
-
-def MdsApi_SetThreadUsername(
-        pUsername: str,
-    )->Any:
-    ...
-
-def MdsApi_GetThreadUsername(
-    )->str:
-    ...
-
-def MdsApi_SetThreadPassword(
-        pPassword: str,
-    )->Any:
-    ...
-
-def MdsApi_GetLastRecvTime(
-        pSessionInfo: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def MdsApi_GetLastSendTime(
-        pSessionInfo: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def MdsApi_HasMoreCachedData(
-        pTcpChannel: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def MdsApi_IsValidTcpChannel(
-        pTcpChannel: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def MdsApi_IsValidQryChannel(
-        pQryChannel: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def MdsApi_IsValidUdpChannel(
-        pUdpChannel: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def MdsApi_IsValidChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-    )->int:
-    ...
-
-def MdsApi_GetLastError(
-    )->int:
-    ...
-
-def MdsApi_SetLastError(
-        errCode: int,
-    )->Any:
-    ...
-
-def MdsApi_GetErrorMsg(
-        errCode: int,
-    )->str:
-    ...
-
-def MdsApi_GetErrorMsg2(
-        status: int,
-        detailStatus: int,
-    )->str:
-    ...
-
-def MdsHelper_SetTickTypeOnSubscribeByString(
-        tickType: eMdsSubscribedTickTypeT,
-    )->Any:
-    ...
-
-def MdsHelper_ClearSubscribeRequestEntries(
-        pSubscribeInfo: MdsMktDataRequestReqBufT,
-    )->Any:
-    ...
-
-def MdsHelper_SetSubscribeRequestMode(
-        pSubscribeInfo: MdsMktDataRequestReqBufT,
-        subMode: eMdsSubscribeModeT,
-    )->Any:
-    ...
-
-def MdsHelper_SetSubscribeRequestTickType(
-        pSubscribeInfo: MdsMktDataRequestReqBufT,
-        tickType: eMdsSubscribedTickTypeT,
-    )->Any:
-    ...
-
-def MdsHelper_SetSubscribeRequestDataTypes(
-        pSubscribeInfo: MdsMktDataRequestReqBufT,
-        dataTypes: int,
-    )->Any:
-    ...
-
-def MdsHelper_SetSubscribeRequestSubFlag(
-        pSubscribeInfo: MdsMktDataRequestReqBufT,
-        exchangeId: eMdsExchangeIdT,
-        securityType: eMdsSecurityTypeT,
-        subFlag: eMdsMktSubscribeFlagT,
-    )->Any:
-    ...
-
-def MdsHelper_AddSubscribeRequestEntry(
-        pSubscribeInfo: MdsMktDataRequestReqBufT,
-        exchangeId: eMdsExchangeIdT,
-        securityType: eMdsSecurityTypeT,
-        securityId: int,
-    )->int:
-    ...
-
-def MdsJsonParser_EncodeReq(
-        pReqHead: SMsgHeadT,
-        pReqBody: MdsMktReqMsgBodyT,
-        pBuf: str,
-        bufSize: int,
-        pRemoteInfo: str,
-    )->Any:
-    ...
-
-def MdsJsonParser_DecodeReq(
-        pReqHead: SMsgHeadT,
-        pMsgBody: Any,
-        pReqMsgBuf: MdsMktReqMsgBodyT,
-        pRemoteInfo: str,
-    )->MdsMktReqMsgBodyT:
-    ...
-
-def MdsJsonParser_EncodeRsp(
-        pRspHead: SMsgHeadT,
-        pRspBody: MdsMktRspMsgBodyT,
-        pBuf: str,
-        bufSize: int,
-        pRemoteInfo: str,
-    )->Any:
-    ...
-
-def MdsJsonParser_EncodeRspSimplify(
-        pRspHead: SMsgHeadT,
-        pRspBody: MdsMktRspMsgBodyT,
-        pBuf: str,
-        bufSize: int,
-        pRemoteInfo: str,
-    )->Any:
-    ...
-
-def MdsJsonParser_DecodeRsp(
-        pRspHead: SMsgHeadT,
-        pMsgBody: Any,
-        pRspMsgBuf: MdsMktRspMsgBodyT,
-        pRemoteInfo: str,
-    )->MdsMktRspMsgBodyT:
-    ...
-
-OES_APPL_VER_ID: str = """0.15.7.4"""
-OES_MIN_APPL_VER_ID: str = """0.15.5"""
-OESAPI_CFG_DEFAULT_SECTION: str = """oes_client"""
-OESAPI_CFG_DEFAULT_SECTION_LOGGER: str = """log"""
-OESAPI_CFG_DEFAULT_KEY_ORD_ADDR: str = """ordServer"""
-OESAPI_CFG_DEFAULT_KEY_RPT_ADDR: str = """rptServer"""
-OESAPI_CFG_DEFAULT_KEY_QRY_ADDR: str = """qryServer"""
-OESAPI_DEFAULT_STRING_DELIM: str = """,;| 	
-"""
-MDS_APPL_VER_ID: str = """0.15.7.4"""
-MDS_MIN_APPL_VER_ID: str = """0.15.5"""
-MDSAPI_CFG_DEFAULT_SECTION: str = """mds_client"""
-MDSAPI_CFG_DEFAULT_SECTION_LOGGER: str = """log"""
-MDSAPI_CFG_DEFAULT_KEY_TCP_ADDR: str = """tcpServer"""
-MDSAPI_CFG_DEFAULT_KEY_QRY_ADDR: str = """qryServer"""
-MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L1: str = """udpServer.L1"""
-MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L2: str = """udpServer.L2"""
-MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_TRADE: str = """udpServer.TickTrade"""
-MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_ORDER: str = """udpServer.TickOrder"""
-MDSAPI_DEFAULT_STRING_DELIM: str = """,;| 	
-"""
-
-
-class constants:
-    OES_APPL_VER_ID: str = """0.15.7.4"""
-    OES_MIN_APPL_VER_ID: str = """0.15.5"""
-    OESAPI_CFG_DEFAULT_SECTION: str = """oes_client"""
-    OESAPI_CFG_DEFAULT_SECTION_LOGGER: str = """log"""
-    OESAPI_CFG_DEFAULT_KEY_ORD_ADDR: str = """ordServer"""
-    OESAPI_CFG_DEFAULT_KEY_RPT_ADDR: str = """rptServer"""
-    OESAPI_CFG_DEFAULT_KEY_QRY_ADDR: str = """qryServer"""
-    OESAPI_DEFAULT_STRING_DELIM: str = """,;| 	
-"""
-    MDS_APPL_VER_ID: str = """0.15.7.4"""
-    MDS_MIN_APPL_VER_ID: str = """0.15.5"""
-    MDSAPI_CFG_DEFAULT_SECTION: str = """mds_client"""
-    MDSAPI_CFG_DEFAULT_SECTION_LOGGER: str = """log"""
-    MDSAPI_CFG_DEFAULT_KEY_TCP_ADDR: str = """tcpServer"""
-    MDSAPI_CFG_DEFAULT_KEY_QRY_ADDR: str = """qryServer"""
-    MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L1: str = """udpServer.L1"""
-    MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L2: str = """udpServer.L2"""
-    MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_TRADE: str = """udpServer.TickTrade"""
-    MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_ORDER: str = """udpServer.TickOrder"""
-    MDSAPI_DEFAULT_STRING_DELIM: str = """,;| 	
-"""
-    ...
-
-class eOesExchangeIdT(Enum):
-    OES_EXCH_UNDEFINE: eOesExchangeIdT
-    OES_EXCH_SSE: eOesExchangeIdT = 1
-    OES_EXCH_SZSE: eOesExchangeIdT = 2
-    __MAX_OES_EXCH: eOesExchangeIdT = 3
-    OES_EXCHANGE_TYPE_SSE: eOesExchangeIdT = 1
-    OES_EXCHANGE_TYPE_SZSE: eOesExchangeIdT = 2
-    ...
-
-class eOesMarketIdT(Enum):
-    OES_MKT_UNDEFINE: eOesMarketIdT
-    OES_MKT_SH_ASHARE: eOesMarketIdT = 1
-    OES_MKT_SZ_ASHARE: eOesMarketIdT = 2
-    OES_MKT_SH_OPTION: eOesMarketIdT = 3
-    __OES_MKT_ID_MAX: eOesMarketIdT = 4
-    OES_MKT_ID_UNDEFINE: eOesMarketIdT
-    OES_MKT_ID_SH_A: eOesMarketIdT = 1
-    OES_MKT_ID_SZ_A: eOesMarketIdT = 2
-    OES_MKT_ID_SH_OPT: eOesMarketIdT = 3
-    __OES_MKT_ID_MAX_ALIGNED4: eOesMarketIdT = 4
-    __OES_MKT_ID_MAX_ALIGNED8: eOesMarketIdT = 8
-    ...
-
-class eOesPlatformIdT(Enum):
-    OES_PLATFORM_UNDEFINE: eOesPlatformIdT
-    OES_PLATFORM_CASH_AUCTION: eOesPlatformIdT = 1
-    OES_PLATFORM_FINANCIAL_SERVICES: eOesPlatformIdT = 2
-    OES_PLATFORM_NON_TRADE: eOesPlatformIdT = 3
-    OES_PLATFORM_DERIVATIVE_AUCTION: eOesPlatformIdT = 4
-    __OES_PLATFORM_ID_MAX: eOesPlatformIdT = 5
-    __OES_PLATFORM_ACTIVE_MAX: eOesPlatformIdT = 4
-    ...
-
-class eOesMarketStatusT(Enum):
-    OES_MKT_STATE_UNDEFINE: eOesMarketStatusT
-    OES_MKT_STATE_PRE_OPEN: eOesMarketStatusT = 1
-    OES_MKT_STATE_OPEN_UP_COMING: eOesMarketStatusT = 2
-    OES_MKT_STATE_OPEN: eOesMarketStatusT = 3
-    OES_MKT_STATE_HALT: eOesMarketStatusT = 4
-    OES_MKT_STATE_CLOSE: eOesMarketStatusT = 5
-    __OES_MKT_STATE_MAX: eOesMarketStatusT = 6
-    ...
-
-class eOesTrdSessTypeT(Enum):
-    OES_TRD_SESS_TYPE_O: eOesTrdSessTypeT
-    OES_TRD_SESS_TYPE_T: eOesTrdSessTypeT = 1
-    OES_TRD_SESS_TYPE_C: eOesTrdSessTypeT = 2
-    __OES_TRD_SESS_TYPE_MAX: eOesTrdSessTypeT = 3
-    ...
-
-class eOesSecurityTypeT(Enum):
-    OES_SECURITY_TYPE_UNDEFINE: eOesSecurityTypeT
-    OES_SECURITY_TYPE_STOCK: eOesSecurityTypeT = 1
-    OES_SECURITY_TYPE_BOND: eOesSecurityTypeT = 2
-    OES_SECURITY_TYPE_ETF: eOesSecurityTypeT = 3
-    OES_SECURITY_TYPE_FUND: eOesSecurityTypeT = 4
-    OES_SECURITY_TYPE_OPTION: eOesSecurityTypeT = 5
-    __OES_SECURITY_TYPE_MAX: eOesSecurityTypeT = 6
-    __OES_SECURITY_TYPE_NOT_SUPPORT: eOesSecurityTypeT = 100
-    ...
-
-class eOesSubSecurityTypeT(Enum):
-    OES_SUB_SECURITY_TYPE_UNDEFINE: eOesSubSecurityTypeT
-    __OES_SUB_SECURITY_TYPE_STOCK_MIN: eOesSubSecurityTypeT = 10
-    OES_SUB_SECURITY_TYPE_STOCK_ASH: eOesSubSecurityTypeT = 11
-    OES_SUB_SECURITY_TYPE_STOCK_SME: eOesSubSecurityTypeT = 12
-    OES_SUB_SECURITY_TYPE_STOCK_GEM: eOesSubSecurityTypeT = 13
-    OES_SUB_SECURITY_TYPE_STOCK_CDR: eOesSubSecurityTypeT = 14
-    __OES_SUB_SECURITY_TYPE_STOCK_MAX: eOesSubSecurityTypeT = 15
-    __OES_SUB_SECURITY_TYPE_BOND_MIN: eOesSubSecurityTypeT = 20
-    OES_SUB_SECURITY_TYPE_BOND_GBF: eOesSubSecurityTypeT = 21
-    OES_SUB_SECURITY_TYPE_BOND_CBF: eOesSubSecurityTypeT = 22
-    OES_SUB_SECURITY_TYPE_BOND_CPF: eOesSubSecurityTypeT = 23
-    OES_SUB_SECURITY_TYPE_BOND_CCF: eOesSubSecurityTypeT = 24
-    OES_SUB_SECURITY_TYPE_BOND_FBF: eOesSubSecurityTypeT = 25
-    OES_SUB_SECURITY_TYPE_BOND_PRP: eOesSubSecurityTypeT = 26
-    OES_SUB_SECURITY_TYPE_BOND_STD: eOesSubSecurityTypeT = 27
-    __OES_SUB_SECURITY_TYPE_BOND_MAX: eOesSubSecurityTypeT = 28
-    __OES_SUB_SECURITY_TYPE_ETF_MIN: eOesSubSecurityTypeT = 30
-    OES_SUB_SECURITY_TYPE_ETF_SINGLE_MKT: eOesSubSecurityTypeT = 31
-    OES_SUB_SECURITY_TYPE_ETF_CROSS_MKT: eOesSubSecurityTypeT = 32
-    OES_SUB_SECURITY_TYPE_ETF_BOND: eOesSubSecurityTypeT = 33
-    OES_SUB_SECURITY_TYPE_ETF_CURRENCY: eOesSubSecurityTypeT = 34
-    OES_SUB_SECURITY_TYPE_ETF_CROSS_BORDER: eOesSubSecurityTypeT = 35
-    OES_SUB_SECURITY_TYPE_ETF_GOLD: eOesSubSecurityTypeT = 36
-    __OES_SUB_SECURITY_TYPE_ETF_MAX: eOesSubSecurityTypeT = 37
-    __OES_SUB_SECURITY_TYPE_FUND_MIN: eOesSubSecurityTypeT = 40
-    OES_SUB_SECURITY_TYPE_FUND_LOF: eOesSubSecurityTypeT = 41
-    OES_SUB_SECURITY_TYPE_FUND_CEF: eOesSubSecurityTypeT = 42
-    OES_SUB_SECURITY_TYPE_FUND_OEF: eOesSubSecurityTypeT = 43
-    OES_SUB_SECURITY_TYPE_FUND_GRADED: eOesSubSecurityTypeT = 44
-    __OES_SUB_SECURITY_TYPE_FUND_MAX: eOesSubSecurityTypeT = 45
-    __OES_SUB_SECURITY_TYPE_OPTION_MIN: eOesSubSecurityTypeT = 50
-    OES_SUB_SECURITY_TYPE_OPTION_STOCK: eOesSubSecurityTypeT = 51
-    OES_SUB_SECURITY_TYPE_OPTION_ETF: eOesSubSecurityTypeT = 52
-    __OES_SUB_SECURITY_TYPE_OPTION_MAX: eOesSubSecurityTypeT = 53
-    __OES_SUB_SECURITY_TYPE_MAX: eOesSubSecurityTypeT = 53
-    ...
-
-class eOesSecurityLevelT(Enum):
-    OES_SECURITY_LEVEL_UNDEFINE: eOesSecurityLevelT
-    OES_SECURITY_LEVEL_N: eOesSecurityLevelT = 1
-    OES_SECURITY_LEVEL_XST: eOesSecurityLevelT = 2
-    OES_SECURITY_LEVEL_ST: eOesSecurityLevelT = 3
-    OES_SECURITY_LEVEL_P: eOesSecurityLevelT = 4
-    OES_SECURITY_LEVEL_T: eOesSecurityLevelT = 5
-    OES_SECURITY_LEVEL_U: eOesSecurityLevelT = 6
-    OES_SECURITY_LEVEL_B: eOesSecurityLevelT = 7
-    __OES_SECURITY_LEVEL_MAX: eOesSecurityLevelT = 8
-    ...
-
-class eOesSecurityRiskLevelT(Enum):
-    OES_RISK_LEVEL_VERY_LOW: eOesSecurityRiskLevelT
-    OES_RISK_LEVEL_LOW: eOesSecurityRiskLevelT = 1
-    OES_RISK_LEVEL_MEDIUM_LOW: eOesSecurityRiskLevelT = 2
-    OES_RISK_LEVEL_MEDIUM: eOesSecurityRiskLevelT = 3
-    OES_RISK_LEVEL_MEDIUM_HIGH: eOesSecurityRiskLevelT = 4
-    OES_RISK_LEVEL_HIGH: eOesSecurityRiskLevelT = 5
-    OES_RISK_LEVEL_VERY_HIGH: eOesSecurityRiskLevelT = 6
-    __OES_RISK_LEVEL_MAX: eOesSecurityRiskLevelT = 7
-    ...
-
-class eOesSecuritySuspFlagT(Enum):
-    OES_SUSPFLAG_NONE: eOesSecuritySuspFlagT
-    OES_SUSPFLAG_EXCHANGE: eOesSecuritySuspFlagT = 1
-    OES_SUSPFLAG_BROKER: eOesSecuritySuspFlagT = 2
-    __OES_SUSPFLAG_OTHER: eOesSecuritySuspFlagT = 3
-    ...
-
-class eOesOrdStatusT(Enum):
-    OES_ORD_STATUS_UNDEFINE: eOesOrdStatusT
-    OES_ORD_STATUS_NEW: eOesOrdStatusT = 1
-    OES_ORD_STATUS_DECLARED: eOesOrdStatusT = 2
-    OES_ORD_STATUS_PARTIALLY_FILLED: eOesOrdStatusT = 3
-    __OES_ORD_STATUS_FINAL_MIN: eOesOrdStatusT = 4
-    OES_ORD_STATUS_CANCEL_DONE: eOesOrdStatusT = 5
-    OES_ORD_STATUS_PARTIALLY_CANCELED: eOesOrdStatusT = 6
-    OES_ORD_STATUS_CANCELED: eOesOrdStatusT = 7
-    OES_ORD_STATUS_FILLED: eOesOrdStatusT = 8
-    __OES_ORD_STATUS_VALID_MAX: eOesOrdStatusT = 9
-    __OES_ORD_STATUS_INVALID_MIN: eOesOrdStatusT = 10
-    OES_ORD_STATUS_INVALID_OES: eOesOrdStatusT = 11
-    OES_ORD_STATUS_INVALID_SH_F: eOesOrdStatusT = 12
-    OES_ORD_STATUS_INVALID_SH_E: eOesOrdStatusT = 13
-    OES_ORD_STATUS_INVALID_SH_COMM: eOesOrdStatusT = 14
-    OES_ORD_STATUS_INVALID_SZ_F: eOesOrdStatusT = 15
-    OES_ORD_STATUS_INVALID_SZ_E: eOesOrdStatusT = 16
-    OES_ORD_STATUS_INVALID_SZ_REJECT: eOesOrdStatusT = 17
-    OES_ORD_STATUS_INVALID_SZ_TRY_AGAIN: eOesOrdStatusT = 18
-    __OES_ORD_STATUS_INVALID_MAX: eOesOrdStatusT = 19
-    OES_ORD_STATUS_NORMAL: eOesOrdStatusT = 1
-    OES_ORD_STATUS_DECLARING: eOesOrdStatusT = 1
-    __OES_ORD_STATUS_INVALID_OES: eOesOrdStatusT = 11
-    ...
-
-class eOesOrdTypeT(Enum):
-    OES_ORD_TYPE_LMT: eOesOrdTypeT
-    OES_ORD_TYPE_LMT_FOK: eOesOrdTypeT = 1
-    __OES_ORD_TYPE_LMT_MAX: eOesOrdTypeT = 2
-    OES_ORD_TYPE_MTL_BEST_5: eOesOrdTypeT = 10
-    OES_ORD_TYPE_MTL_BEST: eOesOrdTypeT = 11
-    OES_ORD_TYPE_MTL_SAMEPARTY_BEST: eOesOrdTypeT = 12
-    __OES_ORD_TYPE_MTL_MAX: eOesOrdTypeT = 13
-    OES_ORD_TYPE_FAK_BEST_5: eOesOrdTypeT = 20
-    OES_ORD_TYPE_FAK: eOesOrdTypeT = 21
-    __OES_ORD_TYPE_FAK_MAX: eOesOrdTypeT = 22
-    OES_ORD_TYPE_FOK: eOesOrdTypeT = 30
-    __OES_ORD_TYPE_FOK_MAX: eOesOrdTypeT = 31
-    __OES_ORD_TYPE_MAX: eOesOrdTypeT = 32
-    ...
-
-class eOesOrdTypeShT(Enum):
-    OES_ORD_TYPE_SH_LMT: eOesOrdTypeShT
-    OES_ORD_TYPE_SH_MTL_BEST_5: eOesOrdTypeShT = 10
-    OES_ORD_TYPE_SH_FAK_BEST_5: eOesOrdTypeShT = 20
-    OES_ORD_TYPE_SH_LMT_FOK: eOesOrdTypeShT = 1
-    OES_ORD_TYPE_SH_FOK: eOesOrdTypeShT = 30
-    ...
-
-class eOesOrdTypeSzT(Enum):
-    OES_ORD_TYPE_SZ_LMT: eOesOrdTypeSzT
-    OES_ORD_TYPE_SZ_MTL_BEST: eOesOrdTypeSzT = 11
-    OES_ORD_TYPE_SZ_MTL_SAMEPARTY_BEST: eOesOrdTypeSzT = 12
-    OES_ORD_TYPE_SZ_FAK_BEST_5: eOesOrdTypeSzT = 20
-    OES_ORD_TYPE_SZ_FAK: eOesOrdTypeSzT = 21
-    OES_ORD_TYPE_SZ_FOK: eOesOrdTypeSzT = 30
-    OES_ORD_TYPE_SZ_LMT_FOK: eOesOrdTypeSzT = 1
-    ...
-
-class eOesBuySellTypeT(Enum):
-    OES_BS_TYPE_UNDEFINE: eOesBuySellTypeT
-    OES_BS_TYPE_BUY: eOesBuySellTypeT = 1
-    OES_BS_TYPE_SELL: eOesBuySellTypeT = 2
-    OES_BS_TYPE_CREATION: eOesBuySellTypeT = 3
-    OES_BS_TYPE_REDEMPTION: eOesBuySellTypeT = 4
-    OES_BS_TYPE_CREDIT_BUY: eOesBuySellTypeT = 5
-    OES_BS_TYPE_CREDIT_SELL: eOesBuySellTypeT = 6
-    OES_BS_TYPE_SUBSCRIPTION: eOesBuySellTypeT = 7
-    OES_BS_TYPE_BUY_OPEN: eOesBuySellTypeT = 11
-    OES_BS_TYPE_BUY_CLOSE: eOesBuySellTypeT = 12
-    OES_BS_TYPE_SELL_OPEN: eOesBuySellTypeT = 13
-    OES_BS_TYPE_SELL_CLOSE: eOesBuySellTypeT = 14
-    OES_BS_TYPE_COVERED_OPEN: eOesBuySellTypeT = 15
-    OES_BS_TYPE_COVERED_CLOSE: eOesBuySellTypeT = 16
-    OES_BS_TYPE_OPTION_EXERCISE: eOesBuySellTypeT = 17
-    OES_BS_TYPE_UNDERLYING_FREEZE: eOesBuySellTypeT = 18
-    OES_BS_TYPE_UNDERLYING_UNFREEZE: eOesBuySellTypeT = 19
-    OES_BS_TYPE_CANCEL: eOesBuySellTypeT = 30
-    __OES_BS_TYPE_MAX_TRADING: eOesBuySellTypeT = 31
-    OES_BS_TYPE_SSE_DESIGNATION: eOesBuySellTypeT = 41
-    OES_BS_TYPE_SSE_RECALL_DESIGNATION: eOesBuySellTypeT = 42
-    OES_BS_TYPE_SZSE_DESIGNATION: eOesBuySellTypeT = 43
-    OES_BS_TYPE_SZSE_CANCEL_DESIGNATION: eOesBuySellTypeT = 44
-    __OES_BS_TYPE_MAX: eOesBuySellTypeT = 45
-    OES_BS_TYPE_B: eOesBuySellTypeT = 1
-    OES_BS_TYPE_S: eOesBuySellTypeT = 2
-    OES_BS_TYPE_KB: eOesBuySellTypeT = 3
-    OES_BS_TYPE_KS: eOesBuySellTypeT = 4
-    OES_BS_TYPE_CB: eOesBuySellTypeT = 5
-    OES_BS_TYPE_CS: eOesBuySellTypeT = 6
-    OES_BS_TYPE_BO: eOesBuySellTypeT = 11
-    OES_BS_TYPE_BC: eOesBuySellTypeT = 12
-    OES_BS_TYPE_SO: eOesBuySellTypeT = 13
-    OES_BS_TYPE_SC: eOesBuySellTypeT = 14
-    OES_BS_TYPE_CO: eOesBuySellTypeT = 15
-    OES_BS_TYPE_CC: eOesBuySellTypeT = 16
-    OES_BS_TYPE_TE: eOesBuySellTypeT = 17
-    OES_BS_TYPE_UF: eOesBuySellTypeT = 18
-    OES_BS_TYPE_UU: eOesBuySellTypeT = 19
-    ...
-
-class eOesOrdDirT(Enum):
-    OES_ORD_DIR_BUY: eOesOrdDirT
-    OES_ORD_DIR_SELL: eOesOrdDirT = 1
-    __OES_ORD_DIR_MAX: eOesOrdDirT = 2
-    ...
-
-class eOesEtfTrdCnfmTypeT(Enum):
-    OES_ETF_TRDCNFM_TYPE_NONE: eOesEtfTrdCnfmTypeT
-    OES_ETF_TRDCNFM_TYPE_ETF_FIRST: eOesEtfTrdCnfmTypeT = 1
-    OES_ETF_TRDCNFM_TYPE_CMPOENT: eOesEtfTrdCnfmTypeT = 2
-    OES_ETF_TRDCNFM_TYPE_CASH: eOesEtfTrdCnfmTypeT = 3
-    OES_ETF_TRDCNFM_TYPE_ETF_LAST: eOesEtfTrdCnfmTypeT = 4
-    __OES_ETF_TRDCNFM_TYPE_MAX: eOesEtfTrdCnfmTypeT = 5
-    ...
-
-class eOesEtfSubFlagT(Enum):
-    OES_ETF_SUBFLAG_FORBID_SUB: eOesEtfSubFlagT
-    OES_ETF_SUBFLAG_ALLOW_SUB: eOesEtfSubFlagT = 1
-    OES_ETF_SUBFLAG_MUST_SUB: eOesEtfSubFlagT = 2
-    OES_ETF_SUBFLAG_SZ_REFUND_SUB: eOesEtfSubFlagT = 3
-    OES_ETF_SUBFLAG_SZ_MUST_SUB: eOesEtfSubFlagT = 4
-    OES_ETF_SUBFLAG_OTHER_REFUND_SUB: eOesEtfSubFlagT = 5
-    OES_ETF_SUBFLAG_OTHER_MUST_SUB: eOesEtfSubFlagT = 6
-    ...
-
-class eOesLotTypeT(Enum):
-    OES_LOT_TYPE_UNDEFINE: eOesLotTypeT
-    OES_LOT_TYPE_FAILED: eOesLotTypeT = 1
-    OES_LOT_TYPE_ASSIGNMENT: eOesLotTypeT = 2
-    OES_LOT_TYPE_LOTTERY: eOesLotTypeT = 3
-    __OES_LOT_TYPE_MAX: eOesLotTypeT = 4
-    ...
-
-class eOesLotRejReasonT(Enum):
-    OES_LOT_REJ_REASON_DUPLICATE: eOesLotRejReasonT = 1
-    OES_LOT_REJ_REASON_INVALID_DUPLICATE: eOesLotRejReasonT = 2
-    OES_LOT_REJ_REASON_OFFLINE_FIRST: eOesLotRejReasonT = 3
-    OES_LOT_REJ_REASON_BAD_RECORD: eOesLotRejReasonT = 4
-    OES_LOT_REJ_REASON_UNKNOW: eOesLotRejReasonT = 5
-    ...
-
-class eOesExecTypeT(Enum):
-    OES_EXECTYPE_UNDEFINE: eOesExecTypeT
-    OES_EXECTYPE_INSERT: eOesExecTypeT = 1
-    OES_EXECTYPE_CONFIRMED: eOesExecTypeT = 2
-    OES_EXECTYPE_CANCELLED: eOesExecTypeT = 3
-    OES_EXECTYPE_AUTO_CANCELLED: eOesExecTypeT = 4
-    OES_EXECTYPE_REJECT: eOesExecTypeT = 5
-    OES_EXECTYPE_TRADE: eOesExecTypeT = 6
-    __OES_EXECTYPE_MAX: eOesExecTypeT = 7
-    ...
-
-class eOesCurrTypeT(Enum):
-    OES_CURR_TYPE_RMB: eOesCurrTypeT
-    OES_CURR_TYPE_HKD: eOesCurrTypeT = 1
-    OES_CURR_TYPE_USD: eOesCurrTypeT = 2
-    __OES_CURR_TYPE_MAX: eOesCurrTypeT = 3
-    ...
-
-class eOesFeeTypeT(Enum):
-    OES_FEE_TYPE_EXCHANGE_STAMP: eOesFeeTypeT = 1
-    OES_FEE_TYPE_EXCHANGE_TRANSFER: eOesFeeTypeT = 2
-    OES_FEE_TYPE_EXCHANGE_SETTLEMENT: eOesFeeTypeT = 3
-    OES_FEE_TYPE_EXCHANGE_TRADE_RULE: eOesFeeTypeT = 4
-    OES_FEE_TYPE_EXCHANGE_EXCHANGE: eOesFeeTypeT = 5
-    OES_FEE_TYPE_EXCHANGE_ADMINFER: eOesFeeTypeT = 6
-    OES_FEE_TYPE_EXCHANGE_OTHER: eOesFeeTypeT = 7
-    __OES_FEE_TYPE_EXCHANGE_MAX: eOesFeeTypeT = 8
-    OES_FEE_TYPE_BROKER_BACK_END: eOesFeeTypeT = 17
-    ...
-
-class eOesCalcFeeModeT(Enum):
-    OES_CALC_FEE_MODE_AMOUNT: eOesCalcFeeModeT
-    OES_CALC_FEE_MODE_QTY: eOesCalcFeeModeT = 1
-    OES_CALC_FEE_MODE_ORD: eOesCalcFeeModeT = 2
-    ...
-
-class eOesFundTrsfDirectT(Enum):
-    OES_FUND_TRSF_DIRECT_IN: eOesFundTrsfDirectT
-    OES_FUND_TRSF_DIRECT_OUT: eOesFundTrsfDirectT = 1
-    ...
-
-class eOesFundTrsfTypeT(Enum):
-    OES_FUND_TRSF_TYPE_OES_BANK: eOesFundTrsfTypeT
-    OES_FUND_TRSF_TYPE_OES_COUNTER: eOesFundTrsfTypeT = 1
-    OES_FUND_TRSF_TYPE_COUNTER_BANK: eOesFundTrsfTypeT = 2
-    __OES_FUND_TRSF_TYPE_MAX: eOesFundTrsfTypeT = 3
-    ...
-
-class eOesFundTrsfStatusT(Enum):
-    OES_FUND_TRSF_STS_UNDECLARED: eOesFundTrsfStatusT
-    OES_FUND_TRSF_STS_DECLARED: eOesFundTrsfStatusT = 1
-    OES_FUND_TRSF_STS_WAIT_DONE: eOesFundTrsfStatusT = 2
-    OES_FUND_TRSF_STS_DONE: eOesFundTrsfStatusT = 3
-    __OES_FUND_TRSF_STS_ROLLBACK_MIN: eOesFundTrsfStatusT = 5
-    OES_FUND_TRSF_STS_UNDECLARED_ROLLBACK: eOesFundTrsfStatusT = 6
-    OES_FUND_TRSF_STS_DECLARED_ROLLBACK: eOesFundTrsfStatusT = 7
-    __OES_FUND_TRSF_STS_INVALID_MIN: eOesFundTrsfStatusT = 10
-    OES_FUND_TRSF_STS_INVALID_OES: eOesFundTrsfStatusT = 11
-    OES_FUND_TRSF_STS_INVALID_COUNTER: eOesFundTrsfStatusT = 12
-    OES_FUND_TRSF_STS_SUSPENDED: eOesFundTrsfStatusT = 13
-    ...
-
-class eOesAcctTypeT(Enum):
-    OES_ACCT_TYPE_NORMAL: eOesAcctTypeT
-    OES_ACCT_TYPE_CREDIT: eOesAcctTypeT = 1
-    OES_ACCT_TYPE_OPTION: eOesAcctTypeT = 2
-    __OES_ACCT_TYPE_MAX: eOesAcctTypeT = 3
-    ...
-
-class eOesCashTypeT(Enum):
-    OES_CASH_TYPE_SPOT: eOesCashTypeT
-    OES_CASH_TYPE_CREDIT: eOesCashTypeT = 1
-    OES_CASH_TYPE_OPTION: eOesCashTypeT = 2
-    __OES_CASH_TYPE_MAX: eOesCashTypeT = 3
-    OES_CASH_TYPE_CRE: eOesCashTypeT = 1
-    OES_CASH_TYPE_OPT: eOesCashTypeT = 2
-    ...
-
-class eOesAcctStatusT(Enum):
-    OES_ACCT_STATUS_NORMAL: eOesAcctStatusT
-    OES_ACCT_STATUS_DISABLED: eOesAcctStatusT = 1
-    OES_ACCT_STATUS_LOCKED: eOesAcctStatusT = 2
-    ...
-
-class eOesTradingPermissionT(Enum):
-    OES_PERMIS_MARKET_ORDER: eOesTradingPermissionT = 2
-    OES_PERMIS_STRUCTURED_FUND: eOesTradingPermissionT = 4
-    OES_PERMIS_BOND_QUALIFIED_INVESTOR: eOesTradingPermissionT = 8
-    OES_PERMIS_XXX4: eOesTradingPermissionT = 16
-    OES_PERMIS_DELISTING: eOesTradingPermissionT = 32
-    OES_PERMIS_RISK_WARNING: eOesTradingPermissionT = 64
-    OES_PERMIS_SINGLE_MARKET_ETF: eOesTradingPermissionT = 128
-    OES_PERMIS_CROSS_BORDER_ETF: eOesTradingPermissionT = 256
-    OES_PERMIS_CROSS_MARKET_ETF: eOesTradingPermissionT = 512
-    OES_PERMIS_CURRENCY_ETF: eOesTradingPermissionT = 1024
-    OES_PERMIS_STOCK_PLEDGE_REPURCHASE: eOesTradingPermissionT = 2048
-    OES_PERMIS_PLEDGE_REPURCHASE: eOesTradingPermissionT = 4096
-    OES_PERMIS_GEM: eOesTradingPermissionT = 8192
-    OES_PERMIS_SH_HK_STOCK_CONNECT: eOesTradingPermissionT = 16384
-    OES_PERMIS_SZ_HK_STOCK_CONNECT: eOesTradingPermissionT = 32768
-    OES_PERMIS_CDR: eOesTradingPermissionT = 65536
-    OES_PERMIS_INNOVATION: eOesTradingPermissionT = 131072
-    __OES_PERMIS_ALL: eOesTradingPermissionT = -1
-    ...
-
-class eOesTradingLimitT(Enum):
-    OES_LIMIT_BUY: eOesTradingLimitT = 2
-    OES_LIMIT_SELL: eOesTradingLimitT = 4
-    OES_LIMIT_RECALL_DESIGNATION: eOesTradingLimitT = 8
-    OES_LIMIT_DESIGNATION: eOesTradingLimitT = 16
-    OES_LIMIT_REPO: eOesTradingLimitT = 32
-    OES_LIMIT_REVERSE_REPO: eOesTradingLimitT = 64
-    OES_LIMIT_SUBSCRIPTION: eOesTradingLimitT = 128
-    OES_LIMIT_CREDIT_BUY: eOesTradingLimitT = 256
-    OES_LIMIT_CREDIT_SELL: eOesTradingLimitT = 512
-    __OES_LIMIT_ALL: eOesTradingLimitT = -1
-    ...
-
-class eOesQualificationClassT(Enum):
-    OES_QUALIFICATION_PUBLIC_INVESTOR: eOesQualificationClassT
-    OES_QUALIFICATION_QUALIFIED_INVESTOR: eOesQualificationClassT = 1
-    OES_QUALIFICATION_QUALIFIED_INSTITUTIONAL: eOesQualificationClassT = 2
-    ...
-
-class eOesInvestorClassT(Enum):
-    OES_INVESTOR_CLASS_NORMAL: eOesInvestorClassT
-    OES_INVESTOR_CLASS_PROFESSIONAL_A: eOesInvestorClassT = 1
-    OES_INVESTOR_CLASS_PROFESSIONAL_B: eOesInvestorClassT = 2
-    OES_INVESTOR_CLASS_PROFESSIONAL_C: eOesInvestorClassT = 3
-    ...
-
-class eOesOwnerTypeT(Enum):
-    OES_OWNER_TYPE_PERSONAL: eOesOwnerTypeT = 1
-    OES_OWNER_TYPE_EXCHANGE: eOesOwnerTypeT = 101
-    OES_OWNER_TYPE_MEMBER: eOesOwnerTypeT = 102
-    OES_OWNER_TYPE_INSTITUTION: eOesOwnerTypeT = 103
-    OES_OWNER_TYPE_PROPRIETARY: eOesOwnerTypeT = 104
-    OES_OWNER_TYPE_MKT_MAKER: eOesOwnerTypeT = 105
-    OES_OWNER_TYPE_SETTLEMENT: eOesOwnerTypeT = 106
-    __OES_OWNER_TYPE_MAX: eOesOwnerTypeT = 107
-    ...
-
-class eOesClientTypeT(Enum):
-    OES_CLIENT_TYPE_UNDEFINED: eOesClientTypeT
-    OES_CLIENT_TYPE_INVESTOR: eOesClientTypeT = 1
-    OES_CLIENT_TYPE_VIRTUAL: eOesClientTypeT = 2
-    ...
-
-class eOesClientStatusT(Enum):
-    OES_CLIENT_STATUS_UNACTIVATED: eOesClientStatusT
-    OES_CLIENT_STATUS_ACTIVATED: eOesClientStatusT = 1
-    OES_CLIENT_STATUS_PAUSE: eOesClientStatusT = 2
-    OES_CLIENT_STATUS_SUSPENDED: eOesClientStatusT = 3
-    OES_CLIENT_STATUS_CANCELLED: eOesClientStatusT = 4
-    ...
-
-class eOesOptContractTypeT(Enum):
-    OES_OPT_CONTRACT_TYPE_CALL: eOesOptContractTypeT
-    OES_OPT_CONTRACT_TYPE_PUT: eOesOptContractTypeT = 1
-    __OES_OPT_CONTRACT_TYPE_MAX: eOesOptContractTypeT = 2
-    ...
-
-class eOesOptInvLevelT(Enum):
-    OES_OPT_INV_LEVEL_B: eOesOptInvLevelT
-    OES_OPT_INV_LEVEL_L: eOesOptInvLevelT = 1
-    OES_OPT_INV_LEVEL_A: eOesOptInvLevelT = 2
-    __OES_OPT_INV_LEVEL_MAX: eOesOptInvLevelT = 3
-    ...
-
-class eOpenFlagTypeT(Enum):
-    OPEN_FLAG_TYPE_ALLOW: eOpenFlagTypeT
-    OPEN_FLAG_TYPE_FORBID: eOpenFlagTypeT = 1
-    __OPEN_FLAG_TYPE_MAX: eOpenFlagTypeT = 2
-    ...
-
-class eOesOptionOpenFlagT(Enum):
-    OES_OPTION_OPEN_FLAG_ALLOW: eOesOptionOpenFlagT
-    OES_OPTION_OPEN_FLAG_FORBID: eOesOptionOpenFlagT = 1
-    ...
-
-class eOesPositionEffT(Enum):
-    OES_POSITION_INVALID: eOesPositionEffT
-    OES_POSITION_OPEN: eOesPositionEffT = 1
-    OES_POSITION_CLOSE: eOesPositionEffT = 2
-    ...
-
-class eOesOptionTypeT(Enum):
-    OES_OPTION_TYPE_E: eOesOptionTypeT
-    OES_OPTION_TYPE_A: eOesOptionTypeT = 1
-    __OES_OPTION_TYPE_MAX: eOesOptionTypeT = 2
-    ...
-
-class eSMsgProtocolTypeT(Enum):
-    SMSG_PROTO_BINARY: eSMsgProtocolTypeT
-    SMSG_PROTO_JSON: eSMsgProtocolTypeT = 1
-    SMSG_PROTO_FIX: eSMsgProtocolTypeT = 2
-    SMSG_PROTO_PROTOBUF: eSMsgProtocolTypeT = 3
-    __MAX_SMSG_PROTO_TYPE: eSMsgProtocolTypeT = 4
-    ...
-
-class eSMsgFlagT(Enum):
-    SMSG_MSGFLAG_NONE: eSMsgFlagT
-    SMSG_MSGFLAG_REQ: eSMsgFlagT
-    SMSG_MSGFLAG_RSP: eSMsgFlagT = 80
-    SMSG_MSGFLAG_NESTED: eSMsgFlagT = 32
-    SMSG_MSGFLAG_COMPRESSED: eSMsgFlagT = 128
-    SMSG_MSGFLAG_MASK_RSPFLAG: eSMsgFlagT = 240
-    SMSG_MSGFLAG_MASK_PROTOCOL: eSMsgFlagT = 15
-    ...
-
-class eOesMsgTypeT(Enum):
-    OESMSG_ORD_NEW_ORDER: eOesMsgTypeT = 1
-    OESMSG_ORD_CANCEL_REQUEST: eOesMsgTypeT = 2
-    OESMSG_ORD_BATCH_ORDERS: eOesMsgTypeT = 3
-    __OESMSG_ORD_MAX: eOesMsgTypeT = 4
-    __OESMSG_RPT_MIN: eOesMsgTypeT = 15
-    OESMSG_RPT_MARKET_STATE: eOesMsgTypeT = 16
-    OESMSG_RPT_REPORT_SYNCHRONIZATION: eOesMsgTypeT = 17
-    OESMSG_RPT_BUSINESS_REJECT: eOesMsgTypeT = 18
-    OESMSG_RPT_ORDER_INSERT: eOesMsgTypeT = 19
-    OESMSG_RPT_ORDER_REPORT: eOesMsgTypeT = 20
-    OESMSG_RPT_TRADE_REPORT: eOesMsgTypeT = 21
-    OESMSG_RPT_FUND_TRSF_REJECT: eOesMsgTypeT = 22
-    OESMSG_RPT_FUND_TRSF_REPORT: eOesMsgTypeT = 23
-    OESMSG_RPT_CASH_ASSET_VARIATION: eOesMsgTypeT = 24
-    OESMSG_RPT_STOCK_HOLDING_VARIATION: eOesMsgTypeT = 25
-    OESMSG_RPT_OPTION_HOLDING_VARIATION: eOesMsgTypeT = 26
-    __OESMSG_RPT_MAX: eOesMsgTypeT = 27
-    __OESMSG_NONTRD_MIN: eOesMsgTypeT = 32
-    OESMSG_NONTRD_FUND_TRSF_REQ: eOesMsgTypeT = 33
-    OESMSG_NONTRD_CHANGE_PASSWORD: eOesMsgTypeT = 34
-    __OESMSG_NONTRD_MAX: eOesMsgTypeT = 35
-    __OESMSG_QRYMSG_MIN: eOesMsgTypeT = 47
-    OESMSG_QRYMSG_CLIENT_OVERVIEW: eOesMsgTypeT = 48
-    OESMSG_QRYMSG_ORD: eOesMsgTypeT = 49
-    OESMSG_QRYMSG_TRD: eOesMsgTypeT = 50
-    OESMSG_QRYMSG_CASH_ASSET: eOesMsgTypeT = 51
-    OESMSG_QRYMSG_STK_HLD: eOesMsgTypeT = 52
-    OESMSG_QRYMSG_OPT_HLD: eOesMsgTypeT = 53
-    OESMSG_QRYMSG_CUST: eOesMsgTypeT = 54
-    OESMSG_QRYMSG_INV_ACCT: eOesMsgTypeT = 55
-    OESMSG_QRYMSG_COMMISSION_RATE: eOesMsgTypeT = 56
-    OESMSG_QRYMSG_FUND_TRSF: eOesMsgTypeT = 57
-    OESMSG_QRYMSG_STOCK: eOesMsgTypeT = 58
-    OESMSG_QRYMSG_ETF: eOesMsgTypeT = 59
-    OESMSG_QRYMSG_ETF_COMPONENT: eOesMsgTypeT = 60
-    OESMSG_QRYMSG_OPTION: eOesMsgTypeT = 61
-    OESMSG_QRYMSG_ISSUE: eOesMsgTypeT = 62
-    OESMSG_QRYMSG_LOT_WINNING: eOesMsgTypeT = 63
-    OESMSG_QRYMSG_TRADING_DAY: eOesMsgTypeT = 64
-    OESMSG_QRYMSG_MARKET_STATE: eOesMsgTypeT = 65
-    OESMSG_QRYMSG_COUNTER_CASH: eOesMsgTypeT = 66
-    __OESMSG_QRYMSG_MAX: eOesMsgTypeT = 67
-    OESMSG_SESS_TRD_LOGIN: eOesMsgTypeT = 241
-    OESMSG_SESS_RPT_LOGIN: eOesMsgTypeT = 243
-    OESMSG_SESS_QRY_LOGIN: eOesMsgTypeT = 244
-    OESMSG_SESS_HEARTBEAT: eOesMsgTypeT = 250
-    OESMSG_SESS_TEST_REQUEST: eOesMsgTypeT = 251
-    OESMSG_SESS_LOGOUT: eOesMsgTypeT = 254
-    OESMSG_RPT_ORDER_REJECT: eOesMsgTypeT = 18
-    ...
-
-class eOesSubscribeReportTypeT(Enum):
-    OES_SUB_RPT_TYPE_DEFAULT: eOesSubscribeReportTypeT
-    OES_SUB_RPT_TYPE_BUSINESS_REJECT: eOesSubscribeReportTypeT = 1
-    OES_SUB_RPT_TYPE_ORDER_INSERT: eOesSubscribeReportTypeT = 2
-    OES_SUB_RPT_TYPE_ORDER_REPORT: eOesSubscribeReportTypeT = 4
-    OES_SUB_RPT_TYPE_TRADE_REPORT: eOesSubscribeReportTypeT = 8
-    OES_SUB_RPT_TYPE_FUND_TRSF_REPORT: eOesSubscribeReportTypeT = 16
-    OES_SUB_RPT_TYPE_CASH_ASSET_VARIATION: eOesSubscribeReportTypeT = 32
-    OES_SUB_RPT_TYPE_HOLDING_VARIATION: eOesSubscribeReportTypeT = 64
-    OES_SUB_RPT_TYPE_MARKET_STATE: eOesSubscribeReportTypeT = 128
-    OES_SUB_RPT_TYPE_ALL: eOesSubscribeReportTypeT = 65535
-    __MAX_OES_SUB_RPT_TYPE: eOesSubscribeReportTypeT = 2147483647
-    ...
-
-class eSSocketProtocolTypeT(Enum):
-    SPK_SOCKET_PROTOCOL_TCP: eSSocketProtocolTypeT
-    SPK_SOCKET_PROTOCOL_IPC: eSSocketProtocolTypeT = 1
-    SPK_SOCKET_PROTOCOL_UDP_UCAST: eSSocketProtocolTypeT = 2
-    SPK_SOCKET_PROTOCOL_UDP_MCAST: eSSocketProtocolTypeT = 3
-    SPK_SOCKET_PROTOCOL_PGM: eSSocketProtocolTypeT = 4
-    SPK_SOCKET_PROTOCOL_EPGM: eSSocketProtocolTypeT = 5
-    __MAX_SPK_SOCKET_PROTOCOL: eSSocketProtocolTypeT = 6
-    ...
-
-class eGeneralClientClusterTypeT(Enum):
-    GENERAL_CLI_CLUSTER_UNDEFINED: eGeneralClientClusterTypeT
-    GENERAL_CLI_CLUSTER_REPLICA_SET: eGeneralClientClusterTypeT = 1
-    GENERAL_CLI_CLUSTER_PEER_NODES: eGeneralClientClusterTypeT = 2
-    __MAX_GENERAL_CLI_CLUSTER_TYPE: eGeneralClientClusterTypeT = 3
-    ...
-
-class eGeneralClientEncryptTypeT(Enum):
-    GENERAL_CLI_ENCRYPT_NONE: eGeneralClientEncryptTypeT
-    GENERAL_CLI_ENCRYPT_MD5: eGeneralClientEncryptTypeT = 1
-    GENERAL_CLI_ENCRYPT_SHA: eGeneralClientEncryptTypeT = 2
-    GENERAL_CLI_ENCRYPT_DES: eGeneralClientEncryptTypeT = 16
-    GENERAL_CLI_ENCRYPT_AES: eGeneralClientEncryptTypeT = 32
-    GENERAL_CLI_ENCRYPT_RSA: eGeneralClientEncryptTypeT = 64
-    ...
-
-class eOesApiChannelTypeT(Enum):
-    OESAPI_CHANNEL_TYPE_ORDER: eOesApiChannelTypeT = 1
-    OESAPI_CHANNEL_TYPE_REPORT: eOesApiChannelTypeT = 2
-    OESAPI_CHANNEL_TYPE_QUERY: eOesApiChannelTypeT = 3
-    ...
-
-class eMdsExchangeIdT(Enum):
-    MDS_EXCH_SSE: eMdsExchangeIdT = 1
-    MDS_EXCH_SZSE: eMdsExchangeIdT = 2
-    __MAX_MDS_EXCH: eMdsExchangeIdT = 3
-    __MAX_MDS_EXCH_ALIGNED4: eMdsExchangeIdT = 4
-    __MAX_MDS_EXCH_ALIGNED8: eMdsExchangeIdT = 8
-    ...
-
-class eMdsMsgSourceT(Enum):
-    MDS_MSGSRC_UNDEFINED: eMdsMsgSourceT
-    MDS_MSGSRC_EZEI_TCP: eMdsMsgSourceT = 1
-    MDS_MSGSRC_EZEI_UDP: eMdsMsgSourceT = 2
-    MDS_MSGSRC_VDE_LEVEL2: eMdsMsgSourceT = 3
-    MDS_MSGSRC_VDE_LEVEL1: eMdsMsgSourceT = 4
-    MDS_MSGSRC_SZSE_MDGW_BINARY: eMdsMsgSourceT = 5
-    MDS_MSGSRC_SZSE_MDGW_STEP: eMdsMsgSourceT = 6
-    MDS_MSGSRC_MDS_TCP: eMdsMsgSourceT = 7
-    MDS_MSGSRC_MDS_UDP: eMdsMsgSourceT = 8
-    MDS_MSGSRC_FILE_MKTDT: eMdsMsgSourceT = 9
-    MDS_MSGSRC_SSE_MDGW_BINARY: eMdsMsgSourceT = 10
-    MDS_MSGSRC_SSE_MDGW_STEP: eMdsMsgSourceT = 11
-    __MAX_MDS_MSGSRC: eMdsMsgSourceT = 12
-    MDS_MSGSRC_MDGW_BINARY: eMdsMsgSourceT = 5
-    MDS_MSGSRC_MDGW_STEP: eMdsMsgSourceT = 6
-    ...
-
-class eMdsSecurityTypeT(Enum):
-    MDS_SECURITY_TYPE_STOCK: eMdsSecurityTypeT = 1
-    MDS_SECURITY_TYPE_INDEX: eMdsSecurityTypeT = 2
-    MDS_SECURITY_TYPE_OPTION: eMdsSecurityTypeT = 3
-    __MAX_MDS_SECURITY_TYPE: eMdsSecurityTypeT = 4
-    ...
-
-class eMdsMdStreamTypeT(Enum):
-    MDS_MD_STREAM_TYPE_INDEX: eMdsMdStreamTypeT = 1
-    MDS_MD_STREAM_TYPE_STOCK: eMdsMdStreamTypeT = 2
-    MDS_MD_STREAM_TYPE_BOND: eMdsMdStreamTypeT = 3
-    MDS_MD_STREAM_TYPE_FUND: eMdsMdStreamTypeT = 4
-    MDS_MD_STREAM_TYPE_SZSE_STOCK: eMdsMdStreamTypeT = 5
-    MDS_MD_STREAM_TYPE_SZSE_REPO: eMdsMdStreamTypeT = 6
-    MDS_MD_STREAM_TYPE_SZSE_TRADE_STATS: eMdsMdStreamTypeT = 7
-    MDS_MD_STREAM_TYPE_OPTION: eMdsMdStreamTypeT = 8
-    MDS_MD_STREAM_TYPE_OTHERS: eMdsMdStreamTypeT = 9
-    __MAX_MDS_MD_STREAM_TYPE: eMdsMdStreamTypeT = 10
-    ...
-
-class eMdsMdLevelT(Enum):
-    MDS_MD_LEVEL_0: eMdsMdLevelT
-    MDS_MD_LEVEL_1: eMdsMdLevelT = 1
-    MDS_MD_LEVEL_2: eMdsMdLevelT = 2
-    __MAX_MDS_MD_LEVEL: eMdsMdLevelT = 3
-    ...
-
-class eMdsL2PriceLevelOperatorT(Enum):
-    MDS_L2_PX_OPERATOR_ADD: eMdsL2PriceLevelOperatorT = 1
-    MDS_L2_PX_OPERATOR_UPDATE: eMdsL2PriceLevelOperatorT = 2
-    MDS_L2_PX_OPERATOR_DELETE: eMdsL2PriceLevelOperatorT = 3
-    __MAX_MDS_L2_PX_OPERATOR: eMdsL2PriceLevelOperatorT = 4
-    ...
-
-class eMdsL2VirtualAuctionSideT(Enum):
-    MDS_L2_VIRTUAL_AUCTION_SIDE_NONE: eMdsL2VirtualAuctionSideT
-    MDS_L2_VIRTUAL_AUCTION_SIDE_BID: eMdsL2VirtualAuctionSideT = 1
-    MDS_L2_VIRTUAL_AUCTION_SIDE_OFFER: eMdsL2VirtualAuctionSideT = 2
-    ...
-
-class eMdsL2TradeExecTypeT(Enum):
-    MDS_L2_TRADE_EXECTYPE_CANCELED: eMdsL2TradeExecTypeT = 52
-    MDS_L2_TRADE_EXECTYPE_TRADE: eMdsL2TradeExecTypeT = 70
-    ...
-
-class eMdsL2TradeBSFlagT(Enum):
-    MDS_L2_TRADE_BSFLAG_BUY: eMdsL2TradeBSFlagT = 66
-    MDS_L2_TRADE_BSFLAG_SELL: eMdsL2TradeBSFlagT = 83
-    MDS_L2_TRADE_BSFLAG_UNKNOWN: eMdsL2TradeBSFlagT = 78
-    ...
-
-class eMdsL2OrderSideT(Enum):
-    MDS_L2_ORDER_SIDE_BUY: eMdsL2OrderSideT = 49
-    MDS_L2_ORDER_SIDE_SELL: eMdsL2OrderSideT = 50
-    MDS_L2_ORDER_SIDE_BORROW: eMdsL2OrderSideT = 71
-    MDS_L2_ORDER_SIDE_LEND: eMdsL2OrderSideT = 70
-    ...
-
-class eMdsL2OrderTypeT(Enum):
-    MDS_L2_ORDER_TYPE_MKT: eMdsL2OrderTypeT = 49
-    MDS_L2_ORDER_TYPE_LMT: eMdsL2OrderTypeT = 50
-    MDS_L2_ORDER_TYPE_SAMEPARTY_BEST: eMdsL2OrderTypeT = 85
-    ...
-
-class eMdsClientTypeT(Enum):
-    MDS_CLIENT_TYPE_UNDEFINED: eMdsClientTypeT
-    MDS_CLIENT_TYPE_INVESTOR: eMdsClientTypeT = 1
-    MDS_CLIENT_TYPE_VIRTUAL: eMdsClientTypeT = 2
-    ...
-
-class eMdsClientStatusT(Enum):
-    MDS_CLIENT_STATUS_UNACTIVATED: eMdsClientStatusT
-    MDS_CLIENT_STATUS_ACTIVATED: eMdsClientStatusT = 1
-    MDS_CLIENT_STATUS_PAUSE: eMdsClientStatusT = 2
-    MDS_CLIENT_STATUS_SUSPENDED: eMdsClientStatusT = 3
-    MDS_CLIENT_STATUS_CANCELLED: eMdsClientStatusT = 4
-    ...
-
-class eMdsMsgTypeT(Enum):
-    MDS_MSGTYPE_HEARTBEAT: eMdsMsgTypeT = 1
-    MDS_MSGTYPE_TEST_REQUEST: eMdsMsgTypeT = 2
-    MDS_MSGTYPE_LOGON: eMdsMsgTypeT = 3
-    MDS_MSGTYPE_LOGOUT: eMdsMsgTypeT = 4
-    MDS_MSGTYPE_MARKET_DATA_REQUEST: eMdsMsgTypeT = 5
-    MDS_MSGTYPE_COMPRESSED_PACKETS: eMdsMsgTypeT = 6
-    __MDS_MSGTYPE_SESSION_MAX: eMdsMsgTypeT = 7
-    MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH: eMdsMsgTypeT = 10
-    MDS_MSGTYPE_INDEX_SNAPSHOT_FULL_REFRESH: eMdsMsgTypeT = 11
-    MDS_MSGTYPE_OPTION_SNAPSHOT_FULL_REFRESH: eMdsMsgTypeT = 12
-    MDS_MSGTYPE_TRADING_SESSION_STATUS: eMdsMsgTypeT = 13
-    MDS_MSGTYPE_SECURITY_STATUS: eMdsMsgTypeT = 14
-    __MDS_MSGTYPE_L1_MAX: eMdsMsgTypeT = 15
-    MDS_MSGTYPE_L2_MARKET_DATA_SNAPSHOT: eMdsMsgTypeT = 20
-    MDS_MSGTYPE_L2_BEST_ORDERS_SNAPSHOT: eMdsMsgTypeT = 21
-    MDS_MSGTYPE_L2_TRADE: eMdsMsgTypeT = 22
-    MDS_MSGTYPE_L2_ORDER: eMdsMsgTypeT = 23
-    MDS_MSGTYPE_L2_MARKET_DATA_INCREMENTAL: eMdsMsgTypeT = 24
-    MDS_MSGTYPE_L2_BEST_ORDERS_INCREMENTAL: eMdsMsgTypeT = 25
-    MDS_MSGTYPE_L2_MARKET_OVERVIEW: eMdsMsgTypeT = 26
-    MDS_MSGTYPE_L2_VIRTUAL_AUCTION_PRICE: eMdsMsgTypeT = 27
-    __MDS_MSGTYPE_L2_MAX: eMdsMsgTypeT = 28
-    MDS_MSGTYPE_QRY_MARKET_DATA_SNAPSHOT: eMdsMsgTypeT = 80
-    MDS_MSGTYPE_QRY_SECURITY_STATUS: eMdsMsgTypeT = 81
-    MDS_MSGTYPE_QRY_TRADING_SESSION_STATUS: eMdsMsgTypeT = 82
-    __MDS_MSGTYPE_QRY_MAX: eMdsMsgTypeT = 83
-    ...
-
-class eMdsSubscribeModeT(Enum):
-    MDS_SUB_MODE_SET: eMdsSubscribeModeT
-    MDS_SUB_MODE_APPEND: eMdsSubscribeModeT = 1
-    MDS_SUB_MODE_DELETE: eMdsSubscribeModeT = 2
-    __MAX_MDS_SUB_MODE: eMdsSubscribeModeT = 3
-    ...
-
-class eMdsMktSubscribeFlagT(Enum):
-    MDS_MKT_SUB_FLAG_DEFAULT: eMdsMktSubscribeFlagT
-    MDS_MKT_SUB_FLAG_ALL: eMdsMktSubscribeFlagT = 1
-    MDS_MKT_SUB_FLAG_DISABLE: eMdsMktSubscribeFlagT = 2
-    __MAX_MDS_MKT_SUB_FLAG: eMdsMktSubscribeFlagT = 3
-    ...
-
-class eMdsSubscribedTickTypeT(Enum):
-    MDS_TICK_TYPE_LATEST_SIMPLIFIED: eMdsSubscribedTickTypeT
-    MDS_TICK_TYPE_LATEST_TIMELY: eMdsSubscribedTickTypeT = 1
-    MDS_TICK_TYPE_ALL_INCREMENTS: eMdsSubscribedTickTypeT = 2
-    __MAX_MDS_TICK_TYPE: eMdsSubscribedTickTypeT = 3
-    ...
-
-class eMdsSubscribedTickExpireTypeT(Enum):
-    MDS_TICK_EXPIRE_TYPE_NONE: eMdsSubscribedTickExpireTypeT
-    MDS_TICK_EXPIRE_TYPE_IMMEDIATE: eMdsSubscribedTickExpireTypeT = 1
-    MDS_TICK_EXPIRE_TYPE_TIMELY: eMdsSubscribedTickExpireTypeT = 2
-    MDS_TICK_EXPIRE_TYPE_TIMEOUT: eMdsSubscribedTickExpireTypeT = 3
-    __MAX_MDS_TICK_EXPIRE_TYPE: eMdsSubscribedTickExpireTypeT = 4
-    ...
-
-class eMdsSubscribeDataTypeT(Enum):
-    MDS_SUB_DATA_TYPE_DEFAULT: eMdsSubscribeDataTypeT
-    MDS_SUB_DATA_TYPE_L1_SNAPSHOT: eMdsSubscribeDataTypeT = 1
-    MDS_SUB_DATA_TYPE_L2_SNAPSHOT: eMdsSubscribeDataTypeT = 2
-    MDS_SUB_DATA_TYPE_L2_BEST_ORDERS: eMdsSubscribeDataTypeT = 4
-    MDS_SUB_DATA_TYPE_L2_TRADE: eMdsSubscribeDataTypeT = 8
-    MDS_SUB_DATA_TYPE_L2_ORDER: eMdsSubscribeDataTypeT = 16
-    MDS_SUB_DATA_TYPE_L2_VIRTUAL_AUCTION_PRICE: eMdsSubscribeDataTypeT = 32
-    MDS_SUB_DATA_TYPE_L2_MARKET_OVERVIEW: eMdsSubscribeDataTypeT = 64
-    MDS_SUB_DATA_TYPE_TRADING_SESSION_STATUS: eMdsSubscribeDataTypeT = 256
-    MDS_SUB_DATA_TYPE_SECURITY_STATUS: eMdsSubscribeDataTypeT = 512
-    MDS_SUB_DATA_TYPE_INDEX_SNAPSHOT: eMdsSubscribeDataTypeT = 1024
-    MDS_SUB_DATA_TYPE_OPTION_SNAPSHOT: eMdsSubscribeDataTypeT = 2048
-    MDS_SUB_DATA_TYPE_NONE: eMdsSubscribeDataTypeT = 32768
-    MDS_SUB_DATA_TYPE_ALL: eMdsSubscribeDataTypeT = 65535
-    __MAX_MDS_SUB_DATA_TYPE: eMdsSubscribeDataTypeT = 2147483647
-    ...
-
-class eMdsTickChannelNoT(Enum):
-    MDS_CHANNEL_NO_DEFAULT: eMdsTickChannelNoT
-    MDS_CHANNEL_NO_ONE: eMdsTickChannelNoT = 1
-    MDS_CHANNEL_NO_TWO: eMdsTickChannelNoT = 2
-    MDS_CHANNEL_NO_THREE: eMdsTickChannelNoT = 4
-    MDS_CHANNEL_NO_FOUR: eMdsTickChannelNoT = 8
-    MDS_CHANNEL_NO_ALL: eMdsTickChannelNoT = 15
-    MDS_CHANNEL_NO_NONE: eMdsTickChannelNoT = 128
-    ...
-
-class eMdsApiChannelTypeT(Enum):
-    MDSAPI_CHANNEL_TYPE_TCP: eMdsApiChannelTypeT = 1
-    MDSAPI_CHANNEL_TYPE_UDP: eMdsApiChannelTypeT = 2
-    MDSAPI_CHANNEL_TYPE_QUERY: eMdsApiChannelTypeT = 3
-    ...
-
-OES_EXCH_UNDEFINE: eOesExchangeIdT
-OES_EXCH_SSE: eOesExchangeIdT = 1
-OES_EXCH_SZSE: eOesExchangeIdT = 2
-__MAX_OES_EXCH: eOesExchangeIdT = 3
-OES_EXCHANGE_TYPE_SSE: eOesExchangeIdT = 1
-OES_EXCHANGE_TYPE_SZSE: eOesExchangeIdT = 2
-OES_MKT_UNDEFINE: eOesMarketIdT
-OES_MKT_SH_ASHARE: eOesMarketIdT = 1
-OES_MKT_SZ_ASHARE: eOesMarketIdT = 2
-OES_MKT_SH_OPTION: eOesMarketIdT = 3
-__OES_MKT_ID_MAX: eOesMarketIdT = 4
-OES_MKT_ID_UNDEFINE: eOesMarketIdT
-OES_MKT_ID_SH_A: eOesMarketIdT = 1
-OES_MKT_ID_SZ_A: eOesMarketIdT = 2
-OES_MKT_ID_SH_OPT: eOesMarketIdT = 3
-__OES_MKT_ID_MAX_ALIGNED4: eOesMarketIdT = 4
-__OES_MKT_ID_MAX_ALIGNED8: eOesMarketIdT = 8
-OES_PLATFORM_UNDEFINE: eOesPlatformIdT
-OES_PLATFORM_CASH_AUCTION: eOesPlatformIdT = 1
-OES_PLATFORM_FINANCIAL_SERVICES: eOesPlatformIdT = 2
-OES_PLATFORM_NON_TRADE: eOesPlatformIdT = 3
-OES_PLATFORM_DERIVATIVE_AUCTION: eOesPlatformIdT = 4
-__OES_PLATFORM_ID_MAX: eOesPlatformIdT = 5
-__OES_PLATFORM_ACTIVE_MAX: eOesPlatformIdT = 4
-OES_MKT_STATE_UNDEFINE: eOesMarketStatusT
-OES_MKT_STATE_PRE_OPEN: eOesMarketStatusT = 1
-OES_MKT_STATE_OPEN_UP_COMING: eOesMarketStatusT = 2
-OES_MKT_STATE_OPEN: eOesMarketStatusT = 3
-OES_MKT_STATE_HALT: eOesMarketStatusT = 4
-OES_MKT_STATE_CLOSE: eOesMarketStatusT = 5
-__OES_MKT_STATE_MAX: eOesMarketStatusT = 6
-OES_TRD_SESS_TYPE_O: eOesTrdSessTypeT
-OES_TRD_SESS_TYPE_T: eOesTrdSessTypeT = 1
-OES_TRD_SESS_TYPE_C: eOesTrdSessTypeT = 2
-__OES_TRD_SESS_TYPE_MAX: eOesTrdSessTypeT = 3
-OES_SECURITY_TYPE_UNDEFINE: eOesSecurityTypeT
-OES_SECURITY_TYPE_STOCK: eOesSecurityTypeT = 1
-OES_SECURITY_TYPE_BOND: eOesSecurityTypeT = 2
-OES_SECURITY_TYPE_ETF: eOesSecurityTypeT = 3
-OES_SECURITY_TYPE_FUND: eOesSecurityTypeT = 4
-OES_SECURITY_TYPE_OPTION: eOesSecurityTypeT = 5
-__OES_SECURITY_TYPE_MAX: eOesSecurityTypeT = 6
-__OES_SECURITY_TYPE_NOT_SUPPORT: eOesSecurityTypeT = 100
-OES_SUB_SECURITY_TYPE_UNDEFINE: eOesSubSecurityTypeT
-__OES_SUB_SECURITY_TYPE_STOCK_MIN: eOesSubSecurityTypeT = 10
-OES_SUB_SECURITY_TYPE_STOCK_ASH: eOesSubSecurityTypeT = 11
-OES_SUB_SECURITY_TYPE_STOCK_SME: eOesSubSecurityTypeT = 12
-OES_SUB_SECURITY_TYPE_STOCK_GEM: eOesSubSecurityTypeT = 13
-OES_SUB_SECURITY_TYPE_STOCK_CDR: eOesSubSecurityTypeT = 14
-__OES_SUB_SECURITY_TYPE_STOCK_MAX: eOesSubSecurityTypeT = 15
-__OES_SUB_SECURITY_TYPE_BOND_MIN: eOesSubSecurityTypeT = 20
-OES_SUB_SECURITY_TYPE_BOND_GBF: eOesSubSecurityTypeT = 21
-OES_SUB_SECURITY_TYPE_BOND_CBF: eOesSubSecurityTypeT = 22
-OES_SUB_SECURITY_TYPE_BOND_CPF: eOesSubSecurityTypeT = 23
-OES_SUB_SECURITY_TYPE_BOND_CCF: eOesSubSecurityTypeT = 24
-OES_SUB_SECURITY_TYPE_BOND_FBF: eOesSubSecurityTypeT = 25
-OES_SUB_SECURITY_TYPE_BOND_PRP: eOesSubSecurityTypeT = 26
-OES_SUB_SECURITY_TYPE_BOND_STD: eOesSubSecurityTypeT = 27
-__OES_SUB_SECURITY_TYPE_BOND_MAX: eOesSubSecurityTypeT = 28
-__OES_SUB_SECURITY_TYPE_ETF_MIN: eOesSubSecurityTypeT = 30
-OES_SUB_SECURITY_TYPE_ETF_SINGLE_MKT: eOesSubSecurityTypeT = 31
-OES_SUB_SECURITY_TYPE_ETF_CROSS_MKT: eOesSubSecurityTypeT = 32
-OES_SUB_SECURITY_TYPE_ETF_BOND: eOesSubSecurityTypeT = 33
-OES_SUB_SECURITY_TYPE_ETF_CURRENCY: eOesSubSecurityTypeT = 34
-OES_SUB_SECURITY_TYPE_ETF_CROSS_BORDER: eOesSubSecurityTypeT = 35
-OES_SUB_SECURITY_TYPE_ETF_GOLD: eOesSubSecurityTypeT = 36
-__OES_SUB_SECURITY_TYPE_ETF_MAX: eOesSubSecurityTypeT = 37
-__OES_SUB_SECURITY_TYPE_FUND_MIN: eOesSubSecurityTypeT = 40
-OES_SUB_SECURITY_TYPE_FUND_LOF: eOesSubSecurityTypeT = 41
-OES_SUB_SECURITY_TYPE_FUND_CEF: eOesSubSecurityTypeT = 42
-OES_SUB_SECURITY_TYPE_FUND_OEF: eOesSubSecurityTypeT = 43
-OES_SUB_SECURITY_TYPE_FUND_GRADED: eOesSubSecurityTypeT = 44
-__OES_SUB_SECURITY_TYPE_FUND_MAX: eOesSubSecurityTypeT = 45
-__OES_SUB_SECURITY_TYPE_OPTION_MIN: eOesSubSecurityTypeT = 50
-OES_SUB_SECURITY_TYPE_OPTION_STOCK: eOesSubSecurityTypeT = 51
-OES_SUB_SECURITY_TYPE_OPTION_ETF: eOesSubSecurityTypeT = 52
-__OES_SUB_SECURITY_TYPE_OPTION_MAX: eOesSubSecurityTypeT = 53
-__OES_SUB_SECURITY_TYPE_MAX: eOesSubSecurityTypeT = 53
-OES_SECURITY_LEVEL_UNDEFINE: eOesSecurityLevelT
-OES_SECURITY_LEVEL_N: eOesSecurityLevelT = 1
-OES_SECURITY_LEVEL_XST: eOesSecurityLevelT = 2
-OES_SECURITY_LEVEL_ST: eOesSecurityLevelT = 3
-OES_SECURITY_LEVEL_P: eOesSecurityLevelT = 4
-OES_SECURITY_LEVEL_T: eOesSecurityLevelT = 5
-OES_SECURITY_LEVEL_U: eOesSecurityLevelT = 6
-OES_SECURITY_LEVEL_B: eOesSecurityLevelT = 7
-__OES_SECURITY_LEVEL_MAX: eOesSecurityLevelT = 8
-OES_RISK_LEVEL_VERY_LOW: eOesSecurityRiskLevelT
-OES_RISK_LEVEL_LOW: eOesSecurityRiskLevelT = 1
-OES_RISK_LEVEL_MEDIUM_LOW: eOesSecurityRiskLevelT = 2
-OES_RISK_LEVEL_MEDIUM: eOesSecurityRiskLevelT = 3
-OES_RISK_LEVEL_MEDIUM_HIGH: eOesSecurityRiskLevelT = 4
-OES_RISK_LEVEL_HIGH: eOesSecurityRiskLevelT = 5
-OES_RISK_LEVEL_VERY_HIGH: eOesSecurityRiskLevelT = 6
-__OES_RISK_LEVEL_MAX: eOesSecurityRiskLevelT = 7
-OES_SUSPFLAG_NONE: eOesSecuritySuspFlagT
-OES_SUSPFLAG_EXCHANGE: eOesSecuritySuspFlagT = 1
-OES_SUSPFLAG_BROKER: eOesSecuritySuspFlagT = 2
-__OES_SUSPFLAG_OTHER: eOesSecuritySuspFlagT = 3
-OES_ORD_STATUS_UNDEFINE: eOesOrdStatusT
-OES_ORD_STATUS_NEW: eOesOrdStatusT = 1
-OES_ORD_STATUS_DECLARED: eOesOrdStatusT = 2
-OES_ORD_STATUS_PARTIALLY_FILLED: eOesOrdStatusT = 3
-__OES_ORD_STATUS_FINAL_MIN: eOesOrdStatusT = 4
-OES_ORD_STATUS_CANCEL_DONE: eOesOrdStatusT = 5
-OES_ORD_STATUS_PARTIALLY_CANCELED: eOesOrdStatusT = 6
-OES_ORD_STATUS_CANCELED: eOesOrdStatusT = 7
-OES_ORD_STATUS_FILLED: eOesOrdStatusT = 8
-__OES_ORD_STATUS_VALID_MAX: eOesOrdStatusT = 9
-__OES_ORD_STATUS_INVALID_MIN: eOesOrdStatusT = 10
-OES_ORD_STATUS_INVALID_OES: eOesOrdStatusT = 11
-OES_ORD_STATUS_INVALID_SH_F: eOesOrdStatusT = 12
-OES_ORD_STATUS_INVALID_SH_E: eOesOrdStatusT = 13
-OES_ORD_STATUS_INVALID_SH_COMM: eOesOrdStatusT = 14
-OES_ORD_STATUS_INVALID_SZ_F: eOesOrdStatusT = 15
-OES_ORD_STATUS_INVALID_SZ_E: eOesOrdStatusT = 16
-OES_ORD_STATUS_INVALID_SZ_REJECT: eOesOrdStatusT = 17
-OES_ORD_STATUS_INVALID_SZ_TRY_AGAIN: eOesOrdStatusT = 18
-__OES_ORD_STATUS_INVALID_MAX: eOesOrdStatusT = 19
-OES_ORD_STATUS_NORMAL: eOesOrdStatusT = 1
-OES_ORD_STATUS_DECLARING: eOesOrdStatusT = 1
-__OES_ORD_STATUS_INVALID_OES: eOesOrdStatusT = 11
-OES_ORD_TYPE_LMT: eOesOrdTypeT
-OES_ORD_TYPE_LMT_FOK: eOesOrdTypeT = 1
-__OES_ORD_TYPE_LMT_MAX: eOesOrdTypeT = 2
-OES_ORD_TYPE_MTL_BEST_5: eOesOrdTypeT = 10
-OES_ORD_TYPE_MTL_BEST: eOesOrdTypeT = 11
-OES_ORD_TYPE_MTL_SAMEPARTY_BEST: eOesOrdTypeT = 12
-__OES_ORD_TYPE_MTL_MAX: eOesOrdTypeT = 13
-OES_ORD_TYPE_FAK_BEST_5: eOesOrdTypeT = 20
-OES_ORD_TYPE_FAK: eOesOrdTypeT = 21
-__OES_ORD_TYPE_FAK_MAX: eOesOrdTypeT = 22
-OES_ORD_TYPE_FOK: eOesOrdTypeT = 30
-__OES_ORD_TYPE_FOK_MAX: eOesOrdTypeT = 31
-__OES_ORD_TYPE_MAX: eOesOrdTypeT = 32
-OES_ORD_TYPE_SH_LMT: eOesOrdTypeShT
-OES_ORD_TYPE_SH_MTL_BEST_5: eOesOrdTypeShT = 10
-OES_ORD_TYPE_SH_FAK_BEST_5: eOesOrdTypeShT = 20
-OES_ORD_TYPE_SH_LMT_FOK: eOesOrdTypeShT = 1
-OES_ORD_TYPE_SH_FOK: eOesOrdTypeShT = 30
-OES_ORD_TYPE_SZ_LMT: eOesOrdTypeSzT
-OES_ORD_TYPE_SZ_MTL_BEST: eOesOrdTypeSzT = 11
-OES_ORD_TYPE_SZ_MTL_SAMEPARTY_BEST: eOesOrdTypeSzT = 12
-OES_ORD_TYPE_SZ_FAK_BEST_5: eOesOrdTypeSzT = 20
-OES_ORD_TYPE_SZ_FAK: eOesOrdTypeSzT = 21
-OES_ORD_TYPE_SZ_FOK: eOesOrdTypeSzT = 30
-OES_ORD_TYPE_SZ_LMT_FOK: eOesOrdTypeSzT = 1
-OES_BS_TYPE_UNDEFINE: eOesBuySellTypeT
-OES_BS_TYPE_BUY: eOesBuySellTypeT = 1
-OES_BS_TYPE_SELL: eOesBuySellTypeT = 2
-OES_BS_TYPE_CREATION: eOesBuySellTypeT = 3
-OES_BS_TYPE_REDEMPTION: eOesBuySellTypeT = 4
-OES_BS_TYPE_CREDIT_BUY: eOesBuySellTypeT = 5
-OES_BS_TYPE_CREDIT_SELL: eOesBuySellTypeT = 6
-OES_BS_TYPE_SUBSCRIPTION: eOesBuySellTypeT = 7
-OES_BS_TYPE_BUY_OPEN: eOesBuySellTypeT = 11
-OES_BS_TYPE_BUY_CLOSE: eOesBuySellTypeT = 12
-OES_BS_TYPE_SELL_OPEN: eOesBuySellTypeT = 13
-OES_BS_TYPE_SELL_CLOSE: eOesBuySellTypeT = 14
-OES_BS_TYPE_COVERED_OPEN: eOesBuySellTypeT = 15
-OES_BS_TYPE_COVERED_CLOSE: eOesBuySellTypeT = 16
-OES_BS_TYPE_OPTION_EXERCISE: eOesBuySellTypeT = 17
-OES_BS_TYPE_UNDERLYING_FREEZE: eOesBuySellTypeT = 18
-OES_BS_TYPE_UNDERLYING_UNFREEZE: eOesBuySellTypeT = 19
-OES_BS_TYPE_CANCEL: eOesBuySellTypeT = 30
-__OES_BS_TYPE_MAX_TRADING: eOesBuySellTypeT = 31
-OES_BS_TYPE_SSE_DESIGNATION: eOesBuySellTypeT = 41
-OES_BS_TYPE_SSE_RECALL_DESIGNATION: eOesBuySellTypeT = 42
-OES_BS_TYPE_SZSE_DESIGNATION: eOesBuySellTypeT = 43
-OES_BS_TYPE_SZSE_CANCEL_DESIGNATION: eOesBuySellTypeT = 44
-__OES_BS_TYPE_MAX: eOesBuySellTypeT = 45
-OES_BS_TYPE_B: eOesBuySellTypeT = 1
-OES_BS_TYPE_S: eOesBuySellTypeT = 2
-OES_BS_TYPE_KB: eOesBuySellTypeT = 3
-OES_BS_TYPE_KS: eOesBuySellTypeT = 4
-OES_BS_TYPE_CB: eOesBuySellTypeT = 5
-OES_BS_TYPE_CS: eOesBuySellTypeT = 6
-OES_BS_TYPE_BO: eOesBuySellTypeT = 11
-OES_BS_TYPE_BC: eOesBuySellTypeT = 12
-OES_BS_TYPE_SO: eOesBuySellTypeT = 13
-OES_BS_TYPE_SC: eOesBuySellTypeT = 14
-OES_BS_TYPE_CO: eOesBuySellTypeT = 15
-OES_BS_TYPE_CC: eOesBuySellTypeT = 16
-OES_BS_TYPE_TE: eOesBuySellTypeT = 17
-OES_BS_TYPE_UF: eOesBuySellTypeT = 18
-OES_BS_TYPE_UU: eOesBuySellTypeT = 19
-OES_ORD_DIR_BUY: eOesOrdDirT
-OES_ORD_DIR_SELL: eOesOrdDirT = 1
-__OES_ORD_DIR_MAX: eOesOrdDirT = 2
-OES_ETF_TRDCNFM_TYPE_NONE: eOesEtfTrdCnfmTypeT
-OES_ETF_TRDCNFM_TYPE_ETF_FIRST: eOesEtfTrdCnfmTypeT = 1
-OES_ETF_TRDCNFM_TYPE_CMPOENT: eOesEtfTrdCnfmTypeT = 2
-OES_ETF_TRDCNFM_TYPE_CASH: eOesEtfTrdCnfmTypeT = 3
-OES_ETF_TRDCNFM_TYPE_ETF_LAST: eOesEtfTrdCnfmTypeT = 4
-__OES_ETF_TRDCNFM_TYPE_MAX: eOesEtfTrdCnfmTypeT = 5
-OES_ETF_SUBFLAG_FORBID_SUB: eOesEtfSubFlagT
-OES_ETF_SUBFLAG_ALLOW_SUB: eOesEtfSubFlagT = 1
-OES_ETF_SUBFLAG_MUST_SUB: eOesEtfSubFlagT = 2
-OES_ETF_SUBFLAG_SZ_REFUND_SUB: eOesEtfSubFlagT = 3
-OES_ETF_SUBFLAG_SZ_MUST_SUB: eOesEtfSubFlagT = 4
-OES_ETF_SUBFLAG_OTHER_REFUND_SUB: eOesEtfSubFlagT = 5
-OES_ETF_SUBFLAG_OTHER_MUST_SUB: eOesEtfSubFlagT = 6
-OES_LOT_TYPE_UNDEFINE: eOesLotTypeT
-OES_LOT_TYPE_FAILED: eOesLotTypeT = 1
-OES_LOT_TYPE_ASSIGNMENT: eOesLotTypeT = 2
-OES_LOT_TYPE_LOTTERY: eOesLotTypeT = 3
-__OES_LOT_TYPE_MAX: eOesLotTypeT = 4
-OES_LOT_REJ_REASON_DUPLICATE: eOesLotRejReasonT = 1
-OES_LOT_REJ_REASON_INVALID_DUPLICATE: eOesLotRejReasonT = 2
-OES_LOT_REJ_REASON_OFFLINE_FIRST: eOesLotRejReasonT = 3
-OES_LOT_REJ_REASON_BAD_RECORD: eOesLotRejReasonT = 4
-OES_LOT_REJ_REASON_UNKNOW: eOesLotRejReasonT = 5
-OES_EXECTYPE_UNDEFINE: eOesExecTypeT
-OES_EXECTYPE_INSERT: eOesExecTypeT = 1
-OES_EXECTYPE_CONFIRMED: eOesExecTypeT = 2
-OES_EXECTYPE_CANCELLED: eOesExecTypeT = 3
-OES_EXECTYPE_AUTO_CANCELLED: eOesExecTypeT = 4
-OES_EXECTYPE_REJECT: eOesExecTypeT = 5
-OES_EXECTYPE_TRADE: eOesExecTypeT = 6
-__OES_EXECTYPE_MAX: eOesExecTypeT = 7
-OES_CURR_TYPE_RMB: eOesCurrTypeT
-OES_CURR_TYPE_HKD: eOesCurrTypeT = 1
-OES_CURR_TYPE_USD: eOesCurrTypeT = 2
-__OES_CURR_TYPE_MAX: eOesCurrTypeT = 3
-OES_FEE_TYPE_EXCHANGE_STAMP: eOesFeeTypeT = 1
-OES_FEE_TYPE_EXCHANGE_TRANSFER: eOesFeeTypeT = 2
-OES_FEE_TYPE_EXCHANGE_SETTLEMENT: eOesFeeTypeT = 3
-OES_FEE_TYPE_EXCHANGE_TRADE_RULE: eOesFeeTypeT = 4
-OES_FEE_TYPE_EXCHANGE_EXCHANGE: eOesFeeTypeT = 5
-OES_FEE_TYPE_EXCHANGE_ADMINFER: eOesFeeTypeT = 6
-OES_FEE_TYPE_EXCHANGE_OTHER: eOesFeeTypeT = 7
-__OES_FEE_TYPE_EXCHANGE_MAX: eOesFeeTypeT = 8
-OES_FEE_TYPE_BROKER_BACK_END: eOesFeeTypeT = 17
-OES_CALC_FEE_MODE_AMOUNT: eOesCalcFeeModeT
-OES_CALC_FEE_MODE_QTY: eOesCalcFeeModeT = 1
-OES_CALC_FEE_MODE_ORD: eOesCalcFeeModeT = 2
-OES_FUND_TRSF_DIRECT_IN: eOesFundTrsfDirectT
-OES_FUND_TRSF_DIRECT_OUT: eOesFundTrsfDirectT = 1
-OES_FUND_TRSF_TYPE_OES_BANK: eOesFundTrsfTypeT
-OES_FUND_TRSF_TYPE_OES_COUNTER: eOesFundTrsfTypeT = 1
-OES_FUND_TRSF_TYPE_COUNTER_BANK: eOesFundTrsfTypeT = 2
-__OES_FUND_TRSF_TYPE_MAX: eOesFundTrsfTypeT = 3
-OES_FUND_TRSF_STS_UNDECLARED: eOesFundTrsfStatusT
-OES_FUND_TRSF_STS_DECLARED: eOesFundTrsfStatusT = 1
-OES_FUND_TRSF_STS_WAIT_DONE: eOesFundTrsfStatusT = 2
-OES_FUND_TRSF_STS_DONE: eOesFundTrsfStatusT = 3
-__OES_FUND_TRSF_STS_ROLLBACK_MIN: eOesFundTrsfStatusT = 5
-OES_FUND_TRSF_STS_UNDECLARED_ROLLBACK: eOesFundTrsfStatusT = 6
-OES_FUND_TRSF_STS_DECLARED_ROLLBACK: eOesFundTrsfStatusT = 7
-__OES_FUND_TRSF_STS_INVALID_MIN: eOesFundTrsfStatusT = 10
-OES_FUND_TRSF_STS_INVALID_OES: eOesFundTrsfStatusT = 11
-OES_FUND_TRSF_STS_INVALID_COUNTER: eOesFundTrsfStatusT = 12
-OES_FUND_TRSF_STS_SUSPENDED: eOesFundTrsfStatusT = 13
-OES_ACCT_TYPE_NORMAL: eOesAcctTypeT
-OES_ACCT_TYPE_CREDIT: eOesAcctTypeT = 1
-OES_ACCT_TYPE_OPTION: eOesAcctTypeT = 2
-__OES_ACCT_TYPE_MAX: eOesAcctTypeT = 3
-OES_CASH_TYPE_SPOT: eOesCashTypeT
-OES_CASH_TYPE_CREDIT: eOesCashTypeT = 1
-OES_CASH_TYPE_OPTION: eOesCashTypeT = 2
-__OES_CASH_TYPE_MAX: eOesCashTypeT = 3
-OES_CASH_TYPE_CRE: eOesCashTypeT = 1
-OES_CASH_TYPE_OPT: eOesCashTypeT = 2
-OES_ACCT_STATUS_NORMAL: eOesAcctStatusT
-OES_ACCT_STATUS_DISABLED: eOesAcctStatusT = 1
-OES_ACCT_STATUS_LOCKED: eOesAcctStatusT = 2
-OES_PERMIS_MARKET_ORDER: eOesTradingPermissionT = 2
-OES_PERMIS_STRUCTURED_FUND: eOesTradingPermissionT = 4
-OES_PERMIS_BOND_QUALIFIED_INVESTOR: eOesTradingPermissionT = 8
-OES_PERMIS_XXX4: eOesTradingPermissionT = 16
-OES_PERMIS_DELISTING: eOesTradingPermissionT = 32
-OES_PERMIS_RISK_WARNING: eOesTradingPermissionT = 64
-OES_PERMIS_SINGLE_MARKET_ETF: eOesTradingPermissionT = 128
-OES_PERMIS_CROSS_BORDER_ETF: eOesTradingPermissionT = 256
-OES_PERMIS_CROSS_MARKET_ETF: eOesTradingPermissionT = 512
-OES_PERMIS_CURRENCY_ETF: eOesTradingPermissionT = 1024
-OES_PERMIS_STOCK_PLEDGE_REPURCHASE: eOesTradingPermissionT = 2048
-OES_PERMIS_PLEDGE_REPURCHASE: eOesTradingPermissionT = 4096
-OES_PERMIS_GEM: eOesTradingPermissionT = 8192
-OES_PERMIS_SH_HK_STOCK_CONNECT: eOesTradingPermissionT = 16384
-OES_PERMIS_SZ_HK_STOCK_CONNECT: eOesTradingPermissionT = 32768
-OES_PERMIS_CDR: eOesTradingPermissionT = 65536
-OES_PERMIS_INNOVATION: eOesTradingPermissionT = 131072
-__OES_PERMIS_ALL: eOesTradingPermissionT = -1
-OES_LIMIT_BUY: eOesTradingLimitT = 2
-OES_LIMIT_SELL: eOesTradingLimitT = 4
-OES_LIMIT_RECALL_DESIGNATION: eOesTradingLimitT = 8
-OES_LIMIT_DESIGNATION: eOesTradingLimitT = 16
-OES_LIMIT_REPO: eOesTradingLimitT = 32
-OES_LIMIT_REVERSE_REPO: eOesTradingLimitT = 64
-OES_LIMIT_SUBSCRIPTION: eOesTradingLimitT = 128
-OES_LIMIT_CREDIT_BUY: eOesTradingLimitT = 256
-OES_LIMIT_CREDIT_SELL: eOesTradingLimitT = 512
-__OES_LIMIT_ALL: eOesTradingLimitT = -1
-OES_QUALIFICATION_PUBLIC_INVESTOR: eOesQualificationClassT
-OES_QUALIFICATION_QUALIFIED_INVESTOR: eOesQualificationClassT = 1
-OES_QUALIFICATION_QUALIFIED_INSTITUTIONAL: eOesQualificationClassT = 2
-OES_INVESTOR_CLASS_NORMAL: eOesInvestorClassT
-OES_INVESTOR_CLASS_PROFESSIONAL_A: eOesInvestorClassT = 1
-OES_INVESTOR_CLASS_PROFESSIONAL_B: eOesInvestorClassT = 2
-OES_INVESTOR_CLASS_PROFESSIONAL_C: eOesInvestorClassT = 3
-OES_OWNER_TYPE_PERSONAL: eOesOwnerTypeT = 1
-OES_OWNER_TYPE_EXCHANGE: eOesOwnerTypeT = 101
-OES_OWNER_TYPE_MEMBER: eOesOwnerTypeT = 102
-OES_OWNER_TYPE_INSTITUTION: eOesOwnerTypeT = 103
-OES_OWNER_TYPE_PROPRIETARY: eOesOwnerTypeT = 104
-OES_OWNER_TYPE_MKT_MAKER: eOesOwnerTypeT = 105
-OES_OWNER_TYPE_SETTLEMENT: eOesOwnerTypeT = 106
-__OES_OWNER_TYPE_MAX: eOesOwnerTypeT = 107
-OES_CLIENT_TYPE_UNDEFINED: eOesClientTypeT
-OES_CLIENT_TYPE_INVESTOR: eOesClientTypeT = 1
-OES_CLIENT_TYPE_VIRTUAL: eOesClientTypeT = 2
-OES_CLIENT_STATUS_UNACTIVATED: eOesClientStatusT
-OES_CLIENT_STATUS_ACTIVATED: eOesClientStatusT = 1
-OES_CLIENT_STATUS_PAUSE: eOesClientStatusT = 2
-OES_CLIENT_STATUS_SUSPENDED: eOesClientStatusT = 3
-OES_CLIENT_STATUS_CANCELLED: eOesClientStatusT = 4
-OES_OPT_CONTRACT_TYPE_CALL: eOesOptContractTypeT
-OES_OPT_CONTRACT_TYPE_PUT: eOesOptContractTypeT = 1
-__OES_OPT_CONTRACT_TYPE_MAX: eOesOptContractTypeT = 2
-OES_OPT_INV_LEVEL_B: eOesOptInvLevelT
-OES_OPT_INV_LEVEL_L: eOesOptInvLevelT = 1
-OES_OPT_INV_LEVEL_A: eOesOptInvLevelT = 2
-__OES_OPT_INV_LEVEL_MAX: eOesOptInvLevelT = 3
-OPEN_FLAG_TYPE_ALLOW: eOpenFlagTypeT
-OPEN_FLAG_TYPE_FORBID: eOpenFlagTypeT = 1
-__OPEN_FLAG_TYPE_MAX: eOpenFlagTypeT = 2
-OES_OPTION_OPEN_FLAG_ALLOW: eOesOptionOpenFlagT
-OES_OPTION_OPEN_FLAG_FORBID: eOesOptionOpenFlagT = 1
-OES_POSITION_INVALID: eOesPositionEffT
-OES_POSITION_OPEN: eOesPositionEffT = 1
-OES_POSITION_CLOSE: eOesPositionEffT = 2
-OES_OPTION_TYPE_E: eOesOptionTypeT
-OES_OPTION_TYPE_A: eOesOptionTypeT = 1
-__OES_OPTION_TYPE_MAX: eOesOptionTypeT = 2
-SMSG_PROTO_BINARY: eSMsgProtocolTypeT
-SMSG_PROTO_JSON: eSMsgProtocolTypeT = 1
-SMSG_PROTO_FIX: eSMsgProtocolTypeT = 2
-SMSG_PROTO_PROTOBUF: eSMsgProtocolTypeT = 3
-__MAX_SMSG_PROTO_TYPE: eSMsgProtocolTypeT = 4
-SMSG_MSGFLAG_NONE: eSMsgFlagT
-SMSG_MSGFLAG_REQ: eSMsgFlagT
-SMSG_MSGFLAG_RSP: eSMsgFlagT = 80
-SMSG_MSGFLAG_NESTED: eSMsgFlagT = 32
-SMSG_MSGFLAG_COMPRESSED: eSMsgFlagT = 128
-SMSG_MSGFLAG_MASK_RSPFLAG: eSMsgFlagT = 240
-SMSG_MSGFLAG_MASK_PROTOCOL: eSMsgFlagT = 15
-OESMSG_ORD_NEW_ORDER: eOesMsgTypeT = 1
-OESMSG_ORD_CANCEL_REQUEST: eOesMsgTypeT = 2
-OESMSG_ORD_BATCH_ORDERS: eOesMsgTypeT = 3
-__OESMSG_ORD_MAX: eOesMsgTypeT = 4
-__OESMSG_RPT_MIN: eOesMsgTypeT = 15
-OESMSG_RPT_MARKET_STATE: eOesMsgTypeT = 16
-OESMSG_RPT_REPORT_SYNCHRONIZATION: eOesMsgTypeT = 17
-OESMSG_RPT_BUSINESS_REJECT: eOesMsgTypeT = 18
-OESMSG_RPT_ORDER_INSERT: eOesMsgTypeT = 19
-OESMSG_RPT_ORDER_REPORT: eOesMsgTypeT = 20
-OESMSG_RPT_TRADE_REPORT: eOesMsgTypeT = 21
-OESMSG_RPT_FUND_TRSF_REJECT: eOesMsgTypeT = 22
-OESMSG_RPT_FUND_TRSF_REPORT: eOesMsgTypeT = 23
-OESMSG_RPT_CASH_ASSET_VARIATION: eOesMsgTypeT = 24
-OESMSG_RPT_STOCK_HOLDING_VARIATION: eOesMsgTypeT = 25
-OESMSG_RPT_OPTION_HOLDING_VARIATION: eOesMsgTypeT = 26
-__OESMSG_RPT_MAX: eOesMsgTypeT = 27
-__OESMSG_NONTRD_MIN: eOesMsgTypeT = 32
-OESMSG_NONTRD_FUND_TRSF_REQ: eOesMsgTypeT = 33
-OESMSG_NONTRD_CHANGE_PASSWORD: eOesMsgTypeT = 34
-__OESMSG_NONTRD_MAX: eOesMsgTypeT = 35
-__OESMSG_QRYMSG_MIN: eOesMsgTypeT = 47
-OESMSG_QRYMSG_CLIENT_OVERVIEW: eOesMsgTypeT = 48
-OESMSG_QRYMSG_ORD: eOesMsgTypeT = 49
-OESMSG_QRYMSG_TRD: eOesMsgTypeT = 50
-OESMSG_QRYMSG_CASH_ASSET: eOesMsgTypeT = 51
-OESMSG_QRYMSG_STK_HLD: eOesMsgTypeT = 52
-OESMSG_QRYMSG_OPT_HLD: eOesMsgTypeT = 53
-OESMSG_QRYMSG_CUST: eOesMsgTypeT = 54
-OESMSG_QRYMSG_INV_ACCT: eOesMsgTypeT = 55
-OESMSG_QRYMSG_COMMISSION_RATE: eOesMsgTypeT = 56
-OESMSG_QRYMSG_FUND_TRSF: eOesMsgTypeT = 57
-OESMSG_QRYMSG_STOCK: eOesMsgTypeT = 58
-OESMSG_QRYMSG_ETF: eOesMsgTypeT = 59
-OESMSG_QRYMSG_ETF_COMPONENT: eOesMsgTypeT = 60
-OESMSG_QRYMSG_OPTION: eOesMsgTypeT = 61
-OESMSG_QRYMSG_ISSUE: eOesMsgTypeT = 62
-OESMSG_QRYMSG_LOT_WINNING: eOesMsgTypeT = 63
-OESMSG_QRYMSG_TRADING_DAY: eOesMsgTypeT = 64
-OESMSG_QRYMSG_MARKET_STATE: eOesMsgTypeT = 65
-OESMSG_QRYMSG_COUNTER_CASH: eOesMsgTypeT = 66
-__OESMSG_QRYMSG_MAX: eOesMsgTypeT = 67
-OESMSG_SESS_TRD_LOGIN: eOesMsgTypeT = 241
-OESMSG_SESS_RPT_LOGIN: eOesMsgTypeT = 243
-OESMSG_SESS_QRY_LOGIN: eOesMsgTypeT = 244
-OESMSG_SESS_HEARTBEAT: eOesMsgTypeT = 250
-OESMSG_SESS_TEST_REQUEST: eOesMsgTypeT = 251
-OESMSG_SESS_LOGOUT: eOesMsgTypeT = 254
-OESMSG_RPT_ORDER_REJECT: eOesMsgTypeT = 18
-OES_SUB_RPT_TYPE_DEFAULT: eOesSubscribeReportTypeT
-OES_SUB_RPT_TYPE_BUSINESS_REJECT: eOesSubscribeReportTypeT = 1
-OES_SUB_RPT_TYPE_ORDER_INSERT: eOesSubscribeReportTypeT = 2
-OES_SUB_RPT_TYPE_ORDER_REPORT: eOesSubscribeReportTypeT = 4
-OES_SUB_RPT_TYPE_TRADE_REPORT: eOesSubscribeReportTypeT = 8
-OES_SUB_RPT_TYPE_FUND_TRSF_REPORT: eOesSubscribeReportTypeT = 16
-OES_SUB_RPT_TYPE_CASH_ASSET_VARIATION: eOesSubscribeReportTypeT = 32
-OES_SUB_RPT_TYPE_HOLDING_VARIATION: eOesSubscribeReportTypeT = 64
-OES_SUB_RPT_TYPE_MARKET_STATE: eOesSubscribeReportTypeT = 128
-OES_SUB_RPT_TYPE_ALL: eOesSubscribeReportTypeT = 65535
-__MAX_OES_SUB_RPT_TYPE: eOesSubscribeReportTypeT = 2147483647
-SPK_SOCKET_PROTOCOL_TCP: eSSocketProtocolTypeT
-SPK_SOCKET_PROTOCOL_IPC: eSSocketProtocolTypeT = 1
-SPK_SOCKET_PROTOCOL_UDP_UCAST: eSSocketProtocolTypeT = 2
-SPK_SOCKET_PROTOCOL_UDP_MCAST: eSSocketProtocolTypeT = 3
-SPK_SOCKET_PROTOCOL_PGM: eSSocketProtocolTypeT = 4
-SPK_SOCKET_PROTOCOL_EPGM: eSSocketProtocolTypeT = 5
-__MAX_SPK_SOCKET_PROTOCOL: eSSocketProtocolTypeT = 6
-GENERAL_CLI_CLUSTER_UNDEFINED: eGeneralClientClusterTypeT
-GENERAL_CLI_CLUSTER_REPLICA_SET: eGeneralClientClusterTypeT = 1
-GENERAL_CLI_CLUSTER_PEER_NODES: eGeneralClientClusterTypeT = 2
-__MAX_GENERAL_CLI_CLUSTER_TYPE: eGeneralClientClusterTypeT = 3
-GENERAL_CLI_ENCRYPT_NONE: eGeneralClientEncryptTypeT
-GENERAL_CLI_ENCRYPT_MD5: eGeneralClientEncryptTypeT = 1
-GENERAL_CLI_ENCRYPT_SHA: eGeneralClientEncryptTypeT = 2
-GENERAL_CLI_ENCRYPT_DES: eGeneralClientEncryptTypeT = 16
-GENERAL_CLI_ENCRYPT_AES: eGeneralClientEncryptTypeT = 32
-GENERAL_CLI_ENCRYPT_RSA: eGeneralClientEncryptTypeT = 64
-OESAPI_CHANNEL_TYPE_ORDER: eOesApiChannelTypeT = 1
-OESAPI_CHANNEL_TYPE_REPORT: eOesApiChannelTypeT = 2
-OESAPI_CHANNEL_TYPE_QUERY: eOesApiChannelTypeT = 3
-MDS_EXCH_SSE: eMdsExchangeIdT = 1
-MDS_EXCH_SZSE: eMdsExchangeIdT = 2
-__MAX_MDS_EXCH: eMdsExchangeIdT = 3
-__MAX_MDS_EXCH_ALIGNED4: eMdsExchangeIdT = 4
-__MAX_MDS_EXCH_ALIGNED8: eMdsExchangeIdT = 8
-MDS_MSGSRC_UNDEFINED: eMdsMsgSourceT
-MDS_MSGSRC_EZEI_TCP: eMdsMsgSourceT = 1
-MDS_MSGSRC_EZEI_UDP: eMdsMsgSourceT = 2
-MDS_MSGSRC_VDE_LEVEL2: eMdsMsgSourceT = 3
-MDS_MSGSRC_VDE_LEVEL1: eMdsMsgSourceT = 4
-MDS_MSGSRC_SZSE_MDGW_BINARY: eMdsMsgSourceT = 5
-MDS_MSGSRC_SZSE_MDGW_STEP: eMdsMsgSourceT = 6
-MDS_MSGSRC_MDS_TCP: eMdsMsgSourceT = 7
-MDS_MSGSRC_MDS_UDP: eMdsMsgSourceT = 8
-MDS_MSGSRC_FILE_MKTDT: eMdsMsgSourceT = 9
-MDS_MSGSRC_SSE_MDGW_BINARY: eMdsMsgSourceT = 10
-MDS_MSGSRC_SSE_MDGW_STEP: eMdsMsgSourceT = 11
-__MAX_MDS_MSGSRC: eMdsMsgSourceT = 12
-MDS_MSGSRC_MDGW_BINARY: eMdsMsgSourceT = 5
-MDS_MSGSRC_MDGW_STEP: eMdsMsgSourceT = 6
-MDS_SECURITY_TYPE_STOCK: eMdsSecurityTypeT = 1
-MDS_SECURITY_TYPE_INDEX: eMdsSecurityTypeT = 2
-MDS_SECURITY_TYPE_OPTION: eMdsSecurityTypeT = 3
-__MAX_MDS_SECURITY_TYPE: eMdsSecurityTypeT = 4
-MDS_MD_STREAM_TYPE_INDEX: eMdsMdStreamTypeT = 1
-MDS_MD_STREAM_TYPE_STOCK: eMdsMdStreamTypeT = 2
-MDS_MD_STREAM_TYPE_BOND: eMdsMdStreamTypeT = 3
-MDS_MD_STREAM_TYPE_FUND: eMdsMdStreamTypeT = 4
-MDS_MD_STREAM_TYPE_SZSE_STOCK: eMdsMdStreamTypeT = 5
-MDS_MD_STREAM_TYPE_SZSE_REPO: eMdsMdStreamTypeT = 6
-MDS_MD_STREAM_TYPE_SZSE_TRADE_STATS: eMdsMdStreamTypeT = 7
-MDS_MD_STREAM_TYPE_OPTION: eMdsMdStreamTypeT = 8
-MDS_MD_STREAM_TYPE_OTHERS: eMdsMdStreamTypeT = 9
-__MAX_MDS_MD_STREAM_TYPE: eMdsMdStreamTypeT = 10
-MDS_MD_LEVEL_0: eMdsMdLevelT
-MDS_MD_LEVEL_1: eMdsMdLevelT = 1
-MDS_MD_LEVEL_2: eMdsMdLevelT = 2
-__MAX_MDS_MD_LEVEL: eMdsMdLevelT = 3
-MDS_L2_PX_OPERATOR_ADD: eMdsL2PriceLevelOperatorT = 1
-MDS_L2_PX_OPERATOR_UPDATE: eMdsL2PriceLevelOperatorT = 2
-MDS_L2_PX_OPERATOR_DELETE: eMdsL2PriceLevelOperatorT = 3
-__MAX_MDS_L2_PX_OPERATOR: eMdsL2PriceLevelOperatorT = 4
-MDS_L2_VIRTUAL_AUCTION_SIDE_NONE: eMdsL2VirtualAuctionSideT
-MDS_L2_VIRTUAL_AUCTION_SIDE_BID: eMdsL2VirtualAuctionSideT = 1
-MDS_L2_VIRTUAL_AUCTION_SIDE_OFFER: eMdsL2VirtualAuctionSideT = 2
-MDS_L2_TRADE_EXECTYPE_CANCELED: eMdsL2TradeExecTypeT = 52
-MDS_L2_TRADE_EXECTYPE_TRADE: eMdsL2TradeExecTypeT = 70
-MDS_L2_TRADE_BSFLAG_BUY: eMdsL2TradeBSFlagT = 66
-MDS_L2_TRADE_BSFLAG_SELL: eMdsL2TradeBSFlagT = 83
-MDS_L2_TRADE_BSFLAG_UNKNOWN: eMdsL2TradeBSFlagT = 78
-MDS_L2_ORDER_SIDE_BUY: eMdsL2OrderSideT = 49
-MDS_L2_ORDER_SIDE_SELL: eMdsL2OrderSideT = 50
-MDS_L2_ORDER_SIDE_BORROW: eMdsL2OrderSideT = 71
-MDS_L2_ORDER_SIDE_LEND: eMdsL2OrderSideT = 70
-MDS_L2_ORDER_TYPE_MKT: eMdsL2OrderTypeT = 49
-MDS_L2_ORDER_TYPE_LMT: eMdsL2OrderTypeT = 50
-MDS_L2_ORDER_TYPE_SAMEPARTY_BEST: eMdsL2OrderTypeT = 85
-MDS_CLIENT_TYPE_UNDEFINED: eMdsClientTypeT
-MDS_CLIENT_TYPE_INVESTOR: eMdsClientTypeT = 1
-MDS_CLIENT_TYPE_VIRTUAL: eMdsClientTypeT = 2
-MDS_CLIENT_STATUS_UNACTIVATED: eMdsClientStatusT
-MDS_CLIENT_STATUS_ACTIVATED: eMdsClientStatusT = 1
-MDS_CLIENT_STATUS_PAUSE: eMdsClientStatusT = 2
-MDS_CLIENT_STATUS_SUSPENDED: eMdsClientStatusT = 3
-MDS_CLIENT_STATUS_CANCELLED: eMdsClientStatusT = 4
-MDS_MSGTYPE_HEARTBEAT: eMdsMsgTypeT = 1
-MDS_MSGTYPE_TEST_REQUEST: eMdsMsgTypeT = 2
-MDS_MSGTYPE_LOGON: eMdsMsgTypeT = 3
-MDS_MSGTYPE_LOGOUT: eMdsMsgTypeT = 4
-MDS_MSGTYPE_MARKET_DATA_REQUEST: eMdsMsgTypeT = 5
-MDS_MSGTYPE_COMPRESSED_PACKETS: eMdsMsgTypeT = 6
-__MDS_MSGTYPE_SESSION_MAX: eMdsMsgTypeT = 7
-MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH: eMdsMsgTypeT = 10
-MDS_MSGTYPE_INDEX_SNAPSHOT_FULL_REFRESH: eMdsMsgTypeT = 11
-MDS_MSGTYPE_OPTION_SNAPSHOT_FULL_REFRESH: eMdsMsgTypeT = 12
-MDS_MSGTYPE_TRADING_SESSION_STATUS: eMdsMsgTypeT = 13
-MDS_MSGTYPE_SECURITY_STATUS: eMdsMsgTypeT = 14
-__MDS_MSGTYPE_L1_MAX: eMdsMsgTypeT = 15
-MDS_MSGTYPE_L2_MARKET_DATA_SNAPSHOT: eMdsMsgTypeT = 20
-MDS_MSGTYPE_L2_BEST_ORDERS_SNAPSHOT: eMdsMsgTypeT = 21
-MDS_MSGTYPE_L2_TRADE: eMdsMsgTypeT = 22
-MDS_MSGTYPE_L2_ORDER: eMdsMsgTypeT = 23
-MDS_MSGTYPE_L2_MARKET_DATA_INCREMENTAL: eMdsMsgTypeT = 24
-MDS_MSGTYPE_L2_BEST_ORDERS_INCREMENTAL: eMdsMsgTypeT = 25
-MDS_MSGTYPE_L2_MARKET_OVERVIEW: eMdsMsgTypeT = 26
-MDS_MSGTYPE_L2_VIRTUAL_AUCTION_PRICE: eMdsMsgTypeT = 27
-__MDS_MSGTYPE_L2_MAX: eMdsMsgTypeT = 28
-MDS_MSGTYPE_QRY_MARKET_DATA_SNAPSHOT: eMdsMsgTypeT = 80
-MDS_MSGTYPE_QRY_SECURITY_STATUS: eMdsMsgTypeT = 81
-MDS_MSGTYPE_QRY_TRADING_SESSION_STATUS: eMdsMsgTypeT = 82
-__MDS_MSGTYPE_QRY_MAX: eMdsMsgTypeT = 83
-MDS_SUB_MODE_SET: eMdsSubscribeModeT
-MDS_SUB_MODE_APPEND: eMdsSubscribeModeT = 1
-MDS_SUB_MODE_DELETE: eMdsSubscribeModeT = 2
-__MAX_MDS_SUB_MODE: eMdsSubscribeModeT = 3
-MDS_MKT_SUB_FLAG_DEFAULT: eMdsMktSubscribeFlagT
-MDS_MKT_SUB_FLAG_ALL: eMdsMktSubscribeFlagT = 1
-MDS_MKT_SUB_FLAG_DISABLE: eMdsMktSubscribeFlagT = 2
-__MAX_MDS_MKT_SUB_FLAG: eMdsMktSubscribeFlagT = 3
-MDS_TICK_TYPE_LATEST_SIMPLIFIED: eMdsSubscribedTickTypeT
-MDS_TICK_TYPE_LATEST_TIMELY: eMdsSubscribedTickTypeT = 1
-MDS_TICK_TYPE_ALL_INCREMENTS: eMdsSubscribedTickTypeT = 2
-__MAX_MDS_TICK_TYPE: eMdsSubscribedTickTypeT = 3
-MDS_TICK_EXPIRE_TYPE_NONE: eMdsSubscribedTickExpireTypeT
-MDS_TICK_EXPIRE_TYPE_IMMEDIATE: eMdsSubscribedTickExpireTypeT = 1
-MDS_TICK_EXPIRE_TYPE_TIMELY: eMdsSubscribedTickExpireTypeT = 2
-MDS_TICK_EXPIRE_TYPE_TIMEOUT: eMdsSubscribedTickExpireTypeT = 3
-__MAX_MDS_TICK_EXPIRE_TYPE: eMdsSubscribedTickExpireTypeT = 4
-MDS_SUB_DATA_TYPE_DEFAULT: eMdsSubscribeDataTypeT
-MDS_SUB_DATA_TYPE_L1_SNAPSHOT: eMdsSubscribeDataTypeT = 1
-MDS_SUB_DATA_TYPE_L2_SNAPSHOT: eMdsSubscribeDataTypeT = 2
-MDS_SUB_DATA_TYPE_L2_BEST_ORDERS: eMdsSubscribeDataTypeT = 4
-MDS_SUB_DATA_TYPE_L2_TRADE: eMdsSubscribeDataTypeT = 8
-MDS_SUB_DATA_TYPE_L2_ORDER: eMdsSubscribeDataTypeT = 16
-MDS_SUB_DATA_TYPE_L2_VIRTUAL_AUCTION_PRICE: eMdsSubscribeDataTypeT = 32
-MDS_SUB_DATA_TYPE_L2_MARKET_OVERVIEW: eMdsSubscribeDataTypeT = 64
-MDS_SUB_DATA_TYPE_TRADING_SESSION_STATUS: eMdsSubscribeDataTypeT = 256
-MDS_SUB_DATA_TYPE_SECURITY_STATUS: eMdsSubscribeDataTypeT = 512
-MDS_SUB_DATA_TYPE_INDEX_SNAPSHOT: eMdsSubscribeDataTypeT = 1024
-MDS_SUB_DATA_TYPE_OPTION_SNAPSHOT: eMdsSubscribeDataTypeT = 2048
-MDS_SUB_DATA_TYPE_NONE: eMdsSubscribeDataTypeT = 32768
-MDS_SUB_DATA_TYPE_ALL: eMdsSubscribeDataTypeT = 65535
-__MAX_MDS_SUB_DATA_TYPE: eMdsSubscribeDataTypeT = 2147483647
-MDS_CHANNEL_NO_DEFAULT: eMdsTickChannelNoT
-MDS_CHANNEL_NO_ONE: eMdsTickChannelNoT = 1
-MDS_CHANNEL_NO_TWO: eMdsTickChannelNoT = 2
-MDS_CHANNEL_NO_THREE: eMdsTickChannelNoT = 4
-MDS_CHANNEL_NO_FOUR: eMdsTickChannelNoT = 8
-MDS_CHANNEL_NO_ALL: eMdsTickChannelNoT = 15
-MDS_CHANNEL_NO_NONE: eMdsTickChannelNoT = 128
-MDSAPI_CHANNEL_TYPE_TCP: eMdsApiChannelTypeT = 1
-MDSAPI_CHANNEL_TYPE_UDP: eMdsApiChannelTypeT = 2
-MDSAPI_CHANNEL_TYPE_QUERY: eMdsApiChannelTypeT = 3
 

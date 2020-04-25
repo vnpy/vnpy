@@ -36,9 +36,7 @@ class TurtleSignalStrategy(CtaTemplate):
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
-        super(TurtleSignalStrategy, self).__init__(
-            cta_engine, strategy_name, vt_symbol, setting
-        )
+        super().__init__(cta_engine, strategy_name, vt_symbol, setting)
 
         self.bg = BarGenerator(self.on_bar)
         self.am = ArrayManager()
@@ -78,7 +76,12 @@ class TurtleSignalStrategy(CtaTemplate):
         if not self.am.inited:
             return
 
-        self.entry_up, self.entry_down = self.am.donchian(self.entry_window)
+        # Only calculates new entry channel when no position holding
+        if not self.pos:
+            self.entry_up, self.entry_down = self.am.donchian(
+                self.entry_window
+            )
+
         self.exit_up, self.exit_down = self.am.donchian(self.exit_window)
 
         if not self.pos:
@@ -92,13 +95,13 @@ class TurtleSignalStrategy(CtaTemplate):
             self.send_buy_orders(self.entry_up)
             self.send_short_orders(self.entry_down)
         elif self.pos > 0:
-            self.send_buy_orders(self.long_entry)
+            self.send_buy_orders(self.entry_up)
 
             sell_price = max(self.long_stop, self.exit_down)
             self.sell(sell_price, abs(self.pos), True)
 
         elif self.pos < 0:
-            self.send_short_orders(self.short_entry)
+            self.send_short_orders(self.entry_down)
 
             cover_price = min(self.short_stop, self.exit_up)
             self.cover(cover_price, abs(self.pos), True)

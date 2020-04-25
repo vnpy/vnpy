@@ -809,7 +809,7 @@ public:
 
 PYBIND11_MODULE(vnctpmd, m)
 {
-	class_<MdApi, PyMdApi> mdapi(m, "MdApi");
+	class_<MdApi, PyMdApi> mdapi(m, "MdApi", module_local());
 	mdapi
 		.def(init<>())
 		.def("createFtdcMdApi", &MdApi::createFtdcMdApi)

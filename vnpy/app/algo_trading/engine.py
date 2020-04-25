@@ -4,8 +4,8 @@ from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.event import (
     EVENT_TICK, EVENT_TIMER, EVENT_ORDER, EVENT_TRADE)
 from vnpy.trader.constant import (Direction, Offset, OrderType)
-from vnpy.trader.object import (SubscribeRequest, OrderRequest)
-from vnpy.trader.utility import load_json, save_json
+from vnpy.trader.object import (SubscribeRequest, OrderRequest, LogData)
+from vnpy.trader.utility import load_json, save_json, round_to
 
 from .template import AlgoTemplate
 
@@ -46,10 +46,20 @@ class AlgoEngine(BaseEngine):
         from .algos.twap_algo import TwapAlgo
         from .algos.iceberg_algo import IcebergAlgo
         from .algos.sniper_algo import SniperAlgo
+        from .algos.stop_algo import StopAlgo
+        from .algos.best_limit_algo import BestLimitAlgo
+        from .algos.grid_algo import GridAlgo
+        from .algos.dma_algo import DmaAlgo
+        from .algos.arbitrage_algo import ArbitrageAlgo
 
         self.add_algo_template(TwapAlgo)
         self.add_algo_template(IcebergAlgo)
         self.add_algo_template(SniperAlgo)
+        self.add_algo_template(StopAlgo)
+        self.add_algo_template(BestLimitAlgo)
+        self.add_algo_template(GridAlgo)
+        self.add_algo_template(DmaAlgo)
+        self.add_algo_template(ArbitrageAlgo)
 
     def add_algo_template(self, template: AlgoTemplate):
         """"""
@@ -86,7 +96,10 @@ class AlgoEngine(BaseEngine):
 
     def process_timer_event(self, event: Event):
         """"""
-        for algo in self.algos.values():
+        # Generate a list of algos first to avoid dict size change
+        algos = list(self.algos.values())
+
+        for algo in algos:
             algo.update_timer()
 
     def process_trade_event(self, event: Event):
@@ -162,6 +175,10 @@ class AlgoEngine(BaseEngine):
             self.write_log(f'委托下单失败，找不到合约：{vt_symbol}', algo)
             return
 
+        volume = round_to(volume, contract.min_volume)
+        if not volume:
+            return ""
+
         req = OrderRequest(
             symbol=contract.symbol,
             exchange=contract.exchange,
@@ -210,8 +227,8 @@ class AlgoEngine(BaseEngine):
         if algo:
             msg = f"{algo.algo_name}：{msg}"
 
-        event = Event(EVENT_ALGO_LOG)
-        event.data = msg
+        log = LogData(msg=msg, gateway_name=APP_NAME)
+        event = Event(EVENT_ALGO_LOG, data=log)
         self.event_engine.put(event)
 
     def put_setting_event(self, setting_name: str, setting: dict):

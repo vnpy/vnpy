@@ -4,5 +4,5 @@
 
 * Github Issues：[Issues页面](https://github.com/vnpy/vnpy/issues)
 * 官方QQ群: 262656087
-* 项目论坛：[维恩的派](http://www.vnpie.com))
+* 项目论坛：[维恩的派](http://www.vnpie.com)
 * 项目邮箱: vn.py@foxmail.com

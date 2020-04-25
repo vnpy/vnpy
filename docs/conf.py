@@ -24,9 +24,9 @@ copyright = '2019, vn.py Team'
 author = 'vn.py Team'
 
 # The short X.Y version
-version = '2.0'
+version = '2.0.3'
 # The full version, including alpha/beta/rc tags
-release = '2.0-DEV'
+release = '2.0.3'
 
 # -- General configuration ---------------------------------------------------
 
@@ -38,7 +38,9 @@ release = '2.0-DEV'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'recommonmark'
+    'sphinx.ext.autodoc',
+    'sphinx.ext.intersphinx',
+    'recommonmark',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -72,7 +74,7 @@ locale_dirs = ["locale/"]
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = None
+pygments_style = 'sphinx'
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -85,8 +87,20 @@ html_theme = 'alabaster'
 # documentation.
 #
 html_theme_options = {
+    'logo': 'vnpy.ico',
     "base_bg": "inherit",
     "narrow_sidebar_bg": "inherit",
+    'github_banner': True,
+    'github_user': 'vnpy',
+    'github_repo': 'vnpy',
+    'github_type': 'star',
+    'description': (r"<div class='col-md-12'>"
+                    r"<strong>VN.PY</strong>"
+                    r"</div>"
+                    r"<br/>"
+                    r"By Traders, For Traders"),
+    'fixed_sidebar': True,
+    'show_related': True
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -102,7 +116,21 @@ html_static_path = ['_static']
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
-# html_sidebars = {}
+html_sidebars = {
+    'index': [
+        'about.html',
+        'sidebarintro.html',
+        'sourcelink.html',
+        'searchbox.html'
+    ],
+    '**': [
+        'about.html',
+        'localtoc.html',
+        'relations.html',
+        'sourcelink.html',
+        'searchbox.html'
+    ]
+}
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
@@ -158,6 +186,11 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
+# -- Options for intersphinx output ----------------------------------------------
+intersphinx_mapping = {
+    # 'python': ('https://docs.python.org/3/', None),
+}
+
 # -- Options for Epub output -------------------------------------------------
 
 # Bibliographic Dublin Core info.
@@ -171,6 +204,11 @@ epub_title = project
 # A unique identification for the text.
 #
 # epub_uid = ''
-
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
+
+# -- Options for Autodoc -------------------------------------------------
+autodoc_default_options = {
+    'member-order': 'bysource',
+    'undoc-members': True,
+}

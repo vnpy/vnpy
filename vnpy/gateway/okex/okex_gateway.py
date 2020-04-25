@@ -1,4 +1,3 @@
-# encoding: UTF-8
 """
 """
 
@@ -10,9 +9,10 @@ import json
 import base64
 import zlib
 from copy import copy
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from threading import Lock
 from urllib.parse import urlencode
+from typing import Dict
 
 from requests import ConnectionError
 
@@ -23,7 +23,8 @@ from vnpy.trader.constant import (
     Exchange,
     OrderType,
     Product,
-    Status
+    Status,
+    Interval
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
@@ -32,13 +33,15 @@ from vnpy.trader.object import (
     TradeData,
     AccountData,
     ContractData,
+    BarData,
     OrderRequest,
     CancelRequest,
     SubscribeRequest,
+    HistoryRequest
 )
 
 REST_HOST = "https://www.okex.com"
-WEBSOCKET_HOST = "wss://real.okex.com:10442/ws/v3"
+WEBSOCKET_HOST = "wss://real.okex.com:8443/ws/v3"
 
 STATUS_OKEX2VT = {
     "ordering": Status.SUBMITTING,
@@ -59,8 +62,23 @@ ORDERTYPE_VT2OKEX = {
 }
 ORDERTYPE_OKEX2VT = {v: k for k, v in ORDERTYPE_VT2OKEX.items()}
 
+INTERVAL_VT2OKEX = {
+    Interval.MINUTE: "60",
+    Interval.HOUR: "3600",
+    Interval.DAILY: "86400",
+}
+
+TIMEDELTA_MAP = {
+    Interval.MINUTE: timedelta(minutes=1),
+    Interval.HOUR: timedelta(hours=1),
+    Interval.DAILY: timedelta(days=1),
+}
+
 
 instruments = set()
+utc_tz = timezone.utc
+local_tz = datetime.now(timezone.utc).astimezone().tzinfo
+
 currencies = set()
 
 
@@ -77,6 +95,8 @@ class OkexGateway(BaseGateway):
         "代理地址": "",
         "代理端口": "",
     }
+
+    exchanges = [Exchange.OKEX]
 
     def __init__(self, event_engine):
         """Constructor"""
@@ -124,6 +144,10 @@ class OkexGateway(BaseGateway):
     def query_position(self):
         """"""
         pass
+
+    def query_history(self, req: HistoryRequest):
+        """"""
+        return self.rest_api.query_history(req)
 
     def close(self):
         """"""
@@ -317,6 +341,7 @@ class OkexRestApi(RestClient):
                 size=1,
                 pricetick=float(instrument_data["tick_size"]),
                 min_volume=float(instrument_data["min_size"]),
+                history_data=True,
                 gateway_name=self.gateway_name
             )
             self.gateway.on_contract(contract)
@@ -448,6 +473,75 @@ class OkexRestApi(RestClient):
             self.exception_detail(exception_type, exception_value, tb, request)
         )
 
+    def query_history(self, req: HistoryRequest):
+        """"""
+        buf = {}
+        end_time = None
+
+        for i in range(10):
+            path = f"/api/spot/v3/instruments/{req.symbol}/candles"
+
+            # Create query params
+            params = {
+                "granularity": INTERVAL_VT2OKEX[req.interval]
+            }
+
+            if end_time:
+                end = datetime.strptime(end_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+                start = end - TIMEDELTA_MAP[req.interval] * 200
+
+                params["start"] = start.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                params["end"] = end.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+            # Get response from server
+            resp = self.request(
+                "GET",
+                path,
+                params=params
+            )
+
+            # Break if request failed with other status code
+            if resp.status_code // 100 != 2:
+                msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
+                self.gateway.write_log(msg)
+                break
+            else:
+                data = resp.json()
+                if not data:
+                    msg = f"获取历史数据为空"
+                    break
+
+                for l in data:
+                    ts, o, h, l, c, v = l
+                    dt = _parse_timestamp(ts)
+                    bar = BarData(
+                        symbol=req.symbol,
+                        exchange=req.exchange,
+                        datetime=dt,
+                        interval=req.interval,
+                        volume=float(v),
+                        open_price=float(o),
+                        high_price=float(h),
+                        low_price=float(l),
+                        close_price=float(c),
+                        gateway_name=self.gateway_name
+                    )
+                    buf[bar.datetime] = bar
+
+                begin = data[-1][0]
+                end = data[0][0]
+                msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
+                self.gateway.write_log(msg)
+
+                # Update start time
+                end_time = begin
+
+        index = list(buf.keys())
+        index.sort()
+
+        history = [buf[i] for i in index]
+        return history
+
 
 class OkexWebsocketApi(WebsocketClient):
     """"""
@@ -469,6 +563,7 @@ class OkexWebsocketApi(WebsocketClient):
 
         self.callbacks = {}
         self.ticks = {}
+        self.subscribed: Dict[str, SubscribeRequest] = {}
 
     def connect(
         self,
@@ -496,6 +591,8 @@ class OkexWebsocketApi(WebsocketClient):
         """
         Subscribe to tick data upate.
         """
+        self.subscribed[req.vt_symbol] = req
+
         tick = TickData(
             symbol=req.symbol,
             exchange=req.exchange,
@@ -622,6 +719,9 @@ class OkexWebsocketApi(WebsocketClient):
         if success:
             self.gateway.write_log("Websocket API登录成功")
             self.subscribe_topic()
+
+            for req in list(self.subscribed.values()):
+                self.subscribe(req)
         else:
             self.gateway.write_log("Websocket API登录失败")
 
@@ -633,9 +733,9 @@ class OkexWebsocketApi(WebsocketClient):
             return
 
         tick.last_price = float(d["last"])
-        tick.open = float(d["open_24h"])
-        tick.high = float(d["high_24h"])
-        tick.low = float(d["low_24h"])
+        tick.open_price = float(d["open_24h"])
+        tick.high_price = float(d["high_24h"])
+        tick.low_price = float(d["low_24h"])
         tick.volume = float(d["base_volume_24h"])
         tick.datetime = datetime.strptime(
             d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -643,27 +743,26 @@ class OkexWebsocketApi(WebsocketClient):
 
     def on_depth(self, d):
         """"""
-        for tick_data in d:
-            symbol = d["instrument_id"]
-            tick = self.ticks.get(symbol, None)
-            if not tick:
-                return
+        symbol = d["instrument_id"]
+        tick = self.ticks.get(symbol, None)
+        if not tick:
+            return
 
-            bids = d["bids"]
-            asks = d["asks"]
-            for n, buf in enumerate(bids):
-                price, volume, _ = buf
-                tick.__setattr__("bid_price_%s" % (n + 1), float(price))
-                tick.__setattr__("bid_volume_%s" % (n + 1), float(volume))
+        bids = d["bids"]
+        asks = d["asks"]
+        for n, buf in enumerate(bids):
+            price, volume, _ = buf
+            tick.__setattr__("bid_price_%s" % (n + 1), float(price))
+            tick.__setattr__("bid_volume_%s" % (n + 1), float(volume))
 
-            for n, buf in enumerate(asks):
-                price, volume, _ = buf
-                tick.__setattr__("ask_price_%s" % (n + 1), float(price))
-                tick.__setattr__("ask_volume_%s" % (n + 1), float(volume))
+        for n, buf in enumerate(asks):
+            price, volume, _ = buf
+            tick.__setattr__("ask_price_%s" % (n + 1), float(price))
+            tick.__setattr__("ask_volume_%s" % (n + 1), float(volume))
 
-            tick.datetime = datetime.strptime(
-                d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
-            self.gateway.on_tick(copy(tick))
+        tick.datetime = datetime.strptime(
+            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        self.gateway.on_tick(copy(tick))
 
     def on_order(self, d):
         """"""
@@ -724,3 +823,11 @@ def get_timestamp():
     now = datetime.utcnow()
     timestamp = now.isoformat("T", "milliseconds")
     return timestamp + "Z"
+
+
+def _parse_timestamp(timestamp):
+    """parse timestamp into local time."""
+    time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    utc_time = time.replace(tzinfo=utc_tz)
+    local_time = utc_time.astimezone(local_tz)
+    return local_time

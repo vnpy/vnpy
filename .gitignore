@@ -1,5 +1,7 @@
 # Python
 *.pyc
+*.pyo
+*.egg-info/
 
 # Jupyter
 .ipynb_checkpoints
@@ -19,3 +21,17 @@ dist
 
 # vn.py
 .vntrader
+
+# Visual Studio intermediate files
+*.exp
+*.iobj
+*.ipdb
+*.pdb
+
+# Documents
+_build
+_static
+_templates
+
+# Misc
+.DS_Store

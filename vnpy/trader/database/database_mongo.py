@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Sequence, Optional
+from typing import Optional, Sequence, List
 
 from mongoengine import DateTimeField, Document, FloatField, StringField, connect
 
@@ -47,6 +47,7 @@ class DbBarData(Document):
     interval: str = StringField()
 
     volume: float = FloatField()
+    open_interest: float = FloatField()
     open_price: float = FloatField()
     high_price: float = FloatField()
     low_price: float = FloatField()
@@ -55,7 +56,7 @@ class DbBarData(Document):
     meta = {
         "indexes": [
             {
-                "fields": ("datetime", "interval", "symbol", "exchange"),
+                "fields": ("symbol", "exchange", "interval", "datetime"),
                 "unique": True,
             }
         ]
@@ -73,6 +74,7 @@ class DbBarData(Document):
         db_bar.datetime = bar.datetime
         db_bar.interval = bar.interval.value
         db_bar.volume = bar.volume
+        db_bar.open_interest = bar.open_interest
         db_bar.open_price = bar.open_price
         db_bar.high_price = bar.high_price
         db_bar.low_price = bar.low_price
@@ -90,6 +92,7 @@ class DbBarData(Document):
             datetime=self.datetime,
             interval=Interval(self.interval),
             volume=self.volume,
+            open_interest=self.open_interest,
             open_price=self.open_price,
             high_price=self.high_price,
             low_price=self.low_price,
@@ -112,6 +115,7 @@ class DbTickData(Document):
 
     name: str = StringField()
     volume: float = FloatField()
+    open_interest: float = FloatField()
     last_price: float = FloatField()
     last_volume: float = FloatField()
     limit_up: float = FloatField()
@@ -150,7 +154,7 @@ class DbTickData(Document):
     meta = {
         "indexes": [
             {
-                "fields": ("datetime", "symbol", "exchange"),
+                "fields": ("symbol", "exchange", "datetime"),
                 "unique": True,
             }
         ],
@@ -168,6 +172,7 @@ class DbTickData(Document):
         db_tick.datetime = tick.datetime
         db_tick.name = tick.name
         db_tick.volume = tick.volume
+        db_tick.open_interest = tick.open_interest
         db_tick.last_price = tick.last_price
         db_tick.last_volume = tick.last_volume
         db_tick.limit_up = tick.limit_up
@@ -215,6 +220,7 @@ class DbTickData(Document):
             datetime=self.datetime,
             name=self.name,
             volume=self.volume,
+            open_interest=self.open_interest,
             last_price=self.last_price,
             last_volume=self.last_volume,
             limit_up=self.limit_up,
@@ -255,6 +261,7 @@ class DbTickData(Document):
 
 
 class MongoManager(BaseDatabaseManager):
+
     def load_bar_data(
         self,
         symbol: str,
@@ -318,8 +325,28 @@ class MongoManager(BaseDatabaseManager):
         self, symbol: str, exchange: "Exchange", interval: "Interval"
     ) -> Optional["BarData"]:
         s = (
-            DbBarData.objects(symbol=symbol, exchange=exchange.value)
+            DbBarData.objects(
+                symbol=symbol,
+                exchange=exchange.value,
+                interval=interval.value
+            )
             .order_by("-datetime")
+            .first()
+        )
+        if s:
+            return s.to_bar()
+        return None
+
+    def get_oldest_bar_data(
+        self, symbol: str, exchange: "Exchange", interval: "Interval"
+    ) -> Optional["BarData"]:
+        s = (
+            DbBarData.objects(
+                symbol=symbol,
+                exchange=exchange.value,
+                interval=interval.value
+            )
+            .order_by("+datetime")
             .first()
         )
         if s:
@@ -337,6 +364,47 @@ class MongoManager(BaseDatabaseManager):
         if s:
             return s.to_tick()
         return None
+
+    def get_bar_data_statistics(self) -> List:
+        """"""
+        s = (
+            DbBarData.objects.aggregate({
+                "$group": {
+                    "_id": {
+                        "symbol": "$symbol",
+                        "exchange": "$exchange",
+                        "interval": "$interval",
+                    },
+                    "count": {"$sum": 1}
+                }
+            })
+        )
+
+        result = []
+
+        for d in s:
+            data = d["_id"]
+            data["count"] = d["count"]
+            result.append(data)
+
+        return result
+
+    def delete_bar_data(
+        self,
+        symbol: str,
+        exchange: "Exchange",
+        interval: "Interval"
+    ) -> int:
+        """
+        Delete all bar data with given symbol + exchange + interval.
+        """
+        count = DbBarData.objects(
+            symbol=symbol,
+            exchange=exchange.value,
+            interval=interval.value
+        ).delete()
+
+        return count
 
     def clean(self, symbol: str):
         DbTickData.objects(symbol=symbol).delete()
