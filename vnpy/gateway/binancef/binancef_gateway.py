@@ -343,7 +343,7 @@ class BinancefRestApi(RestClient):
 
     def send_order(self, req: OrderRequest) -> str:
         """"""
-        orderid = str(self.connect_time + self._new_order_id())
+        orderid = str("328hhn6c-" + self.connect_time + self._new_order_id())
         order = req.create_order_data(
             orderid,
             self.gateway_name
