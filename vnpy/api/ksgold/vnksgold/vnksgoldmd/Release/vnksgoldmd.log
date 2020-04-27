@@ -1,0 +1,9 @@
+﻿  pch.cpp
+  dllmain.cpp
+  vnksgoldmd.cpp
+    正在创建库 C:\Users\yazhang\miniconda3\Lib\site-packages\vnpy-2.1.2.1-py3.7.egg\vnpy\api\ksgold\vnksgold\..\vnksgoldmd.lib 和对象 C:\Users\yazhang\miniconda3\Lib\site-packages\vnpy-2.1.2.1-py3.7.egg\vnpy\api\ksgold\vnksgold\..\vnksgoldmd.exp
+  正在生成代码
+c:\users\yazhang\miniconda3\lib\site-packages\vnpy-2.1.2.1-py3.7.egg\vnpy\api\ksgold\vnksgold\vnksgoldmd\vnksgoldmd.cpp(435): warning C4715: “MdApi::init”: 不是所有的控件路径都返回值
+  All 3806 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  已完成代码的生成
+  vnksgoldmd.vcxproj -> C:\Users\yazhang\miniconda3\Lib\site-packages\vnpy-2.1.2.1-py3.7.egg\vnpy\api\ksgold\vnksgold\..\vnksgoldmd.pyd
