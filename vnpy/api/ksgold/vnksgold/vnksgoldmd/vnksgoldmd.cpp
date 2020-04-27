@@ -467,6 +467,7 @@ int MdApi::subscribeMarketData(string ppInstrumentID, int reqid)
 {
 	char* buffer = (char*)ppInstrumentID.c_str();
 	char* myreq[1] = { buffer };
+	cout << "myreq=" <<myreq <<endl;
 	int i = this->api->SubscribeMarketData(myreq, 1 , reqid);
 	return i;
 };
@@ -483,20 +484,16 @@ int MdApi::reqUserLogin(const dict &req, int reqid)
 {
 	CThostFtdcReqUserLoginField myreq = CThostFtdcReqUserLoginField();
 	memset(&myreq, 0, sizeof(myreq));
-	getString(req, "Md AccountID", myreq.AccountID);
-	cout << "myreq.AccountID=" << myreq.AccountID << endl;
+	getString(req, "AccountID", myreq.AccountID);
 	getInt(req, "LoginType", &myreq.LoginType);
-	cout << "LoginType=" << &myreq.LoginType << endl;
 
 	getString(req, "Password", myreq.Password);
 	getString(req, "LoginIp", myreq.LoginIp);
 	getString(req, "MacAddress", myreq.MacAddress);
 	getString(req, "UserProductionInfo", myreq.UserProductionInfo);
 	getString(req, "ProtocolInfo", myreq.ProtocolInfo);
-	cout << "&myreq=" << &myreq << endl;
 	
 	int i = this->api->ReqUserLogin(&myreq, reqid);
-	cout << "MD   reqUserLogin result=" << i << endl;
 	return i;
 };
 
