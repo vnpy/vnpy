@@ -26,10 +26,8 @@ from vnpy.trader.constant import (
     Direction,
     Offset,
     Exchange,
-    OrderType,
     Product,
     Status,
-    OptionType
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
@@ -71,18 +69,7 @@ OFFSET_VT2KSGOLD = {
     Offset.CLOSE: KS_P_OFFSET,
 }
 OFFSET_KSGOLD2VT = {v: k for k, v in OFFSET_VT2KSGOLD.items()}
-
-# PRODUCT_KSGOLD2VT = {
-#     THOST_FTDC_PC_Futures: Product.FUTURES,
-#     THOST_FTDC_PC_Options: Product.OPTION,
-#     THOST_FTDC_PC_SpotOption: Product.OPTION,
-#     THOST_FTDC_PC_Combination: Product.SPREAD
-# }
-
-# OPTIONTYPE_KSGOLD2VT = {
-#     THOST_FTDC_CP_CallOptions: OptionType.CALL,
-#     THOST_FTDC_CP_PutOptions: OptionType.PUT
-# }
+OFFSET_KSGOLD2VT[48] = Offset.OPEN
 
 MAX_FLOAT = sys.float_info.max
 
@@ -104,7 +91,8 @@ class KsgoldGateway(BaseGateway):
         "用户名": "",
         "密码": "",
         "交易服务器": "",
-        "行情服务器": ""
+        "行情服务器": "",
+        "账号类型": ["银行账号", "黄金账号"]
     }
 
     exchanges = [Exchange.SGE]
@@ -120,8 +108,14 @@ class KsgoldGateway(BaseGateway):
         """"""
         userid = setting["用户名"]
         password = setting["密码"]
+        accout_type = setting["账号类型"]
         td_address = setting["交易服务器"]
         md_address = setting["行情服务器"]
+
+        if accout_type == "银行账号":
+            login_type = 1
+        else:
+            login_type = 2
 
         if (
             (not td_address.startswith("tcp://"))
@@ -135,8 +129,8 @@ class KsgoldGateway(BaseGateway):
         ):
             md_address = "tcp://" + md_address
 
-        self.td_api.connect(td_address, userid, password)
-        self.md_api.connect(md_address, userid, password)
+        self.td_api.connect(td_address, userid, password, login_type)
+        self.md_api.connect(md_address, userid, password, login_type)
 
         self.init_query()
 
@@ -208,12 +202,12 @@ class KsgoldMdApi(MdApi):
 
         self.userid: str = ""
         self.password: str = ""
+        self.login_type: int = 0
 
     def onFrontConnected(self, result: int) -> None:
         """
         Callback when front server is connected.
         """
-        print("Md on front connect, result=", result)
         self.gateway.write_log("行情服务器连接成功")
         self.login()
 
@@ -221,15 +215,19 @@ class KsgoldMdApi(MdApi):
         """
         Callback when front server is disconnected.
         """
-        print("Md on front disconnect, resaon=", reason)
         self.login_status = False
         self.gateway.write_log(f"行情服务器连接断开，原因{reason}")
 
-    def onRspUserLogin(self, data: dict, error: dict, reqid: int, last: bool) -> None:
+    def onRspUserLogin(
+        self,
+        data: dict,
+        error: dict,
+        reqid: int,
+        last: bool
+    ) -> None:
         """
         Callback when user is logged in.
         """
-        print("Md on login, data=", data)
         if not error["ErrorID"]:
             self.login_status = True
             self.gateway.write_log("行情服务器登录成功")
@@ -313,12 +311,19 @@ class KsgoldMdApi(MdApi):
 
         self.gateway.on_tick(tick)
 
-    def connect(self, address: str, userid: str, password: str) -> None:
+    def connect(
+        self,
+        address: str,
+        userid: str,
+        password: str,
+        login_type: int
+    ) -> None:
         """
         Start connection to server.
         """
         self.userid = userid
         self.password = password
+        self.login_type = login_type
 
         # If not connected, then start connection first.
         if not self.connect_status:
@@ -338,11 +343,10 @@ class KsgoldMdApi(MdApi):
         Login onto server.
         """
         req = {
-            "ClientID": self.userid,
+            "AccountID": self.userid,
             "Password": self.password,
-            "LoginType": 2
+            "LoginType": self.login_type
         }
-        print("md login req=", req)
 
         self.reqid += 1
         self.reqUserLogin(req, self.reqid)
@@ -352,7 +356,9 @@ class KsgoldMdApi(MdApi):
         Subscribe to tick data update.
         """
         if self.login_status:
-            self.subscribeMarketData(req.symbol)
+            self.reqid += 1
+            self.subscribeMarketData(req.symbol, self.reqid)
+
         self.subscribed.add(req.symbol)
 
     def close(self) -> None:
@@ -383,6 +389,7 @@ class KsgoldTdApi(TdApi):
         self.userid: str = ""
         self.password: str = ""
         self.trade_code: str = ""
+        self.login_type: int = 0
         self.seat_no: int = 0
 
         self.frontid: int = 0
@@ -395,29 +402,13 @@ class KsgoldTdApi(TdApi):
 
     def onFrontConnected(self, result: int) -> None:
         """"""
-        print("Td on front connect, result=", result)
         self.gateway.write_log("交易服务器连接成功")
-
-        # if self.auth_code:
-        #     self.authenticate()
-        # else:
         self.login()
 
     def onFrontDisconnected(self, reason: int) -> None:
         """"""
-        print("Td on front disconnet, reason=", resaon)
-
         self.login_status = False
         self.gateway.write_log(f"交易服务器连接断开，原因{reason}")
-
-    # def onRspAuthenticate(self, data: dict, error: dict, reqid: int, last: bool):
-    #     """"""
-    #     if not error['ErrorID']:
-    #         self.auth_staus = True
-    #         self.gateway.write_log("交易服务器授权验证成功")
-    #         self.login()
-    #     else:
-    #         self.gateway.write_error("交易服务器授权验证失败", error)
 
     def onRspUserLogin(
         self,
@@ -443,13 +434,6 @@ class KsgoldTdApi(TdApi):
                     break
                 else:
                     sleep(1)
-            # # Confirm settlement
-            # req = {
-            #     "BrokerID": self.brokerid,
-            #     "InvestorID": self.userid
-            # }
-            # self.reqid += 1
-            # self.reqSettlementInfoConfirm(req, self.reqid)
         else:
             self.login_failed = True
 
@@ -463,6 +447,9 @@ class KsgoldTdApi(TdApi):
         last: bool
     ) -> None:
         """"""
+        print("on order: data, ", data, "\n\nerror:", error)
+        print("offset=", data["OffsetFlag"])
+
         order_ref = data["OrderRef"]
         orderid = f"{self.frontid}_{self.sessionid}_{order_ref}"
 
@@ -478,6 +465,7 @@ class KsgoldTdApi(TdApi):
             price=data["Price"],
             volume=data["Amount"],
             status=Status.REJECTED,
+            datetime=datetime.now(),
             gateway_name=self.gateway_name
         )
         self.gateway.on_order(order)
@@ -504,13 +492,6 @@ class KsgoldTdApi(TdApi):
         """"""
         pass
 
-    # def onRspSettlementInfoConfirm(self, data: dict, error: dict, reqid: int, last: bool):
-    #     """
-    #     Callback of settlment info confimation.
-    #     """
-    #     self.gateway.write_log("结算信息确认成功")
-
-
     def onRspQryInvestorPosition(
         self,
         data: dict,
@@ -519,29 +500,16 @@ class KsgoldTdApi(TdApi):
         last: bool
     ) -> None:
         """"""
-        if not data:
-            return
+        error_id = error["ErrorID"]
+        error_msg = error["ErrorMsg"]
 
-        # # Check if contract data received
-        # if data["InstID"] in symbol_exchange_map:
-        #     # Get buffered position object
-        #     post_direction = data["LongPosiVol"] - data["ShortPosiVol"]
-        #     if post_direction >= 0:
-        #         price = data["LongPosiAvgPrice"]
-        #         yd_volume = data["LastLong"]
-        #         pnl = post_direction * (price - data["LongOpenAvgPrice"])
-        #         frozen = data["LongPosiFrozen"]
-        #     else:
-        #         price = data["ShortPosiAvgPrice"]
-        #         yd_volume = data["LastShort"]
-        #         pnl = post_direction * (data["ShortOpenAvgPrice"] - price)
-        #         frozen = data["ShortPosiFrozen"]
+        if error_id != 0:
+            if error_id == 10001:
+                return
+            else:
+                self.gateway.write_log(f"查询持仓失败，信息{error_msg}")
+                return
 
-        #     key = f"{data['InstID'], post_direction}"
-
-        #     position = self.positions.get(key, None)
-
-        #     if not position:
         # Long pos
         long_position = PositionData(
             symbol=data["InstID"],
@@ -570,43 +538,6 @@ class KsgoldTdApi(TdApi):
         )
         self.gateway.on_position(short_position)
 
-            # # For SHFE and INE position data update
-            # if position.exchange in [Exchange.SHFE, Exchange.INE]:
-            #     if data["YdPosition"] and not data["TodayPosition"]:
-            #         position.yd_volume = data["Position"]
-            # # For other exchange position data update
-            # else:
-            #     position.yd_volume = data["Position"] - data["TodayPosition"]
-
-            # Get contract size (spread contract has no size value)
-            #size = symbol_size_map.get(position.symbol, 0)
-
-            # Calculate previous position cost
-            # cost = position.price * position.volume * size
-
-            # Update new position volume
-            # if position.volume >=0:
-
-            #     position.volume += data["Position"]
-            #     position.pnl += data["PositionProfit"]
-
-            # # Calculate average position price
-            # if position.volume and size:
-            #     cost += data["PositionCost"]
-            #     position.price = cost / (position.volume * size)
-
-            # # Get frozen volume
-            # if position.direction == Direction.LONG:
-            #     position.frozen += data["ShortFrozen"]
-            # else:
-            #     position.frozen += data["LongFrozen"]
-
-        # if last:
-        #     for position in self.positions.values():
-        #         self.gateway.on_position(position)
-
-        #     self.positions.clear()
-
     def onRspQryTradingAccount(
         self,
         data: dict,
@@ -624,7 +555,6 @@ class KsgoldTdApi(TdApi):
             frozen=data["TotalFrozen"],
             gateway_name=self.gateway_name
         )
-        # account.available = data["Available"]
 
         self.gateway.on_account(account)
 
@@ -638,31 +568,15 @@ class KsgoldTdApi(TdApi):
         """
         Callback of instrument query.
         """
-        # product = PRODUCT_KSGOLD2VT.get(data["ProductClass"], None)
-        # if product:
         contract = ContractData(
             symbol=data["InstID"],
-            exchange=EXCHANGE_KSGOLD2VT[data["ExchangeID"]],
+            exchange=Exchange.SGE,
             name=data["Name"],
             product=Product.SPOT,
             size=data["Unit"],
             pricetick=data["Tick"],
             gateway_name=self.gateway_name
         )
-
-        # For option only
-        # if contract.product == Product.OPTION:
-        #     # Remove C/P suffix of CZCE option product name
-        #     if contract.exchange == Exchange.CZCE:
-        #         contract.option_portfolio = data["ProductID"][:-1]
-        #     else:
-        #         contract.option_portfolio = data["ProductID"]
-
-        #     contract.option_underlying = data["UnderlyingInstrID"]
-        #     contract.option_type = OPTIONTYPE_KSGOLD2VT.get(data["OptionsType"], None)
-        #     contract.option_strike = data["StrikePrice"]
-        #     contract.option_index = str(data["StrikePrice"])
-        #     contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d")
 
         self.gateway.on_contract(contract)
 
@@ -705,7 +619,6 @@ class KsgoldTdApi(TdApi):
             symbol=symbol,
             exchange=exchange,
             orderid=orderid,
-            # type=ORDERTYPE_KSGOLD2VT[data["OrderPriceType"]],
             direction=DIRECTION_KSGOLD2VT[data["BuyOrSell"]],
             offset=OFFSET_KSGOLD2VT[data["OffsetFlag"]],
             price=data["Price"],
@@ -750,13 +663,14 @@ class KsgoldTdApi(TdApi):
         address: str,
         userid: str,
         password: str,
-
+        login_type: int,
     ) -> None:
         """
         Start connection to server.
         """
         self.userid = userid
         self.password = password
+        self.login_type = login_type
 
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
@@ -769,25 +683,6 @@ class KsgoldTdApi(TdApi):
             self.init()
 
             self.connect_status = True
-    #     else:
-    #         self.authenticate()
-
-    # def authenticate(self):
-    #     """
-    #     Authenticate with auth_code and appid.
-    #     """
-    #     req = {
-    #         "UserID": self.userid,
-    #         "BrokerID": self.brokerid,
-    #         "AuthCode": self.auth_code,
-    #         "AppID": self.appid
-    #     }
-
-    #     if self.product_info:
-    #         req["UserProductInfo"] = self.product_info
-
-    #     self.reqid += 1
-    #     self.reqAuthenticate(req, self.reqid)
 
     def login(self) -> None:
         """
@@ -797,11 +692,10 @@ class KsgoldTdApi(TdApi):
             return
 
         req = {
-            "UserID": self.userid,
+            "AccountID": self.userid,
             "Password": self.password,
-            "LoginType": 2,
+            "LoginType": self.login_type,
         }
-        print("Td login req", req)
 
         self.reqid += 1
         self.reqUserLogin(req, self.reqid)
@@ -828,35 +722,7 @@ class KsgoldTdApi(TdApi):
             "MarketID": symbol_market_map[req.symbol],
             "OrderRef": str(self.order_ref),
             "SessionID": self.sessionid,
-
-
-            # "ExchangeID": req.exchange.value,
-            
-            
-            # "OrderPriceType": ORDERTYPE_VT2KSGOLD.get(req.type, ""),
-            
-            
-            
-            # "InvestorID": self.userid,
-            
-            # "BrokerID": self.brokerid,
-            # "CombHedgeFlag": THOST_FTDC_HF_Speculation,
-            # "ContingentCondition": THOST_FTDC_CC_Immediately,
-            # "ForceCloseReason": THOST_FTDC_FCC_NotForceClose,
-            # "IsAutoSuspend": 0,
-            # "TimeCondition": THOST_FTDC_TC_GFD,
-            # "VolumeCondition": THOST_FTDC_VC_AV,
-            # "MinVolume": 1
         }
-
-        # if req.type == OrderType.FAK:
-        #     Ksgold_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
-        #     Ksgold_req["TimeCondition"] = THOST_FTDC_TC_IOC
-        #     Ksgold_req["VolumeCondition"] = THOST_FTDC_VC_AV
-        # elif req.type == OrderType.FOK:
-        #     Ksgold_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
-        #     Ksgold_req["TimeCondition"] = THOST_FTDC_TC_IOC
-        #     Ksgold_req["VolumeCondition"] = THOST_FTDC_VC_CV
 
         self.reqid += 1
         self.reqOrderInsert(ksgold_req, self.reqid)
@@ -871,21 +737,8 @@ class KsgoldTdApi(TdApi):
         """
         Cancel existing order.
         """
-        # frontid, sessionid, order_ref = req.orderid.split("_")
-
         localid = orderid_localid_map[req.orderid]
-
-        ksgold_req = {
-            "LocalOrderNo": localid
-            # "InstID": req.symbol,
-            # "ExchangeID": req.exchange.value,
-            # "OrderRef": order_ref,
-            # "FrontID": int(frontid),
-            # "SessionID": int(sessionid),
-            # "ActionFlag": THOST_FTDC_AF_Delete,
-            # "BrokerID": self.brokerid,
-            # "InvestorID": self.userid
-        }
+        ksgold_req = {"LocalOrderNo": localid}
 
         self.reqid += 1
         self.reqOrderAction(ksgold_req, self.reqid)
@@ -903,11 +756,6 @@ class KsgoldTdApi(TdApi):
         """
         if not symbol_exchange_map:
             return
-
-        # req = {
-        #     "BrokerID": self.brokerid,
-        #     "InvestorID": self.userid
-        # }
 
         self.reqid += 1
         self.reqQryInvestorPosition({}, self.reqid)

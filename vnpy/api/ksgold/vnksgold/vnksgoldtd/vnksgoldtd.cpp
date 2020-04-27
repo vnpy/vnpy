@@ -1182,8 +1182,8 @@ void TdApi::processRspOrderInsert(Task *task)
 		data["ClientID"] = toUtf(task_data->ClientID);
 		data["TradeCode"] = toUtf(task_data->TradeCode);
 		data["InstID"] = toUtf(task_data->InstID);
-		data["BuyOrSell"] = task_data->BuyOrSell;
-		data["OffsetFlag"] = task_data->OffsetFlag;
+		data["BuyOrSell"] = (char) task_data->BuyOrSell;
+		data["OffsetFlag"] = (char) task_data->OffsetFlag;
 		data["Amount"] = task_data->Amount;
 		data["Price"] = task_data->Price;
 		data["MarketID"] = toUtf(task_data->MarketID);
@@ -1403,8 +1403,8 @@ void TdApi::processRtnOrder(Task *task)
 		data["LocalOrderNo"] = toUtf(task_data->LocalOrderNo);
 		data["MarketID"] = toUtf(task_data->MarketID);
 		data["InstID"] = toUtf(task_data->InstID);
-		data["BuyOrSell"] = task_data->BuyOrSell;
-		data["OffsetFlag"] = task_data->OffsetFlag;
+		data["BuyOrSell"] = (char) task_data->BuyOrSell;
+		data["OffsetFlag"] = (char) task_data->OffsetFlag;
 		data["Amount"] = task_data->Amount;
 		data["Price"] = task_data->Price;
 		data["MatchQty"] = task_data->MatchQty;
@@ -1547,8 +1547,8 @@ void TdApi::processRtnTrade(Task *task)
 		data["OrderNo"] = toUtf(task_data->OrderNo);
 		data["MatchNo"] = toUtf(task_data->MatchNo);
 		data["InstID"] = toUtf(task_data->InstID);
-		data["BuyOrSell"] = task_data->BuyOrSell;
-		data["OffSetFlag"] = task_data->OffSetFlag;
+		data["BuyOrSell"] = (char) task_data->BuyOrSell;
+		data["OffSetFlag"] = (char) task_data->OffSetFlag;
 		data["Price"] = task_data->Price;
 		data["Volume"] = task_data->Volume;
 		data["Amount"] = task_data->Amount;
@@ -1650,8 +1650,8 @@ void TdApi::processRspQryOrder(Task *task)
 		data["LocalOrderNo"] = toUtf(task_data->LocalOrderNo);
 		data["MarketID"] = toUtf(task_data->MarketID);
 		data["InstID"] = toUtf(task_data->InstID);
-		data["BuyOrSell"] = task_data->BuyOrSell;
-		data["OffsetFlag"] = task_data->OffsetFlag;
+		data["BuyOrSell"] = (char) task_data->BuyOrSell;
+		data["OffsetFlag"] = (char) task_data->OffsetFlag;
 		data["Amount"] = task_data->Amount;
 		data["Price"] = task_data->Price;
 		data["MatchQty"] = task_data->MatchQty;
@@ -1846,8 +1846,8 @@ void TdApi::processRspConditionOrderInsert(Task *task)
 		data["Status"] = task_data->Status;
 		data["MarketID"] = toUtf(task_data->MarketID);
 		data["InstID"] = toUtf(task_data->InstID);
-		data["BuyOrSell"] = task_data->BuyOrSell;
-		data["OffsetFlag"] = task_data->OffsetFlag;
+		data["BuyOrSell"] = (char) task_data->BuyOrSell;
+		data["OffsetFlag"] = (char) task_data->OffsetFlag;
 		data["Amount"] = task_data->Amount;
 		data["OrderType"] = task_data->OrderType;
 		data["MiddleFlag"] = task_data->MiddleFlag;
@@ -1909,7 +1909,7 @@ void TdApi::processRspQryConditionOrder(Task *task)
 		data["OrderType"] = task_data->OrderType;
 		data["EntrustTypeName"] = toUtf(task_data->EntrustTypeName);
 		data["InstID"] = toUtf(task_data->InstID);
-		data["BuyOrSell"] = task_data->BuyOrSell;
+		data["BuyOrSell"] = (char) task_data->BuyOrSell;
 		data["OffSetFlag"] = task_data->OffSetFlag;
 		data["Status"] = task_data->Status;
 		data["Amount"] = task_data->Amount;
@@ -2094,7 +2094,7 @@ void TdApi::processRspQryInvestorPositionDetail(Task *task)
 		data["ClientShortName"] = toUtf(task_data->ClientShortName);
 		data["Data"] = toUtf(task_data->Data);
 		data["InstID"] = toUtf(task_data->InstID);
-		data["BuyOrSell"] = task_data->BuyOrSell;
+		data["BuyOrSell"] = (char) task_data->BuyOrSell;
 		data["Volumn"] = task_data->Volumn;
 		data["Settle"] = task_data->Settle;
 		data["OpenFlagData"] = toUtf(task_data->OpenFlagData);
@@ -2301,19 +2301,15 @@ int TdApi::reqUserLogin(const dict &req, int reqid)
 {
 	CThostFtdcReqUserLoginField myreq = CThostFtdcReqUserLoginField();
 	memset(&myreq, 0, sizeof(myreq));
-	getString(req, "Td AccountID", myreq.AccountID);
-	cout << "myreq.AccountID=" << myreq.AccountID << endl;
+	getString(req, "AccountID", myreq.AccountID);
 	getInt(req, "LoginType", &myreq.LoginType);
-	cout << "LoginType=" << &myreq.LoginType << endl;
 
 	getString(req, "Password", myreq.Password);
 	getString(req, "LoginIp", myreq.LoginIp);
 	getString(req, "MacAddress", myreq.MacAddress);
 	getString(req, "UserProductionInfo", myreq.UserProductionInfo);
 	getString(req, "ProtocolInfo", myreq.ProtocolInfo);
-	cout << "&myreq=" << &myreq << endl;
 	int i = this->api->ReqUserLogin(&myreq, reqid);
-	cout << "TD   reqUserLogin result=" << i << endl;
 	return i;
 };
 
