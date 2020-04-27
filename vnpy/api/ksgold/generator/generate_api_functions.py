@@ -414,7 +414,6 @@ class ApiGenerator:
                     name = name.replace("Req", "req")
                     f.write(f".def(\"{name}\", &{self.class_name}::{name})\n")
                 else:
-                    
                     cpp_type, name = name.split(" ")
                     spc_name = name[0].lower() + name[1:]
                     f.write(f".def(\"{spc_name}\", &{self.class_name}::{spc_name})\n")

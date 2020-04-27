@@ -755,4 +755,3 @@ CThostFtdcBOCMoneyIOField = {
 CThostFtdcBOCMoneyIORspField = {
     "ClientID": "string",
 }
-

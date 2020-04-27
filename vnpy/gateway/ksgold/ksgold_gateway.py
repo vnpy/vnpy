@@ -1,4 +1,5 @@
 """
+Put SLEdll folder in the path of python.exe
 """
 
 import sys
