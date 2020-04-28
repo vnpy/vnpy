@@ -6,10 +6,11 @@ import json
 import threading
 import sys
 import requests
+import math
 from Crypto.Cipher import AES
 from datetime import datetime
 from typing import Dict, Any, List
-import math
+from urllib import parse
 
 from vnpy.event import Event
 from vnpy.api.rest import RestClient, Request
@@ -122,7 +123,7 @@ class KaisaGateway(BaseGateway):
         auth_password = setting["auth_password"]
         user_id = setting["user_id"]
         _password = setting["password"]
-        password = self.encrypt_password(_password)
+        password = self.encrypt(_password)
         session_number = setting["会话数"]
 
         if not self.authentica_status:
@@ -264,21 +265,19 @@ class KaisaGateway(BaseGateway):
         """"""
         threading.Thread(target=self._query_contract).start()
 
-    def encrypt_password(self, text):
+    def encrypt(self, text):
         """"""
         key = "login&pwd@glob)!"
         iv = "kai&sa!global@)!"
 
-        # Padding algorithm
-        bs = len(key)
-        pad = lambda s: s + (bs - len(s) % bs) * chr(bs - len(s) % bs)
-        unpad = lambda s: s[0:-ord(s[-1:])]
-
         cryptor = AES.new(key.encode("utf8"), AES.MODE_CBC, iv.encode("utf8"))
-        ciphertext = cryptor.encrypt(bytes(pad(text), encoding="utf8"))
-        encrypt_password = base64.b64encode(ciphertext).decode("utf-8")
-        print("加密前：", text, "加密后，",encrypt_password)
-        return encrypt_password
+
+        text_ajust = text.ljust(16, "\n")
+        ciphertext = cryptor.encrypt(bytes(text_ajust, encoding="utf8"))
+
+        encrypt_password = base64.b64encode(ciphertext)
+        password = parse.quote(encrypt_password, "\\")
+        return password
 
 
 class KaisaTradeRestApi(RestClient):
