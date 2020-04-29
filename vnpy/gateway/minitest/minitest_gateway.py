@@ -1,6 +1,6 @@
 """
 """
-
+import pytz
 from datetime import datetime
 
 from vnpy.api.mini import (
@@ -113,6 +113,7 @@ OPTIONTYPE_MINI2VT = {
     THOST_FTDC_CP_PutOptions: OptionType.PUT
 }
 
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 symbol_exchange_map = {}
 symbol_name_map = {}
