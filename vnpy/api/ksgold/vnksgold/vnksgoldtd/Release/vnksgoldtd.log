@@ -1,5 +1,5 @@
-﻿  pch.cpp
-  dllmain.cpp
+﻿  dllmain.cpp
+  stdafx.cpp
   vnksgoldtd.cpp
     正在创建库 C:\Users\yazhang\miniconda3\Lib\site-packages\vnpy-2.1.2.1-py3.7.egg\vnpy\api\ksgold\vnksgold\..\vnksgoldtd.lib 和对象 C:\Users\yazhang\miniconda3\Lib\site-packages\vnpy-2.1.2.1-py3.7.egg\vnpy\api\ksgold\vnksgold\..\vnksgoldtd.exp
   正在生成代码
