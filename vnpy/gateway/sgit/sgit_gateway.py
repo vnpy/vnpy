@@ -2,6 +2,7 @@
 """
 
 import sys
+import pytz
 from datetime import datetime
 from typing import Dict, List
 
@@ -126,7 +127,7 @@ OPTIONTYPE_SGIT2VT: Dict[str, OptionType] = {
 }
 
 MAX_FLOAT: float = sys.float_info.max
-
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 symbol_exchange_map: Dict = {}
 symbol_name_map: Dict = {}
@@ -296,11 +297,13 @@ class SgitMdApi(MdApi):
             return
 
         timestamp = f"{data['TradingDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f")
+        dt = dt.replace(tzinfo=CHINA_TZ)
 
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
-            datetime=datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f"),
+            datetime=dt,
             name=symbol_name_map[symbol],
             volume=data["Volume"],
             open_interest=data["OpenInterest"],
@@ -641,6 +644,10 @@ class SgitTdApi(TdApi):
         orderid = data["OrderRef"]
         self.order_ref = max(self.order_ref, int(orderid))
 
+        timestamp = f"{data['InsertDate']} {data['InsertTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = dt.replace(tzinfo=CHINA_TZ)
+
         order = OrderData(
             symbol=symbol,
             exchange=exchange,
@@ -652,7 +659,7 @@ class SgitTdApi(TdApi):
             volume=data["VolumeTotalOriginal"],
             traded=data["VolumeTraded"],
             status=STATUS_SGIT2VT[data["OrderStatus"]],
-            time=data["InsertTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
         self.gateway.on_order(order)
@@ -669,6 +676,10 @@ class SgitTdApi(TdApi):
 
         orderid = self.sysid_orderid_map[data["OrderSysID"]]
 
+        timestamp = f"{data['TradeDate']} {data['TradeTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = dt.replace(tzinfo=CHINA_TZ)
+
         trade = TradeData(
             symbol=symbol,
             exchange=exchange,
@@ -678,7 +689,7 @@ class SgitTdApi(TdApi):
             offset=OFFSET_SGIT2VT[data["OffsetFlag"]],
             price=data["Price"],
             volume=data["Volume"],
-            time=data["TradeTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
 
