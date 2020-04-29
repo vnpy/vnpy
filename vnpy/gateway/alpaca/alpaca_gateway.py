@@ -6,11 +6,12 @@ import sys
 import json
 from threading import Lock
 from datetime import datetime
+import pytz
+
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
 from vnpy.event import Event
 from vnpy.trader.event import EVENT_TIMER
-
 from vnpy.trader.constant import (
     Direction,
     Exchange,
@@ -67,6 +68,7 @@ ORDERTYPE_VT2ALPACA = {
 ORDERTYPE_ALPACA2VT = {v: k for k, v in ORDERTYPE_VT2ALPACA.items()}
 
 LOCAL_SYS_MAP = {}
+UTC_TZ = pytz.utc
 
 
 class AlpacaGateway(BaseGateway):
@@ -202,7 +204,7 @@ class AlpacaRestApi(RestClient):
         self.secret = secret
 
         self.connect_time = (
-            int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
+            int(datetime.now(UTC_TZ).strftime("%y%m%d%H%M%S")) * self.order_count
         )
 
         self.init(url)
@@ -367,7 +369,7 @@ class AlpacaRestApi(RestClient):
             direction=direction,
             traded=float(d["filled_qty"]),
             status=STATUS_ALPACA2VT.get(d["status"], Status.SUBMITTING),
-            time=d["created_at"],
+            datetime=generate_datetime(d["created_at"]),
             gateway_name=self.gateway_name,
         )
         self.gateway.on_order(order)
@@ -526,7 +528,7 @@ class AlpacaWebsocketApi(WebsocketClient):
             direction=direction,
             traded=float(d["filled_qty"]),
             status=STATUS_ALPACA2VT.get(d["status"], Status.SUBMITTING),
-            time=d["created_at"],
+            datetime=generate_datetime(d["created_at"]),
             gateway_name=self.gateway_name,
         )
         self.gateway.on_order(order)
@@ -546,7 +548,7 @@ class AlpacaWebsocketApi(WebsocketClient):
             direction=order.direction,
             price=float(data["price"]),
             volume=int(data["qty"]),
-            time=data["timestamp"],
+            datetime=generate_datetime(data["timestamp"]),
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)
@@ -638,7 +640,7 @@ class AlpacaDataRestApi(RestClient):
             tick = TickData(
                 symbol=symbol,
                 exchange=Exchange.SMART,
-                datetime=datetime.now(),
+                datetime=datetime.now(UTC_TZ),
                 name=symbol,
                 open_price=d["o"],
                 high_price=d["h"],
@@ -648,3 +650,10 @@ class AlpacaDataRestApi(RestClient):
             )
 
             self.gateway.on_tick(tick)
+
+
+def generate_datetime(time_str: str):
+    """"""
+    dt = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%SZ")
+    dt = dt.replace(tzinfo=UTC_TZ)
+    return dt
