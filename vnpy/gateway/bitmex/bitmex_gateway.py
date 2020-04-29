@@ -8,6 +8,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import urlencode
+import pytz
 
 from requests import ConnectionError
 
@@ -74,6 +75,8 @@ TIMEDELTA_MAP = {
     Interval.HOUR: timedelta(hours=1),
     Interval.DAILY: timedelta(days=1),
 }
+
+UTC_TZ = pytz.utc
 
 
 class BitmexGateway(BaseGateway):
@@ -231,7 +234,7 @@ class BitmexRestApi(RestClient):
         self.secret = secret.encode()
 
         self.connect_time = (
-            int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
+            int(datetime.now(UTC_TZ).strftime("%y%m%d%H%M%S")) * self.order_count
         )
 
         if server == "REAL":
@@ -357,12 +360,10 @@ class BitmexRestApi(RestClient):
                     break
 
                 for d in data:
-                    dt = datetime.strptime(
-                        d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
                     bar = BarData(
                         symbol=req.symbol,
                         exchange=req.exchange,
-                        datetime=dt,
+                        datetime=generate_datetime(d["timestamp"]),
                         interval=req.interval,
                         volume=d["volume"],
                         open_price=d["open"],
@@ -558,7 +559,7 @@ class BitmexWebsocketApi(WebsocketClient):
             symbol=req.symbol,
             exchange=req.exchange,
             name=req.symbol,
-            datetime=datetime.now(),
+            datetime=datetime.now(UTC_TZ),
             gateway_name=self.gateway_name,
         )
         self.ticks[req.symbol] = tick
@@ -695,7 +696,7 @@ class BitmexWebsocketApi(WebsocketClient):
             direction=DIRECTION_BITMEX2VT[d["side"]],
             price=d["lastPx"],
             volume=d["lastQty"],
-            time=d["timestamp"][11:19],
+            datetime=generate_datetime(d["timestamp"]),
             gateway_name=self.gateway_name,
         )
 
@@ -729,7 +730,7 @@ class BitmexWebsocketApi(WebsocketClient):
                 direction=DIRECTION_BITMEX2VT[side],
                 price=d["price"],
                 volume=d["orderQty"],
-                time=d["timestamp"][11:19],
+                datetime=generate_datetime(d["timestamp"]),
                 gateway_name=self.gateway_name,
             )
             self.orders[sysid] = order
@@ -800,3 +801,10 @@ class BitmexWebsocketApi(WebsocketClient):
         )
 
         self.gateway.on_contract(contract)
+
+
+def generate_datetime(timestamp: str) -> datetime:
+    """"""
+    dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    dt = dt.replace(tzinfo=UTC_TZ)
+    return dt
