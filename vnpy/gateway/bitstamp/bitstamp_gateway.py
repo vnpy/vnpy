@@ -11,6 +11,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from typing import Dict
+import pytz
 
 import requests
 
@@ -61,6 +62,8 @@ TIMEDELTA_MAP = {
     Interval.HOUR: timedelta(hours=1),
     Interval.DAILY: timedelta(days=1),
 }
+
+UTC_TZ = pytz.utc
 
 
 symbol_name_map = {}
@@ -172,7 +175,7 @@ class BitstampGateway(BaseGateway):
                     bar = BarData(
                         symbol=req.symbol,
                         exchange=req.exchange,
-                        datetime=datetime.fromtimestamp(d["start"]),
+                        datetime=generate_datetime(d["start"]),
                         interval=req.interval,
                         volume=d["volume"],
                         open_price=d["open"],
@@ -241,7 +244,7 @@ class BitstampRestApi(RestClient):
         self.username = username
 
         self.connect_time = (
-            int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
+            int(datetime.now(UTC_TZ).strftime("%y%m%d%H%M%S")) * self.order_count
         )
 
         self.init(REST_HOST, proxy_host, proxy_port)
@@ -375,7 +378,7 @@ class BitstampRestApi(RestClient):
                 traded=float(0),
                 direction=direction,
                 status=Status.NOTTRADED,
-                time=d["datetime"],
+                datetime=generate_datetime(d["datetime"]),
                 gateway_name=self.gateway_name,
             )
             self.order_manager.on_order(order)
@@ -486,7 +489,7 @@ class BitstampRestApi(RestClient):
             local_orderid,
             self.gateway_name
         )
-        order.time = datetime.now().strftime("%H:%M:%S")
+        order.datetime = datetime.now(UTC_TZ)
 
         data = {
             "amount": req.volume,
@@ -605,7 +608,7 @@ class BitstampWebsocketApi(WebsocketClient):
             symbol=req.symbol,
             name=symbol_name_map.get(req.symbol, ""),
             exchange=Exchange.BITSTAMP,
-            datetime=datetime.now(),
+            datetime=datetime.now(UTC_TZ),
             gateway_name=self.gateway_name,
         )
 
@@ -645,7 +648,9 @@ class BitstampWebsocketApi(WebsocketClient):
         tick = self.ticks[channel]
         tick.last_price = data["price"]
         tick.last_volume = data["amount"]
-        tick.datetime = datetime.fromtimestamp(int(data["timestamp"]))
+
+        dt = datetime.fromtimestamp(int(data["timestamp"]))
+        tick.datetime = dt.replace(tzinfo=UTC_TZ)
 
         self.gateway.on_tick(copy(tick))
 
@@ -675,7 +680,7 @@ class BitstampWebsocketApi(WebsocketClient):
                     direction=order.direction,
                     price=data["price"],
                     volume=data["amount"],
-                    time=tick.datetime.strftime("%H:%M:%S"),
+                    datetime=tick.datetime,
                     gateway_name=self.gateway_name
                 )
                 self.gateway.on_trade(trade)
@@ -686,7 +691,9 @@ class BitstampWebsocketApi(WebsocketClient):
         data = packet["data"]
 
         tick = self.ticks[channel]
-        tick.datetime = datetime.fromtimestamp(int(data["timestamp"]))
+        
+        dt = datetime.fromtimestamp(int(data["timestamp"]))
+        tick.datetime = dt.replace(tzinfo=UTC_TZ)
 
         bids = data["bids"]
         asks = data["asks"]
@@ -718,3 +725,10 @@ class BitstampWebsocketApi(WebsocketClient):
         if order and order.is_active():
             order.status = Status.CANCELLED
             self.order_manager.on_order(copy(order))
+
+
+def generate_datetime(timestamp: str) -> datetime:
+    """"""
+    dt = datetime.fromtimestamp(timestamp)
+    dt = dt.replace(tzinfo=UTC_TZ)
+    return dt
