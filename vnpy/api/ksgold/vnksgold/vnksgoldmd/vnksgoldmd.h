@@ -1,6 +1,6 @@
 //ϵͳ
 #ifdef WIN32
-#include "pch.h"
+#include "stdafx.h"
 #endif
 
 #include "vnksgold.h"

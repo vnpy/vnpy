@@ -152,7 +152,6 @@ def get_ext_modules():
         language="cpp",
     )
 
-## 01
     vnksgoldmd = Extension(
         "vnpy.api.ksgold.vnksgoldmd",
         [
@@ -188,8 +187,6 @@ def get_ext_modules():
         depends=[],
         language="cpp",
     )
-
-## 02
 
     vnxtpmd = Extension(
         "vnpy.api.xtp.vnxtpmd",
