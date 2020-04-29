@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from threading import Lock
 from typing import Dict, List
+import pytz
 
 from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
@@ -79,6 +80,8 @@ TIMEDELTA_MAP: Dict[Interval, timedelta] = {
     Interval.HOUR: timedelta(hours=1),
     Interval.DAILY: timedelta(days=1),
 }
+
+UTC_TZ = pytz.utc
 
 
 class Security(Enum):
@@ -477,9 +480,6 @@ class BinancesRestApi(RestClient):
     def on_query_order(self, data: dict, request: Request) -> None:
         """"""
         for d in data:
-            dt = datetime.fromtimestamp(d["time"] / 1000)
-            time = dt.strftime("%Y-%m-%d %H:%M:%S")
-
             order = OrderData(
                 orderid=d["clientOrderId"],
                 symbol=d["symbol"],
@@ -490,7 +490,7 @@ class BinancesRestApi(RestClient):
                 direction=DIRECTION_BINANCEF2VT[d["side"]],
                 traded=float(d["executedQty"]),
                 status=STATUS_BINANCEF2VT.get(d["status"], None),
-                time=time,
+                datetime=generate_datetime(d["time"]),
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_order(order)
@@ -622,12 +622,10 @@ class BinancesRestApi(RestClient):
                 buf = []
 
                 for l in data:
-                    dt = datetime.fromtimestamp(l[0] / 1000)    # convert to second
-
                     bar = BarData(
                         symbol=req.symbol,
                         exchange=req.exchange,
-                        datetime=dt,
+                        datetime=generate_datetime(l[0]),
                         interval=req.interval,
                         volume=float(l[5]),
                         open_price=float(l[1]),
@@ -709,9 +707,6 @@ class BinancesTradeWebsocketApi(WebsocketClient):
 
     def on_order(self, packet: dict) -> None:
         """"""
-        dt = datetime.fromtimestamp(packet["E"] / 1000)
-        time = dt.strftime("%Y-%m-%d %H:%M:%S")
-
         ord_data = packet["o"]
 
         order = OrderData(
@@ -724,7 +719,7 @@ class BinancesTradeWebsocketApi(WebsocketClient):
             volume=float(ord_data["q"]),
             traded=float(ord_data["z"]),
             status=STATUS_BINANCEF2VT[ord_data["X"]],
-            time=time,
+            datetime=generate_datetime(packet["E"]),
             gateway_name=self.gateway_name
         )
 
@@ -735,9 +730,6 @@ class BinancesTradeWebsocketApi(WebsocketClient):
         if not trade_volume:
             return
 
-        trade_dt = datetime.fromtimestamp(ord_data["T"] / 1000)
-        trade_time = trade_dt.strftime("%Y-%m-%d %H:%M:%S")
-
         trade = TradeData(
             symbol=order.symbol,
             exchange=order.exchange,
@@ -746,7 +738,7 @@ class BinancesTradeWebsocketApi(WebsocketClient):
             direction=order.direction,
             price=float(ord_data["L"]),
             volume=trade_volume,
-            time=trade_time,
+            datetime=generate_datetime(ord_data["T"]),
             gateway_name=self.gateway_name,
         )
         self.gateway.on_trade(trade)
@@ -790,7 +782,7 @@ class BinancesDataWebsocketApi(WebsocketClient):
             symbol=req.symbol,
             name=symbol_name_map.get(req.symbol, ""),
             exchange=Exchange.BINANCE,
-            datetime=datetime.now(),
+            datetime=datetime.now(UTC_TZ),
             gateway_name=self.gateway_name,
         )
         self.ticks[req.symbol.lower()] = tick
@@ -844,3 +836,10 @@ class BinancesDataWebsocketApi(WebsocketClient):
 
         if tick.last_price:
             self.gateway.on_tick(copy(tick))
+
+
+def generate_datetime(timestamp: float) -> datetime:
+    """"""
+    dt = datetime.fromtimestamp(timestamp / 1000)
+    dt = dt.replace(tzinfo=UTC_TZ)
+    return dt

@@ -573,12 +573,10 @@ class BinanceRestApi(RestClient):
                 buf = []
 
                 for l in data:
-                    dt = datetime.fromtimestamp(l[0] / 1000)    # convert to second
-
                     bar = BarData(
                         symbol=req.symbol,
                         exchange=req.exchange,
-                        datetime=dt,
+                        datetime=generate_datetime(l[0]),
                         interval=req.interval,
                         volume=float(l[5]),
                         open_price=float(l[1]),
