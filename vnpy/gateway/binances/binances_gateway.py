@@ -90,7 +90,7 @@ class Security(Enum):
 symbol_name_map: Dict[str, str] = {}
 
 
-class BinancefGateway(BaseGateway):
+class BinancesGateway(BaseGateway):
     """
     VN Trader Gateway for Binance connection.
     """
@@ -110,9 +110,9 @@ class BinancefGateway(BaseGateway):
         """Constructor"""
         super().__init__(event_engine, "BINANCEF")
 
-        self.trade_ws_api = BinancefTradeWebsocketApi(self)
-        self.market_ws_api = BinancefDataWebsocketApi(self)
-        self.rest_api = BinancefRestApi(self)
+        self.trade_ws_api = BinancesTradeWebsocketApi(self)
+        self.market_ws_api = BinancesDataWebsocketApi(self)
+        self.rest_api = BinancesRestApi(self)
 
     def connect(self, setting: dict) -> None:
         """"""
@@ -164,19 +164,19 @@ class BinancefGateway(BaseGateway):
         self.rest_api.keep_user_stream()
 
 
-class BinancefRestApi(RestClient):
+class BinancesRestApi(RestClient):
     """
     BINANCE REST API
     """
 
-    def __init__(self, gateway: BinancefGateway):
+    def __init__(self, gateway: BinancesGateway):
         """"""
         super().__init__()
 
-        self.gateway: BinancefGateway = gateway
+        self.gateway: BinancesGateway = gateway
         self.gateway_name: str = gateway.gateway_name
 
-        self.trade_ws_api: BinancefTradeWebsocketApi = self.gateway.trade_ws_api
+        self.trade_ws_api: BinancesTradeWebsocketApi = self.gateway.trade_ws_api
 
         self.key: str = ""
         self.secret: str = ""
@@ -656,14 +656,14 @@ class BinancefRestApi(RestClient):
         return history
 
 
-class BinancefTradeWebsocketApi(WebsocketClient):
+class BinancesTradeWebsocketApi(WebsocketClient):
     """"""
 
-    def __init__(self, gateway: BinancefGateway):
+    def __init__(self, gateway: BinancesGateway):
         """"""
         super().__init__()
 
-        self.gateway: BinancefGateway = gateway
+        self.gateway: BinancesGateway = gateway
         self.gateway_name: str = gateway.gateway_name
 
     def connect(self, url: str, proxy_host: str, proxy_port: int) -> None:
@@ -752,14 +752,14 @@ class BinancefTradeWebsocketApi(WebsocketClient):
         self.gateway.on_trade(trade)
 
 
-class BinancefDataWebsocketApi(WebsocketClient):
+class BinancesDataWebsocketApi(WebsocketClient):
     """"""
 
-    def __init__(self, gateway: BinancefGateway):
+    def __init__(self, gateway: BinancesGateway):
         """"""
         super().__init__()
 
-        self.gateway: BinancefGateway = gateway
+        self.gateway: BinancesGateway = gateway
         self.gateway_name: str = gateway.gateway_name
 
         self.ticks: Dict[str, TickData] = {}
