@@ -14,6 +14,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from threading import Lock
 from typing import Sequence
+from pytz import utc as UTC_TZ
 
 from vnpy.event import Event
 from vnpy.api.rest import RestClient, Request
@@ -262,7 +263,7 @@ class HbdmRestApi(RestClient):
         self.key = key
         self.secret = secret
         self.host, _ = _split_url(REST_HOST)
-        self.connect_time = int(datetime.now().strftime("%y%m%d%H%M%S"))
+        self.connect_time = int(datetime.now(UTC_TZ).strftime("%y%m%d%H%M%S"))
 
         self.init(REST_HOST, proxy_host, proxy_port)
         self.start(session_number)
@@ -357,7 +358,7 @@ class HbdmRestApi(RestClient):
 
                 buf = []
                 for d in data["data"]:
-                    dt = datetime.fromtimestamp(d["id"])
+                    dt = generate_datetime(d["id"])
 
                     bar = BarData(
                         symbol=req.symbol,
@@ -403,7 +404,7 @@ class HbdmRestApi(RestClient):
             local_orderid,
             self.gateway_name
         )
-        order.time = datetime.now().strftime("%H:%M:%S")
+        order.time = datetime.now(UTC_TZ).strftime("%H:%M:%S")
 
         data = {
             "contract_code": req.symbol,
@@ -442,7 +443,7 @@ class HbdmRestApi(RestClient):
                 local_orderid,
                 self.gateway_name
             )
-            order.time = datetime.now().strftime("%H:%M:%S")
+            order.time = datetime.now(UTC_TZ).strftime("%H:%M:%S")
             self.gateway.on_order(order)
 
             d = {
@@ -554,8 +555,7 @@ class HbdmRestApi(RestClient):
 
         for d in data["data"]["orders"]:
             timestamp = d["created_at"]
-            dt = datetime.fromtimestamp(timestamp / 1000)
-            time = dt.strftime("%H:%M:%S")
+            dt = generate_datetime(timestamp / 1000)
 
             if d["client_order_id"]:
                 orderid = d["client_order_id"]
@@ -573,7 +573,7 @@ class HbdmRestApi(RestClient):
                 offset=OFFSET_HBDM2VT[d["offset"]],
                 traded=d["trade_volume"],
                 status=STATUS_HBDM2VT[d["status"]],
-                time=time,
+                datetime=dt,
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_order(order)
@@ -852,8 +852,7 @@ class HbdmTradeWebsocketApi(HbdmWebsocketApiBase):
 
     def on_order(self, data: dict):
         """"""
-        dt = datetime.fromtimestamp(data["created_at"] / 1000)
-        time = dt.strftime("%H:%M:%S")
+        dt = generate_datetime(data["created_at"] / 1000)
 
         if data["client_order_id"]:
             orderid = data["client_order_id"]
@@ -871,7 +870,7 @@ class HbdmTradeWebsocketApi(HbdmWebsocketApiBase):
             volume=data["volume"],
             traded=data["trade_volume"],
             status=STATUS_HBDM2VT[data["status"]],
-            time=time,
+            datetime=dt,
             gateway_name=self.gateway_name
         )
         self.gateway.on_order(order)
@@ -882,8 +881,7 @@ class HbdmTradeWebsocketApi(HbdmWebsocketApiBase):
             return
 
         for d in trades:
-            dt = datetime.fromtimestamp(d["created_at"] / 1000)
-            time = dt.strftime("%H:%M:%S")
+            dt = generate_datetime(d["created_at"] / 1000)
 
             trade = TradeData(
                 symbol=order.symbol,
@@ -894,7 +892,7 @@ class HbdmTradeWebsocketApi(HbdmWebsocketApiBase):
                 offset=order.offset,
                 price=d["trade_price"],
                 volume=d["trade_volume"],
-                time=time,
+                datetime=dt,
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_trade(trade)
@@ -937,7 +935,7 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
             symbol=req.symbol,
             name=req.symbol,
             exchange=Exchange.HUOBI,
-            datetime=datetime.now(),
+            datetime=datetime.now(UTC_TZ),
             gateway_name=self.gateway_name,
         )
         self.ticks[ws_symbol] = tick
@@ -979,7 +977,7 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
         """行情深度推送 """
         ws_symbol = data["ch"].split(".")[1]
         tick = self.ticks[ws_symbol]
-        tick.datetime = datetime.fromtimestamp(data["ts"] / 1000)
+        tick.datetime = generate_datetime(data["ts"] / 1000)
 
         tick_data = data["tick"]
         if "bids" not in tick_data or "asks" not in tick_data:
@@ -1004,7 +1002,7 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
         """市场细节推送"""
         ws_symbol = data["ch"].split(".")[1]
         tick = self.ticks[ws_symbol]
-        tick.datetime = datetime.fromtimestamp(data["ts"] / 1000)
+        tick.datetime = generate_datetime(data["ts"] / 1000)
 
         tick_data = data["tick"]
         tick.open_price = tick_data["open"]
@@ -1037,7 +1035,7 @@ def create_signature(api_key, method, host, path, secret_key, get_params=None):
         ("AccessKeyId", api_key),
         ("SignatureMethod", "HmacSHA256"),
         ("SignatureVersion", "2"),
-        ("Timestamp", datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"))
+        ("Timestamp", datetime.utcnow(UTC_TZ).strftime("%Y-%m-%dT%H:%M:%S"))
     ]
 
     if get_params:
@@ -1057,3 +1055,10 @@ def create_signature(api_key, method, host, path, secret_key, get_params=None):
     params = dict(sorted_params)
     params["Signature"] = signature.decode("UTF8")
     return params
+
+
+def generate_datetime(timestamp: float) -> datetime:
+    """"""
+    dt = generate_datetime(timestamp)
+    dt = dt.replace(tzinfo=UTC_TZ)
+    return dt
