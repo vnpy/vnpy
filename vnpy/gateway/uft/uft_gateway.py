@@ -2,6 +2,7 @@
 """
 
 import sys
+import pytz
 from datetime import datetime
 from typing import Dict, List
 
@@ -117,7 +118,7 @@ OPTIONTYPE_UFT2VT: Dict[str, OptionType] = {
 }
 
 MAX_FLOAT = sys.float_info.max
-
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 symbol_name_map = {}
 symbol_size_map = {}
@@ -280,11 +281,13 @@ class UftMdApi(MdApi):
             return
 
         timestamp = f"{data['TradingDay']} {data['UpdateTime']}000"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H%M%S%f")
+        dt = dt.replace(tzinfo=CHINA_TZ)
 
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
-            datetime=datetime.strptime(timestamp, "%Y%m%d %H%M%S%f"),
+            datetime=dt,
             name=symbol_name_map[symbol],
             volume=data["TradeVolume"],
             open_interest=data["OpenInterest"],
@@ -657,6 +660,9 @@ class UftTdApi(TdApi):
         orderid = f"{sessionid}_{order_ref}"
 
         order = self.orders.get(orderid, None)
+        str_time = generate_time(data["InsertTime"])
+        dt = datetime.strptime(str_time, "%H:%M:%S")
+        dt = dt.replace(tzinfo=CHINA_TZ)
 
         if not order:
             order = OrderData(
@@ -670,7 +676,7 @@ class UftTdApi(TdApi):
                 volume=data["OrderVolume"],
                 traded=data["TradeVolume"],
                 status=STATUS_UFT2VT.get(data["OrderStatus"], Status.SUBMITTING),
-                time=generate_time(data["InsertTime"]),
+                datetime=dt,
                 gateway_name=self.gateway_name
             )
             self.orders[orderid] = order
@@ -705,6 +711,10 @@ class UftTdApi(TdApi):
 
             self.gateway.on_order(order)
 
+        str_time = generate_time(data["TradeTime"])
+        dt = datetime.strptime(str_time, "%H:%M:%S")
+        dt = dt.replace(tzinfo=CHINA_TZ)
+
         trade = TradeData(
             symbol=symbol,
             exchange=exchange,
@@ -714,7 +724,7 @@ class UftTdApi(TdApi):
             offset=OFFSET_UFT2VT[data["OffsetFlag"]],
             price=data["TradePrice"],
             volume=data["TradeVolume"],
-            time=generate_time(data["TradeTime"]),
+            datetime=dt,
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)
