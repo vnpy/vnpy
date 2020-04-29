@@ -3,7 +3,7 @@
   vnksgoldtd.cpp
     正在创建库 C:\Users\yazhang\miniconda3\Lib\site-packages\vnpy-2.1.2.1-py3.7.egg\vnpy\api\ksgold\vnksgold\..\vnksgoldtd.lib 和对象 C:\Users\yazhang\miniconda3\Lib\site-packages\vnpy-2.1.2.1-py3.7.egg\vnpy\api\ksgold\vnksgold\..\vnksgoldtd.exp
   正在生成代码
-c:\users\yazhang\miniconda3\lib\site-packages\vnpy-2.1.2.1-py3.7.egg\vnpy\api\ksgold\vnksgold\vnksgoldtd\vnksgoldtd.cpp(2276): warning C4715: “TdApi::init”: 不是所有的控件路径都返回值
+c:\users\yazhang\miniconda3\lib\site-packages\vnpy-2.1.2.1-py3.7.egg\vnpy\api\ksgold\vnksgold\vnksgoldtd\vnksgoldtd.cpp(2275): warning C4715: “TdApi::init”: 不是所有的控件路径都返回值
   All 4039 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   已完成代码的生成
   vnksgoldtd.vcxproj -> C:\Users\yazhang\miniconda3\Lib\site-packages\vnpy-2.1.2.1-py3.7.egg\vnpy\api\ksgold\vnksgold\..\vnksgoldtd.pyd
