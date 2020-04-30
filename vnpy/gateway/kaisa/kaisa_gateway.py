@@ -1,18 +1,17 @@
 """
 """
 import base64
-
 import json
 import threading
 import sys
 import requests
 import math
+import pytz
 from Crypto.Cipher import AES
 from datetime import datetime
 from typing import Dict, Any, List
 from urllib import parse
 
-from vnpy.event import Event
 from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.constant import (
@@ -94,6 +93,7 @@ EXCHANGE_KAISA2VT: Dict[str, Exchange] = {
 EXCHANGE_VT2KAISA = {v: k for k, v in EXCHANGE_KAISA2VT.items()}
 
 symbol_name_map = {}
+UTC_TZ = pytz.UTC
 
 
 class KaisaGateway(BaseGateway):
@@ -424,7 +424,7 @@ class KaisaTradeRestApi(RestClient):
 
         self.add_request(
             method="POST",
-            path="/v1/order/orders/cancelOrder",
+            path="/v1/order/orders/cancel",
             callback=self.on_cancel_order,
             on_failed=self.on_cancel_order_failed,
             data=data,
@@ -491,9 +491,12 @@ class KaisaTradeRestApi(RestClient):
 
             dt = d["createTime"]
             trade_dt = d["updatedTime"]
-            time = datetime.strptime(dt, "%Y-%m-%d %H:%M:%S").time()
+            time = datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
+            time = time.replace(tzinfo=UTC_TZ)
+
             trade_time = datetime.strptime(
-                trade_dt, "%Y-%m-%d %H:%M:%S").time()
+                trade_dt, "%Y-%m-%d %H:%M:%S")
+            trade_time = trade_time.replace(tzinfo=UTC_TZ)
 
             traded = int(d["execQty"])
 
@@ -508,7 +511,7 @@ class KaisaTradeRestApi(RestClient):
                 offset=Offset.NONE,
                 traded=traded,
                 status=STATUS_KAISA2VT[d["orderStatus"]],
-                time=time,
+                datetime=time,
                 gateway_name=self.gateway_name,
             )
             self.order_manager.on_order(order)
@@ -525,7 +528,7 @@ class KaisaTradeRestApi(RestClient):
                     offset=Offset.NONE,
                     volume=traded,
                     price=float(d["execPrice"]),
-                    time=trade_time,
+                    datetime=trade_time,
                     gateway_name=self.gateway_name,
                 )
                 self.gateway.on_trade(trade)
@@ -655,6 +658,18 @@ class KaisaWebsocketApiBase(WebsocketClient):
 
         self.start()
 
+    def login(self):
+        """"""
+        data = {
+            "accountCode": self.user_id,
+            "password": self.password,
+            "ipAddress": "198.22.32.2"
+        }
+
+        req = self.generate_req(LOGIN, data)
+
+        return self.send_packet(req)
+
     def generate_req(self, reqtype: int, data: dict) -> dict:
 
         self.gateway.req_id += 1
@@ -697,7 +712,7 @@ class KaisaTradeWebsocketApi(KaisaWebsocketApiBase):
         self.order_manager.push_data_callback = self.on_data
 
         self.event_callbacks = {
-            CREATION: self.on_create_order,
+            CREATION: self.on_order,
             UPDATE: self.on_order,
             TRADE: self.on_trade,
             CANCELLATION: self.on_cancel_order,
@@ -712,11 +727,18 @@ class KaisaTradeWebsocketApi(KaisaWebsocketApiBase):
     def on_connected(self) -> None:
         """"""
         self.gateway.write_log("交易Websocket API连接成功")
+        self.login()
+
+    def on_login(self, data):
+        """"""
+        self.gateway.write_log("交易Websocket API登录成功")
 
     def on_data(self, reqtype: int, data: dict) -> None:
         """"""
+        if reqtype == LOGIN:
+            self.on_login(data)
 
-        if reqtype == SYNCHRONIZE_PUSH:
+        elif reqtype == SYNCHRONIZE_PUSH:
             event = data["eventType"]
 
             func = self.event_callbacks[event]
@@ -742,7 +764,7 @@ class KaisaTradeWebsocketApi(KaisaWebsocketApiBase):
         sys_orderid = data["orderID"]
         order = self.order_manager.get_order_with_sys_orderid(sys_orderid)
 
-        order.status == STATUS_KAISA2VT[data["orderStatus"]]
+        order.status = STATUS_KAISA2VT[data["orderStatus"]]
         self.order_manager.on_order(order)
 
     def on_order(self, data: dict) -> None:
@@ -751,19 +773,19 @@ class KaisaTradeWebsocketApi(KaisaWebsocketApiBase):
         local_orderid = self.order_manager.get_local_orderid(sys_orderid)
 
         dt = data["createTime"]
-        time = datetime.strptime(dt, "%Y-%m-%d %H:%M:%S").time()
+        time = datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
+        time = time.replace(tzinfo=UTC_TZ)
 
         order = OrderData(
             symbol=data["productCode"],
             exchange=Exchange.HKSE,
             orderid=local_orderid,
-            type=ORDERTYPE_KAISA2VT[data["orderType"]],
             direction=DIRECTION_KAISA2VT[data["bsFlag"]],
             price=float(data["price"]),
             volume=int(data["qty"]),
             traded=int(data["execQty"]),
             status=STATUS_KAISA2VT[data["orderStatus"]],
-            time=time,
+            datetime=time,
             gateway_name=self.gateway_name
         )
         self.gateway.on_order(order)
@@ -785,28 +807,31 @@ class KaisaTradeWebsocketApi(KaisaWebsocketApiBase):
     def on_trade(self, data: dict) -> None:
         """"""
         sys_orderid = str(data["orderID"])
-        local_orderid = self.order_manager.get_local_orderid(sys_orderid)
-
         dt = data["tradeTime"]
-        time = datetime.strptime(dt, "%Y-%m-%d %H:%M:%S").time()
+        time = datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
+        time = time.replace(tzinfo=UTC_TZ)
 
-        self.gateway_name.rest_api.trader_count += 1
+        order = self.order_manager.get_order_with_sys_orderid(sys_orderid)
+        order.status = STATUS_KAISA2VT[data["orderStatus"]]
+        order.traded = int(data["execQty"])
+        order.time = time
+        self.gateway.on_order(order)
 
-        order = TradeData(
-            tradeid=self.gateway_name.rest_api.trader_count,
+        self.gateway.rest_api.trader_count += 1
+
+        trade = TradeData(
+            tradeid=self.gateway.rest_api.trader_count,
             symbol=data["productCode"],
             exchange=Exchange.HKSE,
-            orderid=local_orderid,
-            type=ORDERTYPE_KAISA2VT[data["orderType"]],
-            direction=DIRECTION_KAISA2VT[data["bsFlag"]],
+            orderid=order.orderid,
+            # type=ORDERTYPE_KAISA2VT[data["orderType"]],
+            direction=order.direction,
             price=float(data["execPrice"]),
-            volume=int(data["qty"]),
-            traded=int(data["execQty"]),
-            status=STATUS_KAISA2VT[data["orderStatus"]],
-            time=time,
+            volume=int(data["execQty"]),
+            datetime=time,
             gateway_name=self.gateway_name
         )
-        self.gateway.on_order(order)
+        self.gateway.on_trade(trade)
 
 
 class KaisaDataWebsocketApi(KaisaWebsocketApiBase):
@@ -840,13 +865,15 @@ class KaisaDataWebsocketApi(KaisaWebsocketApiBase):
 
         for d in ticks:
             millisecond = str(d["millisecond"]).ljust(6, "0")
-            dt = f"{d['time']}.{millisecond}"
-            dt_ = datetime.strptime(dt, "%Y-%m-%d %H:%M:%S.%f")
+            dt_ = f"{d['time']}.{millisecond}"
+            dt = datetime.strptime(dt_, "%Y-%m-%d %H:%M:%S.%f")
+            dt = dt.replace(tzinfo=UTC_TZ)
+
             tick = TickData(
                 symbol=d["code"],
                 exchange=Exchange.HKSE,
                 name=symbol_name_map[d['code']],
-                datetime=dt_,
+                datetime=dt,
                 volume=d["volume"],
                 last_price=d["price"],
                 gateway_name=self.gateway_name
