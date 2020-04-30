@@ -493,6 +493,7 @@ class XtpTdApi(TdApi):
         self.login_status: bool = False
 
         self.short_positions: Dict[str, PositionData] = {}
+        self.orders: Dict[str, OrderData] = {}
 
     def onDisconnected(self, session: int, reason: int) -> None:
         """"""
@@ -518,20 +519,27 @@ class XtpTdApi(TdApi):
         else:
             direction, offset = DIRECTION_STOCK_XTP2VT[data["side"]]
 
-        order = OrderData(
-            symbol=symbol,
-            exchange=MARKET_XTP2VT[data["market"]],
-            orderid=str(data["order_xtp_id"]),
-            type=ORDERTYPE_XTP2VT[data["price_type"]],
-            direction=direction,
-            offset=offset,
-            price=data["price"],
-            volume=data["quantity"],
-            traded=data["qty_traded"],
-            status=STATUS_XTP2VT[data["order_status"]],
-            time=data["insert_time"],
-            gateway_name=self.gateway_name
-        )
+        orderid = str(data["order_xtp_id"])
+        if orderid not in self.orders:
+            order = OrderData(
+                symbol=symbol,
+                exchange=MARKET_XTP2VT[data["market"]],
+                orderid=orderid,
+                type=ORDERTYPE_XTP2VT[data["price_type"]],
+                direction=direction,
+                offset=offset,
+                price=data["price"],
+                volume=data["quantity"],
+                traded=data["qty_traded"],
+                status=STATUS_XTP2VT[data["order_status"]],
+                time=data["insert_time"],
+                gateway_name=self.gateway_name
+            )
+            self.orders[orderid] = order
+        else:
+            order = self.orders[orderid]
+            order.traded = data["qty_traded"]
+            order.status = STATUS_XTP2VT[data["order_status"]]
 
         self.gateway.on_order(order)
 
@@ -556,6 +564,19 @@ class XtpTdApi(TdApi):
             time=data["trade_time"],
             gateway_name=self.gateway_name
         )
+
+        if trade.orderid in self.orders:
+            order = self.orders[trade.orderid]
+            order.traded += trade.volume
+
+            if order.traded < order.volume:
+                order.status = Status.PARTTRADED
+            else:
+                order.status = Status.ALLTRADED
+
+            self.gateway.on_order(order)
+        else:
+            self.gateway.write_log(f"成交找不到对应委托{trade.orderid}")
 
         self.gateway.on_trade(trade)
 
