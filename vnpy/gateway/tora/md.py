@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, List, Optional
 
 from vnpy.api.tora.vntora import (CTORATstpMarketDataField, CTORATstpMdApi, CTORATstpMdSpi,
-                                  CTORATstpReqUserLoginField, 
+                                  CTORATstpReqUserLoginField,
                                   CTORATstpRspInfoField, CTORATstpRspUserLoginField,
                                   CTORATstpUserLogoutField, TORA_TSTP_LACT_AccountID)
 
