@@ -99,7 +99,8 @@ EXCHANGE_CTP2VT = {
     "SHFE": Exchange.SHFE,
     "CZCE": Exchange.CZCE,
     "DCE": Exchange.DCE,
-    "INE": Exchange.INE
+    "INE": Exchange.INE,
+    "SGE": Exchange.SGE
 }
 
 PRODUCT_CTP2VT = {
@@ -291,7 +292,8 @@ class CtpMdApi(MdApi):
         if not exchange:
             return
 
-        timestamp = f"{data['ActionDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
+        md_date = data['ActionDay'] if data['ActionDay'] else data['TradingDay']
+        timestamp = f"{md_date} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
 
         tick = TickData(
             symbol=symbol,
