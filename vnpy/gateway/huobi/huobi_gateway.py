@@ -12,6 +12,7 @@ import hmac
 import sys
 from copy import copy
 from datetime import datetime
+from pytz import utc as UTC_TZ
 
 from vnpy.event import Event
 from vnpy.api.rest import RestClient, Request
@@ -291,7 +292,7 @@ class HuobiRestApi(RestClient):
                 self.gateway.write_log(msg)
             else:
                 for d in data["data"]:
-                    dt = datetime.fromtimestamp(d["id"])
+                    dt = generate_datetime(d["id"])
 
                     bar = BarData(
                         symbol=req.symbol,
@@ -325,7 +326,7 @@ class HuobiRestApi(RestClient):
             local_orderid,
             self.gateway_name
         )
-        order.time = datetime.now().strftime("%H:%M:%S")
+        order.datetime = datetime.now(UTC_TZ)
 
         data = {
             "account-id": self.account_id,
@@ -405,8 +406,7 @@ class HuobiRestApi(RestClient):
             local_orderid = self.order_manager.get_local_orderid(sys_orderid)
 
             direction, order_type = ORDERTYPE_HUOBI2VT[d["type"]]
-            dt = datetime.fromtimestamp(d["created-at"] / 1000)
-            time = dt.strftime("%H:%M:%S")
+            dt = generate_datetime(d["created-at"] / 1000)
 
             order = OrderData(
                 orderid=local_orderid,
@@ -418,7 +418,7 @@ class HuobiRestApi(RestClient):
                 direction=direction,
                 traded=float(d["filled-amount"]),
                 status=STATUS_HUOBI2VT.get(d["state"], None),
-                time=time,
+                datetime=dt,
                 gateway_name=self.gateway_name,
             )
 
@@ -684,7 +684,7 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
             direction=order.direction,
             price=float(data["price"]),
             volume=float(data["filled-amount"]),
-            time=datetime.now().strftime("%H:%M:%S"),
+            datetime=datetime.now(UTC_TZ),
             gateway_name=self.gateway_name,
         )
         self.gateway.on_trade(trade)
@@ -717,7 +717,7 @@ class HuobiDataWebsocketApi(HuobiWebsocketApiBase):
             symbol=symbol,
             name=symbol_name_map.get(symbol, ""),
             exchange=Exchange.HUOBI,
-            datetime=datetime.now(),
+            datetime=datetime.now(UTC_TZ),
             gateway_name=self.gateway_name,
         )
         self.ticks[symbol] = tick
@@ -755,7 +755,7 @@ class HuobiDataWebsocketApi(HuobiWebsocketApiBase):
         """行情深度推送 """
         symbol = data["ch"].split(".")[1]
         tick = self.ticks[symbol]
-        tick.datetime = datetime.fromtimestamp(data["ts"] / 1000)
+        tick.datetime = generate_datetime(data["ts"] / 1000)
 
         bids = data["tick"]["bids"]
         for n in range(5):
@@ -776,7 +776,7 @@ class HuobiDataWebsocketApi(HuobiWebsocketApiBase):
         """市场细节推送"""
         symbol = data["ch"].split(".")[1]
         tick = self.ticks[symbol]
-        tick.datetime = datetime.fromtimestamp(data["ts"] / 1000)
+        tick.datetime = generate_datetime(data["ts"] / 1000)
 
         tick_data = data["tick"]
         tick.open_price = float(tick_data["open"])
@@ -829,3 +829,10 @@ def create_signature(api_key, method, host, path, secret_key, get_params=None):
     params = dict(sorted_params)
     params["Signature"] = signature.decode("UTF8")
     return params
+
+
+def generate_datetime(timestamp: float) -> datetime:
+    """"""
+    dt = generate_datetime(timestamp)
+    dt = dt.replace(tzinfo=UTC_TZ)
+    return dt
