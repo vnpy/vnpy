@@ -158,9 +158,7 @@ class TimeCell(BaseCell):
         super(TimeCell, self).__init__(content, data)
 
     def set_content(self, content: Any, data: Any) -> None:
-        """
-        Time format is 12:12:12.5
-        """
+        """"""
         if content is None:
             return
 
