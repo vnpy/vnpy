@@ -48,6 +48,7 @@ class BacktesterManager(QtWidgets.QWidget):
         self.register_event()
         self.backtester_engine.init_engine()
         self.init_strategy_settings()
+        self.load_backtesting_setting()
 
     def init_strategy_settings(self):
         """"""
@@ -221,7 +222,8 @@ class BacktesterManager(QtWidgets.QWidget):
         # Code Editor
         self.editor = CodeEditor(self.main_engine, self.event_engine)
 
-        # Load setting
+    def load_backtesting_setting(self):
+        """"""
         setting = load_json(self.setting_filename)
         if not setting:
             return
