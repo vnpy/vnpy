@@ -2,8 +2,9 @@ from datetime import datetime
 from typing import Any, List, Optional
 
 from vnpy.api.tora.vntora import (CTORATstpMarketDataField, CTORATstpMdApi, CTORATstpMdSpi,
+                                  CTORATstpReqUserLoginField,
                                   CTORATstpRspInfoField, CTORATstpRspUserLoginField,
-                                  CTORATstpUserLogoutField)
+                                  CTORATstpUserLogoutField, TORA_TSTP_LACT_AccountID)
 
 from vnpy.gateway.tora.error_codes import get_error_msg
 from vnpy.trader.constant import Exchange
@@ -35,6 +36,7 @@ class ToraMdSpi(CTORATstpMdSpi):
     def OnFrontConnected(self) -> Any:
         """"""
         self.gateway.write_log("行情服务器连接成功")
+        self._api.login()
 
     def OnFrontDisconnected(self, error_code: int) -> Any:
         """"""
@@ -128,10 +130,21 @@ class ToraMdApi:
     def __init__(self, gateway: BaseGateway):
         """"""
         self.gateway = gateway
+
+        self.username = ""
+        self.password = ""
         self.md_address = ""
 
         self._native_api: Optional[CTORATstpMdApi] = None
         self._spi: Optional["ToraMdApi"] = None
+
+        self._last_req_id = 0
+
+    def _get_new_req_id(self):
+        """"""
+        req_id = self._last_req_id
+        self._last_req_id += 1
+        return req_id
 
     def stop(self):
         """
@@ -149,6 +162,17 @@ class ToraMdApi:
         """
         if self._native_api:
             self._native_api.Join()
+
+    def login(self):
+        """
+        send login request using self.username, self.password
+        :return:
+        """
+        info = CTORATstpReqUserLoginField()
+        info.LogInAccount = self.username
+        info.LogInAccountType = TORA_TSTP_LACT_AccountID
+        info.Password = self.password
+        self._native_api.ReqUserLogin(info, self._get_new_req_id())
 
     def connect(self):
         """
