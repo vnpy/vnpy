@@ -660,8 +660,9 @@ class UftTdApi(TdApi):
         orderid = f"{sessionid}_{order_ref}"
 
         order = self.orders.get(orderid, None)
-        str_time = generate_time(data["InsertTime"])
-        dt = datetime.strptime(str_time, "%H:%M:%S")
+        insert_time = generate_time(data["InsertTime"])
+        timestamp = f"{data['InsertDate']} {insert_time}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
         dt = dt.replace(tzinfo=CHINA_TZ)
 
         if not order:
@@ -711,8 +712,9 @@ class UftTdApi(TdApi):
 
             self.gateway.on_order(order)
 
-        str_time = generate_time(data["TradeTime"])
-        dt = datetime.strptime(str_time, "%H:%M:%S")
+        trade_time = generate_time(data["TradeTime"])
+        timestamp = f"{data['TradeDate']} {trade_time}"
+        dt = datetime.strptime(timestamp, "%H:%M:%S")
         dt = dt.replace(tzinfo=CHINA_TZ)
 
         trade = TradeData(
