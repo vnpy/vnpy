@@ -649,8 +649,7 @@ class BitmexWebsocketApi(WebsocketClient):
             return
 
         tick.last_price = d["price"]
-        tick.datetime = datetime.strptime(
-            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        tick.datetime = generate_datetime(d["timestamp"])
         self.gateway.on_tick(copy(tick))
 
     def on_depth(self, d):
