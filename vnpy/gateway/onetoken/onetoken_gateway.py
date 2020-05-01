@@ -13,6 +13,7 @@ from typing import Dict
 from urllib.parse import urlparse
 
 from requests import ConnectionError
+import pytz
 
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
@@ -54,6 +55,8 @@ EXCHANGE_VT2ONETOKEN = {
     Exchange.BITMEX: "bitmex",
     Exchange.GATEIO: "gateio",
 }
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 # EXCHANGE_ONETOKEN2VT = {v: k for k, v in EXCHANGE_VT2ONETOKEN.items()}
 
@@ -274,7 +277,7 @@ class OnetokenRestApi(RestClient):
         self.exchange = exchange
         self.account = account
 
-        self.connect_time = int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
+        self.connect_time = int(datetime.now(UTC_TZ).strftime("%y%m%d%H%M%S")) * self.order_count
 
         self.init(REST_HOST, proxy_host, proxy_port)
 
@@ -491,7 +494,7 @@ class OnetokenDataWebsocketApi(WebsocketClient):
             symbol=req.symbol,
             exchange=req.exchange,
             name=req.symbol,
-            datetime=datetime.now(),
+            datetime=datetime.now(UTC_TZ),
             gateway_name=self.gateway_name,
         )
 
@@ -557,8 +560,7 @@ class OnetokenDataWebsocketApi(WebsocketClient):
             return
 
         tick.last_price = data["last"]
-        tick.datetime = datetime.strptime(
-            data["time"][:-6], "%Y-%m-%dT%H:%M:%S.%f")
+        tick.datetime = generate_datetime(data["time"][:-6])
 
         bids = data["bids"]
         asks = data["asks"]
@@ -743,7 +745,7 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
         for order_data in data:
             contract_symbol = order_data["contract"]
             exchange_str, symbol = contract_symbol.split("/")
-            timestamp = order_data["entrust_time"][11:19]
+            timestamp = order_data["entrust_time"][:-6]
 
             orderid = order_data["client_oid"]
 
@@ -755,7 +757,7 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
                 price=order_data["entrust_price"],
                 volume=order_data["entrust_amount"],
                 traded=order_data["dealt_amount"],
-                time=timestamp,
+                datetime=generate_datetime(timestamp),
                 gateway_name=self.gateway_name
             )
 
@@ -775,7 +777,7 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
             if not order_data["last_dealt_amount"]:
                 return
 
-            trade_timestamp = order_data["last_update"][11:19]
+            trade_timestamp = order_data["last_update"][:-6]
             self.trade_count += 1
             if order_data["dealt_amount"]:
                 self.trade_count += 1
@@ -788,9 +790,16 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
                     price=order_data["average_dealt_price"],
                     volume=order_data["dealt_amount"],
                     gateway_name=self.gateway_name,
-                    time=trade_timestamp)
+                    datetime=generate_datetime(trade_timestamp)
+                )
                 self.gateway.on_trade(trade)
 
     def ping(self):
         """"""
         self.send_packet({"uri": "ping"})
+
+
+def generate_datetime(timestamp: str) -> datetime:
+    dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    dt = dt.replace(tzinfo=CHINA_TZ)
+    return dt
