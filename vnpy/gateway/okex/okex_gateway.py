@@ -735,8 +735,7 @@ class OkexWebsocketApi(WebsocketClient):
         tick.high_price = float(d["high_24h"])
         tick.low_price = float(d["low_24h"])
         tick.volume = float(d["base_volume_24h"])
-        tick.datetime = datetime.strptime(
-            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        tick.datetime = generate_datetime(d["timestamp"])
         self.gateway.on_tick(copy(tick))
 
     def on_depth(self, d):
@@ -758,8 +757,7 @@ class OkexWebsocketApi(WebsocketClient):
             tick.__setattr__("ask_price_%s" % (n + 1), float(price))
             tick.__setattr__("ask_volume_%s" % (n + 1), float(volume))
 
-        tick.datetime = datetime.strptime(
-            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        tick.datetime = generate_datetime(d["timestamp"])
         self.gateway.on_tick(copy(tick))
 
     def on_order(self, d):

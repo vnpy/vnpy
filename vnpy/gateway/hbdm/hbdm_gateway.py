@@ -14,7 +14,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from threading import Lock
 from typing import Sequence
-from pytz import utc as UTC_TZ
+import pytz
 
 from vnpy.event import Event
 from vnpy.api.rest import RestClient, Request
@@ -104,6 +104,7 @@ TIMEDELTA_MAP = {
     Interval.DAILY: timedelta(days=1),
 }
 
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 symbol_type_map = {}
 
@@ -263,7 +264,7 @@ class HbdmRestApi(RestClient):
         self.key = key
         self.secret = secret
         self.host, _ = _split_url(REST_HOST)
-        self.connect_time = int(datetime.now(UTC_TZ).strftime("%y%m%d%H%M%S"))
+        self.connect_time = int(datetime.now(CHINA_TZ).strftime("%y%m%d%H%M%S"))
 
         self.init(REST_HOST, proxy_host, proxy_port)
         self.start(session_number)
@@ -404,7 +405,7 @@ class HbdmRestApi(RestClient):
             local_orderid,
             self.gateway_name
         )
-        order.time = datetime.now(UTC_TZ).strftime("%H:%M:%S")
+        order.datetime = datetime.now(CHINA_TZ)
 
         data = {
             "contract_code": req.symbol,
@@ -443,7 +444,7 @@ class HbdmRestApi(RestClient):
                 local_orderid,
                 self.gateway_name
             )
-            order.time = datetime.now(UTC_TZ).strftime("%H:%M:%S")
+            order.datetime = datetime.now(CHINA_TZ)
             self.gateway.on_order(order)
 
             d = {
@@ -935,7 +936,7 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
             symbol=req.symbol,
             name=req.symbol,
             exchange=Exchange.HUOBI,
-            datetime=datetime.now(UTC_TZ),
+            datetime=datetime.now(CHINA_TZ),
             gateway_name=self.gateway_name,
         )
         self.ticks[ws_symbol] = tick
@@ -1035,7 +1036,7 @@ def create_signature(api_key, method, host, path, secret_key, get_params=None):
         ("AccessKeyId", api_key),
         ("SignatureMethod", "HmacSHA256"),
         ("SignatureVersion", "2"),
-        ("Timestamp", datetime.utcnow(UTC_TZ).strftime("%Y-%m-%dT%H:%M:%S"))
+        ("Timestamp", datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"))
     ]
 
     if get_params:
@@ -1059,6 +1060,6 @@ def create_signature(api_key, method, host, path, secret_key, get_params=None):
 
 def generate_datetime(timestamp: float) -> datetime:
     """"""
-    dt = generate_datetime(timestamp)
-    dt = dt.replace(tzinfo=UTC_TZ)
+    dt = datetime.fromtimestamp(timestamp)
+    dt = dt.replace(tzinfo=CHINA_TZ)
     return dt

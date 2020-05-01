@@ -12,7 +12,7 @@ import hmac
 import sys
 from copy import copy
 from datetime import datetime
-from pytz import utc as UTC_TZ
+import pytz
 
 from vnpy.event import Event
 from vnpy.api.rest import RestClient, Request
@@ -67,6 +67,8 @@ INTERVAL_VT2HUOBI = {
     Interval.HOUR: "60min",
     Interval.DAILY: "1day"
 }
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 huobi_symbols = set()
 symbol_name_map = {}
@@ -326,7 +328,7 @@ class HuobiRestApi(RestClient):
             local_orderid,
             self.gateway_name
         )
-        order.datetime = datetime.now(UTC_TZ)
+        order.datetime = datetime.now(CHINA_TZ)
 
         data = {
             "account-id": self.account_id,
@@ -684,7 +686,7 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
             direction=order.direction,
             price=float(data["price"]),
             volume=float(data["filled-amount"]),
-            datetime=datetime.now(UTC_TZ),
+            datetime=datetime.now(CHINA_TZ),
             gateway_name=self.gateway_name,
         )
         self.gateway.on_trade(trade)
@@ -717,7 +719,7 @@ class HuobiDataWebsocketApi(HuobiWebsocketApiBase):
             symbol=symbol,
             name=symbol_name_map.get(symbol, ""),
             exchange=Exchange.HUOBI,
-            datetime=datetime.now(UTC_TZ),
+            datetime=datetime.now(CHINA_TZ),
             gateway_name=self.gateway_name,
         )
         self.ticks[symbol] = tick
@@ -833,6 +835,6 @@ def create_signature(api_key, method, host, path, secret_key, get_params=None):
 
 def generate_datetime(timestamp: float) -> datetime:
     """"""
-    dt = generate_datetime(timestamp)
-    dt = dt.replace(tzinfo=UTC_TZ)
+    dt = datetime.fromtimestamp(timestamp)
+    dt = dt.replace(tzinfo=CHINA_TZ)
     return dt

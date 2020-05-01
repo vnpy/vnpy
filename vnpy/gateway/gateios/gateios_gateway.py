@@ -773,6 +773,6 @@ def get_order_status(status: str, volume: int, traded: int):
 
 def generate_datetime(timestamp: float) -> datetime:
     """"""
-    dt = generate_datetime(timestamp)
+    dt = datetime.fromtimestamp(timestamp)
     dt = dt.replace(tzinfo=UTC_TZ)
     return dt
