@@ -102,8 +102,7 @@ EXCHANGE_CTP2VT = {
     "SHFE": Exchange.SHFE,
     "CZCE": Exchange.CZCE,
     "DCE": Exchange.DCE,
-    "INE": Exchange.INE,
-    "SGE": Exchange.SGE
+    "INE": Exchange.INE
 }
 
 PRODUCT_CTP2VT = {
@@ -591,10 +590,11 @@ class CtpTdApi(TdApi):
         Callback of instrument query.
         """
         product = PRODUCT_CTP2VT.get(data["ProductClass"], None)
-        if product:
+        exchange = EXCHANGE_CTP2VT.get(data["ExchangeID"], None)
+        if product and exchange:
             contract = ContractData(
                 symbol=data["InstrumentID"],
-                exchange=EXCHANGE_CTP2VT[data["ExchangeID"]],
+                exchange=exchange,
                 name=data["InstrumentName"],
                 product=product,
                 size=data["VolumeMultiple"],
