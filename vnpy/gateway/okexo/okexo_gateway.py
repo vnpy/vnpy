@@ -10,12 +10,13 @@ import json
 import base64
 import zlib
 from copy import copy
-from datetime import datetime, timedelta
+from datetime import datetime
 from threading import Lock
 from urllib.parse import urlencode
 from typing import Dict, List
 
 from requests import ConnectionError
+from pytz import utc as UTC_TZ
 
 from vnpy.event.engine import EventEngine
 from vnpy.api.rest import Request, RestClient
@@ -447,7 +448,7 @@ class OkexoRestApi(RestClient):
                 traded=int(order_data["filled_qty"]),
                 price=float(order_data["price"]),
                 volume=float(order_data["size"]),
-                time=utc_to_local(order_data["timestamp"]).strftime("%H:%M:%S"),
+                datetime=generate_datetime(order_data["timestamp"]),
                 status=STATE_OKEXO2VT[order_data["state"]],
                 gateway_name=self.gateway_name,
             )
@@ -579,7 +580,7 @@ class OkexoRestApi(RestClient):
 
                 for l in data:
                     ts, o, h, l, c, v, _ = l
-                    dt = utc_to_local(ts)
+                    dt = generate_datetime(ts)
                     bar = BarData(
                         symbol=req.symbol,
                         exchange=req.exchange,
@@ -660,7 +661,7 @@ class OkexoWebsocketApi(WebsocketClient):
             symbol=req.symbol,
             exchange=req.exchange,
             name=req.symbol,
-            datetime=datetime.now(),
+            datetime=datetime.now(UTC_TZ),
             gateway_name=self.gateway_name,
         )
         self.ticks[req.symbol] = tick
@@ -802,7 +803,7 @@ class OkexoWebsocketApi(WebsocketClient):
         tick.high_price = float(data["high_24h"])
         tick.low_price = float(data["low_24h"])
         tick.volume = float(data["volume_24h"])
-        tick.datetime = utc_to_local(data["timestamp"])
+        tick.datetime = generate_datetime(data["timestamp"])
 
         self.gateway.on_tick(copy(tick))
 
@@ -825,7 +826,7 @@ class OkexoWebsocketApi(WebsocketClient):
             tick.__setattr__("ask_price_%s" % (n + 1), float(price))
             tick.__setattr__("ask_volume_%s" % (n + 1), int(volume))
 
-        tick.datetime = utc_to_local(data["timestamp"])
+        tick.datetime = generate_datetime(data["timestamp"])
         self.gateway.on_tick(copy(tick))
 
     def on_order(self, data: dict) -> None:
@@ -840,7 +841,7 @@ class OkexoWebsocketApi(WebsocketClient):
             price=float(data["price"]),
             volume=float(data["size"]),
             traded=float(data["filled_qty"]),
-            time=utc_to_local(data["timestamp"]).strftime("%H:%M:%S"),
+            datetime=generate_datetime(data["timestamp"]),
             status=STATE_OKEXO2VT[data["state"]],
             gateway_name=self.gateway_name,
         )
@@ -862,7 +863,7 @@ class OkexoWebsocketApi(WebsocketClient):
             offset=order.offset,
             price=float(data["last_fill_px"]),
             volume=float(trade_volume),
-            time=order.time,
+            datetime=order.datetime,
             gateway_name=self.gateway_name,
         )
         self.gateway.on_trade(trade)
@@ -904,7 +905,7 @@ def get_timestamp() -> str:
     return timestamp + "Z"
 
 
-def utc_to_local(timestamp) -> datetime:
-    time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    utc_time = time + timedelta(hours=8)
-    return utc_time
+def generate_datetime(timestamp: str) -> datetime:
+    dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    dt = dt.replace(tzinfo=UTC_TZ)
+    return dt

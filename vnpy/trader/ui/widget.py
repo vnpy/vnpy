@@ -7,6 +7,7 @@ import platform
 from enum import Enum
 from typing import Any, Dict
 from copy import copy
+from tzlocal import get_localzone
 
 from PyQt5 import QtCore, QtGui, QtWidgets, Qt
 import rqdatac
@@ -150,17 +151,18 @@ class TimeCell(BaseCell):
     Cell used for showing time string from datetime object.
     """
 
+    local_tz = get_localzone()
+
     def __init__(self, content: Any, data: Any):
         """"""
         super(TimeCell, self).__init__(content, data)
 
     def set_content(self, content: Any, data: Any) -> None:
-        """
-        Time format is 12:12:12.5
-        """
+        """"""
         if content is None:
             return
 
+        content = content.astimezone(self.local_tz)
         timestamp = content.strftime("%H:%M:%S")
 
         millisecond = int(content.microsecond / 1000)
@@ -402,7 +404,7 @@ class TradeMonitor(BaseMonitor):
         "offset": {"display": "开平", "cell": EnumCell, "update": False},
         "price": {"display": "价格", "cell": BaseCell, "update": False},
         "volume": {"display": "数量", "cell": BaseCell, "update": False},
-        "time": {"display": "时间", "cell": BaseCell, "update": False},
+        "datetime": {"display": "时间", "cell": TimeCell, "update": False},
         "gateway_name": {"display": "接口", "cell": BaseCell, "update": False},
     }
 
@@ -427,7 +429,7 @@ class OrderMonitor(BaseMonitor):
         "volume": {"display": "总数量", "cell": BaseCell, "update": True},
         "traded": {"display": "已成交", "cell": BaseCell, "update": True},
         "status": {"display": "状态", "cell": EnumCell, "update": True},
-        "time": {"display": "时间", "cell": BaseCell, "update": True},
+        "datetime": {"display": "时间", "cell": TimeCell, "update": True},
         "gateway_name": {"display": "接口", "cell": BaseCell, "update": False},
     }
 

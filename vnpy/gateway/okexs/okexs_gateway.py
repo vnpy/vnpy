@@ -10,12 +10,13 @@ import sys
 import time
 import zlib
 from copy import copy
-from datetime import datetime, timezone
+from datetime import datetime
 from threading import Lock
 from urllib.parse import urlencode
 from typing import Dict
 
 from requests import ConnectionError
+from pytz import utc as UTC_TZ
 
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
@@ -65,8 +66,6 @@ INTERVAL_VT2OKEXS = {
 }
 
 instruments = set()
-utc_tz = timezone.utc
-local_tz = datetime.now(timezone.utc).astimezone().tzinfo
 
 
 class OkexsGateway(BaseGateway):
@@ -588,7 +587,7 @@ class OkexsWebsocketApi(WebsocketClient):
             symbol=req.symbol,
             exchange=req.exchange,
             name=req.symbol,
-            datetime=datetime.now(),
+            datetime=datetime.now(UTC_TZ),
             gateway_name=self.gateway_name,
         )
         self.ticks[req.symbol] = tick
@@ -783,7 +782,7 @@ class OkexsWebsocketApi(WebsocketClient):
                 offset=order.offset,
                 price=float(data["last_fill_px"]),
                 volume=float(traded_volume),
-                time=order.time,
+                datetime=order.datetime,
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_trade(trade)
@@ -844,10 +843,9 @@ def generate_timestamp():
 
 def _parse_timestamp(timestamp):
     """parse timestamp into local time."""
-    time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    utc_time = time.replace(tzinfo=utc_tz)
-    local_time = utc_time.astimezone(local_tz)
-    return local_time
+    dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    dt = dt.replace(tzinfo=UTC_TZ)
+    return dt
 
 
 def _parse_position_holding(holding, symbol, gateway_name):
@@ -894,7 +892,7 @@ def _parse_order_info(order_info, gateway_name: str):
         traded=int(order_info["filled_qty"]),
         price=float(order_info["price"]),
         volume=float(order_info["size"]),
-        time=_parse_timestamp(order_info["timestamp"]).strftime("%H:%M:%S"),
+        datetime=_parse_timestamp(order_info["timestamp"]),
         status=STATUS_OKEXS2VT[order_info["status"]],
         gateway_name=gateway_name,
     )
