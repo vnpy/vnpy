@@ -10,7 +10,7 @@ from multiprocessing.dummy import Pool
 from queue import Empty, Queue
 import functools
 import traceback
-
+import pytz
 import pandas as pd
 from pandas import DataFrame
 
@@ -73,6 +73,8 @@ STATUS_TIGER2VT = {
     OrderStatus.REJECTED: Status.REJECTED,
     OrderStatus.EXPIRED: Status.NOTTRADED
 }
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 
 class TigerGateway(BaseGateway):
@@ -237,7 +239,7 @@ class TigerGateway(BaseGateway):
                 symbol=symbol,
                 exchange=exchange,
                 gateway_name=self.gateway_name,
-                datetime=datetime.now(),
+                datetime=datetime.now(CHINA_TZ),
                 name=self.symbol_names[symbol],
             )
             self.ticks[symbol] = tick
@@ -293,6 +295,9 @@ class TigerGateway(BaseGateway):
         symbol, exchange = convert_symbol_tiger2vt(data["origin_symbol"])
         status = STATUS_TIGER2VT[data["status"]]
 
+        dt = datetime.fromtimestamp(data["order_time"] / 1000)
+        dt = dt.replace(tzinfo=CHINA_TZ)
+
         order = OrderData(
             symbol=symbol,
             exchange=exchange,
@@ -303,14 +308,16 @@ class TigerGateway(BaseGateway):
             volume=data["quantity"],
             traded=data["filled"],
             status=status,
-            time=datetime.fromtimestamp(
-                data["order_time"] / 1000).strftime("%H:%M:%S"),
+            datetime=dt,
             gateway_name=self.gateway_name,
         )
         self.ID_TIGER2VT[str(data["order_id"])] = order.orderid
         self.on_order(order)
 
         if status == Status.ALLTRADED:
+            dt = datetime.fromtimestamp(data["trade_time"] / 1000)
+            dt = dt.replace(tzinfo=CHINA_TZ)
+
             self.tradeid += 1
 
             trade = TradeData(
@@ -321,8 +328,7 @@ class TigerGateway(BaseGateway):
                 orderid=self.ID_TIGER2VT[str(data["order_id"])],
                 price=data["avg_fill_price"],
                 volume=data["filled"],
-                time=datetime.fromtimestamp(
-                    data["trade_time"] / 1000).strftime("%H:%M:%S"),
+                datetime=dt,
                 gateway_name=self.gateway_name,
             )
             self.on_trade(trade)
@@ -525,6 +531,9 @@ class TigerGateway(BaseGateway):
             symbol, exchange = convert_symbol_tiger2vt(str(i.contract))
             local_id = self.get_new_local_id()
 
+            dt = datetime.fromtimestamp(i.order_time / 1000)
+            dt = dt.replace(tzinfo=CHINA_TZ)
+
             order = OrderData(
                 symbol=symbol,
                 exchange=exchange,
@@ -534,8 +543,7 @@ class TigerGateway(BaseGateway):
                 volume=i.quantity,
                 traded=i.filled,
                 status=STATUS_TIGER2VT[i.status],
-                time=datetime.fromtimestamp(
-                    i.order_time / 1000).strftime("%H:%M:%S"),
+                datetime=dt,
                 gateway_name=self.gateway_name,
             )
             self.ID_TIGER2VT[str(i.order_id)] = local_id
@@ -552,6 +560,9 @@ class TigerGateway(BaseGateway):
                 symbol, exchange = convert_symbol_tiger2vt(str(i.contract))
                 self.tradeid += 1
 
+                dt = datetime.fromtimestamp(i.trade_time / 1000)
+                dt = dt.replace(tzinfo=CHINA_TZ)
+
                 trade = TradeData(
                     symbol=symbol,
                     exchange=exchange,
@@ -560,8 +571,7 @@ class TigerGateway(BaseGateway):
                     orderid=self.ID_TIGER2VT[str(i.order_id)],
                     price=i.avg_fill_price,
                     volume=i.filled,
-                    time=datetime.fromtimestamp(
-                        i.trade_time / 1000).strftime("%H:%M:%S"),
+                    datetime=dt,
                     gateway_name=self.gateway_name,
                 )
 
