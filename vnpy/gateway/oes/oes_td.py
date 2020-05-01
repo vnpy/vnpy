@@ -1,7 +1,7 @@
 import time
 from copy import copy
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from gettext import gettext as _
 from threading import Lock, Thread
 # noinspection PyUnresolvedReferences

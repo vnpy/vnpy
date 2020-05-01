@@ -9,7 +9,7 @@ import json
 import base64
 import zlib
 from copy import copy
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import urlencode
 from typing import Dict

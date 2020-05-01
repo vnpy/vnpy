@@ -691,7 +691,7 @@ class BitstampWebsocketApi(WebsocketClient):
         data = packet["data"]
 
         tick = self.ticks[channel]
-        
+
         dt = datetime.fromtimestamp(int(data["timestamp"]))
         tick.datetime = dt.replace(tzinfo=UTC_TZ)
 

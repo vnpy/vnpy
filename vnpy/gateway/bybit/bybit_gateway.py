@@ -3,7 +3,6 @@ import hashlib
 import hmac
 import time
 import sys
-import pytz
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Callable
 from threading import Lock
@@ -713,7 +712,7 @@ class BybitWebsocketApi(WebsocketClient):
         topic = packet["topic"]
         type_ = packet["type"]
         data = packet["data"]
-        
+
         symbol = topic.replace("instrument_info.100ms.", "")
         tick = self.ticks[symbol]
 

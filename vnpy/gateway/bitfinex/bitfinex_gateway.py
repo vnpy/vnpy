@@ -30,7 +30,6 @@ from vnpy.trader.object import (
     OrderData,
     TradeData,
     BarData,
-    PositionData,
     AccountData,
     ContractData,
     OrderRequest,

@@ -277,7 +277,7 @@ class OnetokenRestApi(RestClient):
         self.exchange = exchange
         self.account = account
 
-        self.connect_time = int(datetime.now(UTC_TZ).strftime("%y%m%d%H%M%S")) * self.order_count
+        self.connect_time = int(datetime.now(CHINA_TZ).strftime("%y%m%d%H%M%S")) * self.order_count
 
         self.init(REST_HOST, proxy_host, proxy_port)
 
@@ -494,7 +494,7 @@ class OnetokenDataWebsocketApi(WebsocketClient):
             symbol=req.symbol,
             exchange=req.exchange,
             name=req.symbol,
-            datetime=datetime.now(UTC_TZ),
+            datetime=datetime.now(CHINA_TZ),
             gateway_name=self.gateway_name,
         )
 

@@ -808,10 +808,13 @@ def generate_datetime(timestamp: str) -> datetime:
     """
     Convert timestamp string to datetime object.
     """
-    if "." in timestamp:
-        dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
+    if "-" in timestamp:
+        if "." in timestamp:
+            dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
+        else:
+            dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
     else:
-        dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+        dt = datetime.strptime(timestamp, "%y%m%d%H%M%S.%f")
 
     dt = dt.replace(tzinfo=CHINA_TZ)
     return dt

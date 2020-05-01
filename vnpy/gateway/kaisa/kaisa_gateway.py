@@ -795,7 +795,7 @@ class KaisaTradeWebsocketApi(KaisaWebsocketApiBase):
     def on_trade(self, data: dict) -> None:
         """"""
         sys_orderid = str(data["orderID"])
-        
+
         order = self.order_manager.get_order_with_sys_orderid(sys_orderid)
         order.status = STATUS_KAISA2VT[data["orderStatus"]]
         order.traded = int(data["execQty"])
@@ -887,7 +887,7 @@ class KaisaDataWebsocketApi(KaisaWebsocketApiBase):
             "code": req.symbol,
             "type": 3,
             "language": 0
-            }]
+        }]
 
         req = self.generate_req(200, data)
 
@@ -897,9 +897,9 @@ class KaisaDataWebsocketApi(KaisaWebsocketApiBase):
 def generate_datetime(timestamp: str) -> datetime:
     """"""
     if "." in timestamp:
-        dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")    
+        dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
     else:
         dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
-    
+
     dt = dt.replace(tzinfo=CHINA_TZ)
     return dt
