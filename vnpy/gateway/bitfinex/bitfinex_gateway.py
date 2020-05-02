@@ -9,6 +9,8 @@ import time
 from copy import copy
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
+import pytz
+
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
 from vnpy.event import Event
@@ -28,7 +30,6 @@ from vnpy.trader.object import (
     OrderData,
     TradeData,
     BarData,
-    PositionData,
     AccountData,
     ContractData,
     OrderRequest,
@@ -80,6 +81,8 @@ TIMEDELTA_MAP = {
     Interval.HOUR: timedelta(hours=1),
     Interval.DAILY: timedelta(days=1),
 }
+
+UTC_TZ = pytz.utc
 
 
 class BitfinexGateway(BaseGateway):
@@ -234,7 +237,7 @@ class BitfinexRestApi(RestClient):
         self.secret = secret.encode()
 
         self.connect_time = (
-            int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
+            int(datetime.now(UTC_TZ).strftime("%y%m%d%H%M%S")) * self.order_count
         )
 
         self.init(REST_HOST, proxy_host, proxy_port)
@@ -329,12 +332,11 @@ class BitfinexRestApi(RestClient):
 
                 for l in data:
                     ts, o, h, l, c, v = l
-                    dt = datetime.fromtimestamp(ts / 1000)
 
                     bar = BarData(
                         symbol=req.symbol,
                         exchange=req.exchange,
-                        datetime=dt,
+                        datetime=generate_datetime(ts),
                         interval=req.interval,
                         volume=v,
                         open_price=o,
@@ -375,14 +377,6 @@ class BitfinexWebsocketApi(WebsocketClient):
         self.trade_id = 1_000_000
         self.key = ""
         self.secret = ""
-
-        self.callbacks = {
-            "trade": self.on_tick,
-            "orderBook10": self.on_depth,
-            "execution": self.on_trade,
-            "order": self.on_order,
-            "position": self.on_position,
-        }
 
         self.ticks = {}
         self.accounts = {}
@@ -540,7 +534,7 @@ class BitfinexWebsocketApi(WebsocketClient):
                 symbol=symbol,
                 exchange=Exchange.BITFINEX,
                 name=symbol,
-                datetime=datetime.now(),
+                datetime=datetime.now(UTC_TZ),
                 gateway_name=self.gateway_name,
             )
 
@@ -623,16 +617,13 @@ class BitfinexWebsocketApi(WebsocketClient):
             except IndexError:
                 return
 
-        dt = datetime.now()
-        tick.date = dt.strftime("%Y%m%d")
-        tick.time = dt.strftime("%H:%M:%S.%f")
+        dt = datetime.now(UTC_TZ)
         tick.datetime = dt
 
         self.gateway.on_tick(copy(tick))
 
     def on_wallet(self, data):
         """"""
-        print(data)
         # Exchange Mode
         if not self.margin and str(data[0]) != "exchange":
             return
@@ -722,40 +713,6 @@ class BitfinexWebsocketApi(WebsocketClient):
         }
         self.send_packet(req)
 
-    def on_tick(self, d):
-        """"""
-        symbol = d["symbol"]
-        tick = self.ticks.get(symbol, None)
-        if not tick:
-            return
-
-        tick.last_price = d["price"]
-        tick.datetime = datetime.strptime(
-            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ"
-        )
-        self.gateway.on_tick(copy(tick))
-
-    def on_depth(self, d):
-        """"""
-        symbol = d["symbol"]
-        tick = self.ticks.get(symbol, None)
-        if not tick:
-            return
-
-        for n, buf in enumerate(d["bids"][:5]):
-            price, volume = buf
-            tick.__setattr__("bid_price_%s" % (n + 1), price)
-            tick.__setattr__("bid_volume_%s" % (n + 1), volume)
-
-        for n, buf in enumerate(d["asks"][:5]):
-            price, volume = buf
-            tick.__setattr__("ask_price_%s" % (n + 1), price)
-            tick.__setattr__("ask_volume_%s" % (n + 1), volume)
-
-        tick.datetime = datetime.strptime(
-            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
-        self.gateway.on_tick(copy(tick))
-
     def on_trade(self, data):
         """"""
         self.trade_id += 1
@@ -773,16 +730,10 @@ class BitfinexWebsocketApi(WebsocketClient):
             volume=abs(data[4]),
             price=data[5],
             tradeid=str(self.trade_id),
-            time=self.generate_date_time(data[2]),
+            datetime=generate_datetime(data[2]),
             gateway_name=self.gateway_name,
         )
         self.gateway.on_trade(trade)
-
-    def generate_date_time(self, s):
-        """"""
-        dt = datetime.fromtimestamp(s / 1000.0)
-        time = dt.strftime("%H:%M:%S.%f")
-        return time
 
     def on_order_error(self, d):
         """"""
@@ -812,7 +763,7 @@ class BitfinexWebsocketApi(WebsocketClient):
             direction=direction,
             price=float(data[16]),
             volume=abs(data[6]),
-            time=self.generate_date_time(d[0]),
+            datetime=generate_datetime(d[0]),
             gateway_name=self.gateway_name,
         )
 
@@ -831,9 +782,9 @@ class BitfinexWebsocketApi(WebsocketClient):
 
         order_status = str(data[13].split("@")[0]).replace(" ", "")
         if order_status == "CANCELED":
-            order_time = self.generate_date_time(data[5])
+            dt = generate_datetime(data[5])
         else:
-            order_time = self.generate_date_time(data[4])
+            dt = generate_datetime(data[4])
 
         order = OrderData(
             symbol=str(data[3].replace("t", "")),
@@ -845,20 +796,15 @@ class BitfinexWebsocketApi(WebsocketClient):
             price=float(data[16]),
             volume=abs(data[7]),
             traded=abs(data[7]) - abs(data[6]),
-            time=order_time,
+            datetime=dt,
             gateway_name=self.gateway_name,
         )
 
         self.gateway.on_order(copy(order))
 
-    def on_position(self, d):
-        """"""
-        position = PositionData(
-            symbol=d["symbol"],
-            exchange=Exchange.BITFINEX,
-            direction=Direction.NET,
-            volume=d["currentQty"],
-            gateway_name=self.gateway_name,
-        )
 
-        self.gateway.on_position(position)
+def generate_datetime(timestamp: float) -> datetime:
+    """"""
+    dt = datetime.fromtimestamp(timestamp / 1000)
+    dt = dt.replace(tzinfo=UTC_TZ)
+    return dt

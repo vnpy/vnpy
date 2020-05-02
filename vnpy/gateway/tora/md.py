@@ -1,3 +1,4 @@
+import pytz
 from datetime import datetime
 from typing import Any, List, Optional
 
@@ -14,13 +15,17 @@ from vnpy.trader.object import (
 )
 from .constant import EXCHANGE_TORA2VT, EXCHANGE_VT2TORA
 
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
+
 
 def parse_datetime(date: str, time: str):
     # sampled :
     # date: '20190611'
     # time: '16:28:24'
 
-    return datetime.strptime(f'{date}-{time}', "%Y%m%d-%H:%M:%S")
+    dt = datetime.strptime(f'{date}-{time}', "%Y%m%d-%H:%M:%S")
+    dt = dt.replace(tzinfo=CHINA_TZ)
+    return dt
 
 
 class ToraMdSpi(CTORATstpMdSpi):

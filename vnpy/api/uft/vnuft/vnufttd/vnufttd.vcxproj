@@ -81,8 +81,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\vnstudio\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\uft;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\vnstudio\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\miniconda3\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\uft;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\miniconda3\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -155,7 +155,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\GitHub\vnpy\vnpy\api\uft\libs;C:\vnstudio\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\GitHub\vnpy\vnpy\api\uft\libs;C:\miniconda3\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>HSMdApi.lib;HSTradeApi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -181,19 +181,16 @@
     <ClCompile Include="vnufttd.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="..\..\include\uft\HSError.xml" />
+    <Library Include="..\..\libs\HsFutuSystemInfo.lib" />
+    <Library Include="..\..\libs\HSMdApi.lib" />
+    <Library Include="..\..\libs\HSTradeApi.lib" />
+    <Library Include="..\..\libs\t2sdk.lib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\HsFutuSystemInfo.dll" />
     <None Include="..\..\HSMdApi.dll" />
     <None Include="..\..\HSTradeApi.dll" />
     <None Include="..\..\t2sdk.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="..\..\libs\HsFutuSystemInfo.lib" />
-    <Library Include="..\..\libs\HSMdApi.lib" />
-    <Library Include="..\..\libs\HSTradeApi.lib" />
-    <Library Include="..\..\libs\t2sdk.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

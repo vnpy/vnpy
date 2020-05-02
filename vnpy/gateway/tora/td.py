@@ -2,6 +2,7 @@ import functools
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, Optional
+import pytz
 
 from vnpy.api.tora.vntora import (CTORATstpConditionOrderField, CTORATstpInputOrderActionField,
                                   CTORATstpInputOrderField, CTORATstpInvestorField,
@@ -29,6 +30,8 @@ from vnpy.trader.utility import get_folder_path
 from .constant import DIRECTION_TORA2VT, DIRECTION_VT2TORA, EXCHANGE_TORA2VT, EXCHANGE_VT2TORA, \
     ORDER_STATUS_TORA2VT, ORDER_TYPE_TORA2VT, ORDER_TYPE_VT2TORA, PRODUCT_TORA2VT
 from .error_codes import get_error_msg
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 
 def _check_error(none_return: bool = True,
@@ -139,7 +142,7 @@ class ToraTdSpi(CTORATstpTraderSpi):
                 offset=Offset.OPEN,
                 price=info.Price,
                 volume=info.Volume,
-                time=info.TradeTime,
+                datetime=datetime.now(CHINA_TZ)
             )
             self.gateway.on_trade(trade_data)
         except KeyError:
@@ -346,7 +349,7 @@ class ToraTdSpi(CTORATstpTraderSpi):
             volume=info.VolumeTotalOriginal,
             traded=0,
             status=Status.NOTTRADED,
-            time=datetime.now().isoformat()  # note: server doesn't provide a timestamp
+            datetime=datetime.now(CHINA_TZ)  # note: server doesn't provide a timestamp
         )
         return order_data
 

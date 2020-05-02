@@ -1,3 +1,4 @@
+import pytz
 from typing import Any, Dict, List
 from datetime import datetime
 
@@ -117,6 +118,8 @@ OPTIONTYPE_XTP2VT = {
     1: OptionType.CALL,
     2: OptionType.PUT
 }
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 symbol_name_map: Dict[str, str] = {}
 symbol_pricetick_map: Dict[str, float] = {}
@@ -261,6 +264,7 @@ class XtpMdApi(MdApi):
         """"""
         timestamp = str(data["data_time"])
         dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
+        dt = dt.replace(tzinfo=CHINA_TZ)
 
         tick = TickData(
             symbol=data["ticker"],
@@ -521,6 +525,10 @@ class XtpTdApi(TdApi):
 
         orderid = str(data["order_xtp_id"])
         if orderid not in self.orders:
+            timestamp = str(data["insert_time"])
+            dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
+            dt = dt.replace(tzinfo=CHINA_TZ)
+
             order = OrderData(
                 symbol=symbol,
                 exchange=MARKET_XTP2VT[data["market"]],
@@ -532,7 +540,7 @@ class XtpTdApi(TdApi):
                 volume=data["quantity"],
                 traded=data["qty_traded"],
                 status=STATUS_XTP2VT[data["order_status"]],
-                time=data["insert_time"],
+                datetime=dt,
                 gateway_name=self.gateway_name
             )
             self.orders[orderid] = order
@@ -552,6 +560,10 @@ class XtpTdApi(TdApi):
         else:
             direction, offset = DIRECTION_STOCK_XTP2VT[data["side"]]
 
+        timestamp = str(data["trade_time"])
+        dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
+        dt = dt.replace(tzinfo=CHINA_TZ)
+
         trade = TradeData(
             symbol=symbol,
             exchange=MARKET_XTP2VT[data["market"]],
@@ -561,7 +573,7 @@ class XtpTdApi(TdApi):
             offset=offset,
             price=data["price"],
             volume=data["quantity"],
-            time=data["trade_time"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
 

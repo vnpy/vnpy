@@ -1,11 +1,12 @@
 import time
 from copy import copy
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from gettext import gettext as _
 from threading import Lock, Thread
 # noinspection PyUnresolvedReferences
 from typing import Any, Callable, Dict
+import pytz
 
 from vnpy.api.oes.vnoes import OesApiClientEnvT, OesApiSubscribeInfoT, OesApi_DestoryAll, \
     OesApi_InitLogger, OesApi_InitOrdChannel2, OesApi_InitQryChannel2, OesApi_InitRptChannel2, \
@@ -92,7 +93,7 @@ STATUS_OES2VT = {
     eOesOrdStatusT.OES_ORD_STATUS_INVALID_SZ_TRY_AGAIN: Status.REJECTED,
 }
 
-bjtz = timezone(timedelta(hours=8))
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 
 @dataclass
@@ -113,7 +114,7 @@ def parse_oes_datetime(date: int, time: int):
     minute = int((time % 10000000) / 100000)
     sec = int((time % 100000) / 1000)
     mill = int(time % 1000)
-    return datetime(year, month, day, hour, minute, sec, mill * 1000, tzinfo=bjtz)
+    return datetime(year, month, day, hour, minute, sec, mill * 1000, tzinfo=CHINA_TZ)
 
 
 class OesTdMessageLoop:
@@ -253,7 +254,7 @@ class OesTdMessageLoop:
             offset=vt_order.offset,
             price=data.trdPrice / 10000,
             volume=data.trdQty,
-            time=parse_oes_datetime(data.trdDate, data.trdTime).isoformat()
+            datetime=parse_oes_datetime(data.trdDate, data.trdTime)
         )
         vt_order.status = STATUS_OES2VT[data.ordStatus]
         vt_order.traded = data.cumQty
@@ -748,7 +749,7 @@ class OrderManager:
                     data.ordStatus],
 
                 # this time should be generated automatically or by a static function
-                time=parse_oes_datetime(data.ordDate, data.ordCnfmTime).isoformat(),
+                datetime=parse_oes_datetime(data.ordDate, data.ordCnfmTime),
             )
             self.save_order(order_id, vt_order)
         return vt_order

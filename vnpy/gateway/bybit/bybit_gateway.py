@@ -3,11 +3,11 @@ import hashlib
 import hmac
 import time
 import sys
-import pytz
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Callable
 from threading import Lock
 from copy import copy
+import pytz
 
 from requests import ConnectionError
 
@@ -75,6 +75,8 @@ TIMEDELTA_MAP = {
     Interval.WEEKLY: timedelta(days=7),
 }
 
+UTC_TZ = pytz.utc
+
 
 REST_HOST = "https://api.bybit.com"
 WEBSOCKET_HOST = "wss://stream.bybit.com/realtime"
@@ -105,7 +107,7 @@ class BybitGateway(BaseGateway):
         """Constructor"""
         super().__init__(event_engine, "BYBIT")
 
-        self.connect_time = datetime.now().strftime("%y%m%d%H%M%S")
+        self.connect_time = datetime.now(UTC_TZ).strftime("%y%m%d%H%M%S")
         self.order_manager = LocalOrderManager(self, self.connect_time)
 
         self.rest_api = BybitRestApi(self)
@@ -224,7 +226,7 @@ class BybitRestApi(RestClient):
         self.secret = secret.encode()
 
         self.connect_time = (
-            int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
+            int(datetime.now(UTC_TZ).strftime("%y%m%d%H%M%S")) * self.order_count
         )
 
         if server == "REAL":
@@ -492,7 +494,7 @@ class BybitRestApi(RestClient):
                 volume=d["qty"],
                 traded=d["cum_exec_qty"],
                 status=STATUS_BYBIT2VT[d["order_status"]],
-                time=d["created_at"],
+                datetime=generate_datetime(d["created_at"]),
                 gateway_name=self.gateway_name
             )
             self.order_manager.on_order(order)
@@ -547,6 +549,8 @@ class BybitRestApi(RestClient):
                 buf = []
                 for d in data["result"]:
                     dt = datetime.fromtimestamp(d["open_time"])
+                    dt = dt.replace(tzinfo=UTC_TZ)
+
                     bar = BarData(
                         symbol=req.symbol,
                         exchange=req.exchange,
@@ -639,7 +643,7 @@ class BybitWebsocketApi(WebsocketClient):
         tick = TickData(
             symbol=req.symbol,
             exchange=req.exchange,
-            datetime=datetime.now(),
+            datetime=datetime.now(UTC_TZ),
             name=req.symbol,
             gateway_name=self.gateway_name
         )
@@ -708,7 +712,6 @@ class BybitWebsocketApi(WebsocketClient):
         topic = packet["topic"]
         type_ = packet["type"]
         data = packet["data"]
-        timestamp = packet["timestamp_e6"]
 
         symbol = topic.replace("instrument_info.100ms.", "")
         tick = self.ticks[symbol]
@@ -731,8 +734,7 @@ class BybitWebsocketApi(WebsocketClient):
             if "volume_24h" in update:
                 tick.volume = update["volume_24h"]
 
-        local_dt = datetime.fromtimestamp(timestamp / 1_000_000)
-        tick.datetime = local_dt.astimezone(UTC_TZ)
+        tick.datetime = generate_datetime(data["updated_at"])
         self.gateway.on_tick(copy(tick))
 
     def on_depth(self, packet: dict):
@@ -810,7 +812,7 @@ class BybitWebsocketApi(WebsocketClient):
                 direction=DIRECTION_BYBIT2VT[d["side"]],
                 price=float(d["price"]),
                 volume=d["exec_qty"],
-                time=d["trade_time"],
+                datetime=generate_datetime(d["trade_time"]),
                 gateway_name=self.gateway_name,
             )
 
@@ -825,7 +827,7 @@ class BybitWebsocketApi(WebsocketClient):
             if order:
                 order.traded = d["cum_exec_qty"]
                 order.status = STATUS_BYBIT2VT[d["order_status"]]
-                order.time = d["timestamp"]
+                order.datetime = generate_datetime(d["timestamp"])
             else:
                 # Use sys_orderid as local_orderid when
                 # order placed from other source
@@ -848,7 +850,7 @@ class BybitWebsocketApi(WebsocketClient):
                     volume=d["qty"],
                     traded=d["cum_exec_qty"],
                     status=STATUS_BYBIT2VT[d["order_status"]],
-                    time=d["timestamp"],
+                    datetime=generate_datetime(d["timestamp"]),
                     gateway_name=self.gateway_name
                 )
 
@@ -886,3 +888,10 @@ def sign(secret: bytes, data: bytes) -> str:
     return hmac.new(
         secret, data, digestmod=hashlib.sha256
     ).hexdigest()
+
+
+def generate_datetime(timestamp: str) -> datetime:
+    """"""
+    dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    dt = dt.replace(tzinfo=UTC_TZ)
+    return dt

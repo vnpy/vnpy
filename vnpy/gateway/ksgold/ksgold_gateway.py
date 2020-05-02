@@ -1,7 +1,7 @@
 """
 Put SLEdll folder in the path of python.exe
 """
-
+import pytz
 import sys
 from datetime import datetime
 from time import sleep
@@ -74,6 +74,7 @@ OFFSET_KSGOLD2VT[48] = Offset.OPEN
 
 MAX_FLOAT = sys.float_info.max
 
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 symbol_exchange_map = {}
 symbol_name_map = {}
@@ -267,11 +268,13 @@ class KsgoldMdApi(MdApi):
             return
 
         timestamp = f"{data['QuoteDate']} {data['QuoteTime']}.{int(data['UpdateMillisec']/100)}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f")
+        dt = dt.replace(tzinfo=CHINA_TZ)
 
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
-            datetime=datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f"),
+            datetime=dt,
             name=symbol_name_map[symbol],
             volume=data["Volume"],
             open_interest=data["OpenInt"],
@@ -616,6 +619,11 @@ class KsgoldTdApi(TdApi):
         orderid_localid_map[orderid] = localid
         localid_orderid_map[localid] = orderid
 
+        today = datetime.now().strftime("%Y%m%d")
+        timestamp = f"{today} {data['EntrustTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = dt.replace(tzinfo=CHINA_TZ)
+
         order = OrderData(
             symbol=symbol,
             exchange=exchange,
@@ -626,7 +634,7 @@ class KsgoldTdApi(TdApi):
             volume=data["Amount"],
             traded=data["MatchQty"],
             status=STATUS_KSGOLD2VT[data["Status"]],
-            time=data["EntrustTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
         self.gateway.on_order(order)
@@ -645,6 +653,11 @@ class KsgoldTdApi(TdApi):
 
         orderid = self.sysid_orderid_map[data["OrderNo"]]
 
+        today = datetime.now().strftime("%Y%m%d")
+        timestamp = f"{today} {data['MatchTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = dt.replace(tzinfo=CHINA_TZ)
+
         trade = TradeData(
             symbol=symbol,
             exchange=exchange,
@@ -654,7 +667,7 @@ class KsgoldTdApi(TdApi):
             offset=OFFSET_KSGOLD2VT[data["OffSetFlag"]],
             price=data["Price"],
             volume=data["Volume"],
-            time=data["MatchTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)

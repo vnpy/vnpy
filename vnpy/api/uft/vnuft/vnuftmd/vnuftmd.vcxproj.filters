@@ -55,12 +55,31 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="..\..\..\..\..\..\..\..\Desktop\UFX_api_test\vnpy-master\vnpy\api\uft\include\uft\HSError.xml" />
+    <None Include="..\..\HsFutuSystemInfo.dll">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\HSMdApi.dll">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\HSTradeApi.dll">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\t2sdk.dll">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\..\..\..\..\..\Desktop\UFX_api_test\vnpy-master\vnpy\api\uft\libs\HsFutuSystemInfo.lib" />
-    <Library Include="..\..\..\..\..\..\..\..\Desktop\UFX_api_test\vnpy-master\vnpy\api\uft\libs\HSMdApi.lib" />
-    <Library Include="..\..\..\..\..\..\..\..\Desktop\UFX_api_test\vnpy-master\vnpy\api\uft\libs\HSTradeApi.lib" />
-    <Library Include="..\..\..\..\..\..\..\..\Desktop\UFX_api_test\vnpy-master\vnpy\api\uft\libs\t2sdk.lib" />
+    <Library Include="..\..\libs\HsFutuSystemInfo.lib">
+      <Filter>资源文件</Filter>
+    </Library>
+    <Library Include="..\..\libs\HSMdApi.lib">
+      <Filter>资源文件</Filter>
+    </Library>
+    <Library Include="..\..\libs\HSTradeApi.lib">
+      <Filter>资源文件</Filter>
+    </Library>
+    <Library Include="..\..\libs\t2sdk.lib">
+      <Filter>资源文件</Filter>
+    </Library>
   </ItemGroup>
 </Project>

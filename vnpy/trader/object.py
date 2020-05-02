@@ -111,13 +111,13 @@ class OrderData(BaseData):
     orderid: str
 
     type: OrderType = OrderType.LIMIT
-    direction: Direction = ""
+    direction: Direction = None
     offset: Offset = Offset.NONE
     price: float = 0
     volume: float = 0
     traded: float = 0
     status: Status = Status.SUBMITTING
-    time: str = ""
+    datetime: datetime = None
 
     def __post_init__(self):
         """"""
@@ -154,12 +154,12 @@ class TradeData(BaseData):
     exchange: Exchange
     orderid: str
     tradeid: str
-    direction: Direction = ""
+    direction: Direction = None
 
     offset: Offset = Offset.NONE
     price: float = 0
     volume: float = 0
-    time: str = ""
+    datetime: datetime = None
 
     def __post_init__(self):
         """"""
