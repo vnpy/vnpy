@@ -63,6 +63,7 @@ class OrderType(Enum):
     STOP = "STOP"
     FAK = "FAK"
     FOK = "FOK"
+    RFQ = "询价"
 
 
 class OptionType(Enum):

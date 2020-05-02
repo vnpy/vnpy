@@ -186,7 +186,11 @@ class CtpGateway(BaseGateway):
 
     def send_order(self, req: OrderRequest):
         """"""
-        return self.td_api.send_order(req)
+        if req.type == OrderType.RFQ:
+            vt_orderid = self.td_api.send_rfq(req)
+        else:
+            vt_orderid = self.td_api.send_order(req)
+        return vt_orderid
 
     def cancel_order(self, req: CancelRequest):
         """"""
@@ -702,6 +706,15 @@ class CtpTdApi(TdApi):
         )
         self.gateway.on_trade(trade)
 
+    def onRspForQuoteInsert(self, data: dict, error: dict, reqid: int, last: bool):
+        """"""
+        if not error["ErrorID"]:
+            symbol = data["InstrumentID"]
+            msg = f"{symbol}询价请求发送成功"
+            self.gateway.write_log(msg)
+        else:
+            self.gateway.write_error("询价请求发送失败", error)
+
     def connect(
         self,
         address: str,
@@ -841,6 +854,26 @@ class CtpTdApi(TdApi):
 
         self.reqid += 1
         self.reqOrderAction(ctp_req, self.reqid)
+
+    def send_rfq(self, req: OrderRequest) -> str:
+        """"""
+        self.order_ref += 1
+
+        ctp_req = {
+            "InstrumentID": req.symbol,
+            "ExchangeID": req.exchange.value,
+            "ForQuoteRef": str(self.order_ref),
+            "BrokerID": self.brokerid,
+            "InvestorID": self.userid
+        }
+
+        self.reqid += 1
+        self.reqForQuoteInsert(ctp_req, self.reqid)
+
+        orderid = f"{self.frontid}_{self.sessionid}_{self.order_ref}"
+        vt_orderid = f"{self.gateway_name}.{orderid}"
+
+        return vt_orderid
 
     def query_account(self):
         """
