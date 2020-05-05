@@ -91,7 +91,7 @@ class Mt4Gateway(BaseGateway):
         self.opened_order_info: List[Dict] = []
 
         self.orderid_closeid_map: Dict[str, str] = {}
-        self.orderid_close_counts: Dict[str, int] = defaultdict(0)
+        self.orderid_close_counts: Dict[str, int] = defaultdict(int)
 
     def connect(self, setting: dict):
         """"""
@@ -135,9 +135,7 @@ class Mt4Gateway(BaseGateway):
 
         }
 
-        start = time()
         packet = self.client.send_request(mt4_req)
-        print("fuck", time() - start)
         self.write_log(str(packet))
 
         orderid = str(packet["data"]["ticket"])
@@ -151,7 +149,7 @@ class Mt4Gateway(BaseGateway):
     def cancel_order(self, req: CancelRequest) -> None:
         """"""
         if "close" in req.orderid:
-            ticket = int(req.orderid.split("-")[1])
+            ticket = int(req.orderid.split("_")[1])
             mt4_req = {
                 "type": FUNCTION_MODIFYORDER,
                 "ticket": ticket,
@@ -177,7 +175,7 @@ class Mt4Gateway(BaseGateway):
 
     def modify_order(self, req: OrderRequest) -> str:
         """"""
-        d = None
+        target = None
         for d in self.opened_order_info:
             if d["take_profit"]:
                 continue
@@ -194,15 +192,16 @@ class Mt4Gateway(BaseGateway):
             if req.direction == Direction.SHORT and d["type"] == TYPE_SELL:
                 continue
 
+            target = d
             break
 
-        if d is None:
+        if target is None:
             self.write_log("平仓委托失败，找不到匹配的可平仓位")
             return ""
 
         mt4_req = {
             "type": FUNCTION_MODIFYORDER,
-            "ticket": d["ticket"],
+            "ticket": target["ticket"],
             "price": 0,
             "take_profit": req.price,
             "expiration": "1970.01.01 00:00",
@@ -218,10 +217,10 @@ class Mt4Gateway(BaseGateway):
         order = req.create_order_data(closeid, self.gateway_name)
         order.status = Status.NOTTRADED
 
-        self.active_orders[orderid] = order
+        self.active_orders[closeid] = order
         self.on_order(order)
 
-        return orderid
+        return closeid
 
     def query_contract(self) -> None:
         """"""
@@ -229,7 +228,6 @@ class Mt4Gateway(BaseGateway):
         mt4_rep: dict = self.client.send_request(mt4_req)
 
         if mt4_rep:
-            print(mt4_rep)
             self.write_log("MT4连接成功")
 
         for d in mt4_rep["data"]:
@@ -285,14 +283,11 @@ class Mt4Gateway(BaseGateway):
         if "data" not in packet:
             return
 
-        print("------------------")
-
         positions: Dict[Tuple[str, Direction], PositionData] = {}
         active_orderids: Set[str] = set()
         self.opened_order_info.clear()
 
         for d in packet["data"]:
-            print(d)
             symbol = d["symbol"]
             type_ = d["type"]
             orderid = str(d["ticket"])
@@ -338,15 +333,15 @@ class Mt4Gateway(BaseGateway):
                         datetime=datetime.now(CHINA_TZ),
                         gateway_name=self.gateway_name
                     )
+
                     self.on_trade(trade)
 
                 # check for close order
                 if d["take_profit"]:
                     if orderid not in self.orderid_closeid_map:
-                        closeid = self.new_closeid()
-                        self.orderid_closeid_map[orderid] = closeid
-
+                        closeid = self.new_closeid(orderid)
                         active_orderids.add(closeid)
+                        self.orderid_closeid_map[orderid] = closeid
 
                         if type_ == TYPE_BUY:
                             close_direction = Direction.SHORT
@@ -359,7 +354,7 @@ class Mt4Gateway(BaseGateway):
                             orderid=closeid,
                             direction=close_direction,
                             type=OrderType.LIMIT,
-                            offset=Offset.OPEN,
+                            offset=Offset.CLOSE,
                             price=d["take_profit"],
                             volume=d["lots"],
                             status=Status.NOTTRADED,
@@ -368,6 +363,9 @@ class Mt4Gateway(BaseGateway):
                         )
                         self.active_orders[closeid] = order
                         self.on_order(order)
+                    else:
+                        closeid = self.orderid_closeid_map[orderid]
+                        active_orderids.add(closeid)
                 else:
                     if orderid in self.orderid_closeid_map:
                         closeid = self.orderid_closeid_map.pop(orderid)
