@@ -443,7 +443,16 @@ class SettingEditor(QtWidgets.QDialog):
         button.clicked.connect(self.accept)
         form.addRow(button)
 
-        self.setLayout(form)
+        widget = QtWidgets.QWidget()
+        widget.setLayout(form)
+
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(widget)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(scroll)
+        self.setLayout(vbox)
 
     def get_setting(self):
         """"""
