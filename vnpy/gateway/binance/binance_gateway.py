@@ -332,7 +332,7 @@ class BinanceRestApi(RestClient):
         }
 
         params = {
-            "symbol": req.symbol,
+            "symbol": req.symbol.upper(),
             "timeInForce": "GTC",
             "side": DIRECTION_VT2BINANCE[req.direction],
             "type": ORDERTYPE_VT2BINANCE[req.type],
@@ -362,7 +362,7 @@ class BinanceRestApi(RestClient):
         }
 
         params = {
-            "symbol": req.symbol,
+            "symbol": req.symbol.upper(),
             "origClientOrderId": req.orderid
         }
 
@@ -437,7 +437,7 @@ class BinanceRestApi(RestClient):
         for d in data:
             order = OrderData(
                 orderid=d["clientOrderId"],
-                symbol=d["symbol"],
+                symbol=d["symbol"].lower(),
                 exchange=Exchange.BINANCE,
                 price=float(d["price"]),
                 volume=float(d["origQty"]),
@@ -469,7 +469,7 @@ class BinanceRestApi(RestClient):
                     min_volume = float(f["stepSize"])
 
             contract = ContractData(
-                symbol=d["symbol"],
+                symbol=d["symbol"].lower(),
                 exchange=Exchange.BINANCE,
                 name=name,
                 pricetick=pricetick,
@@ -652,7 +652,7 @@ class BinanceTradeWebsocketApi(WebsocketClient):
             orderid = packet["C"]
 
         order = OrderData(
-            symbol=packet["s"],
+            symbol=packet["s"].lower(),
             exchange=Exchange.BINANCE,
             orderid=orderid,
             type=ORDERTYPE_BINANCE2VT[packet["o"]],
@@ -721,7 +721,7 @@ class BinanceDataWebsocketApi(WebsocketClient):
             datetime=datetime.now(CHINA_TZ),
             gateway_name=self.gateway_name,
         )
-        self.ticks[req.symbol.lower()] = tick
+        self.ticks[req.symbol] = tick
 
         # Close previous connection
         if self._active:
