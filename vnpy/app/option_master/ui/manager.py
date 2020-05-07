@@ -194,7 +194,7 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
 
         {"name": "price_spread", "display": "价格\n价差", "cell": AlgoDoubleSpinBox},
         {"name": "volatility_spread", "display": "隐波\n价差", "cell": AlgoDoubleSpinBox},
-        {"name": "max_pos", "display": "持仓\n上限", "cell": AlgoPositiveSpinBox},
+        {"name": "max_pos", "display": "持仓\n范围", "cell": AlgoPositiveSpinBox},
         {"name": "target_pos", "display": "目标\n持仓", "cell": AlgoSpinBox},
         {"name": "max_order_size", "display": "最大\n委托", "cell": AlgoPositiveSpinBox},
         {"name": "direction", "display": "方向", "cell": AlgoDirectionCombo},
