@@ -25,7 +25,7 @@ from ..event import (
     EVENT_ACCOUNT,
     EVENT_LOG
 )
-from ..object import OrderRequest, SubscribeRequest
+from ..object import OrderRequest, SubscribeRequest, PositionData
 from ..utility import load_json, save_json
 from ..setting import SETTING_FILENAME, SETTINGS
 
@@ -629,24 +629,37 @@ class TradingWidget(QtWidgets.QWidget):
         self.gateway_combo = QtWidgets.QComboBox()
         self.gateway_combo.addItems(self.main_engine.get_all_gateway_names())
 
+        self.price_check = QtWidgets.QCheckBox()
+        self.price_check.setToolTip("设置价格随行情更新")
+
         send_button = QtWidgets.QPushButton("委托")
         send_button.clicked.connect(self.send_order)
 
         cancel_button = QtWidgets.QPushButton("全撤")
         cancel_button.clicked.connect(self.cancel_all)
 
-        form1 = QtWidgets.QFormLayout()
-        form1.addRow("交易所", self.exchange_combo)
-        form1.addRow("代码", self.symbol_line)
-        form1.addRow("名称", self.name_line)
-        form1.addRow("方向", self.direction_combo)
-        form1.addRow("开平", self.offset_combo)
-        form1.addRow("类型", self.order_type_combo)
-        form1.addRow("价格", self.price_line)
-        form1.addRow("数量", self.volume_line)
-        form1.addRow("接口", self.gateway_combo)
-        form1.addRow(send_button)
-        form1.addRow(cancel_button)
+        grid = QtWidgets.QGridLayout()
+        grid.addWidget(QtWidgets.QLabel("交易所"), 0, 0)
+        grid.addWidget(QtWidgets.QLabel("代码"), 1, 0)
+        grid.addWidget(QtWidgets.QLabel("名称"), 2, 0)
+        grid.addWidget(QtWidgets.QLabel("方向"), 3, 0)
+        grid.addWidget(QtWidgets.QLabel("开平"), 4, 0)
+        grid.addWidget(QtWidgets.QLabel("类型"), 5, 0)
+        grid.addWidget(QtWidgets.QLabel("价格"), 6, 0)
+        grid.addWidget(QtWidgets.QLabel("数量"), 7, 0)
+        grid.addWidget(QtWidgets.QLabel("接口"), 8, 0)
+        grid.addWidget(self.exchange_combo, 0, 1, 1, 2)
+        grid.addWidget(self.symbol_line, 1, 1, 1, 2)
+        grid.addWidget(self.name_line, 2, 1, 1, 2)
+        grid.addWidget(self.direction_combo, 3, 1, 1, 2)
+        grid.addWidget(self.offset_combo, 4, 1, 1, 2)
+        grid.addWidget(self.order_type_combo, 5, 1, 1, 2)
+        grid.addWidget(self.price_line, 6, 1, 1, 1)
+        grid.addWidget(self.price_check, 6, 2, 1, 1)
+        grid.addWidget(self.volume_line, 7, 1, 1, 2)
+        grid.addWidget(self.gateway_combo, 8, 1, 1, 2)
+        grid.addWidget(send_button, 9, 0, 1, 3)
+        grid.addWidget(cancel_button, 10, 0, 1, 3)
 
         # Market depth display area
         bid_color = "rgb(255,174,201)"
@@ -689,23 +702,23 @@ class TradingWidget(QtWidgets.QWidget):
         self.lp_label = self.create_label()
         self.return_label = self.create_label(alignment=QtCore.Qt.AlignRight)
 
-        form2 = QtWidgets.QFormLayout()
-        form2.addRow(self.ap5_label, self.av5_label)
-        form2.addRow(self.ap4_label, self.av4_label)
-        form2.addRow(self.ap3_label, self.av3_label)
-        form2.addRow(self.ap2_label, self.av2_label)
-        form2.addRow(self.ap1_label, self.av1_label)
-        form2.addRow(self.lp_label, self.return_label)
-        form2.addRow(self.bp1_label, self.bv1_label)
-        form2.addRow(self.bp2_label, self.bv2_label)
-        form2.addRow(self.bp3_label, self.bv3_label)
-        form2.addRow(self.bp4_label, self.bv4_label)
-        form2.addRow(self.bp5_label, self.bv5_label)
+        form = QtWidgets.QFormLayout()
+        form.addRow(self.ap5_label, self.av5_label)
+        form.addRow(self.ap4_label, self.av4_label)
+        form.addRow(self.ap3_label, self.av3_label)
+        form.addRow(self.ap2_label, self.av2_label)
+        form.addRow(self.ap1_label, self.av1_label)
+        form.addRow(self.lp_label, self.return_label)
+        form.addRow(self.bp1_label, self.bv1_label)
+        form.addRow(self.bp2_label, self.bv2_label)
+        form.addRow(self.bp3_label, self.bv3_label)
+        form.addRow(self.bp4_label, self.bv4_label)
+        form.addRow(self.bp5_label, self.bv5_label)
 
         # Overall layout
         vbox = QtWidgets.QVBoxLayout()
-        vbox.addLayout(form1)
-        vbox.addLayout(form2)
+        vbox.addLayout(grid)
+        vbox.addLayout(form)
         self.setLayout(vbox)
 
     def create_label(
@@ -764,6 +777,9 @@ class TradingWidget(QtWidgets.QWidget):
             self.ap5_label.setText(str(tick.ask_price_5))
             self.av5_label.setText(str(tick.ask_volume_5))
 
+        if self.price_check.isChecked():
+            self.price_line.setText(str(tick.last_price))
+
     def set_vt_symbol(self) -> None:
         """
         Set the tick depth data to monitor by vt_symbol.
@@ -794,6 +810,8 @@ class TradingWidget(QtWidgets.QWidget):
             self.gateway_combo.setCurrentIndex(ix)
 
         self.clear_label_text()
+        self.volume_line.setText("")
+        self.price_line.setText("")
 
         # Subscribe tick data
         req = SubscribeRequest(
@@ -876,6 +894,31 @@ class TradingWidget(QtWidgets.QWidget):
         for order in order_list:
             req = order.create_cancel_request()
             self.main_engine.cancel_order(req, order.gateway_name)
+
+    def update_with_cell(self, cell: BaseCell) -> None:
+        """"""
+        data = cell.get_data()
+
+        self.symbol_line.setText(data.symbol)
+        self.exchange_combo.setCurrentIndex(
+            self.exchange_combo.findText(data.exchange.value)
+        )
+
+        self.set_vt_symbol()
+
+        if isinstance(data, PositionData):
+            if data.direction == Direction.SHORT:
+                direction = Direction.LONG
+            else:
+                direction = Direction.SHORT
+
+            self.direction_combo.setCurrentIndex(
+                self.direction_combo.findText(direction.value)
+            )
+            self.offset_combo.setCurrentIndex(
+                self.offset_combo.findText(Offset.CLOSE.value)
+            )
+            self.volume_line.setText(str(data.volume))
 
 
 class ActiveOrderMonitor(OrderMonitor):
