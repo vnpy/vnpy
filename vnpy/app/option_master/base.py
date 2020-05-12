@@ -27,16 +27,16 @@ CHAIN_UNDERLYING_MAP = {
     # Futures Options
     "IO.CFFEX": "IF",
     "HO.CFFEX": "IH",
-    
+
     "i_o.DCE": "i",
     "pg_o.DCE": "pg",
     "m_o.DCE": "m",
     "c_o.DCE": "c",
-    
+
     "cu_o.SHFE": "cu",
     "ru_o.SHFE": "ru",
     "au_o.SHFE": "au",
-    
+
     "SR.CZCE": "SR",
     "CF.CZCE": "CF",
     "TA.CZCE": "TA",
