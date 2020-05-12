@@ -356,7 +356,12 @@ class BacktesterEngine(BaseEngine):
         """
         self.write_log(f"{vt_symbol}-{interval}开始下载历史数据")
 
-        symbol, exchange = extract_vt_symbol(vt_symbol)
+        try:
+            symbol, exchange = extract_vt_symbol(vt_symbol)
+        except ValueError:
+            self.write_log(f"{vt_symbol}解析失败，请检查交易所后缀")
+            self.thread = None
+            return
 
         req = HistoryRequest(
             symbol=symbol,
