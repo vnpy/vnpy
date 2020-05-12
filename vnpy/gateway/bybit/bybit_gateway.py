@@ -5,7 +5,6 @@ import time
 import sys
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Callable
-from threading import Lock
 from copy import copy
 import pytz
 
@@ -35,7 +34,7 @@ from vnpy.trader.object import (
     OrderRequest
 )
 from vnpy.trader.event import EVENT_TIMER
-from vnpy.trader.gateway import BaseGateway, LocalOrderManager
+from vnpy.trader.gateway import BaseGateway
 
 
 STATUS_BYBIT2VT: Dict[str, Status] = {
@@ -104,21 +103,20 @@ class BybitGateway(BaseGateway):
         "ID": "",
         "Secret": "",
         "服务器": ["REAL", "TESTNET"],
-        "合约模式": ["正向", "反向"],
+        "合约模式": ["反向", "正向"],
         "代理地址": "",
         "代理端口": "",
     }
 
     exchanges: List[Exchange] = [Exchange.BYBIT]
-    usdt_base = None
 
     def __init__(self, event_engine):
         """Constructor"""
         super().__init__(event_engine, "BYBIT")
 
         self.rest_api = BybitRestApi(self)
-        self.private_ws_api = BybitWebsocketApi(self)
-        self.public_private_ws_api = BybitPublicWebsocketApi(self)
+        self.private_ws_api = BybitPrivateWebsocketApi(self)
+        self.public_ws_api = BybitPublicWebsocketApi(self)
 
     def connect(self, setting: dict) -> None:
         """"""
@@ -129,29 +127,24 @@ class BybitGateway(BaseGateway):
         proxy_port = setting["代理端口"]
 
         if setting["合约模式"] == "正向":
-            self.usdt_base = True
+            usdt_base = True
         else:
-            self.usdt_base = False
+            usdt_base = False
 
         if proxy_port.isdigit():
             proxy_port = int(proxy_port)
         else:
             proxy_port = 0
 
-        self.rest_api.connect(key, secret, server, proxy_host, proxy_port)
-        self.private_ws_api.connect(key, secret, server, proxy_host, proxy_port)
-
-        if self.usdt_base:
-            self.public_private_ws_api.connect(server, proxy_host, proxy_port)
+        self.rest_api.connect(usdt_base, key, secret, server, proxy_host, proxy_port)
+        self.private_ws_api.connect(usdt_base, key, secret, server, proxy_host, proxy_port)
+        self.public_ws_api.connect(usdt_base, server, proxy_host, proxy_port)
 
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
-        if self.usdt_base:
-            self.public_private_ws_api.subscribe(req)
-        else:
-            self.private_ws_api.subscribe(req)
+        self.public_ws_api.subscribe(req)
 
     def send_order(self, req: OrderRequest) -> str:
         """"""
@@ -177,6 +170,7 @@ class BybitGateway(BaseGateway):
         """"""
         self.rest_api.stop()
         self.private_ws_api.stop()
+        self.public_ws_api.stop()
 
     def process_timer_event(self, event):
         """"""
@@ -195,6 +189,7 @@ class BybitRestApi(RestClient):
         self.gateway: BybitGateway = gateway
         self.gateway_name: str = gateway.gateway_name
 
+        self.usdt_base: bool = False
         self.key: str = ""
         self.secret: bytes = b""
 
@@ -239,6 +234,7 @@ class BybitRestApi(RestClient):
 
     def connect(
         self,
+        usdt_base: bool,
         key: str,
         secret: str,
         server: str,
@@ -248,6 +244,7 @@ class BybitRestApi(RestClient):
         """
         Initialize connection to REST server.
         """
+        self.usdt_base = usdt_base
         self.key = key
         self.secret = secret.encode()
 
@@ -416,7 +413,7 @@ class BybitRestApi(RestClient):
             )
             self.gateway.on_position(position)
 
-            if not self.gateway.usdt_base:
+            if not self.usdt_base:
                 account = AccountData(
                     accountid=d["symbol"].replace("USD", ""),
                     balance=d["wallet_balance"],
@@ -471,13 +468,16 @@ class BybitRestApi(RestClient):
         if self.check_error("查询委托", data):
             return
 
+        params = request.params
+        symbol = params["symbol"]
+
         result = data["result"]
         if not result:
-            self.gateway.write_log("委托信息查询成功")
+            self.gateway.write_log(f"{symbol}委托信息查询成功")
             return
 
         if not result["data"]:
-            self.gateway.write_log("委托信息查询成功")
+            self.gateway.write_log(f"{symbol}委托信息查询成功")
             return
 
         for d in result["data"]:
@@ -503,7 +503,7 @@ class BybitRestApi(RestClient):
         if result["current_page"] != result["last_page"]:
             self.query_order(result["current_page"] + 1)
         else:
-            self.gateway.write_log("委托信息查询成功")
+            self.gateway.write_log(f"{symbol}委托信息查询成功")
 
     def query_contract(self) -> Request:
         """"""
@@ -536,10 +536,9 @@ class BybitRestApi(RestClient):
 
     def query_position(self) -> Request:
         """"""
-        if self.gateway.usdt_base:
+        if self.usdt_base:
             path = "/private/linear/position/list"
             symbols = symbols_usdt
-
         else:
             path = "/position/list"
             symbols = symbols_inverse
@@ -556,7 +555,7 @@ class BybitRestApi(RestClient):
 
     def query_order(self, page: int = 1) -> Request:
         """"""
-        if self.gateway.usdt_base:
+        if self.usdt_base:
             path = "/private/linear/order/list"
             symbols = symbols_usdt
         else:
@@ -658,12 +657,15 @@ class BybitRestApi(RestClient):
 
 class BybitPublicWebsocketApi(WebsocketClient):
     """"""
+
     def __init__(self, gateway: BybitGateway):
         """"""
         super().__init__()
 
         self.gateway: BybitGateway = gateway
         self.gateway_name: str = gateway.gateway_name
+
+        self.usdt_base: bool = False
 
         self.callbacks: Dict[str, Callable] = {}
         self.ticks: Dict[str, TickData] = {}
@@ -674,30 +676,42 @@ class BybitPublicWebsocketApi(WebsocketClient):
 
     def connect(
         self,
+        usdt_base: bool,
         server: str,
         proxy_host: str,
         proxy_port: int
     ) -> None:
         """"""
+        self.usdt_base = usdt_base
         self.proxy_host = proxy_host
         self.proxy_port = proxy_port
         self.server = server
 
         if self.server == "REAL":
-            url = PUBLIC_WEBSOCKET_HOST
+            if usdt_base:
+                url = PUBLIC_WEBSOCKET_HOST
+            else:
+                url = INVERSE_WEBSOCKET_HOST
         else:
-            url = TESTNET_PUBLIC_WEBSOCKET_HOST
+            if usdt_base:
+                url = TESTNET_PUBLIC_WEBSOCKET_HOST
+            else:
+                url = TESTNET_INVERSE_WEBSOCKET_HOST
 
         self.init(url, self.proxy_host, self.proxy_port)
         self.start()
 
     def on_connected(self) -> None:
         """"""
-        self.gateway.write_log("Public Websocket API连接成功")
+        self.gateway.write_log("行情Websocket API连接成功")
 
         if self.subscribed:
             for req in self.subscribed.values():
                 self.subscribe(req)
+
+    def on_disconnected(self) -> None:
+        """"""
+        self.gateway.write_log("行情Websocket API连接断开")
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """
@@ -762,7 +776,6 @@ class BybitPublicWebsocketApi(WebsocketClient):
         topic = packet["topic"]
         type_ = packet["type"]
         data = packet["data"]
-        timestamp = int(packet["timestamp_e6"][:10])
 
         symbol = topic.replace("instrument_info.100ms.", "")
         tick = self.ticks[symbol]
@@ -772,7 +785,13 @@ class BybitPublicWebsocketApi(WebsocketClient):
                 return
 
             tick.last_price = int(data["last_price_e4"]) / 10000
-            tick.volume = int(data["volume_24h_e8"]) / 100000000
+
+            if self.usdt_base:
+                tick.volume = int(data["volume_24h_e8"]) / 100000000
+            else:
+                tick.volume = int(data["volume_24h"])
+
+            tick.datetime = generate_datetime(data["updated_at"])
         else:
             update = data["update"][0]
 
@@ -782,12 +801,12 @@ class BybitPublicWebsocketApi(WebsocketClient):
 
                 tick.last_price = int(update["last_price_e4"]) / 10000
 
-            if "volume_24h_e8" in update:
+            if self.usdt_base:
                 tick.volume = int(update["volume_24h_e8"]) / 100000000
+            else:
+                tick.volume = int(update["volume_24h"])
 
-        dt = datetime.fromtimestamp(timestamp)
-        dt = dt.replace(tzinfo=UTC_TZ)
-        tick.datetime = dt
+            tick.datetime = generate_datetime(update["updated_at"])
 
         self.gateway.on_tick(copy(tick))
 
@@ -796,7 +815,7 @@ class BybitPublicWebsocketApi(WebsocketClient):
         topic = packet["topic"]
         type_ = packet["type"]
         data = packet["data"]
-        timestamp = int(packet["timestamp_e6"][:10])
+        timestamp = int(packet["timestamp_e6"]) / 1000000
 
         # Update depth data into dict buf
         symbol = topic.replace("orderBookL2_25.", "")
@@ -805,7 +824,12 @@ class BybitPublicWebsocketApi(WebsocketClient):
         asks = self.symbol_asks.setdefault(symbol, {})
 
         if type_ == "snapshot":
-            for d in data["order_book"]:
+            if self.usdt_base:
+                buf = data["order_book"]
+            else:
+                buf = data
+
+            for d in buf:
                 price = float(d["price"])
 
                 if d["side"] == "Buy":
@@ -852,7 +876,7 @@ class BybitPublicWebsocketApi(WebsocketClient):
         self.gateway.on_tick(copy(tick))
 
 
-class BybitWebsocketApi(WebsocketClient):
+class BybitPrivateWebsocketApi(WebsocketClient):
     """"""
 
     def __init__(self, gateway: BybitGateway):
@@ -861,10 +885,11 @@ class BybitWebsocketApi(WebsocketClient):
 
         self.gateway: BybitGateway = gateway
         self.gateway_name: str = gateway.gateway_name
-        
+
         self.key: str = ""
         self.secret: bytes = b""
         self.server: str = ""  # REAL or TESTNET
+        self.usdt_base: bool = False
 
         self.callbacks: Dict[str, Callable] = {}
         self.ticks: Dict[str, TickData] = {}
@@ -875,6 +900,7 @@ class BybitWebsocketApi(WebsocketClient):
 
     def connect(
         self,
+        usdt_base: bool,
         key: str,
         secret: str,
         server: str,
@@ -882,6 +908,7 @@ class BybitWebsocketApi(WebsocketClient):
         proxy_port: int
     ) -> None:
         """"""
+        self.usdt_base = usdt_base
         self.key = key
         self.secret = secret.encode()
         self.proxy_host = proxy_host
@@ -889,12 +916,12 @@ class BybitWebsocketApi(WebsocketClient):
         self.server = server
 
         if self.server == "REAL":
-            if self.gateway.usdt_base:
+            if usdt_base:
                 url = PRIVATE_WEBSOCKET_HOST
             else:
                 url = INVERSE_WEBSOCKET_HOST
         else:
-            if self.gateway.usdt_base:
+            if usdt_base:
                 url = TESTNET_PRIVATE_WEBSOCKET_HOST
             else:
                 url = TESTNET_INVERSE_WEBSOCKET_HOST
@@ -914,26 +941,6 @@ class BybitWebsocketApi(WebsocketClient):
         }
         self.send_packet(req)
 
-    def subscribe(self, req: SubscribeRequest) -> None:
-        """
-        Subscribe to tick data upate.
-        """
-        self.subscribed[req.symbol] = req
-
-        tick = TickData(
-            symbol=req.symbol,
-            exchange=req.exchange,
-            datetime=datetime.now(UTC_TZ),
-            name=req.symbol,
-            gateway_name=self.gateway_name
-        )
-        self.ticks[req.symbol] = tick
-
-        self.subscribe_topic(
-            f"instrument_info.100ms.{req.symbol}", self.on_tick
-        )
-        self.subscribe_topic(f"orderBookL2_25.{req.symbol}", self.on_depth)
-
     def subscribe_topic(
         self,
         topic: str,
@@ -952,12 +959,12 @@ class BybitWebsocketApi(WebsocketClient):
 
     def on_connected(self) -> None:
         """"""
-        self.gateway.write_log("Websocket API连接成功")
+        self.gateway.write_log("交易Websocket API连接成功")
         self.login()
 
     def on_disconnected(self) -> None:
         """"""
-        self.gateway.write_log("Websocket API连接断开")
+        self.gateway.write_log("交易Websocket API连接断开")
 
     def on_packet(self, packet: dict) -> None:
         """"""
@@ -987,109 +994,16 @@ class BybitWebsocketApi(WebsocketClient):
         """"""
         success = packet.get("success", False)
         if success:
-            self.gateway.write_log("Websocket API登录成功")
+            self.gateway.write_log("交易Websocket API登录成功")
 
             self.subscribe_topic("order", self.on_order)
             self.subscribe_topic("execution", self.on_trade)
             self.subscribe_topic("position", self.on_position)
 
-            if self.gateway.usdt_base:
+            if self.usdt_base:
                 self.subscribe_topic("wallet", self.on_account)
-
-            for req in self.subscribed.values():
-                self.subscribe(req)
         else:
-            self.gateway.write_log("Websocket API登录失败")
-
-    def on_tick(self, packet: dict) -> None:
-        """"""
-        topic = packet["topic"]
-        type_ = packet["type"]
-        data = packet["data"]
-
-        symbol = topic.replace("instrument_info.100ms.", "")
-        tick = self.ticks[symbol]
-
-        if type_ == "snapshot":
-            if not data["last_price_e4"]:           # Filter last price with 0 value
-                return
-
-            tick.last_price = data["last_price_e4"] / 10000
-            tick.volume = data["volume_24h"]
-        else:
-            update = data["update"][0]
-
-            if "last_price_e4" in update:
-                if not update["last_price_e4"]:     # Filter last price with 0 value
-                    return
-
-                tick.last_price = update["last_price_e4"] / 10000
-
-            if "volume_24h" in update:
-                tick.volume = update["volume_24h"]
-
-        tick.datetime = generate_datetime(data["updated_at"])
-        self.gateway.on_tick(copy(tick))
-
-    def on_depth(self, packet: dict) -> None:
-        """"""
-        topic = packet["topic"]
-        type_ = packet["type"]
-        data = packet["data"]
-        timestamp = packet["timestamp_e6"]
-
-        # Update depth data into dict buf
-        symbol = topic.replace("orderBookL2_25.", "")
-        tick = self.ticks[symbol]
-        bids = self.symbol_bids.setdefault(symbol, {})
-        asks = self.symbol_asks.setdefault(symbol, {})
-
-        if type_ == "snapshot":
-            for d in data:
-                price = float(d["price"])
-
-                if d["side"] == "Buy":
-                    bids[price] = d
-                else:
-                    asks[price] = d
-        else:
-            for d in data["delete"]:
-                price = float(d["price"])
-                if d["side"] == "Buy":
-                    bids.pop(price)
-                else:
-                    asks.pop(price)
-
-            for d in (data["update"] + data["insert"]):
-                price = float(d["price"])
-                if d["side"] == "Buy":
-                    bids[price] = d
-                else:
-                    asks[price] = d
-
-        # Calculate 1-5 bid/ask depth
-        bid_keys = list(bids.keys())
-        bid_keys.sort(reverse=True)
-
-        ask_keys = list(asks.keys())
-        ask_keys.sort()
-
-        for i in range(5):
-            n = i + 1
-
-            bid_price = bid_keys[i]
-            bid_data = bids[bid_price]
-            ask_price = ask_keys[i]
-            ask_data = asks[ask_price]
-
-            setattr(tick, f"bid_price_{n}", bid_price)
-            setattr(tick, f"bid_volume_{n}", bid_data["size"])
-            setattr(tick, f"ask_price_{n}", ask_price)
-            setattr(tick, f"ask_volume_{n}", ask_data["size"])
-
-        local_dt = datetime.fromtimestamp(timestamp / 1_000_000)
-        tick.datetime = local_dt.astimezone(UTC_TZ)
-        self.gateway.on_tick(copy(tick))
+            self.gateway.write_log("交易Websocket API登录失败")
 
     def on_account(self, packet: dict) -> None:
         """"""
@@ -1178,6 +1092,9 @@ def sign(secret: bytes, data: bytes) -> str:
 
 def generate_datetime(timestamp: str) -> datetime:
     """"""
-    dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    if "." in timestamp:
+        dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    else:
+        dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
     dt = dt.replace(tzinfo=UTC_TZ)
     return dt
