@@ -13,7 +13,7 @@ import sys
 from copy import copy
 from datetime import datetime
 import pytz
-from typing import Dict, List, Any, Callable
+from typing import Dict, List, Any
 
 from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
@@ -25,7 +25,7 @@ from vnpy.trader.constant import (
     OrderType,
     Interval
 )
-from vnpy.trader.gateway import BaseGateway, LocalOrderManager
+from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     TickData,
     OrderData,
@@ -93,11 +93,20 @@ class HuobiGateway(BaseGateway):
         """Constructor"""
         super().__init__(event_engine, "HUOBI")
 
-        self.order_manager = LocalOrderManager(self)
-
         self.rest_api = HuobiRestApi(self)
         self.trade_ws_api = HuobiTradeWebsocketApi(self)
         self.market_ws_api = HuobiDataWebsocketApi(self)
+
+        self.orders: Dict[str, OrderData] = {}
+
+    def get_order(self, orderid: str) -> OrderData:
+        """"""
+        return self.orders.get(orderid, None)
+
+    def on_order(self, order: OrderData) -> None:
+        """"""
+        self.orders[order.orderid] = order
+        super().on_order(order)
 
     def connect(self, setting: dict) -> None:
         """"""
@@ -126,7 +135,7 @@ class HuobiGateway(BaseGateway):
         """"""
         return self.rest_api.send_order(req)
 
-    def cancel_order(self, req: CancelRequest) -> Request:
+    def cancel_order(self, req: CancelRequest) -> None:
         """"""
         self.rest_api.cancel_order(req)
 
@@ -160,12 +169,23 @@ class HuobiRestApi(RestClient):
 
         self.gateway: HuobiGateway = gateway
         self.gateway_name: str = gateway.gateway_name
-        self.order_manager: LocalOrderManager = gateway.order_manager
 
         self.host: str = ""
         self.key: str = ""
         self.secret: str = ""
         self.account_id: str = ""
+
+        self.order_count = 0
+
+    def new_orderid(self):
+        """"""
+        prefix = datetime.now().strftime("%Y%m%d-%H%M%S-")
+
+        self.order_count += 1
+        suffix = str(self.order_count).rjust(8, "0")
+
+        orderid = prefix + suffix
+        return orderid
 
     def sign(self, request: Request) -> Request:
         """
@@ -217,7 +237,7 @@ class HuobiRestApi(RestClient):
         self.query_account()
         self.query_order()
 
-    def query_account(self) -> Request:
+    def query_account(self) -> None:
         """"""
         self.add_request(
             method="GET",
@@ -225,7 +245,7 @@ class HuobiRestApi(RestClient):
             callback=self.on_query_account
         )
 
-    def query_order(self) -> Request:
+    def query_order(self) -> None:
         """"""
         self.add_request(
             method="GET",
@@ -233,7 +253,7 @@ class HuobiRestApi(RestClient):
             callback=self.on_query_order
         )
 
-    def query_contract(self) -> Request:
+    def query_contract(self) -> None:
         """"""
         self.add_request(
             method="GET",
@@ -299,11 +319,8 @@ class HuobiRestApi(RestClient):
             (req.direction, req.type), ""
         )
 
-        local_orderid = self.order_manager.new_local_orderid()
-        order = req.create_order_data(
-            local_orderid,
-            self.gateway_name
-        )
+        orderid = self.new_orderid()
+        order = req.create_order_data(orderid, self.gateway_name)
         order.datetime = datetime.now(CHINA_TZ)
 
         data = {
@@ -312,7 +329,8 @@ class HuobiRestApi(RestClient):
             "symbol": req.symbol,
             "type": huobi_type,
             "price": str(req.price),
-            "source": "api"
+            "source": "api",
+            "client-order-id": orderid
         }
 
         self.add_request(
@@ -325,17 +343,17 @@ class HuobiRestApi(RestClient):
             on_failed=self.on_send_order_failed
         )
 
-        self.order_manager.on_order(order)
+        self.gateway.on_order(order)
         return order.vt_orderid
 
-    def cancel_order(self, req: CancelRequest) -> Request:
+    def cancel_order(self, req: CancelRequest) -> None:
         """"""
-        sys_orderid = self.order_manager.get_sys_orderid(req.orderid)
+        data = {"client-order-id": req.orderid}
 
-        path = f"/v1/order/orders/{sys_orderid}/submitcancel"
         self.add_request(
             method="POST",
-            path=path,
+            path="/v1/order/orders/submitCancelClientOrder",
+            data=data,
             callback=self.on_cancel_order,
             extra=req
         )
@@ -356,14 +374,11 @@ class HuobiRestApi(RestClient):
             return
 
         for d in data["data"]:
-            sys_orderid = d["id"]
-            local_orderid = self.order_manager.get_local_orderid(sys_orderid)
-
             direction, order_type = ORDERTYPE_HUOBI2VT[d["type"]]
             dt = generate_datetime(d["created-at"] / 1000)
 
             order = OrderData(
-                orderid=local_orderid,
+                orderid=d["client-order-id"],
                 symbol=d["symbol"],
                 exchange=Exchange.HUOBI,
                 price=float(d["price"]),
@@ -376,7 +391,7 @@ class HuobiRestApi(RestClient):
                 gateway_name=self.gateway_name,
             )
 
-            self.order_manager.on_order(order)
+            self.gateway.on_order(order)
 
         self.gateway.write_log("委托信息查询成功")
 
@@ -416,11 +431,7 @@ class HuobiRestApi(RestClient):
 
         if self.check_error(data, "委托"):
             order.status = Status.REJECTED
-            self.order_manager.on_order(order)
-            return
-
-        sys_orderid = data["data"]
-        self.order_manager.update_orderid_map(order.orderid, sys_orderid)
+            self.gateway.on_order(order)
 
     def on_send_order_failed(self, status_code: str, request: Request) -> None:
         """
@@ -454,8 +465,9 @@ class HuobiRestApi(RestClient):
     def on_cancel_order(self, data: dict, request: Request) -> None:
         """"""
         cancel_request = request.extra
-        local_orderid = cancel_request.orderid
-        order = self.order_manager.get_order_with_local_orderid(local_orderid)
+        order = self.gateway.get_order(cancel_request.orderid)
+        if not order:
+            return
 
         if self.check_error(data, "撤单"):
             order.status = Status.REJECTED
@@ -463,7 +475,7 @@ class HuobiRestApi(RestClient):
             order.status = Status.CANCELLED
             self.gateway.write_log(f"委托撤单成功：{order.orderid}")
 
-        self.order_manager.on_order(order)
+        self.gateway.on_order(order)
 
     def on_error(
         self,
@@ -542,7 +554,7 @@ class HuobiWebsocketApiBase(WebsocketClient):
             "action": "req",
             "ch": "auth",
             "params": params
-            }
+        }
 
         return self.send_packet(req)
 
@@ -597,9 +609,6 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
     def __init__(self, gateway):
         """"""
         super().__init__(gateway)
-
-        self.order_manager: LocalOrderManager = gateway.order_manager
-        self.order_manager.push_data_callback: Callable = self.on_data
 
         self.req_id: int = 0
 
@@ -698,11 +707,9 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
 
     def on_order(self, data: dict) -> None:
         """"""
-        sys_orderid = str(data["orderId"])
-
-        order = self.order_manager.get_order_with_sys_orderid(sys_orderid)
+        orderid = data["clientOrderId"]
+        order = self.gateway.get_order(orderid)
         if not order:
-            self.order_manager.add_push_data(sys_orderid, data)
             return
 
         traded_volume = float(data.get("tradeVolume", 0))
@@ -710,7 +717,7 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
         # Push order event
         order.traded += traded_volume
         order.status = STATUS_HUOBI2VT.get(data["orderStatus"], None)
-        self.order_manager.on_order(order)
+        self.gateway.on_order(order)
 
         # Push trade event
         if not traded_volume:
