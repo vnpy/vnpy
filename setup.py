@@ -152,6 +152,42 @@ def get_ext_modules():
         language="cpp",
     )
 
+    vnxtpmd = Extension(
+        "vnpy.api.xtp.vnxtpmd",
+        [
+            "vnpy/api/xtp/vnxtp/vnxtpmd/vnxtpmd.cpp",
+        ],
+        include_dirs=["vnpy/api/xtp/include",
+                      "vnpy/api/xtp/vnxtp"],
+        define_macros=[],
+        undef_macros=[],
+        library_dirs=["vnpy/api/xtp/libs", "vnpy/api/xtp"],
+        libraries=["xtptraderapi", "xtpquoteapi"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        depends=[],
+        language="cpp",
+    )
+
+    vnxtptd = Extension(
+        "vnpy.api.xtp.vnxtptd",
+        [
+            "vnpy/api/xtp/vnxtp/vnxtptd/vnxtptd.cpp",
+        ],
+        include_dirs=["vnpy/api/xtp/include",
+                      "vnpy/api/xtp/vnxtp"],
+        define_macros=[],
+        undef_macros=[],
+        library_dirs=["vnpy/api/xtp/libs", "vnpy/api/xtp"],
+        libraries=["xtptraderapi", "xtpquoteapi"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        depends=[],
+        language="cpp",
+    )
+
     vnksgoldmd = Extension(
         "vnpy.api.ksgold.vnksgoldmd",
         [
@@ -249,6 +285,7 @@ def get_ext_modules():
     else:
         ext_modules = [
             vnctptd, vnctpmd,
+            vnxtptd, vnxtpmd,
             vnsgittd, vnsgitmd,
             vnksgoldmd, vnksgoldtd,
             vnoes
@@ -260,6 +297,10 @@ def get_ext_modules():
         ext_modules, "VNPY_BUILD_CTP", vnctptd)
     ext_modules = check_extension_build_flag(
         ext_modules, "VNPY_BUILD_CTP", vnctpmd)
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_XTP", vnxtptd)
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_XTP", vnxtpmd)
     ext_modules = check_extension_build_flag(
         ext_modules, "VNPY_BUILD_sgit", vnsgittd)
     ext_modules = check_extension_build_flag(
