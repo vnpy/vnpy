@@ -148,7 +148,7 @@ class GateiosRestApi(RestClient):
 
     def sign(self, request):
         """
-        Generate HBDM signature.
+        Generate signature.
         """
         request.headers = generate_sign(
             self.key,

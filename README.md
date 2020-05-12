@@ -84,25 +84,27 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * Bybit（bybit）：数字货币永续合约
 
+        * 币安（binance）：数字货币现货
+
+        * 币安永续（binances)：数字货币永续合约
+
+        * OKEX（okex）：数字货币现货
+
         * OKEX永续（okexs）：数字货币永续合约
 
         * OKEX期货（okexf）：数字货币期货
 
         * OKEX期权（okexo）：数字货币期权
 
-        * 火币合约（hbdm）：数字货币期货
+        * 火币（huobi）：数字货币现货
 
-        * 币安永续（binancef)：数字货币永续合约
+        * 火币期货（huobif）：数字货币期货
+
+        * 火币永续（huobis）：数字货币永续
 
         * Gate.io永续（gateios）：数字货币永续合约
 
-        * Deribit（deribit），数字货币期权、永续合约
-
-        * 币安（binance）：数字货币现货
-
-        * OKEX（okex）：数字货币现货
-
-        * 火币（huobi）：数字货币现货
+        * Deribit（deribit），数字货币期权、永续合约        
 
         * Bitfinex（bitfinex）：数字货币现货
 

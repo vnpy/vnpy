@@ -90,7 +90,7 @@ def main():
 | OKEX     |                  数字货币                  |
 | OKEXF    |                  数字货币                  |
 | HUOBI    |                  数字货币                  |
-| HBDM     |                  数字货币                  |
+| HUOBIF   |                  数字货币                  |
 | ONETOKEN |                  数字货币                  |
 | RPC      |                  RPC服务                   |
 
@@ -612,14 +612,14 @@ main_engine.add_gateway(HuobiGateway)
 
 
 
-### 火币合约(HBDM)
+### 火币合约(HUOBIF)
 
 #### 如何加载
 
-先从gateway上调用HbdmGateway类；然后通过add_gateway()函数添加到main_engine上。
+先从gateway上调用HuobifGateway类；然后通过add_gateway()函数添加到main_engine上。
 ```
-from vnpy.gateway.hbdm import HbdmGateway
-main_engine.add_gateway(HbdmGateway)
+from vnpy.gateway.huobif import HuobifGateway
+main_engine.add_gateway(HuobifGateway)
 ```
 
 &nbsp;

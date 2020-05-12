@@ -49,7 +49,7 @@ REST_HOST = "https://api.hbdm.com"
 WEBSOCKET_DATA_HOST = "wss://www.hbdm.com/ws"               # Market Data
 WEBSOCKET_TRADE_HOST = "wss://api.hbdm.com/notification"    # Account and Order
 
-STATUS_HBDM2VT = {
+STATUS_HUOBIF2VT = {
     3: Status.NOTTRADED,
     4: Status.PARTTRADED,
     5: Status.CANCELLED,
@@ -57,36 +57,36 @@ STATUS_HBDM2VT = {
     7: Status.CANCELLED,
 }
 
-ORDERTYPE_VT2HBDM = {
+ORDERTYPE_VT2HUOBIF = {
     OrderType.MARKET: "opponent",
     OrderType.LIMIT: "limit",
     OrderType.FOK: "fok",
     OrderType.FAK: "ioc"
 }
-ORDERTYPE_HBDM2VT = {v: k for k, v in ORDERTYPE_VT2HBDM.items()}
-ORDERTYPE_HBDM2VT[1] = OrderType.LIMIT
-ORDERTYPE_HBDM2VT[3] = OrderType.MARKET
-ORDERTYPE_HBDM2VT[4] = OrderType.MARKET
-ORDERTYPE_HBDM2VT[5] = OrderType.STOP
-ORDERTYPE_HBDM2VT[6] = OrderType.LIMIT
-ORDERTYPE_HBDM2VT["lightning"] = OrderType.MARKET
-ORDERTYPE_HBDM2VT["optimal_5"] = OrderType.MARKET
-ORDERTYPE_HBDM2VT["optimal_10"] = OrderType.MARKET
-ORDERTYPE_HBDM2VT["optimal_20"] = OrderType.MARKET
+ORDERTYPE_HUOBIF2VT = {v: k for k, v in ORDERTYPE_VT2HUOBIF.items()}
+ORDERTYPE_HUOBIF2VT[1] = OrderType.LIMIT
+ORDERTYPE_HUOBIF2VT[3] = OrderType.MARKET
+ORDERTYPE_HUOBIF2VT[4] = OrderType.MARKET
+ORDERTYPE_HUOBIF2VT[5] = OrderType.STOP
+ORDERTYPE_HUOBIF2VT[6] = OrderType.LIMIT
+ORDERTYPE_HUOBIF2VT["lightning"] = OrderType.MARKET
+ORDERTYPE_HUOBIF2VT["optimal_5"] = OrderType.MARKET
+ORDERTYPE_HUOBIF2VT["optimal_10"] = OrderType.MARKET
+ORDERTYPE_HUOBIF2VT["optimal_20"] = OrderType.MARKET
 
-DIRECTION_VT2HBDM = {
+DIRECTION_VT2HUOBIF = {
     Direction.LONG: "buy",
     Direction.SHORT: "sell",
 }
-DIRECTION_HBDM2VT = {v: k for k, v in DIRECTION_VT2HBDM.items()}
+DIRECTION_HUOBIF2VT = {v: k for k, v in DIRECTION_VT2HUOBIF.items()}
 
-OFFSET_VT2HBDM = {
+OFFSET_VT2HUOBIF = {
     Offset.OPEN: "open",
     Offset.CLOSE: "close",
 }
-OFFSET_HBDM2VT = {v: k for k, v in OFFSET_VT2HBDM.items()}
+OFFSET_HUOBIF2VT = {v: k for k, v in OFFSET_VT2HUOBIF.items()}
 
-INTERVAL_VT2HBDM = {
+INTERVAL_VT2HUOBIF = {
     Interval.MINUTE: "1min",
     Interval.HOUR: "60min",
     Interval.DAILY: "1day"
@@ -109,9 +109,9 @@ CHINA_TZ = pytz.timezone("Asia/Shanghai")
 symbol_type_map = {}
 
 
-class HbdmGateway(BaseGateway):
+class HuobifGateway(BaseGateway):
     """
-    VN Trader Gateway for Hbdm connection.
+    VN Trader Gateway for Huobif connection.
     """
 
     default_setting = {
@@ -126,11 +126,11 @@ class HbdmGateway(BaseGateway):
 
     def __init__(self, event_engine):
         """Constructor"""
-        super().__init__(event_engine, "HBDM")
+        super().__init__(event_engine, "HUOBIF")
 
-        self.rest_api = HbdmRestApi(self)
-        self.trade_ws_api = HbdmTradeWebsocketApi(self)
-        self.market_ws_api = HbdmDataWebsocketApi(self)
+        self.rest_api = HuobifRestApi(self)
+        self.trade_ws_api = HuobifTradeWebsocketApi(self)
+        self.market_ws_api = HuobifDataWebsocketApi(self)
 
     def connect(self, setting: dict):
         """"""
@@ -201,9 +201,9 @@ class HbdmGateway(BaseGateway):
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
 
-class HbdmRestApi(RestClient):
+class HuobifRestApi(RestClient):
     """
-    HBDM REST API
+    HUOBIF REST API
     """
 
     def __init__(self, gateway: BaseGateway):
@@ -227,7 +227,7 @@ class HbdmRestApi(RestClient):
 
     def sign(self, request):
         """
-        Generate HBDM signature.
+        Generate HUOBIF signature.
         """
         request.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36"
@@ -333,7 +333,7 @@ class HbdmRestApi(RestClient):
             # Create query params
             params = {
                 "symbol": ws_symbol,
-                "period": INTERVAL_VT2HBDM[req.interval],
+                "period": INTERVAL_VT2HUOBIF[req.interval],
                 "from": int(start.timestamp()),
                 "to": int(end.timestamp())
             }
@@ -412,9 +412,9 @@ class HbdmRestApi(RestClient):
             "client_order_id": int(local_orderid),
             "price": req.price,
             "volume": int(req.volume),
-            "direction": DIRECTION_VT2HBDM.get(req.direction, ""),
-            "offset": OFFSET_VT2HBDM.get(req.offset, ""),
-            "order_price_type": ORDERTYPE_VT2HBDM.get(req.type, ""),
+            "direction": DIRECTION_VT2HUOBIF.get(req.direction, ""),
+            "offset": OFFSET_VT2HUOBIF.get(req.offset, ""),
+            "order_price_type": ORDERTYPE_VT2HUOBIF.get(req.type, ""),
             "lever_rate": 20
         }
 
@@ -452,9 +452,9 @@ class HbdmRestApi(RestClient):
                 "client_order_id": int(local_orderid),
                 "price": req.price,
                 "volume": int(req.volume),
-                "direction": DIRECTION_VT2HBDM.get(req.direction, ""),
-                "offset": OFFSET_VT2HBDM.get(req.offset, ""),
-                "order_price_type": ORDERTYPE_VT2HBDM.get(req.type, ""),
+                "direction": DIRECTION_VT2HUOBIF.get(req.direction, ""),
+                "offset": OFFSET_VT2HUOBIF.get(req.offset, ""),
+                "order_price_type": ORDERTYPE_VT2HUOBIF.get(req.type, ""),
                 "lever_rate": 20
             }
 
@@ -536,7 +536,7 @@ class HbdmRestApi(RestClient):
                 position = PositionData(
                     symbol=d["contract_code"],
                     exchange=Exchange.HUOBI,
-                    direction=DIRECTION_HBDM2VT[d["direction"]],
+                    direction=DIRECTION_HUOBIF2VT[d["direction"]],
                     gateway_name=self.gateway_name
                 )
                 self.positions[key] = position
@@ -569,11 +569,11 @@ class HbdmRestApi(RestClient):
                 exchange=Exchange.HUOBI,
                 price=d["price"],
                 volume=d["volume"],
-                type=ORDERTYPE_HBDM2VT[d["order_price_type"]],
-                direction=DIRECTION_HBDM2VT[d["direction"]],
-                offset=OFFSET_HBDM2VT[d["offset"]],
+                type=ORDERTYPE_HUOBIF2VT[d["order_price_type"]],
+                direction=DIRECTION_HUOBIF2VT[d["direction"]],
+                offset=OFFSET_HUOBIF2VT[d["offset"]],
                 traded=d["trade_volume"],
-                status=STATUS_HBDM2VT[d["status"]],
+                status=STATUS_HUOBIF2VT[d["status"]],
                 datetime=dt,
                 gateway_name=self.gateway_name,
             )
@@ -724,12 +724,12 @@ class HbdmRestApi(RestClient):
         return True
 
 
-class HbdmWebsocketApiBase(WebsocketClient):
+class HuobifWebsocketApiBase(WebsocketClient):
     """"""
 
     def __init__(self, gateway):
         """"""
-        super(HbdmWebsocketApiBase, self).__init__()
+        super(HuobifWebsocketApiBase, self).__init__()
 
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
@@ -811,7 +811,7 @@ class HbdmWebsocketApiBase(WebsocketClient):
         self.gateway.write_log(packet["err-msg"])
 
 
-class HbdmTradeWebsocketApi(HbdmWebsocketApiBase):
+class HuobifTradeWebsocketApi(HuobifWebsocketApiBase):
     """"""
     def __init__(self, gateway):
         """"""
@@ -864,13 +864,13 @@ class HbdmTradeWebsocketApi(HbdmWebsocketApiBase):
             symbol=data["contract_code"],
             exchange=Exchange.HUOBI,
             orderid=orderid,
-            type=ORDERTYPE_HBDM2VT[data["order_price_type"]],
-            direction=DIRECTION_HBDM2VT[data["direction"]],
-            offset=OFFSET_HBDM2VT[data["offset"]],
+            type=ORDERTYPE_HUOBIF2VT[data["order_price_type"]],
+            direction=DIRECTION_HUOBIF2VT[data["direction"]],
+            offset=OFFSET_HUOBIF2VT[data["offset"]],
             price=data["price"],
             volume=data["volume"],
             traded=data["trade_volume"],
-            status=STATUS_HBDM2VT[data["status"]],
+            status=STATUS_HUOBIF2VT[data["status"]],
             datetime=dt,
             gateway_name=self.gateway_name
         )
@@ -899,7 +899,7 @@ class HbdmTradeWebsocketApi(HbdmWebsocketApiBase):
             self.gateway.on_trade(trade)
 
 
-class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
+class HuobifDataWebsocketApi(HuobifWebsocketApiBase):
     """"""
 
     def __init__(self, gateway):
