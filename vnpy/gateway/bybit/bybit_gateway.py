@@ -116,12 +116,9 @@ class BybitGateway(BaseGateway):
         """Constructor"""
         super().__init__(event_engine, "BYBIT")
 
-        self.connect_time = datetime.now(UTC_TZ).strftime("%y%m%d%H%M%S")
-        self.order_manager = LocalOrderManager(self, self.connect_time)
-
         self.rest_api = BybitRestApi(self)
-        self.ws_api = BybitWebsocketApi(self)
-        self.public_ws_api = BybitPublicWebsocketApi(self)
+        self.private_ws_api = BybitWebsocketApi(self)
+        self.public_private_ws_api = BybitPublicWebsocketApi(self)
 
     def connect(self, setting: dict) -> None:
         """"""
@@ -142,19 +139,19 @@ class BybitGateway(BaseGateway):
             proxy_port = 0
 
         self.rest_api.connect(key, secret, server, proxy_host, proxy_port)
-        self.ws_api.connect(key, secret, server, proxy_host, proxy_port)
+        self.private_ws_api.connect(key, secret, server, proxy_host, proxy_port)
 
         if self.usdt_base:
-            self.public_ws_api.connect(server, proxy_host, proxy_port)
+            self.public_private_ws_api.connect(server, proxy_host, proxy_port)
 
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
         if self.usdt_base:
-            self.public_ws_api.subscribe(req)
+            self.public_private_ws_api.subscribe(req)
         else:
-            self.ws_api.subscribe(req)
+            self.private_ws_api.subscribe(req)
 
     def send_order(self, req: OrderRequest) -> str:
         """"""
@@ -179,7 +176,7 @@ class BybitGateway(BaseGateway):
     def close(self) -> None:
         """"""
         self.rest_api.stop()
-        self.ws_api.stop()
+        self.private_ws_api.stop()
 
     def process_timer_event(self, event):
         """"""
@@ -197,14 +194,11 @@ class BybitRestApi(RestClient):
 
         self.gateway: BybitGateway = gateway
         self.gateway_name: str = gateway.gateway_name
-        self.order_manager: LocalOrderManager = gateway.order_manager
 
         self.key: str = ""
         self.secret: bytes = b""
 
-        self.order_count: int = 1_000_000
-        self.order_count_lock: Lock = Lock()
-        self.connect_time: int = 0
+        self.order_count: int = 0
         self.contract_codes: set = set()
 
     def sign(self, request: Request) -> Request:
@@ -233,6 +227,16 @@ class BybitRestApi(RestClient):
 
         return request
 
+    def new_orderid(self):
+        """"""
+        prefix = datetime.now().strftime("%Y%m%d-%H%M%S-")
+
+        self.order_count += 1
+        suffix = str(self.order_count).rjust(8, "0")
+
+        orderid = prefix + suffix
+        return orderid
+
     def connect(
         self,
         key: str,
@@ -247,10 +251,6 @@ class BybitRestApi(RestClient):
         self.key = key
         self.secret = secret.encode()
 
-        self.connect_time = (
-            int(datetime.now(UTC_TZ).strftime("%y%m%d%H%M%S")) * self.order_count
-        )
-
         if server == "REAL":
             self.init(REST_HOST, proxy_host, proxy_port)
         else:
@@ -264,22 +264,20 @@ class BybitRestApi(RestClient):
 
     def send_order(self, req: OrderRequest) -> str:
         """"""
-        order_id = self.order_manager.new_local_orderid()
+        orderid = self.new_orderid()
+        order = req.create_order_data(orderid, self.gateway_name)
 
-        symbol = req.symbol
         data = {
-            "symbol": symbol,
+            "symbol": req.symbol,
             "side": DIRECTION_VT2BYBIT[req.direction],
             "qty": int(req.volume),
-            "order_link_id": order_id,
+            "order_link_id": orderid,
             "time_in_force": "GoodTillCancel"
         }
 
-        order = req.create_order_data(order_id, self.gateway_name)
-
-        # Only add price for limit order.
         data["order_type"] = ORDER_TYPE_VT2BYBIT[req.type]
         data["price"] = req.price
+
         self.add_request(
             "POST",
             "/open-api/order/create",
@@ -290,7 +288,7 @@ class BybitRestApi(RestClient):
             on_error=self.on_send_order_error,
         )
 
-        self.order_manager.on_order(order)
+        self.gateway.on_order(order)
         return order.vt_orderid
 
     def on_send_order_failed(
@@ -303,7 +301,7 @@ class BybitRestApi(RestClient):
         """
         order = request.extra
         order.status = Status.REJECTED
-        self.order_manager.on_order(order)
+        self.gateway.on_order(order)
 
         data = request.response.json()
         error_msg = data["ret_msg"]
@@ -323,7 +321,7 @@ class BybitRestApi(RestClient):
         """
         order = request.extra
         order.status = Status.REJECTED
-        self.order_manager.on_order(order)
+        self.gateway.on_order(order)
 
         # Record exception if not ConnectionError
         if not issubclass(exception_type, ConnectionError):
@@ -334,18 +332,11 @@ class BybitRestApi(RestClient):
         if self.check_error("委托下单", data):
             return
 
-        result = data["result"]
-        self.order_manager.update_orderid_map(
-            result["order_link_id"],
-            result["order_id"]
-        )
-
     def cancel_order(self, req: CancelRequest) -> Request:
         """"""
-        sys_orderid = self.order_manager.get_sys_orderid(req.orderid)
         data = {
-            "order_id": sys_orderid,
             "symbol": req.symbol,
+            "order_link_id": req.orderid
         }
 
         self.add_request(
@@ -490,23 +481,14 @@ class BybitRestApi(RestClient):
             return
 
         for d in result["data"]:
-            sys_orderid = d["order_id"]
-
-            # Use sys_orderid as local_orderid when
-            # order placed from other source
-            local_orderid = d["order_link_id"]
-            if not local_orderid:
-                local_orderid = sys_orderid
-
-            self.order_manager.update_orderid_map(
-                local_orderid,
-                sys_orderid
-            )
+            orderid = d["order_link_id"]
+            if not orderid:     # Ignore order not placed by vn.py
+                continue
 
             order = OrderData(
                 symbol=d["symbol"],
                 exchange=Exchange.BYBIT,
-                orderid=local_orderid,
+                orderid=orderid,
                 type=ORDER_TYPE_BYBIT2VT[d["order_type"]],
                 direction=DIRECTION_BYBIT2VT[d["side"]],
                 price=d["price"],
@@ -516,7 +498,7 @@ class BybitRestApi(RestClient):
                 datetime=generate_datetime(d["created_at"]),
                 gateway_name=self.gateway_name
             )
-            self.order_manager.on_order(order)
+            self.gateway.on_order(order)
 
         if result["current_page"] != result["last_page"]:
             self.query_order(result["current_page"] + 1)
@@ -879,8 +861,7 @@ class BybitWebsocketApi(WebsocketClient):
 
         self.gateway: BybitGateway = gateway
         self.gateway_name: str = gateway.gateway_name
-        self.order_manager: LocalOrderManager = gateway.order_manager
-
+        
         self.key: str = ""
         self.secret: bytes = b""
         self.server: str = ""  # REAL or TESTNET
@@ -1124,14 +1105,14 @@ class BybitWebsocketApi(WebsocketClient):
     def on_trade(self, packet: dict) -> None:
         """"""
         for d in packet["data"]:
-            order_id = d["order_link_id"]
-            if not order_id:
-                order_id = d["order_id"]
+            orderid = d["order_link_id"]
+            if not orderid:
+                orderid = d["orderid"]
 
             trade = TradeData(
                 symbol=d["symbol"],
                 exchange=Exchange.BYBIT,
-                orderid=order_id,
+                orderid=orderid,
                 tradeid=d["exec_id"],
                 direction=DIRECTION_BYBIT2VT[d["side"]],
                 price=float(d["price"]),
@@ -1145,40 +1126,21 @@ class BybitWebsocketApi(WebsocketClient):
     def on_order(self, packet: dict) -> None:
         """"""
         for d in packet["data"]:
-            sys_orderid = d["order_id"]
-            order = self.order_manager.get_order_with_sys_orderid(sys_orderid)
+            order = OrderData(
+                symbol=d["symbol"],
+                exchange=Exchange.BYBIT,
+                orderid=d["order_link_id"],
+                type=ORDER_TYPE_BYBIT2VT[d["order_type"]],
+                direction=DIRECTION_BYBIT2VT[d["side"]],
+                price=float(d["price"]),
+                volume=d["qty"],
+                traded=d["cum_exec_qty"],
+                status=STATUS_BYBIT2VT[d["order_status"]],
+                datetime=generate_datetime(d["timestamp"]),
+                gateway_name=self.gateway_name
+            )
 
-            if order:
-                order.traded = d["cum_exec_qty"]
-                order.status = STATUS_BYBIT2VT[d["order_status"]]
-                order.datetime = generate_datetime(d["timestamp"])
-            else:
-                # Use sys_orderid as local_orderid when
-                # order placed from other source
-                local_orderid = d["order_link_id"]
-                if not local_orderid:
-                    local_orderid = sys_orderid
-
-                self.order_manager.update_orderid_map(
-                    local_orderid,
-                    sys_orderid
-                )
-
-                order = OrderData(
-                    symbol=d["symbol"],
-                    exchange=Exchange.BYBIT,
-                    orderid=local_orderid,
-                    type=ORDER_TYPE_BYBIT2VT[d["order_type"]],
-                    direction=DIRECTION_BYBIT2VT[d["side"]],
-                    price=float(d["price"]),
-                    volume=d["qty"],
-                    traded=d["cum_exec_qty"],
-                    status=STATUS_BYBIT2VT[d["order_status"]],
-                    datetime=generate_datetime(d["timestamp"]),
-                    gateway_name=self.gateway_name
-                )
-
-            self.order_manager.on_order(order)
+            self.gateway.on_order(order)
 
     def on_position(self, packet: dict) -> None:
         """"""
