@@ -339,15 +339,15 @@ class CtpMdApi(MdApi):
             tick.ask_price_4 = adjust_price(data["AskPrice4"])
             tick.ask_price_5 = adjust_price(data["AskPrice5"])
 
-            tick.bid_volume_2 = adjust_price(data["BidVolume2"])
-            tick.bid_volume_3 = adjust_price(data["BidVolume3"])
-            tick.bid_volume_4 = adjust_price(data["BidVolume4"])
-            tick.bid_volume_5 = adjust_price(data["BidVolume5"])
+            tick.bid_volume_2 = data["BidVolume2"]
+            tick.bid_volume_3 = data["BidVolume3"]
+            tick.bid_volume_4 = data["BidVolume4"]
+            tick.bid_volume_5 = data["BidVolume5"]
 
-            tick.ask_volume_2 = adjust_price(data["AskVolume2"])
-            tick.ask_volume_3 = adjust_price(data["AskVolume3"])
-            tick.ask_volume_4 = adjust_price(data["AskVolume4"])
-            tick.ask_volume_5 = adjust_price(data["AskVolume5"])
+            tick.ask_volume_2 = data["AskVolume2"]
+            tick.ask_volume_3 = data["AskVolume3"]
+            tick.ask_volume_4 = data["AskVolume4"]
+            tick.ask_volume_5 = data["AskVolume5"]
 
         self.gateway.on_tick(tick)
 
