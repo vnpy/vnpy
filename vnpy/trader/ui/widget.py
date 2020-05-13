@@ -26,7 +26,7 @@ from ..event import (
     EVENT_LOG
 )
 from ..object import OrderRequest, SubscribeRequest, PositionData
-from ..utility import load_json, save_json
+from ..utility import load_json, save_json, get_digits
 from ..setting import SETTING_FILENAME, SETTINGS
 
 
@@ -587,6 +587,7 @@ class TradingWidget(QtWidgets.QWidget):
         self.event_engine: EventEngine = event_engine
 
         self.vt_symbol: str = ""
+        self.price_digits: int = 0
 
         self.init_ui()
         self.register_event()
@@ -746,10 +747,12 @@ class TradingWidget(QtWidgets.QWidget):
         if tick.vt_symbol != self.vt_symbol:
             return
 
-        self.lp_label.setText(str(tick.last_price))
-        self.bp1_label.setText(str(tick.bid_price_1))
+        price_digits = self.price_digits
+
+        self.lp_label.setText(f"{tick.last_price:.{price_digits}f}")
+        self.bp1_label.setText(f"{tick.bid_price_1:.{price_digits}f}")
         self.bv1_label.setText(str(tick.bid_volume_1))
-        self.ap1_label.setText(str(tick.ask_price_1))
+        self.ap1_label.setText(f"{tick.ask_price_1:.{price_digits}f}")
         self.av1_label.setText(str(tick.ask_volume_1))
 
         if tick.pre_close:
@@ -757,28 +760,28 @@ class TradingWidget(QtWidgets.QWidget):
             self.return_label.setText(f"{r:.2f}%")
 
         if tick.bid_price_2:
-            self.bp2_label.setText(str(tick.bid_price_2))
+            self.bp2_label.setText(f"{tick.bid_price_2:.{price_digits}f}")
             self.bv2_label.setText(str(tick.bid_volume_2))
-            self.ap2_label.setText(str(tick.ask_price_2))
+            self.ap2_label.setText(f"{tick.ask_price_2:.{price_digits}f}")
             self.av2_label.setText(str(tick.ask_volume_2))
 
-            self.bp3_label.setText(str(tick.bid_price_3))
+            self.bp3_label.setText(f"{tick.bid_price_3:.{price_digits}f}")
             self.bv3_label.setText(str(tick.bid_volume_3))
-            self.ap3_label.setText(str(tick.ask_price_3))
+            self.ap3_label.setText(f"{tick.ask_price_3:.{price_digits}f}")
             self.av3_label.setText(str(tick.ask_volume_3))
 
-            self.bp4_label.setText(str(tick.bid_price_4))
+            self.bp4_label.setText(f"{tick.bid_price_4:.{price_digits}f}")
             self.bv4_label.setText(str(tick.bid_volume_4))
-            self.ap4_label.setText(str(tick.ask_price_4))
+            self.ap4_label.setText(f"{tick.ask_price_4:.{price_digits}f}")
             self.av4_label.setText(str(tick.ask_volume_4))
 
-            self.bp5_label.setText(str(tick.bid_price_5))
+            self.bp5_label.setText(f"{tick.bid_price_5:.{price_digits}f}")
             self.bv5_label.setText(str(tick.bid_volume_5))
-            self.ap5_label.setText(str(tick.ask_price_5))
+            self.ap5_label.setText(f"{tick.ask_price_5:.{price_digits}f}")
             self.av5_label.setText(str(tick.ask_volume_5))
 
         if self.price_check.isChecked():
-            self.price_line.setText(str(tick.last_price))
+            self.price_line.setText(f"{tick.last_price:.{price_digits}f}")
 
     def set_vt_symbol(self) -> None:
         """
@@ -808,6 +811,9 @@ class TradingWidget(QtWidgets.QWidget):
             # Update gateway combo box.
             ix = self.gateway_combo.findText(gateway_name)
             self.gateway_combo.setCurrentIndex(ix)
+
+            # Update price digits
+            self.price_digits = get_digits(contract.pricetick)
 
         self.clear_label_text()
         self.volume_line.setText("")
