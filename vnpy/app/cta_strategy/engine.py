@@ -9,6 +9,7 @@ from typing import Any, Callable
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
+from tzlocal import get_localzone
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
@@ -532,7 +533,7 @@ class CtaEngine(BaseEngine):
     ):
         """"""
         symbol, exchange = extract_vt_symbol(vt_symbol)
-        end = datetime.now()
+        end = datetime.now(get_localzone())
         start = end - timedelta(days)
         bars = []
 

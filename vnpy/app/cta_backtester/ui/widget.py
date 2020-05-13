@@ -1,5 +1,6 @@
 import csv
 from datetime import datetime, timedelta
+from tzlocal import get_localzone
 
 import numpy as np
 import pyqtgraph as pg
@@ -415,8 +416,22 @@ class BacktesterManager(QtWidgets.QWidget):
         start_date = self.start_date_edit.date()
         end_date = self.end_date_edit.date()
 
-        start = datetime(start_date.year(), start_date.month(), start_date.day())
-        end = datetime(end_date.year(), end_date.month(), end_date.day(), 23, 59, 59)
+        start = datetime(
+            start_date.year(),
+            start_date.month(),
+            start_date.day(),
+            tzinfo=get_localzone()
+        )
+
+        end = datetime(
+            end_date.year(),
+            end_date.month(),
+            end_date.day(),
+            23,
+            59,
+            59,
+            tzinfo=get_localzone()
+        )
 
         self.backtester_engine.start_downloading(
             vt_symbol,
