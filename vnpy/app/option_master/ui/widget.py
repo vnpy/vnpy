@@ -552,7 +552,7 @@ class OptionManualTrader(QtWidgets.QWidget):
         if tick.vt_symbol != self.vt_symbol:
             return
         self.signal_tick.emit(tick)
-        
+
     def update_tick(self, tick: TickData) -> None:
         """"""
         price_digits = self.price_digits
