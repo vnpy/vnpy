@@ -5,6 +5,7 @@ from datetime import datetime
 from copy import copy
 
 import wmi
+import pytz
 
 from vnpy.api.da import (
     MarketApi,
@@ -85,6 +86,7 @@ OPTIONTYPE_DA2VT = {
     "F": OptionType.PUT
 }
 
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 symbol_name_map = {}
 symbol_currency_map = {}
@@ -220,10 +222,13 @@ class DaMarketApi(MarketApi):
         if not exchange:
             return
 
+        dt = datetime.strptime(data['Time'], "%Y-%m-%d %H:%M:%S")
+        dt = dt.replace(tzinfo=CHINA_TZ)
+
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
-            datetime=datetime.strptime(data['Time'], "%Y-%m-%d %H:%M:%S"),
+            datetime=dt,
             volume=to_int(data["FilledNum"]),
             open_interest=to_int(data["HoldNum"]),
             limit_up=to_float(data["LimitUpPrice"]),
@@ -396,7 +401,9 @@ class DaFutureApi(FutureApi):
             order.status = Status.REJECTED
             self.gateway.write_error("交易委托失败", error)
         else:
-            order.time = data["OrderTime"]
+            timestamp = f"{data['OrderDate']} {data['OrderTime']}"
+            dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+            order.datetime = dt.replace(tzinfo=CHINA_TZ)
 
             self.order_info[order.orderid] = (data["OrderNo"], data["SystemNo"])
 
@@ -455,6 +462,10 @@ class DaFutureApi(FutureApi):
         Callback of order query.
         """
         if data["TreatyCode"]:
+            timestamp = f"{data['OrderDate']} {data['OrderTime']}"
+            dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+            dt = dt.replace(tzinfo=CHINA_TZ)
+
             order = OrderData(
                 symbol=data["TreatyCode"],
                 exchange=EXCHANGE_DA2VT[data["ExchangeCode"]],
@@ -466,7 +477,7 @@ class DaFutureApi(FutureApi):
                 volume=int(data["OrderNumber"]),
                 traded=int(data["FilledNumber"]),
                 status=STATUS_DA2VT[data["OrderState"]],
-                time=data["OrderTime"],
+                datetime=dt,
                 gateway_name=self.gateway_name
             )
 
@@ -491,6 +502,10 @@ class DaFutureApi(FutureApi):
 
     def update_trade(self, data: dict):
         """"""
+        timestamp = f"{data['FilledDate']} {data['FilledTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = dt.replace(tzinfo=CHINA_TZ)
+
         trade = TradeData(
             symbol=data["TreatyCode"],
             exchange=EXCHANGE_DA2VT[data["ExchangeCode"]],
@@ -500,7 +515,7 @@ class DaFutureApi(FutureApi):
             offset=OFFSET_DA2VT[data["AddReduce"]],
             price=float(data["FilledPrice"]),
             volume=int(data["FilledNumber"]),
-            time=data["FilledTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)

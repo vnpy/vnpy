@@ -270,7 +270,7 @@ int MdApi::registerFensServer(string pszFensAddress, string pszAccountID)
 
 string MdApi::getApiErrorMsg(int nErrorCode)
 {
-	string error = this->api->GetApiErrorMsg(nErrorCode);
+	string error = toUtf(this->api->GetApiErrorMsg(nErrorCode));
 	return error;
 };
 

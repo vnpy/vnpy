@@ -34,6 +34,7 @@ class StrategyTemplate(ABC):
         self.inited: bool = False
         self.trading: bool = False
         self.pos: Dict[str, int] = defaultdict(int)
+
         self.orders: Dict[str, OrderData] = {}
         self.active_orderids: Set[str] = set()
 
@@ -42,6 +43,7 @@ class StrategyTemplate(ABC):
         self.variables: Dict = copy(self.variables)
         self.variables.insert(0, "inited")
         self.variables.insert(1, "trading")
+        self.variables.insert(2, "pos")
 
         self.update_setting(setting)
 
@@ -245,3 +247,10 @@ class StrategyTemplate(ABC):
         """
         if self.inited:
             self.strategy_engine.send_email(msg, self)
+
+    def sync_data(self):
+        """
+        Sync strategy variables value into disk storage.
+        """
+        if self.trading:
+            self.strategy_engine.sync_strategy_data(self)

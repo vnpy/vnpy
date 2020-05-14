@@ -54,6 +54,8 @@ class ToraGateway(BaseGateway):
         if not is_valid_front_address(md_address):
             md_address = "tcp://" + md_address
 
+        self._md_api.username = username
+        self._md_api.password = password
         self._md_api.md_address = md_address
         self._md_api.connect()
 

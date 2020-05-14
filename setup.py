@@ -152,6 +152,78 @@ def get_ext_modules():
         language="cpp",
     )
 
+    vnxtpmd = Extension(
+        "vnpy.api.xtp.vnxtpmd",
+        [
+            "vnpy/api/xtp/vnxtp/vnxtpmd/vnxtpmd.cpp",
+        ],
+        include_dirs=["vnpy/api/xtp/include",
+                      "vnpy/api/xtp/vnxtp"],
+        define_macros=[],
+        undef_macros=[],
+        library_dirs=["vnpy/api/xtp/libs", "vnpy/api/xtp"],
+        libraries=["xtptraderapi", "xtpquoteapi"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        depends=[],
+        language="cpp",
+    )
+
+    vnxtptd = Extension(
+        "vnpy.api.xtp.vnxtptd",
+        [
+            "vnpy/api/xtp/vnxtp/vnxtptd/vnxtptd.cpp",
+        ],
+        include_dirs=["vnpy/api/xtp/include",
+                      "vnpy/api/xtp/vnxtp"],
+        define_macros=[],
+        undef_macros=[],
+        library_dirs=["vnpy/api/xtp/libs", "vnpy/api/xtp"],
+        libraries=["xtptraderapi", "xtpquoteapi"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        depends=[],
+        language="cpp",
+    )
+
+    vnksgoldmd = Extension(
+        "vnpy.api.ksgold.vnksgoldmd",
+        [
+            "vnpy/api/ksgold/vnksgold/vnksgoldmd/vnksgoldmd.cpp",
+        ],
+        include_dirs=["vnpy/api/ksgold/include",
+                      "vnpy/api/ksgold/vnksgold"],
+        define_macros=[],
+        undef_macros=[],
+        library_dirs=["vnpy/api/ksgold/libs", "vnpy/api/ksgold"],
+        libraries=["ksgoldquotmarketdataapi", "ksgoldtraderapi"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        depends=[],
+        language="cpp",
+    )
+
+    vnksgoldtd = Extension(
+        "vnpy.api.ksgold.vnksgoldtd",
+        [
+            "vnpy/api/ksgold/vnksgold/vnksgoldtd/vnksgoldtd.cpp",
+        ],
+        include_dirs=["vnpy/api/ksgold/include",
+                      "vnpy/api/ksgold/vnksgold"],
+        define_macros=[],
+        undef_macros=[],
+        library_dirs=["vnpy/api/ksgold/libs", "vnpy/api/ksgold"],
+        libraries=["ksgoldquotmarketdataapi", "ksgoldtraderapi"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        depends=[],
+        language="cpp",
+    )
+
     vnsgitmd = Extension(
         "vnpy.api.sgit.vnsgitmd",
         [
@@ -211,7 +283,13 @@ def get_ext_modules():
     elif platform.system() == "Darwin":
         ext_modules = []
     else:
-        ext_modules = [vnctptd, vnctpmd, vnsgittd, vnsgitmd, vnoes]
+        ext_modules = [
+            vnctptd, vnctpmd,
+            vnxtptd, vnxtpmd,
+            vnsgittd, vnsgitmd,
+            vnksgoldmd, vnksgoldtd,
+            vnoes
+        ]
 
     ext_modules = check_extension_build_flag(
         ext_modules, "VNPY_BUILD_OES", vnoes)
@@ -220,9 +298,17 @@ def get_ext_modules():
     ext_modules = check_extension_build_flag(
         ext_modules, "VNPY_BUILD_CTP", vnctpmd)
     ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_XTP", vnxtptd)
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_XTP", vnxtpmd)
+    ext_modules = check_extension_build_flag(
         ext_modules, "VNPY_BUILD_sgit", vnsgittd)
     ext_modules = check_extension_build_flag(
         ext_modules, "VNPY_BUILD_sgit", vnsgitmd)
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_ksgold", vnksgoldmd)
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_ksgold", vnksgoldtd)
 
     return ext_modules
 

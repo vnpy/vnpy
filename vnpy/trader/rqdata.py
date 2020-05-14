@@ -79,7 +79,7 @@ class RqdataClient:
             else:
                 rq_symbol = f"{symbol}.XSHE"
         # Futures and Options
-        elif exchange in [Exchange.SHFE, Exchange.CFFEX, Exchange.DCE, Exchange.DCE, Exchange.INE]:
+        elif exchange in [Exchange.SHFE, Exchange.CFFEX, Exchange.DCE, Exchange.CZCE, Exchange.INE]:
             for count, word in enumerate(symbol):
                 if word.isdigit():
                     break
@@ -128,6 +128,9 @@ class RqdataClient:
         """
         Query history bar data from RQData.
         """
+        if self.symbols is None:
+            return None
+
         symbol = req.symbol
         exchange = req.exchange
         interval = req.interval

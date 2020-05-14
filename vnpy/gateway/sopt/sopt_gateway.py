@@ -1,6 +1,7 @@
 """
 """
 
+import pytz
 from datetime import datetime
 from time import sleep
 
@@ -111,6 +112,7 @@ OPTIONTYPE_SOPT2VT = {
     THOST_FTDC_CP_PutOptions: OptionType.PUT
 }
 
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 symbol_exchange_map = {}
 symbol_name_map = {}
@@ -282,11 +284,13 @@ class SoptMdApi(MdApi):
         if not exchange:
             return
         timestamp = f"{data['TradingDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f")
+        dt = dt.replace(tzinfo=CHINA_TZ)
 
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
-            datetime=datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f"),
+            datetime=dt,
             name=symbol_name_map[symbol],
             volume=data["Volume"],
             open_interest=data["OpenInterest"],
@@ -626,6 +630,10 @@ class SoptTdApi(TdApi):
         order_ref = data["OrderRef"]
         orderid = f"{frontid}_{sessionid}_{order_ref}"
 
+        timestamp = f"{data['InsertDate']} {data['InsertTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = dt.replace(tzinfo=CHINA_TZ)
+
         order = OrderData(
             symbol=symbol,
             exchange=exchange,
@@ -637,7 +645,7 @@ class SoptTdApi(TdApi):
             volume=data["VolumeTotalOriginal"],
             traded=data["VolumeTraded"],
             status=STATUS_SOPT2VT[data["OrderStatus"]],
-            time=data["InsertTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
         self.gateway.on_order(order)
@@ -656,6 +664,10 @@ class SoptTdApi(TdApi):
 
         orderid = self.sysid_orderid_map[data["OrderSysID"]]
 
+        timestamp = f"{data['TradeDate']} {data['TradeTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = dt.replace(tzinfo=CHINA_TZ)
+
         trade = TradeData(
             symbol=symbol,
             exchange=exchange,
@@ -665,7 +677,7 @@ class SoptTdApi(TdApi):
             offset=OFFSET_SOPT2VT[data["OffsetFlag"]],
             price=data["Price"],
             volume=data["Volume"],
-            time=data["TradeTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)

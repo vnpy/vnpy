@@ -1,5 +1,6 @@
 """"""
 
+import pytz
 from datetime import datetime
 from time import sleep
 
@@ -97,6 +98,9 @@ OPTIONTYPE_FEMAS2VT = {
     USTP_FTDC_OT_CallOptions: OptionType.CALL,
     USTP_FTDC_OT_PutOptions: OptionType.PUT,
 }
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
+
 
 symbol_exchange_map = {}
 symbol_name_map = {}
@@ -273,11 +277,13 @@ class FemasMdApi(MdApi):
             return
 
         timestamp = f"{data['TradingDay']} {data['UpdateTime']}.{int(data['UpdateMillisec'] / 100)}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f")
+        dt = dt.replace(tzinfo=CHINA_TZ)
 
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
-            datetime=datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f"),
+            datetime=dt,
             name=symbol_name_map[symbol],
             volume=data["Volume"],
             last_price=data["LastPrice"],
@@ -567,6 +573,10 @@ class FemasTdApi(TdApi):
         """
         Callback of order status update.
         """
+        timestamp = f"{data['InsertDate']} {data['InsertTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = dt.replace(tzinfo=CHINA_TZ)
+
         order = OrderData(
             symbol=data["InstrumentID"],
             exchange=EXCHANGE_FEMAS2VT[data["ExchangeID"]],
@@ -577,7 +587,7 @@ class FemasTdApi(TdApi):
             volume=data["Volume"],
             traded=data["VolumeTraded"],
             status=STATUS_FEMAS2VT[data["OrderStatus"]],
-            time=data["InsertTime"],
+            datettime=dt,
             gateway_name=self.gateway_name,
         )
 
@@ -594,6 +604,10 @@ class FemasTdApi(TdApi):
             return
         self.tradeids.add(tradeid)
 
+        timestamp = f"{data['TradeDate']} {data['TradeTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = dt.replace(tzinfo=CHINA_TZ)
+
         trade = TradeData(
             symbol=data["InstrumentID"],
             exchange=EXCHANGE_FEMAS2VT[data["ExchangeID"]],
@@ -603,7 +617,7 @@ class FemasTdApi(TdApi):
             offset=OFFSET_FEMAS2VT[data["OffsetFlag"]],
             price=data["TradePrice"],
             volume=data["TradeVolume"],
-            time=data["TradeTime"],
+            datetime=dt,
             gateway_name=self.gateway_name,
         )
 

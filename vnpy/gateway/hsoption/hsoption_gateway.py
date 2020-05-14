@@ -5,6 +5,7 @@ import requests
 from datetime import datetime
 from time import sleep
 import traceback
+import pytz
 
 from vnpy.api.t2sdk import py_t2sdk
 from vnpy.api.sopt import MdApi
@@ -107,6 +108,8 @@ FUNCTION_CANCEL_ORDER = 338012
 
 ISSUE_ORDER = "33012"
 ISSUE_TRADE = "33011"
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 
 class HsoptionGateway(BaseGateway):
@@ -523,7 +526,6 @@ class TdApi:
     def on_query_position(self, data: List[Dict[str, str]]) -> None:
         """"""
         if not data:
-            self.gateway.write_log("持仓信息查询失败")
             return
 
         for d in data:
@@ -543,7 +545,6 @@ class TdApi:
     def on_query_account(self, data: List[Dict[str, str]]) -> None:
         """"""
         if not data:
-            self.gateway.write_log("账号资金信息查询失败")
             return
 
         for d in data:
@@ -564,9 +565,6 @@ class TdApi:
             return
 
         for d in data:
-            t = d["entrust_time"].rjust(6, "0")
-            dt = ":".join([t[: 2], t[2: 4], t[4:]])
-
             batch_no = d["batch_no"]
             self.batch_no = max(self.batch_no, int(batch_no))
             self.batch_entrust_id[batch_no] = d["entrust_no"]
@@ -582,7 +580,7 @@ class TdApi:
                 volume=int(float(d["entrust_amount"])),
                 traded=int(float(d["business_amount"])),
                 price=float(d["opt_entrust_price"]),
-                time=dt,
+                datetime=generate_datetime(d["entrust_time"]),
                 gateway_name=self.gateway_name
 
             )
@@ -603,9 +601,6 @@ class TdApi:
             if price == 0:
                 continue
 
-            t = d["business_time"].rjust(6, "0")
-            dt = ":".join([t[: 2], t[2: 4], t[4:]])
-
             batch_no = self.entrust_batch_id[d["entrust_no"]]
 
             trade = TradeData(
@@ -617,7 +612,7 @@ class TdApi:
                 offset=OFFSET_HSOPTION2VT[d["entrust_oc"]],
                 price=price,
                 volume=int(float(d["business_amount"])),
-                time=dt,
+                datetime=generate_datetime(d["business_time"]),
                 gateway_name=self.gateway_name
             )
             self.gateway.on_trade(trade)
@@ -686,8 +681,7 @@ class TdApi:
                 self.cancel_order(cancel_req)
 
             order = self.orders[batch_no]
-            t = d["entrust_time"].rjust(6, "0")
-            order.time = ":".join([t[:2], t[2:4], t[4:]])
+            order.datetime = generate_datetime(d["entrust_time"]),
             self.gateway.on_order(order)
 
     def on_cancel_order(self, data: List[Dict[str, str]]) -> None:
@@ -715,10 +709,7 @@ class TdApi:
             traded = int(float(d["business_amount"]))
 
             entrust_no = d["entrust_no"]
-
             batch_no = self.entrust_batch_id[entrust_no]
-            t = d["business_time"].rjust(6, "0")
-            dt = ":".join([t[:2], t[2:4], t[4:]])
 
             if traded > 0:
                 trade = TradeData(
@@ -730,7 +721,7 @@ class TdApi:
                     offset=OFFSET_HSOPTION2VT[d["entrust_oc"]],
                     price=float(d["opt_business_price"]),
                     volume=traded,
-                    time=dt,
+                    datetime=generate_datetime(d["business_time"]),
                     gateway_name=self.gateway_name,
                 )
                 self.gateway.on_trade(trade)
@@ -1101,3 +1092,13 @@ def get_option_index(strike_price: float, exchange_instrument_id: str) -> str:
 
 
 td_api = None
+
+
+def generate_datetime(time: str) -> datetime:
+    """"""
+    time = time.rjust(6, "0")
+    today = datetime.now().strftime("%Y%m%d")
+    timestamp = f"{today} {time}"
+    dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+    dt = dt.replace(tzinfo=CHINA_TZ)
+    return dt

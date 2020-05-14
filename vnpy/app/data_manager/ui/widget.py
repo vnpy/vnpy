@@ -1,6 +1,7 @@
 from typing import Tuple, Dict
 from functools import partial
 from datetime import datetime, timedelta
+from tzlocal import get_localzone
 
 from vnpy.trader.ui import QtWidgets, QtCore
 from vnpy.trader.engine import MainEngine, EventEngine
@@ -580,7 +581,7 @@ class DownloadDialog(QtWidgets.QDialog):
         interval = Interval(self.interval_combo.currentData())
 
         start_date = self.start_date_edit.date()
-        start = datetime(start_date.year(), start_date.month(), start_date.day())
+        start = datetime(start_date.year(), start_date.month(), start_date.day(), tzinfo=get_localzone())
 
         count = self.engine.download_bar_data(symbol, exchange, interval, start)
         QtWidgets.QMessageBox.information(self, "下载结束", f"下载总数据量：{count}条")

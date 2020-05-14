@@ -86,6 +86,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.save_window_setting("default")
 
+        tick_widget.itemDoubleClicked.connect(self.trading_widget.update_with_cell)
+        position_widget.itemDoubleClicked.connect(self.trading_widget.update_with_cell)
+
     def init_menu(self) -> None:
         """"""
         bar = self.menuBar()

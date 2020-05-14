@@ -40,7 +40,7 @@ def calculate_price(
         return max(0, cp * (s - k))
 
     if not d1:
-        d1 = calculate_d1(s, k, r, r, v)
+        d1 = calculate_d1(s, k, r, t, v)
     d2 = d1 - v * sqrt(t)
 
     price = cp * (s * cdf(cp * d1) - k * cdf(cp * d2)) * exp(-r * t)
