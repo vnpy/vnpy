@@ -4,7 +4,7 @@ from datetime import datetime
 import numpy as np
 
 from vnpy.app.portfolio_strategy import StrategyTemplate, StrategyEngine
-from vnpy.trader.utility import BarGenerator, extract_vt_symbol
+from vnpy.trader.utility import BarGenerator
 from vnpy.trader.object import TickData, BarData
 
 
