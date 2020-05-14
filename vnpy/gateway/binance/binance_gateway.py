@@ -537,7 +537,6 @@ class BinanceRestApi(RestClient):
         start_time = int(datetime.timestamp(req.start))
 
         while True:
-            print("binance", len(history))
             # Create query params
             params = {
                 "symbol": req.symbol.upper(),
