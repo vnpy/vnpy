@@ -480,13 +480,17 @@ class BinancesRestApi(RestClient):
     def on_query_order(self, data: dict, request: Request) -> None:
         """"""
         for d in data:
+            order_type = ORDERTYPE_BINANCES2VT.get(d["type"], None)
+            if not order_type:
+                continue
+
             order = OrderData(
                 orderid=d["clientOrderId"],
                 symbol=d["symbol"],
                 exchange=Exchange.BINANCE,
                 price=float(d["price"]),
                 volume=float(d["origQty"]),
-                type=ORDERTYPE_BINANCES2VT[d["type"]],
+                type=order_type,
                 direction=DIRECTION_BINANCES2VT[d["side"]],
                 traded=float(d["executedQty"]),
                 status=STATUS_BINANCES2VT.get(d["status"], None),
@@ -709,11 +713,15 @@ class BinancesTradeWebsocketApi(WebsocketClient):
         """"""
         ord_data = packet["o"]
 
+        order_type = ORDERTYPE_BINANCES2VT.get(ord_data["o"], None)
+        if not order_type:
+            return
+
         order = OrderData(
             symbol=ord_data["s"],
             exchange=Exchange.BINANCE,
             orderid=str(ord_data["c"]),
-            type=ORDERTYPE_BINANCES2VT[ord_data["o"]],
+            type=order_type,
             direction=DIRECTION_BINANCES2VT[ord_data["S"]],
             price=float(ord_data["p"]),
             volume=float(ord_data["q"]),
