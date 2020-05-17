@@ -95,7 +95,8 @@ class BacktestingEngine:
         sizes: Dict[str, float],
         priceticks: Dict[str, float],
         capital: int = 0,
-        end: datetime = None
+        end: datetime = None,
+        collection_names: Dict[str, str] = None
     ) -> None:
         """"""
         self.vt_symbols = vt_symbols
@@ -109,6 +110,7 @@ class BacktestingEngine:
         self.start = start
         self.end = end
         self.capital = capital
+        self.collection_names = collection_names
 
     def add_strategy(self, strategy_class: type, setting: dict) -> None:
         """"""
@@ -149,7 +151,8 @@ class BacktestingEngine:
                     vt_symbol,
                     self.interval,
                     start,
-                    end
+                    end,
+                    self.collection_names[vt_symbol]
                 )
 
                 for bar in data:
@@ -810,11 +813,12 @@ def load_bar_data(
     vt_symbol: str,
     interval: Interval,
     start: datetime,
-    end: datetime
+    end: datetime,
+    collection_name: str = None
 ):
     """"""
     symbol, exchange = extract_vt_symbol(vt_symbol)
 
     return database_manager.load_bar_data(
-        symbol, exchange, interval, start, end
+        symbol, exchange, interval, start, end, collection_name
     )
