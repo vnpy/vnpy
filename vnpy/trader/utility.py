@@ -202,6 +202,10 @@ class BarGenerator:
         if not tick.last_price:
             return
 
+        # Filter tick data with older timestamp
+        if self.last_tick and tick.datetime < self.last_tick.datetime:
+            return
+
         if not self.bar:
             new_minute = True
         elif self.bar.datetime.minute != tick.datetime.minute:
