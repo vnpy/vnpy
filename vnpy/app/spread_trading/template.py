@@ -103,9 +103,21 @@ class SpreadAlgoTemplate:
             )
             leg_traded = self.leg_traded[passive_symbol]
 
-            if leg_traded != leg_target:
-                finished = False
-                break
+            # For linear contract, traded volume must be same as target volume
+            if not self.spread.is_inverse(leg.vt_symbol):
+                if leg_traded != leg_target:
+                    finished = False
+                    break
+            # For inverse contract, the difference must be lower than min volume
+            else:
+                leg_min_volume = self.spread.calculate_leg_volume(
+                    passive_symbol, self.spread.min_volume
+                )
+
+                dif = leg_target - leg_traded
+                if abs(dif) < leg_min_volume:
+                    finished = False
+                    break
 
         return finished
 
