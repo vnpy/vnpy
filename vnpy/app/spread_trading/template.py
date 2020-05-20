@@ -58,6 +58,9 @@ class SpreadAlgoTemplate:
 
         self.leg_traded: Dict[str, float] = defaultdict(int)
         self.leg_orders: Dict[str, List[str]] = defaultdict(list)
+        
+        self.order_trade_volume: Dict[str, int] = defaultdict(int)
+        self.orders: Dict[str, OrderData] = {}
 
         self.write_log("算法已启动")
 
@@ -170,6 +173,20 @@ class SpreadAlgoTemplate:
         else:
             self.leg_traded[trade.vt_symbol] -= trade_volume
 
+        self.calculate_traded()
+
+        # Sum up total traded volume of each order,
+        self.order_trade_volume[trade.vt_orderid] += trade.volume
+
+        # Remove order from active list if all volume traded
+        order = self.orders[trade.vt_orderid]
+        trade_volume = self.order_trade_volume[order.vt_orderid]
+
+        if trade_volume == order.volume:
+            vt_orderids = self.leg_orders[order.vt_symbol]
+            if order.vt_orderid in vt_orderids:
+                vt_orderids.remove(order.vt_orderid)
+
         msg = "委托成交，{}，{}，{}@{}".format(
             trade.vt_symbol,
             trade.direction,
@@ -178,14 +195,15 @@ class SpreadAlgoTemplate:
         )
         self.write_log(msg)
 
-        self.calculate_traded()
         self.put_event()
-
         self.on_trade(trade)
 
     def update_order(self, order: OrderData):
         """"""
-        if not order.is_active():
+        self.orders[order.vt_orderid] = order
+
+        # Remove order from active list if rejected or cancelled
+        if order.status in {Status.REJECTED, Status.CANCELLED}:
             vt_orderids = self.leg_orders[order.vt_symbol]
             if order.vt_orderid in vt_orderids:
                 vt_orderids.remove(order.vt_orderid)
