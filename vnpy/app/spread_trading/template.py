@@ -58,7 +58,7 @@ class SpreadAlgoTemplate:
 
         self.leg_traded: Dict[str, float] = defaultdict(int)
         self.leg_orders: Dict[str, List[str]] = defaultdict(list)
-        
+
         self.order_trade_volume: Dict[str, int] = defaultdict(int)
         self.orders: Dict[str, OrderData] = {}
 

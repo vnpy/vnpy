@@ -56,7 +56,7 @@ from vnpy.trader.utility import get_file_path
 
 
 ORDERTYPE_VT2IB = {
-    OrderType.LIMIT: "LMT", 
+    OrderType.LIMIT: "LMT",
     OrderType.MARKET: "MKT",
     OrderType.STOP: "STP"
 }
