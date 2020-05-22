@@ -111,8 +111,6 @@ def init_models(db: Database, driver: Driver):
             db_bar.low_price = bar.low_price
             db_bar.close_price = bar.close_price
 
-            print(bar.datetime, db_bar.datetime)
-
             return db_bar
 
         def to_bar(self):
