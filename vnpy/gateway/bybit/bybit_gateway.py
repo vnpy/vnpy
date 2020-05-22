@@ -798,12 +798,11 @@ class BybitPublicWebsocketApi(WebsocketClient):
             if "last_price_e4" in update:
                 if not update["last_price_e4"]:     # Filter last price with 0 value
                     return
-
                 tick.last_price = int(update["last_price_e4"]) / 10000
 
-            if self.usdt_base:
+            if "volume_24h_e8" in update:
                 tick.volume = int(update["volume_24h_e8"]) / 100000000
-            else:
+            elif "volume_24h" in update:
                 tick.volume = int(update["volume_24h"])
 
             tick.datetime = generate_datetime(update["updated_at"])

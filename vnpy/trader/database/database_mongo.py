@@ -6,7 +6,8 @@ from mongoengine import DateTimeField, Document, FloatField, StringField, connec
 
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.object import BarData, TickData
-from .database import BaseDatabaseManager, Driver
+
+from .database import BaseDatabaseManager, Driver, DB_TZ
 
 
 def init(_: Driver, settings: dict):
@@ -67,11 +68,14 @@ class DbBarData(Document):
         """
         Generate DbBarData object from BarData.
         """
+        dt = bar.datetime.astimezone(DB_TZ)
+        dt = dt.replace(tzinfo=None)
+
         db_bar = DbBarData()
 
         db_bar.symbol = bar.symbol
         db_bar.exchange = bar.exchange.value
-        db_bar.datetime = bar.datetime
+        db_bar.datetime = dt
         db_bar.interval = bar.interval.value
         db_bar.volume = bar.volume
         db_bar.open_interest = bar.open_interest
@@ -89,7 +93,7 @@ class DbBarData(Document):
         bar = BarData(
             symbol=self.symbol,
             exchange=Exchange(self.exchange),
-            datetime=self.datetime,
+            datetime=self.datetime.replace(tzinfo=DB_TZ),
             interval=Interval(self.interval),
             volume=self.volume,
             open_interest=self.open_interest,
@@ -165,11 +169,14 @@ class DbTickData(Document):
         """
         Generate DbTickData object from TickData.
         """
+        dt = tick.datetime.astimezone(DB_TZ)
+        dt = dt.replace(tzinfo=None)
+
         db_tick = DbTickData()
 
         db_tick.symbol = tick.symbol
         db_tick.exchange = tick.exchange.value
-        db_tick.datetime = tick.datetime
+        db_tick.datetime = dt
         db_tick.name = tick.name
         db_tick.volume = tick.volume
         db_tick.open_interest = tick.open_interest
@@ -217,7 +224,7 @@ class DbTickData(Document):
         tick = TickData(
             symbol=self.symbol,
             exchange=Exchange(self.exchange),
-            datetime=self.datetime,
+            datetime=self.datetime.replace(tzinfo=DB_TZ),
             name=self.name,
             volume=self.volume,
             open_interest=self.open_interest,
