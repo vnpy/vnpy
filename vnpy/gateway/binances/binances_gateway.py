@@ -831,13 +831,13 @@ class BinancesDataWebsocketApi(WebsocketClient):
             tick.datetime = datetime.fromtimestamp(float(data['E']) / 1000)
         else:
             bids = data["b"]
-            for n in range(5):
+            for n in range(min(5, len(bids))):
                 price, volume = bids[n]
                 tick.__setattr__("bid_price_" + str(n + 1), float(price))
                 tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
 
             asks = data["a"]
-            for n in range(5):
+            for n in range(min(5, len(asks))):
                 price, volume = asks[n]
                 tick.__setattr__("ask_price_" + str(n + 1), float(price))
                 tick.__setattr__("ask_volume_" + str(n + 1), float(volume))
