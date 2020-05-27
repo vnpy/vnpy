@@ -476,7 +476,6 @@ class BacktestingEngine:
         """"""
         self.datetime = dt
 
-        self.bars.clear()
         for vt_symbol in self.vt_symbols:
             bar = self.history_data.get((dt, vt_symbol), None)
             if bar:
