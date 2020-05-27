@@ -450,7 +450,7 @@ class Mt4Gateway(BaseGateway):
                 exchange=Exchange.OTC,
                 name=d["symbol"],
                 high_price=d["high"],
-                low_price=d["high"],
+                low_price=d["low"],
                 bid_price_1=d["bid"],
                 ask_price_1=d["ask"],
                 datetime=dt,
