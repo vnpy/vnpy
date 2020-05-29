@@ -725,6 +725,6 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
 
 
 def generate_datetime(timestamp: str) -> datetime:
-    dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f")
     dt = dt.replace(tzinfo=CHINA_TZ)
     return dt
