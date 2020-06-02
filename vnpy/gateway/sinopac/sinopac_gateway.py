@@ -2,7 +2,6 @@
 Gateway for Sinopac Seruritites.
 Author: ypochien@gmail.com
 """
-import json
 import os
 import sys
 from collections import OrderedDict
@@ -219,7 +218,7 @@ class SinopacGateway(BaseGateway):
         self.query_funcs.append(func)
 
     def query_contract(self, securities_type=None):
-        self.write_log("商品檔" + securities_type)
+        self.write_log(f"Download 商品檔 {securities_type} 完成")
         if securities_type == constant.SecurityType.Future:
             for category in self.api.Contracts.Futures:
                 for contract in category:
@@ -229,65 +228,84 @@ class SinopacGateway(BaseGateway):
                         name=contract.name + contract.delivery_month,
                         product=Product.FUTURES,
                         size=200,
-                        pricetick=contract.unit,
+                        pricetick=0.01,
+                        stop_supported=False,
                         net_position=True,
                         min_volume=1,
                         gateway_name=self.gateway_name,
                     )
                     self.on_contract(data)
-                    self.code2contract[contract.code] = contract
+                    symbol = f"{contract.code}.{Exchange.TFE.value}"
+                    self.code2contract[symbol] = contract
         if securities_type == constant.SecurityType.Option:
             for category in self.api.Contracts.Options:
                 for contract in category:
                     data = ContractData(
-                        symbol=f"{contract.code} {contract.name}",
+                        symbol=f"{contract.code}",
                         exchange=Exchange.TFE,
-                        name=contract.name + contract.delivery_month,
+                        name=f"{contract.name} {contract.delivery_month} {contract.strike_price}{contract.option_right}",
                         product=Product.OPTION,
                         size=50,
                         net_position=True,
-                        pricetick=contract.unit,
+                        pricetick=0.01,
                         min_volume=1,
                         gateway_name=self.gateway_name,
                         option_strike=contract.strike_price,
                         option_underlying=contract.underlying_code,
                         option_type=OptionType.CALL
-                        if contract.option_right == "C"
+                        if contract.option_right == constant.OptionRight.Call
                         else OptionType.PUT,
                         option_expiry=None,
                     )
                     self.on_contract(data)
-                    self.code2contract[contract.code] = contract
+                    symbol = f"{contract.code}.{Exchange.TFE.value}"
+                    self.code2contract[symbol] = contract
+
         if securities_type == constant.SecurityType.Stock:
             for category in self.api.Contracts.Stocks:
                 for contract in category:
+                    pricetick = 5
+                    if contract.limit_down < 10:
+                        pricetick = 0.01
+                    elif contract.limit_down < 50:
+                        pricetick = 0.05
+                    elif contract.limit_down < 100:
+                        pricetick = 0.1
+                    elif contract.limit_down < 500:
+                        pricetick = 0.5
+                    elif contract.limit_down < 1000:
+                        pricetick = 1
+
                     data = ContractData(
                         symbol=f"{contract.code}",
                         exchange=Exchange.TSE,
-                        name=contract.name,
+                        name=f"{contract.name} (不可當沖)" if contract.day_trade != constant.DayTrade.Yes else contract.name,
                         product=Product.EQUITY,
                         size=1,
                         net_position=False,
-                        pricetick=contract.unit,
+                        pricetick=pricetick,
                         min_volume=1,
                         gateway_name=self.gateway_name,
                     )
                     self.on_contract(data)
-                    self.code2contract[contract.code] = contract
+                    symbol = f"{contract.code}.{Exchange.TSE.value}"
+                    self.code2contract[symbol] = contract
 
-    def tick_snapshot(self, contract):
+    def getContractSnapshot(self, contract):
         snapshot = self.api.quote.snapshots([contract])[0]
         code = snapshot.code
-        tick = self.ticks.get(code, None)
+        exchange = Exchange.TSE if snapshot.exchange == "TSE" else Exchange.TFE
+        symbol = f"{code}.{exchange.value}"
+        tick = self.ticks.get(symbol, None)
         if tick is None:
-            info = self.code2contract[code]
+            self.code2contract[symbol] = contract
             tick = TickData(
                 symbol=code,
-                exchange=Exchange.TSE,
-                name=f"{info['name']}",
+                exchange=exchange,
+                name=f"{contract['name']}",
                 datetime=datetime.fromtimestamp(
-                    snapshot.ts // 1000000000 - 8 * 60 * 60),
-                gateway_name=self.gateway_name,
+                    snapshot.ts / 1000000000 - 8 * 60 * 60),
+                gateway_name=self.gateway_name
             )
         tick.volume = snapshot.total_volume
         tick.last_price = snapshot.close
@@ -302,34 +320,27 @@ class SinopacGateway(BaseGateway):
         tick.bid_volume_1 = snapshot.buy_volume
         tick.ask_price_1 = snapshot.sell_price
         tick.ask_volume_1 = snapshot.sell_volume
-        self.ticks[code] = tick
+        self.ticks[symbol] = tick
         self.on_tick(copy(tick))
-
-    def getContractSnapshot(self, contract):
-        self.tick_snapshot(contract)
 
     def subscribe(self, req: SubscribeRequest):
         """"""
-        if req.symbol in self.subscribed:
+        symbol = f"{req.symbol}.{req.exchange.value}"
+        if symbol in self.subscribed:
             return
 
-        contract = self.code2contract.get(req.symbol, None)
+        contract = self.code2contract.get(symbol, None)
         if contract:
             self.getContractSnapshot(contract)
             self.api.quote.subscribe(contract, quote_type="tick")
             self.api.quote.subscribe(contract, quote_type="bidask")
-            self.write_log(
-                "訂閱 {} {} {}".format(req.exchange.value,
-                                     contract.code, contract.name)
-            )
-            self.subscribed.add(req.symbol)
+            self.write_log(f"訂閱 [{symbol}] {contract.name}")
+            self.subscribed.add(symbol)
         else:
-            self.write_log("無此訂閱商品[{}].".format(str(req)))
+            self.write_log(f"無此訂閱商品[{symbol}]")
 
     def send_order(self, req: OrderRequest):
         """"""
-        self.write_log("***send_order")
-        self.write_log(str(req))
         if req.exchange == Exchange.TFE:
             action = (
                 constant.ACTION_BUY
@@ -367,9 +378,11 @@ class SinopacGateway(BaseGateway):
                 order_type=order_type,
                 first_sell=first_sell,
             )
+        symbol = f"{req.symbol}.{req.exchange.value}"
         trade = self.api.place_order(
-            self.code2contract[req.symbol], order, 0, self.cb_placeorder
+            self.code2contract[symbol], order, 0, self.cb_placeorder
         )
+        # self.write_log(f"trade:[{trade}]")
         orderdata = req.create_order_data(order.seqno, self.gateway_name)
         self.orders[orderdata.orderid] = trade
         self.on_order(orderdata)
@@ -391,7 +404,7 @@ class SinopacGateway(BaseGateway):
                 orderid=trade.order.seqno.ljust(6, "0"),
                 price=float(trade.order.price),
                 volume=float(trade.order.quantity),
-                time=trade.status.order_datetime,
+                datetime=trade.status.order_datetime,
                 gateway_name=self.gateway_name,
             )
             self.on_trade(trade)
@@ -411,7 +424,7 @@ class SinopacGateway(BaseGateway):
                 ),
                 traded=float(trade.status.deal_quantity),
                 status=STATUS_SINOPAC2VT[trade.status.status],
-                time=trade.status.order_datetime,
+                datetime=trade.status.order_datetime,
                 gateway_name=self.gateway_name,
             )
             self.on_order(order)
@@ -501,17 +514,13 @@ class SinopacGateway(BaseGateway):
         code = data.get("Code", None)
         if code is None:
             return
-        tick = self.ticks.get(code, None)
+        symbol = f"{code}.TFE"
+        tick = self.ticks.get(symbol, None)
         if tick is None:
-            contract = self.code2contract[code]
-            tick = TickData(
-                symbol=data["Code"],
-                exchange=Exchange.TFE,
-                name=f"{contract['name']}{contract['delivery_month']}",
-                datetime=datetime.now(),
-                gateway_name=self.gateway_name,
-            )
-            self.ticks[code] = tick
+            contract = self.code2contract[symbol]
+            self.getContractSnapshot(contract)
+            tick = self.ticks.get(symbol, None)
+        # self.write_log(data["BidPrice"])
         tick.bid_price_1 = data["BidPrice"][0]
         tick.bid_price_2 = data["BidPrice"][1]
         tick.bid_price_3 = data["BidPrice"][2]
@@ -538,17 +547,13 @@ class SinopacGateway(BaseGateway):
         code = data.get("Code", None)
         if code is None:
             return
-        tick = self.ticks.get(code, None)
+        symbol = f"{code}.TFE"
+        tick = self.ticks.get(symbol, None)
         if tick is None:
-            contract = self.code2contract.get(code, None)
-            tick = TickData(
-                symbol=code,
-                exchange=Exchange.TFE,
-                name=f"{contract['name']}{contract['delivery_month']}",
-                datetime=datetime.now(),
-                gateway_name=self.gateway_name,
-            )
-            self.ticks[code] = tick
+            contract = self.code2contract.get(symbol, None)
+            self.getContractSnapshot(contract)
+            tick = self.ticks.get(symbol, None)
+
         tick.datetime = datetime.strptime(
             "{} {}".format(data["Date"], data["Time"]), "%Y/%m/%d %H:%M:%S.%f"
         )
@@ -574,28 +579,19 @@ class SinopacGateway(BaseGateway):
         {'Close': [248.0], 'Time': '09:53:00.706928',
             'VolSum': [7023], 'Volume': [1]}
         """
-
-        tick = self.ticks.get(code, None)
+        symbol = f"{code}.TSE"
+        tick = self.ticks.get(symbol, None)
         if tick is None:
-            contract = self.code2contract[code]
-            tick = TickData(
-                symbol=code,
-                exchange=Exchange.TSE,
-                name=f"{contract['name']}{contract['delivery_month']}",
-                datetime=datetime.now(),
-                gateway_name=self.gateway_name,
-                low_price=99999,
-            )
-            self.ticks[code] = tick
+            contract = self.code2contract[symbol]
+            self.getContractSnapshot(contract)
+            tick = self.ticks.get(symbol, None)
+
         tick.datetime = datetime.combine(
             datetime.today(),
             datetime.strptime("{}".format(data["Time"]), "%H:%M:%S.%f").time(),
         )
         tick.volume = int(data["VolSum"][0])
         tick.last_price = data["Close"][0]
-        tick.limit_up = 0
-        tick.open_interest = 0
-        tick.limit_down = 0
         tick.open_price = data["Close"][0] if tick.open_price == 0 else tick.open_price
         tick.high_price = (
             data["Close"][0] if data["Close"][0] > tick.high_price else tick.high_price
@@ -603,21 +599,16 @@ class SinopacGateway(BaseGateway):
         tick.low_price = (
             data["Close"][0] if data["Close"][0] < tick.low_price else tick.low_price
         )
-        tick.pre_close = tick.open_price
         return tick
 
     def qute_stock_QUT(self, code, data):
-        tick = self.ticks.get(code, None)
+        symbol = f"{code}.TSE"
+        tick = self.ticks.get(symbol, None)
         if tick is None:
-            contract = self.code2contract[code]
-            tick = TickData(
-                symbol=code,
-                exchange=Exchange.TSE,
-                name=f"{contract['name']}{contract['delivery_month']}",
-                datetime=datetime.now(),
-                gateway_name=self.gateway_name,
-            )
-            self.ticks[code] = tick
+            contract = self.code2contract[symbol]
+            self.getContractSnapshot(contract)
+            tick = self.ticks.get(symbol, None)
+
         tick.bid_price_1 = data["BidPrice"][0]
         tick.bid_price_2 = data["BidPrice"][1]
         tick.bid_price_3 = data["BidPrice"][2]
