@@ -11,7 +11,6 @@ from datetime import datetime
 from threading import Thread
 from time import sleep
 
-import requests
 import shioaji as sj
 from shioaji import constant
 from shioaji.account import StockAccount, FutureAccount
@@ -286,7 +285,8 @@ class SinopacGateway(BaseGateway):
                 symbol=code,
                 exchange=Exchange.TSE,
                 name=f"{info['name']}",
-                datetime=snapshot.ts,
+                datetime=datetime.fromtimestamp(
+                    snapshot.ts // 1000000000 - 8 * 60 * 60),
                 gateway_name=self.gateway_name,
             )
         tick.volume = snapshot.total_volume
@@ -337,7 +337,7 @@ class SinopacGateway(BaseGateway):
                 else constant.ACTION_SELL
             )
             price_type = constant.FUTURES_PRICE_TYPE_LMT
-            order_type = constant.FUTURES_ORDER_TYPE_ROD
+            order_type = constant.ORDER_TYPE_ROD
             order = self.api.Order(
                 req.price,
                 req.volume,
