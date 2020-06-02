@@ -118,6 +118,8 @@ class Exchange(Enum):
     KRX = "KRX"             # Korean Exchange
 
     OANDA = "OANDA"         # oanda.com
+    TSE = "TSE"             # Taiwan Stock Exchange
+    TFE = "TFE"             # Taiwan Futures Exchange
 
     # CryptoCurrency
     BITMEX = "BITMEX"
