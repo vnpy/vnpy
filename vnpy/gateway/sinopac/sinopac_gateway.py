@@ -101,7 +101,7 @@ class SinopacGateway(BaseGateway):
                     continue
                 self.trades.add(tradeid)
                 trade = TradeData(
-                    symbol=f"{item.contract.code} {item.contract.name}",
+                    symbol=item.contract.code,
                     exchange=EXCHANGE_SINOPAC2VT.get(
                         item.contract.exchange, Exchange.TSE
                     ),
@@ -121,7 +121,7 @@ class SinopacGateway(BaseGateway):
                 unVol = float(
                     item.order.quantity - (item.status.deal_quantity + item.status.cancel_quantity))
                 order = OrderData(
-                    symbol=f"{item.contract.code} {item.contract.name}",
+                    symbol=item.contract.code,
                     exchange=EXCHANGE_SINOPAC2VT.get(
                         item.contract.exchange, Exchange.TSE
                     ),
@@ -223,7 +223,7 @@ class SinopacGateway(BaseGateway):
             for category in self.api.Contracts.Futures:
                 for contract in category:
                     data = ContractData(
-                        symbol=f"{contract.code}",
+                        symbol=contract.code,
                         exchange=Exchange.TFE,
                         name=contract.name + contract.delivery_month,
                         product=Product.FUTURES,
@@ -241,7 +241,7 @@ class SinopacGateway(BaseGateway):
             for category in self.api.Contracts.Options:
                 for contract in category:
                     data = ContractData(
-                        symbol=f"{contract.code}",
+                        symbol=contract.code,
                         exchange=Exchange.TFE,
                         name=f"{contract.name} {contract.delivery_month} {contract.strike_price}{contract.option_right}",
                         product=Product.OPTION,
@@ -277,7 +277,7 @@ class SinopacGateway(BaseGateway):
                         pricetick = 1
 
                     data = ContractData(
-                        symbol=f"{contract.code}",
+                        symbol=contract.code,
                         exchange=Exchange.TSE,
                         name=f"{contract.name} (不可當沖)" if contract.day_trade != constant.DayTrade.Yes else contract.name,
                         product=Product.EQUITY,
@@ -294,15 +294,20 @@ class SinopacGateway(BaseGateway):
     def getContractSnapshot(self, contract):
         snapshot = self.api.quote.snapshots([contract])[0]
         code = snapshot.code
-        exchange = Exchange.TSE if snapshot.exchange == "TSE" else Exchange.TFE
+        exchange = Exchange.TSE if snapshot.exchange in [
+            "TSE", "OTC"] else Exchange.TFE
         symbol = f"{code}.{exchange.value}"
         tick = self.ticks.get(symbol, None)
         if tick is None:
             self.code2contract[symbol] = contract
+            if exchange == Exchange.TFE:
+                name = f"{contract['name']}{contract['delivery_month']}"
+            else:
+                name = f"{contract['name']}"
             tick = TickData(
                 symbol=code,
                 exchange=exchange,
-                name=f"{contract['name']}",
+                name=name,
                 datetime=datetime.fromtimestamp(
                     snapshot.ts / 1000000000 - 8 * 60 * 60),
                 gateway_name=self.gateway_name
@@ -334,7 +339,10 @@ class SinopacGateway(BaseGateway):
             self.getContractSnapshot(contract)
             self.api.quote.subscribe(contract, quote_type="tick")
             self.api.quote.subscribe(contract, quote_type="bidask")
-            self.write_log(f"訂閱 [{symbol}] {contract.name}")
+            msg = f"訂閱 [{symbol}] {contract.name}"
+            if req.exchange == Exchange.TFE:
+                msg = f"訂閱 [{symbol}] {contract.name}{contract.delivery_month}"
+            self.write_log(msg)
             self.subscribed.add(symbol)
         else:
             self.write_log(f"無此訂閱商品[{symbol}]")
@@ -394,7 +402,7 @@ class SinopacGateway(BaseGateway):
         if trade.status.status in [SinopacStatus.Filled]:  # 成交
             tradeid = trade.status.id
             trade = TradeData(
-                symbol=f"{trade.contract.code} {trade.contract.name}",
+                symbol=trade.contract.code,
                 exchange=EXCHANGE_SINOPAC2VT.get(
                     trade.contract.exchange, Exchange.TSE),
                 direction=Direction.LONG
@@ -410,7 +418,7 @@ class SinopacGateway(BaseGateway):
             self.on_trade(trade)
         else:
             order = OrderData(
-                symbol=f"{trade.contract.code} {trade.contract.name}",
+                symbol=trade.contract.code,
                 exchange=EXCHANGE_SINOPAC2VT.get(
                     trade.contract.exchange, Exchange.TSE),
                 orderid=trade.order.seqno,
@@ -449,7 +457,7 @@ class SinopacGateway(BaseGateway):
             total_qty = float(item["real_qty"]) / 1000
             yd_qty = float(item["qty"]) / 1000
             pos = PositionData(
-                symbol=f"{item['stock']} {item['stocknm']}",
+                symbol=item['stock'],
                 exchange=EXCHANGE_SINOPAC2VT.get("TSE", Exchange.TSE),
                 direction=Direction.LONG if volume >= 0 else Direction.SHORT,
                 volume=volume,
