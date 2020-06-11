@@ -1,5 +1,5 @@
 """
-Gateway for Sinopac Seruritites.
+Gateway for Sinopac securities.
 Author: ypochien@gmail.com
 """
 import os
@@ -92,9 +92,9 @@ class SinopacGateway(BaseGateway):
 
     def proc_trade(self, trades):
         self.write_log("cb_update_status")
-        # trades = self.api.list_trades()
+        trades = self.api.list_trades()
         for item in trades:
-            self.orders[item.order.seqno] = item
+            self.orders[str(id(item))] = item
             if item.status.status in [SinopacStatus.Filled]:  # 成交
                 tradeid = item.status.id
                 if tradeid in self.trades:
@@ -109,7 +109,7 @@ class SinopacGateway(BaseGateway):
                     if item.order.action == "Buy"
                     else Direction.SHORT,
                     tradeid=tradeid,
-                    orderid=item.order.seqno.rjust(6, "0"),
+                    orderid=str(id(item)),
                     price=float(item.order.price),
                     volume=float(item.order.quantity),
                     datetime=item.status.order_datetime,
@@ -117,7 +117,6 @@ class SinopacGateway(BaseGateway):
                 )
                 self.on_trade(trade)
             else:
-                self.write_log(str(item))
                 unVol = float(
                     item.order.quantity - (item.status.deal_quantity + item.status.cancel_quantity))
                 order = OrderData(
@@ -125,7 +124,7 @@ class SinopacGateway(BaseGateway):
                     exchange=EXCHANGE_SINOPAC2VT.get(
                         item.contract.exchange, Exchange.TSE
                     ),
-                    orderid=item.order.seqno.rjust(6, "0"),
+                    orderid=str(id(item)),
                     direction=Direction.LONG
                     if item.order.action == "Buy"
                     else Direction.SHORT,
@@ -145,7 +144,7 @@ class SinopacGateway(BaseGateway):
         """
         Query all data necessary.
         """
-        sleep(2.0)  # Wait 2 seconds till connection completed.
+        sleep(2.0)  # Wait 2 seconds utill connection completed.
 
         self.query_position()
         self.query_trade()
@@ -171,9 +170,21 @@ class SinopacGateway(BaseGateway):
             self.api.activate_ca(
                 setting["憑證檔案路徑"], setting["憑證密碼"], setting["身份證字號"])
             self.write_log(f"{setting['身份證字號']} 憑證 已啟用.")
-        self.api.quote.set_callback(self.quote_callback)
+        self.api.quote.set_callback(self.cb_quote)
+        self.api.set_order_callback(self.cb_pushorder)
         self.write_log("交易行情 - 連線成功")
         self.thread.start()
+
+    def cb_pushorder(self, stat, msg):
+        self.write_log(f"{stat},{msg}")
+        if stat == constant.OrderState.FOrder:
+            pass
+        elif stat == constant.OrderState.FDeal:
+            pass
+        elif stat == constant.OrderState.TFTOrder:
+            pass
+        elif stat == constant.OrderState.TFTDeal:
+            pass
 
     def select_default_account(self, select_stock_number, select_futures_number):
         stock_account_count = 0
@@ -355,11 +366,11 @@ class SinopacGateway(BaseGateway):
                 if req.direction == Direction.LONG
                 else constant.ACTION_SELL
             )
-            price_type = constant.FUTURES_PRICE_TYPE_LMT
-            order_type = constant.ORDER_TYPE_ROD
+            price_type = constant.FuturesPriceType.LMT
+            order_type = constant.FuturesOrderType.ROD
             order = self.api.Order(
-                req.price,
-                req.volume,
+                price=req.price,
+                quantity=int(req.volume),
                 action=action,
                 price_type=price_type,
                 order_type=order_type,
@@ -384,21 +395,19 @@ class SinopacGateway(BaseGateway):
                 action=action,
                 price_type=price_type,
                 order_type=order_type,
-                first_sell=first_sell,
+                first_sell=first_sell
             )
         symbol = f"{req.symbol}.{req.exchange.value}"
         trade = self.api.place_order(
             self.code2contract[symbol], order, 0, self.cb_placeorder
         )
-        # self.write_log(f"trade:[{trade}]")
-        orderdata = req.create_order_data(order.seqno, self.gateway_name)
+        orderdata = req.create_order_data(str(id(trade)), self.gateway_name)
         self.orders[orderdata.orderid] = trade
         self.on_order(orderdata)
         return orderdata.vt_orderid
 
     def cb_placeorder(self, trade: sj.order.Trade):
-        self.write_log("order_callback.")
-        self.orders[trade.order.seqno] = trade
+        self.orders[id(trade)] = trade
         if trade.status.status in [SinopacStatus.Filled]:  # 成交
             tradeid = trade.status.id
             trade = TradeData(
@@ -409,11 +418,11 @@ class SinopacGateway(BaseGateway):
                 if trade.order.action == "Buy"
                 else Direction.SHORT,
                 tradeid=tradeid,
-                orderid=trade.order.seqno.ljust(6, "0"),
+                orderid=str(id(trade)),
                 price=float(trade.order.price),
                 volume=float(trade.order.quantity),
                 datetime=trade.status.order_datetime,
-                gateway_name=self.gateway_name,
+                gateway_name=self.gateway_name
             )
             self.on_trade(trade)
         else:
@@ -421,7 +430,7 @@ class SinopacGateway(BaseGateway):
                 symbol=trade.contract.code,
                 exchange=EXCHANGE_SINOPAC2VT.get(
                     trade.contract.exchange, Exchange.TSE),
-                orderid=trade.order.seqno,
+                orderid=str(id(trade)),
                 direction=Direction.LONG
                 if trade.order.action == "Buy"
                 else Direction.SHORT,
@@ -433,7 +442,7 @@ class SinopacGateway(BaseGateway):
                 traded=float(trade.status.deal_quantity),
                 status=STATUS_SINOPAC2VT[trade.status.status],
                 datetime=trade.status.order_datetime,
-                gateway_name=self.gateway_name,
+                gateway_name=self.gateway_name
             )
             self.on_order(order)
 
@@ -471,8 +480,9 @@ class SinopacGateway(BaseGateway):
 
     def close(self):
         """"""
+        self.api.logout()
 
-    def quote_callback(self, topic, data):
+    def cb_quote(self, topic, data):
         """
         # L/TFE/TXFF9
         {'Amount': [21088.0], 'AmountSum': [1028165646.0], 'AvgPrice': [10562.513699263414],
@@ -513,43 +523,12 @@ class SinopacGateway(BaseGateway):
             exc_type, _, exc_tb = sys.exc_info()
             filename = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             self.write_log(
-                "[{}][{}][{}][{}]".format(
+                "except: [{}][{}][{}][{}]".format(
                     exc_type, filename, exc_tb.tb_lineno, str(e))
             )
             self.write_log(data)
 
-    def quote_futures_Q(self, data):
-        code = data.get("Code", None)
-        if code is None:
-            return
-        symbol = f"{code}.TFE"
-        tick = self.ticks.get(symbol, None)
-        if tick is None:
-            contract = self.code2contract[symbol]
-            self.getContractSnapshot(contract)
-            tick = self.ticks.get(symbol, None)
-        # self.write_log(data["BidPrice"])
-        tick.bid_price_1 = data["BidPrice"][0]
-        tick.bid_price_2 = data["BidPrice"][1]
-        tick.bid_price_3 = data["BidPrice"][2]
-        tick.bid_price_4 = data["BidPrice"][3]
-        tick.bid_price_5 = data["BidPrice"][4]
-        tick.ask_price_1 = data["AskPrice"][0]
-        tick.ask_price_2 = data["AskPrice"][1]
-        tick.ask_price_3 = data["AskPrice"][2]
-        tick.ask_price_4 = data["AskPrice"][3]
-        tick.ask_price_5 = data["AskPrice"][4]
-        tick.bid_volume_1 = data["BidVolume"][0]
-        tick.bid_volume_2 = data["BidVolume"][1]
-        tick.bid_volume_3 = data["BidVolume"][2]
-        tick.bid_volume_4 = data["BidVolume"][3]
-        tick.bid_volume_5 = data["BidVolume"][4]
-        tick.ask_volume_1 = data["AskVolume"][0]
-        tick.ask_volume_2 = data["AskVolume"][1]
-        tick.ask_volume_3 = data["AskVolume"][2]
-        tick.ask_volume_4 = data["AskVolume"][3]
-        tick.ask_volume_5 = data["AskVolume"][4]
-        return tick
+
 
     def qutote_futures_L(self, data):
         code = data.get("Code", None)
@@ -609,32 +588,38 @@ class SinopacGateway(BaseGateway):
         )
         return tick
 
+    def quote_futures_Q(self, data):
+        code = data.get("Code", None)
+        if code is None:
+            return
+        symbol = f"{code}.TFE"
+        return self.update_orderbook_tick(data, symbol)
+
     def qute_stock_QUT(self, code, data):
         symbol = f"{code}.TSE"
+        return self.update_orderbook_tick(data, symbol)
+
+    def update_orderbook_tick(self, data, symbol):
         tick = self.ticks.get(symbol, None)
         if tick is None:
             contract = self.code2contract[symbol]
             self.getContractSnapshot(contract)
             tick = self.ticks.get(symbol, None)
-
         tick.bid_price_1 = data["BidPrice"][0]
         tick.bid_price_2 = data["BidPrice"][1]
         tick.bid_price_3 = data["BidPrice"][2]
         tick.bid_price_4 = data["BidPrice"][3]
         tick.bid_price_5 = data["BidPrice"][4]
-
         tick.ask_price_1 = data["AskPrice"][0]
         tick.ask_price_2 = data["AskPrice"][1]
         tick.ask_price_3 = data["AskPrice"][2]
         tick.ask_price_4 = data["AskPrice"][3]
         tick.ask_price_5 = data["AskPrice"][4]
-
         tick.bid_volume_1 = data["BidVolume"][0]
         tick.bid_volume_2 = data["BidVolume"][1]
         tick.bid_volume_3 = data["BidVolume"][2]
         tick.bid_volume_4 = data["BidVolume"][3]
         tick.bid_volume_5 = data["BidVolume"][4]
-
         tick.ask_volume_1 = data["AskVolume"][0]
         tick.ask_volume_2 = data["AskVolume"][1]
         tick.ask_volume_3 = data["AskVolume"][2]
