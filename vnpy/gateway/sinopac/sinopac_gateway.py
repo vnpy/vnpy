@@ -87,9 +87,10 @@ class SinopacGateway(BaseGateway):
 
         self.thread = Thread(target=self.query_data)
         self.query_funcs = [self.query_position, self.query_trade]
+        self.api = None
 
     def proc_trade(self, trades):
-        self.write_log("cb_update_status")
+        # self.write_log("cb_update_status")
         trades = self.api.list_trades()
         for item in trades:
             self.orders[str(id(item))] = item
@@ -154,7 +155,9 @@ class SinopacGateway(BaseGateway):
 
     def connect(self, setting: dict):
         simulation = True if setting["環境"] == "模擬" else False
-        self.write_log("使用 {setting['環境']} 平台")
+        self.write_log(f"使用永豐金證券 {setting['環境']} 平台")
+        if self.api:
+            self.api.logout()
         self.api = sj.Shioaji(simulation=simulation)
         userid = setting["身份證字號"]
         password = setting["密碼"]
@@ -479,7 +482,8 @@ class SinopacGateway(BaseGateway):
 
     def close(self):
         """"""
-        self.api.logout()
+        if self.api:
+            self.api.logout()
 
     def cb_quote(self, topic, data):
         """
