@@ -2,10 +2,16 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
 from typing import Optional, Sequence, List, Dict, TYPE_CHECKING
+from pytz import timezone
+
+from vnpy.trader.setting import SETTINGS
 
 if TYPE_CHECKING:
     from vnpy.trader.constant import Interval, Exchange  # noqa
     from vnpy.trader.object import BarData, TickData  # noqa
+
+
+DB_TZ = timezone(SETTINGS["database.timezone"])
 
 
 class Driver(Enum):

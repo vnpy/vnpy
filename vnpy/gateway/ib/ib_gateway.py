@@ -56,7 +56,7 @@ from vnpy.trader.utility import get_file_path
 
 
 ORDERTYPE_VT2IB = {
-    OrderType.LIMIT: "LMT", 
+    OrderType.LIMIT: "LMT",
     OrderType.MARKET: "MKT",
     OrderType.STOP: "STP"
 }
@@ -78,7 +78,8 @@ EXCHANGE_VT2IB = {
     Exchange.HKFE: "HKFE",
     Exchange.CFE: "CFE",
     Exchange.NYSE: "NYSE",
-    Exchange.NASDAQ: "NASDAQ"
+    Exchange.NASDAQ: "NASDAQ",
+    Exchange.ARCA: "ARCA"
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}
 

@@ -227,6 +227,8 @@ class CtpGateway(BaseGateway):
         func()
         self.query_functions.append(func)
 
+        self.md_api.update_date()
+
     def init_query(self):
         """"""
         self.count = 0
@@ -253,6 +255,8 @@ class CtpMdApi(MdApi):
         self.userid = ""
         self.password = ""
         self.brokerid = ""
+
+        self.current_date = datetime.now().strftime("%Y%m%d")
 
     def onFrontConnected(self):
         """
@@ -303,7 +307,7 @@ class CtpMdApi(MdApi):
         if not exchange:
             return
 
-        timestamp = f"{data['ActionDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
+        timestamp = f"{self.current_date} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
         dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f")
         dt = dt.replace(tzinfo=CHINA_TZ)
 
@@ -399,6 +403,10 @@ class CtpMdApi(MdApi):
         """
         if self.connect_status:
             self.exit()
+
+    def update_date(self):
+        """"""
+        self.current_date = datetime.now().strftime("%Y%m%d")
 
 
 class CtpTdApi(TdApi):
