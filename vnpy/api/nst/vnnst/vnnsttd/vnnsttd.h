@@ -241,4 +241,9 @@ public:
 
 	int reqQryTest();
 
+	uint64_t getToken();
+
+	int getReqPort();
+
+
 };
