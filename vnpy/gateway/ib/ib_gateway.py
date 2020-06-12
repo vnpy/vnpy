@@ -238,6 +238,7 @@ class IbApi(EWrapper):
         self.contracts = {}
 
         self.tick_exchange = {}
+        self.subscribed = set()
 
         self.history_req = None
         self.history_condition = Condition()
@@ -650,6 +651,11 @@ class IbApi(EWrapper):
         if req.exchange not in EXCHANGE_VT2IB:
             self.gateway.write_log(f"不支持的交易所{req.exchange}")
             return
+
+        # Filter duplicate subscribe
+        if req.vt_symbol in self.subscrbied:
+            return
+        self.subscrbied.add(req.vt_symbol)
 
         # Extract ib contract detail
         ib_contract = generate_ib_contract(req.symbol, req.exchange)
