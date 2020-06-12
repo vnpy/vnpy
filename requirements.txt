@@ -23,4 +23,5 @@ deap
 pyzmq
 wmi
 QScintilla
+pyplot
 shioaji

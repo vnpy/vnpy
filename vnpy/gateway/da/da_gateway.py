@@ -72,7 +72,12 @@ OFFSET_DA2VT = {v: k for k, v in OFFSET_VT2DA.items()}
 
 EXCHANGE_DA2VT = {
     "APEX": Exchange.APEX,
-    "CME": Exchange.CME
+    "CME": Exchange.CME,
+    "SGXQ": Exchange.SGX,
+    "CFFEX": Exchange.CFFEX,
+    "SHFE": Exchange.SHFE,
+    "DCE": Exchange.DCE,
+    "CZCE": Exchange.CZCE
 }
 EXCHANGE_VT2DA = {v: k for k, v in EXCHANGE_DA2VT.items()}
 
@@ -377,6 +382,9 @@ class DaFutureApi(FutureApi):
             for exchange in EXCHANGE_DA2VT.values():
                 self.query_contract(exchange)
 
+            # self.reqid += 1
+            # self.reqQryExchange({}, self.reqid)
+
             # 查询账户信息
             self.query_account()
             self.query_position()
@@ -455,7 +463,7 @@ class DaFutureApi(FutureApi):
             self.gateway.on_contract(contract)
 
         if last:
-            self.gateway.write_log("合约信息查询成功")
+            self.gateway.write_log(f"{data['ExchangeNo']}合约信息查询成功")
 
     def onRspQryOrder(self, data: dict, error: dict, reqid: int, last: bool):
         """
