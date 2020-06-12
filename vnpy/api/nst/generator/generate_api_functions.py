@@ -23,6 +23,7 @@ class ApiGenerator:
         """加载Struct"""
         module_name = f"{self.prefix}_struct"
         print(module_name)
+
         module = importlib.import_module(module_name)
 
         for name in dir(module):
@@ -37,22 +38,20 @@ class ApiGenerator:
             self.process_line(line)
 
         self.f_cpp.close()
-        print(self.callbacks, "\n")
-        print(self.functions, "\n\n")
 
-        # self.generate_header_define()
-        # self.generate_header_process()
-        # self.generate_header_on()
-        # self.generate_header_function()
+        self.generate_header_define()
+        self.generate_header_process()
+        self.generate_header_on()
+        self.generate_header_function()
 
-        # self.generate_source_task()
-        # self.generate_source_switch()
-        # self.generate_source_process()
-        # self.generate_source_function()
-        # self.generate_source_on()
-        # self.generate_source_module()
+        self.generate_source_task()
+        self.generate_source_switch()
+        self.generate_source_process()
+        self.generate_source_function()
+        self.generate_source_on()
+        self.generate_source_module()
 
-        print("API生成成功")
+        print(f"{self.prefix} API生成成功")
 
     def process_line(self, line: str):
         """处理每行"""
@@ -78,6 +77,9 @@ class ApiGenerator:
         """处理主动函数"""
         name = line[line.index("Req"):line.index("(")]
 
+        if name == "ReqOrderInsert":
+            return
+
         d = self.generate_arg_dict(line)
         self.functions[name] = d
 
@@ -92,7 +94,10 @@ class ApiGenerator:
         for arg in args:
             words = arg.split(" ")
             words = [word for word in words if word]
-            d[words[1].replace("*", "")] = words[0]
+            if "=" in words:
+                d[words[1]] = words[0]
+
+            d[words[-1].replace("*", "")] = words[-2].replace("*", "")
         return d
 
     def generate_header_define(self):
@@ -119,21 +124,26 @@ class ApiGenerator:
             for name, d in self.callbacks.items():
                 name = name.replace("On", "on")
 
-                args_list = []
-                for type_ in d.values():
-                    if type_ == "int":
-                        args_list.append("int reqid")
-                    elif type_ == "bool":
-                        args_list.append("bool last")
-                    elif type_ == "char*":
-                        args_list.append("string data")
-                    elif type_ == "CThostFtdcRspInfoField":
-                        args_list.append("const dict &error")
-                    else:
-                        args_list.append("const dict &data")
+                if len(d.values()) > 0:
+                    args_list = []
+                    for type_ in d.values():
 
-                args_str = ", ".join(args_list)
-                line = f"virtual void {name}({args_str}) {{}};\n\n"
+                        if type_ == "bool":
+                            args_list.append("bool last")
+                        elif type_ == "char":
+                            args_list.append("string data")
+                        elif (
+                            type_ == "CUftRspErrorField"
+                            or type_ == "CUftRspInfoField"
+                        ):
+                            args_list.append("const dict &error")
+                        else:
+                            args_list.append("const dict &data")
+
+                    args_str = ", ".join(args_list)
+                    line = f"virtual void {name}({args_str}) {{}};\n\n"
+                else:
+                    line = f"virtual void {name}() {{}};\n\n"
 
                 f.write(line)
 
@@ -160,11 +170,10 @@ class ApiGenerator:
                 f.write(f"\ttask.task_name = {name.upper()};\n")
 
                 for field, type_ in d.items():
-                    if type_ == "int":
-                        f.write(f"\ttask.task_id = {field};\n")
-                    elif type_ == "bool":
+
+                    if type_ == "bool":
                         f.write(f"\ttask.task_last = {field};\n")
-                    elif type_ == "CThostFtdcRspInfoField":
+                    elif type_ == "CUftRspErrorField" or type_ == "CUftRspInfoField":
                         f.write(f"\tif ({field})\n")
                         f.write("\t{\n")
                         f.write(f"\t\t{type_} *task_error = new {type_}();\n")
@@ -205,59 +214,66 @@ class ApiGenerator:
                 f.write(
                     f"void {self.class_name}::{process_name}(Task *task)\n")
                 f.write("{\n")
-                f.write("\tgil_scoped_acquire acquire;\n")
+                if len(d.keys()) < 1:
+                    f.write(f"\tthis->{on_name}();\n")
+                    f.write("};\n\n")
+                else:
+                    f.write("\tgil_scoped_acquire acquire;\n")
+                    args = []
+                    for field, type_ in d.items():
+                        if type_ == "int":
+                            args.append("task->task_id")
+                        elif type_ == "bool":
+                            args.append("task->task_last")
+                        elif type_ == "CUftRspErrorField" or type_ == "CUftRspInfoField":
+                            args.append("error")
 
-                args = []
+                            f.write("\tdict error;\n")
+                            f.write("\tif (task->task_error)\n")
+                            f.write("\t{\n")
+                            f.write(
+                                f"\t\t{type_} *task_error = ({type_}*)task->task_error;\n")
 
-                for field, type_ in d.items():
-                    if type_ == "int":
-                        args.append("task->task_id")
-                    elif type_ == "bool":
-                        args.append("task->task_last")
-                    elif type_ == "CThostFtdcRspInfoField":
-                        args.append("error")
+                            struct_fields = self.structs[type_]
+                            for struct_field, struct_type in struct_fields.items():
 
-                        f.write("\tdict error;\n")
-                        f.write("\tif (task->task_error)\n")
-                        f.write("\t{\n")
-                        f.write(
-                            f"\t\t{type_} *task_error = ({type_}*)task->task_error;\n")
 
-                        struct_fields = self.structs[type_]
-                        for struct_field, struct_type in struct_fields.items():
-                            if struct_type == "string":
-                                f.write(
-                                    f"\t\terror[\"{struct_field}\"] = toUtf(task_error->{struct_field});\n")
-                            else:
-                                f.write(
-                                    f"\t\terror[\"{struct_field}\"] = task_error->{struct_field};\n")
+                                if struct_type == "string":
+                                    f.write(
+                                        f"\t\terror[\"{struct_field}\"] = toUtf(task_error->{struct_field});\n")
+                                else:
+                                    f.write(
+                                        f"\t\terror[\"{struct_field}\"] = task_error->{struct_field};\n")
 
-                        f.write("\t\tdelete task_error;\n")
-                        f.write("\t}\n")
-                    else:
-                        args.append("data")
+                            f.write("\t\tdelete task_error;\n")
+                            f.write("\t}\n")
+                        elif type_ == "char":
+                            args.append("task->task_data")
+                        else:
+                            args.append("data")
 
-                        f.write("\tdict data;\n")
-                        f.write("\tif (task->task_data)\n")
-                        f.write("\t{\n")
-                        f.write(
-                            f"\t\t{type_} *task_data = ({type_}*)task->task_data;\n")
+                            f.write("\tdict data;\n")
+                            f.write("\tif (task->task_data)\n")
+                            f.write("\t{\n")
+                            f.write(
+                                f"\t\t{type_} *task_data = ({type_}*)task->task_data;\n")
 
-                        struct_fields = self.structs[type_]
-                        for struct_field, struct_type in struct_fields.items():
-                            if struct_type == "string":
-                                f.write(
-                                    f"\t\tdata[\"{struct_field}\"] = toUtf(task_data->{struct_field});\n")
-                            else:
-                                f.write(
-                                    f"\t\tdata[\"{struct_field}\"] = task_data->{struct_field};\n")
+                            struct_fields = self.structs[type_]
+                            for struct_field, struct_type in struct_fields.items():
 
-                        f.write("\t\tdelete task_data;\n")
-                        f.write("\t}\n")
+                                if struct_type == "string":
+                                    f.write(
+                                        f"\t\tdata[\"{struct_field}\"] = toUtf(task_data->{struct_field});\n")
+                                else:
+                                    f.write(
+                                        f"\t\tdata[\"{struct_field}\"] = task_data->{struct_field};\n")
 
-                args_str = ", ".join(args)
-                f.write(f"\tthis->{on_name}({args_str});\n")
-                f.write("};\n\n")
+                            f.write("\t\tdelete task_data;\n")
+                            f.write("\t}\n")
+
+                    args_str = ", ".join(args)
+                    f.write(f"\tthis->{on_name}({args_str});\n")
+                    f.write("};\n\n")
 
     def generate_source_function(self):
         """"""
@@ -265,25 +281,25 @@ class ApiGenerator:
         with open(filename, "w") as f:
             for name, d in self.functions.items():
                 req_name = name.replace("Req", "req")
-                type_ = list(d.values())[0]
 
                 f.write(
-                    f"int {self.class_name}::{req_name}(const dict &req, int reqid)\n")
+                    f"int {self.class_name}::{req_name}()\n")
                 f.write("{\n")
-                f.write(f"\t{type_} myreq = {type_}();\n")
-                f.write("\tmemset(&myreq, 0, sizeof(myreq));\n")
 
-                struct_fields = self.structs[type_]
-                for struct_field, struct_type in struct_fields.items():
-                    if struct_type == "string":
-                        line = f"\tgetString(req, \"{struct_field}\", myreq.{struct_field});\n"
-                    else:
-                        line = f"\tget{struct_type.capitalize()}(req, \"{struct_field}\", &myreq.{struct_field});\n"
-                    f.write(line)
+                if len(d.values()) < 1:
 
-                f.write(f"\tint i = this->api->{name}(&myreq, reqid);\n")
-                f.write("\treturn i;\n")
-                f.write("};\n\n")
+                    f.write(f"\tint i = this->api->{name}();\n")
+                    f.write("\treturn i;\n")
+                    f.write("};\n\n")
+                else:
+
+                    type_ = list(d.values())[0]
+                    f.write(f"\t{type_} myreq = {type_}();\n")
+
+
+                    f.write(f"\tint i = this->api->{name}();\n")
+                    f.write("\treturn i;\n")
+                    f.write("};\n\n")
 
     def generate_source_on(self):
         """"""
@@ -295,13 +311,11 @@ class ApiGenerator:
                 args = []
                 bind_args = ["void", self.class_name, on_name]
                 for field, type_ in d.items():
-                    if type_ == "int":
-                        args.append("int reqid")
-                        bind_args.append("reqid")
-                    elif type_ == "bool":
+
+                    if type_ == "bool":
                         args.append("bool last")
                         bind_args.append("last")
-                    elif type_ == "CThostFtdcRspInfoField":
+                    elif type_ == "CUftRspErrorField" or type_ == "CUftRspInfoField":
                         args.append("const dict &error")
                         bind_args.append("error")
                     else:

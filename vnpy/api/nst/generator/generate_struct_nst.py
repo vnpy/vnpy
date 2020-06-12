@@ -65,7 +65,7 @@ class StructGenerator:
             self.process_start(line)
         elif line.startswith("}"):
             self.process_end(line)
-        elif "///" not in line or "#" not in line:
+        elif "///" not in line and "#" not in line:
             self.process_member(line)
     
     def process_enum_name(self, line: str):
@@ -123,7 +123,7 @@ class StructGenerator:
             new_line = f"{name} = {number}\n"
             self.f_define.write(new_line)
 
-            new_line_ = f"    \"{name}\" = \"int\",\n"
+            new_line_ = f"    \"{name}\": \"int\",\n"
             self.f_struct.write(new_line_)
         else:
             self.enum_no += 1
@@ -133,7 +133,7 @@ class StructGenerator:
             new_line = f"{name} = {number}\n"
 
             self.f_define.write(new_line)
-            new_line_ = f"    \"{name}\" : \"int\",\n"
+            new_line_ = f"    \"{name}\": \"int\",\n"
             self.f_struct.write(new_line_)
 
     def process_member(self, line: str):
@@ -155,7 +155,7 @@ class StructGenerator:
                 if not words:
                     return
 
-                print(words)
+                # print(words)
 
                 py_type = self.typedefs.get(words[0], "dict")
                 name = words[1]
