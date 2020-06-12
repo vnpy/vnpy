@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.1.2-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.1.3-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
@@ -52,6 +52,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 飞鼠（sgit）：黄金TD、国内期货
 
+        * 金仕达黄金（ksgold）：黄金TD
+
         * 鑫管家（xgj）：期货资管
 
         * 融航（rohon）：期货资管
@@ -74,11 +76,19 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * Alpaca（alpaca）：美股（零佣金）
 
+        * 佳兆业投资（kasia）：港股
+
     * 数字货币
 
         * BitMEX（bitmex）：数字货币期货、期权、永续合约
 
         * Bybit（bybit）：数字货币永续合约
+
+        * 币安（binance）：数字货币现货
+
+        * 币安永续（binances)：数字货币永续合约
+
+        * OKEX（okex）：数字货币现货
 
         * OKEX永续（okexs）：数字货币永续合约
 
@@ -86,19 +96,15 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * OKEX期权（okexo）：数字货币期权
 
-        * 火币合约（hbdm）：数字货币期货
+        * 火币（huobi）：数字货币现货
 
-        * 币安永续（binancef)：数字货币永续合约
+        * 火币期货（huobif）：数字货币期货
+
+        * 火币永续（huobis）：数字货币永续
 
         * Gate.io永续（gateios）：数字货币永续合约
 
-        * Deribit（deribit），数字货币期权、永续合约
-
-        * 币安（binance）：数字货币现货
-
-        * OKEX（okex）：数字货币现货
-
-        * 火币（huobi）：数字货币现货
+        * Deribit（deribit），数字货币期权、永续合约        
 
         * Bitfinex（bitfinex）：数字货币现货
 
@@ -156,7 +162,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.1.2](https://download.vnpy.com/vnstudio-2.1.2.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.1.3](https://download.vnpy.com/vnstudio-2.1.3.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 

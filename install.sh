@@ -13,7 +13,7 @@ $python -m pip install --upgrade pip setuptools wheel
 function install-ta-lib()
 {
     pushd /tmp
-    wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+    wget https://pip.vnpy.com/colletion/ta-lib-0.4.0-src.tar.gz
     tar -xf ta-lib-0.4.0-src.tar.gz
     cd ta-lib
     ./configure --prefix=$prefix
@@ -32,7 +32,7 @@ $python -m pip install numpy
 
 # Install extra packages
 $python -m pip install ta-lib
-$python -m pip install https://vnpy-pip.oss-cn-shanghai.aliyuncs.com/colletion/ibapi-9.75.1-py3-none-any.whl
+$python -m pip install psycopg2-binary
 
 # Install Python Modules
 $python -m pip install -r requirements.txt

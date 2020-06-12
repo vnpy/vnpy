@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, List, Set, Tuple, Type, Any, Callable
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
+from tzlocal import get_localzone
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
@@ -268,7 +269,7 @@ class StrategyEngine(BaseEngine):
     def load_bar(self, vt_symbol: str, days: int, interval: Interval) -> List[BarData]:
         """"""
         symbol, exchange = extract_vt_symbol(vt_symbol)
-        end = datetime.now()
+        end = datetime.now(get_localzone())
         start = end - timedelta(days)
         contract: ContractData = self.main_engine.get_contract(vt_symbol)
         data = []

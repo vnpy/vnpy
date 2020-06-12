@@ -635,13 +635,8 @@ class SpreadStrategyEngine:
         """
         for dirpath, dirnames, filenames in os.walk(str(path)):
             for filename in filenames:
-                if filename.endswith(".py"):
-                    strategy_module_name = ".".join(
-                        [module_name, filename.replace(".py", "")])
-                    self.load_strategy_class_from_module(strategy_module_name)
-                elif filename.endswith(".pyd"):
-                    strategy_module_name = ".".join(
-                        [module_name, filename.split(".")[0]])
+                if filename.split(".")[-1] in ("py", "pyd", "so"):
+                    strategy_module_name = ".".join([module_name, filename.split(".")[0]])
                     self.load_strategy_class_from_module(strategy_module_name)
 
     def load_strategy_class_from_module(self, module_name: str):

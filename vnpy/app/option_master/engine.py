@@ -447,6 +447,10 @@ class OptionHedgeEngine:
         contract = self.main_engine.get_contract(self.vt_symbol)
         holding = self.option_engine.get_position_holding(self.vt_symbol)
 
+        # Check if hedge volume meets contract minimum trading volume
+        if abs(hedge_volume) < contract.min_volume:
+            return
+
         if hedge_volume > 0:
             price = tick.ask_price_1 + contract.pricetick * self.hedge_payup
             direction = Direction.LONG

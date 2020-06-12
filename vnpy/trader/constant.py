@@ -63,6 +63,7 @@ class OrderType(Enum):
     STOP = "STOP"
     FAK = "FAK"
     FOK = "FOK"
+    RFQ = "询价"
 
 
 class OptionType(Enum):
@@ -93,6 +94,9 @@ class Exchange(Enum):
     SMART = "SMART"         # Smart Router for US stocks
     NYSE = "NYSE"           # New York Stock Exchnage
     NASDAQ = "NASDAQ"       # Nasdaq Exchange
+    ARCA = "ARCA"           # ARCA Exchange
+    EDGEA = "EDGEA"         # Direct Edge Exchange
+    ISLAND = "ISLAND"       # Nasdaq Island ECN
     NYMEX = "NYMEX"         # New York Mercantile Exchange
     COMEX = "COMEX"         # a division of theNew York Mercantile Exchange
     GLOBEX = "GLOBEX"       # Globex of CME
@@ -114,8 +118,6 @@ class Exchange(Enum):
     TOCOM = "TOCOM"         # Tokyo Commodity Exchange
     EUNX = "EUNX"           # Euronext Exchange
     KRX = "KRX"             # Korean Exchange
-
-    OTC = "OTC"             # Forex&CFD OTC Dealer
 
     # CryptoCurrency
     BITMEX = "BITMEX"

@@ -1,6 +1,7 @@
 from copy import copy
 from typing import Dict, List
 from datetime import datetime, timedelta
+from tzlocal import get_localzone
 
 from vnpy.event import EventEngine, Event
 from vnpy.chart import ChartWidget, CandleItem, VolumeItem
@@ -88,7 +89,7 @@ class ChartWizardWidget(QtWidgets.QWidget):
         self.tab.addTab(chart, vt_symbol)
 
         # Query history data
-        end = datetime.now()
+        end = datetime.now(get_localzone())
         start = end - timedelta(days=5)
 
         self.chart_engine.query_history(

@@ -4,6 +4,7 @@ Global setting of VN Trader.
 
 from logging import CRITICAL
 from typing import Dict, Any
+from tzlocal import get_localzone
 
 from .utility import load_json
 
@@ -26,8 +27,9 @@ SETTINGS: Dict[str, Any] = {
     "rqdata.username": "",
     "rqdata.password": "",
 
-    "database.driver": "sqlite",  # see database.Driver
-    "database.database": "database.db",  # for sqlite, use this as filepath
+    "database.timezone": get_localzone().zone,
+    "database.driver": "sqlite",                # see database.Driver
+    "database.database": "database.db",         # for sqlite, use this as filepath
     "database.host": "localhost",
     "database.port": 3306,
     "database.user": "root",

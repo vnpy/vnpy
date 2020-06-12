@@ -5,6 +5,8 @@ SPY-USD-STK   SMART
 EUR-USD-CASH  IDEALPRO
 XAUUSD-USD-CMDTY  SMART
 ES-202002-USD-FUT  GLOBEX
+SI-202006-1000-USD-FUT  NYMEX
+ES-2020006-C-2430-50-USD-FOP  GLOBEX
 """
 
 
@@ -56,7 +58,7 @@ from vnpy.trader.utility import get_file_path
 
 
 ORDERTYPE_VT2IB = {
-    OrderType.LIMIT: "LMT", 
+    OrderType.LIMIT: "LMT",
     OrderType.MARKET: "MKT",
     OrderType.STOP: "STP"
 }
@@ -78,7 +80,10 @@ EXCHANGE_VT2IB = {
     Exchange.HKFE: "HKFE",
     Exchange.CFE: "CFE",
     Exchange.NYSE: "NYSE",
-    Exchange.NASDAQ: "NASDAQ"
+    Exchange.NASDAQ: "NASDAQ",
+    Exchange.ARCA: "ARCA",
+    Exchange.EDGEA: "EDGEA",
+    Exchange.ISLAND: "ISLAND"
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}
 
@@ -237,6 +242,7 @@ class IbApi(EWrapper):
         self.contracts = {}
 
         self.tick_exchange = {}
+        self.subscribed = set()
 
         self.history_req = None
         self.history_condition = Condition()
@@ -650,6 +656,11 @@ class IbApi(EWrapper):
             self.gateway.write_log(f"不支持的交易所{req.exchange}")
             return
 
+        # Filter duplicate subscribe
+        if req.vt_symbol in self.subscrbied:
+            return
+        self.subscrbied.add(req.vt_symbol)
+
         # Extract ib contract detail
         ib_contract = generate_ib_contract(req.symbol, req.exchange)
         if not ib_contract:
@@ -829,6 +840,10 @@ def generate_ib_contract(symbol: str, exchange: Exchange) -> Optional[Contract]:
 
         if ib_contract.secType in ["FUT", "OPT", "FOP"]:
             ib_contract.lastTradeDateOrContractMonth = fields[1]
+
+        if ib_contract.secType == "FUT":
+            if len(fields) == 5:
+                ib_contract.multiplier = int(fields[2])
 
         if ib_contract.secType in ["OPT", "FOP"]:
             ib_contract.right = fields[2]

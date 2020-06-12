@@ -114,7 +114,7 @@ class RestClient(object):
         self.url_base = url_base
 
         if proxy_host and proxy_port:
-            proxy = f"{proxy_host}:{proxy_port}"
+            proxy = f"http://{proxy_host}:{proxy_port}"
             self.proxies = {"http": proxy, "https": proxy}
 
     def start(self, n: int = 3) -> None:

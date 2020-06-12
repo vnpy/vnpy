@@ -1,5 +1,6 @@
 import csv
 from datetime import datetime, timedelta
+from tzlocal import get_localzone
 
 import numpy as np
 import pyqtgraph as pg
@@ -415,8 +416,22 @@ class BacktesterManager(QtWidgets.QWidget):
         start_date = self.start_date_edit.date()
         end_date = self.end_date_edit.date()
 
-        start = datetime(start_date.year(), start_date.month(), start_date.day())
-        end = datetime(end_date.year(), end_date.month(), end_date.day(), 23, 59, 59)
+        start = datetime(
+            start_date.year(),
+            start_date.month(),
+            start_date.day(),
+            tzinfo=get_localzone()
+        )
+
+        end = datetime(
+            end_date.year(),
+            end_date.month(),
+            end_date.day(),
+            23,
+            59,
+            59,
+            tzinfo=get_localzone()
+        )
 
         self.backtester_engine.start_downloading(
             vt_symbol,
@@ -627,7 +642,16 @@ class BacktestingSettingEditor(QtWidgets.QDialog):
         button.clicked.connect(self.accept)
         form.addRow(button)
 
-        self.setLayout(form)
+        widget = QtWidgets.QWidget()
+        widget.setLayout(form)
+
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(widget)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(scroll)
+        self.setLayout(vbox)
 
     def get_setting(self):
         """"""
@@ -857,7 +881,16 @@ class OptimizationSettingEditor(QtWidgets.QDialog):
         ga_button.clicked.connect(self.generate_ga_setting)
         grid.addWidget(ga_button, row, 0, 1, 4)
 
-        self.setLayout(grid)
+        widget = QtWidgets.QWidget()
+        widget.setLayout(grid)
+
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(widget)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(scroll)
+        self.setLayout(vbox)
 
     def generate_ga_setting(self):
         """"""

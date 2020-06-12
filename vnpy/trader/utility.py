@@ -147,6 +147,19 @@ def ceil_to(value: float, target: float) -> float:
     return result
 
 
+def get_digits(value: float) -> int:
+    """
+    Get number of digits after decimal point.
+    """
+    value_str = str(value)
+
+    if "." not in value_str:
+        return 0
+    else:
+        _, buf = value_str.split(".")
+        return len(buf)
+
+
 class BarGenerator:
     """
     For:
@@ -187,6 +200,10 @@ class BarGenerator:
 
         # Filter tick data with 0 last price
         if not tick.last_price:
+            return
+
+        # Filter tick data with older timestamp
+        if self.last_tick and tick.datetime < self.last_tick.datetime:
             return
 
         if not self.bar:

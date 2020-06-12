@@ -497,10 +497,9 @@ class BacktestingEngine:
                 offset=algo.offset,
                 price=trade_price,
                 volume=algo.volume,
-                time=self.datetime.strftime("%H:%M:%S"),
+                datetime=self.datetime,
                 gateway_name=self.gateway_name,
             )
-            trade.datetime = self.datetime
 
             if self.mode == BacktestingMode.BAR:
                 trade.value = self.bar.value
