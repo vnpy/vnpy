@@ -5,6 +5,8 @@ SPY-USD-STK   SMART
 EUR-USD-CASH  IDEALPRO
 XAUUSD-USD-CMDTY  SMART
 ES-202002-USD-FUT  GLOBEX
+SI-202006-1000-USD-FUT  NYMEX
+ES-2020006-C-2430-50-USD-FOP  GLOBEX
 """
 
 
@@ -836,6 +838,10 @@ def generate_ib_contract(symbol: str, exchange: Exchange) -> Optional[Contract]:
 
         if ib_contract.secType in ["FUT", "OPT", "FOP"]:
             ib_contract.lastTradeDateOrContractMonth = fields[1]
+
+        if ib_contract.secType == "FUT":
+            if len(fields) == 5:
+                ib_contract.multiplier = int(fields[2])
 
         if ib_contract.secType in ["OPT", "FOP"]:
             ib_contract.right = fields[2]
