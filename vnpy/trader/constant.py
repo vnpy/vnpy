@@ -98,7 +98,7 @@ class Exchange(Enum):
     EDGEA = "EDGEA"         # Direct Edge Exchange
     ISLAND = "ISLAND"       # Nasdaq Island ECN
     NYMEX = "NYMEX"         # New York Mercantile Exchange
-    COMEX = "COMEX"         # a division of theNew York Mercantile Exchange
+    COMEX = "COMEX"         # COMEX of CME
     GLOBEX = "GLOBEX"       # Globex of CME
     IDEALPRO = "IDEALPRO"   # Forex ECN of Interactive Brokers
     CME = "CME"             # Chicago Mercantile Exchange
@@ -118,6 +118,7 @@ class Exchange(Enum):
     TOCOM = "TOCOM"         # Tokyo Commodity Exchange
     EUNX = "EUNX"           # Euronext Exchange
     KRX = "KRX"             # Korean Exchange
+    OTC = "OTC"             # OTC Forex Broker
 
     # CryptoCurrency
     BITMEX = "BITMEX"

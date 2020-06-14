@@ -92,7 +92,7 @@ class SpreadAlgoTemplate:
         spread_volume = self.spread.calculate_spread_volume(
             active_symbol, active_traded
         )
-        
+
         finished = True
 
         for leg in self.spread.passive_legs:
