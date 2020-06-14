@@ -463,8 +463,11 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
 
     def update_net_pos(self, vt_symbol: str) -> None:
         """"""
+        cells = self.cells.get(vt_symbol, None)
+        if not cells:
+            return
+
         option = self.option_engine.get_instrument(vt_symbol)
-        cells = self.cells[vt_symbol]
         cells["net_pos"].setText(str(option.net_pos))
 
     def start_algo_pricing(self, vt_symbol: str) -> None:
