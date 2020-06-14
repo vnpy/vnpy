@@ -1,10 +1,10 @@
 import threading
 from datetime import datetime
 from typing import Callable, Dict, Tuple, List
-import pytz
 import zmq
 import zmq.auth
 from zmq.backend.cython.constants import NOBLOCK
+from tzlocal import get_localzone
 
 from vnpy.trader.constant import (
     Direction,
@@ -83,7 +83,7 @@ ORDERTYPE_MT2VT = {
 }
 ORDERTYPE_VT2MT = {v: k for k, v in ORDERTYPE_MT2VT.items()}
 
-CHINA_TZ = pytz.timezone("Asia/Shanghai")
+LOCAL_TZ = get_localzone()
 
 
 class Mt5Gateway(BaseGateway):
@@ -235,7 +235,6 @@ class Mt5Gateway(BaseGateway):
         """
         Query bar history data.
         """
-
         history = []
 
         start_time = req.start.isoformat()
@@ -253,7 +252,6 @@ class Mt5Gateway(BaseGateway):
         if packet["result"] == -1:
             msg = "获取历史数据失败"
             self.write_log(msg)
-
         else:
             for d in packet["data"]:
                 bar = BarData(
@@ -269,9 +267,11 @@ class Mt5Gateway(BaseGateway):
                     gateway_name=self.gateway_name
                 )
                 history.append(bar)
+
             data = packet["data"]
             begin = data[0]["time"]
             end = data[-1]["time"]
+
             msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
             self.write_log(msg)
 
@@ -289,12 +289,12 @@ class Mt5Gateway(BaseGateway):
 
         if callback_func:
             callback_func(packet)
-  
+
     def update_order_info(self, packet: dict) -> None:
         """"""
         data = packet["data"]
 
-        # Cheque Request Event
+        # Check Request Event
         if data["event_type"] == EVENT_REQUEST:
             if not data["magic"]:
                 return
@@ -309,7 +309,7 @@ class Mt5Gateway(BaseGateway):
                 self.on_order(order)
                 del self.temp_orders[sys_id]
 
-        # Cheque TradeTransaction Event
+        # Check TradeTransaction Event
         else:
             order_status = STATUS_MT2VT.get(data["order_state"], None)
 
@@ -360,7 +360,7 @@ class Mt5Gateway(BaseGateway):
                             gateway_name=self.gateway_name,
                         )
                         self.positions[key] = position
-                  
+
                     cost = position.price * position.volume
                     cost += data["volume"] * data["price"]
                     position.volume += data["volume"]
@@ -405,9 +405,9 @@ class Mt5Gateway(BaseGateway):
                 tick.high_price = d["last_high"]
                 tick.low_price = d["last_low"]
             else:
-                tick.last_price = (d["bid"]+d["ask"])/2
-                tick.high_price = (d["bid_high"]+d["ask_high"])/2
-                tick.low_price = (d["bid_low"]+d["ask_low"])/2
+                tick.last_price = (d["bid"] + d["ask"]) / 2
+                tick.high_price = (d["bid_high"] + d["ask_high"]) / 2
+                tick.low_price = (d["bid_low"] + d["ask_low"]) / 2
 
             self.on_tick(tick)
 
@@ -494,5 +494,5 @@ class Mt5Client:
 def generate_datetime(timestamp: str) -> datetime:
     """"""
     dt = datetime.strptime(timestamp, "%Y.%m.%d %H:%M")
-    dt = dt.replace(tzinfo=CHINA_TZ)
+    dt = dt.replace(tzinfo=LOCAL_TZ)
     return dt
