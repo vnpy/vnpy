@@ -77,9 +77,13 @@ def calculate_delta(
 ) -> float:
     """Calculate option delta"""
     option_tree, underlying_tree = generate_tree(f, k, r, t, v, cp, n)
-    option_price_change = option_tree[0, 1] - option_tree[1, 1]
-    underlying_price_change = underlying_tree[0, 1] - underlying_tree[1, 1]
-    return option_price_change / underlying_price_change
+
+    option_price_change: float = option_tree[0, 1] - option_tree[1, 1]
+    underlying_price_change: float = underlying_tree[0, 1] - underlying_tree[1, 1]
+
+    _delta: float = option_price_change / underlying_price_change
+    delta: float = _delta * f * 0.01
+    return delta
 
 
 def calculate_gamma(
@@ -94,12 +98,14 @@ def calculate_gamma(
     """Calculate option gamma"""
     option_tree, underlying_tree = generate_tree(f, k, r, t, v, cp, n)
 
-    gamma_delta_1 = (option_tree[0, 2] - option_tree[1, 2]) / \
+    gamma_delta_1: float = (option_tree[0, 2] - option_tree[1, 2]) / \
         (underlying_tree[0, 2] - underlying_tree[1, 2])
-    gamma_delta_2 = (option_tree[1, 2] - option_tree[2, 2]) / \
+    gamma_delta_2: float = (option_tree[1, 2] - option_tree[2, 2]) / \
         (underlying_tree[1, 2] - underlying_tree[2, 2])
-    gamma = (gamma_delta_1 - gamma_delta_2) / \
+
+    _gamma: float = (gamma_delta_1 - gamma_delta_2) / \
         (0.5 * (underlying_tree[0, 2] - underlying_tree[2, 2]))
+    gamma: float = _gamma * pow(f, 2) * 0.0001
 
     return gamma
 
@@ -174,15 +180,17 @@ def calculate_greeks(
     # Delta
     option_price_change = option_tree[0, 1] - option_tree[1, 1]
     underlying_price_change = underlying_tree[0, 1] - underlying_tree[1, 1]
-    delta = option_price_change / underlying_price_change
+    _delta: float = option_price_change / underlying_price_change
+    delta: float = _delta * f * 0.01
 
     # Gamma
     gamma_delta_1 = (option_tree[0, 2] - option_tree[1, 2]) / \
         (underlying_tree[0, 2] - underlying_tree[1, 2])
     gamma_delta_2 = (option_tree[1, 2] - option_tree[2, 2]) / \
         (underlying_tree[1, 2] - underlying_tree[2, 2])
-    gamma = (gamma_delta_1 - gamma_delta_2) / \
+    _gamma: float = (gamma_delta_1 - gamma_delta_2) / \
         (0.5 * (underlying_tree[0, 2] - underlying_tree[2, 2]))
+    gamma: float = _gamma * pow(f, 2) * 0.0001
 
     # Theta
     theta = (option_tree[1, 2] - option_tree[0, 0]) / (2 * dt * annual_days)
