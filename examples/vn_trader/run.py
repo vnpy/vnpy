@@ -22,9 +22,9 @@ from vnpy.trader.ui import MainWindow, create_qapp
 # from vnpy.gateway.onetoken import OnetokenGateway
 # from vnpy.gateway.okexf import OkexfGateway
 # from vnpy.gateway.okexs import OkexsGateway
-from vnpy.gateway.xtp import XtpGateway
+# from vnpy.gateway.xtp import XtpGateway
 # from vnpy.gateway.huobif import HuobifGateway
-from vnpy.gateway.tap import TapGateway
+# from vnpy.gateway.tap import TapGateway
 # from vnpy.gateway.tora import ToraGateway
 # from vnpy.gateway.alpaca import AlpacaGateway
 # from vnpy.gateway.da import DaGateway
@@ -36,7 +36,8 @@ from vnpy.gateway.tap import TapGateway
 # from vnpy.gateway.uft import UftGateway
 # from vnpy.gateway.okexo import OkexoGateway
 # from vnpy.gateway.binancef import BinancefGateway
-from vnpy.gateway.mt4 import Mt4Gateway
+# from vnpy.gateway.mt4 import Mt4Gateway
+from vnpy.gateway.mt5 import Mt5Gateway
 
 # from vnpy.app.cta_strategy import CtaStrategyApp
 # from vnpy.app.csv_loader import CsvLoaderApp
@@ -82,8 +83,8 @@ def main():
     # main_engine.add_gateway(OnetokenGateway)
     # main_engine.add_gateway(OkexfGateway)
     # main_engine.add_gateway(HuobifGateway)
-    main_engine.add_gateway(XtpGateway)
-    main_engine.add_gateway(TapGateway)
+    # main_engine.add_gateway(XtpGateway)
+    # main_engine.add_gateway(TapGateway)
     # main_engine.add_gateway(ToraGateway)
     # main_engine.add_gateway(AlpacaGateway)
     # main_engine.add_gateway(OkexsGateway)
@@ -95,7 +96,8 @@ def main():
     # main_engine.add_gateway(DeribitGateway)
     # main_engine.add_gateway(OkexoGateway)
     # main_engine.add_gateway(BinancefGateway)
-    main_engine.add_gateway(Mt4Gateway)
+    # main_engine.add_gateway(Mt4Gateway)
+    main_engine.add_gateway(Mt5Gateway)
 
     # main_engine.add_app(CtaStrategyApp)
     # main_engine.add_app(CtaBacktesterApp)
