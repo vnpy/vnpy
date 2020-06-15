@@ -21,12 +21,30 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="vnihq.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="vnihqmd.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ihq\IStoneApiDataType.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ihq\IStoneMdApi.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ihq\IStoneMdApiStruct.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="vnihqmd.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

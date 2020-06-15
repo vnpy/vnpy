@@ -89,6 +89,7 @@
     <IncludePath>C:\vnstudio\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\nst;$(IncludePath)</IncludePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <LibraryPath>C:\vnstudio\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)..\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
