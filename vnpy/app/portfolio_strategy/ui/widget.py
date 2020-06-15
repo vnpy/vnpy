@@ -387,7 +387,7 @@ class SettingEditor(QtWidgets.QDialog):
         if self.class_name:
             self.setWindowTitle(f"添加策略：{self.class_name}")
             button_text = "添加"
-            parameters = {"strategy_name": "", "vt_symbols": ""}
+            parameters = {"strategy_name": "", "vt_symbols": []}
             parameters.update(self.parameters)
         else:
             self.setWindowTitle(f"参数编辑：{self.strategy_name}")
