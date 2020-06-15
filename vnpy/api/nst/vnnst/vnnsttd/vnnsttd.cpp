@@ -942,17 +942,6 @@ class PyTdApi : public TdApi
 public:
     using TdApi::TdApi;
     
-	void onFrontConnected() override
-	{
-		try
-		{
-			PYBIND11_OVERLOAD(void, TdApi, onFrontConnected);
-		}
-		catch (const error_already_set &e)
-		{
-			cout << e.what() << endl;
-		}
-	};
 
 	void onFrontConnected() override
 	{
