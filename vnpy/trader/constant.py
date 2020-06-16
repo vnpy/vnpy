@@ -97,6 +97,8 @@ class Exchange(Enum):
     ARCA = "ARCA"           # ARCA Exchange
     EDGEA = "EDGEA"         # Direct Edge Exchange
     ISLAND = "ISLAND"       # Nasdaq Island ECN
+    BATS = "BATS"           # Bats Global Markets
+    IEX = "IEX"             # The Investors Exchange
     NYMEX = "NYMEX"         # New York Mercantile Exchange
     COMEX = "COMEX"         # COMEX of CME
     GLOBEX = "GLOBEX"       # Globex of CME
@@ -119,6 +121,7 @@ class Exchange(Enum):
     EUNX = "EUNX"           # Euronext Exchange
     KRX = "KRX"             # Korean Exchange
     OTC = "OTC"             # OTC Forex Broker
+    IBKRATS = "IBKRATS"     # Paper Trading Exchange of IB
 
     # CryptoCurrency
     BITMEX = "BITMEX"

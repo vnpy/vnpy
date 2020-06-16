@@ -83,7 +83,10 @@ EXCHANGE_VT2IB = {
     Exchange.NASDAQ: "NASDAQ",
     Exchange.ARCA: "ARCA",
     Exchange.EDGEA: "EDGEA",
-    Exchange.ISLAND: "ISLAND"
+    Exchange.ISLAND: "ISLAND",
+    Exchange.BATS: "BATS",
+    Exchange.IEX: "IEX",
+    Exchange.IBKRATS: "IBKRATS",
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}
 
