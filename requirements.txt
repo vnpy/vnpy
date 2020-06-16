@@ -23,4 +23,4 @@ deap
 pyzmq
 wmi
 QScintilla
-pyplot
+plotly
