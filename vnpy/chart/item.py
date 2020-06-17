@@ -166,10 +166,11 @@ class CandleItem(ChartItem):
             painter.setBrush(self._down_brush)
 
         # Draw candle shadow
-        painter.drawLine(
-            QtCore.QPointF(ix, bar.high_price),
-            QtCore.QPointF(ix, bar.low_price)
-        )
+        if bar.high_price > bar.low_price:
+            painter.drawLine(
+                QtCore.QPointF(ix, bar.high_price),
+                QtCore.QPointF(ix, bar.low_price)
+            )
 
         # Draw candle body
         if bar.open_price == bar.close_price:
