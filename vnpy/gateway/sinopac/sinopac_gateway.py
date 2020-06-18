@@ -467,7 +467,7 @@ class SinopacGateway(BaseGateway):
                 symbol=item.code,
                 exchange=EXCHANGE_SINOPAC2VT.get("TSE", Exchange.TSE),
                 direction=Direction.LONG if item.quantity >= 0 else Direction.SHORT,
-                volume=item.quantity,
+                volume=abs(item.quantity),
                 frozen=item.quantity - item.quantity,
                 price=item.price,
                 pnl=item.pnl,
