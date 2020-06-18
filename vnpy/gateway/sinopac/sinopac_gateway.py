@@ -461,21 +461,17 @@ class SinopacGateway(BaseGateway):
 
     def query_position(self):
         """"""
-        self.api.get_stock_account_unreal_profitloss().update()
-        data = self.api.get_stock_account_unreal_profitloss().data()["summary"]
+        data = self.api.list_positions()
         for item in data:
-            volume = float(item["real_qty"]) / 1000
-            total_qty = float(item["real_qty"]) / 1000
-            yd_qty = float(item["qty"]) / 1000
             pos = PositionData(
-                symbol=item["stock"],
+                symbol=item.code,
                 exchange=EXCHANGE_SINOPAC2VT.get("TSE", Exchange.TSE),
-                direction=Direction.LONG if volume >= 0 else Direction.SHORT,
-                volume=volume,
-                frozen=total_qty - yd_qty,
-                price=float(item["avgprice"]),
-                pnl=float(item["unreal"]),
-                yd_volume=yd_qty,
+                direction=Direction.LONG if item.quantity >= 0 else Direction.SHORT,
+                volume=item.quantity,
+                frozen=item.quantity - item.quantity,
+                price=item.price,
+                pnl=item.pnl,
+                yd_volume=item.yd_quantity,
                 gateway_name=self.gateway_name,
             )
             self.on_position(pos)
