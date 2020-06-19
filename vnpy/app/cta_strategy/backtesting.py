@@ -271,7 +271,7 @@ class BacktestingEngine:
         self.strategy.on_init()
 
         # Use the first [days] of history data for initializing strategy
-        day_count = 0
+        day_count = 1
         ix = 0
 
         for ix, data in enumerate(self.history_data):
