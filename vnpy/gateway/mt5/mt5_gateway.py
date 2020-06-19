@@ -1,10 +1,10 @@
 import threading
 from datetime import datetime
-from typing import Callable, Dict, Tuple, Set, List
-import pytz
+from typing import Callable, Dict, Tuple, List
 import zmq
 import zmq.auth
 from zmq.backend.cython.constants import NOBLOCK
+from tzlocal import get_localzone
 
 from vnpy.trader.constant import (
     Direction,
@@ -48,24 +48,12 @@ ORDER_STATE_REJECTED = 5
 EVENT_REQUEST = 10
 EVENT_HISTORY_ADD = 6
 
-BUY = 2
-NET = 1
-SELL = -1
-
-POSITION_TYPE_BUY = 0
-POSITION_TYPE_SELL = 1
-
 TYPE_BUY = 0
 TYPE_SELL = 1
 TYPE_BUY_LIMIT = 2
 TYPE_SELL_LIMIT = 3
 TYPE_BUY_STOP = 4
 TYPE_SELL_STOP = 5
-
-POSITION_MT2VT = {
-    POSITION_TYPE_BUY: Direction.LONG,
-    POSITION_TYPE_SELL: Direction.SHORT
-}
 
 INTERVAL_VT2MT = {
     Interval.MINUTE: PERIOD_M1,
@@ -82,9 +70,12 @@ STATUS_MT2VT = {
     5: Status.REJECTED
 }
 
+DIRECTION_MT2VT = {
+    TYPE_BUY: Direction.LONG,
+    TYPE_SELL: Direction.SHORT
+}
+
 ORDERTYPE_MT2VT = {
-    TYPE_BUY: (Direction.LONG, OrderType.MARKET),
-    TYPE_SELL: (Direction.SHORT, OrderType.MARKET),
     TYPE_BUY_LIMIT: (Direction.LONG, OrderType.LIMIT),
     TYPE_SELL_LIMIT: (Direction.SHORT, OrderType.LIMIT),
     TYPE_BUY_STOP: (Direction.LONG, OrderType.STOP),
@@ -92,7 +83,7 @@ ORDERTYPE_MT2VT = {
 }
 ORDERTYPE_VT2MT = {v: k for k, v in ORDERTYPE_MT2VT.items()}
 
-CHINA_TZ = pytz.timezone("Asia/Shanghai")
+LOCAL_TZ = get_localzone()
 
 
 class Mt5Gateway(BaseGateway):
@@ -115,21 +106,17 @@ class Mt5Gateway(BaseGateway):
         self.callbacks: Dict[str, Callable] = {
             "account": self.on_account_info,
             "price": self.on_price_info,
-            "on_order": self.update_order_info,
-            "position": self.on_position_info
+            "on_order": self.update_order_info
         }
 
         self.client = Mt5Client(self)
         self.order_count = 100
 
         self.orders: Dict[str, OrderData] = {}
-        self.market_trades: Dict[str, TradeData] = {}
         self.temp_orders: Dict[str, str] = {}
         self.local_sys_map: Dict[str, str] = {}
         self.sys_local_map: Dict[str, str] = {}
         self.positions: Dict[Tuple[str, Direction], PositionData] = {}
-        self.position_symbol_map: Set[str] = set()
-        self.data_symbol_map: Set[str] = set()
 
     def connect(self, setting: dict) -> None:
         """"""
@@ -155,8 +142,7 @@ class Mt5Gateway(BaseGateway):
     def send_order(self, req: OrderRequest) -> str:
         """"""
         cmd = ORDERTYPE_VT2MT.get((req.direction, req.type), None)
-
-        if req.type == OrderType.FOK or req.type == OrderType.FAK or req.type == OrderType.RFQ:
+        if not cmd:
             self.write_log(f"不支持的委托类型：{req.type.value}")
             return ""
 
@@ -210,13 +196,9 @@ class Mt5Gateway(BaseGateway):
             "ticket": int(cancelid)
         }
 
-        packet = self.client.send_request(mt5_req)
-        result = packet["data"]["result"]
-        if result is True:
-            self.write_log("交易撤销成功")
-        elif result is False:
-            self.write_log("交易撤销失败")
-            
+        mt5_rep = self.client.send_request(mt5_req)
+        self.write_log(str(mt5_rep))
+
     def query_contract(self) -> None:
         """"""
         mt5_req = {"type": FUNCTION_QUERYCONTRACT}
@@ -241,11 +223,11 @@ class Mt5Gateway(BaseGateway):
 
         self.write_log("合约信息查询成功")
 
-    def query_position(self) -> None:
+    def query_account(self) -> None:
         """"""
         pass
 
-    def query_account(self) -> None:
+    def query_position(self) -> None:
         """"""
         pass
 
@@ -253,7 +235,6 @@ class Mt5Gateway(BaseGateway):
         """
         Query bar history data.
         """
-
         history = []
 
         start_time = req.start.isoformat()
@@ -269,8 +250,8 @@ class Mt5Gateway(BaseGateway):
         packet = self.client.send_request(mt5_req)
 
         if packet["result"] == -1:
-            self.write_log("获取历史数据失败")
-
+            msg = "获取历史数据失败"
+            self.write_log(msg)
         else:
             for d in packet["data"]:
                 bar = BarData(
@@ -286,9 +267,11 @@ class Mt5Gateway(BaseGateway):
                     gateway_name=self.gateway_name
                 )
                 history.append(bar)
+
             data = packet["data"]
             begin = data[0]["time"]
             end = data[-1]["time"]
+
             msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
             self.write_log(msg)
 
@@ -306,12 +289,12 @@ class Mt5Gateway(BaseGateway):
 
         if callback_func:
             callback_func(packet)
-  
+
     def update_order_info(self, packet: dict) -> None:
         """"""
         data = packet["data"]
 
-        # Cheque Request Event
+        # Check Request Event
         if data["event_type"] == EVENT_REQUEST:
             if not data["magic"]:
                 return
@@ -320,25 +303,13 @@ class Mt5Gateway(BaseGateway):
             self.sys_local_map[sys_id] = local_id
             self.local_sys_map[local_id] = sys_id
 
-            if sys_id in self.market_trades.keys():
-                order = self.orders[local_id]
-                trade = self.market_trades[sys_id]
-                trade.direction = order.direction
-                trade.orderid = order.orderid
-                order.status = self.temp_orders[sys_id]
-                order.traded = trade.volume
-                self.on_order(order)
-                self.on_trade(trade)
-                del self.market_trades[sys_id]
-                del self.temp_orders[sys_id]
-
-            elif sys_id in self.temp_orders.keys():
+            if sys_id in self.temp_orders.keys():
                 order = self.orders[local_id]
                 order.status = self.temp_orders[sys_id]
                 self.on_order(order)
                 del self.temp_orders[sys_id]
 
-        # Cheque TradeTransaction Event
+        # Check TradeTransaction Event
         else:
             order_status = STATUS_MT2VT.get(data["order_state"], None)
 
@@ -372,22 +343,33 @@ class Mt5Gateway(BaseGateway):
                         order.status = Status.PARTTRADED
                     self.on_order(order)
                     self.on_trade(trade)
-                   
+
+                    if trade.direction == Direction.LONG:
+                        otype = TYPE_BUY_LIMIT
+                    elif trade.direction == Direction.SHORT:
+                        otype = TYPE_SELL_LIMIT
+                    key = (trade.symbol, otype)
+
+                    position = self.positions.get(key, None)
+
+                    if not position:
+                        position = PositionData(
+                            symbol=trade.symbol,
+                            exchange=Exchange.OTC,
+                            direction=trade.direction,
+                            gateway_name=self.gateway_name,
+                        )
+                        self.positions[key] = position
+
+                    cost = position.price * position.volume
+                    cost += data["volume"] * data["price"]
+                    position.volume += data["volume"]
+                    position.price = cost / position.volume
+                    self.on_position(position)
+                    self.positions[key] = position
+
             else:
                 self.temp_orders[sys_id] = order_status
-
-                if data["event_type"] == EVENT_HISTORY_ADD:
-                    trade = TradeData(
-                        symbol=data["symbol"],
-                        exchange=Exchange.OTC,
-                        tradeid=data["deal"],
-                        orderid=data["order"],
-                        price=data["price"],
-                        volume=data["volume"],
-                        gateway_name=self.gateway_name,
-                        datetime=datetime.now()
-                    )
-                    self.market_trades[sys_id] = trade
 
     def on_account_info(self, packet: dict) -> None:
         """"""
@@ -400,91 +382,6 @@ class Mt5Gateway(BaseGateway):
             gateway_name=self.gateway_name
         )
         self.on_account(account)
-
-    def on_position_info(self, packet: dict) -> None:
-        """"""
-        if "data" not in packet:
-            if self.positions:
-                for position_symbol in self.position_symbol_map:
-                    key_ = (position_symbol, NET)
-                    if self.positions.get(key_, None): 
-                        position = self.positions.get(key_, None)
-                        position.volume = 0
-                        position.price = 0
-                        position.pnl = 0
-                        self.on_position(position)
-                        del self.positions[key_]
-                    
-            return
-        
-        for d in packet["data"]:
-            symbol_ = d["symbol"]
-            self.data_symbol_map.add(symbol_)
-
-            direction = POSITION_MT2VT.get(d["type"], None)
-
-            if direction == Direction.LONG:
-                otype = BUY
-            if direction == Direction.SHORT:
-                otype = SELL
-            key = (symbol_, otype)
-
-            position = self.positions.get(key, None)
-
-            if not position: 
-                position = PositionData(
-                    symbol=symbol_,
-                    exchange=Exchange.OTC,
-                    direction=direction,
-                    gateway_name=self.gateway_name
-                )
-            position.volume = d["volume"]
-            position.price = d["price"]
-            position.pnl = d["current_profit"]
-            self.positions[key] = position
- 
-            key = (symbol_, NET)
-            key1 = (symbol_, BUY)
-            key2 = (symbol_, SELL)
-            position = self.positions.get(key, None)
-
-            if not position:
-                position = PositionData(
-                    symbol=symbol_,
-                    exchange=Exchange.OTC,
-                    gateway_name=self.gateway_name,
-                    direction=Direction.NET
-                )
-            buy = self.positions.get(key1, None)
-            sell = self.positions.get(key2, None)
-
-            if otype == BUY:
-                position.volume = buy.volume
-                position.price = buy.price
-                position.pnl = buy.pnl
-
-            elif otype == SELL:
-                position.volume = -sell.volume
-                position.price = sell.price
-                position.pnl = sell.pnl
-    
-            self.positions[key] = position
-            self.on_position(position)
-            self.position_symbol_map.add(symbol_)
-
-        for closed_symbol in self.position_symbol_map:
-            key_ = (closed_symbol, NET)
-            if self.positions.get(key_, None): 
-                closed_map = self.position_symbol_map-self.data_symbol_map
-                if closed_symbol in closed_map:
-                    position = self.positions.get(key_, None)
-                    position.volume = 0
-                    position.price = 0
-                    position.pnl = 0
-                    self.on_position(position)
-                    del self.positions[key_]
-
-        self.data_symbol_map.clear()
 
     def on_price_info(self, packet: dict) -> None:
         """"""
@@ -508,9 +405,9 @@ class Mt5Gateway(BaseGateway):
                 tick.high_price = d["last_high"]
                 tick.low_price = d["last_low"]
             else:
-                tick.last_price = (d["bid"]+d["ask"])/2
-                tick.high_price = (d["bid_high"]+d["ask_high"])/2
-                tick.low_price = (d["bid_low"]+d["ask_low"])/2
+                tick.last_price = (d["bid"] + d["ask"]) / 2
+                tick.high_price = (d["bid_high"] + d["ask_high"]) / 2
+                tick.low_price = (d["bid_low"] + d["ask_low"]) / 2
 
             self.on_tick(tick)
 
@@ -597,5 +494,5 @@ class Mt5Client:
 def generate_datetime(timestamp: str) -> datetime:
     """"""
     dt = datetime.strptime(timestamp, "%Y.%m.%d %H:%M")
-    dt = dt.replace(tzinfo=CHINA_TZ)
+    dt = dt.replace(tzinfo=LOCAL_TZ)
     return dt
