@@ -38,6 +38,7 @@ FUNCTION_SUBSCRIBE = 1
 FUNCTION_SENDORDER = 2
 FUNCTION_CANCELORDER = 3
 FUNCTION_QUERYHISTORY = 4
+FUNCTION_QUERYORDER = 5
 
 ORDER_STATE_PLACED = 1
 ORDER_STATE_CANCELED = 2
@@ -143,6 +144,7 @@ class Mt5Gateway(BaseGateway):
         self.client.start(req_address, sub_address)
 
         self.query_contract()
+        self.query_order()
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
@@ -248,6 +250,34 @@ class Mt5Gateway(BaseGateway):
     def query_position(self) -> None:
         """"""
         pass
+
+    def query_order(self) -> None:
+        """"""
+        mt5_req = {"type": FUNCTION_QUERYORDER}
+        mt5_rep = self.client.send_request(mt5_req)
+
+        if "data" not in mt5_rep:
+            return
+
+        for d in mt5_rep["data"]:
+            type_ = d["type"]
+            direction, order_type = ORDERTYPE_MT2VT[type_]
+            order = OrderData(
+                symbol=d["symbol"],
+                exchange=Exchange.OTC,
+                gateway_name=self.gateway_name,
+                orderid=d["magic_number"],
+                type=order_type,
+                direction=direction,
+                price=d["open_price"],
+                volume=d["lots"],
+                datetime=datetime.now()
+            )
+            self.on_order(order)
+            self.orders[order.orderid] = order
+            sys_id = d["ticket"]
+            self.sys_local_map[sys_id] = order.orderid
+            self.local_sys_map[order.orderid] = sys_id
 
     def query_history(self, req: HistoryRequest) -> List[BarData]:
         """
@@ -364,13 +394,6 @@ class Mt5Gateway(BaseGateway):
                         direction=order.direction,
                         datetime=datetime.now()
                     )
-                    if order.volume == trade.volume:
-                        order.traded = trade.volume
-                        order.status = Status.ALLTRADED
-                    else:
-                        order.traded = trade.volume
-                        order.status = Status.PARTTRADED
-                    self.on_order(order)
                     self.on_trade(trade)
 
             else:
