@@ -662,7 +662,7 @@ void TdApi::processRspQryOrder(Task *task)
 	if (task->task_data)
 	{
 		CUftAnsQueryOrderField *task_data = (CUftAnsQueryOrderField*)task->task_data;
-		data["Order"] = task_data->Order;
+		//data["Order"] = task_data->Order;
 		data["OrderRef"] = task_data->OrderRef;
 		data["MaginCheck"] = task_data->MaginCheck;
 		data["VolumeTotal"] = task_data->VolumeTotal;
@@ -827,12 +827,28 @@ void TdApi::newTradeApi(int nCnnMode)
 	this->api->RegisterSpi(this);
 };
 
-int TdApi::init(string szAccount, string szPwd)
+
+void TdApi::tasksetCPU(int nBindingRspCpuId, int nBindingRtnCpuId)
+{
+	this->api->TasksetCPU(nBindingRspCpuId, nBindingRtnCpuId);
+
+};
+
+
+void TdApi::registerFront(string pszFrontAddress, uint16_t nPort, string pszLocalAddr, uint16_t nReqPort, uint16_t nRspPort, uint16_t nLocalNotifyPort)
+{
+	this->api->RegisterFront((char*)pszFrontAddress.c_str(), nPort, (char*)pszLocalAddr.c_str(), nReqPort, nRspPort, nLocalNotifyPort);
+
+};
+
+int TdApi::init(string szAccount, string szPwd, int eExType)
 {
 	this->active = true;
 	this->task_thread = thread(&TdApi::processTask, this);
 
-	int i = this->api->Init((char*)szAccount.c_str(), (char*)szPwd.c_str());
+
+	int i = this->api->Init((char*)szAccount.c_str(), (char*)szPwd.c_str(), 0,0,100,(E_EXCHANGE_TYPE)eExType,0);
+
 	return i;
 };
 
@@ -866,9 +882,9 @@ int TdApi::reqUserLogout()
 	return i;
 };
 
-int TdApi::reqOrderInsert(string szCode, char bs, char kp, int dbPrice, int nVolume, int nOrderRef)
+int TdApi::reqOrderInsert(string szCode, char bs, char kp, double dbPrice, int nVolume, int64_t nOrderRef, char cOrderPriceType)
 {
-	int i = this->api->ReqOrderInsert((char*)szCode.c_str(), (T_UFT_FtdcOrderBs) bs, kp, dbPrice, nVolume, nOrderRef);
+	int i = this->api->ReqOrderInsert((char*)szCode.c_str(), (T_UFT_FtdcOrderBs) bs, kp, dbPrice, nVolume, nOrderRef, UFT_FTDC_TC_GFD, UFT_FTDC_VC_AV, 1, '1', cOrderPriceType);
 	return i;
 }
 
@@ -1180,6 +1196,8 @@ PYBIND11_MODULE(vnnsttd, m)
 	TdApi
 		.def(init<>())
 		.def("newTradeApi", &TdApi::newTradeApi)
+		.def("tasksetCPU", &TdApi::tasksetCPU)
+		.def("registerFront", &TdApi::registerFront)
 		.def("init", &TdApi::init)
 		.def("join", &TdApi::join)
 		.def("exit", &TdApi::exit)

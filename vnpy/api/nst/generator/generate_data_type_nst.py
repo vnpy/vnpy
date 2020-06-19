@@ -10,6 +10,8 @@ TYPE_CPP2PY = {
 
 class DataTypeGenerator:
     """DataType生成器"""
+    count = 0
+    count_ = 0
 
     def __init__(self, filename: str, prefix: str):
         """Constructor"""
@@ -57,6 +59,7 @@ class DataTypeGenerator:
 
                 new_line = f"{name} = {value}\n"
                 self.f_define.write(new_line)
+
             else:
                 content = words[1]
                 if "'" in content:
@@ -65,12 +68,20 @@ class DataTypeGenerator:
                     new_line = f"{name} = \'{value}\'\n"
                     self.f_define.write(new_line)
 
+
                 elif "-" in content:
                     name = content.split("-")[0]
                     value = content.split("-")[1]
 
                     new_line = f"{name} = -{value}\n"
                     self.f_define.write(new_line)
+        else:
+            name = words[1]
+            value = words[2]
+
+            new_line = f"{name} = {value}\n"
+            self.f_define.write(new_line)
+
 
     def process_typedef(self, line: str):
         """处理类型定义"""

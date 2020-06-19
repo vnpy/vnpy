@@ -215,17 +215,21 @@ public:
 
 	void newTradeApi(int nCnnMode);
 
-    int init(string szAccount, string szPwd);
+	void tasksetCPU(int nBindingRspCpuId, int nBindingRtnCpuId);
+
+    int init(string szAccount, string szPwd, int eExType);
 
     int join();
 
 	int exit();
 
+	void registerFront(string pszFrontAddress, uint16_t nPort, string pszLocalAddr, uint16_t nReqPort, uint16_t nRspPort, uint16_t nLocalNotifyPort);
+
 	int reqUserLogin();
 
 	int reqUserLogout();
 
-	int reqOrderInsert(string szCode, char bs, char kp, int dbPrice, int nVolume, int nOrderRef);
+	int reqOrderInsert(string szCode, char bs, char kp, double dbPrice, int nVolume, int64_t nOrderRef, char cOrderPriceType);
 
 	int reqOrderAction(int nOrderIndex, int nOrderRef);
 
