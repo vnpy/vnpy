@@ -401,6 +401,9 @@ class DaFutureApi(FutureApi):
 
     def onRspOrderInsert(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
+        if not data["OrderNo"]:
+            return
+
         errorid = error["ErrorID"]
         orderid = data["LocalNo"]
         order = self.orders[orderid]
@@ -410,7 +413,7 @@ class DaFutureApi(FutureApi):
             self.gateway.write_error("交易委托失败", error)
         else:
             timestamp = f"{data['OrderDate']} {data['OrderTime']}"
-            dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+            dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
             order.datetime = dt.replace(tzinfo=CHINA_TZ)
 
             self.order_info[order.orderid] = (data["OrderNo"], data["SystemNo"])
@@ -471,7 +474,7 @@ class DaFutureApi(FutureApi):
         """
         if data["TreatyCode"]:
             timestamp = f"{data['OrderDate']} {data['OrderTime']}"
-            dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+            dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
             dt = dt.replace(tzinfo=CHINA_TZ)
 
             order = OrderData(
@@ -511,7 +514,7 @@ class DaFutureApi(FutureApi):
     def update_trade(self, data: dict):
         """"""
         timestamp = f"{data['FilledDate']} {data['FilledTime']}"
-        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
         dt = dt.replace(tzinfo=CHINA_TZ)
 
         trade = TradeData(
