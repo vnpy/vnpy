@@ -2,7 +2,7 @@
 //
 
 #include "vnihqmd.h"
-#include "pch.h"
+
 
 ///-------------------------------------------------------------------------------------
 ///C++的回调函数将数据保存到队列中
@@ -532,10 +532,10 @@ void MdApi::processRtnDepthMarketData(Task *task)
 		data["Qty"] = task_data->Qty;
 		data["Turnover"] = task_data->Turnover;
 		data["AvgPrice"] = task_data->AvgPrice;
-		data["Bid"] = task_data->Bid;
-		data["Ask"] = task_data->Ask;
-		data["BidQty"] = task_data->BidQty;
-		data["AskQty"] = task_data->AskQty;
+		//data["Bid"] = task_data->Bid;
+		//data["Ask"] = task_data->Ask;
+		//data["BidQty"] = task_data->BidQty;
+		//data["AskQty"] = task_data->AskQty;
 		data["TradesCount"] = task_data->TradesCount;
 		data["TickerStatus"] = task_data->TickerStatus;
 		data["tickBid1"] = task_data->tickBid1;
@@ -543,6 +543,25 @@ void MdApi::processRtnDepthMarketData(Task *task)
 		data["Stk"] = task_data->Stk;
 		data["Opt"] = task_data->Opt;
 		data["R4"] = task_data->R4;
+
+		pybind11::list Ask;
+		pybind11::list Bid;
+		pybind11::list AskQty;
+		pybind11::list BidQty;
+
+		for (int i = 0; i < 10; i++)
+		{
+			Ask.append(task_data->Ask[i]);
+			Bid.append(task_data->Bid[i]);
+			AskQty.append(task_data->AskQty[i]);
+			BidQty.append(task_data->BidQty[i]);
+		}
+
+		data["Ask"] = Ask;
+		data["Bid"] = Bid;
+		data["BidQty"] = BidQty;
+		data["AskQty"] = AskQty;
+
 		delete task_data;
 	}
 	this->onRtnDepthMarketData(data);
