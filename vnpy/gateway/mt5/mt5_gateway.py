@@ -394,6 +394,8 @@ class Mt5Gateway(BaseGateway):
                         direction=order.direction,
                         datetime=datetime.now()
                     )
+                    order.traded = trade.volume
+                    self.on_order(order)
                     self.on_trade(trade)
 
             else:
