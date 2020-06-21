@@ -32,8 +32,8 @@ from vnpy.trader.object import (
 )
 
 PERIOD_M1 = 1
-PERIOD_H1 = 16385
-PERIOD_D1 = 16408
+PERIOD_H1 = 12
+PERIOD_D1 = 19
 
 FUNCTION_QUERYCONTRACT = 0
 FUNCTION_QUERYORDER = 1
@@ -213,12 +213,12 @@ class Mt5Gateway(BaseGateway):
     def query_contract(self) -> None:
         """"""
         mt5_req = {"type": FUNCTION_QUERYCONTRACT}
-        mt5_rep = self.client.send_request(mt5_req)
+        packet = self.client.send_request(mt5_req)
 
-        if mt5_rep:
+        if packet:
             self.write_log("MT5连接成功")
 
-        for d in mt5_rep["data"]:
+        for d in packet["data"]:
             contract = ContractData(
                 symbol=d["symbol"],
                 exchange=Exchange.OTC,
@@ -239,15 +239,15 @@ class Mt5Gateway(BaseGateway):
     def query_order(self) -> None:
         """"""
         mt5_req = {"type": FUNCTION_QUERYORDER}
-        mt5_rep = self.client.send_request(mt5_req)
+        packet = self.client.send_request(mt5_req)
 
-        for d in mt5_rep.get("data", []):
-            direction, order_type = ORDERTYPE_MT2VT[d["type"]]
+        for d in packet.get("data", []):
+            direction, order_type = ORDERTYPE_MT2VT[d["order_type"]]
 
-            sys_id = str(d["ticket"])
+            sys_id = str(d["order"])
 
-            if d["comment"]:
-                local_id = d["comment"]
+            if d["order_comment"]:
+                local_id = d["order_comment"]
             else:
                 local_id = sys_id
 
@@ -260,10 +260,10 @@ class Mt5Gateway(BaseGateway):
                 orderid=local_id,
                 direction=direction,
                 type=order_type,
-                price=d["price"],
-                volume=d["volume_initial"],
-                traded=d["volume_initial"] - d["volume_current"],
-                status=STATUS_MT2VT.get(d["state"], Status.SUBMITTING),
+                price=d["order_price"],
+                volume=d["order_volume_initial"],
+                traded=d["order_volume_initial"] - d["order_volume_current"],
+                status=STATUS_MT2VT.get(d["order_state"], Status.SUBMITTING),
                 gateway_name=self.gateway_name
             )
 
@@ -370,7 +370,7 @@ class Mt5Gateway(BaseGateway):
             )
             self.orders[local_id] = order
 
-        order.status = STATUS_MT2VT.get(data["state"], Status.SUBMITTING)
+        order.status = STATUS_MT2VT.get(data["order_state"], Status.SUBMITTING)
         order.traded = data["order_volume_initial"] - data["order_volume_current"]
         order.datetime = generate_datetime(data["order_time_setup"])
         self.on_order(order)
@@ -388,88 +388,88 @@ class Mt5Gateway(BaseGateway):
             )
             self.on_trade(trade)
 
-    def on_order_info123(self, packet: dict) -> None:
-        """"""
-        print("on_order", packet)
-        data = packet["data"]
+    # def on_order_info123(self, packet: dict) -> None:
+    #     """"""
+    #     print("on_order", packet)
+    #     data = packet["data"]
 
-        # Check Request Event
-        if data["event_type"] == EVENT_REQUEST:
-            if not data["magic"]:
-                return
-            local_id = str(data["magic"])
-            sys_id = data["order_"]
-            self.sys_local_map[sys_id] = local_id
-            self.local_sys_map[local_id] = sys_id
+    #     # Check Request Event
+    #     if data["event_type"] == EVENT_REQUEST:
+    #         if not data["magic"]:
+    #             return
+    #         local_id = str(data["magic"])
+    #         sys_id = data["order_"]
+    #         self.sys_local_map[sys_id] = local_id
+    #         self.local_sys_map[local_id] = sys_id
 
-            if sys_id in self.market_trades.keys():
-                order = self.orders[local_id]
-                trade = self.market_trades[sys_id]
-                trade.direction = order.direction
-                trade.orderid = order.orderid
-                order.status = self.temp_orders[sys_id]
-                order.traded = trade.volume
-                self.on_order(order)
-                self.on_trade(trade)
-                del self.market_trades[sys_id]
-                del self.temp_orders[sys_id]
+    #         if sys_id in self.market_trades.keys():
+    #             order = self.orders[local_id]
+    #             trade = self.market_trades[sys_id]
+    #             trade.direction = order.direction
+    #             trade.orderid = order.orderid
+    #             order.status = self.temp_orders[sys_id]
+    #             order.traded = trade.volume
+    #             self.on_order(order)
+    #             self.on_trade(trade)
+    #             del self.market_trades[sys_id]
+    #             del self.temp_orders[sys_id]
 
-            elif sys_id in self.temp_orders.keys():
-                order = self.orders[local_id]
-                order.status = self.temp_orders[sys_id]
-                self.on_order(order)
-                del self.temp_orders[sys_id]
+    #         elif sys_id in self.temp_orders.keys():
+    #             order = self.orders[local_id]
+    #             order.status = self.temp_orders[sys_id]
+    #             self.on_order(order)
+    #             del self.temp_orders[sys_id]
 
-        # Check TradeTransaction Event
-        else:
-            order_status = STATUS_MT2VT.get(data["order_state"], None)
+    #     # Check TradeTransaction Event
+    #     else:
+    #         order_status = STATUS_MT2VT.get(data["order_state"], None)
 
-            sys_id = data["order"]
-            local_id = self.sys_local_map.get(sys_id, None)
+    #         sys_id = data["order"]
+    #         local_id = self.sys_local_map.get(sys_id, None)
 
-            if local_id:
-                # cheque order status
-                order = self.orders[local_id]
-                order.status = order_status
-                self.on_order(order)
+    #         if local_id:
+    #             # cheque order status
+    #             order = self.orders[local_id]
+    #             order.status = order_status
+    #             self.on_order(order)
 
-                # cheque trade_status
-                if data["event_type"] == EVENT_HISTORY_ADD:
-                    trade = TradeData(
-                        symbol=data["symbol"],
-                        exchange=Exchange.OTC,
-                        tradeid=data["deal"],
-                        orderid=order.orderid,
-                        price=data["price"],
-                        volume=data["volume"],
-                        gateway_name=self.gateway_name,
-                        direction=order.direction,
-                        datetime=datetime.now()
-                    )
-                    if order.volume == trade.volume:
-                        order.traded = trade.volume
-                        order.status = Status.ALLTRADED
-                    else:
-                        order.traded = trade.volume
-                        order.status = Status.PARTTRADED
-                    self.on_order(order)
-                    self.on_trade(trade)
+    #             # cheque trade_status
+    #             if data["event_type"] == EVENT_HISTORY_ADD:
+    #                 trade = TradeData(
+    #                     symbol=data["symbol"],
+    #                     exchange=Exchange.OTC,
+    #                     tradeid=data["deal"],
+    #                     orderid=order.orderid,
+    #                     price=data["price"],
+    #                     volume=data["volume"],
+    #                     gateway_name=self.gateway_name,
+    #                     direction=order.direction,
+    #                     datetime=datetime.now()
+    #                 )
+    #                 if order.volume == trade.volume:
+    #                     order.traded = trade.volume
+    #                     order.status = Status.ALLTRADED
+    #                 else:
+    #                     order.traded = trade.volume
+    #                     order.status = Status.PARTTRADED
+    #                 self.on_order(order)
+    #                 self.on_trade(trade)
 
-            else:
-                self.temp_orders[sys_id] = order_status
+    #         else:
+    #             self.temp_orders[sys_id] = order_status
 
-                if data["event_type"] == EVENT_HISTORY_ADD:
-                    trade = TradeData(
-                        symbol=data["symbol"],
-                        exchange=Exchange.OTC,
-                        tradeid=data["deal"],
-                        orderid=data["order"],
-                        price=data["price"],
-                        volume=data["volume"],
-                        gateway_name=self.gateway_name,
-                        datetime=datetime.now()
-                    )
-                    self.market_trades[sys_id] = trade
+    #             if data["event_type"] == EVENT_HISTORY_ADD:
+    #                 trade = TradeData(
+    #                     symbol=data["symbol"],
+    #                     exchange=Exchange.OTC,
+    #                     tradeid=data["deal"],
+    #                     orderid=data["order"],
+    #                     price=data["price"],
+    #                     volume=data["volume"],
+    #                     gateway_name=self.gateway_name,
+    #                     datetime=datetime.now()
+    #                 )
+    #                 self.market_trades[sys_id] = trade
 
     def on_account_info(self, packet: dict) -> None:
         """"""
