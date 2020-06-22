@@ -32,8 +32,8 @@ from vnpy.trader.object import (
 )
 
 PERIOD_M1 = 1
-PERIOD_H1 = 12
-PERIOD_D1 = 19
+PERIOD_H1 = 16385
+PERIOD_D1 = 16408
 
 FUNCTION_QUERYCONTRACT = 0
 FUNCTION_QUERYORDER = 1
@@ -121,9 +121,7 @@ class Mt5Gateway(BaseGateway):
         self.position_symbols: Set[str] = set()
 
         self.orders: Dict[str, OrderData] = {}
-        self.market_trades: Dict[str, TradeData] = {}
-        self.temp_orders: Dict[str, str] = {}
-
+        
         self.sysid_order_map: Dict[str, OrderData] = {}
 
     def connect(self, setting: dict) -> None:
@@ -304,7 +302,7 @@ class Mt5Gateway(BaseGateway):
                 bar = BarData(
                     symbol=req.symbol,
                     exchange=Exchange.OTC,
-                    datetime=generate_datetime(d["time"]),
+                    datetime=generate_datetime2(d["time"]),
                     interval=req.interval,
                     volume=d["real_volume"],
                     open_price=d["open"],
