@@ -48,9 +48,6 @@ ORDER_STATE_PARTIAL = 3
 ORDER_STATE_FILLED = 4
 ORDER_STATE_REJECTED = 5
 
-EVENT_REQUEST = 10
-EVENT_HISTORY_ADD = 6
-
 POSITION_TYPE_BUY = 0
 POSITION_TYPE_SELL = 1
 
@@ -374,8 +371,6 @@ class Mt5Gateway(BaseGateway):
                 )
                 self.orders[local_id] = order
 
-            order.traded = data["order_volume_initial"] - data["order_volume_current"]
-
             if data["order_time_setup"]:
                 order.datetime = generate_datetime(data["order_time_setup"])
 
@@ -404,6 +399,8 @@ class Mt5Gateway(BaseGateway):
                     datetime=datetime.now().replace(tzinfo=LOCAL_TZ),
                     gateway_name=self.gateway_name
                 )
+                order.traded = trade.volume
+                self.on_order(order)
                 self.on_trade(trade)
 
     def on_account_info(self, packet: dict) -> None:
