@@ -42,7 +42,6 @@ FUNCTION_SUBSCRIBE = 3
 FUNCTION_SENDORDER = 4
 FUNCTION_CANCELORDER = 5
 
-ORDER_STATE_STARTED = 0
 ORDER_STATE_PLACED = 1
 ORDER_STATE_CANCELED = 2
 ORDER_STATE_PARTIAL = 3
@@ -51,11 +50,6 @@ ORDER_STATE_REJECTED = 5
 
 POSITION_TYPE_BUY = 0
 POSITION_TYPE_SELL = 1
-
-TRADE_TRANSACTION_ORDER_ADD = 0
-TRADE_TRANSACTION_ORDER_UPDATE = 1
-TRADE_TRANSACTION_ORDER_DELETE = 2
-TRADE_TRANSACTION_HISTORY_ADD = 6
 
 TYPE_BUY = 0
 TYPE_SELL = 1
@@ -71,12 +65,12 @@ INTERVAL_VT2MT = {
 }
 
 STATUS_MT2VT = {
-    ORDER_STATE_STARTED: Status.SUBMITTING,
-    ORDER_STATE_PLACED: Status.NOTTRADED,
-    ORDER_STATE_CANCELED: Status.CANCELLED,
-    ORDER_STATE_PARTIAL: Status.PARTTRADED,
-    ORDER_STATE_FILLED: Status.ALLTRADED,
-    ORDER_STATE_REJECTED: Status.REJECTED
+    0: Status.SUBMITTING,
+    1: Status.NOTTRADED,
+    2: Status.CANCELLED,
+    3: Status.PARTTRADED,
+    4: Status.ALLTRADED,
+    5: Status.REJECTED
 }
 
 ORDERTYPE_MT2VT = {
@@ -125,6 +119,8 @@ class Mt5Gateway(BaseGateway):
 
         self.orders: Dict[str, OrderData] = {}
         
+        self.sysid_order_map: Dict[str, OrderData] = {}
+
     def connect(self, setting: dict) -> None:
         """"""
         address = setting["通讯地址"]
@@ -345,7 +341,7 @@ class Mt5Gateway(BaseGateway):
         trans_type = data["trans_type"]
 
         # Map sys and local orderid
-        if trans_type == TRADE_TRANSACTION_ORDER_ADD:
+        if trans_type == 0:
             sys_id = str(data["order"])
 
             local_id = data["order_comment"]
@@ -355,11 +351,25 @@ class Mt5Gateway(BaseGateway):
             self.local_sys_map[local_id] = sys_id
             self.sys_local_map[sys_id] = local_id
         # Update order data
-        elif trans_type in {TRADE_TRANSACTION_ORDER_UPDATE, TRADE_TRANSACTION_ORDER_DELETE}:
+        elif trans_type in {1, 2}:
             sysid = str(data["order"])
             local_id = self.sys_local_map[sysid]
 
             order = self.orders.get(local_id, None)
+            if not order:
+                direction, order_type = ORDERTYPE_MT2VT[data["order_type"]]
+
+                order = OrderData(
+                    symbol=data["symbol"],
+                    exchange=Exchange.OTC,
+                    orderid=local_id,
+                    type=order_type,
+                    direction=direction,
+                    price=data["order_price"],
+                    volume=data["order_volume_initial"],
+                    gateway_name=self.gateway_name
+                )
+                self.orders[local_id] = order
 
             if data["order_time_setup"]:
                 order.datetime = generate_datetime(data["order_time_setup"])
@@ -369,12 +379,14 @@ class Mt5Gateway(BaseGateway):
 
             self.on_order(order)
         # Update trade data
-        elif trans_type == TRADE_TRANSACTION_HISTORY_ADD:
+        elif trans_type == 6:
             sysid = str(data["order"])
             local_id = self.sys_local_map[sysid]
 
             order = self.orders.get(local_id, None)
             if order:
+                if data["order_time_setup"]:
+                    order.datetime = generate_datetime(data["order_time_setup"])
 
                 trade = TradeData(
                     symbol=order.symbol,
@@ -388,7 +400,6 @@ class Mt5Gateway(BaseGateway):
                     gateway_name=self.gateway_name
                 )
                 order.traded = trade.volume
-                order.datetime = generate_datetime(data["order_time_setup"])
                 self.on_order(order)
                 self.on_trade(trade)
 
