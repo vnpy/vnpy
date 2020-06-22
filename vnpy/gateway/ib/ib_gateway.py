@@ -749,7 +749,7 @@ class IbApi(EWrapper):
             end = req.end
             end_str = end.strftime("%Y%m%d %H:%M:%S")
         else:
-            end = datetime.now()
+            end = datetime.now(self.local_tz)
             end_str = ""
 
         delta = end - req.start
