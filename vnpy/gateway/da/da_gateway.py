@@ -74,6 +74,7 @@ EXCHANGE_DA2VT = {
     "APEX": Exchange.APEX,
     "CME": Exchange.CME,
     "SGXQ": Exchange.SGX,
+    "HKEX": Exchange.HKFE,
     "CFFEX": Exchange.CFFEX,
     "SHFE": Exchange.SHFE,
     "DCE": Exchange.DCE,
@@ -382,15 +383,17 @@ class DaFutureApi(FutureApi):
             for exchange in EXCHANGE_DA2VT.values():
                 self.query_contract(exchange)
 
-            # self.reqid += 1
-            # self.reqQryExchange({}, self.reqid)
+                if exchange == Exchange.HKFE:
+                    self.query_contract(exchange, 2)
+
+            self.reqid += 1
+            self.reqQryExchange({}, self.reqid)
 
             # 查询账户信息
             self.query_account()
             self.query_position()
             self.query_order()
             self.query_trade()
-
         else:
             self.login_failed = True
             self.gateway.write_error("交易服务器登录失败", error)
@@ -426,10 +429,6 @@ class DaFutureApi(FutureApi):
         if errorid:
             self.gateway.write_error("交易撤单失败", error)
 
-    def onRspQueryMaxOrderVolume(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-
     def onRspSettlementInfoConfirm(self, data: dict, error: dict, reqid: int, last: bool):
         """
         Callback of settlment info confimation.
@@ -444,6 +443,7 @@ class DaFutureApi(FutureApi):
         Callback of instrument query.
         """
         product = PRODUCT_DA2VT.get(data["CommodityType"], None)
+
         if product:
             contract = ContractData(
                 symbol=data["CommodityCode"],
@@ -464,9 +464,17 @@ class DaFutureApi(FutureApi):
             symbol_currency_map[contract.symbol] = data["CommodityFCurrencyNo"]
 
             self.gateway.on_contract(contract)
+        else:
+            print(data)
 
         if last:
             self.gateway.write_log(f"{data['ExchangeNo']}合约信息查询成功")
+
+    def onRspQryExchange(self, data: dict, error: dict, reqid: int, last: bool):
+        """
+        Callback of order query.
+        """
+        print(data)
 
     def onRspQryOrder(self, data: dict, error: dict, reqid: int, last: bool):
         """
