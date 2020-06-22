@@ -1,6 +1,8 @@
 import threading
 from datetime import datetime
-from typing import Callable, Dict, Tuple, Set, List
+from typing import Callable, Dict, Set, List
+from dataclasses import dataclass
+
 import zmq
 import zmq.auth
 from zmq.backend.cython.constants import NOBLOCK
@@ -30,15 +32,15 @@ from vnpy.trader.object import (
 )
 
 PERIOD_M1 = 1
-PERIOD_H1 = 16385
-PERIOD_D1 = 16408
+PERIOD_H1 = 12
+PERIOD_D1 = 19
 
 FUNCTION_QUERYCONTRACT = 0
-FUNCTION_SUBSCRIBE = 1
-FUNCTION_SENDORDER = 2
-FUNCTION_CANCELORDER = 3
-FUNCTION_QUERYHISTORY = 4
-FUNCTION_QUERYORDER = 5
+FUNCTION_QUERYORDER = 1
+FUNCTION_QUERYHISTORY = 2
+FUNCTION_SUBSCRIBE = 3
+FUNCTION_SENDORDER = 4
+FUNCTION_CANCELORDER = 5
 
 ORDER_STATE_PLACED = 1
 ORDER_STATE_CANCELED = 2
@@ -49,10 +51,6 @@ ORDER_STATE_REJECTED = 5
 EVENT_REQUEST = 10
 EVENT_HISTORY_ADD = 6
 
-BUY = 2
-NET = 1
-SELL = -1
-
 POSITION_TYPE_BUY = 0
 POSITION_TYPE_SELL = 1
 
@@ -62,11 +60,6 @@ TYPE_BUY_LIMIT = 2
 TYPE_SELL_LIMIT = 3
 TYPE_BUY_STOP = 4
 TYPE_SELL_STOP = 5
-
-POSITION_MT2VT = {
-    POSITION_TYPE_BUY: Direction.LONG,
-    POSITION_TYPE_SELL: Direction.SHORT
-}
 
 INTERVAL_VT2MT = {
     Interval.MINUTE: PERIOD_M1,
@@ -116,21 +109,22 @@ class Mt5Gateway(BaseGateway):
         self.callbacks: Dict[str, Callable] = {
             "account": self.on_account_info,
             "price": self.on_price_info,
-            "on_order": self.update_order_info,
+            "order": self.on_order_info,
             "position": self.on_position_info
         }
 
         self.client = Mt5Client(self)
-        self.order_count = 100
+        self.order_count = 0
+
+        self.local_sys_map: Dict[str, str] = {}
+        self.sys_local_map: Dict[str, str] = {}
+        self.position_symbols: Set[str] = set()
 
         self.orders: Dict[str, OrderData] = {}
         self.market_trades: Dict[str, TradeData] = {}
         self.temp_orders: Dict[str, str] = {}
-        self.local_sys_map: Dict[str, str] = {}
-        self.sys_local_map: Dict[str, str] = {}
-        self.positions: Dict[Tuple[str, Direction], PositionData] = {}
-        self.position_symbol_map: Set[str] = set()
-        self.data_symbol_map: Set[str] = set()
+
+        self.sysid_order_map: Dict[str, OrderData] = {}
 
     def connect(self, setting: dict) -> None:
         """"""
@@ -170,64 +164,60 @@ class Mt5Gateway(BaseGateway):
             "cmd": cmd,
             "price": req.price,
             "volume": req.volume,
-            "magic": local_id,
+            "comment": local_id,
         }
 
         packet = self.client.send_request(mt5_req)
-
-        orderid = str(local_id)
-        order = req.create_order_data(orderid, self.gateway_name)
-
         result = packet["data"]["result"]
+
+        order = req.create_order_data(local_id, self.gateway_name)
         if result:
             order.status = Status.SUBMITTING
         else:
             order.status = Status.REJECTED
-            self.write_log(f"委托 {orderid} 拒单。请检查委托价格或者委托数量！")
+            self.write_log(f"委托{local_id}拒单，请检查委托价格或者委托数量！")
 
-        order.datetime = datetime.now()
         self.on_order(order)
-        self.orders[orderid] = order
+        self.orders[local_id] = order
 
-        return orderid
+        return order.vt_orderid
 
     def new_orderid(self) -> int:
         """"""
-        prefix = datetime.now().strftime("%H%M%S")
+        prefix = datetime.now().strftime("%Y%m%d_%H%M%S_")
 
         self.order_count += 1
-        suffix = str(self.order_count)
+        suffix = str(self.order_count).rjust(4, "0")
 
         orderid = prefix + suffix
-        orderid = int(orderid)
-
         return orderid
 
     def cancel_order(self, req: CancelRequest) -> None:
         """"""
-        cancelid = self.local_sys_map[req.orderid]
+        sys_id = self.local_sys_map[req.orderid]
 
         mt5_req = {
             "type": FUNCTION_CANCELORDER,
-            "ticket": int(cancelid)
+            "ticket": int(sys_id)
         }
 
         packet = self.client.send_request(mt5_req)
         result = packet["data"]["result"]
+
         if result is True:
-            self.write_log("交易撤销成功")
+            self.write_log(f"委托撤单成功{req.orderid}")
         elif result is False:
-            self.write_log("交易撤销失败")
+            self.write_log(f"委托撤单失败{req.orderid}")
 
     def query_contract(self) -> None:
         """"""
         mt5_req = {"type": FUNCTION_QUERYCONTRACT}
-        mt5_rep = self.client.send_request(mt5_req)
+        packet = self.client.send_request(mt5_req)
 
-        if mt5_rep:
+        if packet:
             self.write_log("MT5连接成功")
 
-        for d in mt5_rep["data"]:
+        for d in packet["data"]:
             contract = ContractData(
                 symbol=d["symbol"],
                 exchange=Exchange.OTC,
@@ -236,12 +226,50 @@ class Mt5Gateway(BaseGateway):
                 size=d["lot_size"],
                 pricetick=pow(10, -d["digits"]),
                 min_volume=d["min_lot"],
+                net_position=True,
+                stop_supported=True,
                 history_data=True,
                 gateway_name=self.gateway_name,
             )
             self.on_contract(contract)
 
         self.write_log("合约信息查询成功")
+
+    def query_order(self) -> None:
+        """"""
+        mt5_req = {"type": FUNCTION_QUERYORDER}
+        packet = self.client.send_request(mt5_req)
+
+        for d in packet.get("data", []):
+            direction, order_type = ORDERTYPE_MT2VT[d["order_type"]]
+
+            sys_id = str(d["order"])
+
+            if d["order_comment"]:
+                local_id = d["order_comment"]
+            else:
+                local_id = sys_id
+
+            self.local_sys_map[local_id] = sys_id
+            self.sys_local_map[sys_id] = local_id
+
+            order = OrderData(
+                symbol=d["symbol"],
+                exchange=Exchange.OTC,
+                orderid=local_id,
+                direction=direction,
+                type=order_type,
+                price=d["order_price"],
+                volume=d["order_volume_initial"],
+                traded=d["order_volume_initial"] - d["order_volume_current"],
+                status=STATUS_MT2VT.get(d["order_state"], Status.SUBMITTING),
+                datetime=generate_datetime(d["order_time_setup"]),
+                gateway_name=self.gateway_name
+            )
+            self.orders[local_id] = order
+            self.on_order(order)
+
+        self.write_log("委托信息查询成功")
 
     def query_account(self) -> None:
         """"""
@@ -250,34 +278,6 @@ class Mt5Gateway(BaseGateway):
     def query_position(self) -> None:
         """"""
         pass
-
-    def query_order(self) -> None:
-        """"""
-        mt5_req = {"type": FUNCTION_QUERYORDER}
-        mt5_rep = self.client.send_request(mt5_req)
-
-        if "data" not in mt5_rep:
-            return
-
-        for d in mt5_rep["data"]:
-            type_ = d["type"]
-            direction, order_type = ORDERTYPE_MT2VT[type_]
-            order = OrderData(
-                symbol=d["symbol"],
-                exchange=Exchange.OTC,
-                gateway_name=self.gateway_name,
-                orderid=d["magic_number"],
-                type=order_type,
-                direction=direction,
-                price=d["open_price"],
-                volume=d["lots"],
-                datetime=datetime.now()
-            )
-            self.on_order(order)
-            self.orders[order.orderid] = order
-            sys_id = d["ticket"]
-            self.sys_local_map[sys_id] = order.orderid
-            self.local_sys_map[order.orderid] = sys_id
 
     def query_history(self, req: HistoryRequest) -> List[BarData]:
         """
@@ -337,82 +337,76 @@ class Mt5Gateway(BaseGateway):
         if callback_func:
             callback_func(packet)
 
-    def update_order_info(self, packet: dict) -> None:
+    def on_order_info(self, packet: dict) -> None:
         """"""
         data = packet["data"]
+        if not data["order"]:
+            return
 
-        # Check Request Event
-        if data["event_type"] == EVENT_REQUEST:
-            if not data["magic"]:
-                return
-            local_id = str(data["magic"])
-            sys_id = data["order_"]
-            self.sys_local_map[sys_id] = local_id
+        trans_type = data["trans_type"]
+
+        # Map sys and local orderid
+        if trans_type == 0:
+            sys_id = str(data["order"])
+
+            local_id = data["order_comment"]
+            if not local_id:
+                local_id = sys_id
+
             self.local_sys_map[local_id] = sys_id
+            self.sys_local_map[sys_id] = local_id
+        # Update order data
+        elif trans_type in {1, 2}:
+            sysid = str(data["order"])
+            local_id = self.sys_local_map[sysid]
 
-            if sys_id in self.market_trades.keys():
-                order = self.orders[local_id]
-                trade = self.market_trades[sys_id]
-                trade.direction = order.direction
-                trade.orderid = order.orderid
-                order.status = self.temp_orders[sys_id]
-                order.traded = trade.volume
-                self.on_order(order)
+            order = self.orders.get(local_id, None)
+            if not order:
+                direction, order_type = ORDERTYPE_MT2VT[data["order_type"]]
+
+                order = OrderData(
+                    symbol=data["symbol"],
+                    exchange=Exchange.OTC,
+                    orderid=local_id,
+                    type=order_type,
+                    direction=direction,
+                    price=data["order_price"],
+                    volume=data["order_volume_initial"],
+                    gateway_name=self.gateway_name
+                )
+                self.orders[local_id] = order
+
+            order.traded = data["order_volume_initial"] - data["order_volume_current"]
+
+            if data["order_time_setup"]:
+                order.datetime = generate_datetime(data["order_time_setup"])
+
+            if data["trans_state"] in STATUS_MT2VT:
+                order.status = STATUS_MT2VT[data["trans_state"]]
+
+            self.on_order(order)
+        # Update trade data
+        elif trans_type == 6:
+            sysid = str(data["order"])
+            local_id = self.sys_local_map[sysid]
+
+            order = self.orders.get(local_id, None)
+            if order:
+                if data["order_time_setup"]:
+                    order.datetime = generate_datetime(data["order_time_setup"])
+
+                trade = TradeData(
+                    symbol=order.symbol,
+                    exchange=order.exchange,
+                    direction=order.direction,
+                    orderid=order.orderid,
+                    tradeid=data["deal"],
+                    price=data["trans_price"],
+                    volume=data["trans_volume"],
+                    datetime=datetime.now().replace(tzinfo=LOCAL_TZ),
+                    gateway_name=self.gateway_name
+                )
                 self.on_trade(trade)
-                del self.market_trades[sys_id]
-                del self.temp_orders[sys_id]
-
-            elif sys_id in self.temp_orders.keys():
-                order = self.orders[local_id]
-                order.status = self.temp_orders[sys_id]
-                self.on_order(order)
-                del self.temp_orders[sys_id]
-
-        # Check TradeTransaction Event
-        else:
-            order_status = STATUS_MT2VT.get(data["order_state"], None)
-
-            sys_id = data["order"]
-            local_id = self.sys_local_map.get(sys_id, None)
-
-            if local_id:
-                # cheque order status
-                order = self.orders[local_id]
-                order.status = order_status
-                self.on_order(order)
-
-                # cheque trade_status
-                if data["event_type"] == EVENT_HISTORY_ADD:
-                    trade = TradeData(
-                        symbol=data["symbol"],
-                        exchange=Exchange.OTC,
-                        tradeid=data["deal"],
-                        orderid=order.orderid,
-                        price=data["price"],
-                        volume=data["volume"],
-                        gateway_name=self.gateway_name,
-                        direction=order.direction,
-                        datetime=datetime.now()
-                    )
-                    order.traded = trade.volume
-                    self.on_order(order)
-                    self.on_trade(trade)
-
-            else:
-                self.temp_orders[sys_id] = order_status
-
-                if data["event_type"] == EVENT_HISTORY_ADD:
-                    trade = TradeData(
-                        symbol=data["symbol"],
-                        exchange=Exchange.OTC,
-                        tradeid=data["deal"],
-                        orderid=data["order"],
-                        price=data["price"],
-                        volume=data["volume"],
-                        gateway_name=self.gateway_name,
-                        datetime=datetime.now()
-                    )
-                    self.market_trades[sys_id] = trade
 
     def on_account_info(self, packet: dict) -> None:
         """"""
@@ -428,87 +422,40 @@ class Mt5Gateway(BaseGateway):
 
     def on_position_info(self, packet: dict) -> None:
         """"""
-        if "data" not in packet:
-            if self.positions:
-                for position_symbol in self.position_symbol_map:
-                    key_ = (position_symbol, NET)
-                    if self.positions.get(key_, None): 
-                        position = self.positions.get(key_, None)
-                        position.volume = 0
-                        position.price = 0
-                        position.pnl = 0
-                        self.on_position(position)
-                        del self.positions[key_]                   
-            return
-        
-        for d in packet["data"]:
-            symbol_ = d["symbol"]
-            self.data_symbol_map.add(symbol_)
+        positions = {}
 
-            direction = POSITION_MT2VT.get(d["type"], None)
+        data = packet.get("data", [])
+        for d in data:
+            position = PositionData(
+                symbol=d["symbol"],
+                exchange=Exchange.OTC,
+                direction=Direction.NET,
+                gateway_name=self.gateway_name
+            )
 
-            if direction == Direction.LONG:
-                otype = BUY
-            if direction == Direction.SHORT:
-                otype = SELL
-            key = (symbol_, otype)
+            if d["type"] == POSITION_TYPE_BUY:
+                position.volume = d["volume"]
+            else:
+                position.volume = -d["volume"]
 
-            position = self.positions.get(key, None)
-
-            if not position: 
-                position = PositionData(
-                    symbol=symbol_,
-                    exchange=Exchange.OTC,
-                    direction=direction,
-                    gateway_name=self.gateway_name
-                )
-            position.volume = d["volume"]
             position.price = d["price"]
             position.pnl = d["current_profit"]
-            self.positions[key] = position
- 
-            key = (symbol_, NET)
-            key1 = (symbol_, BUY)
-            key2 = (symbol_, SELL)
-            position = self.positions.get(key, None)
 
-            if not position:
+            positions[position.symbol] = position
+
+        for symbol in self.position_symbols:
+            if symbol not in positions:
                 position = PositionData(
-                    symbol=symbol_,
+                    symbol=symbol,
                     exchange=Exchange.OTC,
-                    gateway_name=self.gateway_name,
-                    direction=Direction.NET
+                    direction=Direction.NET,
+                    gateway_name=self.gateway_name
                 )
-            buy = self.positions.get(key1, None)
-            sell = self.positions.get(key2, None)
+                positions[symbol] = position
 
-            if otype == BUY:
-                position.volume = buy.volume
-                position.price = buy.price
-                position.pnl = buy.pnl
-
-            elif otype == SELL:
-                position.volume = -sell.volume
-                position.price = sell.price
-                position.pnl = sell.pnl
-    
-            self.positions[key] = position
+        for position in positions.values():
+            self.position_symbols.add(position.symbol)
             self.on_position(position)
-            self.position_symbol_map.add(symbol_)
-
-        for closed_symbol in self.position_symbol_map:
-            key_ = (closed_symbol, NET)
-            if self.positions.get(key_, None): 
-                closed_map = self.position_symbol_map - self.data_symbol_map
-                if closed_symbol in closed_map:
-                    position = self.positions.get(key_, None)
-                    position.volume = 0
-                    position.price = 0
-                    position.pnl = 0
-                    self.on_position(position)
-                    del self.positions[key_]
-
-        self.data_symbol_map.clear()
 
     def on_price_info(self, packet: dict) -> None:
         """"""
@@ -618,8 +565,26 @@ class Mt5Client:
         return data
 
 
-def generate_datetime(timestamp: str) -> datetime:
+def generate_datetime(timestamp: int) -> datetime:
     """"""
-    dt = datetime.strptime(timestamp, "%Y.%m.%d %H:%M")
+    dt = datetime.fromtimestamp(timestamp)
     dt = dt.replace(tzinfo=LOCAL_TZ)
     return dt
+
+
+def generate_datetime2(timestamp: int) -> datetime:
+    """"""
+    dt = datetime.strptime(str(timestamp), "%Y.%m.%d %H:%M")
+    dt = dt.replace(tzinfo=LOCAL_TZ)
+    return dt
+
+@dataclass
+class OrderBuf:
+    symbol: str
+    type: OrderType = OrderType.LIMIT
+    direction: Direction = None
+    price: float = 0
+    volume: float = 0
+    traded: float = 0
+    status: Status = Status.SUBMITTING
+    datetime: datetime = None
