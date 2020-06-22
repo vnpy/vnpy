@@ -359,6 +359,20 @@ class Mt5Gateway(BaseGateway):
             local_id = self.sys_local_map[sysid]
 
             order = self.orders.get(local_id, None)
+            if not order:
+                direction, order_type = ORDERTYPE_MT2VT[data["order_type"]]
+
+                order = OrderData(
+                    symbol=data["symbol"],
+                    exchange=Exchange.OTC,
+                    orderid=local_id,
+                    type=order_type,
+                    direction=direction,
+                    price=data["order_price"],
+                    volume=data["order_volume_initial"],
+                    gateway_name=self.gateway_name
+                )
+                self.orders[local_id] = order
 
             if data["order_time_setup"]:
                 order.datetime = generate_datetime(data["order_time_setup"])
@@ -374,6 +388,8 @@ class Mt5Gateway(BaseGateway):
 
             order = self.orders.get(local_id, None)
             if order:
+                if data["order_time_setup"]:
+                    order.datetime = generate_datetime(data["order_time_setup"])
 
                 trade = TradeData(
                     symbol=order.symbol,
@@ -387,7 +403,6 @@ class Mt5Gateway(BaseGateway):
                     gateway_name=self.gateway_name
                 )
                 order.traded = trade.volume
-                order.datetime = generate_datetime(data["order_time_setup"])
                 self.on_order(order)
                 self.on_trade(trade)
 
