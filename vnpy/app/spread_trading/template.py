@@ -103,11 +103,12 @@ class SpreadAlgoTemplate:
             )
             leg_traded = self.leg_traded[passive_symbol]
 
-            # For linear contract, traded volume must be same as target volume
+            # For linear contract, traded volume must be no less than target volume
             if not self.spread.is_inverse(leg.vt_symbol):
-                if leg_traded != leg_target:
+                if leg_target > 0 and leg_traded < leg_target:
                     finished = False
-                    break
+                elif leg_target < 0 and leg_traded > leg_target:
+                    finished = False
             # For inverse contract, the difference must be lower than min volume
             else:
                 leg_min_volume = self.spread.calculate_leg_volume(
@@ -115,9 +116,13 @@ class SpreadAlgoTemplate:
                 )
 
                 dif = leg_target - leg_traded
-                if abs(dif) < leg_min_volume:
+                if leg_target > 0 and dif >= leg_min_volume:
                     finished = False
-                    break
+                elif leg_target < 0 and dif <= -leg_min_volume:
+                    finished = False
+
+            if not finished:
+                break
 
         return finished
 
@@ -192,7 +197,12 @@ class SpreadAlgoTemplate:
 
         # Remove order from active list if all volume traded
         order = self.orders[trade.vt_orderid]
-        trade_volume = self.order_trade_volume[order.vt_orderid]
+        contract = self.get_contract(trade.vt_symbol)
+
+        trade_volume = round_to(
+            self.order_trade_volume[order.vt_orderid],
+            contract.min_volume
+        )
 
         if trade_volume == order.volume:
             vt_orderids = self.leg_orders[order.vt_symbol]

@@ -3,6 +3,7 @@
 
 from datetime import datetime
 from copy import copy
+from collections import defaultdict
 
 import wmi
 import pytz
@@ -72,7 +73,13 @@ OFFSET_DA2VT = {v: k for k, v in OFFSET_VT2DA.items()}
 
 EXCHANGE_DA2VT = {
     "APEX": Exchange.APEX,
-    "CME": Exchange.CME
+    "CME": Exchange.CME,
+    "SGXQ": Exchange.SGX,
+    "HKEX": Exchange.HKFE,
+    "CFFEX": Exchange.CFFEX,
+    "SHFE": Exchange.SHFE,
+    "DCE": Exchange.DCE,
+    "CZCE": Exchange.CZCE
 }
 EXCHANGE_VT2DA = {v: k for k, v in EXCHANGE_DA2VT.items()}
 
@@ -354,6 +361,8 @@ class DaFutureApi(FutureApi):
         self.auth_code = ""
         self.mac_address = get_mac_address()
 
+        self.exchange_page = defaultdict(int)
+
         self.orders = {}
         self.order_info = {}
 
@@ -377,12 +386,14 @@ class DaFutureApi(FutureApi):
             for exchange in EXCHANGE_DA2VT.values():
                 self.query_contract(exchange)
 
+            # self.reqid += 1
+            # self.reqQryExchange({}, self.reqid)
+
             # 查询账户信息
             self.query_account()
             self.query_position()
             self.query_order()
             self.query_trade()
-
         else:
             self.login_failed = True
             self.gateway.write_error("交易服务器登录失败", error)
@@ -393,6 +404,9 @@ class DaFutureApi(FutureApi):
 
     def onRspOrderInsert(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
+        if not data["OrderNo"]:
+            return
+
         errorid = error["ErrorID"]
         orderid = data["LocalNo"]
         order = self.orders[orderid]
@@ -402,7 +416,7 @@ class DaFutureApi(FutureApi):
             self.gateway.write_error("交易委托失败", error)
         else:
             timestamp = f"{data['OrderDate']} {data['OrderTime']}"
-            dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+            dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
             order.datetime = dt.replace(tzinfo=CHINA_TZ)
 
             self.order_info[order.orderid] = (data["OrderNo"], data["SystemNo"])
@@ -414,10 +428,6 @@ class DaFutureApi(FutureApi):
         errorid = error["ErrorID"]
         if errorid:
             self.gateway.write_error("交易撤单失败", error)
-
-    def onRspQueryMaxOrderVolume(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
 
     def onRspSettlementInfoConfirm(self, data: dict, error: dict, reqid: int, last: bool):
         """
@@ -432,7 +442,11 @@ class DaFutureApi(FutureApi):
         """
         Callback of instrument query.
         """
+        if error["ErrorID"]:
+            return
+
         product = PRODUCT_DA2VT.get(data["CommodityType"], None)
+
         if product:
             contract = ContractData(
                 symbol=data["CommodityCode"],
@@ -455,7 +469,17 @@ class DaFutureApi(FutureApi):
             self.gateway.on_contract(contract)
 
         if last:
-            self.gateway.write_log("合约信息查询成功")
+            current_page = self.exchange_page[contract.exchange] + 1
+            self.gateway.write_log(f"{contract.exchange.value}第{current_page}页合约信息查询成功")
+
+            self.exchange_page[contract.exchange] += 1
+            self.query_contract(contract.exchange, self.exchange_page[contract.exchange])
+
+    def onRspQryExchange(self, data: dict, error: dict, reqid: int, last: bool):
+        """
+        Callback of order query.
+        """
+        print(data)
 
     def onRspQryOrder(self, data: dict, error: dict, reqid: int, last: bool):
         """
@@ -463,7 +487,7 @@ class DaFutureApi(FutureApi):
         """
         if data["TreatyCode"]:
             timestamp = f"{data['OrderDate']} {data['OrderTime']}"
-            dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+            dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
             dt = dt.replace(tzinfo=CHINA_TZ)
 
             order = OrderData(
@@ -503,7 +527,7 @@ class DaFutureApi(FutureApi):
     def update_trade(self, data: dict):
         """"""
         timestamp = f"{data['FilledDate']} {data['FilledTime']}"
-        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
         dt = dt.replace(tzinfo=CHINA_TZ)
 
         trade = TradeData(
@@ -782,14 +806,14 @@ class DaFutureApi(FutureApi):
         self.reqid += 1
         self.reqQryTotalPosition(da_req, self.reqid)
 
-    def query_contract(self, exchange, page=1):
+    def query_contract(self, exchange, page=0):
         """
         Query contract data.
         """
         da_exchange = EXCHANGE_VT2DA[exchange]
 
         req = {
-            "PageIndex": page,
+            "PageIndex": page * 1000,
             "ExchangeNo": da_exchange
         }
 
