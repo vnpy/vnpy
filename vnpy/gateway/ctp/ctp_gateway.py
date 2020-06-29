@@ -366,7 +366,7 @@ class CtpMdApi(MdApi):
         # If not connected, then start connection first.
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
-            self.createFtdcMdApi(str(path) + "\\Md")
+            self.createFtdcMdApi((str(path) + "\\Md").encode("GBK"))
 
             self.registerFront(address)
             self.init()
@@ -424,7 +424,7 @@ class CtpTdApi(TdApi):
 
         self.connect_status = False
         self.login_status = False
-        self.auth_staus = False
+        self.auth_status = False
         self.login_failed = False
 
         self.userid = ""
@@ -459,7 +459,7 @@ class CtpTdApi(TdApi):
     def onRspAuthenticate(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         if not error['ErrorID']:
-            self.auth_staus = True
+            self.auth_status = True
             self.gateway.write_log("交易服务器授权验证成功")
             self.login()
         else:
@@ -745,7 +745,7 @@ class CtpTdApi(TdApi):
 
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
-            self.createFtdcTraderApi(str(path) + "\\Td")
+            self.createFtdcTraderApi((str(path) + "\\Td").encode("GBK"))
 
             self.subscribePrivateTopic(0)
             self.subscribePublicTopic(0)

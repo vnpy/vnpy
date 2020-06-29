@@ -643,7 +643,7 @@ class XtpTdApi(TdApi):
         """"""
         account = AccountData(
             accountid=self.userid,
-            balance=data["buying_power"],
+            balance=data["total_asset"],
             frozen=data["withholding_amount"],
             gateway_name=self.gateway_name
         )

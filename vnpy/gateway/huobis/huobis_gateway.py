@@ -923,7 +923,7 @@ class HuobisTradeWebsocketApi(HuobisWebsocketApiBase):
                 symbol=order.symbol,
                 exchange=Exchange.HUOBI,
                 orderid=order.orderid,
-                tradeid=str(d["trade_id"]),
+                tradeid=str(d["id"]),
                 direction=order.direction,
                 offset=order.offset,
                 price=d["trade_price"],

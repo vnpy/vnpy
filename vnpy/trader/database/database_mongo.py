@@ -63,29 +63,6 @@ class DbBarData(Document):
         ]
     }
 
-    @staticmethod
-    def from_bar(bar: BarData):
-        """
-        Generate DbBarData object from BarData.
-        """
-        dt = bar.datetime.astimezone(DB_TZ)
-        dt = dt.replace(tzinfo=None)
-
-        db_bar = DbBarData()
-
-        db_bar.symbol = bar.symbol
-        db_bar.exchange = bar.exchange.value
-        db_bar.datetime = dt
-        db_bar.interval = bar.interval.value
-        db_bar.volume = bar.volume
-        db_bar.open_interest = bar.open_interest
-        db_bar.open_price = bar.open_price
-        db_bar.high_price = bar.high_price
-        db_bar.low_price = bar.low_price
-        db_bar.close_price = bar.close_price
-
-        return db_bar
-
     def to_bar(self):
         """
         Generate BarData object from DbBarData.
@@ -163,59 +140,6 @@ class DbTickData(Document):
             }
         ],
     }
-
-    @staticmethod
-    def from_tick(tick: TickData):
-        """
-        Generate DbTickData object from TickData.
-        """
-        dt = tick.datetime.astimezone(DB_TZ)
-        dt = dt.replace(tzinfo=None)
-
-        db_tick = DbTickData()
-
-        db_tick.symbol = tick.symbol
-        db_tick.exchange = tick.exchange.value
-        db_tick.datetime = dt
-        db_tick.name = tick.name
-        db_tick.volume = tick.volume
-        db_tick.open_interest = tick.open_interest
-        db_tick.last_price = tick.last_price
-        db_tick.last_volume = tick.last_volume
-        db_tick.limit_up = tick.limit_up
-        db_tick.limit_down = tick.limit_down
-        db_tick.open_price = tick.open_price
-        db_tick.high_price = tick.high_price
-        db_tick.low_price = tick.low_price
-        db_tick.pre_close = tick.pre_close
-
-        db_tick.bid_price_1 = tick.bid_price_1
-        db_tick.ask_price_1 = tick.ask_price_1
-        db_tick.bid_volume_1 = tick.bid_volume_1
-        db_tick.ask_volume_1 = tick.ask_volume_1
-
-        if tick.bid_price_2:
-            db_tick.bid_price_2 = tick.bid_price_2
-            db_tick.bid_price_3 = tick.bid_price_3
-            db_tick.bid_price_4 = tick.bid_price_4
-            db_tick.bid_price_5 = tick.bid_price_5
-
-            db_tick.ask_price_2 = tick.ask_price_2
-            db_tick.ask_price_3 = tick.ask_price_3
-            db_tick.ask_price_4 = tick.ask_price_4
-            db_tick.ask_price_5 = tick.ask_price_5
-
-            db_tick.bid_volume_2 = tick.bid_volume_2
-            db_tick.bid_volume_3 = tick.bid_volume_3
-            db_tick.bid_volume_4 = tick.bid_volume_4
-            db_tick.bid_volume_5 = tick.bid_volume_5
-
-            db_tick.ask_volume_2 = tick.ask_volume_2
-            db_tick.ask_volume_3 = tick.ask_volume_3
-            db_tick.ask_volume_4 = tick.ask_volume_4
-            db_tick.ask_volume_5 = tick.ask_volume_5
-
-        return db_tick
 
     def to_tick(self):
         """
@@ -325,11 +249,15 @@ class MongoManager(BaseDatabaseManager):
         return data
 
     @staticmethod
-    def to_update_param(d):
-        return {
+    def to_update_param(d) -> dict:
+        dt = d.datetime.astimezone(DB_TZ)
+        d.datetime = dt.replace(tzinfo=None)
+
+        param = {
             "set__" + k: v.value if isinstance(v, Enum) else v
             for k, v in d.__dict__.items()
         }
+        return param
 
     def save_bar_data(self, datas: Sequence[BarData], collection_name: str = None):
         for d in datas:
