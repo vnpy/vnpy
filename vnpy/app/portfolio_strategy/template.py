@@ -40,7 +40,7 @@ class StrategyTemplate(ABC):
 
         # Copy a new variables list here to avoid duplicate insert when multiple
         # strategy instances are created with the same strategy class.
-        self.variables: Dict = copy(self.variables)
+        self.variables: List = copy(self.variables)
         self.variables.insert(0, "inited")
         self.variables.insert(1, "trading")
         self.variables.insert(2, "pos")
