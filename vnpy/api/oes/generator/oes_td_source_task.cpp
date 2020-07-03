@@ -1,4 +1,48 @@
-    void TdApi::OnBusinessReject(const OesRptMsgHeadT *pRptMsgHead, const OesOrdRejectT *pOrderReject)
+    virtual int32       OnConnected(eOesApiChannelTypeT channelType, OesApiSessionInfoT *pSessionInfo, OesApiSubscribeInfoT *pSubscribeInfo = NULL)
+{
+	Task task = Task();
+	task.task_name = ONCONNECTED;
+	if (channelType)
+	{
+		eOesApiChannelTypeT *task_data = new eOesApiChannelTypeT();
+		*task_data = *channelType;
+		task.task_data = task_data;
+	}
+	if (pSessionInfo)
+	{
+		OesApiSessionInfoT *task_data = new OesApiSessionInfoT();
+		*task_data = *pSessionInfo;
+		task.task_data = task_data;
+	}
+	if (pSubscribeInfo)
+	{
+		OesApiSubscribeInfoT *task_data = new OesApiSubscribeInfoT();
+		*task_data = *pSubscribeInfo;
+		task.task_data = task_data;
+	}
+	this->task_queue.push(task);
+};
+
+    virtual int32       OnDisconnected(eOesApiChannelTypeT channelType, OesApiSessionInfoT *pSessionInfo)
+{
+	Task task = Task();
+	task.task_name = ONDISCONNECTED;
+	if (channelType)
+	{
+		eOesApiChannelTypeT *task_data = new eOesApiChannelTypeT();
+		*task_data = *channelType;
+		task.task_data = task_data;
+	}
+	if (pSessionInfo)
+	{
+		OesApiSessionInfoT *task_data = new OesApiSessionInfoT();
+		*task_data = *pSessionInfo;
+		task.task_data = task_data;
+	}
+	this->task_queue.push(task);
+};
+
+    void TdApi::OnBusinessReject(const OesRptMsgHeadT *pRptMsgHead, const OesOrdRejectT *pOrderReject) = 0
 {
 	Task task = Task();
 	task.task_name = ONBUSINESSREJECT;
@@ -17,7 +61,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnOrderInsert(const OesRptMsgHeadT *pRptMsgHead, const OesOrdCnfmT *pOrderInsert)
+    void TdApi::OnOrderInsert(const OesRptMsgHeadT *pRptMsgHead, const OesOrdCnfmT *pOrderInsert) = 0
 {
 	Task task = Task();
 	task.task_name = ONORDERINSERT;
@@ -36,7 +80,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnOrderReport(const OesRptMsgHeadT *pRptMsgHead, const OesOrdCnfmT *pOrderReport)
+    void TdApi::OnOrderReport(const OesRptMsgHeadT *pRptMsgHead, const OesOrdCnfmT *pOrderReport) = 0
 {
 	Task task = Task();
 	task.task_name = ONORDERREPORT;
@@ -55,7 +99,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnTradeReport(const OesRptMsgHeadT *pRptMsgHead, const OesTrdCnfmT *pTradeReport)
+    void TdApi::OnTradeReport(const OesRptMsgHeadT *pRptMsgHead, const OesTrdCnfmT *pTradeReport) = 0
 {
 	Task task = Task();
 	task.task_name = ONTRADEREPORT;
@@ -74,7 +118,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnCashAssetVariation(const OesCashAssetReportT *pCashAssetRpt)
+    void TdApi::OnCashAssetVariation(const OesCashAssetReportT *pCashAssetRpt) = 0
 {
 	Task task = Task();
 	task.task_name = ONCASHASSETVARIATION;
@@ -87,7 +131,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnStockHoldingVariation(const OesStkHoldingReportT *pStkHoldingRpt)
+    void TdApi::OnStockHoldingVariation(const OesStkHoldingReportT *pStkHoldingRpt) = 0
 {
 	Task task = Task();
 	task.task_name = ONSTOCKHOLDINGVARIATION;
@@ -100,7 +144,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnOptionHoldingVariation(const OesOptHoldingReportT *pOptHoldingRpt)
+    void TdApi::OnOptionHoldingVariation(const OesOptHoldingReportT *pOptHoldingRpt) = 0
 {
 	Task task = Task();
 	task.task_name = ONOPTIONHOLDINGVARIATION;
@@ -113,7 +157,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnOptionUnderlyingHoldingVariation(const OesOptUnderlyingHoldingReportT *pUnderlyingHoldingRpt)
+    void TdApi::OnOptionUnderlyingHoldingVariation(const OesOptUnderlyingHoldingReportT *pUnderlyingHoldingRpt) = 0
 {
 	Task task = Task();
 	task.task_name = ONOPTIONUNDERLYINGHOLDINGVARIATION;
@@ -126,7 +170,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnSettlementConfirmedRpt(const OesRptMsgHeadT *pRptMsgHead, const OesOptSettlementConfirmReportT *pCnfmSettlementRpt)
+    void TdApi::OnSettlementConfirmedRpt(const OesRptMsgHeadT *pRptMsgHead, const OesOptSettlementConfirmReportT *pCnfmSettlementRpt) = 0
 {
 	Task task = Task();
 	task.task_name = ONSETTLEMENTCONFIRMEDRPT;
@@ -145,7 +189,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnFundTrsfReject(const OesRptMsgHeadT *pRptMsgHead, const OesFundTrsfRejectT *pFundTrsfReject)
+    void TdApi::OnFundTrsfReject(const OesRptMsgHeadT *pRptMsgHead, const OesFundTrsfRejectT *pFundTrsfReject) = 0
 {
 	Task task = Task();
 	task.task_name = ONFUNDTRSFREJECT;
@@ -164,7 +208,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnFundTrsfReport(const OesRptMsgHeadT *pRptMsgHead, const OesFundTrsfReportT *pFundTrsfReport)
+    void TdApi::OnFundTrsfReport(const OesRptMsgHeadT *pRptMsgHead, const OesFundTrsfReportT *pFundTrsfReport) = 0
 {
 	Task task = Task();
 	task.task_name = ONFUNDTRSFREPORT;
@@ -183,7 +227,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnMarketState(const OesMarketStateItemT *pMarketStateItem)
+    void TdApi::OnMarketState(const OesMarketStateItemT *pMarketStateItem) = 0
 {
 	Task task = Task();
 	task.task_name = ONMARKETSTATE;
@@ -196,7 +240,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnNotifyReport(const OesNotifyInfoReportT *pNotifyInfoRpt)
+    void TdApi::OnNotifyReport(const OesNotifyInfoReportT *pNotifyInfoRpt) = 0
 {
 	Task task = Task();
 	task.task_name = ONNOTIFYREPORT;
@@ -209,7 +253,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnReportSynchronizationRsp(const OesReportSynchronizationRspT *pReportSynchronization)
+    void TdApi::OnReportSynchronizationRsp(const OesReportSynchronizationRspT *pReportSynchronization) = 0
 {
 	Task task = Task();
 	task.task_name = ONREPORTSYNCHRONIZATIONRSP;
@@ -222,7 +266,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryOrder(const OesOrdItemT *pOrder, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryOrder(const OesOrdItemT *pOrder, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYORDER;
@@ -242,7 +286,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryTrade(const OesTrdItemT *pTrade, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryTrade(const OesTrdItemT *pTrade, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYTRADE;
@@ -262,7 +306,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryCashAsset(const OesCashAssetItemT *pCashAsset, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryCashAsset(const OesCashAssetItemT *pCashAsset, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYCASHASSET;
@@ -282,7 +326,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryStkHolding(const OesStkHoldingItemT *pStkHolding, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryStkHolding(const OesStkHoldingItemT *pStkHolding, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYSTKHOLDING;
@@ -302,7 +346,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryLotWinning(const OesLotWinningItemT *pLotWinning, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryLotWinning(const OesLotWinningItemT *pLotWinning, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYLOTWINNING;
@@ -322,7 +366,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryCustInfo(const OesCustItemT *pCust, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryCustInfo(const OesCustItemT *pCust, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYCUSTINFO;
@@ -342,7 +386,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryInvAcct(const OesInvAcctItemT *pInvAcct, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryInvAcct(const OesInvAcctItemT *pInvAcct, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYINVACCT;
@@ -362,7 +406,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryCommissionRate(const OesCommissionRateItemT *pCommissionRate, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryCommissionRate(const OesCommissionRateItemT *pCommissionRate, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYCOMMISSIONRATE;
@@ -382,7 +426,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryFundTransferSerial(const OesFundTransferSerialItemT *pFundTrsf, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryFundTransferSerial(const OesFundTransferSerialItemT *pFundTrsf, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYFUNDTRANSFERSERIAL;
@@ -402,7 +446,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryIssue(const OesIssueItemT *pIssue, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryIssue(const OesIssueItemT *pIssue, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYISSUE;
@@ -422,7 +466,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryStock(const OesStockItemT *pStock, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryStock(const OesStockItemT *pStock, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYSTOCK;
@@ -442,7 +486,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryEtf(const OesEtfItemT *pEtf, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryEtf(const OesEtfItemT *pEtf, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYETF;
@@ -462,7 +506,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryEtfComponent(const OesEtfComponentItemT *pEtfComponent, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryEtfComponent(const OesEtfComponentItemT *pEtfComponent, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYETFCOMPONENT;
@@ -482,7 +526,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryMarketState(const OesMarketStateItemT *pMarketState, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryMarketState(const OesMarketStateItemT *pMarketState, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYMARKETSTATE;
@@ -502,7 +546,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryOption(const OesOptionItemT *pOption, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryOption(const OesOptionItemT *pOption, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYOPTION;
@@ -522,7 +566,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryOptHolding(const OesOptHoldingItemT *pOptHolding, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryOptHolding(const OesOptHoldingItemT *pOptHolding, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYOPTHOLDING;
@@ -542,7 +586,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryOptUnderlyingHolding(const OesOptUnderlyingHoldingItemT *pUnderlyingHld, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryOptUnderlyingHolding(const OesOptUnderlyingHoldingItemT *pUnderlyingHld, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYOPTUNDERLYINGHOLDING;
@@ -562,7 +606,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryOptPositionLimit(const OesOptPositionLimitItemT *pPositionLimit, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryOptPositionLimit(const OesOptPositionLimitItemT *pPositionLimit, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYOPTPOSITIONLIMIT;
@@ -582,7 +626,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryOptPurchaseLimit(const OesOptPurchaseLimitItemT *pPurchaseLimit, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryOptPurchaseLimit(const OesOptPurchaseLimitItemT *pPurchaseLimit, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYOPTPURCHASELIMIT;
@@ -602,7 +646,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryOptExerciseAssign(const OesOptExerciseAssignItemT *pExerciseAssign, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryOptExerciseAssign(const OesOptExerciseAssignItemT *pExerciseAssign, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYOPTEXERCISEASSIGN;
@@ -622,7 +666,7 @@
 	this->task_queue.push(task);
 };
 
-    void TdApi::OnQueryNotifyInfo(const OesNotifyInfoItemT *pNotifyInfo, const OesQryCursorT *pCursor, int32 requestId)
+    void TdApi::OnQueryNotifyInfo(const OesNotifyInfoItemT *pNotifyInfo, const OesQryCursorT *pCursor, int32 requestId) = 0
 {
 	Task task = Task();
 	task.task_name = ONQUERYNOTIFYINFO;

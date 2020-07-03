@@ -7,42 +7,6 @@
 ///-------------------------------------------------------------------------------------
 ///C++的回调函数将数据保存到队列中
 ///-------------------------------------------------------------------------------------
-
-int32 TdApi::OnConnected(eOesApiChannelTypeT channelType, OesApiSessionInfoT *pSessionInfo, OesApiSubscribeInfoT *pSubscribeInfo)
-{
-	Task task = Task();
-	task.task_name = ONCONNECTED;
-	task.task_int =  channelType;
-
-	if (pSessionInfo)
-	{
-		OesApiSessionInfoT *task_data = new OesApiSessionInfoT();
-		*task_data = *pSessionInfo;
-		task.task_data = task_data;
-	}
-	this->task_queue.push(task);
-
-	return EAGAIN;
-
-};
-
-int32 TdApi::OnDisconnected(eOesApiChannelTypeT channelType, OesApiSessionInfoT *pSessionInfo)
-{
-	Task task = Task();
-	task.task_name = ONDISCONNECTED;
-	task.task_int = channelType;
-
-	if (pSessionInfo)
-	{
-		OesApiSessionInfoT *task_data = new OesApiSessionInfoT();
-		*task_data = *pSessionInfo;
-		task.task_data = task_data;
-	}
-	this->task_queue.push(task);
-
-	return EAGAIN;
-};
-
 void TdApi::OnBusinessReject(const OesRptMsgHeadT *pRptMsgHead, const OesOrdRejectT *pOrderReject)
 {
 	Task task = Task();
@@ -703,17 +667,6 @@ void TdApi::processTask()
 
             switch (task.task_name)
             {
-			case ONCONNECTED:
-			{
-				this->processConnected(&task);
-				break;
-			}
-
-			case ONDISCONNECTED:
-			{
-				this->processDisconnected(&task);
-				break;
-			}
 			case ONBUSINESSREJECT:
 			{
 				this->processBusinessReject(&task);
@@ -931,32 +884,6 @@ void TdApi::processTask()
     catch (const TerminatedError&)
     {
     }
-};
-
-int32 TdApi::processConnected(Task *task)
-{
-	gil_scoped_acquire acquire;
-	dict data;
-	if (task->task_data)
-	{
-		OesApiSessionInfoT *task_data = (OesApiSessionInfoT*)task->task_data;
-		data["remoteHostNum"] = task_data->remoteHostNum;
-		delete task_data;
-	}
-	this->onConnected(task->task_int, data);
-};
-
-int32 TdApi::processDisconnected(Task *task)
-{
-	gil_scoped_acquire acquire;
-	dict data;
-	if (task->task_data)
-	{
-		OesApiSessionInfoT *task_data = (OesApiSessionInfoT*)task->task_data;
-		data["remoteHostNum"] = task_data->remoteHostNum;
-		delete task_data;
-	}
-	this->onDisconnected(task->task_int, data);
 };
 
 
@@ -2156,59 +2083,7 @@ void TdApi::processQueryNotifyInfo(Task *task)
 ///-------------------------------------------------------------------------------------
 ///主动函数
 ///-------------------------------------------------------------------------------------
-bool TdApi::loadCfg(string pCfgFile)
-{
-	bool i = this->api->LoadCfg((char*)pCfgFile.c_str());
-}
 
-bool TdApi::setCustomizedIpAndMac(string pIpStr, string pMacStr)
-{
-	bool i = this->api->SetCustomizedIpAndMac((char*)pIpStr.c_str(), (char*)pMacStr.c_str());
-}
-
-bool TdApi::setCustomizedIp(string pIpStr)
-{
-	bool i = this->api->SetCustomizedIp((char*)pIpStr.c_str());
-}
-
-bool TdApi::setCustomizedMac(string pMacStr)
-{
-	bool  i = this->api->SetCustomizedMac((char*)pMacStr.c_str());
-}
-
-bool TdApi::setCustomizedDriverId(string pDriverStr)
-{
-	bool  i = this->api->SetCustomizedDriverId((char*)pDriverStr.c_str());
-}
-
-void TdApi::setThreadUsername(string pUsername)
-{
-	this->api->SetThreadUsername((char*)pUsername.c_str());
-}
-
-
-void TdApi::setThreadPassword(string pPassword)
-{
-	this->api->SetThreadPassword((char*)pPassword.c_str());
-}
-
-
-void TdApi::setThreadEnvId(int clEnvId)
-{
-	this->api->SetThreadEnvId(clEnvId);
-}
-
-void TdApi::setThreadSubscribeEnvId(int subscribeEnvId)
-{
-	this->api->SetThreadSubscribeEnvId(subscribeEnvId);
-}
-
-void TdApi::init()
-{
-	this->active = true;
-	this->task_thread = thread(&TdApi::processTask, this);
-	this->api->Start();
-}
 
 int TdApi::exit()
 {
@@ -2221,37 +2096,6 @@ int TdApi::exit()
 	this->api = NULL;
 	return 1;
 };
-
-int sendOrder(const dict &req)
-{
-	OesOrdReqT myreq = OesOrdReqT();
-	memset(&myreq, 0, sizeof(myreq));
-
-
-	getInt32(req, "clSeqNo", &myreq.clSeqNo);
-	getUint8(req, "mktId", &myreq.mktId);
-	getUint8(req, "ordType", &myreq.ordType);
-	getUint8(req, "bsType", &myreq.bsType);
-	getString(req, "invAcctId", myreq.invAcctId);
-	getString(req, "securityId", myreq.securityId);
-
-
-
-	getString(req, "custId", myreq.custId);
-	getString(req, "invAcctId", myreq.invAcctId);
-	getUint8(req, "mktId", &myreq.mktId);
-	getUint8(req, "isUnclosedOnly", &myreq.isUnclosedOnly);
-	getInt8(req, "clEnvId", &myreq.clEnvId);
-	getUint8(req, "securityType", &myreq.securityType);
-	getUint8(req, "bsType", &myreq.bsType);
-	getInt64(req, "clOrdId", &myreq.clOrdId);
-	getInt64(req, "clSeqNo", &myreq.clSeqNo);
-	getInt32(req, "startTime", &myreq.startTime);
-	getInt32(req, "endTime", &myreq.endTime);
-	getInt64(req, "userInfo", &myreq.userInfo);
-	int i = this->api->QueryOrder(&myreq, reqid);
-	return i;
-}
 
 
 int TdApi::queryOrder(const dict &req, int reqid)
@@ -2567,30 +2411,6 @@ class PyTdApi : public TdApi
 {
 public:
     using TdApi::TdApi;
-
-	void onConnected(int channelType, const dict &data) override
-	{
-		try
-		{
-			PYBIND11_OVERLOAD(void, TdApi, onConnected, channelType, data);
-		}
-		catch (const error_already_set &e)
-		{
-			cout << e.what() << endl;
-		}
-	};
-
-	void onDisconnected(int channelType, const dict &data) override
-	{
-		try
-		{
-			PYBIND11_OVERLOAD(void, TdApi, onDisconnected, channelType, data);
-		}
-		catch (const error_already_set &e)
-		{
-			cout << e.what() << endl;
-		}
-	};
     
 	void onBusinessReject(const dict &error, const dict &data) override
 	{
@@ -3057,8 +2877,6 @@ PYBIND11_MODULE(vnoestd, m)
 		.def("queryOptSettlementStatement", &TdApi::queryOptSettlementStatement)
 		.def("queryNotifyInfo", &TdApi::queryNotifyInfo)
 
-		.def("onConnected", &TdApi::onConnected)
-		.def("onDisconnected", &TdApi::onDisconnected)
 		.def("onBusinessReject", &TdApi::onBusinessReject)
 		.def("onOrderInsert", &TdApi::onOrderInsert)
 		.def("onOrderReport", &TdApi::onOrderReport)

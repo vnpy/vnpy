@@ -1,3 +1,7 @@
+virtual void onConnected(const dict &data, const dict &data, const dict &data) {};
+
+virtual void onDisconnected(const dict &data, const dict &data) {};
+
 virtual void onBusinessReject(const dict &error, const dict &data) {};
 
 virtual void onOrderInsert(const dict &error, const dict &data) {};

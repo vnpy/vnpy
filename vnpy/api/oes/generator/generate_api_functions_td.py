@@ -159,7 +159,7 @@ class ApiGenerator:
         line = line.replace("\t", "")
         line = line.replace("{}", "")
 
-        if "virtual void        On" in line:
+        if "virtual void        On" in line or "virtual int32       On" in line:
             self.process_callback(line)
         elif "int32               Query" in line:
             self.process_function(line)
@@ -334,16 +334,17 @@ class ApiGenerator:
                         f.write(
                             f"\t\t{type_} *task_data = ({type_}*)task->task_data;\n")
 
-                        if type_ in [
+                        if type_ not in [
                             "OesMarketStateItemT", "OesTrdItemT", "OesLotWinningItemT", 
                             "OesOrdItemT", "OesCustItemT", "OesFundTransferSerialItemT",
                             "OesIssueItemT", "OesStockItemT", "OesOptExerciseAssignItemT",
                             "OesEtfItemT", "OesOptionItemT", "OesOptUnderlyingHoldingItemT",
-                            "OesNotifyInfoItemT"
+                            "OesNotifyInfoItemT", "eOesApiChannelTypeT", "OesApiSessionInfoT",
+                            "pSubscribeInfo", "OesApiSubscribeInfoT"
                         ]:
-                            f.write(
-                                f"\t\tdata[\"{field}\"] = toUtf(task_data->{field});\n")
-                        else:
+                            # f.write(
+                            #     f"\t\tdata[\"{field}\"] = toUtf(task_data->{field});\n")
+                        # else:
                             struct_fields = self.final_structs[type_]
                             for struct_field, struct_type in struct_fields.items():
                                 if struct_type == "string":
@@ -444,5 +445,5 @@ class ApiGenerator:
 
 
 if __name__ == "__main__":
-    td_generator = ApiGenerator("../include/oes/oes_client_sample.h", "oes", "td", "TdApi")
+    td_generator = ApiGenerator("../include_for_generator/oes/oes_client_sample.h", "oes", "td", "TdApi")
     td_generator.run()

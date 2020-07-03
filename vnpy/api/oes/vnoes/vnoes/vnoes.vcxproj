@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{5BBEC6F2-B4B9-4B32-9757-F07E8BB4594A}</ProjectGuid>
+    <ProjectGuid>{A9E6ACD6-9BBB-4168-BB6D-4C6F0811FF28}</ProjectGuid>
     <RootNamespace>vnoes</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>

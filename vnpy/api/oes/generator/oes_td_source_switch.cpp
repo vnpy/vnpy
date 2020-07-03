@@ -1,3 +1,15 @@
+case ONCONNECTED:
+{
+	this->processConnected(&task);
+	break;
+}
+
+case ONDISCONNECTED:
+{
+	this->processDisconnected(&task);
+	break;
+}
+
 case ONBUSINESSREJECT:
 {
 	this->processBusinessReject(&task);

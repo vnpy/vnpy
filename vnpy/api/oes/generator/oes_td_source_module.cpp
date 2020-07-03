@@ -22,6 +22,8 @@
 .def("queryOptSettlementStatement", &TdApi::queryOptSettlementStatement)
 .def("queryNotifyInfo", &TdApi::queryNotifyInfo)
 
+.def("onConnected", &TdApi::onConnected)
+.def("onDisconnected", &TdApi::onDisconnected)
 .def("onBusinessReject", &TdApi::onBusinessReject)
 .def("onOrderInsert", &TdApi::onOrderInsert)
 .def("onOrderReport", &TdApi::onOrderReport)

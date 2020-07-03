@@ -22,7 +22,6 @@ struct Task
     void *task_error;	//错误指针
     int task_id;		//请求id
     bool task_last;		//是否为最后返回
-	int task_int;
 };
 
 class TerminatedError : std::exception
@@ -86,7 +85,7 @@ void getInt64(const dict &d, const char *key, INT64 *value)
 	if (d.contains(key))		//检查字典中是否存在该键值
 	{
 		object o = d[key];		//获取该键值
-		*value = o.cast<INT64>();
+		*value = o.cast<int64>();
 	}
 };
 
@@ -95,7 +94,7 @@ void getInt32(const dict &d, const char *key, INT32 *value)
 	if (d.contains(key))		//检查字典中是否存在该键值
 	{
 		object o = d[key];		//获取该键值
-		*value = o.cast<INT32>();
+		*value = o.cast<int32>();
 	}
 };
 
@@ -104,7 +103,7 @@ void getInt8(const dict &d, const char *key, INT8 *value)
 	if (d.contains(key))		//检查字典中是否存在该键值
 	{
 		object o = d[key];		//获取该键值
-		*value = o.cast<INT8>();
+		*value = o.cast<int32>();
 	}
 };
 
@@ -113,7 +112,7 @@ void getUint8(const dict &d, const char *key, UINT8 *value)
 	if (d.contains(key))		//检查字典中是否存在该键值
 	{
 		object o = d[key];		//获取该键值
-		*value = o.cast<UINT8>();
+		*value = o.cast<uint8>();
 	}
 };
 
@@ -122,7 +121,7 @@ void getUint32(const dict &d, const char *key, UINT32 *value)
 	if (d.contains(key))		//检查字典中是否存在该键值
 	{
 		object o = d[key];		//获取该键值
-		*value = o.cast<UINT32>();
+		*value = o.cast<uint32>();
 	}
 };
 

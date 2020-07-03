@@ -1,3 +1,45 @@
+void TdApi::processConnected(Task *task)
+{
+	gil_scoped_acquire acquire;
+	dict data;
+	if (task->task_data)
+	{
+		eOesApiChannelTypeT *task_data = (eOesApiChannelTypeT*)task->task_data;
+		delete task_data;
+	}
+	dict data;
+	if (task->task_data)
+	{
+		OesApiSessionInfoT *task_data = (OesApiSessionInfoT*)task->task_data;
+		delete task_data;
+	}
+	dict data;
+	if (task->task_data)
+	{
+		OesApiSubscribeInfoT *task_data = (OesApiSubscribeInfoT*)task->task_data;
+		delete task_data;
+	}
+	this->onConnected(data, data, data);
+};
+
+void TdApi::processDisconnected(Task *task)
+{
+	gil_scoped_acquire acquire;
+	dict data;
+	if (task->task_data)
+	{
+		eOesApiChannelTypeT *task_data = (eOesApiChannelTypeT*)task->task_data;
+		delete task_data;
+	}
+	dict data;
+	if (task->task_data)
+	{
+		OesApiSessionInfoT *task_data = (OesApiSessionInfoT*)task->task_data;
+		delete task_data;
+	}
+	this->onDisconnected(data, data);
+};
+
 void TdApi::processBusinessReject(Task *task)
 {
 	gil_scoped_acquire acquire;
@@ -511,7 +553,6 @@ void TdApi::processMarketState(Task *task)
 	if (task->task_data)
 	{
 		OesMarketStateItemT *task_data = (OesMarketStateItemT*)task->task_data;
-		data["pMarketStateItem"] = toUtf(task_data->pMarketStateItem);
 		delete task_data;
 	}
 	this->onMarketState(data);
@@ -561,7 +602,6 @@ void TdApi::processQueryOrder(Task *task)
 	if (task->task_data)
 	{
 		OesOrdItemT *task_data = (OesOrdItemT*)task->task_data;
-		data["pOrder"] = toUtf(task_data->pOrder);
 		delete task_data;
 	}
 	dict error;
@@ -584,7 +624,6 @@ void TdApi::processQueryTrade(Task *task)
 	if (task->task_data)
 	{
 		OesTrdItemT *task_data = (OesTrdItemT*)task->task_data;
-		data["pTrade"] = toUtf(task_data->pTrade);
 		delete task_data;
 	}
 	dict error;
@@ -718,7 +757,6 @@ void TdApi::processQueryLotWinning(Task *task)
 	if (task->task_data)
 	{
 		OesLotWinningItemT *task_data = (OesLotWinningItemT*)task->task_data;
-		data["pLotWinning"] = toUtf(task_data->pLotWinning);
 		delete task_data;
 	}
 	dict error;
@@ -741,7 +779,6 @@ void TdApi::processQueryCustInfo(Task *task)
 	if (task->task_data)
 	{
 		OesCustItemT *task_data = (OesCustItemT*)task->task_data;
-		data["pCust"] = toUtf(task_data->pCust);
 		delete task_data;
 	}
 	dict error;
@@ -837,7 +874,6 @@ void TdApi::processQueryFundTransferSerial(Task *task)
 	if (task->task_data)
 	{
 		OesFundTransferSerialItemT *task_data = (OesFundTransferSerialItemT*)task->task_data;
-		data["pFundTrsf"] = toUtf(task_data->pFundTrsf);
 		delete task_data;
 	}
 	dict error;
@@ -860,7 +896,6 @@ void TdApi::processQueryIssue(Task *task)
 	if (task->task_data)
 	{
 		OesIssueItemT *task_data = (OesIssueItemT*)task->task_data;
-		data["pIssue"] = toUtf(task_data->pIssue);
 		delete task_data;
 	}
 	dict error;
@@ -883,7 +918,6 @@ void TdApi::processQueryStock(Task *task)
 	if (task->task_data)
 	{
 		OesStockItemT *task_data = (OesStockItemT*)task->task_data;
-		data["pStock"] = toUtf(task_data->pStock);
 		delete task_data;
 	}
 	dict error;
@@ -906,7 +940,6 @@ void TdApi::processQueryEtf(Task *task)
 	if (task->task_data)
 	{
 		OesEtfItemT *task_data = (OesEtfItemT*)task->task_data;
-		data["pEtf"] = toUtf(task_data->pEtf);
 		delete task_data;
 	}
 	dict error;
@@ -962,7 +995,6 @@ void TdApi::processQueryMarketState(Task *task)
 	if (task->task_data)
 	{
 		OesMarketStateItemT *task_data = (OesMarketStateItemT*)task->task_data;
-		data["pMarketState"] = toUtf(task_data->pMarketState);
 		delete task_data;
 	}
 	dict error;
@@ -985,7 +1017,6 @@ void TdApi::processQueryOption(Task *task)
 	if (task->task_data)
 	{
 		OesOptionItemT *task_data = (OesOptionItemT*)task->task_data;
-		data["pOption"] = toUtf(task_data->pOption);
 		delete task_data;
 	}
 	dict error;
@@ -1070,7 +1101,6 @@ void TdApi::processQueryOptUnderlyingHolding(Task *task)
 	if (task->task_data)
 	{
 		OesOptUnderlyingHoldingItemT *task_data = (OesOptUnderlyingHoldingItemT*)task->task_data;
-		data["pUnderlyingHld"] = toUtf(task_data->pUnderlyingHld);
 		delete task_data;
 	}
 	dict error;
@@ -1167,7 +1197,6 @@ void TdApi::processQueryOptExerciseAssign(Task *task)
 	if (task->task_data)
 	{
 		OesOptExerciseAssignItemT *task_data = (OesOptExerciseAssignItemT*)task->task_data;
-		data["pExerciseAssign"] = toUtf(task_data->pExerciseAssign);
 		delete task_data;
 	}
 	dict error;
@@ -1190,7 +1219,6 @@ void TdApi::processQueryNotifyInfo(Task *task)
 	if (task->task_data)
 	{
 		OesNotifyInfoItemT *task_data = (OesNotifyInfoItemT*)task->task_data;
-		data["pNotifyInfo"] = toUtf(task_data->pNotifyInfo);
 		delete task_data;
 	}
 	dict error;

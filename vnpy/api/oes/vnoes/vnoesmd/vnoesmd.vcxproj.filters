@@ -21,27 +21,12 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\vnoes.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="vnoestd.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\oes\oes_api\samples\cpp_sample\oes_client_sample.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="vnoestd.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\include\oes\oes_api\samples\cpp_sample\oes_client_sample.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

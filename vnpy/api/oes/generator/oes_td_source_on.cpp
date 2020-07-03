@@ -1,3 +1,27 @@
+void onConnected(const dict &data, const dict &data, const dict &data) override
+{
+	try
+	{
+		PYBIND11_OVERLOAD(void, TdApi, onConnected, data, data, data);
+	}
+	catch (const error_already_set &e)
+	{
+		cout << e.what() << endl;
+	}
+};
+
+void onDisconnected(const dict &data, const dict &data) override
+{
+	try
+	{
+		PYBIND11_OVERLOAD(void, TdApi, onDisconnected, data, data);
+	}
+	catch (const error_already_set &e)
+	{
+		cout << e.what() << endl;
+	}
+};
+
 void onBusinessReject(const dict &error, const dict &data) override
 {
 	try

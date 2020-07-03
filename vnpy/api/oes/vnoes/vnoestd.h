@@ -46,9 +46,9 @@ using namespace Quant360;
 #define ONQUERYOPTPOSITIONLIMIT 31
 #define ONQUERYOPTPURCHASELIMIT 32
 #define ONQUERYOPTEXERCISEASSIGN 33
-#define ONQUERYNOTIFYINFO 34 
-#define ONCONNECTED 35
-#define ONDISCONNECTED 36
+#define ONQUERYNOTIFYINFO 34
+
+
 ///-------------------------------------------------------------------------------------
 ///C++ SPI的回调函数方法实现
 ///-------------------------------------------------------------------------------------
@@ -79,96 +79,88 @@ public:
     //API回调函数
     //-------------------------------------------------------------------------------------
 
-
-
-
 	/* 连接或重新连接完成后的回调函数 */
 	virtual int32       OnConnected(eOesApiChannelTypeT channelType, OesApiSessionInfoT *pSessionInfo, OesApiSubscribeInfoT *pSubscribeInfo = NULL);
 	/* 连接断开后的回调函数 */
 	virtual int32       OnDisconnected(eOesApiChannelTypeT channelType, OesApiSessionInfoT *pSessionInfo);
 
 	/* 委托拒绝回报 */
-	virtual void        OnBusinessReject(const OesRptMsgHeadT *pRptMsgHead, const OesOrdRejectT *pOrderReject);
+	virtual void        OnBusinessReject(const OesRptMsgHeadT *pRptMsgHead, const OesOrdRejectT *pOrderReject) = 0;
 	/* 委托已收回报 */
-	virtual void        OnOrderInsert(const OesRptMsgHeadT *pRptMsgHead, const OesOrdCnfmT *pOrderInsert);
+	virtual void        OnOrderInsert(const OesRptMsgHeadT *pRptMsgHead, const OesOrdCnfmT *pOrderInsert) = 0;
 	/* 委托确认回报 */
-	virtual void        OnOrderReport(const OesRptMsgHeadT *pRptMsgHead, const OesOrdCnfmT *pOrderReport);
+	virtual void        OnOrderReport(const OesRptMsgHeadT *pRptMsgHead, const OesOrdCnfmT *pOrderReport) = 0;
 	/* 成交确认回报 */
-	virtual void        OnTradeReport(const OesRptMsgHeadT *pRptMsgHead, const OesTrdCnfmT *pTradeReport);
+	virtual void        OnTradeReport(const OesRptMsgHeadT *pRptMsgHead, const OesTrdCnfmT *pTradeReport) = 0;
 	/* 资金变动通知 */
-	virtual void        OnCashAssetVariation(const OesCashAssetReportT *pCashAssetRpt);
+	virtual void        OnCashAssetVariation(const OesCashAssetReportT *pCashAssetRpt) = 0;
 	/* 股票持仓变动通知 */
-	virtual void        OnStockHoldingVariation(const OesStkHoldingReportT *pStkHoldingRpt);
+	virtual void        OnStockHoldingVariation(const OesStkHoldingReportT *pStkHoldingRpt) = 0;
 	/* 期权持仓变动通知 (适用于期权业务) */
-	virtual void        OnOptionHoldingVariation(const OesOptHoldingReportT *pOptHoldingRpt);
+	virtual void        OnOptionHoldingVariation(const OesOptHoldingReportT *pOptHoldingRpt) = 0;
 	/* 期权标的持仓变动通知 (适用于期权业务) */
-	virtual void        OnOptionUnderlyingHoldingVariation(const OesOptUnderlyingHoldingReportT *pUnderlyingHoldingRpt);
+	virtual void        OnOptionUnderlyingHoldingVariation(const OesOptUnderlyingHoldingReportT *pUnderlyingHoldingRpt) = 0;
 	/* 期权结算单确认回报 (适用于期权业务) */
-	virtual void        OnSettlementConfirmedRpt(const OesRptMsgHeadT *pRptMsgHead, const OesOptSettlementConfirmReportT *pCnfmSettlementRpt);
+	virtual void        OnSettlementConfirmedRpt(const OesRptMsgHeadT *pRptMsgHead, const OesOptSettlementConfirmReportT *pCnfmSettlementRpt) = 0;
 	/* 出入金委托拒绝回报 */
-	virtual void        OnFundTrsfReject(const OesRptMsgHeadT *pRptMsgHead, const OesFundTrsfRejectT *pFundTrsfReject);
+	virtual void        OnFundTrsfReject(const OesRptMsgHeadT *pRptMsgHead, const OesFundTrsfRejectT *pFundTrsfReject) = 0;
 	/* 出入金委托执行回报 */
-	virtual void        OnFundTrsfReport(const OesRptMsgHeadT *pRptMsgHead, const OesFundTrsfReportT *pFundTrsfReport);
+	virtual void        OnFundTrsfReport(const OesRptMsgHeadT *pRptMsgHead, const OesFundTrsfReportT *pFundTrsfReport) = 0;
 	/* 市场状态信息通知 */
-	virtual void        OnMarketState(const OesMarketStateItemT *pMarketStateItem);
+	virtual void        OnMarketState(const OesMarketStateItemT *pMarketStateItem) = 0;
 	/* 通知消息回报 */
-	virtual void        OnNotifyReport(const OesNotifyInfoReportT *pNotifyInfoRpt);
+	virtual void        OnNotifyReport(const OesNotifyInfoReportT *pNotifyInfoRpt) = 0;
 	/* 回报同步请求的响应 */
-	virtual void        OnReportSynchronizationRsp(const OesReportSynchronizationRspT *pReportSynchronization);
+	virtual void        OnReportSynchronizationRsp(const OesReportSynchronizationRspT *pReportSynchronization) = 0;
 
 	/* 查询委托信息回调 */
-	virtual void        OnQueryOrder(const OesOrdItemT *pOrder, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryOrder(const OesOrdItemT *pOrder, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询成交信息回调 */
-	virtual void        OnQueryTrade(const OesTrdItemT *pTrade, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryTrade(const OesTrdItemT *pTrade, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询资金信息回调 */
-	virtual void        OnQueryCashAsset(const OesCashAssetItemT *pCashAsset, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryCashAsset(const OesCashAssetItemT *pCashAsset, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询股票持仓信息回调 */
-	virtual void        OnQueryStkHolding(const OesStkHoldingItemT *pStkHolding, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryStkHolding(const OesStkHoldingItemT *pStkHolding, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询配号、中签信息回调 */
-	virtual void        OnQueryLotWinning(const OesLotWinningItemT *pLotWinning, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryLotWinning(const OesLotWinningItemT *pLotWinning, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询客户信息回调 */
-	virtual void        OnQueryCustInfo(const OesCustItemT *pCust, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryCustInfo(const OesCustItemT *pCust, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询股东账户信息回调 */
-	virtual void        OnQueryInvAcct(const OesInvAcctItemT *pInvAcct, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryInvAcct(const OesInvAcctItemT *pInvAcct, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询佣金信息回调 */
-	virtual void        OnQueryCommissionRate(const OesCommissionRateItemT *pCommissionRate, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryCommissionRate(const OesCommissionRateItemT *pCommissionRate, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询出入金流水信息回调 */
-	virtual void        OnQueryFundTransferSerial(const OesFundTransferSerialItemT *pFundTrsf, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryFundTransferSerial(const OesFundTransferSerialItemT *pFundTrsf, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询证券发行信息回调 */
-	virtual void        OnQueryIssue(const OesIssueItemT *pIssue, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryIssue(const OesIssueItemT *pIssue, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询证券信息回调 */
-	virtual void        OnQueryStock(const OesStockItemT *pStock, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryStock(const OesStockItemT *pStock, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询ETF产品信息回调 */
-	virtual void        OnQueryEtf(const OesEtfItemT *pEtf, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryEtf(const OesEtfItemT *pEtf, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询ETF成分股信息回调 */
-	virtual void        OnQueryEtfComponent(const OesEtfComponentItemT *pEtfComponent, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryEtfComponent(const OesEtfComponentItemT *pEtfComponent, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询市场状态信息回调 */
-	virtual void        OnQueryMarketState(const OesMarketStateItemT *pMarketState, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryMarketState(const OesMarketStateItemT *pMarketState, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询期权产品信息回调 (适用于期权业务) */
-	virtual void        OnQueryOption(const OesOptionItemT *pOption, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryOption(const OesOptionItemT *pOption, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询期权持仓信息回调 (适用于期权业务) */
-	virtual void        OnQueryOptHolding(const OesOptHoldingItemT *pOptHolding, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryOptHolding(const OesOptHoldingItemT *pOptHolding, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询期权标的持仓信息回调 (适用于期权业务) */
-	virtual void        OnQueryOptUnderlyingHolding(const OesOptUnderlyingHoldingItemT *pUnderlyingHld, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryOptUnderlyingHolding(const OesOptUnderlyingHoldingItemT *pUnderlyingHld, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询期权限仓额度信息回调 (适用于期权业务) */
-	virtual void        OnQueryOptPositionLimit(const OesOptPositionLimitItemT *pPositionLimit, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryOptPositionLimit(const OesOptPositionLimitItemT *pPositionLimit, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询期权限购额度信息回调 (适用于期权业务) */
-	virtual void        OnQueryOptPurchaseLimit(const OesOptPurchaseLimitItemT *pPurchaseLimit, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryOptPurchaseLimit(const OesOptPurchaseLimitItemT *pPurchaseLimit, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询期权行权指派信息回调 (适用于期权业务) */
-	virtual void        OnQueryOptExerciseAssign(const OesOptExerciseAssignItemT *pExerciseAssign, const OesQryCursorT *pCursor, int32 requestId);
+	virtual void        OnQueryOptExerciseAssign(const OesOptExerciseAssignItemT *pExerciseAssign, const OesQryCursorT *pCursor, int32 requestId) = 0;
 	/* 查询通知消息回调 */
-	virtual void        OnQueryNotifyInfo(const OesNotifyInfoItemT *pNotifyInfo, const OesQryCursorT *pCursor, int32 requestId);
-
+	virtual void        OnQueryNotifyInfo(const OesNotifyInfoItemT *pNotifyInfo, const OesQryCursorT *pCursor, int32 requestId) = 0;
 
 
     //-------------------------------------------------------------------------------------
     //task：任务
     //-------------------------------------------------------------------------------------
     void processTask();
-
-	int32 processConnected(Task *task);
-
-	int32 processDisconnected(Task *task);
 
 	void processBusinessReject(Task *task);
 
@@ -250,11 +242,6 @@ public:
     //i：整数
     //-------------------------------------------------------------------------------------
     
-
-	virtual void onConnected(int channelType, const dict &data) {};
-
-	virtual void onDisconnected(int channelType, const dict &data) {};
-
 	virtual void onBusinessReject(const dict &error, const dict &data) {};
 
 	virtual void onOrderInsert(const dict &error, const dict &data) {};
@@ -331,37 +318,25 @@ public:
     //req:主动函数的请求字典
     //-------------------------------------------------------------------------------------
 
-	bool loadCfg(string pCfgFile);
+    //void createFtdcTraderApi(string pszFlowPath = "");
 
-	bool setCustomizedIpAndMac(string pIpStr, string pMacStr);
+    //void release();
 
-	bool setCustomizedIp(string pIpStr);
+    //void init();
 
-	bool setCustomizedMac(string pMacStr);
-
-	bool setCustomizedDriverId(string pDriverStr);
-
-	void setThreadUsername(string pUsername);
-
-	void setThreadPassword(string pPassword);
-
-	void setThreadEnvId(int clEnvId);
-
-	void setThreadSubscribeEnvId(int subscribeEnvId);
-
-	void init();
+    //int join();
 
     int exit();
 
-	int sendOrder(const dict &req);
+    //string getTradingDay();
 
-	int sendCancelOrder(const dict &req);
+    //void registerFront(string pszFrontAddress);
 
-	int sendOptSettlementConfirm(const dict &req, const dict &req1);
+    //void subscribePrivateTopic(int nType);
 
-	int getTradingDay();
+    //void subscribePublicTopic(int nType);
 
-	int getClientOverview(const dict &req);
+
 
 	int queryOrder(const dict &req, int reqid);
 

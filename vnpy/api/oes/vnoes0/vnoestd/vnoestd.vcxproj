@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{9EE83317-F583-4ED9-BA96-1B8791C18D84}</ProjectGuid>
+    <ProjectGuid>{C06DB057-9C62-44FF-9688-EC2841DAE237}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>vnoestd</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
@@ -85,7 +85,6 @@
     <IncludePath>C:\vnstudio\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\oes;$(IncludePath)</IncludePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <LibraryPath>C:\vnstudio\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)..\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -150,8 +149,7 @@
       <PreprocessorDefinitions>NOMINMAX;_CRT_SECURE_NO_WARNINGS;NDEBUG;VNCTPMD_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
-      <DisableSpecificWarnings>4819</DisableSpecificWarnings>
+      <ForcedIncludeFiles>pch</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -164,14 +162,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\oes\oes_api\samples\cpp_sample\oes_client_sample.h" />
+    <ClInclude Include="..\..\include\sutil\cmnlib.h" />
+    <ClInclude Include="..\..\include\sutil\compiler.h" />
+    <ClInclude Include="..\..\include\sutil\stdc.h" />
+    <ClInclude Include="..\..\include\sutil\types.h" />
     <ClInclude Include="..\vnoes.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="vnoestd.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\include\oes\oes_api\samples\cpp_sample\oes_client_sample.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

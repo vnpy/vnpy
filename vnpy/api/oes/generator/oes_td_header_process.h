@@ -1,3 +1,7 @@
+void processConnected(Task *task);
+
+void processDisconnected(Task *task);
+
 void processBusinessReject(Task *task);
 
 void processOrderInsert(Task *task);
