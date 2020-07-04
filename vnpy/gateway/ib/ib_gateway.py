@@ -561,7 +561,7 @@ class IbApi(EWrapper):
 
         trade = TradeData(
             symbol=contract.conId,
-            exchange=EXCHANGE_IB2VT.get(contract.exchange, contract.exchange),
+            exchange=EXCHANGE_IB2VT.get(contract.exchange, Exchange.SMART),
             orderid=str(execution.orderId),
             tradeid=str(execution.execId),
             direction=DIRECTION_IB2VT[execution.side],
