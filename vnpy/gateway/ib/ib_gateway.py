@@ -416,7 +416,7 @@ class IbApi(EWrapper):
         order = OrderData(
             symbol=ib_contract.conId,
             exchange=EXCHANGE_IB2VT.get(
-                ib_contract.exchange, ib_contract.exchange),
+                ib_contract.exchange, Exchange.SMART),
             type=ORDERTYPE_IB2VT[ib_order.orderType],
             orderid=orderid,
             direction=DIRECTION_IB2VT[ib_order.action],
