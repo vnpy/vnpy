@@ -297,7 +297,8 @@ class CtaEngine(BaseEngine):
         price: float,
         volume: float,
         type: OrderType,
-        lock: bool
+        lock: bool,
+        timeInForce: str = 'GTC'
     ):
         """
         Send a new order to server.
@@ -311,6 +312,7 @@ class CtaEngine(BaseEngine):
             type=type,
             price=price,
             volume=volume,
+            timeInForce=timeInForce,
         )
 
         # Convert with offset converter
@@ -347,7 +349,8 @@ class CtaEngine(BaseEngine):
         offset: Offset,
         price: float,
         volume: float,
-        lock: bool
+        lock: bool,
+        timeInForce: str = 'GTC'
     ):
         """
         Send a limit order to server.
@@ -360,7 +363,8 @@ class CtaEngine(BaseEngine):
             price,
             volume,
             OrderType.LIMIT,
-            lock
+            lock,
+            timeInForce
         )
 
     def send_server_stop_order(
@@ -468,7 +472,8 @@ class CtaEngine(BaseEngine):
         price: float,
         volume: float,
         stop: bool,
-        lock: bool
+        lock: bool,
+        timeInForce: str = 'GTC'
     ):
         """
         """
@@ -487,7 +492,7 @@ class CtaEngine(BaseEngine):
             else:
                 return self.send_local_stop_order(strategy, direction, offset, price, volume, lock)
         else:
-            return self.send_limit_order(strategy, contract, direction, offset, price, volume, lock)
+            return self.send_limit_order(strategy, contract, direction, offset, price, volume, lock, timeInForce)
 
     def cancel_order(self, strategy: CtaTemplate, vt_orderid: str):
         """

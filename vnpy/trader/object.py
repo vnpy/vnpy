@@ -280,6 +280,7 @@ class OrderRequest:
     price: float = 0
     offset: Offset = Offset.NONE
     reference: str = ""
+    timeInForce: str = "GTC"
 
     def __post_init__(self):
         """"""
@@ -298,7 +299,7 @@ class OrderRequest:
             offset=self.offset,
             price=self.price,
             volume=self.volume,
-            gateway_name=gateway_name,
+            gateway_name=gateway_name
         )
         return order
 

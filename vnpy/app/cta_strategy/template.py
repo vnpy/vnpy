@@ -179,14 +179,15 @@ class CtaTemplate(ABC):
         price: float,
         volume: float,
         stop: bool = False,
-        lock: bool = False
+        lock: bool = False,
+        timeInForce: str = 'GTC'
     ):
         """
         Send a new order.
         """
         if self.trading:
             vt_orderids = self.cta_engine.send_order(
-                self, direction, offset, price, volume, stop, lock
+                self, direction, offset, price, volume, stop, lock, timeInForce
             )
             return vt_orderids
         else:
