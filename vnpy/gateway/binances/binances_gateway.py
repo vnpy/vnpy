@@ -54,7 +54,8 @@ STATUS_BINANCES2VT: Dict[str, Status] = {
     "PARTIALLY_FILLED": Status.PARTTRADED,
     "FILLED": Status.ALLTRADED,
     "CANCELED": Status.CANCELLED,
-    "REJECTED": Status.REJECTED
+    "REJECTED": Status.REJECTED,
+    "EXPIRED": Status.EXPIRED
 }
 
 ORDERTYPE_VT2BINANCES: Dict[OrderType, str] = {
@@ -359,7 +360,7 @@ class BinancesRestApi(RestClient):
 
         params = {
             "symbol": req.symbol,
-            "timeInForce": OrderRequest.timeInForce,
+            "timeInForce": req.timeInForce,
             "side": DIRECTION_VT2BINANCES[req.direction],
             "type": ORDERTYPE_VT2BINANCES[req.type],
             "price": float(req.price),
