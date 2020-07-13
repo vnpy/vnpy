@@ -108,6 +108,16 @@ void getInt8(const dict &d, const char *key, INT8 *value)
 	}
 };
 
+
+void getInt16(const dict &d, const char *key, INT16 *value)
+{
+	if (d.contains(key))		//检查字典中是否存在该键值
+	{
+		object o = d[key];		//获取该键值
+		*value = o.cast<INT16>();
+	}
+};
+
 void getUint8(const dict &d, const char *key, UINT8 *value)
 {
 	if (d.contains(key))		//检查字典中是否存在该键值

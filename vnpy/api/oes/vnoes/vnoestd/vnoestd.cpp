@@ -2159,26 +2159,33 @@ void TdApi::processQueryNotifyInfo(Task *task)
 bool TdApi::loadCfg(string pCfgFile)
 {
 	bool i = this->api->LoadCfg((char*)pCfgFile.c_str());
+	this->api->RegisterSpi(this);
+	
+	return i;
 }
 
 bool TdApi::setCustomizedIpAndMac(string pIpStr, string pMacStr)
 {
 	bool i = this->api->SetCustomizedIpAndMac((char*)pIpStr.c_str(), (char*)pMacStr.c_str());
+	return i;
 }
 
 bool TdApi::setCustomizedIp(string pIpStr)
 {
 	bool i = this->api->SetCustomizedIp((char*)pIpStr.c_str());
+	return i;
 }
 
 bool TdApi::setCustomizedMac(string pMacStr)
 {
 	bool  i = this->api->SetCustomizedMac((char*)pMacStr.c_str());
+	return i;
 }
 
 bool TdApi::setCustomizedDriverId(string pDriverStr)
 {
 	bool  i = this->api->SetCustomizedDriverId((char*)pDriverStr.c_str());
+	return i;
 }
 
 void TdApi::setThreadUsername(string pUsername)
@@ -2222,7 +2229,7 @@ int TdApi::exit()
 	return 1;
 };
 
-int sendOrder(const dict &req)
+int TdApi::sendOrder(const dict &req)
 {
 	OesOrdReqT myreq = OesOrdReqT();
 	memset(&myreq, 0, sizeof(myreq));
@@ -2234,25 +2241,99 @@ int sendOrder(const dict &req)
 	getUint8(req, "bsType", &myreq.bsType);
 	getString(req, "invAcctId", myreq.invAcctId);
 	getString(req, "securityId", myreq.securityId);
-
-
-
-	getString(req, "custId", myreq.custId);
-	getString(req, "invAcctId", myreq.invAcctId);
-	getUint8(req, "mktId", &myreq.mktId);
-	getUint8(req, "isUnclosedOnly", &myreq.isUnclosedOnly);
-	getInt8(req, "clEnvId", &myreq.clEnvId);
-	getUint8(req, "securityType", &myreq.securityType);
-	getUint8(req, "bsType", &myreq.bsType);
-	getInt64(req, "clOrdId", &myreq.clOrdId);
-	getInt64(req, "clSeqNo", &myreq.clSeqNo);
-	getInt32(req, "startTime", &myreq.startTime);
-	getInt32(req, "endTime", &myreq.endTime);
-	getInt64(req, "userInfo", &myreq.userInfo);
-	int i = this->api->QueryOrder(&myreq, reqid);
+	getInt32(req, "ordQty", &myreq.ordQty);
+	getInt32(req, "ordPrice", &myreq.ordPrice);
+	getInt64(req, "origClOrdId", &myreq.origClOrdId);
+	int i = this->api->SendOrder(&myreq);
 	return i;
 }
 
+
+int TdApi::sendCancelOrder(const dict &req)
+{
+	OesOrdCancelReqT myreq = OesOrdCancelReqT();
+	memset(&myreq, 0, sizeof(myreq));
+
+
+	getInt32(req, "clSeqNo", &myreq.clSeqNo);
+	getUint8(req, "mktId", &myreq.mktId);
+	getString(req, "invAcctId", myreq.invAcctId);
+	getString(req, "securityId", myreq.securityId);
+
+	getInt32(req, "origClSeqNo", &myreq.origClSeqNo);
+	getInt8(req, "origClEnvId", &myreq.origClEnvId);
+	getInt64(req, "origClOrdId", &myreq.origClOrdId);
+	int i = this->api->SendCancelOrder(&myreq);
+	return i;
+}
+
+
+int TdApi::sendOptSettlementConfirm(const dict &req)
+{
+	OesOptSettlementConfirmReqT myreq = OesOptSettlementConfirmReqT();
+	memset(&myreq, 0, sizeof(myreq));
+	getChar(req, "custId", myreq.custId);
+
+	OesOptSettlementConfirmRspT myreq1 = OesOptSettlementConfirmRspT();
+	memset(&myreq1, 0, sizeof(myreq1));
+	getChar(req, "custId", myreq1.custId);
+	//getInt16(req, "clientId", &myreq.clientId);
+	//getInt8(req, "clEnvId", &myreq.clEnvId);
+	//getInt32(req, "transDate", &myreq.transDate);
+	//getInt32(req, "transTime", &myreq.transTime);
+	//getInt32(req, "rejReason", &myreq.rejReason);
+
+
+	int i = this->api->SendOptSettlementConfirm(&myreq, &myreq1);
+	return i;
+}
+
+
+int TdApi::getTradingDay()
+{
+	int i = this->api->GetTradingDay();
+	return i;
+}
+
+
+int TdApi::getClientOverview(const dict &req)
+{
+	OesClientOverviewT myreq = OesClientOverviewT();
+	memset(&myreq, 0, sizeof(myreq));
+	getInt16(req, "clientId", &myreq.clientId);
+	getUint8(req, "clientType", &myreq.clientType);
+	getUint8(req, "clientStatus", &myreq.clientStatus);
+	getUint8(req, "isApiForbidden", &myreq.isApiForbidden);
+	getUint8(req, "isBlockTrader", &myreq.isBlockTrader);
+	getUint8(req, "businessScope", &myreq.businessScope);
+
+	getInt64(req, "logonTime", &myreq.logonTime);
+
+	getChar(req, "clientName", myreq.clientName);
+	getChar(req, "clientMemo", myreq.clientMemo);
+	getInt32(req, "sseStkPbuId", &myreq.sseStkPbuId);
+	getInt32(req, "sseStkPbuId", &myreq.sseStkPbuId);
+	getUint8(req, "sseQualificationClass", &myreq.sseQualificationClass);
+
+	getInt32(req, "szseStkPbuId", &myreq.szseStkPbuId);
+	getInt32(req, "szseOptPbuId", &myreq.szseOptPbuId);
+	getUint8(req, "szseQualificationClass", &myreq.szseQualificationClass);
+
+	getInt32(req, "currOrdConnected", &myreq.currOrdConnected);
+	getInt32(req, "currRptConnected", &myreq.currRptConnected);
+	getInt32(req, "currQryConnected", &myreq.currQryConnected);
+	getInt32(req, "maxOrdConnect", &myreq.maxOrdConnect);
+	getInt32(req, "maxRptConnect", &myreq.maxRptConnect);
+	getInt32(req, "maxQryConnect", &myreq.maxQryConnect);
+	getInt32(req, "ordTrafficLimit", &myreq.ordTrafficLimit);
+	getInt32(req, "qryTrafficLimit", &myreq.qryTrafficLimit);
+	getInt32(req, "associatedCustCnt", &myreq.associatedCustCnt);
+
+
+
+	int i = this->api->GetClientOverview(&myreq);
+	return i;
+}
 
 int TdApi::queryOrder(const dict &req, int reqid)
 {
@@ -3023,15 +3104,22 @@ PYBIND11_MODULE(vnoestd, m)
     class_<TdApi, PyTdApi> TdApi(m, "TdApi", module_local());
     TdApi
         .def(init<>())
-        //.def("createFtdcTraderApi", &TdApi::createFtdcTraderApi)
-        //.def("release", &TdApi::release)
-        //.def("init", &TdApi::init)
-        //.def("join", &TdApi::join)
-        .def("exit", &TdApi::exit)
-        //.def("getTradingDay", &TdApi::getTradingDay)
-        //.def("registerFront", &TdApi::registerFront)
-        //.def("subscribePublicTopic", &TdApi::subscribePublicTopic)
-        //.def("subscribePrivateTopic", &TdApi::subscribePrivateTopic)
+		.def("loadCfg", &TdApi::loadCfg)
+		.def("setCustomizedIpAndMac", &TdApi::setCustomizedIpAndMac)
+		.def("setCustomizedIp", &TdApi::setCustomizedIp)
+		.def("setCustomizedMac", &TdApi::setCustomizedMac)
+		.def("setCustomizedDriverId", &TdApi::setCustomizedDriverId)
+		.def("setThreadUsername", &TdApi::setThreadUsername)
+		.def("setThreadPassword", &TdApi::setThreadPassword)
+		.def("setThreadEnvId", &TdApi::setThreadEnvId)
+		.def("setThreadSubscribeEnvId", &TdApi::setThreadSubscribeEnvId)
+		.def("init", &TdApi::init)
+		.def("exit", &TdApi::exit)
+		.def("sendOrder", &TdApi::sendOrder)
+		.def("sendCancelOrder", &TdApi::sendCancelOrder)
+		.def("sendOptSettlementConfirm", &TdApi::sendOptSettlementConfirm)
+		.def("getTradingDay", &TdApi::getTradingDay)
+		.def("getClientOverview", &TdApi::getClientOverview)
 
 		.def("queryOrder", &TdApi::queryOrder)
 		.def("queryTrade", &TdApi::queryTrade)

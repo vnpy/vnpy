@@ -357,7 +357,7 @@ public:
 
 	int sendCancelOrder(const dict &req);
 
-	int sendOptSettlementConfirm(const dict &req, const dict &req1);
+	int sendOptSettlementConfirm(const dict &req);
 
 	int getTradingDay();
 
