@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 from datetime import datetime
 from copy import copy
+import pytz
 
 from vnpy.event import EventEngine
 from vnpy.trader.event import EVENT_TIMER
@@ -26,7 +27,7 @@ from vnpy.trader.object import (
     AccountData
 )
 from vnpy.trader.utility import get_folder_path
-from vnpy.api.dfitc import (
+from vnpy.api.sec import (
     MdApi,
     TdApi,
     DFITCSEC_PQF_Extend,
@@ -41,8 +42,13 @@ from vnpy.api.dfitc import (
     DFITCSEC_ED_Buy,
     DFITCSEC_ED_Sell,
     DFITCSEC_OT_CALL,
-    DFITCSEC_OT_PUT
-
+    DFITCSEC_OT_PUT,
+    DFITCSEC_COLLECTTYPE_APEX,
+    DFITCSEC_COLLECTTYPE_HS,
+    DFITCSEC_COLLECTTYPE_KD,
+    DFITCSEC_COLLECTTYPE_KS,
+    DFITCSEC_COMPRESS_TRUE,
+    DFITCSEC_COMPRESS_FALSE
 )
 
 EXCHANGE_SEC2VT = {
@@ -76,24 +82,45 @@ DIRECTION_VT2SEC = {
 }
 DIRECTION_SEC2VT: Dict[int, Direction] = {v: k for k, v in DIRECTION_VT2SEC.items()}
 
+HEDGE_DIRECTION = {
+    DFITCSEC_ED_Buy: 2,
+    DFITCSEC_ED_Sell: 1
+}
+
+COLLECTION_TYPE_VT2SEC = {
+    "顶点": DFITCSEC_COLLECTTYPE_APEX,
+    "恒生": DFITCSEC_COLLECTTYPE_HS,
+    "金证": DFITCSEC_COLLECTTYPE_KD,
+    "金仕达": DFITCSEC_COLLECTTYPE_KS
+}
+
+COMPRESS_VT2SEC = {
+    "Y": DFITCSEC_COMPRESS_TRUE,
+    "N": DFITCSEC_COMPRESS_FALSE
+}
+
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
+
 symbol_name_map: Dict[str, str] = {}
 symbol_pricetick_map: Dict[str, float] = {}
 
 
 class SecGateway(BaseGateway):
     """
-    VN Trader Gateway for sec .
+    VN Trader Gateway for dfitc .
     """
 
     default_setting: Dict[str, Any] = {
         "账号": "",
         "密码": "",
-        "客户号": 1,
         "行情地址": "",
         "交易地址": "",
         "行情协议": ["TCP", "UDP"],
         "授权码": "",
-        "产品号": ""
+        "产品号": "",
+        "看穿式监管采集接口类型": ["顶点", "恒生", "金证", "金仕达"],
+        "要求行情前置压缩行情": ["Y", "N"],
     }
 
     exchanges: List[Exchange] = list(EXCHANGE_VT2SEC.keys())
@@ -107,14 +134,15 @@ class SecGateway(BaseGateway):
 
     def connect(self, setting: dict) -> None:
         """"""
-        account_id = setting["账号"]
+        accountid = setting["账号"]
         password = setting["密码"]
-        client_id = int(setting["客户号"])
         md_address = setting["行情地址"]
         td_address = setting["交易地址"]
         quote_protocol = setting["行情协议"]
         auth_code = setting["授权码"]
         appid = setting["产品号"]
+        collection_type = COLLECTION_TYPE_VT2SEC[setting["看穿式监管采集接口类型"]]
+        compress_flag = COMPRESS_VT2SEC[setting["要求行情前置压缩行情"]]
 
         if (
             (not md_address.startswith("tcp://"))
@@ -132,22 +160,23 @@ class SecGateway(BaseGateway):
             md_address = md_address.replace("tcp", "udp")
 
         self.md_api.connect(
-            account_id,
+            accountid,
             password,
-            client_id,
             md_address,
             auth_code,
-            appid
+            appid,
+            collection_type,
+            compress_flag,
         )
         self.td_api.connect(
-            account_id,
+            accountid,
             password,
-            client_id,
             td_address,
             auth_code,
-            appid
+            appid,
+            collection_type,
         )
-        # self.init_query()
+        self.init_query()
 
     def close(self) -> None:
         """"""
@@ -208,24 +237,19 @@ class SecMdApi(MdApi):
         self.gateway: SecGateway = gateway
         self.gateway_name: str = gateway.gateway_name
 
-        self.account_id: str = ""
+        self.accountid: str = ""
         self.password: str = ""
-        self.client_id: int = 0
         self.md_address: str = ""
-        self.server_port: int = 0
-        self.session_id: int = 0
 
         self.connect_status: bool = False
         self.login_status: bool = False
-        self.compressflag: int = 1
+        self.compress_flag: int = 1
         self.auth_code: str = ""
         self.app_id: str = ""
-        self.collectInterType: int = 1
+        self.collection_type: int = 1
+        self.trading_option: bool = False
 
         self.reqid: int = 0
-
-        self.connect_status = False
-        self.login_status = False
         self.subscribed = set()
 
         self.sse_inited: bool = False
@@ -247,14 +271,14 @@ class SecMdApi(MdApi):
         if not error:
             self.gateway.write_log("股票行情服务器登录成功")
         else:
-            self.gateway.write_error("股票行情服务器登录失败", error)
+            self.gateway.write_error("股票期权行情服务器登录失败,", error)
 
     def onRspSOPUserLogin(self, data: dict, error: dict) -> None:
         if not error:
             self.gateway.write_log("股票期权行情服务器登录成功")
             self.login_status = True
         else:
-            self.gateway.write_error("股票期权行情服务器登录失败", error)
+            self.gateway.write_error("股票期权行情服务器登录失败,", error)
 
     def onRspError(self, error: dict) -> None:
         """"""
@@ -277,7 +301,8 @@ class SecMdApi(MdApi):
     def onSOPMarketData(self, data: dict) -> None:
         """"""
         timestamp = str(data["tradingDay"]) + str(data["updateTime"])
-        dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
+        dt = datetime.strptime(timestamp, "%Y%m%d%H:%M:%S.%f")
+        dt = dt.replace(tzinfo=CHINA_TZ)
 
         tick = TickData(
             symbol=data["securityID"],
@@ -323,7 +348,8 @@ class SecMdApi(MdApi):
     def onStockMarketData(self, data: dict) -> None:
         """"""
         timestamp = str(data["tradingDay"]) + str(data["updateTime"])
-        dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
+        dt = datetime.strptime(timestamp, "%Y%m%d%H:%M:%S.%f")
+        dt = dt.replace(tzinfo=CHINA_TZ)
 
         tick = TickData(
             symbol=data["securityID"],
@@ -404,46 +430,46 @@ class SecMdApi(MdApi):
 
     def connect(
         self,
-        account_id: str,
+        accountid: str,
         password: str,
-        client_id: int,
         md_address: str,
         auth_code,
-        appid
+        appid,
+        collection_type: int,
+        compress_flag: int,
     ) -> None:
         """"""
-        self.account_id = account_id
+        self.accountid = accountid
         self.password = password
-        self.client_id = client_id
         self.md_address = md_address
         self.auth_code = auth_code
         self.app_id = appid
+        self.collection_type = collection_type
+        self.compress_flag = compress_flag
 
         # Create API object
         if not self.connect_status:
             path = str(get_folder_path(self.gateway_name.lower()))
-            self.createDFITCMdApi(path, md_address)
-            self.init()
+            self.createDFITCMdApi(path)
+            self.init(md_address)
 
     def login_server(self) -> None:
         """"""
         self.reqid += 1
         data = {
             "requestID": self.reqid,
-            "accountID": self.account_id,
+            "accountID": self.accountid,
             "password": self.password,
-            "compressflag": self.compressflag,
+            "compressflag": self.compress_flag,
             "authenticCode": self.auth_code,
             "appID": self.app_id,
-            "collectInterType": self.collectInterType
+            "collectInterType": self.collection_type
         }
-        n = self.reqStockUserLogin(data)
+        self.reqSOPUserLogin(data)
 
         self.reqid += 1
         data["requestID"] = self.reqid
-        m = self.reqSOPUserLogin(data)
-
-        print("Md login: n, m", n, m)
+        self.reqStockUserLogin(data)
 
     def close(self) -> None:
         """"""
@@ -452,17 +478,19 @@ class SecMdApi(MdApi):
 
     def subscrbie(self, req: SubscribeRequest) -> None:
         """"""
-        if self.login_status_stock:
+        if self.login_status:
             self.reqid += 1
 
             if check_option_symbol(req.symbol):
                 symbol = str(EXCHANGE_VT2SEC[req.exchange] + req.symbol)
                 self.subscribeSOPMarketData(symbol, self.reqid)
+
             else:
                 symbol = str(EXCHANGE_VT2SEC[req.exchange] + req.symbol)
+                print("订阅股票信息：",symbol)
                 self.subscribeStockMarketData(symbol, self.reqid)
 
-        self.subscribed.add(req)
+            self.subscribed.add(req.symbol)
 
 
 class SecTdApi(TdApi):
@@ -474,23 +502,25 @@ class SecTdApi(TdApi):
         self.gateway: SecGateway = gateway
         self.gateway_name: str = gateway.gateway_name
 
-        self.account_id: str = ""
+        self.accountid: str = ""
         self.password: str = ""
-        self.client_id: str = ""
         self.auth_code: str = ""
-        self.compressflag: int = 0
+        self.compress_flag: int = 0
         self.auth_code: str = ""
         self.app_id: str = ""
-        self.collectInterType: int = 1
+        self.collection_type: int = 1
+        self.trading_day: str = ""
+        self.positions: dict = {}
+        self.trading_option: bool = False
 
-        self.session_id: int = 0
+        self.sessionid: str = ""
         self.reqid: int = 0
         self.localid: int = 10000
         self.orders: Dict[str, OrderData] = {}
 
         # Whether current account supports margin or option
         self.margin_trading = False
-        self.option_trading = False
+        # self.option_trading = False
 
         self.connect_status: bool = False
         self.login_status: bool = False
@@ -509,13 +539,19 @@ class SecTdApi(TdApi):
     def onRspStockUserLogin(self, data: dict, error: dict) -> None:
         if not error:
             self.gateway.write_log("股票交易服务器登录成功")
+            self.qry_stock_contracts()
         else:
             self.gateway.write_error("股票交易服务器登录失败", error)
 
     def onRspSOPUserLogin(self, data: dict, error: dict) -> None:
         if not error:
-            self.gateway.write_log("股票期权交易服务器登录成功")
+            self.trading_day = str(data["tradingDay"])
+            self.sessionid = str(data["sessionID"])
+
+            self.gateway.write_log(f"股票期权交易服务器登录成功")
             self.login_status = True
+
+            self.qry_option_contracts()
         else:
             self.gateway.write_error("股票期权交易服务器登录失败", error)
 
@@ -525,28 +561,28 @@ class SecTdApi(TdApi):
 
     def onStockEntrustOrderRtn(self, data: dict) -> None:
         """股票报单回报"""
-        # 更新最大报单编号
-        new_localid = data["localOrderID"]
-        self.localid = max(self.localid, new_localid)
+        localid = str(data["localOrderID"])
+        sessionid = str(data["sessionID"])
+        orderid = f"{sessionid}_{localid}"
 
-        # 获取报单数据对象
-        if new_localid in self.orders:
-            order = self.orders[new_localid]
+        if orderid in self.orders:
+            order = self.orders[orderid]
         else:
+            timestamp = self.trading_day + str(data["entrustTime"])
+            dt = datetime.strptime(timestamp, "%Y%m%d%H:%M:%S.%f")
+            dt = dt.replace(tzinfo=CHINA_TZ)
             order = OrderData(
                 symbol=data["securityID"],
                 exchange=EXCHANGE_SEC2VT[data["exchangeID"]],
-                orderid=str(new_localid),
+                orderid=orderid,
                 direction=DIRECTION_SEC2VT[data["entrustDirection"]],
                 price=data["entrustPrice"],
                 volume=data["entrustQty"],
                 datetime=data["entrustTime"],
-                product=Product.EQUITY,
                 gateway_name=self.gateway_name
             )
-            self.orders[new_localid] = order
+            self.orders[orderid] = order
 
-        # 确定委托状态
         if order.volume == order.traded:
             order.status = Status.ALLTRADED
         elif order.traded > 0:
@@ -558,29 +594,30 @@ class SecTdApi(TdApi):
 
     def onSOPEntrustOrderRtn(self, data: dict) -> None:
         """期权报单回报"""
-        # 更新最大报单编号
-        new_localid = data["localOrderID"]
-        self.localid = max(self.localid, new_localid)
+        localid = str(data["localOrderID"])
+        sessionid = str(data["sessionID"])
+        orderid = f"{sessionid}_{localid}"
 
-        # 获取报单数据对象
-        if new_localid in self.orders:
-            order = self.orders[new_localid]
+        if orderid in self.orders:
+            order = self.orders[orderid]
         else:
+            timestamp = self.trading_day + str(data["entrustTime"])
+            dt = datetime.strptime(timestamp, "%Y%m%d%H:%M:%S.%f")
+            dt = dt.replace(tzinfo=CHINA_TZ)
+
             order = OrderData(
                 symbol=data["securityID"],
                 exchange=EXCHANGE_SEC2VT[data["exchangeID"]],
-                orderid=str(new_localid),
+                orderid=orderid,
                 direction=DIRECTION_SEC2VT[data["entrustDirection"]],
                 offset=OFFSET_SEC2VT[data["openCloseFlag"]],
                 price=data["entrustPrice"],
                 volume=data["entrustQty"],
-                datetime=data["entrustTime"],
-                product=Product.OPTION,
+                datetime=dt,
                 gateway_name=self.gateway_name
             )
-            self.orders[new_localid] = order
+            self.orders[orderid] = order
 
-        # 确定委托状态
         if order.volume == order.traded:
             order.status = Status.ALLTRADED
         elif order.traded > 0:
@@ -592,102 +629,141 @@ class SecTdApi(TdApi):
 
     def onStockTradeRtn(self, data: dict) -> None:
         """股票成交推送"""
-        # 更新成交信息
+        # Update Trade info
+        timestamp = self.trading_day + str(data["tradeTime"])
+        dt = datetime.strptime(timestamp, "%Y%m%d%H:%M:%S.%f")
+
+        localid = str(data["localOrderID"])
+        sessionid = str(data["sessionID"])
+        orderid = f"{sessionid}_{localid}"
+        dt = dt.replace(tzinfo=CHINA_TZ)
         trade = TradeData(
             symbol=data["securityID"],
             exchange=EXCHANGE_SEC2VT[data["exchangeID"]],
             tradeid=data["tradeID"],
-            orderid=str(data["localOrderID"]),
+            orderid=orderid,
             direction=DIRECTION_SEC2VT[data["entrustDirection"]],
             price=data["tradePrice"],
             volume=data["tradeQty"],
-            datetime=data["tradeTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
 
         self.gateway.on_trade(trade)
 
-        # 获取报单数据对象
-        localid = data["localOrderID"]
-        order = self.orders.get(localid, None)
+        # Get order object
+        order = self.orders.get(orderid, None)
         if not order:
             return
 
         order.traded += trade.volume
         order.traded = min(order.volume, order.traded)
 
-        # 确定委托状态
+        # Check order status
         if order.volume == order.traded:
             order.status = Status.ALLTRADED
         elif order.traded > 0:
             order.status = Status.PARTTRADED
 
+        order.datetime = trade.datetime
         self.gateway.on_order(copy(order))
+
+        # Update positon igual al 0
+        trade_symbol = f"{data['securityID']}_{data['exchangeID']}"
+        pos = self.positions.get(trade_symbol, None)
+        if not pos:
+            return
+
+        trade_pos = trade.volume
+        if trade.direction == Direction.SHORT:
+            trade_pos = - trade_pos
+
+        if trade_pos + pos.volume == 0:
+            pos.volume = 0
+            self.gateway.on_position(pos)
 
     def onSOPTradeRtn(self, data: dict) -> None:
         """期权成交推送"""
-        # 更新成交信息
+        # Update Trade info
+        timestamp = self.trading_day + str(data["tradeTime"])
+        dt = datetime.strptime(timestamp, "%Y%m%d%H:%M:%S.%f")
+        dt = dt.replace(tzinfo=CHINA_TZ)
+        localid = str(data["localOrderID"])
+        sessionid = str(data["sessionID"])
+        orderid = f"{sessionid}_{localid}"
         trade = TradeData(
             symbol=data["securityID"],
             exchange=EXCHANGE_SEC2VT[data["exchangeID"]],
             tradeid=data["tradeID"],
-            orderid=str(data["localOrderID"]),
+            orderid=orderid,
             direction=DIRECTION_SEC2VT[data["entrustDirection"]],
             offset=OFFSET_SEC2VT[data["openCloseFlag"]],
             price=data["tradePrice"],
             volume=data["tradeQty"],
-            datetime=data["tradeTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
 
         self.gateway.on_trade(trade)
 
-        # 获取报单数据对象
-        localid = data["localOrderID"]
-        order = self.orders.get(localid, None)
-        if not order:
-            return
-
-        # 获取报单数据对象
-        localid = data["localOrderID"]
-        order = self.orders.get(localid, None)
+        # Get order objete
+        # localid = data["localOrderID"]
+        order = self.orders.get(orderid, None)
         if not order:
             return
 
         order.traded += trade.volume
         order.traded = min(order.volume, order.traded)
 
-        # 确定委托状态
+        # Check order status
         if order.volume == order.traded:
             order.status = Status.ALLTRADED
         elif order.traded > 0:
             order.status = Status.PARTTRADED
 
+        order.datetime = trade.datetime
+
         self.gateway.on_order(copy(order))
+
+        # Update positon igual al 0
+        if trade.offset == Offset.CLOSE:
+            hedge_direction = HEDGE_DIRECTION[data["entrustDirection"]]
+            trade_symbol = f"{data['securityID']}_{hedge_direction}"
+            pos = self.positions.get(trade_symbol, None)
+
+            if not pos:
+                return
+
+            if trade.volume - pos.volume == 0:
+                pos.volume = 0
+                self.gateway.on_position(pos)
 
     def onStockWithdrawOrderRtn(self, data: dict) -> None:
         """股票撤单推送"""
-        # 更新最大报单编号
-        new_localid = data["localOrderID"]
-        self.localid = max(self.localid, int(new_localid))
+        localid = str(data["localOrderID"])
+        sessionid = str(data["sessionID"])
+        orderid = f"{sessionid}_{localid}"
 
-        # 获取报单数据对象
-        if new_localid in self.orders:
-            order = self.orders[new_localid]
+        if orderid in self.orders:
+            order = self.orders[orderid]
+            dt = datetime.now().replace(tzinfo=CHINA_TZ)
+            order.datetime = dt
         else:
+            timestamp = self.trading_day + str(data["entrustTime"])
+            dt = datetime.strptime(timestamp, "%Y%m%d%H:%M:%S.%f")
+            dt = dt.replace(tzinfo=CHINA_TZ)
             order = OrderData(
                 symbol=data["securityID"],
                 exchange=EXCHANGE_SEC2VT[data["exchangeID"]],
-                orderid=str(new_localid),
+                orderid=orderid,
                 direction=DIRECTION_SEC2VT[data["entrustDirection"]],
                 price=data["entrustPrice"],
                 traded=data["tradeQty"],
                 volume=data["tradeQty"]+data["withdrawQty"],
-                datetime=data["entrustTime"],
-                product=Product.EQUITY,
+                datetime=dt,
                 gateway_name=self.gateway_name
             )
-            self.orders[new_localid] = order
+            self.orders[orderid] = order
 
         if data["withdrawQty"]:
             order.status = Status.CANCELLED
@@ -696,45 +772,69 @@ class SecTdApi(TdApi):
 
     def onSOPWithdrawOrderRtn(self, data: dict) -> None:
         """期权撤单推送"""
-        # 更新最大报单编号
-        new_localid = data["localOrderID"]
-        self.localid = max(self.localid, int(new_localid))
+        localid = str(data["localOrderID"])
+        sessionid = str(data["sessionID"])
+        orderid = f"{sessionid}_{localid}"
 
-        # 获取报单数据对象
-        if new_localid in self.orders:
-            order = self.orders[new_localid]
+        if orderid in self.orders:
+            order = self.orders[orderid]
         else:
+            timestamp = self.trading_day + str(data["entrustTime"])
+            dt = datetime.strptime(timestamp, "%Y%m%d%H:%M:%S.%f")
+            dt = dt.replace(tzinfo=CHINA_TZ)
             order = OrderData(
                 symbol=data["securityID"],
                 exchange=EXCHANGE_SEC2VT[data["exchangeID"]],
-                orderid=str(new_localid),
+                orderid=orderid,
                 direction=DIRECTION_SEC2VT[data["entrustDirection"]],
                 price=data["entrustPrice"],
                 traded=data["tradeQty"],
                 offset=OFFSET_SEC2VT[data["openCloseFlag"]],
                 volume=data["tradeQty"]+data["withdrawQty"],
-                datetime=data["entrustTime"],
-                product=Product.OPTION,
+                datetime=dt,
                 gateway_name=self.gateway_name
             )
-            self.orders[new_localid] = order
+            self.orders[orderid] = order
 
         if data["withdrawQty"]:
             order.status = Status.CANCELLED
 
         self.gateway.on_order(copy(order))
 
+    def OnRspStockEntrustOrder(self, data: dict, error: dict) -> None:
+        """股票发单错误"""
+        if error:
+            localid = str(error["localOrderID"])
+            sessionid = str(error["sessionID"])
+            orderid = f"{sessionid}_{localid}"
+            order = self.orders.get(orderid, None)
+
+            if order:
+                dt = datetime.now()
+                dt = dt.replace(tzinfo=CHINA_TZ)
+                order.datetime = dt
+                order.status = Status.REJECTED
+                self.gateway.on_order(order)
+
+                self.gateway.write_error("股票委托错误", error)
+
     def onRspSOPEntrustOrder(self, data: dict, error: dict) -> None:
         """期权发单错误"""
+        print("onRspSOPEntrustOrder", data, error)
         if error:
-            order = OrderData(
-                orderid=str(error["localOrderID"]),
-                status=Status.REJECTED,
-                gateway_name=self.gateway_name,
-            )
-            self.gateway.on_order(order)
+            localid = str(error["localOrderID"])
+            sessionid = str(error["sessionID"])
+            orderid = f"{sessionid}_{localid}"
+            order = self.orders.get(orderid, None)
 
-            self.gateway.write_error("期权委托错误", error)
+            if order:
+                dt = datetime.now()
+                dt = dt.replace(tzinfo=CHINA_TZ)
+                order.datetime = dt
+                order.status = Status.REJECTED
+                self.gateway.on_order(order)
+
+                self.gateway.write_error("期权委托错误", error)
 
     def onRspSOPWithdrawOrder(self, data: dict, error: dict) -> None:
         """撤单错误"""
@@ -770,7 +870,7 @@ class SecTdApi(TdApi):
         contract = ContractData(
             symbol=data["securityOptionID"],
             exchange=EXCHANGE_SEC2VT[data["exchangeID"]],
-            name=data["contractName"].decode("GBK"),
+            name=data["contractName"],
             size=data["contactUnit"],
             pricetick=data["miniPriceChange"],
             product=Product.OPTION,
@@ -780,13 +880,12 @@ class SecTdApi(TdApi):
             gateway_name=self.gateway_name
         )
 
-        # 期权类型
+        # Option type
         if data["optType"] == DFITCSEC_OT_CALL:
             contract.option_type = OptionType.CALL
         elif data["optType"] == DFITCSEC_OT_PUT:
             contract.option_type = OptionType.PUT
 
-        # 推送
         self.gateway.on_contract(contract)
 
         if last:
@@ -800,7 +899,6 @@ class SecTdApi(TdApi):
 
         account = AccountData(
             accountid=data["accountID"] + "_Stock",
-            available=data["availableFunds"],
             balance=data["totalFunds"],
             frozen=data["totalFunds"] - data["availableFunds"],
             gateway_name=self.gateway_name
@@ -811,9 +909,9 @@ class SecTdApi(TdApi):
         """期权资金账户查询回报"""
         if not data:
             return
+
         account = AccountData(
             accountid=data["accountID"] + "_Option",
-            available=data["availableFunds"],
             balance=data["totalFunds"],
             frozen=data["totalFunds"] - data["availableFunds"],
             gateway_name=self.gateway_name
@@ -829,26 +927,32 @@ class SecTdApi(TdApi):
             symbol=data["securityID"],
             exchange=EXCHANGE_SEC2VT[data["exchangeID"]],
             direction=Direction.NEt,
-            postiion=data["position"],
+            volume=data["totalQty"],
             price=data["avgPositionPrice"],
             gateway_name=self.gateway_name
         )
         self.gateway.on_position(pos)
 
+        pos_symbol = f"{data['securityID']}_{data['exchangeID']}"
+        self.positions[pos_symbol] = pos
+
     def onRspSOPQryPosition(self, data: dict, error: dict, last: bool) -> None:
         """期权持仓查询回报"""
-        if not data:
+        if not data or not data["securityOptionID"]:
             return
 
         pos = PositionData(
             symbol=data["securityOptionID"],
             exchange=EXCHANGE_SEC2VT[data["exchangeID"]],
             direction=DIRECTION_SEC2VT[data["entrustDirection"]],
-            postiion=data["position"],
+            volume=data["totalQty"],
             price=data["openAvgPrice"],
             gateway_name=self.gateway_name
         )
         self.gateway.on_position(pos)
+
+        pos_symbol = f"{data['securityOptionID']}_{data['entrustDirection']}"
+        self.positions[pos_symbol] = pos
 
     def onRspStockQryAccountInfo(self, data: dict, error: dict) -> None:
         """"""
@@ -988,7 +1092,8 @@ class SecTdApi(TdApi):
 
     def onRspStockUserPasswordUpdate(self, data: dict, error: dict) -> None:
         """"""
-        pas
+        pass
+
     def onRspStockQryEntrustOrder(self, data: dict, error: dict, last: bool) -> None:
         """"""
         pass
@@ -1135,43 +1240,48 @@ class SecTdApi(TdApi):
 
     def connect(
         self,
-        account_id: str,
+        accountid: str,
         password: str,
-        client_id: int,
         td_address: str,
         auth_code,
-        appid
+        appid,
+        collection_type,
+        # trading_option
     ) -> None:
         """"""
-        self.account_id = account_id
+        self.accountid = accountid
         self.password = password
-        self.client_id = client_id
         self.auth_code = auth_code
         self.app_id = appid
+        self.collection_type = collection_type
+        # self.trading_option = trading_option
 
         # Create API object
         if not self.connect_status:
             path = str(get_folder_path(self.gateway_name.lower()))
-            self.createDFITCSECTraderApi(path, td_address)
-            self.init()
+            self.createDFITCSECTraderApi(path)
+
+            self.init(td_address)
+            self.subscribePrivateTopic(2)
 
     def login_server(self) -> None:
         """"""
         self.reqid += 1
         data = {
             "requestID": self.reqid,
-            "accountID": self.account_id,
+            "accountID": self.accountid,
             "password": self.password,
-            "compressflag": self.compressflag,
+            "compressflag": self.compress_flag,
             "authenticCode": self.auth_code,
             "appID": self.app_id,
-            "collectInterType": self.collectInterType
+            "collectInterType": self.collection_type
         }
-        self.reqStockUserLogin(data)
+
+        self.reqSOPUserLogin(data)
 
         self.reqid += 1
         data["requestID"] = self.reqid
-        self.reqSOPUserLogin(data)
+        self.reqStockUserLogin(data)
 
     def close(self) -> None:
         """"""
@@ -1181,7 +1291,7 @@ class SecTdApi(TdApi):
     def query_option_info(self) -> None:
         """"""
         self.reqid += 1
-        self.queryOptionAuctionInfo({}, self.session_id, self.reqid)
+        self.queryOptionAuctionInfo({}, self.sessionid, self.reqid)
 
     def send_order(self, req: OrderRequest) -> str:
         """"""
@@ -1194,58 +1304,65 @@ class SecTdApi(TdApi):
             "entrustPrice": req.price,
             "entrustQty": int(req.volume),
             "localOrderID": self.localid,
-            "accountID": self.account_id,
+            "accountID": self.accountid,
             "requestID": self.reqid,
             "entrustDirection": DIRECTION_VT2SEC[req.direction]
         }
 
         # Option order
         if check_option_symbol(req.symbol):
-            sec_req["orderType"] = OPTION_PRICE_TYPE_VT2SEC.get(req.ordertype, "")
-            sec_req["openCloseFlag"] = OFFSET_VT2SEC.get(req.offset, "")
+            sec_req["orderType"] = OPTION_PRICE_TYPE_VT2SEC[req.type]
+            sec_req["openCloseFlag"] = OFFSET_VT2SEC[req.offset]
             self.reqSOPEntrustOrder(sec_req)
-            product = Product.OPTION
         # Stock order
         else:
-            sec_req["orderType"] = STOCK_PRICE_TYPE_VT2SEC.get(req.ordertype, "")
+            sec_req["orderType"] = STOCK_PRICE_TYPE_VT2SEC[req.type]
             self.reqStockEntrustOrder(sec_req)
-            product = Product.EQUITY
+
+        localid = str(self.localid)
+        orderid = f"{self.sessionid}_{localid}"
 
         order = OrderData(
             symbol=req.symbol,
             exchange=req.exchange,
-            orderid=str(self.localid),
+            orderid=orderid,
             price=req.price,
             volume=req.volume,
             direction=req.direction,
             offset=req.offset,
-            product=product
+            gateway_name=self.gateway_name,
         )
-        self.orders[str(self.localid)] = order
+        self.orders[orderid] = order
 
         return order.vt_orderid
 
     def cancel_order(self, req: CancelRequest) -> None:
         """"""
         self.reqid += 1
-        req = {
-            "localOrderID": int(req.orderid),
-            "accountID": self.account_id,
-            "requestID": self.reqid
+        sessionid, localid = req.orderid.split("_")
+        sec_req = {
+            "localOrderID": int(localid),
+            "accountID": self.accountid,
+            "requestID": self.reqid,
+            "sessionID": int(sessionid)
         }
 
         order = self.orders.get(req.orderid, None)
-        if not order or order.product == Product.OPTION:
-            self.reqSOPWithdrawOrder(req)
+
+        if not order:
+            self.gateway.write_log("找不到撤单委托")
+            return
+        if check_option_symbol(req.symbol):
+            self.reqSOPWithdrawOrder(sec_req)
         else:
-            self.reqStockWithdrawOrder(req)
+            self.reqStockWithdrawOrder(sec_req)
 
     def query_account(self) -> None:
         """"""
         self.reqid += 1
         req = {}
         req["requestID"] = self.reqid
-        req["accountID"] = self.account_id
+        req["accountID"] = self.accountid
         self.reqSOPQryCapitalAccountInfo(req)
 
         self.reqid += 1
@@ -1257,7 +1374,7 @@ class SecTdApi(TdApi):
         self.reqid += 1
         req = {}
         req["requestID"] = self.reqid
-        req["accountID"] = self.account_id
+        req["accountID"] = self.accountid
         self.reqSOPQryPosition(req)
 
         self.reqid += 1
@@ -1268,10 +1385,10 @@ class SecTdApi(TdApi):
         self.reqid += 1
         req = {}
         req["requestID"] = self.reqid
-        req["accountID"] = self.account_id
+        req["accountID"] = self.accountid
         self.reqSOPQryContactInfo(req)
 
-    def qryStockContracts(self) -> None:
+    def qry_stock_contracts(self) -> None:
         """查询股票合约"""
         self.reqid += 1
         req = {}
@@ -1286,3 +1403,10 @@ def check_option_symbol(symbol) -> bool:
     if len(symbol) > 6:
         return True
     return False
+
+
+def check_sse_option(symbol) -> bool:
+    if symbol.startswith("1"):
+        return True
+    else:
+        return False
