@@ -298,7 +298,7 @@ class SgitMdApi(MdApi):
 
         timestamp = f"{data['TradingDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
         dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f")
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         tick = TickData(
             symbol=symbol,
@@ -646,7 +646,7 @@ class SgitTdApi(TdApi):
 
         timestamp = f"{data['InsertDate']} {data['InsertTime']}"
         dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         order = OrderData(
             symbol=symbol,
@@ -678,7 +678,7 @@ class SgitTdApi(TdApi):
 
         timestamp = f"{data['TradeDate']} {data['TradeTime']}"
         dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         trade = TradeData(
             symbol=symbol,

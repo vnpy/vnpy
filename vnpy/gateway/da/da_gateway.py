@@ -230,7 +230,7 @@ class DaMarketApi(MarketApi):
             return
 
         dt = datetime.strptime(data['Time'], "%Y-%m-%d %H:%M:%S")
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         tick = TickData(
             symbol=symbol,
@@ -417,7 +417,7 @@ class DaFutureApi(FutureApi):
         else:
             timestamp = f"{data['OrderDate']} {data['OrderTime']}"
             dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
-            order.datetime = dt.replace(tzinfo=CHINA_TZ)
+            order.datetime = CHINA_TZ.localize(dt)
 
             self.order_info[order.orderid] = (data["OrderNo"], data["SystemNo"])
 
@@ -488,7 +488,7 @@ class DaFutureApi(FutureApi):
         if data["TreatyCode"]:
             timestamp = f"{data['OrderDate']} {data['OrderTime']}"
             dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
-            dt = dt.replace(tzinfo=CHINA_TZ)
+            dt = CHINA_TZ.localize(dt)
 
             order = OrderData(
                 symbol=data["TreatyCode"],
@@ -528,7 +528,7 @@ class DaFutureApi(FutureApi):
         """"""
         timestamp = f"{data['FilledDate']} {data['FilledTime']}"
         dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         trade = TradeData(
             symbol=data["TreatyCode"],

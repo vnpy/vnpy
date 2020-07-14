@@ -350,7 +350,7 @@ def parse_datetime(s: str) -> datetime:
     else:
         dt = datetime.now()
 
-    dt = dt.replace(tzinfo=CHINA_TZ)
+    dt = CHINA_TZ.localize(dt)
     return dt
 
 

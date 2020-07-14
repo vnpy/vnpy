@@ -173,7 +173,7 @@ class RqdataClient:
         if df is not None:
             for ix, row in df.iterrows():
                 dt = row.name.to_pydatetime() - adjustment
-                dt = dt.replace(tzinfo=CHINA_TZ)
+                dt = CHINA_TZ.localize(dt)
 
                 bar = BarData(
                     symbol=symbol,

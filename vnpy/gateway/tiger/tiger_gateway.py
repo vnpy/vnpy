@@ -296,7 +296,7 @@ class TigerGateway(BaseGateway):
         status = STATUS_TIGER2VT[data["status"]]
 
         dt = datetime.fromtimestamp(data["order_time"] / 1000)
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         order = OrderData(
             symbol=symbol,
@@ -316,7 +316,7 @@ class TigerGateway(BaseGateway):
 
         if status == Status.ALLTRADED:
             dt = datetime.fromtimestamp(data["trade_time"] / 1000)
-            dt = dt.replace(tzinfo=CHINA_TZ)
+            dt = CHINA_TZ.localize(dt)
 
             self.tradeid += 1
 
@@ -532,7 +532,7 @@ class TigerGateway(BaseGateway):
             local_id = self.get_new_local_id()
 
             dt = datetime.fromtimestamp(i.order_time / 1000)
-            dt = dt.replace(tzinfo=CHINA_TZ)
+            dt = CHINA_TZ.localize(dt)
 
             order = OrderData(
                 symbol=symbol,
@@ -561,7 +561,7 @@ class TigerGateway(BaseGateway):
                 self.tradeid += 1
 
                 dt = datetime.fromtimestamp(i.trade_time / 1000)
-                dt = dt.replace(tzinfo=CHINA_TZ)
+                dt = CHINA_TZ.localize(dt)
 
                 trade = TradeData(
                     symbol=symbol,

@@ -416,7 +416,7 @@ class FutuGateway(BaseGateway):
             date = row["data_date"].replace("-", "")
             time = row["data_time"]
             dt = datetime.strptime(f"{date} {time}", "%Y%m%d %H:%M:%S")
-            dt = dt.replace(tzinfo=CHINA_TZ)
+            dt = CHINA_TZ.localize(dt)
 
             tick = self.get_tick(symbol)
             tick.datetime = dt
@@ -529,5 +529,5 @@ def generate_datetime(s: str) -> datetime:
     else:
         dt = datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
 
-    dt = dt.replace(tzinfo=CHINA_TZ)
+    dt = CHINA_TZ.localize(dt)
     return dt

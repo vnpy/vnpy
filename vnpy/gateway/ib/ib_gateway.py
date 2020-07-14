@@ -360,7 +360,7 @@ class IbApi(EWrapper):
 
         tick = self.ticks[reqId]
         dt = datetime.fromtimestamp(int(value))
-        tick.datetime = dt.replace(tzinfo=self.local_tz)
+        tick.datetime = self.local_tz.localize(dt)
 
         self.gateway.on_tick(copy(tick))
 
@@ -565,7 +565,7 @@ class IbApi(EWrapper):
         super().execDetails(reqId, contract, execution)
 
         dt = datetime.strptime(execution.time, "%Y%m%d  %H:%M:%S")
-        dt = dt.replace(tzinfo=self.local_tz)
+        dt = self.local_tz.localize(dt)
 
         trade = TradeData(
             symbol=contract.conId,
@@ -599,7 +599,7 @@ class IbApi(EWrapper):
         Callback of history data update.
         """
         dt = datetime.strptime(ib_bar.date, "%Y%m%d %H:%M:%S")
-        dt = dt.replace(tzinfo=self.local_tz)
+        dt = self.local_tz.localize(dt)
 
         bar = BarData(
             symbol=self.history_req.symbol,

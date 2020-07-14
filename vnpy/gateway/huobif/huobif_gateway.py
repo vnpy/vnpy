@@ -1061,5 +1061,5 @@ def create_signature(api_key, method, host, path, secret_key, get_params=None):
 def generate_datetime(timestamp: float) -> datetime:
     """"""
     dt = datetime.fromtimestamp(timestamp)
-    dt = dt.replace(tzinfo=CHINA_TZ)
+    dt = CHINA_TZ.localize(dt)
     return dt

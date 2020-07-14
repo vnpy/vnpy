@@ -296,7 +296,7 @@ class UftMdApi(MdApi):
 
         timestamp = f"{data['TradingDay']} {data['UpdateTime']}000"
         dt = datetime.strptime(timestamp, "%Y%m%d %H%M%S%f")
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         tick = TickData(
             symbol=symbol,
@@ -680,7 +680,7 @@ class UftTdApi(TdApi):
         insert_time = generate_time(data["InsertTime"])
         timestamp = f"{data['InsertDate']} {insert_time}"
         dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         if not order:
             order = OrderData(
@@ -732,7 +732,7 @@ class UftTdApi(TdApi):
         trade_time = generate_time(data["TradeTime"])
         timestamp = f"{data['TradeDate']} {trade_time}"
         dt = datetime.strptime(timestamp, "%H:%M:%S")
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         trade = TradeData(
             symbol=symbol,

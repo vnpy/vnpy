@@ -655,5 +655,5 @@ class AlpacaDataRestApi(RestClient):
 def generate_datetime(time_str: str) -> datetime:
     """"""
     dt = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%SZ")
-    dt = dt.replace(tzinfo=UTC_TZ)
+    dt = UTC_TZ.localize(dt)
     return dt
