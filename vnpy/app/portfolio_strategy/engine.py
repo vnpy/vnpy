@@ -369,7 +369,10 @@ class StrategyEngine(BaseEngine):
         if data:
             for name in strategy.variables:
                 value = data.get(name, None)
-                if value:
+                if name == "pos":
+                    pos = getattr(strategy, name)
+                    pos.update(value)
+                elif value:
                     setattr(strategy, name, value)
 
         # Subscribe market data
