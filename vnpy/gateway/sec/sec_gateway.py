@@ -840,7 +840,7 @@ class SecTdApi(TdApi):
             contract = ContractData(
                 symbol=data["securityID"],
                 exchange=EXCHANGE_SEC2VT[data["exchangeID"]],
-                name=data["securityName"].decode("GBK"),
+                name=data["securityName"],
                 size=data["tradeUnit"],
                 pricetick=0.001,
                 product=Product.EQUITY,
