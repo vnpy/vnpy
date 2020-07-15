@@ -251,7 +251,7 @@ void MdApi::OnStockMarketData(struct DFITCStockDepthMarketDataField * pMarketDat
 };
 
 void MdApi::OnSOPMarketData(struct DFITCSOPDepthMarketDataField * pMarketDataField)
-{
+{	
 	Task task = Task();
 	task.task_name = ONSOPMARKETDATA;
 	if (pMarketDataField)
@@ -329,11 +329,14 @@ void MdApi::OnRspUserMDPasswordUpdate(struct DFITCSECRspMDPasswordUpdateField *p
 void MdApi::processTask()
 {
 	try
-	{
-		Task task = this->task_queue.pop();
 
-		switch (task.task_name)
+	{
+		while (this->active)
 		{
+			Task task = this->task_queue.pop();
+			switch (task.task_name)
+			{
+
 			case ONFRONTCONNECTED:
 			{
 				this->processFrontConnected(&task);
@@ -447,12 +450,13 @@ void MdApi::processTask()
 				this->processRspUserMDPasswordUpdate(&task);
 				break;
 			}
+			};
 		}
-
 	}
 	catch (const TerminatedError&)
 	{
 	}
+
 };
 
 void MdApi::processFrontConnected(Task *task)
@@ -563,7 +567,7 @@ void MdApi::processRspStockUserLogout(Task *task)
 };
 
 void MdApi::processRspSOPUserLogin(Task *task)
-{
+{	
 	gil_scoped_acquire acquire;
 	dict data;
 	if (task->task_data)
@@ -594,6 +598,7 @@ void MdApi::processRspSOPUserLogin(Task *task)
 		delete task_error;
 	}
 	this->onRspSOPUserLogin(data, error);
+	
 };
 
 void MdApi::processRspSOPUserLogout(Task *task)
@@ -807,22 +812,19 @@ void MdApi::processStockMarketData(Task *task)
 	if (task->task_data)
 	{
 		DFITCStockDepthMarketDataField *task_data = (DFITCStockDepthMarketDataField*)task->task_data;
-		//data["specificDataField"] = task_data->specificDataField;
 		data["securityID"] = task_data->staticDataField.securityID;
-		data["securityName"] = task_data->staticDataField.securityName;
+		data["securityName"] = toUtf(task_data->staticDataField.securityName);
 		data["tradingDay"] = task_data->staticDataField.tradingDay;
-		data["exchangeID"] = task_data->staticDataField.exchangeID;
+		data["exchangeID"] = toUtf(task_data->staticDataField.exchangeID);
 		data["preClosePrice"] = task_data->staticDataField.preClosePrice;
 		data["openPrice"] = task_data->staticDataField.openPrice;
 		data["upperLimitPrice"] = task_data->staticDataField.upperLimitPrice;
 		data["lowerLimitPrice"] = task_data->staticDataField.lowerLimitPrice;
 
-
 		data["latestPrice"] = task_data->sharedDataField.latestPrice;
 		data["turnover"] = task_data->sharedDataField.turnover;
 		data["highestPrice"] = task_data->sharedDataField.highestPrice;
 		data["lowestPrice"] = task_data->sharedDataField.lowestPrice;
-
 		data["tradeQty"] = task_data->sharedDataField.tradeQty;
 		data["updateTime"] = task_data->sharedDataField.updateTime;
 		data["bidPrice1"] = task_data->sharedDataField.bidPrice1;
@@ -863,6 +865,7 @@ void MdApi::processSOPMarketData(Task *task)
 	if (task->task_data)
 	{
 		DFITCSOPDepthMarketDataField *task_data = (DFITCSOPDepthMarketDataField*)task->task_data;
+
 		data["contractID"] = task_data->specificDataField.contractID;
 		data["execPrice"] = task_data->specificDataField.execPrice;
 		data["preSettlePrice"] = task_data->specificDataField.preSettlePrice;
@@ -871,22 +874,19 @@ void MdApi::processSOPMarketData(Task *task)
 		data["auctionPrice"] = task_data->specificDataField.auctionPrice;
 		data["latestEnquiryTime"] = task_data->specificDataField.latestEnquiryTime;
 
-
 		data["securityID"] = task_data->staticDataField.securityID;
-		data["securityName"] = task_data->staticDataField.securityName;
+		data["securityName"] = toUtf(task_data->staticDataField.securityName);
 		data["tradingDay"] = task_data->staticDataField.tradingDay;
-		data["exchangeID"] = task_data->staticDataField.exchangeID;
+		data["exchangeID"] = toUtf(task_data->staticDataField.exchangeID);
 		data["preClosePrice"] = task_data->staticDataField.preClosePrice;
 		data["openPrice"] = task_data->staticDataField.openPrice;
 		data["upperLimitPrice"] = task_data->staticDataField.upperLimitPrice;
 		data["lowerLimitPrice"] = task_data->staticDataField.lowerLimitPrice;
 
-
 		data["latestPrice"] = task_data->sharedDataField.latestPrice;
 		data["turnover"] = task_data->sharedDataField.turnover;
 		data["highestPrice"] = task_data->sharedDataField.highestPrice;
 		data["lowestPrice"] = task_data->sharedDataField.lowestPrice;
-
 		data["tradeQty"] = task_data->sharedDataField.tradeQty;
 		data["updateTime"] = task_data->sharedDataField.updateTime;
 		data["bidPrice1"] = task_data->sharedDataField.bidPrice1;
@@ -1247,7 +1247,7 @@ class PyMdApi : public MdApi
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspStockUserLogin, data, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRspStockUserLogin, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1259,7 +1259,7 @@ class PyMdApi : public MdApi
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspStockUserLogout, data, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRspStockUserLogout, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1271,7 +1271,7 @@ class PyMdApi : public MdApi
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspSOPUserLogin, data, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRspSOPUserLogin, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1283,7 +1283,7 @@ class PyMdApi : public MdApi
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspSOPUserLogout, data, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRspSOPUserLogout, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1295,7 +1295,7 @@ class PyMdApi : public MdApi
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspFASLUserLogin, data, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRspFASLUserLogin, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1307,7 +1307,7 @@ class PyMdApi : public MdApi
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspFASLUserLogout, data, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRspFASLUserLogout, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1319,7 +1319,7 @@ class PyMdApi : public MdApi
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspStockSubMarketData, data, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRspStockSubMarketData, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1331,7 +1331,7 @@ class PyMdApi : public MdApi
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspStockUnSubMarketData, data, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRspStockUnSubMarketData, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1343,7 +1343,7 @@ class PyMdApi : public MdApi
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspSOPSubMarketData, data, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRspSOPSubMarketData, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1355,7 +1355,7 @@ class PyMdApi : public MdApi
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspSOPUnSubMarketData, data, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRspSOPUnSubMarketData, data, error);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1391,7 +1391,7 @@ class PyMdApi : public MdApi
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspStockAvailableQuot, data, data, last);
+			PYBIND11_OVERLOAD(void, MdApi, onRspStockAvailableQuot, data, error, last);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1403,7 +1403,7 @@ class PyMdApi : public MdApi
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspSopAvailableQuot, data, data, last);
+			PYBIND11_OVERLOAD(void, MdApi, onRspSopAvailableQuot, data, error, last);
 		}
 		catch (const error_already_set &e)
 		{
@@ -1415,7 +1415,7 @@ class PyMdApi : public MdApi
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRspUserMDPasswordUpdate, data, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRspUserMDPasswordUpdate, data, error);
 		}
 		catch (const error_already_set &e)
 		{

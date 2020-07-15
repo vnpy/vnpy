@@ -57,7 +57,7 @@
          */
         virtual void OnRspStockUserLogin(struct DFITCSECRspUserLoginField * pRspUserLogin, struct DFITCSECRspInfoField * pRspInfo) {}
 
-        /**
+        /**login
          * STOCK-登出响应
          * @param pRspUsrLogout:指针若非空,返回用户登出响应信息结构地址,表明登出请求成功
          * @param pRspInfo:指针若非空，返回错误信息地址，表明登出请求失败
