@@ -116,8 +116,8 @@ class SecGateway(BaseGateway):
         "行情协议": ["TCP", "UDP"],
         "授权码": "",
         "产品号": "",
-        "看穿式监管采集接口类型": ["顶点", "恒生", "金证", "金仕达"],
-        "要求行情前置压缩行情": ["Y", "N"],
+        "采集类型": ["顶点", "恒生", "金证", "金仕达"],
+        "行情压缩": ["N", "Y"],
     }
 
     exchanges: List[Exchange] = list(EXCHANGE_VT2SEC.keys())
@@ -138,8 +138,8 @@ class SecGateway(BaseGateway):
         quote_protocol = setting["行情协议"]
         auth_code = setting["授权码"]
         appid = setting["产品号"]
-        collection_type = COLLECTION_TYPE_VT2SEC[setting["看穿式监管采集接口类型"]]
-        compress_flag = COMPRESS_VT2SEC[setting["要求行情前置压缩行情"]]
+        collection_type = COLLECTION_TYPE_VT2SEC[setting["采集类型"]]
+        compress_flag = COMPRESS_VT2SEC[setting["行情压缩"]]
 
         if (
             (not md_address.startswith("tcp://"))
@@ -531,7 +531,7 @@ class SecTdApi(TdApi):
     def onRspStockUserLogin(self, data: dict, error: dict) -> None:
         if not error:
             self.gateway.write_log("股票交易服务器登录成功")
-            self.qry_stock_contracts()
+            self.query_stock_contracts()
         else:
             self.gateway.write_error("股票交易服务器登录失败", error)
 
@@ -543,7 +543,7 @@ class SecTdApi(TdApi):
             self.gateway.write_log(f"股票期权交易服务器登录成功")
             self.login_status = True
 
-            self.qry_option_contracts()
+            self.query_option_contracts()
         else:
             self.gateway.write_error("股票期权交易服务器登录失败", error)
 
@@ -864,9 +864,11 @@ class SecTdApi(TdApi):
             size=data["contactUnit"],
             pricetick=data["miniPriceChange"],
             product=Product.OPTION,
+
             option_strike=data["execPrice"],
             option_underlying="-".join([data["securityID"], str(data["endTradingDay"])[2:-2]]),
             option_expiry=str(data["endTradingDay"]),
+
             gateway_name=self.gateway_name
         )
 
@@ -1340,6 +1342,7 @@ class SecTdApi(TdApi):
         if not order:
             self.gateway.write_log("找不到撤单委托")
             return
+
         if check_option_symbol(req.symbol):
             self.reqSOPWithdrawOrder(sec_req)
         else:
@@ -1368,7 +1371,7 @@ class SecTdApi(TdApi):
         self.reqid += 1
         self.reqStockQryPosition(req)
 
-    def qry_option_contracts(self) -> None:
+    def query_option_contracts(self) -> None:
         """"""
         self.reqid += 1
         req = {}
@@ -1376,11 +1379,10 @@ class SecTdApi(TdApi):
         req["accountID"] = self.accountid
         self.reqSOPQryContactInfo(req)
 
-    def qry_stock_contracts(self) -> None:
+    def query_stock_contracts(self) -> None:
         """"""
         self.reqid += 1
         req = {}
-        req["exchangeID"] = "SH"
         req["requestID"] = self.reqid
         req["accountID"] = self.accountid
         self.reqStockQryStockStaticInfo(req)
@@ -1391,10 +1393,3 @@ def check_option_symbol(symbol) -> bool:
     if len(symbol) > 6:
         return True
     return False
-
-
-def check_sse_option(symbol) -> bool:
-    if symbol.startswith("1"):
-        return True
-    else:
-        return False
