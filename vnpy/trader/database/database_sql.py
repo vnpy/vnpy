@@ -350,6 +350,9 @@ class SqlManager(BaseDatabaseManager):
         start: datetime,
         end: datetime,
     ) -> Sequence[BarData]:
+        from time import perf_counter
+
+        n1 = perf_counter()
         s = (
             self.class_bar.select()
                 .where(
@@ -361,7 +364,12 @@ class SqlManager(BaseDatabaseManager):
             )
             .order_by(self.class_bar.datetime)
         )
-        data = [db_bar.to_bar() for db_bar in s]
+        n2 = perf_counter()
+        # data = [db_bar.to_bar() for db_bar in s]
+        data = [db_bar for db_bar in s.namedtuples().iterator()]
+        print(data[0])
+        n3 = perf_counter()
+        print(n3 - n1, n3 - n2, n2 - n1)
         return data
 
     def load_tick_data(
