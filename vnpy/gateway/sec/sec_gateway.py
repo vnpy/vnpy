@@ -531,7 +531,7 @@ class SecTdApi(TdApi):
     def onRspStockUserLogin(self, data: dict, error: dict) -> None:
         if not error:
             self.gateway.write_log("股票交易服务器登录成功")
-            self.qry_stock_contracts()
+            self.query_stock_contracts()
         else:
             self.gateway.write_error("股票交易服务器登录失败", error)
 
@@ -543,7 +543,7 @@ class SecTdApi(TdApi):
             self.gateway.write_log(f"股票期权交易服务器登录成功")
             self.login_status = True
 
-            self.qry_option_contracts()
+            self.query_option_contracts()
         else:
             self.gateway.write_error("股票期权交易服务器登录失败", error)
 
@@ -1368,7 +1368,7 @@ class SecTdApi(TdApi):
         self.reqid += 1
         self.reqStockQryPosition(req)
 
-    def qry_option_contracts(self) -> None:
+    def query_option_contracts(self) -> None:
         """"""
         self.reqid += 1
         req = {}
@@ -1376,7 +1376,7 @@ class SecTdApi(TdApi):
         req["accountID"] = self.accountid
         self.reqSOPQryContactInfo(req)
 
-    def qry_stock_contracts(self) -> None:
+    def query_stock_contracts(self) -> None:
         """"""
         self.reqid += 1
         req = {}
@@ -1391,10 +1391,3 @@ def check_option_symbol(symbol) -> bool:
     if len(symbol) > 6:
         return True
     return False
-
-
-def check_sse_option(symbol) -> bool:
-    if symbol.startswith("1"):
-        return True
-    else:
-        return False
