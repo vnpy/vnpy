@@ -707,7 +707,9 @@ class XtpTdApi(TdApi):
         contract.option_type = OPTIONTYPE_XTP2VT.get(data["call_or_put"], None)
 
         contract.option_strike = data["exercise_price"]
-        contract.option_expiry = datetime.strptime(str(data["delivery_day"]), "%Y%m%d")
+        contract.option_expiry = datetime.strptime(
+            str(data["last_trade_date"]), "%Y%m%d"
+        )
         contract.option_index = get_option_index(
             contract.option_strike, data["contract_id"]
         )
