@@ -95,7 +95,8 @@ INTERVAL_VT2HUOBIF = {
 CONTRACT_TYPE_MAP = {
     "this_week": "CW",
     "next_week": "NW",
-    "quarter": "CQ"
+    "quarter": "CQ",
+    "next_quarter": "NQ"
 }
 
 TIMEDELTA_MAP = {
