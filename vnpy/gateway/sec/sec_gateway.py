@@ -120,8 +120,8 @@ class SecGateway(BaseGateway):
         "行情协议": ["TCP", "UDP"],
         "授权码": "",
         "产品号": "",
-        "看穿式监管采集接口类型": ["顶点", "恒生", "金证", "金仕达"],
-        "要求行情前置压缩行情": ["Y", "N"],
+        "采集类型": ["顶点", "恒生", "金证", "金仕达"],
+        "行情压缩": ["N", "Y"],
     }
 
     exchanges: List[Exchange] = list(EXCHANGE_VT2SEC.keys())
@@ -142,8 +142,8 @@ class SecGateway(BaseGateway):
         quote_protocol = setting["行情协议"]
         auth_code = setting["授权码"]
         appid = setting["产品号"]
-        collection_type = COLLECTION_TYPE_VT2SEC[setting["看穿式监管采集接口类型"]]
-        compress_flag = COMPRESS_VT2SEC[setting["要求行情前置压缩行情"]]
+        collection_type = COLLECTION_TYPE_VT2SEC[setting["采集类型"]]
+        compress_flag = COMPRESS_VT2SEC[setting["行情压缩"]]
 
         if (
             (not md_address.startswith("tcp://"))
@@ -1344,6 +1344,7 @@ class SecTdApi(TdApi):
         if not order:
             self.gateway.write_log("找不到撤单委托")
             return
+
         if check_option_symbol(req.symbol):
             self.reqSOPWithdrawOrder(sec_req)
         else:
@@ -1384,7 +1385,6 @@ class SecTdApi(TdApi):
         """"""
         self.reqid += 1
         req = {}
-        req["exchangeID"] = "SH"
         req["requestID"] = self.reqid
         req["accountID"] = self.accountid
         self.reqStockQryStockStaticInfo(req)
