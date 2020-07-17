@@ -660,9 +660,9 @@ class IbApi(EWrapper):
             return
 
         # Filter duplicate subscribe
-        if req.vt_symbol in self.subscrbied:
+        if req.vt_symbol in self.subscribed:
             return
-        self.subscrbied.add(req.vt_symbol)
+        self.subscribed.add(req.vt_symbol)
 
         # Extract ib contract detail
         ib_contract = generate_ib_contract(req.symbol, req.exchange)
