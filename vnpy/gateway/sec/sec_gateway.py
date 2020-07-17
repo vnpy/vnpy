@@ -97,6 +97,10 @@ COMPRESS_VT2SEC = {
     "Y": DFITCSEC_COMPRESS_TRUE,
     "N": DFITCSEC_COMPRESS_FALSE
 }
+OPTION_TYPE_SEC2VT = {
+    DFITCSEC_OT_CALL: OptionType.CALL,
+    DFITCSEC_OT_PUT: OptionType.PUT
+}
 
 CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
@@ -864,19 +868,17 @@ class SecTdApi(TdApi):
             size=data["contactUnit"],
             pricetick=data["miniPriceChange"],
             product=Product.OPTION,
-
+            option_portfolio=data["securityID"] + "_O",
+            option_type=OPTION_TYPE_SEC2VT[data["optType"]],
             option_strike=data["execPrice"],
-            option_underlying="-".join([data["securityID"], str(data["endTradingDay"])[2:-2]]),
-            option_expiry=str(data["endTradingDay"]),
-
+            option_underlying="-".join([data["securityID"], str(data["endDate"])[:-2]]),
+            option_expiry=datetime.strptime(str(data["endDate"]), "%Y%m%d"),
             gateway_name=self.gateway_name
         )
 
-        # Option type
-        if data["optType"] == DFITCSEC_OT_CALL:
-            contract.option_type = OptionType.CALL
-        elif data["optType"] == DFITCSEC_OT_PUT:
-            contract.option_type = OptionType.PUT
+        contract.option_index = get_option_index(
+            contract.option_strike, data["contractID"]
+        )
 
         self.gateway.on_contract(contract)
 
@@ -1393,3 +1395,22 @@ def check_option_symbol(symbol) -> bool:
     if len(symbol) > 6:
         return True
     return False
+
+
+def get_option_index(strike_price: float, exchange_instrument_id: str) -> str:
+    """"""
+    exchange_instrument_id = exchange_instrument_id.replace(" ", "")
+
+    if "M" in exchange_instrument_id:
+        n = exchange_instrument_id.index("M")
+    elif "A" in exchange_instrument_id:
+        n = exchange_instrument_id.index("A")
+    elif "B" in exchange_instrument_id:
+        n = exchange_instrument_id.index("B")
+    else:
+        return str(strike_price)
+
+    index = exchange_instrument_id[n:]
+    option_index = f"{strike_price:.3f}-{index}"
+
+    return option_index
