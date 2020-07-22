@@ -1,4 +1,4 @@
-import sys
+
 import time
 import quickfix as fix
 from datetime import datetime, timedelta
@@ -20,19 +20,6 @@ from vnpy.trader.constant import (
 hours = timedelta(hours=1)
 mins = timedelta(minutes=1)
 
-p_setting = {
-    "host": "123.56.88.75",
-    "port": "11131",
-    "sender": "client06",
-    "target": "GenusStgyUAT1"
-}
-
-c_setting = {
-    "host": "10.11.27.81",
-    "port": "6668",
-    "sender": "VnpyUAT6",
-    "target": "GenusVnpyMarket"
-}
 
 EXCHANGE_VT2GNS = {
     Exchange.SSE: "SS",
@@ -56,11 +43,11 @@ DIRECTION_VT2GNS = {
 
 class FixClient(fix.Application):
 
-    orderid: int = 100001
+    orderid: int = 100008
     execid: int = 0
     session_id = ""
     tradeid = 0
-    mather_child_id  = {}
+    mather_child_id = {}
 
     structs = {}
 
@@ -81,7 +68,6 @@ class FixClient(fix.Application):
         pass
 
     def onLogon(self, session_id):
-        print("Login success---------------------")
         self.session_id = session_id
         if self.session_id:
             print("Session ID 获取成功， id=", self.session_id)
@@ -105,17 +91,14 @@ class FixClient(fix.Application):
     def toApp(self, session_id, msg):
         d = self.msg2dict(msg)
         print("@@Sent the following msg: ", d)
-        #return
 
     def fromApp(self, msg, session_id):
-        #print("@@Received msg: %s----------" % msg.toString())
         d = self.msg2dict(msg)
         print("@@Received msg: ", d)
 
         msg_type = d["<35>MsgType"]
         if msg_type == "EXECUTION_REPORT":
             self.mather_child_id[d["<11>ClOrdID"]] = d["<37>OrderID"]
-
 
     def new_orderid(self) -> str:
         self.orderid = self.orderid + 1
@@ -180,6 +163,32 @@ class FixClient(fix.Application):
 
         return order
 
+    def cancel_order(self):
+        now_utc = datetime.utcnow()
+        now_time = now_utc.strftime("%Y%m%d-%H:%M:%S")
+        localid = str(self.orderid)
+        new_localid = self.new_orderid()
+        child_id = self.mather_child_id(localid)
+        symbol = "600519"
+        volume = 1000
+        price = 0
+
+        order = fix.Message()
+        order.setField(35, "F")
+        order.setField(11, localid)
+        order.setField(41, new_localid)
+        order.setField(37, child_id)
+        order.setField(55, symbol)
+        order.setField(fix.CharField(54, fix.Side_BUY))
+
+        if volume:
+            order.setField(38, str(volume))
+        else:
+            order.setField(152, str(price))
+        order.setField(60, now_time)
+        order.setField(847, "TWAP")
+        self.put_order(self.session_id, order)
+
     def send_order(self):
         order = self.generate_order(
             symbol="600519",
@@ -197,7 +206,7 @@ class FixClient(fix.Application):
         words = msg_str.split("\x01")
         words = [word for word in words if word != ""]
         if len(words) == 1 and words[0] == 'FIX.4.2:client06->GenusStgyUAT1':
-            return 'FIX.4.2:client06->GenusStgyUAT1'
+            return
 
         for word in words:
             k, v = word.split("=")
@@ -222,7 +231,7 @@ class FixClient(fix.Application):
 if __name__== '__main__':
     try:
         sended = False
-        settings = fix.SessionSettings("genus.cfg")
+        settings = fix.SessionSettings("genus_mather.cfg")
         fix_client = FixClient()
         fix_client.load_struct()
         # print("载入Fix 4.2 字典成功")
@@ -234,11 +243,13 @@ if __name__== '__main__':
         initiator.start()
 
         print("系统启动成功！--------------")
+        fix_client.send_order()
 
         while True:
-            time.sleep(3)
+            time.sleep(10)
             if not sended:
-                fix_client.send_order()
+                
+                fix_client.cancel_order()
                 print("委托发送完成")
                 sended = True
 

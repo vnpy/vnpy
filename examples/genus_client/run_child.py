@@ -1,12 +1,12 @@
 import sys
-from datetime import datetime, timedelta
 import time
 import quickfix as fix
-
+from datetime import datetime, timedelta
 from vnpy.trader.utility import get_file_path, get_folder_path
 from vnpy.trader.object import (
     OrderRequest,
 )
+import importlib
 from vnpy.trader.constant import (
     Exchange,
     Product,
@@ -17,7 +17,8 @@ from vnpy.trader.constant import (
     OptionType
 )
 
-
+hours = timedelta(hours=1)
+mins = timedelta(minutes=1)
 
 p_setting = {
     "host": "123.56.88.75",
@@ -52,26 +53,37 @@ DIRECTION_VT2GNS = {
     Direction.SHORT: "2"
 }
 
-day = timedelta(days=1)
 
 class FixClient(fix.Application):
 
-    orderid: int = 10000
+    orderid: int = 100002
     execid: int = 0
     session_id = ""
     tradeid = 0
+    mather_child_id = {}
 
-    # def new_orderid(self):
-    #     # global orderid
-    #     self.orderid += 1
-    #     return self.orderid
+    structs = {}
+
+    def load_struct(self):
+        """加载Struct"""
+        module_name = f"fix_dict"
+        module = importlib.import_module(module_name)
+
+        for name in dir(module):
+            if "__" not in name:
+                self.structs[name] = getattr(module, name)
+
+        for k, v in self.structs.items():
+            words = k.split("_")
+            name = words[0]
 
     def onCreate(self, session_id):
         pass
 
     def onLogon(self, session_id):
-        print("2-Login success")
-
+        self.session_id = session_id
+        if self.session_id:
+            print("Session ID 获取成功， id=", self.session_id)
 
     def onLogout(self, session_id):
         print("4-onLogout")
@@ -85,24 +97,21 @@ class FixClient(fix.Application):
         msg.setField(mycompid)
 
     def fromAdmin(self, msg, session_id):
-        print("1-On Front Connected")
-        self.session_id = session_id
-
-        data = self.msg2dict(msg)
-        if not data:
-            return
-
-        self.sender = data["56"]
-        self.target = data["49"]
-        
-        # print(d)
+        d = self.msg2dict(msg)
+        if d["<35>MsgType"] != "HEARTBEAT":
+            print("@@Callback", d)
 
     def toApp(self, session_id, msg):
-        print("Sent the following msg: %s" % msg.toString())
-        return
+        d = self.msg2dict(msg)
+        print("@@Sent the following msg: ", d)
 
     def fromApp(self, msg, session_id):
-        print("Received the following msg: %s" % msg.toString())
+        d = self.msg2dict(msg)
+        print("@@Received msg: ", d)
+
+        msg_type = d["<35>MsgType"]
+        if msg_type == "EXECUTION_REPORT":
+            self.mather_child_id[d["<11>ClOrdID"]] = d["<37>OrderID"]
 
     def new_orderid(self) -> str:
         self.orderid = self.orderid + 1
@@ -113,9 +122,8 @@ class FixClient(fix.Application):
         return self.execid
 
     def put_order(self, session_id, order):
-        print("@@@委托--------- ")
-        # order = self.generate_order(symbol, volume)
-        fix.Session.sendToTarget(order, self.session_id)
+        print("@@Creating Order----------------")
+        fix.Session.sendToTarget(order, session_id)
 
     def generate_order(
         self,
@@ -126,32 +134,17 @@ class FixClient(fix.Application):
         volume=None,
         price=None,
     ):
-        print(
-            "symbol=", symbol,
-            ",exchange=", exchange,
-            ",order_type=", order_type,
-            ",direction=", direction,
-            ",volume=", volume,
-            ",price=", price)
-        # today = datetime.datetime.now()
-        start_utc = datetime.utcnow()
-        end_utc = start_utc + day
+        now_utc = datetime.utcnow()
+        end_utc = now_utc + hours
+        start_utc = now_utc - mins
         start_time = start_utc.strftime("%Y%m%d-%H:%M:%S")
         end_time = end_utc.strftime("%Y%m%d-%H:%M:%S")
-        # nextID = today.strftime("%m%d%Y%H%M%S%f")
+        now_time = now_utc.strftime("%Y%m%d-%H:%M:%S")
         order = fix.Message()
 
         # Header
-        # order.setField(fix.StringField(8, "FIX.4.2"))
-        # #order.getHeader().setField(fix.MsgType(fix.MsgType_NewOrderSingle))  #MsgType
-        # order.setField(fix.StringField(35, "D"))
-
-        # order.getHeader().setField(fix.Account("account"))
-        # order.getHeader().setField(fix.TargetSubID("targetsubid"))
-
         order.getHeader().setField(fix.StringField(8, "FIX.4.2"))
-        #order.getHeader().setField(fix.MsgType(fix.MsgType_NewOrderSingle))  #MsgType
-        order.setField(fix.StringField(35, "D"))
+        order.getHeader().setField(fix.MsgType(fix.MsgType_NewOrderSingle))  # MsgType
 
         order.getHeader().setField(fix.Account("account"))
         order.getHeader().setField(fix.TargetSubID("targetsubid"))
@@ -175,29 +168,43 @@ class FixClient(fix.Application):
             order.setField(44, str(price))
 
         order.setField(15, "CNY")
-        order.setField(60, start_time)
+        order.setField(60, now_time)
         order.setField(847, "TWAP")
-        order.setField(848, end_time)
+        msg = f"StartTime;{start_time}^EndTime;{end_time}"
+        order.setField(848, msg)
+        order.setField(fix.CharField(54, fix.Side_BUY))
 
-
-        # order.setField(fix.ClOrdID(nextID)) #11=Unique order
-        # order.setField(fix.Symbol(symbol)) #55=SMBL ?
-        # order.setField(fix.TransactTime())
-        # order.setField(fix.CharField(54, fix.Side_BUY))
-        # order.setField(fix.OrdType(fix.OrdType_MARKET))  # 40=2 Limit order
-        # order.setField(fix.OrderQty(volume))  # 38=100
         return order
 
-    def send_order(self): #, req: OrderRequest):
+    def cancel_order(self):
+        now_utc = datetime.utcnow()
+        now_time = now_utc.strftime("%Y%m%d-%H:%M:%S")
+        localid = str(self.orderid)
+        new_localid = self.new_orderid()
+        child_id = self.mather_child_id(localid)
+        symbol = "600519"
+        volume = 1000
+        price = 0
 
-        # {
-        #     "symbol": req.symbol,
-        #     "volume": req.volume,
-        #     "direction": req.direction,
-        #     "typte": req.type
-        # }
+        order = fix.Message()
+        order.setField(35, "F")
+        order.setField(11, localid)
+        order.setField(41, new_localid)
+        order.setField(37, child_id)
+        order.setField(55, symbol)
+        order.setField(fix.CharField(54, fix.Side_BUY))
+
+        if volume:
+            order.setField(38, str(volume))
+        else:
+            order.setField(152, str(price))
+        order.setField(60, now_time)
+        order.setField(847, "TWAP")
+        self.put_order(self.session_id, order)
+
+    def send_order(self):
         order = self.generate_order(
-            symbol="600570",
+            symbol="600519",
             exchange=Exchange.SSE,
             volume=1000,
             order_type=OrderType.MARKET,
@@ -211,18 +218,36 @@ class FixClient(fix.Application):
 
         words = msg_str.split("\x01")
         words = [word for word in words if word != ""]
+        if len(words) == 1 and words[0] == 'FIX.4.2:client06->GenusStgyUAT1':
+            return 'FIX.4.2:client06->GenusStgyUAT1'
 
         for word in words:
             k, v = word.split("=")
-            d[k] = v
+            number = f"no_{k}"
+            field = self.structs.get(number, None)
+            if not field:
+                field = k
+                new_name = f"<{k}>"
+                value = v
+                d[new_name] = value
+            else:
+                name = field["name"]
+                new_name = f"<{k}>{name}"
+                value = field.get(v, None)
+                if not value:
+                    value = v
+                d[new_name] = value
 
         return d
 
 
 if __name__== '__main__':
     try:
+        sended = False
         settings = fix.SessionSettings("genus.cfg")
         fix_client = FixClient()
+        fix_client.load_struct()
+        # print("载入Fix 4.2 字典成功")
         store_factory = fix.FileStoreFactory(settings)
         log_factory = fix.ScreenLogFactory(settings)
         initiator = fix.SocketInitiator(
@@ -231,23 +256,14 @@ if __name__== '__main__':
         initiator.start()
 
         print("系统启动成功！--------------")
-        time.sleep(3)
 
-        fix_client.send_order()
-
-        # while 1:
-        #     time.sleep(2)
-
-        #     if input == '1':
-        #         print("Putin Order")
-        #         fix_client.put_order(fix.Application)
-        #     if input == '2':
-        #         sys.exit(0)
-        #     if input == 'd':
-        #         import pdb
-        #         pdb.set_trace()
-        #     else:
-        #         print("输入1 -> 委托， 输入2 -> 退出")
+        while True:
+            time.sleep(3)
+            if not sended:
+                # fix_client.send_order()
+                fix_client.cancel_order()
+                print("委托发送完成")
+                sended = True
 
     except (fix.ConfigError, fix.RuntimeError) as e:
         print(e)
