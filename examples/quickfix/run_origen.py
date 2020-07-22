@@ -16,7 +16,8 @@ from vnpy.trader.constant import (
     OptionType
 )
 
-day = timedelta(days=1)
+hours = timedelta(hours=1)
+mins = timedelta(minutes=1)
 
 p_setting = {
     "host": "123.56.88.75",
@@ -51,23 +52,22 @@ DIRECTION_VT2GNS = {
     Direction.SHORT: "2"
 }
 
+
 class FixClient(fix.Application):
 
-    orderid: int = 10000
+    orderid: int = 1006
     execid: int = 0
     session_id = ""
     tradeid = 0
-
-    # def new_orderid(self):
-    #     # global orderid
-    #     self.orderid += 1
-    #     return self.orderid
 
     def onCreate(self, session_id):
         pass
 
     def onLogon(self, session_id):
-        print("2-Login success")
+        print("Login success---------------------")
+        self.session_id = session_id
+        if self.session_id:
+            print("Session ID 获取成功， id=", self.session_id)
 
     def onLogout(self, session_id):
         print("4-onLogout")
@@ -81,15 +81,16 @@ class FixClient(fix.Application):
         msg.setField(mycompid)
 
     def fromAdmin(self, msg, session_id):
-        print("1-On Front Connected")
-        self.session_id = session_id
+        # print("1-On Front Connected")
+        pass
+
 
     def toApp(self, session_id, msg):
-        print("Sent the following msg: %s" % msg.toString())
+        print("@@Sent the following msg: %s-------------" % msg.toString())
         return
 
     def fromApp(self, msg, session_id):
-        print("Received the following msg: %s" % msg.toString())
+        print("@@Received msg: %s----------" % msg.toString())
 
     def new_orderid(self) -> str:
         self.orderid = self.orderid + 1
@@ -100,9 +101,8 @@ class FixClient(fix.Application):
         return self.execid
 
     def put_order(self, session_id, order):
-        print("Creating the following order: ")
-        # order = self.generate_order(symbol, volume)
-        fix.Session.sendToTarget(order, self.session_id)
+        print("@@Creating Order----------------")
+        fix.Session.sendToTarget(order, session_id)
 
     def generate_order(
         self,
@@ -113,18 +113,17 @@ class FixClient(fix.Application):
         volume=None,
         price=None,
     ):
-        # today = datetime.datetime.now()
-        start_utc = datetime.utcnow()
-        end_utc = start_utc + day
+        now_utc = datetime.utcnow()
+        end_utc = now_utc + hours
+        start_utc = now_utc - mins
         start_time = start_utc.strftime("%Y%m%d-%H:%M:%S")
         end_time = end_utc.strftime("%Y%m%d-%H:%M:%S")
-        # nextID = today.strftime("%m%d%Y%H%M%S%f")
+        now_time = now_utc.strftime("%Y%m%d-%H:%M:%S")
         order = fix.Message()
 
         # Header
         order.getHeader().setField(fix.StringField(8, "FIX.4.2"))
-        #order.getHeader().setField(fix.MsgType(fix.MsgType_NewOrderSingle))  #MsgType
-        order.setField(fix.StringField(35, "D"))
+        order.getHeader().setField(fix.MsgType(fix.MsgType_NewOrderSingle))  # MsgType
 
         order.getHeader().setField(fix.Account("account"))
         order.getHeader().setField(fix.TargetSubID("targetsubid"))
@@ -148,29 +147,17 @@ class FixClient(fix.Application):
             order.setField(44, str(price))
 
         order.setField(15, "CNY")
-        order.setField(60, start_time)
+        order.setField(60, now_time)
         order.setField(847, "TWAP")
-        order.setField(848, end_time)
+        msg = f"StartTime;{start_time}^EndTime;{end_time}"
+        order.setField(848, msg)
+        order.setField(fix.CharField(54, fix.Side_BUY))
 
-
-        # order.setField(fix.ClOrdID(nextID)) #11=Unique order
-        # order.setField(fix.Symbol(symbol)) #55=SMBL ?
-        # order.setField(fix.TransactTime())
-        # order.setField(fix.CharField(54, fix.Side_BUY))
-        # order.setField(fix.OrdType(fix.OrdType_MARKET))  # 40=2 Limit order
-        # order.setField(fix.OrderQty(volume))  # 38=100
         return order
 
-    def send_order(self): #, req: OrderRequest):
-
-        # {
-        #     "symbol": req.symbol,
-        #     "volume": req.volume,
-        #     "direction": req.direction,
-        #     "typte": req.type
-        # }
+    def send_order(self):
         order = self.generate_order(
-            symbol="600570",
+            symbol="600609",
             exchange=Exchange.SSE,
             volume=1000,
             order_type=OrderType.MARKET,
@@ -204,23 +191,11 @@ if __name__== '__main__':
         initiator.start()
 
         print("系统启动成功！--------------")
-        time.sleep(3)
 
-        fix_client.send_order()
+        # fix_client.send_order()
 
-        # while 1:
-        #     time.sleep(2)
-
-        #     if input == '1':
-        #         print("Putin Order")
-        #         fix_client.put_order(fix.Application)
-        #     if input == '2':
-        #         sys.exit(0)
-        #     if input == 'd':
-        #         import pdb
-        #         pdb.set_trace()
-        #     else:
-        #         print("输入1 -> 委托， 输入2 -> 退出")
+        while True:
+            time.sleep(3)
 
     except (fix.ConfigError, fix.RuntimeError) as e:
         print(e)
