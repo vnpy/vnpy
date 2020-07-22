@@ -6,6 +6,7 @@ from vnpy.trader.utility import get_file_path, get_folder_path
 from vnpy.trader.object import (
     OrderRequest,
 )
+import importlib
 from vnpy.trader.constant import (
     Exchange,
     Product,
@@ -55,10 +56,26 @@ DIRECTION_VT2GNS = {
 
 class FixClient(fix.Application):
 
-    orderid: int = 1006
+    orderid: int = 100001
     execid: int = 0
     session_id = ""
     tradeid = 0
+    mather_child_id  = {}
+
+    structs = {}
+
+    def load_struct(self):
+        """加载Struct"""
+        module_name = f"fix_dict"
+        module = importlib.import_module(module_name)
+
+        for name in dir(module):
+            if "__" not in name:
+                self.structs[name] = getattr(module, name)
+
+        for k, v in self.structs.items():
+            words = k.split("_")
+            name = words[0]
 
     def onCreate(self, session_id):
         pass
@@ -81,16 +98,24 @@ class FixClient(fix.Application):
         msg.setField(mycompid)
 
     def fromAdmin(self, msg, session_id):
-        # print("1-On Front Connected")
-        pass
-
+        d = self.msg2dict(msg)
+        if d["<35>MsgType"] != "HEARTBEAT":
+            print("@@Callback", d)
 
     def toApp(self, session_id, msg):
-        print("@@Sent the following msg: %s-------------" % msg.toString())
-        return
+        d = self.msg2dict(msg)
+        print("@@Sent the following msg: ", d)
+        #return
 
     def fromApp(self, msg, session_id):
-        print("@@Received msg: %s----------" % msg.toString())
+        #print("@@Received msg: %s----------" % msg.toString())
+        d = self.msg2dict(msg)
+        print("@@Received msg: ", d)
+
+        msg_type = d["<35>MsgType"]
+        if msg_type == "EXECUTION_REPORT":
+            self.mather_child_id[d["<11>ClOrdID"]] = d["<37>OrderID"]
+
 
     def new_orderid(self) -> str:
         self.orderid = self.orderid + 1
@@ -157,7 +182,7 @@ class FixClient(fix.Application):
 
     def send_order(self):
         order = self.generate_order(
-            symbol="600609",
+            symbol="600519",
             exchange=Exchange.SSE,
             volume=1000,
             order_type=OrderType.MARKET,
@@ -171,18 +196,36 @@ class FixClient(fix.Application):
 
         words = msg_str.split("\x01")
         words = [word for word in words if word != ""]
+        if len(words) == 1 and words[0] == 'FIX.4.2:client06->GenusStgyUAT1':
+            return 'FIX.4.2:client06->GenusStgyUAT1'
 
         for word in words:
             k, v = word.split("=")
-            d[k] = v
+            number = f"no_{k}"
+            field = self.structs.get(number, None)
+            if not field:
+                field = k
+                new_name = f"<{k}>"
+                value = v
+                d[new_name] = value
+            else:
+                name = field["name"]
+                new_name = f"<{k}>{name}"
+                value = field.get(v, None)
+                if not value:
+                    value = v
+                d[new_name] = value
 
         return d
 
 
 if __name__== '__main__':
     try:
+        sended = False
         settings = fix.SessionSettings("genus.cfg")
         fix_client = FixClient()
+        fix_client.load_struct()
+        # print("载入Fix 4.2 字典成功")
         store_factory = fix.FileStoreFactory(settings)
         log_factory = fix.ScreenLogFactory(settings)
         initiator = fix.SocketInitiator(
@@ -192,10 +235,12 @@ if __name__== '__main__':
 
         print("系统启动成功！--------------")
 
-        # fix_client.send_order()
-
         while True:
             time.sleep(3)
+            if not sended:
+                fix_client.send_order()
+                print("委托发送完成")
+                sended = True
 
     except (fix.ConfigError, fix.RuntimeError) as e:
         print(e)
