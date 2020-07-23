@@ -246,20 +246,19 @@ class FixClient(fix.Application):
 
 
 class GenusClient:
-
-    # fix_client = None
+    fix_client = None
     initiator = None
     acceptor = None
 
     def __init__(self):
-        
-        self.initiator = self.create_initiator()
-        # self.acceptor = self.create_acceptor()
+        self.fix_client = FixClient()
+        self.fix_client.load_struct()
 
-    def create_initiator(self):
+        self.initiator = self.create_initiator(self.fix_client)
+        self.acceptor = self.create_acceptor(self.fix_client)
+
+    def create_initiator(self, fix_client):
         settings = fix.SessionSettings("genus_mather.cfg")
-        fix_client = FixClient()
-        fix_client.load_struct()
         store_factory = fix.FileStoreFactory(settings)
         log_factory = fix.ScreenLogFactory(settings)
         initiator = fix.SocketInitiator(
@@ -269,10 +268,10 @@ class GenusClient:
         print("Initiator 创建成功！")
         return initiator
 
-    def create_acceptor(self):
-        settings = fix.SessionSettings("executor.cfg")
-        fix_client = FixClient()
-        fix_client.load_struct()
+    def create_acceptor(self, fix_client):
+        settings = fix.SessionSettings("genus_child.cfg")
+        # fix_client = FixClient()
+        # fix_client.load_struct()
         store_factory = fix.FileStoreFactory(settings)
         log_factory = fix.ScreenLogFactory(settings)
         acceptor = fix.SocketAcceptor(
@@ -282,37 +281,17 @@ class GenusClient:
         print("acceptor 创建成功！")
         return acceptor
 
+    def send_order_ma(self):
+        self.fix_client.send_order()
+
+    def cancel_order_ma(self):
+        self.fix_client.cancel_order()
+
 
 
 if __name__== '__main__':
-    try:
-        sended = False
-        settings = fix.SessionSettings("executor.cfg")
-        fix_client = FixClient()
-        fix_client.load_struct()
-        # print("载入Fix 4.2 字典成功")
-        store_factory = fix.FileStoreFactory(settings)
-        log_factory = fix.ScreenLogFactory(settings)
-        acceptor = fix.SocketAcceptor(
-            fix_client, store_factory, settings, log_factory
-        )
-        acceptor.start()
 
-        print("系统启动成功！--------------")
+    a = GenusClient()
 
-        while True:
-            time.sleep(3)
-            # if not sended:
-            #     # fix_client.send_order()
-            #     fix_client.cancel_order()
-            #     print("委托发送完成")
-            #     sended = True
-
-    except (fix.ConfigError, fix.RuntimeError) as e:
-        print(e)
-
-##################################################################
-    # a = GenusClient()
-
-    # while True:
-    #     time.sleep(3)
+    while True:
+        time.sleep(3)

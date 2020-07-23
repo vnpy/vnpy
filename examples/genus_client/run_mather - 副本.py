@@ -1,4 +1,4 @@
-import sys
+
 import time
 import quickfix as fix
 from datetime import datetime, timedelta
@@ -20,19 +20,6 @@ from vnpy.trader.constant import (
 hours = timedelta(hours=1)
 mins = timedelta(minutes=1)
 
-p_setting = {
-    "host": "123.56.88.75",
-    "port": "11131",
-    "sender": "client06",
-    "target": "GenusStgyUAT1"
-}
-
-c_setting = {
-    "host": "10.11.27.81",
-    "port": "6668",
-    "sender": "VnpyUAT6",
-    "target": "GenusVnpyMarket"
-}
 
 EXCHANGE_VT2GNS = {
     Exchange.SSE: "SS",
@@ -56,13 +43,16 @@ DIRECTION_VT2GNS = {
 
 class FixClient(fix.Application):
 
-    orderid: int = 100002
+    orderid: int = 100008
     execid: int = 0
     session_id = ""
     tradeid = 0
     mather_child_id = {}
 
     structs = {}
+
+    # def __init__(self, orderid):
+    #     self.orderid = orderid
 
     def load_struct(self):
         """加载Struct"""
@@ -77,14 +67,10 @@ class FixClient(fix.Application):
             words = k.split("_")
             name = words[0]
 
-    def set_orderid(self, orderid):
-        self.orderid = orderid
-
     def onCreate(self, session_id):
         pass
 
     def onLogon(self, session_id):
-        print("onLogin------------------")
         self.session_id = session_id
         if self.session_id:
             print("Session ID 获取成功， id=", self.session_id)
@@ -127,7 +113,7 @@ class FixClient(fix.Application):
 
     def put_order(self, session_id, order):
         print("@@Creating Order----------------")
-        fix.Session.sendToTarget(order, session_id)
+        fix.Session.sendToTarget(order, self.session_id)
 
     def generate_order(
         self,
@@ -206,11 +192,11 @@ class FixClient(fix.Application):
         order.setField(847, "TWAP")
         self.put_order(self.session_id, order)
 
-    def send_order(self):
+    def send_order(self, req: OrderRequest):
         order = self.generate_order(
-            symbol="600519",
+            symbol=req.symbol,
             exchange=Exchange.SSE,
-            volume=1000,
+            volume=req.volume,
             order_type=OrderType.MARKET,
             direction=Direction.LONG
         )
@@ -223,7 +209,7 @@ class FixClient(fix.Application):
         words = msg_str.split("\x01")
         words = [word for word in words if word != ""]
         if len(words) == 1 and words[0] == 'FIX.4.2:client06->GenusStgyUAT1':
-            return 'FIX.4.2:client06->GenusStgyUAT1'
+            return
 
         for word in words:
             k, v = word.split("=")
@@ -245,74 +231,32 @@ class FixClient(fix.Application):
         return d
 
 
-class GenusClient:
-
-    # fix_client = None
-    initiator = None
-    acceptor = None
-
-    def __init__(self):
-        
-        self.initiator = self.create_initiator()
-        # self.acceptor = self.create_acceptor()
-
-    def create_initiator(self):
+if __name__== '__main__':
+    try:
+        sended = False
         settings = fix.SessionSettings("genus_mather.cfg")
         fix_client = FixClient()
         fix_client.load_struct()
+        # print("载入Fix 4.2 字典成功")
         store_factory = fix.FileStoreFactory(settings)
         log_factory = fix.ScreenLogFactory(settings)
         initiator = fix.SocketInitiator(
             fix_client, store_factory, settings, log_factory
         )
         initiator.start()
-        print("Initiator 创建成功！")
-        return initiator
-
-    def create_acceptor(self):
-        settings = fix.SessionSettings("executor.cfg")
-        fix_client = FixClient()
-        fix_client.load_struct()
-        store_factory = fix.FileStoreFactory(settings)
-        log_factory = fix.ScreenLogFactory(settings)
-        acceptor = fix.SocketAcceptor(
-            fix_client, store_factory, settings, log_factory
-        )
-        acceptor.start()
-        print("acceptor 创建成功！")
-        return acceptor
-
-
-
-if __name__== '__main__':
-    try:
-        sended = False
-        settings = fix.SessionSettings("executor.cfg")
-        fix_client = FixClient()
-        fix_client.load_struct()
-        # print("载入Fix 4.2 字典成功")
-        store_factory = fix.FileStoreFactory(settings)
-        log_factory = fix.ScreenLogFactory(settings)
-        acceptor = fix.SocketAcceptor(
-            fix_client, store_factory, settings, log_factory
-        )
-        acceptor.start()
 
         print("系统启动成功！--------------")
+        #fix_client.send_order()
+        
 
         while True:
-            time.sleep(3)
+            time.sleep(10)
             # if not sended:
-            #     # fix_client.send_order()
-            #     fix_client.cancel_order()
-            #     print("委托发送完成")
+            #     fix_client.send_order()
+
+            # #     fix_client.cancel_order()
+            #     print("撤单发送完成")
             #     sended = True
 
     except (fix.ConfigError, fix.RuntimeError) as e:
         print(e)
-
-##################################################################
-    # a = GenusClient()
-
-    # while True:
-    #     time.sleep(3)

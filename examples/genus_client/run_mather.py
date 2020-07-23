@@ -243,15 +243,15 @@ if __name__== '__main__':
         initiator.start()
 
         print("系统启动成功！--------------")
-        fix_client.send_order()
 
         while True:
             time.sleep(10)
-            if not sended:
+            # if not sended:
+            #     fix_client.send_order()
                 
-                fix_client.cancel_order()
-                print("委托发送完成")
-                sended = True
+            #     fix_client.cancel_order()
+            #     print("委托发送完成")
+            #     sended = True
 
     except (fix.ConfigError, fix.RuntimeError) as e:
         print(e)
