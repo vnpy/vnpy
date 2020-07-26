@@ -230,42 +230,34 @@ class BacktestingEngine:
         end = self.start + progress_delta
         progress = 0
 
-        self.history_data = load_bar_data(
-            self.symbol,
-            self.exchange,
-            self.interval,
-            self.start,
-            self.end
-        )
+        while start < self.end:
+            end = min(end, self.end)  # Make sure end time stays within set range
 
-        # while start < self.end:
-        #     end = min(end, self.end)  # Make sure end time stays within set range
+            if self.mode == BacktestingMode.BAR:
+                data = load_bar_data(
+                    self.symbol,
+                    self.exchange,
+                    self.interval,
+                    start,
+                    end
+                )
+            else:
+                data = load_tick_data(
+                    self.symbol,
+                    self.exchange,
+                    start,
+                    end
+                )
 
-        #     if self.mode == BacktestingMode.BAR:
-        #         data = load_bar_data(
-        #             self.symbol,
-        #             self.exchange,
-        #             self.interval,
-        #             start,
-        #             end
-        #         )
-        #     else:
-        #         data = load_tick_data(
-        #             self.symbol,
-        #             self.exchange,
-        #             start,
-        #             end
-        #         )
+            self.history_data.extend(data)
 
-        #     self.history_data.extend(data)
+            progress += progress_delta / total_delta
+            progress = min(progress, 1)
+            progress_bar = "#" * int(progress * 10)
+            self.output(f"加载进度：{progress_bar} [{progress:.0%}]")
 
-        #     progress += progress_delta / total_delta
-        #     progress = min(progress, 1)
-        #     progress_bar = "#" * int(progress * 10)
-        #     self.output(f"加载进度：{progress_bar} [{progress:.0%}]")
-
-        #     start = end + interval_delta
-        #     end += (progress_delta + interval_delta)
+            start = end + interval_delta
+            end += (progress_delta + interval_delta)
 
         self.output(f"历史数据加载完成，数据量：{len(self.history_data)}")
 
