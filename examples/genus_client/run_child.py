@@ -287,7 +287,7 @@ class GenusClient:
 if __name__== '__main__':
     try:
         sended = False
-        settings = fix.SessionSettings("executor.cfg")
+        settings = fix.SessionSettings("genus_child.cfg")
         fix_client = FixClient()
         fix_client.load_struct()
         # print("载入Fix 4.2 字典成功")
@@ -303,9 +303,9 @@ if __name__== '__main__':
         while True:
             time.sleep(3)
             # if not sended:
-            #     # fix_client.send_order()
-            #     fix_client.cancel_order()
-            #     print("委托发送完成")
+            #     fix_client.send_order()
+            # #     fix_client.cancel_order()
+            # #     print("委托发送完成")
             #     sended = True
 
     except (fix.ConfigError, fix.RuntimeError) as e:

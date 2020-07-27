@@ -115,7 +115,15 @@ class FixClient(fix.Application):
 
         msg_type = d["<35>MsgType"]
         if msg_type == "EXECUTION_REPORT":
-            self.mather_child_id[d["<11>ClOrdID"]] = d["<37>OrderID"]
+            # Recieve child id success
+            child_id = d["<37>OrderID"]
+            mather_id = d["<11>ClOrdID"]
+            if child_id.startswith("co."):
+                self.mather_child_id[mather_id] = child_id
+                self.send_order_child(d)
+            else:
+                text = d["<58>Text"]
+                print(f"母单发送失败，原因：{text}")
 
     def new_orderid(self) -> str:
         self.orderid = self.orderid + 1
@@ -180,7 +188,7 @@ class FixClient(fix.Application):
 
         return order
 
-    def cancel_order(self):
+    def cancel_order_ma(self):
         now_utc = datetime.utcnow()
         now_time = now_utc.strftime("%Y%m%d-%H:%M:%S")
         localid = str(self.orderid)
@@ -206,7 +214,7 @@ class FixClient(fix.Application):
         order.setField(847, "TWAP")
         self.put_order(self.session_id, order)
 
-    def send_order(self):
+    def send_order_ma(self):
         order = self.generate_order(
             symbol="600519",
             exchange=Exchange.SSE,
@@ -215,6 +223,31 @@ class FixClient(fix.Application):
             direction=Direction.LONG
         )
         self.put_order(self.session_id, order)
+
+    def send_order_child(d: dict):
+        now_utc = datetime.utcnow()
+        now_time = now_utc.strftime("%Y%m%d-%H:%M:%S")
+        order = fix.Message()
+
+        order.getHeader().setField(fix.StringField(8, "FIX.4.2"))
+        order.getHeader().setField(fix.MsgType(fix.MsgType_NewOrderSingle))  # MsgType
+
+        order.setField(11, d["<11>ClOrdID"])
+        order.setField(21, "2")
+        symbol = d["<55>Symbol"]
+        exchange = symbol.split(".")[1]
+        order.setField(100, exchange)
+        order.setField(55, symbol)
+
+        order.setField(38, d["<38>OrderQty"])
+        order.setField(167, d["<167>SecurityType"])
+        order.setField(54, d["<54>Side"])
+
+        order.setField(40, d["<40>OrdType"])
+        order.setField(15, d["<40>OrdType"])
+
+        order.setField(15, "CNY")
+        order.setField(60, now_time)
 
     def msg2dict(self, msg) -> dict:
         d = {}
@@ -282,16 +315,20 @@ class GenusClient:
         return acceptor
 
     def send_order_ma(self):
-        self.fix_client.send_order()
+        self.fix_client.send_order_ma()
 
     def cancel_order_ma(self):
-        self.fix_client.cancel_order()
+        self.fix_client.cancel_order_ma()
 
 
 
 if __name__== '__main__':
 
     a = GenusClient()
+
+    time.sleep(5)
+
+    a.send_order_ma()
 
     while True:
         time.sleep(3)
