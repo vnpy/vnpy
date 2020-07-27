@@ -143,7 +143,7 @@ class Mt5Gateway(BaseGateway):
         """"""
         mt5_req = {
             "type": FUNCTION_SUBSCRIBE,
-            "symbol": req.symbol
+            "symbol": req.symbol.replace('-','.')
         }
         self.client.send_request(mt5_req)
 
@@ -159,7 +159,7 @@ class Mt5Gateway(BaseGateway):
 
         mt5_req = {
             "type": FUNCTION_SENDORDER,
-            "symbol": req.symbol,
+            "symbol": req.symbol.replace('-','.'),
             "cmd": cmd,
             "price": req.price,
             "volume": req.volume,
@@ -218,9 +218,9 @@ class Mt5Gateway(BaseGateway):
 
         for d in packet["data"]:
             contract = ContractData(
-                symbol=d["symbol"],
+                symbol=d["symbol"].replace('.','-'),
                 exchange=Exchange.OTC,
-                name=d["symbol"],
+                name=d["symbol"].replace('.','-'),
                 product=Product.FOREX,
                 size=d["lot_size"],
                 pricetick=pow(10, -d["digits"]),
@@ -253,7 +253,7 @@ class Mt5Gateway(BaseGateway):
             self.sys_local_map[sys_id] = local_id
 
             order = OrderData(
-                symbol=d["symbol"],
+                symbol=d["symbol"].replace('.','-'),
                 exchange=Exchange.OTC,
                 orderid=local_id,
                 direction=direction,
@@ -288,7 +288,7 @@ class Mt5Gateway(BaseGateway):
 
         mt5_req = {
             "type": FUNCTION_QUERYHISTORY,
-            "symbol": req.symbol,
+            "symbol": req.symbol.replace('-','.'),
             "interval": INTERVAL_VT2MT[req.interval],
             "start_time": start_time,
             "end_time": end_time,
@@ -300,7 +300,7 @@ class Mt5Gateway(BaseGateway):
         else:
             for d in packet["data"]:
                 bar = BarData(
-                    symbol=req.symbol,
+                    symbol=req.symbol.replace('.','-'),
                     exchange=Exchange.OTC,
                     datetime=generate_datetime2(d["time"]),
                     interval=req.interval,
@@ -317,7 +317,7 @@ class Mt5Gateway(BaseGateway):
             begin = data[0]["time"]
             end = data[-1]["time"]
 
-            msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
+            msg = f"获取历史数据成功，{req.symbol.replace('.','-')} - {req.interval.value}，{begin} - {end}"
             self.write_log(msg)
 
         return history
@@ -353,7 +353,7 @@ class Mt5Gateway(BaseGateway):
 
             self.local_sys_map[local_id] = sys_id
             self.sys_local_map[sys_id] = local_id
-
+                  
             order = self.orders.get(local_id, None)
             if local_id and order:
                 order.datetime = generate_datetime(data["order_time_setup"])
@@ -368,7 +368,7 @@ class Mt5Gateway(BaseGateway):
                 direction, order_type = ORDERTYPE_MT2VT[data["order_type"]]
 
                 order = OrderData(
-                    symbol=data["symbol"],
+                    symbol=data["symbol"].replace('.','-'),
                     exchange=Exchange.OTC,
                     orderid=local_id,
                     type=order_type,
@@ -397,7 +397,7 @@ class Mt5Gateway(BaseGateway):
                     order.datetime = generate_datetime(data["order_time_setup"])
 
                 trade = TradeData(
-                    symbol=order.symbol,
+                    symbol=order.symbol.replace('.','-'),
                     exchange=order.exchange,
                     direction=order.direction,
                     orderid=order.orderid,
@@ -430,7 +430,7 @@ class Mt5Gateway(BaseGateway):
         data = packet.get("data", [])
         for d in data:
             position = PositionData(
-                symbol=d["symbol"],
+                symbol=d["symbol"].replace('.','-'),
                 exchange=Exchange.OTC,
                 direction=Direction.NET,
                 gateway_name=self.gateway_name
@@ -468,9 +468,9 @@ class Mt5Gateway(BaseGateway):
         for d in packet["data"]:
 
             tick = TickData(
-                symbol=d["symbol"],
+                symbol=d["symbol"].replace('.','-'),
                 exchange=Exchange.OTC,
-                name=d["symbol"],
+                name=d["symbol"].replace('.','-'),
                 bid_price_1=d["bid"],
                 ask_price_1=d["ask"],
                 volume=d["last_volume"],
