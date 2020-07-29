@@ -124,7 +124,7 @@ class Mt5Gateway(BaseGateway):
         self.position_symbols: Set[str] = set()
 
         self.orders: Dict[str, OrderData] = {}
-        
+
     def connect(self, setting: dict) -> None:
         """"""
         address = setting["通讯地址"]
@@ -143,7 +143,7 @@ class Mt5Gateway(BaseGateway):
         """"""
         mt5_req = {
             "type": FUNCTION_SUBSCRIBE,
-            "symbol": req.symbol.replace('-','.')
+            "symbol": req.symbol.replace('-', '.')
         }
         self.client.send_request(mt5_req)
 
@@ -159,7 +159,7 @@ class Mt5Gateway(BaseGateway):
 
         mt5_req = {
             "type": FUNCTION_SENDORDER,
-            "symbol": req.symbol.replace('-','.'),
+            "symbol": req.symbol.replace('-', '.'),
             "cmd": cmd,
             "price": req.price,
             "volume": req.volume,
@@ -168,13 +168,14 @@ class Mt5Gateway(BaseGateway):
 
         packet = self.client.send_request(mt5_req)
         result = packet["data"]["result"]
+        comment = packet["data"]["comment"]
 
         order = req.create_order_data(local_id, self.gateway_name)
         if result:
             order.status = Status.SUBMITTING
         else:
             order.status = Status.REJECTED
-            self.write_log(f"委托{local_id}拒单，请检查委托价格或者委托数量！")
+            self.write_log(f"委托{local_id}拒单，原因{comment}")
 
         self.on_order(order)
         self.orders[local_id] = order
@@ -218,9 +219,9 @@ class Mt5Gateway(BaseGateway):
 
         for d in packet["data"]:
             contract = ContractData(
-                symbol=d["symbol"].replace('.','-'),
+                symbol=d["symbol"].replace('.', '-'),
                 exchange=Exchange.OTC,
-                name=d["symbol"].replace('.','-'),
+                name=d["symbol"].replace('.', '-'),
                 product=Product.FOREX,
                 size=d["lot_size"],
                 pricetick=pow(10, -d["digits"]),
@@ -253,7 +254,7 @@ class Mt5Gateway(BaseGateway):
             self.sys_local_map[sys_id] = local_id
 
             order = OrderData(
-                symbol=d["symbol"].replace('.','-'),
+                symbol=d["symbol"].replace('.', '-'),
                 exchange=Exchange.OTC,
                 orderid=local_id,
                 direction=direction,
@@ -288,7 +289,7 @@ class Mt5Gateway(BaseGateway):
 
         mt5_req = {
             "type": FUNCTION_QUERYHISTORY,
-            "symbol": req.symbol.replace('-','.'),
+            "symbol": req.symbol.replace('-', '.'),
             "interval": INTERVAL_VT2MT[req.interval],
             "start_time": start_time,
             "end_time": end_time,
@@ -300,7 +301,7 @@ class Mt5Gateway(BaseGateway):
         else:
             for d in packet["data"]:
                 bar = BarData(
-                    symbol=req.symbol.replace('.','-'),
+                    symbol=req.symbol.replace('.', '-'),
                     exchange=Exchange.OTC,
                     datetime=generate_datetime2(d["time"]),
                     interval=req.interval,
@@ -368,7 +369,7 @@ class Mt5Gateway(BaseGateway):
                 direction, order_type = ORDERTYPE_MT2VT[data["order_type"]]
 
                 order = OrderData(
-                    symbol=data["symbol"].replace('.','-'),
+                    symbol=data["symbol"].replace('.', '-'),
                     exchange=Exchange.OTC,
                     orderid=local_id,
                     type=order_type,
@@ -397,7 +398,7 @@ class Mt5Gateway(BaseGateway):
                     order.datetime = generate_datetime(data["order_time_setup"])
 
                 trade = TradeData(
-                    symbol=order.symbol.replace('.','-'),
+                    symbol=order.symbol.replace('.', '-'),
                     exchange=order.exchange,
                     direction=order.direction,
                     orderid=order.orderid,
@@ -430,7 +431,7 @@ class Mt5Gateway(BaseGateway):
         data = packet.get("data", [])
         for d in data:
             position = PositionData(
-                symbol=d["symbol"].replace('.','-'),
+                symbol=d["symbol"].replace('.', '-'),
                 exchange=Exchange.OTC,
                 direction=Direction.NET,
                 gateway_name=self.gateway_name
@@ -468,9 +469,9 @@ class Mt5Gateway(BaseGateway):
         for d in packet["data"]:
 
             tick = TickData(
-                symbol=d["symbol"].replace('.','-'),
+                symbol=d["symbol"].replace('.', '-'),
                 exchange=Exchange.OTC,
-                name=d["symbol"].replace('.','-'),
+                name=d["symbol"].replace('.', '-'),
                 bid_price_1=d["bid"],
                 ask_price_1=d["ask"],
                 volume=d["last_volume"],
@@ -580,6 +581,7 @@ def generate_datetime2(timestamp: int) -> datetime:
     dt = datetime.strptime(str(timestamp), "%Y.%m.%d %H:%M")
     dt = dt.replace(tzinfo=LOCAL_TZ)
     return dt
+
 
 @dataclass
 class OrderBuf:
