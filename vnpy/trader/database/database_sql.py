@@ -364,12 +364,8 @@ class SqlManager(BaseDatabaseManager):
             )
             .order_by(self.class_bar.datetime)
         )
-        n2 = perf_counter()
-        # data = [db_bar.to_bar() for db_bar in s]
-        data = [db_bar for db_bar in s.namedtuples().iterator()]
-        print(data[0])
-        n3 = perf_counter()
-        print(n3 - n1, n3 - n2, n2 - n1)
+
+        data = [db_bar.to_bar() for db_bar in s]
         return data
 
     def load_tick_data(
