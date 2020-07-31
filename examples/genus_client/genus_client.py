@@ -1,38 +1,19 @@
-import sys
 import time
 import quickfix as fix
-from datetime import datetime, timedelta
-from vnpy.trader.utility import get_file_path, get_folder_path
-from vnpy.trader.object import (
-    OrderRequest,
-)
 import importlib
+from datetime import datetime, timedelta
+
 from vnpy.trader.constant import (
     Exchange,
-    Product,
+    # Product,
     Direction,
     OrderType,
-    Status,
-    Offset,
-    OptionType
+    # Status,
+    # Offset,
 )
 
 hours = timedelta(hours=1)
 mins = timedelta(minutes=1)
-
-p_setting = {
-    "host": "123.56.88.75",
-    "port": "11131",
-    "sender": "client06",
-    "target": "GenusStgyUAT1"
-}
-
-c_setting = {
-    "host": "10.11.27.81",
-    "port": "6668",
-    "sender": "VnpyUAT6",
-    "target": "GenusVnpyMarket"
-}
 
 EXCHANGE_VT2GNS = {
     Exchange.SSE: "SS",
@@ -114,7 +95,7 @@ class FixClient(fix.Application):
         print("@@Received msg: ", d)
 
         msg_type = d["<35>MsgType"]
-        if msg_type == "EXECUTION_REPORT" and d["<11>ClOrdID"]:
+        if msg_type == "EXECUTION_REPORT" and not d["<58>Text"]:
             # Recieve child id success
             child_id = d["<37>OrderID"]
             mather_id = d["<11>ClOrdID"]
@@ -156,7 +137,7 @@ class FixClient(fix.Application):
 
         # Header
         order.getHeader().setField(fix.StringField(8, "FIX.4.2"))
-        order.getHeader().setField(fix.MsgType(fix.MsgType_NewOrderSingle))  # MsgType
+        order.getHeader().setField(fix.MsgType(fix.MsgType_NewOrderSingle))
 
         order.getHeader().setField(fix.Account("account"))
         order.getHeader().setField(fix.TargetSubID("targetsubid"))
@@ -216,7 +197,6 @@ class FixClient(fix.Application):
         self.put_order(self.session_id, order)
 
     def send_order_ma(self):
-        
         order = self.generate_order(
             symbol="600570",
             exchange=Exchange.SSE,
@@ -233,7 +213,7 @@ class FixClient(fix.Application):
         order = fix.Message()
 
         order.getHeader().setField(fix.StringField(8, "FIX.4.2"))
-        order.getHeader().setField(fix.MsgType(fix.MsgType_NewOrderSingle))  # MsgType
+        order.getHeader().setField(fix.MsgType(fix.MsgType_NewOrderSingle))
 
         order.setField(11, d["<11>ClOrdID"])
         order.setField(21, "2")
@@ -308,15 +288,13 @@ class GenusClient:
 
     def create_acceptor(self, fix_client):
         settings = fix.SessionSettings("genus_child.cfg")
-        # fix_client = FixClient()
-        # fix_client.load_struct()
         store_factory = fix.FileStoreFactory(settings)
         log_factory = fix.ScreenLogFactory(settings)
         acceptor = fix.SocketAcceptor(
             fix_client, store_factory, settings, log_factory
         )
         acceptor.start()
-        print("acceptor 创建成功！")
+        print("Acceptor 创建成功！")
         return acceptor
 
     def send_order_ma(self):
@@ -326,16 +304,13 @@ class GenusClient:
         self.fix_client.cancel_order_ma()
 
 
-
 if __name__== '__main__':
-
     a = GenusClient()
 
     time.sleep(5)
 
     a.send_order_ma()
     time.sleep(5)
-
 
     a.cancel_order_ma()
 
