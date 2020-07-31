@@ -242,11 +242,11 @@ class SpreadData:
                 )
             else:
                 adjusted_bid_volume = floor_to(
-                    leg_bid_volume / abs(trading_multiplier),
+                    leg_ask_volume / abs(trading_multiplier),
                     self.min_volume
                 )
                 adjusted_ask_volume = floor_to(
-                    leg_ask_volume / abs(trading_multiplier),
+                    leg_bid_volume / abs(trading_multiplier),
                     self.min_volume
                 )
 
