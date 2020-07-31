@@ -56,7 +56,7 @@ DIRECTION_VT2GNS = {
 
 class FixClient(fix.Application):
 
-    orderid: int = 100003
+    orderid: int = 100002
     execid: int = 0
     session_id = ""
     tradeid = 0
@@ -114,16 +114,8 @@ class FixClient(fix.Application):
         print("@@Received msg: ", d)
 
         msg_type = d["<35>MsgType"]
-        if msg_type == "EXECUTION_REPORT" and d["<11>ClOrdID"]:
-            # Recieve child id success
-            child_id = d["<37>OrderID"]
-            mather_id = d["<11>ClOrdID"]
-            if child_id.startswith("co."):
-                self.mather_child_id[mather_id] = child_id
-                self.send_order_child(d)
-            else:
-                text = d["<58>Text"]
-                print(f"母单发送失败，原因：{text}")
+        if msg_type == "EXECUTION_REPORT":
+            self.mather_child_id[d["<11>ClOrdID"]] = d["<37>OrderID"]
 
     def new_orderid(self) -> str:
         self.orderid = self.orderid + 1
@@ -188,15 +180,14 @@ class FixClient(fix.Application):
 
         return order
 
-    def cancel_order_ma(self):
+    def cancel_order(self):
         now_utc = datetime.utcnow()
         now_time = now_utc.strftime("%Y%m%d-%H:%M:%S")
-        print("now orderid= ", self.orderid)
         localid = str(self.orderid)
         new_localid = self.new_orderid()
-        child_id = self.mather_child_id[localid]
-        symbol = "600570"
-        volume = 100
+        child_id = self.mather_child_id(localid)
+        symbol = "600519"
+        volume = 1000
         price = 0
 
         order = fix.Message()
@@ -215,42 +206,14 @@ class FixClient(fix.Application):
         order.setField(847, "TWAP")
         self.put_order(self.session_id, order)
 
-    def send_order_ma(self):
-        
+    def send_order(self):
         order = self.generate_order(
-            symbol="600570",
+            symbol="600519",
             exchange=Exchange.SSE,
-            volume=100,
+            volume=1000,
             order_type=OrderType.MARKET,
             direction=Direction.LONG
         )
-        self.put_order(self.session_id, order)
-
-    def send_order_child(self, d):
-        print("子单通道，发送子单委托----------------------")
-        now_utc = datetime.utcnow()
-        now_time = now_utc.strftime("%Y%m%d-%H:%M:%S")
-        order = fix.Message()
-
-        order.getHeader().setField(fix.StringField(8, "FIX.4.2"))
-        order.getHeader().setField(fix.MsgType(fix.MsgType_NewOrderSingle))  # MsgType
-
-        order.setField(11, d["<11>ClOrdID"])
-        order.setField(21, "2")
-        symbol = d["<55>Symbol"]
-        exchange = symbol.split(".")[1]
-        order.setField(100, exchange)
-        order.setField(55, symbol)
-
-        order.setField(38, d["<38>OrderQty"])
-        order.setField(167, d["<167>SecurityType"])
-        order.setField(54, d["<54>Side"])
-
-        order.setField(40, d["<40>OrdType"])
-        order.setField(15, d["<40>OrdType"])
-
-        order.setField(15, "CNY")
-        order.setField(60, now_time)
         self.put_order(self.session_id, order)
 
     def msg2dict(self, msg) -> dict:
@@ -283,20 +246,20 @@ class FixClient(fix.Application):
 
 
 class GenusClient:
-    fix_client = None
+
+    # fix_client = None
     initiator = None
     acceptor = None
 
     def __init__(self):
-        self.fix_client = FixClient()
-        self.fix_client.load_struct()
-        self.fix_client.set_orderid(1000001)
+        
+        self.initiator = self.create_initiator()
+        # self.acceptor = self.create_acceptor()
 
-        self.initiator = self.create_initiator(self.fix_client)
-        self.acceptor = self.create_acceptor(self.fix_client)
-
-    def create_initiator(self, fix_client):
+    def create_initiator(self):
         settings = fix.SessionSettings("genus_mather.cfg")
+        fix_client = FixClient()
+        fix_client.load_struct()
         store_factory = fix.FileStoreFactory(settings)
         log_factory = fix.ScreenLogFactory(settings)
         initiator = fix.SocketInitiator(
@@ -306,10 +269,10 @@ class GenusClient:
         print("Initiator 创建成功！")
         return initiator
 
-    def create_acceptor(self, fix_client):
-        settings = fix.SessionSettings("genus_child.cfg")
-        # fix_client = FixClient()
-        # fix_client.load_struct()
+    def create_acceptor(self):
+        settings = fix.SessionSettings("executor.cfg")
+        fix_client = FixClient()
+        fix_client.load_struct()
         store_factory = fix.FileStoreFactory(settings)
         log_factory = fix.ScreenLogFactory(settings)
         acceptor = fix.SocketAcceptor(
@@ -319,25 +282,37 @@ class GenusClient:
         print("acceptor 创建成功！")
         return acceptor
 
-    def send_order_ma(self):
-        self.fix_client.send_order_ma()
-
-    def cancel_order_ma(self):
-        self.fix_client.cancel_order_ma()
-
 
 
 if __name__== '__main__':
+    try:
+        sended = False
+        settings = fix.SessionSettings("genus_child.cfg")
+        fix_client = FixClient()
+        fix_client.load_struct()
+        # print("载入Fix 4.2 字典成功")
+        store_factory = fix.FileStoreFactory(settings)
+        log_factory = fix.ScreenLogFactory(settings)
+        acceptor = fix.SocketAcceptor(
+            fix_client, store_factory, settings, log_factory
+        )
+        acceptor.start()
 
-    a = GenusClient()
+        # print("系统启动成功！--------------")
 
-    time.sleep(5)
+        while True:
+            time.sleep(3)
+            # if not sended:
+            #     fix_client.send_order()
+            # #     fix_client.cancel_order()
+            # #     print("委托发送完成")
+            #     sended = True
 
-    a.send_order_ma()
-    time.sleep(5)
+    except (fix.ConfigError, fix.RuntimeError) as e:
+        print(e)
 
+##################################################################
+    # a = GenusClient()
 
-    a.cancel_order_ma()
-
-    while True:
-        time.sleep(3)
+    # while True:
+    #     time.sleep(3)
