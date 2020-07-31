@@ -350,9 +350,6 @@ class SqlManager(BaseDatabaseManager):
         start: datetime,
         end: datetime,
     ) -> Sequence[BarData]:
-        from time import perf_counter
-
-        n1 = perf_counter()
         s = (
             self.class_bar.select()
                 .where(

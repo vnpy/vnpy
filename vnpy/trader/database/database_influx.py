@@ -1,5 +1,4 @@
 from datetime import datetime
-from enum import Enum
 from typing import Optional, Sequence, List
 
 from influxdb import InfluxDBClient
@@ -46,10 +45,6 @@ class InfluxManager(BaseDatabaseManager):
         start: datetime,
         end: datetime,
     ) -> Sequence[BarData]:
-        print(start, end)
-
-        from time import perf_counter
-
         query = (
             "select * from bar_data"
             " where vt_symbol=$vt_symbol"
@@ -57,18 +52,15 @@ class InfluxManager(BaseDatabaseManager):
             f" and time >= '{start.isoformat()}'"
             f" and time <= '{end.isoformat()}';"
         )
-        # query = f"select * from bar_data"
 
         bind_params = {
             "vt_symbol": generate_vt_symbol(symbol, exchange),
             "interval": interval.value
         }
 
-        n1 = perf_counter()
         result = influx_client.query(query, bind_params=bind_params)
-        n2 = perf_counter()
         points = result.get_points()
-        n3 = perf_counter()
+
         data = []
         for d in points:
             dt = datetime.strptime(d["time"], "%Y-%m-%dT%H:%M:%SZ")
@@ -87,8 +79,7 @@ class InfluxManager(BaseDatabaseManager):
                 gateway_name="DB"
             )
             data.append(bar)
-        n4 = perf_counter()
-        print(n4 - n1, n4 - n3, n3 - n2, n2 - n1)
+
         return data
 
     def load_tick_data(
@@ -133,12 +124,76 @@ class InfluxManager(BaseDatabaseManager):
     def get_newest_bar_data(
         self, symbol: str, exchange: "Exchange", interval: "Interval"
     ) -> Optional["BarData"]:
-        pass
+        query = (
+            "select last(close_price), * from bar_data"
+            " where vt_symbol=$vt_symbol"
+            " and interval=$interval"
+        )
+
+        bind_params = {
+            "vt_symbol": generate_vt_symbol(symbol, exchange),
+            "interval": interval.value
+        }
+
+        result = influx_client.query(query, bind_params=bind_params)
+        points = result.get_points()
+
+        bar = None
+        for d in points:
+            dt = datetime.strptime(d["time"], "%Y-%m-%dT%H:%M:%SZ")
+
+            bar = BarData(
+                symbol=symbol,
+                exchange=exchange,
+                interval=interval,
+                datetime=dt.replace(tzinfo=DB_TZ),
+                open_price=d["open_price"],
+                high_price=d["high_price"],
+                low_price=d["low_price"],
+                close_price=d["close_price"],
+                volume=d["volume"],
+                open_interest=d["open_interest"],
+                gateway_name="DB"
+            )
+
+        return bar
 
     def get_oldest_bar_data(
         self, symbol: str, exchange: "Exchange", interval: "Interval"
     ) -> Optional["BarData"]:
-        pass
+        query = (
+            "select first(close_price), * from bar_data"
+            " where vt_symbol=$vt_symbol"
+            " and interval=$interval"
+        )
+
+        bind_params = {
+            "vt_symbol": generate_vt_symbol(symbol, exchange),
+            "interval": interval.value
+        }
+
+        result = influx_client.query(query, bind_params=bind_params)
+        points = result.get_points()
+
+        bar = None
+        for d in points:
+            dt = datetime.strptime(d["time"], "%Y-%m-%dT%H:%M:%SZ")
+
+            bar = BarData(
+                symbol=symbol,
+                exchange=exchange,
+                interval=interval,
+                datetime=dt.replace(tzinfo=DB_TZ),
+                open_price=d["open_price"],
+                high_price=d["high_price"],
+                low_price=d["low_price"],
+                close_price=d["close_price"],
+                volume=d["volume"],
+                open_interest=d["open_interest"],
+                gateway_name="DB"
+            )
+
+        return bar
 
     def get_newest_tick_data(
         self, symbol: str, exchange: "Exchange"
@@ -146,8 +201,24 @@ class InfluxManager(BaseDatabaseManager):
         pass
 
     def get_bar_data_statistics(self) -> List:
-        """"""
-        pass
+        query = "select count(close_price) from bar_data group by *"
+        result = influx_client.query(query)
+
+        r = []
+        for k, v in result.items():
+            tags = k[1]
+            statistics = list(v)[0]
+
+            symbol, exchange = tags["vt_symbol"].split(".")
+
+            r.append({
+                "symbol": symbol,
+                "exchange": exchange,
+                "interval": tags["interval"],
+                "count": statistics["count"]
+            })
+
+        return r
 
     def delete_bar_data(
         self,
@@ -158,7 +229,32 @@ class InfluxManager(BaseDatabaseManager):
         """
         Delete all bar data with given symbol + exchange + interval.
         """
-        pass
+        bind_params = {
+            "vt_symbol": generate_vt_symbol(symbol, exchange),
+            "interval": interval.value
+        }
+
+        # Query data count
+        query1 = (
+            "select count(close_price) from bar_data"
+            " where vt_symbol=$vt_symbol"
+            " and interval=$interval"
+        )
+        result = influx_client.query(query1, bind_params=bind_params)
+        points = result.get_points()
+
+        for d in points:
+            count = d["count"]
+
+        # Delete data
+        query2 = (
+            "drop series from bar_data"
+            " where vt_symbol=$vt_symbol"
+            " and interval=$interval"
+        )
+        influx_client.query(query2, bind_params=bind_params)
+
+        return count
 
     def clean(self, symbol: str):
         pass
