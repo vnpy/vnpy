@@ -408,7 +408,7 @@ class GateiosRestApi(RestClient):
                 symbol=symbol,
                 exchange=Exchange.GATEIO,
                 name=symbol,
-                pricetick=d["order_price_round"],
+                pricetick=float(d["order_price_round"]),
                 size=int(d["leverage_min"]),
                 min_volume=d["order_size_min"],
                 product=Product.FUTURES,
