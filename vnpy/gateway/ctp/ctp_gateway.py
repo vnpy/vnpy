@@ -302,6 +302,10 @@ class CtpMdApi(MdApi):
         """
         Callback of tick data update.
         """
+        # Filter data update with no timestamp
+        if not data["UpdateTime"]:
+            return
+
         symbol = data["InstrumentID"]
         exchange = symbol_exchange_map.get(symbol, "")
         if not exchange:
