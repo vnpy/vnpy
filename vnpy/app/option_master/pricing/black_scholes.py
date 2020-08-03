@@ -185,7 +185,7 @@ def calculate_impv(
         return 0
 
     # Calculate implied volatility with Newton's method
-    v: float = 0.3     # Initial guess of volatility
+    v: float = 0.01     # Initial guess of volatility
 
     for i in range(50):
         # Caculate option price and vega with current guess
