@@ -455,7 +455,11 @@ class BybitRestApi(RestClient):
                 history_data=True,
                 gateway_name=self.gateway_name
             )
-            self.gateway.on_contract(contract)
+
+            if self.usdt_base and "USDT" in contract.symbol:
+                self.gateway.on_contract(contract)
+            elif not self.usdt_base and "USDT" not in contract.symbol:
+                self.gateway.on_contract(contract)
 
         self.gateway.write_log("合约信息查询成功")
         self.query_position()
