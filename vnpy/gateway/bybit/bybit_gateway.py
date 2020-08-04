@@ -516,7 +516,10 @@ class BybitRestApi(RestClient):
             )
             self.gateway.on_order(order)
 
-        if result["current_page"] != result["last_page"]:
+        if (
+            "last_page" in result
+            and result["current_page"] != result["last_page"]
+        ):
             self.query_order(result["current_page"] + 1)
         else:
             self.gateway.write_log(f"{symbol}委托信息查询成功")
