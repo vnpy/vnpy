@@ -7,6 +7,7 @@ import zmq
 import zmq.auth
 from zmq.backend.cython.constants import NOBLOCK
 from tzlocal import get_localzone
+import pytz
 
 from vnpy.trader.constant import (
     Direction,
@@ -285,8 +286,8 @@ class Mt5Gateway(BaseGateway):
         """
         history = []
 
-        start_time = req.start.isoformat()
-        end_time = req.end.isoformat()
+        start_time = generate_datetime3(req.start)
+        end_time = generate_datetime3(req.end)
 
         mt5_req = {
             "type": FUNCTION_QUERYHISTORY,
@@ -316,8 +317,8 @@ class Mt5Gateway(BaseGateway):
                 history.append(bar)
 
             data = packet["data"]
-            begin = data[0]["time"]
-            end = data[-1]["time"]
+            begin = generate_datetime2(data[0]["time"])
+            end = generate_datetime2(data[-1]["time"])
 
             msg = f"获取历史数据成功，{req.symbol.replace('.','-')} - {req.interval.value}，{begin} - {end}"
             self.write_log(msg)
@@ -580,7 +581,20 @@ def generate_datetime(timestamp: int) -> datetime:
 def generate_datetime2(timestamp: int) -> datetime:
     """"""
     dt = datetime.strptime(str(timestamp), "%Y.%m.%d %H:%M")
-    dt = LOCAL_TZ.localize(dt)
+    utc_dt = dt.replace(tzinfo=pytz.utc)
+    local_tz = LOCAL_TZ.normalize(utc_dt.astimezone(LOCAL_TZ))
+    dt = local_tz.replace(tzinfo=LOCAL_TZ)
+    return dt
+
+
+def generate_datetime3(datetime: datetime) -> str:
+    """"""
+    dt = datetime.replace(tzinfo=None)
+    local_tz = LOCAL_TZ.normalize(dt.astimezone(LOCAL_TZ))
+    utc_tz = pytz.utc.normalize(local_tz.astimezone(pytz.utc))
+    utc_tz = utc_tz.replace(tzinfo=None)
+    dt = utc_tz.isoformat()
+    dt = dt.replace('T', ' ')
     return dt
 
 
