@@ -430,6 +430,7 @@ class CtpTdApi(TdApi):
         self.login_status = False
         self.auth_status = False
         self.login_failed = False
+        self.contract_inited = False
 
         self.userid = ""
         self.password = ""
@@ -641,6 +642,7 @@ class CtpTdApi(TdApi):
             symbol_size_map[contract.symbol] = contract.size
 
         if last:
+            self.contract_inited = True
             self.gateway.write_log("合约信息查询成功")
 
             for data in self.order_data:
@@ -655,11 +657,12 @@ class CtpTdApi(TdApi):
         """
         Callback of order status update.
         """
-        symbol = data["InstrumentID"]
-        exchange = symbol_exchange_map.get(symbol, "")
-        if not exchange:
+        if not self.contract_inited:
             self.order_data.append(data)
             return
+
+        symbol = data["InstrumentID"]
+        exchange = symbol_exchange_map[symbol]
 
         frontid = data["FrontID"]
         sessionid = data["SessionID"]
@@ -692,11 +695,12 @@ class CtpTdApi(TdApi):
         """
         Callback of trade status update.
         """
-        symbol = data["InstrumentID"]
-        exchange = symbol_exchange_map.get(symbol, "")
-        if not exchange:
+        if not self.contract_inited:
             self.trade_data.append(data)
             return
+
+        symbol = data["InstrumentID"]
+        exchange = symbol_exchange_map[symbol]
 
         orderid = self.sysid_orderid_map[data["OrderSysID"]]
 
