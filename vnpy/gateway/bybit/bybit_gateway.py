@@ -74,8 +74,6 @@ TIMEDELTA_MAP: Dict[Interval, timedelta] = {
     Interval.WEEKLY: timedelta(days=7),
 }
 
-UTC_TZ = pytz.utc
-
 
 REST_HOST = "https://api.bybit.com"
 INVERSE_WEBSOCKET_HOST = "wss://stream.bybit.com/realtime"
@@ -582,6 +580,7 @@ class BybitRestApi(RestClient):
         history = []
         count = 200
         start_time = int(req.start.timestamp())
+        print(req.start, start_time)
 
         while True:
             # Create query params
@@ -622,7 +621,7 @@ class BybitRestApi(RestClient):
                 buf = []
                 for d in data["result"]:
                     dt = datetime.fromtimestamp(d["open_time"])
-                    dt = dt.replace(tzinfo=UTC_TZ)
+                    dt = CHINA_TZ.localize(dt)
 
                     bar = BarData(
                         symbol=req.symbol,
@@ -1095,5 +1094,5 @@ def generate_datetime(timestamp: str) -> datetime:
         dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
     else:
         dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
-    dt = dt.replace(tzinfo=UTC_TZ)
+    dt = UTC_TZ.localize(dt)
     return dt

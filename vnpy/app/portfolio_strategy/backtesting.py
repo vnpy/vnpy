@@ -2,6 +2,7 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import Dict, List, Set, Tuple
 from functools import lru_cache
+from copy import copy
 import traceback
 
 import numpy as np
@@ -113,7 +114,7 @@ class BacktestingEngine:
     def add_strategy(self, strategy_class: type, setting: dict) -> None:
         """"""
         self.strategy = strategy_class(
-            self, strategy_class.__name__, self.vt_symbols, setting
+            self, strategy_class.__name__, copy(self.vt_symbols), setting
         )
 
     def load_data(self) -> None:

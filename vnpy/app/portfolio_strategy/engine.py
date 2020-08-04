@@ -369,7 +369,10 @@ class StrategyEngine(BaseEngine):
         if data:
             for name in strategy.variables:
                 value = data.get(name, None)
-                if value:
+                if name == "pos":
+                    pos = getattr(strategy, name)
+                    pos.update(value)
+                elif value:
                     setattr(strategy, name, value)
 
         # Subscribe market data
@@ -604,12 +607,12 @@ class StrategyEngine(BaseEngine):
 
     def write_log(self, msg: str, strategy: StrategyTemplate = None):
         """
-        Create cta engine log event.
+        Create portfolio engine log event.
         """
         if strategy:
             msg = f"{strategy.strategy_name}: {msg}"
 
-        log = LogData(msg=msg, gateway_name="CtaStrategy")
+        log = LogData(msg=msg, gateway_name=APP_NAME)
         event = Event(type=EVENT_PORTFOLIO_LOG, data=log)
         self.event_engine.put(event)
 

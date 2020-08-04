@@ -940,5 +940,5 @@ def create_signature_v2(
 def generate_datetime(timestamp: float) -> datetime:
     """"""
     dt = datetime.fromtimestamp(timestamp)
-    dt = dt.replace(tzinfo=CHINA_TZ)
+    dt = CHINA_TZ.localize(dt)
     return dt

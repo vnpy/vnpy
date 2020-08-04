@@ -361,6 +361,7 @@ class SqlManager(BaseDatabaseManager):
             )
             .order_by(self.class_bar.datetime)
         )
+
         data = [db_bar.to_bar() for db_bar in s]
         return data
 

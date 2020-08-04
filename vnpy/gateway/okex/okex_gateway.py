@@ -824,5 +824,5 @@ def get_timestamp():
 def generate_datetime(timestamp: str) -> datetime:
     """parse timestamp into local time."""
     dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    dt = dt.replace(tzinfo=UTC_TZ)
+    dt = UTC_TZ.localize(dt)
     return dt

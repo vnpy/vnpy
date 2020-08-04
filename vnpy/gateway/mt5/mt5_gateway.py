@@ -261,7 +261,8 @@ class Mt5Gateway(BaseGateway):
                 direction=direction,
                 type=order_type,
                 price=d["order_price"],
-                volume=d["order_volume_current"],
+                volume=d["order_volume_initial"],
+                traded=d["order_volume_initial"] - d["order_volume_current"],
                 status=STATUS_MT2VT.get(d["order_state"], Status.SUBMITTING),
                 datetime=generate_datetime(d["order_time_setup"]),
                 gateway_name=self.gateway_name
@@ -406,7 +407,7 @@ class Mt5Gateway(BaseGateway):
                     tradeid=data["deal"],
                     price=data["trans_price"],
                     volume=data["trans_volume"],
-                    datetime=datetime.now().replace(tzinfo=LOCAL_TZ),
+                    datetime=LOCAL_TZ.localize(datetime.now()),
                     gateway_name=self.gateway_name
                 )
                 order.traded = trade.volume
@@ -573,7 +574,7 @@ class Mt5Client:
 def generate_datetime(timestamp: int) -> datetime:
     """"""
     dt = datetime.fromtimestamp(timestamp)
-    dt = dt.replace(tzinfo=LOCAL_TZ)
+    dt = LOCAL_TZ.localize(dt)
     return dt
 
 

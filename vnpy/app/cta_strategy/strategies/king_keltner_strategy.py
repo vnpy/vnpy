@@ -13,7 +13,7 @@ from vnpy.app.cta_strategy import (
 class KingKeltnerStrategy(CtaTemplate):
     """"""
 
-    author = '用Python的交易员'
+    author = "用Python的交易员"
 
     kk_length = 11
     kk_dev = 1.6
@@ -29,8 +29,8 @@ class KingKeltnerStrategy(CtaTemplate):
     short_vt_orderids = []
     vt_orderids = []
 
-    parameters = ['kk_length', 'kk_dev', 'fixed_size']
-    variables = ['kk_up', 'kk_down']
+    parameters = ["kk_length", "kk_dev", "trailing_percent", "fixed_size"]
+    variables = ["kk_up", "kk_down"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
