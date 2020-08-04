@@ -260,7 +260,8 @@ class Mt5Gateway(BaseGateway):
                 direction=direction,
                 type=order_type,
                 price=d["order_price"],
-                volume=d["order_volume_current"],
+                volume=d["order_volume_initial"],
+                traded=d["order_volume_initial"] - d["order_volume_current"],
                 status=STATUS_MT2VT.get(d["order_state"], Status.SUBMITTING),
                 datetime=generate_datetime(d["order_time_setup"]),
                 gateway_name=self.gateway_name
