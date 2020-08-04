@@ -590,7 +590,7 @@ def generate_datetime3(datetime: datetime) -> str:
     """"""
     dt = datetime.replace(tzinfo=None)
     local_tz = LOCAL_TZ.normalize(dt.astimezone(LOCAL_TZ))
-    utc_tz = pytz.utc.normalize(dt.astimezone(pytz.utc))
+    utc_tz = pytz.utc.normalize(local_tz.astimezone(pytz.utc))
     utc_tz = utc_tz.replace(tzinfo=None)
     dt = utc_tz.isoformat()
     dt = dt.replace('T', ' ')
