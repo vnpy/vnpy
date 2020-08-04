@@ -913,7 +913,7 @@ class CtaEngine(BaseEngine):
         if strategy:
             msg = f"{strategy.strategy_name}: {msg}"
 
-        log = LogData(msg=msg, gateway_name="CtaStrategy")
+        log = LogData(msg=msg, gateway_name=APP_NAME)
         event = Event(type=EVENT_CTA_LOG, data=log)
         self.event_engine.put(event)
 
