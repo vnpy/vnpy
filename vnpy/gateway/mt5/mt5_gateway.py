@@ -194,6 +194,10 @@ class Mt5Gateway(BaseGateway):
 
     def cancel_order(self, req: CancelRequest) -> None:
         """"""
+        if req.orderid not in self.local_sys_map:
+            self.write_log(f"委托撤单失败，找不到{req.orderid}对应的系统委托号")
+            return
+
         sys_id = self.local_sys_map[req.orderid]
 
         mt5_req = {
