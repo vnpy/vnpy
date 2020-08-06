@@ -253,16 +253,30 @@ class StrategyEngine(BaseEngine):
         dts = list(dts)
         dts.sort()
 
-        for dt in dts:
-            bars = {}
+        bars = {}
 
+        for dt in dts:
             for vt_symbol in vt_symbols:
                 bar = history_data.get((dt, vt_symbol), None)
+
+                # If bar data of vt_symbol at dt exists
                 if bar:
                     bars[vt_symbol] = bar
-                else:
-                    dt_str = dt.strftime("%Y-%m-%d %H:%M:%S")
-                    self.write_log(f"数据缺失：{dt_str} {vt_symbol}", strategy)
+                # Otherwise, use previous data to backfill
+                elif vt_symbol in bars:
+                    old_bar = bars[vt_symbol]
+
+                    bar = BarData(
+                        symbol=old_bar.symbol,
+                        exchange=old_bar.exchange,
+                        datetime=dt,
+                        open_price=old_bar.close_price,
+                        high_price=old_bar.close_price,
+                        low_price=old_bar.close_price,
+                        close_price=old_bar.close_price,
+                        gateway_name=old_bar.gateway_name
+                    )
+                    bars[vt_symbol] = bar
 
             self.call_strategy_func(strategy, strategy.on_bars, bars)
 

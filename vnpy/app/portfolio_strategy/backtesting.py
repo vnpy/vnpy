@@ -477,14 +477,28 @@ class BacktestingEngine:
         """"""
         self.datetime = dt
 
-        self.bars.clear()
+        # self.bars.clear()
         for vt_symbol in self.vt_symbols:
             bar = self.history_data.get((dt, vt_symbol), None)
+
+            # If bar data of vt_symbol at dt exists
             if bar:
                 self.bars[vt_symbol] = bar
-            else:
-                dt_str = dt.strftime("%Y-%m-%d %H:%M:%S")
-                self.output(f"数据缺失：{dt_str} {vt_symbol}")
+            # Otherwise, use previous data to backfill
+            elif vt_symbol in self.bars:
+                old_bar = self.bars[vt_symbol]
+
+                bar = BarData(
+                    symbol=old_bar.symbol,
+                    exchange=old_bar.exchange,
+                    datetime=dt,
+                    open_price=old_bar.close_price,
+                    high_price=old_bar.close_price,
+                    low_price=old_bar.close_price,
+                    close_price=old_bar.close_price,
+                    gateway_name=old_bar.gateway_name
+                )
+                self.bars[vt_symbol] = bar
 
         self.cross_limit_order()
         self.strategy.on_bars(self.bars)
