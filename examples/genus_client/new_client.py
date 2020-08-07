@@ -41,16 +41,13 @@ STATUS_GNS2VT = {
 }
 
 
-
-class FixInitiator(fix.Application):
+class ParentApp(fix.Application):
 
     def __init__(self):
         """"""
         super().__init__()
 
-        now_timestamp = datetime.now().strftime("%H%M%S0000")
-        self.algoid = int(now_timestamp)
-
+        self.algoid = int(datetime.now().strftime("%H%M%S0000"))
         self.session_id = 0
 
         self.callbacks = {
@@ -212,6 +209,41 @@ class FixInitiator(fix.Application):
         fix.Session.sendToTarget(message, self.session_id)
 
 
+class ChildApp(fix.Application):
+
+    def __init__(self):
+        """"""
+        super().__init__()
+
+    def onCreate(self, session_id: int):
+        """"""
+        self.session_id = session_id
+
+    def onLogon(self, session_id: int):
+        """"""
+        print("on logon", session_id)
+
+    def onLogout(self, session_id: int):
+        """"""
+        print("on logout", session_id)
+
+    def toAdmin(self, message: fix.Message, session_id: int):
+        """"""
+        print("to admin", session_id)
+
+    def toApp(self, message: fix.Message, session_id: int):
+        """"""
+        print("to app", session_id)
+
+    def fromAdmin(self, message: fix.Message, session_id: int):
+        """"""
+        print("from admin", session_id)
+
+    def fromApp(self, message: fix.Message, session_id: int):
+        """"""
+        print("from app")
+
+
 def new_message(msg_type: int) -> fix.Message:
     """"""
     message = fix.Message()
@@ -236,7 +268,7 @@ def get_field_value(field_map: fix.FieldMap, field: Any) -> Any:
 if __name__ == "__main__":
     from time import sleep
 
-    app = FixInitiator()
+    app = ParentApp()
     settings = fix.SessionSettings("genus_mother.cfg")
     store_factory = fix.FileStoreFactory(settings)
     log_factory = fix.ScreenLogFactory(settings)
