@@ -6,8 +6,8 @@ from copy import copy
 import traceback
 
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from pandas import DataFrame
 
 from vnpy.trader.constant import Direction, Offset, Interval, Status
@@ -16,9 +16,6 @@ from vnpy.trader.object import OrderData, TradeData, BarData
 from vnpy.trader.utility import round_to, extract_vt_symbol
 
 from .template import StrategyTemplate
-
-# Set seaborn style
-sns.set_style("whitegrid")
 
 
 INTERVAL_DELTA_MAP = {
@@ -347,12 +344,15 @@ class BacktestingEngine:
             daily_return = df["return"].mean() * 100
             return_std = df["return"].std() * 100
 
+            pnl_std = df["net_pnl"].std()
+
             if return_std:
-                sharpe_ratio = daily_return / return_std * np.sqrt(240)
+                # sharpe_ratio = daily_return / return_std * np.sqrt(240)
+                sharpe_ratio = daily_net_pnl / pnl_std * np.sqrt(240)
             else:
                 sharpe_ratio = 0
 
-            return_drawdown_ratio = -total_return / max_ddpercent
+            return_drawdown_ratio = -total_net_pnl / max_drawdown
 
         # Output
         if output:
@@ -438,25 +438,37 @@ class BacktestingEngine:
         if df is None:
             return
 
-        plt.figure(figsize=(10, 16))
+        fig = make_subplots(
+            rows=4,
+            cols=1,
+            subplot_titles=["Balance", "Drawdown", "Daily Pnl", "Pnl Distribution"],
+            vertical_spacing=0.06
+        )
 
-        balance_plot = plt.subplot(4, 1, 1)
-        balance_plot.set_title("Balance")
-        df["balance"].plot(legend=True)
+        balance_line = go.Scatter(
+            x=df.index,
+            y=df["balance"],
+            mode="lines",
+            name="Balance"
+        )
+        drawdown_scatter = go.Scatter(
+            x=df.index,
+            y=df["drawdown"],
+            fillcolor="red",
+            fill='tozeroy',
+            mode="lines",
+            name="Drawdown"
+        )
+        pnl_bar = go.Bar(y=df["net_pnl"], name="Daily Pnl")
+        pnl_histogram = go.Histogram(x=df["net_pnl"], nbinsx=100, name="Days")
 
-        drawdown_plot = plt.subplot(4, 1, 2)
-        drawdown_plot.set_title("Drawdown")
-        drawdown_plot.fill_between(range(len(df)), df["drawdown"].values)
+        fig.add_trace(balance_line, row=1, col=1)
+        fig.add_trace(drawdown_scatter, row=2, col=1)
+        fig.add_trace(pnl_bar, row=3, col=1)
+        fig.add_trace(pnl_histogram, row=4, col=1)
 
-        pnl_plot = plt.subplot(4, 1, 3)
-        pnl_plot.set_title("Daily Pnl")
-        df["net_pnl"].plot(kind="bar", legend=False, grid=False, xticks=[])
-
-        distribution_plot = plt.subplot(4, 1, 4)
-        distribution_plot.set_title("Daily Pnl Distribution")
-        df["net_pnl"].hist(bins=50)
-
-        plt.show()
+        fig.update_layout(height=1000, width=1000)
+        fig.show()  
 
     def update_daily_close(self, bars: Dict[str, BarData], dt: datetime) -> None:
         """"""
@@ -816,8 +828,9 @@ class PortfolioDailyResult:
         self.close_prices = close_prices
 
         for vt_symbol, close_price in close_prices.items():
-            contract_result = self.contract_results[vt_symbol]
-            contract_result.update_close_price(close_price)
+            contract_result = self.contract_results.get(vt_symbol, None)
+            if contract_result:
+                contract_result.update_close_price(close_price)
 
 
 @lru_cache(maxsize=999)
