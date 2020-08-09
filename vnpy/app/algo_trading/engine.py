@@ -8,14 +8,14 @@ from vnpy.trader.object import (SubscribeRequest, OrderRequest, LogData)
 from vnpy.trader.utility import load_json, save_json, round_to
 
 from .template import AlgoTemplate
+from .base import (
+    EVENT_ALGO_LOG, EVENT_ALGO_PARAMETERS, EVENT_ALGO_SETTING, EVENT_ALGO_VARIABLES
+)
 
 
 APP_NAME = "AlgoTrading"
 
-EVENT_ALGO_LOG = "eAlgoLog"
-EVENT_ALGO_SETTING = "eAlgoSetting"
-EVENT_ALGO_VARIABLES = "eAlgoVariables"
-EVENT_ALGO_PARAMETERS = "eAlgoParameters"
+
 
 
 class AlgoEngine(BaseEngine):
