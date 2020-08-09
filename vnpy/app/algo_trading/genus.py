@@ -11,6 +11,7 @@ from vnpy.trader.engine import MainEngine
 from vnpy.trader.constant import Exchange, OrderType, Direction, Status
 from vnpy.trader.utility import extract_vt_symbol, generate_vt_symbol
 from vnpy.trader.object import OrderRequest, OrderData, TradeData
+from vnpy.trader.setting import SETTINGS
 
 from .base import EVENT_ALGO_PARAMETERS, EVENT_ALGO_SETTING, EVENT_ALGO_LOG
 
@@ -429,10 +430,44 @@ class GenusClient:
 
     def init(self):
         """"""
-        self.child_app: GenusChildApp = GenusChildApp(self)
-        self.parent_app: GenusChildApp = GenusParentApp(self)
-
         self.register_event()
+
+        # For child app
+        child_settings = fix.SessionSettings("genus_child.cfg")
+        child_settings.setString("SocketAcceptHost", SETTINGS["genus.child_host"])
+        child_settings.setString("SocketAcceptPort", SETTINGS["genus.child_port"])
+        child_settings.setString("SenderCompID", SETTINGS["genus.child_sender"])
+        child_settings.setString("TargetCompID", SETTINGS["genus.child_target"])
+
+        child_store_factory = fix.FileStoreFactory(child_settings)
+        child_log_factory = fix.ScreenLogFactory(child_settings)
+
+        self.child_app: GenusChildApp = GenusChildApp(self)
+        self.child_socket = fix.SocketAcceptor(
+            self.child_app,
+            child_store_factory,
+            child_settings,
+            child_log_factory
+        )
+        self.child_socket.start()
+
+        # For parent app
+        parent_settings = fix.SessionSettings("genus_parent.cfg")
+        parent_settings.setString("SocketConnectHost", SETTINGS["genus.parent_host"])
+        parent_settings.setString("SocketConnectPort", SETTINGS["genus.parent_port"])
+        parent_settings.setString("SenderCompID", SETTINGS["genus.parent_sender"])
+        parent_settings.setString("TargetCompID", SETTINGS["genus.parent_target"])
+
+        parent_store_factory = fix.FileStoreFactory(parent_settings)
+        parent_log_factory = fix.ScreenLogFactory(parent_settings)
+
+        self.parent_app: GenusChildApp = GenusChildApp(self)
+        self.parent_socket = fix.SocketAcceptor(
+            self.parent_app,
+            parent_store_factory,
+            parent_settings,
+            parent_log_factory
+        )
 
     def register_event(self):
         """"""
@@ -543,6 +578,7 @@ if __name__ == "__main__":
 
     app = GenusParentApp()
     settings = fix.SessionSettings("genus_mother.cfg")
+    settings.set
     store_factory = fix.FileStoreFactory(settings)
     log_factory = fix.ScreenLogFactory(settings)
 
