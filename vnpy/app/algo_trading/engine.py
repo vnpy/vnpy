@@ -11,11 +11,10 @@ from .template import AlgoTemplate
 from .base import (
     EVENT_ALGO_LOG, EVENT_ALGO_PARAMETERS, EVENT_ALGO_SETTING, EVENT_ALGO_VARIABLES
 )
+from .genus import GenusClient
 
 
 APP_NAME = "AlgoTrading"
-
-
 
 
 class AlgoEngine(BaseEngine):
@@ -40,6 +39,8 @@ class AlgoEngine(BaseEngine):
         """"""
         self.write_log("算法交易引擎启动")
         self.load_algo_setting()
+
+        self.genus_client = GenusClient(self.main_engine, self.event_engine)
 
     def load_algo_template(self):
         """"""
@@ -120,7 +121,10 @@ class AlgoEngine(BaseEngine):
 
     def start_algo(self, setting: dict):
         """"""
-        template_name = setting["template_name"]
+        template_name: str = setting["template_name"]
+        if template_name.startswith("G-"):
+            return self.genus_client.start_algo(setting)
+
         algo_template = self.algo_templates[template_name]
 
         algo = algo_template.new(self, setting)
@@ -131,6 +135,10 @@ class AlgoEngine(BaseEngine):
 
     def stop_algo(self, algo_name: str):
         """"""
+        if algo_name.startswith("G-"):
+            self.genus_client.stop_algo(algo_name)
+            return
+
         algo = self.algos.get(algo_name, None)
         if algo:
             algo.stop()
