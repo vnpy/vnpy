@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Any
 from dataclasses import dataclass
+import pytz
 
 import quickfix as fix
 
@@ -13,6 +14,8 @@ from vnpy.trader.object import OrderRequest, OrderData, TradeData
 
 from .base import EVENT_ALGO_PARAMETERS, EVENT_ALGO_SETTING, EVENT_ALGO_LOG
 
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 EXCHANGE_VT2GNS = {
     Exchange.SSE: "SS",
@@ -171,6 +174,12 @@ class GenusParentApp(fix.Application):
         }
         print(d)
 
+        # Add algo active status
+        if status in {Status.SUBMITTING, Status.NOTTRADED, Status.ALLTRADED}:
+            variables["active"] = True
+        else:
+            variables["active"] = False
+
         self.client.put_variables_event(parent_orderid, variables)
 
     def send_parent_order(self, setting: dict):
@@ -180,7 +189,7 @@ class GenusParentApp(fix.Application):
         price = setting["price"]
         order_type = setting["order_type"]
         direction = setting["direction"]
-        algo_type = setting["algo_type"]
+        algo_type = setting["template_name"]
 
         message = new_message(fix.MsgType_NewOrderSingle)
 
@@ -190,13 +199,6 @@ class GenusParentApp(fix.Application):
 
         side = DIRECTION_VT2GNS[direction]
         genus_type = ORDERTYPE_VT2GNS[order_type]
-
-        utc_now = datetime.utcnow()
-        hours = timedelta(hours=1)
-        mins = timedelta(minutes=1)
-
-        utc_start = (utc_now - mins).strftime("%Y%m%d-%H:%M:%S")
-        utc_end = (utc_now + hours).strftime("%Y%m%d-%H:%M:%S")
 
         self.parent_orderid += 1
         parent_orderid = str(self.parent_orderid)
@@ -214,7 +216,19 @@ class GenusParentApp(fix.Application):
         if order_type == OrderType.LIMIT:
             message.setField(fix.Price(price))
 
+        # utc_now = datetime.utcnow()
+        # hours = timedelta(hours=1)
+        # mins = timedelta(minutes=1)
+        # utc_start = (utc_now - mins).strftime("%Y%m%d-%H:%M:%S")
+        # utc_end = (utc_now + hours).strftime("%Y%m%d-%H:%M:%S")
+
+        start_time = setting{"start_time"}
+        end_time = setting{"end_time"}
+        utc_start = convert_to_utc(start_time)
+        utc_end = convert_to_utc(end_time)
+
         parameters = f"StartTime;{utc_start}^EndTime;{utc_end}"
+
         message.setField(847, algo_type)
         message.setField(848, parameters)
 
@@ -512,6 +526,16 @@ def get_field_value(field_map: fix.FieldMap, field: Any) -> Any:
     """"""
     field_map.getField(field)
     return field.getValue()
+
+
+def convert_to_utc(time_str: str) -> str:
+    """"""
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    dt_str = f"{date_str} {time_str}"
+    dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+    local_dt = CHINA_TZ.localize(dt)
+    utc_dt = local_dt.astimezone(pytz.utc)
+    return utc_dt.strftime("%Y%m%d-%H:%M:%S")
 
 
 if __name__ == "__main__":
