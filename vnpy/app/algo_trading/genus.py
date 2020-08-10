@@ -339,7 +339,7 @@ class GenusChildApp(fix.Application):
 
     def update_seq_num(self, message: fix.Message):
         """"""
-        seq_num: int = get_field_value(message, fix.MsgSeqNum())
+        seq_num: int = get_field_value(message.getHeader(), fix.MsgSeqNum())
         session: fix.Session = fix.Session.lookupSession(self.session_id)
         session.setNextSenderMsgSeqNum(seq_num + 1)
 
@@ -369,14 +369,14 @@ class GenusChildApp(fix.Application):
         child_order.order_id = self.client.send_order(
             vt_symbol,
             child_order.price,
-            child_order.volume,
+            child_order.order_qty,
             direction,
             order_type
         )
         self.child_orders[child_order.order_id] = child_order
         self.genus_vt_map[child_order.cl_ord_id] = child_order.order_id
 
-        msg = f"委托{direction.value}{vt_symbol}：{child_order.volume}@{child_order.price}"
+        msg = f"委托{direction.value}{vt_symbol}：{child_order.order_qty}@{child_order.price}"
         self.client.write_log(msg, algo_name=child_order.parent_id)
 
     def cancel_child_order(self, message: fix.Message):
@@ -527,6 +527,8 @@ class GenusClient:
         offset = Offset.OPEN
 
         contract = self.main_engine.get_contract(vt_symbol)
+        if not contract:
+            return ""
 
         req = OrderRequest(
             symbol=contract.symbol,
