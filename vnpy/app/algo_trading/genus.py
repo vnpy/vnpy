@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any
 from dataclasses import dataclass
 import pytz
+from pathlib import Path
 
 import quickfix as fix
 
@@ -270,16 +271,18 @@ class GenusChildApp(fix.Application):
         """"""
         super().__init__()
 
-        self.client = client
+        self.client: "GenusClient" = client
 
-        self.callbacks = {
+        self.callbacks: Dict[int, callable] = {
             fix.MsgType_NewOrderSingle: self.new_child_order,
             fix.MsgType_OrderCancelRequest: self.cancel_child_order,
         }
 
-        self.exec_id = 0
+        self.exec_id: int = 0
         self.child_orders: Dict[str, GenusChildOrder] = {}
         self.genus_vt_map: Dict[str, str] = {}
+
+        self.seq_num: int = 0
 
     def onCreate(self, session_id: int):
         """"""
@@ -301,20 +304,30 @@ class GenusChildApp(fix.Application):
         """"""
         print("to app", session_id)
 
+        self.seq_num = get_field_value(message, fix.MsgSeqNum())
+
     def fromAdmin(self, message: fix.Message, session_id: int):
         """"""
         print("from admin", session_id)
+        self.update_seq_num(message)
 
     def fromApp(self, message: fix.Message, session_id: int):
         """"""
-        print("from app")
+        self.update_seq_num(message)
 
         header = message.getHeader()
-
         msg_type = get_field_value(header, fix.MsgType())
         callback = self.callbacks.get(msg_type, None)
         if callback:
             callback(message)
+
+    def update_seq_num(self, message: fix.Message):
+        """"""
+        seq_num: int = get_field_value(message, fix.MsgSeqNum())
+        self.seq_num = seq_num
+
+        session: fix.Session = fix.Session.lookupSession(self.session_id)
+        session.setNextSenderMsgSeqNum(self.seq_num + 1)
 
     def new_child_order(self, message: fix.Message):
         """"""
@@ -432,8 +445,10 @@ class GenusClient:
         """"""
         self.register_event()
 
+        app_path = Path(__file__).parent
+
         # For child app
-        child_settings = fix.SessionSettings("genus_child.cfg")
+        child_settings = fix.SessionSettings(str(app_path.joinpath("genus_child.cfg")))
         child_settings.setString("SocketAcceptHost", SETTINGS["genus.child_host"])
         child_settings.setString("SocketAcceptPort", SETTINGS["genus.child_port"])
         child_settings.setString("SenderCompID", SETTINGS["genus.child_sender"])
@@ -452,7 +467,7 @@ class GenusClient:
         self.child_socket.start()
 
         # For parent app
-        parent_settings = fix.SessionSettings("genus_parent.cfg")
+        parent_settings = fix.SessionSettings(str(app_path.joinpath("genus_parent.cfg")))
         parent_settings.setString("SocketConnectHost", SETTINGS["genus.parent_host"])
         parent_settings.setString("SocketConnectPort", SETTINGS["genus.parent_port"])
         parent_settings.setString("SenderCompID", SETTINGS["genus.parent_sender"])
