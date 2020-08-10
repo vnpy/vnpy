@@ -53,8 +53,6 @@ class AlgoEngine(BaseEngine):
         from .algos.dma_algo import DmaAlgo
         from .algos.arbitrage_algo import ArbitrageAlgo
 
-        from .genus import GenusVWAP
-
         self.add_algo_template(TwapAlgo)
         self.add_algo_template(IcebergAlgo)
         self.add_algo_template(SniperAlgo)
@@ -63,7 +61,22 @@ class AlgoEngine(BaseEngine):
         self.add_algo_template(GridAlgo)
         self.add_algo_template(DmaAlgo)
         self.add_algo_template(ArbitrageAlgo)
+
+        from .genus import (
+            GenusVWAP,
+            GenusTWAP,
+            GenusPercent,
+            GenusPxInline,
+            GenusSniper,
+            GenusDMA
+        )
+
         self.add_algo_template(GenusVWAP)
+        self.add_algo_template(GenusTWAP)
+        self.add_algo_template(GenusPercent)
+        self.add_algo_template(GenusPxInline)
+        self.add_algo_template(GenusSniper)
+        self.add_algo_template(GenusDMA)
 
     def add_algo_template(self, template: AlgoTemplate):
         """"""

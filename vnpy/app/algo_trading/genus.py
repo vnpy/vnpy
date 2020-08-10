@@ -232,12 +232,13 @@ class GenusParentApp(fix.Application):
         if order_type == OrderType.LIMIT:
             message.setField(fix.Price(price))
 
-        start_time = setting["start_time"]
+        # start_time = setting["start_time"]
         end_time = setting["end_time"]
-        utc_start = convert_to_utc(start_time)
+        # utc_start = convert_to_utc(start_time)
         utc_end = convert_to_utc(end_time)
 
-        parameters = f"StartTime;{utc_start}^EndTime;{utc_end}"
+        # parameters = f"StartTime;{utc_start}^EndTime;{utc_end}"
+        parameters = f"EndTime;{utc_end}"
 
         message.setField(847, algo_type)
         message.setField(848, parameters)
@@ -637,18 +638,17 @@ def convert_to_utc(time_str: str) -> str:
     return utc_dt.strftime("%Y%m%d-%H:%M:%S")
 
 
-class GenusVWAP:
+class GenusAlgo:
     """"""
 
-    display_name = "金纳 TWAP"
+    display_name = "金纳算法"
 
     default_setting = {
         "vt_symbol": "",
         "order_type": [OrderType.LIMIT.value, OrderType.MARKET.value],
         "direction": [Direction.LONG.value, Direction.SHORT.value],
         "price": 0.0,
-        "volume": 0.0,
-        "start_time": "",
+        "volume": 0,
         "end_time": "",
         "offset": [
             Offset.NONE.value,
@@ -658,3 +658,27 @@ class GenusVWAP:
             Offset.CLOSEYESTERDAY.value
         ]
     }
+
+
+class GenusVWAP(GenusAlgo):
+    display_name = "金纳 VWAP"
+
+
+class GenusTWAP(GenusAlgo):
+    display_name = "金纳 TWAP"
+
+
+class GenusPercent(GenusAlgo):
+    display_name = "金纳 Percent"
+
+
+class GenusPxInline(GenusAlgo):
+    display_name = "金纳 PxInline"
+
+
+class GenusSniper(GenusAlgo):
+    display_name = "金纳 Sniper"
+
+
+class GenusDMA(GenusAlgo):
+    display_name = "金纳 DMA"
