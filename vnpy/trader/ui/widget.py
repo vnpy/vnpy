@@ -1113,7 +1113,16 @@ class GlobalDialog(QtWidgets.QDialog):
         button.clicked.connect(self.update_setting)
         form.addRow(button)
 
-        self.setLayout(form)
+        scroll_widget = QtWidgets.QWidget()
+        scroll_widget.setLayout(form)
+
+        scroll_area = QtWidgets.QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(scroll_widget)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(scroll_area)
+        self.setLayout(vbox)
 
     def update_setting(self) -> None:
         """
