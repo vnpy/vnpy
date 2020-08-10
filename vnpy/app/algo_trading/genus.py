@@ -143,6 +143,9 @@ class GenusParentApp(fix.Application):
     def on_parent_order(self, message: fix.Message):
         """"""
         parent_orderid = get_field_value(message, fix.ClOrdID())
+        if parent_orderid not in self.algo_settings:
+            return
+
         tradeid = get_field_value(message, fix.ExecID())
         orderid = get_field_value(message, fix.OrderID())
 
@@ -200,7 +203,8 @@ class GenusParentApp(fix.Application):
         price = setting["price"]
         order_type = OrderType(setting["order_type"])
         direction = Direction(setting["direction"])
-        algo_type = setting["template_name"]
+        template_name = setting["template_name"]
+        algo_type = template_name.replace("Genus", "")
 
         message = new_message(fix.MsgType_NewOrderSingle)
 
@@ -212,7 +216,7 @@ class GenusParentApp(fix.Application):
         genus_type = ORDERTYPE_VT2GNS[order_type]
 
         self.parent_orderid += 1
-        parent_orderid = str(self.parent_orderid)
+        parent_orderid = f"{template_name}_{self.parent_orderid}"
         message.setField(fix.ClOrdID(parent_orderid))
 
         message.setField(fix.HandlInst("2"))
@@ -260,8 +264,9 @@ class GenusParentApp(fix.Application):
         message = new_message(fix.MsgType_OrderCancelRequest)
 
         self.parent_orderid += 1
-        message.setField(fix.ClOrdID(str(self.parent_orderid)))
-        message.setField(fix.OrigClOrdID(orderid))
+        cancel_orderid = f"Cancel_{self.parent_orderid}"
+        message.setField(fix.ClOrdID(cancel_orderid))
+        message.setField(fix.OrigClOrdID(parent_orderid))
         message.setField(fix.Symbol(algo_setting["symbol"]))
         message.setField(fix.Side(algo_setting["side"]))
         message.setField(847, algo_setting["algo_type"])
@@ -593,7 +598,7 @@ def new_message(msg_type: int) -> fix.Message:
 
     header = message.getHeader()
     header.setField(fix.BeginString("FIX.4.2"))
-    header.setField(fix.MsgType(fix.MsgType_OrderCancelRequest))
+    header.setField(fix.MsgType(msg_type))
 
     utc_now = datetime.utcnow()
     utc_timestamp = utc_now.strftime("%Y%m%d-%H:%M:%S")
