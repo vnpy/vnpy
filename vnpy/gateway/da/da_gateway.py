@@ -736,7 +736,8 @@ class DaFutureApi(FutureApi):
             "BuySale": DIRECTION_VT2DA[req.direction],
             "OrderPrice": str(req.price),
             "OrderNumber": str(int(req.volume)),
-            "PriceType": ORDERTYPE_VT2DA[req.type]
+            "PriceType": ORDERTYPE_VT2DA[req.type],
+            "ValidDate": "1"
         }
 
         self.reqid += 1
