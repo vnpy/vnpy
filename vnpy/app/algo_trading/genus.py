@@ -91,12 +91,12 @@ class GenusParentApp(fix.Application):
 
         self.client: "GenusClient" = client
 
-        self.parent_orderid = int(datetime.now().strftime("%H%M%S0000"))
-        self.session_id = 0
-
-        self.callbacks = {
+        self.callbacks: Dict[int, callable] = {
             fix.MsgType_ExecutionReport: self.on_parent_order
         }
+
+        self.session_id: int = 0
+        self.parent_orderid: int = int(datetime.now().strftime("%H%M%S0000"))
 
         self.algo_settings = {}
 
@@ -289,7 +289,9 @@ class GenusChildApp(fix.Application):
             fix.MsgType_OrderCancelRequest: self.cancel_child_order,
         }
 
-        self.exec_id: int = 0
+        self.session_id: int = 0
+        self.exec_id: int = int(datetime.now().strftime("%H%M%S0000"))
+
         self.child_orders: Dict[str, GenusChildOrder] = {}
         self.genus_vt_map: Dict[str, str] = {}
 
@@ -395,6 +397,7 @@ class GenusChildApp(fix.Application):
                 self.client.cancel_order(vt_orderid)
                 return
 
+        # Reject cancel request
         self.exec_id += 1
 
         message = new_message(fix.MsgType_OrderCancelReject)
@@ -507,7 +510,7 @@ class GenusClient:
         parent_store_factory = fix.FileStoreFactory(parent_settings)
         parent_log_factory = fix.ScreenLogFactory(parent_settings)
 
-        self.parent_app: GenusChildApp = GenusParentApp(self)
+        self.parent_app: GenusParentApp = GenusParentApp(self)
         self.parent_socket = fix.SocketInitiator(
             self.parent_app,
             parent_store_factory,
