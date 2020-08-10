@@ -9,12 +9,11 @@ from vnpy.trader.utility import load_json, save_json, round_to
 
 from .template import AlgoTemplate
 from .base import (
-    EVENT_ALGO_LOG, EVENT_ALGO_PARAMETERS, EVENT_ALGO_SETTING, EVENT_ALGO_VARIABLES
+    EVENT_ALGO_LOG, EVENT_ALGO_PARAMETERS,
+    EVENT_ALGO_SETTING, EVENT_ALGO_VARIABLES,
+    APP_NAME
 )
 from .genus import GenusClient
-
-
-APP_NAME = "AlgoTrading"
 
 
 class AlgoEngine(BaseEngine):
@@ -41,6 +40,7 @@ class AlgoEngine(BaseEngine):
         self.load_algo_setting()
 
         self.genus_client = GenusClient(self.main_engine, self.event_engine)
+        self.genus_client.init()
 
     def load_algo_template(self):
         """"""

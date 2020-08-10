@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict
 from dataclasses import dataclass
 import pytz
 from pathlib import Path
@@ -9,12 +9,14 @@ import quickfix as fix
 from vnpy.event import EventEngine, Event
 from vnpy.trader.event import EVENT_TRADE, EVENT_ORDER
 from vnpy.trader.engine import MainEngine
-from vnpy.trader.constant import Exchange, OrderType, Direction, Status
+from vnpy.trader.constant import Exchange, OrderType, Direction, Status, Offset
 from vnpy.trader.utility import extract_vt_symbol, generate_vt_symbol
-from vnpy.trader.object import OrderRequest, OrderData, TradeData
+from vnpy.trader.object import OrderRequest, OrderData, TradeData, LogData
 from vnpy.trader.setting import SETTINGS
 
-from .base import EVENT_ALGO_PARAMETERS, EVENT_ALGO_SETTING, EVENT_ALGO_LOG
+from .base import (
+    EVENT_ALGO_PARAMETERS, EVENT_ALGO_VARIABLES, EVENT_ALGO_LOG, APP_NAME
+)
 
 
 CHINA_TZ = pytz.timezone("Asia/Shanghai")
@@ -64,7 +66,8 @@ STATUS_VT2GNS = {
 }
 
 
-class GenusChildOrder(dataclass):
+@dataclass
+class GenusChildOrder:
 
     cl_ord_id: str = ""
     order_id: str = ""
@@ -178,7 +181,6 @@ class GenusParentApp(fix.Application):
             "side": side,
             "algo_type": algo_type
         }
-        print(d)
 
         # Add algo active status
         if status in {"0", "1", "5", "6", "A", "D", "E"}:
@@ -232,8 +234,8 @@ class GenusParentApp(fix.Application):
         # utc_start = (utc_now - mins).strftime("%Y%m%d-%H:%M:%S")
         # utc_end = (utc_now + hours).strftime("%Y%m%d-%H:%M:%S")
 
-        start_time = setting{"start_time"}
-        end_time = setting{"end_time"}
+        start_time = setting["start_time"]
+        end_time = setting["end_time"]
         utc_start = convert_to_utc(start_time)
         utc_end = convert_to_utc(end_time)
 
@@ -390,7 +392,7 @@ class GenusChildApp(fix.Application):
 
         self.exec_id += 1
 
-        message = new_message(fix.MsgType_OrderCancelReject)        
+        message = new_message(fix.MsgType_OrderCancelReject)
         message.setField(fix.ClOrdID(cl_ord_id))
         message.setField(fix.OrigClOrdID(cl_ord_id))
         message.setField(fix.OrdStatus("8"))
@@ -407,8 +409,8 @@ class GenusChildApp(fix.Application):
 
         message.setField(fix.ClOrdID(child_order.cl_ord_id))
         message.setField(fix.OrderID(child_order.order_id))
-        message.setField(fix.ExecID(str(self.exec_id))
-        message.setField(fix.OrdStatus(child_order.ord_status)
+        message.setField(fix.ExecID(str(self.exec_id)))
+        message.setField(fix.OrdStatus(child_order.ord_status))
         message.setField(fix.ExecType(child_order.ord_status))
         message.setField(fix.Symbol(child_order.symbol))
         message.setField(fix.Side(child_order.side))
@@ -439,7 +441,7 @@ class GenusChildApp(fix.Application):
 
     def update_trade(self, trade: OrderData):
         """"""
-        child_order = self.child_orders.get(order.vt_orderid, None)
+        child_order = self.child_orders.get(trade.vt_orderid, None)
         if not child_order:
             return
 
@@ -467,10 +469,12 @@ class GenusClient:
 
         # For child app
         child_settings = fix.SessionSettings(str(app_path.joinpath("genus_child.cfg")))
-        child_settings.setString("SocketAcceptHost", SETTINGS["genus.child_host"])
-        child_settings.setString("SocketAcceptPort", SETTINGS["genus.child_port"])
-        child_settings.setString("SenderCompID", SETTINGS["genus.child_sender"])
-        child_settings.setString("TargetCompID", SETTINGS["genus.child_target"])
+
+        child_dict = child_settings.get()
+        child_dict.setString("SocketAcceptHost", SETTINGS["genus.child_host"])
+        child_dict.setString("SocketAcceptPort", SETTINGS["genus.child_port"])
+        child_dict.setString("SenderCompID", SETTINGS["genus.child_sender"])
+        child_dict.setString("TargetCompID", SETTINGS["genus.child_target"])
 
         child_store_factory = fix.FileStoreFactory(child_settings)
         child_log_factory = fix.ScreenLogFactory(child_settings)
@@ -486,10 +490,12 @@ class GenusClient:
 
         # For parent app
         parent_settings = fix.SessionSettings(str(app_path.joinpath("genus_parent.cfg")))
-        parent_settings.setString("SocketConnectHost", SETTINGS["genus.parent_host"])
-        parent_settings.setString("SocketConnectPort", SETTINGS["genus.parent_port"])
-        parent_settings.setString("SenderCompID", SETTINGS["genus.parent_sender"])
-        parent_settings.setString("TargetCompID", SETTINGS["genus.parent_target"])
+
+        parent_dict = parent_settings.get()
+        parent_dict.setString("SocketConnectHost", SETTINGS["genus.parent_host"])
+        parent_dict.setString("SocketConnectPort", SETTINGS["genus.parent_port"])
+        parent_dict.setString("SenderCompID", SETTINGS["genus.parent_sender"])
+        parent_dict.setString("TargetCompID", SETTINGS["genus.parent_target"])
 
         parent_store_factory = fix.FileStoreFactory(parent_settings)
         parent_log_factory = fix.ScreenLogFactory(parent_settings)
@@ -529,7 +535,7 @@ class GenusClient:
             volume=volume,
             price=price
         )
-        vt_orderid = self.main_engine.send_order(req, vt_orderid)
+        vt_orderid = self.main_engine.send_order(req, contract.gateway_name)
         return vt_orderid
 
     def cancel_order(self, vt_orderid: str):
@@ -556,20 +562,20 @@ class GenusClient:
         """"""
         self.parent_app.cancel_parent_order(algo_name)
 
-    def put_parameters_event(self, algo: AlgoTemplate, parameters: dict):
+    def put_parameters_event(self, algo_name: str, parameters: dict):
         """"""
         event = Event(EVENT_ALGO_PARAMETERS)
         event.data = {
-            "algo_name": algo.algo_name,
+            "algo_name": algo_name,
             "parameters": parameters
         }
         self.event_engine.put(event)
 
-    def put_variables_event(self, algo: AlgoTemplate, variables: dict):
+    def put_variables_event(self, algo_name: str, variables: dict):
         """"""
         event = Event(EVENT_ALGO_VARIABLES)
         event.data = {
-            "algo_name": algo.algo_name,
+            "algo_name": algo_name,
             "variables": variables
         }
         self.event_engine.put(event)
