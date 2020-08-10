@@ -77,18 +77,16 @@ class GenusChildOrder(dataclass):
     cum_qty: int = 0
     avg_px: float = 0
 
-
-
-
-
-
+    parent_id: str = ""
 
 
 class GenusParentApp(fix.Application):
 
-    def __init__(self):
+    def __init__(self, client: "GenusClient"):
         """"""
         super().__init__()
+
+        self.client: "GenusClient" = client
 
         self.parent_orderid = int(datetime.now().strftime("%H%M%S0000"))
         self.session_id = 0
@@ -103,13 +101,19 @@ class GenusParentApp(fix.Application):
         """"""
         self.session_id = session_id
 
+        self.client.write_log("金纳算法交易服务：母单FIX APP创建成功")
+
     def onLogon(self, session_id: int):
         """"""
         print("on logon", session_id)
 
+        self.client.write_log("金纳算法交易服务：母单FIX APP登录成功")
+
     def onLogout(self, session_id: int):
         """"""
         print("on logout", session_id)
+
+        self.client.write_log("金纳算法交易服务：母单FIX APP连接断开")
 
     def toAdmin(self, message: fix.Message, session_id: int):
         """"""
@@ -177,10 +181,13 @@ class GenusParentApp(fix.Application):
         print(d)
 
         # Add algo active status
-        if status in {Status.SUBMITTING, Status.NOTTRADED, Status.ALLTRADED}:
+        if status in {"0", "1", "5", "6", "A", "D", "E"}:
             variables["active"] = True
         else:
             variables["active"] = False
+
+        if status == "C":
+            self.client.write_log("执行时间已结束，停止算法", parent_orderid)
 
         self.client.put_variables_event(parent_orderid, variables)
 
@@ -214,6 +221,7 @@ class GenusParentApp(fix.Application):
         message.setField(fix.Side(side))
         message.setField(fix.OrdType(genus_type))
         message.setField(fix.OrderQty(volume))
+        message.setField(526, parent_orderid)
 
         if order_type == OrderType.LIMIT:
             message.setField(fix.Price(price))
@@ -288,13 +296,19 @@ class GenusChildApp(fix.Application):
         """"""
         self.session_id = session_id
 
+        self.client.write_log("金纳算法交易服务：子单FIX APP创建成功")
+
     def onLogon(self, session_id: int):
         """"""
         print("on logon", session_id)
 
+        self.client.write_log("金纳算法交易服务：子单FIX APP登录成功")
+
     def onLogout(self, session_id: int):
         """"""
         print("on logout", session_id)
+
+        self.client.write_log("金纳算法交易服务：子单FIX APP连接断开")
 
     def toAdmin(self, message: fix.Message, session_id: int):
         """"""
@@ -338,7 +352,8 @@ class GenusChildApp(fix.Application):
             order_qty=get_field_value(message, fix.OrderQty()),
             price=get_field_value(message, fix.Price()),
             order_type=get_field_value(message, fix.OrdType()),
-            ord_status="A"
+            ord_status="A",
+            parent_id=get_field_value(message, fix.StringField(526))
         )
 
         symbol, genus_exchange = child_order.symbol.split(".")
@@ -357,6 +372,9 @@ class GenusChildApp(fix.Application):
         )
         self.child_orders[child_order.order_id] = child_order
         self.genus_vt_map[child_order.cl_ord_id] = child_order.order_id
+
+        msg = f"委托{direction.value}{vt_symbol}：{child_order.volume}@{child_order.price}"
+        self.client.write_log(msg, algo_name=child_order.parent_id)
 
     def cancel_child_order(self, message: fix.Message):
         """"""
@@ -554,6 +572,15 @@ class GenusClient:
             "algo_name": algo.algo_name,
             "variables": variables
         }
+        self.event_engine.put(event)
+
+    def write_log(self, msg: str, algo_name: str = ""):
+        """"""
+        if algo_name:
+            msg = f"{algo_name}：{msg}"
+
+        log = LogData(msg=msg, gateway_name=APP_NAME)
+        event = Event(EVENT_ALGO_LOG, data=log)
         self.event_engine.put(event)
 
 
