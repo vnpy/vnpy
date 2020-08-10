@@ -22,5 +22,9 @@ NAME_DISPLAY_MAP = {
     "passive_vt_symbol": "被动腿",
     "spread_up": "价差上限",
     "spread_down": "价差下限",
-    "max_pos": "最大持仓"
+    "max_pos": "最大持仓",
+
+    "order_type": "委托类型",
+    "start_time": "开始时间",
+    "end_time": "结束时间",
 }

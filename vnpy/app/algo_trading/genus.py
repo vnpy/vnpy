@@ -110,7 +110,7 @@ class GenusParentApp(fix.Application):
         """"""
         print("on logon", session_id)
 
-        self.client.write_log("金纳算法交易服务：母单FIX APP登录成功")
+        self.client.write_log("金纳算法交易服务：母单FIX APP连接成功")
 
     def onLogout(self, session_id: int):
         """"""
@@ -198,8 +198,8 @@ class GenusParentApp(fix.Application):
         vt_symbol = setting["vt_symbol"]
         volume = setting["volume"]
         price = setting["price"]
-        order_type = setting["order_type"]
-        direction = setting["direction"]
+        order_type = OrderType(setting["order_type"])
+        direction = Direction(setting["direction"])
         algo_type = setting["template_name"]
 
         message = new_message(fix.MsgType_NewOrderSingle)
@@ -227,12 +227,6 @@ class GenusParentApp(fix.Application):
 
         if order_type == OrderType.LIMIT:
             message.setField(fix.Price(price))
-
-        # utc_now = datetime.utcnow()
-        # hours = timedelta(hours=1)
-        # mins = timedelta(minutes=1)
-        # utc_start = (utc_now - mins).strftime("%Y%m%d-%H:%M:%S")
-        # utc_end = (utc_now + hours).strftime("%Y%m%d-%H:%M:%S")
 
         start_time = setting["start_time"]
         end_time = setting["end_time"]
@@ -304,7 +298,7 @@ class GenusChildApp(fix.Application):
         """"""
         print("on logon", session_id)
 
-        self.client.write_log("金纳算法交易服务：子单FIX APP登录成功")
+        self.client.write_log("金纳算法交易服务：子单FIX APP连接成功")
 
     def onLogout(self, session_id: int):
         """"""
@@ -500,13 +494,14 @@ class GenusClient:
         parent_store_factory = fix.FileStoreFactory(parent_settings)
         parent_log_factory = fix.ScreenLogFactory(parent_settings)
 
-        self.parent_app: GenusChildApp = GenusChildApp(self)
-        self.parent_socket = fix.SocketAcceptor(
+        self.parent_app: GenusChildApp = GenusParentApp(self)
+        self.parent_socket = fix.SocketInitiator(
             self.parent_app,
             parent_store_factory,
             parent_settings,
             parent_log_factory
         )
+        self.parent_socket.start()
 
     def register_event(self):
         """"""
@@ -621,32 +616,24 @@ def convert_to_utc(time_str: str) -> str:
     return utc_dt.strftime("%Y%m%d-%H:%M:%S")
 
 
-if __name__ == "__main__":
-    from time import sleep
+class GenusVWAP:
+    """"""
 
-    app = GenusParentApp()
-    settings = fix.SessionSettings("genus_mother.cfg")
-    settings.set
-    store_factory = fix.FileStoreFactory(settings)
-    log_factory = fix.ScreenLogFactory(settings)
+    display_name = "金纳 TWAP"
 
-    initiator = fix.SocketInitiator(app, store_factory, settings, log_factory)
-    initiator.start()
-
-    sleep(3)
-
-    orderid = app.send_parent_order(
-        "510050.SSE",
-        10000,
-        0,
-        OrderType.MARKET,
-        Direction.LONG,
-        "TWAP"
-    )
-
-    sleep(3)
-
-    app.cancel_parent_order(orderid)
-
-    while True:
-        sleep(1)
+    default_setting = {
+        "vt_symbol": "",
+        "order_type": [OrderType.LIMIT.value, OrderType.MARKET.value],
+        "direction": [Direction.LONG.value, Direction.SHORT.value],
+        "price": 0.0,
+        "volume": 0.0,
+        "start_time": "",
+        "end_time": "",
+        "offset": [
+            Offset.NONE.value,
+            Offset.OPEN.value,
+            Offset.CLOSE.value,
+            Offset.CLOSETODAY.value,
+            Offset.CLOSEYESTERDAY.value
+        ]
+    }

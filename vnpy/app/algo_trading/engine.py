@@ -53,6 +53,8 @@ class AlgoEngine(BaseEngine):
         from .algos.dma_algo import DmaAlgo
         from .algos.arbitrage_algo import ArbitrageAlgo
 
+        from .genus import GenusVWAP
+
         self.add_algo_template(TwapAlgo)
         self.add_algo_template(IcebergAlgo)
         self.add_algo_template(SniperAlgo)
@@ -61,6 +63,7 @@ class AlgoEngine(BaseEngine):
         self.add_algo_template(GridAlgo)
         self.add_algo_template(DmaAlgo)
         self.add_algo_template(ArbitrageAlgo)
+        self.add_algo_template(GenusVWAP)
 
     def add_algo_template(self, template: AlgoTemplate):
         """"""
@@ -122,7 +125,7 @@ class AlgoEngine(BaseEngine):
     def start_algo(self, setting: dict):
         """"""
         template_name: str = setting["template_name"]
-        if template_name.startswith("G-"):
+        if template_name.startswith("Genus"):
             return self.genus_client.start_algo(setting)
 
         algo_template = self.algo_templates[template_name]
@@ -135,7 +138,7 @@ class AlgoEngine(BaseEngine):
 
     def stop_algo(self, algo_name: str):
         """"""
-        if algo_name.startswith("G-"):
+        if algo_name.startswith("Genus"):
             self.genus_client.stop_algo(algo_name)
             return
 
