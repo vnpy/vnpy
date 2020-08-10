@@ -286,8 +286,6 @@ class GenusChildApp(fix.Application):
         self.child_orders: Dict[str, GenusChildOrder] = {}
         self.genus_vt_map: Dict[str, str] = {}
 
-        self.seq_num: int = 0
-
     def onCreate(self, session_id: int):
         """"""
         self.session_id = session_id
@@ -319,14 +317,17 @@ class GenusChildApp(fix.Application):
     def fromAdmin(self, message: fix.Message, session_id: int):
         """"""
         print("from admin", session_id)
-        self.update_seq_num(message)
+        header = message.getHeader()
+        msg_type = get_field_value(header, fix.MsgType())
+
+        if msg_type == fix.MsgType_Logon:
+            self.update_seq_num(message)
 
     def fromApp(self, message: fix.Message, session_id: int):
         """"""
-        self.update_seq_num(message)
-
         header = message.getHeader()
         msg_type = get_field_value(header, fix.MsgType())
+
         callback = self.callbacks.get(msg_type, None)
         if callback:
             callback(message)
@@ -334,10 +335,11 @@ class GenusChildApp(fix.Application):
     def update_seq_num(self, message: fix.Message):
         """"""
         seq_num: int = get_field_value(message, fix.MsgSeqNum())
-        self.seq_num = seq_num
-
         session: fix.Session = fix.Session.lookupSession(self.session_id)
-        session.setNextSenderMsgSeqNum(self.seq_num + 1)
+        session.setNextSenderMsgSeqNum(seq_num + 1)
+
+        message = new_message(fix.MsgType_TestRequest)
+        fix.Session.sendToTarget(message, self.session_id)
 
     def new_child_order(self, message: fix.Message):
         """"""
