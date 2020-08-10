@@ -121,7 +121,6 @@ class Mt5Gateway(BaseGateway):
         self.position_symbols: Set[str] = set()
 
         self.orders: Dict[str, OrderData] = {}
-        
         self.sysid_order_map: Dict[str, OrderData] = {}
 
     def connect(self, setting: dict) -> None:
@@ -575,6 +574,7 @@ def generate_datetime2(timestamp: int) -> datetime:
     dt = datetime.strptime(str(timestamp), "%Y.%m.%d %H:%M")
     dt = LOCAL_TZ.localize(dt)
     return dt
+
 
 @dataclass
 class OrderBuf:
