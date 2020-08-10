@@ -80,7 +80,7 @@ class GenusChildOrder:
     cum_qty: int = 0
     avg_px: float = 0
 
-    parent_id: str = ""
+    parent_orderid: str = ""
 
 
 class GenusParentApp(fix.Application):
@@ -132,7 +132,6 @@ class GenusParentApp(fix.Application):
 
     def fromApp(self, message: fix.Message, session_id: int):
         """"""
-        print("from app")
         header = message.getHeader()
 
         msg_type = get_field_value(header, fix.MsgType())
@@ -203,6 +202,7 @@ class GenusParentApp(fix.Application):
         price = setting["price"]
         order_type = OrderType(setting["order_type"])
         direction = Direction(setting["direction"])
+        offset = Offset(setting["offset"])
         template_name = setting["template_name"]
         algo_type = template_name.replace("Genus", "")
 
@@ -250,6 +250,7 @@ class GenusParentApp(fix.Application):
             "algo_type": algo_type
         }
 
+        self.client.set_parent_offset(parent_orderid, offset)
         self.client.put_parameters_event(parent_orderid, setting)
 
         return parent_orderid
@@ -356,28 +357,30 @@ class GenusChildApp(fix.Application):
             price=get_field_value(message, fix.Price()),
             order_type=get_field_value(message, fix.OrdType()),
             ord_status="A",
-            parent_id=get_field_value(message, fix.StringField(526))
+            parent_orderid=get_field_value(message, fix.StringField(526))
         )
 
         symbol, genus_exchange = child_order.symbol.split(".")
         exchange = EXCHANGE_GNS2VT[genus_exchange]
         direction = DIRECTION_GNS2VT[child_order.side]
         order_type = ORDERTYPE_GNS2VT[child_order.order_type]
+        offset = self.client.get_parent_offset(child_order.parent_orderid)
 
         vt_symbol = generate_vt_symbol(symbol, exchange)
 
         child_order.order_id = self.client.send_order(
             vt_symbol,
+            direction,
+            offset,
+            order_type,
             child_order.price,
             child_order.order_qty,
-            direction,
-            order_type
         )
         self.child_orders[child_order.order_id] = child_order
         self.genus_vt_map[child_order.cl_ord_id] = child_order.order_id
 
         msg = f"委托{direction.value}{vt_symbol}：{child_order.order_qty}@{child_order.price}"
-        self.client.write_log(msg, algo_name=child_order.parent_id)
+        self.client.write_log(msg, algo_name=child_order.parent_orderid)
 
     def cancel_child_order(self, message: fix.Message):
         """"""
@@ -462,6 +465,8 @@ class GenusClient:
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine
 
+        self.parent_offset_map: Dict[str, Offset] = {}
+
     def init(self):
         """"""
         self.register_event()
@@ -518,14 +523,13 @@ class GenusClient:
     def send_order(
         self,
         vt_symbol: str,
+        direction: Direction,
+        offset: Offset,
+        order_type: OrderType,
         price: float,
         volume: float,
-        direction: Direction,
-        order_type: OrderType
     ):
         """"""
-        offset = Offset.OPEN
-
         contract = self.main_engine.get_contract(vt_symbol)
         if not contract:
             return ""
@@ -592,6 +596,14 @@ class GenusClient:
         log = LogData(msg=msg, gateway_name=APP_NAME)
         event = Event(EVENT_ALGO_LOG, data=log)
         self.event_engine.put(event)
+
+    def set_parent_offset(self, parent_orderid: str, offset: Offset):
+        """"""
+        self.parent_offset_map[parent_orderid] = offset
+
+    def get_parent_offset(self, parent_orderid: str) -> Offset:
+        """"""
+        return self.parent_offset_map.get(parent_orderid, Offset.NONE)
 
 
 def new_message(msg_type: int) -> fix.Message:
