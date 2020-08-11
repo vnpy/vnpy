@@ -57,6 +57,9 @@ TRADE_TRANSACTION_ORDER_ADD = 0
 TRADE_TRANSACTION_ORDER_UPDATE = 1
 TRADE_TRANSACTION_ORDER_DELETE = 2
 TRADE_TRANSACTION_HISTORY_ADD = 6
+TRADE_TRANSACTION_REQUEST = 10
+
+TRADE_RETCODE_MARKET_CLOSED = 10018
 
 TYPE_BUY = 0
 TYPE_SELL = 1
@@ -342,6 +345,13 @@ class Mt5Gateway(BaseGateway):
         """"""
         data = packet["data"]
         if not data["order"]:
+            if data["trans_type"] == TRADE_TRANSACTION_REQUEST and data["result_retcode"] == TRADE_RETCODE_MARKET_CLOSED:
+                local_id = data["request_comment"]
+                order = self.orders.get(local_id, None)
+                if local_id and order:
+                    order.status = Status.REJECTED   
+                    self.on_order(order)    
+                    self.write_log(f"委托{local_id}拒单，原因market_closed") 
             return
 
         trans_type = data["trans_type"]
