@@ -7,6 +7,7 @@ import zmq
 import zmq.auth
 from zmq.backend.cython.constants import NOBLOCK
 from tzlocal import get_localzone
+import pytz
 
 from vnpy.trader.constant import (
     Direction,
@@ -42,17 +43,20 @@ FUNCTION_SUBSCRIBE = 3
 FUNCTION_SENDORDER = 4
 FUNCTION_CANCELORDER = 5
 
+ORDER_STATE_STARTED = 0
 ORDER_STATE_PLACED = 1
 ORDER_STATE_CANCELED = 2
 ORDER_STATE_PARTIAL = 3
 ORDER_STATE_FILLED = 4
 ORDER_STATE_REJECTED = 5
 
-EVENT_REQUEST = 10
-EVENT_HISTORY_ADD = 6
-
 POSITION_TYPE_BUY = 0
 POSITION_TYPE_SELL = 1
+
+TRADE_TRANSACTION_ORDER_ADD = 0
+TRADE_TRANSACTION_ORDER_UPDATE = 1
+TRADE_TRANSACTION_ORDER_DELETE = 2
+TRADE_TRANSACTION_HISTORY_ADD = 6
 
 TYPE_BUY = 0
 TYPE_SELL = 1
@@ -68,12 +72,12 @@ INTERVAL_VT2MT = {
 }
 
 STATUS_MT2VT = {
-    0: Status.SUBMITTING,
-    1: Status.NOTTRADED,
-    2: Status.CANCELLED,
-    3: Status.PARTTRADED,
-    4: Status.ALLTRADED,
-    5: Status.REJECTED
+    ORDER_STATE_STARTED: Status.SUBMITTING,
+    ORDER_STATE_PLACED: Status.NOTTRADED,
+    ORDER_STATE_CANCELED: Status.CANCELLED,
+    ORDER_STATE_PARTIAL: Status.PARTTRADED,
+    ORDER_STATE_FILLED: Status.ALLTRADED,
+    ORDER_STATE_REJECTED: Status.REJECTED
 }
 
 ORDERTYPE_MT2VT = {
@@ -121,7 +125,6 @@ class Mt5Gateway(BaseGateway):
         self.position_symbols: Set[str] = set()
 
         self.orders: Dict[str, OrderData] = {}
-        self.sysid_order_map: Dict[str, OrderData] = {}
 
     def connect(self, setting: dict) -> None:
         """"""
@@ -141,7 +144,7 @@ class Mt5Gateway(BaseGateway):
         """"""
         mt5_req = {
             "type": FUNCTION_SUBSCRIBE,
-            "symbol": req.symbol
+            "symbol": req.symbol.replace('-', '.')
         }
         self.client.send_request(mt5_req)
 
@@ -157,7 +160,7 @@ class Mt5Gateway(BaseGateway):
 
         mt5_req = {
             "type": FUNCTION_SENDORDER,
-            "symbol": req.symbol,
+            "symbol": req.symbol.replace('-', '.'),
             "cmd": cmd,
             "price": req.price,
             "volume": req.volume,
@@ -166,13 +169,14 @@ class Mt5Gateway(BaseGateway):
 
         packet = self.client.send_request(mt5_req)
         result = packet["data"]["result"]
+        comment = packet["data"]["comment"]
 
         order = req.create_order_data(local_id, self.gateway_name)
         if result:
             order.status = Status.SUBMITTING
         else:
             order.status = Status.REJECTED
-            self.write_log(f"委托{local_id}拒单，请检查委托价格或者委托数量！")
+            self.write_log(f"委托{local_id}拒单，原因{comment}")
 
         self.on_order(order)
         self.orders[local_id] = order
@@ -191,6 +195,10 @@ class Mt5Gateway(BaseGateway):
 
     def cancel_order(self, req: CancelRequest) -> None:
         """"""
+        if req.orderid not in self.local_sys_map:
+            self.write_log(f"委托撤单失败，找不到{req.orderid}对应的系统委托号")
+            return
+
         sys_id = self.local_sys_map[req.orderid]
 
         mt5_req = {
@@ -216,9 +224,9 @@ class Mt5Gateway(BaseGateway):
 
         for d in packet["data"]:
             contract = ContractData(
-                symbol=d["symbol"],
+                symbol=d["symbol"].replace('.', '-'),
                 exchange=Exchange.OTC,
-                name=d["symbol"],
+                name=d["symbol"].replace('.', '-'),
                 product=Product.FOREX,
                 size=d["lot_size"],
                 pricetick=pow(10, -d["digits"]),
@@ -251,7 +259,7 @@ class Mt5Gateway(BaseGateway):
             self.sys_local_map[sys_id] = local_id
 
             order = OrderData(
-                symbol=d["symbol"],
+                symbol=d["symbol"].replace('.', '-'),
                 exchange=Exchange.OTC,
                 orderid=local_id,
                 direction=direction,
@@ -282,12 +290,12 @@ class Mt5Gateway(BaseGateway):
         """
         history = []
 
-        start_time = req.start.isoformat()
-        end_time = req.end.isoformat()
+        start_time = generate_datetime3(req.start)
+        end_time = generate_datetime3(req.end)
 
         mt5_req = {
             "type": FUNCTION_QUERYHISTORY,
-            "symbol": req.symbol,
+            "symbol": req.symbol.replace('-', '.'),
             "interval": INTERVAL_VT2MT[req.interval],
             "start_time": start_time,
             "end_time": end_time,
@@ -299,7 +307,7 @@ class Mt5Gateway(BaseGateway):
         else:
             for d in packet["data"]:
                 bar = BarData(
-                    symbol=req.symbol,
+                    symbol=req.symbol.replace('.', '-'),
                     exchange=Exchange.OTC,
                     datetime=generate_datetime2(d["time"]),
                     interval=req.interval,
@@ -313,10 +321,10 @@ class Mt5Gateway(BaseGateway):
                 history.append(bar)
 
             data = packet["data"]
-            begin = data[0]["time"]
-            end = data[-1]["time"]
+            begin = generate_datetime2(data[0]["time"])
+            end = generate_datetime2(data[-1]["time"])
 
-            msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
+            msg = f"获取历史数据成功，{req.symbol.replace('.','-')} - {req.interval.value}，{begin} - {end}"
             self.write_log(msg)
 
         return history
@@ -343,7 +351,7 @@ class Mt5Gateway(BaseGateway):
         trans_type = data["trans_type"]
 
         # Map sys and local orderid
-        if trans_type == 0:
+        if trans_type == TRADE_TRANSACTION_ORDER_ADD:
             sys_id = str(data["order"])
 
             local_id = data["order_comment"]
@@ -352,8 +360,13 @@ class Mt5Gateway(BaseGateway):
 
             self.local_sys_map[local_id] = sys_id
             self.sys_local_map[sys_id] = local_id
+                  
+            order = self.orders.get(local_id, None)
+            if local_id and order:
+                order.datetime = generate_datetime(data["order_time_setup"])
+                
         # Update order data
-        elif trans_type in {1, 2}:
+        elif trans_type in {TRADE_TRANSACTION_ORDER_UPDATE, TRADE_TRANSACTION_ORDER_DELETE}:
             sysid = str(data["order"])
             local_id = self.sys_local_map[sysid]
 
@@ -362,7 +375,7 @@ class Mt5Gateway(BaseGateway):
                 direction, order_type = ORDERTYPE_MT2VT[data["order_type"]]
 
                 order = OrderData(
-                    symbol=data["symbol"],
+                    symbol=data["symbol"].replace('.', '-'),
                     exchange=Exchange.OTC,
                     orderid=local_id,
                     type=order_type,
@@ -373,8 +386,6 @@ class Mt5Gateway(BaseGateway):
                 )
                 self.orders[local_id] = order
 
-            order.traded = data["order_volume_initial"] - data["order_volume_current"]
-
             if data["order_time_setup"]:
                 order.datetime = generate_datetime(data["order_time_setup"])
 
@@ -383,7 +394,7 @@ class Mt5Gateway(BaseGateway):
 
             self.on_order(order)
         # Update trade data
-        elif trans_type == 6:
+        elif trans_type == TRADE_TRANSACTION_HISTORY_ADD:
             sysid = str(data["order"])
             local_id = self.sys_local_map[sysid]
 
@@ -393,7 +404,7 @@ class Mt5Gateway(BaseGateway):
                     order.datetime = generate_datetime(data["order_time_setup"])
 
                 trade = TradeData(
-                    symbol=order.symbol,
+                    symbol=order.symbol.replace('.', '-'),
                     exchange=order.exchange,
                     direction=order.direction,
                     orderid=order.orderid,
@@ -403,6 +414,8 @@ class Mt5Gateway(BaseGateway):
                     datetime=LOCAL_TZ.localize(datetime.now()),
                     gateway_name=self.gateway_name
                 )
+                order.traded = trade.volume
+                self.on_order(order)
                 self.on_trade(trade)
 
     def on_account_info(self, packet: dict) -> None:
@@ -424,7 +437,7 @@ class Mt5Gateway(BaseGateway):
         data = packet.get("data", [])
         for d in data:
             position = PositionData(
-                symbol=d["symbol"],
+                symbol=d["symbol"].replace('.', '-'),
                 exchange=Exchange.OTC,
                 direction=Direction.NET,
                 gateway_name=self.gateway_name
@@ -462,9 +475,9 @@ class Mt5Gateway(BaseGateway):
         for d in packet["data"]:
 
             tick = TickData(
-                symbol=d["symbol"],
+                symbol=d["symbol"].replace('.', '-'),
                 exchange=Exchange.OTC,
-                name=d["symbol"],
+                name=d["symbol"].replace('.', '-'),
                 bid_price_1=d["bid"],
                 ask_price_1=d["ask"],
                 volume=d["last_volume"],
@@ -572,7 +585,20 @@ def generate_datetime(timestamp: int) -> datetime:
 def generate_datetime2(timestamp: int) -> datetime:
     """"""
     dt = datetime.strptime(str(timestamp), "%Y.%m.%d %H:%M")
-    dt = LOCAL_TZ.localize(dt)
+    utc_dt = dt.replace(tzinfo=pytz.utc)
+    local_tz = LOCAL_TZ.normalize(utc_dt.astimezone(LOCAL_TZ))
+    dt = local_tz.replace(tzinfo=LOCAL_TZ)
+    return dt
+
+
+def generate_datetime3(datetime: datetime) -> str:
+    """"""
+    dt = datetime.replace(tzinfo=None)
+    local_tz = LOCAL_TZ.normalize(dt.astimezone(LOCAL_TZ))
+    utc_tz = pytz.utc.normalize(local_tz.astimezone(pytz.utc))
+    utc_tz = utc_tz.replace(tzinfo=None)
+    dt = utc_tz.isoformat()
+    dt = dt.replace('T', ' ')
     return dt
 
 

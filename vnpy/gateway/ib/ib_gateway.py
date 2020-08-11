@@ -424,7 +424,7 @@ class IbApi(EWrapper):
         order = OrderData(
             symbol=ib_contract.conId,
             exchange=EXCHANGE_IB2VT.get(
-                ib_contract.exchange, ib_contract.exchange),
+                ib_contract.exchange, Exchange.SMART),
             type=ORDERTYPE_IB2VT[ib_order.orderType],
             orderid=orderid,
             direction=DIRECTION_IB2VT[ib_order.action],
@@ -569,7 +569,7 @@ class IbApi(EWrapper):
 
         trade = TradeData(
             symbol=contract.conId,
-            exchange=EXCHANGE_IB2VT.get(contract.exchange, contract.exchange),
+            exchange=EXCHANGE_IB2VT.get(contract.exchange, Exchange.SMART),
             orderid=str(execution.orderId),
             tradeid=str(execution.execId),
             direction=DIRECTION_IB2VT[execution.side],
@@ -660,9 +660,9 @@ class IbApi(EWrapper):
             return
 
         # Filter duplicate subscribe
-        if req.vt_symbol in self.subscrbied:
+        if req.vt_symbol in self.subscribed:
             return
-        self.subscrbied.add(req.vt_symbol)
+        self.subscribed.add(req.vt_symbol)
 
         # Extract ib contract detail
         ib_contract = generate_ib_contract(req.symbol, req.exchange)

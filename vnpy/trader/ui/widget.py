@@ -915,8 +915,13 @@ class TradingWidget(QtWidgets.QWidget):
         if isinstance(data, PositionData):
             if data.direction == Direction.SHORT:
                 direction = Direction.LONG
-            else:
+            elif data.direction == Direction.LONG:
                 direction = Direction.SHORT
+            else:       # Net position mode
+                if data.volume > 0:
+                    direction = Direction.SHORT
+                else:
+                    direction = Direction.LONG
 
             self.direction_combo.setCurrentIndex(
                 self.direction_combo.findText(direction.value)
@@ -924,7 +929,7 @@ class TradingWidget(QtWidgets.QWidget):
             self.offset_combo.setCurrentIndex(
                 self.offset_combo.findText(Offset.CLOSE.value)
             )
-            self.volume_line.setText(str(data.volume))
+            self.volume_line.setText(str(abs(data.volume)))
 
 
 class ActiveOrderMonitor(OrderMonitor):

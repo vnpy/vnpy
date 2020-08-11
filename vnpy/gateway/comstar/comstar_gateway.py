@@ -247,28 +247,34 @@ def parse_tick(data: dict) -> TickData:
         high_price=float(data["high_price"]),
         low_price=float(data["low_price"]),
         pre_close=float(data["pre_close"]),
-        bid_price_1=float(data["bid_price_1"]),
+        bid_price_1=float(data["bid_price_2"]),
         bid_price_2=float(data["bid_price_3"]),
         bid_price_3=float(data["bid_price_4"]),
         bid_price_4=float(data["bid_price_5"]),
         bid_price_5=float(data["bid_price_6"]),
-        ask_price_1=float(data["ask_price_1"]),
+        ask_price_1=float(data["ask_price_2"]),
         ask_price_2=float(data["ask_price_3"]),
         ask_price_3=float(data["ask_price_4"]),
         ask_price_4=float(data["ask_price_5"]),
         ask_price_5=float(data["ask_price_6"]),
-        bid_volume_1=float(data["bid_volume_1"]),
+        bid_volume_1=float(data["bid_volume_2"]),
         bid_volume_2=float(data["bid_volume_3"]),
         bid_volume_3=float(data["bid_volume_4"]),
         bid_volume_4=float(data["bid_volume_5"]),
         bid_volume_5=float(data["bid_volume_6"]),
-        ask_volume_1=float(data["ask_volume_1"]),
+        ask_volume_1=float(data["ask_volume_2"]),
         ask_volume_2=float(data["ask_volume_3"]),
         ask_volume_3=float(data["ask_volume_4"]),
         ask_volume_4=float(data["ask_volume_5"]),
         ask_volume_5=float(data["ask_volume_6"]),
         gateway_name=data["gateway_name"]
     )
+
+    tick.public_bid_price = float(data["bid_price_1"])
+    tick.public_ask_price = float(data["ask_price_1"])
+    tick.public_bid_volume = float(data["bid_volume_1"])
+    tick.public_ask_volume = float(data["ask_volume_1"])
+
     return tick
 
 
