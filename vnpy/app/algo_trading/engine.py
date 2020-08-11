@@ -6,6 +6,7 @@ from vnpy.trader.event import (
 from vnpy.trader.constant import (Direction, Offset, OrderType)
 from vnpy.trader.object import (SubscribeRequest, OrderRequest, LogData)
 from vnpy.trader.utility import load_json, save_json, round_to
+from vnpy.trader.setting import SETTINGS
 
 from .template import AlgoTemplate
 from .base import (
@@ -41,8 +42,9 @@ class AlgoEngine(BaseEngine):
         self.write_log("算法交易引擎启动")
         self.load_algo_setting()
 
-        self.genus_client = GenusClient(self.main_engine, self.event_engine)
-        self.genus_client.start()
+        if SETTINGS["genus.parent_host"]:
+            self.genus_client = GenusClient(self.main_engine, self.event_engine)
+            self.genus_client.start()
 
     def close(self):
         """"""

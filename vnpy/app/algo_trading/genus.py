@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from typing import Any, Dict
 from dataclasses import dataclass
 import pytz
-from pathlib import Path
 
 import quickfix as fix
 
@@ -108,14 +107,10 @@ class GenusParentApp(fix.Application):
 
     def onLogon(self, session_id: int):
         """"""
-        print("on logon", session_id)
-
         self.client.write_log("金纳算法交易服务：母单FIX APP连接成功")
 
     def onLogout(self, session_id: int):
         """"""
-        print("on logout", session_id)
-
         self.client.write_log("金纳算法交易服务：母单FIX APP连接断开")
 
     def toAdmin(self, message: fix.Message, session_id: int):
@@ -154,36 +149,18 @@ class GenusParentApp(fix.Application):
             return
 
         tradeid = get_field_value(message, fix.ExecID())
-        orderid = get_field_value(message, fix.OrderID())
-
         status = get_field_value(message, fix.OrdStatus())
         side = get_field_value(message, fix.Side())
         genus_symbol = get_field_value(message, fix.Symbol())
-
-        trade_volume = get_field_value(message, fix.LastShares())
-        trade_price = get_field_value(message, fix.LastPx())
-
         order_traded = get_field_value(message, fix.CumQty())
-        order_left = get_field_value(message, fix.LeavesQty())
-        order_volume = order_traded + order_left
 
         text = get_field_value(message, fix.Text())
         algo_type = get_field_value(message, fix.StringField(847))
 
         variables = {
-            "parent_orderid": parent_orderid,
-            "tradeid": tradeid,
-            "orderid": orderid,
-            "side": side,
-            "algo_type": algo_type,
-            "status": STATUS_GNS2VT[status],
-            "genus_symbol": genus_symbol,
-            "trade_volume": trade_volume,
-            "trade_price": trade_price,
-            "order_traded": order_traded,
-            "order_left": order_left,
-            "order_volume": order_volume,
-            "text": text
+            "推送编号": tradeid,
+            "已成交": order_traded,
+            "算法信息": text
         }
 
         self.algo_settings[parent_orderid] = {
@@ -241,18 +218,12 @@ class GenusParentApp(fix.Application):
         if order_type == OrderType.LIMIT:
             message.setField(fix.Price(price))
 
-        # start_time = setting["start_time"]
-        # end_time = setting["end_time"]
-        # utc_start = convert_to_utc(start_time)
-        # utc_end = convert_to_utc(end_time)
-
         seconds = setting["time"]
         dt = datetime.now() + timedelta(seconds=seconds)
         local_dt = CHINA_TZ.localize(dt)
         utc_dt = local_dt.astimezone(pytz.utc)
         utc_end = utc_dt.strftime("%Y%m%d-%H:%M:%S")
 
-        # parameters = f"StartTime;{utc_start}^EndTime;{utc_end}"
         parameters = f"EndTime;{utc_end}"
 
         message.setField(847, algo_type)
@@ -319,27 +290,22 @@ class GenusChildApp(fix.Application):
 
     def onLogon(self, session_id: int):
         """"""
-        print("on logon", session_id)
-
         self.client.write_log("金纳算法交易服务：子单FIX APP连接成功")
 
     def onLogout(self, session_id: int):
         """"""
-        print("on logout", session_id)
-
         self.client.write_log("金纳算法交易服务：子单FIX APP连接断开")
 
     def toAdmin(self, message: fix.Message, session_id: int):
         """"""
-        print("to admin", session_id)
+        pass
 
     def toApp(self, message: fix.Message, session_id: int):
         """"""
-        print("to app", session_id)
+        pass
 
     def fromAdmin(self, message: fix.Message, session_id: int):
         """"""
-        print("from admin", session_id)
         header = message.getHeader()
         msg_type = get_field_value(header, fix.MsgType())
 
@@ -360,9 +326,6 @@ class GenusChildApp(fix.Application):
         seq_num: int = get_field_value(message.getHeader(), fix.MsgSeqNum())
         session: fix.Session = fix.Session.lookupSession(self.session_id)
         session.setNextSenderMsgSeqNum(seq_num + 1)
-
-        # message = new_message(fix.MsgType_TestRequest)
-        # fix.Session.sendToTarget(message, self.session_id)
 
     def new_child_order(self, message: fix.Message):
         """"""
@@ -496,16 +459,33 @@ class GenusClient:
         """"""
         self.register_event()
 
-        app_path = Path(__file__).parent
-
         # For child app
-        child_settings = fix.SessionSettings(str(app_path.joinpath("genus_child.cfg")))
+        child_settings = fix.SessionSettings()
+        child_dict = fix.Dictionary()
 
-        child_dict = child_settings.get()
+        child_dict.setString("ConnectionType", "acceptor")
+        child_dict.setString("ResetOnLogon", "Y")
+        child_dict.setString("FileLogPath", "./genus_log/child")
+        child_dict.setString("LogonTimeout", "30")
+        child_dict.setString("StartTime", "00:00:00")
+        child_dict.setString("EndTime", "00:00:00")
+        child_dict.setString("HeartBtInt", "30")
+        child_dict.setString("CheckLatency", "N")
+        child_dict.setString("UseDataDictionary", "N")
+        child_dict.setString("FileStorePath", "./genus_store/child")
+        child_dict.setString("ScreenLogShowIncoming", "N")
+        child_dict.setString("ScreenLogShowOutgoing", "N")
+        child_dict.setString("ScreenLogShowEvents", "N")
+
         child_dict.setString("SocketAcceptHost", SETTINGS["genus.child_host"])
         child_dict.setString("SocketAcceptPort", SETTINGS["genus.child_port"])
-        child_dict.setString("SenderCompID", SETTINGS["genus.child_sender"])
-        child_dict.setString("TargetCompID", SETTINGS["genus.child_target"])
+
+        child_session = fix.SessionID(
+            "FIX.4.2",
+            SETTINGS["genus.child_sender"],
+            SETTINGS["genus.child_target"]
+        )
+        child_settings.set(child_session, child_dict)
 
         child_store_factory = fix.FileStoreFactory(child_settings)
         child_log_factory = fix.ScreenLogFactory(child_settings)
@@ -520,13 +500,32 @@ class GenusClient:
         self.child_socket.start()
 
         # For parent app
-        parent_settings = fix.SessionSettings(str(app_path.joinpath("genus_parent.cfg")))
+        parent_settings = fix.SessionSettings()
+        parent_dict = fix.Dictionary()
 
-        parent_dict = parent_settings.get()
+        parent_dict.setString("ConnectionType", "initiator")
+        parent_dict.setString("ResetOnLogon", "Y")
+        parent_dict.setString("FileLogPath", "./genus_log/parent")
+        parent_dict.setString("LogonTimeout", "30")
+        parent_dict.setString("StartTime", "00:00:00")
+        parent_dict.setString("EndTime", "00:00:00")
+        parent_dict.setString("HeartBtInt", "30")
+        parent_dict.setString("CheckLatency", "N")
+        parent_dict.setString("UseDataDictionary", "N")
+        parent_dict.setString("FileStorePath", "./genus_store/parent")
+        parent_dict.setString("ScreenLogShowIncoming", "N")
+        parent_dict.setString("ScreenLogShowOutgoing", "N")
+        parent_dict.setString("ScreenLogShowEvents", "N")
+
         parent_dict.setString("SocketConnectHost", SETTINGS["genus.parent_host"])
         parent_dict.setString("SocketConnectPort", SETTINGS["genus.parent_port"])
-        parent_dict.setString("SenderCompID", SETTINGS["genus.parent_sender"])
-        parent_dict.setString("TargetCompID", SETTINGS["genus.parent_target"])
+
+        parent_session = fix.SessionID(
+            "FIX.4.2",
+            SETTINGS["genus.parent_sender"],
+            SETTINGS["genus.parent_target"]
+        )
+        parent_settings.set(parent_session, parent_dict)
 
         parent_store_factory = fix.FileStoreFactory(parent_settings)
         parent_log_factory = fix.ScreenLogFactory(parent_settings)
@@ -658,16 +657,6 @@ def get_field_value(field_map: fix.FieldMap, field: Any) -> Any:
     """"""
     field_map.getField(field)
     return field.getValue()
-
-
-def convert_to_utc(time_str: str) -> str:
-    """"""
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    dt_str = f"{date_str} {time_str}"
-    dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
-    local_dt = CHINA_TZ.localize(dt)
-    utc_dt = local_dt.astimezone(pytz.utc)
-    return utc_dt.strftime("%Y%m%d-%H:%M:%S")
 
 
 class GenusAlgo:
