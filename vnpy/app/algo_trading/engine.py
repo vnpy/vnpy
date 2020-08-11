@@ -34,13 +34,20 @@ class AlgoEngine(BaseEngine):
         self.load_algo_template()
         self.register_event()
 
+        self.genus_client: GenusClient = None
+
     def init_engine(self):
         """"""
         self.write_log("算法交易引擎启动")
         self.load_algo_setting()
 
         self.genus_client = GenusClient(self.main_engine, self.event_engine)
-        self.genus_client.init()
+        self.genus_client.start()
+
+    def close(self):
+        """"""
+        if self.genus_client:
+            self.genus_client.close()
 
     def load_algo_template(self):
         """"""

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict
 from dataclasses import dataclass
 import pytz
@@ -142,7 +142,15 @@ class GenusParentApp(fix.Application):
     def on_parent_order(self, message: fix.Message):
         """"""
         parent_orderid = get_field_value(message, fix.ClOrdID())
+
+        # Get parent orderid of cancel request
+        if parent_orderid.startswith("Cancel"):
+            parent_orderid = get_field_value(message, fix.OrigClOrdID())
+
+        # If this parent order is from previous session
         if parent_orderid not in self.algo_settings:
+            # Cancel it to avoid future update
+            self.cancel_parent_order(parent_orderid)
             return
 
         tradeid = get_field_value(message, fix.ExecID())
@@ -228,14 +236,21 @@ class GenusParentApp(fix.Application):
         message.setField(fix.OrdType(genus_type))
         message.setField(fix.OrderQty(volume))
         message.setField(526, parent_orderid)
+        message.setField(fix.Text("vnpy"))
 
         if order_type == OrderType.LIMIT:
             message.setField(fix.Price(price))
 
         # start_time = setting["start_time"]
-        end_time = setting["end_time"]
+        # end_time = setting["end_time"]
         # utc_start = convert_to_utc(start_time)
-        utc_end = convert_to_utc(end_time)
+        # utc_end = convert_to_utc(end_time)
+
+        seconds = setting["time"]
+        dt = datetime.now() + timedelta(seconds=seconds)
+        local_dt = CHINA_TZ.localize(dt)
+        utc_dt = local_dt.astimezone(pytz.utc)
+        utc_end = utc_dt.strftime("%Y%m%d-%H:%M:%S")
 
         # parameters = f"StartTime;{utc_start}^EndTime;{utc_end}"
         parameters = f"EndTime;{utc_end}"
@@ -272,6 +287,7 @@ class GenusParentApp(fix.Application):
         message.setField(fix.Symbol(algo_setting["symbol"]))
         message.setField(fix.Side(algo_setting["side"]))
         message.setField(847, algo_setting["algo_type"])
+        message.setField(fix.Text("vnpy"))
 
         fix.Session.sendToTarget(message, self.session_id)
 
@@ -321,8 +337,6 @@ class GenusChildApp(fix.Application):
         """"""
         print("to app", session_id)
 
-        self.seq_num = get_field_value(message, fix.MsgSeqNum())
-
     def fromAdmin(self, message: fix.Message, session_id: int):
         """"""
         print("from admin", session_id)
@@ -347,8 +361,8 @@ class GenusChildApp(fix.Application):
         session: fix.Session = fix.Session.lookupSession(self.session_id)
         session.setNextSenderMsgSeqNum(seq_num + 1)
 
-        message = new_message(fix.MsgType_TestRequest)
-        fix.Session.sendToTarget(message, self.session_id)
+        # message = new_message(fix.MsgType_TestRequest)
+        # fix.Session.sendToTarget(message, self.session_id)
 
     def new_child_order(self, message: fix.Message):
         """"""
@@ -363,11 +377,15 @@ class GenusChildApp(fix.Application):
             parent_orderid=get_field_value(message, fix.StringField(526))
         )
 
+        # If parent offset not exist, then this child order should be ignored
+        offset = self.client.get_parent_offset(child_order.parent_orderid)
+        if not offset:
+            return
+
         symbol, genus_exchange = child_order.symbol.split(".")
         exchange = EXCHANGE_GNS2VT[genus_exchange]
         direction = DIRECTION_GNS2VT[child_order.side]
         order_type = ORDERTYPE_GNS2VT[child_order.order_type]
-        offset = self.client.get_parent_offset(child_order.parent_orderid)
 
         vt_symbol = generate_vt_symbol(symbol, exchange)
 
@@ -471,7 +489,10 @@ class GenusClient:
 
         self.parent_offset_map: Dict[str, Offset] = {}
 
-    def init(self):
+        self.parent_socket: fix.SocketInitiator = None
+        self.child_socket: fix.SocketAcceptor = None
+
+    def start(self):
         """"""
         self.register_event()
 
@@ -523,6 +544,14 @@ class GenusClient:
         """"""
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
+
+    def close(self):
+        """"""
+        if self.parent_socket:
+            self.parent_socket.stop()
+
+        if self.child_socket:
+            self.child_socket.stop()
 
     def send_order(
         self,
@@ -607,7 +636,7 @@ class GenusClient:
 
     def get_parent_offset(self, parent_orderid: str) -> Offset:
         """"""
-        return self.parent_offset_map.get(parent_orderid, Offset.NONE)
+        return self.parent_offset_map.get(parent_orderid, None)
 
 
 def new_message(msg_type: int) -> fix.Message:
@@ -652,7 +681,7 @@ class GenusAlgo:
         "direction": [Direction.LONG.value, Direction.SHORT.value],
         "price": 0.0,
         "volume": 0,
-        "end_time": "",
+        "time": 60,
         "offset": [
             Offset.NONE.value,
             Offset.OPEN.value,
