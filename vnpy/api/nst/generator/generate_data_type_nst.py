@@ -67,8 +67,6 @@ class DataTypeGenerator:
                     value = content.split("'")[1]
                     new_line = f"{name} = \'{value}\'\n"
                     self.f_define.write(new_line)
-
-
                 elif "-" in content:
                     name = content.split("-")[0]
                     value = content.split("-")[1]
@@ -81,7 +79,6 @@ class DataTypeGenerator:
 
             new_line = f"{name} = {value}\n"
             self.f_define.write(new_line)
-
 
     def process_typedef(self, line: str):
         """处理类型定义"""

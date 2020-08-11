@@ -7,6 +7,7 @@ import zmq
 import zmq.auth
 from zmq.backend.cython.constants import NOBLOCK
 from tzlocal import get_localzone
+import pytz
 
 from vnpy.trader.constant import (
     Direction,
@@ -194,6 +195,10 @@ class Mt5Gateway(BaseGateway):
 
     def cancel_order(self, req: CancelRequest) -> None:
         """"""
+        if req.orderid not in self.local_sys_map:
+            self.write_log(f"委托撤单失败，找不到{req.orderid}对应的系统委托号")
+            return
+
         sys_id = self.local_sys_map[req.orderid]
 
         mt5_req = {
@@ -260,7 +265,8 @@ class Mt5Gateway(BaseGateway):
                 direction=direction,
                 type=order_type,
                 price=d["order_price"],
-                volume=d["order_volume_current"],
+                volume=d["order_volume_initial"],
+                traded=d["order_volume_initial"] - d["order_volume_current"],
                 status=STATUS_MT2VT.get(d["order_state"], Status.SUBMITTING),
                 datetime=generate_datetime(d["order_time_setup"]),
                 gateway_name=self.gateway_name
@@ -284,8 +290,8 @@ class Mt5Gateway(BaseGateway):
         """
         history = []
 
-        start_time = req.start.isoformat()
-        end_time = req.end.isoformat()
+        start_time = generate_datetime3(req.start)
+        end_time = generate_datetime3(req.end)
 
         mt5_req = {
             "type": FUNCTION_QUERYHISTORY,
@@ -315,8 +321,8 @@ class Mt5Gateway(BaseGateway):
                 history.append(bar)
 
             data = packet["data"]
-            begin = data[0]["time"]
-            end = data[-1]["time"]
+            begin = generate_datetime2(data[0]["time"])
+            end = generate_datetime2(data[-1]["time"])
 
             msg = f"获取历史数据成功，{req.symbol.replace('.','-')} - {req.interval.value}，{begin} - {end}"
             self.write_log(msg)
@@ -354,11 +360,11 @@ class Mt5Gateway(BaseGateway):
 
             self.local_sys_map[local_id] = sys_id
             self.sys_local_map[sys_id] = local_id
-                  
+
             order = self.orders.get(local_id, None)
             if local_id and order:
                 order.datetime = generate_datetime(data["order_time_setup"])
-                
+
         # Update order data
         elif trans_type in {TRADE_TRANSACTION_ORDER_UPDATE, TRADE_TRANSACTION_ORDER_DELETE}:
             sysid = str(data["order"])
@@ -405,7 +411,7 @@ class Mt5Gateway(BaseGateway):
                     tradeid=data["deal"],
                     price=data["trans_price"],
                     volume=data["trans_volume"],
-                    datetime=datetime.now().replace(tzinfo=LOCAL_TZ),
+                    datetime=LOCAL_TZ.localize(datetime.now()),
                     gateway_name=self.gateway_name
                 )
                 order.traded = trade.volume
@@ -572,14 +578,27 @@ class Mt5Client:
 def generate_datetime(timestamp: int) -> datetime:
     """"""
     dt = datetime.fromtimestamp(timestamp)
-    dt = dt.replace(tzinfo=LOCAL_TZ)
+    dt = LOCAL_TZ.localize(dt)
     return dt
 
 
 def generate_datetime2(timestamp: int) -> datetime:
     """"""
     dt = datetime.strptime(str(timestamp), "%Y.%m.%d %H:%M")
-    dt = dt.replace(tzinfo=LOCAL_TZ)
+    utc_dt = dt.replace(tzinfo=pytz.utc)
+    local_tz = LOCAL_TZ.normalize(utc_dt.astimezone(LOCAL_TZ))
+    dt = local_tz.replace(tzinfo=LOCAL_TZ)
+    return dt
+
+
+def generate_datetime3(datetime: datetime) -> str:
+    """"""
+    dt = datetime.replace(tzinfo=None)
+    local_tz = LOCAL_TZ.normalize(dt.astimezone(LOCAL_TZ))
+    utc_tz = pytz.utc.normalize(local_tz.astimezone(pytz.utc))
+    utc_tz = utc_tz.replace(tzinfo=None)
+    dt = utc_tz.isoformat()
+    dt = dt.replace('T', ' ')
     return dt
 
 

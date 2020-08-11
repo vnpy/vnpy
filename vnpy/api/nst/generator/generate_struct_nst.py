@@ -67,7 +67,7 @@ class StructGenerator:
             self.process_end(line)
         elif "///" not in line and "#" not in line:
             self.process_member(line)
-    
+
     def process_enum_name(self, line: str):
         """"""
         words = line.split(" ")

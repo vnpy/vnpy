@@ -236,8 +236,6 @@ class ApiGenerator:
 
                             struct_fields = self.structs[type_]
                             for struct_field, struct_type in struct_fields.items():
-
-
                                 if struct_type == "string":
                                     f.write(
                                         f"\t\terror[\"{struct_field}\"] = toUtf(task_error->{struct_field});\n")
@@ -295,8 +293,6 @@ class ApiGenerator:
 
                     type_ = list(d.values())[0]
                     f.write(f"\t{type_} myreq = {type_}();\n")
-
-
                     f.write(f"\tint i = this->api->{name}();\n")
                     f.write("\treturn i;\n")
                     f.write("};\n\n")

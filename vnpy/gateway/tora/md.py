@@ -24,7 +24,7 @@ def parse_datetime(date: str, time: str):
     # time: '16:28:24'
 
     dt = datetime.strptime(f'{date}-{time}', "%Y%m%d-%H:%M:%S")
-    dt = dt.replace(tzinfo=CHINA_TZ)
+    dt = CHINA_TZ.localize(dt)
     return dt
 
 
