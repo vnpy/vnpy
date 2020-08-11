@@ -24,3 +24,4 @@ pyzmq
 wmi
 QScintilla
 plotly
+quickfix
