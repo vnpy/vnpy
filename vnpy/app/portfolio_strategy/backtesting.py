@@ -468,7 +468,7 @@ class BacktestingEngine:
         fig.add_trace(pnl_histogram, row=4, col=1)
 
         fig.update_layout(height=1000, width=1000)
-        fig.show()  
+        fig.show()
 
     def update_daily_close(self, bars: Dict[str, BarData], dt: datetime) -> None:
         """"""

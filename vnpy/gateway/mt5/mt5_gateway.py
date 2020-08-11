@@ -360,11 +360,11 @@ class Mt5Gateway(BaseGateway):
 
             self.local_sys_map[local_id] = sys_id
             self.sys_local_map[sys_id] = local_id
-                  
+
             order = self.orders.get(local_id, None)
             if local_id and order:
                 order.datetime = generate_datetime(data["order_time_setup"])
-                
+
         # Update order data
         elif trans_type in {TRADE_TRANSACTION_ORDER_UPDATE, TRADE_TRANSACTION_ORDER_DELETE}:
             sysid = str(data["order"])
