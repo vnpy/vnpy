@@ -267,15 +267,22 @@ class BybitRestApi(RestClient):
             "side": DIRECTION_VT2BYBIT[req.direction],
             "qty": int(req.volume),
             "order_link_id": orderid,
-            "time_in_force": "GoodTillCancel"
+            "time_in_force": "GoodTillCancel",
+            "reduce_only": False,
+            "close_on_trigger": False
         }
 
         data["order_type"] = ORDER_TYPE_VT2BYBIT[req.type]
         data["price"] = req.price
 
+        if self.usdt_base:
+            path = "/private/linear/order/create"
+        else:
+            path = "/v2/private/order/create"
+
         self.add_request(
             "POST",
-            "/open-api/order/create",
+            path,
             callback=self.on_send_order,
             data=data,
             extra=order,
@@ -325,6 +332,9 @@ class BybitRestApi(RestClient):
     def on_send_order(self, data: dict, request: Request) -> None:
         """"""
         if self.check_error("委托下单", data):
+            order = request.extra
+            order.status = Status.REJECTED
+            self.gateway.on_order(order)
             return
 
     def cancel_order(self, req: CancelRequest) -> Request:
@@ -334,9 +344,14 @@ class BybitRestApi(RestClient):
             "order_link_id": req.orderid
         }
 
+        if self.usdt_base:
+            path = "/private/linear/order/cancel"
+        else:
+            path = "/v2/private/order/cancel"
+
         self.add_request(
             "POST",
-            path="/open-api/order/cancel",
+            path,
             data=data,
             callback=self.on_cancel_order
         )
@@ -357,7 +372,7 @@ class BybitRestApi(RestClient):
 
     def on_cancel_order(self, data: dict, request: Request) -> None:
         """"""
-        if self.check_error("委托下单", data):
+        if self.check_error("委托撤单", data):
             return
 
     def on_failed(self, status_code: int, request: Request):
@@ -426,7 +441,6 @@ class BybitRestApi(RestClient):
             return
 
         for d in data["result"]:
-            # print("on query contract", d)
             self.contract_codes.add(d["name"])
 
             contract = ContractData(
@@ -441,7 +455,11 @@ class BybitRestApi(RestClient):
                 history_data=True,
                 gateway_name=self.gateway_name
             )
-            self.gateway.on_contract(contract)
+
+            if self.usdt_base and "USDT" in contract.symbol:
+                self.gateway.on_contract(contract)
+            elif not self.usdt_base and "USDT" not in contract.symbol:
+                self.gateway.on_contract(contract)
 
         self.gateway.write_log("合约信息查询成功")
         self.query_position()
@@ -498,7 +516,10 @@ class BybitRestApi(RestClient):
             )
             self.gateway.on_order(order)
 
-        if result["current_page"] != result["last_page"]:
+        if (
+            "last_page" in result
+            and result["current_page"] != result["last_page"]
+        ):
             self.query_order(result["current_page"] + 1)
         else:
             self.gateway.write_log(f"{symbol}委托信息查询成功")
@@ -580,7 +601,11 @@ class BybitRestApi(RestClient):
         history = []
         count = 200
         start_time = int(req.start.timestamp())
-        print(req.start, start_time)
+
+        if self.usdt_base:
+            path = "/public/linear/kline"
+        else:
+            path = "/v2/public/kline/list"
 
         while True:
             # Create query params
@@ -594,7 +619,7 @@ class BybitRestApi(RestClient):
             # Get response from server
             resp = self.request(
                 "GET",
-                "/v2/public/kline/list",
+                path,
                 params=params
             )
 

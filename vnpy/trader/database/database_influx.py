@@ -45,6 +45,12 @@ class InfluxManager(BaseDatabaseManager):
         start: datetime,
         end: datetime,
     ) -> Sequence[BarData]:
+        if isinstance(start, datetime):
+            start = start.date()
+
+        if isinstance(end, datetime):
+            end = end.date()
+
         query = (
             "select * from bar_data"
             " where vt_symbol=$vt_symbol"
