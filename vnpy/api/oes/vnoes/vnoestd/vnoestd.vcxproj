@@ -82,9 +82,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.pyd</TargetExt>
-    <IncludePath>C:\vnstudio\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\oes;$(IncludePath)</IncludePath>
+    <IncludePath>C:\vnstudio4\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\oes;$(IncludePath)</IncludePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
-    <LibraryPath>C:\vnstudio\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\vnstudio4\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -159,7 +159,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\Users\yazhang\Documents\GitHub\vnpy\vnpy\api\oes\libs;C:\vnstudio\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\libs;C:\vnstudio4\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>oes_api.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

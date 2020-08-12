@@ -2156,11 +2156,16 @@ void TdApi::processQueryNotifyInfo(Task *task)
 ///-------------------------------------------------------------------------------------
 ///Ö÷¶¯º¯Êý
 ///-------------------------------------------------------------------------------------
+void TdApi::createTdAPi()
+{
+	this->api = new OesClientApi();
+	this->api->RegisterSpi(this);
+}
+
+
 bool TdApi::loadCfg(string pCfgFile)
 {
 	bool i = this->api->LoadCfg((char*)pCfgFile.c_str());
-	this->api->RegisterSpi(this);
-	
 	return i;
 }
 
@@ -3104,6 +3109,7 @@ PYBIND11_MODULE(vnoestd, m)
     class_<TdApi, PyTdApi> TdApi(m, "TdApi", module_local());
     TdApi
         .def(init<>())
+		.def("createTdAPi", &TdApi::createTdAPi)
 		.def("loadCfg", &TdApi::loadCfg)
 		.def("setCustomizedIpAndMac", &TdApi::setCustomizedIpAndMac)
 		.def("setCustomizedIp", &TdApi::setCustomizedIp)

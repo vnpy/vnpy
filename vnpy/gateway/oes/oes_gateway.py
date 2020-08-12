@@ -9,22 +9,18 @@ from threading import Lock, Thread
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (CancelRequest, OrderRequest,
                                 SubscribeRequest)
+from vnpy.trader.constant import Exchange
 from vnpy.trader.utility import get_file_path
-from .oes_md import OesMdApi
-from .oes_td import OesTdApi, EXCHANGE_VT2OES
-from .utils import config_template
+from vnpy.api.oes import TdApi
 
+
+mydir = os.path.dirname(__file__)
+config_template_path = os.path.join(mydir, "config_template.ini")
+with open(config_template_path, "rt", encoding='utf-8') as f:
+    config_template = f.read()
 
 class OesGateway(BaseGateway):
     """
-    VN Trader Gateway for OES
-
-    Because the design of OES API, multiple gateway instance with a same account is currently
-        not supported.
-    running multiple gateway instance with the same account will make send_order and
-        cancel_order fail frequently, because:
-        * seq_index is not unique between instances
-        * value range of client_id is too small to create a unique hash for different client.
     """
 
     default_setting = {
@@ -40,20 +36,14 @@ class OesGateway(BaseGateway):
         "customize_mac": "",
     }
 
-    exchanges = list(EXCHANGE_VT2OES.keys())
+    exchanges = [Exchange.SSE, Exchange.SZSE]
 
     def __init__(self, event_engine):
         """Constructor"""
         super().__init__(event_engine, "OES")
 
-        self.md_api = OesMdApi(self)
         self.td_api = OesTdApi(self)
 
-        self._lock_subscribe = Lock()
-        self._lock_send_order = Lock()
-        self._lock_cancel_order = Lock()
-        self._lock_query_position = Lock()
-        self._lock_query_account = Lock()
 
     def connect(self, setting: dict):
         """"""
@@ -82,44 +72,17 @@ class OesGateway(BaseGateway):
                                              log_path=log_path)
             f.write(content)
 
-        self.md_api.tcp_server = setting['md_tcp_server']
-        self.md_api.qry_server = setting['md_qry_server']
-        Thread(target=self._connect_md_sync, args=(
-            config_path, username, password)).start()
-
-        self.td_api.ord_server = setting['td_ord_server']
-        self.td_api.rpt_server = setting['td_rpt_server']
-        self.td_api.qry_server = setting['td_qry_server']
-        self.td_api.hdd_serial = setting['hdd_serial']
-        self.td_api.customize_ip = setting['customize_ip']
-        self.td_api.customize_mac = setting['customize_mac']
-        Thread(target=self._connect_td_sync, args=(
-            config_path, username, password)).start()
-
-    def _connect_td_sync(self, config_path, username, password):
-        self.td_api.config_path = config_path
-        self.td_api.username = username
-        self.td_api.password = password
-        if self.td_api.connect():
-            self.write_log(_("成功连接到交易服务器"))
-            self.td_api.query_contracts()
-            # self.td_api.query_account()
-            self.write_log("合约信息查询成功")
-            # self.td_api.query_position()
-            # self.td_api.query_orders()
-            self.td_api.start()
-        else:
-            self.write_log(_("无法连接到交易服务器，请检查你的配置"))
-
-    def _connect_md_sync(self, config_path, username, password):
-        self.md_api.config_path = config_path
-        self.md_api.username = username
-        self.md_api.password = password
-        if self.md_api.connect():
-            self.write_log(_("成功连接到行情服务器"))
-            self.md_api.start()
-        else:
-            self.write_log(_("无法连接到行情服务器，请检查你的配置"))
+        self.td_api.connect(
+            config_path=config_path,
+            username=username,
+            password=password,
+            ord_server=setting['td_ord_server'],
+            rpt_server=setting['td_rpt_server'],
+            qry_server=setting['td_qry_server'],
+            hdd_serial=setting['hdd_serial'],
+            customize_ip=setting['customize_ip'],
+            customize_mac=setting['customize_mac'],
+        )
 
     def subscribe(self, req: SubscribeRequest):
         """"""
@@ -148,5 +111,47 @@ class OesGateway(BaseGateway):
 
     def close(self):
         """"""
-        self.md_api.stop()
+        # self.md_api.stop()
         self.td_api.stop()
+
+
+class OesTdApi(TdApi):
+    def __init__(self, gateway):
+        """Constructor"""
+        super(OesTdApi, self).__init__()
+
+        self.gateway = gateway
+        self.gateway_name = gateway.gateway_name
+
+        self.reqid = 0
+
+    def onConnected(self, channel_type, data):
+        print("onConnected", data)
+
+    def onDisconnected(self, channel_type, data):
+        print("onDisConnected", data)
+
+    def connect(
+        self,
+        config_path,
+        username,
+        password,
+        ord_server,
+        rpt_server,
+        qry_server,
+        hdd_serial,
+        customize_ip,
+        customize_mac,
+        ):
+
+        a=self.createTdAPi()
+        b=self.loadCfg(config_path)
+        c=self.setCustomizedIpAndMac(customize_ip, customize_mac)
+        d=self.setCustomizedDriverId(hdd_serial)
+        e=self.setThreadUsername(username)
+        f=self.setThreadPassword(password)
+        g=self.setThreadEnvId(0)
+        h=self.setThreadSubscribeEnvId(0)
+        i=self.init()
+        print(a,b,c,d,e,f,g,h,i)
+        
