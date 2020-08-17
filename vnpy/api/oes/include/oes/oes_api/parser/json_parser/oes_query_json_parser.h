@@ -155,7 +155,7 @@ int32   JsonParser_EncodeEtfItem(
                 char *pBuf,
                 int32 bufSize);
 
-/* 单条ETF成分股信息查询结果序列化 */
+/* 单条ETF成份证券信息查询结果序列化 */
 int32   JsonParser_EncodeEtfComponentItem(
                 const OesEtfComponentItemT *pRspItem,
                 char *pBuf,
@@ -224,6 +224,11 @@ int32   JsonParser_EncodeOptSettlPosition(
 /* 券商参数查询结果序列化 */
 int32   JsonParser_EncodeBrokerParams(
                 const OesBrokerParamsInfoT *pRspItem,
+                char *pBuf, int32 bufSize);
+
+/* 周边应用升级配置信息查询结果序列化 */
+int32   JsonParser_EncodeApplUpgradeInfo(
+                const OesApplUpgradeInfoT *pUpgradeInfo,
                 char *pBuf, int32 bufSize);
 /* -------------------------           */
 

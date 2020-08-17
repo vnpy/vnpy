@@ -3,8 +3,8 @@
 */
 
 
-#ifndef _OES_CPP_API_SAMPLE_H
-#define _OES_CPP_API_SAMPLE_H
+#ifndef _MDS_CPP_API_SAMPLE_H
+#define _MDS_CPP_API_SAMPLE_H
 
 
 #include    <mds_api/mds_async_api.h>
@@ -24,12 +24,10 @@ namespace   Quant360 {
 	class MdsClientSpi {
 	public:
 		/* 连接或重新连接完成后的回调函数 */
-		virtual int32       OnConnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo, OesApiSubscribeInfoT *pSubscribeInfo = NULL);
+		virtual int32       OnConnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo, MdsApiSubscribeInfoT *pSubscribeInfo = NULL);
 		/* 连接断开后的回调函数 */
 		virtual int32       OnDisconnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo);
 
-		/* 查询通知消息回调 */
-		virtual void        OnQueryNotifyInfo(const OesNotifyInfoItemT *pNotifyInfo, const OesQryCursorT *pCursor, int32 requestId) = 0;
 
 	public:
 		MdsClientSpi();
@@ -75,8 +73,6 @@ namespace   Quant360 {
 		/* 停止实例并释放相关资源 */
 		void                Stop(void);
 
-		/* 查询通知消息 */
-		int32               QueryNotifyInfo(const OesQryNotifyInfoFilterT *pQryFilter, int32 requestId = 0);
 
 	private:
 		/* 禁止拷贝构造函数 */
@@ -96,8 +92,7 @@ namespace   Quant360 {
 
 		MdsClientSpi        *_pSpi;
 		MdsAsyncApiContextT *_pAsyncContext;
-		MdsAsyncApiChannelT *_pDefaultOrdChannel;
-		MdsAsyncApiChannelT *_pDefaultRptChannel;
+		MdsAsyncApiChannelT *_pDefaultTcpChannel;
 		MdsApiSessionInfoT  *_pQryChannel;
 	};
 

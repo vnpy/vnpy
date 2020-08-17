@@ -633,18 +633,67 @@ SStr_ToLowerR(char *pBuf, const char *pStr) {
 
 /**
  * 拷贝指定长度的字符串
- * <p>需保证缓存有足够的空间(maxStrlen + 1)</p>
+ * <p>需保证缓存有足够的空间(maxStrLen + 1)</p>
  *
- * @param   maxStrlen   最大有效字符长度(不包括结尾的'\0')，即buf的长度需至少
- *                      为 maxStrlen + 1
+ * @param[out]  pBuf            用于输出数据的缓存区指针
+ * @param       pStr            待拷贝的字符串
+ * @param       maxStrLen       最大有效字符长度(不包括结尾的'\0')，即buf的长度需至少
+ *                              为 maxStrLen + 1
+ * @param[out]  pOutCopyLen     拷贝字符串的长度
+ * @return      返回拷贝后字符串
  */
 static __inline char*
-SStr_StrCopy(char *pBuf, const char *pStr, int32 maxStrlen) {
+SStr_StrCopy2(char *pBuf, const char *pStr, int32 maxStrLen,
+        int32 *pOutCopyLen) {
+    char    *pPtr = pBuf;
+
+    SLOG_ASSERT(pPtr);
+
+    if (__spk_likely(pStr)) {
+        while (*pStr && maxStrLen-- != 0) {
+            *pPtr++ = *pStr++;
+        }
+    }
+
+    *pPtr = '\0';
+
+    if (pOutCopyLen) {
+        *pOutCopyLen = (int32) (pPtr - pBuf);
+    }
+
+    return pBuf;
+}
+
+
+/**
+ * 拷贝指定长度的字符串
+ * <p>需保证缓存有足够的空间(maxStrLen + 1)</p>
+ *
+ * @param[out]  pBuf            用于输出数据的缓存区指针
+ * @param       pStr            待拷贝的字符串
+ * @param       maxStrLen       最大有效字符长度(不包括结尾的'\0')，即buf的长度需至少
+ *                              为 maxStrLen + 1
+ * @return      返回拷贝后字符串
+ */
+static __inline char*
+SStr_StrCopy(char *pBuf, const char *pStr, int32 maxStrLen) {
+    return SStr_StrCopy2(pBuf, pStr, maxStrLen, (int32 *) NULL);
+}
+
+
+/**
+ * 拷贝指定长度的字符串
+ * <p>需保证缓存有足够的空间(maxStrlen + 1)</p>
+ *
+ * @param   strLen      有效字符长度(不包括结尾的'\0')，即buf的长度需至少为 strLen + 1
+ */
+static __inline char*
+SStr_StrFixedLengthCopy(char *pBuf, const char *pStr, int32 strLen) {
     SLOG_ASSERT(pBuf);
 
-    if (__spk_likely(pStr && maxStrlen > 0)) {
-        strncpy(pBuf, pStr, maxStrlen);
-        pBuf[maxStrlen] = '\0';
+    if (__spk_likely(pStr && strLen > 0)) {
+        memcpy(pBuf, pStr, strLen);
+        pBuf[strLen] = '\0';
     } else {
         *pBuf = '\0';
     }
@@ -706,17 +755,24 @@ SStr_SubStrCopy(char *pBuf, const char *pStr, int32 from, int32 subLen) {
  */
 static __inline char*
 SStr_StrCat(char *pBuf, const char *s1, const char *s2, int32 maxStrlen) {
-    SLOG_ASSERT(pBuf);
+    char    *pPtr = pBuf;
+
+    SLOG_ASSERT(pPtr);
 
     if (__spk_likely(s1)) {
-        SStr_StrCopy(pBuf, s1, maxStrlen);
-    } else {
-        *pBuf = '\0';
+        while (*s1 && maxStrlen != 0) {
+            *pPtr++ = *s1++;
+            maxStrlen--;
+        }
     }
 
     if (__spk_likely(s2)) {
-        return strncat(pBuf, s2, maxStrlen - strlen(pBuf));
+        while (*s2 && maxStrlen-- != 0) {
+            *pPtr++ = *s2++;
+        }
     }
+
+    *pPtr = '\0';
     return pBuf;
 }
 
@@ -727,9 +783,10 @@ SStr_StrCat(char *pBuf, const char *s1, const char *s2, int32 maxStrlen) {
  * @return 原字符串地址
  */
 static __inline char*
-SStr_StrCatP(char **ppString, const char *s) {
-    char    *pBegin = (char *) NULL;
-    char    *pEnd = (char *) NULL;
+SStr_StrCatP(char **ppString, const char *s, int32 *pMaxStrlen) {
+    char                *pBegin = (char *) NULL;
+    char                *pEnd = (char *) NULL;
+    int32               maxStrlen = -1;
 
     if (__spk_unlikely(! ppString || ! *ppString)) {
         return (char *) NULL;
@@ -739,12 +796,24 @@ SStr_StrCatP(char **ppString, const char *s) {
         pBegin = pEnd = *ppString;
     }
 
+    if (__spk_likely(pMaxStrlen)) {
+        maxStrlen = *pMaxStrlen;
+        if (__spk_unlikely(maxStrlen == 0)) {
+            return pBegin;
+        }
+    }
+
     while (*pEnd) {
         pEnd++;
     }
 
-    while (*s) {
+    while (*s && maxStrlen != 0) {
         *pEnd++ = *s++;
+        maxStrlen--;
+    }
+
+    if (__spk_likely(pMaxStrlen)) {
+        *pMaxStrlen = maxStrlen;
     }
 
     *pEnd = '\0';
@@ -784,6 +853,7 @@ SStr_StrTrimCopy(char *pBuf, const char *pStr, int32 maxStrlen) {
     char    *pPtr = pBuf;
 
     SLOG_ASSERT(pPtr);
+
     if (__spk_unlikely(SStr_IsEmpty(pStr))) {
         *pBuf = '\0';
         return pBuf;

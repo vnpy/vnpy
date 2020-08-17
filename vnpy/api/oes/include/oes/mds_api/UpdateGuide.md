@@ -1,5 +1,115 @@
 # MDS-API Update Guide    {#update_guide}
 
+MDS_0.16.1.1 / 2020-06-29
+-----------------------------------
+
+### 1. API更新概要
+  1. 服务端兼容 v0.15.5.1 版本API (建议升级, 以支持期权业务)
+     - 如果使用到了时间戳字段下的微秒时间, 则需要升级最新的API, 因为时间戳字段已全部升级为纳秒级时间戳。具体请参见注意事项说明
+     - 升级到0.16.1.1以支持创业板注册制改革的相关内容
+  2. 异步API新增如下接口
+    | API                                | 描述 |
+    | -----------------------------------| -------------------- |
+    | MdsAsyncApi_IsAllTerminated        | 检查所有线程是否均已安全退出 |
+  3. 同步API新增如下接口
+    | API                                | 描述 |
+    | -----------------------------------| -------------------- |
+    | MdsApi_QueryOptionStaticInfoList   | 批量查询期权合约静态信息列表 |
+    | MdsApi_QueryOptionStaticInfoList2  | 批量查询期权合约静态信息列表 (字符串指针数组形式的期权代码列表) |
+    | MdsApi_QueryStockStaticInfoList    | 批量查询证券(股票/债券/基金)静态信息列表 |
+    | MdsApi_QueryStockStaticInfoList2   | 批量查询证券(股票/债券/基金)静态信息列表 (字符串指针数组形式的证券代码列表) |
+    | MdsApi_GetChannelGroupLastRecvTime | 返回通道组最近接收消息时间 |
+    | MdsApi_GetChannelGroupLastSendTime | 返回通道组最近发送消息时间 |
+    | MdsApi_HasStockStatus              | 返回现货产品是否具有指定状态|
+    | __MdsApi_CheckApiVersion           | 检查API版本是否匹配 (检查API头文件和库文件的版本是否匹配) |
+  4. 为支持创业板注册制改革, 证券静态信息 (MdsStockStaticInfoT) 中新增如下字段:
+    | 字段                        | 描述 |
+    | -------------------------- | -------------------- |
+    | isRegistration             | 是否注册制 |
+    | currType                   | 币种 |
+    | qualificationClass         | 投资者适当性管理分类 |
+    | securityStatus             | 证券状态 |
+    | securityAttribute          | 证券属性 (保留字段) |
+    | suspFlag                   | 连续停牌标识 |
+    | isDayTrading               | 是否支持当日回转交易 |
+    | isCrdMarginTradeUnderlying | 是否为融资标的 |
+    | isCrdShortSellUnderlying   | 是否为融券标的 |
+    | isCrdCollateral            | 是否为融资融券担保品 |
+    | isNoProfit                 | 是否尚未盈利 |
+    | isWeightedVotingRights     | 是否存在投票权差异 |
+    | isVie                      | 是否具有协议控制框架 |
+    | lmtBuyQtyUnit              | 限价买入单位 |
+    | lmtSellQtyUnit             | 限价卖出单位 |
+    | mktBuyQtyUnit              | 市价买入单位 |
+    | mktSellQtyUnit             | 市价卖出单位 |
+    | parValue                   | 面值 (重命名 parPrice) |
+    | auctionLimitType           | 连续竞价范围限制类型 |
+    | auctionReferPriceType      | 连续竞价范围基准价类型 |
+    | auctionUpDownRange         | 连续竞价范围涨跌幅度 |
+    | listDate                   | 上市日期 |
+    | maturityDate               | 到期日期 (仅适用于债券等有发行期限的产品) |
+    | underlyingSecurityId       | 基础证券代码 |
+    | securityLongName           | 证券长名称 (UTF-8 编码) |
+    | securityEnglishName        | 证券英文名称 (UTF-8 编码) |
+    | securityIsinCode           | ISIN代码 |
+  5. 证券静态信息 (MdsStockStaticInfoT) 中新增证券子类型(同OES):
+     - 创业板存托凭证 (OES_SUB_SECURITY_TYPE_STOCK_GEMCDR)
+     - 可交换债券 (OES_SUB_SECURITY_TYPE_BOND_EXG)
+     - 商品期货ETF (OES_SUB_SECURITY_TYPE_ETF_COMMODITY_FUTURES)
+  6. 优化异步API
+     - 为异步API增加是否优先使用大页内存来创建异步队列的配置项
+     - 为异步API的I/O线程增加追加模式输出的配置项
+     - 为异步API的I/O线程增加支持忙等待的配置选项，以使异步队列的延迟统计结果更接近实际情况
+  7. 优化时间戳精度, 将系统下的时间戳全部升级为纳秒级时间戳, 以提高时延统计的精度
+     - 时间戳字段的数据类型从 STimevalT/STimeval32T 变更为 STimespecT/STimespec32T
+     - 协议保持兼容, 但如果使用到了时间戳字段下的微秒时间(tv_usec 字段), 则需要修改为纳秒时间(tv_nsec 字段),
+       否则会因为时间单位的调整而导致时延计算错误
+  8. API中添加vs2015工程样例
+
+### 2. 服务端更新概要
+
+  1. fix: 更新上海增量快照的去重处理, 以处理存在时间相同但数据不同的增量快照问题
+  2. fix: 完善上海增量快照的更新处理, 防止因为数据丢失导致出现买卖盘价格倒挂
+  3. fix: 完善由上海增量快照合成的快照消息中，没有更新和携带实际的原始行情的序列号（__origTickSeq）的问题
+  4. 支持创业板注册制改革
+  5. 其它细节完善和性能优化
+
+### 3. 注意事项说明
+
+  1. 时间戳精度的修改没法完全兼容之前的API, 如果使用到了时间戳字段下的微秒时间(tv_usec 字段), 则需要升级API到最新版本
+     - 通常只有在统计延迟时才会使用到微秒时间(tv_usec)字段, 如果使用到了该字段, 则需要改为使用纳秒时间(tv_nsec)字段,
+       否则会因为时间单位的调整而导致时延计算错误
+     - 升级API以后, 可以通过检查有无编译错误的方式, 来检查是否使用到了 tv_usec 字段。如果没有编译错误就无需再做额外的调整
+  2. 上海市场存在更新时间相同但数据不同的Level-2快照, 与通常的预期不太相符。(频率不高, 但会存在这样的数据)
+
+
+---
+
+MDS_0.16.0.5 / 2020-04-17
+-----------------------------------
+
+### 1. API更新概要
+
+  1. 服务端兼容 v0.15.5.1 版本API, 客户可以选择不升级 (建议升级, 以支持期权业务)
+  2. 统一沪深期权行情的昨收盘价字段, 不再通过该字段推送昨结算价（深圳期权快照中没有结算价字段）
+  3. 调整组播行情的行为, 不再强制过滤掉重复的快照行情和重建到的逐笔行情, 并允许通过订阅条件进行控制
+  4. 为异步API增加对UDP行情数据的本地订阅/过滤功能
+      - 订阅方式与TCP行情订阅方式相同, 相关订阅接口如下:
+         - MdsAsyncApi_SubscribeMarketData
+         - MdsAsyncApi_SubscribeByString
+         - MdsAsyncApi_SubscribeByStringAndPrefixes
+      - 对UDP行情数据的订阅和过滤功能默认不开启, 可通过接口或配置予以控制
+      - 样例代码参见:
+         - samples/mds_sample/04_mds_async_udp_sample.c
+  5. 调整示例代码的目录位置
+
+### 2. 服务端更新概要
+
+  1. 无
+
+
+---
+
 MDS_0.16.0.4 / 2020-02-28
 -----------------------------------
 
@@ -60,14 +170,98 @@ MDS_0.16 / 2019-11-20
 
 ---
 
-MDS_0.15.10.3 / 2020-02-28
+MDS_0.15.11.3 / 2020-06-29
+-----------------------------------
+
+### 1. API更新概要
+  1. 服务端兼容 v0.15.5.1 版本API, 客户可以选择不升级 (建议升级以支持创业板注册制改革的相关内容)
+     - 如果使用到了时间戳字段下的微秒时间, 则需要升级最新的API, 因为时间戳字段已全部升级为纳秒级时间戳。具体请参见注意事项说明
+  2. 异步API新增如下接口
+    | API                                | 描述 |
+    | -----------------------------------| -------------------- |
+    | MdsAsyncApi_IsAllTerminated        | 检查所有线程是否均已安全退出 |
+  3. 同步API新增如下接口
+    | API                                | 描述 |
+    | -----------------------------------| -------------------- |
+    | MdsApi_QueryStockStaticInfoList    | 批量查询证券(股票/债券/基金)静态信息列表 |
+    | MdsApi_QueryStockStaticInfoList2   | 批量查询证券(股票/债券/基金)静态信息列表 (字符串指针数组形式的证券代码列表) |
+    | MdsApi_GetChannelGroupLastRecvTime | 返回通道组最近接收消息时间 |
+    | MdsApi_GetChannelGroupLastSendTime | 返回通道组最近发送消息时间 |
+    | MdsApi_HasStockStatus              | 返回现货产品是否具有指定状态|
+    | __MdsApi_CheckApiVersion           | 检查API版本是否匹配 (检查API头文件和库文件的版本是否匹配) |
+  4. 为支持创业板注册制改革, 证券静态信息 (MdsStockStaticInfoT) 中新增如下字段:
+    | 字段                        | 描述 |
+    | -------------------------- | -------------------- |
+    | isRegistration             | 是否注册制 |
+    | currType                   | 币种 |
+    | qualificationClass         | 投资者适当性管理分类 |
+    | securityStatus             | 证券状态 |
+    | securityAttribute          | 证券属性 (保留字段) |
+    | suspFlag                   | 连续停牌标识 |
+    | isDayTrading               | 是否支持当日回转交易 |
+    | isCrdMarginTradeUnderlying | 是否为融资标的 |
+    | isCrdShortSellUnderlying   | 是否为融券标的 |
+    | isCrdCollateral            | 是否为融资融券担保品 |
+    | isNoProfit                 | 是否尚未盈利 |
+    | isWeightedVotingRights     | 是否存在投票权差异 |
+    | isVie                      | 是否具有协议控制框架 |
+    | lmtBuyQtyUnit              | 限价买入单位 |
+    | lmtSellQtyUnit             | 限价卖出单位 |
+    | mktBuyQtyUnit              | 市价买入单位 |
+    | mktSellQtyUnit             | 市价卖出单位 |
+    | parValue                   | 面值 (重命名 parPrice) |
+    | auctionLimitType           | 连续竞价范围限制类型 |
+    | auctionReferPriceType      | 连续竞价范围基准价类型 |
+    | auctionUpDownRange         | 连续竞价范围涨跌幅度 |
+    | listDate                   | 上市日期 |
+    | maturityDate               | 到期日期 (仅适用于债券等有发行期限的产品) |
+    | underlyingSecurityId       | 基础证券代码 |
+    | securityLongName           | 证券长名称 (UTF-8 编码) |
+    | securityEnglishName        | 证券英文名称 (UTF-8 编码) |
+    | securityIsinCode           | ISIN代码 |
+  5. 证券静态信息 (MdsStockStaticInfoT) 中新增证券子类型(同OES):
+     - 创业板存托凭证 (OES_SUB_SECURITY_TYPE_STOCK_GEMCDR)
+     - 可交换债券 (OES_SUB_SECURITY_TYPE_BOND_EXG)
+     - 商品期货ETF (OES_SUB_SECURITY_TYPE_ETF_COMMODITY_FUTURES)
+  6. 优化异步API
+     - 为异步API增加是否优先使用大页内存来创建异步队列的配置项
+     - 为异步API的I/O线程增加追加模式输出的配置项
+     - 为异步API的I/O线程增加支持忙等待的配置选项，以使异步队列的延迟统计结果更接近实际情况
+  7. 优化时间戳精度, 将系统下的时间戳全部升级为纳秒级时间戳, 以提高时延统计的精度
+     - 时间戳字段的数据类型从 STimevalT/STimeval32T 变更为 STimespecT/STimespec32T
+     - 协议保持兼容, 但如果使用到了时间戳字段下的微秒时间(tv_usec 字段), 则需要修改为纳秒时间(tv_nsec 字段), 
+	   否则会因为时间单位的调整而导致时延计算错误
+  8. API中添加vs2015工程样例
+
+### 2. 服务端更新概要
+
+  1. fix: 更新上海增量快照的去重处理, 以处理存在时间相同但数据不同的增量快照问题
+  2. fix: 完善上海增量快照的更新处理, 防止因为数据丢失导致出现买卖盘价格倒挂
+  3. fix: 完善由上海增量快照合成的快照消息中，没有更新和携带实际的原始行情的序列号（__origTickSeq）的问题
+  4. 支持创业板注册制改革
+  5. 其它细节完善和性能优化
+
+### 3. 注意事项说明
+
+  1. 时间戳精度的修改没法完全兼容之前的API, 如果使用到了时间戳字段下的微秒时间(tv_usec 字段), 则需要升级API到最新版本
+     - 通常只有在统计延迟时才会使用到微秒时间(tv_usec)字段, 如果使用到了该字段, 则需要改为使用纳秒时间(tv_nsec)字段, 
+	   否则会因为时间单位的调整而导致时延计算错误
+     - 升级API以后, 可以通过检查有无编译错误的方式, 来检查是否使用到了 tv_usec 字段。如果没有编译错误就无需再做额外的调整
+  2. 上海市场存在更新时间相同但数据不同的Level-2快照, 与通常的预期不太相符。(频率不高, 但会存在这样的数据)
+
+
+---
+
+MDS_0.15.10.5 / 2020-04-07
 -----------------------------------
 
 ### 1. API更新概要
 
   1. 服务端兼容 v0.15.5.1 版本API, 客户可以选择不升级
   2. fix: 为API增加对SIGPIPE信号的屏蔽处理，以避免连接断开以后重复send导致程序异常退出
-  3. 重构异步API接口, 统一交易和行情的异步API定义 (不兼容之前版本的异步API)
+  3. 统一沪深期权行情的昨收盘价字段，不再通过该字段推送昨结算价（深圳期权快照中没有结算价字段）
+  4. 调整组播行情的行为, 不再强制过滤掉重复的快照行情和重建到的逐笔行情，并允许通过订阅条件进行控制
+  5. 重构异步API接口, 统一交易和行情的异步API定义 (不兼容之前版本的异步API)
      - 支持异步接收行情数据
      - 支持自动的连接管理 (自动识别异常并重建连接)
      - 支持异步数据落地和延迟统计 (可以通过配置文件进行控制, 默认为禁用)
@@ -77,7 +271,17 @@ MDS_0.15.10.3 / 2020-02-28
         - MdsAsyncApi_Start
         - MdsAsyncApi_Stop
         - MdsAsyncApi_ReleaseContext
-    - 样例代码参见: mds_api/samples/02_mds_async_api_sample.c
+     - 样例代码参见:
+         - mds_api/samples/mds_sample/01_mds_async_tcp_sample.c
+  6. 为异步API增加对UDP行情数据的本地订阅/过滤功能
+      - 订阅方式与TCP行情订阅方式相同, 相关订阅接口如下:
+         - MdsAsyncApi_SubscribeMarketData
+         - MdsAsyncApi_SubscribeByString
+         - MdsAsyncApi_SubscribeByStringAndPrefixes
+      - 对UDP行情数据的订阅和过滤功能默认不开启, 可通过接口或配置予以控制
+      - 样例代码参见:
+         - mds_api/samples/mds_sample/03_mds_async_udp_sample.c
+  7. 调整示例代码的目录位置
 
 ### 2. 服务端更新概要
 
@@ -86,7 +290,7 @@ MDS_0.15.10.3 / 2020-02-28
 
 ### 3. 注意事项说明
 
-  1. 异步接口发生了变化, 无法兼容之前版本的异步API, 请参考样例代码进行升级处理。
+  1. 异步接口发生了变化, 无法兼容之前版本的异步API, 请参考样例代码进行升级处理
 
 
 ---
@@ -135,7 +339,7 @@ MDS_0.15.9.1 / 2019-08-16
   2. 增加异步API接口, 以支持行情异步接收和处理
      - 支持异步行情接收
      - 支持自动的连接管理 (自动识别异常并重建连接)
-     - 样例代码参见: mds_api/samples/02_mds_async_api_sample.c
+     - 样例代码参见: mds_api/samples/01_mds_async_tcp_sample.c
   3. 增加对重建到的逐笔数据的订阅和推送处理
      - 行情订阅条件和订阅配置中增加 '逐笔数据的数据重建标识 tickRebuildFlag', 用于标识是否订阅重建到的逐笔数据
   4. 增加批量订阅模式, 以支持更灵活可控的行情订阅 (@see eMdsSubscribeModeT)

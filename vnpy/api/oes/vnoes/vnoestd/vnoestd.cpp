@@ -1835,6 +1835,70 @@ void TdApi::processQueryStock(Task *task)
 	if (task->task_data)
 	{
 		OesStockItemT *task_data = (OesStockItemT*)task->task_data;
+		data["securityId"] = task_data->securityId;
+		data["mktId"] = task_data->mktId;
+		data["productType"] = task_data->productType;
+		data["securityType"] = task_data->securityType;
+		data["subSecurityType"] = task_data->subSecurityType;
+		data["securityLevel"] = task_data->securityLevel;
+		data["securityRiskLevel"] = task_data->securityRiskLevel;
+		data["currType"] = task_data->currType;
+		data["qualificationClass"] = task_data->qualificationClass;
+		data["securityStatus"] = task_data->securityStatus;
+		data["securityAttribute"] = task_data->securityAttribute;
+		data["suspFlag"] = task_data->suspFlag;
+		data["temporarySuspFlag"] = task_data->temporarySuspFlag;
+		data["isDayTrading"] = task_data->isDayTrading;
+		data["isRegistration"] = task_data->isRegistration;
+		data["isCrdCollateral"] = task_data->isCrdCollateral;
+		data["isCrdMarginTradeUnderlying"] = task_data->isCrdMarginTradeUnderlying;
+		data["isCrdShortSellUnderlying"] = task_data->isCrdShortSellUnderlying;
+		data["isNoProfit"] = task_data->isNoProfit;
+		data["isWeightedVotingRights"] = task_data->isWeightedVotingRights;
+		data["isVie"] = task_data->isVie;
+		data["__STOCK_BASE_filler"] = task_data->__STOCK_BASE_filler;
+
+		data["upperLimitPrice"] = task_data->priceLimit->upperLimitPrice;
+		data["lowerLimitPrice"] = task_data->priceLimit->lowerLimitPrice;
+		data["priceTick"] = task_data->priceTick;
+		data["priceUnit"] = task_data->priceUnit;
+		data["prevClose"] = task_data->prevClose;
+		data["lmtBuyMaxQty"] = task_data->lmtBuyMaxQty;
+		data["buyOrdMaxQty"] = task_data->buyOrdMaxQty;
+		data["lmtBuyMinQty"] = task_data->lmtBuyMinQty;
+		data["buyOrdMinQty"] = task_data->buyOrdMinQty;
+		data["lmtBuyQtyUnit"] = task_data->lmtBuyQtyUnit;
+		data["buyQtyUnit"] = task_data->buyQtyUnit;
+		data["mktBuyMaxQty"] = task_data->mktBuyMaxQty;
+		data["mktBuyMinQty"] = task_data->mktBuyMinQty;
+		data["mktBuyQtyUnit"] = task_data->mktBuyQtyUnit;
+		data["lmtSellMaxQty"] = task_data->lmtSellMaxQty;
+		data["sellOrdMaxQty"] = task_data->sellOrdMaxQty;
+		data["lmtSellMinQty"] = task_data->lmtSellMinQty;
+		data["sellOrdMinQty"] = task_data->sellOrdMinQty;
+		data["lmtSellQtyUnit"] = task_data->lmtSellQtyUnit;
+		data["sellQtyUnit"] = task_data->sellQtyUnit;
+		data["mktSellMaxQty"] = task_data->mktSellMaxQty;
+		data["mktSellMinQty"] = task_data->mktSellMinQty;
+		data["mktSellQtyUnit"] = task_data->mktSellQtyUnit;
+		data["bondInterest"] = task_data->bondInterest;
+		data["parValue"] = task_data->parValue;
+		data["parPrice"] = task_data->parPrice;
+		data["repoExpirationDays"] = task_data->repoExpirationDays;
+		data["cashHoldDays"] = task_data->cashHoldDays;
+		data["auctionLimitType"] = task_data->auctionLimitType;
+		data["auctionReferPriceType"] = task_data->auctionReferPriceType;
+		data["__STOCK_BASE_filler1"] = task_data->__STOCK_BASE_filler1;
+		data["auctionUpDownRange"] = task_data->auctionUpDownRange;
+		data["listDate"] = task_data->listDate;
+		data["maturityDate"] = task_data->maturityDate;
+		data["outstandingShare"] = task_data->outstandingShare;
+		data["publicFloatShare"] = task_data->publicFloatShare;
+		data["underlyingSecurityId"] = task_data->underlyingSecurityId;
+		data["fundId"] = task_data->fundId;
+		data["securityName"] = task_data->securityName;
+		data["__STOCK_BASE_reserve1"] = task_data->__STOCK_BASE_reserve1;
+		data["__STOCK_BASE_reserve2"] = task_data->__STOCK_BASE_reserve2;
 		delete task_data;
 	}
 	dict error;
@@ -1857,6 +1921,35 @@ void TdApi::processQueryEtf(Task *task)
 	if (task->task_data)
 	{
 		OesEtfItemT *task_data = (OesEtfItemT*)task->task_data;
+		data["fundId"] = task_data->fundId;
+		data["securityId"] = task_data->securityId;
+		data["mktId"] = task_data->mktId;
+
+		data["securityType"] = task_data->securityType;
+		data["subSecurityType"] = task_data->subSecurityType;
+		data["isPublishIOPV"] = task_data->isPublishIOPV;
+
+		data["isCreationAble"] = task_data->isCreationAble;
+		data["isRedemptionAble"] = task_data->isRedemptionAble;
+		data["isDisabled"] = task_data->isDisabled;
+		data["__ETF_BASE_filler"] = task_data->__ETF_BASE_filler;
+
+		data["componentCnt"] = task_data->componentCnt;
+		data["creRdmUnit"] = task_data->creRdmUnit;
+		data["maxCashRatio"] = task_data->maxCashRatio;
+		data["nav"] = task_data->nav;
+
+		data["navPerCU"] = task_data->navPerCU;
+		data["dividendPerCU"] = task_data->dividendPerCU;
+
+		data["tradingDay"] = task_data->tradingDay;
+		data["preTradingDay"] = task_data->preTradingDay;
+		data["estiCashCmpoent"] = task_data->estiCashCmpoent;
+		data["cashCmpoent"] = task_data->cashCmpoent;
+		data["creationLimit"] = task_data->creationLimit;
+		data["redemLimit"] = task_data->redemLimit;
+		data["netCreationLimit"] = task_data->netCreationLimit;
+		data["netRedemLimit"] = task_data->netRedemLimit;
 		delete task_data;
 	}
 	dict error;
@@ -1934,6 +2027,64 @@ void TdApi::processQueryOption(Task *task)
 	if (task->task_data)
 	{
 		OesOptionItemT *task_data = (OesOptionItemT*)task->task_data;
+		data["securityId"] = task_data->securityId;
+		data["mktId"] = task_data->mktId;
+		data["productType"] = task_data->productType;
+		data["securityType"] = task_data->securityType;
+		data["subSecurityType"] = task_data->subSecurityType;
+		data["contractType"] = task_data->contractType;
+		data["exerciseType"] = task_data->exerciseType;
+		data["deliveryType"] = task_data->deliveryType;
+		data["isDayTrading"] = task_data->isDayTrading;
+		data["limitOpenFlag"] = task_data->limitOpenFlag;
+		data["suspFlag"] = task_data->suspFlag;
+		data["temporarySuspFlag"] = task_data->temporarySuspFlag;
+		data["__OPTION_BASE_filler1"] = task_data->__OPTION_BASE_filler1;
+
+		data["contractUnit"] = task_data->contractUnit;
+		data["exercisePrice"] = task_data->exercisePrice;
+		data["deliveryDate"] = task_data->deliveryDate;
+		data["deliveryMonth"] = task_data->deliveryMonth;
+
+		data["listDate"] = task_data->listDate;
+		data["lastTradeDay"] = task_data->lastTradeDay;
+		data["exerciseBeginDate"] = task_data->exerciseBeginDate;
+		data["exerciseEndDate"] = task_data->exerciseEndDate;
+
+		data["contractPosition"] = task_data->contractPosition;
+		data["prevClosePrice"] = task_data->prevClosePrice;
+		data["prevSettlPrice"] = task_data->prevSettlPrice;
+		data["underlyingClosePrice"] = task_data->underlyingClosePrice;
+
+		data["priceTick"] = task_data->priceTick;
+		data["upperLimitPrice"] = task_data->upperLimitPrice;
+		data["lowerLimitPrice"] = task_data->lowerLimitPrice;
+
+		data["buyQtyUnit"] = task_data->buyQtyUnit;
+		data["lmtBuyMaxQty"] = task_data->lmtBuyMaxQty;
+		data["lmtBuyMinQty"] = task_data->lmtBuyMinQty;
+		data["mktBuyMaxQty"] = task_data->mktBuyMaxQty;
+		data["mktBuyMinQty"] = task_data->mktBuyMinQty;
+
+		data["sellQtyUnit"] = task_data->sellQtyUnit;
+		data["lmtSellMaxQty"] = task_data->lmtSellMaxQty;
+		data["lmtSellMinQty"] = task_data->lmtSellMinQty;
+		data["mktSellMaxQty"] = task_data->mktSellMaxQty;
+		data["mktSellMinQty"] = task_data->mktSellMinQty;
+		data["sellMargin"] = task_data->sellMargin;
+		data["originalSellMargin"] = task_data->originalSellMargin;
+		data["marginRatioParam1"] = task_data->marginRatioParam1;
+		data["marginRatioParam2"] = task_data->marginRatioParam2;
+		data["increasedMarginRatio"] = task_data->increasedMarginRatio;
+		data["expireDays"] = task_data->expireDays;
+		data["contractId"] = task_data->contractId;
+		data["securityName"] = task_data->securityName;
+		data["securityStatusFlag"] = task_data->securityStatusFlag;
+		data["underlyingSecurityId"] = task_data->underlyingSecurityId;
+		data["underlyingMktId"] = task_data->underlyingMktId;
+		data["underlyingSecurityType"] = task_data->underlyingSecurityType;
+		data["__OPTION_BASE_filler3"] = task_data->__OPTION_BASE_filler3;
+		data["__OPTION_BASE_reserve"] = task_data->__OPTION_BASE_reserve;
 		delete task_data;
 	}
 	dict error;
@@ -2215,11 +2366,13 @@ void TdApi::setThreadSubscribeEnvId(int subscribeEnvId)
 	this->api->SetThreadSubscribeEnvId(subscribeEnvId);
 }
 
-void TdApi::init()
+bool TdApi::init()
 {
 	this->active = true;
 	this->task_thread = thread(&TdApi::processTask, this);
-	this->api->Start();
+	int32 LastClSeqNo;
+	bool i = this->api->Start(&LastClSeqNo, 0);
+	return i;
 }
 
 int TdApi::exit()
@@ -2232,7 +2385,7 @@ int TdApi::exit()
 	this->api->Stop();
 	this->api = NULL;
 	return 1;
-};
+}
 
 int TdApi::sendOrder(const dict &req)
 {

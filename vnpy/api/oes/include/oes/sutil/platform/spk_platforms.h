@@ -76,6 +76,7 @@
 #       include <sys/ipc.h>
 #       include <sys/sem.h>
 #       include <sys/shm.h>
+#       include <sys/mman.h>
 #       include <netinet/tcp.h>
 #       include <poll.h>
 #   else
@@ -198,6 +199,12 @@ extern "C" {
 #   define SPK_IS_EPIPE(e)                  (__SPlatform_IsErrEpipe((e)))
 #   define SPK_IS_EINTR(e)                  (__SPlatform_IsErrEintr((e)))
 #   define SPK_IS_EBADMSG(e)                (__SPlatform_IsErrEbadmsg((e)))
+#   define SPK_IS_EINVAL(e)                 (__SPlatform_IsErrEinval((e)))
+#   define SPK_IS_ERANGE(e)                 (__SPlatform_IsErrErange((e)))
+#   define SPK_IS_ENOSPC(e)                 (__SPlatform_IsErrEnospc((e)))
+#   define SPK_IS_ENOENT(e)                 (__SPlatform_IsErrEnoent((e)))
+#   define SPK_IS_ENODATA(e)                (__SPlatform_IsErrEnodata((e)))
+#   define SPK_IS_EEXIST(e)                 (__SPlatform_IsErrEexist((e)))
 
 #   define SPK_IS_NEG_EAGAIN(e)             (__SPlatform_IsNegEagain((e)))
 #   define SPK_IS_NEG_ECONNABORTED(e)       (__SPlatform_IsNegEconnaborted((e)))
@@ -206,6 +213,12 @@ extern "C" {
 #   define SPK_IS_NEG_EPIPE(e)              (__SPlatform_IsNegEpipe((e)))
 #   define SPK_IS_NEG_EINTR(e)              (__SPlatform_IsNegEintr((e)))
 #   define SPK_IS_NEG_EBADMSG(e)            (__SPlatform_IsNegEbadmsg((e)))
+#   define SPK_IS_NEG_EINVAL(e)             (__SPlatform_IsNegEinval((e)))
+#   define SPK_IS_NEG_ERANGE(e)             (__SPlatform_IsNegErange((e)))
+#   define SPK_IS_NEG_ENOSPC(e)             (__SPlatform_IsNegEnospc((e)))
+#   define SPK_IS_NEG_ENOENT(e)             (__SPlatform_IsNegEnoent((e)))
+#   define SPK_IS_NEG_ENODATA(e)            (__SPlatform_IsNegEnodata((e)))
+#   define SPK_IS_NEG_EEXIST(e)             (__SPlatform_IsNegEexist((e)))
 
 #else
 
@@ -220,6 +233,12 @@ extern "C" {
 #   define SPK_IS_EPIPE(e)                  ((e) == EPIPE)
 #   define SPK_IS_EINTR(e)                  ((e) == EINTR)
 #   define SPK_IS_EBADMSG(e)                ((e) == EBADMSG)
+#   define SPK_IS_EINVAL(e)                 ((e) == EINVAL)
+#   define SPK_IS_ERANGE(e)                 ((e) == ERANGE)
+#   define SPK_IS_ENOSPC(e)                 ((e) == ENOSPC)
+#   define SPK_IS_ENOENT(e)                 ((e) == ENOENT)
+#   define SPK_IS_ENODATA(e)                ((e) == ENODATA)
+#   define SPK_IS_EEXIST(e)                 ((e) == EEXIST)
 
 #   define SPK_IS_NEG_EAGAIN(e)             (_SPK_IS_ERRNO_EAGAIN(-(e)))
 #   define SPK_IS_NEG_ECONNABORTED(e)       (_SPK_IS_ERRNO_ECONNABORTED(-(e)))
@@ -228,6 +247,12 @@ extern "C" {
 #   define SPK_IS_NEG_EPIPE(e)              ((e) == -(EPIPE))
 #   define SPK_IS_NEG_EINTR(e)              ((e) == -(EINTR))
 #   define SPK_IS_NEG_EBADMSG(e)            ((e) == -(EBADMSG))
+#   define SPK_IS_NEG_EINVAL(e)             ((e) == -(EINVAL))
+#   define SPK_IS_NEG_ERANGE(e)             ((e) == -(ERANGE))
+#   define SPK_IS_NEG_ENOSPC(e)             ((e) == -(ENOSPC))
+#   define SPK_IS_NEG_ENOENT(e)             ((e) == -(ENOENT))
+#   define SPK_IS_NEG_ENODATA(e)            ((e) == -(ENODATA))
+#   define SPK_IS_NEG_EEXIST(e)             ((e) == -(EEXIST))
 
 #endif
 
@@ -239,6 +264,12 @@ extern "C" {
 #define SPK_IS_ERRNO_EPIPE()                (SPK_IS_EPIPE(SPK_GET_ERRNO()))
 #define SPK_IS_ERRNO_EINTR()                (SPK_IS_EINTR(SPK_GET_ERRNO()))
 #define SPK_IS_ERRNO_EBADMSG()              (SPK_IS_EBADMSG(SPK_GET_ERRNO()))
+#define SPK_IS_ERRNO_EINVAL()               (SPK_IS_EINVAL(SPK_GET_ERRNO()))
+#define SPK_IS_ERRNO_ERANGE()               (SPK_IS_ERANGE(SPK_GET_ERRNO()))
+#define SPK_IS_ERRNO_ENOSPC()               (SPK_IS_ENOSPC(SPK_GET_ERRNO()))
+#define SPK_IS_ERRNO_ENOENT()               (SPK_IS_ENOENT(SPK_GET_ERRNO()))
+#define SPK_IS_ERRNO_ENODATA()              (SPK_IS_ENODATA(SPK_GET_ERRNO()))
+#define SPK_IS_ERRNO_EEXIST()               (SPK_IS_EEXIST(SPK_GET_ERRNO()))
 /* -------------------------           */
 
 
@@ -269,6 +300,18 @@ BOOL        __SPlatform_IsErrEpipe(int32 err);
 BOOL        __SPlatform_IsErrEintr(int32 err);
 /* 返回错误号是否是 EBADMSG */
 BOOL        __SPlatform_IsErrEbadmsg(int32 err);
+/* 返回错误号是否是 EINVAL */
+BOOL        __SPlatform_IsErrEinval(int32 err);
+/* 返回错误号是否是 ERANGE */
+BOOL        __SPlatform_IsErrErange(int32 err);
+/* 返回错误号是否是 ENOSPC */
+BOOL        __SPlatform_IsErrEnospc(int32 err);
+/* 返回错误号是否是 ENOENT */
+BOOL        __SPlatform_IsErrEnoent(int32 err);
+/* 返回错误号是否是 ENODATA */
+BOOL        __SPlatform_IsErrEnodata(int32 err);
+/* 返回错误号是否是 EEXIST */
+BOOL        __SPlatform_IsErrEexist(int32 err);
 
 /* 返回错误号是否是负的 EAGAIN */
 BOOL        __SPlatform_IsNegEagain(int32 err);
@@ -284,6 +327,18 @@ BOOL        __SPlatform_IsNegEpipe(int32 err);
 BOOL        __SPlatform_IsNegEintr(int32 err);
 /* 返回错误号是否是负的 EBADMSG */
 BOOL        __SPlatform_IsNegEbadmsg(int32 err);
+/* 返回错误号是否是负的 EINVAL */
+BOOL        __SPlatform_IsNegEinval(int32 err);
+/* 返回错误号是否是负的 ERANGE */
+BOOL        __SPlatform_IsNegErange(int32 err);
+/* 返回错误号是否是负的 ENOSPC */
+BOOL        __SPlatform_IsNegEnospc(int32 err);
+/* 返回错误号是否是负的 ENOENT */
+BOOL        __SPlatform_IsNegEnoent(int32 err);
+/* 返回错误号是否是负的 ENODATA */
+BOOL        __SPlatform_IsNegEnodata(int32 err);
+/* 返回错误号是否是负的 EEXIST */
+BOOL        __SPlatform_IsNegEexist(int32 err);
 /* -------------------------           */
 
 

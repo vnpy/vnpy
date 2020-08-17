@@ -150,6 +150,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
+      <DisableSpecificWarnings>4819</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -157,17 +158,22 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\Users\yazhang\Documents\GitHub\vnpy\vnpy\api\oes\libs;C:\vnstudio\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\libs;C:\vnstudio\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>oes_api.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\..\..\..\Users\yazhang\Documents\GitHub\vnpy\vnpy\api\oes\vnoes\vnoesmd\vnoesmd.h" />
     <ClInclude Include="..\..\include\oes\mds_api\mds_api.h" />
+    <ClInclude Include="..\..\include\oes\mds_api\mds_async_api.h" />
+    <ClInclude Include="..\..\include\oes\mds_global\mds_mkt_packets.h" />
+    <ClInclude Include="..\..\include\oes\mds_global\mds_qry_packets.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="mds_client_sample.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\..\..\..\Users\yazhang\Documents\GitHub\vnpy\vnpy\api\oes\vnoes\vnoesmd\vnoesmd.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="mds_client_sample.cpp" />
     <ClCompile Include="pch.cpp">

@@ -37,16 +37,28 @@
  *              - 1274, 股东账户没有交易沪伦通存托凭证的权限 (OESERR_NO_HLTCDR_PERM)
  * @version 0.15.8_RC3  2019/01/14
  *          - 调整错误描述
- *              - 1007, 非服务开放时间（OESERR_NOT_TRADING_TIME）
- *              - 1022, 尚不支持或尚未开通此业务（OESERR_NOT_SUPPORT）
+ *              - 1007, 非服务开放时间 (OESERR_NOT_TRADING_TIME)
+ *              - 1022, 尚不支持或尚未开通此业务 (OESERR_NOT_SUPPORT)
  * @version 0.15.9      2019/03/12
  *          - 新增错误码定义
- *              - 1275, 股东账户没有交易科创板的权限（OESERR_NO_KSH_PERM）
- *              - 1036, 未通过黑白名单检查（OESERR_WBLIST_CHECK_FAILURE）
+ *              - 1275, 股东账户没有交易科创板的权限 (OESERR_NO_KSH_PERM)
+ *              - 1036, 未通过黑白名单检查 (OESERR_WBLIST_CHECK_FAILURE)
  *              - 1037, 集群编号不匹配 (OESERR_SET_NUM_MISMATCH)
  *              - 1038, 无此操作权限 (OESERR_NO_PERM)
  *              - 1276, 个股持仓比例超过限制 (OESERR_CUST_STK_POSITION_LIMIT)
  *              - 1277, 超出营业部委托流水号的有效范围 (OESERR_OUTOF_BRANCH_SEQ_RANGE)
+ * @version 0.15.11     2020/05/29
+ *          - 删除错误码定义
+ *              - 1242, 出入金笔数超过限制 (OESERR_FUND_TRSF_CNT_LIMIT)
+ *          - 调整错误描述
+ *              - 1249, 不支持市价委托或账户无市价委托的交易权限 (OESERR_NO_MARKET_ORDER_PERM)
+ *              - 1250, 股东账户没有交易创业板非注册制证券的权限 (OESERR_NO_GEM_PERM)
+ *              - 1258, 股东账户没有交易货币ETF的权限 (OESERR_NO_CURRENCY_ETF_PERM)
+ *          - 新增错误码定义
+ *              - 1285, 股东账户没有交易债券ETF的权限 (OESERR_NO_BOND_ETF_PERM)
+ *              - 1286, 股东账户没有交易黄金ETF的权限 (OESERR_NO_GOLD_ETF_PERM)
+ *              - 1287, 股东账户没有交易商品期货ETF的权限 (OESERR_NO_COMMODITY_FUTURES_ETF_PERM)
+ *              - 1288, 股东账户没有交易创业板注册制证券的权限 (OESERR_NO_GEM_REGISTRATION_PERM)
  *
  * @version 0.16        2019/01/18
  *          - 新增错误码定义
@@ -76,8 +88,11 @@
  *              - 1347, 禁止标的解锁 (OESERR_UNDERLYING_UNFREEZE_LIMIT)
  *              - 1348, 禁止期权行权 (OESERR_OPTION_EXERCISE_LIMIT)
  *              - 1349, 非行权日 (OESERR_ORDER_NOT_EXEC_DATE)
- * @version 0.16.0.3    2020/01/XX
+ * @version 0.16.0.3    2020/01/17
  *          - 删除错误码定义
+ *              - 1284, 投资者未进行程序化交易报备 (OESERR_INVESTOR_NOT_FILING)
+ * @version 0.16.0.5    2020/04/17
+ *          - 新增错误码定义
  *              - 1284, 投资者未进行程序化交易报备 (OESERR_INVESTOR_NOT_FILING)
  * @since   2015/07/30
  */
@@ -147,7 +162,7 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_CONFLICT_REQ_CONDITION           (&__ERRS_oesApiErrors[19])
 /** 1021, 非法的客户端IP/MAC地址格式 */
 #define OESERR_ILLEGAL_IP_MAC_FORMAT            (&__ERRS_oesApiErrors[20])
-/** 1022, 尚不支持此业务 */
+/** 1022, 尚不支持或尚未开通此业务 */
 #define OESERR_NOT_SUPPORT                      (&__ERRS_oesApiErrors[21])
 /** 1023, 非法的客户端环境号 */
 #define OESERR_ILLEGAL_CLIENT_ENV_ID            (&__ERRS_oesApiErrors[22])
@@ -259,8 +274,8 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_ORDER_CASH_QUOTA                 (&__ERRS_oesApiErrors[60 + 28])
 /** 1230, 超过了ETF最大现金替代比例 */
 #define OESERR_ORDER_ETF_CASH_RATIO             (&__ERRS_oesApiErrors[60 + 29])
-/** 1231, 未定义 */
-#define OESERR_UNDEFINE                         (&__ERRS_oesApiErrors[60 + 30])
+/** 1231, 未定义1 */
+#define OESERR_UNDEFINE1                        (&__ERRS_oesApiErrors[60 + 30])
 /** 1232, 证券停牌 */
 #define OESERR_ORDER_INSTR_SUSP                 (&__ERRS_oesApiErrors[60 + 31])
 /** 1233, 合约限制开仓 */
@@ -281,8 +296,8 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_SUBSCRIPTION_DUPLICATE           (&__ERRS_oesApiErrors[60 + 39])
 /** 1241, 认购委托份数超过认购额度 */
 #define OESERR_SUBSCRIPTION_QUOTA_EXCEED        (&__ERRS_oesApiErrors[60 + 40])
-/** 1242, 出入金笔数超过限制 */
-#define OESERR_FUND_TRSF_CNT_LIMIT              (&__ERRS_oesApiErrors[60 + 41])
+/** 1242, 未定义2 */
+#define OESERR_UNDEFINE2                        (&__ERRS_oesApiErrors[60 + 41])
 /** 1243, 禁止同时做多笔出入金 */
 #define OESERR_FORBID_CONCURRENT_FUND_TRSF      (&__ERRS_oesApiErrors[60 + 42])
 /** 1244, 非法的新股配号、中签记录类型 */
@@ -295,9 +310,9 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_PLEDGED_REPO_LIMIT               (&__ERRS_oesApiErrors[60 + 46])
 /** 1248, 限制股东账户进行新股认购交易 */
 #define OESERR_SUBSCRIPTION_LIMIT               (&__ERRS_oesApiErrors[60 + 47])
-/** 1249, 股东账户没有市价委托交易的权限 */
+/** 1249, 不支持市价委托或账户无市价委托的交易权限 */
 #define OESERR_NO_MARKET_ORDER_PERM             (&__ERRS_oesApiErrors[60 + 48])
-/** 1250, 股东账户没有交易创业板证券的权限 */
+/** 1250, 股东账户没有交易创业板非注册制证券的权限 */
 #define OESERR_NO_GEM_PERM                      (&__ERRS_oesApiErrors[60 + 49])
 /** 1251, 股东账户没有交易分级基金的权限 */
 #define OESERR_NO_STRUCTURED_FUND_PERM          (&__ERRS_oesApiErrors[60 + 50])
@@ -313,7 +328,7 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_NO_SINGLE_MARKET_ETF_PERM        (&__ERRS_oesApiErrors[60 + 55])
 /** 1257, 股东账户没有交易跨市场ETF的权限 */
 #define OESERR_NO_CROSS_MARKET_ETF_PERM         (&__ERRS_oesApiErrors[60 + 56])
-/** 1258, 股东账户没有交易货币基金ETF的权限 */
+/** 1258, 股东账户没有交易货币ETF的权限 */
 #define OESERR_NO_CURRENCY_ETF_PERM             (&__ERRS_oesApiErrors[60 + 57])
 /** 1259, 股东账户没有交易跨境ETF的权限 */
 #define OESERR_NO_CROSS_BORDER_ETF_PERM         (&__ERRS_oesApiErrors[60 + 58])
@@ -365,6 +380,16 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_INVESTOR_DAILY_TRADING_LIMIT     (&__ERRS_oesApiErrors[60 + 81])
 /** 1283, 委托数量超出报备的单笔委托数量限制 */
 #define OESERR_INVESTOR_ORDER_QTY_LIMIT         (&__ERRS_oesApiErrors[60 + 82])
+/** 1284, 投资者未进行程序化交易报备 */
+#define OESERR_INVESTOR_NOT_FILING              (&__ERRS_oesApiErrors[60 + 83])
+/** 1285, 股东账户没有交易债券ETF的权限 */
+#define OESERR_NO_BOND_ETF_PERM                 (&__ERRS_oesApiErrors[60 + 84])
+/** 1286, 股东账户没有交易黄金ETF的权限 */
+#define OESERR_NO_GOLD_ETF_PERM                 (&__ERRS_oesApiErrors[60 + 85])
+/** 1287, 股东账户没有交易商品期货ETF的权限 */
+#define OESERR_NO_COMMODITY_FUTURES_ETF_PERM    (&__ERRS_oesApiErrors[60 + 86])
+/** 1288, 股东账户没有交易创业板注册制证券的权限 */
+#define OESERR_NO_GEM_REGISTRATION_PERM         (&__ERRS_oesApiErrors[60 + 87])
 /* -------------------------           */
 
 

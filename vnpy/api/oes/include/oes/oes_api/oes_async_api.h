@@ -25,6 +25,11 @@
  *              - 支持自动的连接管理 (自动识别异常并重建连接)
  *          - 样例代码参见:
  *              - include/oes_api/samples/c_sample/03_oes_async_api_sample.c
+ * @version 0.15.11     2020/05/29
+ *          - 增加辅助的异步API接口
+ *              - OesAsyncApi_SendReportSynchronization, 发送回报同步消息 (仅适用于回报通道)
+ *              - OesAsyncApi_IsAllTerminated, 返回异步API相关的所有线程是否都已经安全退出
+ *
  * @since   2019/11/17
  */
 
@@ -149,6 +154,40 @@ typedef SEndpointChannelT           OesAsyncApiChannelT;
 /* -------------------------           */
 
 
+/**
+ * OES异步API的上下文环境的创建参数 (仅做为 CreateContext 接口的参数使用)
+ */
+typedef struct _OesAsyncApiContextParams {
+    /** 异步队列的大小 */
+    int32               asyncQueueSize;
+
+    /** 是否优先使用大页内存来创建异步队列 */
+    uint8               isHugepageAble;
+
+    /** 是否启动独立的回调线程来执行回调处理 (否则将直接在通信线程下执行回调处理) */
+    uint8               isAsyncCallbackAble;
+
+    /** 是否使用忙等待模式 (TRUE:延迟更低但CPU会被100%占用; FALSE:延迟和CPU使用率相对均衡) */
+    uint8               isBusyPollAble;
+
+    /** 是否在启动前预创建并校验所有的连接 */
+    uint8               isPreconnectAble;
+
+    /** 为保证64位对齐而设 */
+    uint8               __filler[8];
+} OesAsyncApiContextParamsT;
+
+
+/* 结构体初始化值定义 */
+#define NULLOBJ_OESAPI_ASYNC_CONTEXT_PARAMS     \
+        0, 0, 0, 0, 0, {0}
+
+/* 结构体的默认值定义 */
+#define DEFAULT_OESAPI_ASYNC_CONTEXT_PARAMS     \
+        -1, TRUE, FALSE, TRUE, TRUE, {0}
+/* -------------------------           */
+
+
 /* ===================================================================
  * 回调函数的函数原型定义
  * =================================================================== */
@@ -199,13 +238,6 @@ typedef F_OESAPI_ON_RPT_MSG_T       F_OESAPI_ASYNC_ON_MSG_T;
  *
  * <p> 线程说明:
  * - OnMsg/OnConnect/OnDisconnect 回调函数均运行在异步API线程下
- * </p>
- *
- * <p> @note 注意:
- * - 在 OnConnect 回调函数中, 不能使用 OesAsyncApi_SendHeartbeat 等异步API的消息发送接
- *   口, 仍需要使用对应的 OesApi_SendHeartbeat 等同步API的接口, 因为此时连接状态尚不是已
- *   就绪
- * - 只有当 OnConnect 回调函数执行成功以后, 连接状态才是已就绪
  * </p>
  *
  * @param   pAsyncChannel       异步API的连接通道信息
@@ -309,6 +341,23 @@ OesAsyncApiContextT *
                 int32 asyncQueueSize);
 
 /**
+ * 创建异步API的运行时环境 (仅通过函数参数指定必要的配置参数)
+ *
+ * @param   pLoggerCfgFile      日志配置文件路径
+ *                              - 为空则忽略, 不初始化日志记录器
+ * @param   pLoggerSection      日志记录器的配置区段名称 (e.g. "log")
+ *                              - 为空则使用默认值
+ * @param   pContextParams      上下文环境的创建参数
+ *                              - 为空则使用默认值
+ * @return  非空, 异步API的运行时环境指针; NULL, 失败
+ */
+OesAsyncApiContextT *
+        OesAsyncApi_CreateContextSimple2(
+                const char *pLoggerCfgFile,
+                const char *pLoggerSection,
+                const OesAsyncApiContextParamsT *pContextParams);
+
+/**
  * 释放异步API的运行时环境
  *
  * @param   pAsyncContext       异步API的运行时环境指针
@@ -334,12 +383,21 @@ void    OesAsyncApi_Stop(
                 OesAsyncApiContextT *pAsyncContext);
 
 /**
- * 返回异步API线程是否正在运行过程中
+ * 返回异步API的通信线程是否正在运行过程中
  *
  * @param   pAsyncContext       异步API的运行时环境指针
  * @return  TRUE 正在运行过程中; FALSE 已终止或尚未运行
  */
 BOOL    OesAsyncApi_IsRunning(
+                OesAsyncApiContextT *pAsyncContext);
+
+/**
+ * 返回异步API相关的所有线程是否都已经安全退出 (或尚未运行)
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @return  TRUE 所有线程均已退出; FALSE 尚未全部退出
+ */
+BOOL    OesAsyncApi_IsAllTerminated(
                 OesAsyncApiContextT *pAsyncContext);
 
 /**
@@ -405,8 +463,8 @@ OesAsyncApiChannelT *
                 OesAsyncApiContextT *pAsyncContext,
                 eOesApiChannelTypeT channelType,
                 const char *pChannelTag,
-                OesApiRemoteCfgT *pRemoteCfg,
-                OesApiSubscribeInfoT *pSubscribeCfg,
+                const OesApiRemoteCfgT *pRemoteCfg,
+                const OesApiSubscribeInfoT *pSubscribeCfg,
                 F_OESAPI_ASYNC_ON_MSG_T fnOnMsg,
                 void *pOnMsgParams,
                 F_OESAPI_ASYNC_ON_CONNECT_T fnOnConnect,
@@ -714,15 +772,13 @@ int32   OesAsyncApi_SendFundTransferReq(
                 const OesFundTrsfReqT *pFundTrsfReq);
 
 /**
- * 发送密码修改请求 (修改客户端登录密码)
- * 密码修改请求将通过委托通道发送到OES服务器, 并将采用同步请求/应答的方式直接返回处理结果
+ * 异步发送密码修改请求 (修改客户端登录密码)
+ * 密码修改请求将通过委托通道发送到OES服务器, 仅发送请求不接收应答消息
  *
  * @param       pAsyncOrdChannel
  *                              异步API的委托连接通道
  * @param[in]   pChangePasswordReq
  *                              待发送的密码修改请求
- * @param[out]  pOutChangePasswordRsp
- *                              用于输出测试请求应答的缓存区
  * @retval      0               成功
  * @retval      <0              API调用失败 (负的错误号)
  * @retval      >0              服务端业务处理失败 (OES错误号)
@@ -733,8 +789,7 @@ int32   OesAsyncApi_SendFundTransferReq(
  */
 int32   OesAsyncApi_SendChangePasswordReq(
                 OesAsyncApiChannelT *pAsyncOrdChannel,
-                const OesChangePasswordReqT *pChangePasswordReq,
-                OesChangePasswordRspT *pOutChangePasswordRsp);
+                const OesChangePasswordReqT *pChangePasswordReq);
 /* -------------------------           */
 
 
@@ -773,6 +828,40 @@ int32   OesAsyncApi_SendOptSettlementConfirmReq(
 /* ===================================================================
  * 会话管理接口
  * =================================================================== */
+
+/**
+ * 发送回报同步消息 (仅适用于回报通道)
+ *
+ * @param   pAsyncRptChannel    异步API的回报连接通道
+ * @param   subscribeEnvId      待订阅的客户端环境号
+ *                              - 大于0, 区分环境号, 仅订阅环境号对应的回报数据
+ *                              - 等于0, 不区分环境号, 订阅该客户下的所有回报数据
+ *                              - 小于0, 复用添加通道时指定的默认配置
+ *                                  - @note 此处与同步API不同. 小于0时, 同步API为不区
+ *                                    分环境号
+ * @param   subscribeRptTypes   待订阅的回报消息种类 (e.g.
+ *                              OES_SUB_RPT_TYPE_ORDER_INSERT
+ *                              | OES_SUB_RPT_TYPE_ORDER_REPORT
+ *                              | OES_SUB_RPT_TYPE_TRADE_REPORT)
+ *                              @see eOesSubscribeReportTypeT
+ *                              - 小于0, 复用添加通道时指定的默认配置
+ *                                  - @note 此处与同步API不同. 小于0时, 同步API为订阅
+ *                                    所有类型的消息
+ * @param   lastRptSeqNum       客户端最后接收到的回报数据的回报编号
+ *                              - 等于0, 从头开始推送回报数据
+ *                              - 大于0, 从指定的回报编号开始推送回报数据
+ *                              - 小于0, 从上次接收到的断点位置开始
+ *                                  - @note 此处与同步API不同. 小于0时, 同步API为从最
+ *                                    新的数据开始推送回报数据
+ *                                  - 如果明确需要只从最新的数据开始推送回报数据, 可以指
+ *                                    定一个特别大的数 (例如 INT_MAX)
+ * @return  TRUE 成功; FALSE 失败
+ */
+BOOL    OesAsyncApi_SendReportSynchronization(
+                OesAsyncApiChannelT *pAsyncRptChannel,
+                int8 subscribeEnvId,
+                int32 subscribeRptTypes,
+                int64 lastRptSeqNum);
 
 /**
  * 发送心跳消息
@@ -1087,7 +1176,8 @@ __OesAsyncApi_IsRunning(OesAsyncApiContextT *pAsyncContext) {
 static __inline BOOL
 __OesAsyncApi_IsChannelConnected(OesAsyncApiChannelT *pAsyncChannel) {
     return pAsyncChannel->pSessionInfo
-            && *((volatile uint8 *) &pAsyncChannel->isConnected);
+            && (*((volatile uint8 *) &pAsyncChannel->isConnected)
+                    >= SPK_ENDPOINT_CHANNEL_STATUS_READY);
 }
 /* -------------------------           */
 

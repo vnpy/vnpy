@@ -19,12 +19,12 @@ using namespace Quant360;
  * 内部函数声明
  * =================================================================== */
 
- /* 连接或重新连接完成后的回调函数 (适用于基于异步API的委托通道和回报通道) */
+ /* 连接或重新连接完成后的回调函数 (适用于基于异步API的TCP通道和UDP通道) */
 static int32    _MdsClientApi_OnAsyncConnect(
 	MdsAsyncApiChannelT *pAsyncChannel,
 	void *pCallbackParams);
 
-/* 连接断开后的回调函数 (适用于基于异步API的委托通道和回报通道) */
+/* 连接断开后的回调函数 (适用于基于异步API的TCP通道和UDP通道) */
 static int32    _MdsClientApi_OnAsyncDisconnect(
 	MdsAsyncApiChannelT *pAsyncChannel,
 	void *pCallbackParams);
@@ -40,14 +40,14 @@ static int32    _MdsClientApi_OnQueryDisconnect(
 	MdsClientSpi *pSpi,
 	const MdsApiRemoteCfgT *pQryChannelCfg);
 
-/* 对接收到的回报消息进行处理的回调函数 */
-static int32    _MdsClientApi_HandleReportMsg(
-	MdsApiSessionInfoT *pRptChannel,
-	SMsgHeadT *pMsgHead,
-	void *pMsgBody,
-	void *pCallbackParams);
+///* 对接收到的回报消息进行处理的回调函数 */
+//static int32    _MdsClientApi_HandleReportMsg(
+//	MdsApiSessionInfoT *pTcpChannel,
+//	SMsgHeadT *pMsgHead,
+//	void *pMsgBody,
+//	void *pCallbackParams);
 
-/* 对接收到的应答消息进行处理的回调函数 (适用于委托通道) */
+/* 对接收到的应答消息进行处理的回调函数 (适用于TCP通道) */
 static int32    _MdsClientApi_HandleOrderChannelRsp(
 	MdsApiSessionInfoT *pSessionInfo,
 	SMsgHeadT *pMsgHead,
@@ -71,8 +71,7 @@ MdsClientApi::MdsClientApi() {
 
 	_pSpi = NULL;
 	_pAsyncContext = NULL;
-	_pDefaultOrdChannel = NULL;
-	_pDefaultRptChannel = NULL;
+	_pDefaultTcpChannel = NULL;
 	_pQryChannel = NULL;
 
 	memset(&_apiCfg, 0, sizeof(MdsApiClientCfgT));
@@ -167,8 +166,7 @@ MdsClientApi::LoadCfg(const char *pCfgFile) {
 BOOL
 MdsClientApi::LoadCfg(MdsApiClientCfgT *pApiCfg, const char *pCfgFile) {
 	MdsAsyncApiContextT     *pAsyncContext = (MdsAsyncApiContextT *)NULL;
-	MdsAsyncApiChannelT     *pOrdChannel = (MdsAsyncApiChannelT *)NULL;
-	MdsAsyncApiChannelT     *pRptChannel = (MdsAsyncApiChannelT *)NULL;
+	MdsAsyncApiChannelT     *pTcpChannel = (MdsAsyncApiChannelT *)NULL;
 
 	if (_isInitialized || _pAsyncContext) {
 		SLOG_ERROR("已初始化过, 不能重复初始化! " \
@@ -195,49 +193,33 @@ MdsClientApi::LoadCfg(MdsApiClientCfgT *pApiCfg, const char *pCfgFile) {
 	}
 
 	/* 创建异步API的运行时环境 (初始化日志, 创建上下文环境) */
-	pAsyncContext = MdsAsyncApiContextT(pCfgFile);
+	pAsyncContext = MdsAsyncApi_CreateContext(pCfgFile);
 	if (!pAsyncContext) {
 		SLOG_ERROR("创建异步API的运行时环境失败!");
 		return FALSE;
 	}
 
-	/* 添加初始的委托通道 */
-	if (_apiCfg.ordChannelCfg.addrCnt > 0) {
-		pOrdChannel = MdsAsyncApi_AddChannel(
-			pAsyncContext, MDSAPI_CHANNEL_TYPE_ORDER,
-			MdsAPI_CFG_DEFAULT_KEY_ORD_ADDR, &_apiCfg.ordChannelCfg,
-			(OesApiSubscribeInfoT *)NULL,
+	/* 添加初始的TCP通道 */
+	if (_apiCfg.tcpChannelCfg.addrCnt > 0) {
+		pTcpChannel = MdsAsyncApi_AddChannel(
+			pAsyncContext,
+			MDSAPI_CFG_DEFAULT_KEY_TCP_ADDR,
+			&_apiCfg.tcpChannelCfg,
+			(MdsApiSubscribeInfoT *)NULL,
 			_MdsClientApi_HandleOrderChannelRsp, _pSpi,
 			_MdsClientApi_OnAsyncConnect, _pSpi,
 			_MdsClientApi_OnAsyncDisconnect, _pSpi);
-		if (__spk_unlikely(!pOrdChannel)) {
-			SLOG_ERROR("添加委托通道失败! channelTag[%s]",
-				MdsAPI_CFG_DEFAULT_KEY_ORD_ADDR);
+		if (__spk_unlikely(!pTcpChannel)) {
+			SLOG_ERROR("添加TCP通道失败! channelTag[%s]",
+				MDSAPI_CFG_DEFAULT_KEY_TCP_ADDR);
 			MdsAsyncApi_ReleaseContext(pAsyncContext);
 			return FALSE;
 		}
 	}
 
-	/* 添加初始的回报通道 */
-	if (_apiCfg.rptChannelCfg.addrCnt > 0) {
-		pRptChannel = MdsAsyncApi_AddChannel(
-			pAsyncContext, MDSAPI_CHANNEL_TYPE_REPORT,
-			MdsAPI_CFG_DEFAULT_KEY_RPT_ADDR, &_apiCfg.rptChannelCfg,
-			&_apiCfg.subscribeInfo,
-			_MdsClientApi_HandleReportMsg, _pSpi,
-			_MdsClientApi_OnAsyncConnect, _pSpi,
-			_MdsClientApi_OnAsyncDisconnect, _pSpi);
-		if (__spk_unlikely(!pRptChannel)) {
-			SLOG_ERROR("添加回报通道失败! channelTag[%s]",
-				MdsAPI_CFG_DEFAULT_KEY_RPT_ADDR);
-			MdsAsyncApi_ReleaseContext(pAsyncContext);
-			return FALSE;
-		}
-	}
 
 	_pAsyncContext = pAsyncContext;
-	_pDefaultOrdChannel = pOrdChannel;
-	_pDefaultRptChannel = pRptChannel;
+	_pDefaultTcpChannel = pTcpChannel;
 	_isInitialized = TRUE;
 	return TRUE;
 }
@@ -388,7 +370,7 @@ MdsClientApi::Start(int32 *pLastClSeqNo, int64 lastRptSeqNum) {
 		SLOG_INFO("未配置查询通道, 将忽略查询通道并继续执行!");
 	}
 
-	/* 启动异步API线程 (连接委托通道和回报通道) */
+	/* 启动异步API线程 (连接TCP通道和UDP通道) */
 	if (MdsAsyncApi_GetChannelCount(_pAsyncContext) > 0) {
 		MdsAsyncApi_SetPreconnectAble(_pAsyncContext, TRUE);
 
@@ -402,7 +384,7 @@ MdsClientApi::Start(int32 *pLastClSeqNo, int64 lastRptSeqNum) {
 		}
 	}
 	else {
-		SLOG_INFO("未配置委托通道或回报通道, 将仅连接查询通道, 无需启动异步API线程!");
+		SLOG_INFO("未配置TCP通道或UDP通道, 将仅连接查询通道, 无需启动异步API线程!");
 	}
 
 	SLOG_INFO("启动交易接口实例...");
@@ -443,15 +425,15 @@ MdsClientApi::Stop(void) {
  * =================================================================== */
 
  /**
-  * 连接或重新连接完成后的回调函数 (适用于基于异步API的委托通道和回报通道)
+  * 连接或重新连接完成后的回调函数 (适用于基于异步API的TCP通道和UDP通道)
   *
   * <p> 回调函数说明:
-  * - 对于回报通道, 需要通过该回调函数完成回报订阅操作。若函数指针为空, 则会使用通道配置中默认的
+  * - 对于UDP通道, 需要通过该回调函数完成回报订阅操作。若函数指针为空, 则会使用通道配置中默认的
   *   回报订阅参数进行订阅。若函数指针不为空, 但未订阅回报, 90秒以后服务器端会强制断开连接
   * - 若回调函数返回小于0的数, 则异步线程将中止运行
   * </p>
   *
-  * <p> @note 关于上一次会话的最大请求数据编号 (针对委托通道)
+  * <p> @note 关于上一次会话的最大请求数据编号 (针对TCP通道)
   * - 将通过 lastOutMsgSeq 字段存储上一次会话实际已发送的出向消息序号, 即: 服务器端最
   *   后接收到的客户委托流水号(clSeqNo)
   * - 该值对应的是服务器端最后接收到并校验通过的(同一环境号下的)客户委托流水号, 效果等价
@@ -463,7 +445,7 @@ MdsClientApi::Stop(void) {
   *   意该字段在登录后会被重置为服务器端最后接收到并校验通过的"客户委托流水号(clSeqNo)"
   * </p>
   *
-  * <p> @note 关于最近接收到的回报数据编号 (针对回报通道):
+  * <p> @note 关于最近接收到的回报数据编号 (针对UDP通道):
   * - 将通过 lastInMsgSeq 字段存储上一次会话实际接收到的入向消息序号, 即: 最近接收到的
   *   回报数据编号
   * - 该字段会在接收到回报数据并回调OnMsg成功以后实时更新, 可以通过该字段获取到最近接收到
@@ -509,19 +491,6 @@ _MdsClientApi_OnAsyncConnect(MdsAsyncApiChannelT *pAsyncChannel,
 		return SPK_NEG(EINVAL);
 	}
 
-	if (pAsyncChannel->pChannelCfg->channelType == MDSAPI_CHANNEL_TYPE_REPORT) {
-		/* 提取回报通道对应的订阅配置信息 */
-		pSubscribeInfo = MdsAsyncApi_GetChannelSubscribeCfg(pAsyncChannel);
-		if (__spk_unlikely(!pSubscribeInfo)) {
-			SLOG_ERROR("Illegal extended subscribe info! " \
-				"pAsyncChannel[%p], channelTag[%s]",
-				pAsyncChannel, pAsyncChannel->pChannelCfg->channelTag);
-			SLOG_ASSERT(0);
-
-			SPK_SET_ERRNO(EINVAL);
-			return SPK_NEG(EINVAL);
-		}
-	}
 
 	/*
 	 * 返回值说明
@@ -544,13 +513,11 @@ _MdsClientApi_OnAsyncConnect(MdsAsyncApiChannelT *pAsyncChannel,
 
 	/* 执行默认处理 */
 	switch (pAsyncChannel->pChannelCfg->channelType) {
-	case MDSAPI_CHANNEL_TYPE_ORDER:
+	case MDSAPI_CHANNEL_TYPE_TCP:
 		SLOG_INFO("Order channel connected. server[%s:%d], " \
-			"lastInMsgSeq[%" __SPK_FMT_LL__ "d], " \
 			"lastOutMsgSeq[%" __SPK_FMT_LL__ "d]",
 			pAsyncChannel->pSessionInfo->channel.remoteAddr,
 			pAsyncChannel->pSessionInfo->channel.remotePort,
-			pAsyncChannel->pSessionInfo->lastInMsgSeq,
 			pAsyncChannel->pSessionInfo->lastOutMsgSeq);
 
 		/*
@@ -566,48 +533,28 @@ _MdsClientApi_OnAsyncConnect(MdsAsyncApiChannelT *pAsyncChannel,
 		}
 		break;
 
-	case MDSAPI_CHANNEL_TYPE_REPORT:
-		/* 按照默认回报订阅参数从上次的断点位置开始订阅回报 */
-		SLOG_INFO("Report channel connected, subscribe report data by " \
-			"default. server[%s:%d], " \
-			"lastInMsgSeq[%" __SPK_FMT_LL__ "d], " \
-			"lastOutMsgSeq[%" __SPK_FMT_LL__ "d]",
-			pAsyncChannel->pSessionInfo->channel.remoteAddr,
-			pAsyncChannel->pSessionInfo->channel.remotePort,
-			pAsyncChannel->pSessionInfo->lastInMsgSeq,
-			pAsyncChannel->pSessionInfo->lastOutMsgSeq);
 
-		pSubscribeInfo = MdsAsyncApi_GetChannelSubscribeCfg(pAsyncChannel);
-		if (__spk_unlikely(!pSubscribeInfo)) {
-			SLOG_ERROR("Illegal extended subscribe info! pAsyncChannel[%p]",
-				pAsyncChannel);
-			SLOG_ASSERT(0);
+		///*
+		// * 关于 lastInMsgSeq 字段 (最近接收到的回报数据编号)
+		// * @note 提示:
+		// * - API会将回报数据的断点位置存储在 <code>pAsyncChannel->lastInMsgSeq</code> 和
+		// *   <code>pSessionInfo->lastInMsgSeq</code> 字段中, 可以使用该值订阅回报
+		// * - 对于SPI回调接口, 可以在OnConnect回调函数中重新设置
+		// *   <code>pSessionInfo->lastInMsgSeq</code> 的取值来重新指定订阅条件
+		// */
+		//if (__spk_unlikely(!MdsApi_SendReportSynchronization(
+		//	pAsyncChannel->pSessionInfo, pSubscribeInfo->clEnvId,
+		//	pSubscribeInfo->rptTypes,
+		//	pAsyncChannel->pSessionInfo->lastInMsgSeq))) {
+		//	SLOG_ERROR("Send report synchronization failure, will retry! " \
+		//		"server[%s:%d]",
+		//		pAsyncChannel->pSessionInfo->channel.remoteAddr,
+		//		pAsyncChannel->pSessionInfo->channel.remotePort);
 
-			SPK_SET_ERRNO(EINVAL);
-			return SPK_NEG(EINVAL);
-		}
-
-		/*
-		 * 关于 lastInMsgSeq 字段 (最近接收到的回报数据编号)
-		 * @note 提示:
-		 * - API会将回报数据的断点位置存储在 <code>pAsyncChannel->lastInMsgSeq</code> 和
-		 *   <code>pSessionInfo->lastInMsgSeq</code> 字段中, 可以使用该值订阅回报
-		 * - 对于SPI回调接口, 可以在OnConnect回调函数中重新设置
-		 *   <code>pSessionInfo->lastInMsgSeq</code> 的取值来重新指定订阅条件
-		 */
-		if (__spk_unlikely(!MdsApi_SendReportSynchronization(
-			pAsyncChannel->pSessionInfo, pSubscribeInfo->clEnvId,
-			pSubscribeInfo->rptTypes,
-			pAsyncChannel->pSessionInfo->lastInMsgSeq))) {
-			SLOG_ERROR("Send report synchronization failure, will retry! " \
-				"server[%s:%d]",
-				pAsyncChannel->pSessionInfo->channel.remoteAddr,
-				pAsyncChannel->pSessionInfo->channel.remotePort);
-
-			/* 处理失败, 将重建连接并继续尝试执行 */
-			return EAGAIN;
-		}
-		break;
+		//	/* 处理失败, 将重建连接并继续尝试执行 */
+		//	return EAGAIN;
+		//}
+		//break;
 
 	case MDSAPI_CHANNEL_TYPE_QUERY:
 	default:
@@ -624,7 +571,7 @@ _MdsClientApi_OnAsyncConnect(MdsAsyncApiChannelT *pAsyncChannel,
 
 
 /**
- * 连接断开后的回调函数 (适用于基于异步API的委托通道和回报通道)
+ * 连接断开后的回调函数 (适用于基于异步API的TCP通道和UDP通道)
  *
  * <p> 回调函数说明:
  * - 仅用于通知客户端连接已经断开, 无需做特殊处理, 异步线程会自动尝试重建连接
@@ -678,7 +625,7 @@ _MdsClientApi_OnAsyncDisconnect(MdsAsyncApiChannelT *pAsyncChannel,
 		"channelInMsg[%" __SPK_FMT_LL__ "d], " \
 		"channelOutMsg[%" __SPK_FMT_LL__ "d]",
 		pAsyncChannel->pChannelCfg->channelType
-		== MDSAPI_CHANNEL_TYPE_ORDER ? "Order" : "Report",
+		== MDSAPI_CHANNEL_TYPE_TCP ? "Order" : "Report",
 		pAsyncChannel->pSessionInfo->channel.remoteAddr,
 		pAsyncChannel->pSessionInfo->channel.remotePort,
 		pAsyncChannel->pChannelCfg->channelType,
@@ -733,10 +680,9 @@ _MdsClientApi_OnQueryConnect(MdsApiSessionInfoT *pSessionInfo,
 
 	/* 执行默认处理 */
 	SLOG_INFO("Query channel connected. server[%s:%d], " \
-		"lastInMsgSeq[%" __SPK_FMT_LL__ "d], " \
 		"lastOutMsgSeq[%" __SPK_FMT_LL__ "d]",
 		pSessionInfo->channel.remoteAddr, pSessionInfo->channel.remotePort,
-		pSessionInfo->lastInMsgSeq, pSessionInfo->lastOutMsgSeq);
+		pSessionInfo->lastOutMsgSeq);
 
 	return 0;
 }
@@ -834,50 +780,50 @@ _MdsClientApi_OnQueryDisconnect(MdsApiSessionInfoT *pSessionInfo,
 }
 
 
+///**
+// * 对接收到的回报消息进行处理的回调函数 (适用于UDP通道)
+// *
+// * @param   pSessionInfo        会话信息
+// * @param   pMsgHead            消息头
+// * @param   pMsgBody            消息体数据
+// * @param   pCallbackParams     外部传入的参数
+// * @retval  >=0                 大于等于0, 成功
+// * @retval  <0                  小于0, 处理失败, 将尝试断开并重建连接
+// *
+// * @see     eOesMsgTypeT
+// * @see     OesRspMsgBodyT
+// * @see     OesRptMsgT
+// */
+//static int32
+//_MdsClientApi_HandleReportMsg(MdsApiSessionInfoT *pSessionInfo,
+//	SMsgHeadT *pMsgHead, void *pMsgBody, void *pCallbackParams) {
+//	MdsClientSpi            *pSpi = (MdsClientSpi *)pCallbackParams;
+//	OesRspMsgBodyT          *pRspMsg = (OesRspMsgBodyT *)pMsgBody;
+//	OesRptMsgT              *pRptMsg = &pRspMsg->rptMsg;
+//
+//	SLOG_ASSERT(pSessionInfo && pMsgHead && pMsgBody);
+//	SLOG_ASSERT(pSpi);
+//
+//	switch (pMsgHead->msgId) {
+//
+//
+//	case OESMSG_RPT_REPORT_SYNCHRONIZATION:                 /* 回报同步的应答消息 @see OesReportSynchronizationRspT */
+//		pSpi->OnReportSynchronizationRsp(&pRspMsg->reportSynchronizationRsp);
+//		break;
+//
+//	default:
+//		/* 接收到非预期(未定义处理方式)的回报消息 */
+//		SLOG_ERROR("Invalid message type! msgId[0x%02X]",
+//			pMsgHead->msgId);
+//		break;
+//	}
+//
+//	return 0;
+//}
+
+
 /**
- * 对接收到的回报消息进行处理的回调函数 (适用于回报通道)
- *
- * @param   pSessionInfo        会话信息
- * @param   pMsgHead            消息头
- * @param   pMsgBody            消息体数据
- * @param   pCallbackParams     外部传入的参数
- * @retval  >=0                 大于等于0, 成功
- * @retval  <0                  小于0, 处理失败, 将尝试断开并重建连接
- *
- * @see     eOesMsgTypeT
- * @see     OesRspMsgBodyT
- * @see     OesRptMsgT
- */
-static int32
-_MdsClientApi_HandleReportMsg(MdsApiSessionInfoT *pSessionInfo,
-	SMsgHeadT *pMsgHead, void *pMsgBody, void *pCallbackParams) {
-	MdsClientSpi            *pSpi = (MdsClientSpi *)pCallbackParams;
-	OesRspMsgBodyT          *pRspMsg = (OesRspMsgBodyT *)pMsgBody;
-	OesRptMsgT              *pRptMsg = &pRspMsg->rptMsg;
-
-	SLOG_ASSERT(pSessionInfo && pMsgHead && pMsgBody);
-	SLOG_ASSERT(pSpi);
-
-	switch (pMsgHead->msgId) {
-
-
-	case OESMSG_RPT_REPORT_SYNCHRONIZATION:                 /* 回报同步的应答消息 @see OesReportSynchronizationRspT */
-		pSpi->OnReportSynchronizationRsp(&pRspMsg->reportSynchronizationRsp);
-		break;
-
-	default:
-		/* 接收到非预期(未定义处理方式)的回报消息 */
-		SLOG_ERROR("Invalid message type! msgId[0x%02X]",
-			pMsgHead->msgId);
-		break;
-	}
-
-	return 0;
-}
-
-
-/**
- * 对接收到的应答消息进行处理的回调函数 (适用于委托通道)
+ * 对接收到的应答消息进行处理的回调函数 (适用于TCP通道)
  *
  * @param   pSessionInfo        会话信息
  * @param   pMsgHead            消息头
@@ -892,32 +838,31 @@ _MdsClientApi_HandleReportMsg(MdsApiSessionInfoT *pSessionInfo,
 static int32
 _MdsClientApi_HandleOrderChannelRsp(MdsApiSessionInfoT *pSessionInfo,
 	SMsgHeadT *pMsgHead, void *pMsgBody, void *pCallbackParams) {
-	OesRspMsgBodyT          *pRspMsg = (OesRspMsgBodyT *)pMsgBody;
+	MdsMktRspMsgBodyT          *pRspMsg = (MdsMktRspMsgBodyT *)pMsgBody;
 
 	SLOG_ASSERT(pSessionInfo && pMsgHead && pMsgBody);
 
 	switch (pMsgHead->msgId) {
-	case OESMSG_SESS_HEARTBEAT:                 /* 心跳消息 */
+	case MDS_MSGTYPE_HEARTBEAT:                 /* 心跳消息 */
 		SLOG_DEBUG(">>> Recv heartbeat message.");
 		break;
 
-	case OESMSG_SESS_TEST_REQUEST:              /* 测试请求消息 */
+	case MDS_MSGTYPE_TEST_REQUEST:              /* 测试请求消息 */
 		SLOG_DEBUG(">>> Recv test-request response message.");
 		break;
 
-	case OESMSG_NONTRD_CHANGE_PASSWORD:         /* 登录密码修改的应答消息 @see OesChangePasswordRspT */
-		SLOG_DEBUG(">>> Recv change password response message. " \
-			"username[%s], rejReason[%d]",
-			pRspMsg->changePasswordRsp.username,
-			pRspMsg->changePasswordRsp.rejReason);
+	case MDS_MSGTYPE_MARKET_DATA_REQUEST:         /* 证券行情订阅消息 (5/0x05) */
+		SLOG_DEBUG(">>> Recv market-data-request response message. ");
 		break;
 
-	case OESMSG_NONTRD_OPT_CONFIRM_SETTLEMENT:  /* 结算单确认的应答消息 @see OesOptSettlementConfirmRspT */
-		SLOG_DEBUG(">>> Recv option settlement confirm response message. " \
-			"custId[%s], rejReason[%d]",
-			pRspMsg->optSettlementConfirmRsp.custId,
-			pRspMsg->optSettlementConfirmRsp.rejReason);
+	case MDS_MSGTYPE_LOGOUT:         /*  */
+		SLOG_DEBUG(">>> Recv logout message. ");
 		break;
+
+	case MDS_MSGTYPE_COMPRESSED_PACKETS:         /*  */
+		SLOG_DEBUG(">>> Recv compressed message. ");
+		break;
+
 
 	default:
 		/* 接收到非预期(未定义处理方式)的回报消息 */
@@ -952,56 +897,6 @@ MdsClientApi::GetVersion(void) {
 
 
 
-/**
- * 查询通知消息回调包裹函数
- */
-static __inline int32
-_MdsClientApi_QueryNotifyInfo(MdsApiSessionInfoT *pSessionInfo,
-	SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
-	void *pCallbackParams) {
-	((MdsClientSpi *)pCallbackParams)->OnQueryNotifyInfo(
-		(OesNotifyInfoItemT *)pMsgBody, pQryCursor,
-		((MdsClientSpi *)pCallbackParams)->currentRequestId);
-	return 0;
-}
-
-
-/**
- * 查询通知消息
- *
- * @param   pQryFilter          查询条件过滤条件
- * @retval  >=0                 成功查询到的记录数
- * @retval  <0                  失败 (负的错误号)
- */
-int32
-MdsClientApi::QueryNotifyInfo(const OesQryNotifyInfoFilterT *pQryFilter,
-	int32 requestId) {
-	int32                   ret = 0;
-
-	if (__spk_unlikely(!_isRunning || !_pSpi)) {
-		SLOG_ERROR("Invalid params or running state! isRunning[%d], pSpi[%p]",
-			_isRunning, _pSpi);
-		SPK_SET_ERRNO(EINVAL);
-		return SPK_NEG(EINVAL);
-	}
-
-	_pSpi->currentRequestId = requestId;
-
-	ret = MdsApi_QueryNotifyInfo(_pQryChannel, pQryFilter,
-		_MdsClientApi_QueryNotifyInfo, (void *)_pSpi);
-	if (__spk_unlikely(ret < 0)) {
-		SLOG_ERROR("查询通知消息失败, 将断开并尝试重建查询通道! " \
-			"ret[%d], error[%d - %s]",
-			ret, MdsApi_GetLastError(),
-			MdsApi_GetErrorMsg(MdsApi_GetLastError()));
-
-		/* 查询失败, 断开并尝试重建查询通道 */
-		_MdsClientApi_OnQueryDisconnect(_pQryChannel, _pSpi,
-			&_apiCfg.qryChannelCfg);
-	}
-
-	return ret;
-}
 
 
 /* ===================================================================
@@ -1021,12 +916,12 @@ MdsClientSpi::MdsClientSpi() {
  * 连接或重新连接完成后的回调函数的默认实现
  *
  * <p> 回调函数说明:
- * - 对于回报通道, 需要通过该回调函数完成回报订阅操作。若函数指针为空, 则会使用通道配置中默认的
+ * - 对于UDP通道, 需要通过该回调函数完成回报订阅操作。若函数指针为空, 则会使用通道配置中默认的
  *   回报订阅参数进行订阅。若函数指针不为空, 但未订阅回报, 90秒以后服务器端会强制断开连接
  * - 若回调函数返回小于0的数, 则异步线程将中止运行
  * </p>
  *
- * <p> @note 关于上一次会话的最大请求数据编号 (针对委托通道)
+ * <p> @note 关于上一次会话的最大请求数据编号 (针对TCP通道)
  * - 将通过 lastOutMsgSeq 字段存储上一次会话实际已发送的出向消息序号, 即: 服务器端最
  *   后接收到的客户委托流水号(clSeqNo)
  * - 该值对应的是服务器端最后接收到并校验通过的(同一环境号下的)客户委托流水号, 效果等价
@@ -1038,7 +933,7 @@ MdsClientSpi::MdsClientSpi() {
  *   意该字段在登录后会被重置为服务器端最后接收到并校验通过的"客户委托流水号(clSeqNo)"
  * </p>
  *
- * <p> @note 关于最近接收到的回报数据编号 (针对回报通道):
+ * <p> @note 关于最近接收到的回报数据编号 (针对UDP通道):
  * - 将通过 lastInMsgSeq 字段存储上一次会话实际接收到的入向消息序号, 即: 最近接收到的
  *   回报数据编号
  * - 该字段会在接收到回报数据并回调OnMsg成功以后实时更新, 可以通过该字段获取到最近接收到
@@ -1058,7 +953,7 @@ MdsClientSpi::MdsClientSpi() {
  *
  * @param   channelType         通道类型
  * @param   pSessionInfo        会话信息
- * @param   pSubscribeInfo      默认的回报订阅参数 (仅适用于回报通道)
+ * @param   pSubscribeInfo      默认的回报订阅参数 (仅适用于UDP通道)
  * @retval  =0                  等于0, 成功 (不再执行默认的回调函数)
  * @retval  >0                  大于0, 忽略本次执行, 并继续执行默认的回调函数
  * @retval  <0                  小于0, 处理失败, 异步线程将中止运行
@@ -1066,12 +961,12 @@ MdsClientSpi::MdsClientSpi() {
 int32
 MdsClientSpi::OnConnected(eMdsApiChannelTypeT channelType,
 	MdsApiSessionInfoT *pSessionInfo,
-	OesApiSubscribeInfoT *pSubscribeInfo) {
+	MdsApiSubscribeInfoT *pSubscribeInfo) {
 	/*
 	 * 返回值说明:
-	 * - 返回大于0的值, 表示需要继续执行默认的 OnConnect 回调函数 (对于回报通道, 将使用配置
+	 * - 返回大于0的值, 表示需要继续执行默认的 OnConnect 回调函数 (对于UDP通道, 将使用配置
 	 *   文件中的订阅参数订阅回报)
-	 * - 若返回0, 表示已经处理成功 (包括回报通道的回报订阅操作也需要显式的调用并执行成功), 将
+	 * - 若返回0, 表示已经处理成功 (包括UDP通道的回报订阅操作也需要显式的调用并执行成功), 将
 	 *   不再执行默认的回调函数
 	 */
 	return EAGAIN;
@@ -1089,7 +984,7 @@ MdsClientSpi::OnConnected(eMdsApiChannelTypeT channelType,
  *
  * @param   channelType         通道类型
  * @param   pSessionInfo        会话信息
- * @param   pSubscribeInfo      默认的回报订阅参数 (仅适用于回报通道)
+ * @param   pSubscribeInfo      默认的回报订阅参数 (仅适用于UDP通道)
  * @retval  =0                  等于0, 成功 (不再执行默认的回调函数. 但对于查询通道仍将继续执行连接重建处理)
  * @retval  >0                  大于0, 忽略本次执行, 并继续执行默认的回调函数
  * @retval  <0                  小于0, 处理失败, 异步线程将中止运行
