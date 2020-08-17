@@ -1,0 +1,5 @@
+TapAPIOrderDeactivateReq = "dict"
+TapAPIOrderActivateReq = "dict"
+TapAPIOrderDeleteReq = "dict"
+TapAPIHisOrderProcessQryRsp = "dict"
+TapAPIMobileDeviceAddRsp = "dict"
