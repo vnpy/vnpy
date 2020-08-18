@@ -99,7 +99,7 @@
  * @version 0.15.5.1    2017/11/17
  *          - 增加 OesApi_IsValidOrdChannel、OesApi_IsValidRptChannel 等接口, 用于判断通道是否已经连接且有效
  * @version 0.15.5.2    2018/01/29
- *          - 增加 OesApi_GetLastRecvTime、OesApi_GetLastSendTime 接口, 用于获取通道最新发送/接受消息的时间
+ *          - 增加 OesApi_GetLastRecvTime、OesApi_GetLastSendTime 接口, 用于获取通道最近发送/接收消息的时间
  *          - 登录失败时, 可以通过 errno/SPK_GET_ERRNO() 获取到具体失败原因
  * @version 0.15.5.11_u2 2018/11/04
  *          - 添加从成交回报中提取和生成委托回报信息的辅助函数
@@ -188,8 +188,8 @@
  *          - 配置文件中增加配置项 driverId, 以支持通过API配置文件配置硬盘序列号
  * @version 0.15.9_u4   2019/12/03
  *          - '证券发行信息 (OesIssueItemT)' 结构中增加字段:
- *              - 停牌标识 (suspFlag)
- *              - 发行方式 (issueType)
+ *               - 停牌标识 (suspFlag)
+ *               - 发行方式 (issueType)
  * @version 0.15.9.1_RC3 2019/08/02
  *          - 增加 '查询券商参数信息 (OesApi_QueryBrokerParamsInfo)' 接口
  * @version 0.15.9.4    2019/12/24
@@ -222,6 +222,21 @@
  *              - OesApi_SendChangePasswordReqAsynced
  *          - 为委托通道增加异步测试请求接口 (仅发送测试请求不接收应答消息)
  *              - OesApi_TestOrdChannelAsynced
+ * @version 0.15.10.6   2020/05/14
+ *          - 将会话信息中的发送时间(lastSendTime)和接收时间(lastRecvTime)升级为纳秒级时间戳 (STimevalT => STimespecT)
+ * @version 0.15.11     2020/05/29
+ *          - 增加辅助的通道组接口
+ *              - OesApi_GetChannelGroupLastRecvTime, 返回通道组最近接收消息时间
+ *              - OesApi_GetChannelGroupLastSendTime, 返回通道组最近发送消息时间
+ *          - 增加辅助判断现货产品状态的接口
+ *              - OesApi_HasStockStatus
+ *          - 从现货版本中删除已经过时的期权相关查询接口定义, 包括:
+ *              - 查询单条期权持仓信息 (OesApi_QuerySingleOptHolding)
+ *              - 查询期权持仓信息 (OesApi_QueryOptHolding)
+ *              - 查询期权产品信息 (OesApi_QueryOption)
+ * @version 0.15.11.3   2020/06/29
+ *          - 增加用于校验API版本号是否匹配的辅助函数
+ *              - __OesApi_CheckApiVersion
  * @version 0.16.0      2019/11/20
  *          - OesApi_QuerySingleOptHolding 接口增加参数
  *              - ‘市场代码(mktId)’
@@ -277,6 +292,7 @@
  *          - '资金变动回报 (OesCashAssetReportT)' 和 '客户资金信息 (OesCashAssetItemT)' 结构字段变更:
  *              - 新增 未对冲实时价格保证金 (totalMarketMargin) 字段
  *              - 新增 已对冲实时价格保证金 (totalNetMargin) 字段
+ *
  * @since   2016/03/04
  */
 
@@ -285,6 +301,7 @@
 #define _OES_API_H
 
 
+#include    <oes_global/oes_base_model.h>
 #include    <oes_global/oes_packets.h>
 #include    <oes_api/errors/oes_errors.h>
 #include    <sutil/net/spk_general_client_define.h>
@@ -695,8 +712,6 @@ int32   OesApi_SendChangePasswordReq(
  * @param       pOrdChannel     委托通道会话信息
  * @param[in]   pChangePasswordReq
  *                              待发送的密码修改请求
- * @param[out]  pOutChangePasswordRsp
- *                              用于输出测试请求应答的缓存区
  * @retval      0               成功
  * @retval      <0              API调用失败 (负的错误号)
  * @retval      >0              服务端业务处理失败 (异步接口不会返回>0的值)
@@ -707,8 +722,7 @@ int32   OesApi_SendChangePasswordReq(
  */
 int32   OesApi_SendChangePasswordReqAsynced(
                 OesApiSessionInfoT *pOrdChannel,
-                const OesChangePasswordReqT *pChangePasswordReq,
-                OesChangePasswordRspT *pOutChangePasswordRsp);
+                const OesChangePasswordReqT *pChangePasswordReq);
 /* -------------------------           */
 
 
@@ -1140,7 +1154,7 @@ int32   OesApi_QueryEtf(
                 void *pCallbackParams);
 
 /**
- * 查询ETF成分股信息
+ * 查询ETF成份证券信息
  *
  * @param   pQryChannel         查询通道的会话信息
  * @param   pQryFilter          查询过滤条件
@@ -2136,6 +2150,24 @@ OesApiSessionInfoT *
                 SPK_SOCKET socketFd);
 
 /**
+ * 返回通道组最近接收消息时间
+ *
+ * @param   pChannelGroup       通道组信息
+ * @return  通道组最近接收消息时间(单位: 秒)
+ */
+int64   OesApi_GetChannelGroupLastRecvTime(
+                OesApiChannelGroupT *pChannelGroup);
+
+/**
+ * 返回通道组最近发送消息时间
+ *
+ * @param   pChannelGroup       通道组信息
+ * @return  通道组最近发送消息时间(单位: 秒)
+ */
+int64   OesApi_GetChannelGroupLastSendTime(
+                OesApiChannelGroupT *pChannelGroup);
+
+/**
  * 遍历通道组下的所有通道信息并执行回调函数
  *
  * @param       pChannelGroup   通道组信息
@@ -2320,19 +2352,19 @@ BOOL    OesApi_IsBusinessSupported(
                 eOesBusinessScopeT businessScope);
 
 /**
- * 获取通道最新接受消息时间
+ * 获取通道最近接收消息时间
  *
  * @param   pSessionInfo        会话信息
- * @return  通道最新接受消息时间(单位: 秒)
+ * @return  通道最近接收消息时间(单位: 秒)
  */
 int64   OesApi_GetLastRecvTime(
                 const OesApiSessionInfoT *pSessionInfo);
 
 /**
- * 获取通道最新发送消息时间
+ * 获取通道最近发送消息时间
  *
  * @param   pSessionInfo        会话信息
- * @return  通道最新发送消息时间(单位: 秒)
+ * @return  通道最近发送消息时间(单位: 秒)
  */
 int64   OesApi_GetLastSendTime(
                 const OesApiSessionInfoT *pSessionInfo);
@@ -2443,6 +2475,18 @@ BOOL    OesApi_IsErrorOf2(
                 uint8 status,
                 uint8 detailStatus,
                 const SErrMsgT *pErrMsg);
+
+/**
+ * 返回现货产品是否具有指定状态
+ * 根据证券状态'securityStatus'字段判断 @see OesStockItemT
+ *
+ * @param   pStockItem          现货产品信息
+ * @param   status              指定的状态 @see eOesSecurityStatusT
+ * @return  TRUE 具有指定的状态; FALSE 没有指定的状态
+ */
+BOOL    OesApi_HasStockStatus(
+                const OesStockItemT *pStockItem,
+                eOesSecurityStatusT status);
 /* -------------------------           */
 
 
@@ -2469,6 +2513,47 @@ OesOrdCnfmT *
         OesHelper_ExtractOrdReportFromTrd(
                 const OesTrdCnfmT *pTrdReport,
                 OesOrdCnfmT *pOutOrdReport);
+/* -------------------------           */
+
+
+/* ===================================================================
+ * 用于校验API版本号是否匹配的标识函数定义
+ * =================================================================== */
+
+#define __OESAPI_METHOD_IsApiVersionMatched_NAME2(VER)          \
+        __OesApi_IsApiVersionMatched__##VER
+
+#define __OESAPI_METHOD_IsApiVersionMatched_NAME(VER)           \
+        __OESAPI_METHOD_IsApiVersionMatched_NAME2(VER)
+
+#define __OESAPI_METHOD_IsApiVersionMatched                     \
+        __OESAPI_METHOD_IsApiVersionMatched_NAME(OES_APPL_VER_VALUE)
+
+
+/* 用于校验API版本号是否匹配的标识函数 (如果链接时报函数不存在错误, 请检查API的头文件与库文件是否一致) */
+BOOL    __OESAPI_METHOD_IsApiVersionMatched();
+/* -------------------------           */
+
+
+/* ===================================================================
+ * 辅助的内联函数定义
+ * =================================================================== */
+
+/**
+ * 检查API版本是否匹配 (检查API头文件和库文件的版本是否匹配)
+ *
+ * @return  TRUE 匹配; FALSE 不匹配
+ */
+static __inline BOOL
+__OesApi_CheckApiVersion() {
+
+    /* 如果编译时报 IsApiVersionMatched 函数不存在错误, 请检查API的头文件与库文件是否一致 */
+    if (__OESAPI_METHOD_IsApiVersionMatched()
+            && strcmp(OesApi_GetApiVersion(), OES_APPL_VER_ID) == 0) {
+        return TRUE;
+    }
+    return FALSE;
+}
 /* -------------------------           */
 
 

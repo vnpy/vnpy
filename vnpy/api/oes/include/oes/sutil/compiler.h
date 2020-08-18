@@ -106,20 +106,16 @@ extern "C" {
 /*
  * 若 likely 与 boost 等第三方库中的函数名称冲突, 可以通过指定 __NO_SHORT_LIKELY 来禁用之
  */
-#ifndef __NO_SHORT_LIKELY
-#   ifndef  likely
-#       define  likely(x)               __spk_likely(x)
-#   endif
+#if !defined (likely) && !defined (__NO_SHORT_LIKELY)
+#   define  likely(x)                   __spk_likely(x)
 #endif
 
 
 /*
  * 若 unlikely 与第三方库中的函数名称冲突, 可以通过指定 __NO_SHORT_UNLIKELY 来禁用之
  */
-#ifndef __NO_SHORT_UNLIKELY
-#   ifndef  unlikely
-#       define  unlikely(x)             __spk_unlikely(x)
-#   endif
+#if !defined (unlikely) && !defined (__NO_SHORT_LIKELY)
+#   define  unlikely(x)                 __spk_unlikely(x)
 #endif
 /* -------------------------           */
 
@@ -207,13 +203,7 @@ extern "C" {
 
 /*
  * 返回x对应的负数
- *
- * @deprecated  已废弃, 为保持兼容而暂时保留. 若 NEG 与第三方库冲突, 直接注释掉即可.
  */
-#ifndef NEG
-#   define  NEG(x)                      SPK_NEG(x)
-#endif
-
 #undef  SPK_NEG
 #define SPK_NEG(x)                      ((x) > 0 ? -(x) : (x))
 /* -------------------------           */
@@ -324,6 +314,102 @@ extern "C" {
 /* 返回按1024字节对齐的SIZE */
 #undef  SPK_ALIGN_SIZE1024
 #define SPK_ALIGN_SIZE1024(SIZE)        SPK_ALIGN_SIZE((SIZE), 1024)
+
+/* 返回按4K字节对齐的SIZE */
+#undef  SPK_ALIGN_SIZE4096
+#define SPK_ALIGN_SIZE4096(SIZE)        SPK_ALIGN_SIZE((SIZE), 4096)
+
+/* 返回按8K字节对齐的SIZE */
+#undef  SPK_ALIGN_SIZE8192
+#define SPK_ALIGN_SIZE8192(SIZE)        SPK_ALIGN_SIZE((SIZE), 8192)
+/* -------------------------           */
+
+
+/* ===================================================================
+ * 字节序转换相关的宏函数定义
+ * =================================================================== */
+
+/*
+ * 编译器内建字节序转换函数定义
+ */
+#if defined (__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
+#   define  __spk_bswap32(x)            ((uint32) __builtin_bswap32(x))
+#   define  __spk_bswap64(x)            ((uint64) __builtin_bswap64(x))
+
+#   define  __spk_bswap32_direct(x)     ( *(uint32 *) &(x) = __spk_bswap32(x) )
+#   define  __spk_bswap64_direct(x)     ( *(uint64 *) &(x) = __spk_bswap64(x) )
+
+#else
+#   define  __spk_bswap32(x)            ((uint32) __SPK_SWAP_INT32(x))
+#   define  __spk_bswap64(x)            ((uint64) __SPK_SWAP_INT64(x))
+
+#   define  __spk_bswap32_direct(x)     __SPK_SWAP_INT32_DIRECT(x)
+#   define  __spk_bswap64_direct(x)     __SPK_SWAP_INT64_DIRECT(x)
+
+#endif
+#if defined (__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
+#   define  __spk_bswap16(x)            ((uint16) __builtin_bswap16(x))
+#   define  __spk_bswap16_direct(x)     ( *(uint16 *) &(x) = __spk_bswap16(x) )
+
+#else
+#   define  __spk_bswap16(x)            ((uint16) __SPK_SWAP_INT16(x))
+#   define  __spk_bswap16_direct(x)     __SPK_SWAP_INT16_DIRECT(x)
+
+#endif
+/* -------------------------           */
+
+
+/* Swap 2 byte, 16 bit values (for Big and Little Endian Byte Order) */
+#define __SPK_SWAP_INT16(x)                             \
+        ( ((((uint16) x) >> 8) & 0x00FF) \
+                | ((((uint16) x) << 8) & 0xFF00) )
+
+/* Swap 4 byte, 32 bit values */
+#define __SPK_SWAP_INT32(x)                             \
+        ( ((((uint32) x) >> 24) & 0x000000FF) \
+                | ((((uint32) x) >>  8) & 0x0000FF00) \
+                | ((((uint32) x) <<  8) & 0x00FF0000) \
+                | ((((uint32) x) << 24) & 0xFF000000) )
+
+/* Swap 8 byte, 64 bit values */
+#define __SPK_SWAP_INT64(x)                             \
+        ( ((((uint64) x) >> 56) & 0x00000000000000FF) \
+                | ((((uint64) x) >> 40) & 0x000000000000FF00) \
+                | ((((uint64) x) >> 24) & 0x0000000000FF0000) \
+                | ((((uint64) x) >>  8) & 0x00000000FF000000) \
+                | ((((uint64) x) <<  8) & 0x000000FF00000000) \
+                | ((((uint64) x) << 24) & 0x0000FF0000000000) \
+                | ((((uint64) x) << 40) & 0x00FF000000000000) \
+                | ((((uint64) x) << 56) & 0xFF00000000000000) )
+
+/* Swap 2 byte, 16 bit values direct */
+#define __SPK_SWAP_INT16_DIRECT(x)                      \
+        ( *(uint16 *) &(x) = __SPK_SWAP_INT16(*(uint16 *) &(x)) )
+
+/* Swap 4 byte, 32 bit values direct */
+#define __SPK_SWAP_INT32_DIRECT(x)                      \
+        ( *(uint32 *) &(x) = __SPK_SWAP_INT32(*(uint32 *) &(x)) )
+
+/* Swap 8 byte, 64 bit values direct */
+#define __SPK_SWAP_INT64_DIRECT(x)                      \
+        ( *(uint64 *) &(x) = __SPK_SWAP_INT64(*(uint64 *) &(x)) )
+/* -------------------------           */
+
+
+/* 字节序转换函数的别名定义 */
+#undef  SPK_SWAP_INT16
+#undef  SPK_SWAP_INT32
+#undef  SPK_SWAP_INT64
+#undef  SPK_SWAP_INT16_DIRECT
+#undef  SPK_SWAP_INT32_DIRECT
+#undef  SPK_SWAP_INT64_DIRECT
+
+#define SPK_SWAP_INT16(x)               __spk_bswap16(x)
+#define SPK_SWAP_INT32(x)               __spk_bswap32(x)
+#define SPK_SWAP_INT64(x)               __spk_bswap64(x)
+#define SPK_SWAP_INT16_DIRECT(x)        __spk_bswap16_direct(x)
+#define SPK_SWAP_INT32_DIRECT(x)        __spk_bswap32_direct(x)
+#define SPK_SWAP_INT64_DIRECT(x)        __spk_bswap64_direct(x)
 /* -------------------------           */
 
 
@@ -539,6 +625,7 @@ extern "C" {
 
 /*
  * 定时并睡眠, 按指定的起始时间计算需要睡眠的毫秒数
+ * @param   P_SINCE_TV      <struct timeval *> 起始时间
  */
 #undef  SPK_TIMED_SLEEP_SINCE
 #if ( defined (_XOPEN_SOURCE) && (_XOPEN_SOURCE >= 600) ) \
@@ -586,6 +673,20 @@ extern "C" {
     } while (0)
 
 #endif
+
+
+/*
+ * 定时并睡眠, 按指定的起始时间计算需要睡眠的毫秒数
+ * @param   P_SINCE_TS      <struct timespec *> 起始时间
+ */
+#undef  SPK_TIMED_SLEEP_SINCE_TS
+#define SPK_TIMED_SLEEP_SINCE_TS(MS, P_SINCE_TS)        \
+    do { \
+        struct timeval  __TIMED_SINCE_TS_tmp; \
+        __TIMED_SINCE_TS_tmp.tv_sec = (P_SINCE_TS)->tv_sec; \
+        __TIMED_SINCE_TS_tmp.tv_usec = (P_SINCE_TS)->tv_nsec / 1000; \
+        SPK_TIMED_SLEEP_SINCE((MS), &__TIMED_SINCE_TS_tmp); \
+    } while (0)
 /* -------------------------           */
 
 

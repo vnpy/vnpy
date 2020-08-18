@@ -1,5 +1,117 @@
 # OES-API Change Log    {#changelog}
 
+OES_0.16.1.1 / 2020-06-30
+==============================================
+
+  * 将系统下的时间戳全部升级为纳秒级时间戳, 以提高时延统计的精度
+    - 时间戳字段的数据类型从 STimevalT/STimeval32T 变更为 STimespecT/STimespec32T
+    - 协议保持兼容, 但如果使用到了时间戳字段下的微秒时间(tv_usec 字段), 则需要修改为纳秒时间(tv_nsec 字段), 否则会因为时间单位的调整而导致时延计算错误
+  * 异步API新增如下接口
+    - OesAsyncApi_SendReportSynchronization, 异步API的发送回报同步消息接口
+    - OesAsyncApi_IsAllTerminated, 异步API检查所有线程是否均已安全退出
+  * 同步API新增如下接口
+    - OesApi_GetChannelGroupLastRecvTime, 返回通道组最近接收消息时间
+    - OesApi_GetChannelGroupLastSendTime, 返回通道组最近发送消息时间
+    - OesApi_HasStockStatus, 返回现货产品是否具有指定状态
+    - __OesApi_CheckApiVersion, 校验API版本号是否匹配的辅助函数
+  * 为支持创业板注册制改革, 现货产品信息 (OesStockItemT) 中:
+    - 新增 是否注册制 (isRegistration) 字段
+    - 新增 证券状态 (securityStatus) 字段
+    - 新增 证券属性 (securityAttribute) 保留字段
+    - 新增 是否为融资标的 (isCrdMarginTradeUnderlying) 字段
+    - 新增 是否为融券标的 (isCrdShortSellUnderlying) 字段
+    - 新增 是否为融资融券担保品 (isCrdCollateral) 字段
+    - 新增 是否尚未盈利 (isNoProfit) 字段
+    - 新增 是否存在投票权差异 (isWeightedVotingRights) 字段
+    - 新增 是否具有协议控制框架 (isVie) 字段
+    - 重构 限价买入单位 (lmtBuyQtyUnit) 字段, 增加新的别名
+        - buyQtyUnit => lmtBuyQtyUnit
+    - 重构 限价卖出单位 (lmtSellQtyUnit) 字段, 增加新的别名
+        - sellQtyUnit => lmtSellQtyUnit
+    - 新增 市价买入单位 (mktBuyQtyUnit) 字段
+    - 新增 市价卖出单位 (mktSellQtyUnit) 字段
+    - 重构 面值 (parPrice) 字段, 增加新的别名  (兼容之前版本的API)
+        - parPrice => parValue
+    - 新增 连续竞价范围限制类型 (auctionLimitType) 字段
+    - 新增 连续竞价范围基准价类型 (auctionReferPriceType) 字段
+    - 新增 连续竞价范围涨跌幅度 (auctionUpDownRange) 字段
+    - 新增 上市日期 (listDate) 字段
+    - 新增 到期日期 (maturityDate) 字段
+    - 新增 基础证券代码 (underlyingSecurityId) 字段
+  * 为支持创业板注册制改革, 证券发行信息 (OesIssueItemT) 中:
+    - 新增 是否注册制 (isRegistration) 字段
+    - 新增 证券属性 (securityAttribute) 保留字段
+    - 新增 是否尚未盈利 (isNoProfit) 字段
+    - 新增 是否存在投票权差异 (isWeightedVotingRights) 字段
+    - 新增 是否具有协议控制框架 (isVie) 字段
+    - 新增 配股股权登记日 (alotRecordDay) 字段
+    - 新增 配股股权除权日 (alotExRightsDay) 字段
+  * 股东账户交易权限枚举(eOesTradingPermissionT)中宏定义调整
+    - 删除 '股票质押式回购 (OES_PERMIS_STOCK_PLEDGE_REPURCHASE)'
+    - 删除 '质押回购 (OES_PERMIS_PLEDGE_REPURCHASE)'
+    - 增加 '债券ETF申赎 (OES_PERMIS_BOND_ETF)'
+    - 增加 '黄金ETF申赎 (OES_PERMIS_GOLD_ETF)'
+    - 调整 '货币基金申赎 (OES_PERMIS_CURRENCY_ETF)' 权限描述为 '货币ETF申赎'
+    - 重命名 '创业板交易 (OES_PERMIS_GEM)' -> '非注册制创业板交易 (OES_PERMIS_GEM_UNREGISTRATION)'
+    - 增加 '注册制创业板交易 (OES_PERMIS_GEM_REGISTRATION)'
+  * 'ETF成份证券现金替代标志 (eOesEtfSubFlagT)'中
+    - 新增 港市退补现金替代(OES_ETF_SUBFLAG_HK_REFUND_SUB) 定义
+    - 新增 港市必须现金替代(OES_ETF_SUBFLAG_HK_MUST_SUB) 定义
+  * 查询ETF成份证券信息接口调整
+    - 查询过滤条件 (OesQryEtfComponentFilterT) 中:
+        - 查询条件 ETF基金申赎代码 (fundId) 字段不再是必填项
+        - 新增查询条件 ETF基金市场代码 (fundMktId) 字段
+    - ETF成份证券信息 (OesEtfComponentItemT) 中:
+        - 新增 ETF基金市场代码 (fundMktId) 字段
+        - 新增 是否是作为申赎对价的成份证券 (isTrdComponent) 字段
+        - 新增 赎回折价比例 (discountRatio) 字段
+        - 新增 成份证券名称 (securityName) 字段
+        - 重构 申购溢价比例、赎回替代金额 字段命名, 为这些字段增加新的别名 (兼容之前版本的API)
+            - premiumRate => premiumRatio
+            - redemptionCashSub => redemptionSubCash
+  * 新增证券子类型
+    - 创业板存托凭证 (OES_SUB_SECURITY_TYPE_STOCK_GEMCDR)
+    - 可交换债券 (OES_SUB_SECURITY_TYPE_BOND_EXG)
+    - 商品期货ETF (OES_SUB_SECURITY_TYPE_ETF_COMMODITY_FUTURES)
+  * 调整买卖类型 (eOesBuySellTypeT) 定义:
+    - 重命名 质押式逆回购 (OES_BS_TYPE_CREDIT_SELL => OES_BS_TYPE_REVERSE_REPO)
+    - 废弃 OES_BS_TYPE_CREDIT_SELL (融资买入或质押式逆回购)
+    - 废弃 OES_BS_TYPE_CREDIT_BUY (融资买入)
+  * 股东账户交易权限枚举(eOesTradingPermissionT)中新增:
+    - 商品期货ETF申赎权限 (OES_PERMIS_COMMODITY_FUTURES_ETF)
+  * 删除已经过时的期权相关查询接口和结构体定义, 包括:
+    - 删除接口
+      - 查询单条期权持仓信息 (OesApi_QuerySingleOptHolding)
+      - 查询期权持仓信息 (OesApi_QueryOptHolding)
+      - 查询期权产品信息 (OesApi_QueryOption)
+    - 删除结构体
+      - 期权合约结构体 (OesOptionItemT)
+      - 期权持仓结构体 (OesOptHoldingItemT)
+    - 从0.16版本开始正式支持期权业务
+  * 优化异步API
+    - 为异步API增加是否优先使用大页内存来创建异步队列的配置项
+    - 为异步API的I/O线程增加追加模式输出的配置项
+    - 为异步API的I/O线程增加支持忙等待的配置选项，以使异步队列的延迟统计结果更接近实际情况
+    - '异步修改客户端密码 (OesAsyncApi_SendChangePasswordReq)' 接口中删除多余的应答参数
+  * API中添加vs2015工程样例
+  * 调整错误码内容
+    - 删除 '1242, 出入金笔数超过限制'
+    - 调整描述内容 '1249, 不支持市价委托或账户无市价委托的交易权限'
+    - 调整描述内容 '1258, 股东账户没有交易货币ETF的权限'
+    - 调整描述内容 '1250, 股东账户没有交易创业板非注册制证券的权限'
+    - 新增 '1285, 股东账户没有交易债券ETF的权限'
+    - 新增 '1286, 股东账户没有交易黄金ETF的权限'
+    - 新增 '1287, 股东账户没有交易商品期货ETF的权限'
+    - 新增 '1288, 股东账户没有交易创业板注册制证券的权限'
+
+OES_0.16.0.5 / 2020-04-17
+==============================================
+
+  * 新增错误码定义
+    - 1284, 投资者未进行程序化交易报备
+  * Merge OES_0.15.10.5
+    - 调整发布API示例代码的目录位置
+
 OES_0.16.0.4 / 2020-02-28
 ==============================================
 
@@ -124,6 +236,120 @@ OES_0.16 / 2019-11-20
     - 1348, 禁止期权行权
     - 1349, 非行权日
 
+OES_0.15.11.3 / 2020-06-29
+==============================================
+
+  * 将系统下的时间戳全部升级为纳秒级时间戳, 以提高时延统计的精度
+    - 时间戳字段的数据类型从 STimevalT/STimeval32T 变更为 STimespecT/STimespec32T
+    - 协议保持兼容, 但如果使用到了时间戳字段下的微秒时间(tv_usec 字段), 则需要修改为纳秒时间(tv_nsec 字段), 否则会因为时间单位的调整而导致时延计算错误
+  * 增加用于校验API版本号是否匹配的辅助函数
+    - __OesApi_CheckApiVersion
+
+OES_0.15.11.1 / 2020-06-08
+==============================================
+
+  * 异步API新增如下接口
+    - OesAsyncApi_SendReportSynchronization, 异步API的发送回报同步消息接口
+    - OesAsyncApi_IsAllTerminated, 异步API检查所有线程是否均已安全退出
+  * 同步API新增如下接口
+    - OesApi_GetChannelGroupLastRecvTime, 返回通道组最近接收消息时间
+    - OesApi_GetChannelGroupLastSendTime, 返回通道组最近发送消息时间
+    - OesApi_HasStockStatus, 返回现货产品是否具有指定状态
+  * 为支持创业板注册制改革, 现货产品信息 (OesStockItemT) 中:
+    - 新增 是否注册制 (isRegistration) 字段
+    - 新增 证券状态 (securityStatus) 字段
+    - 新增 证券属性 (securityAttribute) 保留字段
+    - 新增 是否为融资标的 (isCrdMarginTradeUnderlying) 字段
+    - 新增 是否为融券标的 (isCrdShortSellUnderlying) 字段
+    - 新增 是否为融资融券担保品 (isCrdCollateral) 字段
+    - 新增 是否尚未盈利 (isNoProfit) 字段
+    - 新增 是否存在投票权差异 (isWeightedVotingRights) 字段
+    - 新增 是否具有协议控制框架 (isVie) 字段
+    - 重构 限价买入单位 (lmtBuyQtyUnit) 字段, 增加新的别名
+        - buyQtyUnit => lmtBuyQtyUnit
+    - 重构 限价卖出单位 (lmtSellQtyUnit) 字段, 增加新的别名
+        - sellQtyUnit => lmtSellQtyUnit
+    - 新增 市价买入单位 (mktBuyQtyUnit) 字段
+    - 新增 市价卖出单位 (mktSellQtyUnit) 字段
+    - 重构 面值 (parPrice) 字段, 增加新的别名  (兼容之前版本的API)
+        - parPrice => parValue
+    - 新增 连续竞价范围限制类型 (auctionLimitType) 字段
+    - 新增 连续竞价范围基准价类型 (auctionReferPriceType) 字段
+    - 新增 连续竞价范围涨跌幅度 (auctionUpDownRange) 字段
+    - 新增 上市日期 (listDate) 字段
+    - 新增 到期日期 (maturityDate) 字段
+    - 新增 基础证券代码 (underlyingSecurityId) 字段
+  * 为支持创业板注册制改革, 证券发行信息 (OesIssueItemT) 中:
+    - 新增 是否注册制 (isRegistration) 字段
+    - 新增 证券属性 (securityAttribute) 保留字段
+    - 新增 是否尚未盈利 (isNoProfit) 字段
+    - 新增 是否存在投票权差异 (isWeightedVotingRights) 字段
+    - 新增 是否具有协议控制框架 (isVie) 字段
+    - 新增 配股股权登记日 (alotRecordDay) 字段
+    - 新增 配股股权除权日 (alotExRightsDay) 字段
+  * 股东账户交易权限枚举(eOesTradingPermissionT)中宏定义调整
+    - 删除 '股票质押式回购 (OES_PERMIS_STOCK_PLEDGE_REPURCHASE)'
+    - 删除 '质押回购 (OES_PERMIS_PLEDGE_REPURCHASE)'
+    - 增加 '债券ETF申赎 (OES_PERMIS_BOND_ETF)'
+    - 增加 '黄金ETF申赎 (OES_PERMIS_GOLD_ETF)'
+    - 调整 '货币基金申赎 (OES_PERMIS_CURRENCY_ETF)' 权限描述为 '货币ETF申赎'
+    - 重命名 '创业板交易 (OES_PERMIS_GEM)' -> '非注册制创业板交易 (OES_PERMIS_GEM_UNREGISTRATION)'
+    - 增加 '注册制创业板交易 (OES_PERMIS_GEM_REGISTRATION)'
+  * 'ETF成份证券现金替代标志 (eOesEtfSubFlagT)'中
+    - 新增 港市退补现金替代(OES_ETF_SUBFLAG_HK_REFUND_SUB) 定义
+    - 新增 港市必须现金替代(OES_ETF_SUBFLAG_HK_MUST_SUB) 定义
+  * 查询ETF成份证券信息接口调整
+    - 查询过滤条件 (OesQryEtfComponentFilterT) 中:
+        - 查询条件 ETF基金申赎代码 (fundId) 字段不再是必填项
+        - 新增查询条件 ETF基金市场代码 (fundMktId) 字段
+    - ETF成份证券信息 (OesEtfComponentItemT) 中:
+        - 新增 ETF基金市场代码 (fundMktId) 字段
+        - 新增 是否是作为申赎对价的成份证券 (isTrdComponent) 字段
+        - 新增 赎回折价比例 (discountRatio) 字段
+        - 新增 成份证券名称 (securityName) 字段
+        - 重构 申购溢价比例、赎回替代金额 字段命名, 为这些字段增加新的别名 (兼容之前版本的API)
+            - premiumRate => premiumRatio
+            - redemptionCashSub => redemptionSubCash
+  * 新增证券子类型
+    - 创业板存托凭证 (OES_SUB_SECURITY_TYPE_STOCK_GEMCDR)
+    - 可交换债券 (OES_SUB_SECURITY_TYPE_BOND_EXG)
+    - 商品期货ETF (OES_SUB_SECURITY_TYPE_ETF_COMMODITY_FUTURES)
+  * 调整买卖类型 (eOesBuySellTypeT) 定义:
+    - 重命名 质押式逆回购 (OES_BS_TYPE_CREDIT_SELL => OES_BS_TYPE_REVERSE_REPO)
+    - 废弃 OES_BS_TYPE_CREDIT_SELL (融资买入或质押式逆回购)
+    - 废弃 OES_BS_TYPE_CREDIT_BUY (融资买入)
+  * 股东账户交易权限枚举(eOesTradingPermissionT)中新增:
+    - 商品期货ETF申赎权限 (OES_PERMIS_COMMODITY_FUTURES_ETF)
+  * 删除已经过时的期权相关查询接口和结构体定义, 包括:
+    - 删除接口
+      - 查询单条期权持仓信息 (OesApi_QuerySingleOptHolding)
+      - 查询期权持仓信息 (OesApi_QueryOptHolding)
+      - 查询期权产品信息 (OesApi_QueryOption)
+    - 删除结构体
+      - 期权合约结构体 (OesOptionItemT)
+      - 期权持仓结构体 (OesOptHoldingItemT)
+    - 从0.16版本开始正式支持期权业务
+  * 优化异步API
+    - 为异步API增加是否优先使用大页内存来创建异步队列的配置项
+    - 为异步API的I/O线程增加追加模式输出的配置项
+    - 为异步API的I/O线程增加支持忙等待的配置选项，以使异步队列的延迟统计结果更接近实际情况
+    - '异步修改客户端密码 (OesAsyncApi_SendChangePasswordReq)' 接口中删除多余的应答参数
+  * API中添加vs2015工程样例
+  * 调整错误码内容
+    - 删除 '1242, 出入金笔数超过限制'
+    - 调整描述内容 '1249, 不支持市价委托或账户无市价委托的交易权限'
+    - 调整描述内容 '1258, 股东账户没有交易货币ETF的权限'
+    - 调整描述内容 '1250, 股东账户没有交易创业板非注册制证券的权限'
+    - 新增 '1285, 股东账户没有交易债券ETF的权限'
+    - 新增 '1286, 股东账户没有交易黄金ETF的权限'
+    - 新增 '1287, 股东账户没有交易商品期货ETF的权限'
+    - 新增 '1288, 股东账户没有交易创业板注册制证券的权限'
+
+OES_0.15.10.5 / 2020-04-07
+==============================================
+
+  * 调整发布API示例代码的目录位置
+
 OES_0.15.10.3 / 2020-02-28
 ==============================================
 
@@ -154,6 +380,9 @@ OES_0.15.10.1 / 2020-01-17
     - 新增 当日最大可减持额度 (maxReduceQuota) 字段
   * '客户端总览信息 (OesClientOverviewT)' 结构字段变更
     - 新增 客户端适用的业务范围 (businessScope) 字段
+  * 新增错误码
+    - 1037, 集群编号不匹配
+    - 1038, 无此操作权限
 
 OES_0.15.9.4 / 2019-12-24
 ==============================================
@@ -831,7 +1060,7 @@ OES_0.12.3.5 / 2017-02-20
   * 委托确认、成交回报中增加延迟统计字段
   * 现货产品基础信息中增加“证券子类型”字段，并且重命名“买入单位”、“卖出单位”字段
   * ETF产品基础信息中增加“证券类型”、“证券子类型”字段
-  * ETF成分股基础信息中增加“证券子类型”字段
+  * ETF成份股基础信息中增加“证券子类型”字段
   * 期权产品基础信息中增加“证券子类型”字段
 
 OES_0.12.3 / 2017-01-10
@@ -880,7 +1109,7 @@ OES_0.12 / 2016-12-06
   * 增加 OesApi_GetErrorMsg 和 OesApi_GetErrorMsg2 方法
   * 在登录报文中增加协议版本号信息, 并在登录时校验协议版本号的兼容性
   * 增加客户信息查询功能
-  * ETF成分股查询应答中增加成分股所属ETF申赎代码
+  * ETF成份股查询应答中增加成份股所属ETF申赎代码
   * 佣金查询应答中增加客户代码
   * 增加默认佣金模板配置；为佣金模板配置项增加通配设置
   * 增加所有者(OwnerType)配置，并替换原股东账户中的 optAcctLevel 字段

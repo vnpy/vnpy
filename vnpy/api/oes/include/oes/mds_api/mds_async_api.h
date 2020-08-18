@@ -24,12 +24,18 @@
  *              - 支持异步行情接收
  *              - 支持自动的连接管理 (自动识别异常并重建连接)
  *          - 样例代码参见:
- *              - include/mds_api/samples/02_mds_async_api_sample.c
+ *              - samples/01_mds_async_tcp_sample.c
  * @version 0.15.9.4    2019/11/19
  *          - 支持在运行过程中重新指定行情订阅条件
  *          - 调整 OnConnect 回调函数的返回值约定 @see F_MDSAPI_ASYNC_ON_DISCONNECT_T
  * @version 0.15.10     2019/12/20
  *          - 重构异步API, 统一交易和行情的异步接口
+ * @version 0.15.11     2020/05/29
+ *          - 增加辅助的异步API接口
+ *              - MdsAsyncApi_IsAllTerminated, 返回异步API相关的所有线程是否都已经安全退出
+ *          - 删除并不适用于行情异步API的密码修改接口
+ *              - MdsAsyncApi_SendChangePasswordReq
+ *
  * @since   2019/07/01
  */
 
@@ -107,8 +113,8 @@ typedef SEndpointContextT           MdsAsyncApiContextT;
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDSAPI_ASYNC_THREAD_ENV         \
-        NULLOBJ_SPK_ENDPOINT_ENV
+#define NULLOBJ_MDSAPI_ASYNC_CONTEXT            \
+        NULLOBJ_SPK_ENDPOINT_CONTEXT
 /* -------------------------           */
 
 
@@ -119,8 +125,48 @@ typedef SEndpointChannelT           MdsAsyncApiChannelT;
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDSAPI_ASYNC_CHANNEL_REF        \
-        NULLOBJ_SPK_ENDPOINT_CHANNEL_REF
+#define NULLOBJ_MDSAPI_ASYNC_CHANNEL            \
+        NULLOBJ_SPK_ENDPOINT_CHANNEL
+/* -------------------------           */
+
+
+/**
+ * MDS异步API的上下文环境的创建参数 (仅做为 CreateContext 接口的参数使用)
+ */
+typedef struct _MdsAsyncApiContextParams {
+    /** 异步队列的大小 */
+    int32               asyncQueueSize;
+
+    /** 是否优先使用大页内存来创建异步队列 */
+    uint8               isHugepageAble;
+
+    /** 是否启动独立的回调线程来执行回调处理 (否则将直接在通信线程下执行回调处理) */
+    uint8               isAsyncCallbackAble;
+
+    /** 是否使用忙等待模式 (TRUE:延迟更低但CPU会被100%占用; FALSE:延迟和CPU使用率相对均衡) */
+    uint8               isBusyPollAble;
+
+    /** 是否在启动前预创建并校验所有的连接 */
+    uint8               isPreconnectAble;
+
+    /** 是否需要支持对接压缩后的行情数据 */
+    uint8               isCompressible;
+
+    /** 是否启用对UDP行情数据的本地行情订阅和过滤功能 */
+    uint8               isUdpFilterable;
+
+    /** 为保证64位对齐而设 */
+    uint8               __filler[6];
+} MdsAsyncApiContextParamsT;
+
+
+/* 结构体初始化值定义 */
+#define NULLOBJ_MDSAPI_ASYNC_CONTEXT_PARAMS     \
+        0, 0, 0, 0, 0, 0, 0, {0}
+
+/* 结构体的默认值定义 */
+#define DEFAULT_MDSAPI_ASYNC_CONTEXT_PARAMS     \
+        -1, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, {0}
 /* -------------------------           */
 
 
@@ -169,13 +215,6 @@ typedef F_MDSAPI_ONMSG_T        F_MDSAPI_ASYNC_ON_MSG_T;
  *
  * <p> 线程说明:
  * - OnMsg/OnConnect/OnDisconnect 回调函数均运行在异步API线程下
- * </p>
- *
- * <p> @note 注意:
- * - 在 OnConnect 回调函数中, 不能使用 MdsAsyncApi_SubscribeByString 等异步API的消息发
- *   送接口, 仍需要使用对应的 MdsApi_SubscribeByString 等同步API的接口, 因为此时连接状态
- *   尚不是已就绪
- * - 只有当 OnConnect 回调函数执行成功以后, 连接状态才是已就绪
  * </p>
  *
  * @param   pAsyncChannel       异步API的连接通道信息
@@ -279,6 +318,23 @@ MdsAsyncApiContextT *
                 int32 asyncQueueSize);
 
 /**
+ * 创建异步API的运行时环境 (仅通过函数参数指定必要的配置参数)
+ *
+ * @param   pLoggerCfgFile      日志配置文件路径
+ *                              - 为空则忽略, 不初始化日志记录器
+ * @param   pLoggerSection      日志记录器的配置区段名称 (e.g. "log")
+ *                              - 为空则使用默认值
+ * @param   pContextParams      上下文环境的创建参数
+ *                              - 为空则使用默认值
+ * @return  非空, 异步API的运行时环境指针; NULL, 失败
+ */
+MdsAsyncApiContextT *
+        MdsAsyncApi_CreateContextSimple2(
+                const char *pLoggerCfgFile,
+                const char *pLoggerSection,
+                const MdsAsyncApiContextParamsT *pContextParams);
+
+/**
  * 释放异步API的运行时环境
  *
  * @param   pAsyncContext       异步API的运行时环境指针
@@ -304,12 +360,21 @@ void    MdsAsyncApi_Stop(
                 MdsAsyncApiContextT *pAsyncContext);
 
 /**
- * 返回异步API线程是否正在运行过程中
+ * 返回异步API的通信线程是否正在运行过程中
  *
  * @param   pAsyncContext       异步API的运行时环境指针
  * @return  TRUE 正在运行过程中; FALSE 已终止或尚未运行
  */
 BOOL    MdsAsyncApi_IsRunning(
+                MdsAsyncApiContextT *pAsyncContext);
+
+/**
+ * 返回异步API相关的所有线程是否都已经安全退出 (或尚未运行)
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @return  TRUE 所有线程均已退出; FALSE 尚未全部退出
+ */
+BOOL    MdsAsyncApi_IsAllTerminated(
                 MdsAsyncApiContextT *pAsyncContext);
 
 /**
@@ -371,8 +436,8 @@ MdsAsyncApiChannelT *
         MdsAsyncApi_AddChannel(
                 MdsAsyncApiContextT *pAsyncContext,
                 const char *pChannelTag,
-                MdsApiRemoteCfgT *pRemoteCfg,
-                MdsApiSubscribeInfoT *pSubscribeCfg,
+                const MdsApiRemoteCfgT *pRemoteCfg,
+                const MdsApiSubscribeInfoT *pSubscribeCfg,
                 F_MDSAPI_ASYNC_ON_MSG_T fnOnMsg,
                 void *pOnMsgParams,
                 F_MDSAPI_ASYNC_ON_CONNECT_T fnOnConnect,
@@ -555,8 +620,8 @@ BOOL    MdsAsyncApi_SubscribeMarketData(
 /**
  * 根据字符串形式的证券代码列表订阅行情信息
  *
- * @note    为兼容之前的版本, 该接口无法指定 tickType 等订阅参数, 可以通过
- *          MdsApi_SetThreadSubscribeTickType 等接口来设置这些附加的订阅参数
+ * @note    与 MdsApi_SubscribeByString 接口相同, 无法直接指定 tickType 等订阅参数(均
+ *          默认为0), 需要通过 MdsApi_SetThreadSubscribeTickType 等接口来这些订阅参数
  * @note    频繁订阅会对当前连接的行情获取速度产生不利影响, 建议每次订阅都尽量指定更多的证券
  *          代码, 以减少订阅次数
  * @note    订阅的数据类型 (dataTypes) 会以最后一次订阅为准, 所以每次都应该指定为所有待订阅
@@ -580,7 +645,11 @@ BOOL    MdsAsyncApi_SubscribeMarketData(
  *                              @see eMdsSubscribeDataTypeT
  * @return  TRUE 成功; FALSE 失败
  *
- * @see     MdsHelper_SetTickTypeOnSubscribeByString
+ * @see     MdsApi_SetThreadSubscribeTickType
+ * @see     MdsApi_SetThreadSubscribeTickRebuildFlag
+ * @see     MdsApi_SetThreadSubscribeTickExpireType
+ * @see     MdsApi_SetThreadSubscribeRequireInitMd
+ * @see     MdsApi_SetThreadSubscribeBeginTime
  */
 BOOL    MdsAsyncApi_SubscribeByString(
                 MdsAsyncApiChannelT *pAsyncChannel,
@@ -591,8 +660,10 @@ BOOL    MdsAsyncApi_SubscribeByString(
 /**
  * 直接根据字符串形式的证券代码列表订阅行情, 并通过证券代码前缀来区分和识别所属市场
  *
- * @note    为兼容之前的版本, 该接口无法指定 tickType 等订阅参数, 可以通过
- *          MdsApi_SetThreadSubscribeTickType 等接口来设置这些附加的订阅参数
+ * @note    代码前缀仅对 pSecurityListStr 参数指定的证券代码生效, 只是为了方便区分证券代码
+ *          所属的市场, 并不能直接通过代码前缀自动订阅所有匹配的股票
+ * @note    与 MdsApi_SubscribeByString 接口相同, 无法直接指定 tickType 等订阅参数(均
+ *          默认为0), 需要通过 MdsApi_SetThreadSubscribeTickType 等接口来这些订阅参数
  * @note    频繁订阅会对当前连接的行情获取速度产生不利影响, 建议每次订阅都尽量指定更多的证券
  *          代码, 以减少订阅次数
  * @note    订阅的数据类型 (dataTypes) 会以最后一次订阅为准, 所以每次都应该指定为所有待订阅
@@ -636,7 +707,11 @@ BOOL    MdsAsyncApi_SubscribeByString(
  *                              @see eMdsSubscribeDataTypeT
  * @return  TRUE 成功; FALSE 失败
  *
- * @see     MdsHelper_SetTickTypeOnSubscribeByString
+ * @see     MdsApi_SetThreadSubscribeTickType
+ * @see     MdsApi_SetThreadSubscribeTickRebuildFlag
+ * @see     MdsApi_SetThreadSubscribeTickExpireType
+ * @see     MdsApi_SetThreadSubscribeRequireInitMd
+ * @see     MdsApi_SetThreadSubscribeBeginTime
  */
 BOOL    MdsAsyncApi_SubscribeByStringAndPrefixes(
                 MdsAsyncApiChannelT *pAsyncChannel,
@@ -647,28 +722,6 @@ BOOL    MdsAsyncApi_SubscribeByStringAndPrefixes(
                 eMdsMdProductTypeT mdProductType,
                 eMdsSubscribeModeT subMode,
                 int32 dataTypes);
-
-/**
- * 发送密码修改请求 (修改客户端登录密码)
- * 密码修改请求将通过委托通道发送到MDS服务器, 并将采用同步请求/应答的方式直接返回处理结果
- *
- * @param       pAsyncChannel   异步API的连接通道信息
- * @param[in]   pChangePasswordReq
- *                              待发送的密码修改请求
- * @param[out]  pOutChangePasswordRsp
- *                              用于输出测试请求应答的缓存区
- * @retval      0               成功
- * @retval      <0              API调用失败 (负的错误号)
- * @retval      >0              服务端业务处理失败 (MDS错误号)
- *
- * @exception   EINVAL          传入参数非法
- * @exception   EPIPE           连接已破裂
- * @exception   Others          由send()系统调用返回的错误
- */
-int32   MdsAsyncApi_SendChangePasswordReq(
-                MdsAsyncApiChannelT *pAsyncOrdChannel,
-                const MdsChangePasswordReqT *pChangePasswordReq,
-                MdsChangePasswordRspT *pOutChangePasswordRsp);
 
 /**
  * 发送心跳消息
@@ -841,6 +894,31 @@ BOOL    MdsAsyncApi_IsCompressible(
                 MdsAsyncApiContextT *pAsyncContext);
 
 /**
+ * 设置是否启用对UDP行情数据的本地行情订阅和过滤功能
+ *
+ * @param[out]  pAsyncContext   异步API的运行时环境指针
+ * @param       isUdpFilterable 是否启用对UDP行情数据的本地订阅和过滤功能
+ *                              - 如果将该参数设置为TRUE, 则允许通过
+ *                                MdsAsyncApi_SubscribeByString 等接口设置 UDP 行
+ *                                情的订阅条件, 并在API端完成对行情数据的过滤
+ *                              - 如果不需要通过API进行行情数据过滤的话, 可以将该参数设
+ *                                置为FALSE, 这样可以避免额外的(微小的)性能消耗
+ * @return      TRUE 成功; FALSE 失败
+ */
+BOOL    MdsAsyncApi_SetUdpFilterable(
+                MdsAsyncApiContextT *pAsyncContext,
+                BOOL isUdpFilterable);
+
+/**
+ * 返回是否启用对UDP行情数据的本地行情订阅和过滤功能
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @return  是否启用对UDP行情数据的本地行情订阅和过滤功能
+ */
+BOOL    MdsAsyncApi_IsUdpFilterable(
+                MdsAsyncApiContextT *pAsyncContext);
+
+/**
  * 设置是否接管启动线程
  *
  * @param   pAsyncContext       异步API的运行时环境指针
@@ -1007,7 +1085,8 @@ __MdsAsyncApi_IsRunning(MdsAsyncApiContextT *pAsyncContext) {
 static __inline BOOL
 __MdsAsyncApi_IsChannelConnected(MdsAsyncApiChannelT *pAsyncChannel) {
     return pAsyncChannel->pSessionInfo
-            && *((volatile uint8 *) &pAsyncChannel->isConnected);
+            && (*((volatile uint8 *) &pAsyncChannel->isConnected)
+                    >= SPK_ENDPOINT_CHANNEL_STATUS_READY);
 }
 /* -------------------------           */
 

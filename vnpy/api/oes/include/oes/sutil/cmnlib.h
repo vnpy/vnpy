@@ -60,14 +60,14 @@ extern "C" {
  * =================================================================== */
 
 /* 用于浮点数的精度偏差 */
-#define SPK_FLOAT_WINDAGE               (0.0000001F)
+#define SPK_FLOAT_WINDAGE               (0.0000001)
 /* 用于浮点数舍入的精度偏差 */
-#define SPK_FLOAT_ROUNDING_WINDAGE      (0.5000001F)
+#define SPK_FLOAT_ROUNDING_WINDAGE      (0.5000001)
 
 /* 用于浮点数的精度偏差 */
-#define SPK_DOUBLE_WINDAGE              (0.0000000001)
+#define SPK_DOUBLE_WINDAGE              (0.00000000000001)
 /* 用于浮点数舍入的精度偏差 */
-#define SPK_DOUBLE_ROUNDING_WINDAGE     (0.5000000001)
+#define SPK_DOUBLE_ROUNDING_WINDAGE     (0.50000000000001)
 /* -------------------------           */
 
 
@@ -80,6 +80,10 @@ extern "C" {
 
 #undef  SPK_MIN_NONZERO
 #define SPK_MIN_NONZERO(a,b)            (((a) > 0 && (a) <= (b)) ? (a) : (b))
+
+#undef  SPK_MIN_NONZERO_FLOAT
+#define SPK_MIN_NONZERO_FLOAT(a,b)      \
+        (((a) > SPK_FLOAT_WINDAGE && (a) <= (b)) ? (a) : (b))
 
 #undef  SPK_MAX
 #define SPK_MAX(a,b)                    ((a) >= (b) ? (a) : (b))
@@ -201,13 +205,22 @@ extern "C" {
 #undef  SPK_IF_ZERO
 #define SPK_IF_ZERO(x,v)                ((x) > 0 ? (x) : (v))
 
+#undef  SPK_IF_ZERO_FLOAT
+#define SPK_IF_ZERO_FLOAT(x,v)          ((x) > SPK_FLOAT_WINDAGE ? (x) : (v))
+
 /* 若x为负数则返回v, 否则返回x */
 #undef  SPK_IF_NEG
 #define SPK_IF_NEG(x,v)                 ((x) < 0 ? (v) : (x))
 
+#undef  SPK_IF_NEG_FLOAT
+#define SPK_IF_NEG_FLOAT(x,v)           ((x) < -SPK_FLOAT_WINDAGE ? (v) : (x))
+
 /* 若x为非负数则返回v, 否则返回x */
 #undef  SPK_IF_NONNEG
 #define SPK_IF_NONNEG(x,v)              ((x) < 0 ? (x) : (v))
+
+#undef  SPK_IF_NONNEG_FLOAT
+#define SPK_IF_NONNEG_FLOAT(x,v)        ((x) < -SPK_FLOAT_WINDAGE ? (x) : (v))
 /* -------------------------           */
 
 
@@ -296,54 +309,6 @@ extern "C" {
 #   define  SPK_TOLOWER(c)              \
             (SPK_ISUPPER(c) ? 'a' + ((c) - 'A') : (c))
 #endif
-/* -------------------------           */
-
-
-/* ===================================================================
- * 宏函数定义 (字节序转换)
- * =================================================================== */
-
-#undef  SPK_SWAP_INT16
-#undef  SPK_SWAP_INT32
-#undef  SPK_SWAP_INT64
-#undef  SPK_SWAP_INT16_DIRECT
-#undef  SPK_SWAP_INT32_DIRECT
-#undef  SPK_SWAP_INT64_DIRECT
-
-/* Swap 2 byte, 16 bit values (for Big and Little Endian Byte Order) */
-#define SPK_SWAP_INT16(val)                     \
-        ( ((((uint16) val) >> 8) & 0x00FF) \
-                | ((((uint16) val) << 8) & 0xFF00) )
-
-/* Swap 4 byte, 32 bit values */
-#define SPK_SWAP_INT32(val)                     \
-        ( ((((uint32) val) >> 24) & 0x000000FF) \
-                | ((((uint32) val) >>  8) & 0x0000FF00) \
-                | ((((uint32) val) <<  8) & 0x00FF0000) \
-                | ((((uint32) val) << 24) & 0xFF000000) )
-
-/* Swap 8 byte, 64 bit values */
-#define SPK_SWAP_INT64(val)                     \
-        ( ((((uint64) val) >> 56) & 0x00000000000000FF) \
-                | ((((uint64) val) >> 40) & 0x000000000000FF00) \
-                | ((((uint64) val) >> 24) & 0x0000000000FF0000) \
-                | ((((uint64) val) >>  8) & 0x00000000FF000000) \
-                | ((((uint64) val) <<  8) & 0x000000FF00000000) \
-                | ((((uint64) val) << 24) & 0x0000FF0000000000) \
-                | ((((uint64) val) << 40) & 0x00FF000000000000) \
-                | ((((uint64) val) << 56) & 0xFF00000000000000) )
-
-/* Swap 2 byte, 16 bit values direct */
-#define SPK_SWAP_INT16_DIRECT(x)                \
-        ( *(uint16 *) &(x) = SPK_SWAP_INT16(*(uint16 *) &(x)) )
-
-/* Swap 4 byte, 32 bit values direct */
-#define SPK_SWAP_INT32_DIRECT(x)                \
-        ( *(uint32 *) &(x) = SPK_SWAP_INT32(*(uint32 *) &(x)) )
-
-/* Swap 8 byte, 64 bit values direct */
-#define SPK_SWAP_INT64_DIRECT(x)                \
-        ( *(uint64 *) &(x) = SPK_SWAP_INT64(*(uint64 *) &(x)) )
 /* -------------------------           */
 
 
@@ -447,377 +412,6 @@ extern "C" {
 #undef  SPK_ANNOUNCE_IS_NULL
 #define SPK_ANNOUNCE_IS_NULL(x)         \
         ((void*) (x) == (void*) 0 ? "IS-NULL" : "NOT-NULL")
-/* -------------------------           */
-
-
-/* ===================================================================
- * 忙等待方法定义
- * =================================================================== */
-
-/*
- * 根据构建类型设置忙等待策略
- */
-#if defined (__DEBUG)
-#   if ! defined (BUSY_YIELD_TO_SLEEP) && ! defined (NO_BUSY_YIELD_TO_SLEEP)
-#       define  BUSY_YIELD_TO_SLEEP         (1)
-#   endif
-#endif
-
-
-#if defined (NO_BUSY_YIELD_TO_WAITING)
-#   undef   BUSY_YIELD_TO_WAITING
-#endif
-
-#if defined (NO_BUSY_YIELD_TO_SLEEP)
-#   undef   BUSY_YIELD_TO_SLEEP
-#endif
-/* -------------------------           */
-
-
-/*
- * 忙等待级别定义
- */
-typedef enum _eSpkBusyPollLevel {
-    SPK_BUSY_POLL_LEVEL_BUSY_WAITING    = 0,    /* 忙等待级别-忙等待 */
-    SPK_BUSY_POLL_LEVEL_SCHED_YIELD     = 1,    /* 忙等待级别-让出CPU */
-    SPK_BUSY_POLL_LEVEL_SLEEP_YIELD     = 2,    /* 忙等待级别-以睡眠的方式让出CPU(睡眠1纳秒或1微秒) */
-    SPK_BUSY_POLL_LEVEL_SLEEP           = 3,    /* 忙等待级别-睡眠(睡眠1毫秒) */
-    __MAX_SPK_BUSY_POLL_LEVEL           = 1000
-} eSpkBusyPollLevelT;
-/* -------------------------           */
-
-
-/*
- * 根据忙等待级别进行忙等待时的睡眠处理
- *
- * @param   BUSY_POLL_LEVEL 忙等待级别定义 @see eSpkBusyPollLevelT
- */
-#undef  SPK_BUSY_POLL_YIELD
-#define SPK_BUSY_POLL_YIELD(BUSY_POLL_LEVEL)    \
-    do { \
-        if (__spk_likely((BUSY_POLL_LEVEL) == SPK_BUSY_POLL_LEVEL_BUSY_WAITING)) { \
-            SPK_BUSY_YIELD2(); \
-        } else if ((BUSY_POLL_LEVEL) == SPK_BUSY_POLL_LEVEL_SCHED_YIELD) { \
-            SPK_SCHED_YIELD(); \
-        } else if ((BUSY_POLL_LEVEL) == SPK_BUSY_POLL_LEVEL_SLEEP_YIELD) { \
-            SPK_SLEEP_YIELD(); \
-        } else if ((BUSY_POLL_LEVEL) <= SPK_BUSY_POLL_LEVEL_SLEEP) { \
-            SPK_SLEEP_MS(1); \
-        } else { \
-            SPK_SLEEP_MS((BUSY_POLL_LEVEL)); \
-        } \
-    } while (0)
-/* -------------------------           */
-
-
-/*
- * 用于忙等待时的睡眠处理
- */
-#undef  SPK_BUSY_YIELD
-#if defined (BUSY_YIELD_TO_WAITING)
-#   define  SPK_BUSY_YIELD(LOOP_VAR)            __SPK_CPU_RELAX()
-
-#elif defined (BUSY_YIELD_TO_SLEEP)
-#   define  SPK_BUSY_YIELD(LOOP_VAR)            \
-    do { \
-        switch (((LOOP_VAR)++ & 0x0F)) { \
-        case 0x03: \
-            SPK_SCHED_YIELD(); \
-            break; \
-        case 0x0F: \
-            SPK_SLEEP_YIELD(); \
-            break; \
-        } \
-        __SPK_CPU_RELAX(); \
-    } while (0)
-
-#else
-#   define  SPK_BUSY_YIELD(LOOP_VAR)            \
-    do { \
-        if (((LOOP_VAR)++ & 0x07) == 0x07) { \
-            SPK_SCHED_YIELD(); \
-        } else { \
-            __SPK_CPU_RELAX(); \
-        } \
-    } while (0)
-
-#endif
-
-
-#undef  SPK_BUSY_YIELD2
-#if defined (BUSY_YIELD_TO_WAITING)
-#   define  SPK_BUSY_YIELD2()                   __SPK_CPU_RELAX()
-
-#elif defined (BUSY_YIELD_TO_SLEEP)
-#   define  SPK_BUSY_YIELD2()                   SPK_SLEEP_YIELD()
-
-#else
-#   define  SPK_BUSY_YIELD2()                   SPK_SCHED_YIELD()
-
-#endif
-/* -------------------------           */
-
-
-/*
- * 用于忙等待时的睡眠处理
- */
-#undef  SPK_BUSY_SLEEP
-#define SPK_BUSY_SLEEP(LOOP_VAR)                \
-    do { \
-        switch (((LOOP_VAR)++ & 0x0F)) { \
-        case 0x03: \
-            SPK_SCHED_YIELD(); \
-            break; \
-        case 0x0F: \
-            SPK_SLEEP_YIELD(); \
-            break; \
-        } \
-        __SPK_CPU_RELAX(); \
-    } while (0)
-
-
-#undef  SPK_BUSY_SLEEP2
-#define SPK_BUSY_SLEEP2()                       SPK_SLEEP_YIELD()
-/* -------------------------           */
-
-
-/*
- * 忙等待, 直至条件不再成立
- */
-#undef  SPK_BUSY_WAITING
-#define SPK_BUSY_WAITING(COND)                  \
-    do { \
-        while (__spk_unlikely((COND))) { \
-            __SPK_CPU_RELAX(); \
-        } \
-    } while (0)
-/* -------------------------           */
-
-
-/*
- * 忙等待, 直至条件不再成立
- */
-#undef  SPK_BUSY_YIELD_WAITING
-#if defined (BUSY_YIELD_TO_WAITING)
-#   define  SPK_BUSY_YIELD_WAITING(COND)        SPK_BUSY_WAITING(COND)
-
-#elif defined (BUSY_YIELD_TO_SLEEP)
-#   define  SPK_BUSY_YIELD_WAITING(COND)        SPK_BUSY_SLEEP_WAITING(COND)
-
-#else
-#   define  SPK_BUSY_YIELD_WAITING(COND)        \
-    do { \
-        uint32  __BUSY_YIELD_loop = 0; \
-        while (__spk_unlikely((COND))) { \
-            SPK_BUSY_YIELD(__BUSY_YIELD_loop); \
-        } \
-    } while (0)
-
-#endif
-/* -------------------------           */
-
-
-/*
- * 忙等待, 直至条件不再成立
- */
-#undef  SPK_BUSY_SLEEP_WAITING
-#define SPK_BUSY_SLEEP_WAITING(COND)            \
-    do { \
-        uint32  __BUSY_SLEEP_loop = 0; \
-        while (__spk_unlikely((COND))) { \
-            SPK_BUSY_SLEEP(__BUSY_SLEEP_loop); \
-        } \
-    } while (0)
-/* -------------------------           */
-
-
-/* ===================================================================
- * 忙等待操作块定义
- * =================================================================== */
-
-/*
- * 忙等待操作块
- * 忙等待, 直至条件不再成立
- *
- * <p>同步块由3个宏组成:<ul>
- * <li> ● _YIELD_WAITING_BEGIN </li>
- * <li> ● _YIELD_WAITING_ELSE </li>
- * <li> ● _YIELD_WAITING_END </li>
- * </ul></p>
- *
- * <p>忙等待操作块示例: <pre>
- *      _YIELD_WAITING_BEGIN(! isXxxCompleted) {
- *          // do something
- *          ...;
- *      }
- *      _YIELD_WAITING_ELSE() {
- *          // do something
- *          ...;
- *      }
- *      _YIELD_WAITING_END();
- * </pre></p>
- *
- * @param   COND    忙等待的等待条件
- */
-#if !defined (_YIELD_WAITING_BEGIN)
-#if defined (BUSY_YIELD_TO_WAITING)
-#   define  _YIELD_WAITING_BEGIN(COND)          \
-    do { \
-        while ((COND)) {
-
-
-#   define  _YIELD_WAITING_YIELD()              \
-        SPK_BUSY_YIELD2()
-
-
-#   define  _YIELD_WAITING_WITH_TICK(COND)      \
-    do { \
-        uint32  __YIELD_WAITING_BEGIN_loop = 0; \
-        while ((COND)) {
-
-
-#   define  _YIELD_WAITING_TICK(N)              \
-        (((__YIELD_WAITING_BEGIN_loop++) & (N)) == (N))
-
-
-#   define  _YIELD_WAITING_ELSE()               \
-            _YIELD_WAITING_YIELD(); \
-        } \
-        {
-
-
-#   define  _YIELD_WAITING_END()                \
-            _YIELD_WAITING_YIELD(); \
-        } \
-    } while (0)
-
-
-#elif defined (BUSY_YIELD_TO_SLEEP)
-#   define  _YIELD_WAITING_BEGIN(COND)          _SLEEP_WAITING_BEGIN(COND)
-#   define  _YIELD_WAITING_YIELD()              _SLEEP_WAITING_YIELD()
-#   define  _YIELD_WAITING_WITH_TICK(COND)      _SLEEP_WAITING_WITH_TICK(COND)
-#   define  _YIELD_WAITING_TICK(N)              _SLEEP_WAITING_TICK(N)
-#   define  _YIELD_WAITING_ELSE()               _SLEEP_WAITING_ELSE()
-#   define  _YIELD_WAITING_END()                _SLEEP_WAITING_END()
-
-
-#else
-#   define  _YIELD_WAITING_BEGIN(COND)          \
-    do { \
-        uint32  __YIELD_WAITING_BEGIN_loop = 0; \
-        while ((COND)) {
-
-
-#   define  _YIELD_WAITING_YIELD()              \
-        SPK_BUSY_YIELD(__YIELD_WAITING_BEGIN_loop)
-
-
-#   define  _YIELD_WAITING_WITH_TICK(COND)      _YIELD_WAITING_BEGIN(COND)
-#   define  _YIELD_WAITING_TICK(N)              \
-        ((__YIELD_WAITING_BEGIN_loop & (N)) == (N))
-
-
-#   define  _YIELD_WAITING_ELSE()               \
-            _YIELD_WAITING_YIELD(); \
-        } \
-        {
-
-
-#   define  _YIELD_WAITING_END()                \
-            _YIELD_WAITING_YIELD(); \
-        } \
-    } while (0)
-
-
-#endif
-#endif  /* !defined (_YIELD_WAITING_BEGIN) */
-/* -------------------------           */
-
-
-/*
- * 忙等待操作块
- * 忙等待, 直至条件不再成立
- *
- * <p>同步块由3个宏组成:<ul>
- * <li> ● _SLEEP_WAITING_BEGIN </li>
- * <li> ● _SLEEP_WAITING_ELSE </li>
- * <li> ● _SLEEP_WAITING_END </li>
- * </ul></p>
- *
- * <p>忙等待操作块示例: <pre>
- *      _SLEEP_WAITING_BEGIN(! isXxxCompleted) {
- *          // do something
- *          ...;
- *      }
- *      _SLEEP_WAITING_ELSE() {
- *          // do something
- *          ...;
- *      }
- *      _SLEEP_WAITING_END();
- * </pre></p>
- *
- * @param   COND    忙等待的等待条件
- */
-#if !defined (_SLEEP_WAITING_BEGIN)
-#   define  _SLEEP_WAITING_BEGIN(COND)          \
-    do { \
-        uint32  __SLEEP_WAITING_BEGIN_loop = 0; \
-        while ((COND)) {
-
-
-#   define  _SLEEP_WAITING_YIELD()              \
-        SPK_BUSY_SLEEP(__SLEEP_WAITING_BEGIN_loop)
-
-
-#   define  _SLEEP_WAITING_WITH_TICK(COND)      _SLEEP_WAITING_BEGIN(COND)
-#   define  _SLEEP_WAITING_TICK(N)              \
-        ((__SLEEP_WAITING_BEGIN_loop & (N)) == (N))
-
-
-#   define  _SLEEP_WAITING_ELSE()               \
-            _SLEEP_WAITING_YIELD(); \
-        } \
-        {
-
-
-#   define  _SLEEP_WAITING_END()                \
-            _SLEEP_WAITING_YIELD(); \
-        } \
-    } while (0)
-
-#endif
-/* -------------------------           */
-
-
-/* ===================================================================
- * 检查是否需要使用 tcmalloc 或 jemalloc
- * =================================================================== */
-
-#if defined (USE_TCMALLOC)
-#   define  SPK_MALLOC_LIB_VER                  \
-            ("tcmalloc-" __XSTRING(TC_VERSION_MAJOR) "." \
-                    __XSTRING(TC_VERSION_MINOR))
-
-#   include <gperftools/tcmalloc.h>
-
-#   if ! ((TC_VERSION_MAJOR == 2 && TC_VERSION_MINOR >= 4) \
-            || (TC_VERSION_MAJOR > 2))
-#       error "Newer version of tcmalloc required"
-#   endif
-
-#elif defined (USE_JEMALLOC)
-#   define  SPK_MALLOC_LIB_VER                  \
-            ("jemalloc-" __XSTRING(JEMALLOC_VERSION_MAJOR) "." \
-                    __XSTRING(JEMALLOC_VERSION_MINOR) "." \
-                    __XSTRING(JEMALLOC_VERSION_BUGFIX))
-
-#   include <jemalloc/jemalloc.h>
-
-#   if ! ((JEMALLOC_VERSION_MAJOR == 3 && JEMALLOC_VERSION_MINOR >= 0) \
-            || (JEMALLOC_VERSION_MAJOR > 3))
-#       error "Newer version of jemalloc required"
-#   endif
-#endif
 /* -------------------------           */
 
 

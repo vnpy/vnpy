@@ -115,7 +115,7 @@ public:
     virtual void        OnQueryStock(const OesStockItemT *pStock, const OesQryCursorT *pCursor, int32 requestId) = 0;
     /* 查询ETF产品信息回调 */
     virtual void        OnQueryEtf(const OesEtfItemT *pEtf, const OesQryCursorT *pCursor, int32 requestId) = 0;
-    /* 查询ETF成分股信息回调 */
+    /* 查询ETF成份证券信息回调 */
     virtual void        OnQueryEtfComponent(const OesEtfComponentItemT *pEtfComponent, const OesQryCursorT *pCursor, int32 requestId) = 0;
     /* 查询市场状态信息回调 */
     virtual void        OnQueryMarketState(const OesMarketStateItemT *pMarketState, const OesQryCursorT *pCursor, int32 requestId) = 0;
@@ -194,7 +194,7 @@ public:
     /* 发送出入金请求 */
     int32               SendFundTrsf(const OesFundTrsfReqT *pFundTrsfReq);
     /* 客户端密码修改请求 */
-    int32               SendChangePassword(const OesChangePasswordReqT *pChangePasswordReq, OesChangePasswordRspT *pChangePasswordRsp);
+    int32               SendChangePassword(const OesChangePasswordReqT *pChangePasswordReq);
     /* 期权账户结算单确认请求 (适用于期权业务) */
     int32               SendOptSettlementConfirm(const OesOptSettlementConfirmReqT *pOptSettleCnfmReq, OesOptSettlementConfirmRspT *pOptSettleCnfmRsp);
 
@@ -226,7 +226,7 @@ public:
     int32               QueryStock(const OesQryStockFilterT *pQryFilter, int32 requestId = 0);
     /* 查询ETF申赎产品信息 */
     int32               QueryEtf(const OesQryEtfFilterT *pQryFilter, int32 requestId = 0);
-    /* 查询ETF成分股信息 */
+    /* 查询ETF成份证券信息 */
     int32               QueryEtfComponent(const OesQryEtfComponentFilterT *pQryFilter, int32 requestId = 0);
     /* 查询市场状态信息 */
     int32               QueryMarketState(const OesQryMarketStateFilterT *pQryFilter, int32 requestId = 0);

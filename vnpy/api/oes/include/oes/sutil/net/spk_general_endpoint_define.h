@@ -42,8 +42,9 @@ extern "C" {
  * =================================================================== */
 
 /** 可以同时连接的远程服务器的最大数量 */
-#define SPK_ENDPOINT_MAX_REMOTE_CNT             \
-        GENERAL_CLI_MAX_CHANNEL_GROUP_SIZE
+#ifndef SPK_ENDPOINT_MAX_REMOTE_CNT
+#   define  SPK_ENDPOINT_MAX_REMOTE_CNT         (128)
+#endif
 /* -------------------------           */
 
 
@@ -55,11 +56,23 @@ extern "C" {
  * 数据导出格式
  */
 typedef enum _eSpkDataExportFormat {
-    SPK_ENDPOINT_EXPORT_FORMATE_NONE    = 0,    /**< 空 (不输出数据) */
-    SPK_ENDPOINT_EXPORT_FORMATE_JSON    = 1,    /**< JSON格式 */
-    SPK_ENDPOINT_EXPORT_FORMATE_CSV     = 2,    /**< CSV/TXT格式 */
-    SPK_ENDPOINT_EXPORT_FORMATE_BINARY  = 3     /**< 原始的二进制结构 */
+    SPK_ENDPOINT_EXPORT_FORMATE_NONE            = 0,    /**< 空 (不输出数据) */
+    SPK_ENDPOINT_EXPORT_FORMATE_JSON            = 1,    /**< JSON格式 */
+    SPK_ENDPOINT_EXPORT_FORMATE_CSV             = 2,    /**< CSV/TXT格式 */
+    SPK_ENDPOINT_EXPORT_FORMATE_BINARY          = 3,    /**< 原始的二进制结构 */
+    SPK_ENDPOINT_EXPORT_FORMATE_POC             = 4     /**< 适用于POC测试的文本格式 */
 } eSpkDataExportFormatT;
+/* -------------------------           */
+
+
+/**
+ * 连接就绪状态
+ */
+typedef enum _eSpkEndpointChannelStatus {
+    SPK_ENDPOINT_CHANNEL_STATUS_DISCONNECT      = 0,    /**< 尚未连接或连接已断开 */
+    SPK_ENDPOINT_CHANNEL_STATUS_CONNECTED       = 1,    /**< 连接已建立 */
+    SPK_ENDPOINT_CHANNEL_STATUS_READY           = 2     /**< 连接已就绪 */
+} eSpkEndpointChannelStatusT;
 /* -------------------------           */
 
 
@@ -165,8 +178,11 @@ typedef struct _SEndpointIoThreadCfg {
     /** 是否采用精简模式输出数据 */
     uint8                   isOutputSimplify;
 
-    /** 按64位对齐的填充域 */
-    uint8                   __filler[2];
+    /** 是否采用追加模式输出数据 */
+    uint8                   isAppendMode;
+
+    /** I/O线程是否使用忙等待模式 (仅用于延迟测量场景, 否则I/O线程没有必要使用忙等待模式) */
+    uint8                   isIoThreadBusyPollAble;
 
     /** 数据输出格式 */
     int32                   dataOutputFormat;
@@ -181,7 +197,7 @@ typedef struct _SEndpointIoThreadCfg {
 
 /* 结构体的初始化值定义 */
 #define NULLOBJ_SPK_ENDPOINT_IO_THREAD_CFG                          \
-        0, 0, {0}, 0, \
+        0, 0, 0, 0, 0, \
         {0}, {0}
 /* -------------------------           */
 
@@ -220,7 +236,7 @@ typedef struct _SEndpointChannel {
 
     /** 通道配置信息指针 */
     SEndpointChannelCfgT    *pChannelCfg;
-    /** 扩展的通道配置数据 (由应用层或API负责解释和维护) */
+    /** 扩展的通道配置数据 (由基础库负责分配空间, 由应用层或API负责解释和维护) */
     void                    *pExtChannelCfg;
 
     /** 标识通道是否已连接就绪 */

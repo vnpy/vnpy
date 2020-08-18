@@ -77,28 +77,28 @@ extern  SLogModeT __SPK_DLL_IMPORT      __SPK_slogModes[];
 /*
  * 日志级别常量定义
  */
-/** 日志模式 - 文件日志 - 等同FILE_ROLLING */
+/** 日志模式 - 文件日志(FILE) - 等同FILE_ROLLING */
 #define SLOG_MODE_FILE                  (&__SPK_slogModes[0])
 
-/** 日志模式 - 文件日志 - 轮换, 不区分具体日期 */
+/** 日志模式 - 文件日志(FILE_ROLLING) - 轮换, 不区分具体日期 */
 #define SLOG_MODE_FILE_ROLLING          (&__SPK_slogModes[1])
 
-/** 日志模式 - 文件日志 - 每天N个日志文件(N >= 1) */
+/** 日志模式 - 文件日志(FILE_DAILY_ROLLING) - 每天N个日志文件(N >= 1) */
 #define SLOG_MODE_FILE_DAILY_ROLLING    (&__SPK_slogModes[2])
 
-/** 日志模式 - 文件日志 - 每天一个日志文件 */
+/** 日志模式 - 文件日志(FILE_DAILY) - 每天一个日志文件 */
 #define SLOG_MODE_FILE_DAILY            (&__SPK_slogModes[3])
 
-/** 日志模式 - 控制台日志 - 等同CONSOLE_STDOUT */
+/** 日志模式 - 控制台日志(CONSOLE) - 等同CONSOLE_STDOUT */
 #define SLOG_MODE_CONSOLE               (&__SPK_slogModes[4])
 
-/** 日志模式 - 控制台日志 - 输出到stdout */
+/** 日志模式 - 控制台日志(CONSOLE_STDOUT) - 输出到stdout */
 #define SLOG_MODE_CONSOLE_STDOUT        (&__SPK_slogModes[5])
 
-/** 日志模式 - 控制台日志 - 输出到stderr */
+/** 日志模式 - 控制台日志(CONSOLE_STDERR) - 输出到stderr */
 #define SLOG_MODE_CONSOLE_STDERR        (&__SPK_slogModes[6])
 
-/** 日志模式 - 异步文件日志 */
+/** 日志模式 - 异步文件日志(ASYNC_FILE) */
 #define SLOG_MODE_ASYNC_FILE            (&__SPK_slogModes[7])
 /* -------------------------           */
 

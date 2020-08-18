@@ -8,13 +8,17 @@
 
 #### 1.1 示例代码
 
-- 参见 mds_api/samples 目录下的样例文件
+- 参见 samples/mds_sample 目录下的样例文件
 	- 配置文件样例 <mds_client_sample.conf>
-	- 行情接收与打印的代码样例 <mds_client_sample.c>
-	- 行情订阅与接收的代码样例 <mds_subscribe_sample.c>
-	- 用于样例代码编译的 <Makefile.sample>
+	- TCP行情对接的样例代码 (基于异步API实现) <01_mds_async_tcp_sample.c>
+	- TCP行情对接的样例代码 (精简版本, 基于异步API实现) <02_mds_async_tcp_sample.minimal.c>
+	- UDP行情对接的样例代码 (基于异步API实现) <03_mds_async_udp_sample.c>
+	- TCP行情对接的样例代码 (基于同步API实现) <04_mds_sync_tcp_sample.c>
+	- UDP行情对接的样例代码 (基于同步API实现) <05_mds_sync_udp_sample.c>
+	- 证券静态信息查询和快照行情查询的样例代码 <06_mds_query_sample.c>
+	- 用于样例代码编译的 Makefile <Makefile.sample>
 
-mds_subscribe_sample.c 摘录如下：
+04_mds_sync_tcp_sample.c 摘录如下：
 ~~~{.c}
 
 /**
@@ -123,7 +127,7 @@ ON_ERROR:
 #### 1.2 示例代码的编译和运行
 
 1. 进入样例代码目录
-	- ``cd mds_libs-xxx/include/mds_api/samples/``
+	- ``cd mds_libs-xxx/samples/mds_sample/``
 
 2. 编译代码
 	- ``make -f Makefile.sample``
@@ -133,7 +137,8 @@ ON_ERROR:
 
 4. 运行样例程序
 	- ``./mds_subscribe_sample``
-	- ``./mds_client_sample``
+	- ``./mds_async_api_sample``
+	- ``./mds_async_udp_sample``
 
 
 ---

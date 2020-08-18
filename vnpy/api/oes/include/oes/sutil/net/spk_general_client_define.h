@@ -162,12 +162,12 @@ typedef struct _SGeneralClientChannel {
     uint64              firstInMsgSeq;          /**< 已接收到的起始入向消息序号 */
     uint64              lastInMsgSeq;           /**< 实际已接收到的入向消息序号 (对应于登录应答消息的 lastOutMsgSeq) */
     uint64              nextInMsgSeq;           /**< 期望的入向消息序号 */
-    STimevalT           lastRecvTime;           /**< 接收时间 */
+    STimespecT          lastRecvTime;           /**< 接收时间 */
 
     SSocketChannelInfoT channel;                /**< 连接通道信息 */
     uint64              nextOutMsgSeq;          /**< 出向消息序号 */
     uint64              lastOutMsgSeq;          /**< 实际已发送的出向消息序号 (对应于登录应答消息的 lastInMsgSeq) */
-    STimevalT           lastSendTime;           /**< 发送时间 */
+    STimespecT          lastSendTime;           /**< 发送时间 */
 
     /** 发送方代码 */
     char                senderCompId[GENERAL_CLI_MAX_COMP_ID_LEN];
@@ -181,7 +181,7 @@ typedef struct _SGeneralClientChannel {
     int8                __clEnvId;              /**< 客户端环境号 */
     uint8               __groupFlag;            /**< 通道组标志 */
     uint8               __protocolHints;        /**< 协议约定信息 */
-    uint8               __businessScope;        /**< 服务端业务范围 */
+    uint8               __businessScope;        /**< 业务范围 (@deprecated 已废弃) */
     uint8               __filler[3];            /**< 按64位对齐填充域 */
 
     /** 保留给服务器或API内部使用的, 用于存储自定义数据的扩展空间 */

@@ -562,6 +562,18 @@ extern "C" {
 
     typedef _SPK_STRUCT_TIMEVAL32       STimeval32T;
 #endif      /* _SPK_STRUCT_TIMEVAL32 */
+
+
+#ifndef _SPK_STRUCT_TIMESPEC32
+#   define  _SPK_STRUCT_TIMESPEC32      struct _spk_struct_timespec32
+    _SPK_STRUCT_TIMESPEC32
+    {
+        int32                           tv_sec;         /* seconds */
+        int32                           tv_nsec;        /* and nanoseconds */
+    };
+
+    typedef _SPK_STRUCT_TIMESPEC32      STimespec32T;
+#endif      /* _SPK_STRUCT_TIMEVAL32 */
 /* -------------------------           */
 
 
@@ -578,6 +590,18 @@ extern "C" {
 
     typedef _SPK_STRUCT_TIMEVAL64       STimeval64T;
 #endif      /* _SPK_STRUCT_TIMEVAL64 */
+
+
+#ifndef _SPK_STRUCT_TIMESPEC64
+#   define  _SPK_STRUCT_TIMESPEC64      struct _spk_struct_timespec64
+    _SPK_STRUCT_TIMESPEC64
+    {
+        int64                           tv_sec;         /* seconds */
+        int64                           tv_nsec;        /* and nanoseconds */
+    };
+
+    typedef _SPK_STRUCT_TIMESPEC64      STimespec64T;
+#endif      /* _SPK_STRUCT_TIMESPEC64 */
 /* -------------------------           */
 
 

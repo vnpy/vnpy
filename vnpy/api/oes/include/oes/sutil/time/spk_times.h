@@ -140,15 +140,127 @@ int32       __STime_GetTimevalStructSize();
 
 
 /**
+ * 返回相差的毫秒数
+ *
+ * @param   P_TV1           <struct timeval *> 开始时间
+ * @param   P_TV2           <struct timeval *> 结束时间
+ * @return  <int64> 相差的毫秒数 (P_TV2 - P_TV1)
+ */
+#define __STIME_DiffTimevalMs(P_TV1, P_TV2)                 \
+        ( (int64) ((P_TV2)->tv_sec - (P_TV1)->tv_sec) * 1000 \
+                + SPK_UNSIGNED_ROUND_TIMES( \
+                        (P_TV2)->tv_usec - (P_TV1)->tv_usec, 1000) )
+
+
+/**
+ * 返回相差的毫秒数 (浮点数值)
+ *
+ * @param   P_TV1           <struct timeval *> 开始时间
+ * @param   P_TV2           <struct timeval *> 结束时间
+ * @return  <double> 相差的毫秒数 (P_TV2 - P_TV1)
+ */
+#define __STIME_DiffTimevalMsFloat(P_TV1, P_TV2)            \
+        ( (double) ((P_TV2)->tv_sec - (P_TV1)->tv_sec) * 1000 \
+                + (double) ((P_TV2)->tv_usec - (P_TV1)->tv_usec) / 1000 )
+
+
+/**
  * 返回相差的微秒数
  *
- * @param   pTv1    开始时间
- * @param   pTv2    结束时间
- * @return  相差的微秒数
+ * @param   P_TV1           <struct timeval *> 开始时间
+ * @param   P_TV2           <struct timeval *> 结束时间
+ * @return  <int64> 相差的微秒数 (P_TV2 - P_TV1)
  */
-#define __STIME_DiffTimevalMicrosecond(P_TV1, P_TV2)        \
+#define __STIME_DiffTimevalUs(P_TV1, P_TV2)                 \
         ( (int64) ((P_TV2)->tv_sec - (P_TV1)->tv_sec) * 1000000 \
                 + (P_TV2)->tv_usec - (P_TV1)->tv_usec )
+
+
+/**
+ * 返回相差的微秒数 (浮点数值)
+ *
+ * @param   P_TV1           <struct timeval *> 开始时间
+ * @param   P_TV2           <struct timeval *> 结束时间
+ * @return  <double> 相差的微秒数 (P_TV2 - P_TV1)
+ */
+#define __STIME_DiffTimevalUsFloat(P_TV1, P_TV2)            \
+        ( (double) ((P_TV2)->tv_sec - (P_TV1)->tv_sec) * 1000000 \
+                + (P_TV2)->tv_usec - (P_TV1)->tv_usec )
+/* -------------------------           */
+
+
+/**
+ * 返回相差的毫秒数
+ *
+ * @param   P_TS1           <struct timespec *> 开始时间
+ * @param   P_TS2           <struct timespec *> 结束时间
+ * @return  <int64> 相差的毫秒数 (P_TS2 - P_TS1)
+ */
+#define __STIME_DiffTimespecMs(P_TS1, P_TS2)                \
+        ( (int64) ((P_TS2)->tv_sec - (P_TS1)->tv_sec) * 1000 \
+                + SPK_UNSIGNED_ROUND_TIMES( \
+                        (P_TS2)->tv_nsec - (P_TS1)->tv_nsec, 1000000) )
+
+
+/**
+ * 返回相差的毫秒数 (浮点数值)
+ *
+ * @param   P_TS1           <struct timespec *> 开始时间
+ * @param   P_TS2           <struct timespec *> 结束时间
+ * @return  <double> 相差的毫秒数 (P_TS2 - P_TS1)
+ */
+#define __STIME_DiffTimespecMsFloat(P_TS1, P_TS2)           \
+        ( (double) ((P_TS2)->tv_sec - (P_TS1)->tv_sec) * 1000 \
+                + (double) ((P_TS2)->tv_nsec - (P_TS1)->tv_nsec) / 1000000 )
+
+
+/**
+ * 返回相差的微秒数
+ *
+ * @param   P_TS1           <struct timespec *> 开始时间
+ * @param   P_TS2           <struct timespec *> 结束时间
+ * @return  <int64> 相差的微秒数 (P_TS2 - P_TS1)
+ */
+#define __STIME_DiffTimespecUs(P_TS1, P_TS2)                \
+        ( (int64) ((P_TS2)->tv_sec - (P_TS1)->tv_sec) * 1000000 \
+                + SPK_UNSIGNED_ROUND_TIMES( \
+                        (P_TS2)->tv_nsec - (P_TS1)->tv_nsec, 1000) )
+
+
+/**
+ * 返回相差的微秒数 (浮点数值)
+ *
+ * @param   P_TS1           <struct timespec *> 开始时间
+ * @param   P_TS2           <struct timespec *> 结束时间
+ * @return  <double> 相差的微秒数 (P_TS2 - P_TS1)
+ */
+#define __STIME_DiffTimespecUsFloat(P_TS1, P_TS2)           \
+        ( (double) ((P_TS2)->tv_sec - (P_TS1)->tv_sec) * 1000000 \
+                + (double) ((P_TS2)->tv_nsec - (P_TS1)->tv_nsec) / 1000 )
+
+
+/**
+ * 返回相差的纳秒数
+ *
+ * @param   P_TS1           <struct timespec *> 开始时间
+ * @param   P_TS2           <struct timespec *> 结束时间
+ * @return  <int64> 相差的纳秒数 (P_TS2 - P_TS1)
+ */
+#define __STIME_DiffTimespecNs(P_TS1, P_TS2)                \
+        ( (int64) ((P_TS2)->tv_sec - (P_TS1)->tv_sec) * 1000000 * 1000 \
+                + ((P_TS2)->tv_nsec - (P_TS1)->tv_nsec))
+
+
+/**
+ * 返回相差的纳秒数 (浮点数值)
+ *
+ * @param   P_TS1           <struct timespec *> 开始时间
+ * @param   P_TS2           <struct timespec *> 结束时间
+ * @return  <double> 相差的纳秒数 (P_TS2 - P_TS1)
+ */
+#define __STIME_DiffTimespecNsFloat(P_TS1, P_TS2)           \
+        ( (double) ((P_TS2)->tv_sec - (P_TS1)->tv_sec) * 1000000 * 1000 \
+                + ((P_TS2)->tv_nsec - (P_TS1)->tv_nsec))
 /* -------------------------           */
 
 
@@ -235,7 +347,7 @@ __STime_LocaltimeR(const time_t *pUnixSecs, struct tm *pResult) {
 /**
  * 返回当前系统时间
  *
- * @return  time_t
+ * @return  time_t          number of seconds since 1970-01-01 00:00:00 +0000 (UTC)
  * @see     time()
  */
 static __inline time_t
@@ -247,7 +359,7 @@ STime_GetSysTime() {
 /**
  * 返回tm结构的当前时间
  *
- * @param[out]  pOutTm  <struct tm *> 用于输出当前时间的数据缓存
+ * @param[out]  pOutTm      <struct tm *> 用于输出当前时间的数据缓存
  * @return      当前时间 (struct tm *)
  */
 static __inline struct tm*
@@ -272,7 +384,7 @@ STime_GetTmBySeconds(struct tm *pOutTm, int64 unixSecs) {
 /**
  * 返回微秒级的当前时间
  *
- * @param[out]  pTv     用于输出当前时间的数据缓存
+ * @param[out]  pTv         用于输出当前时间的数据缓存
  * @return      微秒级时间
  * @see         gettimeofday()
  */
@@ -288,7 +400,7 @@ STime_GetTimeOfDay(STimevalT *pTv) {
 /**
  * 返回微秒级的当前时间
  *
- * @param[out]  pTv     用于输出当前时间的数据缓存
+ * @param[out]  pTv         用于输出当前时间的数据缓存
  * @return      微秒级时间
  * @see         gettimeofday()
  */
@@ -309,7 +421,7 @@ STime_GetTimeOfDay32(STimeval32T *pTv) {
 /**
  * 返回纳秒级的当前时间
  *
- * @param[out]  pTs     用于输出当前时间的数据缓存
+ * @param[out]  pTs         用于输出当前时间的数据缓存
  * @return      纳秒级时间
  * @see         clock_gettime()
  */
@@ -318,11 +430,32 @@ STime_GetClockTime(STimespecT *pTs) {
     SLOG_ASSERT(pTs);
 
 #if defined (__LINUX__)
-    clock_gettime(CLOCK_MONOTONIC, pTs);
+    clock_gettime(CLOCK_REALTIME, pTs);
 #else
     STime_GetTimeOfDay((STimevalT *) pTs);
     pTs->tv_nsec *= 1000;
 #endif
+
+    return pTs;
+}
+
+
+/**
+ * 返回纳秒级的当前时间
+ *
+ * @param[out]  pTs         用于输出当前时间的数据缓存
+ * @return      纳秒级时间
+ * @see         clock_gettime()
+ */
+static __inline STimespec32T*
+STime_GetClockTime32(STimespec32T *pTs) {
+    STimespecT  ts = {0, 0};
+
+    SLOG_ASSERT(pTs);
+
+    STime_GetClockTime(&ts);
+    pTs->tv_sec = ts.tv_sec;
+    pTs->tv_nsec = ts.tv_nsec;
 
     return pTs;
 }
@@ -345,168 +478,224 @@ STime_GetMillisecondsTime() {
 /**
  * 返回相差的毫秒数
  *
- * @param   pTv1    开始时间
- * @param   pTv2    结束时间
- * @return  相差的毫秒数
+ * @param   pTv1            开始时间
+ * @param   pTv2            结束时间
+ * @return  相差的毫秒数 (pTv2 - pTv1)
  */
 static __inline int64
 STime_DiffMillisecond(const STimevalT *pTv1, const STimevalT *pTv2) {
-    int64       diff = 0;
-
     SLOG_ASSERT(pTv1 && pTv2);
-
-    diff = (pTv2->tv_sec - pTv1->tv_sec) * 1000;
-    diff += (pTv2->tv_usec - pTv1->tv_usec) / 1000;
-
-    return diff;
+    return __STIME_DiffTimevalMs(pTv1, pTv2);
 }
 
 
 /**
  * 返回相差的毫秒数
  *
- * @param   pTv1    开始时间
- * @param   pTv2    结束时间
- * @return  相差的毫秒数
+ * @param   pTv1            开始时间
+ * @param   pTv2            结束时间
+ * @return  相差的毫秒数 (pTv2 - pTv1)
  */
 static __inline int64
 STime_DiffMillisecond32(const STimeval32T *pTv1, const STimeval32T *pTv2) {
-    int64       diff = 0;
-
     SLOG_ASSERT(pTv1 && pTv2);
-
-    diff = (pTv2->tv_sec - pTv1->tv_sec) * 1000;
-    diff += (pTv2->tv_usec - pTv1->tv_usec) / 1000;
-
-    return diff;
+    return __STIME_DiffTimevalMs(pTv1, pTv2);
 }
 
 
 /**
  * 返回相差的毫秒数 (浮点数值)
  *
- * @param   pTv1    开始时间
- * @param   pTv2    结束时间
- * @return  相差的毫秒数
+ * @param   pTv1            开始时间
+ * @param   pTv2            结束时间
+ * @return  相差的毫秒数 (pTv2 - pTv1)
  */
 static __inline double
 STime_DiffMillisecondFloat(const STimevalT *pTv1, const STimevalT *pTv2) {
-    double      diff = 0.0;
-
     SLOG_ASSERT(pTv1 && pTv2);
-
-    diff = (pTv2->tv_sec - pTv1->tv_sec) * 1000;
-    diff += (double) (pTv2->tv_usec - pTv1->tv_usec) / 1000;
-
-    return diff;
+    return __STIME_DiffTimevalMsFloat(pTv1, pTv2);
 }
 
 
 /**
  * 返回相差的毫秒数 (浮点数值)
  *
- * @param   pTv1    开始时间
- * @param   pTv2    结束时间
- * @return  相差的毫秒数
+ * @param   pTv1            开始时间
+ * @param   pTv2            结束时间
+ * @return  相差的毫秒数 (pTv2 - pTv1)
  */
 static __inline double
 STime_DiffMillisecondFloat32(const STimeval32T *pTv1, const STimeval32T *pTv2) {
-    double      diff = 0.0;
-
     SLOG_ASSERT(pTv1 && pTv2);
-
-    diff = (pTv2->tv_sec - pTv1->tv_sec) * 1000;
-    diff += (double) (pTv2->tv_usec - pTv1->tv_usec) / 1000;
-
-    return diff;
+    return __STIME_DiffTimevalMsFloat(pTv1, pTv2);
 }
 
 
 /**
  * 返回相差的微秒数
  *
- * @param   pTv1    开始时间
- * @param   pTv2    结束时间
- * @return  相差的微秒数
+ * @param   pTv1            开始时间
+ * @param   pTv2            结束时间
+ * @return  相差的微秒数 (pTv2 - pTv1)
  */
 static __inline int64
 STime_DiffMicrosecond(const STimevalT *pTv1, const STimevalT *pTv2) {
     SLOG_ASSERT(pTv1 && pTv2);
-    return __STIME_DiffTimevalMicrosecond(pTv1, pTv2);
+    return __STIME_DiffTimevalUs(pTv1, pTv2);
 }
 
 
 /**
  * 返回相差的微秒数
  *
- * @param   pTv1    开始时间
- * @param   pTv2    结束时间
- * @return  相差的微秒数
+ * @param   pTv1            开始时间
+ * @param   pTv2            结束时间
+ * @return  相差的微秒数 (pTv2 - pTv1)
  */
 static __inline int64
 STime_DiffMicrosecond32(const STimeval32T *pTv1, const STimeval32T *pTv2) {
     SLOG_ASSERT(pTv1 && pTv2);
-    return __STIME_DiffTimevalMicrosecond(pTv1, pTv2);
+    return __STIME_DiffTimevalUs(pTv1, pTv2);
 }
 
 
 /**
  * 返回相差的纳秒数
  *
- * @param   pTs1    开始时间
- * @param   pTs2    结束时间
- * @return  相差的纳秒数
+ * @param   pTs1            开始时间
+ * @param   pTs2            结束时间
+ * @return  相差的纳秒数 (pTs2 - pTs1)
  */
 static __inline int64
 STime_DiffTimespecNs(const STimespecT *pTs1, const STimespecT *pTs2) {
-    int64       diff = 0;
-
     SLOG_ASSERT(pTs1 && pTs2);
+    return __STIME_DiffTimespecNs(pTs1, pTs2);
+}
 
-    diff = (int64) (pTs2->tv_sec - pTs1->tv_sec) * 1000000000;
-    diff += pTs2->tv_nsec - pTs1->tv_nsec;
 
-    return diff;
+/**
+ * 返回相差的纳秒数
+ *
+ * @param   pTs1            开始时间
+ * @param   pTs2            结束时间
+ * @return  相差的纳秒数 (pTs2 - pTs1)
+ */
+static __inline int64
+STime_DiffTimespecNs32(const STimespec32T *pTs1, const STimespec32T *pTs2) {
+    SLOG_ASSERT(pTs1 && pTs2);
+    return __STIME_DiffTimespecNs(pTs1, pTs2);
 }
 
 
 /**
  * 返回相差的微秒数
  *
- * @param   pTs1    开始时间
- * @param   pTs2    结束时间
- * @return  相差的微秒数
+ * @param   pTs1            开始时间
+ * @param   pTs2            结束时间
+ * @return  相差的微秒数 (pTs2 - pTs1)
  */
 static __inline int64
 STime_DiffTimespecUs(const STimespecT *pTs1, const STimespecT *pTs2) {
-    int64       diff = 0;
-
     SLOG_ASSERT(pTs1 && pTs2);
+    return __STIME_DiffTimespecUs(pTs1, pTs2);
+}
 
-    diff = (int64) (pTs2->tv_sec - pTs1->tv_sec) * 1000000;
-    diff += (pTs2->tv_nsec - pTs1->tv_nsec) / 1000;
 
-    return diff;
+/**
+ * 返回相差的微秒数
+ *
+ * @param   pTs1            开始时间
+ * @param   pTs2            结束时间
+ * @return  相差的微秒数 (pTs2 - pTs1)
+ */
+static __inline int64
+STime_DiffTimespecUs32(const STimespec32T *pTs1, const STimespec32T *pTs2) {
+    SLOG_ASSERT(pTs1 && pTs2);
+    return __STIME_DiffTimespecUs(pTs1, pTs2);
+}
+
+
+/**
+ * 返回相差的微秒数 (浮点数值)
+ *
+ * @param   pTs1            开始时间
+ * @param   pTs2            结束时间
+ * @return  相差的微秒数 (pTs2 - pTs1)
+ */
+static __inline double
+STime_DiffTimespecUsFloat(const STimespecT *pTs1, const STimespecT *pTs2) {
+    SLOG_ASSERT(pTs1 && pTs2);
+    return __STIME_DiffTimespecUsFloat(pTs1, pTs2);
+}
+
+
+/**
+ * 返回相差的微秒数 (浮点数值)
+ *
+ * @param   pTs1            开始时间
+ * @param   pTs2            结束时间
+ * @return  相差的微秒数 (pTs2 - pTs1)
+ */
+static __inline double
+STime_DiffTimespecUsFloat32(const STimespec32T *pTs1, const STimespec32T *pTs2) {
+    SLOG_ASSERT(pTs1 && pTs2);
+    return __STIME_DiffTimespecUsFloat(pTs1, pTs2);
 }
 
 
 /**
  * 返回相差的毫秒数
  *
- * @param   pTs1    开始时间
- * @param   pTs2    结束时间
- * @return  相差的毫秒数
+ * @param   pTs1            开始时间
+ * @param   pTs2            结束时间
+ * @return  相差的毫秒数 (pTs2 - pTs1)
  */
 static __inline int64
 STime_DiffTimespecMs(const STimespecT *pTs1, const STimespecT *pTs2) {
-    int64       diff = 0;
-
     SLOG_ASSERT(pTs1 && pTs2);
+    return __STIME_DiffTimespecMs(pTs1, pTs2);
+}
 
-    diff = (int64) (pTs2->tv_sec - pTs1->tv_sec) * 1000;
-    diff += (pTs2->tv_nsec - pTs1->tv_nsec) / 1000000;
 
-    return diff;
+/**
+ * 返回相差的毫秒数
+ *
+ * @param   pTs1            开始时间
+ * @param   pTs2            结束时间
+ * @return  相差的毫秒数 (pTs2 - pTs1)
+ */
+static __inline int64
+STime_DiffTimespecMs32(const STimespec32T *pTs1, const STimespec32T *pTs2) {
+    SLOG_ASSERT(pTs1 && pTs2);
+    return __STIME_DiffTimespecMs(pTs1, pTs2);
+}
+
+
+/**
+ * 返回相差的毫秒数 (浮点数值)
+ *
+ * @param   pTs1            开始时间
+ * @param   pTs2            结束时间
+ * @return  相差的毫秒数 (pTs2 - pTs1)
+ */
+static __inline double
+STime_DiffTimespecMsFloat(const STimespecT *pTs1, const STimespecT *pTs2) {
+    SLOG_ASSERT(pTs1 && pTs2);
+    return __STIME_DiffTimespecMsFloat(pTs1, pTs2);
+}
+
+
+/**
+ * 返回相差的毫秒数 (浮点数值)
+ *
+ * @param   pTs1            开始时间
+ * @param   pTs2            结束时间
+ * @return  相差的毫秒数 (pTs2 - pTs1)
+ */
+static __inline double
+STime_DiffTimespecMsFloat32(const STimespec32T *pTs1, const STimespec32T *pTs2) {
+    SLOG_ASSERT(pTs1 && pTs2);
+    return __STIME_DiffTimespecMsFloat(pTs1, pTs2);
 }
 
 
@@ -1093,6 +1282,32 @@ STime_FormatTimevalMs4(char *pBuf, const STimevalT *pTv) {
 
 
 /**
+ * 格式化时间为形如"YYYYMMDD-HH:mm:SS"的17位时间戳字符串返回
+ *
+ * @param[out]  pBuf    缓存区指针
+ * @param       pTs     待格式化的时间
+ * @return      形如"YYYYMMDD-HH:mm:SS"的17位时间戳字符串
+ */
+static __inline char*
+STime_FormatTimespecSecs(char *pBuf, const STimespecT *pTs) {
+    struct tm       tm1;
+
+    SLOG_ASSERT(pBuf && pTs);
+
+    __STime_FastSecondToDate(pTs->tv_sec, &tm1);
+
+    snprintf(pBuf, 18, "%d%02d%02d-%02d:%02d:%02d",
+            tm1.tm_year + 1900,
+            tm1.tm_mon + 1,
+            tm1.tm_mday,
+            tm1.tm_hour,
+            tm1.tm_min,
+            tm1.tm_sec);
+    return pBuf;
+}
+
+
+/**
  * 格式化时间为形如"YYYYMMDD-HH:mm:SS.sss"的21位时间戳字符串返回
  *
  * @param[out]  pBuf    缓存区指针
@@ -1399,6 +1614,32 @@ STime_GetMillisecondsFromTimeval32(const STimeval32T *pTv) {
 
 
 /**
+ * 返回精度为毫秒的UTC相对时间
+ *
+ * @param   pTs     当前时间
+ * @return  相对与UTC 1970年1月1日零时的毫秒数
+ */
+static __inline int64
+STime_GetMillisecondsFromTimespec(const STimespecT *pTs) {
+    SLOG_ASSERT(pTs);
+    return (int64) pTs->tv_sec * 1000 + pTs->tv_nsec / 1000000;
+}
+
+
+/**
+ * 返回精度为毫秒的UTC相对时间
+ *
+ * @param   pTs     当前时间
+ * @return  相对与UTC 1970年1月1日零时的毫秒数
+ */
+static __inline int64
+STime_GetMillisecondsFromTimespec32(const STimespec32T *pTs) {
+    SLOG_ASSERT(pTs);
+    return (int64) pTs->tv_sec * 1000 + pTs->tv_nsec / 1000000;
+}
+
+
+/**
  * 返回当前日期的整数表示(YYYYMMDD)
  *
  * @param   pTv     当前时间
@@ -1594,6 +1835,23 @@ STime_GetIntDateFromTimespec(const STimespecT *pTs) {
 
 
 /**
+ * 返回当前日期的整数表示(YYYYMMDD)
+ *
+ * @param   pTs     当前时间
+ * @return  int32 当前日期, 格式为YYYYMMDD
+ */
+static __inline int32
+STime_GetIntDateFromTimespec32(const STimespec32T *pTs) {
+    struct tm   tm1;
+
+    SLOG_ASSERT(pTs);
+    STime_GetTmBySeconds(&tm1, pTs->tv_sec);
+
+    return STime_GetIntDateFromTm(&tm1);
+}
+
+
+/**
  * 返回当前时间的整数表示(秒, HHMMSS)
  *
  * @param   pTs     当前时间
@@ -1611,6 +1869,23 @@ STime_GetIntTimeFromTimespec(const STimespecT *pTs) {
 
 
 /**
+ * 返回当前时间的整数表示(秒, HHMMSS)
+ *
+ * @param   pTs     当前时间
+ * @return  int32 当前时间(秒), 格式为HHMMSS
+ */
+static __inline int32
+STime_GetIntTimeFromTimespec32(const STimespec32T *pTs) {
+    struct tm   tm1;
+
+    SLOG_ASSERT(pTs);
+    STime_GetTmBySeconds(&tm1, pTs->tv_sec);
+
+    return STime_GetIntTimeFromTm(&tm1);
+}
+
+
+/**
  * 返回当前时间的整数表示(毫秒, HHMMSSsss)
  *
  * @param   pTs     当前时间
@@ -1618,6 +1893,24 @@ STime_GetIntTimeFromTimespec(const STimespecT *pTs) {
  */
 static __inline int32
 STime_GetIntTimeMsFromTimespec(const STimespecT *pTs) {
+    struct tm   tm1;
+
+    SLOG_ASSERT(pTs);
+    STime_GetTmBySeconds(&tm1, pTs->tv_sec);
+
+    return STime_GetIntTimeFromTm(&tm1) * 1000
+            + (int32) (pTs->tv_nsec / 1000000);
+}
+
+
+/**
+ * 返回当前时间的整数表示(毫秒, HHMMSSsss)
+ *
+ * @param   pTs     当前时间
+ * @return  int32 当前时间(毫秒), 格式为HHMMSSsss
+ */
+static __inline int32
+STime_GetIntTimeMsFromTimespec32(const STimespec32T *pTs) {
     struct tm   tm1;
 
     SLOG_ASSERT(pTs);
@@ -1647,6 +1940,24 @@ STime_GetIntTimestampFromTimespec(const STimespecT *pTs) {
 
 
 /**
+ * 返回当前时间戳的整数表示(YYYYMMDDHHMMSSsss)
+ *
+ * @param   pTs     当前时间
+ * @return  int64 当前时间, 格式为YYYYMMDDHHMMSSsss
+ */
+static __inline int64
+STime_GetIntTimestampFromTimespec32(const STimespec32T *pTs) {
+    struct tm   tm1;
+
+    SLOG_ASSERT(pTs);
+    STime_GetTmBySeconds(&tm1, pTs->tv_sec);
+
+    return (int64) STime_GetIntDateFromTm(&tm1) * 1000000000
+            + STime_GetIntTimeFromTm(&tm1) * 1000 + pTs->tv_nsec / 1000000;
+}
+
+
+/**
  * 输出当前时间戳的整数表示
  *
  * @param       pTs         当前时间
@@ -1654,7 +1965,28 @@ STime_GetIntTimestampFromTimespec(const STimespecT *pTs) {
  * @param[out]  pOutTimeMs  输出当前时间(毫秒), 格式为HHMMSSsss
  */
 static __inline void
-STime_GetIntTimestampFromTimespec2(const STimespecT *pTs, int32 *pOutDate,
+STime_GetIntTimestamp2FromTimespec(const STimespecT *pTs, int32 *pOutDate,
+        int32 *pOutTimeMs) {
+    struct tm   tm1;
+
+    SLOG_ASSERT(pTs && pOutDate && pOutTimeMs);
+    STime_GetTmBySeconds(&tm1, pTs->tv_sec);
+
+    *pOutDate = STime_GetIntDateFromTm(&tm1);
+    *pOutTimeMs = STime_GetIntTimeFromTm(&tm1) * 1000
+            + (int32) (pTs->tv_nsec / 1000000);
+}
+
+
+/**
+ * 输出当前时间戳的整数表示
+ *
+ * @param       pTs         当前时间
+ * @param[out]  pOutDate    输出当前日期, 格式为YYYYMMDD
+ * @param[out]  pOutTimeMs  输出当前时间(毫秒), 格式为HHMMSSsss
+ */
+static __inline void
+STime_GetIntTimestamp2FromTimespec32(const STimespec32T *pTs, int32 *pOutDate,
         int32 *pOutTimeMs) {
     struct tm   tm1;
 

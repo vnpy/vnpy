@@ -32,7 +32,7 @@
 #include    <sutil/string/spk_strings.h>
 #include    <sutil/logger/spk_log.h>
 
-
+using namespace std;
 using namespace Quant360;
 
 
@@ -392,6 +392,16 @@ BOOL
 OesClientApi::Start(int32 *pLastClSeqNo, int64 lastRptSeqNum) {
     int32                   ret = 0;
 
+    /* 检查API的头文件与库文件版本是否匹配 */
+    if (! __OesApi_CheckApiVersion()) {
+        SLOG_ERROR("API的头文件版本与库文件版本不匹配, 没有替换头文件或者没有重新编译? " \
+                "apiVersion[%s], libVersion[%s]",
+                OES_APPL_VER_ID, OesApi_GetApiVersion());
+        return FALSE;
+    } else {
+        SLOG_INFO("API version: %s", OesApi_GetApiVersion());
+    }
+
     if (! _isInitialized || ! _pAsyncContext) {
         SLOG_ERROR("尚未载入配置, 需要先通过 LoadCfg 接口初始化配置信息! " \
                 "isInitialized[%d], pAsyncContext[%p]",
@@ -623,28 +633,8 @@ _OesClientApi_OnAsyncConnect(OesAsyncApiChannelT *pAsyncChannel,
                 pAsyncChannel->pSessionInfo->lastInMsgSeq,
                 pAsyncChannel->pSessionInfo->lastOutMsgSeq);
 
-        pSubscribeInfo = OesAsyncApi_GetChannelSubscribeCfg(pAsyncChannel);
-        if (__spk_unlikely(! pSubscribeInfo)) {
-            SLOG_ERROR("Illegal extended subscribe info! pAsyncChannel[%p]",
-                    pAsyncChannel);
-            SLOG_ASSERT(0);
-
-            SPK_SET_ERRNO(EINVAL);
-            return SPK_NEG(EINVAL);
-        }
-
-        /*
-         * 关于 lastInMsgSeq 字段 (最近接收到的回报数据编号)
-         * @note 提示:
-         * - API会将回报数据的断点位置存储在 <code>pAsyncChannel->lastInMsgSeq</code> 和
-         *   <code>pSessionInfo->lastInMsgSeq</code> 字段中, 可以使用该值订阅回报
-         * - 对于SPI回调接口, 可以在OnConnect回调函数中重新设置
-         *   <code>pSessionInfo->lastInMsgSeq</code> 的取值来重新指定订阅条件
-         */
-        if (__spk_unlikely(! OesApi_SendReportSynchronization(
-                pAsyncChannel->pSessionInfo, pSubscribeInfo->clEnvId,
-                pSubscribeInfo->rptTypes,
-                pAsyncChannel->pSessionInfo->lastInMsgSeq))) {
+        if (__spk_unlikely(! OesAsyncApi_SendReportSynchronization(
+                pAsyncChannel, -1, -1, -1))) {
             SLOG_ERROR("Send report synchronization failure, will retry! " \
                     "server[%s:%d]",
                     pAsyncChannel->pSessionInfo->channel.remoteAddr,
@@ -749,6 +739,7 @@ _OesClientApi_OnQueryConnect(OesApiSessionInfoT *pSessionInfo,
         OesClientSpi *pSpi) {
     int32                   ret = 0;
 
+
     SLOG_ASSERT(pSessionInfo
             && pSessionInfo->__channelType == OESAPI_CHANNEL_TYPE_QUERY);
     SLOG_ASSERT(pSpi);
@@ -766,6 +757,7 @@ _OesClientApi_OnQueryConnect(OesApiSessionInfoT *pSessionInfo,
      * - 大于0, 忽略本次执行, 并继续执行默认的回调函数
      * - 小于0, 处理失败, 异步线程将中止运行
      */
+
     ret = pSpi->OnConnected(OESAPI_CHANNEL_TYPE_QUERY, pSessionInfo);
     if (__spk_unlikely(ret < 0)) {
         SLOG_ERROR("Call SPI.OnConnected failure! channelType[%d], ret[%d]",
@@ -776,6 +768,7 @@ _OesClientApi_OnQueryConnect(OesApiSessionInfoT *pSessionInfo,
                 OESAPI_CHANNEL_TYPE_QUERY);
         return 0;
     }
+
 
     /* 执行默认处理 */
     SLOG_INFO("Query channel connected. server[%s:%d], " \
@@ -1063,7 +1056,7 @@ OesClientApi::SendOrder(const OesOrdReqT *pOrderReq) {
     //TODO 内置锁处理
     ret = OesAsyncApi_SendOrderReq(_pDefaultOrdChannel, pOrderReq);
     if (__spk_unlikely(ret < 0)) {
-        if (__spk_unlikely(ret == SPK_NEG(EINVAL))) {
+        if (__spk_unlikely(SPK_IS_NEG_EINVAL(ret))) {
             SLOG_ERROR("参数错误, 请参考日志信息检查相关数据是否合法! " \
                     "ret[%d], channelTag[%s]",
                     ret, _pDefaultOrdChannel->pChannelCfg->channelTag);
@@ -1097,7 +1090,7 @@ OesClientApi::SendCancelOrder(const OesOrdCancelReqT *pCancelReq) {
 
     ret = OesAsyncApi_SendOrderCancelReq(_pDefaultOrdChannel, pCancelReq);
     if (__spk_unlikely(ret < 0)) {
-        if (__spk_unlikely(ret == SPK_NEG(EINVAL))) {
+        if (__spk_unlikely(SPK_IS_NEG_EINVAL(ret))) {
             SLOG_ERROR("参数错误, 请参考日志信息检查相关数据是否合法! " \
                     "ret[%d], channelTag[%s]",
                     ret, _pDefaultOrdChannel->pChannelCfg->channelTag);
@@ -1212,7 +1205,7 @@ OesClientApi::SendFundTrsf(const OesFundTrsfReqT *pFundTrsfReq) {
 
     ret = OesAsyncApi_SendFundTransferReq(_pDefaultOrdChannel, pFundTrsfReq);
     if (__spk_unlikely(ret < 0)) {
-        if (__spk_unlikely(ret == SPK_NEG(EINVAL))) {
+        if (__spk_unlikely(SPK_IS_NEG_EINVAL(ret))) {
             SLOG_ERROR("参数错误, 请参考日志信息检查相关数据是否合法! " \
                     "ret[%d], channelTag[%s]",
                     ret, _pDefaultOrdChannel->pChannelCfg->channelTag);
@@ -1230,12 +1223,10 @@ OesClientApi::SendFundTrsf(const OesFundTrsfReqT *pFundTrsfReq) {
 
 /**
  * 发送密码修改请求 (修改客户端登录密码)
- * 密码修改请求将通过委托通道发送到OES服务器, 并将采用同步请求/应答的方式直接返回处理结果
+ * 密码修改请求将通过委托通道发送到OES服务器, 仅发送请求不接收应答消息
  *
  * @param[in]   pChangePasswordReq
  *                              待发送的密码修改请求
- * @param[out]  pChangePasswordRsp
- *                              用于输出测试请求应答的缓存区
  * @retval      0               成功
  * @retval      <0              API调用失败 (负的错误号)
  * @retval      >0              服务端业务处理失败 (OES错误号)
@@ -1246,12 +1237,11 @@ OesClientApi::SendFundTrsf(const OesFundTrsfReqT *pFundTrsfReq) {
  */
 int32
 OesClientApi::SendChangePassword(
-        const OesChangePasswordReqT *pChangePasswordReq,
-        OesChangePasswordRspT *pChangePasswordRsp) {
+        const OesChangePasswordReqT *pChangePasswordReq) {
     int32                   ret = 0;
 
     ret = OesAsyncApi_SendChangePasswordReq(_pDefaultOrdChannel,
-            pChangePasswordReq, pChangePasswordRsp);
+            pChangePasswordReq);
     if (__spk_unlikely(ret < 0)) {
         if (__spk_unlikely(ret == SPK_NEG(EINVAL))) {
             SLOG_ERROR("参数错误, 请参考日志信息检查相关数据是否合法! " \
@@ -2016,7 +2006,7 @@ OesClientApi::QueryEtf(const OesQryEtfFilterT *pQryFilter, int32 requestId) {
 
 
 /**
- * 查询ETF成分股信息回调包裹函数
+ * 查询ETF成份证券信息回调包裹函数
  */
 static int32
 _OesClientApi_QueryEtfComponent(OesApiSessionInfoT *pSessionInfo,
@@ -2030,7 +2020,7 @@ _OesClientApi_QueryEtfComponent(OesApiSessionInfoT *pSessionInfo,
 
 
 /**
- * 查询ETF成分股信息
+ * 查询ETF成份证券信息
  *
  * @param   pQryFilter          查询条件过滤条件
  * @retval  >=0                 成功查询到的记录数
@@ -2053,7 +2043,7 @@ OesClientApi::QueryEtfComponent(const OesQryEtfComponentFilterT *pQryFilter,
     ret = OesApi_QueryEtfComponent(_pQryChannel, pQryFilter,
             _OesClientApi_QueryEtfComponent, (void *) _pSpi);
     if (__spk_unlikely(ret < 0)) {
-        SLOG_ERROR("查询ETF成分股信息失败, 将断开并尝试重建查询通道! " \
+        SLOG_ERROR("查询ETF成份证券信息失败, 将断开并尝试重建查询通道! " \
                 "ret[%d], error[%d - %s]",
                 ret, OesApi_GetLastError(),
                 OesApi_GetErrorMsg(OesApi_GetLastError()));

@@ -330,7 +330,9 @@ public:
     //-------------------------------------------------------------------------------------
     //req:主动函数的请求字典
     //-------------------------------------------------------------------------------------
+
 	void createTdAPi();
+
 	bool loadCfg(string pCfgFile);
 
 	bool setCustomizedIpAndMac(string pIpStr, string pMacStr);
@@ -349,7 +351,7 @@ public:
 
 	void setThreadSubscribeEnvId(int subscribeEnvId);
 
-	void init();
+	bool init();
 
     int exit();
 

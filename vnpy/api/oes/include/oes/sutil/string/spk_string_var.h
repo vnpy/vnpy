@@ -129,11 +129,13 @@ void    SStr_SetVarValueByName(
 /* 替换所有的字符串变量 */
 char*   SStr_ReplaceAllVar(
                 char *pBuf,
+                int32 maxStrlen,
                 const char *pTarget);
 
 /* 替换所有的字符串变量 */
 char*   SStr_ReplaceAllVar2(
                 char *pBuf,
+                int32 maxStrlen,
                 const char *pTarget,
                 const SStrVarT *pVarItems,
                 int32 varItemsNumber);
@@ -141,6 +143,7 @@ char*   SStr_ReplaceAllVar2(
 /* 替换所有的字符串变量 */
 char*   SStr_ReplaceAllVar3(
                 char *pBuf,
+                int32 maxStrlen,
                 const char *pTarget,
                 const SStrVarT *pVarItems,
                 int32 varItemsNumber,

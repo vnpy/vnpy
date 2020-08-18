@@ -73,6 +73,8 @@ extern "C" {
 #define SPK_MAX_PROTOCOL_NAME_LEN       (32)
 /** 通信协议类型描述的最大长度 */
 #define SPK_MAX_PROTOCOL_MEMO_LEN       (64)
+/** 十六进制整数格式的MAC地址的字节数 */
+#define SPK_MAC_SEGS_CNT                (6)
 /** MAC地址字符串的最大长度 */
 #define SPK_MAX_MAC_LEN                 (20)
 /** MAC地址字符串的最大长度(按64位对齐的长度) */
@@ -105,7 +107,7 @@ extern "C" {
 
 /** 默认的SOCKET超时时间 (毫秒) */
 #ifndef SPK_DEFAULT_SO_TIMEOUT_MS
-#   define  SPK_DEFAULT_SO_TIMEOUT_MS   (10000)
+#   define  SPK_DEFAULT_SO_TIMEOUT_MS   (15000)
 #endif
 /** 常用的较短的SOCKET超时时间 (毫秒) */
 #define SPK_SHORT_SO_TIMEOUT_MS         (5000)
