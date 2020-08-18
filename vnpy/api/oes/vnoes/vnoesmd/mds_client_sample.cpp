@@ -48,7 +48,7 @@ static int32    _MdsClientApi_OnQueryDisconnect(
 //	void *pCallbackParams);
 
 /* 对接收到的应答消息进行处理的回调函数 (适用于TCP通道) */
-static int32    _MdsClientApi_HandleOrderChannelRsp(
+static int32    _MdsClientApi_HandleTcpChannelRsp(
 	MdsApiSessionInfoT *pSessionInfo,
 	SMsgHeadT *pMsgHead,
 	void *pMsgBody,
@@ -206,7 +206,7 @@ MdsClientApi::LoadCfg(MdsApiClientCfgT *pApiCfg, const char *pCfgFile) {
 			MDSAPI_CFG_DEFAULT_KEY_TCP_ADDR,
 			&_apiCfg.tcpChannelCfg,
 			(MdsApiSubscribeInfoT *)NULL,
-			_MdsClientApi_HandleOrderChannelRsp, _pSpi,
+			_MdsClientApi_HandleTcpChannelRsp, _pSpi,
 			_MdsClientApi_OnAsyncConnect, _pSpi,
 			_MdsClientApi_OnAsyncDisconnect, _pSpi);
 		if (__spk_unlikely(!pTcpChannel)) {
@@ -418,6 +418,20 @@ MdsClientApi::Stop(void) {
 
 	_isRunning = FALSE;
 }
+
+/* ===================================================================
+ * 订阅TCP行情接口
+ * =================================================================== */
+
+BOOL
+MdsClientApi::SubscribeMarketData(const MdsMktDataRequestReqT *pMktDataRequestReq, const MdsMktDataRequestEntryT *pEntries) {
+	return MdsAsyncApi_SubscribeMarketData(
+		_pDefaultTcpChannel,
+		pMktDataRequestReq, 
+		pEntries
+	);
+}
+
 
 
 /* ===================================================================
@@ -836,8 +850,9 @@ _MdsClientApi_OnQueryDisconnect(MdsApiSessionInfoT *pSessionInfo,
  * @see     OesRspMsgBodyT
  */
 static int32
-_MdsClientApi_HandleOrderChannelRsp(MdsApiSessionInfoT *pSessionInfo,
+_MdsClientApi_HandleTcpChannelRsp(MdsApiSessionInfoT *pSessionInfo,
 	SMsgHeadT *pMsgHead, void *pMsgBody, void *pCallbackParams) {
+	MdsClientSpi            *pSpi = (MdsClientSpi *)pCallbackParams;
 	MdsMktRspMsgBodyT          *pRspMsg = (MdsMktRspMsgBodyT *)pMsgBody;
 
 	SLOG_ASSERT(pSessionInfo && pMsgHead && pMsgBody);

@@ -47,7 +47,7 @@ public:
 
 
 
-		/* 连接或重新连接完成后的回调函数 */
+	/* 连接或重新连接完成后的回调函数 */
 	virtual int32       OnConnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo, MdsApiSubscribeInfoT *pSubscribeInfo = NULL);
 	/* 连接断开后的回调函数 */
 	virtual int32       OnDisconnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo);
@@ -95,5 +95,6 @@ public:
 	bool init();
 
 	int exit();
+	bool subscribeMarketData(const dict &req1, const dict &req2);
 
 };

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -85,6 +85,7 @@
     <IncludePath>C:\vnstudio\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\oes;$(IncludePath)</IncludePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <LibraryPath>C:\vnstudio\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)..\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -163,17 +164,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\..\..\..\Users\yazhang\Documents\GitHub\vnpy\vnpy\api\oes\vnoes\vnoesmd\vnoesmd.h" />
     <ClInclude Include="..\..\include\oes\mds_api\mds_api.h" />
     <ClInclude Include="..\..\include\oes\mds_api\mds_async_api.h" />
     <ClInclude Include="..\..\include\oes\mds_global\mds_mkt_packets.h" />
     <ClInclude Include="..\..\include\oes\mds_global\mds_qry_packets.h" />
+    <ClInclude Include="..\..\oes\vnoes\vnoesmd\vnoesmd.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="mds_client_sample.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\..\..\..\Users\yazhang\Documents\GitHub\vnpy\vnpy\api\oes\vnoes\vnoesmd\vnoesmd.cpp" />
+    <ClCompile Include="..\..\oes\vnoes\vnoesmd\vnoesmd.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="mds_client_sample.cpp" />
     <ClCompile Include="pch.cpp">

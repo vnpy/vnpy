@@ -176,6 +176,38 @@ int MdApi::exit()
 };
 
 
+bool MdApi::subscribeMarketData(const dict &req1, const dict &req2)
+{
+	MdsMktDataRequestReqT myreq1 = MdsMktDataRequestReqT();
+	memset(&myreq1, 0, sizeof(myreq1));
+	getUint8(req1, "subMode", &myreq1.subMode);
+	getUint8(req1, "tickType", &myreq1.tickType);
+	getInt8(req1, "sseStockFlag", &myreq1.sseStockFlag);
+	getInt8(req1, "sseIndexFlag", &myreq1.sseIndexFlag);
+	getInt8(req1, "sseOptionFlag", &myreq1.sseOptionFlag);
+	getInt8(req1, "szseStockFlag", &myreq1.szseStockFlag);
+	getInt8(req1, "szseIndexFlag", &myreq1.szseIndexFlag);
+	getInt8(req1, "szseOptionFlag", &myreq1.szseOptionFlag);
+	getUint8(req1, "isRequireInitialMktData", &myreq1.isRequireInitialMktData);
+	getUint8(req1, "__channelNos", &myreq1.__channelNos);
+	getUint8(req1, "tickExpireType", &myreq1.tickExpireType);
+	getUint8(req1, "tickRebuildFlag", &myreq1.tickRebuildFlag);
+	getInt32(req1, "dataTypes", &myreq1.dataTypes);
+	getInt32(req1, "beginTime", &myreq1.beginTime);
+	getInt32(req1, "subSecurityCnt", &myreq1.subSecurityCnt);
+
+
+	MdsMktDataRequestEntryT myreq2 = MdsMktDataRequestEntryT();
+	memset(&myreq2, 0, sizeof(myreq2));
+	getUint8(req2, "exchId", &myreq2.exchId);
+	getUint8(req2, "mdProductType", &myreq2.mdProductType);
+	getInt32(req2, "instrId", &myreq2.instrId);
+
+	bool i = this->api->SubscribeMarketData(&myreq1, &myreq2);
+	return i;
+
+}
+
 
 ///-------------------------------------------------------------------------------------
 ///Boost.Python·â×°

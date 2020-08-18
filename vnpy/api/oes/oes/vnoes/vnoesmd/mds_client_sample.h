@@ -72,6 +72,7 @@ namespace   Quant360 {
 		BOOL                Start(int32 *pLastClSeqNo = NULL, int64 lastRptSeqNum = -1);
 		/* 停止实例并释放相关资源 */
 		void                Stop(void);
+		BOOL				SubscribeMarketData(const MdsMktDataRequestReqT *pMktDataRequestReq, const MdsMktDataRequestEntryT *pEntries);
 
 
 	private:

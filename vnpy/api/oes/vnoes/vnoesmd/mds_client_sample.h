@@ -73,6 +73,8 @@ namespace   Quant360 {
 		/* 停止实例并释放相关资源 */
 		void                Stop(void);
 
+		BOOL				SubscribeMarketData(const MdsMktDataRequestReqT *pMktDataRequestReq, const MdsMktDataRequestEntryT *pEntries);
+
 
 	private:
 		/* 禁止拷贝构造函数 */
