@@ -854,8 +854,10 @@ _MdsClientApi_HandleTcpChannelRsp(MdsApiSessionInfoT *pSessionInfo,
 	SMsgHeadT *pMsgHead, void *pMsgBody, void *pCallbackParams) {
 	MdsClientSpi            *pSpi = (MdsClientSpi *)pCallbackParams;
 	MdsMktRspMsgBodyT          *pRspMsg = (MdsMktRspMsgBodyT *)pMsgBody;
+	MdsMktDataSnapshotT			 *pRptMsg = &pRspMsg->mktDataSnapshot;
 
 	SLOG_ASSERT(pSessionInfo && pMsgHead && pMsgBody);
+	SLOG_ASSERT(pSpi);
 
 	switch (pMsgHead->msgId) {
 	case MDS_MSGTYPE_HEARTBEAT:                 /* 心跳消息 */
@@ -878,6 +880,17 @@ _MdsClientApi_HandleTcpChannelRsp(MdsApiSessionInfoT *pSessionInfo,
 		SLOG_DEBUG(">>> Recv compressed message. ");
 		break;
 
+	case MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH: /** Level1 市场行情快照 (10/0x0A) */
+		pSpi->OnRtnStockData(&pRptMsg->head, &pRptMsg->stock);
+		break;
+
+	case MDS_MSGTYPE_INDEX_SNAPSHOT_FULL_REFRESH: /** Level1 市场行情快照 (10/0x0A) */
+		pSpi->OnRtnIndexData(&pRptMsg->head, &pRptMsg->index);
+		break;
+
+	case MDS_MSGTYPE_OPTION_SNAPSHOT_FULL_REFRESH: /** Level1/Level2 期权行情快照 (12/0x0C) */
+		pSpi->OnRtnOptionData(&pRptMsg->head, &pRptMsg->option);
+		break;
 
 	default:
 		/* 接收到非预期(未定义处理方式)的回报消息 */

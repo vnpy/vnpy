@@ -43,6 +43,70 @@ int32 MdApi::OnDisconnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT 
 };
 
 
+void MdApi::OnRtnStockData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *stock)
+{
+	Task task = Task();
+	task.task_name = ONRTNSTOCKDATA;
+	if (head)
+	{
+		MdsMktDataSnapshotHeadT * task_error = new MdsMktDataSnapshotHeadT();
+		*task_error = *head;
+		task.task_error = task_error;
+	}
+	if (stock)
+	{
+		MdsStockSnapshotBodyT * task_data = new MdsStockSnapshotBodyT();
+		*task_data = *stock;
+		task.task_data = task_data;
+	}
+	this->task_queue.push(task);
+
+};
+
+
+
+void MdApi::OnRtnIndexData(const MdsMktDataSnapshotHeadT *head, const MdsIndexSnapshotBodyT *index)
+{
+	Task task = Task();
+	task.task_name = ONRTNINDEXDATA;
+	if (head)
+	{
+		MdsMktDataSnapshotHeadT * task_error = new MdsMktDataSnapshotHeadT();
+		*task_error = *head;
+		task.task_error = task_error;
+	}
+	if (index)
+	{
+		MdsIndexSnapshotBodyT * task_data = new MdsIndexSnapshotBodyT();
+		*task_data = *index;
+		task.task_data = task_data;
+	}
+	this->task_queue.push(task);
+
+};
+
+
+void MdApi::OnRtnOptionData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *option)
+{
+	Task task = Task();
+	task.task_name = ONRTNOPTIONDATA;
+	if (head)
+	{
+		MdsMktDataSnapshotHeadT * task_error = new MdsMktDataSnapshotHeadT();
+		*task_error = *head;
+		task.task_error = task_error;
+	}
+	if (option)
+	{
+		MdsStockSnapshotBodyT * task_data = new MdsStockSnapshotBodyT();
+		*task_data = *option;
+		task.task_data = task_data;
+	}
+	this->task_queue.push(task);
+
+};
+
+
 
 ///-------------------------------------------------------------------------------------
 ///工作线程从队列中取出数据，转化为python对象后，进行推送
@@ -70,6 +134,22 @@ void MdApi::processTask()
 				break;
 			}
 
+			case ONRTNSTOCKDATA:
+			{
+				this->processRtnStockData(&task);
+				break;
+			}
+
+			case ONRTNINDEXDATA:
+			{
+				this->processRtnIndexData(&task);
+				break;
+			}
+			case ONRTNOPTIONDATA:
+			{
+				this->processRtnOptionData(&task);
+				break;
+			}
 
 			};
 		}
@@ -105,6 +185,158 @@ int32 MdApi::processDisconnected(Task *task)
 	this->onDisconnected(task->task_int, data);
 };
 
+void MdApi::processRtnStockData(Task *task)
+{
+	gil_scoped_acquire acquire;
+	dict error;
+	if (task->task_error)
+	{
+		MdsMktDataSnapshotHeadT *task_error = (MdsMktDataSnapshotHeadT*)task->task_error;
+		error["exchId"] = task_error->exchId;
+		error["mdProductType"] = task_error->mdProductType;
+		error["tradeDate"] = task_error->tradeDate;
+		error["updateTime"] = task_error->updateTime;
+		error["instrId"] = task_error->instrId;
+		delete task_error;
+	}
+	dict data;
+	if (task->task_data)
+	{
+		MdsStockSnapshotBodyT * task_data = (MdsStockSnapshotBodyT*)task->task_data;
+		data["SecurityID"] = task_data->SecurityID;
+		data["TradingPhaseCode"] = task_data->TradingPhaseCode;
+		data["__filler"] = task_data->__filler;
+		data["NumTrades"] = task_data->NumTrades;
+		data["TotalVolumeTraded"] = task_data->TotalVolumeTraded;
+		data["TotalValueTraded"] = task_data->TotalValueTraded;
+		data["PrevClosePx"] = task_data->PrevClosePx;
+		data["OpenPx"] = task_data->OpenPx;
+		data["HighPx"] = task_data->HighPx;
+		data["LowPx"] = task_data->LowPx;
+		data["TradePx"] = task_data->TradePx;
+		data["ClosePx"] = task_data->ClosePx;
+		data["IOPV"] = task_data->IOPV;
+		data["NAV"] = task_data->NAV;
+		data["TotalLongPosition"] = task_data->TotalLongPosition;
+
+		pybind11::list ask;
+		pybind11::list bid;
+		pybind11::list ask_qty;
+		pybind11::list bid_qty;
+
+		for (int i = 0; i < 5; i++)
+		{
+			ask.append(task_data->OfferLevels[i].Price);
+			bid.append(task_data->BidLevels[i].Price);
+			ask_qty.append(task_data->OfferLevels[i].OrderQty);
+			bid_qty.append(task_data->BidLevels[i].OrderQty);
+		}
+
+		data["ask"] = ask;
+		data["bid"] = bid;
+		data["bid_qty"] = bid_qty;
+		data["ask_qty"] = ask_qty;
+
+		delete task_data;
+	}
+	this->onRtnStockData(error, data);
+
+};
+
+void MdApi::processRtnOptionData(Task *task)
+{
+	gil_scoped_acquire acquire;
+	dict error;
+	if (task->task_error)
+	{
+		MdsMktDataSnapshotHeadT *task_error = (MdsMktDataSnapshotHeadT*)task->task_error;
+		error["exchId"] = task_error->exchId;
+		error["mdProductType"] = task_error->mdProductType;
+		error["tradeDate"] = task_error->tradeDate;
+		error["updateTime"] = task_error->updateTime;
+		error["instrId"] = task_error->instrId;
+		delete task_error;
+	}
+	dict data;
+	if (task->task_data)
+	{
+		MdsStockSnapshotBodyT * task_data = (MdsStockSnapshotBodyT*)task->task_data;
+		data["SecurityID"] = task_data->SecurityID;
+		data["TradingPhaseCode"] = task_data->TradingPhaseCode;
+		data["__filler"] = task_data->__filler;
+		data["NumTrades"] = task_data->NumTrades;
+		data["TotalVolumeTraded"] = task_data->TotalVolumeTraded;
+		data["TotalValueTraded"] = task_data->TotalValueTraded;
+		data["PrevClosePx"] = task_data->PrevClosePx;
+		data["OpenPx"] = task_data->OpenPx;
+		data["HighPx"] = task_data->HighPx;
+		data["LowPx"] = task_data->LowPx;
+		data["TradePx"] = task_data->TradePx;
+		data["ClosePx"] = task_data->ClosePx;
+		data["IOPV"] = task_data->IOPV;
+		data["NAV"] = task_data->NAV;
+		data["TotalLongPosition"] = task_data->TotalLongPosition;
+
+		pybind11::list ask;
+		pybind11::list bid;
+		pybind11::list ask_qty;
+		pybind11::list bid_qty;
+
+		for (int i = 0; i < 5; i++)
+		{
+			ask.append(task_data->OfferLevels[i].Price);
+			bid.append(task_data->BidLevels[i].Price);
+			ask_qty.append(task_data->OfferLevels[i].OrderQty);
+			bid_qty.append(task_data->BidLevels[i].OrderQty);
+		}
+
+		data["ask"] = ask;
+		data["bid"] = bid;
+		data["bid_qty"] = bid_qty;
+		data["ask_qty"] = ask_qty;
+
+		delete task_data;
+	}
+	this->onRtnOptionData(error, data);
+
+};
+
+void MdApi::processRtnIndexData(Task *task)
+{
+	gil_scoped_acquire acquire;
+	dict error;
+	if (task->task_error)
+	{
+		MdsMktDataSnapshotHeadT *task_error = (MdsMktDataSnapshotHeadT*)task->task_error;
+		error["exchId"] = task_error->exchId;
+		error["mdProductType"] = task_error->mdProductType;
+		error["tradeDate"] = task_error->tradeDate;
+		error["updateTime"] = task_error->updateTime;
+		error["instrId"] = task_error->instrId;
+		delete task_error;
+	}
+	dict data;
+	if (task->task_data)
+	{
+		MdsIndexSnapshotBodyT * task_data = (MdsIndexSnapshotBodyT*)task->task_data;
+		data["SecurityID"] = task_data->SecurityID;
+		data["TradingPhaseCode"] = task_data->TradingPhaseCode;
+		data["__filler"] = task_data->__filler;
+		data["NumTrades"] = task_data->NumTrades;
+		data["TotalVolumeTraded"] = task_data->TotalVolumeTraded;
+		data["TotalValueTraded"] = task_data->TotalValueTraded;
+		data["PrevCloseIdx"] = task_data->PrevCloseIdx;
+		data["OpenIdx"] = task_data->OpenIdx;
+		data["HighIdx"] = task_data->HighIdx;
+		data["LowIdx"] = task_data->LowIdx;
+		data["LastIdx"] = task_data->LastIdx;
+		data["CloseIdx"] = task_data->CloseIdx;
+		data["StockNum"] = task_data->StockNum;
+		data["__filler1"] = task_data->__filler1;
+		delete task_data;
+	}
+	this->onRtnIndexData(error, data);
+};
 
 
 ///-------------------------------------------------------------------------------------
@@ -242,7 +474,40 @@ public:
 		}
 	};
 
+	void onRtnStockData(const dict &error, const dict &data) override
+	{
+		try
+		{
+			PYBIND11_OVERLOAD(void, MdApi, onRtnStockData, error, data);
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
+	};
+	void onRtnOptionData(const dict &error, const dict &data) override
+	{
+		try
+		{
+			PYBIND11_OVERLOAD(void, MdApi, onRtnOptionData, error, data);
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
+	};
 
+	void onRtnIndexData(const dict &error, const dict &data) override
+	{
+		try
+		{
+			PYBIND11_OVERLOAD(void, MdApi, onRtnIndexData, error, data);
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
+	};
 
 };
 
@@ -264,6 +529,9 @@ PYBIND11_MODULE(vnoesmd, m)
 
 		.def("onConnected", &MdApi::onConnected)
 		.def("onDisconnected", &MdApi::onDisconnected)
+		.def("OnRtnStockData", &MdApi::OnRtnStockData)
+		.def("OnRtnIndexData", &MdApi::OnRtnIndexData)
+		.def("OnRtnOptionData", &MdApi::OnRtnOptionData)
 		;
 
 }
