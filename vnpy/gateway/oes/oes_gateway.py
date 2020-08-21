@@ -22,7 +22,7 @@ from vnpy.trader.object import (
     CancelRequest,
     SubscribeRequest,
 )
-from vnpy.api.oes import TdApi
+from vnpy.api.oes import TdApi, MdApi
 from vnpy.trader.constant import (
     Direction,
     Offset,
@@ -42,7 +42,9 @@ with open(config_template_path, "rt", encoding='utf-8') as f:
 CHANNELTYPE_OES2VT = {
     1: "委托通道",
     2: "回报通道",
-    3: "查询通道",
+    3: "交易查询通道",
+    11: "TCP通道",
+    13: "行情查询通道",
 }
 
 OPTIONTYPE_OES2VT = {
@@ -95,7 +97,7 @@ class OesGateway(BaseGateway):
         """Constructor"""
         super().__init__(event_engine, "OES")
 
-        # self.md_api = OesMdApi(self)
+        self.md_api = OesMdApi(self)
         self.td_api = OesTdApi(self)
 
     def connect(self, setting: dict):
@@ -125,22 +127,26 @@ class OesGateway(BaseGateway):
                                              log_path=log_path)
             f.write(content)
 
-        # self.md_api.tcp_server = setting['md_tcp_server']
-        # self.md_api.qry_server = setting['md_qry_server']
-        # Thread(target=self._connect_md_sync, args=(
-        #     config_path, username, password)).start()
-
-        self.td_api.connect(
+        self.md_api.connect(
             config_path=config_path,
             username=username,
             password=password,
-            ord_server=setting['td_ord_server'],
-            rpt_server=setting['td_rpt_server'],
             hdd_serial=setting['hdd_serial'],
-            qry_server=setting['td_qry_server'],
             customize_ip=setting['customize_ip'],
             customize_mac=setting['customize_mac'],
         )
+
+        # self.td_api.connect(
+        #     config_path=config_path,
+        #     username=username,
+        #     password=password,
+        #     ord_server=setting['td_ord_server'],
+        #     rpt_server=setting['td_rpt_server'],
+        #     hdd_serial=setting['hdd_serial'],
+        #     qry_server=setting['td_qry_server'],
+        #     customize_ip=setting['customize_ip'],
+        #     customize_mac=setting['customize_mac'],
+        # )
 
     def _connect_md_sync(self, config_path, username, password):
         self.md_api.config_path = config_path
@@ -179,9 +185,56 @@ class OesGateway(BaseGateway):
 
     def close(self):
         """"""
-        # self.md_api.stop()
+        self.md_api.exit()
         self.td_api.exit()
 
+class OesMdApi(MdApi):
+
+    username = ""
+    password = ""
+
+    def __init__(self, gateway):
+        """Constructor"""
+        super(OesMdApi, self).__init__()
+        self.gateway = gateway
+        self.gateway_name = gateway.gateway_name
+
+    def onConnected(self,channel, data):
+        """"""
+        channel_msg = CHANNELTYPE_OES2VT[channel]
+        self.gateway.write_log(f"{channel_msg}连接成功")
+
+
+
+    def onDisConnected(self,channel, data):
+        """"""
+        #self.gateway.write_log("交易服务器连接断开")
+        print("onDisconnect", channel, data)
+
+    def connect(
+        self,
+        config_path,
+        username,
+        password,
+        #ord_server,
+        #rpt_server,
+        hdd_serial,
+        # qry_server,
+        customize_ip,
+        customize_mac,
+    ):
+        self.username = username
+        self.password = password
+        self.createMdApi()
+        self.loadCfg(config_path)
+        self.setCustomizedIp(customize_ip)
+        self.setCustomizedMac(customize_mac)
+        self.setCustomizedDriverId(hdd_serial)
+        self.setThreadUsername(self.username)
+        self.setThreadPassword(self.password)
+        self.setThreadUsername(username)
+        self.setThreadPassword(password)
+        self.init()
 
 class OesTdApi(TdApi):
     userid = 0

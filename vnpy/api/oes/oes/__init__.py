@@ -1,1 +1,0 @@
-from .vnoestd import TdApi

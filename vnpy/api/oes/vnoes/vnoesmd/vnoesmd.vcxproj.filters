@@ -36,7 +36,7 @@
     <ClInclude Include="..\..\include\oes\mds_global\mds_qry_packets.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\oes\vnoes\vnoesmd\vnoesmd.h">
+    <ClInclude Include="vnoesmd.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,7 +50,7 @@
     <ClCompile Include="mds_client_sample.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\oes\vnoes\vnoesmd\vnoesmd.cpp">
+    <ClCompile Include="vnoesmd.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
