@@ -158,6 +158,7 @@ class BybitGateway(BaseGateway):
 
     def query_position(self) -> None:
         """"""
+        return
         self.rest_api.query_position()
 
     def query_history(self, req: HistoryRequest) -> List[BarData]:
@@ -582,11 +583,11 @@ class BybitRestApi(RestClient):
             symbols = symbols_inverse
 
         for symbol in symbols:
-
             params = {
                 "symbol": symbol,
                 "limit": 50,
                 "page": page,
+                "order_status": "New,PartiallyFilled"
             }
 
             self.add_request(
@@ -601,7 +602,8 @@ class BybitRestApi(RestClient):
         history = []
         count = 200
         start_time = int(req.start.timestamp())
-
+        print(req)
+        print(start_time)
         if self.usdt_base:
             path = "/public/linear/kline"
         else:
