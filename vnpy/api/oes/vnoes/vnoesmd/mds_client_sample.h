@@ -28,6 +28,12 @@ namespace   Quant360 {
 		/* 连接断开后的回调函数 */
 		virtual int32       OnDisconnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo);
 
+		virtual void		OnRtnStockData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *stock) = 0;
+		virtual void		OnRtnIndexData(const MdsMktDataSnapshotHeadT *head, const MdsIndexSnapshotBodyT *index) = 0;
+		virtual void		OnRtnOptionData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *option) = 0;
+
+
+
 
 	public:
 		MdsClientSpi();

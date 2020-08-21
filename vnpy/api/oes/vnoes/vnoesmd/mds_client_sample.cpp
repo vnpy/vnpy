@@ -441,41 +441,7 @@ MdsClientApi::SubscribeMarketData(const MdsMktDataRequestReqT *pMktDataRequestRe
  /**
   * 连接或重新连接完成后的回调函数 (适用于基于异步API的TCP通道和UDP通道)
   *
-  * <p> 回调函数说明:
-  * - 对于UDP通道, 需要通过该回调函数完成回报订阅操作。若函数指针为空, 则会使用通道配置中默认的
-  *   回报订阅参数进行订阅。若函数指针不为空, 但未订阅回报, 90秒以后服务器端会强制断开连接
-  * - 若回调函数返回小于0的数, 则异步线程将中止运行
-  * </p>
-  *
-  * <p> @note 关于上一次会话的最大请求数据编号 (针对TCP通道)
-  * - 将通过 lastOutMsgSeq 字段存储上一次会话实际已发送的出向消息序号, 即: 服务器端最
-  *   后接收到的客户委托流水号(clSeqNo)
-  * - 该值对应的是服务器端最后接收到并校验通过的(同一环境号下的)客户委托流水号, 效果等价
-  *   于 MdsApi_InitOrdChannel接口的pLastClSeqNo参数的输出值
-  * - 登录成功以后, API会将该值存储在 <code>pAsyncChannel->lastOutMsgSeq</code>
-  *   和 <code>pSessionInfo->lastOutMsgSeq</code> 字段中
-  * - 该字段在登录成功以后就不会再更新
-  * - 客户端若想借用这个字段来维护自增的"客户委托流水号(clSeqNo)"也是可行的, 只是需要注
-  *   意该字段在登录后会被重置为服务器端最后接收到并校验通过的"客户委托流水号(clSeqNo)"
-  * </p>
-  *
-  * <p> @note 关于最近接收到的回报数据编号 (针对UDP通道):
-  * - 将通过 lastInMsgSeq 字段存储上一次会话实际接收到的入向消息序号, 即: 最近接收到的
-  *   回报数据编号
-  * - 该字段会在接收到回报数据并回调OnMsg成功以后实时更新, 可以通过该字段获取到最近接收到
-  *   的回报数据编号
-  * - 当OnConnect函数指针为空时, 会执行默认的回报订阅处理, 此时会自动从断点位置继续订阅
-  *   回报数据
-  * - 若指定了OnConnect回调函数(函数指针不为空), 则需要显式的执行回报订阅处理
-  * - API会将回报数据的断点位置存储在 <code>pAsyncChannel->lastInMsgSeq</code>
-  *   和 <code>pSessionInfo->lastInMsgSeq</code> 字段中, 可以使用该值订阅回报
-  * - 客户端可以在OnConnect回调函数中重新设置
-  *   <code>pSessionInfo->lastInMsgSeq</code> 的取值来重新指定初始的回报订阅位置,
-  *   效果等同于MdsApi_InitRptChannel接口的lastRptSeqNum参数:
-  *   - 等于0, 从头开始推送回报数据 (默认值)
-  *   - 大于0, 以指定的回报编号为起点, 从该回报编号的下一条数据开始推送
-  *   - 小于0, 从最新的数据开始推送回报数据
-  * </p>
+
   *
   * @param   pAsyncChannel       异步API的连接通道信息
   * @param   pCallbackParams     外部传入的参数
@@ -505,6 +471,19 @@ _MdsClientApi_OnAsyncConnect(MdsAsyncApiChannelT *pAsyncChannel,
 		return SPK_NEG(EINVAL);
 	}
 
+	if (pAsyncChannel->pChannelCfg->channelType == MDSAPI_CHANNEL_TYPE_TCP) {
+		/* 提取回报通道对应的订阅配置信息 */
+		pSubscribeInfo = MdsAsyncApi_GetChannelSubscribeCfg(pAsyncChannel);
+		if (__spk_unlikely(!pSubscribeInfo)) {
+			SLOG_ERROR("Illegal extended subscribe info! " \
+				"pAsyncChannel[%p], channelTag[%s]",
+				pAsyncChannel, pAsyncChannel->pChannelCfg->channelTag);
+			SLOG_ASSERT(0);
+
+			SPK_SET_ERRNO(EINVAL);
+			return SPK_NEG(EINVAL);
+		}
+	}
 
 	/*
 	 * 返回值说明
@@ -528,10 +507,12 @@ _MdsClientApi_OnAsyncConnect(MdsAsyncApiChannelT *pAsyncChannel,
 	/* 执行默认处理 */
 	switch (pAsyncChannel->pChannelCfg->channelType) {
 	case MDSAPI_CHANNEL_TYPE_TCP:
-		SLOG_INFO("Order channel connected. server[%s:%d], " \
+		SLOG_INFO("Tcp connected. server[%s:%d], " \
+			"lastInMsgSeq[%" __SPK_FMT_LL__ "d], " \
 			"lastOutMsgSeq[%" __SPK_FMT_LL__ "d]",
 			pAsyncChannel->pSessionInfo->channel.remoteAddr,
 			pAsyncChannel->pSessionInfo->channel.remotePort,
+			pAsyncChannel->pSessionInfo->lastInMsgSeq,
 			pAsyncChannel->pSessionInfo->lastOutMsgSeq);
 
 		/*
@@ -639,7 +620,7 @@ _MdsClientApi_OnAsyncDisconnect(MdsAsyncApiChannelT *pAsyncChannel,
 		"channelInMsg[%" __SPK_FMT_LL__ "d], " \
 		"channelOutMsg[%" __SPK_FMT_LL__ "d]",
 		pAsyncChannel->pChannelCfg->channelType
-		== MDSAPI_CHANNEL_TYPE_TCP ? "Order" : "Report",
+		== MDSAPI_CHANNEL_TYPE_TCP,
 		pAsyncChannel->pSessionInfo->channel.remoteAddr,
 		pAsyncChannel->pSessionInfo->channel.remotePort,
 		pAsyncChannel->pChannelCfg->channelType,
@@ -795,7 +776,7 @@ _MdsClientApi_OnQueryDisconnect(MdsApiSessionInfoT *pSessionInfo,
 
 
 ///**
-// * 对接收到的回报消息进行处理的回调函数 (适用于UDP通道)
+// * 对接收到的回报消息进行处理的回调函数 (适用于TCP通道)
 // *
 // * @param   pSessionInfo        会话信息
 // * @param   pMsgHead            消息头
@@ -854,8 +835,10 @@ _MdsClientApi_HandleTcpChannelRsp(MdsApiSessionInfoT *pSessionInfo,
 	SMsgHeadT *pMsgHead, void *pMsgBody, void *pCallbackParams) {
 	MdsClientSpi            *pSpi = (MdsClientSpi *)pCallbackParams;
 	MdsMktRspMsgBodyT          *pRspMsg = (MdsMktRspMsgBodyT *)pMsgBody;
+	MdsMktDataSnapshotT			 *pRptMsg = &pRspMsg->mktDataSnapshot;
 
 	SLOG_ASSERT(pSessionInfo && pMsgHead && pMsgBody);
+	SLOG_ASSERT(pSpi);
 
 	switch (pMsgHead->msgId) {
 	case MDS_MSGTYPE_HEARTBEAT:                 /* 心跳消息 */
@@ -878,6 +861,17 @@ _MdsClientApi_HandleTcpChannelRsp(MdsApiSessionInfoT *pSessionInfo,
 		SLOG_DEBUG(">>> Recv compressed message. ");
 		break;
 
+	case MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH: /** Level1 市场行情快照 (10/0x0A) */
+		pSpi->OnRtnStockData(&pRptMsg->head, &pRptMsg->stock);
+		break;
+
+	case MDS_MSGTYPE_INDEX_SNAPSHOT_FULL_REFRESH: /** Level1 市场行情快照 (10/0x0A) */
+		pSpi->OnRtnIndexData(&pRptMsg->head, &pRptMsg->index);
+		break;
+
+	case MDS_MSGTYPE_OPTION_SNAPSHOT_FULL_REFRESH: /** Level1/Level2 期权行情快照 (12/0x0C) */
+		pSpi->OnRtnOptionData(&pRptMsg->head, &pRptMsg->option);
+		break;
 
 	default:
 		/* 接收到非预期(未定义处理方式)的回报消息 */

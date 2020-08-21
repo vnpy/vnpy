@@ -168,13 +168,12 @@
     <ClInclude Include="..\..\include\oes\mds_api\mds_async_api.h" />
     <ClInclude Include="..\..\include\oes\mds_global\mds_mkt_packets.h" />
     <ClInclude Include="..\..\include\oes\mds_global\mds_qry_packets.h" />
-    <ClInclude Include="..\..\oes\vnoes\vnoesmd\vnoesmd.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="mds_client_sample.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="vnoesmd.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\oes\vnoes\vnoesmd\vnoesmd.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="mds_client_sample.cpp" />
     <ClCompile Include="pch.cpp">
@@ -183,6 +182,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="vnoesmd.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

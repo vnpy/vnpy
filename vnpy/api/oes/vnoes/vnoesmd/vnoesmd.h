@@ -13,6 +13,9 @@ using namespace Quant360;
 //常量
 #define ONCONNECTED 0
 #define ONDISCONNECTED 1
+#define ONRTNSTOCKDATA 2
+#define ONRTNINDEXDATA 3
+#define ONRTNOPTIONDATA 4
 
 
 ///-------------------------------------------------------------------------------------
@@ -52,6 +55,9 @@ public:
 	/* 连接断开后的回调函数 */
 	virtual int32       OnDisconnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo);
 
+	virtual void		OnRtnStockData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *stock);
+	virtual void		OnRtnIndexData(const MdsMktDataSnapshotHeadT *head, const MdsIndexSnapshotBodyT *index);
+	virtual void		OnRtnOptionData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *option);
 	//-------------------------------------------------------------------------------------
 	//task：任务
 	//-------------------------------------------------------------------------------------
@@ -60,6 +66,10 @@ public:
 	int32 processConnected(Task *task);
 
 	int32 processDisconnected(Task *task);
+
+	void processRtnStockData(Task *task);
+	void processRtnIndexData(Task *task);
+	void processRtnOptionData(Task *task);
 
 	//-------------------------------------------------------------------------------------
 	//data：回调函数的数据字典
@@ -73,6 +83,10 @@ public:
 	virtual void onConnected(int channelType, const dict &data) {};
 
 	virtual void onDisconnected(int channelType, const dict &data) {};
+
+	virtual void onRtnStockData(const dict &error, const dict &data) {};
+	virtual void onRtnIndexData(const dict &error, const dict &data) {};
+	virtual void onRtnOptionData(const dict &error, const dict &data) {};
 
 	//-------------------------------------------------------------------------------------
 	//req:主动函数的请求字典
