@@ -1,6 +1,5 @@
 from datetime import datetime
 
-
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtCore, QtWidgets
@@ -73,21 +72,21 @@ class RecorderManager(QtWidgets.QWidget):
         self.log_edit = QtWidgets.QTextEdit()
         self.log_edit.setReadOnly(True)
 
+        self.use_regexp_checkbox = QtWidgets.QCheckBox("使用正则表达式")
+        self.use_regexp_checkbox.stateChanged.connect(self.set_use_regexp)
+
         # Set layout
         grid = QtWidgets.QGridLayout()
-        grid.addWidget(QtWidgets.QLabel("K线记录"), 0, 0)
-        grid.addWidget(add_bar_button, 0, 1)
-        grid.addWidget(remove_bar_button, 0, 2)
-        grid.addWidget(QtWidgets.QLabel("Tick记录"), 1, 0)
-        grid.addWidget(add_tick_button, 1, 1)
-        grid.addWidget(remove_tick_button, 1, 2)
-
-        hbox = QtWidgets.QHBoxLayout()
-        hbox.addWidget(QtWidgets.QLabel("本地代码"))
-        hbox.addWidget(self.symbol_line)
-        hbox.addWidget(QtWidgets.QLabel("     "))
-        hbox.addLayout(grid)
-        hbox.addStretch()
+        grid.addWidget(QtWidgets.QLabel("本地代码"), 0, 0)
+        grid.addWidget(self.symbol_line, 0, 1)
+        grid.addWidget(self.symbol_line, 0, 1)
+        grid.addWidget(self.use_regexp_checkbox, 1, 1)
+        grid.addWidget(QtWidgets.QLabel("K线记录"), 0, 2)
+        grid.addWidget(add_bar_button, 0, 3)
+        grid.addWidget(remove_bar_button, 0, 4)
+        grid.addWidget(QtWidgets.QLabel("Tick记录"), 1, 2)
+        grid.addWidget(add_tick_button, 1, 3)
+        grid.addWidget(remove_tick_button, 1, 4)
 
         grid2 = QtWidgets.QGridLayout()
         grid2.addWidget(QtWidgets.QLabel("K线记录列表"), 0, 0)
@@ -97,7 +96,7 @@ class RecorderManager(QtWidgets.QWidget):
         grid2.addWidget(self.log_edit, 2, 0, 1, 2)
 
         vbox = QtWidgets.QVBoxLayout()
-        vbox.addLayout(hbox)
+        vbox.addLayout(grid)
         vbox.addLayout(grid2)
         self.setLayout(vbox)
 
@@ -124,6 +123,8 @@ class RecorderManager(QtWidgets.QWidget):
     def process_update_event(self, event: Event):
         """"""
         data = event.data
+
+        self.use_regexp_checkbox.setChecked(data['use_regexp'])
 
         self.bar_recording_edit.clear()
         bar_text = "\n".join(data["bar"])
@@ -165,3 +166,7 @@ class RecorderManager(QtWidgets.QWidget):
         """"""
         vt_symbol = self.symbol_line.text()
         self.recorder_engine.remove_tick_recording(vt_symbol)
+
+    def set_use_regexp(self):
+        use_regexp = self.use_regexp_checkbox.isChecked()
+        self.recorder_engine.set_use_regexp(use_regexp)

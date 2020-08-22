@@ -1,6 +1,8 @@
 """"""
 
 import sys
+import re
+
 from threading import Thread
 from queue import Queue, Empty
 from copy import copy
@@ -18,7 +20,6 @@ from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT
 from vnpy.trader.utility import load_json, save_json, BarGenerator
 from vnpy.trader.database import database_manager
 from vnpy.app.spread_trading.base import EVENT_SPREAD_DATA, SpreadData
-
 
 APP_NAME = "DataRecorder"
 
@@ -39,6 +40,7 @@ class RecorderEngine(BaseEngine):
         self.thread = Thread(target=self.run)
         self.active = False
 
+        self.use_regexp = False
         self.tick_recordings = {}
         self.bar_recordings = {}
         self.bar_generators = {}
@@ -51,12 +53,14 @@ class RecorderEngine(BaseEngine):
     def load_setting(self):
         """"""
         setting = load_json(self.setting_filename)
+        self.use_regexp = setting.get('use_regexp', False)
         self.tick_recordings = setting.get("tick", {})
         self.bar_recordings = setting.get("bar", {})
 
     def save_setting(self):
         """"""
         setting = {
+            "use_regexp": self.use_regexp,
             "tick": self.tick_recordings,
             "bar": self.bar_recordings
         }
@@ -88,7 +92,7 @@ class RecorderEngine(BaseEngine):
         """"""
         self.active = False
 
-        if self.thread.isAlive():
+        if self.thread.is_alive():
             self.thread.join()
 
     def start(self):
@@ -102,26 +106,45 @@ class RecorderEngine(BaseEngine):
             self.write_log(f"已在K线记录列表中：{vt_symbol}")
             return
 
-        if Exchange.LOCAL.value not in vt_symbol:
-            contract = self.main_engine.get_contract(vt_symbol)
-            if not contract:
-                self.write_log(f"找不到合约：{vt_symbol}")
-                return
+        if self.use_regexp:
+            for matched_contract in self.main_engine.get_all_contracts():
+                if re.fullmatch(vt_symbol, matched_contract.vt_symbol, re.IGNORECASE):
+                    if matched_contract.exchange != Exchange.LOCAL:
+                        self.bar_recordings[vt_symbol] = {
+                            "symbol": matched_contract.symbol,
+                            "exchange": matched_contract.exchange.value,
+                            "gateway_name": matched_contract.gateway_name
+                        }
 
-            self.bar_recordings[vt_symbol] = {
-                "symbol": contract.symbol,
-                "exchange": contract.exchange.value,
-                "gateway_name": contract.gateway_name
-            }
+                        self.subscribe(matched_contract)
 
-            self.subscribe(contract)
+            self.bar_recordings[vt_symbol] = {}
         else:
-            self.tick_recordings[vt_symbol] = {}
+            if Exchange.LOCAL.value not in vt_symbol:
+                contract = self.main_engine.get_contract(vt_symbol)
+                if not contract:
+                    self.write_log(f"找不到合约：{vt_symbol}")
+                    return
+
+                self.bar_recordings[vt_symbol] = {
+                    "symbol": contract.symbol,
+                    "exchange": contract.exchange.value,
+                    "gateway_name": contract.gateway_name
+                }
+
+                self.subscribe(contract)
+            else:
+                self.bar_recordings[vt_symbol] = {}
 
         self.save_setting()
         self.put_event()
 
         self.write_log(f"添加K线记录成功：{vt_symbol}")
+
+    def set_use_regexp(self, use_regexp: bool):
+        self.use_regexp = use_regexp
+        self.save_setting()
+        self.put_event()
 
     def add_tick_recording(self, vt_symbol: str):
         """"""
@@ -129,23 +152,37 @@ class RecorderEngine(BaseEngine):
             self.write_log(f"已在Tick记录列表中：{vt_symbol}")
             return
 
-        # For normal contract
-        if Exchange.LOCAL.value not in vt_symbol:
-            contract = self.main_engine.get_contract(vt_symbol)
-            if not contract:
-                self.write_log(f"找不到合约：{vt_symbol}")
-                return
+        if self.use_regexp:
+            for matched_contract in self.main_engine.get_all_contracts():
+                if re.fullmatch(vt_symbol, matched_contract.vt_symbol, re.IGNORECASE):
+                    if matched_contract.exchange != Exchange.LOCAL:
+                        self.tick_recordings[vt_symbol] = {
+                            "symbol": matched_contract.symbol,
+                            "exchange": matched_contract.exchange.value,
+                            "gateway_name": matched_contract.gateway_name
+                        }
 
-            self.tick_recordings[vt_symbol] = {
-                "symbol": contract.symbol,
-                "exchange": contract.exchange.value,
-                "gateway_name": contract.gateway_name
-            }
-
-            self.subscribe(contract)
-        # No need to subscribe for spread data
-        else:
+                        self.subscribe(matched_contract)
             self.tick_recordings[vt_symbol] = {}
+
+        else:
+            # For normal contract
+            if Exchange.LOCAL.value not in vt_symbol:
+                contract = self.main_engine.get_contract(vt_symbol)
+                if not contract:
+                    self.write_log(f"找不到合约：{vt_symbol}")
+                    return
+
+                self.tick_recordings[vt_symbol] = {
+                    "symbol": contract.symbol,
+                    "exchange": contract.exchange.value,
+                    "gateway_name": contract.gateway_name
+                }
+
+                self.subscribe(contract)
+            # No need to subscribe for spread data
+            else:
+                self.tick_recordings[vt_symbol] = {}
 
         self.save_setting()
         self.put_event()
@@ -180,17 +217,25 @@ class RecorderEngine(BaseEngine):
         """"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
-        self.event_engine.register(
-            EVENT_SPREAD_DATA, self.process_spread_event)
+        self.event_engine.register(EVENT_SPREAD_DATA, self.process_spread_event)
 
     def update_tick(self, tick: TickData):
         """"""
-        if tick.vt_symbol in self.tick_recordings:
-            self.record_tick(tick)
+        if self.use_regexp:
+            if any(re.fullmatch(pattern, tick.vt_symbol) for pattern in self.tick_recordings):
+                self.record_tick(tick)
 
-        if tick.vt_symbol in self.bar_recordings:
-            bg = self.get_bar_generator(tick.vt_symbol)
-            bg.update_tick(tick)
+            if any(re.fullmatch(pattern, tick.vt_symbol) for pattern in self.bar_recordings):
+                bg = self.get_bar_generator(tick.vt_symbol)
+                bg.update_tick(tick)
+
+        else:
+            if tick.vt_symbol in self.tick_recordings:
+                self.record_tick(tick)
+
+            if tick.vt_symbol in self.bar_recordings:
+                bg = self.get_bar_generator(tick.vt_symbol)
+                bg.update_tick(tick)
 
     def process_tick_event(self, event: Event):
         """"""
@@ -202,8 +247,13 @@ class RecorderEngine(BaseEngine):
         contract = event.data
         vt_symbol = contract.vt_symbol
 
-        if (vt_symbol in self.tick_recordings or vt_symbol in self.bar_recordings):
-            self.subscribe(contract)
+        if self.use_regexp:
+            if any(re.fullmatch(pattern, vt_symbol) for pattern
+                   in set(self.tick_recordings.keys()) | set(self.bar_recordings.keys())):
+                self.subscribe(contract)
+        else:
+            if vt_symbol in self.tick_recordings or vt_symbol in self.bar_recordings:
+                self.subscribe(contract)
 
     def process_spread_event(self, event: Event):
         """"""
@@ -231,6 +281,7 @@ class RecorderEngine(BaseEngine):
         bar_symbols.sort()
 
         data = {
+            "use_regexp": self.use_regexp,
             "tick": tick_symbols,
             "bar": bar_symbols
         }
