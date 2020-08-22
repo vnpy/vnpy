@@ -72,20 +72,20 @@ def run_child():
     main_engine.connect(ctp_setting, "CTP")
     main_engine.write_log("连接CTP接口")
 
-    sleep(1)
+    sleep(10)
 
     cta_engine.init_engine()
     main_engine.write_log("CTA策略初始化完成")
 
     cta_engine.init_all_strategies()
-    sleep(6)   # Leave enough time to complete strategy initialization
+    sleep(60)   # Leave enough time to complete strategy initialization
     main_engine.write_log("CTA策略全部初始化")
 
     cta_engine.start_all_strategies()
     main_engine.write_log("CTA策略全部启动")
 
     while True:
-        sleep(1)
+        sleep(10)
 
         trading = check_trading_period()
         if not trading:
