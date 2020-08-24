@@ -174,7 +174,9 @@
     <ClInclude Include="vnoesmd.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="01_mds_async_tcp_sample.c" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="mds_client.c" />
     <ClCompile Include="mds_client_sample.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

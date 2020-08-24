@@ -53,5 +53,11 @@
     <ClCompile Include="vnoesmd.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="01_mds_async_tcp_sample.c">
+      <Filter>头文件</Filter>
+    </ClCompile>
+    <ClCompile Include="mds_client.c">
+      <Filter>头文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
