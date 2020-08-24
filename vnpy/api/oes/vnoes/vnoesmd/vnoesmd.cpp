@@ -2,13 +2,31 @@
 //
 
 #include "vnoesmd.h"
-
+#include    <mds_api/mds_async_api.h>
+#include    <mds_api/parser/mds_protocol_parser.h>
+#include    <sutil/compiler.h>
+#include    <sutil/string/spk_strings.h>
+#include    <sutil/logger/spk_log.h>
+#include    <iostream>
 
 ///-------------------------------------------------------------------------------------
 ///C++的回调函数将数据保存到队列中
 ///-------------------------------------------------------------------------------------
 int32 MdApi::OnConnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo, MdsApiSubscribeInfoT *pSubscribeInfo)
 {
+
+
+	MdsApiSubscribeInfoT    *pSubscribeInfo = (MdsApiSubscribeInfoT *)NULL;
+	MdSpi            *pSpi = (MdSpi *)pCallbackParams;
+	int32                   ret = 0;
+
+	ret = pSpi->OnConnected(
+		(eMdsApiChannelTypeT)pAsyncChannel->pChannelCfg->channelType,
+		pAsyncChannel->pSessionInfo, pSubscribeInfo);
+
+
+
+
 	Task task = Task();
 	task.task_name = ONCONNECTED;
 	task.task_int = channelType;
@@ -351,49 +369,124 @@ void MdApi::createMdApi()
 
 bool MdApi::loadCfg(string pCfgFile)
 {
-	bool i = this->api->LoadCfg((char*)pCfgFile.c_str());
-	return i;
+	MdsApiClientCfgT        tmpApiCfg;
+	MdsAsyncApiContextT     *pAsyncContext = (MdsAsyncApiContextT *)NULL;
+	MdsAsyncApiChannelT     *pTcpChannel = (MdsAsyncApiChannelT *)NULL;
+
+	/* 初始化日志记录器 */
+	if (!MdsApi_InitLogger((char*)pCfgFile.c_str(), MDSAPI_CFG_DEFAULT_SECTION_LOGGER)) {
+		SLOG_ERROR("初始化API记录器失败! cfgFile[%s], cfgSection[%s]",
+			(char*)pCfgFile.c_str(), MDSAPI_CFG_DEFAULT_SECTION_LOGGER);
+		return FALSE;
+	}
+
+	/* 解析配置文件 */
+	memset(&tmpApiCfg, 0, sizeof(MdsApiClientCfgT));
+	if (!MdsApi_ParseAllConfig((char*)pCfgFile.c_str(), &tmpApiCfg)) {
+		SLOG_ERROR("解析配置文件失败! cfgFile[%s]", (char*)pCfgFile.c_str());
+		return FALSE;
+	}
+
+
+	if (&tmpApiCfg != &_apiCfg) {
+		memcpy(&_apiCfg, &tmpApiCfg, sizeof(MdsApiClientCfgT));
+	}
+
+	/* 创建异步API的运行时环境 (初始化日志, 创建上下文环境) */
+	pAsyncContext = MdsAsyncApi_CreateContext((char*)pCfgFile.c_str());
+	if (!pAsyncContext) {
+		SLOG_ERROR("创建异步API的运行时环境失败!");
+		return FALSE;
+	}
+
+	/* 添加初始的TCP通道 */
+	if (_apiCfg.tcpChannelCfg.addrCnt > 0) {
+		pTcpChannel = MdsAsyncApi_AddChannel(
+			pAsyncContext,
+			MDSAPI_CFG_DEFAULT_KEY_TCP_ADDR,
+			&_apiCfg.tcpChannelCfg,
+			(MdsApiSubscribeInfoT *)NULL,
+			OnData, _pSpi,
+			OnConnected, _pSpi,
+			OnDisConnected, _pSpi);
+		if (__spk_unlikely(!pTcpChannel)) {
+			SLOG_ERROR("添加TCP通道失败! channelTag[%s]",
+				MDSAPI_CFG_DEFAULT_KEY_TCP_ADDR);
+			MdsAsyncApi_ReleaseContext(pAsyncContext);
+			return FALSE;
+		}
+	}
+
+
+	_pAsyncContext = pAsyncContext;
+	_pDefaultTcpChannel = pTcpChannel;
+	_isInitialized = TRUE;
+	return TRUE;
+
 }
 
 
-bool MdApi::setCustomizedIp(string pIpStr)
-{
-	bool i = this->api->SetCustomizedIp((char*)pIpStr.c_str());
-	return i;
-}
-
-bool MdApi::setCustomizedMac(string pMacStr)
-{
-	bool  i = this->api->SetCustomizedMac((char*)pMacStr.c_str());
-	return i;
-}
-
-bool MdApi::setCustomizedDriverId(string pDriverStr)
-{
-	bool  i = this->api->SetCustomizedDriverId((char*)pDriverStr.c_str());
-	return i;
-}
-
-void MdApi::setThreadUsername(string pUsername)
-{
-	this->api->SetThreadUsername((char*)pUsername.c_str());
-}
-
-
-void MdApi::setThreadPassword(string pPassword)
-{
-	this->api->SetThreadPassword((char*)pPassword.c_str());
-}
+//bool MdApi::setCustomizedIp(string pIpStr)
+//{
+//	bool i = this->api->SetCustomizedIp((char*)pIpStr.c_str());
+//	return i;
+//}
+//
+//bool MdApi::setCustomizedMac(string pMacStr)
+//{
+//	bool  i = this->api->SetCustomizedMac((char*)pMacStr.c_str());
+//	return i;
+//}
+//
+//bool MdApi::setCustomizedDriverId(string pDriverStr)
+//{
+//	bool  i = this->api->SetCustomizedDriverId((char*)pDriverStr.c_str());
+//	return i;
+//}
+//
+//void MdApi::setThreadUsername(string pUsername)
+//{
+//	this->api->SetThreadUsername((char*)pUsername.c_str());
+//}
+//
+//
+//void MdApi::setThreadPassword(string pPassword)
+//{
+//	this->api->SetThreadPassword((char*)pPassword.c_str());
+//}
 
 
 bool MdApi::init()
 {
 	this->active = true;
 	this->task_thread = thread(&MdApi::processTask, this);
-	int32 LastClSeqNo;
-	bool i = this->api->Start(&LastClSeqNo, 0);
-	return i;
+
+	////启动交易接口实例 
+
+		/* 启动异步API线程 (连接TCP通道和UDP通道) */
+		if (MdsAsyncApi_GetChannelCount(_pAsyncContext) > 0) {
+			MdsAsyncApi_SetPreconnectAble(_pAsyncContext, TRUE);
+
+			if (!MdsAsyncApi_Start(_pAsyncContext)) {
+				SLOG_ERROR("启动异步API线程失败! error[%d - %s]",
+					MdsApi_GetLastError(),
+					MdsApi_GetErrorMsg(MdsApi_GetLastError()));
+
+				exit();
+				return FALSE;
+			}
+		}
+		else {
+			SLOG_INFO("未配置TCP通道或UDP通道, 将仅连接查询通道, 无需启动异步API线程!");
+		}
+
+		SLOG_INFO("启动交易接口实例...");
+		_isRunning = TRUE;
+
+		return TRUE;
 }
+
+
 
 int MdApi::exit()
 {
@@ -401,8 +494,18 @@ int MdApi::exit()
 	this->task_queue.terminate();
 	this->task_thread.join();
 
-	this->api->RegisterSpi(NULL);
-	this->api->Stop();
+	if (_isRunning) {
+		SLOG_INFO("停止交易接口实例并释放相关资源...");
+	}
+
+	/* 停止并销毁异步API线程 */
+	if (_pAsyncContext) {
+		MdsAsyncApi_Stop(_pAsyncContext);
+		MdsAsyncApi_ReleaseContext(_pAsyncContext);
+		_pAsyncContext = NULL;
+	}
+
+	_isRunning = FALSE;
 	this->api = NULL;
 	return 1;
 };
@@ -435,7 +538,10 @@ bool MdApi::subscribeMarketData(const dict &req1, const dict &req2)
 	getUint8(req2, "mdProductType", &myreq2.mdProductType);
 	getInt32(req2, "instrId", &myreq2.instrId);
 
-	bool i = this->api->SubscribeMarketData(&myreq1, &myreq2);
+	bool i = MdsAsyncApi_SubscribeMarketData(
+		_pDefaultTcpChannel,
+		&myreq1,
+		&myreq2);
 	return i;
 
 }
@@ -519,11 +625,11 @@ PYBIND11_MODULE(vnoesmd, m)
 		.def(init<>())
 		.def("createMdApi", &MdApi::createMdApi)
 		.def("loadCfg", &MdApi::loadCfg)
-		.def("setCustomizedIp", &MdApi::setCustomizedIp)
-		.def("setCustomizedMac", &MdApi::setCustomizedMac)
-		.def("setCustomizedDriverId", &MdApi::setCustomizedDriverId)
-		.def("setThreadUsername", &MdApi::setThreadUsername)
-		.def("setThreadPassword", &MdApi::setThreadPassword)
+		//.def("setCustomizedIp", &MdApi::setCustomizedIp)
+		//.def("setCustomizedMac", &MdApi::setCustomizedMac)
+		//.def("setCustomizedDriverId", &MdApi::setCustomizedDriverId)
+		//.def("setThreadUsername", &MdApi::setThreadUsername)
+		//.def("setThreadPassword", &MdApi::setThreadPassword)
 		.def("init", &MdApi::init)
 		.def("exit", &MdApi::exit)
 

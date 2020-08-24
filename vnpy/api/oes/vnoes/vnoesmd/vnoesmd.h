@@ -5,10 +5,11 @@
 
 #include "vnoes.h"
 #include "pybind11/pybind11.h"
-#include "mds_client_sample.h"
+#include    <mds_api/mds_async_api.h>
+
 
 using namespace pybind11;
-using namespace Quant360;
+//using namespace Quant360;
 
 //常量
 #define ONCONNECTED 0
@@ -22,11 +23,34 @@ using namespace Quant360;
 ///C++ SPI的回调函数方法实现
 ///-------------------------------------------------------------------------------------
 
-//API的继承实现
-class MdApi : public MdsClientSpi
+	/* API类的前置声明 */
+class MdsClientApi;
+
+
+/**
+ * 交易接口响应类
+ */
+
+
+
+
+class MdApi
 {
+	//int32 defaultClSeqNo = 0;
+
+	//BOOL _isInitialized = FALSE;
+	//BOOL _isRunning = FALSE;
+
+	//MdSpi _pSpi = NULL;
+	//MdsAsyncApiContextT _pAsyncContext = NULL;
+	//MdsAsyncApiChannelT _pDefaultTcpChannel = NULL;
+	//// _pQryChannel = NULL;
+
+	//memset(&_apiCfg, 0, sizeof(MdsApiClientCfgT));
+	//memset(&_qryChannel, 0, sizeof(MdsApiSessionInfoT));
+
 private:
-	MdsClientApi* api;            //API对象
+	MdApi* api;            //API对象
 	thread task_thread;                    //工作线程指针（向python中推送数据）
 	TaskQueue task_queue;                //任务队列
 	bool active = false;                //工作状态
@@ -34,6 +58,7 @@ private:
 public:
 	MdApi()
 	{
+
 	};
 
 	~MdApi()
@@ -96,19 +121,64 @@ public:
 
 	bool loadCfg(string pCfgFile);
 
-	bool setCustomizedIp(string pIpStr);
+	//bool setCustomizedIp(string pIpStr);
 
-	bool setCustomizedMac(string pMacStr);
+	//bool setCustomizedMac(string pMacStr);
 
-	bool setCustomizedDriverId(string pDriverStr);
+	//bool setCustomizedDriverId(string pDriverStr);
 
-	void setThreadUsername(string pUsername);
+	//void setThreadUsername(string pUsername);
 
-	void setThreadPassword(string pPassword);
+	//void setThreadPassword(string pPassword);
 
 	bool init();
 
 	int exit();
 	bool subscribeMarketData(const dict &req1, const dict &req2);
 
+
+	private:
+		/* 禁止拷贝构造函数 */
+		MdApi(const MdApi&);
+		/* 禁止赋值函数 */
+		MdApi&      operator=(const MdApi&);
+
+	public:
+		/* 为了方便客户端使用而内置的流水号计数器, 可以基于该字段来递增维护客户端委托流水号 */
+		int32               defaultClSeqNo;
+
+	protected:
+		MdsApiClientCfgT    _apiCfg;
+		MdsApiSessionInfoT  _qryChannel;
+		BOOL                _isInitialized;
+		BOOL                _isRunning;
+
+		MdSpi        *_pSpi;
+		MdsAsyncApiContextT *_pAsyncContext;
+		MdsAsyncApiChannelT *_pDefaultTcpChannel;
+		MdsApiSessionInfoT  *_pQryChannel;
+};
+
+
+class MdSpi {
+//public:
+//	/* 连接或重新连接完成后的回调函数 */
+//	virtual int32       OnConnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo, MdsApiSubscribeInfoT *pSubscribeInfo = NULL);
+//	/* 连接断开后的回调函数 */
+//	virtual int32       OnDisconnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo);
+//
+//	virtual void		OnRtnStockData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *stock) = 0;
+//	virtual void		OnRtnIndexData(const MdsMktDataSnapshotHeadT *head, const MdsIndexSnapshotBodyT *index) = 0;
+//	virtual void		OnRtnOptionData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *option) = 0;
+//
+
+
+
+public:
+	MdSpi();
+	virtual ~MdSpi() {};
+
+public:
+	MdApi        *pApi;
+	int32               currentRequestId;
 };
