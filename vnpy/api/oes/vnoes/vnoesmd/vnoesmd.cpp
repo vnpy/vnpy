@@ -12,20 +12,131 @@
 ///-------------------------------------------------------------------------------------
 ///C++的回调函数将数据保存到队列中
 ///-------------------------------------------------------------------------------------
-int32 MdApi::OnConnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo, MdsApiSubscribeInfoT *pSubscribeInfo)
+
+
+int32 MdOnConnected(MdsAsyncApiChannelT *pAsyncChannel, void *pCallbackParam)
 {
+	if (md_api)
+	{
+		md_api->OnConnected(pAsyncChannel);
+	};
+	return 0;
+};
 
 
+int32 MdOnDisConnected(MdsAsyncApiChannelT *pAsyncChannel, void *pCallbackParam)
+{
+	if (md_api)
+	{
+		md_api->OnDisConnected(pAsyncChannel);
+	};
+	return 0;
+};
+
+int32 MdOnData(MdsApiSessionInfoT *pSessionInfo, SMsgHeadT *pMsgHead, void *pMsgBody, void *pCallbackParams)
+{
+	if (md_api)
+	{
+		md_api->OnData(pSessionInfo,pMsgHead,pMsgBody, pCallbackParams);
+	};
+	return 0;
+};
+
+int32 MdApi::OnConnected(MdsAsyncApiChannelT *pAsyncChannel)
+{
+	this->channel = pAsyncChannel;
 	MdsApiSubscribeInfoT    *pSubscribeInfo = (MdsApiSubscribeInfoT *)NULL;
-	MdSpi            *pSpi = (MdSpi *)pCallbackParams;
-	int32                   ret = 0;
 
-	ret = pSpi->OnConnected(
-		(eMdsApiChannelTypeT)pAsyncChannel->pChannelCfg->channelType,
-		pAsyncChannel->pSessionInfo, pSubscribeInfo);
+	if (pAsyncChannel->pChannelCfg->channelType == MDSAPI_CHANNEL_TYPE_TCP) {
+		/* 提取回报通道对应的订阅配置信息 */
+		pSubscribeInfo = MdsAsyncApi_GetChannelSubscribeCfg(pAsyncChannel);
+		if (__spk_unlikely(!pSubscribeInfo)) {
+			SLOG_ERROR("Illegal extended subscribe info! " \
+				"pAsyncChannel[%p], channelTag[%s]",
+				pAsyncChannel, pAsyncChannel->pChannelCfg->channelTag);
+			SLOG_ASSERT(0);
+
+			SPK_SET_ERRNO(EINVAL);
+			return SPK_NEG(EINVAL);
+		}
+	}
+
+	int32 dataTypes = MDS_SUB_DATA_TYPE_L1_SNAPSHOT;
 
 
+	SLOG_ASSERT(pAsyncChannel && pAsyncChannel->pSessionInfo
+		&& pAsyncChannel->pChannelCfg);
 
+
+	/* 设置SubscribeByString接口使用的数据模式 (tickType=1) */
+	MdsApi_SetThreadSubscribeTickType(MDS_TICK_TYPE_LATEST_SIMPLIFIED);
+
+	/* 设置SubscribeByString接口使用的逐笔数据的数据重建标识 (实时行情+重建数据) */
+	MdsApi_SetThreadSubscribeTickRebuildFlag(
+		MDS_TICK_REBUILD_FLAG_EXCLUDE_REBUILDED);
+
+	/* 设置SubscribeByString接口使用的初始快照订阅标志 (isRequireInitialMktData) */
+	MdsApi_SetThreadSubscribeRequireInitMd(FALSE);
+
+	/* 订阅所有上海股票/债券/基金的 Level-2 行情 */
+	if (!MdsAsyncApi_SubscribeByString(pAsyncChannel,
+		(char *)NULL, (char *)NULL,
+		MDS_EXCH_SSE, MDS_MD_PRODUCT_TYPE_STOCK, MDS_SUB_MODE_SET,
+		dataTypes)) {
+		SLOG_ERROR("订阅上海股票行情失败!");
+		return EFAULT;
+	}
+
+	/* 追加订阅所有上海指数行情 */
+	if (!MdsAsyncApi_SubscribeByString(pAsyncChannel,
+		(char *)NULL, (char *)NULL,
+		MDS_EXCH_SSE, MDS_MD_PRODUCT_TYPE_INDEX, MDS_SUB_MODE_APPEND,
+		dataTypes)) {
+		SLOG_ERROR("订阅上海指数行情失败!");
+		return EFAULT;
+	}
+
+	/* 追加订阅所有上海期权行情 */
+	if (!MdsAsyncApi_SubscribeByString(pAsyncChannel,
+		(char *)NULL, (char *)NULL,
+		MDS_EXCH_SSE, MDS_MD_PRODUCT_TYPE_OPTION, MDS_SUB_MODE_APPEND,
+		dataTypes)) {
+		SLOG_ERROR("订阅上海期权行情失败!");
+		return EFAULT;
+	}
+
+	/* 追加订阅所有深圳股票/债券/基金的 Level-2 行情 */
+	if (!MdsAsyncApi_SubscribeByString(pAsyncChannel,
+		(char *)NULL, (char *)NULL,
+		MDS_EXCH_SZSE, MDS_MD_PRODUCT_TYPE_STOCK, MDS_SUB_MODE_APPEND,
+		dataTypes)) {
+		SLOG_ERROR("订阅深圳股票行情失败!");
+		return EFAULT;
+	}
+
+	/* 追加订阅所有深圳指数行情 */
+	if (!MdsAsyncApi_SubscribeByString(pAsyncChannel,
+		(char *)NULL, (char *)NULL,
+		MDS_EXCH_SZSE, MDS_MD_PRODUCT_TYPE_INDEX, MDS_SUB_MODE_APPEND,
+		dataTypes)) {
+		SLOG_ERROR("订阅深圳指数行情失败!");
+		return EFAULT;
+	}
+
+	/* 追加订阅所有深圳期权行情 */
+	if (!MdsAsyncApi_SubscribeByString(pAsyncChannel,
+		(char *)NULL, (char *)NULL,
+		MDS_EXCH_SZSE, MDS_MD_PRODUCT_TYPE_OPTION, MDS_SUB_MODE_APPEND,
+		dataTypes)) {
+		SLOG_ERROR("订阅上海期权行情失败!");
+		return EFAULT;
+	}
+
+	SLOG_INFO("订阅行情成功! channelTag[%s]",
+		pAsyncChannel->pChannelCfg->channelTag);
+
+	int channelType = (eMdsApiChannelTypeT)pAsyncChannel->pChannelCfg->channelType;
+	MdsApiSessionInfoT *pSessionInfo = pAsyncChannel->pSessionInfo;
 
 	Task task = Task();
 	task.task_name = ONCONNECTED;
@@ -43,8 +154,14 @@ int32 MdApi::OnConnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pS
 
 };
 
-int32 MdApi::OnDisconnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo)
+
+
+int32 MdApi::OnDisConnected(MdsAsyncApiChannelT *pAsyncChannel)
 {
+
+	int channelType = (eMdsApiChannelTypeT)pAsyncChannel->pChannelCfg->channelType;
+	MdsApiSessionInfoT *pSessionInfo = pAsyncChannel->pSessionInfo;
+
 	Task task = Task();
 	task.task_name = ONDISCONNECTED;
 	task.task_int = channelType;
@@ -61,15 +178,16 @@ int32 MdApi::OnDisconnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT 
 };
 
 
+
 void MdApi::OnRtnStockData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *stock)
 {
 	Task task = Task();
 	task.task_name = ONRTNSTOCKDATA;
 	if (head)
 	{
-		MdsMktDataSnapshotHeadT * task_error = new MdsMktDataSnapshotHeadT();
-		*task_error = *head;
-		task.task_error = task_error;
+		MdsMktDataSnapshotHeadT * task_head = new MdsMktDataSnapshotHeadT();
+		*task_head = *head;
+		task.task_head = task_head;
 	}
 	if (stock)
 	{
@@ -81,6 +199,29 @@ void MdApi::OnRtnStockData(const MdsMktDataSnapshotHeadT *head, const MdsStockSn
 
 };
 
+int32 MdApi::OnData(MdsApiSessionInfoT *pSessionInfo, SMsgHeadT *pMsgHead, void *pMsgBody, void *pCallbackParams = NULL)
+{
+	MdsMktRspMsgBodyT	*pRspMsg = (MdsMktRspMsgBodyT *)pMsgBody;
+	MdsMktDataSnapshotT	*pRptMsg = &pRspMsg->mktDataSnapshot;
+	switch (pMsgHead->msgId) {
+
+	cout << "@msgid" << pMsgHead->msgId << endl;
+	case MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH: /** Level1 市场行情快照 (10/0x0A) */
+		this->OnRtnStockData(&pRptMsg->head, &pRptMsg->stock);
+		break;
+
+	case MDS_MSGTYPE_INDEX_SNAPSHOT_FULL_REFRESH: /** Level1 市场行情快照 (10/0x0A) */
+		this->OnRtnIndexData(&pRptMsg->head, &pRptMsg->index);
+		break;
+
+	case MDS_MSGTYPE_OPTION_SNAPSHOT_FULL_REFRESH: /** Level1/Level2 期权行情快照 (12/0x0C) */
+		this->OnRtnOptionData(&pRptMsg->head, &pRptMsg->option);
+		break;
+	}
+	return 0;
+}
+
+
 
 
 void MdApi::OnRtnIndexData(const MdsMktDataSnapshotHeadT *head, const MdsIndexSnapshotBodyT *index)
@@ -89,9 +230,9 @@ void MdApi::OnRtnIndexData(const MdsMktDataSnapshotHeadT *head, const MdsIndexSn
 	task.task_name = ONRTNINDEXDATA;
 	if (head)
 	{
-		MdsMktDataSnapshotHeadT * task_error = new MdsMktDataSnapshotHeadT();
-		*task_error = *head;
-		task.task_error = task_error;
+		MdsMktDataSnapshotHeadT * task_head = new MdsMktDataSnapshotHeadT();
+		*task_head = *head;
+		task.task_head = task_head;
 	}
 	if (index)
 	{
@@ -110,9 +251,9 @@ void MdApi::OnRtnOptionData(const MdsMktDataSnapshotHeadT *head, const MdsStockS
 	task.task_name = ONRTNOPTIONDATA;
 	if (head)
 	{
-		MdsMktDataSnapshotHeadT * task_error = new MdsMktDataSnapshotHeadT();
-		*task_error = *head;
-		task.task_error = task_error;
+		MdsMktDataSnapshotHeadT * task_head = new MdsMktDataSnapshotHeadT();
+		*task_head = *head;
+		task.task_head = task_head;
 	}
 	if (option)
 	{
@@ -200,22 +341,22 @@ int32 MdApi::processDisconnected(Task *task)
 		data["remoteHostNum"] = task_data->remoteHostNum;
 		delete task_data;
 	}
-	this->onDisconnected(task->task_int, data);
+	this->onDisConnected(task->task_int, data);
 };
 
 void MdApi::processRtnStockData(Task *task)
 {
 	gil_scoped_acquire acquire;
-	dict error;
-	if (task->task_error)
+	dict head;
+	if (task->task_head)
 	{
-		MdsMktDataSnapshotHeadT *task_error = (MdsMktDataSnapshotHeadT*)task->task_error;
-		error["exchId"] = task_error->exchId;
-		error["mdProductType"] = task_error->mdProductType;
-		error["tradeDate"] = task_error->tradeDate;
-		error["updateTime"] = task_error->updateTime;
-		error["instrId"] = task_error->instrId;
-		delete task_error;
+		MdsMktDataSnapshotHeadT *task_head = (MdsMktDataSnapshotHeadT*)task->task_head;
+		head["exchId"] = task_head->exchId;
+		head["mdProductType"] = task_head->mdProductType;
+		head["tradeDate"] = task_head->tradeDate;
+		head["updateTime"] = task_head->updateTime;
+		head["instrId"] = task_head->instrId;
+		delete task_head;
 	}
 	dict data;
 	if (task->task_data)
@@ -257,23 +398,23 @@ void MdApi::processRtnStockData(Task *task)
 
 		delete task_data;
 	}
-	this->onRtnStockData(error, data);
+	this->onRtnStockData(head, data);
 
 };
 
 void MdApi::processRtnOptionData(Task *task)
 {
 	gil_scoped_acquire acquire;
-	dict error;
-	if (task->task_error)
+	dict head;
+	if (task->task_head)
 	{
-		MdsMktDataSnapshotHeadT *task_error = (MdsMktDataSnapshotHeadT*)task->task_error;
-		error["exchId"] = task_error->exchId;
-		error["mdProductType"] = task_error->mdProductType;
-		error["tradeDate"] = task_error->tradeDate;
-		error["updateTime"] = task_error->updateTime;
-		error["instrId"] = task_error->instrId;
-		delete task_error;
+		MdsMktDataSnapshotHeadT *task_head = (MdsMktDataSnapshotHeadT*)task->task_head;
+		head["exchId"] = task_head->exchId;
+		head["mdProductType"] = task_head->mdProductType;
+		head["tradeDate"] = task_head->tradeDate;
+		head["updateTime"] = task_head->updateTime;
+		head["instrId"] = task_head->instrId;
+		delete task_head;
 	}
 	dict data;
 	if (task->task_data)
@@ -315,23 +456,23 @@ void MdApi::processRtnOptionData(Task *task)
 
 		delete task_data;
 	}
-	this->onRtnOptionData(error, data);
+	this->onRtnOptionData(head, data);
 
 };
 
 void MdApi::processRtnIndexData(Task *task)
 {
 	gil_scoped_acquire acquire;
-	dict error;
-	if (task->task_error)
+	dict head;
+	if (task->task_head)
 	{
-		MdsMktDataSnapshotHeadT *task_error = (MdsMktDataSnapshotHeadT*)task->task_error;
-		error["exchId"] = task_error->exchId;
-		error["mdProductType"] = task_error->mdProductType;
-		error["tradeDate"] = task_error->tradeDate;
-		error["updateTime"] = task_error->updateTime;
-		error["instrId"] = task_error->instrId;
-		delete task_error;
+		MdsMktDataSnapshotHeadT *task_head = (MdsMktDataSnapshotHeadT*)task->task_head;
+		head["exchId"] = task_head->exchId;
+		head["mdProductType"] = task_head->mdProductType;
+		head["tradeDate"] = task_head->tradeDate;
+		head["updateTime"] = task_head->updateTime;
+		head["instrId"] = task_head->instrId;
+		delete task_head;
 	}
 	dict data;
 	if (task->task_data)
@@ -353,22 +494,19 @@ void MdApi::processRtnIndexData(Task *task)
 		data["__filler1"] = task_data->__filler1;
 		delete task_data;
 	}
-	this->onRtnIndexData(error, data);
+	this->onRtnIndexData(head, data);
 };
 
 
 ///-------------------------------------------------------------------------------------
 ///主动函数
 ///-------------------------------------------------------------------------------------
-void MdApi::createMdApi()
-{
-	this->api = new MdsClientApi();
-	this->api->RegisterSpi(this);
-}
 
 
-bool MdApi::loadCfg(string pCfgFile)
+bool MdApi::createMdApi(string pCfgFile, string username, string password)
 {
+	md_api = this;
+
 	MdsApiClientCfgT        tmpApiCfg;
 	MdsAsyncApiContextT     *pAsyncContext = (MdsAsyncApiContextT *)NULL;
 	MdsAsyncApiChannelT     *pTcpChannel = (MdsAsyncApiChannelT *)NULL;
@@ -379,6 +517,15 @@ bool MdApi::loadCfg(string pCfgFile)
 			(char*)pCfgFile.c_str(), MDSAPI_CFG_DEFAULT_SECTION_LOGGER);
 		return FALSE;
 	}
+
+
+
+	/* 设置线程用户名， 密码*/
+	MdsApi_SetThreadUsername((char*)username.c_str());
+	MdsApi_SetThreadPassword((char*)password.c_str());
+
+
+
 
 	/* 解析配置文件 */
 	memset(&tmpApiCfg, 0, sizeof(MdsApiClientCfgT));
@@ -399,6 +546,7 @@ bool MdApi::loadCfg(string pCfgFile)
 		return FALSE;
 	}
 
+
 	/* 添加初始的TCP通道 */
 	if (_apiCfg.tcpChannelCfg.addrCnt > 0) {
 		pTcpChannel = MdsAsyncApi_AddChannel(
@@ -406,9 +554,10 @@ bool MdApi::loadCfg(string pCfgFile)
 			MDSAPI_CFG_DEFAULT_KEY_TCP_ADDR,
 			&_apiCfg.tcpChannelCfg,
 			(MdsApiSubscribeInfoT *)NULL,
-			OnData, _pSpi,
-			OnConnected, _pSpi,
-			OnDisConnected, _pSpi);
+			MdOnData,  nullptr,
+			MdOnConnected, nullptr,
+			MdOnDisConnected, nullptr
+		);
 		if (__spk_unlikely(!pTcpChannel)) {
 			SLOG_ERROR("添加TCP通道失败! channelTag[%s]",
 				MDSAPI_CFG_DEFAULT_KEY_TCP_ADDR);
@@ -424,36 +573,6 @@ bool MdApi::loadCfg(string pCfgFile)
 	return TRUE;
 
 }
-
-
-//bool MdApi::setCustomizedIp(string pIpStr)
-//{
-//	bool i = this->api->SetCustomizedIp((char*)pIpStr.c_str());
-//	return i;
-//}
-//
-//bool MdApi::setCustomizedMac(string pMacStr)
-//{
-//	bool  i = this->api->SetCustomizedMac((char*)pMacStr.c_str());
-//	return i;
-//}
-//
-//bool MdApi::setCustomizedDriverId(string pDriverStr)
-//{
-//	bool  i = this->api->SetCustomizedDriverId((char*)pDriverStr.c_str());
-//	return i;
-//}
-//
-//void MdApi::setThreadUsername(string pUsername)
-//{
-//	this->api->SetThreadUsername((char*)pUsername.c_str());
-//}
-//
-//
-//void MdApi::setThreadPassword(string pPassword)
-//{
-//	this->api->SetThreadPassword((char*)pPassword.c_str());
-//}
 
 
 bool MdApi::init()
@@ -494,10 +613,6 @@ int MdApi::exit()
 	this->task_queue.terminate();
 	this->task_thread.join();
 
-	if (_isRunning) {
-		SLOG_INFO("停止交易接口实例并释放相关资源...");
-	}
-
 	/* 停止并销毁异步API线程 */
 	if (_pAsyncContext) {
 		MdsAsyncApi_Stop(_pAsyncContext);
@@ -508,41 +623,26 @@ int MdApi::exit()
 	_isRunning = FALSE;
 	this->api = NULL;
 	return 1;
-};
+}
 
 
-bool MdApi::subscribeMarketData(const dict &req1, const dict &req2)
+bool MdApi::subscribeMarketData(string symbol, int exchange, int product_type)
 {
-	MdsMktDataRequestReqT myreq1 = MdsMktDataRequestReqT();
-	memset(&myreq1, 0, sizeof(myreq1));
-	getUint8(req1, "subMode", &myreq1.subMode);
-	getUint8(req1, "tickType", &myreq1.tickType);
-	getInt8(req1, "sseStockFlag", &myreq1.sseStockFlag);
-	getInt8(req1, "sseIndexFlag", &myreq1.sseIndexFlag);
-	getInt8(req1, "sseOptionFlag", &myreq1.sseOptionFlag);
-	getInt8(req1, "szseStockFlag", &myreq1.szseStockFlag);
-	getInt8(req1, "szseIndexFlag", &myreq1.szseIndexFlag);
-	getInt8(req1, "szseOptionFlag", &myreq1.szseOptionFlag);
-	getUint8(req1, "isRequireInitialMktData", &myreq1.isRequireInitialMktData);
-	getUint8(req1, "__channelNos", &myreq1.__channelNos);
-	getUint8(req1, "tickExpireType", &myreq1.tickExpireType);
-	getUint8(req1, "tickRebuildFlag", &myreq1.tickRebuildFlag);
-	getInt32(req1, "dataTypes", &myreq1.dataTypes);
-	getInt32(req1, "beginTime", &myreq1.beginTime);
-	getInt32(req1, "subSecurityCnt", &myreq1.subSecurityCnt);
+	/* 设置SubscribeByString接口使用的数据模式 (tickType=1) */
+	MdsApi_SetThreadSubscribeTickType(MDS_TICK_TYPE_LATEST_SIMPLIFIED);
 
+	/* 设置SubscribeByString接口使用的逐笔数据的数据重建标识 (实时行情+重建数据) */
+	MdsApi_SetThreadSubscribeTickRebuildFlag(
+		MDS_TICK_REBUILD_FLAG_EXCLUDE_REBUILDED);
 
-	MdsMktDataRequestEntryT myreq2 = MdsMktDataRequestEntryT();
-	memset(&myreq2, 0, sizeof(myreq2));
-	getUint8(req2, "exchId", &myreq2.exchId);
-	getUint8(req2, "mdProductType", &myreq2.mdProductType);
-	getInt32(req2, "instrId", &myreq2.instrId);
-
-	bool i = MdsAsyncApi_SubscribeMarketData(
-		_pDefaultTcpChannel,
-		&myreq1,
-		&myreq2);
-	return i;
+	/* 设置SubscribeByString接口使用的初始快照订阅标志 (isRequireInitialMktData) */
+	MdsApi_SetThreadSubscribeRequireInitMd(FALSE);
+	return MdsAsyncApi_SubscribeByString(
+		this->channel,
+		(char*)symbol.c_str(), (char *)NULL,
+		(eMdsExchangeIdT)exchange,(eMdsMdProductTypeT)product_type,
+		MDS_SUB_MODE_APPEND,
+		MDS_SUB_DATA_TYPE_L1_SNAPSHOT);
 
 }
 
@@ -568,11 +668,11 @@ public:
 		}
 	};
 
-	void onDisconnected(int channelType, const dict &data) override
+	void onDisConnected(int channelType, const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onDisconnected, channelType, data);
+			PYBIND11_OVERLOAD(void, MdApi, onDisConnected, channelType, data);
 		}
 		catch (const error_already_set &e)
 		{
@@ -580,22 +680,22 @@ public:
 		}
 	};
 
-	void onRtnStockData(const dict &error, const dict &data) override
+	void onRtnStockData(const dict &head, const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRtnStockData, error, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRtnStockData, head, data);
 		}
 		catch (const error_already_set &e)
 		{
 			cout << e.what() << endl;
 		}
 	};
-	void onRtnOptionData(const dict &error, const dict &data) override
+	void onRtnOptionData(const dict &head, const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRtnOptionData, error, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRtnOptionData, head, data);
 		}
 		catch (const error_already_set &e)
 		{
@@ -603,11 +703,11 @@ public:
 		}
 	};
 
-	void onRtnIndexData(const dict &error, const dict &data) override
+	void onRtnIndexData(const dict &head, const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD(void, MdApi, onRtnIndexData, error, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRtnIndexData, head, data);
 		}
 		catch (const error_already_set &e)
 		{
@@ -617,24 +717,19 @@ public:
 
 };
 
-
 PYBIND11_MODULE(vnoesmd, m)
 {
 	class_<MdApi, PyMdApi> MdApi(m, "MdApi", module_local());
 	MdApi
 		.def(init<>())
 		.def("createMdApi", &MdApi::createMdApi)
-		.def("loadCfg", &MdApi::loadCfg)
-		//.def("setCustomizedIp", &MdApi::setCustomizedIp)
-		//.def("setCustomizedMac", &MdApi::setCustomizedMac)
-		//.def("setCustomizedDriverId", &MdApi::setCustomizedDriverId)
-		//.def("setThreadUsername", &MdApi::setThreadUsername)
-		//.def("setThreadPassword", &MdApi::setThreadPassword)
 		.def("init", &MdApi::init)
 		.def("exit", &MdApi::exit)
+		.def("subscribeMarketData", &MdApi::subscribeMarketData)
+
 
 		.def("onConnected", &MdApi::onConnected)
-		.def("onDisconnected", &MdApi::onDisconnected)
+		.def("onDisConnected", &MdApi::onDisConnected)
 		.def("OnRtnStockData", &MdApi::OnRtnStockData)
 		.def("OnRtnIndexData", &MdApi::OnRtnIndexData)
 		.def("OnRtnOptionData", &MdApi::OnRtnOptionData)
