@@ -55,7 +55,10 @@ STATUS_OKEXF2VT = {
 
 ORDERTYPE_OKEXF2VT = {
     "0": OrderType.LIMIT,
-    "1": OrderType.MARKET,
+    "1": OrderType.LIMIT,
+    "2": OrderType.FOK,
+    "3": OrderType.FAK,
+    "4": OrderType.MARKET
 }
 
 TYPE_OKEXF2VT = {
@@ -263,7 +266,7 @@ class OkexfRestApi(RestClient):
         }
 
         if req.type == OrderType.MARKET:
-            data["match_price"] = "1"
+            data["match_price"] = "4"
         else:
             data["match_price"] = "0"
 
