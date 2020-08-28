@@ -67,7 +67,6 @@ int32 MdApi::OnConnected(MdsAsyncApiChannelT *pAsyncChannel)
 	SLOG_ASSERT(pAsyncChannel && pAsyncChannel->pSessionInfo
 		&& pAsyncChannel->pChannelCfg);
 
-
 	/* 设置SubscribeByString接口使用的数据模式 (tickType=1) */
 	MdsApi_SetThreadSubscribeTickType(MDS_TICK_TYPE_LATEST_SIMPLIFIED);
 
@@ -80,57 +79,13 @@ int32 MdApi::OnConnected(MdsAsyncApiChannelT *pAsyncChannel)
 
 	/* 订阅所有上海股票/债券/基金的 Level-2 行情 */
 	if (!MdsAsyncApi_SubscribeByString(pAsyncChannel,
-		(char *)NULL, (char *)NULL,
-		MDS_EXCH_SSE, MDS_MD_PRODUCT_TYPE_STOCK, MDS_SUB_MODE_SET,
+		"000001.SH", (char *)NULL,
+		MDS_EXCH_SSE, MDS_MD_PRODUCT_TYPE_INDEX, MDS_SUB_MODE_SET,
 		dataTypes)) {
-		SLOG_ERROR("订阅上海股票行情失败!");
+		SLOG_ERROR("订阅上证指数行情失败!");
 		return EFAULT;
 	}
 
-	/* 追加订阅所有上海指数行情 */
-	if (!MdsAsyncApi_SubscribeByString(pAsyncChannel,
-		(char *)NULL, (char *)NULL,
-		MDS_EXCH_SSE, MDS_MD_PRODUCT_TYPE_INDEX, MDS_SUB_MODE_APPEND,
-		dataTypes)) {
-		SLOG_ERROR("订阅上海指数行情失败!");
-		return EFAULT;
-	}
-
-	/* 追加订阅所有上海期权行情 */
-	if (!MdsAsyncApi_SubscribeByString(pAsyncChannel,
-		(char *)NULL, (char *)NULL,
-		MDS_EXCH_SSE, MDS_MD_PRODUCT_TYPE_OPTION, MDS_SUB_MODE_APPEND,
-		dataTypes)) {
-		SLOG_ERROR("订阅上海期权行情失败!");
-		return EFAULT;
-	}
-
-	/* 追加订阅所有深圳股票/债券/基金的 Level-2 行情 */
-	if (!MdsAsyncApi_SubscribeByString(pAsyncChannel,
-		(char *)NULL, (char *)NULL,
-		MDS_EXCH_SZSE, MDS_MD_PRODUCT_TYPE_STOCK, MDS_SUB_MODE_APPEND,
-		dataTypes)) {
-		SLOG_ERROR("订阅深圳股票行情失败!");
-		return EFAULT;
-	}
-
-	/* 追加订阅所有深圳指数行情 */
-	if (!MdsAsyncApi_SubscribeByString(pAsyncChannel,
-		(char *)NULL, (char *)NULL,
-		MDS_EXCH_SZSE, MDS_MD_PRODUCT_TYPE_INDEX, MDS_SUB_MODE_APPEND,
-		dataTypes)) {
-		SLOG_ERROR("订阅深圳指数行情失败!");
-		return EFAULT;
-	}
-
-	/* 追加订阅所有深圳期权行情 */
-	if (!MdsAsyncApi_SubscribeByString(pAsyncChannel,
-		(char *)NULL, (char *)NULL,
-		MDS_EXCH_SZSE, MDS_MD_PRODUCT_TYPE_OPTION, MDS_SUB_MODE_APPEND,
-		dataTypes)) {
-		SLOG_ERROR("订阅上海期权行情失败!");
-		return EFAULT;
-	}
 
 	SLOG_INFO("订阅行情成功! channelTag[%s]",
 		pAsyncChannel->pChannelCfg->channelTag);

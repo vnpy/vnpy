@@ -700,8 +700,8 @@ void TdApi::processTask()
         while (this->active)
         {
             Task task = this->task_queue.pop();
-
-            switch (task.task_name)
+			switch (task.task_name)
+				
             {
 			case ONCONNECTED:
 			{
@@ -941,6 +941,7 @@ int32 TdApi::processConnected(Task *task)
 	{
 		OesApiSessionInfoT *task_data = (OesApiSessionInfoT*)task->task_data;
 		data["remoteHostNum"] = task_data->remoteHostNum;
+		data["lastOutMsgSeq"] = task_data->lastOutMsgSeq;
 		delete task_data;
 	}
 	this->onConnected(task->task_int, data);
@@ -968,6 +969,11 @@ void TdApi::processBusinessReject(Task *task)
 	if (task->task_error)
 	{
 		OesRptMsgHeadT *task_error = (OesRptMsgHeadT*)task->task_error;
+		error["rptSeqNum"] = task_error->rptSeqNum;
+		error["rptMsgType"] = task_error->rptMsgType;
+		error["execType"] = task_error->execType;
+		error["bodyLength"] = task_error->bodyLength;
+		error["ordRejReason"] = task_error->ordRejReason;
 		delete task_error;
 	}
 	dict data;
@@ -978,13 +984,11 @@ void TdApi::processBusinessReject(Task *task)
 		data["mktId"] = task_data->mktId;
 		data["ordType"] = task_data->ordType;
 		data["bsType"] = task_data->bsType;
-		data["__ORD_BASE_INFO_filler"] = task_data->__ORD_BASE_INFO_filler;
-		data["invAcctId"] = toUtf(task_data->invAcctId);
-		data["securityId"] = toUtf(task_data->securityId);
+		data["invAcctId"] = task_data->invAcctId;
+		data["securityId"] = task_data->securityId;
 		data["ordQty"] = task_data->ordQty;
 		data["ordPrice"] = task_data->ordPrice;
 		data["origClOrdId"] = task_data->origClOrdId;
-		data["__ordReqOrigSendTime"] = task_data->__ordReqOrigSendTime;
 		data["origClSeqNo"] = task_data->origClSeqNo;
 		data["origClEnvId"] = task_data->origClEnvId;
 		data["clEnvId"] = task_data->clEnvId;
@@ -1002,12 +1006,19 @@ void TdApi::processOrderInsert(Task *task)
 {
 	gil_scoped_acquire acquire;
 	dict error;
+	
 	if (task->task_error)
 	{
 		OesRptMsgHeadT *task_error = (OesRptMsgHeadT*)task->task_error;
+		error["rptSeqNum"] = task_error->rptSeqNum;
+		error["rptMsgType"] = task_error->rptMsgType;
+		error["execType"] = task_error->execType;
+		error["bodyLength"] = task_error->bodyLength;
+		error["ordRejReason"] = task_error->ordRejReason;
 		delete task_error;
 	}
 	dict data;
+	
 	if (task->task_data)
 	{
 		OesOrdCnfmT *task_data = (OesOrdCnfmT*)task->task_data;
@@ -1015,32 +1026,18 @@ void TdApi::processOrderInsert(Task *task)
 		data["mktId"] = task_data->mktId;
 		data["ordType"] = task_data->ordType;
 		data["bsType"] = task_data->bsType;
-		data["__ORD_BASE_INFO_filler"] = task_data->__ORD_BASE_INFO_filler;
-		data["invAcctId"] = toUtf(task_data->invAcctId);
-		data["securityId"] = toUtf(task_data->securityId);
 		data["ordQty"] = task_data->ordQty;
 		data["ordPrice"] = task_data->ordPrice;
 		data["origClOrdId"] = task_data->origClOrdId;
-		data["__ordReqOrigSendTime"] = task_data->__ordReqOrigSendTime;
-		data["clOrdId"] = task_data->clOrdId;
-		data["clientId"] = task_data->clientId;
-		data["clEnvId"] = task_data->clEnvId;
-		data["origClEnvId"] = task_data->origClEnvId;
-		data["origClSeqNo"] = task_data->origClSeqNo;
 		data["ordDate"] = task_data->ordDate;
+		data["securityId"] = task_data->securityId;
 		data["ordTime"] = task_data->ordTime;
 		data["ordCnfmTime"] = task_data->ordCnfmTime;
 		data["ordStatus"] = task_data->ordStatus;
 		data["ordCnfmSts"] = task_data->ordCnfmSts;
 		data["securityType"] = task_data->securityType;
 		data["subSecurityType"] = task_data->subSecurityType;
-		data["__platformId"] = task_data->__platformId;
-		data["__tgwGrpNo"] = task_data->__tgwGrpNo;
-		data["__tgwPartitionNo"] = task_data->__tgwPartitionNo;
 		data["productType"] = task_data->productType;
-		data["exchOrdId"] = toUtf(task_data->exchOrdId);
-		data["__declareFlag"] = task_data->__declareFlag;
-		data["__repeatFlag"] = task_data->__repeatFlag;
 		data["ownerType"] = task_data->ownerType;
 		data["frzAmt"] = task_data->frzAmt;
 		data["frzInterest"] = task_data->frzInterest;
@@ -1054,22 +1051,6 @@ void TdApi::processOrderInsert(Task *task)
 		data["exchErrCode"] = task_data->exchErrCode;
 		data["pbuId"] = task_data->pbuId;
 		data["branchId"] = task_data->branchId;
-		data["__rowNum"] = task_data->__rowNum;
-		data["__recNum"] = task_data->__recNum;
-		data["__ordReqOrigRecvTime"] = task_data->__ordReqOrigRecvTime;
-		data["__ordReqCollectedTime"] = task_data->__ordReqCollectedTime;
-		data["__ordReqActualDealTime"] = task_data->__ordReqActualDealTime;
-		data["__ordReqProcessedTime"] = task_data->__ordReqProcessedTime;
-		data["__ordCnfmOrigRecvTime"] = task_data->__ordCnfmOrigRecvTime;
-		data["__ordCnfmCollectedTime"] = task_data->__ordCnfmCollectedTime;
-		data["__ordCnfmActualDealTime"] = task_data->__ordCnfmActualDealTime;
-		data["__ordCnfmProcessedTime"] = task_data->__ordCnfmProcessedTime;
-		data["__ordDeclareTime"] = task_data->__ordDeclareTime;
-		data["__ordDeclareDoneTime"] = task_data->__ordDeclareDoneTime;
-		data["__pushingTime"] = task_data->__pushingTime;
-		data["frzMargin"] = task_data->frzMargin;
-		data["cumMargin"] = task_data->cumMargin;
-		data["__ORD_CNFM_EXT_reserve"] = toUtf(task_data->__ORD_CNFM_EXT_reserve);
 		delete task_data;
 	}
 	this->onOrderInsert(error, data);
@@ -1082,6 +1063,11 @@ void TdApi::processOrderReport(Task *task)
 	if (task->task_error)
 	{
 		OesRptMsgHeadT *task_error = (OesRptMsgHeadT*)task->task_error;
+		error["rptSeqNum"] = task_error->rptSeqNum;
+		error["rptMsgType"] = task_error->rptMsgType;
+		error["execType"] = task_error->execType;
+		error["bodyLength"] = task_error->bodyLength;
+		error["ordRejReason"] = task_error->ordRejReason;
 		delete task_error;
 	}
 	dict data;
@@ -1092,13 +1078,10 @@ void TdApi::processOrderReport(Task *task)
 		data["mktId"] = task_data->mktId;
 		data["ordType"] = task_data->ordType;
 		data["bsType"] = task_data->bsType;
-		data["__ORD_BASE_INFO_filler"] = task_data->__ORD_BASE_INFO_filler;
-		data["invAcctId"] = toUtf(task_data->invAcctId);
-		data["securityId"] = toUtf(task_data->securityId);
 		data["ordQty"] = task_data->ordQty;
 		data["ordPrice"] = task_data->ordPrice;
 		data["origClOrdId"] = task_data->origClOrdId;
-		data["__ordReqOrigSendTime"] = task_data->__ordReqOrigSendTime;
+		//data["__ordReqOrigSendTime"] = task_data->__ordReqOrigSendTime;
 		data["clOrdId"] = task_data->clOrdId;
 		data["clientId"] = task_data->clientId;
 		data["clEnvId"] = task_data->clEnvId;
@@ -1111,13 +1094,11 @@ void TdApi::processOrderReport(Task *task)
 		data["ordCnfmSts"] = task_data->ordCnfmSts;
 		data["securityType"] = task_data->securityType;
 		data["subSecurityType"] = task_data->subSecurityType;
-		data["__platformId"] = task_data->__platformId;
-		data["__tgwGrpNo"] = task_data->__tgwGrpNo;
-		data["__tgwPartitionNo"] = task_data->__tgwPartitionNo;
+		//data["__platformId"] = task_data->__platformId;
+		//data["__tgwGrpNo"] = task_data->__tgwGrpNo;
+		//data["__tgwPartitionNo"] = task_data->__tgwPartitionNo;
 		data["productType"] = task_data->productType;
 		data["exchOrdId"] = toUtf(task_data->exchOrdId);
-		data["__declareFlag"] = task_data->__declareFlag;
-		data["__repeatFlag"] = task_data->__repeatFlag;
 		data["ownerType"] = task_data->ownerType;
 		data["frzAmt"] = task_data->frzAmt;
 		data["frzInterest"] = task_data->frzInterest;
@@ -1131,22 +1112,6 @@ void TdApi::processOrderReport(Task *task)
 		data["exchErrCode"] = task_data->exchErrCode;
 		data["pbuId"] = task_data->pbuId;
 		data["branchId"] = task_data->branchId;
-		data["__rowNum"] = task_data->__rowNum;
-		data["__recNum"] = task_data->__recNum;
-		data["__ordReqOrigRecvTime"] = task_data->__ordReqOrigRecvTime;
-		data["__ordReqCollectedTime"] = task_data->__ordReqCollectedTime;
-		data["__ordReqActualDealTime"] = task_data->__ordReqActualDealTime;
-		data["__ordReqProcessedTime"] = task_data->__ordReqProcessedTime;
-		data["__ordCnfmOrigRecvTime"] = task_data->__ordCnfmOrigRecvTime;
-		data["__ordCnfmCollectedTime"] = task_data->__ordCnfmCollectedTime;
-		data["__ordCnfmActualDealTime"] = task_data->__ordCnfmActualDealTime;
-		data["__ordCnfmProcessedTime"] = task_data->__ordCnfmProcessedTime;
-		data["__ordDeclareTime"] = task_data->__ordDeclareTime;
-		data["__ordDeclareDoneTime"] = task_data->__ordDeclareDoneTime;
-		data["__pushingTime"] = task_data->__pushingTime;
-		data["frzMargin"] = task_data->frzMargin;
-		data["cumMargin"] = task_data->cumMargin;
-		data["__ORD_CNFM_EXT_reserve"] = toUtf(task_data->__ORD_CNFM_EXT_reserve);
 		delete task_data;
 	}
 	this->onOrderReport(error, data);
@@ -1159,6 +1124,11 @@ void TdApi::processTradeReport(Task *task)
 	if (task->task_error)
 	{
 		OesRptMsgHeadT *task_error = (OesRptMsgHeadT*)task->task_error;
+		error["rptSeqNum"] = task_error->rptSeqNum;
+		error["rptMsgType"] = task_error->rptMsgType;
+		error["execType"] = task_error->execType;
+		error["bodyLength"] = task_error->bodyLength;
+		error["ordRejReason"] = task_error->ordRejReason;
 		delete task_error;
 	}
 	dict data;
@@ -1168,9 +1138,9 @@ void TdApi::processTradeReport(Task *task)
 		data["exchTrdNum"] = task_data->exchTrdNum;
 		data["mktId"] = task_data->mktId;
 		data["trdSide"] = task_data->trdSide;
-		data["__platformId"] = task_data->__platformId;
-		data["__trdCnfmType"] = task_data->__trdCnfmType;
-		data["__etfTrdCnfmSeq"] = task_data->__etfTrdCnfmSeq;
+		//data["__platformId"] = task_data->__platformId;
+		//data["__trdCnfmType"] = task_data->__trdCnfmType;
+		//data["__etfTrdCnfmSeq"] = task_data->__etfTrdCnfmSeq;
 		data["invAcctId"] = toUtf(task_data->invAcctId);
 		data["securityId"] = toUtf(task_data->securityId);
 		data["trdDate"] = task_data->trdDate;
@@ -1180,10 +1150,10 @@ void TdApi::processTradeReport(Task *task)
 		data["trdAmt"] = task_data->trdAmt;
 		data["clOrdId"] = task_data->clOrdId;
 		data["cumQty"] = task_data->cumQty;
-		data["__rowNum"] = task_data->__rowNum;
-		data["__tgwGrpNo"] = task_data->__tgwGrpNo;
-		data["__isTrsfInCashAvailable"] = task_data->__isTrsfInCashAvailable;
-		data["__tgwPartitionNo"] = task_data->__tgwPartitionNo;
+		//data["__rowNum"] = task_data->__rowNum;
+		//data["__tgwGrpNo"] = task_data->__tgwGrpNo;
+		//data["__isTrsfInCashAvailable"] = task_data->__isTrsfInCashAvailable;
+		//data["__tgwPartitionNo"] = task_data->__tgwPartitionNo;
 		data["productType"] = task_data->productType;
 		data["origOrdQty"] = task_data->origOrdQty;
 		data["pbuId"] = task_data->pbuId;
@@ -1200,16 +1170,16 @@ void TdApi::processTradeReport(Task *task)
 		data["cumAmt"] = task_data->cumAmt;
 		data["cumInterest"] = task_data->cumInterest;
 		data["cumFee"] = task_data->cumFee;
-		data["__trdCnfmOrigRecvTime"] = task_data->__trdCnfmOrigRecvTime;
-		data["__trdCnfmCollectedTime"] = task_data->__trdCnfmCollectedTime;
-		data["__trdCnfmActualDealTime"] = task_data->__trdCnfmActualDealTime;
-		data["__trdCnfmProcessedTime"] = task_data->__trdCnfmProcessedTime;
-		data["__pushingTime"] = task_data->__pushingTime;
-		data["trdInterest"] = task_data->trdInterest;
-		data["trdFee"] = task_data->trdFee;
-		data["trdMargin"] = task_data->trdMargin;
-		data["cumMargin"] = task_data->cumMargin;
-		data["__TRD_CNFM_EXT_reserve"] = toUtf(task_data->__TRD_CNFM_EXT_reserve);
+		//data["__trdCnfmOrigRecvTime"] = task_data->__trdCnfmOrigRecvTime;
+		//data["__trdCnfmCollectedTime"] = task_data->__trdCnfmCollectedTime;
+		//data["__trdCnfmActualDealTime"] = task_data->__trdCnfmActualDealTime;
+		//data["__trdCnfmProcessedTime"] = task_data->__trdCnfmProcessedTime;
+		//data["__pushingTime"] = task_data->__pushingTime;
+		//data["trdInterest"] = task_data->trdInterest;
+		//data["trdFee"] = task_data->trdFee;
+		//data["trdMargin"] = task_data->trdMargin;
+		//data["cumMargin"] = task_data->cumMargin;
+		//data["__TRD_CNFM_EXT_reserve"] = toUtf(task_data->__TRD_CNFM_EXT_reserve);
 		delete task_data;
 	}
 	this->onTradeReport(error, data);
@@ -1389,6 +1359,11 @@ void TdApi::processSettlementConfirmedRpt(Task *task)
 	if (task->task_error)
 	{
 		OesRptMsgHeadT *task_error = (OesRptMsgHeadT*)task->task_error;
+		error["rptSeqNum"] = task_error->rptSeqNum;
+		error["rptMsgType"] = task_error->rptMsgType;
+		error["execType"] = task_error->execType;
+		error["bodyLength"] = task_error->bodyLength;
+		error["ordRejReason"] = task_error->ordRejReason;
 		delete task_error;
 	}
 	dict data;
@@ -1415,6 +1390,11 @@ void TdApi::processFundTrsfReject(Task *task)
 	if (task->task_error)
 	{
 		OesRptMsgHeadT *task_error = (OesRptMsgHeadT*)task->task_error;
+		error["rptSeqNum"] = task_error->rptSeqNum;
+		error["rptMsgType"] = task_error->rptMsgType;
+		error["execType"] = task_error->execType;
+		error["bodyLength"] = task_error->bodyLength;
+		error["ordRejReason"] = task_error->ordRejReason;
 		delete task_error;
 	}
 	dict data;
@@ -1448,6 +1428,11 @@ void TdApi::processFundTrsfReport(Task *task)
 	if (task->task_error)
 	{
 		OesRptMsgHeadT *task_error = (OesRptMsgHeadT*)task->task_error;
+		error["rptSeqNum"] = task_error->rptSeqNum;
+		error["rptMsgType"] = task_error->rptMsgType;
+		error["execType"] = task_error->execType;
+		error["bodyLength"] = task_error->bodyLength;
+		error["ordRejReason"] = task_error->ordRejReason;
 		delete task_error;
 	}
 	dict data;
@@ -1472,6 +1457,10 @@ void TdApi::processMarketState(Task *task)
 	if (task->task_data)
 	{
 		OesMarketStateItemT *task_data = (OesMarketStateItemT*)task->task_data;
+		data["exchId"] = task_data->exchId;
+		data["platformId"] = task_data->platformId;
+		data["mktId"] = task_data->mktId;
+		data["mktState"] = task_data->mktState;
 		delete task_data;
 	}
 	this->onMarketState(data);
@@ -1521,6 +1510,57 @@ void TdApi::processQueryOrder(Task *task)
 	if (task->task_data)
 	{
 		OesOrdItemT *task_data = (OesOrdItemT*)task->task_data;
+
+		data["clSeqNo"] = task_data->clSeqNo;
+		data["mktId"] = task_data->mktId;
+		data["ordType"] = task_data->ordType;
+		data["bsType"] = task_data->bsType;
+		data["__ORD_BASE_INFO_filler"] = task_data->__ORD_BASE_INFO_filler;
+		data["invAcctId"] = task_data->invAcctId;
+		data["securityId"] = task_data->securityId;
+		data["ordQty"] = task_data->ordQty;
+		data["ordPrice"] = task_data->ordPrice;
+		data["origClOrdId"] = task_data->origClOrdId;
+		data["clOrdId"] = task_data->clOrdId;
+		data["clientId"] = task_data->clientId;
+		data["clEnvId"] = task_data->clEnvId;
+		data["origClEnvId"] = task_data->origClEnvId;
+		data["origClSeqNo"] = task_data->origClSeqNo;
+
+		data["ordDate"] = task_data->ordDate;
+		data["ordTime"] = task_data->ordTime;
+		data["ordCnfmTime"] = task_data->ordCnfmTime;
+
+		data["ordStatus"] = task_data->ordStatus;
+		data["ordCnfmSts"] = task_data->ordCnfmSts;
+		data["securityType"] = task_data->securityType;
+		data["subSecurityType"] = task_data->subSecurityType;
+
+		data["__platformId"] = task_data->__platformId;
+		data["__tgwGrpNo"] = task_data->__tgwGrpNo;
+		data["__tgwPartitionNo"] = task_data->__tgwPartitionNo;
+		data["productType"] = task_data->productType;
+		data["exchOrdId"] = task_data->exchOrdId;
+		data["__declareFlag"] = task_data->__declareFlag;
+		data["__repeatFlag"] = task_data->__repeatFlag;
+		data["ownerType"] = task_data->ownerType;
+
+		data["frzAmt"] = task_data->frzAmt;
+		data["frzInterest"] = task_data->frzInterest;
+		data["frzFee"] = task_data->frzFee;
+		data["cumAmt"] = task_data->cumAmt;
+		data["cumInterest"] = task_data->cumInterest;
+		data["cumFee"] = task_data->cumFee;
+
+		data["cumQty"] = task_data->cumQty;
+		data["canceledQty"] = task_data->canceledQty;
+
+		data["ordRejReason"] = task_data->ordRejReason;
+		data["exchErrCode"] = task_data->exchErrCode;
+		data["pbuId"] = task_data->pbuId;
+		data["branchId"] = task_data->branchId;
+		data["__rowNum"] = task_data->__rowNum;
+		data["__recNum"] = task_data->__recNum;
 		delete task_data;
 	}
 	dict error;
@@ -1543,6 +1583,49 @@ void TdApi::processQueryTrade(Task *task)
 	if (task->task_data)
 	{
 		OesTrdItemT *task_data = (OesTrdItemT*)task->task_data;
+
+		data["clSeqNo"] = task_data->clSeqNo;
+		data["clientId"] = task_data->clientId;
+		data["clEnvId"] = task_data->clEnvId;
+		data["subSecurityType"] = task_data->subSecurityType;
+
+		data["ordStatus"] = task_data->ordStatus;
+		data["ordType"] = task_data->ordType;
+		data["ordBuySellType"] = task_data->ordBuySellType;
+		data["securityType"] = task_data->securityType;
+		data["origOrdPrice"] = task_data->origOrdPrice;
+
+		data["cumAmt"] = task_data->cumAmt;
+		data["cumInterest"] = task_data->cumInterest;
+		data["cumFee"] = task_data->cumFee;
+		data["exchTrdNum"] = task_data->exchTrdNum;
+		data["mktId"] = task_data->mktId;
+		data["trdSide"] = task_data->trdSide;
+		data["__platformId"] = task_data->__platformId;
+		data["__trdCnfmType"] = task_data->__trdCnfmType;
+		data["__etfTrdCnfmSeq"] = task_data->__etfTrdCnfmSeq;
+
+		data["invAcctId"] = task_data->invAcctId;
+		data["securityId"] = task_data->securityId;
+
+		data["trdDate"] = task_data->trdDate;
+		data["trdTime"] = task_data->trdTime;
+		data["trdQty"] = task_data->trdQty;
+		data["trdPrice"] = task_data->trdPrice;
+		data["trdAmt"] = task_data->trdAmt;
+
+		data["clOrdId"] = task_data->clOrdId;
+		data["cumQty"] = task_data->cumQty;
+		data["__rowNum"] = task_data->__rowNum;
+
+		data["__tgwGrpNo"] = task_data->__tgwGrpNo;
+		data["__isTrsfInCashAvailable"] = task_data->__isTrsfInCashAvailable;
+		data["__tgwPartitionNo"] = task_data->__tgwPartitionNo;
+		data["productType"] = task_data->productType;
+		data["origOrdQty"] = task_data->origOrdQty;
+
+		data["pbuId"] = task_data->pbuId;
+		data["branchId"] = task_data->branchId;
 		delete task_data;
 	}
 	dict error;
@@ -2307,18 +2390,26 @@ void TdApi::processQueryNotifyInfo(Task *task)
 ///-------------------------------------------------------------------------------------
 ///Ö÷¶¯º¯Êý
 ///-------------------------------------------------------------------------------------
-void TdApi::createTdAPi()
+bool TdApi::createTdApi(string pCfgFile, string pUsername, string pPassword)
 {
 	this->api = new OesClientApi();
 	this->api->RegisterSpi(this);
-}
 
-
-bool TdApi::loadCfg(string pCfgFile)
-{
 	bool i = this->api->LoadCfg((char*)pCfgFile.c_str());
+
+	this->api->SetThreadUsername((char*)pUsername.c_str());
+	this->api->SetThreadPassword((char*)pPassword.c_str());
+
 	return i;
+
 }
+
+
+//bool TdApi::loadCfg(string pCfgFile)
+//{
+//	bool i = this->api->LoadCfg((char*)pCfgFile.c_str());
+//	return i;
+//}
 
 bool TdApi::setCustomizedIpAndMac(string pIpStr, string pMacStr)
 {
@@ -2344,16 +2435,16 @@ bool TdApi::setCustomizedDriverId(string pDriverStr)
 	return i;
 }
 
-void TdApi::setThreadUsername(string pUsername)
-{
-	this->api->SetThreadUsername((char*)pUsername.c_str());
-}
-
-
-void TdApi::setThreadPassword(string pPassword)
-{
-	this->api->SetThreadPassword((char*)pPassword.c_str());
-}
+//void TdApi::setThreadUsername(string pUsername)
+//{
+//	this->api->SetThreadUsername((char*)pUsername.c_str());
+//}
+//
+//
+//void TdApi::setThreadPassword(string pPassword)
+//{
+//	this->api->SetThreadPassword((char*)pPassword.c_str());
+//}
 
 
 void TdApi::setThreadEnvId(int clEnvId)
@@ -2430,11 +2521,11 @@ int TdApi::sendOptSettlementConfirm(const dict &req)
 {
 	OesOptSettlementConfirmReqT myreq = OesOptSettlementConfirmReqT();
 	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "custId", myreq.custId);
+	getString(req, "custId", myreq.custId);
 
-	OesOptSettlementConfirmRspT myreq1 = OesOptSettlementConfirmRspT();
-	memset(&myreq1, 0, sizeof(myreq1));
-	getChar(req, "custId", myreq1.custId);
+	OesOptSettlementConfirmRspT result = OesOptSettlementConfirmRspT();
+	//memset(&myreq1, 0, sizeof(myreq1));
+	//getChar(req, "custId", myreq1.custId);
 	//getInt16(req, "clientId", &myreq.clientId);
 	//getInt8(req, "clEnvId", &myreq.clEnvId);
 	//getInt32(req, "transDate", &myreq.transDate);
@@ -2442,7 +2533,7 @@ int TdApi::sendOptSettlementConfirm(const dict &req)
 	//getInt32(req, "rejReason", &myreq.rejReason);
 
 
-	int i = this->api->SendOptSettlementConfirm(&myreq, &myreq1);
+	int i = this->api->SendOptSettlementConfirm(&myreq, &result);
 	return i;
 }
 
@@ -3262,14 +3353,14 @@ PYBIND11_MODULE(vnoestd, m)
     class_<TdApi, PyTdApi> TdApi(m, "TdApi", module_local());
     TdApi
         .def(init<>())
-		.def("createTdAPi", &TdApi::createTdAPi)
-		.def("loadCfg", &TdApi::loadCfg)
+		.def("createTdApi", &TdApi::createTdApi)
+		//.def("loadCfg", &TdApi::loadCfg)
 		.def("setCustomizedIpAndMac", &TdApi::setCustomizedIpAndMac)
 		.def("setCustomizedIp", &TdApi::setCustomizedIp)
 		.def("setCustomizedMac", &TdApi::setCustomizedMac)
 		.def("setCustomizedDriverId", &TdApi::setCustomizedDriverId)
-		.def("setThreadUsername", &TdApi::setThreadUsername)
-		.def("setThreadPassword", &TdApi::setThreadPassword)
+		//.def("setThreadUsername", &TdApi::setThreadUsername)
+		//.def("setThreadPassword", &TdApi::setThreadPassword)
 		.def("setThreadEnvId", &TdApi::setThreadEnvId)
 		.def("setThreadSubscribeEnvId", &TdApi::setThreadSubscribeEnvId)
 		.def("init", &TdApi::init)
