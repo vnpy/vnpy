@@ -129,6 +129,7 @@ class OkexfGateway(BaseGateway):
                               session_number, proxy_host, proxy_port)
         self.ws_api.connect(key, secret, passphrase, proxy_host, proxy_port)
 
+        self.timer_count = 0
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
     def subscribe(self, req: SubscribeRequest):
@@ -171,6 +172,11 @@ class OkexfGateway(BaseGateway):
 
     def process_timer_event(self, event):
         """"""
+        self.timer_count += 1
+        if self.timer_count < 3:
+            return
+        self.timer_count = 0
+
         self.query_account()
         self.query_position()
 
