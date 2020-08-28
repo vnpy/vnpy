@@ -43,6 +43,8 @@ from vnpy.trader.object import (
     SubscribeRequest,
     HistoryRequest
 )
+from vnpy.trader.event import EVENT_TIMER
+
 REST_HOST = "https://www.okex.com"
 WEBSOCKET_HOST = "wss://real.okex.com:8443/ws/v3"
 
@@ -127,6 +129,8 @@ class OkexfGateway(BaseGateway):
                               session_number, proxy_host, proxy_port)
         self.ws_api.connect(key, secret, passphrase, proxy_host, proxy_port)
 
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
+
     def subscribe(self, req: SubscribeRequest):
         """"""
         self.ws_api.subscribe(req)
@@ -141,11 +145,11 @@ class OkexfGateway(BaseGateway):
 
     def query_account(self):
         """"""
-        pass
+        self.rest_api.query_account()
 
     def query_position(self):
         """"""
-        pass
+        self.rest_api.query_position()
 
     def query_history(self, req: HistoryRequest):
         """"""
@@ -164,6 +168,11 @@ class OkexfGateway(BaseGateway):
     def get_order(self, orderid: str):
         """"""
         return self.orders.get(orderid, None)
+
+    def process_timer_event(self, event):
+        """"""
+        self.query_account()
+        self.query_position()
 
 
 class OkexfRestApi(RestClient):
@@ -307,6 +316,9 @@ class OkexfRestApi(RestClient):
 
     def query_account(self):
         """"""
+        if not self._active:
+            return
+
         self.add_request(
             "GET",
             "/api/futures/v3/accounts",
@@ -333,6 +345,9 @@ class OkexfRestApi(RestClient):
 
     def query_position(self):
         """"""
+        if not self._active:
+            return
+
         self.add_request(
             "GET",
             "/api/futures/v3/position",
@@ -730,9 +745,7 @@ class OkexfWebsocketApi(WebsocketClient):
         """
         self.callbacks["futures/ticker"] = self.on_ticker
         self.callbacks["futures/depth5"] = self.on_depth
-        self.callbacks["futures/account"] = self.on_account
         self.callbacks["futures/order"] = self.on_order
-        self.callbacks["futures/position"] = self.on_position
 
         # Subscribe to order update
         channels = []
@@ -865,44 +878,6 @@ class OkexfWebsocketApi(WebsocketClient):
             gateway_name=self.gateway_name,
         )
         self.gateway.on_trade(trade)
-
-    def on_account(self, d):
-        """"""
-        for key in d:
-            account_data = d[key]
-            account = AccountData(
-                accountid=key,
-                balance=float(account_data["equity"]),
-                frozen=float(d.get("margin_for_unfilled", 0)),
-                gateway_name=self.gateway_name
-            )
-            self.gateway.on_account(account)
-
-    def on_position(self, d):
-        """"""
-        pos = PositionData(
-            symbol=d["instrument_id"],
-            exchange=Exchange.OKEX,
-            direction=Direction.LONG,
-            volume=int(d["long_qty"]),
-            frozen=float(d["long_qty"]) - float(d["long_avail_qty"]),
-            price=float(d["long_avg_cost"]),
-            pnl=float(d["realised_pnl"]),
-            gateway_name=self.gateway_name,
-        )
-        self.gateway.on_position(pos)
-
-        pos = PositionData(
-            symbol=d["instrument_id"],
-            exchange=Exchange.OKEX,
-            direction=Direction.SHORT,
-            volume=int(d["short_qty"]),
-            frozen=float(d["short_qty"]) - float(d["short_avail_qty"]),
-            price=float(d["short_avg_cost"]),
-            pnl=float(d["realised_pnl"]),
-            gateway_name=self.gateway_name,
-        )
-        self.gateway.on_position(pos)
 
 
 def generate_signature(msg: str, secret_key: str):
