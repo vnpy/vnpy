@@ -146,7 +146,7 @@ class OkexfGateway(BaseGateway):
 
     def query_account(self):
         """"""
-        self.rest_api.query_account()
+        pass
 
     def query_position(self):
         """"""
@@ -173,11 +173,10 @@ class OkexfGateway(BaseGateway):
     def process_timer_event(self, event):
         """"""
         self.timer_count += 1
-        if self.timer_count < 3:
+        if self.timer_count < 5:
             return
         self.timer_count = 0
 
-        self.query_account()
         self.query_position()
 
 
@@ -334,7 +333,6 @@ class OkexfRestApi(RestClient):
     def query_order(self):
         """"""
         for code in instruments:
-
             # get waiting orders
             self.add_request(
                 "GET",
@@ -751,6 +749,7 @@ class OkexfWebsocketApi(WebsocketClient):
         """
         self.callbacks["futures/ticker"] = self.on_ticker
         self.callbacks["futures/depth5"] = self.on_depth
+        self.callbacks["futures/account"] = self.on_account
         self.callbacks["futures/order"] = self.on_order
 
         # Subscribe to order update
@@ -884,6 +883,18 @@ class OkexfWebsocketApi(WebsocketClient):
             gateway_name=self.gateway_name,
         )
         self.gateway.on_trade(trade)
+
+    def on_account(self, d):
+        """"""
+        for key in d:
+            account_data = d[key]
+            account = AccountData(
+                accountid=key,
+                balance=float(account_data["equity"]),
+                frozen=float(d.get("margin_for_unfilled", 0)),
+                gateway_name=self.gateway_name
+            )
+            self.gateway.on_account(account)
 
 
 def generate_signature(msg: str, secret_key: str):
