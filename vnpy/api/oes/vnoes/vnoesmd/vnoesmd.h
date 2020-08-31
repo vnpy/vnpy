@@ -36,24 +36,13 @@ class MdsClientApi;
 
 class MdApi
 {
-	//int32 defaultClSeqNo = 0;
-
-	//BOOL _isInitialized = FALSE;
-	//BOOL _isRunning = FALSE;
-
-	//MdSpi _pSpi = NULL;
-	//MdsAsyncApiContextT _pAsyncContext = NULL;
-	//MdsAsyncApiChannelT _pDefaultTcpChannel = NULL;
-	//// _pQryChannel = NULL;
-
-	//memset(&_apiCfg, 0, sizeof(MdsApiClientCfgT));
-	//memset(&_qryChannel, 0, sizeof(MdsApiSessionInfoT));
 
 private:
 	MdApi* api;            //API对象
 	thread task_thread;                    //工作线程指针（向python中推送数据）
 	TaskQueue task_queue;                //任务队列
 	bool active = false;                //工作状态
+	MdsAsyncApiChannelT *channel;
 
 public:
 	MdApi()
@@ -76,13 +65,15 @@ public:
 
 
 	/* 连接或重新连接完成后的回调函数 */
-	virtual int32       OnConnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo, MdsApiSubscribeInfoT *pSubscribeInfo = NULL);
+	int32       OnConnected(MdsAsyncApiChannelT *pAsyncChannel);
 	/* 连接断开后的回调函数 */
-	virtual int32       OnDisconnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo);
+	int32       OnDisConnected(MdsAsyncApiChannelT *pAsyncChannel) ;
 
-	virtual void		OnRtnStockData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *stock);
-	virtual void		OnRtnIndexData(const MdsMktDataSnapshotHeadT *head, const MdsIndexSnapshotBodyT *index);
-	virtual void		OnRtnOptionData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *option);
+	int32		OnData(MdsApiSessionInfoT *pSessionInfo, SMsgHeadT *pMsgHead, void *pMsgBody, void *pCallbackParams);
+
+	void		OnRtnStockData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *stock);
+	void		OnRtnIndexData(const MdsMktDataSnapshotHeadT *head, const MdsIndexSnapshotBodyT *index);
+	void		OnRtnOptionData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *option);
 	//-------------------------------------------------------------------------------------
 	//task：任务
 	//-------------------------------------------------------------------------------------
@@ -107,7 +98,7 @@ public:
 
 	virtual void onConnected(int channelType, const dict &data) {};
 
-	virtual void onDisconnected(int channelType, const dict &data) {};
+	virtual void onDisConnected(int channelType, const dict &data) {};
 
 	virtual void onRtnStockData(const dict &error, const dict &data) {};
 	virtual void onRtnIndexData(const dict &error, const dict &data) {};
@@ -117,24 +108,12 @@ public:
 	//req:主动函数的请求字典
 	//-------------------------------------------------------------------------------------
 
-	void createMdApi();
-
-	bool loadCfg(string pCfgFile);
-
-	//bool setCustomizedIp(string pIpStr);
-
-	//bool setCustomizedMac(string pMacStr);
-
-	//bool setCustomizedDriverId(string pDriverStr);
-
-	//void setThreadUsername(string pUsername);
-
-	//void setThreadPassword(string pPassword);
+	bool createMdApi(string pCfgFile, string username, string password);
 
 	bool init();
 
 	int exit();
-	bool subscribeMarketData(const dict &req1, const dict &req2);
+	bool subscribeMarketData(string symbol, int exchange, int product_type);
 
 
 	private:
@@ -153,32 +132,16 @@ public:
 		BOOL                _isInitialized;
 		BOOL                _isRunning;
 
-		MdSpi        *_pSpi;
+		//MdSpi *_pSpi;
 		MdsAsyncApiContextT *_pAsyncContext;
 		MdsAsyncApiChannelT *_pDefaultTcpChannel;
 		MdsApiSessionInfoT  *_pQryChannel;
 };
 
 
-class MdSpi {
-//public:
-//	/* 连接或重新连接完成后的回调函数 */
-//	virtual int32       OnConnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo, MdsApiSubscribeInfoT *pSubscribeInfo = NULL);
-//	/* 连接断开后的回调函数 */
-//	virtual int32       OnDisconnected(eMdsApiChannelTypeT channelType, MdsApiSessionInfoT *pSessionInfo);
-//
-//	virtual void		OnRtnStockData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *stock) = 0;
-//	virtual void		OnRtnIndexData(const MdsMktDataSnapshotHeadT *head, const MdsIndexSnapshotBodyT *index) = 0;
-//	virtual void		OnRtnOptionData(const MdsMktDataSnapshotHeadT *head, const MdsStockSnapshotBodyT *option) = 0;
-//
+MdApi *md_api;
 
+int32 MdOnConnected(MdsAsyncApiChannelT *pAsyncChannel,void *pCallbackParam);
+int32 MdOnDisConnected(MdsAsyncApiChannelT *pAsyncChannel, void *pCallbackParam);
 
-
-public:
-	MdSpi();
-	virtual ~MdSpi() {};
-
-public:
-	MdApi        *pApi;
-	int32               currentRequestId;
-};
+int32 MdOnData(MdsApiSessionInfoT *pSessionInfo, SMsgHeadT *pMsgHead, void *pMsgBody, void *pCallbackParams);

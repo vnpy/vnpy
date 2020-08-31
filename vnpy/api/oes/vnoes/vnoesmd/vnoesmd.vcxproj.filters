@@ -21,9 +21,6 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="mds_client_sample.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\oes\mds_api\mds_api.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -39,6 +36,9 @@
     <ClInclude Include="vnoesmd.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\vnoes.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -47,17 +47,8 @@
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="mds_client_sample.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="vnoesmd.cpp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="01_mds_async_tcp_sample.c">
-      <Filter>头文件</Filter>
-    </ClCompile>
-    <ClCompile Include="mds_client.c">
-      <Filter>头文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

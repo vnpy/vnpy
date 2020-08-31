@@ -331,9 +331,9 @@ public:
     //req:主动函数的请求字典
     //-------------------------------------------------------------------------------------
 
-	void createTdAPi();
+	bool createTdApi(string pCfgFile, string pUsername, string pPassword);
 
-	bool loadCfg(string pCfgFile);
+	//bool loadCfg(string pCfgFile);
 
 	bool setCustomizedIpAndMac(string pIpStr, string pMacStr);
 
@@ -343,9 +343,9 @@ public:
 
 	bool setCustomizedDriverId(string pDriverStr);
 
-	void setThreadUsername(string pUsername);
+	//void setThreadUsername(string pUsername);
 
-	void setThreadPassword(string pPassword);
+	//void setThreadPassword(string pPassword);
 
 	void setThreadEnvId(int clEnvId);
 
