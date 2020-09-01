@@ -631,7 +631,6 @@ class OkexfWebsocketApi(WebsocketClient):
         self.secret = ""
         self.passphrase = ""
 
-        self.trade_count = 10000
         self.connect_time = 0
 
         self.subscribed: Dict[str, SubscribeRequest] = {}
@@ -867,14 +866,11 @@ class OkexfWebsocketApi(WebsocketClient):
         if not trade_volume or float(trade_volume) == 0:
             return
 
-        self.trade_count += 1
-        tradeid = f"{self.connect_time}{self.trade_count}"
-
         trade = TradeData(
             symbol=order.symbol,
             exchange=order.exchange,
             orderid=order.orderid,
-            tradeid=tradeid,
+            tradeid=d["last_fill_id"],
             direction=order.direction,
             offset=order.offset,
             price=float(d["last_fill_px"]),
