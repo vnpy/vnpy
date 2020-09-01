@@ -3,7 +3,7 @@ from vnpy.trader.engine import MainEngine
 from vnpy.trader.constant import Direction, Offset
 from vnpy.trader.ui import QtWidgets, QtGui
 from vnpy.trader.ui.widget import (
-    BaseMonitor, BaseCell,
+    BaseMonitor, BaseCell, TimeCell,
     PnlCell, DirectionCell, EnumCell,
 )
 
@@ -126,7 +126,7 @@ class PortfolioTradeMonitor(BaseMonitor):
         "offset": {"display": "开平", "cell": EnumCell, "update": False},
         "price": {"display": "价格", "cell": BaseCell, "update": False},
         "volume": {"display": "数量", "cell": BaseCell, "update": False},
-        "time": {"display": "时间", "cell": BaseCell, "update": False},
+        "datetime": {"display": "时间", "cell": TimeCell, "update": False},
     }
 
 
@@ -151,7 +151,7 @@ class PortfolioOrderMonitor(BaseMonitor):
         "volume": {"display": "总数量", "cell": BaseCell, "update": True},
         "traded": {"display": "已成交", "cell": BaseCell, "update": True},
         "status": {"display": "状态", "cell": EnumCell, "update": True},
-        "time": {"display": "时间", "cell": BaseCell, "update": True},
+        "datetime": {"display": "时间", "cell": TimeCell, "update": True},
     }
 
     def init_ui(self):
