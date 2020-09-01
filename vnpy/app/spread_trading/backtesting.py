@@ -137,7 +137,7 @@ class BacktestingEngine:
                 self.pricetick
             )
         else:
-            self.history_datas = load_tick_data(
+            self.history_data = load_tick_data(
                 self.spread,
                 self.start,
                 self.end
