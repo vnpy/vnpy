@@ -6,7 +6,7 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Callable, Dict, Tuple, Union
+from typing import Callable, Dict, Tuple, Union, Optional
 from decimal import Decimal
 from math import floor, ceil
 
@@ -305,7 +305,7 @@ class BarGenerator:
         # Cache last bar object
         self.last_bar = bar
 
-    def generate(self) -> None:
+    def generate(self) -> Optional[BarData]:
         """
         Generate the bar data and call callback immediately.
         """
