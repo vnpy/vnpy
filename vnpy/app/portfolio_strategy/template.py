@@ -220,7 +220,7 @@ class StrategyTemplate(ABC):
 
     def get_all_active_orderids(self) -> List[OrderData]:
         """"""
-        return list(self.active_orderids.values())
+        return list(self.active_orderids)
 
     def write_log(self, msg: str) -> None:
         """
