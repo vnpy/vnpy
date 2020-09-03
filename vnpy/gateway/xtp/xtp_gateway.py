@@ -430,6 +430,8 @@ class XtpMdApi(MdApi):
             path = str(get_folder_path(self.gateway_name.lower()))
             self.createQuoteApi(self.client_id, path)
             self.login_server()
+        else:
+            self.gateway.write_log("行情接口已登录，请勿重复操作")
 
     def login_server(self) -> None:
         """"""
@@ -778,6 +780,8 @@ class XtpTdApi(TdApi):
             self.setSoftwareKey(self.software_key)
             self.subscribePublicTopic(0)
             self.login_server()
+        else:
+            self.gateway.write_log("交易接口已登录，请勿重复操作")
 
     def login_server(self) -> None:
         """"""
