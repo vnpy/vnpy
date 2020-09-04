@@ -378,7 +378,7 @@ class OkexRestApi(RestClient):
                 price=float(order_data["price"]),
                 volume=float(order_data["size"]),
                 traded=float(order_data["filled_size"]),
-                datetime=generate_datetime["timestamp"],
+                datetime=generate_datetime(order_data["timestamp"]),
                 status=STATUS_OKEX2VT[order_data["status"]],
                 gateway_name=self.gateway_name,
             )

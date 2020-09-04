@@ -147,9 +147,7 @@ class StrategyTemplate(ABC):
         """
         self.orders[order.vt_orderid] = order
 
-        if order.is_active():
-            self.active_orderids.add(order.vt_orderid)
-        elif order.vt_orderid in self.active_orderids:
+        if not order.is_active() and order.vt_orderid in self.active_orderids:
             self.active_orderids.remove(order.vt_orderid)
 
     def buy(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
@@ -192,6 +190,10 @@ class StrategyTemplate(ABC):
             vt_orderids = self.strategy_engine.send_order(
                 self, vt_symbol, direction, offset, price, volume, lock
             )
+
+            for vt_orderid in vt_orderids:
+                self.active_orderids.add(vt_orderid)
+
             return vt_orderids
         else:
             return []

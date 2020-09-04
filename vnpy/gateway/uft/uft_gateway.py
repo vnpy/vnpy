@@ -90,9 +90,10 @@ ORDERTYPE_UFT2VT: Dict[str, OrderType] = {v: k for k, v in ORDERTYPE_VT2UFT.item
 OFFSET_VT2UFT: Dict[Offset, str] = {
     Offset.OPEN: HS_OF_Open,
     Offset.CLOSE: HS_OF_Close,
-    Offset.CLOSETODAY: HS_OF_CloseToday,
+    Offset.CLOSETODAY: HS_OF_CloseToday
 }
 OFFSET_UFT2VT: Dict[str, Offset] = {v: k for k, v in OFFSET_VT2UFT.items()}
+OFFSET_VT2UFT[Offset.CLOSEYESTERDAY] = HS_OF_Close
 
 EXCHANGE_UFT2VT: Dict[str, Exchange] = {
     HS_EI_CFFEX: Exchange.CFFEX,
