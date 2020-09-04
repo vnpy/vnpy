@@ -410,8 +410,6 @@ class BinancesRestApi(RestClient):
         path = "/fapi/v1/order"
         if not self.usdt_base:
             path = "/dapi/v1/order"
-            pair = req.symbol.split("_")[0]
-            params["pair"] = pair
 
         self.add_request(
             method="POST",
@@ -440,8 +438,6 @@ class BinancesRestApi(RestClient):
         path = "/fapi/v1/order"
         if not self.usdt_base:
             path = "/dapi/v1/order"
-            pair = req.symbol.split("_")[0]
-            params["pair"] = pair
 
         self.add_request(
             method="DELETE",
