@@ -307,8 +307,10 @@ class BinancesRestApi(RestClient):
         data = {
             "security": Security.NONE
         }
-        path = "/fapi/v1/time"
-        if not self.usdt_base:
+
+        if self.usdt_base:
+            path = "/fapi/v1/time"
+        else:
             path = "/dapi/v1/time"
 
         return self.add_request(
@@ -321,8 +323,10 @@ class BinancesRestApi(RestClient):
     def query_account(self) -> Request:
         """"""
         data = {"security": Security.SIGNED}
-        path = "/fapi/v1/account"
-        if not self.usdt_base:
+
+        if self.usdt_base:
+            path = "/fapi/v1/account"
+        else:
             path = "/dapi/v1/account"
 
         self.add_request(
@@ -335,8 +339,10 @@ class BinancesRestApi(RestClient):
     def query_position(self) -> Request:
         """"""
         data = {"security": Security.SIGNED}
-        path = "/fapi/v1/positionRisk"
-        if not self.usdt_base:
+
+        if self.usdt_base:
+            path = "/fapi/v1/positionRisk"
+        else:
             path = "/dapi/v1/positionRisk"
 
         self.add_request(
@@ -349,8 +355,10 @@ class BinancesRestApi(RestClient):
     def query_order(self) -> Request:
         """"""
         data = {"security": Security.SIGNED}
-        path = "/fapi/v1/openOrders"
-        if not self.usdt_base:
+
+        if self.usdt_base:
+            path = "/fapi/v1/openOrders"
+        else:
             path = "/dapi/v1/openOrders"
 
         self.add_request(
@@ -365,9 +373,12 @@ class BinancesRestApi(RestClient):
         data = {
             "security": Security.NONE
         }
-        path = "/fapi/v1/exchangeInfo"
-        if not self.usdt_base:
+
+        if self.usdt_base:
+            path = "/fapi/v1/exchangeInfo"
+        else:
             path = "/dapi/v1/exchangeInfo"
+
         self.add_request(
             method="GET",
             path=path,
@@ -407,8 +418,9 @@ class BinancesRestApi(RestClient):
         if req.offset == Offset.CLOSE:
             params["reduceOnly"] = True
 
-        path = "/fapi/v1/order"
-        if not self.usdt_base:
+        if self.usdt_base:
+            path = "/fapi/v1/order"
+        else:
             path = "/dapi/v1/order"
 
         self.add_request(
@@ -435,8 +447,9 @@ class BinancesRestApi(RestClient):
             "origClientOrderId": req.orderid
         }
 
-        path = "/fapi/v1/order"
-        if not self.usdt_base:
+        if self.usdt_base:
+            path = "/fapi/v1/order"
+        else:
             path = "/dapi/v1/order"
 
         self.add_request(
@@ -454,8 +467,9 @@ class BinancesRestApi(RestClient):
             "security": Security.API_KEY
         }
 
-        path = "/fapi/v1/listenKey"
-        if not self.usdt_base:
+        if self.usdt_base:
+            path = "/fapi/v1/listenKey"
+        else:
             path = "/dapi/v1/listenKey"
 
         self.add_request(
@@ -480,8 +494,9 @@ class BinancesRestApi(RestClient):
             "listenKey": self.user_stream_key
         }
 
-        path = "/fapi/v1/listenKey"
-        if not self.usdt_base:
+        if self.usdt_base:
+            path = "/fapi/v1/listenKey"
+        else:
             path = "/dapi/v1/listenKey"
         self.add_request(
             method="PUT",
@@ -661,9 +676,11 @@ class BinancesRestApi(RestClient):
                 params["endTime"] = end_time * 1000     # convert to millisecond
 
             # Get response from server
-            path = "/fapi/v1/klines"
-            if not self.usdt_base:
+            if self.usdt_base:
+                path = "/fapi/v1/klines"
+            else:
                 path = "/dapi/v1/klines"
+
             resp = self.request(
                 "GET",
                 path=path,
