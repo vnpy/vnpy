@@ -265,5 +265,5 @@ class Generator:
 
 
 if __name__ == "__main__":
-    generator = Generator("../include/oes/mds_qry_packets.h", "oes")
+    generator = Generator("../include_for_generator/oes/mds_qry_packets.h", "oes")
     generator.run()
