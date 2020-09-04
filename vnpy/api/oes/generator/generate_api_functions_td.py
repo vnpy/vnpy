@@ -335,16 +335,13 @@ class ApiGenerator:
                             f"\t\t{type_} *task_data = ({type_}*)task->task_data;\n")
 
                         if type_ not in [
-                            "OesMarketStateItemT", "OesTrdItemT", "OesLotWinningItemT", 
+                            "OesMarketStateItemT", "OesTrdItemT", "OesLotWinningItemT",
                             "OesOrdItemT", "OesCustItemT", "OesFundTransferSerialItemT",
                             "OesIssueItemT", "OesStockItemT", "OesOptExerciseAssignItemT",
                             "OesEtfItemT", "OesOptionItemT", "OesOptUnderlyingHoldingItemT",
                             "OesNotifyInfoItemT", "eOesApiChannelTypeT", "OesApiSessionInfoT",
                             "pSubscribeInfo", "OesApiSubscribeInfoT"
                         ]:
-                            # f.write(
-                            #     f"\t\tdata[\"{field}\"] = toUtf(task_data->{field});\n")
-                        # else:
                             struct_fields = self.final_structs[type_]
                             for struct_field, struct_type in struct_fields.items():
                                 if struct_type == "string":

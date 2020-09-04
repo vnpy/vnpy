@@ -31,7 +31,6 @@ class Generator:
         for line in self.f_cpp:
             self.process_line(line)
 
-
         self.process_enum_short_name()
 
         self.f_cpp.close()
@@ -235,22 +234,6 @@ class Generator:
 
         new_line = f"{name} = {value}\n"
         self.f_define.write(new_line)
-
-    def process_typedef(self, line: str):
-        """处理类型定义"""
-        words = line.split(" ")
-        words = [word for word in words if word != " "]
-
-        name = words[2]
-        typedef = TYPE_CPP2PY[words[1]]
-
-        if typedef == "char":
-            if "[" in name:
-                typedef = "string"
-                name = name[:name.index("[")]
-
-        new_line = f"{name} = \"{typedef}\"\n"
-        self.f_typedef.write(new_line)
 
 
 if __name__ == "__main__":

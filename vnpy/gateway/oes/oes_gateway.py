@@ -247,9 +247,9 @@ class OesMdApi(MdApi):
             datetime=datetime.strptime(timestamp, "%Y%m%d %H%M%S%f"),
             volume=data["TotalVolumeTraded"],
             pre_close=data["PrevClosePx"],
-            last_price=data["TradePx"]/10000,
-            open_price=data["OpenPx"]/10000,
-            high_price=data["HighPx"]/10000,
+            last_price=data["TradePx"] / 10000,
+            open_price=data["OpenPx"] / 10000,
+            high_price=data["HighPx"] / 10000,
             low_price=data["LowPx"] / 10000,
             gateway_name=self.gateway_name
         )
@@ -284,9 +284,9 @@ class OesMdApi(MdApi):
             datetime=datetime.strptime(timestamp, "%Y%m%d %H%M%S%f"),
             volume=data["TotalVolumeTraded"],
             pre_close=data["PrevCloseIdx"],
-            last_price=data["LastIdx"]/10000,
-            open_price=data["OpenIdx"]/10000,
-            high_price=data["HighIdx"]/10000,
+            last_price=data["LastIdx"] / 10000,
+            open_price=data["OpenIdx"] / 10000,
+            high_price=data["HighIdx"] / 10000,
             low_price=data["LowIdx"] / 10000,
             gateway_name=self.gateway_name
         )
@@ -303,9 +303,9 @@ class OesMdApi(MdApi):
             datetime=datetime.strptime(timestamp, "%Y%m%d %H%M%S%f"),
             volume=data["TotalVolumeTraded"],
             pre_close=data["PrevClosePx"],
-            last_price=data["TradePx"]/10000,
-            open_price=data["OpenPx"]/10000,
-            high_price=data["HighPx"]/10000,
+            last_price=data["TradePx"] / 10000,
+            open_price=data["OpenPx"] / 10000,
+            high_price=data["HighPx"] / 10000,
             low_price=data["LowPx"] / 10000,
             gateway_name=self.gateway_name
         )
@@ -442,7 +442,7 @@ class OesTdApi(TdApi):
             direction=DIRECTION_OES2VT[data["positionType"]],
             volume=data["sumQty"],
             frozen=data["closeFrzQty"],
-            price=data["costPrice"]/10000,
+            price=data["costPrice"] / 10000,
             gateway_name=self.gateway_name
         )
         self.gateway.on_position(pos)
@@ -616,8 +616,8 @@ class OesTdApi(TdApi):
             size=1,
             min_volume=data["buyQtyUnit"],
             name=data["securityName"],
-            pricetick=data["priceTick"]/10000,
-            option_strike=data["exercisePrice"]/10000,
+            pricetick=data["priceTick"] / 10000,
+            option_strike=data["exercisePrice"] / 10000,
             option_underlying=data["underlyingSecurityId"],
             option_type=OPTIONTYPE_OES2VT[data["contractType"]],
             option_expiry=datetime.strptime(
@@ -661,7 +661,7 @@ class OesTdApi(TdApi):
             direction=DIRECTION_OES2VT[data["positionType"]],
             volume=data["sumQty"],
             frozen=data["closeFrzQty"],
-            price=data["costPrice"]/10000,
+            price=data["costPrice"] / 10000,
             gateway_name=self.gateway_name
         )
         self.gateway.on_position(pos)
