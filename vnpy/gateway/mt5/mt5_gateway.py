@@ -354,7 +354,7 @@ class Mt5Gateway(BaseGateway):
                 order = self.orders.get(local_id, None)
                 if local_id and order:
 
-                    order_id=str(data["result_order"])
+                    order_id = str(data["result_order"])
                     if data["result_order"] and self.sys_local_map[order_id] == order_id:
                         order.orderid = local_id
                         order.traded = data["result_volume"]
@@ -373,13 +373,13 @@ class Mt5Gateway(BaseGateway):
                             volume=data["result_volume"],
                             datetime=LOCAL_TZ.localize(datetime.now()),
                             gateway_name=self.gateway_name
-                            )
-                        self.on_trade(trade)   
+                        )
+                        self.on_trade(trade)
 
                     elif data["result_retcode"] == TRADE_RETCODE_MARKET_CLOSED:
-                        order.status = Status.REJECTED       
-                        self.write_log(f"委托{local_id}拒单，原因market_closed") 
-                        self.on_order(order)          
+                        order.status = Status.REJECTED
+                        self.write_log(f"委托{local_id}拒单，原因market_closed")
+                        self.on_order(order)
             return
 
         trans_type = data["trans_type"]
