@@ -18,7 +18,7 @@ x64
 build
 dist
 *.local
-
+.history
 # vn.py
 .vntrader
 
