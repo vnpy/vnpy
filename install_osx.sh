@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -x
 
 python=$1
 prefix=$2
@@ -12,14 +12,12 @@ $python -m pip install --upgrade pip setuptools wheel
 # Get and build ta-lib
 function install-ta-lib()
 {
-    pushd /tmp
-    curl https://pip.vnpy.com/colletion/ta-lib-0.4.0-src.tar.gz --output ta-lib-0.4.0-src.tar.gz
-    tar -xf ta-lib-0.4.0-src.tar.gz
-    cd ta-lib
-    ./configure --prefix=$prefix
-    make -j
-    make install
-    popd
+    if test ! $(which brew)
+    then
+    echo "Installing Homebrew..."
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    fi
+    brew install ta-lib
 }
 function ta-lib-exists()
 {
