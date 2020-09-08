@@ -33,11 +33,12 @@ from vnpy.trader.ui import MainWindow, create_qapp
 # from vnpy.gateway.gateios import GateiosGateway
 # from vnpy.gateway.bybit import BybitGateway
 # from vnpy.gateway.deribit import DeribitGateway
+from vnpy.gateway.duedex import DuedexGateway
 # from vnpy.gateway.uft import UftGateway
 # from vnpy.gateway.okexo import OkexoGateway
 # from vnpy.gateway.binancef import BinancefGateway
 # from vnpy.gateway.mt4 import Mt4Gateway
-from vnpy.gateway.mt5 import Mt5Gateway
+# from vnpy.gateway.mt5 import Mt5Gateway
 
 # from vnpy.app.cta_strategy import CtaStrategyApp
 # from vnpy.app.csv_loader import CsvLoaderApp
@@ -94,10 +95,11 @@ def main():
     # main_engine.add_gateway(GateiosGateway)
     # main_engine.add_gateway(BybitGateway)
     # main_engine.add_gateway(DeribitGateway)
+    main_engine.add_gateway(DuedexGateway)
     # main_engine.add_gateway(OkexoGateway)
     # main_engine.add_gateway(BinancefGateway)
     # main_engine.add_gateway(Mt4Gateway)
-    main_engine.add_gateway(Mt5Gateway)
+    # main_engine.add_gateway(Mt5Gateway)
 
     # main_engine.add_app(CtaStrategyApp)
     # main_engine.add_app(CtaBacktesterApp)
@@ -114,7 +116,7 @@ def main():
     # main_engine.add_app(ExcelRtdApp)
     # main_engine.add_app(DataManagerApp)
     # main_engine.add_app(PortfolioStrategyApp)
-    
+
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()
 

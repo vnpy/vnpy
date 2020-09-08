@@ -86,6 +86,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * Bybit（bybit）：数字货币永续合约
 
+        * DueDEX（duedex）：数字货币永续合约
+
         * 币安（binance）：数字货币现货
 
         * 币安永续（binances)：数字货币永续合约

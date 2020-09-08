@@ -132,6 +132,7 @@ class Exchange(Enum):
     BYBIT = "BYBIT"         # bybit.com
     COINBASE = "COINBASE"
     DERIBIT = "DERIBIT"
+    DUEDEX = "DUEDEX"       # duedex.com
     GATEIO = "GATEIO"
     BITSTAMP = "BITSTAMP"
 
