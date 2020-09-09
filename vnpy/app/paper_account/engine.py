@@ -49,9 +49,17 @@ class PaperEngine(BaseEngine):
         main_engine.send_order = self.send_order
         main_engine.cancel_order = self.cancel_order
 
+        self.register_event()
+
+    def register_event(self):
+        """"""
+        self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
+        self.event_engine.register(EVENT_TICK, self.process_tick_event)
+
     def process_contract_event(self, event: Event) -> None:
         """"""
         contract: ContractData = event.data
+        self.gateway_map[contract.vt_symbol] = contract.gateway_name
         contract.gateway_name = GATEWAY_NAME
 
     def process_tick_event(self, event: Event) -> None:
@@ -74,7 +82,7 @@ class PaperEngine(BaseEngine):
             if not order.is_active():
                 active_orders.pop(orderid)
 
-    def subscribe(self, req: SubscribeRequest) -> None:
+    def subscribe(self, req: SubscribeRequest, gateway_name: str) -> None:
         """"""
         original_gateway_name = self.gateway_map.get(req.vt_symbol, "")
         if original_gateway_name:
@@ -97,7 +105,7 @@ class PaperEngine(BaseEngine):
         self.put_event(EVENT_ORDER, copy(order))
 
         # Reject unsupported order type
-        if order.type in {OrderType.FAK, OrderType.FOK}:
+        if order.type in {OrderType.FAK, OrderType.FOK, OrderType.RFQ}:
             order.status = Status.REJECTED
         elif order.type == OrderType.STOP and not contract.stop_supported:
             order.status = Status.REJECTED
@@ -131,6 +139,8 @@ class PaperEngine(BaseEngine):
 
     def cross_order(self, order: OrderData, tick: TickData):
         """"""
+        contract = self.main_engine.get_contract(order.vt_symbol)
+
         trade_price = 0
 
         # Cross market order immediately after received
@@ -149,8 +159,6 @@ class PaperEngine(BaseEngine):
                     trade_price = tick.bid_price_1
         # Cross limit order only if price broken
         elif order.type == OrderType.STOP:
-            contract = self.main_engine.get_contract(order.vt_symbol)
-
             if order.direction == Direction.LONG:
                 if tick.ask_price_1 >= order.price:
                     trade_price = tick.ask_price_1 + self.slippage * contract.pricetick
@@ -179,5 +187,5 @@ class PaperEngine(BaseEngine):
 
     def write_log(self, msg: str) -> None:
         """"""
-        log = LogData(msg, gateway_name=GATEWAY_NAME)
+        log = LogData(msg=msg, gateway_name=GATEWAY_NAME)
         self.put_event(EVENT_LOG, log)
