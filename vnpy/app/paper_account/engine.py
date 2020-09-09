@@ -1,18 +1,21 @@
 from copy import copy
-from typing import Any, Dict
+from typing import Any, Dict, Tuple, Optional
 from datetime import datetime
 from tzlocal import get_localzone
 
 from vnpy.event import Event, EventEngine
+from vnpy.trader.utility import extract_vt_symbol
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
     OrderRequest, CancelRequest, SubscribeRequest,
-    ContractData, OrderData, TradeData, TickData, LogData
+    ContractData, OrderData, TradeData, TickData,
+    LogData, PositionData
 )
 from vnpy.trader.event import (
     EVENT_ORDER,
     EVENT_TRADE,
     EVENT_TICK,
+    EVENT_POSITION,
     EVENT_CONTRACT,
     EVENT_LOG
 )
@@ -42,6 +45,7 @@ class PaperEngine(BaseEngine):
         self.active_orders: Dict[str, Dict[str, OrderData]] = {}
         self.gateway_map: Dict[str, str] = {}
         self.ticks: Dict[str, TickData] = {}
+        self.positions: Dict[Tuple[str, Direction], PositionData] = {}
 
         self._subscribe = main_engine.subscribe
 
@@ -104,22 +108,21 @@ class PaperEngine(BaseEngine):
         order = req.create_order_data(orderid, GATEWAY_NAME)
         self.put_event(EVENT_ORDER, copy(order))
 
-        # Reject unsupported order type
-        if order.type in {OrderType.FAK, OrderType.FOK, OrderType.RFQ}:
-            order.status = Status.REJECTED
-        elif order.type == OrderType.STOP and not contract.stop_supported:
-            order.status = Status.REJECTED
+        # Check if order is valid
+        updated_position = self.check_order_valid(order, contract)
 
         # Put simulated order update event from exchange
-        if order.status == Status.REJECTED:
-            self.write_log(f"委托被拒单，不支持的委托类型{order.type.value}")
-        else:
+        if order.status != Status.REJECTED:
             order.datetime = datetime.now(LOCAL_TZ)
             order.status = Status.NOTTRADED
             active_orders = self.active_orders.setdefault(order.vt_symbol, {})
             active_orders[orderid] = order
 
         self.put_event(EVENT_ORDER, copy(order))
+
+        # Update position frozen for close order
+        if updated_position:
+            self.put_event(EVENT_POSITION, copy(updated_position))
 
         return vt_orderid
 
@@ -132,10 +135,59 @@ class PaperEngine(BaseEngine):
             order.status = Status.CANCELLED
             self.put_event(EVENT_ORDER, copy(order))
 
+            # Free frozen position volume
+            if order.offset == Offset.OPEN:
+                return
+
+            if order.direction == Direction.LONG:
+                position = self.get_position(order.vt_symbol, Direction.SHORT)
+            else:
+                position = self.get_position(order.vt_symbol, Direction.LONG)
+            position.frozen -= order.volume
+
+            self.put_event(EVENT_POSITION, copy(position))
+
     def put_event(self, event_type: str, data: Any) -> None:
         """"""
         event = Event(event_type, data)
         self.event_engine.put(event)
+
+    def check_order_valid(self, order: OrderData, contract: ContractData) -> Optional[PositionData]:
+        """"""
+        # Reject unsupported order type
+        if order.type in {OrderType.FAK, OrderType.FOK, OrderType.RFQ}:
+            order.status = Status.REJECTED
+        elif order.type == OrderType.STOP and not contract.stop_supported:
+            order.status = Status.REJECTED
+
+        if order.status == Status.REJECTED:
+            self.write_log(f"委托被拒单，不支持的委托类型{order.type.value}")
+
+        # Reject close order if no more available position
+        if contract.net_position or order.offset == Offset.OPEN:
+            return
+
+        if order.direction == Direction.LONG:
+            short_position = self.get_position(order.vt_symbol, Direction.SHORT)
+            available = short_position.volume - short_position.frozen
+
+            if order.volume > available:
+                order.status = Status.REJECTED
+            else:
+                short_position.frozen += order.volume
+                return short_position
+        else:
+            long_position = self.get_position(order.vt_symbol, Direction.LONG)
+            available = long_position.volume - long_position.frozen
+
+            if order.volume > available:
+                order.status = Status.REJECTED
+            else:
+                long_position.frozen += order.volume
+                return long_position
+            
+            if order.status == Status.REJECTED:
+                self.write_log(f"委托被拒单，可平仓位不足")
 
     def cross_order(self, order: OrderData, tick: TickData):
         """"""
@@ -184,6 +236,61 @@ class PaperEngine(BaseEngine):
                 gateway_name=order.gateway_name
             )
             self.put_event(EVENT_TRADE, trade)
+
+            self.update_position(trade, contract)
+
+    def update_position(self, trade: TradeData, contract: ContractData):
+        """"""
+        vt_symbol = trade.vt_symbol
+
+        # Net position mode
+        if contract.net_position:
+            position = self.get_position(vt_symbol, Direction.NET)
+
+            if trade.direction == Direction.LONG:
+                position.volume += trade.volume
+            else:
+                position.volume -= trade.volume
+
+            self.put_event(EVENT_POSITION, copy(position))
+        # Long/Short position mode
+        else:
+            long_position = self.get_position(vt_symbol, Direction.LONG)
+            short_position = self.get_position(vt_symbol, Direction.SHORT)
+
+            if trade.direction == Direction.LONG:
+                if trade.offset == Offset.OPEN:
+                    long_position.volume += trade.volume
+                else:
+                    short_position.volume -= trade.volume
+                    short_position.frozen -= trade.volume
+            else:
+                if trade.offset == Offset.OPEN:
+                    short_position.volume += trade.volume
+                else:
+                    long_position.volume -= trade.volume
+                    long_position.frozen -= trade.volume
+
+            self.put_event(EVENT_POSITION, long_position)
+            self.put_event(EVENT_POSITION, short_position)
+
+    def get_position(self, vt_symbol: str, direction: Direction):
+        """"""
+        key = (vt_symbol, direction)
+
+        if key in self.positions:
+            return self.positions[key]
+        else:
+            symbol, exchange = extract_vt_symbol(vt_symbol)
+            position = PositionData(
+                symbol=symbol,
+                exchange=exchange,
+                direction=direction,
+                gateway_name=GATEWAY_NAME
+            )
+
+            self.positions[key] = position
+            return position
 
     def write_log(self, msg: str) -> None:
         """"""
