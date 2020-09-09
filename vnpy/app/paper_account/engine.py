@@ -4,7 +4,7 @@ from datetime import datetime
 from tzlocal import get_localzone
 
 from vnpy.event import Event, EventEngine
-from vnpy.trader.utility import extract_vt_symbol
+from vnpy.trader.utility import extract_vt_symbol, save_json, load_json
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
     OrderRequest, CancelRequest, SubscribeRequest,
@@ -34,6 +34,8 @@ GATEWAY_NAME = "PAPER"
 
 class PaperEngine(BaseEngine):
     """"""
+    setting_filename = "paper_account_setting.json"
+    data_filename = "paper_account_data.json"
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
@@ -54,6 +56,7 @@ class PaperEngine(BaseEngine):
         main_engine.cancel_order = self.cancel_order
 
         self.register_event()
+        self.load_data()
 
     def register_event(self):
         """"""
@@ -65,6 +68,12 @@ class PaperEngine(BaseEngine):
         contract: ContractData = event.data
         self.gateway_map[contract.vt_symbol] = contract.gateway_name
         contract.gateway_name = GATEWAY_NAME
+
+        for direciton in Direction:
+            key = (contract.vt_symbol, direciton)
+            if key in self.positions:
+                position = self.positions[key]
+                self.put_event(EVENT_POSITION, position)
 
     def process_tick_event(self, event: Event) -> None:
         """"""
@@ -274,6 +283,8 @@ class PaperEngine(BaseEngine):
             self.put_event(EVENT_POSITION, long_position)
             self.put_event(EVENT_POSITION, short_position)
 
+        self.save_data()
+
     def get_position(self, vt_symbol: str, direction: Direction):
         """"""
         key = (vt_symbol, direction)
@@ -296,3 +307,35 @@ class PaperEngine(BaseEngine):
         """"""
         log = LogData(msg=msg, gateway_name=GATEWAY_NAME)
         self.put_event(EVENT_LOG, log)
+
+    def save_data(self) -> None:
+        """"""
+        position_data = []
+
+        for position in self.positions.values():
+            d = {
+                "vt_symbol": position.vt_symbol,
+                "volume": position.volume,
+                "direction": position.direction.value
+            }
+            position_data.append(d)
+
+        save_json(self.data_filename, position_data)
+
+    def load_data(self) -> None:
+        """"""
+        position_data = load_json(self.data_filename)
+
+        for d in position_data:
+            vt_symbol = d["vt_symbol"]
+            direction = Direction(d["direction"])
+
+            position = self.get_position(vt_symbol, direction)
+            position.volume = d["volume"]
+
+    def clear_position(self) -> None:
+        """"""
+        for position in self.positions.values():
+            position.volume = 0
+            position.frozen = 0
+            self.put_event(EVENT_POSITION, position)
