@@ -340,6 +340,7 @@ class OkexRestApi(RestClient):
                 pricetick=float(instrument_data["tick_size"]),
                 min_volume=float(instrument_data["min_size"]),
                 history_data=True,
+                net_position=True,
                 gateway_name=self.gateway_name
             )
             self.gateway.on_contract(contract)
