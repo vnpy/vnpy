@@ -17,7 +17,8 @@ from vnpy.trader.event import (
     EVENT_TICK,
     EVENT_POSITION,
     EVENT_CONTRACT,
-    EVENT_LOG
+    EVENT_LOG,
+    EVENT_TIMER
 )
 from vnpy.trader.constant import (
     Status,
@@ -42,13 +43,18 @@ class PaperEngine(BaseEngine):
         super().__init__(main_engine, event_engine, APP_NAME)
 
         self.slippage: int = 0
+        self.interval: int = 3
+        self.auto_trade: bool = False
+
         self.order_count: int = 100000
+        self.timer_count: int = 0
 
         self.active_orders: Dict[str, Dict[str, OrderData]] = {}
         self.gateway_map: Dict[str, str] = {}
         self.ticks: Dict[str, TickData] = {}
         self.positions: Dict[Tuple[str, Direction], PositionData] = {}
 
+        # Patch main engine functions
         self._subscribe = main_engine.subscribe
 
         main_engine.subscribe = self.subscribe
@@ -62,6 +68,7 @@ class PaperEngine(BaseEngine):
         """"""
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
     def process_contract_event(self, event: Event) -> None:
         """"""
@@ -94,6 +101,32 @@ class PaperEngine(BaseEngine):
 
             if not order.is_active():
                 active_orders.pop(orderid)
+
+    def process_timer_event(self, event: Event) -> None:
+        """"""
+        self.timer_count += 1
+        if self.timer_count < self.interval:
+            return
+        self.timer_count = 0
+
+        for position in self.positions.values():
+            self.calculate_pnl(position)
+            self.put_event(EVENT_POSITION, copy(position))
+
+    def calculate_pnl(self, position: PositionData) -> None:
+        """"""
+        tick = self.ticks.get(position.vt_symbol, None)
+
+        if tick:
+            contract = self.main_engine.get_contract(position.vt_symbol)
+
+            if position.direction == Direction.SHORT:
+                multiplier = -position.volume * contract.size
+            else:
+                multiplier = position.volume * contract.size
+
+            position.pnl = (tick.last_price - position.price) * multiplier
+            position.pnl = round(position.pnl, 2)
 
     def subscribe(self, req: SubscribeRequest, gateway_name: str) -> None:
         """"""
@@ -132,6 +165,15 @@ class PaperEngine(BaseEngine):
         # Update position frozen for close order
         if updated_position:
             self.put_event(EVENT_POSITION, copy(updated_position))
+
+        # Cross order immediately with last tick data
+        if self.auto_trade:
+            tick = self.ticks.get(order.vt_symbol, None)
+            if tick:
+                self.cross_order(order, tick)
+
+                if not order.is_active():
+                    active_orders.pop(orderid)
 
         return vt_orderid
 
@@ -194,7 +236,7 @@ class PaperEngine(BaseEngine):
             else:
                 long_position.frozen += order.volume
                 return long_position
-            
+
             if order.status == Status.REJECTED:
                 self.write_log(f"委托被拒单，可平仓位不足")
 
@@ -256,11 +298,35 @@ class PaperEngine(BaseEngine):
         if contract.net_position:
             position = self.get_position(vt_symbol, Direction.NET)
 
-            if trade.direction == Direction.LONG:
-                position.volume += trade.volume
-            else:
-                position.volume -= trade.volume
+            old_volume = position.volume
+            old_cost = position.volume * position.price
 
+            if trade.direction == Direction.LONG:
+                pos_change = trade.volume
+            else:
+                pos_change = -trade.volume
+
+            new_volume = position.volume + pos_change
+
+            # No position holding, clear price
+            if not new_volume:
+                position.price = 0
+            # Position direction changed, set to open price
+            elif (
+                (new_volume > 0 and old_volume < 0)
+                or (new_volume < 0 and old_volume > 0)
+            ):
+                position.price = trade.price
+            # Position is add on the same direction
+            elif (
+                (old_volume >= 0 and pos_change > 0)
+                or (old_volume <= 0 and pos_change < 0)
+            ):
+                new_cost = old_cost + pos_change * trade.price
+                position.price = new_cost / new_volume
+
+            position.volume = new_volume
+            self.calculate_pnl(position)
             self.put_event(EVENT_POSITION, copy(position))
         # Long/Short position mode
         else:
@@ -269,19 +335,36 @@ class PaperEngine(BaseEngine):
 
             if trade.direction == Direction.LONG:
                 if trade.offset == Offset.OPEN:
+                    old_cost = long_position.volume * long_position.price
+                    new_cost = old_cost + trade.volume * trade.price
+
                     long_position.volume += trade.volume
+                    long_position.price = new_cost / long_position.volume
                 else:
                     short_position.volume -= trade.volume
                     short_position.frozen -= trade.volume
+
+                    if not short_position.volume:
+                        short_position.price = 0
             else:
                 if trade.offset == Offset.OPEN:
+                    old_cost = short_position.volume * short_position.price
+                    new_cost = old_cost + trade.volume * trade.price
+
                     short_position.volume += trade.volume
+                    short_position.price = new_cost / short_position.volume
                 else:
                     long_position.volume -= trade.volume
                     long_position.frozen -= trade.volume
 
-            self.put_event(EVENT_POSITION, long_position)
-            self.put_event(EVENT_POSITION, short_position)
+                    if not long_position.volume:
+                        long_position.price = 0
+
+            self.calculate_pnl(long_position)
+            self.calculate_pnl(short_position)
+
+            self.put_event(EVENT_POSITION, copy(long_position))
+            self.put_event(EVENT_POSITION, copy(short_position))
 
         self.save_data()
 
@@ -316,6 +399,7 @@ class PaperEngine(BaseEngine):
             d = {
                 "vt_symbol": position.vt_symbol,
                 "volume": position.volume,
+                "price": position.price,
                 "direction": position.direction.value
             }
             position_data.append(d)
@@ -332,6 +416,7 @@ class PaperEngine(BaseEngine):
 
             position = self.get_position(vt_symbol, direction)
             position.volume = d["volume"]
+            position.price = d["price"]
 
     def clear_position(self) -> None:
         """"""
@@ -339,3 +424,15 @@ class PaperEngine(BaseEngine):
             position.volume = 0
             position.frozen = 0
             self.put_event(EVENT_POSITION, position)
+
+    def set_slippage(self, slippage: int) -> None:
+        """"""
+        self.slippage = slippage
+
+    def set_interval(self, interval: int) -> None:
+        """"""
+        self.interval = interval
+
+    def set_auto_trade(self, auto_trade: bool) -> None:
+        """"""
+        self.auto_trade = auto_trade
