@@ -26,4 +26,8 @@ NAME_DISPLAY_MAP = {
 
     "start_time": "开始时间",
     "end_time": "结束时间",
+
+    "min_volume": "最小委托量",
+    "max_volume": "最大委托量",
+    "volume_change": "委托量变化"
 }
