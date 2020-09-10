@@ -42,9 +42,9 @@ class PaperEngine(BaseEngine):
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
-        self.slippage: int = 0
-        self.interval: int = 3
-        self.auto_trade: bool = False
+        self.trade_slippage: int = 0
+        self.timer_interval: int = 3
+        self.instant_trade: bool = False
 
         self.order_count: int = 100000
         self.timer_count: int = 0
@@ -61,8 +61,9 @@ class PaperEngine(BaseEngine):
         main_engine.send_order = self.send_order
         main_engine.cancel_order = self.cancel_order
 
-        self.register_event()
+        self.load_setting()
         self.load_data()
+        self.register_event()
 
     def register_event(self):
         """"""
@@ -105,7 +106,7 @@ class PaperEngine(BaseEngine):
     def process_timer_event(self, event: Event) -> None:
         """"""
         self.timer_count += 1
-        if self.timer_count < self.interval:
+        if self.timer_count < self.timer_interval:
             return
         self.timer_count = 0
 
@@ -167,7 +168,7 @@ class PaperEngine(BaseEngine):
             self.put_event(EVENT_POSITION, copy(updated_position))
 
         # Cross order immediately with last tick data
-        if self.auto_trade:
+        if self.instant_trade:
             tick = self.ticks.get(order.vt_symbol, None)
             if tick:
                 self.cross_order(order, tick)
@@ -187,6 +188,10 @@ class PaperEngine(BaseEngine):
             self.put_event(EVENT_ORDER, copy(order))
 
             # Free frozen position volume
+            contract = self.main_engine.get_contract(order.vt_symbol)
+            if contract.net_position:
+                return
+
             if order.offset == Offset.OPEN:
                 return
 
@@ -249,9 +254,9 @@ class PaperEngine(BaseEngine):
         # Cross market order immediately after received
         if order.type == OrderType.MARKET:
             if order.direction == Direction.LONG:
-                trade_price = tick.ask_price_1 + self.slippage * contract.pricetick
+                trade_price = tick.ask_price_1 + self.trade_slippage * contract.pricetick
             else:
-                trade_price = tick.bid_price_1 - self.slippage * contract.pricetick
+                trade_price = tick.bid_price_1 - self.trade_slippage * contract.pricetick
         # Cross limit order only if price touched
         elif order.type == OrderType.LIMIT:
             if order.direction == Direction.LONG:
@@ -264,10 +269,10 @@ class PaperEngine(BaseEngine):
         elif order.type == OrderType.STOP:
             if order.direction == Direction.LONG:
                 if tick.ask_price_1 >= order.price:
-                    trade_price = tick.ask_price_1 + self.slippage * contract.pricetick
+                    trade_price = tick.ask_price_1 + self.trade_slippage * contract.pricetick
             else:
                 if tick.bid_price_1 <= order.price:
-                    trade_price = tick.bid_price_1 - self.slippage * contract.pricetick
+                    trade_price = tick.bid_price_1 - self.trade_slippage * contract.pricetick
 
         if trade_price:
             order.status = Status.ALLTRADED
@@ -396,6 +401,9 @@ class PaperEngine(BaseEngine):
         position_data = []
 
         for position in self.positions.values():
+            if not position.volume:
+                continue
+
             d = {
                 "vt_symbol": position.vt_symbol,
                 "volume": position.volume,
@@ -418,21 +426,45 @@ class PaperEngine(BaseEngine):
             position.volume = d["volume"]
             position.price = d["price"]
 
+    def load_setting(self) -> None:
+        """"""
+        setting = load_json(self.setting_filename)
+
+        if setting:
+            self.trade_slippage = setting["trade_slippage"]
+            self.timer_interval = setting["timer_interval"]
+            self.instant_trade = setting["instant_trade"]
+
+    def save_setting(self) -> None:
+        """"""
+        setting = {
+            "trade_slippage": self.trade_slippage,
+            "timer_interval": self.timer_interval,
+            "instant_trade": self.instant_trade
+        }
+        save_json(self.setting_filename, setting)
+
     def clear_position(self) -> None:
         """"""
         for position in self.positions.values():
             position.volume = 0
             position.frozen = 0
+            position.price = 0
             self.put_event(EVENT_POSITION, position)
 
-    def set_slippage(self, slippage: int) -> None:
-        """"""
-        self.slippage = slippage
+        self.save_data()
 
-    def set_interval(self, interval: int) -> None:
+    def set_trade_slippage(self, trade_slippage: int) -> None:
         """"""
-        self.interval = interval
+        self.trade_slippage = trade_slippage
+        self.save_setting()
 
-    def set_auto_trade(self, auto_trade: bool) -> None:
+    def set_timer_interval(self, timer_interval: int) -> None:
         """"""
-        self.auto_trade = auto_trade
+        self.timer_interval = timer_interval
+        self.save_setting()
+
+    def set_instant_trade(self, instant_trade: bool) -> None:
+        """"""
+        self.instant_trade = bool(instant_trade)
+        self.save_setting()
