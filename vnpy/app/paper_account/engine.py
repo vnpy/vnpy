@@ -111,8 +111,10 @@ class PaperEngine(BaseEngine):
         self.timer_count = 0
 
         for position in self.positions.values():
-            self.calculate_pnl(position)
-            self.put_event(EVENT_POSITION, copy(position))
+            contract = self.main_engine.get_contract(position.vt_symbol)
+            if contract:
+                self.calculate_pnl(position)
+                self.put_event(EVENT_POSITION, copy(position))
 
     def calculate_pnl(self, position: PositionData) -> None:
         """"""
