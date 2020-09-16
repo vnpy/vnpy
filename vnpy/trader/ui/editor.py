@@ -54,6 +54,7 @@ class CodeEditor(QtWidgets.QMainWindow):
     def init_menu(self) -> None:
         """"""
         bar = self.menuBar()
+        bar.setNativeMenuBar(False)
 
         file_menu = bar.addMenu("文件")
         self.add_menu_action(file_menu, "新建文件", self.new_file, "Ctrl+N")
@@ -82,11 +83,11 @@ class CodeEditor(QtWidgets.QMainWindow):
         self.add_menu_action(edit_menu, "替换", self.replace, "Ctrl+H")
 
     def add_menu_action(
-        self,
-        menu: QtWidgets.QMenu,
-        action_name: str,
-        func: Callable,
-        shortcut: str = "",
+            self,
+            menu: QtWidgets.QMenu,
+            action_name: str,
+            func: Callable,
+            shortcut: str = "",
     ) -> None:
         """"""
         action = QtWidgets.QAction(action_name, self)
@@ -325,9 +326,9 @@ class FindDialog(QtWidgets.QDialog):
     """"""
 
     def __init__(
-        self,
-        editor: Qsci.QsciScintilla,
-        show_replace: bool = False
+            self,
+            editor: Qsci.QsciScintilla,
+            show_replace: bool = False
     ):
         """"""
         super().__init__()

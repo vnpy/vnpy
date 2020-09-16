@@ -92,6 +92,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def init_menu(self) -> None:
         """"""
         bar = self.menuBar()
+        bar.setNativeMenuBar(False)
 
         # System menu
         sys_menu = bar.addMenu("系统")
