@@ -22,7 +22,7 @@ class PairTradingStrategy(StrategyTemplate):
 
     leg1_symbol = ""
     leg2_symbol = ""
-    last_spread = 0.0
+    current_spread = 0.0
     boll_mid = 0.0
     boll_down = 0.0
     boll_up = 0.0
