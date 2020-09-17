@@ -1046,7 +1046,7 @@ class BybitPrivateWebsocketApi(WebsocketClient):
         for d in packet["data"]:
             orderid = d["order_link_id"]
             if not orderid:
-                orderid = d["orderid"]
+                orderid = d["order_id"]
 
             trade = TradeData(
                 symbol=d["symbol"],
