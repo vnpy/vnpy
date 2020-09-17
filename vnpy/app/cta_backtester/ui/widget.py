@@ -1,6 +1,7 @@
 import csv
 from datetime import datetime, timedelta
 from tzlocal import get_localzone
+from copy import copy
 
 import numpy as np
 import pyqtgraph as pg
@@ -1154,11 +1155,6 @@ class CandleChartDialog(QtWidgets.QDialog):
         self.chart.add_item(VolumeItem, "volume", "volume")
         self.chart.add_cursor()
 
-        # Add scatter item for showing tradings
-        self.trade_scatter = pg.ScatterPlotItem()
-        candle_plot = self.chart.get_plot("candle")
-        candle_plot.addItem(self.trade_scatter)
-
         # Set layout
         vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(self.chart)
@@ -1174,34 +1170,26 @@ class CandleChartDialog(QtWidgets.QDialog):
 
     def update_trades(self, trades: list):
         """"""
-        trade_data = []
+        trade_pairs = generate_trade_pairs(trades)
 
-        for trade in trades:
-            ix = self.dt_ix_map[trade.datetime]
+        candle_plot = self.chart.get_plot("candle")
+        for d in trade_pairs:
+            x = [
+                self.dt_ix_map[d["open_dt"]],
+                self.dt_ix_map[d["close_dt"]],
+            ]
+            y = [
+                d["open_price"],
+                d["close_price"]
+            ]
 
-            scatter = {
-                "pos": (ix, trade.price),
-                "data": 1,
-                "size": 14,
-                "pen": pg.mkPen((255, 255, 255))
-            }
-
-            if trade.direction == Direction.LONG:
-                scatter_symbol = "t1"   # Up arrow
+            if d["direction"] == Direction.LONG:
+                pen = pg.mkPen((255, 255, 0), width=5)
             else:
-                scatter_symbol = "t"    # Down arrow
+                pen = pg.mkPen((0, 0, 255), width=5)
 
-            if trade.offset == Offset.OPEN:
-                scatter_brush = pg.mkBrush((255, 255, 0))   # Yellow
-            else:
-                scatter_brush = pg.mkBrush((0, 0, 255))     # Blue
-
-            scatter["symbol"] = scatter_symbol
-            scatter["brush"] = scatter_brush
-
-            trade_data.append(scatter)
-
-        self.trade_scatter.setData(trade_data)
+            item = pg.PlotCurveItem(x, y, pen=pen)
+            candle_plot.addItem(item)
 
     def clear_data(self):
         """"""
@@ -1214,3 +1202,45 @@ class CandleChartDialog(QtWidgets.QDialog):
     def is_updated(self):
         """"""
         return self.updated
+
+
+def generate_trade_pairs(trades: list) -> list:
+    """"""
+    long_trades = []
+    short_trades = []
+    trade_pairs = []
+
+    for trade in trades:
+        trade = copy(trade)
+
+        if trade.direction == Direction.LONG:
+            same_direction = long_trades
+            opposite_direction = short_trades
+        else:
+            same_direction = short_trades
+            opposite_direction = long_trades
+
+        while trade.volume and opposite_direction:
+            open_trade = opposite_direction[0]
+
+            close_volume = min(open_trade.volume, trade.volume)
+            d = {
+                "open_dt": open_trade.datetime,
+                "open_price": open_trade.price,
+                "close_dt": trade.datetime,
+                "close_price": trade.price,
+                "direction": open_trade.direction,
+                "volume": close_volume
+            }
+            trade_pairs.append(d)
+
+            open_trade.volume -= close_volume
+            if not open_trade.volume:
+                opposite_direction.pop(0)
+
+            trade.volume -= close_volume
+
+        if trade.volume:
+            same_direction.append(trade)
+
+    return trade_pairs
