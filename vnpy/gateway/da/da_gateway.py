@@ -74,6 +74,7 @@ OFFSET_DA2VT = {v: k for k, v in OFFSET_VT2DA.items()}
 EXCHANGE_DA2VT = {
     "APEX": Exchange.APEX,
     "CME": Exchange.CME,
+    "CME_CBT": Exchange.CBOT,
     "SGXQ": Exchange.SGX,
     "HKEX": Exchange.HKFE,
     "CFFEX": Exchange.CFFEX,
@@ -334,8 +335,7 @@ class DaMarketApi(MarketApi):
         """
         Close the connection.
         """
-        if self.connect_status:
-            self.exit()
+        pass
 
 
 class DaFutureApi(FutureApi):
@@ -823,8 +823,7 @@ class DaFutureApi(FutureApi):
 
     def close(self):
         """"""
-        if self.connect_status:
-            self.exit()
+        pass
 
 
 def get_network_interface():
