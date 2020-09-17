@@ -778,11 +778,11 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def ad(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def ad(self, array: bool = False) -> Union[float, np.ndarray]:
         """
         AD.
         """
-        result = talib.AD(self.high, self.low, self.close, self.volume, n)
+        result = talib.AD(self.high, self.low, self.close, self.volume)
         if array:
             return result
         return result[-1]
