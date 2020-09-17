@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Callable
 from copy import copy
 import pytz
+from simplejson.errors import JSONDecodeError
 
 from requests import ConnectionError
 
@@ -380,12 +381,14 @@ class BybitRestApi(RestClient):
         """
         Callback to handle request failed.
         """
-        data = request.response.json()
-
-        error_msg = data["ret_msg"]
-        error_code = data["ret_code"]
-
-        msg = f"请求失败，状态码：{request.status}，错误代码：{error_code}, 信息：{error_msg}"
+        try:
+            data = request.response.json()
+            error_msg = data["ret_msg"]
+            error_code = data["ret_code"]
+            msg = f"请求失败，状态码：{request.status}，错误代码：{error_code}, 信息：{error_msg}"
+        except JSONDecodeError:
+            text = request.response.text
+            msg = f"请求失败，信息：{text}"
 
         self.gateway.write_log(msg)
 
