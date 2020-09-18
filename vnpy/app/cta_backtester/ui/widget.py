@@ -1197,7 +1197,7 @@ class CandleChartDialog(QtWidgets.QDialog):
         self.chart.clear_all()
 
         self.dt_ix_map.clear()
-        self.trade_scatter.clear()
+        # self.trade_scatter.clear()
 
     def is_updated(self):
         """"""
