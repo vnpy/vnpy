@@ -6,7 +6,7 @@ from copy import copy
 import numpy as np
 import pyqtgraph as pg
 
-from vnpy.trader.constant import Interval, Direction, Offset
+from vnpy.trader.constant import Interval, Direction
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtCore, QtWidgets, QtGui
 from vnpy.trader.ui.widget import BaseMonitor, BaseCell, DirectionCell, EnumCell
@@ -1138,8 +1138,17 @@ class CandleChartDialog(QtWidgets.QDialog):
         """"""
         super().__init__()
 
-        self.dt_ix_map = {}
         self.updated = False
+
+        self.dt_ix_map = {}
+        self.ix_bar_map = {}
+
+        self.high_price = 0
+        self.low_price = 0
+        self.price_range = 0
+
+        self.items = []
+
         self.init_ui()
 
     def init_ui(self):
@@ -1166,41 +1175,127 @@ class CandleChartDialog(QtWidgets.QDialog):
         self.chart.update_history(history)
 
         for ix, bar in enumerate(history):
+            self.ix_bar_map[ix] = bar
             self.dt_ix_map[bar.datetime] = ix
+
+            if not self.high_price:
+                self.high_price = bar.high_price
+                self.low_price = bar.low_price
+            else:
+                self.high_price = max(self.high_price, bar.high_price)
+                self.low_price = min(self.low_price, bar.low_price)
+
+        self.price_range = self.high_price - self.low_price
 
     def update_trades(self, trades: list):
         """"""
         trade_pairs = generate_trade_pairs(trades)
 
         candle_plot = self.chart.get_plot("candle")
-        for d in trade_pairs:
-            x = [
-                self.dt_ix_map[d["open_dt"]],
-                self.dt_ix_map[d["close_dt"]],
-            ]
-            y = [
-                d["open_price"],
-                d["close_price"]
-            ]
 
-            if d["direction"] == Direction.LONG and d["open_price"] >= d["close_price"]:
+        scatter_data = []
+
+        y_adjustment = self.price_range * 0.001
+
+        for d in trade_pairs:
+            open_ix = self.dt_ix_map[d["open_dt"]]
+            close_ix = self.dt_ix_map[d["close_dt"]]
+            open_price = d["open_price"]
+            close_price = d["close_price"]
+
+            # Trade Line
+            x = [open_ix, close_ix]
+            y = [open_price, close_price]
+
+            if d["direction"] == Direction.LONG and close_price >= open_price:
                 color = "r"
-            elif d["direction"] == Direction.SHORT and d["open_price"] <= d["close_price"]:
+            elif d["direction"] == Direction.SHORT and close_price <= open_price:
                 color = "r"
             else:
                 color = "g"
 
-            pen = pg.mkPen(color, width=1, style=QtCore.Qt.DashLine)
+            pen = pg.mkPen(color, width=1.5, style=QtCore.Qt.DashLine)
             item = pg.PlotCurveItem(x, y, pen=pen)
+
+            self.items.append(item)
             candle_plot.addItem(item)
+
+            # Trade Scatter
+            open_bar = self.ix_bar_map[open_ix]
+            close_bar = self.ix_bar_map[close_ix]
+
+            if d["direction"] == Direction.LONG:
+                scatter_color = "yellow"
+                open_symbol = "t1"
+                close_symbol = "t"
+                open_side = 1
+                close_side = -1
+                open_y = open_bar.low_price
+                close_y = close_bar.high_price
+            else:
+                scatter_color = "magenta"
+                open_symbol = "t"
+                close_symbol = "t1"
+                open_side = -1
+                close_side = 1
+                open_y = open_bar.high_price
+                close_y = close_bar.low_price
+
+            pen = pg.mkPen(QtGui.QColor(scatter_color))
+            brush = pg.mkBrush(QtGui.QColor(scatter_color))
+            size = 10
+
+            open_scatter = {
+                "pos": (open_ix, open_y - open_side * y_adjustment),
+                "size": size,
+                "pen": pen,
+                "brush": brush,
+                "symbol": open_symbol
+            }
+
+            close_scatter = {
+                "pos": (close_ix, close_y - close_side * y_adjustment),
+                "size": size,
+                "pen": pen,
+                "brush": brush,
+                "symbol": close_symbol
+            }
+
+            scatter_data.append(open_scatter)
+            scatter_data.append(close_scatter)
+
+            # Trade text
+            volume = d["volume"]
+            text_color = QtGui.QColor(scatter_color)
+            open_text = pg.TextItem(f"[{volume}]", color=text_color, anchor=(0.5, 0.5))
+            close_text = pg.TextItem(f"[{volume}]", color=text_color, anchor=(0.5, 0.5))
+
+            open_text.setPos(open_ix, open_y - open_side * y_adjustment * 3)
+            close_text.setPos(close_ix, close_y - close_side * y_adjustment * 3)
+
+            self.items.append(open_text)
+            self.items.append(close_text)
+
+            candle_plot.addItem(open_text)
+            candle_plot.addItem(close_text)
+
+        trade_scatter = pg.ScatterPlotItem(scatter_data)
+        self.items.append(trade_scatter)
+        candle_plot.addItem(trade_scatter)
 
     def clear_data(self):
         """"""
         self.updated = False
+
+        candle_plot = self.chart.get_plot("candle")
+        for item in self.items:
+            candle_plot.removeItem(item)
+        self.items.clear()
+
         self.chart.clear_all()
 
         self.dt_ix_map.clear()
-        # self.trade_scatter.clear()
+        self.ix_bar_map.clear()
 
     def is_updated(self):
         """"""
