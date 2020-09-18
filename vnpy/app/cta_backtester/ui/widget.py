@@ -1183,11 +1183,14 @@ class CandleChartDialog(QtWidgets.QDialog):
                 d["close_price"]
             ]
 
-            if d["direction"] == Direction.LONG:
-                pen = pg.mkPen((255, 255, 0), width=5)
+            if d["direction"] == Direction.LONG and d["open_price"] >= d["close_price"]:
+                color = "r"
+            elif d["direction"] == Direction.SHORT and d["open_price"] <= d["close_price"]:
+                color = "r"
             else:
-                pen = pg.mkPen((0, 0, 255), width=5)
+                color = "g"
 
+            pen = pg.mkPen(color, width=1, style=QtCore.Qt.DashLine)
             item = pg.PlotCurveItem(x, y, pen=pen)
             candle_plot.addItem(item)
 
@@ -1230,7 +1233,7 @@ def generate_trade_pairs(trades: list) -> list:
                 "close_dt": trade.datetime,
                 "close_price": trade.price,
                 "direction": open_trade.direction,
-                "volume": close_volume
+                "volume": close_volume,
             }
             trade_pairs.append(d)
 
