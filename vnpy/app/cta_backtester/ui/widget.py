@@ -1164,9 +1164,58 @@ class CandleChartDialog(QtWidgets.QDialog):
         self.chart.add_item(VolumeItem, "volume", "volume")
         self.chart.add_cursor()
 
+        # Create help widget
+        text1 = "红色虚线 —— 盈利交易"
+        label1 = QtWidgets.QLabel(text1)
+        label1.setStyleSheet("color:red")
+
+        text2 = "绿色虚线 —— 亏损交易"
+        label2 = QtWidgets.QLabel(text2)
+        label2.setStyleSheet("color:#00FF00")
+
+        text3 = "黄色向上箭头 —— 买入开仓 Buy"
+        label3 = QtWidgets.QLabel(text3)
+        label3.setStyleSheet("color:yellow")
+
+        text4 = "黄色向下箭头 —— 卖出平仓 Sell"
+        label4 = QtWidgets.QLabel(text4)
+        label4.setStyleSheet("color:yellow")
+
+        text5 = "紫红向下箭头 —— 卖出开仓 Short"
+        label5 = QtWidgets.QLabel(text5)
+        label5.setStyleSheet("color:magenta")
+
+        text6 = "紫红向上箭头 —— 买入平仓 Cover"
+        label6 = QtWidgets.QLabel(text6)
+        label6.setStyleSheet("color:magenta")
+
+        hbox1 = QtWidgets.QHBoxLayout()
+        hbox1.addStretch()
+        hbox1.addWidget(label1)
+        hbox1.addStretch()
+        hbox1.addWidget(label2)
+        hbox1.addStretch()
+
+        hbox2 = QtWidgets.QHBoxLayout()
+        hbox2.addStretch()
+        hbox2.addWidget(label3)
+        hbox2.addStretch()
+        hbox2.addWidget(label4)
+        hbox2.addStretch()
+
+        hbox3 = QtWidgets.QHBoxLayout()
+        hbox3.addStretch()
+        hbox3.addWidget(label5)
+        hbox3.addStretch()
+        hbox3.addWidget(label6)
+        hbox3.addStretch()
+
         # Set layout
         vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(self.chart)
+        vbox.addLayout(hbox1)
+        vbox.addLayout(hbox2)
+        vbox.addLayout(hbox3)
         self.setLayout(vbox)
 
     def update_history(self, history: list):
