@@ -1068,6 +1068,11 @@ class BybitPrivateWebsocketApi(WebsocketClient):
     def on_order(self, packet: dict) -> None:
         """"""
         for d in packet["data"]:
+            if self.usdt_base:
+                dt = generate_datetime(d["timestamp"])
+            else:
+                dt = generate_datetime(d["create_time"])
+
             order = OrderData(
                 symbol=d["symbol"],
                 exchange=Exchange.BYBIT,
@@ -1078,7 +1083,7 @@ class BybitPrivateWebsocketApi(WebsocketClient):
                 volume=d["qty"],
                 traded=d["cum_exec_qty"],
                 status=STATUS_BYBIT2VT[d["order_status"]],
-                datetime=generate_datetime(d["timestamp"]),
+                datetime=dt,
                 gateway_name=self.gateway_name
             )
 
