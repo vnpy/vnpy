@@ -1131,6 +1131,11 @@ def sign(secret: bytes, data: bytes) -> str:
 def generate_datetime(timestamp: str) -> datetime:
     """"""
     if "." in timestamp:
+        part1, part2 = timestamp.split(".")
+        if len(part2) > 7:
+            part2 = part2[:6] + "Z"
+            timestamp = ".".join([part1, part2])
+
         dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
     else:
         dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
