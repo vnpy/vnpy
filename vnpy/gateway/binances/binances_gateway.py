@@ -10,7 +10,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from enum import Enum
 from threading import Lock
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import pytz
 
 from vnpy.api.rest import RestClient, Request
@@ -62,14 +62,17 @@ STATUS_BINANCES2VT: Dict[str, Status] = {
     "PARTIALLY_FILLED": Status.PARTTRADED,
     "FILLED": Status.ALLTRADED,
     "CANCELED": Status.CANCELLED,
-    "REJECTED": Status.REJECTED
+    "REJECTED": Status.REJECTED,
+    "EXPIRED":  Status.CANCELLED
 }
 
-ORDERTYPE_VT2BINANCES: Dict[OrderType, str] = {
-    OrderType.LIMIT: "LIMIT",
-    OrderType.MARKET: "MARKET"
+ORDERTYPE_VT2BINANCES: Dict[OrderType, Tuple[str, str]] = {
+    OrderType.LIMIT: ("LIMIT", "GTC"),
+    OrderType.MARKET: ("MARKET", "GTC"),
+    OrderType.FAK: ("LIMIT", "IOC"),
+    OrderType.FOK: ("LIMIT", "FOK"),
 }
-ORDERTYPE_BINANCES2VT: Dict[str, OrderType] = {v: k for k, v in ORDERTYPE_VT2BINANCES.items()}
+ORDERTYPE_BINANCES2VT: Dict[Tuple[str, str], OrderType] = {v: k for k, v in ORDERTYPE_VT2BINANCES.items()}
 
 DIRECTION_VT2BINANCES: Dict[Direction, str] = {
     Direction.LONG: "BUY",
@@ -405,11 +408,13 @@ class BinancesRestApi(RestClient):
             "security": Security.SIGNED
         }
 
+        order_type, time_condition = ORDERTYPE_VT2BINANCES[req.type]
+
         params = {
             "symbol": req.symbol,
-            "timeInForce": "GTC",
             "side": DIRECTION_VT2BINANCES[req.direction],
-            "type": ORDERTYPE_VT2BINANCES[req.type],
+            "type": order_type,
+            "timeInForce": time_condition,
             "price": float(req.price),
             "quantity": float(req.volume),
             "newClientOrderId": orderid,
@@ -548,7 +553,8 @@ class BinancesRestApi(RestClient):
     def on_query_order(self, data: dict, request: Request) -> None:
         """"""
         for d in data:
-            order_type = ORDERTYPE_BINANCES2VT.get(d["type"], None)
+            key = (d["type"], d["timeInForce"])
+            order_type = ORDERTYPE_BINANCES2VT.get(key, None)
             if not order_type:
                 continue
 
@@ -789,8 +795,8 @@ class BinancesTradeWebsocketApi(WebsocketClient):
     def on_order(self, packet: dict) -> None:
         """"""
         ord_data = packet["o"]
-
-        order_type = ORDERTYPE_BINANCES2VT.get(ord_data["o"], None)
+        key = (ord_data["o"], ord_data["f"])
+        order_type = ORDERTYPE_BINANCES2VT.get(key, None)
         if not order_type:
             return
 
