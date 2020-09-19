@@ -1,6 +1,9 @@
+from random import uniform
+
 from vnpy.trader.constant import Offset, Direction
 from vnpy.trader.object import TradeData, OrderData, TickData
 from vnpy.trader.engine import BaseEngine
+from vnpy.trader.utility import round_to
 
 from vnpy.app.algo_trading import AlgoTemplate
 
@@ -14,6 +17,16 @@ class BestLimitAlgo(AlgoTemplate):
         "vt_symbol": "",
         "direction": [Direction.LONG.value, Direction.SHORT.value],
         "volume": 0.0,
+        "min_volume": 0.0,
+        "max_volume": 0.0,
+        "volume_change": [
+            "1",
+            "0.1",
+            "0.01",
+            "0.001",
+            "0.0001",
+            "0.00001"
+        ],
         "offset": [
             Offset.NONE.value,
             Offset.OPEN.value,
@@ -45,15 +58,35 @@ class BestLimitAlgo(AlgoTemplate):
         self.volume = setting["volume"]
         self.offset = Offset(setting["offset"])
 
+        self.min_volume = setting["min_volume"]
+        self.max_volume = setting["max_volume"]
+
+        if "." in setting["volume_change"]:
+            self.volume_change = float(setting["volume_change"])
+        else:
+            self.volume_change = int(setting["volume_change"])
+
         # Variables
         self.vt_orderid = ""
         self.traded = 0
         self.last_tick = None
         self.order_price = 0
 
-        self.subscribe(self.vt_symbol)
         self.put_parameters_event()
         self.put_variables_event()
+
+        # Check if min/max volume met
+        if self.min_volume <= 0:
+            self.write_log("最小挂单量必须大于0，算法启动失败")
+            self.stop()
+            return
+
+        if self.max_volume < self.min_volume:
+            self.write_log("最大挂单量必须不小于最小委托量，算法启动失败")
+            self.stop()
+            return
+
+        self.subscribe(self.vt_symbol)
 
     def on_tick(self, tick: TickData):
         """"""
@@ -91,7 +124,11 @@ class BestLimitAlgo(AlgoTemplate):
 
     def buy_best_limit(self):
         """"""
-        order_volume = self.volume - self.traded
+        volume_left = self.volume - self.traded
+
+        rand_volume = self.generate_rand_volume()
+        order_volume = min(rand_volume, volume_left)
+
         self.order_price = self.last_tick.bid_price_1
         self.vt_orderid = self.buy(
             self.vt_symbol,
@@ -102,7 +139,11 @@ class BestLimitAlgo(AlgoTemplate):
 
     def sell_best_limit(self):
         """"""
-        order_volume = self.volume - self.traded
+        volume_left = self.volume - self.traded
+
+        rand_volume = self.generate_rand_volume()
+        order_volume = min(rand_volume, volume_left)
+
         self.order_price = self.last_tick.ask_price_1
         self.vt_orderid = self.sell(
             self.vt_symbol,
@@ -110,3 +151,13 @@ class BestLimitAlgo(AlgoTemplate):
             order_volume,
             offset=self.offset
         )
+
+    def generate_rand_volume(self):
+        """"""
+        rand_volume = uniform(self.min_volume, self.max_volume)
+        rand_volume = round_to(rand_volume, self.volume_change)
+
+        if self.volume_change == 1:
+            rand_volume = int(rand_volume)
+
+        return rand_volume

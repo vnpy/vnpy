@@ -333,6 +333,7 @@ class SpreadAlgoWidget(QtWidgets.QFrame):
 
     def update_class_combo(self):
         """"""
+        self.class_combo.clear()
         self.class_combo.addItems(
             self.strategy_engine.get_all_strategy_class_names()
         )

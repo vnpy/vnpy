@@ -81,6 +81,12 @@ class RqdataClient:
                 rq_symbol = f"{symbol}.XSHG"
             else:
                 rq_symbol = f"{symbol}.XSHE"
+        # Spot
+        elif exchange in [Exchange.SGE]:
+            for char in ["(", ")", "+"]:
+                symbol = symbol.replace(char, "")
+            symbol = symbol.upper()
+            rq_symbol = f"{symbol}.SGEX"
         # Futures and Options
         elif exchange in [Exchange.SHFE, Exchange.CFFEX, Exchange.DCE, Exchange.CZCE, Exchange.INE]:
             for count, word in enumerate(symbol):

@@ -6,7 +6,7 @@ import pyqtgraph as pg
 from vnpy.trader.ui import QtCore, QtGui, QtWidgets
 from vnpy.trader.object import BarData
 
-from .base import UP_COLOR, DOWN_COLOR, PEN_WIDTH, BAR_WIDTH
+from .base import BLACK_COLOR, UP_COLOR, DOWN_COLOR, PEN_WIDTH, BAR_WIDTH
 from .manager import BarManager
 
 
@@ -21,6 +21,8 @@ class ChartItem(pg.GraphicsObject):
 
         self._bar_picutures: Dict[int, QtGui.QPicture] = {}
         self._item_picuture: QtGui.QPicture = None
+
+        self._black_brush: QtGui.QBrush = pg.mkBrush(color=BLACK_COLOR)
 
         self._up_pen: QtGui.QPen = pg.mkPen(
             color=UP_COLOR, width=PEN_WIDTH
@@ -160,7 +162,7 @@ class CandleItem(ChartItem):
         # Set painter color
         if bar.close_price >= bar.open_price:
             painter.setPen(self._up_pen)
-            painter.setBrush(self._up_brush)
+            painter.setBrush(self._black_brush)
         else:
             painter.setPen(self._down_pen)
             painter.setBrush(self._down_brush)

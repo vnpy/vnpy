@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Callable
 from copy import copy
 import pytz
+from simplejson.errors import JSONDecodeError
 
 from requests import ConnectionError
 
@@ -158,6 +159,7 @@ class BybitGateway(BaseGateway):
 
     def query_position(self) -> None:
         """"""
+        return
         self.rest_api.query_position()
 
     def query_history(self, req: HistoryRequest) -> List[BarData]:
@@ -379,12 +381,14 @@ class BybitRestApi(RestClient):
         """
         Callback to handle request failed.
         """
-        data = request.response.json()
-
-        error_msg = data["ret_msg"]
-        error_code = data["ret_code"]
-
-        msg = f"请求失败，状态码：{request.status}，错误代码：{error_code}, 信息：{error_msg}"
+        try:
+            data = request.response.json()
+            error_msg = data["ret_msg"]
+            error_code = data["ret_code"]
+            msg = f"请求失败，状态码：{request.status}，错误代码：{error_code}, 信息：{error_msg}"
+        except JSONDecodeError:
+            text = request.response.text
+            msg = f"请求失败，信息：{text}"
 
         self.gateway.write_log(msg)
 
@@ -501,6 +505,11 @@ class BybitRestApi(RestClient):
             if not orderid:     # Ignore order not placed by vn.py
                 continue
 
+            if self.usdt_base:
+                dt = generate_datetime(d["created_time"])
+            else:
+                dt = generate_datetime(d["created_at"])
+
             order = OrderData(
                 symbol=d["symbol"],
                 exchange=Exchange.BYBIT,
@@ -511,7 +520,7 @@ class BybitRestApi(RestClient):
                 volume=d["qty"],
                 traded=d["cum_exec_qty"],
                 status=STATUS_BYBIT2VT[d["order_status"]],
-                datetime=generate_datetime(d["created_at"]),
+                datetime=dt,
                 gateway_name=self.gateway_name
             )
             self.gateway.on_order(order)
@@ -582,11 +591,11 @@ class BybitRestApi(RestClient):
             symbols = symbols_inverse
 
         for symbol in symbols:
-
             params = {
                 "symbol": symbol,
                 "limit": 50,
                 "page": page,
+                "order_status": "New,PartiallyFilled"
             }
 
             self.add_request(
@@ -601,7 +610,8 @@ class BybitRestApi(RestClient):
         history = []
         count = 200
         start_time = int(req.start.timestamp())
-
+        print(req)
+        print(start_time)
         if self.usdt_base:
             path = "/public/linear/kline"
         else:
@@ -1044,7 +1054,7 @@ class BybitPrivateWebsocketApi(WebsocketClient):
         for d in packet["data"]:
             orderid = d["order_link_id"]
             if not orderid:
-                orderid = d["orderid"]
+                orderid = d["order_id"]
 
             trade = TradeData(
                 symbol=d["symbol"],
@@ -1063,6 +1073,11 @@ class BybitPrivateWebsocketApi(WebsocketClient):
     def on_order(self, packet: dict) -> None:
         """"""
         for d in packet["data"]:
+            if self.usdt_base:
+                dt = generate_datetime(d["timestamp"])
+            else:
+                dt = generate_datetime(d["create_time"])
+
             order = OrderData(
                 symbol=d["symbol"],
                 exchange=Exchange.BYBIT,
@@ -1073,7 +1088,7 @@ class BybitPrivateWebsocketApi(WebsocketClient):
                 volume=d["qty"],
                 traded=d["cum_exec_qty"],
                 status=STATUS_BYBIT2VT[d["order_status"]],
-                datetime=generate_datetime(d["timestamp"]),
+                datetime=dt,
                 gateway_name=self.gateway_name
             )
 
@@ -1116,6 +1131,11 @@ def sign(secret: bytes, data: bytes) -> str:
 def generate_datetime(timestamp: str) -> datetime:
     """"""
     if "." in timestamp:
+        part1, part2 = timestamp.split(".")
+        if len(part2) > 7:
+            part2 = part2[:6] + "Z"
+            timestamp = ".".join([part1, part2])
+
         dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
     else:
         dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")

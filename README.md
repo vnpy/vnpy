@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.1.5-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.1.6-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
@@ -44,7 +44,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 飞创证券（sec）：ETF期权
 
-        * 宽睿（oes）：国内证券（A股）
+        * 宽睿（oes）：国内证券（A股）、ETF期权
 
         * 中泰XTP（xtp）：国内证券（A股）、ETF期权
 
@@ -136,6 +136,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * script_trader：脚本策略模块，针对多标的组合类交易策略设计，同时也可以直接在命令行中实现REPL指令形式的交易，不支持回测功能
 
+    * paper_account：模拟交易模块，纯本地化实现的模拟交易功能，基于交易接口获取的实时行情进行委托撮合，提供委托成交推送以及持仓记录
+
     * chart_wizard：K线图表模块，基于RQData数据服务（期货）或者交易接口（数字货币）获取历史数据，并结合Tick推送显示实时行情变化
 
     * portfolio_manager：投资组合模块，面向各类基本面交易策略，以独立的策略子账户为基础，提供交易仓位的自动跟踪以及盈亏实时统计功能
@@ -164,7 +166,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.1.5](https://download.vnpy.com/vnstudio-2.1.5.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.1.6](https://download.vnpy.com/vnstudio-2.1.6.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 

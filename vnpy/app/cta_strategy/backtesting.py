@@ -885,6 +885,7 @@ class BacktestingEngine:
                 offset=stop_order.offset,
                 price=stop_order.price,
                 volume=stop_order.volume,
+                traded=stop_order.volume,
                 status=Status.ALLTRADED,
                 gateway_name=self.gateway_name,
                 datetime=self.datetime

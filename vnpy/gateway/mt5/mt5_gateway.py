@@ -57,6 +57,9 @@ TRADE_TRANSACTION_ORDER_ADD = 0
 TRADE_TRANSACTION_ORDER_UPDATE = 1
 TRADE_TRANSACTION_ORDER_DELETE = 2
 TRADE_TRANSACTION_HISTORY_ADD = 6
+TRADE_TRANSACTION_REQUEST = 10
+
+TRADE_RETCODE_MARKET_CLOSED = 10018
 
 TYPE_BUY = 0
 TYPE_SELL = 1
@@ -346,6 +349,37 @@ class Mt5Gateway(BaseGateway):
         """"""
         data = packet["data"]
         if not data["order"]:
+            if data["trans_type"] == TRADE_TRANSACTION_REQUEST:
+                local_id = data["request_comment"]
+                order = self.orders.get(local_id, None)
+                if local_id and order:
+
+                    order_id = str(data["result_order"])
+                    if data["result_order"] and self.sys_local_map[order_id] == order_id:
+                        order.orderid = local_id
+                        order.traded = data["result_volume"]
+                        if order.traded == order.volume:
+                            order.status = Status.ALLTRADED
+                        else:
+                            order.status = Status.PARTTRADED
+                        self.on_order(order)
+                        trade = TradeData(
+                            symbol=order.symbol,
+                            exchange=order.exchange,
+                            direction=order.direction,
+                            orderid=data["request_comment"],
+                            tradeid=data["result_deal"],
+                            price=data["result_price"],
+                            volume=data["result_volume"],
+                            datetime=LOCAL_TZ.localize(datetime.now()),
+                            gateway_name=self.gateway_name
+                        )
+                        self.on_trade(trade)
+
+                    elif data["result_retcode"] == TRADE_RETCODE_MARKET_CLOSED:
+                        order.status = Status.REJECTED
+                        self.write_log(f"委托{local_id}拒单，原因market_closed")
+                        self.on_order(order)
             return
 
         trans_type = data["trans_type"]
