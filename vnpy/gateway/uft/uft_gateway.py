@@ -575,13 +575,7 @@ class UftTdApi(TdApi):
                 )
                 self.positions[key] = position
 
-            # For SHFE and INE position data update
-            if position.exchange in [Exchange.SHFE, Exchange.INE]:
-                if data["YdPositionVolume"] and not data["TodayPositionVolume"]:
-                    position.yd_volume = data["PositionVolume"]
-            # For other exchange position data update
-            else:
-                position.yd_volume = data["PositionVolume"] - data["TodayPositionVolume"]
+            position.yd_volume = data["PositionVolume"] - data["TodayPositionVolume"]
 
             # Get contract size (spread contract has no size value)
             size = symbol_size_map.get(position.symbol, 0)
