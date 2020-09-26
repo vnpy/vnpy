@@ -740,7 +740,7 @@ class SpreadStrategyTemplate:
         Send email to default receiver.
         """
         if self.inited:
-            self.strategy_engine.send_email(msg, self)
+            self.strategy_engine.send_strategy_email(msg, self)
 
     def load_bar(
         self,
