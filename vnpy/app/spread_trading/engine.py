@@ -1021,7 +1021,7 @@ class SpreadStrategyEngine:
         msg = f"{strategy.strategy_name}：{msg}"
         self.write_log(msg)
 
-    def send_strategy_email(self, strategy: SpreadStrategyTemplate, msg: str):
+    def send_email(self, msg: str, strategy: SpreadStrategyTemplate = None):
         """"""
         if strategy:
             subject = f"{strategy.strategy_name}"
