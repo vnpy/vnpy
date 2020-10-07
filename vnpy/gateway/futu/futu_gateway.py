@@ -14,6 +14,7 @@ from futu import (
     TrdEnv,
     OpenHKTradeContext,
     OpenQuoteContext,
+    OpenHKCCTradeContext,
     OpenUSTradeContext,
     OrderBookHandlerBase,
     OrderStatus,
@@ -44,6 +45,8 @@ EXCHANGE_VT2FUTU = {
     Exchange.SMART: "US",
     Exchange.SEHK: "HK",
     Exchange.HKFE: "HK_FUTURE",
+    Exchange.SSE: "SH",
+    Exchange.SZSE: "SZ",
 }
 EXCHANGE_FUTU2VT = {v: k for k, v in EXCHANGE_VT2FUTU.items()}
 
@@ -84,7 +87,7 @@ class FutuGateway(BaseGateway):
         "密码": "",
         "地址": "127.0.0.1",
         "端口": 11111,
-        "市场": ["HK", "US"],
+        "市场": ["HK", "US","CN"],
         "环境": [TrdEnv.REAL, TrdEnv.SIMULATE],
     }
 
@@ -195,8 +198,10 @@ class FutuGateway(BaseGateway):
         # Initialize context according to market.
         if self.market == "US":
             self.trade_ctx = OpenUSTradeContext(self.host, self.port)
-        else:
+        elif self.market == "HK":
             self.trade_ctx = OpenHKTradeContext(self.host, self.port)
+        elif self.market == "CN":
+            self.trade_ctx = OpenHKCCTradeContext ( self.host , self.port )
 
         # Implement handlers.
         class OrderHandler(TradeOrderHandlerBase):
