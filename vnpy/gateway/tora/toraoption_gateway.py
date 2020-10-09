@@ -587,7 +587,8 @@ class ToraTdApi(sptraderapi.CTORATstpSPTraderSpi):
             + "-"
             + str(data["LastDate"])
         )
-        contract.option_type = OPTIONTYPE_TORA2VT[data["OptionsType"]]
+        contract.option_type = OPTIONTYPE_TORA2VT[bytes.decode(
+            data["OptionsType"])]
 
         contract.option_strike = data["StrikePrice"]
         contract.option_expiry = datetime.strptime(
