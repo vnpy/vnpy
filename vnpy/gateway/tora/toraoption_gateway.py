@@ -46,6 +46,8 @@ from vnpy.api.tora import (
     TORA_TSTP_SP_PD_Long,
     TORA_TSTP_SP_PD_Short,
     TORA_TSTP_SP_OST_Failed,
+    TORA_TSTP_SP_CP_PutOptions,
+    TORA_TSTP_SP_CP_CallOptions
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.event import EventEngine
@@ -68,7 +70,8 @@ from vnpy.trader.constant import (
     OrderType,
     Product,
     Status,
-    Offset
+    Offset,
+    OptionType
 )
 
 EXCHANGE_TORA2VT = {
@@ -135,6 +138,11 @@ ORDERTYPE_TORA2VT = {
     TORA_TSTP_SP_OPT_LimitPrice: OrderType.LIMIT
 }
 
+OPTIONTYPE_TORA2VT = {
+    TORA_TSTP_SP_CP_CallOptions: OptionType.CALL,
+    TORA_TSTP_SP_CP_PutOptions: OptionType.PUT
+}
+
 CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 
@@ -152,7 +160,7 @@ class ToraOptionGateway(BaseGateway):
 
     def __init__(self, event_engine: EventEngine):
         """"""
-        super().__init__(event_engine, "TORA")
+        super().__init__(event_engine, "TORAO")
 
         self.td_api = ToraTdApi(self)
         self.md_api = ToraMdApi(self)
@@ -559,20 +567,37 @@ class ToraTdApi(sptraderapi.CTORATstpSPTraderSpi):
         if not data:
             return
 
-        contract_data = ContractData(
+        contract = ContractData(
             gateway_name=self.gateway.gateway_name,
             symbol=data["SecurityID"],
             exchange=EXCHANGE_TORA2VT[bytes.decode(data["ExchangeID"])],
             name=data["SecurityName"],
             product=PRODUCT_TORA2VT[bytes.decode(data["ProductID"])],
-            size=data["VolumeMultiple"],  # to verify
+            size=data["VolumeMultiple"],
             pricetick=data["PriceTick"],
-            min_volume=data["MinLimitOrderBuyVolume"],  # verify: buy?sell
+            min_volume=data["MinLimitOrderBuyVolume"],
             stop_supported=False,
             net_position=True,
             history_data=False,
         )
-        self.gateway.on_contract(contract_data)
+
+        contract.option_portfolio = data["UnderlyingSecurityID"] + "_O"
+        contract.option_underlying = (
+            data["UnderlyingSecurityID"]
+            + "-"
+            + str(data["LastDate"])
+        )
+        contract.option_type = OPTIONTYPE_TORA2VT[data["OptionsType"]]
+
+        contract.option_strike = data["StrikePrice"]
+        contract.option_expiry = datetime.strptime(
+            str(data["LastDate"]), "%Y%m%d"
+        )
+        contract.option_index = get_option_index(
+            contract.option_strike, data["ExchSecurityID"]
+        )
+
+        self.gateway.on_contract(contract)
 
     def OnRspQryTradingAccount(
         self,
@@ -832,6 +857,25 @@ class ToraTdApi(sptraderapi.CTORATstpSPTraderSpi):
         self.localid += 1
         order_id = self.localid
         return order_id
+
+
+def get_option_index(strike_price: float, exchange_instrument_id: str) -> str:
+    """"""
+    exchange_instrument_id = exchange_instrument_id.replace(" ", "")
+
+    if "M" in exchange_instrument_id:
+        n = exchange_instrument_id.index("M")
+    elif "A" in exchange_instrument_id:
+        n = exchange_instrument_id.index("A")
+    elif "B" in exchange_instrument_id:
+        n = exchange_instrument_id.index("B")
+    else:
+        return str(strike_price)
+
+    index = exchange_instrument_id[n:]
+    option_index = f"{strike_price:.3f}-{index}"
+
+    return option_index
 
 
 @dataclass()
