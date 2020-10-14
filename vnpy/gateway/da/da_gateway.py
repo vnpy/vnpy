@@ -4,9 +4,13 @@
 from datetime import datetime
 from copy import copy
 from collections import defaultdict
+from typing import List
+from csv import DictReader
+from io import StringIO
 
 import wmi
 import pytz
+import requests
 
 from vnpy.api.da import (
     MarketApi,
@@ -33,6 +37,8 @@ from vnpy.trader.object import (
     ContractData,
     OrderRequest,
     CancelRequest,
+    HistoryRequest,
+    BarData,
     SubscribeRequest,
 )
 
@@ -159,6 +165,48 @@ class DaGateway(BaseGateway):
     def query_position(self):
         """"""
         pass
+
+    def query_history(self, req: HistoryRequest) -> List[BarData]:
+        """"""
+        print(req)
+        path = "http://222.73.120.40:8609/api/HistoryQuote"
+
+        params = {
+            "type": "M1",
+            "exchangeNo": EXCHANGE_VT2DA[req.exchange],
+            "symbol": req.symbol,
+            "startTime": req.start.strftime("%Y-%m-%d"),
+            "count": ""
+        }
+
+        if req.end:
+            params["endTime"] = req.end.strftime("%Y-%m-%d")
+
+        headers = {"Accept-Encoding": "gzip"}
+
+        r = requests.get(path, headers=headers, params=params)
+
+        bars = []
+        reader = DictReader(StringIO(r.json()))
+        for d in reader:
+            dt = datetime.strptime(d["时间"], "%Y-%m-%d %H:%M")
+            dt = CHINA_TZ.localize(dt)
+
+            bar = BarData(
+                symbol=req.symbol,
+                exchange=req.exchange,
+                interval=req.interval,
+                datetime=dt,
+                open_price=float(d["开盘价"]),
+                high_price=float(d["最高价"]),
+                low_price=float(d["最低价"]),
+                close_price=float(d["收盘价"]),
+                volume=int(d["成交量"]),
+                gateway_name=self.gateway_name
+            )
+            bars.append(bar)
+
+        return bars
 
     def close(self):
         """"""
@@ -455,6 +503,7 @@ class DaFutureApi(FutureApi):
                 product=product,
                 size=data["ProductDot"] / data["UpperTick"],
                 pricetick=data["UpperTick"],
+                history_data=True,
                 gateway_name=self.gateway_name
             )
 
