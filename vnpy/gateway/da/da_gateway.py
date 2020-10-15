@@ -78,11 +78,12 @@ OFFSET_VT2DA = {
 OFFSET_DA2VT = {v: k for k, v in OFFSET_VT2DA.items()}
 
 EXCHANGE_DA2VT = {
-    "APEX": Exchange.APEX,
     "CME": Exchange.CME,
     "CME_CBT": Exchange.CBOT,
+    "LME": Exchange.LME,
     "SGXQ": Exchange.SGX,
     "HKEX": Exchange.HKFE,
+    "APEX": Exchange.APEX,
     "CFFEX": Exchange.CFFEX,
     "SHFE": Exchange.SHFE,
     "DCE": Exchange.DCE,
