@@ -161,7 +161,7 @@ class ToraOptionGateway(BaseGateway):
 
     def __init__(self, event_engine: EventEngine):
         """"""
-        super().__init__(event_engine, "TORAO")
+        super().__init__(event_engine, "TORAOPTION")
 
         self.td_api = ToraTdApi(self)
         self.md_api = ToraMdApi(self)

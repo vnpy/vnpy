@@ -48,7 +48,6 @@ from .stock_api import (
     TORA_TSTP_PID_SZFund,
     TORA_TSTP_PID_SZStock,
     TORA_TSTP_TC_GFD,
-    TORA_TSTP_TC_IOC,
     TORA_TSTP_VC_AV,
     TORA_TSTP_AF_Delete,
     TORA_TSTP_HF_Speculation,
@@ -61,8 +60,6 @@ from .stock_api import (
     CTORATstpQryPositionField,
     CTORATstpQryOrderField,
     CTORATstpQryTradeField,
-    TORA_TSTP_PID_SHStock,
-    TORA_TSTP_PID_SZStock,
     CTORATstpInputOrderField,
     CTORATstpInputOrderActionField,
     TORA_TSTP_PID_SHKC,
@@ -141,7 +138,7 @@ class ToraStockGateway(BaseGateway):
 
     def __init__(self, event_engine: EventEngine):
         """"""
-        super().__init__(event_engine, "TORAS")
+        super().__init__(event_engine, "TORASTOCK")
 
         self.td_api = ToraTdApi(self)
         self.md_api = ToraMdApi(self)
