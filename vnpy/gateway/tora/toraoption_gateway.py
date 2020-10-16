@@ -711,7 +711,7 @@ class ToraTdApi(sptraderapi.CTORATstpSPTraderSpi):
             f"错误码:{error['ErrorID']}, 错误消息:{error['ErrorMsg']}"
         )
 
-    def OnErrRtnOrderAction(self, data: dict, error: dict) -> None:
+    def OnErrRtnOrderAction(self, data: dict, error: dict, reqid: int) -> None:
         """"""
         pass
 
