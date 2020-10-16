@@ -3,7 +3,32 @@ import pytz
 from datetime import datetime
 from dataclasses import dataclass
 
-from vnpy.api.tora import (
+from vnpy.trader.gateway import BaseGateway
+from vnpy.event import EventEngine
+from vnpy.trader.event import EVENT_TIMER
+from vnpy.trader.object import (
+    TickData,
+    OrderData,
+    TradeData,
+    PositionData,
+    AccountData,
+    ContractData,
+    OrderRequest,
+    CancelRequest,
+    SubscribeRequest,
+)
+
+from vnpy.trader.constant import (
+    Direction,
+    Exchange,
+    OrderType,
+    Product,
+    Status,
+    Offset,
+    OptionType
+)
+
+from .option_api import (
     sptraderapi,
     spmdapi,
     TORA_TSTP_SP_D_Buy,
@@ -48,30 +73,6 @@ from vnpy.api.tora import (
     TORA_TSTP_SP_OST_Failed,
     TORA_TSTP_SP_CP_PutOptions,
     TORA_TSTP_SP_CP_CallOptions
-)
-from vnpy.trader.gateway import BaseGateway
-from vnpy.event import EventEngine
-from vnpy.trader.event import EVENT_TIMER
-from vnpy.trader.object import (
-    TickData,
-    OrderData,
-    TradeData,
-    PositionData,
-    AccountData,
-    ContractData,
-    OrderRequest,
-    CancelRequest,
-    SubscribeRequest,
-)
-
-from vnpy.trader.constant import (
-    Direction,
-    Exchange,
-    OrderType,
-    Product,
-    Status,
-    Offset,
-    OptionType
 )
 
 EXCHANGE_TORA2VT = {

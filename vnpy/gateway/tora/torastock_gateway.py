@@ -3,7 +3,31 @@ import pytz
 from datetime import datetime
 from dataclasses import dataclass
 
-from vnpy.api.tora import (
+from vnpy.trader.gateway import BaseGateway
+from vnpy.event import EventEngine
+from vnpy.trader.event import EVENT_TIMER
+from vnpy.trader.object import (
+    TickData,
+    OrderData,
+    TradeData,
+    PositionData,
+    AccountData,
+    ContractData,
+    OrderRequest,
+    CancelRequest,
+    SubscribeRequest,
+)
+
+from vnpy.trader.constant import (
+    Direction,
+    Exchange,
+    OrderType,
+    Product,
+    Status,
+    Offset
+)
+
+from .stock_api import (
     traderapi,
     mdapi,
     TORA_TSTP_D_Buy,
@@ -48,29 +72,6 @@ from vnpy.api.tora import (
     # TORA_TSTP_PD_Long,
     # TORA_TSTP_PD_Short,
     # TORA_TSTP_OST_Failed,
-)
-from vnpy.trader.gateway import BaseGateway
-from vnpy.event import EventEngine
-from vnpy.trader.event import EVENT_TIMER
-from vnpy.trader.object import (
-    TickData,
-    OrderData,
-    TradeData,
-    PositionData,
-    AccountData,
-    ContractData,
-    OrderRequest,
-    CancelRequest,
-    SubscribeRequest,
-)
-
-from vnpy.trader.constant import (
-    Direction,
-    Exchange,
-    OrderType,
-    Product,
-    Status,
-    Offset
 )
 
 EXCHANGE_TORA2VT = {
@@ -126,7 +127,7 @@ ORDERTYPE_TORA2VT = {
 CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 
-class ToraSpotGateway(BaseGateway):
+class ToraStockGateway(BaseGateway):
     """"""
 
     default_setting = {
@@ -219,7 +220,7 @@ class ToraMdApi(mdapi.CTORATstpMdSpi):
         """Constructor"""
         super(ToraMdApi, self).__init__()
 
-        self.gateway: ToraSpotGateway = gateway
+        self.gateway: ToraStockGateway = gateway
         self.gateway_name: str = gateway.gateway_name
 
         self.reqid: int = 0
@@ -403,7 +404,7 @@ class ToraTdApi(traderapi.CTORATstpTraderSpi):
         """Constructor"""
         super(ToraTdApi, self).__init__()
 
-        self.gateway: ToraSpotGateway = gateway
+        self.gateway: ToraStockGateway = gateway
         self.gateway_name: str = gateway.gateway_name
 
         self.reqid: int = 0

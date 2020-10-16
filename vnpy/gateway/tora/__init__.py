@@ -1,2 +1,2 @@
 from .toraoption_gateway import ToraOptionGateway
-from .toraspot_gateway import ToraSpotGateway
+from .torastock_gateway import ToraStockGateway
