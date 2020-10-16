@@ -284,16 +284,10 @@ class HuobioRestApi(RestClient):
 
     def query_order(self) -> Request:
         """"""
-        # for contract_code in self.contract_codes:
-            # Open Orders
-            #data = {"contract_code": contract_code}
-
         self.add_request(
             method="POST",
             path="/option-api/v1/option_openorders",
             callback=self.on_query_order,
-            # data=data,
-            # extra=contract_code
         )
 
     def query_contract(self) -> Request:
@@ -354,7 +348,6 @@ class HuobioRestApi(RestClient):
                     break
 
                 buf = []
-                print("download data:", data)
                 for d in data["data"]:
                     dt = generate_datetime(d["id"])
 
@@ -499,9 +492,6 @@ class HuobioRestApi(RestClient):
 
     def on_query_account(self, data: dict, request: Request) -> None:
         """"""
-        #if self.check_error(data, "查询账户"):
-        return
-
         for d in data["data"]:
             account = AccountData(
                 accountid=d["symbol"],
@@ -514,7 +504,6 @@ class HuobioRestApi(RestClient):
 
     def on_query_position(self, data: dict, request: Request) -> None:
         """"""
-        # print("### on query position", data, request)
         if self.check_error(data, "查询持仓"):
             return
 
@@ -548,7 +537,6 @@ class HuobioRestApi(RestClient):
 
     def on_query_order(self, data: dict, request: Request) -> None:
         """"""
-        # print("### on_query_order", data, request)
         if self.check_error(data, "查询活动委托"):
             return
 
@@ -607,7 +595,6 @@ class HuobioRestApi(RestClient):
     def on_send_order(self, data: dict, request: Request) -> None:
         """"""
         order = request.extra
-        print("on order send:", data)
 
         if self.check_error(data, "委托"):
             order.status = Status.REJECTED
@@ -794,7 +781,6 @@ class HuobioWebsocketApiBase(WebsocketClient):
                 self.secret
             )
         )
-        print("2-Req TD LOGIN")
         return self.send_packet(params)
 
     def on_login(self, packet) -> None:
@@ -808,7 +794,6 @@ class HuobioWebsocketApiBase(WebsocketClient):
 
     def on_packet(self, packet) -> None:
         """"""
-        print("@@@@@", packet)
         if "ping" in packet:
             req = {"pong": packet["ping"]}
             self.send_packet(req)
@@ -821,7 +806,6 @@ class HuobioWebsocketApiBase(WebsocketClient):
         elif "err-msg" in packet:
             return self.on_error_msg(packet)
         elif "op" in packet and packet["op"] == "auth":
-            
             return self.on_login()
         else:
             self.on_data(packet)
@@ -860,7 +844,6 @@ class HuobioTradeWebsocketApi(HuobioWebsocketApiBase):
             proxy_host,
             proxy_port
         )
-
 
     def subscribe(self) -> int:
         """"""
@@ -964,7 +947,6 @@ class HuobioDataWebsocketApi(HuobioWebsocketApiBase):
             proxy_host,
             proxy_port
         )
-        print("Req MD connect")
 
     def on_connected(self) -> None:
         """"""
@@ -989,7 +971,6 @@ class HuobioDataWebsocketApi(HuobioWebsocketApiBase):
             gateway_name=self.gateway_name,
         )
         self.ticks[req.symbol] = tick
-        print("subscribe=", req.symbol)
 
         self.subscribe_data(req.symbol)
 

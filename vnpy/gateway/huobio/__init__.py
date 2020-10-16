@@ -1,1 +1,1 @@
-from .huobif_gateway import HuobifGateway
+from .huobio_gateway import HuobioGateway
