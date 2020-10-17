@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Callable
 from copy import copy
 import pytz
-from simplejson.errors import JSONDecodeError
 
 from requests import ConnectionError
 
@@ -37,7 +36,6 @@ from vnpy.trader.object import (
 from vnpy.trader.event import EVENT_TIMER
 from vnpy.trader.gateway import BaseGateway
 
-
 STATUS_BYBIT2VT: Dict[str, Status] = {
     "Created": Status.NOTTRADED,
     "New": Status.NOTTRADED,
@@ -45,6 +43,10 @@ STATUS_BYBIT2VT: Dict[str, Status] = {
     "Filled": Status.ALLTRADED,
     "Cancelled": Status.CANCELLED,
     "Rejected": Status.REJECTED,
+    "Active": Status.ALLTRADED,
+    "Untriggered": Status.NOTTRADED,
+    "Triggered":  Status.PARTTRADED,
+    "Deactivated": Status.CANCELLED,
 }
 
 DIRECTION_VT2BYBIT: Dict[Direction, str] = {Direction.LONG: "Buy", Direction.SHORT: "Sell"}
@@ -58,6 +60,7 @@ OPPOSITE_DIRECTION: Dict[Direction, Direction] = {
 ORDER_TYPE_VT2BYBIT: Dict[OrderType, str] = {
     OrderType.LIMIT: "Limit",
     OrderType.MARKET: "Market",
+    OrderType.STOP: "Stop"
 }
 ORDER_TYPE_BYBIT2VT: Dict[str, OrderType] = {v: k for k, v in ORDER_TYPE_VT2BYBIT.items()}
 
@@ -139,6 +142,7 @@ class BybitGateway(BaseGateway):
         self.private_ws_api.connect(usdt_base, key, secret, server, proxy_host, proxy_port)
         self.public_ws_api.connect(usdt_base, server, proxy_host, proxy_port)
 
+        self.timer_count = 0
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
     def subscribe(self, req: SubscribeRequest) -> None:
@@ -159,7 +163,6 @@ class BybitGateway(BaseGateway):
 
     def query_position(self) -> None:
         """"""
-        return
         self.rest_api.query_position()
 
     def query_history(self, req: HistoryRequest) -> List[BarData]:
@@ -174,7 +177,11 @@ class BybitGateway(BaseGateway):
 
     def process_timer_event(self, event):
         """"""
+        self.timer_count += 1
+        if self.timer_count < 3:
+            return
         self.query_position()
+        self.timer_count = 0
 
 
 class BybitRestApi(RestClient):
@@ -195,6 +202,7 @@ class BybitRestApi(RestClient):
 
         self.order_count: int = 0
         self.contract_codes: set = set()
+        self.orders: dict = {}       
 
     def sign(self, request: Request) -> Request:
         """
@@ -261,26 +269,45 @@ class BybitRestApi(RestClient):
 
     def send_order(self, req: OrderRequest) -> str:
         """"""
+        order_data: dict = {}
         orderid = self.new_orderid()
         order = req.create_order_data(orderid, self.gateway_name)
 
-        data = {
-            "symbol": req.symbol,
-            "side": DIRECTION_VT2BYBIT[req.direction],
-            "qty": int(req.volume),
-            "order_link_id": orderid,
-            "time_in_force": "GoodTillCancel",
-            "reduce_only": False,
-            "close_on_trigger": False
-        }
+        if req.type == OrderType.STOP:
+            data = {
+                "side": DIRECTION_VT2BYBIT[req.direction],
+                "symbol": req.symbol,
+                "order_type": "Market",
+                "qty": int(req.volume),
+                "base_price": self.gateway.symbols_last_price[req.symbol],
+                "stop_px": req.price,
+                "time_in_force": "GoodTillCancel",
+                "close_on_trigger": False,
+                "order_link_id": orderid,
+            }
 
-        data["order_type"] = ORDER_TYPE_VT2BYBIT[req.type]
-        data["price"] = req.price
-
-        if self.usdt_base:
-            path = "/private/linear/order/create"
+            if self.usdt_base:
+                path = "/private/linear/stop-order/create"
+            else:
+                path = "/open-api/stop-order/create"
         else:
-            path = "/v2/private/order/create"
+            data = {
+                "symbol": req.symbol,
+                "side": DIRECTION_VT2BYBIT[req.direction],
+                "qty": int(req.volume),
+                "order_link_id": orderid,
+                "time_in_force": "GoodTillCancel",
+                "reduce_only": False,
+                "close_on_trigger": False
+            }
+
+            data["order_type"] = ORDER_TYPE_VT2BYBIT[req.type]
+            data["price"] = req.price
+
+            if self.usdt_base:
+                path = "/private/linear/order/create"
+            else:
+                path = "/v2/private/order/create"
 
         self.add_request(
             "POST",
@@ -291,7 +318,9 @@ class BybitRestApi(RestClient):
             on_failed=self.on_send_order_failed,
             on_error=self.on_send_order_error,
         )
-
+        data["req_order_type"] = req.type
+        order_data[orderid] = data
+        self.orders.update(order_data)
         self.gateway.on_order(order)
         return order.vt_orderid
 
@@ -345,12 +374,17 @@ class BybitRestApi(RestClient):
             "symbol": req.symbol,
             "order_link_id": req.orderid
         }
-
-        if self.usdt_base:
-            path = "/private/linear/order/cancel"
+        order = self.orders[req.orderid]
+        if order["req_order_type"] == OrderType.STOP:
+            if self.usdt_base:
+                path = "/private/linear/stop-order/cancel"
+            else:
+                path = "/open-api/stop-order/cancel"
         else:
-            path = "/v2/private/order/cancel"
-
+            if self.usdt_base:
+                path = "/private/linear/order/cancel"
+            else:
+                path = "/v2/private/order/cancel"
         self.add_request(
             "POST",
             path,
@@ -381,14 +415,12 @@ class BybitRestApi(RestClient):
         """
         Callback to handle request failed.
         """
-        try:
-            data = request.response.json()
-            error_msg = data["ret_msg"]
-            error_code = data["ret_code"]
-            msg = f"请求失败，状态码：{request.status}，错误代码：{error_code}, 信息：{error_msg}"
-        except JSONDecodeError:
-            text = request.response.text
-            msg = f"请求失败，信息：{text}"
+        data = request.response.json()
+
+        error_msg = data["ret_msg"]
+        error_code = data["ret_code"]
+
+        msg = f"请求失败，状态码：{request.status}，错误代码：{error_code}, 信息：{error_msg}"
 
         self.gateway.write_log(msg)
 
@@ -457,6 +489,7 @@ class BybitRestApi(RestClient):
                 min_volume=d["lot_size_filter"]["min_trading_qty"],
                 net_position=True,
                 history_data=True,
+                stop_supported=True,
                 gateway_name=self.gateway_name
             )
 
@@ -509,29 +542,28 @@ class BybitRestApi(RestClient):
                 dt = generate_datetime(d["created_time"])
             else:
                 dt = generate_datetime(d["created_at"])
-
             order = OrderData(
                 symbol=d["symbol"],
                 exchange=Exchange.BYBIT,
                 orderid=orderid,
                 type=ORDER_TYPE_BYBIT2VT[d["order_type"]],
                 direction=DIRECTION_BYBIT2VT[d["side"]],
-                price=d["price"],
-                volume=d["qty"],
                 traded=d["cum_exec_qty"],
                 status=STATUS_BYBIT2VT[d["order_status"]],
+                price=d["price"],
+                volume=d["qty"],
                 datetime=dt,
                 gateway_name=self.gateway_name
             )
             self.gateway.on_order(order)
 
-        if (
-            "last_page" in result
-            and result["current_page"] != result["last_page"]
-        ):
-            self.query_order(result["current_page"] + 1)
-        else:
-            self.gateway.write_log(f"{symbol}委托信息查询成功")
+        # if (
+        #     "last_page" in result
+        #     and result["current_page"] != result["last_page"]
+        # ):
+        #     self.query_order(result["current_page"] + 1)
+        # else:
+        self.gateway.write_log(f"{symbol}委托信息查询成功")
 
     def query_contract(self) -> Request:
         """"""
@@ -591,11 +623,11 @@ class BybitRestApi(RestClient):
             symbols = symbols_inverse
 
         for symbol in symbols:
+
             params = {
                 "symbol": symbol,
                 "limit": 50,
                 "page": page,
-                "order_status": "New,PartiallyFilled"
             }
 
             self.add_request(
@@ -610,8 +642,7 @@ class BybitRestApi(RestClient):
         history = []
         count = 200
         start_time = int(req.start.timestamp())
-        print(req)
-        print(start_time)
+
         if self.usdt_base:
             path = "/public/linear/kline"
         else:
@@ -707,6 +738,7 @@ class BybitPublicWebsocketApi(WebsocketClient):
 
         self.symbol_bids: Dict[str, dict] = {}
         self.symbol_asks: Dict[str, dict] = {}
+        self.symbols_last_price: Dict[str, dict] = {}
 
     def connect(
         self,
@@ -810,6 +842,7 @@ class BybitPublicWebsocketApi(WebsocketClient):
         topic = packet["topic"]
         type_ = packet["type"]
         data = packet["data"]
+        symbol_last_price: Dict[str, dict] = {}
 
         symbol = topic.replace("instrument_info.100ms.", "")
         tick = self.ticks[symbol]
@@ -817,8 +850,9 @@ class BybitPublicWebsocketApi(WebsocketClient):
         if type_ == "snapshot":
             if not data["last_price_e4"]:           # Filter last price with 0 value
                 return
-
             tick.last_price = int(data["last_price_e4"]) / 10000
+            symbol_last_price[data["symbol"]] = int(data["last_price_e4"]) / 10000
+            self.symbols_last_price.update(symbol_last_price)
 
             if self.usdt_base:
                 tick.volume = int(data["volume_24h_e8"]) / 100000000
@@ -833,7 +867,8 @@ class BybitPublicWebsocketApi(WebsocketClient):
                 if not update["last_price_e4"]:     # Filter last price with 0 value
                     return
                 tick.last_price = int(update["last_price_e4"]) / 10000
-
+                symbol_last_price[update["symbol"]] = int(update["last_price_e4"]) / 10000
+                self.symbols_last_price.update(symbol_last_price)
             if "volume_24h_e8" in update:
                 tick.volume = int(update["volume_24h_e8"]) / 100000000
             elif "volume_24h" in update:
@@ -842,6 +877,7 @@ class BybitPublicWebsocketApi(WebsocketClient):
             tick.datetime = generate_datetime(update["updated_at"])
 
         self.gateway.on_tick(copy(tick))
+        self.gateway.symbols_last_price = self.symbols_last_price
 
     def on_depth(self, packet: dict) -> None:
         """"""
@@ -1030,6 +1066,7 @@ class BybitPrivateWebsocketApi(WebsocketClient):
             self.gateway.write_log("交易Websocket API登录成功")
 
             self.subscribe_topic("order", self.on_order)
+            self.subscribe_topic("stop_order", self.on_stop_order)
             self.subscribe_topic("execution", self.on_trade)
             self.subscribe_topic("position", self.on_position)
 
@@ -1074,10 +1111,9 @@ class BybitPrivateWebsocketApi(WebsocketClient):
         """"""
         for d in packet["data"]:
             if self.usdt_base:
-                dt = generate_datetime(d["timestamp"])
-            else:
                 dt = generate_datetime(d["create_time"])
-
+            else:
+                dt = generate_datetime(d["timestamp"])
             order = OrderData(
                 symbol=d["symbol"],
                 exchange=Exchange.BYBIT,
@@ -1093,6 +1129,27 @@ class BybitPrivateWebsocketApi(WebsocketClient):
             )
 
             self.gateway.on_order(order)
+    
+    def on_stop_order(self, packet: dict) -> None:
+        for d in packet["data"]:
+            if self.usdt_base:
+                dt = generate_datetime(d["create_time"])
+            else:
+                dt = generate_datetime(d["timestamp"])
+            order = OrderData(
+                symbol=d["symbol"],
+                exchange=Exchange.BYBIT,
+                orderid=d["order_link_id"],
+                type=ORDER_TYPE_BYBIT2VT[d["stop_order_type"]],
+                direction=DIRECTION_BYBIT2VT[d["side"]],
+                price=float(d["trigger_price"]),
+                volume=d["qty"],
+                status=STATUS_BYBIT2VT[d["order_status"]],
+                datetime=dt,
+                gateway_name=self.gateway_name
+            )
+
+            self.gateway.on_order(order)        
 
     def on_position(self, packet: dict) -> None:
         """"""
@@ -1135,7 +1192,6 @@ def generate_datetime(timestamp: str) -> datetime:
         if len(part2) > 7:
             part2 = part2[:6] + "Z"
             timestamp = ".".join([part1, part2])
-
         dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
     else:
         dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
