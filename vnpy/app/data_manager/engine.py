@@ -219,3 +219,30 @@ class ManagerEngine(BaseEngine):
             return(len(data))
 
         return 0
+
+    def download_tick_data(
+        self,
+        symbol: str,
+        exchange: Exchange,
+        start: datetime
+    ) -> int:
+        """
+        Query tick data from RQData.
+        """
+        req = HistoryRequest(
+            symbol=symbol,
+            exchange=exchange,
+            start=start,
+            end=datetime.now()
+        )
+
+        if not rqdata_client.inited:
+            rqdata_client.init()
+
+        data = rqdata_client.query_history(req)
+
+        if data:
+            database_manager.save_tick_data(data)
+            return(len(data))
+
+        return 0
