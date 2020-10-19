@@ -305,6 +305,7 @@ class BacktestingEngine:
                 self.output(traceback.format_exc())
                 return
 
+        self.strategy.on_stop()
         self.output("历史数据回放结束")
 
     def calculate_result(self):
