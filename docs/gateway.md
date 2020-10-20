@@ -71,28 +71,48 @@ def main():
 
 ## 接口分类
 
-| 接口     |                    类型                    |
-| -------- | :----------------------------------------: |
-| CTP      |                    期货                    |
-| MINI     |                    期货                    |
-| FEMAS    |                    期货                    |
-| XTP      | 国内股票、指数、基金、债券、期权、融资融券 |
-| OES      |                  国内股票                  |
-| TORA     |                  国内股票                  |
-| IB       |            外盘股票、期货、期权            |
-| TAP      |               外盘期货、期权               |
-| FUTU     |            国内股票、港股、美股            |
-| TIGER    |            国内股票、港股、美股            |
-| ALPACA   |                    美股                    |
-| BITFINEX |                  数字货币                  |
-| BITMEX   |                  数字货币                  |
-| BINANCE  |                  数字货币                  |
-| OKEX     |                  数字货币                  |
-| OKEXF    |                  数字货币                  |
-| HUOBI    |                  数字货币                  |
-| HUOBIF   |                  数字货币                  |
-| ONETOKEN |                  数字货币                  |
-| RPC      |                  RPC服务                   |
+| 接口          |                    类型                         |
+| ------------  | :--------------------------------------------: |
+| CTP           |           期货、期货期权（实盘6.3.15）            |
+| CTP测试       |           期货、期货期权（测试6.3.16）            |
+| CTP Mini      |            期货、期货期权（实盘1.4）             |
+| CTP Mini测试  |            期货、期货期权（测试1.2）              |
+| 飞马          |                    期货                         |
+| CTP期权       |             ETF期权（实盘20190802）              |
+| CTP期权测试    |            ETF期权（实盘20190604）              |
+| 飞创期权       |            ETF期权（实盘20200427）              |
+| 恒生UFT       |                期货、ETF期权                     |
+| 恒生期权       |                  ETF期权                        |
+| 中泰XTP       |              A股、两融、ETF期权                  |
+| 华鑫奇点       |                    A股                          |
+| 宽睿          |                A股、ETF期权                      |
+| 中亿汇达Comstar|                银行间市场                       |
+| 富途证券       |                 港股、美股                      |
+| 盈透证券       |                 海外全品种                      |
+| 老虎证券       |                  外盘期货                       |
+| 易盛9.0外盘    |                  外盘期货                       |
+| 直达期货       |                  国内股票                       |
+| MetaTrader 5  |            外汇、CFD、股票、期货                 |
+| 币安           |                  数字货币                       |
+| 币安永续合约   |             数字货币永续和期货                   |
+| 火币          |                   数字货币                      |
+| 火币期货       |                数字货币期货                     |
+| 火币永续       |                数字货币永续                     |
+| OKEX           |                  数字货币                      |
+| OKEX期货       |                数字货币期货                     |
+| OKEX永续       |                数字货币永续                     |
+| OKEX期权       |                数字货币期权                     |
+| BitMEX        |              数字货币期货、永续                  |
+| Bybit         |                 数字货币永续                     |
+| Gate.io合约    |                数字货币永续                      |
+| Deribit        |             数字货币永续、期权                   |
+| Bitfinex       |                  数字货币                       |
+| Coinbase       |                  数字货币                       |
+| Bitstamp       |                  数字货币                       |
+| 1Token         |                   数字货币                      |
+| 融航           |                  期货资管                       |
+| 鑫管家         |                  期货资管                        |
+| RPC服务        |                核心交易路由                      |
 
 
 
@@ -284,7 +304,7 @@ main_engine.add_gateway(OesGateway)
 先从gateway上调用ToraGateway类；然后通过add_gateway()函数添加到main_engine上。
 ```
 from vnpy.gateway.tota import ToraGateway
-main_engine.add_gateway(OesGateway)
+main_engine.add_gateway(ToraGateway)
 ```
 
 &nbsp;
