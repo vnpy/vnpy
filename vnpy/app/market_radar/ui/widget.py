@@ -72,18 +72,20 @@ class RadarManager(QtWidgets.QWidget):
         form.addRow(add_button)
         form.addRow(edit_button)
 
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(self.log_monitor)
+        vbox.addWidget(load_button)
+
         hbox = QtWidgets.QHBoxLayout()
         hbox.addLayout(form)
         hbox.addStretch()
-        hbox.addWidget(load_button)
-        hbox.addStretch()
-        hbox.addWidget(self.log_monitor)
+        hbox.addLayout(vbox)
 
-        vbox = QtWidgets.QVBoxLayout()
-        vbox.addWidget(self.radar_monitor)
-        vbox.addLayout(hbox)
+        vbox2 = QtWidgets.QVBoxLayout()
+        vbox2.addWidget(self.radar_monitor)
+        vbox2.addLayout(hbox)
 
-        self.setLayout(vbox)
+        self.setLayout(vbox2)
 
     def register_event(self) -> None:
         """"""
