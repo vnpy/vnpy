@@ -17,9 +17,8 @@ from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT
 LOCAL_TZ = get_localzone()
 APP_NAME = "MarketRadar"
 
-EVENT_RADAR_ADD = "eRadarAdd"
+EVENT_RADAR_RULE = "eRadarRule"
 EVENT_RADAR_UPDATE = "eRadarUpdate"
-EVENT_RADAR_REMOVE = "eRadarRemove"
 EVENT_RADAR_LOG = "eRaderLog"
 
 
@@ -92,6 +91,24 @@ class RadarEngine(BaseEngine):
 
             self.symbol_rule_map[vt_symbol].add(rule)
 
+        rule_data = {
+            "name": name,
+            "formula": formula,
+            "params": params
+        }
+        self.put_event(EVENT_RADAR_RULE, rule_data)
+
+        return True
+
+    def remove_rule(self, name: str) -> bool:
+        """"""
+        if name not in self.rules:
+            return False
+
+        rule = self.rules.pop(name)
+        for vt_symbol in rule.params.values():
+            self.symbol_rule_map[vt_symbol].remove(rule)
+
         return True
 
     def load_setting(self) -> None:
@@ -127,8 +144,8 @@ class RadarEngine(BaseEngine):
             else:
                 data[name] = tick.last_price
 
-        result = parse_formula(rule.formula, data)
-        if result is None:
+        value = parse_formula(rule.formula, data)
+        if value is None:
             return
 
         dt = datetime.now()
@@ -136,8 +153,8 @@ class RadarEngine(BaseEngine):
 
         radar_data = {
             "name": rule.name,
-            "result": result,
-            "datetime": dt
+            "value": value,
+            "time": dt
         }
         self.put_event(EVENT_RADAR_UPDATE, radar_data)
 
