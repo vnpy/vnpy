@@ -5,7 +5,7 @@ from vnpy.trader.app import BaseApp
 from .engine import RadarEngine, APP_NAME
 
 
-class PaperAccountApp(BaseApp):
+class MarketRadarApp(BaseApp):
     """"""
     app_name = APP_NAME
     app_module = __module__

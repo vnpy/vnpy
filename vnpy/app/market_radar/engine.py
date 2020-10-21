@@ -22,11 +22,14 @@ EVENT_RADAR_UPDATE = "eRadarUpdate"
 EVENT_RADAR_LOG = "eRaderLog"
 
 
-@dataclass
 class RadarRule:
-    name: str
-    formula: str
-    params: Dict[str, str]
+    """"""
+
+    def __init__(self, name: str, formula: str, params: Dict[str, str]):
+        """"""
+        self.name: str = name
+        self.formula: str = formula
+        self.params: Dict[str, str] = params
 
 
 class RadarEngine(BaseEngine):
@@ -40,9 +43,17 @@ class RadarEngine(BaseEngine):
 
         self.rules: Dict[str, RadarRule] = {}
         self.symbol_rule_map: Dict[str, Set[RadarRule]] = defaultdict(set)
+        self.inited = False
 
-        self.load_setting()
         self.register_event()
+
+    def init(self):
+        """"""
+        if not self.inited:
+            self.inited = True
+            self.load_setting()
+
+            self.write_log("初始化成功")
 
     def register_event(self):
         """"""
@@ -64,7 +75,7 @@ class RadarEngine(BaseEngine):
         contract = event.data
         vt_symbol = contract.vt_symbol
 
-        if vt_symbol not in self.symbol_rule_map:
+        if vt_symbol in self.symbol_rule_map:
             self.subscribe(vt_symbol)
 
     def subscribe(self, vt_symbol: str) -> None:
@@ -77,9 +88,11 @@ class RadarEngine(BaseEngine):
     def add_rule(self, name: str, formula: str, params: Dict[str, str]) -> bool:
         """"""
         if name in self.rules:
+            self.write_log(f"添加失败，已存在同名{name}")
             return False
 
         if not self.check_rule(formula, params):
+            self.write_log(f"添加失败，公式无法运算{formula}")
             return False
 
         rule = RadarRule(name, formula, params)
@@ -98,6 +111,48 @@ class RadarEngine(BaseEngine):
         }
         self.put_event(EVENT_RADAR_RULE, rule_data)
 
+        self.calculate_rule(rule)
+
+        self.write_log(f"添加成功{name}")
+        return True
+
+    def edit_rule(self, name: str, formula: str, params: Dict[str, str]) -> bool:
+        """"""
+        # Check valid
+        if name not in self.rules:
+            self.write_log(f"修改失败，找不到该名称{name}")
+            return False
+
+        if not self.check_rule(formula, params):
+            self.write_log(f"修改失败，公式无法运算{formula}")
+            return False
+
+        # Remove old symbol map
+        rule: RadarRule = self.rules[name]
+        for vt_symbol in rule.params.values():
+            self.symbol_rule_map[vt_symbol].remove(rule)
+
+        # Add new symbol map
+        rule.formula = formula
+        rule.params = params
+
+        for vt_symbol in params.values():
+            if vt_symbol not in self.symbol_rule_map:
+                self.subscribe(vt_symbol)
+
+            self.symbol_rule_map[vt_symbol].add(rule)
+
+        # Push event
+        rule_data = {
+            "name": name,
+            "formula": formula,
+            "params": params
+        }
+        self.put_event(EVENT_RADAR_RULE, rule_data)
+
+        self.calculate_rule(rule)
+
+        self.write_log(f"修改成功{name}")
         return True
 
     def remove_rule(self, name: str) -> bool:

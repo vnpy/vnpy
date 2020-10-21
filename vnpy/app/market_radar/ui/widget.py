@@ -1,22 +1,18 @@
-from typing import Dict
 from functools import partial
+from typing import Dict
 
-from vnpy.event import EventEngine, Event
+from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import MainEngine
-from vnpy.trader.ui import QtWidgets, QtCore
+from vnpy.trader.ui import QtCore, QtWidgets
 
-
-from ..engine import (
-    RadarEngine,
-    APP_NAME,
-    EVENT_RADAR_RULE,
-    EVENT_RADAR_UPDATE,
-    EVENT_RADAR_LOG
-)
+from ..engine import (APP_NAME, EVENT_RADAR_LOG, EVENT_RADAR_RULE,
+                      EVENT_RADAR_UPDATE, RadarEngine)
 
 
 class RadarManager(QtWidgets.QWidget):
     """"""
+
+    signal_log = QtCore.pyqtSignal(Event)
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
@@ -28,16 +24,108 @@ class RadarManager(QtWidgets.QWidget):
         self.radar_engine: RadarEngine = main_engine.get_engine(APP_NAME)
 
         self.init_ui()
+        self.register_event()
 
-    def init_ui(self):
+        self.radar_engine.init()
+
+    def init_ui(self) -> None:
         """"""
         self.setWindowTitle("市场雷达")
 
-        self.monitor = RadarMonitor(self.radar_engine)
+        self.radar_monitor = RadarMonitor(self.radar_engine)
+
+        self.log_monitor = QtWidgets.QTextEdit()
+        self.log_monitor.setReadOnly(True)
+        self.log_monitor.setMaximumHeight(300)
+
+        self.name_line = QtWidgets.QLineEdit()
+        self.formula_line = QtWidgets.QLineEdit()
+        self.a_line = QtWidgets.QLineEdit()
+        self.b_line = QtWidgets.QLineEdit()
+        self.c_line = QtWidgets.QLineEdit()
+        self.d_line = QtWidgets.QLineEdit()
+        self.e_line = QtWidgets.QLineEdit()
+
+        add_button = QtWidgets.QPushButton("添加")
+        add_button.clicked.connect(self.add_rule)
+
+        edit_button = QtWidgets.QPushButton("编辑")
+        edit_button.clicked.connect(self.edit_rule)
+
+        form = QtWidgets.QFormLayout()
+        form.addRow("名称", self.name_line)
+        form.addRow("公式", self.formula_line)
+        form.addRow("A", self.a_line)
+        form.addRow("B", self.b_line)
+        form.addRow("C", self.c_line)
+        form.addRow("D", self.d_line)
+        form.addRow("E", self.e_line)
+        form.addRow(add_button)
+        form.addRow(edit_button)
+
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addLayout(form)
+        hbox.addStretch()
+        hbox.addWidget(self.log_monitor)
 
         vbox = QtWidgets.QVBoxLayout()
-        vbox.addWidget(self.monitor)
+        vbox.addWidget(self.radar_monitor)
+        vbox.addLayout(hbox)
+
         self.setLayout(vbox)
+
+    def register_event(self) -> None:
+        """"""
+        self.signal_log.connect(self.process_log_event)
+        self.event_engine.register(EVENT_RADAR_LOG, self.signal_log.emit)
+
+    def process_log_event(self, event: Event) -> None:
+        """"""
+        log = event.data
+        time_str = log.time.strftime("%H:%M:%S")
+        msg = f"{time_str}\t{log.msg}"
+        self.log_monitor.append(msg)
+
+    def add_rule(self) -> None:
+        """"""
+        name, formula, params = self.get_rule_setting()
+        self.radar_engine.add_rule(name, formula, params)
+        self.radar_engine.save_setting()
+
+    def edit_rule(self) -> None:
+        """"""
+        name, formula, params = self.get_rule_setting()
+        self.radar_engine.edit_rule(name, formula, params)
+        self.radar_engine.save_setting()
+
+    def get_rule_setting(self) -> tuple:
+        """"""
+        name = self.name_line.text()
+        formula = self.formula_line.text()
+
+        a = self.a_line.text()
+        b = self.b_line.text()
+        c = self.c_line.text()
+        d = self.d_line.text()
+        e = self.e_line.text()
+
+        params = {}
+        if a:
+            params["A"] = a
+        if b:
+            params["B"] = b
+        if c:
+            params["C"] = c
+        if d:
+            params["D"] = d
+        if e:
+            params["E"] = e
+
+        return name, formula, params
+
+    def show(self):
+        """"""
+        self.showMaximized()
 
 
 class RadarCell(QtWidgets.QTableWidgetItem):
@@ -70,10 +158,10 @@ class RadarMonitor(QtWidgets.QTableWidget):
     def init_ui(self) -> None:
         """"""
         headers = [
-            "规则名称",
-            "最新数值",
-            "更新时间",
-            "计算公式",
+            "名称",
+            "数值",
+            "时间",
+            "公式",
             "A",
             "B",
             "C",
@@ -88,11 +176,16 @@ class RadarMonitor(QtWidgets.QTableWidget):
         self.setEditTriggers(self.NoEditTriggers)
         self.setAlternatingRowColors(True)
 
+        h_header = self.horizontalHeader()
+        h_header.setSectionResizeMode(h_header.Stretch)
+
     def register_event(self) -> None:
         """"""
         self.signal_rule.connect(self.process_rule_event)
         self.signal_update.connect(self.process_update_event)
-        self.signal_remove.connect(self.process_remove_event)
+
+        self.event_engine.register(EVENT_RADAR_RULE, self.signal_rule.emit)
+        self.event_engine.register(EVENT_RADAR_UPDATE, self.signal_update.emit)
 
     def process_rule_event(self, event: Event) -> None:
         """"""
