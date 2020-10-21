@@ -186,6 +186,7 @@ class PaperEngine(BaseEngine):
                 self.cross_order(order, tick)
 
                 if not order.is_active():
+                    active_orders = self.active_orders[order.vt_symbol]
                     active_orders.pop(orderid)
 
         return vt_orderid
