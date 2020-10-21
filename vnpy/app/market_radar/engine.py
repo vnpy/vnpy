@@ -1,3 +1,4 @@
+import traceback
 from typing import Dict, Set, Any
 from datetime import datetime
 from collections import defaultdict
@@ -19,6 +20,7 @@ APP_NAME = "MarketRadar"
 EVENT_RADAR_ADD = "eRadarAdd"
 EVENT_RADAR_UPDATE = "eRadarUpdate"
 EVENT_RADAR_REMOVE = "eRadarRemove"
+EVENT_RADAR_LOG = "eRaderLog"
 
 
 @dataclass
@@ -60,17 +62,34 @@ class RadarEngine(BaseEngine):
 
     def process_contract_event(self, event: Event) -> None:
         """"""
-        pass
+        contract = event.data
+        vt_symbol = contract.vt_symbol
+
+        if vt_symbol not in self.symbol_rule_map:
+            self.subscribe(vt_symbol)
+
+    def subscribe(self, vt_symbol: str) -> None:
+        """"""
+        contract = self.main_engine.get_contract(vt_symbol)
+        if contract:
+            req = SubscribeRequest(contract.symbol, contract.exchange)
+            self.main_engine.subscribe(req, contract.gateway_name)
 
     def add_rule(self, name: str, formula: str, params: Dict[str, str]) -> bool:
         """"""
         if name in self.rules:
             return False
 
+        if not self.check_rule(formula, params):
+            return False
+
         rule = RadarRule(name, formula, params)
         self.rules[name] = rule
 
         for vt_symbol in params.values():
+            if vt_symbol not in self.symbol_rule_map:
+                self.subscribe(vt_symbol)
+
             self.symbol_rule_map[vt_symbol].add(rule)
 
         return True
@@ -100,7 +119,7 @@ class RadarEngine(BaseEngine):
         """"""
         data = {}
 
-        for name, vt_symbol in rule.params:
+        for name, vt_symbol in rule.params.items():
             tick = self.main_engine.get_tick(vt_symbol)
 
             if not tick:
@@ -122,10 +141,32 @@ class RadarEngine(BaseEngine):
         }
         self.put_event(EVENT_RADAR_UPDATE, radar_data)
 
+    def check_rule(self, formula: str, params: Dict[str, str]) -> bool:
+        """"""
+        data = {}
+
+        for name in params.keys():
+            data[name] = 1
+
+        try:
+            parse_formula(formula, data)
+        except Exception:
+            msg = f"价差公式校验出错，细节：\n{traceback.format_exec()}"
+            self.write_log(msg)
+
+            return False
+
+        return True
+
     def put_event(self, type: str, data: Any) -> None:
         """"""
         event = Event(type, data)
         self.event_engine.put(event)
+
+    def write_log(self, msg: str) -> None:
+        """"""
+        log = LogData(APP_NAME, msg)
+        self.put_event(EVENT_RADAR_LOG, log)
 
 
 def parse_formula(formula: str, data: Dict[str, float]) -> float:
