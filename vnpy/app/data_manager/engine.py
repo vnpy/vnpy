@@ -239,7 +239,7 @@ class ManagerEngine(BaseEngine):
         if not rqdata_client.inited:
             rqdata_client.init()
 
-        data = rqdata_client.query_history(req)
+        data = rqdata_client.query_tick_history(req)
 
         if data:
             database_manager.save_tick_data(data)
