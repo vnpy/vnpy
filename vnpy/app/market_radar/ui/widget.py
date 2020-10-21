@@ -1,5 +1,6 @@
 from functools import partial
 from typing import Dict
+from csv import DictReader
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import MainEngine
@@ -46,11 +47,18 @@ class RadarManager(QtWidgets.QWidget):
         self.d_line = QtWidgets.QLineEdit()
         self.e_line = QtWidgets.QLineEdit()
 
+        self.ndigits_spin = QtWidgets.QSpinBox()
+        self.ndigits_spin.setMinimum(0)
+        self.ndigits_spin.setValue(2)
+
         add_button = QtWidgets.QPushButton("添加")
         add_button.clicked.connect(self.add_rule)
 
-        edit_button = QtWidgets.QPushButton("编辑")
+        edit_button = QtWidgets.QPushButton("修改")
         edit_button.clicked.connect(self.edit_rule)
+
+        load_button = QtWidgets.QPushButton("导入CSV")
+        load_button.clicked.connect(self.load_csv)
 
         form = QtWidgets.QFormLayout()
         form.addRow("名称", self.name_line)
@@ -60,11 +68,14 @@ class RadarManager(QtWidgets.QWidget):
         form.addRow("C", self.c_line)
         form.addRow("D", self.d_line)
         form.addRow("E", self.e_line)
+        form.addRow("小数", self.ndigits_spin)
         form.addRow(add_button)
         form.addRow(edit_button)
 
         hbox = QtWidgets.QHBoxLayout()
         hbox.addLayout(form)
+        hbox.addStretch()
+        hbox.addWidget(load_button)
         hbox.addStretch()
         hbox.addWidget(self.log_monitor)
 
@@ -88,14 +99,14 @@ class RadarManager(QtWidgets.QWidget):
 
     def add_rule(self) -> None:
         """"""
-        name, formula, params = self.get_rule_setting()
-        self.radar_engine.add_rule(name, formula, params)
+        name, formula, params, ndigits = self.get_rule_setting()
+        self.radar_engine.add_rule(name, formula, params, ndigits)
         self.radar_engine.save_setting()
 
     def edit_rule(self) -> None:
         """"""
-        name, formula, params = self.get_rule_setting()
-        self.radar_engine.edit_rule(name, formula, params)
+        name, formula, params, ndigits = self.get_rule_setting()
+        self.radar_engine.edit_rule(name, formula, params, ndigits)
         self.radar_engine.save_setting()
 
     def get_rule_setting(self) -> tuple:
@@ -121,11 +132,43 @@ class RadarManager(QtWidgets.QWidget):
         if e:
             params["E"] = e
 
-        return name, formula, params
+        ndigits = self.ndigits_spin.value()
+
+        return name, formula, params, ndigits
 
     def show(self):
         """"""
         self.showMaximized()
+
+    def load_csv(self):
+        """"""
+        path, type_ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            u"导入CSV配置",
+            "",
+            "CSV(*.csv)"
+        )
+
+        if not path:
+            return
+
+        # Create csv DictReader
+        with open(path, "r") as f:
+            reader = DictReader(f)
+
+            for row in reader:
+                name = row["名称"]
+                formula = row["公式"]
+                ndigits = int(row["小数"])
+
+                params = {}
+                for param in ["A", "B", "C", "D", "E"]:
+                    vt_symbol = row.get(param, "")
+                    if vt_symbol:
+                        params[param] = vt_symbol
+
+                self.radar_engine.add_rule(name, formula, params, ndigits)
+                self.radar_engine.save_setting()
 
 
 class RadarCell(QtWidgets.QTableWidgetItem):
@@ -167,6 +210,7 @@ class RadarMonitor(QtWidgets.QTableWidget):
             "C",
             "D",
             "E",
+            "小数",
             " "
         ]
 
@@ -194,6 +238,7 @@ class RadarMonitor(QtWidgets.QTableWidget):
         name = rule_data["name"]
         formula = rule_data["formula"]
         params = rule_data["params"]
+        ndigits = rule_data["ndigits"]
 
         if name not in self.cells:
             name_cell = RadarCell(name)
@@ -205,6 +250,7 @@ class RadarMonitor(QtWidgets.QTableWidget):
             c_cell = RadarCell(params.get("C", ""))
             d_cell = RadarCell(params.get("D", ""))
             e_cell = RadarCell(params.get("E", ""))
+            ndigits_cell = RadarCell(str(ndigits))
 
             remove_func = partial(self.remove_rule, name)
             remove_button = QtWidgets.QPushButton("删除")
@@ -220,7 +266,8 @@ class RadarMonitor(QtWidgets.QTableWidget):
             self.setItem(0, 6, c_cell)
             self.setItem(0, 7, d_cell)
             self.setItem(0, 8, e_cell)
-            self.setCellWidget(0, 9, remove_button)
+            self.setItem(0, 9, ndigits_cell)
+            self.setCellWidget(0, 10, remove_button)
 
             self.cells[name] = {
                 "name": name_cell,
@@ -232,6 +279,7 @@ class RadarMonitor(QtWidgets.QTableWidget):
                 "c": c_cell,
                 "d": d_cell,
                 "e": e_cell,
+                "ndigits": ndigits_cell
             }
         else:
             row_cells = self.cells[name]
@@ -242,6 +290,7 @@ class RadarMonitor(QtWidgets.QTableWidget):
             row_cells["c"].setText(params.get("C", ""))
             row_cells["d"].setText(params.get("D", ""))
             row_cells["e"].setText(params.get("E", ""))
+            row_cells["ndigits"].setText(str(ndigits))
 
     def process_update_event(self, event: Event) -> None:
         """"""
@@ -255,10 +304,11 @@ class RadarMonitor(QtWidgets.QTableWidget):
     def remove_rule(self, name: str) -> None:
         """"""
         rule_names = list(self.cells.keys())
+        rule_names.reverse()
         row = rule_names.index(name)
+
+        self.cells.pop(name)
+        self.removeRow(row)
 
         self.radar_engine.remove_rule(name)
         self.radar_engine.save_setting()
-
-        self.removeRow(row)
-        self.cells.pop(name)

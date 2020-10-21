@@ -2,8 +2,6 @@ import traceback
 from typing import Dict, Set, Any
 from datetime import datetime
 from collections import defaultdict
-from tzlocal import get_localzone
-from dataclasses import dataclass
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.utility import save_json, load_json
@@ -14,7 +12,6 @@ from vnpy.trader.object import (
 from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT
 
 
-LOCAL_TZ = get_localzone()
 APP_NAME = "MarketRadar"
 
 EVENT_RADAR_RULE = "eRadarRule"
@@ -25,11 +22,12 @@ EVENT_RADAR_LOG = "eRaderLog"
 class RadarRule:
     """"""
 
-    def __init__(self, name: str, formula: str, params: Dict[str, str]):
+    def __init__(self, name: str, formula: str, params: Dict[str, str], ndigits: int):
         """"""
         self.name: str = name
         self.formula: str = formula
         self.params: Dict[str, str] = params
+        self.ndigits = ndigits
 
 
 class RadarEngine(BaseEngine):
@@ -72,7 +70,7 @@ class RadarEngine(BaseEngine):
 
     def process_contract_event(self, event: Event) -> None:
         """"""
-        contract = event.data
+        contract: ContractData = event.data
         vt_symbol = contract.vt_symbol
 
         if vt_symbol in self.symbol_rule_map:
@@ -80,12 +78,14 @@ class RadarEngine(BaseEngine):
 
     def subscribe(self, vt_symbol: str) -> None:
         """"""
-        contract = self.main_engine.get_contract(vt_symbol)
+        contract: ContractData = self.main_engine.get_contract(vt_symbol)
         if contract:
             req = SubscribeRequest(contract.symbol, contract.exchange)
             self.main_engine.subscribe(req, contract.gateway_name)
 
-    def add_rule(self, name: str, formula: str, params: Dict[str, str]) -> bool:
+    def add_rule(
+        self, name: str, formula: str, params: Dict[str, str], ndigits: int
+    ) -> bool:
         """"""
         if name in self.rules:
             self.write_log(f"添加失败，已存在同名{name}")
@@ -95,7 +95,7 @@ class RadarEngine(BaseEngine):
             self.write_log(f"添加失败，公式无法运算{formula}")
             return False
 
-        rule = RadarRule(name, formula, params)
+        rule = RadarRule(name, formula, params, ndigits)
         self.rules[name] = rule
 
         for vt_symbol in params.values():
@@ -107,7 +107,8 @@ class RadarEngine(BaseEngine):
         rule_data = {
             "name": name,
             "formula": formula,
-            "params": params
+            "params": params,
+            "ndigits": ndigits
         }
         self.put_event(EVENT_RADAR_RULE, rule_data)
 
@@ -116,7 +117,9 @@ class RadarEngine(BaseEngine):
         self.write_log(f"添加成功{name}")
         return True
 
-    def edit_rule(self, name: str, formula: str, params: Dict[str, str]) -> bool:
+    def edit_rule(
+        self, name: str, formula: str, params: Dict[str, str], ndigits: int
+    ) -> bool:
         """"""
         # Check valid
         if name not in self.rules:
@@ -130,11 +133,14 @@ class RadarEngine(BaseEngine):
         # Remove old symbol map
         rule: RadarRule = self.rules[name]
         for vt_symbol in rule.params.values():
-            self.symbol_rule_map[vt_symbol].remove(rule)
+            rules = self.symbol_rule_map[vt_symbol]
+            if rule in rules:
+                rules.remove(rule)
 
         # Add new symbol map
         rule.formula = formula
         rule.params = params
+        rule.ndigits = ndigits
 
         for vt_symbol in params.values():
             if vt_symbol not in self.symbol_rule_map:
@@ -146,7 +152,8 @@ class RadarEngine(BaseEngine):
         rule_data = {
             "name": name,
             "formula": formula,
-            "params": params
+            "params": params,
+            "ndigits": ndigits
         }
         self.put_event(EVENT_RADAR_RULE, rule_data)
 
@@ -162,8 +169,11 @@ class RadarEngine(BaseEngine):
 
         rule = self.rules.pop(name)
         for vt_symbol in rule.params.values():
-            self.symbol_rule_map[vt_symbol].remove(rule)
+            rules = self.symbol_rule_map[vt_symbol]
+            if rule in rules:
+                rules.remove(rule)
 
+        self.write_log(f"移除成功{name}")
         return True
 
     def load_setting(self) -> None:
@@ -171,7 +181,7 @@ class RadarEngine(BaseEngine):
         setting = load_json(self.setting_filename)
 
         for d in setting:
-            self.add_rule(d["name"], d["formula"], d["params"])
+            self.add_rule(d["name"], d["formula"], d["params"], d["ndigits"])
 
     def save_setting(self) -> None:
         """"""
@@ -181,7 +191,8 @@ class RadarEngine(BaseEngine):
             d = {
                 "name": rule.name,
                 "formula": rule.formula,
-                "params": rule.params
+                "params": rule.params,
+                "ndigits": rule.ndigits
             }
             setting.append(d)
 
@@ -202,14 +213,14 @@ class RadarEngine(BaseEngine):
         value = parse_formula(rule.formula, data)
         if value is None:
             return
+        value = round(value, rule.ndigits)
 
         dt = datetime.now()
-        dt = LOCAL_TZ.localize(dt)
 
         radar_data = {
             "name": rule.name,
             "value": value,
-            "time": dt
+            "time": dt.strftime("%H:%M:%S.%f")
         }
         self.put_event(EVENT_RADAR_UPDATE, radar_data)
 
