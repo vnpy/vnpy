@@ -509,10 +509,17 @@ class SoptTdApi(TdApi):
         # Get buffered position object
         key = f"{data['InstrumentID'], data['PosiDirection']}"
         position = self.positions.get(key, None)
+
+        symbol = data["InstrumentID"]
+        if "&" in symbol:
+            exchange = Exchange.SSE
+        else:
+            exchange = symbol_exchange_map[data["InstrumentID"]]
+
         if not position:
             position = PositionData(
-                symbol=data["InstrumentID"],
-                exchange=symbol_exchange_map[data["InstrumentID"]],
+                symbol=symbol,
+                exchange=exchange,
                 direction=DIRECTION_SOPT2VT[data["PosiDirection"]],
                 gateway_name=self.gateway_name
             )
