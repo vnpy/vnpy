@@ -3,15 +3,13 @@ import trading_calendars
 
 ANNUAL_DAYS = 240
 
-# For checking public holidays
+# Get public holidays data from Shanghai Stock Exchange
 cn_calendar = trading_calendars.get_calendar('XSHG')
-a = cn_calendar.precomputed_holidays
-b = [x.to_pydatetime() for x in a]
+holidays = [x.to_pydatetime() for x in cn_calendar.precomputed_holidays]
 
-# precomputed holidays seem to extend 5 years
+# Filter future public holidays
 start = datetime.today()
-
-PUBLIC_HOLIDAYS = [x for x in b if x >= start ]
+PUBLIC_HOLIDAYS = [x for x in holidays if x >= start]
 
 
 def calculate_days_to_expiry(option_expiry: datetime) -> int:
