@@ -441,8 +441,8 @@ class ArrayManager(object):
 
     def apo(
         self,
-        fast_period: int, 
-        slow_period: int, 
+        fast_period: int,
+        slow_period: int,
         matype: int = 0,
         array: bool = False
     ) -> Union[float, np.ndarray]:
@@ -474,8 +474,8 @@ class ArrayManager(object):
 
     def ppo(
         self,
-        fast_period: int, 
-        slow_period: int, 
+        fast_period: int,
+        slow_period: int,
         matype: int = 0,
         array: bool = False
     ) -> Union[float, np.ndarray]:
@@ -661,7 +661,7 @@ class ArrayManager(object):
         return result[-1]
 
     def ultosc(
-        self, 
+        self,
         time_period1: int = 7,
         time_period2: int = 14,
         time_period3: int = 28,
@@ -806,9 +806,9 @@ class ArrayManager(object):
         return result[-1]
 
     def adosc(
-        self, 
-        fast_period: int, 
-        slow_period: int, 
+        self,
+        fast_period: int,
+        slow_period: int,
         array: bool = False
     ) -> Union[float, np.ndarray]:
         """
