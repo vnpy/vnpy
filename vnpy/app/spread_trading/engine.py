@@ -540,7 +540,8 @@ class SpreadAlgoEngine:
             offset=offset,
             type=OrderType.LIMIT,
             price=price,
-            volume=volume
+            volume=volume,
+            reference=f"{APP_NAME}_{algo.spread_name}"
         )
 
         # Convert with offset converter
@@ -968,7 +969,8 @@ class SpreadStrategyEngine:
             offset=offset,
             type=OrderType.LIMIT,
             price=price,
-            volume=volume
+            volume=volume,
+            reference=f"{APP_NAME}_{strategy.strategy_name}"
         )
 
         # Convert with offset converter
