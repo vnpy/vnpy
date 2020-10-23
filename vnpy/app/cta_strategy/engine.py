@@ -311,6 +311,7 @@ class CtaEngine(BaseEngine):
             type=type,
             price=price,
             volume=volume,
+            reference=f"{APP_NAME}_{strategy.strategy_name}"
         )
 
         # Convert with offset converter
