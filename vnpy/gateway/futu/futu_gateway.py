@@ -6,6 +6,7 @@ from copy import copy
 from datetime import datetime
 from threading import Thread
 from time import sleep
+import pytz
 
 from futu import (
     ModifyOrderOp,
@@ -72,6 +73,8 @@ STATUS_FUTU2VT = {
     OrderStatus.FAILED: Status.REJECTED,
     OrderStatus.DISABLED: Status.CANCELLED,
 }
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 
 class FutuGateway(BaseGateway):
@@ -394,7 +397,7 @@ class FutuGateway(BaseGateway):
             tick = TickData(
                 symbol=symbol,
                 exchange=exchange,
-                datetime=datetime.now(),
+                datetime=datetime.now(CHINA_TZ),
                 gateway_name=self.gateway_name,
             )
             self.ticks[code] = tick
@@ -410,12 +413,13 @@ class FutuGateway(BaseGateway):
         for ix, row in data.iterrows():
             symbol = row["code"]
 
-            tick = self.get_tick(symbol)
-
             date = row["data_date"].replace("-", "")
             time = row["data_time"]
-            tick.datetime = datetime.strptime(
-                f"{date} {time}", "%Y%m%d %H:%M:%S")
+            dt = datetime.strptime(f"{date} {time}", "%Y%m%d %H:%M:%S")
+            dt = CHINA_TZ.localize(dt)
+
+            tick = self.get_tick(symbol)
+            tick.datetime = dt
             tick.open_price = row["open_price"]
             tick.high_price = row["high_price"]
             tick.low_price = row["low_price"]
@@ -468,7 +472,7 @@ class FutuGateway(BaseGateway):
                 volume=row["qty"],
                 traded=row["dealt_qty"],
                 status=STATUS_FUTU2VT[row["order_status"]],
-                time=row["create_time"].split(" ")[-1],
+                datetime=generate_datetime(row["create_time"]),
                 gateway_name=self.gateway_name,
             )
 
@@ -493,7 +497,7 @@ class FutuGateway(BaseGateway):
                 orderid=row["order_id"],
                 price=float(row["price"]),
                 volume=row["qty"],
-                time=row["create_time"].split(" ")[-1],
+                datetime=generate_datetime(row["create_time"]),
                 gateway_name=self.gateway_name,
             )
 
@@ -517,3 +521,13 @@ def convert_symbol_vt2futu(symbol, exchange):
     """
     futu_exchange = EXCHANGE_VT2FUTU[exchange]
     return f"{futu_exchange}.{symbol}"
+
+
+def generate_datetime(s: str) -> datetime:
+    if "." in s:
+        dt = datetime.strptime(s, "%Y-%m-%d %H:%M:%S.%f")
+    else:
+        dt = datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
+
+    dt = CHINA_TZ.localize(dt)
+    return dt

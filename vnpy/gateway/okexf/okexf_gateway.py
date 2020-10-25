@@ -10,12 +10,13 @@ import json
 import base64
 import zlib
 from copy import copy
-from datetime import datetime, timedelta
+from datetime import datetime
 from threading import Lock
 from urllib.parse import urlencode
 from typing import Dict
 
 from requests import ConnectionError
+import pytz
 
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
@@ -42,6 +43,8 @@ from vnpy.trader.object import (
     SubscribeRequest,
     HistoryRequest
 )
+from vnpy.trader.event import EVENT_TIMER
+
 REST_HOST = "https://www.okex.com"
 WEBSOCKET_HOST = "wss://real.okex.com:8443/ws/v3"
 
@@ -54,7 +57,10 @@ STATUS_OKEXF2VT = {
 
 ORDERTYPE_OKEXF2VT = {
     "0": OrderType.LIMIT,
-    "1": OrderType.MARKET,
+    "1": OrderType.LIMIT,
+    "2": OrderType.FOK,
+    "3": OrderType.FAK,
+    "4": OrderType.MARKET
 }
 
 TYPE_OKEXF2VT = {
@@ -70,6 +76,8 @@ INTERVAL_VT2OKEXF = {
     Interval.HOUR: "3600",
     Interval.DAILY: "86400",
 }
+
+UTC_TZ = pytz.UTC
 
 
 instruments = set()
@@ -121,6 +129,9 @@ class OkexfGateway(BaseGateway):
                               session_number, proxy_host, proxy_port)
         self.ws_api.connect(key, secret, passphrase, proxy_host, proxy_port)
 
+        self.timer_count = 0
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
+
     def subscribe(self, req: SubscribeRequest):
         """"""
         self.ws_api.subscribe(req)
@@ -139,7 +150,7 @@ class OkexfGateway(BaseGateway):
 
     def query_position(self):
         """"""
-        pass
+        self.rest_api.query_position()
 
     def query_history(self, req: HistoryRequest):
         """"""
@@ -158,6 +169,15 @@ class OkexfGateway(BaseGateway):
     def get_order(self, orderid: str):
         """"""
         return self.orders.get(orderid, None)
+
+    def process_timer_event(self, event):
+        """"""
+        self.timer_count += 1
+        if self.timer_count < 5:
+            return
+        self.timer_count = 0
+
+        self.query_position()
 
 
 class OkexfRestApi(RestClient):
@@ -260,7 +280,7 @@ class OkexfRestApi(RestClient):
         }
 
         if req.type == OrderType.MARKET:
-            data["match_price"] = "1"
+            data["match_price"] = "4"
         else:
             data["match_price"] = "0"
 
@@ -301,6 +321,9 @@ class OkexfRestApi(RestClient):
 
     def query_account(self):
         """"""
+        if not self._active:
+            return
+
         self.add_request(
             "GET",
             "/api/futures/v3/accounts",
@@ -310,7 +333,6 @@ class OkexfRestApi(RestClient):
     def query_order(self):
         """"""
         for code in instruments:
-
             # get waiting orders
             self.add_request(
                 "GET",
@@ -327,6 +349,9 @@ class OkexfRestApi(RestClient):
 
     def query_position(self):
         """"""
+        if not self._active:
+            return
+
         self.add_request(
             "GET",
             "/api/futures/v3/position",
@@ -427,7 +452,7 @@ class OkexfRestApi(RestClient):
                 traded=int(order_data["filled_qty"]),
                 price=float(order_data["price"]),
                 volume=float(order_data["size"]),
-                time=utc_to_local(order_data["timestamp"]).strftime("%H:%M:%S"),
+                datetime=utc_to_local(order_data["timestamp"]),
                 status=STATUS_OKEXF2VT[order_data["status"]],
                 gateway_name=self.gateway_name,
             )
@@ -447,7 +472,7 @@ class OkexfRestApi(RestClient):
 
         order = request.extra
         order.status = Status.REJECTED
-        order.time = datetime.now().strftime("%H:%M:%S.%f")
+        order.datetime = datetime.now(UTC_TZ)
         self.gateway.on_order(order)
         msg = f"委托失败，状态码：{status_code}，信息：{request.response.text}"
         self.gateway.write_log(msg)
@@ -606,7 +631,6 @@ class OkexfWebsocketApi(WebsocketClient):
         self.secret = ""
         self.passphrase = ""
 
-        self.trade_count = 10000
         self.connect_time = 0
 
         self.subscribed: Dict[str, SubscribeRequest] = {}
@@ -726,7 +750,6 @@ class OkexfWebsocketApi(WebsocketClient):
         self.callbacks["futures/depth5"] = self.on_depth
         self.callbacks["futures/account"] = self.on_account
         self.callbacks["futures/order"] = self.on_order
-        self.callbacks["futures/position"] = self.on_position
 
         # Subscribe to order update
         channels = []
@@ -833,7 +856,7 @@ class OkexfWebsocketApi(WebsocketClient):
             price=float(d["price"]),
             volume=float(d["size"]),
             traded=float(d["filled_qty"]),
-            time=utc_to_local(d["timestamp"]).strftime("%H:%M:%S"),
+            datetime=utc_to_local(d["timestamp"]),
             status=STATUS_OKEXF2VT[d["status"]],
             gateway_name=self.gateway_name,
         )
@@ -843,19 +866,16 @@ class OkexfWebsocketApi(WebsocketClient):
         if not trade_volume or float(trade_volume) == 0:
             return
 
-        self.trade_count += 1
-        tradeid = f"{self.connect_time}{self.trade_count}"
-
         trade = TradeData(
             symbol=order.symbol,
             exchange=order.exchange,
             orderid=order.orderid,
-            tradeid=tradeid,
+            tradeid=d["last_fill_id"],
             direction=order.direction,
             offset=order.offset,
             price=float(d["last_fill_px"]),
             volume=float(trade_volume),
-            time=order.time,
+            datetime=order.datetime,
             gateway_name=self.gateway_name,
         )
         self.gateway.on_trade(trade)
@@ -872,32 +892,6 @@ class OkexfWebsocketApi(WebsocketClient):
             )
             self.gateway.on_account(account)
 
-    def on_position(self, d):
-        """"""
-        pos = PositionData(
-            symbol=d["instrument_id"],
-            exchange=Exchange.OKEX,
-            direction=Direction.LONG,
-            volume=int(d["long_qty"]),
-            frozen=float(d["long_qty"]) - float(d["long_avail_qty"]),
-            price=float(d["long_avg_cost"]),
-            pnl=float(d["realised_pnl"]),
-            gateway_name=self.gateway_name,
-        )
-        self.gateway.on_position(pos)
-
-        pos = PositionData(
-            symbol=d["instrument_id"],
-            exchange=Exchange.OKEX,
-            direction=Direction.SHORT,
-            volume=int(d["short_qty"]),
-            frozen=float(d["short_qty"]) - float(d["short_avail_qty"]),
-            price=float(d["short_avg_cost"]),
-            pnl=float(d["realised_pnl"]),
-            gateway_name=self.gateway_name,
-        )
-        self.gateway.on_position(pos)
-
 
 def generate_signature(msg: str, secret_key: str):
     """OKEX V3 signature"""
@@ -912,6 +906,6 @@ def get_timestamp():
 
 
 def utc_to_local(timestamp):
-    time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    utc_time = time + timedelta(hours=8)
-    return utc_time
+    dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    dt = UTC_TZ.localize(dt)
+    return dt

@@ -136,6 +136,8 @@ class StatisticalArbitrageStrategy(SpreadStrategyTemplate):
                     interval=self.interval
                 )
 
+        self.put_event()
+
     def on_spread_pos(self):
         """
         Callback when spread position is updated.

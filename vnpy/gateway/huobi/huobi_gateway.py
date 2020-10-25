@@ -12,8 +12,9 @@ import hmac
 import sys
 from copy import copy
 from datetime import datetime
+import pytz
+from typing import Dict, List, Any
 
-from vnpy.event import Event
 from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.constant import (
@@ -24,7 +25,7 @@ from vnpy.trader.constant import (
     OrderType,
     Interval
 )
-from vnpy.trader.gateway import BaseGateway, LocalOrderManager
+from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     TickData,
     OrderData,
@@ -37,12 +38,11 @@ from vnpy.trader.object import (
     SubscribeRequest,
     HistoryRequest
 )
-from vnpy.trader.event import EVENT_TIMER
 
 
 REST_HOST = "https://api.huobipro.com"
 WEBSOCKET_DATA_HOST = "wss://api.huobi.pro/ws"       # Market Data
-WEBSOCKET_TRADE_HOST = "wss://api.huobi.pro/ws/v1"     # Account and Order
+WEBSOCKET_TRADE_HOST = "wss://api.huobi.pro/ws/v2"     # Account and Order
 
 STATUS_HUOBI2VT = {
     "submitted": Status.NOTTRADED,
@@ -67,8 +67,11 @@ INTERVAL_VT2HUOBI = {
     Interval.DAILY: "1day"
 }
 
-huobi_symbols = set()
-symbol_name_map = {}
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
+
+huobi_symbols: set = set()
+symbol_name_map: Dict[str, str] = {}
+currency_balance: Dict[str, float] = {}
 
 
 class HuobiGateway(BaseGateway):
@@ -76,7 +79,7 @@ class HuobiGateway(BaseGateway):
     VN Trader Gateway for Huobi connection.
     """
 
-    default_setting = {
+    default_setting: Dict[str, Any] = {
         "API Key": "",
         "Secret Key": "",
         "会话数": 3,
@@ -84,19 +87,28 @@ class HuobiGateway(BaseGateway):
         "代理端口": "",
     }
 
-    exchanges = [Exchange.HUOBI]
+    exchanges: List[Exchange] = [Exchange.HUOBI]
 
     def __init__(self, event_engine):
         """Constructor"""
         super().__init__(event_engine, "HUOBI")
 
-        self.order_manager = LocalOrderManager(self)
-
         self.rest_api = HuobiRestApi(self)
         self.trade_ws_api = HuobiTradeWebsocketApi(self)
         self.market_ws_api = HuobiDataWebsocketApi(self)
 
-    def connect(self, setting: dict):
+        self.orders: Dict[str, OrderData] = {}
+
+    def get_order(self, orderid: str) -> OrderData:
+        """"""
+        return self.orders.get(orderid, None)
+
+    def on_order(self, order: OrderData) -> None:
+        """"""
+        self.orders[order.orderid] = order
+        super().on_order(order)
+
+    def connect(self, setting: dict) -> None:
         """"""
         key = setting["API Key"]
         secret = setting["Secret Key"]
@@ -114,26 +126,23 @@ class HuobiGateway(BaseGateway):
         self.trade_ws_api.connect(key, secret, proxy_host, proxy_port)
         self.market_ws_api.connect(key, secret, proxy_host, proxy_port)
 
-        self.init_query()
-
-    def subscribe(self, req: SubscribeRequest):
+    def subscribe(self, req: SubscribeRequest) -> None:
         """"""
         self.market_ws_api.subscribe(req)
-        self.trade_ws_api.subscribe(req)
 
-    def send_order(self, req: OrderRequest):
+    def send_order(self, req: OrderRequest) -> str:
         """"""
         return self.rest_api.send_order(req)
 
-    def cancel_order(self, req: CancelRequest):
+    def cancel_order(self, req: CancelRequest) -> None:
         """"""
         self.rest_api.cancel_order(req)
 
-    def query_account(self):
+    def query_account(self) -> None:
         """"""
-        self.rest_api.query_account_balance()
+        pass
 
-    def query_position(self):
+    def query_position(self) -> None:
         """"""
         pass
 
@@ -141,24 +150,11 @@ class HuobiGateway(BaseGateway):
         """"""
         return self.rest_api.query_history(req)
 
-    def close(self):
+    def close(self) -> None:
         """"""
         self.rest_api.stop()
         self.trade_ws_api.stop()
         self.market_ws_api.stop()
-
-    def process_timer_event(self, event: Event):
-        """"""
-        self.count += 1
-        if self.count < 3:
-            return
-
-        self.query_account()
-
-    def init_query(self):
-        """"""
-        self.count = 0
-        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
 
 class HuobiRestApi(RestClient):
@@ -170,16 +166,27 @@ class HuobiRestApi(RestClient):
         """"""
         super().__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
-        self.order_manager = gateway.order_manager
+        self.gateway: HuobiGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
-        self.host = ""
-        self.key = ""
-        self.secret = ""
-        self.account_id = ""
+        self.host: str = ""
+        self.key: str = ""
+        self.secret: str = ""
+        self.account_id: str = ""
 
-    def sign(self, request):
+        self.order_count = 0
+
+    def new_orderid(self):
+        """"""
+        prefix = datetime.now().strftime("%Y%m%d-%H%M%S-")
+
+        self.order_count += 1
+        suffix = str(self.order_count).rjust(8, "0")
+
+        orderid = prefix + suffix
+        return orderid
+
+    def sign(self, request: Request) -> Request:
         """
         Generate HUOBI signature.
         """
@@ -211,7 +218,7 @@ class HuobiRestApi(RestClient):
         session_number: int,
         proxy_host: str,
         proxy_port: int
-    ):
+    ) -> None:
         """
         Initialize connection to REST server.
         """
@@ -229,7 +236,7 @@ class HuobiRestApi(RestClient):
         self.query_account()
         self.query_order()
 
-    def query_account(self):
+    def query_account(self) -> None:
         """"""
         self.add_request(
             method="GET",
@@ -237,16 +244,7 @@ class HuobiRestApi(RestClient):
             callback=self.on_query_account
         )
 
-    def query_account_balance(self):
-        """"""
-        path = f"/v1/account/accounts/{self.account_id}/balance"
-        self.add_request(
-            method="GET",
-            path=path,
-            callback=self.on_query_account_balance
-        )
-
-    def query_order(self):
+    def query_order(self) -> None:
         """"""
         self.add_request(
             method="GET",
@@ -254,7 +252,7 @@ class HuobiRestApi(RestClient):
             callback=self.on_query_order
         )
 
-    def query_contract(self):
+    def query_contract(self) -> None:
         """"""
         self.add_request(
             method="GET",
@@ -262,7 +260,7 @@ class HuobiRestApi(RestClient):
             callback=self.on_query_contract
         )
 
-    def query_history(self, req: HistoryRequest):
+    def query_history(self, req: HistoryRequest) -> List[BarData]:
         """"""
         # Create query params
         params = {
@@ -291,7 +289,7 @@ class HuobiRestApi(RestClient):
                 self.gateway.write_log(msg)
             else:
                 for d in data["data"]:
-                    dt = datetime.fromtimestamp(d["id"])
+                    dt = generate_datetime(d["id"])
 
                     bar = BarData(
                         symbol=req.symbol,
@@ -314,18 +312,15 @@ class HuobiRestApi(RestClient):
 
         return history
 
-    def send_order(self, req: OrderRequest):
+    def send_order(self, req: OrderRequest) -> str:
         """"""
         huobi_type = ORDERTYPE_VT2HUOBI.get(
             (req.direction, req.type), ""
         )
 
-        local_orderid = self.order_manager.new_local_orderid()
-        order = req.create_order_data(
-            local_orderid,
-            self.gateway_name
-        )
-        order.time = datetime.now().strftime("%H:%M:%S")
+        orderid = self.new_orderid()
+        order = req.create_order_data(orderid, self.gateway_name)
+        order.datetime = datetime.now(CHINA_TZ)
 
         data = {
             "account-id": self.account_id,
@@ -333,7 +328,8 @@ class HuobiRestApi(RestClient):
             "symbol": req.symbol,
             "type": huobi_type,
             "price": str(req.price),
-            "source": "api"
+            "source": "api",
+            "client-order-id": orderid
         }
 
         self.add_request(
@@ -346,22 +342,22 @@ class HuobiRestApi(RestClient):
             on_failed=self.on_send_order_failed
         )
 
-        self.order_manager.on_order(order)
+        self.gateway.on_order(order)
         return order.vt_orderid
 
-    def cancel_order(self, req: CancelRequest):
+    def cancel_order(self, req: CancelRequest) -> None:
         """"""
-        sys_orderid = self.order_manager.get_sys_orderid(req.orderid)
+        data = {"client-order-id": req.orderid}
 
-        path = f"/v1/order/orders/{sys_orderid}/submitcancel"
         self.add_request(
             method="POST",
-            path=path,
+            path="/v1/order/orders/submitCancelClientOrder",
+            data=data,
             callback=self.on_cancel_order,
             extra=req
         )
 
-    def on_query_account(self, data, request):
+    def on_query_account(self, data: dict, request: Request) -> None:
         """"""
         if self.check_error(data, "查询账户"):
             return
@@ -371,45 +367,17 @@ class HuobiRestApi(RestClient):
                 self.account_id = d["id"]
                 self.gateway.write_log(f"账户代码{self.account_id}查询成功")
 
-        self.query_account_balance()
-
-    def on_query_account_balance(self, data, request):
-        """"""
-        if self.check_error(data, "查询账户资金"):
-            return
-
-        buf = {}
-        for d in data["data"]["list"]:
-            currency = d["currency"]
-            currency_data = buf.setdefault(currency, {})
-            currency_data[d["type"]] = float(d["balance"])
-
-        for currency, currency_data in buf.items():
-            account = AccountData(
-                accountid=currency,
-                balance=currency_data["trade"] + currency_data["frozen"],
-                frozen=currency_data["frozen"],
-                gateway_name=self.gateway_name,
-            )
-
-            if account.balance:
-                self.gateway.on_account(account)
-
-    def on_query_order(self, data, request):
+    def on_query_order(self, data: dict, request: Request) -> None:
         """"""
         if self.check_error(data, "查询委托"):
             return
 
         for d in data["data"]:
-            sys_orderid = d["id"]
-            local_orderid = self.order_manager.get_local_orderid(sys_orderid)
-
             direction, order_type = ORDERTYPE_HUOBI2VT[d["type"]]
-            dt = datetime.fromtimestamp(d["created-at"] / 1000)
-            time = dt.strftime("%H:%M:%S")
+            dt = generate_datetime(d["created-at"] / 1000)
 
             order = OrderData(
-                orderid=local_orderid,
+                orderid=d["client-order-id"],
                 symbol=d["symbol"],
                 exchange=Exchange.HUOBI,
                 price=float(d["price"]),
@@ -418,15 +386,15 @@ class HuobiRestApi(RestClient):
                 direction=direction,
                 traded=float(d["filled-amount"]),
                 status=STATUS_HUOBI2VT.get(d["state"], None),
-                time=time,
+                datetime=dt,
                 gateway_name=self.gateway_name,
             )
 
-            self.order_manager.on_order(order)
+            self.gateway.on_order(order)
 
         self.gateway.write_log("委托信息查询成功")
 
-    def on_query_contract(self, data, request):  # type: (dict, Request)->None
+    def on_query_contract(self, data: dict, request: Request) -> None:
         """"""
         if self.check_error(data, "查询合约"):
             return
@@ -456,19 +424,15 @@ class HuobiRestApi(RestClient):
 
         self.gateway.write_log("合约信息查询成功")
 
-    def on_send_order(self, data, request):
+    def on_send_order(self, data: dict, request: Request) -> None:
         """"""
         order = request.extra
 
         if self.check_error(data, "委托"):
             order.status = Status.REJECTED
-            self.order_manager.on_order(order)
-            return
+            self.gateway.on_order(order)
 
-        sys_orderid = data["data"]
-        self.order_manager.update_orderid_map(order.orderid, sys_orderid)
-
-    def on_send_order_failed(self, status_code: str, request: Request):
+    def on_send_order_failed(self, status_code: str, request: Request) -> None:
         """
         Callback when sending order failed on server.
         """
@@ -480,8 +444,12 @@ class HuobiRestApi(RestClient):
         self.gateway.write_log(msg)
 
     def on_send_order_error(
-        self, exception_type: type, exception_value: Exception, tb, request: Request
-    ):
+        self,
+        exception_type: type,
+        exception_value: Exception,
+        tb,
+        request: Request
+    ) -> None:
         """
         Callback when sending order caused exception.
         """
@@ -493,11 +461,12 @@ class HuobiRestApi(RestClient):
         if not issubclass(exception_type, ConnectionError):
             self.on_error(exception_type, exception_value, tb, request)
 
-    def on_cancel_order(self, data, request):
+    def on_cancel_order(self, data: dict, request: Request) -> None:
         """"""
         cancel_request = request.extra
-        local_orderid = cancel_request.orderid
-        order = self.order_manager.get_order_with_local_orderid(local_orderid)
+        order = self.gateway.get_order(cancel_request.orderid)
+        if not order:
+            return
 
         if self.check_error(data, "撤单"):
             order.status = Status.REJECTED
@@ -505,11 +474,15 @@ class HuobiRestApi(RestClient):
             order.status = Status.CANCELLED
             self.gateway.write_log(f"委托撤单成功：{order.orderid}")
 
-        self.order_manager.on_order(order)
+        self.gateway.on_order(order)
 
     def on_error(
-        self, exception_type: type, exception_value: Exception, tb, request: Request
-    ):
+        self,
+        exception_type: type,
+        exception_value: Exception,
+        tb,
+        request: Request
+    ) -> None:
         """
         Callback to handler request exception.
         """
@@ -520,7 +493,7 @@ class HuobiRestApi(RestClient):
             self.exception_detail(exception_type, exception_value, tb, request)
         )
 
-    def check_error(self, data: dict, func: str = ""):
+    def check_error(self, data: dict, func: str = "") -> bool:
         """"""
         if data["status"] != "error":
             return False
@@ -539,13 +512,13 @@ class HuobiWebsocketApiBase(WebsocketClient):
         """"""
         super().__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
+        self.gateway: HuobiGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
-        self.key = ""
-        self.secret = ""
-        self.sign_host = ""
-        self.path = ""
+        self.key: str = ""
+        self.secret: str = ""
+        self.sign_host: str = ""
+        self.path: str = ""
 
     def connect(
         self,
@@ -554,7 +527,7 @@ class HuobiWebsocketApiBase(WebsocketClient):
         url: str,
         proxy_host: str,
         proxy_port: int
-    ):
+    ) -> None:
         """"""
         self.key = key
         self.secret = secret
@@ -566,44 +539,62 @@ class HuobiWebsocketApiBase(WebsocketClient):
         self.init(url, proxy_host, proxy_port)
         self.start()
 
-    def login(self):
+    def login(self) -> int:
         """"""
-        params = {"op": "auth"}
-        params.update(create_signature(self.key, "GET", self.sign_host, self.path, self.secret))
-        return self.send_packet(params)
+        params = create_signature_v2(
+            self.key,
+            "GET",
+            self.sign_host,
+            self.path,
+            self.secret
+        )
 
-    def on_login(self, packet):
+        req = {
+            "action": "req",
+            "ch": "auth",
+            "params": params
+        }
+
+        return self.send_packet(req)
+
+    def on_login(self, packet: dict) -> None:
         """"""
         pass
 
     @staticmethod
     def unpack_data(data):
         """"""
-        return json.loads(zlib.decompress(data, 31))
+        if isinstance(data, bytes):
+            buf = zlib.decompress(data, 31)
+        else:
+            buf = data
 
-    def on_packet(self, packet):
+        return json.loads(buf)
+
+    def on_packet(self, packet: dict):
         """"""
+        # print("on packet", packet)
         if "ping" in packet:
             req = {"pong": packet["ping"]}
             self.send_packet(req)
-        elif "op" in packet and packet["op"] == "ping":
+        elif "action" in packet and packet["action"] == "ping":
             req = {
-                "op": "pong",
-                "ts": packet["ts"]
+                "action": "pong",
+                "ts": packet["data"]["ts"]
             }
             self.send_packet(req)
         elif "err-msg" in packet:
             return self.on_error_msg(packet)
-        elif "op" in packet and packet["op"] == "auth":
-            return self.on_login()
+        elif "action" in packet and packet["action"] == "req":
+            return self.on_login(packet)
         else:
             self.on_data(packet)
 
-    def on_data(self, packet):
+    def on_data(self, packet: dict) -> None:
         """"""
         print("data : {}".format(packet))
 
-    def on_error_msg(self, packet):
+    def on_error_msg(self, packet: dict) -> None:
         """"""
         msg = packet["err-msg"]
         if msg == "invalid pong":
@@ -618,59 +609,116 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
         """"""
         super().__init__(gateway)
 
-        self.order_manager = gateway.order_manager
-        self.order_manager.push_data_callback = self.on_data
+        self.req_id: int = 0
 
-        self.req_id = 0
-
-    def connect(self, key, secret, proxy_host, proxy_port):
+    def connect(
+        self,
+        key: str,
+        secret: str,
+        proxy_host: str,
+        proxy_port: int
+    ):
         """"""
-        super().connect(key, secret, WEBSOCKET_TRADE_HOST, proxy_host, proxy_port)
+        super().connect(
+            key,
+            secret,
+            WEBSOCKET_TRADE_HOST,
+            proxy_host,
+            proxy_port
+        )
 
-    def subscribe(self, req: SubscribeRequest):
+    def subscribe_order_update(self) -> None:
         """"""
         self.req_id += 1
         req = {
-            "op": "sub",
-            "cid": str(self.req_id),
-            "topic": f"orders.{req.symbol}"
+            "action": "sub",
+            "ch": f"orders#*"
         }
         self.send_packet(req)
 
-    def on_connected(self):
+    def subscribe_account_update(self) -> None:
+        """"""
+        req = {
+            "action": "sub",
+            "ch": "accounts.update#1"
+        }
+        self.send_packet(req)
+
+    def on_connected(self) -> None:
         """"""
         self.gateway.write_log("交易Websocket API连接成功")
         self.login()
 
-    def on_login(self):
+    def on_login(self, packet: dict) -> None:
         """"""
-        self.gateway.write_log("交易Websocket API登录成功")
+        if "data" in packet and not packet["data"]:
+            self.gateway.write_log("交易Websocket API登录成功")
 
-    def on_data(self, packet):  # type: (dict)->None
+            self.subscribe_order_update()
+            self.subscribe_account_update()
+        else:
+            msg = packet["message"]
+            error_msg = f"交易Websocket API登录失败，原因：{msg}"
+            self.gateway.write_log(error_msg)
+
+    def on_data(self, packet: dict) -> None:
         """"""
-        op = packet.get("op", None)
-        if op != "notify":
+        if "sub" in packet["action"]:
             return
 
-        topic = packet["topic"]
-        if "orders" in topic:
+        ch = packet["ch"]
+        if "orders" in ch:
             self.on_order(packet["data"])
+        elif "accounts" in ch:
+            self.on_account(packet["data"])
 
-    def on_order(self, data: dict):
+    def on_account(self, data: dict) -> None:
         """"""
-        sys_orderid = str(data["order-id"])
-
-        order = self.order_manager.get_order_with_sys_orderid(sys_orderid)
-        if not order:
-            self.order_manager.add_push_data(sys_orderid, data)
+        if not data:
             return
 
-        traded_volume = float(data["filled-amount"])
+        currency = data["currency"]
+
+        change_type = data["changeType"]
+        if not change_type:
+            balance = float(data["balance"])
+            frozen = balance - float(data["available"])
+            currency_balance[currency] = balance
+
+        elif "place" in change_type:
+            if "available" not in data:
+                return
+            balance = currency_balance[currency]
+            frozen = balance - float(data["available"])
+        else:
+            frozen = 0.0
+            if "balance" in data:
+                balance = float(data["balance"])
+            else:
+                balance = float(data["available"])
+            currency_balance[currency] = balance
+
+        account = AccountData(
+            accountid=currency,
+            balance=balance,
+            frozen=frozen,
+            gateway_name=self.gateway_name,
+        )
+        self.gateway.on_account(account)
+
+    def on_order(self, data: dict) -> None:
+        """"""
+        orderid = data["clientOrderId"]
+        order = self.gateway.get_order(orderid)
+        if not order:
+            return
+
+        traded_volume = float(data.get("tradeVolume", 0))
 
         # Push order event
         order.traded += traded_volume
-        order.status = STATUS_HUOBI2VT.get(data["order-state"], None)
-        self.order_manager.on_order(order)
+        order.status = STATUS_HUOBI2VT.get(data["orderStatus"], None)
+        self.gateway.on_order(order)
 
         # Push trade event
         if not traded_volume:
@@ -680,11 +728,11 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
             symbol=order.symbol,
             exchange=Exchange.HUOBI,
             orderid=order.orderid,
-            tradeid=str(data["seq-id"]),
+            tradeid=str(data["tradeId"]),
             direction=order.direction,
-            price=float(data["price"]),
-            volume=float(data["filled-amount"]),
-            time=datetime.now().strftime("%H:%M:%S"),
+            price=float(data["tradePrice"]),
+            volume=float(data["tradeVolume"]),
+            datetime=datetime.now(CHINA_TZ),
             gateway_name=self.gateway_name,
         )
         self.gateway.on_trade(trade)
@@ -697,27 +745,45 @@ class HuobiDataWebsocketApi(HuobiWebsocketApiBase):
         """"""
         super().__init__(gateway)
 
-        self.req_id = 0
-        self.ticks = {}
+        self.req_id: int = 0
+        self.ticks: Dict[str, TickData] = {}
 
-    def connect(self, key: str, secret: str, proxy_host: str, proxy_port: int):
+    def connect(
+        self,
+        key: str,
+        secret: str,
+        proxy_host: str,
+        proxy_port: int
+    ) -> None:
         """"""
-        super().connect(key, secret, WEBSOCKET_DATA_HOST, proxy_host, proxy_port)
+        super().connect(
+            key,
+            secret,
+            WEBSOCKET_DATA_HOST,
+            proxy_host,
+            proxy_port
+        )
 
-    def on_connected(self):
+    def on_connected(self) -> None:
         """"""
         self.gateway.write_log("行情Websocket API连接成功")
 
-    def subscribe(self, req: SubscribeRequest):
+        for symbol in self.ticks.keys():
+            self.subscribe_by_symbol(symbol)
+
+    def subscribe(self, req: SubscribeRequest) -> None:
         """"""
         symbol = req.symbol
+        self.subscribe_by_symbol(symbol)
 
+    def subscribe_by_symbol(self, symbol: str) -> None:
+        """"""
         # Create tick data buffer
         tick = TickData(
             symbol=symbol,
             name=symbol_name_map.get(symbol, ""),
             exchange=Exchange.HUOBI,
-            datetime=datetime.now(),
+            datetime=datetime.now(CHINA_TZ),
             gateway_name=self.gateway_name,
         )
         self.ticks[symbol] = tick
@@ -738,7 +804,7 @@ class HuobiDataWebsocketApi(HuobiWebsocketApiBase):
         }
         self.send_packet(req)
 
-    def on_data(self, packet):  # type: (dict)->None
+    def on_data(self, packet: dict) -> None:
         """"""
         channel = packet.get("ch", None)
         if channel:
@@ -751,11 +817,11 @@ class HuobiDataWebsocketApi(HuobiWebsocketApiBase):
             msg = packet["err-msg"]
             self.gateway.write_log(f"错误代码：{code}, 错误信息：{msg}")
 
-    def on_market_depth(self, data):
+    def on_market_depth(self, data: dict) -> None:
         """行情深度推送 """
         symbol = data["ch"].split(".")[1]
         tick = self.ticks[symbol]
-        tick.datetime = datetime.fromtimestamp(data["ts"] / 1000)
+        tick.datetime = generate_datetime(data["ts"] / 1000)
 
         bids = data["tick"]["bids"]
         for n in range(5):
@@ -772,11 +838,11 @@ class HuobiDataWebsocketApi(HuobiWebsocketApiBase):
         if tick.last_price:
             self.gateway.on_tick(copy(tick))
 
-    def on_market_detail(self, data):
+    def on_market_detail(self, data: dict) -> None:
         """市场细节推送"""
         symbol = data["ch"].split(".")[1]
         tick = self.ticks[symbol]
-        tick.datetime = datetime.fromtimestamp(data["ts"] / 1000)
+        tick.datetime = generate_datetime(data["ts"] / 1000)
 
         tick_data = data["tick"]
         tick.open_price = float(tick_data["open"])
@@ -799,7 +865,14 @@ def _split_url(url):
         return result.group(1), result.group(2)
 
 
-def create_signature(api_key, method, host, path, secret_key, get_params=None):
+def create_signature(
+    api_key,
+    method,
+    host,
+    path,
+    secret_key,
+    get_params=None
+) -> Dict[str, str]:
     """
     创建签名
     :param get_params: dict 使用GET方法时附带的额外参数(urlparams)
@@ -829,3 +902,50 @@ def create_signature(api_key, method, host, path, secret_key, get_params=None):
     params = dict(sorted_params)
     params["Signature"] = signature.decode("UTF8")
     return params
+
+
+def create_signature_v2(
+    api_key,
+    method,
+    host,
+    path,
+    secret_key,
+    get_params=None
+) -> Dict[str, str]:
+    """
+    创建签名
+    :param get_params: dict 使用GET方法时附带的额外参数(urlparams)
+    :return:
+    """
+    sorted_params = [
+        ("accessKey", api_key),
+        ("signatureMethod", "HmacSHA256"),
+        ("signatureVersion", "2.1"),
+        ("timestamp", datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"))
+    ]
+
+    if get_params:
+        sorted_params.extend(list(get_params.items()))
+        sorted_params = list(sorted(sorted_params))
+    encode_params = urllib.parse.urlencode(sorted_params)
+
+    payload = [method, host, path, encode_params]
+    payload = "\n".join(payload)
+    payload = payload.encode(encoding="UTF8")
+
+    secret_key = secret_key.encode(encoding="UTF8")
+
+    digest = hmac.new(secret_key, payload, digestmod=hashlib.sha256).digest()
+    signature = base64.b64encode(digest)
+
+    params = dict(sorted_params)
+    params["authType"] = "api"
+    params["signature"] = signature.decode("UTF8")
+    return params
+
+
+def generate_datetime(timestamp: float) -> datetime:
+    """"""
+    dt = datetime.fromtimestamp(timestamp)
+    dt = CHINA_TZ.localize(dt)
+    return dt

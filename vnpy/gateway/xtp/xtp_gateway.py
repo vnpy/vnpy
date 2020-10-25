@@ -1,3 +1,4 @@
+import pytz
 from typing import Any, Dict, List
 from datetime import datetime
 
@@ -117,6 +118,8 @@ OPTIONTYPE_XTP2VT = {
     1: OptionType.CALL,
     2: OptionType.PUT
 }
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 symbol_name_map: Dict[str, str] = {}
 symbol_pricetick_map: Dict[str, float] = {}
@@ -261,6 +264,7 @@ class XtpMdApi(MdApi):
         """"""
         timestamp = str(data["data_time"])
         dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
+        dt = CHINA_TZ.localize(dt)
 
         tick = TickData(
             symbol=data["ticker"],
@@ -426,6 +430,8 @@ class XtpMdApi(MdApi):
             path = str(get_folder_path(self.gateway_name.lower()))
             self.createQuoteApi(self.client_id, path)
             self.login_server()
+        else:
+            self.gateway.write_log("行情接口已登录，请勿重复操作")
 
     def login_server(self) -> None:
         """"""
@@ -493,6 +499,7 @@ class XtpTdApi(TdApi):
         self.login_status: bool = False
 
         self.short_positions: Dict[str, PositionData] = {}
+        self.orders: Dict[str, OrderData] = {}
 
     def onDisconnected(self, session: int, reason: int) -> None:
         """"""
@@ -518,20 +525,31 @@ class XtpTdApi(TdApi):
         else:
             direction, offset = DIRECTION_STOCK_XTP2VT[data["side"]]
 
-        order = OrderData(
-            symbol=symbol,
-            exchange=MARKET_XTP2VT[data["market"]],
-            orderid=str(data["order_xtp_id"]),
-            type=ORDERTYPE_XTP2VT[data["price_type"]],
-            direction=direction,
-            offset=offset,
-            price=data["price"],
-            volume=data["quantity"],
-            traded=data["qty_traded"],
-            status=STATUS_XTP2VT[data["order_status"]],
-            time=data["insert_time"],
-            gateway_name=self.gateway_name
-        )
+        orderid = str(data["order_xtp_id"])
+        if orderid not in self.orders:
+            timestamp = str(data["insert_time"])
+            dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
+            dt = CHINA_TZ.localize(dt)
+
+            order = OrderData(
+                symbol=symbol,
+                exchange=MARKET_XTP2VT[data["market"]],
+                orderid=orderid,
+                type=ORDERTYPE_XTP2VT[data["price_type"]],
+                direction=direction,
+                offset=offset,
+                price=data["price"],
+                volume=data["quantity"],
+                traded=data["qty_traded"],
+                status=STATUS_XTP2VT[data["order_status"]],
+                datetime=dt,
+                gateway_name=self.gateway_name
+            )
+            self.orders[orderid] = order
+        else:
+            order = self.orders[orderid]
+            order.traded = data["qty_traded"]
+            order.status = STATUS_XTP2VT[data["order_status"]]
 
         self.gateway.on_order(order)
 
@@ -544,6 +562,10 @@ class XtpTdApi(TdApi):
         else:
             direction, offset = DIRECTION_STOCK_XTP2VT[data["side"]]
 
+        timestamp = str(data["trade_time"])
+        dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
+        dt = CHINA_TZ.localize(dt)
+
         trade = TradeData(
             symbol=symbol,
             exchange=MARKET_XTP2VT[data["market"]],
@@ -553,9 +575,22 @@ class XtpTdApi(TdApi):
             offset=offset,
             price=data["price"],
             volume=data["quantity"],
-            time=data["trade_time"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
+
+        if trade.orderid in self.orders:
+            order = self.orders[trade.orderid]
+            order.traded += trade.volume
+
+            if order.traded < order.volume:
+                order.status = Status.PARTTRADED
+            else:
+                order.status = Status.ALLTRADED
+
+            self.gateway.on_order(order)
+        else:
+            self.gateway.write_log(f"成交找不到对应委托{trade.orderid}")
 
         self.gateway.on_trade(trade)
 
@@ -610,16 +645,19 @@ class XtpTdApi(TdApi):
         """"""
         account = AccountData(
             accountid=self.userid,
-            balance=data["buying_power"],
+            balance=data["total_asset"],
             frozen=data["withholding_amount"],
             gateway_name=self.gateway_name
         )
-        self.gateway.on_account(account)
 
         if data["account_type"] == 1:
             self.margin_trading = True
         elif data["account_type"] == 2:
+            account.available = data["buying_power"]
+            account.frozen = account.balance - account.available
             self.option_trading = True
+
+        self.gateway.on_account(account)
 
     def onQueryStructuredFund(self, data: dict, error: dict, last: bool, session: int) -> None:
         """"""
@@ -674,7 +712,9 @@ class XtpTdApi(TdApi):
         contract.option_type = OPTIONTYPE_XTP2VT.get(data["call_or_put"], None)
 
         contract.option_strike = data["exercise_price"]
-        contract.option_expiry = datetime.strptime(str(data["delivery_day"]), "%Y%m%d")
+        contract.option_expiry = datetime.strptime(
+            str(data["last_trade_date"]), "%Y%m%d"
+        )
         contract.option_index = get_option_index(
             contract.option_strike, data["contract_id"]
         )
@@ -743,6 +783,8 @@ class XtpTdApi(TdApi):
             self.setSoftwareKey(self.software_key)
             self.subscribePublicTopic(0)
             self.login_server()
+        else:
+            self.gateway.write_log("交易接口已登录，请勿重复操作")
 
     def login_server(self) -> None:
         """"""

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Tuple
+import pytz
 
 from vnpy.api.tap import MdApi, TdApi
 from vnpy.event import EventEngine
@@ -96,6 +97,8 @@ FLAG_VT2TAP: Dict[str, str] = {
     "TAPI_CALLPUT_FLAG_PUT": "P",
     "TAPI_CALLPUT_FLAG_NONE": "N"
 }
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 
 class TapGateway(BaseGateway):
@@ -245,7 +248,7 @@ class QuoteApi(MdApi):
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
-            datetime=parse_datetime(data["DateTimeStamp"]),
+            datetime=generate_datetime(data["DateTimeStamp"]),
             name=contract_info.name,
             volume=data["QTotalQty"],
             last_price=data["QLastPrice"],
@@ -650,7 +653,7 @@ class TradeApi(TdApi):
             volume=data["OrderQty"],
             traded=data["OrderMatchQty"],
             status=STATUS_TAP2VT.get(data["OrderState"], Status.SUBMITTING),
-            time=data["OrderInsertTime"],
+            datetime=generate_datetime(data["OrderInsertTime"]),
             gateway_name=self.gateway_name
         )
         self.gateway.on_order(order)
@@ -674,7 +677,7 @@ class TradeApi(TdApi):
             direction=DIRECTION_TAP2VT[data["MatchSide"]],
             price=data["MatchPrice"],
             volume=data["MatchQty"],
-            time=data["MatchDateTime"],
+            datetime=generate_datetime(data["MatchDateTime"]),
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)
@@ -801,14 +804,19 @@ class TradeApi(TdApi):
         self.qryFill({})
 
 
-def parse_datetime(dt_str: str) -> datetime:
+def generate_datetime(timestamp: str) -> datetime:
     """
     Convert timestamp string to datetime object.
     """
-    try:
-        dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S.%f")
-    except ValueError:
-        dt = datetime(1970, 1, 1)
+    if "-" in timestamp:
+        if "." in timestamp:
+            dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
+        else:
+            dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+    else:
+        dt = datetime.strptime(timestamp, "%y%m%d%H%M%S.%f")
+
+    dt = CHINA_TZ.localize(dt)
     return dt
 
 

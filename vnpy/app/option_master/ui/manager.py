@@ -5,9 +5,10 @@ from functools import partial
 from scipy import interpolate
 
 from vnpy.event import Event
-from vnpy.trader.ui import QtWidgets, QtCore
+from vnpy.trader.ui import QtWidgets, QtCore, QtGui
 from vnpy.trader.event import EVENT_TICK, EVENT_TIMER, EVENT_TRADE
 from vnpy.trader.object import TickData, TradeData
+from vnpy.trader.utility import save_json, load_json
 
 from ..engine import OptionEngine
 from ..base import (
@@ -35,6 +36,10 @@ class AlgoSpinBox(QtWidgets.QSpinBox):
     def get_value(self) -> int:
         """"""
         return self.value()
+
+    def set_value(self, value: int) -> None:
+        """"""
+        self.setValue(value)
 
     def update_status(self, active: bool) -> None:
         """"""
@@ -66,6 +71,10 @@ class AlgoDoubleSpinBox(QtWidgets.QDoubleSpinBox):
     def get_value(self) -> float:
         """"""
         return self.value()
+
+    def set_value(self, value: float) -> None:
+        """"""
+        self.setValue(value)
 
     def update_status(self, active: bool) -> None:
         """"""
@@ -104,6 +113,15 @@ class AlgoDirectionCombo(QtWidgets.QComboBox):
             }
 
         return value
+
+    def set_value(self, value: dict) -> None:
+        """"""
+        if value["long_allowed"] and value["short_allowed"]:
+            self.setCurrentIndex(0)
+        elif value["long_allowed"]:
+            self.setCurrentIndex(1)
+        else:
+            self.setCurrentIndex(2)
 
     def update_status(self, active: bool) -> None:
         """"""
@@ -194,7 +212,7 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
 
         {"name": "price_spread", "display": "价格\n价差", "cell": AlgoDoubleSpinBox},
         {"name": "volatility_spread", "display": "隐波\n价差", "cell": AlgoDoubleSpinBox},
-        {"name": "max_pos", "display": "持仓\n上限", "cell": AlgoPositiveSpinBox},
+        {"name": "max_pos", "display": "持仓\n范围", "cell": AlgoPositiveSpinBox},
         {"name": "target_pos", "display": "目标\n持仓", "cell": AlgoSpinBox},
         {"name": "max_order_size", "display": "最大\n委托", "cell": AlgoPositiveSpinBox},
         {"name": "direction", "display": "方向", "cell": AlgoDirectionCombo},
@@ -212,11 +230,13 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
         self.main_engine = option_engine.main_engine
         self.algo_engine = option_engine.algo_engine
         self.portfolio_name = portfolio_name
+        self.setting_filename = f"{portfolio_name}_electronic_eye.json"
 
         self.cells: Dict[str, Dict] = {}
 
         self.init_ui()
         self.register_event()
+        self.load_setting()
 
     def init_ui(self) -> None:
         """"""
@@ -324,6 +344,45 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
             if tick:
                 self.update_tick(tick)
 
+    def load_setting(self) -> None:
+        """"""
+        fields = [
+            "price_spread",
+            "volatility_spread",
+            "max_pos",
+            "target_pos",
+            "max_order_size",
+            "direction"
+        ]
+
+        setting = load_json(self.setting_filename)
+
+        for vt_symbol, cells in self.cells.items():
+            buf = setting.get(vt_symbol, None)
+            if buf:
+                for field in fields:
+                    cells[field].set_value(buf[field])
+
+    def save_setting(self) -> None:
+        """"""
+        fields = [
+            "price_spread",
+            "volatility_spread",
+            "max_pos",
+            "target_pos",
+            "max_order_size",
+            "direction"
+        ]
+
+        setting = {}
+        for vt_symbol, cells in self.cells.items():
+            buf = {}
+            for field in fields:
+                buf[field] = cells[field].get_value()
+            setting[vt_symbol] = buf
+
+        save_json(self.setting_filename, setting)
+
     def register_event(self) -> None:
         """"""
         self.signal_pricing.connect(self.process_pricing_event)
@@ -404,8 +463,11 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
 
     def update_net_pos(self, vt_symbol: str) -> None:
         """"""
+        cells = self.cells.get(vt_symbol, None)
+        if not cells:
+            return
+
         option = self.option_engine.get_instrument(vt_symbol)
-        cells = self.cells[vt_symbol]
         cells["net_pos"].setText(str(option.net_pos))
 
     def start_algo_pricing(self, vt_symbol: str) -> None:
@@ -611,6 +673,11 @@ class ElectronicEyeManager(QtWidgets.QWidget):
         """"""
         for vt_symbol in self.algo_monitor.cells.keys():
             self.algo_monitor.stop_algo_trading(vt_symbol)
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        """"""
+        self.algo_monitor.save_setting()
+        event.accept()
 
 
 class VolatilityDoubleSpinBox(QtWidgets.QDoubleSpinBox):
@@ -866,8 +933,11 @@ class PricingVolatilityManager(QtWidgets.QWidget):
                 otm = chain.puts[index]
 
             value = round(otm.pricing_impv * 100, 1)
-            cells = self.cells[(chain_symbol, index)]
-            cells["pricing_impv"].setValue(value)
+
+            key = (chain_symbol, index)
+            cells = self.cells.get(key, None)
+            if cells:
+                cells["pricing_impv"].setValue(value)
 
     def update_mid_impv(self, chain_symbol: str) -> None:
         """"""

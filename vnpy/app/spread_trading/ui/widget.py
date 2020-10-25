@@ -173,7 +173,8 @@ class SpreadAlgoMonitor(BaseMonitor):
         "price": {"display": "价格", "cell": BaseCell, "update": False},
         "payup": {"display": "超价", "cell": BaseCell, "update": False},
         "volume": {"display": "数量", "cell": BaseCell, "update": False},
-        "traded_volume": {"display": "成交", "cell": BaseCell, "update": True},
+        "traded_volume": {"display": "成交数量", "cell": BaseCell, "update": True},
+        "traded_price": {"display": "成交均价", "cell": BaseCell, "update": True},
         "interval": {"display": "间隔", "cell": BaseCell, "update": False},
         "count": {"display": "计数", "cell": BaseCell, "update": True},
         "status": {"display": "状态", "cell": EnumCell, "update": True},
@@ -333,6 +334,7 @@ class SpreadAlgoWidget(QtWidgets.QFrame):
 
     def update_class_combo(self):
         """"""
+        self.class_combo.clear()
         self.class_combo.addItems(
             self.strategy_engine.get_all_strategy_class_names()
         )

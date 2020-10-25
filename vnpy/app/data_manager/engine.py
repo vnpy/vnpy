@@ -61,12 +61,12 @@ class ManagerEngine(BaseEngine):
                 exchange=exchange,
                 datetime=dt,
                 interval=interval,
-                volume=item[volume_head],
-                open_price=item[open_head],
-                high_price=item[high_head],
-                low_price=item[low_head],
-                close_price=item[close_head],
-                open_interest=open_interest,
+                volume=float(item[volume_head]),
+                open_price=float(item[open_head]),
+                high_price=float(item[high_head]),
+                low_price=float(item[low_head]),
+                close_price=float(item[close_head]),
+                open_interest=float(open_interest),
                 gateway_name="DB",
             )
 
@@ -216,6 +216,33 @@ class ManagerEngine(BaseEngine):
 
         if data:
             database_manager.save_bar_data(data)
+            return(len(data))
+
+        return 0
+
+    def download_tick_data(
+        self,
+        symbol: str,
+        exchange: Exchange,
+        start: datetime
+    ) -> int:
+        """
+        Query tick data from RQData.
+        """
+        req = HistoryRequest(
+            symbol=symbol,
+            exchange=exchange,
+            start=start,
+            end=datetime.now()
+        )
+
+        if not rqdata_client.inited:
+            rqdata_client.init()
+
+        data = rqdata_client.query_tick_history(req)
+
+        if data:
+            database_manager.save_tick_data(data)
             return(len(data))
 
         return 0

@@ -19,19 +19,31 @@ EVENT_OPTION_ALGO_LOG = "eOptionAlgoLog"
 
 
 CHAIN_UNDERLYING_MAP = {
+    # ETF Options
     "510050_O.SSE": "510050",
     "510300_O.SSE": "510300",
     "159919_O.SZSE": "159919",
+
+    # Futures Options
     "IO.CFFEX": "IF",
     "HO.CFFEX": "IH",
+
     "i_o.DCE": "i",
+    "pg_o.DCE": "pg",
     "m_o.DCE": "m",
     "c_o.DCE": "c",
+
     "cu_o.SHFE": "cu",
     "ru_o.SHFE": "ru",
+    "au_o.SHFE": "au",
+
     "SR.CZCE": "SR",
     "CF.CZCE": "CF",
     "TA.CZCE": "TA",
+    "MA.CZCE": "MA",
+    "RM.CZCE": "RM",
+
+    # Crypto Options
     "BTC.DERIBIT": "BTC-PERPETUAL",
     "BTC-USD.OKEX": "BTC-USD-SWAP"
 }
@@ -148,7 +160,7 @@ class OptionData(InstrumentData):
 
     def calculate_option_impv(self) -> None:
         """"""
-        if not self.tick:
+        if not self.tick or not self.underlying:
             return
 
         underlying_price = self.underlying.mid_price

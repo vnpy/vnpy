@@ -6,6 +6,7 @@ from vnpy.trader.ui import QtWidgets, QtCore, QtGui
 from vnpy.trader.constant import Direction, Offset, OrderType
 from vnpy.trader.object import OrderRequest, ContractData, TickData
 from vnpy.trader.event import EVENT_TICK
+from vnpy.trader.utility import get_digits
 
 from ..base import APP_NAME, EVENT_OPTION_NEW_PORTFOLIO
 from ..engine import OptionEngine, PRICING_MODELS
@@ -332,10 +333,12 @@ class OptionManualTrader(QtWidgets.QWidget):
         self.event_engine: EventEngine = option_engine.event_engine
 
         self.contracts: Dict[str, ContractData] = {}
-        self.vt_symbol = ""
+        self.vt_symbol: str = ""
+        self.price_digits: int = 0
 
         self.init_ui()
         self.init_contracts()
+        self.connect_signal()
 
     def init_ui(self) -> None:
         """"""
@@ -520,12 +523,14 @@ class OptionManualTrader(QtWidgets.QWidget):
 
         vt_symbol = contract.vt_symbol
         self.vt_symbol = vt_symbol
+        self.price_digits = get_digits(contract.pricetick)
 
         tick = self.main_engine.get_tick(vt_symbol)
         if tick:
             self.update_tick(tick)
 
-        self.event_engine.unregister(EVENT_TICK + vt_symbol, self.process_tick_event)
+        print(EVENT_TICK + vt_symbol)
+        self.event_engine.register(EVENT_TICK + vt_symbol, self.process_tick_event)
 
     def create_label(
         self,
@@ -544,18 +549,18 @@ class OptionManualTrader(QtWidgets.QWidget):
     def process_tick_event(self, event: Event) -> None:
         """"""
         tick = event.data
-
         if tick.vt_symbol != self.vt_symbol:
             return
-
         self.signal_tick.emit(tick)
 
     def update_tick(self, tick: TickData) -> None:
         """"""
-        self.lp_label.setText(str(tick.last_price))
-        self.bp1_label.setText(str(tick.bid_price_1))
+        price_digits = self.price_digits
+
+        self.lp_label.setText(f"{tick.last_price:.{price_digits}f}")
+        self.bp1_label.setText(f"{tick.bid_price_1:.{price_digits}f}")
         self.bv1_label.setText(str(tick.bid_volume_1))
-        self.ap1_label.setText(str(tick.ask_price_1))
+        self.ap1_label.setText(f"{tick.ask_price_1:.{price_digits}f}")
         self.av1_label.setText(str(tick.ask_volume_1))
 
         if tick.pre_close:
@@ -563,24 +568,24 @@ class OptionManualTrader(QtWidgets.QWidget):
             self.return_label.setText(f"{r:.2f}%")
 
         if tick.bid_price_2:
-            self.bp2_label.setText(str(tick.bid_price_2))
+            self.bp2_label.setText(f"{tick.bid_price_2:.{price_digits}f}")
             self.bv2_label.setText(str(tick.bid_volume_2))
-            self.ap2_label.setText(str(tick.ask_price_2))
+            self.ap2_label.setText(f"{tick.ask_price_2:.{price_digits}f}")
             self.av2_label.setText(str(tick.ask_volume_2))
 
-            self.bp3_label.setText(str(tick.bid_price_3))
+            self.bp3_label.setText(f"{tick.bid_price_3:.{price_digits}f}")
             self.bv3_label.setText(str(tick.bid_volume_3))
-            self.ap3_label.setText(str(tick.ask_price_3))
+            self.ap3_label.setText(f"{tick.ask_price_3:.{price_digits}f}")
             self.av3_label.setText(str(tick.ask_volume_3))
 
-            self.bp4_label.setText(str(tick.bid_price_4))
+            self.bp4_label.setText(f"{tick.bid_price_4:.{price_digits}f}")
             self.bv4_label.setText(str(tick.bid_volume_4))
-            self.ap4_label.setText(str(tick.ask_price_4))
+            self.ap4_label.setText(f"{tick.ask_price_4:.{price_digits}f}")
             self.av4_label.setText(str(tick.ask_volume_4))
 
-            self.bp5_label.setText(str(tick.bid_price_5))
+            self.bp5_label.setText(f"{tick.bid_price_5:.{price_digits}f}")
             self.bv5_label.setText(str(tick.bid_volume_5))
-            self.ap5_label.setText(str(tick.ask_price_5))
+            self.ap5_label.setText(f"{tick.ask_price_5:.{price_digits}f}")
             self.av5_label.setText(str(tick.ask_volume_5))
 
     def clear_data(self) -> None:

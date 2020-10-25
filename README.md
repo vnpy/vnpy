@@ -5,14 +5,14 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.1.2-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.1.7-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
 
-vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1月正式发布，在开源社区6年持续不断的贡献下一步步成长为全功能量化交易平台，目前国内外金融机构用户已经超过500家，包括：私募基金、证券自营和资管、期货资管和子公司、高校研究机构、自营交易公司、交易所、Token Fund等。
+vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1月正式发布，在开源社区6年持续不断的贡献下一步步成长为全功能量化交易平台，目前国内外金融机构用户已经超过600家，包括：私募基金、证券自营和资管、期货资管和子公司、高校研究机构、自营交易公司、交易所、Token Fund等。
 
 全新的《vn.py全实战进阶》系列在线课程，已经在官方微信公众号[**vnpy-community**]上线，覆盖CTA策略（已完成）、期权波动率交易（更新中）等内容。购买请扫描下方二维码关注后，点击菜单栏的【进阶课程】按钮即可：
 
@@ -42,15 +42,19 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 恒生UFT（uft）：国内期货、ETF期权
 
-        * 宽睿（oes）：国内证券（A股）
+        * 飞创证券（sec）：ETF期权
+
+        * 宽睿（oes）：国内证券（A股）、ETF期权
 
         * 中泰XTP（xtp）：国内证券（A股）、ETF期权
 
         * 恒生期权（hsoption）：ETF期权
 
-        * 华鑫奇点（tora）：国内证券（A股）
+        * 华鑫奇点（tora）：国内证券（A股）、ETF期权
 
         * 飞鼠（sgit）：黄金TD、国内期货
+
+        * 金仕达黄金（ksgold）：黄金TD
 
         * 鑫管家（xgj）：期货资管
 
@@ -70,9 +74,11 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 直达期货（da）：全球期货
 
-        * OANDA（oanda）：外汇、CFD
+        * MetaTrader 5（mt5）：外汇、CFD、期货、股票
 
         * Alpaca（alpaca）：美股（零佣金）
+
+        * 佳兆业投资（kasia）：港股
 
     * 数字货币
 
@@ -80,25 +86,29 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * Bybit（bybit）：数字货币永续合约
 
+        * 币安（binance）：数字货币现货
+
+        * 币安永续（binances)：数字货币永续合约
+
+        * OKEX（okex）：数字货币现货
+
         * OKEX永续（okexs）：数字货币永续合约
 
         * OKEX期货（okexf）：数字货币期货
 
         * OKEX期权（okexo）：数字货币期权
 
-        * 火币合约（hbdm）：数字货币期货
+        * 火币（huobi）：数字货币现货
 
-        * 币安永续（binancef)：数字货币永续合约
+        * 火币期货（huobif）：数字货币期货
 
+        * 火币永续（huobis）：数字货币永续
+
+        * 火币期权（huobio）：数字货币期权
+        
         * Gate.io永续（gateios）：数字货币永续合约
 
-        * Deribit（deribit），数字货币期权、永续合约
-
-        * 币安（binance）：数字货币现货
-
-        * OKEX（okex）：数字货币现货
-
-        * 火币（huobi）：数字货币现货
+        * Deribit（deribit），数字货币期权、永续合约        
 
         * Bitfinex（bitfinex）：数字货币现货
 
@@ -124,9 +134,13 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * portfolio_strategy：组合策略模块，面向同时交易多合约的量化策略（Alpha、期权套利等），提供历史数据回测和实盘自动交易功能
 
-    * algo_trading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等等，支持常用算法配置保存
+    * algo_trading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等，支持对接外部智能算法交易服务（如金纳算法）
 
     * script_trader：脚本策略模块，针对多标的组合类交易策略设计，同时也可以直接在命令行中实现REPL指令形式的交易，不支持回测功能
+
+    * market_radar：市场雷达模块，允许用户基于自定义的公式实时计算任意合约组合数据，公式支持标准Python运算语法以及内置函数
+
+    * paper_account：模拟交易模块，纯本地化实现的模拟交易功能，基于交易接口获取的实时行情进行委托撮合，提供委托成交推送以及持仓记录
 
     * chart_wizard：K线图表模块，基于RQData数据服务（期货）或者交易接口（数字货币）获取历史数据，并结合Tick推送显示实时行情变化
 
@@ -156,7 +170,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.1.2](https://download.vnpy.com/vnstudio-2.1.2.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.1.7](https://download.vnpy.com/vnstudio-2.1.7.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 

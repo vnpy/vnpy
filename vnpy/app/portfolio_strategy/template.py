@@ -34,14 +34,16 @@ class StrategyTemplate(ABC):
         self.inited: bool = False
         self.trading: bool = False
         self.pos: Dict[str, int] = defaultdict(int)
+
         self.orders: Dict[str, OrderData] = {}
         self.active_orderids: Set[str] = set()
 
         # Copy a new variables list here to avoid duplicate insert when multiple
         # strategy instances are created with the same strategy class.
-        self.variables: Dict = copy(self.variables)
+        self.variables: List = copy(self.variables)
         self.variables.insert(0, "inited")
         self.variables.insert(1, "trading")
+        self.variables.insert(2, "pos")
 
         self.update_setting(setting)
 
@@ -145,9 +147,7 @@ class StrategyTemplate(ABC):
         """
         self.orders[order.vt_orderid] = order
 
-        if order.is_active():
-            self.active_orderids.add(order.vt_orderid)
-        elif order.vt_orderid in self.active_orderids:
+        if not order.is_active() and order.vt_orderid in self.active_orderids:
             self.active_orderids.remove(order.vt_orderid)
 
     def buy(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
@@ -190,6 +190,10 @@ class StrategyTemplate(ABC):
             vt_orderids = self.strategy_engine.send_order(
                 self, vt_symbol, direction, offset, price, volume, lock
             )
+
+            for vt_orderid in vt_orderids:
+                self.active_orderids.add(vt_orderid)
+
             return vt_orderids
         else:
             return []
@@ -218,7 +222,7 @@ class StrategyTemplate(ABC):
 
     def get_all_active_orderids(self) -> List[OrderData]:
         """"""
-        return list(self.active_orderids.values())
+        return list(self.active_orderids)
 
     def write_log(self, msg: str) -> None:
         """
@@ -245,3 +249,10 @@ class StrategyTemplate(ABC):
         """
         if self.inited:
             self.strategy_engine.send_email(msg, self)
+
+    def sync_data(self):
+        """
+        Sync strategy variables value into disk storage.
+        """
+        if self.trading:
+            self.strategy_engine.sync_strategy_data(self)

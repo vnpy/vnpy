@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional, Sequence, Dict
 from enum import Enum
+import pytz
 
 from vnpy.event import EventEngine
 from vnpy.trader.gateway import BaseGateway
@@ -33,6 +34,8 @@ VN_ENUMS = {
     "Direction": Direction,
     "Status": Status
 }
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 
 class ComstarGateway(BaseGateway):
@@ -266,6 +269,12 @@ def parse_tick(data: dict) -> TickData:
         ask_volume_5=float(data["ask_volume_6"]),
         gateway_name=data["gateway_name"]
     )
+
+    tick.public_bid_price = float(data["bid_price_1"])
+    tick.public_ask_price = float(data["ask_price_1"])
+    tick.public_bid_volume = float(data["bid_volume_1"])
+    tick.public_ask_volume = float(data["ask_volume_1"])
+
     return tick
 
 
@@ -284,7 +293,7 @@ def parse_order(data: dict) -> OrderData:
         volume=float(data["volume"]),
         traded=float(data["traded"]),
         status=enum_decode(data["status"]),
-        time=data["time"],
+        datetime=generate_datetime(data["time"]),
         gateway_name=data["gateway_name"]
     )
     return order
@@ -303,7 +312,7 @@ def parse_trade(data: dict) -> TradeData:
         offset=Offset.NONE,
         price=float(data["price"]),
         volume=float(data["volume"]),
-        time=data["time"],
+        datetime=generate_datetime(data["time"]),
         gateway_name=data["gateway_name"]
     )
     return trade
@@ -341,11 +350,14 @@ def parse_log(data: dict) -> LogData:
 
 def parse_datetime(s: str) -> datetime:
     if "." in s:
-        return datetime.strptime(s, "%Y%m%d %H:%M:%S.%f")
+        dt = datetime.strptime(s, "%Y%m%d %H:%M:%S.%f")
     elif len(s) > 0:
-        return datetime.strptime(s, "%Y%m%d %H:%M:%S")
+        dt = datetime.strptime(s, "%Y%m%d %H:%M:%S")
     else:
-        return datetime.now()
+        dt = datetime.now()
+
+    dt = CHINA_TZ.localize(dt)
+    return dt
 
 
 def enum_decode(s: str) -> Optional[Enum]:
@@ -373,3 +385,11 @@ def vn_encode(obj: object) -> str or dict:
             else:
                 s[k] = str(v)
         return s
+
+
+def generate_datetime(time: str) -> datetime:
+    """"""
+    today = datetime.now().strftime("%Y%m%d")
+    timestamp = f"{today} {time}"
+    dt = parse_datetime(timestamp)
+    return dt

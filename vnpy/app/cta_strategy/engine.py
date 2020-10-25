@@ -9,6 +9,7 @@ from typing import Any, Callable
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
+from tzlocal import get_localzone
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
@@ -310,6 +311,7 @@ class CtaEngine(BaseEngine):
             type=type,
             price=price,
             volume=volume,
+            reference=f"{APP_NAME}_{strategy.strategy_name}"
         )
 
         # Convert with offset converter
@@ -319,8 +321,6 @@ class CtaEngine(BaseEngine):
         vt_orderids = []
 
         for req in req_list:
-            req.reference = strategy.strategy_name      # Add strategy name as order reference
-
             vt_orderid = self.main_engine.send_order(
                 req, contract.gateway_name)
 
@@ -532,7 +532,7 @@ class CtaEngine(BaseEngine):
     ):
         """"""
         symbol, exchange = extract_vt_symbol(vt_symbol)
-        end = datetime.now()
+        end = datetime.now(get_localzone())
         start = end - timedelta(days)
         bars = []
 
@@ -774,16 +774,9 @@ class CtaEngine(BaseEngine):
         """
         for dirpath, dirnames, filenames in os.walk(str(path)):
             for filename in filenames:
-                if filename.endswith(".py"):
-                    strategy_module_name = ".".join(
-                        [module_name, filename.replace(".py", "")])
-                elif filename.endswith(".pyd"):
-                    strategy_module_name = ".".join(
-                        [module_name, filename.split(".")[0]])
-                else:
-                    continue
-
-                self.load_strategy_class_from_module(strategy_module_name)
+                if filename.split(".")[-1] in ("py", "pyd", "so"):
+                    strategy_module_name = ".".join([module_name, filename.split(".")[0]])
+                    self.load_strategy_class_from_module(strategy_module_name)
 
     def load_strategy_class_from_module(self, module_name: str):
         """
@@ -919,7 +912,7 @@ class CtaEngine(BaseEngine):
         if strategy:
             msg = f"{strategy.strategy_name}: {msg}"
 
-        log = LogData(msg=msg, gateway_name="CtaStrategy")
+        log = LogData(msg=msg, gateway_name=APP_NAME)
         event = Event(type=EVENT_CTA_LOG, data=log)
         self.event_engine.put(event)
 

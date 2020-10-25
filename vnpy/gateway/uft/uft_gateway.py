@@ -2,6 +2,7 @@
 """
 
 import sys
+import pytz
 from datetime import datetime
 from typing import Dict, List
 
@@ -58,7 +59,7 @@ from vnpy.trader.object import (
     CancelRequest,
     SubscribeRequest,
 )
-from vnpy.trader.utility import get_folder_path
+from vnpy.trader.utility import get_folder_path, TRADER_DIR
 from vnpy.trader.event import EVENT_TIMER
 from vnpy.event import EventEngine
 
@@ -89,9 +90,10 @@ ORDERTYPE_UFT2VT: Dict[str, OrderType] = {v: k for k, v in ORDERTYPE_VT2UFT.item
 OFFSET_VT2UFT: Dict[Offset, str] = {
     Offset.OPEN: HS_OF_Open,
     Offset.CLOSE: HS_OF_Close,
-    Offset.CLOSETODAY: HS_OF_CloseToday,
+    Offset.CLOSETODAY: HS_OF_CloseToday
 }
 OFFSET_UFT2VT: Dict[str, Offset] = {v: k for k, v in OFFSET_VT2UFT.items()}
+OFFSET_VT2UFT[Offset.CLOSEYESTERDAY] = HS_OF_Close
 
 EXCHANGE_UFT2VT: Dict[str, Exchange] = {
     HS_EI_CFFEX: Exchange.CFFEX,
@@ -117,7 +119,7 @@ OPTIONTYPE_UFT2VT: Dict[str, OptionType] = {
 }
 
 MAX_FLOAT = sys.float_info.max
-
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 symbol_name_map = {}
 symbol_size_map = {}
@@ -131,11 +133,12 @@ class UftGateway(BaseGateway):
     default_setting: Dict[str, str] = {
         "用户名": "",
         "密码": "",
-        "服务器地址": "",
+        "行情服务器": "",
+        "交易服务器": "",
         "服务器类型": ["期货", "ETF期权"],
         "产品名称": "",
         "授权编码": "",
-        "产品信息": ""
+        "委托类型": "q"
     }
 
     exchanges: List[Exchange] = list(EXCHANGE_UFT2VT.values())
@@ -151,29 +154,41 @@ class UftGateway(BaseGateway):
         """"""
         userid = setting["用户名"]
         password = setting["密码"]
-        address = setting["服务器地址"]
+        md_address = setting["行情服务器"]
+        td_address = setting["交易服务器"]
         server = setting["服务器类型"]
         appid = setting["产品名称"]
         auth_code = setting["授权编码"]
+        application_type = setting["委托类型"]
 
-        if not address.startswith("tcp://"):
-            address = "tcp://" + address
+        if not md_address.startswith("tcp://"):
+            md_address = "tcp://" + md_address
 
-        if server == "期货":
-            server_license = FUTURES_LICENSE
+        if not td_address.startswith("tcp://"):
+            td_address = "tcp://" + td_address
+
+        # Check license file path
+        license_path = TRADER_DIR.joinpath("license.dat")
+
+        if license_path.exists():
+            server_license = str(license_path)
         else:
-            server_license = OPTION_LICENSE
+            if server == "期货":
+                server_license = FUTURES_LICENSE
+            else:
+                server_license = OPTION_LICENSE
 
         self.td_api.connect(
-            address,
+            td_address,
             server_license,
             userid,
             password,
             auth_code,
-            appid
+            appid,
+            application_type
         )
         self.md_api.connect(
-            address,
+            md_address,
             server_license
         )
 
@@ -256,7 +271,8 @@ class UftMdApi(MdApi):
         """
         Callback when front server is disconnected.
         """
-        self.gateway.write_log(f"行情服务器连接断开，原因{reason}")
+        msg = self.getApiErrorMsg(reason)
+        self.gateway.write_log(f"行情服务器连接断开，原因：{reason}，{msg}")
 
     def onRspDepthMarketDataSubscribe(
         self,
@@ -280,11 +296,13 @@ class UftMdApi(MdApi):
             return
 
         timestamp = f"{data['TradingDay']} {data['UpdateTime']}000"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H%M%S%f")
+        dt = CHINA_TZ.localize(dt)
 
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
-            datetime=datetime.strptime(timestamp, "%Y%m%d %H%M%S%f"),
+            datetime=dt,
             name=symbol_name_map[symbol],
             volume=data["TradeVolume"],
             open_interest=data["OpenInterest"],
@@ -388,6 +406,7 @@ class UftTdApi(TdApi):
         self.password: str = ""
         self.auth_code: str = ""
         self.appid: str = ""
+        self.application_type: str = ""
 
         self.frontid: int = 0
         self.sessionid: int = 0
@@ -407,7 +426,9 @@ class UftTdApi(TdApi):
     def onFrontDisconnected(self, reason: int) -> None:
         """"""
         self.login_status = False
-        self.gateway.write_log(f"交易服务器连接断开，原因{reason}")
+
+        msg = self.getApiErrorMsg(reason)
+        self.gateway.write_log(f"交易服务器连接断开，原因：{reason}，{msg}")
 
     def onRspAuthenticate(
         self,
@@ -554,13 +575,7 @@ class UftTdApi(TdApi):
                 )
                 self.positions[key] = position
 
-            # For SHFE and INE position data update
-            if position.exchange in [Exchange.SHFE, Exchange.INE]:
-                if data["YdPositionVolume"] and not data["TodayPositionVolume"]:
-                    position.yd_volume = data["PositionVolume"]
-            # For other exchange position data update
-            else:
-                position.yd_volume = data["PositionVolume"] - data["TodayPositionVolume"]
+            position.yd_volume = data["PositionVolume"] - data["TodayPositionVolume"]
 
             # Get contract size (spread contract has no size value)
             size = symbol_size_map.get(position.symbol, 0)
@@ -657,6 +672,10 @@ class UftTdApi(TdApi):
         orderid = f"{sessionid}_{order_ref}"
 
         order = self.orders.get(orderid, None)
+        insert_time = generate_time(data["InsertTime"])
+        timestamp = f"{data['InsertDate']} {insert_time}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = CHINA_TZ.localize(dt)
 
         if not order:
             order = OrderData(
@@ -670,12 +689,12 @@ class UftTdApi(TdApi):
                 volume=data["OrderVolume"],
                 traded=data["TradeVolume"],
                 status=STATUS_UFT2VT.get(data["OrderStatus"], Status.SUBMITTING),
-                time=generate_time(data["InsertTime"]),
+                datetime=dt,
                 gateway_name=self.gateway_name
             )
             self.orders[orderid] = order
         else:
-            order.traded = data["OrderVolume"]
+            order.traded = data["TradeVolume"]
             order.status = STATUS_UFT2VT.get(data["OrderStatus"], Status.SUBMITTING)
 
         self.gateway.on_order(order)
@@ -705,6 +724,11 @@ class UftTdApi(TdApi):
 
             self.gateway.on_order(order)
 
+        trade_time = generate_time(data["TradeTime"])
+        timestamp = f"{data['TradeDate']} {trade_time}"
+        dt = datetime.strptime(timestamp, "%H:%M:%S")
+        dt = CHINA_TZ.localize(dt)
+
         trade = TradeData(
             symbol=symbol,
             exchange=exchange,
@@ -714,7 +738,7 @@ class UftTdApi(TdApi):
             offset=OFFSET_UFT2VT[data["OffsetFlag"]],
             price=data["TradePrice"],
             volume=data["TradeVolume"],
-            time=generate_time(data["TradeTime"]),
+            datetime=dt,
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)
@@ -726,7 +750,8 @@ class UftTdApi(TdApi):
         userid: str,
         password: str,
         auth_code: str,
-        appid: str
+        appid: str,
+        application_type: str
     ) -> None:
         """
         Start connection to server.
@@ -735,6 +760,7 @@ class UftTdApi(TdApi):
         self.password = password
         self.auth_code = auth_code
         self.appid = appid
+        self.application_type = application_type
 
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
@@ -779,7 +805,7 @@ class UftTdApi(TdApi):
         req = {
             "AccountID": self.userid,
             "Password": self.password,
-            "UserApplicationType": "q",
+            "UserApplicationType": self.application_type,
             "UserApplicationInfo": "",
             "MacAddress": "",
             "IPAddress": "",

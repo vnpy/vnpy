@@ -1,0 +1,22 @@
+## ==> make -f Makefile.sample
+
+INC_DIR   = ../../../../include
+LIB_DIR   = ../../../../linux64
+#LIB_DIR   = ../../../../macos64
+#LIB_DIR   = ../../../../win32
+#LIB_DIR   = ../../../../win64
+
+CC_CFLAGS = -g -Wall
+CC_LFLAGS_API = -loes_api
+CC_LFLAGS_EXT = -lpthread -lm
+#CC_LFLAGS_WIN32 = -lws2_32 -liphlpapi
+CC_LFLAGS = $(CC_LFLAGS_API) $(CC_LFLAGS_EXT) $(CC_LFLAGS_WIN32)
+
+all:
+	gcc $(CC_CFLAGS) -I$(INC_DIR) 01_oes_client_stock_sample.c  -L$(LIB_DIR) $(CC_LFLAGS) -o 01_oes_client_stock_sample
+	gcc $(CC_CFLAGS) -I$(INC_DIR) 02_oes_client_option_sample.c -L$(LIB_DIR) $(CC_LFLAGS) -o 02_oes_client_option_sample
+	gcc $(CC_CFLAGS) -I$(INC_DIR) 03_oes_async_api_sample.c  -L$(LIB_DIR) $(CC_LFLAGS) -o 03_oes_async_api_sample
+	gcc $(CC_CFLAGS) -I$(INC_DIR) 04_oes_strerror_sample.c  -L$(LIB_DIR) $(CC_LFLAGS) -o oes_strerror
+
+clean:
+	rm -f *.o 01_oes_client_stock_sample 02_oes_client_option_sample 03_oes_async_api_sample oes_strerror

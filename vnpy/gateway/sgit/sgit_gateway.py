@@ -2,6 +2,7 @@
 """
 
 import sys
+import pytz
 from datetime import datetime
 from typing import Dict, List
 
@@ -126,7 +127,7 @@ OPTIONTYPE_SGIT2VT: Dict[str, OptionType] = {
 }
 
 MAX_FLOAT: float = sys.float_info.max
-
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 symbol_exchange_map: Dict = {}
 symbol_name_map: Dict = {}
@@ -296,11 +297,13 @@ class SgitMdApi(MdApi):
             return
 
         timestamp = f"{data['TradingDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f")
+        dt = CHINA_TZ.localize(dt)
 
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
-            datetime=datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f"),
+            datetime=dt,
             name=symbol_name_map[symbol],
             volume=data["Volume"],
             open_interest=data["OpenInterest"],
@@ -405,7 +408,7 @@ class SgitTdApi(TdApi):
 
         self.connect_status = False
         self.login_status = False
-        self.auth_staus = False
+        self.auth_status = False
         self.login_failed = False
 
         self.userid = ""
@@ -419,6 +422,7 @@ class SgitTdApi(TdApi):
         self.order_data = []
         self.trade_data = []
         self.positions = {}
+        self.sysid_orderid_map = {}
 
     def onFrontConnected(self):
         """"""
@@ -437,7 +441,7 @@ class SgitTdApi(TdApi):
     def onRspAuthenticate(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         if not error['ErrorID']:
-            self.auth_staus = True
+            self.auth_status = True
             self.gateway.write_log("交易服务器授权验证成功")
             self.login()
         else:
@@ -641,6 +645,10 @@ class SgitTdApi(TdApi):
         orderid = data["OrderRef"]
         self.order_ref = max(self.order_ref, int(orderid))
 
+        timestamp = f"{data['InsertDate']} {data['InsertTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = CHINA_TZ.localize(dt)
+
         order = OrderData(
             symbol=symbol,
             exchange=exchange,
@@ -652,10 +660,12 @@ class SgitTdApi(TdApi):
             volume=data["VolumeTotalOriginal"],
             traded=data["VolumeTraded"],
             status=STATUS_SGIT2VT[data["OrderStatus"]],
-            time=data["InsertTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
         self.gateway.on_order(order)
+
+        self.self.sysid_orderid_map[data["OrderSysID"]] = orderid
 
     def onRtnTrade(self, data: dict):
         """
@@ -669,6 +679,10 @@ class SgitTdApi(TdApi):
 
         orderid = self.sysid_orderid_map[data["OrderSysID"]]
 
+        timestamp = f"{data['TradeDate']} {data['TradeTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = CHINA_TZ.localize(dt)
+
         trade = TradeData(
             symbol=symbol,
             exchange=exchange,
@@ -678,7 +692,7 @@ class SgitTdApi(TdApi):
             offset=OFFSET_SGIT2VT[data["OffsetFlag"]],
             price=data["Price"],
             volume=data["Volume"],
-            time=data["TradeTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
 

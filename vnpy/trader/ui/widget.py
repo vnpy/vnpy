@@ -7,6 +7,7 @@ import platform
 from enum import Enum
 from typing import Any, Dict
 from copy import copy
+from tzlocal import get_localzone
 
 from PyQt5 import QtCore, QtGui, QtWidgets, Qt
 import rqdatac
@@ -24,8 +25,8 @@ from ..event import (
     EVENT_ACCOUNT,
     EVENT_LOG
 )
-from ..object import OrderRequest, SubscribeRequest
-from ..utility import load_json, save_json
+from ..object import OrderRequest, SubscribeRequest, PositionData
+from ..utility import load_json, save_json, get_digits
 from ..setting import SETTING_FILENAME, SETTINGS
 
 
@@ -150,17 +151,18 @@ class TimeCell(BaseCell):
     Cell used for showing time string from datetime object.
     """
 
+    local_tz = get_localzone()
+
     def __init__(self, content: Any, data: Any):
         """"""
         super(TimeCell, self).__init__(content, data)
 
     def set_content(self, content: Any, data: Any) -> None:
-        """
-        Time format is 12:12:12.5
-        """
+        """"""
         if content is None:
             return
 
+        content = content.astimezone(self.local_tz)
         timestamp = content.strftime("%H:%M:%S")
 
         millisecond = int(content.microsecond / 1000)
@@ -402,7 +404,7 @@ class TradeMonitor(BaseMonitor):
         "offset": {"display": "开平", "cell": EnumCell, "update": False},
         "price": {"display": "价格", "cell": BaseCell, "update": False},
         "volume": {"display": "数量", "cell": BaseCell, "update": False},
-        "time": {"display": "时间", "cell": BaseCell, "update": False},
+        "datetime": {"display": "时间", "cell": TimeCell, "update": False},
         "gateway_name": {"display": "接口", "cell": BaseCell, "update": False},
     }
 
@@ -418,6 +420,7 @@ class OrderMonitor(BaseMonitor):
 
     headers: Dict[str, dict] = {
         "orderid": {"display": "委托号", "cell": BaseCell, "update": False},
+        "reference": {"display": "来源", "cell": BaseCell, "update": False},
         "symbol": {"display": "代码", "cell": BaseCell, "update": False},
         "exchange": {"display": "交易所", "cell": EnumCell, "update": False},
         "type": {"display": "类型", "cell": EnumCell, "update": False},
@@ -427,7 +430,7 @@ class OrderMonitor(BaseMonitor):
         "volume": {"display": "总数量", "cell": BaseCell, "update": True},
         "traded": {"display": "已成交", "cell": BaseCell, "update": True},
         "status": {"display": "状态", "cell": EnumCell, "update": True},
-        "time": {"display": "时间", "cell": BaseCell, "update": True},
+        "datetime": {"display": "时间", "cell": TimeCell, "update": True},
         "gateway_name": {"display": "接口", "cell": BaseCell, "update": False},
     }
 
@@ -585,6 +588,7 @@ class TradingWidget(QtWidgets.QWidget):
         self.event_engine: EventEngine = event_engine
 
         self.vt_symbol: str = ""
+        self.price_digits: int = 0
 
         self.init_ui()
         self.register_event()
@@ -627,24 +631,37 @@ class TradingWidget(QtWidgets.QWidget):
         self.gateway_combo = QtWidgets.QComboBox()
         self.gateway_combo.addItems(self.main_engine.get_all_gateway_names())
 
+        self.price_check = QtWidgets.QCheckBox()
+        self.price_check.setToolTip("设置价格随行情更新")
+
         send_button = QtWidgets.QPushButton("委托")
         send_button.clicked.connect(self.send_order)
 
         cancel_button = QtWidgets.QPushButton("全撤")
         cancel_button.clicked.connect(self.cancel_all)
 
-        form1 = QtWidgets.QFormLayout()
-        form1.addRow("交易所", self.exchange_combo)
-        form1.addRow("代码", self.symbol_line)
-        form1.addRow("名称", self.name_line)
-        form1.addRow("方向", self.direction_combo)
-        form1.addRow("开平", self.offset_combo)
-        form1.addRow("类型", self.order_type_combo)
-        form1.addRow("价格", self.price_line)
-        form1.addRow("数量", self.volume_line)
-        form1.addRow("接口", self.gateway_combo)
-        form1.addRow(send_button)
-        form1.addRow(cancel_button)
+        grid = QtWidgets.QGridLayout()
+        grid.addWidget(QtWidgets.QLabel("交易所"), 0, 0)
+        grid.addWidget(QtWidgets.QLabel("代码"), 1, 0)
+        grid.addWidget(QtWidgets.QLabel("名称"), 2, 0)
+        grid.addWidget(QtWidgets.QLabel("方向"), 3, 0)
+        grid.addWidget(QtWidgets.QLabel("开平"), 4, 0)
+        grid.addWidget(QtWidgets.QLabel("类型"), 5, 0)
+        grid.addWidget(QtWidgets.QLabel("价格"), 6, 0)
+        grid.addWidget(QtWidgets.QLabel("数量"), 7, 0)
+        grid.addWidget(QtWidgets.QLabel("接口"), 8, 0)
+        grid.addWidget(self.exchange_combo, 0, 1, 1, 2)
+        grid.addWidget(self.symbol_line, 1, 1, 1, 2)
+        grid.addWidget(self.name_line, 2, 1, 1, 2)
+        grid.addWidget(self.direction_combo, 3, 1, 1, 2)
+        grid.addWidget(self.offset_combo, 4, 1, 1, 2)
+        grid.addWidget(self.order_type_combo, 5, 1, 1, 2)
+        grid.addWidget(self.price_line, 6, 1, 1, 1)
+        grid.addWidget(self.price_check, 6, 2, 1, 1)
+        grid.addWidget(self.volume_line, 7, 1, 1, 2)
+        grid.addWidget(self.gateway_combo, 8, 1, 1, 2)
+        grid.addWidget(send_button, 9, 0, 1, 3)
+        grid.addWidget(cancel_button, 10, 0, 1, 3)
 
         # Market depth display area
         bid_color = "rgb(255,174,201)"
@@ -687,23 +704,23 @@ class TradingWidget(QtWidgets.QWidget):
         self.lp_label = self.create_label()
         self.return_label = self.create_label(alignment=QtCore.Qt.AlignRight)
 
-        form2 = QtWidgets.QFormLayout()
-        form2.addRow(self.ap5_label, self.av5_label)
-        form2.addRow(self.ap4_label, self.av4_label)
-        form2.addRow(self.ap3_label, self.av3_label)
-        form2.addRow(self.ap2_label, self.av2_label)
-        form2.addRow(self.ap1_label, self.av1_label)
-        form2.addRow(self.lp_label, self.return_label)
-        form2.addRow(self.bp1_label, self.bv1_label)
-        form2.addRow(self.bp2_label, self.bv2_label)
-        form2.addRow(self.bp3_label, self.bv3_label)
-        form2.addRow(self.bp4_label, self.bv4_label)
-        form2.addRow(self.bp5_label, self.bv5_label)
+        form = QtWidgets.QFormLayout()
+        form.addRow(self.ap5_label, self.av5_label)
+        form.addRow(self.ap4_label, self.av4_label)
+        form.addRow(self.ap3_label, self.av3_label)
+        form.addRow(self.ap2_label, self.av2_label)
+        form.addRow(self.ap1_label, self.av1_label)
+        form.addRow(self.lp_label, self.return_label)
+        form.addRow(self.bp1_label, self.bv1_label)
+        form.addRow(self.bp2_label, self.bv2_label)
+        form.addRow(self.bp3_label, self.bv3_label)
+        form.addRow(self.bp4_label, self.bv4_label)
+        form.addRow(self.bp5_label, self.bv5_label)
 
         # Overall layout
         vbox = QtWidgets.QVBoxLayout()
-        vbox.addLayout(form1)
-        vbox.addLayout(form2)
+        vbox.addLayout(grid)
+        vbox.addLayout(form)
         self.setLayout(vbox)
 
     def create_label(
@@ -731,10 +748,12 @@ class TradingWidget(QtWidgets.QWidget):
         if tick.vt_symbol != self.vt_symbol:
             return
 
-        self.lp_label.setText(str(tick.last_price))
-        self.bp1_label.setText(str(tick.bid_price_1))
+        price_digits = self.price_digits
+
+        self.lp_label.setText(f"{tick.last_price:.{price_digits}f}")
+        self.bp1_label.setText(f"{tick.bid_price_1:.{price_digits}f}")
         self.bv1_label.setText(str(tick.bid_volume_1))
-        self.ap1_label.setText(str(tick.ask_price_1))
+        self.ap1_label.setText(f"{tick.ask_price_1:.{price_digits}f}")
         self.av1_label.setText(str(tick.ask_volume_1))
 
         if tick.pre_close:
@@ -742,25 +761,28 @@ class TradingWidget(QtWidgets.QWidget):
             self.return_label.setText(f"{r:.2f}%")
 
         if tick.bid_price_2:
-            self.bp2_label.setText(str(tick.bid_price_2))
+            self.bp2_label.setText(f"{tick.bid_price_2:.{price_digits}f}")
             self.bv2_label.setText(str(tick.bid_volume_2))
-            self.ap2_label.setText(str(tick.ask_price_2))
+            self.ap2_label.setText(f"{tick.ask_price_2:.{price_digits}f}")
             self.av2_label.setText(str(tick.ask_volume_2))
 
-            self.bp3_label.setText(str(tick.bid_price_3))
+            self.bp3_label.setText(f"{tick.bid_price_3:.{price_digits}f}")
             self.bv3_label.setText(str(tick.bid_volume_3))
-            self.ap3_label.setText(str(tick.ask_price_3))
+            self.ap3_label.setText(f"{tick.ask_price_3:.{price_digits}f}")
             self.av3_label.setText(str(tick.ask_volume_3))
 
-            self.bp4_label.setText(str(tick.bid_price_4))
+            self.bp4_label.setText(f"{tick.bid_price_4:.{price_digits}f}")
             self.bv4_label.setText(str(tick.bid_volume_4))
-            self.ap4_label.setText(str(tick.ask_price_4))
+            self.ap4_label.setText(f"{tick.ask_price_4:.{price_digits}f}")
             self.av4_label.setText(str(tick.ask_volume_4))
 
-            self.bp5_label.setText(str(tick.bid_price_5))
+            self.bp5_label.setText(f"{tick.bid_price_5:.{price_digits}f}")
             self.bv5_label.setText(str(tick.bid_volume_5))
-            self.ap5_label.setText(str(tick.ask_price_5))
+            self.ap5_label.setText(f"{tick.ask_price_5:.{price_digits}f}")
             self.av5_label.setText(str(tick.ask_volume_5))
+
+        if self.price_check.isChecked():
+            self.price_line.setText(f"{tick.last_price:.{price_digits}f}")
 
     def set_vt_symbol(self) -> None:
         """
@@ -791,7 +813,12 @@ class TradingWidget(QtWidgets.QWidget):
             ix = self.gateway_combo.findText(gateway_name)
             self.gateway_combo.setCurrentIndex(ix)
 
+            # Update price digits
+            self.price_digits = get_digits(contract.pricetick)
+
         self.clear_label_text()
+        self.volume_line.setText("")
+        self.price_line.setText("")
 
         # Subscribe tick data
         req = SubscribeRequest(
@@ -860,6 +887,7 @@ class TradingWidget(QtWidgets.QWidget):
             volume=volume,
             price=price,
             offset=Offset(str(self.offset_combo.currentText())),
+            reference="ManualTrading"
         )
 
         gateway_name = str(self.gateway_combo.currentText())
@@ -874,6 +902,36 @@ class TradingWidget(QtWidgets.QWidget):
         for order in order_list:
             req = order.create_cancel_request()
             self.main_engine.cancel_order(req, order.gateway_name)
+
+    def update_with_cell(self, cell: BaseCell) -> None:
+        """"""
+        data = cell.get_data()
+
+        self.symbol_line.setText(data.symbol)
+        self.exchange_combo.setCurrentIndex(
+            self.exchange_combo.findText(data.exchange.value)
+        )
+
+        self.set_vt_symbol()
+
+        if isinstance(data, PositionData):
+            if data.direction == Direction.SHORT:
+                direction = Direction.LONG
+            elif data.direction == Direction.LONG:
+                direction = Direction.SHORT
+            else:       # Net position mode
+                if data.volume > 0:
+                    direction = Direction.SHORT
+                else:
+                    direction = Direction.LONG
+
+            self.direction_combo.setCurrentIndex(
+                self.direction_combo.findText(direction.value)
+            )
+            self.offset_combo.setCurrentIndex(
+                self.offset_combo.findText(Offset.CLOSE.value)
+            )
+            self.volume_line.setText(str(abs(data.volume)))
 
 
 class ActiveOrderMonitor(OrderMonitor):
@@ -1062,7 +1120,16 @@ class GlobalDialog(QtWidgets.QDialog):
         button.clicked.connect(self.update_setting)
         form.addRow(button)
 
-        self.setLayout(form)
+        scroll_widget = QtWidgets.QWidget()
+        scroll_widget.setLayout(form)
+
+        scroll_area = QtWidgets.QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(scroll_widget)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(scroll_area)
+        self.setLayout(vbox)
 
     def update_setting(self) -> None:
         """

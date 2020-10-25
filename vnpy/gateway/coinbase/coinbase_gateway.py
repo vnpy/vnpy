@@ -7,6 +7,7 @@ from copy import copy
 from datetime import datetime, timedelta
 import base64
 import uuid
+import pytz
 
 from typing import List, Sequence
 
@@ -65,6 +66,8 @@ TIMEDELTA_MAP = {
     Interval.DAILY: timedelta(days=1),
 }
 
+UTC_TZ = pytz.utc
+
 sys_order_map = {}
 symbol_name_map = {}
 
@@ -100,8 +103,8 @@ class CoinbaseGateway(BaseGateway):
         session_number = setting["会话数"]
         proxy_host = setting["proxy_host"]
         proxy_port = setting["proxy_port"]
-        server = setting['server']
-        passphrase = setting['passphrase']
+        server = setting["server"]
+        passphrase = setting["passphrase"]
 
         if proxy_port.isdigit():
             proxy_port = int(proxy_port)
@@ -241,7 +244,7 @@ class CoinbaseWebsocketApi(WebsocketClient):
         }
 
         timestamp = str(time.time())
-        message = timestamp + 'GET' + '/users/self/verify'
+        message = timestamp + "GET" + "/users/self/verify"
 
         auth_headers = get_auth_header(
             timestamp,
@@ -251,10 +254,10 @@ class CoinbaseWebsocketApi(WebsocketClient):
             self.passphrase
         )
 
-        sub_req['signature'] = auth_headers['CB-ACCESS-SIGN']
-        sub_req['key'] = auth_headers['CB-ACCESS-KEY']
-        sub_req['passphrase'] = auth_headers['CB-ACCESS-PASSPHRASE']
-        sub_req['timestamp'] = auth_headers['CB-ACCESS-TIMESTAMP']
+        sub_req["signature"] = auth_headers["CB-ACCESS-SIGN"]
+        sub_req["key"] = auth_headers["CB-ACCESS-KEY"]
+        sub_req["passphrase"] = auth_headers["CB-ACCESS-PASSPHRASE"]
+        sub_req["timestamp"] = auth_headers["CB-ACCESS-TIMESTAMP"]
 
         self.send_packet(sub_req)
 
@@ -275,20 +278,20 @@ class CoinbaseWebsocketApi(WebsocketClient):
         """
         callback when data is received and  unpacked
         """
-        if packet['type'] == 'error':
+        if packet["type"] == "error":
             self.gateway.write_log(
-                "Websocket API报错： %s" % packet['message'])
+                "Websocket API报错： %s" % packet["message"])
             self.gateway.write_log(
-                "Websocket API报错原因是： %s" % packet['reason'])
+                "Websocket API报错原因是： %s" % packet["reason"])
             self.active = False
 
         else:
-            callback = self.callbacks.get(packet['type'], None)
+            callback = self.callbacks.get(packet["type"], None)
             if callback:
-                if packet['type'] not in ['ticker', 'snapshot', 'l2update']:
+                if packet["type"] not in ["ticker", "snapshot", "l2update"]:
                     callback(packet)
                 else:
-                    product_id = packet['product_id']
+                    product_id = packet["product_id"]
                     callback(packet, product_id)
 
     def on_orderbook(self, packet: dict, product_id: str):
@@ -302,18 +305,18 @@ class CoinbaseWebsocketApi(WebsocketClient):
         """
         Call back when order is received by Coinbase
         """
-        orderid = packet['client_oid']
-        sysid = packet['order_id']
+        orderid = packet["client_oid"]
+        sysid = packet["order_id"]
 
         order = OrderData(
-            symbol=packet['product_id'],
+            symbol=packet["product_id"],
             exchange=Exchange.COINBASE,
-            type=ORDERTYPE_COINBASE2VT[packet['order_type']],
+            type=ORDERTYPE_COINBASE2VT[packet["order_type"]],
             orderid=orderid,
-            direction=DIRECTION_COINBASE2VT[packet['side']],
-            price=float(packet['price']),
-            volume=float(packet['size']),
-            time=packet['time'],
+            direction=DIRECTION_COINBASE2VT[packet["side"]],
+            price=float(packet["price"]),
+            volume=float(packet["size"]),
+            datetime=generate_datetime(packet["time"]),
             status=Status.NOTTRADED,
             gateway_name=self.gateway_name,
         )
@@ -326,10 +329,10 @@ class CoinbaseWebsocketApi(WebsocketClient):
         """
         Call back when the order is on the orderbook
         """
-        sysid = packet['order_id']
+        sysid = packet["order_id"]
         order = sys_order_map[sysid]
 
-        order.traded = order.volume - float(packet['remaining_size'])
+        order.traded = order.volume - float(packet["remaining_size"])
         if order.traded:
             order.status = Status.PARTTRADED
 
@@ -339,15 +342,15 @@ class CoinbaseWebsocketApi(WebsocketClient):
         """
         Call back when the order is done
         """
-        sysid = packet['order_id']
+        sysid = packet["order_id"]
         order = sys_order_map[sysid]
 
         if order.status == Status.CANCELLED:
             return
 
-        order.traded = order.volume - float(packet['remaining_size'])
+        order.traded = order.volume - float(packet["remaining_size"])
 
-        if packet['reason'] == 'filled':
+        if packet["reason"] == "filled":
             order.status = Status.ALLTRADED
         else:
             order.status = Status.CANCELLED
@@ -356,20 +359,20 @@ class CoinbaseWebsocketApi(WebsocketClient):
 
     def on_order_match(self, packet: dict):
         """"""
-        if packet['maker_order_id'] in sys_order_map:
-            order = sys_order_map[packet['maker_order_id']]
+        if packet["maker_order_id"] in sys_order_map:
+            order = sys_order_map[packet["maker_order_id"]]
         else:
-            order = sys_order_map[packet['taker_order_id']]
+            order = sys_order_map[packet["taker_order_id"]]
 
         trade = TradeData(
-            symbol=packet['product_id'],
+            symbol=packet["product_id"],
             exchange=Exchange.COINBASE,
             orderid=order.orderid,
-            tradeid=packet['trade_id'],
-            direction=DIRECTION_COINBASE2VT[packet['side']],
-            price=float(packet['price']),
-            volume=float(packet['size']),
-            time=packet['time'],
+            tradeid=packet["trade_id"],
+            direction=DIRECTION_COINBASE2VT[packet["side"]],
+            price=float(packet["price"]),
+            volume=float(packet["size"]),
+            datetime=generate_datetime(packet["time"]),
             gateway_name=self.gateway_name,
         )
         self.gateway.on_trade(trade)
@@ -393,7 +396,7 @@ class OrderBook():
             symbol=symbol,
             exchange=exchange,
             name=symbol_name_map.get(symbol, ""),
-            datetime=datetime.now(),
+            datetime=datetime.now(UTC_TZ),
             gateway_name=gateway.gateway_name,
         )
 
@@ -403,12 +406,11 @@ class OrderBook():
         """
         callback by websocket when server send orderbook data
         """
-        if d['type'] == 'l2update':
-            dt = datetime.strptime(
-                d["time"][:-4] + d['time'][-1], "%Y-%m-%dT%H:%M:%S.%fZ")
-            self.on_update(d['changes'][0], dt)
-        elif d['type'] == 'snapshot':
-            self.on_snapshot(d['asks'], d['bids'])
+        if d["type"] == "l2update":
+            dt = generate_datetime(d["time"])
+            self.on_update(d["changes"][0], dt)
+        elif d["type"] == "snapshot":
+            self.on_snapshot(d["asks"], d["bids"])
         else:
             self.on_ticker(d)
 
@@ -420,7 +422,7 @@ class OrderBook():
         price = d[1]
         side = d[0]
 
-        if side == 'buy':
+        if side == "buy":
             if float(price) in self.bids:
                 if size == 0:
                     del self.bids[float(price)]
@@ -445,11 +447,11 @@ class OrderBook():
         """
         tick = self.tick
 
-        tick.open_price = float(d['open_24h'])
-        tick.high_price = float(d['high_24h'])
-        tick.low_price = float(d['low_24h'])
-        tick.last_price = float(d['price'])
-        tick.volume = float(d['volume_24h'])
+        tick.open_price = float(d["open_24h"])
+        tick.high_price = float(d["high_24h"])
+        tick.low_price = float(d["low_24h"])
+        tick.last_price = float(d["price"])
+        tick.volume = float(d["volume_24h"])
 
         self.gateway.on_tick(copy(tick))
 
@@ -524,7 +526,7 @@ class CoinbaseRestApi(RestClient):
         Generate Coinbase signature
         """
         timestamp = str(time.time())
-        message = ''.join([timestamp, request.method,
+        message = "".join([timestamp, request.method,
                            request.path, request.data or ""])
         request.headers = (get_auth_header(timestamp, message,
                                            self.key,
@@ -590,7 +592,7 @@ class CoinbaseRestApi(RestClient):
     def on_query_account(self, data, request):
         """"""
         for acc in data:
-            account_id = str(acc['currency'])
+            account_id = str(acc["currency"])
 
             account = self.accounts.get(account_id, None)
             if not account:
@@ -609,48 +611,46 @@ class CoinbaseRestApi(RestClient):
     def on_query_order(self, data, request):
         """"""
         for d in data:
-            date, time = d['created_at'].split('T')
-
-            if d['status'] == 'open':
-                if not float(d['filled_size']):
+            if d["status"] == "open":
+                if not float(d["filled_size"]):
                     status = Status.NOTTRADED
                 else:
                     status = Status.PARTTRADED
             else:
-                if d['size'] == d['filled_size']:
+                if d["size"] == d["filled_size"]:
                     status = Status.ALLTRADED
                 else:
                     status = Status.CANCELLED
 
             order = OrderData(
-                symbol=d['product_id'],
+                symbol=d["product_id"],
                 gateway_name=self.gateway_name,
                 exchange=Exchange.COINBASE,
-                orderid=d['id'],
-                direction=DIRECTION_COINBASE2VT[d['side']],
-                price=float(d['price']),
-                volume=float(d['size']),
-                traded=float(d['filled_size']),
-                time=time.replace('Z', ""),
+                orderid=d["id"],
+                direction=DIRECTION_COINBASE2VT[d["side"]],
+                price=float(d["price"]),
+                volume=float(d["size"]),
+                traded=float(d["filled_size"]),
+                datetime=generate_datetime(d["created_at"]),
                 status=status,
             )
             self.gateway.on_order(copy(order))
 
             sys_order_map[order.orderid] = order
 
-        self.gateway.write_log(u'委托信息查询成功')
+        self.gateway.write_log(u"委托信息查询成功")
 
     def on_query_instrument(self, data, request):
         """"""
         for d in data:
             contract = ContractData(
-                symbol=d['id'],
+                symbol=d["id"],
                 exchange=Exchange.COINBASE,
-                name=d['display_name'],
+                name=d["display_name"],
                 product=Product.SPOT,
-                pricetick=float(d['quote_increment']),
+                pricetick=float(d["quote_increment"]),
                 size=1,
-                min_volume=float(d['base_min_size']),
+                min_volume=float(d["base_min_size"]),
                 net_position=True,
                 history_data=True,
                 gateway_name=self.gateway_name,
@@ -676,7 +676,7 @@ class CoinbaseRestApi(RestClient):
         }
 
         if req.type == OrderType.LIMIT:
-            data['price'] = req.price
+            data["price"] = req.price
 
         self.add_request(
             "POST",
@@ -778,7 +778,7 @@ class CoinbaseRestApi(RestClient):
         Callback to handle request failed.
         """
         data = request.response.json()
-        error = data['message']
+        error = data["message"]
         msg = f"请求失败，状态码：{status_code},信息：{error}"
         self.gateway.write_log(msg)
 
@@ -850,6 +850,8 @@ class CoinbaseRestApi(RestClient):
 
                 for l in data[1:]:
                     dt = datetime.fromtimestamp(l[0])
+                    dt = UTC_TZ.localize(dt)
+
                     o, h, l, c, v = l[1:]
                     bar = BarData(
                         symbol=req.symbol,
@@ -889,12 +891,19 @@ def get_auth_header(
     message = message.encode("ascii")
     hmac_key = base64.b64decode(secret_key)
     signature = hmac.new(hmac_key, message, hashlib.sha256)
-    signature_b64 = base64.b64encode(signature.digest()).decode('utf-8')
+    signature_b64 = base64.b64encode(signature.digest()).decode("utf-8")
 
     return{
-        'Content-Type': 'Application/JSON',
-        'CB-ACCESS-SIGN': signature_b64,
-        'CB-ACCESS-TIMESTAMP': timestamp,
-        'CB-ACCESS-KEY': api_key,
-        'CB-ACCESS-PASSPHRASE': passphrase
+        "Content-Type": "Application/JSON",
+        "CB-ACCESS-SIGN": signature_b64,
+        "CB-ACCESS-TIMESTAMP": timestamp,
+        "CB-ACCESS-KEY": api_key,
+        "CB-ACCESS-PASSPHRASE": passphrase
     }
+
+
+def generate_datetime(timestamp: str) -> datetime:
+    """"""
+    dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    dt = UTC_TZ.localize(dt)
+    return dt

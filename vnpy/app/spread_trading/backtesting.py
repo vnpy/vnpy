@@ -3,9 +3,9 @@ from datetime import date, datetime
 from typing import Callable, Type
 
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from pandas import DataFrame
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 from vnpy.trader.constant import (Direction, Offset, Exchange,
                                   Interval, Status)
@@ -13,8 +13,6 @@ from vnpy.trader.object import TradeData, BarData, TickData
 
 from .template import SpreadStrategyTemplate, SpreadAlgoTemplate
 from .base import SpreadData, BacktestingMode, load_bar_data, load_tick_data
-
-sns.set_style("whitegrid")
 
 
 class BacktestingEngine:
@@ -139,7 +137,7 @@ class BacktestingEngine:
                 self.pricetick
             )
         else:
-            self.history_datas = load_tick_data(
+            self.history_data = load_tick_data(
                 self.spread,
                 self.start,
                 self.end
@@ -390,25 +388,37 @@ class BacktestingEngine:
         if df is None:
             return
 
-        plt.figure(figsize=(10, 16))
+        fig = make_subplots(
+            rows=4,
+            cols=1,
+            subplot_titles=["Balance", "Drawdown", "Daily Pnl", "Pnl Distribution"],
+            vertical_spacing=0.06
+        )
 
-        balance_plot = plt.subplot(4, 1, 1)
-        balance_plot.set_title("Balance")
-        df["balance"].plot(legend=True)
+        balance_line = go.Scatter(
+            x=df.index,
+            y=df["balance"],
+            mode="lines",
+            name="Balance"
+        )
+        drawdown_scatter = go.Scatter(
+            x=df.index,
+            y=df["drawdown"],
+            fillcolor="red",
+            fill='tozeroy',
+            mode="lines",
+            name="Drawdown"
+        )
+        pnl_bar = go.Bar(y=df["net_pnl"], name="Daily Pnl")
+        pnl_histogram = go.Histogram(x=df["net_pnl"], nbinsx=100, name="Days")
 
-        drawdown_plot = plt.subplot(4, 1, 2)
-        drawdown_plot.set_title("Drawdown")
-        drawdown_plot.fill_between(range(len(df)), df["drawdown"].values)
+        fig.add_trace(balance_line, row=1, col=1)
+        fig.add_trace(drawdown_scatter, row=2, col=1)
+        fig.add_trace(pnl_bar, row=3, col=1)
+        fig.add_trace(pnl_histogram, row=4, col=1)
 
-        pnl_plot = plt.subplot(4, 1, 3)
-        pnl_plot.set_title("Daily Pnl")
-        df["net_pnl"].plot(kind="bar", legend=False, grid=False, xticks=[])
-
-        distribution_plot = plt.subplot(4, 1, 4)
-        distribution_plot.set_title("Daily Pnl Distribution")
-        df["net_pnl"].hist(bins=50)
-
-        plt.show()
+        fig.update_layout(height=1000, width=1000)
+        fig.show()
 
     def update_daily_close(self, price: float):
         """"""
@@ -497,10 +507,9 @@ class BacktestingEngine:
                 offset=algo.offset,
                 price=trade_price,
                 volume=algo.volume,
-                time=self.datetime.strftime("%H:%M:%S"),
+                datetime=self.datetime,
                 gateway_name=self.gateway_name,
             )
-            trade.datetime = self.datetime
 
             if self.mode == BacktestingMode.BAR:
                 trade.value = self.bar.value

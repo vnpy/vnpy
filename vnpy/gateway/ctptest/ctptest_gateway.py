@@ -1,6 +1,7 @@
 """
 """
 
+import pytz
 from datetime import datetime
 
 from .vnctpmd import MdApi
@@ -112,6 +113,8 @@ OPTIONTYPE_CTP2VT = {
     THOST_FTDC_CP_CallOptions: OptionType.CALL,
     THOST_FTDC_CP_PutOptions: OptionType.PUT
 }
+
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 
 symbol_exchange_map = {}
@@ -292,11 +295,13 @@ class CtpMdApi(MdApi):
             return
 
         timestamp = f"{data['ActionDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f")
+        dt = CHINA_TZ.localize(dt)
 
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
-            datetime=datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f"),
+            datetime=dt,
             name=symbol_name_map[symbol],
             volume=data["Volume"],
             last_price=data["LastPrice"],
@@ -604,6 +609,10 @@ class CtpTdApi(TdApi):
         order_ref = data["OrderRef"]
         orderid = f"{frontid}_{sessionid}_{order_ref}"
 
+        timestamp = f"{data['InsertDate']} {data['InsertTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = CHINA_TZ.localize(dt)
+
         order = OrderData(
             symbol=symbol,
             exchange=exchange,
@@ -615,7 +624,7 @@ class CtpTdApi(TdApi):
             volume=data["VolumeTotalOriginal"],
             traded=data["VolumeTraded"],
             status=STATUS_CTP2VT[data["OrderStatus"]],
-            time=data["InsertTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
         self.gateway.on_order(order)
@@ -634,6 +643,10 @@ class CtpTdApi(TdApi):
 
         orderid = self.sysid_orderid_map[data["OrderSysID"]]
 
+        timestamp = f"{data['TradeDate']} {data['TradeTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = CHINA_TZ.localize(dt)
+
         trade = TradeData(
             symbol=symbol,
             exchange=exchange,
@@ -643,7 +656,7 @@ class CtpTdApi(TdApi):
             offset=OFFSET_CTP2VT[data["OffsetFlag"]],
             price=data["Price"],
             volume=data["Volume"],
-            time=data["TradeTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)
