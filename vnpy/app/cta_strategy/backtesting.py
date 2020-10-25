@@ -672,7 +672,7 @@ class BacktestingEngine:
         ga_mode = self.mode
         ga_inverse = self.inverse
 
-        # Set up genetic algorithem
+        # Set up genetic algorithm
         toolbox = base.Toolbox()
         toolbox.register("individual", tools.initIterate, creator.Individual, generate_parameter)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
