@@ -420,6 +420,7 @@ class OrderMonitor(BaseMonitor):
 
     headers: Dict[str, dict] = {
         "orderid": {"display": "委托号", "cell": BaseCell, "update": False},
+        "reference": {"display": "来源", "cell": BaseCell, "update": False},
         "symbol": {"display": "代码", "cell": BaseCell, "update": False},
         "exchange": {"display": "交易所", "cell": EnumCell, "update": False},
         "type": {"display": "类型", "cell": EnumCell, "update": False},
@@ -886,6 +887,7 @@ class TradingWidget(QtWidgets.QWidget):
             volume=volume,
             price=price,
             offset=Offset(str(self.offset_combo.currentText())),
+            reference="ManualTrading"
         )
 
         gateway_name = str(self.gateway_combo.currentText())

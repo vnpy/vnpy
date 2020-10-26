@@ -55,8 +55,10 @@ class SpreadAlgoTemplate:
         self.count: int = 0                     # Timer count
         self.traded: float = 0                  # Volume traded
         self.traded_volume: float = 0           # Volume traded (Abs value)
+        self.traded_price: float = 0            # Spread fill price
 
-        self.leg_traded: Dict[str, float] = defaultdict(int)
+        self.leg_traded: Dict[str, float] = defaultdict(float)
+        self.leg_cost: Dict[str, float] = defaultdict(float)
         self.leg_orders: Dict[str, List[str]] = defaultdict(list)
 
         self.order_trade_volume: Dict[str, int] = defaultdict(int)
@@ -187,8 +189,10 @@ class SpreadAlgoTemplate:
 
         if trade.direction == Direction.LONG:
             self.leg_traded[trade.vt_symbol] += trade_volume
+            self.leg_cost[trade.vt_symbol] += trade_volume * trade.price
         else:
             self.leg_traded[trade.vt_symbol] -= trade_volume
+            self.leg_cost[trade.vt_symbol] -= trade_volume * trade.price
 
         self.calculate_traded()
 
@@ -328,6 +332,7 @@ class SpreadAlgoTemplate:
 
     def calculate_traded(self):
         """"""
+        # Calculate traded volume
         self.traded = 0
 
         for n, leg in enumerate(self.spread.legs.values()):
@@ -366,6 +371,24 @@ class SpreadAlgoTemplate:
             self.status = Status.NOTTRADED
         else:
             self.status = Status.PARTTRADED
+
+        # Calculate traded price
+        self.traded_price = 0
+
+        for n, leg in enumerate(self.spread.legs.values()):
+            # If any leg is not traded yet, set spread trade price to 0
+            leg_traded = self.leg_traded[leg.vt_symbol]
+            if not leg_traded:
+                self.traded_price = 0
+                break
+
+            leg_cost = self.leg_cost[leg.vt_symbol]
+            leg_price = leg_cost / leg_traded
+
+            price_multiplier = self.spread.price_multipliers[leg.vt_symbol]
+            self.traded_price += leg_price * price_multiplier
+
+        self.traded_price = round_to(self.traded_price, self.spread.pricetick)
 
     def get_tick(self, vt_symbol: str) -> TickData:
         """"""

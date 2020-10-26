@@ -610,8 +610,7 @@ class BybitRestApi(RestClient):
         history = []
         count = 200
         start_time = int(req.start.timestamp())
-        print(req)
-        print(start_time)
+
         if self.usdt_base:
             path = "/public/linear/kline"
         else:

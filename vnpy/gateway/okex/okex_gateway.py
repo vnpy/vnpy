@@ -748,13 +748,13 @@ class OkexWebsocketApi(WebsocketClient):
 
         bids = d["bids"]
         asks = d["asks"]
-        for n, buf in enumerate(bids):
-            price, volume, _ = buf
+        for n in range(min(5, len(bids))):
+            price, volume, _ = bids[n]
             tick.__setattr__("bid_price_%s" % (n + 1), float(price))
             tick.__setattr__("bid_volume_%s" % (n + 1), float(volume))
 
-        for n, buf in enumerate(asks):
-            price, volume, _ = buf
+        for n in range(min(5, len(asks))):
+            price, volume, _ = asks[n]
             tick.__setattr__("ask_price_%s" % (n + 1), float(price))
             tick.__setattr__("ask_volume_%s" % (n + 1), float(volume))
 
