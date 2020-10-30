@@ -765,7 +765,7 @@ class CtaEngine(BaseEngine):
         self.load_strategy_class_from_folder(
             path1, "vnpy.app.cta_strategy.strategies")
 
-        path2 = Path.cwd().joinpath("strategies")
+        path2 = Path.cwd().joinpath(".vntrader", "strategies")
         self.load_strategy_class_from_folder(path2, "strategies")
 
     def load_strategy_class_from_folder(self, path: Path, module_name: str = ""):
