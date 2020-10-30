@@ -256,7 +256,7 @@ class BacktestingEngine:
             progress_bar = "#" * int(progress * 10)
             self.output(f"加载进度：{progress_bar} [{progress:.0%}]")
 
-            start = end + interval_delta
+            start = end
             end += (progress_delta + interval_delta)
 
         self.output(f"历史数据加载完成，数据量：{len(self.history_data)}")
