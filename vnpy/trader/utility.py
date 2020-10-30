@@ -697,7 +697,7 @@ class ArrayManager(object):
         Bollinger Channel.
         """
         mid = self.sma(n, array)
-        std = self.std(n, array)
+        std = self.std(n, 1, array)
 
         up = mid + std * dev
         down = mid - std * dev
