@@ -488,7 +488,7 @@ class StrategyEngine(BaseEngine):
         path1 = Path(__file__).parent.joinpath("strategies")
         self.load_strategy_class_from_folder(path1, "vnpy.app.portfolio_strategy.strategies")
 
-        path2 = Path.cwd().joinpath("strategies")
+        path2 = Path.cwd().joinpath(".vntrader", "strategies")
         self.load_strategy_class_from_folder(path2, "strategies")
 
     def load_strategy_class_from_folder(self, path: Path, module_name: str = ""):
