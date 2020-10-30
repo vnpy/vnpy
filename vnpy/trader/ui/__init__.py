@@ -33,7 +33,7 @@ def create_qapp(app_name: str = "VN Trader") -> QtWidgets.QApplication:
 
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
 
-    qapp = QtWidgets.QApplication([])
+    qapp = QtWidgets.QApplication(sys.argv)
     qapp.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
 
     font = QtGui.QFont(SETTINGS["font.family"], SETTINGS["font.size"])
