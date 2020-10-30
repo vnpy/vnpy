@@ -18,6 +18,8 @@ vn.py项目文档
    algo_trader.md
    script_trader.md
 
+   market_radar.md
+   paper_account.md
    data_recoder.md
    data_manager.md
    risk_manager.md
