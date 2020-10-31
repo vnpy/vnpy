@@ -50,4 +50,5 @@ INTERVAL_DELTA_MAP = {
     Interval.MINUTE: timedelta(minutes=1),
     Interval.HOUR: timedelta(hours=1),
     Interval.DAILY: timedelta(days=1),
+    Interval.WEEKLY: timedelta(weeks=1),
 }
