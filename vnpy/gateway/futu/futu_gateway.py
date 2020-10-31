@@ -7,6 +7,8 @@ from datetime import datetime
 from threading import Thread
 from time import sleep
 import pytz
+from pandas import DataFrame
+from futu import *
 
 from futu import (
     ModifyOrderOp,
@@ -14,6 +16,7 @@ from futu import (
     TrdEnv,
     OpenHKTradeContext,
     OpenQuoteContext,
+    OpenHKCCTradeContext,
     OpenUSTradeContext,
     OrderBookHandlerBase,
     OrderStatus,
@@ -28,22 +31,23 @@ from futu import (
 from vnpy.trader.constant import Direction, Exchange, Product, Status
 from vnpy.trader.event import EVENT_TIMER
 from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.object import (
-    TickData,
-    OrderData,
-    TradeData,
-    AccountData,
-    ContractData,
-    PositionData,
-    SubscribeRequest,
-    OrderRequest,
-    CancelRequest
-)
+from vnpy.trader.object import *
+
+
+INTERVAL_VT2FUTU = {
+    Interval.MINUTE: KLType.K_1M,
+    Interval.HOUR: KLType.K_60M,
+    Interval.DAILY: KLType.K_DAY,
+    Interval.WEEKLY: KLType.K_WEEK,
+}
+
 
 EXCHANGE_VT2FUTU = {
     Exchange.SMART: "US",
     Exchange.SEHK: "HK",
     Exchange.HKFE: "HK_FUTURE",
+    Exchange.SSE: "SH",
+    Exchange.SZSE: "SZ",
 }
 EXCHANGE_FUTU2VT = {v: k for k, v in EXCHANGE_VT2FUTU.items()}
 
@@ -84,7 +88,6 @@ class FutuGateway(BaseGateway):
         "密码": "",
         "地址": "127.0.0.1",
         "端口": 11111,
-        "市场": ["HK", "US"],
         "环境": [TrdEnv.REAL, TrdEnv.SIMULATE],
     }
 
@@ -95,11 +98,10 @@ class FutuGateway(BaseGateway):
         super(FutuGateway, self).__init__(event_engine, "FUTU")
 
         self.quote_ctx = None
-        self.trade_ctx = None
+        self.trade_ctx = {}
 
         self.host = ""
         self.port = 0
-        self.market = ""
         self.password = ""
         self.env = TrdEnv.SIMULATE
 
@@ -118,7 +120,6 @@ class FutuGateway(BaseGateway):
         """"""
         self.host = setting["地址"]
         self.port = setting["端口"]
-        self.market = setting["市场"]
         self.password = setting["密码"]
         self.env = setting["环境"]
 
@@ -151,6 +152,18 @@ class FutuGateway(BaseGateway):
         func = self.query_funcs.pop(0)
         func()
         self.query_funcs.append(func)
+
+    def find_trade_ctx (self, exchange):
+        """
+        find futu trade context
+        """
+        futu_exchange = EXCHANGE_VT2FUTU[exchange]
+        if futu_exchange == 'US':
+            return self.trade_ctx['US']
+        elif futu_exchange == 'HK':
+            return self.trade_ctx['HK']
+        else:
+            return self.trade_ctx['CN']
 
     def connect_quote(self):
         """
@@ -193,10 +206,13 @@ class FutuGateway(BaseGateway):
         Connect to trade server.
         """
         # Initialize context according to market.
-        if self.market == "US":
-            self.trade_ctx = OpenUSTradeContext(self.host, self.port)
-        else:
-            self.trade_ctx = OpenHKTradeContext(self.host, self.port)
+
+        self.trade_ctx['US'] = OpenUSTradeContext(self.host, self.port)
+        self.trade_ctx['HK'] = OpenHKTradeContext(self.host, self.port)
+        if self.env == TrdEnv.REAL:
+            self.trade_ctx['CN'] = OpenHKCCTradeContext ( self.host , self.port )
+        elif self.env == TrdEnv.SIMULATE:
+            self.trade_ctx['CN'] = OpenCNTradeContext(self.host, self.port)
 
         # Implement handlers.
         class OrderHandler(TradeOrderHandlerBase):
@@ -224,17 +240,18 @@ class FutuGateway(BaseGateway):
                 return RET_OK, content
 
         # Unlock to allow trading.
-        code, data = self.trade_ctx.unlock_trade(self.password)
-        if code == RET_OK:
-            self.write_log("交易接口解锁成功")
-        else:
-            self.write_log(f"交易接口解锁失败，原因：{data}")
+        for ctx in self.trade_ctx.values() :
+            code, data = ctx.unlock_trade(self.password)
+            if code == RET_OK:
+                self.write_log("交易接口解锁成功")
+            else:
+                self.write_log(f"交易接口解锁失败，原因：{data}")
 
-        # Start context.
-        self.trade_ctx.set_handler(OrderHandler())
-        self.trade_ctx.set_handler(DealHandler())
-        self.trade_ctx.start()
-        self.write_log("交易接口连接成功")
+            # Start context.
+            ctx.set_handler(OrderHandler())
+            ctx.set_handler(DealHandler())
+            ctx.start()
+            self.write_log("交易接口连接成功")
 
     def subscribe(self, req: SubscribeRequest):
         """"""
@@ -244,6 +261,61 @@ class FutuGateway(BaseGateway):
 
             if code:
                 self.write_log(f"订阅行情失败：{data}")
+
+    def query_history(self, req: HistoryRequest):
+        history_buf = []
+        futu_symbol = convert_symbol_vt2futu ( req.symbol , req.exchange )
+        futu_interval = INTERVAL_VT2FUTU[req.interval]
+        ret , df_data , page_req_key = self.quote_ctx.request_history_kline ( futu_symbol ,ktype=futu_interval, start=req.start.strftime("%Y-%m-%d") ,
+                                                                      end=req.end.strftime("%Y-%m-%d") , max_count=1000 )  # 每页1000个，请求第一页
+        if ret == RET_OK :
+            for index, futu_bar in df_data.iterrows():
+                dt = datetime.strptime ( futu_bar['time_key'] , "%Y-%m-%d %H:%M:%S" )
+                bar = BarData (
+                    symbol= req.symbol ,
+                    exchange=req.exchange ,
+                    datetime=dt,
+                    interval=req.interval ,
+                    volume=futu_bar['volume'] ,
+                    open_price=futu_bar['open'] ,
+                    high_price=futu_bar['high'] ,
+                    low_price=futu_bar['low'] ,
+                    close_price=futu_bar['close'] ,
+                    gateway_name= self.gateway_name
+                )
+                history_buf.append(bar)
+
+        else :
+            print ( 'error:' , df_data )
+
+        while page_req_key != None :  # 请求后面的所有结果
+            print ( '*************************************' )
+            ret , df_data , page_req_key = self.quote_ctx.request_history_kline ( futu_symbol ,ktype=futu_interval, start=req.start.strftime("%Y-%m-%d") ,
+                                                                      end=req.end.strftime("%Y-%m-%d") , max_count=1000,
+                                                                          page_req_key=page_req_key )  # 请求翻页后的数据
+            if ret == RET_OK :
+                for index, futu_bar in df_data.iterrows():
+                    dt = datetime.strptime ( futu_bar['time_key'] , "%Y-%m-%d %H:%M:%S" )
+                    #dt = self.local_tz.localize ( dt )
+                    bar = BarData (
+                        symbol=req.symbol ,
+                        exchange=req.exchange ,
+                        datetime=dt ,
+                        interval=req.interval ,
+                        volume=futu_bar['volume'] ,
+                        open_price=futu_bar['open'] ,
+                        high_price=futu_bar['high'] ,
+                        low_price=futu_bar['low'] ,
+                        close_price=futu_bar['close'] ,
+                        gateway_name='FUTU'
+                    )
+                    history_buf.append ( bar )
+
+            else :
+                print ( 'error:' , df_data )
+
+        return history_buf
+
 
     def send_order(self, req: OrderRequest):
         """"""
@@ -257,7 +329,7 @@ class FutuGateway(BaseGateway):
             adjust_limit = -0.05
 
         futu_symbol = convert_symbol_vt2futu(req.symbol, req.exchange)
-        code, data = self.trade_ctx.place_order(
+        code, data = self.find_trade_ctx(req.exchange).place_order(
             req.price,
             req.volume,
             futu_symbol,
@@ -280,7 +352,7 @@ class FutuGateway(BaseGateway):
 
     def cancel_order(self, req: CancelRequest):
         """"""
-        code, data = self.trade_ctx.modify_order(
+        code, data = self.find_trade_ctx(req.exchange).modify_order(
             ModifyOrderOp.CANCEL, req.orderid, 0, 0, trd_env=self.env
         )
 
@@ -289,103 +361,110 @@ class FutuGateway(BaseGateway):
 
     def query_contract(self):
         """"""
-        for product, futu_product in PRODUCT_VT2FUTU.items():
-            code, data = self.quote_ctx.get_stock_basicinfo(
-                self.market, futu_product
+        for market in EXCHANGE_VT2FUTU.values():
+            for product, futu_product in PRODUCT_VT2FUTU.items():
+                code, data = self.quote_ctx.get_stock_basicinfo(
+                    market, futu_product
+                )
+
+                if code:
+                    self.write_log(f"查询合约信息失败：{data}")
+                    return
+
+                for ix, row in data.iterrows():
+                    symbol, exchange = convert_symbol_futu2vt(row["code"])
+                    contract = ContractData(
+                        symbol=symbol,
+                        exchange=exchange,
+                        name=row["name"],
+                        product=product,
+                        size=1,
+                        pricetick=0.001,
+                        net_position=True,
+                        gateway_name=self.gateway_name,
+                        history_data = True,
+                    )
+                    self.on_contract(contract)
+                    self.contracts[contract.vt_symbol] = contract
+
+            self.write_log("合约信息查询成功")
+
+    def query_account(self):
+        """"""
+        for market, ctx in self.trade_ctx.items():
+            code, data = ctx.accinfo_query(trd_env=self.env, acc_id=0)
+
+            if code:
+                self.write_log(f"查询账户资金失败：{data}")
+                return
+
+            for ix, row in data.iterrows():
+                account = AccountData(
+                    accountid=f"{self.gateway_name}_{market}",
+                    balance=float(row["total_assets"]),
+                    frozen=(float(row["total_assets"]) - float(row["avl_withdrawal_cash"])),
+                    gateway_name=self.gateway_name,
+                )
+                self.on_account(account)
+
+    def query_position(self):
+        """"""
+        for ctx in self.trade_ctx.values() :
+            code, data = ctx.position_list_query(
+                trd_env=self.env, acc_id=0
             )
 
             if code:
-                self.write_log(f"查询合约信息失败：{data}")
+                self.write_log(f"查询持仓失败：{data}")
                 return
 
             for ix, row in data.iterrows():
                 symbol, exchange = convert_symbol_futu2vt(row["code"])
-                contract = ContractData(
+                pos = PositionData(
                     symbol=symbol,
                     exchange=exchange,
-                    name=row["name"],
-                    product=product,
-                    size=1,
-                    pricetick=0.001,
-                    net_position=True,
+                    direction=Direction.LONG,
+                    volume=row["qty"],
+                    frozen=(float(row["qty"]) - float(row["can_sell_qty"])),
+                    price=float(row["cost_price"]),
+                    pnl=float(row["pl_val"]),
                     gateway_name=self.gateway_name,
                 )
-                self.on_contract(contract)
-                self.contracts[contract.vt_symbol] = contract
 
-        self.write_log("合约信息查询成功")
-
-    def query_account(self):
-        """"""
-        code, data = self.trade_ctx.accinfo_query(trd_env=self.env, acc_id=0)
-
-        if code:
-            self.write_log(f"查询账户资金失败：{data}")
-            return
-
-        for ix, row in data.iterrows():
-            account = AccountData(
-                accountid=f"{self.gateway_name}_{self.market}",
-                balance=float(row["total_assets"]),
-                frozen=(float(row["total_assets"]) - float(row["avl_withdrawal_cash"])),
-                gateway_name=self.gateway_name,
-            )
-            self.on_account(account)
-
-    def query_position(self):
-        """"""
-        code, data = self.trade_ctx.position_list_query(
-            trd_env=self.env, acc_id=0
-        )
-
-        if code:
-            self.write_log(f"查询持仓失败：{data}")
-            return
-
-        for ix, row in data.iterrows():
-            symbol, exchange = convert_symbol_futu2vt(row["code"])
-            pos = PositionData(
-                symbol=symbol,
-                exchange=exchange,
-                direction=Direction.LONG,
-                volume=row["qty"],
-                frozen=(float(row["qty"]) - float(row["can_sell_qty"])),
-                price=float(row["cost_price"]),
-                pnl=float(row["pl_val"]),
-                gateway_name=self.gateway_name,
-            )
-
-            self.on_position(pos)
+                self.on_position(pos)
 
     def query_order(self):
         """"""
-        code, data = self.trade_ctx.order_list_query("", trd_env=self.env)
+        for ctx in self.trade_ctx.values() :
+            code, data = ctx.order_list_query("", trd_env=self.env)
 
-        if code:
-            self.write_log(f"查询委托失败：{data}")
-            return
+            if code:
+                self.write_log(f"查询委托失败：{data}")
+                return
 
-        self.process_order(data)
-        self.write_log("委托查询成功")
+            self.process_order(data)
+            self.write_log("委托查询成功")
 
     def query_trade(self):
         """"""
-        code, data = self.trade_ctx.deal_list_query("", trd_env=self.env)
+        for ctx in self.trade_ctx.values() :
+            code, data = ctx.deal_list_query("", trd_env=self.env)
 
-        if code:
-            self.write_log(f"查询成交失败：{data}")
-            return
+            if code:
+                self.write_log(f"查询成交失败：{data}")
+                return
 
-        self.process_deal(data)
-        self.write_log("成交查询成功")
+            self.process_deal(data)
+            self.write_log("成交查询成功")
 
     def close(self):
         """"""
         if self.quote_ctx:
             self.quote_ctx.close()
 
-        if self.trade_ctx:
-            self.trade_ctx.close()
+        for ctx in self.trade_ctx.values() :
+            if ctx:
+                ctx.close()
 
     def get_tick(self, code):
         """
@@ -412,14 +491,16 @@ class FutuGateway(BaseGateway):
         """报价推送"""
         for ix, row in data.iterrows():
             symbol = row["code"]
-
+            tick = self.get_tick ( symbol )
             date = row["data_date"].replace("-", "")
-            time = row["data_time"]
-            dt = datetime.strptime(f"{date} {time}", "%Y%m%d %H:%M:%S")
-            dt = CHINA_TZ.localize(dt)
+            if date != '':
+                time = row["data_time"]
+                time = time.split('.')[0]
+                dt = datetime.strptime(f"{date} {time}", "%Y%m%d %H:%M:%S")
+                #dt = CHINA_TZ.localize(dt)
+                tick.datetime = dt
 
-            tick = self.get_tick(symbol)
-            tick.datetime = dt
+
             tick.open_price = row["open_price"]
             tick.high_price = row["high_price"]
             tick.low_price = row["low_price"]
@@ -521,6 +602,8 @@ def convert_symbol_vt2futu(symbol, exchange):
     """
     futu_exchange = EXCHANGE_VT2FUTU[exchange]
     return f"{futu_exchange}.{symbol}"
+
+
 
 
 def generate_datetime(s: str) -> datetime:
