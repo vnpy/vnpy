@@ -6,7 +6,7 @@ from copy import copy
 import numpy as np
 import pyqtgraph as pg
 
-from vnpy.trader.constant import Interval, Direction
+from vnpy.trader.constant import Interval, Direction, Exchange
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtCore, QtWidgets, QtGui
 from vnpy.trader.ui.widget import BaseMonitor, BaseCell, DirectionCell, EnumCell
@@ -312,6 +312,11 @@ class BacktesterManager(QtWidgets.QWidget):
             inverse = False
         else:
             inverse = True
+            
+        symbol, exchange_str = vt_symbol.split(".")
+        if exchange_str not in Exchange.__members__:
+            self.write_log("交易所代码不正确")
+            return
 
         # Save backtesting parameters
         backtesting_setting = {
