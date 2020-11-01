@@ -2,6 +2,7 @@
 
 import importlib
 import os
+import re
 import traceback
 from collections import defaultdict
 from pathlib import Path
@@ -649,6 +650,14 @@ class CtaEngine(BaseEngine):
             self.write_log(f"{strategy_name}已经完成初始化，禁止重复操作")
             return
 
+        if re.match(".+\..+", strategy.vt_symbol) == None:
+            self.write_log("本地代码格式不正确")
+            return
+        symbol, exchange_str = strategy.vt_symbol.split(".")
+        if exchange_str not in Exchange.__members__:
+            self.write_log("交易所代码不正确")
+            return
+        
         self.write_log(f"{strategy_name}开始执行初始化")
 
         # Call on_init function of strategy
