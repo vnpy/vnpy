@@ -1,4 +1,5 @@
 import csv
+import re
 from datetime import datetime, timedelta
 from tzlocal import get_localzone
 from copy import copy
@@ -312,6 +313,14 @@ class BacktesterManager(QtWidgets.QWidget):
             inverse = False
         else:
             inverse = True
+            
+        if re.match(".+\..+", vt_symbol) == None:
+            self.write_log("本地代码格式不正确")
+            return
+        symbol, exchange_str = vt_symbol.split(".")
+        if exchange_str not in Exchange.__members__:
+            self.write_log("交易所代码不正确")
+            return
 
         # Save backtesting parameters
         backtesting_setting = {
