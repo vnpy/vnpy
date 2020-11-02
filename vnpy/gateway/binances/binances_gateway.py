@@ -822,7 +822,6 @@ class BinancesTradeWebsocketApi(WebsocketClient):
     def on_connected(self) -> None:
         """"""
         self.gateway.write_log("交易Websocket API连接成功")
-        self.gateway.write_log(self.gateway_name)
 
     def on_packet(self, packet: dict) -> None:  # type: (dict)->None
         """"""

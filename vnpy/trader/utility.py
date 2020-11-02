@@ -39,6 +39,10 @@ def _get_trader_dir(temp_name: str) -> Tuple[Path, Path]:
     """
     Get path where trader is running in.
     """
+    # by incenselee
+    # 原方法，当前目录必须自建.vntrader子目录，否则在用户得目录下创建
+    # 为兼容多账号管理，取消此方法。
+    return Path.cwd(), Path.cwd()
     cwd = Path.cwd()
     temp_path = cwd.joinpath(temp_name)
 
@@ -179,7 +183,8 @@ class BarGenerator:
         on_bar: Callable,
         window: int = 0,
         on_window_bar: Callable = None,
-        interval: Interval = Interval.MINUTE
+        interval: Interval = Interval.MINUTE,
+        is_7x24: bool = False
     ):
         """Constructor"""
         self.bar: BarData = None
@@ -195,6 +200,8 @@ class BarGenerator:
         self.last_tick: TickData = None
         self.last_bar: BarData = None
 
+        self.is_7x24 = is_7x24
+
     def update_tick(self, tick: TickData) -> None:
         """
         Update new tick data into generator.
@@ -205,8 +212,12 @@ class BarGenerator:
         if not tick.last_price:
             return
 
+        # Filter tick date with same time
+        if self.last_tick and self.last_tick.datetime.second == tick.datetime.second and tick.datetime.microsecond == self.last_tick.datetime.microsecond:
+            return
+
         # Filter tick data with less intraday trading volume (i.e. older timestamp)
-        if self.last_tick and tick.volume and tick.volume < self.last_tick.volume:
+        if self.last_tick and tick.volume and tick.volume < self.last_tick.volume and not self.is_7x24:
             return
 
         if not self.bar:
