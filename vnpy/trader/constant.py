@@ -64,6 +64,10 @@ class OrderType(Enum):
     FAK = "FAK"
     FOK = "FOK"
     RFQ = "询价"
+    TAKE_PROFIT_MARKET = "市价止赢"
+    TAKE_PROFIT = "止盈单"
+    STOP_LOSS = "止损单"
+    STOP_LOSS_LIMIT = "限价止损单"
 
 
 class OptionType(Enum):

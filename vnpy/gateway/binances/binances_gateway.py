@@ -2,6 +2,7 @@
 Gateway for Binance Crypto Exchange.
 """
 
+import json
 import urllib
 import hashlib
 import hmac
@@ -71,14 +72,30 @@ ORDERTYPE_VT2BINANCES: Dict[OrderType, Tuple[str, str]] = {
     OrderType.MARKET: ("MARKET", "GTC"),
     OrderType.FAK: ("LIMIT", "IOC"),
     OrderType.FOK: ("LIMIT", "FOK"),
+    OrderType.TAKE_PROFIT_MARKET : ("TAKE_PROFIT_MARKET", "GTC"),
+    OrderType.TAKE_PROFIT: ("TAKE_PROFIT", "GTC"),
+    OrderType.STOP_LOSS: ("STOP_LOSS", "GTC"),
+    OrderType.STOP_LOSS_LIMIT: ("STOP_LOSS_LIMIT", "GTC")
 }
+
 ORDERTYPE_BINANCES2VT: Dict[Tuple[str, str], OrderType] = {v: k for k, v in ORDERTYPE_VT2BINANCES.items()}
+
+SIDE_VT2BINANCEF: Dict[Direction, str] = {
+    Direction.LONG: "LONG",
+    Direction.SHORT: "SHORT"
+}
 
 DIRECTION_VT2BINANCES: Dict[Direction, str] = {
     Direction.LONG: "BUY",
     Direction.SHORT: "SELL"
 }
 DIRECTION_BINANCES2VT: Dict[str, Direction] = {v: k for k, v in DIRECTION_VT2BINANCES.items()}
+
+OFFSET_VT2BINANCES: Dict[Offset, bool] = {
+    Offset.OPEN: False,
+    Offset.CLOSE: True
+}
+OFFSET_BINANCES2VT: Dict[bool, Offset] = {v: k for k, v in OFFSET_VT2BINANCES.items()}
 
 INTERVAL_VT2BINANCES: Dict[Interval, str] = {
     Interval.MINUTE: "1m",
@@ -206,6 +223,8 @@ class BinancesRestApi(RestClient):
         self.recv_window: int = 5000
         self.time_offset: int = 0
 
+        self.contracts = {}
+
         self.order_count: int = 1_000_000
         self.order_count_lock: Lock = Lock()
         self.connect_time: int = 0
@@ -328,7 +347,7 @@ class BinancesRestApi(RestClient):
         data = {"security": Security.SIGNED}
 
         if self.usdt_base:
-            path = "/fapi/v1/account"
+            path = "/fapi/v2/account"
         else:
             path = "/dapi/v1/account"
 
@@ -408,6 +427,14 @@ class BinancesRestApi(RestClient):
             "security": Security.SIGNED
         }
 
+        if req.offset == Offset.OPEN:
+            positionSide = SIDE_VT2BINANCEF[req.direction]
+        else:
+            if req.direction == Direction.LONG:
+                positionSide = SIDE_VT2BINANCEF[Direction.SHORT]
+            else:
+                positionSide = SIDE_VT2BINANCEF[Direction.LONG]
+
         order_type, time_condition = ORDERTYPE_VT2BINANCES[req.type]
 
         params = {
@@ -418,9 +445,10 @@ class BinancesRestApi(RestClient):
             "price": float(req.price),
             "quantity": float(req.volume),
             "newClientOrderId": orderid,
+            "positionSide": positionSide
         }
 
-        if req.offset == Offset.CLOSE:
+        if req.offset == Offset.CLOSE and self.contracts['positionSide'] != "BOTH":
             params["reduceOnly"] = True
 
         if self.usdt_base:
@@ -463,8 +491,27 @@ class BinancesRestApi(RestClient):
             callback=self.on_cancel_order,
             params=params,
             data=data,
-            extra=req
+            extra=req,
+            on_error=self.on_cancel_order_error,
+            on_failed=self.on_cancel_order_failed
         )
+
+    def on_cancel_order_error(
+        self, exception_type: type, exception_value: Exception, tb, request: Request
+    ):
+        """
+        Callback when cancelling order failed on server.
+        """
+        # Record exception if not ConnectionError
+        if not issubclass(exception_type, ConnectionError):
+            self.on_error(exception_type, exception_value, tb, request)
+
+    def on_cancel_order_failed(self, status_code: str, request: Request):
+        """
+        Callback when canceling order failed on server.
+        """
+        msg = f"撤单失败，状态码：{status_code}，信息：{request.response.text}"
+        self.gateway.write_log(msg)
 
     def start_user_stream(self) -> Request:
         """"""
@@ -530,6 +577,14 @@ class BinancesRestApi(RestClient):
             if account.balance:
                 self.gateway.on_account(account)
 
+        # 临时缓存合约的配置信息
+        for position in data["positions"]:
+            symbol = position.get('symbol')
+            if symbol:
+                # if symbol not in self.contracts:
+                #     self.gateway.write_log(json.dumps(position, indent=2))
+                self.contracts.update({symbol: position})
+
         self.gateway.write_log("账户资金查询成功")
 
     def on_query_position(self, data: dict, request: Request) -> None:
@@ -584,6 +639,7 @@ class BinancesRestApi(RestClient):
 
             pricetick = 1
             min_volume = 1
+            symbol = d["symbol"]
 
             for f in d["filters"]:
                 if f["filterType"] == "PRICE_FILTER":
@@ -591,13 +647,20 @@ class BinancesRestApi(RestClient):
                 elif f["filterType"] == "LOT_SIZE":
                     min_volume = float(f["stepSize"])
 
+            # 合约乘数
+            symbol_size = 20  # 缺省为20倍的杠杆
+            contract_info = self.contracts.get(symbol, {})
+            if contract_info:
+                symbol_size = int(contract_info.get('leverage', symbol_size))
+
             contract = ContractData(
-                symbol=d["symbol"],
+                symbol=symbol,
                 exchange=Exchange.BINANCE,
                 name=name,
                 pricetick=pricetick,
                 size=1,
                 min_volume=min_volume,
+                margin_rate=symbol_size,
                 product=Product.FUTURES,
                 history_data=True,
                 gateway_name=self.gateway_name,
@@ -759,6 +822,7 @@ class BinancesTradeWebsocketApi(WebsocketClient):
     def on_connected(self) -> None:
         """"""
         self.gateway.write_log("交易Websocket API连接成功")
+        self.gateway.write_log(self.gateway_name)
 
     def on_packet(self, packet: dict) -> None:  # type: (dict)->None
         """"""
@@ -811,7 +875,8 @@ class BinancesTradeWebsocketApi(WebsocketClient):
             traded=float(ord_data["z"]),
             status=STATUS_BINANCES2VT[ord_data["X"]],
             datetime=generate_datetime(packet["E"]),
-            gateway_name=self.gateway_name
+            gateway_name=self.gateway_name,
+            offset=OFFSET_BINANCES2VT[ord_data['R']]
         )
 
         self.gateway.on_order(order)
@@ -831,6 +896,7 @@ class BinancesTradeWebsocketApi(WebsocketClient):
             volume=trade_volume,
             datetime=generate_datetime(ord_data["T"]),
             gateway_name=self.gateway_name,
+            offset=order.offset
         )
         self.gateway.on_trade(trade)
 
