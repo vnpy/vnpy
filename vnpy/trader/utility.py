@@ -12,6 +12,7 @@ from math import floor, ceil
 
 import numpy as np
 import talib
+import operator
 
 from .object import BarData, TickData
 from .constant import Exchange, Interval
@@ -413,6 +414,14 @@ class ArrayManager(object):
         Get trading volume time series.
         """
         return self.open_interest_array
+
+    def pinbar(self, functionName, array: bool = False):
+        func = operator.methodcaller(functionName, self.open, self.high, self.low, self.close)
+        ret = func(talib)
+        if array:
+            return ret
+        else:
+            return ret[-1]
 
     def sma(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """

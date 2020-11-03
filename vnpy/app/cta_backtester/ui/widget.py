@@ -1,5 +1,6 @@
 import csv
 from datetime import datetime, timedelta
+from PyQt5.QtGui import QTextCursor
 from tzlocal import get_localzone
 from copy import copy
 
@@ -247,6 +248,10 @@ class BacktesterManager(QtWidgets.QWidget):
         self.pricetick_line.setText(str(setting["pricetick"]))
         self.capital_line.setText(str(setting["capital"]))
 
+        if "start" in setting.keys():
+            self.start_date_edit.setDate(datetime.strptime(setting['start'], "%Y-%m-%d"))
+            self.end_date_edit.setDate(datetime.strptime(setting['end'], "%Y-%m-%d"))
+
         if not setting["inverse"]:
             self.inverse_combo.setCurrentIndex(0)
         else:
@@ -276,6 +281,7 @@ class BacktesterManager(QtWidgets.QWidget):
         timestamp = datetime.now().strftime("%H:%M:%S")
         msg = f"{timestamp}\t{msg}"
         self.log_monitor.append(msg)
+        self.log_monitor.moveCursor(QTextCursor.End)
 
     def process_backtesting_finished_event(self, event: Event):
         """"""
@@ -324,6 +330,8 @@ class BacktesterManager(QtWidgets.QWidget):
             "pricetick": pricetick,
             "capital": capital,
             "inverse": inverse,
+            "start": start.strftime("%Y-%m-%d"),
+            "end": end.strftime("%Y-%m-%d"),
         }
         save_json(self.setting_filename, backtesting_setting)
 
@@ -502,6 +510,14 @@ class BacktesterManager(QtWidgets.QWidget):
         self.class_combo.clear()
         self.init_strategy_settings()
 
+        setting = load_json(self.setting_filename)
+        if not setting:
+            return
+
+        self.class_combo.setCurrentIndex(
+            self.class_combo.findText(setting["class_name"])
+        )
+
     def show(self):
         """"""
         self.showMaximized()
@@ -539,7 +555,9 @@ class StatisticsMonitor(QtWidgets.QTableWidget):
 
         "daily_return": "日均收益率",
         "return_std": "收益标准差",
+        "win_ratio": "胜率",
         "sharpe_ratio": "夏普比率",
+        "sortino_info": "索提诺比率",
         "return_drawdown_ratio": "收益回撤比"
     }
 

@@ -13,6 +13,9 @@ from pandas import DataFrame
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from deap import creator, base, tools, algorithms
+import logging
+#empyrical风险指标计算模块
+from empyrical import (sortino_ratio,omega_ratio,annual_volatility,cagr,conditional_value_at_risk,downside_risk,stability_of_timeseries,tail_ratio,value_at_risk)
 
 from vnpy.trader.constant import (Direction, Offset, Exchange,
                                   Interval, Status)
@@ -168,6 +171,10 @@ class BacktestingEngine:
 
         self.logs.clear()
         self.daily_results.clear()
+
+    def get_size(self, vt_symbol: str):
+        """查询合约的size"""
+        return self.size
 
     def set_parameters(
         self,
@@ -386,6 +393,8 @@ class BacktestingEngine:
             daily_return = 0
             return_std = 0
             sharpe_ratio = 0
+            sortino_info = 0
+            win_ratio = 0
             return_drawdown_ratio = 0
         else:
             # Calculate balance related time series data
@@ -430,6 +439,8 @@ class BacktestingEngine:
             daily_turnover = total_turnover / total_days
 
             total_trade_count = df["trade_count"].sum()
+            total_win_trade_count = df['win_trade_count'].sum() * 100
+            win_ratio = total_win_trade_count / total_trade_count
             daily_trade_count = total_trade_count / total_days
 
             total_return = (end_balance / self.capital - 1) * 100
@@ -443,6 +454,26 @@ class BacktestingEngine:
                 sharpe_ratio = 0
 
             return_drawdown_ratio = -total_return / max_ddpercent
+
+            #sortino_info
+            sortino_info = sortino_ratio(df['return'])
+            omega_info = omega_ratio(df['return'])
+            #年化波动率
+            annual_volatility_info = annual_volatility(df['return'])
+            #年化复合增长率
+            cagr_info = cagr(df['return'])
+            #年化下行风险率
+            annual_downside_risk = downside_risk(df['return'])
+            """CVaR即条件风险价值，其含义为在投资组合的损失超过某个给定VaR值的条件下，该投资组合的平均损失值。"""
+            c_var = conditional_value_at_risk(df['return'])
+            """风险价值（VaR）是对投资损失风险的一种度量。它估计在正常的市场条件下，在设定的时间段（例如一天）中，
+            一组投资可能（以给定的概率）损失多少。金融业中的公司和监管机构通常使用VaR来衡量弥补可能损失所需的资产数量"""
+            var_info = value_at_risk(df['return'])
+            
+            #收益稳定率
+            stability_return = stability_of_timeseries(df['return'])
+            #尾部比率0.25 == 1/4,收益1，风险4
+            tail_ratio_info = tail_ratio(df['return'])
 
         # Output
         if output:
@@ -477,7 +508,9 @@ class BacktestingEngine:
 
             self.output(f"日均收益率：\t{daily_return:,.2f}%")
             self.output(f"收益标准差：\t{return_std:,.2f}%")
+            self.output(f"胜率：\t{win_ratio:,.2f}")
             self.output(f"Sharpe Ratio：\t{sharpe_ratio:,.2f}")
+            self.output(f"sortino Ratio：\t{sortino_info:,.3f}")
             self.output(f"收益回撤比：\t{return_drawdown_ratio:,.2f}")
 
         statistics = {
@@ -506,6 +539,8 @@ class BacktestingEngine:
             "daily_return": daily_return,
             "return_std": return_std,
             "sharpe_ratio": sharpe_ratio,
+            'sortino_info': sortino_info,
+            "win_ratio": win_ratio,
             "return_drawdown_ratio": return_drawdown_ratio,
         }
 
@@ -673,6 +708,7 @@ class BacktestingEngine:
         ga_inverse = self.inverse
 
         # Set up genetic algorithem
+        # pool = multiprocessing.Pool(processes=multiprocessing.cpu_count() - 1)
         toolbox = base.Toolbox()
         toolbox.register("individual", tools.initIterate, creator.Individual, generate_parameter)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
@@ -680,6 +716,7 @@ class BacktestingEngine:
         toolbox.register("mutate", mutate_individual, indpb=1)
         toolbox.register("evaluate", ga_optimize)
         toolbox.register("select", tools.selNSGA2)
+        # toolbox.register("map", pool.map)
 
         total_size = len(settings)
         pop_size = population_size                      # number of individuals in each generation
@@ -1060,7 +1097,7 @@ class BacktestingEngine:
         for vt_orderid in stop_orderids:
             self.cancel_stop_order(strategy, vt_orderid)
 
-    def write_log(self, msg: str, strategy: CtaTemplate = None):
+    def write_log(self, msg: str, strategy: CtaTemplate = None, level: int = logging.INFO):
         """
         Write log message.
         """
@@ -1090,6 +1127,12 @@ class BacktestingEngine:
         Return contract pricetick data.
         """
         return self.pricetick
+
+    def get_margin_rate(self, strategy: CtaTemplate):
+        """
+        docstring
+        """
+        return self.rate
 
     def put_strategy_event(self, strategy: CtaTemplate):
         """
@@ -1133,6 +1176,7 @@ class DailyResult:
 
         self.trades = []
         self.trade_count = 0
+        self.win_trade_count = 0
 
         self.start_pos = 0
         self.end_pos = 0
@@ -1192,14 +1236,20 @@ class DailyResult:
             # For normal contract
             if not inverse:
                 turnover = trade.volume * size * trade.price
-                self.trading_pnl += pos_change * \
+                pnl = pos_change * \
                     (self.close_price - trade.price) * size
+                if pnl > 0:
+                    self.win_trade_count += 1
+                self.trading_pnl += pnl
                 self.slippage += trade.volume * size * slippage
             # For crypto currency inverse contract
             else:
                 turnover = trade.volume * size / trade.price
-                self.trading_pnl += pos_change * \
+                pnl = pos_change * \
                     (1 / trade.price - 1 / self.close_price) * size
+                if pnl > 0:
+                    self.win_trade_count += 1
+                self.trading_pnl += pnl
                 self.slippage += trade.volume * size * slippage / (trade.price ** 2)
 
             self.turnover += turnover
@@ -1252,6 +1302,7 @@ def optimize(
     statistics = engine.calculate_statistics(output=False)
 
     target_value = statistics[target_name]
+    print(setting, target_value)
     return (str(setting), target_value, statistics)
 
 
