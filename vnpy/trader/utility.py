@@ -40,6 +40,10 @@ def _get_trader_dir(temp_name: str) -> Tuple[Path, Path]:
     """
     Get path where trader is running in.
     """
+    # by incenselee
+    # 原方法，当前目录必须自建.vntrader子目录，否则在用户得目录下创建
+    # 为兼容多账号管理，取消此方法。
+    return Path.cwd(), Path.cwd()
     cwd = Path.cwd()
     temp_path = cwd.joinpath(temp_name)
 
