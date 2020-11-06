@@ -72,6 +72,7 @@ from .stock_api import (
 )
 from .terminal_info import get_terminal_info
 
+
 EXCHANGE_TORA2VT = {
     TORA_TSTP_EXD_SSE: Exchange.SSE,
     TORA_TSTP_EXD_SZSE: Exchange.SZSE,
@@ -372,6 +373,7 @@ class ToraMdApi(mdapi.CTORATstpMdSpi):
         login_req.LogInAccountType = TORA_TSTP_LACT_UserID
         login_req.Password = self.password
         login_req.UserProductInfo = "vnpy_vntech_2.0"
+        login_req.TerminalInfo = get_terminal_info()
 
         self.reqid += 1
         self.api.ReqUserLogin(login_req, self.reqid)
