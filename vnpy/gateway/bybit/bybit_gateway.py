@@ -903,7 +903,8 @@ class BybitPublicWebsocketApi(WebsocketClient):
             setattr(tick, f"ask_price_{n}", ask_price)
             setattr(tick, f"ask_volume_{n}", ask_data["size"])
 
-        self.gateway.on_tick(copy(tick))
+        if tick.datetime:
+            self.gateway.on_tick(copy(tick))
 
 
 class BybitPrivateWebsocketApi(WebsocketClient):
