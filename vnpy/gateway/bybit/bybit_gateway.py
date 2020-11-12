@@ -903,8 +903,6 @@ class BybitPublicWebsocketApi(WebsocketClient):
             setattr(tick, f"ask_price_{n}", ask_price)
             setattr(tick, f"ask_volume_{n}", ask_data["size"])
 
-        local_dt = datetime.fromtimestamp(timestamp)
-        tick.datetime = local_dt.astimezone(UTC_TZ)
         self.gateway.on_tick(copy(tick))
 
 
