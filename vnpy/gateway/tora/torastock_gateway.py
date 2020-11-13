@@ -372,7 +372,7 @@ class ToraMdApi(mdapi.CTORATstpMdSpi):
         login_req.LogInAccount = self.userid
         login_req.LogInAccountType = TORA_TSTP_LACT_UserID
         login_req.Password = self.password
-        login_req.UserProductInfo = "vnpy_vntech_2.0"
+        login_req.UserProductInfo = "vnpy_2.0"
         login_req.TerminalInfo = get_terminal_info()
 
         self.reqid += 1
