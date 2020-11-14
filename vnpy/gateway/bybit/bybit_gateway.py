@@ -18,7 +18,8 @@ from vnpy.trader.constant import (
     OrderType,
     Product,
     Status,
-    Direction
+    Direction,
+    Offset
 )
 from vnpy.trader.object import (
     AccountData,
@@ -45,7 +46,19 @@ STATUS_BYBIT2VT: Dict[str, Status] = {
     "Rejected": Status.REJECTED,
     "Active": Status.ALLTRADED,
     "Untriggered": Status.NOTTRADED,
-    "Triggered":  Status.PARTTRADED,
+    "Triggered": Status.ALLTRADED,
+    "Deactivated": Status.CANCELLED,
+}
+STATUS_BYBIT2VTS: Dict[str, Status] = {
+    "Created": Status.ALLTRADED,
+    "New": Status.NOTTRADED,
+    "PartiallyFilled": Status.PARTTRADED,
+    "Filled": Status.ALLTRADED,
+    "Cancelled": Status.CANCELLED,
+    "Rejected": Status.REJECTED,
+    "Active": Status.ALLTRADED,
+    "Untriggered": Status.NOTTRADED,
+    "Triggered": Status.ALLTRADED,
     "Deactivated": Status.CANCELLED,
 }
 
@@ -178,10 +191,10 @@ class BybitGateway(BaseGateway):
     def process_timer_event(self, event):
         """"""
         self.timer_count += 1
-        if self.timer_count < 3:
+        if self.timer_count < 4:  
             return
-        self.query_position()
         self.timer_count = 0
+        self.query_position()
 
 
 class BybitRestApi(RestClient):
@@ -202,7 +215,8 @@ class BybitRestApi(RestClient):
 
         self.order_count: int = 0
         self.contract_codes: set = set()
-        self.orders: dict = {}       
+        self.orders: dict = {}
+        self.price_tick: dict = {}
 
     def sign(self, request: Request) -> Request:
         """
@@ -274,27 +288,37 @@ class BybitRestApi(RestClient):
         order = req.create_order_data(orderid, self.gateway_name)
 
         if req.type == OrderType.STOP:
+            base_price = self.gateway.symbols_last_price[req.symbol]
             data = {
                 "side": DIRECTION_VT2BYBIT[req.direction],
                 "symbol": req.symbol,
-                "order_type": "Market",
-                "qty": int(req.volume),
-                "base_price": self.gateway.symbols_last_price[req.symbol],
+                "order_type": "Limit",
+                "qty": float(req.volume),
+                "base_price": base_price,
                 "stop_px": req.price,
                 "time_in_force": "GoodTillCancel",
                 "close_on_trigger": False,
                 "order_link_id": orderid,
+                "trigger_by": "LastPrice"
             }
+            if req.direction == Direction.LONG:
+                data["price"] = req.price + 40*float(self.price_tick[req.symbol])
+            else:
+                data["price"] = req.price - 40*float(self.price_tick[req.symbol])
 
             if self.usdt_base:
+                if req.offset == Offset.CLOSE:
+                    data["reduce_only"] = "true"
+                else:
+                    data["reduce_only"] = "false"
                 path = "/private/linear/stop-order/create"
             else:
-                path = "/open-api/stop-order/create"
+                path = "/v2/private/stop-order/create"
         else:
             data = {
                 "symbol": req.symbol,
                 "side": DIRECTION_VT2BYBIT[req.direction],
-                "qty": int(req.volume),
+                "qty": float(req.volume),
                 "order_link_id": orderid,
                 "time_in_force": "GoodTillCancel",
                 "reduce_only": False,
@@ -379,7 +403,7 @@ class BybitRestApi(RestClient):
             if self.usdt_base:
                 path = "/private/linear/stop-order/cancel"
             else:
-                path = "/open-api/stop-order/cancel"
+                path = "/v2/private/stop-order/cancel"
         else:
             if self.usdt_base:
                 path = "/private/linear/order/cancel"
@@ -445,31 +469,35 @@ class BybitRestApi(RestClient):
         """"""
         if self.check_error("查询持仓", data):
             return
-
-        for d in data["result"]:
+        
+        if not self.usdt_base:
+            d = data["result"]
             if d["side"] == "Buy":
                 volume = d["size"]
             else:
                 volume = -d["size"]
-
-            position = PositionData(
-                symbol=d["symbol"],
-                exchange=Exchange.BYBIT,
-                direction=Direction.NET,
-                volume=volume,
-                price=d["entry_price"],
-                gateway_name=self.gateway_name
+            account = AccountData(
+                accountid=d["symbol"].replace("USD", ""),
+                balance=float(d["wallet_balance"]),
+                frozen=float(d["order_margin"]),
+                gateway_name=self.gateway_name,
             )
-            self.gateway.on_position(position)
-
-            if not self.usdt_base:
-                account = AccountData(
-                    accountid=d["symbol"].replace("USD", ""),
-                    balance=d["wallet_balance"],
-                    frozen=d["order_margin"],
-                    gateway_name=self.gateway_name,
-                )
-                self.gateway.on_account(account)
+            self.gateway.on_account(account)
+        else:
+            for d in data["result"]:
+                if d["side"] == "Buy":
+                    volume = d["size"]
+                else:
+                    volume = -d["size"]
+        position = PositionData(
+            symbol=d["symbol"],
+            exchange=Exchange.BYBIT,
+            direction=Direction.NET,
+            volume=float(volume),
+            price=float(d["entry_price"]),
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_position(position)
 
     def on_query_contract(self, data: dict, request: Request) -> None:
         """"""
@@ -477,6 +505,7 @@ class BybitRestApi(RestClient):
             return
 
         for d in data["result"]:
+            one_price_tick: dict = {}
             self.contract_codes.add(d["name"])
 
             contract = ContractData(
@@ -497,6 +526,9 @@ class BybitRestApi(RestClient):
                 self.gateway.on_contract(contract)
             elif not self.usdt_base and "USDT" not in contract.symbol:
                 self.gateway.on_contract(contract)
+
+            one_price_tick[d["name"]] = float(d["price_filter"]["tick_size"])
+            self.price_tick.update(one_price_tick)
 
         self.gateway.write_log("合约信息查询成功")
         self.query_position()
@@ -600,7 +632,7 @@ class BybitRestApi(RestClient):
             path = "/private/linear/position/list"
             symbols = symbols_usdt
         else:
-            path = "/position/list"
+            path = "/v2/private/position/list"
             symbols = symbols_inverse
 
         for symbol in symbols:
@@ -619,7 +651,7 @@ class BybitRestApi(RestClient):
             path = "/private/linear/order/list"
             symbols = symbols_usdt
         else:
-            path = "/open-api/order/list"
+            path = "/v2/private/order/list"
             symbols = symbols_inverse
 
         for symbol in symbols:
@@ -859,7 +891,10 @@ class BybitPublicWebsocketApi(WebsocketClient):
             else:
                 tick.volume = int(data["volume_24h"])
 
-            tick.datetime = generate_datetime(data["updated_at"])
+            updated_datetime = int(packet["timestamp_e6"]) / 1000000
+            local_dt = datetime.fromtimestamp(updated_datetime)
+            tick.datetime = local_dt.astimezone(UTC_TZ)
+
         else:
             update = data["update"][0]
 
@@ -874,7 +909,9 @@ class BybitPublicWebsocketApi(WebsocketClient):
             elif "volume_24h" in update:
                 tick.volume = int(update["volume_24h"])
 
-            tick.datetime = generate_datetime(update["updated_at"])
+            updated_datetime = int(packet["timestamp_e6"]) / 1000000
+            local_dt = datetime.fromtimestamp(updated_datetime)
+            tick.datetime = local_dt.astimezone(UTC_TZ)
 
         self.gateway.on_tick(copy(tick))
         self.gateway.symbols_last_price = self.symbols_last_price
@@ -1129,7 +1166,7 @@ class BybitPrivateWebsocketApi(WebsocketClient):
             )
 
             self.gateway.on_order(order)
-    
+
     def on_stop_order(self, packet: dict) -> None:
         for d in packet["data"]:
             if self.usdt_base:
@@ -1144,12 +1181,11 @@ class BybitPrivateWebsocketApi(WebsocketClient):
                 direction=DIRECTION_BYBIT2VT[d["side"]],
                 price=float(d["trigger_price"]),
                 volume=d["qty"],
-                status=STATUS_BYBIT2VT[d["order_status"]],
+                status=STATUS_BYBIT2VTS[d["order_status"]],
                 datetime=dt,
                 gateway_name=self.gateway_name
             )
-
-            self.gateway.on_order(order)        
+            self.gateway.on_order(order)    
 
     def on_position(self, packet: dict) -> None:
         """"""
