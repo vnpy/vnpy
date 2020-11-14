@@ -191,7 +191,7 @@ class BybitGateway(BaseGateway):
     def process_timer_event(self, event):
         """"""
         self.timer_count += 1
-        if self.timer_count < 4:  
+        if self.timer_count < 4:
             return
         self.timer_count = 0
         self.query_position()
@@ -302,9 +302,9 @@ class BybitRestApi(RestClient):
                 "trigger_by": "LastPrice"
             }
             if req.direction == Direction.LONG:
-                data["price"] = req.price + 40*float(self.price_tick[req.symbol])
+                data["price"] = req.price + 40 * float(self.price_tick[req.symbol])
             else:
-                data["price"] = req.price - 40*float(self.price_tick[req.symbol])
+                data["price"] = req.price - 40 * float(self.price_tick[req.symbol])
 
             if self.usdt_base:
                 if req.offset == Offset.CLOSE:
@@ -469,7 +469,7 @@ class BybitRestApi(RestClient):
         """"""
         if self.check_error("查询持仓", data):
             return
-        
+
         if not self.usdt_base:
             d = data["result"]
             if d["side"] == "Buy":
@@ -1185,7 +1185,7 @@ class BybitPrivateWebsocketApi(WebsocketClient):
                 datetime=dt,
                 gateway_name=self.gateway_name
             )
-            self.gateway.on_order(order)    
+            self.gateway.on_order(order)
 
     def on_position(self, packet: dict) -> None:
         """"""
