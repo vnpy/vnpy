@@ -297,13 +297,23 @@ class BacktestingEngine:
         self.output("开始回放历史数据")
 
         # Use the rest of history data for running backtesting
-        for data in self.history_data[ix:]:
-            try:
-                func(data)
-            except Exception:
-                self.output("触发异常，回测终止")
-                self.output(traceback.format_exc())
-                return
+        backtesting_data = self.history_data[ix:]
+        total_size = len(backtesting_data)
+        batch_size = int(total_size / 10)
+
+        for ix, i in enumerate(range(0, total_size, batch_size)):
+            batch_data = backtesting_data[i: i + batch_size]
+            for data in batch_data:
+                try:
+                    func(data)
+                except Exception:
+                    self.output("触发异常，回测终止")
+                    self.output(traceback.format_exc())
+                    return
+
+            progress = min(ix / 10, 1)
+            progress_bar = "=" * (ix + 1)
+            self.output(f"回放进度：{progress_bar} [{progress:.0%}]")
 
         self.strategy.on_stop()
         self.output("历史数据回放结束")
