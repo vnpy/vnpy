@@ -63,7 +63,7 @@ STATUS_BINANCES2VT: Dict[str, Status] = {
     "FILLED": Status.ALLTRADED,
     "CANCELED": Status.CANCELLED,
     "REJECTED": Status.REJECTED,
-    "EXPIRED":  Status.CANCELLED
+    "EXPIRED": Status.CANCELLED
 }
 
 ORDERTYPE_VT2BINANCES: Dict[OrderType, Tuple[str, str]] = {

@@ -28,6 +28,7 @@ def generate_tree(
     p = (a - d) / (u - d)
     p1 = p / a
     p2 = (1 - p) / a
+    discount = exp(-r * dt)
 
     # Calculate underlying price tree
     underlying_tree[0, 0] = f
@@ -44,8 +45,9 @@ def generate_tree(
     for i in range(n - 1, -1, -1):
         for j in range(i + 1):
             option_tree[j, i] = max(
-                (p1 * option_tree[j, i + 1] + p2 * option_tree[j + 1, i + 1]),
-                cp * (underlying_tree[j, i] - k)
+                (p1 * option_tree[j, i + 1] + p2 * option_tree[j + 1, i + 1]) * discount,
+                cp * (underlying_tree[j, i] - k),
+                0
             )
 
     # Return both trees
@@ -228,7 +230,7 @@ def calculate_impv(
         return 0
 
     # Calculate implied volatility with Newton's method
-    v: float = 0.01     # Initial guess of volatility
+    v: float = 0.3      # Initial guess of volatility
 
     for i in range(50):
         # Caculate option price and vega with current guess

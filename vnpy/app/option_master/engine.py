@@ -477,6 +477,7 @@ class OptionHedgeEngine:
             type=OrderType.LIMIT,
             volume=order_volume,
             price=round_to(price, contract.pricetick),
+            reference=f"{APP_NAME}_DeltaHedging"
         )
 
         # Close positon if opposite available is enough
@@ -656,7 +657,8 @@ class OptionAlgoEngine:
             OrderType.LIMIT,
             volume,
             price,
-            offset
+            offset,
+            reference=f"{APP_NAME}_ElectronicEye"
         )
 
         vt_orderid = self.main_engine.send_order(req, contract.gateway_name)

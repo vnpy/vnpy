@@ -540,7 +540,8 @@ class SpreadAlgoEngine:
             offset=offset,
             type=OrderType.LIMIT,
             price=price,
-            volume=volume
+            volume=volume,
+            reference=f"{APP_NAME}_{algo.spread_name}"
         )
 
         # Convert with offset converter
@@ -968,7 +969,8 @@ class SpreadStrategyEngine:
             offset=offset,
             type=OrderType.LIMIT,
             price=price,
-            volume=volume
+            volume=volume,
+            reference=f"{APP_NAME}_{strategy.strategy_name}"
         )
 
         # Convert with offset converter
@@ -1021,7 +1023,7 @@ class SpreadStrategyEngine:
         msg = f"{strategy.strategy_name}：{msg}"
         self.write_log(msg)
 
-    def send_strategy_email(self, strategy: SpreadStrategyTemplate, msg: str):
+    def send_email(self, msg: str, strategy: SpreadStrategyTemplate = None):
         """"""
         if strategy:
             subject = f"{strategy.strategy_name}"

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from vnpy.app.spread_trading import (
     SpreadStrategyTemplate,
     SpreadAlgoTemplate,
@@ -19,8 +21,11 @@ class BasicSpreadStrategy(SpreadStrategyTemplate):
     max_pos = 0.0
     payup = 10
     interval = 5
+    start_time = "9:00:00"
+    end_time = "15:00:00"
 
     spread_pos = 0.0
+    update_time = None
     buy_algoid = ""
     sell_algoid = ""
     short_algoid = ""
@@ -37,6 +42,7 @@ class BasicSpreadStrategy(SpreadStrategyTemplate):
     ]
     variables = [
         "spread_pos",
+        "update_time",
         "buy_algoid",
         "sell_algoid",
         "short_algoid",
@@ -54,6 +60,9 @@ class BasicSpreadStrategy(SpreadStrategyTemplate):
         super().__init__(
             strategy_engine, strategy_name, spread, setting
         )
+
+        self.start_t = datetime.strptime(self.start_time, "%H:%M:%S").time()
+        self.end_t = datetime.strptime(self.end_time, "%H:%M:%S").time()
 
     def on_init(self):
         """
@@ -73,6 +82,7 @@ class BasicSpreadStrategy(SpreadStrategyTemplate):
         """
         self.write_log("策略停止")
 
+        self.update_time = None
         self.buy_algoid = ""
         self.sell_algoid = ""
         self.short_algoid = ""
@@ -83,6 +93,14 @@ class BasicSpreadStrategy(SpreadStrategyTemplate):
         """
         Callback when spread price is updated.
         """
+        # Trading is only allowed within given start/end time range
+        self.update_time = self.spread.datetime.time()
+        if self.update_time < self.start_t or self.update_time >= self.end_t:
+            self.stop_open_algos()
+            self.stop_close_algos()
+            self.put_event()
+            return
+
         self.spread_pos = self.get_spread_pos()
 
         # No position
