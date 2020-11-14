@@ -27,6 +27,7 @@ from vnpy.trader.constant import (
     Product,
     Status,
     OrderType,
+    OptionType,
     Interval
 )
 from vnpy.trader.gateway import BaseGateway
@@ -97,6 +98,11 @@ TIMEDELTA_MAP: Dict[Interval, timedelta] = {
     Interval.MINUTE: timedelta(minutes=1),
     Interval.HOUR: timedelta(hours=1),
     Interval.DAILY: timedelta(days=1),
+}
+
+OPTIONTYPE_HUOBIO2VT = {
+    "C": OptionType.CALL,
+    "P": OptionType.PUT
 }
 
 CHINA_TZ = pytz.timezone("Asia/Shanghai")
@@ -492,6 +498,9 @@ class HuobioRestApi(RestClient):
 
     def on_query_account(self, data: dict, request: Request) -> None:
         """"""
+        if not data["data"]:
+            return
+
         for d in data["data"]:
             account = AccountData(
                 accountid=d["symbol"],
@@ -582,10 +591,19 @@ class HuobioRestApi(RestClient):
                 pricetick=d["price_tick"],
                 size=int(d["contract_size"]),
                 min_volume=1,
-                product=Product.FUTURES,
+                product=Product.OPTION,
+                option_strike=d["exercise_price"],
+                option_type=OPTIONTYPE_HUOBIO2VT[d["option_right_type"]],
+                option_expiry=datetime.strptime(d["delivery_date"], "%Y%m%d"),
+                option_portfolio=d["symbol"],
+                option_index=str(d["exercise_price"]),
                 history_data=True,
                 gateway_name=self.gateway_name,
             )
+            contract.option_underlying = "".join([
+                contract.option_portfolio,
+                contract.option_expiry.strftime("%Y%m%d")
+            ])
             self.gateway.on_contract(contract)
 
         self.gateway.write_log("合约信息查询成功")
@@ -1016,13 +1034,13 @@ class HuobioDataWebsocketApi(HuobioWebsocketApiBase):
             return
 
         bids = tick_data["bids"]
-        for n in range(5):
+        for n in range(min(len(bids), 5)):
             price, volume = bids[n]
             tick.__setattr__("bid_price_" + str(n + 1), float(price))
             tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
 
         asks = tick_data["asks"]
-        for n in range(5):
+        for n in range(min(len(asks), 5)):
             price, volume = asks[n]
             tick.__setattr__("ask_price_" + str(n + 1), float(price))
             tick.__setattr__("ask_volume_" + str(n + 1), float(volume))

@@ -45,7 +45,8 @@ CHAIN_UNDERLYING_MAP = {
 
     # Crypto Options
     "BTC.DERIBIT": "BTC-PERPETUAL",
-    "BTC-USD.OKEX": "BTC-USD-SWAP"
+    "BTC-USD.OKEX": "BTC-USD-SWAP",
+    "BTC.HUOBI": "BTC-USD",
 }
 
 
