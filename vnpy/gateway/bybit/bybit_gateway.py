@@ -293,22 +293,23 @@ class BybitRestApi(RestClient):
 
         if req.type == OrderType.STOP:
             base_price = self.gateway.symbols_last_price[req.symbol]
+            price = req.price
             data = {
                 "side": DIRECTION_VT2BYBIT[req.direction],
                 "symbol": req.symbol,
                 "order_type": "Limit",
                 "qty": qty,
                 "base_price": base_price,
-                "stop_px": req.price,
+                "stop_px": price,
                 "time_in_force": "GoodTillCancel",
                 "close_on_trigger": False,
                 "order_link_id": orderid,
                 "trigger_by": "LastPrice"
             }
             if req.direction == Direction.LONG:
-                data["price"] = req.price + 40 * float(self.price_tick[req.symbol])
+                data["price"] = price + 40 * float(self.price_tick[req.symbol])
             else:
-                data["price"] = req.price - 40 * float(self.price_tick[req.symbol])
+                data["price"] = price - 40 * float(self.price_tick[req.symbol])
 
             if self.usdt_base:
                 if req.offset == Offset.CLOSE:
