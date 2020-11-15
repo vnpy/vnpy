@@ -318,7 +318,7 @@ class BybitRestApi(RestClient):
             data = {
                 "symbol": req.symbol,
                 "side": DIRECTION_VT2BYBIT[req.direction],
-                "qty": float(req.volume),
+                "qty": int(req.volume),
                 "order_link_id": orderid,
                 "time_in_force": "GoodTillCancel",
                 "reduce_only": False,
