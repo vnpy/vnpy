@@ -286,6 +286,10 @@ class BybitRestApi(RestClient):
         order_data: dict = {}
         orderid = self.new_orderid()
         order = req.create_order_data(orderid, self.gateway_name)
+        if self.usdt_base:
+            qty = float(req.volume)
+        else:
+            qty = int(req.volume)
 
         if req.type == OrderType.STOP:
             base_price = self.gateway.symbols_last_price[req.symbol]
@@ -293,7 +297,7 @@ class BybitRestApi(RestClient):
                 "side": DIRECTION_VT2BYBIT[req.direction],
                 "symbol": req.symbol,
                 "order_type": "Limit",
-                "qty": float(req.volume),
+                "qty": qty,
                 "base_price": base_price,
                 "stop_px": req.price,
                 "time_in_force": "GoodTillCancel",
@@ -318,7 +322,7 @@ class BybitRestApi(RestClient):
             data = {
                 "symbol": req.symbol,
                 "side": DIRECTION_VT2BYBIT[req.direction],
-                "qty": int(req.volume),
+                "qty": qty,
                 "order_link_id": orderid,
                 "time_in_force": "GoodTillCancel",
                 "reduce_only": False,
