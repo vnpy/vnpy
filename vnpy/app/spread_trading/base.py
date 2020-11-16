@@ -215,8 +215,9 @@ class SpreadData:
                 self.ask_price += leg.bid_price * price_multiplier
 
             # Round price to pricetick
-            self.bid_price = round_to(self.bid_price, self.pricetick)
-            self.ask_price = round_to(self.ask_price, self.pricetick)
+            if self.pricetick:
+                self.bid_price = round_to(self.bid_price, self.pricetick)
+                self.ask_price = round_to(self.ask_price, self.pricetick)
 
             # Calculate volume
             trading_multiplier = self.trading_multipliers[leg.vt_symbol]

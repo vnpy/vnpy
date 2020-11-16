@@ -213,9 +213,10 @@ class SpreadAlgoTemplate:
             if order.vt_orderid in vt_orderids:
                 vt_orderids.remove(order.vt_orderid)
 
-        msg = "委托成交，{}，{}，{}@{}".format(
+        msg = "委托成交[{}]，{}，{}，{}@{}".format(
+            trade.vt_orderid,
             trade.vt_symbol,
-            trade.direction,
+            trade.direction.value,
             trade.volume,
             trade.price
         )
@@ -233,6 +234,12 @@ class SpreadAlgoTemplate:
             vt_orderids = self.leg_orders[order.vt_symbol]
             if order.vt_orderid in vt_orderids:
                 vt_orderids.remove(order.vt_orderid)
+
+            msg = "委托{}[{}]".format(
+                order.status.value,
+                order.vt_orderid
+            )
+            self.write_log(msg)
 
         self.on_order(order)
 
@@ -312,9 +319,10 @@ class SpreadAlgoTemplate:
 
         self.leg_orders[vt_symbol].extend(vt_orderids)
 
-        msg = "发出委托，{}，{}，{}@{}".format(
+        msg = "发出委托[{}]，{}，{}，{}@{}".format(
+            "|".join(vt_orderids),
             vt_symbol,
-            direction,
+            direction.value,
             volume,
             price
         )
