@@ -19,7 +19,7 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 KEEP_ALIVE_TOPIC: str = "_keep_alive"
 KEEP_ALIVE_INTERVAL: timedelta = timedelta(seconds=1)
-KEEP_ALIVE_TOLERANCE: timedelta = timedelta(seconds=3)
+KEEP_ALIVE_TOLERANCE: timedelta = timedelta(seconds=30)
 
 
 class RemoteException(Exception):
@@ -66,8 +66,6 @@ class RpcServer:
 
         # Authenticator used to ensure data security
         self.__authenticator: ThreadAuthenticator = None
-
-        self._register(KEEP_ALIVE_TOPIC, lambda n: n)
 
     def is_active(self) -> bool:
         """"""
@@ -180,13 +178,7 @@ class RpcServer:
         """
         Register function
         """
-        return self._register(func.__name__, func)
-
-    def _register(self, name: str, func: Callable) -> None:
-        """
-        Register function
-        """
-        self.__functions[name] = func
+        self.__functions[func.__name__] = func
 
 
 class RpcClient:
@@ -307,7 +299,7 @@ class RpcClient:
 
         while self.__active:
             if not self.__socket_sub.poll(pull_tolerance):
-                self._on_unexpected_disconnected()
+                self.on_disconnected()
                 continue
 
             # Receive data from subscribe socket
@@ -323,11 +315,6 @@ class RpcClient:
         self.__socket_req.close()
         self.__socket_sub.close()
 
-    @staticmethod
-    def _on_unexpected_disconnected():
-        print("RpcServer has no response over {tolerance} seconds, please check you connection."
-                .format(tolerance=KEEP_ALIVE_TOLERANCE.total_seconds()))
-
     def callback(self, topic: str, data: Any) -> None:
         """
         Callable function
@@ -339,6 +326,13 @@ class RpcClient:
         Subscribe data
         """
         self.__socket_sub.setsockopt_string(zmq.SUBSCRIBE, topic)
+
+    def on_disconnected(self):
+        """
+        Callback when heartbeat is lost.
+        """
+        print("RpcServer has no response over {tolerance} seconds, please check you connection."
+                .format(tolerance=KEEP_ALIVE_TOLERANCE.total_seconds()))
 
 
 def generate_certificates(name: str) -> None:
