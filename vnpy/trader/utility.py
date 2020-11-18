@@ -541,7 +541,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def obv(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def obv(self, array: bool = False) -> Union[float, np.ndarray]:
         """
         OBV.
         """
