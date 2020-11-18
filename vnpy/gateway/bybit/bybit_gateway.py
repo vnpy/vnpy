@@ -3,7 +3,7 @@ import hashlib
 import hmac
 import time
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Callable
 from copy import copy
 import pytz
@@ -15,7 +15,7 @@ from vnpy.api.websocket import WebsocketClient
 from vnpy.api.rest import Request, RestClient
 from vnpy.trader.constant import (
     Exchange,
-    Interval,
+    Interval, Offset,
     OrderType,
     Product,
     Status,
@@ -267,12 +267,16 @@ class BybitRestApi(RestClient):
         data = {
             "symbol": req.symbol,
             "side": DIRECTION_VT2BYBIT[req.direction],
-            "qty": int(req.volume),
+            "qty": req.volume,
             "order_link_id": orderid,
             "time_in_force": "GoodTillCancel",
-            "reduce_only": False,
             "close_on_trigger": False
         }
+
+        if req.offset == Offset.CLOSE:
+            data['reduce_only'] = True
+        else:
+            data['reduce_only'] = False
 
         data["order_type"] = ORDER_TYPE_VT2BYBIT[req.type]
         data["price"] = req.price
@@ -1053,7 +1057,7 @@ class BybitPrivateWebsocketApi(WebsocketClient):
             orderid = d["order_link_id"]
             if not orderid:
                 orderid = d["order_id"]
-
+            
             trade = TradeData(
                 symbol=d["symbol"],
                 exchange=Exchange.BYBIT,
@@ -1072,7 +1076,7 @@ class BybitPrivateWebsocketApi(WebsocketClient):
         """"""
         for d in packet["data"]:
             if self.usdt_base:
-                dt = generate_datetime(d["timestamp"])
+                dt = generate_datetime(d["update_time"])
             else:
                 dt = generate_datetime(d["create_time"])
 
