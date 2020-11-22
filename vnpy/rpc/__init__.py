@@ -226,12 +226,25 @@ class RpcClient:
 
         # Perform remote call task
         def dorpc(*args, **kwargs):
+            # Get timeout value from kwargs, default value is 30 seconds
+            if "timeout" in kwargs:
+                timeout = kwargs.pop("timeout")
+            else:
+                timeout = 30000
+
             # Generate request
             req = [name, args, kwargs]
 
             # Send request and wait for response
             with self.__lock:
                 self.__socket_req.send_pyobj(req)
+                
+                # Timeout reached without any data
+                n = self.__socket_req.poll(timeout)
+                if not n:
+                    msg = f"Timeout of {timeout}ms reached for {req}"
+                    raise RemoteException(msg)
+                
                 rep = self.__socket_req.recv_pyobj()
 
             # Return response if successed; Trigger exception if failed
