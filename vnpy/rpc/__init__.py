@@ -1,4 +1,5 @@
 import os
+from os import truncate
 import signal
 import threading
 import traceback
@@ -75,7 +76,9 @@ class RpcServer:
         self, 
         rep_address: str, 
         pub_address: str,
-        server_secretkey_path: str = ""
+        server_secretkey_path: str = "",
+        username: str = "",
+        password: str = ""
     ) -> None:
         """
         Start RpcServer
@@ -101,6 +104,16 @@ class RpcServer:
             self.__socket_rep.curve_secretkey = secretkey
             self.__socket_rep.curve_publickey = publickey
             self.__socket_rep.curve_server = True
+        elif username and password:
+            self.__authenticator = ThreadAuthenticator(self.__context)
+            self.__authenticator.start()
+            self.__authenticator.configure_plain(
+                domain="*", 
+                passwords={username: password}
+            )
+
+            self.__socket_pub.plain_server = True
+            self.__socket_rep.plain_server = True
 
         # Bind socket address
         self.__socket_rep.bind(rep_address)
@@ -234,7 +247,9 @@ class RpcClient:
         req_address: str, 
         sub_address: str,
         client_secretkey_path: str = "",
-        server_publickey_path: str = ""
+        server_publickey_path: str = "",
+        username: str = "",
+        password: str = ""
     ) -> None:
         """
         Start RpcClient
@@ -261,7 +276,20 @@ class RpcClient:
             self.__socket_req.curve_secretkey = secretkey
             self.__socket_req.curve_publickey = publickey
             self.__socket_req.curve_serverkey = serverkey
+        elif username and password:
+            self.__authenticator = ThreadAuthenticator(self.__context)
+            self.__authenticator.start()
+            self.__authenticator.configure_plain(
+                domain="*", 
+                passwords={username: password}
+            )
 
+            self.__socket_sub.plain_username = username
+            self.__socket_sub.plain_password = password
+            
+            self.__socket_req.plain_username = username
+            self.__socket_req.plain_password = password
+            
         # Connect zmq port
         self.__socket_req.connect(req_address)
         self.__socket_sub.connect(sub_address)
