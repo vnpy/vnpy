@@ -284,11 +284,11 @@ class RpcClient:
                 passwords={username: password}
             )
 
-            self.__socket_sub.plain_username = username
-            self.__socket_sub.plain_password = password
+            self.__socket_sub.plain_username = username.encode()
+            self.__socket_sub.plain_password = password.encode()
             
-            self.__socket_req.plain_username = username
-            self.__socket_req.plain_password = password
+            self.__socket_req.plain_username = username.encode()
+            self.__socket_req.plain_password = password.encode()
             
         # Connect zmq port
         self.__socket_req.connect(req_address)
