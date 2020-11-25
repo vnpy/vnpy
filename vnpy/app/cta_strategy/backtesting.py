@@ -116,6 +116,7 @@ class BacktestingEngine:
         self.size = 1
         self.pricetick = 0
         self.capital = 1_000_000
+        self.risk_free: float = 0.02
         self.mode = BacktestingMode.BAR
         self.inverse = False
 
@@ -181,7 +182,8 @@ class BacktestingEngine:
         capital: int = 0,
         end: datetime = None,
         mode: BacktestingMode = BacktestingMode.BAR,
-        inverse: bool = False
+        inverse: bool = False,
+        risk_free: float = 0
     ):
         """"""
         self.mode = mode
@@ -200,6 +202,7 @@ class BacktestingEngine:
         self.end = end
         self.mode = mode
         self.inverse = inverse
+        self.risk_free = risk_free
 
     def add_strategy(self, strategy_class: type, setting: dict):
         """"""
@@ -448,7 +451,8 @@ class BacktestingEngine:
             return_std = df["return"].std() * 100
 
             if return_std:
-                sharpe_ratio = daily_return / return_std * np.sqrt(240)
+                daily_risk_free = self.risk_free / np.sqrt(240)
+                sharpe_ratio = (daily_return - daily_risk_free) / return_std * np.sqrt(240)
             else:
                 sharpe_ratio = 0
 
