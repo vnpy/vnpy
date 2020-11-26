@@ -225,8 +225,9 @@ class BacktestingEngine:
         self.history_data.clear()       # Clear previously loaded history data
 
         # Load 30 days of data each time and allow for progress update
-        progress_delta = timedelta(days=30)
-        total_delta = self.end - self.start
+        total_days = (self.end - self.start).days
+        progress_days = int(total_days / 10)
+        progress_delta = timedelta(days=progress_days)
         interval_delta = INTERVAL_DELTA_MAP[self.interval]
 
         start = self.start
@@ -234,6 +235,9 @@ class BacktestingEngine:
         progress = 0
 
         while start < self.end:
+            progress_bar = "#" * int(progress * 10 + 1)
+            self.output(f"加载进度：{progress_bar} [{progress:.0%}]")
+
             end = min(end, self.end)  # Make sure end time stays within set range
 
             if self.mode == BacktestingMode.BAR:
@@ -254,10 +258,8 @@ class BacktestingEngine:
 
             self.history_data.extend(data)
 
-            progress += progress_delta / total_delta
+            progress += progress_days / total_days
             progress = min(progress, 1)
-            progress_bar = "#" * int(progress * 10)
-            self.output(f"加载进度：{progress_bar} [{progress:.0%}]")
 
             start = end + interval_delta
             end += (progress_delta + interval_delta)

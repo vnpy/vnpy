@@ -811,7 +811,7 @@ class DaFutureApi(FutureApi):
             msg = f"撤单失败，尚未收到服务端返回的委托信息{order.orderid}"
             self.gateway.write_log(msg)
             return
-        
+
         currency = symbol_currency_map[req.symbol]
         account_no = currency_account_map[currency]
         order_no, system_no = self.order_info[order.orderid]
