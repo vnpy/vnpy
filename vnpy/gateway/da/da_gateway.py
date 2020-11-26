@@ -806,6 +806,12 @@ class DaFutureApi(FutureApi):
         """
         order = self.orders[req.orderid]
 
+        # Reject cancel if order info not received from server
+        if order.orderid not in self.orders_info:
+            msg = f"撤单失败，尚未收到服务端返回的委托信息{order.orderid}"
+            self.gateway.write_log(msg)
+            return
+        
         currency = symbol_currency_map[req.symbol]
         account_no = currency_account_map[currency]
         order_no, system_no = self.order_info[order.orderid]
