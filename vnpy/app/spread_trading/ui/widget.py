@@ -418,13 +418,14 @@ class SpreadDataDialog(QtWidgets.QDialog):
         grid.addWidget(Label("合约模式"), 4, 4)
 
         int_validator = QtGui.QIntValidator()
+        double_validator = QtGui.QDoubleValidator()
 
         leg_count = 5
         for i in range(leg_count):
             symbol_line = QtWidgets.QLineEdit()
 
             price_line = QtWidgets.QLineEdit()
-            price_line.setValidator(int_validator)
+            price_line.setValidator(double_validator)
 
             trading_line = QtWidgets.QLineEdit()
             trading_line.setValidator(int_validator)
