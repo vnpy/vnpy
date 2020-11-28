@@ -182,15 +182,34 @@ class ChartWidget(pg.PlotWidget):
         """
         Update the limit of plots.
         """
+        plot_y_range_map = {}
+        # 以plot中所有item y轴范围的最大值和最小值来设置
+        # plot的y轴上下限
+        # 解决plot中有多个item时，新添加的item y轴范围比
+        # 之前添加的item y轴范围小时，plot图像显示不全的问题
         for item, plot in self._item_plot_map.items():
-            min_value, max_value = item.get_y_range()
-
-            plot.setLimits(
-                xMin=-1,
-                xMax=self._manager.get_count(),
-                yMin=min_value,
-                yMax=max_value
-            )
+            y_range = item.get_y_range()
+            if plot not in plot_y_range_map:
+                plot_y_range_map[plot] = y_range
+                plot.setLimits(
+                    xMin=-1,
+                    xMax=self._manager.get_count(),
+                    yMin=y_range[0],
+                    yMax=y_range[1]
+                )
+            else:
+                min_y, max_y = plot_y_range_map[plot]
+                if y_range[0] < min_y:
+                    min_y = y_range[0]
+                if y_range[1] > max_y:
+                    max_y = y_range[1]
+                plot_y_range_map[plot] = (min_y, max_y)
+                plot.setLimits(
+                    xMin=-1,
+                    xMax=self._manager.get_count(),
+                    yMin=min_y,
+                    yMax=max_y
+                )
 
     def _update_x_range(self) -> None:
         """
@@ -212,10 +231,26 @@ class ChartWidget(pg.PlotWidget):
         min_ix = max(0, int(view_range[0][0]))
         max_ix = min(self._manager.get_count(), int(view_range[0][1]))
 
+        plot_y_range_map = {}
+
         # Update limit for y-axis
+        # 以plot中所有item y轴范围的最大值和最小值来设置
+        # plot的y轴范围
+        # 解决plot中有多个item时，新添加的item y轴范围比
+        # 之前添加的item y轴范围小时，plot图像显示不全的问题
         for item, plot in self._item_plot_map.items():
             y_range = item.get_y_range(min_ix, max_ix)
-            plot.setRange(yRange=y_range)
+            if plot not in plot_y_range_map:
+                plot_y_range_map[plot] = y_range
+                plot.setRange(yRange=y_range)
+            else:
+                min_y, max_y = plot_y_range_map[plot]
+                if y_range[0] < min_y:
+                    min_y = y_range[0]
+                if y_range[1] > max_y:
+                    max_y = y_range[1]
+                plot_y_range_map[plot] = (min_y, max_y)
+                plot.setRange(yRange=(min_y, max_y))
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         """
