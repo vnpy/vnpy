@@ -505,6 +505,8 @@ class ChartCursor(QtCore.QObject):
         """"""
         buf = {}
 
+        max_ix = self._manager.get_count()
+
         for item, plot in self._item_plot_map.items():
             item_info_text = item.get_info_text(self._x)
 
@@ -514,6 +516,10 @@ class ChartCursor(QtCore.QObject):
                 if item_info_text:
                     buf[plot] += ("\n\n" + item_info_text)
 
+        # 根据光标位置调整信息提示框位置
+        # 若光标在左半侧，则信息提示框显示在右上角
+        # 若光标在右半侧，则信息提示框显示在左上角
+        # 解决信息提示框始终在左上角，有可能遮挡左上角图像的问题
         for plot_name, plot in self._plots.items():
             plot_info_text = buf[plot]
             info = self._infos[plot_name]
@@ -521,8 +527,14 @@ class ChartCursor(QtCore.QObject):
             info.show()
 
             view = self._views[plot_name]
-            top_left = view.mapSceneToView(view.sceneBoundingRect().topLeft())
-            info.setPos(top_left)
+            if self._x > max_ix / 2:
+                pos = view.mapSceneToView(view.sceneBoundingRect().topLeft())
+            else:
+                origin_pos = view.sceneBoundingRect().topRight()
+                pos = view.mapSceneToView(view.sceneBoundingRect().topRight())
+                ratio = pos.x() / origin_pos.x()
+                pos.setX(pos.x() - float(info.boundingRect().width())*ratio)
+            info.setPos(pos)
 
     def move_right(self) -> None:
         """
