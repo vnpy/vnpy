@@ -303,6 +303,10 @@ class BacktestingEngine:
 
         # Use the rest of history data for running backtesting
         backtesting_data = self.history_data[ix:]
+        if not backtesting_data:
+            self.output("历史数据不足，回测终止")
+            return
+
         total_size = len(backtesting_data)
         batch_size = int(total_size / 10)
 
