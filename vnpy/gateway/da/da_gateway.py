@@ -651,6 +651,10 @@ class DaFutureApi(FutureApi):
         if not order:
             return
 
+        # Filter duplicate order cancel push of DA API
+        if not order.is_active():
+            return
+
         order.traded = data["FilledNumber"]
 
         if data["IsCanceled"] == "1":
