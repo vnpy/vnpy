@@ -1,7 +1,6 @@
 from typing import Tuple, Dict
 from functools import partial
 from datetime import datetime, timedelta
-from tzlocal import get_localzone
 
 from vnpy.trader.ui import QtWidgets, QtCore
 from vnpy.trader.engine import MainEngine, EventEngine
