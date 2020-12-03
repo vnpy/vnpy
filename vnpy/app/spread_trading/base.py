@@ -2,6 +2,7 @@ from typing import Dict, List
 from datetime import datetime
 from enum import Enum
 from functools import lru_cache
+from parser import expr
 
 from vnpy.trader.object import (
     TickData, PositionData, TradeData, ContractData, BarData
@@ -387,11 +388,11 @@ class AdvancedSpreadData(SpreadData):
         self.variable_symbols = variable_symbols
         self.variable_directions = variable_directions
         self.price_formula = price_formula
+        self.price_code = expr(price_formula).compile()
 
         self.variable_legs = {}
-        symbol_legs = {leg.vt_symbol: leg for leg in legs}        
         for variable, vt_symbol in variable_symbols.items():
-            leg = symbol_legs[vt_symbol]
+            leg = self.legs[vt_symbol]
             self.variable_legs[variable] = leg
 
     def calculate_price(self):
@@ -463,8 +464,8 @@ class AdvancedSpreadData(SpreadData):
                 self.ask_volume = min(self.ask_volume, adjusted_ask_volume)
 
         # Calculate spread price
-        self.bid_price = self.parse_formula(self.price_formula, bid_data)
-        self.ask_price = self.parse_formula(self.price_formula, ask_data)
+        self.bid_price = self.parse_formula(self.price_code, bid_data)
+        self.ask_price = self.parse_formula(self.price_code, ask_data)
 
         # Update calculate time
         self.datetime = datetime.now()

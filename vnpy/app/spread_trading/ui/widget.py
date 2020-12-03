@@ -915,8 +915,6 @@ class AdvancedSpreadDataDialog(QtWidgets.QDialog):
         int_validator = QtGui.QIntValidator()
         int_validator.setBottom(0)
 
-        double_validator = QtGui.QDoubleValidator()
-
         leg_count = 5
         variables = ["A", "B", "C", "D", "E"]
         for i, variable in enumerate(variables):
@@ -931,13 +929,14 @@ class AdvancedSpreadDataDialog(QtWidgets.QDialog):
             inverse_combo = QtWidgets.QComboBox()
             inverse_combo.addItems(["正向", "反向"])
 
-            grid.addWidget(Label(variable, 5 + i, 0)
+            grid.addWidget(Label(variable), 5 + i, 0)
             grid.addWidget(symbol_line, 5 + i, 1)
             grid.addWidget(direction_combo, 5 + i, 2)
             grid.addWidget(trading_line, 5 + i, 3)
             grid.addWidget(inverse_combo, 5 + i, 4)
 
             d = {
+                "variable": variable,
                 "symbol": symbol_line,
                 "direction": direction_combo,
                 "trading": trading_line,
@@ -964,6 +963,7 @@ class AdvancedSpreadDataDialog(QtWidgets.QDialog):
 
         active_symbol = self.active_line.text()
         min_volume = float(self.min_volume_combo.currentText())
+        price_formula = self.formula_line.text()
 
         leg_settings = {}
         for d in self.leg_widgets:
@@ -982,6 +982,7 @@ class AdvancedSpreadDataDialog(QtWidgets.QDialog):
                     inverse_contract = True
 
                 leg_settings[vt_symbol] = {
+                    "variable": d["variable"],
                     "vt_symbol": vt_symbol,
                     "trading_direction": trading_direction,
                     "trading_multiplier": trading_multiplier,
@@ -1011,6 +1012,7 @@ class AdvancedSpreadDataDialog(QtWidgets.QDialog):
         self.spread_engine.add_advanced_spread(
             spread_name,
             list(leg_settings.values()),
+            price_formula,
             active_symbol,
             min_volume
         )

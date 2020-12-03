@@ -24,7 +24,7 @@ from vnpy.trader.constant import (
 from vnpy.trader.converter import OffsetConverter
 
 from .base import (
-    LegData, SpreadData,
+    LegData, SpreadData, AdvancedSpreadData,
     EVENT_SPREAD_DATA, EVENT_SPREAD_POS,
     EVENT_SPREAD_ALGO, EVENT_SPREAD_LOG,
     EVENT_SPREAD_STRATEGY,
@@ -151,6 +151,7 @@ class SpreadDataEngine:
                 "active_symbol": spread.active_leg.vt_symbol,
                 "min_volume": spread.min_volume
             }
+
             setting.append(spread_setting)
 
         save_json(self.setting_filename, setting)
@@ -290,6 +291,59 @@ class SpreadDataEngine:
             name,
             legs,
             price_multipliers,
+            trading_multipliers,
+            active_symbol,
+            inverse_contracts,
+            min_volume
+        )
+        self.spreads[name] = spread
+
+        for leg in spread.legs.values():
+            self.symbol_spread_map[leg.vt_symbol].append(spread)
+
+        if save:
+            self.save_setting()
+
+        self.write_log("价差创建成功：{}".format(name))
+        self.put_data_event(spread)
+
+    def add_advanced_spread(
+        self,
+        name: str,
+        leg_settings: List[Dict],
+        price_formula: str,
+        active_symbol: str,
+        min_volume: float,
+        save: bool = True
+    ) -> None:
+        """"""
+        if name in self.spreads:
+            self.write_log("价差创建失败，名称重复：{}".format(name))
+            return
+
+        legs: List[LegData] = []
+        variable_symbols: Dict[str, str] = {}
+        variable_directions: Dict[str, int] = {}
+        trading_multipliers: Dict[str, int] = {}
+        inverse_contracts: Dict[str, bool] = {}
+
+        for leg_setting in leg_settings:
+            vt_symbol = leg_setting["vt_symbol"]
+            variable = leg_setting["variable"]
+            leg = self.get_leg(vt_symbol)
+
+            legs.append(leg)
+            variable_symbols[variable] = vt_symbol
+            variable_directions[variable] = leg_setting["trading_direction"]
+            trading_multipliers[vt_symbol] = leg_setting["trading_multiplier"]
+            inverse_contracts[vt_symbol] = leg_setting.get("inverse_contract", False)
+
+        spread = AdvancedSpreadData(
+            name,
+            legs,
+            variable_symbols,
+            variable_directions,
+            price_formula,
             trading_multipliers,
             active_symbol,
             inverse_contracts,
