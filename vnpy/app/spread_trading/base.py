@@ -420,8 +420,10 @@ class AdvancedSpreadData(SpreadData):
 
             # Calculate volume
             trading_multiplier = self.trading_multipliers[leg.vt_symbol]
-            inverse_contract = self.inverse_contracts[leg.vt_symbol]
+            if not trading_multiplier:
+                continue
 
+            inverse_contract = self.inverse_contracts[leg.vt_symbol]
             if not inverse_contract:
                 leg_bid_volume = leg.bid_volume
                 leg_ask_volume = leg.ask_volume
@@ -460,12 +462,12 @@ class AdvancedSpreadData(SpreadData):
                 self.bid_volume = min(self.bid_volume, adjusted_bid_volume)
                 self.ask_volume = min(self.ask_volume, adjusted_ask_volume)
 
-            # Update calculate time
-            self.datetime = datetime.now()
-
         # Calculate spread price
         self.bid_price = self.parse_formula(self.price_formula, bid_data)
         self.ask_price = self.parse_formula(self.price_formula, ask_data)
+
+        # Update calculate time
+        self.datetime = datetime.now()
 
     def parse_formula(self, formula: str, data: Dict[str, float]):
         """"""
