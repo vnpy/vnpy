@@ -73,8 +73,7 @@ class BacktesterManager(QtWidgets.QWidget):
 
         self.interval_combo = QtWidgets.QComboBox()
         for interval in Interval:
-            if interval != Interval.TICK:
-                self.interval_combo.addItem(interval.value)
+            self.interval_combo.addItem(interval.value)
 
         end_dt = datetime.now()
         start_dt = end_dt - timedelta(days=3 * 365)
@@ -288,7 +287,11 @@ class BacktesterManager(QtWidgets.QWidget):
         self.trade_button.setEnabled(True)
         self.order_button.setEnabled(True)
         self.daily_button.setEnabled(True)
-        self.candle_button.setEnabled(True)
+
+        # Tick data can not be displayed using candle chart
+        interval = self.interval_combo.currentText()
+        if interval != Interval.TICK.value:
+            self.candle_button.setEnabled(True)
 
     def process_optimization_finished_event(self, event: Event):
         """"""
@@ -1058,6 +1061,17 @@ class BacktestingOrderMonitor(BaseMonitor):
     }
 
 
+class FloatCell(BaseCell):
+    """
+    Cell used for showing pnl data.
+    """
+
+    def __init__(self, content, data):
+        """"""
+        content = f"{content:.2f}"
+        super().__init__(content, data)
+
+
 class DailyResultMonitor(BaseMonitor):
     """
     Monitor for backtesting daily result.
@@ -1068,13 +1082,13 @@ class DailyResultMonitor(BaseMonitor):
         "trade_count": {"display": "成交笔数", "cell": BaseCell, "update": False},
         "start_pos": {"display": "开盘持仓", "cell": BaseCell, "update": False},
         "end_pos": {"display": "收盘持仓", "cell": BaseCell, "update": False},
-        "turnover": {"display": "成交额", "cell": BaseCell, "update": False},
-        "commission": {"display": "手续费", "cell": BaseCell, "update": False},
-        "slippage": {"display": "滑点", "cell": BaseCell, "update": False},
-        "trading_pnl": {"display": "交易盈亏", "cell": BaseCell, "update": False},
-        "holding_pnl": {"display": "持仓盈亏", "cell": BaseCell, "update": False},
-        "total_pnl": {"display": "总盈亏", "cell": BaseCell, "update": False},
-        "net_pnl": {"display": "净盈亏", "cell": BaseCell, "update": False},
+        "turnover": {"display": "成交额", "cell": FloatCell, "update": False},
+        "commission": {"display": "手续费", "cell": FloatCell, "update": False},
+        "slippage": {"display": "滑点", "cell": FloatCell, "update": False},
+        "trading_pnl": {"display": "交易盈亏", "cell": FloatCell, "update": False},
+        "holding_pnl": {"display": "持仓盈亏", "cell": FloatCell, "update": False},
+        "total_pnl": {"display": "总盈亏", "cell": FloatCell, "update": False},
+        "net_pnl": {"display": "净盈亏", "cell": FloatCell, "update": False},
     }
 
 
