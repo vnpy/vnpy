@@ -378,7 +378,7 @@ class AdvancedSpreadData(SpreadData):
         super().__init__(
             name,
             legs,
-            {},
+            trading_multipliers,
             trading_multipliers,
             active_symbol,
             inverse_contracts,
@@ -466,6 +466,11 @@ class AdvancedSpreadData(SpreadData):
         # Calculate spread price
         self.bid_price = self.parse_formula(self.price_code, bid_data)
         self.ask_price = self.parse_formula(self.price_code, ask_data)
+
+        # Round price to pricetick
+        if self.pricetick:
+            self.bid_price = round_to(self.bid_price, self.pricetick)
+            self.ask_price = round_to(self.ask_price, self.pricetick)
 
         # Update calculate time
         self.datetime = datetime.now()

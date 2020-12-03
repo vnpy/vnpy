@@ -51,6 +51,7 @@ class SpreadEngine(BaseEngine):
         self.strategy_engine: SpreadStrategyEngine = SpreadStrategyEngine(self)
 
         self.add_spread = self.data_engine.add_spread
+        self.add_advanced_spread = self.data_engine.add_advanced_spread
         self.remove_spread = self.data_engine.remove_spread
         self.get_spread = self.data_engine.get_spread
         self.get_all_spreads = self.data_engine.get_all_spreads
@@ -191,7 +192,7 @@ class SpreadDataEngine:
 
                 leg_setting = {
                     "variable": variable,
-                    "vt_symbol": leg.vt_symbol,
+                    "vt_symbol": vt_symbol,
                     "trading_direction": trading_direction,
                     "trading_multiplier": trading_multiplier,
                     "inverse_contract": inverse_contract
@@ -208,7 +209,7 @@ class SpreadDataEngine:
 
             setting.append(spread_setting)
 
-        save_json(self.setting_filename, setting)
+        save_json(self.advanced_filename, setting)
 
     def register_event(self) -> None:
         """"""

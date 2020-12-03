@@ -275,7 +275,7 @@ class SpreadAlgoWidget(QtWidgets.QFrame):
         add_spread_button.clicked.connect(self.add_spread)
 
         add_advanced_button = QtWidgets.QPushButton("创建灵活价差")
-        add_advanced_button.clicked.connect(self.add_spread)
+        add_advanced_button.clicked.connect(self.add_advanced_spread)
 
         remove_spread_button = QtWidgets.QPushButton("移除价差")
         remove_spread_button.clicked.connect(self.remove_spread)
@@ -961,9 +961,18 @@ class AdvancedSpreadDataDialog(QtWidgets.QDialog):
             )
             return
 
+        price_formula = self.formula_line.text()
+        if not self.check_formula(price_formula):
+            QtWidgets.QMessageBox.warning(
+                self,
+                "创建失败",
+                "请输入正确的计算公式",
+                QtWidgets.QMessageBox.Ok
+            )
+            return
+
         active_symbol = self.active_line.text()
         min_volume = float(self.min_volume_combo.currentText())
-        price_formula = self.formula_line.text()
 
         leg_settings = {}
         for d in self.leg_widgets:
@@ -975,6 +984,7 @@ class AdvancedSpreadDataDialog(QtWidgets.QDialog):
                     trading_direction = 1
                 else:
                     trading_direction = -1
+                trading_multiplier = trading_multiplier * trading_direction
 
                 if d["inverse"].currentText() == "正向":
                     inverse_contract = False
@@ -1017,3 +1027,13 @@ class AdvancedSpreadDataDialog(QtWidgets.QDialog):
             min_volume
         )
         self.accept()
+
+    def check_formula(self, formula: str):
+        """"""
+        data = {variable: 1 for variable in "ABCDE"}
+        locals().update(data)
+        try:
+            result = eval(formula)
+            return True
+        except Exception:
+            return False
