@@ -2010,4 +2010,3 @@ DFITCTerminalInfoField = {
     "clientLoginTime": "string",
     "systemInfo_integrity": "string",
 }
-

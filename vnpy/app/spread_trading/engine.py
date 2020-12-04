@@ -100,6 +100,8 @@ class SpreadDataEngine:
         self.spreads: Dict[str, SpreadData] = {}    # name: spread
         self.symbol_spread_map: Dict[str, List[SpreadData]] = defaultdict(list)
 
+        self.tradeid_history: Set[str] = set()
+
     def start(self):
         """"""
         self.load_setting()
@@ -189,6 +191,10 @@ class SpreadDataEngine:
     def process_trade_event(self, event: Event) -> None:
         """"""
         trade = event.data
+
+        if trade.vt_tradeid in self.tradeid_history:
+            return
+        self.tradeid_history.add(trade.vt_tradeid)
 
         leg = self.legs.get(trade.vt_symbol, None)
         if not leg:
@@ -534,7 +540,8 @@ class SpreadAlgoEngine:
             offset=offset,
             type=OrderType.LIMIT,
             price=price,
-            volume=volume
+            volume=volume,
+            reference=f"{APP_NAME}_{algo.spread_name}"
         )
 
         # Convert with offset converter
@@ -962,7 +969,8 @@ class SpreadStrategyEngine:
             offset=offset,
             type=OrderType.LIMIT,
             price=price,
-            volume=volume
+            volume=volume,
+            reference=f"{APP_NAME}_{strategy.strategy_name}"
         )
 
         # Convert with offset converter
@@ -1015,7 +1023,7 @@ class SpreadStrategyEngine:
         msg = f"{strategy.strategy_name}：{msg}"
         self.write_log(msg)
 
-    def send_strategy_email(self, strategy: SpreadStrategyTemplate, msg: str):
+    def send_email(self, msg: str, strategy: SpreadStrategyTemplate = None):
         """"""
         if strategy:
             subject = f"{strategy.strategy_name}"

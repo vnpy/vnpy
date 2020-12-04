@@ -90,9 +90,10 @@ ORDERTYPE_UFT2VT: Dict[str, OrderType] = {v: k for k, v in ORDERTYPE_VT2UFT.item
 OFFSET_VT2UFT: Dict[Offset, str] = {
     Offset.OPEN: HS_OF_Open,
     Offset.CLOSE: HS_OF_Close,
-    Offset.CLOSETODAY: HS_OF_CloseToday,
+    Offset.CLOSETODAY: HS_OF_CloseToday
 }
 OFFSET_UFT2VT: Dict[str, Offset] = {v: k for k, v in OFFSET_VT2UFT.items()}
+OFFSET_VT2UFT[Offset.CLOSEYESTERDAY] = HS_OF_Close
 
 EXCHANGE_UFT2VT: Dict[str, Exchange] = {
     HS_EI_CFFEX: Exchange.CFFEX,
@@ -574,13 +575,7 @@ class UftTdApi(TdApi):
                 )
                 self.positions[key] = position
 
-            # For SHFE and INE position data update
-            if position.exchange in [Exchange.SHFE, Exchange.INE]:
-                if data["YdPositionVolume"] and not data["TodayPositionVolume"]:
-                    position.yd_volume = data["PositionVolume"]
-            # For other exchange position data update
-            else:
-                position.yd_volume = data["PositionVolume"] - data["TodayPositionVolume"]
+            position.yd_volume = data["PositionVolume"] - data["TodayPositionVolume"]
 
             # Get contract size (spread contract has no size value)
             size = symbol_size_map.get(position.symbol, 0)

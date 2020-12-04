@@ -4,9 +4,13 @@
 from datetime import datetime
 from copy import copy
 from collections import defaultdict
+from typing import List
+from csv import DictReader
+from io import StringIO
 
 import wmi
 import pytz
+import requests
 
 from vnpy.api.da import (
     MarketApi,
@@ -33,6 +37,8 @@ from vnpy.trader.object import (
     ContractData,
     OrderRequest,
     CancelRequest,
+    HistoryRequest,
+    BarData,
     SubscribeRequest,
 )
 
@@ -72,10 +78,12 @@ OFFSET_VT2DA = {
 OFFSET_DA2VT = {v: k for k, v in OFFSET_VT2DA.items()}
 
 EXCHANGE_DA2VT = {
-    "APEX": Exchange.APEX,
     "CME": Exchange.CME,
+    "CME_CBT": Exchange.CBOT,
+    "LME": Exchange.LME,
     "SGXQ": Exchange.SGX,
     "HKEX": Exchange.HKFE,
+    "APEX": Exchange.APEX,
     "CFFEX": Exchange.CFFEX,
     "SHFE": Exchange.SHFE,
     "DCE": Exchange.DCE,
@@ -158,6 +166,48 @@ class DaGateway(BaseGateway):
     def query_position(self):
         """"""
         pass
+
+    def query_history(self, req: HistoryRequest) -> List[BarData]:
+        """"""
+        print(req)
+        path = "http://222.73.120.40:8609/api/HistoryQuote"
+
+        params = {
+            "type": "M1",
+            "exchangeNo": EXCHANGE_VT2DA[req.exchange],
+            "symbol": req.symbol,
+            "startTime": req.start.strftime("%Y-%m-%d"),
+            "count": ""
+        }
+
+        if req.end:
+            params["endTime"] = req.end.strftime("%Y-%m-%d")
+
+        headers = {"Accept-Encoding": "gzip"}
+
+        r = requests.get(path, headers=headers, params=params)
+
+        bars = []
+        reader = DictReader(StringIO(r.json()))
+        for d in reader:
+            dt = datetime.strptime(d["时间"], "%Y-%m-%d %H:%M")
+            dt = CHINA_TZ.localize(dt)
+
+            bar = BarData(
+                symbol=req.symbol,
+                exchange=req.exchange,
+                interval=req.interval,
+                datetime=dt,
+                open_price=float(d["开盘价"]),
+                high_price=float(d["最高价"]),
+                low_price=float(d["最低价"]),
+                close_price=float(d["收盘价"]),
+                volume=int(d["成交量"]),
+                gateway_name=self.gateway_name
+            )
+            bars.append(bar)
+
+        return bars
 
     def close(self):
         """"""
@@ -334,8 +384,7 @@ class DaMarketApi(MarketApi):
         """
         Close the connection.
         """
-        if self.connect_status:
-            self.exit()
+        pass
 
 
 class DaFutureApi(FutureApi):
@@ -455,6 +504,7 @@ class DaFutureApi(FutureApi):
                 product=product,
                 size=data["ProductDot"] / data["UpperTick"],
                 pricetick=data["UpperTick"],
+                history_data=True,
                 gateway_name=self.gateway_name
             )
 
@@ -599,6 +649,10 @@ class DaFutureApi(FutureApi):
 
         order = self.orders.get(orderid, None)
         if not order:
+            return
+
+        # Filter duplicate order cancel push of DA API
+        if not order.is_active():
             return
 
         order.traded = data["FilledNumber"]
@@ -756,6 +810,12 @@ class DaFutureApi(FutureApi):
         """
         order = self.orders[req.orderid]
 
+        # Reject cancel if order info not received from server
+        if order.orderid not in self.order_info:
+            msg = f"撤单失败，尚未收到服务端返回的委托信息{order.orderid}"
+            self.gateway.write_log(msg)
+            return
+
         currency = symbol_currency_map[req.symbol]
         account_no = currency_account_map[currency]
         order_no, system_no = self.order_info[order.orderid]
@@ -823,8 +883,7 @@ class DaFutureApi(FutureApi):
 
     def close(self):
         """"""
-        if self.connect_status:
-            self.exit()
+        pass
 
 
 def get_network_interface():

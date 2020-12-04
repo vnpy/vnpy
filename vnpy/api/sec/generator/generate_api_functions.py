@@ -89,7 +89,6 @@ class ApiGenerator:
         for arg in args:
             words = arg.split(" ")
             words = [word for word in words if word]
-            #words = [word for word in words if word]
 
             if words[0] != "struct":
                 d[words[1].replace("*", "")] = words[0]
@@ -149,7 +148,7 @@ class ApiGenerator:
         with open(filename, "w") as f:
             for name in self.functions.keys():
                 name = name.replace("Req", "req")
-                #line = f"int {name}(const dict &req, int reqid);\n\n"
+
                 line = f"int {name}(const dict &req);\n\n"
                 f.write(line)
 
@@ -271,9 +270,7 @@ class ApiGenerator:
                 req_name = name.replace("Req", "req")
                 type_ = list(d.values())[0]
 
-                f.write(
-                    #f"int {self.class_name}::{req_name}(const dict &req, int reqid)\n")
-                    f"int {self.class_name}::{req_name}(const dict &req)\n")
+                f.write(f"int {self.class_name}::{req_name}(const dict &req)\n")
                 f.write("{\n")
                 f.write(f"\t{type_} myreq = {type_}();\n")
                 f.write("\tmemset(&myreq, 0, sizeof(myreq));\n")
@@ -291,7 +288,6 @@ class ApiGenerator:
                         line = f"\tget{struct_type.capitalize()}(req, \"{struct_field}\", &myreq.{struct_field});\n"
                     f.write(line)
 
-                #f.write(f"\tint i = this->api->{name}(&myreq, reqid);\n")
                 f.write(f"\tint i = this->api->{name}(&myreq);\n")
                 f.write("\treturn i;\n")
                 f.write("};\n\n")

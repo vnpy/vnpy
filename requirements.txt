@@ -11,7 +11,7 @@ pymysql
 psycopg2
 mongoengine
 numpy
-pandas==0.24.2
+pandas
 matplotlib
 seaborn
 futu-api
@@ -22,5 +22,7 @@ ibapi
 deap
 pyzmq
 wmi
-QScintilla
+QScintilla==2.11.4
 plotly
+quickfix
+trading-calendars

@@ -48,7 +48,6 @@ class StructGenerator:
             self.process_start(line)
         elif line.startswith("}"):
             self.process_end(line)
-        #elif "\t" in line and "///" not in line:
         elif line.startswith("    DFITCSE"):
             self.process_member(line)
 
@@ -64,7 +63,7 @@ class StructGenerator:
     def process_declare2(self, line: str):
         words = line.split(" ")
         words = [word for word in words if word]
-            
+
         py_type = "dict"
         name = words[2]
 
@@ -87,7 +86,6 @@ class StructGenerator:
 
     def process_member(self, line: str):
         """处理成员"""
-        #words = line.split("\t")
         words = line.split(" ")
         words = [word for word in words if word]
 

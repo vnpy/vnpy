@@ -197,6 +197,7 @@ class StrategyEngine(BaseEngine):
             type=OrderType.LIMIT,
             price=price,
             volume=volume,
+            reference=f"{APP_NAME}_{strategy.strategy_name}"
         )
 
         # Convert with offset converter
@@ -332,7 +333,7 @@ class StrategyEngine(BaseEngine):
             self.write_log(msg, strategy)
 
     def add_strategy(
-        self, class_name: str, strategy_name: str, vt_symbols: str, setting: dict
+        self, class_name: str, strategy_name: str, vt_symbols: list, setting: dict
     ):
         """
         Add a new strategy.

@@ -180,8 +180,7 @@ class RecorderEngine(BaseEngine):
         """"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
-        self.event_engine.register(
-            EVENT_SPREAD_DATA, self.process_spread_event)
+        self.event_engine.register(EVENT_SPREAD_DATA, self.process_spread_event)
 
     def update_tick(self, tick: TickData):
         """"""

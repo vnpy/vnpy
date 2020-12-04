@@ -1,6 +1,7 @@
 import pytz
 from typing import Any, Dict, List
 from datetime import datetime
+from copy import copy
 
 from vnpy.api.xtp import MdApi, TdApi
 from vnpy.event import EventEngine
@@ -430,6 +431,8 @@ class XtpMdApi(MdApi):
             path = str(get_folder_path(self.gateway_name.lower()))
             self.createQuoteApi(self.client_id, path)
             self.login_server()
+        else:
+            self.gateway.write_log("行情接口已登录，请勿重复操作")
 
     def login_server(self) -> None:
         """"""
@@ -549,7 +552,7 @@ class XtpTdApi(TdApi):
             order.traded = data["qty_traded"]
             order.status = STATUS_XTP2VT[data["order_status"]]
 
-        self.gateway.on_order(order)
+        self.gateway.on_order(copy(order))
 
     def onTradeEvent(self, data: dict, session: int) -> None:
         """"""
@@ -586,7 +589,7 @@ class XtpTdApi(TdApi):
             else:
                 order.status = Status.ALLTRADED
 
-            self.gateway.on_order(order)
+            self.gateway.on_order(copy(order))
         else:
             self.gateway.write_log(f"成交找不到对应委托{trade.orderid}")
 
@@ -647,12 +650,15 @@ class XtpTdApi(TdApi):
             frozen=data["withholding_amount"],
             gateway_name=self.gateway_name
         )
-        self.gateway.on_account(account)
 
         if data["account_type"] == 1:
             self.margin_trading = True
         elif data["account_type"] == 2:
+            account.available = data["buying_power"]
+            account.frozen = account.balance - account.available
             self.option_trading = True
+
+        self.gateway.on_account(account)
 
     def onQueryStructuredFund(self, data: dict, error: dict, last: bool, session: int) -> None:
         """"""
@@ -778,6 +784,8 @@ class XtpTdApi(TdApi):
             self.setSoftwareKey(self.software_key)
             self.subscribePublicTopic(0)
             self.login_server()
+        else:
+            self.gateway.write_log("交易接口已登录，请勿重复操作")
 
     def login_server(self) -> None:
         """"""
@@ -856,9 +864,11 @@ class XtpTdApi(TdApi):
                 xtp_req["business_type"] = 0
 
         orderid = self.insertOrder(xtp_req, self.session_id)
+        orderid = str(orderid)
 
-        order = req.create_order_data(str(orderid), self.gateway_name)
-        self.gateway.on_order(order)
+        order = req.create_order_data(orderid, self.gateway_name)
+        self.orders[orderid] = order
+        self.gateway.on_order(copy(order))
 
         return order.vt_orderid
 

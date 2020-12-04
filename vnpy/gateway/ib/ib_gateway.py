@@ -422,7 +422,7 @@ class IbApi(EWrapper):
 
         orderid = str(orderId)
         order = OrderData(
-            symbol=ib_contract.conId,
+            symbol=ib_generate_symbol(contract),
             exchange=EXCHANGE_IB2VT.get(
                 ib_contract.exchange, Exchange.SMART),
             type=ORDERTYPE_IB2VT[ib_order.orderType],
@@ -494,7 +494,7 @@ class IbApi(EWrapper):
             exchange = Exchange.SMART   # Use smart routing for default
 
         if not exchange:
-            msg = f"存在不支持的交易所持仓{contract.conId} {contract.exchange} {contract.primaryExchange}"
+            msg = f"存在不支持的交易所持仓{generate_symbol(contract)} {contract.exchange} {contract.primaryExchange}"
             self.gateway.write_log(msg)
             return
 
@@ -568,7 +568,7 @@ class IbApi(EWrapper):
         dt = self.local_tz.localize(dt)
 
         trade = TradeData(
-            symbol=contract.conId,
+            symbol=generate_symbol(contract),
             exchange=EXCHANGE_IB2VT.get(contract.exchange, Exchange.SMART),
             orderid=str(execution.orderId),
             tradeid=str(execution.execId),

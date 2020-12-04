@@ -6,7 +6,7 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Callable, Dict, Tuple, Union
+from typing import Callable, Dict, Tuple, Union, Optional
 from decimal import Decimal
 from math import floor, ceil
 
@@ -205,13 +205,13 @@ class BarGenerator:
         if not tick.last_price:
             return
 
-        # Filter tick data with older timestamp
-        if self.last_tick and tick.datetime < self.last_tick.datetime:
+        # Filter tick data with less intraday trading volume (i.e. older timestamp)
+        if self.last_tick and tick.volume and tick.volume < self.last_tick.volume:
             return
 
         if not self.bar:
             new_minute = True
-        elif self.bar.datetime.minute != tick.datetime.minute:
+        elif(self.bar.datetime.minute != tick.datetime.minute) or (self.bar.datetime.hour != tick.datetime.hour):
             self.bar.datetime = self.bar.datetime.replace(
                 second=0, microsecond=0
             )
@@ -305,7 +305,7 @@ class BarGenerator:
         # Cache last bar object
         self.last_bar = bar
 
-    def generate(self) -> None:
+    def generate(self) -> Optional[BarData]:
         """
         Generate the bar data and call callback immediately.
         """
@@ -441,8 +441,8 @@ class ArrayManager(object):
 
     def apo(
         self,
-        fast_period: int, 
-        slow_period: int, 
+        fast_period: int,
+        slow_period: int,
         matype: int = 0,
         array: bool = False
     ) -> Union[float, np.ndarray]:
@@ -474,8 +474,8 @@ class ArrayManager(object):
 
     def ppo(
         self,
-        fast_period: int, 
-        slow_period: int, 
+        fast_period: int,
+        slow_period: int,
         matype: int = 0,
         array: bool = False
     ) -> Union[float, np.ndarray]:
@@ -661,7 +661,7 @@ class ArrayManager(object):
         return result[-1]
 
     def ultosc(
-        self, 
+        self,
         time_period1: int = 7,
         time_period2: int = 14,
         time_period3: int = 28,
@@ -697,7 +697,7 @@ class ArrayManager(object):
         Bollinger Channel.
         """
         mid = self.sma(n, array)
-        std = self.std(n, array)
+        std = self.std(n, 1, array)
 
         up = mid + std * dev
         down = mid - std * dev
@@ -796,19 +796,19 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def ad(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def ad(self, array: bool = False) -> Union[float, np.ndarray]:
         """
         AD.
         """
-        result = talib.AD(self.high, self.low, self.close, self.volume, n)
+        result = talib.AD(self.high, self.low, self.close, self.volume)
         if array:
             return result
         return result[-1]
 
     def adosc(
-        self, 
-        fast_period: int, 
-        slow_period: int, 
+        self,
+        fast_period: int,
+        slow_period: int,
         array: bool = False
     ) -> Union[float, np.ndarray]:
         """

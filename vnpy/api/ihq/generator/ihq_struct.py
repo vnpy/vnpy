@@ -210,4 +210,3 @@ CIStoneTickerPriceInfo = {
     "Ticker": "string",
     "LastPrice": "double",
 }
-
