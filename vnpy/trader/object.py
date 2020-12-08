@@ -5,7 +5,6 @@ Basic data structure used for general trading function in VN Trader.
 from dataclasses import dataclass
 from datetime import datetime
 from logging import INFO
-from typing import Any
 
 from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
 
@@ -234,7 +233,7 @@ class ContractData(BaseData):
     exchange: Exchange
     name: str
     product: Product
-    size: Any
+    size: float
     pricetick: float
 
     min_volume: float = 1           # minimum trading volume of the contract
