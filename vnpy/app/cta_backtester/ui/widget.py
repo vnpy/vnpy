@@ -326,7 +326,7 @@ class BacktesterManager(QtWidgets.QWidget):
             self.write_log("本地代码缺失交易所后缀，请检查")
             return
 
-        symbol, exchange_str = vt_symbol.split(".")
+        _, exchange_str = vt_symbol.split(".")
         if exchange_str not in Exchange.__members__:
             self.write_log("本地代码的交易所后缀不正确，请检查")
             return

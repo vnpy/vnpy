@@ -621,6 +621,15 @@ class CtaEngine(BaseEngine):
             self.write_log(f"创建策略失败，找不到策略类{class_name}")
             return
 
+        if "." not in vt_symbol:
+            self.write_log("创建策略失败，本地代码缺失交易所后缀")
+            return
+
+        _, exchange_str = vt_symbol.split(".")
+        if exchange_str not in Exchange.__members__:
+            self.write_log("创建策略失败，本地代码的交易所后缀不正确")
+            return
+
         strategy = strategy_class(self, strategy_name, vt_symbol, setting)
         self.strategies[strategy_name] = strategy
 
