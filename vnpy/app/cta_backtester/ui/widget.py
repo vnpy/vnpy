@@ -320,10 +320,15 @@ class BacktesterManager(QtWidgets.QWidget):
             inverse = False
         else:
             inverse = True
-            
+
+        # Check validity of vt_symbol
+        if "." not in vt_symbol:
+            self.write_log("本地代码缺失交易所后缀，请检查")
+            return
+
         symbol, exchange_str = vt_symbol.split(".")
         if exchange_str not in Exchange.__members__:
-            self.write_log("交易所代码不正确")
+            self.write_log("本地代码的交易所后缀不正确，请检查")
             return
 
         # Save backtesting parameters
