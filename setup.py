@@ -255,6 +255,48 @@ def get_ext_modules():
         language="cpp",
     )
 
+    vnnhmd = Extension(
+        "vnpy.api.nh.vnnhmd",
+        [
+            "vnpy/api/nh/vnnh/vnnhmd/vnnhmd.cpp",
+        ],
+        include_dirs=["vnpy/api/nh/include", "vnpy/api/nh/vnnh"],
+        library_dirs=["vnpy/api/nh/libs", "vnpy/api/nh"],
+        libraries=["nhmdapi"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        language="cpp",
+    )
+
+    vnnhfutures = Extension(
+        "vnpy.api.nh.vnnhfutures",
+        [
+            "vnpy/api/nh/vnnh/vnnhfutures/vnnhfutures.cpp",
+        ],
+        include_dirs=["vnpy/api/nh/include", "vnpy/api/nh/vnnh"],
+        library_dirs=["vnpy/api/nh/libs", "vnpy/api/nh"],
+        libraries=["nhtd2traderapi"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        language="cpp",
+    )
+
+    vnnhstock = Extension(
+        "vnpy.api.nh.vnnhstock",
+        [
+            "vnpy/api/nh/vnnh/vnnhstock/vnnhstock.cpp",
+        ],
+        include_dirs=["vnpy/api/nh/include", "vnpy/api/nh/vnnh"],
+        library_dirs=["vnpy/api/nh/libs", "vnpy/api/nh"],
+        libraries=["nhtdstockapi"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        language="cpp",
+    )
+
     if platform.system() == "Windows":
         # use pre-built pyd for windows ( support python 3.7 only )
         ext_modules = []
@@ -265,7 +307,8 @@ def get_ext_modules():
             vnctptd, vnctpmd,
             vnxtptd, vnxtpmd,
             vnsgittd, vnsgitmd,
-            vnksgoldmd, vnksgoldtd
+            vnksgoldmd, vnksgoldtd,
+            vnnhmd, vnnhfutures, vnnhstock
         ]
 
     ext_modules = check_extension_build_flag(
