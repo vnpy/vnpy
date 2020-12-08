@@ -1,11 +1,11 @@
 from typing import Tuple, Dict
 from functools import partial
 from datetime import datetime, timedelta
-from tzlocal import get_localzone
 
 from vnpy.trader.ui import QtWidgets, QtCore
 from vnpy.trader.engine import MainEngine, EventEngine
 from vnpy.trader.constant import Interval, Exchange
+from vnpy.trader.database.database import DB_TZ
 
 from ..engine import APP_NAME, ManagerEngine
 
@@ -582,7 +582,8 @@ class DownloadDialog(QtWidgets.QDialog):
         interval = Interval(self.interval_combo.currentData())
 
         start_date = self.start_date_edit.date()
-        start = datetime(start_date.year(), start_date.month(), start_date.day(), tzinfo=get_localzone())
+        start = datetime(start_date.year(), start_date.month(), start_date.day())
+        start = DB_TZ.localize(start)
 
         if interval == Interval.TICK:
             count = self.engine.download_tick_data(symbol, exchange, start)
