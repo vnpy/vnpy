@@ -85,7 +85,6 @@ class GtjaGateway(BaseGateway):
     """
     VN Trader Gateway for CTP .
     """
-    date = ""
 
     default_setting = {
         "用户名": "",
@@ -114,7 +113,6 @@ class GtjaGateway(BaseGateway):
         system_id = setting["网关"]
 
         td_host, td_port = tuple(td_address.split(":"))
-        self.date = datetime.now().strftime("%Y%m%d%H%M")
 
         self.td_api.connect(userid, password, orgid, barnchid, system_id, td_host, td_port)
 
@@ -174,40 +172,38 @@ class GtjaTdApi(TdApi):
         """Constructor"""
         super(GtjaTdApi, self).__init__()
 
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
+        self.gateway: GtjaGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
 
-        self.reqid = 0
-        self.order_count = 1000
+        self.reqid: int = 0
+        self.order_count: int = 1000
+        self.tradeid: int = 1000
+        self.date: str = ""
 
-        self.connect_status = False
-        self.login_status = False
-        self.auth_status = False
-        self.login_failed = False
+        self.connect_status: bool = False
+        self.login_status: bool = False
+        self.auth_status: bool = False
+        self.login_failed: bool = False
 
-        self.userid = ""
-        self.password = ""
+        self.userid: str = ""
+        self.password: str = ""
         self.orders: Dict[str, OrderData] = {}
 
-        self.account_id = 0
-        self.cust_id = 0
+        self.account_id: int = 0
+        self.cust_id: int = 0
 
-        self.order_data = []
-        self.trade_data = []
-        self.positions = {}
         self.sysid_orderid_map = {}
         self.orderid_sysid_map = {}
-        self.tradeid = 0
 
     def _new_orderid(self) -> str:
         """"""
         self.order_count += 1
-        orderid = f"{self.gateway.date}_{self.order_count}"
+        orderid = f"{self.date}_{self.order_count}"
         return orderid
 
     def onError(self, error: dict, reqid: int) -> None:
         """"""
-        self.gateway.write_error("错误",error)
+        self.gateway.write_error("错误", error)
 
     def onRiskNotify(self, data: dict) -> None:
         """"""
@@ -236,6 +232,7 @@ class GtjaTdApi(TdApi):
             self.gateway.write_error("交易服务器登录失败", error)
 
     def onTradeReport(self, data) -> None:
+        print("onTrade", data)
         self.tradeid += 1
         exchange, symbol = tuple(data["symbol"].split("."))
         dt = f"{data['trade_date']} {data['trade_time']}"
@@ -256,10 +253,17 @@ class GtjaTdApi(TdApi):
             volume=data["volume"],
             datetime=datetime.strptime(dt, "%Y%m%d %H%M%S%f"),
         )
-        self.gateway.on_trade(trade)
 
-    def onOrderStatus(self, data: dict) -> None:
-        print("OnOrderStatus", data)
+        order = self.orders[orderid]
+        order.datetime = trade.datetime
+        order.traded += trade.volume
+        if order.traded == order.volume:
+            order.status = Status.ALLTRADED
+        else:
+            order.status = Status.PARTTRADED
+
+        self.gateway.on_order(order)
+        self.gateway.on_trade(trade)
 
     def onOrderRsp(
         self,
@@ -269,11 +273,12 @@ class GtjaTdApi(TdApi):
         last: bool
     ):
         """"""
+        print("onOrder", data)
         orderid = data["cl_order_id"]
         order = self.orders[orderid]
         if error["err_code"]:
             self.gateway.write_error("交易委托失败", error)
-            order.Status = Status.REJECTED
+            order.status = Status.REJECTED
             order.datetime = datetime.now()
             self.gateway.on_order(order)
         else:
@@ -289,6 +294,7 @@ class GtjaTdApi(TdApi):
         last: bool
     ) -> None:
         """"""
+        # print("onCancelRsp", data, error)
         if error["err_code"]:
             self.gateway.write_error("交易撤单失败", error)
 
@@ -394,17 +400,6 @@ class GtjaTdApi(TdApi):
             datetime=datetime.strptime(dt, "%Y%m%d %H%M%S%f"),
         )
 
-        order = OrderData(
-            gateway_name=self.gateway_name,
-            symbol=trade.symbol,
-            exchange=trade.exchange,
-            orderid=trade.orderid,
-            direction=trade.direction,
-            volume=trade.volume,
-            traded=trade.volume,
-            status=Status.ALLTRADED
-        )
-        self.gateway.on_order(order)
         self.gateway.on_trade(trade)
 
     def connect(
@@ -422,6 +417,7 @@ class GtjaTdApi(TdApi):
         """
         self.userid = userid
         self.password = password
+        self.date = datetime.now().strftime("%Y%m%d%H%M")
 
         if not self.connect_status:
 
