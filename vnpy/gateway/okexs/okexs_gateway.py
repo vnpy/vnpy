@@ -42,8 +42,10 @@ STATUS_OKEXS2VT = {
 
 ORDERTYPE_OKEXS2VT = {
     "0": OrderType.LIMIT,
-    "1": OrderType.MARKET,
-    "4": OrderType.MARKET,
+    "1": OrderType.LIMIT,
+    "2": OrderType.FOK,
+    "3": OrderType.FAK,
+    "4": OrderType.MARKET
 }
 
 TYPE_OKEXS2VT = {
@@ -844,7 +846,7 @@ def generate_timestamp():
 def _parse_timestamp(timestamp):
     """parse timestamp into local time."""
     dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    dt = dt.replace(tzinfo=UTC_TZ)
+    dt = UTC_TZ.localize(dt)
     return dt
 
 

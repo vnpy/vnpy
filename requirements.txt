@@ -1,7 +1,7 @@
 six==1.13.0
 wheel
-PyQt5
-pyqtgraph
+PyQt5==5.14.1
+pyqtgraph==0.10.0
 dataclasses; python_version<="3.6"
 qdarkstyle
 requests
@@ -11,7 +11,7 @@ pymysql
 psycopg2
 mongoengine
 numpy
-pandas==0.24.2
+pandas
 matplotlib
 seaborn
 futu-api
@@ -22,4 +22,7 @@ ibapi
 deap
 pyzmq
 wmi
-QScintilla
+QScintilla==2.11.4
+plotly
+quickfix
+trading-calendars

@@ -287,7 +287,7 @@ class RohonMdApi(MdApi):
 
         timestamp = f"{data['ActionDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
         dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f")
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         tick = TickData(
             symbol=symbol,
@@ -322,8 +322,7 @@ class RohonMdApi(MdApi):
         # If not connected, then start connection first.
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
-            self.createFtdcMdApi(str(path) + "\\Md")
-
+            self.createFtdcMdApi((str(path) + "\\Md").encode("GBK"))
             self.registerFront(address)
             self.init()
 
@@ -601,7 +600,7 @@ class RohonTdApi(TdApi):
 
         timestamp = f"{data['InsertDate']} {data['InsertTime']}"
         dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         order = OrderData(
             symbol=symbol,
@@ -635,7 +634,7 @@ class RohonTdApi(TdApi):
 
         timestamp = f"{data['TradeDate']} {data['TradeTime']}"
         dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         trade = TradeData(
             symbol=symbol,
@@ -673,8 +672,7 @@ class RohonTdApi(TdApi):
 
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
-            self.createFtdcTraderApi(str(path) + "\\Td")
-
+            self.createFtdcTraderApi((str(path) + "\\Td").encode("GBK"))
             self.subscribePrivateTopic(0)
             self.subscribePublicTopic(0)
 

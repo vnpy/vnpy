@@ -340,6 +340,7 @@ class OkexRestApi(RestClient):
                 pricetick=float(instrument_data["tick_size"]),
                 min_volume=float(instrument_data["min_size"]),
                 history_data=True,
+                net_position=True,
                 gateway_name=self.gateway_name
             )
             self.gateway.on_contract(contract)
@@ -378,7 +379,7 @@ class OkexRestApi(RestClient):
                 price=float(order_data["price"]),
                 volume=float(order_data["size"]),
                 traded=float(order_data["filled_size"]),
-                datetime=generate_datetime["timestamp"],
+                datetime=generate_datetime(order_data["timestamp"]),
                 status=STATUS_OKEX2VT[order_data["status"]],
                 gateway_name=self.gateway_name,
             )
@@ -747,13 +748,13 @@ class OkexWebsocketApi(WebsocketClient):
 
         bids = d["bids"]
         asks = d["asks"]
-        for n, buf in enumerate(bids):
-            price, volume, _ = buf
+        for n in range(min(5, len(bids))):
+            price, volume, _ = bids[n]
             tick.__setattr__("bid_price_%s" % (n + 1), float(price))
             tick.__setattr__("bid_volume_%s" % (n + 1), float(volume))
 
-        for n, buf in enumerate(asks):
-            price, volume, _ = buf
+        for n in range(min(5, len(asks))):
+            price, volume, _ = asks[n]
             tick.__setattr__("ask_price_%s" % (n + 1), float(price))
             tick.__setattr__("ask_volume_%s" % (n + 1), float(volume))
 
@@ -824,5 +825,5 @@ def get_timestamp():
 def generate_datetime(timestamp: str) -> datetime:
     """parse timestamp into local time."""
     dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    dt = dt.replace(tzinfo=UTC_TZ)
+    dt = UTC_TZ.localize(dt)
     return dt

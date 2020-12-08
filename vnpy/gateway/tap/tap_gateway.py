@@ -816,7 +816,7 @@ def generate_datetime(timestamp: str) -> datetime:
     else:
         dt = datetime.strptime(timestamp, "%y%m%d%H%M%S.%f")
 
-    dt = dt.replace(tzinfo=CHINA_TZ)
+    dt = CHINA_TZ.localize(dt)
     return dt
 
 

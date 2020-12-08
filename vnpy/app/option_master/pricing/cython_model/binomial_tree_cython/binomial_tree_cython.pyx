@@ -40,6 +40,7 @@ cdef tuple generate_tree(
     cdef double p = (a - d) / (u - d)
     cdef double p1 = p / a
     cdef double p2 = (1 - p) / a
+    cdef double discount = exp(-r * dt)
 
     # Calculate underlying price tree
     underlying_tree[0, 0] = f
@@ -56,8 +57,9 @@ cdef tuple generate_tree(
     for i in range(n - 1, -1, -1):
         for j in range(i + 1):
             option_tree[j, i] = max(
-                (p1 * option_tree[j, i + 1] + p2 * option_tree[j + 1, i + 1]),
-                cp * (underlying_tree[j, i] - k)
+                (p1 * option_tree[j, i + 1] + p2 * option_tree[j + 1, i + 1]) * discount,
+                cp * (underlying_tree[j, i] - k),
+                0
             )
 
     # Return both trees
@@ -88,11 +90,17 @@ def calculate_delta(
     int n = DEFAULT_STEP
 ) -> float:
     """Calculate option delta"""
+    cdef double option_price_change, underlying_price_change
+    cdef _delta, delta
+
     option_tree, underlying_tree = generate_tree(f, k, r, t, v, cp, n)
+    
     option_price_change = option_tree[0, 1] - option_tree[1, 1]
     underlying_price_change = underlying_tree[0, 1] - underlying_tree[1, 1]
-    return option_price_change / underlying_price_change
 
+    _delta = option_price_change / underlying_price_change
+    delta = _delta * f * 0.01
+    return delta
 
 def calculate_gamma(
     double f,
@@ -104,14 +112,19 @@ def calculate_gamma(
     int n = DEFAULT_STEP
 ) -> float:
     """Calculate option gamma"""
+    cdef double gamma_delta_1, gamma_delta_2
+    cdef double _gamma, gamma
+
     option_tree, underlying_tree = generate_tree(f, k, r, t, v, cp, n)
 
     gamma_delta_1 = (option_tree[0, 2] - option_tree[1, 2]) / \
         (underlying_tree[0, 2] - underlying_tree[1, 2])
     gamma_delta_2 = (option_tree[1, 2] - option_tree[2, 2]) / \
         (underlying_tree[1, 2] - underlying_tree[2, 2])
-    gamma = (gamma_delta_1 - gamma_delta_2) / \
+
+    _gamma = (gamma_delta_1 - gamma_delta_2) / \
         (0.5 * (underlying_tree[0, 2] - underlying_tree[2, 2]))
+    gamma = _gamma * pow(f, 2) * 0.0001
 
     return gamma
 
@@ -127,6 +140,8 @@ def calculate_theta(
     int annual_days = 240
 ) -> float:
     """Calcualte option theta"""
+    cdef double dt, theta
+
     option_tree, underlying_tree = generate_tree(f, k, r, t, v, cp, n)
 
     dt = t / n
@@ -177,9 +192,10 @@ def calculate_greeks(
 ) -> Tuple[float, float, float, float, float]:
     """Calculate option price and greeks"""
     cdef double dt = t / n
-    cdef price, delta, gamma, vega, theta
-    cdef option_price_change, underlying_price_change
-    cdef gamma_delta_1, gamma_delta_2
+    cdef double price, delta, gamma, vega, theta
+    cdef double _delta, _gamma
+    cdef double option_price_change, underlying_price_change
+    cdef double gamma_delta_1, gamma_delta_2
 
     option_tree, underlying_tree = generate_tree(f, k, r, t, v, cp, n)
     option_tree_vega, underlying_tree_vega = generate_tree(f, k, r, t, v * 1.001, cp, n)
@@ -190,15 +206,19 @@ def calculate_greeks(
     # Delta
     option_price_change = option_tree[0, 1] - option_tree[1, 1]
     underlying_price_change = underlying_tree[0, 1] - underlying_tree[1, 1]
-    delta = option_price_change / underlying_price_change
+
+    _delta = option_price_change / underlying_price_change
+    delta = _delta * f * 0.01
 
     # Gamma
     gamma_delta_1 = (option_tree[0, 2] - option_tree[1, 2]) / \
         (underlying_tree[0, 2] - underlying_tree[1, 2])
     gamma_delta_2 = (option_tree[1, 2] - option_tree[2, 2]) / \
         (underlying_tree[1, 2] - underlying_tree[2, 2])
-    gamma = (gamma_delta_1 - gamma_delta_2) / \
+
+    _gamma = (gamma_delta_1 - gamma_delta_2) / \
         (0.5 * (underlying_tree[0, 2] - underlying_tree[2, 2]))
+    gamma = _gamma * pow(f, 2) * 0.0001
 
     # Theta
     theta = (option_tree[1, 2] - option_tree[0, 0]) / (2 * dt * annual_days)

@@ -323,7 +323,7 @@ class HuobisRestApi(RestClient):
 
             # Create query params
             params = {
-                "symbol": ws_symbol,
+                "contract_code": ws_symbol,
                 "period": INTERVAL_VT2HUOBIS[req.interval],
                 "from": int(start.timestamp()),
                 "to": int(end.timestamp())
@@ -335,6 +335,8 @@ class HuobisRestApi(RestClient):
                 "/swap-ex/market/history/kline",
                 params=params
             )
+
+            print(params)
 
             # Break if request failed with other status code
             if resp.status_code // 100 != 2:
@@ -354,7 +356,6 @@ class HuobisRestApi(RestClient):
                     break
 
                 buf = []
-                print("download data:", data)
                 for d in data["data"]:
                     dt = generate_datetime(d["id"])
 
@@ -923,7 +924,7 @@ class HuobisTradeWebsocketApi(HuobisWebsocketApiBase):
                 symbol=order.symbol,
                 exchange=Exchange.HUOBI,
                 orderid=order.orderid,
-                tradeid=str(d["trade_id"]),
+                tradeid=str(d["id"]),
                 direction=order.direction,
                 offset=order.offset,
                 price=d["trade_price"],
@@ -1110,5 +1111,5 @@ def create_signature(
 def generate_datetime(timestamp: float) -> datetime:
     """"""
     dt = datetime.fromtimestamp(timestamp)
-    dt = dt.replace(tzinfo=CHINA_TZ)
+    dt = CHINA_TZ.localize(dt)
     return dt

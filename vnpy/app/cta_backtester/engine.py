@@ -14,7 +14,9 @@ from vnpy.trader.object import HistoryRequest
 from vnpy.trader.rqdata import rqdata_client
 from vnpy.trader.database import database_manager
 from vnpy.app.cta_strategy import CtaTemplate
-from vnpy.app.cta_strategy.backtesting import BacktestingEngine, OptimizationSetting
+from vnpy.app.cta_strategy.backtesting import (
+    BacktestingEngine, OptimizationSetting, BacktestingMode
+)
 
 APP_NAME = "CtaBacktester"
 
@@ -147,6 +149,11 @@ class BacktesterEngine(BaseEngine):
         engine = self.backtesting_engine
         engine.clear_data()
 
+        if interval == Interval.TICK.value:
+            mode = BacktestingMode.TICK
+        else:
+            mode = BacktestingMode.BAR
+
         engine.set_parameters(
             vt_symbol=vt_symbol,
             interval=interval,
@@ -157,7 +164,8 @@ class BacktesterEngine(BaseEngine):
             size=size,
             pricetick=pricetick,
             capital=capital,
-            inverse=inverse
+            inverse=inverse,
+            mode=mode
         )
 
         strategy_class = self.classes[class_name]
@@ -167,7 +175,16 @@ class BacktesterEngine(BaseEngine):
         )
 
         engine.load_data()
-        engine.run_backtesting()
+
+        try:
+            engine.run_backtesting()
+        except Exception:
+            msg = f"策略回测失败，触发异常：\n{traceback.format_exc()}"
+            self.write_log(msg)
+
+            self.thread = None
+            return
+
         self.result_df = engine.calculate_result()
         self.result_statistics = engine.calculate_statistics(output=False)
 
@@ -263,6 +280,11 @@ class BacktesterEngine(BaseEngine):
         engine = self.backtesting_engine
         engine.clear_data()
 
+        if interval == Interval.TICK:
+            mode = BacktestingMode.TICK
+        else:
+            mode = BacktestingMode.BAR
+
         engine.set_parameters(
             vt_symbol=vt_symbol,
             interval=interval,
@@ -273,7 +295,8 @@ class BacktesterEngine(BaseEngine):
             size=size,
             pricetick=pricetick,
             capital=capital,
-            inverse=inverse
+            inverse=inverse,
+            mode=mode
         )
 
         strategy_class = self.classes[class_name]
