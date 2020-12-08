@@ -205,13 +205,16 @@ class BarGenerator:
         if not tick.last_price:
             return
 
-        # Filter tick data with less intraday trading volume (i.e. older timestamp)
-        if self.last_tick and tick.volume and tick.volume < self.last_tick.volume:
+        # Filter tick data with older timestamp
+        if self.last_tick and tick.datetime < self.last_tick.datetime:
             return
 
         if not self.bar:
             new_minute = True
-        elif(self.bar.datetime.minute != tick.datetime.minute) or (self.bar.datetime.hour != tick.datetime.hour):
+        elif (
+            (self.bar.datetime.minute != tick.datetime.minute)
+            or (self.bar.datetime.hour != tick.datetime.hour)
+        ):
             self.bar.datetime = self.bar.datetime.replace(
                 second=0, microsecond=0
             )
