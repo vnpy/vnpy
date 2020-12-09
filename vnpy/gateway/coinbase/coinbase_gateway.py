@@ -850,7 +850,7 @@ class CoinbaseRestApi(RestClient):
 
                 for l in data[1:]:
                     dt = datetime.fromtimestamp(l[0])
-                    dt = dt.replace(tzinfo=UTC_TZ)
+                    dt = UTC_TZ.localize(dt)
 
                     o, h, l, c, v = l[1:]
                     bar = BarData(
@@ -905,5 +905,5 @@ def get_auth_header(
 def generate_datetime(timestamp: str) -> datetime:
     """"""
     dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    dt = dt.replace(tzinfo=UTC_TZ)
+    dt = UTC_TZ.localize(dt)
     return dt

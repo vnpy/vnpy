@@ -227,6 +227,8 @@ class CtpGateway(BaseGateway):
         func()
         self.query_functions.append(func)
 
+        self.md_api.update_date()
+
     def init_query(self):
         """"""
         self.count = 0
@@ -253,6 +255,8 @@ class CtpMdApi(MdApi):
         self.userid = ""
         self.password = ""
         self.brokerid = ""
+
+        self.current_date = datetime.now().strftime("%Y%m%d")
 
     def onFrontConnected(self):
         """
@@ -298,14 +302,18 @@ class CtpMdApi(MdApi):
         """
         Callback of tick data update.
         """
+        # Filter data update with no timestamp
+        if not data["UpdateTime"]:
+            return
+
         symbol = data["InstrumentID"]
         exchange = symbol_exchange_map.get(symbol, "")
         if not exchange:
             return
 
-        timestamp = f"{data['ActionDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
+        timestamp = f"{self.current_date} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
         dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f")
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         tick = TickData(
             symbol=symbol,
@@ -362,7 +370,7 @@ class CtpMdApi(MdApi):
         # If not connected, then start connection first.
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
-            self.createFtdcMdApi(str(path) + "\\Md")
+            self.createFtdcMdApi((str(path) + "\\Md").encode("GBK"))
 
             self.registerFront(address)
             self.init()
@@ -400,6 +408,10 @@ class CtpMdApi(MdApi):
         if self.connect_status:
             self.exit()
 
+    def update_date(self):
+        """"""
+        self.current_date = datetime.now().strftime("%Y%m%d")
+
 
 class CtpTdApi(TdApi):
     """"""
@@ -416,8 +428,9 @@ class CtpTdApi(TdApi):
 
         self.connect_status = False
         self.login_status = False
-        self.auth_staus = False
+        self.auth_status = False
         self.login_failed = False
+        self.contract_inited = False
 
         self.userid = ""
         self.password = ""
@@ -451,7 +464,7 @@ class CtpTdApi(TdApi):
     def onRspAuthenticate(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         if not error['ErrorID']:
-            self.auth_staus = True
+            self.auth_status = True
             self.gateway.write_log("交易服务器授权验证成功")
             self.login()
         else:
@@ -629,6 +642,7 @@ class CtpTdApi(TdApi):
             symbol_size_map[contract.symbol] = contract.size
 
         if last:
+            self.contract_inited = True
             self.gateway.write_log("合约信息查询成功")
 
             for data in self.order_data:
@@ -643,11 +657,12 @@ class CtpTdApi(TdApi):
         """
         Callback of order status update.
         """
-        symbol = data["InstrumentID"]
-        exchange = symbol_exchange_map.get(symbol, "")
-        if not exchange:
+        if not self.contract_inited:
             self.order_data.append(data)
             return
+
+        symbol = data["InstrumentID"]
+        exchange = symbol_exchange_map[symbol]
 
         frontid = data["FrontID"]
         sessionid = data["SessionID"]
@@ -656,7 +671,7 @@ class CtpTdApi(TdApi):
 
         timestamp = f"{data['InsertDate']} {data['InsertTime']}"
         dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         order = OrderData(
             symbol=symbol,
@@ -680,17 +695,18 @@ class CtpTdApi(TdApi):
         """
         Callback of trade status update.
         """
-        symbol = data["InstrumentID"]
-        exchange = symbol_exchange_map.get(symbol, "")
-        if not exchange:
+        if not self.contract_inited:
             self.trade_data.append(data)
             return
+
+        symbol = data["InstrumentID"]
+        exchange = symbol_exchange_map[symbol]
 
         orderid = self.sysid_orderid_map[data["OrderSysID"]]
 
         timestamp = f"{data['TradeDate']} {data['TradeTime']}"
         dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
-        dt = dt.replace(tzinfo=CHINA_TZ)
+        dt = CHINA_TZ.localize(dt)
 
         trade = TradeData(
             symbol=symbol,
@@ -737,7 +753,7 @@ class CtpTdApi(TdApi):
 
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
-            self.createFtdcTraderApi(str(path) + "\\Td")
+            self.createFtdcTraderApi((str(path) + "\\Td").encode("GBK"))
 
             self.subscribePrivateTopic(0)
             self.subscribePublicTopic(0)
@@ -792,6 +808,10 @@ class CtpTdApi(TdApi):
         """
         if req.offset not in OFFSET_VT2CTP:
             self.gateway.write_log("请选择开平方向")
+            return ""
+
+        if req.type not in ORDERTYPE_VT2CTP:
+            self.gateway.write_log(f"当前接口不支持该类型的委托{req.type.value}")
             return ""
 
         self.order_ref += 1

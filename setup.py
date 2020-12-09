@@ -63,17 +63,12 @@ def get_install_requires():
         "requests",
         "websocket-client",
         "peewee",
-        "pymysql",
-        "mongoengine",
         "numpy",
         "pandas",
         "matplotlib",
         "seaborn",
-        "futu-api",
-        "tigeropen",
         "rqdatac",
         "ta-lib",
-        "ibapi",
         "deap",
         "pyzmq",
         "QScintilla"
@@ -260,23 +255,48 @@ def get_ext_modules():
         language="cpp",
     )
 
-    vnoes = Extension(
-        name="vnpy.api.oes.vnoes",
-        sources=gather_autocxxpy_generated_files(
-            "vnpy/api/oes/vnoes/generated_files/",
-        ),
-        include_dirs=["vnpy/api/oes/vnoes/include",
-                      "vnpy/api/oes/vnoes/include/oes"],
-        define_macros=[("BRIGAND_NO_BOOST_SUPPORT", "1")],
-        undef_macros=[],
-        library_dirs=["vnpy/api/oes/vnoes/libs"],
-        libraries=["oes_api"],
+    vnnhmd = Extension(
+        "vnpy.api.nh.vnnhmd",
+        [
+            "vnpy/api/nh/vnnh/vnnhmd/vnnhmd.cpp",
+        ],
+        include_dirs=["vnpy/api/nh/include", "vnpy/api/nh/vnnh"],
+        library_dirs=["vnpy/api/nh/libs", "vnpy/api/nh"],
+        libraries=["nhmdapi"],
         extra_compile_args=compiler_flags,
         extra_link_args=extra_link_args,
         runtime_library_dirs=runtime_library_dirs,
-        depends=[],
         language="cpp",
     )
+
+    vnnhfutures = Extension(
+        "vnpy.api.nh.vnnhfutures",
+        [
+            "vnpy/api/nh/vnnh/vnnhfutures/vnnhfutures.cpp",
+        ],
+        include_dirs=["vnpy/api/nh/include", "vnpy/api/nh/vnnh"],
+        library_dirs=["vnpy/api/nh/libs", "vnpy/api/nh"],
+        libraries=["nhtd2traderapi"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        language="cpp",
+    )
+
+    vnnhstock = Extension(
+        "vnpy.api.nh.vnnhstock",
+        [
+            "vnpy/api/nh/vnnh/vnnhstock/vnnhstock.cpp",
+        ],
+        include_dirs=["vnpy/api/nh/include", "vnpy/api/nh/vnnh"],
+        library_dirs=["vnpy/api/nh/libs", "vnpy/api/nh"],
+        libraries=["nhtdstockapi"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        language="cpp",
+    )
+
     if platform.system() == "Windows":
         # use pre-built pyd for windows ( support python 3.7 only )
         ext_modules = []
@@ -288,11 +308,9 @@ def get_ext_modules():
             vnxtptd, vnxtpmd,
             vnsgittd, vnsgitmd,
             vnksgoldmd, vnksgoldtd,
-            vnoes
+            vnnhmd, vnnhfutures, vnnhstock
         ]
 
-    ext_modules = check_extension_build_flag(
-        ext_modules, "VNPY_BUILD_OES", vnoes)
     ext_modules = check_extension_build_flag(
         ext_modules, "VNPY_BUILD_CTP", vnctptd)
     ext_modules = check_extension_build_flag(

@@ -378,7 +378,7 @@ class OkexoRestApi(RestClient):
                 size=float(instrument_data["contract_val"]),
                 pricetick=float(instrument_data["tick_size"]),
                 min_volume=float(instrument_data["lot_size"]),
-                option_strike=int(instrument_data["strike"]),
+                option_strike=float(instrument_data["strike"]),
                 option_type=OPTIONTYPE_OKEXO2VT[instrument_data["option_type"]],
                 option_expiry=datetime.strptime(instrument_data["delivery"], "%Y-%m-%dT%H:%M:%S.%fZ"),
                 option_portfolio=instrument_data["underlying"],
@@ -816,13 +816,13 @@ class OkexoWebsocketApi(WebsocketClient):
 
         bids = data["bids"]
         asks = data["asks"]
-        for n, buf in enumerate(bids):
-            price, volume, _, __ = buf
+        for n in range(min(5, len(bids))):
+            price, volume, _ = bids[n]
             tick.__setattr__("bid_price_%s" % (n + 1), float(price))
             tick.__setattr__("bid_volume_%s" % (n + 1), int(volume))
 
-        for n, buf in enumerate(asks):
-            price, volume, _, __ = buf
+        for n in range(min(5, len(asks))):
+            price, volume, _ = asks[n]
             tick.__setattr__("ask_price_%s" % (n + 1), float(price))
             tick.__setattr__("ask_volume_%s" % (n + 1), int(volume))
 
@@ -907,5 +907,5 @@ def get_timestamp() -> str:
 
 def generate_datetime(timestamp: str) -> datetime:
     dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    dt = dt.replace(tzinfo=UTC_TZ)
+    dt = UTC_TZ.localize(dt)
     return dt
