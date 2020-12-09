@@ -818,6 +818,34 @@ void MdApi::processTickByTick(Task *task)
 		data["seq"] = task_data->seq;
 		data["data_time"] = task_data->data_time;
 		data["type"] = (int)task_data->type;
+
+		dict entrust;
+		dict trade;
+
+		if (task_data->type == XTP_TBT_ENTRUST) 
+		{
+			entrust["channel_no"] = task_data->entrust.channel_no;
+			entrust["seq"] = task_data->entrust.seq;
+			entrust["price"] = task_data->entrust.price;
+			entrust["qty"] = task_data->entrust.qty;
+			entrust["side"] = task_data->entrust.side;
+			entrust["ord_type"] = task_data->entrust.ord_type;
+		}
+		else
+		{
+			trade["channel_no"] = task_data->trade.channel_no;
+			trade["seq"] = task_data->trade.seq;
+			trade["price"] = task_data->trade.price;
+			trade["qty"] = task_data->trade.qty;
+			trade["money"] = task_data->trade.money;
+			trade["bid_no"] = task_data->trade.bid_no;
+			trade["ask_no"] = task_data->trade.ask_no;
+			trade["trade_flag"] = task_data->trade.trade_flag;
+		}
+
+		data["entrust"] = entrust;
+		data["trade"] = trade;
+
 		delete task_data;
 	}
 	this->onTickByTick(data);

@@ -95,7 +95,8 @@ INTERVAL_VT2HUOBIF = {
 CONTRACT_TYPE_MAP = {
     "this_week": "CW",
     "next_week": "NW",
-    "quarter": "CQ"
+    "quarter": "CQ",
+    "next_quarter": "NQ"
 }
 
 TIMEDELTA_MAP = {
@@ -888,7 +889,7 @@ class HuobifTradeWebsocketApi(HuobifWebsocketApiBase):
                 symbol=order.symbol,
                 exchange=Exchange.HUOBI,
                 orderid=order.orderid,
-                tradeid=str(d["trade_id"]),
+                tradeid=str(d["id"]),
                 direction=order.direction,
                 offset=order.offset,
                 price=d["trade_price"],
@@ -1061,5 +1062,5 @@ def create_signature(api_key, method, host, path, secret_key, get_params=None):
 def generate_datetime(timestamp: float) -> datetime:
     """"""
     dt = datetime.fromtimestamp(timestamp)
-    dt = dt.replace(tzinfo=CHINA_TZ)
+    dt = CHINA_TZ.localize(dt)
     return dt

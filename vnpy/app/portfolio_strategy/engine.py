@@ -197,6 +197,7 @@ class StrategyEngine(BaseEngine):
             type=OrderType.LIMIT,
             price=price,
             volume=volume,
+            reference=f"{APP_NAME}_{strategy.strategy_name}"
         )
 
         # Convert with offset converter
@@ -253,16 +254,30 @@ class StrategyEngine(BaseEngine):
         dts = list(dts)
         dts.sort()
 
-        for dt in dts:
-            bars = {}
+        bars = {}
 
+        for dt in dts:
             for vt_symbol in vt_symbols:
                 bar = history_data.get((dt, vt_symbol), None)
+
+                # If bar data of vt_symbol at dt exists
                 if bar:
                     bars[vt_symbol] = bar
-                else:
-                    dt_str = dt.strftime("%Y-%m-%d %H:%M:%S")
-                    self.write_log(f"数据缺失：{dt_str} {vt_symbol}", strategy)
+                # Otherwise, use previous data to backfill
+                elif vt_symbol in bars:
+                    old_bar = bars[vt_symbol]
+
+                    bar = BarData(
+                        symbol=old_bar.symbol,
+                        exchange=old_bar.exchange,
+                        datetime=dt,
+                        open_price=old_bar.close_price,
+                        high_price=old_bar.close_price,
+                        low_price=old_bar.close_price,
+                        close_price=old_bar.close_price,
+                        gateway_name=old_bar.gateway_name
+                    )
+                    bars[vt_symbol] = bar
 
             self.call_strategy_func(strategy, strategy.on_bars, bars)
 
@@ -318,7 +333,7 @@ class StrategyEngine(BaseEngine):
             self.write_log(msg, strategy)
 
     def add_strategy(
-        self, class_name: str, strategy_name: str, vt_symbols: str, setting: dict
+        self, class_name: str, strategy_name: str, vt_symbols: list, setting: dict
     ):
         """
         Add a new strategy.
@@ -369,7 +384,10 @@ class StrategyEngine(BaseEngine):
         if data:
             for name in strategy.variables:
                 value = data.get(name, None)
-                if value:
+                if name == "pos":
+                    pos = getattr(strategy, name)
+                    pos.update(value)
+                elif value:
                     setattr(strategy, name, value)
 
         # Subscribe market data
@@ -604,12 +622,12 @@ class StrategyEngine(BaseEngine):
 
     def write_log(self, msg: str, strategy: StrategyTemplate = None):
         """
-        Create cta engine log event.
+        Create portfolio engine log event.
         """
         if strategy:
             msg = f"{strategy.strategy_name}: {msg}"
 
-        log = LogData(msg=msg, gateway_name="CtaStrategy")
+        log = LogData(msg=msg, gateway_name=APP_NAME)
         event = Event(type=EVENT_PORTFOLIO_LOG, data=log)
         self.event_engine.put(event)
 

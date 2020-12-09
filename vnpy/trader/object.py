@@ -118,6 +118,7 @@ class OrderData(BaseData):
     traded: float = 0
     status: Status = Status.SUBMITTING
     datetime: datetime = None
+    reference: str = ""
 
     def __post_init__(self):
         """"""
@@ -232,7 +233,7 @@ class ContractData(BaseData):
     exchange: Exchange
     name: str
     product: Product
-    size: int
+    size: float
     pricetick: float
 
     min_volume: float = 1           # minimum trading volume of the contract
@@ -298,6 +299,7 @@ class OrderRequest:
             offset=self.offset,
             price=self.price,
             volume=self.volume,
+            reference=self.reference,
             gateway_name=gateway_name,
         )
         return order

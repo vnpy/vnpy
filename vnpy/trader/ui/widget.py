@@ -420,6 +420,7 @@ class OrderMonitor(BaseMonitor):
 
     headers: Dict[str, dict] = {
         "orderid": {"display": "委托号", "cell": BaseCell, "update": False},
+        "reference": {"display": "来源", "cell": BaseCell, "update": False},
         "symbol": {"display": "代码", "cell": BaseCell, "update": False},
         "exchange": {"display": "交易所", "cell": EnumCell, "update": False},
         "type": {"display": "类型", "cell": EnumCell, "update": False},
@@ -886,6 +887,7 @@ class TradingWidget(QtWidgets.QWidget):
             volume=volume,
             price=price,
             offset=Offset(str(self.offset_combo.currentText())),
+            reference="ManualTrading"
         )
 
         gateway_name = str(self.gateway_combo.currentText())
@@ -915,8 +917,13 @@ class TradingWidget(QtWidgets.QWidget):
         if isinstance(data, PositionData):
             if data.direction == Direction.SHORT:
                 direction = Direction.LONG
-            else:
+            elif data.direction == Direction.LONG:
                 direction = Direction.SHORT
+            else:       # Net position mode
+                if data.volume > 0:
+                    direction = Direction.SHORT
+                else:
+                    direction = Direction.LONG
 
             self.direction_combo.setCurrentIndex(
                 self.direction_combo.findText(direction.value)
@@ -924,7 +931,7 @@ class TradingWidget(QtWidgets.QWidget):
             self.offset_combo.setCurrentIndex(
                 self.offset_combo.findText(Offset.CLOSE.value)
             )
-            self.volume_line.setText(str(data.volume))
+            self.volume_line.setText(str(abs(data.volume)))
 
 
 class ActiveOrderMonitor(OrderMonitor):
@@ -1113,7 +1120,16 @@ class GlobalDialog(QtWidgets.QDialog):
         button.clicked.connect(self.update_setting)
         form.addRow(button)
 
-        self.setLayout(form)
+        scroll_widget = QtWidgets.QWidget()
+        scroll_widget.setLayout(form)
+
+        scroll_area = QtWidgets.QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(scroll_widget)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(scroll_area)
+        self.setLayout(vbox)
 
     def update_setting(self) -> None:
         """

@@ -447,6 +447,10 @@ class OptionHedgeEngine:
         contract = self.main_engine.get_contract(self.vt_symbol)
         holding = self.option_engine.get_position_holding(self.vt_symbol)
 
+        # Check if hedge volume meets contract minimum trading volume
+        if abs(hedge_volume) < contract.min_volume:
+            return
+
         if hedge_volume > 0:
             price = tick.ask_price_1 + contract.pricetick * self.hedge_payup
             direction = Direction.LONG
@@ -473,6 +477,7 @@ class OptionHedgeEngine:
             type=OrderType.LIMIT,
             volume=order_volume,
             price=round_to(price, contract.pricetick),
+            reference=f"{APP_NAME}_DeltaHedging"
         )
 
         # Close positon if opposite available is enough
@@ -652,7 +657,8 @@ class OptionAlgoEngine:
             OrderType.LIMIT,
             volume,
             price,
-            offset
+            offset,
+            reference=f"{APP_NAME}_ElectronicEye"
         )
 
         vt_orderid = self.main_engine.send_order(req, contract.gateway_name)

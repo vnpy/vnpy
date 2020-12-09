@@ -463,8 +463,11 @@ class ElectronicEyeMonitor(QtWidgets.QTableWidget):
 
     def update_net_pos(self, vt_symbol: str) -> None:
         """"""
+        cells = self.cells.get(vt_symbol, None)
+        if not cells:
+            return
+
         option = self.option_engine.get_instrument(vt_symbol)
-        cells = self.cells[vt_symbol]
         cells["net_pos"].setText(str(option.net_pos))
 
     def start_algo_pricing(self, vt_symbol: str) -> None:
@@ -930,8 +933,11 @@ class PricingVolatilityManager(QtWidgets.QWidget):
                 otm = chain.puts[index]
 
             value = round(otm.pricing_impv * 100, 1)
-            cells = self.cells[(chain_symbol, index)]
-            cells["pricing_impv"].setValue(value)
+
+            key = (chain_symbol, index)
+            cells = self.cells.get(key, None)
+            if cells:
+                cells["pricing_impv"].setValue(value)
 
     def update_mid_impv(self, chain_symbol: str) -> None:
         """"""

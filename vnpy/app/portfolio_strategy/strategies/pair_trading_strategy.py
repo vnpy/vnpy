@@ -22,7 +22,7 @@ class PairTradingStrategy(StrategyTemplate):
 
     leg1_symbol = ""
     leg2_symbol = ""
-    last_spread = 0.0
+    current_spread = 0.0
     boll_mid = 0.0
     boll_down = 0.0
     boll_up = 0.0
@@ -131,7 +131,7 @@ class PairTradingStrategy(StrategyTemplate):
         )
 
         # Update to spread array
-        self.spread_data[:-1] = self.spread_data[-1:]
+        self.spread_data[:-1] = self.spread_data[1:]
         self.spread_data[-1] = self.current_spread
 
         self.spread_count += 1
