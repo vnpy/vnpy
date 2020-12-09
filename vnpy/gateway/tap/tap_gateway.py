@@ -66,8 +66,9 @@ STATUS_TAP2VT: Dict[str, Status] = {
     "4": Status.NOTTRADED,
     "5": Status.PARTTRADED,
     "6": Status.ALLTRADED,
-    "7": Status.CANCELLED,
     "9": Status.CANCELLED,
+    "A": Status.CANCELLED,
+    "B": Status.REJECTED,
 }
 
 ORDERTYPE_TAP2VT: Dict[str, OrderType] = {
@@ -639,6 +640,10 @@ class TradeApi(TdApi):
         """
         Convert TAP order data structure into OrderData event and push it.
         """
+        # Filter canceling and modifying order state update
+        if data["OrderState"] in {"7", "8"}:
+            return
+
         self.local_sys_map[data["ClientOrderNo"]] = data["OrderNo"]
         self.sys_local_map[data["OrderNo"]] = data["ClientOrderNo"]
         self.sys_server_map[data["OrderNo"]] = data["ServerFlag"]
