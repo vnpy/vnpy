@@ -5,9 +5,11 @@ import sys
 import pytz
 from datetime import datetime
 from typing import Dict
+import json
 
 from vnpy.api.gtja import (
     TdApi,
+    MdApi,
     AccountType_Stock,
     PositionSide_Long,
     PositionSide_Short,
@@ -24,6 +26,8 @@ from vnpy.api.gtja import (
     OrderStatus_PartiallyCanceled,
     OrderStatus_Rejected,
     OrderStatus_CancelRejected,
+    MKtype_SH,
+    MKtype_SZ,
 )
 from vnpy.trader.constant import (
     Direction,
@@ -49,6 +53,12 @@ from vnpy.trader.object import (
 from vnpy.trader.utility import get_folder_path
 from vnpy.trader.event import EVENT_TIMER
 
+MK_GTJA2VT = {
+    MKtype_SH: Exchange.SSE,
+    MKtype_SZ: Exchange.SZSE
+
+}
+MK_VT2GTJA = {v: k for k, v in MK_GTJA2VT.items()}
 
 MAX_FLOAT = sys.float_info.max
 CHINA_TZ = pytz.timezone("Asia/Shanghai")
@@ -97,11 +107,14 @@ class GtjaGateway(BaseGateway):
 
     exchanges = [Exchange.SSE, Exchange.SZSE]
 
+    date = ""
+
     def __init__(self, event_engine):
         """Constructor"""
         super().__init__(event_engine, "GTJA")
 
         self.td_api = GtjaTdApi(self)
+        self.md_api = GtjaMdApi(self)
 
     def connect(self, setting: dict):
         """"""
@@ -114,11 +127,13 @@ class GtjaGateway(BaseGateway):
 
         td_host, td_port = tuple(td_address.split(":"))
 
-        self.td_api.connect(userid, password, orgid, barnchid, system_id, td_host, td_port)
+        # self.td_api.connect(userid, password, orgid, barnchid, system_id, td_host, td_port)
 
+        self.md_api.connect()
+        self.date = datetime.now().strftime("%Y%m%d%H%M")
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
-        pass
+        self.md_api.subscrbie(req)
 
     def send_order(self, req: OrderRequest) -> str:
         """"""
@@ -165,6 +180,190 @@ class GtjaGateway(BaseGateway):
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
 
+class GtjaMdApi(MdApi):
+
+    def __init__(self, gateway: GtjaGateway):
+        """"""
+        super().__init__()
+
+        self.gateway: GtjaGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
+
+        self.userid: str = ""
+        self.password: str = ""
+        self.client_id: int = 0
+        self.server_ip: str = ""
+        self.server_port: int = 0
+        self.protocol: int = 0
+        self.session_id: int = 0
+
+        self.connect_status: bool = False
+        self.login_status: bool = False
+
+        self.sse_inited: bool = False
+        self.szse_inited: bool = False
+
+    def onDisconnected(self, reason: int) -> None:
+        """"""
+        print("onDisconected", reason)
+        self.connect_status = False
+        self.login_status = False
+        self.gateway.write_log(f"行情服务器连接断开, 原因{reason}")
+
+        self.login_server()
+
+    def onSubscribe(self, error):
+        """"""
+        print("onSubcrieb", error)
+        if error["errcode"]:
+            self.gateway.write_log(f"订阅失败，错误码{error['errcode']}，信息{error['errstr']}")
+
+    def onDepthMarketData(self, mk_type: int, symbol: str, data: dict) -> None:
+        """"""
+        pass
+
+
+    def OnMarketData(self, mk_type: int, symbol: str, data: dict) -> None:
+        """"""
+        timestamp = f"{self.gateway.date}{str(data['nTime'])}"
+        dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
+        dt = CHINA_TZ.localize(dt)
+
+        tick = TickData(
+            symbol=symbol,
+            exchange=MK_GTJA2VT[mk_type],
+            datetime=dt,
+            volume=data["iVolume"],
+            last_price=data["uMatch"],
+            limit_up=data["uHighLimited"],
+            limit_down=data["uLowLimited"],
+            open_price=data["uOpen"],
+            high_price=data["uHigh"],
+            low_price=data["uLow"],
+            pre_close=data["uPreClose"],
+            gateway_name=self.gateway_name
+        )
+
+        tick.bid_price_1, tick.bid_price_2, tick.bid_price_3, tick.bid_price_4, tick.bid_price_5 = data["bid"][0:5]
+        tick.ask_price_1, tick.ask_price_2, tick.ask_price_3, tick.ask_price_4, tick.ask_price_5 = data["ask"][0:5]
+        tick.bid_volume_1, tick.bid_volume_2, tick.bid_volume_3, tick.bid_volume_4, tick.bid_volume_5 = data["bid_qty"][0:5]
+        tick.ask_volume_1, tick.ask_volume_2, tick.ask_volume_3, tick.ask_volume_4, tick.ask_volume_5 = data["ask_qty"][0:5]
+
+        pricetick = symbol_pricetick_map.get(tick.vt_symbol, 0)
+        if pricetick:
+            tick.bid_price_1 = round_to(tick.bid_price_1, pricetick)
+            tick.bid_price_2 = round_to(tick.bid_price_2, pricetick)
+            tick.bid_price_3 = round_to(tick.bid_price_3, pricetick)
+            tick.bid_price_4 = round_to(tick.bid_price_4, pricetick)
+            tick.bid_price_5 = round_to(tick.bid_price_5, pricetick)
+            tick.ask_price_1 = round_to(tick.ask_price_1, pricetick)
+            tick.ask_price_2 = round_to(tick.ask_price_2, pricetick)
+            tick.ask_price_3 = round_to(tick.ask_price_3, pricetick)
+            tick.ask_price_4 = round_to(tick.ask_price_4, pricetick)
+            tick.ask_price_5 = round_to(tick.ask_price_5, pricetick)
+
+        tick.name = symbol_name_map.get(tick.vt_symbol, tick.symbol)
+        self.gateway.on_tick(tick)
+
+
+
+    # def onQueryAllTickers(self, data: dict, error: dict, last: bool) -> None:
+    #     """"""
+    #     contract = ContractData(
+    #         symbol=data["ticker"],
+    #         exchange=EXCHANGE_Gtja2VT[data["exchange_id"]],
+    #         name=data["ticker_name"],
+    #         product=PRODUCT_Gtja2VT[data["ticker_type"]],
+    #         size=1,
+    #         pricetick=data["price_tick"],
+    #         min_volume=data["buy_qty_unit"],
+    #         gateway_name=self.gateway_name
+    #     )
+
+    #     if contract.product != Product.OPTION:
+    #         self.gateway.on_contract(contract)
+
+    #     symbol_name_map[contract.vt_symbol] = contract.name
+    #     symbol_pricetick_map[contract.vt_symbol] = contract.pricetick
+
+    #     if last:
+    #         self.gateway.write_log(f"{contract.exchange.value}合约信息查询成功")
+
+    #         if contract.exchange == Exchange.SSE:
+    #             self.sse_inited = True
+    #         else:
+    #             self.szse_inited = True
+
+    #         if self.sse_inited and self.szse_inited:
+    #             self.gateway.td_api.query_option_info()
+
+    def connect(
+        self,
+        # userid: str,
+        # password: str,
+        # client_id: int,
+        # server_ip: str,
+        # server_port: int,
+        # quote_protocol: int
+    ) -> None:
+        """"""
+        # self.userid = userid
+        # self.password = password
+        # self.client_id = client_id
+        # self.server_ip = server_ip
+        # self.server_port = server_port
+        # self.protocol = PROTOCOL_VT2Gtja[quote_protocol]
+        a_cfg = "{\"ip0\":\"101.231.93.225\",\"port0\":16004,\"ip1\":\"101.231.93.225\",\"port1\":16005,\"connect_mode\":\"NR\",\"username\":\"gxjy_tst5\",\"password\":\"1uHnE8GMN7tPl\"}"
+        b_cfg = "{\"ip0\":\"101.231.93.225\"|\"port0\":16004|\"ip1\":\"101.231.93.225\"|\"port1\":16005|\"connect_mode\":\"LNK\"|\"username\":\"gxjy_tst5\"|\"password\":\"1uHnE8GMN7tPl\"}"
+        cfg = {
+            # "ip0": "101.231.93.225",
+            # "port0": 16004,
+            "ip1": "101.231.93.225",
+            "port1": 16004,
+            "connect_mode": "NR",
+            "username": "gxjy_tst5",
+            "password": "1uHnE8GMN7tPl"
+        }
+
+        g_cfg = json.dumps(cfg)
+        # print("login dict=", a_cfg)
+
+        # Create API object
+        if not self.connect_status:
+            a = self.createMdApi(b_cfg)
+            n = self.login()
+            print("create=",a, ",,login python=",n)
+            if not a:
+                self.gateway.write_log("行情登录成功")
+                self.connect_status = True
+                self.login_status = True
+            else:
+                self.gateway.write_log(f"行情登录失败，错误号{n}")
+        else:
+            self.gateway.write_log("行情接口已登录，请勿重复操作")
+
+    def close(self) -> None:
+        """"""
+        if self.connect_status:
+            self.exit()
+
+    def subscrbie(self, req: SubscribeRequest) -> None:
+        """"""
+        # if self.login_status:
+        if True:
+            gtja_exchange = MK_VT2GTJA.get(req.exchange, "")
+            
+            n = self.subscribeMarketData(gtja_exchange, req.symbol)
+            print("subcribe:",n, "@",gtja_exchange, req.symbol)
+            
+
+    def query_contract(self) -> None:
+        """"""
+        for exchange_id in EXCHANGE_Gtja2VT.keys():
+            self.queryAllTickers(exchange_id)
+
+
+
 class GtjaTdApi(TdApi):
     """"""
 
@@ -178,7 +377,6 @@ class GtjaTdApi(TdApi):
         self.reqid: int = 0
         self.order_count: int = 1000
         self.tradeid: int = 1000
-        self.date: str = ""
 
         self.connect_status: bool = False
         self.login_status: bool = False
@@ -198,7 +396,7 @@ class GtjaTdApi(TdApi):
     def _new_orderid(self) -> str:
         """"""
         self.order_count += 1
-        orderid = f"{self.date}_{self.order_count}"
+        orderid = f"{self.gateway.date}_{self.order_count}"
         return orderid
 
     def onError(self, error: dict, reqid: int) -> None:
