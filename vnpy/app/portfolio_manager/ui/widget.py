@@ -91,6 +91,11 @@ class PortfolioManager(QtWidgets.QWidget):
         interval_spin.setValue(self.portfolio_engine.get_timer_interval())
         interval_spin.valueChanged.connect(self.portfolio_engine.set_timer_interval)
 
+        self.reference_combo = QtWidgets.QComboBox()
+        self.reference_combo.setMinimumWidth(200)
+        self.reference_combo.addItem("")
+        self.reference_combo.currentIndexChanged.connect(self.set_reference_filter)
+
         hbox1 = QtWidgets.QHBoxLayout()
         hbox1.addWidget(expand_button)
         hbox1.addWidget(collapse_button)
@@ -98,6 +103,9 @@ class PortfolioManager(QtWidgets.QWidget):
         hbox1.addStretch()
         hbox1.addWidget(QtWidgets.QLabel("刷新频率"))
         hbox1.addWidget(interval_spin)
+        hbox1.addStretch()
+        hbox1.addWidget(QtWidgets.QLabel("组合成交"))
+        hbox1.addWidget(self.reference_combo)
 
         hbox2 = QtWidgets.QHBoxLayout()
         hbox2.addWidget(self.tree)
@@ -136,6 +144,8 @@ class PortfolioManager(QtWidgets.QWidget):
 
             self.portfolio_items[reference] = portfolio_item
             self.tree.addTopLevelItem(portfolio_item)
+
+            self.reference_combo.addItem(reference)
 
         return portfolio_item
 
@@ -204,9 +214,9 @@ class PortfolioManager(QtWidgets.QWidget):
         ]):
             i = n + start_column
 
-            if result.trading_pnl > 0:
+            if pnl > 0:
                 item.setForeground(i, RED_COLOR)
-            elif result.trading_pnl < 0:
+            elif pnl < 0:
                 item.setForeground(i, GREEN_COLOR)
             else:
                 item.setForeground(i, WHITE_COLOR)
@@ -215,6 +225,15 @@ class PortfolioManager(QtWidgets.QWidget):
         """"""
         for i in range(self.column_count):
             self.tree.resizeColumnToContents(i)
+
+    def set_reference_filter(self, filter: str) -> None:
+        """"""
+        filter = self.reference_combo.currentText()
+        self.monitor.set_filter(filter)
+
+    def show(self) -> None:
+        """"""
+        self.showMaximized()
 
 
 class PortfolioTradeMonitor(QtWidgets.QTableWidget):
@@ -225,6 +244,7 @@ class PortfolioTradeMonitor(QtWidgets.QTableWidget):
         super().__init__()
 
         self.init_ui()
+        self.filter = ""
 
     def init_ui(self) -> None:
         """"""
@@ -273,3 +293,20 @@ class PortfolioTradeMonitor(QtWidgets.QTableWidget):
         self.setItem(0, 8, volume_cell)
         self.setItem(0, 9, datetime_cell)
         self.setItem(0, 10, gateway_cell)
+
+        if self.filter and trade.reference != self.filter:
+            self.hideRow(0)
+
+    def set_filter(self, filter: str) -> None:
+        """"""
+        self.filter = filter
+
+        for row in range(self.rowCount()):
+            if not filter:
+                self.showRow(row)
+            else:
+                item = self.item(row, 0)
+                if item.text() == filter:
+                    self.showRow(row)
+                else:
+                    self.hideRow(row)

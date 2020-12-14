@@ -7,8 +7,13 @@ from vnpy.trader.engine import (
     EventEngine,
     BaseEngine
 )
-from vnpy.trader.event import EVENT_ORDER, EVENT_TIMER, EVENT_TRADE
-from vnpy.trader.object import OrderData, TradeData, SubscribeRequest
+from vnpy.trader.event import (
+    EVENT_ORDER,
+    EVENT_CONTRACT,
+    EVENT_TIMER,
+    EVENT_TRADE
+)
+from vnpy.trader.object import ContractData, OrderData, TradeData, SubscribeRequest
 from vnpy.trader.utility import load_json, save_json
 
 from .base import ContractResult, PortfolioResult
@@ -35,6 +40,7 @@ class PortfolioEngine(BaseEngine):
         self.get_contract = self.main_engine.get_contract
 
         self.subscribed: Set[str] = set()
+        self.result_symbols: Set[str] = set()
         self.order_reference_map: Dict[str, str] = {}
         self.contract_results: Dict[str, ContractResult] = {}
         self.portfolio_results: Dict[str, PortfolioResult] = {}
@@ -52,6 +58,7 @@ class PortfolioEngine(BaseEngine):
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
+        self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
 
     def process_order_event(self, event: Event) -> None:
         """"""
@@ -120,6 +127,17 @@ class PortfolioEngine(BaseEngine):
             event = Event(EVENT_PM_PORTFOLIO, portfolio_result)
             self.event_engine.put(event)
 
+    def process_contract_event(self, event: Event) -> None:
+        """"""
+        contract: ContractData = event.data
+        if contract.vt_symbol not in self.result_symbols:
+            return
+
+        req = SubscribeRequest(contract.symbol, contract.exchange)
+        self.main_engine.subscribe(req, contract.gateway_name)
+
+        self.subscribed.add(contract.vt_symbol)
+
     def load_data(self) -> None:
         """"""
         data = load_json(self.data_filename)
@@ -139,6 +157,7 @@ class PortfolioEngine(BaseEngine):
                 pos = d["last_pos"]
                 date_changed = True
 
+            self.result_symbols.add(vt_symbol)
             self.contract_results[(reference, vt_symbol)] = ContractResult(
                 self,
                 reference,
