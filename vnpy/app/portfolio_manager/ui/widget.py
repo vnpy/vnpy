@@ -1,393 +1,191 @@
-from vnpy.event import EventEngine
-from vnpy.trader.engine import MainEngine
-from vnpy.trader.constant import Direction, Offset
-from vnpy.trader.ui import QtWidgets, QtGui
-from vnpy.trader.ui.widget import (
-    BaseMonitor, BaseCell, TimeCell,
-    PnlCell, DirectionCell, EnumCell,
+from typing import Dict, Tuple, Union
+from vnpy.event.engine import Event
+from vnpy.trader.ui import QtWidgets, QtCore, QtGui
+
+
+from vnpy.trader.engine import MainEngine, EventEngine
+
+from ..base import ContractResult, PortfolioResult
+from ..engine import (
+    APP_NAME,
+    EVENT_PM_CONTRACT,
+    EVENT_PM_PORTFOLIO,
+    PortfolioEngine
 )
 
-from ..engine import (
-    PortfolioEngine,
-    APP_NAME,
-    EVENT_PORTFOLIO_UPDATE,
-    EVENT_PORTFOLIO_TRADE,
-    EVENT_PORTFOLIO_ORDER
-)
+
+RED_COLOR = QtGui.QColor("red")
+GREEN_COLOR = QtGui.QColor("green")
+WHITE_COLOR = QtGui.QColor("white")
 
 
 class PortfolioManager(QtWidgets.QWidget):
     """"""
 
-    def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
+    signal_contract = QtCore.pyqtSignal(Event)
+    signal_portfolio = QtCore.pyqtSignal(Event)
+
+    def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
         super().__init__()
 
         self.main_engine = main_engine
         self.event_engine = event_engine
 
-        self.portfolio_engine = main_engine.get_engine(APP_NAME)
+        self.portfolio_engine: PortfolioEngine = main_engine.get_engine(APP_NAME)
+
+        self.contract_items: Dict[Tuple(str, str), QtWidgets.QTreeWidgetItem] = {}
+        self.portfolio_items: Dict[str, QtWidgets.QTreeWidgetItem] = {}
 
         self.init_ui()
+        self.register_event()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """"""
         self.setWindowTitle("投资组合")
 
-        strategy_monitor = PortfolioStrategyMonitor(
-            self.main_engine, self.event_engine)
-        order_monitor = PortfolioOrderMonitor(
-            self.main_engine, self.event_engine)
-        trade_monitor = PortfolioTradeMonitor(
-            self.main_engine, self.event_engine)
+        labels = [
+            "投资组合",
+            "本地代码",
+            "开盘仓位",
+            "当前仓位",
+            "交易盈亏",
+            "持仓盈亏",
+            "总盈亏",
+            "多头成交",
+            "空头成交"
+        ]
+        self.column_count = len(labels)
 
-        self.trading_widget = StrategyTradingWidget(self.portfolio_engine)
-        self.management_widget = StrategyManagementWidget(
-            self.portfolio_engine,
-            self.trading_widget,
-            strategy_monitor
-        )
+        self.tree = QtWidgets.QTreeWidget()
+        self.tree.setColumnCount(self.column_count)
+        self.tree.setHeaderLabels(labels)
+        self.tree.header().setDefaultAlignment(QtCore.Qt.AlignCenter)
+        self.tree.header().setStretchLastSection(False)
+
+        # for i in range(self.column_count):
+        #     self.tree.setItemDelegateForColumn(i, ElideCenterDelegate(self.tree))
+
+        expand_button = QtWidgets.QPushButton("全部展开")
+        expand_button.clicked.connect(self.tree.expandAll)
+
+        collapse_button = QtWidgets.QPushButton("全部折叠")
+        collapse_button.clicked.connect(self.tree.collapseAll)
+
+        resize_button = QtWidgets.QPushButton("调整列宽")
+        resize_button.clicked.connect(self.resize_columns)
+
+        interval_spin = QtWidgets.QSpinBox()
+        interval_spin.setMinimum(1)
+        interval_spin.setMaximum(60)
+        interval_spin.setSuffix("秒")
+        interval_spin.setValue(self.portfolio_engine.get_timer_interval())
+        interval_spin.valueChanged.connect(self.portfolio_engine.set_timer_interval)
+
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addWidget(expand_button)
+        hbox.addWidget(collapse_button)
+        hbox.addWidget(resize_button)
+        hbox.addStretch()
+        hbox.addWidget(QtWidgets.QLabel("刷新频率"))
+        hbox.addWidget(interval_spin)
 
         vbox = QtWidgets.QVBoxLayout()
-        vbox.addWidget(self.management_widget)
-        vbox.addWidget(self.create_group("策略", strategy_monitor))
-        vbox.addWidget(self.trading_widget)
-        vbox.addWidget(self.create_group("委托", order_monitor))
-        vbox.addWidget(self.create_group("成交", trade_monitor))
-
+        vbox.addLayout(hbox)
+        vbox.addWidget(self.tree)
         self.setLayout(vbox)
 
-    def show(self):
+    def register_event(self) -> None:
         """"""
-        self.portfolio_engine.init_engine()
-        self.management_widget.update_combo()
+        self.signal_contract.connect(self.process_contract_event)
+        self.signal_portfolio.connect(self.process_portfolio_event)
 
-        self.showMaximized()
+        self.event_engine.register(EVENT_PM_CONTRACT, self.signal_contract.emit)
+        self.event_engine.register(EVENT_PM_PORTFOLIO, self.signal_portfolio.emit)
 
-    def create_group(self, title: str, widget: QtWidgets.QWidget):
+    def get_portfolio_item(self, reference: str) -> QtWidgets.QTreeWidgetItem:
         """"""
-        group = QtWidgets.QGroupBox()
+        portfolio_item = self.portfolio_items.get(reference, None)
 
-        vbox = QtWidgets.QVBoxLayout()
-        vbox.addWidget(widget)
+        if not portfolio_item:
+            portfolio_item = QtWidgets.QTreeWidgetItem()
+            portfolio_item.setText(0, reference)
+            for i in range(self.column_count):
+                portfolio_item.setTextAlignment(i, QtCore.Qt.AlignCenter)
 
-        group.setLayout(vbox)
-        group.setTitle(title)
+            self.portfolio_items[reference] = portfolio_item
+            self.tree.addTopLevelItem(portfolio_item)
 
-        return group
+        return portfolio_item
 
-
-class PortfolioStrategyMonitor(BaseMonitor):
-    """
-    Monitor for portfolio strategy.
-    """
-
-    event_type = EVENT_PORTFOLIO_UPDATE
-    data_key = "name"
-    sorting = False
-
-    headers = {
-        "name": {"display": "策略名称", "cell": BaseCell, "update": False},
-        "vt_symbol": {"display": "交易合约", "cell": BaseCell, "update": False},
-        "size": {"display": "合约乘数", "cell": BaseCell, "update": False},
-        "net_pos": {"display": "策略持仓", "cell": BaseCell, "update": True},
-        "open_price": {"display": "持仓价格", "cell": BaseCell, "update": True},
-        "last_price": {"display": "最新价格", "cell": BaseCell, "update": True},
-        "pos_pnl": {"display": "持仓盈亏", "cell": PnlCell, "update": True},
-        "realized_pnl": {"display": "平仓盈亏", "cell": PnlCell, "update": True},
-        "create_time": {"display": "创建时间", "cell": BaseCell, "update": False},
-    }
-
-    def remove_strategy(self, name: str):
+    def get_contract_item(self, reference: str, vt_symbol: str) -> QtWidgets.QTreeWidgetItem:
         """"""
-        if name not in self.cells:
-            return
+        key = (reference, vt_symbol)
+        contract_item = self.contract_items.get(key, None)
 
-        row_cells = self.cells.pop(name)
-        row = self.row(row_cells["net_pos"])
-        self.removeRow(row)
+        if not contract_item:
+            contract_item = QtWidgets.QTreeWidgetItem()
+            contract_item.setText(1, vt_symbol)
+            for i in range(self.column_count):
+                contract_item.setTextAlignment(i, QtCore.Qt.AlignCenter)
 
+            self.contract_items[key] = contract_item
 
-class PortfolioTradeMonitor(BaseMonitor):
-    """
-    Monitor for trade data.
-    """
+            portfolio_item = self.get_portfolio_item(reference)
+            portfolio_item.addChild(contract_item)
 
-    event_type = EVENT_PORTFOLIO_TRADE
-    data_key = ""
+        return contract_item
 
-    headers = {
-        "gateway_name": {"display": "策略名称", "cell": BaseCell, "update": False},
-        "tradeid": {"display": "成交号 ", "cell": BaseCell, "update": False},
-        "orderid": {"display": "委托号", "cell": BaseCell, "update": False},
-        "symbol": {"display": "代码", "cell": BaseCell, "update": False},
-        "exchange": {"display": "交易所", "cell": EnumCell, "update": False},
-        "direction": {"display": "方向", "cell": DirectionCell, "update": False},
-        "offset": {"display": "开平", "cell": EnumCell, "update": False},
-        "price": {"display": "价格", "cell": BaseCell, "update": False},
-        "volume": {"display": "数量", "cell": BaseCell, "update": False},
-        "datetime": {"display": "时间", "cell": TimeCell, "update": False},
-    }
-
-
-class PortfolioOrderMonitor(BaseMonitor):
-    """
-    Monitor for order data.
-    """
-
-    event_type = EVENT_PORTFOLIO_ORDER
-    data_key = "vt_orderid"
-    sorting = True
-
-    headers = {
-        "gateway_name": {"display": "策略名称", "cell": BaseCell, "update": False},
-        "orderid": {"display": "委托号", "cell": BaseCell, "update": False},
-        "symbol": {"display": "代码", "cell": BaseCell, "update": False},
-        "exchange": {"display": "交易所", "cell": EnumCell, "update": False},
-        "type": {"display": "类型", "cell": EnumCell, "update": False},
-        "direction": {"display": "方向", "cell": DirectionCell, "update": False},
-        "offset": {"display": "开平", "cell": EnumCell, "update": False},
-        "price": {"display": "价格", "cell": BaseCell, "update": False},
-        "volume": {"display": "总数量", "cell": BaseCell, "update": True},
-        "traded": {"display": "已成交", "cell": BaseCell, "update": True},
-        "status": {"display": "状态", "cell": EnumCell, "update": True},
-        "datetime": {"display": "时间", "cell": TimeCell, "update": True},
-    }
-
-    def init_ui(self):
-        """
-        Connect signal.
-        """
-        super(PortfolioOrderMonitor, self).init_ui()
-
-        self.setToolTip("双击单元格撤单")
-        self.itemDoubleClicked.connect(self.cancel_order)
-
-    def cancel_order(self, cell):
-        """
-        Cancel order if cell double clicked.
-        """
-        order = cell.get_data()
-        req = order.create_cancel_request()
-        self.main_engine.cancel_order(req, order.gateway_name)
-
-
-class StrategyTradingWidget(QtWidgets.QWidget):
-    """"""
-
-    def __init__(self, portfolio_engine: PortfolioEngine):
+    def process_contract_event(self, event: Event) -> None:
         """"""
-        super().__init__()
+        contract_result: ContractResult = event.data
 
-        self.portfolio_engine = portfolio_engine
-        self.init_ui()
-        self.update_combo()
-
-    def init_ui(self):
-        """"""
-        self.name_combo = QtWidgets.QComboBox()
-
-        self.direction_combo = QtWidgets.QComboBox()
-        self.direction_combo.addItems(
-            [Direction.LONG.value, Direction.SHORT.value])
-
-        self.offset_combo = QtWidgets.QComboBox()
-        self.offset_combo.addItems([offset.value for offset in Offset])
-
-        double_validator = QtGui.QDoubleValidator()
-        double_validator.setBottom(0)
-
-        self.price_line = QtWidgets.QLineEdit()
-        self.price_line.setValidator(double_validator)
-
-        self.volume_line = QtWidgets.QLineEdit()
-        self.volume_line.setValidator(double_validator)
-
-        for w in [
-            self.name_combo,
-            self.price_line,
-            self.volume_line,
-            self.direction_combo,
-            self.offset_combo
-        ]:
-            w.setFixedWidth(150)
-
-        send_button = QtWidgets.QPushButton("委托")
-        send_button.clicked.connect(self.send_order)
-        send_button.setFixedWidth(70)
-
-        cancel_button = QtWidgets.QPushButton("全撤")
-        cancel_button.clicked.connect(self.cancel_all)
-        cancel_button.setFixedWidth(70)
-
-        hbox = QtWidgets.QHBoxLayout()
-        hbox.addWidget(QtWidgets.QLabel("策略名称"))
-        hbox.addWidget(self.name_combo)
-        hbox.addWidget(QtWidgets.QLabel("方向"))
-        hbox.addWidget(self.direction_combo)
-        hbox.addWidget(QtWidgets.QLabel("开平"))
-        hbox.addWidget(self.offset_combo)
-        hbox.addWidget(QtWidgets.QLabel("价格"))
-        hbox.addWidget(self.price_line)
-        hbox.addWidget(QtWidgets.QLabel("数量"))
-        hbox.addWidget(self.volume_line)
-        hbox.addWidget(send_button)
-        hbox.addWidget(cancel_button)
-        hbox.addStretch()
-
-        self.setLayout(hbox)
-
-    def send_order(self):
-        """"""
-        name = self.name_combo.currentText()
-
-        price_text = self.price_line.text()
-        volume_text = self.volume_line.text()
-
-        if not price_text or not volume_text:
-            return
-
-        price = float(price_text)
-        volume = float(volume_text)
-        direction = Direction(self.direction_combo.currentText())
-        offset = Offset(self.offset_combo.currentText())
-
-        self.portfolio_engine.send_order(
-            name,
-            price,
-            volume,
-            direction,
-            offset
+        contract_item = self.get_contract_item(
+            contract_result.reference,
+            contract_result.vt_symbol
         )
+        contract_item.setText(2, str(contract_result.open_pos))
+        contract_item.setText(3, str(contract_result.last_pos))
+        contract_item.setText(4, str(contract_result.trading_pnl))
+        contract_item.setText(5, str(contract_result.holding_pnl))
+        contract_item.setText(6, str(contract_result.total_pnl))
+        contract_item.setText(7, str(contract_result.long_volume))
+        contract_item.setText(8, str(contract_result.short_volume))
 
-    def cancel_all(self):
+        self.update_item_color(contract_item, contract_result)
+
+    def process_portfolio_event(self, event: Event) -> None:
         """"""
-        name = self.name_combo.currentText()
-        self.portfolio_engine.cancel_all(name)
+        portfolio_result: PortfolioResult = event.data
 
-    def update_combo(self):
-        """"""
-        strategy_names = list(self.portfolio_engine.strategies.keys())
+        portfolio_item = self.get_portfolio_item(portfolio_result.reference)
+        portfolio_item.setText(4, str(portfolio_result.trading_pnl))
+        portfolio_item.setText(5, str(portfolio_result.holding_pnl))
+        portfolio_item.setText(6, str(portfolio_result.total_pnl))
 
-        self.name_combo.clear()
-        self.name_combo.addItems(strategy_names)
+        self.update_item_color(portfolio_item, portfolio_result)
 
-
-class StrategyManagementWidget(QtWidgets.QWidget):
-    """"""
-
-    def __init__(
+    def update_item_color(
         self,
-        portfolio_engine: PortfolioEngine,
-        trading_widget: StrategyTradingWidget,
-        strategy_monitor: PortfolioStrategyMonitor
+        item: QtWidgets.QTreeWidgetItem,
+        result: Union[ContractResult, PortfolioResult]
     ):
+        start_column = 4
+        for n, pnl in enumerate([
+            result.trading_pnl,
+            result.holding_pnl,
+            result.total_pnl
+        ]):
+            i = n + start_column
+
+            if result.trading_pnl > 0:
+                item.setForeground(i, RED_COLOR)
+            elif result.trading_pnl < 0:
+                item.setForeground(i, GREEN_COLOR)
+            else:
+                item.setForeground(i, WHITE_COLOR)
+
+    def resize_columns(self) -> None:
         """"""
-        super().__init__()
-
-        self.portfolio_engine = portfolio_engine
-        self.trading_widget = trading_widget
-        self.strategy_monitor = strategy_monitor
-
-        self.init_ui()
-        self.update_combo()
-
-    def init_ui(self):
-        """"""
-        self.name_line = QtWidgets.QLineEdit()
-        self.symbol_line = QtWidgets.QLineEdit()
-        self.remove_combo = QtWidgets.QComboBox()
-
-        for w in [
-            self.name_line,
-            self.symbol_line,
-            self.remove_combo
-        ]:
-            w.setFixedWidth(150)
-
-        add_button = QtWidgets.QPushButton("创建策略")
-        add_button.clicked.connect(self.add_strategy)
-
-        remove_button = QtWidgets.QPushButton("移除策略")
-        remove_button.clicked.connect(self.remove_strategy)
-
-        hbox = QtWidgets.QHBoxLayout()
-        hbox.addWidget(QtWidgets.QLabel("策略名称"))
-        hbox.addWidget(self.name_line)
-        hbox.addWidget(QtWidgets.QLabel("交易合约"))
-        hbox.addWidget(self.symbol_line)
-        hbox.addWidget(add_button)
-        hbox.addStretch()
-        hbox.addWidget(self.remove_combo)
-        hbox.addWidget(remove_button)
-
-        self.setLayout(hbox)
-
-    def add_strategy(self):
-        """"""
-        name = self.name_line.text()
-        vt_symbol = self.symbol_line.text()
-
-        if not name or not vt_symbol:
-            QtWidgets.QMessageBox.information(
-                self,
-                "提示",
-                "请输入策略名称和交易合约",
-                QtWidgets.QMessageBox.Ok
-            )
-
-        result = self.portfolio_engine.add_strategy(name, vt_symbol)
-
-        if result:
-            QtWidgets.QMessageBox.information(
-                self,
-                "提示",
-                "策略创建成功",
-                QtWidgets.QMessageBox.Ok
-            )
-
-            self.update_combo()
-        else:
-            QtWidgets.QMessageBox.warning(
-                self,
-                "提示",
-                "策略创建失败，存在重名或找不到合约",
-                QtWidgets.QMessageBox.Ok
-            )
-
-    def remove_strategy(self):
-        """"""
-        name = self.remove_combo.currentText()
-
-        if not name:
-            return
-
-        result = self.portfolio_engine.remove_strategy(name)
-
-        if result:
-            QtWidgets.QMessageBox.information(
-                self,
-                "提示",
-                "策略移除成功",
-                QtWidgets.QMessageBox.Ok
-            )
-
-            self.update_combo()
-
-            self.strategy_monitor.remove_strategy(name)
-        else:
-            QtWidgets.QMessageBox.warning(
-                self,
-                "提示",
-                "策略移除失败，不存在该策略",
-                QtWidgets.QMessageBox.Ok
-            )
-
-    def update_combo(self):
-        """"""
-        strategy_names = list(self.portfolio_engine.strategies.keys())
-
-        self.remove_combo.clear()
-        self.remove_combo.addItems(strategy_names)
-
-        self.trading_widget.update_combo()
+        for i in range(self.column_count):
+            self.tree.resizeColumnToContents(i)
