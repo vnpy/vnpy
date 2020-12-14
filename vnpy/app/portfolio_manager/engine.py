@@ -18,6 +18,7 @@ APP_NAME = "PortfolioManager"
 
 EVENT_PM_CONTRACT = "ePmContract"
 EVENT_PM_PORTFOLIO = "ePmPortfolio"
+EVENT_PM_TRADE = "ePmTrade"
 
 
 class PortfolioEngine(BaseEngine):
@@ -78,6 +79,10 @@ class PortfolioEngine(BaseEngine):
             self.contract_results[key] = contract_result
 
         contract_result.update_trade(trade)
+
+        # Push trade data with reference
+        trade.reference = reference
+        self.event_engine.put(Event(EVENT_PM_TRADE, trade))
 
         # Auto-subscribe tick data
         if trade.vt_symbol in self.subscribed:
