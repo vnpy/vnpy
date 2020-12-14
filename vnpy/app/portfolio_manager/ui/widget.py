@@ -139,7 +139,7 @@ class PortfolioManager(QtWidgets.QWidget):
         if not portfolio_item:
             portfolio_item = QtWidgets.QTreeWidgetItem()
             portfolio_item.setText(0, reference)
-            for i in range(self.column_count):
+            for i in range(2, self.column_count):
                 portfolio_item.setTextAlignment(i, QtCore.Qt.AlignCenter)
 
             self.portfolio_items[reference] = portfolio_item
@@ -157,7 +157,7 @@ class PortfolioManager(QtWidgets.QWidget):
         if not contract_item:
             contract_item = QtWidgets.QTreeWidgetItem()
             contract_item.setText(1, vt_symbol)
-            for i in range(self.column_count):
+            for i in range(2, self.column_count):
                 contract_item.setTextAlignment(i, QtCore.Qt.AlignCenter)
 
             self.contract_items[key] = contract_item
