@@ -1,4 +1,4 @@
-from typing import Dict, TYPE_CHECKING
+from typing import Dict, List, TYPE_CHECKING
 
 from vnpy.trader.object import TradeData
 from vnpy.trader.constant import Direction
@@ -30,12 +30,23 @@ class ContractResult:
 
         self.trading_pnl: float = 0
         self.holding_pnl: float = 0
+        self.total_pnl: float = 0
 
         self.trades: Dict[str, TradeData] = {}
+        self.new_trades: List[TradeData] = []
+
+        self.long_volume: float = 0
+        self.short_volume: float = 0
+        self.long_cost: float = 0
+        self.short_cost: float = 0
 
     def update_trade(self, trade: TradeData) -> None:
         """"""
+        # Filter duplicate trade push
+        if trade.vt_tradeid in self.trades:
+            return
         self.trades[trade.vt_tradeid] = trade
+        self.new_trades.append(trade)
 
         if trade.direction == Direction.LONG:
             self.last_pos += trade.volume
@@ -46,7 +57,7 @@ class ContractResult:
         """"""
         vt_symbol = self.vt_symbol
 
-        contract = self.engine.get_conrtact(vt_symbol)
+        contract = self.engine.get_contract(vt_symbol)
         tick = self.engine.get_tick(vt_symbol)
         if not contract or not tick:
             return
@@ -54,22 +65,32 @@ class ContractResult:
         last_price = tick.last_price
         size = contract.size
 
-        # Calculate trading pnl
-        trading_pnl = 0
+        # Sum new trade cost
+        for trade in self.new_trades:
+            trade_volume = trade.volume
+            trade_cost = trade.price * trade_volume * size
 
-        for trade in self.trades.values():
             if trade.direction == Direction.LONG:
-                pos_change = trade.volume
+                self.long_cost += trade_cost
+                self.long_volume += trade_volume
             else:
-                pos_change = -trade.volume
+                self.short_cost += trade_cost
+                self.short_volume += trade_volume
 
-            pnl = (last_price - trade.price) * pos_change * size
-            trading_pnl += pnl
+        self.new_trades.clear()
 
-        self.trading_pnl = trading_pnl
+        # Calculate trading pnl
+        long_value = self.long_volume * last_price * size
+        long_pnl = long_value - self.long_cost
 
-        # Calculate holding pnl
+        shrot_value = self.short_volume * last_price * size
+        short_pnl = self.short_cost - shrot_value
+
+        self.trading_pnl = long_pnl + short_pnl
+
+        # Calculate holding and total pnl
         self.holding_pnl = (last_price - tick.pre_close) * self.open_pos * size
+        self.total_pnl = self.holding_pnl + self.trading_pnl
 
 
 class PortfolioResult:
@@ -82,8 +103,10 @@ class PortfolioResult:
         self.reference: str = reference
         self.trading_pnl: float = 0
         self.holding_pnl: float = 0
+        self.total_pnl: float = 0
 
     def clear_pnl(self) -> None:
         """"""
         self.trading_pnl = 0
         self.holding_pnl = 0
+        self.total_pnl = 0
