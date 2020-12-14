@@ -847,7 +847,6 @@ class BybitPublicWebsocketApi(WebsocketClient):
         topic = packet["topic"]
         type_ = packet["type"]
         data = packet["data"]
-        timestamp = int(packet["timestamp_e6"]) / 1000000
 
         # Update depth data into dict buf
         symbol = topic.replace("orderBookL2_25.", "")

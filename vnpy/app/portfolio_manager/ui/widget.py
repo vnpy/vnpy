@@ -1,15 +1,23 @@
 from typing import Dict, Tuple, Union
+from vnpy.trader.object import TradeData
 from vnpy.event.engine import Event
 from vnpy.trader.ui import QtWidgets, QtCore, QtGui
 
 
 from vnpy.trader.engine import MainEngine, EventEngine
+from vnpy.trader.ui.widget import (
+    BaseCell,
+    EnumCell,
+    DirectionCell,
+    TimeCell
+)
 
 from ..base import ContractResult, PortfolioResult
 from ..engine import (
     APP_NAME,
     EVENT_PM_CONTRACT,
     EVENT_PM_PORTFOLIO,
+    EVENT_TRADE,
     PortfolioEngine
 )
 
@@ -24,6 +32,7 @@ class PortfolioManager(QtWidgets.QWidget):
 
     signal_contract = QtCore.pyqtSignal(Event)
     signal_portfolio = QtCore.pyqtSignal(Event)
+    signal_trade = QtCore.pyqtSignal(Event)
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
@@ -39,13 +48,14 @@ class PortfolioManager(QtWidgets.QWidget):
 
         self.init_ui()
         self.register_event()
+        self.update_trades()
 
     def init_ui(self) -> None:
         """"""
         self.setWindowTitle("投资组合")
 
         labels = [
-            "投资组合",
+            "组合名称",
             "本地代码",
             "开盘仓位",
             "当前仓位",
@@ -63,8 +73,7 @@ class PortfolioManager(QtWidgets.QWidget):
         self.tree.header().setDefaultAlignment(QtCore.Qt.AlignCenter)
         self.tree.header().setStretchLastSection(False)
 
-        # for i in range(self.column_count):
-        #     self.tree.setItemDelegateForColumn(i, ElideCenterDelegate(self.tree))
+        self.monitor = PortfolioTradeMonitor()
 
         expand_button = QtWidgets.QPushButton("全部展开")
         expand_button.clicked.connect(self.tree.expandAll)
@@ -82,26 +91,46 @@ class PortfolioManager(QtWidgets.QWidget):
         interval_spin.setValue(self.portfolio_engine.get_timer_interval())
         interval_spin.valueChanged.connect(self.portfolio_engine.set_timer_interval)
 
-        hbox = QtWidgets.QHBoxLayout()
-        hbox.addWidget(expand_button)
-        hbox.addWidget(collapse_button)
-        hbox.addWidget(resize_button)
-        hbox.addStretch()
-        hbox.addWidget(QtWidgets.QLabel("刷新频率"))
-        hbox.addWidget(interval_spin)
+        self.reference_combo = QtWidgets.QComboBox()
+        self.reference_combo.setMinimumWidth(200)
+        self.reference_combo.addItem("")
+        self.reference_combo.currentIndexChanged.connect(self.set_reference_filter)
+
+        hbox1 = QtWidgets.QHBoxLayout()
+        hbox1.addWidget(expand_button)
+        hbox1.addWidget(collapse_button)
+        hbox1.addWidget(resize_button)
+        hbox1.addStretch()
+        hbox1.addWidget(QtWidgets.QLabel("刷新频率"))
+        hbox1.addWidget(interval_spin)
+        hbox1.addStretch()
+        hbox1.addWidget(QtWidgets.QLabel("组合成交"))
+        hbox1.addWidget(self.reference_combo)
+
+        hbox2 = QtWidgets.QHBoxLayout()
+        hbox2.addWidget(self.tree)
+        hbox2.addWidget(self.monitor)
 
         vbox = QtWidgets.QVBoxLayout()
-        vbox.addLayout(hbox)
-        vbox.addWidget(self.tree)
+        vbox.addLayout(hbox1)
+        vbox.addLayout(hbox2)
         self.setLayout(vbox)
 
     def register_event(self) -> None:
         """"""
         self.signal_contract.connect(self.process_contract_event)
         self.signal_portfolio.connect(self.process_portfolio_event)
+        self.signal_trade.connect(self.process_trade_event)
 
         self.event_engine.register(EVENT_PM_CONTRACT, self.signal_contract.emit)
         self.event_engine.register(EVENT_PM_PORTFOLIO, self.signal_portfolio.emit)
+        self.event_engine.register(EVENT_TRADE, self.signal_trade.emit)
+
+    def update_trades(self) -> None:
+        """"""
+        trades = self.main_engine.get_all_trades()
+        for trade in trades:
+            self.monitor.update_trade(trade)
 
     def get_portfolio_item(self, reference: str) -> QtWidgets.QTreeWidgetItem:
         """"""
@@ -110,11 +139,13 @@ class PortfolioManager(QtWidgets.QWidget):
         if not portfolio_item:
             portfolio_item = QtWidgets.QTreeWidgetItem()
             portfolio_item.setText(0, reference)
-            for i in range(self.column_count):
+            for i in range(2, self.column_count):
                 portfolio_item.setTextAlignment(i, QtCore.Qt.AlignCenter)
 
             self.portfolio_items[reference] = portfolio_item
             self.tree.addTopLevelItem(portfolio_item)
+
+            self.reference_combo.addItem(reference)
 
         return portfolio_item
 
@@ -126,7 +157,7 @@ class PortfolioManager(QtWidgets.QWidget):
         if not contract_item:
             contract_item = QtWidgets.QTreeWidgetItem()
             contract_item.setText(1, vt_symbol)
-            for i in range(self.column_count):
+            for i in range(2, self.column_count):
                 contract_item.setTextAlignment(i, QtCore.Qt.AlignCenter)
 
             self.contract_items[key] = contract_item
@@ -165,6 +196,11 @@ class PortfolioManager(QtWidgets.QWidget):
 
         self.update_item_color(portfolio_item, portfolio_result)
 
+    def process_trade_event(self, event: Event) -> None:
+        """"""
+        trade: TradeData = event.data
+        self.monitor.update_trade(trade)
+
     def update_item_color(
         self,
         item: QtWidgets.QTreeWidgetItem,
@@ -178,9 +214,9 @@ class PortfolioManager(QtWidgets.QWidget):
         ]):
             i = n + start_column
 
-            if result.trading_pnl > 0:
+            if pnl > 0:
                 item.setForeground(i, RED_COLOR)
-            elif result.trading_pnl < 0:
+            elif pnl < 0:
                 item.setForeground(i, GREEN_COLOR)
             else:
                 item.setForeground(i, WHITE_COLOR)
@@ -189,3 +225,88 @@ class PortfolioManager(QtWidgets.QWidget):
         """"""
         for i in range(self.column_count):
             self.tree.resizeColumnToContents(i)
+
+    def set_reference_filter(self, filter: str) -> None:
+        """"""
+        filter = self.reference_combo.currentText()
+        self.monitor.set_filter(filter)
+
+    def show(self) -> None:
+        """"""
+        self.showMaximized()
+
+
+class PortfolioTradeMonitor(QtWidgets.QTableWidget):
+    """"""
+
+    def __init__(self) -> None:
+        """"""
+        super().__init__()
+
+        self.init_ui()
+        self.filter = ""
+
+    def init_ui(self) -> None:
+        """"""
+        labels = [
+            "组合",
+            "成交号",
+            "委托号",
+            "代码",
+            "交易所",
+            "方向",
+            "开平",
+            "价格",
+            "数量",
+            "时间",
+            "接口",
+        ]
+        self.setColumnCount(len(labels))
+        self.setHorizontalHeaderLabels(labels)
+        self.verticalHeader().setVisible(False)
+        self.setEditTriggers(self.NoEditTriggers)
+
+    def update_trade(self, trade: TradeData) -> None:
+        """"""
+        self.insertRow(0)
+
+        reference_cell = BaseCell(trade.reference, trade)
+        tradeid_cell = BaseCell(trade.tradeid, trade)
+        orderid_cell = BaseCell(trade.orderid, trade)
+        symbol_cell = BaseCell(trade.symbol, trade)
+        exchange_cell = EnumCell(trade.exchange, trade)
+        direction_cell = DirectionCell(trade.direction, trade)
+        offset_cell = EnumCell(trade.offset, trade)
+        price_cell = BaseCell(trade.price, trade)
+        volume_cell = BaseCell(trade.volume, trade)
+        datetime_cell = TimeCell(trade.datetime, trade)
+        gateway_cell = BaseCell(trade.gateway_name, trade)
+
+        self.setItem(0, 0, reference_cell)
+        self.setItem(0, 1, tradeid_cell)
+        self.setItem(0, 2, orderid_cell)
+        self.setItem(0, 3, symbol_cell)
+        self.setItem(0, 4, exchange_cell)
+        self.setItem(0, 5, direction_cell)
+        self.setItem(0, 6, offset_cell)
+        self.setItem(0, 7, price_cell)
+        self.setItem(0, 8, volume_cell)
+        self.setItem(0, 9, datetime_cell)
+        self.setItem(0, 10, gateway_cell)
+
+        if self.filter and trade.reference != self.filter:
+            self.hideRow(0)
+
+    def set_filter(self, filter: str) -> None:
+        """"""
+        self.filter = filter
+
+        for row in range(self.rowCount()):
+            if not filter:
+                self.showRow(row)
+            else:
+                item = self.item(row, 0)
+                if item.text() == filter:
+                    self.showRow(row)
+                else:
+                    self.hideRow(row)
