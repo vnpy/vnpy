@@ -518,8 +518,13 @@ class BacktesterManager(QtWidgets.QWidget):
         """"""
         self.backtester_engine.reload_strategy_class()
 
+        current_strategy_name = self.class_combo.currentText()
+
         self.class_combo.clear()
         self.init_strategy_settings()
+
+        ix = self.class_combo.findText(current_strategy_name)
+        self.class_combo.setCurrentIndex(ix)
 
     def show(self):
         """"""
