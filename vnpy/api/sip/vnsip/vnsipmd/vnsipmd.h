@@ -130,6 +130,8 @@ public:
 	*/
 	virtual void OnSHBaseInfo(char *code, T_SH_BaseInfo *baseinfodata);
 
+	virtual void OnSZBaseInfo(char *code, t_SZ_BaseInfo *baseinfodata) ;
+
 	/*!
 	\brief 分钟K线回调
 	\param mktype 代表订阅的市场类型
@@ -176,6 +178,7 @@ public:
 	virtual void onSZOrder(string code, const dict &data) {};
 
 	virtual void onSHBaseInfo(string code, const dict &data) {};
+	virtual void onSZBaseInfo(string code, const dict &data) {};
 
 	virtual void onKline(int mk_type, string code, const dict &data) {};
 
@@ -185,7 +188,7 @@ public:
     //-------------------------------------------------------------------------------------
     //req:主动函数的请求字典
     //-------------------------------------------------------------------------------------
-	int createMdApi();
+	int createMdApi(string sjson);
 
 	int login();
 

@@ -247,35 +247,6 @@ typedef struct t_SZ_StockMarketDataLF {
 	T_U32 uNumTrades;			//成交笔数
 	T_I64 iVolume;				//成交总量
 	T_I64 iTurnover;			//成交总金额
-	T_I64 iTotalBidVol;			//委托买入总量
-	T_I64 iTotalAskVol;			//委托卖出总量
-	T_U32 uWeightedAvgBidPrice; //加权平均委买价格
-	T_U32 uWeightedAvgAskPrice; //加权平均委卖价格
-	T_I32 nIOPV;				//IOPV净值估值
-	T_I32 nYieldToMaturity;		//到期收益率
-	T_U32 uHighLimited;			//涨停价 999999999 表示无涨停价格限制
-	T_U32 uLowLimited;			//跌停价 -999999999 ,用无符号表示成3294967297 表示无跌停价格限制；对于价格不可以为负数的业务，则填写价格档位，表示无跌停价格限制，比如对于股票现货集中竞价业务填写 10
-	char sPrefix[4];			//证券信息前缀
-	T_I32 nSyl1;				//市盈率1 2 位小数 股票：价格/上年每股利润 债券：每百元应计利息
-	T_I32 nSyl2;				//市盈率2 2 位小数 股票：价格/本年每股利润 债券：到期收益率 基金：每百份的IOPV 或净值 权证：溢价率
-	T_I32 nSD2;					//升跌2（对比上一笔）
-	char sTradingPhraseCode[8]; //上交所与深交所字段含义不同，参见以下注解：
-	//深交所：
-	//   产品所处的交易阶段代码
-	//第 0 位：
-	//S=启动（开市前）
-	//O=开盘集合竞价
-	//T=连续竞价
-	//B=休市
-	//C=收盘集合竞价
-	//E=已闭市
-	//H=临时停牌
-	//A=盘后交易
-	//V=波动性中断
-	//第 1 位：
-	//0=正常状态
-	//1=全天停牌
-	T_I32 nPreIOPV; //基金T-1日收盘时刻IOPV 仅标的为基金时有效
 } T_SZ_StockMarketDataLF, *PSZ_StockMarketDataLF;
 
 /**

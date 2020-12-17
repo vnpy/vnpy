@@ -12,33 +12,32 @@ void MdApi::OnLog(int32_t level, const char *source, const char *slog)
 {
 	//gil_scoped_acquire acquire;
 	//this->onLog(level, source, slog);
-	cout << "onLog ->source=" << source << "@slog="<< slog << endl;
+	cout << "onLog: source=" << source << ",  slog="<< slog << endl;
 };
 
 
 void MdApi::OnDisconnect(int32_t chn)
 {
-	cout << "OnDisconnect ->channel=" << chn << endl;
-	//gil_scoped_acquire acquire;
-	//this->onDisconnect(chn);
+	gil_scoped_acquire acquire;
+	this->onDisconnect(chn);
 	
 };
 
 void MdApi::OnSubscribe(ErrMsg *errmsg)
 {
-	cout << "OnSubscribe ->msg" << errmsg << endl;
-	//gil_scoped_acquire acquire;
-	//dict error;
-	//{
-	//	error["channel"] = errmsg->channel;
-	//	error["errcode"] = errmsg->errcode;
-	//	error["errstr"] = toUtf(errmsg->errstr);
+
+	gil_scoped_acquire acquire;
+	dict error;
+	{
+		error["channel"] = errmsg->channel;
+		error["errcode"] = errmsg->errcode;
+		error["errstr"] = toUtf(errmsg->errstr);
 	//	error["mktype"] = errmsg->mktype;
 	//	error["datatype"] = errmsg->datatype;
 	//	error["usize"] = errmsg->usize;
 	//	//error["codes"] = errmsg->codes;
-	//}
-	//this->onSubscribe(error);
+	}
+	this->onSubscribe(error);
 };
 
 void MdApi::OnUnSubscribe(ErrMsg *errmsg)
@@ -52,14 +51,12 @@ void MdApi::OnUnSubscribe(ErrMsg *errmsg)
 		error["mktype"] = errmsg->mktype;
 		error["datatype"] = errmsg->datatype;
 		error["usize"] = errmsg->usize;
-		//error["codes"] = errmsg->codes;
 	}
 	this->onUnSubscribe(error);
 };
 
 void MdApi::OnDepthMarketData(MKtype mk_type, char *code, Stock_MarketData *dataL2)
 {
-	cout << "OnDepthMarketData" << endl;
 	gil_scoped_acquire acquire;
 	dict data;
 	{
@@ -70,10 +67,6 @@ void MdApi::OnDepthMarketData(MKtype mk_type, char *code, Stock_MarketData *data
 		data["uHigh"] = dataL2->uHigh;
 		data["uLow"] = dataL2->uLow;
 		data["uMatch"] = dataL2->uMatch;
-		//data["uAskPrice"] = dataL2->uAskPrice;
-		//data["uAskVol"] = dataL2->uAskVol;
-		//data["uBidPrice"] = dataL2->uBidPrice;
-		//data["uBidVol"] = dataL2->uBidVol;
 		data["uNumTrades"] = dataL2->uNumTrades;
 		data["iVolume"] = dataL2->iVolume;
 		data["iTurnover"] = dataL2->iTurnover;
@@ -115,7 +108,6 @@ void MdApi::OnDepthMarketData(MKtype mk_type, char *code, Stock_MarketData *data
 
 void MdApi::OnMarketData(MKtype mk_type, char *code, StockMarketDataL1 *dataL1)
 {
-	cout << "OnMarketData" << endl;
 	gil_scoped_acquire acquire;
 	dict data;
 	{
@@ -250,45 +242,88 @@ void MdApi::OnSZOrder(char *code, T_SZ_STEPORDER *steporder)
 
 void MdApi::OnSHBaseInfo(char *code, T_SH_BaseInfo *baseinfodata)
 {
-	cout << "OnSHBaseInfo" << code << endl;
-	//gil_scoped_acquire acquire;
-	//dict data;
-	//{
-	//	data["szStkCode"] = toUtf(baseinfodata->szStkCode);
-	//	data["szISIN"] = toUtf(baseinfodata->szISIN);
-	//	data["uUpdateTime"] = baseinfodata->uUpdateTime;
-	//	data["szStkNameZN"] = toUtf(baseinfodata->szStkNameZN);
-	//	data["szStkNameEn"] = toUtf(baseinfodata->szStkNameEn);
-	//	data["szUnderlyingCode"] = toUtf(baseinfodata->szUnderlyingCode);
-	//	data["szMktClass"] = toUtf(baseinfodata->szMktClass);
-	//	data["szStkClass"] = toUtf(baseinfodata->szStkClass);
-	//	data["szStkSubClass"] = toUtf(baseinfodata->szStkSubClass);
-	//	data["szCurrency"] = toUtf(baseinfodata->szCurrency);
-	//	data["i64FaceValue"] = baseinfodata->i64FaceValue;
-	//	data["i64MatchQty"] = baseinfodata->i64MatchQty;
-	//	data["szLastDate"] = toUtf(baseinfodata->szLastDate);
-	//	data["uListingData"] = baseinfodata->uListingData;
-	//	data["uProductSETId"] = baseinfodata->uProductSETId;
-	//	data["i64BuyNumUnit"] = baseinfodata->i64BuyNumUnit;
-	//	data["i64SellNumUnit"] = baseinfodata->i64SellNumUnit;
-	//	data["i64DecalaredLowestNum"] = baseinfodata->i64DecalaredLowestNum;
-	//	data["i64DecalaredHightestNum"] = baseinfodata->i64DecalaredHightestNum;
-	//	data["i64PreClosePrice"] = baseinfodata->i64PreClosePrice;
-	//	data["i64PriceLevel"] = baseinfodata->i64PriceLevel;
-	//	data["cPriceLimitsType"] = baseinfodata->cPriceLimitsType;
-	//	data["i64UpLimitsPrice"] = baseinfodata->i64UpLimitsPrice;
-	//	data["i64LowerLimitPrice"] = baseinfodata->i64LowerLimitPrice;
-	//	data["i64DividendRatio"] = baseinfodata->i64DividendRatio;
-	//	data["i64DividendAmount"] = baseinfodata->i64DividendAmount;
-	//	data["cFinaSubjectFlag"] = baseinfodata->cFinaSubjectFlag;
-	//	data["cMarginSubjectFlag"] = baseinfodata->cMarginSubjectFlag;
-	//	data["szProdStatusFlag"] = toUtf(baseinfodata->szProdStatusFlag);
-	//	data["i64MPDecalaredLowestNum"] = baseinfodata->i64MPDecalaredLowestNum;
-	//	data["i64MPDecalaredHightestNum"] = baseinfodata->i64MPDecalaredHightestNum;
-	//	data["szStkNameZNLong"] = toUtf(baseinfodata->szStkNameZNLong);
-	//	data["szNote"] = toUtf(baseinfodata->szNote);
-	//}
-	//this->onSHBaseInfo(code, data);
+	gil_scoped_acquire acquire;
+	dict data;
+	{
+		data["szStkCode"] = toUtf(baseinfodata->szStkCode);
+		// data["szISIN"] = baseinfodata->szISIN;
+		data["uUpdateTime"] = baseinfodata->uUpdateTime;
+		data["szStkNameZN"] = toUtf(baseinfodata->szStkNameZN);
+		data["szStkNameEn"] = toUtf(baseinfodata->szStkNameEn);
+		data["szUnderlyingCode"] = toUtf(baseinfodata->szUnderlyingCode);
+		data["szMktClass"] = toUtf(baseinfodata->szMktClass);
+		data["szStkClass"] = toUtf(baseinfodata->szStkClass);
+		data["szStkSubClass"] = toUtf(baseinfodata->szStkSubClass);
+		data["szCurrency"] = toUtf(baseinfodata->szCurrency);
+		data["i64FaceValue"] = baseinfodata->i64FaceValue;
+		data["i64MatchQty"] = baseinfodata->i64MatchQty;
+		data["szLastDate"] = toUtf(baseinfodata->szLastDate);
+		data["uListingData"] = baseinfodata->uListingData;
+		data["uProductSETId"] = baseinfodata->uProductSETId;
+		data["i64BuyNumUnit"] = baseinfodata->i64BuyNumUnit;
+		data["i64SellNumUnit"] = baseinfodata->i64SellNumUnit;
+		data["i64DecalaredLowestNum"] = baseinfodata->i64DecalaredLowestNum;
+		data["i64DecalaredHightestNum"] = baseinfodata->i64DecalaredHightestNum;
+		data["i64PreClosePrice"] = baseinfodata->i64PreClosePrice;
+		data["i64PriceLevel"] = baseinfodata->i64PriceLevel;
+		data["cPriceLimitsType"] = baseinfodata->cPriceLimitsType;
+		data["i64UpLimitsPrice"] = baseinfodata->i64UpLimitsPrice;
+		data["i64LowerLimitPrice"] = baseinfodata->i64LowerLimitPrice;
+		data["i64DividendRatio"] = baseinfodata->i64DividendRatio;
+		data["i64DividendAmount"] = baseinfodata->i64DividendAmount;
+		data["cFinaSubjectFlag"] = baseinfodata->cFinaSubjectFlag;
+		data["cMarginSubjectFlag"] = baseinfodata->cMarginSubjectFlag;
+		data["szProdStatusFlag"] = toUtf(baseinfodata->szProdStatusFlag);
+		data["i64MPDecalaredLowestNum"] = baseinfodata->i64MPDecalaredLowestNum;
+		data["i64MPDecalaredHightestNum"] = baseinfodata->i64MPDecalaredHightestNum;
+		data["szStkNameZNLong"] = toUtf(baseinfodata->szStkNameZNLong);
+		data["szNote"] = toUtf(baseinfodata->szNote);
+	}
+	this->onSHBaseInfo(code, data);
+};
+
+void MdApi::OnSZBaseInfo(char *code, t_SZ_BaseInfo *baseinfodata)
+{
+	gil_scoped_acquire acquire;
+	dict data;
+
+	{
+		data["sSecurityID"] = toUtf(baseinfodata->tBase.sSecurityID);
+		data["sSecurityIDSource"] = toUtf(baseinfodata->tBase.sSecurityIDSource);
+		data["sSymbol"] = toUtf(baseinfodata->tBase.sSymbol);
+		data["sEnglishName"] = toUtf(baseinfodata->tBase.sEnglishName);
+		data["sISIN"] = toUtf(baseinfodata->tBase.sISIN);
+		data["sUnderlyingSecurityID"] = toUtf(baseinfodata->tBase.sUnderlyingSecurityID);
+		data["sUnderlyingSecurityIDSource"] = toUtf(baseinfodata->tBase.sUnderlyingSecurityIDSource);
+		data["uListDate"] = baseinfodata->tBase.uListDate;
+		data["usSecurityType"] = baseinfodata->tBase.usSecurityType;
+		data["sCurrency"] = toUtf(baseinfodata->tBase.sCurrency);
+		data["i64QtyUnit"] = baseinfodata->tBase.i64QtyUnit;
+		data["cDayTrading"] = baseinfodata->tBase.cDayTrading;
+		data["i64PrevClosePx"] = baseinfodata->tBase.i64PrevClosePx;
+		data["usSecurityStatus"] = baseinfodata->tBase.usSecurityStatus;
+		data["i64OutstandingShare"] = baseinfodata->tBase.i64OutstandingShare;
+		data["i64PublicFloatShareQuantity"] = baseinfodata->tBase.i64PublicFloatShareQuantity;
+		data["i64ParValue"] = baseinfodata->tBase.i64ParValue;
+		data["cGageFlag"] = baseinfodata->tBase.cGageFlag;
+		data["nGageRatio"] = baseinfodata->tBase.nGageRatio;
+		data["cCrdBuyUnderlying"] = baseinfodata->tBase.cCrdBuyUnderlying;
+		data["cCrdSellUnderlying"] = baseinfodata->tBase.cCrdSellUnderlying;
+		data["nPriceCheckMode"] = baseinfodata->tBase.nPriceCheckMode;
+		data["cPledgeFlag"] = baseinfodata->tBase.cPledgeFlag;
+		data["i64ContractMultiplier"] = baseinfodata->tBase.i64ContractMultiplier;
+		data["sRegularShare"] = toUtf(baseinfodata->tBase.sRegularShare);
+		data["cQualificationFlag"] = baseinfodata->tBase.cQualificationFlag;
+		data["sSecurityID"] = toUtf(baseinfodata->tCashParams.sSecurityID);
+		data["sSecurityIDSource"] = toUtf(baseinfodata->tCashParams.sSecurityIDSource);
+		data["i64BuyQtyUpperLimit"] = baseinfodata->tCashParams.i64BuyQtyUpperLimit;
+		data["i64SellQtyUpperLimit"] = baseinfodata->tCashParams.i64SellQtyUpperLimit;
+		data["i64BuyQtyUnit"] = baseinfodata->tCashParams.i64BuyQtyUnit;
+		data["i64SellQtyUnit"] = baseinfodata->tCashParams.i64SellQtyUnit;
+		data["i64PriceTick"] = baseinfodata->tCashParams.i64PriceTick;
+
+	}
+	this->onSZBaseInfo(code, data);
 };
 
 void MdApi::OnKline(MKtype mk_type, char *code, T_Kline *kline)
@@ -341,65 +376,16 @@ void MdApi::OnEtfExtData(MKtype mk_type, char *code, T_ETFEXTENDS *etfextdata)
 ///-------------------------------------------------------------------------------------
 ///Ö÷¶¯º¯Êý
 ///-------------------------------------------------------------------------------------
-int MdApi::createMdApi()
+int MdApi::createMdApi(string sjson)
 {
 	this->api = CSipMdApi::Register(this);
 
-	const char *g_cfg = "{"
-		"\"ip0\":\"101.231.93.225\"|"
-		"\"port0\":16004|"
-		//"\"ip1\":\"101.231.93.225\"|"
-		//"\"port1\":16004|"
-		"\"connect_mode\":\"NR\"|"
-		"\"username\":\"gxjy_tst5\"|"
-		"\"password\":\"1uHnE8GMN7tPl\"|"
-		"}";
-
-	int i = this->api->Initialize(g_cfg);
-	cout << "config = " << g_cfg << endl;
-	cout << "init result->" << i << endl;
-
-	cout << "@@@@@@@@@@" << endl;
-	cout << "start Login..." << endl;
-	int a = this->api->Login();
-	cout << "login result -> " << a << endl;
-	cout << "@@@@@@@@@@" << endl;
-
-	printf("start subscribe....\n");
-	char *code[24] = { nullptr };
-	cout << "1)code=" << code << endl;
-	code[0] = new char[24];
-	memcpy(code[0], "601211", sizeof("601211"));
-	code[1] = new char[24];
-	memcpy(code[1], "601808", sizeof("601808"));
-	cout << "2)subscribe info " << code[0] << "@" << code[1] << endl;
-	this->api->SubscribeBaseInfo(MKtype_SH, code, 2);
-	cout << "3)subscribe info " << code[0] << "@" << code[1] << endl;
-
-	for (int i = 0; i < 2; i++)
-	{
-		delete[] code[i];
-	}
-	cout << "4)code = " << code << endl;
-
-	cout << "5) start subscribe market data" << endl;
-	code[0] = new char[24];
-	memcpy(code[0], "601211", sizeof("601211"));
-	code[1] = new char[24];
-	memcpy(code[1], "601808", sizeof("601808"));
-	this->api->SubscribeMarketData(MKtype_SH, code, 2);
-
-	for (int i = 0; i < 2; i++)
-	{
-		delete[] code[i];
-	}
+	int i = this->api->Initialize(sjson.c_str());
 
 	return i;
 };
 int MdApi::login()
-
 {
-	cout << "start Login..." << endl;
 	int i = this->api->Login();
 	return i;
 };
@@ -428,7 +414,6 @@ int MdApi::subscribeDepthMarketData(int mk_type, string code)
 	char* buffer = (char*)code.c_str();
 	char* myreq[1] = { buffer };
 	int i = this->api->SubscribeDepthMarketData((MKtype)mk_type, myreq, 1);
-	cout << "Subscribe Depth" << code << "result=" << i << endl;
 	return i;
 };
 
@@ -437,7 +422,6 @@ int MdApi::subscribeMarketData(int mk_type, string code)
 	char* buffer = (char*)code.c_str();
 	char* myreq[1] = { buffer };
 	int i = this->api->SubscribeMarketData((MKtype)mk_type, myreq, 1);
-	cout << "Subscribe" << code << "result=" << i << endl;
 	return i;
 };
 
@@ -524,7 +508,6 @@ int MdApi::unSubscribeStepOrder(int mk_type, string code)
 int MdApi::subscribeBaseInfo(int mk_type)
 {
 	int i = this->api->SubscribeBaseInfo((MKtype)mk_type);
-	cout << "Query Base Info" << mk_type << "result=" << i << endl;
 	return i;
 };
 
@@ -737,7 +720,17 @@ public:
 			cout << e.what() << endl;
 		}
 	};
-
+	void onSZBaseInfo(string code, const dict &data) override
+	{
+		try
+		{
+			PYBIND11_OVERLOAD(void, MdApi, onSZBaseInfo, code, data);
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
+	};
 	void onKline(int mk_type, string code, const dict &data) override
 	{
 		try
@@ -809,6 +802,7 @@ PYBIND11_MODULE(vnsipmd, m)
 		.def("onSZTrade", &MdApi::onSZTrade)
 		.def("onSZOrder", &MdApi::onSZOrder)
 		.def("onSHBaseInfo", &MdApi::onSHBaseInfo)
+		.def("onSZBaseInfo", &MdApi::onSZBaseInfo)
 		.def("onKline", &MdApi::onKline)
 		.def("onEtfExtData", &MdApi::onEtfExtData)
 		;

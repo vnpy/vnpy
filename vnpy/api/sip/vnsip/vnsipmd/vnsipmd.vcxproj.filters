@@ -21,7 +21,10 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\sip\tdcemarket.h">
+    <ClInclude Include="vnsip.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="vnsipmd.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\sip\tdef.h">
@@ -54,10 +57,7 @@
     <ClInclude Include="..\..\include\sip\tczcemarket.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="vnsip.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="vnsipmd.h">
+    <ClInclude Include="..\..\include\sip\tdcemarket.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

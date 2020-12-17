@@ -5,15 +5,13 @@ import sys
 import pytz
 from datetime import datetime
 from typing import Dict
-import json
 
-from vnpy.api.gtja import (
-    TdApi,
+from vnpy.api.hft import TdApi
+from vnpy.api.sip import (
     MdApi,
     AccountType_Stock,
     PositionSide_Long,
     PositionSide_Short,
-    PositionSide_Short_Covered,
     OrderType_LMT,
     OrderFlag_Security_Normal,
     OrderStatus_PendingNew,
@@ -31,14 +29,12 @@ from vnpy.api.gtja import (
 )
 from vnpy.trader.constant import (
     Direction,
-    Offset,
     Exchange,
-    OrderType,
     Product,
     Status,
-    OptionType
 )
 from vnpy.trader.gateway import BaseGateway
+from vnpy.trader.utility import round_to
 from vnpy.trader.object import (
     TickData,
     OrderData,
@@ -50,20 +46,63 @@ from vnpy.trader.object import (
     CancelRequest,
     SubscribeRequest,
 )
-from vnpy.trader.utility import get_folder_path
 from vnpy.trader.event import EVENT_TIMER
-
-MK_GTJA2VT = {
-    MKtype_SH: Exchange.SSE,
-    MKtype_SZ: Exchange.SZSE
-
-}
-MK_VT2GTJA = {v: k for k, v in MK_GTJA2VT.items()}
 
 MAX_FLOAT = sys.float_info.max
 CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
-ORDERSTATUS_GTJA2VT = {
+MK_GTJA2VT: Dict[int, Exchange] = {
+    MKtype_SH: Exchange.SSE,
+    MKtype_SZ: Exchange.SZSE
+
+}
+MK_VT2GTJA: Dict[Exchange, int] = {v: k for k, v in MK_GTJA2VT.items()}
+
+SH_PRODUCT_GTJA2VT: Dict[str, Product] = {
+    "ES": Product.EQUITY,
+    "D": Product.BOND,
+    "RWS": Product.OPTION,
+    "FF": Product.FUTURES,
+    "EU": Product.FUND
+}
+
+SZ_PRODUCT_GTJA2VT: Dict[int, Product] = {
+    1: Product.EQUITY,
+    2: Product.EQUITY,
+    3: Product.EQUITY,
+    4: Product.EQUITY,
+    5: Product.BOND,
+    6: Product.BOND,
+    7: Product.BOND,
+    8: Product.BOND,
+    9: Product.BOND,
+    10: Product.BOND,
+    11: Product.BOND,
+    12: Product.BOND,
+    13: Product.BOND,
+    14: Product.ETF,
+    15: Product.ETF,
+    16: Product.ETF,
+    17: Product.ETF,
+    18: Product.ETF,
+    19: Product.ETF,
+    20: Product.ETF,
+    21: Product.ETF,
+    22: Product.ETF,
+    23: Product.FUND,
+    24: Product.FUND,
+    25: Product.FUND,
+    26: Product.FUND,
+    28: Product.OPTION,
+    29: Product.OPTION,
+    30: Product.OPTION,
+    33: Product.EQUITY,
+    34: Product.BOND,
+    35: Product.BOND,
+
+}
+
+ORDERSTATUS_GTJA2VT: Dict[int, Status] = {
     OrderStatus_PendingNew: Status.SUBMITTING,
     OrderStatus_New: Status.NOTTRADED,
     OrderStatus_PartiallyFilled: Status.PARTTRADED,
@@ -75,20 +114,24 @@ ORDERSTATUS_GTJA2VT = {
     OrderStatus_Rejected: Status.REJECTED,
     OrderStatus_CancelRejected: Status.REJECTED,
 }
-symbol_exchange_map = {}
-symbol_name_map = {}
-symbol_size_map = {}
 
-EXCHANGE_GTJA2VT = {
+EXCHANGE_GTJA2VT: Dict[str, Exchange] = {
     "SH": Exchange.SSE,
     "SZ": Exchange.SZSE
 }
-EXCHANGE_VT2GTJA = {v: k for k, v in EXCHANGE_GTJA2VT.items()}
-DIRECTION_GTJA2VT = {
+EXCHANGE_VT2GTJA: Dict[Exchange, str] = {
+    v: k for k, v in EXCHANGE_GTJA2VT.items()
+}
+DIRECTION_GTJA2VT: Dict[int, Direction] = {
     PositionSide_Long: Direction.LONG,
     PositionSide_Short: Direction.SHORT
 }
-DIRECTION_VT2GTJA = {v: k for k, v in DIRECTION_GTJA2VT.items()}
+DIRECTION_VT2GTJA: Dict[Direction, int] = {
+    v: k for k, v in DIRECTION_GTJA2VT.items()
+}
+
+symbol_name_map: Dict[str, str] = {}
+symbol_pricetick_map: Dict[str, float] = {}
 
 
 class GtjaGateway(BaseGateway):
@@ -97,12 +140,19 @@ class GtjaGateway(BaseGateway):
     """
 
     default_setting = {
-        "用户名": "",
-        "密码": "",
+        "交易用户名": "",
+        "交易密码": "",
         "交易服务器": "",
         "机构代号": "",
         "营业部代号": "",
         "网关": "",
+        "本机信息": "",
+        "行情服务器0": "",
+        "行情服务器1": "",
+        "行情连接模式": "",
+        "行情用户名": "",
+        "行情密码": "",
+
     }
 
     exchanges = [Exchange.SSE, Exchange.SZSE]
@@ -118,19 +168,45 @@ class GtjaGateway(BaseGateway):
 
     def connect(self, setting: dict):
         """"""
-        userid = setting["用户名"]
-        password = setting["密码"]
+        td_userid = setting["交易用户名"]
+        td_password = setting["交易密码"]
         td_address = setting["交易服务器"]
         orgid = setting["机构代号"]
         barnchid = setting["营业部代号"]
         system_id = setting["网关"]
+        md_address0 = setting["行情服务器0"]
+        md_address1 = setting["行情服务器1"]
+        connect_mode = setting["行情连接模式"]
+        md_userid = setting["行情用户名"]
+        md_password = setting["行情密码"]
+        terminal_info = setting["本机信息"]
 
         td_host, td_port = tuple(td_address.split(":"))
+        ip0, port0 = tuple(md_address0.split(":"))
+        ip1, port1 = tuple(md_address1.split(":"))
 
-        # self.td_api.connect(userid, password, orgid, barnchid, system_id, td_host, td_port)
+        self.td_api.connect(
+            td_userid,
+            td_password,
+            orgid,
+            barnchid,
+            system_id,
+            td_host,
+            td_port,
+            terminal_info
+        )
 
-        self.md_api.connect()
+        self.md_api.connect(
+            ip0,
+            port0,
+            ip1,
+            port1,
+            connect_mode,
+            md_userid,
+            md_password,
+        )
         self.date = datetime.now().strftime("%Y%m%d%H%M")
+
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
         self.md_api.subscrbie(req)
@@ -196,6 +272,7 @@ class GtjaMdApi(MdApi):
         self.server_port: int = 0
         self.protocol: int = 0
         self.session_id: int = 0
+        self.date: str = ""
 
         self.connect_status: bool = False
         self.login_status: bool = False
@@ -205,7 +282,6 @@ class GtjaMdApi(MdApi):
 
     def onDisconnected(self, reason: int) -> None:
         """"""
-        print("onDisconected", reason)
         self.connect_status = False
         self.login_status = False
         self.gateway.write_log(f"行情服务器连接断开, 原因{reason}")
@@ -214,18 +290,18 @@ class GtjaMdApi(MdApi):
 
     def onSubscribe(self, error):
         """"""
-        print("onSubcrieb", error)
         if error["errcode"]:
-            self.gateway.write_log(f"订阅失败，错误码{error['errcode']}，信息{error['errstr']}")
+            self.gateway.write_log(
+                f"订阅失败，错误码{error['errcode']}，信息{error['errstr']}"
+            )
 
     def onDepthMarketData(self, mk_type: int, symbol: str, data: dict) -> None:
         """"""
         pass
 
-
-    def OnMarketData(self, mk_type: int, symbol: str, data: dict) -> None:
+    def onMarketData(self, mk_type: int, symbol: str, data: dict) -> None:
         """"""
-        timestamp = f"{self.gateway.date}{str(data['nTime'])}"
+        timestamp = f"{self.date}{str(data['nTime'])}"
         dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
         dt = CHINA_TZ.localize(dt)
 
@@ -234,13 +310,13 @@ class GtjaMdApi(MdApi):
             exchange=MK_GTJA2VT[mk_type],
             datetime=dt,
             volume=data["iVolume"],
-            last_price=data["uMatch"],
-            limit_up=data["uHighLimited"],
-            limit_down=data["uLowLimited"],
-            open_price=data["uOpen"],
-            high_price=data["uHigh"],
-            low_price=data["uLow"],
-            pre_close=data["uPreClose"],
+            last_price=data["uMatch"] / 10000,
+            limit_up=data["uHighLimited"] / 10000,
+            limit_down=data["uLowLimited"] / 10000,
+            open_price=data["uOpen"] / 10000,
+            high_price=data["uHigh"] / 10000,
+            low_price=data["uLow"] / 10000,
+            pre_close=data["uPreClose"] / 10000,
             gateway_name=self.gateway_name
         )
 
@@ -251,90 +327,43 @@ class GtjaMdApi(MdApi):
 
         pricetick = symbol_pricetick_map.get(tick.vt_symbol, 0)
         if pricetick:
-            tick.bid_price_1 = round_to(tick.bid_price_1, pricetick)
-            tick.bid_price_2 = round_to(tick.bid_price_2, pricetick)
-            tick.bid_price_3 = round_to(tick.bid_price_3, pricetick)
-            tick.bid_price_4 = round_to(tick.bid_price_4, pricetick)
-            tick.bid_price_5 = round_to(tick.bid_price_5, pricetick)
-            tick.ask_price_1 = round_to(tick.ask_price_1, pricetick)
-            tick.ask_price_2 = round_to(tick.ask_price_2, pricetick)
-            tick.ask_price_3 = round_to(tick.ask_price_3, pricetick)
-            tick.ask_price_4 = round_to(tick.ask_price_4, pricetick)
-            tick.ask_price_5 = round_to(tick.ask_price_5, pricetick)
+            tick.bid_price_1 = round_to(tick.bid_price_1 / 10000, pricetick)
+            tick.bid_price_2 = round_to(tick.bid_price_2 / 10000, pricetick)
+            tick.bid_price_3 = round_to(tick.bid_price_3 / 10000, pricetick)
+            tick.bid_price_4 = round_to(tick.bid_price_4 / 10000, pricetick)
+            tick.bid_price_5 = round_to(tick.bid_price_5 / 10000, pricetick)
+            tick.ask_price_1 = round_to(tick.ask_price_1 / 10000, pricetick)
+            tick.ask_price_2 = round_to(tick.ask_price_2 / 10000, pricetick)
+            tick.ask_price_3 = round_to(tick.ask_price_3 / 10000, pricetick)
+            tick.ask_price_4 = round_to(tick.ask_price_4 / 10000, pricetick)
+            tick.ask_price_5 = round_to(tick.ask_price_5 / 10000, pricetick)
 
         tick.name = symbol_name_map.get(tick.vt_symbol, tick.symbol)
         self.gateway.on_tick(tick)
 
-
-
-    # def onQueryAllTickers(self, data: dict, error: dict, last: bool) -> None:
-    #     """"""
-    #     contract = ContractData(
-    #         symbol=data["ticker"],
-    #         exchange=EXCHANGE_Gtja2VT[data["exchange_id"]],
-    #         name=data["ticker_name"],
-    #         product=PRODUCT_Gtja2VT[data["ticker_type"]],
-    #         size=1,
-    #         pricetick=data["price_tick"],
-    #         min_volume=data["buy_qty_unit"],
-    #         gateway_name=self.gateway_name
-    #     )
-
-    #     if contract.product != Product.OPTION:
-    #         self.gateway.on_contract(contract)
-
-    #     symbol_name_map[contract.vt_symbol] = contract.name
-    #     symbol_pricetick_map[contract.vt_symbol] = contract.pricetick
-
-    #     if last:
-    #         self.gateway.write_log(f"{contract.exchange.value}合约信息查询成功")
-
-    #         if contract.exchange == Exchange.SSE:
-    #             self.sse_inited = True
-    #         else:
-    #             self.szse_inited = True
-
-    #         if self.sse_inited and self.szse_inited:
-    #             self.gateway.td_api.query_option_info()
-
     def connect(
         self,
-        # userid: str,
-        # password: str,
-        # client_id: int,
-        # server_ip: str,
-        # server_port: int,
-        # quote_protocol: int
+        ip0: str,
+        port0: int,
+        ip1: str,
+        port1: int,
+        connect_mode: str,
+        username: str,
+        password: str,
     ) -> None:
         """"""
-        # self.userid = userid
-        # self.password = password
-        # self.client_id = client_id
-        # self.server_ip = server_ip
-        # self.server_port = server_port
-        # self.protocol = PROTOCOL_VT2Gtja[quote_protocol]
-        a_cfg = "{\"ip0\":\"101.231.93.225\",\"port0\":16004,\"ip1\":\"101.231.93.225\",\"port1\":16005,\"connect_mode\":\"NR\",\"username\":\"gxjy_tst5\",\"password\":\"1uHnE8GMN7tPl\"}"
-        b_cfg = "{\"ip0\":\"101.231.93.225\"|\"port0\":16004|\"ip1\":\"101.231.93.225\"|\"port1\":16005|\"connect_mode\":\"LNK\"|\"username\":\"gxjy_tst5\"|\"password\":\"1uHnE8GMN7tPl\"}"
-        cfg = {
-            # "ip0": "101.231.93.225",
-            # "port0": 16004,
-            "ip1": "101.231.93.225",
-            "port1": 16004,
-            "connect_mode": "NR",
-            "username": "gxjy_tst5",
-            "password": "1uHnE8GMN7tPl"
-        }
+        g_cfg= "{\"ip0\":\"" + ip0 + "\"|\"port0\":" + port0 + "|\"ip1\":\"" + ip1 + "\"|\"port1\":" + port1 + "|\"connect_mode\":\"" + connect_mode + "\"|\"username\":\"" + username + "\"|\"password\":\"" + password + "\"}"
 
-        g_cfg = json.dumps(cfg)
-        # print("login dict=", a_cfg)
+        self.date = datetime.now().strftime("%Y%m%d")
 
         # Create API object
         if not self.connect_status:
-            a = self.createMdApi(b_cfg)
+            self.createMdApi(g_cfg)
             n = self.login()
-            print("create=",a, ",,login python=",n)
-            if not a:
-                self.gateway.write_log("行情登录成功")
+            self.query_contract()
+
+            if not n:
+                self.gateway.write_log("行情服务器登录成功")
                 self.connect_status = True
                 self.login_status = True
             else:
@@ -349,19 +378,52 @@ class GtjaMdApi(MdApi):
 
     def subscrbie(self, req: SubscribeRequest) -> None:
         """"""
-        # if self.login_status:
-        if True:
+        if self.login_status:
             gtja_exchange = MK_VT2GTJA.get(req.exchange, "")
-            
-            n = self.subscribeMarketData(gtja_exchange, req.symbol)
-            print("subcribe:",n, "@",gtja_exchange, req.symbol)
-            
+            self.subscribeMarketData(gtja_exchange, req.symbol)
 
     def query_contract(self) -> None:
-        """"""
-        for exchange_id in EXCHANGE_Gtja2VT.keys():
-            self.queryAllTickers(exchange_id)
+        """
+        0 -> SSE, SZSE
+        1 -> SSE,
+        2 -> SZSE
+        """
+        self.subscribeBaseInfo(0)
 
+    def onSHBaseInfo(self, code, data):
+        contract = ContractData(
+            gateway_name=self.gateway_name,
+            symbol=str(code),
+            exchange=Exchange.SSE,
+            name=data["szStkNameZN"].split(" ")[0],
+            product=SH_PRODUCT_GTJA2VT.get(
+                data["szStkClass"].split(" ")[0], Product.EQUITY
+            ),
+            min_volume=data["i64BuyNumUnit"],
+            pricetick=data["i64PriceLevel"] / 10000,
+            size=1,
+        )
+        self.gateway.on_contract(contract)
+        symbol_name_map[contract.vt_symbol] = contract.name
+        symbol_pricetick_map[contract.vt_symbol] = contract.pricetick
+
+    def onSZBaseInfo(self, code, data):
+        contract = ContractData(
+            gateway_name=self.gateway_name,
+            symbol=str(code),
+            exchange=Exchange.SZSE,
+            name=data["sSymbol"],
+            product=SZ_PRODUCT_GTJA2VT.get(
+                data["usSecurityType"], Product.EQUITY
+            ),
+            min_volume=data["i64BuyQtyUnit"],
+            pricetick=data.get("i64PriceTick", 100) / 10000,
+            size=1,
+        )
+
+        self.gateway.on_contract(contract)
+        symbol_name_map[contract.vt_symbol] = contract.name
+        symbol_pricetick_map[contract.vt_symbol] = contract.pricetick
 
 
 class GtjaTdApi(TdApi):
@@ -392,6 +454,8 @@ class GtjaTdApi(TdApi):
 
         self.sysid_orderid_map = {}
         self.orderid_sysid_map = {}
+        self.pos_write_log = True
+        self.accout_write_log = True
 
     def _new_orderid(self) -> str:
         """"""
@@ -430,7 +494,6 @@ class GtjaTdApi(TdApi):
             self.gateway.write_error("交易服务器登录失败", error)
 
     def onTradeReport(self, data) -> None:
-        print("onTrade", data)
         self.tradeid += 1
         exchange, symbol = tuple(data["symbol"].split("."))
         dt = f"{data['trade_date']} {data['trade_time']}"
@@ -440,6 +503,9 @@ class GtjaTdApi(TdApi):
         if not orderid and sysid:
             orderid = self._new_orderid()
 
+        dt = datetime.strptime(dt, "%Y%m%d %H%M%S%f")
+        dt = CHINA_TZ.localize(dt)
+
         trade = TradeData(
             tradeid=self.tradeid,
             orderid=orderid,
@@ -447,9 +513,9 @@ class GtjaTdApi(TdApi):
             symbol=symbol,
             exchange=EXCHANGE_GTJA2VT[exchange],
             direction=DIRECTION_GTJA2VT[data["side"]],
-            price=data["price"]/10000,
+            price=data["price"] / 10000,
             volume=data["volume"],
-            datetime=datetime.strptime(dt, "%Y%m%d %H%M%S%f"),
+            datetime=dt,
         )
 
         order = self.orders[orderid]
@@ -471,13 +537,14 @@ class GtjaTdApi(TdApi):
         last: bool
     ):
         """"""
-        print("onOrder", data)
         orderid = data["cl_order_id"]
         order = self.orders[orderid]
         if error["err_code"]:
             self.gateway.write_error("交易委托失败", error)
             order.status = Status.REJECTED
-            order.datetime = datetime.now()
+            dt = datetime.now()
+            dt = CHINA_TZ.localize(dt)
+            order.datetime = dt
             self.gateway.on_order(order)
         else:
             sysid = data["order_id"]
@@ -492,7 +559,6 @@ class GtjaTdApi(TdApi):
         last: bool
     ) -> None:
         """"""
-        # print("onCancelRsp", data, error)
         if error["err_code"]:
             self.gateway.write_error("交易撤单失败", error)
 
@@ -513,10 +579,15 @@ class GtjaTdApi(TdApi):
             exchange=EXCHANGE_GTJA2VT[exchange],
             direction=Direction.NET,
             volume=data["volume"],
-            price=data["cost_price"]/10000,
-            pnl=data["total_income"]/10000,
+            price=data["cost_price"] / 10000,
+            pnl=data["total_income"] / 10000,
         )
         self.gateway.on_position(pos)
+
+        if last:
+            if self.pos_write_log:
+                self.gateway.write_log("查询持仓成功")
+                self.pos_write_log = False
 
     def onQueryCashRsp(self, data: dict, error: dict, reqid: int) -> None:
         """"""
@@ -528,6 +599,9 @@ class GtjaTdApi(TdApi):
                 gateway_name=self.gateway_name
             )
             self.gateway.on_account(account)
+            if self.accout_write_log:
+                self.gateway.write_log("查询账户成功")
+                self.accout_write_log = False
 
     def onQueryOrderRsp(
         self,
@@ -549,16 +623,19 @@ class GtjaTdApi(TdApi):
         if not orderid and sysid:
             orderid = self._new_orderid()
 
+        dt = datetime.strptime(dt, "%Y%m%d %H%M%S%f")
+        dt = CHINA_TZ.localize(dt)
+
         order = OrderData(
             orderid=orderid,
             gateway_name=self.gateway_name,
             symbol=symbol,
             exchange=EXCHANGE_GTJA2VT[exchange],
             direction=DIRECTION_GTJA2VT[data["side"]],
-            price=data["price"]/10000,
+            price=data["price"] / 10000,
             volume=data["volume"],
             status=ORDERSTATUS_GTJA2VT[data["order_status"]],
-            datetime=datetime.strptime(dt, "%Y%m%d %H%M%S%f"),
+            datetime=dt,
         )
         self.orders[orderid] = order
         self.sysid_orderid_map[sysid] = orderid
@@ -586,6 +663,9 @@ class GtjaTdApi(TdApi):
         if not orderid and sysid:
             orderid = self._new_orderid()
 
+        dt = datetime.strptime(dt, "%Y%m%d %H%M%S%f")
+        dt = CHINA_TZ.localize(dt)
+
         trade = TradeData(
             tradeid=self.tradeid,
             orderid=orderid,
@@ -593,9 +673,9 @@ class GtjaTdApi(TdApi):
             symbol=symbol,
             exchange=EXCHANGE_GTJA2VT[exchange],
             direction=DIRECTION_GTJA2VT[data["side"]],
-            price=data["price"]/10000,
+            price=data["price"] / 10000,
             volume=data["volume"],
-            datetime=datetime.strptime(dt, "%Y%m%d %H%M%S%f"),
+            datetime=dt,
         )
 
         self.gateway.on_trade(trade)
@@ -609,6 +689,7 @@ class GtjaTdApi(TdApi):
         system_id: str,
         host: str,
         port: str,
+        terminal_info
     ) -> None:
         """
         Start connection to server.
@@ -619,8 +700,8 @@ class GtjaTdApi(TdApi):
 
         if not self.connect_status:
 
-            path = get_folder_path(self.gateway_name.lower())
-            self.setLogConfig("D:/gtja")
+            # path = get_folder_path(self.gateway_name.lower())
+            self.setLogConfig("C:/gtja")
             self.createTraderApi()
 
             account_info = {
@@ -631,8 +712,6 @@ class GtjaTdApi(TdApi):
                 "cust_branchid": branchid,
                 "cl_system_id": system_id,
             }
-
-            terminal_info = "PC;IIP=106.14.230.54;IPORT=50002;LIP=192.168.6.5;MAC=54EE750B1713^54EE750B1716;HD=TF655AY91GHRVL;CPU=BFEBFBFF004065@ClientName;V1.0.1"
 
             self.login(host, int(port), account_info, terminal_info)
 
