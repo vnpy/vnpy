@@ -205,7 +205,7 @@ class QuoteApi(MdApi):
         """
         Callback when API is ready for sending requests or queries.
         """
-        pass
+        self.qryCommodity()
 
     def onDisconnect(self, reason: int) -> None:
         """
@@ -233,6 +233,84 @@ class QuoteApi(MdApi):
         Callback of new data update.
         """
         self.update_tick(data)
+
+    def onRspQryCommodity(
+        self,
+        session: int,
+        error: int,
+        last: str,
+        data: dict,
+    ) -> None:
+        """
+        Callback of commodity query with size and pricetick data.
+        """
+        if error != ERROR_VT2TAP["TAPIERROR_SUCCEED"]:
+            self.gateway.write_log("查询交易品种信息失败")
+            return
+
+        commodity_info = CommodityInfo(
+            name=data["CommodityEngName"],
+            size=int(data["ContractSize"]),
+            pricetick=data["CommodityTickSize"]
+        )
+        commodity_infos[data["CommodityNo"]] = commodity_info
+
+        if last == "Y":
+            self.gateway.write_log("查询交易品种信息成功")
+            req = {}
+            self.qryContract(req)
+
+    def onRspQryContract(
+        self,
+        session: int,
+        error: int,
+        last: str,
+        data: dict
+    ) -> None:
+        """
+        Callback of contract query with detailed contract data.
+        """
+        if error != ERROR_VT2TAP["TAPIERROR_SUCCEED"]:
+            self.gateway.write_log("查询交易合约信息失败")
+            return
+
+        exchange = EXCHANGE_TAP2VT.get(data["ExchangeNo"], None)
+        commodity_info = commodity_infos.get(data["CommodityNo"], None)
+
+        if not data or not exchange or not commodity_info:
+            return
+
+        if data["CommodityType"] == "F":
+            symbol = data["CommodityNo"] + data["ContractNo1"]
+
+            if commodity_info.name:
+                name = f"{commodity_info.name} {data['ContractNo1']}"
+            else:
+                name = symbol
+
+            contract = ContractData(
+                symbol=symbol,
+                exchange=exchange,
+                name=name,
+                product=Product.FUTURES,
+                size=commodity_info.size,
+                pricetick=commodity_info.pricetick,
+                net_position=True,
+                gateway_name=self.gateway.gateway_name
+            )
+            self.gateway.on_contract(contract)
+
+            contract_info = ContractInfo(
+                name=contract.name,
+                exchange_no=data["ExchangeNo"],
+                contract_no=data["ContractNo1"],
+                commodity_type=data["CommodityType"],
+                commodity_no=data["CommodityNo"],
+            )
+            contract_infos[(contract.symbol, contract.exchange)] = contract_info
+
+        if last == "Y":
+            self.gateway.write_log("查询交易合约信息成功")
 
     def update_tick(self, data: dict) -> None:
         """
@@ -381,7 +459,7 @@ class TradeApi(TdApi):
         """
         Callback when API is ready for sending requests or queries.
         """
-        self.qryCommodity()
+        self.query_account()
 
     def onRspQryCommodity(
         self,
