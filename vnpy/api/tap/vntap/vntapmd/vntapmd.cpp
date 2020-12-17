@@ -231,17 +231,7 @@ void MdApi::processRspQryCommodity(Task *task)
 	if (task->task_data)
 	{
 		TapAPIQuoteCommodityInfo *task_data = (TapAPIQuoteCommodityInfo*)task->task_data;
-		
-		data["ExchangeNo"] = toUtf(task_data->Commodity.ExchangeNo);
-		data["CommodityType"] = task_data->Commodity.CommodityType;
-		data["CommodityNo"] = toUtf(task_data->Commodity.CommodityNo);
-		data["RelateExchangeNo"] = toUtf(task_data->RelateCommodity1.ExchangeNo);
-		data["RelateCommodityType"] = task_data->RelateCommodity1.CommodityType;
-		data["RelateCommodityNo"] = toUtf(task_data->RelateCommodity1.CommodityNo);
-		data["RelateExchangeNo2"] = toUtf(task_data->RelateCommodity2.ExchangeNo);
-		data["RelateCommodityType2"] = task_data->RelateCommodity2.CommodityType;
-		data["RelateCommodityNo2"] = toUtf(task_data->RelateCommodity2.CommodityNo);
-		
+		data["Commodity"] = task_data->Commodity;
 		data["CommodityName"] = toUtf(task_data->CommodityName);
 		data["CommodityEngName"] = toUtf(task_data->CommodityEngName);
 		data["ContractSize"] = task_data->ContractSize;
@@ -250,6 +240,8 @@ void MdApi::processRspQryCommodity(Task *task)
 		data["CmbDirect"] = task_data->CmbDirect;
 		data["CommodityContractLen"] = task_data->CommodityContractLen;
 		data["IsDST"] = task_data->IsDST;
+		data["RelateCommodity1"] = task_data->RelateCommodity1;
+		data["RelateCommodity2"] = task_data->RelateCommodity2;
 		delete task_data;
 	}
 	this->onRspQryCommodity(task->task_id, task->task_int, task->task_last, data);
@@ -262,17 +254,7 @@ void MdApi::processRspQryContract(Task *task)
 	if (task->task_data)
 	{
 		TapAPIQuoteContractInfo *task_data = (TapAPIQuoteContractInfo*)task->task_data;
-		
-		data["ExchangeNo"] = toUtf(task_data->Contract.Commodity.ExchangeNo);
-		data["CommodityType"] = task_data->Contract.Commodity.CommodityType;
-		data["CommodityNo"] = toUtf(task_data->Contract.Commodity.CommodityNo);
-		data["ContractNo1"] = toUtf(task_data->Contract.ContractNo1);
-		data["StrikePrice1"] = toUtf(task_data->Contract.StrikePrice1);
-		data["CallOrPutFlag1"] = task_data->Contract.CallOrPutFlag1;
-		data["ContractNo2"] = toUtf(task_data->Contract.ContractNo2);
-		data["StrikePrice2"] = toUtf(task_data->Contract.StrikePrice2);
-		data["CallOrPutFlag2"] = task_data->Contract.CallOrPutFlag2;
-
+		data["Contract"] = task_data->Contract;
 		data["ContractType"] = task_data->ContractType;
 		data["QuoteUnderlyingContract"] = toUtf(task_data->QuoteUnderlyingContract);
 		data["ContractName"] = toUtf(task_data->ContractName);

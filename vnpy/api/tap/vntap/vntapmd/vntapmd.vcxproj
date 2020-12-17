@@ -83,9 +83,9 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\</OutDir>
     <TargetExt>.pyd</TargetExt>
-    <IncludePath>C:\miniconda3\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\tap;$(IncludePath)</IncludePath>
+    <IncludePath>C:\vnstudio4\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\tap;$(IncludePath)</IncludePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
-    <LibraryPath>C:\miniconda3\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\vnstudio4\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -151,7 +151,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\GitHub\vnpy\vnpy\api\tap\libs;C:\miniconda3\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\GitHub\vnpy\vnpy\api\tap\libs;C:\vnstudio4\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>iTapTradeAPI_64.lib;TapQuoteAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
