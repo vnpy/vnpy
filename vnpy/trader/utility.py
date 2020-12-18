@@ -237,7 +237,13 @@ class BarGenerator:
             )
         else:
             self.bar.high_price = max(self.bar.high_price, tick.last_price)
+            if tick.high_price > self.last_tick.high_price:
+                self.bar.high_price = max(self.bar.high_price, tick.high_price)
+
             self.bar.low_price = min(self.bar.low_price, tick.last_price)
+            if tick.low_price < self.last_tick.low_price:
+                self.bar.low_price = min(self.bar.low_price, tick.low_price)
+
             self.bar.close_price = tick.last_price
             self.bar.open_interest = tick.open_interest
             self.bar.datetime = tick.datetime

@@ -253,7 +253,8 @@ class QuoteApi(MdApi):
             size=int(data["ContractSize"]),
             pricetick=data["CommodityTickSize"]
         )
-        commodity_infos[(data["CommodityNo"], data["CommodityType"])] = commodity_info
+        key = (data["ExchangeNo"], data["CommodityNo"], data["CommodityType"])
+        commodity_infos[key] = commodity_info
 
         if last == "Y":
             self.gateway.write_log("查询交易品种信息成功")
@@ -275,7 +276,8 @@ class QuoteApi(MdApi):
             return
 
         exchange = EXCHANGE_TAP2VT.get(data["ExchangeNo"], None)
-        commodity_info = commodity_infos.get((data["CommodityNo"], data["CommodityType"]), None)
+        key = (data["ExchangeNo"], data["CommodityNo"], data["CommodityType"])
+        commodity_info = commodity_infos.get(key, None)
 
         if not data or not exchange or not commodity_info:
             return
