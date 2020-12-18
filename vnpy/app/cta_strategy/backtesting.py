@@ -25,7 +25,8 @@ from .base import (
     EngineType,
     STOPORDER_PREFIX,
     StopOrder,
-    StopOrderStatus
+    StopOrderStatus,
+    INTERVAL_DELTA_MAP
 )
 from .template import CtaTemplate
 
@@ -227,6 +228,7 @@ class BacktestingEngine:
         total_days = (self.end - self.start).days
         progress_days = int(total_days / 10)
         progress_delta = timedelta(days=progress_days)
+        interval_delta = INTERVAL_DELTA_MAP[self.interval]
 
         start = self.start
         end = self.start + progress_delta
@@ -259,8 +261,8 @@ class BacktestingEngine:
             progress += progress_days / total_days
             progress = min(progress, 1)
 
-            start = end + timedelta(days=1)
-            end += (progress_delta + timedelta(days=1))
+            start = end + interval_delta
+            end += progress_delta
 
         self.output(f"历史数据加载完成，数据量：{len(self.history_data)}")
 

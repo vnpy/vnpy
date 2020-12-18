@@ -4,8 +4,9 @@ Defines constants and objects used in CtaStrategy App.
 
 from dataclasses import dataclass, field
 from enum import Enum
+from datetime import timedelta
 
-from vnpy.trader.constant import Direction, Offset
+from vnpy.trader.constant import Direction, Offset, Interval
 
 APP_NAME = "CtaStrategy"
 STOPORDER_PREFIX = "STOP"
@@ -44,3 +45,10 @@ class StopOrder:
 EVENT_CTA_LOG = "eCtaLog"
 EVENT_CTA_STRATEGY = "eCtaStrategy"
 EVENT_CTA_STOPORDER = "eCtaStopOrder"
+
+INTERVAL_DELTA_MAP = {
+    Interval.TICK: timedelta(milliseconds=1),
+    Interval.MINUTE: timedelta(minutes=1),
+    Interval.HOUR: timedelta(hours=1),
+    Interval.DAILY: timedelta(days=1),
+}
