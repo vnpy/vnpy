@@ -73,6 +73,9 @@ class PortfolioManager(QtWidgets.QWidget):
         self.tree.header().setDefaultAlignment(QtCore.Qt.AlignCenter)
         self.tree.header().setStretchLastSection(False)
 
+        delegate = TreeDelegate()
+        self.tree.setItemDelegate(delegate)
+
         self.monitor = PortfolioTradeMonitor()
 
         expand_button = QtWidgets.QPushButton("全部展开")
@@ -310,3 +313,17 @@ class PortfolioTradeMonitor(QtWidgets.QTableWidget):
                     self.showRow(row)
                 else:
                     self.hideRow(row)
+
+
+class TreeDelegate(QtGui.QStyledItemDelegate):
+    """"""
+
+    def sizeHint(
+        self,
+        option: QtGui.QStyleOptionViewItem,
+        index: QtCore.QModelIndex
+    ) -> QtCore.QSize:
+        """"""
+        size = super().sizeHint(option, index)
+        size.setHeight(40)
+        return size
