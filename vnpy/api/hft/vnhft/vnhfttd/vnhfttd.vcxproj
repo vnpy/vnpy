@@ -82,9 +82,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\</OutDir>
-    <IncludePath>C:\vnstudio\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\hft;$(IncludePath)</IncludePath>
+    <IncludePath>C:\miniconda3\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\hft;$(IncludePath)</IncludePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
-    <LibraryPath>C:\vnstudio\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\miniconda3\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
     <TargetExt>.pyd</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -151,6 +151,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -158,16 +159,16 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\include;C:\vnstudio\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\include;C:\miniconda3\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libhft_trader_api.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\gtja\hft_option_trader_api.h" />
-    <ClInclude Include="..\..\include\gtja\hft_trader_api.h" />
-    <ClInclude Include="..\..\include\gtja\hft_trader_common.h" />
-    <ClInclude Include="..\..\include\gtja\hft_trader_error.h" />
-    <ClInclude Include="..\..\include\gtja\hft_trader_struct.h" />
+    <ClInclude Include="..\..\include\hft\hft_option_trader_api.h" />
+    <ClInclude Include="..\..\include\hft\hft_trader_api.h" />
+    <ClInclude Include="..\..\include\hft\hft_trader_common.h" />
+    <ClInclude Include="..\..\include\hft\hft_trader_error.h" />
+    <ClInclude Include="..\..\include\hft\hft_trader_struct.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="vnhft.h" />

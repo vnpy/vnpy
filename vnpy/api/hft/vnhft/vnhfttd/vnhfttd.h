@@ -594,11 +594,11 @@ public:
 
 	virtual void onQueryCashRsp(const dict &data, const dict &error, int request_id) {};
 
-	virtual void onQueryJZJYAvailFundRsp(int avail_balance, const dict &error, int request_id) {};
+	virtual void onQueryJZJYAvailFundRsp(int64_t avail_balance, const dict &error, int request_id) {};
 
-	virtual void onTransferFundInAndOutRsp(int transfer_value, const dict &error, int request_id) {};
+	virtual void onTransferFundInAndOutRsp(int64_t transfer_value, const dict &error, int request_id) {};
 
-	virtual void onTransferFundBetweenSecuidRsp(int transfer_value, const dict &error, int request_id) {};
+	virtual void onTransferFundBetweenSecuidRsp(int64_t transfer_value, const dict &error, int request_id) {};
 
 	virtual void onQueryETFRsp(const dict &data, const dict &error, int request_id, bool last) {};
 
@@ -680,9 +680,9 @@ public:
 
 	int getCounterType();
 
-	int getSecuidInfo(const dict &req, int count);
+	pybind11::list getSecuidInfo();
 
-	int getApiLocalAddr(const dict &req);
+	dict getApiLocalAddr();
 
 	int order(const dict &req, int request_id);
 

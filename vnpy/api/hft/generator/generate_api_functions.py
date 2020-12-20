@@ -368,5 +368,5 @@ class ApiGenerator:
 
 
 if __name__ == "__main__":
-    td_generator = ApiGenerator("../include/hft/hft_trader_api_.h", "hft", "hft", "HftApi")
+    td_generator = ApiGenerator("../include/hft/hft_trader_api_.h", "hft", "stock", "TdApi")
     td_generator.run()

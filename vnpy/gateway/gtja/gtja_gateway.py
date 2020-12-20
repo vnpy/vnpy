@@ -352,7 +352,7 @@ class GtjaMdApi(MdApi):
         password: str,
     ) -> None:
         """"""
-        g_cfg= "{\"ip0\":\"" + ip0 + "\"|\"port0\":" + port0 + "|\"ip1\":\"" + ip1 + "\"|\"port1\":" + port1 + "|\"connect_mode\":\"" + connect_mode + "\"|\"username\":\"" + username + "\"|\"password\":\"" + password + "\"}"
+        g_cfg = "{\"ip0\":\"" + ip0 + "\"|\"port0\":" + port0 + "|\"ip1\":\"" + ip1 + "\"|\"port1\":" + port1 + "|\"connect_mode\":\"" + connect_mode + "\"|\"username\":\"" + username + "\"|\"password\":\"" + password + "\"}"
 
         self.date = datetime.now().strftime("%Y%m%d")
 

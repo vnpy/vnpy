@@ -1046,24 +1046,35 @@ int TdApi::getCounterType()
 	return i;
 };
 
-int TdApi::getSecuidInfo(const dict &req, int count)
+pybind11::list TdApi::getSecuidInfo()
 {
-	SecuidInfo myreq = SecuidInfo();
-	memset(&myreq, 0, sizeof(myreq));
-	getString(req, "market", myreq.market);
-	getString(req, "secuid", myreq.secuid);
-	int i = this->api->GetSecuidInfo(&myreq, (int*)count);
-	return i;
+	SecuidInfo info[20];
+	int count;
+	int i = this->api->GetSecuidInfo(info, &count);
+
+	pybind11::list data;
+
+	for (int i = 0; i < count; i++)
+	{
+		dict d;
+		d["market"] = info[i].market;
+		d["secuid"] = info[i].secuid;
+		d["bank_code"] = info[i].bank_code;
+		data.append(d);
+	}
+
+	return data;
 };
 
-int TdApi::getApiLocalAddr(const dict &req)
+dict TdApi::getApiLocalAddr()
 {
-	IpAddr myreq = IpAddr();
-	memset(&myreq, 0, sizeof(myreq));
-	getString(req, "ip", myreq.ip);
-	getInt(req, "port", &myreq.port);
-	int i = this->api->GetApiLocalAddr(&myreq);
-	return i;
+	IpAddr localAddr;
+	int i = this->api->GetApiLocalAddr(&localAddr);
+
+	dict data;
+	data["ip"] = localAddr.ip;
+	data["port"] = localAddr.port;
+	return data;
 };
 
 int TdApi::order(const dict &req, int request_id)
@@ -1557,7 +1568,7 @@ public:
 		}
 	};
 
-	void onQueryJZJYAvailFundRsp(int avail_balance, const dict &error, int request_id) override
+	void onQueryJZJYAvailFundRsp(int64_t avail_balance, const dict &error, int request_id) override
 	{
 		try
 		{
@@ -1569,7 +1580,7 @@ public:
 		}
 	};
 
-	void onTransferFundInAndOutRsp(int transfer_value, const dict &error, int request_id) override
+	void onTransferFundInAndOutRsp(int64_t transfer_value, const dict &error, int request_id) override
 	{
 		try
 		{
@@ -1581,7 +1592,7 @@ public:
 		}
 	};
 
-	void onTransferFundBetweenSecuidRsp(int transfer_value, const dict &error, int request_id) override
+	void onTransferFundBetweenSecuidRsp(int64_t transfer_value, const dict &error, int request_id) override
 	{
 		try
 		{
