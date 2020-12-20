@@ -28,32 +28,23 @@ class ApiGenerator:
             if "__" not in name:
                 self.structs[name] = getattr(module, name)
 
-        self.structs["ErrorInfo"] = {
-            "err_code": "int32_t",
-            "err_msg": "string"
-        }
-
-        self.structs["IpAddr"] = {
-            "ip": "string",
-            "port": "int"
-        }
-
     def run(self):
         """运行生成"""
         self.f_cpp = open(self.filename, "r", encoding="UTF-8")
+        print("filename=", self.filename)
 
         for line in self.f_cpp:
             self.process_line(line)
 
         self.f_cpp.close()
+        print(self.callbacks)
+        print(self.functions)
 
         self.generate_header_define()
         self.generate_header_process()
         self.generate_header_on()
         self.generate_header_function()
 
-        # self.generate_source_task()
-        # self.generate_source_switch()
         self.generate_source_spi()
         self.generate_source_function()
         self.generate_source_on()
@@ -84,7 +75,6 @@ class ApiGenerator:
     def process_function(self, line: str):
         """处理主动函数"""
         name = line.split("(")[0].split(" ")[-1]
-        # name = line[line.index("Que"):line.index("(")]
 
         d = self.generate_arg_dict(line)
         self.functions[name] = d
@@ -128,7 +118,6 @@ class ApiGenerator:
         filename = f"{self.prefix}_{self.name}_header_on.h"
         with open(filename, "w") as f:
             for name, d in self.callbacks.items():
-                
                 name = name.replace("On", "on")
 
                 args_list = []
@@ -183,7 +172,6 @@ class ApiGenerator:
 
                 f.write(line)
 
-
     def generate_source_spi(self):
         """"""
         filename = f"{self.prefix}_{self.name}_source_spi.cpp"
@@ -221,7 +209,6 @@ class ApiGenerator:
 
                         struct_fields = self.structs[type_]
                         for struct_field, struct_type in struct_fields.items():
-                            
                             if struct_type == "string":
                                 f.write(
                                     f"\t\terror[\"{struct_field}\"] = toUtf({field}->{struct_field});\n")
@@ -266,7 +253,6 @@ class ApiGenerator:
                     f.write("\treturn i;\n")
                     f.write("};\n\n")
                 else:
-                    
                     for field, type_ in d.items():
 
                         if type_ == "int" or type_ == "int64_t" or type_ == "int16_t" or type_ == "int32_t" or type_ == "int64_t":
@@ -373,5 +359,5 @@ class ApiGenerator:
 
 if __name__ == "__main__":
 
-    td_generator = ApiGenerator("../include/gtja/hft_trader_api_.h", "gtja", "td", "TdApi")
-    td_generator.run()
+    md_generator = ApiGenerator("../include/sip/isipuix.h", "sip", "md", "MdApi")
+    md_generator.run()
