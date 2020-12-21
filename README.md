@@ -44,9 +44,13 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 飞创证券（sec）：ETF期权
 
+        * 南华NHTD（nhtd）：国内期货、ETF期权
+
         * 宽睿（oes）：国内证券（A股）、ETF期权
 
         * 中泰XTP（xtp）：国内证券（A股）、ETF期权
+
+        * 国泰君安（gtja）：国内证券（A股）
 
         * 恒生期权（hsoption）：ETF期权
 
