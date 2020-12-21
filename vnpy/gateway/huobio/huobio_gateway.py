@@ -589,7 +589,7 @@ class HuobioRestApi(RestClient):
                 exchange=Exchange.HUOBI,
                 name=d["contract_code"],
                 pricetick=d["price_tick"],
-                size=int(d["contract_size"]),
+                size=float(d["contract_size"]),
                 min_volume=1,
                 product=Product.OPTION,
                 option_strike=d["exercise_price"],

@@ -305,6 +305,7 @@ class HuobiRestApi(RestClient):
                     )
                     history.append(bar)
 
+                history.reverse()
                 begin = history[0].datetime
                 end = history[-1].datetime
                 msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"

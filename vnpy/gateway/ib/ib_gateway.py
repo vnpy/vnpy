@@ -397,6 +397,9 @@ class IbApi(EWrapper):
 
         orderid = str(orderId)
         order = self.orders.get(orderid, None)
+        if not order:
+            return
+
         order.traded = filled
 
         # To filter PendingCancel status
