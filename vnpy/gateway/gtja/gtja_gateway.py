@@ -230,6 +230,7 @@ class GtjaGateway(BaseGateway):
     def close(self) -> None:
         """"""
         self.td_api.close()
+        self.md_api.close()
 
     def write_error(self, msg: str, error: dict):
         """"""
