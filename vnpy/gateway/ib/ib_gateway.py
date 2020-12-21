@@ -397,12 +397,15 @@ class IbApi(EWrapper):
 
         orderid = str(orderId)
         order = self.orders.get(orderid, None)
-        order.traded = filled
+        if order:
+            order.traded = filled
 
         # To filter PendingCancel status
         order_status = STATUS_IB2VT.get(status, None)
-        if order_status:
+        if order_status and order:
             order.status = order_status
+        else:
+            return
 
         self.gateway.on_order(copy(order))
 
