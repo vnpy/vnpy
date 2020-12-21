@@ -21,7 +21,7 @@ class ApiGenerator:
 
     def load_struct(self):
         """加载Struct"""
-        module_name = f"{self.prefix}_struct_md"
+        module_name = f"{self.prefix}_struct"
         module = importlib.import_module(module_name)
 
         for name in dir(module):
