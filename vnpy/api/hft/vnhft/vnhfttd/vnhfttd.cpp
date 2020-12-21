@@ -1077,7 +1077,6 @@ dict TdApi::getApiLocalAddr()
 	data["port"] = localAddr.port;
 	return data;
 };
-
 int TdApi::order(const dict &req, int request_id)
 {
 	OrderReq myreq = OrderReq();

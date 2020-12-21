@@ -23,16 +23,13 @@ void MdApi::OnDisconnect(int32_t chn)
 
 void MdApi::OnSubscribe(ErrMsg *errmsg)
 {
+
 	gil_scoped_acquire acquire;
 	dict error;
 	{
 		error["channel"] = errmsg->channel;
 		error["errcode"] = errmsg->errcode;
 		error["errstr"] = toUtf(errmsg->errstr);
-	//	error["mktype"] = errmsg->mktype;
-	//	error["datatype"] = errmsg->datatype;
-	//	error["usize"] = errmsg->usize;
-	//	error["codes"] = errmsg->codes;
 	}
 	this->onSubscribe(error);
 };
@@ -376,8 +373,10 @@ void MdApi::OnEtfExtData(MKtype mk_type, char *code, T_ETFEXTENDS *etfextdata)
 int MdApi::createMdApi(string sjson)
 {
 	this->api = CSipMdApi::Register(this);
+
 	int i = this->api->Initialize(sjson.c_str());
 	this->active = true;
+
 	return i;
 };
 int MdApi::login()
@@ -399,6 +398,7 @@ void MdApi::release()
 
 int MdApi::exit()
 {
+	this->api->Stop();
 	this->api->Register(NULL);
 	this->api->Release();
 	this->api = NULL;

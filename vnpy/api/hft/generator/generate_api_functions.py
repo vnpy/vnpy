@@ -128,6 +128,7 @@ class ApiGenerator:
         filename = f"{self.prefix}_{self.name}_header_on.h"
         with open(filename, "w") as f:
             for name, d in self.callbacks.items():
+                
                 name = name.replace("On", "on")
 
                 args_list = []
@@ -182,6 +183,7 @@ class ApiGenerator:
 
                 f.write(line)
 
+
     def generate_source_spi(self):
         """"""
         filename = f"{self.prefix}_{self.name}_source_spi.cpp"
@@ -219,6 +221,7 @@ class ApiGenerator:
 
                         struct_fields = self.structs[type_]
                         for struct_field, struct_type in struct_fields.items():
+                            
                             if struct_type == "string":
                                 f.write(
                                     f"\t\terror[\"{struct_field}\"] = toUtf({field}->{struct_field});\n")
@@ -263,6 +266,7 @@ class ApiGenerator:
                     f.write("\treturn i;\n")
                     f.write("};\n\n")
                 else:
+                    
                     for field, type_ in d.items():
 
                         if type_ == "int" or type_ == "int64_t" or type_ == "int16_t" or type_ == "int32_t" or type_ == "int64_t":
@@ -368,5 +372,6 @@ class ApiGenerator:
 
 
 if __name__ == "__main__":
-    td_generator = ApiGenerator("../include/hft/hft_trader_api_.h", "hft", "stock", "TdApi")
+
+    td_generator = ApiGenerator("../include/hft/header_for_generator/hft_trader_api_.h", "hft", "td", "TdApi")
     td_generator.run()

@@ -27,19 +27,19 @@
     <ClInclude Include="vnhfttd.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\hft\hft_option_trader_api.h">
+    <ClInclude Include="..\..\include\gtja\hft_trader_error.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\hft\hft_trader_api.h">
+    <ClInclude Include="..\..\include\gtja\hft_trader_struct.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\hft\hft_trader_common.h">
+    <ClInclude Include="..\..\include\gtja\hft_option_trader_api.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\hft\hft_trader_error.h">
+    <ClInclude Include="..\..\include\gtja\hft_trader_api.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\hft\hft_trader_struct.h">
+    <ClInclude Include="..\..\include\gtja\hft_trader_common.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

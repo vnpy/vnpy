@@ -22,6 +22,8 @@ class MdApi : public CSipMdSpi
 {
 private:
 	ISIPUIX_EXPORT CSipMdApi* api;            //API对象
+    thread task_thread;                    //工作线程指针（向python中推送数据）
+    TaskQueue task_queue;                //任务队列
     bool active = false;                //工作状态
 
 public:
@@ -176,7 +178,6 @@ public:
 	virtual void onSZOrder(string code, const dict &data) {};
 
 	virtual void onSHBaseInfo(string code, const dict &data) {};
-
 	virtual void onSZBaseInfo(string code, const dict &data) {};
 
 	virtual void onKline(int mk_type, string code, const dict &data) {};

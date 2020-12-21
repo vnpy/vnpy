@@ -86,5 +86,5 @@ class StructGenerator:
 
 
 if __name__ == "__main__":
-    generator = StructGenerator("../include/hft/hft_trader_struct_.h", "hft")
+    generator = StructGenerator("../include/hft/header_for_generator/hft_trader_struct_.h", "hft")
     generator.run()
