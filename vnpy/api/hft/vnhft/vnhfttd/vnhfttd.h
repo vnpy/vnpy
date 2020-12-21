@@ -22,8 +22,6 @@ class TdApi : public TraderSpi
 {
 private:
 	TraderApi* api;            //API对象
-    thread task_thread;                    //工作线程指针（向python中推送数据）
-    TaskQueue task_queue;                //任务队列
     bool active = false;                //工作状态
 
 public:
@@ -668,6 +666,7 @@ public:
     //req:主动函数的请求字典
     //-------------------------------------------------------------------------------------
 	void setLogConfig(string log_path);
+
     void createTraderApi();
 
     void release();

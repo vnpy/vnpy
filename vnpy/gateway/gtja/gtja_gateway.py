@@ -34,7 +34,7 @@ from vnpy.trader.constant import (
     Status,
 )
 from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.utility import round_to
+from vnpy.trader.utility import round_to, get_folder_path
 from vnpy.trader.object import (
     TickData,
     OrderData,
@@ -431,7 +431,7 @@ class GtjaTdApi(TdApi):
 
     def __init__(self, gateway):
         """Constructor"""
-        super(GtjaTdApi, self).__init__()
+        super().__init__()
 
         self.gateway: GtjaGateway = gateway
         self.gateway_name: str = gateway.gateway_name
@@ -494,6 +494,7 @@ class GtjaTdApi(TdApi):
             self.gateway.write_error("交易服务器登录失败", error)
 
     def onTradeReport(self, data) -> None:
+        """"""
         self.tradeid += 1
         exchange, symbol = tuple(data["symbol"].split("."))
         dt = f"{data['trade_date']} {data['trade_time']}"
@@ -699,9 +700,8 @@ class GtjaTdApi(TdApi):
         self.date = datetime.now().strftime("%Y%m%d%H%M")
 
         if not self.connect_status:
-
-            # path = get_folder_path(self.gateway_name.lower())
-            self.setLogConfig("C:/gtja")
+            path = get_folder_path(self.gateway_name.lower())
+            self.setLogConfig(str(path))
             self.createTraderApi()
 
             account_info = {
@@ -742,12 +742,14 @@ class GtjaTdApi(TdApi):
         return order.vt_orderid
 
     def query_order(self) -> None:
+        """"""
         self.reqid += 1
         self.queryOrders(
             "", 500, self.reqid, 0
         )
 
     def query_trade(self) -> None:
+        """"""
         self.reqid += 1
         self.queryTrades(
             "", 500, self.reqid

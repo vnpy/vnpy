@@ -1005,6 +1005,7 @@ void TdApi::createTraderApi()
 {
     this->api = TraderApi::CreateTraderApi();
     this->api->RegisterSpi(this);
+	this->active = true;
 };
 
 void TdApi::release()
