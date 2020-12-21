@@ -3,6 +3,7 @@
 
 import sys
 import pytz
+import json
 from datetime import datetime
 from typing import Dict
 
@@ -47,6 +48,9 @@ from vnpy.trader.object import (
     SubscribeRequest,
 )
 from vnpy.trader.event import EVENT_TIMER
+
+from.terminal_info import get_terminal_info
+
 
 MAX_FLOAT = sys.float_info.max
 CHINA_TZ = pytz.timezone("Asia/Shanghai")
@@ -143,16 +147,14 @@ class GtjaGateway(BaseGateway):
         "交易用户名": "",
         "交易密码": "",
         "交易服务器": "",
+        "交易端口": "",
         "机构代号": "",
         "营业部代号": "",
         "网关": "",
-        "本机信息": "",
-        "行情服务器0": "",
-        "行情服务器1": "",
-        "行情连接模式": "",
         "行情用户名": "",
         "行情密码": "",
-
+        "行情服务器": "",
+        "行情端口": ""
     }
 
     exchanges = [Exchange.SSE, Exchange.SZSE]
@@ -170,20 +172,16 @@ class GtjaGateway(BaseGateway):
         """"""
         td_userid = setting["交易用户名"]
         td_password = setting["交易密码"]
-        td_address = setting["交易服务器"]
+        td_ip = setting["交易服务器"]
+        td_port = setting["交易端口"]
         orgid = setting["机构代号"]
         barnchid = setting["营业部代号"]
         system_id = setting["网关"]
-        md_address0 = setting["行情服务器0"]
-        md_address1 = setting["行情服务器1"]
-        connect_mode = setting["行情连接模式"]
+
         md_userid = setting["行情用户名"]
         md_password = setting["行情密码"]
-        terminal_info = setting["本机信息"]
-
-        td_host, td_port = tuple(td_address.split(":"))
-        ip0, port0 = tuple(md_address0.split(":"))
-        ip1, port1 = tuple(md_address1.split(":"))
+        md_ip = setting["行情服务器"]
+        md_port = setting["行情端口"]
 
         self.td_api.connect(
             td_userid,
@@ -191,17 +189,13 @@ class GtjaGateway(BaseGateway):
             orgid,
             barnchid,
             system_id,
-            td_host,
-            td_port,
-            terminal_info
+            td_ip,
+            td_port
         )
 
         self.md_api.connect(
-            ip0,
-            port0,
-            ip1,
-            port1,
-            connect_mode,
+            md_ip,
+            md_port,
             md_userid,
             md_password,
         )
@@ -344,22 +338,19 @@ class GtjaMdApi(MdApi):
 
     def connect(
         self,
-        ip0: str,
-        port0: int,
-        ip1: str,
-        port1: int,
-        connect_mode: str,
+        ip: str,
+        port: int,
         username: str,
         password: str,
     ) -> None:
         """"""
-        g_cfg = "{\"ip0\":\"" + ip0 + "\"|\"port0\":" + port0 + "|\"ip1\":\"" + ip1 + "\"|\"port1\":" + port1 + "|\"connect_mode\":\"" + connect_mode + "\"|\"username\":\"" + username + "\"|\"password\":\"" + password + "\"}"
+        cfg = generate_cfg(ip, port, username, password)
 
         self.date = datetime.now().strftime("%Y%m%d")
 
         # Create API object
         if not self.connect_status:
-            self.createMdApi(g_cfg, False)
+            self.createMdApi(cfg, False)
             n = self.login()
             self.query_contract()
 
@@ -691,7 +682,6 @@ class GtjaTdApi(TdApi):
         system_id: str,
         host: str,
         port: str,
-        terminal_info
     ) -> None:
         """
         Start connection to server.
@@ -714,7 +704,7 @@ class GtjaTdApi(TdApi):
                 "cl_system_id": system_id,
             }
 
-            self.login(host, int(port), account_info, terminal_info)
+            self.login(host, int(port), account_info, get_terminal_info())
 
             self.connect_status = True
 
@@ -797,3 +787,16 @@ def adjust_price(price: float) -> float:
     if price == MAX_FLOAT:
         price = 0
     return price
+
+
+def generate_cfg(ip: str, port: int, username: str, password: str) -> str:
+    """"""
+    setting = {
+        "ip0": ip,
+        "port0": port,
+        "connect_mode": "NR",
+        "username": username,
+        "password": password
+    }
+    cfg = json.dumps(setting, separators=("|", ":"))
+    return cfg
