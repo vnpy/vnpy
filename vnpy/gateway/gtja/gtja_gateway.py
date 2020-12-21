@@ -159,8 +159,6 @@ class GtjaGateway(BaseGateway):
 
     exchanges = [Exchange.SSE, Exchange.SZSE]
 
-    date = ""
-
     def __init__(self, event_engine):
         """Constructor"""
         super().__init__(event_engine, "GTJA")
@@ -199,7 +197,6 @@ class GtjaGateway(BaseGateway):
             md_userid,
             md_password,
         )
-        self.date = datetime.now().strftime("%Y%m%d%H%M")
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
@@ -429,30 +426,23 @@ class GtjaTdApi(TdApi):
         self.gateway_name: str = gateway.gateway_name
 
         self.reqid: int = 0
-        self.order_count: int = 1000
-        self.tradeid: int = 1000
+        self.order_count: int = 0
 
         self.connect_status: bool = False
         self.login_status: bool = False
-        self.auth_status: bool = False
-        self.login_failed: bool = False
 
         self.userid: str = ""
         self.password: str = ""
         self.orders: Dict[str, OrderData] = {}
 
-        self.account_id: int = 0
-        self.cust_id: int = 0
-
-        self.sysid_orderid_map = {}
         self.orderid_sysid_map = {}
-        self.pos_write_log = True
-        self.accout_write_log = True
+
+        self.prefix = ""
 
     def _new_orderid(self) -> str:
         """"""
         self.order_count += 1
-        orderid = f"{self.gateway.date}_{self.order_count}"
+        orderid = f"{self.date}_{self.order_count}"
         return orderid
 
     def onError(self, error: dict, reqid: int) -> None:
@@ -473,22 +463,18 @@ class GtjaTdApi(TdApi):
     def onLogin(self, data: dict, error: dict) -> None:
         """"""
         if not error["err_code"]:
-            self.account_id = data["account_id"]
-            self.cust_id = data["cust_id"]
-
             self.login_status = True
             self.gateway.write_log(f"交易服务器登录成功")
-            self.gateway.init_query()
+
             self.query_order()
             self.query_trade()
+            self.gateway.init_query()
         else:
-            self.login_failed = True
             self.gateway.write_error("交易服务器登录失败", error)
 
     def onTradeReport(self, data) -> None:
         """"""
-        self.tradeid += 1
-        exchange, symbol = tuple(data["symbol"].split("."))
+        exchange, symbol = data["symbol"].split(".")
         dt = f"{data['trade_date']} {data['trade_time']}"
         orderid = data["cl_order_id"]
         sysid = data["order_id"]
@@ -500,7 +486,7 @@ class GtjaTdApi(TdApi):
         dt = CHINA_TZ.localize(dt)
 
         trade = TradeData(
-            tradeid=self.tradeid,
+            tradeid=data["report_no"],
             orderid=orderid,
             gateway_name=self.gateway_name,
             symbol=symbol,
@@ -532,8 +518,10 @@ class GtjaTdApi(TdApi):
         """"""
         orderid = data["cl_order_id"]
         order = self.orders[orderid]
+
         if error["err_code"]:
             self.gateway.write_error("交易委托失败", error)
+
             order.status = Status.REJECTED
             dt = datetime.now()
             dt = CHINA_TZ.localize(dt)
@@ -541,7 +529,6 @@ class GtjaTdApi(TdApi):
             self.gateway.on_order(order)
         else:
             sysid = data["order_id"]
-            self.sysid_orderid_map[sysid] = orderid
             self.orderid_sysid_map[orderid] = sysid
 
     def onCancelRsp(
@@ -564,7 +551,7 @@ class GtjaTdApi(TdApi):
         pos: str
     ) -> None:
         """"""
-        exchange, symbol = tuple(data["symbol"].split("."))
+        exchange, symbol = data["symbol"].split(".")
 
         pos = PositionData(
             gateway_name=self.gateway_name,
@@ -577,24 +564,15 @@ class GtjaTdApi(TdApi):
         )
         self.gateway.on_position(pos)
 
-        if last:
-            if self.pos_write_log:
-                self.gateway.write_log("查询持仓成功")
-                self.pos_write_log = False
-
     def onQueryCashRsp(self, data: dict, error: dict, reqid: int) -> None:
         """"""
-        if not error["err_code"]:
-            account = AccountData(
-                accountid=data["account_id"],
-                balance=data["total_amount"] / 10000,
-                frozen=(data["total_amount"] - data["avail_amount"]) / 10000,
-                gateway_name=self.gateway_name
-            )
-            self.gateway.on_account(account)
-            if self.accout_write_log:
-                self.gateway.write_log("查询账户成功")
-                self.accout_write_log = False
+        account = AccountData(
+            accountid=data["account_id"],
+            balance=data["total_amount"] / 10000,
+            frozen=(data["total_amount"] - data["avail_amount"]) / 10000,
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_account(account)
 
     def onQueryOrderRsp(
         self,
@@ -605,35 +583,36 @@ class GtjaTdApi(TdApi):
         pos: str
     ) -> None:
         """"""
-        if error["err_code"] == 14020:
-            return
+        if error["err_code"] != 14020:
+            exchange, symbol = data["symbol"].split(".")
 
-        exchange, symbol = tuple(data["symbol"].split("."))
-        dt = f"{data['order_date']} {data['order_time']}"
-        orderid = data["cl_order_id"]
-        sysid = data["order_id"]
+            orderid = data["cl_order_id"]
+            sysid = data["order_id"]
+            if not orderid:
+                orderid = sysid
+            else:
+                self.orderid_sysid_map[orderid] = sysid
 
-        if not orderid and sysid:
-            orderid = self._new_orderid()
+            dt = f"{data['order_date']} {data['order_time']}"
+            dt = datetime.strptime(dt, "%Y%m%d %H%M%S%f")
+            dt = CHINA_TZ.localize(dt)
 
-        dt = datetime.strptime(dt, "%Y%m%d %H%M%S%f")
-        dt = CHINA_TZ.localize(dt)
+            order = OrderData(
+                orderid=orderid,
+                gateway_name=self.gateway_name,
+                symbol=symbol,
+                exchange=EXCHANGE_GTJA2VT[exchange],
+                direction=DIRECTION_GTJA2VT[data["side"]],
+                price=data["price"] / 10000,
+                volume=data["volume"],
+                status=ORDERSTATUS_GTJA2VT[data["order_status"]],
+                datetime=dt,
+            )
+            self.orders[orderid] = order
+            self.gateway.on_order(order)
 
-        order = OrderData(
-            orderid=orderid,
-            gateway_name=self.gateway_name,
-            symbol=symbol,
-            exchange=EXCHANGE_GTJA2VT[exchange],
-            direction=DIRECTION_GTJA2VT[data["side"]],
-            price=data["price"] / 10000,
-            volume=data["volume"],
-            status=ORDERSTATUS_GTJA2VT[data["order_status"]],
-            datetime=dt,
-        )
-        self.orders[orderid] = order
-        self.sysid_orderid_map[sysid] = orderid
-        self.orderid_sysid_map[orderid] = sysid
-        self.gateway.on_order(order)
+        if last:
+            self.gateway.write_log("查询委托信息成功")
 
     def onQueryTradeRsp(
         self,
@@ -644,34 +623,33 @@ class GtjaTdApi(TdApi):
         pos: str
     ) -> None:
         """"""
-        if error["err_code"] == 14020:
-            return
+        if error["err_code"] != 14020:
+            exchange, symbol = data["symbol"].split(".")
 
-        self.tradeid += 1
-        exchange, symbol = tuple(data["symbol"].split("."))
-        dt = f"{data['trade_date']} {data['trade_time']}"
-        orderid = data["cl_order_id"]
-        sysid = data["order_id"]
+            orderid = data["cl_order_id"]
+            sysid = data["order_id"]
+            if not orderid:
+                orderid = sysid
 
-        if not orderid and sysid:
-            orderid = self._new_orderid()
+            dt = f"{data['trade_date']} {data['trade_time']}"
+            dt = datetime.strptime(dt, "%Y%m%d %H%M%S%f")
+            dt = CHINA_TZ.localize(dt)
 
-        dt = datetime.strptime(dt, "%Y%m%d %H%M%S%f")
-        dt = CHINA_TZ.localize(dt)
+            trade = TradeData(
+                tradeid=data["report_no"],
+                orderid=orderid,
+                gateway_name=self.gateway_name,
+                symbol=symbol,
+                exchange=EXCHANGE_GTJA2VT[exchange],
+                direction=DIRECTION_GTJA2VT[data["side"]],
+                price=data["price"] / 10000,
+                volume=data["volume"],
+                datetime=dt,
+            )
+            self.gateway.on_trade(trade)
 
-        trade = TradeData(
-            tradeid=self.tradeid,
-            orderid=orderid,
-            gateway_name=self.gateway_name,
-            symbol=symbol,
-            exchange=EXCHANGE_GTJA2VT[exchange],
-            direction=DIRECTION_GTJA2VT[data["side"]],
-            price=data["price"] / 10000,
-            volume=data["volume"],
-            datetime=dt,
-        )
-
-        self.gateway.on_trade(trade)
+        if last:
+            self.gateway.write_log("查询委托信息成功")
 
     def connect(
         self,
@@ -688,7 +666,7 @@ class GtjaTdApi(TdApi):
         """
         self.userid = userid
         self.password = password
-        self.date = datetime.now().strftime("%Y%m%d%H%M")
+        self.prefix = datetime.now().strftime("%Y%m%d%H%M%S")
 
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
@@ -712,11 +690,13 @@ class GtjaTdApi(TdApi):
         """
         Send new order.
         """
-        self.reqid += 1
-        orderid = self._new_orderid()
-        order = req.create_order_data(orderid, self.gateway_name)
+        self.order_count += 1
+        suffix = str(self.order_count).rjust(6, "0")
+        orderid = f"{self.prefix}_{suffix}"
+
         exchange = EXCHANGE_VT2GTJA[req.exchange]
         gtja_symbol = f"{exchange}.{req.symbol}"
+
         order_req = {
             "cl_order_id": orderid,
             "symbol": gtja_symbol,
@@ -727,7 +707,11 @@ class GtjaTdApi(TdApi):
             "order_flag": OrderFlag_Security_Normal,
 
         }
+
+        self.reqid += 1
         self.order(order_req, self.reqid)
+
+        order = req.create_order_data(orderid, self.gateway_name)
         self.orders[orderid] = order
         self.gateway.on_order(order)
         return order.vt_orderid
@@ -735,27 +719,22 @@ class GtjaTdApi(TdApi):
     def query_order(self) -> None:
         """"""
         self.reqid += 1
-        self.queryOrders(
-            "", 500, self.reqid, 0
-        )
+        self.queryOrders("", 500, self.reqid, 0)
 
     def query_trade(self) -> None:
         """"""
         self.reqid += 1
-        self.queryTrades(
-            "", 500, self.reqid
-        )
+        self.queryTrades("", 500, self.reqid)
 
     def cancel_order(self, req: CancelRequest) -> None:
         """
         Cancel existing order.
         """
         self.reqid += 1
-        sysid = self.orderid_sysid_map[req.orderid]
-        order_req = {
-            "order_id": sysid
-        }
-        self.cancelOrder(order_req, self.reqid)
+        sysid = self.orderid_sysid_map.get(req.orderid, req.orderid)
+
+        cancel_req = {"order_id": sysid}
+        self.cancelOrder(cancel_req, self.reqid)
 
     def query_account(self) -> None:
         """
@@ -770,11 +749,7 @@ class GtjaTdApi(TdApi):
         """
 
         self.reqid += 1
-        self.queryPositions(
-            "",
-            500,
-            self.reqid
-        )
+        self.queryPositions("", 500, self.reqid)
 
     def close(self) -> None:
         """"""
