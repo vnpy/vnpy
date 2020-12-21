@@ -22,7 +22,7 @@ class TdApi : public TraderSpi
 {
 private:
 	TraderApi* api;            //API对象
-    bool active = false;                //工作状态
+    bool active = false;       //工作状态
 
 public:
     TdApi()
@@ -659,8 +659,6 @@ public:
 	virtual void onCancelExtendLockSecurityRsp(int apply_date, string apply_sno, string cancel_sno, const dict &error, int request_id) {};
 
 	virtual void onQueryTransferFundHistoryRsp(const dict &data, const dict &error, int request_id, bool last) {};
-
-
 
     //-------------------------------------------------------------------------------------
     //req:主动函数的请求字典

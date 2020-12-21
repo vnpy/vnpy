@@ -789,4 +789,3 @@ TransferFundDetail = {
     "transfer_status": "int16_t",
     "remark": "char",
 }
-

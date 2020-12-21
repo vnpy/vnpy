@@ -28,7 +28,6 @@ class ApiGenerator:
             if "__" not in name:
                 self.structs[name] = getattr(module, name)
 
-
     def run(self):
         """运行生成"""
         self.f_cpp = open(self.filename, "r", encoding="UTF-8")
@@ -170,7 +169,6 @@ class ApiGenerator:
 
                 f.write(line)
 
-
     def generate_source_spi(self):
         """"""
         filename = f"{self.prefix}_{self.name}_source_spi.cpp"
@@ -251,7 +249,6 @@ class ApiGenerator:
                     f.write("\treturn i;\n")
                     f.write("};\n\n")
                 else:
-                    
                     for field, type_ in d.items():
 
                         if type_ == "int" or type_ == "int64_t" or type_ == "int16_t" or type_ == "int32_t" or type_ == "MKtype":

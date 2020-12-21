@@ -359,7 +359,7 @@ class GtjaMdApi(MdApi):
 
         # Create API object
         if not self.connect_status:
-            self.createMdApi(g_cfg)
+            self.createMdApi(g_cfg, False)
             n = self.login()
             self.query_contract()
 

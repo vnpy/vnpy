@@ -10,9 +10,11 @@
 
 void MdApi::OnLog(int32_t level, const char *source, const char *slog)
 {
-	cout << "onLog: source=" << source << ",  slog="<< slog << endl;
+	if (this->logging)
+	{
+		cout << "onLog: source=" << source << ",  slog=" << slog << endl;
+	}
 };
-
 
 void MdApi::OnDisconnect(int32_t chn)
 {
@@ -370,8 +372,9 @@ void MdApi::OnEtfExtData(MKtype mk_type, char *code, T_ETFEXTENDS *etfextdata)
 ///-------------------------------------------------------------------------------------
 ///Ö÷¶¯º¯Êý
 ///-------------------------------------------------------------------------------------
-int MdApi::createMdApi(string sjson)
+int MdApi::createMdApi(string sjson, bool logging)
 {
+	this->logging = logging;
 	this->api = CSipMdApi::Register(this);
 
 	int i = this->api->Initialize(sjson.c_str());

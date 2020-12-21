@@ -21,10 +21,9 @@ using namespace api;
 class MdApi : public CSipMdSpi
 {
 private:
-	ISIPUIX_EXPORT CSipMdApi* api;            //API对象
-    thread task_thread;                    //工作线程指针（向python中推送数据）
-    TaskQueue task_queue;                //任务队列
+	ISIPUIX_EXPORT CSipMdApi* api;      //API对象
     bool active = false;                //工作状态
+	bool logging = false;
 
 public:
     MdApi()
@@ -178,6 +177,7 @@ public:
 	virtual void onSZOrder(string code, const dict &data) {};
 
 	virtual void onSHBaseInfo(string code, const dict &data) {};
+
 	virtual void onSZBaseInfo(string code, const dict &data) {};
 
 	virtual void onKline(int mk_type, string code, const dict &data) {};
@@ -188,11 +188,12 @@ public:
     //-------------------------------------------------------------------------------------
     //req:主动函数的请求字典
     //-------------------------------------------------------------------------------------
-	int createMdApi(string sjson);
+	int createMdApi(string sjson, bool logging);
 
 	int login();
 
 	int stop();
+
 	void release();
 
 	int exit();
@@ -236,6 +237,4 @@ public:
 	int subscribeEtfExt(int mk_type, string code);
 
 	int unSubscribeEtfExt(int mk_type, string code);
-
-
 };
