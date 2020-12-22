@@ -350,7 +350,7 @@ class MongoManager(BaseDatabaseManager):
         DbBarData.objects(symbol=symbol).delete()
 
 
-def convert_tz(self, dt: datetime):
+def convert_tz(dt: datetime):
     """"""
     if not dt.tzinfo:
         dt = LOCAL_TZ.localize(dt)
