@@ -295,17 +295,21 @@ class BarGenerator:
             if not (bar.datetime.minute + 1) % self.window:
                 finished = True
         elif self.interval == Interval.HOUR:
-            if self.last_bar and bar.datetime.hour != self.last_bar.datetime.hour:
-                # 1-hour bar
-                if self.window == 1:
-                    finished = True
-                # x-hour bar
-                else:
-                    self.interval_count += 1
+            if self.last_bar:
+                new_hour = bar.datetime.hour != self.last_bar.datetime.hour
+                last_minute = bar.datetime.minute == 59
 
-                    if not self.interval_count % self.window:
+                if new_hour or last_minute:
+                    # 1-hour bar
+                    if self.window == 1:
                         finished = True
-                        self.interval_count = 0
+                    # x-hour bar
+                    else:
+                        self.interval_count += 1
+
+                        if not self.interval_count % self.window:
+                            finished = True
+                            self.interval_count = 0
 
         if finished:
             self.on_window_bar(self.window_bar)
