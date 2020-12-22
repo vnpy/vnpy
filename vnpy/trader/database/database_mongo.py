@@ -229,7 +229,7 @@ class MongoManager(BaseDatabaseManager):
 
     @staticmethod
     def to_update_param(d) -> dict:
-        dt = DB_TZ.localize(d.datetime)
+        dt = d.datetime.astimezone(DB_TZ)
         d.datetime = dt.replace(tzinfo=None)
 
         param = {
@@ -354,5 +354,5 @@ def convert_tz(dt: datetime):
     """"""
     if not dt.tzinfo:
         dt = LOCAL_TZ.localize(dt)
-    dt = DB_TZ.localize(dt)
+    dt = dt.astimezone(DB_TZ)
     return dt.replace(tzinfo=None)
