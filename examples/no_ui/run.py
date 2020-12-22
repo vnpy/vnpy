@@ -32,7 +32,7 @@ ctp_setting = {
 
 # Chinese futures market trading period (day/night)
 DAY_START = time(8, 45)
-DAY_END = time(14, 29)
+DAY_END = time(15, 0)
 
 NIGHT_START = time(20, 45)
 NIGHT_END = time(2, 45)

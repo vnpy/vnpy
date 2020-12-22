@@ -518,8 +518,13 @@ class BacktesterManager(QtWidgets.QWidget):
         """"""
         self.backtester_engine.reload_strategy_class()
 
+        current_strategy_name = self.class_combo.currentText()
+
         self.class_combo.clear()
         self.init_strategy_settings()
+
+        ix = self.class_combo.findText(current_strategy_name)
+        self.class_combo.setCurrentIndex(ix)
 
     def show(self):
         """"""
@@ -608,6 +613,7 @@ class StatisticsMonitor(QtWidgets.QTableWidget):
         data["daily_commission"] = f"{data['daily_commission']:,.2f}"
         data["daily_slippage"] = f"{data['daily_slippage']:,.2f}"
         data["daily_turnover"] = f"{data['daily_turnover']:,.2f}"
+        data["daily_trade_count"] = f"{data['daily_trade_count']:,.2f}"
         data["daily_return"] = f"{data['daily_return']:,.2f}%"
         data["return_std"] = f"{data['return_std']:,.2f}%"
         data["sharpe_ratio"] = f"{data['sharpe_ratio']:,.2f}"
@@ -994,7 +1000,7 @@ class OptimizationResultMonitor(QtWidgets.QDialog):
         for n, tp in enumerate(self.result_values):
             setting, target_value, _ = tp
             setting_cell = QtWidgets.QTableWidgetItem(str(setting))
-            target_cell = QtWidgets.QTableWidgetItem(str(target_value))
+            target_cell = QtWidgets.QTableWidgetItem(f"{target_value:.2f}")
 
             setting_cell.setTextAlignment(QtCore.Qt.AlignCenter)
             target_cell.setTextAlignment(QtCore.Qt.AlignCenter)
