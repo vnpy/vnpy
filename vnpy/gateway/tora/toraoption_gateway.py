@@ -74,6 +74,8 @@ from .option_api import (
     TORA_TSTP_SP_CP_PutOptions,
     TORA_TSTP_SP_CP_CallOptions
 )
+from .terminal_info import get_terminal_info
+
 
 EXCHANGE_TORA2VT = {
     TORA_TSTP_SP_EXD_SSE: Exchange.SSE,
@@ -387,6 +389,8 @@ class ToraMdApi(spmdapi.CTORATstpSPMdSpi):
         login_req.LogInAccount = self.userid
         login_req.LogInAccountType = TORA_TSTP_SP_LACT_UserID
         login_req.Password = self.password
+        login_req.UserProductInfo = "vnpy_2.0"
+        login_req.TerminalInfo = get_terminal_info()
 
         self.reqid += 1
         self.api.ReqUserLogin(login_req, self.reqid)

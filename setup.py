@@ -63,17 +63,12 @@ def get_install_requires():
         "requests",
         "websocket-client",
         "peewee",
-        "pymysql",
-        "mongoengine",
         "numpy",
         "pandas",
         "matplotlib",
         "seaborn",
-        "futu-api",
-        "tigeropen",
         "rqdatac",
         "ta-lib",
-        "ibapi",
         "deap",
         "pyzmq",
         "QScintilla"
@@ -260,6 +255,48 @@ def get_ext_modules():
         language="cpp",
     )
 
+    vnnhmd = Extension(
+        "vnpy.api.nh.vnnhmd",
+        [
+            "vnpy/api/nh/vnnh/vnnhmd/vnnhmd.cpp",
+        ],
+        include_dirs=["vnpy/api/nh/include", "vnpy/api/nh/vnnh"],
+        library_dirs=["vnpy/api/nh/libs", "vnpy/api/nh"],
+        libraries=["nhmdapi"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        language="cpp",
+    )
+
+    vnnhfutures = Extension(
+        "vnpy.api.nh.vnnhfutures",
+        [
+            "vnpy/api/nh/vnnh/vnnhfutures/vnnhfutures.cpp",
+        ],
+        include_dirs=["vnpy/api/nh/include", "vnpy/api/nh/vnnh"],
+        library_dirs=["vnpy/api/nh/libs", "vnpy/api/nh"],
+        libraries=["nhtd2traderapi"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        language="cpp",
+    )
+
+    vnnhstock = Extension(
+        "vnpy.api.nh.vnnhstock",
+        [
+            "vnpy/api/nh/vnnh/vnnhstock/vnnhstock.cpp",
+        ],
+        include_dirs=["vnpy/api/nh/include", "vnpy/api/nh/vnnh"],
+        library_dirs=["vnpy/api/nh/libs", "vnpy/api/nh"],
+        libraries=["nhtdstockapi"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        language="cpp",
+    )
+
     if platform.system() == "Windows":
         # use pre-built pyd for windows ( support python 3.7 only )
         ext_modules = []
@@ -270,7 +307,8 @@ def get_ext_modules():
             vnctptd, vnctpmd,
             vnxtptd, vnxtpmd,
             vnsgittd, vnsgitmd,
-            vnksgoldmd, vnksgoldtd
+            vnksgoldmd, vnksgoldtd,
+            vnnhmd, vnnhfutures, vnnhstock
         ]
 
     ext_modules = check_extension_build_flag(
@@ -329,14 +367,13 @@ setup(
         "Operating System :: Microsoft :: Windows :: Windows 10",
         "Operating System :: Microsoft :: Windows :: Windows Server 2008",
         "Operating System :: Microsoft :: Windows :: Windows Server 2012",
-        "Operating System :: Microsoft :: Windows :: Windows Server 2012",
+        "Operating System :: Microsoft :: Windows :: Windows Server 2019",
         "Operating System :: POSIX :: Linux"
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
         "Topic :: Office/Business :: Financial :: Investment",
         "Programming Language :: Python :: Implementation :: CPython",
         "License :: OSI Approved :: MIT License",
-        "Natural Language :: Chinese (Simplified)",
         "Natural Language :: Chinese (Simplified)"
     ],
     ext_modules=get_ext_modules(),

@@ -651,6 +651,10 @@ class DaFutureApi(FutureApi):
         if not order:
             return
 
+        # Filter duplicate order cancel push of DA API
+        if not order.is_active():
+            return
+
         order.traded = data["FilledNumber"]
 
         if data["IsCanceled"] == "1":
@@ -805,6 +809,12 @@ class DaFutureApi(FutureApi):
         Cancel existing order.
         """
         order = self.orders[req.orderid]
+
+        # Reject cancel if order info not received from server
+        if order.orderid not in self.order_info:
+            msg = f"撤单失败，尚未收到服务端返回的委托信息{order.orderid}"
+            self.gateway.write_log(msg)
+            return
 
         currency = symbol_currency_map[req.symbol]
         account_no = currency_account_map[currency]

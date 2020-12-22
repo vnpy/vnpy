@@ -42,6 +42,7 @@ class BacktestingEngine:
         self.priceticks: Dict[str, float] = 0
 
         self.capital: float = 1_000_000
+        self.risk_free: float = 0.02
 
         self.strategy: StrategyTemplate = None
         self.bars: Dict[str, BarData] = {}
@@ -93,7 +94,8 @@ class BacktestingEngine:
         sizes: Dict[str, float],
         priceticks: Dict[str, float],
         capital: int = 0,
-        end: datetime = None
+        end: datetime = None,
+        risk_free: float = 0
     ) -> None:
         """"""
         self.vt_symbols = vt_symbols
@@ -107,6 +109,7 @@ class BacktestingEngine:
         self.start = start
         self.end = end
         self.capital = capital
+        self.risk_free = risk_free
 
     def add_strategy(self, strategy_class: type, setting: dict) -> None:
         """"""
@@ -344,11 +347,9 @@ class BacktestingEngine:
             daily_return = df["return"].mean() * 100
             return_std = df["return"].std() * 100
 
-            pnl_std = df["net_pnl"].std()
-
             if return_std:
-                # sharpe_ratio = daily_return / return_std * np.sqrt(240)
-                sharpe_ratio = daily_net_pnl / pnl_std * np.sqrt(240)
+                daily_risk_free = self.risk_free / np.sqrt(240)
+                sharpe_ratio = (daily_return - daily_risk_free) / return_std * np.sqrt(240)
             else:
                 sharpe_ratio = 0
 

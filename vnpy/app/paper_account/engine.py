@@ -138,6 +138,8 @@ class PaperEngine(BaseEngine):
         original_gateway_name = self.gateway_map.get(req.vt_symbol, "")
         if original_gateway_name:
             self._subscribe(req, original_gateway_name)
+        else:
+            self.write_log(f"订阅行情失败，找不到该合约{req.vt_symbol}")
 
     def query_history(self, req: HistoryRequest, gateway_name: str) -> List[BarData]:
         """"""

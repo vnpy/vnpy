@@ -233,7 +233,7 @@ class ContractData(BaseData):
     exchange: Exchange
     name: str
     product: Product
-    size: int
+    size: float
     pricetick: float
 
     min_volume: float = 1           # minimum trading volume of the contract

@@ -1,6 +1,7 @@
 import pytz
 from typing import Any, Dict, List
 from datetime import datetime
+from copy import copy
 
 from vnpy.api.xtp import MdApi, TdApi
 from vnpy.event import EventEngine
@@ -551,7 +552,7 @@ class XtpTdApi(TdApi):
             order.traded = data["qty_traded"]
             order.status = STATUS_XTP2VT[data["order_status"]]
 
-        self.gateway.on_order(order)
+        self.gateway.on_order(copy(order))
 
     def onTradeEvent(self, data: dict, session: int) -> None:
         """"""
@@ -588,7 +589,7 @@ class XtpTdApi(TdApi):
             else:
                 order.status = Status.ALLTRADED
 
-            self.gateway.on_order(order)
+            self.gateway.on_order(copy(order))
         else:
             self.gateway.write_log(f"成交找不到对应委托{trade.orderid}")
 
@@ -863,9 +864,11 @@ class XtpTdApi(TdApi):
                 xtp_req["business_type"] = 0
 
         orderid = self.insertOrder(xtp_req, self.session_id)
+        orderid = str(orderid)
 
-        order = req.create_order_data(str(orderid), self.gateway_name)
-        self.gateway.on_order(order)
+        order = req.create_order_data(orderid, self.gateway_name)
+        self.orders[orderid] = order
+        self.gateway.on_order(copy(order))
 
         return order.vt_orderid
 

@@ -24,7 +24,7 @@ from vnpy.trader.constant import (
 from vnpy.trader.converter import OffsetConverter
 
 from .base import (
-    LegData, SpreadData,
+    LegData, SpreadData, AdvancedSpreadData,
     EVENT_SPREAD_DATA, EVENT_SPREAD_POS,
     EVENT_SPREAD_ALGO, EVENT_SPREAD_LOG,
     EVENT_SPREAD_STRATEGY,
@@ -51,6 +51,7 @@ class SpreadEngine(BaseEngine):
         self.strategy_engine: SpreadStrategyEngine = SpreadStrategyEngine(self)
 
         self.add_spread = self.data_engine.add_spread
+        self.add_advanced_spread = self.data_engine.add_advanced_spread
         self.remove_spread = self.data_engine.remove_spread
         self.get_spread = self.data_engine.get_spread
         self.get_all_spreads = self.data_engine.get_all_spreads
@@ -87,6 +88,7 @@ class SpreadEngine(BaseEngine):
 class SpreadDataEngine:
     """"""
     setting_filename = "spread_trading_setting.json"
+    advanced_filename = "spread_trading_advanced.json"
 
     def __init__(self, spread_engine: SpreadEngine):
         """"""
@@ -115,6 +117,7 @@ class SpreadDataEngine:
 
     def load_setting(self) -> None:
         """"""
+        # For normal spread
         setting = load_json(self.setting_filename)
 
         for spread_setting in setting:
@@ -126,11 +129,28 @@ class SpreadDataEngine:
                 save=False
             )
 
+        # For advanced spread
+        setting = load_json(self.advanced_filename)
+
+        for spread_setting in setting:
+            self.add_advanced_spread(
+                spread_setting["name"],
+                spread_setting["leg_settings"],
+                spread_setting["price_formula"],
+                spread_setting["active_symbol"],
+                spread_setting.get("min_volume", 1),
+                save=False
+            )
+
     def save_setting(self) -> None:
         """"""
+        # For normal spread
         setting = []
 
         for spread in self.spreads.values():
+            if isinstance(spread, AdvancedSpreadData):
+                continue
+
             leg_settings = []
             for leg in spread.legs.values():
                 price_multiplier = spread.price_multipliers[leg.vt_symbol]
@@ -151,9 +171,45 @@ class SpreadDataEngine:
                 "active_symbol": spread.active_leg.vt_symbol,
                 "min_volume": spread.min_volume
             }
+
             setting.append(spread_setting)
 
         save_json(self.setting_filename, setting)
+
+        # For advanced spread
+        setting = []
+
+        for spread in self.spreads.values():
+            if not isinstance(spread, AdvancedSpreadData):
+                continue
+
+            leg_settings = []
+            for variable, vt_symbol in spread.variable_symbols.items():
+                trading_direction = spread.variable_directions[variable]
+                price_multiplier = spread.price_multipliers[vt_symbol]
+                trading_multiplier = spread.trading_multipliers[vt_symbol]
+                inverse_contract = spread.inverse_contracts[vt_symbol]
+
+                leg_setting = {
+                    "variable": variable,
+                    "vt_symbol": vt_symbol,
+                    "trading_direction": trading_direction,
+                    "trading_multiplier": trading_multiplier,
+                    "inverse_contract": inverse_contract
+                }
+                leg_settings.append(leg_setting)
+
+            spread_setting = {
+                "name": spread.name,
+                "leg_settings": leg_settings,
+                "price_formula": spread.price_formula,
+                "active_symbol": spread.active_leg.vt_symbol,
+                "min_volume": spread.min_volume
+            }
+
+            setting.append(spread_setting)
+
+        save_json(self.advanced_filename, setting)
 
     def register_event(self) -> None:
         """"""
@@ -290,6 +346,59 @@ class SpreadDataEngine:
             name,
             legs,
             price_multipliers,
+            trading_multipliers,
+            active_symbol,
+            inverse_contracts,
+            min_volume
+        )
+        self.spreads[name] = spread
+
+        for leg in spread.legs.values():
+            self.symbol_spread_map[leg.vt_symbol].append(spread)
+
+        if save:
+            self.save_setting()
+
+        self.write_log("价差创建成功：{}".format(name))
+        self.put_data_event(spread)
+
+    def add_advanced_spread(
+        self,
+        name: str,
+        leg_settings: List[Dict],
+        price_formula: str,
+        active_symbol: str,
+        min_volume: float,
+        save: bool = True
+    ) -> None:
+        """"""
+        if name in self.spreads:
+            self.write_log("价差创建失败，名称重复：{}".format(name))
+            return
+
+        legs: List[LegData] = []
+        variable_symbols: Dict[str, str] = {}
+        variable_directions: Dict[str, int] = {}
+        trading_multipliers: Dict[str, int] = {}
+        inverse_contracts: Dict[str, bool] = {}
+
+        for leg_setting in leg_settings:
+            vt_symbol = leg_setting["vt_symbol"]
+            variable = leg_setting["variable"]
+            leg = self.get_leg(vt_symbol)
+
+            legs.append(leg)
+            variable_symbols[variable] = vt_symbol
+            variable_directions[variable] = leg_setting["trading_direction"]
+            trading_multipliers[vt_symbol] = leg_setting["trading_multiplier"]
+            inverse_contracts[vt_symbol] = leg_setting.get("inverse_contract", False)
+
+        spread = AdvancedSpreadData(
+            name,
+            legs,
+            variable_symbols,
+            variable_directions,
+            price_formula,
             trading_multipliers,
             active_symbol,
             inverse_contracts,
