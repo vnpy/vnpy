@@ -309,7 +309,7 @@ class BarGenerator:
                         # x-hour bar
                         else:
                             self.interval_count += 1
-    
+   
                             if not self.interval_count % self.window:
                                 finished = True
                                 self.interval_count = 0
