@@ -299,7 +299,8 @@ class BarGenerator:
                 new_hour = bar.datetime.hour != self.last_bar.datetime.hour
                 last_minute = bar.datetime.minute == 59
 
-                if new_hour or last_minute:
+                # Only one condition should be True, to filter duplicate hour bar finished condition
+                if new_hour + last_minute == 1:
                     # 1-hour bar
                     if self.window == 1:
                         finished = True
