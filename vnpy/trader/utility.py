@@ -2,11 +2,12 @@
 General utility functions.
 """
 
+from datetime import datetime
 import json
 import logging
 import sys
 from pathlib import Path
-from typing import Callable, Dict, Tuple, Union, Optional
+from typing import Callable, Dict, Tuple, Union, Optional, Set
 from decimal import Decimal
 from math import floor, ceil
 
@@ -298,9 +299,10 @@ class BarGenerator:
             if self.last_bar:
                 new_hour = bar.datetime.hour != self.last_bar.datetime.hour
                 last_minute = bar.datetime.minute == 59
+                not_first = self.window_bar.datetime != bar.datetime
 
-                # Only one condition should be True, to filter duplicate hour bar finished condition
-                if new_hour + last_minute == 1:
+                # To filter duplicate hour bar finished condition
+                if (new_hour or last_minute) and not_first:
                     # 1-hour bar
                     if self.window == 1:
                         finished = True
