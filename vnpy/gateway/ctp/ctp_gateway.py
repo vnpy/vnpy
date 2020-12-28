@@ -322,7 +322,7 @@ class CtpMdApi(MdApi):
             name=symbol_name_map[symbol],
             volume=data["Volume"],
             open_interest=data["OpenInterest"],
-            last_price=data["LastPrice"],
+            last_price=adjust_price["LastPrice"],
             limit_up=data["UpperLimitPrice"],
             limit_down=data["LowerLimitPrice"],
             open_price=adjust_price(data["OpenPrice"]),
