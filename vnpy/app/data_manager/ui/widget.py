@@ -255,7 +255,6 @@ class ManagerWidget(QtWidgets.QWidget):
         n = dialog.exec_()
         if n != dialog.Accepted:
             return
-        start, end = dialog.get_date_range()
 
         # Get output file path
         path, _ = QtWidgets.QFileDialog.getSaveFileName(
@@ -297,7 +296,6 @@ class ManagerWidget(QtWidgets.QWidget):
         n = dialog.exec_()
         if n != dialog.Accepted:
             return
-        start, end = dialog.get_date_range()
 
         bars = self.engine.load_bar_data(
             symbol,
@@ -434,12 +432,6 @@ class DateRangeDialog(QtWidgets.QDialog):
         form.addRow(button)
 
         self.setLayout(form)
-
-    def get_date_range(self) -> Tuple[datetime, datetime]:
-        """"""
-        start = self.start_edit.date().toPyDate()
-        end = self.end_edit.date().toPyDate() + timedelta(days=1)
-        return start, end
 
 
 class ImportDialog(QtWidgets.QDialog):
