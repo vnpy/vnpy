@@ -2,11 +2,12 @@
 General utility functions.
 """
 
+from datetime import datetime
 import json
 import logging
 import sys
 from pathlib import Path
-from typing import Callable, Dict, Tuple, Union, Optional
+from typing import Callable, Dict, Tuple, Union, Optional, Set
 from decimal import Decimal
 from math import floor, ceil
 
@@ -295,17 +296,23 @@ class BarGenerator:
             if not (bar.datetime.minute + 1) % self.window:
                 finished = True
         elif self.interval == Interval.HOUR:
-            if self.last_bar and bar.datetime.hour != self.last_bar.datetime.hour:
-                # 1-hour bar
-                if self.window == 1:
-                    finished = True
-                # x-hour bar
-                else:
-                    self.interval_count += 1
+            if self.last_bar:
+                new_hour = bar.datetime.hour != self.last_bar.datetime.hour
+                last_minute = bar.datetime.minute == 59
+                not_first = self.window_bar.datetime != bar.datetime
 
-                    if not self.interval_count % self.window:
+                # To filter duplicate hour bar finished condition
+                if (new_hour or last_minute) and not_first:
+                    # 1-hour bar
+                    if self.window == 1:
                         finished = True
-                        self.interval_count = 0
+                    # x-hour bar
+                    else:
+                        self.interval_count += 1
+
+                        if not self.interval_count % self.window:
+                            finished = True
+                            self.interval_count = 0
 
         if finished:
             self.on_window_bar(self.window_bar)
