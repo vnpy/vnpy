@@ -302,7 +302,7 @@ class BacktestingEngine:
         self.output("开始回放历史数据")
 
         # Use the rest of history data for running backtesting
-        backtesting_data = self.history_data[ix+1:]
+        backtesting_data = self.history_data[ix + 1:]
         if not backtesting_data:
             self.output("历史数据不足，回测终止")
             return
