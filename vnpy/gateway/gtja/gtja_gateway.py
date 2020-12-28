@@ -14,6 +14,7 @@ from vnpy.api.sip import (
     PositionSide_Long,
     PositionSide_Short,
     OrderType_LMT,
+    OrderType_B5TC,
     OrderFlag_Security_Normal,
     OrderStatus_PendingNew,
     OrderStatus_New,
@@ -25,12 +26,13 @@ from vnpy.api.sip import (
     OrderStatus_PartiallyCanceled,
     OrderStatus_Rejected,
     OrderStatus_CancelRejected,
+    TradeReportType_Normal,
     MKtype_SH,
     MKtype_SZ,
 )
 from vnpy.trader.constant import (
     Direction,
-    Exchange,
+    Exchange, OrderType,
     Product,
     Status,
 )
@@ -117,6 +119,14 @@ ORDERSTATUS_GTJA2VT: Dict[int, Status] = {
     OrderStatus_PartiallyCanceled: Status.CANCELLED,
     OrderStatus_Rejected: Status.REJECTED,
     OrderStatus_CancelRejected: Status.REJECTED,
+}
+
+ORDERTYPE_GTJA2VT: Dict[int, OrderType] = {
+    OrderType_LMT: OrderType.LIMIT,
+    OrderType_B5TC: OrderType.MARKET
+}
+ORDERTYPE_VT2GTJA: Dict[OrderType, int] = {
+    v: k for k, v in ORDERTYPE_GTJA2VT.items()
 }
 
 EXCHANGE_GTJA2VT: Dict[str, Exchange] = {
@@ -439,12 +449,6 @@ class GtjaTdApi(TdApi):
 
         self.prefix = ""
 
-    def _new_orderid(self) -> str:
-        """"""
-        self.order_count += 1
-        orderid = f"{self.date}_{self.order_count}"
-        return orderid
-
     def onError(self, error: dict, reqid: int) -> None:
         """"""
         self.gateway.write_error("错误", error)
@@ -472,41 +476,69 @@ class GtjaTdApi(TdApi):
         else:
             self.gateway.write_error("交易服务器登录失败", error)
 
+    def onOrderStatus(self, data) -> None:
+        """"""
+        exchange, symbol = data["symbol"].split(".")
+
+        orderid = data["cl_order_id"]
+        sysid = data["order_id"]
+        if not orderid:
+            orderid = sysid
+
+        timestamp = f"{data['order_date']} {data['order_time']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H%M%S%f")
+        dt = CHINA_TZ.localize(dt)
+
+        order = self.orders.get(orderid, None)
+        if not order:
+            order = OrderData(
+                orderid=orderid,
+                gateway_name=self.gateway_name,
+                symbol=symbol,
+                exchange=EXCHANGE_GTJA2VT[exchange],
+                direction=DIRECTION_GTJA2VT[data["side"]],
+                type=ORDERTYPE_GTJA2VT.get(data["order_type"], OrderType.MARKET),
+                price=data["price"] / 10000,
+                volume=data["volume"],
+                traded=data["filled_volume"],
+                status=ORDERSTATUS_GTJA2VT[data["order_status"]],
+                datetime=dt,
+            )
+            self.orders[orderid] = order
+        elif not order.datetime:
+            order.datetime = dt
+
+        order.traded = data["filled_volume"]
+        order.status = ORDERSTATUS_GTJA2VT[data["order_status"]]
+
+        self.gateway.on_order(order)
+
     def onTradeReport(self, data) -> None:
         """"""
         exchange, symbol = data["symbol"].split(".")
-        dt = f"{data['trade_date']} {data['trade_time']}"
+
         orderid = data["cl_order_id"]
         sysid = data["order_id"]
+        if not orderid:
+            orderid = sysid
 
-        if not orderid and sysid:
-            orderid = self._new_orderid()
-
-        dt = datetime.strptime(dt, "%Y%m%d %H%M%S%f")
+        timestamp = f"{data['trade_date']} {data['trade_time']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H%M%S%f")
         dt = CHINA_TZ.localize(dt)
 
-        trade = TradeData(
-            tradeid=data["report_no"],
-            orderid=orderid,
-            gateway_name=self.gateway_name,
-            symbol=symbol,
-            exchange=EXCHANGE_GTJA2VT[exchange],
-            direction=DIRECTION_GTJA2VT[data["side"]],
-            price=data["price"] / 10000,
-            volume=data["volume"],
-            datetime=dt,
-        )
-
-        order = self.orders[orderid]
-        order.datetime = trade.datetime
-        order.traded += trade.volume
-        if order.traded == order.volume:
-            order.status = Status.ALLTRADED
-        else:
-            order.status = Status.PARTTRADED
-
-        self.gateway.on_order(order)
-        self.gateway.on_trade(trade)
+        if data["report_type"] == TradeReportType_Normal:
+            trade = TradeData(
+                tradeid=data["report_no"],
+                orderid=orderid,
+                gateway_name=self.gateway_name,
+                symbol=symbol,
+                exchange=EXCHANGE_GTJA2VT[exchange],
+                direction=DIRECTION_GTJA2VT[data["side"]],
+                price=data["price"] / 10000,
+                volume=data["volume"],
+                datetime=dt,
+            )
+            self.gateway.on_trade(trade)
 
     def onOrderRsp(
         self,
@@ -551,6 +583,8 @@ class GtjaTdApi(TdApi):
         pos: str
     ) -> None:
         """"""
+        if not data["symbol"]:
+            return
         exchange, symbol = data["symbol"].split(".")
 
         pos = PositionData(
@@ -593,8 +627,8 @@ class GtjaTdApi(TdApi):
             else:
                 self.orderid_sysid_map[orderid] = sysid
 
-            dt = f"{data['order_date']} {data['order_time']}"
-            dt = datetime.strptime(dt, "%Y%m%d %H%M%S%f")
+            timestamp = f"{data['order_date']} {data['order_time']}"
+            dt = datetime.strptime(timestamp, "%Y%m%d %H%M%S%f")
             dt = CHINA_TZ.localize(dt)
 
             order = OrderData(
@@ -603,6 +637,7 @@ class GtjaTdApi(TdApi):
                 symbol=symbol,
                 exchange=EXCHANGE_GTJA2VT[exchange],
                 direction=DIRECTION_GTJA2VT[data["side"]],
+                type=ORDERTYPE_GTJA2VT.get(data["order_type"], OrderType.MARKET),
                 price=data["price"] / 10000,
                 volume=data["volume"],
                 status=ORDERSTATUS_GTJA2VT[data["order_status"]],
@@ -631,8 +666,8 @@ class GtjaTdApi(TdApi):
             if not orderid:
                 orderid = sysid
 
-            dt = f"{data['trade_date']} {data['trade_time']}"
-            dt = datetime.strptime(dt, "%Y%m%d %H%M%S%f")
+            timestamp = f"{data['trade_date']} {data['trade_time']}"
+            dt = datetime.strptime(timestamp, "%Y%m%d %H%M%S%f")
             dt = CHINA_TZ.localize(dt)
 
             trade = TradeData(
@@ -705,7 +740,6 @@ class GtjaTdApi(TdApi):
             "volume": int(req.volume),
             "price": int(req.price * 10000),
             "order_flag": OrderFlag_Security_Normal,
-
         }
 
         self.reqid += 1
