@@ -640,6 +640,9 @@ class BacktestingEngine:
 
     def run_ga_optimization(self, optimization_setting: OptimizationSetting, population_size=100, ngen_size=30, output=True):
         """"""
+        # Clear lru_cache before running ga optimization
+        _ga_optimize.cache_clear()
+
         # Get optimization setting and target
         settings = optimization_setting.generate_setting_ga()
         target_name = optimization_setting.target_name
