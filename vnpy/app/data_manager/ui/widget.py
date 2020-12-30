@@ -1,6 +1,6 @@
 from typing import Tuple, Dict
 from functools import partial
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 
 from vnpy.trader.ui import QtWidgets, QtCore
 from vnpy.trader.engine import MainEngine, EventEngine
@@ -437,8 +437,8 @@ class DateRangeDialog(QtWidgets.QDialog):
 
     def get_date_range(self) -> Tuple[datetime, datetime]:
         """"""
-        start = self.start_edit.date().toPyDate()
-        end = self.end_edit.date().toPyDate() + timedelta(days=1)
+        start = datetime.combine(self.start_edit.date().toPyDate(), time())
+        end = datetime.combine(self.end_edit.date().toPyDate() + timedelta(days=1), time())
         return start, end
 
 
