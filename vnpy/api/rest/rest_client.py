@@ -11,7 +11,10 @@ import requests
 
 
 # Use SSL from Python stdlib instead of OpenSSL to avoid [10054 WSAECONNRESET] error
-requests.packages.urllib3.contrib.pyopenssl.extract_from_urllib3()
+try:
+    requests.packages.urllib3.contrib.pyopenssl.extract_from_urllib3()
+except AttributeError:
+    pass
 
 
 CALLBACK_TYPE = Callable[[dict, "Request"], Any]

@@ -46,9 +46,6 @@ from vnpy.trader.object import (
     HistoryRequest
 )
 
-REST_HOST = "https://api.hbdm.com"
-WEBSOCKET_DATA_HOST = "wss://api.hbdm.com/linear-swap-ws"  # Market Data
-WEBSOCKET_TRADE_HOST = "wss://api.hbdm.com/linear-swap-notification"  # Account and Order
 
 STATUS_HUOBIS2VT: Dict[int, Status] = {
     3: Status.NOTTRADED,
@@ -108,6 +105,9 @@ class HuobilGateway(BaseGateway):
     """
 
     default_setting: Dict[str, Any] = {
+        "Rest API 地址": "https://api.hbdm.com",
+        "Data WS 地址": "wss://www.hbdm.com/linear-swap-ws",
+        "Trade WS 地址": "wss://api.hbdm.com/linear-swap-notification",
         "API Key": "",
         "Secret Key": "",
         "会话数": 3,
@@ -129,6 +129,10 @@ class HuobilGateway(BaseGateway):
 
     def connect(self, setting: dict) -> None:
         """"""
+        rest_url = setting["Rest API 地址"]
+        market_ws_url = setting["Data WS 地址"]
+        trade_ws_url = setting["Trade WS 地址"]
+
         key = setting["API Key"]
         secret = setting["Secret Key"]
         session_number = setting["会话数"]
@@ -142,9 +146,11 @@ class HuobilGateway(BaseGateway):
         else:
             proxy_port = 0
 
-        self.rest_api.connect(key, secret, session_number, proxy_host, proxy_port, margin_mode, leverage_ratio)
-        self.trade_ws_api.connect(key, secret, proxy_host, proxy_port, margin_mode)
-        self.market_ws_api.connect(key, secret, proxy_host, proxy_port)
+        self.rest_api.connect(rest_url, key, secret, session_number, proxy_host, proxy_port,
+                              margin_mode, leverage_ratio)
+
+        self.trade_ws_api.connect(trade_ws_url, key, secret, proxy_host, proxy_port, margin_mode)
+        self.market_ws_api.connect(market_ws_url, key, secret, proxy_host, proxy_port)
 
         self.init_query()
 
@@ -249,6 +255,7 @@ class HuobilRestApi(RestClient):
 
     def connect(
             self,
+            url: str,
             key: str,
             secret: str,
             session_number: int,
@@ -262,12 +269,12 @@ class HuobilRestApi(RestClient):
         """
         self.key = key
         self.secret = secret
-        self.host, _ = _split_url(REST_HOST)
+        self.host, _ = _split_url(url)
         self.connect_time = int(datetime.now(CHINA_TZ).strftime("%y%m%d%H%M%S"))
         self.margin_mode = margin_mode
         self.leverage_ratio = leverage_ratio
 
-        self.init(REST_HOST, proxy_host, proxy_port)
+        self.init(url, proxy_host, proxy_port)
         self.start(session_number)
 
         self.gateway.write_log("REST API启动成功")
@@ -804,9 +811,9 @@ class HuobilWebsocketApiBase(WebsocketClient):
 
     def connect(
             self,
+            url: str,
             key: str,
             secret: str,
-            url: str,
             proxy_host: str,
             proxy_port: int
     ) -> None:
@@ -852,6 +859,7 @@ class HuobilWebsocketApiBase(WebsocketClient):
 
     def on_packet(self, packet) -> None:
         """"""
+        print(f"{self.__class__}: {packet}")
         if "ping" in packet:
             req = {"pong": packet["ping"]}
             self.send_packet(req)
@@ -890,6 +898,7 @@ class HuobilTradeWebsocketApi(HuobilWebsocketApiBase):
 
     def connect(
             self,
+            url: str,
             key: str,
             secret: str,
             proxy_host: str,
@@ -898,9 +907,9 @@ class HuobilTradeWebsocketApi(HuobilWebsocketApiBase):
     ) -> None:
         """"""
         super().connect(
+            url,
             key,
             secret,
-            WEBSOCKET_TRADE_HOST,
             proxy_host,
             proxy_port
         )
@@ -1002,6 +1011,7 @@ class HuobilDataWebsocketApi(HuobilWebsocketApiBase):
 
     def connect(
             self,
+            url: str,
             key: str,
             secret: str,
             proxy_host: str,
@@ -1009,9 +1019,9 @@ class HuobilDataWebsocketApi(HuobilWebsocketApiBase):
     ) -> None:
         """"""
         super().connect(
+            url,
             key,
             secret,
-            WEBSOCKET_DATA_HOST,
             proxy_host,
             proxy_port
         )
