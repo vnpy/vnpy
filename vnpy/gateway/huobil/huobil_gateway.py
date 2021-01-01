@@ -46,7 +46,6 @@ from vnpy.trader.object import (
     HistoryRequest
 )
 
-
 STATUS_HUOBIS2VT: Dict[int, Status] = {
     3: Status.NOTTRADED,
     4: Status.PARTTRADED,
@@ -818,14 +817,20 @@ class HuobilWebsocketApiBase(WebsocketClient):
             proxy_port: int
     ) -> None:
         """"""
+        self.url = url
         self.key = key
         self.secret = secret
+        self.proxy_host = proxy_host
+        self.proxy_port = proxy_port
 
         host, path = _split_url(url)
         self.sign_host = host
         self.path = path
 
         self.init(url, proxy_host, proxy_port)
+        self.start()
+
+    def on_disconnected(self):
         self.start()
 
     def login(self) -> int:
@@ -872,7 +877,7 @@ class HuobilWebsocketApiBase(WebsocketClient):
         elif "err-msg" in packet:
             return self.on_error_msg(packet)
         elif "op" in packet and packet["op"] == "auth":
-            return self.on_login()
+            return self.on_login(packet)
         else:
             self.on_data(packet)
 
@@ -906,6 +911,8 @@ class HuobilTradeWebsocketApi(HuobilWebsocketApiBase):
             margin_mode: str
     ) -> None:
         """"""
+        self.margin_mode = margin_mode
+
         super().connect(
             url,
             key,
@@ -913,8 +920,6 @@ class HuobilTradeWebsocketApi(HuobilWebsocketApiBase):
             proxy_host,
             proxy_port
         )
-
-        self.margin_mode = margin_mode
 
     def subscribe(self) -> int:
         """"""
@@ -937,7 +942,11 @@ class HuobilTradeWebsocketApi(HuobilWebsocketApiBase):
         self.gateway.write_log("交易Websocket API连接成功")
         self.login()
 
-    def on_login(self) -> None:
+    def on_disconnected(self):
+        self.gateway.write_log("交易Websocket API断开")
+        super().on_disconnected()
+
+    def on_login(self, packet) -> None:
         """"""
         self.gateway.write_log("交易Websocket API登录成功")
         self.subscribe()
@@ -1032,6 +1041,10 @@ class HuobilDataWebsocketApi(HuobilWebsocketApiBase):
 
         for ws_symbol in self.ticks.keys():
             self.subscribe_data(ws_symbol)
+
+    def on_disconnected(self):
+        self.gateway.write_log("行情Websocket API断开")
+        super().on_disconnected()
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
