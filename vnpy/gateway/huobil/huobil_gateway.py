@@ -367,8 +367,6 @@ class HuobilRestApi(RestClient):
                 params=params
             )
 
-            print(params)
-
             # Break if request failed with other status code
             if resp.status_code // 100 != 2:
                 msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
@@ -864,7 +862,6 @@ class HuobilWebsocketApiBase(WebsocketClient):
 
     def on_packet(self, packet) -> None:
         """"""
-        print(f"{self.__class__}: {packet}")
         if "ping" in packet:
             req = {"pong": packet["ping"]}
             self.send_packet(req)
@@ -883,7 +880,7 @@ class HuobilWebsocketApiBase(WebsocketClient):
 
     def on_data(self, packet) -> None:
         """"""
-        print("data : {}".format(packet))
+        pass
 
     def on_error_msg(self, packet) -> None:
         """"""
