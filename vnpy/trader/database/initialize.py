@@ -8,6 +8,8 @@ def init(settings: dict) -> BaseDatabaseManager:
         return init_mongo(driver=driver, settings=settings)
     elif driver is Driver.INFLUX:
         return init_influx(driver=driver, settings=settings)
+    elif driver is Driver.TIMESCALEDB:
+        return init_timescaledb(driver=driver, settings=settings)
     else:
         return init_sql(driver=driver, settings=settings)
 
@@ -28,5 +30,10 @@ def init_mongo(driver: Driver, settings: dict):
 
 def init_influx(driver: Driver, settings: dict):
     from .database_influx import init
+    _database_manager = init(driver, settings=settings)
+    return _database_manager
+
+def init_timescaledb(driver: Driver, settings: dict):
+    from .database_timescaledb import init
     _database_manager = init(driver, settings=settings)
     return _database_manager
