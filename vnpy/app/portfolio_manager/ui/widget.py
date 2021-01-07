@@ -133,7 +133,9 @@ class PortfolioManager(QtWidgets.QWidget):
         """"""
         trades = self.main_engine.get_all_trades()
         for trade in trades:
-            self.monitor.update_trade(trade)
+            # Ignore trade with no order reference
+            if hasattr(trade, "reference"):
+                self.monitor.update_trade(trade)
 
     def get_portfolio_item(self, reference: str) -> QtWidgets.QTreeWidgetItem:
         """"""
@@ -315,12 +317,12 @@ class PortfolioTradeMonitor(QtWidgets.QTableWidget):
                     self.hideRow(row)
 
 
-class TreeDelegate(QtGui.QStyledItemDelegate):
+class TreeDelegate(QtWidgets.QStyledItemDelegate):
     """"""
 
     def sizeHint(
         self,
-        option: QtGui.QStyleOptionViewItem,
+        option: QtWidgets.QStyleOptionViewItem,
         index: QtCore.QModelIndex
     ) -> QtCore.QSize:
         """"""
