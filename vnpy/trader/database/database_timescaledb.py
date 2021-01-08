@@ -66,10 +66,10 @@ def init(_: Driver, settings: dict):
              "    exchange      varchar(50)              not null,\n"
              "    datetime      timestamp with time zone not null,\n"
              "    interval      varchar(50)              not null,\n"
-             "    open          real,\n"
-             "    high          real,\n"
-             "    low           real,\n"
-             "    close         real,\n"
+             "    open_price    real,\n"
+             "    high_price    real,\n"
+             "    low_price     real,\n"
+             "    close_price   real,\n"
              "    volume        real,\n"
              "    open_interest integer,\n"
              "    constraint bardata_pk\n"
@@ -89,11 +89,9 @@ class TimescaleDBManager(BaseDatabaseManager):
     def __init__(self, conn):
         self.__conn = conn
 
-    def load_bar_data(self,
-                      symbol: str, exchange: Exchange, interval: Interval,
-                      start: datetime, end: datetime
+    def load_bar_data(self, symbol: str, exchange: Exchange, interval: Interval, start: datetime, end: datetime
                       ) -> Sequence[BarData]:
-        columns = ('datetime', 'open', 'high', 'low', 'close', 'volume', 'open_interest')
+        columns = ('datetime', 'open_price', 'high_price', 'low_price', 'close_price', 'volume', 'open_interest')
 
         query = f"select {','.join(columns)} " \
                 f"from hist_md.bardata " \
@@ -103,13 +101,13 @@ class TimescaleDBManager(BaseDatabaseManager):
                 f"    and datetime >= %s " \
                 f"    and datetime <= %s;"
 
-        params = (symbol, exchange, interval.value, start, end)
+        params = (symbol, exchange.value, interval.value, start, end)
 
         with self.__conn.cursor() as cur:
             cur.execute(query, params)
             result = cur.fetchall()
 
-        bars = [BarData(symbol=symbol, exchange=exchange, interval=interval,
+        bars = [BarData(gateway_name='DB', symbol=symbol, exchange=exchange, interval=interval,
                         **{col: val for col, val in zip(columns, values) if val is not None})
                 for values in result]
 
@@ -131,13 +129,13 @@ class TimescaleDBManager(BaseDatabaseManager):
                 f"    and datetime >= %s " \
                 f"    and datetime <= %s;"
 
-        params = (symbol, exchange, start, end)
+        params = (symbol, exchange.value, start, end)
 
         with self.__conn.cursor() as cur:
             cur.execute(query, params)
             result = cur.fetchall()
 
-        ticks = [TickData(symbol=symbol, exchange=exchange,
+        ticks = [TickData(gateway_name='DB', symbol=symbol, exchange=exchange,
                           **{col: val for col, val in zip(columns, values) if val is not None})
                  for values in result]
 
@@ -145,12 +143,16 @@ class TimescaleDBManager(BaseDatabaseManager):
 
     def save_bar_data(self, data: Sequence[BarData]):
         columns = ('symbol', 'exchange', 'interval', 'datetime',
-                   'open', 'high', 'low', 'close', 'volume', 'open_interest')
+                   'open_price', 'high_price', 'low_price', 'close_price', 'volume', 'open_interest')
 
-        values = [{column: getattr(bar, column) for column in columns} for bar in data]
-        query = f"insert into hist_md.bardata {','.join(columns)} values %s;"
+        values = [(bar.symbol, bar.exchange.value, bar.interval.value, bar.datetime,
+                   bar.open_price, bar.high_price, bar.low_price, bar.close_price, bar.volume, bar.open_interest)
+                  for bar in data]
+
+        query = f"insert into hist_md.bardata ({','.join(columns)}) values %s;"
         with self.__conn.cursor() as cur:
             psycopg2.extras.execute_values(cur, query, values)
+            self.__conn.commit()
 
     def save_tick_data(self, data: Sequence[TickData]):
         columns = ('symbol', 'exchange', 'datetime',
@@ -165,25 +167,26 @@ class TimescaleDBManager(BaseDatabaseManager):
         query = f"insert into hist_md.tickdata {','.join(columns)} values %s;"
         with self.__conn.cursor() as cur:
             psycopg2.extras.execute_values(cur, query, values)
+            self.__conn.commit()
 
     def get_newest_bar_data(self, symbol: str, exchange: Exchange, interval: Interval) -> Optional[BarData]:
-        columns = ('datetime', 'open', 'high', 'low', 'close', 'volume', 'open_interest')
+        columns = ('datetime', 'open_price', 'high_price', 'low_price', 'close_price', 'volume', 'open_interest')
 
         query = f"select {','.join(columns)} " \
-                f"from hist_md.tickdata " \
+                f"from hist_md.bardata " \
                 f"where symbol = %s " \
                 f"    and exchange = %s " \
                 f"    and interval = %s " \
                 f"order by datetime desc " \
                 f"limit 1;"
 
-        params = (symbol, exchange, interval.value)
+        params = (symbol, exchange.value, interval.value)
 
         with self.__conn.cursor() as cur:
-            cur.execute(query)
+            cur.execute(query, params)
             result = cur.fetchall()
 
-        bars = [BarData(symbol=symbol, exchange=exchange, interval=interval,
+        bars = [BarData(gateway_name='DB', symbol=symbol, exchange=exchange, interval=interval,
                         **{col: val for col, val in zip(columns, values) if val is not None})
                 for values in result]
 
@@ -193,23 +196,23 @@ class TimescaleDBManager(BaseDatabaseManager):
             return bars[0]
 
     def get_oldest_bar_data(self, symbol: str, exchange: Exchange, interval: Interval) -> Optional[BarData]:
-        columns = ('datetime', 'open', 'high', 'low', 'close', 'volume', 'open_interest')
+        columns = ('datetime', 'open_price', 'high_price', 'low_price', 'close_price', 'volume', 'open_interest')
 
         query = f"select {','.join(columns)} " \
-                f"from hist_md.tickdata " \
+                f"from hist_md.bardata " \
                 f"where symbol = %s " \
                 f"    and exchange = %s " \
                 f"    and interval = %s " \
                 f"order by datetime " \
                 f"limit 1;"
 
-        params = (symbol, exchange, interval.value)
+        params = (symbol, exchange.value, interval.value)
 
         with self.__conn.cursor() as cur:
-            cur.execute(query)
+            cur.execute(query, params)
             result = cur.fetchall()
 
-        bars = [BarData(symbol=symbol, exchange=exchange, interval=interval,
+        bars = [BarData(gateway_name='DB', symbol=symbol, exchange=exchange, interval=interval,
                         **{col: val for col, val in zip(columns, values) if val is not None})
                 for values in result]
 
@@ -234,13 +237,13 @@ class TimescaleDBManager(BaseDatabaseManager):
                 f"order by datetime desc" \
                 f"limit 1;"
 
-        params = (symbol, exchange)
+        params = (symbol, exchange.value)
 
         with self.__conn.cursor() as cur:
             cur.execute(query, params)
             result = cur.fetchall()
 
-        ticks = [TickData(symbol=symbol, exchange=exchange,
+        ticks = [TickData(gateway_name='DB', symbol=symbol, exchange=exchange,
                           **{col: val for col, val in zip(columns, values) if val is not None})
                  for values in result]
 
@@ -249,8 +252,8 @@ class TimescaleDBManager(BaseDatabaseManager):
         else:
             return ticks[0]
 
-    def get_bar_data_statistics(self, symbol: str, exchange: Exchange) -> List:
-        columns = {'symbol', 'exchange', 'interval', }
+    def get_bar_data_statistics(self) -> List:
+        columns = ('symbol', 'exchange', 'interval', 'count')
         query = f"select symbol, exchange, interval, count(*) as count " \
                 f"from hist_md.bardata " \
                 f"group by symbol, exchange, interval; "
@@ -259,7 +262,7 @@ class TimescaleDBManager(BaseDatabaseManager):
             cur.execute(query)
             result = cur.fetchall()
 
-        statistics = [{col: val for col, val in zip(columns, result)}
+        statistics = [{col: val for col, val in zip(columns, values)}
                       for values in result]
 
         return statistics
@@ -271,11 +274,12 @@ class TimescaleDBManager(BaseDatabaseManager):
                 f"    and exchange = %s " \
                 f"    and interval = %s;"
 
-        params = (symbol, exchange, interval.value)
+        params = (symbol, exchange.value, interval.value)
 
         with self.__conn.cursor() as cur:
             cur.execute(query, params)
             count = cur.rowcount
+            self.__conn.commit()
 
         return count
 
@@ -297,3 +301,5 @@ class TimescaleDBManager(BaseDatabaseManager):
 
         with self.__conn.cursor() as cur:
             cur.execute(query, params)
+
+        self.__conn.commit()

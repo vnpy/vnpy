@@ -100,9 +100,7 @@ class BaseDatabaseManager(ABC):
 
     @abstractmethod
     def get_bar_data_statistics(
-            self,
-            symbol: str,
-            exchange: "Exchange",
+            self
     ) -> List[Dict]:
         """
         Return data avaible in database with a list of symbol/exchange/interval/count.
