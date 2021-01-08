@@ -49,8 +49,6 @@ class RecorderEngine(BaseEngine):
         self.start()
         self.put_event()
 
-
-
     def load_setting(self):
         """"""
         setting = load_json(self.setting_filename)
@@ -81,12 +79,15 @@ class RecorderEngine(BaseEngine):
 
                 while len(items) < self.batch_size:
                     # First, retrieve all pending items in the queue, up to `self.batch_size` items
-                    for _ in range(0, self.batch_size):
+                    for _ in range(len(items), self.batch_size):
                         try:
                             item = self.queue.get_nowait()
                             items.append(item)
                         except Empty:
                             break
+
+                    if len(items) >= self.batch_size:
+                        break
 
                     # Second, we wait until `self.__last_commit_time + self.commit_delay`
                     ts = time.time()
@@ -106,16 +107,13 @@ class RecorderEngine(BaseEngine):
 
                 self.last_commit_time = time.time()
 
-
                 ticks = [data for task_type, data in items if task_type == 'tick']
                 bars = [data for task_type, data in items if task_type == 'bar']
 
                 if len(ticks) > 0:
-                    print(f"Saving {len(ticks)} tick data items")
                     database_manager.save_tick_data(ticks)
 
                 if len(bars) > 0:
-                    print(f"Saving {len(bars)} bar data items")
                     database_manager.save_bar_data(bars)
 
             except:
@@ -126,7 +124,6 @@ class RecorderEngine(BaseEngine):
                 info = sys.exc_info()
                 event = Event(EVENT_RECORDER_EXCEPTION, info)
                 self.event_engine.put(event)
-
 
     def close(self):
         """"""
