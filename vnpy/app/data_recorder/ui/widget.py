@@ -64,6 +64,12 @@ class RecorderManager(QtWidgets.QWidget):
         remove_tick_button = QtWidgets.QPushButton("移除")
         remove_tick_button.clicked.connect(self.remove_tick_recording)
 
+        self.batch_size_edit = QtWidgets.QLineEdit()
+        self.commit_delay_edit = QtWidgets.QLineEdit()
+
+        self.batch_size_edit.editingFinished.connect(self.update_batch_size)
+        self.commit_delay_edit.editingFinished.connect(self.update_commit_delay)
+
         self.bar_recording_edit = QtWidgets.QTextEdit()
         self.bar_recording_edit.setReadOnly(True)
 
@@ -81,6 +87,13 @@ class RecorderManager(QtWidgets.QWidget):
         grid.addWidget(QtWidgets.QLabel("Tick记录"), 1, 0)
         grid.addWidget(add_tick_button, 1, 1)
         grid.addWidget(remove_tick_button, 1, 2)
+
+        grid.addWidget(QtWidgets.QLabel("批量写入"), 0, 4)
+        grid.addWidget(self.batch_size_edit, 0, 5)
+        grid.addWidget(QtWidgets.QLabel("写入间隔"), 1, 4)
+        grid.addWidget(self.commit_delay_edit, 1, 5)
+
+
 
         hbox = QtWidgets.QHBoxLayout()
         hbox.addWidget(QtWidgets.QLabel("本地代码"))
@@ -125,6 +138,9 @@ class RecorderManager(QtWidgets.QWidget):
         """"""
         data = event.data
 
+        self.batch_size_edit.setText(str(data["batch_size"]))
+        self.commit_delay_edit.setText(str(data["commit_delay"]))
+
         self.bar_recording_edit.clear()
         bar_text = "\n".join(data["bar"])
         self.bar_recording_edit.setText(bar_text)
@@ -165,3 +181,20 @@ class RecorderManager(QtWidgets.QWidget):
         """"""
         vt_symbol = self.symbol_line.text()
         self.recorder_engine.remove_tick_recording(vt_symbol)
+
+    def update_batch_size(self):
+        try:
+            self.recorder_engine.batch_size = int(self.batch_size_edit.text())
+            self.recorder_engine.save_setting()
+            self.recorder_engine.put_event()
+        except ValueError:
+            pass
+
+    def update_commit_delay(self):
+        try:
+            self.recorder_engine.commit_delay = int(self.commit_delay_edit.text())
+            self.recorder_engine.save_setting()
+            self.recorder_engine.put_event()
+        except ValueError:
+            pass
+

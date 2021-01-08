@@ -40,6 +40,9 @@ class RecorderEngine(BaseEngine):
         self.thread = Thread(target=self.run)
         self.active = False
 
+        self.batch_size = None
+        self.commit_delay = None
+
         self.tick_recordings = {}
         self.bar_recordings = {}
         self.bar_generators = {}
@@ -54,12 +57,14 @@ class RecorderEngine(BaseEngine):
         setting = load_json(self.setting_filename)
         self.tick_recordings = setting.get("tick", {})
         self.bar_recordings = setting.get("bar", {})
-        self.batch_size = setting.get("batch_size", 1000)
+        self.batch_size = setting.get("batch_size", 10000)
         self.commit_delay = setting.get("commit_delay", 30)
 
     def save_setting(self):
         """"""
         setting = {
+            "batch_size": self.batch_size,
+            "commit_delay": self.commit_delay,
             "tick": self.tick_recordings,
             "bar": self.bar_recordings
         }
@@ -271,6 +276,8 @@ class RecorderEngine(BaseEngine):
         bar_symbols.sort()
 
         data = {
+            "batch_size": self.batch_size,
+            "commit_delay": self.commit_delay,
             "tick": tick_symbols,
             "bar": bar_symbols
         }
