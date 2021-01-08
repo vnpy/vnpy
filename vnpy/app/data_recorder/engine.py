@@ -1,24 +1,24 @@
 """"""
 
 import sys
-from threading import Thread
-from queue import Queue, Empty
+import time
 from copy import copy
+from queue import Queue, Empty
+from threading import Thread
 
+from vnpy.app.spread_trading.base import EVENT_SPREAD_DATA, SpreadData
 from vnpy.event import Event, EventEngine
-from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.constant import Exchange
+from vnpy.trader.database import database_manager
+from vnpy.trader.engine import BaseEngine, MainEngine
+from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT
 from vnpy.trader.object import (
     SubscribeRequest,
     TickData,
     BarData,
     ContractData
 )
-from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT
 from vnpy.trader.utility import load_json, save_json, BarGenerator
-from vnpy.trader.database import database_manager
-from vnpy.app.spread_trading.base import EVENT_SPREAD_DATA, SpreadData
-
 
 APP_NAME = "DataRecorder"
 
@@ -36,6 +36,7 @@ class RecorderEngine(BaseEngine):
         super().__init__(main_engine, event_engine, APP_NAME)
 
         self.queue = Queue()
+        self.last_commit_time = None
         self.thread = Thread(target=self.run)
         self.active = False
 
@@ -48,11 +49,15 @@ class RecorderEngine(BaseEngine):
         self.start()
         self.put_event()
 
+
+
     def load_setting(self):
         """"""
         setting = load_json(self.setting_filename)
         self.tick_recordings = setting.get("tick", {})
         self.bar_recordings = setting.get("bar", {})
+        self.batch_size = setting.get("batch_size", 1000)
+        self.commit_delay = setting.get("commit_delay", 30)
 
     def save_setting(self):
         """"""
@@ -65,24 +70,63 @@ class RecorderEngine(BaseEngine):
     def run(self):
         """"""
         while self.active:
+
             try:
-                task = self.queue.get(timeout=1)
-                task_type, data = task
+                items = []
 
-                if task_type == "tick":
-                    database_manager.save_tick_data([data])
-                elif task_type == "bar":
-                    database_manager.save_bar_data([data])
+                if self.last_commit_time is None:
+                    elapse_time = None
+                else:
+                    elapse_time = self.last_commit_time + self.commit_delay
 
-            except Empty:
-                continue
+                while len(items) < self.batch_size:
+                    # First, retrieve all pending items in the queue, up to `self.batch_size` items
+                    for _ in range(0, self.batch_size):
+                        try:
+                            item = self.queue.get_nowait()
+                            items.append(item)
+                        except Empty:
+                            break
 
-            except Exception:
+                    # Second, we wait until `self.__last_commit_time + self.commit_delay`
+                    ts = time.time()
+
+                    if elapse_time is None or ts >= elapse_time:
+                        break
+
+                    try:
+                        item = self.queue.get(timeout=max(0., elapse_time - ts))
+
+                        # We do get something, try to get more
+                        items.append(item)
+                        continue
+                    except Empty:
+                        # No more item until the commit time, let's continue to write them back to DB
+                        break
+
+                self.last_commit_time = time.time()
+
+
+                ticks = [data for task_type, data in items if task_type == 'tick']
+                bars = [data for task_type, data in items if task_type == 'bar']
+
+                if len(ticks) > 0:
+                    print(f"Saving {len(ticks)} tick data items")
+                    database_manager.save_tick_data(ticks)
+
+                if len(bars) > 0:
+                    print(f"Saving {len(bars)} bar data items")
+                    database_manager.save_bar_data(bars)
+
+            except:
+                import traceback
+                traceback.print_exc()
+
                 self.active = False
-
                 info = sys.exc_info()
                 event = Event(EVENT_RECORDER_EXCEPTION, info)
                 self.event_engine.put(event)
+
 
     def close(self):
         """"""
