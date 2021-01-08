@@ -145,8 +145,8 @@ class TimescaleDBManager(BaseDatabaseManager):
         columns = ('symbol', 'exchange', 'interval', 'datetime',
                    'open_price', 'high_price', 'low_price', 'close_price', 'volume', 'open_interest')
 
-        values = [(bar.symbol, bar.exchange.value, bar.interval.value, bar.datetime,
-                   bar.open_price, bar.high_price, bar.low_price, bar.close_price, bar.volume, bar.open_interest)
+        values = [[bar.symbol, bar.exchange.value, bar.interval.value, bar.datetime,
+                   bar.open_price, bar.high_price, bar.low_price, bar.close_price, bar.volume, bar.open_interest]
                   for bar in data]
 
         query = f"insert into hist_md.bardata ({','.join(columns)}) values %s;"
@@ -163,8 +163,17 @@ class TimescaleDBManager(BaseDatabaseManager):
                    'bid_volume_1', 'bid_volume_2', 'bid_volume_3', 'bid_volume_4', 'bid_volume_5',
                    'ask_volume_1', 'ask_volume_2', 'ask_volume_3', 'ask_volume_4', 'ask_volume_5')
 
-        values = [{column: getattr(bar, column) for column in columns} for bar in data]
-        query = f"insert into hist_md.tickdata {','.join(columns)} values %s;"
+        values = [[tick.symbol, tick.exchange.value, tick.datetime,
+                   tick.name, tick.volume, tick.open_interest, tick.last_price, tick.last_volume,
+                   tick.limit_up, tick.limit_down, tick.open_price, tick.high_price, tick.low_price, tick.pre_close,
+                   tick.bid_price_1, tick.bid_price_2, tick.bid_price_3, tick.bid_price_4, tick.bid_price_5,
+                   tick.ask_price_1, tick.ask_price_2, tick.ask_price_3, tick.ask_price_4, tick.ask_price_5,
+                   tick.bid_volume_1, tick.bid_volume_2, tick.bid_volume_3, tick.bid_volume_4, tick.bid_volume_5,
+                   tick.ask_volume_1, tick.ask_volume_2, tick.ask_volume_3, tick.ask_volume_4, tick.ask_volume_5]
+                  for tick in data]
+
+
+        query = f"insert into hist_md.tickdata ({','.join(columns)}) values %s;"
         with self.__conn.cursor() as cur:
             psycopg2.extras.execute_values(cur, query, values)
             self.__conn.commit()
