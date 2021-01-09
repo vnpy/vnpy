@@ -152,6 +152,8 @@ class TimescaleDBManager(BaseDatabaseManager):
                    bar.open_price, bar.high_price, bar.low_price, bar.close_price, bar.volume, bar.open_interest]
                   for bar in data]
 
+        values = list({tuple(x[0:4]): x for x in values}.values())
+        
         on_conflict_clause = ','.join([column + '=excluded.' + column
                                        for column in columns
                                        if column not in ('symbol', 'exchange', 'interval', 'datetime')])
