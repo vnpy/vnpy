@@ -1100,6 +1100,7 @@ class HuobilDataWebsocketApi(HuobilWebsocketApiBase):
         tick.datetime = generate_datetime(data["ts"] / 1000)
 
         tick_data = data["tick"]
+        tick.tick_id = str(tick_data["id"])
         if "bids" not in tick_data or "asks" not in tick_data:
             return
 
