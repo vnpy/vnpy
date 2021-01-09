@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional, Sequence, List
 
+import numpy
 import psycopg2
 import psycopg2.extras
 
@@ -25,6 +26,7 @@ def init(_: Driver, settings: dict):
              "    symbol        varchar(255)             not null,\n"
              "    exchange      varchar(255)             not null,\n"
              "    datetime      timestamp with time zone not null,\n"
+             "    tick_id       varchar(255)             not null,\n"
              "    name          varchar(255)             not null,\n"
              "    volume        real                     not null,\n"
              "    open_interest real                     not null,\n"
@@ -57,7 +59,7 @@ def init(_: Driver, settings: dict):
              "    ask_volume_4  real,\n"
              "    ask_volume_5  real,\n"
              "    constraint tickdata_pk\n"
-             "        primary key (symbol, exchange, datetime)\n"
+             "        primary key (symbol, exchange, datetime, tick_id)\n"
              ");\n"
              "\n"
              "create table if not exists hist_md.bardata\n"
@@ -81,6 +83,7 @@ def init(_: Driver, settings: dict):
 
     with conn.cursor() as cur:
         cur.execute(query)
+        conn.commit()
 
     return TimescaleDBManager(conn)
 
@@ -149,13 +152,20 @@ class TimescaleDBManager(BaseDatabaseManager):
                    bar.open_price, bar.high_price, bar.low_price, bar.close_price, bar.volume, bar.open_interest]
                   for bar in data]
 
-        query = f"insert into hist_md.bardata ({','.join(columns)}) values %s;"
+        on_conflict_clause = ','.join([column + '=excluded.' + column
+                                       for column in columns
+                                       if column not in ('symbol', 'exchange', 'interval', 'datetime')])
+
+        query = f"insert into hist_md.bardata ({','.join(columns)}) values %s " \
+                f"on conflict (symbol, exchange, interval, datetime) do update " \
+                f"  set {on_conflict_clause};"
+
         with self.__conn.cursor() as cur:
             psycopg2.extras.execute_values(cur, query, values)
             self.__conn.commit()
 
     def save_tick_data(self, data: Sequence[TickData]):
-        columns = ('symbol', 'exchange', 'datetime',
+        columns = ('symbol', 'exchange', 'datetime', 'tick_id',
                    'name', 'volume', 'open_interest', 'last_price', 'last_volume',
                    'limit_up', 'limit_down', 'open_price', 'high_price', 'low_price', 'pre_close',
                    'bid_price_1', 'bid_price_2', 'bid_price_3', 'bid_price_4', 'bid_price_5',
@@ -163,17 +173,30 @@ class TimescaleDBManager(BaseDatabaseManager):
                    'bid_volume_1', 'bid_volume_2', 'bid_volume_3', 'bid_volume_4', 'bid_volume_5',
                    'ask_volume_1', 'ask_volume_2', 'ask_volume_3', 'ask_volume_4', 'ask_volume_5')
 
-        values = [[tick.symbol, tick.exchange.value, tick.datetime,
+        if data is not list:
+            data = list(data)
+
+        random_ids = numpy.random.randint(1000000000, size=len(data))
+        values = [[tick.symbol, tick.exchange.value, tick.datetime, tick.tick_id or str(random_ids[i]),
                    tick.name, tick.volume, tick.open_interest, tick.last_price, tick.last_volume,
                    tick.limit_up, tick.limit_down, tick.open_price, tick.high_price, tick.low_price, tick.pre_close,
                    tick.bid_price_1, tick.bid_price_2, tick.bid_price_3, tick.bid_price_4, tick.bid_price_5,
                    tick.ask_price_1, tick.ask_price_2, tick.ask_price_3, tick.ask_price_4, tick.ask_price_5,
                    tick.bid_volume_1, tick.bid_volume_2, tick.bid_volume_3, tick.bid_volume_4, tick.bid_volume_5,
                    tick.ask_volume_1, tick.ask_volume_2, tick.ask_volume_3, tick.ask_volume_4, tick.ask_volume_5]
-                  for tick in data]
+                  for i, tick in enumerate(data)]
 
+        # Remove duplicates in values
+        values = list({tuple(x[0:4]) : x for x in values}.values())
 
-        query = f"insert into hist_md.tickdata ({','.join(columns)}) values %s;"
+        on_conflict_clause = ','.join([column + '=excluded.' + column
+                                       for column in columns
+                                       if column not in ('symbol', 'exchange', 'datetime', 'tick_id')])
+
+        query = f"insert into hist_md.tickdata ({','.join(columns)}) values %s " \
+                f"on conflict (symbol, exchange, datetime, tick_id) do update " \
+                f"  set {on_conflict_clause}; "
+
         with self.__conn.cursor() as cur:
             psycopg2.extras.execute_values(cur, query, values)
             self.__conn.commit()
@@ -237,7 +260,8 @@ class TimescaleDBManager(BaseDatabaseManager):
             'bid_price_1', 'bid_price_2', 'bid_price_3', 'bid_price_4', 'bid_price_5',
             'ask_price_1', 'ask_price_2', 'ask_price_3', 'ask_price_4', 'ask_price_5',
             'bid_volume_1', 'bid_volume_2', 'bid_volume_3', 'bid_volume_4', 'bid_volume_5',
-            'ask_volume_1', 'ask_volume_2', 'ask_volume_3', 'ask_volume_4', 'ask_volume_5')
+            'ask_volume_1', 'ask_volume_2', 'ask_volume_3', 'ask_volume_4', 'ask_volume_5',
+            'tick_id')
 
         query = f"select {','.join(columns)} " \
                 f"from hist_md.tickdata " \
