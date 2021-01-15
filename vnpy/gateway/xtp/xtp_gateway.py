@@ -172,7 +172,7 @@ class XtpGateway(BaseGateway):
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
-        self.md_api.subscrbie(req)
+        self.md_api.subscribe(req)
 
     def send_order(self, req: OrderRequest) -> str:
         """"""
@@ -289,6 +289,14 @@ class XtpMdApi(MdApi):
 
         pricetick = symbol_pricetick_map.get(tick.vt_symbol, 0)
         if pricetick:
+            tick.last_price = round_to(data["last_price"], pricetick)
+            tick.limit_up = round_to(data["upper_limit_price"], pricetick)
+            tick.limit_down = round_to(data["lower_limit_price"], pricetick)
+            tick.open_price = round_to(data["open_price"], pricetick)
+            tick.high_price = round_to(data["high_price"], pricetick)
+            tick.low_price = round_to(data["low_price"], pricetick)
+            tick.pre_close = round_to(data["pre_close_price"], pricetick)
+
             tick.bid_price_1 = round_to(tick.bid_price_1, pricetick)
             tick.bid_price_2 = round_to(tick.bid_price_2, pricetick)
             tick.bid_price_3 = round_to(tick.bid_price_3, pricetick)
@@ -460,7 +468,7 @@ class XtpMdApi(MdApi):
         if self.connect_status:
             self.exit()
 
-    def subscrbie(self, req: SubscribeRequest) -> None:
+    def subscribe(self, req: SubscribeRequest) -> None:
         """"""
         if self.login_status:
             xtp_exchange = EXCHANGE_VT2XTP.get(req.exchange, "")
@@ -602,11 +610,11 @@ class XtpTdApi(TdApi):
 
         self.gateway.write_error("撤单失败", error)
 
-    def onQueryOrder(self, data: dict, error: dict, last: bool, session: int) -> None:
+    def onQueryOrder(self, data: dict, error: dict, reqid: int, last: bool, session: int) -> None:
         """"""
         pass
 
-    def onQueryTrade(self, data: dict, error: dict, last: bool, session: int) -> None:
+    def onQueryTrade(self, data: dict, error: dict, reqid: int, last: bool, session: int) -> None:
         """"""
         pass
 
@@ -627,13 +635,16 @@ class XtpTdApi(TdApi):
             exchange=MARKET_XTP2VT[data["market"]],
             direction=POSITION_DIRECTION_XTP2VT[data["position_direction"]],
             volume=data["total_qty"],
-            frozen=data["locked_position"],
+            frozen=data["total_qty"] - data["sellable_qty"],
             price=data["avg_price"],
             pnl=data["unrealized_pnl"],
             yd_volume=data["yesterday_position"],
             gateway_name=self.gateway_name
         )
         self.gateway.on_position(position)
+
+        if position.symbol == "600036":
+            print(data)
 
     def onQueryAsset(
         self,
@@ -646,15 +657,15 @@ class XtpTdApi(TdApi):
         """"""
         account = AccountData(
             accountid=self.userid,
-            balance=data["total_asset"],
-            frozen=data["withholding_amount"],
+            balance=round(data["total_asset"], 2),
+            frozen=round(data["withholding_amount"], 2),
             gateway_name=self.gateway_name
         )
 
         if data["account_type"] == 1:
             self.margin_trading = True
         elif data["account_type"] == 2:
-            account.available = data["buying_power"]
+            account.available = round(data["buying_power"], 2)
             account.frozen = account.balance - account.available
             self.option_trading = True
 
