@@ -329,9 +329,13 @@ class BaseMonitor(QtWidgets.QTableWidget):
         with open(path, "w") as f:
             writer = csv.writer(f, lineterminator="\n")
 
-            writer.writerow(self.headers.keys())
+            headers = [d["display"] for d in self.headers.values()]
+            writer.writerow(headers)
 
             for row in range(self.rowCount()):
+                if self.isRowHidden(row):
+                    continue
+
                 row_data = []
                 for column in range(self.columnCount()):
                     item = self.item(row, column)
@@ -587,7 +591,6 @@ class ConnectDialog(QtWidgets.QDialog):
         save_json(self.filename, setting)
 
         self.main_engine.connect(setting, self.gateway_name)
-
         self.accept()
 
 
