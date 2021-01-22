@@ -122,7 +122,7 @@ class FutuGateway(BaseGateway):
         self.first_query = True
         self.count = 0
         self.interval = 1
-        self.query_funcs = [self.query_account, self.query_position]
+        self.query_funcs = [self.query_account, self.query_position, self.query_trade]
 
     def connect(self, setting: dict):
         """"""
@@ -478,7 +478,10 @@ class FutuGateway(BaseGateway):
                 return
 
             self.process_deal(data)
-            self.write_log(f"{market} 成交查询成功")
+
+            # show success message when the first query, but be quiet for next intervals
+            if self.first_query:
+                self.write_log(f"{market} 成交查询成功")
 
     def close(self):
         """"""
