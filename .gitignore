@@ -13,11 +13,13 @@
 *.wpu
 .vs
 x64
+*.sw[po]
 
 # Temp
 build
 dist
 *.local
+/tmp
 
 # vn.py
 .vntrader

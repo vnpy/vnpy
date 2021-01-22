@@ -22,7 +22,8 @@ from futu import (
     RET_OK,
     StockQuoteHandlerBase,
     TradeDealHandlerBase,
-    TradeOrderHandlerBase
+    TradeOrderHandlerBase,
+    SysConfig,
 )
 
 from vnpy.trader.constant import Direction, Exchange, Product, Status
@@ -86,6 +87,7 @@ class FutuGateway(BaseGateway):
         "端口": 11111,
         "市场": ["HK", "US"],
         "环境": [TrdEnv.REAL, TrdEnv.SIMULATE],
+        "私钥": "",
     }
 
     exchanges = list(EXCHANGE_FUTU2VT.values())
@@ -121,6 +123,12 @@ class FutuGateway(BaseGateway):
         self.market = setting["市场"]
         self.password = setting["密码"]
         self.env = setting["环境"]
+        self.rsa_key = setting["私钥"]
+
+        if self.rsa_key:
+            SysConfig.enable_proto_encrypt(True)
+            # set rsa key path
+            SysConfig.set_init_rsa_file(self.rsa_key)
 
         self.connect_quote()
         self.connect_trade()
