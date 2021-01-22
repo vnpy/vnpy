@@ -65,6 +65,11 @@ DIRECTION_VT2FUTU = {
     Direction.SHORT: TrdSide.SELL,
 }
 DIRECTION_FUTU2VT = {v: k for k, v in DIRECTION_VT2FUTU.items()}
+# https://openapi.futunn.com/futu-api-doc/base/trade.html#%E4%BA%A4%E6%98%93%E6%96%B9%E5%90%91
+DIRECTION_FUTU2VT.update({
+    TrdSide.BUY_BACK: Direction.LONG,
+    TrdSide.SELL_SHORT: Direction.SHORT,
+})
 
 STATUS_FUTU2VT = {
     OrderStatus.NONE: Status.SUBMITTING,
@@ -114,6 +119,7 @@ class FutuGateway(BaseGateway):
         self.thread = Thread(target=self.query_data)
 
         # For query function.
+        self.first_query = True
         self.count = 0
         self.interval = 1
         self.query_funcs = [self.query_account, self.query_position]
@@ -153,6 +159,7 @@ class FutuGateway(BaseGateway):
 
     def process_timer_event(self, event):
         """"""
+        self.first_query = False
         self.count += 1
         if self.count < self.interval:
             return
@@ -161,7 +168,7 @@ class FutuGateway(BaseGateway):
         func()
         self.query_funcs.append(func)
 
-    def find_trade_ctx (self, exchange):
+    def find_trade_ctx(self, exchange):
         """
         find futu trade context
         """
@@ -376,7 +383,7 @@ class FutuGateway(BaseGateway):
                 )
 
                 if code:
-                    self.write_log(f"查询合约信息失败：{data}")
+                    self.write_log(f"{market} 查询合约信息失败：{data}")
                     return
 
                 for ix, row in data.iterrows():
@@ -390,12 +397,12 @@ class FutuGateway(BaseGateway):
                         pricetick=0.001,
                         net_position=True,
                         gateway_name=self.gateway_name,
-                        history_data = True,
+                        history_data=True,
                     )
                     self.on_contract(contract)
                     self.contracts[contract.vt_symbol] = contract
 
-            self.write_log("合约信息查询成功")
+            self.write_log(f"{market} 合约信息查询成功")
 
     def query_account(self):
         """"""
@@ -403,7 +410,7 @@ class FutuGateway(BaseGateway):
             code, data = ctx.accinfo_query(trd_env=self.env, acc_id=0)
 
             if code:
-                self.write_log(f"查询账户资金失败：{data}")
+                self.write_log(f"{market} 查询账户资金失败：{data}")
                 return
 
             for ix, row in data.iterrows():
@@ -415,15 +422,19 @@ class FutuGateway(BaseGateway):
                 )
                 self.on_account(account)
 
+            # show success message when the first query, but be quiet for next intervals
+            if self.first_query:
+                self.write_log(f"{market} 查询账户资金成功")
+
     def query_position(self):
         """"""
-        for ctx in self.trade_ctx.values() :
+        for market, ctx in self.trade_ctx.items():
             code, data = ctx.position_list_query(
                 trd_env=self.env, acc_id=0
             )
 
             if code:
-                self.write_log(f"查询持仓失败：{data}")
+                self.write_log(f"{market} 查询持仓失败：{data}")
                 return
 
             for ix, row in data.iterrows():
@@ -441,29 +452,33 @@ class FutuGateway(BaseGateway):
 
                 self.on_position(pos)
 
+            # show success message when the first query, but be quiet for next intervals
+            if self.first_query:
+                self.write_log(f"{market} 查询持仓成功")
+
     def query_order(self):
         """"""
-        for ctx in self.trade_ctx.values() :
+        for market, ctx in self.trade_ctx.items():
             code, data = ctx.order_list_query("", trd_env=self.env)
 
             if code:
-                self.write_log(f"查询委托失败：{data}")
+                self.write_log(f"{market} 查询委托失败：{data}")
                 return
 
             self.process_order(data)
-            self.write_log("委托查询成功")
+            self.write_log(f"{market} 委托查询成功")
 
     def query_trade(self):
         """"""
-        for ctx in self.trade_ctx.values() :
+        for market, ctx in self.trade_ctx.items():
             code, data = ctx.deal_list_query("", trd_env=self.env)
 
             if code:
-                self.write_log(f"查询成交失败：{data}")
+                self.write_log(f"{market} 查询成交失败：{data}")
                 return
 
             self.process_deal(data)
-            self.write_log("成交查询成功")
+            self.write_log(f"{market} 成交查询成功")
 
     def close(self):
         """"""
@@ -610,8 +625,6 @@ def convert_symbol_vt2futu(symbol, exchange):
     """
     futu_exchange = EXCHANGE_VT2FUTU[exchange]
     return f"{futu_exchange}.{symbol}"
-
-
 
 
 def generate_datetime(s: str) -> datetime:
