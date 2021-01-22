@@ -41,6 +41,7 @@ from .stock_api import (
     TORA_TSTP_OST_PartTradedQueueing,
     TORA_TERT_RESTART,
     TORA_TSTP_LACT_UserID,
+    TORA_TSTP_LACT_AccountID,
     TORA_TSTP_PID_SHBond,
     TORA_TSTP_PID_SHFund,
     TORA_TSTP_PID_SHStock,
@@ -126,6 +127,12 @@ ORDERTYPE_TORA2VT = {
 CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 
+ACCOUNT_USERID = "用户代码"
+ACCOUNT_ACCOUNTID = "资金账号"
+ADDRESS_FRONT = "前置地址"
+ADDRESS_FENS = "FENS地址"
+
+
 class ToraStockGateway(BaseGateway):
     """"""
 
@@ -134,6 +141,8 @@ class ToraStockGateway(BaseGateway):
         "密码": "",
         "行情服务器": "",
         "交易服务器": "",
+        "账号类型": [ACCOUNT_USERID, ACCOUNT_ACCOUNTID],
+        "地址类型": [ADDRESS_FRONT, ADDRESS_FENS]
     }
 
     exchanges = list(EXCHANGE_VT2TORA.keys())
@@ -157,8 +166,11 @@ class ToraStockGateway(BaseGateway):
         if not md_address.startswith("tcp://"):
             md_address = "tcp://" + md_address
 
-        self.md_api.connect(username, password, md_address)
-        self.td_api.connect(username, password, td_address)
+        account_type = setting["账号类型"]
+        address_type = setting["地址类型"]
+
+        self.md_api.connect(username, password, md_address, account_type, address_type)
+        self.td_api.connect(username, password, td_address, account_type, address_type)
 
         self.init_query()
 
@@ -231,7 +243,7 @@ class ToraMdApi(mdapi.CTORATstpMdSpi):
 
         self.userid: str = ""
         self.password: str = ""
-        self.md_address: str = ""
+        self.address: str = ""
 
     def OnFrontConnected(self) -> None:
         """
@@ -343,21 +355,30 @@ class ToraMdApi(mdapi.CTORATstpMdSpi):
         self,
         userid: str,
         password: str,
-        md_address: str
+        address: str,
+        account_type: str,
+        address_type: str
     ) -> None:
         """
         Start connection to server.
         """
         self.userid = userid
         self.password = password
-        self.md_address = md_address
+        self.address = address
+        self.account_type = account_type
+        self.address_type = address_type
 
         # If not connected, then start connection first.
         if not self.connect_status:
             self.api = mdapi.CTORATstpMdApi_CreateTstpMdApi()
 
             self.api.RegisterSpi(self)
-            self.api.RegisterFront(md_address)
+
+            if self.address_type == ADDRESS_FRONT:
+                self.api.RegisterFront(address)
+            else:
+                self.api.RegisterNameServer(address)
+
             self.api.Init()
             self.connect_status = True
         # If already connected, then login immediately.
@@ -370,10 +391,14 @@ class ToraMdApi(mdapi.CTORATstpMdSpi):
         """
         login_req = mdapi.CTORATstpReqUserLoginField()
         login_req.LogInAccount = self.userid
-        login_req.LogInAccountType = TORA_TSTP_LACT_UserID
         login_req.Password = self.password
         login_req.UserProductInfo = "vnpy_2.0"
         login_req.TerminalInfo = get_terminal_info()
+
+        if self.account_type == ACCOUNT_USERID:
+            login_req.LogInAccountType = TORA_TSTP_LACT_UserID
+        else:
+            login_req.LogInAccountType = TORA_TSTP_LACT_AccountID
 
         self.reqid += 1
         self.api.ReqUserLogin(login_req, self.reqid)
@@ -560,7 +585,7 @@ class ToraTdApi(traderapi.CTORATstpTraderSpi):
             symbol=data["SecurityID"],
             exchange=EXCHANGE_TORA2VT[bytes.decode(data["ExchangeID"])],
             name=data["SecurityName"],
-            product=PRODUCT_TORA2VT[bytes.decode(data["ProductID"])],
+            product=PRODUCT_TORA2VT.get(bytes.decode(data["ProductID"]), Product.EQUITY),
             size=data["VolumeMultiple"],
             pricetick=data["PriceTick"],
             min_volume=data["MinLimitOrderBuyVolume"],
@@ -702,17 +727,27 @@ class ToraTdApi(traderapi.CTORATstpTraderSpi):
         userid: str,
         password: str,
         address: str,
+        account_type: str,
+        address_type: str
     ) -> None:
         """
         Start connection to server.
         """
         self.userid = userid
         self.password = password
+        self.address = address
+        self.account_type = account_type
+        self.address_type = address_type
 
         if not self.connect_status:
             self.api = traderapi.CTORATstpTraderApi.CreateTstpTraderApi()
+
             self.api.RegisterSpi(self)
-            self.api.RegisterFront(address)
+
+            if self.address_type == ADDRESS_FRONT:
+                self.api.RegisterFront(address)
+            else:
+                self.api.RegisterNameServer(address)
 
             self.api.SubscribePrivateTopic(TORA_TERT_RESTART)
             self.api.SubscribePublicTopic(TORA_TERT_RESTART)
@@ -725,8 +760,14 @@ class ToraTdApi(traderapi.CTORATstpTraderSpi):
         """
         login_req = traderapi.CTORATstpReqUserLoginField()
         login_req.LogInAccount = self.userid
-        login_req.LogInAccountType = TORA_TSTP_LACT_UserID
         login_req.Password = self.password
+        login_req.UserProductInfo = "vnpy_2.0"
+        login_req.TerminalInfo = get_terminal_info()
+
+        if self.account_type == ACCOUNT_USERID:
+            login_req.LogInAccountType = TORA_TSTP_LACT_UserID
+        else:
+            login_req.LogInAccountType = TORA_TSTP_LACT_AccountID
 
         self.reqid += 1
         self.api.ReqUserLogin(login_req, self.reqid)
