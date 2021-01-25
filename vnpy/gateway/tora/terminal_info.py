@@ -1,5 +1,6 @@
 import wmi
 import requests
+import pythoncom
 
 
 def get_iip():
@@ -44,6 +45,9 @@ def get_hd():
 
 def get_terminal_info():
     """"""
+    # Initialize COM object in this thread.
+    pythoncom.CoInitialize()
+
     iip = ""
     iport = ""
     lip = get_lip()

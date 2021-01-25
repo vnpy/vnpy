@@ -67,7 +67,7 @@ class TrendFollowingStrategy(StrategyTemplate):
             self.bgs[vt_symbol] = BarGenerator(on_bar)
             self.ams[vt_symbol] = ArrayManager()
             self.targets[vt_symbol] = 0
-       
+
     def on_init(self):
         """
         Callback when strategy is inited.

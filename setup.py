@@ -367,14 +367,13 @@ setup(
         "Operating System :: Microsoft :: Windows :: Windows 10",
         "Operating System :: Microsoft :: Windows :: Windows Server 2008",
         "Operating System :: Microsoft :: Windows :: Windows Server 2012",
-        "Operating System :: Microsoft :: Windows :: Windows Server 2012",
+        "Operating System :: Microsoft :: Windows :: Windows Server 2019",
         "Operating System :: POSIX :: Linux"
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
         "Topic :: Office/Business :: Financial :: Investment",
         "Programming Language :: Python :: Implementation :: CPython",
         "License :: OSI Approved :: MIT License",
-        "Natural Language :: Chinese (Simplified)",
         "Natural Language :: Chinese (Simplified)"
     ],
     ext_modules=get_ext_modules(),

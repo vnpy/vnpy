@@ -34,10 +34,6 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
 
     def on_tick(self, tick: TickData):
         """"""
-        # Return if tick not inited
-        if not self.spread.bid_volume or not self.spread.ask_volume:
-            return
-
         # Return if there are any existing orders
         if not self.check_order_finished():
             return
@@ -45,6 +41,10 @@ class SpreadTakerAlgo(SpreadAlgoTemplate):
         # Hedge if active leg is not fully hedged
         if not self.check_hedge_finished():
             self.hedge_passive_legs()
+            return
+
+        # Return if tick not inited
+        if not self.spread.bid_volume or not self.spread.ask_volume:
             return
 
         # Otherwise check if should take active leg
