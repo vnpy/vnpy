@@ -8,6 +8,7 @@ shift 2
 [[ -z $prefix ]] && prefix=/usr
 
 $python -m pip install --upgrade pip setuptools wheel
+$python -m pip uninstall -y enum34
 
 # Get and build ta-lib
 function install-ta-lib()
@@ -41,5 +42,6 @@ $python -m pip install -r requirements.txt
 # Install local Chinese language environment
 locale-gen zh_CN.GB18030
 
+$python -m pip uninstall -y enum34
 # Install vn.py
 $python -m pip install . $@
