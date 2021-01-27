@@ -33,7 +33,7 @@ file(GLOB vnsgittd_sources
 message(STATUS "vnsgittd_sources ${vnsgittd_sources}")
 add_library(vnsgittd MODULE ${vnsgittd_sources})
 target_include_directories(vnsgittd
-    PRIvATE ${CMAKE_SOURCE_DIR}/external/include
+    PRIVATE ${CMAKE_SOURCE_DIR}/external/include
     PRIVATE include
     PRIVATE vnsgit
     PRIVATE vnsgit/vnsgittd )

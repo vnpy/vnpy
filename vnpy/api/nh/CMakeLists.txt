@@ -20,6 +20,7 @@ message(STATUS "vnnhfutures_sources ${vnnhfutures_sources}")
 add_library(vnnhfutures MODULE ${vnnhfutures_sources})
 target_include_directories(vnnhfutures
     PRIVATE ${CMAKE_SOURCE_DIR}/external/include
+    PRIVATE vnnh
     PRIVATE include
     PRIVATE vnnh/vnnhfutures )
 target_link_directories(vnnhfutures PRIVATE . PRIVATE libs)
