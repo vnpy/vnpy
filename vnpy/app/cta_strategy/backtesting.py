@@ -7,6 +7,7 @@ from time import time
 import multiprocessing
 import random
 import traceback
+import math
 
 import numpy as np
 from pandas import DataFrame
@@ -226,7 +227,7 @@ class BacktestingEngine:
 
         # Load 30 days of data each time and allow for progress update
         total_days = (self.end - self.start).days
-        progress_days = int(total_days / 10)
+        progress_days = math.ceil(total_days / 10)
         progress_delta = timedelta(days=progress_days)
         interval_delta = INTERVAL_DELTA_MAP[self.interval]
 
@@ -263,7 +264,6 @@ class BacktestingEngine:
 
             start = end + interval_delta
             end += progress_delta
-
         self.output(f"历史数据加载完成，数据量：{len(self.history_data)}")
 
     def run_backtesting(self):
@@ -308,7 +308,7 @@ class BacktestingEngine:
             return
 
         total_size = len(backtesting_data)
-        batch_size = int(total_size / 10)
+        batch_size = math.ceil(total_size / 10)
 
         for ix, i in enumerate(range(0, total_size, batch_size)):
             batch_data = backtesting_data[i: i + batch_size]
