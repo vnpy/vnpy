@@ -1,7 +1,9 @@
 """
 """
 
+import pytz
 from datetime import datetime
+from time import sleep
 
 from vnpy.api.sopt import (
     MdApi,
@@ -110,6 +112,7 @@ OPTIONTYPE_SOPT2VT = {
     THOST_FTDC_CP_PutOptions: OptionType.PUT
 }
 
+CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 symbol_exchange_map = {}
 symbol_name_map = {}
@@ -217,7 +220,7 @@ class SoptMdApi(MdApi):
 
     def __init__(self, gateway):
         """Constructor"""
-        super(SoptMdApi, self).__init__()
+        super().__init__()
 
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
@@ -281,11 +284,13 @@ class SoptMdApi(MdApi):
         if not exchange:
             return
         timestamp = f"{data['TradingDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f")
+        dt = CHINA_TZ.localize(dt)
 
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
-            datetime=datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f"),
+            datetime=dt,
             name=symbol_name_map[symbol],
             volume=data["Volume"],
             open_interest=data["OpenInterest"],
@@ -302,6 +307,27 @@ class SoptMdApi(MdApi):
             ask_volume_1=data["AskVolume1"],
             gateway_name=self.gateway_name
         )
+
+        tick.bid_price_2 = data["BidPrice2"]
+        tick.bid_price_3 = data["BidPrice3"]
+        tick.bid_price_4 = data["BidPrice4"]
+        tick.bid_price_5 = data["BidPrice5"]
+
+        tick.ask_price_2 = data["AskPrice2"]
+        tick.ask_price_3 = data["AskPrice3"]
+        tick.ask_price_4 = data["AskPrice4"]
+        tick.ask_price_5 = data["AskPrice5"]
+
+        tick.bid_volume_2 = data["BidVolume2"]
+        tick.bid_volume_3 = data["BidVolume3"]
+        tick.bid_volume_4 = data["BidVolume4"]
+        tick.bid_volume_5 = data["BidVolume5"]
+
+        tick.ask_volume_2 = data["AskVolume2"]
+        tick.ask_volume_3 = data["AskVolume3"]
+        tick.ask_volume_4 = data["AskVolume4"]
+        tick.ask_volume_5 = data["AskVolume5"]
+
         self.gateway.on_tick(tick)
 
     def connect(self, address: str, userid: str, password: str, brokerid: int):
@@ -319,6 +345,13 @@ class SoptMdApi(MdApi):
             self.registerFront(address)
             self.init()
             self.connect_status = True
+
+            # Sleep 1 second and check trigger callback manually
+            # (temp fix of the bug of Huaxi futures SOPT system)
+            sleep(1)
+            if not self.login_status:
+                self.onFrontConnected()
+
         # If already connected, then login immediately.
         elif not self.login_status:
             self.login()
@@ -357,9 +390,7 @@ class SoptTdApi(TdApi):
 
     def __init__(self, gateway):
         """Constructor"""
-        super(SoptTdApi, self).__init__()
-
-        self.test = []
+        super().__init__()
 
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
@@ -478,10 +509,17 @@ class SoptTdApi(TdApi):
         # Get buffered position object
         key = f"{data['InstrumentID'], data['PosiDirection']}"
         position = self.positions.get(key, None)
+
+        symbol = data["InstrumentID"]
+        if "&" in symbol:
+            exchange = Exchange.SSE
+        else:
+            exchange = symbol_exchange_map[data["InstrumentID"]]
+
         if not position:
             position = PositionData(
-                symbol=data["InstrumentID"],
-                exchange=symbol_exchange_map[data["InstrumentID"]],
+                symbol=symbol,
+                exchange=exchange,
                 direction=DIRECTION_SOPT2VT[data["PosiDirection"]],
                 gateway_name=self.gateway_name
             )
@@ -553,10 +591,19 @@ class SoptTdApi(TdApi):
 
             # For option only
             if contract.product == Product.OPTION:
-                contract.option_underlying = data["UnderlyingInstrID"],
-                contract.option_type = OPTIONTYPE_SOPT2VT.get(data["OptionsType"], None),
-                contract.option_strike = data["StrikePrice"],
-                contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d"),
+                contract.option_portfolio = data["UnderlyingInstrID"] + "_O"
+                contract.option_underlying = (
+                    data["UnderlyingInstrID"]
+                    + "-"
+                    + str(data["DeliveryYear"])
+                    + str(data["DeliveryMonth"]).rjust(2, "0")
+                )
+                contract.option_type = OPTIONTYPE_SOPT2VT.get(data["OptionsType"], None)
+                contract.option_strike = data["StrikePrice"]
+                contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d")
+                contract.option_index = get_option_index(
+                    contract.option_strike, data["InstrumentCode"]
+                )
 
             self.gateway.on_contract(contract)
 
@@ -590,6 +637,10 @@ class SoptTdApi(TdApi):
         order_ref = data["OrderRef"]
         orderid = f"{frontid}_{sessionid}_{order_ref}"
 
+        timestamp = f"{data['InsertDate']} {data['InsertTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = CHINA_TZ.localize(dt)
+
         order = OrderData(
             symbol=symbol,
             exchange=exchange,
@@ -601,7 +652,7 @@ class SoptTdApi(TdApi):
             volume=data["VolumeTotalOriginal"],
             traded=data["VolumeTraded"],
             status=STATUS_SOPT2VT[data["OrderStatus"]],
-            time=data["InsertTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
         self.gateway.on_order(order)
@@ -620,6 +671,10 @@ class SoptTdApi(TdApi):
 
         orderid = self.sysid_orderid_map[data["OrderSysID"]]
 
+        timestamp = f"{data['TradeDate']} {data['TradeTime']}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+        dt = CHINA_TZ.localize(dt)
+
         trade = TradeData(
             symbol=symbol,
             exchange=exchange,
@@ -629,7 +684,7 @@ class SoptTdApi(TdApi):
             offset=OFFSET_SOPT2VT[data["OffsetFlag"]],
             price=data["Price"],
             volume=data["Volume"],
-            time=data["TradeTime"],
+            datetime=dt,
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)
@@ -796,3 +851,22 @@ class SoptTdApi(TdApi):
         """"""
         if self.connect_status:
             self.exit()
+
+
+def get_option_index(strike_price: float, exchange_instrument_id: str) -> str:
+    """"""
+    exchange_instrument_id = exchange_instrument_id.replace(" ", "")
+
+    if "M" in exchange_instrument_id:
+        n = exchange_instrument_id.index("M")
+    elif "A" in exchange_instrument_id:
+        n = exchange_instrument_id.index("A")
+    elif "B" in exchange_instrument_id:
+        n = exchange_instrument_id.index("B")
+    else:
+        return str(strike_price)
+
+    index = exchange_instrument_id[n:]
+    option_index = f"{strike_price:.3f}-{index}"
+
+    return option_index

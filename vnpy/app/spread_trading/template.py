@@ -9,7 +9,7 @@ from vnpy.trader.object import (
 from vnpy.trader.constant import Direction, Status, Offset, Interval
 from vnpy.trader.utility import virtual, floor_to, ceil_to, round_to
 
-from .base import SpreadData, calculate_inverse_volume
+from .base import SpreadData, AdvancedSpreadData, calculate_inverse_volume
 
 
 class SpreadAlgoTemplate:
@@ -55,9 +55,14 @@ class SpreadAlgoTemplate:
         self.count: int = 0                     # Timer count
         self.traded: float = 0                  # Volume traded
         self.traded_volume: float = 0           # Volume traded (Abs value)
+        self.traded_price: float = 0            # Spread fill price
 
-        self.leg_traded: Dict[str, float] = defaultdict(int)
+        self.leg_traded: Dict[str, float] = defaultdict(float)
+        self.leg_cost: Dict[str, float] = defaultdict(float)
         self.leg_orders: Dict[str, List[str]] = defaultdict(list)
+
+        self.order_trade_volume: Dict[str, int] = defaultdict(int)
+        self.orders: Dict[str, OrderData] = {}
 
         self.write_log("算法已启动")
 
@@ -100,9 +105,57 @@ class SpreadAlgoTemplate:
             )
             leg_traded = self.leg_traded[passive_symbol]
 
-            if leg_traded != leg_target:
-                finished = False
+            # For linear contract, traded volume must be no less than target volume
+            if not self.spread.is_inverse(leg.vt_symbol):
+                if leg_target > 0 and leg_traded < leg_target:
+                    finished = False
+                elif leg_target < 0 and leg_traded > leg_target:
+                    finished = False
+            # For inverse contract, the difference must be lower than min volume
+            else:
+                leg_min_volume = self.spread.calculate_leg_volume(
+                    passive_symbol, self.spread.min_volume
+                )
+
+                dif = leg_target - leg_traded
+                if leg_target > 0 and dif >= leg_min_volume:
+                    finished = False
+                elif leg_target < 0 and dif <= -leg_min_volume:
+                    finished = False
+
+            if not finished:
                 break
+
+        return finished
+
+    def check_algo_finished(self) -> bool:
+        """"""
+        finished = True
+
+        for vt_symbol, leg in self.spread.legs.items():
+            leg_traded = self.leg_traded[vt_symbol]
+
+            trading_multiplier = self.spread.trading_multipliers[vt_symbol]
+            size = self.spread.get_leg_size(vt_symbol)
+
+            if self.spread.is_inverse(vt_symbol):
+                leg_target = calculate_inverse_volume(
+                    self.target * trading_multiplier,
+                    leg.last_price,
+                    size
+                )
+                min_change = calculate_inverse_volume(
+                    leg.min_volume,
+                    leg.last_price,
+                    size
+                )
+            else:
+                leg_target = self.target * trading_multiplier
+                min_change = leg.min_volume
+
+            leg_left = leg_target - leg_traded
+            if abs(leg_left) >= min_change:
+                finished = False
 
         return finished
 
@@ -136,28 +189,58 @@ class SpreadAlgoTemplate:
 
         if trade.direction == Direction.LONG:
             self.leg_traded[trade.vt_symbol] += trade_volume
+            self.leg_cost[trade.vt_symbol] += trade_volume * trade.price
         else:
             self.leg_traded[trade.vt_symbol] -= trade_volume
+            self.leg_cost[trade.vt_symbol] -= trade_volume * trade.price
 
-        msg = "委托成交，{}，{}，{}@{}".format(
+        self.calculate_traded_volume()
+        self.calculate_traded_price()
+
+        # Sum up total traded volume of each order,
+        self.order_trade_volume[trade.vt_orderid] += trade.volume
+
+        # Remove order from active list if all volume traded
+        order = self.orders[trade.vt_orderid]
+        contract = self.get_contract(trade.vt_symbol)
+
+        trade_volume = round_to(
+            self.order_trade_volume[order.vt_orderid],
+            contract.min_volume
+        )
+
+        if trade_volume == order.volume:
+            vt_orderids = self.leg_orders[order.vt_symbol]
+            if order.vt_orderid in vt_orderids:
+                vt_orderids.remove(order.vt_orderid)
+
+        msg = "委托成交[{}]，{}，{}，{}@{}".format(
+            trade.vt_orderid,
             trade.vt_symbol,
-            trade.direction,
+            trade.direction.value,
             trade.volume,
             trade.price
         )
         self.write_log(msg)
 
-        self.calculate_traded()
         self.put_event()
-
         self.on_trade(trade)
 
     def update_order(self, order: OrderData):
         """"""
-        if not order.is_active():
+        self.orders[order.vt_orderid] = order
+
+        # Remove order from active list if rejected or cancelled
+        if order.status in {Status.REJECTED, Status.CANCELLED}:
             vt_orderids = self.leg_orders[order.vt_symbol]
             if order.vt_orderid in vt_orderids:
                 vt_orderids.remove(order.vt_orderid)
+
+            msg = "委托{}[{}]".format(
+                order.status.value,
+                order.vt_orderid
+            )
+            self.write_log(msg)
 
         self.on_order(order)
 
@@ -209,6 +292,23 @@ class SpreadAlgoTemplate:
         leg = self.spread.legs[vt_symbol]
         volume = round_to(volume, leg.min_volume)
 
+        # If new order volume is 0, then check if algo finished
+        if not volume:
+            finished = self.check_algo_finished()
+
+            if finished:
+                self.status = Status.ALLTRADED
+                self.put_event()
+
+                msg = "各腿剩余数量均不足最小下单量，算法执行结束"
+                self.write_log(msg)
+
+            return
+
+        # Round order price to pricetick of contract
+        price = round_to(price, leg.pricetick)
+
+        # Otherwise send order
         vt_orderids = self.algo_engine.send_order(
             self,
             vt_symbol,
@@ -220,9 +320,10 @@ class SpreadAlgoTemplate:
 
         self.leg_orders[vt_symbol].extend(vt_orderids)
 
-        msg = "发出委托，{}，{}，{}@{}".format(
+        msg = "发出委托[{}]，{}，{}，{}@{}".format(
+            "|".join(vt_orderids),
             vt_symbol,
-            direction,
+            direction.value,
             volume,
             price
         )
@@ -238,25 +339,25 @@ class SpreadAlgoTemplate:
         for vt_symbol in self.leg_orders.keys():
             self.cancel_leg_order(vt_symbol)
 
-    def calculate_traded(self):
+    def calculate_traded_volume(self):
         """"""
         self.traded = 0
+        spread = self.spread
 
-        for n, leg in enumerate(self.spread.legs.values()):
+        n = 0
+        for leg in spread.legs.values():
             leg_traded = self.leg_traded[leg.vt_symbol]
-            trading_multiplier = self.spread.trading_multipliers[
-                leg.vt_symbol]
+            trading_multiplier = spread.trading_multipliers[leg.vt_symbol]
+            if not trading_multiplier:
+                continue
 
             adjusted_leg_traded = leg_traded / trading_multiplier
-            adjusted_leg_traded = round_to(
-                adjusted_leg_traded, self.spread.min_volume)
+            adjusted_leg_traded = round_to(adjusted_leg_traded, spread.min_volume)
 
             if adjusted_leg_traded > 0:
-                adjusted_leg_traded = floor_to(
-                    adjusted_leg_traded, self.spread.min_volume)
+                adjusted_leg_traded = floor_to(adjusted_leg_traded, spread.min_volume)
             else:
-                adjusted_leg_traded = ceil_to(
-                    adjusted_leg_traded, self.spread.min_volume)
+                adjusted_leg_traded = ceil_to(adjusted_leg_traded, spread.min_volume)
 
             if not n:
                 self.traded = adjusted_leg_traded
@@ -268,14 +369,66 @@ class SpreadAlgoTemplate:
                 else:
                     self.traded = 0
 
+            n += 1
+
         self.traded_volume = abs(self.traded)
 
-        if self.traded == self.target:
+        if self.target > 0 and self.traded >= self.target:
+            self.status = Status.ALLTRADED
+        elif self.target < 0 and self.traded <= self.target:
             self.status = Status.ALLTRADED
         elif not self.traded:
             self.status = Status.NOTTRADED
         else:
             self.status = Status.PARTTRADED
+
+    def calculate_traded_price(self):
+        """"""
+        self.traded_price = 0
+        spread = self.spread
+
+        # Basic spread
+        if not isinstance(spread, AdvancedSpreadData):
+            for leg in spread.legs.values():
+                # If any leg is not traded yet, set spread trade price to 0
+                leg_traded = self.leg_traded[leg.vt_symbol]
+                if not leg_traded:
+                    self.traded_price = 0
+                    break
+
+                leg_cost = self.leg_cost[leg.vt_symbol]
+                leg_price = leg_cost / leg_traded
+
+                price_multiplier = spread.price_multipliers[leg.vt_symbol]
+                self.traded_price += leg_price * price_multiplier
+
+            self.traded_price = round_to(self.traded_price, spread.pricetick)
+        # Advanced spread
+        else:
+            data = {}
+
+            for variable, vt_symbol in spread.variable_symbols.items():
+                leg = spread.legs[vt_symbol]
+                trading_multiplier = spread.trading_multipliers[leg.vt_symbol]
+
+                # Use last price for non-trading leg (trading multiplier is 0)
+                if not trading_multiplier:
+                    data[variable] = leg.tick.last_price
+                else:
+                    # If any leg is not traded yet, clear data dict to set traded price to 0
+                    leg_traded = self.leg_traded[leg.vt_symbol]
+                    if not leg_traded:
+                        data.clear()
+                        break
+
+                    leg_cost = self.leg_cost[leg.vt_symbol]
+                    data[variable] = leg_cost / leg_traded
+
+            if data:
+                self.traded_price = spread.parse_formula(spread.price_code, data)
+                self.traded_price = round_to(self.traded_price, spread.pricetick)
+            else:
+                self.traded_price = 0
 
     def get_tick(self, vt_symbol: str) -> TickData:
         """"""

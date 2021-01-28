@@ -63,6 +63,7 @@ class OrderType(Enum):
     STOP = "STOP"
     FAK = "FAK"
     FOK = "FOK"
+    RFQ = "询价"
 
 
 class OptionType(Enum):
@@ -87,17 +88,26 @@ class Exchange(Enum):
     SZSE = "SZSE"           # Shenzhen Stock Exchange
     SGE = "SGE"             # Shanghai Gold Exchange
     WXE = "WXE"             # Wuxi Steel Exchange
+    CFETS = "CFETS"         # China Foreign Exchange Trade System
 
     # Global
     SMART = "SMART"         # Smart Router for US stocks
+    NYSE = "NYSE"           # New York Stock Exchnage
+    NASDAQ = "NASDAQ"       # Nasdaq Exchange
+    ARCA = "ARCA"           # ARCA Exchange
+    EDGEA = "EDGEA"         # Direct Edge Exchange
+    ISLAND = "ISLAND"       # Nasdaq Island ECN
+    BATS = "BATS"           # Bats Global Markets
+    IEX = "IEX"             # The Investors Exchange
     NYMEX = "NYMEX"         # New York Mercantile Exchange
-    COMEX = "COMEX"         # a division of theNew York Mercantile Exchange
+    COMEX = "COMEX"         # COMEX of CME
     GLOBEX = "GLOBEX"       # Globex of CME
     IDEALPRO = "IDEALPRO"   # Forex ECN of Interactive Brokers
     CME = "CME"             # Chicago Mercantile Exchange
     ICE = "ICE"             # Intercontinental Exchange
     SEHK = "SEHK"           # Stock Exchange of Hong Kong
     HKFE = "HKFE"           # Hong Kong Futures Exchange
+    HKSE = "HKSE"           # Hong Kong Stock Exchange
     SGX = "SGX"             # Singapore Global Exchange
     CBOT = "CBT"            # Chicago Board of Trade
     CBOE = "CBOE"           # Chicago Board Options Exchange
@@ -110,8 +120,8 @@ class Exchange(Enum):
     TOCOM = "TOCOM"         # Tokyo Commodity Exchange
     EUNX = "EUNX"           # Euronext Exchange
     KRX = "KRX"             # Korean Exchange
-
-    OANDA = "OANDA"         # oanda.com
+    OTC = "OTC"             # OTC Forex Broker
+    IBKRATS = "IBKRATS"     # Paper Trading Exchange of IB
 
     # CryptoCurrency
     BITMEX = "BITMEX"
@@ -121,6 +131,7 @@ class Exchange(Enum):
     BINANCE = "BINANCE"
     BYBIT = "BYBIT"         # bybit.com
     COINBASE = "COINBASE"
+    DERIBIT = "DERIBIT"
     GATEIO = "GATEIO"
     BITSTAMP = "BITSTAMP"
 
@@ -145,3 +156,4 @@ class Interval(Enum):
     HOUR = "1h"
     DAILY = "d"
     WEEKLY = "w"
+    TICK = "tick"

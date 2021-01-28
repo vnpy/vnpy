@@ -6,11 +6,12 @@ from functools import lru_cache
 from time import time
 import multiprocessing
 import random
+import traceback
 
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from pandas import DataFrame
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from deap import creator, base, tools, algorithms
 
 from vnpy.trader.constant import (Direction, Offset, Exchange,
@@ -29,7 +30,8 @@ from .base import (
 )
 from .template import CtaTemplate
 
-sns.set_style("whitegrid")
+
+# Set deap algo
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
 
@@ -114,6 +116,7 @@ class BacktestingEngine:
         self.size = 1
         self.pricetick = 0
         self.capital = 1_000_000
+        self.risk_free: float = 0.02
         self.mode = BacktestingMode.BAR
         self.inverse = False
 
@@ -179,7 +182,8 @@ class BacktestingEngine:
         capital: int = 0,
         end: datetime = None,
         mode: BacktestingMode = BacktestingMode.BAR,
-        inverse: bool = False
+        inverse: bool = False,
+        risk_free: float = 0
     ):
         """"""
         self.mode = mode
@@ -198,6 +202,7 @@ class BacktestingEngine:
         self.end = end
         self.mode = mode
         self.inverse = inverse
+        self.risk_free = risk_free
 
     def add_strategy(self, strategy_class: type, setting: dict):
         """"""
@@ -220,8 +225,9 @@ class BacktestingEngine:
         self.history_data.clear()       # Clear previously loaded history data
 
         # Load 30 days of data each time and allow for progress update
-        progress_delta = timedelta(days=30)
-        total_delta = self.end - self.start
+        total_days = (self.end - self.start).days
+        progress_days = int(total_days / 10)
+        progress_delta = timedelta(days=progress_days)
         interval_delta = INTERVAL_DELTA_MAP[self.interval]
 
         start = self.start
@@ -229,6 +235,9 @@ class BacktestingEngine:
         progress = 0
 
         while start < self.end:
+            progress_bar = "#" * int(progress * 10 + 1)
+            self.output(f"加载进度：{progress_bar} [{progress:.0%}]")
+
             end = min(end, self.end)  # Make sure end time stays within set range
 
             if self.mode == BacktestingMode.BAR:
@@ -249,13 +258,11 @@ class BacktestingEngine:
 
             self.history_data.extend(data)
 
-            progress += progress_delta / total_delta
+            progress += progress_days / total_days
             progress = min(progress, 1)
-            progress_bar = "#" * int(progress * 10)
-            self.output(f"加载进度：{progress_bar} [{progress:.0%}]")
 
             start = end + interval_delta
-            end += (progress_delta + interval_delta)
+            end += progress_delta
 
         self.output(f"历史数据加载完成，数据量：{len(self.history_data)}")
 
@@ -269,7 +276,7 @@ class BacktestingEngine:
         self.strategy.on_init()
 
         # Use the first [days] of history data for initializing strategy
-        day_count = 0
+        day_count = 1
         ix = 0
 
         for ix, data in enumerate(self.history_data):
@@ -279,7 +286,13 @@ class BacktestingEngine:
                     break
 
             self.datetime = data.datetime
-            self.callback(data)
+
+            try:
+                self.callback(data)
+            except Exception:
+                self.output("触发异常，回测终止")
+                self.output(traceback.format_exc())
+                return
 
         self.strategy.inited = True
         self.output("策略初始化完成")
@@ -289,9 +302,29 @@ class BacktestingEngine:
         self.output("开始回放历史数据")
 
         # Use the rest of history data for running backtesting
-        for data in self.history_data[ix:]:
-            func(data)
+        backtesting_data = self.history_data[ix:]
+        if not backtesting_data:
+            self.output("历史数据不足，回测终止")
+            return
 
+        total_size = len(backtesting_data)
+        batch_size = int(total_size / 10)
+
+        for ix, i in enumerate(range(0, total_size, batch_size)):
+            batch_data = backtesting_data[i: i + batch_size]
+            for data in batch_data:
+                try:
+                    func(data)
+                except Exception:
+                    self.output("触发异常，回测终止")
+                    self.output(traceback.format_exc())
+                    return
+
+            progress = min(ix / 10, 1)
+            progress_bar = "=" * (ix + 1)
+            self.output(f"回放进度：{progress_bar} [{progress:.0%}]")
+
+        self.strategy.on_stop()
         self.output("历史数据回放结束")
 
     def calculate_result(self):
@@ -376,7 +409,12 @@ class BacktestingEngine:
         else:
             # Calculate balance related time series data
             df["balance"] = df["net_pnl"].cumsum() + self.capital
-            df["return"] = np.log(df["balance"] / df["balance"].shift(1)).fillna(0)
+
+            # When balance falls below 0, set daily return to 0
+            x = df["balance"] / df["balance"].shift(1)
+            x[x <= 0] = np.nan
+            df["return"] = np.log(x).fillna(0)
+
             df["highlevel"] = (
                 df["balance"].rolling(
                     min_periods=1, window=len(df), center=False).max()
@@ -396,8 +434,12 @@ class BacktestingEngine:
             max_drawdown = df["drawdown"].min()
             max_ddpercent = df["ddpercent"].min()
             max_drawdown_end = df["drawdown"].idxmin()
-            max_drawdown_start = df["balance"][:max_drawdown_end].argmax()
-            max_drawdown_duration = (max_drawdown_end - max_drawdown_start).days
+
+            if isinstance(max_drawdown_end, date):
+                max_drawdown_start = df["balance"][:max_drawdown_end].idxmax()
+                max_drawdown_duration = (max_drawdown_end - max_drawdown_start).days
+            else:
+                max_drawdown_duration = 0
 
             total_net_pnl = df["net_pnl"].sum()
             daily_net_pnl = total_net_pnl / total_days
@@ -420,7 +462,8 @@ class BacktestingEngine:
             return_std = df["return"].std() * 100
 
             if return_std:
-                sharpe_ratio = daily_return / return_std * np.sqrt(240)
+                daily_risk_free = self.risk_free / np.sqrt(240)
+                sharpe_ratio = (daily_return - daily_risk_free) / return_std * np.sqrt(240)
             else:
                 sharpe_ratio = 0
 
@@ -491,6 +534,13 @@ class BacktestingEngine:
             "return_drawdown_ratio": return_drawdown_ratio,
         }
 
+        # Filter potential error infinite value
+        for key, value in statistics.items():
+            if value in (np.inf, -np.inf):
+                value = 0
+            statistics[key] = np.nan_to_num(value)
+
+        self.output("策略统计指标计算完成")
         return statistics
 
     def show_chart(self, df: DataFrame = None):
@@ -503,25 +553,37 @@ class BacktestingEngine:
         if df is None:
             return
 
-        plt.figure(figsize=(10, 16))
+        fig = make_subplots(
+            rows=4,
+            cols=1,
+            subplot_titles=["Balance", "Drawdown", "Daily Pnl", "Pnl Distribution"],
+            vertical_spacing=0.06
+        )
 
-        balance_plot = plt.subplot(4, 1, 1)
-        balance_plot.set_title("Balance")
-        df["balance"].plot(legend=True)
+        balance_line = go.Scatter(
+            x=df.index,
+            y=df["balance"],
+            mode="lines",
+            name="Balance"
+        )
+        drawdown_scatter = go.Scatter(
+            x=df.index,
+            y=df["drawdown"],
+            fillcolor="red",
+            fill='tozeroy',
+            mode="lines",
+            name="Drawdown"
+        )
+        pnl_bar = go.Bar(y=df["net_pnl"], name="Daily Pnl")
+        pnl_histogram = go.Histogram(x=df["net_pnl"], nbinsx=100, name="Days")
 
-        drawdown_plot = plt.subplot(4, 1, 2)
-        drawdown_plot.set_title("Drawdown")
-        drawdown_plot.fill_between(range(len(df)), df["drawdown"].values)
+        fig.add_trace(balance_line, row=1, col=1)
+        fig.add_trace(drawdown_scatter, row=2, col=1)
+        fig.add_trace(pnl_bar, row=3, col=1)
+        fig.add_trace(pnl_histogram, row=4, col=1)
 
-        pnl_plot = plt.subplot(4, 1, 3)
-        pnl_plot.set_title("Daily Pnl")
-        df["net_pnl"].plot(kind="bar", legend=False, grid=False, xticks=[])
-
-        distribution_plot = plt.subplot(4, 1, 4)
-        distribution_plot.set_title("Daily Pnl Distribution")
-        df["net_pnl"].hist(bins=50)
-
-        plt.show()
+        fig.update_layout(height=1000, width=1000)
+        fig.show()
 
     def run_optimization(self, optimization_setting: OptimizationSetting, output=True):
         """"""
@@ -538,7 +600,9 @@ class BacktestingEngine:
             return
 
         # Use multiprocessing pool for running backtesting with different setting
-        pool = multiprocessing.Pool(multiprocessing.cpu_count())
+        # Force to use spawn method to create new process (instead of fork on Linux)
+        ctx = multiprocessing.get_context("spawn")
+        pool = ctx.Pool(multiprocessing.cpu_count())
 
         results = []
         for setting in settings:
@@ -633,7 +697,7 @@ class BacktestingEngine:
         ga_mode = self.mode
         ga_inverse = self.inverse
 
-        # Set up genetic algorithem
+        # Set up genetic algorithm
         toolbox = base.Toolbox()
         toolbox.register("individual", tools.initIterate, creator.Individual, generate_parameter)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
@@ -797,10 +861,9 @@ class BacktestingEngine:
                 offset=order.offset,
                 price=trade_price,
                 volume=order.volume,
-                time=self.datetime.strftime("%H:%M:%S"),
+                datetime=self.datetime,
                 gateway_name=self.gateway_name,
             )
-            trade.datetime = self.datetime
 
             self.strategy.pos += pos_change
             self.strategy.on_trade(trade)
@@ -848,10 +911,11 @@ class BacktestingEngine:
                 offset=stop_order.offset,
                 price=stop_order.price,
                 volume=stop_order.volume,
+                traded=stop_order.volume,
                 status=Status.ALLTRADED,
                 gateway_name=self.gateway_name,
+                datetime=self.datetime
             )
-            order.datetime = self.datetime
 
             self.limit_orders[order.vt_orderid] = order
 
@@ -874,10 +938,9 @@ class BacktestingEngine:
                 offset=order.offset,
                 price=trade_price,
                 volume=order.volume,
-                time=self.datetime.strftime("%H:%M:%S"),
+                datetime=self.datetime,
                 gateway_name=self.gateway_name,
             )
-            trade.datetime = self.datetime
 
             self.trades[trade.vt_tradeid] = trade
 
@@ -885,7 +948,8 @@ class BacktestingEngine:
             stop_order.vt_orderids.append(order.vt_orderid)
             stop_order.status = StopOrderStatus.TRIGGERED
 
-            self.active_stop_orders.pop(stop_order.stop_orderid)
+            if stop_order.stop_orderid in self.active_stop_orders:
+                self.active_stop_orders.pop(stop_order.stop_orderid)
 
             # Push update to strategy.
             self.strategy.on_stop_order(stop_order)
@@ -895,7 +959,12 @@ class BacktestingEngine:
             self.strategy.on_trade(trade)
 
     def load_bar(
-        self, vt_symbol: str, days: int, interval: Interval, callback: Callable
+        self,
+        vt_symbol: str,
+        days: int,
+        interval: Interval,
+        callback: Callable,
+        use_database: bool
     ):
         """"""
         self.days = days
@@ -969,8 +1038,8 @@ class BacktestingEngine:
             volume=volume,
             status=Status.SUBMITTING,
             gateway_name=self.gateway_name,
+            datetime=self.datetime
         )
-        order.datetime = self.datetime
 
         self.active_limit_orders[order.vt_orderid] = order
         self.limit_orders[order.vt_orderid] = order
@@ -1040,6 +1109,12 @@ class BacktestingEngine:
         Return engine type.
         """
         return self.engine_type
+
+    def get_pricetick(self, strategy: CtaTemplate):
+        """
+        Return contract pricetick data.
+        """
+        return self.pricetick
 
     def put_strategy_event(self, strategy: CtaTemplate):
         """

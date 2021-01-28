@@ -124,7 +124,8 @@ class ScriptEngine(BaseEngine):
             type=order_type,
             volume=volume,
             price=price,
-            offset=offset
+            offset=offset,
+            reference=APP_NAME
         )
 
         vt_orderid = self.main_engine.send_order(req, contract.gateway_name)
@@ -247,11 +248,13 @@ class ScriptEngine(BaseEngine):
             return []
 
         start = datetime.strptime(start_date, "%Y%m%d")
+        end = datetime.now()
 
         req = HistoryRequest(
             symbol=contract.symbol,
             exchange=contract.exchange,
             start=start,
+            end=end,
             interval=interval
         )
 

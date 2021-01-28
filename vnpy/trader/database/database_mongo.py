@@ -1,12 +1,17 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Sequence
+from typing import Optional, Sequence, List
+from tzlocal import get_localzone
 
 from mongoengine import DateTimeField, Document, FloatField, StringField, connect
 
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.object import BarData, TickData
-from .database import BaseDatabaseManager, Driver
+
+from .database import BaseDatabaseManager, Driver, DB_TZ
+
+
+LOCAL_TZ = get_localzone()
 
 
 def init(_: Driver, settings: dict):
@@ -62,26 +67,6 @@ class DbBarData(Document):
         ]
     }
 
-    @staticmethod
-    def from_bar(bar: BarData):
-        """
-        Generate DbBarData object from BarData.
-        """
-        db_bar = DbBarData()
-
-        db_bar.symbol = bar.symbol
-        db_bar.exchange = bar.exchange.value
-        db_bar.datetime = bar.datetime
-        db_bar.interval = bar.interval.value
-        db_bar.volume = bar.volume
-        db_bar.open_interest = bar.open_interest
-        db_bar.open_price = bar.open_price
-        db_bar.high_price = bar.high_price
-        db_bar.low_price = bar.low_price
-        db_bar.close_price = bar.close_price
-
-        return db_bar
-
     def to_bar(self):
         """
         Generate BarData object from DbBarData.
@@ -89,7 +74,7 @@ class DbBarData(Document):
         bar = BarData(
             symbol=self.symbol,
             exchange=Exchange(self.exchange),
-            datetime=self.datetime,
+            datetime=DB_TZ.localize(self.datetime),
             interval=Interval(self.interval),
             volume=self.volume,
             open_interest=self.open_interest,
@@ -160,56 +145,6 @@ class DbTickData(Document):
         ],
     }
 
-    @staticmethod
-    def from_tick(tick: TickData):
-        """
-        Generate DbTickData object from TickData.
-        """
-        db_tick = DbTickData()
-
-        db_tick.symbol = tick.symbol
-        db_tick.exchange = tick.exchange.value
-        db_tick.datetime = tick.datetime
-        db_tick.name = tick.name
-        db_tick.volume = tick.volume
-        db_tick.open_interest = tick.open_interest
-        db_tick.last_price = tick.last_price
-        db_tick.last_volume = tick.last_volume
-        db_tick.limit_up = tick.limit_up
-        db_tick.limit_down = tick.limit_down
-        db_tick.open_price = tick.open_price
-        db_tick.high_price = tick.high_price
-        db_tick.low_price = tick.low_price
-        db_tick.pre_close = tick.pre_close
-
-        db_tick.bid_price_1 = tick.bid_price_1
-        db_tick.ask_price_1 = tick.ask_price_1
-        db_tick.bid_volume_1 = tick.bid_volume_1
-        db_tick.ask_volume_1 = tick.ask_volume_1
-
-        if tick.bid_price_2:
-            db_tick.bid_price_2 = tick.bid_price_2
-            db_tick.bid_price_3 = tick.bid_price_3
-            db_tick.bid_price_4 = tick.bid_price_4
-            db_tick.bid_price_5 = tick.bid_price_5
-
-            db_tick.ask_price_2 = tick.ask_price_2
-            db_tick.ask_price_3 = tick.ask_price_3
-            db_tick.ask_price_4 = tick.ask_price_4
-            db_tick.ask_price_5 = tick.ask_price_5
-
-            db_tick.bid_volume_2 = tick.bid_volume_2
-            db_tick.bid_volume_3 = tick.bid_volume_3
-            db_tick.bid_volume_4 = tick.bid_volume_4
-            db_tick.bid_volume_5 = tick.bid_volume_5
-
-            db_tick.ask_volume_2 = tick.ask_volume_2
-            db_tick.ask_volume_3 = tick.ask_volume_3
-            db_tick.ask_volume_4 = tick.ask_volume_4
-            db_tick.ask_volume_5 = tick.ask_volume_5
-
-        return db_tick
-
     def to_tick(self):
         """
         Generate TickData object from DbTickData.
@@ -217,7 +152,7 @@ class DbTickData(Document):
         tick = TickData(
             symbol=self.symbol,
             exchange=Exchange(self.exchange),
-            datetime=self.datetime,
+            datetime=DB_TZ.localize(self.datetime),
             name=self.name,
             volume=self.volume,
             open_interest=self.open_interest,
@@ -274,8 +209,8 @@ class MongoManager(BaseDatabaseManager):
             symbol=symbol,
             exchange=exchange.value,
             interval=interval.value,
-            datetime__gte=start,
-            datetime__lte=end,
+            datetime__gte=convert_tz(start),
+            datetime__lte=convert_tz(end),
         )
         data = [db_bar.to_bar() for db_bar in s]
         return data
@@ -286,18 +221,22 @@ class MongoManager(BaseDatabaseManager):
         s = DbTickData.objects(
             symbol=symbol,
             exchange=exchange.value,
-            datetime__gte=start,
-            datetime__lte=end,
+            datetime__gte=convert_tz(start),
+            datetime__lte=convert_tz(end),
         )
         data = [db_tick.to_tick() for db_tick in s]
         return data
 
     @staticmethod
-    def to_update_param(d):
-        return {
+    def to_update_param(d) -> dict:
+        dt = d.datetime.astimezone(DB_TZ)
+        d.datetime = dt.replace(tzinfo=None)
+
+        param = {
             "set__" + k: v.value if isinstance(v, Enum) else v
             for k, v in d.__dict__.items()
         }
+        return param
 
     def save_bar_data(self, datas: Sequence[BarData]):
         for d in datas:
@@ -325,8 +264,28 @@ class MongoManager(BaseDatabaseManager):
         self, symbol: str, exchange: "Exchange", interval: "Interval"
     ) -> Optional["BarData"]:
         s = (
-            DbBarData.objects(symbol=symbol, exchange=exchange.value)
+            DbBarData.objects(
+                symbol=symbol,
+                exchange=exchange.value,
+                interval=interval.value
+            )
             .order_by("-datetime")
+            .first()
+        )
+        if s:
+            return s.to_bar()
+        return None
+
+    def get_oldest_bar_data(
+        self, symbol: str, exchange: "Exchange", interval: "Interval"
+    ) -> Optional["BarData"]:
+        s = (
+            DbBarData.objects(
+                symbol=symbol,
+                exchange=exchange.value,
+                interval=interval.value
+            )
+            .order_by("+datetime")
             .first()
         )
         if s:
@@ -345,6 +304,55 @@ class MongoManager(BaseDatabaseManager):
             return s.to_tick()
         return None
 
+    def get_bar_data_statistics(self) -> List:
+        """"""
+        s = (
+            DbBarData.objects.aggregate({
+                "$group": {
+                    "_id": {
+                        "symbol": "$symbol",
+                        "exchange": "$exchange",
+                        "interval": "$interval",
+                    },
+                    "count": {"$sum": 1}
+                }
+            })
+        )
+
+        result = []
+
+        for d in s:
+            data = d["_id"]
+            data["count"] = d["count"]
+            result.append(data)
+
+        return result
+
+    def delete_bar_data(
+        self,
+        symbol: str,
+        exchange: "Exchange",
+        interval: "Interval"
+    ) -> int:
+        """
+        Delete all bar data with given symbol + exchange + interval.
+        """
+        count = DbBarData.objects(
+            symbol=symbol,
+            exchange=exchange.value,
+            interval=interval.value
+        ).delete()
+
+        return count
+
     def clean(self, symbol: str):
         DbTickData.objects(symbol=symbol).delete()
         DbBarData.objects(symbol=symbol).delete()
+
+
+def convert_tz(dt: datetime):
+    """"""
+    if not dt.tzinfo:
+        dt = LOCAL_TZ.localize(dt)
+    dt = dt.astimezone(DB_TZ)
+    return dt.replace(tzinfo=None)

@@ -10,6 +10,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from typing import List, Dict
+from pytz import utc as UTC_TZ
 
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
@@ -147,7 +148,7 @@ class GateiosRestApi(RestClient):
 
     def sign(self, request):
         """
-        Generate HBDM signature.
+        Generate signature.
         """
         request.headers = generate_sign(
             self.key,
@@ -180,7 +181,7 @@ class GateiosRestApi(RestClient):
         self.proxy_host = proxy_host
         self.proxy_port = proxy_port
 
-        self.connect_date = int(datetime.now().strftime("%y%m%d"))
+        self.connect_date = int(datetime.now(UTC_TZ).strftime("%y%m%d"))
 
         if server == "REAL":
             self.init(REST_HOST, proxy_host, proxy_port)
@@ -259,7 +260,7 @@ class GateiosRestApi(RestClient):
                 bar = BarData(
                     symbol=req.symbol,
                     exchange=req.exchange,
-                    datetime=datetime.fromtimestamp(d["t"]),
+                    datetime=generate_datetime(d["t"]),
                     interval=req.interval,
                     volume=d["v"],
                     open_price=float(d["o"]),
@@ -270,8 +271,8 @@ class GateiosRestApi(RestClient):
                 )
                 history.append(bar)
 
-            begin = datetime.fromtimestamp(data[0]["t"])
-            end = datetime.fromtimestamp(data[-1]["t"])
+            begin = generate_datetime(data[0]["t"])
+            end = generate_datetime(data[-1]["t"])
 
             msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
 
@@ -286,7 +287,7 @@ class GateiosRestApi(RestClient):
             local_orderid,
             self.gateway_name
         )
-        order.time = datetime.now().strftime("%H:%M:%S")
+        order.datetime = datetime.now(UTC_TZ)
 
         if req.direction == Direction.SHORT:
             volume = -int(req.volume)
@@ -381,8 +382,6 @@ class GateiosRestApi(RestClient):
             traded = abs(d["size"] - d["left"])
             status = get_order_status(d["status"], volume, traded)
 
-            dt = datetime.fromtimestamp(d["create_time"])
-
             order = OrderData(
                 orderid=local_orderid,
                 symbol=d["contract"],
@@ -392,7 +391,7 @@ class GateiosRestApi(RestClient):
                 type=OrderType.LIMIT,
                 direction=direction,
                 status=status,
-                time=dt.strftime("%H:%M:%S"),
+                datetime=generate_datetime(d["create_time"]),
                 gateway_name=self.gateway_name,
             )
             self.order_manager.on_order(order)
@@ -409,7 +408,7 @@ class GateiosRestApi(RestClient):
                 symbol=symbol,
                 exchange=Exchange.GATEIO,
                 name=symbol,
-                pricetick=d["order_price_round"],
+                pricetick=float(d["order_price_round"]),
                 size=int(d["leverage_min"]),
                 min_volume=d["order_size_min"],
                 product=Product.FUTURES,
@@ -543,7 +542,7 @@ class GateiosWebsocketApi(WebsocketClient):
             symbol=req.symbol,
             exchange=req.exchange,
             name=req.symbol,
-            datetime=datetime.now(),
+            datetime=datetime.now(UTC_TZ),
             gateway_name=self.gateway_name,
         )
         self.ticks[req.symbol] = tick
@@ -625,7 +624,7 @@ class GateiosWebsocketApi(WebsocketClient):
 
         tick.last_price = float(d["last"])
         tick.volume = int(d["volume_24h"])
-        tick.datetime = datetime.fromtimestamp(t)
+        tick.datetime = generate_datetime(t)
         self.gateway.on_tick(copy(tick))
 
     def on_depth(self, d: Dict, t: int):
@@ -647,7 +646,7 @@ class GateiosWebsocketApi(WebsocketClient):
             tick.__setattr__("ask_price_%s" % (n + 1), price)
             tick.__setattr__("ask_volume_%s" % (n + 1), volume)
 
-        tick.datetime = datetime.fromtimestamp(t)
+        tick.datetime = generate_datetime(t)
 
         self.gateway.on_tick(copy(tick))
 
@@ -675,7 +674,7 @@ class GateiosWebsocketApi(WebsocketClient):
             type=OrderType.LIMIT,
             direction=direction,
             status=status,
-            time=datetime.fromtimestamp(t).strftime("%H:%M:%S"),
+            datetime=generate_datetime(t),
             gateway_name=self.gateway_name,
         )
 
@@ -698,7 +697,7 @@ class GateiosWebsocketApi(WebsocketClient):
             direction=order.direction,
             price=float(d["price"]),
             volume=abs(d["size"]),
-            time=datetime.fromtimestamp(d["create_time"]).strftime("%H:%M:%S"),
+            datetime=generate_datetime(d["create_time"]),
             gateway_name=self.gateway_name,
         )
         self.gateway.on_trade(trade)
@@ -770,3 +769,10 @@ def get_order_status(status: str, volume: int, traded: int):
             return Status.ALLTRADED
         else:
             return Status.CANCELLED
+
+
+def generate_datetime(timestamp: float) -> datetime:
+    """"""
+    dt = datetime.fromtimestamp(timestamp)
+    dt = UTC_TZ.localize(dt)
+    return dt

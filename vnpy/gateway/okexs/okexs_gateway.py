@@ -10,11 +10,13 @@ import sys
 import time
 import zlib
 from copy import copy
-from datetime import datetime, timezone
+from datetime import datetime
 from threading import Lock
 from urllib.parse import urlencode
+from typing import Dict
 
 from requests import ConnectionError
+from pytz import utc as UTC_TZ
 
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
@@ -26,18 +28,24 @@ from vnpy.trader.object import (AccountData, BarData, CancelRequest, ContractDat
 
 _ = lambda x: x  # noqa
 REST_HOST = "https://www.okex.com"
-WEBSOCKET_HOST = "wss://real.okex.com:10442/ws/v3"
+WEBSOCKET_HOST = "wss://real.okex.com:8443/ws/v3"
 
 STATUS_OKEXS2VT = {
     "0": Status.NOTTRADED,
     "1": Status.PARTTRADED,
     "2": Status.ALLTRADED,
+    "3": Status.SUBMITTING,
+    "4": Status.SUBMITTING,
     "-1": Status.CANCELLED,
+    "-2": Status.REJECTED
 }
 
 ORDERTYPE_OKEXS2VT = {
     "0": OrderType.LIMIT,
-    "1": OrderType.MARKET,
+    "1": OrderType.LIMIT,
+    "2": OrderType.FOK,
+    "3": OrderType.FAK,
+    "4": OrderType.MARKET
 }
 
 TYPE_OKEXS2VT = {
@@ -60,8 +68,6 @@ INTERVAL_VT2OKEXS = {
 }
 
 instruments = set()
-utc_tz = timezone.utc
-local_tz = datetime.now(timezone.utc).astimezone().tzinfo
 
 
 class OkexsGateway(BaseGateway):
@@ -330,7 +336,7 @@ class OkexsRestApi(RestClient):
                 exchange=Exchange.OKEX,
                 name=symbol,
                 product=Product.FUTURES,
-                size=int(instrument_data["size_increment"]),
+                size=float(instrument_data["contract_val"]),
                 pricetick=float(instrument_data["tick_size"]),
                 history_data=True,
                 gateway_name=self.gateway_name,
@@ -500,7 +506,7 @@ class OkexsRestApi(RestClient):
 
                 for l in data:
                     ts, o, h, l, c, v, _ = l
-                    dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%fZ")
+                    dt = _parse_timestamp(ts)
                     bar = BarData(
                         symbol=req.symbol,
                         exchange=req.exchange,
@@ -548,6 +554,7 @@ class OkexsWebsocketApi(WebsocketClient):
         self._last_trade_id = 10000
         self.connect_time = 0
 
+        self.subscribed: Dict[str, SubscribeRequest] = {}
         self.callbacks = {}
         self.ticks = {}
 
@@ -576,11 +583,13 @@ class OkexsWebsocketApi(WebsocketClient):
         """
         Subscribe to tick data upate.
         """
+        self.subscribed[req.vt_symbol] = req
+
         tick = TickData(
             symbol=req.symbol,
             exchange=req.exchange,
             name=req.symbol,
-            datetime=datetime.now(),
+            datetime=datetime.now(UTC_TZ),
             gateway_name=self.gateway_name,
         )
         self.ticks[req.symbol] = tick
@@ -708,6 +717,9 @@ class OkexsWebsocketApi(WebsocketClient):
         if success:
             self.gateway.write_log("Websocket API登录成功")
             self.subscribe_topic()
+
+            for req in list(self.subscribed.values()):
+                self.subscribe(req)
         else:
             self.gateway.write_log("Websocket API登录失败")
 
@@ -718,7 +730,12 @@ class OkexsWebsocketApi(WebsocketClient):
         if not tick:
             return
 
-        tick.last_price = float(d["last"])
+        # Filter last price with 0 value
+        last_price = float(d["last"])
+        if not last_price:
+            return
+
+        tick.last_price = last_price
         tick.high_price = float(d["high_24h"])
         tick.low_price = float(d["low_24h"])
         tick.volume = float(d["volume_24h"])
@@ -735,15 +752,15 @@ class OkexsWebsocketApi(WebsocketClient):
 
         bids = d["bids"]
         asks = d["asks"]
-        for n, buf in enumerate(bids):
-            price, volume, _, __ = buf
-            tick.__setattr__("bid_price_%s" % (n + 1), price)
-            tick.__setattr__("bid_volume_%s" % (n + 1), volume)
+        for n in range(min(5, len(bids))):
+            price, volume, _ = bids[n]
+            tick.__setattr__("bid_price_%s" % (n + 1), float(price))
+            tick.__setattr__("bid_volume_%s" % (n + 1), int(volume))
 
-        for n, buf in enumerate(asks):
-            price, volume, _, __ = buf
-            tick.__setattr__("ask_price_%s" % (n + 1), price)
-            tick.__setattr__("ask_volume_%s" % (n + 1), volume)
+        for n in range(min(5, len(asks))):
+            price, volume, _ = asks[n]
+            tick.__setattr__("ask_price_%s" % (n + 1), float(price))
+            tick.__setattr__("ask_volume_%s" % (n + 1), int(volume))
 
         tick.datetime = _parse_timestamp(d["timestamp"])
         self.gateway.on_tick(copy(tick))
@@ -767,7 +784,7 @@ class OkexsWebsocketApi(WebsocketClient):
                 offset=order.offset,
                 price=float(data["last_fill_px"]),
                 volume=float(traded_volume),
-                time=order.time,
+                datetime=order.datetime,
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_trade(trade)
@@ -781,10 +798,37 @@ class OkexsWebsocketApi(WebsocketClient):
         """"""
         holdings = data['holding']
         symbol = data['instrument_id']
+
+        long_position = PositionData(
+            symbol=symbol,
+            exchange=Exchange.OKEX,
+            direction=Direction.LONG,
+            gateway_name=self.gateway_name
+        )
+
+        short_position = PositionData(
+            symbol=symbol,
+            exchange=Exchange.OKEX,
+            direction=Direction.SHORT,
+            gateway_name=self.gateway_name
+        )
+
         for holding in holdings:
-            pos = _parse_position_holding(holding=holding, symbol=symbol,
-                                          gateway_name=self.gateway_name)
-            self.gateway.on_position(pos)
+            if holding["side"] == "long":
+                long_position = _parse_position_holding(
+                    holding=holding,
+                    symbol=symbol,
+                    gateway_name=self.gateway_name
+                )
+            else:
+                short_position = _parse_position_holding(
+                    holding=holding,
+                    symbol=symbol,
+                    gateway_name=self.gateway_name
+                )
+
+        self.gateway.on_position(long_position)
+        self.gateway.on_position(short_position)
 
 
 def generate_signature(msg: str, secret_key: str):
@@ -801,10 +845,9 @@ def generate_timestamp():
 
 def _parse_timestamp(timestamp):
     """parse timestamp into local time."""
-    time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-    utc_time = time.replace(tzinfo=utc_tz)
-    local_time = utc_time.astimezone(local_tz)
-    return local_time
+    dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    dt = UTC_TZ.localize(dt)
+    return dt
 
 
 def _parse_position_holding(holding, symbol, gateway_name):
@@ -851,7 +894,7 @@ def _parse_order_info(order_info, gateway_name: str):
         traded=int(order_info["filled_qty"]),
         price=float(order_info["price"]),
         volume=float(order_info["size"]),
-        time=_parse_timestamp(order_info["timestamp"]).strftime("%H:%M:%S"),
+        datetime=_parse_timestamp(order_info["timestamp"]),
         status=STATUS_OKEXS2VT[order_info["status"]],
         gateway_name=gateway_name,
     )

@@ -1,5 +1,6 @@
 """"""
 
+import sys
 from threading import Thread
 from queue import Queue, Empty
 from copy import copy
@@ -23,6 +24,7 @@ APP_NAME = "DataRecorder"
 
 EVENT_RECORDER_LOG = "eRecorderLog"
 EVENT_RECORDER_UPDATE = "eRecorderUpdate"
+EVENT_RECORDER_EXCEPTION = "eRecorderException"
 
 
 class RecorderEngine(BaseEngine):
@@ -74,6 +76,13 @@ class RecorderEngine(BaseEngine):
 
             except Empty:
                 continue
+
+            except Exception:
+                self.active = False
+
+                info = sys.exc_info()
+                event = Event(EVENT_RECORDER_EXCEPTION, info)
+                self.event_engine.put(event)
 
     def close(self):
         """"""
@@ -171,8 +180,7 @@ class RecorderEngine(BaseEngine):
         """"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
-        self.event_engine.register(
-            EVENT_SPREAD_DATA, self.process_spread_event)
+        self.event_engine.register(EVENT_SPREAD_DATA, self.process_spread_event)
 
     def update_tick(self, tick: TickData):
         """"""

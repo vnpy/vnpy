@@ -5,16 +5,16 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.0.8-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.1.8-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
-    <img src ="https://img.shields.io/circleci/build/github/vnpy/vnpy?token=4d11df68295c8cc02a2bede46094991364190bbc"/>
+    <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
 
-vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1月正式发布，在开源社区5年持续不断的贡献下一步步成长为全功能量化交易平台，目前国内外金融机构用户已经超过300家，包括：私募基金、证券自营和资管、期货资管和子公司、高校研究机构、自营交易公司、交易所、Token Fund等。
+vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1月正式发布，在开源社区6年持续不断的贡献下一步步成长为全功能量化交易平台，目前国内外金融机构用户已经超过600家，包括：私募基金、证券自营和资管、期货资管和子公司、高校研究机构、自营交易公司、交易所、Token Fund等。
 
-全新的《vn.py全实战进阶》在线课程，已经在官方微信公众号[**vnpy-community**]上线，50节内容覆盖从策略设计开发、参数回测优化，到最终实盘自动交易的完整CTA量化业务流程。购买请扫描下方二维码关注后，点击菜单栏的【进阶课程】按钮即可：
+全新的《vn.py全实战进阶》系列在线课程，已经在官方微信公众号[**vnpy-community**]上线，覆盖CTA策略（已完成）、期权波动率交易（更新中）等内容。购买请扫描下方二维码关注后，点击菜单栏的【进阶课程】按钮即可：
 
 <p align="center">
   <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy_qr.jpg"/>
@@ -22,7 +22,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 在使用vn.py进行二次开发（策略、模块等）的过程中有任何疑问，请查看[**vn.py项目文档**](https://www.vnpy.com/docs/cn/index.html)，如果无法解决请前往[**官方社区论坛**](https://www.vnpy.com/forum/)的【提问求助】板块寻求帮助，也欢迎在【经验分享】板块分享你的使用心得！
 
-2.0版本基于Python 3.7全新重构开发，如需Python 2上的版本请点击：[长期支持版本v1.9.2 LTS](https://github.com/vnpy/vnpy/tree/v1.9.2-LTS)。
+针对vn.py的金融机构用户，创建了一个专门的【vn.py机构用户群】（QQ群号：676499931），主要分享机构应用方面相关的问题，如：银行间市场接入、资管O32系统、分布式部署等内容。请注意本群只对金融机构用户开放，加群时请注明：姓名-机构-部门。
 
 ## 功能特点
 
@@ -40,15 +40,31 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 飞马（femas）：国内期货
 
-        * 宽睿（oes）：国内证券（A股）
+        * 恒生UFT（uft）：国内期货、ETF期权
 
-        * 中泰XTP（xtp）：国内证券（A股）
+        * 飞创证券（sec）：ETF期权
 
-        * 华鑫奇点（tora）：国内证券（A股）
+        * 南华NHTD（nhtd）：国内期货、ETF期权
+
+        * 宽睿（oes）：国内证券（A股）、ETF期权
+
+        * 中泰XTP（xtp）：国内证券（A股）、ETF期权
+
+        * 国泰君安（gtja）：国内证券（A股）
+
+        * 恒生期权（hsoption）：ETF期权
+
+        * 华鑫奇点（tora）：国内证券（A股）、ETF期权
+
+        * 飞鼠（sgit）：黄金TD、国内期货
+
+        * 金仕达黄金（ksgold）：黄金TD
 
         * 鑫管家（xgj）：期货资管
 
         * 融航（rohon）：期货资管
+
+        * 中汇亿达（comstar）：银行间市场
 
     * 海外市场
 
@@ -62,7 +78,11 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 直达期货（da）：全球期货
 
-        * OANDA（oanda）：外汇、CFD
+        * MetaTrader 5（mt5）：外汇、CFD、期货、股票
+
+        * Alpaca（alpaca）：美股（零佣金）
+
+        * 佳兆业投资（kasia）：港股
 
     * 数字货币
 
@@ -70,19 +90,29 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * Bybit（bybit）：数字货币永续合约
 
-        * OKEX永续（okexs）：数字货币永续合约
-
-        * OKEX合约（okexf）：数字货币期货
-
-        * 火币合约（hbdm）：数字货币期货
-
-        * Gate.io永续（gateios）：数字货币永续合约
-
         * 币安（binance）：数字货币现货
+
+        * 币安永续（binances)：数字货币永续合约
 
         * OKEX（okex）：数字货币现货
 
+        * OKEX永续（okexs）：数字货币永续合约
+
+        * OKEX期货（okexf）：数字货币期货
+
+        * OKEX期权（okexo）：数字货币期权
+
         * 火币（huobi）：数字货币现货
+
+        * 火币期货（huobif）：数字货币期货
+
+        * 火币永续（huobis）：数字货币永续
+
+        * 火币期权（huobio）：数字货币期权
+        
+        * Gate.io永续（gateios）：数字货币永续合约
+
+        * Deribit（deribit），数字货币期权、永续合约        
 
         * Bitfinex（bitfinex）：数字货币现货
 
@@ -104,17 +134,29 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * spread_trading：价差交易模块，支持自定义价差，实时计算价差行情和持仓，支持半自动价差算法交易以及全自动价差策略交易两种模式
 
-    * algo_trading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等等，支持常用算法配置保存
+    * option_master：期权交易模块，针对国内期权市场设计，支持多种期权定价模型、隐含波动率曲面计算、希腊值风险跟踪等功能
+
+    * portfolio_strategy：组合策略模块，面向同时交易多合约的量化策略（Alpha、期权套利等），提供历史数据回测和实盘自动交易功能
+
+    * algo_trading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等，支持对接外部智能算法交易服务（如金纳算法）
 
     * script_trader：脚本策略模块，针对多标的组合类交易策略设计，同时也可以直接在命令行中实现REPL指令形式的交易，不支持回测功能
+
+    * market_radar：市场雷达模块，允许用户基于自定义的公式实时计算任意合约组合数据，公式支持标准Python运算语法以及内置函数
+
+    * paper_account：模拟交易模块，纯本地化实现的模拟交易功能，基于交易接口获取的实时行情进行委托撮合，提供委托成交推送以及持仓记录
+
+    * chart_wizard：K线图表模块，基于RQData数据服务（期货）或者交易接口（数字货币）获取历史数据，并结合Tick推送显示实时行情变化
 
     * portfolio_manager：投资组合模块，面向各类基本面交易策略，以独立的策略子账户为基础，提供交易仓位的自动跟踪以及盈亏实时统计功能
 
     * rpc_service：RPC服务模块，允许将某一VN Trader进程启动为服务端，作为统一的行情和交易路由通道，允许多客户端同时连接，实现多进程分布式系统
 
-    * csv_loader：CSV历史数据加载器，用于加载CSV格式文件中的历史数据到平台数据库中，用于策略的回测研究以及实盘初始化等功能，支持自定义数据表头格式
+    * data_manager：历史数据管理模块，通过树形目录查看数据库中已有的数据概况，选择任意时间段数据查看字段细节，支持CSV文件的数据导入和导出
 
     * data_recorder：行情记录模块，基于图形界面进行配置，根据需求实时录制Tick或者K线行情到数据库中，用于策略回测或者实盘初始化
+
+    * excel_rtd：Excel RTD（Real Time Data）实时数据服务，基于pyxll模块实现在Excel中获取各类数据（行情、合约、持仓等）的实时推送更新
 
     * risk_manager：风险管理模块，提供包括交易流控、下单数量、活动委托、撤单总数等规则的统计和限制，有效实现前端风控功能
 
@@ -132,7 +174,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.0.8](https://download.vnpy.com/vnstudio-2.0.8.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.1.8](https://download.vnpy.com/vnstudio-2.1.8.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 
@@ -154,7 +196,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 2. 在[vn.py社区论坛](https://www.vnpy.com/forum/)注册获得VN Station账号密码（论坛账号密码即是）
 
-3. 启动VN Station（安装VNConda后会在桌面自动创建快捷方式），输入上一步的账号密码登录
+3. 启动VN Station（安装VN Studio后会在桌面自动创建快捷方式），输入上一步的账号密码登录
 
 4. 点击底部的**VN Trader Lite**按钮，开始你的交易！！！
 
@@ -227,7 +269,7 @@ vn.py使用Github托管其源代码，如果希望贡献代码请使用github的
 
 ## 项目捐赠
 
-过去5年中收到过许多社区用户的捐赠，在此深表感谢！所有的捐赠资金都投入到了vn.py社区基金中，用于支持vn.py项目的运作。
+过去6年中收到过许多社区用户的捐赠，在此深表感谢！所有的捐赠资金都投入到了vn.py社区基金中，用于支持vn.py项目的运作。
 
 先强调一下：**vn.py是开源项目，可以永久免费使用，并没有强制捐赠的要求！！！**
 
@@ -237,10 +279,10 @@ vn.py使用Github托管其源代码，如果希望贡献代码请使用github的
 
 ## 其他内容
 
-* [获取帮助](https://github.com/vnpy/vnpy/blob/dev/docs/SUPPORT.md)
-* [社区行为准侧](https://github.com/vnpy/vnpy/blob/dev/docs/CODE_OF_CONDUCT.md)
-* [Issue模板](https://github.com/vnpy/vnpy/blob/dev/docs/ISSUE_TEMPLATE.md)
-* [PR模板](https://github.com/vnpy/vnpy/blob/dev/docs/PULL_REQUEST_TEMPLATE.md)
+* [获取帮助](https://github.com/vnpy/vnpy/blob/dev/.github/SUPPORT.md)
+* [社区行为准侧](https://github.com/vnpy/vnpy/blob/dev/.github/CODE_OF_CONDUCT.md)
+* [Issue模板](https://github.com/vnpy/vnpy/blob/dev/.github/ISSUE_TEMPLATE.md)
+* [PR模板](https://github.com/vnpy/vnpy/blob/dev/.github/PULL_REQUEST_TEMPLATE.md)
 
 ## 版权说明
 

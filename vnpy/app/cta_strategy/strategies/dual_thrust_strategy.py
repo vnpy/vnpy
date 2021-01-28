@@ -26,7 +26,7 @@ class DualThrustStrategy(CtaTemplate):
     day_high = 0
     day_low = 0
 
-    range = 0
+    day_range = 0
     long_entry = 0
     short_entry = 0
     exit_time = time(hour=14, minute=55)
@@ -35,13 +35,11 @@ class DualThrustStrategy(CtaTemplate):
     short_entered = False
 
     parameters = ["k1", "k2", "fixed_size"]
-    variables = ["range", "long_entry", "short_entry", "exit_time"]
+    variables = ["day_range", "long_entry", "short_entry"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
-        super(DualThrustStrategy, self).__init__(
-            cta_engine, strategy_name, vt_symbol, setting
-        )
+        super().__init__(cta_engine, strategy_name, vt_symbol, setting)
 
         self.bg = BarGenerator(self.on_bar)
         self.am = ArrayManager()
@@ -87,9 +85,9 @@ class DualThrustStrategy(CtaTemplate):
 
         if last_bar.datetime.date() != bar.datetime.date():
             if self.day_high:
-                self.range = self.day_high - self.day_low
-                self.long_entry = bar.open_price + self.k1 * self.range
-                self.short_entry = bar.open_price - self.k2 * self.range
+                self.day_range = self.day_high - self.day_low
+                self.long_entry = bar.open_price + self.k1 * self.day_range
+                self.short_entry = bar.open_price - self.k2 * self.day_range
 
             self.day_open = bar.open_price
             self.day_high = bar.high_price
@@ -101,7 +99,7 @@ class DualThrustStrategy(CtaTemplate):
             self.day_high = max(self.day_high, bar.high_price)
             self.day_low = min(self.day_low, bar.low_price)
 
-        if not self.range:
+        if not self.day_range:
             return
 
         if bar.datetime.time() < self.exit_time:

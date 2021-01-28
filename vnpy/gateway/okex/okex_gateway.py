@@ -12,8 +12,10 @@ from copy import copy
 from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import urlencode
+from typing import Dict
 
 from requests import ConnectionError
+from pytz import utc as UTC_TZ
 
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
@@ -40,7 +42,7 @@ from vnpy.trader.object import (
 )
 
 REST_HOST = "https://www.okex.com"
-WEBSOCKET_HOST = "wss://real.okex.com:10442/ws/v3"
+WEBSOCKET_HOST = "wss://real.okex.com:8443/ws/v3"
 
 STATUS_OKEX2VT = {
     "ordering": Status.SUBMITTING,
@@ -224,7 +226,7 @@ class OkexRestApi(RestClient):
         self.secret = secret.encode()
         self.passphrase = passphrase
 
-        self.connect_time = int(datetime.now().strftime("%y%m%d%H%M%S"))
+        self.connect_time = int(datetime.now(UTC_TZ).strftime("%y%m%d%H%M%S"))
 
         self.init(REST_HOST, proxy_host, proxy_port)
         self.start(session_number)
@@ -338,6 +340,7 @@ class OkexRestApi(RestClient):
                 pricetick=float(instrument_data["tick_size"]),
                 min_volume=float(instrument_data["min_size"]),
                 history_data=True,
+                net_position=True,
                 gateway_name=self.gateway_name
             )
             self.gateway.on_contract(contract)
@@ -376,7 +379,7 @@ class OkexRestApi(RestClient):
                 price=float(order_data["price"]),
                 volume=float(order_data["size"]),
                 traded=float(order_data["filled_size"]),
-                time=order_data["timestamp"][11:19],
+                datetime=generate_datetime(order_data["timestamp"]),
                 status=STATUS_OKEX2VT[order_data["status"]],
                 gateway_name=self.gateway_name,
             )
@@ -509,7 +512,7 @@ class OkexRestApi(RestClient):
 
                 for l in data:
                     ts, o, h, l, c, v = l
-                    dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%fZ")
+                    dt = generate_datetime(ts)
                     bar = BarData(
                         symbol=req.symbol,
                         exchange=req.exchange,
@@ -559,6 +562,7 @@ class OkexWebsocketApi(WebsocketClient):
 
         self.callbacks = {}
         self.ticks = {}
+        self.subscribed: Dict[str, SubscribeRequest] = {}
 
     def connect(
         self,
@@ -573,7 +577,7 @@ class OkexWebsocketApi(WebsocketClient):
         self.secret = secret.encode()
         self.passphrase = passphrase
 
-        self.connect_time = int(datetime.now().strftime("%y%m%d%H%M%S"))
+        self.connect_time = int(datetime.now(UTC_TZ).strftime("%y%m%d%H%M%S"))
 
         self.init(WEBSOCKET_HOST, proxy_host, proxy_port)
         # self.start()
@@ -586,11 +590,13 @@ class OkexWebsocketApi(WebsocketClient):
         """
         Subscribe to tick data upate.
         """
+        self.subscribed[req.vt_symbol] = req
+
         tick = TickData(
             symbol=req.symbol,
             exchange=req.exchange,
             name=req.symbol,
-            datetime=datetime.now(),
+            datetime=datetime.now(UTC_TZ),
             gateway_name=self.gateway_name,
         )
         self.ticks[req.symbol] = tick
@@ -712,6 +718,9 @@ class OkexWebsocketApi(WebsocketClient):
         if success:
             self.gateway.write_log("Websocket API登录成功")
             self.subscribe_topic()
+
+            for req in list(self.subscribed.values()):
+                self.subscribe(req)
         else:
             self.gateway.write_log("Websocket API登录失败")
 
@@ -723,12 +732,11 @@ class OkexWebsocketApi(WebsocketClient):
             return
 
         tick.last_price = float(d["last"])
-        tick.open = float(d["open_24h"])
-        tick.high = float(d["high_24h"])
-        tick.low = float(d["low_24h"])
+        tick.open_price = float(d["open_24h"])
+        tick.high_price = float(d["high_24h"])
+        tick.low_price = float(d["low_24h"])
         tick.volume = float(d["base_volume_24h"])
-        tick.datetime = datetime.strptime(
-            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        tick.datetime = generate_datetime(d["timestamp"])
         self.gateway.on_tick(copy(tick))
 
     def on_depth(self, d):
@@ -740,18 +748,17 @@ class OkexWebsocketApi(WebsocketClient):
 
         bids = d["bids"]
         asks = d["asks"]
-        for n, buf in enumerate(bids):
-            price, volume, _ = buf
+        for n in range(min(5, len(bids))):
+            price, volume, _ = bids[n]
             tick.__setattr__("bid_price_%s" % (n + 1), float(price))
             tick.__setattr__("bid_volume_%s" % (n + 1), float(volume))
 
-        for n, buf in enumerate(asks):
-            price, volume, _ = buf
+        for n in range(min(5, len(asks))):
+            price, volume, _ = asks[n]
             tick.__setattr__("ask_price_%s" % (n + 1), float(price))
             tick.__setattr__("ask_volume_%s" % (n + 1), float(volume))
 
-        tick.datetime = datetime.strptime(
-            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        tick.datetime = generate_datetime(d["timestamp"])
         self.gateway.on_tick(copy(tick))
 
     def on_order(self, d):
@@ -765,7 +772,7 @@ class OkexWebsocketApi(WebsocketClient):
             price=float(d["price"]),
             volume=float(d["size"]),
             traded=float(d["filled_size"]),
-            time=d["timestamp"][11:19],
+            datetime=generate_datetime(d["timestamp"]),
             status=STATUS_OKEX2VT[d["status"]],
             gateway_name=self.gateway_name,
         )
@@ -786,7 +793,7 @@ class OkexWebsocketApi(WebsocketClient):
             direction=order.direction,
             price=float(d["last_fill_px"]),
             volume=float(trade_volume),
-            time=d["last_fill_time"][11:19],
+            datetime=generate_datetime(d["last_fill_time"]),
             gateway_name=self.gateway_name
         )
         self.gateway.on_trade(trade)
@@ -813,3 +820,10 @@ def get_timestamp():
     now = datetime.utcnow()
     timestamp = now.isoformat("T", "milliseconds")
     return timestamp + "Z"
+
+
+def generate_datetime(timestamp: str) -> datetime:
+    """parse timestamp into local time."""
+    dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+    dt = UTC_TZ.localize(dt)
+    return dt

@@ -2,6 +2,7 @@ from typing import Dict, List
 from datetime import datetime
 from enum import Enum
 from functools import lru_cache
+from parser import expr
 
 from vnpy.trader.object import (
     TickData, PositionData, TradeData, ContractData, BarData
@@ -45,12 +46,14 @@ class LegData:
         self.size: float = 0
         self.net_position: bool = False
         self.min_volume: float = 0
+        self.pricetick: float = 0
 
     def update_contract(self, contract: ContractData):
         """"""
         self.size = contract.size
         self.net_position = contract.net_position
         self.min_volume = contract.min_volume
+        self.pricetick = contract.pricetick
 
     def update_tick(self, tick: TickData):
         """"""
@@ -145,6 +148,7 @@ class SpreadData:
         self.passive_legs: List[LegData] = []
 
         self.min_volume: float = min_volume
+        self.pricetick: float = 0
 
         # For calculating spread price
         self.price_multipliers: Dict[str, int] = price_multipliers
@@ -177,6 +181,11 @@ class SpreadData:
             else:
                 self.trading_formula += f"{trading_multiplier}*{leg.vt_symbol}"
 
+            if not self.pricetick:
+                self.pricetick = leg.pricetick
+            else:
+                self.pricetick = min(self.pricetick, leg.pricetick)
+
         # Spread data
         self.bid_price: float = 0
         self.ask_price: float = 0
@@ -206,6 +215,11 @@ class SpreadData:
                 self.bid_price += leg.ask_price * price_multiplier
                 self.ask_price += leg.bid_price * price_multiplier
 
+            # Round price to pricetick
+            if self.pricetick:
+                self.bid_price = round_to(self.bid_price, self.pricetick)
+                self.ask_price = round_to(self.ask_price, self.pricetick)
+
             # Calculate volume
             trading_multiplier = self.trading_multipliers[leg.vt_symbol]
             inverse_contract = self.inverse_contracts[leg.vt_symbol]
@@ -230,11 +244,11 @@ class SpreadData:
                 )
             else:
                 adjusted_bid_volume = floor_to(
-                    leg_bid_volume / abs(trading_multiplier),
+                    leg_ask_volume / abs(trading_multiplier),
                     self.min_volume
                 )
                 adjusted_ask_volume = floor_to(
-                    leg_ask_volume / abs(trading_multiplier),
+                    leg_bid_volume / abs(trading_multiplier),
                     self.min_volume
                 )
 
@@ -260,8 +274,10 @@ class SpreadData:
             leg_short_pos = 0
 
             trading_multiplier = self.trading_multipliers[leg.vt_symbol]
-            inverse_contract = self.inverse_contracts[leg.vt_symbol]
+            if not trading_multiplier:
+                continue
 
+            inverse_contract = self.inverse_contracts[leg.vt_symbol]
             if not inverse_contract:
                 net_pos = leg.net_pos
             else:
@@ -287,7 +303,7 @@ class SpreadData:
         if long_pos > 0:
             self.net_pos = long_pos
         else:
-            self.net_pos = short_pos
+            self.net_pos = -short_pos
 
     def clear_price(self):
         """"""
@@ -343,6 +359,129 @@ class SpreadData:
         return leg.size
 
 
+class AdvancedSpreadData(SpreadData):
+    """"""
+
+    def __init__(
+        self,
+        name: str,
+        legs: List[LegData],
+        variable_symbols: Dict[str, str],
+        variable_directions: Dict[str, int],
+        price_formula: str,
+        trading_multipliers: Dict[str, int],
+        active_symbol: str,
+        inverse_contracts: Dict[str, bool],
+        min_volume: float
+    ):
+        """"""
+        super().__init__(
+            name,
+            legs,
+            trading_multipliers,
+            trading_multipliers,
+            active_symbol,
+            inverse_contracts,
+            min_volume
+        )
+
+        self.variable_symbols = variable_symbols
+        self.variable_directions = variable_directions
+        self.price_formula = price_formula
+        self.price_code = expr(price_formula).compile()
+
+        self.variable_legs = {}
+        for variable, vt_symbol in variable_symbols.items():
+            leg = self.legs[vt_symbol]
+            self.variable_legs[variable] = leg
+
+    def calculate_price(self):
+        """"""
+        self.clear_price()
+
+        # Go through all legs to calculate price
+        bid_data = {}
+        ask_data = {}
+        volume_inited = False
+
+        for variable, leg in self.variable_legs.items():
+            # Filter not all leg price data has been received
+            if not leg.bid_volume or not leg.ask_volume:
+                self.clear_price()
+                return
+
+            # Generate price dict for calculating spread bid/ask
+            variable_direction = self.variable_directions[variable]
+            if variable_direction > 0:
+                bid_data[variable] = leg.bid_price
+                ask_data[variable] = leg.ask_price
+            else:
+                bid_data[variable] = leg.ask_price
+                ask_data[variable] = leg.bid_price
+
+            # Calculate volume
+            trading_multiplier = self.trading_multipliers[leg.vt_symbol]
+            if not trading_multiplier:
+                continue
+
+            inverse_contract = self.inverse_contracts[leg.vt_symbol]
+            if not inverse_contract:
+                leg_bid_volume = leg.bid_volume
+                leg_ask_volume = leg.ask_volume
+            else:
+                leg_bid_volume = calculate_inverse_volume(
+                    leg.bid_volume, leg.bid_price, leg.size)
+                leg_ask_volume = calculate_inverse_volume(
+                    leg.ask_volume, leg.ask_price, leg.size)
+
+            if trading_multiplier > 0:
+                adjusted_bid_volume = floor_to(
+                    leg_bid_volume / trading_multiplier,
+                    self.min_volume
+                )
+                adjusted_ask_volume = floor_to(
+                    leg_ask_volume / trading_multiplier,
+                    self.min_volume
+                )
+            else:
+                adjusted_bid_volume = floor_to(
+                    leg_ask_volume / abs(trading_multiplier),
+                    self.min_volume
+                )
+                adjusted_ask_volume = floor_to(
+                    leg_bid_volume / abs(trading_multiplier),
+                    self.min_volume
+                )
+
+            # For the first leg, just initialize
+            if not volume_inited:
+                self.bid_volume = adjusted_bid_volume
+                self.ask_volume = adjusted_ask_volume
+                volume_inited = True
+            # For following legs, use min value of each leg quoting volume
+            else:
+                self.bid_volume = min(self.bid_volume, adjusted_bid_volume)
+                self.ask_volume = min(self.ask_volume, adjusted_ask_volume)
+
+        # Calculate spread price
+        self.bid_price = self.parse_formula(self.price_code, bid_data)
+        self.ask_price = self.parse_formula(self.price_code, ask_data)
+
+        # Round price to pricetick
+        if self.pricetick:
+            self.bid_price = round_to(self.bid_price, self.pricetick)
+            self.ask_price = round_to(self.ask_price, self.pricetick)
+
+        # Update calculate time
+        self.datetime = datetime.now()
+
+    def parse_formula(self, formula: str, data: Dict[str, float]):
+        """"""
+        locals().update(data)
+        value = eval(formula)
+        return value
+
+
 def calculate_inverse_volume(
     original_volume: float,
     price: float,
@@ -386,6 +525,7 @@ def load_bar_data(
 
     for dt in bars.keys():
         spread_price = 0
+        spread_value = 0
         spread_available = True
 
         for leg in spread.legs.values():
@@ -394,6 +534,7 @@ def load_bar_data(
             if leg_bar:
                 price_multiplier = spread.price_multipliers[leg.vt_symbol]
                 spread_price += price_multiplier * leg_bar.close_price
+                spread_value += abs(price_multiplier) * leg_bar.close_price
             else:
                 spread_available = False
 
@@ -412,6 +553,7 @@ def load_bar_data(
                 close_price=spread_price,
                 gateway_name="SPREAD",
             )
+            spread_bar.value = spread_value
             spread_bars.append(spread_bar)
 
     return spread_bars
