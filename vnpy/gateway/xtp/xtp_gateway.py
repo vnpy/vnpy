@@ -532,7 +532,6 @@ class XtpTdApi(TdApi):
 
     def onOrderEvent(self, data: dict, error: dict, session: int) -> None:
         """"""
-        print(data)
         if error["error_id"]:
             self.gateway.write_error("交易委托失败", error)
 
