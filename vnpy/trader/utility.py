@@ -195,6 +195,7 @@ class BarGenerator:
 
         self.last_tick: TickData = None
         self.last_bar: BarData = None
+        self.not_first = False
 
     def update_tick(self, tick: TickData) -> None:
         """
@@ -299,10 +300,13 @@ class BarGenerator:
             if self.last_bar:
                 new_hour = bar.datetime.hour != self.last_bar.datetime.hour
                 last_minute = bar.datetime.minute == 59
-                not_first = self.window_bar.datetime != bar.datetime
+
+                if self.not_first and bar.datetime.minute != 0:
+                    self.not_first = False
 
                 # To filter duplicate hour bar finished condition
-                if (new_hour or last_minute) and not_first:
+                if (new_hour or last_minute) and not self.not_first:
+                    self.not_first = True
                     # 1-hour bar
                     if self.window == 1:
                         finished = True
