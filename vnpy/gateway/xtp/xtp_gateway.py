@@ -175,8 +175,7 @@ class XtpGateway(BaseGateway):
 
     def close(self) -> None:
         """"""
-        self.md_api.close()
-        self.td_api.close()
+        pass
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
