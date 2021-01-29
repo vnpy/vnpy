@@ -1,3 +1,4 @@
+from vnpy.trader.utility import round_to
 from vnpy.trader.constant import Offset, Direction
 from vnpy.trader.object import TradeData
 from vnpy.trader.engine import BaseEngine
@@ -52,7 +53,10 @@ class TwapAlgo(AlgoTemplate):
         self.offset = Offset(setting["offset"])
 
         # Variables
-        self.order_volume = self.volume / (self.time / self.interval)
+        contract = self.get_contract(self.vt_symbol)
+        order_volume = self.volume / (self.time / self.interval)
+        self.order_volume = round_to(order_volume, contract.min_volume)
+
         self.timer_count = 0
         self.total_count = 0
         self.traded = 0
