@@ -308,7 +308,7 @@ class BacktestingEngine:
             return
 
         total_size = len(backtesting_data)
-        batch_size = int(total_size / 10)
+        batch_size = max(int(total_size / 10), 1)
 
         for ix, i in enumerate(range(0, total_size, batch_size)):
             batch_data = backtesting_data[i: i + batch_size]
