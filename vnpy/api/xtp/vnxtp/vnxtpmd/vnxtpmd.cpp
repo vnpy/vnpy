@@ -1080,16 +1080,21 @@ void MdApi::processUnSubscribeAllOptionTickByTick(Task *task)
 
 void MdApi::createQuoteApi(int client_id, string save_file_path)
 {
-	this->api = QuoteApi::CreateQuoteApi(client_id, save_file_path.c_str());
-	this->api->RegisterSpi(this);
-
+	if (!this->api)
+	{
+		this->api = QuoteApi::CreateQuoteApi(client_id, save_file_path.c_str());
+		this->api->RegisterSpi(this);
+	}
 };
 
 
 void MdApi::init()
 {
-	this->active = true;
-	this->task_thread = thread(&MdApi::processTask, this);
+	if (!this->active)
+	{
+		this->active = true;
+		this->task_thread = thread(&MdApi::processTask, this);
+	}
 };
 
 void MdApi::release()
