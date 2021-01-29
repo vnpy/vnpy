@@ -65,11 +65,19 @@ POSITION_DIRECTION_XTP2VT = {
     3: Direction.SHORT
 }
 
-ORDERTYPE_XTP2VT: Dict[int, OrderType] = {
+OPTION_ORDERTYPE_XTP2VT: Dict[int, OrderType] = {
     1: OrderType.LIMIT,
-    2: OrderType.MARKET
+    2: OrderType.MARKET,
+    8: OrderType.FOK
 }
-ORDERTYPE_VT2XTP: Dict[OrderType, int] = {v: k for k, v in ORDERTYPE_XTP2VT.items()}
+OPTION_ORDERTYPE_VT2XTP: Dict[OrderType, int] = {v: k for k, v in OPTION_ORDERTYPE_XTP2VT.items()}
+
+EQUITY_ORDERTYPE_XTP2VT: Dict[int, OrderType] = {
+    1: OrderType.LIMIT,
+    4: OrderType.MARKET
+}
+EQUITY_ORDERTYPE_VT2XTP: Dict[OrderType, int] = {v: k for k, v in EQUITY_ORDERTYPE_XTP2VT.items()}
+
 
 PROTOCOL_VT2XTP: Dict[str, int] = {
     "TCP": 1,
@@ -524,6 +532,7 @@ class XtpTdApi(TdApi):
 
     def onOrderEvent(self, data: dict, error: dict, session: int) -> None:
         """"""
+        print(data)
         if error["error_id"]:
             self.gateway.write_error("交易委托失败", error)
 
@@ -531,27 +540,24 @@ class XtpTdApi(TdApi):
         if len(symbol) == 8:
             direction = DIRECTION_OPTION_XTP2VT[data["side"]]
             offset = OFFSET_XTP2VT[data["position_effect"]]
+            order_type = OPTION_ORDERTYPE_XTP2VT.get(data["price_type"], OrderType.MARKET)
         else:
             direction, offset = DIRECTION_STOCK_XTP2VT[data["side"]]
+            order_type = EQUITY_ORDERTYPE_XTP2VT.get(data["price_type"], OrderType.MARKET)
 
         orderid = str(data["order_xtp_id"])
         if orderid not in self.orders:
-            timestamp = str(data["insert_time"])
-            dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
-            dt = CHINA_TZ.localize(dt)
-
             order = OrderData(
                 symbol=symbol,
                 exchange=MARKET_XTP2VT[data["market"]],
                 orderid=orderid,
-                type=ORDERTYPE_XTP2VT[data["price_type"]],
+                type=order_type,
                 direction=direction,
                 offset=offset,
                 price=data["price"],
                 volume=data["quantity"],
                 traded=data["qty_traded"],
                 status=STATUS_XTP2VT[data["order_status"]],
-                datetime=dt,
                 gateway_name=self.gateway_name
             )
             self.orders[orderid] = order
@@ -559,6 +565,12 @@ class XtpTdApi(TdApi):
             order = self.orders[orderid]
             order.traded = data["qty_traded"]
             order.status = STATUS_XTP2VT[data["order_status"]]
+
+        if not order.datetime:
+            timestamp = str(data["insert_time"])
+            dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
+            dt = CHINA_TZ.localize(dt)
+            order.datetime = dt
 
         self.gateway.on_order(copy(order))
 
@@ -596,7 +608,6 @@ class XtpTdApi(TdApi):
                 order.status = Status.PARTTRADED
             else:
                 order.status = Status.ALLTRADED
-
             self.gateway.on_order(copy(order))
         else:
             self.gateway.write_log(f"成交找不到对应委托{trade.orderid}")
@@ -643,9 +654,6 @@ class XtpTdApi(TdApi):
         )
         self.gateway.on_position(position)
 
-        if position.symbol == "600036":
-            print(data)
-
     def onQueryAsset(
         self,
         data: dict,
@@ -661,12 +669,12 @@ class XtpTdApi(TdApi):
             frozen=round(data["withholding_amount"], 2),
             gateway_name=self.gateway_name
         )
+        account.available = round(data["buying_power"], 2)
 
         if data["account_type"] == 1:
             self.margin_trading = True
         elif data["account_type"] == 2:
-            account.available = round(data["buying_power"], 2)
-            account.frozen = account.balance - account.available
+            account.frozen = round(account.balance - account.available, 2)
             self.option_trading = True
 
         self.gateway.on_account(account)
@@ -836,16 +844,16 @@ class XtpTdApi(TdApi):
             self.gateway.write_log(f"委托失败，不支持的交易所{req.exchange.value}")
             return ""
 
-        if req.type not in ORDERTYPE_VT2XTP:
-            self.gateway.write_log(f"委托失败，不支持的委托类型{req.type.value}")
-            return ""
-
         if self.margin_trading and req.offset == Offset.NONE:
             self.gateway.write_log(f"委托失败，两融交易需要选择开平方向")
             return ""
 
         # check for option type
         if len(req.symbol) == 8:
+            if req.type not in OPTION_ORDERTYPE_VT2XTP:
+                self.gateway.write_log(f"委托失败，不支持的期权委托类型{req.type.value}")
+                return ""
+
             xtp_req = {
                 "ticker": req.symbol,
                 "market": MARKET_VT2XTP[req.exchange],
@@ -853,18 +861,22 @@ class XtpTdApi(TdApi):
                 "quantity": int(req.volume),
                 "side": DIRECTION_OPTION_VT2XTP.get(req.direction, ""),
                 "position_effect": OFFSET_VT2XTP[req.offset],
-                "price_type": ORDERTYPE_VT2XTP[req.type],
+                "price_type": OPTION_ORDERTYPE_VT2XTP[req.type],
                 "business_type": 10
             }
 
         # stock type
         else:
+            if req.type not in EQUITY_ORDERTYPE_VT2XTP:
+                self.gateway.write_log(f"委托失败，不支持的股票委托类型{req.type.value}")
+                return ""
+
             xtp_req = {
                 "ticker": req.symbol,
                 "market": MARKET_VT2XTP[req.exchange],
                 "price": req.price,
                 "quantity": int(req.volume),
-                "price_type": ORDERTYPE_VT2XTP[req.type],
+                "price_type": EQUITY_ORDERTYPE_VT2XTP[req.type],
             }
 
             if self.margin_trading:
