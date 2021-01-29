@@ -46,7 +46,7 @@
 
   * 中泰XTP(xtp)：A股、两融、ETF期权
 
-  * 华鑫奇点股票(tora)：A股
+  * 华鑫奇点股票(torastock)：A股
 
   * 华鑫奇点期权(toraoption)：ETF期权
 

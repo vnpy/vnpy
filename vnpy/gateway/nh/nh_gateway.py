@@ -271,7 +271,6 @@ class NhGateway(BaseGateway):
     def write_error(self, msg: str, error: dict):
         """"""
         error_id = error["ErrorID"]
-        
         error_msg = error["ErrorMsg"]
         if not error_msg:
             error_msg = ERROR_MSG.get(error_id, "")
@@ -1215,10 +1214,10 @@ class NhStockTdApi(StockTdApi):
         """"""
         self.order_ref += 1
         self.reqid += 1
-        
+
         leg1_symbol = req.get("leg1_symbol", "")
         leg2_symbol = req.get("leg2_symbol", "")
-        
+
         # 单腿行权
         if not leg2_symbol:
             nh_req = {

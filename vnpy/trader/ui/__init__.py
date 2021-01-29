@@ -22,7 +22,7 @@ def excepthook(exctype: type, value: Exception, tb: types.TracebackType) -> None
 
     msg = "".join(traceback.format_exception(exctype, value, tb))
     dialog = ExceptionDialog(msg)
-    dialog.exec_()
+    dialog.signal.emit()
 
 
 def create_qapp(app_name: str = "VN Trader") -> QtWidgets.QApplication:
@@ -52,6 +52,7 @@ def create_qapp(app_name: str = "VN Trader") -> QtWidgets.QApplication:
 
 class ExceptionDialog(QtWidgets.QDialog):
     """"""
+    signal = QtCore.pyqtSignal()
 
     def __init__(self, msg: str):
         """"""
@@ -60,6 +61,7 @@ class ExceptionDialog(QtWidgets.QDialog):
         self.msg: str = msg
 
         self.init_ui()
+        self.signal.connect(self.exec_)
 
     def init_ui(self) -> None:
         """"""
