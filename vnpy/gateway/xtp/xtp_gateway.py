@@ -1,3 +1,4 @@
+from logging import log
 import pytz
 from typing import Any, Dict, List
 from datetime import datetime
@@ -128,6 +129,15 @@ OPTIONTYPE_XTP2VT = {
     2: OptionType.PUT
 }
 
+LOGLEVEL_VT2XTP = {
+    "FATAL": 0,
+    "ERROR": 1,
+    "WARNING": 2,
+    "INFO": 3,
+    "DEBUG": 4,
+    "TRACE": 5,
+}
+
 CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 symbol_name_map: Dict[str, str] = {}
@@ -145,6 +155,7 @@ class XtpGateway(BaseGateway):
         "交易地址": "",
         "交易端口": 0,
         "行情协议": ["TCP", "UDP"],
+        "日志级别": ["FATAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE"],
         "授权码": ""
     }
 
@@ -167,10 +178,17 @@ class XtpGateway(BaseGateway):
         trader_ip = setting["交易地址"]
         trader_port = int(setting["交易端口"])
         quote_protocol = setting["行情协议"]
+        log_level = LOGLEVEL_VT2XTP[setting["日志级别"]]
         software_key = setting["授权码"]
 
-        self.md_api.connect(userid, password, client_id, quote_ip, quote_port, quote_protocol)
-        self.td_api.connect(userid, password, client_id, trader_ip, trader_port, software_key)
+        self.md_api.connect(
+            userid, password, client_id, quote_ip,
+            quote_port, quote_protocol, log_level
+        )
+        self.td_api.connect(
+            userid, password, client_id, trader_ip,
+            trader_port, software_key, log_level
+        )
         self.init_query()
 
     def close(self) -> None:
@@ -431,7 +449,8 @@ class XtpMdApi(MdApi):
         client_id: int,
         server_ip: str,
         server_port: int,
-        quote_protocol: int
+        quote_protocol: int,
+        log_level: int
     ) -> None:
         """"""
         self.userid = userid
@@ -444,7 +463,7 @@ class XtpMdApi(MdApi):
         # Create API object
         if not self.connect_status:
             path = str(get_folder_path(self.gateway_name.lower()))
-            self.createQuoteApi(self.client_id, path)
+            self.createQuoteApi(self.client_id, path, log_level)
             self.login_server()
         else:
             self.gateway.write_log("行情接口已登录，请勿重复操作")
@@ -781,7 +800,8 @@ class XtpTdApi(TdApi):
         client_id: int,
         server_ip: str,
         server_port: int,
-        software_key: str
+        software_key: str,
+        log_level: int
     ) -> None:
         """"""
 
@@ -796,7 +816,7 @@ class XtpTdApi(TdApi):
         # Create API object
         if not self.connect_status:
             path = str(get_folder_path(self.gateway_name.lower()))
-            self.createTraderApi(self.client_id, path)
+            self.createTraderApi(self.client_id, path, log_level)
 
             self.setSoftwareKey(self.software_key)
             self.subscribePublicTopic(0)

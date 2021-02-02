@@ -1411,11 +1411,11 @@ void TdApi::processQueryCreditExcessStock(Task *task)
 ///主动函数
 ///-------------------------------------------------------------------------------------
 
-void TdApi::createTraderApi(int client_id, string save_file_path)
+void TdApi::createTraderApi(int client_id, string save_file_path, int log_level)
 {
 	if (!this->api)
 	{
-		this->api = TraderApi::CreateTraderApi(client_id, save_file_path.c_str());
+		this->api = TraderApi::CreateTraderApi(client_id, save_file_path.c_str(), XTP_LOG_LEVEL(log_level));
 		this->api->RegisterSpi(this);
 	}
 };
