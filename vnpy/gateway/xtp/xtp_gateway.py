@@ -79,6 +79,12 @@ EQUITY_ORDERTYPE_XTP2VT: Dict[int, OrderType] = {
 }
 EQUITY_ORDERTYPE_VT2XTP: Dict[OrderType, int] = {v: k for k, v in EQUITY_ORDERTYPE_XTP2VT.items()}
 
+STAR_ORDERTYPE_XTP2VT: Dict[int, OrderType] = {
+    1: OrderType.LIMIT,
+    7: OrderType.MARKET
+}
+STAR_ORDERTYPE_VT2XTP: Dict[OrderType, int] = {v: k for k, v in STAR_ORDERTYPE_XTP2VT.items()}
+
 
 PROTOCOL_VT2XTP: Dict[str, int] = {
     "TCP": 1,
@@ -560,7 +566,12 @@ class XtpTdApi(TdApi):
             order_type = OPTION_ORDERTYPE_XTP2VT.get(data["price_type"], OrderType.MARKET)
         else:
             direction, offset = DIRECTION_STOCK_XTP2VT[data["side"]]
-            order_type = EQUITY_ORDERTYPE_XTP2VT.get(data["price_type"], OrderType.MARKET)
+
+            if symbol.startswith("688"):
+                type_map = STAR_ORDERTYPE_XTP2VT
+            else:
+                type_map = EQUITY_ORDERTYPE_XTP2VT
+            order_type = type_map.get(data["price_type"], OrderType.MARKET)
 
         orderid = str(data["order_xtp_id"])
         if orderid not in self.orders:
@@ -882,10 +893,16 @@ class XtpTdApi(TdApi):
                 "price_type": OPTION_ORDERTYPE_VT2XTP[req.type],
                 "business_type": 10
             }
-
         # stock type
         else:
-            if req.type not in EQUITY_ORDERTYPE_VT2XTP:
+            # STAR of SSE
+            if req.symbol.startswith("688"):
+                type_map = STAR_ORDERTYPE_VT2XTP
+            # Other
+            else:
+                type_map = EQUITY_ORDERTYPE_VT2XTP
+
+            if req.type not in type_map:
                 self.gateway.write_log(f"委托失败，不支持的股票委托类型{req.type.value}")
                 return ""
 
@@ -894,7 +911,7 @@ class XtpTdApi(TdApi):
                 "market": MARKET_VT2XTP[req.exchange],
                 "price": req.price,
                 "quantity": int(req.volume),
-                "price_type": EQUITY_ORDERTYPE_VT2XTP[req.type],
+                "price_type": type_map[req.type],
             }
 
             if self.margin_trading:
