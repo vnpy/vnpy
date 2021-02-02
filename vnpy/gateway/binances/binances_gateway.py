@@ -13,6 +13,8 @@ from threading import Lock
 from typing import Dict, List, Tuple
 import pytz
 
+from requests.exceptions import SSLError
+
 from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.constant import (
@@ -634,7 +636,7 @@ class BinancesRestApi(RestClient):
         self.gateway.on_order(order)
 
         # Record exception if not ConnectionError
-        if not issubclass(exception_type, ConnectionError):
+        if not issubclass(exception_type, (ConnectionError, SSLError)):
             self.on_error(exception_type, exception_value, tb, request)
 
     def on_cancel_order(self, data: dict, request: Request) -> None:

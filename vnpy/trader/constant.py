@@ -120,7 +120,7 @@ class Exchange(Enum):
     TOCOM = "TOCOM"         # Tokyo Commodity Exchange
     EUNX = "EUNX"           # Euronext Exchange
     KRX = "KRX"             # Korean Exchange
-    OTC = "OTC"             # OTC Forex Broker
+    OTC = "OTC"             # OTC Product (Forex/CFD/Pink Sheet Equity)
     IBKRATS = "IBKRATS"     # Paper Trading Exchange of IB
 
     # CryptoCurrency
