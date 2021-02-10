@@ -42,6 +42,7 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.event import EVENT_TIMER
 from vnpy.event import Event, EventEngine
+from vnpy.trader.utility import round_to
 
 F_REST_HOST: str = "https://fapi.binance.com"
 F_WEBSOCKET_TRADE_HOST: str = "wss://fstream.binance.com/ws/"
@@ -104,6 +105,7 @@ class Security(Enum):
 
 
 symbol_name_map: Dict[str, str] = {}
+minvol_map: Dict[str, str] = {}
 
 
 class BinancesGateway(BaseGateway):
@@ -607,6 +609,7 @@ class BinancesRestApi(RestClient):
             self.gateway.on_contract(contract)
 
             symbol_name_map[contract.symbol] = contract.name
+            minvol_map[contract.symbol] = contract.min_volume
 
         self.gateway.write_log("合约信息查询成功")
 
@@ -822,6 +825,9 @@ class BinancesTradeWebsocketApi(WebsocketClient):
         trade_volume = float(ord_data["l"])
         if not trade_volume:
             return
+
+        target = minvol_map.get(order.symbol, "")
+        trade_volume = round_to(ord_data["l"], target)
 
         trade = TradeData(
             symbol=order.symbol,
