@@ -42,18 +42,16 @@ class AlgoTemplate:
 
     def update_order(self, order: OrderData):
         """"""
-        if self.active:
-            if order.is_active():
-                self.active_orders[order.vt_orderid] = order
-            elif order.vt_orderid in self.active_orders:
-                self.active_orders.pop(order.vt_orderid)
+        if order.is_active():
+            self.active_orders[order.vt_orderid] = order
+        elif order.vt_orderid in self.active_orders:
+            self.active_orders.pop(order.vt_orderid)
 
-            self.on_order(order)
+        self.on_order(order)
 
     def update_trade(self, trade: TradeData):
         """"""
-        if self.active:
-            self.on_trade(trade)
+        self.on_trade(trade)
 
     def update_timer(self):
         """"""
@@ -117,6 +115,9 @@ class AlgoTemplate:
         offset: Offset = Offset.NONE
     ):
         """"""
+        if not self.active:
+            return
+
         msg = f"委托买入{vt_symbol}：{volume}@{price}"
         self.write_log(msg)
 
@@ -139,6 +140,9 @@ class AlgoTemplate:
         offset: Offset = Offset.NONE
     ):
         """"""
+        if not self.active:
+            return
+
         msg = f"委托卖出{vt_symbol}：{volume}@{price}"
         self.write_log(msg)
 

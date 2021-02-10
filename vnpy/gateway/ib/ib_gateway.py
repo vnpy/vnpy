@@ -87,6 +87,7 @@ EXCHANGE_VT2IB = {
     Exchange.BATS: "BATS",
     Exchange.IEX: "IEX",
     Exchange.IBKRATS: "IBKRATS",
+    Exchange.OTC: "PINK"
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}
 
@@ -397,6 +398,9 @@ class IbApi(EWrapper):
 
         orderid = str(orderId)
         order = self.orders.get(orderid, None)
+        if not order:
+            return
+
         order.traded = filled
 
         # To filter PendingCancel status
@@ -422,7 +426,7 @@ class IbApi(EWrapper):
 
         orderid = str(orderId)
         order = OrderData(
-            symbol=ib_generate_symbol(contract),
+            symbol=generate_symbol(ib_contract),
             exchange=EXCHANGE_IB2VT.get(
                 ib_contract.exchange, Exchange.SMART),
             type=ORDERTYPE_IB2VT[ib_order.orderType],
