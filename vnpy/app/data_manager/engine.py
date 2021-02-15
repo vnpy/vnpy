@@ -1,6 +1,6 @@
 import csv
 from datetime import datetime
-from typing import List, Dict, Tuple
+from typing import List, Tuple
 
 from vnpy.trader.database import BarOverview, DB_TZ
 from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine

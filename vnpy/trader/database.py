@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Optional, List, Dict, Tuple
+from typing import List
 from pytz import timezone
 from dataclasses import dataclass
 

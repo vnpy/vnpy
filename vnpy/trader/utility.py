@@ -2,12 +2,11 @@
 General utility functions.
 """
 
-from datetime import datetime
 import json
 import logging
 import sys
 from pathlib import Path
-from typing import Callable, Dict, Tuple, Union, Optional, Set
+from typing import Callable, Dict, Tuple, Union, Optional
 from decimal import Decimal
 from math import floor, ceil
 

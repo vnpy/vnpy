@@ -8,7 +8,7 @@ from peewee import (
     DateTimeField,
     FloatField, IntegerField,
     Model,
-    SqliteDatabase as PeeweeSqliteDatabase,
+    MySQLDatabase,
     ModelSelect,
     ModelDelete,
     chunked
@@ -16,12 +16,17 @@ from peewee import (
 
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.object import BarData, TickData
-from vnpy.trader.utility import get_file_path
 from vnpy.trader.database import BaseDatabase, BarOverview, DB_TZ
+from vnpy.trader.setting import SETTINGS
 
 
-path = str(get_file_path("database.db"))
-db = PeeweeSqliteDatabase(path)
+db = MySQLDatabase(
+    database=SETTINGS["database.database"],
+    user=SETTINGS["database.user"],
+    password=SETTINGS["database.password"],
+    host=SETTINGS["database.host"],
+    port=SETTINGS["database.port"]
+)
 
 
 class DbBarData(Model):
@@ -114,7 +119,7 @@ class DbBarOverview(Model):
         indexes = ((("symbol", "exchange", "interval"), True),)
 
 
-class SqliteDatabase(BaseDatabase):
+class MysqlDatabase(BaseDatabase):
     """"""
 
     def __init__(self) -> None:
@@ -298,4 +303,4 @@ class SqliteDatabase(BaseDatabase):
         return overviews
 
 
-database_manager = SqliteDatabase()
+database_manager = MysqlDatabase()
