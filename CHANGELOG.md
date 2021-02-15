@@ -10,7 +10,10 @@
 7. 修复活动委托监控组件ActiveOrderMonitor，保存CSV时会将所有委托数据一起保存的问题
 8. 修复XtpGateway重复发起登录操作时，出现的系统崩溃问题
 9. 修复XtpGateway的股票市价委托类型映射错误问题
-10. 
+10. 修复DeribitGateway中对于Stop Market类型委托的支持问题，同时过滤掉Stop Limit类型委托
+11. 修复BinancesGateway中，由于成交数量浮点数精度问题导致的上层应用模块（CtaStrategy）数据计算错误
+12. 修复BinancesGateway中，由于合约持仓类型（应该是净仓，而非多空仓）错误，导致的上层应用模块（SpreadTrading）数据计算错误
+13. 修复HuobisGateway中，初始化查询活动委托时，由于请求过快导致的限流错误
 
 ## 调整
 1. 对XTP接口的行情价格数据基于合约最小价格跳动进行取整，资金保留2位小数
