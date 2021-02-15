@@ -16,7 +16,7 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT
 from vnpy.trader.utility import load_json, save_json, BarGenerator
-from vnpy.trader.database import database_manager
+from vnpy.database import database_manager
 from vnpy.app.spread_trading.base import EVENT_SPREAD_DATA, SpreadData
 
 

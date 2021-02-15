@@ -11,7 +11,7 @@ from plotly.subplots import make_subplots
 from pandas import DataFrame
 
 from vnpy.trader.constant import Direction, Offset, Interval, Status
-from vnpy.trader.database import database_manager
+from vnpy.database import database_manager
 from vnpy.trader.object import OrderData, TradeData, BarData
 from vnpy.trader.utility import round_to, extract_vt_symbol
 

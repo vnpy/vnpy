@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from vnpy.trader.ui import QtWidgets, QtCore
 from vnpy.trader.engine import MainEngine, EventEngine
 from vnpy.trader.constant import Interval, Exchange
-from vnpy.trader.database.database import DB_TZ
+from vnpy.trader.database import DB_TZ
 
 from ..engine import APP_NAME, ManagerEngine
 

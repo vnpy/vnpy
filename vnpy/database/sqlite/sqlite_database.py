@@ -17,12 +17,10 @@ from peewee import (
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.object import BarData, TickData
 from vnpy.trader.utility import get_file_path
-from vnpy.trader.setting import SETTINGS
 from vnpy.trader.database import BaseDatabase, BarOverview, DB_TZ
 
 
-database = SETTINGS["database.database"]
-path = str(get_file_path(database))
+path = str(get_file_path("database.db"))
 db = SqliteDatabase(path)
 
 
@@ -289,3 +287,6 @@ class SqliteDatabase(BaseDatabase):
         """
         s: ModelSelect = DbBarOverview.select()
         return [overview for overview in s]
+
+
+database_manager = SqliteDatabase()

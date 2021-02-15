@@ -9,7 +9,7 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.constant import Direction, Offset, Exchange, Interval
 from vnpy.trader.utility import floor_to, ceil_to, round_to, extract_vt_symbol
-from vnpy.trader.database import database_manager
+from vnpy.database import database_manager
 
 
 EVENT_SPREAD_DATA = "eSpreadData"
