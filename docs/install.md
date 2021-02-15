@@ -90,7 +90,7 @@ VNStudio是vn.py团队自行打包的一键安装版本，整合了：
 &nbsp;
 
 #### 4.启动VN Trader
-在文件夹tests\trader中找到run.py文件。按住“Shift” + 鼠标右键进入cmd窗口，输入下面命令即可启动VN Trader。
+在github文件夹examples\vn_trader中找到run.py文件。按住“Shift” + 鼠标右键进入cmd窗口，输入下面命令即可启动VN Trader。
 ```
 python run.py 
 ```
@@ -149,7 +149,7 @@ bash install.sh
 &nbsp;
 
 ### 4.启动VN Trader
-在文件夹tests\trader中找到run.py文件。右键进入终端，输入下面命令即可启动VN Trader。
+在github文件夹examples\vn_trader中找到run.py文件。右键进入终端，输入下面命令即可启动VN Trader。
 ```
 python run.py 
 ```

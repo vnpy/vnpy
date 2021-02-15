@@ -1,6 +1,7 @@
 import csv
 from datetime import datetime
 from typing import List, Dict, Tuple
+from vnpy.trader.database.database import DB_TZ
 
 from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine
 from vnpy.trader.constant import Interval, Exchange
@@ -196,7 +197,7 @@ class ManagerEngine(BaseEngine):
             exchange=exchange,
             interval=Interval(interval),
             start=start,
-            end=datetime.now()
+            end=datetime.now(DB_TZ)
         )
 
         vt_symbol = f"{symbol}.{exchange.value}"
@@ -233,7 +234,7 @@ class ManagerEngine(BaseEngine):
             symbol=symbol,
             exchange=exchange,
             start=start,
-            end=datetime.now()
+            end=datetime.now(DB_TZ)
         )
 
         if not rqdata_client.inited:
