@@ -11,6 +11,7 @@
 8. 修复XtpGateway重复发起登录操作时，出现的系统崩溃问题
 9. 修复XtpGateway的股票市价委托类型映射错误问题
 10. 修复DeribitGateway中对于Stop Market类型委托的支持问题，同时过滤掉Stop Limit类型委托
+11. 修复BinancesGateway中，由于成交数量浮点数精度问题导致的上层应用模块（CtaStrategy）数据计算错误
 
 ## 调整
 1. 对XTP接口的行情价格数据基于合约最小价格跳动进行取整，资金保留2位小数
