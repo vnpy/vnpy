@@ -19,8 +19,8 @@ class BarOverview:
     """
 
     symbol: str
-    exchange: str
-    interval: str
+    exchange: Exchange
+    interval: Interval
     count: int
     start: datetime
     end: datetime

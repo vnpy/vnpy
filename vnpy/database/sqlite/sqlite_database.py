@@ -41,16 +41,9 @@ class DbBarData(Model):
     low_price: float = FloatField()
     close_price: float = FloatField()
 
-    gateway_name: str = "DB"
-
     class Meta:
         database = db
         indexes = ((("symbol", "exchange", "interval", "datetime"), True),)
-
-    @property
-    def vt_symbol(self) -> str:
-        """"""
-        return f"{self.symbol}.{self.exchange.value}"
 
 
 class DbTickData(Model):
@@ -99,16 +92,9 @@ class DbTickData(Model):
     ask_volume_4: float = FloatField(null=True)
     ask_volume_5: float = FloatField(null=True)
 
-    gateway_name: str = "DB"
-
     class Meta:
         database = db
         indexes = ((("symbol", "exchange", "datetime"), True),)
-
-    @property
-    def vt_symbol(self) -> str:
-        """"""
-        return f"{self.symbol}.{self.exchange.value}"
 
 
 class DbBarOverview(Model):
@@ -145,7 +131,10 @@ class SqliteDatabase(BaseDatabase):
         for bar in bars:
             bar.datetime = bar.datetime.astimezone(DB_TZ)
             bar.datetime = bar.datetime.replace(tzinfo=None)
-            data.append(bar.__dict__)
+            d = bar.__dict__
+            d.pop("gateway_name")
+            d.pop("vt_symbol")
+            data.append(d)
 
         # Upsert data into database
         with self.db.atomic():
@@ -158,7 +147,7 @@ class SqliteDatabase(BaseDatabase):
         exchange = bar.exchange
         interval = bar.interval
 
-        overview: DbBarOverview = DbBarOverview.get(
+        overview: DbBarOverview = DbBarOverview.get_or_none(
             DbBarOverview.symbol == symbol,
             DbBarOverview.exchange == exchange.value,
             DbBarOverview.interval == interval.value,
@@ -193,7 +182,11 @@ class SqliteDatabase(BaseDatabase):
         for tick in ticks:
             tick.datetime = tick.datetime.astimezone(DB_TZ)
             tick.datetime = tick.datetime.replace(tzinfo=None)
-            data.append(tick.__dict__)
+
+            d = tick.__dict__
+            d.pop("gateway_name")
+            d.pop("vt_symbol")
+            data.append(d)
 
         # Upsert data into database
         with self.db.atomic():
@@ -219,11 +212,14 @@ class SqliteDatabase(BaseDatabase):
             ).order_by(DbBarData.datetime)
         )
 
+        vt_symbol = f"{symbol}.{exchange.value}"
         bars: List[BarData] = []
         for db_bar in s:
             db_bar.datetime = DB_TZ.localize(db_bar.datetime)
             db_bar.exchange = Exchange(db_bar.exchange)
             db_bar.interval = Interval(db_bar.interval)
+            db_bar.gateway_name = "DB"
+            db_bar.vt_symbol = vt_symbol
             bars.append(db_bar)
 
         return bars
@@ -245,10 +241,13 @@ class SqliteDatabase(BaseDatabase):
             ).order_by(DbTickData.datetime)
         )
 
+        vt_symbol = f"{symbol}.{exchange.value}"
         ticks: List[TickData] = []
         for db_tick in s:
             db_tick.datetime = DB_TZ.localize(db_tick.datetime)
             db_tick.exchange = Exchange(db_tick.exchange)
+            db_tick.gateway_name = "DB"
+            db_tick.vt_symbol = vt_symbol
             ticks.append(db_tick)
 
         return ticks
@@ -286,7 +285,12 @@ class SqliteDatabase(BaseDatabase):
         Return data avaible in database.
         """
         s: ModelSelect = DbBarOverview.select()
-        return [overview for overview in s]
+        overviews = []
+        for overview in s:
+            overview.exchange = Exchange(overview.exchange)
+            overview.interval = Interval(overview.interval)
+            overviews.append(overview)
+        return overviews
 
 
 database_manager = SqliteDatabase()
