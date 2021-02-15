@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Optional, List, Dict, Tuple
 from pytz import timezone
+from dataclasses import dataclass
 
 from .constant import Interval, Exchange
 from .object import BarData, TickData
@@ -11,26 +12,34 @@ from .setting import SETTINGS
 DB_TZ = timezone(SETTINGS["database.timezone"])
 
 
+@dataclass
+class BarOverview:
+    """
+    Overview of bar data in database.
+    """
+
+    symbol: str
+    exchange: str
+    interval: str
+    count: int
+    start: datetime
+    end: datetime
+
+
 class BaseDatabase(ABC):
     """
     Abstract database class for connecting to different database.
     """
 
     @abstractmethod
-    def save_bar_data(
-        self,
-        bars: List[BarData],
-    ):
+    def save_bar_data(self, bars: List[BarData]) -> bool:
         """
         Save bar data into database.
         """
         pass
 
     @abstractmethod
-    def save_tick_data(
-        self,
-        ticks: List[TickData],
-    ):
+    def save_tick_data(self, ticks: List[TickData]) -> bool:
         """
         Save tick data into database.
         """
@@ -87,20 +96,8 @@ class BaseDatabase(ABC):
         pass
 
     @abstractmethod
-    def get_bar_data_range(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval
-    ) -> Tuple[Optional[datetime], Optional[datetime]]:
+    def get_bar_overview(self) -> List[BarOverview]:
         """
-        If there is data in database, return the datetime of oldest and latest data.
-        """
-        pass
-
-    @abstractmethod
-    def get_bar_data_statistics(self) -> List[Dict]:
-        """
-        Return data avaible in database with a list of symbol/exchange/interval/count.
+        Return data avaible in database.
         """
         pass
