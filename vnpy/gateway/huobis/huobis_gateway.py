@@ -49,7 +49,9 @@ from vnpy.trader.event import EVENT_TIMER
 
 REST_HOST = "https://api.hbdm.com"
 WEBSOCKET_DATA_HOST = "wss://api.hbdm.com/swap-ws"               # Market Data
+WEBSOCKET_DATA_HOST_LINEAR = "wss://api.hbdm.com/linear-swap-ws"               # Linear Market Data
 WEBSOCKET_TRADE_HOST = "wss://api.hbdm.com/swap-notification"    # Account and Order
+WEBSOCKET_TRADE_HOST_LINEAR = "wss://api.hbdm.com/linear-swap-notification"    # Linear Account and Order
 
 STATUS_HUOBIS2VT: Dict[int, Status] = {
     3: Status.NOTTRADED,
@@ -65,7 +67,8 @@ ORDERTYPE_VT2HUOBIS: Dict[OrderType, Any] = {
     OrderType.FOK: "fok",
     OrderType.FAK: "ioc"
 }
-ORDERTYPE_HUOBIS2VT: Dict[Any, OrderType] = {v: k for k, v in ORDERTYPE_VT2HUOBIS.items()}
+ORDERTYPE_HUOBIS2VT: Dict[Any, OrderType] = {
+    v: k for k, v in ORDERTYPE_VT2HUOBIS.items()}
 ORDERTYPE_HUOBIS2VT[1] = OrderType.LIMIT
 ORDERTYPE_HUOBIS2VT[3] = OrderType.MARKET
 ORDERTYPE_HUOBIS2VT[4] = OrderType.MARKET
@@ -80,13 +83,15 @@ DIRECTION_VT2HUOBIS: Dict[Direction, str] = {
     Direction.LONG: "buy",
     Direction.SHORT: "sell",
 }
-DIRECTION_HUOBIS2VT: Dict[str, Direction] = {v: k for k, v in DIRECTION_VT2HUOBIS.items()}
+DIRECTION_HUOBIS2VT: Dict[str, Direction] = {
+    v: k for k, v in DIRECTION_VT2HUOBIS.items()}
 
 OFFSET_VT2HUOBIS: Dict[Offset, str] = {
     Offset.OPEN: "open",
     Offset.CLOSE: "close",
 }
-OFFSET_HUOBIS2VT: Dict[str, Offset] = {v: k for k, v in OFFSET_VT2HUOBIS.items()}
+OFFSET_HUOBIS2VT: Dict[str, Offset] = {
+    v: k for k, v in OFFSET_VT2HUOBIS.items()}
 
 INTERVAL_VT2HUOBIS: Dict[Interval, str] = {
     Interval.MINUTE: "1min",
@@ -125,6 +130,7 @@ class HuobisGateway(BaseGateway):
         self.rest_api = HuobisRestApi(self)
         self.trade_ws_api = HuobisTradeWebsocketApi(self)
         self.market_ws_api = HuobisDataWebsocketApi(self)
+        self.market_linear_ws_api = HuobisLinearDataWebsocketApi(self)
 
     def connect(self, setting: dict) -> None:
         """"""
@@ -143,12 +149,16 @@ class HuobisGateway(BaseGateway):
                               proxy_host, proxy_port)
         self.trade_ws_api.connect(key, secret, proxy_host, proxy_port)
         self.market_ws_api.connect(key, secret, proxy_host, proxy_port)
+        self.market_linear_ws_api.connect(key, secret, proxy_host, proxy_port)
 
         self.init_query()
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
-        self.market_ws_api.subscribe(req)
+        if 'USDT' in  req.symbol:
+            self.market_linear_ws_api.subscribe(req)
+        else:    
+            self.market_ws_api.subscribe(req)
 
     def send_order(self, req: OrderRequest) -> str:
         """"""
@@ -179,6 +189,7 @@ class HuobisGateway(BaseGateway):
         self.rest_api.stop()
         self.trade_ws_api.stop()
         self.market_ws_api.stop()
+        self.market_linear_ws_api.stop()
 
     def process_timer_event(self, event: Event) -> None:
         """"""
@@ -258,7 +269,8 @@ class HuobisRestApi(RestClient):
         self.key = key
         self.secret = secret
         self.host, _ = _split_url(REST_HOST)
-        self.connect_time = int(datetime.now(CHINA_TZ).strftime("%y%m%d%H%M%S"))
+        self.connect_time = int(datetime.now(
+            CHINA_TZ).strftime("%y%m%d%H%M%S"))
 
         self.init(REST_HOST, proxy_host, proxy_port)
         self.start(session_number)
@@ -274,6 +286,11 @@ class HuobisRestApi(RestClient):
             path="/swap-api/v1/swap_account_info",
             callback=self.on_query_account
         )
+        self.add_request(
+            method="POST",
+            path="/linear-swap-api/v1/swap_account_info",
+            callback=self.on_query_account
+        )
 
     def query_position(self) -> None:
         """"""
@@ -283,9 +300,25 @@ class HuobisRestApi(RestClient):
             callback=self.on_query_position
         )
 
-    def query_order(self, contract_code: str) -> None:
+        self.add_request(
+            method="POST",
+            path="/linear-swap-api/v1/swap_position_info",
+            callback=self.on_query_position
+        )
+
+    def query_order(self) -> Request:
         """"""
-        data = {"contract_code": contract_code}
+        for contract_code in self.contract_codes:
+            # Open Orders
+            data = {"contract_code": contract_code}
+
+            self.add_request(
+                method="POST",
+                path=f"/{symbol_apipath(contract_code)}swap-api/v1/swap_openorders",
+                callback=self.on_query_order,
+                data=data,
+                extra=contract_code
+            )
 
         self.add_request(
             method="POST",
@@ -302,11 +335,16 @@ class HuobisRestApi(RestClient):
             path="/swap-api/v1/swap_contract_info",
             callback=self.on_query_contract
         )
+        self.add_request(
+            method="GET",
+            path="/linear-swap-api/v1/swap_contract_info",
+            callback=self.on_query_contract
+        )
 
     def query_history(self, req: HistoryRequest) -> List[BarData]:
         """"""
         history = []
-        count = 2000
+        count = 1999
         start = req.start
         time_delta = TIMEDELTA_MAP[req.interval]
 
@@ -331,7 +369,7 @@ class HuobisRestApi(RestClient):
             # Get response from server
             resp = self.request(
                 "GET",
-                "/swap-ex/market/history/kline",
+                f"/{symbol_apipath(ws_symbol)}swap-ex/market/history/kline",
                 params=params
             )
 
@@ -417,7 +455,7 @@ class HuobisRestApi(RestClient):
 
         self.add_request(
             method="POST",
-            path="/swap-api/v1/swap_order",
+            path=f"/{symbol_apipath(req.symbol)}swap-api/v1/swap_order",
             callback=self.on_send_order,
             data=data,
             extra=order,
@@ -432,6 +470,8 @@ class HuobisRestApi(RestClient):
         """"""
         orders_data = []
         orders = []
+        orders_data_linear = []
+        orders_linear = []
         vt_orderids = []
 
         for req in reqs:
@@ -455,14 +495,21 @@ class HuobisRestApi(RestClient):
                 "lever_rate": 20
             }
 
-            orders_data.append(d)
-            orders.append(order)
+            if 'USDT' in req.symbol:
+                orders_data_linear.append(d)
+                orders_linear.append(order)
+            else:
+                orders_data.append(d)
+                orders.append(order)
+
             vt_orderids.append(order.vt_orderid)
 
         data = {
             "orders_data": orders_data
         }
-
+        data_linear = {
+            "orders_data": orders_data_linear
+        }
         self.add_request(
             method="POST",
             path="/swap-api/v1/swap_batchorder",
@@ -472,15 +519,24 @@ class HuobisRestApi(RestClient):
             on_error=self.on_send_orders_error,
             on_failed=self.on_send_orders_failed
         )
-
+        self.add_request(
+            method="POST",
+            path="/linear-swap-api/v1/swap_batchorder",
+            callback=self.on_send_orders,
+            data=data_linear,
+            extra=orders_linear,
+            on_error=self.on_send_orders_error,
+            on_failed=self.on_send_orders_failed
+        )
         return vt_orderids
 
     def cancel_order(self, req: CancelRequest) -> None:
         """"""
         buf = [i for i in req.symbol if not i.isdigit()]
 
+        symbol = "".join(buf)
         data = {
-            "contract_code": "".join(buf),
+            "contract_code": symbol,
         }
 
         orderid = int(req.orderid)
@@ -491,7 +547,7 @@ class HuobisRestApi(RestClient):
 
         self.add_request(
             method="POST",
-            path="/swap-api/v1/swap_cancel",
+            path=f"/{symbol_apipath(symbol)}swap-api/v1/swap_cancel",
             callback=self.on_cancel_order,
             on_failed=self.on_cancel_order_failed,
             data=data,
@@ -505,7 +561,7 @@ class HuobisRestApi(RestClient):
 
         for d in data["data"]:
             account = AccountData(
-                accountid=d["symbol"],
+                accountid=d["contract_code"],
                 balance=d["margin_balance"],
                 frozen=d["margin_frozen"],
                 gateway_name=self.gateway_name,
@@ -844,6 +900,7 @@ class HuobisWebsocketApiBase(WebsocketClient):
 
 class HuobisTradeWebsocketApi(HuobisWebsocketApiBase):
     """"""
+
     def __init__(self, gateway):
         """"""
         super().__init__(gateway)
@@ -1066,6 +1123,130 @@ class HuobisDataWebsocketApi(HuobisWebsocketApiBase):
             self.gateway.on_tick(copy(tick))
 
 
+
+class HuobisLinearDataWebsocketApi(HuobisWebsocketApiBase):
+    """"""
+
+    def __init__(self, gateway):
+        """"""
+        super().__init__(gateway)
+
+        self.ticks = {}
+
+    def connect(
+        self,
+        key: str,
+        secret: str,
+        proxy_host: str,
+        proxy_port: int
+    ) -> None:
+        """"""
+        super().connect(
+            key,
+            secret,
+            WEBSOCKET_DATA_HOST_LINEAR,
+            proxy_host,
+            proxy_port
+        )
+    def on_connected(self) -> None:
+        """"""
+        self.gateway.write_log("Linear行情Websocket API连接成功")
+
+        for ws_symbol in self.ticks.keys():
+            self.subscribe_data(ws_symbol)
+
+    def subscribe(self, req: SubscribeRequest) -> None:
+        """"""
+        buf = [i for i in req.symbol if not i.isdigit()]
+        symbol = "".join(buf)
+
+        ws_symbol = f"{symbol}"
+
+        # Create tick data buffer
+        tick = TickData(
+            symbol=req.symbol,
+            name=req.symbol,
+            exchange=Exchange.HUOBI,
+            datetime=datetime.now(CHINA_TZ),
+            gateway_name=self.gateway_name,
+        )
+        self.ticks[ws_symbol] = tick
+
+        self.subscribe_data(ws_symbol)
+
+    def subscribe_data(self, ws_symbol: str) -> None:
+        """"""
+        # Subscribe to market depth update
+        self.req_id += 1
+        req = {
+            "sub": f"market.{ws_symbol}.depth.step0",
+            "id": str(self.req_id)
+        }
+        self.send_packet(req)
+
+        # Subscribe to market detail update
+        self.req_id += 1
+        req = {
+            "sub": f"market.{ws_symbol}.detail",
+            "id": str(self.req_id)
+        }
+        self.send_packet(req)
+
+    def on_data(self, packet) -> None:
+        """"""
+        channel = packet.get("ch", None)
+        if channel:
+            if "depth.step" in channel:
+                self.on_market_depth(packet)
+            elif "detail" in channel:
+                self.on_market_detail(packet)
+        elif "err_code" in packet:
+            code = packet["err_code"]
+            msg = packet["err_msg"]
+            self.gateway.write_log(f"错误代码：{code}, 错误信息：{msg}")
+
+    def on_market_depth(self, data: dict) -> None:
+        """行情深度推送 """
+        ws_symbol = data["ch"].split(".")[1]
+        tick = self.ticks[ws_symbol]
+        tick.datetime = generate_datetime(data["ts"] / 1000)
+
+        tick_data = data["tick"]
+        if "bids" not in tick_data or "asks" not in tick_data:
+            return
+
+        bids = tick_data["bids"]
+        for n in range(5):
+            price, volume = bids[n]
+            tick.__setattr__("bid_price_" + str(n + 1), float(price))
+            tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
+
+        asks = tick_data["asks"]
+        for n in range(5):
+            price, volume = asks[n]
+            tick.__setattr__("ask_price_" + str(n + 1), float(price))
+            tick.__setattr__("ask_volume_" + str(n + 1), float(volume))
+
+        if tick.last_price:
+            self.gateway.on_tick(copy(tick))
+
+    def on_market_detail(self, data: dict) -> None:
+        """市场细节推送"""
+        ws_symbol = data["ch"].split(".")[1]
+        tick = self.ticks[ws_symbol]
+        tick.datetime = generate_datetime(data["ts"] / 1000)
+
+        tick_data = data["tick"]
+        tick.open_price = tick_data["open"]
+        tick.high_price = tick_data["high"]
+        tick.low_price = tick_data["low"]
+        tick.last_price = tick_data["close"]
+        tick.volume = tick_data["vol"]
+
+        if tick.bid_price_1:
+            self.gateway.on_tick(copy(tick))
+
+
 def _split_url(url) -> str:
     """
     将url拆分为host和path
@@ -1120,3 +1301,17 @@ def generate_datetime(timestamp: float) -> datetime:
     dt = datetime.fromtimestamp(timestamp)
     dt = CHINA_TZ.localize(dt)
     return dt
+
+
+def symbol_apipath(symbol: str):
+    '''
+    根据不同的品种返回相应的API路径(抬头)：
+    ---
+    ‘ETH.USD’ ==> ''
+
+    'ETH.USDT' ==> 'linear-'
+    '''
+    if 'USDT' in symbol:
+        return 'linear-'
+
+    return ''
