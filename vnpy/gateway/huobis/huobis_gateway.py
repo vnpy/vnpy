@@ -16,6 +16,7 @@ from threading import Lock
 from typing import Sequence
 import pytz
 from typing import Dict, List, Any
+from time import sleep
 
 from vnpy.event import Event
 from vnpy.api.rest import RestClient, Request
@@ -153,7 +154,7 @@ class HuobisGateway(BaseGateway):
         """"""
         return self.rest_api.send_order(req)
 
-    def cancel_order(self, req: CancelRequest) -> Request:
+    def cancel_order(self, req: CancelRequest) -> None:
         """"""
         self.rest_api.cancel_order(req)
 
@@ -161,11 +162,11 @@ class HuobisGateway(BaseGateway):
         """"""
         return self.rest_api.send_orders(reqs)
 
-    def query_account(self) -> Request:
+    def query_account(self) -> None:
         """"""
         self.rest_api.query_account()
 
-    def query_position(self) -> Request:
+    def query_position(self) -> None:
         """"""
         self.rest_api.query_position()
 
@@ -266,7 +267,7 @@ class HuobisRestApi(RestClient):
 
         self.query_contract()
 
-    def query_account(self) -> Request:
+    def query_account(self) -> None:
         """"""
         self.add_request(
             method="POST",
@@ -274,7 +275,7 @@ class HuobisRestApi(RestClient):
             callback=self.on_query_account
         )
 
-    def query_position(self) -> Request:
+    def query_position(self) -> None:
         """"""
         self.add_request(
             method="POST",
@@ -282,21 +283,19 @@ class HuobisRestApi(RestClient):
             callback=self.on_query_position
         )
 
-    def query_order(self) -> Request:
+    def query_order(self, contract_code: str) -> None:
         """"""
-        for contract_code in self.contract_codes:
-            # Open Orders
-            data = {"contract_code": contract_code}
+        data = {"contract_code": contract_code}
 
-            self.add_request(
-                method="POST",
-                path="/swap-api/v1/swap_openorders",
-                callback=self.on_query_order,
-                data=data,
-                extra=contract_code
-            )
+        self.add_request(
+            method="POST",
+            path="/swap-api/v1/swap_openorders",
+            callback=self.on_query_order,
+            data=data,
+            extra=contract_code
+        )
 
-    def query_contract(self) -> Request:
+    def query_contract(self) -> None:
         """"""
         self.add_request(
             method="GET",
@@ -476,7 +475,7 @@ class HuobisRestApi(RestClient):
 
         return vt_orderids
 
-    def cancel_order(self, req: CancelRequest) -> Request:
+    def cancel_order(self, req: CancelRequest) -> None:
         """"""
         buf = [i for i in req.symbol if not i.isdigit()]
 
@@ -579,6 +578,11 @@ class HuobisRestApi(RestClient):
 
         self.gateway.write_log(f"{request.extra}活动委托信息查询成功")
 
+        if self.order_codes:
+            sleep(0.1)
+            contract_code = self.order_codes.pop()
+            self.query_order(contract_code)
+
     def on_query_contract(self, data: dict, request: Request) -> None:
         """"""
         if self.check_error(data, "查询合约"):
@@ -602,7 +606,10 @@ class HuobisRestApi(RestClient):
 
         self.gateway.write_log("合约信息查询成功")
 
-        self.query_order()
+        # Start querying open order info
+        self.order_codes = copy(self.contract_codes)
+        contract_code = self.order_codes.pop()
+        self.query_order(contract_code)
 
     def on_send_order(self, data: dict, request: Request) -> None:
         """"""
