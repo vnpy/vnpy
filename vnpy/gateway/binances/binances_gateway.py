@@ -603,6 +603,7 @@ class BinancesRestApi(RestClient):
                 size=1,
                 min_volume=min_volume,
                 product=Product.FUTURES,
+                net_position=True,
                 history_data=True,
                 gateway_name=self.gateway_name,
             )
