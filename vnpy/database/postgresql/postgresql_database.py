@@ -16,7 +16,12 @@ from peewee import (
 
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.object import BarData, TickData
-from vnpy.trader.database import BaseDatabase, BarOverview, DB_TZ
+from vnpy.trader.database import (
+    BaseDatabase,
+    BarOverview,
+    DB_TZ,
+    convert_tz
+)
 from vnpy.trader.setting import SETTINGS
 
 
@@ -140,8 +145,8 @@ class PostgresqlDatabase(BaseDatabase):
         data = []
 
         for bar in bars:
-            bar.datetime = bar.datetime.astimezone(DB_TZ)
-            bar.datetime = bar.datetime.replace(tzinfo=None)
+            bar.datetime = convert_tz(bar.datetime)
+
             d = bar.__dict__
             d["exchange"] = d["exchange"].value
             d["interval"] = d["interval"].value
@@ -196,8 +201,7 @@ class PostgresqlDatabase(BaseDatabase):
         data = []
 
         for tick in ticks:
-            tick.datetime = tick.datetime.astimezone(DB_TZ)
-            tick.datetime = tick.datetime.replace(tzinfo=None)
+            tick.datetime = convert_tz(tick.datetime)
 
             d = tick.__dict__
             d["exchange"] = d["exchange"].value
