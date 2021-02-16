@@ -1,13 +1,13 @@
 import csv
 from datetime import datetime
-from typing import List, Dict, Tuple
-from vnpy.trader.database.database import DB_TZ
+from typing import List, Tuple
 
+from vnpy.trader.database import BarOverview, DB_TZ
 from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine
 from vnpy.trader.constant import Interval, Exchange
 from vnpy.trader.object import BarData, HistoryRequest
-from vnpy.trader.database import database_manager
 from vnpy.trader.rqdata import rqdata_client
+from vnpy.trader.database import database_manager
 
 
 APP_NAME = "DataManager"
@@ -131,22 +131,9 @@ class ManagerEngine(BaseEngine):
         except PermissionError:
             return False
 
-    def get_bar_data_available(self) -> List[Dict]:
+    def get_bar_overview(self) -> List[BarOverview]:
         """"""
-        data = database_manager.get_bar_data_statistics()
-
-        for d in data:
-            oldest_bar = database_manager.get_oldest_bar_data(
-                d["symbol"], Exchange(d["exchange"]), Interval(d["interval"])
-            )
-            d["start"] = oldest_bar.datetime
-
-            newest_bar = database_manager.get_newest_bar_data(
-                d["symbol"], Exchange(d["exchange"]), Interval(d["interval"])
-            )
-            d["end"] = newest_bar.datetime
-
-        return data
+        return database_manager.get_bar_overview()
 
     def load_bar_data(
         self,

@@ -13,7 +13,7 @@ from vnpy.trader.ui.editor import CodeEditor
 from vnpy.event import Event, EventEngine
 from vnpy.chart import ChartWidget, CandleItem, VolumeItem
 from vnpy.trader.utility import load_json, save_json
-from vnpy.trader.database.database import DB_TZ
+from vnpy.trader.database import DB_TZ
 
 from ..engine import (
     APP_NAME,

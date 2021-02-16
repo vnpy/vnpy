@@ -1,4 +1,3 @@
-from logging import log
 import pytz
 from typing import Any, Dict, List
 from datetime import datetime
