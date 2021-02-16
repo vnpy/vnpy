@@ -197,7 +197,7 @@ class SqliteDatabase(BaseDatabase):
         # Upsert data into database
         with self.db.atomic():
             for c in chunked(data, 50):
-                DbBarData.insert_many(c).on_conflict_replace().execute()
+                DbTickData.insert_many(c).on_conflict_replace().execute()
 
     def load_bar_data(
         self,

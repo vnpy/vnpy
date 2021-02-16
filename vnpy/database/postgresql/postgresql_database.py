@@ -8,10 +8,9 @@ from peewee import (
     DateTimeField,
     FloatField, IntegerField,
     Model,
-    MySQLDatabase as PeeweeMySQLDatabase,
+    PostgresqlDatabase as PeeweePostgresqlDatabase,
     ModelSelect,
     ModelDelete,
-    chunked,
     fn
 )
 
@@ -21,7 +20,7 @@ from vnpy.trader.database import BaseDatabase, BarOverview, DB_TZ
 from vnpy.trader.setting import SETTINGS
 
 
-db = PeeweeMySQLDatabase(
+db = PeeweePostgresqlDatabase(
     database=SETTINGS["database.database"],
     user=SETTINGS["database.user"],
     password=SETTINGS["database.password"],
@@ -120,7 +119,7 @@ class DbBarOverview(Model):
         indexes = ((("symbol", "exchange", "interval"), True),)
 
 
-class MysqlDatabase(BaseDatabase):
+class PostgresqlDatabase(BaseDatabase):
     """"""
 
     def __init__(self) -> None:
@@ -152,8 +151,16 @@ class MysqlDatabase(BaseDatabase):
 
         # Upsert data into database
         with self.db.atomic():
-            for c in chunked(data, 50):
-                DbBarData.insert_many(c).on_conflict_replace().execute()
+            for d in data:
+                DbBarData.insert(d).on_conflict(
+                    update=d,
+                    conflict_target=(
+                        DbBarData.symbol,
+                        DbBarData.exchange,
+                        DbBarData.interval,
+                        DbBarData.datetime,
+                    ),
+                ).execute()
 
         # Update bar overview
         overview: DbBarOverview = DbBarOverview.get_or_none(
@@ -201,8 +208,15 @@ class MysqlDatabase(BaseDatabase):
 
         # Upsert data into database
         with self.db.atomic():
-            for c in chunked(data, 50):
-                DbTickData.insert_many(c).on_conflict_replace().execute()
+            for d in data:
+                DbTickData.insert(d).on_conflict(
+                    update=d,
+                    conflict_target=(
+                        DbTickData.symbol,
+                        DbTickData.exchange,
+                        DbTickData.datetime,
+                    ),
+                ).execute()
 
     def load_bar_data(
         self,
@@ -368,4 +382,4 @@ class MysqlDatabase(BaseDatabase):
             overview.save()
 
 
-database_manager = MysqlDatabase()
+database_manager = PostgresqlDatabase()
