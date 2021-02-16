@@ -13,18 +13,26 @@ from .setting import SETTINGS
 DB_TZ = timezone(SETTINGS["database.timezone"])
 
 
+def convert_tz(dt: datetime) -> datetime:
+    """
+    Convert timezone of datetime object to DB_TZ.
+    """
+    dt = dt.astimezone(DB_TZ)
+    return dt.replace(tzinfo=None)
+
+
 @dataclass
 class BarOverview:
     """
     Overview of bar data stored in database.
     """
 
-    symbol: str
-    exchange: Exchange
-    interval: Interval
-    count: int
-    start: datetime
-    end: datetime
+    symbol: str = ""
+    exchange: Exchange = None
+    interval: Interval = None
+    count: int = 0
+    start: datetime = None
+    end: datetime = None
 
 
 class BaseDatabase(ABC):

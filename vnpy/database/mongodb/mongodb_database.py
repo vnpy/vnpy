@@ -1,7 +1,6 @@
 """"""
 from datetime import datetime
 from typing import List
-from tzlocal import get_localzone
 
 from mongoengine import (
     Document,
@@ -16,11 +15,13 @@ from mongoengine.errors import DoesNotExist
 
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.object import BarData, TickData
-from vnpy.trader.database import BaseDatabase, BarOverview, DB_TZ
+from vnpy.trader.database import (
+    BaseDatabase,
+    BarOverview,
+    DB_TZ,
+    convert_tz
+)
 from vnpy.trader.setting import SETTINGS
-
-
-LOCAL_TZ = get_localzone()
 
 
 class DbBarData(Document):
@@ -378,16 +379,6 @@ class MongodbDatabase(BaseDatabase):
             overview.end = end_bar.datetime
 
             overview.save()
-
-
-def convert_tz(dt: datetime) -> datetime:
-    """
-    Convert timezone of datetime object to DB_TZ.
-    """
-    if not dt.tzinfo:
-        dt = LOCAL_TZ.localize(dt)
-    dt = dt.astimezone(DB_TZ)
-    return dt.replace(tzinfo=None)
 
 
 def to_update_param(d: dict) -> dict:
