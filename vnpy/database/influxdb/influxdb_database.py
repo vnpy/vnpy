@@ -108,7 +108,62 @@ class InfluxdbDatabase(BaseDatabase):
 
     def save_tick_data(self, ticks: List[TickData]) -> bool:
         """"""
-        pass
+        json_body = []
+
+        tick = ticks[0]
+        vt_symbol = tick.vt_symbol
+
+        for tick in ticks:
+            tick.datetime = convert_tz(tick.datetime)
+
+            d = {
+                "measurement": "tick_data",
+                "tags": {
+                    "vt_symbol": vt_symbol
+                },
+                "time": tick.datetime.isoformat(),
+                "fields": {
+                    "name": tick.name,
+                    "volume": tick.volume,
+                    "open_interest": tick.open_interest,
+                    "last_price": tick.last_price,
+                    "last_volume": tick.last_volume,
+                    "limit_up": tick.limit_up,
+                    "limit_down": tick.limit_down,
+
+                    "open_price": tick.open_price,
+                    "high_price": tick.high_price,
+                    "low_price": tick.low_price,
+                    "pre_close": tick.pre_close,
+
+                    "bid_price_1": tick.bid_price_1,
+                    "bid_price_2": tick.bid_price_2,
+                    "bid_price_3": tick.bid_price_3,
+                    "bid_price_4": tick.bid_price_4,
+                    "bid_price_5": tick.bid_price_5,
+
+                    "ask_price_1": tick.ask_price_1,
+                    "ask_price_2": tick.ask_price_2,
+                    "ask_price_3": tick.ask_price_3,
+                    "ask_price_4": tick.ask_price_4,
+                    "ask_price_5": tick.ask_price_5,
+
+                    "bid_volume_1": tick.bid_volume_1,
+                    "bid_volume_2": tick.bid_volume_2,
+                    "bid_volume_3": tick.bid_volume_3,
+                    "bid_volume_4": tick.bid_volume_4,
+                    "bid_volume_5": tick.bid_volume_5,
+
+                    "ask_volume_1": tick.ask_volume_1,
+                    "ask_volume_2": tick.ask_volume_2,
+                    "ask_volume_3": tick.ask_volume_3,
+                    "ask_volume_4": tick.ask_volume_4,
+                    "ask_volume_5": tick.ask_volume_5,
+                }
+            }
+            json_body.append(d)
+
+        self.client.write_points(json_body, batch_size=10000)
 
     def load_bar_data(
         self,
@@ -164,7 +219,64 @@ class InfluxdbDatabase(BaseDatabase):
         end: datetime
     ) -> List[TickData]:
         """"""
-        pass
+        query = (
+            "select * from tick_data"
+            " where vt_symbol=$vt_symbol"
+            f" and time >= '{start.date().isoformat()}'"
+            f" and time <= '{end.date().isoformat()}';"
+        )
+
+        bind_params = {
+            "vt_symbol": generate_vt_symbol(symbol, exchange),
+        }
+
+        result = self.client.query(query, bind_params=bind_params)
+        points = result.get_points()
+
+        ticks: List[TickData] = []
+        for d in points:
+            dt = datetime.strptime(d["time"], "%Y-%m-%dT%H:%M:%SZ")
+
+            tick = TickData(
+                symbol=symbol,
+                exchange=exchange,
+                datetime=DB_TZ.localize(dt),
+                name=d["name"],
+                volume=d["volume"],
+                open_interest=d["open_interest"],
+                last_price=d["last_price"],
+                last_volume=d["last_volume"],
+                limit_up=d["limit_up"],
+                limit_down=d["limit_down"],
+                open_price=d["open_price"],
+                high_price=d["high_price"],
+                low_price=d["low_price"],
+                pre_close=d["pre_close"],
+                bid_price_1=d["bid_price_1"],
+                bid_price_2=d["bid_price_2"],
+                bid_price_3=d["bid_price_3"],
+                bid_price_4=d["bid_price_4"],
+                bid_price_5=d["bid_price_5"],
+                ask_price_1=d["ask_price_1"],
+                ask_price_2=d["ask_price_2"],
+                ask_price_3=d["ask_price_3"],
+                ask_price_4=d["ask_price_4"],
+                ask_price_5=d["ask_price_5"],
+                bid_volume_1=d["bid_volume_1"],
+                bid_volume_2=d["bid_volume_2"],
+                bid_volume_3=d["bid_volume_3"],
+                bid_volume_4=d["bid_volume_4"],
+                bid_volume_5=d["bid_volume_5"],
+                ask_volume_1=d["ask_volume_1"],
+                ask_volume_2=d["ask_volume_2"],
+                ask_volume_3=d["ask_volume_3"],
+                ask_volume_4=d["ask_volume_4"],
+                ask_volume_5=d["ask_volume_5"],
+                gateway_name="DB"
+            )
+            ticks.append(tick)
+
+        return ticks
 
     def delete_bar_data(
         self,
@@ -214,7 +326,29 @@ class InfluxdbDatabase(BaseDatabase):
         exchange: Exchange
     ) -> int:
         """"""
-        pass
+        bind_params = {
+            "vt_symbol": generate_vt_symbol(symbol, exchange),
+        }
+
+        # Query data count
+        query1 = (
+            "select count(last_price) from tick_data"
+            " where vt_symbol=$vt_symbol"
+        )
+        result = self.client.query(query1, bind_params=bind_params)
+        points = result.get_points()
+
+        for d in points:
+            count = d["count"]
+
+        # Delete data
+        query2 = (
+            "drop series from tick_data"
+            " where vt_symbol=$vt_symbol"
+        )
+        self.client.query(query2, bind_params=bind_params)
+
+        return count
 
     def get_bar_overview(self) -> List[BarOverview]:
         """
