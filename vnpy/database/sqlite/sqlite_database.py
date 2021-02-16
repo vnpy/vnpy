@@ -11,7 +11,8 @@ from peewee import (
     SqliteDatabase as PeeweeSqliteDatabase,
     ModelSelect,
     ModelDelete,
-    chunked
+    chunked,
+    fn
 )
 
 from vnpy.trader.constant import Exchange, Interval
@@ -298,6 +299,12 @@ class SqliteDatabase(BaseDatabase):
         """
         Return data avaible in database.
         """
+        # Init bar overview for old version database
+        data_count = DbBarData.select().count()
+        overview_count = DbBarOverview.select().count()
+        if data_count and not overview_count:
+            self.init_bar_overview()
+
         s: ModelSelect = DbBarOverview.select()
         overviews = []
         for overview in s:
@@ -305,6 +312,56 @@ class SqliteDatabase(BaseDatabase):
             overview.interval = Interval(overview.interval)
             overviews.append(overview)
         return overviews
+
+    def init_bar_overview(self) -> None:
+        """
+        Init overview table if not exists.
+        """
+        s: ModelSelect = (
+            DbBarData.select(
+                DbBarData.symbol,
+                DbBarData.exchange,
+                DbBarData.interval,
+                fn.COUNT(DbBarData.id).alias("count")
+            ).group_by(
+                DbBarData.symbol,
+                DbBarData.exchange,
+                DbBarData.interval
+            )
+        )
+
+        for data in s:
+            overview = DbBarOverview()
+            overview.symbol = data.symbol
+            overview.exchange = data.exchange
+            overview.interval = data.interval
+            overview.count = data.count
+
+            start_bar: DbBarData = (
+                DbBarData.select()
+                .where(
+                    (DbBarData.symbol == data.symbol)
+                    & (DbBarData.exchange == data.exchange)
+                    & (DbBarData.interval == data.interval)
+                )
+                .order_by(DbBarData.datetime.desc())
+                .first()
+            )
+            overview.start = start_bar.datetime
+
+            end_bar: DbBarData = (
+                DbBarData.select()
+                .where(
+                    (DbBarData.symbol == data.symbol)
+                    & (DbBarData.exchange == data.exchange)
+                    & (DbBarData.interval == data.interval)
+                )
+                .order_by(DbBarData.datetime.asc())
+                .first()
+            )
+            overview.end = end_bar.datetime
+
+            overview.save()
 
 
 database_manager = SqliteDatabase()
