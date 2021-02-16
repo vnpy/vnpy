@@ -11,7 +11,7 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 import talib
 
 from vnpy.trader.constant import Exchange, Interval
-from vnpy.database import database_manager
+from vnpy.trader.database import database_manager
 warnings.filterwarnings("ignore")
 
 

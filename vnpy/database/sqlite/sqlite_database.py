@@ -270,6 +270,15 @@ class SqliteDatabase(BaseDatabase):
             & (DbBarData.interval == interval.value)
         )
         count = d.execute()
+
+        # Delete bar overview
+        d2: ModelDelete = DbBarOverview.delete().where(
+            (DbBarOverview.symbol == symbol)
+            & (DbBarOverview.exchange == exchange.value)
+            & (DbBarOverview.interval == interval.value)
+        )
+        d2.execute()
+
         return count
 
     def delete_tick_data(

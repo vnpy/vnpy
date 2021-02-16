@@ -12,7 +12,7 @@ from vnpy.trader.constant import Interval
 from vnpy.trader.utility import extract_vt_symbol
 from vnpy.trader.object import HistoryRequest
 from vnpy.trader.rqdata import rqdata_client
-from vnpy.database import database_manager
+from vnpy.trader.database import database_manager
 from vnpy.app.cta_strategy import CtaTemplate
 from vnpy.app.cta_strategy.backtesting import (
     BacktestingEngine, OptimizationSetting, BacktestingMode

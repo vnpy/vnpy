@@ -8,7 +8,7 @@ from peewee import (
     DateTimeField,
     FloatField, IntegerField,
     Model,
-    MySQLDatabase,
+    MySQLDatabase as PeeweeMySQLDatabase,
     ModelSelect,
     ModelDelete,
     chunked
@@ -20,7 +20,7 @@ from vnpy.trader.database import BaseDatabase, BarOverview, DB_TZ
 from vnpy.trader.setting import SETTINGS
 
 
-db = MySQLDatabase(
+db = PeeweeMySQLDatabase(
     database=SETTINGS["database.database"],
     user=SETTINGS["database.user"],
     password=SETTINGS["database.password"],
@@ -270,11 +270,19 @@ class MysqlDatabase(BaseDatabase):
     ) -> int:
         """"""
         d: ModelDelete = DbBarData.delete().where(
+            (DbBarOverview.symbol == symbol)
+            & (DbBarOverview.exchange == exchange.value)
+            & (DbBarOverview.interval == interval.value)
+        )
+        count = d.execute()
+
+        # Delete bar overview
+        d2: ModelDelete = DbBarOverview.delete().where(
             (DbBarData.symbol == symbol)
             & (DbBarData.exchange == exchange.value)
             & (DbBarData.interval == interval.value)
         )
-        count = d.execute()
+        d2.execute()
         return count
 
     def delete_tick_data(

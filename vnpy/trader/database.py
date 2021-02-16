@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List
 from pytz import timezone
 from dataclasses import dataclass
+from importlib import import_module
 
 from .constant import Interval, Exchange
 from .object import BarData, TickData
@@ -15,7 +16,7 @@ DB_TZ = timezone(SETTINGS["database.timezone"])
 @dataclass
 class BarOverview:
     """
-    Overview of bar data in database.
+    Overview of bar data stored in database.
     """
 
     symbol: str
@@ -101,3 +102,12 @@ class BaseDatabase(ABC):
         Return data avaible in database.
         """
         pass
+
+
+driver: str = SETTINGS["database.driver"]
+module_name: str = f"vnpy.database.{driver}"
+try:
+    database_manager: BaseDatabase = import_module(module_name).database_manager
+except ModuleNotFoundError:
+    print(f"找不到数据库驱动{module_name}，使用默认的SQLite数据库")
+    database_manager: BaseDatabase = import_module("vnpy.database.sqlite").database_manager
