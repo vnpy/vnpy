@@ -133,7 +133,6 @@ class HuobisGateway(BaseGateway):
         self.rest_api = HuobisRestApi(self)
         self.trade_ws_api = HuobisTradeWebsocketApi(self)
         self.market_ws_api = HuobisDataWebsocketApi(self)
-        self.market_linear_ws_api = HuobisLinearDataWebsocketApi(self)
 
     def connect(self, setting: dict) -> None:
         """"""
@@ -162,10 +161,7 @@ class HuobisGateway(BaseGateway):
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
-        if 'USDT' in  req.symbol:
-            self.market_linear_ws_api.subscribe(req)
-        else:    
-            self.market_ws_api.subscribe(req)
+        self.market_ws_api.subscribe(req)
 
     def send_order(self, req: OrderRequest) -> str:
         """"""
@@ -196,7 +192,6 @@ class HuobisGateway(BaseGateway):
         self.rest_api.stop()
         self.trade_ws_api.stop()
         self.market_ws_api.stop()
-        self.market_linear_ws_api.stop()
 
     def process_timer_event(self, event: Event) -> None:
         """"""
@@ -1188,130 +1183,6 @@ class HuobisDataWebsocketApi(HuobisWebsocketApiBase):
             self.gateway.on_tick(copy(tick))
 
 
-
-class HuobisLinearDataWebsocketApi(HuobisWebsocketApiBase):
-    """"""
-
-    def __init__(self, gateway):
-        """"""
-        super().__init__(gateway)
-
-        self.ticks = {}
-
-    def connect(
-        self,
-        key: str,
-        secret: str,
-        proxy_host: str,
-        proxy_port: int
-    ) -> None:
-        """"""
-        super().connect(
-            key,
-            secret,
-            WEBSOCKET_DATA_HOST_LINEAR,
-            proxy_host,
-            proxy_port
-        )
-    def on_connected(self) -> None:
-        """"""
-        self.gateway.write_log("Linear行情Websocket API连接成功")
-
-        for ws_symbol in self.ticks.keys():
-            self.subscribe_data(ws_symbol)
-
-    def subscribe(self, req: SubscribeRequest) -> None:
-        """"""
-        buf = [i for i in req.symbol if not i.isdigit()]
-        symbol = "".join(buf)
-
-        ws_symbol = f"{symbol}"
-
-        # Create tick data buffer
-        tick = TickData(
-            symbol=req.symbol,
-            name=req.symbol,
-            exchange=Exchange.HUOBI,
-            datetime=datetime.now(CHINA_TZ),
-            gateway_name=self.gateway_name,
-        )
-        self.ticks[ws_symbol] = tick
-
-        self.subscribe_data(ws_symbol)
-
-    def subscribe_data(self, ws_symbol: str) -> None:
-        """"""
-        # Subscribe to market depth update
-        self.req_id += 1
-        req = {
-            "sub": f"market.{ws_symbol}.depth.step0",
-            "id": str(self.req_id)
-        }
-        self.send_packet(req)
-
-        # Subscribe to market detail update
-        self.req_id += 1
-        req = {
-            "sub": f"market.{ws_symbol}.detail",
-            "id": str(self.req_id)
-        }
-        self.send_packet(req)
-
-    def on_data(self, packet) -> None:
-        """"""
-        channel = packet.get("ch", None)
-        if channel:
-            if "depth.step" in channel:
-                self.on_market_depth(packet)
-            elif "detail" in channel:
-                self.on_market_detail(packet)
-        elif "err_code" in packet:
-            code = packet["err_code"]
-            msg = packet["err_msg"]
-            self.gateway.write_log(f"错误代码：{code}, 错误信息：{msg}")
-
-    def on_market_depth(self, data: dict) -> None:
-        """行情深度推送 """
-        ws_symbol = data["ch"].split(".")[1]
-        tick = self.ticks[ws_symbol]
-        tick.datetime = generate_datetime(data["ts"] / 1000)
-
-        tick_data = data["tick"]
-        if "bids" not in tick_data or "asks" not in tick_data:
-            return
-
-        bids = tick_data["bids"]
-        for n in range(5):
-            price, volume = bids[n]
-            tick.__setattr__("bid_price_" + str(n + 1), float(price))
-            tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
-
-        asks = tick_data["asks"]
-        for n in range(5):
-            price, volume = asks[n]
-            tick.__setattr__("ask_price_" + str(n + 1), float(price))
-            tick.__setattr__("ask_volume_" + str(n + 1), float(volume))
-
-        if tick.last_price:
-            self.gateway.on_tick(copy(tick))
-
-    def on_market_detail(self, data: dict) -> None:
-        """市场细节推送"""
-        ws_symbol = data["ch"].split(".")[1]
-        tick = self.ticks[ws_symbol]
-        tick.datetime = generate_datetime(data["ts"] / 1000)
-
-        tick_data = data["tick"]
-        tick.open_price = tick_data["open"]
-        tick.high_price = tick_data["high"]
-        tick.low_price = tick_data["low"]
-        tick.last_price = tick_data["close"]
-        tick.volume = tick_data["vol"]
-
-        if tick.bid_price_1:
-            self.gateway.on_tick(copy(tick))
-
-
 def _split_url(url) -> str:
     """
     将url拆分为host和path
@@ -1366,17 +1237,3 @@ def generate_datetime(timestamp: float) -> datetime:
     dt = datetime.fromtimestamp(timestamp)
     dt = CHINA_TZ.localize(dt)
     return dt
-
-
-def symbol_apipath(symbol: str):
-    '''
-    根据不同的品种返回相应的API路径(抬头)：
-    ---
-    ‘ETH.USD’ ==> ''
-
-    'ETH.USDT' ==> 'linear-'
-    '''
-    if 'USDT' in symbol:
-        return 'linear-'
-
-    return ''
