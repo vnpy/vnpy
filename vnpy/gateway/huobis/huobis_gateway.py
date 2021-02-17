@@ -48,8 +48,12 @@ from vnpy.trader.event import EVENT_TIMER
 
 
 REST_HOST = "https://api.hbdm.com"
-WEBSOCKET_DATA_HOST = "wss://api.hbdm.com/swap-ws"               # Market Data
-WEBSOCKET_TRADE_HOST = "wss://api.hbdm.com/swap-notification"    # Account and Order
+
+INVERSE_WEBSOCKET_DATA_HOST = "wss://api.hbdm.com/swap-ws"               # Market Data
+INVERSE_WEBSOCKET_TRADE_HOST = "wss://api.hbdm.com/swap-notification"    # Account and Order
+
+WEBSOCKET_DATA_HOST = "wss://api.hbdm.com/linear-swap-ws"               # Market Data
+WEBSOCKET_TRADE_HOST = "wss://api.hbdm.com/linear-swap-notification"    # Account and Order
 
 STATUS_HUOBIS2VT: Dict[int, Status] = {
     3: Status.NOTTRADED,
@@ -112,6 +116,7 @@ class HuobisGateway(BaseGateway):
         "API Key": "",
         "Secret Key": "",
         "会话数": 3,
+        "合约模式": ["反向", "正向"],
         "代理地址": "",
         "代理端口": "",
     }
@@ -134,15 +139,20 @@ class HuobisGateway(BaseGateway):
         proxy_host = setting["代理地址"]
         proxy_port = setting["代理端口"]
 
+        if setting["合约模式"] == "正向":
+            usdt_base = True
+        else:
+            usdt_base = False
+
         if proxy_port.isdigit():
             proxy_port = int(proxy_port)
         else:
             proxy_port = 0
 
-        self.rest_api.connect(key, secret, session_number,
+        self.rest_api.connect(usdt_base, key, secret, session_number,
                               proxy_host, proxy_port)
-        self.trade_ws_api.connect(key, secret, proxy_host, proxy_port)
-        self.market_ws_api.connect(key, secret, proxy_host, proxy_port)
+        self.trade_ws_api.connect(usdt_base, key, secret, proxy_host, proxy_port)
+        self.market_ws_api.connect(usdt_base, key, secret, proxy_host, proxy_port)
 
         self.init_query()
 
@@ -207,6 +217,7 @@ class HuobisRestApi(RestClient):
         self.gateway: HuobisGateway = gateway
         self.gateway_name: str = gateway.gateway_name
 
+        self.usdt_base: bool = False
         self.host: str = ""
         self.key: str = ""
         self.secret: str = ""
@@ -246,6 +257,7 @@ class HuobisRestApi(RestClient):
 
     def connect(
         self,
+        usdt_base: bool,
         key: str,
         secret: str,
         session_number: int,
@@ -255,6 +267,7 @@ class HuobisRestApi(RestClient):
         """
         Initialize connection to REST server.
         """
+        self.usdt_base = usdt_base
         self.key = key
         self.secret = secret
         self.host, _ = _split_url(REST_HOST)
@@ -269,27 +282,42 @@ class HuobisRestApi(RestClient):
 
     def query_account(self) -> None:
         """"""
+        if self.usdt_base:
+            path = "/linear-swap-api/v1/swap_cross_account_info"
+        else:
+            path = "/swap-api/v1/swap_account_info"
+
         self.add_request(
             method="POST",
-            path="/swap-api/v1/swap_account_info",
+            path=path,
             callback=self.on_query_account
         )
 
     def query_position(self) -> None:
         """"""
+        if self.usdt_base:
+            path = "/linear-swap-api/v1/swap_cross_position_info"
+        else:
+            path = "/swap-api/v1/swap_position_info"
+
         self.add_request(
             method="POST",
-            path="/swap-api/v1/swap_position_info",
+            path=path,
             callback=self.on_query_position
         )
 
-    def query_order(self, contract_code: str) -> None:
+    def query_order(self, contract_code: str) -> Request:
         """"""
+        if self.usdt_base:
+            path = "/linear-swap-api/v1/swap_cross_openorders"
+        else:
+            path = "/swap-api/v1/swap_openorders"
+
         data = {"contract_code": contract_code}
 
         self.add_request(
             method="POST",
-            path="/swap-api/v1/swap_openorders",
+            path=path,
             callback=self.on_query_order,
             data=data,
             extra=contract_code
@@ -297,16 +325,29 @@ class HuobisRestApi(RestClient):
 
     def query_contract(self) -> None:
         """"""
+        if self.usdt_base:
+            path = "/linear-swap-api/v1/swap_contract_info"
+            data = {"support_margin_mode": "cross"}
+        else:
+            path = "/swap-api/v1/swap_contract_info"
+            data = {}
+
         self.add_request(
             method="GET",
-            path="/swap-api/v1/swap_contract_info",
+            path=path,
+            data=data,
             callback=self.on_query_contract
         )
 
     def query_history(self, req: HistoryRequest) -> List[BarData]:
         """"""
+        if self.usdt_base:
+            path = "/linear-swap-ex/market/history/kline"
+        else:
+            path = "/swap-ex/market/history/kline"
+
         history = []
-        count = 2000
+        count = 1999
         start = req.start
         time_delta = TIMEDELTA_MAP[req.interval]
 
@@ -331,11 +372,9 @@ class HuobisRestApi(RestClient):
             # Get response from server
             resp = self.request(
                 "GET",
-                "/swap-ex/market/history/kline",
+                path=path,
                 params=params
             )
-
-            print(params)
 
             # Break if request failed with other status code
             if resp.status_code // 100 != 2:
@@ -397,6 +436,11 @@ class HuobisRestApi(RestClient):
 
     def send_order(self, req: OrderRequest) -> str:
         """"""
+        if self.usdt_base:
+            path = "/linear-swap-api/v1/swap_cross_order"
+        else:
+            path = "/swap-api/v1/swap_order"
+
         local_orderid = self.new_local_orderid()
         order = req.create_order_data(
             local_orderid,
@@ -417,7 +461,7 @@ class HuobisRestApi(RestClient):
 
         self.add_request(
             method="POST",
-            path="/swap-api/v1/swap_order",
+            path=path,
             callback=self.on_send_order,
             data=data,
             extra=order,
@@ -430,6 +474,11 @@ class HuobisRestApi(RestClient):
 
     def send_orders(self, reqs: Sequence[OrderRequest]) -> str:
         """"""
+        if self.usdt_base:
+            path = "/linear-swap-api/v1/swap_cross_batchorder"
+        else:
+            path = "/swap-api/v1/swap_batchorder"
+
         orders_data = []
         orders = []
         vt_orderids = []
@@ -457,30 +506,32 @@ class HuobisRestApi(RestClient):
 
             orders_data.append(d)
             orders.append(order)
+
             vt_orderids.append(order.vt_orderid)
 
         data = {
             "orders_data": orders_data
         }
-
         self.add_request(
             method="POST",
-            path="/swap-api/v1/swap_batchorder",
+            path=path,
             callback=self.on_send_orders,
             data=data,
             extra=orders,
             on_error=self.on_send_orders_error,
             on_failed=self.on_send_orders_failed
         )
-
         return vt_orderids
 
     def cancel_order(self, req: CancelRequest) -> None:
         """"""
-        buf = [i for i in req.symbol if not i.isdigit()]
+        if self.usdt_base:
+            path = "/linear-swap-api/v1/swap_cross_cancel"
+        else:
+            path = "/swap-api/v1/swap_cancel"
 
         data = {
-            "contract_code": "".join(buf),
+            "contract_code": req.symbol,
         }
 
         orderid = int(req.orderid)
@@ -491,7 +542,7 @@ class HuobisRestApi(RestClient):
 
         self.add_request(
             method="POST",
-            path="/swap-api/v1/swap_cancel",
+            path=path,
             callback=self.on_cancel_order,
             on_failed=self.on_cancel_order_failed,
             data=data,
@@ -503,15 +554,26 @@ class HuobisRestApi(RestClient):
         if self.check_error(data, "查询账户"):
             return
 
-        for d in data["data"]:
-            account = AccountData(
-                accountid=d["symbol"],
-                balance=d["margin_balance"],
-                frozen=d["margin_frozen"],
-                gateway_name=self.gateway_name,
-            )
+        if self.usdt_base:
+            for d in data["data"]:
+                if d["margin_mode"] == "cross":
+                    account = AccountData(
+                        accountid=d["margin_account"],
+                        balance=d["margin_balance"],
+                        frozen=d["margin_frozen"],
+                        gateway_name=self.gateway_name,
+                    )
+                    self.gateway.on_account(account)
+        else:
+            for d in data["data"]:
+                account = AccountData(
+                    accountid=d["symbol"],
+                    balance=d["margin_balance"],
+                    frozen=d["margin_frozen"],
+                    gateway_name=self.gateway_name,
+                )
 
-            self.gateway.on_account(account)
+                self.gateway.on_account(account)
 
     def on_query_position(self, data: dict, request: Request) -> None:
         """"""
@@ -589,20 +651,22 @@ class HuobisRestApi(RestClient):
             return
 
         for d in data["data"]:
-            self.contract_codes.add(d["contract_code"])
+            # Only allow cross margin contract
+            if not self.usdt_base or d["support_margin_mode"] != "isolated":
+                self.contract_codes.add(d["contract_code"])
 
-            contract = ContractData(
-                symbol=d["contract_code"],
-                exchange=Exchange.HUOBI,
-                name=d["contract_code"],
-                pricetick=d["price_tick"],
-                size=int(d["contract_size"]),
-                min_volume=1,
-                product=Product.FUTURES,
-                history_data=True,
-                gateway_name=self.gateway_name,
-            )
-            self.gateway.on_contract(contract)
+                contract = ContractData(
+                    symbol=d["contract_code"],
+                    exchange=Exchange.HUOBI,
+                    name=d["contract_code"],
+                    pricetick=d["price_tick"],
+                    size=int(d["contract_size"]),
+                    min_volume=1,
+                    product=Product.FUTURES,
+                    history_data=True,
+                    gateway_name=self.gateway_name,
+                )
+                self.gateway.on_contract(contract)
 
         self.gateway.write_log("合约信息查询成功")
 
@@ -757,6 +821,7 @@ class HuobisWebsocketApiBase(WebsocketClient):
         self.gateway: HuobisGateway = gateway
         self.gateway_name: str = gateway.gateway_name
 
+        self.usdt_base: bool = False
         self.key: str = ""
         self.secret: str = ""
         self.sign_host: str = ""
@@ -765,6 +830,7 @@ class HuobisWebsocketApiBase(WebsocketClient):
 
     def connect(
         self,
+        usdt_base: bool,
         key: str,
         secret: str,
         url: str,
@@ -844,22 +910,30 @@ class HuobisWebsocketApiBase(WebsocketClient):
 
 class HuobisTradeWebsocketApi(HuobisWebsocketApiBase):
     """"""
+
     def __init__(self, gateway):
         """"""
         super().__init__(gateway)
 
     def connect(
         self,
+        usdt_base: bool,
         key: str,
         secret: str,
         proxy_host: str,
         proxy_port: int
     ) -> None:
         """"""
+        if usdt_base:
+            url = WEBSOCKET_TRADE_HOST
+        else:
+            url = INVERSE_WEBSOCKET_TRADE_HOST
+
         super().connect(
+            usdt_base,
             key,
             secret,
-            WEBSOCKET_TRADE_HOST,
+            url,
             proxy_host,
             proxy_port
         )
@@ -953,16 +1027,23 @@ class HuobisDataWebsocketApi(HuobisWebsocketApiBase):
 
     def connect(
         self,
+        usdt_base: bool,
         key: str,
         secret: str,
         proxy_host: str,
         proxy_port: int
     ) -> None:
         """"""
+        if usdt_base:
+            url = WEBSOCKET_DATA_HOST
+        else:
+            url = INVERSE_WEBSOCKET_DATA_HOST
+
         super().connect(
+            usdt_base,
             key,
             secret,
-            WEBSOCKET_DATA_HOST,
+            url,
             proxy_host,
             proxy_port
         )
