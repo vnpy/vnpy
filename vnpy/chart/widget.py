@@ -182,15 +182,34 @@ class ChartWidget(pg.PlotWidget):
         """
         Update the limit of plots.
         """
+        plot_y_range_map = {}
+        # 以plot中所有item y轴范围的最大值和最小值来设置
+        # plot的y轴上下限
+        # 解决plot中有多个item时，新添加的item y轴范围比
+        # 之前添加的item y轴范围小时，plot图像显示不全的问题
         for item, plot in self._item_plot_map.items():
-            min_value, max_value = item.get_y_range()
-
-            plot.setLimits(
-                xMin=-1,
-                xMax=self._manager.get_count(),
-                yMin=min_value,
-                yMax=max_value
-            )
+            y_range = item.get_y_range()
+            if plot not in plot_y_range_map:
+                plot_y_range_map[plot] = y_range
+                plot.setLimits(
+                    xMin=-1,
+                    xMax=self._manager.get_count(),
+                    yMin=y_range[0],
+                    yMax=y_range[1]
+                )
+            else:
+                min_y, max_y = plot_y_range_map[plot]
+                if y_range[0] < min_y:
+                    min_y = y_range[0]
+                if y_range[1] > max_y:
+                    max_y = y_range[1]
+                plot_y_range_map[plot] = (min_y, max_y)
+                plot.setLimits(
+                    xMin=-1,
+                    xMax=self._manager.get_count(),
+                    yMin=min_y,
+                    yMax=max_y
+                )
 
     def _update_x_range(self) -> None:
         """
@@ -212,10 +231,26 @@ class ChartWidget(pg.PlotWidget):
         min_ix = max(0, int(view_range[0][0]))
         max_ix = min(self._manager.get_count(), int(view_range[0][1]))
 
+        plot_y_range_map = {}
+
         # Update limit for y-axis
+        # 以plot中所有item y轴范围的最大值和最小值来设置
+        # plot的y轴范围
+        # 解决plot中有多个item时，新添加的item y轴范围比
+        # 之前添加的item y轴范围小时，plot图像显示不全的问题
         for item, plot in self._item_plot_map.items():
             y_range = item.get_y_range(min_ix, max_ix)
-            plot.setRange(yRange=y_range)
+            if plot not in plot_y_range_map:
+                plot_y_range_map[plot] = y_range
+                plot.setRange(yRange=y_range)
+            else:
+                min_y, max_y = plot_y_range_map[plot]
+                if y_range[0] < min_y:
+                    min_y = y_range[0]
+                if y_range[1] > max_y:
+                    max_y = y_range[1]
+                plot_y_range_map[plot] = (min_y, max_y)
+                plot.setRange(yRange=(min_y, max_y))
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         """
@@ -470,6 +505,8 @@ class ChartCursor(QtCore.QObject):
         """"""
         buf = {}
 
+        max_ix = self._manager.get_count()
+
         for item, plot in self._item_plot_map.items():
             item_info_text = item.get_info_text(self._x)
 
@@ -479,6 +516,10 @@ class ChartCursor(QtCore.QObject):
                 if item_info_text:
                     buf[plot] += ("\n\n" + item_info_text)
 
+        # 根据光标位置调整信息提示框位置
+        # 若光标在左半侧，则信息提示框显示在右上角
+        # 若光标在右半侧，则信息提示框显示在左上角
+        # 解决信息提示框始终在左上角，有可能遮挡左上角图像的问题
         for plot_name, plot in self._plots.items():
             plot_info_text = buf[plot]
             info = self._infos[plot_name]
@@ -486,8 +527,14 @@ class ChartCursor(QtCore.QObject):
             info.show()
 
             view = self._views[plot_name]
-            top_left = view.mapSceneToView(view.sceneBoundingRect().topLeft())
-            info.setPos(top_left)
+            if self._x > max_ix / 2:
+                pos = view.mapSceneToView(view.sceneBoundingRect().topLeft())
+            else:
+                origin_pos = view.sceneBoundingRect().topRight()
+                pos = view.mapSceneToView(view.sceneBoundingRect().topRight())
+                ratio = pos.x() / origin_pos.x()
+                pos.setX(pos.x() - float(info.boundingRect().width())*ratio)
+            info.setPos(pos)
 
     def move_right(self) -> None:
         """
