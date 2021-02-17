@@ -1,7 +1,7 @@
 # 2.1.9版本
 
 ## 修复
-1. 修复BarGenerator的小时线合成时，出同一个小时的K线重复推送两次的问题
+1. 修复BarGenerator的小时线合成时，出现同一个小时的K线重复推送两次的问题
 2. 修复遗传算法优化时，因为lru_cache缓存导致的新一轮优化结果不变的问题
 3. 修复RestClient发起请求时，由于requests库底层使用OpenSSL导致的WinError 10054 WSAECONNRESET的问题
 4. 修复okexf、okexs、okexo三个接口收取TICK行情时，盘口数据解析错误的问题
@@ -18,8 +18,12 @@
 ## 调整
 1. 对XTP接口的行情价格数据基于合约最小价格跳动进行取整，资金保留2位小数
 2. BaseMonitor保存CSV文件时，表头改为图形界面显示的中文（之前是数据的字段名英文）
-3. 增加华鑫奇点接口对于FENS服务器连接和资金账户登录的支持，之前只支持前置机连接和用户代码登录
-4. 初始化TWAP算法时，对每轮委托数量取整到合约最小交易数量
+3. 初始化TWAP算法时，对每轮委托数量取整到合约最小交易数量
+4. 将原vnpy.trader.database中的数据库客户端拆分到独立的vnpy.database模块下
+5. 对SQLite/MySQL/PostgreSQL/MongoDB/InfluxDB客户端进行代码重构优化，增加K线数据整体情况BarOverview查询功能
 
 ## 新增
 1. 新增BaseMonitor数据监控UI组件（以及其子类），自动保存列宽的功能
+2. 增加华鑫奇点ToraGateway对于FENS服务器连接和资金账户登录的支持，之前只支持前置机连接和用户代码登录 
+3. 增加火币永续合约HuobisGateway对于USDT本位合约的支持
+4. 增加InfluxDB数据库客户端vnpy.database.influx对于Tick数据储存和加载的支持
