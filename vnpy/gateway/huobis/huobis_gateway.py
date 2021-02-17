@@ -326,28 +326,18 @@ class HuobisRestApi(RestClient):
             callback=self.on_query_position
         )
 
-    def query_order(self) -> Request:
+    def query_order(self, contract_code: str) -> Request:
         """"""
         if self.usdt_base:
             path = "/linear-swap-api/v1/swap_cross_openorders"
         else:
             path = "/swap-api/v1/swap_openorders"
 
-        for contract_code in self.contract_codes:
-            # Open Orders
-            data = {"contract_code": contract_code}
-
-            self.add_request(
-                method="POST",
-                path=path,
-                callback=self.on_query_order,
-                data=data,
-                extra=contract_code
-            )
+        data = {"contract_code": contract_code}
 
         self.add_request(
             method="POST",
-            path="/swap-api/v1/swap_openorders",
+            path=path,
             callback=self.on_query_order,
             data=data,
             extra=contract_code
@@ -366,11 +356,6 @@ class HuobisRestApi(RestClient):
             method="GET",
             path=path,
             data=data,
-            callback=self.on_query_contract
-        )
-        self.add_request(
-            method="GET",
-            path="/linear-swap-api/v1/swap_contract_info",
             callback=self.on_query_contract
         )
 
@@ -611,14 +596,15 @@ class HuobisRestApi(RestClient):
             return
 
         if self.usdt_base:
-            for d in data["data"][0]["contract_detail"]:
-                account = AccountData(
-                    accountid=d["symbol"],
-                    balance=d["margin_frozen"] + d["margin_frozen"],
-                    frozen=d["margin_frozen"],
-                    gateway_name=self.gateway_name,
-                )
-                self.gateway.on_account(account)
+            for d in data["data"]:
+                if d["margin_mode"] == "cross":
+                    account = AccountData(
+                        accountid=d["margin_account"],
+                        balance=d["margin_balance"],
+                        frozen=d["margin_frozen"],
+                        gateway_name=self.gateway_name,
+                    )
+                    self.gateway.on_account(account)
         else:
             for d in data["data"]:
                 account = AccountData(
@@ -706,20 +692,22 @@ class HuobisRestApi(RestClient):
             return
 
         for d in data["data"]:
-            self.contract_codes.add(d["contract_code"])
+            # Only allow cross margin contract
+            if not self.usdt_base or d["support_margin_mode"] != "isolated":
+                self.contract_codes.add(d["contract_code"])
 
-            contract = ContractData(
-                symbol=d["contract_code"],
-                exchange=Exchange.HUOBI,
-                name=d["contract_code"],
-                pricetick=d["price_tick"],
-                size=int(d["contract_size"]),
-                min_volume=1,
-                product=Product.FUTURES,
-                history_data=True,
-                gateway_name=self.gateway_name,
-            )
-            self.gateway.on_contract(contract)
+                contract = ContractData(
+                    symbol=d["contract_code"],
+                    exchange=Exchange.HUOBI,
+                    name=d["contract_code"],
+                    pricetick=d["price_tick"],
+                    size=int(d["contract_size"]),
+                    min_volume=1,
+                    product=Product.FUTURES,
+                    history_data=True,
+                    gateway_name=self.gateway_name,
+                )
+                self.gateway.on_contract(contract)
 
         self.gateway.write_log("合约信息查询成功")
 
@@ -859,9 +847,6 @@ class HuobisRestApi(RestClient):
 
         error_code = data["err_code"]
         error_msg = data["err_msg"]
-
-        if error_code == 1348:
-            return True
 
         self.gateway.write_log(f"{func}请求出错，代码：{error_code}，信息：{error_msg}")
         return True
