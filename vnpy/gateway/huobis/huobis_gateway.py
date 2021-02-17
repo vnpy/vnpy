@@ -69,8 +69,7 @@ ORDERTYPE_VT2HUOBIS: Dict[OrderType, Any] = {
     OrderType.FOK: "fok",
     OrderType.FAK: "ioc"
 }
-ORDERTYPE_HUOBIS2VT: Dict[Any, OrderType] = {
-    v: k for k, v in ORDERTYPE_VT2HUOBIS.items()}
+ORDERTYPE_HUOBIS2VT: Dict[Any, OrderType] = {v: k for k, v in ORDERTYPE_VT2HUOBIS.items()}
 ORDERTYPE_HUOBIS2VT[1] = OrderType.LIMIT
 ORDERTYPE_HUOBIS2VT[3] = OrderType.MARKET
 ORDERTYPE_HUOBIS2VT[4] = OrderType.MARKET
@@ -85,15 +84,13 @@ DIRECTION_VT2HUOBIS: Dict[Direction, str] = {
     Direction.LONG: "buy",
     Direction.SHORT: "sell",
 }
-DIRECTION_HUOBIS2VT: Dict[str, Direction] = {
-    v: k for k, v in DIRECTION_VT2HUOBIS.items()}
+DIRECTION_HUOBIS2VT: Dict[str, Direction] = {v: k for k, v in DIRECTION_VT2HUOBIS.items()}
 
 OFFSET_VT2HUOBIS: Dict[Offset, str] = {
     Offset.OPEN: "open",
     Offset.CLOSE: "close",
 }
-OFFSET_HUOBIS2VT: Dict[str, Offset] = {
-    v: k for k, v in OFFSET_VT2HUOBIS.items()}
+OFFSET_HUOBIS2VT: Dict[str, Offset] = {v: k for k, v in OFFSET_VT2HUOBIS.items()}
 
 INTERVAL_VT2HUOBIS: Dict[Interval, str] = {
     Interval.MINUTE: "1min",
@@ -274,8 +271,7 @@ class HuobisRestApi(RestClient):
         self.key = key
         self.secret = secret
         self.host, _ = _split_url(REST_HOST)
-        self.connect_time = int(datetime.now(
-            CHINA_TZ).strftime("%y%m%d%H%M%S"))
+        self.connect_time = int(datetime.now(CHINA_TZ).strftime("%y%m%d%H%M%S"))
 
         self.init(REST_HOST, proxy_host, proxy_port)
         self.start(session_number)
@@ -296,11 +292,6 @@ class HuobisRestApi(RestClient):
             path=path,
             callback=self.on_query_account
         )
-        self.add_request(
-            method="POST",
-            path="/linear-swap-api/v1/swap_account_info",
-            callback=self.on_query_account
-        )
 
     def query_position(self) -> None:
         """"""
@@ -312,12 +303,6 @@ class HuobisRestApi(RestClient):
         self.add_request(
             method="POST",
             path=path,
-            callback=self.on_query_position
-        )
-
-        self.add_request(
-            method="POST",
-            path="/linear-swap-api/v1/swap_position_info",
             callback=self.on_query_position
         )
 
@@ -496,8 +481,6 @@ class HuobisRestApi(RestClient):
 
         orders_data = []
         orders = []
-        orders_data_linear = []
-        orders_linear = []
         vt_orderids = []
 
         for req in reqs:
@@ -521,20 +504,13 @@ class HuobisRestApi(RestClient):
                 "lever_rate": 20
             }
 
-            if 'USDT' in req.symbol:
-                orders_data_linear.append(d)
-                orders_linear.append(order)
-            else:
-                orders_data.append(d)
-                orders.append(order)
+            orders_data.append(d)
+            orders.append(order)
 
             vt_orderids.append(order.vt_orderid)
 
         data = {
             "orders_data": orders_data
-        }
-        data_linear = {
-            "orders_data": orders_data_linear
         }
         self.add_request(
             method="POST",
@@ -542,15 +518,6 @@ class HuobisRestApi(RestClient):
             callback=self.on_send_orders,
             data=data,
             extra=orders,
-            on_error=self.on_send_orders_error,
-            on_failed=self.on_send_orders_failed
-        )
-        self.add_request(
-            method="POST",
-            path="/linear-swap-api/v1/swap_batchorder",
-            callback=self.on_send_orders,
-            data=data_linear,
-            extra=orders_linear,
             on_error=self.on_send_orders_error,
             on_failed=self.on_send_orders_failed
         )
@@ -563,11 +530,8 @@ class HuobisRestApi(RestClient):
         else:
             path = "/swap-api/v1/swap_cancel"
 
-        buf = [i for i in req.symbol if not i.isdigit()]
-
-        symbol = "".join(buf)
         data = {
-            "contract_code": symbol,
+            "contract_code": req.symbol,
         }
 
         orderid = int(req.orderid)
