@@ -494,18 +494,28 @@ class ChainData:
 
     def calculate_atm_price(self) -> None:
         """"""
-        underlying_price = self.underlying.mid_price
-
-        atm_distance = 0
+        min_diff = 0
         atm_price = 0
         atm_index = ""
 
-        for call in self.calls.values():
-            price_distance = abs(underlying_price - call.strike_price)
+        for strike_price, call in self.calls.values():
+            put = self.puts[strike_price]
 
-            if not atm_distance or price_distance < atm_distance:
-                atm_distance = price_distance
-                atm_price = call.strike_price
+            call_tick: TickData = call.tick
+            if not call_tick:
+                continue
+            call_mid_price = (call_tick.ask_price_1 + call_tick.bid_price_1) / 2
+
+            put_tick: TickData = put.tick
+            if not put_tick:
+                continue
+            put_mid_price = (put_tick.ask_price_1 + put_tick.bid_price_1) / 2
+
+            diff = abs(call_mid_price - put_mid_price)
+
+            if not min_diff or diff < min_diff:
+                min_diff = diff
+                atm_price = strike_price
                 atm_index = call.chain_index
 
         self.atm_price = atm_price
