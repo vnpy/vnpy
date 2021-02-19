@@ -228,6 +228,6 @@ class PortfolioEngine(BaseEngine):
         """"""
         self.timer_interval = interval
 
-    def get_timer_interval(self) -> None:
+    def get_timer_interval(self) -> int:
         """"""
         return self.timer_interval

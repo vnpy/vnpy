@@ -226,7 +226,7 @@ class BacktestingEngine:
 
         # Load 30 days of data each time and allow for progress update
         total_days = (self.end - self.start).days
-        progress_days = int(total_days / 10)
+        progress_days = max(int(total_days / 10), 1)
         progress_delta = timedelta(days=progress_days)
         interval_delta = INTERVAL_DELTA_MAP[self.interval]
 
@@ -302,13 +302,13 @@ class BacktestingEngine:
         self.output("开始回放历史数据")
 
         # Use the rest of history data for running backtesting
-        backtesting_data = self.history_data[ix:]
+        backtesting_data = self.history_data[ix + 1:]
         if not backtesting_data:
             self.output("历史数据不足，回测终止")
             return
 
         total_size = len(backtesting_data)
-        batch_size = int(total_size / 10)
+        batch_size = max(int(total_size / 10), 1)
 
         for ix, i in enumerate(range(0, total_size, batch_size)):
             batch_data = backtesting_data[i: i + batch_size]
@@ -640,6 +640,9 @@ class BacktestingEngine:
 
     def run_ga_optimization(self, optimization_setting: OptimizationSetting, population_size=100, ngen_size=30, output=True):
         """"""
+        # Clear lru_cache before running ga optimization
+        _ga_optimize.cache_clear()
+
         # Get optimization setting and target
         settings = optimization_setting.generate_setting_ga()
         target_name = optimization_setting.target_name

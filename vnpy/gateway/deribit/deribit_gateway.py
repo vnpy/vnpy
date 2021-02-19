@@ -43,6 +43,7 @@ DIRECTION_VT2DERIBIT = {Direction.LONG: "buy", Direction.SHORT: "sell"}
 ORDERTYPE_VT2DERIBIT = {
     OrderType.LIMIT: "limit",
     OrderType.MARKET: "market",
+    OrderType.STOP: "stop_market"
 }
 ORDERTYPE_DERIBIT2VT = {v: k for k, v in ORDERTYPE_VT2DERIBIT.items()}
 DIRECTION_DERIBIT2VT = {v: k for k, v in DIRECTION_VT2DERIBIT.items()}
@@ -522,6 +523,10 @@ class DeribitWebsocketApi(WebsocketClient):
 
     def on_order(self, data: dict):
         """"""
+        if data["order_type"] not in ORDERTYPE_DERIBIT2VT:
+            self.gateway.write_log(f"收到不支持的类型委托推送{data}")
+            return
+
         if data["label"]:
             local_id = data["label"]
         else:
@@ -531,13 +536,18 @@ class DeribitWebsocketApi(WebsocketClient):
         self.local_sys_map[local_id] = sys_id
         self.sys_local_map[sys_id] = local_id
 
+        if data["price"].isdigit():
+            price = float(data["price"])
+        else:
+            price = 0
+
         order = OrderData(
             symbol=data["instrument_name"],
             exchange=Exchange.DERIBIT,
             type=ORDERTYPE_DERIBIT2VT[data["order_type"]],
             orderid=local_id,
             direction=DIRECTION_DERIBIT2VT[data["direction"]],
-            price=float(data["price"]),
+            price=price,
             volume=float(data["amount"]),
             traded=float(data["filled_amount"]),
             datetime=generate_datetime(data["last_update_timestamp"]),
