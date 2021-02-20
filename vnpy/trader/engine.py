@@ -64,7 +64,7 @@ class MainEngine:
         os.chdir(TRADER_DIR)    # Change working directory
         self.init_engines()     # Initialize function engines
 
-    def add_engine(self, engine_class: Any) -> "BaseEngine":
+    def add_engine(self, engine_class: Any) -> "Type[BaseEngine]":
         """
         Add function engine.
         """
@@ -86,7 +86,7 @@ class MainEngine:
 
         return gateway
 
-    def add_app(self, app_class: Type[BaseApp]) -> "BaseEngine":
+    def add_app(self, app_class: Type[BaseApp]) -> "Type[BaseEngine]":
         """
         Add app.
         """
