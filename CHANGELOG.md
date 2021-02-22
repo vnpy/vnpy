@@ -1,3 +1,15 @@
+# 2.1.9.1版本
+
+## 修复
+1. 修复RestClient中，因为pyopenssl.extract_from_urllib3引起的兼容性问题
+
+## 调整
+1. 调整OptionMaster模块中，期权链数据结构搜索平值行权价的算法，不再依赖标的物合约
+
+## 新增
+1. 新增OptionMaster模块使用合成期货作为定价标的合约的功能
+
+
 # 2.1.9版本
 
 ## 修复

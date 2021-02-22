@@ -14,6 +14,7 @@ numpy==1.19.3
 pandas
 matplotlib
 seaborn
+PyCryptodome==3.9.9
 futu-api
 tigeropen
 rqdatac
