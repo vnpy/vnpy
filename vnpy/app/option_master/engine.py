@@ -16,10 +16,10 @@ from vnpy.trader.event import (
     EVENT_TIMER, EVENT_ORDER, EVENT_POSITION
 )
 from vnpy.trader.constant import (
-    Product, Offset, Direction, OrderType
+    Product, Offset, Direction, OrderType, Exchange
 )
 from vnpy.trader.converter import OffsetConverter
-from vnpy.trader.utility import round_to, save_json, load_json
+from vnpy.trader.utility import extract_vt_symbol, round_to, save_json, load_json
 
 from .base import (
     APP_NAME, CHAIN_UNDERLYING_MAP,
@@ -251,7 +251,19 @@ class OptionEngine(BaseEngine):
         portfolio = self.get_portfolio(portfolio_name)
 
         for chain_symbol, underlying_symbol in chain_underlying_map.items():
-            contract = self.main_engine.get_contract(underlying_symbol)
+            if "LOCAL" in underlying_symbol:
+                symbol, exchange = extract_vt_symbol(underlying_symbol)
+                contract = ContractData(
+                    symbol=symbol,
+                    exchange=exchange,
+                    name="",
+                    product=Product.INDEX,
+                    size=0,
+                    pricetick=0,
+                    gateway_name=APP_NAME
+                )
+            else:
+                contract = self.main_engine.get_contract(underlying_symbol)
             portfolio.set_chain_underlying(chain_symbol, contract)
 
         portfolio.set_interest_rate(interest_rate)
@@ -286,6 +298,9 @@ class OptionEngine(BaseEngine):
 
         # Subscribe market data
         for underlying in portfolio.underlyings.values():
+            if underlying.exchange == Exchange.LOCAL:
+                continue
+
             self.instruments[underlying.vt_symbol] = underlying
             self.subscribe_data(underlying.vt_symbol)
 

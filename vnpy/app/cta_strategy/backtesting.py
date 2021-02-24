@@ -25,7 +25,8 @@ from .base import (
     EngineType,
     STOPORDER_PREFIX,
     StopOrder,
-    StopOrderStatus
+    StopOrderStatus,
+    INTERVAL_DELTA_MAP
 )
 from .template import CtaTemplate
 
@@ -225,8 +226,9 @@ class BacktestingEngine:
 
         # Load 30 days of data each time and allow for progress update
         total_days = (self.end - self.start).days
-        progress_days = int(total_days / 10)
+        progress_days = max(int(total_days / 10), 1)
         progress_delta = timedelta(days=progress_days)
+        interval_delta = INTERVAL_DELTA_MAP[self.interval]
 
         start = self.start
         end = self.start + progress_delta
@@ -259,8 +261,8 @@ class BacktestingEngine:
             progress += progress_days / total_days
             progress = min(progress, 1)
 
-            start = end + timedelta(days=1)
-            end += (progress_delta + timedelta(days=1))
+            start = end + interval_delta
+            end += progress_delta
 
         self.output(f"历史数据加载完成，数据量：{len(self.history_data)}")
 
@@ -300,13 +302,13 @@ class BacktestingEngine:
         self.output("开始回放历史数据")
 
         # Use the rest of history data for running backtesting
-        backtesting_data = self.history_data[ix:]
+        backtesting_data = self.history_data[ix + 1:]
         if not backtesting_data:
             self.output("历史数据不足，回测终止")
             return
 
         total_size = len(backtesting_data)
-        batch_size = int(total_size / 10)
+        batch_size = max(int(total_size / 10), 1)
 
         for ix, i in enumerate(range(0, total_size, batch_size)):
             batch_data = backtesting_data[i: i + batch_size]
@@ -407,7 +409,12 @@ class BacktestingEngine:
         else:
             # Calculate balance related time series data
             df["balance"] = df["net_pnl"].cumsum() + self.capital
-            df["return"] = np.log(df["balance"] / df["balance"].shift(1)).fillna(0)
+
+            # When balance falls below 0, set daily return to 0
+            x = df["balance"] / df["balance"].shift(1)
+            x[x <= 0] = np.nan
+            df["return"] = np.log(x).fillna(0)
+
             df["highlevel"] = (
                 df["balance"].rolling(
                     min_periods=1, window=len(df), center=False).max()
@@ -633,6 +640,9 @@ class BacktestingEngine:
 
     def run_ga_optimization(self, optimization_setting: OptimizationSetting, population_size=100, ngen_size=30, output=True):
         """"""
+        # Clear lru_cache before running ga optimization
+        _ga_optimize.cache_clear()
+
         # Get optimization setting and target
         settings = optimization_setting.generate_setting_ga()
         target_name = optimization_setting.target_name
