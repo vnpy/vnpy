@@ -36,7 +36,7 @@ RQData提供国内期货、股票ETF以及期权的历史数据。在使用前�
 
 下载成功如图所示。
 
- <img src="https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/7.png" style="zoom:67%;" />
+ <img src="https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/60.png" style="zoom:67%;" />
 
 在每个接口文件（vnpy.gateway文件夹下）处理收到的合约信息时，如果该接口支持历史数据查询，则history_data会填True，如下图。如果没有填写该项或填False，则说明该接口不提供历史数据。
 
