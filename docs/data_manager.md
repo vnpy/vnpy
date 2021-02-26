@@ -1,90 +1,119 @@
-# 历史数据管理模块
+# DataManager - 历史数据管理模块
 
-DataManger模块，是VN Trader内部针对历史数据的全功能管理工具。
-
-![](https://user-images.githubusercontent.com/11263900/93662584-cf1ad480-fa93-11ea-9111-0383e29c9563.png)
-
-
-&nbsp;
-### 数据导入
-
-
-
-打开DataManager模块的界面后，点击右上角的【导入数据】按钮，即可看到如下图所示的对话框：
-
-![](https://user-images.githubusercontent.com/11263900/93662585-cf1ad480-fa93-11ea-8713-4c0d57faca9a.png)
-
-该对话框复用了CsvLoader组件中的功能：
-
-
-
-1.点击顶部的【选择文件】按钮，来选择要加载的CSV文件路径；
-
-2.在合约信息中，输入合约代码，选择对应的交易所和周期；
-
-3.查看CSV文件的表头信息，并将对应的表头字符串输入在表头信息中，对于【持仓量】字段，如果CSV文件中不存在的话（比如股票数据）请留空即可
-
-4.在格式信息中，配置时间戳的日期时间格式，用于后续的时间解析处理
-
-5.点击【确定】按钮，开始从CSV文件导入数据到数据库中。
-
-
-
-导入过程中界面会处于半卡住的情况，对于越大的CSV文件（数据量越多），卡住的时间也会越长。
-
-
-
-最后需要注意的是，这里导入的合约代码（symbol）和交易所（exchange）两个字段组合起来，才能构成在CTA回测等模块中使用的本地代码（vt_symbol）。举例来说，合约代码为IF2003，交易所选择CFFEX（中金所），则在CtaBacktester中回测要用到的本地代码应为IF2003.CFFEX。
-
-&nbsp;
-
-### 数据查看
-
-
-
-目前VN Trader中获取数据的方式一共有三种：
-
-
-
-- 通过RQData下载
-
-- 从CSV文件导入
-
-- 使用DataRecorder模块录制
-
-
-
-不管采用何种方法获取数据，点击左上角的【刷新】按钮，即可看到当前数据库中已有数据的统计情况，如下图所示：
-
-![](https://user-images.githubusercontent.com/11263900/93662586-cfb36b00-fa93-11ea-8075-c295d1730f8e.png)
-
-&nbsp;
+历史数据管理模块，是VN Trader内部针对历史数据的全功能管理工具。
 
 
 
 
-选择好要显示的数据范围后，点击【确定】按钮即可在右侧表格中看到每个时间点上具体的数据字段：
+
+## 加载启动
+
+### VN Station加载
+
+启动登录VN Station后，点击VN Trader Pro按钮，在配置对话框中的“上层应用”栏勾选DataManager。
+
+
+
+### 脚本加载
+
+在启动脚本中添加如下代码：
+
+```
+# 写在顶部
+from vnpy.app.data_manager import DataManagerApp
+
+# 写在创建main_engine对象后
+main_engine.add_app(DataManagerApp)
+```
 
 
 
 
-![](https://user-images.githubusercontent.com/11263900/93662588-d0e49800-fa93-11ea-828f-d9688299587b.png)
 
-&nbsp;
+## 启动模块
 
-### 数据导出
+启动VN Trader后，在菜单栏中点击【功能】-> 【数据管理】，或者点击左侧按钮栏的图标<img src="https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/00.png" style="zoom:50%;" />即可进入该图形化历史数据管理界面，如下图所示：
 
-
-
-除了从CSV导入数据外，社区用户也提出了将数据库中的数据导出为CSV文件的需求。对于熟悉vn.py的用户可能20行代码就能解决问题，不过考虑到对于新用户的友好性，还是决定将导出功能集成到了图形界面上。
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/1.png)
 
 
 
-选择任意一个合约，点击该合约行数据右侧的【导出】按钮后，再次弹出对话框：
 
-![](https://user-images.githubusercontent.com/11263900/93662589-d0e49800-fa93-11ea-9faf-7e06aa155e77.png)
 
-&nbsp;
+## 下载数据
 
-选好要导出的数据区间范围点击【确定】后，会再次弹出对话框选择输出文件的位置，输入确定即可完成CSV文件的导出。
+在查看数据之前，需要保证数据库内有足够的历史数据，故vn.py提供了历史数据一键下载的功能。
+
+点击右上角【下载数据】按钮，会弹出下载历史数据窗口，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/2.png)
+
+需要填写代码、交易所、周期、以及开始日期以及四个字段信息。
+
+- 代码：代码格式为合约品种，如IF88、rb88；
+- 交易所：合约交易的交易所（点击窗口右侧箭头按钮可选择vn.py支持的所有交易所）；
+- 周期：格式为MINUTE（对应一分钟）、HOUR（对应一小时）、DAILY（对应一天）、WEEKLY（对应一周）和TICK（对应一个tick）五个频率（点击窗口右侧箭头按钮可选择频率）；
+- 开始和结束日期：格式为yy/mm/dd，如2018/2/25（点击窗口右侧箭头按钮可改变日期大小）。
+
+填写完字段信息后，点击下方【下载】按钮启动下载程序，下载成功如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/3.png)
+
+ 
+
+### RQData（期货、股票、期权）
+
+RQData提供国内期货、股票ETF以及期权的历史数据。在使用前要保证RQData初始化完毕（RQData配置详见基本使用篇的全局配置部分）。
+
+
+
+### 数字货币（现货、期货、永续）
+
+数字货币交易所都提供历史数据，但是每个交易所对获取历史数据长度的限制是不同的。下载前需要连接好接口。
+
+在每个接口文件（vnpy.gateway文件夹下）处理收到的合约信息时，如果该接口支持历史数据查询，则history_data会填True，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/5.png)
+
+如果没有填写该项或填False，则说明该接口不提供历史数据。
+
+
+
+### IB（外盘期货、股票、外汇等）
+
+盈透证券提供外盘股票、期货、期权的历史数据， 下载前需要连接好IB接口。
+
+注意IB上的行情数据，除少量免费提供外（外汇、贵金属），其他大部分都需要在IB官网的后台管理系统中付费购买后，才能在VN Trader中订阅使用，进而进行历史数据下载。
+
+
+
+
+
+## 导入数据
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/5.png)
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/4.png)
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/6.png)
+
+
+
+
+
+## 查看数据
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/7.png)
+
+
+
+
+
+## 导出数据
+
+
+
+
+
+## 更新数据
 
