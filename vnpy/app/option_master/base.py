@@ -373,6 +373,8 @@ class ChainData:
         self.days_to_expiry: int = 0
         self.inverse: bool = False
 
+        self.use_synthetic: bool = False
+
     def add_option(self, option: OptionData) -> None:
         """"""
         self.options[option.vt_symbol] = option
@@ -426,9 +428,17 @@ class ChainData:
         option = self.options[tick.vt_symbol]
         option.update_tick(tick)
 
+        if self.use_synthetic:
+            if not self.atm_index:
+                self.calculate_atm_price()
+
+            if option.chain_index == self.atm_index:
+                self.update_synthetic_price()
+
     def update_underlying_tick(self) -> None:
         """"""
-        self.calculate_underlying_adjustment()
+        if not self.use_synthetic:
+            self.calculate_underlying_adjustment()
 
         for option in self.options.values():
             option.update_underlying_tick(self.underlying_adjustment)
@@ -470,6 +480,9 @@ class ChainData:
         for option in self.options.values():
             option.set_underlying(underlying)
 
+        if underlying.exchange == Exchange.LOCAL:
+            self.use_synthetic = True
+
     def set_interest_rate(self, interest_rate: float) -> None:
         """"""
         for option in self.options.values():
@@ -494,17 +507,28 @@ class ChainData:
 
     def calculate_atm_price(self) -> None:
         """"""
-        underlying_price = self.underlying.mid_price
-
-        atm_distance = 0
+        min_diff = 0
         atm_price = 0
         atm_index = ""
 
-        for call in self.calls.values():
-            price_distance = abs(underlying_price - call.strike_price)
+        for index, call in self.calls.items():
+            put = self.puts[index]
 
-            if not atm_distance or price_distance < atm_distance:
-                atm_distance = price_distance
+            call_tick: TickData = call.tick
+            if not call_tick or not call_tick.bid_price_1 or not call_tick.ask_price_1:
+                continue
+
+            put_tick: TickData = put.tick
+            if not put_tick or not put_tick.bid_price_1 or not put_tick.ask_price_1:
+                continue
+
+            call_mid_price = (call_tick.ask_price_1 + call_tick.bid_price_1) / 2
+            put_mid_price = (put_tick.ask_price_1 + put_tick.bid_price_1) / 2
+
+            diff = abs(call_mid_price - put_mid_price)
+
+            if not min_diff or diff < min_diff:
+                min_diff = diff
                 atm_price = call.strike_price
                 atm_index = call.chain_index
 
@@ -529,6 +553,14 @@ class ChainData:
 
         synthetic_price = call_price - put_price + self.atm_price
         self.underlying_adjustment = synthetic_price - self.underlying.mid_price
+
+    def update_synthetic_price(self) -> None:
+        """"""
+        call = self.calls[self.atm_index]
+        put = self.puts[self.atm_index]
+
+        self.underlying.mid_price = call.mid_price - put.mid_price + self.atm_price
+        self.update_underlying_tick()
 
 
 class PortfolioData:
