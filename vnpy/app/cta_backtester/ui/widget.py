@@ -1,6 +1,5 @@
 import csv
 from datetime import datetime, timedelta
-from tzlocal import get_localzone
 from copy import copy
 
 import numpy as np
@@ -14,6 +13,7 @@ from vnpy.trader.ui.editor import CodeEditor
 from vnpy.event import Event, EventEngine
 from vnpy.chart import ChartWidget, CandleItem, VolumeItem
 from vnpy.trader.utility import load_json, save_json
+from vnpy.trader.database import DB_TZ
 
 from ..engine import (
     APP_NAME,
@@ -441,8 +441,8 @@ class BacktesterManager(QtWidgets.QWidget):
             start_date.year(),
             start_date.month(),
             start_date.day(),
-            tzinfo=get_localzone()
         )
+        start = DB_TZ.localize(start)
 
         end = datetime(
             end_date.year(),
@@ -451,8 +451,8 @@ class BacktesterManager(QtWidgets.QWidget):
             23,
             59,
             59,
-            tzinfo=get_localzone()
         )
+        end = DB_TZ.localize(end)
 
         self.backtester_engine.start_downloading(
             vt_symbol,
