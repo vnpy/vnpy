@@ -352,8 +352,8 @@ class ManagerWidget(QtWidgets.QWidget):
 
     def update_data(self) -> None:
         """"""
-        data = self.engine.get_bar_data_available()
-        total = len(data)
+        overviews = self.engine.get_bar_overview()
+        total = len(overviews)
         count = 0
 
         dialog = QtWidgets.QProgressDialog(
@@ -366,15 +366,15 @@ class ManagerWidget(QtWidgets.QWidget):
         dialog.setWindowModality(QtCore.Qt.WindowModal)
         dialog.setValue(0)
 
-        for d in data:
+        for overview in overviews:
             if dialog.wasCanceled():
                 break
 
             self.engine.download_bar_data(
-                d["symbol"],
-                Exchange(d["exchange"]),
-                Interval(d["interval"]),
-                d["end"]
+                overview.symbol,
+                Exchange(overview.exchange),
+                Interval(overview.interval),
+                overview.end
             )
             count += 1
             progress = int(round(count / total * 100, 0))
