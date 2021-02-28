@@ -1,13 +1,10 @@
 # CtaStrategy - CTA策略模块
-CTA策略模块，是VN Trader针对CTA策略编写以及实盘的工具。
 
 ## 功能简介
 
 CtaStrategy是用于**CTA策略实盘**的功能模块，用户可以通过图形界面操作来便捷完成策略初始化、策略启动、策略停止、策略参数编辑以及策略移除等任务。
 
-
 ## 加载启动
-
 
 ### VN Station加载
 
@@ -33,7 +30,6 @@ main_engine.add_app(CtaStrategyApp)
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/00.png)
 
 即可进入该图形化历史数据管理界面，如下图所示：
-
 
 
 ## 添加策略
