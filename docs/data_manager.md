@@ -110,7 +110,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 目前VN Trader中获取数据的方式一共有三种：
 
-- 通过RQData下载
+- 通过RQData或者接口下载
 
 - 从CSV文件导入
 
@@ -131,7 +131,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 ## 导出数据
 
-选择任意一个合约，点击该合约行数据右侧的【导出】按钮后，会弹出对话框，如下图所示：
+选择任意一个合约，点击该合约行数据右侧的【导出】按钮后，会弹出选择数据区间对话框，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/8.png)
 
