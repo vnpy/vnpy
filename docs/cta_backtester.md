@@ -76,7 +76,7 @@ main_engine.add_app(CtaBacktesterApp)
 
 ### 数据来源：IB（外盘期货、股票、外汇等）
 
-Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据下载（包括股票、期货、期权、外汇等），注意下载前需要先启动IB TWS交易软件，并在VN Trader主界面连接好IB接口。下载成功如下图所示：
+Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据下载（包括股票、期货、期权、外汇等），注意下载前需要先启动IB TWS交易软件，并在VN Trader主界面连接好IB接口，并订阅所需合约行情。下载成功如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/28.png)
 
