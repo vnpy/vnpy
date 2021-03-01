@@ -1,5 +1,5 @@
 """
-In Linux, when success this case :
+In Linux, when appear this case :
 can't not open file librohonbase.so.1.1,
 please change the file name in vnpy.api.rohon
 from "librohonbase.so" to "librohonbase.so.1.1"
