@@ -27,7 +27,7 @@ main_engine.add_app(DataManagerApp)
 
 启动VN Trader后，在菜单栏中点击【功能】-> 【数据管理】，或者点击左侧按钮栏的图标
 
-![]("https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/00.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/00.png)
 
 即可进入该图形化历史数据管理界面，如下图所示：
 
@@ -42,7 +42,7 @@ main_engine.add_app(DataManagerApp)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/2.png)
 
-下载数据需要填写代码、交易所、周期以及开始日期四个字段信息：
+需要填写代码、交易所、周期以及开始日期四个字段信息：
 
 <span id="jump">
 
@@ -60,11 +60,14 @@ main_engine.add_app(DataManagerApp)
   - 格式为yy/mm/dd
   - 如2018/2/25
   
+
 </span>
 
 全部填写完成后，点击下方【下载】按钮启动下载程序，下载成功如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/3.png)
+
+注意下载完成后的历史数据会保存在本地数据库中，后续回测或实盘时可以直接使用，无需每次都重复下载。
 
 ### 数据来源：RQData（期货、股票、期权）
 
@@ -83,27 +86,34 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 ## 导入数据
 
-打开DataManager模块的界面后，点击右上角的【导入数据】按钮，即可看到从CSV文件导入数据的对话框，如下图所示：
+若想把历史数据从本地CSV文件中导入数据库，可以打开DataManager模块的界面。点击右上角的【导入数据】按钮，会弹出从CSV文件导入数据的对话框，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/16.png)
 
-点击顶部的【选择文件】按钮，会弹出窗口，以供选择要加载的CSV文件路径，如下图所示：
+- 选择文件
+  - 点击顶部的【选择文件】按钮，会弹出窗口，以供选择要加载的CSV文件路径，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/5.png)
 
-选择完CSV文件路径之后，填写合约信息（填写格式详见本章[下载数据](#jump)部分的介绍）；
+- 合约信息
+  - 格式详见本章[下载数据](#jump)部分的介绍；
+  - 请注意，导入的合约代码（symbol）和交易所（exchange）两个字段组合起来，才能构成在CTA回测等模块中使用的本地代码（vt_symbol）；
+  - 若合约代码为IF2003，交易所选择CFFEX（中金所），则在CtaBacktester中回测要用到的本地代码应为IF2003.CFFEX；
+- 表头信息
+  - 可查看CSV文件的表头信息，并将对应的表头字符串输入在表头信息中；
+  - 对于【持仓量】字段，如果CSV文件中不存在的话（比如股票数据）请留空即可；
+- 格式信息
+  - 默认时间格式为"%Y-%m-%d %H:%M:%S"，对应的是"2017-1-3  0:00:00"；
+  - 如果时间戳是"2017-1-3  0:00"，那么时间格式应该是"%Y-%m-%d %H:%M"。
+  
 
-然后查看CSV文件的表头信息，并将对应的表头字符串输入在表头信息中，对于【持仓量】字段，如果CSV文件中不存在的话（比如股票数据）请留空即可；
-
-在格式信息中，配置时间戳的日期时间格式，用于后续的时间解析处理。填写完毕，则如下图所示：
+填写完毕，则如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/4.png)
 
 点击【确定】按钮，开始从CSV文件导入数据到数据库中。导入过程中界面会处于半卡住的情况，对于越大的CSV文件（数据量越多），卡住的时间也会越长。成功载入之后，会弹出窗口显示载入成功，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/6.png)
-
-最后需要注意的是，这里导入的合约代码（symbol）和交易所（exchange）两个字段组合起来，才能构成在CTA回测等模块中使用的本地代码（vt_symbol）。举例来说，合约代码为IF2003，交易所选择CFFEX（中金所），则在CtaBacktester中回测要用到的本地代码应为IF2003.CFFEX。
 
 
 ## 查看数据
@@ -116,7 +126,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 - 使用DataRecorder模块录制
 
-不管采用何种方法获取数据，点击左上角的【刷新】按钮，即可看到当前数据库中已有数据的统计情况，如下图所示：
+不管采用何种方法获取数据，点击左上角的【刷新】按钮，即可看到当前数据库中已有数据的统计情况。刷新过程中界面会处于半卡住的情况，对于越多的数据，卡住的时间也会越长。刷新成功之后，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/7.png)
 
@@ -128,10 +138,14 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/11.png)
 
+在数据库已有数据的前提下，点击界面左侧【数据】下的数据频率前的小箭头，则可展开或收起该数据频率下的合约数据显示。
+
+若界面左侧的信息看不完整，可拖动界面底端的横向滚动条进行调整。
+
 
 ## 导出数据
 
-选择任意一个合约，点击该合约行数据右侧的【导出】按钮后，会弹出选择数据区间对话框，如下图所示：
+若想导出数据库中的数据到本地，则可选择要导出的合约，点击该合约行数据右侧的【导出】按钮后，会弹出选择数据区间对话框，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/8.png)
 
@@ -144,7 +158,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 ## 删除数据
 
-选择任意一个合约，点击该合约行数据右侧的【删除】按钮后，会弹出对话框，如下图所示：
+若想删除特定合约数据，则可选择要删除的合约，点击该合约行数据右侧的【删除】按钮后，会弹出对话框，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/12.png)
 
@@ -159,7 +173,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 ## 更新数据
 
-在用户配置了数据服务或者接口提供充足的历史数据的情况下，点击右上角的【更新数据】按钮即可基于数据库已有的合约数据，进行一键更新。
+在用户配置了RQData数据服务或者接口提供充足的历史数据的情况下，点击右上角的【更新数据】按钮即可基于数据库已有的合约数据，进行一键更新。
 
 更新前图形界面显示如下图：
 
