@@ -17,7 +17,7 @@ from .widget import (
     TradeMonitor,
     PositionMonitor,
     AccountMonitor,
-    LogMonitor,
+    LogMonitor2 as LogMonitor,
     ActiveOrderMonitor,
     ConnectDialog,
     ContractManager,

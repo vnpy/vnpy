@@ -6,7 +6,7 @@ from vnpy.trader.ui.widget import (
     EnumCell,
     MsgCell,
     TimeCell,
-    BaseMonitor
+    BaseMonitor, BaseLogWidget
 )
 from ..base import (
     APP_NAME,
@@ -69,7 +69,7 @@ class CtaManager(QtWidgets.QWidget):
         scroll_area.setWidgetResizable(True)
         scroll_area.setWidget(scroll_widget)
 
-        self.log_monitor = LogMonitor(self.main_engine, self.event_engine)
+        self.log_monitor = LogMonitor2(self.main_engine, self.event_engine)
 
         self.stop_order_monitor = StopOrderMonitor(
             self.main_engine, self.event_engine
@@ -357,6 +357,23 @@ class StopOrderMonitor(BaseMonitor):
         "strategy_name": {"display": "策略名", "cell": BaseCell, "update": False},
     }
 
+
+class LogMonitor2(BaseLogWidget):
+    """
+    Monitor for log data.
+    """
+    __data_keys = [
+        "time",
+        "msg",
+        "level"
+    ]
+    headers = {
+        "time": "时间",
+        "msg": "日志",
+        "level": "LEVEL",
+    }
+
+    event_type = EVENT_CTA_LOG
 
 class LogMonitor(BaseMonitor):
     """

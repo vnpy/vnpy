@@ -184,6 +184,102 @@ class MsgCell(BaseCell):
         self.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
 
 
+class BaseLogWidget(QtWidgets.QTextEdit):
+    headers: Dict[str, str] = {}
+    __show_limit = 1000
+
+    event_type = ""
+    signal: QtCore.pyqtSignal = QtCore.pyqtSignal(Event)
+
+    def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
+        """"""
+        super(BaseLogWidget, self).__init__()
+
+        self.main_engine: MainEngine = main_engine
+        self.event_engine: EventEngine = event_engine
+
+        self.log_data = []
+        headers_html = []
+        for v in self.headers.values():
+            headers_html.append(f"<th>{v}</th>")
+        self.log_html_head = f"""
+            <body>
+            <table id="log">
+              <tr>
+                {"".join(headers_html)}
+              </tr>
+            """
+        self.log_html_tail = "</table></body>"
+        self.init_ui()
+        self.register_event()
+
+    def init_ui(self):
+        self.setReadOnly(True)
+        self.document().setDocumentMargin(0)
+        self.document().setDefaultStyleSheet("""
+            table {
+                width: 100%;
+                table-layout: fixed;
+                padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;
+            }
+            #log {
+              font-family: 'Microsoft YaHei', 'Lantinghei SC', 'Monaco', 'monospace';
+              border-collapse: collapse;
+              width: 100%;
+              padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;
+            }
+
+            #log td, #log th {
+              border: 3px solid #32414b;
+              white-space: pre-line;
+              padding-left:0; padding-right:0; padding-top:0; padding-bottom:0;
+            }
+
+            #log td {
+              color: #e0e1e4;
+            }
+
+            #log th {
+              text-align: left;
+              background-color: #32414b;
+              color: white;
+            }
+            """)
+
+    def register_event(self) -> None:
+        """
+        Register event handler into event engine.
+        """
+        if self.event_type:
+            self.signal.connect(self.process_event)
+            self.event_engine.register(self.event_type, self.signal.emit)
+
+    def process_event(self, event: Event) -> None:
+        """
+        Process new data from event and update into table.
+        """
+        self.log_data.append(event.data)
+        self.check_data()
+        self.set_html_content()
+
+    def check_data(self):
+        if len(self.log_data) >= self.__show_limit:
+            self.log_data.pop(0)
+
+    def set_html_content(self):
+        log_htmls = []
+        for l in reversed(self.log_data):
+            log_item_html = []
+            for k in self.headers:
+                log_item_html.append(f"<td>{l.__getattribute__(k)}</td>")
+            log_htmls.append(f"<tr>{''.join(log_item_html)}</tr>")
+        html = "".join((self.log_html_head, "".join(log_htmls), self.log_html_tail))
+        self.setHtml(html)
+
+    def setRowCount(self, c: int):
+        self.log_data = self.log_data[:c]
+        self.set_html_content()
+
 class BaseMonitor(QtWidgets.QTableWidget):
     """
     Monitor data update in VN Trader.
@@ -393,6 +489,18 @@ class TickMonitor(BaseMonitor):
     }
 
 
+class LogMonitor2(BaseLogWidget):
+    """
+    Monitor for log data.
+    """
+    headers = {
+        "time": "时间",
+        "msg": "日志",
+        "gateway_name": "接口"
+    }
+
+    event_type = EVENT_LOG
+
 class LogMonitor(BaseMonitor):
     """
     Monitor for log data.
@@ -407,6 +515,7 @@ class LogMonitor(BaseMonitor):
         "msg": {"display": "信息", "cell": MsgCell, "update": False},
         "gateway_name": {"display": "接口", "cell": BaseCell, "update": False},
     }
+
 
 
 class TradeMonitor(BaseMonitor):
