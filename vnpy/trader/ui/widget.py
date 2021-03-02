@@ -4,6 +4,7 @@ Basic widgets for VN Trader.
 
 import csv
 import platform
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict
 from copy import copy
@@ -28,7 +29,6 @@ from ..event import (
 from ..object import OrderRequest, SubscribeRequest, PositionData
 from ..utility import load_json, save_json, get_digits
 from ..setting import SETTING_FILENAME, SETTINGS
-
 
 COLOR_LONG = QtGui.QColor("red")
 COLOR_SHORT = QtGui.QColor("green")
@@ -202,13 +202,7 @@ class BaseLogWidget(QtWidgets.QTextEdit):
         headers_html = []
         for v in self.headers.values():
             headers_html.append(f"<th>{v}</th>")
-        self.log_html_head = f"""
-            <body>
-            <table id="log">
-              <tr>
-                {"".join(headers_html)}
-              </tr>
-            """
+        self.log_html_head = f'<body><table id="log"><tr>{"".join(headers_html)}</tr>'
         self.log_html_tail = "</table></body>"
         self.init_ui()
         self.register_event()
@@ -258,7 +252,13 @@ class BaseLogWidget(QtWidgets.QTextEdit):
         """
         Process new data from event and update into table.
         """
-        self.log_data.append(event.data)
+        log_item_html: [str] = []
+        for k in self.headers:
+            c = event.data.__getattribute__(k)
+            if type(c) is datetime:
+                c = c.strftime("%y-%m-%d %H:%M:%S")
+            log_item_html.append(f"<td>{str(c)}</td>")
+        self.log_data.append(f"<tr>{''.join(log_item_html)}</tr>")
         self.check_data()
         self.set_html_content()
 
@@ -267,18 +267,13 @@ class BaseLogWidget(QtWidgets.QTextEdit):
             self.log_data.pop(0)
 
     def set_html_content(self):
-        log_htmls = []
-        for l in reversed(self.log_data):
-            log_item_html = []
-            for k in self.headers:
-                log_item_html.append(f"<td>{l.__getattribute__(k)}</td>")
-            log_htmls.append(f"<tr>{''.join(log_item_html)}</tr>")
-        html = "".join((self.log_html_head, "".join(log_htmls), self.log_html_tail))
+        html = f"{self.log_html_head}{''.join(reversed(self.log_data))}{self.log_html_tail}"
         self.setHtml(html)
 
     def setRowCount(self, c: int):
         self.log_data = self.log_data[:c]
         self.set_html_content()
+
 
 class BaseMonitor(QtWidgets.QTableWidget):
     """
@@ -501,6 +496,7 @@ class LogMonitor2(BaseLogWidget):
 
     event_type = EVENT_LOG
 
+
 class LogMonitor(BaseMonitor):
     """
     Monitor for log data.
@@ -515,7 +511,6 @@ class LogMonitor(BaseMonitor):
         "msg": {"display": "信息", "cell": MsgCell, "update": False},
         "gateway_name": {"display": "接口", "cell": BaseCell, "update": False},
     }
-
 
 
 class TradeMonitor(BaseMonitor):
@@ -855,9 +850,9 @@ class TradingWidget(QtWidgets.QWidget):
         self.setLayout(vbox)
 
     def create_label(
-        self,
-        color: str = "",
-        alignment: int = QtCore.Qt.AlignLeft
+            self,
+            color: str = "",
+            alignment: int = QtCore.Qt.AlignLeft
     ) -> QtWidgets.QLabel:
         """
         Create label with certain font color.
@@ -1050,7 +1045,7 @@ class TradingWidget(QtWidgets.QWidget):
                 direction = Direction.LONG
             elif data.direction == Direction.LONG:
                 direction = Direction.SHORT
-            else:       # Net position mode
+            else:  # Net position mode
                 if data.volume > 0:
                     direction = Direction.SHORT
                 else:
