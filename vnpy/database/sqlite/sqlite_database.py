@@ -348,7 +348,7 @@ class SqliteDatabase(BaseDatabase):
                     & (DbBarData.exchange == data.exchange)
                     & (DbBarData.interval == data.interval)
                 )
-                .order_by(DbBarData.datetime.desc())
+                .order_by(DbBarData.datetime.asc())
                 .first()
             )
             overview.start = start_bar.datetime
@@ -360,7 +360,7 @@ class SqliteDatabase(BaseDatabase):
                     & (DbBarData.exchange == data.exchange)
                     & (DbBarData.interval == data.interval)
                 )
-                .order_by(DbBarData.datetime.asc())
+                .order_by(DbBarData.datetime.desc())
                 .first()
             )
             overview.end = end_bar.datetime
