@@ -10,10 +10,6 @@ from types import TracebackType
 import requests
 
 
-# Use SSL from Python stdlib instead of OpenSSL to avoid [10054 WSAECONNRESET] error
-requests.packages.urllib3.contrib.pyopenssl.extract_from_urllib3()
-
-
 CALLBACK_TYPE = Callable[[dict, "Request"], Any]
 ON_FAILED_TYPE = Callable[[int, "Request"], Any]
 ON_ERROR_TYPE = Callable[[Type, Exception, TracebackType, "Request"], Any]
