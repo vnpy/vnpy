@@ -8243,12 +8243,16 @@ void TdApi::processRtnChangeAccountByBank(Task *task)
 void TdApi::createFtdcTraderApi(string pszFlowPath)
 {
     this->api = CThostFtdcTraderApi::CreateFtdcTraderApi(pszFlowPath.c_str());
+	this->lock4ReqGap();
     this->api->RegisterSpi(this);
+	this->unlock4ReqGap();
 };
 
 void TdApi::release()
 {
+	this->lock4ReqGap();
     this->api->Release();
+	this->unlock4ReqGap();
 };
 
 void TdApi::init()
@@ -8256,12 +8260,16 @@ void TdApi::init()
     this->active = true;
     this->task_thread = thread(&TdApi::processTask, this);
 
+	this->lock4ReqGap();
     this->api->Init();
+	this->unlock4ReqGap();
 };
 
 int TdApi::join()
 {
+	this->lock4ReqGap();
     int i = this->api->Join();
+	this->unlock4ReqGap();
     return i;
 };
 
@@ -8271,31 +8279,43 @@ int TdApi::exit()
     this->task_queue.terminate();
     this->task_thread.join();
 
+	this->lock4ReqGap();
     this->api->RegisterSpi(NULL);
+	this->unlock4ReqGap();
+	this->lock4ReqGap();
     this->api->Release();
+	this->unlock4ReqGap();
     this->api = NULL;
     return 1;
 };
 
 string TdApi::getTradingDay()
 {
+	this->lock4ReqGap();
     string day = this->api->GetTradingDay();
+	this->unlock4ReqGap();
     return day;
 };
 
 void TdApi::registerFront(string pszFrontAddress)
 {
+	this->lock4ReqGap();
     this->api->RegisterFront((char*)pszFrontAddress.c_str());
+	this->unlock4ReqGap();
 };
 
 void TdApi::subscribePrivateTopic(int nType)
 {
+	this->lock4ReqGap();
     this->api->SubscribePrivateTopic((THOST_TE_RESUME_TYPE) nType);
+	this->unlock4ReqGap();
 };
 
 void TdApi::subscribePublicTopic(int nType)
 {
+	this->lock4ReqGap();
     this->api->SubscribePublicTopic((THOST_TE_RESUME_TYPE)nType);
+	this->unlock4ReqGap();
 };
 
 int TdApi::reqAuthenticate(const dict &req, int reqid)
@@ -8307,7 +8327,9 @@ int TdApi::reqAuthenticate(const dict &req, int reqid)
 	getString(req, "UserProductInfo", myreq.UserProductInfo);
 	getString(req, "AuthCode", myreq.AuthCode);
 	getString(req, "AppID", myreq.AppID);
+	this->lock4ReqGap();
 	int i = this->api->ReqAuthenticate(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8327,7 +8349,9 @@ int TdApi::reqUserLogin(const dict &req, int reqid)
 	getString(req, "ClientIPAddress", myreq.ClientIPAddress);
 	getString(req, "LoginRemark", myreq.LoginRemark);
 	getInt(req, "ClientIPPort", &myreq.ClientIPPort);
+	this->lock4ReqGap();
 	int i = this->api->ReqUserLogin(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8337,7 +8361,9 @@ int TdApi::reqUserLogout(const dict &req, int reqid)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "UserID", myreq.UserID);
+	this->lock4ReqGap();
 	int i = this->api->ReqUserLogout(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8349,7 +8375,9 @@ int TdApi::reqUserPasswordUpdate(const dict &req, int reqid)
 	getString(req, "UserID", myreq.UserID);
 	getString(req, "OldPassword", myreq.OldPassword);
 	getString(req, "NewPassword", myreq.NewPassword);
+	this->lock4ReqGap();
 	int i = this->api->ReqUserPasswordUpdate(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8362,7 +8390,9 @@ int TdApi::reqTradingAccountPasswordUpdate(const dict &req, int reqid)
 	getString(req, "OldPassword", myreq.OldPassword);
 	getString(req, "NewPassword", myreq.NewPassword);
 	getString(req, "CurrencyID", myreq.CurrencyID);
+	this->lock4ReqGap();
 	int i = this->api->ReqTradingAccountPasswordUpdate(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8373,7 +8403,9 @@ int TdApi::reqUserAuthMethod(const dict &req, int reqid)
 	getString(req, "TradingDay", myreq.TradingDay);
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "UserID", myreq.UserID);
+	this->lock4ReqGap();
 	int i = this->api->ReqUserAuthMethod(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8384,7 +8416,9 @@ int TdApi::reqGenUserCaptcha(const dict &req, int reqid)
 	getString(req, "TradingDay", myreq.TradingDay);
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "UserID", myreq.UserID);
+	this->lock4ReqGap();
 	int i = this->api->ReqGenUserCaptcha(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8395,7 +8429,9 @@ int TdApi::reqGenUserText(const dict &req, int reqid)
 	getString(req, "TradingDay", myreq.TradingDay);
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "UserID", myreq.UserID);
+	this->lock4ReqGap();
 	int i = this->api->ReqGenUserText(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8415,7 +8451,9 @@ int TdApi::reqUserLoginWithCaptcha(const dict &req, int reqid)
 	getString(req, "LoginRemark", myreq.LoginRemark);
 	getString(req, "Captcha", myreq.Captcha);
 	getInt(req, "ClientIPPort", &myreq.ClientIPPort);
+	this->lock4ReqGap();
 	int i = this->api->ReqUserLoginWithCaptcha(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8435,7 +8473,9 @@ int TdApi::reqUserLoginWithText(const dict &req, int reqid)
 	getString(req, "LoginRemark", myreq.LoginRemark);
 	getString(req, "Text", myreq.Text);
 	getInt(req, "ClientIPPort", &myreq.ClientIPPort);
+	this->lock4ReqGap();
 	int i = this->api->ReqUserLoginWithText(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8455,7 +8495,9 @@ int TdApi::reqUserLoginWithOTP(const dict &req, int reqid)
 	getString(req, "LoginRemark", myreq.LoginRemark);
 	getString(req, "OTPPassword", myreq.OTPPassword);
 	getInt(req, "ClientIPPort", &myreq.ClientIPPort);
+	this->lock4ReqGap();
 	int i = this->api->ReqUserLoginWithOTP(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8493,7 +8535,9 @@ int TdApi::reqOrderInsert(const dict &req, int reqid)
 	getString(req, "ClientID", myreq.ClientID);
 	getString(req, "IPAddress", myreq.IPAddress);
 	getString(req, "MacAddress", myreq.MacAddress);
+	this->lock4ReqGap();
 	int i = this->api->ReqOrderInsert(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8536,7 +8580,9 @@ int TdApi::reqParkedOrderInsert(const dict &req, int reqid)
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
 	getString(req, "IPAddress", myreq.IPAddress);
 	getString(req, "MacAddress", myreq.MacAddress);
+	this->lock4ReqGap();
 	int i = this->api->ReqParkedOrderInsert(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8566,7 +8612,9 @@ int TdApi::reqParkedOrderAction(const dict &req, int reqid)
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
 	getString(req, "IPAddress", myreq.IPAddress);
 	getString(req, "MacAddress", myreq.MacAddress);
+	this->lock4ReqGap();
 	int i = this->api->ReqParkedOrderAction(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8591,7 +8639,9 @@ int TdApi::reqOrderAction(const dict &req, int reqid)
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
 	getString(req, "IPAddress", myreq.IPAddress);
 	getString(req, "MacAddress", myreq.MacAddress);
+	this->lock4ReqGap();
 	int i = this->api->ReqOrderAction(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8608,7 +8658,9 @@ int TdApi::reqQueryMaxOrderVolume(const dict &req, int reqid)
 	getInt(req, "MaxVolume", &myreq.MaxVolume);
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQueryMaxOrderVolume(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8623,7 +8675,9 @@ int TdApi::reqSettlementInfoConfirm(const dict &req, int reqid)
 	getInt(req, "SettlementID", &myreq.SettlementID);
 	getString(req, "AccountID", myreq.AccountID);
 	getString(req, "CurrencyID", myreq.CurrencyID);
+	this->lock4ReqGap();
 	int i = this->api->ReqSettlementInfoConfirm(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8635,7 +8689,9 @@ int TdApi::reqRemoveParkedOrder(const dict &req, int reqid)
 	getString(req, "InvestorID", myreq.InvestorID);
 	getString(req, "ParkedOrderID", myreq.ParkedOrderID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqRemoveParkedOrder(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8647,7 +8703,9 @@ int TdApi::reqRemoveParkedOrderAction(const dict &req, int reqid)
 	getString(req, "InvestorID", myreq.InvestorID);
 	getString(req, "ParkedOrderActionID", myreq.ParkedOrderActionID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqRemoveParkedOrderAction(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8676,7 +8734,9 @@ int TdApi::reqExecOrderInsert(const dict &req, int reqid)
 	getString(req, "ClientID", myreq.ClientID);
 	getString(req, "IPAddress", myreq.IPAddress);
 	getString(req, "MacAddress", myreq.MacAddress);
+	this->lock4ReqGap();
 	int i = this->api->ReqExecOrderInsert(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8699,7 +8759,9 @@ int TdApi::reqExecOrderAction(const dict &req, int reqid)
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
 	getString(req, "IPAddress", myreq.IPAddress);
 	getString(req, "MacAddress", myreq.MacAddress);
+	this->lock4ReqGap();
 	int i = this->api->ReqExecOrderAction(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8716,7 +8778,9 @@ int TdApi::reqForQuoteInsert(const dict &req, int reqid)
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
 	getString(req, "IPAddress", myreq.IPAddress);
 	getString(req, "MacAddress", myreq.MacAddress);
+	this->lock4ReqGap();
 	int i = this->api->ReqForQuoteInsert(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8747,7 +8811,9 @@ int TdApi::reqQuoteInsert(const dict &req, int reqid)
 	getString(req, "ClientID", myreq.ClientID);
 	getString(req, "IPAddress", myreq.IPAddress);
 	getString(req, "MacAddress", myreq.MacAddress);
+	this->lock4ReqGap();
 	int i = this->api->ReqQuoteInsert(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8771,7 +8837,9 @@ int TdApi::reqQuoteAction(const dict &req, int reqid)
 	getString(req, "ClientID", myreq.ClientID);
 	getString(req, "IPAddress", myreq.IPAddress);
 	getString(req, "MacAddress", myreq.MacAddress);
+	this->lock4ReqGap();
 	int i = this->api->ReqQuoteAction(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8790,7 +8858,9 @@ int TdApi::reqBatchOrderAction(const dict &req, int reqid)
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
 	getString(req, "IPAddress", myreq.IPAddress);
 	getString(req, "MacAddress", myreq.MacAddress);
+	this->lock4ReqGap();
 	int i = this->api->ReqBatchOrderAction(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8815,7 +8885,9 @@ int TdApi::reqOptionSelfCloseInsert(const dict &req, int reqid)
 	getString(req, "ClientID", myreq.ClientID);
 	getString(req, "IPAddress", myreq.IPAddress);
 	getString(req, "MacAddress", myreq.MacAddress);
+	this->lock4ReqGap();
 	int i = this->api->ReqOptionSelfCloseInsert(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8838,7 +8910,9 @@ int TdApi::reqOptionSelfCloseAction(const dict &req, int reqid)
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
 	getString(req, "IPAddress", myreq.IPAddress);
 	getString(req, "MacAddress", myreq.MacAddress);
+	this->lock4ReqGap();
 	int i = this->api->ReqOptionSelfCloseAction(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8859,7 +8933,9 @@ int TdApi::reqCombActionInsert(const dict &req, int reqid)
 	getString(req, "IPAddress", myreq.IPAddress);
 	getString(req, "MacAddress", myreq.MacAddress);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqCombActionInsert(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8875,7 +8951,9 @@ int TdApi::reqQryOrder(const dict &req, int reqid)
 	getString(req, "InsertTimeStart", myreq.InsertTimeStart);
 	getString(req, "InsertTimeEnd", myreq.InsertTimeEnd);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryOrder(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8891,7 +8969,9 @@ int TdApi::reqQryTrade(const dict &req, int reqid)
 	getString(req, "TradeTimeStart", myreq.TradeTimeStart);
 	getString(req, "TradeTimeEnd", myreq.TradeTimeEnd);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryTrade(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8904,7 +8984,9 @@ int TdApi::reqQryInvestorPosition(const dict &req, int reqid)
 	getString(req, "InstrumentID", myreq.InstrumentID);
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryInvestorPosition(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8917,7 +8999,9 @@ int TdApi::reqQryTradingAccount(const dict &req, int reqid)
 	getString(req, "CurrencyID", myreq.CurrencyID);
 	getChar(req, "BizType", &myreq.BizType);
 	getString(req, "AccountID", myreq.AccountID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryTradingAccount(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8927,7 +9011,9 @@ int TdApi::reqQryInvestor(const dict &req, int reqid)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "InvestorID", myreq.InvestorID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryInvestor(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8941,7 +9027,9 @@ int TdApi::reqQryTradingCode(const dict &req, int reqid)
 	getString(req, "ClientID", myreq.ClientID);
 	getChar(req, "ClientIDType", &myreq.ClientIDType);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryTradingCode(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8955,7 +9043,9 @@ int TdApi::reqQryInstrumentMarginRate(const dict &req, int reqid)
 	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryInstrumentMarginRate(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8968,7 +9058,9 @@ int TdApi::reqQryInstrumentCommissionRate(const dict &req, int reqid)
 	getString(req, "InstrumentID", myreq.InstrumentID);
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryInstrumentCommissionRate(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8977,7 +9069,9 @@ int TdApi::reqQryExchange(const dict &req, int reqid)
 	CThostFtdcQryExchangeField myreq = CThostFtdcQryExchangeField();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "ExchangeID", myreq.ExchangeID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryExchange(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -8988,7 +9082,9 @@ int TdApi::reqQryProduct(const dict &req, int reqid)
 	getString(req, "ProductID", myreq.ProductID);
 	getChar(req, "ProductClass", &myreq.ProductClass);
 	getString(req, "ExchangeID", myreq.ExchangeID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryProduct(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9000,7 +9096,9 @@ int TdApi::reqQryInstrument(const dict &req, int reqid)
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "ExchangeInstID", myreq.ExchangeInstID);
 	getString(req, "ProductID", myreq.ProductID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryInstrument(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9010,7 +9108,9 @@ int TdApi::reqQryDepthMarketData(const dict &req, int reqid)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "InstrumentID", myreq.InstrumentID);
 	getString(req, "ExchangeID", myreq.ExchangeID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryDepthMarketData(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9023,7 +9123,9 @@ int TdApi::reqQrySettlementInfo(const dict &req, int reqid)
 	getString(req, "TradingDay", myreq.TradingDay);
 	getString(req, "AccountID", myreq.AccountID);
 	getString(req, "CurrencyID", myreq.CurrencyID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQrySettlementInfo(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9033,7 +9135,9 @@ int TdApi::reqQryTransferBank(const dict &req, int reqid)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "BankID", myreq.BankID);
 	getString(req, "BankBrchID", myreq.BankBrchID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryTransferBank(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9046,7 +9150,9 @@ int TdApi::reqQryInvestorPositionDetail(const dict &req, int reqid)
 	getString(req, "InstrumentID", myreq.InstrumentID);
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryInvestorPositionDetail(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9055,7 +9161,9 @@ int TdApi::reqQryNotice(const dict &req, int reqid)
 	CThostFtdcQryNoticeField myreq = CThostFtdcQryNoticeField();
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "BrokerID", myreq.BrokerID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryNotice(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9067,7 +9175,9 @@ int TdApi::reqQrySettlementInfoConfirm(const dict &req, int reqid)
 	getString(req, "InvestorID", myreq.InvestorID);
 	getString(req, "AccountID", myreq.AccountID);
 	getString(req, "CurrencyID", myreq.CurrencyID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQrySettlementInfoConfirm(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9080,7 +9190,9 @@ int TdApi::reqQryInvestorPositionCombineDetail(const dict &req, int reqid)
 	getString(req, "CombInstrumentID", myreq.CombInstrumentID);
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryInvestorPositionCombineDetail(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9090,7 +9202,9 @@ int TdApi::reqQryCFMMCTradingAccountKey(const dict &req, int reqid)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "InvestorID", myreq.InvestorID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryCFMMCTradingAccountKey(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9103,7 +9217,9 @@ int TdApi::reqQryEWarrantOffset(const dict &req, int reqid)
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InstrumentID", myreq.InstrumentID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryEWarrantOffset(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9117,7 +9233,9 @@ int TdApi::reqQryInvestorProductGroupMargin(const dict &req, int reqid)
 	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryInvestorProductGroupMargin(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9129,7 +9247,9 @@ int TdApi::reqQryExchangeMarginRate(const dict &req, int reqid)
 	getString(req, "InstrumentID", myreq.InstrumentID);
 	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
 	getString(req, "ExchangeID", myreq.ExchangeID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryExchangeMarginRate(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9140,7 +9260,9 @@ int TdApi::reqQryExchangeMarginRateAdjust(const dict &req, int reqid)
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "InstrumentID", myreq.InstrumentID);
 	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryExchangeMarginRateAdjust(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9151,7 +9273,9 @@ int TdApi::reqQryExchangeRate(const dict &req, int reqid)
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "FromCurrencyID", myreq.FromCurrencyID);
 	getString(req, "ToCurrencyID", myreq.ToCurrencyID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryExchangeRate(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9163,7 +9287,9 @@ int TdApi::reqQrySecAgentACIDMap(const dict &req, int reqid)
 	getString(req, "UserID", myreq.UserID);
 	getString(req, "AccountID", myreq.AccountID);
 	getString(req, "CurrencyID", myreq.CurrencyID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQrySecAgentACIDMap(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9173,7 +9299,9 @@ int TdApi::reqQryProductExchRate(const dict &req, int reqid)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "ProductID", myreq.ProductID);
 	getString(req, "ExchangeID", myreq.ExchangeID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryProductExchRate(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9183,7 +9311,9 @@ int TdApi::reqQryProductGroup(const dict &req, int reqid)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "ProductID", myreq.ProductID);
 	getString(req, "ExchangeID", myreq.ExchangeID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryProductGroup(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9194,7 +9324,9 @@ int TdApi::reqQryMMInstrumentCommissionRate(const dict &req, int reqid)
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "InvestorID", myreq.InvestorID);
 	getString(req, "InstrumentID", myreq.InstrumentID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryMMInstrumentCommissionRate(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9205,7 +9337,9 @@ int TdApi::reqQryMMOptionInstrCommRate(const dict &req, int reqid)
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "InvestorID", myreq.InvestorID);
 	getString(req, "InstrumentID", myreq.InstrumentID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryMMOptionInstrCommRate(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9216,7 +9350,9 @@ int TdApi::reqQryInstrumentOrderCommRate(const dict &req, int reqid)
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "InvestorID", myreq.InvestorID);
 	getString(req, "InstrumentID", myreq.InstrumentID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryInstrumentOrderCommRate(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9229,7 +9365,9 @@ int TdApi::reqQrySecAgentTradingAccount(const dict &req, int reqid)
 	getString(req, "CurrencyID", myreq.CurrencyID);
 	getChar(req, "BizType", &myreq.BizType);
 	getString(req, "AccountID", myreq.AccountID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQrySecAgentTradingAccount(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9239,7 +9377,9 @@ int TdApi::reqQrySecAgentCheckMode(const dict &req, int reqid)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "InvestorID", myreq.InvestorID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQrySecAgentCheckMode(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9249,7 +9389,9 @@ int TdApi::reqQrySecAgentTradeInfo(const dict &req, int reqid)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "BrokerSecAgentID", myreq.BrokerSecAgentID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQrySecAgentTradeInfo(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9265,7 +9407,9 @@ int TdApi::reqQryOptionInstrTradeCost(const dict &req, int reqid)
 	getDouble(req, "UnderlyingPrice", &myreq.UnderlyingPrice);
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryOptionInstrTradeCost(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9278,7 +9422,9 @@ int TdApi::reqQryOptionInstrCommRate(const dict &req, int reqid)
 	getString(req, "InstrumentID", myreq.InstrumentID);
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryOptionInstrCommRate(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9293,7 +9439,9 @@ int TdApi::reqQryExecOrder(const dict &req, int reqid)
 	getString(req, "ExecOrderSysID", myreq.ExecOrderSysID);
 	getString(req, "InsertTimeStart", myreq.InsertTimeStart);
 	getString(req, "InsertTimeEnd", myreq.InsertTimeEnd);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryExecOrder(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9308,7 +9456,9 @@ int TdApi::reqQryForQuote(const dict &req, int reqid)
 	getString(req, "InsertTimeStart", myreq.InsertTimeStart);
 	getString(req, "InsertTimeEnd", myreq.InsertTimeEnd);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryForQuote(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9324,7 +9474,9 @@ int TdApi::reqQryQuote(const dict &req, int reqid)
 	getString(req, "InsertTimeStart", myreq.InsertTimeStart);
 	getString(req, "InsertTimeEnd", myreq.InsertTimeEnd);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryQuote(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9339,7 +9491,9 @@ int TdApi::reqQryOptionSelfClose(const dict &req, int reqid)
 	getString(req, "OptionSelfCloseSysID", myreq.OptionSelfCloseSysID);
 	getString(req, "InsertTimeStart", myreq.InsertTimeStart);
 	getString(req, "InsertTimeEnd", myreq.InsertTimeEnd);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryOptionSelfClose(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9350,7 +9504,9 @@ int TdApi::reqQryInvestUnit(const dict &req, int reqid)
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "InvestorID", myreq.InvestorID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryInvestUnit(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9361,7 +9517,9 @@ int TdApi::reqQryCombInstrumentGuard(const dict &req, int reqid)
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "InstrumentID", myreq.InstrumentID);
 	getString(req, "ExchangeID", myreq.ExchangeID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryCombInstrumentGuard(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9374,7 +9532,9 @@ int TdApi::reqQryCombAction(const dict &req, int reqid)
 	getString(req, "InstrumentID", myreq.InstrumentID);
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryCombAction(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9386,7 +9546,9 @@ int TdApi::reqQryTransferSerial(const dict &req, int reqid)
 	getString(req, "AccountID", myreq.AccountID);
 	getString(req, "BankID", myreq.BankID);
 	getString(req, "CurrencyID", myreq.CurrencyID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryTransferSerial(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9399,7 +9561,9 @@ int TdApi::reqQryAccountregister(const dict &req, int reqid)
 	getString(req, "BankID", myreq.BankID);
 	getString(req, "BankBranchID", myreq.BankBranchID);
 	getString(req, "CurrencyID", myreq.CurrencyID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryAccountregister(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9410,7 +9574,9 @@ int TdApi::reqQryContractBank(const dict &req, int reqid)
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "BankID", myreq.BankID);
 	getString(req, "BankBrchID", myreq.BankBrchID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryContractBank(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9423,7 +9589,9 @@ int TdApi::reqQryParkedOrder(const dict &req, int reqid)
 	getString(req, "InstrumentID", myreq.InstrumentID);
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryParkedOrder(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9436,7 +9604,9 @@ int TdApi::reqQryParkedOrderAction(const dict &req, int reqid)
 	getString(req, "InstrumentID", myreq.InstrumentID);
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryParkedOrderAction(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9447,7 +9617,9 @@ int TdApi::reqQryTradingNotice(const dict &req, int reqid)
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "InvestorID", myreq.InvestorID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryTradingNotice(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9459,7 +9631,9 @@ int TdApi::reqQryBrokerTradingParams(const dict &req, int reqid)
 	getString(req, "InvestorID", myreq.InvestorID);
 	getString(req, "CurrencyID", myreq.CurrencyID);
 	getString(req, "AccountID", myreq.AccountID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryBrokerTradingParams(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9470,7 +9644,9 @@ int TdApi::reqQryBrokerTradingAlgos(const dict &req, int reqid)
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "ExchangeID", myreq.ExchangeID);
 	getString(req, "InstrumentID", myreq.InstrumentID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQryBrokerTradingAlgos(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9481,7 +9657,9 @@ int TdApi::reqQueryCFMMCTradingAccountToken(const dict &req, int reqid)
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "InvestorID", myreq.InvestorID);
 	getString(req, "InvestUnitID", myreq.InvestUnitID);
+	this->lock4ReqGap();
 	int i = this->api->ReqQueryCFMMCTradingAccountToken(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9533,7 +9711,9 @@ int TdApi::reqFromBankToFutureByFuture(const dict &req, int reqid)
 	getInt(req, "TID", &myreq.TID);
 	getChar(req, "TransferStatus", &myreq.TransferStatus);
 	getString(req, "LongCustomerName", myreq.LongCustomerName);
+	this->lock4ReqGap();
 	int i = this->api->ReqFromBankToFutureByFuture(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9585,7 +9765,9 @@ int TdApi::reqFromFutureToBankByFuture(const dict &req, int reqid)
 	getInt(req, "TID", &myreq.TID);
 	getChar(req, "TransferStatus", &myreq.TransferStatus);
 	getString(req, "LongCustomerName", myreq.LongCustomerName);
+	this->lock4ReqGap();
 	int i = this->api->ReqFromFutureToBankByFuture(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -9630,7 +9812,9 @@ int TdApi::reqQueryBankAccountMoneyByFuture(const dict &req, int reqid)
 	getInt(req, "RequestID", &myreq.RequestID);
 	getInt(req, "TID", &myreq.TID);
 	getString(req, "LongCustomerName", myreq.LongCustomerName);
+	this->lock4ReqGap();
 	int i = this->api->ReqQueryBankAccountMoneyByFuture(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -11162,6 +11346,7 @@ PYBIND11_MODULE(vnctptd, m)
         .def("registerFront", &TdApi::registerFront)
         .def("subscribePublicTopic", &TdApi::subscribePublicTopic)
         .def("subscribePrivateTopic", &TdApi::subscribePrivateTopic)
+		.def("setReqMilsecGap", &TdApi::setReqMilsecGap)
 
 		.def("reqAuthenticate", &TdApi::reqAuthenticate)
 		.def("reqUserLogin", &TdApi::reqUserLogin)

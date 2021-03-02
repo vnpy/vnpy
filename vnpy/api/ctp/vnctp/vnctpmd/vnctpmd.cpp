@@ -545,12 +545,16 @@ void MdApi::processRtnForQuoteRsp(Task *task)
 void MdApi::createFtdcMdApi(string pszFlowPath)
 {
 	this->api = CThostFtdcMdApi::CreateFtdcMdApi(pszFlowPath.c_str());
+	this->lock4ReqGap();
 	this->api->RegisterSpi(this);
+	this->unlock4ReqGap();
 };
 
 void MdApi::release()
 {
+	this->lock4ReqGap();
 	this->api->Release();
+	this->unlock4ReqGap();
 };
 
 void MdApi::init()
@@ -558,12 +562,16 @@ void MdApi::init()
 	this->active = true;
 	this->task_thread = thread(&MdApi::processTask, this);
 
+	this->lock4ReqGap();
 	this->api->Init();
+	this->unlock4ReqGap();
 };
 
 int MdApi::join()
 {
+	this->lock4ReqGap();
 	int i = this->api->Join();
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -573,28 +581,38 @@ int MdApi::exit()
     this->task_queue.terminate();
     this->task_thread.join();
 
+	this->lock4ReqGap();
 	this->api->RegisterSpi(NULL);
+	this->unlock4ReqGap();
+	this->lock4ReqGap();
 	this->api->Release();
+	this->unlock4ReqGap();
 	this->api = NULL;
 	return 1;
 };
 
 string MdApi::getTradingDay()
 {
+	this->lock4ReqGap();
 	string day = this->api->GetTradingDay();
+	this->unlock4ReqGap();
 	return day;
 };
 
 void MdApi::registerFront(string pszFrontAddress)
 {
+	this->lock4ReqGap();
 	this->api->RegisterFront((char*)pszFrontAddress.c_str());
+	this->unlock4ReqGap();
 };
 
 int MdApi::subscribeMarketData(string instrumentID)
 {
 	char* buffer = (char*) instrumentID.c_str();
 	char* myreq[1] = { buffer };
+	this->lock4ReqGap();
 	int i = this->api->SubscribeMarketData(myreq, 1);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -602,7 +620,9 @@ int MdApi::unSubscribeMarketData(string instrumentID)
 {
 	char* buffer = (char*)instrumentID.c_str();
 	char* myreq[1] = { buffer };;
+	this->lock4ReqGap();
 	int i = this->api->UnSubscribeMarketData(myreq, 1);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -610,7 +630,9 @@ int MdApi::subscribeForQuoteRsp(string instrumentID)
 {
 	char* buffer = (char*)instrumentID.c_str();
 	char* myreq[1] = { buffer };
+	this->lock4ReqGap();
 	int i = this->api->SubscribeForQuoteRsp(myreq, 1);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -618,7 +640,9 @@ int MdApi::unSubscribeForQuoteRsp(string instrumentID)
 {
 	char* buffer = (char*)instrumentID.c_str();
 	char* myreq[1] = { buffer };;
+	this->lock4ReqGap();
 	int i = this->api->UnSubscribeForQuoteRsp(myreq, 1);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -637,7 +661,9 @@ int MdApi::reqUserLogin(const dict &req, int reqid)
 	getString(req, "OneTimePassword", myreq.OneTimePassword);
 	getString(req, "ClientIPAddress", myreq.ClientIPAddress);
 	getString(req, "LoginRemark", myreq.LoginRemark);
+	this->lock4ReqGap();
 	int i = this->api->ReqUserLogin(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -647,7 +673,9 @@ int MdApi::reqUserLogout(const dict &req, int reqid)
 	memset(&myreq, 0, sizeof(myreq));
 	getString(req, "BrokerID", myreq.BrokerID);
 	getString(req, "UserID", myreq.UserID);
+	this->lock4ReqGap();
 	int i = this->api->ReqUserLogout(&myreq, reqid);
+	this->unlock4ReqGap();
 	return i;
 };
 
@@ -825,6 +853,7 @@ PYBIND11_MODULE(vnctpmd, m)
 		.def("unSubscribeForQuoteRsp", &MdApi::unSubscribeForQuoteRsp)
 		.def("reqUserLogin", &MdApi::reqUserLogin)
 		.def("reqUserLogout", &MdApi::reqUserLogout)
+		.def("setReqMilsecGap", &MdApi::setReqMilsecGap)
 
 		.def("onFrontConnected", &MdApi::onFrontConnected)
 		.def("onFrontDisconnected", &MdApi::onFrontDisconnected)

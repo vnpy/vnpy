@@ -6,6 +6,7 @@
 #include <codecvt>
 #include <condition_variable>
 #include <locale>
+#include <chrono>
 
 #include "pybind11/pybind11.h"
 

@@ -239,9 +239,11 @@ class CtpGateway(BaseGateway):
 class CtpMdApi(MdApi):
     """"""
 
-    def __init__(self, gateway):
+    def __init__(self, gateway, req_milsec_gap:int = 0):
         """Constructor"""
         super(CtpMdApi, self).__init__()
+        if req_milsec_gap != 0:
+            self.setReqMilsecGap(req_milsec_gap)
 
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
@@ -416,9 +418,11 @@ class CtpMdApi(MdApi):
 class CtpTdApi(TdApi):
     """"""
 
-    def __init__(self, gateway):
+    def __init__(self, gateway, req_milsec_gap:int = 0):
         """Constructor"""
         super(CtpTdApi, self).__init__()
+        if req_milsec_gap != 0:
+            self.setReqMilsecGap(req_milsec_gap)
 
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name

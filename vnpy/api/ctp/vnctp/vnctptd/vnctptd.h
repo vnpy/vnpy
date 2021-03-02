@@ -150,10 +150,33 @@ private:
     thread task_thread;                    //工作线程指针（向python中推送数据）
     TaskQueue task_queue;                //任务队列
     bool active = false;                //工作状态
+	std::mutex mtx_req;
+    chrono::milliseconds next_req_tsepoch_milsec;
+    chrono::milliseconds req_gap_ms{50};
+    void lock4ReqGap()
+    {
+        this->mtx_req.lock();
+        auto will_sleep_milsec = (this->next_req_tsepoch_milsec - this->tsmilsec_now());
+        if (will_sleep_milsec.count() > 0){
+            std::this_thread::sleep_for(will_sleep_milsec);
+        }
+    }
+    void unlock4ReqGap()
+    {
+        this->next_req_tsepoch_milsec = this->tsmilsec_now() + this->req_gap_ms;
+        this->mtx_req.unlock();
+    }
+    chrono::milliseconds tsmilsec_now()
+    {
+        return chrono::duration_cast<chrono::milliseconds>(
+            chrono::steady_clock::now().time_since_epoch()
+        );
+    }
 
 public:
     TdApi()
     {
+		this->next_req_tsepoch_milsec = this->tsmilsec_now();
     };
 
     ~TdApi()
@@ -163,6 +186,9 @@ public:
             this->exit();
         }
     };
+	
+	// 设置请求间隔(ms)
+	void setReqMilsecGap(int req_milsec_gap);
 
     //-------------------------------------------------------------------------------------
     //API回调函数
