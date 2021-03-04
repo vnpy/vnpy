@@ -316,3 +316,14 @@ CTA策略引擎一般输出的都是全局的信息。下图中除了策略实�
 在所有策略实例启动成功后，点击右上角的【全部停止】按钮，则可批量停止策略实例，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/27.png)
+
+
+## Cta策略模板（CtaTemplate）
+
+### 策略参数
+
+### 策略变量
+
+### 回调函数
+
+### 主动函数
