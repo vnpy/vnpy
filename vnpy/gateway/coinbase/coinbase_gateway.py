@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import base64
 import uuid
 import pytz
+from decimal import Decimal
 
 from typing import List, Sequence
 
@@ -369,7 +370,7 @@ class CoinbaseWebsocketApi(WebsocketClient):
             exchange=Exchange.COINBASE,
             orderid=order.orderid,
             tradeid=packet["trade_id"],
-            direction=DIRECTION_COINBASE2VT[packet["side"]],
+            direction=order.direction,
             price=float(packet["price"]),
             volume=float(packet["size"]),
             datetime=generate_datetime(packet["time"]),
@@ -416,28 +417,28 @@ class OrderBook():
 
     def on_update(self, d: list, dt):
         """
-        call back  when type is 12update
+        call back  when type is l2update
         """
-        size = d[2]
-        price = d[1]
+        size = Decimal(d[2])
+        price = Decimal(d[1])
         side = d[0]
 
         if side == "buy":
-            if float(price) in self.bids:
-                if size == 0:
-                    del self.bids[float(price)]
+            if price in self.bids:
+                if not size:
+                    del self.bids[price]
                 else:
-                    self.bids[float(price)] = float(size)
+                    self.bids[price] = size
             else:
-                self.bids[float(price)] = float(size)
+                self.bids[price] = size
         else:
-            if float(price) in self.asks:
-                if size == 0:
-                    del self.asks[float(price)]
+            if price in self.asks:
+                if not size:
+                    del self.asks[price]
                 else:
-                    self.asks[float(price)] = float(size)
+                    self.asks[price] = size
             else:
-                self.asks[float(price)] = float(size)
+                self.asks[price] = size
 
         self.generate_tick(dt)
 
@@ -460,10 +461,10 @@ class OrderBook():
         call back when type is snapshot
         """
         for price, size in asks:
-            self.asks[float(price)] = float(size)
+            self.asks[Decimal(price)] = Decimal(size)
 
         for price, size in bids:
-            self.bids[float(price)] = float(size)
+            self.bids[Decimal(price)] = Decimal(size)
 
     def generate_tick(self, dt: datetime):
         """"""
@@ -472,32 +473,20 @@ class OrderBook():
         bids_keys = self.bids.keys()
         bids_keys = sorted(bids_keys, reverse=True)
 
-        tick.bid_price_1 = bids_keys[0]
-        tick.bid_price_2 = bids_keys[1]
-        tick.bid_price_3 = bids_keys[2]
-        tick.bid_price_4 = bids_keys[3]
-        tick.bid_price_5 = bids_keys[4]
-
-        tick.bid_volume_1 = self.bids[bids_keys[0]]
-        tick.bid_volume_2 = self.bids[bids_keys[1]]
-        tick.bid_volume_3 = self.bids[bids_keys[2]]
-        tick.bid_volume_4 = self.bids[bids_keys[3]]
-        tick.bid_volume_5 = self.bids[bids_keys[4]]
+        for i in range(min(5, len(bids_keys))):
+            price = float(bids_keys[i])
+            volume = float(self.bids[bids_keys[i]])
+            setattr(tick, f"bid_price_{i + 1}", price)
+            setattr(tick, f"bid_volume_{i + 1}", volume)
 
         asks_keys = self.asks.keys()
         asks_keys = sorted(asks_keys)
-
-        tick.ask_price_1 = asks_keys[0]
-        tick.ask_price_2 = asks_keys[1]
-        tick.ask_price_3 = asks_keys[2]
-        tick.ask_price_4 = asks_keys[3]
-        tick.ask_price_5 = asks_keys[4]
-
-        tick.ask_volume_1 = self.asks[asks_keys[0]]
-        tick.ask_volume_2 = self.asks[asks_keys[1]]
-        tick.ask_volume_3 = self.asks[asks_keys[2]]
-        tick.ask_volume_4 = self.asks[asks_keys[3]]
-        tick.ask_volume_5 = self.asks[asks_keys[4]]
+        
+        for i in range(min(5, len(asks_keys))):
+            price = float(asks_keys[i])
+            volume = float(self.asks[asks_keys[i]])
+            setattr(tick, f"ask_price_{i + 1}", price)
+            setattr(tick, f"ask_volume_{i + 1}", volume)
 
         tick.datetime = dt
         self.gateway.on_tick(copy(tick))
@@ -753,7 +742,7 @@ class CoinbaseRestApi(RestClient):
         """
         Callback when order cancelled
         """
-        sysid = data[0]
+        sysid = data
         order = sys_order_map[sysid]
 
         if order.status != Status.CANCELLED:

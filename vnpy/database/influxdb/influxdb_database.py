@@ -406,9 +406,9 @@ class InfluxdbDatabase(BaseDatabase):
     def get_bar_datetime(self, vt_symbol: str, interval: Interval, order: int) -> datetime:
         """"""
         if order > 0:
-            keyword = "last"
-        else:
             keyword = "first"
+        else:
+            keyword = "last"
 
         query = (
             f"select {keyword}(close_price), * from bar_data"
