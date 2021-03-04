@@ -1071,9 +1071,9 @@ class BybitPrivateWebsocketApi(WebsocketClient):
         """"""
         for d in packet["data"]:
             if self.usdt_base:
-                dt = generate_datetime(d["timestamp"])
-            else:
                 dt = generate_datetime(d["create_time"])
+            else:
+                dt = generate_datetime(d["timestamp"])
 
             order = OrderData(
                 symbol=d["symbol"],
