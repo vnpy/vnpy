@@ -8,6 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict
 from copy import copy
+import html
 from tzlocal import get_localzone
 
 from PyQt5 import QtCore, QtGui, QtWidgets, Qt
@@ -257,7 +258,7 @@ class BaseLogWidget(QtWidgets.QTextEdit):
             c = event.data.__getattribute__(k)
             if type(c) is datetime:
                 c = c.strftime("%y-%m-%d %H:%M:%S")
-            log_item_html.append(f"<td>{str(c)}</td>")
+            log_item_html.append(f"<td>{html.escape(str(c))}</td>")
         self.log_data.append(f"<tr>{''.join(log_item_html)}</tr>")
         self.check_data()
         self.set_html_content()
