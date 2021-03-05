@@ -330,7 +330,7 @@ CTA策略模板提供完整的信号生成和委托管理功能，用户可以�
 
 用户自行开发的策略可以放在用户运行文件夹下的[strategies](#jump)文件夹内。
 
-请注意，策略文件命名是以下划线模式，如boll_channel_strategy.py；而策略类命名采用的是驼峰式，如BollChannelStrategy。
+请注意，策略文件命名是以下划线模式，如boll_channel_strategy.py，而策略类命名采用的是驼峰式，如BollChannelStrategy。
 
 下面通过BollChannelStrategy策略示例，来展示策略开发的具体步骤：
 
@@ -348,6 +348,8 @@ from vnpy.app.cta_strategy import (
     ArrayManager,
 )
 ```
+
+CtaTemplate就是CTA策略模板，StopOrder、TickData、BarData、TradeData和OrderData都是储存对应信息的数据容器，BarGenerator是K线生成模块，ArrayManager是K线时间序列管理模块。
 
 ### 策略参数与变量
 
@@ -395,11 +397,53 @@ from vnpy.app.cta_strategy import (
 
 ```
 
-如果需要CTA引擎在运行过程中，对策略参数和变量在图形界面进行显示和数据刷新、停止策略时对其数值有所保存的话，需要把参数和变量的名字以字符串的形式添加进parameters和variables列表。
+如果需要CTA引擎在运行过程中，对策略参数和变量在图形界面进行显示和数据刷新、停止策略时对其数值有所保存的话，需要把参数和变量的名字以字符串的形式添加进parameters和variables列表里。
 
-但是请注意，该列表只能接受str、int、float和bool这四种参数类型。如果策略里需要用到其他数据类型的变量，那么请把其他数据类型变量的定义放到__init__函数下。
+但是请注意，该列表只能接受str、int、float和bool这四种参数类型。如果策略里需要用到其他数据类型的变量，那么请把该变量的定义放到__init__函数下。
 
 ### __init__函数
+
+__init__函数是策略类的构造函数，需要与继承的CtaTemplate保持一致。
+
+在这个继承的策略类里，初始化一般分三步，如下方代码所示：
+
+```
+    def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
+        """"""
+        super().__init__(cta_engine, strategy_name, vt_symbol, setting)
+
+        self.bg = BarGenerator(self.on_bar, 15, self.on_15min_bar)
+        self.am = ArrayManager()
+```
+
+1. 通过super( )的方法继承CTA策略模板，在__init__( )函数传入CTA引擎、策略名称、vt_symbol、参数设置。
+
+2. 调用K线生成模块:通过时间切片来把Tick数据合成1分钟K线数据。有需求的话，还可以合成更大的时间周期数据，如15分钟K线。
+
+如果只基于on_bar进行交易，这里代码可以写成：
+
+```
+        self.bg = BarGenerator(self.on_bar)
+```
+
+而不用给bg实例传入需要基于on_bar周期合成的更长周期，以及接收更长周期K线的函数名。
+
+请注意，对于X分钟线来说，X必须是能被60整除的数（60除外）。对于小时线的合成没有这个限制。
+
+BarGenerator这个类默认的基于on_bar合成的长周期K线的数据频率是分钟级别。如果需要基于合成的小时线或者更长周期的K线交易，请在策略文件顶部导入Interval，并传入对应的数据频率给bg实例。如下方代码所示：
+
+文件顶部导入Interval：
+
+```
+from vnpy.trader.constant import Interval
+```
+
+__init__函数创建bg实例时传入数据频率：
+```
+        self.bg = BarGenerator(self.on_bar, 2, self.on_2hour_bar, Interval.HOUR)
+```
+
+3. 调用K线时间序列管理模块：基于K线数据，如1分钟、15分钟，来生成相应的技术指标。
 
 ### CTA策略引擎调用的函数
 
@@ -409,7 +453,7 @@ CtaTemplate中的update_setting函数和该函数后四个以get开头的函数�
 
 CtaTemplate中以on开头的函数都是在编写策略的过程中能够用来收到数据或者收到状态更新的回调函数。它的作用是当某一个事件发生的时候，策略里的这类函数会被调用（CTA策略引擎会去调用，在策略里的效果是无需策略主动操作，被自动调用了）。
 
-策略实例状态控制
+策略实例状态控制（所有策略都需要）
 
 on_init
 
@@ -452,7 +496,9 @@ on_stop
 
 on_tick
 
-当策略收到最新的逐笔成交的行情推送时会被调用，默认写法是通过BarGenerator的update_tick函数把收到的这个tick推进前面创建的bg实例中以便合成1分钟的K线，如下方代码所示：
+绝大部分交易系统都只提供Tick数据的推送，即使一些数字货币交易或者外汇平台会提供K线数据的推送，但是这些数据到达本地电脑的速度也会慢于Tick数据的推送，因为也需要平台合成之后才能推送过来。所以实盘的时候，vn.py里所有的策略的K线都是由收到的Tick数据合成的。
+
+当策略收到最新的Tick数据的行情推送时，该函数就会被调用。默认写法是通过BarGenerator的update_tick函数把收到的这个Tick推进前面创建的bg实例中以便合成1分钟的K线，如下方代码所示：
 
 
 ```
@@ -465,7 +511,7 @@ on_tick
 
 on_bar
 
-当策略收到最新的K线数据（实盘时默认推进来的是基于tick合成的一分钟的K线，回测时则取决于回测选择参数时填入的K线数据频率）时会被调用，示例策略里出现过的写法有两种：
+当策略收到最新的K线数据（实盘时默认推进来的是基于Tick合成的一分钟的K线，回测时则取决于回测选择参数时填入的K线数据频率）时会被调用，示例策略里出现过的写法有两种：
 
 1. 如果策略基于on_bar推进来的K线交易，那么请把交易请求类函数都写在on_bar函数下（因为本次示例策略类BollChannelStrategy不基于on_bar交易，故不作示例讲解了。基于on_bar交易的示例代码可参考其他示例策略）；
 
@@ -478,6 +524,14 @@ on_bar
         """
         self.bg.update_bar(bar)
 ```
+
+第一步先获取ArrayManager对象，然后把收到的K线推送进去。检查一下ArrayManager的初始化状态，如果还没初始化好就直接返回，没有必要去进行后续的交易相关的逻辑判断（因为很多技术指标计算对最少K线数量有要求，如果数量不够的话计算出来的指标要不是错的或者根本没有意义）。
+
+如果没有return, 就可以开始计算技术指标了。
+
+在当前没有仓位的前提下，
+
+最后需要调用put_event()函数在图形界面刷新指标数值。
 
 
 订单状态推送
