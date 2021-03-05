@@ -1,5 +1,5 @@
 from copy import copy
-from typing import Any, Dict, Tuple, Optional
+from typing import Any, Dict, Tuple, Optional, List
 from datetime import datetime
 from tzlocal import get_localzone
 
@@ -9,7 +9,7 @@ from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
     OrderRequest, CancelRequest, SubscribeRequest,
     ContractData, OrderData, TradeData, TickData,
-    LogData, PositionData
+    LogData, PositionData, HistoryRequest, BarData
 )
 from vnpy.trader.event import (
     EVENT_ORDER,
@@ -56,8 +56,10 @@ class PaperEngine(BaseEngine):
 
         # Patch main engine functions
         self._subscribe = main_engine.subscribe
+        self._query_history = main_engine.query_history
 
         main_engine.subscribe = self.subscribe
+        main_engine.query_history = self.query_history
         main_engine.send_order = self.send_order
         main_engine.cancel_order = self.cancel_order
 
@@ -136,6 +138,16 @@ class PaperEngine(BaseEngine):
         original_gateway_name = self.gateway_map.get(req.vt_symbol, "")
         if original_gateway_name:
             self._subscribe(req, original_gateway_name)
+        else:
+            self.write_log(f"订阅行情失败，找不到该合约{req.vt_symbol}")
+
+    def query_history(self, req: HistoryRequest, gateway_name: str) -> List[BarData]:
+        """"""
+        original_gateway_name = self.gateway_map.get(req.vt_symbol, "")
+        if original_gateway_name:
+            return self._query_history(req, original_gateway_name)
+        else:
+            return None
 
     def send_order(self, req: OrderRequest, gateway_name: str) -> str:
         """"""
@@ -176,6 +188,7 @@ class PaperEngine(BaseEngine):
                 self.cross_order(order, tick)
 
                 if not order.is_active():
+                    active_orders = self.active_orders[order.vt_symbol]
                     active_orders.pop(orderid)
 
         return vt_orderid

@@ -621,15 +621,12 @@ def generate_datetime2(timestamp: int) -> datetime:
     dt = datetime.strptime(str(timestamp), "%Y.%m.%d %H:%M")
     utc_dt = dt.replace(tzinfo=pytz.utc)
     local_tz = LOCAL_TZ.normalize(utc_dt.astimezone(LOCAL_TZ))
-    dt = local_tz.replace(tzinfo=LOCAL_TZ)
-    return dt
+    return local_tz
 
 
 def generate_datetime3(datetime: datetime) -> str:
     """"""
-    dt = datetime.replace(tzinfo=None)
-    local_tz = LOCAL_TZ.normalize(dt.astimezone(LOCAL_TZ))
-    utc_tz = pytz.utc.normalize(local_tz.astimezone(pytz.utc))
+    utc_tz = pytz.utc.normalize(datetime.astimezone(pytz.utc))
     utc_tz = utc_tz.replace(tzinfo=None)
     dt = utc_tz.isoformat()
     dt = dt.replace('T', ' ')

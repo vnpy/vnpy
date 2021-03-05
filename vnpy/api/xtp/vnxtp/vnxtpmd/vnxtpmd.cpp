@@ -668,9 +668,12 @@ void MdApi::processDepthMarketData(Task *task)
 		data["turnover"] = task_data->turnover;
 		data["avg_price"] = task_data->avg_price;
 		data["trades_count"] = task_data->trades_count;
-		data["ticker_status"] = task_data->ticker_status;
 		data["data_type"] = (int)task_data->data_type;
 		data["r4"] = task_data->r4;
+
+		//Solve UDP protocol error text
+		string status = task_data->ticker_status;
+		data["ticker_status"] = status.substr(0, 4);
 
 		pybind11::list ask;
 		pybind11::list bid;
@@ -818,6 +821,34 @@ void MdApi::processTickByTick(Task *task)
 		data["seq"] = task_data->seq;
 		data["data_time"] = task_data->data_time;
 		data["type"] = (int)task_data->type;
+
+		dict entrust;
+		dict trade;
+
+		if (task_data->type == XTP_TBT_ENTRUST) 
+		{
+			entrust["channel_no"] = task_data->entrust.channel_no;
+			entrust["seq"] = task_data->entrust.seq;
+			entrust["price"] = task_data->entrust.price;
+			entrust["qty"] = task_data->entrust.qty;
+			entrust["side"] = task_data->entrust.side;
+			entrust["ord_type"] = task_data->entrust.ord_type;
+		}
+		else
+		{
+			trade["channel_no"] = task_data->trade.channel_no;
+			trade["seq"] = task_data->trade.seq;
+			trade["price"] = task_data->trade.price;
+			trade["qty"] = task_data->trade.qty;
+			trade["money"] = task_data->trade.money;
+			trade["bid_no"] = task_data->trade.bid_no;
+			trade["ask_no"] = task_data->trade.ask_no;
+			trade["trade_flag"] = task_data->trade.trade_flag;
+		}
+
+		data["entrust"] = entrust;
+		data["trade"] = trade;
+
 		delete task_data;
 	}
 	this->onTickByTick(data);
@@ -1050,18 +1081,23 @@ void MdApi::processUnSubscribeAllOptionTickByTick(Task *task)
 ///主动函数
 ///-------------------------------------------------------------------------------------
 
-void MdApi::createQuoteApi(int client_id, string save_file_path)
+void MdApi::createQuoteApi(int client_id, string save_file_path, int log_level)
 {
-	this->api = QuoteApi::CreateQuoteApi(client_id, save_file_path.c_str());
-	this->api->RegisterSpi(this);
-
+	if (!this->api)
+	{
+		this->api = QuoteApi::CreateQuoteApi(client_id, save_file_path.c_str(), XTP_LOG_LEVEL(log_level));
+		this->api->RegisterSpi(this);
+	}
 };
 
 
 void MdApi::init()
 {
-	this->active = true;
-	this->task_thread = thread(&MdApi::processTask, this);
+	if (!this->active)
+	{
+		this->active = true;
+		this->task_thread = thread(&MdApi::processTask, this);
+	}
 };
 
 void MdApi::release()

@@ -11,7 +11,10 @@ from datetime import datetime, timedelta
 from enum import Enum
 from threading import Lock
 from typing import Dict, List, Tuple
+from vnpy.trader.utility import round_to
 import pytz
+
+from requests.exceptions import SSLError
 
 from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
@@ -63,7 +66,7 @@ STATUS_BINANCES2VT: Dict[str, Status] = {
     "FILLED": Status.ALLTRADED,
     "CANCELED": Status.CANCELLED,
     "REJECTED": Status.REJECTED,
-    "EXPIRED":  Status.CANCELLED
+    "EXPIRED": Status.CANCELLED
 }
 
 ORDERTYPE_VT2BINANCES: Dict[OrderType, Tuple[str, str]] = {
@@ -102,6 +105,7 @@ class Security(Enum):
 
 
 symbol_name_map: Dict[str, str] = {}
+symbol_contract_map: Dict[str, ContractData] = {}
 
 
 class BinancesGateway(BaseGateway):
@@ -599,12 +603,13 @@ class BinancesRestApi(RestClient):
                 size=1,
                 min_volume=min_volume,
                 product=Product.FUTURES,
+                net_position=True,
                 history_data=True,
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_contract(contract)
 
-            symbol_name_map[contract.symbol] = contract.name
+            symbol_contract_map[contract.symbol] = contract
 
         self.gateway.write_log("合约信息查询成功")
 
@@ -634,7 +639,7 @@ class BinancesRestApi(RestClient):
         self.gateway.on_order(order)
 
         # Record exception if not ConnectionError
-        if not issubclass(exception_type, ConnectionError):
+        if not issubclass(exception_type, (ConnectionError, SSLError)):
             self.on_error(exception_type, exception_value, tb, request)
 
     def on_cancel_order(self, data: dict, request: Request) -> None:
@@ -816,11 +821,17 @@ class BinancesTradeWebsocketApi(WebsocketClient):
 
         self.gateway.on_order(order)
 
-        # Push trade event
+        # Round trade volume to minimum trading volume
         trade_volume = float(ord_data["l"])
+
+        contract = symbol_contract_map.get(order.symbol, None)
+        if contract:
+            trade_volume = round_to(trade_volume, contract.min_volume)
+
         if not trade_volume:
             return
 
+        # Push trade event
         trade = TradeData(
             symbol=order.symbol,
             exchange=order.exchange,
@@ -867,14 +878,14 @@ class BinancesDataWebsocketApi(WebsocketClient):
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
-        if req.symbol not in symbol_name_map:
+        if req.symbol not in symbol_contract_map:
             self.gateway.write_log(f"找不到该合约代码{req.symbol}")
             return
 
         # Create tick buf data
         tick = TickData(
             symbol=req.symbol,
-            name=symbol_name_map.get(req.symbol, ""),
+            name=symbol_contract_map[req.symbol].name,
             exchange=Exchange.BINANCE,
             datetime=datetime.now(CHINA_TZ),
             gateway_name=self.gateway_name,

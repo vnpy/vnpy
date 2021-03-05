@@ -1,43 +1,15 @@
 from datetime import datetime, timedelta
-
+import trading_calendars
 
 ANNUAL_DAYS = 240
 
-# For checking public holidays
-PUBLIC_HOLIDAYS = set([
-    datetime(2020, 1, 1),       # New Year
+# Get public holidays data from Shanghai Stock Exchange
+cn_calendar = trading_calendars.get_calendar('XSHG')
+holidays = [x.to_pydatetime() for x in cn_calendar.precomputed_holidays]
 
-    datetime(2020, 1, 24),      # Spring Festival
-    datetime(2020, 1, 25),
-    datetime(2020, 1, 26),
-    datetime(2020, 1, 27),
-    datetime(2020, 1, 28),
-    datetime(2020, 1, 29),
-    datetime(2020, 1, 30),
-
-    datetime(2020, 4, 4),       # Qingming Festval
-    datetime(2020, 4, 5),
-    datetime(2020, 4, 6),
-
-    datetime(2020, 5, 1),       # Labour Day
-    datetime(2020, 5, 2),
-    datetime(2020, 5, 3),
-    datetime(2020, 5, 4),
-    datetime(2020, 5, 5),
-
-    datetime(2020, 6, 25),      # Duanwu Festival
-    datetime(2020, 6, 26),
-    datetime(2020, 6, 27),
-
-    datetime(2020, 10, 1),      # National Day
-    datetime(2020, 10, 2),
-    datetime(2020, 10, 3),
-    datetime(2020, 10, 4),
-    datetime(2020, 10, 5),
-    datetime(2020, 10, 6),
-    datetime(2020, 10, 7),
-    datetime(2020, 10, 8),
-])
+# Filter future public holidays
+start = datetime.today()
+PUBLIC_HOLIDAYS = [x for x in holidays if x >= start]
 
 
 def calculate_days_to_expiry(option_expiry: datetime) -> int:

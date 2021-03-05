@@ -219,7 +219,8 @@ class AlgoEngine(BaseEngine):
             type=order_type,
             volume=volume,
             price=price,
-            offset=offset
+            offset=offset,
+            reference=f"{APP_NAME}_{algo.algo_name}"
         )
         vt_orderid = self.main_engine.send_order(req, contract.gateway_name)
 

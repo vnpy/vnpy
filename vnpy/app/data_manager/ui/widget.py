@@ -1,11 +1,11 @@
 from typing import Tuple, Dict
 from functools import partial
 from datetime import datetime, timedelta
-from tzlocal import get_localzone
 
 from vnpy.trader.ui import QtWidgets, QtCore
 from vnpy.trader.engine import MainEngine, EventEngine
 from vnpy.trader.constant import Interval, Exchange
+from vnpy.trader.database import DB_TZ
 
 from ..engine import APP_NAME, ManagerEngine
 
@@ -131,23 +131,23 @@ class ManagerWidget(QtWidgets.QWidget):
         """"""
         self.clear_tree()
 
-        data = self.engine.get_bar_data_available()
+        overviews = self.engine.get_bar_overview()
 
-        for d in data:
-            key = (d["symbol"], d["exchange"], d["interval"])
+        for overview in overviews:
+            key = (overview.symbol, overview.exchange, overview.interval)
             item = self.tree_items.get(key, None)
 
             if not item:
                 item = QtWidgets.QTreeWidgetItem()
                 self.tree_items[key] = item
 
-                item.setText(1, ".".join([d["symbol"], d["exchange"]]))
-                item.setText(2, d["symbol"])
-                item.setText(3, d["exchange"])
+                item.setText(1, f"{overview.symbol}.{overview.exchange.value}")
+                item.setText(2, overview.symbol)
+                item.setText(3, overview.exchange.value)
 
-                if d["interval"] == Interval.MINUTE.value:
+                if overview.interval == Interval.MINUTE:
                     self.minute_child.addChild(item)
-                elif d["interval"] == Interval.HOUR.value:
+                elif overview.interval == Interval.HOUR:
                     self.hour_child.addChild(item)
                 else:
                     self.daily_child.addChild(item)
@@ -155,31 +155,31 @@ class ManagerWidget(QtWidgets.QWidget):
                 output_button = QtWidgets.QPushButton("导出")
                 output_func = partial(
                     self.output_data,
-                    d["symbol"],
-                    Exchange(d["exchange"]),
-                    Interval(d["interval"]),
-                    d["start"],
-                    d["end"]
+                    overview.symbol,
+                    overview.exchange,
+                    overview.interval,
+                    overview.start,
+                    overview.end
                 )
                 output_button.clicked.connect(output_func)
 
                 show_button = QtWidgets.QPushButton("查看")
                 show_func = partial(
                     self.show_data,
-                    d["symbol"],
-                    Exchange(d["exchange"]),
-                    Interval(d["interval"]),
-                    d["start"],
-                    d["end"]
+                    overview.symbol,
+                    overview.exchange,
+                    overview.interval,
+                    overview.start,
+                    overview.end
                 )
                 show_button.clicked.connect(show_func)
 
                 delete_button = QtWidgets.QPushButton("删除")
                 delete_func = partial(
                     self.delete_data,
-                    d["symbol"],
-                    Exchange(d["exchange"]),
-                    Interval(d["interval"]),
+                    overview.symbol,
+                    overview.exchange,
+                    overview.interval
                 )
                 delete_button.clicked.connect(delete_func)
 
@@ -187,9 +187,9 @@ class ManagerWidget(QtWidgets.QWidget):
                 self.tree.setItemWidget(item, 8, output_button)
                 self.tree.setItemWidget(item, 9, delete_button)
 
-            item.setText(4, str(d["count"]))
-            item.setText(5, d["start"].strftime("%Y-%m-%d %H:%M:%S"))
-            item.setText(6, d["end"].strftime("%Y-%m-%d %H:%M:%S"))
+            item.setText(4, str(overview.count))
+            item.setText(5, overview.start.strftime("%Y-%m-%d %H:%M:%S"))
+            item.setText(6, overview.end.strftime("%Y-%m-%d %H:%M:%S"))
 
         self.minute_child.setExpanded(True)
         self.hour_child.setExpanded(True)
@@ -437,8 +437,8 @@ class DateRangeDialog(QtWidgets.QDialog):
 
     def get_date_range(self) -> Tuple[datetime, datetime]:
         """"""
-        start = self.start_edit.date().toPyDate()
-        end = self.end_edit.date().toPyDate() + timedelta(days=1)
+        start = self.start_edit.dateTime().toPyDateTime()
+        end = self.end_edit.dateTime().toPyDateTime() + timedelta(days=1)
         return start, end
 
 
@@ -471,7 +471,8 @@ class ImportDialog(QtWidgets.QDialog):
 
         self.interval_combo = QtWidgets.QComboBox()
         for i in Interval:
-            self.interval_combo.addItem(str(i.name), i)
+            if i != Interval.TICK:
+                self.interval_combo.addItem(str(i.name), i)
 
         self.datetime_edit = QtWidgets.QLineEdit("datetime")
         self.open_edit = QtWidgets.QLineEdit("open")
@@ -581,7 +582,11 @@ class DownloadDialog(QtWidgets.QDialog):
         interval = Interval(self.interval_combo.currentData())
 
         start_date = self.start_date_edit.date()
-        start = datetime(start_date.year(), start_date.month(), start_date.day(), tzinfo=get_localzone())
+        start = datetime(start_date.year(), start_date.month(), start_date.day())
+        start = DB_TZ.localize(start)
 
-        count = self.engine.download_bar_data(symbol, exchange, interval, start)
+        if interval == Interval.TICK:
+            count = self.engine.download_tick_data(symbol, exchange, start)
+        else:
+            count = self.engine.download_bar_data(symbol, exchange, interval, start)
         QtWidgets.QMessageBox.information(self, "下载结束", f"下载总数据量：{count}条")

@@ -1,12 +1,11 @@
 import csv
 from datetime import datetime, timedelta
-from tzlocal import get_localzone
 from copy import copy
 
 import numpy as np
 import pyqtgraph as pg
 
-from vnpy.trader.constant import Interval, Direction
+from vnpy.trader.constant import Interval, Direction, Exchange
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtCore, QtWidgets, QtGui
 from vnpy.trader.ui.widget import BaseMonitor, BaseCell, DirectionCell, EnumCell
@@ -14,6 +13,7 @@ from vnpy.trader.ui.editor import CodeEditor
 from vnpy.event import Event, EventEngine
 from vnpy.chart import ChartWidget, CandleItem, VolumeItem
 from vnpy.trader.utility import load_json, save_json
+from vnpy.trader.database import DB_TZ
 
 from ..engine import (
     APP_NAME,
@@ -72,8 +72,8 @@ class BacktesterManager(QtWidgets.QWidget):
         self.symbol_line = QtWidgets.QLineEdit("IF88.CFFEX")
 
         self.interval_combo = QtWidgets.QComboBox()
-        for inteval in Interval:
-            self.interval_combo.addItem(inteval.value)
+        for interval in Interval:
+            self.interval_combo.addItem(interval.value)
 
         end_dt = datetime.now()
         start_dt = end_dt - timedelta(days=3 * 365)
@@ -240,6 +240,11 @@ class BacktesterManager(QtWidgets.QWidget):
             self.interval_combo.findText(setting["interval"])
         )
 
+        start_str = setting.get("start", "")
+        if start_str:
+            start_dt = QtCore.QDate.fromString(start_str, "yyyy-MM-dd")
+            self.start_date_edit.setDate(start_dt)
+
         self.rate_line.setText(str(setting["rate"]))
         self.slippage_line.setText(str(setting["slippage"]))
         self.size_line.setText(str(setting["size"]))
@@ -287,7 +292,11 @@ class BacktesterManager(QtWidgets.QWidget):
         self.trade_button.setEnabled(True)
         self.order_button.setEnabled(True)
         self.daily_button.setEnabled(True)
-        self.candle_button.setEnabled(True)
+
+        # Tick data can not be displayed using candle chart
+        interval = self.interval_combo.currentText()
+        if interval != Interval.TICK.value:
+            self.candle_button.setEnabled(True)
 
     def process_optimization_finished_event(self, event: Event):
         """"""
@@ -299,8 +308,8 @@ class BacktesterManager(QtWidgets.QWidget):
         class_name = self.class_combo.currentText()
         vt_symbol = self.symbol_line.text()
         interval = self.interval_combo.currentText()
-        start = self.start_date_edit.date().toPyDate()
-        end = self.end_date_edit.date().toPyDate()
+        start = self.start_date_edit.dateTime().toPyDateTime()
+        end = self.end_date_edit.dateTime().toPyDateTime()
         rate = float(self.rate_line.text())
         slippage = float(self.slippage_line.text())
         size = float(self.size_line.text())
@@ -312,11 +321,22 @@ class BacktesterManager(QtWidgets.QWidget):
         else:
             inverse = True
 
+        # Check validity of vt_symbol
+        if "." not in vt_symbol:
+            self.write_log("本地代码缺失交易所后缀，请检查")
+            return
+
+        _, exchange_str = vt_symbol.split(".")
+        if exchange_str not in Exchange.__members__:
+            self.write_log("本地代码的交易所后缀不正确，请检查")
+            return
+
         # Save backtesting parameters
         backtesting_setting = {
             "class_name": class_name,
             "vt_symbol": vt_symbol,
             "interval": interval,
+            "start": start.isoformat(),
             "rate": rate,
             "slippage": slippage,
             "size": size,
@@ -370,8 +390,8 @@ class BacktesterManager(QtWidgets.QWidget):
         class_name = self.class_combo.currentText()
         vt_symbol = self.symbol_line.text()
         interval = self.interval_combo.currentText()
-        start = self.start_date_edit.date().toPyDate()
-        end = self.end_date_edit.date().toPyDate()
+        start = self.start_date_edit.dateTime().toPyDateTime()
+        end = self.end_date_edit.dateTime().toPyDateTime()
         rate = float(self.rate_line.text())
         slippage = float(self.slippage_line.text())
         size = float(self.size_line.text())
@@ -421,8 +441,8 @@ class BacktesterManager(QtWidgets.QWidget):
             start_date.year(),
             start_date.month(),
             start_date.day(),
-            tzinfo=get_localzone()
         )
+        start = DB_TZ.localize(start)
 
         end = datetime(
             end_date.year(),
@@ -431,8 +451,8 @@ class BacktesterManager(QtWidgets.QWidget):
             23,
             59,
             59,
-            tzinfo=get_localzone()
         )
+        end = DB_TZ.localize(end)
 
         self.backtester_engine.start_downloading(
             vt_symbol,
@@ -498,8 +518,13 @@ class BacktesterManager(QtWidgets.QWidget):
         """"""
         self.backtester_engine.reload_strategy_class()
 
+        current_strategy_name = self.class_combo.currentText()
+
         self.class_combo.clear()
         self.init_strategy_settings()
+
+        ix = self.class_combo.findText(current_strategy_name)
+        self.class_combo.setCurrentIndex(ix)
 
     def show(self):
         """"""
@@ -588,6 +613,7 @@ class StatisticsMonitor(QtWidgets.QTableWidget):
         data["daily_commission"] = f"{data['daily_commission']:,.2f}"
         data["daily_slippage"] = f"{data['daily_slippage']:,.2f}"
         data["daily_turnover"] = f"{data['daily_turnover']:,.2f}"
+        data["daily_trade_count"] = f"{data['daily_trade_count']:,.2f}"
         data["daily_return"] = f"{data['daily_return']:,.2f}%"
         data["return_std"] = f"{data['return_std']:,.2f}%"
         data["sharpe_ratio"] = f"{data['sharpe_ratio']:,.2f}"
@@ -974,7 +1000,7 @@ class OptimizationResultMonitor(QtWidgets.QDialog):
         for n, tp in enumerate(self.result_values):
             setting, target_value, _ = tp
             setting_cell = QtWidgets.QTableWidgetItem(str(setting))
-            target_cell = QtWidgets.QTableWidgetItem(str(target_value))
+            target_cell = QtWidgets.QTableWidgetItem(f"{target_value:.2f}")
 
             setting_cell.setTextAlignment(QtCore.Qt.AlignCenter)
             target_cell.setTextAlignment(QtCore.Qt.AlignCenter)
@@ -1057,6 +1083,17 @@ class BacktestingOrderMonitor(BaseMonitor):
     }
 
 
+class FloatCell(BaseCell):
+    """
+    Cell used for showing pnl data.
+    """
+
+    def __init__(self, content, data):
+        """"""
+        content = f"{content:.2f}"
+        super().__init__(content, data)
+
+
 class DailyResultMonitor(BaseMonitor):
     """
     Monitor for backtesting daily result.
@@ -1067,13 +1104,13 @@ class DailyResultMonitor(BaseMonitor):
         "trade_count": {"display": "成交笔数", "cell": BaseCell, "update": False},
         "start_pos": {"display": "开盘持仓", "cell": BaseCell, "update": False},
         "end_pos": {"display": "收盘持仓", "cell": BaseCell, "update": False},
-        "turnover": {"display": "成交额", "cell": BaseCell, "update": False},
-        "commission": {"display": "手续费", "cell": BaseCell, "update": False},
-        "slippage": {"display": "滑点", "cell": BaseCell, "update": False},
-        "trading_pnl": {"display": "交易盈亏", "cell": BaseCell, "update": False},
-        "holding_pnl": {"display": "持仓盈亏", "cell": BaseCell, "update": False},
-        "total_pnl": {"display": "总盈亏", "cell": BaseCell, "update": False},
-        "net_pnl": {"display": "净盈亏", "cell": BaseCell, "update": False},
+        "turnover": {"display": "成交额", "cell": FloatCell, "update": False},
+        "commission": {"display": "手续费", "cell": FloatCell, "update": False},
+        "slippage": {"display": "滑点", "cell": FloatCell, "update": False},
+        "trading_pnl": {"display": "交易盈亏", "cell": FloatCell, "update": False},
+        "holding_pnl": {"display": "持仓盈亏", "cell": FloatCell, "update": False},
+        "total_pnl": {"display": "总盈亏", "cell": FloatCell, "update": False},
+        "net_pnl": {"display": "净盈亏", "cell": FloatCell, "update": False},
     }
 
 
