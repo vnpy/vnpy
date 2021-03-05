@@ -57,7 +57,7 @@ main_engine.add_app(DataManagerApp)
   - DAILY（日K线）
   - WEEKLY（周K线）
   - TICK（一个tick）
-- 开始和结束日期
+- 开始日期
   - 格式为yy/mm/dd
   - 如2018/2/25
   
@@ -90,7 +90,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/16.png)
 
 - 选择文件
-  - 点击顶部的【选择文件】按钮，会弹出窗口，以供选择要加载的CSV文件路径，如下图所示：
+  - 点击顶部的【选择文件】按钮，在弹出窗口中选择要加载的CSV文件路径，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/5.png)
 
@@ -110,7 +110,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/4.png)
 
-点击【确定】按钮，开始从CSV文件导入数据到数据库中。导入过程中界面会处于半卡住的情况，对于越大的CSV文件（数据量越多），卡住的时间也会越长。成功载入之后，会弹出窗口显示载入成功，如下图所示：
+点击【确定】按钮，开始从CSV文件导入数据到数据库中。导入过程中界面会处于半卡住的情况，CSV文件越大（数据量越多），卡住的时间也会越长。成功载入之后，会弹出窗口显示载入成功，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/6.png)
 
@@ -139,7 +139,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 在数据库已有数据的前提下，点击界面左侧【数据】下的数据频率前的小箭头，则可展开或收起该数据频率下的合约数据显示。
 
-若界面左侧的信息看不完整，可拖动界面底端的横向滚动条进行调整。
+若界面左侧的信息显示不完整，可拖动界面底端的横向滚动条进行调整。
 
 
 ## 导出数据
@@ -148,7 +148,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/8.png)
 
-选好要导出的数据区间范围点击【确定】后，会再次弹出对话框选择输出文件的位置，如下图所示：
+选择要导出的数据区间范围，点击【确定】后，会再次弹出对话框选择输出文件的位置，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/9.png)
 
