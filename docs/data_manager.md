@@ -29,7 +29,7 @@ main_engine.add_app(DataManagerApp)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/00.png)
 
-即可进入该图形化历史数据管理界面，如下图所示：
+即可进入该图形化的历史数据管理界面，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/1.png)
 
