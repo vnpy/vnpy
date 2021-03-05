@@ -56,7 +56,7 @@ main_engine.add_app(DataManagerApp)
   - HOUR（1小时K线）
   - DAILY（日K线）
   - WEEKLY（周K线）
-  - TICK（一个tick）
+  - TICK（一个Tick）
 - 开始和结束日期
   - 格式为yy/mm/dd
   - 如2018/2/25
