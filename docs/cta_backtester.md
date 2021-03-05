@@ -60,7 +60,7 @@ C:\Users\Administrator\strategies
   - 1h（1小时K线）
   - d（日K线）
   - w（周K线）
-  - tick（一个tick）
+  - tick（一个Tick）
 - 开始和结束日期
   - 格式为yyyy/mm/dd
   - 如2018/2/25、2021/2/28
