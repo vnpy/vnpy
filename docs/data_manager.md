@@ -55,7 +55,7 @@ DataManager模块提供了一键下载历史数据的功能，点击右上角【
   - DAILY（日K线）
   - WEEKLY（周K线）
   - TICK（一个tick）
-- 开始和结束日期
+- 开始日期
   - 格式为yy/mm/dd
   - 如2018/2/25
   
@@ -109,7 +109,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/4.png)
 
-点击【确定】按钮，开始从CSV文件导入数据到数据库中。导入过程中界面会处于半卡住的情况，对于越大的CSV文件（数据量越多），卡住的时间也会越长。成功载入之后，会弹出窗口显示载入成功，如下图所示：
+点击【确定】按钮，开始从CSV文件导入数据到数据库中。导入过程中界面会处于半卡住的情况，CSV文件越大（数据量越多），卡住的时间也会越长。成功载入之后，会弹出窗口显示载入成功，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/6.png)
 
@@ -147,7 +147,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/8.png)
 
-选好要导出的数据区间范围点击【确定】后，会再次弹出对话框选择输出文件的位置，如下图所示：
+选择要导出的数据区间范围，点击【确定】后，会再次弹出对话框选择输出文件的位置，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/9.png)
 
