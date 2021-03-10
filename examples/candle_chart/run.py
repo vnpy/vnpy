@@ -1,9 +1,10 @@
 from datetime import datetime
 
 from vnpy.trader.ui import create_qapp, QtCore
-from vnpy.trader.database import database_manager
 from vnpy.trader.constant import Exchange, Interval
+from vnpy.trader.database import database_manager
 from vnpy.chart import ChartWidget, VolumeItem, CandleItem
+
 
 if __name__ == "__main__":
     app = create_qapp()
