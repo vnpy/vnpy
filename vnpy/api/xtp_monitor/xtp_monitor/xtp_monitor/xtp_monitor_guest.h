@@ -71,7 +71,7 @@ public:
 	///@param port 服务器端口号
 	///@param user 登录用户名
 	///@param strategy_is_start 当前策略是否在运行状态，是的话为true，否则为false
-	MONITOR_GUEST_API_EXPORT int32_t ConnectToMonitor(const char* ip, int port, const char* user, bool strategy_is_start);
+	MONITOR_GUEST_API_EXPORT int ConnectToMonitor(const char* ip, int port, const char* user, bool strategy_is_start);
 
 	///将监控日志发往监控客户端
 	///@return 发送请求是否成功，“0”表示请求成功，非“0”表示请求失败，此时用户可以调用GetApiLastError()来获取错误信息
@@ -79,7 +79,7 @@ public:
 	///@param topic 日志主题，由用户自定义
 	///@param log_text 日志具体信息，由用户自定义
 	///@param alarm_wav_index 音效索引值，例如“1”，监控客户端会播放“1.wav”音效，用户可以在监控客户端自定义音效，默认-1表示不播放音效
-	MONITOR_GUEST_API_EXPORT int32_t SendMsg(int level, const char* topic, const char* log_text, int alarm_wav_index = -1);
+	MONITOR_GUEST_API_EXPORT int SendMsg(int level, const char* topic, const char* log_text, int alarm_wav_index = -1);
 
 	///获取API的系统错误
 	///@param error_info 具体的错误信息，包括错误代码和错误原因
