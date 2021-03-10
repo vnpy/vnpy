@@ -27,10 +27,10 @@
     <ClInclude Include="xtp_monitor_guest.h">
       <Filter>头文件\xtp_monitor_guest</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\xtp\xtp_monitor_api_struct_common.h">
+    <ClInclude Include="..\..\include\xtp\xtp_monitor_api_struct_common.h">
       <Filter>头文件\xtp_monitor_guest</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\xtp\xtp_monitor_guest_api.h">
+    <ClInclude Include="..\..\include\xtp\xtp_monitor_guest_api.h">
       <Filter>头文件\xtp_monitor_guest</Filter>
     </ClInclude>
   </ItemGroup>

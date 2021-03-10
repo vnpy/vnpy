@@ -117,7 +117,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\vnstudio\libs;C:\Users\monicat\Documents\GitHub\vnpy_\vnpy\api\xtp_monitor\include\xtp;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\vnstudio\libs;C:\Users\monicat\Documents\GitHub\vnpy_\vnpy\api\xtp_monitor\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -163,8 +163,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\xtp\xtp_monitor_api_struct_common.h" />
-    <ClInclude Include="..\include\xtp\xtp_monitor_guest_api.h" />
+    <ClInclude Include="..\..\include\xtp\xtp_monitor_api_struct_common.h" />
+    <ClInclude Include="..\..\include\xtp\xtp_monitor_guest_api.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="xtp_monitor_guest.h" />
