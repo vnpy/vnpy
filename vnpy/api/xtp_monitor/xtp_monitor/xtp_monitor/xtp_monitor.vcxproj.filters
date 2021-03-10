@@ -41,5 +41,8 @@
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="xtp_monitor_guest.cpp">
+      <Filter>头文件\xtp_monitor_guest</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
