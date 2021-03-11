@@ -26,22 +26,22 @@ main_engine.add_app(MarketRadarApp)
 
 在启动模块之前，请先连接登录交易接口（连接方法详见基本使用篇的连接接口部分）。看到VN Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：  
 
-![](figure/1.png) 
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/1.png) 
 
 成功连接交易接口后，在菜单栏中点击【功能】-> 【市场雷达】，或者点击左侧按钮栏的图标：
 
-![](figure/2.png) 
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/2.png) 
 
 即可进入MarketRadar的UI界面，如下图所示：
 
-![](figure/3.png) 
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/3.png) 
 
 ## 管理雷达规则
 
 ### 添加雷达规则
 在图形界面左下角的编辑区中，可以快速创建要扫描计算的雷达规则（RadarRule），如下图所示：
 
-![](figure/4.png) 
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/4.png) 
 
 其中，各字段的对应含义如下：  
 - 名称
@@ -58,11 +58,11 @@ main_engine.add_app(MarketRadarApp)
 
 填写完毕后，点击【添加】按钮即可完成新规则的添加，MarketRadar会自动订阅相关合约行情并开始自动扫描计算，如下图所示。
 
-![](figure/5.png) 
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/5.png) 
 
 除了跨期价差这种减法求差的规则外，MarketRadar也支持金银比等跨品种价差的计算规则，如下图所示：
 
-![](figure/6.png) 
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/6.png) 
 
 ### 修改雷达规则
 
@@ -78,11 +78,11 @@ main_engine.add_app(MarketRadarApp)
 
 请注意，CSV文件的格式应如下图所示，和编辑区的各字段完全一致：
 
-![](figure/7.png) 
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/7.png) 
 
 结合Excel的表格快速编辑功能，批量添加规则较为方便。添加成功后如下图所示：
 
-![](figure/8.png) 
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/8.png) 
 
 请注意，运行MarketRadar，需确保vn.py版本 ≥ 2.1.7。在目前的版本中，MarketRadar只支持雷达规则计算结果的数字显示，后续版本会进一步加入图表显示、条件提醒、策略信号订阅等功能。
 
