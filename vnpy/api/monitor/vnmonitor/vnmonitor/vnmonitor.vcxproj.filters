@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="头文件\xtp_monitor_guest">
-      <UniqueIdentifier>{6c7c18a7-c8c8-4caa-b985-71879acd4e4c}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -24,14 +21,14 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="xtp_monitor_guest.h">
-      <Filter>头文件\xtp_monitor_guest</Filter>
+    <ClInclude Include="vnmonitor.h">
+      <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\xtp\xtp_monitor_api_struct_common.h">
-      <Filter>头文件\xtp_monitor_guest</Filter>
+    <ClInclude Include="..\..\include\monitor\xtp_monitor_api_struct_common.h">
+      <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\xtp\xtp_monitor_guest_api.h">
-      <Filter>头文件\xtp_monitor_guest</Filter>
+    <ClInclude Include="..\..\include\monitor\xtp_monitor_guest_api.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -41,8 +38,8 @@
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="xtp_monitor_guest.cpp">
-      <Filter>头文件\xtp_monitor_guest</Filter>
+    <ClCompile Include="vnmonitor.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
