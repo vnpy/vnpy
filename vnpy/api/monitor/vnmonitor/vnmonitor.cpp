@@ -4,42 +4,55 @@
 #include "vnmonitor.h"
 
 
+MonitorApi::MonitorApi()
+{
+	if (!api)
+	{
+		api = this;
+	}
+
+	RegisterMonitorClientLoginFunc(&OnClientLogin);
+	RegisterStartFunc(&OnStart);
+	RegisterStopFunc(&OnStop);
+	RegisterDisconnectedFunc(&OnDisconnected);
+	RegisterSetParameterFunc(&OnMonitorClientSetParameter);
+}
 
 ///-------------------------------------------------------------------------------------
 ///C++的回调函数
 ///-------------------------------------------------------------------------------------
 
-int32_t MonitorApi::OnClientLogin(const char* username, const char* password, const char* mac_add, const char* ip)
+int32_t OnClientLogin(const char* username, const char* password, const char* mac_add, const char* ip)
 {   
 	gil_scoped_acquire acquire;
-	int i = this->onClientLogin(username, password, mac_add, ip);
+	int i = api->onClientLogin(username, password, mac_add, ip);
 	return i;
 };
 
-int32_t MonitorApi::OnStart()
+int32_t OnStart()
 {   
 	gil_scoped_acquire acquire;
-	int i = this->onStart();
+	int i = api->onStart();
 	return i;
 };
 
-int32_t MonitorApi::OnStop()
+int32_t OnStop()
 {   
 	gil_scoped_acquire acquire;
-	int i = this->onStop();
+	int i = api->onStop();
 	return i;
 };
 
-void MonitorApi::OnDisconnected()
+void OnDisconnected()
 {   
 	gil_scoped_acquire acquire;
-	this->onDisconnected();
+	api->onDisconnected();
 };
 
-int32_t MonitorApi::OnMonitorClientSetParameter(const char* key, const char* value)
+int32_t OnMonitorClientSetParameter(const char* key, const char* value)
 {   
 	gil_scoped_acquire acquire;
-	int i = this->onMonitorClientSetParameter(key, value);
+	int i = api->onMonitorClientSetParameter(key, value);
 	return i;
 };
 
@@ -57,6 +70,7 @@ int MonitorApi::connectToMonitor(string ip, int port, string user, bool strategy
 int MonitorApi::sendMsg(int level, string topic, string log_text, int alarm_wav_index)
 {
 	int i = SendMsg(level, topic.c_str(), log_text.c_str(), alarm_wav_index);
+	return i;
 };
 
 dict MonitorApi::getApiLastError()
@@ -89,6 +103,7 @@ public:
 		catch (const error_already_set &e)
 		{
 			cout << e.what() << endl;
+			return -1;
 		}
 	};
 
@@ -97,10 +112,12 @@ public:
 		try
 		{
 			PYBIND11_OVERLOAD(int, MonitorApi, onStart);
+			return 0;
 		}
 		catch (const error_already_set &e)
 		{
 			cout << e.what() << endl;
+			return -1;
 		}
 	};
 
@@ -109,10 +126,12 @@ public:
 		try
 		{
 			PYBIND11_OVERLOAD(int, MonitorApi, onStop);
+			return 0;
 		}
 		catch (const error_already_set &e)
 		{
 			cout << e.what() << endl;
+			return -1;
 		}
 	};
 
@@ -137,12 +156,9 @@ public:
 		catch (const error_already_set &e)
 		{
 			cout << e.what() << endl;
+			return -1;
 		}
 	};
-
-
-
-
 };
 
 

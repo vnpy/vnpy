@@ -76,6 +76,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir).\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -85,6 +86,7 @@
     <TargetExt>.pyd</TargetExt>
     <IncludePath>C:\Users\monicat\Documents\GitHub\vnpy_\vnpy\api\monitor\include\monitor;C:\vnstudio\include;C:\Users\monicat\Documents\GitHub\vnpy_\vnpy\api\monitor\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Users\monicat\Documents\GitHub\vnpy_\vnpy\api\monitor\libs;C:\vnstudio\libs;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir).\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -159,6 +161,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>C:\Users\monicat\Documents\GitHub\vnpy_\vnpy\api\monitor\libs;C:\vnstudio\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>xtpmonitorguestapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
