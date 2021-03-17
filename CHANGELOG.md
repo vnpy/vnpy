@@ -5,6 +5,7 @@
 2. 修复CoinbaseGateway的行情订单簿在更新时，已经撤单的档位不删除的问题
 3. 修复BybitGateway对于USDT本位永续合约，浮点数委托量会被转换为0的问题
 4. 修改BinanceGateway/BinancesGateway的ConnectionResetError问题，通过关闭HTTP连接的keep-alive功能实现
+5. 
 
 ## 调整
 1. 修改vnpy.chart下ChartItem为按需绘制，大幅缩短图表第一次显示出来的耗时

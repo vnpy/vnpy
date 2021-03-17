@@ -797,7 +797,7 @@ class IbApi(EWrapper):
             bar_size,
             bar_type,
             1,
-            1,
+            0,
             False,
             []
         )
