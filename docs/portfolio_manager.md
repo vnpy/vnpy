@@ -31,13 +31,13 @@ main_engine.add_app(PortfolioManagerApp)
 
 即可进入MarketRadar模块的UI界面，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_manager/2.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_manager/6.png)
 
 ## 交易组合信息表
 
 界面整体可以分为左右两部分，左边显示的是当前已有交易组合的信息表，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_manager/3.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_manager/7.png)
 
 
 交易组合信息表每列的含义如下：
@@ -92,7 +92,7 @@ main_engine.add_app(PortfolioManagerApp)
 
 界面右侧部分显示的是所有成交记录，点击右上角的下拉框可以根据投资组合进行筛选，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_manager/4.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_manager/8.png)
 
 
 ## 刷新频率
