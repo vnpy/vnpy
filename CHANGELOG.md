@@ -4,11 +4,12 @@
 1. 修复DataManager查询数据库中K线数据范围时，开始和结束日期相反的问题
 2. 修复CoinbaseGateway的行情订单簿在更新时，已经撤单的档位不删除的问题
 3. 修复BybitGateway对于USDT本位永续合约，浮点数委托量会被转换为0的问题
-4. 修改BinanceGateway/BinancesGateway的ConnectionResetError问题，通过关闭HTTP连接的keep-alive功能实现
-5. 
+4. 修复BinanceGateway/BinancesGateway的ConnectionResetError问题，通过关闭HTTP连接的keep-alive功能实现
+5. 修复HuobisGateway在USDT本位模式下时，浮点数合约乘数转换出错的问题
 
 ## 调整
 1. 修改vnpy.chart下ChartItem为按需绘制，大幅缩短图表第一次显示出来的耗时
+2. 修改IbGateway的历史数据查询功能，包括所有可用时间（即欧美晚上的电子交易时段）
 
 
 
