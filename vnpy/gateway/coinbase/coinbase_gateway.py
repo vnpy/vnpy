@@ -487,7 +487,7 @@ class OrderBook():
 
         asks_keys = self.asks.keys()
         asks_keys = sorted(asks_keys)
-        
+
         for i in range(min(5, len(asks_keys))):
             price = float(asks_keys[i])
             volume = float(self.asks[asks_keys[i]])

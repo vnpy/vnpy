@@ -4956,4 +4956,3 @@ CThostFtdcSyncDelaySwapFrozenField = {
     "FromRemainSwap": "double",
     "IsManualSwap": "int",
 }
-

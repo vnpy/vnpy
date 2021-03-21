@@ -329,7 +329,6 @@ class RohonMdApi(MdApi):
             self.createFtdcMdApi(str(path) + "\\Md")
 
             self.registerFront(address)
-            print("MD address",address)
             self.init()
 
             self.connect_status = True
@@ -684,7 +683,7 @@ class RohonTdApi(TdApi):
             self.subscribePublicTopic(0)
 
             self.registerFront(address)
-            
+
             self.init()
 
             self.connect_status = True
