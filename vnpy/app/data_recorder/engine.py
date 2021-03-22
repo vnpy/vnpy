@@ -116,7 +116,7 @@ class RecorderEngine(BaseEngine):
 
             self.subscribe(contract)
         else:
-            self.tick_recordings[vt_symbol] = {}
+            self.bar_recordings[vt_symbol] = {}
 
         self.save_setting()
         self.put_event()
