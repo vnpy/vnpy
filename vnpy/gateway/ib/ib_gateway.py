@@ -337,10 +337,10 @@ class IbApi(EWrapper):
         if contract:
             tick.name = contract.name
 
-        # Forex and spot product of IDEALPRO has no tick time and last price.
+        # Forex of IDEALPRO and Spot Commodity has no tick time and last price.
         # We need to calculate locally.
         exchange = self.tick_exchange[reqId]
-        if exchange is Exchange.IDEALPRO:
+        if exchange is Exchange.IDEALPRO or "CMDTY" in tick.symbol:
             tick.last_price = (tick.bid_price_1 + tick.ask_price_1) / 2
             tick.datetime = datetime.now(self.local_tz)
         self.gateway.on_tick(copy(tick))
