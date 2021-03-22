@@ -1,5 +1,6 @@
 six==1.13.0
 wheel
+tzlocal
 PyQt5==5.14.1
 pyqtgraph==0.10.0
 dataclasses; python_version<="3.6"
