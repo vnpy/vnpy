@@ -9,6 +9,8 @@
 6. 修复PostgreSQL数据库对接层中，save_tick_data函数由于访问interval导致保存出错的问题
 7. 修复DataRecorder模块中add_bar_recording下保存录制用合约配置错误的问题
 8. 修复PostgreSQL数据库对接层中，由于事务执行失败导致的后续报错问题，创建数据库对象时设置自动回滚模式（autorollback=True）
+9. 修复DataManager自动更新数据时，查询数据范围由于调用老版本函数导致的错误
+10. 修复RQData下载获取的历史数据浮点数精度问题
 
 ## 调整
 1. 修改vnpy.chart下ChartItem为按需绘制，大幅缩短图表第一次显示出来的耗时
