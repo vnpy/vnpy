@@ -986,7 +986,8 @@ class BacktestingEngine:
         price: float,
         volume: float,
         stop: bool,
-        lock: bool
+        lock: bool,
+        net: bool
     ):
         """"""
         price = round_to(price, self.pricetick)
