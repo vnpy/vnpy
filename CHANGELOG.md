@@ -6,6 +6,9 @@
 3. 修复BybitGateway对于USDT本位永续合约，浮点数委托量会被转换为0的问题
 4. 修复BinanceGateway/BinancesGateway的ConnectionResetError问题，通过关闭HTTP连接的keep-alive功能实现
 5. 修复HuobisGateway在USDT本位模式下时，浮点数合约乘数转换出错的问题
+6. 修复PostgreSQL数据库对接层中，save_tick_data函数由于访问interval导致保存出错的问题
+7. 修复DataRecorder模块中add_bar_recording下保存录制用合约配置错误的问题
+8. 修复PostgreSQL数据库对接层中，由于事务执行失败导致的后续报错问题，创建数据库对象时设置自动回滚模式（autorollback=True）
 
 ## 调整
 1. 修改vnpy.chart下ChartItem为按需绘制，大幅缩短图表第一次显示出来的耗时
