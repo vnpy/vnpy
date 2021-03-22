@@ -400,9 +400,9 @@ class BarGenerator:
                     bar.low_price
                 )
 
-                self.window_bar.close_price = bar.close_price
-                self.window_bar.volume += int(bar.volume)
-                self.window_bar.open_interest = bar.open_interest
+            self.window_bar.close_price = bar.close_price
+            self.window_bar.volume += int(bar.volume)
+            self.window_bar.open_interest = bar.open_interest
 
             self.interval_count += 1
             if not self.interval_count % self.window:
