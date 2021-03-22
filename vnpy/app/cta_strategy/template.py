@@ -159,7 +159,15 @@ class CtaTemplate(ABC):
         """
         Send buy order to open a long position.
         """
-        return self.send_order(Direction.LONG, Offset.OPEN, price, volume, stop, lock, net)
+        return self.send_order(
+            Direction.LONG,
+            Offset.OPEN,
+            price,
+            volume,
+            stop,
+            lock,
+            net
+        )
 
     def sell(
         self,
@@ -172,7 +180,15 @@ class CtaTemplate(ABC):
         """
         Send sell order to close a long position.
         """
-        return self.send_order(Direction.SHORT, Offset.CLOSE, price, volume, stop, lock, net)
+        return self.send_order(
+            Direction.SHORT,
+            Offset.CLOSE,
+            price,
+            volume,
+            stop,
+            lock,
+            net
+        )
 
     def short(
         self,
@@ -185,7 +201,15 @@ class CtaTemplate(ABC):
         """
         Send short order to open as short position.
         """
-        return self.send_order(Direction.SHORT, Offset.OPEN, price, volume, stop, lock, net)
+        return self.send_order(
+            Direction.SHORT,
+            Offset.OPEN,
+            price,
+            volume,
+            stop,
+            lock,
+            net
+        )
 
     def cover(
         self,
@@ -198,7 +222,15 @@ class CtaTemplate(ABC):
         """
         Send cover order to close a short position.
         """
-        return self.send_order(Direction.LONG, Offset.CLOSE, price, volume, stop, lock, net)
+        return self.send_order(
+            Direction.LONG,
+            Offset.CLOSE,
+            price,
+            volume,
+            stop,
+            lock,
+            net
+        )
 
     def send_order(
         self,
