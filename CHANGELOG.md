@@ -26,9 +26,10 @@
 1. 新增IbGateway连接断开后的自动重连功能（每10秒检查）
 2. 新增双边报价业务相关的底层数据结构和功能函数
 3. 新增开平转换器OffsetConverter的净仓交易模式
-4. 新增CtaStrategy策略模板的委托时的净仓交易可选参数
-5. 新增CtaStrategy回测引擎中的全年交易日可选参数
-6. 新增ChartWizard对于价差行情图表的显示支持
+4. 新增CtaStrategy模块策略模板的委托时的净仓交易可选参数
+5. 新增CtaStrategy模块回测引擎中的全年交易日可选参数
+6. 新增ChartWizard模块对于价差行情图表的显示支持
+7. 新增MarketRadar模块的雷达信号条件提醒功能
 
 # 2.1.9.1版本
 
