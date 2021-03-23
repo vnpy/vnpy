@@ -4,10 +4,10 @@ from csv import DictReader
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import MainEngine
-from vnpy.trader.ui import QtCore, QtWidgets
+from vnpy.trader.ui import QtCore, QtWidgets, QtGui
 
-from ..engine import (APP_NAME, EVENT_RADAR_LOG, EVENT_RADAR_RULE,
-                      EVENT_RADAR_UPDATE, RadarEngine)
+from ..engine import (APP_NAME, EVENT_RADAR_LOG, EVENT_RADAR_RULE, EVENT_RADAR_SIGNAL,
+                      EVENT_RADAR_UPDATE, RadarEngine, RadarSignal, SignalType)
 
 
 class RadarManager(QtWidgets.QWidget):
@@ -34,10 +34,10 @@ class RadarManager(QtWidgets.QWidget):
         self.setWindowTitle("市场雷达")
 
         self.radar_monitor = RadarMonitor(self.radar_engine)
+        self.signal_monitor = SignalMonitor(self.radar_engine)
 
         self.log_monitor = QtWidgets.QTextEdit()
         self.log_monitor.setReadOnly(True)
-        self.log_monitor.setMaximumHeight(300)
 
         self.name_line = QtWidgets.QLineEdit()
         self.formula_line = QtWidgets.QLineEdit()
@@ -71,15 +71,12 @@ class RadarManager(QtWidgets.QWidget):
         form.addRow("小数", self.ndigits_spin)
         form.addRow(add_button)
         form.addRow(edit_button)
-
-        vbox = QtWidgets.QVBoxLayout()
-        vbox.addWidget(self.log_monitor)
-        vbox.addWidget(load_button)
+        form.addRow(load_button)
 
         hbox = QtWidgets.QHBoxLayout()
         hbox.addLayout(form)
-        hbox.addStretch()
-        hbox.addLayout(vbox)
+        hbox.addWidget(self.signal_monitor)
+        hbox.addWidget(self.log_monitor)
 
         vbox2 = QtWidgets.QVBoxLayout()
         vbox2.addWidget(self.radar_monitor)
@@ -243,7 +240,11 @@ class RadarMonitor(QtWidgets.QTableWidget):
         ndigits = rule_data["ndigits"]
 
         if name not in self.cells:
-            name_cell = RadarCell(name)
+            name_button = QtWidgets.QPushButton(name)
+            name_func = partial(self.add_signal, name)
+            name_button.clicked.connect(name_func)
+            name_button.setToolTip("添加雷达信号")
+
             value_cell = RadarCell()
             time_cell = RadarCell()
             formula_cell = RadarCell(formula)
@@ -259,7 +260,7 @@ class RadarMonitor(QtWidgets.QTableWidget):
             remove_button.clicked.connect(remove_func)
 
             self.insertRow(0)
-            self.setItem(0, 0, name_cell)
+            self.setCellWidget(0, 0, name_button)
             self.setItem(0, 1, value_cell)
             self.setItem(0, 2, time_cell)
             self.setItem(0, 3, formula_cell)
@@ -272,7 +273,7 @@ class RadarMonitor(QtWidgets.QTableWidget):
             self.setCellWidget(0, 10, remove_button)
 
             self.cells[name] = {
-                "name": name_cell,
+                "name": name_button,
                 "value": value_cell,
                 "time": time_cell,
                 "formula": formula_cell,
@@ -314,3 +315,150 @@ class RadarMonitor(QtWidgets.QTableWidget):
 
         self.radar_engine.remove_rule(name)
         self.radar_engine.save_setting()
+
+    def add_signal(self, name: str) -> None:
+        """"""
+        dialog = SignalDialog(name, self.radar_engine)
+        dialog.exec()
+
+
+class SignalMonitor(QtWidgets.QTableWidget):
+    """"""
+
+    signal = QtCore.pyqtSignal(Event)
+
+    def __init__(self, radar_engine: RadarEngine):
+        """"""
+        super().__init__()
+
+        self.radar_engine: RadarEngine = radar_engine
+        self.event_engine: EventEngine = radar_engine.event_engine
+
+        self.cells: Dict[str, Dict[str, RadarCell]] = {}
+
+        self.init_ui()
+        self.register_event()
+
+    def init_ui(self) -> None:
+        """"""
+        headers = [
+            "信号编号",
+            "规则名称",
+            "信号类型",
+            "目标数值",
+            "声音通知",
+            "邮件通知",
+            " "
+        ]
+
+        self.setColumnCount(len(headers))
+        self.setHorizontalHeaderLabels(headers)
+        self.verticalHeader().setVisible(False)
+        self.setEditTriggers(self.NoEditTriggers)
+        self.setAlternatingRowColors(True)
+
+        h_header = self.horizontalHeader()
+        h_header.setSectionResizeMode(h_header.Stretch)
+
+    def register_event(self) -> None:
+        """"""
+        self.signal.connect(self.process_event)
+        self.event_engine.register(EVENT_RADAR_SIGNAL, self.signal.emit)
+
+    def process_event(self, event: Event) -> None:
+        """"""
+        signal: RadarSignal = event.data
+
+        if signal.signal_id not in self.cells:
+            id_cell = RadarCell(str(signal.signal_id))
+            name_cell = RadarCell(signal.rule_name)
+            type_cell = RadarCell(signal.signal_type.value)
+            target_cell = RadarCell(str(signal.signal_target))
+            sound_cell = RadarCell(str(signal.signal_sound))
+            email_cell = RadarCell(str(signal.signal_email))
+
+            remove_func = partial(self.remove_signal, signal.signal_id)
+            remove_button = QtWidgets.QPushButton("删除")
+            remove_button.clicked.connect(remove_func)
+
+            self.insertRow(0)
+            self.setItem(0, 0, id_cell)
+            self.setItem(0, 1, name_cell)
+            self.setItem(0, 2, type_cell)
+            self.setItem(0, 3, target_cell)
+            self.setItem(0, 4, sound_cell)
+            self.setItem(0, 5, email_cell)
+            self.setCellWidget(0, 6, remove_button)
+
+            self.cells[signal.signal_id] = id_cell
+        else:
+            id_cell = self.cells[signal.signal_id]
+            if not signal.active:
+                row = self.row(id_cell)
+                self.hideRow(row)
+
+    def remove_signal(self, signal_id: int) -> None:
+        """"""
+        self.radar_engine.remove_signal(signal_id)
+
+
+class SignalDialog(QtWidgets.QDialog):
+
+    def __init__(self, rule_name: str, radar_engine: RadarEngine) -> None:
+        super().__init__()
+
+        self.rule_name = rule_name
+        self.radar_engine = radar_engine
+
+        self.init_ui()
+
+    def init_ui(self) -> None:
+        """"""
+        self.setMinimumWidth(300)
+        self.setWindowTitle(f"添加【{self.rule_name}】雷达信号")
+
+        self.type_combo = QtWidgets.QComboBox()
+        self.type_combo.addItems([
+            SignalType.GREATER_THAN.value,
+            SignalType.LESS_THAN.value,
+            SignalType.EQUAL_TO.value,
+        ])
+
+        self.target_line = QtWidgets.QLineEdit()
+        self.target_line.setValidator(QtGui.QDoubleValidator())
+
+        self.sound_check = QtWidgets.QCheckBox()
+        self.email_check = QtWidgets.QCheckBox()
+
+        button = QtWidgets.QPushButton("添加")
+        button.clicked.connect(self.add_signal)
+
+        form = QtWidgets.QFormLayout()
+        form.addRow("信号类型", self.type_combo)
+        form.addRow("目标数值", self.target_line)
+        form.addRow("声音通知", self.sound_check)
+        form.addRow("邮件通知", self.email_check)
+        form.addRow(button)
+
+        self.setLayout(form)
+
+    def add_signal(self) -> None:
+        """"""
+        signal_type = SignalType(self.type_combo.currentText())
+
+        target_text = self.target_line.text()
+        if not target_text:
+            return
+        signal_target = float(target_text)
+
+        signal_sound = self.sound_check.isChecked()
+        signal_email = self.email_check.isChecked()
+
+        self.radar_engine.add_signal(
+            self.rule_name,
+            signal_type,
+            signal_target,
+            signal_sound,
+            signal_email
+        )
+        self.accept()
