@@ -3,7 +3,8 @@
 
 ## 功能简介
 
-PortfolioManager是用于**投资组合盈亏统计和分析**的功能模块，用户可以通过图形界面对交易策略进行实时的业绩跟踪和分析。  
+PortfolioManager是用于**投资组合盈亏统计和分析**的功能模块，用户可以在盘中通过其UI界面对交易策略进行实时的业绩跟踪和盈亏分析。  
+
 
 ## 加载启动
 
@@ -23,15 +24,10 @@ from vnpy.app.portfolio_manager import PortfolioManagerApp
 main_engine.add_app(PortfolioManagerApp)
 ```
 
+
 ## 启动模块
 
-在启动模块之前，请先连接交易接口（连接方法详见基本使用篇的连接接口部分）。看到VN Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/1.png)
-
-请注意，IB接口因为登录时无法自动获取所有的合约信息，只有在用户手动订阅行情时才能获取。因此需要在主界面上先行手动订阅合约行情，再启动模块。
-
-成功连接交易接口后，在菜单栏中点击【功能】-> 【投资组合】，或者点击左侧按钮栏的图标：
+在菜单栏中点击【功能】-> 【投资组合】，或者点击左侧按钮栏的图标：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_manager/1.jpg)
 
@@ -39,14 +35,15 @@ main_engine.add_app(PortfolioManagerApp)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_manager/6.png)
 
-## 交易组合信息表
 
-界面整体可以分为左右两部分，左边显示的是当前已有交易组合的信息表，如下图所示：
+## 组合信息表
+
+界面整体可以分为左右两部分，左边显示的是当前已有投资组合的信息表，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_manager/7.png)
 
 
-交易组合信息表每列的含义如下：
+组合信息表每列的含义如下：
 
  - 组合名称：委托来源标识（reference），所有从vn.py发出的委托请求都可以直接通过该标识来区分其交易来源，如手动交易、算法执行、量化策略等，每个交易来源可以视作一个独立的投资组合。
 
@@ -80,7 +77,6 @@ main_engine.add_app(PortfolioManagerApp)
 
  - 空头成交：投资组合内该合约今日卖开和卖平成交数量
 
-
 其中，交易盈亏（TradingPnl）和持仓盈亏（HoldingPnl）的计算方式采用的是期货交易所每日结算时所用的逐日盯市（Marking to Market）算法，计算过程如下所示：
 
  - 交易盈亏 = 持仓量 * （当日收盘价-昨日收盘价）* 合约规模  
@@ -91,11 +87,11 @@ main_engine.add_app(PortfolioManagerApp)
 
  - 净盈亏 = 总盈亏 - 总手续费 - 总滑点  
 
-用户可以通过展开和折叠交易组合，调整列宽来查看信息：
+用户可以通过展开和折叠投资组合，调整列宽来查看信息：
 
- - 点击每个交易组合左侧的箭头可以展开和折叠各交易组合的信息；
+ - 点击每个投资组合左侧的箭头可以展开和折叠各投资组合的信息；
 
- - 点击顶部的【全部展开】和【全部折叠】按钮对所有交易组合进行批量操作；
+ - 点击顶部的【全部展开】和【全部折叠】按钮对所有投资组合进行批量操作；
 
  - 点击【调整列宽】按钮可以自动调整表格每列的宽度。
 
@@ -117,4 +113,10 @@ main_engine.add_app(PortfolioManagerApp)
 
 在隔日加载时，程序会自动将昨天的总仓位结算到今天的昨仓数据字段中，该逻辑对于24小时交易的市场（外盘期货、数字货币）不一定合适，后续考虑加入每日定时结算或者手动结算功能。
 
-如果发现有仓位记录错误，或者策略已经移除的情况，可以手动修改缓存文件，再重新启动VN Trader即可。缓存文件路径位于C:\users\administrator\.vntrader\portfolio_manager_data.json。
+如果发现有仓位记录错误，或者策略已经移除的情况，可以手动修改缓存文件，再重新启动VN Trader即可。
+
+Windows系统上缓存文件的默认路径位于：
+
+    C:\Users\Administrator\\.vntrader\portfolio_manager_data.json
+
+其中Administrator是当前Windows系统的用户名。
