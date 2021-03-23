@@ -4,6 +4,7 @@ import sys
 from threading import Thread
 from queue import Queue, Empty
 from copy import copy
+from collections import defaultdict
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
@@ -14,7 +15,7 @@ from vnpy.trader.object import (
     BarData,
     ContractData
 )
-from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT
+from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT, EVENT_TIMER
 from vnpy.trader.utility import load_json, save_json, BarGenerator
 from vnpy.trader.database import database_manager
 from vnpy.app.spread_trading.base import EVENT_SPREAD_DATA, SpreadData
@@ -43,6 +44,12 @@ class RecorderEngine(BaseEngine):
         self.bar_recordings = {}
         self.bar_generators = {}
 
+        self.timer_count = 0
+        self.timer_interval = 10
+
+        self.ticks = defaultdict(list)
+        self.bars = defaultdict(list)
+
         self.load_setting()
         self.register_event()
         self.start()
@@ -70,9 +77,9 @@ class RecorderEngine(BaseEngine):
                 task_type, data = task
 
                 if task_type == "tick":
-                    database_manager.save_tick_data([data])
+                    database_manager.save_tick_data(data)
                 elif task_type == "bar":
-                    database_manager.save_bar_data([data])
+                    database_manager.save_bar_data(data)
 
             except Empty:
                 continue
@@ -178,6 +185,7 @@ class RecorderEngine(BaseEngine):
 
     def register_event(self):
         """"""
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
         self.event_engine.register(EVENT_SPREAD_DATA, self.process_spread_event)
@@ -185,11 +193,26 @@ class RecorderEngine(BaseEngine):
     def update_tick(self, tick: TickData):
         """"""
         if tick.vt_symbol in self.tick_recordings:
-            self.record_tick(tick)
+            self.record_tick(copy(tick))
 
         if tick.vt_symbol in self.bar_recordings:
             bg = self.get_bar_generator(tick.vt_symbol)
-            bg.update_tick(tick)
+            bg.update_tick(copy(tick))
+
+    def process_timer_event(self, event: Event):
+        """"""
+        self.timer_count += 1
+        if self.timer_count < self.timer_interval:
+            return
+        self.timer_count = 0
+
+        for bars in self.bars.values():
+            self.queue.put(("bar", bars))
+        self.bars.clear()
+
+        for ticks in self.ticks.values():
+            self.queue.put(("tick", ticks))
+        self.ticks.clear()
 
     def process_tick_event(self, event: Event):
         """"""
@@ -242,13 +265,11 @@ class RecorderEngine(BaseEngine):
 
     def record_tick(self, tick: TickData):
         """"""
-        task = ("tick", copy(tick))
-        self.queue.put(task)
+        self.ticks[tick.vt_symbol].append(tick)
 
     def record_bar(self, bar: BarData):
         """"""
-        task = ("bar", copy(bar))
-        self.queue.put(task)
+        self.bars[bar.vt_symbol].append(bar)
 
     def get_bar_generator(self, vt_symbol: str):
         """"""
