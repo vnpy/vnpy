@@ -28,6 +28,7 @@
 3. 新增开平转换器OffsetConverter的净仓交易模式
 4. 新增CtaStrategy策略模板的委托时的净仓交易可选参数
 5. 新增CtaStrategy回测引擎中的全年交易日可选参数
+6. 新增ChartWizard对于价差行情图表的显示支持
 
 # 2.1.9.1版本
 
