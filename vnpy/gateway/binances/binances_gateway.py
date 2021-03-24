@@ -676,8 +676,8 @@ class BinancesRestApi(RestClient):
     def query_history(self, req: HistoryRequest) -> List[BarData]:
         """"""
         history = []
-        limit = 1000
-        start_time = int(datetime.timestamp(req.start))
+        limit = 1500
+        end_time = int(datetime.timestamp(req.end))
 
         while True:
             # Create query params
@@ -685,13 +685,13 @@ class BinancesRestApi(RestClient):
                 "symbol": req.symbol,
                 "interval": INTERVAL_VT2BINANCES[req.interval],
                 "limit": limit,
-                "startTime": start_time * 1000,         # convert to millisecond
+                "endTime": end_time * 1000,         # convert to millisecond
             }
 
             # Add end time if specified
-            if req.end:
-                end_time = int(datetime.timestamp(req.end))
-                params["endTime"] = end_time * 1000     # convert to millisecond
+            if req.start:
+                start_time = int(datetime.timestamp(req.start))
+                params["startTime"] = start_time * 1000     # convert to millisecond
 
             # Get response from server
             if self.usdt_base:
@@ -747,8 +747,8 @@ class BinancesRestApi(RestClient):
                     break
 
                 # Update start time
-                start_dt = bar.datetime + TIMEDELTA_MAP[req.interval]
-                start_time = int(datetime.timestamp(start_dt))
+                end_dt = begin - TIMEDELTA_MAP[req.interval]
+                end_time = int(datetime.timestamp(end_dt))
 
         return history
 
