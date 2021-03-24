@@ -53,9 +53,11 @@ class RadarManager(QtWidgets.QWidget):
 
         add_button = QtWidgets.QPushButton("添加")
         add_button.clicked.connect(self.add_rule)
+        add_button.setFixedHeight(add_button.sizeHint().height() * 2)
 
         edit_button = QtWidgets.QPushButton("修改")
         edit_button.clicked.connect(self.edit_rule)
+        edit_button.setFixedHeight(edit_button.sizeHint().height() * 2)
 
         load_button = QtWidgets.QPushButton("导入CSV")
         load_button.clicked.connect(self.load_csv)
@@ -71,10 +73,18 @@ class RadarManager(QtWidgets.QWidget):
         form.addRow("小数", self.ndigits_spin)
         form.addRow(add_button)
         form.addRow(edit_button)
-        form.addRow(load_button)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addLayout(form)
+        vbox.addStretch()
+        vbox.addWidget(load_button)
+
+        left_widget = QtWidgets.QWidget()
+        left_widget.setLayout(vbox)
+        left_widget.setFixedWidth(300)
 
         hbox = QtWidgets.QHBoxLayout()
-        hbox.addLayout(form)
+        hbox.addWidget(left_widget)
         hbox.addWidget(self.signal_monitor)
         hbox.addWidget(self.log_monitor)
 
