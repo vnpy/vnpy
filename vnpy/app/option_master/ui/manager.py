@@ -569,7 +569,7 @@ class ElectronicEyeManager(QtWidgets.QWidget):
         grid.addWidget(QLabel("隐波价差"), 1, 0)
         grid.addWidget(self.volatility_spread_spin, 1, 1)
         grid.addWidget(volatility_spread_button, 1, 2)
-        grid.addWidget(QLabel("持仓上限"), 2, 0)
+        grid.addWidget(QLabel("持仓范围"), 2, 0)
         grid.addWidget(self.max_pos_spin, 2, 1)
         grid.addWidget(max_pos_button, 2, 2)
         grid.addWidget(QLabel("目标持仓"), 3, 0)

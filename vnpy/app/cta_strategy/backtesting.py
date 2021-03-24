@@ -183,7 +183,8 @@ class BacktestingEngine:
         end: datetime = None,
         mode: BacktestingMode = BacktestingMode.BAR,
         inverse: bool = False,
-        risk_free: float = 0
+        risk_free: float = 0,
+        annual_days: int = 240
     ):
         """"""
         self.mode = mode
@@ -203,6 +204,7 @@ class BacktestingEngine:
         self.mode = mode
         self.inverse = inverse
         self.risk_free = risk_free
+        self.annual_days = annual_days
 
     def add_strategy(self, strategy_class: type, setting: dict):
         """"""
@@ -457,13 +459,13 @@ class BacktestingEngine:
             daily_trade_count = total_trade_count / total_days
 
             total_return = (end_balance / self.capital - 1) * 100
-            annual_return = total_return / total_days * 240
+            annual_return = total_return / total_days * self.annual_days
             daily_return = df["return"].mean() * 100
             return_std = df["return"].std() * 100
 
             if return_std:
-                daily_risk_free = self.risk_free / np.sqrt(240)
-                sharpe_ratio = (daily_return - daily_risk_free) / return_std * np.sqrt(240)
+                daily_risk_free = self.risk_free / np.sqrt(self.annual_days)
+                sharpe_ratio = (daily_return - daily_risk_free) / return_std * np.sqrt(self.annual_days)
             else:
                 sharpe_ratio = 0
 
@@ -986,7 +988,8 @@ class BacktestingEngine:
         price: float,
         volume: float,
         stop: bool,
-        lock: bool
+        lock: bool,
+        net: bool
     ):
         """"""
         price = round_to(price, self.pricetick)

@@ -30,7 +30,8 @@ db = PeeweePostgresqlDatabase(
     user=SETTINGS["database.user"],
     password=SETTINGS["database.password"],
     host=SETTINGS["database.host"],
-    port=SETTINGS["database.port"]
+    port=SETTINGS["database.port"],
+    autorollback=True
 )
 
 
@@ -205,7 +206,6 @@ class PostgresqlDatabase(BaseDatabase):
 
             d = tick.__dict__
             d["exchange"] = d["exchange"].value
-            d["interval"] = d["interval"].value
             d.pop("gateway_name")
             d.pop("vt_symbol")
             data.append(d)
@@ -366,7 +366,7 @@ class PostgresqlDatabase(BaseDatabase):
                     & (DbBarData.exchange == data.exchange)
                     & (DbBarData.interval == data.interval)
                 )
-                .order_by(DbBarData.datetime.desc())
+                .order_by(DbBarData.datetime.asc())
                 .first()
             )
             overview.start = start_bar.datetime
@@ -378,7 +378,7 @@ class PostgresqlDatabase(BaseDatabase):
                     & (DbBarData.exchange == data.exchange)
                     & (DbBarData.interval == data.interval)
                 )
-                .order_by(DbBarData.datetime.asc())
+                .order_by(DbBarData.datetime.desc())
                 .first()
             )
             overview.end = end_bar.datetime

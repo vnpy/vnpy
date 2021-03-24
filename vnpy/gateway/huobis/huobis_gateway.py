@@ -655,12 +655,17 @@ class HuobisRestApi(RestClient):
             if not self.usdt_base or d["support_margin_mode"] != "isolated":
                 self.contract_codes.add(d["contract_code"])
 
+                if "." in d["contract_size"]:
+                    size = float(d["contract_size"])
+                else:
+                    size = int(d["contract_size"])
+
                 contract = ContractData(
                     symbol=d["contract_code"],
                     exchange=Exchange.HUOBI,
                     name=d["contract_code"],
                     pricetick=d["price_tick"],
-                    size=int(d["contract_size"]),
+                    size=size,
                     min_volume=1,
                     product=Product.FUTURES,
                     history_data=True,
@@ -840,6 +845,7 @@ class HuobisWebsocketApiBase(WebsocketClient):
         """"""
         self.key = key
         self.secret = secret
+        self.usdt_base = usdt_base
 
         host, path = _split_url(url)
         self.sign_host = host
@@ -941,11 +947,20 @@ class HuobisTradeWebsocketApi(HuobisWebsocketApiBase):
     def subscribe(self) -> int:
         """"""
         self.req_id += 1
-        req = {
-            "op": "sub",
-            "cid": str(self.req_id),
-            "topic": f"orders.*"
-        }
+
+        if self.usdt_base:
+            req = {
+                "op": "sub",
+                "cid": str(self.req_id),
+                "topic": f"orders_cross.*"
+            }
+        else:
+            req = {
+                "op": "sub",
+                "cid": str(self.req_id),
+                "topic": f"orders.*"
+            }
+
         self.send_packet(req)
 
     def on_connected(self) -> None:
