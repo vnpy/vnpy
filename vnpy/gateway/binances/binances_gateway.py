@@ -544,13 +544,19 @@ class BinancesRestApi(RestClient):
                 symbol=d["symbol"],
                 exchange=Exchange.BINANCE,
                 direction=Direction.NET,
-                volume=int(float(d["positionAmt"])),
+                volume=float(d["positionAmt"]),
                 price=float(d["entryPrice"]),
                 pnl=float(d["unRealizedProfit"]),
                 gateway_name=self.gateway_name,
             )
 
             if position.volume:
+                volume = d["positionAmt"]
+                if '.' in volume:
+                    position.volume = float(d["positionAmt"])
+                else:
+                    position.volume = int(d["positionAmt"])
+
                 self.gateway.on_position(position)
 
         self.gateway.write_log("持仓信息查询成功")
@@ -787,11 +793,17 @@ class BinancesTradeWebsocketApi(WebsocketClient):
                 self.gateway.on_account(account)
 
         for pos_data in packet["a"]["P"]:
+            volume = pos_data["pa"]
+            if '.' in volume:
+                volume = float(volume)
+            else:
+                volume = int(volume)
+
             position = PositionData(
                 symbol=pos_data["s"],
                 exchange=Exchange.BINANCE,
                 direction=Direction.NET,
-                volume=int(float(pos_data["pa"])),
+                volume=volume,
                 price=float(pos_data["ep"]),
                 pnl=float(pos_data["cr"]),
                 gateway_name=self.gateway_name,
