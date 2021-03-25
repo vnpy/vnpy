@@ -66,7 +66,7 @@ class OffsetConverter:
         self,
         req: OrderRequest,
         lock: bool,
-        net: bool
+        net: bool = False
     ) -> List[OrderRequest]:
         """"""
         if not self.is_convert_required(req.vt_symbol):
