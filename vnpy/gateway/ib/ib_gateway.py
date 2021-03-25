@@ -55,6 +55,8 @@ from vnpy.trader.constant import (
     Interval
 )
 from vnpy.trader.utility import get_file_path
+from vnpy.trader.event import EVENT_TIMER
+from vnpy.event import Event
 
 
 ORDERTYPE_VT2IB = {
@@ -167,6 +169,7 @@ class IbGateway(BaseGateway):
         super().__init__(event_engine, "IB")
 
         self.api = IbApi(self)
+        self.count = 0
 
     def connect(self, setting: dict):
         """
@@ -178,6 +181,8 @@ class IbGateway(BaseGateway):
         account = setting["交易账户"]
 
         self.api.connect(host, port, clientid, account)
+
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
     def close(self):
         """
@@ -218,6 +223,15 @@ class IbGateway(BaseGateway):
     def query_history(self, req: HistoryRequest):
         """"""
         return self.api.query_history(req)
+
+    def process_timer_event(self, event: Event):
+        """"""
+        self.count += 1
+        if self.count < 10:
+            return
+        self.count = 0
+
+        self.api.check_connection()
 
 
 class IbApi(EWrapper):
@@ -323,10 +337,10 @@ class IbApi(EWrapper):
         if contract:
             tick.name = contract.name
 
-        # Forex and spot product of IDEALPRO has no tick time and last price.
+        # Forex of IDEALPRO and Spot Commodity has no tick time and last price.
         # We need to calculate locally.
         exchange = self.tick_exchange[reqId]
-        if exchange is Exchange.IDEALPRO:
+        if exchange is Exchange.IDEALPRO or "CMDTY" in tick.symbol:
             tick.last_price = (tick.bid_price_1 + tick.ask_price_1) / 2
             tick.datetime = datetime.now(self.local_tz)
         self.gateway.on_tick(copy(tick))
@@ -635,12 +649,21 @@ class IbApi(EWrapper):
         if self.status:
             return
 
+        self.host = host
+        self.port = port
         self.clientid = clientid
         self.account = account
         self.client.connect(host, port, clientid)
         self.thread.start()
 
         self.client.reqCurrentTime()
+
+    def check_connection(self):
+        """"""
+        if self.client.isConnected():
+            return
+
+        self.client.connect(self.host, self.port, self.clientid)
 
     def close(self):
         """
@@ -774,7 +797,7 @@ class IbApi(EWrapper):
             bar_size,
             bar_type,
             1,
-            1,
+            0,
             False,
             []
         )

@@ -599,7 +599,8 @@ class BacktestingEngine:
         offset: Offset,
         price: float,
         volume: float,
-        lock: bool
+        lock: bool,
+        net: bool
     ) -> List[str]:
         """"""
         price = round_to(price, self.priceticks[vt_symbol])

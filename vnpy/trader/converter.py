@@ -62,7 +62,12 @@ class OffsetConverter:
             self.holdings[vt_symbol] = holding
         return holding
 
-    def convert_order_request(self, req: OrderRequest, lock: bool) -> List[OrderRequest]:
+    def convert_order_request(
+        self,
+        req: OrderRequest,
+        lock: bool,
+        net: bool = False
+    ) -> List[OrderRequest]:
         """"""
         if not self.is_convert_required(req.vt_symbol):
             return [req]
@@ -71,6 +76,8 @@ class OffsetConverter:
 
         if lock:
             return holding.convert_order_request_lock(req)
+        elif net:
+            return holding.convert_order_request_net(req)
         elif req.exchange in [Exchange.SHFE, Exchange.INE]:
             return holding.convert_order_request_shfe(req)
         else:
@@ -299,3 +306,30 @@ class PositionHolding:
                 req_list.append(req_open)
 
             return req_list
+
+    def convert_order_request_net(self, req: OrderRequest) -> List[OrderRequest]:
+        """"""
+        if req.direction == Direction.LONG:
+            pos_available = self.short_pos - self.short_pos_frozen
+        else:
+            pos_available = self.long_pos - self.long_pos_frozen
+
+        if not pos_available:
+            req.offset = Offset.OPEN
+            return [req]
+        elif req.volume <= pos_available:
+            req.offset = Offset.CLOSE
+            return [req]
+        else:
+            close_volume = pos_available
+            open_volume = req.volume - close_volume
+
+            close_req = copy(req)
+            close_req.offset = Offset.CLOSE
+            close_req.volume = close_volume
+
+            open_req = copy(req)
+            open_req.offset = Offset.OPEN
+            open_req.offset = open_volume
+
+            return [close_req, open_req]

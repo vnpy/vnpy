@@ -1,3 +1,38 @@
+# 2.2.0版本
+
+## 修复
+1. 修复DataManager查询数据库中K线数据范围时，开始和结束日期相反的问题
+2. 修复CoinbaseGateway的行情订单簿在更新时，已经撤单的档位不删除的问题
+3. 修复BybitGateway对于USDT本位永续合约，浮点数委托量会被转换为0的问题
+4. 修复BinanceGateway/BinancesGateway的ConnectionResetError问题，通过关闭HTTP连接的keep-alive功能实现
+5. 修复HuobisGateway在USDT本位模式下时，浮点数合约乘数转换出错的问题
+6. 修复PostgreSQL数据库对接层中，save_tick_data函数由于访问interval导致保存出错的问题
+7. 修复DataRecorder模块中add_bar_recording下保存录制用合约配置错误的问题
+8. 修复PostgreSQL数据库对接层中，由于事务执行失败导致的后续报错问题，创建数据库对象时设置自动回滚模式（autorollback=True）
+9. 修复DataManager自动更新数据时，查询数据范围由于调用老版本函数导致的错误
+10. 修复RQData下载获取的历史数据浮点数精度问题
+11. 修复BarGenerator在合成N小时K线时，收盘价、成交量、持仓量字段缺失的问题
+12. 修复K线图表底层组件ChartWidget当绘制数据较少时，坐标轴时间点显示重复的问题
+13. 修复SpreadTrading模块生成的价差盘口数据的时区信息缺失问题
+14. 修复IbGateway的现货贵金属行情数据缺失最新价和时间戳的问题
+15. 修复BarGenerator在合成小时级别K线时，成交量字段部分缺失的问题
+16. 修复vnpy.rpc模块启用非对称加密后无法正常退出的问题
+17. 修复BinancesGateway持仓更新时由于包含多条方向记录导致的持仓错误问题
+
+## 调整
+1. 修改vnpy.chart下ChartItem为按需绘制，大幅缩短图表第一次显示出来的耗时
+2. 修改IbGateway的历史数据查询功能，包括所有可用时间（即欧美晚上的电子交易时段）
+3. 修改DataRecorder的数据入库为定时批量写入，提高录制大量合约数据时的写入性能
+
+## 新增
+1. 新增IbGateway连接断开后的自动重连功能（每10秒检查）
+2. 新增双边报价业务相关的底层数据结构和功能函数
+3. 新增开平转换器OffsetConverter的净仓交易模式
+4. 新增CtaStrategy模块策略模板的委托时的净仓交易可选参数
+5. 新增CtaStrategy模块回测引擎中的全年交易日可选参数
+6. 新增ChartWizard模块对于价差行情图表的显示支持
+7. 新增MarketRadar模块的雷达信号条件提醒功能
+
 # 2.1.9.1版本
 
 ## 修复

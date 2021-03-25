@@ -38,6 +38,7 @@ class StopOrder:
     stop_orderid: str
     strategy_name: str
     lock: bool = False
+    net: bool = False
     vt_orderids: list = field(default_factory=list)
     status: StopOrderStatus = StopOrderStatus.WAITING
 

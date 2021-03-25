@@ -255,7 +255,8 @@ class BinancesRestApi(RestClient):
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",
-            "X-MBX-APIKEY": self.key
+            "X-MBX-APIKEY": self.key,
+            "Connection": "close"
         }
 
         if security in [Security.SIGNED, Security.API_KEY]:
@@ -543,13 +544,19 @@ class BinancesRestApi(RestClient):
                 symbol=d["symbol"],
                 exchange=Exchange.BINANCE,
                 direction=Direction.NET,
-                volume=int(float(d["positionAmt"])),
+                volume=float(d["positionAmt"]),
                 price=float(d["entryPrice"]),
                 pnl=float(d["unRealizedProfit"]),
                 gateway_name=self.gateway_name,
             )
 
             if position.volume:
+                volume = d["positionAmt"]
+                if '.' in volume:
+                    position.volume = float(d["positionAmt"])
+                else:
+                    position.volume = int(d["positionAmt"])
+
                 self.gateway.on_position(position)
 
         self.gateway.write_log("持仓信息查询成功")
@@ -669,8 +676,8 @@ class BinancesRestApi(RestClient):
     def query_history(self, req: HistoryRequest) -> List[BarData]:
         """"""
         history = []
-        limit = 1000
-        start_time = int(datetime.timestamp(req.start))
+        limit = 1500
+        end_time = int(datetime.timestamp(req.end))
 
         while True:
             # Create query params
@@ -678,13 +685,13 @@ class BinancesRestApi(RestClient):
                 "symbol": req.symbol,
                 "interval": INTERVAL_VT2BINANCES[req.interval],
                 "limit": limit,
-                "startTime": start_time * 1000,         # convert to millisecond
+                "endTime": end_time * 1000,         # convert to millisecond
             }
 
             # Add end time if specified
-            if req.end:
-                end_time = int(datetime.timestamp(req.end))
-                params["endTime"] = end_time * 1000     # convert to millisecond
+            if req.start:
+                start_time = int(datetime.timestamp(req.start))
+                params["startTime"] = start_time * 1000     # convert to millisecond
 
             # Get response from server
             if self.usdt_base:
@@ -740,8 +747,8 @@ class BinancesRestApi(RestClient):
                     break
 
                 # Update start time
-                start_dt = bar.datetime + TIMEDELTA_MAP[req.interval]
-                start_time = int(datetime.timestamp(start_dt))
+                end_dt = begin - TIMEDELTA_MAP[req.interval]
+                end_time = int(datetime.timestamp(end_dt))
 
         return history
 
@@ -786,16 +793,23 @@ class BinancesTradeWebsocketApi(WebsocketClient):
                 self.gateway.on_account(account)
 
         for pos_data in packet["a"]["P"]:
-            position = PositionData(
-                symbol=pos_data["s"],
-                exchange=Exchange.BINANCE,
-                direction=Direction.NET,
-                volume=int(float(pos_data["pa"])),
-                price=float(pos_data["ep"]),
-                pnl=float(pos_data["cr"]),
-                gateway_name=self.gateway_name,
-            )
-            self.gateway.on_position(position)
+            if pos_data["ps"] == "BOTH":
+                volume = pos_data["pa"]
+                if '.' in volume:
+                    volume = float(volume)
+                else:
+                    volume = int(volume)
+
+                position = PositionData(
+                    symbol=pos_data["s"],
+                    exchange=Exchange.BINANCE,
+                    direction=Direction.NET,
+                    volume=volume,
+                    price=float(pos_data["ep"]),
+                    pnl=float(pos_data["cr"]),
+                    gateway_name=self.gateway_name,
+                )
+                self.gateway.on_position(position)
 
     def on_order(self, packet: dict) -> None:
         """"""
