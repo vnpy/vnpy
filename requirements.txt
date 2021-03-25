@@ -1,9 +1,8 @@
-six==1.13.0
+six
 wheel
 tzlocal
 PyQt5==5.14.1
-pyqtgraph==0.10.0
-dataclasses; python_version<="3.6"
+pyqtgraph
 qdarkstyle
 requests
 websocket-client
@@ -11,7 +10,7 @@ peewee
 pymysql
 psycopg2
 mongoengine
-numpy==1.19.3
+numpy
 pandas
 matplotlib
 seaborn

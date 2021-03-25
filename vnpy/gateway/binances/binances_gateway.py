@@ -793,22 +793,23 @@ class BinancesTradeWebsocketApi(WebsocketClient):
                 self.gateway.on_account(account)
 
         for pos_data in packet["a"]["P"]:
-            volume = pos_data["pa"]
-            if '.' in volume:
-                volume = float(volume)
-            else:
-                volume = int(volume)
+            if pos_data["ps"] == "BOTH":
+                volume = pos_data["pa"]
+                if '.' in volume:
+                    volume = float(volume)
+                else:
+                    volume = int(volume)
 
-            position = PositionData(
-                symbol=pos_data["s"],
-                exchange=Exchange.BINANCE,
-                direction=Direction.NET,
-                volume=volume,
-                price=float(pos_data["ep"]),
-                pnl=float(pos_data["cr"]),
-                gateway_name=self.gateway_name,
-            )
-            self.gateway.on_position(position)
+                position = PositionData(
+                    symbol=pos_data["s"],
+                    exchange=Exchange.BINANCE,
+                    direction=Direction.NET,
+                    volume=volume,
+                    price=float(pos_data["ep"]),
+                    pnl=float(pos_data["cr"]),
+                    gateway_name=self.gateway_name,
+                )
+                self.gateway.on_position(position)
 
     def on_order(self, packet: dict) -> None:
         """"""
