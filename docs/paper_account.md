@@ -1,4 +1,4 @@
-****# PaperAccount - 本地模拟交易模块
+# PaperAccount - 本地模拟交易模块
 
 
 ## 功能简介
