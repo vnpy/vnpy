@@ -260,14 +260,14 @@ class IbApi(EWrapper):
         self.contracts = {}
 
         self.tick_exchange = {}
-        self.subscribed = set()
+        self.subscribed = {}
+        self.data_ready = False
 
         self.history_req = None
         self.history_condition = Condition()
         self.history_buf = []
 
-        self.client = IbClient(self)
-        self.thread = Thread(target=self.client.run)
+        self.client = EClient(self)
 
     def connectAck(self):  # pylint: disable=invalid-name
         """
@@ -277,6 +277,8 @@ class IbApi(EWrapper):
         self.gateway.write_log("IB TWS连接成功")
 
         self.load_contract_data()
+
+        self.data_ready = False
 
     def connectionClosed(self):  # pylint: disable=invalid-name
         """
@@ -306,9 +308,7 @@ class IbApi(EWrapper):
         msg = f"服务器时间: {time_string}"
         self.gateway.write_log(msg)
 
-    def error(
-        self, reqId: TickerId, errorCode: int, errorString: str
-    ):  # pylint: disable=invalid-name
+    def error(self, reqId: TickerId, errorCode: int, errorString: str):  # pylint: disable=invalid-name
         """
         Callback of error caused by specific request.
         """
@@ -316,6 +316,17 @@ class IbApi(EWrapper):
 
         msg = f"信息通知，代码：{errorCode}，内容: {errorString}"
         self.gateway.write_log(msg)
+
+        # Market data server is connected
+        if errorCode == 2104 and not self.data_ready:
+            self.data_ready = True
+
+            self.client.reqCurrentTime()
+
+            reqs = list(self.subscribed.values())
+            self.subscribed.clear()
+            for req in reqs:
+                self.subscribe(req)
 
     def tickPrice(  # pylint: disable=invalid-name
         self, reqId: TickerId, tickType: TickType, price: float, attrib: TickAttrib
@@ -653,17 +664,23 @@ class IbApi(EWrapper):
         self.port = port
         self.clientid = clientid
         self.account = account
-        self.client.connect(host, port, clientid)
-        self.thread.start()
 
-        self.client.reqCurrentTime()
+        self.client.connect(host, port, clientid)
+        self.thread = Thread(target=self.client.run)
+        self.thread.start()
 
     def check_connection(self):
         """"""
         if self.client.isConnected():
             return
 
+        if self.status:
+            self.close()
+
         self.client.connect(self.host, self.port, self.clientid)
+
+        self.thread = Thread(target=self.client.run)
+        self.thread.start()
 
     def close(self):
         """
@@ -689,7 +706,7 @@ class IbApi(EWrapper):
         # Filter duplicate subscribe
         if req.vt_symbol in self.subscribed:
             return
-        self.subscribed.add(req.vt_symbol)
+        self.subscribed[req.vt_symbol] = req
 
         # Extract ib contract detail
         ib_contract = generate_ib_contract(req.symbol, req.exchange)
@@ -828,33 +845,6 @@ class IbApi(EWrapper):
         f = shelve.open(self.data_filepath)
         f["contracts"] = self.contracts
         f.close()
-
-
-class IbClient(EClient):
-    """"""
-
-    def run(self):
-        """
-        Reimplement the original run message loop of eclient.
-
-        Remove all unnecessary try...catch... and allow exceptions to interrupt loop.
-        """
-        while not self.done and self.isConnected():
-            try:
-                text = self.msg_queue.get(block=True, timeout=0.2)
-
-                if len(text) > MAX_MSG_LEN:
-                    errorMsg = "%s:%d:%s" % (BAD_LENGTH.msg(), len(text), text)
-                    self.wrapper.error(
-                        NO_VALID_ID, BAD_LENGTH.code(), errorMsg
-                    )
-                    self.disconnect()
-                    break
-
-                fields = comm.read_fields(text)
-                self.decoder.interpret(fields)
-            except Empty:
-                pass
 
 
 def generate_ib_contract(symbol: str, exchange: Exchange) -> Optional[Contract]:
