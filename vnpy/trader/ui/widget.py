@@ -363,6 +363,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
 
         if isinstance(column_state, QtCore.QByteArray):
             self.horizontalHeader().restoreState(column_state)
+            self.horizontalHeader().setSortIndicator(-1, QtCore.Qt.AscendingOrder)
 
 
 class TickMonitor(BaseMonitor):
