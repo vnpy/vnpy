@@ -3,7 +3,7 @@
 
 ## 功能简介
 
-ChartWizard是用于**实时K线图表展示**的功能模块，用户可以通过其UI界面查看分钟级别以上的实时K线行情。
+ChartWizard是用于**实时K线图表展示**的功能模块，用户可以通过其UI界面查看实时和历史K线行情，目前只支持显示1分钟级别的K线数据，实时K线（最新的一根K线）为Tick级刷新。
 
 
 ## 加载启动
@@ -44,16 +44,30 @@ main_engine.add_app(ChartWizardApp)
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/chart_wizard/2.png)
 
 
-## 新建K线图表
+## 新建图表
 
- - 在【本地代码】中输入合约代码，注意本地代码由代码前缀和交易所后缀两部分组成，如rb2112.SHFE；
- - 点击【新建图表】的按钮，弹出对应合约的实时K线图表，如下图所示：
- ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/chart_wizard/3.png)
- - 用户可以新建多个合约的K线图表，通过切换窗口来实现快速切换，如下图所示： 
- ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/chart_wizard/4.png)
+打开图表窗口后，在【本地代码】编辑框中输入合约代码（注意本地代码由代码前缀和交易所后缀两部分组成，如rb2112.SHFE）。
+
+点击【新建图表】的按钮，即可创建对应合约的K线图表，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/chart_wizard/3.png)
+
+用户可以新建多个合约的K线图表，通过切换窗口来实现快速切换： 
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/chart_wizard/4.png)
 
 
-## 查看K线图表
+## 查看图表
 
- - 用户可以通过鼠标左键拖拽功能，左右平移K线图显示的时间范围；
- - 用户可以通过鼠标滚轮滚动功能，放大和缩小K线图显示的时间范围。
+每个合约的图表分为上下两块子图区域：
+
+- 上面的子图为行情K线；
+- 下面的子图为成交量数据。
+
+图表上的十字光标可用于定位和显示特定时间点的具体数据，在X轴和Y轴上均会对应数据点的标签，同时在左上角也会显示此根K线的OHLCV等信息。
+
+其他快捷操作：
+
+- 可以通过鼠标左键的拖拽，左右平移K线图显示的时间范围；
+- 可以通过鼠标滚轮的滚动，放大和缩小K线图显示的时间范围。
+
