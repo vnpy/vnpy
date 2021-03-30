@@ -63,6 +63,8 @@ STOP_STATUS_MAP = {
     Status.REJECTED: StopOrderStatus.CANCELLED
 }
 
+LOCAL_TZ = get_localzone()
+
 
 class CtaEngine(BaseEngine):
     """"""
@@ -185,6 +187,7 @@ class CtaEngine(BaseEngine):
                 volume=order.volume,
                 stop_orderid=order.vt_orderid,
                 strategy_name=strategy.strategy_name,
+                datetime=order.datetime,
                 status=STOP_STATUS_MAP[order.status],
                 vt_orderids=[order.vt_orderid],
             )
@@ -418,6 +421,7 @@ class CtaEngine(BaseEngine):
             volume=volume,
             stop_orderid=stop_orderid,
             strategy_name=strategy.strategy_name,
+            datetime=datetime.now(LOCAL_TZ),
             lock=lock,
             net=net
         )
@@ -546,7 +550,7 @@ class CtaEngine(BaseEngine):
     ):
         """"""
         symbol, exchange = extract_vt_symbol(vt_symbol)
-        end = datetime.now(get_localzone())
+        end = datetime.now(LOCAL_TZ)
         start = end - timedelta(days)
         bars = []
 
@@ -589,7 +593,7 @@ class CtaEngine(BaseEngine):
     ):
         """"""
         symbol, exchange = extract_vt_symbol(vt_symbol)
-        end = datetime.now()
+        end = datetime.now(LOCAL_TZ)
         start = end - timedelta(days)
 
         ticks = database_manager.load_tick_data(

@@ -4,7 +4,7 @@ Defines constants and objects used in CtaStrategy App.
 
 from dataclasses import dataclass, field
 from enum import Enum
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from vnpy.trader.constant import Direction, Offset, Interval
 
@@ -37,6 +37,7 @@ class StopOrder:
     volume: float
     stop_orderid: str
     strategy_name: str
+    datetime: datetime
     lock: bool = False
     net: bool = False
     vt_orderids: list = field(default_factory=list)
