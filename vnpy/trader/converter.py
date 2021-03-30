@@ -311,25 +311,63 @@ class PositionHolding:
         """"""
         if req.direction == Direction.LONG:
             pos_available = self.short_pos - self.short_pos_frozen
+            td_available = self.short_td - self.short_td_frozen
+            yd_available = self.short_yd - self.short_yd_frozen
         else:
             pos_available = self.long_pos - self.long_pos_frozen
+            td_available = self.long_td - self.long_td_frozen
+            yd_available = self.long_yd - self.long_yd_frozen
 
-        if not pos_available:
-            req.offset = Offset.OPEN
-            return [req]
-        elif req.volume <= pos_available:
-            req.offset = Offset.CLOSE
-            return [req]
+        # Split close order to close today/yesterday for SHFE/INE exchange
+        if req.exchange in {Exchange.SHFE, Exchange.INE}:
+            reqs = []
+            volume_left = req.volume
+
+            if td_available:
+                td_volume = min(td_available, volume_left)
+                volume_left -= td_volume
+
+                td_req = copy(req)
+                td_req.offset = Offset.CLOSETODAY
+                td_req.volume = td_volume
+                reqs.append(td_req)
+
+            if volume_left and yd_available:
+                yd_volume = min(yd_available, volume_left)
+                volume_left -= yd_volume
+
+                yd_req = copy(req)
+                yd_req.offset = Offset.CLOSEYESTERDAY
+                yd_req.volume = yd_volume
+                reqs.append(yd_req)
+
+            if volume_left:
+                open_volume = volume_left
+
+                open_req = copy(req)
+                open_req.offset = Offset.OPEN
+                open_req.volume = open_volume
+                reqs.append(open_req)
+
+            return reqs
+        # Just use close for other exchanges
         else:
-            close_volume = pos_available
-            open_volume = req.volume - close_volume
+            if not pos_available:
+                req.offset = Offset.OPEN
+                return [req]
+            elif req.volume <= pos_available:
+                req.offset = Offset.CLOSE
+                return [req]
+            else:
+                close_volume = pos_available
+                open_volume = req.volume - close_volume
 
-            close_req = copy(req)
-            close_req.offset = Offset.CLOSE
-            close_req.volume = close_volume
+                close_req = copy(req)
+                close_req.offset = Offset.CLOSE
+                close_req.volume = close_volume
 
-            open_req = copy(req)
-            open_req.offset = Offset.OPEN
-            open_req.offset = open_volume
+                open_req = copy(req)
+                open_req.offset = Offset.OPEN
+                open_req.offset = open_volume
 
-            return [close_req, open_req]
+                return [close_req, open_req]
