@@ -352,22 +352,24 @@ class PositionHolding:
             return reqs
         # Just use close for other exchanges
         else:
-            if not pos_available:
-                req.offset = Offset.OPEN
-                return [req]
-            elif req.volume <= pos_available:
-                req.offset = Offset.CLOSE
-                return [req]
-            else:
-                close_volume = pos_available
-                open_volume = req.volume - close_volume
+            reqs = []
+            volume_left = req.volume
+
+            if pos_available:
+                close_volume = min(pos_available, volume_left)
+                volume_left -= pos_available
 
                 close_req = copy(req)
                 close_req.offset = Offset.CLOSE
                 close_req.volume = close_volume
+                reqs.append(close_req)
+
+            if volume_left:
+                open_volume = volume_left
 
                 open_req = copy(req)
                 open_req.offset = Offset.OPEN
-                open_req.offset = open_volume
+                open_req.volume = open_volume
+                reqs.append(open_req)
 
-                return [close_req, open_req]
+            return reqs
