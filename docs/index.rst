@@ -20,7 +20,7 @@ vn.py项目文档
 
    market_radar.md
    paper_account.md
-   data_recoder.md
+   data_recorder.md
    data_manager.md
    risk_manager.md
    rpc_service.md
