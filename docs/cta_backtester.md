@@ -35,7 +35,7 @@ C:\Users\Administrator\strategies
 
 其中Administrator为当前登录Windows的系统用户名。
 
-启动VN Trader后，在菜单栏中点击【功能】-> 【CTA回测】，或者点击左侧按钮栏的图标
+启动VN Trader后，在菜单栏中点击【功能】-> 【CTA回测】，或者点击左侧按钮栏的图标：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/00.png)
 
