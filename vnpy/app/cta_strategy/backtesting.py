@@ -183,7 +183,7 @@ class BacktestingEngine:
         end: datetime = None,
         mode: BacktestingMode = BacktestingMode.BAR,
         inverse: bool = False,
-        risk_free: float = 0,
+        risk_free: float = 0.02,
         annual_days: int = 240
     ):
         """"""
@@ -412,10 +412,7 @@ class BacktestingEngine:
             # Calculate balance related time series data
             df["balance"] = df["net_pnl"].cumsum() + self.capital
 
-            # When balance falls below 0, set daily return to 0
-            x = df["balance"] / df["balance"].shift(1)
-            x[x <= 0] = np.nan
-            df["return"] = np.log(x).fillna(0)
+            df["return"] = df["balance"].pct_change().fillna(0)
 
             df["highlevel"] = (
                 df["balance"].rolling(

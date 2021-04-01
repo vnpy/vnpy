@@ -95,7 +95,7 @@ class BacktestingEngine:
         priceticks: Dict[str, float],
         capital: int = 0,
         end: datetime = None,
-        risk_free: float = 0
+        risk_free: float = 0.02
     ) -> None:
         """"""
         self.vt_symbols = vt_symbols
@@ -300,7 +300,7 @@ class BacktestingEngine:
         else:
             # Calculate balance related time series data
             df["balance"] = df["net_pnl"].cumsum() + self.capital
-            df["return"] = np.log(df["balance"] / df["balance"].shift(1)).fillna(0)
+            df["return"] = df["balance"].pct_change().fillna(0)
             df["highlevel"] = (
                 df["balance"].rolling(
                     min_periods=1, window=len(df), center=False).max()
