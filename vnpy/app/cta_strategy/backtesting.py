@@ -328,6 +328,7 @@ class BacktestingEngine:
 
         self.strategy.on_stop()
         self.output("历史数据回放结束")
+        # self.output(self.logs)
 
     def calculate_result(self):
         """"""
@@ -411,12 +412,12 @@ class BacktestingEngine:
         else:
             # Calculate balance related time series data
             df["balance"] = df["net_pnl"].cumsum() + self.capital
-
+            if (df["balance"]<0).sum() > 0:
+                raise ValueError(" balance 小于0!!!")
             # When balance falls below 0, set daily return to 0
             x = df["balance"] / df["balance"].shift(1)
-            x[x <= 0] = np.nan
-            df["return"] = np.log(x).fillna(0)
-
+            #x[x <= 0] = np.nan
+            df["return"] = np.log(x).fillna(np.log(df["balance"][0]/self.capital))
             df["highlevel"] = (
                 df["balance"].rolling(
                     min_periods=1, window=len(df), center=False).max()
@@ -460,7 +461,7 @@ class BacktestingEngine:
 
             total_return = (end_balance / self.capital - 1) * 100
             annual_return = total_return / total_days * self.annual_days
-            daily_return = df["return"].mean() * 100
+            daily_return = df["return"].mean() * 100 
             return_std = df["return"].std() * 100
 
             if return_std:
@@ -586,6 +587,8 @@ class BacktestingEngine:
 
         fig.update_layout(height=1000, width=1000)
         fig.show()
+
+        return fig
 
     def run_optimization(self, optimization_setting: OptimizationSetting, output=True):
         """"""
@@ -817,6 +820,8 @@ class BacktestingEngine:
             short_cross_price = self.tick.bid_price_1
             long_best_price = long_cross_price
             short_best_price = short_cross_price
+
+        start = 0
 
         for order in list(self.active_limit_orders.values()):
             # Push order update with status "not traded" (pending).
