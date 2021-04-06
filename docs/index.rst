@@ -15,12 +15,12 @@ vn.py项目文档
    spread_trading.md
    option_master.md
    portfolio_strategy.md   
-   algo_trader.md
+   algo_trading.md
    script_trader.md
 
    market_radar.md
    paper_account.md
-   data_recoder.md
+   data_recorder.md
    data_manager.md
    risk_manager.md
    rpc_service.md

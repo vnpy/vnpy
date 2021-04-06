@@ -212,7 +212,6 @@ class MongodbDatabase(BaseDatabase):
 
             d = tick.__dict__
             d["exchange"] = d["exchange"].value
-            d["interval"] = d["interval"].value
             d.pop("gateway_name")
             d.pop("vt_symbol")
             param = to_update_param(d)

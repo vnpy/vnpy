@@ -198,7 +198,6 @@ class MysqlDatabase(BaseDatabase):
 
             d = tick.__dict__
             d["exchange"] = d["exchange"].value
-            d["interval"] = d["interval"].value
             d.pop("gateway_name")
             d.pop("vt_symbol")
             data.append(d)
@@ -352,7 +351,7 @@ class MysqlDatabase(BaseDatabase):
                     & (DbBarData.exchange == data.exchange)
                     & (DbBarData.interval == data.interval)
                 )
-                .order_by(DbBarData.datetime.desc())
+                .order_by(DbBarData.datetime.asc())
                 .first()
             )
             overview.start = start_bar.datetime
@@ -364,7 +363,7 @@ class MysqlDatabase(BaseDatabase):
                     & (DbBarData.exchange == data.exchange)
                     & (DbBarData.interval == data.interval)
                 )
-                .order_by(DbBarData.datetime.asc())
+                .order_by(DbBarData.datetime.desc())
                 .first()
             )
             overview.end = end_bar.datetime
