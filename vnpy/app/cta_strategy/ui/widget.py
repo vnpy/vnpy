@@ -353,7 +353,9 @@ class StopOrderMonitor(BaseMonitor):
         "price": {"display": "价格", "cell": BaseCell, "update": False},
         "volume": {"display": "数量", "cell": BaseCell, "update": False},
         "status": {"display": "状态", "cell": EnumCell, "update": True},
+        "datetime": {"display": "时间", "cell": TimeCell, "update": False},
         "lock": {"display": "锁仓", "cell": BaseCell, "update": False},
+        "net": {"display": "净仓", "cell": BaseCell, "update": False},
         "strategy_name": {"display": "策略名", "cell": BaseCell, "update": False},
     }
 

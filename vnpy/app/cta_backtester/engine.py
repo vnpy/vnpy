@@ -18,6 +18,7 @@ from vnpy.app.cta_strategy.backtesting import (
     BacktestingEngine, OptimizationSetting, BacktestingMode
 )
 
+
 APP_NAME = "CtaBacktester"
 
 EVENT_BACKTESTER_LOG = "eBacktesterLog"
