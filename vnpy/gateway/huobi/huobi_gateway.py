@@ -69,9 +69,8 @@ INTERVAL_VT2HUOBI = {
 
 CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
-huobi_symbols: set = set()
-symbol_name_map: Dict[str, str] = {}
 currency_balance: Dict[str, float] = {}
+symbol_contract_map: Dict[str, ContractData] = {}
 
 
 class HuobiGateway(BaseGateway):
@@ -420,8 +419,7 @@ class HuobiRestApi(RestClient):
             )
             self.gateway.on_contract(contract)
 
-            huobi_symbols.add(contract.symbol)
-            symbol_name_map[contract.symbol] = contract.name
+            symbol_contract_map[contract.symbol] = contract
 
         self.gateway.write_log("合约信息查询成功")
 
@@ -716,6 +714,10 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
 
         traded_volume = float(data.get("tradeVolume", 0))
 
+        contract = symbol_contract_map.get(order.symbol, None)
+        if contract:
+            traded_volume = round_to(traded_volume, contract.min_volume)
+
         # Push order event
         order.traded += traded_volume
         order.status = STATUS_HUOBI2VT.get(data["orderStatus"], None)
@@ -732,7 +734,7 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
             tradeid=str(data["tradeId"]),
             direction=order.direction,
             price=float(data["tradePrice"]),
-            volume=float(data["tradeVolume"]),
+            volume=traded_volume,
             datetime=datetime.now(CHINA_TZ),
             gateway_name=self.gateway_name,
         )
@@ -779,10 +781,14 @@ class HuobiDataWebsocketApi(HuobiWebsocketApiBase):
 
     def subscribe_by_symbol(self, symbol: str) -> None:
         """"""
+        if symbol not in symbol_contract_map:
+            self.gateway.write_log(f"找不到该合约代码{symbol}")
+            return
+
         # Create tick data buffer
         tick = TickData(
             symbol=symbol,
-            name=symbol_name_map.get(symbol, ""),
+            name=symbol_contract_map[symbol].name,
             exchange=Exchange.HUOBI,
             datetime=datetime.now(CHINA_TZ),
             gateway_name=self.gateway_name,
