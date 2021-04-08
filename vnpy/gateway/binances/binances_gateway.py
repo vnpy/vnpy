@@ -104,7 +104,6 @@ class Security(Enum):
     API_KEY: int = 2
 
 
-symbol_name_map: Dict[str, str] = {}
 symbol_contract_map: Dict[str, ContractData] = {}
 
 
