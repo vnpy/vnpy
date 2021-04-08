@@ -14,6 +14,7 @@ from copy import copy
 from datetime import datetime
 import pytz
 from typing import Dict, List, Any
+from vnpy.trader.utility import round_to
 
 from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
