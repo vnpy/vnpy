@@ -2,6 +2,8 @@ from typing import Tuple, Dict
 from functools import partial
 from datetime import datetime, timedelta
 
+from pytz import all_timezones
+
 from vnpy.trader.ui import QtWidgets, QtCore
 from vnpy.trader.engine import MainEngine, EventEngine
 from vnpy.trader.constant import Interval, Exchange
@@ -206,6 +208,7 @@ class ManagerWidget(QtWidgets.QWidget):
         symbol = dialog.symbol_edit.text()
         exchange = dialog.exchange_combo.currentData()
         interval = dialog.interval_combo.currentData()
+        tz_name = dialog.tz_combo.currentText()
         datetime_head = dialog.datetime_edit.text()
         open_head = dialog.open_edit.text()
         low_head = dialog.low_edit.text()
@@ -220,6 +223,7 @@ class ManagerWidget(QtWidgets.QWidget):
             symbol,
             exchange,
             interval,
+            tz_name,
             datetime_head,
             open_head,
             high_head,
@@ -474,6 +478,10 @@ class ImportDialog(QtWidgets.QDialog):
             if i != Interval.TICK:
                 self.interval_combo.addItem(str(i.name), i)
 
+        self.tz_combo = QtWidgets.QComboBox()
+        self.tz_combo.addItems(all_timezones)
+        self.tz_combo.setCurrentIndex(self.tz_combo.findText("Asia/Shanghai"))
+
         self.datetime_edit = QtWidgets.QLineEdit("datetime")
         self.open_edit = QtWidgets.QLineEdit("open")
         self.high_edit = QtWidgets.QLineEdit("high")
@@ -500,6 +508,7 @@ class ImportDialog(QtWidgets.QDialog):
         form.addRow("代码", self.symbol_edit)
         form.addRow("交易所", self.exchange_combo)
         form.addRow("周期", self.interval_combo)
+        form.addRow("时区", self.tz_combo)
         form.addRow(QtWidgets.QLabel())
         form.addRow(head_label)
         form.addRow("时间戳", self.datetime_edit)
