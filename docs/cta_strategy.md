@@ -468,7 +468,7 @@ CtaTemplate中的update_setting函数和该函数后面四个以get开头的函�
 
 CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程中能够用来接收数据或者接收状态更新。回调函数的作用是当某一个事件发生的时候，策略里的这类函数会被CTA策略引擎自动调用（无需在策略中主动操作）。回调函数按其功能可分为以下三类：
 
-####策略实例状态控制（所有策略都需要）
+#### 策略实例状态控制（所有策略都需要）
 
 **on_init**
 
@@ -493,9 +493,9 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 **on_start**
 
-入参：无
+* 入参：无
 
-出参：无
+* 出参：无
 
 启动策略时on_start函数会被调用，默认写法是调用write_log函数输出“策略启动”日志，如下方代码所示：
 
@@ -511,9 +511,9 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 **on_stop**
 
-入参：无
+* 入参：无
 
-出参：无
+* 出参：无
 
 停止策略时on_stop函数会被调用，默认写法是调用write_log函数输出“策略停止”日志，如下方代码所示：
 
@@ -527,13 +527,13 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 调用策略的on_stop函数停止策略后，策略的trading状态变为【False】，此时策略就不会发出交易信号了。
 
-**接收数据、计算指标、发出交易信号**
+#### 接收数据、计算指标、发出交易信号
 
-on_tick
+**on_tick**
 
-入参：tick: TickData
+* 入参：tick: TickData
 
-出参：无
+* 出参：无
 
 绝大部分交易系统都只提供Tick数据的推送。即使一部分数字货币交易平台或者外汇平台可以提供K线数据的推送，但是这些数据到达本地电脑的速度也会慢于Tick数据的推送，因为也需要平台合成之后才能推送过来。所以实盘的时候，vn.py里所有的策略的K线都是由收到的Tick数据合成的。
 
@@ -547,11 +547,11 @@ on_tick
         self.bg.update_tick(tick)
 ```
 
-on_bar
+**on_bar**
 
-入参：bar: BarData
+* 入参：bar: BarData
 
-出参：无
+* 出参：无
 
 当策略收到最新的K线数据时（实盘时默认推进来的是基于Tick合成的一分钟的K线，回测时则取决于选择参数时填入的K线数据频率），on_bar函数就会被调用。示例策略里出现过的写法有两种：
 
@@ -617,46 +617,49 @@ on_bar
 
     请注意，如果需要在图形界面刷新指标数值，请不要忘记调用put_event()函数。
 
-**委托状态更新**
+#### 委托状态更新
 
 以下函数在策略中可以直接pass，其具体逻辑应用交给回测/实盘引擎负责。
 
-on_trade
+**on_trade**
 
-入参：bar: TradeData
+* 入参：bar: TradeData
 
-出参：无
+* 出参：无
 
 收到策略成交回报时on_trade函数会被调用。
 
-on_order
+**on_order**
 
-入参：bar: OrderData
+* 入参：bar: OrderData
 
-出参：无
+* 出参：无
 
 收到策略委托回报时on_order函数会被调用。
 
-on_stop_order
+**on_stop_order**
 
-入参：bar: StopOrder
+* 入参：bar: StopOrder
 
-出参：无
+* 出参：无
 
 收到策略停止单回报时on_stop_order函数会被调用。
 
 ### 策略的主动函数
 
-**策略内**
+#### 策略内
 
-- buy：买入开仓（Direction：LONG，Offset：OPEN）
-- sell：卖出平仓（Direction：SHORT，Offset：CLOSE）
-- short：卖出开仓（Direction：SHORT，Offset：OPEN）
-- cover：买入平仓（Direction：LONG，Offset：CLOSE）
+**buy**：买入开仓（Direction：LONG，Offset：OPEN）
 
-入参：price: float, volume: float, stop: bool = False, lock: bool = False, net: bool = False
+**sell**：卖出平仓（Direction：SHORT，Offset：CLOSE）
 
-出参：vt_orderids: List[vt_orderid] / 无 
+**short**：卖出开仓（Direction：SHORT，Offset：OPEN）
+
+**cover**：买入平仓（Direction：LONG，Offset：CLOSE）
+
+* 入参：price: float, volume: float, stop: bool = False, lock: bool = False, net: bool = False
+
+* 出参：vt_orderids: List[vt_orderid] / 无 
 
 buy/sell/short/cover都是策略内部的负责发单的交易请求类函数。策略可以通过这些函数给CTA策略引擎发送交易信号来达到下单的目的。
 
@@ -678,29 +681,29 @@ buy/sell/short/cover都是策略内部的负责发单的交易请求类函数。
 
 请注意，国内期货有开平仓的概念，例如买入操作要区分为买入开仓和买入平仓；但对于股票、外盘期货和绝大部分数字货币都是净持仓模式，没有开仓和平仓概念，所以只需使用买入（buy）和卖出（sell）这两个指令就可以了。
 
-cancel_order
+**cancel_order**
 
-入参：vt_orderid: str
+* 入参：vt_orderid: str
 
-出参：无
+* 出参：无
 
-cancel_all
+**cancel_all**
 
-入参：无
+* 入参：无
 
-出参：无
+* 出参：无
 
 cancel_order和cancel_all都是策略内部的负责撤单的交易请求类函数。cancel_order是撤掉策略内指定的活动委托，cancel_all是撤掉策略所有的活动委托。
 
 请注意，要在策略启动之后，也就是策略的trading状态变为【True】之后，才能撤单。
 
-**CTA策略引擎**
+#### CTA策略引擎
 
-send_order
+**send_order**
 
-入参：price: float, volume: float, stop: bool = False, lock: bool = False, net: bool = False
+* 入参：price: float, volume: float, stop: bool = False, lock: bool = False, net: bool = False
 
-出参：vt_orderids / 无
+* 出参：vt_orderids / 无
 
 send_order函数是CTA策略引擎调用的发送委托的函数。一般在策略编写的时候不需要单独调用，通过buy/sell/short/cover函数发送委托即可。
 
@@ -712,37 +715,37 @@ send_order函数是CTA策略引擎调用的发送委托的函数。一般在策�
 
 以下为策略以外的功能函数：
 
-write_log
+**write_log**
 
-入参：msg: str
+* 入参：msg: str
 
-出参：无
+* 出参：无
 
 在策略中调用write_log函数，可以进行指定内容的日志输出。
 
-get_engine_type
+**get_engine_type**
 
-入参：无
+* 入参：无
 
-出参：engine_type: EngineType
+* 出参：engine_type: EngineType
 
 如果策略对于回测和实盘时有不同的逻辑处理，可以调用get_engine_type函数获取当下使用的引擎类型来进行逻辑判断。
 
 请注意，如果要调用该函数进行逻辑判断，请在策略文件顶部导入“EngineType”。
 
-get_pricetick
+**get_pricetick**
 
-入参：无
+* 入参：无
 
-出参：pricetick: float / None
+* 出参：pricetick: float / None
 
 在策略中调用get_pricetick函数，可以获取交易合约的最小价格跳动。
 
-load_bar
+**load_bar**
 
-入参：days: int, interval: Interval = Interval.MINUTE, callback: Callable = None, use_database: bool = False
+* 入参：days: int, interval: Interval = Interval.MINUTE, callback: Callable = None, use_database: bool = False
 
-出参：无
+* 出参：无
 
 在策略中调用load_bar函数，可以在策略初始化时加载K线数据。
 
@@ -771,39 +774,39 @@ load_bar
         )
 ```
 
-load_tick
+**load_tick**
 
-入参：days: int
+* 入参：days: int
 
-出参：无
+* 出参：无
 
 在策略中调用load_tick函数，可以在策略初始化时加载Tick数据。
 
-put_event
+**put_event**
 
-入参：无
+* 入参：无
 
-出参：无
+* 出参：无
 
 在策略中调用put_event函数，可以通知图形界面刷新策略状态相关显示。
 
 请注意，要策略初始化完成，inited状态变为【True】之后，才能刷新界面。
 
-send_email
+**send_email**
 
-入参：msg: str
+* 入参：msg: str
 
-出参：无
+* 出参：无
 
 配置好邮箱相关信息之后（配置方法详见基本使用篇的全局配置部分），在策略中调用send_email函数，可以发送指定内容的邮件到自己的邮箱。
 
 请注意，要策略初始化完成，inited状态变为【True】之后，才能发送邮件。
 
-sync_data 
+**sync_data**
 
-入参：无
+* 入参：无
 
-出参：无
+* 出参：无
 
 在策略中调用sync_data函数，可以在实盘的时候，每次停止或成交时都同步策略变量进json文件中进行本地缓存，方便第二天初始化时再进行读取还原（CTA策略引擎会去调用，在策略里无需主动调用）。
 
