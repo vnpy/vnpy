@@ -2,6 +2,8 @@ import csv
 from datetime import datetime
 from typing import List, Tuple
 
+from pytz import timezone
+
 from vnpy.trader.database import BarOverview, DB_TZ
 from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine
 from vnpy.trader.constant import Interval, Exchange
@@ -30,6 +32,7 @@ class ManagerEngine(BaseEngine):
         symbol: str,
         exchange: Exchange,
         interval: Interval,
+        tz_name: str,
         datetime_head: str,
         open_head: str,
         high_head: str,
@@ -48,12 +51,14 @@ class ManagerEngine(BaseEngine):
         bars = []
         start = None
         count = 0
+        tz = timezone(tz_name)
 
         for item in reader:
             if datetime_format:
                 dt = datetime.strptime(item[datetime_head], datetime_format)
             else:
                 dt = datetime.fromisoformat(item[datetime_head])
+            dt = tz.localize(dt)
 
             open_interest = item.get(open_interest_head, 0)
 
