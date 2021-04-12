@@ -83,10 +83,10 @@ class ManagerEngine(BaseEngine):
             if not start:
                 start = bar.datetime
 
+        end = bar.datetime
         # insert into database
         database_manager.save_bar_data(bars)
 
-        end = bar.datetime
         return start, end, count
 
     def output_data_to_csv(
