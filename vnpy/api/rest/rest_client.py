@@ -2,7 +2,6 @@ import sys
 import traceback
 from datetime import datetime
 from enum import Enum
-from multiprocessing.dummy import Pool
 from queue import Empty, Queue
 from typing import Any, Callable, Optional, Union, Type
 from types import TracebackType
@@ -97,7 +96,7 @@ class RestClient(object):
         self._active: bool = False
 
         self._queue: Queue = Queue()
-        self._pool: Pool = None
+        self._pool = None
 
         self.proxies: dict = None
 
@@ -125,8 +124,9 @@ class RestClient(object):
             return
 
         self._active = True
-        self._pool = Pool(n)
-        self._pool.apply_async(self._run)
+        self._pool = [Thread(target=self._run) for _ in range(n)]
+        for t in self._pool:
+            t.start()
 
     def stop(self) -> None:
         """
