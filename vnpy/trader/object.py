@@ -129,10 +129,7 @@ class OrderData(BaseData):
         """
         Check if the order is active.
         """
-        if self.status in ACTIVE_STATUSES:
-            return True
-        else:
-            return False
+        return self.status in ACTIVE_STATUSES
 
     def create_cancel_request(self) -> "CancelRequest":
         """
