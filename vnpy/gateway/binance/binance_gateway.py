@@ -227,7 +227,8 @@ class BinanceRestApi(RestClient):
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",
-            "X-MBX-APIKEY": self.key
+            "X-MBX-APIKEY": self.key,
+            "Connection": "close"
         }
 
         if security in [Security.SIGNED, Security.API_KEY]:
