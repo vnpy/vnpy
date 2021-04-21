@@ -1126,13 +1126,17 @@ class HuobisDataWebsocketApi(HuobisWebsocketApiBase):
             return
 
         bids = tick_data["bids"]
-        for n in range(5):
+        bids_n = len(bids)
+        bids_n = min(bids_n, 5)
+        for n in range(bids_n):
             price, volume = bids[n]
             tick.__setattr__("bid_price_" + str(n + 1), float(price))
             tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
 
         asks = tick_data["asks"]
-        for n in range(5):
+        asks_n = len(asks)
+        asks_n = min(asks_n, 5)
+        for n in range(asks_n):
             price, volume = asks[n]
             tick.__setattr__("ask_price_" + str(n + 1), float(price))
             tick.__setattr__("ask_volume_" + str(n + 1), float(volume))
