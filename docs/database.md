@@ -1,19 +1,59 @@
-# 数据库配置
+# 数据库
 
-VN Trader目前支持以下四种数据库：  
+## 数据库简介
 
- * [SQLite](#sqlite)（默认）
- * [MySQL](#sqlmysqlpostgresql)
- * [PostgreSQL](#sqlmysqlpostgresql)
- * [MongoDB](#mongodb)
- 
-如果需要配置数据库，请点击配置。然后按照各个数据库所需的字段填入相对应的值即可。
+VN Trader目前支持以下五种数据库，其中，SQLite、MySQL和PostgreSQL为SQL类数据库，MongoDB和InfluxDB为非SQL类数据库。
 
----
-## SQLite
-需要填写以下字段：
+### SQLite
 
-| 字段名            | 值 |
+SQLite是轻量级嵌入式数据库，也是vn.py的**默认数据库**，适合入门新手用户；
+ - 存储在一个单一的跨平台的磁盘文件上；
+ - 不需要在系统中配置、安装和管理；
+ - 不需要一个单独的服务器进程。
+
+MySQL：目前最流行的开源关系型数据库；
+ - 文档材料丰富，社区及用户活跃；
+ - 支持多种操作系统，多种开发语言；
+ - 可替换其他高NewSQL兼容实现（如TiDB）。
+
+PostgreSQL：特性更为丰富的开源关系型数据库，只推荐熟手使用；
+ - 多进程结构；
+ - 支持通过扩展插件来新增功能。
+
+MongoDB：基于分布式文件储存（bson格式）的非关系型数据库；
+ - 面向文档存储，操作比较简单；
+ - 支持丰富的存储类型和数据操作；
+ - 内置的热数据内存缓存实现更快的读写速度。
+
+InfluxDB：专门针对时间序列数据存储设计的非关系型数据库；
+- 列式数据存储提供极高的读写效率；
+- 采用独立服务进程的模式运行，也能支持多进程的并发访问需求。
+
+## 数据库配置（以MySQL为例）
+
+本文档以MySQL为例，介绍数据库的配置过程。
+
+首先在[MySQL官网](https://dev.mysql.com/downloads/)下载Windows版本安装包【MySQL Installer for Windows】，如下图所示：
+
+![](1.png)
+
+![](2.png)
+
+![](3.png)
+
+下载完成后得到msi格式的安装包，双击打开后选择【Full】模式，安装MySQL完整版，然后一路点击【Next】按钮即可完成安装。
+
+![](4.png)
+
+![](5.png)
+
+## 数据库字段
+
+### SQLite
+
+SQLite配置需要填写以下字段：
+
+| 字段名             | 值 |
 |---------           |---- |
 |database.driver     | sqlite |
 |database.database   | 数据库文件（相对于trader目录） |
@@ -26,7 +66,6 @@ SQLite的例子：
 |database.database   | database.db |
 
 
----
 ## SQL(MySQL,PostgreSQL)
 
 需要填写以下字段：
@@ -52,9 +91,14 @@ MySQL的例子：
 |database.password   | .... |
 
 > vnpy不会主动为关系型数据库创建数据库，所以请确保你所填的database.database字段对应的数据库已经创建好了  
-> 若未创建数据库，请手动连上数据库并运行该命令：```create database <你填的database.database>;```   
+> 若未创建数据库，请手动连上数据库并运行该命令：
+```
+create database <你填的database.database>;
+```   
 
 ---
+
+
 ## MongoDB
 
 需要填写以下字段：
@@ -71,7 +115,7 @@ MySQL的例子：
  
 MongoDB的带认证例子：
 
-| 字段名            | 值 |
+| 字段名             | 值 |
 |---------           |----  |
 |database.driver     | mongodb |
 |database.host       | localhost |
