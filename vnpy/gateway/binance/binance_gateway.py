@@ -629,7 +629,7 @@ class BinanceTradeWebsocketApi(WebsocketClient):
 
     def on_packet(self, packet: dict):  # type: (dict)->None
         """"""
-        if packet["e"] == "outboundAccountInfo":
+        if packet["e"] == "outboundAccountPosition":
             self.on_account(packet)
         elif packet["e"] == "executionReport":
             self.on_order(packet)
