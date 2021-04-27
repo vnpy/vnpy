@@ -695,7 +695,7 @@ class BinancesRestApi(RestClient):
                 if req.end:
                     end_time = int(datetime.timestamp(req.end))
                     params["endTime"] = end_time * 1000     # convert to millisecond
-                   
+
             else:
                 params["endTime"] = end_time * 1000
                 path = "/dapi/v1/klines"
@@ -760,7 +760,7 @@ class BinancesRestApi(RestClient):
                 else:
                     end_dt = begin - TIMEDELTA_MAP[req.interval]
                     end_time = int(datetime.timestamp(end_dt))
- 
+
         if not self.usdt_base:
             history = list(reversed(history))
         return history

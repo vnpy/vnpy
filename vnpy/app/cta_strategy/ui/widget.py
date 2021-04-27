@@ -164,7 +164,7 @@ class CtaManager(QtWidgets.QWidget):
 
     def roll(self):
         """"""
-        dialog = RolloverTool(self.cta_engine)
+        dialog = RolloverTool(self)
         dialog.exec_()
 
 
