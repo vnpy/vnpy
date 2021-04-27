@@ -2,6 +2,8 @@ from typing import Tuple, Dict
 from functools import partial
 from datetime import datetime, timedelta
 
+from pytz import all_timezones
+
 from vnpy.trader.ui import QtWidgets, QtCore
 from vnpy.trader.engine import MainEngine, EventEngine
 from vnpy.trader.constant import Interval, Exchange
@@ -206,6 +208,7 @@ class ManagerWidget(QtWidgets.QWidget):
         symbol = dialog.symbol_edit.text()
         exchange = dialog.exchange_combo.currentData()
         interval = dialog.interval_combo.currentData()
+        tz_name = dialog.tz_combo.currentText()
         datetime_head = dialog.datetime_edit.text()
         open_head = dialog.open_edit.text()
         low_head = dialog.low_edit.text()
@@ -220,6 +223,7 @@ class ManagerWidget(QtWidgets.QWidget):
             symbol,
             exchange,
             interval,
+            tz_name,
             datetime_head,
             open_head,
             high_head,
@@ -352,8 +356,8 @@ class ManagerWidget(QtWidgets.QWidget):
 
     def update_data(self) -> None:
         """"""
-        data = self.engine.get_bar_data_available()
-        total = len(data)
+        overviews = self.engine.get_bar_overview()
+        total = len(overviews)
         count = 0
 
         dialog = QtWidgets.QProgressDialog(
@@ -366,15 +370,15 @@ class ManagerWidget(QtWidgets.QWidget):
         dialog.setWindowModality(QtCore.Qt.WindowModal)
         dialog.setValue(0)
 
-        for d in data:
+        for overview in overviews:
             if dialog.wasCanceled():
                 break
 
             self.engine.download_bar_data(
-                d["symbol"],
-                Exchange(d["exchange"]),
-                Interval(d["interval"]),
-                d["end"]
+                overview.symbol,
+                overview.exchange,
+                overview.interval,
+                overview.end
             )
             count += 1
             progress = int(round(count / total * 100, 0))
@@ -474,6 +478,10 @@ class ImportDialog(QtWidgets.QDialog):
             if i != Interval.TICK:
                 self.interval_combo.addItem(str(i.name), i)
 
+        self.tz_combo = QtWidgets.QComboBox()
+        self.tz_combo.addItems(all_timezones)
+        self.tz_combo.setCurrentIndex(self.tz_combo.findText("Asia/Shanghai"))
+
         self.datetime_edit = QtWidgets.QLineEdit("datetime")
         self.open_edit = QtWidgets.QLineEdit("open")
         self.high_edit = QtWidgets.QLineEdit("high")
@@ -500,6 +508,7 @@ class ImportDialog(QtWidgets.QDialog):
         form.addRow("代码", self.symbol_edit)
         form.addRow("交易所", self.exchange_combo)
         form.addRow("周期", self.interval_combo)
+        form.addRow("时区", self.tz_combo)
         form.addRow(QtWidgets.QLabel())
         form.addRow(head_label)
         form.addRow("时间戳", self.datetime_edit)

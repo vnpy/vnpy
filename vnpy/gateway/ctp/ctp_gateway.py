@@ -810,7 +810,9 @@ class CtpTdApi(TdApi):
             self.gateway.write_log("请选择开平方向")
             return ""
 
-        if req.type not in ORDERTYPE_VT2CTP:
+        if req.type not in {
+            OrderType.LIMIT, OrderType.MARKET, OrderType.FAK, OrderType.FOK
+        }:
             self.gateway.write_log(f"当前接口不支持该类型的委托{req.type.value}")
             return ""
 
