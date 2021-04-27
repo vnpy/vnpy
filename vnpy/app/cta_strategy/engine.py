@@ -782,6 +782,7 @@ class CtaEngine(BaseEngine):
         # Remove from strategies
         self.strategies.pop(strategy_name)
 
+        self.write_log(f"策略{strategy.strategy_name}移除移除成功")
         return True
 
     def load_strategy_class(self):
@@ -937,7 +938,7 @@ class CtaEngine(BaseEngine):
         Create cta engine log event.
         """
         if strategy:
-            msg = f"{strategy.strategy_name}: {msg}"
+            msg = f"[{strategy.strategy_name}]  {msg}"
 
         log = LogData(msg=msg, gateway_name=APP_NAME)
         event = Event(type=EVENT_CTA_LOG, data=log)
