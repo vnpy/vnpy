@@ -660,7 +660,7 @@ class HuobisRestApi(RestClient):
                     exchange=Exchange.HUOBI,
                     name=d["contract_code"],
                     pricetick=d["price_tick"],
-                    size=int(d["contract_size"]),
+                    size=d["contract_size"],
                     min_volume=1,
                     product=Product.FUTURES,
                     history_data=True,
@@ -840,6 +840,7 @@ class HuobisWebsocketApiBase(WebsocketClient):
         """"""
         self.key = key
         self.secret = secret
+        self.usdt_base = usdt_base
 
         host, path = _split_url(url)
         self.sign_host = host
@@ -941,11 +942,20 @@ class HuobisTradeWebsocketApi(HuobisWebsocketApiBase):
     def subscribe(self) -> int:
         """"""
         self.req_id += 1
-        req = {
-            "op": "sub",
-            "cid": str(self.req_id),
-            "topic": f"orders.*"
-        }
+
+        if self.usdt_base:
+            req = {
+                "op": "sub",
+                "cid": str(self.req_id),
+                "topic": f"orders_cross.*"
+            }
+        else:
+            req = {
+                "op": "sub",
+                "cid": str(self.req_id),
+                "topic": f"orders.*"
+            }
+
         self.send_packet(req)
 
     def on_connected(self) -> None:
@@ -1116,13 +1126,17 @@ class HuobisDataWebsocketApi(HuobisWebsocketApiBase):
             return
 
         bids = tick_data["bids"]
-        for n in range(5):
+        bids_n = len(bids)
+        bids_n = min(bids_n, 5)
+        for n in range(bids_n):
             price, volume = bids[n]
             tick.__setattr__("bid_price_" + str(n + 1), float(price))
             tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
 
         asks = tick_data["asks"]
-        for n in range(5):
+        asks_n = len(asks)
+        asks_n = min(asks_n, 5)
+        for n in range(asks_n):
             price, volume = asks[n]
             tick.__setattr__("ask_price_" + str(n + 1), float(price))
             tick.__setattr__("ask_volume_" + str(n + 1), float(volume))

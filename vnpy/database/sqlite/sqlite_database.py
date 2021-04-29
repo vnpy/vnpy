@@ -193,14 +193,13 @@ class SqliteDatabase(BaseDatabase):
 
             d = tick.__dict__
             d["exchange"] = d["exchange"].value
-            d["interval"] = d["interval"].value
             d.pop("gateway_name")
             d.pop("vt_symbol")
             data.append(d)
 
         # Upsert data into database
         with self.db.atomic():
-            for c in chunked(data, 50):
+            for c in chunked(data, 10):
                 DbTickData.insert_many(c).on_conflict_replace().execute()
 
     def load_bar_data(

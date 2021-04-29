@@ -1,11 +1,15 @@
 """
+In Linux, when appear this case :
+can't not open file librohonbase.so.1.1,
+please change the file name in vnpy.api.rohon
+from "librohonbase.so" to "librohonbase.so.1.1"
 """
 import pytz
 from datetime import datetime
 
-from .vnctpmd import MdApi
-from .vnctptd import TdApi
-from .ctp_constant import (
+from vnpy.api.rohon import (
+    MdApi,
+    TdApi,
     THOST_FTDC_OAS_Submitted,
     THOST_FTDC_OAS_Accepted,
     THOST_FTDC_OAS_Rejected,
@@ -322,7 +326,8 @@ class RohonMdApi(MdApi):
         # If not connected, then start connection first.
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
-            self.createFtdcMdApi((str(path) + "\\Md").encode("GBK"))
+            self.createFtdcMdApi(str(path) + "\\Md")
+
             self.registerFront(address)
             self.init()
 
@@ -672,11 +677,13 @@ class RohonTdApi(TdApi):
 
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
-            self.createFtdcTraderApi((str(path) + "\\Td").encode("GBK"))
+            self.createFtdcTraderApi(str(path) + "\\Td")
+
             self.subscribePrivateTopic(0)
             self.subscribePublicTopic(0)
 
             self.registerFront(address)
+
             self.init()
 
             self.connect_status = True

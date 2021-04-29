@@ -203,6 +203,7 @@ class CoinbaseWebsocketApi(WebsocketClient):
 
         self.orderbooks = {}
         self.subscribed = {}
+        self.tradeids = set()
 
     def connect(
         self,
@@ -365,6 +366,11 @@ class CoinbaseWebsocketApi(WebsocketClient):
         else:
             order = sys_order_map[packet["taker_order_id"]]
 
+        tradeid = packet["trade_id"]
+        if tradeid in self.tradeids:
+            return
+        self.tradeids.add(tradeid)
+
         trade = TradeData(
             symbol=packet["product_id"],
             exchange=Exchange.COINBASE,
@@ -481,7 +487,7 @@ class OrderBook():
 
         asks_keys = self.asks.keys()
         asks_keys = sorted(asks_keys)
-        
+
         for i in range(min(5, len(asks_keys))):
             price = float(asks_keys[i])
             volume = float(self.asks[asks_keys[i]])
