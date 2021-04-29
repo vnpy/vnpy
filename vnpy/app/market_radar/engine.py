@@ -2,6 +2,12 @@ import traceback
 from typing import Dict, Set, Any
 from datetime import datetime
 from collections import defaultdict
+from enum import Enum
+
+try:
+    from winsound import PlaySound, SND_ASYNC
+except ModuleNotFoundError:
+    PlaySound = None
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.utility import save_json, load_json
@@ -17,6 +23,7 @@ APP_NAME = "MarketRadar"
 EVENT_RADAR_RULE = "eRadarRule"
 EVENT_RADAR_UPDATE = "eRadarUpdate"
 EVENT_RADAR_LOG = "eRaderLog"
+EVENT_RADAR_SIGNAL = "eRadarSignal"
 
 
 class RadarRule:
@@ -30,6 +37,37 @@ class RadarRule:
         self.ndigits = ndigits
 
 
+class SignalType(Enum):
+    """"""
+
+    GREATER_THAN = "大于"
+    LESS_THAN = "小于"
+    EQUAL_TO = "等于"
+
+
+class RadarSignal:
+    """"""
+
+    def __init__(
+        self,
+        rule_name: str,
+        signal_id: int,
+        signal_type: SignalType,
+        signal_target: float,
+        signal_sound: bool,
+        signal_email: bool
+    ) -> None:
+        """"""
+        self.rule_name: str = rule_name
+        self.signal_id: int = signal_id
+        self.signal_type: SignalType = signal_type
+        self.signal_target: float = signal_target
+        self.signal_sound: bool = signal_sound
+        self.signal_email: bool = signal_email
+
+        self.active = True
+
+
 class RadarEngine(BaseEngine):
     """"""
 
@@ -41,6 +79,12 @@ class RadarEngine(BaseEngine):
 
         self.rules: Dict[str, RadarRule] = {}
         self.symbol_rule_map: Dict[str, Set[RadarRule]] = defaultdict(set)
+
+        self.signals: Dict[int, RadarSignal] = {}
+        self.rule_signal_map: Dict[str, Set[RadarSignal]] = defaultdict(set)
+
+        self.signal_id: int = 0
+
         self.inited = False
 
         self.register_event()
@@ -224,6 +268,9 @@ class RadarEngine(BaseEngine):
         }
         self.put_event(EVENT_RADAR_UPDATE, radar_data)
 
+        # Check radar signal
+        self.check_signal(rule.name, value)
+
     def check_rule(self, formula: str, params: Dict[str, str]) -> bool:
         """"""
         data = {}
@@ -234,7 +281,7 @@ class RadarEngine(BaseEngine):
         try:
             parse_formula(formula, data)
         except Exception:
-            msg = f"价差公式校验出错，细节：\n{traceback.format_exec()}"
+            msg = f"计算公式校验出错，细节：\n{traceback.format_exc()}"
             self.write_log(msg)
 
             return False
@@ -250,6 +297,80 @@ class RadarEngine(BaseEngine):
         """"""
         log = LogData(APP_NAME, msg)
         self.put_event(EVENT_RADAR_LOG, log)
+
+    def add_signal(
+        self,
+        rule_name: str,
+        signal_type: SignalType,
+        signal_target: float,
+        signal_sound: bool,
+        signal_email: bool
+    ) -> None:
+        """"""
+        self.signal_id += 1
+
+        signal = RadarSignal(
+            rule_name,
+            self.signal_id,
+            signal_type,
+            signal_target,
+            signal_sound,
+            signal_email
+        )
+
+        self.signals[self.signal_id] = signal
+        self.rule_signal_map[rule_name].add(signal)
+
+        self.put_event(EVENT_RADAR_SIGNAL, signal)
+
+    def remove_signal(self, signal_id: int) -> None:
+        """"""
+        if signal_id not in self.signals:
+            return
+
+        signal = self.signals.pop(signal_id)
+        signal.active = False
+
+        self.rule_signal_map[signal.rule_name].remove(signal)
+        self.put_event(EVENT_RADAR_SIGNAL, signal)
+
+    def check_signal(self, rule_name: str, rule_value: float) -> None:
+        """"""
+        signals = self.rule_signal_map[rule_name]
+        if not signals:
+            return
+
+        for signal in list(signals):
+            triggered = False
+
+            if signal.signal_type == SignalType.GREATER_THAN:
+                if rule_value > signal.signal_target:
+                    triggered = True
+            elif signal.signal_type == SignalType.LESS_THAN:
+                if rule_value < signal.signal_target:
+                    triggered = True
+            elif signal.signal_type == SignalType.EQUAL_TO:
+                if rule_value == signal.signal_target:
+                    triggered = True
+
+            if triggered:
+                signal.active = False
+                signals.remove(signal)
+                self.put_event(EVENT_RADAR_SIGNAL, signal)
+
+                msg = (
+                    f"雷达信号{signal.signal_id}已触发，"
+                    f"规则{signal.rule_name}实时计算数值{rule_value}，"
+                    f"{signal.signal_type.value}目标{signal.signal_target}"
+                )
+
+                self.write_log(msg)
+
+                if signal.signal_email:
+                    self.main_engine.send_email("市场雷达", msg)
+
+                if signal.signal_sound and PlaySound:
+                    PlaySound("SystemHand", SND_ASYNC)
 
 
 def parse_formula(formula: str, data: Dict[str, float]) -> float:

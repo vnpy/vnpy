@@ -40,8 +40,13 @@ class RecorderManager(QtWidgets.QWidget):
 
         # Create widgets
         self.symbol_line = QtWidgets.QLineEdit()
-        self.symbol_line.setFixedHeight(
-            self.symbol_line.sizeHint().height() * 2)
+
+        self.interval_spin = QtWidgets.QSpinBox()
+        self.interval_spin.setMinimum(1)
+        self.interval_spin.setMaximum(60)
+        self.interval_spin.setValue(self.recorder_engine.timer_interval)
+        self.interval_spin.setSuffix("秒")
+        self.interval_spin.valueChanged.connect(self.set_interval)
 
         contracts = self.main_engine.get_all_contracts()
         self.vt_symbols = [contract.vt_symbol for contract in contracts]
@@ -82,9 +87,12 @@ class RecorderManager(QtWidgets.QWidget):
         grid.addWidget(add_tick_button, 1, 1)
         grid.addWidget(remove_tick_button, 1, 2)
 
+        form = QtWidgets.QFormLayout()
+        form.addRow("本地代码", self.symbol_line)
+        form.addRow("写入间隔", self.interval_spin)
+
         hbox = QtWidgets.QHBoxLayout()
-        hbox.addWidget(QtWidgets.QLabel("本地代码"))
-        hbox.addWidget(self.symbol_line)
+        hbox.addLayout(form)
         hbox.addWidget(QtWidgets.QLabel("     "))
         hbox.addLayout(grid)
         hbox.addStretch()
@@ -165,3 +173,7 @@ class RecorderManager(QtWidgets.QWidget):
         """"""
         vt_symbol = self.symbol_line.text()
         self.recorder_engine.remove_tick_recording(vt_symbol)
+
+    def set_interval(self, interval):
+        """"""
+        self.recorder_engine.interval = interval
