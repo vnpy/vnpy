@@ -490,14 +490,18 @@ class BacktestingEngine:
         """"""
         self.datetime = dt
 
-        # self.bars.clear()
+        bars: Dict[str, BarData] = {}
         for vt_symbol in self.vt_symbols:
             bar = self.history_data.get((dt, vt_symbol), None)
 
             # If bar data of vt_symbol at dt exists
             if bar:
+                # Update bar data for crossing order
                 self.bars[vt_symbol] = bar
-            # Otherwise, use previous data to backfill
+
+                # Put bar into dict for strategy.on_bars update
+                bars[vt_symbol] = bar
+            # Otherwise, use previous close to backfill
             elif vt_symbol in self.bars:
                 old_bar = self.bars[vt_symbol]
 
@@ -514,7 +518,7 @@ class BacktestingEngine:
                 self.bars[vt_symbol] = bar
 
         self.cross_limit_order()
-        self.strategy.on_bars(self.bars)
+        self.strategy.on_bars(bars)
 
         self.update_daily_close(self.bars, dt)
 
@@ -599,7 +603,8 @@ class BacktestingEngine:
         offset: Offset,
         price: float,
         volume: float,
-        lock: bool
+        lock: bool,
+        net: bool
     ) -> List[str]:
         """"""
         price = round_to(price, self.priceticks[vt_symbol])

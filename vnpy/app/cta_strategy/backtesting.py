@@ -183,7 +183,8 @@ class BacktestingEngine:
         end: datetime = None,
         mode: BacktestingMode = BacktestingMode.BAR,
         inverse: bool = False,
-        risk_free: float = 0
+        risk_free: float = 0,
+        annual_days: int = 240
     ):
         """"""
         self.mode = mode
@@ -203,6 +204,7 @@ class BacktestingEngine:
         self.mode = mode
         self.inverse = inverse
         self.risk_free = risk_free
+        self.annual_days = annual_days
 
     def add_strategy(self, strategy_class: type, setting: dict):
         """"""
@@ -226,7 +228,7 @@ class BacktestingEngine:
 
         # Load 30 days of data each time and allow for progress update
         total_days = (self.end - self.start).days
-        progress_days = int(total_days / 10)
+        progress_days = max(int(total_days / 10), 1)
         progress_delta = timedelta(days=progress_days)
         interval_delta = INTERVAL_DELTA_MAP[self.interval]
 
@@ -302,13 +304,13 @@ class BacktestingEngine:
         self.output("开始回放历史数据")
 
         # Use the rest of history data for running backtesting
-        backtesting_data = self.history_data[ix:]
+        backtesting_data = self.history_data[ix + 1:]
         if not backtesting_data:
             self.output("历史数据不足，回测终止")
             return
 
         total_size = len(backtesting_data)
-        batch_size = int(total_size / 10)
+        batch_size = max(int(total_size / 10), 1)
 
         for ix, i in enumerate(range(0, total_size, batch_size)):
             batch_data = backtesting_data[i: i + batch_size]
@@ -457,13 +459,13 @@ class BacktestingEngine:
             daily_trade_count = total_trade_count / total_days
 
             total_return = (end_balance / self.capital - 1) * 100
-            annual_return = total_return / total_days * 240
+            annual_return = total_return / total_days * self.annual_days
             daily_return = df["return"].mean() * 100
             return_std = df["return"].std() * 100
 
             if return_std:
-                daily_risk_free = self.risk_free / np.sqrt(240)
-                sharpe_ratio = (daily_return - daily_risk_free) / return_std * np.sqrt(240)
+                daily_risk_free = self.risk_free / np.sqrt(self.annual_days)
+                sharpe_ratio = (daily_return - daily_risk_free) / return_std * np.sqrt(self.annual_days)
             else:
                 sharpe_ratio = 0
 
@@ -986,7 +988,8 @@ class BacktestingEngine:
         price: float,
         volume: float,
         stop: bool,
-        lock: bool
+        lock: bool,
+        net: bool
     ):
         """"""
         price = round_to(price, self.pricetick)
@@ -1012,6 +1015,7 @@ class BacktestingEngine:
             offset=offset,
             price=price,
             volume=volume,
+            datetime=self.datetime,
             stop_orderid=f"{STOPORDER_PREFIX}.{self.stop_order_count}",
             strategy_name=self.strategy.strategy_name,
         )
