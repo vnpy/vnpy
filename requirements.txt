@@ -1,8 +1,8 @@
-six==1.13.0
+six
 wheel
+tzlocal
 PyQt5==5.14.1
-pyqtgraph==0.10.0
-dataclasses; python_version<="3.6"
+pyqtgraph
 qdarkstyle
 requests
 websocket-client
@@ -14,6 +14,7 @@ numpy
 pandas
 matplotlib
 seaborn
+PyCryptodome==3.9.9
 futu-api
 tigeropen
 rqdatac
@@ -26,3 +27,4 @@ QScintilla==2.11.4
 plotly
 quickfix
 trading-calendars
+influxdb

@@ -267,7 +267,7 @@ class BybitRestApi(RestClient):
         data = {
             "symbol": req.symbol,
             "side": DIRECTION_VT2BYBIT[req.direction],
-            "qty": int(req.volume),
+            "qty": float(req.volume),
             "order_link_id": orderid,
             "time_in_force": "GoodTillCancel",
             "reduce_only": False,
@@ -847,7 +847,6 @@ class BybitPublicWebsocketApi(WebsocketClient):
         topic = packet["topic"]
         type_ = packet["type"]
         data = packet["data"]
-        timestamp = int(packet["timestamp_e6"]) / 1000000
 
         # Update depth data into dict buf
         symbol = topic.replace("orderBookL2_25.", "")
@@ -1072,9 +1071,9 @@ class BybitPrivateWebsocketApi(WebsocketClient):
         """"""
         for d in packet["data"]:
             if self.usdt_base:
-                dt = generate_datetime(d["timestamp"])
-            else:
                 dt = generate_datetime(d["create_time"])
+            else:
+                dt = generate_datetime(d["timestamp"])
 
             order = OrderData(
                 symbol=d["symbol"],

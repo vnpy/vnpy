@@ -12,6 +12,8 @@ from enum import Enum
 from threading import Lock
 import pytz
 
+from requests.exceptions import SSLError
+
 from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.constant import (
@@ -225,7 +227,8 @@ class BinanceRestApi(RestClient):
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",
-            "X-MBX-APIKEY": self.key
+            "X-MBX-APIKEY": self.key,
+            "Connection": "close"
         }
 
         if security in [Security.SIGNED, Security.API_KEY]:
@@ -511,7 +514,7 @@ class BinanceRestApi(RestClient):
         self.gateway.on_order(order)
 
         # Record exception if not ConnectionError
-        if not issubclass(exception_type, ConnectionError):
+        if not issubclass(exception_type, (ConnectionError, SSLError)):
             self.on_error(exception_type, exception_value, tb, request)
 
     def on_cancel_order(self, data, request):

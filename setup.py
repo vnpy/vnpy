@@ -1,12 +1,9 @@
 """
 vn.py - By Traders, For Traders.
-
 The vn.py project is an open-source quantitative trading framework
 that is developed by traders, for traders.
-
 The project is mainly written in Python and uses C++ for low-layer
 and performance sensitive infrastructure.
-
 Using the vn.py project, institutional investors and professional
 traders, such as hedge funds, prop trading firms and investment banks,
 can easily develop complex trading strategies with the Event Engine
@@ -297,6 +294,42 @@ def get_ext_modules():
         language="cpp",
     )
 
+    vnrohonmd = Extension(
+        "vnpy.api.rohon.vnrohonmd",
+        [
+            "vnpy/api/rohon/vnrohon/vnrohonmd/vnrohonmd.cpp",
+        ],
+        include_dirs=["vnpy/api/rohon/include",
+                      "vnpy/api/rohon/vnrohon"],
+        define_macros=[],
+        undef_macros=[],
+        library_dirs=["vnpy/api/rohon/libs", "vnpy/api/rohon"],
+        libraries=["thostmduserapi_se", "thosttraderapi_se", "LinuxDataCollect", "rohonbase"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        depends=[],
+        language="cpp",
+    )
+
+    vnrohontd = Extension(
+        "vnpy.api.rohon.vnrohontd",
+        [
+            "vnpy/api/rohon/vnrohon/vnrohontd/vnrohontd.cpp",
+        ],
+        include_dirs=["vnpy/api/rohon/include",
+                      "vnpy/api/rohon/vnrohon"],
+        define_macros=[],
+        undef_macros=[],
+        library_dirs=["vnpy/api/rohon/libs", "vnpy/api/rohon"],
+        libraries=["thostmduserapi_se", "thosttraderapi_se", "LinuxDataCollect", "rohonbase"],
+        extra_compile_args=compiler_flags,
+        extra_link_args=extra_link_args,
+        runtime_library_dirs=runtime_library_dirs,
+        depends=[],
+        language="cpp",
+    )
+
     if platform.system() == "Windows":
         # use pre-built pyd for windows ( support python 3.7 only )
         ext_modules = []
@@ -308,7 +341,8 @@ def get_ext_modules():
             vnxtptd, vnxtpmd,
             vnsgittd, vnsgitmd,
             vnksgoldmd, vnksgoldtd,
-            vnnhmd, vnnhfutures, vnnhstock
+            vnnhmd, vnnhfutures, vnnhstock,
+            vnrohontd, vnrohonmd,
         ]
 
     ext_modules = check_extension_build_flag(
@@ -327,6 +361,10 @@ def get_ext_modules():
         ext_modules, "VNPY_BUILD_ksgold", vnksgoldmd)
     ext_modules = check_extension_build_flag(
         ext_modules, "VNPY_BUILD_ksgold", vnksgoldtd)
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_ROHON", vnrohontd)
+    ext_modules = check_extension_build_flag(
+        ext_modules, "VNPY_BUILD_ROHON", vnrohonmd)
 
     return ext_modules
 
@@ -367,14 +405,13 @@ setup(
         "Operating System :: Microsoft :: Windows :: Windows 10",
         "Operating System :: Microsoft :: Windows :: Windows Server 2008",
         "Operating System :: Microsoft :: Windows :: Windows Server 2012",
-        "Operating System :: Microsoft :: Windows :: Windows Server 2012",
+        "Operating System :: Microsoft :: Windows :: Windows Server 2019",
         "Operating System :: POSIX :: Linux"
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
         "Topic :: Office/Business :: Financial :: Investment",
         "Programming Language :: Python :: Implementation :: CPython",
         "License :: OSI Approved :: MIT License",
-        "Natural Language :: Chinese (Simplified)",
         "Natural Language :: Chinese (Simplified)"
     ],
     ext_modules=get_ext_modules(),

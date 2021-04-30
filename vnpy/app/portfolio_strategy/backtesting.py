@@ -347,12 +347,9 @@ class BacktestingEngine:
             daily_return = df["return"].mean() * 100
             return_std = df["return"].std() * 100
 
-            pnl_std = df["net_pnl"].std()
-
             if return_std:
                 daily_risk_free = self.risk_free / np.sqrt(240)
                 sharpe_ratio = (daily_return - daily_risk_free) / return_std * np.sqrt(240)
-                # sharpe_ratio = daily_net_pnl / pnl_std * np.sqrt(240)
             else:
                 sharpe_ratio = 0
 
@@ -602,7 +599,8 @@ class BacktestingEngine:
         offset: Offset,
         price: float,
         volume: float,
-        lock: bool
+        lock: bool,
+        net: bool
     ) -> List[str]:
         """"""
         price = round_to(price, self.priceticks[vt_symbol])

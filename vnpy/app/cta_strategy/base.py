@@ -38,6 +38,7 @@ class StopOrder:
     stop_orderid: str
     strategy_name: str
     lock: bool = False
+    net: bool = False
     vt_orderids: list = field(default_factory=list)
     status: StopOrderStatus = StopOrderStatus.WAITING
 
@@ -45,3 +46,10 @@ class StopOrder:
 EVENT_CTA_LOG = "eCtaLog"
 EVENT_CTA_STRATEGY = "eCtaStrategy"
 EVENT_CTA_STOPORDER = "eCtaStopOrder"
+
+INTERVAL_DELTA_MAP = {
+    Interval.TICK: timedelta(milliseconds=1),
+    Interval.MINUTE: timedelta(minutes=1),
+    Interval.HOUR: timedelta(hours=1),
+    Interval.DAILY: timedelta(days=1),
+}

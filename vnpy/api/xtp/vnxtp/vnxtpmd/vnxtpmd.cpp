@@ -668,9 +668,12 @@ void MdApi::processDepthMarketData(Task *task)
 		data["turnover"] = task_data->turnover;
 		data["avg_price"] = task_data->avg_price;
 		data["trades_count"] = task_data->trades_count;
-		data["ticker_status"] = task_data->ticker_status;
 		data["data_type"] = (int)task_data->data_type;
 		data["r4"] = task_data->r4;
+
+		//Solve UDP protocol error text
+		string status = task_data->ticker_status;
+		data["ticker_status"] = status.substr(0, 4);
 
 		pybind11::list ask;
 		pybind11::list bid;
@@ -1078,18 +1081,23 @@ void MdApi::processUnSubscribeAllOptionTickByTick(Task *task)
 ///主动函数
 ///-------------------------------------------------------------------------------------
 
-void MdApi::createQuoteApi(int client_id, string save_file_path)
+void MdApi::createQuoteApi(int client_id, string save_file_path, int log_level)
 {
-	this->api = QuoteApi::CreateQuoteApi(client_id, save_file_path.c_str());
-	this->api->RegisterSpi(this);
-
+	if (!this->api)
+	{
+		this->api = QuoteApi::CreateQuoteApi(client_id, save_file_path.c_str(), XTP_LOG_LEVEL(log_level));
+		this->api->RegisterSpi(this);
+	}
 };
 
 
 void MdApi::init()
 {
-	this->active = true;
-	this->task_thread = thread(&MdApi::processTask, this);
+	if (!this->active)
+	{
+		this->active = true;
+		this->task_thread = thread(&MdApi::processTask, this);
+	}
 };
 
 void MdApi::release()
