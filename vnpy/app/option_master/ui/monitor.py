@@ -253,6 +253,7 @@ class OptionMarketMonitor(MonitorTable):
         if tick.vt_symbol in self.option_symbols:
             self.update_price(tick.vt_symbol)
             self.update_impv(tick.vt_symbol)
+            self.update_greeks(tick.vt_symbol)
         elif tick.vt_symbol in self.underlying_option_map:
             option_symbols = self.underlying_option_map[tick.vt_symbol]
 
@@ -594,9 +595,10 @@ class OptionChainMonitor(MonitorTable):
             if chain.underlying_adjustment == float("inf"):
                 continue
 
-            adjustment = round_to(
-                chain.underlying_adjustment, underlying.pricetick
-            )
+            if underlying.pricetick:
+                adjustment = round_to(chain.underlying_adjustment, underlying.pricetick)
+            else:
+                adjustment = 0
 
             chain_cells = self.cells[chain.chain_symbol]
             chain_cells["underlying"].setText(underlying_symbol)

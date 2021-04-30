@@ -315,7 +315,7 @@ class HuobifRestApi(RestClient):
     def query_history(self, req: HistoryRequest):
         """"""
         history = []
-        count = 2000
+        count = 1999
         start = req.start
         time_delta = TIMEDELTA_MAP[req.interval]
 

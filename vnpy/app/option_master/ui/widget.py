@@ -270,6 +270,10 @@ class PortfolioDialog(QtWidgets.QDialog):
             combo.addItem("")
             combo.addItems(underlying_symbols)
 
+            symbol, _ = chain_symbol.split(".")
+            synthetic_symbol = f"{symbol}.LOCAL"
+            combo.addItem(synthetic_symbol)
+
             underlying_symbol = chain_underlying_map.get(chain_symbol, "")
             if underlying_symbol:
                 combo.setCurrentIndex(combo.findText(underlying_symbol))

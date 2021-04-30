@@ -1,12 +1,15 @@
 import csv
 from datetime import datetime
-from typing import List, Dict, Tuple
+from typing import List, Tuple
 
+from pytz import timezone
+
+from vnpy.trader.database import BarOverview, DB_TZ
 from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine
 from vnpy.trader.constant import Interval, Exchange
 from vnpy.trader.object import BarData, HistoryRequest
-from vnpy.trader.database import database_manager
 from vnpy.trader.rqdata import rqdata_client
+from vnpy.trader.database import database_manager
 
 
 APP_NAME = "DataManager"
@@ -29,6 +32,7 @@ class ManagerEngine(BaseEngine):
         symbol: str,
         exchange: Exchange,
         interval: Interval,
+        tz_name: str,
         datetime_head: str,
         open_head: str,
         high_head: str,
@@ -47,12 +51,14 @@ class ManagerEngine(BaseEngine):
         bars = []
         start = None
         count = 0
+        tz = timezone(tz_name)
 
         for item in reader:
             if datetime_format:
                 dt = datetime.strptime(item[datetime_head], datetime_format)
             else:
                 dt = datetime.fromisoformat(item[datetime_head])
+            dt = tz.localize(dt)
 
             open_interest = item.get(open_interest_head, 0)
 
@@ -130,22 +136,9 @@ class ManagerEngine(BaseEngine):
         except PermissionError:
             return False
 
-    def get_bar_data_available(self) -> List[Dict]:
+    def get_bar_overview(self) -> List[BarOverview]:
         """"""
-        data = database_manager.get_bar_data_statistics()
-
-        for d in data:
-            oldest_bar = database_manager.get_oldest_bar_data(
-                d["symbol"], Exchange(d["exchange"]), Interval(d["interval"])
-            )
-            d["start"] = oldest_bar.datetime
-
-            newest_bar = database_manager.get_newest_bar_data(
-                d["symbol"], Exchange(d["exchange"]), Interval(d["interval"])
-            )
-            d["end"] = newest_bar.datetime
-
-        return data
+        return database_manager.get_bar_overview()
 
     def load_bar_data(
         self,
@@ -196,7 +189,7 @@ class ManagerEngine(BaseEngine):
             exchange=exchange,
             interval=Interval(interval),
             start=start,
-            end=datetime.now()
+            end=datetime.now(DB_TZ)
         )
 
         vt_symbol = f"{symbol}.{exchange.value}"
@@ -233,7 +226,7 @@ class ManagerEngine(BaseEngine):
             symbol=symbol,
             exchange=exchange,
             start=start,
-            end=datetime.now()
+            end=datetime.now(DB_TZ)
         )
 
         if not rqdata_client.inited:
