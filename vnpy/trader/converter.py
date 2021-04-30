@@ -62,7 +62,12 @@ class OffsetConverter:
             self.holdings[vt_symbol] = holding
         return holding
 
-    def convert_order_request(self, req: OrderRequest, lock: bool) -> List[OrderRequest]:
+    def convert_order_request(
+        self,
+        req: OrderRequest,
+        lock: bool,
+        net: bool = False
+    ) -> List[OrderRequest]:
         """"""
         if not self.is_convert_required(req.vt_symbol):
             return [req]
@@ -71,6 +76,8 @@ class OffsetConverter:
 
         if lock:
             return holding.convert_order_request_lock(req)
+        elif net:
+            return holding.convert_order_request_net(req)
         elif req.exchange in [Exchange.SHFE, Exchange.INE]:
             return holding.convert_order_request_shfe(req)
         else:
@@ -299,3 +306,70 @@ class PositionHolding:
                 req_list.append(req_open)
 
             return req_list
+
+    def convert_order_request_net(self, req: OrderRequest) -> List[OrderRequest]:
+        """"""
+        if req.direction == Direction.LONG:
+            pos_available = self.short_pos - self.short_pos_frozen
+            td_available = self.short_td - self.short_td_frozen
+            yd_available = self.short_yd - self.short_yd_frozen
+        else:
+            pos_available = self.long_pos - self.long_pos_frozen
+            td_available = self.long_td - self.long_td_frozen
+            yd_available = self.long_yd - self.long_yd_frozen
+
+        # Split close order to close today/yesterday for SHFE/INE exchange
+        if req.exchange in {Exchange.SHFE, Exchange.INE}:
+            reqs = []
+            volume_left = req.volume
+
+            if td_available:
+                td_volume = min(td_available, volume_left)
+                volume_left -= td_volume
+
+                td_req = copy(req)
+                td_req.offset = Offset.CLOSETODAY
+                td_req.volume = td_volume
+                reqs.append(td_req)
+
+            if volume_left and yd_available:
+                yd_volume = min(yd_available, volume_left)
+                volume_left -= yd_volume
+
+                yd_req = copy(req)
+                yd_req.offset = Offset.CLOSEYESTERDAY
+                yd_req.volume = yd_volume
+                reqs.append(yd_req)
+
+            if volume_left:
+                open_volume = volume_left
+
+                open_req = copy(req)
+                open_req.offset = Offset.OPEN
+                open_req.volume = open_volume
+                reqs.append(open_req)
+
+            return reqs
+        # Just use close for other exchanges
+        else:
+            reqs = []
+            volume_left = req.volume
+
+            if pos_available:
+                close_volume = min(pos_available, volume_left)
+                volume_left -= pos_available
+
+                close_req = copy(req)
+                close_req.offset = Offset.CLOSE
+                close_req.volume = close_volume
+                reqs.append(close_req)
+
+            if volume_left:
+                open_volume = volume_left
+
+                open_req = copy(req)
+                open_req.offset = Offset.OPEN
+                open_req.volume = open_volume
+                reqs.append(open_req)
+
+            return reqs

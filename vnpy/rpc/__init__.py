@@ -180,6 +180,9 @@ class RpcServer:
         self.__socket_pub.unbind(self.__socket_pub.LAST_ENDPOINT)
         self.__socket_rep.unbind(self.__socket_rep.LAST_ENDPOINT)
 
+        if self.__authenticator:
+            self.__authenticator.stop()
+
     def publish(self, topic: str, data: Any) -> None:
         """
         Publish data
@@ -355,6 +358,9 @@ class RpcClient:
         # Close socket
         self.__socket_req.close()
         self.__socket_sub.close()
+
+        if self.__authenticator:
+            self.__authenticator.stop()
 
     def callback(self, topic: str, data: Any) -> None:
         """

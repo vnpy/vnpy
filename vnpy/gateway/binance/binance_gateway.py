@@ -227,7 +227,8 @@ class BinanceRestApi(RestClient):
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",
-            "X-MBX-APIKEY": self.key
+            "X-MBX-APIKEY": self.key,
+            "Connection": "close"
         }
 
         if security in [Security.SIGNED, Security.API_KEY]:
@@ -628,7 +629,7 @@ class BinanceTradeWebsocketApi(WebsocketClient):
 
     def on_packet(self, packet: dict):  # type: (dict)->None
         """"""
-        if packet["e"] == "outboundAccountInfo":
+        if packet["e"] == "outboundAccountPosition":
             self.on_account(packet)
         elif packet["e"] == "executionReport":
             self.on_order(packet)

@@ -181,14 +181,7 @@ class OptionVolatilityChart(QtWidgets.QWidget):
 
     def update_curve_visible(self) -> None:
         """"""
-        # Remove old
-        legend: pg.LegendItem = self.impv_chart.legend
-        legend.scene().removeItem(legend)
-
         self.impv_chart.clear()
-
-        # Add new
-        self.impv_chart.addLegend()
 
         for chain_symbol, checkbox in self.chain_checks.items():
             if checkbox.isChecked():
