@@ -253,6 +253,7 @@ class IbApi(EWrapper):
         self.reqid = 0
         self.orderid = 0
         self.clientid = 0
+        self.history_reqid = 0
         self.account = ""
         self.ticks = {}
         self.orders = {}
@@ -313,6 +314,10 @@ class IbApi(EWrapper):
         Callback of error caused by specific request.
         """
         super().error(reqId, errorCode, errorString)
+        if reqId == self.history_reqid:
+            self.history_condition.acquire()
+            self.history_condition.notify()
+            self.history_condition.release()
 
         msg = f"信息通知，代码：{errorCode}，内容: {errorString}"
         self.gateway.write_log(msg)
@@ -806,6 +811,7 @@ class IbApi(EWrapper):
         else:
             bar_type = "TRADES"
 
+        self.history_reqid = self.reqid
         self.client.reqHistoricalData(
             self.reqid,
             ib_contract,
