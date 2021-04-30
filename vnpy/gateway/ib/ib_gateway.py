@@ -819,8 +819,8 @@ class IbApi(EWrapper):
             duration,
             bar_size,
             bar_type,
-            1,
             0,
+            1,
             False,
             []
         )
