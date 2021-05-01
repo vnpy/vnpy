@@ -9,13 +9,18 @@
 6. 修复CtpGateway对于FAK和FOK委托指令的处理错误问题
 7. 修复HuobiGateway的成交数量为浮点数时，浮点数精度导致上层应用仓位计算偏差问题
 8. 修复BinancesGateway，U本位合约查询历史数据失败的问题
+9. 修复BinanceGateway，账户资金收不到推送更新的问题
+10. 修复IbGateway，查询历史数据由于传参错误导致的查询失败问题
+11. 修复IbGateway，当要查询的合约历史数据不存在时卡死的问题
+12. 修复IbGateway，查询返回的合约乘数（字符串）未作转换导致的上层应用问题
+13. 修复BitfinexGateway，查询的历史数据OHLC字段取值错误问题
 
 
 ## 调整
 1. 修改CTA模块的净仓交易模式，支持上期所和能交所的今昨仓拆分下单
 2. 调整组合策略模块的回测引擎K线回放逻辑，当某个时间点K线数据缺失时，推送给策略的K线字典中不对其进行向前补齐
 3. 将CTP接口和API封装，剥离到vnpy_ctp项目中
-3. 将CTP穿透式测试接口和API封装，剥离到vnpy_ctptest项目中
+4. 将CTP穿透式测试接口和API封装，剥离到vnpy_ctptest项中
 
 ## 新增
 1. 新增DataManager在导入CSV文件时，对于时间戳时区的选择功能
