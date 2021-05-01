@@ -1015,6 +1015,7 @@ class BacktestingEngine:
             offset=offset,
             price=price,
             volume=volume,
+            datetime=self.datetime,
             stop_orderid=f"{STOPORDER_PREFIX}.{self.stop_order_count}",
             strategy_name=self.strategy.strategy_name,
         )

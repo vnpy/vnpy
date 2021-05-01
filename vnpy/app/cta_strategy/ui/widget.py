@@ -15,6 +15,7 @@ from ..base import (
     EVENT_CTA_STRATEGY
 )
 from ..engine import CtaEngine
+from .rollover import RolloverTool
 
 
 class CtaManager(QtWidgets.QWidget):
@@ -59,6 +60,9 @@ class CtaManager(QtWidgets.QWidget):
         clear_button = QtWidgets.QPushButton("清空日志")
         clear_button.clicked.connect(self.clear_log)
 
+        roll_button = QtWidgets.QPushButton("移仓助手")
+        roll_button.clicked.connect(self.roll)
+
         self.scroll_layout = QtWidgets.QVBoxLayout()
         self.scroll_layout.addStretch()
 
@@ -84,6 +88,7 @@ class CtaManager(QtWidgets.QWidget):
         hbox1.addWidget(start_button)
         hbox1.addWidget(stop_button)
         hbox1.addWidget(clear_button)
+        hbox1.addWidget(roll_button)
 
         grid = QtWidgets.QGridLayout()
         grid.addWidget(scroll_area, 0, 0, 2, 1)
@@ -156,6 +161,11 @@ class CtaManager(QtWidgets.QWidget):
     def show(self):
         """"""
         self.showMaximized()
+
+    def roll(self):
+        """"""
+        dialog = RolloverTool(self)
+        dialog.exec_()
 
 
 class StrategyManager(QtWidgets.QFrame):
@@ -353,6 +363,7 @@ class StopOrderMonitor(BaseMonitor):
         "price": {"display": "价格", "cell": BaseCell, "update": False},
         "volume": {"display": "数量", "cell": BaseCell, "update": False},
         "status": {"display": "状态", "cell": EnumCell, "update": True},
+        "datetime": {"display": "时间", "cell": TimeCell, "update": False},
         "lock": {"display": "锁仓", "cell": BaseCell, "update": False},
         "net": {"display": "净仓", "cell": BaseCell, "update": False},
         "strategy_name": {"display": "策略名", "cell": BaseCell, "update": False},

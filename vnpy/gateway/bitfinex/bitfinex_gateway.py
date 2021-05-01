@@ -331,7 +331,7 @@ class BitfinexRestApi(RestClient):
                 buf = []
 
                 for l in data:
-                    ts, o, h, l, c, v = l
+                    ts, o, c, h, l, v = l
 
                     bar = BarData(
                         symbol=req.symbol,

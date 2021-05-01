@@ -1,8 +1,10 @@
 # MarketRadar - 市场信号雷达模块
 
+
 ## 功能简介
 
-MarketRadar是用于**实时衍生行据计算**的模块，用户可以结合Python内置诸多数学函数，对多合约价格自定义灵活的数学公式，执行高效的衍生数据计算任务。
+MarketRadar是用于**实时衍生行情数据计算**的模块，用户可以通过其UI界面对多合约价格自定义灵活的数学公式和条件信号，并执行衍生数据高效计算、条件信号实时扫描、信号触发后的提醒与通知等任务。
+
 
 ## 加载启动
 
@@ -22,6 +24,7 @@ from vnpy.app.market_radar import MarketRadarApp
 main_engine.add_app(MarketRadarApp)
 ```
 
+
 ## 启动模块
 
 在启动模块之前，请先连接登录交易接口（连接方法详见基本使用篇的连接接口部分）。看到VN Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：  
@@ -34,11 +37,13 @@ main_engine.add_app(MarketRadarApp)
 
 即可进入MarketRadar的UI界面，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/3.png) 
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/2-3.png) 
+
 
 ## 管理雷达规则
 
 ### 添加雷达规则
+
 在图形界面左下角的编辑区中，可以快速创建要扫描计算的雷达规则（RadarRule），如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/4.png) 
@@ -58,7 +63,7 @@ main_engine.add_app(MarketRadarApp)
 
 填写完毕后，点击【添加】按钮即可完成新规则的添加，MarketRadar会自动订阅相关合约行情并开始自动扫描计算，如下图所示。
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/5.png) 
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/2-5.png) 
 
 除了跨期价差这种减法求差的规则外，MarketRadar也支持金银比等跨品种价差的计算规则，如下图所示：
 
@@ -82,8 +87,29 @@ main_engine.add_app(MarketRadarApp)
 
 结合Excel的表格快速编辑功能，批量添加规则较为方便。添加成功后如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/8.png) 
-
-请注意，运行MarketRadar，需确保vn.py版本 ≥ 2.1.7。在目前的版本中，MarketRadar只支持雷达规则计算结果的数字显示，后续版本会进一步加入图表显示、条件提醒、策略信号订阅等功能。
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/2-8.png) 
 
 
+## 管理雷达信号
+
+### 添加雷达信号
+
+2.2.0后的版本中，市场信号雷达模块新增雷达信号实时扫描和提醒通知功能。在成功添加雷达规则后，如果需要对其定义雷达信号，只需点击最左侧的规则名称按钮，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/2-9.png) 
+
+在弹出的对话框中，输入触发条件的具体信息，包括信号类型（大于、小于、等于）、目标数值和通知方式（声音、邮件），如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/2-10.png) 
+
+在底部中间的监控组件中即可看到当前处于实时监控中的条件信号，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/2-11.png) 
+
+当雷达规则满足条件后，信号会被立即触发（并自动从监控表中移除），此时会在右下角的日志区域输出相关提示信息，并根据之前用户的选择播放声音通知或者发送邮件提醒。
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/2-12.png) 
+请注意，目前雷达信号不提供缓存功能，程序关闭后就会消失，每次重启VN Trader后需要重新创建。
+
+### 删除雷达信号
+
+当不再需要某个信号时，点击最左侧【删除】按钮，即可移除对应的雷达信号。

@@ -25,7 +25,7 @@ main_engine.add_app(DataManagerApp)
 
 ## 启动模块
 
-启动VN Trader后，在菜单栏中点击【功能】-> 【数据管理】，或者点击左侧按钮栏的图标
+启动VN Trader后，在菜单栏中点击【功能】-> 【数据管理】，或者点击左侧按钮栏的图标：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/00.png)
 
