@@ -193,48 +193,48 @@ Open in the directoryCMD（Press and holdShift->right click->Open a command wind
 
 ## Contributing code
 
-vn.pyuseGithubManaged its source code，If you want to contribute code to usegithubofPR（Pull Request）Process:
+vn.py uses Github to host its source code, if you wish to contribute code please use the PR (Pull Request) process of github:
 
-1. [create Issue](https://github.com/vnpy/vnpy/issues/new) - For larger changes（As new features，Large-scale reconstruction, etc.）A good idea to openissueDiscuss，smallerimprovement（Such as documentation improvements，bugfixWait）Sent directlyPRTo
+1. [create Issue](https://github.com/vnpy/vnpy/issues/new) - For the larger changes (such as new features, large refactoring, etc.) it is best to first open an issue to discuss, and smaller improvements (such as document improvements, bugfixes, etc.) can be sent directly to PR
 
-2. Fork [vn.py](https://github.com/vnpy/vnpy) - Click on the top right**Fork**Push button
+2. Fork [vn.py](https://github.com/vnpy/vnpy) - Click the **Fork** button in the upper right corner
 
-3. CloneYour ownfork: ```git clone https://github.com/$userid/vnpy.git```
-	* if yourforkOutdated，Need to manuallysync：[Synchronization method](https://help.github.com/articles/syncing-a-fork/)
+3. CloneYour own fork: ```git clone https://github.com/$userid/vnpy.git```
 
-4. From**dev**Create your ownfeature branch: ```git checkout -b $my_feature_branch dev```
+	* If your fork is out of date, you need to manually sync: [Synchronization method](https://help.github.com/articles/syncing-a-fork/)
 
-5. in$my_feature_branchOn modify and amendpushTo yourforkon
+4. Create your own feature branch from **dev**: ```git checkout -b $my_feature_branch dev```
 
-6. Creating Yourforkof$my_feature_branchBranch to the main project**dev**Branch[Pull Request] -  [here](https://github.com/vnpy/vnpy/compare?expand=1)Click on**compare across forks**，Select the desiredforkwithbranchcreatePR
+5. Make changes on $my_feature_branch and push the changes to your fork
 
-7. waitreview, We need to continue to improve，Or isMerge!
+6. Create a [Pull Request] from your fork's $my_feature_branch branch to the main project's **dev** branch - [here](https://github.com/vnpy/vnpy/compare?expand=1) Click on **compare across forks** and select the required fork and branch to create the PR
 
-When submitting code，Please observe the following rules，To improve code quality：
+7. Waiting for review, need to continue to improve, or be Merge!
 
-  * use[autopep8](https://github.com/hhatto/autopep8)Format your code。run```autopep8 --in-place --recursive . ```To。
-  * use[flake8](https://pypi.org/project/flake8/)Check your code，Ensure that noerrorwithwarning。Run in the project root directory```flake8```To。
+When submitting code, please observe the following rules to improve the quality of the code:
+
+  * Use [autopep8](https://github.com/hhatto/autopep8) to format your code. Run ```autopep8 --in-place --recursive . ``` Just do it.
+  * Check your code with [flake8](https://pypi.org/project/flake8/) to make sure there are no errors and warnings. Just run ``flake8`` in the project root directory.
 
 
 
 ## Project Donation
 
-past5Years received many donations user community，In this deeply grateful！All donated funds are put into thevn.pyCommunity Fund，For supportvn.pyOperation of the project。
+We have received many donations from the community over the past 6 years and would like to thank them all! All donations are put into the vn.py Community Fund, which supports the operation of the vn.py project.
 
-To emphasize：**vn.pyIt is an open source project，It can be permanently free of charge，And there is no mandatory requirement to donate！！！**
+Just to be clear: **vn.py is an open source project and can be used for free forever, there is no mandatory donation requirement!**
 
-Donations：Alipay3216630132@qq.com（*Xiao Excellent）
+Donation method: 支付宝3216630132@qq.com *Xiao Excellent）
 
-Long-term maintenance of a list of donations，Please indicate in the message is a project donor and the donor's name。
-
+Long-term maintenance of the donation list, please indicate in the message that it is a project donation and the name of the donor.
 
 
 ## Other content
 
 * [Getting Help](https://github.com/vnpy/vnpy/blob/dev/docs/SUPPORT.md)
 * [Community Conduct side](https://github.com/vnpy/vnpy/blob/dev/docs/CODE_OF_CONDUCT.md)
-* [Issuetemplate](https://github.com/vnpy/vnpy/blob/dev/docs/ISSUE_TEMPLATE.md)
-* [PRtemplate](https://github.com/vnpy/vnpy/blob/dev/docs/PULL_REQUEST_TEMPLATE.md)
+* [Issue templates](https://github.com/vnpy/vnpy/blob/dev/docs/ISSUE_TEMPLATE.md)
+* [PR templates](https://github.com/vnpy/vnpy/blob/dev/docs/PULL_REQUEST_TEMPLATE.md)
 
 
 
