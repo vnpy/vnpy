@@ -227,6 +227,30 @@ from vnpy.gateway.ctp import CtpGateway
 from vnpy.app.cta_strategy import CtaStrategyApp
 from vnpy.app.cta_backtester import CtaBacktesterApp
 
+def main():
+    ""启动VN交易"""
+    qapp = create_qapp()
+
+    event_engine = EventEngine()
+    main_engine = MainEngine(event_engine)
+    
+    main_engine.add_gateway(CtpGateway)
+    main_engine.add_app(CtaStrategyApp)
+    main_engine.add_app(CtaBacktesterApp)
+
+    main_window = MainWindow(main_engine, event_engine)
+    main_window.showMaximized()
+
+    qapp.exec()
+
+如果 __name__ == "__main__"。
+    main()
+```
+
+在该目录下打开CMD（按住Shift->点击鼠标右键->在此处打开命令窗口/PowerShell）后运行下列命令启动VN操盘手。
+
+    python run.py
+    
 ## Contributing code
 
 vn.py uses Github to host its source code, if you wish to contribute code please use the PR (Pull Request) process of github:
