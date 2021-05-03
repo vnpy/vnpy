@@ -1,13 +1,3 @@
-## Important notice
-
-This code (comments, strings, docstings) and readme were automatically translated from famous algotrading [Chinese repo](https://github.com/vnpy/vnpy) using 
-[this tool](https://github.com/day0market/pychinesecodetoenglish) (made by me). Translation for sure is not perfect but it's better than nothing. 
-
-*I will not update this repo on regular basis but you can translate it by yourself (link is above)*
-
-*No support, no warranties :)*
-
- 
 # By Traders, For Traders.
 
 <p align="center">
@@ -22,17 +12,17 @@ This code (comments, strings, docstings) and readme were automatically translate
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
 
-vn.pyIt is based on a set ofPythonQuantitative trading system open source development framework，to2015year1Officially released，In the open source community5Years of continuous contribution to the growth of quantitative trading platform next step is a full-featured，Currently financial institutions, domestic and foreign users has exceeded300Family，include：Private Equity、Securities dealers and information management、Futures and information management subsidiary、University research institutions、Proprietary trading company、Exchange、Token FundWait。
+vn.py is a Python-based open source quantitative trading system development framework, officially released in January 2015, has grown step by step into a full-featured quantitative trading platform with 6 years of continuous contributions from the open source community, and currently has more than 600 users from domestic and international financial institutions, including: private equity funds, securities proprietary and capital management, futures capital management and subsidiaries, university research institutions, proprietary trading companies, exchanges, Token Funds, etc.
 
-New《vn.pyAdvanced full combat》Online Courses，It has been the official micro-channel public number[**vnpy-community**]online，50Section covers the design and development from the policy、Backtesting parameter optimization，To complete the final automated trading firmCTAQuantify the business process。After purchase, please scan the next Fanger Wei code concerns，Click on the menu bar【Advanced courses】Button：
+The new 《vn.py Full Practical Advance》 online course series has been launched on the official WeChat public number [**vnpy-community**], covering CTA strategies (completed), options volatility trading (being updated) and more. To purchase, please scan the QR code below and click the 【Advanced Course】 button in the menu bar to.
 
 <p align="center">
   <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy_qr.jpg"/>
 </p>
 
-In usevn.pySecondary development（Tactics、Modules, etc.）Have any questions about the process，please check[**vn.pyProject Documentation**](https://www.vnpy.com/docs/cn/index.html)，If you can not solve the go[**Official Community Forum**](https://www.vnpy.com/forum/)of【Question for help】Plate for help，Also welcomed【Experience Sharing】Share your experience using plate！
+If you have any questions about using vn.py for secondary development (strategies, modules, etc.), please check the [**vn.pyProject Documentation**](https://www.vnpy.com/docs/cn/index.html). If you can't solve it, please go to the 【Questions and Help】 section of the [**Official Community Forum**](https://www.vnpy.com/forum/) forum for help, or share your experience in the 【Experience Sharing】 section!
 
-2.0Based on versionPython 3.7Development of new reconstruction，ToPython 2Click on the version：[Long Term Supportv1.9.2 LTS](https://github.com/vnpy/vnpy/tree/v1.9.2-LTS)。
+For financial institution users of vn.py, a special 【vn.py Institutional Users Group】 (QQ group number: 676499931) has been created to share issues related to institutional applications, such as: interbank market access, asset management O32 system, distributed deployment, etc. Please note that this group is for financial institution users only. Please note that this group is only open to financial institution users, please specify: Name - Institution - Department when adding the group.
 
 ## Features
 
