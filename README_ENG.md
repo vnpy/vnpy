@@ -24,111 +24,173 @@ If you have any questions about using vn.py for secondary development (strategie
 
 For financial institution users of vn.py, a special 【vn.py Institutional Users Group】 (QQ group number: 676499931) has been created to share issues related to institutional applications, such as: interbank market access, asset management O32 system, distributed deployment, etc. Please note that this group is for financial institution users only. Please note that this group is only open to financial institution users, please specify: Name - Institution - Department when adding the group.
 
-## Features
+## Functional Features
 
-1. Full-featured quantitative trading platform（vnpy.trader），It integrates multiple transaction interface，And provides a simple and easy to use for a particular strategy algorithm and feature developmentAPI，Rapid construction required for traders quantitative trading application。
+1. Full-featured quantitative trading platform (vnpy.trader) that integrates a variety of trading interfaces and provides simple and easy-to-use APIs for specific strategy algorithm and function development, for quickly building quantitative trading applications required by traders.
 
-2. All transactions covering domestic and foreign varieties of the transaction interface（vnpy.gateway）：
+2. Trading interfaces (vnpy.gateway) covering all domestic and international trading varieties.
 
     * Domestic market
 
-        * CTP（ctp）：Domestic futures、Options
+        * CTP (ctp): Domestic futures and options
 
-        * CTP Mini（mini）：Domestic futures、Options
+        * CTP Mini (mini): domestic futures, options
 
-        * CTPSecurities（sopt）：ETFOptions
+        * CTP Securities (sopt): ETF options
 
-        * Pegasus（femas）：Domestic futures
+        * Pegasus (femas): domestic futures
 
-        * Core Width（oes）：Domestic securities（Ashare）
+        * Hang Seng UFT (uft): domestic futures, ETF options
 
-        * NakaYasushiXTP（xtp）：Domestic securities（Ashare）
+        * Feitron Securities (sec): ETF options
 
-        * 华鑫奇 point（tora）：Domestic securities（Ashare）
+        * South China NHTD (nhtd): domestic futures, ETF options
 
-        * Xin housekeeper（xgj）：Futures and information management
+        * Kuan Rui (oes): domestic securities (A shares), ETF options
 
-        * Rong Hang（rohon）：Futures and information management
+        * Zhongtai XTP (xtp): Domestic securities (A shares), ETF options
 
-    * overseas market
+        * Guotai Junan (gtja): Domestic securities (A shares)
 
-        * Fu passers securities（futu）：Hong Kong stocks、US stocks
+        * Hang Seng Options (hsoption): ETF options
 
-        * Tiger Securities（tiger）：Global Securities、futures、Options、Foreign exchange
+        * Huaxin Singularity (tora): Domestic securities (A shares), ETF options
 
-        * Interactive Brokers（ib）：Global Securities、futures、Options、Foreign exchange
+        * Flying Rat (sgit): Gold TD, domestic futures
 
-        * Yi Sheng9.0External disk（tap）：Global Futures
+        * Jinshida Gold (ksgold): Gold TD
 
-        * Direct Futures（da）：Global Futures
+        * XGJ (xgj): futures capital management
 
-    * Digital Currency
+        * Rong Hang (rohon): futures management
 
-        * BitMEX（bitmex）：Digital currency futures、Options、Sustainable contracts
+        * Zhong Hui Yi Da (comstar): Interbank market
 
-        * OKEXSustainable（okexs）：Sustainable digital currency contracts
+    * Overseas market
 
-        * OKEXcontract（okexf）：Digital currency futures
+        * Futu Securities (futu): Hong Kong stocks, U.S. stocks
 
-        * Fire currency contracts（hbdm）：Digital currency futures
+        * Tiger Securities (tiger): global securities, futures, options, foreign exchange, etc.
 
-        * An coins（binance）：Digital currency spot
+        * Interactive Brokers (ib): global securities, futures, options, foreign exchange, etc.
 
-        * OKEX（okex）：Digital currency spot
+        * EaseUS 9.0 Foreign Exchange (tap): Global futures
 
-        * Fire currency（huobi）：Digital currency spot
+        * Direct Futures (da): Global Futures
 
-        * Bitfinex（bitfinex）：Digital currency spot
+        * MetaTrader 5 (mt5): Forex, CFDs, Futures, Stocks
 
-        * Coinbase（coinbase）：Digital currency spot
+        * Alpaca (alpaca): US stocks (zero commission)
 
-        * 1Token（onetoken）：Digital currency broker（Stock、futures）
+        * kasia investment (kasia): Hong Kong stocks
+
+    * Digital currencies
+
+        * BitMEX (bitmex): digital currency futures, options, perpetual contracts
+
+        * Bybit (bybit): digital currency perpetual contracts
+
+        * Binance (binance): digital currency spot
+
+        * binance (binances): digital currency perpetual contracts
+
+        * OKEX (okex): digital currency spot, futures, perpetual, options (V5 unified account)
+
+        * Firecoin (huobi): digital currency spot
+
+        * Firecoin Futures (huobif): digital currency futures
+
+        * Firecoin perpetual (huobis): digital currency perpetual
+
+        * Firecoin Options (huobio): digital currency options
+        
+        * Gate.io perpetual (gateios): digital currency perpetual contracts
+
+        * Deribit (deribit), digital currency options, perpetual contracts        
+
+        * Bitfinex (bitfinex): digital currency spot
+
+        * Coinbase (coinbase): digital currency spot
+
+        * Bitstamp (bitstamp): digital currency spot
+
+        * 1Token (onetoken): digital currency brokerage (spot, futures)
 
     * Special Applications
-    
-        * RPCservice（rpc）：Cross-process communication interface，For distributed architecture
 
-3. All kinds of quantitative strategies trading applications out of the box（vnpy.app）：
+        * RPC service (rpc): cross-process communication interface for distributed architecture
 
-    * cta_strategy：CTAPolicy engine module，While maintaining the ease of use，To allow for usersCTAProcess class policy to run in the report commissioned by the withdrawal behavior of fine-grained control（Reduce transaction Slippage、High frequency strategies）
+3. Out-of-the-box trading applications for various quantitative strategies (vnpy.app).
 
-    * cta_backtester：CTAStrategy Backtesting module，Without the use ofJupyter Notebook，Direct use graphical interface directly strategy backtesting analysis、Parameter optimization and other related work
+    * cta_strategy: CTA strategy engine module, which allows users to perform fine-grained control over the withdrawal behavior of delegates during the operation of CTA-type strategies while maintaining ease of use (reducing trading slippage, implementing high-frequency strategies)
 
-    * spread_trading：Spread trading module，Support for custom spreads，Real-time quotes and to calculate the spread positions，Support for semi-automatic and fully automatic algorithmic trading spreads spread trading strategies two modes
+    * cta_backtester: CTA strategy backtester module, no need to use Jupyter Notebook, directly use the graphical interface to directly carry out strategy backtester analysis, parameter optimization and other related work
 
-    * algo_trading：Algorithmic trading module，It offers a variety of commonly used smart trading algorithms：TWAP、Sniper、Iceberg、BestLimitand many more，Support for common algorithm configuration is saved
+    * spread_trading: spread trading module, support custom spreads, real-time calculation of spread quotes and positions, support semi-automatic spread algorithm trading and fully automatic spread strategy trading two modes
 
-    * script_trader：Scripts policy module，For multi-target combination class trading strategy design，At the same time can also be implemented directly on the command lineREPLInstruction in the form of transaction，Backtesting feature is not supported
+    * option_master: option trading module, designed for the domestic options market, supports a variety of option pricing models, implied volatility surface calculation, Greek value risk tracking and other functions
 
-    * rpc_service：RPCService Module，Allows aVN TraderProcess starts for the server，As a unified market and transaction routing channel，It allows multiple simultaneous client connections，Multi-process distributed systems
+    * portfolio_strategy: portfolio strategy module, designed for trading multi-contract quantitative strategies (Alpha, option arbitrage, etc.) at the same time, providing historical data backtesting and live automatic trading functions
 
-    * csv_loader：CSVHistorical Data Loader，For loadingCSVHistorical data format file into the database platform，Backtesting for strategy and research firm initialization function，Support for custom data format header
+    * algo_trading: algorithm trading module, providing a variety of commonly used intelligent trading algorithms: TWAP, Sniper, Iceberg, BestLimit, etc., supporting the docking of external intelligent algorithm trading services (such as Jinnah algorithm)
 
-    * data_recorder：Quotes recording module，Be configured based graphical interface，According to the needs of real-time recordingTickorKQuotes line into the database，Backtesting for strategy or firm initialization
+    * script_trader: script strategy module, designed for multi-standard portfolio trading strategies, also can be directly in the command line to achieve REPL instructions in the form of trading, does not support the backtest function
 
-    * risk_manager：Risk Management Module，Including transaction provides flow control、Under a single number、Principal activities、Statistics and limit the total number of regular withdrawals，Effective to achieve the control function of the front end of the wind
+    * market_radar: market radar module, allowing users to calculate any combination of contract data in real time based on a custom formula, which supports standard Python syntax and built-in functions
 
-4. PythontransactionAPIInterface Package（vnpy.api），The deal provides an interface to achieve the underlying docking。
+    * paper_account: Simulation trading module, pure localization of simulation trading functions, based on the real-time quotes obtained from the trading interface for commission aggregation, providing commission transaction push and position records
 
-5. Simple and easy to use event-driven engine（vnpy.event），As the core of event-driven trading programs。
+    * chart_wizard: K-line chart module, based on RQData data service (futures) or trading interface (digital currency) to obtain historical data, and combined with Tick push to display real-time market changes
 
-6. Inter-process communication standard components（vnpy.rpc），System implementation for complex transactions distributed deployment。
+    * portfolio_manager: portfolio module, for all kinds of fundamental trading strategies, based on separate strategy sub-accounts, providing automatic tracking of trading positions and real-time profit and loss statistics
 
-7. Pythonhigh performanceKLine chart（vnpy.chart），Support large amount of data in the chart display and real-time data updates。
+    * rpc_service: RPC service module, allowing a VN Trader process to be started as a server, serving as a unified routing channel for quotes and trades, allowing multiple clients to connect at the same time, realizing a multi-process distributed system
 
-8. [Community Forum](http://www.vnpy.com)with[Know almost Column](http://zhuanlan.zhihu.com/vn-py)，content includevn.pyTutorials and project developmentPythonThe contents of applied research in the field of quantitative trading。
+    * data_manager: Historical data management module, view the existing data in the database through the tree directory, select any time period data to view the field details, support CSV file data import and export
 
-9.  The official exchange group262656087（QQ），Strict management（Periodically clear long-term member of diving），The fee will be donated to the groupvn.pyCommunity Fund。
+    * data_recorder: Quotes recording module, based on the graphical interface for configuration, according to the demand for real-time recording Tick or K-line quotes to the database, for strategy backtesting or live initialization
 
-## Preparing the Environment
+    * excel_rtd: Excel RTD (Real Time Data) real-time data service, based on pyxll module to achieve real-time push updates of various data (quotes, contracts, positions, etc.) in Excel
 
-* Recommended Usevn.pyQuantitative trading team built specificallyPythonRelease[VNStudio-2.0.7](https://download.vnpy.com/vnstudio-2.0.7.exe)，Built with the latest version of thevn.pyFramework andVN StationQuantitative Management Platform，No need to manually install
-* Support system version：Windows 7the above/Windows Server 2008the above/Ubuntu 18.04 LTS
-* SupportedPythonversion：Python 3.7 64Place（**Note must bePython 3.7 64Bit versions**）
+    * risk_manager: risk management module, providing statistics and restrictions on rules including trade flow control, number of orders placed, active orders, total number of cancelled orders, etc., effectively realizing front-end risk control functions
 
-## installation steps
+4. Python trading API interface package (vnpy.api), providing the underlying docking implementation of the above trading interface.
 
-in[Here](https://github.com/vnpy/vnpy/releases)Download the latest version，After extracting run the following command to install：
+5. simple and easy-to-use event-driven engine (vnpy.event), which is the core of event-driven trading program
+
+6. standardized management client (vnpy.database) interfacing with various databases.
+
+    * SQL class
+
+        * SQLite (sqlite): lightweight single file database, no need to install and configure data service programs, default option of vnpy.py, suitable for novice users
+
+        * MySQL (mysql): the world's most popular open source relational database, extremely rich documentation, and can replace other high NewSQL compatible implementations (such as TiDB)
+
+        * PostgreSQL (postgresql): more feature-rich open source relational database, support for new features through extension plug-ins, only recommended for skilled users
+
+    * NoSQL classes
+
+        * MongoDB (mongodb): non-relational database based on distributed file storage (bson format), built-in memory cache of hot data provides faster read and write speeds
+
+        * InfluxDB (influxdb): non-relational database specially designed for time-series data, columnar data storage provides high read/write efficiency and peripheral analysis applications
+
+6. standard component for cross-process communication (vnpy.rpc) for implementing complex trading systems in distributed deployments
+
+7. Python high-performance K-line charts (vnpy.chart), supporting large data volume chart display and real-time data update functions
+
+8. [Community Forum](http://www.vnpy.com) and [Zhihu Column](http://zhuanlan.zhihu.com/vn-py), which include the development tutorial of vn.py project and the research on the application of Python in the field of quantitative trading, etc.
+
+9. The official communication group 262656087 (QQ), with strict management (regular purging of long-term diving members), and the membership fee will be donated to the vn.py community fund.
+
+## Environment preparation
+
+* We recommend using the Python distribution [VNStudio-2.3.0](https://download.vnpy.com/vnstudio-2.3.0.exe), which is built with the latest version of vn.py framework and VN Station quantitative management platform, specifically created by the vn.py team for quantitative trading. Manual installation
+* Supported system versions: Windows 7 or above/Windows Server 2008 or above/Ubuntu 18.04 LTS
+* Supported Python version: Python 3.7 64-bit (**Note that it must be Python 3.7 64-bit version**)
+
+## Installation steps
+
+Download the latest version from [here](https://github.com/vnpy/vnpy/releases), unzip it and run the following command to install it.
 
 **Windows**
 
@@ -138,26 +200,24 @@ in[Here](https://github.com/vnpy/vnpy/releases)Download the latest version，Aft
 
     bash install.sh
 
+## User's Guide
 
-## user's guidance
+1. Register a CTP Demo account at [SimNow](http://www.simnow.com.cn/) and get the broker code and the trading quotes server address at [this page](http://www.simnow.com.cn/product.action).
 
-1. in[SimNow](http://www.simnow.com.cn/)registeredCTPSimulation account，And[This page](http://www.simnow.com.cn/product.action)Get the code and brokers trading market server address。
+2. Register at [vn.py community forum](https://www.vnpy.com/forum/) to get the VN Station account password (the forum account password is)
 
-2. in[vn.pyCommunity Forum](https://www.vnpy.com/forum/)Register forVN Stationaccount password（Forum account password that is）
+3. Launch VN Station (a shortcut will be created automatically on your desktop after installing VN Studio), enter the account password from the previous step and login
 
-3. start upVN Station（installationVNCondaAfter automatically create a shortcut on the desktop），Enter your login account and password on step
+4. Click on the **VN Trader Lite** button at the bottom and start your trading!
 
-4. Click the bottom**VN Trader Lite**Push button，Start your transaction！！！
+Attention.
 
-note：
+* Please do not close VN Station during the running of VN Trader (it will exit automatically)
+* For flexible configuration of quantitative trading application components, please use **VN Trader Pro**
 
-* inVN TraderDo not turn off the process of runningVN Station（It will automatically exit）
-* If you need the flexibility to configure quantitative trading application components，please use**VN Trader Pro**
+## Script Run
 
-
-## Script
-
-In addition to onVN StationGraphical way outside to start，You can also create any directoryrun.py，The following sample code is written：
+In addition to the graphical start-up method based on VN Station, you can also create run.py in any directory and write the following sample code.
 
 ```Python
 from vnpy.event import EventEngine
@@ -166,30 +226,6 @@ from vnpy.trader.ui import MainWindow, create_qapp
 from vnpy.gateway.ctp import CtpGateway
 from vnpy.app.cta_strategy import CtaStrategyApp
 from vnpy.app.cta_backtester import CtaBacktesterApp
-
-def main（）:
-    """Start VN Trader"""
-    qapp = create_qapp（）
-
-    event_engine = EventEngine（）
-    main_engine = MainEngine（event_engine）
-    
-    main_engine.add_gateway（CtpGateway）
-    main_engine.add_app（CtaStrategyApp）
-    main_engine.add_app（CtaBacktesterApp）
-
-    main_window = MainWindow（main_engine, event_engine）
-    main_window.showMaximized（）
-
-    qapp.exec（）
-
-if __name__ == "__main__":
-    main（）
-```
-
-Open in the directoryCMD（Press and holdShift->right click->Open a command window here/PowerShell）After you run the following command to startVN Trader：
-
-    python run.py
 
 ## Contributing code
 
