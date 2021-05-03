@@ -4,6 +4,7 @@
   <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy-logo.png"/>
 </p>
 
+Want to read the english version? Go [here](README_ENG.md)
 <p align="center">
     <img src ="https://img.shields.io/badge/version-2.3.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
