@@ -247,7 +247,7 @@ def main():
     main()
 ```
 
-在该目录下打开CMD（按住Shift->点击鼠标右键->在此处打开命令窗口/PowerShell）后运行下列命令启动VN操盘手。
+Open CMD in that directory (hold Shift->click right mouse button->open command window/PowerShell here) and then run the following command to start VN Trader.
 
     python run.py
     
