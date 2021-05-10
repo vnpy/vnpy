@@ -12,22 +12,19 @@ ES-2020006-C-2430-50-USD-FOP  GLOBEX
 
 from copy import copy
 from datetime import datetime
-from queue import Empty
 from threading import Thread, Condition
 from typing import Optional
 import shelve
 from tzlocal import get_localzone
 
-from ibapi import comm
 from ibapi.client import EClient
-from ibapi.common import MAX_MSG_LEN, NO_VALID_ID, OrderId, TickAttrib, TickerId
+from ibapi.common import OrderId, TickAttrib, TickerId
 from ibapi.contract import Contract, ContractDetails
 from ibapi.execution import Execution
 from ibapi.order import Order
 from ibapi.order_state import OrderState
 from ibapi.ticktype import TickType, TickTypeEnum
 from ibapi.wrapper import EWrapper
-from ibapi.errors import BAD_LENGTH
 from ibapi.common import BarData as IbBarData
 
 from vnpy.trader.gateway import BaseGateway
