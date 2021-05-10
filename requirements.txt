@@ -28,6 +28,9 @@ plotly
 quickfix
 trading-calendars
 influxdb
+vnpy_rest
+vnpy_websocket
 vnpy_ctp
 vnpy_ctptest
 vnpy_okex
+vnpy_deribit
