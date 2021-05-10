@@ -357,6 +357,8 @@ class IbApi(EWrapper):
         # We need to calculate locally.
         exchange = self.tick_exchange[reqId]
         if exchange is Exchange.IDEALPRO or "CMDTY" in tick.symbol:
+            if not tick.bid_price_1 or not tick.ask_price_1:
+                return
             tick.last_price = (tick.bid_price_1 + tick.ask_price_1) / 2
             tick.datetime = datetime.now(self.local_tz)
         self.gateway.on_tick(copy(tick))
