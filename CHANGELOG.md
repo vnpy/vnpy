@@ -2,6 +2,12 @@
 
 ## 新增
 1. 新增TickData的本地时间戳字段local_time（不带时区信息）
+2. 新增基于asyncio和aiohttp实现的协程异步REST API客户端vnpy_rest项目
+3. 新增基于asyncio和aiohttp实现的协程异步Websocket API客户端vnpy_websocket项目
+
+## 调整
+1. 将Deribit接口剥离到vnpy_deribit项目中
+
 
 
 # 2.3.0版本
@@ -26,7 +32,7 @@
 1. 修改CTA模块的净仓交易模式，支持上期所和能交所的今昨仓拆分下单
 2. 调整组合策略模块的回测引擎K线回放逻辑，当某个时间点K线数据缺失时，推送给策略的K线字典中不对其进行向前补齐
 3. 将CTP接口和API封装，剥离到vnpy_ctp项目中
-4. 将CTP穿透式测试接口和API封装，剥离到vnpy_ctptest项中
+4. 将CTP穿透式测试接口和API封装，剥离到vnpy_ctptest项目中
 
 ## 新增
 1. 新增DataManager在导入CSV文件时，对于时间戳时区的选择功能
