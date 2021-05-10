@@ -45,7 +45,7 @@ C:\Users\Administrator\strategies
 
 请注意，IB接口因为登录时无法自动获取所有的合约信息，只有在用户手动订阅行情时才能获取。因此需要在主界面上先行手动订阅合约行情，再启动模块。
 
-成功连接交易接口后，在菜单栏中点击【功能】-> 【数据管理】，或者点击左侧按钮栏的图标：
+成功连接交易接口后，在菜单栏中点击【功能】-> 【CTA策略】，或者点击左侧按钮栏的图标：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/00.png)
 

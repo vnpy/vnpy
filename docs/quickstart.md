@@ -174,7 +174,7 @@ font.family和font.size参数用于配置GUI界面，各参数含义如下所示
 
 ### 日志输出
 
-log.active, log.level, log.console和log.file用于对日志输出进行配置，参数含义如下所示：
+log.active, log.level, log.console和log.file用于对日志输出进行配置，各参数含义如下所示：
 
 - log.active：控制是否启动LogEngine，默认为True。如果该项修改为False，则后续几项参数都将失效，同时VN Trader运行时不再输出日志或生成日志文件（可以降低部分系统延时）。
 
@@ -192,12 +192,13 @@ C:\users\administrator.vntrader\log
 
 以email为前缀的参数用于对邮箱进行配置，可以在特定事件发生时（如委托成交，数据异常时）发送邮件实时通知，各参数含义如下：
 
-- email.server: SMTP邮件服务器地址；
-- email.port: SMTP邮件服务器端口号；
-- email.username: 邮箱用户名；
-- email.password: 邮箱密码；
-- email.sender: 发送者邮箱；
-- email.receiver: 接收者邮箱。
+- email.server：邮件服务器地址，vnpy默认填写好了QQ邮箱服务器地址，可以直接用，如果需要使用其他邮箱，需要自行查找一下其他的服务器地址；
+- email.port：邮件服务器端口号，vnpm默认填写好了QQ邮箱服务器端口，可以直接用；
+- email.username：填写邮箱地址即可，如xxxx@qq.com；
+- email.password：对于QQ邮箱，此处不是邮箱密码，而是开通SMTP后系统生成的一个授权码；
+- email.sender：发送邮箱名，与email.username一致；
+- email.receiver：接受邮件的邮箱地址，比如xxxx@outlook.com。
+
 
 ### RQData数据服务
 
