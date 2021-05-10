@@ -150,7 +150,7 @@ class BacktesterEngine(BaseEngine):
         engine = self.backtesting_engine
         engine.clear_data()
 
-        if interval == Interval.TICK.value:
+        if Interval(interval) == Interval.TICK:
             mode = BacktestingMode.TICK
         else:
             mode = BacktestingMode.BAR
@@ -281,7 +281,7 @@ class BacktesterEngine(BaseEngine):
         engine = self.backtesting_engine
         engine.clear_data()
 
-        if interval == Interval.TICK:
+        if Interval(interval) == Interval.TICK:
             mode = BacktestingMode.TICK
         else:
             mode = BacktestingMode.BAR
