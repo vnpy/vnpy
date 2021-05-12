@@ -5,6 +5,7 @@ from random import random, choice
 from time import perf_counter
 
 from deap import creator, base, tools, algorithms
+from numpy.core.einsumfunc import _update_other_results
 
 
 class OptimizationSetting:
@@ -118,14 +119,13 @@ def run_ga_optimization(
         """"""
         tp: tuple = tuple(parameters)
         if tp in cache:
-            value = cache[tp]
+            result = cache[tp]
         else:
             setting: dict = dict(parameters)
             result: dict = optimization_func(setting)
+            cache[tp] = result
 
-            value: float = key_func(result)
-            cache[tp] = value
-
+        value: float = key_func(result)
         return (value, )
 
     # Set up genetic algorithm
@@ -147,7 +147,6 @@ def run_ga_optimization(
     ngen = ngen_size    # number of generation
 
     pop = toolbox.population(pop_size)
-    hof = tools.ParetoFront()               # end result of pareto front
 
     # Run ga optimization
     print(f"参数优化空间：{total_size}")
@@ -166,8 +165,7 @@ def run_ga_optimization(
         lambda_,
         cxpb,
         mutpb,
-        ngen,
-        halloffame=hof
+        ngen
     )
 
     end = perf_counter()
@@ -175,12 +173,6 @@ def run_ga_optimization(
 
     print(f"遗传算法优化完成，耗时{cost}秒")
 
-    # Return result list
-    results = []
-
-    for parameter_values in hof:
-        setting = dict(parameter_values)
-        target_value = ga_optimize(parameter_values)[0]
-        results.append((setting, target_value, {}))
-
+    results: list = list(cache.values())
+    results.sort(reverse=True, key=key_func)
     return results
