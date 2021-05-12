@@ -3,22 +3,23 @@ from datetime import date, datetime, timedelta
 from typing import Callable
 
 from functools import lru_cache, partial
-from time import time
-import random
 import traceback
 
 import numpy as np
 from pandas import DataFrame
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from deap import creator, base, tools, algorithms
 
 from vnpy.trader.constant import (Direction, Offset, Exchange,
                                   Interval, Status)
 from vnpy.trader.database import database_manager
 from vnpy.trader.object import OrderData, TradeData, BarData, TickData
 from vnpy.trader.utility import round_to
-from vnpy.trader.optimize import OptimizationSetting, run_bf_optimization
+from vnpy.trader.optimize import (
+    OptimizationSetting,
+    run_bf_optimization,
+    run_ga_optimization
+)
 
 from .base import (
     BacktestingMode,
@@ -29,11 +30,6 @@ from .base import (
     INTERVAL_DELTA_MAP
 )
 from .template import CtaTemplate
-
-
-# Set deap algo
-creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-creator.create("Individual", list, fitness=creator.FitnessMax)
 
 
 class BacktestingEngine:
@@ -570,13 +566,10 @@ class BacktestingEngine:
 
         return results
 
-    def run_ga_optimization(self, optimization_setting: OptimizationSetting, population_size=100, ngen_size=30, output=True):
+    def run_ga_optimization(self, optimization_setting: OptimizationSetting, output=True):
         """"""
-        # Clear lru_cache before running ga optimization
-        _ga_optimize.cache_clear()
-
-        # Get optimization setting and target
-        settings = optimization_setting.generate_setting_ga()
+        # Check optimization setting
+        settings = optimization_setting.generate_setting()
         target_name = optimization_setting.target_name
 
         if not settings:
@@ -587,117 +580,34 @@ class BacktestingEngine:
             self.output("优化目标未设置，请检查")
             return
 
-        # Define parameter generation function
-        def generate_parameter():
-            """"""
-            return random.choice(settings)
-
-        def mutate_individual(individual, indpb):
-            """"""
-            size = len(individual)
-            paramlist = generate_parameter()
-            for i in range(size):
-                if random.random() < indpb:
-                    individual[i] = paramlist[i]
-            return individual,
-
-        # Create ga object function
-        global ga_target_name
-        global ga_strategy_class
-        global ga_setting
-        global ga_vt_symbol
-        global ga_interval
-        global ga_start
-        global ga_rate
-        global ga_slippage
-        global ga_size
-        global ga_pricetick
-        global ga_capital
-        global ga_end
-        global ga_mode
-        global ga_inverse
-
-        ga_target_name = target_name
-        ga_strategy_class = self.strategy_class
-        ga_setting = settings[0]
-        ga_vt_symbol = self.vt_symbol
-        ga_interval = self.interval
-        ga_start = self.start
-        ga_rate = self.rate
-        ga_slippage = self.slippage
-        ga_size = self.size
-        ga_pricetick = self.pricetick
-        ga_capital = self.capital
-        ga_end = self.end
-        ga_mode = self.mode
-        ga_inverse = self.inverse
-
-        # Set up genetic algorithm
-        toolbox = base.Toolbox()
-        toolbox.register("individual", tools.initIterate, creator.Individual, generate_parameter)
-        toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-        toolbox.register("mate", tools.cxTwoPoint)
-        toolbox.register("mutate", mutate_individual, indpb=1)
-        toolbox.register("evaluate", ga_optimize)
-        toolbox.register("select", tools.selNSGA2)
-
-        total_size = len(settings)
-        pop_size = population_size                      # number of individuals in each generation
-        lambda_ = pop_size                              # number of children to produce at each generation
-        mu = int(pop_size * 0.8)                        # number of individuals to select for the next generation
-
-        cxpb = 0.95         # probability that an offspring is produced by crossover
-        mutpb = 1 - cxpb    # probability that an offspring is produced by mutation
-        ngen = ngen_size    # number of generation
-
-        pop = toolbox.population(pop_size)
-        hof = tools.ParetoFront()               # end result of pareto front
-
-        stats = tools.Statistics(lambda ind: ind.fitness.values)
-        np.set_printoptions(suppress=True)
-        stats.register("mean", np.mean, axis=0)
-        stats.register("std", np.std, axis=0)
-        stats.register("min", np.min, axis=0)
-        stats.register("max", np.max, axis=0)
-
-        # Multiprocessing is not supported yet.
-        # pool = multiprocessing.Pool(multiprocessing.cpu_count())
-        # toolbox.register("map", pool.map)
-
-        # Run ga optimization
-        self.output(f"参数优化空间：{total_size}")
-        self.output(f"每代族群总数：{pop_size}")
-        self.output(f"优良筛选个数：{mu}")
-        self.output(f"迭代次数：{ngen}")
-        self.output(f"交叉概率：{cxpb:.0%}")
-        self.output(f"突变概率：{mutpb:.0%}")
-
-        start = time()
-
-        algorithms.eaMuPlusLambda(
-            pop,
-            toolbox,
-            mu,
-            lambda_,
-            cxpb,
-            mutpb,
-            ngen,
-            stats,
-            halloffame=hof
+        # Use partial to wrap function
+        optimization_func = partial(
+            optimize,
+            target_name,
+            self.strategy_class,
+            self.vt_symbol,
+            self.interval,
+            self.start,
+            self.rate,
+            self.slippage,
+            self.size,
+            self.pricetick,
+            self.capital,
+            self.end,
+            self.mode,
+            self.inverse
         )
 
-        end = time()
-        cost = int((end - start))
+        results = run_ga_optimization(
+            optimization_func,
+            optimization_setting,
+            lambda result: result[1]
+        )
 
-        self.output(f"遗传算法优化完成，耗时{cost}秒")
-
-        # Return result list
-        results = []
-
-        for parameter_values in hof:
-            setting = dict(parameter_values)
-            target_value = ga_optimize(parameter_values)[0]
-            results.append((setting, target_value, {}))
+        if output:
+            for value in results:
+                msg = f"参数：{value[0]}, 目标：{value[1]}"
+                self.output(msg)
 
         return results
 
@@ -1217,35 +1127,6 @@ def optimize(
     return (str(setting), target_value, statistics)
 
 
-@lru_cache(maxsize=1000000)
-def _ga_optimize(parameter_values: tuple):
-    """"""
-    setting = dict(parameter_values)
-
-    result = optimize(
-        ga_target_name,
-        ga_strategy_class,
-        ga_vt_symbol,
-        ga_interval,
-        ga_start,
-        ga_rate,
-        ga_slippage,
-        ga_size,
-        ga_pricetick,
-        ga_capital,
-        ga_end,
-        ga_mode,
-        ga_inverse,
-        setting
-    )
-    return (result[1],)
-
-
-def ga_optimize(parameter_values: list):
-    """"""
-    return _ga_optimize(tuple(parameter_values))
-
-
 @lru_cache(maxsize=999)
 def load_bar_data(
     symbol: str,
@@ -1271,19 +1152,3 @@ def load_tick_data(
     return database_manager.load_tick_data(
         symbol, exchange, start, end
     )
-
-
-# GA related global value
-ga_end = None
-ga_mode = None
-ga_target_name = None
-ga_strategy_class = None
-ga_setting = None
-ga_vt_symbol = None
-ga_interval = None
-ga_start = None
-ga_rate = None
-ga_slippage = None
-ga_size = None
-ga_pricetick = None
-ga_capital = None

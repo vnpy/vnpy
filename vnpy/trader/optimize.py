@@ -1,6 +1,10 @@
 from typing import Dict, List, Callable, Tuple
 from itertools import product
 from concurrent.futures import ProcessPoolExecutor
+from random import random, choice
+from time import perf_counter
+
+from deap import creator, base, tools, algorithms
 
 
 class OptimizationSetting:
@@ -77,3 +81,106 @@ def run_bf_optimization(
         results: List[Tuple] = list(executor.map(optimization_func, settings))
         results.sort(reverse=True, key=key_func)
         return results
+
+
+def run_ga_optimization(
+    optimization_func: Callable,
+    optimization_setting: OptimizationSetting,
+    key_func: callable,
+    max_workers: int = None,
+    population_size: int = 100,
+    ngen_size: int = 30
+) -> List[Tuple]:
+    """Run genetic algorithm optimization"""
+    # Create individual class
+    if not hasattr(creator, "Individual"):
+        creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+        creator.create("Individual", list, fitness=creator.FitnessMax)
+
+    # Define functions for generate parameter randomly
+    settings: List[Dict] = optimization_setting.generate_setting_ga()
+    cache: Dict[Tuple, float] = {}
+
+    def generate_parameter() -> list:
+        """"""
+        return choice(settings)
+
+    def mutate_individual(individual: list, indpb: float) -> tuple:
+        """"""
+        size = len(individual)
+        paramlist = generate_parameter()
+        for i in range(size):
+            if random() < indpb:
+                individual[i] = paramlist[i]
+        return individual,
+
+    def ga_optimize(parameters: list) -> float:
+        """"""
+        tp: tuple = tuple(parameters)
+        if tp in cache:
+            value = cache[tp]
+        else:
+            setting: dict = dict(parameters)
+            result: dict = optimization_func(setting)
+
+            value: float = key_func(result)
+            cache[tp] = value
+
+        return (value, )
+
+    # Set up genetic algorithm
+    toolbox = base.Toolbox()
+    toolbox.register("individual", tools.initIterate, creator.Individual, generate_parameter)
+    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+    toolbox.register("mate", tools.cxTwoPoint)
+    toolbox.register("mutate", mutate_individual, indpb=1)
+    toolbox.register("evaluate", ga_optimize)
+    toolbox.register("select", tools.selNSGA2)
+
+    total_size = len(settings)
+    pop_size = population_size                      # number of individuals in each generation
+    lambda_ = pop_size                              # number of children to produce at each generation
+    mu = int(pop_size * 0.8)                        # number of individuals to select for the next generation
+
+    cxpb = 0.95         # probability that an offspring is produced by crossover
+    mutpb = 1 - cxpb    # probability that an offspring is produced by mutation
+    ngen = ngen_size    # number of generation
+
+    pop = toolbox.population(pop_size)
+    hof = tools.ParetoFront()               # end result of pareto front
+
+    # Run ga optimization
+    print(f"参数优化空间：{total_size}")
+    print(f"每代族群总数：{pop_size}")
+    print(f"优良筛选个数：{mu}")
+    print(f"迭代次数：{ngen}")
+    print(f"交叉概率：{cxpb:.0%}")
+    print(f"突变概率：{mutpb:.0%}")
+
+    start = perf_counter()
+
+    algorithms.eaMuPlusLambda(
+        pop,
+        toolbox,
+        mu,
+        lambda_,
+        cxpb,
+        mutpb,
+        ngen,
+        halloffame=hof
+    )
+
+    end = perf_counter()
+    cost = int((end - start))
+
+    print(f"遗传算法优化完成，耗时{cost}秒")
+
+    # Return result list
+    results = []
+
+    for parameter_values in hof:
+        setting = dict(parameter_values)
+        target_value = ga_optimize(parameter_values)[0]
+        results.append((setting, target_value, {}))
+
+    return results
