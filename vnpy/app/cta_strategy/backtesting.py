@@ -1,10 +1,9 @@
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import Callable
-from itertools import product
-from functools import lru_cache
+
+from functools import lru_cache, partial
 from time import time
-import multiprocessing
 import random
 import traceback
 
@@ -19,6 +18,7 @@ from vnpy.trader.constant import (Direction, Offset, Exchange,
 from vnpy.trader.database import database_manager
 from vnpy.trader.object import OrderData, TradeData, BarData, TickData
 from vnpy.trader.utility import round_to
+from vnpy.trader.optimize import OptimizationSetting, run_bf_optimization
 
 from .base import (
     BacktestingMode,
@@ -34,68 +34,6 @@ from .template import CtaTemplate
 # Set deap algo
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
-
-
-class OptimizationSetting:
-    """
-    Setting for runnning optimization.
-    """
-
-    def __init__(self):
-        """"""
-        self.params = {}
-        self.target_name = ""
-
-    def add_parameter(
-        self, name: str, start: float, end: float = None, step: float = None
-    ):
-        """"""
-        if not end and not step:
-            self.params[name] = [start]
-            return
-
-        if start >= end:
-            print("参数优化起始点必须小于终止点")
-            return
-
-        if step <= 0:
-            print("参数优化步进必须大于0")
-            return
-
-        value = start
-        value_list = []
-
-        while value <= end:
-            value_list.append(value)
-            value += step
-
-        self.params[name] = value_list
-
-    def set_target(self, target_name: str):
-        """"""
-        self.target_name = target_name
-
-    def generate_setting(self):
-        """"""
-        keys = self.params.keys()
-        values = self.params.values()
-        products = list(product(*values))
-
-        settings = []
-        for p in products:
-            setting = dict(zip(keys, p))
-            settings.append(setting)
-
-        return settings
-
-    def generate_setting_ga(self):
-        """"""
-        settings_ga = []
-        settings = self.generate_setting()
-        for d in settings:
-            param = [tuple(i) for i in d.items()]
-            settings_ga.append(param)
-        return settings_ga
 
 
 class BacktestingEngine:
@@ -589,7 +527,7 @@ class BacktestingEngine:
 
     def run_optimization(self, optimization_setting: OptimizationSetting, output=True):
         """"""
-        # Get optimization setting and target
+        # Check optimization setting
         settings = optimization_setting.generate_setting()
         target_name = optimization_setting.target_name
 
@@ -601,44 +539,32 @@ class BacktestingEngine:
             self.output("优化目标未设置，请检查")
             return
 
-        # Use multiprocessing pool for running backtesting with different setting
-        # Force to use spawn method to create new process (instead of fork on Linux)
-        ctx = multiprocessing.get_context("spawn")
-        pool = ctx.Pool(multiprocessing.cpu_count())
+        # Use partial to wrap function
+        optimization_func = partial(
+            optimize,
+            target_name,
+            self.strategy_class,
+            self.vt_symbol,
+            self.interval,
+            self.start,
+            self.rate,
+            self.slippage,
+            self.size,
+            self.pricetick,
+            self.capital,
+            self.end,
+            self.mode,
+            self.inverse
+        )
 
-        results = []
-        for setting in settings:
-            result = (pool.apply_async(optimize, (
-                target_name,
-                self.strategy_class,
-                setting,
-                self.vt_symbol,
-                self.interval,
-                self.start,
-                self.rate,
-                self.slippage,
-                self.size,
-                self.pricetick,
-                self.capital,
-                self.end,
-                self.mode,
-                self.inverse
-            )))
-            results.append(result)
-
-        pool.close()
-        pool.join()
-
-        # Sort results and output
-        result_values = [result.get() for result in results]
-        result_values.sort(reverse=True, key=lambda result: result[1])
+        results = run_bf_optimization(optimization_func, optimization_setting)
 
         if output:
-            for value in result_values:
+            for value in results:
                 msg = f"参数：{value[0]}, 目标：{value[1]}"
                 self.output(msg)
 
-        return result_values
+        return results
 
     def run_ga_optimization(self, optimization_setting: OptimizationSetting, population_size=100, ngen_size=30, output=True):
         """"""
@@ -1245,7 +1171,6 @@ class DailyResult:
 def optimize(
     target_name: str,
     strategy_class: CtaTemplate,
-    setting: dict,
     vt_symbol: str,
     interval: Interval,
     start: datetime,
@@ -1256,7 +1181,8 @@ def optimize(
     capital: int,
     end: datetime,
     mode: BacktestingMode,
-    inverse: bool
+    inverse: bool,
+    setting: dict
 ):
     """
     Function for running in multiprocessing.pool
