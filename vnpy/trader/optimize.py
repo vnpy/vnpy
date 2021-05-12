@@ -68,11 +68,12 @@ class OptimizationSetting:
 def run_bf_optimization(
     optimization_func: Callable,
     optimization_setting: OptimizationSetting,
+    key_func: callable,
     max_workers: int = None
 ) -> List[Tuple]:
     """Run brutal force optimization"""
     with ProcessPoolExecutor(max_workers) as executor:
         settings: List[Dict] = optimization_setting.generate_setting()
         results: List[Tuple] = list(executor.map(optimization_func, settings))
-        results.sort(reverse=True, key=lambda result: result[1])
+        results.sort(reverse=True, key=key_func)
         return results

@@ -557,7 +557,11 @@ class BacktestingEngine:
             self.inverse
         )
 
-        results = run_bf_optimization(optimization_func, optimization_setting)
+        results = run_bf_optimization(
+            optimization_func,
+            optimization_setting,
+            lambda result: result[1]
+        )
 
         if output:
             for value in results:
@@ -1221,7 +1225,6 @@ def _ga_optimize(parameter_values: tuple):
     result = optimize(
         ga_target_name,
         ga_strategy_class,
-        setting,
         ga_vt_symbol,
         ga_interval,
         ga_start,
@@ -1232,7 +1235,8 @@ def _ga_optimize(parameter_values: tuple):
         ga_capital,
         ga_end,
         ga_mode,
-        ga_inverse
+        ga_inverse,
+        setting
     )
     return (result[1],)
 
