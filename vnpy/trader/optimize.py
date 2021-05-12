@@ -93,11 +93,6 @@ def run_ga_optimization(
     ngen_size: int = 30
 ) -> List[Tuple]:
     """Run genetic algorithm optimization"""
-    # Create individual class
-    if not hasattr(creator, "Individual"):
-        creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-        creator.create("Individual", list, fitness=creator.FitnessMax)
-
     # Define functions for generate parameter randomly
     buf: List[Dict] = optimization_setting.generate_setting()
     settings: List[Tuple] = [list(d.items()) for d in buf]
@@ -115,16 +110,19 @@ def run_ga_optimization(
                 individual[i] = paramlist[i]
         return individual,
 
-    # Set up genetic algorithm
-    pool = Pool(max_workers)
-    with Manager() as manager:
-        cache = manager.dict()
+    # Set up multiprocessing Pool and Manager
+    with Manager() as manager, Pool(max_workers) as pool:
+        # Create shared dict for result cache
+        cache: Dict[Tuple, Tuple] = manager.dict()
 
+        # Set up toolbox
         toolbox = base.Toolbox()
         toolbox.register("individual", tools.initIterate, creator.Individual, generate_parameter)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
         toolbox.register("mate", tools.cxTwoPoint)
         toolbox.register("mutate", mutate_individual, indpb=1)
+        toolbox.register("select", tools.selNSGA2)
+        toolbox.register("map", pool.map)
         toolbox.register(
             "evaluate",
             ga_optimize,
@@ -132,19 +130,17 @@ def run_ga_optimization(
             optimization_func,
             key_func
         )
-        toolbox.register("select", tools.selNSGA2)
-        toolbox.register("map", pool.map)
 
-        total_size = len(settings)
-        pop_size = population_size                      # number of individuals in each generation
-        lambda_ = pop_size                              # number of children to produce at each generation
-        mu = int(pop_size * 0.8)                        # number of individuals to select for the next generation
+        total_size: int = len(settings)
+        pop_size: int = population_size                      # number of individuals in each generation
+        lambda_: int = pop_size                              # number of children to produce at each generation
+        mu: int = int(pop_size * 0.8)                        # number of individuals to select for the next generation
 
-        cxpb = 0.95         # probability that an offspring is produced by crossover
-        mutpb = 1 - cxpb    # probability that an offspring is produced by mutation
-        ngen = ngen_size    # number of generation
+        cxpb: float = 0.95         # probability that an offspring is produced by crossover
+        mutpb: float = 1 - cxpb    # probability that an offspring is produced by mutation
+        ngen: int = ngen_size    # number of generation
 
-        pop = toolbox.population(pop_size)
+        pop: list = toolbox.population(pop_size)
 
         # Run ga optimization
         print(f"参数优化空间：{total_size}")
@@ -154,7 +150,7 @@ def run_ga_optimization(
         print(f"交叉概率：{cxpb:.0%}")
         print(f"突变概率：{mutpb:.0%}")
 
-        start = perf_counter()
+        start: int = perf_counter()
 
         algorithms.eaMuPlusLambda(
             pop,
@@ -166,8 +162,8 @@ def run_ga_optimization(
             ngen
         )
 
-        end = perf_counter()
-        cost = int((end - start))
+        end: int = perf_counter()
+        cost: int = int((end - start))
 
         print(f"遗传算法优化完成，耗时{cost}秒")
 
@@ -187,7 +183,7 @@ def ga_optimize(
     """
     tp: tuple = tuple(parameters)
     if tp in cache:
-        result = cache[tp]
+        result: tuple = cache[tp]
     else:
         setting: dict = dict(parameters)
         result: dict = optimization_func(setting)
