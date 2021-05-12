@@ -4,6 +4,7 @@
 1. 新增TickData的本地时间戳字段local_time（不带时区信息）
 2. 新增基于asyncio和aiohttp实现的协程异步REST API客户端vnpy_rest项目
 3. 新增基于asyncio和aiohttp实现的协程异步Websocket API客户端vnpy_websocket项目
+4. 新增基于多进程模式的遗传算法优化功能
 
 ## 调整
 1. 将Deribit接口剥离到vnpy_deribit项目中

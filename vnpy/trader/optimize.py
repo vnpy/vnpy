@@ -3,9 +3,14 @@ from itertools import product
 from concurrent.futures import ProcessPoolExecutor
 from random import random, choice
 from time import perf_counter
+from multiprocessing import Manager, Pool
 
 from deap import creator, base, tools, algorithms
-from numpy.core.einsumfunc import _update_other_results
+
+
+# Create individual class used in genetic algorithm optimization
+creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMax)
 
 
 class OptimizationSetting:
@@ -13,16 +18,20 @@ class OptimizationSetting:
     Setting for runnning optimization.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """"""
-        self.params = {}
-        self.target_name = ""
+        self.params: Dict[str, List] = {}
+        self.target_name: str = ""
 
     def add_parameter(
-        self, name: str, start: float, end: float = None, step: float = None
-    ):
+        self,
+        name: str,
+        start: float,
+        end: float = None,
+        step: float = None
+    ) -> None:
         """"""
-        if not end and not step:
+        if end is None and step is None:
             self.params[name] = [start]
             return
 
@@ -34,8 +43,8 @@ class OptimizationSetting:
             print("参数优化步进必须大于0")
             return
 
-        value = start
-        value_list = []
+        value: float = start
+        value_list: List[float] = []
 
         while value <= end:
             value_list.append(value)
@@ -43,11 +52,11 @@ class OptimizationSetting:
 
         self.params[name] = value_list
 
-    def set_target(self, target_name: str):
+    def set_target(self, target_name: str) -> None:
         """"""
         self.target_name = target_name
 
-    def generate_setting(self):
+    def generate_setting(self) -> List[dict]:
         """"""
         keys = self.params.keys()
         values = self.params.values()
@@ -59,15 +68,6 @@ class OptimizationSetting:
             settings.append(setting)
 
         return settings
-
-    def generate_setting_ga(self):
-        """"""
-        settings_ga = []
-        settings = self.generate_setting()
-        for d in settings:
-            param = [tuple(i) for i in d.items()]
-            settings_ga.append(param)
-        return settings_ga
 
 
 def run_bf_optimization(
@@ -99,8 +99,8 @@ def run_ga_optimization(
         creator.create("Individual", list, fitness=creator.FitnessMax)
 
     # Define functions for generate parameter randomly
-    settings: List[Dict] = optimization_setting.generate_setting_ga()
-    cache: Dict[Tuple, float] = {}
+    buf: List[Dict] = optimization_setting.generate_setting()
+    settings: List[Tuple] = [list(d.items()) for d in buf]
 
     def generate_parameter() -> list:
         """"""
@@ -115,64 +115,83 @@ def run_ga_optimization(
                 individual[i] = paramlist[i]
         return individual,
 
-    def ga_optimize(parameters: list) -> float:
-        """"""
-        tp: tuple = tuple(parameters)
-        if tp in cache:
-            result = cache[tp]
-        else:
-            setting: dict = dict(parameters)
-            result: dict = optimization_func(setting)
-            cache[tp] = result
-
-        value: float = key_func(result)
-        return (value, )
-
     # Set up genetic algorithm
-    toolbox = base.Toolbox()
-    toolbox.register("individual", tools.initIterate, creator.Individual, generate_parameter)
-    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-    toolbox.register("mate", tools.cxTwoPoint)
-    toolbox.register("mutate", mutate_individual, indpb=1)
-    toolbox.register("evaluate", ga_optimize)
-    toolbox.register("select", tools.selNSGA2)
+    pool = Pool(max_workers)
+    with Manager() as manager:
+        cache = manager.dict()
 
-    total_size = len(settings)
-    pop_size = population_size                      # number of individuals in each generation
-    lambda_ = pop_size                              # number of children to produce at each generation
-    mu = int(pop_size * 0.8)                        # number of individuals to select for the next generation
+        toolbox = base.Toolbox()
+        toolbox.register("individual", tools.initIterate, creator.Individual, generate_parameter)
+        toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+        toolbox.register("mate", tools.cxTwoPoint)
+        toolbox.register("mutate", mutate_individual, indpb=1)
+        toolbox.register(
+            "evaluate",
+            ga_optimize,
+            cache,
+            optimization_func,
+            key_func
+        )
+        toolbox.register("select", tools.selNSGA2)
+        toolbox.register("map", pool.map)
 
-    cxpb = 0.95         # probability that an offspring is produced by crossover
-    mutpb = 1 - cxpb    # probability that an offspring is produced by mutation
-    ngen = ngen_size    # number of generation
+        total_size = len(settings)
+        pop_size = population_size                      # number of individuals in each generation
+        lambda_ = pop_size                              # number of children to produce at each generation
+        mu = int(pop_size * 0.8)                        # number of individuals to select for the next generation
 
-    pop = toolbox.population(pop_size)
+        cxpb = 0.95         # probability that an offspring is produced by crossover
+        mutpb = 1 - cxpb    # probability that an offspring is produced by mutation
+        ngen = ngen_size    # number of generation
 
-    # Run ga optimization
-    print(f"参数优化空间：{total_size}")
-    print(f"每代族群总数：{pop_size}")
-    print(f"优良筛选个数：{mu}")
-    print(f"迭代次数：{ngen}")
-    print(f"交叉概率：{cxpb:.0%}")
-    print(f"突变概率：{mutpb:.0%}")
+        pop = toolbox.population(pop_size)
 
-    start = perf_counter()
+        # Run ga optimization
+        print(f"参数优化空间：{total_size}")
+        print(f"每代族群总数：{pop_size}")
+        print(f"优良筛选个数：{mu}")
+        print(f"迭代次数：{ngen}")
+        print(f"交叉概率：{cxpb:.0%}")
+        print(f"突变概率：{mutpb:.0%}")
 
-    algorithms.eaMuPlusLambda(
-        pop,
-        toolbox,
-        mu,
-        lambda_,
-        cxpb,
-        mutpb,
-        ngen
-    )
+        start = perf_counter()
 
-    end = perf_counter()
-    cost = int((end - start))
+        algorithms.eaMuPlusLambda(
+            pop,
+            toolbox,
+            mu,
+            lambda_,
+            cxpb,
+            mutpb,
+            ngen
+        )
 
-    print(f"遗传算法优化完成，耗时{cost}秒")
+        end = perf_counter()
+        cost = int((end - start))
 
-    results: list = list(cache.values())
-    results.sort(reverse=True, key=key_func)
-    return results
+        print(f"遗传算法优化完成，耗时{cost}秒")
+
+        results: list = list(cache.values())
+        results.sort(reverse=True, key=key_func)
+        return results
+
+
+def ga_optimize(
+    cache: dict,
+    optimization_func: callable,
+    key_func: callable,
+    parameters: list
+) -> float:
+    """
+    Functions to be run in genetic algorithm optimization.
+    """
+    tp: tuple = tuple(parameters)
+    if tp in cache:
+        result = cache[tp]
+    else:
+        setting: dict = dict(parameters)
+        result: dict = optimization_func(setting)
+        cache[tp] = result
+
+    value: float = key_func(result)
+    return (value, )

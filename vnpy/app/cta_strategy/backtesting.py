@@ -601,7 +601,7 @@ class BacktestingEngine:
         results = run_ga_optimization(
             optimization_func,
             optimization_setting,
-            lambda result: result[1]
+            get_target_value
         )
 
         if output:
@@ -1152,3 +1152,10 @@ def load_tick_data(
     return database_manager.load_tick_data(
         symbol, exchange, start, end
     )
+
+
+def get_target_value(result: list):
+    """
+    Get target value for sorting optimization results.
+    """
+    return result[1]
