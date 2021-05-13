@@ -8,6 +8,11 @@ from multiprocessing import Manager, Pool
 from deap import creator, base, tools, algorithms
 
 
+OUTPUT_FUNC = Callable[[str], None]
+EVALUATE_FUNC = Callable[[dict], dict]
+KEY_FUNC = Callable[[list], float]
+
+
 # Create individual class used in genetic algorithm optimization
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -68,6 +73,22 @@ class OptimizationSetting:
             settings.append(setting)
 
         return settings
+
+
+def check_optimization_setting(
+    optimization_setting: OptimizationSetting,
+    output: OUTPUT_FUNC = print
+) -> bool:
+    """"""
+    if not optimization_setting.generate_setting():
+        output("优化参数组合为空，请检查")
+        return False
+
+    if not optimization_setting.target_name:
+        output("优化目标未设置，请检查")
+        return False
+
+    return True
 
 
 def run_bf_optimization(

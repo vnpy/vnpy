@@ -17,6 +17,7 @@ from vnpy.trader.object import OrderData, TradeData, BarData, TickData
 from vnpy.trader.utility import round_to
 from vnpy.trader.optimize import (
     OptimizationSetting,
+    check_optimization_setting,
     run_bf_optimization,
     run_ga_optimization
 )
@@ -521,24 +522,15 @@ class BacktestingEngine:
         fig.update_layout(height=1000, width=1000)
         fig.show()
 
-    def run_optimization(self, optimization_setting: OptimizationSetting, output=True):
+    def run_bf_optimization(self, optimization_setting: OptimizationSetting, output=True):
         """"""
-        # Check optimization setting
-        settings = optimization_setting.generate_setting()
-        target_name = optimization_setting.target_name
-
-        if not settings:
-            self.output("优化参数组合为空，请检查")
-            return
-
-        if not target_name:
-            self.output("优化目标未设置，请检查")
+        if not check_optimization_setting(optimization_setting):
             return
 
         # Use partial to wrap function
         optimization_func = partial(
             optimize,
-            target_name,
+            optimization_setting.target_name,
             self.strategy_class,
             self.vt_symbol,
             self.interval,
@@ -566,24 +558,17 @@ class BacktestingEngine:
 
         return results
 
+    run_optimization = run_bf_optimization
+
     def run_ga_optimization(self, optimization_setting: OptimizationSetting, output=True):
         """"""
-        # Check optimization setting
-        settings = optimization_setting.generate_setting()
-        target_name = optimization_setting.target_name
-
-        if not settings:
-            self.output("优化参数组合为空，请检查")
-            return
-
-        if not target_name:
-            self.output("优化目标未设置，请检查")
+        if not check_optimization_setting(optimization_setting):
             return
 
         # Use partial to wrap function
         optimization_func = partial(
             optimize,
-            target_name,
+            optimization_setting.target_name,
             self.strategy_class,
             self.vt_symbol,
             self.interval,
