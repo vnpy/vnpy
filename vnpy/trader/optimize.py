@@ -1,4 +1,4 @@
-from typing import Dict, List, Callable, Tuple
+from typing import Dict, KeysView, List, Callable, Tuple
 from itertools import product
 from concurrent.futures import ProcessPoolExecutor
 from random import random, choice
@@ -34,19 +34,17 @@ class OptimizationSetting:
         start: float,
         end: float = None,
         step: float = None
-    ) -> None:
+    ) -> Tuple[bool, str]:
         """"""
         if end is None and step is None:
             self.params[name] = [start]
-            return
+            return True, "固定参数添加成功"
 
         if start >= end:
-            print("参数优化起始点必须小于终止点")
-            return
+            return False, "参数优化起始点必须小于终止点"
 
         if step <= 0:
-            print("参数优化步进必须大于0")
-            return
+            return False, "参数优化步进必须大于0"
 
         value: float = start
         value_list: List[float] = []
@@ -57,11 +55,13 @@ class OptimizationSetting:
 
         self.params[name] = value_list
 
+        return True, f"范围参数添加成功，数量{len(value_list)}"
+
     def set_target(self, target_name: str) -> None:
         """"""
         self.target_name = target_name
 
-    def generate_setting(self) -> List[dict]:
+    def generate_settings(self) -> List[dict]:
         """"""
         keys = self.params.keys()
         values = self.params.values()
@@ -80,7 +80,7 @@ def check_optimization_setting(
     output: OUTPUT_FUNC = print
 ) -> bool:
     """"""
-    if not optimization_setting.generate_setting():
+    if not optimization_setting.generate_settings():
         output("优化参数组合为空，请检查")
         return False
 
@@ -92,30 +92,43 @@ def check_optimization_setting(
 
 
 def run_bf_optimization(
-    optimization_func: Callable,
+    evaluate_func: EVALUATE_FUNC,
     optimization_setting: OptimizationSetting,
-    key_func: callable,
-    max_workers: int = None
+    key_func: KEY_FUNC,
+    max_workers: int = None,
+    output: OUTPUT_FUNC = print
 ) -> List[Tuple]:
     """Run brutal force optimization"""
+    settings: List[Dict] = optimization_setting.generate_settings()
+
+    output(f"开始执行穷举算法优化")
+    output(f"参数优化空间：{len(settings)}")
+
+    start: int = perf_counter()
+
     with ProcessPoolExecutor(max_workers) as executor:
-        settings: List[Dict] = optimization_setting.generate_setting()
-        results: List[Tuple] = list(executor.map(optimization_func, settings))
+        results: List[Tuple] = list(executor.map(evaluate_func, settings))
         results.sort(reverse=True, key=key_func)
+
+        end: int = perf_counter()
+        cost: int = int((end - start))
+        output(f"穷举算法优化完成，耗时{cost}秒")
+
         return results
 
 
 def run_ga_optimization(
-    optimization_func: Callable,
+    evaluate_func: EVALUATE_FUNC,
     optimization_setting: OptimizationSetting,
-    key_func: callable,
+    key_func: KEY_FUNC,
     max_workers: int = None,
     population_size: int = 100,
-    ngen_size: int = 30
+    ngen_size: int = 30,
+    output: OUTPUT_FUNC = print
 ) -> List[Tuple]:
     """Run genetic algorithm optimization"""
     # Define functions for generate parameter randomly
-    buf: List[Dict] = optimization_setting.generate_setting()
+    buf: List[Dict] = optimization_setting.generate_settings()
     settings: List[Tuple] = [list(d.items()) for d in buf]
 
     def generate_parameter() -> list:
@@ -146,9 +159,9 @@ def run_ga_optimization(
         toolbox.register("map", pool.map)
         toolbox.register(
             "evaluate",
-            ga_optimize,
+            ga_evaluate,
             cache,
-            optimization_func,
+            evaluate_func,
             key_func
         )
 
@@ -164,12 +177,13 @@ def run_ga_optimization(
         pop: list = toolbox.population(pop_size)
 
         # Run ga optimization
-        print(f"参数优化空间：{total_size}")
-        print(f"每代族群总数：{pop_size}")
-        print(f"优良筛选个数：{mu}")
-        print(f"迭代次数：{ngen}")
-        print(f"交叉概率：{cxpb:.0%}")
-        print(f"突变概率：{mutpb:.0%}")
+        output(f"开始执行遗传算法优化")
+        output(f"参数优化空间：{total_size}")
+        output(f"每代族群总数：{pop_size}")
+        output(f"优良筛选个数：{mu}")
+        output(f"迭代次数：{ngen}")
+        output(f"交叉概率：{cxpb:.0%}")
+        output(f"突变概率：{mutpb:.0%}")
 
         start: int = perf_counter()
 
@@ -180,22 +194,23 @@ def run_ga_optimization(
             lambda_,
             cxpb,
             mutpb,
-            ngen
+            ngen,
+            verbose=False
         )
 
         end: int = perf_counter()
         cost: int = int((end - start))
 
-        print(f"遗传算法优化完成，耗时{cost}秒")
+        output(f"遗传算法优化完成，耗时{cost}秒")
 
         results: list = list(cache.values())
         results.sort(reverse=True, key=key_func)
         return results
 
 
-def ga_optimize(
+def ga_evaluate(
     cache: dict,
-    optimization_func: callable,
+    evaluate_func: callable,
     key_func: callable,
     parameters: list
 ) -> float:
@@ -207,7 +222,7 @@ def ga_optimize(
         result: tuple = cache[tp]
     else:
         setting: dict = dict(parameters)
-        result: dict = optimization_func(setting)
+        result: dict = evaluate_func(setting)
         cache[tp] = result
 
     value: float = key_func(result)

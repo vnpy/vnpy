@@ -271,11 +271,6 @@ class BacktesterEngine(BaseEngine):
         use_ga: bool
     ):
         """"""
-        if use_ga:
-            self.write_log("开始遗传算法参数优化")
-        else:
-            self.write_log("开始多进程参数优化")
-
         self.result_values = None
 
         engine = self.backtesting_engine
@@ -312,7 +307,7 @@ class BacktesterEngine(BaseEngine):
                 output=False
             )
         else:
-            self.result_values = engine.run_optimization(
+            self.result_values = engine.run_bf_optimization(
                 optimization_setting,
                 output=False
             )

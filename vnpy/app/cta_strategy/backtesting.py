@@ -528,11 +528,16 @@ class BacktestingEngine:
             return
 
         evaluate_func: callable = wrap_evaluate(self, optimization_setting.target_name)
-        results = run_bf_optimization(evaluate_func, optimization_setting, get_target_value)
+        results = run_bf_optimization(
+            evaluate_func,
+            optimization_setting,
+            get_target_value,
+            output=self.output
+        )
 
         if output:
-            for value in results:
-                msg = f"参数：{value[0]}, 目标：{value[1]}"
+            for result in results:
+                msg: str = f"参数：{result[0]}, 目标：{result[1]}"
                 self.output(msg)
 
         return results
@@ -545,11 +550,16 @@ class BacktestingEngine:
             return
 
         evaluate_func: callable = wrap_evaluate(self, optimization_setting.target_name)
-        results = run_ga_optimization(evaluate_func, optimization_setting, get_target_value)
+        results = run_ga_optimization(
+            evaluate_func,
+            optimization_setting,
+            get_target_value,
+            output=self.output
+        )
 
         if output:
-            for value in results:
-                msg = f"参数：{value[0]}, 目标：{value[1]}"
+            for result in results:
+                msg: str = f"参数：{result[0]}, 目标：{result[1]}"
                 self.output(msg)
 
         return results
