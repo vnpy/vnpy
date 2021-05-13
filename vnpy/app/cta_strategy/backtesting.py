@@ -527,29 +527,8 @@ class BacktestingEngine:
         if not check_optimization_setting(optimization_setting):
             return
 
-        # Use partial to wrap function
-        optimization_func = partial(
-            optimize,
-            optimization_setting.target_name,
-            self.strategy_class,
-            self.vt_symbol,
-            self.interval,
-            self.start,
-            self.rate,
-            self.slippage,
-            self.size,
-            self.pricetick,
-            self.capital,
-            self.end,
-            self.mode,
-            self.inverse
-        )
-
-        results = run_bf_optimization(
-            optimization_func,
-            optimization_setting,
-            lambda result: result[1]
-        )
+        evaluate_func: callable = wrap_evaluate(self, optimization_setting.target_name)
+        results = run_bf_optimization(evaluate_func, optimization_setting, get_target_value)
 
         if output:
             for value in results:
@@ -565,29 +544,8 @@ class BacktestingEngine:
         if not check_optimization_setting(optimization_setting):
             return
 
-        # Use partial to wrap function
-        optimization_func = partial(
-            optimize,
-            optimization_setting.target_name,
-            self.strategy_class,
-            self.vt_symbol,
-            self.interval,
-            self.start,
-            self.rate,
-            self.slippage,
-            self.size,
-            self.pricetick,
-            self.capital,
-            self.end,
-            self.mode,
-            self.inverse
-        )
-
-        results = run_ga_optimization(
-            optimization_func,
-            optimization_setting,
-            get_target_value
-        )
+        evaluate_func: callable = wrap_evaluate(self, optimization_setting.target_name)
+        results = run_ga_optimization(evaluate_func, optimization_setting, get_target_value)
 
         if output:
             for value in results:
@@ -1067,7 +1025,34 @@ class DailyResult:
         self.net_pnl = self.total_pnl - self.commission - self.slippage
 
 
-def optimize(
+@lru_cache(maxsize=999)
+def load_bar_data(
+    symbol: str,
+    exchange: Exchange,
+    interval: Interval,
+    start: datetime,
+    end: datetime
+):
+    """"""
+    return database_manager.load_bar_data(
+        symbol, exchange, interval, start, end
+    )
+
+
+@lru_cache(maxsize=999)
+def load_tick_data(
+    symbol: str,
+    exchange: Exchange,
+    start: datetime,
+    end: datetime
+):
+    """"""
+    return database_manager.load_tick_data(
+        symbol, exchange, start, end
+    )
+
+
+def evaluate(
     target_name: str,
     strategy_class: CtaTemplate,
     vt_symbol: str,
@@ -1112,34 +1097,30 @@ def optimize(
     return (str(setting), target_value, statistics)
 
 
-@lru_cache(maxsize=999)
-def load_bar_data(
-    symbol: str,
-    exchange: Exchange,
-    interval: Interval,
-    start: datetime,
-    end: datetime
-):
-    """"""
-    return database_manager.load_bar_data(
-        symbol, exchange, interval, start, end
+def wrap_evaluate(engine: BacktestingEngine, target_name: str) -> callable:
+    """
+    Wrap evaluate function with given setting from backtesting engine.
+    """
+    func: callable = partial(
+        evaluate,
+        target_name,
+        engine.strategy_class,
+        engine.vt_symbol,
+        engine.interval,
+        engine.start,
+        engine.rate,
+        engine.slippage,
+        engine.size,
+        engine.pricetick,
+        engine.capital,
+        engine.end,
+        engine.mode,
+        engine.inverse
     )
+    return func
 
 
-@lru_cache(maxsize=999)
-def load_tick_data(
-    symbol: str,
-    exchange: Exchange,
-    start: datetime,
-    end: datetime
-):
-    """"""
-    return database_manager.load_tick_data(
-        symbol, exchange, start, end
-    )
-
-
-def get_target_value(result: list):
+def get_target_value(result: list) -> float:
     """
     Get target value for sorting optimization results.
     """
