@@ -1,1 +1,6 @@
-from vnpy_ctastrategy import *
+import sys
+
+import vnpy_ctastrategy
+
+
+sys.modules[__name__] = vnpy_ctastrategy
