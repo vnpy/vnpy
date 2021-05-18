@@ -853,7 +853,7 @@ public:
 	};
 };
 
-PYBIND11_MODULE(MdApi, m)
+PYBIND11_MODULE(vnminimd, m)
 
 {
 	class_<MdApi, PyMdApi> mdapi(m, "MdApi", module_local());
