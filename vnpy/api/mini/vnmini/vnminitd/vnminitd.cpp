@@ -9619,8 +9619,7 @@ public:
 	};
 };
 
-
-PYBIND11_MODULE(vnminitd, m)
+PYBIND11_MODULE(TdApi, m)
 {
     class_<TdApi, PyTdApi> TdApi(m, "TdApi", module_local());
     TdApi

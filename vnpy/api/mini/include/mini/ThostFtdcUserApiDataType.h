@@ -595,6 +595,8 @@ typedef char TThostFtdcTradingRoleType;
 #define THOST_FTDC_PC_EFP '5'
 ///现货期权
 #define THOST_FTDC_PC_SpotOption '6'
+//TAS合约
+#define THOST_FTDC_PC_TAS '7'
 
 typedef char TThostFtdcProductClassType;
 
@@ -1975,11 +1977,6 @@ typedef char TThostFtdcCommentType[31];
 ///TFtdcVersionType是一个版本号类型
 /////////////////////////////////////////////////////////////////////////
 typedef char TThostFtdcVersionType[4];
-
-/////////////////////////////////////////////////////////////////////////
-/////UtpCipherVersionType是一个版本信息类型
-///////////////////////////////////////////////////////////////////////////
-typedef char UtpCipherVersionType[65];
 
 /////////////////////////////////////////////////////////////////////////
 ///TFtdcTradeCodeType是一个交易代码类型
@@ -6394,7 +6391,8 @@ typedef char TThostFtdcLongFBEBankAccountNameType[161];
 #define THOST_FTDC_OSCF_ReserveOptionPosition '2'
 ///自对冲卖方履约后的期货仓位
 #define THOST_FTDC_OSCF_SellCloseSelfFuturePosition '3'
-
+///保留卖方履约后的期货仓位
+#define THOST_FTDC_OSCF_ReserveFuturePosition '4'
 typedef char TThostFtdcOptSelfCloseFlagType;
 
 /////////////////////////////////////////////////////////////////////////
