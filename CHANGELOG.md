@@ -15,6 +15,8 @@
 6. 将CTA策略模块剥离到vnpy_ctastrategy项目中
 7. 将CTA回测模块剥离到vnpy_ctabacktester项目中
 8. 将XTP接口剥离到vnpy_xtp项目中
+9. 将事前风控模块剥离到vnpy_riskmanager项目中
+10. 将数据管理模块剥离到vnpy_datamanager项目中
 
 ## 修复
 1. 修复BinancesGateway由于撤单请求失败，导致委托持续处于【提交中】状态的问题
