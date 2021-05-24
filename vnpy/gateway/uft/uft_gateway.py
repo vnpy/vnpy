@@ -725,8 +725,8 @@ class UftTdApi(TdApi):
             self.gateway.on_order(order)
 
         trade_time = generate_time(data["TradeTime"])
-        timestamp = f"{data['TradeDate']} {trade_time}"
-        dt = datetime.strptime(timestamp, "%H:%M:%S")
+        timestamp = f"{data['TradingDay']} {trade_time}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
         dt = CHINA_TZ.localize(dt)
 
         trade = TradeData(
