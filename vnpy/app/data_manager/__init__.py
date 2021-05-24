@@ -1,16 +1,6 @@
-from pathlib import Path
+import sys
 
-from vnpy.trader.app import BaseApp
-from .engine import APP_NAME, ManagerEngine
+import vnpy_datamanager
 
 
-class DataManagerApp(BaseApp):
-    """"""
-
-    app_name = APP_NAME
-    app_module = __module__
-    app_path = Path(__file__).parent
-    display_name = "数据管理"
-    engine_class = ManagerEngine
-    widget_name = "ManagerWidget"
-    icon_name = "manager.ico"
+sys.modules[__name__] = vnpy_datamanager
