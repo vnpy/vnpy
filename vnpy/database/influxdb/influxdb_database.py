@@ -235,7 +235,7 @@ class InfluxdbDatabase(BaseDatabase):
 
         ticks: List[TickData] = []
         for d in points:
-            dt = datetime.strptime(d["time"], "%Y-%m-%dT%H:%M:%SZ")
+            dt = datetime.strptime(d["time"], "%Y-%m-%dT%H:%M:%S.%fZ")
 
             tick = TickData(
                 symbol=symbol,
