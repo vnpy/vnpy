@@ -1,1 +1,1 @@
-from .xtp_gateway import XtpGateway
+from vnpy_xtp import XtpGateway
