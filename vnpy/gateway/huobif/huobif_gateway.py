@@ -1,7 +1,7 @@
 """
 火币合约接口
 """
-
+from time import sleep
 import re
 import urllib
 import base64
@@ -109,6 +109,15 @@ CHINA_TZ = pytz.timezone("Asia/Shanghai")
 
 symbol_type_map = {}
 
+def check_symbol_map():
+    """
+    等待symbol_type_map字典写入数据
+    """
+    while True:
+        if not symbol_type_map:
+            sleep(1)
+        else:
+            break
 
 class HuobifGateway(BaseGateway):
     """
@@ -314,6 +323,7 @@ class HuobifRestApi(RestClient):
 
     def query_history(self, req: HistoryRequest):
         """"""
+        check_symbol_map()
         history = []
         count = 1999
         start = req.start
@@ -922,6 +932,7 @@ class HuobifDataWebsocketApi(HuobifWebsocketApiBase):
 
     def subscribe(self, req: SubscribeRequest):
         """"""
+        check_symbol_map()
         contract_type = symbol_type_map.get(req.symbol, "")
         if not contract_type:
             return
