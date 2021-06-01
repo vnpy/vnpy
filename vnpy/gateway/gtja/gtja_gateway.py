@@ -401,6 +401,7 @@ class GtjaMdApi(MdApi):
             min_volume=data["i64BuyNumUnit"],
             pricetick=data["i64PriceLevel"] / 10000,
             size=1,
+            net_position=True
         )
         self.gateway.on_contract(contract)
         symbol_name_map[contract.vt_symbol] = contract.name
@@ -418,6 +419,7 @@ class GtjaMdApi(MdApi):
             min_volume=data["i64BuyQtyUnit"],
             pricetick=data.get("i64PriceTick", 100) / 10000,
             size=1,
+            net_position=True
         )
 
         self.gateway.on_contract(contract)
