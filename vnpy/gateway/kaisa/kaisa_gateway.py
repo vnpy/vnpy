@@ -255,6 +255,7 @@ class KaisaGateway(BaseGateway):
                     product=Product.SPOT,
                     history_data=True,
                     gateway_name=self.gateway_name,
+                    net_position=True
                 )
                 self.on_contract(contract)
 
