@@ -413,7 +413,8 @@ class GateiosRestApi(RestClient):
                 min_volume=d["order_size_min"],
                 product=Product.FUTURES,
                 gateway_name=self.gateway_name,
-                history_data=True
+                history_data=True,
+                net_position=True
             )
             self.gateway.on_contract(contract)
 
