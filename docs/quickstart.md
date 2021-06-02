@@ -7,86 +7,78 @@
 
 启动登录VN Station后，用户可通过以下两种方式进入VN Trader。
 - 点击【VN Trade Lite】按钮，快速进入VN Trader Lite（底层接口只包含CTP接口，功能模块只包含CTA策略模块和CTA回测模块）；
-- 点击【VN Trader Pro】按钮，勾选所需的底层接口和上层应用，点击【启动】按钮进入VN Trader Pro，如下图所示。
+- 点击【VN Trader Pro】按钮，勾选所需的底层接口和上层应用，点击【启动】按钮进入VN Trader Pro，如下图所示：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/1.png)
 
 ### 脚本模式
 
-在文件夹examples\vn_trader中找到run.py文件，打开文件路径下的cmd窗口，输入“python run.py”命令，即可启动VN Trader。 
+在文件夹examples\vn_trader中找到run.py文件(不是vnstudio下的，需要在github上单独下载）。运行run.py即可进入VN Trader。
 
-- 以Win10系统为例，用户可在run.py所在文件夹内按住“Shift” + 鼠标右键，选择"在此处打开 powershell 窗口"，如下图所示；
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/2.png)
-- 在弹出窗口中，输入“python run.py”命令，即可启动VN Trader。如下图所示。
+- 以Win10系统为例，用户可在run.py所在文件夹内按住“Shift” + 鼠标右键，选择"在此处打开 powershell 窗口"，在弹出窗口中，输入“python run.py”命令，即可启动VN Trader。如下图所示：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/3.png)
-
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/10.png)
 
 ## 连接接口
 
 ### SimNow仿真
 
-以使用SinNow仿真交易账号登陆CTP接口为例，点击VN Trader菜单栏的【系统】->【连接CTP】后，弹出连接CTP的配置对话框，如下图所示。
+以使用SinNow仿真交易账号登陆CTP接口为例，点击VN Trader菜单栏的【系统】->【连接CTP】后，弹出连接CTP的配置对话框，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/4.png)
 
 其中，各字段填写要求如下：
 - 用户名：xxxxxx （6位纯数字账号）
-- 密码：xxxxxx  （需要修改一次密码用于盘后测试）
+- 密码：xxxxxx （需要修改一次密码用于盘后测试）
 - 经纪商代码：9999 （SimNow默认经纪商编号）
-- 交易服务器：218.202.237.33 :10102 （盘中测试）
-- 行情服务器：218.202.237.33 :10112 （盘中测试）
+- 交易服务器：180.168.146.187:10202 （盘中测试）
+- 行情服务器：180.168.146.187:10212 （盘中测试）
 - 产品名称：simnow_client_test
-- 授权编码：0000000000000000（16个0）
-- 产品信息：可不填
+- 授权编码：0000000000000000 （16个0）
 
 请注意，用户名需填写InvestorID（6位纯数字），而不是Simnow网站注册时的账号（手机号）。此外，Simnow注册的账号需要修改一次密码后才能登录。
 
-连接成功以后，VN Trader主界面【日志】栏输出“合约信息查询成功”信息，如下图所示。
+连接成功以后，VN Trader主界面【日志】栏输出“合约信息查询成功”信息，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/1.png)
 
 
 ## 订阅行情
 
-在交易组件输入交易所和合约代码，按回车键即可订阅行情，如订阅铁矿石期货时，交易所填写DCE，代码填写i1905。
+在交易组件输入交易所和合约代码，按回车键即可订阅行情，如订阅铁矿石期货时，交易所填写DCE，代码填写i2106。
 
-订阅成功后，交易组件会显示合约名称，并且在下方显示深度行情报价，如最新价、买一价和卖一价（数字货币品种可以显示十档行情），行情组件会显示最新行情信息，如下图所示。
+订阅成功后，交易组件会显示合约名称，并且在下方显示深度行情报价，如最新价、买一价和卖一价（数字货币品种可以显示十档行情），行情组件会显示最新行情信息，如下图所示：
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/11.png)
 
-请注意，合约代码格式可以通过菜单栏的【帮助】->【查询合约】功能查到。
+请注意，合约代码正确名称可从菜单栏的【帮助】->【查询合约】功能查到。
 
 
 ## 委托交易
 
-交易组件用于手动发起委托交易，除了填写交易所和合约代码外，还需填写下图中的字段。
+交易组件用于手动发起委托交易，除了填写交易所和合约代码外，还需填写下图中的五个字段（方向、开平、类型、价格数量）：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/5.png)
 
-各字段含义如下：
+请注意，若委托类型为市价单，委托价格可不填；若交易接口只支持单向持仓，请勿填写开平方向。
 
-- 名称：委托名称，不能重名；
-- 方向：委托方向。包括做多和做空；
-- 开平：开平仓类型，包括开、平、平今和平昨；
-- 类型：委托类型，包括限价单、市价单、STOP、FAK、FOK和询价单。若委托类型为市价单，委托价格可不填；
-- 价格：委托价格；
-- 数量：委托数量。
+发出委托后，本地会缓存委托相关信息，并显示到【委托】组件和【活动】组件，此时委托状态为【提交中】。
 
-发出委托后，本地会缓存委托相关信息，并显示到 委托组件和活动组件，此时委托状态为“提交中”。
-
-交易所收到用户发送的委托后，将其插入中央订单簿来进行撮合成交，并推送委托回报给用户：
-- 若委托还未成交，委托组件和活动组件只会更新时间和委托状态这两字段，委托状态变成“未成交”；
-- 若委托立刻成交，委托相关信息会从活动组件移除，新增至成交组件，委托状态变成“全部成交”。
+交易所收到用户发送的委托后，会将其插入中央订单簿来进行撮合成交，并推送委托回报给用户：
+- 若委托还未成交，【委托】组件和【活动】组件只会更新时间和委托状态这两字段，委托状态变成【未成交】；
+- 若委托立刻成交，委托相关信息会从【活动】组件移除，新增至【成交】组件，委托状态变成【全部成交】。
 
 
 ## 数据监控
 
-数据监控由以下组件构成。在任一组件中，鼠标右键可以选择“调整列宽”（特别适用于屏幕分辨率较低的情况）或者选择“保存数据”，将数据以csv格式保存，如下图所示。
+数据监控由以下组件构成，并附带两个辅助功能：
+
+选定以下任一组件，鼠标右键可以选择【调整列宽】（特别适用于屏幕分辨率较低的情况）或者选择【保存数据】（CSV格式），如下图所示：
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/2_optiones.png "enter image title here")
 
 ### 行情组件
 
-行情组件用于对订阅的行情实时监控，如下图所示。
+行情组件用于对订阅的行情进行实时监控，如下图所示：
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract_module.png "enter image title here")
 
@@ -97,13 +89,13 @@
 
 ### 活动组件
 
-活动组件用于存放还未成交的委托，如限价单或者没有立刻成交的市价单。在该组件中鼠标双击任一委托可以完成撤单操作，如下图所示。
+活动组件用于存放还未成交的委托，如限价单或者没有立刻成交的市价单。在该组件中鼠标双击任一委托可以完成撤单操作，如下图所示：
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/active_order.png "enter image title here")
 
 ### 成交组件
 
-成交组件用于存放已成交的委托，在该组件中，价格、数量和时间都是交易所推送过来的成交信息，而不是委托信息，如下图所示。
+成交组件用于存放已成交的委托，在该组件中，价格、数量和时间都是交易所推送过来的成交信息，而不是委托信息，如下图所示：
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/trade.png "enter image title here")
 
@@ -111,7 +103,7 @@
 
 ### 委托组件
 
-委托组件用于存放用户发出的所有委托信息，其委托状态可以是提交中、已撤销、部分成交、全部成交、拒单等，如下图所示。
+委托组件用于存放用户发出的所有委托信息，其委托状态可以是提交中、已撤销、部分成交、全部成交、拒单等，如下图所示：
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/order.png "enter image title here")
 
@@ -119,20 +111,20 @@
 
 持仓组件用于记录其历史持仓，需要注意以下字段信息。
 
-- 方向：期货品种具有多空方向，而股票品种方向为“净”持仓；
+- 方向：期货品种具有多空方向，而股票品种方向为【净】持仓；
 - 数量：总持仓，即今仓 + 昨仓；
 - 昨仓：其出现衍生于上期所特有的平今、平昨模式的需要；
 - 均价：历史成交的平均价格（某些巨型委托，会发生多次部分成交，需要计算平均价格）；
 - 盈亏：持仓盈亏。多仓情况下，盈利 = 当前价格 - 均价，空仓则反之。
   
-若平仓离场，持仓数量清零，浮动盈亏变成实际盈亏从而影响账号余额变化。故以下字段：数量、昨仓、冻结、均价、盈亏均为0，如下图所示。
+若平仓离场，持仓数量清零，浮动盈亏变成实际盈亏从而影响账号余额变化。故以下字段：数量、昨仓、冻结、均价、盈亏均为0，如下图所示：
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_position.png "enter image title here")
 
 
 ### 资金组件
 
-资金组件显示了账号的基础信息，如下图所示。
+资金组件显示了账号的基础信息，如下图所示：
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_account.png "enter image title here")
 
@@ -153,7 +145,7 @@
 
 ## 应用模块
 
-vn.py官方提供了开箱即用的量化交易应用模块，在启动VN Trader时勾选所需的功能模块，启动成功后在菜单栏中点击【功能】按钮，即可显示所勾选的功能模块，如下图所示。
+vn.py官方提供了开箱即用的量化交易应用模块，在启动VN Trader时勾选所需的功能模块，启动成功后在菜单栏中点击【功能】按钮，即可显示所勾选的功能模块，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/7.png)
 
@@ -217,7 +209,7 @@ C:\users\administrator.vntrader\log
 
 ### 金纳算法
 
-以genus为前缀的参数用于配置金纳算法交易服务，各参数含义如下所示。
+以genus为前缀的参数用于配置金纳算法交易服务，各参数含义如下所示：
 
 - genus.parent_hot: 算法母单的服务器地址；
 - genus.parent_port: 算法母单的通讯端；
