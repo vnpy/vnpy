@@ -203,4 +203,4 @@ InfluxDB的例子如下所示：
 |database.password   | .... |
 |database.authentication_source   | vnpy |
 
-请注意，运行influxd.exe的cmd需要保持运行，如果关闭则会导致InfluxDB退出，也可以使用一些辅助工具将其注册为后台运行的Windows服务。
+请注意，运行influxd.exe的cmd需要保持运行，如果关闭则会导致InfluxDB退出，或者也可以使用一些辅助工具将其注册为后台运行的Windows服务。
