@@ -45,7 +45,6 @@ WEBSOCKET_DATA_HOST = "ws://dev-kgl.jt00000.com/dz_app_ws/ws"
 START_PUSH = 200
 STOP_PUSH = 201
 SYNCHRONIZE_PUSH = 250
-QUERY_HISTORY = 36
 QUERY_CONTRACT = 52
 ON_TICK = 251
 PING = 2
@@ -253,7 +252,6 @@ class KaisaGateway(BaseGateway):
                     size=1,
                     min_volume=d["lotsize"],
                     product=Product.SPOT,
-                    history_data=True,
                     gateway_name=self.gateway_name,
                     net_position=True
                 )
@@ -526,7 +524,7 @@ class KaisaTradeRestApi(RestClient):
                 )
                 self.gateway.on_trade(trade)
 
-        self.gateway.write_log(f"委托信息查询成功")
+        self.gateway.write_log("委托信息查询成功")
         self.gateway.write_log("成交查询成功")
 
     def on_send_order(self, data: dict, request: Request) -> None:
