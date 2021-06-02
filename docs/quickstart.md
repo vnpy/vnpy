@@ -14,17 +14,22 @@
 
 在文件夹examples\vn_trader中找到run.py文件(不是vnstudio下的，需要在github上单独下载）。运行run.py即可进入VN Trader。
 
-- 以Win10系统为例，用户可在run.py所在文件夹内按住“Shift” + 鼠标右键，选择"在此处打开 powershell 窗口"，在弹出窗口中，输入“python run.py”命令，即可启动VN Trader。如下图所示：
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/3.png)
+- 以Win10系统为例，用户可在run.py所在文件夹内按住【Shift】，同时点击鼠标右键，选择【在此处打开 powershell 窗口】，在弹出窗口中，输入如下命令，即可启动VN Trader。
+   ```
+   python run.py
+   ```
+   ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/3.png)
+   
+启动成功的VN Trader如下图所示：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/10.png)
 
 ## 连接接口
 
 ### SimNow仿真
 
-以使用SinNow仿真交易账号登陆CTP接口为例，点击VN Trader菜单栏的【系统】->【连接CTP】后，弹出连接CTP的配置对话框，如下图所示：
+以使用SinNow仿真交易账号登陆CTP接口为例，点击VN Trader上的菜单栏中点击【系统】->【连接CTP】，会弹出账号配置窗口，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/4.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/1.png)
 
 其中，各字段填写要求如下：
 - 用户名：xxxxxx （6位纯数字账号）
@@ -37,7 +42,7 @@
 
 请注意，用户名需填写InvestorID（6位纯数字），而不是Simnow网站注册时的账号（手机号）。此外，Simnow注册的账号需要修改一次密码后才能登录。
 
-连接成功以后，VN Trader主界面【日志】栏输出“合约信息查询成功”信息，如下图所示：
+连接成功以后，VN Trader主界面【日志】组件会立刻输出登陆相关信息，同时用户也可以看到账号信息，持仓信息，合约查询等相关信息。如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/1.png)
 
@@ -59,7 +64,7 @@
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/5.png)
 
-请注意，若委托类型为市价单，委托价格可不填；若交易接口只支持单向持仓，请勿填写开平方向。
+请注意，若委托类型为市价单，委托价格可不填；若交易接口只支持单向持仓（接口持仓方向支持详见交易接口篇），请勿填写开平方向。
 
 发出委托后，本地会缓存委托相关信息，并显示到【委托】组件和【活动】组件，此时委托状态为【提交中】。
 
@@ -74,13 +79,13 @@
 
 选定以下任一组件，鼠标右键可以选择【调整列宽】（特别适用于屏幕分辨率较低的情况）或者选择【保存数据】（CSV格式），如下图所示：
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/2_optiones.png "enter image title here")
+![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/2_optiones.png)
 
 ### 行情组件
 
 行情组件用于对订阅的行情进行实时监控，如下图所示：
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract_module.png "enter image title here")
+![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract_module.png)
 
 行情组件监控内容包括以下部分：
 - 合约信息：合约代码、交易所、合约名称；
@@ -91,13 +96,13 @@
 
 活动组件用于存放还未成交的委托，如限价单或者没有立刻成交的市价单。在该组件中鼠标双击任一委托可以完成撤单操作，如下图所示：
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/active_order.png "enter image title here")
+![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/active_order.png)
 
 ### 成交组件
 
 成交组件用于存放已成交的委托，在该组件中，价格、数量和时间都是交易所推送过来的成交信息，而不是委托信息，如下图所示：
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/trade.png "enter image title here")
+![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/trade.png)
 
 请注意，有些接口会独立推送成交信息，如CTP接口；有些接口则需要从委托信息里面提取成交相关字段，如Tiger接口。
 
@@ -105,7 +110,7 @@
 
 委托组件用于存放用户发出的所有委托信息，其委托状态可以是提交中、已撤销、部分成交、全部成交、拒单等，如下图所示：
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/order.png "enter image title here")
+![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/order.png)
 
 ### 持仓组件
 
@@ -119,14 +124,14 @@
   
 若平仓离场，持仓数量清零，浮动盈亏变成实际盈亏从而影响账号余额变化。故以下字段：数量、昨仓、冻结、均价、盈亏均为0，如下图所示：
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_position.png "enter image title here")
+![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_position.png)
 
 
 ### 资金组件
 
 资金组件显示了账号的基础信息，如下图所示：
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_account.png "enter image title here")
+![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_account.png)
 
 需要注意以下3个字段信息：
 
@@ -211,11 +216,11 @@ C:\users\administrator.vntrader\log
 
 以genus为前缀的参数用于配置金纳算法交易服务，各参数含义如下所示：
 
-- genus.parent_hot: 算法母单的服务器地址；
+- genus.parent_host: 算法母单的服务器地址；
 - genus.parent_port: 算法母单的通讯端；
 - genus.parent_sender: 算法母单的发送方名称；
 - genus.parent_target: 算法母单部分接收方名称；
-- genus.child_hot: 算法子单的服务器地址；
+- genus.child_host: 算法子单的服务器地址；
 - genus.child_port: 算法子单的通讯端；
 - genus.child_sender: 算法子单的发送方名称；
 - genus.child_target: 算法子单的接收方名称。
