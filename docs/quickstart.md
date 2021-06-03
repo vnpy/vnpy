@@ -165,7 +165,7 @@ vn.py官方提供了开箱即用的量化交易应用模块，在启动VN Trader
 
 font.family和font.size参数用于配置GUI界面，各参数含义如下所示：
 
-- font.family：设置VN Trader图形界面的字体类型，除了默认的Arial字体，也支持Courier New和System字体。
+- font.family：设置VN Trader图形界面的字体类型，除了默认的Arial字体，也支持Courier New和System字体；
 
 - font.size：设置VN Trader图形界面的字体大小，用户可以根据自己显示器的实际分辨率对字体大小进行修改。
 
@@ -173,34 +173,35 @@ font.family和font.size参数用于配置GUI界面，各参数含义如下所示
 
 log.active, log.level, log.console和log.file用于对日志输出进行配置，参数含义如下所示：
 
-- log.active：控制是否启动LogEngine，默认为True。如果该项修改为False，则后续几项参数都将失效，同时VN Trader运行时不再输出日志或生成日志文件（可以降低部分系统延时）。
+- log.active：控制是否启动LogEngine，默认为True。如果该项修改为False，则后续几项参数都将失效，同时VN Trader运行时不再输出日志或生成日志文件（可以降低部分系统延时）；
 
-- log.level：控制日志输出的级别，日志可以从轻到严重分成DEBUG、INFO、WARNING、ERROR、CRITICAL五个级别，分别对应10、20、30、40、50的整数值。如果日志等级低于该项设置值，将会被忽略。如果想要记录更详细的系统运行信息，建议将该项整数值调低。
+- log.level：控制日志输出的级别，日志可以从轻到严重分成DEBUG、INFO、WARNING、ERROR、CRITICAL五个级别，分别对应10、20、30、40、50的整数值。如果日志等级低于该项设置值，将会被忽略。如果想要记录更详细的系统运行信息，建议将该项整数值调低；
 
-- log.console：console指的是终端，如Windows系统上的cmd和Powershell，以及Linux上的Terminal。当设置为True时，通过终端运行脚本来启动VN Trader，日志信息会输出在终端中；如果通过VN Station来直接启动VN Trader，则无console输出。
+- log.console：console指的是终端，如Windows系统上的cmd和Powershell，以及Linux上的Terminal。当设置为True时，通过终端运行脚本来启动VN Trader，日志信息会输出在终端中；如果通过VN Station来直接启动VN Trader，则无console输出；
 
 - log.file：该参数用于控制是否要将日志输出到文件中，建议设置为True，否则无法记录生成的日志。
  
 VN Trader的日志文件，默认位于运行时目录的.vntrader\log目录下，完整路径为：
 C:\users\administrator.vntrader\log
+
 其中，administrator为当前Windows系统的登录用户名。
 
 ### 邮件通知
 
 以email为前缀的参数用于对邮箱进行配置，可以在特定事件发生时（如委托成交，数据异常时）发送邮件实时通知，各参数含义如下：
 
-- email.server: SMTP邮件服务器地址；
-- email.port: SMTP邮件服务器端口号；
-- email.username: 邮箱用户名；
-- email.password: 邮箱密码；
-- email.sender: 发送者邮箱；
-- email.receiver: 接收者邮箱。
+- email.server: SMTP邮件服务器地址
+- email.port: SMTP邮件服务器端口号
+- email.username: 邮箱用户名
+- email.password: 邮箱密码
+- email.sender: 发送者邮箱
+- email.receiver: 接收者邮箱
 
 ### RQData数据服务
 
 以rqdata为前缀的参数用于配置RQData数据服务。
-- rqdata.username: 米筐登录账号；
-- rqdata.password: RQData的license。
+- rqdata.username: 米筐登录账号
+- rqdata.password: RQData的license
 
 购买RQData后（或者申请试用账号），会获得license文件，将license文件中的内容填入字段即可，如下图所示：
 
