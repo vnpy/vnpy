@@ -89,7 +89,8 @@ EXCHANGE_VT2IB = {
     Exchange.BATS: "BATS",
     Exchange.IEX: "IEX",
     Exchange.IBKRATS: "IBKRATS",
-    Exchange.OTC: "PINK"
+    Exchange.OTC: "PINK",
+    Exchange.SGX: "SGX"
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}
 
@@ -110,7 +111,8 @@ PRODUCT_IB2VT = {
     "CMDTY": Product.SPOT,
     "FUT": Product.FUTURES,
     "OPT": Product.OPTION,
-    "FOT": Product.OPTION
+    "FOT": Product.OPTION,
+    "CONTFUT": Product.FUTURES
 }
 
 OPTION_VT2IB = {OptionType.CALL: "CALL", OptionType.PUT: "PUT"}
