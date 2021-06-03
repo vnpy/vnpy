@@ -79,7 +79,7 @@
 
 选定以下任一组件，鼠标右键可以选择【调整列宽】（特别适用于屏幕分辨率较低的情况）或者选择【保存数据】（CSV格式），如下图所示：
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/2_optiones.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/12.png)
 
 ### 行情组件
 
@@ -96,13 +96,13 @@
 
 活动组件用于存放还未成交的委托，如限价单或者没有立刻成交的市价单。在该组件中鼠标双击任一委托可以完成撤单操作，如下图所示：
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/active_order.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/15.png)
 
 ### 成交组件
 
 成交组件用于存放已成交的委托，在该组件中，价格、数量和时间都是交易所推送过来的成交信息，而不是委托信息，如下图所示：
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/trade.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/14.png)
 
 请注意，有些接口会独立推送成交信息，如CTP接口；有些接口则需要从委托信息里面提取成交相关字段，如Tiger接口。
 
@@ -110,11 +110,11 @@
 
 委托组件用于存放用户发出的所有委托信息，其委托状态可以是提交中、已撤销、部分成交、全部成交、拒单等，如下图所示：
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/order.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/13.png)
 
 ### 持仓组件
 
-持仓组件用于记录其历史持仓，需要注意以下字段信息。
+持仓组件用于记录历史持仓，需要注意以下字段信息。
 
 - 方向：期货品种具有多空方向，而股票品种方向为【净】持仓；
 - 数量：总持仓，即今仓 + 昨仓；
@@ -143,7 +143,7 @@
 
 ### 日志组件
 
-日志组件用于显示接口登陆信息以及委托报错信息，如下图。
+日志组件用于显示接口登陆信息以及委托报错信息，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/1.png)
 
