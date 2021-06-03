@@ -212,17 +212,5 @@ C:\users\administrator.vntrader\log
 
 以database为前缀的参数用于配置数据库服务。目前，vn.py支持SQLite、MySQL、PostgreSQL、MongoDB和InfluxDB五种数据库。具体配置方法详见项目文档的数据库配置部分。
 
-### 金纳算法
-
-以genus为前缀的参数用于配置金纳算法交易服务，各参数含义如下所示：
-
-- genus.parent_host: 算法母单的服务器地址；
-- genus.parent_port: 算法母单的通讯端；
-- genus.parent_sender: 算法母单的发送方名称；
-- genus.parent_target: 算法母单部分接收方名称；
-- genus.child_host: 算法子单的服务器地址；
-- genus.child_port: 算法子单的通讯端；
-- genus.child_sender: 算法子单的发送方名称；
-- genus.child_target: 算法子单的接收方名称。
 
 
