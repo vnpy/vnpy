@@ -389,11 +389,11 @@ from vnpy.app.cta_strategy import (
     TradeData,
     OrderData,
     BarGenerator,
-    ArrayManager,
+    ArrayManager
 )
 ```
 
-CtaTemplate是CTA策略模板，StopOrder、TickData、BarData、TradeData和OrderData都是储存对应信息的数据容器，BarGenerator是K线生成模块，ArrayManager是K线时间序列管理模块。
+其中，CtaTemplate是CTA策略模板，StopOrder、TickData、BarData、TradeData和OrderData都是储存对应信息的数据容器，BarGenerator是K线生成模块，ArrayManager是K线时间序列管理模块。
 
 ### 策略参数与变量
 
