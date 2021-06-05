@@ -27,7 +27,7 @@
 
 ### SimNow仿真
 
-以使用SinNow仿真交易账号登陆CTP接口为例，点击VN Trader上的菜单栏中点击【系统】->【连接CTP】，会弹出账号配置窗口，如下图所示：
+以使用SinNow仿真交易账号登陆**CTP**接口为例，点击VN Trader上的菜单栏中点击【系统】->【连接CTP】，会弹出账号配置窗口，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/1.png)
 
