@@ -55,7 +55,7 @@ DataRecorder模块支持按需添加K线（1分钟）和Tick数据的记录任�
 3. 点击右侧【K线记录】或者【Tick记录】对应的【添加】按钮添加录制任务：
 
 - 添加成功后，合约本地代码会出现在下方的【K线记录列表】或者【Tick记录列表】中，并在界面下方输出对应日志，如下图所示：
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_recorder/7.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_recorder/10.png)
 
 
 ## 移除记录
@@ -63,5 +63,7 @@ DataRecorder模块支持按需添加K线（1分钟）和Tick数据的记录任�
 当不再需要记录某一合约的行情时，可以移除其对应的录制任务：
 
 1. 在【本地代码】编辑框中输入需要移除录制任务的合约本地代码（vt_symbol）；
-2. 点击右侧【K线记录】或者【Tick记录】对应的【移除】按钮移除相应录制任务。移除成功，【K线记录列表】或者【Tick记录列表】下对应的录制任务信息会被移除，并在界面下方输出对应日志，如下图所示：
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_recorder/8.png)
+2. 点击右侧【K线记录】或者【Tick记录】对应的【移除】按钮移除相应录制任务。
+
+移除成功，【K线记录列表】或者【Tick记录列表】下对应的录制任务信息会被移除，并在界面下方输出对应日志，如下图所示：
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_recorder/9.png)
