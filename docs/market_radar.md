@@ -31,6 +31,8 @@ main_engine.add_app(MarketRadarApp)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/1.png) 
 
+请注意，IB接口因为登录时无法自动获取所有的合约信息，只有在用户手动订阅行情时才能获取。因此需要在主界面上先行手动订阅合约行情，再启动模块。
+
 成功连接交易接口后，在菜单栏中点击【功能】-> 【市场雷达】，或者点击左侧按钮栏的图标：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/2.png) 
