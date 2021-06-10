@@ -718,7 +718,7 @@ buy/sell/short/cover都是策略内部的负责发单的交易请求类函数。
 
 **send_order**
 
-* 入参：price: float, volume: float, stop: bool = False, lock: bool = False, net: bool = False
+* 入参：direction: Direction, offset: Offset, price: float, volume: float, stop: bool = False, lock: bool = False, net: bool = False
 
 * 出参：vt_orderids / 无
 
