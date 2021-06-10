@@ -682,9 +682,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 收到策略停止单回报时on_stop_order函数会被调用。
 
-### 策略的主动函数
-
-#### 策略内
+### 主动函数
 
 **buy**：买入开仓（Direction：LONG，Offset：OPEN）
 
@@ -718,6 +716,18 @@ buy/sell/short/cover都是策略内部的负责发单的交易请求类函数。
 
 请注意，国内期货有开平仓的概念，例如买入操作要区分为买入开仓和买入平仓；但对于股票、外盘期货和绝大部分数字货币都是净持仓模式，没有开仓和平仓概念，所以只需使用买入（buy）和卖出（sell）这两个指令就可以了。
 
+**send_order**
+
+* 入参：price: float, volume: float, stop: bool = False, lock: bool = False, net: bool = False
+
+* 出参：vt_orderids / 无
+
+send_order函数是CTA策略引擎调用的发送委托的函数。一般在策略编写的时候不需要单独调用，通过buy/sell/short/cover函数发送委托即可。
+
+实盘的时候，收到传进来的参数后，会调用round_to函数基于合约的pricetick和min_volume对委托的价格和数量进行处理。
+
+请注意，要在策略启动之后，也就是策略的trading状态变为【True】之后，才能发出交易委托。如果策略的Trading状态为【False】时调用了该函数，只会返回[]。
+
 **cancel_order**
 
 * 入参：vt_orderid: str
@@ -730,23 +740,9 @@ buy/sell/short/cover都是策略内部的负责发单的交易请求类函数。
 
 * 出参：无
 
-cancel_order和cancel_all都是策略内部的负责撤单的交易请求类函数。cancel_order是撤掉策略内指定的活动委托，cancel_all是撤掉策略所有的活动委托。
+cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_order是撤掉策略内指定的活动委托，cancel_all是撤掉策略所有的活动委托。
 
 请注意，要在策略启动之后，也就是策略的trading状态变为【True】之后，才能撤单。
-
-#### CTA策略引擎
-
-**send_order**
-
-* 入参：price: float, volume: float, stop: bool = False, lock: bool = False, net: bool = False
-
-* 出参：vt_orderids / 无
-
-send_order函数是CTA策略引擎调用的发送委托的函数。一般在策略编写的时候不需要单独调用，通过buy/sell/short/cover函数发送委托即可。
-
-实盘的时候，收到传进来的参数后，会调用round_to函数基于合约的pricetick和min_volume对委托的价格和数量进行处理。
-
-请注意，要在策略启动之后，也就是策略的trading状态变为【True】之后，才能发出交易委托。如果策略的Trading状态为【False】时调用了该函数，只会返回[]。
 
 ### 功能函数
 
