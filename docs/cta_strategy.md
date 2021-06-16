@@ -374,7 +374,11 @@ CTA策略模板提供完整的信号生成和委托管理功能，用户可以�
 
 用户自行开发的策略可以放在用户运行文件夹下的[strategies](#jump)文件夹内。
 
-请注意，策略文件命名采用下划线模式，如boll_channel_strategy.py，而策略类命名采用驼峰式，如BollChannelStrategy。
+请注意：
+
+1. 策略文件命名采用下划线模式，如boll_channel_strategy.py，而策略类命名采用驼峰式，如BollChannelStrategy。
+
+2. 自建策略的类名不要与示例策略的类名重合。如果重合了，图形界面上只会显示一个策略类名。
 
 下面通过BollChannelStrategy策略示例，来展示策略开发的具体步骤：
 
