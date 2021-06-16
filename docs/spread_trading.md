@@ -304,7 +304,11 @@ C:\Users\Administrator\strategies
 
 用户自行开发的策略可以放在用户运行文件夹下的[strategies](#jump)文件夹内。
 
-请注意，策略文件命名采用下划线模式，如statistical_arbitrage_strategy.py，而策略类命名采用驼峰式，如StatisticalArbitrageStrategy。
+请注意：
+
+1. 策略文件命名采用下划线模式，如statistical_arbitrage_strategy.py，而策略类命名采用驼峰式，如StatisticalArbitrageStrategy。
+
+2. 自建策略的类名不要与示例策略的类名重合。如果重合了，图形界面上只会显示一个策略类名。
 
 目前，vnpy官方提供两个价差策略，即BasicSpreadStrategy和StatisticalArbitrageStrategy。下面通过StatisticalArbitrageStrategy示例，来展示策略开发的具体步骤：
 
