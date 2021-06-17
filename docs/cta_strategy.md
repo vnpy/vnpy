@@ -217,7 +217,7 @@ CTA策略引擎会自动将该策略之前发出的所有活动委托全部撤�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/20.png)
 
-若盘中编辑后想要再次启动策略，点击策略实例下的【启动】按钮即可再次启动该略实例，如下图所示：
+若盘中编辑后想要再次启动策略，点击策略实例下的【启动】按钮即可再次启动该策略实例，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/41.png)
 
