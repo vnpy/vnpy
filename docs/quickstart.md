@@ -12,7 +12,7 @@
 
 ### 脚本模式
 
-在文件夹examples\vn_trader中找到run.py文件(不是vnstudio下的，需要在github上单独下载）。运行run.py即可进入VN Trader。
+在文件夹examples/vn_trader中找到run.py文件(不是vnstudio下的，需要在github上单独下载）。运行run.py即可进入VN Trader。
 
 - 以Win10系统为例，用户可在run.py所在文件夹内按住【Shift】，同时点击鼠标右键，选择【在此处打开 powershell 窗口】，在弹出窗口中，输入如下命令，即可启动VN Trader。
    ```
