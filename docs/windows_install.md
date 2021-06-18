@@ -97,7 +97,7 @@ install.bat
 
 ### 启动VN Trader
 
-启动命令行工具，进入解压vn.py源代码的目录下，在文件夹examples\vn_trader中找到run.py文件。
+启动命令行工具，进入解压vn.py源代码的目录下，在文件夹examples/vn_trader中找到run.py文件。
 
 输入如下命令即可启动VN Trader：
 
