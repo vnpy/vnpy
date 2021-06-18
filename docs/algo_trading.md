@@ -42,11 +42,6 @@ main_engine.add_app(AlgoTradingApp)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/10.png)
 
-该界面主要由委托交易、数据监控两部分组成：
-
-- 委托交易：位于界面左侧，用于启动或停止算法交易、保存配置信息等操作；
-- 数据监控：位于界面右侧，用于监控算法交易执行情况，并且能够选择使用或移除算法。
-
 
 ## 配置算法
 
