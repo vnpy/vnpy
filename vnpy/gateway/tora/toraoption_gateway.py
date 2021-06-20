@@ -884,6 +884,8 @@ class ToraTdApi(sptraderapi.CTORATstpSPTraderSpi):
         )
         self.api.ReqOrderInsert(info, self.reqid)
 
+        return f"{self.gateway_name}.{order_id}"
+
     def cancel_order(self, req: CancelRequest) -> None:
         """"""
         self.reqid += 1

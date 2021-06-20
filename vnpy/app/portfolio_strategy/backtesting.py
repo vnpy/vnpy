@@ -42,7 +42,7 @@ class BacktestingEngine:
         self.priceticks: Dict[str, float] = 0
 
         self.capital: float = 1_000_000
-        self.risk_free: float = 0.02
+        self.risk_free: float = 0
 
         self.strategy: StrategyTemplate = None
         self.bars: Dict[str, BarData] = {}
@@ -520,7 +520,8 @@ class BacktestingEngine:
         self.cross_limit_order()
         self.strategy.on_bars(bars)
 
-        self.update_daily_close(self.bars, dt)
+        if self.strategy.inited:
+            self.update_daily_close(self.bars, dt)
 
     def cross_limit_order(self) -> None:
         """

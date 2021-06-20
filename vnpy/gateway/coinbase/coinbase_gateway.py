@@ -646,7 +646,6 @@ class CoinbaseRestApi(RestClient):
                 pricetick=float(d["quote_increment"]),
                 size=1,
                 min_volume=float(d["base_min_size"]),
-                net_position=True,
                 history_data=True,
                 gateway_name=self.gateway_name,
             )
