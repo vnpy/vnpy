@@ -369,7 +369,7 @@ class UftMdApi(MdApi):
         """
         if self.connect_status:
             uft_req = {
-                "ExchangeID": req.exchange.value,
+                "ExchangeID": EXCHANGE_VT2UFT[req.exchange],
                 "InstrumentID": req.symbol
             }
 
