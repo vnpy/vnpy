@@ -521,12 +521,14 @@ class BinancesRestApi(RestClient):
             path = "/fapi/v1/listenKey"
         else:
             path = "/dapi/v1/listenKey"
+
         self.add_request(
             method="PUT",
             path=path,
             callback=self.on_keep_user_stream,
             params=params,
-            data=data
+            data=data,
+            on_error=self.on_keep_user_stream_error
         )
 
     def on_query_time(self, data: dict, request: Request) -> None:
@@ -695,6 +697,16 @@ class BinancesRestApi(RestClient):
     def on_keep_user_stream(self, data: dict, request: Request) -> None:
         """"""
         pass
+
+    def on_keep_user_stream_error(
+        self, exception_type: type, exception_value: Exception, tb, request: Request
+    ) -> None:
+        """
+        Callback when sending order caused exception.
+        """
+        # Ignore timeout error when trying to keep user stream
+        if not issubclass(exception_type, TimeoutError):
+            self.on_error(exception_type, exception_value, tb, request)
 
     def query_history(self, req: HistoryRequest) -> List[BarData]:
         """"""
