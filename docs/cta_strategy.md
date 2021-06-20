@@ -217,7 +217,7 @@ CTA策略引擎会自动将该策略之前发出的所有活动委托全部撤�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/20.png)
 
-若盘中编辑后想要再次启动策略，点击策略实例下的【启动】按钮即可再次启动该略实例，如下图所示：
+若盘中编辑后想要再次启动策略，点击策略实例下的【启动】按钮即可再次启动该策略实例，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/41.png)
 
@@ -297,7 +297,7 @@ vn.py的本地停止单有三个特点：
 
 停止单刚发出时是处于【等待中】的状态。因为停止单的信息记录在本地，没有发往交易所，所以此时主界面上【委托】栏不会有变化。
 
-一旦该停止单的委托价格被触发，为了实现立即成交的目的，CTA策略引擎会立即以**涨跌停价**或者**盘口五档**的价格，去发出**限价**委托（所以建议本地停止单只用于流动性较好的合约）。限价委托发出后，主界面上【委托】栏将更新该订单的状态，此时停止单状态会变为【已触发】，【限价委托号】栏下也会填入该订单的限价委托号。
+一旦该停止单的委托价格被触发，为了实现立即成交的目的，CTA策略引擎会立即以**涨跌停价**或者**盘口五档**的价格，去发出**限价**委托（所以建议本地停止单只用于流动性较好的合约）。限价委托发出后，VN Trader主界面上【委托】栏将更新该订单的状态，此时停止单状态会变为【已触发】，【限价委托号】栏下也会填入该订单的限价委托号。
 
 需注意，停止单界面显示的价格是本地停止单的触发价格，而不是发出限价单的价格。
 
@@ -331,13 +331,54 @@ vn.py的本地停止单有三个特点：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/27.png)
 
 
+## 移仓助手
+
+如需使用自动移仓助手，请在完成策略初始化之后，对要执行移仓的策略先点击【移仓助手】按钮，则会弹出移仓助手对话框，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/45.png)
+
+首先请在在左侧区域配置要执行的移仓任务，其中：
+
+- 移仓合约：该下拉框中，显示当前CTA策略模块下所有策略实例所交易的合约本地代码，选择要平仓掉的老合约；
+- 目标合约：要将老的仓位和策略，移仓过去的的合约本地代码（vt_symbol），输入要开仓的新合约；
+- 委托超价：执行移仓交易时，委托价格相对于当时盘口对价超出的pricetick。
+
+完成配置确认无误后，点击【移仓】按钮开始执行，移仓过程中会有如下图所示的日志输出，完成后该对话框会被设为锁死（变灰无法再点击）：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/44.png)
+
+可以看到几乎1秒内就完成了移仓合约对应的全部仓位和策略的移仓操作，同时CTA策略模块界面上的策略交易代码已经变为目标合约。
+
+移仓过程中具体执行的任务步骤如下：
+
+- 仓位移仓：
+
+  - 对当前账户内，移仓合约的【所有仓位】进行平仓（注意这里不会区分策略持仓还是手动交易持仓），并记录对应的仓位（多空分别记录）；
+  - 对目标合约执行开仓交易，开仓的价格为当时的盘口对价加上超价pricetick，数量为上一步中记录的原有移仓合约持仓量。
+
+- 策略移仓：
+
+  - 记录当前CTA策略模块中，所有交易对象为移仓合约的策略的【逻辑持仓】（注意这里的逻辑持仓和账户实际持仓不一定完全对应）；
+  - 将上述交易对象为移仓合约的老策略实例删除，并创建以目标合约为交易标的同名新策略实例；
+  - 初始化新策略实例，并将之前记录的老策略实例的【逻辑持仓】，更新到新策略的状态上。
+
+回到VN Trader主界面，也可以查看到详细的移仓委托和成交记录。如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/43.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/42.png)
+
+
 ## CTA策略模板（CtaTemplate）
 
 CTA策略模板提供完整的信号生成和委托管理功能，用户可以基于该模板(位于vnpy.app.cta_strategy.template中)自行开发CTA策略。
 
 用户自行开发的策略可以放在用户运行文件夹下的[strategies](#jump)文件夹内。
 
-请注意，策略文件命名采用下划线模式，如boll_channel_strategy.py，而策略类命名采用驼峰式，如BollChannelStrategy。
+请注意：
+
+1. 策略文件命名采用下划线模式，如boll_channel_strategy.py，而策略类命名采用驼峰式，如BollChannelStrategy。
+
+2. 自建策略的类名不要与示例策略的类名重合。如果重合了，图形界面上只会显示一个策略类名。
 
 下面通过BollChannelStrategy策略示例，来展示策略开发的具体步骤：
 
@@ -352,11 +393,11 @@ from vnpy.app.cta_strategy import (
     TradeData,
     OrderData,
     BarGenerator,
-    ArrayManager,
+    ArrayManager
 )
 ```
 
-CtaTemplate是CTA策略模板，StopOrder、TickData、BarData、TradeData和OrderData都是储存对应信息的数据容器，BarGenerator是K线生成模块，ArrayManager是K线时间序列管理模块。
+其中，CtaTemplate是CTA策略模板，StopOrder、TickData、BarData、TradeData和OrderData都是储存对应信息的数据容器，BarGenerator是K线生成模块，ArrayManager是K线时间序列管理模块。
 
 ### 策略参数与变量
 
@@ -645,9 +686,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 收到策略停止单回报时on_stop_order函数会被调用。
 
-### 策略的主动函数
-
-#### 策略内
+### 主动函数
 
 **buy**：买入开仓（Direction：LONG，Offset：OPEN）
 
@@ -681,6 +720,18 @@ buy/sell/short/cover都是策略内部的负责发单的交易请求类函数。
 
 请注意，国内期货有开平仓的概念，例如买入操作要区分为买入开仓和买入平仓；但对于股票、外盘期货和绝大部分数字货币都是净持仓模式，没有开仓和平仓概念，所以只需使用买入（buy）和卖出（sell）这两个指令就可以了。
 
+**send_order**
+
+* 入参：direction: Direction, offset: Offset, price: float, volume: float, stop: bool = False, lock: bool = False, net: bool = False
+
+* 出参：vt_orderids / 无
+
+send_order函数是CTA策略引擎调用的发送委托的函数。一般在策略编写的时候不需要单独调用，通过buy/sell/short/cover函数发送委托即可。
+
+实盘的时候，收到传进来的参数后，会调用round_to函数基于合约的pricetick和min_volume对委托的价格和数量进行处理。
+
+请注意，要在策略启动之后，也就是策略的trading状态变为【True】之后，才能发出交易委托。如果策略的Trading状态为【False】时调用了该函数，只会返回[]。
+
 **cancel_order**
 
 * 入参：vt_orderid: str
@@ -693,23 +744,9 @@ buy/sell/short/cover都是策略内部的负责发单的交易请求类函数。
 
 * 出参：无
 
-cancel_order和cancel_all都是策略内部的负责撤单的交易请求类函数。cancel_order是撤掉策略内指定的活动委托，cancel_all是撤掉策略所有的活动委托。
+cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_order是撤掉策略内指定的活动委托，cancel_all是撤掉策略所有的活动委托。
 
 请注意，要在策略启动之后，也就是策略的trading状态变为【True】之后，才能撤单。
-
-#### CTA策略引擎
-
-**send_order**
-
-* 入参：price: float, volume: float, stop: bool = False, lock: bool = False, net: bool = False
-
-* 出参：vt_orderids / 无
-
-send_order函数是CTA策略引擎调用的发送委托的函数。一般在策略编写的时候不需要单独调用，通过buy/sell/short/cover函数发送委托即可。
-
-实盘的时候，收到传进来的参数后，会调用round_to函数基于合约的pricetick和min_volume对委托的价格和数量进行处理。
-
-请注意，要在策略启动之后，也就是策略的trading状态变为【True】之后，才能发出交易委托。如果策略的Trading状态为【False】时调用了该函数，只会返回[]。
 
 ### 功能函数
 

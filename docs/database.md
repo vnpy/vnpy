@@ -1,13 +1,12 @@
 # 数据库
 
+VN Trader目前支持以下五种数据库：
 
-## 数据库简介
+## SQL类数据库简介
 
-VN Trader目前支持以下五种数据库，其中，SQLite、MySQL和PostgreSQL为SQL类数据库，MongoDB和InfluxDB为非SQL类数据库。
+### SQLite（默认）
 
-### SQLite
-
-SQLite是一个轻量的嵌入式数据库，也是vn.py的**默认数据库**，适合入门新手用户，其特点如下：
+SQLite是一个轻量的嵌入式数据库，无需安装和配置数据服务程序，是vn.py的**默认数据库**。适合入门新手用户，其特点如下：
  - 存储在一个单一的跨平台的磁盘文件上；
  - 不需要在系统中配置、安装和管理；
  - 不需要一个单独的服务器进程。
@@ -24,6 +23,9 @@ MySQL是目前最流行的开源关系型数据库，其特点如下：
 PostgreSQL是特性更为丰富的开源关系型数据库，只推荐熟手使用。相比于MySQL，其特点如下：
  - 采用多进程结构；
  - 支持通过扩展插件来新增功能。
+
+
+## 非SQL类数据库简介
 
 ### MongoDB
 
@@ -77,7 +79,7 @@ InfluxDB是专门针对时间序列数据存储设计的非关系型数据库，
 
 随后启动VN Trader，点击菜单栏的【配置】，设置数据库相关字段：
 
-- driver要改成mysql；
+- driver要改成mysql（请注意大小写）；
 - database改成vnpy；
 - host为本地IP，即localhost或者127.0.0.1；
 - port为MySQL的默认端口3306；
@@ -203,4 +205,4 @@ InfluxDB的例子如下所示：
 |database.password   | .... |
 |database.authentication_source   | vnpy |
 
-请注意，运行influxd.exe的cmd需要保持运行，如果关闭则会导致InfluxDB退出，也可以使用一些辅助工具将其注册为后台运行的Windows服务。
+请注意，运行influxd.exe的cmd需要保持运行，如果关闭则会导致InfluxDB退出，或者也可以使用一些辅助工具将其注册为后台运行的Windows服务。
