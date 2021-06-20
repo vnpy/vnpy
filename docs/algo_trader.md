@@ -1,510 +1,212 @@
-# 算法交易
-算法交易可以用于把巨型单子拆分成一个个小单，能够有效降低交易成本，冲击成本等（冰山算法、狙击手算法)；也可以在设定的阈值内进行高抛低吸操作(网格算法、套利算法）。
+# AlgoTrading - 算法交易模块
 
-&nbsp;
 
-## 模块构成
+## 功能简介
 
-算法交易模块主要由4部分构成，如下图：
+AlgoTrading是用于**执行算法交易**的功能模块，用户可以通过图形界面操作来便捷完成启动算法、保存配置、停止算法等任务。
 
-- engine：定义了算法引擎，其中包括：引擎初始化、保存/移除/加载算法配置、启动算法、停止算法、订阅行情、挂撤单等。
-- template：定义了交易算法模板，具体的算法示例，如冰山算法，都需要继承于该模板。
-- algos：具体的交易算法示例。用户基于算法模板和官方提供是算法示例，可以自己搭建新的算法。
-- ui：基于PyQt5的GUI图形应用。
+算法交易负责委托订单的具体执行过程。目前，AlgoTrading提供了多种示例算法，用户可以通过把大笔订单自动拆分成合适的小单分批委托，有效降低交易成本和冲击成本（如冰山算法、狙击手算法），也可以在设定的阈值内进行高抛低吸操作（如网格算法、套利算法）。
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/algo_trader/algo_trader_document.png)
 
-&nbsp;
+## 加载启动
 
-## 基本操作
+### VN Station加载
 
-在VN Trader的菜单栏中点击“功能”—>“算法交易”即可打开如图算法交易模块窗口，如下图。
+启动登录VN Station后，点击【VN Trader Pro】按钮，在配置对话框中的【上层应用】栏勾选【AlgoTrading】。
 
-算法交易模块有2部分构成：
-- 委托交易，用于启动算法交易；
-- 数据监控，用于监控算法交易执行情况，并且能够手动停止算法。
+### 脚本加载
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/algo_trader/algo_trader_all_section.png)
+在启动脚本中添加如下代码：
 
-&nbsp;
+```
+# 写在顶部
+from vnpy.app.algo_trading import AlgoTradingApp
 
-### 委托交易
+# 写在创建main_engine对象后
+main_engine.add_app(AlgoTradingApp)
+```  
 
-下面以时间加权平均算法为例，具体介绍如下图委托交易功能选项。
-- 算法：目前提供了5种交易算法：时间加权平均算法、冰山算法、狙击手算法、条件委托、最优限价；
-- 本地代码：vt_symbol格式，如AAPL.SMART, 用于算法交易组建订阅行情和委托交易；
+
+## 启动模块
+
+启动VN Trader后，在菜单栏中点击【功能】-> 【算法交易】，或者点击左侧按钮栏的图标：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/1.png)
+
+即可进入算法交易模块的UI界面，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/2.png)
+
+该界面由委托交易、数据监控两部分组成：
+
+- 委托交易：位于界面左侧，用于启动或停止算法交易、保存配置信息等操作；
+- 数据监控：位于界面右侧，用于监控算法交易执行情况，并且能够手动停止算法交易。
+
+
+## 启动算法
+
+目前vn.py共提供了8种常用的示例算法，同时也对接了金纳科技提供的交易算法。本文档以时间加权平均算法（TWAP）为例，介绍算法启动过程。
+
+在启动算法时，需要配置相关参数，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/3.png)
+
+各参数要求如下：
+
+- 算法：在下拉框中选择要执行的交易算法；
+- 本地代码：格式为vt_symbol（合约代码 + 交易所名称）；
 - 方向：做多或者做空；
 - 价格：委托下单的价格；
-- 数量：委托的总数量，需要拆分成小单进行交易；
-- 执行时间：运行改算法交易的总时间，以秒为单位；
-- 每轮间隔：每隔一段时间（秒）进行委托下单操作；
-- 启动算法：设置好算法配置后，用于立刻执行算法交易。
+- 数量：委托的总数量，需要拆分成小批订单进行交易；
+- 执行时间：运行该算法交易的总时间，以秒为单位；
+- 每轮间隔：每隔多少时间进行委托下单操作，以秒为单位。
 
-所以，该算法执行的任务如下：通过时间加权平均算法，买入10000股AAPL（美股），执行价格为180美金，执行时间为600秒，间隔为6秒；即每隔6秒钟，当买一价少于等于180时，以180的价格买入100股AAPL，买入操作分割成100次。
+参数配置完成后，点击【启动算法】按钮，即可立刻执行算法交易。
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/algo_trader/trading_section.png)
+图中执行的任务具体为：使用时间加权平均算法，买入10000手豆油2109合约（y2109），执行价格为9000元，执行时间为600秒，每轮间隔为6秒；即每隔6秒钟，当合约买一价少于等于9000时，以9000的价格买入100手豆油2109合约，将买入操作分割成100次。
 
-交易配置可以保存在json文件，这样每次打开算法交易模块就不用重复输入配置。其操作是在“算法名称”选项输入该算法设置命名，然后点击下方"保存设置”按钮。保存的json文件在C:\Users\Administrator\\.vntrader文件夹的algo_trading_setting.json中，如图。
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/algo_trader/setting.png)
+## 保存配置
 
-委托交易界面最下方的“全部停止”按钮用于一键停止所有执行中的算法交易。
+交易算法的配置信息可以用json文件保存在本地，这样每次打开算法交易模块无需重复输入，具体操作如下：
 
-&nbsp;
+- 在【配置名称】选项中输入该算法配置信息的命名，然后点击下方【保存配置】按钮，即可保存配置信息到本地；
+- 保存配置后，在界面右侧的配置组件可以看到用户保存的配置名称和配置参数。
 
-### 数据监控
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/4.png)
 
-数据监控由4个部分构成。
+保存的配置文件在C:\Users\Administrator\\.vntrader文件夹的algo_trading_setting.json中，如下图所示：
 
-- 活动组件：显示正在运行的算法交易，包括：算法名称、参数、状态。最右边的“停止”按钮用于手动停止执行中的算法。
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/5.png)
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/algo_trader/action.png)
 
-&nbsp;
+## 停止算法
 
-- 历史委托组件：显示已完成的算法交易，同样包括：算法名称、参数、状态。
+当用户需要停止正在执行的交易算法时，可以在数据监控界面点击【停止】按钮，停止某个正在执行的算法交易，如下图所示：
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/algo_trader/final.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/6.png)
 
-&nbsp;
+用户也可以在委托交易界面点击最下方的【全部停止】按钮，一键停止所有执行中的算法交易。
 
-- 日志组件：显示启动、停止、完成算法的相关日志信息。在打开算法交易模块后，会进行初始化，故日志上会首先显示“算法交易引擎启动”和“算法配置载入成功”。
+
+## 数据监控
+
+数据监控界面由4个部分构成：
+
+活动组件显示正在执行的算法交易，包括：算法名称、参数和状态，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/6.png)
+
+历史委托组件显示已完成的算法交易，同样包括：算法名称、参数和状态，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/9.png)
+
+日志组件显示启动、停止、完成算法的相关日志信息。在打开算法交易模块后，会进行初始化，故日志组件会首先显示“算法交易引擎启动”和“算法配置载入成功”，如下图所示：
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/algo_trader/log_section.png)
 
-&nbsp;
+配置组件：用于载入algo_trading_setting.json的配置信息，并以图形化界面显示出来，如下图所示：
 
-- 配置组件：用于载入algo_trading_setting.json的配置信息，并且以图形化界面显示出来。
-用户可以点击“使用”按钮立刻读取配置信息，并显示在委托交易界面上，点击“启动算法”即可开始进行交易；
-用户也可以点击“移除”按钮来移除该算法配置，同步更新到json文件内。
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/8.png)
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/algo_trader/setting_section.png)
+- 点击配置组件的【使用】按钮立刻读取该配置信息，并显示在委托交易界面上，随后点击【启动算法】即可开始进行交易；
 
-&nbsp;
-
-## 算法示例
+- 点击配置组件【移除】按钮可以移除该算法配置，并同步更新到json文件内。
 
 
-### 直接委托算法
+## 示例算法
 
-直接发出新的委托（限价单、停止单、市价单）
+示例算法路径位于vnpy/app/algo_trading/algos文件夹下。目前，算法交易模块提供了以下8种内置算法：
 
-```
-    def on_tick(self, tick: TickData):
-        """"""
-        if not self.vt_orderid:
-            if self.direction == Direction.LONG:
-                self.vt_orderid = self.buy(
-                    self.vt_symbol,
-                    self.price,
-                    self.volume,
-                    self.order_type,
-                    self.offset
-                )
-                
-            else:
-                self.vt_orderid = self.sell(
-                    self.vt_symbol,
-                    self.price,
-                    self.volume,
-                    self.order_type,
-                    self.offset
-                )
-        self.put_variables_event()
-```
+**DMA - 直接委托算法**
 
-&nbsp;
+直接委托算法（DMA）直接发出新的委托（限价单、停止单、市价单）。
 
-### 时间加权平均算法
+**TWAP - 时间加权平均算法**
 
-- 将委托数量平均分布在某个时间区域内；
-- 每隔一段时间用指定的价格挂出买单（或者卖单）。
-- 买入情况：买一价低于目标价格时，发出委托，委托数量在剩余委托量与委托分割量中取最小值。
+时间加权平均算法（TWAP）具体执行步骤如下：
+
+- 将委托数量平均分布在一段时间区域内，每隔一段时间用指定价格挂出买单或卖单；
+
+- 买入情况：买一价低于目标价格时，发出委托，委托数量在剩余委托量与委托分割量中取最小值；
+
 - 卖出情况：卖一价高于目标价格时，发出委托，委托数量在剩余委托量与委托分割量中取最小值。
 
-```
-    def on_timer(self):
-        """"""
-        self.timer_count += 1
-        self.total_count += 1
-        self.put_variables_event()
+**Iceberg - 冰山算法**
 
-        if self.total_count >= self.time:
-            self.write_log("执行时间已结束，停止算法")
-            self.stop()
-            return
+冰山算法（Iceberg）具体执行步骤如下：
 
-        if self.timer_count < self.interval:
-            return
-        self.timer_count = 0
+- 在某个价位挂单，但是只挂一部分，直到全部成交；
 
-        tick = self.get_tick(self.vt_symbol)
-        if not tick:
-            return
+- 买入情况：先检查撤单，最新Tick卖一价低于目标价格时执行撤单；若无活动委托，发出委托，委托数量在剩余委托量与挂出委托量中取最小值；
 
-        self.cancel_all()
+- 卖出情况：先检查撤单，最新Tick买一价高于目标价格执行撤单；若无活动委托，发出委托，委托数量在剩余委托量与挂出委托量中取最小值。
 
-        left_volume = self.volume - self.traded
-        order_volume = min(self.order_volume, left_volume)
+**Sniper - 狙击手算法**
 
-        if self.direction == Direction.LONG:
-            if tick.ask_price_1 <= self.price:
-                self.buy(self.vt_symbol, self.price,
-                         order_volume, offset=self.offset)
-        else:
-            if tick.bid_price_1 >= self.price:
-                self.sell(self.vt_symbol, self.price,
-                          order_volume, offset=self.offset)
-```
+狙击手算法（Sniper）具体执行步骤如下：
 
-&nbsp;
+- 监控最新推送的Tick行情，发现好的价格立刻报价成交；
 
-### 冰山算法
+- 买入情况：最新Tick卖一价低于目标价格时，发出委托，委托数量在剩余委托量与卖一量中取最小值；
 
-- 在某个价位挂单，但是只挂一部分，直到全部成交。
-- 买入情况：先检查撤单：最新Tick卖一价低于目标价格，执行撤单；若无活动委托，发出委托：委托数量在剩余委托量与挂出委托量中取最小值。
-- 卖出情况：先检查撤单：最新Tick买一价高于目标价格，执行撤单；若无活动委托，发出委托：委托数量在剩余委托量与挂出委托量中取最小值。
-
-```
-    def on_timer(self):
-        """"""
-        self.timer_count += 1
-
-        if self.timer_count < self.interval:
-            self.put_variables_event()
-            return
-
-        self.timer_count = 0
-
-        contract = self.get_contract(self.vt_symbol)
-        if not contract:
-            return
-
-        # If order already finished, just send new order
-        if not self.vt_orderid:
-            order_volume = self.volume - self.traded
-            order_volume = min(order_volume, self.display_volume)
-
-            if self.direction == Direction.LONG:
-                self.vt_orderid = self.buy(
-                    self.vt_symbol,
-                    self.price,
-                    order_volume,
-                    offset=self.offset
-                )
-            else:
-                self.vt_orderid = self.sell(
-                    self.vt_symbol,
-                    self.price,
-                    order_volume,
-                    offset=self.offset
-                )
-        # Otherwise check for cancel
-        else:
-            if self.direction == Direction.LONG:
-                if self.last_tick.ask_price_1 <= self.price:
-                    self.cancel_order(self.vt_orderid)
-                    self.vt_orderid = ""
-                    self.write_log(u"最新Tick卖一价，低于买入委托价格，之前委托可能丢失，强制撤单")
-            else:
-                if self.last_tick.bid_price_1 >= self.price:
-                    self.cancel_order(self.vt_orderid)
-                    self.vt_orderid = ""
-                    self.write_log(u"最新Tick买一价，高于卖出委托价格，之前委托可能丢失，强制撤单")
-
-        self.put_variables_event()
-```
-
-&nbsp;
-
-### 狙击手算法
-
-- 监控最新tick推送的行情，发现好的价格立刻报价成交。
-- 买入情况：最新Tick卖一价低于目标价格时，发出委托，委托数量在剩余委托量与卖一量中取最小值。
 - 卖出情况：最新Tick买一价高于目标价格时，发出委托，委托数量在剩余委托量与买一量中取最小值。
 
-```
-    def on_tick(self, tick: TickData):
-        """"""
-        if self.vt_orderid:
-            self.cancel_all()
-            return
 
-        if self.direction == Direction.LONG:
-            if tick.ask_price_1 <= self.price:
-                order_volume = self.volume - self.traded
-                order_volume = min(order_volume, tick.ask_volume_1)
+**BestLimit - 最优限价算法**
 
-                self.vt_orderid = self.buy(
-                    self.vt_symbol,
-                    self.price,
-                    order_volume,
-                    offset=self.offset
-                )
-        else:
-            if tick.bid_price_1 >= self.price:
-                order_volume = self.volume - self.traded
-                order_volume = min(order_volume, tick.bid_volume_1)
+最优限价算法（BsetLimit）具体执行步骤如下：
 
-                self.vt_orderid = self.sell(
-                    self.vt_symbol,
-                    self.price,
-                    order_volume,
-                    offset=self.offset
-                )
+- 监控最新推送的Tick行情，发现好的价格立刻报价成交；
 
-        self.put_variables_event()
-```
+- 买入情况：先检查撤单，最新Tick买一价不等于目标价格时执行撤单；若无活动委托，发出委托，委托价格为最新Tick买一价，委托数量为剩余委托量；
 
-&nbsp;
+- 卖出情况：先检查撤单，最新Tick买一价不等于目标价格时执行撤单；若无活动委托，发出委托，委托价格为最新Tick卖一价，委托数量为剩余委托量。
 
-### 条件委托算法
+**Stop - 条件委托算法**
 
-- 监控最新tick推送的行情，发现行情突破立刻报价成交。
-- 买入情况：Tick最新价高于目标价格时，发出委托，委托价为目标价格加上超价。
+条件委托算法（StopAlgo）具体执行步骤如下：
+
+- 监控最新推送的Tick行情，发现行情突破立刻报价成交；
+
+- 买入情况：Tick最新价高于目标价格时，发出委托，委托价为目标价格加上超价；
+
 - 卖出情况：Tick最新价低于目标价格时，发出委托，委托价为目标价格减去超价。
 
-```
-    def on_tick(self, tick: TickData):
-        """"""
-        if self.vt_orderid:
-            return
 
-        if self.direction == Direction.LONG:
-            if tick.last_price >= self.stop_price:
-                price = self.stop_price + self.price_add
+**Arbitrage - 套利算法**
 
-                if tick.limit_up:
-                    price = min(price, tick.limit_up)
+套利算法（Arbitrage）具体执行步骤如下：
 
-                self.vt_orderid = self.buy(
-                    self.vt_symbol,
-                    price,
-                    self.volume,
-                    offset=self.offset
-                )
-                self.write_log(f"停止单已触发，代码：{self.vt_symbol}，方向：{self.direction}, 价格：{self.stop_price}，数量：{self.volume}，开平：{self.offset}")                   
+- 每隔一段时间检查委托情况，若有委托则先清空；若主动腿还持有净持仓，通过被动腿成交来对冲；
 
-        else:
-            if tick.last_price <= self.stop_price:
-                price = self.stop_price - self.price_add
-                
-                if tick.limit_down:
-                    price = max(price, tick.limit_down)
+- 计算价差spread_bid_price 和 spread_ask_price，以及对应的委托数量；
 
-                self.vt_orderid = self.buy(
-                    self.vt_symbol,
-                    price,
-                    self.volume,
-                    offset=self.offset
-                )
-                self.write_log(f"停止单已触发，代码：{self.vt_symbol}，方向：{self.direction}, 价格：{self.stop_price}，数量：{self.volume}，开平：{self.offset}") 
+- 卖出情况：主动腿价格相对被动腿上涨，其价差spread_bid_price大于spread_up时，触发买入信号；
 
-        self.put_variables_event()
-```
+- 买入情况：主动腿价格相对被动腿下跌，其价差spread_ask_price小于 - spread_down（spread_down默认设置为正数）时，触发卖出信号；
 
-&nbsp;
+- 在买卖信号判断加入最大持仓的限制，其作用是避免持仓过多导致保证金不足或者直接被交易所惩罚性强平；而且随着价差持续波动，主动腿持仓可以从0 -> 10 -> 0 -> -10 -> 0，从而实现平仓获利离场。
 
-### 最优限价算法
+**Grid - 网格交易算法**
 
-- 监控最新tick推送的行情，发现好的价格立刻报价成交。
-- 买入情况：先检查撤单：最新Tick买一价不等于目标价格时，执行撤单；若无活动委托，发出委托：委托价格为最新Tick买一价，委托数量为剩余委托量。
-- 卖出情况：先检查撤单：最新Tick买一价不等于目标价格时，执行撤单；若无活动委托，发出委托：委托价格为最新Tick卖一价，委托数量为剩余委托量。
+网格交易算法（Grid）具体执行步骤如下：
 
-```
-    def on_tick(self, tick: TickData):
-        """"""
-        self.last_tick = tick
+- 每隔一段时间检查委托情况，若有委托则先清空；
 
-        if self.direction == Direction.LONG:
-            if not self.vt_orderid:
-                self.buy_best_limit()
-            elif self.order_price != self.last_tick.bid_price_1:
-                self.cancel_all()
-        else:
-            if not self.vt_orderid:
-                self.sell_best_limit()
-            elif self.order_price != self.last_tick.ask_price_1:
-                self.cancel_all()
+- 基于用户设置的价格步进（即网格）计算目标距离，目标距离=（目标价格 - 当前价格）/ 价格步进，故当前价格低于目标价格，目标距离为正，方向为买入；当前价格高于目标价格，目标距离为负，方向为卖出（高抛低吸概念）；
 
-        self.put_variables_event()
+- 计算目标仓位，目标仓位 = 取整后的目标距离 * 委托数量步进。注意买卖方向取整的方式是不同的：买入方向要向下取整math.floor()，如目标距离为1.6，取1；卖出方向要向上取整，如目标距离为-1.6，取-1；
 
-    def buy_best_limit(self):
-        """"""
-        order_volume = self.volume - self.traded
-        self.order_price = self.last_tick.bid_price_1
-        self.vt_orderid = self.buy(
-            self.vt_symbol,
-            self.order_price,
-            order_volume,
-            offset=self.offset
-        )        
+- 计算具体委托仓位：若目标买入仓位大于当前仓位，执行买入操作；若目标卖出仓位低于当前仓位，执行卖出操作；
 
-    def sell_best_limit(self):
-        """"""
-        order_volume = self.volume - self.traded
-        self.order_price = self.last_tick.ask_price_1
-        self.vt_orderid = self.sell(
-            self.vt_symbol,
-            self.order_price,
-            order_volume,
-            offset=self.offset
-        ) 
-```
-
-&nbsp;
-
-### 网格算法
-
-- 每隔一段时间检查委托情况，若有委托则先清空。
-- 基于用户设置的价格步进（即网格）计算目标距离，目标距离=（目标价格- 当前价格）/价格步进，故当前价格低于目标价格，目标距离为正，方向为买入；当前价格高于目标价格，目标距离为负，方向为卖出。（高抛低吸概念）
-- 计算目标仓位，目标仓位= 取整后的目标距离 * 委托数量步进。注意卖卖方向取整的方式是不同的：买入方向要向下取整math.floor()，如目标距离为1.6，取1；卖出方向要向上取整，如目标距离为-1.6，取-1。
-- 计算具体委托仓位：若目标买入仓位大于当前仓位，执行买入操作；若目标卖出仓位低于当前仓位，执行卖出操作。
 - 为了能够快速成交，买入情况是基于ask price计算，卖出情况是基于bid price计算。
 
 
-```
-    def on_timer(self):
-        """"""
-        if not self.last_tick:
-            return
+## 金纳算法
 
-        self.timer_count += 1
-        if self.timer_count < self.interval:
-            self.put_variables_event()
-            return        
-        self.timer_count = 0
-        
-        if self.vt_orderid:
-            self.cancel_all()        
+除了8种内置算法外，算法交易模块也对接了[金纳科技](http://www.genus-finance.com/)提供的算法，包括直接委托算法（DMA）、时间加权均价算法（TWAP）、成交量加权均价算法（VWAP）、交易量百分比算法（Percent）、价格跟踪算法（PxInLine）和盘口捕捉算法（Sniper）。
 
-        # Calculate target volume to buy
-        target_buy_distance = (self.price - self.last_tick.ask_price_1) / self.step_price
-        target_buy_position = math.floor(target_buy_distance) * self.step_volume
-        target_buy_volume = target_buy_position - self.last_pos
+与内置算法相比，金纳算法通过结合全息盘口和L2行情数据来优化算法中的买卖执行细节，从而进一步降低交易成本，也可以理解为在金纳算法中嵌入了一部分高频量化策略的信号来优化买卖点。
 
-        # Buy when price dropping
-        if target_buy_volume > 0:
-            self.vt_orderid = self.buy(
-                self.vt_symbol,
-                self.last_tick.ask_price_1,
-                min(target_buy_volume, self.last_tick.ask_volume_1)
-            )
-        
-        # Calculate target volume to sell
-        target_sell_distance = (self.price - self.last_tick.bid_price_1) / self.step_price
-        target_sell_position = math.ceil(target_sell_distance) * self.step_volume
-        target_sell_volume = self.last_pos - target_sell_position
-
-        # Sell when price rising
-        if target_sell_volume > 0:
-            self.vt_orderid = self.sell(
-                self.vt_symbol,
-                self.last_tick.bid_price_1,
-                min(target_sell_volume, self.last_tick.bid_volume_1)
-            )
-```
-
-&nbsp;
-
-### 套利算法
-
-- 每隔一段时间检查委托情况，若有委托则先清空；若主动腿还持有净持仓，通过被动腿成交来对冲。
-- 计算价差spread_bid_price 和 spread_ask_price, 以及对应的委托数量
-- 卖出情况：主动腿价格相对被动腿上涨，其价差spread_bid_price大于spread_up时，触发买入信号
-- 买入情况：主动腿价格相对被动腿下跌，其价差spread_ask_price小于 - spread_down(spread_down默认设置为正数)时，触发卖出信号
-- 在买卖信号判断加入最大持仓的限制，其作用是避免持仓过多导致保证金不足或者直接被交易所惩罚性强平；而且随着价差持续波动，主动腿持仓可以从0 -> 10 -> 0 -> -10 -> 0,从而实现平仓获利离场。
-
-
-```
-    def on_timer(self):
-        """"""
-        self.timer_count += 1
-        if self.timer_count < self.interval:
-            self.put_variables_event()
-            return
-        self.timer_count = 0
-
-        if self.active_vt_orderid or self.passive_vt_orderid:
-            self.cancel_all()
-            return
-        
-        if self.net_pos:
-            self.hedge()
-            return
-      
-        active_tick = self.get_tick(self.active_vt_symbol)
-        passive_tick = self.get_tick(self.passive_vt_symbol)
-        if not active_tick or not passive_tick:
-            return
-
-        # Calculate spread
-        spread_bid_price = active_tick.bid_price_1 - passive_tick.ask_price_1
-        spread_ask_price = active_tick.ask_price_1 - passive_tick.bid_price_1
-
-        spread_bid_volume = min(active_tick.bid_volume_1, passive_tick.ask_volume_1)
-        spread_ask_volume = min(active_tick.ask_volume_1, passive_tick.bid_volume_1)
-
-        # Sell condition      
-        if spread_bid_price > self.spread_up:
-            if self.acum_pos <= -self.max_pos:
-                return
-            else:
-                self.active_vt_orderid = self.sell(
-                    self.active_vt_symbol,
-                    active_tick.bid_price_1,
-                    spread_bid_volume               
-                )
-
-        # Buy condition
-        elif spread_ask_price < -self.spread_down:
-            if self.acum_pos >= self.max_pos:
-                return
-            else:
-                self.active_vt_orderid = self.buy(
-                    self.active_vt_symbol,
-                    active_tick.ask_price_1,
-                    spread_ask_volume
-                )
-        self.put_variables_event()
-    
-    def hedge(self):
-        """"""
-        tick = self.get_tick(self.passive_vt_symbol)
-        volume = abs(self.net_pos)
-
-        if self.net_pos > 0:
-            self.passive_vt_orderid = self.sell(
-                self.passive_vt_symbol,
-                tick.bid_price_5,
-                volume
-            )
-        elif self.net_pos < 0:
-            self.passive_vt_orderid = self.buy(
-                self.passive_vt_symbol,
-                tick.ask_price_5,
-                volume
-            )
-
-    def on_trade(self, trade: TradeData):
-        """"""
-        # Update net position volume
-        if trade.direction == Direction.LONG:
-            self.net_pos += trade.volume
-        else:
-            self.net_pos -= trade.volume
-
-        # Update active symbol position           
-        if trade.vt_symbol == self.active_vt_symbol:
-            if trade.direction == Direction.LONG:
-                self.acum_pos += trade.volume
-            else:
-                self.acum_pos -= trade.volume
-
-        # Hedge if active symbol traded     
-        if trade.vt_symbol == self.active_vt_symbol:
-            self.hedge()
-        
-        self.put_variables_event()
-
-```
+用户可以自行联系金纳科技购买账号，也可以联系券商是否采购（如中泰、申万宏源）来申请免费账号。获得金纳的账户信息后，只需在VN Trader主界面的菜单栏中点击【配置】按钮进行配置，即可使用金纳算法。具体配置过程详见基本使用文档的全局配置部分。

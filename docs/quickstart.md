@@ -12,7 +12,7 @@
 
 ### 脚本模式
 
-在文件夹examples\vn_trader中找到run.py文件，打开文件路径下的cmd窗口，输入“python run.py”命令，即可启动VN Trader。 
+在文件夹examples\vn_trader中找到run.py文件（需要从Github上下载），打开文件路径下的cmd窗口，输入“python run.py”命令，即可启动VN Trader。 
 
 - 以Win10系统为例，用户可在run.py所在文件夹内按住“Shift” + 鼠标右键，选择"在此处打开 powershell 窗口"，如下图所示；
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/2.png)
@@ -45,6 +45,16 @@
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/1.png)
 
 
+## 合约查询
+
+成功连接交易接口后，用户可以通过合约查询功能查询合约信息：
+
+ - 点击菜单栏的【帮助】->【合约查询】，或者点击左侧按钮栏的图标，如下所示：
+ ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/paper_account/1.png)
+ - 在弹出的对话框中直接点击右上角的【查询】按钮，即可查询所有合约的价格信息，如下图所示：
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/3.png)
+
+
 ## 订阅行情
 
 在交易组件输入交易所和合约代码，按回车键即可订阅行情，如订阅铁矿石期货时，交易所填写DCE，代码填写i1905。
@@ -53,7 +63,7 @@
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract.png)
 
-请注意，合约代码格式可以通过菜单栏的【帮助】->【查询合约】功能查到。
+请注意，合约代码格式必须按照【合约查询】中的格式正确填写。
 
 
 ## 委托交易
@@ -74,6 +84,7 @@
 发出委托后，本地会缓存委托相关信息，并显示到 委托组件和活动组件，此时委托状态为“提交中”。
 
 交易所收到用户发送的委托后，将其插入中央订单簿来进行撮合成交，并推送委托回报给用户：
+
 - 若委托还未成交，委托组件和活动组件只会更新时间和委托状态这两字段，委托状态变成“未成交”；
 - 若委托立刻成交，委托相关信息会从活动组件移除，新增至成交组件，委托状态变成“全部成交”。
 
@@ -174,7 +185,7 @@ font.family和font.size参数用于配置GUI界面，各参数含义如下所示
 
 ### 日志输出
 
-log.active, log.level, log.console和log.file用于对日志输出进行配置，参数含义如下所示：
+log.active, log.level, log.console和log.file用于对日志输出进行配置，各参数含义如下所示：
 
 - log.active：控制是否启动LogEngine，默认为True。如果该项修改为False，则后续几项参数都将失效，同时VN Trader运行时不再输出日志或生成日志文件（可以降低部分系统延时）。
 
@@ -192,12 +203,13 @@ C:\users\administrator.vntrader\log
 
 以email为前缀的参数用于对邮箱进行配置，可以在特定事件发生时（如委托成交，数据异常时）发送邮件实时通知，各参数含义如下：
 
-- email.server: SMTP邮件服务器地址；
-- email.port: SMTP邮件服务器端口号；
-- email.username: 邮箱用户名；
-- email.password: 邮箱密码；
-- email.sender: 发送者邮箱；
-- email.receiver: 接收者邮箱。
+- email.server：邮件服务器地址，vnpy默认填写好了QQ邮箱服务器地址，可以直接用，如果需要使用其他邮箱，需要自行查找一下其他的服务器地址；
+- email.port：邮件服务器端口号，vnpm默认填写好了QQ邮箱服务器端口，可以直接用；
+- email.username：填写邮箱地址即可，如xxxx@qq.com；
+- email.password：对于QQ邮箱，此处不是邮箱密码，而是开通SMTP后系统生成的一个授权码；
+- email.sender：发送邮箱名，与email.username一致；
+- email.receiver：接受邮件的邮箱地址，比如xxxx@outlook.com。
+
 
 ### RQData数据服务
 
