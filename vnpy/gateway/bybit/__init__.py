@@ -1,1 +1,1 @@
-from .bybit_gateway import BybitGateway
+from vnpy_bybit import BybitGateway

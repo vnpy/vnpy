@@ -35,6 +35,7 @@ vnpy_ctptest
 vnpy_okex
 vnpy_deribit
 vnpy_xtp
+vnpy_bybit
 vnpy_ctastrategy
 vnpy_ctabacktester
 vnpy_riskmanager
