@@ -12,22 +12,19 @@ ES-2020006-C-2430-50-USD-FOP  GLOBEX
 
 from copy import copy
 from datetime import datetime
-from queue import Empty
 from threading import Thread, Condition
 from typing import Optional
 import shelve
 from tzlocal import get_localzone
 
-from ibapi import comm
 from ibapi.client import EClient
-from ibapi.common import MAX_MSG_LEN, NO_VALID_ID, OrderId, TickAttrib, TickerId
+from ibapi.common import OrderId, TickAttrib, TickerId
 from ibapi.contract import Contract, ContractDetails
 from ibapi.execution import Execution
 from ibapi.order import Order
 from ibapi.order_state import OrderState
 from ibapi.ticktype import TickType, TickTypeEnum
 from ibapi.wrapper import EWrapper
-from ibapi.errors import BAD_LENGTH
 from ibapi.common import BarData as IbBarData
 
 from vnpy.trader.gateway import BaseGateway
@@ -89,7 +86,8 @@ EXCHANGE_VT2IB = {
     Exchange.BATS: "BATS",
     Exchange.IEX: "IEX",
     Exchange.IBKRATS: "IBKRATS",
-    Exchange.OTC: "PINK"
+    Exchange.OTC: "PINK",
+    Exchange.SGX: "SGX"
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}
 
@@ -110,7 +108,8 @@ PRODUCT_IB2VT = {
     "CMDTY": Product.SPOT,
     "FUT": Product.FUTURES,
     "OPT": Product.OPTION,
-    "FOT": Product.OPTION
+    "FOT": Product.OPTION,
+    "CONTFUT": Product.FUTURES
 }
 
 OPTION_VT2IB = {OptionType.CALL: "CALL", OptionType.PUT: "PUT"}
@@ -357,6 +356,8 @@ class IbApi(EWrapper):
         # We need to calculate locally.
         exchange = self.tick_exchange[reqId]
         if exchange is Exchange.IDEALPRO or "CMDTY" in tick.symbol:
+            if not tick.bid_price_1 or not tick.ask_price_1:
+                return
             tick.last_price = (tick.bid_price_1 + tick.ask_price_1) / 2
             tick.datetime = datetime.now(self.local_tz)
         self.gateway.on_tick(copy(tick))
@@ -632,7 +633,11 @@ class IbApi(EWrapper):
         """
         Callback of history data update.
         """
-        dt = datetime.strptime(ib_bar.date, "%Y%m%d %H:%M:%S")
+        # When requesting daily and weekly history data, the date format is "%Y%m%d"
+        if len(ib_bar.date) > 8:
+            dt = datetime.strptime(ib_bar.date, "%Y%m%d %H:%M:%S")
+        else:
+            dt = datetime.strptime(ib_bar.date, "%Y%m%d")
         dt = self.local_tz.localize(dt)
 
         bar = BarData(

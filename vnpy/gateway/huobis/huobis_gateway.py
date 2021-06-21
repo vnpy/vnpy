@@ -1068,11 +1068,6 @@ class HuobisDataWebsocketApi(HuobisWebsocketApiBase):
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
-        buf = [i for i in req.symbol if not i.isdigit()]
-        symbol = "".join(buf)
-
-        ws_symbol = f"{symbol}"
-
         # Create tick data buffer
         tick = TickData(
             symbol=req.symbol,
@@ -1081,9 +1076,9 @@ class HuobisDataWebsocketApi(HuobisWebsocketApiBase):
             datetime=datetime.now(CHINA_TZ),
             gateway_name=self.gateway_name,
         )
-        self.ticks[ws_symbol] = tick
+        self.ticks[req.symbol] = tick
 
-        self.subscribe_data(ws_symbol)
+        self.subscribe_data(req.symbol)
 
     def subscribe_data(self, ws_symbol: str) -> None:
         """"""

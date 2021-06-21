@@ -1,4 +1,37 @@
-# 2.2.1版本
+# 2.4.0版本
+
+## 新增
+1. 新增TickData的本地时间戳字段local_time（不带时区信息）
+2. 新增基于asyncio和aiohttp实现的协程异步REST API客户端vnpy_rest项目
+3. 新增基于asyncio和aiohttp实现的协程异步Websocket API客户端vnpy_websocket项目
+4. 新增基于多进程模式的遗传算法优化功能
+5. 新增XTP的API封装中，行情登录函数对于本地网卡地址的参数支持
+
+## 调整
+1. 将Deribit接口剥离到vnpy_deribit项目中，并升级到2.0.1版本
+2. 剥离CTA策略模块下的穷举和遗传优化算法到vnpy.trader.optimize模块下
+3. 遗传算法优化完成后，输出所有回测过的参数对应结果（而不只是最优结果）
+4. CTA策略引擎加载策略文件时，增加模块重载的操作，使得任何策略文件修改可以立即生效
+5. CTA策略引擎扫描特定目录下的策略文件时，使用glob函数（替换原有的os.walk），避免对子目录中文件的错误加载
+6. 将CTA策略模块剥离到vnpy_ctastrategy项目中
+7. 将CTA回测模块剥离到vnpy_ctabacktester项目中
+8. 将XTP接口剥离到vnpy_xtp项目中，并升级到2.2.27.4版本
+9. 将事前风控模块剥离到vnpy_riskmanager项目中
+10. 将数据管理模块剥离到vnpy_datamanager项目中
+11. 将Deribit接口剥离到vnpy_bybit项目中，并升级到2021.6.21版本
+
+## 修复
+1. 修复BinancesGateway由于撤单请求失败，导致委托持续处于【提交中】状态的问题
+2. 修复MySQL和PostgreSQL数据库管理器删除K线数据时出错的问题
+3. 修复基于aiohttp的RestClient和WebsocketClient，事件循环停止后重新启动失败的问题
+4. 修复BinancesGateway由于保持会话流超时失败，导致的系统卡死问题
+5. 修复HuobisGateway，订阅O3-USDT（代码中有数字）合约行情失败的问题
+6. 修复BinanceGateway，使用市价下单报错的问题
+7. 修复CtaBacktester基于Tick级别数据进行参数优化时，启动优化失败的问题
+8. 修复ToraStockGateway和ToraOptionGateway，调用下单函数时没有返回委托号的问题
+9. 修复InfluxDB数据管理器，导入数据时时间字段解析错误的问题
+
+# 2.3.0版本
 
 ## 修复
 1. 修复IbGateway断线重连后，没有自动订阅之前已订阅的合约行情问题
@@ -14,13 +47,15 @@
 11. 修复IbGateway，当要查询的合约历史数据不存在时卡死的问题
 12. 修复IbGateway，查询返回的合约乘数（字符串）未作转换导致的上层应用问题
 13. 修复BitfinexGateway，查询的历史数据OHLC字段取值错误问题
-
+14. 修复BarGenerator，在合成小时K线时部分情况下遗漏分钟K线收盘价更新的问题
+15. 修复UftGateway，在连接ETF期权服务器时无法订阅行情的问题
+16. 修复UftGateway，在连接ETF期权服务器时，对于包含毫秒的委托时间戳处理错误的问题
 
 ## 调整
 1. 修改CTA模块的净仓交易模式，支持上期所和能交所的今昨仓拆分下单
 2. 调整组合策略模块的回测引擎K线回放逻辑，当某个时间点K线数据缺失时，推送给策略的K线字典中不对其进行向前补齐
 3. 将CTP接口和API封装，剥离到vnpy_ctp项目中
-4. 将CTP穿透式测试接口和API封装，剥离到vnpy_ctptest项中
+4. 将CTP穿透式测试接口和API封装，剥离到vnpy_ctptest项目中
 
 ## 新增
 1. 新增DataManager在导入CSV文件时，对于时间戳时区的选择功能
