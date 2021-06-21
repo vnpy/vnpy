@@ -674,7 +674,13 @@ class UftTdApi(TdApi):
         order = self.orders.get(orderid, None)
         insert_time = generate_time(data["InsertTime"])
         timestamp = f"{data['InsertDate']} {insert_time}"
-        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+
+        if "." in timestamp:
+            fmt = "%Y%m%d %H:%M:%S.%f"
+        else:
+            fmt = "%Y%m%d %H:%M:%S"
+
+        dt = datetime.strptime(timestamp, fmt)
         dt = CHINA_TZ.localize(dt)
 
         if not order:
@@ -893,10 +899,18 @@ def adjust_price(price: float) -> float:
 def generate_time(data: int) -> str:
     """"""
     buf = str(data)
-    if len(buf) < 6:
-        buf = "0" + buf
+    buf_size = len(buf)
 
-    hour = buf[:2]
+    # 不到6位数字的时间戳，精确到秒
+    if buf_size < 6:
+        buf = "0" + buf         # 补齐小时前面的0
+    # 超过6位数字的时间戳，精确到毫秒
+    elif buf_size > 6:
+        # 不足9位
+        if buf_size < 9:
+            buf = "0" + buf     # 补齐小时前面的0
+
+    hour = buf[0:2]
     minute = buf[2:4]
-    second = buf[4:]
+    second = buf[4:6]
     return f"{hour}:{minute}:{second}"
