@@ -1,1 +1,1 @@
-from .okex_gateway import OkexGateway
+from vnpy_okex import OkexGateway

@@ -1,8 +1,8 @@
-six==1.13.0
+six
 wheel
+tzlocal
 PyQt5==5.14.1
-pyqtgraph==0.10.0
-dataclasses; python_version<="3.6"
+pyqtgraph
 qdarkstyle
 requests
 websocket-client
@@ -10,10 +10,11 @@ peewee
 pymysql
 psycopg2
 mongoengine
-numpy==1.19.3
+numpy
 pandas
 matplotlib
 seaborn
+PyCryptodome==3.9.9
 futu-api
 tigeropen
 rqdatac
@@ -26,3 +27,16 @@ QScintilla==2.11.4
 plotly
 quickfix
 trading-calendars
+influxdb
+vnpy_rest
+vnpy_websocket
+vnpy_ctp
+vnpy_ctptest
+vnpy_okex
+vnpy_deribit
+vnpy_xtp
+vnpy_bybit
+vnpy_ctastrategy
+vnpy_ctabacktester
+vnpy_riskmanager
+vnpy_datamanager

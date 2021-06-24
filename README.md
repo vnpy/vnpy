@@ -4,8 +4,10 @@
   <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy-logo.png"/>
 </p>
 
+💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
+
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.1.8-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.4.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
@@ -94,13 +96,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 币安永续（binances)：数字货币永续合约
 
-        * OKEX（okex）：数字货币现货
-
-        * OKEX永续（okexs）：数字货币永续合约
-
-        * OKEX期货（okexf）：数字货币期货
-
-        * OKEX期权（okexo）：数字货币期权
+        * OKEX（okex）：数字货币现货、期货、永续、期权（V5统一账户）
 
         * 火币（huobi）：数字货币现货
 
@@ -164,6 +160,22 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 5. 简洁易用的事件驱动引擎（vnpy.event），作为事件驱动型交易程序的核心。
 
+6. 对接各类数据库的标准化管理客户端（vnpy.database）：
+
+    * SQL类
+
+        * SQLite（sqlite）：轻量级单文件数据库，无需安装和配置数据服务程序，vn.py的默认选项，适合入门新手用户
+
+        * MySQL（mysql）：世界最流行的开源关系型数据库，文档资料极为丰富，且可替换其他高NewSQL兼容实现（如TiDB）
+
+        * PostgreSQL（postgresql）：特性更为丰富的开源关系型数据库，支持通过扩展插件来新增功能，只推荐熟手使用
+
+    * NoSQL类
+
+        * MongoDB（mongodb）：基于分布式文件储存（bson格式）的非关系型数据库，内置的热数据内存缓存提供更快读写速度
+
+        * InfluxDB（influxdb）：针对时序数据专门设计的非关系型数据库，列式数据储存提供极高的读写效率和外围分析应用
+
 6. 跨进程通讯标准组件（vnpy.rpc），用于实现分布式部署的复杂交易系统。
 
 7. Python高性能K线图表（vnpy.chart），支持大数据量图表显示以及实时数据更新功能。
@@ -174,7 +186,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.1.8](https://download.vnpy.com/vnstudio-2.1.8.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.4.0](https://download.vnpy.com/vnstudio-2.4.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 

@@ -849,6 +849,7 @@ class SecTdApi(TdApi):
                 size=data["tradeUnit"],
                 pricetick=0.001,
                 product=Product.EQUITY,
+                net_position=True,
                 gateway_name=self.gateway_name
             )
             self.gateway.on_contract(contract)
@@ -921,7 +922,7 @@ class SecTdApi(TdApi):
         pos = PositionData(
             symbol=data["securityID"],
             exchange=EXCHANGE_SEC2VT[data["exchangeID"]],
-            direction=Direction.NEt,
+            direction=Direction.NET,
             volume=data["totalQty"],
             price=data["avgPositionPrice"],
             gateway_name=self.gateway_name

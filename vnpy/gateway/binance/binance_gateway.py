@@ -227,7 +227,8 @@ class BinanceRestApi(RestClient):
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",
-            "X-MBX-APIKEY": self.key
+            "X-MBX-APIKEY": self.key,
+            "Connection": "close"
         }
 
         if security in [Security.SIGNED, Security.API_KEY]:
@@ -335,7 +336,6 @@ class BinanceRestApi(RestClient):
 
         params = {
             "symbol": req.symbol.upper(),
-            "timeInForce": "GTC",
             "side": DIRECTION_VT2BINANCE[req.direction],
             "type": ORDERTYPE_VT2BINANCE[req.type],
             "price": str(req.price),
@@ -343,6 +343,9 @@ class BinanceRestApi(RestClient):
             "newClientOrderId": orderid,
             "newOrderRespType": "ACK"
         }
+
+        if req.type == OrderType.LIMIT:
+            params["timeInForce"] = "GTC"
 
         self.add_request(
             method="POST",
@@ -628,7 +631,7 @@ class BinanceTradeWebsocketApi(WebsocketClient):
 
     def on_packet(self, packet: dict):  # type: (dict)->None
         """"""
-        if packet["e"] == "outboundAccountInfo":
+        if packet["e"] == "outboundAccountPosition":
             self.on_account(packet)
         elif packet["e"] == "executionReport":
             self.on_order(packet)
