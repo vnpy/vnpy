@@ -108,42 +108,6 @@ def get_ext_modules():
         extra_link_args = ["-lstdc++"]
         runtime_library_dirs = ["$ORIGIN"]
 
-    vnxtpmd = Extension(
-        "vnpy.api.xtp.vnxtpmd",
-        [
-            "vnpy/api/xtp/vnxtp/vnxtpmd/vnxtpmd.cpp",
-        ],
-        include_dirs=["vnpy/api/xtp/include",
-                      "vnpy/api/xtp/vnxtp"],
-        define_macros=[],
-        undef_macros=[],
-        library_dirs=["vnpy/api/xtp/libs", "vnpy/api/xtp"],
-        libraries=["xtptraderapi", "xtpquoteapi"],
-        extra_compile_args=compiler_flags,
-        extra_link_args=extra_link_args,
-        runtime_library_dirs=runtime_library_dirs,
-        depends=[],
-        language="cpp",
-    )
-
-    vnxtptd = Extension(
-        "vnpy.api.xtp.vnxtptd",
-        [
-            "vnpy/api/xtp/vnxtp/vnxtptd/vnxtptd.cpp",
-        ],
-        include_dirs=["vnpy/api/xtp/include",
-                      "vnpy/api/xtp/vnxtp"],
-        define_macros=[],
-        undef_macros=[],
-        library_dirs=["vnpy/api/xtp/libs", "vnpy/api/xtp"],
-        libraries=["xtptraderapi", "xtpquoteapi"],
-        extra_compile_args=compiler_flags,
-        extra_link_args=extra_link_args,
-        runtime_library_dirs=runtime_library_dirs,
-        depends=[],
-        language="cpp",
-    )
-
     vnksgoldmd = Extension(
         "vnpy.api.ksgold.vnksgoldmd",
         [
@@ -301,17 +265,12 @@ def get_ext_modules():
         ext_modules = []
     else:
         ext_modules = [
-            vnxtptd, vnxtpmd,
             vnsgittd, vnsgitmd,
             vnksgoldmd, vnksgoldtd,
             vnnhmd, vnnhfutures, vnnhstock,
             vnrohontd, vnrohonmd,
         ]
 
-    ext_modules = check_extension_build_flag(
-        ext_modules, "VNPY_BUILD_XTP", vnxtptd)
-    ext_modules = check_extension_build_flag(
-        ext_modules, "VNPY_BUILD_XTP", vnxtpmd)
     ext_modules = check_extension_build_flag(
         ext_modules, "VNPY_BUILD_sgit", vnsgittd)
     ext_modules = check_extension_build_flag(
