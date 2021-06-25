@@ -6,11 +6,12 @@ from parser import expr
 from tzlocal import get_localzone
 
 from vnpy.trader.object import (
-    TickData, PositionData, TradeData, ContractData, BarData
+    HistoryRequest, TickData, PositionData, TradeData, ContractData, BarData
 )
 from vnpy.trader.constant import Direction, Offset, Exchange, Interval
 from vnpy.trader.utility import floor_to, ceil_to, round_to, extract_vt_symbol
 from vnpy.trader.database import database_manager
+from vnpy.trader.rqdata import rqdata_client
 
 
 EVENT_SPREAD_DATA = "eSpreadData"
@@ -516,9 +517,16 @@ def load_bar_data(
     for vt_symbol in spread.legs.keys():
         symbol, exchange = extract_vt_symbol(vt_symbol)
 
-        bar_data: List[BarData] = database_manager.load_bar_data(
+        # First, try to query history from RQData
+        bar_data: List[BarData] = query_bar_from_rq(
             symbol, exchange, interval, start, end
         )
+
+        # If failed, query history from database
+        if not bar_data:
+            bar_data = database_manager.load_bar_data(
+                symbol, exchange, interval, start, end
+            )
 
         bars: Dict[datetime, BarData] = {bar.datetime: bar for bar in bar_data}
         leg_bars[vt_symbol] = bars
@@ -572,3 +580,27 @@ def load_tick_data(
     return database_manager.load_tick_data(
         spread.name, Exchange.LOCAL, start, end
     )
+
+
+def query_bar_from_rq(
+    symbol: str,
+    exchange: Exchange,
+    interval: Interval,
+    start: datetime,
+    end: datetime
+):
+    """
+    Query bar data from RQData.
+    """
+    if not rqdata_client.inited:
+        rqdata_client.init()
+
+    req = HistoryRequest(
+        symbol=symbol,
+        exchange=exchange,
+        interval=interval,
+        start=start,
+        end=end
+    )
+    data = rqdata_client.query_history(req)
+    return data
