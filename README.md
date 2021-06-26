@@ -202,6 +202,12 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     bash install.sh
 
+**Macos**
+
+```
+bash install_osx.sh
+```
+
 ## 使用指南
 
 1. 在[SimNow](http://www.simnow.com.cn/)注册CTP仿真账号，并在[该页面](http://www.simnow.com.cn/product.action)获取经纪商代码以及交易行情服务器地址。
