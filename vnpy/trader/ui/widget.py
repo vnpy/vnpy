@@ -10,8 +10,7 @@ from copy import copy
 from tzlocal import get_localzone
 
 from PyQt5 import QtCore, QtGui, QtWidgets, Qt
-import rqdatac
-import numpy as np
+import importlib_metadata
 
 import vnpy
 from vnpy.event import Event, EventEngine
@@ -1080,7 +1079,7 @@ class AboutDialog(QtWidgets.QDialog):
 
     def init_ui(self) -> None:
         """"""
-        self.setWindowTitle(f"关于VN Trader")
+        self.setWindowTitle("关于VN Trader")
 
         text = f"""
             By Traders, For Traders.
@@ -1094,8 +1093,9 @@ class AboutDialog(QtWidgets.QDialog):
             vn.py - {vnpy.__version__}
             Python - {platform.python_version()}
             PyQt5 - {Qt.PYQT_VERSION_STR}
-            Numpy - {np.__version__}
-            RQData - {rqdatac.__version__}
+            NumPy - {importlib_metadata.version("numpy")}
+            pandas - {importlib_metadata.version("pandas")}
+            RQData - {importlib_metadata.version("rqdatac")}
             """
 
         label = QtWidgets.QLabel()
