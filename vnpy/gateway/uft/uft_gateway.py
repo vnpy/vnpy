@@ -642,17 +642,28 @@ class UftTdApi(TdApi):
 
             # For option only
             if contract.product == Product.OPTION:
-                # Remove C/P suffix of CZCE option product name
-                if contract.exchange == Exchange.CZCE:
-                    contract.option_portfolio = data["ProductID"][:-1]
-                else:
-                    contract.option_portfolio = data["ProductID"]
-
-                contract.option_underlying = data["UnderlyingInstrID"]
                 contract.option_type = OPTIONTYPE_UFT2VT.get(data["OptionsType"], None)
                 contract.option_strike = data["ExercisePrice"]
-                contract.option_index = str(data["ExercisePrice"])
                 contract.option_expiry = datetime.strptime(str(data["ExpireDate"]), "%Y%m%d")
+
+                # ETF期权
+                if contract.exchange in {Exchange.SSE, Exchange.SZSE}:
+                    contract.option_underlying = "-".join([data["UnderlyingInstrID"], str(data["EndExerciseDate"])[:-2]])
+                    contract.option_portfolio = data["UnderlyingInstrID"] + "_O"
+
+                    # 需要考虑标的分红导致的行权价调整后的索引
+                    contract.option_index = get_option_index(contract.option_strike, data["InstrumentEngName"])
+                # 期货期权
+                else:                                    # Remove C/P suffix of CZCE option product name
+                    contract.option_underlying = data["UnderlyingInstrID"]
+
+                    if contract.exchange == Exchange.CZCE:
+                        contract.option_portfolio = data["ProductID"][:-1]
+                    else:
+                        contract.option_portfolio = data["ProductID"]
+
+                    # 直接使用行权价作为索引
+                    contract.option_index = str(contract.option_strike)
 
             self.gateway.on_contract(contract)
 
@@ -914,3 +925,22 @@ def generate_time(data: int) -> str:
     minute = buf[2:4]
     second = buf[4:6]
     return f"{hour}:{minute}:{second}"
+
+
+def get_option_index(strike_price: float, exchange_instrument_id: str) -> str:
+    """"""
+    exchange_instrument_id = exchange_instrument_id.replace(" ", "")
+
+    if "M" in exchange_instrument_id:
+        n = exchange_instrument_id.index("M")
+    elif "A" in exchange_instrument_id:
+        n = exchange_instrument_id.index("A")
+    elif "B" in exchange_instrument_id:
+        n = exchange_instrument_id.index("B")
+    else:
+        return str(strike_price)
+
+    index = exchange_instrument_id[n:]
+    option_index = f"{strike_price:.3f}-{index}"
+
+    return option_index
