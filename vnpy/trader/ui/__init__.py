@@ -47,6 +47,8 @@ def create_qapp(app_name: str = "VN Trader") -> QtWidgets.QApplication:
             app_name
         )
 
+    qapp.setAttribute(QtCore.Qt.AA_DisableWindowContextHelpButton)
+
     return qapp
 
 

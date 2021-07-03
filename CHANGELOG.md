@@ -3,6 +3,7 @@
 ## 调整
 1. 将SpreadTrading模块策略初始化时的K线价差数据加载，改为优先通过RQData查询数据
 2. 在MainWindow的AboutDialog中，基于importlib_metadata模块来获取版本信息
+3. 隐藏所有对话框右上角的【？】按钮
 
 ## 修复
 1. 修复Linux下安装时，对于已经剥离的XTP API的自动编译操作
