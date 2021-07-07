@@ -2,6 +2,7 @@
 General utility functions.
 """
 
+from datetime import datetime
 import json
 import logging
 import sys
@@ -15,8 +16,9 @@ import talib
 
 from .object import BarData, TickData
 from .constant import Exchange, Interval
+from tzlocal import get_localzone
 
-
+local_zone = get_localzone()
 log_formatter = logging.Formatter('[%(asctime)s] %(message)s')
 
 
@@ -209,7 +211,13 @@ class BarGenerator:
 
         # Filter tick data with older timestamp
         if self.last_tick and tick.datetime < self.last_tick.datetime:
-            return
+            # 日盘开盘区间，郑商所会把昨天收盘时间错改成今天收盘时间，导致盘前启动开盘后bar无法更新
+            # tick.datetime: 2021-06-22 09:00:00+08:00
+            # last_tick.datetime: 2021-06-22 22:59:59+08:00
+            if self.last_tick.datetime > datetime.now(tz=local_zone):
+                pass
+            else:
+                return
 
         if not self.bar:
             new_minute = True
