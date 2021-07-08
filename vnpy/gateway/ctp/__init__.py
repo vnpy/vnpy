@@ -1,1 +1,1 @@
-from .ctp_gateway import CtpGateway
+from vnpy_ctp import CtpGateway

@@ -369,7 +369,7 @@ class UftMdApi(MdApi):
         """
         if self.connect_status:
             uft_req = {
-                "ExchangeID": req.exchange.value,
+                "ExchangeID": EXCHANGE_VT2UFT[req.exchange],
                 "InstrumentID": req.symbol
             }
 
@@ -642,17 +642,28 @@ class UftTdApi(TdApi):
 
             # For option only
             if contract.product == Product.OPTION:
-                # Remove C/P suffix of CZCE option product name
-                if contract.exchange == Exchange.CZCE:
-                    contract.option_portfolio = data["ProductID"][:-1]
-                else:
-                    contract.option_portfolio = data["ProductID"]
-
-                contract.option_underlying = data["UnderlyingInstrID"]
                 contract.option_type = OPTIONTYPE_UFT2VT.get(data["OptionsType"], None)
                 contract.option_strike = data["ExercisePrice"]
-                contract.option_index = str(data["ExercisePrice"])
                 contract.option_expiry = datetime.strptime(str(data["ExpireDate"]), "%Y%m%d")
+
+                # ETF期权
+                if contract.exchange in {Exchange.SSE, Exchange.SZSE}:
+                    contract.option_underlying = "-".join([data["UnderlyingInstrID"], str(data["EndExerciseDate"])[:-2]])
+                    contract.option_portfolio = data["UnderlyingInstrID"] + "_O"
+
+                    # 需要考虑标的分红导致的行权价调整后的索引
+                    contract.option_index = get_option_index(contract.option_strike, data["InstrumentEngName"])
+                # 期货期权
+                else:                                    # Remove C/P suffix of CZCE option product name
+                    contract.option_underlying = data["UnderlyingInstrID"]
+
+                    if contract.exchange == Exchange.CZCE:
+                        contract.option_portfolio = data["ProductID"][:-1]
+                    else:
+                        contract.option_portfolio = data["ProductID"]
+
+                    # 直接使用行权价作为索引
+                    contract.option_index = str(contract.option_strike)
 
             self.gateway.on_contract(contract)
 
@@ -674,7 +685,13 @@ class UftTdApi(TdApi):
         order = self.orders.get(orderid, None)
         insert_time = generate_time(data["InsertTime"])
         timestamp = f"{data['InsertDate']} {insert_time}"
-        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+
+        if "." in timestamp:
+            fmt = "%Y%m%d %H:%M:%S.%f"
+        else:
+            fmt = "%Y%m%d %H:%M:%S"
+
+        dt = datetime.strptime(timestamp, fmt)
         dt = CHINA_TZ.localize(dt)
 
         if not order:
@@ -725,8 +742,8 @@ class UftTdApi(TdApi):
             self.gateway.on_order(order)
 
         trade_time = generate_time(data["TradeTime"])
-        timestamp = f"{data['TradeDate']} {trade_time}"
-        dt = datetime.strptime(timestamp, "%H:%M:%S")
+        timestamp = f"{data['TradingDay']} {trade_time}"
+        dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
         dt = CHINA_TZ.localize(dt)
 
         trade = TradeData(
@@ -893,10 +910,37 @@ def adjust_price(price: float) -> float:
 def generate_time(data: int) -> str:
     """"""
     buf = str(data)
-    if len(buf) < 6:
-        buf = "0" + buf
+    buf_size = len(buf)
 
-    hour = buf[:2]
+    # 不到6位数字的时间戳，精确到秒
+    if buf_size < 6:
+        buf = "0" + buf         # 补齐小时前面的0
+    # 超过6位数字的时间戳，精确到毫秒
+    elif buf_size > 6:
+        # 不足9位
+        if buf_size < 9:
+            buf = "0" + buf     # 补齐小时前面的0
+
+    hour = buf[0:2]
     minute = buf[2:4]
-    second = buf[4:]
+    second = buf[4:6]
     return f"{hour}:{minute}:{second}"
+
+
+def get_option_index(strike_price: float, exchange_instrument_id: str) -> str:
+    """"""
+    exchange_instrument_id = exchange_instrument_id.replace(" ", "")
+
+    if "M" in exchange_instrument_id:
+        n = exchange_instrument_id.index("M")
+    elif "A" in exchange_instrument_id:
+        n = exchange_instrument_id.index("A")
+    elif "B" in exchange_instrument_id:
+        n = exchange_instrument_id.index("B")
+    else:
+        return str(strike_price)
+
+    index = exchange_instrument_id[n:]
+    option_index = f"{strike_price:.3f}-{index}"
+
+    return option_index

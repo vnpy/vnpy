@@ -11,6 +11,7 @@ from rqdatac.share.errors import AuthenticationFailed
 from .setting import SETTINGS
 from .constant import Exchange, Interval
 from .object import BarData, TickData, HistoryRequest
+from .utility import round_to
 
 
 INTERVAL_VT2RQ = {
@@ -186,10 +187,10 @@ class RqdataClient:
                     exchange=exchange,
                     interval=interval,
                     datetime=dt,
-                    open_price=row["open"],
-                    high_price=row["high"],
-                    low_price=row["low"],
-                    close_price=row["close"],
+                    open_price=round_to(row["open"], 0.000001),
+                    high_price=round_to(row["high"], 0.000001),
+                    low_price=round_to(row["low"], 0.000001),
+                    close_price=round_to(row["close"], 0.000001),
                     volume=row["volume"],
                     open_interest=row.get("open_interest", 0),
                     gateway_name="RQ"

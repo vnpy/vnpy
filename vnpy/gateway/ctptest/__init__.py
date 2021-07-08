@@ -1,1 +1,1 @@
-from .ctptest_gateway import CtptestGateway
+from vnpy_ctptest import CtptestGateway

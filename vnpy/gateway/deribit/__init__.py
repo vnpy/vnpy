@@ -1,1 +1,1 @@
-from .deribit_gateway import DeribitGateway
+from vnpy_deribit import DeribitGateway
