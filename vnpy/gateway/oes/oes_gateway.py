@@ -260,7 +260,7 @@ class OesMdApi(MdApi):
         tick.ask_volume_1, tick.ask_volume_2, tick.ask_volume_3, tick.ask_volume_4, tick.ask_volume_5 = data["ask_qty"][0:5]
 
         pricetick = SYMBOL_PRICETICK_MAP.get(tick.vt_symbol, 0)
-        #宽睿priceTick最小报价单位 (单位精确到元后四位, 即1元 = 10000)已在OesTdApi登录获取证券信息时已转换成最小报价单位0.01，
+        #宽睿priceTick最小报价单位 (单位精确到元后四位, 即1元 = 10000)已在OesTdApi登录获取证券信息时已转换成原始报价单位
         #宽睿的价格22.22显示为222200,round_to函数为去除小数后两位，不适用，用round函数替换
         ipricetick = get_digits(pricetick)
         if pricetick:
@@ -320,7 +320,7 @@ class OesMdApi(MdApi):
         tick.ask_volume_1, tick.ask_volume_2, tick.ask_volume_3, tick.ask_volume_4, tick.ask_volume_5 = data["ask_qty"][0:5]
 
         pricetick = SYMBOL_PRICETICK_MAP.get(tick.vt_symbol, 0)
-        #宽睿priceTick最小报价单位 (单位精确到元后四位, 即1元 = 10000)已在OesTdApi登录获取证券信息时已转换成最小报价单位0.01，
+        #宽睿priceTick最小报价单位 (单位精确到元后四位, 即1元 = 10000)已在OesTdApi登录获取证券信息时已转换成原始报价单位
         #宽睿的价格22.22显示为222200,round_to函数为去除小数后两位，不适用，用round函数替换
         ipricetick = get_digits(pricetick)
         if pricetick:
@@ -608,7 +608,7 @@ class OesTdApi(TdApi):
         #print(data)
         last = head["isEnd"]
 
-        #宽睿priceTick最小报价单位 (单位精确到元后四位, 即1元 = 10000) 转换VNPY报价单位需要除以10000
+        #宽睿priceTick最小报价单位 (单位精确到元后四位, 即1元 = 10000) 转换为原始报价单位需要除以10000
         contract = ContractData(
             symbol=data["securityId"],
             exchange=EXCHANGE_OES2VT[data["mktId"]],
