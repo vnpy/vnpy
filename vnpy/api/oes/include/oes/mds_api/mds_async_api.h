@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,38 @@
  *              - MdsAsyncApi_IsAllTerminated, 返回异步API相关的所有线程是否都已经安全退出
  *          - 删除并不适用于行情异步API的密码修改接口
  *              - MdsAsyncApi_SendChangePasswordReq
+ * @version 0.15.11.6   2020/07/16
+ *          - 增加辅助的异步API接口
+ *              - MdsAsyncApi_GetAsyncQueueTotalCount, 返回异步API累计已入队的消息数量
+ *              - MdsAsyncApi_GetAsyncQueueRemainingCount, 返回队列中尚未被处理的剩余数据数量
+ * @version 0.15.11.16  2021/02/20
+ *          - 增加辅助的异步API接口, 以支持对通信线程、回调线程等异步API线程进行初始化处理
+ *              - MdsAsyncApi_SetOnCommunicationThreadStart, 设置通信线程的线程初始化回调函数
+ *              - MdsAsyncApi_SetOnCallbackThreadStart, 设置回调线程的线程初始化回调函数
+ *              - MdsAsyncApi_SetOnIoThreadStart, 设置异步I/O线程的线程初始化回调函数
+ *          - 增加辅助的异步API接口, 以方便对接
+ *              - MdsAsyncApi_DefaultOnConnect, 连接完成后处理的默认实现 (执行默认的行情订阅处理)
+ *          - 增加辅助的行情订阅接口
+ *              - MdsAsyncApi_SubscribeByQuery, 查询证券静态信息并根据查询结果订阅行情信息
+ *          - 增加内置的查询通道和相关接口, 以整合查询通道管理和查询接口到异步API中
+ *              - MdsAsyncApi_SetBuiltinQueryable, 设置是否启用内置的查询通道
+ *              - MdsAsyncApi_IsBuiltinQueryable, 返回是否启用内置的查询通道
+ *              - MdsAsyncApi_SetBuiltinQueryChannelCfg, 设置内置的查询通道的配置信息
+ *              - MdsAsyncApi_LoadBuiltinQueryChannelCfg, 从配置文件中加载内置的查询通道的配置信息
+ *              - MdsAsyncApi_GetBuiltinQueryChannelCfg, 返回内置的查询通道的配置信息
+ *              - MdsAsyncApi_GetBuiltinQueryChannelRef, 返回内置的查询通道的会话信息
+ *          - 增加查询接口的包裹函数 (基于异步API内置的查询通道执行)
+ *              - MdsAsyncApi_QueryMktDataSnapshot, 查询证券行情快照
+ *              - MdsAsyncApi_QuerySnapshotList, 批量查询行情快照
+ *              - MdsAsyncApi_QuerySnapshotList2, 批量查询行情快照
+ *              - MdsAsyncApi_QuerySecurityStatus, 查询(深圳)证券实时状态
+ *              - MdsAsyncApi_QueryTrdSessionStatus, 查询(上证)市场状态
+ *              - MdsAsyncApi_QueryStockStaticInfoList, 批量查询证券(股票/债券/基金)静态信息列表
+ *              - MdsAsyncApi_QueryStockStaticInfoList2, 批量查询证券(股票/债券/基金)静态信息列表
+ * @version 0.16.1.11   2021/02/22
+ *          - 增加查询接口的包裹函数 (基于异步API内置的查询通道执行)
+ *              - MdsAsyncApi_QueryOptionStaticInfoList, 批量查询期权合约静态信息列表
+ *              - MdsAsyncApi_QueryOptionStaticInfoList2, 批量查询期权合约静态信息列表
  *
  * @since   2019/07/01
  */
@@ -66,13 +98,13 @@ extern "C" {
 #define MDSAPI_CFG_DEFAULT_SECTION_CPUSET       "cpuset"
 
 /** 默认的异步API线程的CPU亲和性配置项名称 (通信线程) */
-#define MDSAPI_CFG_DEFAULT_KEY_CPUSET_COMMUNICATION         \
+#define MDSAPI_CFG_DEFAULT_KEY_CPUSET_COMMUNICATION                     \
         "mdsapi_communication"
 /** 默认的异步API线程的CPU亲和性配置项名称 (异步回调线程) */
-#define MDSAPI_CFG_DEFAULT_KEY_CPUSET_CALLBACK              \
+#define MDSAPI_CFG_DEFAULT_KEY_CPUSET_CALLBACK                          \
         "mdsapi_callback"
 /** 默认的异步API线程的CPU亲和性配置项名称 (I/O线程) */
-#define MDSAPI_CFG_DEFAULT_KEY_CPUSET_IO_THREAD             \
+#define MDSAPI_CFG_DEFAULT_KEY_CPUSET_IO_THREAD                         \
         "mdsapi_io_thread"
 /* -------------------------           */
 
@@ -88,7 +120,7 @@ typedef SEndpointChannelCfgT        MdsAsyncApiChannelCfgT;
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDSAPI_ASYNC_CHANNEL_CFG        \
+#define NULLOBJ_MDSAPI_ASYNC_CHANNEL_CFG                                \
         NULLOBJ_SPK_ENDPOINT_CHANNEL_CFG
 /* -------------------------           */
 
@@ -100,7 +132,7 @@ typedef SEndpointIoThreadCfgT       MdsAsyncApiIoThreadCfgT;
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDSAPI_ASYNC_IO_THREAD_CFG      \
+#define NULLOBJ_MDSAPI_ASYNC_IO_THREAD_CFG                              \
         NULLOBJ_SPK_ENDPOINT_IO_THREAD_CFG
 /* -------------------------           */
 
@@ -113,7 +145,7 @@ typedef SEndpointContextT           MdsAsyncApiContextT;
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDSAPI_ASYNC_CONTEXT            \
+#define NULLOBJ_MDSAPI_ASYNC_CONTEXT                                    \
         NULLOBJ_SPK_ENDPOINT_CONTEXT
 /* -------------------------           */
 
@@ -125,7 +157,7 @@ typedef SEndpointChannelT           MdsAsyncApiChannelT;
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDSAPI_ASYNC_CHANNEL            \
+#define NULLOBJ_MDSAPI_ASYNC_CHANNEL                                    \
         NULLOBJ_SPK_ENDPOINT_CHANNEL
 /* -------------------------           */
 
@@ -155,18 +187,21 @@ typedef struct _MdsAsyncApiContextParams {
     /** 是否启用对UDP行情数据的本地行情订阅和过滤功能 */
     uint8               isUdpFilterable;
 
+    /** 是否启用内置的查询通道 (TRUE:启动异步API时自动创建内置的查询通道; FALSE:不创建内置的查询通道) */
+    uint8               isBuiltinQueryable;
+
     /** 为保证64位对齐而设 */
-    uint8               __filler[6];
+    uint8               __filler[5];
 } MdsAsyncApiContextParamsT;
 
 
 /* 结构体初始化值定义 */
-#define NULLOBJ_MDSAPI_ASYNC_CONTEXT_PARAMS     \
-        0, 0, 0, 0, 0, 0, 0, {0}
+#define NULLOBJ_MDSAPI_ASYNC_CONTEXT_PARAMS                             \
+        0, 0, 0, 0, 0, 0, 0, 0, {0}
 
 /* 结构体的默认值定义 */
-#define DEFAULT_MDSAPI_ASYNC_CONTEXT_PARAMS     \
-        -1, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, {0}
+#define DEFAULT_MDSAPI_ASYNC_CONTEXT_PARAMS                             \
+        -1, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, {0}
 /* -------------------------           */
 
 
@@ -175,11 +210,11 @@ typedef struct _MdsAsyncApiContextParams {
  * =================================================================== */
 
 /**
- * 对接收到的消息进行处理的回调函数的函数原型定义
+ * 对接收到的应答或回报消息进行处理的回调函数的函数原型定义
  *
  * <p> 回调函数说明:
  * - 和 #F_MDSAPI_ONMSG_T 的定义一致, 回调函数可以通用
- * - 对消息体数据(pMsgBody), 需要按照消息类型(pMsgHead->msgId)转换为对应的消息结构进行处理
+ * - 对消息体数据(pMsgItem), 需要按照消息类型(pMsgHead->msgId)转换为对应的消息结构进行处理
  * - 具体使用方式可以参考样例代码中的 MdsApiSample_HandleMsg 函数
  * - @note 当使用异步回调模式时, 应尽量避免使用会话信息中的数据
  * </p>
@@ -189,11 +224,11 @@ typedef struct _MdsAsyncApiContextParams {
  * </p>
  *
  * @param   pSessionInfo        会话信息
- * @param   pMsgHead            消息头
- * @param   pMsgBody            消息体数据
+ * @param   pMsgHead            回报消息的消息头
+ * @param   pMsgItem            回报消息的数据条目 (需要根据消息类型转换为对应的数据结构)
  * @param   pCallbackParams     外部传入的参数
  * @retval  >=0                 大于等于0, 成功
- * @retval  <0                  小于0, 处理失败, 将尝试断开并重建连接
+ * @retval  <0                  小于0, 处理失败 (负的错误号)
  *
  * @see     eMdsMsgTypeT
  * @see     MdsMktRspMsgBodyT
@@ -249,6 +284,26 @@ typedef int32   (*F_MDSAPI_ASYNC_ON_CONNECT_T) (
 typedef int32   (*F_MDSAPI_ASYNC_ON_DISCONNECT_T) (
                 MdsAsyncApiChannelT *pAsyncChannel,
                 void *pCallbackParams);
+
+/**
+ * 异步API线程初始化函数的函数原型定义
+ *
+ * <p> 回调函数说明:
+ * - 若回调函数返回小于0的数, 则线程将中止运行
+ * </p>
+ *
+ * <p> 线程说明:
+ * - 如果为通信线程或回调线程指定了初始化函数, 则线程启动后将回调该初始化函数
+ * </p>
+ *
+ * @param   pAsyncChannel       异步API的连接通道信息
+ * @param   pCallbackParams     外部传入的参数
+ * @retval  >=0                 大于等于0, 成功
+ * @retval  <0                  小于0, 处理失败, 线程将中止运行
+ */
+typedef int32   (*F_MDSAPI_ASYNC_ON_THREAD_START_T) (
+                MdsAsyncApiContextT *pAsyncContext,
+                void *pCallbackParams);
 /* -------------------------           */
 
 
@@ -286,8 +341,8 @@ MdsAsyncApiContextT *
  * @param   pCfgFile            配置文件路径 (可为空, 为空则不加载配置文件)
  * @param   pLoggerSection      日志记录器的配置区段名称 (e.g. "log")
  *                              - 为空则忽略, 不初始化日志记录器
- * @param   pAsyncApiSection    异步API参数的配置区段名称 (e.g. "mds_client.async_api")
- *                              - 为空则忽略, 不加载异步API相关的配置
+ * @param   pAsyncApiSection    异步API扩展配置参数的配置区段名称 (e.g. "mds_client.async_api")
+ *                              - 为空则忽略, 不加载异步API相关的扩展配置参数
  * @param   pCpusetSection      CPU亲和性配置的配置区段名称 (e.g. "cpuset")
  *                              - 为空则忽略, 不加载CPU亲和性配置
  * @return  非空, 异步API的运行时环境指针; NULL, 失败
@@ -384,6 +439,25 @@ BOOL    MdsAsyncApi_IsAllTerminated(
  * @return  累计已提取和处理过的行情消息数量 (包括已处理但处理失败的消息)
  */
 int64   MdsAsyncApi_GetTotalPicked(
+                MdsAsyncApiContextT *pAsyncContext);
+
+/**
+ * 返回异步API累计已入队的消息数量
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @return  累计已入队的消息数量
+ */
+int64   MdsAsyncApi_GetAsyncQueueTotalCount(
+                MdsAsyncApiContextT *pAsyncContext);
+
+/**
+ * 返回队列中尚未被处理的剩余数据数量
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @return  队列中尚未被处理的剩余数据数量
+ * @note    仅适用于已启用回调线程 (isAsyncCallbackAble=yes) 的运行模式
+ */
+int64   MdsAsyncApi_GetAsyncQueueRemainingCount(
                 MdsAsyncApiContextT *pAsyncContext);
 /* -------------------------           */
 
@@ -638,11 +712,12 @@ BOOL    MdsAsyncApi_SubscribeMarketData(
  * @param   exchangeId          证券代码所属的交易所代码 (如果证券代码没有 .SH 或 .SZ 后缀的话)
  * @param   mdProductType       行情类别 (股票(基金、债券)/指数/期权)
  * @param   subMode             订阅模式 (重新订阅/追加订阅/删除订阅)
- * @param   dataTypes           订阅的数据种类 (e.g. MDS_SUB_DATA_TYPE_L1_SNAPSHOT
+ * @param   dataTypes           订阅的数据种类 @see eMdsSubscribeDataTypeT
+ *                              (e.g. MDS_SUB_DATA_TYPE_L1_SNAPSHOT
  *                              | MDS_SUB_DATA_TYPE_L2_SNAPSHOT
- *                              | MDS_SUB_DATA_TYPE_L2_BEST_ORDERS
  *                              | MDS_SUB_DATA_TYPE_L2_TRADE)
- *                              @see eMdsSubscribeDataTypeT
+ *                              - 当订阅模式为追加订阅时, 如果该参数小于0, 将忽略该参数, 维持上一次订阅时的设置
+ *                              - 当订阅模式为删除订阅时, 该参数没有意义, 将会被忽略
  * @return  TRUE 成功; FALSE 失败
  *
  * @see     MdsApi_SetThreadSubscribeTickType
@@ -700,11 +775,12 @@ BOOL    MdsAsyncApi_SubscribeByString(
  *                                  - "39"                          //指数
  * @param   mdProductType       行情类别 (股票(基金、债券)/指数/期权)
  * @param   subMode             订阅模式 (重新订阅/追加订阅/删除订阅)
- * @param   dataTypes           订阅的数据种类 (e.g. MDS_SUB_DATA_TYPE_L1_SNAPSHOT
+ * @param   dataTypes           订阅的数据种类 @see eMdsSubscribeDataTypeT
+ *                              (e.g. MDS_SUB_DATA_TYPE_L1_SNAPSHOT
  *                              | MDS_SUB_DATA_TYPE_L2_SNAPSHOT
- *                              | MDS_SUB_DATA_TYPE_L2_BEST_ORDERS
  *                              | MDS_SUB_DATA_TYPE_L2_TRADE)
- *                              @see eMdsSubscribeDataTypeT
+ *                              - 当订阅模式为追加订阅时, 如果该参数小于0, 将忽略该参数, 维持上一次订阅时的设置
+ *                              - 当订阅模式为删除订阅时, 该参数没有意义, 将会被忽略
  * @return  TRUE 成功; FALSE 失败
  *
  * @see     MdsApi_SetThreadSubscribeTickType
@@ -722,6 +798,32 @@ BOOL    MdsAsyncApi_SubscribeByStringAndPrefixes(
                 eMdsMdProductTypeT mdProductType,
                 eMdsSubscribeModeT subMode,
                 int32 dataTypes);
+
+/**
+ * 查询证券静态信息, 并根据查询结果订阅行情信息
+ *
+ * @note    频繁订阅会对当前连接的行情获取速度产生不利影响, 建议每次订阅都尽量指定更多的证券
+ *          代码, 以减少订阅次数
+ *
+ * @param   pAsyncChannel       异步API的连接通道信息
+ * @param   subMode             订阅模式 @see eMdsSubscribeModeT
+ * @param   dataTypes           订阅的数据种类 @see eMdsSubscribeDataTypeT
+ *                              (e.g. MDS_SUB_DATA_TYPE_L1_SNAPSHOT
+ *                              | MDS_SUB_DATA_TYPE_L2_SNAPSHOT
+ *                              | MDS_SUB_DATA_TYPE_L2_TRADE)
+ *                              - 当订阅模式为追加订阅时, 如果该参数小于0, 将忽略该参数, 维持上一次订阅时的设置
+ *                              - 当订阅模式为删除订阅时, 该参数没有意义, 将会被忽略
+ * @param   pQryChannel         查询通道的会话信息
+ *                              - 允许为空, 为空则使用异步API内置的查询通道
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0, 代表无需过滤
+ * @retval  >=0                 成功查询到的记录数
+ * @retval  <0                  失败 (负的错误号)
+ */
+int32   MdsAsyncApi_SubscribeByQuery(MdsAsyncApiChannelT *pAsyncChannel,
+                eMdsSubscribeModeT subMode, int32 dataTypes,
+                MdsApiSessionInfoT *pQryChannel,
+                const MdsQryStockStaticInfoListFilterT *pQryFilter);
 
 /**
  * 发送心跳消息
@@ -744,6 +846,24 @@ BOOL    MdsAsyncApi_SendTestReq(
                 MdsAsyncApiChannelT *pAsyncChannel,
                 const char *pTestReqId,
                 int32 testReqIdSize);
+
+/**
+ * 连接完成后处理的默认实现 (执行默认的行情订阅处理)
+ *
+ * <p> 提示:
+ * - 可以在 OnConnect 回调函数中调用该接口来完成默认的行情订阅处理
+ * - 也可以直接使用该接口作为 OnConnect 回调函数 (与不设置 OnConnect 回调函数的效果相同)
+ * </p>
+ *
+ * @param   pAsyncChannel       异步API的连接通道信息
+ * @param   pCallbackParams     外部传入的参数 (不会使用该参数, 传任意值或 NULL 均可)
+ * @retval  =0                  等于0, 成功
+ * @retval  >0                  大于0, 处理失败, 将重建连接并继续尝试执行
+ * @retval  <0                  小于0, 处理失败, 异步线程将中止运行
+ */
+int32   MdsAsyncApi_DefaultOnConnect(
+                MdsAsyncApiChannelT *pAsyncChannel,
+                void *pCallbackParams);
 /* -------------------------           */
 
 
@@ -766,7 +886,7 @@ BOOL    MdsAsyncApi_SendTestReq(
  * @return      TRUE 成功; FALSE 失败
  */
 BOOL    MdsAsyncApi_LoadCpusetCfg(
-                MdsAsyncApiContextT *pOutThreadCfg,
+                MdsAsyncApiContextT *pAsyncContext,
                 const char *pCfgFile,
                 const char *pCfgSection,
                 const char *pCommunicationCpusetKey,
@@ -978,7 +1098,7 @@ BOOL    MdsAsyncApi_IsAsyncCallbackAble(
  */
 BOOL    MdsAsyncApi_SetAsyncCallbackBusyPollAble(
                 MdsAsyncApiContextT *pAsyncContext,
-                int32 callbackThreadBusyPollLevel);
+                BOOL isBusyPollAble);
 
 /**
  * 返回异步回调线程的忙等待模式
@@ -990,7 +1110,7 @@ BOOL    MdsAsyncApi_IsAsyncCallbackBusyPollAble(
                 MdsAsyncApiContextT *pAsyncContext);
 
 /**
- * 返回异步通信队列的长度
+ * 返回异步通信队列的长度 (可缓存的最大消息数量)
  *
  * @param   pAsyncContext       异步API的运行时环境指针
  * @return  异步通信队列的长度 (可缓存的最大消息数量)
@@ -1005,6 +1125,80 @@ int64   MdsAsyncApi_GetAsyncQueueLength(
  * @return  异步通信队列的数据空间大小 (字节数)
  */
 int64   MdsAsyncApi_GetAsyncQueueDataAreaSize(
+                MdsAsyncApiContextT *pAsyncContext);
+
+/**
+ * 设置是否启用内置的查询通道
+ *
+ * @param[out]  pAsyncContext   异步API的运行时环境指针
+ * @param       isBuiltinQueryable
+ *                              是否启用内置的查询通道
+ *                              - 如果将该参数设置为TRUE, 则启动异步API时将自动创建一个
+ *                                与行情查询服务的连接
+ *                              - 如果不需要通过异步API查询行情数据的话, 可以将该参数设
+ *                                置为FALSE, 这样可以避免额外占用一个查询通道的连接数量
+ *                              - 不指定的话, 默认为FALSE
+ * @return      TRUE 成功; FALSE 失败
+ */
+BOOL    MdsAsyncApi_SetBuiltinQueryable(
+                MdsAsyncApiContextT *pAsyncContext,
+                BOOL isBuiltinQueryable);
+
+/**
+ * 返回是否启用内置的查询通道
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @return  是否启用内置的查询通道
+ */
+BOOL    MdsAsyncApi_IsBuiltinQueryable(
+                MdsAsyncApiContextT *pAsyncContext);
+
+/**
+ * 设置内置的查询通道的配置信息
+ *
+ * @param[out]  pAsyncContext   异步API的运行时环境指针
+ * @param       pRemoteCfg      查询通道的远程主机配置信息
+ *                              - 若参数不为空, 则自动启用内置的查询通道
+ *                              - 否则若参数为空, 则自动禁用内置的查询通道
+ * @return      TRUE 成功; FALSE 失败
+ */
+BOOL    MdsAsyncApi_SetBuiltinQueryChannelCfg(
+                MdsAsyncApiContextT *pAsyncContext,
+                const MdsApiRemoteCfgT *pRemoteCfg);
+
+/**
+ * 从配置文件中加载内置的查询通道的配置信息
+ *
+ * @param[out]  pAsyncContext   异步API的运行时环境指针
+ * @param       pCfgFile        配置文件路径
+ * @param       pCfgSection     查询服务的配置区段名称(为空则使用默认值)
+ * @param       pAddrKey        查询服务的配置项关键字(为空则使用默认值)
+ * @return      TRUE 成功; FALSE 失败
+ */
+BOOL    MdsAsyncApi_LoadBuiltinQueryChannelCfg(
+                MdsAsyncApiContextT *pAsyncContext,
+                const char *pCfgFile,
+                const char *pCfgSection,
+                const char *pAddrKey);
+
+/**
+ * 返回内置的查询通道的配置信息
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @return  查询通道的远程主机配置信息
+ */
+MdsApiRemoteCfgT *
+        MdsAsyncApi_GetBuiltinQueryChannelCfg(
+                MdsAsyncApiContextT *pAsyncContext);
+
+/**
+ * 返回内置的查询通道的会话信息
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @return  内置的查询通道的会话信息 (若尚未启用则返回空)
+ */
+MdsApiSessionInfoT *
+        MdsAsyncApi_GetBuiltinQueryChannelRef(
                 MdsAsyncApiContextT *pAsyncContext);
 
 /**
@@ -1031,16 +1225,6 @@ BOOL    MdsAsyncApi_SetIoThreadCfg(
                 const char *pStatsOutputFilePath);
 
 /**
- * 返回异步I/O线程配置
- *
- * @param   pAsyncContext       异步API的运行时环境指针
- * @return  异步I/O线程配置信息
- */
-MdsAsyncApiIoThreadCfgT *
-        MdsAsyncApi_GetIoThreadCfg(
-                MdsAsyncApiContextT *pAsyncContext);
-
-/**
  * 从配置文件中加载异步I/O线程配置
  *
  * @param[out]  pAsyncContext   异步API的运行时环境指针
@@ -1052,6 +1236,364 @@ BOOL    MdsAsyncApi_LoadIoThreadCfg(
                 MdsAsyncApiContextT *pAsyncContext,
                 const char *pCfgFile,
                 const char *pCfgSection);
+
+/**
+ * 返回异步I/O线程配置
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @return  异步I/O线程配置信息
+ */
+MdsAsyncApiIoThreadCfgT *
+        MdsAsyncApi_GetIoThreadCfg(
+                MdsAsyncApiContextT *pAsyncContext);
+
+/**
+ * 设置通信线程的线程初始化回调函数
+ *
+ * @param[out]  pAsyncContext   异步API的运行时环境指针
+ * @param       fnOnThreadStart 线程初始化函数 (为空则不回调)
+ * @param       pCallbackParams 传递线程初始化函数的回调函数参数
+ * @return      TRUE 成功; FALSE 失败
+ */
+BOOL    MdsAsyncApi_SetOnCommunicationThreadStart(
+                MdsAsyncApiContextT *pAsyncContext,
+                F_MDSAPI_ASYNC_ON_THREAD_START_T fnOnThreadStart,
+                void *pCallbackParams);
+
+/**
+ * 设置回调线程的线程初始化回调函数 (如果已启用了独立的回调线程的话)
+ *
+ * @param[out]  pAsyncContext   异步API的运行时环境指针
+ * @param       fnOnThreadStart 线程初始化函数 (为空则不回调)
+ * @param       pCallbackParams 传递线程初始化函数的回调函数参数
+ * @return      TRUE 成功; FALSE 失败
+ *
+ * @see         MdsAsyncApi_SetAsyncCallbackAble
+ */
+BOOL    MdsAsyncApi_SetOnCallbackThreadStart(
+                MdsAsyncApiContextT *pAsyncContext,
+                F_MDSAPI_ASYNC_ON_THREAD_START_T fnOnThreadStart,
+                void *pCallbackParams);
+
+/**
+ * 设置异步I/O线程的线程初始化回调函数 (如果已启用了异步I/O线程的话)
+ *
+ * @param[out]  pAsyncContext   异步API的运行时环境指针
+ * @param       fnOnThreadStart 线程初始化函数 (为空则不回调)
+ * @param       pCallbackParams 传递线程初始化函数的回调函数参数
+ * @return      TRUE 成功; FALSE 失败
+ *
+ * @see         MdsAsyncApi_SetIoThreadCfg
+ */
+BOOL    MdsAsyncApi_SetOnIoThreadStart(
+                MdsAsyncApiContextT *pAsyncContext,
+                F_MDSAPI_ASYNC_ON_THREAD_START_T fnOnThreadStart,
+                void *pCallbackParams);
+/* -------------------------           */
+
+
+/* ===================================================================
+ * 查询接口 (同步API查询接口的包裹函数, 并基于内置的查询通道执行)
+ * =================================================================== */
+
+/**
+ * 获取API的发行版本号
+ *
+ * @note    与同步API接口的异同:
+ *          - 与同步API接口相同, 没有区别
+ *
+ * @return  API的发行版本号 (如: "0.15.3")
+ * @see     MdsApi_GetApiVersion
+ */
+const char *
+        MdsAsyncApi_GetApiVersion();
+
+/**
+ * 查询证券行情快照 (基于异步API内置的查询通道执行)
+ *
+ * @note        与同步API接口的不同处:
+ *              - 支持自动重建连接
+ *              - 线程安全 (内置了加锁处理)
+ * @note        与同步API接口的相同处:
+ *              - 均为请求/应答模式的同步调用
+ *
+ * @param       pAsyncContext   异步API的运行时环境指针
+ * @param       exchangeId      交易所代码
+ * @param       mdProductType   行情类别
+ * @param       instrId         证券代码 (转换为整数类型的证券代码)
+ * @param[out]  pRspBuf         用于输出查询结果的应答数据缓存
+ *                              - 消息体的数据类型为L1快照 <code>MdsL1SnapshotT</code>
+ * @retval      =0              查询成功
+ * @retval      <0              查询失败 (负的错误号)
+ * @exception   ENOENT          未检索到待查询的数据
+ *
+ * @see         MdsApi_QueryMktDataSnapshot
+ * @see         MdsL1SnapshotT
+ */
+int32   MdsAsyncApi_QueryMktDataSnapshot(
+                MdsAsyncApiContextT *pAsyncContext,
+                eMdsExchangeIdT exchangeId,
+                eMdsMdProductTypeT mdProductType,
+                int32 instrId,
+                MdsMktDataSnapshotT *pRspBuf);
+
+/**
+ * 批量查询行情快照 (基于异步API内置的查询通道执行)
+ *
+ * @note    与同步API接口的不同处:
+ *          - 支持自动重建连接
+ *          - 线程安全 (内置了加锁处理)
+ * @note    与同步API接口的相同处:
+ *          - 均为请求/应答模式的同步调用 (回调函数也是在当前线程下同步调用的)
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @param   pSecurityListStr    证券代码列表字符串
+ *                              - 证券代码支持以 .SH 或 .SZ 为后缀来指定其所属的交易所
+ *                              - 空字符串 "" 或 NULL, 表示查询所有产品的行情 (不包括指数和期权)
+ * @param   pDelim              证券代码列表的分隔符 (e.g. ",;| \t")
+ *                              - 如果为空, 则使用默认的分隔符:
+ *                                ',' 或 ';' 或 '|' 或 ' ' 或 '\t'
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0, 代表无需过滤
+ * @param   fnQryMsgCallback    进行消息处理的回调函数
+ *                              - 消息体的数据类型为L1快照 <code>MdsL1SnapshotT</code>
+ * @param   pCallbackParams     回调函数的参数
+ * @retval  >=0                 成功查询到的记录数
+ * @retval  <0                  失败 (负的错误号)
+ *
+ * @see     MdsApi_QuerySnapshotList
+ * @see     MdsL1SnapshotT
+ */
+int32   MdsAsyncApi_QuerySnapshotList(
+                MdsAsyncApiContextT *pAsyncContext,
+                const char *pSecurityListStr,
+                const char *pDelim,
+                const MdsQrySnapshotListFilterT *pQryFilter,
+                F_MDSAPI_ON_QRY_MSG_T fnQryMsgCallback,
+                void *pCallbackParams);
+
+/**
+ * 批量查询行情快照 (使用字符串指针数组形式的证券代码列表)
+ *
+ * @note    与同步API接口的不同处:
+ *          - 支持自动重建连接
+ *          - 线程安全 (内置了加锁处理)
+ * @note    与同步API接口的相同处:
+ *          - 均为请求/应答模式的同步调用 (回调函数也是在当前线程下同步调用的)
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @param   ppSecurityArray     证券代码列表的指针数组
+ *                              - 证券代码支持以 .SH 或 .SZ 为后缀来指定其所属的交易所
+ *                              - 空指针NULL或代码数量为0, 表示查询所有产品的行情 (不包括指数和期权)
+ * @param   securityCount       证券代码数量
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0, 代表无需过滤
+ * @param   fnQryMsgCallback    进行消息处理的回调函数
+ *                              - 消息体的数据类型为L1快照 <code>MdsL1SnapshotT</code>
+ * @param   pCallbackParams     回调函数的参数
+ * @retval  >=0                 成功查询到的记录数
+ * @retval  <0                  失败 (负的错误号)
+ *
+ * @see     MdsApi_QuerySnapshotList2
+ * @see     MdsL1SnapshotT
+ */
+int32   MdsAsyncApi_QuerySnapshotList2(
+                MdsAsyncApiContextT *pAsyncContext,
+                const char *ppSecurityArray[],
+                int32 securityCount,
+                const MdsQrySnapshotListFilterT *pQryFilter,
+                F_MDSAPI_ON_QRY_MSG_T fnQryMsgCallback,
+                void *pCallbackParams);
+
+/**
+ * 查询(深圳)证券实时状态 (基于异步API内置的查询通道执行)
+ *
+ * @note        与同步API接口的不同处:
+ *              - 支持自动重建连接
+ *              - 线程安全 (内置了加锁处理)
+ * @note        与同步API接口的相同处:
+ *              - 均为请求/应答模式的同步调用
+ *
+ * @param       pAsyncContext   异步API的运行时环境指针
+ * @param       exchangeId      交易所代码
+ * @param       mdProductType   行情类别
+ * @param       instrId         证券代码 (转换为整数类型的证券代码)
+ * @param[out]  pRspBuf         用于输出查询结果的应答数据缓存
+ * @retval      =0              查询成功
+ * @retval      <0              查询失败 (负的错误号)
+ * @exception   ENOENT          未检索到待查询的数据
+ *
+ * @see         MdsApi_QuerySecurityStatus
+ * @see         MdsSecurityStatusMsgT
+ */
+int32   MdsAsyncApi_QuerySecurityStatus(
+                MdsAsyncApiContextT *pAsyncContext,
+                eMdsExchangeIdT exchangeId,
+                eMdsMdProductTypeT mdProductType,
+                int32 instrId,
+                MdsSecurityStatusMsgT *pRspBuf);
+
+/**
+ * 查询(上证)市场状态 (基于异步API内置的查询通道执行)
+ *
+ * @note        与同步API接口的不同处:
+ *              - 支持自动重建连接
+ *              - 线程安全 (内置了加锁处理)
+ * @note        与同步API接口的相同处:
+ *              - 均为请求/应答模式的同步调用
+ *
+ * @param       pAsyncContext   异步API的运行时环境指针
+ * @param       exchangeId      交易所代码
+ * @param       mdProductType   行情类别
+ * @param[out]  pRspBuf         用于输出查询结果的应答数据缓存
+ * @retval      =0              查询成功
+ * @retval      <0              查询失败 (负的错误号)
+ * @exception   ENOENT          未检索到待查询的数据
+ *
+ * @see         MdsApi_QueryTrdSessionStatus
+ * @see         MdsTradingSessionStatusMsgT
+ */
+int32   MdsAsyncApi_QueryTrdSessionStatus(
+                MdsAsyncApiContextT *pAsyncContext,
+                eMdsExchangeIdT exchangeId,
+                eMdsMdProductTypeT mdProductType,
+                MdsTradingSessionStatusMsgT *pRspBuf);
+
+/**
+ * 批量查询证券(股票/债券/基金)静态信息列表 (基于异步API内置的查询通道执行)
+ *
+ * @note    与同步API接口的不同处:
+ *          - 支持自动重建连接
+ *          - 线程安全 (内置了加锁处理)
+ * @note    与同步API接口的相同处:
+ *          - 均为请求/应答模式的同步调用 (回调函数也是在当前线程下同步调用的)
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @param   pSecurityListStr    证券代码列表字符串
+ *                              - 证券代码支持以 .SH 或 .SZ 为后缀来指定其所属的交易所
+ *                              - 空字符串 "" 或 NULL, 表示查询所有证券 (不包括指数和期权)
+ * @param   pDelim              证券代码列表的分隔符 (e.g. ",;| \t")
+ *                              - 如果为空, 则使用默认的分隔符:
+ *                                ',' 或 ';' 或 '|' 或 ' ' 或 '\t'
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0, 代表无需过滤
+ * @param   fnQryMsgCallback    进行消息处理的回调函数
+ *                              - 消息体的数据类型为证券静态信息 <code>MdsStockStaticInfoT</code>
+ * @param   pCallbackParams     回调函数的参数
+ * @retval  >=0                 成功查询到的记录数
+ * @retval  <0                  失败 (负的错误号)
+ *
+ * @see     MdsApi_QueryStockStaticInfoList
+ * @see     MdsStockStaticInfoT
+ */
+int32   MdsAsyncApi_QueryStockStaticInfoList(
+                MdsAsyncApiContextT *pAsyncContext,
+                const char *pSecurityListStr,
+                const char *pDelim,
+                const MdsQryStockStaticInfoListFilterT *pQryFilter,
+                F_MDSAPI_ON_QRY_MSG_T fnQryMsgCallback,
+                void *pCallbackParams);
+
+/**
+ * 批量查询证券(股票/债券/基金)静态信息列表 (字符串指针数组形式的证券代码列表)
+ *
+ * @note    与同步API接口的不同处:
+ *          - 支持自动重建连接
+ *          - 线程安全 (内置了加锁处理)
+ * @note    与同步API接口的相同处:
+ *          - 均为请求/应答模式的同步调用 (回调函数也是在当前线程下同步调用的)
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @param   ppSecurityArray     证券代码列表的指针数组
+ *                              - 证券代码支持以 .SH 或 .SZ 为后缀来指定其所属的交易所
+ *                              - 空指针NULL或代码数量为0, 表示查询所有证券 (不包括指数和期权)
+ * @param   securityCount       证券代码数量
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0, 代表无需过滤
+ * @param   fnQryMsgCallback    进行消息处理的回调函数
+ *                              - 消息体的数据类型为证券静态信息 <code>MdsStockStaticInfoT</code>
+ * @param   pCallbackParams     回调函数的参数
+ * @retval  >=0                 成功查询到的记录数
+ * @retval  <0                  失败 (负的错误号)
+ *
+ * @see     MdsApi_QueryStockStaticInfoList2
+ * @see     MdsStockStaticInfoT
+ */
+int32   MdsAsyncApi_QueryStockStaticInfoList2(
+                MdsAsyncApiContextT *pAsyncContext,
+                const char *ppSecurityArray[],
+                int32 securityCount,
+                const MdsQryStockStaticInfoListFilterT *pQryFilter,
+                F_MDSAPI_ON_QRY_MSG_T fnQryMsgCallback,
+                void *pCallbackParams);
+
+/**
+ * 批量查询期权合约静态信息列表 (基于异步API内置的查询通道执行)
+ *
+ * @note    与同步API接口的不同处:
+ *          - 支持自动重建连接
+ *          - 线程安全 (内置了加锁处理)
+ * @note    与同步API接口的相同处:
+ *          - 均为请求/应答模式的同步调用 (回调函数也是在当前线程下同步调用的)
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @param   pSecurityListStr    期权代码列表字符串
+ *                              - 期权代码支持以 .SH 或 .SZ 为后缀来指定其所属的交易所
+ *                              - 空字符串 "" 或 NULL, 表示查询所有期权
+ * @param   pDelim              期权代码列表的分隔符 (e.g. ",;| \t")
+ *                              - 如果为空, 则使用默认的分隔符:
+ *                                ',' 或 ';' 或 '|' 或 ' ' 或 '\t'
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0, 代表无需过滤
+ * @param   fnQryMsgCallback    进行消息处理的回调函数
+ *                              - 消息体的数据类型为期权静态信息 <code>MdsOptionStaticInfoT</code>
+ * @param   pCallbackParams     回调函数的参数
+ * @retval  >=0                 成功查询到的记录数
+ * @retval  <0                  失败 (负的错误号)
+ *
+ * @see     MdsApi_QueryOptionStaticInfoList
+ * @see     MdsOptionStaticInfoT
+ */
+int32   MdsAsyncApi_QueryOptionStaticInfoList(
+                MdsAsyncApiContextT *pAsyncContext,
+                const char *pSecurityListStr,
+                const char *pDelim,
+                const MdsQryOptionStaticInfoListFilterT *pQryFilter,
+                F_MDSAPI_ON_QRY_MSG_T fnQryMsgCallback,
+                void *pCallbackParams);
+
+/**
+ * 批量查询期权合约静态信息列表 (字符串指针数组形式的证券代码列表)
+ *
+ * @note    与同步API接口的不同处:
+ *          - 支持自动重建连接
+ *          - 线程安全 (内置了加锁处理)
+ * @note    与同步API接口的相同处:
+ *          - 均为请求/应答模式的同步调用 (回调函数也是在当前线程下同步调用的)
+ *
+ * @param   pAsyncContext       异步API的运行时环境指针
+ * @param   ppSecurityArray     期权代码列表的指针数组
+ *                              - 期权代码支持以 .SH 或 .SZ 为后缀来指定其所属的交易所
+ *                              - 空指针NULL或代码数量为0, 表示查询所有期权
+ * @param   securityCount       期权代码数量
+ * @param   pQryFilter          查询过滤条件
+ *                              - 传空指针或者将过滤条件初始化为0, 代表无需过滤
+ * @param   fnQryMsgCallback    进行消息处理的回调函数
+ *                              - 消息体的数据类型为期权静态信息 <code>MdsOptionStaticInfoT</code>
+ * @param   pCallbackParams     回调函数的参数
+ * @retval  >=0                 成功查询到的记录数
+ * @retval  <0                  失败 (负的错误号)
+ *
+ * @see     MdsApi_QueryOptionStaticInfoList2
+ * @see     MdsOptionStaticInfoT
+ */
+int32   MdsAsyncApi_QueryOptionStaticInfoList2(
+                MdsAsyncApiContextT *pAsyncContext,
+                const char *ppSecurityArray[],
+                int32 securityCount,
+                const MdsQryOptionStaticInfoListFilterT *pQryFilter,
+                F_MDSAPI_ON_QRY_MSG_T fnQryMsgCallback,
+                void *pCallbackParams);
 /* -------------------------           */
 
 

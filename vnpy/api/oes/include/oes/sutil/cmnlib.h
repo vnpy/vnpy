@@ -76,51 +76,62 @@ extern "C" {
  * =================================================================== */
 
 #undef  SPK_MIN
-#define SPK_MIN(a,b)                    ((a) <= (b) ? (a) : (b))
+#define SPK_MIN(a,b)                    ( (a) <= (b) ? (a) : (b) )
 
+/* @note 仅适用于b明确大于0的场景 */
+#undef  SPK_MIN_NONNEG
+#define SPK_MIN_NONNEG(a,b)             ( ((a) >= 0 && (a) <= (b)) ? (a) : (b) )
+
+/* @note 仅适用于b明确大于0的场景 */
 #undef  SPK_MIN_NONZERO
-#define SPK_MIN_NONZERO(a,b)            (((a) > 0 && (a) <= (b)) ? (a) : (b))
+#define SPK_MIN_NONZERO(a,b)            ( ((a) > 0 && (a) <= (b)) ? (a) : (b) )
 
+/* @note 仅适用于b明确大于0的场景 */
+#undef  SPK_MIN_NONNEG_FLOAT
+#define SPK_MIN_NONNEG_FLOAT(a,b)       \
+        ( ((a) >= -SPK_DOUBLE_ROUNDING_WINDAGE && (a) <= (b)) ? (a) : (b) )
+
+/* @note 仅适用于b明确大于0的场景 */
 #undef  SPK_MIN_NONZERO_FLOAT
 #define SPK_MIN_NONZERO_FLOAT(a,b)      \
-        (((a) > SPK_FLOAT_WINDAGE && (a) <= (b)) ? (a) : (b))
+        ( ((a) > SPK_DOUBLE_ROUNDING_WINDAGE && (a) <= (b)) ? (a) : (b) )
 
 #undef  SPK_MAX
-#define SPK_MAX(a,b)                    ((a) >= (b) ? (a) : (b))
+#define SPK_MAX(a,b)                    ( (a) >= (b) ? (a) : (b) )
 
 #undef  SPK_ABS
-#define SPK_ABS(x)                      ((x) >= 0 ? (x) : -(x))
+#define SPK_ABS(x)                      ( (x) >= 0 ? (x) : -(x) )
 
 /* 若x大于等于0则返回x, 否则返回0 */
 #undef  SPK_FLOOR_ZERO
-#define SPK_FLOOR_ZERO(x)               ((x) > 0 ? (x) : 0)
+#define SPK_FLOOR_ZERO(x)               ( (x) > 0 ? (x) : 0 )
 
 #undef  SPK_CLAMP
 #define SPK_CLAMP(x, low, high)         \
-        (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
+        ( ((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)) )
 
 #undef  SPK_XOR
-#define SPK_XOR(e, f)                   (((e) && !(f)) || (!(e) && (f)))
+#define SPK_XOR(e, f)                   ( ((e) && !(f)) || (!(e) && (f)) )
 
 #undef  SPK_ROUND
-#define SPK_ROUND(f)                    ((int32) (f + SPK_FLOAT_ROUNDING_WINDAGE))
+#define SPK_ROUND(f)                    ( (int32) (f + SPK_FLOAT_ROUNDING_WINDAGE) )
 
 #undef  SPK_ROUND64
-#define SPK_ROUND64(f)                  ((int64) (f + SPK_DOUBLE_ROUNDING_WINDAGE))
+#define SPK_ROUND64(f)                  ( (int64) (f + SPK_DOUBLE_ROUNDING_WINDAGE) )
 
 #undef  SPK_FLOOR
-#define SPK_FLOOR(f)                    ((int32) (f + SPK_FLOAT_WINDAGE))
+#define SPK_FLOOR(f)                    ( (int32) (f + SPK_FLOAT_WINDAGE) )
 
 #undef  SPK_FLOOR64
-#define SPK_FLOOR64(f)                  ((int64) (f + SPK_DOUBLE_WINDAGE))
+#define SPK_FLOOR64(f)                  ( (int64) (f + SPK_DOUBLE_WINDAGE) )
 
 #undef  SPK_CEIL
 #define SPK_CEIL(f)                     \
-        ((f) - (int32)(f) > SPK_FLOAT_WINDAGE ? (int32)(f) + 1 : (int32)(f))
+        ( (f) - (int32)(f) > SPK_FLOAT_WINDAGE ? (int32)(f) + 1 : (int32)(f) )
 
 #undef  SPK_CEIL64
 #define SPK_CEIL64(f)                   \
-        ((f) - (int64)(f) > SPK_DOUBLE_WINDAGE ? (int64)(f) + 1 : (int64)(f))
+        ( (f) - (int64)(f) > SPK_DOUBLE_WINDAGE ? (int64)(f) + 1 : (int64)(f) )
 /* -------------------------           */
 
 
@@ -137,6 +148,7 @@ extern "C" {
 #define SPK_FLOAT_TO_INT64              SPK_SIGNED_FLOAT_TO_INT64
 #define SPK_DOUBLE_TO_INT32             SPK_SIGNED_DOUBLE_TO_INT32
 #define SPK_DOUBLE_TO_INT64             SPK_SIGNED_DOUBLE_TO_INT64
+#define SPK_DOUBLE_TO_INT64_PRECISELY   SPK_SIGNED_DOUBLE_TO_INT64_PRECISELY
 #define SPK_TO_DOUBLE                   SPK_SIGNED_TO_DOUBLE
 
 
@@ -156,8 +168,14 @@ extern "C" {
 #define SPK_UNSIGNED_DOUBLE_TO_INT32(d, multiplier)     \
         ( (int32) ((d) * (multiplier) + SPK_DOUBLE_ROUNDING_WINDAGE) )
 
+/* @note 仅适用于取值确定不会超过浮点数精度范围的场景 */
 #define SPK_UNSIGNED_DOUBLE_TO_INT64(d, multiplier)     \
         ( (int64) ((d) * (multiplier) + SPK_DOUBLE_ROUNDING_WINDAGE) )
+
+#define SPK_UNSIGNED_DOUBLE_TO_INT64_PRECISELY(         \
+                d, realPrecision, finalPrecision)       \
+        ( ((int64) ((d) * (realPrecision) + SPK_DOUBLE_ROUNDING_WINDAGE)) \
+                * (finalPrecision / realPrecision) )
 
 #define SPK_UNSIGNED_TO_DOUBLE(i, multiplier)           \
         ( ((double) (i) / (multiplier)) + SPK_DOUBLE_WINDAGE )
@@ -185,10 +203,18 @@ extern "C" {
                 + ((d) >= 0.0 ? SPK_DOUBLE_ROUNDING_WINDAGE : \
                         -SPK_DOUBLE_ROUNDING_WINDAGE)) )
 
+/* @note 仅适用于取值确定不会超过浮点数精度范围的场景 */
 #define SPK_SIGNED_DOUBLE_TO_INT64(d, multiplier)       \
         ( (int64) ((d) * (multiplier) \
                 + ((d) >= 0.0 ? SPK_DOUBLE_ROUNDING_WINDAGE : \
                         -SPK_DOUBLE_ROUNDING_WINDAGE)) )
+
+#define SPK_SIGNED_DOUBLE_TO_INT64_PRECISELY(           \
+                d, realPrecision, finalPrecision)       \
+        ( ((int64) ((d) * (realPrecision) \
+                + ((d) >= 0.0 ? SPK_DOUBLE_ROUNDING_WINDAGE : \
+                        -SPK_DOUBLE_ROUNDING_WINDAGE))) \
+                * (finalPrecision / realPrecision) )
 
 #define SPK_SIGNED_TO_DOUBLE(i, multiplier)             \
         ( ((double) (i) / (multiplier)) \
@@ -206,21 +232,21 @@ extern "C" {
 #define SPK_IF_ZERO(x,v)                ((x) > 0 ? (x) : (v))
 
 #undef  SPK_IF_ZERO_FLOAT
-#define SPK_IF_ZERO_FLOAT(x,v)          ((x) > SPK_FLOAT_WINDAGE ? (x) : (v))
+#define SPK_IF_ZERO_FLOAT(x,v)          ((x) > SPK_DOUBLE_WINDAGE ? (x) : (v))
 
 /* 若x为负数则返回v, 否则返回x */
 #undef  SPK_IF_NEG
 #define SPK_IF_NEG(x,v)                 ((x) < 0 ? (v) : (x))
 
 #undef  SPK_IF_NEG_FLOAT
-#define SPK_IF_NEG_FLOAT(x,v)           ((x) < -SPK_FLOAT_WINDAGE ? (v) : (x))
+#define SPK_IF_NEG_FLOAT(x,v)           ((x) < -SPK_DOUBLE_WINDAGE ? (v) : (x))
 
 /* 若x为非负数则返回v, 否则返回x */
 #undef  SPK_IF_NONNEG
 #define SPK_IF_NONNEG(x,v)              ((x) < 0 ? (x) : (v))
 
 #undef  SPK_IF_NONNEG_FLOAT
-#define SPK_IF_NONNEG_FLOAT(x,v)        ((x) < -SPK_FLOAT_WINDAGE ? (x) : (v))
+#define SPK_IF_NONNEG_FLOAT(x,v)        ((x) < -SPK_DOUBLE_WINDAGE ? (x) : (v))
 /* -------------------------           */
 
 
@@ -294,6 +320,17 @@ extern "C" {
             ((c) == ' ' || (c) == '\t' || (c) == '\n' || (c) == '\r')
 #endif
 
+#undef  SPK_ISPRINT
+#ifdef  isprint
+#   define  SPK_ISPRINT(c)              isprint((int) c)
+#else
+#   define  SPK_ISPRINT(c)              ((c) >= ' ' && (c) <= '~')
+#endif
+
+/* 与SPK_ISPRINT相比, 仅少空格字符(' ') */
+#undef  SPK_ISVISIBLE
+#define SPK_ISVISIBLE(c)                ((c) >= '!' && (c) <= '~')
+
 #undef  SPK_TOUPPER
 # ifdef toupper
 #   define  SPK_TOUPPER(c)              toupper(c)
@@ -361,25 +398,25 @@ extern "C" {
  * 测试相应位是否已设置
  */
 #undef  SPK_BITS_ISSET_N
-#define SPK_BITS_ISSET_N(x, n)          ( ((x) & (1 << (n))) > 0 )
+#define SPK_BITS_ISSET_N(x, n)          ( ((x) & (1ULL << (n))) > 0 )
 
 /*
  * 设置相应位
  */
 #undef  SPK_BITS_SET_N
-#define SPK_BITS_SET_N(x, n)            ( (x) | (1 << (n)) )
+#define SPK_BITS_SET_N(x, n)            ( (x) | (1ULL << (n)) )
 
 #undef  SPK_BITS_SET_N_DIRECT
-#define SPK_BITS_SET_N_DIRECT(x, n)     ( (x) |= (1 << (n)) )
+#define SPK_BITS_SET_N_DIRECT(x, n)     ( (x) |= (1ULL << (n)) )
 
 /*
  * 清除相应位
  */
 #undef  SPK_BITS_CLR_N
-#define SPK_BITS_CLR_N(x, n)            ( (x) & ~(1 << (n)) )
+#define SPK_BITS_CLR_N(x, n)            ( (x) & ~(1ULL << (n)) )
 
 #undef  SPK_BITS_CLR_N_DIRECT
-#define SPK_BITS_CLR_N_DIRECT(x, n)     ( (x) &= ~(1 << (n)) )
+#define SPK_BITS_CLR_N_DIRECT(x, n)     ( (x) &= ~(1ULL << (n)) )
 /* -------------------------           */
 
 

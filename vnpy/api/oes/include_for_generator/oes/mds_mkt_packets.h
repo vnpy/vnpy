@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,21 @@
  *          - 行情订阅条件和订阅配置中增加 '逐笔数据的数据重建标识 tickRebuildFlag', 用于
  *            标识是否订阅重建到的逐笔数据 (@see eMdsSubscribedTickRebuildFlagT)
  *          - 扩展行情订阅条件中的订阅模式, 增加批量订阅模式, 以支持更灵活可控的行情订阅 (@see eMdsSubscribeModeT)
+ * @version 0.15.10.6   2020/04/19
+ *          - 将延迟统计相关的时间戳字段升级为纳秒级时间戳 (内部使用的字段, 协议保持兼容, STimeval32T => STimespec32T)
+ * @version 0.15.12     2021/03/19
+ *          - 增加行情消息类型: Level2 上交所逐笔委托行情 (MDS_MSGTYPE_L2_SSE_ORDER, 仅适用于上交所)
+ *          - 增加可订阅的数据种类: 上交所逐笔委托 (MDS_SUB_DATA_TYPE_L2_SSE_ORDER, 仅适用于上交所)
+ *          - 协议版本号升级 => 0.15.12, 协议发生了变化, 不过兼容之前的API
+ *          - @note 兼容性相关的注意事项如下:
+ *              - 如果使用的是旧版本的API, 那么服务器端将不再推送上交所Level2快照的增量更新
+ *                消息, 将只推送全量快照。如果需要使用增量更新消息, 就需要升级到最新版本
+ *              - 逐笔成交和逐笔委托结构体中有两个内部使用的字段发生变化:
+ *                  - 调整内部字段 '内部频道号 (__channelNo)' 的定义顺序, 如果使用了该字
+ *                    段就需要升级到最新版本
+ *                  - 删除内部字段 '对应的原始行情的序列号 (__origTickSeq)', 该字段没有
+ *                    业务含义通常不会被使用到, 如果使用了该字段, 需要修改或删除相关代码
+ *
  * @since   2016/01/03
  */
 
@@ -96,7 +111,7 @@ extern "C" {
  * =================================================================== */
 
 /** 当前采用的协议版本号 */
-#define MDS_APPL_VER_ID                         "0.16.0.4"
+#define MDS_APPL_VER_ID                         "0.17.0.9"
 
 /**
  * 当前采用的协议版本号数值
@@ -107,7 +122,7 @@ extern "C" {
  *   - DD 为构建号
  *   - X  0, 表示不带时间戳的正常版本; 1, 表示带时间戳的延迟测量版本
  */
-#define MDS_APPL_VER_VALUE                      (1001600041)
+#define MDS_APPL_VER_VALUE                      1001700091
 
 /** 兼容的最低协议版本号 */
 #define MDS_MIN_APPL_VER_ID                     "0.15.5"
@@ -129,16 +144,15 @@ typedef enum _eMdsMsgType {
      * 会话类消息
      */
     /** 心跳消息 (1/0x01) */
-    MDS_MSGTYPE_HEARTBEAT                           = 1,
+    MDS_MSGTYPE_HEARTBEAT                       = 1,
     /** 测试请求消息 (2/0x02) */
-    MDS_MSGTYPE_TEST_REQUEST                        = 2,
+    MDS_MSGTYPE_TEST_REQUEST                    = 2,
     /** 注销消息 (4/0x04) */
-    MDS_MSGTYPE_LOGOUT                              = 4,
+    MDS_MSGTYPE_LOGOUT                          = 4,
     /** 证券行情订阅消息 (5/0x05) */
-    MDS_MSGTYPE_MARKET_DATA_REQUEST                 = 5,
+    MDS_MSGTYPE_MARKET_DATA_REQUEST             = 5,
     /** 压缩的数据包 (6/0x06, 内部使用) */
-    MDS_MSGTYPE_COMPRESSED_PACKETS                  = 6,
-
+    MDS_MSGTYPE_COMPRESSED_PACKETS              = 6,
     /** 最大的会话消息类型 */
     __MDS_MSGTYPE_SESSION_MAX,
 
@@ -146,16 +160,17 @@ typedef enum _eMdsMsgType {
      * Level1 行情消息
      */
     /** Level1 市场行情快照 (10/0x0A) */
-    MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH   = 10,
+    MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH
+                                                = 10,
     /** Level1/Level2 指数行情快照 (11/0x0B) */
-    MDS_MSGTYPE_INDEX_SNAPSHOT_FULL_REFRESH         = 11,
+    MDS_MSGTYPE_INDEX_SNAPSHOT_FULL_REFRESH     = 11,
     /** Level1/Level2 期权行情快照 (12/0x0C) */
-    MDS_MSGTYPE_OPTION_SNAPSHOT_FULL_REFRESH        = 12,
+    MDS_MSGTYPE_OPTION_SNAPSHOT_FULL_REFRESH    = 12,
 
-    /** 市场状态消息 (13/0x0D, 仅上海) */
-    MDS_MSGTYPE_TRADING_SESSION_STATUS              = 13,
-    /** 证券状态消息 (14/0x0E, 仅深圳) */
-    MDS_MSGTYPE_SECURITY_STATUS                     = 14,
+    /** 市场状态消息 (13/0x0D, 仅适用于上交所) */
+    MDS_MSGTYPE_TRADING_SESSION_STATUS          = 13,
+    /** 证券状态消息 (14/0x0E, 仅适用于深交所) */
+    MDS_MSGTYPE_SECURITY_STATUS                 = 14,
     /** 最大的Level-1行情消息类型 */
     __MDS_MSGTYPE_L1_MAX,
 
@@ -163,24 +178,26 @@ typedef enum _eMdsMsgType {
      * Level2 行情消息
      */
     /** Level2 市场行情快照 (20/0x14) */
-    MDS_MSGTYPE_L2_MARKET_DATA_SNAPSHOT             = 20,
+    MDS_MSGTYPE_L2_MARKET_DATA_SNAPSHOT         = 20,
     /** Level2 委托队列快照 (买一/卖一前五十笔) (21/0x15) */
-    MDS_MSGTYPE_L2_BEST_ORDERS_SNAPSHOT             = 21,
+    MDS_MSGTYPE_L2_BEST_ORDERS_SNAPSHOT         = 21,
 
     /** Level2 逐笔成交行情 (22/0x16) */
-    MDS_MSGTYPE_L2_TRADE                            = 22,
-    /** Level2 逐笔委托行情 (23/0x17, 仅深圳) */
-    MDS_MSGTYPE_L2_ORDER                            = 23,
+    MDS_MSGTYPE_L2_TRADE                        = 22,
+    /** Level2 深交所逐笔委托行情 (23/0x17, 仅适用于深交所) */
+    MDS_MSGTYPE_L2_ORDER                        = 23,
+    /** Level2 上交所逐笔委托行情 (28/0x1C, 仅适用于上交所) */
+    MDS_MSGTYPE_L2_SSE_ORDER                    = 28,
 
-    /** Level2 快照行情的增量更新消息 (24/0x18, 仅上海) */
-    MDS_MSGTYPE_L2_MARKET_DATA_INCREMENTAL          = 24,
-    /** Level2 委托队列快照的增量更新消息 (25/0x19, 仅上海) */
-    MDS_MSGTYPE_L2_BEST_ORDERS_INCREMENTAL          = 25,
+    /** Level2 快照行情的增量更新消息 (24/0x18, 仅适用于上交所) */
+    MDS_MSGTYPE_L2_MARKET_DATA_INCREMENTAL      = 24,
+    /** Level2 委托队列快照的增量更新消息 (25/0x19, 仅适用于上交所) */
+    MDS_MSGTYPE_L2_BEST_ORDERS_INCREMENTAL      = 25,
 
-    /** Level2 市场总览消息 (26/0x1A, 仅上海) */
-    MDS_MSGTYPE_L2_MARKET_OVERVIEW                  = 26,
-    /** Level2 虚拟集合竞价消息 (27/0x1B, @deprecated 已废弃) */
-    MDS_MSGTYPE_L2_VIRTUAL_AUCTION_PRICE            = 27,
+    /** Level2 市场总览消息 (26/0x1A, 仅适用于上交所) */
+    MDS_MSGTYPE_L2_MARKET_OVERVIEW              = 26,
+    /** Level2 虚拟集合竞价消息 (27/0x1B, 仅适用于上交所, @deprecated 已废弃) */
+    MDS_MSGTYPE_L2_VIRTUAL_AUCTION_PRICE        = 27,
     /** 最大的Level-2行情消息类型 */
     __MDS_MSGTYPE_L2_MAX,
 
@@ -188,7 +205,7 @@ typedef enum _eMdsMsgType {
      * 指令类消息
      */
     /** 修改客户端登录密码 (60/0x3C) */
-    MDS_MSGTYPE_CMD_CHANGE_PASSWORD                 = 60,
+    MDS_MSGTYPE_CMD_CHANGE_PASSWORD             = 60,
     /** 最大的指令消息类型 */
     __MDS_MSGTYPE_CMD_MAX,
 
@@ -196,20 +213,24 @@ typedef enum _eMdsMsgType {
      * 查询类消息
      */
     /** 查询证券行情 (80/0x50) */
-    MDS_MSGTYPE_QRY_MARKET_DATA_SNAPSHOT            = 80,
+    MDS_MSGTYPE_QRY_MARKET_DATA_SNAPSHOT        = 80,
     /** 查询(深圳)证券状态 (81/0x51) */
-    MDS_MSGTYPE_QRY_SECURITY_STATUS                 = 81,
+    MDS_MSGTYPE_QRY_SECURITY_STATUS             = 81,
     /** 查询(上证)市场状态 (82/0x52) */
-    MDS_MSGTYPE_QRY_TRADING_SESSION_STATUS          = 82,
+    MDS_MSGTYPE_QRY_TRADING_SESSION_STATUS      = 82,
 
-    /** 批量查询证券(股票/债券/基金)静态信息 (85/0x55) */
-    MDS_MSGTYPE_QRY_STOCK_STATIC_INFO               = 85,
     /** 批量查询行情快照列表 (86/0x56) */
-    MDS_MSGTYPE_QRY_SNAPSHOT_LIST                   = 86,
-    /** 批量查询期权静态信息 (87/0x57) */
-    MDS_MSGTYPE_QRY_OPTION_STATIC_INFO              = 87,
+    MDS_MSGTYPE_QRY_SNAPSHOT_LIST               = 86,
+    /** 查询期权静态信息 (87/0x57) */
+    MDS_MSGTYPE_QRY_OPTION_STATIC_INFO          = 87,
+    /** 查询证券(股票/债券/基金)静态信息 (88/0x58)  (0x55的更新版本, @since 0.15.11) */
+    MDS_MSGTYPE_QRY_STOCK_STATIC_INFO           = 88,
+    /** 批量查询证券(股票/债券/基金)静态信息列表 (89/0x59) */
+    MDS_MSGTYPE_QRY_STOCK_STATIC_INFO_LIST      = 89,
+    /** 批量查询期权静态信息列表 (90/0x5A) */
+    MDS_MSGTYPE_QRY_OPTION_STATIC_INFO_LIST     = 90,
     /** 最大的查询消息类型 */
-    __MDS_MSGTYPE_QRY_MAX,
+    __MDS_MSGTYPE_QRY_MAX
 
 } eMdsMsgTypeT;
 /* -------------------------           */
@@ -283,32 +304,43 @@ typedef enum _eMdsMktSubscribeFlag {
  *
  * 取值说明:
  * -  0: (LatestSimplified) 只订阅最新的行情快照数据, 并忽略和跳过已经过时的数据
- *       - 该模式推送的数据量最小, 没有重复数据, 也不会重复发送最新快照
- *       - 该模式在时延和带宽方面都相对优秀, 如果没有特殊需求, 推荐使用该模式即可
+ *       - 该模式推送的数据量最小, 服务器端会做去重处理, 不会再推送重复的和已经过时的快照数据
+ *       - 优点: 该模式在时延和带宽方面都更加优秀, 该模式优先关注快照行情的时效性, 并避免推送
+ *         没有实质变化的重复快照
+ *       - 缺点: 当没有行情变化时 (例如没有交易或盘中休市等), 就不会推送任何快照行情了, 这一
+ *         点可能会带来困扰, 不好确定是发生丢包了还是没有行情导致的
+ *       - 注意: 过时和重复的快照都会被过滤掉
  * -  1: (LatestTimely) 只订阅最新的行情快照数据, 并立即发送最新数据
- *       - 只要有行情更新事件, 便立即推送该产品的最新行情, 但也因此可能重复发送多次相同的最新行情
- *       - 如果某些产品的交易很活跃, 而客户端处理又比较耗时的话, 那么该模式可能会更及时的获取到
- *         这些产品的最新行情
- *       - 此外, 因为与 AllIncrements 模式下的数据一一对应, 可以方便与增量更新消息进行比对测试
- *       - 通常情况下, 推荐使用 LatestSimplified 模式即可
+ *       - 只要有行情更新事件, 便立即推送该产品的最新行情, 但行情数据本身可能是重复的, 即只有
+ *         行情时间有变化, 行情数据本身没有变化
+ *       - 优点: 可以获取到时间点更完整的快照行情, 不会因为行情数据没有变化而跳过 (如果是因为
+ *         接收慢等原因导致快照已经过时了, 该快照还是会被忽略掉)
+ *       - 缺点: 会收到仅更新时间有变化, 但行情数据本身并没有更新的重复数据, 带宽和数据量上会
+ *         有一定的浪费
+ *       - 注意: 重复的快照不会被过滤掉, 但过时的快照还是会被过滤掉
  * -  2: (AllIncrements) 订阅所有时点的行情快照数据 (包括Level2增量更新消息)
  *       - 该模式会推送所有时点的行情数据, 包括Level2行情快照的增量更新消息
  *       - 如果需要获取全量的行情明细, 或者需要直接使用Level2的增量更新消息, 可以使用该模式
- *       - 如果没有特别需求的话，不需要订阅增量更新消息，增量消息处理起来比较麻烦
- *          - 增量更新消息(字段级别的增量更新)只有上交所Level-2快照有, 深交所行情里面没有
+ *       - 如果没有特别需求的话, 不需要订阅增量更新消息, 增量消息处理起来比较麻烦
+ *          - 增量更新消息 (字段级别的增量更新) 只有上交所Level-2快照有, 深交所行情里面没有
  *          - 在对下游系统进行推送时, 增量快照和完整快照在推送时间上是没有区别的, 增量更新并
- *            不会比完整快照更快，只是信息角度不一样
+ *            不会比完整快照更快, 只是信息角度不一样
  *
  * 补充说明:
- * - 当以 tickType=0 的模式订阅行情时, 服务器端会对重复的快照行情做去重处理, 不会再推送重复的数据
- * - 如果需要获取到所有时点的快照, 可以使用 tickType=1 的模式订阅行情。此模式下只要行情时间有变化,
- *   即使数据重复也会对下游推送
+ * - 当以 tickType=0 的模式订阅行情时, 服务器端会对重复的快照行情做去重处理, 不会再推送重复
+ *   的和已经过时的快照数据。
+ * - 如果需要获取到"所有时点"的快照, 可以使用 tickType=1 的模式订阅行情。此模式下只要行情时
+ *   间有变化, 即使数据重复也会对下游推送。但过时的快照还是会被忽略掉。
+ * - 只有通过 tickType=2 的模式才能接收到完整的所有时间点的行情数据。
+ * - 快照行情 "过时" 表示: 不是当前最新的快照即为"过时", 即存在时间点比该快照更新的快照 (同一
+ *   只股票)。
+ * - @note  上交所行情存在更新时间相同但数据不同的Level-2快照。(频率不高, 但会存在这样的数据)
  */
 typedef enum _eMdsSubscribedTickType {
-    /** 只订阅最新的行情快照数据, 并忽略和跳过已经过时的数据 (推送的数据量最小, 不会重复发送最新快照) */
+    /** 只订阅最新的行情快照数据, 并忽略和跳过已经过时的数据 (推送的数据量最小, 服务器端会做去重处理, 不会再推送重复的和已经过时的快照数据) */
     MDS_TICK_TYPE_LATEST_SIMPLIFIED             = 0,
 
-    /** 只订阅最新的行情快照数据, 并立即发送最新数据 (会更及时的获取到交易活跃的最新行情, 但会重复发送最新快照) */
+    /** 只订阅最新的行情快照数据, 并立即发送最新数据 (可以获取到时间点更完整的快照行情, 只要行情时间有变化, 即使数据重复也会对下游推送) */
     MDS_TICK_TYPE_LATEST_TIMELY                 = 1,
 
     /** 订阅所有时点的行情快照数据 (包括Level2增量更新消息) */
@@ -321,6 +353,7 @@ typedef enum _eMdsSubscribedTickType {
 
 /**
  * 逐笔数据的过期时间定义 (仅对逐笔数据生效)
+ * @note    仅对压缩行情端口生效, 普通的非压缩行情端口不支持该选项
  */
 typedef enum _eMdsSubscribedTickExpireType {
     /** 不过期 */
@@ -368,10 +401,11 @@ typedef enum _eMdsSubscribedTickRebuildFlag {
  * - 0x0002: L2快照
  * - 0x0004: L2委托队列
  * - 0x0008: L2逐笔成交
- * - 0x0010: L2逐笔委托 (深圳)
- * - 0x0040: L2市场总览 (上海)
- * - 0x0100: 市场状态 (上海)
- * - 0x0200: 证券实时状态 (深圳)
+ * - 0x0010: L2深交所逐笔委托 (仅适用于深交所)
+ * - 0x0020: L2上交所逐笔委托 (仅适用于上交所)
+ * - 0x0040: L2市场总览 (仅适用于上交所)
+ * - 0x0100: 市场状态 (仅适用于上交所)
+ * - 0x0200: 证券实时状态 (仅适用于深交所)
  * - 0x0400: 指数行情 (与0x0001的区别在于, 0x0400可以单独订阅指数行情)
  * - 0x0800: 期权行情 (与0x0001的区别在于, 0x0800可以单独订阅期权行情)
  * - 0xFFFF: 所有数据种类
@@ -389,19 +423,22 @@ typedef enum _eMdsSubscribeDataType {
     /** L2委托队列 */
     MDS_SUB_DATA_TYPE_L2_BEST_ORDERS            = 0x0004,
 
-    /** L2逐笔成交 */
+    /** 逐笔成交 */
     MDS_SUB_DATA_TYPE_L2_TRADE                  = 0x0008,
 
-    /** L2逐笔委托 (*深圳, 0x10/16) */
+    /** 深交所逐笔委托 (*仅适用于深交所, 0x10/16) */
     MDS_SUB_DATA_TYPE_L2_ORDER                  = 0x0010,
 
-    /** L2市场总览 (*上海, 0x40/64) */
+    /** 上交所逐笔委托 (*仅适用于上交所, 0x20/32) */
+    MDS_SUB_DATA_TYPE_L2_SSE_ORDER              = 0x0020,
+
+    /** L2市场总览 (*仅适用于上交所, 0x40/64) */
     MDS_SUB_DATA_TYPE_L2_MARKET_OVERVIEW        = 0x0040,
 
-    /** 市场状态 (*上海, 0x100/256) */
+    /** 市场状态 (*仅适用于上交所, 0x100/256) */
     MDS_SUB_DATA_TYPE_TRADING_SESSION_STATUS    = 0x0100,
 
-    /** 证券实时状态 (*深圳, 0x200/512) */
+    /** 证券实时状态 (*仅适用于深交所, 0x200/512) */
     MDS_SUB_DATA_TYPE_SECURITY_STATUS           = 0x0200,
 
     /** 指数行情 (与L1_SNAPSHOT的区别在于, INDEX_SNAPSHOT可以单独订阅指数行情) */
@@ -476,12 +513,12 @@ typedef struct _MdsMktDataRequestEntry {
     uint8               exchId;                 /**< 交易所代码 @see eMdsExchangeIdT */
     uint8               mdProductType;          /**< 证券类型 @see eMdsMdProductTypeT */
     uint8               __filler[2];            /**< 按64位对齐的填充域 */
-    int32               instrId;                /**< 产品代码 */
+    int32               instrId;                /**< 证券代码 (转换为整数类型的证券代码) */
 } MdsMktDataRequestEntryT;
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_MKT_DATA_REQUEST_ENTRY              \
+#define NULLOBJ_MDS_MKT_DATA_REQUEST_ENTRY                              \
         0, 0, {0}, 0
 /* -------------------------           */
 
@@ -617,6 +654,7 @@ typedef struct _MdsMktDataRequestReq {
      * -  3: 超时过期 (30秒)
      *
      * @see     eMdsSubscribedTickExpireTypeT
+     * @note    仅对压缩行情端口生效, 普通的非压缩行情端口不支持该选项
      * @note    因为存在不可控的网络因素, 所以做不到百分百的精确过滤, 如果对数据的
      *          时效性有精确要求, 就需要在前端对数据再进行一次过滤
      */
@@ -639,10 +677,11 @@ typedef struct _MdsMktDataRequestReq {
      * - 0x0002: L2快照
      * - 0x0004: L2委托队列
      * - 0x0008: L2逐笔成交
-     * - 0x0010: L2逐笔委托 (深圳)
-     * - 0x0040: L2市场总览 (上海)
-     * - 0x0100: 市场状态 (上海)
-     * - 0x0200: 证券实时状态 (深圳)
+     * - 0x0010: L2深交所逐笔委托 (仅适用于深交所)
+     * - 0x0020: L2上交所逐笔委托 (仅适用于上交所)
+     * - 0x0040: L2市场总览 (仅适用于上交所)
+     * - 0x0100: 市场状态 (仅适用于上交所)
+     * - 0x0200: 证券实时状态 (仅适用于深交所)
      * - 0x0400: 指数行情 (与0x0001的区别在于, 0x0400可以单独订阅指数行情)
      * - 0x0800: 期权行情 (与0x0001的区别在于, 0x0800可以单独订阅期权行情)
      * - 0xFFFF: 所有数据
@@ -691,7 +730,7 @@ typedef struct _MdsMktDataRequestReq {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_MKT_DATA_REQUEST_REQ                \
+#define NULLOBJ_MDS_MKT_DATA_REQUEST_REQ                                \
         0, 0, \
         0, 0, 0, 0, 0, 0, \
         0, 0, 0, 0, \
@@ -699,10 +738,10 @@ typedef struct _MdsMktDataRequestReq {
 
 
 /* 结构体的初始化值定义 (订阅全市场行情) */
-#define NULLOBJ_MDS_MKT_DATA_REQUEST_REQ_ALLMKT         \
+#define NULLOBJ_MDS_MKT_DATA_REQUEST_REQ_ALLMKT                         \
         0, 0, \
         1, 1, 1, 1, 1, 1, \
-        0, 0, 0, 0, \
+        0, 0, 0, 1, \
         0, 0, 0
 /* -------------------------           */
 
@@ -720,7 +759,7 @@ typedef struct _MdsMktDataRequestReqBuf {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_MKT_DATA_REQUEST_REQ_BUF            \
+#define NULLOBJ_MDS_MKT_DATA_REQUEST_REQ_BUF                            \
         {NULLOBJ_MDS_MKT_DATA_REQUEST_REQ}, \
         {{NULLOBJ_MDS_MKT_DATA_REQUEST_ENTRY}}
 /* -------------------------           */
@@ -790,6 +829,7 @@ typedef struct _MdsMktDataRequestRsp {
      * -  3: 超时过期 (30秒)
      *
      * @see     eMdsSubscribedTickExpireTypeT
+     * @note    仅对压缩行情端口生效, 普通的非压缩行情端口不支持该选项
      * @note    因为存在不可控的网络因素, 所以做不到百分百的精确过滤, 如果对数据的
      *          时效性有精确要求, 就需要在前端对数据再进行一次过滤
      */
@@ -815,10 +855,11 @@ typedef struct _MdsMktDataRequestRsp {
      * - 0x0002: L2快照
      * - 0x0004: L2委托队列
      * - 0x0008: L2逐笔成交
-     * - 0x0010: L2逐笔委托 (深圳)
-     * - 0x0040: L2市场总览 (上海)
-     * - 0x0100: 市场状态 (上海)
-     * - 0x0200: 证券实时状态 (深圳)
+     * - 0x0010: L2深交所逐笔委托 (仅适用于深交所)
+     * - 0x0020: L2上交所逐笔委托 (仅适用于上交所)
+     * - 0x0040: L2市场总览 (仅适用于上交所)
+     * - 0x0100: 市场状态 (仅适用于上交所)
+     * - 0x0200: 证券实时状态 (仅适用于深交所)
      * - 0x0400: 指数行情 (与0x0001的区别在于, 0x0400可以单独订阅指数行情)
      * - 0x0800: 期权行情 (与0x0001的区别在于, 0x0800可以单独订阅期权行情)
      * - 0xFFFF: 所有数据
@@ -894,7 +935,7 @@ typedef struct _MdsMktDataRequestRsp {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_MKT_DATA_REQUEST_RSP                \
+#define NULLOBJ_MDS_MKT_DATA_REQUEST_RSP                                \
         0, 0, 0, 0, 0, 0, {0}, \
         0, 0, \
         0, 0, 0, 0, 0, 0
@@ -917,7 +958,7 @@ typedef struct _MdsTestRequestReq {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_TEST_REQUEST_REQ                    \
+#define NULLOBJ_MDS_TEST_REQUEST_REQ                                    \
         {0}, {0}, {0}
 /* -------------------------           */
 
@@ -943,11 +984,11 @@ typedef struct _MdsTestRequestRsp {
 
 #ifdef  _MDS_ENABLE_LATENCY_STATS
     /** 消息实际接收时间 (开始解码等处理之前的时间) */
-    STimeval32T         __recvTime;
+    STimespec32T        __recvTime;
     /** 消息采集处理完成时间 */
-    STimeval32T         __collectedTime;
+    STimespec32T        __collectedTime;
     /** 消息推送时间 (写入推送缓存以后, 实际网络发送之前) */
-    STimeval32T         __pushingTime;
+    STimespec32T        __pushingTime;
 #endif
 
 } MdsTestRequestRspT;
@@ -955,7 +996,7 @@ typedef struct _MdsTestRequestRsp {
 
 /* 结构体初始化值的尾部填充字段定义 */
 #ifdef  _MDS_ENABLE_LATENCY_STATS
-# define    __NULLOBJ_MDS_TEST_REQUEST_RSP_TAILER       \
+# define    __NULLOBJ_MDS_TEST_REQUEST_RSP_TAILER                       \
             , {0, 0}, {0, 0}, {0, 0}
 #else
 # define    __NULLOBJ_MDS_TEST_REQUEST_RSP_TAILER
@@ -963,7 +1004,7 @@ typedef struct _MdsTestRequestRsp {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_TEST_REQUEST_RSP                    \
+#define NULLOBJ_MDS_TEST_REQUEST_RSP                                    \
         {0}, {0}, {0}, {0}, {0} \
         __NULLOBJ_MDS_TEST_REQUEST_RSP_TAILER
 /* -------------------------           */
@@ -999,7 +1040,7 @@ typedef struct _MdsChangePasswordReq {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_CHANGE_PASSWORD_REQ                 \
+#define NULLOBJ_MDS_CHANGE_PASSWORD_REQ                                 \
         0, 0, \
         {0}, {0}, \
         {0}, {0}
@@ -1039,7 +1080,7 @@ typedef struct _MdsChangePasswordRsp {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_CHANGE_PASSWORD_RSP                 \
+#define NULLOBJ_MDS_CHANGE_PASSWORD_RSP                                 \
         0, 0, \
         {0}, {0}, \
         0, 0, 0, 0
@@ -1067,11 +1108,15 @@ typedef union _MdsMktReqMsgBody {
     MdsQrySecurityStatusReqT        qrySecurityStatusReq;
     /** (上证)市场状态查询请求 */
     MdsQryTrdSessionStatusReqT      qryTrdSessionStatusReq;
-    /** 证券静态信息批量查询请求 */
+    /** 证券静态信息查询请求 (@deprecated 已废弃) */
     MdsQryStockStaticInfoReqT       qryStockStaticInfoReq;
-    /** 期权静态信息批量查询请求 */
+    /** 期权静态信息批量查询请求 (@deprecated 已废弃) */
     MdsQryOptionStaticInfoReqT      qryOptionStaticInfoReq;
-    /** 行情快照批量查询请求 */
+    /** 证券静态信息列表批量查询请求 */
+    MdsQryStockStaticInfoListReqT   qryStockStaticInfoListReq;
+    /** 期权静态信息批量查询请求 */
+    MdsQryOptionStaticInfoListReqT  qryOptionStaticInfoListReq;
+    /** 行情快照列表批量查询请求 */
     MdsQrySnapshotListReqT          qrySnapshotListReq;
 
     /** 修改登录密码请求 */
@@ -1080,7 +1125,7 @@ typedef union _MdsMktReqMsgBody {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_MKT_REQ_MSG_BODY                    \
+#define NULLOBJ_MDS_MKT_REQ_MSG_BODY                                    \
         {NULLOBJ_MDS_MKT_DATA_REQUEST_REQ_BUF}
 /* -------------------------           */
 
@@ -1115,12 +1160,18 @@ typedef union _MdsMktRspMsgBody {
     /*
      * 查询消息
      */
-    /** 证券静态信息查询的应答数据 */
+    /** 证券静态信息查询的应答数据 (@deprecated 已废弃) */
     MdsQryStockStaticInfoRspT       qryStockStaticInfoRsp;
-    /** 期权静态信息查询的应答数据 */
+    /** 期权静态信息查询的应答数据 (@deprecated 已废弃) */
     MdsQryOptionStaticInfoRspT      qryOptionStaticInfoRsp;
-    /** 行情快照批量查询的应答数据 */
+    /** 证券静态信息列表批量查询的应答数据 */
+    MdsQryStockStaticInfoListRspT   qryStockStaticInfoListRsp;
+    /** 期权静态信息查询的应答数据 */
+    MdsQryOptionStaticInfoListRspT  qryOptionStaticInfoListRsp;
+    /** 行情快照列表批量查询的应答数据 */
     MdsQrySnapshotListRspT          qrySnapshotListRsp;
+    /** 周边应用升级信息查询的应答数据 */
+    MdsQryApplUpgradeInfoRspT       qryApplUpgradeInfoRsp;
 
     /*
      * 指令消息
@@ -1131,7 +1182,7 @@ typedef union _MdsMktRspMsgBody {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_MKT_RSP_MSG_BODY                    \
+#define NULLOBJ_MDS_MKT_RSP_MSG_BODY                                    \
         {NULLOBJ_MDS_MKT_DATA_REQUEST_RSP}
 /* -------------------------           */
 

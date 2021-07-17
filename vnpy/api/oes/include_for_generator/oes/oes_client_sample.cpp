@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,14 +65,14 @@ static int32    _OesClientApi_OnQueryDisconnect(
 static int32    _OesClientApi_HandleReportMsg(
                         OesApiSessionInfoT *pRptChannel,
                         SMsgHeadT *pMsgHead,
-                        void *pMsgBody,
+                        void *pMsgItem,
                         void *pCallbackParams);
 
 /* 对接收到的应答消息进行处理的回调函数 (适用于委托通道) */
 static int32    _OesClientApi_HandleOrderChannelRsp(
                         OesApiSessionInfoT *pSessionInfo,
                         SMsgHeadT *pMsgHead,
-                        void *pMsgBody,
+                        void *pMsgItem,
                         void *pCallbackParams);
 /* -------------------------           */
 
@@ -392,6 +392,16 @@ BOOL
 OesClientApi::Start(int32 *pLastClSeqNo, int64 lastRptSeqNum) {
     int32                   ret = 0;
 
+    /* 检查API的头文件与库文件版本是否匹配 */
+    if (! __OesApi_CheckApiVersion()) {
+        SLOG_ERROR("API的头文件版本与库文件版本不匹配, 没有替换头文件或者没有重新编译? " \
+                "apiVersion[%s], libVersion[%s]",
+                OES_APPL_VER_ID, OesApi_GetApiVersion());
+        return FALSE;
+    } else {
+        SLOG_INFO("API version: %s", OesApi_GetApiVersion());
+    }
+
     if (! _isInitialized || ! _pAsyncContext) {
         SLOG_ERROR("尚未载入配置, 需要先通过 LoadCfg 接口初始化配置信息! " \
                 "isInitialized[%d], pAsyncContext[%p]",
@@ -582,90 +592,14 @@ _OesClientApi_OnAsyncConnect(OesAsyncApiChannelT *pAsyncChannel,
         SLOG_ERROR("Call SPI.OnConnected failure! channelType[%d], ret[%d]",
                 pAsyncChannel->pChannelCfg->channelType, ret);
         return ret;
-    } if (ret == 0) {
+    } else if (ret == 0) {
         SLOG_DEBUG("Call SPI.OnConnected success! channelType[%d]",
                 pAsyncChannel->pChannelCfg->channelType);
         return 0;
     }
 
-    /* 执行默认处理 */
-    switch (pAsyncChannel->pChannelCfg->channelType) {
-    case OESAPI_CHANNEL_TYPE_ORDER:
-        SLOG_INFO("Order channel connected. server[%s:%d], " \
-                "lastInMsgSeq[%" __SPK_FMT_LL__ "d], " \
-                "lastOutMsgSeq[%" __SPK_FMT_LL__ "d]",
-                pAsyncChannel->pSessionInfo->channel.remoteAddr,
-                pAsyncChannel->pSessionInfo->channel.remotePort,
-                pAsyncChannel->pSessionInfo->lastInMsgSeq,
-                pAsyncChannel->pSessionInfo->lastOutMsgSeq);
-
-        /*
-         * 关于 lastOutMsgSeq 字段 (登录时服务器返回的上一次会话的最大请求数据编号)
-         * @note 提示:
-         * - 该字段存储的是登录成功以后, 服务器端最后接收到并校验通过的"客户委托流水号(clSeqNo)",
-         *   效果等价于OesApi_InitOrdChannel接口的pLastClSeqNo参数的输出值
-         * - 该字段在登录成功以后就不会再更新
-         * - 对于SPI回调接口, 在OnConnect回调函数中直接更新 API.defaultClSeqNo 字段即可
-         */
-        if (pSpi->pApi->defaultClSeqNo < pAsyncChannel->lastOutMsgSeq) {
-            pSpi->pApi->defaultClSeqNo = pAsyncChannel->lastOutMsgSeq;
-        }
-        break;
-
-    case OESAPI_CHANNEL_TYPE_REPORT:
-        /* 按照默认回报订阅参数从上次的断点位置开始订阅回报 */
-        SLOG_INFO("Report channel connected, subscribe report data by " \
-                "default. server[%s:%d], " \
-                "lastInMsgSeq[%" __SPK_FMT_LL__ "d], " \
-                "lastOutMsgSeq[%" __SPK_FMT_LL__ "d]",
-                pAsyncChannel->pSessionInfo->channel.remoteAddr,
-                pAsyncChannel->pSessionInfo->channel.remotePort,
-                pAsyncChannel->pSessionInfo->lastInMsgSeq,
-                pAsyncChannel->pSessionInfo->lastOutMsgSeq);
-
-        pSubscribeInfo = OesAsyncApi_GetChannelSubscribeCfg(pAsyncChannel);
-        if (__spk_unlikely(! pSubscribeInfo)) {
-            SLOG_ERROR("Illegal extended subscribe info! pAsyncChannel[%p]",
-                    pAsyncChannel);
-            SLOG_ASSERT(0);
-
-            SPK_SET_ERRNO(EINVAL);
-            return SPK_NEG(EINVAL);
-        }
-
-        /*
-         * 关于 lastInMsgSeq 字段 (最近接收到的回报数据编号)
-         * @note 提示:
-         * - API会将回报数据的断点位置存储在 <code>pAsyncChannel->lastInMsgSeq</code> 和
-         *   <code>pSessionInfo->lastInMsgSeq</code> 字段中, 可以使用该值订阅回报
-         * - 对于SPI回调接口, 可以在OnConnect回调函数中重新设置
-         *   <code>pSessionInfo->lastInMsgSeq</code> 的取值来重新指定订阅条件
-         */
-        if (__spk_unlikely(! OesApi_SendReportSynchronization(
-                pAsyncChannel->pSessionInfo, pSubscribeInfo->clEnvId,
-                pSubscribeInfo->rptTypes,
-                pAsyncChannel->pSessionInfo->lastInMsgSeq))) {
-            SLOG_ERROR("Send report synchronization failure, will retry! " \
-                    "server[%s:%d]",
-                    pAsyncChannel->pSessionInfo->channel.remoteAddr,
-                    pAsyncChannel->pSessionInfo->channel.remotePort);
-
-            /* 处理失败, 将重建连接并继续尝试执行 */
-            return EAGAIN;
-        }
-        break;
-
-    case OESAPI_CHANNEL_TYPE_QUERY:
-    default:
-        SLOG_ERROR("Invalid channel type! channelType[%d]",
-                pAsyncChannel->pChannelCfg->channelType);
-        SLOG_ASSERT(0);
-
-        SPK_SET_ERRNO(EINVAL);
-        return SPK_NEG(EINVAL);
-    }
-
-    return 0;
+    /* 执行默认的连接完成后处理 (执行默认的回报订阅处理) */
+    return OesAsyncApi_DefaultOnConnect(pAsyncChannel, NULL);
 }
 
 
@@ -712,7 +646,7 @@ _OesClientApi_OnAsyncDisconnect(OesAsyncApiChannelT *pAsyncChannel,
         SLOG_ERROR("Call SPI.OnDisconnected failure! channelType[%d], ret[%d]",
                 pAsyncChannel->pChannelCfg->channelType, ret);
         return ret;
-    } if (ret == 0) {
+    } else if (ret == 0) {
         SLOG_DEBUG("Call SPI.OnDisconnected success! channelType[%d]",
                 pAsyncChannel->pChannelCfg->channelType);
         return 0;
@@ -771,7 +705,7 @@ _OesClientApi_OnQueryConnect(OesApiSessionInfoT *pSessionInfo,
         SLOG_ERROR("Call SPI.OnConnected failure! channelType[%d], ret[%d]",
                 OESAPI_CHANNEL_TYPE_QUERY, ret);
         return ret;
-    } if (ret == 0) {
+    } else if (ret == 0) {
         SLOG_DEBUG("Call SPI.OnConnected success! channelType[%d]",
                 OESAPI_CHANNEL_TYPE_QUERY);
         return 0;
@@ -832,7 +766,7 @@ _OesClientApi_OnQueryDisconnect(OesApiSessionInfoT *pSessionInfo,
             SLOG_ERROR("Call SPI.OnDisconnected failure! channelType[%d], ret[%d]",
                     OESAPI_CHANNEL_TYPE_QUERY, ret);
             return ret;
-        } if (ret == 0) {
+        } else if (ret == 0) {
             /* 对于查询通道仍将继续执行连接重建处理 */
             SLOG_DEBUG("Call SPI.OnDisconnected success. " \
                     "Will try reconnect immediately... " \
@@ -882,8 +816,8 @@ _OesClientApi_OnQueryDisconnect(OesApiSessionInfoT *pSessionInfo,
  * 对接收到的回报消息进行处理的回调函数 (适用于回报通道)
  *
  * @param   pSessionInfo        会话信息
- * @param   pMsgHead            消息头
- * @param   pMsgBody            消息体数据
+ * @param   pMsgHead            回报消息的消息头
+ * @param   pMsgItem            回报消息的数据条目 (需要根据消息类型转换为对应的数据结构)
  * @param   pCallbackParams     外部传入的参数
  * @retval  >=0                 大于等于0, 成功
  * @retval  <0                  小于0, 处理失败, 将尝试断开并重建连接
@@ -894,12 +828,12 @@ _OesClientApi_OnQueryDisconnect(OesApiSessionInfoT *pSessionInfo,
  */
 static int32
 _OesClientApi_HandleReportMsg(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, void *pCallbackParams) {
+        SMsgHeadT *pMsgHead, void *pMsgItem, void *pCallbackParams) {
     OesClientSpi            *pSpi = (OesClientSpi *) pCallbackParams;
-    OesRspMsgBodyT          *pRspMsg = (OesRspMsgBodyT *) pMsgBody;
+    OesRspMsgBodyT          *pRspMsg = (OesRspMsgBodyT *) pMsgItem;
     OesRptMsgT              *pRptMsg = &pRspMsg->rptMsg;
 
-    SLOG_ASSERT(pSessionInfo && pMsgHead && pMsgBody);
+    SLOG_ASSERT(pSessionInfo && pMsgHead && pMsgItem);
     SLOG_ASSERT(pSpi);
 
     switch (pMsgHead->msgId) {
@@ -990,8 +924,8 @@ _OesClientApi_HandleReportMsg(OesApiSessionInfoT *pSessionInfo,
  * 对接收到的应答消息进行处理的回调函数 (适用于委托通道)
  *
  * @param   pSessionInfo        会话信息
- * @param   pMsgHead            消息头
- * @param   pMsgBody            消息体数据
+ * @param   pMsgHead            回报消息的消息头
+ * @param   pMsgItem            回报消息的数据条目 (需要根据消息类型转换为对应的数据结构)
  * @param   pCallbackParams     外部传入的参数
  * @retval  >=0                 大于等于0, 成功
  * @retval  <0                  小于0, 处理失败, 将尝试断开并重建连接
@@ -1001,10 +935,10 @@ _OesClientApi_HandleReportMsg(OesApiSessionInfoT *pSessionInfo,
  */
 static int32
 _OesClientApi_HandleOrderChannelRsp(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, void *pCallbackParams) {
-    OesRspMsgBodyT          *pRspMsg = (OesRspMsgBodyT *) pMsgBody;
+        SMsgHeadT *pMsgHead, void *pMsgItem, void *pCallbackParams) {
+    OesRspMsgBodyT          *pRspMsg = (OesRspMsgBodyT *) pMsgItem;
 
-    SLOG_ASSERT(pSessionInfo && pMsgHead && pMsgBody);
+    SLOG_ASSERT(pSessionInfo && pMsgHead && pMsgItem);
 
     switch (pMsgHead->msgId) {
     case OESMSG_SESS_HEARTBEAT:                 /* 心跳消息 */
@@ -1060,10 +994,10 @@ int32
 OesClientApi::SendOrder(const OesOrdReqT *pOrderReq) {
     int32                   ret = 0;
 
-    //TODO 内置锁处理
+    /* TODO 内置锁处理 */
     ret = OesAsyncApi_SendOrderReq(_pDefaultOrdChannel, pOrderReq);
     if (__spk_unlikely(ret < 0)) {
-        if (__spk_unlikely(ret == SPK_NEG(EINVAL))) {
+        if (__spk_unlikely(SPK_IS_NEG_EINVAL(ret))) {
             SLOG_ERROR("参数错误, 请参考日志信息检查相关数据是否合法! " \
                     "ret[%d], channelTag[%s]",
                     ret, _pDefaultOrdChannel->pChannelCfg->channelTag);
@@ -1097,7 +1031,7 @@ OesClientApi::SendCancelOrder(const OesOrdCancelReqT *pCancelReq) {
 
     ret = OesAsyncApi_SendOrderCancelReq(_pDefaultOrdChannel, pCancelReq);
     if (__spk_unlikely(ret < 0)) {
-        if (__spk_unlikely(ret == SPK_NEG(EINVAL))) {
+        if (__spk_unlikely(SPK_IS_NEG_EINVAL(ret))) {
             SLOG_ERROR("参数错误, 请参考日志信息检查相关数据是否合法! " \
                     "ret[%d], channelTag[%s]",
                     ret, _pDefaultOrdChannel->pChannelCfg->channelTag);
@@ -1212,7 +1146,7 @@ OesClientApi::SendFundTrsf(const OesFundTrsfReqT *pFundTrsfReq) {
 
     ret = OesAsyncApi_SendFundTransferReq(_pDefaultOrdChannel, pFundTrsfReq);
     if (__spk_unlikely(ret < 0)) {
-        if (__spk_unlikely(ret == SPK_NEG(EINVAL))) {
+        if (__spk_unlikely(SPK_IS_NEG_EINVAL(ret))) {
             SLOG_ERROR("参数错误, 请参考日志信息检查相关数据是否合法! " \
                     "ret[%d], channelTag[%s]",
                     ret, _pDefaultOrdChannel->pChannelCfg->channelTag);
@@ -1230,12 +1164,10 @@ OesClientApi::SendFundTrsf(const OesFundTrsfReqT *pFundTrsfReq) {
 
 /**
  * 发送密码修改请求 (修改客户端登录密码)
- * 密码修改请求将通过委托通道发送到OES服务器, 并将采用同步请求/应答的方式直接返回处理结果
+ * 密码修改请求将通过委托通道发送到OES服务器, 仅发送请求不接收应答消息
  *
  * @param[in]   pChangePasswordReq
  *                              待发送的密码修改请求
- * @param[out]  pChangePasswordRsp
- *                              用于输出测试请求应答的缓存区
  * @retval      0               成功
  * @retval      <0              API调用失败 (负的错误号)
  * @retval      >0              服务端业务处理失败 (OES错误号)
@@ -1246,12 +1178,11 @@ OesClientApi::SendFundTrsf(const OesFundTrsfReqT *pFundTrsfReq) {
  */
 int32
 OesClientApi::SendChangePassword(
-        const OesChangePasswordReqT *pChangePasswordReq,
-        OesChangePasswordRspT *pChangePasswordRsp) {
+        const OesChangePasswordReqT *pChangePasswordReq) {
     int32                   ret = 0;
 
     ret = OesAsyncApi_SendChangePasswordReq(_pDefaultOrdChannel,
-            pChangePasswordReq, pChangePasswordRsp);
+            pChangePasswordReq);
     if (__spk_unlikely(ret < 0)) {
         if (__spk_unlikely(ret == SPK_NEG(EINVAL))) {
             SLOG_ERROR("参数错误, 请参考日志信息检查相关数据是否合法! " \
@@ -1399,10 +1330,10 @@ OesClientApi::GetClientOverview(OesClientOverviewT *pClientOverview) {
  */
 static int32
 _OesClientApi_QueryOrder(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
+        SMsgHeadT *pMsgHead, void *pMsgItem, OesQryCursorT *pQryCursor,
         void *pCallbackParams) {
     ((OesClientSpi *) pCallbackParams)->OnQueryOrder(
-            (OesOrdItemT *) pMsgBody, pQryCursor,
+            (OesOrdItemT *) pMsgItem, pQryCursor,
             ((OesClientSpi *) pCallbackParams)->currentRequestId);
     return 0;
 }
@@ -1450,10 +1381,10 @@ OesClientApi::QueryOrder(const OesQryOrdFilterT *pQryFilter, int32 requestId) {
  */
 static int32
 _OesClientApi_QueryTrade(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
+        SMsgHeadT *pMsgHead, void *pMsgItem, OesQryCursorT *pQryCursor,
         void *pCallbackParams) {
     ((OesClientSpi *) pCallbackParams)->OnQueryTrade(
-            (OesTrdItemT *) pMsgBody, pQryCursor,
+            (OesTrdItemT *) pMsgItem, pQryCursor,
             ((OesClientSpi *) pCallbackParams)->currentRequestId);
     return 0;
 }
@@ -1501,10 +1432,10 @@ OesClientApi::QueryTrade(const OesQryTrdFilterT *pQryFilter, int32 requestId) {
  */
 static int32
 _OesClientApi_QueryCashAsset(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
+        SMsgHeadT *pMsgHead, void *pMsgItem, OesQryCursorT *pQryCursor,
         void *pCallbackParams) {
     ((OesClientSpi *) pCallbackParams)->OnQueryCashAsset(
-            (OesCashAssetItemT *) pMsgBody, pQryCursor,
+            (OesCashAssetItemT *) pMsgItem, pQryCursor,
             ((OesClientSpi *) pCallbackParams)->currentRequestId);
     return 0;
 }
@@ -1553,10 +1484,10 @@ OesClientApi::QueryCashAsset(const OesQryCashAssetFilterT *pQryFilter,
  */
 static int32
 _OesClientApi_QueryStkHolding(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
+        SMsgHeadT *pMsgHead, void *pMsgItem, OesQryCursorT *pQryCursor,
         void *pCallbackParams) {
     ((OesClientSpi *) pCallbackParams)->OnQueryStkHolding(
-            (OesStkHoldingItemT *) pMsgBody, pQryCursor,
+            (OesStkHoldingItemT *) pMsgItem, pQryCursor,
             ((OesClientSpi *) pCallbackParams)->currentRequestId);
     return 0;
 }
@@ -1605,10 +1536,10 @@ OesClientApi::QueryStkHolding(const OesQryStkHoldingFilterT *pQryFilter,
  */
 static int32
 _OesClientApi_QueryLotWinning(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
+        SMsgHeadT *pMsgHead, void *pMsgItem, OesQryCursorT *pQryCursor,
         void *pCallbackParams) {
     ((OesClientSpi *) pCallbackParams)->OnQueryLotWinning(
-            (OesLotWinningItemT *) pMsgBody, pQryCursor,
+            (OesLotWinningItemT *) pMsgItem, pQryCursor,
             ((OesClientSpi *) pCallbackParams)->currentRequestId);
     return 0;
 }
@@ -1657,10 +1588,10 @@ OesClientApi::QueryLotWinning(const OesQryLotWinningFilterT *pQryFilter,
  */
 static int32
 _OesClientApi_QueryCustInfo(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
+        SMsgHeadT *pMsgHead, void *pMsgItem, OesQryCursorT *pQryCursor,
         void *pCallbackParams) {
     ((OesClientSpi *) pCallbackParams)->OnQueryCustInfo(
-            (OesCustItemT *) pMsgBody, pQryCursor,
+            (OesCustItemT *) pMsgItem, pQryCursor,
             ((OesClientSpi *) pCallbackParams)->currentRequestId);
     return 0;
 }
@@ -1709,10 +1640,10 @@ OesClientApi::QueryCustInfo(const OesQryCustFilterT *pQryFilter,
  */
 static int32
 _OesClientApi_QueryInvAcct(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
+        SMsgHeadT *pMsgHead, void *pMsgItem, OesQryCursorT *pQryCursor,
         void *pCallbackParams) {
     ((OesClientSpi *) pCallbackParams)->OnQueryInvAcct(
-            (OesInvAcctItemT *) pMsgBody, pQryCursor,
+            (OesInvAcctItemT *) pMsgItem, pQryCursor,
             ((OesClientSpi *) pCallbackParams)->currentRequestId);
     return 0;
 }
@@ -1761,10 +1692,10 @@ OesClientApi::QueryInvAcct(const OesQryInvAcctFilterT *pQryFilter,
  */
 static int32
 _OesClientApi_QueryCommissionRate(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
+        SMsgHeadT *pMsgHead, void *pMsgItem, OesQryCursorT *pQryCursor,
         void *pCallbackParams) {
     ((OesClientSpi *) pCallbackParams)->OnQueryCommissionRate(
-            (OesCommissionRateItemT *) pMsgBody, pQryCursor,
+            (OesCommissionRateItemT *) pMsgItem, pQryCursor,
             ((OesClientSpi *) pCallbackParams)->currentRequestId);
     return 0;
 }
@@ -1813,10 +1744,10 @@ OesClientApi::QueryCommissionRate(const OesQryCommissionRateFilterT *pQryFilter,
  */
 static int32
 _OesClientApi_QueryFundTransferSerial(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
+        SMsgHeadT *pMsgHead, void *pMsgItem, OesQryCursorT *pQryCursor,
         void *pCallbackParams) {
     ((OesClientSpi *) pCallbackParams)->OnQueryFundTransferSerial(
-            (OesFundTransferSerialItemT *) pMsgBody, pQryCursor,
+            (OesFundTransferSerialItemT *) pMsgItem, pQryCursor,
             ((OesClientSpi *) pCallbackParams)->currentRequestId);
     return 0;
 }
@@ -1865,10 +1796,10 @@ OesClientApi::QueryFundTransferSerial(
  */
 static int32
 _OesClientApi_QueryIssue(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
+        SMsgHeadT *pMsgHead, void *pMsgItem, OesQryCursorT *pQryCursor,
         void *pCallbackParams) {
     ((OesClientSpi *) pCallbackParams)->OnQueryIssue(
-            (OesIssueItemT *) pMsgBody, pQryCursor,
+            (OesIssueItemT *) pMsgItem, pQryCursor,
             ((OesClientSpi *) pCallbackParams)->currentRequestId);
     return 0;
 }
@@ -1917,10 +1848,10 @@ OesClientApi::QueryIssue(const OesQryIssueFilterT *pQryFilter,
  */
 static int32
 _OesClientApi_QueryStock(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
+        SMsgHeadT *pMsgHead, void *pMsgItem, OesQryCursorT *pQryCursor,
         void *pCallbackParams) {
     ((OesClientSpi *) pCallbackParams)->OnQueryStock(
-            (OesStockItemT *) pMsgBody, pQryCursor,
+            (OesStockItemT *) pMsgItem, pQryCursor,
             ((OesClientSpi *) pCallbackParams)->currentRequestId);
     return 0;
 }
@@ -1969,10 +1900,10 @@ OesClientApi::QueryStock(const OesQryStockFilterT *pQryFilter,
  */
 static int32
 _OesClientApi_QueryEtf(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
+        SMsgHeadT *pMsgHead, void *pMsgItem, OesQryCursorT *pQryCursor,
         void *pCallbackParams) {
     ((OesClientSpi *) pCallbackParams)->OnQueryEtf(
-            (OesEtfItemT *) pMsgBody, pQryCursor,
+            (OesEtfItemT *) pMsgItem, pQryCursor,
             ((OesClientSpi *) pCallbackParams)->currentRequestId);
     return 0;
 }
@@ -2016,21 +1947,21 @@ OesClientApi::QueryEtf(const OesQryEtfFilterT *pQryFilter, int32 requestId) {
 
 
 /**
- * 查询ETF成分股信息回调包裹函数
+ * 查询ETF成份证券信息回调包裹函数
  */
 static int32
 _OesClientApi_QueryEtfComponent(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
+        SMsgHeadT *pMsgHead, void *pMsgItem, OesQryCursorT *pQryCursor,
         void *pCallbackParams) {
     ((OesClientSpi *) pCallbackParams)->OnQueryEtfComponent(
-            (OesEtfComponentItemT *) pMsgBody, pQryCursor,
+            (OesEtfComponentItemT *) pMsgItem, pQryCursor,
             ((OesClientSpi *) pCallbackParams)->currentRequestId);
     return 0;
 }
 
 
 /**
- * 查询ETF成分股信息
+ * 查询ETF成份证券信息
  *
  * @param   pQryFilter          查询条件过滤条件
  * @retval  >=0                 成功查询到的记录数
@@ -2053,7 +1984,7 @@ OesClientApi::QueryEtfComponent(const OesQryEtfComponentFilterT *pQryFilter,
     ret = OesApi_QueryEtfComponent(_pQryChannel, pQryFilter,
             _OesClientApi_QueryEtfComponent, (void *) _pSpi);
     if (__spk_unlikely(ret < 0)) {
-        SLOG_ERROR("查询ETF成分股信息失败, 将断开并尝试重建查询通道! " \
+        SLOG_ERROR("查询ETF成份证券信息失败, 将断开并尝试重建查询通道! " \
                 "ret[%d], error[%d - %s]",
                 ret, OesApi_GetLastError(),
                 OesApi_GetErrorMsg(OesApi_GetLastError()));
@@ -2072,10 +2003,10 @@ OesClientApi::QueryEtfComponent(const OesQryEtfComponentFilterT *pQryFilter,
  */
 static int32
 _OesClientApi_QueryMarketState(OesApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, OesQryCursorT *pQryCursor,
+        SMsgHeadT *pMsgHead, void *pMsgItem, OesQryCursorT *pQryCursor,
         void *pCallbackParams) {
     ((OesClientSpi *) pCallbackParams)->OnQueryMarketState(
-            (OesMarketStateItemT *) pMsgBody, pQryCursor,
+            (OesMarketStateItemT *) pMsgItem, pQryCursor,
             ((OesClientSpi *) pCallbackParams)->currentRequestId);
     return 0;
 }

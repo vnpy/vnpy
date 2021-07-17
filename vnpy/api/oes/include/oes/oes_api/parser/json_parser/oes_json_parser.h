@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2014 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,15 @@ extern "C" {
  * 函数声明
  * =================================================================== */
 
-/* 请求消息解码处理（用于接收客户端的请求消息） */
+/**
+ * 请求消息解码处理（解码为二进制结构体，用于接收客户端的请求消息）
+ *
+ * @param[in,out]   pReqHead        消息头
+ * @param[in]       pMsgBody        消息体数据
+ * @param[out]      pReqMsgBuf      解码后的消息体数据缓存
+ * @param           pRemoteInfo     对端身份信息, 用于打印跟踪日志
+ * @return  解码后的消息体数据; NULL, 解析失败
+ */
 OesReqMsgBodyT*
         OesJsonParser_DecodeReq(
                 SMsgHeadT *pReqHead,
@@ -50,7 +58,16 @@ OesReqMsgBodyT*
                 OesReqMsgBodyT *pReqMsgBuf,
                 const char *pRemoteInfo);
 
-/* 应答消息编码处理（用于向客户端发送应答消息） */
+/**
+ * 应答消息编码处理（编码为JSON格式，用于向客户端发送应答消息）
+ *
+ * @param[in,out]   pRspHead        消息头
+ * @param           pRspBody        原始应答数据结构体
+ * @param[out]      pBuf            存储编码后数据的缓存区
+ * @param           bufSize         缓存区长度
+ * @param           pRemoteInfo     对端身份信息, 用于打印跟踪日志
+ * @return  编码后的消息体数据; NULL, 编码失败
+ */
 void*   OesJsonParser_EncodeRsp(
                 SMsgHeadT *pRspHead,
                 const OesRspMsgBodyT *pRspBody,
@@ -58,7 +75,16 @@ void*   OesJsonParser_EncodeRsp(
                 int32 bufSize,
                 const char *pRemoteInfo);
 
-/* 为执行报告回报特别定制的应答消息编码处理（编码为JSON格式，用于向客户端发送应答消息） */
+/**
+ * 为执行报告回报特别定制的应答消息编码处理（编码为JSON格式，用于向客户端发送应答消息）
+ *
+ * @param[in,out]   pRspHead        消息头
+ * @param           pRspBody        原始应答数据结构体
+ * @param[out]      pBuf            存储编码后数据的缓存区
+ * @param           bufSize         缓存区长度
+ * @param           pRemoteInfo     对端身份信息, 用于打印跟踪日志
+ * @return  编码后的消息体数据; NULL, 编码失败
+ */
 void*   OesJsonParser_EncodeRptSpecial(
                 SMsgHeadT *pRspHead,
                 const OesRptMsgHeadT *pRptMsgHead,

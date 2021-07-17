@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2014 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,14 +52,19 @@
  *              - 1242, 出入金笔数超过限制 (OESERR_FUND_TRSF_CNT_LIMIT)
  *          - 调整错误描述
  *              - 1249, 不支持市价委托或账户无市价委托的交易权限 (OESERR_NO_MARKET_ORDER_PERM)
- *              - 1250, 股东账户没有交易创业板非注册制证券的权限 (OESERR_NO_GEM_PERM)
+ *              - 1250, 股东账户没有交易创业板核准制证券的权限 (OESERR_NO_GEM_PERM)
  *              - 1258, 股东账户没有交易货币ETF的权限 (OESERR_NO_CURRENCY_ETF_PERM)
  *          - 新增错误码定义
  *              - 1285, 股东账户没有交易债券ETF的权限 (OESERR_NO_BOND_ETF_PERM)
  *              - 1286, 股东账户没有交易黄金ETF的权限 (OESERR_NO_GOLD_ETF_PERM)
  *              - 1287, 股东账户没有交易商品期货ETF的权限 (OESERR_NO_COMMODITY_FUTURES_ETF_PERM)
  *              - 1288, 股东账户没有交易创业板注册制证券的权限 (OESERR_NO_GEM_REGISTRATION_PERM)
- *
+ * @version 0.15.11.12  2020/09/30
+ *              - 1289, 股东账户没有交易可转换公司债券的权限 (OESERR_NO_CONVERTIBLE_BOND_PERM)
+ *              - 1290, 股东账户没有交易基础设施基金的权限 (OESERR_NO_INFRASTRUCTURE_FUND_PERM)
+ * @version 0.15.11.15  2020/11/20
+ *              - 重命名错误码的宏定义
+ *                  - 1290, 股东账户没有交易基础设施基金的权限 (OESERR_NO_INFRASTRUCTURE_FUND_PERM => OESERR_NO_REITS_PERM)
  * @version 0.16        2019/01/18
  *          - 新增错误码定义
  *              - 1278, 结算单未确认 (OESERR_SETTLEMENT_NOT_CONFIRM)
@@ -94,6 +99,61 @@
  * @version 0.16.0.5    2020/04/17
  *          - 新增错误码定义
  *              - 1284, 投资者未进行程序化交易报备 (OESERR_INVESTOR_NOT_FILING)
+ * @version 0.17        2020/09/16
+ *          - 新增错误码定义
+ *              - 1039, 非法的指令类型 (OESERR_ILLEGAL_CMD_TYPE)
+ *              - 1291, 限制入金 (OESERR_DEPOSIT_LIMIT)
+ *              - 1292, 限制出金 (OESERR_WITHDRAW_LIMIT)
+ *              - 1401, 保证金可用余额不足 (OESERR_MARGIN_NOT_ENOUGH)
+ *              - 1402, 可用还款资金不足 (OESERR_REPAY_CASH_NOT_ENOUGH)
+ *              - 1403, 客户可用两融总额度不足 (OESERR_CUST_CREDIT_TRADE_QUOTA)
+ *              - 1404, 券商可用两融总额度不足 (OESERR_BROKER_CREDIT_TRADE_QUOTA)
+ *              - 1405, 客户可用融资额度不足 (OESERR_CUST_MARGIN_BUY_QUOTA)
+ *              - 1406, 券商可用融资额度不足 (OESERR_BROKER_MARGIN_BUY_QUOTA)
+ *              - 1407, 客户可用融券额度不足 (OESERR_CUST_SHORT_SELL_QUOTA)
+ *              - 1408, 券商可用融券额度不足 (OESERR_BROKER_SHORT_SELL_QUOTA)
+ *              - 1409, 可用融资头寸不足 (OESERR_CASH_POSITION_NOT_ENOUGH)
+ *              - 1410, 可用融券头寸不足 (OESERR_SECURITY_POSITION_NOT_ENOUGH)
+ *              - 1411, 无可用融资头寸 (OESERR_CASH_GROUP_NOT_FOUND)
+ *              - 1412, 无可用融券头寸 (OESERR_NO_SECURITY_POSITION)
+ *              - 1413, 非法的头寸性质 (OESERR_ILLEGAL_CASH_GROUP_PROPERTY)
+ *              - 1414, 单笔委托融资金额超上限 (OESERR_ORD_MARGIN_BUY_CEILING)
+ *              - 1415, 单笔委托融券规模超上限 (OESERR_ORD_SHORT_SELL_CEILING)
+ *              - 1416, 禁止担保品转入 (OESERR_COLLATERAL_TRANSFER_IN_LIMIT)
+ *              - 1417, 禁止担保品转出 (OESERR_COLLATERAL_TRANSFER_OUT_LIMIT)
+ *              - 1418, 禁止融资买入 (OESERR_MARGIN_BUY_LIMIT)
+ *              - 1419, 禁止卖券还款 (OESERR_REPAY_MARGIN_BY_SELL_LIMIT)
+ *              - 1420, 禁止直接还款 (OESERR_REPAY_MARGIN_DIRECT_LIMIT)
+ *              - 1421, 禁止融券卖出 (OESERR_SHORT_SELL_LIMIT)
+ *              - 1422, 禁止买券还券 (OESERR_REPAY_STOCK_BY_BUY_LIMIT)
+ *              - 1423, 禁止直接还券 (OESERR_REPAY_STOCK_DIRECT_LIMIT)
+ *              - 1424, 禁止董监高或大股东的融资融券交易 (OESERR_CHIEF_OR_MAJOR_CREDIT_LIMIT)
+ *              - 1425, 禁止提交限售股份为担保物 (OESERR_RESTRICTED_STOCKS_TO_COLLATERAL)
+ *              - 1426, 禁止个人投资者提交解除限售存量股份为担保物 (OESERR_INDIVIDUAL_RESTRICTED_STOCKS_LIFTED_TO_COLLATERAL)
+ *              - 1427, 禁止大小非开展该证券的融资融券交易 (OESERR_NON_TRADABLE_SHARE_CREDIT_LIMIT)
+ *              - 1428, 禁止其他股东角色开展该证券的融资融券交易 (OESERR_OTHER_ROLES_CREDIT_LIMIT)
+ *              - 1429, 无效的担保品状态 (OESERR_ILLEGAL_COLLATERAL_STATUS)
+ *              - 1430, 非担保证券 (OESERR_NOT_COLLATERAL)
+ *              - 1431, 非融资标的证券 (OESERR_NOT_MARGIN_BUY_UNDERLYING)
+ *              - 1432, 非融券标的证券 (OESERR_NOT_SHORT_SELL_UNDERLYING)
+ *              - 1433, 非融资负债 (OESERR_NOT_MARGIN_BUY_DEBT)
+ *              - 1434, 非融券负债 (OESERR_NOT_SHORT_SELL_DEBT)
+ *              - 1435, 非法的融资融券负债类型 (OESERR_ILLEGAL_CREDIT_DEBT_TYPE)
+ *              - 1436, 非法的融资融券归还模式 (OESERR_ILLEGAL_CREDIT_REPAY_MODE)
+ *              - 1437, 非法的担保证券划转指令类型 (OESERR_ILLEGAL_COLLATERAL_TRANSFER_TYPE)
+ *              - 1438, 无可归还的负债 (OESERR_NO_DEBT)
+ *              - 1439, 不能归还当日开仓的合约 (OESERR_REPAY_INTRADY_NOT_ALLOW)
+ *              - 1440, 不能归还已了结的合约 (OESERR_REPAY_FINISHED_NOT_ALLOW)
+ *              - 1441, 指定合约的负债证券非委托归还的证券 (OESERR_REPAY_WRONG_STOCK)
+ *              - 1442, 还券数量超过融券合约待归还数量 (OESERR_REPAY_STOCK_ORD_QTY_RANGE)
+ *              - 1443, 未找到融资融券合约信息 (OESERR_CRD_DEBT_CONTRACT_NOT_FOUND)
+ *              - 1444, 未通过维保比检查 (OESERR_MAINTENANCE_RATIO)
+ *              - 1445, 申报价格不得低于最近成交价 (OESERR_BELOW_LAST_PRICE)
+ *              - 1446, 信用合同不存在或者状态异常 (OESERR_CRD_COMPACT_ABNORMAL)
+ *              - 1447, 信用客户处于监管黑名单 (OESERR_CRD_GUARD_BLOCKLIST)
+ *              - 1448, 券商深圳市场融资融券专用交易单元未配置 (OESERR_BROKER_CRD_SZSE_PBU_NOT_CONFIG)
+ *              - 15xx, 未通过集中度检查 (OESERR_CONCENTRATE_RATE)
+ *
  * @since   2015/07/30
  */
 
@@ -196,6 +256,8 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_SET_NUM_MISMATCH                 (&__ERRS_oesApiErrors[36])
 /** 1038, 无此操作权限 */
 #define OESERR_NO_PERM                          (&__ERRS_oesApiErrors[37])
+/** 1039, 非法的指令类型 */
+#define OESERR_ILLEGAL_CMD_TYPE                 (&__ERRS_oesApiErrors[38])
 /* -------------------------           */
 
 
@@ -274,8 +336,8 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_ORDER_CASH_QUOTA                 (&__ERRS_oesApiErrors[60 + 28])
 /** 1230, 超过了ETF最大现金替代比例 */
 #define OESERR_ORDER_ETF_CASH_RATIO             (&__ERRS_oesApiErrors[60 + 29])
-/** 1231, 未定义1 */
-#define OESERR_UNDEFINE1                        (&__ERRS_oesApiErrors[60 + 30])
+/** 1231, 非法的业务类型 */
+#define OESERR_ILLEGAL_BUSINESS_TYPE            (&__ERRS_oesApiErrors[60 + 30])
 /** 1232, 证券停牌 */
 #define OESERR_ORDER_INSTR_SUSP                 (&__ERRS_oesApiErrors[60 + 31])
 /** 1233, 合约限制开仓 */
@@ -296,8 +358,8 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_SUBSCRIPTION_DUPLICATE           (&__ERRS_oesApiErrors[60 + 39])
 /** 1241, 认购委托份数超过认购额度 */
 #define OESERR_SUBSCRIPTION_QUOTA_EXCEED        (&__ERRS_oesApiErrors[60 + 40])
-/** 1242, 未定义2 */
-#define OESERR_UNDEFINE2                        (&__ERRS_oesApiErrors[60 + 41])
+/** 1242, 非法的委托强制标志 */
+#define OESERR_ILLEGAL_MANDATORY_FLAG           (&__ERRS_oesApiErrors[60 + 41])
 /** 1243, 禁止同时做多笔出入金 */
 #define OESERR_FORBID_CONCURRENT_FUND_TRSF      (&__ERRS_oesApiErrors[60 + 42])
 /** 1244, 非法的新股配号、中签记录类型 */
@@ -312,7 +374,7 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_SUBSCRIPTION_LIMIT               (&__ERRS_oesApiErrors[60 + 47])
 /** 1249, 不支持市价委托或账户无市价委托的交易权限 */
 #define OESERR_NO_MARKET_ORDER_PERM             (&__ERRS_oesApiErrors[60 + 48])
-/** 1250, 股东账户没有交易创业板非注册制证券的权限 */
+/** 1250, 股东账户没有交易创业板核准制证券的权限 */
 #define OESERR_NO_GEM_PERM                      (&__ERRS_oesApiErrors[60 + 49])
 /** 1251, 股东账户没有交易分级基金的权限 */
 #define OESERR_NO_STRUCTURED_FUND_PERM          (&__ERRS_oesApiErrors[60 + 50])
@@ -390,11 +452,19 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_NO_COMMODITY_FUTURES_ETF_PERM    (&__ERRS_oesApiErrors[60 + 86])
 /** 1288, 股东账户没有交易创业板注册制证券的权限 */
 #define OESERR_NO_GEM_REGISTRATION_PERM         (&__ERRS_oesApiErrors[60 + 87])
+/** 1289, 股东账户没有交易可转换公司债券的权限 */
+#define OESERR_NO_CONVERTIBLE_BOND_PERM         (&__ERRS_oesApiErrors[60 + 88])
+/** 1290, 股东账户没有交易基础设施基金的权限 */
+#define OESERR_NO_REITS_PERM                    (&__ERRS_oesApiErrors[60 + 89])
+/** 1291, 限制入金 */
+#define OESERR_DEPOSIT_LIMIT                    (&__ERRS_oesApiErrors[60 + 90])
+/** 1292, 限制出金 */
+#define OESERR_WITHDRAW_LIMIT                   (&__ERRS_oesApiErrors[60 + 91])
 /* -------------------------           */
 
 
 /*
- * 期权业务新增的错误号
+ * 期权业务特有的错误号
  */
 /** 1331, 非法的持仓类型 */
 #define OESERR_ILLEGAL_POSITION_TYPE            (&__ERRS_oesApiErrors[160])
@@ -434,6 +504,242 @@ extern  SErrMsgT __SPK_DLL_IMPORT               __ERRS_oesApiErrors[];
 #define OESERR_OPTION_EXERCISE_LIMIT            (&__ERRS_oesApiErrors[160 + 17])
 /** 1349, 非行权日 */
 #define OESERR_ORDER_NOT_EXEC_DATE              (&__ERRS_oesApiErrors[160 + 18])
+/* -------------------------           */
+
+
+/*
+ * 两融业务特有的错误号
+ */
+/** 1401, 保证金可用余额不足 */
+#define OESERR_MARGIN_NOT_ENOUGH                (&__ERRS_oesApiErrors[200 + 0])
+/** 1402, 可用还款资金不足 */
+#define OESERR_REPAY_CASH_NOT_ENOUGH            (&__ERRS_oesApiErrors[200 + 1])
+/** 1403, 客户可用两融总额度不足 */
+#define OESERR_CUST_CREDIT_TRADE_QUOTA          (&__ERRS_oesApiErrors[200 + 2])
+/** 1404, 券商可用两融总额度不足 */
+#define OESERR_BROKER_CREDIT_TRADE_QUOTA        (&__ERRS_oesApiErrors[200 + 3])
+/** 1405, 客户可用融资额度不足 */
+#define OESERR_CUST_MARGIN_BUY_QUOTA            (&__ERRS_oesApiErrors[200 + 4])
+/** 1406, 券商可用融资额度不足 */
+#define OESERR_BROKER_MARGIN_BUY_QUOTA          (&__ERRS_oesApiErrors[200 + 5])
+/** 1407, 客户可用融券额度不足 */
+#define OESERR_CUST_SHORT_SELL_QUOTA            (&__ERRS_oesApiErrors[200 + 6])
+/** 1408, 券商可用融券额度不足 */
+#define OESERR_BROKER_SHORT_SELL_QUOTA          (&__ERRS_oesApiErrors[200 + 7])
+/** 1409, 可用融资头寸不足 */
+#define OESERR_CASH_POSITION_NOT_ENOUGH         (&__ERRS_oesApiErrors[200 + 8])
+/** 1410, 可用融券头寸不足 */
+#define OESERR_SECURITY_POSITION_NOT_ENOUGH     (&__ERRS_oesApiErrors[200 + 9])
+/** 1411, 无可用融资头寸 */
+#define OESERR_CASH_GROUP_NOT_FOUND             (&__ERRS_oesApiErrors[200 + 10])
+/** 1412, 无可用融券头寸 */
+#define OESERR_NO_SECURITY_POSITION             (&__ERRS_oesApiErrors[200 + 11])
+/** 1413, 非法的头寸性质 */
+#define OESERR_ILLEGAL_CASH_GROUP_PROPERTY      (&__ERRS_oesApiErrors[200 + 12])
+/** 1414, 单笔委托融资金额超上限 */
+#define OESERR_ORD_MARGIN_BUY_CEILING           (&__ERRS_oesApiErrors[200 + 13])
+/** 1415, 单笔委托融券规模超上限 */
+#define OESERR_ORD_SHORT_SELL_CEILING           (&__ERRS_oesApiErrors[200 + 14])
+/** 1416, 禁止担保品转入 */
+#define OESERR_COLLATERAL_TRANSFER_IN_LIMIT     (&__ERRS_oesApiErrors[200 + 15])
+/** 1417, 禁止担保品转出 */
+#define OESERR_COLLATERAL_TRANSFER_OUT_LIMIT    (&__ERRS_oesApiErrors[200 + 16])
+/** 1418, 禁止融资买入 */
+#define OESERR_MARGIN_BUY_LIMIT                 (&__ERRS_oesApiErrors[200 + 17])
+/** 1419, 禁止卖券还款 */
+#define OESERR_REPAY_MARGIN_BY_SELL_LIMIT       (&__ERRS_oesApiErrors[200 + 18])
+/** 1420, 禁止直接还款 */
+#define OESERR_REPAY_MARGIN_DIRECT_LIMIT        (&__ERRS_oesApiErrors[200 + 19])
+/** 1421, 禁止融券卖出 */
+#define OESERR_SHORT_SELL_LIMIT                 (&__ERRS_oesApiErrors[200 + 20])
+/** 1422, 禁止买券还券 */
+#define OESERR_REPAY_STOCK_BY_BUY_LIMIT         (&__ERRS_oesApiErrors[200 + 21])
+/** 1423, 禁止直接还券 */
+#define OESERR_REPAY_STOCK_DIRECT_LIMIT         (&__ERRS_oesApiErrors[200 + 22])
+/** 1424, 禁止董监高或大股东的融资融券交易 */
+#define OESERR_CHIEF_OR_MAJOR_CREDIT_LIMIT      (&__ERRS_oesApiErrors[200 + 23])
+/** 1425, 禁止提交限售股份为担保物 */
+#define OESERR_RESTRICTED_STOCKS_TO_COLLATERAL  (&__ERRS_oesApiErrors[200 + 24])
+/** 1426, 禁止个人投资者提交解除限售存量股份为担保物 */
+#define OESERR_INDIVIDUAL_RESTRICTED_STOCKS_LIFTED_TO_COLLATERAL \
+                                                (&__ERRS_oesApiErrors[200 + 25])
+/** 1427, 禁止大小非开展该证券的融资融券交易 */
+#define OESERR_NON_TRADABLE_SHARE_CREDIT_LIMIT  (&__ERRS_oesApiErrors[200 + 26])
+/** 1428, 禁止其他股东角色开展该证券的融资融券交易 */
+#define OESERR_OTHER_ROLES_CREDIT_LIMIT         (&__ERRS_oesApiErrors[200 + 27])
+/** 1429, 无效的担保品状态 */
+#define OESERR_ILLEGAL_COLLATERAL_STATUS        (&__ERRS_oesApiErrors[200 + 28])
+/** 1430, 非担保证券 */
+#define OESERR_NOT_COLLATERAL                   (&__ERRS_oesApiErrors[200 + 29])
+/** 1431, 非融资标的证券 */
+#define OESERR_NOT_MARGIN_BUY_UNDERLYING        (&__ERRS_oesApiErrors[200 + 30])
+/** 1432, 非融券标的证券 */
+#define OESERR_NOT_SHORT_SELL_UNDERLYING        (&__ERRS_oesApiErrors[200 + 31])
+/** 1433, 非融资负债 */
+#define OESERR_NOT_MARGIN_BUY_DEBT              (&__ERRS_oesApiErrors[200 + 32])
+/** 1434, 非融券负债 */
+#define OESERR_NOT_SHORT_SELL_DEBT              (&__ERRS_oesApiErrors[200 + 33])
+/** 1435, 非法的融资融券负债类型 */
+#define OESERR_ILLEGAL_CREDIT_DEBT_TYPE         (&__ERRS_oesApiErrors[200 + 34])
+/** 1436, 非法的融资融券归还模式 */
+#define OESERR_ILLEGAL_CREDIT_REPAY_MODE        (&__ERRS_oesApiErrors[200 + 35])
+/** 1437, 非法的担保证券划转指令类型 */
+#define OESERR_ILLEGAL_COLLATERAL_TRANSFER_TYPE (&__ERRS_oesApiErrors[200 + 36])
+/** 1438, 无可归还的负债 */
+#define OESERR_NO_DEBT                          (&__ERRS_oesApiErrors[200 + 37])
+/** 1439, 不能归还当日开仓的合约 */
+#define OESERR_REPAY_INTRADY_NOT_ALLOW          (&__ERRS_oesApiErrors[200 + 38])
+/** 1440, 不能归还已了结的合约 */
+#define OESERR_REPAY_FINISHED_NOT_ALLOW         (&__ERRS_oesApiErrors[200 + 39])
+/** 1441, 指定合约的负债证券非委托归还的证券 */
+#define OESERR_REPAY_WRONG_STOCK                (&__ERRS_oesApiErrors[200 + 40])
+/** 1442, 还券数量超过融券合约待归还数量 */
+#define OESERR_REPAY_STOCK_ORD_QTY_RANGE        (&__ERRS_oesApiErrors[200 + 41])
+/** 1443, 未找到融资融券合约信息 */
+#define OESERR_CRD_DEBT_CONTRACT_NOT_FOUND      (&__ERRS_oesApiErrors[200 + 42])
+/** 1444, 未通过维持担保比检查 */
+#define OESERR_MAINTENANCE_RATIO                (&__ERRS_oesApiErrors[200 + 43])
+/** 1445, 申报价格不得低于最近成交价 */
+#define OESERR_BELOW_LAST_PRICE                 (&__ERRS_oesApiErrors[200 + 44])
+/** 1446, 信用合同不存在或者状态异常 */
+#define OESERR_CRD_COMPACT_ABNORMAL             (&__ERRS_oesApiErrors[200 + 45])
+/** 1447, 信用客户处于监管黑名单 */
+#define OESERR_CRD_GUARD_BLOCKLIST              (&__ERRS_oesApiErrors[200 + 46])
+/** 1448, 券商深圳市场融资融券专用交易单元未配置 */
+#define OESERR_BROKER_CRD_SZSE_PBU_NOT_CONFIG   (&__ERRS_oesApiErrors[200 + 47])
+/* -------------------------           */
+
+
+/*
+ * 两融业务集中度检查相关的错误号
+ */
+/** 1500, 未通过集中度检查 */
+#define OESERR_CONCENTRATE_RATE                 (&__ERRS_oesApiErrors[260 + 0])
+/** 1501, 客户单一证券持仓集中度超限 */
+#define OESERR_CONCENTRATE_RATE_SECURITY_HOLDING                                \
+                                                (&__ERRS_oesApiErrors[260 + 1])
+/** 1502, 客户板块持仓集中度超限 */
+#define OESERR_CONCENTRATE_RATE_SECTOR_HOLDING  (&__ERRS_oesApiErrors[260 + 2])
+/** 1503, 客户单一证券融券集中度超限 */
+#define OESERR_CONCENTRATE_RATE_SECURITY_SHORT_SELL                             \
+                                                (&__ERRS_oesApiErrors[260 + 3])
+/** 1504, 客户板块融券集中度 */
+#define OESERR_CONCENTRATE_RATE_SECTOR_SHORT_SELL                               \
+                                                (&__ERRS_oesApiErrors[260 + 4])
+
+/** 1505, 客户单一证券持仓规模占当前证券流通市值的比例超限 */
+#define OESERR_CONCENTRATE_CIRCULATION_MARKET_CAP_SECURITY_HOLDING              \
+                                                (&__ERRS_oesApiErrors[260 + 5])
+/** 1506, 所有客户单一证券持仓规模占当前证券流通市值的比例超限 */
+#define OESERR_CONCENTRATE_CIRCULATION_MARKET_CAP_SECURITY_HOLDING_BROKER       \
+                                                (&__ERRS_oesApiErrors[260 + 6])
+/** 1507, 客户单一证券融资规模占当前证券流通市值的比例超限 */
+#define OESERR_CONCENTRATE_CIRCULATION_MARKET_CAP_SECURITY_MARGIN_BUY           \
+                                                (&__ERRS_oesApiErrors[260 + 7])
+/** 1508, 所有客户单一证券融资规模占当前证券流通市值的比例超限 */
+#define OESERR_CONCENTRATE_CIRCULATION_MARKET_CAP_SECURITY_MARGIN_BUY_BROKER    \
+                                                (&__ERRS_oesApiErrors[260 + 8])
+/** 1509, 客户单一证券融券规模占当前证券流通市值的比例超限 */
+#define OESERR_CONCENTRATE_CIRCULATION_MARKET_CAP_SECURITY_SHORT_SELL           \
+                                                (&__ERRS_oesApiErrors[260 + 9])
+/** 1510, 所有客户单一证券融券规模占当前证券流通市值的比例超限 */
+#define OESERR_CONCENTRATE_CIRCULATION_MARKET_CAP_SECURITY_SHORT_SELL_BROKER    \
+                                                (&__ERRS_oesApiErrors[260 + 10])
+
+/** 1511, 客户单一证券持仓规模占当前证券总市值的比例超限 */
+#define OESERR_CONCENTRATE_TOTAL_MARKET_CAP_SECURITY_HOLDING                    \
+                                                (&__ERRS_oesApiErrors[260 + 11])
+/** 1512, 所有客户单一证券持仓规模占当前证券总市值的比例超限 */
+#define OESERR_CONCENTRATE_TOTAL_MARKET_CAP_SECURITY_HOLDING_BROKER             \
+                                                (&__ERRS_oesApiErrors[260 + 12])
+/** 1513, 客户单一证券融资规模占当前证券总市值的比例超限 */
+#define OESERR_CONCENTRATE_TOTAL_MARKET_CAP_SECURITY_MARGIN_BUY                 \
+                                                (&__ERRS_oesApiErrors[260 + 13])
+/** 1514, 所有客户单一证券融资规模占当前证券总市值的比例超限 */
+#define OESERR_CONCENTRATE_TOTAL_MARKET_CAP_SECURITY_MARGIN_BUY_BROKER          \
+                                                (&__ERRS_oesApiErrors[260 + 14])
+/** 1515, 客户单一证券融券规模占当前证券总市值的比例超限 */
+#define OESERR_CONCENTRATE_TOTAL_MARKET_CAP_SECURITY_SHORT_SELL                 \
+                                                (&__ERRS_oesApiErrors[260 + 15])
+/** 1516, 所有客户单一证券融券规模占当前证券总市值的比例超限 */
+#define OESERR_CONCENTRATE_TOTAL_MARKET_CAP_SECURITY_SHORT_SELL_BROKER          \
+                                                (&__ERRS_oesApiErrors[260 + 16])
+
+/** 1517, 客户单一证券持仓规模占公司净资本的比例超限 */
+#define OESERR_CONCENTRATE_COMPANY_NET_CAPITAL_SECURITY_HOLDING                 \
+                                                (&__ERRS_oesApiErrors[260 + 17])
+/** 1518, 所有客户单一证券持仓规模占公司净资本的比例超限 */
+#define OESERR_CONCENTRATE_COMPANY_NET_CAPITAL_SECURITY_HOLDING_BROKER          \
+                                                (&__ERRS_oesApiErrors[260 + 18])
+/** 1519, 客户单一证券融资规模占公司净资本的比例超限 */
+#define OESERR_CONCENTRATE_COMPANY_NET_CAPITAL_SECURITY_MARGIN_BUY              \
+                                                (&__ERRS_oesApiErrors[260 + 19])
+/** 1520, 所有客户单一证券融资规模占公司净资本的比例超限 */
+#define OESERR_CONCENTRATE_COMPANY_NET_CAPITAL_SECURITY_MARGIN_BUY_BROKER       \
+                                                (&__ERRS_oesApiErrors[260 + 20])
+/** 1521, 客户单一证券融券规模占公司净资本的比例超限 */
+#define OESERR_CONCENTRATE_COMPANY_NET_CAPITAL_SECURITY_SHORT_SELL              \
+                                                (&__ERRS_oesApiErrors[260 + 21])
+/** 1522, 所有客户单一证券融券规模占公司净资本的比例超限 */
+#define OESERR_CONCENTRATE_COMPANY_NET_CAPITAL_SECURITY_SHORT_SELL_BROKER       \
+                                                (&__ERRS_oesApiErrors[260 + 22])
+
+/** 1523, 客户单一证券持仓规模超限 */
+#define OESERR_CONCENTRATE_SCALE_CEILING_SECURITY_HOLDING                       \
+                                                (&__ERRS_oesApiErrors[260 + 23])
+/** 1524, 所有客户单一证券持仓规模超限 */
+#define OESERR_CONCENTRATE_SCALE_CEILING_SECURITY_HOLDING_BROKER                \
+                                                (&__ERRS_oesApiErrors[260 + 24])
+/** 1525, 客户单一证券融资规模超限 */
+#define OESERR_CONCENTRATE_SCALE_CEILING_SECURITY_MARGIN_BUY                    \
+                                                (&__ERRS_oesApiErrors[260 + 25])
+/** 1526, 所有客户单一证券融资规模超限 */
+#define OESERR_CONCENTRATE_SCALE_CEILING_SECURITY_MARGIN_BUY_BROKER             \
+                                                (&__ERRS_oesApiErrors[260 + 26])
+/** 1527, 客户单一证券融券规模超限 */
+#define OESERR_CONCENTRATE_SCALE_CEILING_SECURITY_SHORT_SELL                    \
+                                                (&__ERRS_oesApiErrors[260 + 27])
+/** 1528, 所有客户单一证券融券规模超限 */
+#define OESERR_CONCENTRATE_SCALE_CEILING_SECURITY_SHORT_SELL_BROKER             \
+                                                (&__ERRS_oesApiErrors[260 + 28])
+
+/** 1529, 客户板块持仓规模占公司净资本的比例超限 */
+#define OESERR_CONCENTRATE_COMPANY_NET_CAPITAL_SECTOR_HOLDING                   \
+                                                (&__ERRS_oesApiErrors[260 + 29])
+/** 1530, 所有客户板块持仓规模占公司净资本的比例超限 */
+#define OESERR_CONCENTRATE_COMPANY_NET_CAPITAL_SECTOR_HOLDING_BROKER            \
+                                                (&__ERRS_oesApiErrors[260 + 30])
+/** 1531, 客户板块融资规模占公司净资本的比例超限 */
+#define OESERR_CONCENTRATE_COMPANY_NET_CAPITAL_SECTOR_MARGIN_BUY                \
+                                                (&__ERRS_oesApiErrors[260 + 31])
+/** 1532, 所有客户板块融资规模占公司净资本的比例超限 */
+#define OESERR_CONCENTRATE_COMPANY_NET_CAPITAL_SECTOR_MARGIN_BUY_BROKER         \
+                                                (&__ERRS_oesApiErrors[260 + 32])
+/** 1533, 客户板块融券规模占公司净资本的比例超限 */
+#define OESERR_CONCENTRATE_COMPANY_NET_CAPITAL_SECTOR_SHORT_SELL                \
+                                                (&__ERRS_oesApiErrors[260 + 33])
+/** 1534, 所有客户板块融券规模占公司净资本的比例超限 */
+#define OESERR_CONCENTRATE_COMPANY_NET_CAPITAL_SECTOR_SHORT_SELL_BROKER         \
+                                                (&__ERRS_oesApiErrors[260 + 34])
+
+/** 1535, 客户板块持仓规模超限 */
+#define OESERR_CONCENTRATE_SCALE_CEILING_SECTOR_HOLDING                         \
+                                                (&__ERRS_oesApiErrors[260 + 35])
+/** 1536, 所有客户板块持仓规模超限 */
+#define OESERR_CONCENTRATE_SCALE_CEILING_SECTOR_HOLDING_BROKER                  \
+                                                (&__ERRS_oesApiErrors[260 + 36])
+/** 1537, 客户板块融资规模超限 */
+#define OESERR_CONCENTRATE_SCALE_CEILING_SECTOR_MARGIN_BUY                      \
+                                                (&__ERRS_oesApiErrors[260 + 37])
+/** 1538, 所有客户板块融资规模超限 */
+#define OESERR_CONCENTRATE_SCALE_CEILING_SECTOR_MARGIN_BUY_BROKER               \
+                                                (&__ERRS_oesApiErrors[260 + 38])
+/** 1539, 客户板块融券规模超限 */
+#define OESERR_CONCENTRATE_SCALE_CEILING_SECTOR_SHORT_SELL                      \
+                                                (&__ERRS_oesApiErrors[260 + 39])
+/** 1540, 所有客户板块融券规模超限 */
+#define OESERR_CONCENTRATE_SCALE_CEILING_SECTOR_SHORT_SELL_BROKER               \
+                                                (&__ERRS_oesApiErrors[260 + 40])
 /* -------------------------           */
 
 

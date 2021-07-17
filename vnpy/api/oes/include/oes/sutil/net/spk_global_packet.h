@@ -97,7 +97,7 @@ typedef struct _SMsgHead {
 
 
 /* 结构体初始化值定义 */
-#define NULLOBJ_SPK_MSG_HEAD                \
+#define NULLOBJ_SPK_MSG_HEAD                                            \
         0, 0, 0, 0, 0
 /* -------------------------           */
 
@@ -112,7 +112,7 @@ typedef struct _SMsgHead {
  * @param   msgFlag 消息标志
  * @return  消息的协议类型 @see eSMsgProtocolTypeT
  */
-#define SPK_GET_MSG_PROTOCOL_TYPE(msgFlag)          \
+#define SPK_GET_MSG_PROTOCOL_TYPE(msgFlag)                              \
         ( (msgFlag) & SMSG_MSGFLAG_MASK_PROTOCOL )
 
 
@@ -122,7 +122,7 @@ typedef struct _SMsgHead {
  * @param   msgFlag 消息标志
  * @return  TRUE 是'BINARY'类型; FALSE 不是'BINARY'类型
  */
-#define SPK_IS_MSG_PROTOCOL_BINARY(msgFlag)         \
+#define SPK_IS_MSG_PROTOCOL_BINARY(msgFlag)                             \
         ( SPK_GET_MSG_PROTOCOL_TYPE(msgFlag) == SMSG_PROTO_BINARY )
 
 
@@ -132,7 +132,7 @@ typedef struct _SMsgHead {
  * @param   msgFlag 消息标志
  * @return  TRUE 是'JSON'类型; FALSE 不是'JSON'类型
  */
-#define SPK_IS_MSG_PROTOCOL_JSON(msgFlag)           \
+#define SPK_IS_MSG_PROTOCOL_JSON(msgFlag)                               \
         ( SPK_GET_MSG_PROTOCOL_TYPE(msgFlag) == SMSG_PROTO_JSON )
 /* -------------------------           */
 
@@ -143,7 +143,7 @@ typedef struct _SMsgHead {
  * @param   msgFlag 消息标志
  * @return  TRUE 是应答消息; FALSE 不是应答消息
  */
-#define SPK_HAS_MSG_FLAG_RSP(msgFlag)               \
+#define SPK_HAS_MSG_FLAG_RSP(msgFlag)                                   \
         ( ((msgFlag) & SMSG_MSGFLAG_RSP) == SMSG_MSGFLAG_RSP )
 
 
@@ -153,7 +153,7 @@ typedef struct _SMsgHead {
  * @param   msgFlag 消息标志
  * @return  TRUE 是嵌套的组合消息; FALSE 不是嵌套的组合消息
  */
-#define SPK_HAS_MSG_FLAG_NESTED(msgFlag)            \
+#define SPK_HAS_MSG_FLAG_NESTED(msgFlag)                                \
         ( ((msgFlag) & SMSG_MSGFLAG_NESTED) == SMSG_MSGFLAG_NESTED )
 
 
@@ -163,7 +163,7 @@ typedef struct _SMsgHead {
  * @param   msgFlag 消息标志
  * @return  TRUE 已压缩; FALSE 未压缩
  */
-#define SPK_HAS_MSG_FLAG_COMPRESSED(msgFlag)        \
+#define SPK_HAS_MSG_FLAG_COMPRESSED(msgFlag)                            \
         ( ((msgFlag) & SMSG_MSGFLAG_COMPRESSED) == SMSG_MSGFLAG_COMPRESSED )
 /* -------------------------           */
 

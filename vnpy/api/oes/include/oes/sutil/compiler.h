@@ -104,7 +104,8 @@ extern "C" {
 
 
 /*
- * 若 likely 与 boost 等第三方库中的函数名称冲突, 可以通过指定 __NO_SHORT_LIKELY 来禁用之
+ * 若 likely 与 boost 等第三方库冲突, 可以通过指定 __NO_SHORT_LIKELY 宏来禁用之
+ * e.g. #define __NO_SHORT_LIKELY       1
  */
 #if !defined (likely) && !defined (__NO_SHORT_LIKELY)
 #   define  likely(x)                   __spk_likely(x)
@@ -112,7 +113,8 @@ extern "C" {
 
 
 /*
- * 若 unlikely 与第三方库中的函数名称冲突, 可以通过指定 __NO_SHORT_UNLIKELY 来禁用之
+ * 若 unlikely 与第三方库冲突, 可以通过指定 __NO_SHORT_LIKELY 宏来禁用之
+ * e.g. #define __NO_SHORT_LIKELY       1
  */
 #if !defined (unlikely) && !defined (__NO_SHORT_LIKELY)
 #   define  unlikely(x)                 __spk_unlikely(x)
@@ -253,6 +255,7 @@ extern "C" {
 
 /*
  * 返回 SIZE / BASESIZE 4舍5入后的倍数
+ * e.g. SPK_ROUND_TIMES(1050, 100) => 11
  */
 #undef  SPK_ROUND_TIMES
 #define SPK_ROUND_TIMES                 SPK_SIGNED_ROUND_TIMES
@@ -270,6 +273,7 @@ extern "C" {
 
 /*
  * 返回BASESIZE 4舍5入后的整倍数 SIZE
+ * e.g. SPK_ROUND_SIZE(1050, 100) => 1100
  */
 #undef  SPK_ROUND_SIZE
 #define SPK_ROUND_SIZE                  SPK_SIGNED_ROUND_SIZE

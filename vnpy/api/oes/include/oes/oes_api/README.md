@@ -8,14 +8,17 @@
 
 #### 1.1 示例代码
 
-- 参见 samples/oes_sample/c_sample 目录下的样例文件
+- 参见 samples/oes_sample_c 目录下的样例文件
 	- 配置文件样例 <oes_client_sample.conf>
 	- 现货代码样例 <01_oes_client_stock_sample.c>
 	- 期权代码样例 <02_oes_client_option_sample.c>
 	- 异步接口样例 <03_oes_async_api_sample.c>
+	- 现货查询样例 <04_oes_stk_query_sample.c>
+	- 期权查询样例 <05_oes_opt_query_sample.c>
 	- 用于样例代码编译的 <Makefile.sample>
 
-01_oes_client_stock_sample.c 摘录如下：
+01_oes_client_stock_sample.c 摘录如下:
+
 ~~~{.c}
 
 /**
@@ -36,7 +39,7 @@
  * @return  大于等于0，成功；小于0，失败（错误号）
  */
 static inline int32
-_OesApiSample_SendOrderReq(OesApiSessionInfoT *pOrdChannel,
+_OesStkSample_SendOrderReq(OesApiSessionInfoT *pOrdChannel,
         uint8 mktId, const char *pSecurityId, const char *pInvAcctId,
         uint8 ordType, uint8 bsType, int32 ordQty, int32 ordPrice) {
     OesOrdReqT          ordReq = {NULLOBJ_OES_ORD_REQ};
@@ -82,7 +85,7 @@ _OesApiSample_SendOrderReq(OesApiSessionInfoT *pOrdChannel,
  * @return  大于等于0，成功；小于0，失败（错误号）
  */
 static inline int32
-_OesApiSample_SendOrderCancelReq(OesApiSessionInfoT *pOrdChannel,
+_OesStkSample_SendOrderCancelReq(OesApiSessionInfoT *pOrdChannel,
         uint8 mktId, const char *pSecurityId, const char *pInvAcctId,
         int32 origClSeqNo, int8 origClEnvId, int64 origClOrdId) {
     OesOrdCancelReqT    cancelReq = {NULLOBJ_OES_ORD_CANCEL_REQ};
@@ -116,14 +119,14 @@ _OesApiSample_SendOrderCancelReq(OesApiSessionInfoT *pOrdChannel,
  *
  * @param   pRptChannel     回报通道的会话信息
  * @param   pMsgHead        消息头
- * @param   pMsgBody        消息体数据
+ * @param   pMsgItem        消息体数据
  * @param   pCallbackParams 外部传入的参数
  * @return  大于等于0，成功；小于0，失败（错误号）
  */
 static inline int32
-_OesApiSample_HandleReportMsg(OesApiSessionInfoT *pRptChannel,
-        SMsgHeadT *pMsgHead, void *pMsgBody, void *pCallbackParams) {
-    OesRspMsgBodyT      *pRspMsg = (OesRspMsgBodyT *) pMsgBody;
+_OesStkSample_HandleReportMsg(OesApiSessionInfoT *pRptChannel,
+        SMsgHeadT *pMsgHead, void *pMsgItem, void *pCallbackParams) {
+    OesRspMsgBodyT      *pRspMsg = (OesRspMsgBodyT *) pMsgItem;
     OesRptMsgT          *pRptMsg = &pRspMsg->rptMsg;
 
     assert(pRptChannel && pMsgHead && pRspMsg);
@@ -163,7 +166,7 @@ _OesApiSample_HandleReportMsg(OesApiSessionInfoT *pRptChannel,
  * @return  TRUE 处理成功; FALSE 处理失败
  */
 void*
-OesApiSample_ReportThreadMain(OesApiClientEnvT *pClientEnv) {
+OesStkSample_ReportThreadMain(OesApiClientEnvT *pClientEnv) {
     static const int32  THE_TIMEOUT_MS = 1000;
 
     OesApiSessionInfoT  *pRptChannel = &pClientEnv->rptChannel;
@@ -203,7 +206,7 @@ ON_ERROR:
 #### 1.2 示例代码的编译和运行
 
 1. 进入样例代码目录
-	- ``cd oes_libs-xxx/samples/oes_sample/c_sample``
+	- ``cd oes_libs-xxx/samples/oes_sample_c``
 
 2. 编译代码
 	- ``make -f Makefile.sample``
@@ -215,6 +218,8 @@ ON_ERROR:
 	- ``./01_oes_client_stock_sample``
 	- ``./02_oes_client_option_sample``
 	- ``./03_oes_async_api_sample``
+	- ``./04_oes_stk_query_sample``
+	- ``./05_oes_opt_query_sample``
 
 
 ---
@@ -348,7 +353,7 @@ ON_ERROR:
 | 1247  | 限制股东账户进行逆回购交易             |
 | 1248  | 限制股东账户进行新股认购交易           |
 | 1249  | 不支持市价委托或账户无市价委托的交易权限 |
-| 1250  | 股东账户没有交易创业板非注册制证券的权限 |
+| 1250  | 股东账户没有交易创业板核准制证券的权限 |
 | 1251  | 股东账户没有交易分级基金的权限         |
 | 1252  | 股东账户没有债券合格投资者的权限        |
 | 1253  | 客户风险评级低于交易证券需求的风险等级  |
@@ -387,6 +392,8 @@ ON_ERROR:
 | 1286  | 股东账户没有交易黄金ETF的权限      |
 | 1287  | 股东账户没有交易商品期货ETF的权限      |
 | 1288  | 股东账户没有交易创业板注册制证券的权限 |
+| 1289  | 股东账户没有交易可转换公司债券的权限   |
+| 1290  | 股东账户没有交易基础设施基金的权限     |
 | 1331  | 非法的持仓类型                       |
 | 1332  | 合约限制开仓                        |
 | 1333  | 客户权利仓持仓限额不足               |
@@ -406,3 +413,52 @@ ON_ERROR:
 | 1347  | 禁止标的解锁                        |
 | 1348  | 禁止期权行权                        |
 | 1349  | 非行权日                           |
+| 1401  | 保证金可用余额不足                   |
+| 1402  | 可用还款资金不足                     |
+| 1403  | 客户可用两融总额度不足                |
+| 1404  | 券商可用两融总额度不足                |
+| 1405  | 客户可用融资额度不足                  |
+| 1406  | 券商可用融资额度不足                  |
+| 1407  | 客户可用融券额度不足                  |
+| 1408  | 券商可用融券额度不足                  |
+| 1409  | 可用融资头寸不足                     |
+| 1410  | 可用融券头寸不足                     |
+| 1411  | 无可用融资头寸                       |
+| 1412  | 无可用融券头寸                       |
+| 1413  | 非法的头寸性质                       |
+| 1414  | 单笔委托融资金额超上限                |
+| 1415  | 单笔委托融券规模超上限                |
+| 1416  | 禁止担保品转入                       |
+| 1417  | 禁止担保品转出                       |
+| 1418  | 禁止融资买入                         |
+| 1419  | 禁止卖券还款                         |
+| 1420  | 禁止直接还款                         |
+| 1421  | 禁止融券卖出                         |
+| 1422  | 禁止买券还券                         |
+| 1423  | 禁止直接还券                         |
+| 1424  | 禁止董监高或大股东的融资融券交易        |
+| 1425  | 禁止提交限售股份为担保物               |
+| 1426  | 禁止个人投资者提交解除限售存量股份为担保物 |
+| 1427  | 禁止大小非开展该证券的融资融券交易        |
+| 1428  | 禁止其他股东角色开展该证券的融资融券交易   |
+| 1429  | 无效的担保品状态                      |
+| 1430  | 非担保证券                           |
+| 1431  | 非融资标的证券                        |
+| 1432  | 非融券标的证券                        |
+| 1433  | 非融资负债                           |
+| 1434  | 非融券负债                           |
+| 1435  | 非法的融资融券负债类型                 |
+| 1436  | 非法的融资融券归还模式                 |
+| 1437  | 非法的担保证券划转指令类型              |
+| 1438  | 无可归还的负债                        |
+| 1439  | 不能归还当日开仓的合约                 |
+| 1440  | 不能归还已了结的合约                   |
+| 1441  | 指定合约的负债证券非委托归还的证券        |
+| 1442  | 还券数量超过融券合约待归还数量           |
+| 1443  | 未找到融资融券合约信息                  |
+| 1444  | 未通过维保比检查                       |
+| 1445  | 申报价格不得低于最近成交价               |
+| 1446  | 信用合同不存在或者状态异常               |
+| 1447  | 信用客户处于监管黑名单                  |
+| 1448  | 券商深圳市场融资融券专用交易单元未配置     |
+| 15xx  | 未通过集中度检查                       |

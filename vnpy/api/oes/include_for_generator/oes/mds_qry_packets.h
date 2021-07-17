@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ extern "C" {
  * =================================================================== */
 
 /** 查询应答报文中的最大证券静态信息数量 */
-#define MDS_QRYRSP_MAX_STOCK_CNT                (200)
+#define MDS_QRYRSP_MAX_STOCK_CNT                (100)
 /** 查询应答报文中的最大期权静态信息数量 */
 #define MDS_QRYRSP_MAX_OPTION_CNT               (100)
 /* -------------------------           */
@@ -59,12 +59,12 @@ typedef struct _MdsQryMktDataSnapshotReq {
     uint8               exchId;                 /**< 交易所代码 @see eMdsExchangeIdT */
     uint8               mdProductType;          /**< 行情类别 (股票/指数/期权) @see eMdsMdProductTypeT */
     uint8               __filler[2];            /**< 按64位对齐的填充域 */
-    int32               instrId;                /**< 产品代码 */
+    int32               instrId;                /**< 证券代码 (转换为整数类型的证券代码) */
 } MdsQryMktDataSnapshotReqT;
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_MKT_DATA_SNAPSHOT_REQ           \
+#define NULLOBJ_MDS_QRY_MKT_DATA_SNAPSHOT_REQ                           \
         0, 0, {0}, 0
 /* -------------------------           */
 
@@ -76,7 +76,7 @@ typedef MdsQryMktDataSnapshotReqT       MdsQrySecurityStatusReqT;
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_SECURITY_STATUS_REQ             \
+#define NULLOBJ_MDS_QRY_SECURITY_STATUS_REQ                             \
         NULLOBJ_MDS_QRY_MKT_DATA_SNAPSHOT_REQ
 /* -------------------------           */
 
@@ -92,7 +92,7 @@ typedef struct _MdsQryTrdSessionStatusReq {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_TRD_SESSION_STATUS_REQ          \
+#define NULLOBJ_MDS_QRY_TRD_SESSION_STATUS_REQ                          \
         0, 0, {0}
 /* -------------------------           */
 
@@ -111,7 +111,7 @@ typedef struct _MdsQryReqHeadT {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_REQ_HEAD                        \
+#define NULLOBJ_MDS_QRY_REQ_HEAD                                        \
         0, 0
 /* -------------------------           */
 
@@ -132,7 +132,7 @@ typedef struct _MdsQryRspHeadT {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_RSP_HEAD                        \
+#define NULLOBJ_MDS_QRY_RSP_HEAD                                        \
         0, 0, 0, {0}, 0
 /* -------------------------           */
 
@@ -155,7 +155,7 @@ typedef struct _MdsQryCursor {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_CURSOR                          \
+#define NULLOBJ_MDS_QRY_CURSOR                                          \
         0, 0, {0}, 0
 /* -------------------------           */
 
@@ -164,7 +164,7 @@ typedef struct _MdsQryCursor {
  * 行情查询请求中的证券代码信息
  */
 typedef struct _MdsQrySecurityCodeEntry {
-    int32               instrId;                /**< 产品代码 */
+    int32               instrId;                /**< 证券代码 (转换为整数类型的证券代码) */
     uint8               exchId;                 /**< 交易所代码 @see eMdsExchangeIdT */
     uint8               mdProductType;          /**< 行情类别 (股票/期权/指数) @see eMdsMdProductTypeT */
     uint8               __filler[2];            /**< 按64位对齐的填充域 */
@@ -172,26 +172,26 @@ typedef struct _MdsQrySecurityCodeEntry {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_SECURITY_CODE_ENTRY             \
+#define NULLOBJ_MDS_QRY_SECURITY_CODE_ENTRY                             \
         0, 0, 0, {0}
 /* -------------------------           */
 
 
 /* ===================================================================
- * 证券静态信息查询相关结构体定义
+ * 证券静态信息查询相关结构体定义 (已废弃)
  * =================================================================== */
 
 /**
  * 证券静态信息查询的过滤条件定义
  */
 typedef struct _MdsQryStockStaticInfoFilter {
-    /** 产品代码 C6 / C8 (如: '600000' 等) */
+    /** 证券代码 C6 / C8 (如: '600000' 等) */
     char                securityId[MDS_MAX_POSTFIXED_INSTR_CODE_LEN];
     uint8               exchId;                 /**< 交易所代码 @see eMdsExchangeIdT */
     uint8               oesSecurityType;        /**< 证券类型 (股票/债券/基金/...) @see eOesSecurityTypeT */
     uint8               subSecurityType;        /**< 证券子类型 @see eOesSubSecurityTypeT */
     uint8               __filler[5];            /**< 按64位对齐的填充域 */
-    int32               instrId;                /**< 产品代码 (转换为整数类型的产品代码)
+    int32               instrId;                /**< 证券代码 (转换为整数类型的证券代码)
                                                      如果同时指定 securityId, 则优先使用 securityId */
 
     /** 用户私有信息 (由客户端自定义填充, 并在应答数据中原样返回) */
@@ -223,17 +223,17 @@ typedef struct _MdsQryStockStaticInfoRsp {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_STOCK_STATIC_INFO_FILTER        \
+#define NULLOBJ_MDS_QRY_STOCK_STATIC_INFO_FILTER                        \
         {0}, 0, 0, 0, {0}, 0, \
         0
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_STOCK_STATIC_INFO_REQ           \
+#define NULLOBJ_MDS_QRY_STOCK_STATIC_INFO_REQ                           \
         {NULLOBJ_MDS_QRY_REQ_HEAD}, \
         {NULLOBJ_MDS_QRY_STOCK_STATIC_INFO_FILTER}
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_STOCK_STATIC_INFO_RSP           \
+#define NULLOBJ_MDS_QRY_STOCK_STATIC_INFO_RSP                           \
         {NULLOBJ_MDS_QRY_RSP_HEAD}, \
         {{NULLOBJ_MDS_STOCK_STATIC_INFO}}
 /* -------------------------           */
@@ -243,13 +243,13 @@ typedef struct _MdsQryStockStaticInfoRsp {
  * 期权合约静态信息查询的过滤条件定义
  */
 typedef struct _MdsQryOptionStaticInfoFilter {
-    /** 产品代码 C6 / C8 (如: '600000' 等) */
+    /** 期权合约代码 C8 (如: '10001230' 等) */
     char                securityId[MDS_MAX_POSTFIXED_INSTR_CODE_LEN];
     uint8               exchId;                 /**< 交易所代码 @see eMdsExchangeIdT */
     uint8               oesSecurityType;        /**< 证券类型 (股票/债券/基金/...) @see eOesSecurityTypeT */
     uint8               subSecurityType;        /**< 证券子类型 @see eOesSubSecurityTypeT */
     uint8               __filler[5];            /**< 按64位对齐的填充域 */
-    int32               instrId;                /**< 产品代码 (转换为整数类型的产品代码)
+    int32               instrId;                /**< 证券代码 (转换为整数类型的期权合约代码)
                                                      如果同时指定 securityId, 则优先使用 securityId */
 
     /** 用户私有信息 (由客户端自定义填充, 并在应答数据中原样返回) */
@@ -282,24 +282,131 @@ typedef struct _MdsQryOptionStaticInfoRsp {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_OPTION_STATIC_INFO_FILTER       \
+#define NULLOBJ_MDS_QRY_OPTION_STATIC_INFO_FILTER                       \
         {0}, 0, 0, 0, {0}, 0, \
         0
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_OPTION_STATIC_INFO_REQ          \
+#define NULLOBJ_MDS_QRY_OPTION_STATIC_INFO_REQ                          \
         {NULLOBJ_MDS_QRY_REQ_HEAD}, \
         {NULLOBJ_MDS_QRY_OPTION_STATIC_INFO_FILTER}
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_OPTION_STATIC_INFO_RSP          \
+#define NULLOBJ_MDS_QRY_OPTION_STATIC_INFO_RSP                          \
         {NULLOBJ_MDS_QRY_RSP_HEAD}, \
         {{NULLOBJ_MDS_OPTION_STATIC_INFO}}
 /* -------------------------           */
 
 
 /* ===================================================================
- * 快照信息查询相关结构体定义
+ * 证券静态信息列表批量查询相关结构体定义
+ * =================================================================== */
+
+/**
+ * 证券静态信息查询的过滤条件定义
+ */
+typedef struct _MdsQryStockStaticInfoListFilter {
+    uint8               exchId;                 /**< 交易所代码 @see eMdsExchangeIdT */
+    uint8               oesSecurityType;        /**< 证券类型 (股票/债券/基金/...) @see eOesSecurityTypeT */
+    uint8               subSecurityType;        /**< 证券子类型 @see eOesSubSecurityTypeT */
+    uint8               __filler[5];            /**< 按64位对齐的填充域 */
+
+    /** 用户私有信息 (由客户端自定义填充, 并在应答数据中原样返回) */
+    int64               userInfo;
+} MdsQryStockStaticInfoListFilterT;
+
+
+/**
+ * 证券静态信息查询的请求报文
+ */
+typedef struct _MdsQryStockStaticInfoListReq {
+    /** 查询请求的消息头 */
+    MdsQryReqHeadT      reqHead;
+    /** 查询请求的过滤条件 */
+    MdsQryStockStaticInfoListFilterT
+                        qryFilter;
+
+    /** 待查询的证券代码数量 */
+    int32               securityCodeCnt;
+    /** 按64位对齐的填充域 */
+    int32               __filler;
+    /** 待查询的证券代码列表 (最大大小为 MDS_QRYRSP_MAX_STOCK_CNT) */
+    MdsQrySecurityCodeEntryT
+                        securityCodeList[1];
+} MdsQryStockStaticInfoListReqT;
+
+
+/**
+ * 证券静态信息查询的应答报文
+ */
+typedef struct _MdsQryStockStaticInfoListRsp {
+    /** 查询应答的消息头 */
+    MdsQryRspHeadT      rspHead;
+    /** 证券静态信息数组 (最大大小为 MDS_QRYRSP_MAX_STOCK_CNT) */
+    MdsStockStaticInfoT qryItems[1];
+} MdsQryStockStaticInfoListRspT;
+
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_MDS_QRY_STOCK_STATIC_INFO_LIST_FILTER                   \
+        0, 0, 0, {0}, \
+        0
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_MDS_QRY_STOCK_STATIC_INFO_LIST_REQ                      \
+        {NULLOBJ_MDS_QRY_REQ_HEAD}, \
+        {NULLOBJ_MDS_QRY_STOCK_STATIC_INFO_LIST_FILTER}, \
+        0, 0, \
+        {{NULLOBJ_MDS_QRY_SECURITY_CODE_ENTRY}}
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_MDS_QRY_STOCK_STATIC_INFO_LIST_RSP                      \
+        {NULLOBJ_MDS_QRY_RSP_HEAD}, \
+        {{NULLOBJ_MDS_STOCK_STATIC_INFO}}
+/* -------------------------           */
+
+
+/**
+ * 期权合约静态信息查询的过滤条件定义
+ */
+typedef MdsQryStockStaticInfoListFilterT    MdsQryOptionStaticInfoListFilterT;
+
+
+/**
+ * 期权合约静态信息查询的请求报文
+ */
+typedef MdsQryStockStaticInfoListReqT       MdsQryOptionStaticInfoListReqT;
+
+
+/**
+ * 期权合约静态信息查询的应答报文
+ */
+typedef struct _MdsQryOptionStaticInfoListRsp {
+    /** 查询应答的消息头 */
+    MdsQryRspHeadT      rspHead;
+    /** 期权合约静态信息数组 (最大大小为 MDS_QRYRSP_MAX_STOCK_CNT) */
+    MdsOptionStaticInfoT
+                        qryItems[1];
+} MdsQryOptionStaticInfoListRspT;
+
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_MDS_QRY_OPTION_STATIC_INFO_LIST_FILTER                  \
+        NULLOBJ_MDS_QRY_STOCK_STATIC_INFO_LIST_FILTER
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_MDS_QRY_OPTION_STATIC_INFO_LIST_REQ                     \
+        NULLOBJ_MDS_QRY_STOCK_STATIC_INFO_LIST_REQ
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_MDS_QRY_OPTION_STATIC_INFO_LIST_RSP                     \
+        {NULLOBJ_MDS_QRY_RSP_HEAD}, \
+        {{NULLOBJ_MDS_OPTION_STATIC_INFO}}
+/* -------------------------           */
+
+
+/* ===================================================================
+ * 行情快照信息批量查询相关结构体定义
  * =================================================================== */
 
 /**
@@ -330,7 +437,7 @@ typedef struct _MdsQrySnapshotListReq {
 
     /** 待查询的证券代码数量 */
     int32               securityCodeCnt;
-    /**< 按64位对齐的填充域 */
+    /** 按64位对齐的填充域 */
     int32               __filler;
     /** 待查询的证券代码列表 (最大大小为 MDS_QRYRSP_MAX_STOCK_CNT) */
     MdsQrySecurityCodeEntryT
@@ -350,21 +457,133 @@ typedef struct _MdsQrySnapshotListRsp {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_SNAPSHOT_LIST_FILTER            \
+#define NULLOBJ_MDS_QRY_SNAPSHOT_LIST_FILTER                            \
         0, 0, 0, 0, 0, {0}, \
         0
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_SNAPSHOT_LIST_REQ               \
+#define NULLOBJ_MDS_QRY_SNAPSHOT_LIST_REQ                               \
         {NULLOBJ_MDS_QRY_REQ_HEAD}, \
         {NULLOBJ_MDS_QRY_SNAPSHOT_LIST_FILTER}, \
         0, 0, \
         {{NULLOBJ_MDS_QRY_SECURITY_CODE_ENTRY}}
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_MDS_QRY_SNAPSHOT_LIST_RSP               \
+#define NULLOBJ_MDS_QRY_SNAPSHOT_LIST_RSP                               \
         {NULLOBJ_MDS_QRY_RSP_HEAD}, \
         {{NULLOBJ_MDS_L1_SNAPSHOT}}
+/* -------------------------           */
+
+
+/* ===================================================================
+ * 周边应用升级配置信息相关结构体定义
+ * =================================================================== */
+
+/**
+ * 应用程序升级源信息
+ */
+typedef struct _MdsApplUpgradeSource {
+    /** IP地址 */
+    char                ipAddress[MDS_MAX_IP_LEN];
+    /** 协议名称 */
+    char                protocol[MDS_APPL_UPGRADE_PROTOCOL_MAX_LEN];
+    /** 用户名 */
+    char                username[MDS_MAX_USERNAME_LEN];
+    /** 登录密码 */
+    char                password[MDS_MAX_PASSWORD_LEN];
+    /** 登录密码的加密方法 */
+    int32               encryptMethod;
+    /** 按64位对齐的填充域 */
+    int32               __filler;
+
+    /** 根目录地址 */
+    char                homePath[SPK_MAX_PATH_LEN];
+    /** 文件名称 */
+    char                fileName[SPK_MAX_PATH_LEN];
+} MdsApplUpgradeSourceT;
+
+
+/**
+ * 单个应用程序升级信息
+ */
+typedef struct _MdsApplUpgradeItem {
+    /** 应用程序名称 */
+    char                applName[MDS_MAX_COMP_ID_LEN];
+
+    /** 应用程序的最低协议版本号 */
+    char                minApplVerId[MDS_VER_ID_MAX_LEN];
+    /** 应用程序的最高协议版本号 */
+    char                maxApplVerId[MDS_VER_ID_MAX_LEN];
+    /** 废弃的应用版本号列表 */
+    char                discardApplVerId[MDS_APPL_DISCARD_VERSION_MAX_COUNT]
+                                         [MDS_VER_ID_MAX_LEN];
+    /** 废弃版本号的数目 */
+    int32               discardVerCount;
+
+    /** 最新协议版本的日期 */
+    int32               newApplVerDate;
+    /** 应用程序的最新协议版本号 */
+    char                newApplVerId[MDS_VER_ID_MAX_LEN];
+    /** 最新协议版本的标签信息 */
+    char                newApplVerTag[MDS_CLIENT_TAG_MAX_LEN];
+
+    /** 主用升级源配置信息 */
+    MdsApplUpgradeSourceT \
+                        primarySource;
+
+    /** 备用升级源配置信息 */
+    MdsApplUpgradeSourceT \
+                        secondarySource;
+} MdsApplUpgradeItemT;
+
+
+/**
+ * MDS周边应用程序升级信息
+ */
+typedef struct _MdsApplUpgradeInfo {
+    /** 客户端升级配置信息 */
+    MdsApplUpgradeItemT clientUpgradeInfo;
+
+    /** C_API升级配置信息 */
+    MdsApplUpgradeItemT cApiUpgradeInfo;
+
+    /** JAVA_API升级配置信息 */
+    MdsApplUpgradeItemT javaApiUpgradeInfo;
+} MdsApplUpgradeInfoT;
+
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_MDS_APPL_UPGRADE_SOURCE                                 \
+        {0}, {0}, {0}, {0}, 0, 0,    \
+        {0}, {0}
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_MDS_APPL_UPGRADE_ITEM                                   \
+        {0},    \
+        {0}, {0}, {{0}}, \
+        0, 0, {0}, {0},  \
+        {NULLOBJ_MDS_APPL_UPGRADE_SOURCE},  \
+        {NULLOBJ_MDS_APPL_UPGRADE_SOURCE}
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_MDS_APPL_UPGRADE_INFO                                   \
+        {NULLOBJ_MDS_APPL_UPGRADE_ITEM},    \
+        {NULLOBJ_MDS_APPL_UPGRADE_ITEM},    \
+        {NULLOBJ_MDS_APPL_UPGRADE_ITEM}
+/* -------------------------           */
+
+
+/**
+ * 查询周边应用升级配置信息应答
+ */
+typedef struct _MdsQryApplUpgradeInfoRsp {
+    MdsApplUpgradeInfoT applUpgradeInfo;
+} MdsQryApplUpgradeInfoRspT;
+
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_MDS_QRY_APPL_UPGRADE_INFO_RSP                           \
+        {NULLOBJ_MDS_APPL_UPGRADE_INFO}
 /* -------------------------           */
 
 

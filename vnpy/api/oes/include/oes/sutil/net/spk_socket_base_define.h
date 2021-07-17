@@ -162,7 +162,7 @@ typedef struct _SSocketUriInfo {
 
 
 /* 结构体初始化值定义 */
-#define NULLOBJ_SOCKET_URI_INFO             \
+#define NULLOBJ_SOCKET_URI_INFO                                         \
         {0}
 /* -------------------------           */
 
@@ -171,16 +171,25 @@ typedef struct _SSocketUriInfo {
  * Socket IP/Port 地址信息
  */
 typedef struct _SSocketIpPortInfo {
-    /** 端口号 */
-    int32               port;
-    /** IP地址 */
-    char                ip[SPK_MAX_IP_LEN + 4];
+    union {
+        struct {
+            /** 整数类型的IP地址 (网络字节序) */
+            uint32      ipValue;
+            /** 端口号 */
+            int32       port;
+        };
+        /** 完整的IP+PORT套接字地址取值 */
+        uint64          __ipPortValue;
+    };
+
+    /** IP地址字符串 */
+    char                ipStr[SPK_MAX_IP_LEN];
 } SSocketIpPortInfoT;
 
 
 /* 结构体初始化值定义 */
-#define NULLOBJ_SOCKET_IP_PORT_INFO         \
-        0, {0}
+#define NULLOBJ_SOCKET_IP_PORT_INFO                                     \
+        {{0, 0}}, {0}
 /* -------------------------           */
 
 
@@ -198,6 +207,9 @@ typedef struct _SSocketChannelInfo {
     /** 套接字端口号 */
     int32               remotePort;
 
+    /** 整数类型的对端IP地址 (网络字节序) */
+    uint32              origRemoteIp;
+
     /**
      * 通信协议类型
      * @see eSSocketProtocolTypeT
@@ -213,25 +225,26 @@ typedef struct _SSocketChannelInfo {
     /** 标示异步发送线程的连接是否已破裂 (用于内部处理) */
     uint8               _isSendBroken;
 
-    /** 套接字地址或DomainSocket的路径地址 (仅用于显示) */
-    char                remoteAddr[SPK_MAX_URI_LEN];
-
-    /** 连接建立时间 (UTC时间, 即相对于1970年的秒数) */
-    int64               connectTime;
-
     /** 标识是否正在尝试连接的过程中 (用于内部处理) */
     uint8               _isTryConnecting;
 
     /** 按64位对齐的填充域 */
-    uint8               __filler[7];
+    uint8               __filler[3];
+
+    /** 连接建立时间 (UTC时间, 即相对于1970年的秒数) */
+    int64               connectTime;
+
+    /** 套接字地址或DomainSocket的路径地址 (仅用于显示) */
+    char                remoteAddr[SPK_MAX_URI_LEN];
 } SSocketChannelInfoT;
 
 
 /* 结构体初始化值定义 */
-#define NULLOBJ_SOCKET_CHANNEL_INFO         \
-        {__SPK_INVALID_SOCKET}, 0, \
-        0, 0, 0, 0, {0}, \
-        0, 0, {0}
+#define NULLOBJ_SOCKET_CHANNEL_INFO                                     \
+        {__SPK_INVALID_SOCKET}, \
+        0, 0, \
+        0, 0, 0, 0, 0, {0}, \
+        0, {0}
 /* -------------------------           */
 
 
@@ -280,7 +293,7 @@ typedef struct _SSocketOptionConfig {
 
 
 /* 结构体初始化值定义 */
-#define NULLOBJ_SOCKET_OPTION_CONFIG        \
+#define NULLOBJ_SOCKET_OPTION_CONFIG                                    \
         SPK_DEFAULT_SO_RCVBUF, SPK_DEFAULT_SO_SNDBUF, \
         SPK_DEFAULT_TCP_NODELAY, 0, \
         0, 0, \

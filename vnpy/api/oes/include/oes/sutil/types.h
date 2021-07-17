@@ -290,9 +290,9 @@ extern "C" {
  */
 #if ! defined (NULL)
 #   ifdef __cplusplus
-#       define NULL                     (0L)
+#       define  NULL                    (0L)
 #   else
-#       define NULL                     ((void*) 0)
+#       define  NULL                    ((void*) 0)
 #   endif
 #endif
 /* -------------------------           */
@@ -302,15 +302,29 @@ extern "C" {
  * BOOL 类型定义
  */
 #if ! defined (BOOL) && ! defined (__WINDOWS__)
-#   define BOOL                         int
+#   define  BOOL                        int
 #endif
 
 #if ! defined (TRUE)
-#   define TRUE                         (1)
+#   define  TRUE                        (1)
 #endif
 
 #if ! defined (FALSE)
-#   define FALSE                        (0)
+#   define  FALSE                       (0)
+#endif
+
+/* 是否使用标准的BOOL类型 */
+#if defined (_SPK_USE_STD_BOOL_TYPE) && defined (__SPK_STD_C99) \
+        && ! defined (__WINDOWS__)
+#   include <stdbool.h>
+
+#   undef   BOOL
+#   undef   TRUE
+#   undef   FALSE
+
+#   define  BOOL                        bool
+#   define  TRUE                        true
+#   define  FALSE                       false
 #endif
 /* -------------------------           */
 
@@ -319,12 +333,12 @@ extern "C" {
  * LLONG_MAX (为了在非C99环境下同样可用)
  */
 #if ! defined (LLONG_MAX)
-#   define LLONG_MAX                    (9223372036854775807LL)
-#   define LLONG_MIN                    (-LLONG_MAX - 1LL)
+#   define  LLONG_MAX                   (9223372036854775807LL)
+#   define  LLONG_MIN                   (-LLONG_MAX - 1LL)
 #endif
 
 #if ! defined (ULLONG_MAX)
-#   define ULLONG_MAX                   (18446744073709551615ULL)
+#   define  ULLONG_MAX                  (18446744073709551615ULL)
 #endif
 /* -------------------------           */
 
@@ -469,17 +483,20 @@ extern "C" {
 #   endif
 
 #   ifndef  _SPK_STRUCT_TIMESPEC
-#   if defined (__MINGW__)
-#       define  _SPK_STRUCT_TIMESPEC    struct timespec
-#       define  STimespecT              _SPK_STRUCT_TIMESPEC
-#   else
 #       define  _SPK_STRUCT_TIMESPEC    struct _spk_struct_timespec
         _SPK_STRUCT_TIMESPEC {
             __SPK_TIMEVAL_TIME_T        tv_sec;
             __SPK_TIMEVAL_TIME_T        tv_nsec;
         };
+        /* 因为 MinGW 下原生的 timespec 结构不是完全按照64位对齐的, 所以也需要使用自定义的结构 */
 #       define  STimespecT              _SPK_STRUCT_TIMESPEC
-#   endif
+
+#       if defined (__MINGW__)
+            /* 为了兼容 MinGW 下的 pthread 库而定义的, 原生 struct timespec 结构的跨平台兼容性定义 */
+#           define  __spk_timespec_t    struct timespec
+#       else
+#           define  __spk_timespec_t    STimespecT
+#       endif
 #   endif   /* _SPK_STRUCT_TIMESPEC */
 
 #   ifndef  _SPK_STRUCT_TIMEZONE
@@ -528,6 +545,9 @@ extern "C" {
 #   ifndef  _SPK_STRUCT_TIMESPEC
 #       define  _SPK_STRUCT_TIMESPEC    struct timespec
 #       define  STimespecT              _SPK_STRUCT_TIMESPEC
+
+        /* 为了兼容 MinGW 下的 pthread 库而定义的, 原生 struct timespec 结构的跨平台兼容性定义 */
+#       define  __spk_timespec_t        struct timespec
 #   endif   /* _SPK_STRUCT_TIMESPEC */
 
 #   ifndef  _SPK_STRUCT_TIMEZONE
@@ -544,6 +564,7 @@ extern "C" {
 #       define  _SPK_STRUCT_POLLFD      struct pollfd
 #       define  SPollfdT                _SPK_STRUCT_POLLFD
 #   endif   /* _SPK_STRUCT_POLLFD */
+
 
 #endif
 /* -------------------------           */

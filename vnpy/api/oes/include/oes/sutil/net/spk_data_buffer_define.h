@@ -41,9 +41,9 @@ extern "C" {
  * =================================================================== */
 
 /** 最小缓存大小 */
-#define SPK_MIN_DATA_BUFFER_SIZE        (4 * 1024)
+#define SPK_MIN_DATA_BUFFER_SIZE            (4 * 1024)
 /** 最大缓存大小 */
-#define SPK_MAX_DATA_BUFFER_SIZE        (32 * 1024 * 1024)
+#define SPK_MAX_DATA_BUFFER_SIZE            (32 * 1024 * 1024)
 /* -------------------------           */
 
 
@@ -55,10 +55,10 @@ extern "C" {
  * 支持动态内存分配的数据缓存定义
  */
 typedef struct _SDataBuffer {
-    int32               dataSize;                       /**< 有效数据长度 */
-    int32               const bufSize;                  /**< 缓存区总大小 */
-    char                * const buffer;                 /**< 缓存区指针 */
-    void                *__ref;                         /**< 反向引用指针 */
+    int32               dataSize;           /**< 有效数据长度 */
+    int32               const bufSize;      /**< 缓存区总大小 */
+    char                * const buffer;     /**< 缓存区指针 */
+    void                *__ref;             /**< 反向引用指针 */
 } SDataBufferT;
 
 
@@ -66,15 +66,15 @@ typedef struct _SDataBuffer {
  * 支持动态内存分配的数据缓存的结构体别名 (为了消除某些情况下的编译警告)
  */
 struct _SDataBufferVar {
-    int32               dataSize;                       /**< 有效数据长度 */
-    int32               bufSize;                        /**< 缓存区总大小 */
-    char                *buffer;                        /**< 缓存区指针 */
-    void                *__ref;                         /**< 反向引用指针 */
+    int32               dataSize;           /**< 有效数据长度 */
+    int32               bufSize;            /**< 缓存区总大小 */
+    char                *buffer;            /**< 缓存区指针 */
+    void                *__ref;             /**< 反向引用指针 */
 };
 
 
 /* 结构体初始化值定义 */
-#define NULLOBJ_SPK_DATA_BUFFER                         \
+#define NULLOBJ_SPK_DATA_BUFFER             \
         0, 0, (char*) NULL, NULL
 /* -------------------------           */
 

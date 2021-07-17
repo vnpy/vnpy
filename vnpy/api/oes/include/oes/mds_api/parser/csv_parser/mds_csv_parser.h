@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ extern "C" {
  * 函数声明
  * =================================================================== */
 
-/*
+/**
  * 请求消息编码处理（编码为JSON格式，用于向服务器发送请求消息）
  *
  * @param[in,out]   pReqHead        消息头
@@ -65,7 +65,7 @@ void*   MdsCsvParser_EncodeReq(
                 int32 bufSize,
                 const char *pRemoteInfo);
 
-/*
+/**
  * 请求消息解码处理（解码为二进制结构体，用于接收客户端的请求消息）
  *
  * @param[in,out]   pReqHead        消息头
@@ -81,7 +81,7 @@ MdsMktReqMsgBodyT*
                 MdsMktReqMsgBodyT *pReqMsgBuf,
                 const char *pRemoteInfo);
 
-/*
+/**
  * 应答消息编码处理（编码为CSV格式，用于向客户端发送应答消息）
  *
  * @param[in,out]   pRspHead        消息头
@@ -98,7 +98,7 @@ void*   MdsCsvParser_EncodeRsp(
                 int32 bufSize,
                 const char *pRemoteInfo);
 
-/*
+/**
  * 应答消息解码处理（解码为二进制结构体，用于接收服务器端返回的应答消息）
  *
  * @param[in,out]   pRspHead        消息头
@@ -114,7 +114,7 @@ MdsMktRspMsgBodyT*
                 MdsMktRspMsgBodyT *pRspMsgBuf,
                 const char *pRemoteInfo);
 
-/*
+/**
  * 返回应答消息编码后的记录格式 (字段列表)
  *
  * @param           msgType         消息类型
@@ -133,21 +133,21 @@ int32   MdsCsvParser_GetRspFields(
  * CVS行情数据文件解析相关的函数声明
  * =================================================================== */
 
-/*
+/**
  * 解析CVS格式的行情数据文件
  *
  * @param   pCsvFile            数据文件的路径
- * @param   pOnMsgCallback      进行消息处理的回调函数
+ * @param   fnOnMsgCallback     进行消息处理的回调函数
  * @param   pCallbackParams     回调函数的参数
  * @return  大于等于0, 成功处理的记录数量;
  *          小于0, 处理失败 (负的错误号)
  */
 int32   MdsCsvParser_ParseCsvFile(
                 const char *pCsvFile,
-                F_MDSAPI_ONMSG_T pOnMsgCallback,
+                F_MDSAPI_ONMSG_T fnOnMsgCallback,
                 void *pCallbackParams);
 
-/*
+/**
  * 解析完整的CVS格式行情数据记录 (形如: MsgId,value1,value2,... 的CSV行情数据记录)
  *
  * @param[in]       pCsvRecord      CSV格式的完整数据记录
@@ -167,7 +167,7 @@ MdsMktRspMsgBodyT*
  * 用于具体数据条目的编码/解码处理的函数声明
  * =================================================================== */
 
-/*
+/**
  * 证券静态信息条目的编码处理
  *
  * @param[in]   pRspItem    单条证券静态信息
@@ -180,7 +180,7 @@ int32   MdsCsvParser_EncodeStockStaticItem(
                 char *pBuf,
                 int32 bufSize);
 
-/*
+/**
  * 期权静态信息条目的编码处理
  *
  * @param[in]   pRspItem    单条期权静态信息
@@ -193,7 +193,7 @@ int32   MdsCsvParser_EncodeOptionStaticItem(
                 char *pBuf,
                 int32 bufSize);
 
-/*
+/**
  * 行情快照条目的编码处理
  *
  * @param[in]   pRspItem    单条行情快照

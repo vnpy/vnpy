@@ -100,7 +100,7 @@ typedef struct _SEndpointChannelCfg {
                             remoteCfg;
 
     /**
-     * 对接收到的回报或应答消息进行处理的回调函数
+     * 对接收到的应答或回报消息进行处理的回调函数
      * - 若回调函数返回小于0的数, 将尝试断开并重建连接
      *
      * @see F_GENERAL_CLI_ON_MSG_T
@@ -108,7 +108,7 @@ typedef struct _SEndpointChannelCfg {
     int32                   (*fnOnMsg) (
             SGeneralClientChannelT *pSessionInfo,
             SMsgHeadT *pMsgHead,
-            void *pMsgBody,
+            void *pMsgItem,
             void *pCallbackParams);
     /** 传递给fnOnMsg回调函数的参数 */
     void                    *pOnMsgParams;
@@ -160,7 +160,7 @@ typedef struct _SEndpointChannelCfg {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_SPK_ENDPOINT_CHANNEL_CFG        \
+#define NULLOBJ_SPK_ENDPOINT_CHANNEL_CFG                                \
         0, 0, {0}, \
         {NULLOBJ_GENERAL_CLIENT_REMOTE_CFG}, \
         0, 0, 0, 0, 0, 0, \
@@ -196,7 +196,7 @@ typedef struct _SEndpointIoThreadCfg {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_SPK_ENDPOINT_IO_THREAD_CFG                          \
+#define NULLOBJ_SPK_ENDPOINT_IO_THREAD_CFG                              \
         0, 0, 0, 0, 0, \
         {0}, {0}
 /* -------------------------           */
@@ -220,7 +220,7 @@ typedef struct _SEndpointContext {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_SPK_ENDPOINT_CONTEXT            \
+#define NULLOBJ_SPK_ENDPOINT_CONTEXT                                    \
         0, 0, 0, {0}
 /* -------------------------           */
 
@@ -241,8 +241,12 @@ typedef struct _SEndpointChannel {
 
     /** 标识通道是否已连接就绪 */
     volatile uint8          isConnected;
+    /** 通信协议类型 (由异步端点启动时自动检测和赋值) @see eSSocketProtocolTypeT */
+    uint8                   protocolType;
+    /** 是否是无连接的UDP类型通信协议 */
+    uint8                   isUdpChannel;
     /** 按64位对齐的填充域 */
-    uint8                   __filler2[7];
+    uint8                   __filler[5];
 
     /** 最近/上一次会话实际接收到的入向消息序号 (由应用层或API负责维护) */
     volatile int64          lastInMsgSeq;
@@ -252,10 +256,10 @@ typedef struct _SEndpointChannel {
 
 
 /* 结构体的初始化值定义 */
-#define NULLOBJ_SPK_ENDPOINT_CHANNEL            \
+#define NULLOBJ_SPK_ENDPOINT_CHANNEL                                    \
         0, 0, \
         0, 0, \
-        0, {0}, \
+        0, 0, 0, {0}, \
         0, 0
 /* -------------------------           */
 
@@ -306,6 +310,26 @@ typedef int32   (*F_SPK_ENDPOINT_ON_CONNECT_T) (
  */
 typedef int32   (*F_SPK_ENDPOINT_ON_DISCONNECT_T) (
                 SEndpointChannelT *pAsyncChannel,
+                void *pCallbackParams);
+
+/**
+ * 通信线程/回调线程初始化函数的函数原型定义
+ *
+ * <p> 回调函数说明:
+ * - 若回调函数返回小于0的数, 则线程将中止运行
+ * </p>
+ *
+ * <p> 线程说明:
+ * - 如果为通信线程或回调线程指定了初始化函数, 则线程启动后将回调该初始化函数
+ * </p>
+ *
+ * @param   pAsyncContext       通信端点的运行时环境
+ * @param   pCallbackParams     外部传入的参数
+ * @retval  >=0                 大于等于0, 成功
+ * @retval  <0                  小于0, 处理失败, 线程将中止运行
+ */
+typedef int32   (*F_SPK_ENDPOINT_ON_THREAD_START_T) (
+                SEndpointContextT *pAsyncContext,
                 void *pCallbackParams);
 /* -------------------------           */
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2014 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -230,6 +230,60 @@ int32   JsonParser_EncodeBrokerParams(
 int32   JsonParser_EncodeApplUpgradeInfo(
                 const OesApplUpgradeInfoT *pUpgradeInfo,
                 char *pBuf, int32 bufSize);
+
+/* 单条融资融券合约信息查询结果序列化 */
+int32   JsonParser_EncodeCrdDebtContractItem(
+                const OesCrdDebtContractItemT *pRspItem,
+                char *pBuf,
+                int32 bufSize);
+
+/* 单条客户单证券融资融券负债统计信息查询结果序列化 */
+int32   JsonParser_EncodeCrdCustSecuDebtStatsItem(
+                const OesCrdSecurityDebtStatsItemT *pRspItem,
+                char *pBuf,
+                int32 bufSize);
+
+/* 单条信用资产信息查询结果序列化 */
+int32   JsonParser_EncodeCreditAssetItem(
+                const OesCrdCreditAssetItemT *pRspItem,
+                char *pBuf,
+                int32 bufSize);
+
+/* 单条融资融券业务直接还款信息查询结果序列化 */
+int32   JsonParser_EncodeCrdCashRepayItem(
+                const OesCrdCashRepayItemT *pRspItem,
+                char *pBuf,
+                int32 bufSize);
+
+/* 单条融资融券业务资金头寸信息查询结果序列化 */
+int32   JsonParser_EncodeCrdCashPositionItem(
+                const OesCrdCashPositionItemT *pRspItem,
+                char *pBuf,
+                int32 bufSize);
+
+/* 单条融资融券业务证券头寸信息查询结果序列化 */
+int32   JsonParser_EncodeCrdSecurityPositionItem(
+                const OesCrdSecurityPositionItemT *pRspItem,
+                char *pBuf,
+                int32 bufSize);
+
+/* 单条融资融券业务余券信息查询结果序列化 */
+int32   JsonParser_EncodeCrdExcessStockItem(
+                const OesCrdExcessStockItemT *pRspItem,
+                char *pBuf,
+                int32 bufSize);
+
+/* 单条融资融券合约流水信息查询结果序列化 */
+int32   JsonParser_EncodeCrdDebtJournalItem(
+                const OesCrdDebtJournalItemT *pRspItem,
+                char *pBuf,
+                int32 bufSize);
+
+/* 单条融资融券息费利率查询结果序列化 */
+int32   JsonParser_EncodeCrdInterestRateItem(
+                const OesCrdInterestRateItemT *pRspItem,
+                char *pBuf,
+                int32 bufSize);
 /* -------------------------           */
 
 

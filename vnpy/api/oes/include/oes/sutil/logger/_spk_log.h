@@ -168,8 +168,11 @@ extern "C" {
 #   undef   SLOG_FATAL
 
 #   undef   SLOG_ASSERT
+#   undef   SLOG_ASSERT2
 #   undef   SLOG_ASSERT_RV
+#   undef   SLOG_ASSERT_RV2
 #   undef   SLOG_ASSERT_NV
+#   undef   SLOG_ASSERT_NV2
 #endif
 
 
@@ -186,7 +189,6 @@ extern "C" {
  * 日志函数(宏函数)定义
  */
 #if _VA_MACRO_ABLE
-
 #   if _LOG_TRACE_ABLE
         /**
          * SLOG_TRACE, 跟踪信息登记宏函数
@@ -329,6 +331,7 @@ extern "C" {
                 _SLog_LogImpl(__FILE__, sizeof(__FILE__), __LINE__, \
                         __FUNCTION__, _SLOG_MASK, SLOG_LEVEL_FATAL, __VA_ARGS__)
 
+
 #   else    /* _LOG_ABLE */
 #       define  SLOG_LOG(...)
 #       define  SLOG_INFO(...)
@@ -340,8 +343,8 @@ extern "C" {
 #       define  SLOG_FATAL(...)
 #   endif   /* _LOG_ABLE */
 
-#else       /* _VA_MACRO_ABLE */
 
+#else       /* _VA_MACRO_ABLE */
 #   if _LOG_ABLE
 #       ifdef _SLOG_MASK
 #           define      SLOG_LOG        _SLog_LogFullSimplenessMasked
@@ -382,6 +385,8 @@ extern "C" {
 #       else
 #           define      SLOG_DEBUG
 #       endif
+
+
 #   else    /* _LOG_ABLE */
 #       define          SLOG_LOG
 #       define          SLOG_TRACE
@@ -398,6 +403,7 @@ extern "C" {
 #   ifndef __FUNCTION__
 #       define  __FUNCTION__    ""
 #   endif
+
 
 #endif      /* _VA_MACRO_ABLE */
 /* -------------------------           */
@@ -436,7 +442,6 @@ extern "C" {
  * =================================================================== */
 
 #if ! defined(NDEBUG)
-
 /**
  * assert, 若未定义 NDEBUG, 则记录错误日志并结束进程
  */
@@ -451,7 +456,7 @@ extern "C" {
 /**
  * assert, 若未定义 NDEBUG, 则记录错误日志并结束进程
  */
-#if _VA_MACRO_ABLE
+# if _VA_MACRO_ABLE
 #   define  SLOG_ASSERT2(EXPR, ...)                 \
         do { \
             if (__spk_unlikely(! (EXPR) )) { \
@@ -460,26 +465,26 @@ extern "C" {
                 assert((EXPR)); \
             } \
         } while (0)
-#else   /* _VA_MACRO_ABLE */
+# else  /* _VA_MACRO_ABLE */
 #   define  SLOG_ASSERT2                _SLog_AssertSimpleness
-#endif
+# endif
 
-#else
 
-#if _VA_MACRO_ABLE
+#else   /* NDEBUG */
+# if _VA_MACRO_ABLE
 #   define  SLOG_ASSERT(EXPR)
 #   define  SLOG_ASSERT2(EXPR, ...)
-#else   /* _VA_MACRO_ABLE */
+# else  /* _VA_MACRO_ABLE */
 #   define  SLOG_ASSERT(EXPR)
 #   define  SLOG_ASSERT2
-#endif
+# endif
 
-#endif
+
+#endif  /* NDEBUG */
 /* -------------------------           */
 
 
 #if defined(ENABLE_SOFT_ASSERT)
-
 /**
  * 记录错误日志并直接从函数返回指定的值
  */
@@ -579,8 +584,8 @@ extern "C" {
 #   define  SLOG_ASSERT_NV2             _SLog_AssertSimpleness
 # endif
 
-#else                                   /* else ENABLE_SOFT_ASSERT */
 
+#else   /* ENABLE_SOFT_ASSERT */
 # if _VA_MACRO_ABLE
 #   define  SLOG_ASSERT_RV(EXPR, RETURN_VAL)
 #   define  SLOG_ASSERT_RV2(EXPR, RETURN_VAL, ...)
@@ -595,7 +600,8 @@ extern "C" {
 #   define  SLOG_ASSERT_NV2
 # endif
 
-#endif
+
+#endif  /* ENABLE_SOFT_ASSERT */
 /* -------------------------           */
 
 

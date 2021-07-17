@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, List
 
 from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.utility import get_file_path, round_to
+from vnpy.trader.utility import get_file_path, round_to,get_digits
 from vnpy.trader.object import (
     TickData,
     OrderData,
@@ -239,6 +239,7 @@ class OesMdApi(MdApi):
 
     def onRtnStockData(self, head: dict, data: dict) -> None:
         """"""
+        #print(data)
         timestamp = f"{head['tradeDate']} {head['updateTime']}"
 
         tick = TickData(
@@ -259,23 +260,26 @@ class OesMdApi(MdApi):
         tick.ask_volume_1, tick.ask_volume_2, tick.ask_volume_3, tick.ask_volume_4, tick.ask_volume_5 = data["ask_qty"][0:5]
 
         pricetick = SYMBOL_PRICETICK_MAP.get(tick.vt_symbol, 0)
+        #宽睿pricetick已在OesTdApi登录获取证券信息时转换成VNPY最小报价单位0.01，宽睿的价格22.22显示为222200,round_to函数为去除小数后两位，不适用，用round函数替换
+        ipricetick = get_digits(pricetick)
         if pricetick:
-            tick.bid_price_1 = round_to(tick.bid_price_1 / 10000, pricetick)
-            tick.bid_price_2 = round_to(tick.bid_price_2 / 10000, pricetick)
-            tick.bid_price_3 = round_to(tick.bid_price_3 / 10000, pricetick)
-            tick.bid_price_4 = round_to(tick.bid_price_4 / 10000, pricetick)
-            tick.bid_price_5 = round_to(tick.bid_price_5 / 10000, pricetick)
-            tick.ask_price_1 = round_to(tick.ask_price_1 / 10000, pricetick)
-            tick.ask_price_2 = round_to(tick.ask_price_2 / 10000, pricetick)
-            tick.ask_price_3 = round_to(tick.ask_price_3 / 10000, pricetick)
-            tick.ask_price_4 = round_to(tick.ask_price_4 / 10000, pricetick)
-            tick.ask_price_5 = round_to(tick.ask_price_5 / 10000, pricetick)
+            tick.bid_price_1 = round(tick.bid_price_1 / 10000, ipricetick)
+            tick.bid_price_2 = round(tick.bid_price_2 / 10000, ipricetick)
+            tick.bid_price_3 = round(tick.bid_price_3 / 10000, ipricetick)
+            tick.bid_price_4 = round(tick.bid_price_4 / 10000, ipricetick)
+            tick.bid_price_5 = round(tick.bid_price_5 / 10000, ipricetick)
+            tick.ask_price_1 = round(tick.ask_price_1 / 10000, ipricetick)
+            tick.ask_price_2 = round(tick.ask_price_2 / 10000, ipricetick)
+            tick.ask_price_3 = round(tick.ask_price_3 / 10000, ipricetick)
+            tick.ask_price_4 = round(tick.ask_price_4 / 10000, ipricetick)
+            tick.ask_price_5 = round(tick.ask_price_5 / 10000, ipricetick)
 
         tick.name = SYMBOL_NAME_MAP.get(tick.vt_symbol, "")
         self.gateway.on_tick(tick)
 
     def onRtnIndexData(self, head: dict, data: dict) -> None:
         """"""
+        #print(data)
         timestamp = f"{head['tradeDate']} {head['updateTime']}"
 
         tick = TickData(
@@ -315,17 +319,19 @@ class OesMdApi(MdApi):
         tick.ask_volume_1, tick.ask_volume_2, tick.ask_volume_3, tick.ask_volume_4, tick.ask_volume_5 = data["ask_qty"][0:5]
 
         pricetick = SYMBOL_PRICETICK_MAP.get(tick.vt_symbol, 0)
+        #宽睿pricetick已在OesTdApi登录时转换成VNPY最小报价单位0.01，宽睿的价格22.22显示为222200,round_to函数为去除小数后两位，不适用，用round函数替换
+        ipricetick = get_digits(pricetick)
         if pricetick:
-            tick.bid_price_1 = round_to(tick.bid_price_1 / 10000, pricetick)
-            tick.bid_price_2 = round_to(tick.bid_price_2 / 10000, pricetick)
-            tick.bid_price_3 = round_to(tick.bid_price_3 / 10000, pricetick)
-            tick.bid_price_4 = round_to(tick.bid_price_4 / 10000, pricetick)
-            tick.bid_price_5 = round_to(tick.bid_price_5 / 10000, pricetick)
-            tick.ask_price_1 = round_to(tick.ask_price_1 / 10000, pricetick)
-            tick.ask_price_2 = round_to(tick.ask_price_2 / 10000, pricetick)
-            tick.ask_price_3 = round_to(tick.ask_price_3 / 10000, pricetick)
-            tick.ask_price_4 = round_to(tick.ask_price_4 / 10000, pricetick)
-            tick.ask_price_5 = round_to(tick.ask_price_5 / 10000, pricetick)
+            tick.bid_price_1 = round(tick.bid_price_1 / 10000, ipricetick)
+            tick.bid_price_2 = round(tick.bid_price_2 / 10000, ipricetick)
+            tick.bid_price_3 = round(tick.bid_price_3 / 10000, ipricetick)
+            tick.bid_price_4 = round(tick.bid_price_4 / 10000, ipricetick)
+            tick.bid_price_5 = round(tick.bid_price_5 / 10000, ipricetick)
+            tick.ask_price_1 = round(tick.ask_price_1 / 10000, ipricetick)
+            tick.ask_price_2 = round(tick.ask_price_2 / 10000, ipricetick)
+            tick.ask_price_3 = round(tick.ask_price_3 / 10000, ipricetick)
+            tick.ask_price_4 = round(tick.ask_price_4 / 10000, ipricetick)
+            tick.ask_price_5 = round(tick.ask_price_5 / 10000, ipricetick)
 
         tick.name = SYMBOL_NAME_MAP.get(tick.vt_symbol, "")
         self.gateway.on_tick(tick)
@@ -365,10 +371,11 @@ class OesMdApi(MdApi):
 class OesTdApi(TdApi):
 
     userid: str = ""
-    investorid: str = ""
+    investoridsz: str = ""
+    investoridsh: str = ""
     connect_date: int = 0
-    trade_count: int = 10000
-    order_count: int = 10000
+    trade_count: int = 900001
+    order_count: int = 900001
     reqid: int = 10000
 
     orders: Dict[int, OrderData] = {}
@@ -431,11 +438,20 @@ class OesTdApi(TdApi):
         self.gateway.on_account(account)
 
     def onStockHoldingVariation(self, data: dict) -> None:
-        pass
+        pos = PositionData(
+            symbol=data["securityId"],
+            exchange=EXCHANGE_OES2VT[data["mktId"]],
+            direction=DIRECTION_OES2VT[1],
+            volume=data["sumHld"],
+            frozen=data["sellFrzHld"],
+            price=data["costPrice"] / 10000,
+            yd_volume=data["originalHld"],
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_position(pos)
+        #pass
 
     def onOptionHoldingVariation(self, data: dict) -> None:
-        self.investorid = data["invAcctId"][1:]
-
         pos = PositionData(
             symbol=data["securityId"],
             exchange=EXCHANGE_OES2VT[data["mktId"]],
@@ -587,8 +603,10 @@ class OesTdApi(TdApi):
 
     def onQueryStock(self, data: dict, head: dict, reqid: int) -> None:
         """"""
+        #print(data)
         last = head["isEnd"]
 
+        #宽睿priceTick最小报价单位 (单位精确到元后四位, 即1元 = 10000) 转换VNPY报价单位需要除以10000
         contract = ContractData(
             symbol=data["securityId"],
             exchange=EXCHANGE_OES2VT[data["mktId"]],
@@ -596,7 +614,7 @@ class OesTdApi(TdApi):
             size=1,
             min_volume=data["buyQtyUnit"],
             name=data["securityName"],
-            pricetick=data["priceTick"],
+            pricetick=data["priceTick"]/10000,
             gateway_name=self.gateway_name
         )
         self.gateway.on_contract(contract)
@@ -647,13 +665,29 @@ class OesTdApi(TdApi):
 
     def onQueryStkHolding(self, data: dict, head: dict, reqid: int) -> None:
         """"""
+        last = head["isEnd"]
+        #print(data)
+
+        pos = PositionData(
+            symbol=data["securityId"],
+            exchange=EXCHANGE_OES2VT[data["mktId"]],
+            direction=DIRECTION_OES2VT[1],
+            volume=data["sumHld"],
+            frozen=data["sellFrzHld"],
+            price=data["costPrice"] / 10000,
+            yd_volume=data["originalHld"],
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_position(pos)
+
+        if last:
+            self.gateway.write_log("现货持仓查询成功")
         pass
 
     def onQueryOptHolding(self, data: dict, head: dict, reqid: int) -> None:
         """"""
         last = head["isEnd"]
-
-        self.investorid = data["invAcctId"][1:]
+        #print(data)
 
         pos = PositionData(
             symbol=data["securityId"],
@@ -669,6 +703,21 @@ class OesTdApi(TdApi):
         if last:
             self.gateway.write_log("期权持仓查询成功")
 
+    def onQueryInvAcct(self, data: dict, head: dict, reqid: int) -> None:
+        last = head["isEnd"]
+        #print(data)
+
+        if 1 == data["mktId"]:
+            self.investoridsh = data["invAcctId"]
+        elif 2 == data["mktId"]:
+            self.investoridsz = data["invAcctId"]
+        else:
+            self.investoridsh = ""
+            self.investoridsz = ""
+
+        if last:
+            self.gateway.write_log("查询账户信息成功")
+
     def query_account(self) -> None:
         """"""
         self.reqid += 1
@@ -677,12 +726,21 @@ class OesTdApi(TdApi):
     def query_position(self) -> None:
         """"""
         self.reqid += 1
+        reqCust = {
+            "custId": self.userid,
+            "mktId": 0,
+            "userInfo": 0
+        }
+        self.queryInvAcct(reqCust, self.reqid)
+
         req = {
             "custId": self.userid,
             "mktId": 0,
             "securityType": 0,
             "productType": 0
         }
+
+        self.reqid += 1
         self.queryStkHolding(req, self.reqid)
 
         self.reqid += 1
@@ -737,6 +795,7 @@ class OesTdApi(TdApi):
         self.setThreadSubscribeEnvId(0)
         self.init()
         self.connect_date = int(datetime.now().strftime("%y%m%d%H%M"))
+        #self.onQueryCashAsset()
 
     def send_order(self, req: OrderRequest) -> str:
         """"""
@@ -745,7 +804,6 @@ class OesTdApi(TdApi):
 
         oes_exchange = STOCK_EXCHANGE_VT2OES[req.exchange]
         oes_direction = DIRECTION_VT2OES[req.direction]
-        oes_investorid = self.investorid
 
         # Check product
         if len(req.symbol) > 6:
@@ -756,10 +814,9 @@ class OesTdApi(TdApi):
 
         # Check market
         if req.exchange == Exchange.SSE:
-            oes_investorid = "A" + oes_investorid
+            oes_investorid = self.investoridsh
         else:
-            oes_investorid = "0" + oes_investorid
-
+            oes_investorid = self.investoridsz
         oes_req = {
             "clSeqNo": self.reqid,
             "mktId": oes_exchange,
@@ -786,14 +843,13 @@ class OesTdApi(TdApi):
         else:
             self.reqid += 1
 
-            oes_investorid = self.investorid
             oes_exchange = STOCK_EXCHANGE_VT2OES[req.exchange]
 
             # Check market
             if req.exchange == Exchange.SSE:
-                oes_investorid = "A" + oes_investorid
+                oes_investorid = self.investoridsh
             else:
-                oes_investorid = "0" + oes_investorid
+                oes_investorid = self.investoridsz
 
             # Check product
             if len(req.symbol) > 6:

@@ -223,7 +223,7 @@ extern "C" {
 #else
 
 #   define SPK_GET_ERRNO()                  (errno)
-#   define SPK_GET_NEG_ERRNO()              ((errno) > 0 ? -(errno) : (errno))
+#   define SPK_GET_NEG_ERRNO()              ((errno) > 0 ? -(errno) : -1)
 #   define SPK_SET_ERRNO(e)                 (errno = (e))
 
 #   define SPK_IS_EAGAIN(e)                 (_SPK_IS_ERRNO_EAGAIN(e))

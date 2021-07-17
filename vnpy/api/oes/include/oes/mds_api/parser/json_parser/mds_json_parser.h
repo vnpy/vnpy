@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,16 @@ extern "C" {
  * 函数声明
  * =================================================================== */
 
-/* 请求消息编码处理（用于向服务器发送请求消息） */
+/**
+ * 请求消息编码处理（编码为JSON格式，用于向服务器发送请求消息）
+ *
+ * @param[in,out]   pReqHead        消息头
+ * @param[in,out]   pReqBody        原始请求数据结构体
+ * @param[out]      pBuf            存储编码后数据的缓存区
+ * @param           bufSize         缓存区长度
+ * @param           pRemoteInfo     对端身份信息, 用于打印跟踪日志
+ * @return  编码后的消息体数据; NULL, 编码失败
+ */
 void*   MdsJsonParser_EncodeReq(
                 SMsgHeadT *pReqHead,
                 const MdsMktReqMsgBodyT *pReqBody,
@@ -50,7 +59,15 @@ void*   MdsJsonParser_EncodeReq(
                 int32 bufSize,
                 const char *pRemoteInfo);
 
-/* 请求消息解码处理（用于接收客户端的请求消息） */
+/**
+ * 请求消息解码处理（解码为二进制结构体，用于接收客户端的请求消息）
+ *
+ * @param[in,out]   pReqHead        消息头
+ * @param[in]       pMsgBody        消息体数据
+ * @param[out]      pReqMsgBuf      解码后的消息体数据缓存
+ * @param           pRemoteInfo     对端身份信息, 用于打印跟踪日志
+ * @return  解码后的消息体数据; NULL, 解析失败
+ */
 MdsMktReqMsgBodyT*
         MdsJsonParser_DecodeReq(
                 SMsgHeadT *pReqHead,
@@ -58,7 +75,16 @@ MdsMktReqMsgBodyT*
                 MdsMktReqMsgBodyT *pReqMsgBuf,
                 const char *pRemoteInfo);
 
-/* 应答消息编码处理（用于向客户端发送应答消息） */
+/**
+ * 应答消息编码处理（编码为JSON格式，用于向客户端发送应答消息）
+ *
+ * @param[in,out]   pRspHead        消息头
+ * @param[in,out]   pRspBody        原始应答数据结构体
+ * @param[out]      pBuf            存储编码后数据的缓存区
+ * @param           bufSize         缓存区长度
+ * @param           pRemoteInfo     对端身份信息, 用于打印跟踪日志
+ * @return  编码后的消息体数据; NULL, 编码失败
+ */
 void*   MdsJsonParser_EncodeRsp(
                 SMsgHeadT *pRspHead,
                 const MdsMktRspMsgBodyT *pRspBody,
@@ -66,7 +92,16 @@ void*   MdsJsonParser_EncodeRsp(
                 int32 bufSize,
                 const char *pRemoteInfo);
 
-/* 应答消息编码处理（编码为精简的JSON格式） */
+/**
+ * 应答消息编码处理（编码为精简的JSON格式）
+ *
+ * @param[in,out]   pRspHead        消息头
+ * @param[in,out]   pRspBody        原始应答数据结构体
+ * @param[out]      pBuf            存储编码后数据的缓存区
+ * @param           bufSize         缓存区长度
+ * @param           pRemoteInfo     对端身份信息, 用于打印跟踪日志
+ * @return  编码后的消息体数据; NULL, 编码失败
+ */
 void*   MdsJsonParser_EncodeRspSimplify(
                 SMsgHeadT *pRspHead,
                 const MdsMktRspMsgBodyT *pRspBody,
@@ -74,7 +109,15 @@ void*   MdsJsonParser_EncodeRspSimplify(
                 int32 bufSize,
                 const char *pRemoteInfo);
 
-/* 应答消息解码处理（用于接收服务器端返回的应答消息） */
+/**
+ * 应答消息解码处理（解码为二进制结构体，用于接收服务器端返回的应答消息）
+ *
+ * @param[in,out]   pRspHead        消息头
+ * @param[in]       pMsgBody        消息体数据
+ * @param[out]      pRspMsgBuf      解码后的消息体数据缓存
+ * @param           pRemoteInfo     对端身份信息, 用于打印跟踪日志
+ * @return  解码后的消息体数据; NULL, 解析失败
+ */
 MdsMktRspMsgBodyT*
         MdsJsonParser_DecodeRsp(
                 SMsgHeadT *pRspHead,
@@ -88,19 +131,40 @@ MdsMktRspMsgBodyT*
  * 用于具体数据条目的编码/解码处理的函数声明
  * =================================================================== */
 
-/* 证券静态信息条目的编码处理 */
+/**
+ * 证券静态信息条目的编码处理
+ *
+ * @param[in]   pRspItem    单条证券静态信息
+ * @param[out]  pBuf        序列化后数据的缓存区
+ * @param[in]   bufSize     缓存区长度
+ * @return  序列化后的消息体数据长度
+ */
 int32   MdsJsonParser_EncodeStockStaticItem(
                 const MdsStockStaticInfoT *pItem,
                 char *pBuf,
                 int32 bufSize);
 
-/* 期权静态信息条目的编码处理 */
+/**
+ * 期权静态信息条目的编码处理
+ *
+ * @param[in]   pRspItem    单条期权静态信息
+ * @param[out]  pBuf        序列化后数据的缓存区
+ * @param[in]   bufSize     缓存区长度
+ * @return  序列化后的消息体数据长度
+ */
 int32   MdsJsonParser_EncodeOptionStaticItem(
                 const MdsOptionStaticInfoT *pItem,
                 char *pBuf,
                 int32 bufSize);
 
-/* 行情快照条目的编码处理 */
+/**
+ * 行情快照条目的编码处理
+ *
+ * @param[in]   pRspItem    单条行情快照
+ * @param[out]  pBuf        序列化后数据的缓存区
+ * @param[in]   bufSize     缓存区长度
+ * @return  序列化后的消息体数据长度
+ */
 int32   MdsJsonParser_EncodeSnapshotListItem(
                 const MdsL1SnapshotT *pItem,
                 char *pBuf,

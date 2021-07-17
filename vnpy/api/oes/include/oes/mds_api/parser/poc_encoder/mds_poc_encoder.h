@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ extern "C" {
  * 函数声明
  * =================================================================== */
 
-/*
+/**
  * 应答消息编码处理（编码为CSV格式，用于向客户端发送应答消息）
  *
  * @param[in,out]   pRspHead        消息头
@@ -62,7 +62,7 @@ void*   MdsPocEncoder_EncodeRsp(
                 int32 recordNum,
                 const STimespec32T *pClRecvTime);
 
-/*
+/**
  * 返回应答消息编码后的记录格式 (字段列表)
  *
  * @param           msgType         消息类型

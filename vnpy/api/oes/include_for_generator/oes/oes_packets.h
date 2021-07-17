@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2015 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,6 +89,13 @@
  *          - 为了支持科创板, 新增以下查询消息类型 (兼容之前版本的API)
  *              - 查询证券账户信息 (OESMSG_QRYMSG_INV_ACCT)
  *              - 查询现货产品信息 (OESMSG_QRYMSG_STOCK)
+ * @version 0.15.10.6   2020/04/19
+ *          - 将延迟统计相关的时间戳字段升级为纳秒级时间戳 (内部使用的字段, 协议保持兼容, STimeval32T => STimespec32T)
+ * @version 0.15.11     2020/05/29
+ *          - 为了支持创业板, 新增以下查询消息类型 (兼容之前版本的API)
+ *              - 查询证券发行信息 (OESMSG_QRYMSG_ISSUE)
+ *              - 查询现货产品信息 (OESMSG_QRYMSG_STOCK)
+ *              - 查询ETF成份证券信息 (OESMSG_QRYMSG_ETF_COMPONENT)
  * @version 0.16        2019/11/20
  *          - 新增回报消息类型 '通知消息回报 (OESMSG_RPT_NOTIFY_INFO)'
  *              - 对应回报消息 OesRptMsgBodyT.notifyInfoRpt
@@ -113,6 +120,17 @@
  * @version 0.16.0.3    2020/01/14
  *          - 为了兼容之前版本的API, 新增以下查询消息类型
  *              - 查询期权行权指派信息 (OESMSG_QRYMSG_OPT_EXERCISE_ASSIGN)
+ * @version 0.17.0.8    2020/04/20
+ *          - 调整非交易类消息的消息代码取值
+ *          - 新增回报消息类型 融资融券直接还款委托执行报告(OESMSG_RPT_CREDIT_CASH_REPAY_REPORT)
+ *              - 对应回报订阅类型 OES_SUB_RPT_TYPE_CREDIT_CASH_REPAY_REPORT
+ *              - 对应回报消息 OesRptMsgBodyT.crdDebtCashRepayRpt
+ *          - 新增回报消息类型 融资融券合约变动信息(OESMSG_RPT_CREDIT_DEBT_CONTRACT_VARIATION)
+ *              - 对应回报订阅类型 OES_SUB_RPT_TYPE_CREDIT_DEBT_CONTRACT_VARIATION
+ *              - 对应回报消息 OesRptMsgBodyT.crdDebtContractRpt
+ *          - 新增回报消息类型 融资融券合约流水信息(OESMSG_RPT_CREDIT_DEBT_JOURNAL)
+ *              - 对应回报订阅类型 OES_SUB_RPT_TYPE_CREDIT_DEBT_JOURNAL
+ *              - 对应回报消息 OesRptMsgBodyT.crdDebtJournalRpt
  *
  * @since   2015/07/30
  */
@@ -123,7 +141,9 @@
 
 
 #include    <oes_global/oes_base_model.h>
+#include    <oes_global/oes_base_credit_model.h>
 #include    <oes_global/oes_qry_packets.h>
+#include    <oes_global/oes_qry_credit_packets.h>
 #include    <sutil/net/spk_global_packet.h>
 
 
@@ -137,7 +157,7 @@ extern "C" {
  * =================================================================== */
 
 /** 当前采用的协议版本号 */
-#define OES_APPL_VER_ID                         "0.16.0.4"
+#define OES_APPL_VER_ID                         "0.17.0.9"
 
 /**
  * 当前采用的协议版本号数值
@@ -148,7 +168,7 @@ extern "C" {
  *   - DD 为构建号
  *   - X  0, 表示不带时间戳的正常版本; 1, 表示带时间戳的延迟测量版本
  */
-#define OES_APPL_VER_VALUE                      (1001600041)
+#define OES_APPL_VER_VALUE                      1001700091
 
 /** 兼容的最低协议版本号 */
 #define OES_MIN_APPL_VER_ID                     "0.15.5"
@@ -172,12 +192,25 @@ typedef enum _eOesMsgType {
     OESMSG_ORD_NEW_ORDER                        = 0x01,     /**< 0x01/01  委托申报消息 */
     OESMSG_ORD_CANCEL_REQUEST                   = 0x02,     /**< 0x02/02  撤单请求消息 */
     OESMSG_ORD_BATCH_ORDERS                     = 0x03,     /**< 0x03/03  批量委托消息 */
+
+    OESMSG_ORD_CREDIT_REPAY                     = 0x04,     /**< 0x04/04  融资融券负债归还请求消息 */
+    OESMSG_ORD_CREDIT_CASH_REPAY                = 0x05,     /**< 0x05/05  融资融券直接还款请求消息 */
     __OESMSG_ORD_MAX,                                       /**< 最大的委托消息类型 */
+
+    /*
+     * 非交易类消息
+     */
+    __OESMSG_NONTRD_MIN                         = 0xC0,     /**< 0xC0/192 最小的非交易消息类型 */
+    OESMSG_NONTRD_FUND_TRSF_REQ                 = 0xC1,     /**< 0xC1/193 出入金委托 */
+    OESMSG_NONTRD_CHANGE_PASSWORD               = 0xC2,     /**< 0xC2/194 修改客户端登录密码 */
+    OESMSG_NONTRD_OPT_CONFIRM_SETTLEMENT        = 0xC3,     /**< 0xC3/195 期权账户结算单确认 */
+    __OESMSG_NONTRD_MAX,                                    /**< 最大的非交易消息类型 */
 
     /*
      * 执行报告类消息
      */
-    __OESMSG_RPT_MIN                            = 0x0F,     /**< 0x0F/15  最小的执行报告消息类型 */
+    __OESMSG_RPT_MIN                            = 0x0A,     /**< 0x0A/10  最小的执行报告消息类型 */
+    OESMSG_RPT_SERVICE_STATE                    = 0x0E,     /**< 0x0E/15  OES服务状态信息 (暂不支持订阅推送) */
     OESMSG_RPT_MARKET_STATE                     = 0x10,     /**< 0x10/16  市场状态信息 */
     OESMSG_RPT_REPORT_SYNCHRONIZATION           = 0x11,     /**< 0x11/17  回报同步的应答消息 */
 
@@ -195,34 +228,22 @@ typedef enum _eOesMsgType {
     OESMSG_RPT_OPTION_UNDERLYING_HOLDING_VARIATION
                                                 = 0x1B,     /**< 0x1B/27  期权标的持仓变动信息 */
     OESMSG_RPT_OPTION_SETTLEMENT_CONFIRMED      = 0x1C,     /**< 0x1C/28  期权账户结算单确认消息 */
-
     OESMSG_RPT_NOTIFY_INFO                      = 0x1E,     /**< 0x1E/30  OES通知消息 */
-    OESMSG_RPT_SERVICE_STATE                    = 0x1F,     /**< 0x1F/31  OES服务状态信息 (暂不支持订阅推送) */
+    OESMSG_RPT_CREDIT_CASH_REPAY_REPORT         = 0x20,     /**< 0x20/32  融资融券直接还款委托执行报告 */
+    OESMSG_RPT_CREDIT_DEBT_CONTRACT_VARIATION   = 0x21,     /**< 0x21/33  融资融券合约变动信息 */
+    OESMSG_RPT_CREDIT_DEBT_JOURNAL              = 0x22,     /**< 0x22/34  融资融券合约流水信息 */
     __OESMSG_RPT_MAX,                                       /**< 最大的回报消息类型 */
-
-    /*
-     * 非交易类消息
-     */
-    __OESMSG_NONTRD_MIN                         = 0x20,     /**< 0x20/32  最小的非交易消息类型 */
-    OESMSG_NONTRD_FUND_TRSF_REQ                 = 0x21,     /**< 0x21/33  出入金委托 */
-    OESMSG_NONTRD_CHANGE_PASSWORD               = 0x22,     /**< 0x22/34  修改客户端登录密码 */
-    OESMSG_NONTRD_OPT_CONFIRM_SETTLEMENT        = 0x23,     /**< 0x23/35  期权账户结算单确认 */
-    __OESMSG_NONTRD_MAX,                                    /**< 最大的非交易消息类型 */
 
     /*
      * 查询类消息
      */
     __OESMSG_QRYMSG_MIN                         = 0x2F,     /**< 0x2F/47  最小的查询消息类型 */
-    OESMSG_QRYMSG_CLIENT_OVERVIEW               = 0x30,     /**< 0x30/48  查询客户端总览信息 */
-    OESMSG_QRYMSG_STK_HLD                       = 0x34,     /**< 0x34/52  查询股票持仓信息 */
     OESMSG_QRYMSG_OPT_HLD                       = 0x35,     /**< 0x35/53  查询期权持仓信息 */
     OESMSG_QRYMSG_CUST                          = 0x36,     /**< 0x36/54  查询客户信息 */
     OESMSG_QRYMSG_COMMISSION_RATE               = 0x38,     /**< 0x38/56  查询客户佣金信息 */
     OESMSG_QRYMSG_FUND_TRSF                     = 0x39,     /**< 0x39/57  查询出入金信息 */
     OESMSG_QRYMSG_ETF                           = 0x3B,     /**< 0x3B/59  查询ETF申赎产品信息 */
-    OESMSG_QRYMSG_ETF_COMPONENT                 = 0x3C,     /**< 0x3C/60  查询ETF成分股信息 */
     OESMSG_QRYMSG_OPTION                        = 0x3D,     /**< 0x3D/61  查询期权产品信息 */
-    OESMSG_QRYMSG_ISSUE                         = 0x3E,     /**< 0x3E/62  查询证券发行信息 */
     OESMSG_QRYMSG_LOT_WINNING                   = 0x3F,     /**< 0x3F/63  查询新股配号、中签信息 */
     OESMSG_QRYMSG_TRADING_DAY                   = 0x40,     /**< 0x40/64  查询当前交易日 */
     OESMSG_QRYMSG_MARKET_STATE                  = 0x41,     /**< 0x41/65  查询市场状态 */
@@ -234,11 +255,25 @@ typedef enum _eOesMsgType {
     OESMSG_QRYMSG_BROKER_PARAMS                 = 0x48,     /**< 0x48/72  查询券商参数信息 */
 
     OESMSG_QRYMSG_INV_ACCT                      = 0x51,     /**< 0x51/81  查询证券账户信息 (0x37的更新版本, @since 0.15.9) */
-    OESMSG_QRYMSG_STOCK                         = 0x52,     /**< 0x52/82  查询现货产品信息 (0x3A的更新版本, @since 0.15.9) */
-    OESMSG_QRYMSG_CASH_ASSET                    = 0x53,     /**< 0x53/83  查询客户资金信息 (0x33的更新版本, @since 0.16) */
     OESMSG_QRYMSG_ORD                           = 0x54,     /**< 0x54/84  查询委托信息 (0x31的更新版本, @since 0.16) */
     OESMSG_QRYMSG_TRD                           = 0x55,     /**< 0x55/85  查询成交信息 (0x32的更新版本, @since 0.16) */
     OESMSG_QRYMSG_OPT_EXERCISE_ASSIGN           = 0x56,     /**< 0x56/86  查询期权行权指派信息 (0x47的更新版本, @since 0.16.0.3) */
+    OESMSG_QRYMSG_ISSUE                         = 0x57,     /**< 0x57/87  查询证券发行信息 (0x3E的更新版本, @since 0.15.11) */
+    OESMSG_QRYMSG_STOCK                         = 0x58,     /**< 0x58/88  查询现货产品信息 (0x52的更新版本, @since 0.15.11) */
+    OESMSG_QRYMSG_ETF_COMPONENT                 = 0x59,     /**< 0x59/89  查询ETF成份证券信息 (0x3C的更新版本, @since 0.15.11) */
+    OESMSG_QRYMSG_CLIENT_OVERVIEW               = 0x5A,     /**< 0x5A/90  查询客户端总览信息 (0x30的更新版本, @since 0.15.11.11)  */
+    OESMSG_QRYMSG_CASH_ASSET                    = 0x5B,     /**< 0x5B/91  查询客户资金信息 (0x53的更新版本, @since 0.17) */
+    OESMSG_QRYMSG_STK_HLD                       = 0x5C,     /**< 0x5C/92  查询股票持仓信息 (0x34的更新版本, @since 0.17) */
+
+    OESMSG_QRYMSG_CRD_DEBT_CONTRACT             = 0x80,     /**< 0x80/128 查询融资融券合约信息 */
+    OESMSG_QRYMSG_CRD_CUST_SECU_DEBT_STATS      = 0x81,     /**< 0x81/129 查询客户单证券融资融券负债统计信息 */
+    OESMSG_QRYMSG_CRD_CREDIT_ASSET              = 0x82,     /**< 0x82/130 查询信用资产信息 */
+    OESMSG_QRYMSG_CRD_CASH_REPAY_INFO           = 0x83,     /**< 0x83/131 查询融资融券业务直接还款信息 */
+    OESMSG_QRYMSG_CRD_CASH_POSITION             = 0x84,     /**< 0x84/132 查询融资融券业务资金头寸信息 (可融资头寸信息) */
+    OESMSG_QRYMSG_CRD_SECURITY_POSITION         = 0x85,     /**< 0x85/133 查询融资融券业务证券头寸信息 (可融券头寸信息) */
+    OESMSG_QRYMSG_CRD_EXCESS_STOCK              = 0x86,     /**< 0x86/134 查询融资融券业务余券信息 */
+    OESMSG_QRYMSG_CRD_DEBT_JOURNAL              = 0x87,     /**< 0x87/135 查询融资融券合约流水信息 (仅当日流水) */
+    OESMSG_QRYMSG_CRD_INTEREST_RATE             = 0x88,     /**< 0x88/136 查询融资融券息费利率 */
     __OESMSG_QRYMSG_MAX,                                    /**< 最大的查询消息类型 */
 
     /*
@@ -252,14 +287,7 @@ typedef enum _eOesMsgType {
     /*
      * 以下消息类型定义已废弃, 只是为了兼容之前的版本而暂时保留
      */
-    OESMSG_RPT_ORDER_REJECT                     = OESMSG_RPT_BUSINESS_REJECT,
-
-    OESMSG_QRYMSG_ORD_L001509                   = 0x31,     /**< 0x31/49  查询委托信息 (兼容 v0.15.9 以及 v0.15.9 之前的版本的消息类型) */
-    OESMSG_QRYMSG_TRD_L001509                   = 0x32,     /**< 0x32/50  查询成交信息 (兼容 v0.15.9 以及 v0.15.9 之前的版本的消息类型) */
-    OESMSG_QRYMSG_CASH_ASSET_L001509            = 0x33,     /**< 0x33/51  查询客户资金信息 (兼容 v0.15.9 以及 v0.15.9 之前的版本的消息类型) */
-    OESMSG_QRYMSG_INV_ACCT_L001508              = 0x37,     /**< 0x37/55  查询证券账户信息 (兼容 v0.15.8 以及 v0.15.8 之前的版本的消息类型) */
-    OESMSG_QRYMSG_STOCK_L001508                 = 0x3A,     /**< 0x3A/58  查询现货产品信息 (兼容 v0.15.8 以及 v0.15.8 之前的版本的消息类型) */
-    OESMSG_QRYMSG_OPT_EXERCISE_ASSIGN_L001600   = 0x47      /**< 0x47/71  查询期权行权指派信息 (兼容 v0.16.0.2 以及 v0.16.0.2 之前的版本的消息类型) */
+    OESMSG_RPT_ORDER_REJECT                     = OESMSG_RPT_BUSINESS_REJECT
 
 } eOesMsgTypeT;
 /* -------------------------           */
@@ -277,6 +305,10 @@ typedef enum _eOesMsgType {
  * - 0x0040: 持仓变动信息
  * - 0x0080: 市场状态信息
  * - 0x0100: 通知消息回报
+ * - 0x0200: 结算单确认消息
+ * - 0x0400: 融资融券直接还款委托执行报告
+ * - 0x0800: 融资融券合约变动信息
+ * - 0x1000: 融资融券合约流水信息
  * - 0xFFFF: 所有回报
  */
 typedef enum _eOesSubscribeReportType {
@@ -313,31 +345,21 @@ typedef enum _eOesSubscribeReportType {
     /** 结算单确认消息 */
     OES_SUB_RPT_TYPE_SETTLEMETN_CONFIRMED       = 0x200,
 
+    /** 融资融券直接还款委托执行报告 */
+    OES_SUB_RPT_TYPE_CREDIT_CASH_REPAY_REPORT   = 0x400,
+
+    /** 融资融券合约变动信息 */
+    OES_SUB_RPT_TYPE_CREDIT_DEBT_CONTRACT_VARIATION
+                                                = 0x800,
+
+    /** 融资融券合约流水信息 */
+    OES_SUB_RPT_TYPE_CREDIT_DEBT_JOURNAL        = 0x1000,
+
     /** 所有回报 */
     OES_SUB_RPT_TYPE_ALL                        = 0xFFFF,
 
     __MAX_OES_SUB_RPT_TYPE                      = 0x7FFFFFFF
 } eOesSubscribeReportTypeT;
-/* -------------------------           */
-
-
-/**
- * 可指定的协议约定类型定义
- * - 0:     默认的协议约定类型
- * - 0x80:  约定以压缩方式传输数据
- * - 0xFF:  无任何协议约定
- */
-typedef enum _eOesProtocolHintsType {
-    /** 默认的协议约定类型 */
-    OES_PROT_HINTS_TYPE_DEFAULT                 = 0,
-
-    /** 协议约定以压缩方式传输数据 */
-    OES_PROT_HINTS_TYPE_COMPRESS                = 0x80,
-
-    /** 无任何协议约定 */
-    OES_PROT_HINTS_TYPE_NONE                    = 0xFF,
-    __MAX_OES_PROT_HINTS_TYPE                   = 0xFF
-} eOesProtocolHintsTypeT;
 /* -------------------------           */
 
 
@@ -463,11 +485,11 @@ typedef struct _OesTestRequestRsp {
 
 #ifdef  _OES_EXPORT_LATENCY_STATS
     /** 消息实际接收时间 (开始解码等处理之前的时间) */
-    STimeval32T         __recvTime;
+    STimespec32T        __recvTime;
     /** 消息采集处理完成时间 */
-    STimeval32T         __collectedTime;
+    STimespec32T        __collectedTime;
     /** 消息推送时间 (写入推送缓存以后, 实际网络发送之前) */
-    STimeval32T         __pushingTime;
+    STimespec32T        __pushingTime;
 #endif
 
 } OesTestRequestRspT;
@@ -651,7 +673,7 @@ typedef OesOptSettlementConfirmBaseInfoT    OesOptSettlementConfirmRspT;
  * 回报消息的消息头定义
  */
 typedef struct _OesRptMsgHead {
-    int64               rptSeqNum;              /**< 执行报告的消息编号 */
+    int64               rptSeqNum;              /**< 回报消息的编号 */
 
     uint8               rptMsgType;             /**< 回报消息的消息代码 @see eOesMsgTypeT */
     uint8               execType;               /**< 执行类型 @see eOesExecTypeT */
@@ -693,6 +715,12 @@ typedef union _OesRptMsgBody {
     OesOptSettlementConfirmReportT
                         optSettlementConfirmRpt;/**< 期权账户结算单确认回报信息 */
 
+    OesCrdCashRepayReportT
+                        crdDebtCashRepayRpt;    /**< 融资融券直接还款执行报告 */
+    OesCrdDebtContractReportT
+                        crdDebtContractRpt;     /**< 融资融券合约变动回报信息 */
+    OesCrdDebtJournalReportT
+                        crdDebtJournalRpt;      /**< 融资融券合约流水回报信息 */
 } OesRptMsgBodyT;
 
 
@@ -734,6 +762,12 @@ typedef union _OesReqMsgBody {
 
     /** 批量委托请求报文 */
     OesBatchOrdersReqT  batchOrdersReq;
+
+    /** 融资融券负债归还(除直接还款以外)请求报文 */
+    OesCrdRepayReqT     crdRepayReq;
+
+    /** 融资融券直接还款请求报文 */
+    OesCrdCashRepayReqT crdCashRepayReq;
 
     /** 出入金请求报文 */
     OesFundTrsfReqT     fundTrsfReq;
@@ -791,6 +825,110 @@ typedef union _OesRspMsgBody {
 /* 结构体的初始化值定义 */
 #define NULLOBJ_OES_RSP_MSG_BODY                        \
         {NULLOBJ_OES_RPT_MSG}
+/* -------------------------           */
+
+
+/* ===================================================================
+ * 统一的查询消息定义
+ * =================================================================== */
+
+/**
+ * 统一的查询请求消息定义
+ */
+typedef union _OesQryReqMsg {
+    OesQryOrdReqT                   qryOrd;                     /**< 查询委托信息请求 */
+    OesQryTrdReqT                   qryTrd;                     /**< 查询成交信息请求 */
+    OesQryCashAssetReqT             qryCashAsset;               /**< 查询客户资金信息请求 */
+    OesQryStkHoldingReqT            qryStkHolding;              /**< 查询股票持仓信息请求 */
+    OesQryOptHoldingReqT            qryOptHolding;              /**< 查询期权持仓信息请求 */
+    OesQryCustReqT                  qryCust;                    /**< 查询客户信息请求 */
+    OesQryInvAcctReqT               qryInvAcct;                 /**< 查询证券账户请求 */
+    OesQryCommissionRateReqT        qryComms;                   /**< 查询客户佣金信息请求 */
+    OesQryFundTransferSerialReqT    qryFundTrsf;                /**< 查询出入金信息请求 */
+    OesQryLotWinningReqT            qryLotWinning;              /**< 查询新股配号、中签信息请求 */
+    OesQryIssueReqT                 qryIssue;                   /**< 查询证券发行信息请求 */
+    OesQryStockReqT                 qryStock;                   /**< 查询现货产品信息请求 */
+    OesQryEtfReqT                   qryEtf;                     /**< 查询ETF申赎产品信息请求 */
+    OesQryEtfComponentReqT          qryEtfComponent;            /**< 查询ETF基金成份证券信息请求 */
+    OesQryOptionReqT                qryOption;                  /**< 查询期权产品信息请求 */
+    OesQryMarketStateReqT           qryMktState;                /**< 查询市场状态信息请求 */
+    OesQryNotifyInfoReqT            qryNotifyInfo;              /**< 查询通知消息请求 */
+    OesQryCounterCashReqT           qryCounterCash;             /**< 查询主柜资金信息请求 */
+    OesQryOptPositionLimitReqT      qryOptPositionLimit;        /**< 查询期权限仓额度信息请求 */
+    OesQryOptPurchaseLimitReqT      qryOptPurchaseLimit;        /**< 查询期权限购额度信息请求 */
+    OesQryOptUnderlyingHoldingReqT  qryOptUnderlyingHolding;    /**< 查询期权标的持仓信息请求 */
+    OesQryOptExerciseAssignReqT     qryOptExerciseAssign;       /**< 查询期权行权指派信息请求 */
+
+    /**
+     * 信用类查询请求
+     */
+    OesQryCrdDebtContractReqT       qryCrdDebtContract;         /**< 查询融资融券合约信息请求 */
+    OesQryCrdSecurityDebtStatsReqT  qryCrdCustSecuDebtStats;    /**< 查询客户单证券融资融券负债统计信息请求 */
+    OesQryCrdCreditAssetReqT        qryCrdCreditAsset;          /**< 查询信用资产信息请求 */
+    OesQryCrdCashRepayReqT          qryCrdCashRepay;            /**< 查询融资融券业务直接还券信息请求 */
+    OesQryCrdCashPositionReqT       qryCrdCashPosition;         /**< 查询融资融券业务资金头寸信息 (可融资头寸信息) 请求 */
+    OesQryCrdSecurityPositionReqT   qryCrdSecurityPosition;     /**< 查询融资融券业务证券头寸信息 (可融券头寸信息) 请求 */
+    OesQryCrdExcessStockReqT        qryCrdExcessStock;          /**< 查询融资融券业务余券信息请求 */
+    OesQryCrdDebtJournalReqT        qryCrdDebtJournal;          /**< 查询融资融券合约流水信息请求 */
+    OesQryCrdInterestRateReqT       qryCrdInterestRateReq;      /**< 查询融资融券息费利率请求 */
+} OesQryReqMsgT;
+
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_OES_QRY_REQ_MSG                         \
+        {NULLOBJ_OES_QRY_ORD_REQ}
+/* -------------------------           */
+
+
+/**
+ * 统一的查询应答消息定义
+ */
+typedef union _OesQryRspMsg {
+    OesQryOrdRspT                   ordRsp;                     /**< 查询委托信息应答 */
+    OesQryTrdRspT                   trdRsp;                     /**< 查询成交信息应答 */
+    OesQryCashAssetRspT             cashAssetRsp;               /**< 查询客户资金信息应答 */
+    OesQryStkHoldingRspT            stkHoldingRsp;              /**< 查询股票持仓信息应答 */
+    OesQryOptHoldingRspT            optHoldingRsp;              /**< 查询期权持仓信息应答 */
+    OesQryCustRspT                  custRsp;                    /**< 查询客户信息应答 */
+    OesQryInvAcctRspT               invAcctRsp;                 /**< 查询证券账户应答 */
+    OesQryCommissionRateRspT        commsRateRsp;               /**< 查询客户佣金信息应答 */
+    OesQryFundTransferSerialRspT    fundTrsfRsp;                /**< 查询出入金流水信息应答 */
+    OesQryLotWinningRspT            lotWinningRsp;              /**< 查询新股配号、中签信息应答 */
+    OesQryIssueRspT                 issueRsp;                   /**< 查询证券发行信息应答 */
+    OesQryStockRspT                 stockRsp;                   /**< 查询现货产品信息应答 */
+    OesQryEtfRspT                   etfRsp;                     /**< 查询ETF申赎产品信息应答 */
+    OesQryEtfComponentRspT          etfComponentRsp;            /**< 查询ETF基金成份证券信息应答 */
+    OesQryOptionRspT                optionRsp;                  /**< 查询期权产品信息应答 */
+    OesQryTradingDayRspT            tradingDay;                 /**< 查询当前交易日信息应答 */
+    OesQryMarketStateRspT           mktStateRsp;                /**< 查询市场状态信息应答 */
+    OesQryNotifyInfoRspT            notifyInfoRsp;              /**< 查询通知消息应答 */
+    OesClientOverviewT              clientOverview;             /**< 客户端总览信息 */
+    OesQryCounterCashRspT           counterCashRsp;             /**< 客户主柜资金信息 */
+    OesQryOptPositionLimitRspT      optPositionLimitRsp;        /**< 查询期权限仓额度信息应答 */
+    OesQryOptPurchaseLimitRspT      optPurchaseLimitRsp;        /**< 查询期权限购额度信息应答 */
+    OesQryOptUnderlyingHoldingRspT  optUnderlyingHoldingRsp;    /**< 查询期权标的持仓信息应答 */
+    OesQryOptExerciseAssignRspT     optExerciseAssignRsp;       /**< 查询期权行权指派信息应答 */
+    OesQryBrokerParamsInfoRspT      brokerParamsRsp;            /**< 查询券商参数信息应答 */
+    OesQryApplUpgradeInfoRspT       applUpgradeRsp;             /**< 周边应用升级信息 */
+
+    /**
+     * 信用类查询应答
+     */
+    OesQryCrdDebtContractRspT       crdDebtContractRsp;         /**< 查询融资融券合约信息应答 */
+    OesQryCrdSecurityDebtStatsRspT  crdCustSecuDebtStatsRsp;    /**< 查询客户单证券融资融券负债统计信息应答 */
+    OesQryCrdCreditAssetRspT        crdCreditAssetRsp;          /**< 查询信用资产信息应答 */
+    OesQryCrdCashRepayRspT          crdCashRepayRsp;            /**< 查询融资融券业务直接还券信息应答 */
+    OesQryCrdCashPositionRspT       crdCashPositionRsp;         /**< 查询融资融券业务资金头寸信息 (可融资头寸信息) 应答 */
+    OesQryCrdSecurityPositionRspT   crdSecurityPositionRsp;     /**< 查询融资融券业务证券头寸信息 (可融券头寸信息) 应答 */
+    OesQryCrdExcessStockRspT        crdExcessStockRsp;          /**< 查询融资融券业务余券信息应答 */
+    OesQryCrdDebtJournalRspT        crdDebtJournalRsp;          /**< 查询融资融券合约流水信息应答 */
+    OesQryCrdInterestRateRspT       crdInterestRateRsp;         /**< 查询融资融券息费利率应答 */
+} OesQryRspMsgT;
+
+
+/* 结构体的初始化值定义 */
+#define NULLOBJ_OES_QRY_RSP_MSG                         \
+        {NULLOBJ_OES_QRY_ORD_RSP}
 /* -------------------------           */
 
 

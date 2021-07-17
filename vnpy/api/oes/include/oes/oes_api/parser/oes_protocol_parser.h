@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,14 @@ extern "C" {
  * 编码/解码函数声明 （非查询消息）
  * =================================================================== */
 
-/*
+/**
  * 请求消息解码处理（解码为二进制结构体，用于接收客户端的请求消息）
+ *
+ * @param[in,out]   pReqHead    消息头
+ * @param           pMsgBody    消息体数据
+ * @param[out]      pReqMsgBuf  解码后的消息体数据缓存
+ * @param           pRemoteInfo 对端身份信息, 用于打印跟踪日志
+ * @return  解码后的消息体数据; NULL：解析失败
  */
 OesReqMsgBodyT* OesParser_DecodeReq(
                         SMsgHeadT *pReqHead,
@@ -50,8 +56,16 @@ OesReqMsgBodyT* OesParser_DecodeReq(
                         OesReqMsgBodyT *pReqMsgBuf,
                         const char *pRemoteInfo);
 
-/*
+/**
  * 应答消息编码处理（编码为JSON等格式，用于向客户端发送应答消息）
+ *
+ * @param[in,out]   pRspHead        消息头
+ * @param           pRspBody        待编码的应答数据
+ * @param[out]      pBuf            存储编码后数据的缓存区
+ * @param           bufSize         缓存区长度
+ * @param           pRemoteInfo     对端身份信息, 用于打印跟踪日志
+ * @param           isCopyBinary    对于二进制协议，是否也同样将原始数据复制到缓存区
+ * @return  编码后的消息体数据; NULL：编码失败
  */
 void*           OesParser_EncodeRsp(
                         SMsgHeadT *pRspHead,
@@ -61,8 +75,16 @@ void*           OesParser_EncodeRsp(
                         const char *pRemoteInfo,
                         BOOL isCopyBinary);
 
-/*
+/**
  * 为执行报告回报特别定制的应答消息编码处理（编码为JSON等格式，用于向客户端发送应答消息）
+ *
+ * @param[in,out]   pRspHead        消息头
+ * @param           pRspBody        待编码的应答数据
+ * @param[out]      pBuf            存储编码后数据的缓存区
+ * @param           bufSize         缓存区长度
+ * @param           pRemoteInfo     对端身份信息, 用于打印跟踪日志
+ * @param           isCopyBinary    对于二进制协议，是否也同样将原始数据复制到缓存区
+ * @return  编码后的消息体数据; NULL：编码失败
  */
 void*           OesParser_EncodeRptSpecial(
                         SMsgHeadT *pRspHead,
@@ -79,8 +101,14 @@ void*           OesParser_EncodeRptSpecial(
  * 编码/解码函数声明 （查询消息）
  * =================================================================== */
 
-/*
+/**
  * 查询服务接收消息的解析处理
+ *
+ * @param   pReqHead    待解析报文头
+ * @param   pMsgBody    待解析报文体
+ * @param   pQryReq     [out] 解析出来的service请求结构
+ * @param   pRemoteInfo 对端身份信息, 用于打印跟踪日志
+ * @return  请求消息的结构体; NULL：解析失败，ppErrMsg将指向错误信息
  */
 OesQryReqMsgT*  OesParser_DecodeQueryReq(
                         SMsgHeadT *pReqHead,
@@ -88,8 +116,15 @@ OesQryReqMsgT*  OesParser_DecodeQueryReq(
                         OesQryReqMsgT *pQryReq,
                         const char *pRemoteInfo);
 
-/*
+/**
  * 查询服务构造应答消息处理
+ *
+ * @param   pRspHead    [in/out]消息头
+ * @param   pQryRsp     应答消息结构体
+ * @param   pBuf        [out] 存储编码后数据的缓存区
+ * @param   bufSize     缓存区长度
+ * @param   pRemoteInfo 对端身份信息, 用于打印跟踪日志
+ * @return  编码后的消息体数据; NULL：编码失败
  */
 void*           OesParser_EncodeQueryRsp(
                         SMsgHeadT *pRspHead,

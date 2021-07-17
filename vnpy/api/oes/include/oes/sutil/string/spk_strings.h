@@ -340,7 +340,7 @@ SStr_IsVisibleAsciiString(const char *pStr) {
     }
 
     while (*pStr) {
-        if (__spk_unlikely(*pStr < '!' || *pStr > '~')) {
+        if (__spk_unlikely(! SPK_ISVISIBLE(*pStr))) {
             return FALSE;
         }
         pStr++;
@@ -1028,9 +1028,43 @@ SStr_SkipString(char **ppStr, const char *pSkipKey) {
 
 
 /**
+ * 替换字符串中的不可见字符
+ * @note 空格字符(含制表符和换行符)特殊对待
+ *
+ * @param[in,out]   pStr    待处理的字符串
+ * @param[in]       charReplacement
+ *                          不可见字符的替换字符
+ * @param[in]       spaceReplacement
+ *                          空格字符的替换字符
+ * @return  已替换的字符数量
+ */
+static __inline int32
+SStr_ReplaceInvisibleChar(char *pStr,
+        char charReplacement, char spaceReplacement) {
+    int32   count = 0;
+
+    SLOG_ASSERT(pStr);
+
+    while (*pStr) {
+        if (__spk_unlikely(! SPK_ISVISIBLE(*pStr))) {
+            *pStr = SPK_ISSPACE(*pStr) ? spaceReplacement : charReplacement;
+            count ++;
+        }
+
+        pStr++;
+    }
+
+    return count;
+}
+
+
+/**
  * 替换字符串中的指定字符
  *
- * @param   pStr    待处理的字符串
+ * @param[in,out]   pStr    待处理的字符串
+ * @param[in]       c1      被替换字符
+ * @param[in]       c2      替换字符
+ * @param[in]       n       最多替换次数
  * @return  已替换的字符数量
  */
 static __inline int32
@@ -1054,8 +1088,11 @@ SStr_ReplaceChar(char *pStr, const char c1, const char c2, int32 n) {
 /**
  * 从后面开始替换字符串中的指定字符
  *
- * @param   pStr    待处理的字符串
- * @return
+ * @param[in,out]   pStr    待处理的字符串
+ * @param[in]       c1      被替换字符
+ * @param[in]       c2      替换字符
+ * @param[in]       n       最多替换次数
+ * @return  已替换的字符数量
  */
 static __inline int32
 SStr_ReplaceCharReverse(char *pStr, const char c1, const char c2, int32 n) {

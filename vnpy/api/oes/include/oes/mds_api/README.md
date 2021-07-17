@@ -16,6 +16,7 @@
 	- TCP行情对接的样例代码 (基于同步API实现) <04_mds_sync_tcp_sample.c>
 	- UDP行情对接的样例代码 (基于同步API实现) <05_mds_sync_udp_sample.c>
 	- 证券静态信息查询和快照行情查询的样例代码 <06_mds_query_sample.c>
+	- 通过查询证券静态信息来订阅行情的样例代码 <08_mds_subscribe_by_query_detail_sample.c>
 	- 用于样例代码编译的 Makefile <Makefile.sample>
 
 04_mds_sync_tcp_sample.c 摘录如下：
@@ -43,16 +44,17 @@ MdsApiSample_ResubscribeByCodePostfix(MdsApiSessionInfoT *pTcpChannel,
 /**
  * 进行消息处理的回调函数
  *
- * @param   pSessionInfo    会话信息
- * @param   pMsgHead        消息头
- * @param   pMsgBody        消息体数据
- * @param   pCallbackParams 外部传入的参数
- * @return  大于等于0，成功；小于0，失败（错误号）
+ * @param   pSessionInfo        会话信息
+ * @param   pMsgHead            回报消息的消息头
+ * @param   pMsgItem            回报消息的数据条目 (需要根据消息类型转换为对应的数据结构)
+ * @param   pCallbackParams     外部传入的参数
+ * @retval  >=0                 大于等于0, 成功
+ * @retval  <0                  小于0, 处理失败 (负的错误号)
  */
 static int32
 MdsApiSample_HandleMsg(MdsApiSessionInfoT *pSessionInfo,
-        SMsgHeadT *pMsgHead, void *pMsgBody, void *pCallbackParams) {
-    MdsMktRspMsgBodyT   *pRspMsg = (MdsMktRspMsgBodyT *) pMsgBody;
+        SMsgHeadT *pMsgHead, void *pMsgItem, void *pCallbackParams) {
+    MdsMktRspMsgBodyT   *pRspMsg = (MdsMktRspMsgBodyT *) pMsgItem;
 
     /*
      * 根据消息类型对行情消息进行处理

@@ -69,6 +69,7 @@ extern "C" {
 
 #if defined (__WINDOWS__) || defined (__MINGW__)
 #   define  __spk_gettimeofday                  __SPK_WIN32_gettimeofday
+#   define  __spk_getclocktime                  __SPK_WIN32_getclocktime
 
 #   if (defined (_MSC_VER) && _MSC_VER < 1400) \
             || (! defined (_WIN32_WINNT) || _WIN32_WINNT < 0x0600)
@@ -81,9 +82,13 @@ extern "C" {
 /* gettimeofday */
 int         __SPK_WIN32_gettimeofday(STimevalT *tv, STimezoneT *tz);
 
+/* getclocktime */
+int         __SPK_WIN32_getclocktime(int clk_id, STimespecT *ts);
+
 
 #else
 #   define  __spk_gettimeofday                  gettimeofday
+#   define  __spk_getclocktime                  clock_gettime
 #   define  __spk_localtime_r(T, P_TM)          localtime_r((T), (P_TM))
 
 
@@ -423,17 +428,27 @@ STime_GetTimeOfDay32(STimeval32T *pTv) {
  *
  * @param[out]  pTs         用于输出当前时间的数据缓存
  * @return      纳秒级时间
- * @see         clock_gettime()
+ * @see         clock_gettime(), __SPK_WIN32_getclocktime()
  */
 static __inline STimespecT*
 STime_GetClockTime(STimespecT *pTs) {
+#if defined (__LINUX__)
+    SLOG_ASSERT(pTs);
+    __spk_getclocktime(CLOCK_REALTIME, pTs);
+
+#elif (defined (__WINDOWS__) || defined (__MINGW__))
+    SLOG_ASSERT(pTs);
+    __spk_getclocktime(0, pTs);
+
+#else
+    STimevalT   tv = {0, 0};
+
     SLOG_ASSERT(pTs);
 
-#if defined (__LINUX__)
-    clock_gettime(CLOCK_REALTIME, pTs);
-#else
-    STime_GetTimeOfDay((STimevalT *) pTs);
-    pTs->tv_nsec *= 1000;
+    STime_GetTimeOfDay(&tv);
+    pTs->tv_sec = tv.tv_sec;
+    pTs->tv_nsec = tv.tv_usec * 1000;
+
 #endif
 
     return pTs;
@@ -900,6 +915,41 @@ STime_GetHourOfIntTimeMs(int32 iTime) {
 
 
 /**
+ * 转换INT型时间为从00:00:00开始的秒数
+ *
+ * @param   iTime   HHMMSS 格式的整型时间
+ * @return  从00:00:00开始的秒数
+ */
+static __inline int32
+STime_ConvertIntTimeToDailySeconds(int32 iTime) {
+    return STime_GetHourOfIntTime(iTime) * 3600
+            + STime_GetMinuteOfIntTime(iTime) * 60
+            + STime_GetSecondOfIntTime(iTime);
+}
+
+
+/**
+ * 转换从00:00:00开始的秒数为INT型时间
+ *
+ * @param   seconds     从00:00:00开始的秒数
+ * @return  HHMMSS 格式的整型时间
+ */
+static __inline int32
+STime_ConvertDailySecondsToIntTime(int32 seconds) {
+    int32           remain = seconds;
+    int32           iTime = 0;
+
+    iTime += (remain % 60);
+    remain /= 60;
+    iTime += (remain % 60) * 100;
+    remain /= 60;
+    iTime += remain * 10000;
+
+    return iTime;
+}
+
+
+/**
  * 返回分钟数
  *
  * @param   iTime   HHMMSSsss 格式的整型时间
@@ -988,18 +1038,8 @@ STime_DiffIntDays(int32 iBeginDate, int32 iEndDate) {
  */
 static __inline int32
 STime_DiffIntTime(int32 beginTime, int32 endTime) {
-    int32           beginSecs = 0;
-    int32           endSecs = 0;
-
-    beginSecs = STime_GetHourOfIntTime(beginTime) * 3600
-            + STime_GetMinuteOfIntTime(beginTime) * 60
-            + STime_GetSecondOfIntTime(beginTime);
-
-    endSecs = STime_GetHourOfIntTime(endTime) * 3600
-            + STime_GetMinuteOfIntTime(endTime) * 60
-            + STime_GetSecondOfIntTime(endTime);
-
-    return (endSecs - beginSecs);
+    return STime_ConvertIntTimeToDailySeconds(endTime)
+            - STime_ConvertIntTimeToDailySeconds(beginTime);
 }
 
 

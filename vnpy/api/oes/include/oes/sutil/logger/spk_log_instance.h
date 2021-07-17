@@ -233,7 +233,7 @@ void    SLog_PrintLogInstanceInfo(FILE *fp);
 /* 创建所有异步日志使用的共享内存队列 */
 BOOL    SLog_CreateAsyncLogQueues();
 
-/* 创建所有异步日志使用的共享内存队列 */
+/* 释放所有异步日志使用的共享内存队列 */
 BOOL    SLog_ReleaseAsyncLogQueues();
 
 /* 激活所有的异步日志记录器 */
