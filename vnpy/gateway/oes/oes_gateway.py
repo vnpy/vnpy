@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, List
 
 from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.utility import get_file_path, round_to,get_digits
+from vnpy.trader.utility import get_file_path, round_to, get_digits
 from vnpy.trader.object import (
     TickData,
     OrderData,
@@ -260,7 +260,8 @@ class OesMdApi(MdApi):
         tick.ask_volume_1, tick.ask_volume_2, tick.ask_volume_3, tick.ask_volume_4, tick.ask_volume_5 = data["ask_qty"][0:5]
 
         pricetick = SYMBOL_PRICETICK_MAP.get(tick.vt_symbol, 0)
-        #宽睿pricetick已在OesTdApi登录获取证券信息时转换成VNPY最小报价单位0.01，宽睿的价格22.22显示为222200,round_to函数为去除小数后两位，不适用，用round函数替换
+        #宽睿priceTick最小报价单位 (单位精确到元后四位, 即1元 = 10000)已在OesTdApi登录获取证券信息时已转换成最小报价单位0.01，
+        #宽睿的价格22.22显示为222200,round_to函数为去除小数后两位，不适用，用round函数替换
         ipricetick = get_digits(pricetick)
         if pricetick:
             tick.bid_price_1 = round(tick.bid_price_1 / 10000, ipricetick)
@@ -319,7 +320,8 @@ class OesMdApi(MdApi):
         tick.ask_volume_1, tick.ask_volume_2, tick.ask_volume_3, tick.ask_volume_4, tick.ask_volume_5 = data["ask_qty"][0:5]
 
         pricetick = SYMBOL_PRICETICK_MAP.get(tick.vt_symbol, 0)
-        #宽睿pricetick已在OesTdApi登录时转换成VNPY最小报价单位0.01，宽睿的价格22.22显示为222200,round_to函数为去除小数后两位，不适用，用round函数替换
+        #宽睿priceTick最小报价单位 (单位精确到元后四位, 即1元 = 10000)已在OesTdApi登录获取证券信息时已转换成最小报价单位0.01，
+        #宽睿的价格22.22显示为222200,round_to函数为去除小数后两位，不适用，用round函数替换
         ipricetick = get_digits(pricetick)
         if pricetick:
             tick.bid_price_1 = round(tick.bid_price_1 / 10000, ipricetick)
@@ -815,8 +817,11 @@ class OesTdApi(TdApi):
         # Check market
         if req.exchange == Exchange.SSE:
             oes_investorid = self.investoridsh
-        else:
+        elif req.exchange == Exchange.SZSE:
             oes_investorid = self.investoridsz
+        else:
+            self.gateway.write_log("暂不支持其它市场")
+
         oes_req = {
             "clSeqNo": self.reqid,
             "mktId": oes_exchange,
@@ -848,8 +853,10 @@ class OesTdApi(TdApi):
             # Check market
             if req.exchange == Exchange.SSE:
                 oes_investorid = self.investoridsh
-            else:
+            elif req.exchange == Exchange.SZSE:
                 oes_investorid = self.investoridsz
+            else:
+                self.gateway.write_log("暂不支持其它市场")
 
             # Check product
             if len(req.symbol) > 6:
