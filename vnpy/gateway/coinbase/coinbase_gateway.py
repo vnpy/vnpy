@@ -732,7 +732,7 @@ class CoinbaseRestApi(RestClient):
         # For open orders from previous trading session, use sysid to cancel
         if orderid in sys_order_map:
             path = f"/orders/{orderid}"
-        # For open orders from currenct trading session, use client_oid to cancel
+        # For open orders from currency trading session, use client_oid to cancel
         else:
             path = f"/orders/client:{orderid}"
 
