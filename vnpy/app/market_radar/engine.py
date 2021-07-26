@@ -331,7 +331,7 @@ class RadarEngine(BaseEngine):
         signal = self.signals.pop(signal_id)
         signal.active = False
 
-        self.rule_signal_map[signal.rule_name].remove(signal)        
+        self.rule_signal_map[signal.rule_name].remove(signal)
         self.put_event(EVENT_RADAR_SIGNAL, signal)
 
     def check_signal(self, rule_name: str, rule_value: float) -> None:

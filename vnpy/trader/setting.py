@@ -9,7 +9,7 @@ from tzlocal import get_localzone
 from .utility import load_json
 
 SETTINGS: Dict[str, Any] = {
-    "font.family": "Arial",
+    "font.family": "微软雅黑",
     "font.size": 12,
 
     "log.active": True,

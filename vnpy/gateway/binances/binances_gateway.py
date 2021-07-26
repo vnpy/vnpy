@@ -104,7 +104,6 @@ class Security(Enum):
     API_KEY: int = 2
 
 
-symbol_name_map: Dict[str, str] = {}
 symbol_contract_map: Dict[str, ContractData] = {}
 
 
@@ -128,6 +127,8 @@ class BinancesGateway(BaseGateway):
     def __init__(self, event_engine: EventEngine):
         """Constructor"""
         super().__init__(event_engine, "BINANCES")
+
+        self.orders: Dict[str, OrderData] = {}
 
         self.trade_ws_api = BinancesTradeWebsocketApi(self)
         self.market_ws_api = BinancesDataWebsocketApi(self)
@@ -186,6 +187,15 @@ class BinancesGateway(BaseGateway):
     def process_timer_event(self, event: Event) -> None:
         """"""
         self.rest_api.keep_user_stream()
+
+    def on_order(self, order: OrderData) -> None:
+        """"""
+        self.orders[order.orderid] = copy(order)
+        super().on_order(order)
+
+    def get_order(self, orderid: str) -> OrderData:
+        """"""
+        return self.orders.get(orderid, None)
 
 
 class BinancesRestApi(RestClient):
@@ -462,13 +472,16 @@ class BinancesRestApi(RestClient):
         else:
             path = "/dapi/v1/order"
 
+        order: OrderData = self.gateway.get_order(req.orderid)
+
         self.add_request(
             method="DELETE",
             path=path,
             callback=self.on_cancel_order,
             params=params,
             data=data,
-            extra=req
+            on_failed=self.on_cancel_failed,
+            extra=order
         )
 
     def start_user_stream(self) -> Request:
@@ -508,12 +521,14 @@ class BinancesRestApi(RestClient):
             path = "/fapi/v1/listenKey"
         else:
             path = "/dapi/v1/listenKey"
+
         self.add_request(
             method="PUT",
             path=path,
             callback=self.on_keep_user_stream,
             params=params,
-            data=data
+            data=data,
+            on_error=self.on_keep_user_stream_error
         )
 
     def on_query_time(self, data: dict, request: Request) -> None:
@@ -653,6 +668,16 @@ class BinancesRestApi(RestClient):
         """"""
         pass
 
+    def on_cancel_failed(self, status_code: str, request: Request) -> None:
+        """"""
+        if request.extra:
+            order = request.extra
+            order.status = Status.REJECTED
+            self.gateway.on_order(order)
+
+        msg = f"撤单失败，状态码：{status_code}，信息：{request.response.text}"
+        self.gateway.write_log(msg)
+
     def on_start_user_stream(self, data: dict, request: Request) -> None:
         """"""
         self.user_stream_key = data["listenKey"]
@@ -673,31 +698,46 @@ class BinancesRestApi(RestClient):
         """"""
         pass
 
+    def on_keep_user_stream_error(
+        self, exception_type: type, exception_value: Exception, tb, request: Request
+    ) -> None:
+        """
+        Callback when sending order caused exception.
+        """
+        # Ignore timeout error when trying to keep user stream
+        if not issubclass(exception_type, TimeoutError):
+            self.on_error(exception_type, exception_value, tb, request)
+
     def query_history(self, req: HistoryRequest) -> List[BarData]:
         """"""
         history = []
         limit = 1500
-        end_time = int(datetime.timestamp(req.end))
+        if self.usdt_base:
+            start_time = int(datetime.timestamp(req.start))
+        else:
+            end_time = int(datetime.timestamp(req.end))
 
         while True:
             # Create query params
             params = {
                 "symbol": req.symbol,
                 "interval": INTERVAL_VT2BINANCES[req.interval],
-                "limit": limit,
-                "endTime": end_time * 1000,         # convert to millisecond
+                "limit": limit
             }
 
-            # Add end time if specified
-            if req.start:
-                start_time = int(datetime.timestamp(req.start))
-                params["startTime"] = start_time * 1000     # convert to millisecond
-
-            # Get response from server
             if self.usdt_base:
+                params["startTime"] = start_time * 1000
                 path = "/fapi/v1/klines"
+                if req.end:
+                    end_time = int(datetime.timestamp(req.end))
+                    params["endTime"] = end_time * 1000     # convert to millisecond
+
             else:
+                params["endTime"] = end_time * 1000
                 path = "/dapi/v1/klines"
+                if req.start:
+                    start_time = int(datetime.timestamp(req.start))
+                    params["startTime"] = start_time * 1000     # convert to millisecond
 
             resp = self.request(
                 "GET",
@@ -735,10 +775,12 @@ class BinancesRestApi(RestClient):
                     )
                     buf.append(bar)
 
-                history.extend(buf)
-
                 begin = buf[0].datetime
                 end = buf[-1].datetime
+
+                if not self.usdt_base:
+                    buf = list(reversed(buf))
+                history.extend(buf)
                 msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
                 self.gateway.write_log(msg)
 
@@ -747,9 +789,16 @@ class BinancesRestApi(RestClient):
                     break
 
                 # Update start time
-                end_dt = begin - TIMEDELTA_MAP[req.interval]
-                end_time = int(datetime.timestamp(end_dt))
+                if self.usdt_base:
+                    start_dt = bar.datetime + TIMEDELTA_MAP[req.interval]
+                    start_time = int(datetime.timestamp(start_dt))
+                # Update end time
+                else:
+                    end_dt = begin - TIMEDELTA_MAP[req.interval]
+                    end_time = int(datetime.timestamp(end_dt))
 
+        if not self.usdt_base:
+            history = list(reversed(history))
         return history
 
 

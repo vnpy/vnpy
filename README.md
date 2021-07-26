@@ -4,8 +4,10 @@
   <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy-logo.png"/>
 </p>
 
+💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
+
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.2.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.4.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
@@ -94,13 +96,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 币安永续（binances)：数字货币永续合约
 
-        * OKEX（okex）：数字货币现货
-
-        * OKEX永续（okexs）：数字货币永续合约
-
-        * OKEX期货（okexf）：数字货币期货
-
-        * OKEX期权（okexo）：数字货币期权
+        * OKEX（okex）：数字货币现货、期货、永续、期权（V5统一账户）
 
         * 火币（huobi）：数字货币现货
 
@@ -190,7 +186,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.2.0](https://download.vnpy.com/vnstudio-2.2.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.4.0](https://download.vnpy.com/vnstudio-2.4.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 

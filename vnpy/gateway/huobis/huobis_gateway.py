@@ -235,7 +235,8 @@ class HuobisRestApi(RestClient):
         Generate HUOBIS signature.
         """
         request.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36",
+            "Connection": "close"
         }
         params_with_signature = create_signature(
             self.key,
@@ -1067,11 +1068,6 @@ class HuobisDataWebsocketApi(HuobisWebsocketApiBase):
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """"""
-        buf = [i for i in req.symbol if not i.isdigit()]
-        symbol = "".join(buf)
-
-        ws_symbol = f"{symbol}"
-
         # Create tick data buffer
         tick = TickData(
             symbol=req.symbol,
@@ -1080,9 +1076,9 @@ class HuobisDataWebsocketApi(HuobisWebsocketApiBase):
             datetime=datetime.now(CHINA_TZ),
             gateway_name=self.gateway_name,
         )
-        self.ticks[ws_symbol] = tick
+        self.ticks[req.symbol] = tick
 
-        self.subscribe_data(ws_symbol)
+        self.subscribe_data(req.symbol)
 
     def subscribe_data(self, ws_symbol: str) -> None:
         """"""
@@ -1126,13 +1122,17 @@ class HuobisDataWebsocketApi(HuobisWebsocketApiBase):
             return
 
         bids = tick_data["bids"]
-        for n in range(5):
+        bids_n = len(bids)
+        bids_n = min(bids_n, 5)
+        for n in range(bids_n):
             price, volume = bids[n]
             tick.__setattr__("bid_price_" + str(n + 1), float(price))
             tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
 
         asks = tick_data["asks"]
-        for n in range(5):
+        asks_n = len(asks)
+        asks_n = min(asks_n, 5)
+        for n in range(asks_n):
             price, volume = asks[n]
             tick.__setattr__("ask_price_" + str(n + 1), float(price))
             tick.__setattr__("ask_volume_" + str(n + 1), float(volume))
