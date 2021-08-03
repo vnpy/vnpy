@@ -7,7 +7,7 @@
 
 ## 修复
 1. 修复Linux下安装时，对于已经剥离的XTP API的自动编译操作
-
+2. 修复PortfolioManager的UI组件，对于成交事件监听类型错误的BUG
 
 # 2.4.0版本
 
