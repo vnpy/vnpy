@@ -311,7 +311,7 @@ class PortfolioTradeMonitor(QtWidgets.QTableWidget):
                 self.showRow(row)
             else:
                 item = self.item(row, 0)
-                if item.text() == filter:
+                if item and item.text() == filter:
                     self.showRow(row)
                 else:
                     self.hideRow(row)
