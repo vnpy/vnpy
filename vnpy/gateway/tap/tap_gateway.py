@@ -205,7 +205,8 @@ class QuoteApi(MdApi):
         """
         Callback when API is ready for sending requests or queries.
         """
-        self.qryCommodity()
+        # self.qryCommodity()
+        pass
 
     def onDisconnect(self, reason: int) -> None:
         """
@@ -462,6 +463,8 @@ class TradeApi(TdApi):
         Callback when API is ready for sending requests or queries.
         """
         self.query_account()
+
+        self.qryCommodity()
 
     def onRspQryCommodity(
         self,
