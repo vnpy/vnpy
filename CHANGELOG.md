@@ -4,10 +4,15 @@
 1. 将SpreadTrading模块策略初始化时的K线价差数据加载，改为优先通过RQData查询数据
 2. 在MainWindow的AboutDialog中，基于importlib_metadata模块来获取版本信息
 3. 隐藏所有对话框右上角的【？】按钮
+4. 将易盛外盘TapGateway的合约信息，从行情接口获取改为交易接口获取（避免外盘合约size为0的问题）
 
 ## 修复
 1. 修复Linux下安装时，对于已经剥离的XTP API的自动编译操作
 2. 修复PortfolioManager的UI组件，对于成交事件监听类型错误的BUG
+
+## 剥离
+1. 将融航接口剥离到vnpy_rohon项目中，并升级到6.5.1版本
+
 
 # 2.4.0版本
 
