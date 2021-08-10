@@ -48,7 +48,7 @@ class RpcServer:
         """
         Constructor
         """
-        # Save functions dict: key is fuction name, value is fuction object
+        # Save functions dict: key is function name, value is function object
         self.__functions: Dict[str, Any] = {}
 
         # Zmq port related
