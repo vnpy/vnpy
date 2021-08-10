@@ -565,6 +565,10 @@ class ConnectDialog(QtWidgets.QDialog):
 
                 if "密码" in field_name:
                     widget.setEchoMode(QtWidgets.QLineEdit.Password)
+                
+                if field_type == int:
+                    validator = QtGui.QIntValidator()
+                    widget.setValidator(validator)
 
             form.addRow(f"{field_name} <{field_type.__name__}>", widget)
             self.widgets[field_name] = (widget, field_type)
@@ -585,7 +589,10 @@ class ConnectDialog(QtWidgets.QDialog):
             if field_type == list:
                 field_value = str(widget.currentText())
             else:
-                field_value = field_type(widget.text())
+                try:
+                    field_value = field_type(widget.text())
+                except ValueError:
+                    field_value = field_type()
             setting[field_name] = field_value
 
         save_json(self.filename, setting)
