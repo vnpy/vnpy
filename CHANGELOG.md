@@ -3,6 +3,7 @@
 ## 新增
 1. 新增TTS交易系统（兼容CTP的仿真交易环境）的接口vnpy_tts（6.5.1）
 2. 新增易盛启明星/北斗星兼容交易API的接口vnpy_esunny（1.0.2.2）
+3. 新增BarData和TickData的成交额turnover字段
 
 ## 调整
 1. 将SpreadTrading模块策略初始化时的K线价差数据加载，改为优先通过RQData查询数据
