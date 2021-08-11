@@ -445,6 +445,7 @@ class ArrayManager(object):
         self.low_array: np.ndarray = np.zeros(size)
         self.close_array: np.ndarray = np.zeros(size)
         self.volume_array: np.ndarray = np.zeros(size)
+        self.turnover_array: np.ndarray = np.zeros(size)
         self.open_interest_array: np.ndarray = np.zeros(size)
 
     def update_bar(self, bar: BarData) -> None:
@@ -460,6 +461,7 @@ class ArrayManager(object):
         self.low_array[:-1] = self.low_array[1:]
         self.close_array[:-1] = self.close_array[1:]
         self.volume_array[:-1] = self.volume_array[1:]
+        self.turnover_array[:-1] = self.turnover_array[1:]
         self.open_interest_array[:-1] = self.open_interest_array[1:]
 
         self.open_array[-1] = bar.open_price
@@ -467,6 +469,7 @@ class ArrayManager(object):
         self.low_array[-1] = bar.low_price
         self.close_array[-1] = bar.close_price
         self.volume_array[-1] = bar.volume
+        self.turnover_array[-1] = bar.turnover
         self.open_interest_array[-1] = bar.open_interest
 
     @property
@@ -503,6 +506,13 @@ class ArrayManager(object):
         Get trading volume time series.
         """
         return self.volume_array
+
+    @property
+    def turnover(self) -> np.ndarray:
+        """
+        Get trading turnover time series.
+        """
+        return self.turnover_array
 
     @property
     def open_interest(self) -> np.ndarray:
