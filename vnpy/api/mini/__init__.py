@@ -1,3 +1,1 @@
-from .vnminimd import MdApi
-from .vnminitd import TdApi
-from .mini_constant import *
+from vnpy_mini.api import *

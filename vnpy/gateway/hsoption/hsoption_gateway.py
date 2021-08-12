@@ -860,7 +860,7 @@ class TdApi:
 
     def subcribe_topic(self, biz_name: str, topic_name: str) -> int:
         """"""
-        # Create subscrbe callback
+        # Create subscribe callback
         sub_callback = py_t2sdk.pySubCallBack(
             "vnpy.gateway.hsoption.hsoption_gateway",
             "TdSubCallback"

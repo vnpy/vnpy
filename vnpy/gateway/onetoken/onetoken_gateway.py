@@ -413,7 +413,7 @@ class OnetokenDataWebsocketApi(WebsocketClient):
 
     def subscribe(self, req: SubscribeRequest):
         """
-        Subscribe to tick data upate.
+        Subscribe to tick data update.
         """
         self.subscribed[req.vt_symbol] = req
         tick = TickData(
@@ -464,7 +464,7 @@ class OnetokenDataWebsocketApi(WebsocketClient):
 
     def login(self):
         """
-        Need to login befores subscribe to websocket topic.
+        Need to login before subscribe to websocket topic.
         """
         req = {"uri": "auth"}
         self.send_packet(req)

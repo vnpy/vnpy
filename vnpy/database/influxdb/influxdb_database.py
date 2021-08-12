@@ -61,6 +61,7 @@ class InfluxdbDatabase(BaseDatabase):
                     "low_price": bar.low_price,
                     "close_price": bar.close_price,
                     "volume": bar.volume,
+                    "turnover": bar.turnover,
                     "open_interest": bar.open_interest,
                 }
             }
@@ -125,6 +126,7 @@ class InfluxdbDatabase(BaseDatabase):
                 "fields": {
                     "name": tick.name,
                     "volume": tick.volume,
+                    "turnover": tick.turnover,
                     "open_interest": tick.open_interest,
                     "last_price": tick.last_price,
                     "last_volume": tick.last_volume,
@@ -159,6 +161,8 @@ class InfluxdbDatabase(BaseDatabase):
                     "ask_volume_3": tick.ask_volume_3,
                     "ask_volume_4": tick.ask_volume_4,
                     "ask_volume_5": tick.ask_volume_5,
+
+                    "localtime": tick.localtime
                 }
             }
             json_body.append(d)
@@ -198,12 +202,13 @@ class InfluxdbDatabase(BaseDatabase):
                 symbol=symbol,
                 exchange=exchange,
                 interval=interval,
-                datetime=DB_TZ.localize(dt),
+                datetime=dt.astimezone(DB_TZ),
                 open_price=d["open_price"],
                 high_price=d["high_price"],
                 low_price=d["low_price"],
                 close_price=d["close_price"],
                 volume=d["volume"],
+                turnover=d["turnover"],
                 open_interest=d["open_interest"],
                 gateway_name="DB"
             )
@@ -240,9 +245,10 @@ class InfluxdbDatabase(BaseDatabase):
             tick = TickData(
                 symbol=symbol,
                 exchange=exchange,
-                datetime=DB_TZ.localize(dt),
+                datetime=dt.astimezone(DB_TZ),
                 name=d["name"],
                 volume=d["volume"],
+                turnover=d["turnover"],
                 open_interest=d["open_interest"],
                 last_price=d["last_price"],
                 last_volume=d["last_volume"],
@@ -272,6 +278,7 @@ class InfluxdbDatabase(BaseDatabase):
                 ask_volume_3=d["ask_volume_3"],
                 ask_volume_4=d["ask_volume_4"],
                 ask_volume_5=d["ask_volume_5"],
+                localtime=d["localtime"],
                 gateway_name="DB"
             )
             ticks.append(tick)

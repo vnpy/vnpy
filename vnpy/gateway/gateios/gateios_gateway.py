@@ -537,7 +537,7 @@ class GateiosWebsocketApi(WebsocketClient):
 
     def subscribe(self, req: SubscribeRequest):
         """
-        Subscribe to tick data upate.
+        Subscribe to tick data update.
         """
         tick = TickData(
             symbol=req.symbol,

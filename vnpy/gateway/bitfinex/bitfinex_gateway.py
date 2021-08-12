@@ -406,7 +406,7 @@ class BitfinexWebsocketApi(WebsocketClient):
 
     def subscribe(self, req: SubscribeRequest):
         """
-        Subscribe to tick data upate.
+        Subscribe to tick data update.
         """
         if req.symbol not in self.subscribed:
             self.subscribed[req.symbol] = req

@@ -1,1 +1,1 @@
-from .sopt_gateway import SoptGateway
+from vnpy_sopt import SoptGateway

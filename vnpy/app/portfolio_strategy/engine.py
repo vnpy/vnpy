@@ -237,6 +237,17 @@ class StrategyEngine(BaseEngine):
         req = order.create_cancel_request()
         self.main_engine.cancel_order(req, order.gateway_name)
 
+    def get_pricetick(self, strategy: StrategyTemplate, vt_symbol: str):
+        """
+        Return contract pricetick data.
+        """
+        contract = self.main_engine.get_contract(vt_symbol)
+
+        if contract:
+            return contract.pricetick
+        else:
+            return None
+
     def load_bars(self, strategy: StrategyTemplate, days: int, interval: Interval):
         """"""
         vt_symbols = strategy.vt_symbols
