@@ -336,7 +336,6 @@ class BinanceRestApi(RestClient):
 
         params = {
             "symbol": req.symbol.upper(),
-            "timeInForce": "GTC",
             "side": DIRECTION_VT2BINANCE[req.direction],
             "type": ORDERTYPE_VT2BINANCE[req.type],
             "price": str(req.price),
@@ -344,6 +343,9 @@ class BinanceRestApi(RestClient):
             "newClientOrderId": orderid,
             "newOrderRespType": "ACK"
         }
+
+        if req.type == OrderType.LIMIT:
+            params["timeInForce"] = "GTC"
 
         self.add_request(
             method="POST",

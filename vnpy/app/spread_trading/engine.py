@@ -634,7 +634,7 @@ class SpreadAlgoEngine:
         # If no position to close, just open new
         if not available:
             offset = Offset.OPEN
-        # If enougth position to close, just close old
+        # If enough position to close, just close old
         elif volume < available:
             offset = Offset.CLOSE
         # Otherwise, just close existing position

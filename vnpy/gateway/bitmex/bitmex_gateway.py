@@ -553,7 +553,7 @@ class BitmexWebsocketApi(WebsocketClient):
 
     def subscribe(self, req: SubscribeRequest):
         """
-        Subscribe to tick data upate.
+        Subscribe to tick data update.
         """
         tick = TickData(
             symbol=req.symbol,
@@ -610,7 +610,7 @@ class BitmexWebsocketApi(WebsocketClient):
 
     def authenticate(self):
         """
-        Authenticate websockey connection to subscribe private topic.
+        Authenticate websocket connection to subscribe private topic.
         """
         expires = int(time.time())
         method = "GET"

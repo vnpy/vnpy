@@ -646,7 +646,6 @@ class CoinbaseRestApi(RestClient):
                 pricetick=float(d["quote_increment"]),
                 size=1,
                 min_volume=float(d["base_min_size"]),
-                net_position=True,
                 history_data=True,
                 gateway_name=self.gateway_name,
             )
@@ -733,7 +732,7 @@ class CoinbaseRestApi(RestClient):
         # For open orders from previous trading session, use sysid to cancel
         if orderid in sys_order_map:
             path = f"/orders/{orderid}"
-        # For open orders from currenct trading session, use client_oid to cancel
+        # For open orders from currency trading session, use client_oid to cancel
         else:
             path = f"/orders/client:{orderid}"
 

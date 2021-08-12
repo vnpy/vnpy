@@ -353,6 +353,7 @@ class BarGenerator:
                 open_price=bar.open_price,
                 high_price=bar.high_price,
                 low_price=bar.low_price,
+                close_price=bar.close_price,
                 volume=bar.volume
             )
         # Otherwise only update minute bar

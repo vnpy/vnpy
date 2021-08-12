@@ -413,7 +413,8 @@ class GateiosRestApi(RestClient):
                 min_volume=d["order_size_min"],
                 product=Product.FUTURES,
                 gateway_name=self.gateway_name,
-                history_data=True
+                history_data=True,
+                net_position=True
             )
             self.gateway.on_contract(contract)
 
@@ -536,7 +537,7 @@ class GateiosWebsocketApi(WebsocketClient):
 
     def subscribe(self, req: SubscribeRequest):
         """
-        Subscribe to tick data upate.
+        Subscribe to tick data update.
         """
         tick = TickData(
             symbol=req.symbol,
