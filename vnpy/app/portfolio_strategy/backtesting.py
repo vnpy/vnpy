@@ -661,6 +661,12 @@ class BacktestingEngine:
         """
         pass
 
+    def get_pricetick(self, strategy: StrategyTemplate, vt_symbol) -> float:
+        """
+        Return contract pricetick data.
+        """
+        return self.priceticks[vt_symbol]
+
     def put_strategy_event(self, strategy: StrategyTemplate) -> None:
         """
         Put an event to update strategy status.

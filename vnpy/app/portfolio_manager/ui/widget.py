@@ -17,7 +17,7 @@ from ..engine import (
     APP_NAME,
     EVENT_PM_CONTRACT,
     EVENT_PM_PORTFOLIO,
-    EVENT_TRADE,
+    EVENT_PM_TRADE,
     PortfolioEngine
 )
 
@@ -127,7 +127,7 @@ class PortfolioManager(QtWidgets.QWidget):
 
         self.event_engine.register(EVENT_PM_CONTRACT, self.signal_contract.emit)
         self.event_engine.register(EVENT_PM_PORTFOLIO, self.signal_portfolio.emit)
-        self.event_engine.register(EVENT_TRADE, self.signal_trade.emit)
+        self.event_engine.register(EVENT_PM_TRADE, self.signal_trade.emit)
 
     def update_trades(self) -> None:
         """"""
@@ -311,7 +311,7 @@ class PortfolioTradeMonitor(QtWidgets.QTableWidget):
                 self.showRow(row)
             else:
                 item = self.item(row, 0)
-                if item.text() == filter:
+                if item and item.text() == filter:
                     self.showRow(row)
                 else:
                     self.hideRow(row)

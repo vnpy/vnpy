@@ -103,7 +103,7 @@ class RqdataClient:
                     return symbol.upper()
 
                 # Check for index symbol
-                if time_str in ["88", "888", "99"]:
+                if time_str in ["88", "888", "99", "889"]:
                     return symbol
 
                 year = symbol[count]
