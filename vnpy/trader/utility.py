@@ -878,7 +878,7 @@ class ArrayManager(object):
         """
         Aroon indicator.
         """
-        aroon_up, aroon_down = talib.AROON(self.high, self.low, n)
+        aroon_down, aroon_up = talib.AROON(self.high, self.low, n)
 
         if array:
             return aroon_up, aroon_down
