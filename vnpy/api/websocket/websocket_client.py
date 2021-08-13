@@ -91,10 +91,10 @@ class WebsocketClient:
 
     def start(self):
         """
-        Start the client and on_connected function is called after webscoket
+        Start the client and on_connected function is called after websocket
         is connected succesfully.
 
-        Please don't send packet untill on_connected fucntion is called.
+        Please don't send packet untill on_connected function is called.
         """
 
         self._active = True

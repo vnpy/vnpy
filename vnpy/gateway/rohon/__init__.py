@@ -1,1 +1,1 @@
-from .rohon_gateway import RohonGateway
+from vnpy_rohon import RohonGateway

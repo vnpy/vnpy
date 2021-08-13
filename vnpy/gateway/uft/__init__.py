@@ -1,1 +1,1 @@
-from .uft_gateway import UftGateway
+from vnpy_uft import UftGateway
