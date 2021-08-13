@@ -59,7 +59,7 @@ class DbTickData(Document):
 
     name: str = StringField()
     volume: float = FloatField()
-    volume: float = FloatField()
+    turnover: float = FloatField()
     open_interest: float = FloatField()
     last_price: float = FloatField()
     last_volume: float = FloatField()
