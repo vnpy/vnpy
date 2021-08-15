@@ -16,6 +16,9 @@
 2. 修复PortfolioManager的UI组件，对于成交事件监听类型错误的BUG
 3. 修复vnpy_rest下的Response对象缺乏text字段导致的BUG
 4. 修复数字货币类接口，代理端口信息传空时，导致底层连接出错的BUG
+5. 修复BitstampGateway，由于_process_request函数参数数量不匹配导致的BUG
+6. 修复ArrayManager的Aroon指标计算输出结果顺序错误的BUG
+7. 修复数据库管理器读写TickData时，由于缺少对localtime字段处理导致的BUG
 
 ## 剥离
 1. 将融航接口剥离到vnpy_rohon项目中，并升级到6.5.1版本

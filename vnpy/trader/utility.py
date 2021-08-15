@@ -195,7 +195,6 @@ class BarGenerator:
         self.on_window_bar: Callable = on_window_bar
 
         self.last_tick: TickData = None
-        self.last_bar: BarData = None
 
     def update_tick(self, tick: TickData) -> None:
         """
@@ -304,9 +303,6 @@ class BarGenerator:
             self.on_window_bar(self.window_bar)
             self.window_bar = None
 
-        # Cache last bar object
-        self.last_bar = bar
-
     def update_bar_hour_window(self, bar: BarData) -> None:
         """"""
         # If not inited, create window bar object
@@ -382,9 +378,6 @@ class BarGenerator:
         # Push finished window bar
         if finished_bar:
             self.on_hour_bar(finished_bar)
-
-        # Cache last bar object
-        self.last_bar = bar
 
     def on_hour_bar(self, bar: BarData) -> None:
         """"""
