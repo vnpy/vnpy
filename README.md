@@ -7,7 +7,7 @@
 💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.4.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.5.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>

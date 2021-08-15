@@ -20,6 +20,7 @@
 5. 修复BitstampGateway，由于_process_request函数参数数量不匹配导致的BUG
 6. 修复ArrayManager的Aroon指标计算输出结果顺序错误的BUG
 7. 修复数据库管理器读写TickData时，由于缺少对localtime字段处理导致的BUG
+8. 修复币安现货接口，对于不支持类型的委托（停止单等）收到推送后导致的BUG
 
 ## 剥离
 1. 将融航接口剥离到vnpy_rohon项目中，并升级到6.5.1版本
