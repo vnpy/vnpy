@@ -304,7 +304,7 @@ class BitstampRestApi(RestClient):
         return request
 
     def _process_request(
-        self, request: Request
+        self, request: Request, session: requests.Session
     ):
         """
         Bistamp API server does not support keep-alive connection.
