@@ -44,6 +44,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 恒生UFT（uft）：国内期货、ETF期权
 
+        * 易盛（esunny）：国内期货、黄金TD
+
         * 飞创证券（sec）：ETF期权
 
         * 南华NHTD（nhtd）：国内期货、ETF期权
@@ -155,6 +157,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
     * excel_rtd：Excel RTD（Real Time Data）实时数据服务，基于pyxll模块实现在Excel中获取各类数据（行情、合约、持仓等）的实时推送更新
 
     * risk_manager：风险管理模块，提供包括交易流控、下单数量、活动委托、撤单总数等规则的统计和限制，有效实现前端风控功能
+
+    * web_trader：Web服务模块，针对B-S架构需求设计，实现了提供主动函数调用（REST）和被动数据推送（Websocket）的Web服务器
 
 4. Python交易API接口封装（vnpy.api），提供上述交易接口的底层对接实现。
 
