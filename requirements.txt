@@ -17,7 +17,7 @@ seaborn
 PyCryptodome==3.9.9
 futu-api
 tigeropen
-rqdatac
+rqdatac==2.9.33
 ta-lib
 ibapi
 deap
