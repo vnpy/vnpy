@@ -160,6 +160,10 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 4. Python交易API接口封装（vnpy.api），提供上述交易接口的底层对接实现。
 
+    * REST Client（[rest](https://www.github.com/vnpy/vnpy_rest)）：基于协程异步IO的高性能REST API客户端，采用事件消息循环的编程模型，支持高并发实时交易请求发送
+
+    * Websocket Client（[websocket](https://www.github.com/vnpy/vnpy_websocket)）：基于协程异步IO的高性能Websocket API客户端，支持和REST Client共用事件循环并发运行，避免GIL带来的多线程性能损耗
+
 5. 简洁易用的事件驱动引擎（vnpy.event），作为事件驱动型交易程序的核心。
 
 6. 对接各类数据库的标准化管理客户端（vnpy.database）：
