@@ -7,7 +7,7 @@
 💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.4.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.5.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
@@ -34,15 +34,17 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * 国内市场
 
-        * CTP（ctp）：国内期货、期权
+        * CTP（[ctp](https://www.github.com/vnpy/vnpy_ctp)）：国内期货、期权
 
-        * CTP Mini（mini）：国内期货、期权
+        * CTP Mini（[mini](https://www.github.com/vnpy/vnpy_mini)）：国内期货、期权
 
-        * CTP证券（sopt）：ETF期权
+        * CTP证券（[sopt](https://www.github.com/vnpy/vnpy_sopt)）：ETF期权
 
         * 飞马（femas）：国内期货
 
-        * 恒生UFT（uft）：国内期货、ETF期权
+        * 恒生UFT（[uft](https://www.github.com/vnpy/vnpy_uft)）：国内期货、ETF期权
+
+        * 易盛（[esunny](https://www.github.com/vnpy/vnpy_esunny)）：国内期货、黄金TD
 
         * 飞创证券（sec）：ETF期权
 
@@ -50,7 +52,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 宽睿（oes）：国内证券（A股）、ETF期权
 
-        * 中泰XTP（xtp）：国内证券（A股）、ETF期权
+        * 中泰XTP（[xtp](https://www.github.com/vnpy/vnpy_xtp)）：国内证券（A股）、ETF期权
 
         * 国泰君安（gtja）：国内证券（A股）
 
@@ -64,9 +66,11 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 鑫管家（xgj）：期货资管
 
-        * 融航（rohon）：期货资管
+        * 融航（[rohon](https://www.github.com/vnpy/vnpy_rohon)）：期货资管
 
         * 中汇亿达（comstar）：银行间市场
+
+        * TTS（[tts](https://www.github.com/vnpy/vnpy_tts)）：国内期货（仿真）
 
     * 海外市场
 
@@ -90,25 +94,21 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * BitMEX（bitmex）：数字货币期货、期权、永续合约
 
-        * Bybit（bybit）：数字货币永续合约
+        * Bybit（[bybit](https://www.github.com/vnpy/vnpy_bybit)）：数字货币永续合约
 
-        * 币安（binance）：数字货币现货
+        * 币安（[binance](https://www.github.com/vnpy/vnpy_binance)）：数字货币现货、期货、永续合约
 
-        * 币安永续（binances)：数字货币永续合约
-
-        * OKEX（okex）：数字货币现货、期货、永续、期权（V5统一账户）
+        * OKEX（[okex](https://www.github.com/vnpy/vnpy_okex)）：数字货币现货、期货、永续、期权（V5统一账户）
 
         * 火币（huobi）：数字货币现货
 
         * 火币期货（huobif）：数字货币期货
 
         * 火币永续（huobis）：数字货币永续
-
-        * 火币期权（huobio）：数字货币期权
         
         * Gate.io永续（gateios）：数字货币永续合约
 
-        * Deribit（deribit），数字货币期权、永续合约        
+        * Deribit（[deribit](https://www.github.com/vnpy/vnpy_deribit)），数字货币期权、永续合约        
 
         * Bitfinex（bitfinex）：数字货币现货
 
@@ -124,11 +124,11 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 3. 开箱即用的各类量化策略交易应用（vnpy.app）：
 
-    * cta_strategy：CTA策略引擎模块，在保持易用性的同时，允许用户针对CTA类策略运行过程中委托的报撤行为进行细粒度控制（降低交易滑点、实现高频策略）
+    * [cta_strategy](https://www.github.com/vnpy/vnpy_ctastrategy)：CTA策略引擎模块，在保持易用性的同时，允许用户针对CTA类策略运行过程中委托的报撤行为进行细粒度控制（降低交易滑点、实现高频策略）
 
-    * cta_backtester：CTA策略回测模块，无需使用Jupyter Notebook，直接使用图形界面直接进行策略回测分析、参数优化等相关工作
+    * [cta_backtester](https://www.github.com/vnpy/vnpy_ctabacktester)：CTA策略回测模块，无需使用Jupyter Notebook，直接使用图形界面直接进行策略回测分析、参数优化等相关工作
 
-    * spread_trading：价差交易模块，支持自定义价差，实时计算价差行情和持仓，支持半自动价差算法交易以及全自动价差策略交易两种模式
+    * [spread_trading](https://www.github.com/vnpy/vnpy_spreadtrading)：价差交易模块，支持自定义价差，实时计算价差行情和持仓，支持半自动价差算法交易以及全自动价差策略交易两种模式
 
     * option_master：期权交易模块，针对国内期权市场设计，支持多种期权定价模型、隐含波动率曲面计算、希腊值风险跟踪等功能
 
@@ -148,13 +148,15 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * rpc_service：RPC服务模块，允许将某一VN Trader进程启动为服务端，作为统一的行情和交易路由通道，允许多客户端同时连接，实现多进程分布式系统
 
-    * data_manager：历史数据管理模块，通过树形目录查看数据库中已有的数据概况，选择任意时间段数据查看字段细节，支持CSV文件的数据导入和导出
+    * [data_manager](https://www.github.com/vnpy/vnpy_datamanager)：历史数据管理模块，通过树形目录查看数据库中已有的数据概况，选择任意时间段数据查看字段细节，支持CSV文件的数据导入和导出
 
     * data_recorder：行情记录模块，基于图形界面进行配置，根据需求实时录制Tick或者K线行情到数据库中，用于策略回测或者实盘初始化
 
     * excel_rtd：Excel RTD（Real Time Data）实时数据服务，基于pyxll模块实现在Excel中获取各类数据（行情、合约、持仓等）的实时推送更新
 
-    * risk_manager：风险管理模块，提供包括交易流控、下单数量、活动委托、撤单总数等规则的统计和限制，有效实现前端风控功能
+    * [risk_manager](https://www.github.com/vnpy/vnpy_riskmanager)：风险管理模块，提供包括交易流控、下单数量、活动委托、撤单总数等规则的统计和限制，有效实现前端风控功能
+
+    * [web_trader](https://www.github.com/vnpy/vnpy_webtrader)：Web服务模块，针对B-S架构需求设计，实现了提供主动函数调用（REST）和被动数据推送（Websocket）的Web服务器
 
 4. Python交易API接口封装（vnpy.api），提供上述交易接口的底层对接实现。
 
@@ -186,7 +188,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.4.0](https://download.vnpy.com/vnstudio-2.4.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.5.0](https://download.vnpy.com/vnstudio-2.5.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 

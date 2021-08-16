@@ -1,3 +1,34 @@
+# 2.5.0版本
+
+## 新增
+1. 新增TTS交易系统（兼容CTP的仿真交易环境）的接口vnpy_tts（6.5.1）
+2. 新增易盛启明星/北斗星兼容交易API的接口vnpy_esunny（1.0.2.2）
+3. 新增BarData和TickData的成交额turnover字段
+
+## 调整
+1. 将SpreadTrading模块策略初始化时的K线价差数据加载，改为优先通过RQData查询数据
+2. 在MainWindow的AboutDialog中，基于importlib_metadata模块来获取版本信息
+3. 隐藏所有对话框右上角的【？】按钮
+4. 将易盛外盘TapGateway的合约信息，从行情接口获取改为交易接口获取（避免外盘合约size为0的问题）
+5. 改进VN Trader的异常捕捉对话框弹出方式，避免多次重复报错情况下的程序卡死崩溃
+
+## 修复
+1. 修复Linux下安装时，对于已经剥离的XTP API的自动编译操作
+2. 修复PortfolioManager的UI组件，对于成交事件监听类型错误的BUG
+3. 修复vnpy_rest下的Response对象缺乏text字段导致的BUG
+4. 修复数字货币类接口，代理端口信息传空时，导致底层连接出错的BUG
+5. 修复BitstampGateway，由于_process_request函数参数数量不匹配导致的BUG
+6. 修复ArrayManager的Aroon指标计算输出结果顺序错误的BUG
+7. 修复数据库管理器读写TickData时，由于缺少对localtime字段处理导致的BUG
+8. 修复币安现货接口，对于不支持类型的委托（停止单等）收到推送后导致的BUG
+
+## 剥离
+1. 将融航接口剥离到vnpy_rohon项目中，并升级到6.5.1版本
+2. 将CTP MINI接口剥离到vnpy_mini项目中，并升级到1.5.6版本
+3. 将CTP期权接口剥离到vnpy_sopt项目中
+4. 将恒生UFT柜台极速API接口剥离到vnpy_uft项目中
+
+
 # 2.4.0版本
 
 ## 新增

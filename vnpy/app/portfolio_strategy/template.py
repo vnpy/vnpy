@@ -231,6 +231,12 @@ class StrategyTemplate(ABC):
         """
         self.strategy_engine.write_log(msg, self)
 
+    def get_pricetick(self, vt_symbol) -> float:
+        """
+        Return pricetick data of trading contract.
+        """
+        return self.strategy_engine.get_pricetick(self, vt_symbol)
+
     def load_bars(self, days: int, interval: Interval = Interval.MINUTE) -> None:
         """
         Load historical bar data for initializing strategy.
