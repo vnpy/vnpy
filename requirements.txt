@@ -1,6 +1,6 @@
 six
 wheel
-tzlocal
+tzlocal==2.0.0
 PyQt5==5.14.1
 pyqtgraph
 qdarkstyle
@@ -17,7 +17,7 @@ seaborn
 PyCryptodome==3.9.9
 futu-api
 tigeropen
-rqdatac
+rqdatac==2.9.33
 ta-lib
 ibapi
 deap
@@ -36,7 +36,15 @@ vnpy_okex
 vnpy_deribit
 vnpy_xtp
 vnpy_bybit
+vnpy_tts
+vnpy_rohon
+vnpy_mini
+vnpy_sopt
+vnpy_uft
+vnpy_esunny
 vnpy_ctastrategy
 vnpy_ctabacktester
 vnpy_riskmanager
 vnpy_datamanager
+vnpy_webtrader
+
