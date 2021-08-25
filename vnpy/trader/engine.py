@@ -28,6 +28,7 @@ from .object import (
     CancelRequest,
     LogData,
     OrderRequest,
+    QuoteRequest,
     SubscribeRequest,
     HistoryRequest,
     OrderData,
@@ -191,21 +192,23 @@ class MainEngine:
         if gateway:
             gateway.cancel_order(req)
 
-    def send_orders(self, reqs: Sequence[OrderRequest], gateway_name: str) -> List[str]:
+    def send_quote(self, req: QuoteRequest, gateway_name: str) -> str:
         """
+        Send new quote request to a specific gateway.
         """
         gateway = self.get_gateway(gateway_name)
         if gateway:
-            return gateway.send_orders(reqs)
+            return gateway.send_quote(req)
         else:
-            return ["" for req in reqs]
+            return ""
 
-    def cancel_orders(self, reqs: Sequence[CancelRequest], gateway_name: str) -> None:
+    def cancel_quote(self, req: CancelRequest, gateway_name: str) -> None:
         """
+        Send cancel quote request to a specific gateway.
         """
         gateway = self.get_gateway(gateway_name)
         if gateway:
-            gateway.cancel_orders(reqs)
+            gateway.cancel_quote(req)
 
     def query_history(self, req: HistoryRequest, gateway_name: str) -> Optional[List[BarData]]:
         """
