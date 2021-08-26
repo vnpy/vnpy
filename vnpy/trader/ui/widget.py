@@ -167,6 +167,8 @@ class TimeCell(BaseCell):
         millisecond = int(content.microsecond / 1000)
         if millisecond:
             timestamp = f"{timestamp}.{millisecond}"
+        else:
+            timestamp = f"{timestamp}.000"
 
         self.setText(timestamp)
         self._data = data
