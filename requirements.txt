@@ -47,4 +47,6 @@ vnpy_ctabacktester
 vnpy_riskmanager
 vnpy_datamanager
 vnpy_webtrader
+vnpy_binance
+vnpy_spreadtrading
 
