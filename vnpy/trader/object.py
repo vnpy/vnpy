@@ -404,7 +404,7 @@ class QuoteRequest:
         quote = QuoteData(
             symbol=self.symbol,
             exchange=self.exchange,
-            quoteid=self.quoteid,
+            quoteid=quoteid,
             bid_price=self.bid_price,
             bid_volume=self.bid_volume,
             ask_price=self.ask_price,
