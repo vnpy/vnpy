@@ -209,7 +209,7 @@ class MainEngine:
 
     def query_history(self, req: HistoryRequest, gateway_name: str) -> Optional[List[BarData]]:
         """
-        Send cancel order request to a specific gateway.
+        Send order history request to a specific gateway.
         """
         gateway = self.get_gateway(gateway_name)
         if gateway:
