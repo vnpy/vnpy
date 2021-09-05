@@ -1,7 +1,6 @@
 from abc import ABC
 from typing import Optional, List
 from importlib import import_module
-from vnpy.trader.database import BaseDatabase
 
 from .object import HistoryRequest, TickData, BarData
 from .setting import SETTINGS
@@ -35,18 +34,23 @@ datafeed: BaseDatafeed = None
 
 
 def get_datafeed() -> BaseDatafeed:
-    """获取数据服务接口对象"""
+    """"""
+    # Return datafeed object if already inited
     global datafeed
     if datafeed:
         return datafeed
 
+    # Read datafeed related global setting
     datafeed_name: str = SETTINGS["datafeed.name"]
     module_name: str = f"vnpy_{datafeed_name}"
 
+    # Try to import datafeed module
     try:
-        datafeed = import_module(module_name).datafeed
+        module = import_module(module_name)
     except ModuleNotFoundError:
         print(f"找不到数据服务驱动{module_name}，使用默认的RQData数据服务")
-        datafeed = import_module("vnpy_rqdata").datafeed
+        module = import_module("vnpy_rqdata")
 
+    # Create datafeed object from module
+    datafeed = module.Datafeed()
     return datafeed

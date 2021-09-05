@@ -116,18 +116,23 @@ database: BaseDatabase = None
 
 
 def get_database() -> BaseDatabase:
-    """获取数据库接口对象"""
+    """"""
+    # Return database object if already inited
     global database
     if database:
         return database
 
+    # Read database related global setting
     database_name: str = SETTINGS["database.name"]
     module_name: str = f"vnpy_{database_name}"
 
+    # Try to import database module
     try:
-        database = import_module(module_name).database
+        module = import_module(module_name)
     except ModuleNotFoundError:
         print(f"找不到数据库驱动{module_name}，使用默认的SQLite数据库")
-        database = import_module("vnpy_sqlite")
+        module = import_module("vnpy_sqlite")
 
+    # Create database object from module
+    database = module.Database()
     return database
