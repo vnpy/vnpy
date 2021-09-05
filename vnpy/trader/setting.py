@@ -8,6 +8,7 @@ from tzlocal import get_localzone
 
 from .utility import load_json
 
+
 SETTINGS: Dict[str, Any] = {
     "font.family": "微软雅黑",
     "font.size": 12,
@@ -29,7 +30,7 @@ SETTINGS: Dict[str, Any] = {
     "datafeed.password": "",
 
     "database.timezone": get_localzone().zone,
-    "database.driver": "sqlite",                # see database.Driver
+    "database.name": "sqlite",
     "database.database": "database.db",         # for sqlite, use this as filepath
     "database.host": "localhost",
     "database.port": 3306,
