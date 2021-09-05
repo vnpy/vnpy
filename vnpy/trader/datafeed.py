@@ -25,7 +25,7 @@ class BaseDatafeed(ABC):
 
     def query_tick_history(self, req: HistoryRequest) -> Optional[List[TickData]]:
         """
-        Query history bar data from RQData.
+        Query history tick data.
         """
         pass
 

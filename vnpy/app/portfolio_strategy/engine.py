@@ -38,7 +38,7 @@ from vnpy.trader.constant import (
     Offset
 )
 from vnpy.trader.utility import load_json, save_json, extract_vt_symbol, round_to
-from vnpy.trader.rqdata import rqdata_client
+from vnpy.trader.datafeed import datafeed
 from vnpy.trader.converter import OffsetConverter
 from vnpy.trader.database import database_manager
 
@@ -77,7 +77,7 @@ class StrategyEngine(BaseEngine):
     def init_engine(self):
         """
         """
-        self.init_rqdata()
+        self.init_datafeed()
         self.load_strategy_class()
         self.load_strategy_setting()
         self.load_strategy_data()
@@ -95,19 +95,19 @@ class StrategyEngine(BaseEngine):
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
         self.event_engine.register(EVENT_POSITION, self.process_position_event)
 
-    def init_rqdata(self):
+    def init_datafeed(self):
         """
-        Init RQData client.
+        Init datafeed.
         """
-        result = rqdata_client.init()
+        result = datafeed.init()
         if result:
-            self.write_log("RQData数据接口初始化成功")
+            self.write_log("数据服务接口初始化成功")
 
-    def query_bar_from_rq(
+    def query_bar_from_datafeed(
         self, symbol: str, exchange: Exchange, interval: Interval, start: datetime, end: datetime
     ):
         """
-        Query bar data from RQData.
+        Query bar data from datafeed.
         """
         req = HistoryRequest(
             symbol=symbol,
@@ -116,7 +116,7 @@ class StrategyEngine(BaseEngine):
             start=start,
             end=end
         )
-        data = rqdata_client.query_history(req)
+        data = datafeed.query_bar_history(req)
         return data
 
     def process_tick_event(self, event: Event):
@@ -311,9 +311,9 @@ class StrategyEngine(BaseEngine):
                 end=end
             )
             data = self.main_engine.query_history(req, contract.gateway_name)
-        # Try to query bars from RQData, if not found, load from database.
+        # Try to query bars from datafeed, if not found, load from database.
         else:
-            data = self.query_bar_from_rq(symbol, exchange, interval, start, end)
+            data = self.query_bar_from_datafeed(symbol, exchange, interval, start, end)
 
         if not data:
             data = database_manager.load_bar_data(
