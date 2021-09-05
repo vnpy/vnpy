@@ -24,8 +24,9 @@ SETTINGS: Dict[str, Any] = {
     "email.sender": "",
     "email.receiver": "",
 
-    "rqdata.username": "",
-    "rqdata.password": "",
+    "datafeed.name": "",
+    "datafeed.username": "",
+    "datafeed.password": "",
 
     "database.timezone": get_localzone().zone,
     "database.driver": "sqlite",                # see database.Driver
