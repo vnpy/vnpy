@@ -17,7 +17,7 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT, EVENT_TIMER
 from vnpy.trader.utility import load_json, save_json, BarGenerator
-from vnpy.trader.database import database_manager
+from vnpy.trader.database import get_database
 from vnpy.app.spread_trading.base import EVENT_SPREAD_DATA, SpreadData
 
 
@@ -50,6 +50,8 @@ class RecorderEngine(BaseEngine):
         self.ticks = defaultdict(list)
         self.bars = defaultdict(list)
 
+        self.database = get_database()
+
         self.load_setting()
         self.register_event()
         self.start()
@@ -77,9 +79,9 @@ class RecorderEngine(BaseEngine):
                 task_type, data = task
 
                 if task_type == "tick":
-                    database_manager.save_tick_data(data)
+                    self.database.save_tick_data(data)
                 elif task_type == "bar":
-                    database_manager.save_bar_data(data)
+                    self.database.save_bar_data(data)
 
             except Empty:
                 continue

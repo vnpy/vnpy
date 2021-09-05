@@ -26,7 +26,7 @@ from vnpy.trader.object import (
     LogData,
     BarData
 )
-from vnpy.trader.datafeed import datafeed
+from vnpy.trader.datafeed import BaseDatafeed, get_datafeed
 
 
 APP_NAME = "ScriptTrader"
@@ -45,11 +45,13 @@ class ScriptEngine(BaseEngine):
         self.strategy_active = False
         self.strategy_thread = None
 
+        self.datafeed: BaseDatafeed = get_datafeed()
+
     def init(self):
         """
         Start script engine.
         """
-        result = datafeed.init()
+        result = self.datafeed.init()
         if result:
             self.write_log("数据服务初始化成功")
 
