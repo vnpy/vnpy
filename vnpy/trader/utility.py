@@ -167,7 +167,7 @@ class BarGenerator:
     """
     For:
     1. generating 1 minute bar data from tick data
-    2. generateing x minute bar/x hour bar data from 1 minute data
+    2. generating x minute bar/x hour bar data from 1 minute data
 
     Notice:
     1. for x minute bar, x must be able to divide 60: 2, 3, 5, 6, 10, 15, 20, 30
