@@ -6,9 +6,9 @@ from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.constant import Interval
 from vnpy.trader.object import HistoryRequest, ContractData
-from vnpy.trader.rqdata import rqdata_client
 from vnpy.trader.utility import extract_vt_symbol
-from vnpy.trader.database import database_manager
+from vnpy.trader.database import get_database
+from vnpy.trader.datafeed import get_datafeed
 
 
 APP_NAME = "ChartWizard"
@@ -23,7 +23,8 @@ class ChartWizardEngine(BaseEngine):
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
-        rqdata_client.init()
+        self.datafeed = get_datafeed()
+        self.database = get_database()
 
     def query_history(
         self,
@@ -62,9 +63,9 @@ class ChartWizardEngine(BaseEngine):
             if contract.history_data:
                 data = self.main_engine.query_history(req, contract.gateway_name)
             else:
-                data = rqdata_client.query_history(req)
+                data = self.datafeed.query_bar_history(req)
         else:
-            data = database_manager.load_bar_data(
+            data = self.database.load_bar_data(
                 symbol,
                 exchange,
                 interval,

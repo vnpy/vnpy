@@ -223,29 +223,6 @@ class BaseGateway(ABC):
         """
         pass
 
-    def send_orders(self, reqs: Sequence[OrderRequest]) -> List[str]:
-        """
-        Send a batch of orders to server.
-        Use a for loop of send_order function by default.
-        Reimplement this function if batch order supported on server.
-        """
-        vt_orderids = []
-
-        for req in reqs:
-            vt_orderid = self.send_order(req)
-            vt_orderids.append(vt_orderid)
-
-        return vt_orderids
-
-    def cancel_orders(self, reqs: Sequence[CancelRequest]) -> None:
-        """
-        Cancel a batch of orders to server.
-        Use a for loop of cancel_order function by default.
-        Reimplement this function if batch cancel supported on server.
-        """
-        for req in reqs:
-            self.cancel_order(req)
-
     def send_quote(self, req: QuoteRequest) -> str:
         """
         Send a new two-sided quote to server.
