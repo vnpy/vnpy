@@ -60,8 +60,6 @@ For financial institution users of vn.py, a special 【vn.py Institutional Users
 
         * Jinshida Gold (ksgold): Gold TD
 
-        * XGJ (xgj): futures capital management
-
         * Rong Hang (rohon): futures management
 
         * Zhong Hui Yi Da (comstar): Interbank market
@@ -69,8 +67,6 @@ For financial institution users of vn.py, a special 【vn.py Institutional Users
     * Overseas market
 
         * Futu Securities (futu): Hong Kong stocks, U.S. stocks
-
-        * Tiger Securities (tiger): global securities, futures, options, foreign exchange, etc.
 
         * Interactive Brokers (ib): global securities, futures, options, foreign exchange, etc.
 
