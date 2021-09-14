@@ -135,6 +135,7 @@ class Exchange(Enum):
     DERIBIT = "DERIBIT"
     GATEIO = "GATEIO"
     BITSTAMP = "BITSTAMP"
+    DYDX = "DYDX"
 
     # Special Function
     LOCAL = "LOCAL"         # For local generated data
