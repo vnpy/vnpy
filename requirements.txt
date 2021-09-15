@@ -24,8 +24,7 @@ pyzmq
 wmi
 QScintilla==2.11.4
 plotly
-quickfix
-trading-calendars
+exchange-calendars
 influxdb
 vnpy_rest
 vnpy_websocket
