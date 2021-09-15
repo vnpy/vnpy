@@ -64,8 +64,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 金仕达黄金（ksgold）：黄金TD
 
-        * 鑫管家（xgj）：期货资管
-
         * 融航（[rohon](https://www.github.com/vnpy/vnpy_rohon)）：期货资管
 
         * 中汇亿达（comstar）：银行间市场
@@ -75,8 +73,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
     * 海外市场
 
         * 富途证券（futu）：港股、美股
-
-        * 老虎证券（tiger）：全球证券、期货、期权、外汇等
 
         * Interactive Brokers（ib）：全球证券、期货、期权、外汇等
 

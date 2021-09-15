@@ -16,7 +16,6 @@ matplotlib
 seaborn
 PyCryptodome==3.9.9
 futu-api
-tigeropen
 rqdatac==2.9.37
 ta-lib
 ibapi

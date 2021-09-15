@@ -21,7 +21,6 @@ from vnpy.gateway.ctp import CtpGateway
 # from vnpy.gateway.comstar import ComstarGateway
 # from vnpy.gateway.futu import FutuGateway
 # from vnpy.gateway.ib import IbGateway
-# from vnpy.gateway.tiger import TigerGateway
 # from vnpy.gateway.tap import TapGateway
 # from vnpy.gateway.da import DaGateway
 # from vnpy.gateway.mt5 import Mt5Gateway
@@ -44,7 +43,6 @@ from vnpy.gateway.ctp import CtpGateway
 # from vnpy.gateway.bitstamp import BitstampGateway
 # from vnpy.gateway.onetoken import OnetokenGateway
 # from vnpy.gateway.rohon import RohonGateway
-# from vnpy.gateway.xgj import XgjGateway
 # from vnpy.gateway.alpaca import AlpacaGateway
 
 # from vnpy.app.cta_strategy import CtaStrategyApp
@@ -90,7 +88,6 @@ def main():
     # main_engine.add_gateway(ComstarGateway)
     # main_engine.add_gateway(FutuGateway)
     # main_engine.add_gateway(IbGateway)
-    # main_engine.add_gateway(TigerGateway)
     # main_engine.add_gateway(TapGateway)
     # main_engine.add_gateway(DaGateway)
     # main_engine.add_gateway(Mt5Gateway)
@@ -112,8 +109,7 @@ def main():
     # main_engine.add_gateway(CoinbaseGateway)
     # main_engine.add_gateway(BitstampGateway)
     # main_engine.add_gateway(OnetokenGateway)
-    # main_engine.add_gateway(RohonGateway) 
-    # main_engine.add_gateway(XgjGateway)       
+    # main_engine.add_gateway(RohonGateway)
     # main_engine.add_gateway(AlpacaGateway)
 
     # main_engine.add_app(CtaStrategyApp)
