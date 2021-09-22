@@ -453,8 +453,8 @@ class SpreadAlgoEngine:
         self.spreads: Dict[str: SpreadData] = {}
         self.algos: Dict[str: SpreadAlgoTemplate] = {}
 
-        self.order_algo_map: dict[str: SpreadAlgoTemplate] = {}
-        self.symbol_algo_map: dict[str: SpreadAlgoTemplate] = defaultdict(list)
+        self.order_algo_map: Dict[str: SpreadAlgoTemplate] = {}
+        self.symbol_algo_map: Dict[str: SpreadAlgoTemplate] = defaultdict(list)
 
         self.algo_count: int = 0
         self.vt_tradeids: Set = set()
@@ -634,7 +634,7 @@ class SpreadAlgoEngine:
         # If no position to close, just open new
         if not available:
             offset = Offset.OPEN
-        # If enougth position to close, just close old
+        # If enough position to close, just close old
         elif volume < available:
             offset = Offset.CLOSE
         # Otherwise, just close existing position
@@ -714,9 +714,9 @@ class SpreadStrategyEngine:
         self.classes: Dict[str: Type[SpreadStrategyTemplate]] = {}
         self.strategies: Dict[str: SpreadStrategyTemplate] = {}
 
-        self.order_strategy_map: dict[str: SpreadStrategyTemplate] = {}
-        self.algo_strategy_map: dict[str: SpreadStrategyTemplate] = {}
-        self.spread_strategy_map: dict[str: SpreadStrategyTemplate] = defaultdict(
+        self.order_strategy_map: Dict[str: SpreadStrategyTemplate] = {}
+        self.algo_strategy_map: Dict[str: SpreadStrategyTemplate] = {}
+        self.spread_strategy_map: Dict[str: SpreadStrategyTemplate] = defaultdict(
             list)
 
         self.vt_tradeids: Set = set()

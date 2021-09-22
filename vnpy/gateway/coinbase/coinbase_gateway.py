@@ -203,6 +203,7 @@ class CoinbaseWebsocketApi(WebsocketClient):
 
         self.orderbooks = {}
         self.subscribed = {}
+        self.tradeids = set()
 
     def connect(
         self,
@@ -365,6 +366,11 @@ class CoinbaseWebsocketApi(WebsocketClient):
         else:
             order = sys_order_map[packet["taker_order_id"]]
 
+        tradeid = packet["trade_id"]
+        if tradeid in self.tradeids:
+            return
+        self.tradeids.add(tradeid)
+
         trade = TradeData(
             symbol=packet["product_id"],
             exchange=Exchange.COINBASE,
@@ -481,7 +487,7 @@ class OrderBook():
 
         asks_keys = self.asks.keys()
         asks_keys = sorted(asks_keys)
-        
+
         for i in range(min(5, len(asks_keys))):
             price = float(asks_keys[i])
             volume = float(self.asks[asks_keys[i]])
@@ -640,7 +646,6 @@ class CoinbaseRestApi(RestClient):
                 pricetick=float(d["quote_increment"]),
                 size=1,
                 min_volume=float(d["base_min_size"]),
-                net_position=True,
                 history_data=True,
                 gateway_name=self.gateway_name,
             )
@@ -727,7 +732,7 @@ class CoinbaseRestApi(RestClient):
         # For open orders from previous trading session, use sysid to cancel
         if orderid in sys_order_map:
             path = f"/orders/{orderid}"
-        # For open orders from currenct trading session, use client_oid to cancel
+        # For open orders from currency trading session, use client_oid to cancel
         else:
             path = f"/orders/client:{orderid}"
 

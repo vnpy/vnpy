@@ -1,7 +1,7 @@
 """"""
 
 import importlib
-import os
+import glob
 import traceback
 from collections import defaultdict
 from pathlib import Path
@@ -174,7 +174,8 @@ class StrategyEngine(BaseEngine):
         offset: Offset,
         price: float,
         volume: float,
-        lock: bool
+        lock: bool,
+        net: bool,
     ):
         """
         Send a new order to server.
@@ -201,7 +202,7 @@ class StrategyEngine(BaseEngine):
         )
 
         # Convert with offset converter
-        req_list = self.offset_converter.convert_order_request(original_req, lock)
+        req_list = self.offset_converter.convert_order_request(original_req, lock, net)
 
         # Send Orders
         vt_orderids = []
@@ -235,6 +236,17 @@ class StrategyEngine(BaseEngine):
 
         req = order.create_cancel_request()
         self.main_engine.cancel_order(req, order.gateway_name)
+
+    def get_pricetick(self, strategy: StrategyTemplate, vt_symbol: str):
+        """
+        Return contract pricetick data.
+        """
+        contract = self.main_engine.get_contract(vt_symbol)
+
+        if contract:
+            return contract.pricetick
+        else:
+            return None
 
     def load_bars(self, strategy: StrategyTemplate, days: int, interval: Interval):
         """"""
@@ -495,17 +507,11 @@ class StrategyEngine(BaseEngine):
         """
         Load strategy class from certain folder.
         """
-        for dirpath, dirnames, filenames in os.walk(str(path)):
-            for filename in filenames:
-                if filename.endswith(".py"):
-                    strategy_module_name = ".".join(
-                        [module_name, filename.replace(".py", "")])
-                elif filename.endswith(".pyd"):
-                    strategy_module_name = ".".join(
-                        [module_name, filename.split(".")[0]])
-                else:
-                    continue
-
+        for suffix in ["py", "pyd"]:
+            pathname = f"{path}/*.{suffix}"
+            for filepath in glob.glob(pathname):
+                stem = Path(filepath).stem
+                strategy_module_name = f"{module_name}.{stem}"
                 self.load_strategy_class_from_module(strategy_module_name)
 
     def load_strategy_class_from_module(self, module_name: str):

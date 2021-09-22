@@ -12,12 +12,15 @@ from vnpy.trader.object import TickData, BarData, SubscribeRequest
 from vnpy.trader.utility import BarGenerator
 from vnpy.trader.constant import Interval
 
+from vnpy.app.spread_trading.base import SpreadData, EVENT_SPREAD_DATA
+
 from ..engine import APP_NAME, EVENT_CHART_HISTORY, ChartWizardEngine
 
 
 class ChartWizardWidget(QtWidgets.QWidget):
     """"""
     signal_tick = QtCore.pyqtSignal(Event)
+    signal_spread = QtCore.pyqtSignal(Event)
     signal_history = QtCore.pyqtSignal(Event)
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
@@ -76,9 +79,10 @@ class ChartWizardWidget(QtWidgets.QWidget):
         if vt_symbol in self.charts:
             return
 
-        contract = self.main_engine.get_contract(vt_symbol)
-        if not contract:
-            return
+        if "LOCAL" not in vt_symbol:
+            contract = self.main_engine.get_contract(vt_symbol)
+            if not contract:
+                return
 
         # Create new chart
         self.bgs[vt_symbol] = BarGenerator(self.on_bar)
@@ -103,9 +107,11 @@ class ChartWizardWidget(QtWidgets.QWidget):
         """"""
         self.signal_tick.connect(self.process_tick_event)
         self.signal_history.connect(self.process_history_event)
+        self.signal_spread.connect(self.process_spread_event)
 
         self.event_engine.register(EVENT_CHART_HISTORY, self.signal_history.emit)
         self.event_engine.register(EVENT_TICK, self.signal_tick.emit)
+        self.event_engine.register(EVENT_SPREAD_DATA, self.signal_spread.emit)
 
     def process_tick_event(self, event: Event) -> None:
         """"""
@@ -132,12 +138,26 @@ class ChartWizardWidget(QtWidgets.QWidget):
 
         # Subscribe following data update
         contract = self.main_engine.get_contract(bar.vt_symbol)
+        if contract:
+            req = SubscribeRequest(
+                contract.symbol,
+                contract.exchange
+            )
+            self.main_engine.subscribe(req, contract.gateway_name)
 
-        req = SubscribeRequest(
-            contract.symbol,
-            contract.exchange
-        )
-        self.main_engine.subscribe(req, contract.gateway_name)
+    def process_spread_event(self, event: Event):
+        """"""
+        spread: SpreadData = event.data
+        tick = spread.to_tick()
+
+        bg = self.bgs.get(tick.vt_symbol, None)
+        if bg:
+            bg.update_tick(tick)
+
+            chart = self.charts[tick.vt_symbol]
+            bar = copy(bg.bar)
+            bar.datetime = bar.datetime.replace(second=0, microsecond=0)
+            chart.update_bar(bar)
 
     def on_bar(self, bar: BarData):
         """"""

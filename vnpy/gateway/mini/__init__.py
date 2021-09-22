@@ -1,1 +1,1 @@
-from .mini_gateway import MiniGateway
+from vnpy_mini import MiniGateway

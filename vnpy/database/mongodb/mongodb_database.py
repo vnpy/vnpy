@@ -33,6 +33,7 @@ class DbBarData(Document):
     interval: str = StringField()
 
     volume: float = FloatField()
+    turnover: float = FloatField()
     open_interest: float = FloatField()
     open_price: float = FloatField()
     high_price: float = FloatField()
@@ -58,6 +59,7 @@ class DbTickData(Document):
 
     name: str = StringField()
     volume: float = FloatField()
+    turnover: float = FloatField()
     open_interest: float = FloatField()
     last_price: float = FloatField()
     last_volume: float = FloatField()
@@ -93,6 +95,8 @@ class DbTickData(Document):
     ask_volume_3: float = FloatField()
     ask_volume_4: float = FloatField()
     ask_volume_5: float = FloatField()
+
+    localtime: datetime = DateTimeField()
 
     meta = {
         "indexes": [
@@ -212,7 +216,6 @@ class MongodbDatabase(BaseDatabase):
 
             d = tick.__dict__
             d["exchange"] = d["exchange"].value
-            d["interval"] = d["interval"].value
             d.pop("gateway_name")
             d.pop("vt_symbol")
             param = to_update_param(d)
@@ -240,15 +243,23 @@ class MongodbDatabase(BaseDatabase):
             datetime__lte=convert_tz(end),
         )
 
-        vt_symbol = f"{symbol}.{exchange.value}"
         bars: List[BarData] = []
         for db_bar in s:
-            db_bar.datetime = DB_TZ.localize(db_bar.datetime)
-            db_bar.exchange = Exchange(db_bar.exchange)
-            db_bar.interval = Interval(db_bar.interval)
-            db_bar.gateway_name = "DB"
-            db_bar.vt_symbol = vt_symbol
-            bars.append(db_bar)
+            bar = BarData(
+                symbol=db_bar.symbol,
+                exchange=Exchange(db_bar.exchange),
+                datetime=db_bar.datetime.astimezone(DB_TZ),
+                interval=Interval(db_bar.interval),
+                volume=db_bar.volume,
+                turnover=db_bar.turnover,
+                open_interest=db_bar.open_interest,
+                open_price=db_bar.open_price,
+                high_price=db_bar.high_price,
+                low_price=db_bar.low_price,
+                close_price=db_bar.close_price,
+                gateway_name="DB"
+            )
+            bars.append(bar)
 
         return bars
 
@@ -267,14 +278,48 @@ class MongodbDatabase(BaseDatabase):
             datetime__lte=convert_tz(end),
         )
 
-        vt_symbol = f"{symbol}.{exchange.value}"
         ticks: List[TickData] = []
         for db_tick in s:
-            db_tick.datetime = DB_TZ.localize(db_tick.datetime)
-            db_tick.exchange = Exchange(db_tick.exchange)
-            db_tick.gateway_name = "DB"
-            db_tick.vt_symbol = vt_symbol
-            ticks.append(db_tick)
+            tick = TickData(
+                symbol=db_tick.symbol,
+                exchange=Exchange(db_tick.exchange),
+                datetime=db_tick.datetime.astimezone(DB_TZ),
+                name=db_tick.name,
+                volume=db_tick.volume,
+                turnover=db_tick.turnover,
+                open_interest=db_tick.open_interest,
+                last_price=db_tick.last_price,
+                last_volume=db_tick.last_volume,
+                limit_up=db_tick.limit_up,
+                limit_down=db_tick.limit_down,
+                open_price=db_tick.open_price,
+                high_price=db_tick.high_price,
+                low_price=db_tick.low_price,
+                pre_close=db_tick.pre_close,
+                bid_price_1=db_tick.bid_price_1,
+                bid_price_2=db_tick.bid_price_2,
+                bid_price_3=db_tick.bid_price_3,
+                bid_price_4=db_tick.bid_price_4,
+                bid_price_5=db_tick.bid_price_5,
+                ask_price_1=db_tick.ask_price_1,
+                ask_price_2=db_tick.ask_price_2,
+                ask_price_3=db_tick.ask_price_3,
+                ask_price_4=db_tick.ask_price_4,
+                ask_price_5=db_tick.ask_price_5,
+                bid_volume_1=db_tick.bid_volume_1,
+                bid_volume_2=db_tick.bid_volume_2,
+                bid_volume_3=db_tick.bid_volume_3,
+                bid_volume_4=db_tick.bid_volume_4,
+                bid_volume_5=db_tick.bid_volume_5,
+                ask_volume_1=db_tick.ask_volume_1,
+                ask_volume_2=db_tick.ask_volume_2,
+                ask_volume_3=db_tick.ask_volume_3,
+                ask_volume_4=db_tick.ask_volume_4,
+                ask_volume_5=db_tick.ask_volume_5,
+                localtime=db_tick.localtime,
+                gateway_name="DB"
+            )
+            ticks.append(tick)
 
         return ticks
 

@@ -1,1 +1,5 @@
-from .binance_gateway import BinanceGateway
+from vnpy_binance import (
+    BinanceSpotGateway,
+    BinanceUsdtGateway,
+    BinanceInverseGateway
+)

@@ -50,7 +50,8 @@ class ChartWidget(pg.PlotWidget):
         self._layout.setZValue(0)
         self.setCentralItem(self._layout)
 
-        self._x_axis = DatetimeAxis(self._manager, orientation='bottom')
+    def _get_new_x_axis(self):
+        return DatetimeAxis(self._manager, orientation='bottom')
 
     def add_cursor(self) -> None:
         """"""
@@ -69,7 +70,7 @@ class ChartWidget(pg.PlotWidget):
         Add plot area.
         """
         # Create plot object
-        plot = pg.PlotItem(axisItems={'bottom': self._x_axis})
+        plot = pg.PlotItem(axisItems={'bottom': self._get_new_x_axis()})
         plot.setMenuEnabled(False)
         plot.setClipToView(True)
         plot.hideAxis('left')
