@@ -180,13 +180,25 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * LevelDB（[leveldb](https://www.github.com/vnpy/vnpy_leveldb)）：由Google推出的高性能Key/Value数据库，基于LSM算法实现进程内存储引擎，支持数十亿级别的海量数据
 
-6. 跨进程通讯标准组件（vnpy.rpc），用于实现分布式部署的复杂交易系统。
+7. 对接各类数据服务的适配器接口：
 
-7. Python高性能K线图表（vnpy.chart），支持大数据量图表显示以及实时数据更新功能。
+    * 米筐RQData（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：股票、期货、期权、基金、债券、黄金TD
 
-8. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容。
+    * 恒生UData（[udata](https://www.github.com/vnpy/vnpy_udata)）：证券、期货、期权
 
-9. 官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
+    * TuShare（[tushare](https://www.github.com/vnpy/vnpy_tushare)）：证券、期货、期权、基金、数字货币
+
+    * 天勤TQSDK（[tqsdk](https://www.github.com/vnpy/vnpy_tqsdk)）：期货
+
+    * CoinAPI（[coinapi](https://www.github.com/vnpy/vnpy_coinapi)）：数字货币
+
+8. 跨进程通讯标准组件（vnpy.rpc），用于实现分布式部署的复杂交易系统。
+
+9. Python高性能K线图表（vnpy.chart），支持大数据量图表显示以及实时数据更新功能。
+
+10. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容。
+
+11. 官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
 
 ## 环境准备
 
