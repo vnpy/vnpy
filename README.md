@@ -7,14 +7,14 @@
 💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.5.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.6.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
 
-vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1月正式发布，在开源社区6年持续不断的贡献下一步步成长为全功能量化交易平台，目前国内外金融机构用户已经超过600家，包括：私募基金、证券自营和资管、期货资管和子公司、高校研究机构、自营交易公司、交易所、Token Fund等。
+vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1月正式发布，在开源社区7年持续不断的贡献下一步步成长为全功能量化交易平台，目前国内外金融机构用户已经超过600家，包括：私募基金、证券自营和资管、期货资管和子公司、高校研究机构、自营交易公司、交易所、Token Fund等。
 
 全新的《vn.py全实战进阶》系列在线课程，已经在官方微信公众号[**vnpy-community**]上线，覆盖CTA策略（已完成）、期权波动率交易（更新中）等内容。购买请扫描下方二维码关注后，点击菜单栏的【进阶课程】按钮即可：
 
@@ -66,7 +66,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 融航（[rohon](https://www.github.com/vnpy/vnpy_rohon)）：期货资管
 
-        * 中汇亿达（comstar）：银行间市场
+        * 中汇亿达（[comstar](https://www.github.com/vnpy/vnpy_comstar)）：银行间市场
 
         * TTS（[tts](https://www.github.com/vnpy/vnpy_tts)）：国内期货（仿真）
 
@@ -96,21 +96,17 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * OKEX（[okex](https://www.github.com/vnpy/vnpy_okex)）：数字货币现货、期货、永续、期权（V5统一账户）
 
-        * 火币（huobi）：数字货币现货
-
-        * 火币期货（huobif）：数字货币期货
-
-        * 火币永续（huobis）：数字货币永续
+        * 火币（[huobi](https://www.github.com/vnpy/vnpy_huobi)）：数字货币现货、期货、永续合约
         
         * Gate.io永续（gateios）：数字货币永续合约
 
         * Deribit（[deribit](https://www.github.com/vnpy/vnpy_deribit)），数字货币期权、永续合约        
 
-        * Bitfinex（bitfinex）：数字货币现货
+        * Bitfinex（[bitfinex](https://www.github.com/vnpy/vnpy_bitfinex)）：数字货币现货
 
-        * Coinbase（coinbase）：数字货币现货
+        * Coinbase（[coinbase](https://www.github.com/vnpy/vnpy_coinbase)）：数字货币现货
 
-        * Bitstamp（bitstamp）：数字货币现货
+        * Bitstamp（[bitstamp](https://www.github.com/vnpy/vnpy_bitstamp)）：数字货币现货
 
         * 1Token（onetoken）：数字货币券商（现货、期货）
 
@@ -126,7 +122,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * [spread_trading](https://www.github.com/vnpy/vnpy_spreadtrading)：价差交易模块，支持自定义价差，实时计算价差行情和持仓，支持半自动价差算法交易以及全自动价差策略交易两种模式
 
-    * option_master：期权交易模块，针对国内期权市场设计，支持多种期权定价模型、隐含波动率曲面计算、希腊值风险跟踪等功能
+    * [option_master](https://www.github.com/vnpy/vnpy_optionmaster)：期权交易模块，针对国内期权市场设计，支持多种期权定价模型、隐含波动率曲面计算、希腊值风险跟踪等功能
 
     * portfolio_strategy：组合策略模块，面向同时交易多合约的量化策略（Alpha、期权套利等），提供历史数据回测和实盘自动交易功能
 
@@ -138,7 +134,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * paper_account：模拟交易模块，纯本地化实现的模拟交易功能，基于交易接口获取的实时行情进行委托撮合，提供委托成交推送以及持仓记录
 
-    * chart_wizard：K线图表模块，基于RQData数据服务（期货）或者交易接口（数字货币）获取历史数据，并结合Tick推送显示实时行情变化
+    * [chart_wizard](https://www.github.com/vnpy/vnpy_chartwizard)：K线图表模块，基于RQData数据服务（期货）或者交易接口（数字货币）获取历史数据，并结合Tick推送显示实时行情变化
 
     * portfolio_manager：投资组合模块，面向各类基本面交易策略，以独立的策略子账户为基础，提供交易仓位的自动跟踪以及盈亏实时统计功能
 
@@ -146,7 +142,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * [data_manager](https://www.github.com/vnpy/vnpy_datamanager)：历史数据管理模块，通过树形目录查看数据库中已有的数据概况，选择任意时间段数据查看字段细节，支持CSV文件的数据导入和导出
 
-    * data_recorder：行情记录模块，基于图形界面进行配置，根据需求实时录制Tick或者K线行情到数据库中，用于策略回测或者实盘初始化
+    * [data_recorder](https://www.github.com/vnpy/vnpy_datarecorder)：行情记录模块，基于图形界面进行配置，根据需求实时录制Tick或者K线行情到数据库中，用于策略回测或者实盘初始化
 
     * excel_rtd：Excel RTD（Real Time Data）实时数据服务，基于pyxll模块实现在Excel中获取各类数据（行情、合约、持仓等）的实时推送更新
 
@@ -162,21 +158,27 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 5. 简洁易用的事件驱动引擎（vnpy.event），作为事件驱动型交易程序的核心。
 
-6. 对接各类数据库的标准化管理客户端（vnpy.database）：
+6. 对接各类数据库的适配器接口：
 
     * SQL类
 
-        * SQLite（sqlite）：轻量级单文件数据库，无需安装和配置数据服务程序，vn.py的默认选项，适合入门新手用户
+        * SQLite（[sqlite](https://www.github.com/vnpy/vnpy_sqlite）：轻量级单文件数据库，无需安装和配置数据服务程序，vn.py的默认选项，适合入门新手用户
 
-        * MySQL（mysql）：世界最流行的开源关系型数据库，文档资料极为丰富，且可替换其他高NewSQL兼容实现（如TiDB）
+        * MySQL（[mysql](https://www.github.com/vnpy/vnpy_mysql）：世界最流行的开源关系型数据库，文档资料极为丰富，且可替换其他高NewSQL兼容实现（如TiDB）
 
-        * PostgreSQL（postgresql）：特性更为丰富的开源关系型数据库，支持通过扩展插件来新增功能，只推荐熟手使用
+        * PostgreSQL（[postgresql](https://www.github.com/vnpy/vnpy_postgresql）：特性更为丰富的开源关系型数据库，支持通过扩展插件来新增功能，只推荐熟手使用
 
     * NoSQL类
 
-        * MongoDB（mongodb）：基于分布式文件储存（bson格式）的非关系型数据库，内置的热数据内存缓存提供更快读写速度
+        * DolphinDB（[dolphindb](https://www.github.com/vnpy/vnpy_dolphindb)）：由浙江智臾科技有限公司研发的一款高性能分布式时序数据库，特别适用于对速度要求极高的低延时或实时性任务
 
-        * InfluxDB（influxdb）：针对时序数据专门设计的非关系型数据库，列式数据储存提供极高的读写效率和外围分析应用
+        * Arctic[arctic](https://www.github.com/vnpy/vnpy_arctic)）：由量化对冲基金Man AHL基于MongoDB开发的高性能金融时序数据库，采用了分块化储存、LZ4压缩等性能优化方案，实现比MongoDB更高的读写效率
+
+        * MongoDB（[mongodb](https://www.github.com/vnpy/vnpy_mongodb)）：基于分布式文件储存（bson格式）的文档式数据库，内置的热数据内存缓存提供更快读写速度
+
+        * InfluxDB（[influxdb]((https://www.github.com/vnpy/vnpy_influxdb)）：针对TimeSeries Data专门设计的时序数据库，列式数据储存提供极高的读写效率和外围分析应用
+
+        * LevelDB（[leveldb](https://www.github.com/vnpy/vnpy_leveldb)）：由Google推出的高性能Key/Value数据库，基于LSM算法实现进程内存储引擎，支持数十亿级别的海量数据
 
 6. 跨进程通讯标准组件（vnpy.rpc），用于实现分布式部署的复杂交易系统。
 
@@ -188,7 +190,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.5.0](https://download.vnpy.com/vnstudio-2.5.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.6.0](https://download.vnpy.com/vnstudio-2.6.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 
