@@ -13,7 +13,9 @@
 
 
 ## 剥离
-1. 将米筐数据接口剥离到vnpy_rqdata项目中，并升级到2.9.37版本
+1. 将米筐数据接口剥离到vnpy_rqdata项目中，并升级到2.9.38版本
+2. 将行情录制模块剥离到vnpy_datarecorder项目中
+3. 将K线图表模块剥离到vnpy_chartwizard项目中
 
 
 # 2.5.0版本
