@@ -167,7 +167,7 @@ class BarGenerator:
     """
     For:
     1. generating 1 minute bar data from tick data
-    2. generateing x minute bar/x hour bar data from 1 minute data
+    2. generating x minute bar/x hour bar data from 1 minute data
 
     Notice:
     1. for x minute bar, x must be able to divide 60: 2, 3, 5, 6, 10, 15, 20, 30
@@ -318,7 +318,8 @@ class BarGenerator:
                 low_price=bar.low_price,
                 close_price=bar.close_price,
                 volume=bar.volume,
-                turnover=bar.turnover
+                turnover=bar.turnover,
+                open_interest=bar.open_interest
             )
             return
 
@@ -358,7 +359,8 @@ class BarGenerator:
                 low_price=bar.low_price,
                 close_price=bar.close_price,
                 volume=bar.volume,
-                turnover=bar.turnover
+                turnover=bar.turnover,
+                open_interest=bar.open_interest
             )
         # Otherwise only update minute bar
         else:
