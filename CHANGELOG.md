@@ -24,6 +24,8 @@
 6. 将PostgreSQL数据库接口剥离到vnpy_postgresql项目中
 7. 将MongoDB数据库接口剥离到vnpy_mongodb项目中
 8. 将InfluxDB数据库接口剥离到vnpy_influxdb项目中
+9. 将火币交易所相关接口剥离到vnpy_huobi项目中
+10. 将Bitstamp交易所相关接口剥离到vnpy_bitstamp项目中
 
 
 # 2.5.0版本
