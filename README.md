@@ -162,11 +162,11 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * SQL类
 
-        * SQLite（[sqlite](https://www.github.com/vnpy/vnpy_sqlite）：轻量级单文件数据库，无需安装和配置数据服务程序，vn.py的默认选项，适合入门新手用户
+        * SQLite（[sqlite](https://www.github.com/vnpy/vnpy_sqlite)）：轻量级单文件数据库，无需安装和配置数据服务程序，vn.py的默认选项，适合入门新手用户
 
-        * MySQL（[mysql](https://www.github.com/vnpy/vnpy_mysql）：世界最流行的开源关系型数据库，文档资料极为丰富，且可替换其他高NewSQL兼容实现（如TiDB）
+        * MySQL（[mysql](https://www.github.com/vnpy/vnpy_mysql)）：世界最流行的开源关系型数据库，文档资料极为丰富，且可替换其他高NewSQL兼容实现（如TiDB）
 
-        * PostgreSQL（[postgresql](https://www.github.com/vnpy/vnpy_postgresql）：特性更为丰富的开源关系型数据库，支持通过扩展插件来新增功能，只推荐熟手使用
+        * PostgreSQL（[postgresql](https://www.github.com/vnpy/vnpy_postgresql)）：特性更为丰富的开源关系型数据库，支持通过扩展插件来新增功能，只推荐熟手使用
 
     * NoSQL类
 
@@ -176,7 +176,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * MongoDB（[mongodb](https://www.github.com/vnpy/vnpy_mongodb)）：基于分布式文件储存（bson格式）的文档式数据库，内置的热数据内存缓存提供更快读写速度
 
-        * InfluxDB（[influxdb]((https://www.github.com/vnpy/vnpy_influxdb)）：针对TimeSeries Data专门设计的时序数据库，列式数据储存提供极高的读写效率和外围分析应用
+        * InfluxDB（[influxdb](https://www.github.com/vnpy/vnpy_influxdb)）：针对TimeSeries Data专门设计的时序数据库，列式数据储存提供极高的读写效率和外围分析应用
 
         * LevelDB（[leveldb](https://www.github.com/vnpy/vnpy_leveldb)）：由Google推出的高性能Key/Value数据库，基于LSM算法实现进程内存储引擎，支持数十亿级别的海量数据
 
