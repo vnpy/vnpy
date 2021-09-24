@@ -27,6 +27,7 @@
 9. 将火币交易所相关接口剥离到vnpy_huobi项目中
 10. 将Bitstamp交易所相关接口剥离到vnpy_bitstamp项目中
 11. 将Coinbase交易所相关接口剥离到vnpy_coinbase项目中
+12. 将Bitfinex交易所相关接口剥离到vnpy_bitfinex项目中
 
 
 # 2.5.0版本
