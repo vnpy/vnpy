@@ -4,6 +4,9 @@
 1. 增加双边报价业务的发送和撤销函数功能
 2. 增加双边报价监控UI组件
 3. 增加用于对接数据服务的抽象接口vnpy.trader.datafeed
+4. 新增基于Arctic的MongoDB数据库接口项目vnpy_arctic
+5. 新增LevelDB数据库接口项目vnpy_leveldb
+6. 新增DolphinDB数据库接口项目vnpy_dolphindb
 
 ## 调整
 1. 移除批量委托和批量撤单相关的函数功能
@@ -16,6 +19,11 @@
 1. 将米筐数据接口剥离到vnpy_rqdata项目中，并升级到2.9.38版本
 2. 将行情录制模块剥离到vnpy_datarecorder项目中
 3. 将K线图表模块剥离到vnpy_chartwizard项目中
+4. 将SQLite数据库接口剥离到vnpy_sqlite项目中
+5. 将MySQL数据库接口剥离到vnpy_mysql项目中
+6. 将PostgreSQL数据库接口剥离到vnpy_postgresql项目中
+7. 将MongoDB数据库接口剥离到vnpy_mongodb项目中
+8. 将InfluxDB数据库接口剥离到vnpy_influxdb项目中
 
 
 # 2.5.0版本
