@@ -13,6 +13,8 @@
 2. 移除老虎证券交易接口TigerGateway
 3. 移除鑫管家交易接口XgjGateway
 4. 移除AlgoTrading算法交易模块对于金纳算法服务的支持
+5. RestClient增加对操作系统代理配置的支持
+6. RestClient和WebsocketClient的默认异常处理逻辑由抛出异常修改为打印输出
 
 ## 修复
 1. 修复在Linux/Mac系统上，运行多进程优化时的进程启动错误
@@ -30,6 +32,7 @@
 10. 将Bitstamp交易所相关接口剥离到vnpy_bitstamp项目中
 11. 将Coinbase交易所相关接口剥离到vnpy_coinbase项目中
 12. 将Bitfinex交易所相关接口剥离到vnpy_bitfinex项目中
+13. 将期权波动率交易模块剥离到vnpy_optionmaster项目中
 
 
 # 2.5.0版本

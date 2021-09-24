@@ -130,12 +130,13 @@ class Exchange(Enum):
     HUOBI = "HUOBI"
     BITFINEX = "BITFINEX"
     BINANCE = "BINANCE"
-    BYBIT = "BYBIT"         # bybit.com
+    BYBIT = "BYBIT"
     COINBASE = "COINBASE"
     DERIBIT = "DERIBIT"
     GATEIO = "GATEIO"
     BITSTAMP = "BITSTAMP"
     DYDX = "DYDX"
+    FTX = "FTX"
 
     # Special Function
     LOCAL = "LOCAL"         # For local generated data
