@@ -26,6 +26,7 @@
 8. 将InfluxDB数据库接口剥离到vnpy_influxdb项目中
 9. 将火币交易所相关接口剥离到vnpy_huobi项目中
 10. 将Bitstamp交易所相关接口剥离到vnpy_bitstamp项目中
+11. 将Coinbase交易所相关接口剥离到vnpy_coinbase项目中
 
 
 # 2.5.0版本
