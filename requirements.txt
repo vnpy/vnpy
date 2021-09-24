@@ -21,7 +21,7 @@ wmi
 QScintilla==2.11.4
 plotly
 exchange-calendars
-influxdb
+
 vnpy_rest
 vnpy_websocket
 vnpy_ctp
@@ -36,15 +36,18 @@ vnpy_mini
 vnpy_sopt
 vnpy_uft
 vnpy_esunny
+vnpy_binance
+vnpy_huobi
+
 vnpy_ctastrategy
 vnpy_ctabacktester
 vnpy_riskmanager
 vnpy_datamanager
 vnpy_webtrader
-vnpy_binance
 vnpy_spreadtrading
 vnpy_datarecorder
 vnpy_chartwizard
+
 vnpy_sqlite
 vnpy_mysql
 vnpy_postgresql
@@ -53,4 +56,3 @@ vnpy_influxdb
 vnpy_dolphindb
 vnpy_arctic
 vnpy_leveldb
-
