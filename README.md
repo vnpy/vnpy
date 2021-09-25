@@ -14,7 +14,7 @@
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
 
-vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1月正式发布，在开源社区7年持续不断的贡献下一步步成长为全功能量化交易平台，目前国内外金融机构用户已经超过600家，包括：私募基金、证券自营和资管、期货资管和子公司、高校研究机构、自营交易公司、交易所、Token Fund等。
+vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1月正式发布，在开源社区7年持续不断的贡献下一步步成长为全功能量化交易平台，目前国内外金融机构用户已经超过900家，包括：私募基金、证券自营和资管、期货资管和子公司、高校研究机构、自营交易公司、交易所、Token Fund等。
 
 全新的《vn.py全实战进阶》系列在线课程，已经在官方微信公众号[**vnpy-community**]上线，覆盖CTA策略（已完成）、期权波动率交易（更新中）等内容。购买请扫描下方二维码关注后，点击菜单栏的【进阶课程】按钮即可：
 
@@ -88,18 +88,16 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * 数字货币
 
-        * BitMEX（bitmex）：数字货币期货、期权、永续合约
-
-        * Bybit（[bybit](https://www.github.com/vnpy/vnpy_bybit)）：数字货币永续合约
-
         * 币安（[binance](https://www.github.com/vnpy/vnpy_binance)）：数字货币现货、期货、永续合约
+
+        * 火币（[huobi](https://www.github.com/vnpy/vnpy_huobi)）：数字货币现货、期货、永续合约
 
         * OKEX（[okex](https://www.github.com/vnpy/vnpy_okex)）：数字货币现货、期货、永续、期权（V5统一账户）
 
-        * 火币（[huobi](https://www.github.com/vnpy/vnpy_huobi)）：数字货币现货、期货、永续合约
-        
-        * Gate.io永续（gateios）：数字货币永续合约
+        * FTX（[ftx](https://www.github.com/vnpy/vnpy_ftx)）：数字货币现货、期货、永续合约
 
+        * Bybit（[bybit](https://www.github.com/vnpy/vnpy_bybit)）：数字货币永续合约
+        
         * Deribit（[deribit](https://www.github.com/vnpy/vnpy_deribit)），数字货币期权、永续合约        
 
         * Bitfinex（[bitfinex](https://www.github.com/vnpy/vnpy_bitfinex)）：数字货币现货
@@ -108,7 +106,11 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * Bitstamp（[bitstamp](https://www.github.com/vnpy/vnpy_bitstamp)）：数字货币现货
 
+        * BitMEX（bitmex）：数字货币期货、期权、永续合约
+
         * 1Token（onetoken）：数字货币券商（现货、期货）
+
+        * Gate.io永续（gateios）：数字货币永续合约
 
     * 特殊应用
 
@@ -203,7 +205,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 ## 环境准备
 
 * 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.6.0](https://download.vnpy.com/vnstudio-2.6.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
-* 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
+* 支持的系统版本：Windows 10以上/Windows Server 2016以上/Ubuntu 20.04 LTS以上
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 
 ## 安装步骤
@@ -300,10 +302,9 @@ vn.py使用Github托管其源代码，如果希望贡献代码请使用github的
   * 使用[flake8](https://pypi.org/project/flake8/)检查你的代码，确保没有error和warning。在项目根目录下运行```flake8```即可。
 
 
-
 ## 项目捐赠
 
-过去6年中收到过许多社区用户的捐赠，在此深表感谢！所有的捐赠资金都投入到了vn.py社区基金中，用于支持vn.py项目的运作。
+过去7年中收到过许多社区用户的捐赠，在此深表感谢！所有的捐赠资金都投入到了vn.py社区基金中，用于支持vn.py项目的运作。
 
 先强调一下：**vn.py是开源项目，可以永久免费使用，并没有强制捐赠的要求！！！**
 

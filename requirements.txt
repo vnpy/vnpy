@@ -38,6 +38,10 @@ vnpy_uft
 vnpy_esunny
 vnpy_binance
 vnpy_huobi
+vnpy_bitfinex
+vnpy_bitstamp
+vnpy_coinbase
+vnpy_ftx
 
 vnpy_ctastrategy
 vnpy_ctabacktester
@@ -47,6 +51,7 @@ vnpy_webtrader
 vnpy_spreadtrading
 vnpy_datarecorder
 vnpy_chartwizard
+vnpy_optionmaster
 
 vnpy_sqlite
 vnpy_mysql
@@ -56,3 +61,9 @@ vnpy_influxdb
 vnpy_dolphindb
 vnpy_arctic
 vnpy_leveldb
+
+vnpy_rqdata
+vnpy_tushare
+vnpy_tqsdk
+vnpy_coinapi
+vnpy_udata

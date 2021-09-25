@@ -3,10 +3,15 @@
 ## 新增
 1. 增加双边报价业务的发送和撤销函数功能
 2. 增加双边报价监控UI组件
-3. 增加用于对接数据服务的抽象接口vnpy.trader.datafeed
+3. 增加用于对接数据库的抽象接口vnpy.trader.database
 4. 新增基于Arctic的MongoDB数据库接口项目vnpy_arctic
 5. 新增LevelDB数据库接口项目vnpy_leveldb
 6. 新增DolphinDB数据库接口项目vnpy_dolphindb
+7. 增加用于对接数据服务的抽象接口vnpy.trader.datafeed
+8. 新增TuShare数据服务项目vnpy_tushare
+8. 新增恒生UData数据服务项目vnpy_udata
+8. 新增天勤TQSDK数据服务项目vnpy_tqsdk
+8. 新增CoinAPI数据服务项目vnpy_coinapi
 
 ## 调整
 1. 移除批量委托和批量撤单相关的函数功能
@@ -15,9 +20,13 @@
 4. 移除AlgoTrading算法交易模块对于金纳算法服务的支持
 5. RestClient增加对操作系统代理配置的支持
 6. RestClient和WebsocketClient的默认异常处理逻辑由抛出异常修改为打印输出
+7. 价差交易模块移除对反向合约、线性价差、开平字段的支持
+8. 价差交易模块优化对灵活价差的支持，优化价差行情推送过滤判断
+9. 价差交易算法停止时，等待全部委托结束、各条腿平衡后，再结束算法
 
 ## 修复
 1. 修复在Linux/Mac系统上，运行多进程优化时的进程启动错误
+2. 修复WebsocketClient由于心跳机制不完善，导致的频繁断线问题
 
 ## 剥离
 1. 将米筐数据接口剥离到vnpy_rqdata项目中，并升级到2.9.38版本
