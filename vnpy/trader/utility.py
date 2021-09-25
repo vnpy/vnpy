@@ -316,8 +316,10 @@ class BarGenerator:
                 open_price=bar.open_price,
                 high_price=bar.high_price,
                 low_price=bar.low_price,
+                close_price=bar.close_price,
                 volume=bar.volume,
-                turnover=bar.turnover
+                turnover=bar.turnover,
+                open_interest=bar.open_interest
             )
             return
 
@@ -357,7 +359,8 @@ class BarGenerator:
                 low_price=bar.low_price,
                 close_price=bar.close_price,
                 volume=bar.volume,
-                turnover=bar.turnover
+                turnover=bar.turnover,
+                open_interest=bar.open_interest
             )
         # Otherwise only update minute bar
         else:

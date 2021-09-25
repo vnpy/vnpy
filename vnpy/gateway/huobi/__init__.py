@@ -1,4 +1,6 @@
-from .huobi_gateway import HuobiGateway
-
-
-
+from vnpy_huobi import (
+    HuobiSpotGateway,
+    HuobiFuturesGateway,
+    HuobiUsdtGateway,
+    HuobiInverseGateway
+)

@@ -14,7 +14,6 @@ from .base import (
     EVENT_ALGO_SETTING, EVENT_ALGO_VARIABLES,
     APP_NAME
 )
-from .genus import GenusClient
 
 
 class AlgoEngine(BaseEngine):
@@ -35,21 +34,14 @@ class AlgoEngine(BaseEngine):
         self.load_algo_template()
         self.register_event()
 
-        self.genus_client: GenusClient = None
-
     def init_engine(self):
         """"""
         self.write_log("算法交易引擎启动")
         self.load_algo_setting()
 
-        if SETTINGS["genus.parent_host"]:
-            self.genus_client = GenusClient(self.main_engine, self.event_engine)
-            self.genus_client.start()
-
     def close(self):
         """"""
-        if self.genus_client:
-            self.genus_client.close()
+        pass
 
     def load_algo_template(self):
         """"""
@@ -70,22 +62,6 @@ class AlgoEngine(BaseEngine):
         self.add_algo_template(GridAlgo)
         self.add_algo_template(DmaAlgo)
         self.add_algo_template(ArbitrageAlgo)
-
-        from .genus import (
-            GenusVWAP,
-            GenusTWAP,
-            GenusPercent,
-            GenusPxInline,
-            GenusSniper,
-            GenusDMA
-        )
-
-        self.add_algo_template(GenusVWAP)
-        self.add_algo_template(GenusTWAP)
-        self.add_algo_template(GenusPercent)
-        self.add_algo_template(GenusPxInline)
-        self.add_algo_template(GenusSniper)
-        self.add_algo_template(GenusDMA)
 
     def add_algo_template(self, template: AlgoTemplate):
         """"""
@@ -147,9 +123,6 @@ class AlgoEngine(BaseEngine):
     def start_algo(self, setting: dict):
         """"""
         template_name: str = setting["template_name"]
-        if template_name.startswith("Genus"):
-            return self.genus_client.start_algo(setting)
-
         algo_template = self.algo_templates[template_name]
 
         algo = algo_template.new(self, setting)
@@ -160,10 +133,6 @@ class AlgoEngine(BaseEngine):
 
     def stop_algo(self, algo_name: str):
         """"""
-        if algo_name.startswith("Genus"):
-            self.genus_client.stop_algo(algo_name)
-            return
-
         algo = self.algos.get(algo_name, None)
         if algo:
             algo.stop()
