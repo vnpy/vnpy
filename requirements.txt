@@ -67,4 +67,4 @@ vnpy_rqdata==2.9.38.0
 vnpy_tushare==1.2.64.0
 vnpy_tqsdk==2.8.6
 vnpy_coinapi==1.0.0
-vnpy_udata==2021.9.22
+vnpy_udata==2021.9.25
