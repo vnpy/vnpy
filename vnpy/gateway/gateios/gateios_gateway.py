@@ -365,7 +365,7 @@ class GateiosRestApi(RestClient):
     def on_query_order(self, data, request):
         """"""
         for d in data:
-            local_orderid = self.order_manager.new_local_orderid()
+            local_orderid = str(raw["text"])[2:]修复gateios接口查询委托单orderid自增的BUG
             sys_orderid = str(d["id"])
 
             self.order_manager.update_orderid_map(
