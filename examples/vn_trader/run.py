@@ -1,145 +1,36 @@
-# flake8: noqa
-from vnpy.event import EventEngine
+from vnpy.app.cta_strategy.backtesting import BacktestingEngine
+from vnpy.trader.object import Interval
+from datetime import datetime
+# from strategies.fixed_trade_time_strategy import FixedTradeTimeStrategy
+# from strategies.turtle_signal_strategy import TurtleSignalStrategy
+# from strategies.spot_grid_strategy_modified import SpotGridStrategy
+# from strategies.high_frequency_strategy import HighFrequencyStrategy
+if __name__ == '__main__':
+    engine = BacktestingEngine()
 
-from vnpy.trader.engine import MainEngine
-from vnpy.trader.ui import MainWindow, create_qapp
+    engine.set_parameters(
+        vt_symbol="ethusdt.BINANCE",  # 现货的数据
+        interval=Interval.MINUTE,
+        start=datetime(2021, 1, 1),
+        end=datetime(2021, 8, 30),
+        rate=1/1000,  # 币安手续费千分之1， BNB 万7.5  7.5/10000
+        slippage=0.2,  # 滑点
+        size=1,  # 币本位合约 100
+        pricetick=0.01,  # 价格精度.
+        capital=1000,
+    )
 
-from vnpy_ctp import CtpGateway
-# from vnpy_ctptest import CtptestGateway
-# from vnpy_mini import MiniGateway
-# from vnpy.gateway.minitest import MinitestGateway
-# from vnpy.gateway.femas import FemasGateway
-# from vnpy_sopt import SoptGateway
-# from vnpy.gateway.sopttest import SopttestGateway
-# from vnpy.gateway.sec import SecGateway
-# from vnpy_uft import UftGateway
-# from vnpy_esunny import EsunnyGateway
-# from vnpy.gateway.hsoption import HsoptionGateway
-# from vnpy_xtp import XtpGateway
-# from vnpy.gateway.tora import ToraStockGateway
-# from vnpy.gateway.tora import ToraOptionGateway
-# from vnpy.gateway.oes import OesGateway
-# from vnpy.gateway.comstar import ComstarGateway
-# from vnpy.gateway.futu import FutuGateway
-# from vnpy.gateway.ib import IbGateway
-# from vnpy.gateway.tiger import TigerGateway
-# from vnpy.gateway.tap import TapGateway
-# from vnpy.gateway.da import DaGateway
-# from vnpy.gateway.mt5 import Mt5Gateway
-# from vnpy_binance import BinanceSpotGateway
-# from vnpy_binance import BinanceInverseGateway
-# from vnpy_binance import BinanceUsdtGateway
-# from vnpy_huobi import HuobiSpotGateway
-# from vnpy_huobi import HuobiFuturesGateway
-# from vnpy_huobi import HuobiInverseGateway
-# from vnpy_huobi import HuobiUsdtGateway
-# from vnpy_okex import OkexGateway
-# from vnpy.gateway.bitmex import BitmexGateway
-# from vnpy_bybit import BybitGateway
-# from vnpy.gateway.gateios import GateiosGateway
-# from vnpy_deribit import DeribitGateway
-# from vnpy_bitfinex import BitfinexGateway
-# from vnpy_coinbase import CoinbaseGateway
-# from vnpy_bitstamp import BitstampGateway
-# from vnpy.gateway.onetoken import OnetokenGateway
-# from vnpy_rohon import RohonGateway
-# from vnpy.gateway.xgj import XgjGateway
-# from vnpy_tts import TtsGateway
-# from vnpy.gateway.alpaca import AlpacaGateway
+    engine.add_strategy(SpotGridStrategy, {})
 
-# from vnpy_ctastrategy import CtaStrategyApp
-# from vnpy_ctabacktester import CtaBacktesterApp
-# from vnpy_spreadtrading import SpreadTradingApp
-# from vnpy.app.algo_trading import AlgoTradingApp
-# from vnpy.app.option_master import OptionMasterApp
-# from vnpy.app.portfolio_strategy import PortfolioStrategyApp
-# from vnpy.app.script_trader import ScriptTraderApp
-# from vnpy.app.market_radar import MarketRadarApp
-# from vnpy_chartwizard import ChartWizardApp
-# from vnpy.app.rpc_service import RpcServiceApp
-# from vnpy.app.excel_rtd import ExcelRtdApp
-# from vnpy_datamanager import DataManagerApp
-# from vnpy_datarecorder import DataRecorderApp
-# from vnpy_riskmanager import RiskManagerApp
-# from vnpy_webtrader import WebTraderApp
-# from vnpy.app.portfolio_manager import PortfolioManagerApp
-# from vnpy.app.paper_account import PaperAccountApp
+    engine.load_data()
+    engine.run_backtesting()
 
+    engine.calculate_result()  # 计算回测的结果
+    engine.calculate_statistics()  # 计算一些统计指标
 
-def main():
-    """"""
-    qapp = create_qapp()
+    engine.show_chart()  # 绘制图表
 
-    event_engine = EventEngine()
-
-    main_engine = MainEngine(event_engine)
-
-    main_engine.add_gateway(CtpGateway)
-    # main_engine.add_gateway(CtptestGateway)
-    # main_engine.add_gateway(MiniGateway)
-    # main_engine.add_gateway(MinitestGateway)
-    # main_engine.add_gateway(FemasGateway)
-    # main_engine.add_gateway(SoptGateway)
-    # main_engine.add_gateway(SopttestGateway)
-    # main_engine.add_gateway(SecGateway)    
-    # main_engine.add_gateway(UftGateway)
-    # main_engine.add_gateway(EsunnyGateway)
-    # main_engine.add_gateway(HsoptionGateway)
-    # main_engine.add_gateway(XtpGateway)
-    # main_engine.add_gateway(ToraStockGateway)
-    # main_engine.add_gateway(ToraOptionGateway)
-    # main_engine.add_gateway(OesGateway)
-    # main_engine.add_gateway(ComstarGateway)
-    # main_engine.add_gateway(FutuGateway)
-    # main_engine.add_gateway(IbGateway)
-    # main_engine.add_gateway(TigerGateway)
-    # main_engine.add_gateway(TapGateway)
-    # main_engine.add_gateway(DaGateway)
-    # main_engine.add_gateway(Mt5Gateway)
-    # main_engine.add_gateway(BinanceSpotGateway)
-    # main_engine.add_gateway(BinanceInverseGateway) 
-    # main_engine.add_gateway(BinanceUsdtGateway)   
-    # main_engine.add_gateway(HuobiSpotGateway)
-    # main_engine.add_gateway(HuobiFuturesGateway)
-    # main_engine.add_gateway(HuobiInverseGateway)    
-    # main_engine.add_gateway(HuobiUsdtGateway)
-    # main_engine.add_gateway(OkexGateway)
-    # main_engine.add_gateway(BitmexGateway)
-    # main_engine.add_gateway(BybitGateway)
-    # main_engine.add_gateway(GateiosGateway)
-    # main_engine.add_gateway(DeribitGateway)
-    # main_engine.add_gateway(BitfinexGateway)
-    # main_engine.add_gateway(CoinbaseGateway)
-    # main_engine.add_gateway(BitstampGateway)
-    # main_engine.add_gateway(OnetokenGateway)
-    # main_engine.add_gateway(RohonGateway)
-    # main_engine.add_gateway(XgjGateway)
-    # main_engine.add_gateway(TtsGateway)
-    # main_engine.add_gateway(AlpacaGateway)
-
-    # main_engine.add_app(CtaStrategyApp)
-    # main_engine.add_app(CtaBacktesterApp)
-    # main_engine.add_app(SpreadTradingApp)
-    # main_engine.add_app(AlgoTradingApp)
-    # main_engine.add_app(OptionMasterApp)
-    # main_engine.add_app(PortfolioStrategyApp)
-    # main_engine.add_app(ScriptTraderApp)
-    # main_engine.add_app(MarketRadarApp)
-    # main_engine.add_app(ChartWizardApp)
-    # main_engine.add_app(RpcServiceApp)
-    # main_engine.add_app(ExcelRtdApp)
-    # main_engine.add_app(DataManagerApp)
-    # main_engine.add_app(DataRecorderApp)
-    # main_engine.add_app(RiskManagerApp)
-    # main_engine.add_app(WebTraderApp)
-    # main_engine.add_app(PortfolioManagerApp)
-    # main_engine.add_app(PaperAccountApp)
-    
-    main_window = MainWindow(main_engine, event_engine)
-    main_window.showMaximized()
-
-    qapp.exec()
-
-
-if __name__ == "__main__":
-    main()
+# 收益上看似不高，但是要知道你一开始你就没有投入100万，这个是相当于你慢慢挣钱，50%-60%
+# 慢慢投资，然后等你攒到100万的时候，实际上你已经有了140万
+# 所以定投有相当于懒人理财的功能。
+# 30 -- 805,090.27
