@@ -78,8 +78,6 @@ For financial institution users of vn.py, a special 【vn.py Institutional Users
 
         * Alpaca (alpaca): US stocks (zero commission)
 
-        * kasia investment (kasia): Hong Kong stocks
-
     * Digital currencies
 
         * BitMEX (bitmex): digital currency futures, options, perpetual contracts

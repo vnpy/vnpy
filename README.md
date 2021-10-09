@@ -84,8 +84,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * Alpaca（alpaca）：美股（零佣金）
 
-        * 佳兆业投资（kasia）：港股
-
     * 数字货币
 
         * 币安（[binance](https://www.github.com/vnpy/vnpy_binance)）：数字货币现货、期货、永续合约
