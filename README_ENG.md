@@ -108,8 +108,6 @@ For financial institution users of vn.py, a special 【vn.py Institutional Users
 
         * Bitstamp (bitstamp): digital currency spot
 
-        * 1Token (onetoken): digital currency brokerage (spot, futures)
-
     * Special Applications
 
         * RPC service (rpc): cross-process communication interface for distributed architecture

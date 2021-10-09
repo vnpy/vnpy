@@ -702,44 +702,6 @@ main_engine.add_gateway(BitfinexGateway)
 &nbsp;
 
 
-### ONETOKEN
-
-#### 如何加载
-
-先从gateway上调用OnetokenGateway类；然后通过add_gateway()函数添加到main_engine上。
-```
-from vnpy.gateway.onetoken import OnetokenGateway
-main_engine.add_gateway(OnetokenGateway)
-```
-
-&nbsp;
-
-
-#### 相关字段
-
-- Key秘钥：OT Key
-- 密码秘钥：OT Secret
-- 会话数：3
-- 交易所：["BINANCE", "BITMEX", "OKEX", "OKEF", "HUOBIP", "HUOBIF"]
-- 账号：
-- 代理地址：
-- 代理端口：
-
-
-
-&nbsp;
-
-
-#### 获取账号
-
-在Onetoken官网开户并且入金后可以获得API接入权限。
-
-
-
-&nbsp;
-
-&nbsp;
-
 ### BINANCE
 
 #### 如何加载

@@ -106,8 +106,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * BitMEX（bitmex）：数字货币期货、期权、永续合约
 
-        * 1Token（onetoken）：数字货币券商（现货、期货）
-
         * Gate.io永续（gateios）：数字货币永续合约
 
     * 特殊应用

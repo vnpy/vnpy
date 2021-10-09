@@ -104,8 +104,6 @@
 
   * Bitstamp(bitstamp)：数字货币
 
-  * 1Token(onetoken)：数字货币
-
 * 特殊应用
 
   * RPC服务(rpc)：跨进程通讯接口，用于分布式架构
