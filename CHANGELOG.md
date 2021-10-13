@@ -2,8 +2,9 @@
 
 # 新增
 1. 新增天软数据服务项目vnpy_tinysoft
-2. 新增同花顺iFinD服务项目vnpy_ifind
+2. 新增同花顺iFinD数据服务项目vnpy_ifind
 3. 新增dYdx交易接口vnpy_dydx
+4. 新增万得Wind数据服务项目vnpy_wind
 
 # 调整
 1. 移除KasiaGateway
