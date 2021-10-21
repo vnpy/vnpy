@@ -11,12 +11,17 @@
 2. 移除OnetokenGateway
 3. 移除BitmexGateway
 4. 移除MarketRadarApp
+5. 算法交易模块中移除套利和网格两个非执行类算法
+
 
 # 剥离
 1. 将InteractiveBrokers交易接口剥离到vnpy_ib项目中
 2. 将飞鼠交易接口剥离到vnpy_sgit项目中
 3. 将易盛外盘交易接口剥离到vnpy_tap项目中
 4. 将直达期货交易接口剥离到vnpy_da项目中
+5. 将算法交易模块剥离到vnpy_algotrading项目中
+6. 将脚本交易模块剥离到vnpy_scripttrader项目中
+7. 将交易组合管理模块剥离到vnpy_portfoliomanager项目中
 
 
 # 2.6.0版本
