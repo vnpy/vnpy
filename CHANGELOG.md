@@ -10,6 +10,12 @@
 1. 移除KasiaGateway
 2. 移除OnetokenGateway
 
+# 剥离
+1. 将InteractiveBrokers交易接口剥离到vnpy_ib项目中
+2. 将飞鼠交易接口剥离到vnpy_sgit项目中
+3. 将易盛外盘交易接口剥离到vnpy_tap项目中
+4. 将直达期货交易接口剥离到vnpy_da项目中
+
 
 # 2.6.0版本
 
