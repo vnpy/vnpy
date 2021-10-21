@@ -7,7 +7,7 @@
 💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.6.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.7.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
@@ -60,7 +60,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 华鑫奇点（tora）：国内证券（A股）、ETF期权
 
-        * 飞鼠（[sgit]((https://www.github.com/vnpy/vnpy_sgit))）：黄金TD、国内期货
+        * 飞鼠（[sgit](https://www.github.com/vnpy/vnpy_sgit)）：黄金TD、国内期货
 
         * 金仕达黄金（ksgold）：黄金TD
 
@@ -202,7 +202,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.6.0](https://download.vnpy.com/vnstudio-2.6.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.7.0](https://download.vnpy.com/vnstudio-2.7.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 10以上/Windows Server 2016以上/Ubuntu 20.04 LTS以上
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 
