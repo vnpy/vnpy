@@ -9,6 +9,8 @@
 # 调整
 1. 移除KasiaGateway
 2. 移除OnetokenGateway
+3. 移除BitmexGateway
+4. 移除MarketRadarApp
 
 # 剥离
 1. 将InteractiveBrokers交易接口剥离到vnpy_ib项目中
