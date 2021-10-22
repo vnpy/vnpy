@@ -15,6 +15,7 @@ from .event import (
     EVENT_ACCOUNT,
     EVENT_CONTRACT,
     EVENT_LOG,
+    EVENT_QUOTE,
 )
 from .object import (
     TickData,
@@ -24,10 +25,12 @@ from .object import (
     AccountData,
     ContractData,
     LogData,
+    QuoteData,
     OrderRequest,
     CancelRequest,
     SubscribeRequest,
     HistoryRequest,
+    QuoteRequest,
     Exchange,
     BarData
 )
@@ -130,6 +133,14 @@ class BaseGateway(ABC):
         self.on_event(EVENT_ACCOUNT, account)
         self.on_event(EVENT_ACCOUNT + account.vt_accountid, account)
 
+    def on_quote(self, quote: QuoteData) -> None:
+        """
+        Quote event push.
+        Quote event of a specific vt_symbol is also pushed.
+        """
+        self.on_event(EVENT_QUOTE, quote)
+        self.on_event(EVENT_QUOTE + quote.vt_symbol, quote)
+
     def on_log(self, log: LogData) -> None:
         """
         Log event push.
@@ -212,28 +223,30 @@ class BaseGateway(ABC):
         """
         pass
 
-    def send_orders(self, reqs: Sequence[OrderRequest]) -> List[str]:
+    def send_quote(self, req: QuoteRequest) -> str:
         """
-        Send a batch of orders to server.
-        Use a for loop of send_order function by default.
-        Reimplement this function if batch order supported on server.
-        """
-        vt_orderids = []
+        Send a new two-sided quote to server.
 
-        for req in reqs:
-            vt_orderid = self.send_order(req)
-            vt_orderids.append(vt_orderid)
+        implementation should finish the tasks blow:
+        * create an QuoteData from req using QuoteRequest.create_quote_data
+        * assign a unique(gateway instance scope) id to QuoteData.quoteid
+        * send request to server
+            * if request is sent, QuoteData.status should be set to Status.SUBMITTING
+            * if request is failed to sent, QuoteData.status should be set to Status.REJECTED
+        * response on_quote:
+        * return vt_quoteid
 
-        return vt_orderids
+        :return str vt_quoteid for created QuoteData
+        """
+        return ""
 
-    def cancel_orders(self, reqs: Sequence[CancelRequest]) -> None:
+    def cancel_quote(self, req: CancelRequest) -> None:
         """
-        Cancel a batch of orders to server.
-        Use a for loop of cancel_order function by default.
-        Reimplement this function if batch cancel supported on server.
+        Cancel an existing quote.
+        implementation should finish the tasks blow:
+        * send request to server
         """
-        for req in reqs:
-            self.cancel_order(req)
+        pass
 
     @abstractmethod
     def query_account(self) -> None:

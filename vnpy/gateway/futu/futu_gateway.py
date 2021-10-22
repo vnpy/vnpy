@@ -347,7 +347,7 @@ class FutuGateway(BaseGateway):
             pos = PositionData(
                 symbol=symbol,
                 exchange=exchange,
-                direction=Direction.LONG,
+                direction=Direction.NET,
                 volume=row["qty"],
                 frozen=(float(row["qty"]) - float(row["can_sell_qty"])),
                 price=float(row["cost_price"]),

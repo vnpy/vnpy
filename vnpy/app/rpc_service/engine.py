@@ -37,9 +37,7 @@ class RpcEngine(BaseEngine):
 
         self.server.register(self.main_engine.subscribe)
         self.server.register(self.main_engine.send_order)
-        self.server.register(self.main_engine.send_orders)
         self.server.register(self.main_engine.cancel_order)
-        self.server.register(self.main_engine.cancel_orders)
         self.server.register(self.main_engine.query_history)
 
         self.server.register(self.main_engine.get_tick)

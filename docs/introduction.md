@@ -64,8 +64,6 @@
 
   * 融航（rohon）：期货资管
 
-  * 鑫管家（xgj）：期货资管
-
   * 飞鼠（sgit）：黄金TD
 
   * 金仕达黄金（ksgold）：黄金TD
@@ -117,8 +115,6 @@
   * Coinbase（coinbase）：数字货币
 
   * Bitstamp（bitstamp）：数字货币
-
-  * 1Token（onetoken）：数字货币
 
 * 特殊应用
 

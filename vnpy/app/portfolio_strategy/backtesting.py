@@ -11,7 +11,7 @@ from plotly.subplots import make_subplots
 from pandas import DataFrame
 
 from vnpy.trader.constant import Direction, Offset, Interval, Status
-from vnpy.trader.database import database_manager
+from vnpy.trader.database import get_database
 from vnpy.trader.object import OrderData, TradeData, BarData
 from vnpy.trader.utility import round_to, extract_vt_symbol
 
@@ -42,7 +42,7 @@ class BacktestingEngine:
         self.priceticks: Dict[str, float] = 0
 
         self.capital: float = 1_000_000
-        self.risk_free: float = 0.02
+        self.risk_free: float = 0
 
         self.strategy: StrategyTemplate = None
         self.bars: Dict[str, BarData] = {}
@@ -490,14 +490,18 @@ class BacktestingEngine:
         """"""
         self.datetime = dt
 
-        # self.bars.clear()
+        bars: Dict[str, BarData] = {}
         for vt_symbol in self.vt_symbols:
             bar = self.history_data.get((dt, vt_symbol), None)
 
             # If bar data of vt_symbol at dt exists
             if bar:
+                # Update bar data for crossing order
                 self.bars[vt_symbol] = bar
-            # Otherwise, use previous data to backfill
+
+                # Put bar into dict for strategy.on_bars update
+                bars[vt_symbol] = bar
+            # Otherwise, use previous close to backfill
             elif vt_symbol in self.bars:
                 old_bar = self.bars[vt_symbol]
 
@@ -514,9 +518,10 @@ class BacktestingEngine:
                 self.bars[vt_symbol] = bar
 
         self.cross_limit_order()
-        self.strategy.on_bars(self.bars)
+        self.strategy.on_bars(bars)
 
-        self.update_daily_close(self.bars, dt)
+        if self.strategy.inited:
+            self.update_daily_close(self.bars, dt)
 
     def cross_limit_order(self) -> None:
         """
@@ -599,7 +604,8 @@ class BacktestingEngine:
         offset: Offset,
         price: float,
         volume: float,
-        lock: bool
+        lock: bool,
+        net: bool
     ) -> List[str]:
         """"""
         price = round_to(price, self.priceticks[vt_symbol])
@@ -654,6 +660,12 @@ class BacktestingEngine:
         Sync strategy data into json file.
         """
         pass
+
+    def get_pricetick(self, strategy: StrategyTemplate, vt_symbol) -> float:
+        """
+        Return contract pricetick data.
+        """
+        return self.priceticks[vt_symbol]
 
     def put_strategy_event(self, strategy: StrategyTemplate) -> None:
         """
@@ -844,6 +856,8 @@ def load_bar_data(
     """"""
     symbol, exchange = extract_vt_symbol(vt_symbol)
 
-    return database_manager.load_bar_data(
+    database = get_database()
+
+    return database.load_bar_data(
         symbol, exchange, interval, start, end
     )

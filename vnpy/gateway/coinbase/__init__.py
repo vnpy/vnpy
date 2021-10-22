@@ -1,1 +1,1 @@
-from .coinbase_gateway import CoinbaseGateway
+from vnpy_coinbase import CoinbaseGateway

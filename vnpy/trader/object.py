@@ -36,6 +36,7 @@ class TickData(BaseData):
 
     name: str = ""
     volume: float = 0
+    turnover: float = 0
     open_interest: float = 0
     last_price: float = 0
     last_volume: float = 0
@@ -71,6 +72,8 @@ class TickData(BaseData):
     ask_volume_4: float = 0
     ask_volume_5: float = 0
 
+    localtime: datetime = None
+
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
@@ -88,6 +91,7 @@ class BarData(BaseData):
 
     interval: Interval = None
     volume: float = 0
+    turnover: float = 0
     open_interest: float = 0
     open_price: float = 0
     high_price: float = 0
@@ -129,10 +133,7 @@ class OrderData(BaseData):
         """
         Check if the order is active.
         """
-        if self.status in ACTIVE_STATUSES:
-            return True
-        else:
-            return False
+        return self.status in ACTIVE_STATUSES
 
     def create_cancel_request(self) -> "CancelRequest":
         """
@@ -254,6 +255,48 @@ class ContractData(BaseData):
 
 
 @dataclass
+class QuoteData(BaseData):
+    """
+    Quote data contains information for tracking lastest status
+    of a specific quote.
+    """
+
+    symbol: str
+    exchange: Exchange
+    quoteid: str
+
+    bid_price: float = 0.0
+    bid_volume: int = 0
+    ask_price: float = 0.0
+    ask_volume: int = 0
+    bid_offset: Offset = Offset.NONE
+    ask_offset: Offset = Offset.NONE
+    status: Status = Status.SUBMITTING
+    datetime: datetime = None
+    reference: str = ""
+
+    def __post_init__(self):
+        """"""
+        self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
+        self.vt_quoteid = f"{self.gateway_name}.{self.quoteid}"
+
+    def is_active(self) -> bool:
+        """
+        Check if the quote is active.
+        """
+        return self.status in ACTIVE_STATUSES
+
+    def create_cancel_request(self) -> "CancelRequest":
+        """
+        Create cancel request object from quote.
+        """
+        req = CancelRequest(
+            orderid=self.quoteid, symbol=self.symbol, exchange=self.exchange
+        )
+        return req
+
+
+@dataclass
 class SubscribeRequest:
     """
     Request sending to specific gateway for subscribing tick data update.
@@ -335,3 +378,43 @@ class HistoryRequest:
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
+
+
+@dataclass
+class QuoteRequest:
+    """
+    Request sending to specific gateway for creating a new quote.
+    """
+
+    symbol: str
+    exchange: Exchange
+    bid_price: float
+    bid_volume: int
+    ask_price: float
+    ask_volume: int
+    bid_offset: Offset = Offset.NONE
+    ask_offset: Offset = Offset.NONE
+    reference: str = ""
+
+    def __post_init__(self):
+        """"""
+        self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
+
+    def create_quote_data(self, quoteid: str, gateway_name: str) -> QuoteData:
+        """
+        Create quote data from request.
+        """
+        quote = QuoteData(
+            symbol=self.symbol,
+            exchange=self.exchange,
+            quoteid=quoteid,
+            bid_price=self.bid_price,
+            bid_volume=self.bid_volume,
+            ask_price=self.ask_price,
+            ask_volume=self.ask_volume,
+            bid_offset=self.bid_offset,
+            ask_offset=self.ask_offset,
+            reference=self.reference,
+            gateway_name=gateway_name,
+        )
+        return quote
