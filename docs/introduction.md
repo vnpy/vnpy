@@ -56,15 +56,11 @@
 
   * 融航(rohon)：期货资管
 
-  * 鑫管家(xgj)：期货资管
-
 * 海外市场
     
   * 富途证券(futu)：港股、美股
 
   * 盈透证券(ib)：海外全品种
-
-  * 老虎证券(tiger)：海外全品种
 
   * 易盛9.0外盘(tap)：外盘期货
 
@@ -107,8 +103,6 @@
   * Coinbase(coinbase)：数字货币
 
   * Bitstamp(bitstamp)：数字货币
-
-  * 1Token(onetoken)：数字货币
 
 * 特殊应用
 

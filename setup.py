@@ -16,7 +16,6 @@ import ast
 import os
 import platform
 import re
-import sys
 
 from setuptools import Extension, find_packages, setup
 
@@ -70,11 +69,7 @@ def get_install_requires():
         "pyzmq",
         "QScintilla"
     ]
-    if not is_psycopg2_exists():
-        install_requires.append("psycopg2-binary")
 
-    if sys.version_info.minor < 7:
-        install_requires.append("dataclasses")
     return install_requires
 
 

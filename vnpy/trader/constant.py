@@ -88,7 +88,8 @@ class Exchange(Enum):
     SZSE = "SZSE"           # Shenzhen Stock Exchange
     SGE = "SGE"             # Shanghai Gold Exchange
     WXE = "WXE"             # Wuxi Steel Exchange
-    CFETS = "CFETS"         # China Foreign Exchange Trade System
+    CFETS = "CFETS"         # CFETS Bond Market Maker Trading System
+    XBOND = "XBOND"         # CFETS X-Bond Anonymous Trading System
 
     # Global
     SMART = "SMART"         # Smart Router for US stocks
@@ -129,11 +130,13 @@ class Exchange(Enum):
     HUOBI = "HUOBI"
     BITFINEX = "BITFINEX"
     BINANCE = "BINANCE"
-    BYBIT = "BYBIT"         # bybit.com
+    BYBIT = "BYBIT"
     COINBASE = "COINBASE"
     DERIBIT = "DERIBIT"
     GATEIO = "GATEIO"
     BITSTAMP = "BITSTAMP"
+    DYDX = "DYDX"
+    FTX = "FTX"
 
     # Special Function
     LOCAL = "LOCAL"         # For local generated data

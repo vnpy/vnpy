@@ -3,7 +3,7 @@ from itertools import product
 from concurrent.futures import ProcessPoolExecutor
 from random import random, choice
 from time import perf_counter
-from multiprocessing import Manager, Pool
+from multiprocessing import Manager, Pool, get_context
 
 from deap import creator, base, tools, algorithms
 
@@ -106,7 +106,10 @@ def run_bf_optimization(
 
     start: int = perf_counter()
 
-    with ProcessPoolExecutor(max_workers) as executor:
+    with ProcessPoolExecutor(
+        max_workers,
+        mp_context=get_context("spawn")
+    ) as executor:
         results: List[Tuple] = list(executor.map(evaluate_func, settings))
         results.sort(reverse=True, key=key_func)
 

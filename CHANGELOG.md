@@ -1,5 +1,76 @@
-# 2.5.0版本
+# 2.7.0版本
 
+# 新增
+1. 新增天软数据服务项目vnpy_tinysoft
+2. 新增同花顺iFinD数据服务项目vnpy_ifind
+3. 新增dYdx交易接口vnpy_dydx
+4. 新增万得Wind数据服务项目vnpy_wind
+
+# 调整
+1. 移除KasiaGateway
+2. 移除OnetokenGateway
+3. 移除BitmexGateway
+4. 移除MarketRadarApp
+5. 算法交易模块中移除套利和网格两个非执行类算法
+
+
+# 剥离
+1. 将InteractiveBrokers交易接口剥离到vnpy_ib项目中
+2. 将飞鼠交易接口剥离到vnpy_sgit项目中
+3. 将易盛外盘交易接口剥离到vnpy_tap项目中
+4. 将直达期货交易接口剥离到vnpy_da项目中
+5. 将算法交易模块剥离到vnpy_algotrading项目中
+6. 将脚本交易模块剥离到vnpy_scripttrader项目中
+7. 将交易组合管理模块剥离到vnpy_portfoliomanager项目中
+
+
+# 2.6.0版本
+
+## 新增
+1. 增加双边报价业务的发送和撤销函数功能
+2. 增加双边报价监控UI组件
+3. 增加用于对接数据库的抽象接口vnpy.trader.database
+4. 新增基于Arctic的MongoDB数据库接口项目vnpy_arctic
+5. 新增LevelDB数据库接口项目vnpy_leveldb
+6. 新增DolphinDB数据库接口项目vnpy_dolphindb
+7. 增加用于对接数据服务的抽象接口vnpy.trader.datafeed
+8. 新增TuShare数据服务项目vnpy_tushare
+8. 新增恒生UData数据服务项目vnpy_udata
+8. 新增天勤TQSDK数据服务项目vnpy_tqsdk
+8. 新增CoinAPI数据服务项目vnpy_coinapi
+
+## 调整
+1. 移除批量委托和批量撤单相关的函数功能
+2. 移除老虎证券交易接口TigerGateway
+3. 移除鑫管家交易接口XgjGateway
+4. 移除AlgoTrading算法交易模块对于金纳算法服务的支持
+5. RestClient增加对操作系统代理配置的支持
+6. RestClient和WebsocketClient的默认异常处理逻辑由抛出异常修改为打印输出
+7. 价差交易模块移除对反向合约、线性价差、开平字段的支持
+8. 价差交易模块优化对灵活价差的支持，优化价差行情推送过滤判断
+9. 价差交易算法停止时，等待全部委托结束、各条腿平衡后，再结束算法
+
+## 修复
+1. 修复在Linux/Mac系统上，运行多进程优化时的进程启动错误
+2. 修复WebsocketClient由于心跳机制不完善，导致的频繁断线问题
+
+## 剥离
+1. 将米筐数据接口剥离到vnpy_rqdata项目中，并升级到2.9.38版本
+2. 将行情录制模块剥离到vnpy_datarecorder项目中
+3. 将K线图表模块剥离到vnpy_chartwizard项目中
+4. 将SQLite数据库接口剥离到vnpy_sqlite项目中
+5. 将MySQL数据库接口剥离到vnpy_mysql项目中
+6. 将PostgreSQL数据库接口剥离到vnpy_postgresql项目中
+7. 将MongoDB数据库接口剥离到vnpy_mongodb项目中
+8. 将InfluxDB数据库接口剥离到vnpy_influxdb项目中
+9. 将火币交易所相关接口剥离到vnpy_huobi项目中
+10. 将Bitstamp交易所相关接口剥离到vnpy_bitstamp项目中
+11. 将Coinbase交易所相关接口剥离到vnpy_coinbase项目中
+12. 将Bitfinex交易所相关接口剥离到vnpy_bitfinex项目中
+13. 将期权波动率交易模块剥离到vnpy_optionmaster项目中
+
+
+# 2.5.0版本
 ## 新增
 1. 新增TTS交易系统（兼容CTP的仿真交易环境）的接口vnpy_tts（6.5.1）
 2. 新增易盛启明星/北斗星兼容交易API的接口vnpy_esunny（1.0.2.2）
