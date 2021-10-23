@@ -1137,6 +1137,8 @@ class AboutDialog(QtWidgets.QDialog):
         text = f"""
             By Traders, For Traders.
 
+            Created by Veighna Technology
+
 
             License：MIT
             Website：www.vnpy.com

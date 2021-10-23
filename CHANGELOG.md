@@ -12,6 +12,12 @@
 3. 移除BitmexGateway
 4. 移除MarketRadarApp
 5. 算法交易模块中移除套利和网格两个非执行类算法
+6. vnpy_tushare数据服务，增加持仓量和成交额字段
+7. vnpy_ftx交易接口，增加获取历史数据时间戳的时区信息
+8. vnpy_datamanager数据管理器，查询的K线信息按合约代码排序显示
+9. vnpy_binance移除委托时的reduceOnly字段
+10. vnpy_binance调整委托时只传递必传字段，修复市价委托的BUG
+11. vnpy_binance修复由于订阅逻辑导致的频繁断线重连BUG
 
 
 # 剥离
