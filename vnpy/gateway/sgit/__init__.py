@@ -1,1 +1,1 @@
-from .sgit_gateway import SgitGateway
+from vnpy_sgit import SgitGateway
