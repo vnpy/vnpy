@@ -5,6 +5,7 @@
 2. 新增同花顺iFinD数据服务项目vnpy_ifind
 3. 新增dYdx交易接口vnpy_dydx
 4. 新增万得Wind数据服务项目vnpy_wind
+5. 新增PortfolioStrategy专用的PortfolioBarGenerator
 
 # 调整
 1. 移除KasiaGateway
@@ -18,6 +19,14 @@
 9. vnpy_binance移除委托时的reduceOnly字段
 10. vnpy_binance调整委托时只传递必传字段，修复市价委托的BUG
 11. vnpy_binance修复由于订阅逻辑导致的频繁断线重连BUG
+12. vnpy_bybit调整行情数据使用新版本API的字段
+13. vnpy_dolphindb优化数据的加载解析速度
+14. vnpy_influxdb采用pandas解析CSV数据，提高整体速度
+
+## 修复
+1. 修复vnpy_ctp的CtpGateway，在夜盘换日时上期所行情时间戳的日期字段误差问题
+2. 修复vnpy_arctic的数据重复写入时出现的错误覆盖问题
+
 
 
 # 剥离
