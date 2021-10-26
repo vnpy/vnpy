@@ -84,7 +84,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 如果已经从其他渠道获取到了CSV格式的数据文件，可以通过DataManager的数据导入功能，将其快速导入vn.py数据库。点击右上角的【导入数据】按钮，会弹出从如下图所示的对话框：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/16.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/21.png)
 
 点击顶部的【选择文件】按钮，会弹出窗口选择要导入的CSV文件路径，如下图所示：
 
@@ -96,6 +96,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
   - 格式详见本章[下载数据](#jump)部分的介绍；
   - 请注意，导入的合约代码（symbol）和交易所（exchange）两个字段组合起来，才能构成在CTA回测等模块中使用的本地代码（vt_symbol）；
   - 若合约代码为**IF2003**，交易所选择**CFFEX**（中金所），则在CtaBacktester中回测要用到的本地代码应为**IF2003.CFFEX**；
+  - 可以对时间戳时区进行选择；
 - 表头信息
   - 可查看CSV文件的表头信息，并将对应的表头字符串输入在表头信息中；
   - 对于CSV文件中不存在的字段（如股票数据没有【持仓量】字段），请留空即可；
@@ -106,11 +107,11 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
   
 填写完毕，则如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/4.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/22.png)
 
 点击【确定】按钮，开始从CSV文件导入数据到数据库中。导入过程中界面会处于半卡住的情况，CSV文件越大（数据量越多），卡住的时间也会越长。成功载入之后，会弹出窗口显示载入成功，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/6.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/20.png)
 
 
 ## 查看数据

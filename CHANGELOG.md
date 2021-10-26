@@ -1,3 +1,44 @@
+# 2.7.0版本
+
+# 新增
+1. 新增天软数据服务项目vnpy_tinysoft
+2. 新增同花顺iFinD数据服务项目vnpy_ifind
+3. 新增dYdx交易接口vnpy_dydx
+4. 新增万得Wind数据服务项目vnpy_wind
+5. 新增PortfolioStrategy专用的PortfolioBarGenerator
+
+# 调整
+1. 移除KasiaGateway
+2. 移除OnetokenGateway
+3. 移除BitmexGateway
+4. 移除MarketRadarApp
+5. 算法交易模块中移除套利和网格两个非执行类算法
+6. vnpy_tushare数据服务，增加持仓量和成交额字段
+7. vnpy_ftx交易接口，增加获取历史数据时间戳的时区信息
+8. vnpy_datamanager数据管理器，查询的K线信息按合约代码排序显示
+9. vnpy_binance移除委托时的reduceOnly字段
+10. vnpy_binance调整委托时只传递必传字段，修复市价委托的BUG
+11. vnpy_binance修复由于订阅逻辑导致的频繁断线重连BUG
+12. vnpy_bybit调整行情数据使用新版本API的字段
+13. vnpy_dolphindb优化数据的加载解析速度
+14. vnpy_influxdb采用pandas解析CSV数据，提高整体速度
+
+## 修复
+1. 修复vnpy_ctp的CtpGateway，在夜盘换日时上期所行情时间戳的日期字段误差问题
+2. 修复vnpy_arctic的数据重复写入时出现的错误覆盖问题
+
+
+
+# 剥离
+1. 将InteractiveBrokers交易接口剥离到vnpy_ib项目中
+2. 将飞鼠交易接口剥离到vnpy_sgit项目中
+3. 将易盛外盘交易接口剥离到vnpy_tap项目中
+4. 将直达期货交易接口剥离到vnpy_da项目中
+5. 将算法交易模块剥离到vnpy_algotrading项目中
+6. 将脚本交易模块剥离到vnpy_scripttrader项目中
+7. 将交易组合管理模块剥离到vnpy_portfoliomanager项目中
+
+
 # 2.6.0版本
 
 ## 新增

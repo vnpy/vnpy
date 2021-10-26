@@ -41,7 +41,6 @@ from vnpy_ctp import CtpGateway
 # from vnpy_bitfinex import BitfinexGateway
 # from vnpy_coinbase import CoinbaseGateway
 # from vnpy_bitstamp import BitstampGateway
-# from vnpy.gateway.onetoken import OnetokenGateway
 # from vnpy_rohon import RohonGateway
 # from vnpy.gateway.xgj import XgjGateway
 # from vnpy_tts import TtsGateway
@@ -111,7 +110,6 @@ def main():
     # main_engine.add_gateway(BitfinexGateway)
     # main_engine.add_gateway(CoinbaseGateway)
     # main_engine.add_gateway(BitstampGateway)
-    # main_engine.add_gateway(OnetokenGateway)
     # main_engine.add_gateway(RohonGateway)
     # main_engine.add_gateway(XgjGateway)
     # main_engine.add_gateway(TtsGateway)

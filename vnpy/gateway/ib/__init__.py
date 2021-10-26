@@ -1,1 +1,1 @@
-from .ib_gateway import IbGateway
+from vnpy_ib import IbGateway

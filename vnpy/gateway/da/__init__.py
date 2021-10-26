@@ -1,1 +1,1 @@
-from .da_gateway import DaGateway
+from vnpy_da import DaGateway
