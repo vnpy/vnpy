@@ -1,11 +1,15 @@
 # 数据库配置
 
-VN Trader目前支持以下四种数据库：  
+VN Trader目前支持以下八种数据库：  
 
  * [SQLite](#sqlite)（默认）
  * [MySQL](#sqlmysqlpostgresql)
  * [PostgreSQL](#sqlmysqlpostgresql)
  * [MongoDB](#mongodb)
+ * [DolphinDB](#dolphindb)
+ * [Arctic](#arctic)
+ * [LevelDB](#leveldb)
+ * [InfluxDB](#influxdb)
  
 如果需要配置数据库，请点击配置。然后按照各个数据库所需的字段填入相对应的值即可。
 
@@ -15,14 +19,14 @@ VN Trader目前支持以下四种数据库：
 
 | 字段名            | 值 |
 |---------           |---- |
-|database.driver     | sqlite |
+|database.name       | sqlite |
 |database.database   | 数据库文件（相对于trader目录） |
  
 SQLite的例子：
 
 | 字段名            | 值 |
 |---------           |---- |
-|database.driver     | sqlite |
+|database.name       | sqlite |
 |database.database   | database.db |
 
 
@@ -33,7 +37,7 @@ SQLite的例子：
 
 | 字段名            | 值 |
 |---------           |---- |
-|database.driver     | "mysql"或"postgresql" |
+|database.name       | "mysql"或"postgresql" |
 |database.host       | 地址 |
 |database.port       | 端口 |
 |database.database   | 数据库名 |
@@ -44,7 +48,7 @@ MySQL的例子：
 
 | 字段名            | 值 |
 |---------           |----  |
-|database.driver     | mysql |
+|database.name       | mysql |
 |database.host       | localhost |
 |database.port       | 3306 |
 |database.database   | vnpy |
@@ -61,7 +65,7 @@ MySQL的例子：
 
 | 字段名            | 值 |          是否必填|
 |---------           |---- |  ---|
-|database.driver     | "mysql"或"postgresql" | 必填 |
+|database.name       | "mysql"或"postgresql" | 必填 |
 |database.host       | 地址| 必填 |
 |database.port       | 端口| 必填 |
 |database.database   | 数据库名| 必填 |
@@ -73,13 +77,90 @@ MongoDB的带认证例子：
 
 | 字段名            | 值 |
 |---------           |----  |
-|database.driver     | mongodb |
+|database.name       | mongodb |
 |database.host       | localhost |
 |database.port       | 27017 |
 |database.database   | vnpy |
 |database.user       | root |
 |database.password   | .... |
 |database.authentication_source   | vnpy |
+[AuthSource]: https://docs.mongodb.com/manual/core/security-users/#user-authentication-database
 
+## DolphinDB
 
+需要填写以下字段：
+
+| 字段名            | 值 |
+|---------           |---- |
+|database.name       | dolphindb|
+|database.host       | 地址 |
+|database.port       | 端口 |
+|database.database   | 数据库名 |
+|database.user       | 用户名 |
+|database.password   | 密码 |
+ 
+DolphinDB的例子：
+
+| 字段名            | 值 |
+|---------           |----  |
+|database.name       | dolphindb |
+|database.host       | localhost |
+|database.port       | 8848 |
+|database.database   | vnpy |
+|database.user       | admin |
+|database.password   | .... |
+---
+## Arctic
+
+| 字段名            | 值 |
+|---------           |---- |
+|database.name       | arctic|
+|database.host       | 地址 |
+ 
+Arctic的例子：
+
+| 字段名            | 值 |
+|---------           |----  |
+|database.name       | arctic |
+|database.host       | localhost |
+
+---
+## LevelDB
+
+| 字段名            | 值 |
+|---------           |---- |
+|database.name       | leveldb|
+|database.database   | 数据库名 |
+
+ 
+LevelDB的例子：
+
+| 字段名            | 值 |
+|---------           |  ----  |
+|database.name       | leveldb |
+|database.database   | vnpy_data |
+
+---
+## InfluxDB
+
+| 字段名            | 值 |
+|---------           |---- |
+|database.name       | influxdb|
+|database.host       | 地址 |
+|database.port       | 端口 |
+|database.database   | 数据库名 |
+|database.user       | 用户名 |
+|database.password   | 密码 |
+ 
+InfluxDB的例子：
+
+| 字段名            | 值 |
+|---------           |----  |
+|database.name       | influxdb |
+|database.host       | localhost |
+|database.port       | 8086 |
+|database.database   | vnpy |
+|database.user       | root |
+|database.password   | .... |
+---
 [AuthSource]: https://docs.mongodb.com/manual/core/security-users/#user-authentication-database
