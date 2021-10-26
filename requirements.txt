@@ -6,7 +6,7 @@ pyqtgraph
 qdarkstyle
 requests
 websocket-client
-numpy
+numpy==1.18.2
 pandas
 matplotlib
 seaborn
