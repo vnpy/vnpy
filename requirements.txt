@@ -44,6 +44,10 @@ vnpy_bitstamp==2021.9.17
 vnpy_coinbase==2021.9.17
 vnpy_ftx==2021.10.25
 vnpy_dydx==2021.10.3
+vnpy_ib==9.81.1.0
+vnpy_tap==9.0.0
+vnpy_da==1.12.0
+vnpy_sgit==4.8.0
 
 vnpy_ctastrategy==1.0.5
 vnpy_ctabacktester==1.0.3
