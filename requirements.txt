@@ -58,7 +58,7 @@ vnpy_spreadtrading==1.1.0
 vnpy_datarecorder==1.0.2
 vnpy_chartwizard==1.0.1
 vnpy_optionmaster==1.0.0
-vnpy_algotrading==1.0.0
+vnpy_algotrading==1.0.1
 vnpy_scripttrader==1.0.0
 vnpy_portfoliomanager==1.0.0
 
