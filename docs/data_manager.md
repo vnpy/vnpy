@@ -16,7 +16,7 @@ DataManager是用于**历史数据管理**的功能模块，用户可以通过�
 
 ```
 # 写在顶部
-from vnpy.app.data_manager import DataManagerApp
+from vnpy_datamanager import DataManagerApp
 
 # 写在创建main_engine对象后
 main_engine.add_app(DataManagerApp)
