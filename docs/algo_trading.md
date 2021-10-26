@@ -9,7 +9,7 @@
 
 - engine：定义了算法引擎，其中包括：引擎初始化、保存/移除/加载算法配置、启动算法、停止算法、订阅行情、挂撤单等。
 - template：定义了交易算法模板，具体的算法示例，如冰山算法，都需要继承于该模板。
-- algos：具体的交易算法示例。用户基于算法模板和官方提供是算法示例，可以自己搭建新的算法。
+- algos：具体的交易算法示例。用户基于算法模板和官方提供的算法示例，可以自己搭建新的算法。
 - ui：基于PyQt5的GUI图形应用。
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/algo_trader/algo_trader_document.png)
@@ -56,7 +56,7 @@
 
 数据监控由4个部分构成。
 
-- 活动组件：显示正在运行的算法交易，包括：算法名称、参数、状态。最右边的“停止”按钮用于手动停止执行中的算法。
+- 活动组件：显示正在运行的算法交易，包括：算法名称、参数、状态。最左边的“停止”按钮用于手动停止执行中的算法。
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/algo_trader/action.png)
 
@@ -138,9 +138,10 @@
             return
         self.timer_count = 0
 
-        tick = self.get_tick(self.vt_symbol)
-        if not tick:
+        if not self.last_tick:
             return
+        tick = self.last_tick
+        self.last_tick = None
 
         self.cancel_all()
 
@@ -308,8 +309,8 @@
 ### 最优限价算法
 
 - 监控最新tick推送的行情，发现好的价格立刻报价成交。
-- 买入情况：先检查撤单：最新Tick买一价不等于目标价格时，执行撤单；若无活动委托，发出委托：委托价格为最新Tick买一价，委托数量为剩余委托量。
-- 卖出情况：先检查撤单：最新Tick买一价不等于目标价格时，执行撤单；若无活动委托，发出委托：委托价格为最新Tick卖一价，委托数量为剩余委托量。
+- 买入情况：先检查撤单：最新Tick买一价不等于目标价格时，执行撤单；若无活动委托，发出委托：委托价格为最新Tick买一价，委托数量为剩余委托量与随机量之间取最小值。
+- 卖出情况：先检查撤单：最新Tick卖一价不等于目标价格时，执行撤单；若无活动委托，发出委托：委托价格为最新Tick卖一价，委托数量为剩余委托量与随机量之间取最小值。
 
 ```
     def on_tick(self, tick: TickData):
@@ -331,7 +332,11 @@
 
     def buy_best_limit(self):
         """"""
-        order_volume = self.volume - self.traded
+        volume_left = self.volume - self.traded
+
+        rand_volume = self.generate_rand_volume()
+        order_volume = min(rand_volume, volume_left)
+
         self.order_price = self.last_tick.bid_price_1
         self.vt_orderid = self.buy(
             self.vt_symbol,
@@ -342,7 +347,11 @@
 
     def sell_best_limit(self):
         """"""
-        order_volume = self.volume - self.traded
+        volume_left = self.volume - self.traded
+
+        rand_volume = self.generate_rand_volume()
+        order_volume = min(rand_volume, volume_left)
+
         self.order_price = self.last_tick.ask_price_1
         self.vt_orderid = self.sell(
             self.vt_symbol,
@@ -381,7 +390,7 @@
         # Calculate target volume to buy
         target_buy_distance = (self.price - self.last_tick.ask_price_1) / self.step_price
         target_buy_position = math.floor(target_buy_distance) * self.step_volume
-        target_buy_volume = target_buy_position - self.last_pos
+        target_buy_volume = target_buy_position - self.pos
 
         # Buy when price dropping
         if target_buy_volume > 0:
@@ -394,7 +403,7 @@
         # Calculate target volume to sell
         target_sell_distance = (self.price - self.last_tick.bid_price_1) / self.step_price
         target_sell_position = math.ceil(target_sell_distance) * self.step_volume
-        target_sell_volume = self.last_pos - target_sell_position
+        target_sell_volume = self.pos - target_sell_position
 
         # Sell when price rising
         if target_sell_volume > 0:
@@ -425,17 +434,23 @@
             return
         self.timer_count = 0
 
+        # Cancel all active orders before moving on
         if self.active_vt_orderid or self.passive_vt_orderid:
+            self.write_log("有未成交委托，执行撤单")
             self.cancel_all()
             return
         
-        if self.net_pos:
+        # Make sure that active leg is fully hedged by passive leg
+        if (self.active_pos + self.passive_pos) != 0:
+            self.write_log("主动腿和被动腿数量不一致，执行对冲")
             self.hedge()
             return
       
+        # Make sure  that tick data of both leg are available
         active_tick = self.get_tick(self.active_vt_symbol)
         passive_tick = self.get_tick(self.passive_vt_symbol)
         if not active_tick or not passive_tick:
+            self.write_log("获取某条套利腿的行情失败，无法交易")
             return
 
         # Calculate spread
@@ -445,66 +460,81 @@
         spread_bid_volume = min(active_tick.bid_volume_1, passive_tick.ask_volume_1)
         spread_ask_volume = min(active_tick.ask_volume_1, passive_tick.bid_volume_1)
 
-        # Sell condition      
+        msg = f"价差盘口，买：{spred_bid_price} ({spred_bid_volume}), 卖：{spred_ask_price} ({spred_ask_volume})"
+        self.write_log(msg)
+
+        # Sell condition
         if spread_bid_price > self.spread_up:
-            if self.acum_pos <= -self.max_pos:
-                return
-            else:
+            self.write_log("套利价差超过上限，满足做空条件")
+
+            if self.active_pos > -self.max_pos:
+                self.write_log("当前持仓小于最大持仓限制，执行卖出操作")
+
+                volume = min(spread_bid_volume,
+                             self.active_pos + self.max_pos)
+
                 self.active_vt_orderid = self.sell(
                     self.active_vt_symbol,
                     active_tick.bid_price_1,
-                    spread_bid_volume               
+                    volume
                 )
 
         # Buy condition
         elif spread_ask_price < -self.spread_down:
-            if self.acum_pos >= self.max_pos:
-                return
-            else:
+            self.write_log("套利价差超过下限，满足做多条件")
+
+            if self.active_pos < self.max_pos:
+                self.write_log("当前持仓小于最大持仓限制，执行买入操作")
+
+                volume = min(spread_ask_volume,
+                             self.max_pos - self.active_pos)
+
                 self.active_vt_orderid = self.buy(
                     self.active_vt_symbol,
                     active_tick.ask_price_1,
-                    spread_ask_volume
+                    volume
                 )
+
+        # Update GUI
         self.put_variables_event()
     
     def hedge(self):
         """"""
         tick = self.get_tick(self.passive_vt_symbol)
-        volume = abs(self.net_pos)
+        volume = -self.active_pos - self.passive_pos
 
-        if self.net_pos > 0:
-            self.passive_vt_orderid = self.sell(
-                self.passive_vt_symbol,
-                tick.bid_price_5,
-                volume
-            )
-        elif self.net_pos < 0:
+        if volume > 0:
             self.passive_vt_orderid = self.buy(
                 self.passive_vt_symbol,
-                tick.ask_price_5,
+                tick.ask_price_1,
                 volume
+            )
+        elif volume < 0:
+            self.passive_vt_orderid = self.sell(
+                self.passive_vt_symbol,
+                tick.bid_price_1,
+                abs(volume)
             )
 
     def on_trade(self, trade: TradeData):
         """"""
-        # Update net position volume
+        # Update pos
         if trade.direction == Direction.LONG:
-            self.net_pos += trade.volume
-        else:
-            self.net_pos -= trade.volume
-
-        # Update active symbol position           
-        if trade.vt_symbol == self.active_vt_symbol:
-            if trade.direction == Direction.LONG:
-                self.acum_pos += trade.volume
+            if trade.vt_symbol == self.active_vt_symbol:
+                self.active_pos += trade.volume
             else:
-                self.acum_pos -= trade.volume
+                self.passive_pos += trade.volume
+        else:
+            if trade.vt_symbol == self.active_vt_symbol:
+                self.active_pos -= trade.volume
+            else:
+                self.passive_pos -= trade.volume
 
-        # Hedge if active symbol traded     
+        # Hedge if active symbol traded
         if trade.vt_symbol == self.active_vt_symbol:
+            self.write_log("收到主动腿成交回报，执行对冲")
             self.hedge()
-        
+
         self.put_variables_event()
 
 ```
