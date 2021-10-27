@@ -18,7 +18,7 @@ ChartWizard是用于**实时K线图表展示**的功能模块，用户可以通�
 
 ```
 # 写在顶部
-from vnpy_chartwizard import ChartWizardApp
+from vnpy.app.chart_wizard import ChartWizardApp
 
 # 写在创建main_engine对象后
 main_engine.add_app(ChartWizardApp)

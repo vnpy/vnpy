@@ -13,8 +13,9 @@ PR流程大致如下：
 2. Fork [vn.py][#GithubVnpy] - 点击右上角**Fork**按钮
 
 3. Clone你自己的fork: ```git clone https://github.com/$userid/vnpy.git```
+	
 	> 如果你的fork已经过时，需要手动[sync][GithubDocForSync]
-
+	
 4. 从**dev**创建你自己的branch: ```git checkout -b $my_feature_branch dev```
 
 5. 在$my_feature_branch上修改并将修改push到你Fork之后的仓库上
@@ -31,9 +32,12 @@ PR流程大致如下：
 ## 代码风格
 在为vn.py写代码的时候，需要遵循一些基本的规则，否则你的代码可能无法被merge。
 这些规则包括：
-1. [命名规则](#命名规则)
-2. [代码格式](#代码格式)
-3. [代码质量检查](#代码质量检查)
+- [贡献代码](#贡献代码)
+  - [创建PR](#创建pr)
+  - [代码风格](#代码风格)
+    - [命名规则](#命名规则)
+    - [代码格式](#代码格式)
+    - [代码质量检查](#代码质量检查)
 
 
 ### 命名规则
