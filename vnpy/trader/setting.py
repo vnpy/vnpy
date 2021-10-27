@@ -32,9 +32,9 @@ SETTINGS: Dict[str, Any] = {
     "database.timezone": get_localzone().zone,
     "database.name": "sqlite",
     "database.database": "database.db",         # for sqlite, use this as filepath
-    "database.host": "localhost",
-    "database.port": 3306,
-    "database.user": "root",
+    "database.host": "",
+    "database.port": 0,
+    "database.user": "0",
     "database.password": ""
 }
 
