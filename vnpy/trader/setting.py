@@ -35,17 +35,7 @@ SETTINGS: Dict[str, Any] = {
     "database.host": "localhost",
     "database.port": 3306,
     "database.user": "root",
-    "database.password": "",
-    "database.authentication_source": "admin",  # for mongodb
-
-    "genus.parent_host": "",
-    "genus.parent_port": "",
-    "genus.parent_sender": "",
-    "genus.parent_target": "",
-    "genus.child_host": "",
-    "genus.child_port": "",
-    "genus.child_sender": "",
-    "genus.child_target": "",
+    "database.password": ""
 }
 
 # Load global setting from json file.

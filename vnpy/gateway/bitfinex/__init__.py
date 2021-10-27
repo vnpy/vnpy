@@ -1,1 +1,1 @@
-from .bitfinex_gateway import BitfinexGateway
+from vnpy_bitfinex import BitfinexGateway

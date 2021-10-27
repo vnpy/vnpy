@@ -26,93 +26,99 @@
 
 ## 支持的接口
 
-**vnpy.gateway**，盖国内外所有交易品种的交易接口：
+**vnpy.gateway**，覆盖国内外所有交易品种的交易接口：
 
 * 国内市场
 
-  * CTP(ctp)：期货、期货期权
+  * CTP（ctp）：期货、期货期权
 
-  * CTP Mini(mini)：期货、期货期权
+  * CTP测试（ctptest）：期货、期货期权
 
-  * 飞马(femas)：期货
+  * CTP Mini（mini）：期货、期货期权
+
+  * CTP Mini测试（minitest）：期货、期货期权
+
+  * 飞马（femas）：期货
     
-  * CTP期权(sopt)：ETF期权
+  * CTP期权（sopt）：ETF期权
 
-  * 飞创期权(sec)：ETF期权
+  * CTP期权测试（sopttest）：ETF期权
 
-  * 恒生UFT(uft)：国内期货、ETF期权
+  * 飞创期权（sec）：ETF期权
 
-  * 恒生期权(hsoption)：ETF期权
+  * 恒生UFT（uft）：期货、ETF期权
 
-  * 中泰XTP(xtp)：A股、两融、ETF期权
+  * 恒生期权（hsoption）：ETF期权
 
-  * 华鑫奇点股票(torastock)：A股
+  * 中泰XTP（xtp）：A股、两融、ETF期权
 
-  * 华鑫奇点期权(toraoption)：ETF期权
+  * 国泰君安（gtja）：A股
 
-  * 宽睿(oes)：A股、ETF期权
+  * 华鑫奇点股票（torastock）：A股
+
+  * 华鑫奇点期权（toraoption）：ETF期权
+
+  * 宽睿（oes）：A股、ETF期权
     
-  * 中亿汇达Comstar(comstar)：银行间市场
+  * 中亿汇达Comstar（comstar）：银行间市场
 
-  * 融航(rohon)：期货资管
+  * 融航（rohon）：期货资管
 
-  * 鑫管家(xgj)：期货资管
+  * 飞鼠（sgit）：黄金TD
+
+  * 金仕达黄金（ksgold）：黄金TD
 
 * 海外市场
     
-  * 富途证券(futu)：港股、美股
+  * 富途证券（futu）：港股、美股
 
-  * 盈透证券(ib)：海外全品种
+  * 盈透证券（ib）：海外全品种
 
-  * 老虎证券(tiger)：海外全品种
+  * 老虎证券（tiger）：海外全品种
 
-  * 易盛9.0外盘(tap)：外盘期货
+  * 易盛9.0外盘（tap）：外盘期货
 
-  * 直达期货(da)：外盘期货
+  * 直达期货（da）：外盘期货
 
-  * MetaTrader 5(mt5)：外汇、CFD、股票、期货
+  * MetaTrader 5（mt5）：外汇、CFD、股票、期货
+
+  * Alpaca（alpaca）：美股
+
+  * 佳兆业投资（kaisa）：港股
 
 * 数字货币
 
-  * 币安(binance)：数字货币
+  * 币安（binance）：数字货币
 
-  * 币安永续合约(binances)：数字货币永续和期货
+  * 币安永续合约（binances）：数字货币永续和期货
 
-  * 火币(huobi)：数字货币
+  * 火币（huobi）：数字货币
 
-  * 火币期货(huobif)：数字货币期货
+  * 火币期货（huobif）：数字货币期货
 
-  * 火币永续(huobis)：数字货币永续
+  * 火币永续（huobis）：数字货币永续
 
-  * 火币期权(huobio)：数字货币期权
+  * 火币期权（huobio）：数字货币期权
 
-  * OKEX(okex)：数字货币
+  * OKEX V5（okex）：数字货币、期货、永续、期权
 
-  * OKEX期货(okexf)：数字货币期货
+  * BitMEX（bitmex）：数字货币期货、永续
 
-  * OKEX永续(okexs)：数字货币永续
+  * Bybit（bybit）：数字货币永续
 
-  * OKEX期权(okexo)：数字货币期权
+  * Gate.io合约（gateios）：数字货币永续
 
-  * BitMEX(bitmex)：数字货币期货、永续
+  * Deribit（deribit）：数字货币永续、期权
 
-  * Bybit(bybit)：数字货币永续
+  * Bitfinex（bitfinex）：数字货币
 
-  * Gate.io合约(gateios)：数字货币永续
+  * Coinbase（coinbase）：数字货币
 
-  * Deribit(deribit)：数字货币永续、期权
-
-  * Bitfinex(bitfinex)：数字货币
-
-  * Coinbase(coinbase)：数字货币
-
-  * Bitstamp(bitstamp)：数字货币
-
-  * 1Token(onetoken)：数字货币
+  * Bitstamp（bitstamp）：数字货币
 
 * 特殊应用
 
-  * RPC服务(rpc)：跨进程通讯接口，用于分布式架构
+  * RPC服务（rpc）：跨进程通讯接口，用于分布式架构
 
 
 ## 支持的应用
@@ -161,3 +167,5 @@
 **vnpy.rpc**，跨进程通讯标准组件，用于实现分布式部署的复杂交易系统。
 
 **vnpy.chart**，Python高性能K线图表，支持大数据量图表显示以及实时数据更新功能。
+
+**vnpy.database**，集成了几大数据库管理端模块，以支持数据库读写性能和未来的新数据库扩展。
