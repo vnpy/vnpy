@@ -206,6 +206,27 @@ C:\users\administrator.vntrader\log
 - email.sender: 发送邮箱名，与email.username一致；
 - email.receiver: 接受邮件的邮箱地址。
 
+
+### datafeed数据服务
+
+与数据库适配器类似，对于数据服务有一个标准化的接口BaseDatafeed（位于vnpy.trader.datafeed），实现了更加灵活的数据服务支持，具体字段含义如下：
+- datafeed.name: 数据服务接口的名称，全称的小写英文字母；
+- datafeed.username: 数据服务的用户名；
+- datafeed.password: 数据服务的密码。
+
+字段如图所示：
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/17.png)
+
+目前支持四种datafeed：
+- [RQData]
+- [Udata]
+- [TuShare]
+- [TQSDK]
+
+[RQData]:https://github.com/vnpy/vnpy_rqdata 
+[Udata]: https://github.com/vnpy/vnpy_udata
+[TuShare]: https://github.com/vnpy/vnpy_tushare
+[TQSDK]: https://github.com/vnpy/vnpy_tqsdk
 ### RQData数据服务
 
 以rqdata为前缀的参数用于配置RQData数据服务。
@@ -214,13 +235,12 @@ C:\users\administrator.vntrader\log
 
 购买RQData后（或者申请试用账号），会获得license文件，将license文件中的内容填入字段即可，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/9.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/16.png)
 
 请注意，这里的username和password不是米筐官网登录用的账号和密码。
-
 ### 数据库
 
-以database为前缀的参数用于配置数据库服务。目前，vn.py支持SQLite、MySQL、PostgreSQL、MongoDB和InfluxDB五种数据库。具体配置方法详见项目文档的数据库配置部分。
+以database为前缀的参数用于配置数据库服务。目前，vn.py支持SQLite、MySQL、PostgreSQL、MongoDB、InfluxDB、DolphinDB、Arctic和LevelDB八种数据库。具体配置方法详见项目文档的数据库配置部分。
 
 
 

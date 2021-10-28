@@ -18,7 +18,7 @@ PaperAccount是用于**本地模拟交易**的功能模块，用户可以通过�
 
 ```
 # 写在顶部
-from vnpy.app.paper_account import PaperAccountApp
+from vnpy_paperaccount import PaperAccountApp
 
 # 写在创建main_engine对象后
 main_engine.add_app(PaperAccountApp)

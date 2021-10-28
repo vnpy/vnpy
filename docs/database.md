@@ -1,6 +1,6 @@
 # 数据库
 
-VN Trader目前支持以下五种数据库：
+VN Trader目前支持以下八种数据库：
 
 ## SQL类数据库简介
 
@@ -39,6 +39,27 @@ MongoDB是一个基于分布式文件储存 （bson格式）的非关系型数�
 InfluxDB是专门针对时间序列数据存储设计的非关系型数据库，其特点如下：
 - 列式数据存储提供极高的读写效率；
 - 采用独立服务进程的模式运行，也能支持多进程的并发访问需求。
+
+### DolphinDB
+
+DolphinDB是浙江智臾科技有限公司研发的一款高性能分布式时序数据库，特别适用于对速度要求极高的低延时或实时性任务，其特点如下：
+- 列式分析型（OLAP）数据库，采用混合引擎（基于内存和硬盘），充分利用缓存来加速；
+- 原生分区表存储，合理的分区方案可以让CPU多线程并行加载每个分区内的数据；
+- 支持高效的数据压缩，显著减小硬盘存储空间的同时，还能大幅降低IO通讯的开销。
+
+### Arctic
+
+Arctic是由英国量化对冲基金Man AHL基于MongoDB开发的高性能金融时序数据库，其特点如下：
+- 支持直接存储pandas的DataFrame和numpy的ndaaray对象；
+- 允许对数据进行版本化管理（类似于数据库中的git），便于因子挖掘过程中的数据迭代管理；
+- 基于分块化存储和LZ4压缩，在网络和磁盘IO方面节省大量资源，实现最高每秒百万行的数据查询。
+
+### Level DB
+LevelDB是由Google推出的高性能Key/Value数据库，其特点如下：
+- 定位为通用型数据存储方案；
+- 基于LSM算法实现进程内存储引擎；
+- 支持数十亿级别的海量数据。
+
 
 ## 数据库配置（以MySQL为例）
 
@@ -79,7 +100,7 @@ InfluxDB是专门针对时间序列数据存储设计的非关系型数据库，
 
 随后启动VN Trader，点击菜单栏的【配置】，设置数据库相关字段：
 
-- driver要改成mysql（请注意大小写）；
+- name要改成mysql（请注意大小写）；
 - database改成vnpy；
 - host为本地IP，即localhost或者127.0.0.1；
 - port为MySQL的默认端口3306；
@@ -87,7 +108,7 @@ InfluxDB是专门针对时间序列数据存储设计的非关系型数据库，
 - password密码则是之前我们设置的1001。
 
 ```
-database.driver: mysql
+database.name: mysql
 database.database: vnpy
 database.host: localhost
 database.port: 3306
@@ -97,7 +118,7 @@ database.password: 1001
 
 填写完毕后如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/database/10.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/database/11.png)
 
 保存完成配置修改后，重启VN Trader来启用新的数据库配置。重启后，在打开VN Trader的过程中若无报错提示，则说明MySQL数据库配置成功。 
 
@@ -109,14 +130,14 @@ SQLite在VN Trader中配置时，需填写以下字段信息：
 
 | 字段名             | 值 |
 |---------           |---- |
-|database.driver     | sqlite |
+|database.name     | sqlite |
 |database.database   | 数据库文件（相对于trader目录） |
 
 SQLite的例子如下所示：
 
 | 字段名            | 值 |
 |---------           |---- |
-|database.driver     | sqlite |
+|database.name     | sqlite |
 |database.database   | database.db |
 
 
@@ -126,7 +147,7 @@ MySQL和PostgreSQL在VN Trader中配置时，需要填写以下字段信息：
 
 | 字段名            | 值 |
 |---------           |---- |
-|database.driver     | "mysql"或"postgresql" |
+|database.name     | "mysql"或"postgresql" |
 |database.host       | 地址 |
 |database.port       | 端口 |
 |database.database   | 数据库名 |
@@ -137,7 +158,7 @@ MySQL的例子如下所示：
 
 | 字段名            | 值 |
 |---------           |----  |
-|database.driver     | mysql |
+|database.name     | mysql |
 |database.host       | localhost |
 |database.port       | 3306 |
 |database.database   | vnpy |
@@ -155,7 +176,7 @@ MongoDB在VN Trader中配置时，需要填写以下字段信息：
 
 | 字段名               |   值 |          是否必填|
 |---------           |---- |  ---|
-|database.driver     | "mongodb" | 必填 |
+|database.name     | "mongodb" | 必填 |
 |database.host       | 地址| 必填 |
 |database.port       | 端口| 必填 |
 |database.database   | 数据库名| 必填 |
@@ -167,7 +188,7 @@ MongoDB的带认证例子如下所示：
 
 | 字段名             | 值 |
 |---------           |----  |
-|database.driver     | mongodb |
+|database.name     | mongodb |
 |database.host       | localhost |
 |database.port       | 27017 |
 |database.database   | vnpy |
@@ -185,7 +206,7 @@ InfluxDB在VN Trader中配置时，需要填写以下字段信息：
 
 | 字段名            | 值 |
 |---------           |---- |
-|database.driver     | "influxdb" |
+|database.name     | "influxdb" |
 |database.host       | 地址|
 |database.port       | 端口|
 |database.database   | 数据库名|
@@ -197,7 +218,7 @@ InfluxDB的例子如下所示：
 
 | 字段名             | 值 |
 |---------           |----  |
-|database.driver     | influxdb |
+|database.name     | influxdb |
 |database.host       | localhost |
 |database.port       | 8086 |
 |database.database   | vnpy |
@@ -206,3 +227,72 @@ InfluxDB的例子如下所示：
 |database.authentication_source   | vnpy |
 
 请注意，运行influxd.exe的cmd需要保持运行，如果关闭则会导致InfluxDB退出，或者也可以使用一些辅助工具将其注册为后台运行的Windows服务。
+
+## DolphinDB
+
+
+需要填写以下字段：
+
+
+| 字段名        | 值 |
+|---------          |---- |
+|database.name      | "dolphindb"|
+|database.host      | 地址 |
+|database.port      | 端口 |
+|database.database  | 数据库名 |
+|database.user      | 用户名 |
+|database.password  | 密码 |
+
+ 
+DolphinDB的例子：
+
+
+| 字段名            | 值 |
+|---------          |----  |
+|database.name      | dolphindb |
+|database.host      | localhost |
+|database.port      | 8848 |
+|database.database  | vnpy |
+|database.user      | admin |
+|database.password  | .... |
+
+
+## Arctic
+
+
+| 字段名          | 值 |
+|---------        |---- |
+|database.name    | "arctic"|
+|database.host    | 地址 |
+|database.port    | 端口 |
+
+ 
+Arctic的例子：
+
+
+| 字段名          | 值 |
+|---------        |----  |
+|database.name    | arctic |
+|database.host    | localhost |
+|database.port    | 0 |
+
+
+## LevelDB
+
+
+| 字段名            | 值 |
+|---------          |---- |
+|database.name      | "leveldb"|
+|database.database  | 数据库名 |
+|database.port    | 端口 |
+
+
+
+LevelDB的例子：
+
+
+| 字段名            | 值 |
+|---------          |  ----  |
+|database.name      | leveldb |
+|database.database  | vnpy_data |
+|database.port      | 0 |

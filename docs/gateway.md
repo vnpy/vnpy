@@ -14,7 +14,7 @@
 
 ```
 # 写在顶部
-from vnpy.gateway.ctp import CtpGateway
+from vnpy_ctp import CtpGateway
 
 # 写在创建main_engine对象后
 main_engine.add_gateway(CtpGateway)

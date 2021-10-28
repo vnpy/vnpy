@@ -16,7 +16,7 @@ CtaStrategy是用于**CTA策略实盘**的功能模块，用户可以通过图�
 
 ```
 # 写在顶部
-from vnpy.app.cta_strategy import CtaStrategyApp
+from vnpy_ctastrategy import CtaStrategyApp
 
 # 写在创建main_engine对象后
 main_engine.add_app(CtaStrategyApp)
@@ -370,7 +370,7 @@ vn.py的本地停止单有三个特点：
 
 ## CTA策略模板（CtaTemplate）
 
-CTA策略模板提供完整的信号生成和委托管理功能，用户可以基于该模板(位于vnpy.app.cta_strategy.template中)自行开发CTA策略。
+CTA策略模板提供完整的信号生成和委托管理功能，用户可以基于该模板(位于site-packages\vnpy_ctastrategy\template中)自行开发CTA策略。
 
 用户自行开发的策略可以放在用户运行文件夹下的[strategies](#jump)文件夹内。
 
@@ -385,7 +385,7 @@ CTA策略模板提供完整的信号生成和委托管理功能，用户可以�
 在基于CTA策略模板编写策略逻辑之前，需要在策略文件的顶部载入需要用到的内部组件，如下方代码所示：
 
 ```
-from vnpy.app.cta_strategy import (
+from vnpy_ctastrategy import (
     CtaTemplate,
     StopOrder,
     TickData,

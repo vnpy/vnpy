@@ -16,7 +16,7 @@ PortfolioStrategy是用于**多合约组合策略实盘**的功能模块，用�
 
 ```
 # 写在顶部
-from vnpy.app.portfolio_strategy import PortfolioStrategyApp
+from vnpy_portfoliostrategy import PortfolioStrategyApp
 
 # 写在创建main_engine对象后
 main_engine.add_app(PortfolioStrategyApp)
@@ -241,7 +241,7 @@ C:\Users\Administrator\strategies
 
 ## 多合约组合策略模板（StrategyTemplate）
 
-多合约组合策略模板提供完整的信号生成和委托管理功能，用户可以基于该模板(位于vnpy.app.portfolio_strategy.template中)自行开发多合约组合策略。
+多合约组合策略模板提供完整的信号生成和委托管理功能，用户可以基于该模板(位于site-packages\vnpy_portfoliostrategy\template中)自行开发多合约组合策略。
 
 用户自行开发的策略可以放在用户运行文件夹下的[strategies](#jump)文件夹内。
 
@@ -259,7 +259,7 @@ C:\Users\Administrator\strategies
 from typing import List, Dict
 from datetime import datetime
 
-from vnpy.app.portfolio_strategy import StrategyTemplate, StrategyEngine
+from vnpy_portfoliostrategy import StrategyTemplate, StrategyEngine
 from vnpy.trader.utility import BarGenerator, ArrayManager
 from vnpy.trader.object import TickData, BarData
 ```

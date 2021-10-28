@@ -17,7 +17,7 @@ SpreadTrading是用于**价差交易**的功能模块，用户可以通过图形
 
 ```
 # 写在顶部
-from vnpy.app.spread_trading import SpreadTradingApp
+from vnpy_spreadtrading import SpreadTradingApp
 
 # 写在创建main_engine对象后
 main_engine.add_app(spread_trading)         
@@ -368,7 +368,7 @@ C:\Users\Administrator\strategies
 
 ```
 from vnpy.trader.utility import BarGenerator, ArrayManager
-from vnpy.app.spread_trading import (
+from vnpy_spreadtrading import (
     SpreadStrategyTemplate,
     SpreadAlgoTemplate,
     SpreadData,
@@ -667,13 +667,13 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 **start_long_algo**
 
-* 入参：direction: Direction, price: float, volume: float, payup: int, interval: int, lock: bool = False, offset: Offset.NONE
+* 入参：direction: Direction, price: float, volume: float, payup: int, interval: int, lock: bool = False, extra: dict = None
 
 * 出参：algoid: str
 
 **start_short_algo**
 
-* 入参：direction: Direction, price: float, volume: float, payup: int, interval: int, lock: bool = False, offset: Offset.NONE
+* 入参：direction: Direction, price: float, volume: float, payup: int, interval: int, lock: bool = False, extra: dict = None
 
 * 出参：algoid: str
 
@@ -682,25 +682,28 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 以下方star_long_algo函数的代码为例，可以看到，价格、数量、超价的数值、时间间隔是必填的参数，锁仓转换和开平方向则分别默认为False和Offset.NONE。也可以看到，函数内部收到传进来的参数之后就调用了SpreadStrategyTemplate里的start_algo函数来发单（因为是long指令，则自动把方向填成了LONG）
 
 ```
-    def start_long_algo(
+     def start_long_algo(
         self,
         price: float,
         volume: float,
         payup: int,
         interval: int,
         lock: bool = False,
-        offset: Offset = Offset.NONE
+        extra: dict = None
     ) -> str:
         """"""
+        if not extra:
+            extra = None
+
         return self.start_algo(
-            Direction.LONG, price, volume,
-            payup, interval, lock, offset
+            Direction.SHORT, price, volume,
+            payup, interval, lock, extra
         )
 ```
 
 **start_algo**
 
-* 入参：direction: Direction, price: float, volume: float, payup: int, interval: int, lock: bool, offset: Offset
+* 入参：direction: Direction, price: float, volume: float, payup: int, interval: int, lock: bool, extra: dict
 
 * 出参：algoid: str
 
