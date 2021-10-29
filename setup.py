@@ -139,42 +139,6 @@ def get_ext_modules():
         language="cpp",
     )
 
-    vnsgitmd = Extension(
-        "vnpy.api.sgit.vnsgitmd",
-        [
-            "vnpy/api/sgit/vnsgit/vnsgitmd/vnsgitmd.cpp",
-        ],
-        include_dirs=["vnpy/api/sgit/include",
-                      "vnpy/api/sgit/vnsgit"],
-        define_macros=[],
-        undef_macros=[],
-        library_dirs=["vnpy/api/sgit/libs", "vnpy/api/sgit"],
-        libraries=["crypto", "sgitquotapi", "sgittradeapi", "ssl"],
-        extra_compile_args=compiler_flags,
-        extra_link_args=extra_link_args,
-        runtime_library_dirs=runtime_library_dirs,
-        depends=[],
-        language="cpp",
-    )
-
-    vnsgittd = Extension(
-        "vnpy.api.sgit.vnsgittd",
-        [
-            "vnpy/api/sgit/vnsgit/vnsgittd/vnsgittd.cpp",
-        ],
-        include_dirs=["vnpy/api/sgit/include",
-                      "vnpy/api/sgit/vnsgit"],
-        define_macros=[],
-        undef_macros=[],
-        library_dirs=["vnpy/api/sgit/libs", "vnpy/api/sgit"],
-        libraries=["crypto", "sgitquotapi", "sgittradeapi", "ssl"],
-        extra_compile_args=compiler_flags,
-        extra_link_args=extra_link_args,
-        runtime_library_dirs=runtime_library_dirs,
-        depends=[],
-        language="cpp",
-    )
-
     vnnhmd = Extension(
         "vnpy.api.nh.vnnhmd",
         [
@@ -224,15 +188,10 @@ def get_ext_modules():
         ext_modules = []
     else:
         ext_modules = [
-            vnsgittd, vnsgitmd,
             vnksgoldmd, vnksgoldtd,
             vnnhmd, vnnhfutures, vnnhstock
         ]
 
-    ext_modules = check_extension_build_flag(
-        ext_modules, "VNPY_BUILD_sgit", vnsgittd)
-    ext_modules = check_extension_build_flag(
-        ext_modules, "VNPY_BUILD_sgit", vnsgitmd)
     ext_modules = check_extension_build_flag(
         ext_modules, "VNPY_BUILD_ksgold", vnksgoldmd)
     ext_modules = check_extension_build_flag(
