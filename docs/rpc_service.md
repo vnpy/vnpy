@@ -18,7 +18,7 @@ RpcService模块用于将VN Trader进程转化为RPC服务器，对外提供交�
 
 ```
 # 写在顶部
-from vnpy.app.rpc_service import RpcServiceApp
+from vnpy_rpcservice import RpcServiceApp
 
 # 写在创建main_engine对象后
 main_engine.add_app(RpcServiceApp)
