@@ -4,8 +4,6 @@ tzlocal==2.0.0
 PyQt5==5.14.1
 pyqtgraph
 qdarkstyle
-requests
-websocket-client
 numpy==1.18.2
 pandas
 matplotlib

@@ -55,8 +55,6 @@ def get_install_requires():
     install_requires = [
         "PyQt5",
         "qdarkstyle",
-        "requests",
-        "websocket-client",
         "peewee",
         "numpy",
         "pandas",
