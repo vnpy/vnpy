@@ -23,11 +23,9 @@
 13. vnpy_dolphindb优化数据的加载解析速度
 14. vnpy_influxdb采用pandas解析CSV数据，提高整体速度
 
-## 修复
+# 修复
 1. 修复vnpy_ctp的CtpGateway，在夜盘换日时上期所行情时间戳的日期字段误差问题
 2. 修复vnpy_arctic的数据重复写入时出现的错误覆盖问题
-
-
 
 # 剥离
 1. 将InteractiveBrokers交易接口剥离到vnpy_ib项目中
