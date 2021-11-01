@@ -12,19 +12,14 @@
 
 ### 脚本模式
 
-在文件夹examples\vn_trader中找到run.py文件（需要从Github上下载），打开文件路径下的cmd窗口，输入“python run.py”命令，即可启动VN Trader。 
-
-- 以Win10系统为例，用户可在run.py所在文件夹内按住“Shift” + 鼠标右键，选择"在此处打开 powershell 窗口"，如下图所示；
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/2.png)
-- 在弹出窗口中，输入“python run.py”命令，即可启动VN Trader。如下图所示。
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/3.png)
+在文件夹examples/vn_trader中找到run.py文件(不是vnstudio下的，需要在github上单独下载）。运行run.py即可进入VN Trader。
 
 - 以Win10系统为例，用户可在run.py所在文件夹内按住【Shift】，同时点击鼠标右键，选择【在此处打开 powershell 窗口】，在弹出窗口中，输入如下命令，即可启动VN Trader。
    ```
    python run.py
    ```
    ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/3.png)
-   
+
 启动成功的VN Trader如下图所示：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/10.png)
 
@@ -82,12 +77,9 @@
 
 发出委托后，本地会缓存委托相关信息，并显示到【委托】组件和【活动】组件，此时委托状态为【提交中】。
 
-发出委托后，本地会缓存委托相关信息，并显示到 委托组件和活动组件，此时委托状态为“提交中”。
-
-交易所收到用户发送的委托后，将其插入中央订单簿来进行撮合成交，并推送委托回报给用户：
-
-- 若委托还未成交，委托组件和活动组件只会更新时间和委托状态这两字段，委托状态变成“未成交”；
-- 若委托立刻成交，委托相关信息会从活动组件移除，新增至成交组件，委托状态变成“全部成交”。
+交易所收到用户发送的委托后，会将其插入中央订单簿来进行撮合成交，并推送委托回报给用户：
+- 若委托还未成交，【委托】组件和【活动】组件只会更新时间和委托状态这两字段，委托状态变成【未成交】；
+- 若委托立刻成交，委托相关信息会从【活动】组件移除，新增至【成交】组件，委托状态变成【全部成交】。
 
 
 ## 数据监控
@@ -138,7 +130,7 @@
 - 昨仓：其出现衍生于上期所特有的平今、平昨模式的需要；
 - 均价：历史成交的平均价格（某些巨型委托，会发生多次部分成交，需要计算平均价格）；
 - 盈亏：持仓盈亏。多仓情况下，盈利 = 当前价格 - 均价，空仓则反之。
-  
+
 若平仓离场，持仓数量清零，浮动盈亏变成实际盈亏从而影响账号余额变化。故以下字段：数量、昨仓、冻结、均价、盈亏均为0，如下图所示：
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/query_position.png)
@@ -197,7 +189,7 @@ log.active, log.level, log.console和log.file用于对日志输出进行配置�
 - log.console：console指的是终端，如Windows系统上的cmd和Powershell，以及Linux上的Terminal。当设置为True时，通过终端运行脚本来启动VN Trader，日志信息会输出在终端中；如果通过VN Station来直接启动VN Trader，则无console输出；
 
 - log.file：该参数用于控制是否要将日志输出到文件中，建议设置为True，否则无法记录生成的日志。
- 
+
 VN Trader的日志文件，默认位于运行时目录的.vntrader\log目录下，完整路径为：
 C:\users\administrator.vntrader\log
 
@@ -214,21 +206,41 @@ C:\users\administrator.vntrader\log
 - email.sender: 发送邮箱名，与email.username一致；
 - email.receiver: 接受邮件的邮箱地址。
 
+
+### datafeed数据服务
+
+与数据库适配器类似，对于数据服务有一个标准化的接口BaseDatafeed（位于vnpy.trader.datafeed），实现了更加灵活的数据服务支持，具体字段含义如下：
+- datafeed.name: 数据服务接口的名称，全称的小写英文字母；
+- datafeed.username: 数据服务的用户名；
+- datafeed.password: 数据服务的密码。
+
+字段如图所示：
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/17.png)
+
+目前支持四种datafeed：
+- [RQData]
+- [Udata]
+- [TuShare]
+- [TQSDK]
+
+[RQData]:https://github.com/vnpy/vnpy_rqdata 
+[Udata]: https://github.com/vnpy/vnpy_udata
+[TuShare]: https://github.com/vnpy/vnpy_tushare
+[TQSDK]: https://github.com/vnpy/vnpy_tqsdk
 ### RQData数据服务
 
 以rqdata为前缀的参数用于配置RQData数据服务。
-- rqdata.username: 米筐登录账号
-- rqdata.password: RQData的license
+- rqdata.username: "license"
+- rqdata.password: 收到的RQData的license的字符
 
 购买RQData后（或者申请试用账号），会获得license文件，将license文件中的内容填入字段即可，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/9.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/16.png)
 
 请注意，这里的username和password不是米筐官网登录用的账号和密码。
-
 ### 数据库
 
-以database为前缀的参数用于配置数据库服务。目前，vn.py支持SQLite、MySQL、PostgreSQL、MongoDB和InfluxDB五种数据库。具体配置方法详见项目文档的数据库配置部分。
+以database为前缀的参数用于配置数据库服务。目前，vn.py支持SQLite、MySQL、PostgreSQL、MongoDB、InfluxDB、DolphinDB、Arctic和LevelDB八种数据库。具体配置方法详见项目文档的数据库配置部分。
 
 
 
