@@ -16,7 +16,7 @@ DataRecorder是用于**实时行情记录**的模块，用户可以利用该模�
 
 ```
 # 写在顶部
-from vnpy.app.data_recorder import DataRecorderApp
+from vnpy_datarecorder import DataRecorderApp
 
 # 写在创建main_engine对象后
 main_engine.add_app(DataRecorderApp)

@@ -12,8 +12,8 @@ ScriptTrader模块提供了交互式的量化分析和程序化交易功能，�
 ### 加载启动
 Jupyter模式是基于脚本引擎（ScriptEngine）驱动的。首先打开Jupyter notebook后，然后加载组件、初始化脚本引擎。其中：
 ```
-from vnpy.app.script_trader import init_cli_trading
-from vnpy.gateway.ctp import CtpGateway
+from vnpy_scripttrader import init_cli_trading
+from vnpy_ctp import CtpGateway
 engine = init_cli_trading([CtpGateway])
 ```
 
@@ -40,7 +40,7 @@ setting = {
 engine.connect_gateway(setting,"CTP")
 ```
 
-setting配置如下图所示，其他接口配置可以参考vnpy/gateway目录下的接口类的default_setting来填写。
+setting配置如下图所示，其他接口配置可以参考site-packages目录下不同接口模块类（如vnpy_ctp.CtpGateway)中的default_setting来填写。
 
 ![](https://static.vnpy.com/upload/temp/82dd7cfd-6a98-4908-a770-582cfb7e69bc.jpg)
 
@@ -80,7 +80,7 @@ engine.subscribe(vt_symbols = ["rb1909.SHFE","rb1910.SHFE"])
 - 每隔3秒获取最新行情。
 ```
 from time import sleep
-from vnpy.app.script_trader import ScriptEngine
+from vnpy_scripttrader import ScriptEngine
 
 def run(engine: ScriptEngine):
     """"""

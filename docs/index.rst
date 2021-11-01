@@ -5,8 +5,7 @@ vn.py项目文档
    :maxdepth: 2
 
    introduction.md
-   windows_install.md
-   ubuntu_install.md
+   install.md
    quickstart.md
    gateway.md
    database.md
