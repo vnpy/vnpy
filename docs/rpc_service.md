@@ -104,7 +104,7 @@ vn.py提供了与RpcService配套使用的RpcGateway，作为客户端的标准�
 
 ![](https://static.vnpy.com/upload/temp/a67e561d-d94d-43f4-9d40-bb929ed6e0e5.png)
 
-## RPC服务（RpcService）的应用场景：
+## RPC服务（RpcService）的应用场景
 
 - 针对运行策略数量较多的用户，只需本地一条行情和交易通道，可以支持多个客户端进程同时交易，且每个客户端中交易策略独立运行，互不影响；
 - 针对中小型投资机构用户，可以通过在服务端加载各种交易接口以及RiskManagerApp，实现一个轻量级的资管交易系统，多个交易员共享统一的交易通道，并实现基金产品级别的风险管理。
