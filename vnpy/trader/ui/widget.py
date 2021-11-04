@@ -5,7 +5,7 @@ Basic widgets for VN Trader.
 import csv
 import platform
 from enum import Enum
-from typing import Any, Dict
+from typing import Any, Dict, Iterable
 from copy import copy
 from tzlocal import get_localzone
 
@@ -20,7 +20,9 @@ from ..event import (
     EVENT_QUOTE,
     EVENT_TICK,
     EVENT_TRADE,
+    EVENT_TRADE_UPDATE,
     EVENT_ORDER,
+    EVENT_ORDER_UPDATE,
     EVENT_POSITION,
     EVENT_ACCOUNT,
     EVENT_LOG
@@ -251,9 +253,13 @@ class BaseMonitor(QtWidgets.QTableWidget):
         """
         Register event handler into event engine.
         """
-        if self.event_type:
+        if isinstance(self.event_type, str):
             self.signal.connect(self.process_event)
             self.event_engine.register(self.event_type, self.signal.emit)
+        elif isinstance(self.event_type, Iterable):
+            for event_type in self.event_type:
+                self.signal.connect(self.process_event)
+                self.event_engine.register(event_type, self.signal.emit)
 
     def process_event(self, event: Event) -> None:
         """
@@ -416,8 +422,8 @@ class TradeMonitor(BaseMonitor):
     Monitor for trade data.
     """
 
-    event_type = EVENT_TRADE
-    data_key = ""
+    event_type = (EVENT_TRADE, EVENT_TRADE_UPDATE)
+    data_key = "vt_tradeid"
     sorting = True
 
     headers: Dict[str, dict] = {
@@ -427,7 +433,12 @@ class TradeMonitor(BaseMonitor):
         "exchange": {"display": "交易所", "cell": EnumCell, "update": False},
         "direction": {"display": "方向", "cell": DirectionCell, "update": False},
         "offset": {"display": "开平", "cell": EnumCell, "update": False},
-        "price": {"display": "价格", "cell": BaseCell, "update": False},
+        "signal_price": {"display": "信号价格", "cell": BaseCell, "update": True},
+        "limit_price": {"display": "限价", "cell": BaseCell, "update": True},
+        "price": {"display": "成交价格", "cell": BaseCell, "update": True},
+        "slippage": {"display": "滑点", "cell": BaseCell, "update": True},
+        "backtest_price": {"display": "回测价格", "cell": BaseCell, "update": True},
+        "backtest_real_slippage": {"display": "与回测误差", "cell": BaseCell, "update": True},
         "volume": {"display": "数量", "cell": BaseCell, "update": False},
         "datetime": {"display": "时间", "cell": TimeCell, "update": False},
         "gateway_name": {"display": "接口", "cell": BaseCell, "update": False},
@@ -439,7 +450,7 @@ class OrderMonitor(BaseMonitor):
     Monitor for order data.
     """
 
-    event_type = EVENT_ORDER
+    event_type = (EVENT_ORDER, EVENT_ORDER_UPDATE)
     data_key = "vt_orderid"
     sorting = True
 
@@ -451,7 +462,9 @@ class OrderMonitor(BaseMonitor):
         "type": {"display": "类型", "cell": EnumCell, "update": False},
         "direction": {"display": "方向", "cell": DirectionCell, "update": False},
         "offset": {"display": "开平", "cell": EnumCell, "update": False},
-        "price": {"display": "价格", "cell": BaseCell, "update": False},
+        "price": {"display": "价格", "cell": BaseCell, "update": True},
+        "signal_price": {"display": "信号价格", "cell": BaseCell, "update": True},
+        "backtest_price": {"display": "回测价格", "cell": BaseCell, "update": True},
         "volume": {"display": "总数量", "cell": BaseCell, "update": True},
         "traded": {"display": "已成交", "cell": BaseCell, "update": True},
         "status": {"display": "状态", "cell": EnumCell, "update": True},
@@ -480,6 +493,7 @@ class OrderMonitor(BaseMonitor):
 class PositionMonitor(BaseMonitor):
     """
     Monitor for position data.
+    持仓窗口
     """
 
     event_type = EVENT_POSITION

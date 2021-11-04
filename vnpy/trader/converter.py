@@ -1,6 +1,7 @@
 """"""
 from copy import copy
-from typing import Dict, List
+from typing import Dict, List, DefaultDict
+from collections import defaultdict
 
 from .engine import MainEngine
 from .object import (
@@ -8,9 +9,14 @@ from .object import (
     OrderData,
     TradeData,
     PositionData,
-    OrderRequest
+    OrderRequest,
+    Status,
+    TickData,
+    BarData
 )
 from .constant import Direction, Offset, Exchange
+from vnpy.event import Event
+from .event import EVENT_TRADE_UPDATE, EVENT_ORDER_UPDATE
 
 
 class OffsetConverter:
@@ -20,6 +26,22 @@ class OffsetConverter:
         """"""
         self.main_engine: MainEngine = main_engine
         self.holdings: Dict[str, "PositionHolding"] = {}
+
+    def before_handle_bar(self, bar: BarData) -> None:
+        """"""
+        if not self.is_convert_required(bar.vt_symbol):
+            return
+
+        holding = self.get_position_holding(bar.vt_symbol)
+        holding.before_handle_bar(bar)
+
+    def before_handle_tick(self, tick: TickData) -> None:
+        """"""
+        if not self.is_convert_required(tick.vt_symbol):
+            return
+
+        holding = self.get_position_holding(tick.vt_symbol)
+        holding.before_handle_tick(tick)
 
     def update_position(self, position: PositionData) -> None:
         """"""
@@ -58,7 +80,7 @@ class OffsetConverter:
         holding = self.holdings.get(vt_symbol, None)
         if not holding:
             contract = self.main_engine.get_contract(vt_symbol)
-            holding = PositionHolding(contract)
+            holding = PositionHolding(contract, self.main_engine)
             self.holdings[vt_symbol] = holding
         return holding
 
@@ -101,12 +123,17 @@ class OffsetConverter:
 class PositionHolding:
     """"""
 
-    def __init__(self, contract: ContractData):
+    def __init__(self, contract: ContractData, main_engin: MainEngine):
         """"""
         self.vt_symbol: str = contract.vt_symbol
+        self.main_engine = main_engin
         self.exchange: Exchange = contract.exchange
 
         self.active_orders: Dict[str, OrderData] = {}
+        self.orders: Dict[str, OrderData] = {}
+        self.next_price_orders: List[OrderData] = []     # 未填写理论成交价的订单，为了计算实盘和模拟盘之间的误差
+
+        self.trades: DefaultDict[str, List[TradeData]] = defaultdict(list)
 
         self.long_pos: float = 0
         self.long_yd: float = 0
@@ -137,6 +164,14 @@ class PositionHolding:
 
     def update_order(self, order: OrderData) -> None:
         """"""
+        if order.vt_orderid not in self.orders:
+            self.orders[order.vt_orderid] = order
+            self.next_price_orders.append(order)
+        else:
+            old_order = self.orders.get(order.vt_orderid)
+            old_order.status = order.status
+            old_order.traded = order.traded
+
         if order.is_active():
             self.active_orders[order.vt_orderid] = order
         else:
@@ -145,15 +180,74 @@ class PositionHolding:
 
         self.calculate_frozen()
 
+    def put_order_update(self, order):
+        evt = Event(EVENT_ORDER_UPDATE, order)
+        self.main_engine.event_engine.put(evt)
+
+    def put_trade_update(self, trade):
+        evt = Event(EVENT_TRADE_UPDATE, trade)
+        self.main_engine.event_engine.put(evt)
+
+    def before_handle_bar(self, bar: BarData):
+        """
+        更新backtest_price
+        :param bar:
+        :return:
+        """
+
+        for order in self.next_price_orders:
+            if order.direction == Direction.LONG:
+                # 参照回测
+                trade_price = min(order.price, bar.open_price)
+            else:
+                trade_price = max(order.price, bar.open_price)
+            order.backtest_price = trade_price
+            self.put_order_update(order)
+            self.update_order_relation_trade(order)
+
+    def before_handle_tick(self, tick: TickData):
+        """
+        更新backtest_price
+        :param tick:
+        :return:
+        """
+        for order in self.next_price_orders:
+            if order.direction == Direction.LONG:
+                # 参照回测
+                trade_price = min(order.price, tick.ask_price_1)
+            else:
+                trade_price = max(order.price, tick.bid_price_1)
+            order.backtest_price = trade_price
+            self.put_order_update(order)
+            self.update_order_relation_trade(order)
+        self.next_price_orders.clear()
+
+    def update_order_relation_trade(self, order: OrderData):
+        """
+        更新order对应trade的backtest_price
+        :param order:
+        :return:
+        """
+        order_trades = self.trades.get(order.vt_orderid, [])
+        for trade in order_trades:
+            trade.backtest_price = order.backtest_price
+            trade.__post_init__()
+            self.put_trade_update(trade)
+
     def update_order_request(self, req: OrderRequest, vt_orderid: str) -> None:
         """"""
-        gateway_name, orderid = vt_orderid.split(".")
+        gateway_name, orderid = vt_orderid.split(".", 1)
 
         order = req.create_order_data(orderid, gateway_name)
         self.update_order(order)
 
     def update_trade(self, trade: TradeData) -> None:
-        """"""
+        """
+        批次成交
+        :param trade:
+        :return:
+        """
+        self.trades[trade.vt_orderid].append(trade)
         if trade.direction == Direction.LONG:
             if trade.offset == Offset.OPEN:
                 self.long_td += trade.volume
@@ -187,11 +281,26 @@ class PositionHolding:
                         self.long_yd += self.long_td
                         self.long_td = 0
 
+        order = self.get_trade_order(trade)
+        if order:
+            trade.signal_price = order.signal_price
+            trade.limit_price = order.price
+            trade.backtest_price = order.backtest_price
+        # 重新计算post_init
+        trade.__post_init__()
+
         self.long_pos = self.long_td + self.long_yd
         self.short_pos = self.short_td + self.short_yd
 
+    def get_trade_order(self, trade: TradeData):
+
+        return self.orders.get(trade.vt_orderid)
+
     def calculate_frozen(self) -> None:
-        """"""
+        """
+        计算冻结持仓
+        :return:
+        """
         self.long_pos_frozen = 0
         self.long_yd_frozen = 0
         self.long_td_frozen = 0
@@ -205,6 +314,7 @@ class PositionHolding:
             if order.offset == Offset.OPEN:
                 continue
 
+            # 每个订单的未成交部分
             frozen = order.volume - order.traded
 
             if order.direction == Direction.LONG:
