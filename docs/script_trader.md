@@ -118,7 +118,7 @@ def run(engine: ScriptEngine):
 
 ## 功能函数
 
-下面通过jupyter notebook来说明ScriptEngine引擎的各功能函数。首先打开Jupyter notebook后，然后加载组件、初始化脚本引擎：
+下面通过jupyter notebook来说明ScriptEngine引擎的各功能函数。首先打开Jupyter notebook，然后加载组件、初始化脚本引擎：
 
 ```
 from vnpy_scripttrader import init_cli_trading
