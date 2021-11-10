@@ -4,7 +4,7 @@
 
 RpcService模块用于将VN Trader进程转化为RPC服务器，对外提供交易路由、行情数据推送、持仓资金查询等功能。
 
-关于RPC的具体应用场景请参考本文档最后的【RPC简介】版块。
+关于RPC的具体应用场景请参考本文档最后的【RPC的应用场景】版块。
 
 ## 加载启动
 
@@ -38,8 +38,9 @@ main_engine.add_app(RpcServiceApp)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/rpc_service/2.png) 
 
-### 配置通讯地址
+## 配置和使用
 
+### 配置RPC服务
 RPC服务基于ZeroMQ开发，对外的通讯地址包括：
 
 * **请求响应地址**
@@ -103,7 +104,7 @@ vn.py提供了与RpcService配套使用的RpcGateway，作为客户端的标准�
 
 ![](https://static.vnpy.com/upload/temp/a67e561d-d94d-43f4-9d40-bb929ed6e0e5.png)
 
-RPC服务（RpcService）可用于以下的**应用场景**：
+## RPC服务（RpcService）的应用场景
 
 - 针对运行策略数量较多的用户，只需本地一条行情和交易通道，可以支持多个客户端进程同时交易，且每个客户端中交易策略独立运行，互不影响；
-- 针对中小型投资机构用户，可以在通过在服务端加载各种交易接口以及RiskManagerApp，实现一个轻量级的资管交易系统，多个交易员共享统一的交易通道，并实现基金产品级别的风险管理。
+- 针对中小型投资机构用户，可以通过在服务端加载各种交易接口以及RiskManagerApp，实现一个轻量级的资管交易系统，多个交易员共享统一的交易通道，并实现基金产品级别的风险管理。
