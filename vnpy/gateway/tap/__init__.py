@@ -1,1 +1,1 @@
-from .tap_gateway import TapGateway
+from vnpy_tap import TapGateway

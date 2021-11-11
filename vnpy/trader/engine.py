@@ -10,7 +10,7 @@ from datetime import datetime
 from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
-from typing import Any, Sequence, Type, Dict, List, Optional
+from typing import Any, Type, Dict, List, Optional
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -21,13 +21,16 @@ from .event import (
     EVENT_POSITION,
     EVENT_ACCOUNT,
     EVENT_CONTRACT,
-    EVENT_LOG
+    EVENT_LOG,
+    EVENT_QUOTE
 )
 from .gateway import BaseGateway
 from .object import (
     CancelRequest,
     LogData,
     OrderRequest,
+    QuoteData,
+    QuoteRequest,
     SubscribeRequest,
     HistoryRequest,
     OrderData,
@@ -191,25 +194,27 @@ class MainEngine:
         if gateway:
             gateway.cancel_order(req)
 
-    def send_orders(self, reqs: Sequence[OrderRequest], gateway_name: str) -> List[str]:
+    def send_quote(self, req: QuoteRequest, gateway_name: str) -> str:
         """
+        Send new quote request to a specific gateway.
         """
         gateway = self.get_gateway(gateway_name)
         if gateway:
-            return gateway.send_orders(reqs)
+            return gateway.send_quote(req)
         else:
-            return ["" for req in reqs]
+            return ""
 
-    def cancel_orders(self, reqs: Sequence[CancelRequest], gateway_name: str) -> None:
+    def cancel_quote(self, req: CancelRequest, gateway_name: str) -> None:
         """
+        Send cancel quote request to a specific gateway.
         """
         gateway = self.get_gateway(gateway_name)
         if gateway:
-            gateway.cancel_orders(reqs)
+            gateway.cancel_quote(req)
 
     def query_history(self, req: HistoryRequest, gateway_name: str) -> Optional[List[BarData]]:
         """
-        Send cancel order request to a specific gateway.
+        Query bar history data from a specific gateway.
         """
         gateway = self.get_gateway(gateway_name)
         if gateway:
@@ -343,8 +348,10 @@ class OmsEngine(BaseEngine):
         self.positions: Dict[str, PositionData] = {}
         self.accounts: Dict[str, AccountData] = {}
         self.contracts: Dict[str, ContractData] = {}
+        self.quotes: Dict[str, QuoteData] = {}
 
         self.active_orders: Dict[str, OrderData] = {}
+        self.active_quotes: Dict[str, QuoteData] = {}
 
         self.add_function()
         self.register_event()
@@ -357,13 +364,17 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_position = self.get_position
         self.main_engine.get_account = self.get_account
         self.main_engine.get_contract = self.get_contract
+        self.main_engine.get_quote = self.get_quote
+
         self.main_engine.get_all_ticks = self.get_all_ticks
         self.main_engine.get_all_orders = self.get_all_orders
         self.main_engine.get_all_trades = self.get_all_trades
         self.main_engine.get_all_positions = self.get_all_positions
         self.main_engine.get_all_accounts = self.get_all_accounts
         self.main_engine.get_all_contracts = self.get_all_contracts
+        self.main_engine.get_all_quotes = self.get_all_quotes
         self.main_engine.get_all_active_orders = self.get_all_active_orders
+        self.main_engine.get_all_active_quotes = self.get_all_active_quotes
 
     def register_event(self) -> None:
         """"""
@@ -373,15 +384,16 @@ class OmsEngine(BaseEngine):
         self.event_engine.register(EVENT_POSITION, self.process_position_event)
         self.event_engine.register(EVENT_ACCOUNT, self.process_account_event)
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
+        self.event_engine.register(EVENT_QUOTE, self.process_quote_event)
 
     def process_tick_event(self, event: Event) -> None:
         """"""
-        tick = event.data
+        tick: TickData = event.data
         self.ticks[tick.vt_symbol] = tick
 
     def process_order_event(self, event: Event) -> None:
         """"""
-        order = event.data
+        order: OrderData = event.data
         self.orders[order.vt_orderid] = order
 
         # If order is active, then update data in dict.
@@ -393,23 +405,35 @@ class OmsEngine(BaseEngine):
 
     def process_trade_event(self, event: Event) -> None:
         """"""
-        trade = event.data
+        trade: TradeData = event.data
         self.trades[trade.vt_tradeid] = trade
 
     def process_position_event(self, event: Event) -> None:
         """"""
-        position = event.data
+        position: PositionData = event.data
         self.positions[position.vt_positionid] = position
 
     def process_account_event(self, event: Event) -> None:
         """"""
-        account = event.data
+        account: AccountData = event.data
         self.accounts[account.vt_accountid] = account
 
     def process_contract_event(self, event: Event) -> None:
         """"""
-        contract = event.data
+        contract: ContractData = event.data
         self.contracts[contract.vt_symbol] = contract
+
+    def process_quote_event(self, event: Event) -> None:
+        """"""
+        quote: QuoteData = event.data
+        self.quotes[quote.vt_quoteid] = quote
+
+        # If quote is active, then update data in dict.
+        if quote.is_active():
+            self.active_quotes[quote.vt_quoteid] = quote
+        # Otherwise, pop inactive quote from in dict
+        elif quote.vt_quoteid in self.active_quotes:
+            self.active_quotes.pop(quote.vt_quoteid)
 
     def get_tick(self, vt_symbol: str) -> Optional[TickData]:
         """
@@ -447,6 +471,12 @@ class OmsEngine(BaseEngine):
         """
         return self.contracts.get(vt_symbol, None)
 
+    def get_quote(self, vt_quoteid: str) -> Optional[QuoteData]:
+        """
+        Get latest quote data by vt_orderid.
+        """
+        return self.quotes.get(vt_quoteid, None)
+
     def get_all_ticks(self) -> List[TickData]:
         """
         Get all tick data.
@@ -483,6 +513,12 @@ class OmsEngine(BaseEngine):
         """
         return list(self.contracts.values())
 
+    def get_all_quotes(self) -> List[QuoteData]:
+        """
+        Get all quote data.
+        """
+        return list(self.quotes.values())
+
     def get_all_active_orders(self, vt_symbol: str = "") -> List[OrderData]:
         """
         Get all active orders by vt_symbol.
@@ -498,6 +534,22 @@ class OmsEngine(BaseEngine):
                 if order.vt_symbol == vt_symbol
             ]
             return active_orders
+
+    def get_all_active_quotes(self, vt_symbol: str = "") -> List[QuoteData]:
+        """
+        Get all active quotes by vt_symbol.
+
+        If vt_symbol is empty, return all active qutoes.
+        """
+        if not vt_symbol:
+            return list(self.active_quotes.values())
+        else:
+            active_quotes = [
+                quote
+                for quote in self.active_quotes.values()
+                if quote.vt_symbol == vt_symbol
+            ]
+            return active_quotes
 
 
 class EmailEngine(BaseEngine):

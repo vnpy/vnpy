@@ -1,1 +1,1 @@
-from .bitstamp_gateway import BitstampGateway
+from vnpy_bitstamp import BitstampGateway

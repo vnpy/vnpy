@@ -1,8 +1,0 @@
-TDACharType = "char"
-TDAStringType = "string"
-TDABrokerType = "string"
-TDAIntType = "int"
-TDAVolumeType = "int"
-TDADoubleType = "double"
-TDAPriceType = "double"
-TDAMoneyType = "double"

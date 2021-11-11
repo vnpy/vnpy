@@ -1,16 +1,6 @@
-from pathlib import Path
+import sys
 
-from vnpy.trader.app import BaseApp
-
-from .engine import PortfolioEngine, APP_NAME
+import vnpy_portfoliomanager
 
 
-class PortfolioManagerApp(BaseApp):
-    """"""
-    app_name = APP_NAME
-    app_module = __module__
-    app_path = Path(__file__).parent
-    display_name = "投资组合"
-    engine_class = PortfolioEngine
-    widget_name = "PortfolioManager"
-    icon_name = "portfolio.ico"
+sys.modules[__name__] = vnpy_portfoliomanager
