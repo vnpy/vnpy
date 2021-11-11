@@ -1,549 +1,320 @@
-# CTA回测模块
-CTA回测模块是基于PyQt5和pyqtgraph的图形化回测工具。启动VN Trader后，在菜单栏中点击“功能-> CTA回测”即可进入该图形化回测界面，如下图。CTA回测模块主要实现3个功能：历史行情数据的下载、策略回测、参数优化、K线图表买卖点展示。
+# CtaBacktester - CTA回测研究模块
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/cta_backtester.png)
+## 功能简介
 
-&nbsp;
+CtaBacktester是用于**CTA策略历史回测研究**的功能模块，用户可以通过图形界面操作来便捷完成数据下载、历史回测、结果分析和参数优化等任务。
 
 ## 加载启动
-进入图形化回测界面“CTA回测”后，会立刻完成初始化工作：初始化回测引擎、初始化RQData客户端。
+
+### VN Station加载
+
+启动登录VN Station后，点击【VN Trader Pro】按钮，在配置对话框中的【上层应用】栏勾选【CtaBacktester】。
+
+### 脚本加载
+
+在启动脚本中添加如下代码：
 
 ```
-    def init_engine(self):
-        """"""
-        self.write_log("初始化CTA回测引擎")
+# 写在顶部
+from vnpy_ctabacktester import CtaBacktesterApp
 
-        self.backtesting_engine = BacktestingEngine()
-        # Redirect log from backtesting engine outside.
-        self.backtesting_engine.output = self.write_log
-
-        self.write_log("策略文件加载完成")
-
-        self.init_rqdata()
-
-    def init_rqdata(self):
-        """
-        Init RQData client.
-        """
-        result = rqdata_client.init()
-        if result:
-            self.write_log("RQData数据接口初始化成功")
+# 写在创建main_engine对象后
+main_engine.add_app(CtaBacktesterApp)
 ```
 
-&nbsp;
+
+## 启动模块
+
+对于用户自行开发的策略，需要放到VN Trader运行时目录下的**strategies**目录中，才能被识别加载。具体的运行时目录路径，可以在VN Trader主界面顶部的标题栏查看。
+
+对于在Windows上默认安装的用户来说，放置策略的strategies目录路径通常为：
+
+```
+C:\Users\Administrator\strategies
+```
+
+其中Administrator为当前登录Windows的系统用户名。
+
+启动VN Trader后，在菜单栏中点击【功能】-> 【CTA回测】，或者点击左侧按钮栏的图标：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/00.png)
+
+即可打开图形化的回测界面，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/25.png)
 
 
 ## 下载数据
-在开始策略回测之前，必须保证数据库内有充足的历史数据。故vnpy提供了历史数据一键下载的功能。
 
-### RQData
-RQData提供国内股票、ETF、期货以及期权的历史数据。
-其下载数据功能主要是基于RQData的get_price()函数实现的。
-```
-get_price(
-    order_book_ids, start_date='2013-01-04', end_date='2014-01-04',
-    frequency='1d', fields=None, adjust_type='pre', skip_suspended =False,
-    market='cn'
-)
-```
+在开始策略回测之前，首先需要保证数据库内有足够的历史数据，CtaBacktester模块也提供了一键下载历史数据的功能。
 
+下载数据需要填写本地代码、K线周期、开始日期以及结束日期四个字段信息：
 
-在使用前要保证RQData初始化完毕，然后填写以下4个字段信息：
-- 本地代码：格式为合约品种+交易所，如IF88.CFFEX、rb88.SHFE；然后在底层通过RqdataClient的to_rq_symbol()函数转换成符合RQData格式，对应RQData中get_price()函数的order_book_ids字段。
-- K线周期：可以填1m、1h、d、w，对应get_price()函数的frequency字段。
-- 开始日期：格式为yy/mm/dd，如2017/4/21，对应get_price()函数的start_date字段。（点击窗口右侧箭头按钮可改变日期大小）
-- 结束日期：格式为yy/mm/dd，如2019/4/22，对应get_price()函数的end_date字段。（点击窗口右侧箭头按钮可改变日期大小）
-  
-填写完字段信息后，点击下方“下载数据”按钮启动下载程序，下载成功如图所示。
+<span id="jump">
 
+- 本地代码
+  - 格式为合约代码 + 交易所名称
+  - 如IF888.CFFEX、rb2105.SHFE
+- K线周期：
+  - 1m（1分钟K线）
+  - 1h（1小时K线）
+  - d（日K线）
+  - w（周K线）
+  - tick（一个Tick）
+- 开始和结束日期
+  - 格式为yyyy/mm/dd
+  - 如2018/2/25、2021/2/28
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/data_loader.png)
+</span>
 
-&nbsp;
+全部填写完成后，点击下方【下载数据】按钮启动下载任务，成功后如下图所示：
 
-### IB
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/27.png)
 
-盈透证券提供外盘股票、期货、期权的历史数据。
-下载前必须连接好IB接口，因为其下载数据功能主要是基于IbGateway类query_history()函数实现的。
+注意下载完成后的历史数据会保存在本地数据库中，后续回测时可以直接使用，无需每次都重复下载。
 
-```
-    def query_history(self, req: HistoryRequest):
-        """"""
-        self.history_req = req
+### 数据来源：RQData（期货、股票、期权）
 
-        self.reqid += 1
+[RQData](https://www.ricequant.com/welcome/purchase?utm_source=vnpy)提供国内期货、股票以及期权的历史数据。在使用前需要保证RQData已经正确配置（配置方法详见基本使用篇的全局配置部分）。打开CtaBacktester时会自动执行RQData登录初始化，若成功则会输出“RQData数据接口初始化成功”的日志，如下图所示：
 
-        ib_contract = Contract()
-        ib_contract.conId = str(req.symbol)
-        ib_contract.exchange = EXCHANGE_VT2IB[req.exchange]
+ ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/26.png)
 
-        if req.end:
-            end = req.end
-            end_str = end.strftime("%Y%m%d %H:%M:%S")
-        else:
-            end = datetime.now()
-            end_str = ""
+### 数据来源：数字货币（现货、期货、永续）
 
-        delta = end - req.start
-        days = min(delta.days, 180)     # IB only provides 6-month data
-        duration = f"{days} D"
-        bar_size = INTERVAL_VT2IB[req.interval]
+各大数字货币交易所都直接提供自家的历史数据下载，但每家交易所可以获取的历史数据长度限制有所区别，注意下载前需要先在VN Trader主界面连接好对应的接口。下载成功如下图所示：
 
-        if req.exchange == Exchange.IDEALPRO:
-            bar_type = "MIDPOINT"
-        else:
-            bar_type = "TRADES"
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/60.png)
 
-        self.client.reqHistoricalData(
-            self.reqid,
-            ib_contract,
-            end_str,
-            duration,
-            bar_size,
-            bar_type,
-            1,
-            1,
-            False,
-            []
-        )
+### 数据来源：IB（外盘期货、股票、外汇等）
 
-        self.history_condition.acquire()    # Wait for async data return
-        self.history_condition.wait()
-        self.history_condition.release()
+Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据下载（包括股票、期货、期权、外汇等），注意下载前需要先启动IB TWS交易软件，并在VN Trader主界面连接好IB接口，并订阅所需合约行情。下载成功如下图所示：
 
-        history = self.history_buf
-        self.history_buf = []       # Create new buffer list
-        self.history_req = None
-
-        return history
-```
-&nbsp;
-
-### BITMEX
-
-BITMEX交易所提供数字货币历史数据。
-由于仿真环境与实盘环境行情差异比较大，故需要用实盘账号登录BIMEX接口来下载真实行情数据，其下载数据功能主要是基于BitmexGateway类query_history()函数实现的。
-
-```
-    def query_history(self, req: HistoryRequest):
-        """"""
-        if not self.check_rate_limit():
-            return
-
-        history = []
-        count = 750
-        start_time = req.start.isoformat()
-
-        while True:
-            # Create query params
-            params = {
-                "binSize": INTERVAL_VT2BITMEX[req.interval],
-                "symbol": req.symbol,
-                "count": count,
-                "startTime": start_time
-            }
-
-            # Add end time if specified
-            if req.end:
-                params["endTime"] = req.end.isoformat()
-
-            # Get response from server
-            resp = self.request(
-                "GET",
-                "/trade/bucketed",
-                params=params
-            )
-
-            # Break if request failed with other status code
-            if resp.status_code // 100 != 2:
-                msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
-                self.gateway.write_log(msg)
-                break
-            else:
-                data = resp.json()
-                if not data:
-                    msg = f"获取历史数据为空，开始时间：{start_time}，数量：{count}"
-                    break
-
-                for d in data:
-                    dt = datetime.strptime(
-                        d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
-                    bar = BarData(
-                        symbol=req.symbol,
-                        exchange=req.exchange,
-                        datetime=dt,
-                        interval=req.interval,
-                        volume=d["volume"],
-                        open_price=d["open"],
-                        high_price=d["high"],
-                        low_price=d["low"],
-                        close_price=d["close"],
-                        gateway_name=self.gateway_name
-                    )
-                    history.append(bar)
-
-                begin = data[0]["timestamp"]
-                end = data[-1]["timestamp"]
-                msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
-                self.gateway.write_log(msg)
-
-                # Break if total data count less than 750 (latest date collected)
-                if len(data) < 750:
-                    break
-
-                # Update start time
-                start_time = bar.datetime + TIMEDELTA_MAP[req.interval]
-
-        return history
-```
-
-&nbsp;
-
-## 策略回测
-下载完历史数据后，需要配置以下字段：交易策略、手续费率、交易滑点、合约乘数、价格跳动、回测资金。
-这些字段主要对应BacktesterEngine类的run_backtesting函数。
-
-若数据库已存在历史数据，无需重复下载，直接从本地数据库中导入数据进行回测。注意，vt_symbol的格式为品种代码.交易所的形式，如IF1908.CFFEX，导入时会自动将其分割为品种和交易所两部分
-
-```
-def run_backtesting(
-    self, class_name: str, vt_symbol: str, interval: str, start: datetime, 
-    end: datetime, rate: float, slippage: float, size: int, pricetick: float, 
-    capital: int, setting: dict
-)：
-```
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/28.png)
 
 
-点击下方的“开始回测”按钮可以开始回测：
-首先会弹出如图所示的参数配置窗口，用于调整策略参数。该设置对应的是run_backtesting()函数的setting字典。
+## 执行回测
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/parameter_setting.png)
+准备好数据后即可开始使用历史数据对策略进行回测研究，回测时需要配置好相关的参数：
 
+- 策略品种
+  - 交易策略：在下拉框中选择要回测的策略名称；
+  - 本地代码：注意不要漏掉交易所后缀；
+- 数据范围
+  - 格式详见本章[下载数据](#jump)部分的介绍；
+- 交易成本
+  - 滑点：下单交易点位与实际交易点位的差别；
+  - 百分比手续费：填写数字即可，不要填写百分数；
+  - 固定比手续费：可以手续费填0，然后把手续费除以合约乘数后，加在滑点中；
+- 合约属性
+  - 合约乘数：合约的交易单位；
+  - 价格跳动：合约价格的最小变动价位；
+  - 回测资金：账户资金；
+  - 合约模式：
+    - 反向：只有数字货币市场才有的一种特殊衍生品合约规则，是指用计价法币来标识价格，用数字货币来结算盈亏的衍生品合约；
+    - 正向：除反向合约外，其他所有的金融市场（股票、期货、期权等）采用的规则。
 
+配置完成后，点击下方的【开始回测】按钮，会弹出策略参数配置对话框，用于设置策略参数，如下图所示：
 
-点击“确认”按钮后开始运行回测，同时日志界面会输出相关信息，如图。
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/29.png)
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/backtesting_log.png)
+点击【确定】按钮后开始执行回测任务，同时日志界面会输出相关信息，如下图所示：
 
-回测完成后会显示统计数字图表。
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/10.png)
 
-&nbsp;
+回测完成后，会自动在右侧区域显示策略回测业绩的统计指标以及相关图表：
 
-### 统计数据
-用于显示回测完成后的相关统计数值, 如结束资金、总收益率、夏普比率、收益回撤比。
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/30.png)
 
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/show_result.png)
+若数据库没有准备好所需的历史数据就点击【开始回测】，则日志界面会输出“历史数据不足，回测终止”的日志，如下图所示：
 
-&nbsp;
-
-### 图表分析
-以下四个图分别是代表账号净值、净值回撤、每日盈亏、盈亏分布。
-
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/show_result_chat.png)
-
-
-&nbsp;
-### K线图
-K线图是基于PyQtGraph开发的，整个模块由以下五大组件构成：
-
-- BarManager：K线序列数据管理工具
-- ChartItem：基础图形类，继承实现后可以绘制K线、成交量、技术指标等
-- DatetimeAxis：针对K线时间戳设计的定制坐标轴
-- ChartCursor：十字光标控件，用于显示特定位置的数据细节
-- ChartWidget：包含以上所有部分，提供单一函数入口的绘图组件
-  
-在回测完毕后，点击“K线图表”按钮即可显示历史K线行情数据（默认1分钟），并且标识有具体的买卖点位，如下图。
-
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/bar_chart.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/15.png)
 
 
-&nbsp;
+## 结果分析
+
+### 业绩图表
+
+右侧的业绩图表由以下四张子图构成：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/31.png)
+
+【账户净值】图的横轴是时间，纵轴是资金，体现了账户净值在交易时段内随着交易日变化的情况。
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/32.png)
+
+【净值回撤】图的横轴是时间，纵轴是回撤，体现了净值从最近高点回撤程度随着交易日变化的情况。
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/33.png)
+
+【每日盈亏】图的横轴是时间，纵轴是日盈亏的金额（采用逐日盯市规则以收盘价结算），体现了整个回测周期内策略的每日盈亏变化情况。
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/34.png)
+
+【盈亏分布】图的横轴是每日盈亏的数值，纵轴是该盈亏数值的出现概率，体现了整体每日盈亏的概率分布情况。
+
+### 统计指标
+
+统计指标区域用于显示策略历史回测业绩的相关统计数值，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/35.png)
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/36.png)
+
+根据数据类型，指标可以分类为：
+
+- 日期信息
+  - 首个交易日
+  - 最后交易日
+  - 总交易日
+  - 盈利交易日
+  - 亏损交易日
+- 资金盈亏
+  - 起始资金
+  - 结束资金
+  - 总收益率
+  - 年化收益
+  - 最大回撤
+  - 百分比最大回撤
+  - 总盈亏
+- 交易成本
+  - 总手续费
+  - 总滑点
+  - 总成交额
+  - 总成交笔数
+- 日均数据
+  - 日均盈亏
+  - 日均手续费
+  - 日均滑点
+  - 日均成交额
+  - 日均成交笔数
+  - 日均收益率
+  - 收益标准差（日均）
+- 绩效评价
+  - 夏普比率
+  - 收益回撤比
+
+### 详细信息
+
+回测完成后，可点击左侧区域的【委托记录】按钮，查看回测过程中策略逐笔委托的细节信息：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/43.png)
+
+如果发现表格内容显示不完整，可以单击鼠标右键弹出菜单后，选择【调整列宽】按钮，即可进行自动列宽缩放：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/46.png)
+
+表格也支持一键将表内全部内容保存为CSV文件，在上一步右键弹出的菜单中，点击【保存数据】按钮，即可弹出如下图所示选择保存文件名的对话框：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/42.png)
+
+回测过程中策略发出委托的**成交价**不一定是原始下单的价格，而要由回测引擎基于当时的行情数据和下单价格进行撮合后算出，每笔委托对应的具体成交细节可以点击【成交记录】按钮后查看：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/38.png)
+
+点击【每日盈亏】按钮后，可以看到如下图所示的策略每日盈亏细节：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/39.png)
+
+这里每日盈亏的统计采用期货市场普遍使用的逐日盯市（Marking-to-Market）规则进行计算：
+
+- 持仓盈亏：今日开盘持仓的部分，以昨收盘价开仓，今收盘价平仓，计算出的盈亏金额；
+- 交易盈亏：今日日内成交的部分，以成交价格开仓，今收盘价平仓，计算出的盈亏金额；
+- 总盈亏：汇总持仓盈亏和交易盈亏后的金额；
+- 净盈亏：总盈亏扣除手续费和滑点后的金额，也是最终计算显示四张图表时用到的每日盈亏金额。
+
+### K线图表
+
+点击【K线图表】按钮，即可打开用于显示回测K线数据，以及策略具体买卖点位置的图表，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/44.png)
+
+注意绘图耗时可能需要一定时间（通常在数十秒到几分钟），请耐心等待。
+
+K线图表中的图例说明可以在窗口底部看到，整体上采用了国内市场标准的配色和风格。开平仓之间的连线采用的是逐笔配对（First-in, First-out）规则进行绘制，每一笔成交会根据其数量自动和其他成交进行匹配，即使策略有复杂的加减仓操作也能正确绘制。
+
 
 ## 参数优化
-vnpy提供2种参数优化的解决方案：穷举算法、遗传算法
-
-
-&nbsp;
-
-### 穷举算法
-
-穷举算法原理：
-- 输入需要优化的参数名、优化区间、优化步进，以及优化目标。
-```
-    def add_parameter(
-        self, name: str, start: float, end: float = None, step: float = None
-    ):
-        """"""
-        if not end and not step:
-            self.params[name] = [start]
-            return
-
-        if start >= end:
-            print("参数优化起始点必须小于终止点")
-            return
 
-        if step <= 0:
-            print("参数优化步进必须大于0")
-            return
+对于开发好的策略，可以使用CtaBacktester内置的优化算法快速进行参数寻优，目前支持穷举和遗传两种优化算法。
 
-        value = start
-        value_list = []
+### 设置优化参数
 
-        while value <= end:
-            value_list.append(value)
-            value += step
+点击【参数优化】按钮，会弹出“优化参数配置”的窗口：
 
-        self.params[name] = value_list
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/37.png)
 
-    def set_target(self, target_name: str):
-        """"""
-        self.target_name = target_name
-```
+点击【目标】下拉框，选择优化过程中要使用的目标函数（即以该数值最大化为目标进行优化）：
 
-&nbsp;
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/45.png)
 
+对于要进行优化的策略参数，需要配置：
 
-- 形成全局参数组合, 数据结构为[{key: value, key: value}, {key: value, key: value}]。
-```
-    def generate_setting(self):
-        """"""
-        keys = self.params.keys()
-        values = self.params.values()
-        products = list(product(*values))
+- 【开始】和【结束】：用于给定参数优化的范围；
+- 【步进】：用于给定参数每次变化的数值；
 
-        settings = []
-        for p in products:
-            setting = dict(zip(keys, p))
-            settings.append(setting)
+举例：如一个参数的【开始】设为10，【结束】设为20，【步进】设为2，则该参数在优化过程中的寻优空间为：10、12、14、16、18、20。
 
-        return settings
-```
-&nbsp;
+对于要设置固定数值的策略参数，请将【开始】和【结束】都同样设为该数值即可。
 
+### 穷举算法优化
 
-- 遍历全局中的每一个参数组合：遍历的过程即运行一次策略回测，并且返回优化目标数值；然后根据目标数值排序，输出优化结果。
-```
-    def run_optimization(self, optimization_setting: OptimizationSetting, output=True):
-        """"""
-        # Get optimization setting and target
-        settings = optimization_setting.generate_setting()
-        target_name = optimization_setting.target_name
+设置好需要优化的参数后，点击窗口底部的【多进程优化】按钮，此时CtaBacktester会调用Python的multiprocessing模块，根据当前电脑CPU的核心数量，启动对应数量的进程来并行执行穷举优化任务。
 
-        if not settings:
-            self.output("优化参数组合为空，请检查")
-            return
+在优化的过程中，穷举算法会遍历参数寻优空间中的每一个组合。遍历的过程即使用该组合作为策略参数运行一次历史回测，并返回优化目标函数的数值。完成遍历后，根据所有目标函数的数值进行排序，从而选出最优的参数组合结果。
 
-        if not target_name:
-            self.output("优化目标未设置，请检查")
-            return
+穷举算法优化的效率和CPU核心数量直接相关：若用户计算机是2核，则优化时间为单核的1/2；若计算机是10核，则优化时间会大幅降低到单核的1/10。
 
-        # Use multiprocessing pool for running backtesting with different setting
-        pool = multiprocessing.Pool(multiprocessing.cpu_count())
+### 遗传算法优化
 
-        results = []
-        for setting in settings:
-            result = (pool.apply_async(optimize, (
-                target_name,
-                self.strategy_class,
-                setting,
-                self.vt_symbol,
-                self.interval,
-                self.start,
-                self.rate,
-                self.slippage,
-                self.size,
-                self.pricetick,
-                self.capital,
-                self.end,
-                self.mode
-            )))
-            results.append(result)
+设置好需要优化的参数后，点击窗口底部的【遗传算法优化】按钮，此时CtaBacktester会自动调用Python的deap模块，来执行高效智能化的遗传算法优化任务。
 
-        pool.close()
-        pool.join()
+附上遗传算法的简要工作原理：
 
-        # Sort results and output
-        result_values = [result.get() for result in results]
-        result_values.sort(reverse=True, key=lambda result: result[1])
+1. 定义优化方向，如总收益率最大化； 
+2. 随机从全局寻优空间中，选择出部分参数组合形成初始族群； 
+3. 对族群内所有个体进行评估，即运行回测获取目标函数结果；
+4. 基于目标函数结果进行排序，剔除表现不好的个体（参数组合）；
+5. 对剩下的个体进行交叉或者变异，通过评估和筛选后形成新的族群；
+6. 以上3-5步为一次完整的种群迭代，在整个优化过程中需要多次重复；
+7. 多次迭代后，种群内差异性减少，参数收敛向最优解，最终输出结果。
 
-        if output:
-            for value in result_values:
-                msg = f"参数：{value[0]}, 目标：{value[1]}"
-                self.output(msg)
+注意以上结果为遗传算法优化的帕累托解集，可以是1个或者数个参数组合，而不会像穷举算法包含全部参数组合。
 
-        return result_values
-```
+### 优化结果分析
 
+优化完成后，会在日志区域输出信息提示：
 
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/49.png)
 
+此时点击【优化结果】按钮即可查看相关结果：
 
-注意：可以使用multiprocessing库来创建多进程实现并行优化。例如：若用户计算机是2核，优化时间为原来1/2；若计算机是10核，优化时间为原来1/10。
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/50.png)
 
-&nbsp;
+上图中的参数优化结果，基于启动优化任务时所选的目标函数【总收益率】的数值，由高到低进行了排序。
 
+最后，点击右下角的【保存】按钮即可将优化结果保存到本地CSV文件中，便于后续分析使用。
 
-穷举算法操作：
 
-- 点击“参数优化”按钮，会弹出“优化参数配置”窗口，用于设置优化目标（如最大化夏普比率、最大化收益回撤比）和设置需要优化的参数以及优化区间，如图。
-  
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/optimize_setting.png)
+## 策略代码
 
-- 设置好需要优化的参数后，点击“优化参数配置”窗口下方的“确认”按钮开始进行调用CPU多核进行多进程并行优化，同时日志会输出相关信息。
-  
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/optimize_log.png)
+### 代码编辑
 
-- 点击“优化结果”按钮可以看出优化结果，如图的参数组合是基于目标数值（夏普比率）由高到低的顺序排列的。
-  
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/optimize_result.png)
+VN Trader内置了轻量级策略编辑器，在CtaBacktester界面左上角的下拉框中选择策略后，点击左下角的【代码编辑】按钮，即可打开：
 
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/57.png)
 
-&nbsp;
-
-### 遗传算法
+该编辑器基于Qscitinlla开发，提供常规的语法高亮、自动补全、代码折叠等功能，同时也可以通过按住Ctrl键滚动鼠标滚轮来进行字体大小的缩放。
 
-遗传算法原理：
-
-- 输入需要优化的参数名、优化区间、优化步进，以及优化目标；
+修改完成后，点击窗口右上角关闭按钮时会弹出下图对话框，需要选择【Save】按钮保存修改后的策略文件：
 
-- 形成全局参数组合，该组合的数据结构是列表内镶嵌元组，即\[[(key, value), (key, value)] , [(key, value), (key,value)]]，与穷举算法的全局参数组合的数据结构不同。这样做的目的是有利于参数间进行交叉互换和变异。
-```
-    def generate_setting_ga(self):
-        """""" 
-        settings_ga = []
-        settings = self.generate_setting()     
-        for d in settings:            
-            param = [tuple(i) for i in d.items()]
-            settings_ga.append(param)
-        return settings_ga
-```
-
-&nbsp;
-
-
-- 形成个体：调用random()函数随机从全局参数组合中获取参数。
-```
-        def generate_parameter():
-            """"""
-            return random.choice(settings)
-```
-
-&nbsp;
-
-
-- 定义个体变异规则: 即发生变异时，旧的个体完全被新的个体替代。
-```
-        def mutate_individual(individual, indpb):
-            """"""
-            size = len(individual)
-            paramlist = generate_parameter()
-            for i in range(size):
-                if random.random() < indpb:
-                    individual[i] = paramlist[i]
-            return individual,
-```
-
-&nbsp;
-
-
-- 定义评估函数：入参的是个体，即[(key, value), (key, value)]形式的参数组合，然后通过dict()转化成setting字典，然后运行回测，输出目标优化数值，如夏普比率、收益回撤比。(注意，修饰器@lru_cache作用是缓存计算结果，避免遇到相同的输入重复计算，大大降低运行遗传算法的时间)
-```
-@lru_cache(maxsize=1000000)
-def _ga_optimize(parameter_values: tuple):
-    """"""
-    setting = dict(parameter_values)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/58.png)
 
-    result = optimize(
-        ga_target_name,
-        ga_strategy_class,
-        setting,
-        ga_vt_symbol,
-        ga_interval,
-        ga_start,
-        ga_rate,
-        ga_slippage,
-        ga_size,
-        ga_pricetick,
-        ga_capital,
-        ga_end,
-        ga_mode
-    )
-    return (result[1],)
+### 策略重载
 
+当用户在CtaBacktester打开时，对策略源代码进行修改后（不管是用内置的策略编辑器，还是外部编辑器，如VSCode），此时的修改尚停留在硬盘上的代码文件层面，内存中依然是修改前的策略代码。
 
-def ga_optimize(parameter_values: list):
-    """"""
-    return _ga_optimize(tuple(parameter_values))
-```
+想让修改内容在内存中立即生效，需要点击左下角的【策略重载】按钮，此时CtaBacktester会自动扫描并重新加载所有策略文件中的策略代码，同时会有相关日志输出，如下图所示：
 
-&nbsp;
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/59.png)
 
-- 运行遗传算法：调用deap库的算法引擎来运行遗传算法，其具体流程如下。
-1）先定义优化方向，如夏普比率最大化；
-2）然后随机从全局参数组合获取个体，并形成族群；
-3）对族群内所有个体进行评估（即运行回测），并且剔除表现不好个体；
-4）剩下的个体会进行交叉或者变异，通过评估和筛选后形成新的族群；（到此为止是完整的一次种群迭代过程）；
-5）多次迭代后，种群内差异性减少，整体适应性提高，最终输出建议结果。该结果为帕累托解集，可以是1个或者多个参数组合。
-
-注意：由于用到了@lru_cache, 迭代中后期的速度回提高非常多，因为很多重复的输入都避免了再次的回测，直接在内存中查询并且返回计算结果。
-```
-from deap import creator, base, tools, algorithms
-creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-creator.create("Individual", list, fitness=creator.FitnessMax)
-        ......
-        # Set up genetic algorithem
-        toolbox = base.Toolbox() 
-        toolbox.register("individual", tools.initIterate, creator.Individual, generate_parameter)                          
-        toolbox.register("population", tools.initRepeat, list, toolbox.individual)                                            
-        toolbox.register("mate", tools.cxTwoPoint)                                               
-        toolbox.register("mutate", mutate_individual, indpb=1)               
-        toolbox.register("evaluate", ga_optimize)                                                
-        toolbox.register("select", tools.selNSGA2)       
-
-        total_size = len(settings)
-        pop_size = population_size                      # number of individuals in each generation
-        lambda_ = pop_size                              # number of children to produce at each generation
-        mu = int(pop_size * 0.8)                        # number of individuals to select for the next generation
-
-        cxpb = 0.95         # probability that an offspring is produced by crossover    
-        mutpb = 1 - cxpb    # probability that an offspring is produced by mutation
-        ngen = ngen_size    # number of generation
-                
-        pop = toolbox.population(pop_size)      
-        hof = tools.ParetoFront()               # end result of pareto front
-
-        stats = tools.Statistics(lambda ind: ind.fitness.values)
-        np.set_printoptions(suppress=True)
-        stats.register("mean", np.mean, axis=0)
-        stats.register("std", np.std, axis=0)
-        stats.register("min", np.min, axis=0)
-        stats.register("max", np.max, axis=0)
-
-        algorithms.eaMuPlusLambda(
-            pop, 
-            toolbox, 
-            mu, 
-            lambda_, 
-            cxpb, 
-            mutpb, 
-            ngen, 
-            stats,
-            halloffame=hof
-        )
-
-        # Return result list
-        results = []
-
-        for parameter_values in hof:
-            setting = dict(parameter_values)
-            target_value = ga_optimize(parameter_values)[0]
-            results.append((setting, target_value, {}))
-        
-        return results
-```
-
-
-
-
-
-
-
+重载刷新完成后，再运行回测或者优化时，使用的就是修改后的策略代码了。
