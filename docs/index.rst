@@ -9,6 +9,7 @@ vn.py项目文档
    quickstart.md
    gateway.md
    database.md
+   datafeed.md
 
    cta_strategy.md
    cta_backtester.md
@@ -18,7 +19,6 @@ vn.py项目文档
    algo_trading.md
    script_trader.md
 
-   market_radar.md
    paper_account.md
    data_recorder.md
    data_manager.md

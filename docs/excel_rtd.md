@@ -1,7 +1,7 @@
 # Excel RTD模块
 
 ## 功能简介
-RTD全称是RealTimeData，是微软提供的主要面向金融行业中实时数据需求设计的Excel数据对接方案，而ExcelRtd模块则是vn.py官方提供的用于实现在Excel中访问vn.py程序内任意数据信息的功能。ExcelRtd依赖于PyXLLC模块（www.pyxll.com），该模块属于商业软件，需要购买才能使用（提供30天免费使用）。
+RTD全称是RealTimeData，是微软提供的主要面向金融行业中实时数据需求设计的Excel数据对接方案，而ExcelRtd模块则是vn.py官方提供的用于实现在Excel中访问vn.py程序内任意数据信息的功能模块。ExcelRtd依赖于PyXLLC模块（www.pyxll.com），该模块属于商业软件，需要购买才能使用（提供30天免费使用）。
 
 ## 安装PyXLL
 为了使用ExcelRtd模块，需要安装PyXLL插件。步骤如下：
@@ -79,6 +79,8 @@ main_engine.add_app(ExcelRtdApp)
 
 ## 功能和配置
 
+### 基础应用
+
 在启动Excel RTD模块后，即可在Excel表格中通过PyXll调用该模块提供的功能（主要是通过rtd_tick_data函数获取实时数据）。
 
 首先打开一个excel表格，并且在每个单元格中调用函数"rtd_tick_data"并传入相应参数则可获取对应的数据，如图：
@@ -89,4 +91,15 @@ main_engine.add_app(ExcelRtdApp)
 
 从图中可以看出rtd_tick_data函数需要两个参数，一个是symbol，一个是vn.py中定义的TickData的属性（具体有哪些属性请参考源代码vnpy.trader.object.TickData）。这两个参数都是字符串，当然第一个参数可以通过单元格的具体位置指定，比如“A1”表示A列第1行的数据。
 
-当然啦，这里只是简单的展示了ExcelRtd模块的功能，至于具体获取哪些数据，以什么样的方式展示在excel上则由用户根据自己的实际需求编写。
+### 进阶应用
+当然，上面只是简单的展示了ExcelRtd模块的功能，至于具体获取哪些数据，以什么样的方式展示在excel上则由用户根据自己的实际需求编写。这里提供几个进阶的案例，包括期货市场报价跟踪、市场深度行情跟踪以及价差监控。
+
+#### 期货市场报价跟踪
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/excel_rtd/excel_rtd_10.png)
+
+#### 市场深度行情跟踪
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/excel_rtd/excel_rtd_11.png)
+#### 价差监控
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/excel_rtd/excel_rtd_12.png)
