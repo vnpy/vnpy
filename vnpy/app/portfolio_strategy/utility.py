@@ -22,7 +22,7 @@ class PortfolioBarGenerator:
             return
 
         if self.last_dt and self.last_dt.minute != tick.datetime.minute:
-            for bar in self.bars.items():
+            for bar in self.bars.values():
                 bar.datetime = bar.datetime.replace(second=0, microsecond=0)
 
             self.on_bars(self.bars)

@@ -1,3 +1,13 @@
+# 2.8.0版本
+
+# 修复
+1. 修复部分C++接口模块剥离后，遗留的安装脚本编译代码导致的报错问题
+
+# 调整
+1. 移除老版本基于requests库的RestClient客户端
+2. 移除老版本基于websocket-client库的WebsocketClient客户端
+
+
 # 2.7.0版本
 
 # 新增
@@ -23,11 +33,9 @@
 13. vnpy_dolphindb优化数据的加载解析速度
 14. vnpy_influxdb采用pandas解析CSV数据，提高整体速度
 
-## 修复
+# 修复
 1. 修复vnpy_ctp的CtpGateway，在夜盘换日时上期所行情时间戳的日期字段误差问题
 2. 修复vnpy_arctic的数据重复写入时出现的错误覆盖问题
-
-
 
 # 剥离
 1. 将InteractiveBrokers交易接口剥离到vnpy_ib项目中

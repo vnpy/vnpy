@@ -374,7 +374,7 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_all_contracts = self.get_all_contracts
         self.main_engine.get_all_quotes = self.get_all_quotes
         self.main_engine.get_all_active_orders = self.get_all_active_orders
-        self.main_engine.get_all_active_qutoes = self.get_all_active_quotes
+        self.main_engine.get_all_active_quotes = self.get_all_active_quotes
 
     def register_event(self) -> None:
         """"""

@@ -14,7 +14,6 @@ other financial markets.
 
 import ast
 import os
-import platform
 import re
 
 from setuptools import Extension, find_packages, setup
@@ -56,8 +55,6 @@ def get_install_requires():
     install_requires = [
         "PyQt5",
         "qdarkstyle",
-        "requests",
-        "websocket-client",
         "peewee",
         "numpy",
         "pandas",
@@ -80,165 +77,6 @@ def get_version_string():
             r"__version__\s+=\s+(.*)", f.read().decode("utf-8")
         ).group(1)
         return str(ast.literal_eval(version_line))
-
-
-def get_ext_modules():
-    if platform.uname().system == "Windows":
-        compiler_flags = [
-            "/MP", "/std:c++17",  # standard
-            "/O2", "/Ob2", "/Oi", "/Ot", "/Oy", "/GL",  # Optimization
-            "/bigobj",  # Better compatibility
-            "/wd4819",  # 936 code page
-            "/D_CRT_SECURE_NO_WARNINGS",
-            # suppress warning of unsafe functions like fopen, strcpy, etc
-        ]
-        extra_link_args = []
-        runtime_library_dirs = None
-    else:
-        compiler_flags = [
-            "-std=c++17",  # standard
-            "-O3",  # Optimization
-            "-Wno-delete-incomplete", "-Wno-sign-compare",
-        ]
-        extra_link_args = ["-lstdc++"]
-        runtime_library_dirs = ["$ORIGIN"]
-
-    vnksgoldmd = Extension(
-        "vnpy.api.ksgold.vnksgoldmd",
-        [
-            "vnpy/api/ksgold/vnksgold/vnksgoldmd/vnksgoldmd.cpp",
-        ],
-        include_dirs=["vnpy/api/ksgold/include",
-                      "vnpy/api/ksgold/vnksgold"],
-        define_macros=[],
-        undef_macros=[],
-        library_dirs=["vnpy/api/ksgold/libs", "vnpy/api/ksgold"],
-        libraries=["ksgoldquotmarketdataapi", "ksgoldtraderapi"],
-        extra_compile_args=compiler_flags,
-        extra_link_args=extra_link_args,
-        runtime_library_dirs=runtime_library_dirs,
-        depends=[],
-        language="cpp",
-    )
-
-    vnksgoldtd = Extension(
-        "vnpy.api.ksgold.vnksgoldtd",
-        [
-            "vnpy/api/ksgold/vnksgold/vnksgoldtd/vnksgoldtd.cpp",
-        ],
-        include_dirs=["vnpy/api/ksgold/include",
-                      "vnpy/api/ksgold/vnksgold"],
-        define_macros=[],
-        undef_macros=[],
-        library_dirs=["vnpy/api/ksgold/libs", "vnpy/api/ksgold"],
-        libraries=["ksgoldquotmarketdataapi", "ksgoldtraderapi"],
-        extra_compile_args=compiler_flags,
-        extra_link_args=extra_link_args,
-        runtime_library_dirs=runtime_library_dirs,
-        depends=[],
-        language="cpp",
-    )
-
-    vnsgitmd = Extension(
-        "vnpy.api.sgit.vnsgitmd",
-        [
-            "vnpy/api/sgit/vnsgit/vnsgitmd/vnsgitmd.cpp",
-        ],
-        include_dirs=["vnpy/api/sgit/include",
-                      "vnpy/api/sgit/vnsgit"],
-        define_macros=[],
-        undef_macros=[],
-        library_dirs=["vnpy/api/sgit/libs", "vnpy/api/sgit"],
-        libraries=["crypto", "sgitquotapi", "sgittradeapi", "ssl"],
-        extra_compile_args=compiler_flags,
-        extra_link_args=extra_link_args,
-        runtime_library_dirs=runtime_library_dirs,
-        depends=[],
-        language="cpp",
-    )
-
-    vnsgittd = Extension(
-        "vnpy.api.sgit.vnsgittd",
-        [
-            "vnpy/api/sgit/vnsgit/vnsgittd/vnsgittd.cpp",
-        ],
-        include_dirs=["vnpy/api/sgit/include",
-                      "vnpy/api/sgit/vnsgit"],
-        define_macros=[],
-        undef_macros=[],
-        library_dirs=["vnpy/api/sgit/libs", "vnpy/api/sgit"],
-        libraries=["crypto", "sgitquotapi", "sgittradeapi", "ssl"],
-        extra_compile_args=compiler_flags,
-        extra_link_args=extra_link_args,
-        runtime_library_dirs=runtime_library_dirs,
-        depends=[],
-        language="cpp",
-    )
-
-    vnnhmd = Extension(
-        "vnpy.api.nh.vnnhmd",
-        [
-            "vnpy/api/nh/vnnh/vnnhmd/vnnhmd.cpp",
-        ],
-        include_dirs=["vnpy/api/nh/include", "vnpy/api/nh/vnnh"],
-        library_dirs=["vnpy/api/nh/libs", "vnpy/api/nh"],
-        libraries=["nhmdapi"],
-        extra_compile_args=compiler_flags,
-        extra_link_args=extra_link_args,
-        runtime_library_dirs=runtime_library_dirs,
-        language="cpp",
-    )
-
-    vnnhfutures = Extension(
-        "vnpy.api.nh.vnnhfutures",
-        [
-            "vnpy/api/nh/vnnh/vnnhfutures/vnnhfutures.cpp",
-        ],
-        include_dirs=["vnpy/api/nh/include", "vnpy/api/nh/vnnh"],
-        library_dirs=["vnpy/api/nh/libs", "vnpy/api/nh"],
-        libraries=["nhtd2traderapi"],
-        extra_compile_args=compiler_flags,
-        extra_link_args=extra_link_args,
-        runtime_library_dirs=runtime_library_dirs,
-        language="cpp",
-    )
-
-    vnnhstock = Extension(
-        "vnpy.api.nh.vnnhstock",
-        [
-            "vnpy/api/nh/vnnh/vnnhstock/vnnhstock.cpp",
-        ],
-        include_dirs=["vnpy/api/nh/include", "vnpy/api/nh/vnnh"],
-        library_dirs=["vnpy/api/nh/libs", "vnpy/api/nh"],
-        libraries=["nhtdstockapi"],
-        extra_compile_args=compiler_flags,
-        extra_link_args=extra_link_args,
-        runtime_library_dirs=runtime_library_dirs,
-        language="cpp",
-    )
-
-    if platform.system() == "Windows":
-        # use pre-built pyd for windows ( support python 3.7 only )
-        ext_modules = []
-    elif platform.system() == "Darwin":
-        ext_modules = []
-    else:
-        ext_modules = [
-            vnsgittd, vnsgitmd,
-            vnksgoldmd, vnksgoldtd,
-            vnnhmd, vnnhfutures, vnnhstock
-        ]
-
-    ext_modules = check_extension_build_flag(
-        ext_modules, "VNPY_BUILD_sgit", vnsgittd)
-    ext_modules = check_extension_build_flag(
-        ext_modules, "VNPY_BUILD_sgit", vnsgitmd)
-    ext_modules = check_extension_build_flag(
-        ext_modules, "VNPY_BUILD_ksgold", vnksgoldmd)
-    ext_modules = check_extension_build_flag(
-        ext_modules, "VNPY_BUILD_ksgold", vnksgoldtd)
-
-    return ext_modules
 
 
 setup(
@@ -276,6 +114,5 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: Chinese (Simplified)"
-    ],
-    ext_modules=get_ext_modules(),
+    ]
 )

@@ -18,7 +18,7 @@ PortfolioManager是用于**投资组合盈亏统计和分析**的功能模块，
 
 ```
 # 写在顶部
-from vnpy.app.portfolio_manager import PortfolioManagerApp
+from vnpy_portfoliomanager import PortfolioManagerApp
 
 # 写在创建main_engine对象后
 main_engine.add_app(PortfolioManagerApp)
@@ -81,7 +81,7 @@ main_engine.add_app(PortfolioManagerApp)
 
  - 交易盈亏 = 持仓量 * （当日收盘价-昨日收盘价）* 合约规模  
 
- - 持仓盈亏 = 持仓变化量 * （当时收盘价 - 开仓成交价）* 合约规模  
+ - 持仓盈亏 = 持仓变化量 * （当日收盘价 - 开仓成交价）* 合约规模  
 
  - 总盈亏 = 交易盈亏 + 持仓盈亏  
 
@@ -117,6 +117,6 @@ main_engine.add_app(PortfolioManagerApp)
 
 Windows系统上缓存文件的默认路径位于：
 
-    C:\Users\Administrator\\.vntrader\portfolio_manager_data.json
+    C:\Users\Administrator\.vntrader\portfolio_manager_data.json
 
 其中Administrator是当前Windows系统的用户名。

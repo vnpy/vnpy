@@ -18,7 +18,7 @@ AlgoTrading是用于**算法委托执行交易**的模块，用户可以通过�
 
 ```
 # 写在顶部
-from vnpy.app.algo_trading import AlgoTradingApp
+from vnpy_algotrading import AlgoTradingApp
 
 # 写在创建main_engine对象后
 main_engine.add_app(AlgoTradingApp)
@@ -191,3 +191,18 @@ main_engine.add_app(AlgoTradingApp)
 - 买入情况：先检查撤单：最新Tick买一价不等于目标价格时，执行撤单；若无活动委托，发出委托：委托价格为最新Tick买一价，委托数量为剩余委托量。
 
 - 卖出情况：先检查撤单：最新Tick买一价不等于目标价格时，执行撤单；若无活动委托，发出委托：委托价格为最新Tick卖一价，委托数量为剩余委托量。
+
+
+### Arbitrage - 套利算法
+
+套利算法（Arbitrage）具体执行步骤如下：
+
+- 每隔一段时间检查委托情况，若有委托则先清空；若主动腿还持有净持仓，通过被动腿成交来对冲。
+
+- 计算价差spread_bid_price 和 spread_ask_price, 以及对应的委托数量。
+
+- 卖出情况：主动腿价格相对被动腿上涨，其价差spread_bid_price大于spread_up时，触发买入信号。
+
+- 买入情况：主动腿价格相对被动腿下跌，其价差spread_ask_price小于 - spread_down(spread_down默认设置为正数)时，触发卖出信号。
+
+- 在买卖信号判断加入最大持仓的限制，其作用是避免持仓过多导致保证金不足或者直接被交易所惩罚性强平；而且随着价差持续波动，主动腿持仓可以从0 -> 10 -> 0 -> -10 -> 0,从而实现平仓获利离场。
