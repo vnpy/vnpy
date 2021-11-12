@@ -1,59 +1,80 @@
 # 交易接口
 
-## 加载启动
+## 如何连接
 
-### VN Station加载
+从gateway文件夹上引入接口程序，通过add_gateway()函数调动，最终展示到图形化操作界面VN Trader中。
 
-启动登录VN Station后，点击【VN Trader Pro】按钮，在配置对话框中的【底层接口】栏勾选想要交易的接口。
+在菜单栏中点击"系统"->"连接CTP”按钮会弹出如图账号配置窗口，输入账号、密码等相关信息即连接接口，并立刻进行查询工作: 如查询账号信息、查询持仓、查询委托信息、查询成交信息等。
 
-请注意: CTP、CTP测试以及融航接口不能同时加载，CTP Mini和CTP Mini测试接口也不能同时加载，会导致API版本错误，报错4097; 所有接口都只支持全仓保证金模式。
+![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/gateway/login.png)
 
-### 脚本加载
+&nbsp;
 
-以CTP接口为例，在启动脚本中添加如下代码：
+### 加载需要用的接口
+
+加载接口示例在根目录"tests\trader"文件夹的run.py文件中。
+- 从gateway文件夹引入接口类文件，如from vnpy.gateway.ctp import CtpGateway;
+- 创建事件引擎对象并且通过add_gateway()函数添加接口程序;
+- 创建图形化对象main_window，以VN Trader操作界面展示出来。
+
 
 ```
-# 写在顶部
-from vnpy_ctp import CtpGateway
+from vnpy.gateway.ctp import CtpGateway
 
-# 写在创建main_engine对象后
-main_engine.add_gateway(CtpGateway)
+def main():
+    """"""
+    qapp = create_qapp()
+    main_engine = MainEngine(event_engine)
+    main_engine.add_gateway(CtpGateway)
+    main_window = MainWindow(main_engine, event_engine)
+    main_window.showMaximized()
+    qapp.exec()
 ```
 
+&nbsp;
 
-## 连接接口
 
-在图形化操作界面VN Trader上的菜单栏中点击【系统】->【连接CTP】，会弹出账号配置窗口，如下图所示：
+### 配置和连接
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/1.png)
+打开cmd窗口，使用命令“Python run.py"即可进入VN Trader操作界面。在左上方的菜单栏中点击"系统"->"连接CTP”按钮会弹出账号配置窗口，输入账号、密码等相关信息即连接接口。
 
-输入账号、密码等相关信息即可连接接口，并立刻进行查询工作: 如查询账号信息、查询持仓、查询委托信息、查询成交信息等。查询成功后可在主界面的组件中看到输出的日志，如下图所示：
+连接接口的流程首先是初始化账户信息，然后调用connet()函数来连接交易端口和行情端口。
+- 交易端口：查询用户相关信息（如账户资金、持仓、委托记录、成交记录）、查询可交易合约信息、挂撤单操作；
+- 行情端口：接收订阅的行情信息推送、接收用户相关信息（如账户资金更新、持仓更新、委托推送、成交推送）更新的回调推送。
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/2.png)
+
+&nbsp;
+
 
 ### 修改json配置文件
 
-接口配置相关信息保存在json文件中，放在如图C盘用户目录下的.vntrader文件夹内。
+接口配置相关保存在json文件中，放在如图C盘用户目录下的.vntrader文件夹内。
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/3.png)
+![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/gateway/.vntrader.png)
 
-所以如果要修改接口配置文件，用户既可以在图形化界面VN Trader内修改，也可以直接在.vntrader修改对应的json文件。
-
+所以要修改接口配置文件，用户即可以在图形化界面VN Trader内修改，也可以直接在.vntrader修改json文件。
 另外将json配置文件分离于vnpy的好处在于：避免每次升级都要重新配置json文件。
+
+
+&nbsp;
+
 
 ### 查看可交易的合约
 
-先登录接口，然后在菜单栏中点击【帮助】->【查询合约】即可弹出空白的【查询合约】窗口，点击【查询】按钮后才会显示查询结果。留空则查询全部合约，如下图所示：
+先登录接口，然后在菜单栏中点击"帮助"->"查询合约”按钮会空白的“查询合约”窗口。点击“查询”按钮后才会显示查询结果，如图。
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/4.png)
+![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/gateway/query_contract.png)
 
 
-## 交易接口分类
+
+&nbsp;
+
+## 接口分类
 
 | 接口          |                    类型                         |
 | ------------  | :--------------------------------------------: |
-| CTP           |           期货、期货期权（实盘6.5.1）            |
-| CTP测试       |           期货、期货期权（测试6.5.1）            |
+| CTP           |           期货、期货期权（实盘6.3.15）            |
+| CTP测试       |           期货、期货期权（测试6.3.16）            |
 | CTP Mini      |            期货、期货期权（实盘1.4）             |
 | CTP Mini测试  |            期货、期货期权（测试1.2）              |
 | 飞马          |                    期货                         |
@@ -63,24 +84,24 @@ main_engine.add_gateway(CtpGateway)
 | 恒生UFT       |                期货、ETF期权                     |
 | 恒生期权       |                  ETF期权                        |
 | 中泰XTP       |              A股、两融、ETF期权                  |
-| 国泰君安       |                    A股                          |
-| 华鑫奇点股票   |                    A股                          |
-| 华鑫奇点期权   |                  ETF期权                         |
+| 华鑫奇点       |                    A股                          |
 | 宽睿          |                A股、ETF期权                      |
 | 中亿汇达Comstar|                银行间市场                       |
 | 富途证券       |                 港股、美股                      |
 | 盈透证券       |                 海外全品种                      |
-| 老虎证券       |                 海外全品种                       |
+| 老虎证券       |                  外盘期货                       |
 | 易盛9.0外盘    |                  外盘期货                       |
-| 直达期货       |                  外盘期货                       |
+| 直达期货       |                  国内股票                       |
 | MetaTrader 5  |            外汇、CFD、股票、期货                 |
 | 币安           |                  数字货币                       |
 | 币安永续合约   |             数字货币永续和期货                   |
 | 火币          |                   数字货币                      |
 | 火币期货       |                数字货币期货                     |
 | 火币永续       |                数字货币永续                     |
-| 火币期权       |                数字货币期权                     |
-| OKEX V5        |          数字货币、期货、永续、期权             |
+| OKEX           |                  数字货币                      |
+| OKEX期货       |                数字货币期货                     |
+| OKEX永续       |                数字货币永续                     |
+| OKEX期权       |                数字货币期权                     |
 | BitMEX        |              数字货币期货、永续                  |
 | Bybit         |                 数字货币永续                     |
 | Gate.io合约    |                数字货币永续                      |
@@ -91,1358 +112,684 @@ main_engine.add_gateway(CtpGateway)
 | 1Token         |                   数字货币                      |
 | 融航           |                  期货资管                       |
 | 鑫管家         |                  期货资管                        |
-| Alpaca         |                    美股                         |
-| 飞鼠           |                  黄金TD                         |
-| 佳兆业投资     |                     港股                         |
-| 金仕达黄金     |                  黄金TD                         |
+| RPC服务        |                核心交易路由                      |
+
+
+
+&nbsp;
 
 
 ## 接口详解
 
 ### CTP
 
-#### 接口支持
+#### 如何加载
 
-- 操作系统
-  - Windows
-  - Ubuntu
+run.py文件提供了接口加载示例：先从gateway上调用ctpGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.ctp import CtpGateway
+main_engine.add_gateway(CtpGateway)
+```
 
-- 交易品种
-  - 期货
-  - 期货期权
-
-- 持仓方向
-  - 只支持双向持仓
-
-- 历史数据
-  - 不提供
+&nbsp;
 
 #### 相关字段
 
-- 用户名：
-- 密码：
-- 经纪商代码：
-- 交易服务器：
-- 行情服务器：
-- 产品名称：
-- 授权编码：
+- 用户名：username
+- 密码：password：
+- 经纪商编号：brokerid
+- 交易服务器地址：td_address
+- 行情服务器地址：md_address
+- 产品名称：product_info
+- 授权编码：auth_code
+  
+&nbsp;
+
 #### 获取账号
 
-- 仿真账号：从SimNow网站上获取。只需输入手机号码和短信验证即可。（短信验证有时只能在工作日正常工作时段收到）SimNow的用户名(InvestorID)为6位纯数字，经纪商编号为9999，并且提供2套环境用于盘中仿真交易以及盘后的测试。需要修改一次密码之后才能使用。请注意每套仿真环境的适用时间段是不同的。
+- 仿真账号：从SimNow网站上获取。只需输入手机号码和短信验证即可。（短信验证有时只能在工作日正常工作时段收到）SimNow的用户名为6位纯数字，经纪商编号为9999，并且提供2套环境用于盘中仿真交易以及盘后的测试。
   
 - 实盘账号：在期货公司开户，通过联系客户经理可以开通。用户名为纯数字，经纪商编号也是4位纯数字。（每个期货公司的经纪商编号都不同）另外，实盘账号也可以开通仿真交易功能，同样需要联系客户经理。
 
-### CTPTEST（CTP测试）
 
-#### 接口支持
+&nbsp;
 
-- 操作系统
-  - Windows
-  - Ubuntu
+### MINI
 
-- 交易品种
-  - 期货
-  - 期货期权
+#### 如何加载
 
-- 持仓方向
-  - 只支持双向持仓
+先从gateway上调用MiniGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.mini import MiniGateway
+main_engine.add_gateway(MiniGateway)
+```
 
-- 历史数据
-  - 不提供
+&nbsp;
 
 #### 相关字段
 
-- 用户名：
-- 密码：
-- 经纪商代码：
-- 交易服务器：
-- 行情服务器：
-- 产品名称：
-- 授权编码：
-
-#### 获取账号
-
-在期货公司开户，通过联系客户经理向期货公司申请进行穿透式接入测试。
-
-### MINI（CTP Mini）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-
-- 交易品种
-  - 期货
-  - 期货期权
-
-- 持仓方向
-  - 只支持双向持仓
-
-- 历史数据
-  - 不提供
-
-#### 相关字段
-
-- 用户名：
-- 密码：
-- 经纪商代码：
-- 交易服务器：
-- 行情服务器：
-- 产品名称：
-- 授权编码：
-- 产品信息：
+- 用户名：username
+- 密码：password：
+- 经纪商编号：brokerid
+- 交易服务器地址：td_address
+- 行情服务器地址：md_address
+- 产品名称：product_info
+- 授权编码：auth_code
+  
+&nbsp;
 
 #### 获取账号
 
 在期货公司开户，通过联系客户经理可以开通。用户名为纯数字，经纪商编号也是4位纯数字。（每个期货公司的经纪商编号都不同）另外，实盘账号也可以开通仿真交易功能，同样需要联系客户经理。
 
-### MINITEST（CTP Mini测试）
 
-#### 接口支持
+&nbsp;
 
-- 操作系统
-  - Windows
+### 飞马（FEMAS）
 
-- 交易品种
-  - 期货
-  - 期货期权
+#### 如何加载
 
-- 持仓方向
-  - 只支持双向持仓
+先从gateway上调用FemasGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.femas import FemasGateway
+main_engine.add_gateway(FemasGateway)
+```
 
-- 历史数据
-  - 不提供
+&nbsp;
 
 #### 相关字段
 
-- 用户名：
-- 密码：
-- 经纪商代码：
-- 交易服务器：
-- 行情服务器：
-- 产品名称：
-- 授权编码：
-- 产品信息：
-
-#### 获取账号
-
-在期货公司开户，通过联系客户经理向期货公司申请进行穿透式接入测试。
-
-### FEMAS（飞马）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-
-- 交易品种
-  - 期货
-
-- 持仓方向
-  - 只支持双向持仓
-
-- 历史数据
-  - 不提供
-#### 相关字段
-
-- 用户名：
-- 密码：
-- 经纪商代码：
-- 交易服务器：
-- 行情服务器：
-- 产品名称：
-- 授权编码：
-- 产品信息：
-#### 获取账号
-
-在期货公司开户，通过联系客户经理可以开通。用户名为纯数字，经纪商编号也是4位纯数字。（每个期货公司的经纪商编号都不同）另外，实盘账号也可以开通仿真交易功能，同样需要联系客户经理。
-
-### SOPT（CTP期权）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-
-- 交易品种
-  - ETF期权
-
-- 持仓方向
-  - 只支持双向持仓
-
-- 历史数据
-  - 不提供
-
-#### 相关字段
-
-- 用户名：
-- 密码：
-- 经纪商代码：
-- 交易服务器：
-- 行情服务器：
-- 产品名称：
-- 授权编码：
-- 产品信息：
+- 用户名：username
+- 密码：password：
+- 经纪商编号：brokerid
+- 交易服务器地址：td_address
+- 行情服务器地址：md_address
+- 产品名称：product_info
+- 授权编码：auth_code
+  
+&nbsp;
 
 #### 获取账号
 
 在期货公司开户，通过联系客户经理可以开通。用户名为纯数字，经纪商编号也是4位纯数字。（每个期货公司的经纪商编号都不同）另外，实盘账号也可以开通仿真交易功能，同样需要联系客户经理。
 
-### SOPTTEST（CTP期权测试）
 
-#### 接口支持
+&nbsp;
 
-- 操作系统
-  - Windows
 
-- 交易品种
-  - ETF期权
 
-- 持仓方向
-  - 只支持双向持仓
+### 中泰柜台(XTP)
 
-- 历史数据
-  - 不提供
+#### 如何加载
 
-#### 相关字段
+先从gateway上调用XtpGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.xtp import XtpGateway
+main_engine.add_gateway(XtpGateway)
+```
 
-- 用户名：
-- 密码：
-- 经纪商代码：
-- 交易服务器：
-- 行情服务器：
-- 产品名称：
-- 授权编码：
-- 产品信息：
+&nbsp;
 
-#### 获取账号
-
-在期货公司开户，通过联系客户经理向期货公司申请进行穿透式接入测试。
-
-### SEC（飞创期权）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-
-- 交易品种
-  - ETF期权
-
-- 持仓方向
-  - 股票只支持单向持仓
-  - 股票期权只支持双向持仓
-
-- 历史数据
-  - 不提供
-
-#### 相关字段
-
-- 用账号：
-- 密码：
-- 行情地址：
-- 交易地址：
-- 行情协议：TCP、UDP
-- 授权码：
-- 产品号：
-- 采集类型：顶点、恒生、金证、金仕达
-- 行情压缩：N、Y
-
-#### 获取账号
-
-在期货公司开户，通过联系客户经理可以开通。
-
-### UFT（恒生UFT）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-
-- 交易品种
-  - 期货
-  - ETF期权
-
-- 持仓方向
-  - 只支持双向持仓
-
-- 历史数据
-  - 不提供
-
-#### 相关字段
-
-- 用户名：
-- 密码：
-- 行情服务器：
-- 交易服务器：
-- 服务器类型：期货、ETF期权
-- 产品名称：
-- 授权编码：
-- 委托类型：
-
-#### 获取账号
-
-测试账号请通过恒生电子申请。
-
-### HSOPTION（恒生期权）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-
-- 交易品种
-  - ETF期权
-
-- 持仓方向
-  - 只支持双向持仓
-
-- 历史数据
-  - 不提供
-
-#### 相关字段
-
-- 交易用户名：
-- 交易密码：
-- 行情用户名：
-- 行情密码：
-- 行情经纪商代码：
-- 行情服务器：
-
-#### 获取账号
-
-请通过中信期权经纪业务总部获取。
-
-### XTP（中泰柜台）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-
-- 交易品种
-  - A股
-  - 两融
-  - ETF期权
-
-- 持仓方向
-  - 股票只支持单向持仓
-  - 其余标的支持双向持仓
-
-- 历史数据
-  - 不提供
 
 #### 相关字段
 
 - 账号：
 - 密码：
-- 客户号: 
+- 客户号": 1
 - 行情地址：
-- 行情端口: 
+- 行情端口": 0
 - 交易地址：
-- 交易端口: 
-- 行情协议: TCP、UDP
-- 日志级别：FATAL、ERROR、WARNING、info、DEBUG、TRACE
+- 交易端口": 0
+- 行情协议: ["TCP", "UDP"]
 - 授权码：
+
+&nbsp;
+
 
 #### 获取账号
 
-测试账号请通过中泰证券申请。
+测试账号请联系中泰证券申请。
 
 #### 其他特点
 
 XTP是首家提供融资融券的极速柜台。
 
-### GTJA（国泰君安）
+&nbsp;
 
-#### 接口支持
 
-- 操作系统
-  - Windows
+### 宽睿柜台(OES)
 
-- 交易品种
-  - A股
+#### 如何加载
 
-- 持仓方向
-  - 只支持单向持仓
+先从gateway上调用OesGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.oes import OesGateway
+main_engine.add_gateway(OesGateway)
+```
 
-- 历史数据
-  - 不提供
+&nbsp;
 
-#### 相关字段
-
-- 交易用户名：
-- 交易密码: 
-- 交易服务器: 
-- 交易端口：
-- 机构代号：
-- 营业部代号：
-- 网关：
-- 行情用户名：
-- 行情密码：
-- 行情服务器: 
-- 行情端口：
-
-#### 获取账号
-
-测试账号请通过国泰君安申请。
-
-### TORASTOCK（华鑫奇点股票）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-
-- 交易品种
-  - A股
-
-- 持仓方向
-  - 只支持单向持仓
-
-- 历史数据
-  - 不提供
 
 #### 相关字段
 
-- 账号：
-- 密码：
-- 行情服务器：
-- 交易服务器：
-- 账号类型：用户代码、 资金账号
-- 地址类型：前置地址、 FENS地址
+- 用户名：username
+- 密码：password
+- 硬盘序列号：hdd_serial
+- 交易委托服务器：td_ord_server
+- 交易回报服务器：td_rpt_server
+- 交易查询服务器：td_qry_server
+- 行情推送服务器：md_tcp_server
+- 行情查询服务器：md_qry_server
+
+&nbsp;
+
 
 #### 获取账号
 
-测试账号请通过华鑫证券申请。
+测试账号请联系宽睿科技申请
 
-### TORAOPTION（华鑫奇点期权）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-
-- 交易品种
-  - ETF期权
-
-- 持仓方向
-  - 只支持单向持仓
-
-- 历史数据
-  - 不提供
-
-#### 相关字段
-
-- 账号：
-- 密码：
-- 行情服务器：
-- 交易服务器：
-- 账号类型：用户代码、资金账号
-- 地址类型：前置地址、FENS地址
-
-#### 获取账号
-
-测试账号请通过华鑫证券申请。
-
-### OES（宽睿）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-
-- 交易品种
-  - A股
-  - ETF期权
-
-- 持仓方向
-  - 只支持双向持仓
-
-- 历史数据
-  - 不提供
-
-#### 相关字段
-
-- td_ord_server
-- td_rpt_server
-- td_qry_server
-- md_tcp_server
-- md_qry_server
-- username
-- password
-- hdd_serial
-- customize_ip
-- customize_mac
-
-#### 获取账号
-
-测试账号请通过宽睿科技申请
+&nbsp;
 
 #### 其他特点
 
 宽睿柜台提供内网UDP低延时组播行情以及实时成交信息推送。
 
-### COMSTAR（中亿汇达）
+&nbsp;
 
-#### 接口支持
 
-- 操作系统
-  - Windows
+### 华鑫奇点(TORA)
 
-- 交易品种
-  - 银行间市场
+#### 如何加载
 
-- 持仓方向
-  - 无
+先从gateway上调用ToraGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.tota import ToraGateway
+main_engine.add_gateway(ToraGateway)
+```
 
-- 历史数据
-  - 不提供
-
-#### 相关字段
-
-- 交易服务器
-- 用户名
-- 密码
-- Key
-
-#### 获取账号
-
-只有各类大型金融机构才能用（券商自营交易部、银行金融市场部等），私募或者个人都用不了。需要购买了ComStar的交易接口服务才能使用。
-
-### FUTU（富途证券）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
-
-- 交易品种
-  - 港股
-  - 美股
-
-- 持仓方向
-  - 只支持单向持仓
-
-- 历史数据
-  - 不提供
+&nbsp;
 
 #### 相关字段
 
-- 密码：
-- 地址：127.0.0.1
-- 端口：11111
-- 市场：HK、US
-- 环境：REAL、SIMULATE
+- 账号: username
+- 密码: password
+- 交易服务器: td_address
+- 行情服务器: md_address
+
+&nbsp;
 
 #### 获取账号
 
-在富途证券开户并且入金后可以获得API接入权限。拥有实盘账号后才可以申请开通仿真交易账号。
+测试账号请联系华鑫证券申请
 
-### IB（盈透证券）
 
-#### 接口支持
+&nbsp;
 
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
+### 盈透证券(IB)
 
-- 交易品种
-  - 海外全品种
+#### 如何加载
 
-- 持仓方向
-  - 只支持单向持仓
+先从gateway上调用IbGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.ib import IbGateway
+main_engine.add_gateway(IbGateway)
+```
 
-- 历史数据
-  - 提供
+&nbsp;
+
 
 #### 相关字段
 
 - TWS地址：127.0.0.1
 - TWS端口：7497
 - 客户号：1
-- 交易账户：
+
+
+&nbsp;
+
 
 #### 获取账号
 
 在盈透证券开户并且入金后可以获得API接入权限。拥有实盘账号后才可以申请开通仿真交易账号。
 
+&nbsp;
+
 #### 其他特点
 
 可交易品种几乎覆盖全球的股票、期权、期权；手续费相对较低。
 
-请注意，IB接口的合约代码较为特殊，请前往官网的产品查询板块查询。VN Trader中使用的是盈透证券对于每个合约在某一交易所的唯一标识符ConId来作为合约代码，而非Symbol或者LocalName。
+注意IB接口的合约代码较为特殊，请前往官网的产品查询板块查询，VN Trader中使用的是盈透证券对于每个合约在某一交易所的唯一标识符ConId来作为合约代码，而非Symbol或者LocalName。
 
-### TIGER（老虎证券）
+&nbsp;
 
-#### 接口支持
 
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
+### 易盛外盘(TAP)
 
-- 交易品种
-  - 海外全品种
+#### 如何加载
 
-- 持仓方向
-  - 只支持单向持仓
+先从gateway上调用TapGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.tap import TapGateway
+main_engine.add_gateway(TapGateway)
+```
 
-- 历史数据
-  - 不提供
+&nbsp;
+
 
 #### 相关字段
 
-- tiger_id：
-- account：
-- 服务器：标准、环球、仿真
-- private_key：
+- 授权码：auth code
+- 行情账号：quote username
+- 行情密码：quote password
+- 行情地址：123.15.58.21
+- 行情端口：7171
 
-#### 获取账号
 
-在老虎证券开户并且入金后可以获得API接入权限。拥有实盘账号后才可以申请开通仿真交易账号。
 
-### TAP（易盛9.0外盘）
+&nbsp;
 
-#### 接口支持
-
-- 操作系统
-  - Windows
-
-- 交易品种
-  - 外盘期货
-
-- 持仓方向
-  - 只支持单向持仓
-
-- 历史数据
-  - 不提供
-
-#### 相关字段
-
-- 行情账号：
-- 行情密码：
-- 行情服务器：
-- 行情端口：0
-- 交易账号：
-- 交易密码：
-- 交易服务器：
-- 交易端口：
-- 授权码：
 
 #### 获取账号
 
 在TAP开户并且入金后可以获得API接入权限。
 
-### DA（直达期货）
+&nbsp;
 
-#### 接口支持
 
-- 操作系统
-  - Windows
+### 富途证券(FUTU)
 
-- 交易品种
-  - 外盘期货
+#### 如何加载
 
-- 持仓方向
-  - 只支持双向持仓
+先从gateway上调用FutuGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.futu import FutuGateway
+main_engine.add_gateway(FutuGateway)
+```
 
-- 历史数据
-  - 不提供
+&nbsp;
+
 
 #### 相关字段
 
-- 用户名：
+- 地址：127.0.0.1
 - 密码：
-- 交易服务器：
-- 行情服务器：
-- 授权码：
+- 端口：11111
+- 市场：HK 或 US
+- 环境：TrdEnv.REAL 或 TrdEnv.SIMULATE
+
+
+&nbsp;
+
 
 #### 获取账号
 
-在直达期货开户并且入金后可以获得API接入权限。
+在富途证券开户并且入金后可以获得API接入权限。拥有实盘账号后才可以申请开通仿真交易账号。
 
-### MT5（MetaTrader 5）
 
-#### 接口支持
 
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
 
-- 交易品种
-  - 外汇
-  - CFD
-  - 股票
-  - 期货
 
-- 持仓方向
-  - 只支持单向持仓
 
-- 历史数据
-  - 提供
+&nbsp;
+
+### 老虎证券(TIGER)
+
+
+#### 如何加载
+
+先从gateway上调用TigerGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.tiger import TigerGateway
+main_engine.add_gateway(TigerGateway)
+```
+
+&nbsp;
+
 
 #### 相关字段
 
-- 通讯地址：
-- 请求端口：
-- 订阅端口：
+- 用户ID：tiger_id
+- 环球账户：account
+- 标准账户：standard_account
+- 秘钥：private_key
+
+
+
+&nbsp;
+
 
 #### 获取账号
 
-测试账号请通过MT5申请。
+在老虎证券开户并且入金后可以获得API接入权限。拥有实盘账号后才可以申请开通仿真交易账号。
 
-### BINANCE（币安）
 
-#### 接口支持
+&nbsp;
 
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
 
-- 交易品种
-  - 数字货币
+### ALPACA
 
-- 持仓方向
-  - 无
+#### 如何加载
+先从gateway上调用AlpacaGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.alpaca import AlpacaGateway
+main_engine.add_gateway(AlpacaGateway)
+```
 
-- 历史数据
-  - 提供
+&nbsp;
 
 #### 相关字段
-
-- key：
-- secret：
-- session_number：3
-- proxy_host：
-- proxy_port：
-
+- KEY ID: key
+- Secret Key: secret
+- 会话数: 10
+- 服务器:["REAL", "PAPER"]
 #### 获取账号
+在OKEX官网开户并且入金后可以获得API接入权限。
+#### 其他特点
 
-在BINANCE官网开户并且入金后可以获得API接入权限。测试账号请通过BINANCE官网申请。
+&nbsp;
 
-### BINANCES（币安永续合约）
 
-#### 接口支持
+### BITMEX
 
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
+#### 如何加载
 
-- 交易品种
-  - 数字货币永续
-  - 期货
+先从gateway上调用BitmexGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.bitmex import BitmexGateway
+main_engine.add_gateway(BitmexGateway)
+```
 
-- 持仓方向
-  - 只支持单向持仓
+&nbsp;
 
-- 历史数据
-  - 提供
 
 #### 相关字段
 
-- key：
-- secret：
-- session_number：3
-- proxy_host：
-- proxy_port：
-
-#### 获取账号
-
-在BINANCE官网开户并且入金后可以获得API接入权限。测试账号请通过BINANCE官网申请。
-
-### HUOBI（火币）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
-
-- 交易品种
-  - 数字货币
-
-- 持仓方向
-  - 无
-
-- 历史数据
-  - 提供
-
-#### 相关字段
-
-- API Key：
-- Secret Key：
+- 用户ID：ID
+- 密码：Secret
 - 会话数：3
+- 服务器：REAL 或 TESTNET
 - 代理地址：
 - 代理端口：
 
-#### 获取账号
 
-在火币官网开户并且入金后可以获得API接入权限。
 
-### HUOBIF（火币期货）
+&nbsp;
 
-#### 接口支持
-
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
-
-- 交易品种
-  - 数字货币期货
-
-- 持仓方向
-  - 只支持双向持仓
-
-- 历史数据
-  - 提供
-
-#### 相关字段
-
-- API Key：
-- Secret Key：
-- 会话数：3
-- 代理地址：
-- 代理端口：
 
 #### 获取账号
 
-在火币官网开户并且入金后可以获得API接入权限。
+在BITMEX官网开户并且入金后可以获得API接入权限。
 
-### HUOBIS（火币永续）
 
-#### 接口支持
 
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
+&nbsp;
 
-- 交易品种
-  - 数字货币永续
+### OKEX现货（OKEX）
 
-- 持仓方向
-  - 只支持双向持仓
 
-- 历史数据
-  - 提供
+#### 如何加载
 
-#### 相关字段
+先从gateway上调用OkexGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.okex import OkexGateway
+main_engine.add_gateway(OkexGateway)
+```
 
-- API Key：
-- Secret Key：
-- 会话数：3
-- 合约模式：反向、正向
-- 代理地址：
-- 代理端口：
+&nbsp;
 
-#### 获取账号
-
-在火币官网开户并且入金后可以获得API接入权限。
-
-### HUOBIO（期权）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
-
-- 交易品种
-  - 数字货币期权
-
-- 持仓方向
-  - 只支持双向持仓
-
-- 历史数据
-  - 提供
 
 #### 相关字段
 
-- API Key：
-- Secret Key：
+- API秘钥：API Key
+- 密码秘钥：Secret Key
 - 会话数：3
+- 密码：passphrase
 - 代理地址：
 - 代理端口：
 
-#### 获取账号
 
-在火币官网开户并且入金后可以获得API接入权限。
 
-### OKEX（OKEX V5）
+&nbsp;
 
-#### 接口支持
-
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
-
-- 交易品种
-  - 数字货币
-  - 期货
-  - 永续
-  - 期权
-
-- 持仓方向
-  - 只支持单向持仓
-
-- 历史数据
-  - 提供
-
-#### 相关字段
-
-- API Key：
-- Secret Key：
-- Passphrase：
-- 会话数：3
-- 代理地址：
-- 代理端口：
-- 服务器": REAL、TEST
 
 #### 获取账号
 
 在OKEX官网开户并且入金后可以获得API接入权限。
 
-### BITMEX
 
-#### 接口支持
 
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
+&nbsp;
 
-- 交易品种
-  - 数字货币期货
-  - 永续
 
-- 持仓方向
-  - 只支持单向持仓
+### OKEX期货（OKEXF）
 
-- 历史数据
-  - 提供
+
+#### 如何加载
+
+先从gateway上调用OkexfGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.okexf import OkexfGateway
+main_engine.add_gateway(OkexfGateway)
+```
+
+&nbsp;
+
 
 #### 相关字段
 
-- ID：
-- Secret：
+- API秘钥：API Key
+- 密码秘钥：Secret Key
 - 会话数：3
-- 服务器：REAL、TESTNET
+- 密码：passphrase
+- 杠杆：Leverage
 - 代理地址：
 - 代理端口：
 
-#### 获取账号
 
-在BITMEX官网开户并且入金后可以获得API接入权限。测试账号请通过BITMEX官网申请。
 
-### BYBIT（Bybit）
+&nbsp;
 
-#### 接口支持
-
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
-
-- 交易品种
-  - 数字货币永续
-
-- 持仓方向
-  - 只支持单向持仓
-
-- 历史数据
-  - 提供
-
-#### 相关字段
-
-- ID：
-- Secret：
-- 服务器：REAL、TESTNET
-- 代理地址：
-- 代理端口：
 
 #### 获取账号
 
-在Bybit官网开户并且入金后可以获得API接入权限。测试账号请通过Bybit官网申请。
+在OKEX官网开户并且入金后可以获得API接入权限。
 
-### GATEIO（Gate.io合约）
 
-#### 接口支持
+&nbsp;
 
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
+### 火币(HUOBI)
 
-- 交易品种
-  - 数字货币永续
+#### 如何加载
 
-- 持仓方向
-  - 只支持单向持仓
+先从gateway上调用HuobiGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.huobi import HuobiGateway
+main_engine.add_gateway(HuobiGateway)
+```
 
-- 历史数据
-  - 提供
+&nbsp;
+
 
 #### 相关字段
 
-- API Key：
-- Secret Key：
-- 服务器：REAL、TESTNET
-- 代理地址：
-- 代理端口：
-
-#### 获取账号
-
-在Gateio官网开户并且入金后可以获得API接入权限。测试账号请通过Gate.io官网申请。
-
-### DERIBT（Deribit）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
-
-- 交易品种
-  - 数字货币永续
-  - 期权
-
-- 持仓方向
-  - 只支持单向持仓
-
-- 历史数据
-  - 不提供
-
-#### 相关字段
-
-- key：
-- secret：
-- 代理地址：
-- 代理端口：
-- 服务器：REAL、TEST
-
-#### 获取账号
-
-在Deribit官网开户并且入金后可以获得API接入权限。测试账号请通过Deribit官网申请。
-
-### BITFINEX（Bitfinex）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
-
-- 交易品种
-  - 数字货币
-
-- 持仓方向
-  - 无
-
-- 历史数据
-  - 提供
-
-#### 相关字段
-
-- key：
-- secret：
-- session：3
-- proxy_host：127.0.0.1
-- proxy_port：1080
-- margin：False、True
-
-#### 获取账号
-
-在Bitfinex官网开户并且入金后可以获得API接入权限。测试账号请通过Bitfinex官网申请。
-
-### COINBASE（Coinbase）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
-
-- 交易品种
-  - 数字货币
-
-- 持仓方向
-  - 无
-
-- 历史数据
-  - 提供
-
-#### 相关字段
-
-- ID：
-- Secret：
-- passphrase：
+- API秘钥：API Key
+- 密码秘钥：Secret Key
 - 会话数：3
-- server：REAL、SANDBOX
-- proxy_host：
-- proxy_port：
+- 代理地址：
+- 代理端口：
+
+
+
+&nbsp;
+
 
 #### 获取账号
 
-在Coinbase官网开户并且入金后可以获得API接入权限。
+在火币官网开户并且入金后可以获得API接入权限。
 
-### BITSTAMP（Bitstamp）
 
-#### 接口支持
+&nbsp;
 
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
 
-- 交易品种
-  - 数字货币
 
-- 持仓方向
-  - 无
+### 火币合约(HUOBIF)
 
-- 历史数据
-  - 提供
+#### 如何加载
 
-#### 相关字段
+先从gateway上调用HuobifGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.huobif import HuobifGateway
+main_engine.add_gateway(HuobifGateway)
+```
 
-- key：
-- secret：
-- username：
-- proxy_host：127.0.0.1
-- proxy_port：1080
+&nbsp;
 
-#### 获取账号
-
-在Bitstamp官网开户并且入金后可以获得API接入权限。
-
-### ONETOKEN（1 Token）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
-
-- 交易品种
-  - 数字货币
-
-- 持仓方向
-  - 只支持双向持仓
-
-- 历史数据
-  - 不提供
 
 #### 相关字段
 
-- OT Key：
-- OT Secret：
+- API秘钥：API Key
+- 密码秘钥：Secret Key
 - 会话数：3
-- 交易所：BINANCE、BITMEX、OKEX、OKEF、HUOBIP、HUOBIF
-- 账户：
-- 会话数：
-- 代理地址：127.0.0.1
-- 代理端口：1080
+- 代理地址：
+- 代理端口：
+
+
+
+&nbsp;
+
+
+#### 获取账号
+
+在火币官网开户并且入金后可以获得API接入权限。
+
+
+&nbsp;
+
+### BITFINEX
+
+#### 如何加载
+
+先从gateway上调用BitFinexGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.bitfinex import BitfinexGateway
+main_engine.add_gateway(BitfinexGateway)
+```
+
+&nbsp;
+
+
+#### 相关字段
+
+- 用户ID：ID
+- 密码：Secret
+- 会话数：3
+- 代理地址：
+- 代理端口：
+
+
+
+&nbsp;
+
+
+#### 获取账号
+
+在BITFINEX官网开户并且入金后可以获得API接入权限。
+
+
+
+&nbsp;
+
+
+### ONETOKEN
+
+#### 如何加载
+
+先从gateway上调用OnetokenGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.onetoken import OnetokenGateway
+main_engine.add_gateway(OnetokenGateway)
+```
+
+&nbsp;
+
+
+#### 相关字段
+
+- Key秘钥：OT Key
+- 密码秘钥：OT Secret
+- 会话数：3
+- 交易所：["BINANCE", "BITMEX", "OKEX", "OKEF", "HUOBIP", "HUOBIF"]
+- 账号：
+- 代理地址：
+- 代理端口：
+
+
+
+&nbsp;
+
 
 #### 获取账号
 
 在Onetoken官网开户并且入金后可以获得API接入权限。
 
-### ROHON（融航）
 
-#### 接口支持
 
-- 操作系统
-  - Windows
-  - Ubuntu
+&nbsp;
 
-- 交易品种
-  - 期货资管
+&nbsp;
 
-- 持仓方向
-  - 只支持双向持仓
+### BINANCE
 
-- 历史数据
-  - 不提供
+#### 如何加载
 
-#### 相关字段
+先从gateway上调用BinanceGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.binance import BinanceGateway
+main_engine.add_gateway(BinanceGateway)
+```
 
-- 用户名：
-- 密码：
-- 经纪商代码：
-- 交易服务器：
-- 行情服务器：
-- 产品名称：
-- 授权编码：
-- 产品信息：
+&nbsp;
 
-#### 获取账号
-
-测试账号请通过融航申请。
-
-请注意，融航接口的【经纪商代码】不再是纯数字形态，而是可以包含英文和数字的字符串；vn.py连接融航进行交易在穿透式认证中属于【中继】模式，而不再是连接柜台（CTP、恒生等）进行交易时的【直连】模式，所以在申请穿透式认证测试填表时不要选错。
-
-### XGJ（鑫管家）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-
-- 交易品种
-  - 期货资管
-
-- 持仓方向
-  - 只支持双向持仓
-
-- 历史数据
-  - 不提供
 
 #### 相关字段
 
-- 行情用户名：
-- 行情密码：
-- 行情服务器：
-- 交易用户名：
-- 交易密码：
-- 交易服务器：
-- 经纪商代码：
-- 产品名称：
-- 授权编码：
-- 产品信息：
+- Key秘钥
+- secret
+- session_number(会话数)：3
+- proxy_host
+- proxy_port
+
+&nbsp;
+
 
 #### 获取账号
 
-请通过鑫管家获取。
+在BINANCE官网开户并且入金后可以获得API接入权限。
 
-### ALPACA
+&nbsp;
 
-#### 接口支持
 
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
+### RPC
 
-- 交易品种
-  - 美股
+#### 如何加载
 
-- 持仓方向
-  - 只支持双向持仓
-
-- 历史数据
-  - 不提供
+RPC的加载涉及到服务端和客户端
+- 服务端：运行vntrader时加载rpc_service模块
+    ```
+    from vnpy.app.rpc_service import RpcService
+    ```
+    启动vntrader后，首先连接外部交易交易如CTP，然后点击菜单栏"功能"->"RPC服务"，点击"启动"
+- 客户端：运行vntrader时加载RpcGateway
+    ```
+    from vnpy.gateway.rpc import RpcGateway
+    ```
+    启动vntrader后，连接rpc接口即可。
 
 #### 相关字段
-
-- KEY ID：
-- Secret Key：
-- 会话数：10
-- 服务器：REAL、PAPER
+在服务端和客户端，使用默认填好的参数即可
 
 #### 获取账号
+使用rpc无须额外申请账号，只需要一个外部接口账号
 
-在Alpaca官网开户并且入金后可以获得API接入权限。
-
-### SGIT（飞鼠）
-
-#### 接口支持
-
-- 操作系统
-  - Windows（只支持32位，64位需自行编译）
-  - Ubuntu
-
-- 交易品种
-  - 黄金TD
-
-- 持仓方向
-  - 只支持双向持仓
-
-- 历史数据
-  - 不提供
-
-#### 相关字段
-
-- 用户名：
-- 密码：
-- 交易服务器：
-- 行情服务器：
-- 产品名称：
-- 授权编码：
-
-#### 获取账号
-
-请通过黄金现货经纪商获取。
-
-### KAISA（佳兆业投资）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
-
-- 交易品种
-  - 港股
-
-- 持仓方向
-  - 只支持单向持仓
-
-- 历史数据
-  - 不提供
-
-#### 相关字段
-
-- auth_id：
-- auth_password：
-- user_id：
-- password：
-- 会话数：3
-
-#### 获取账号
-
-请通过佳兆业投资获取。
-
-### KSGOLD（金仕达黄金）
-
-#### 接口支持
-
-- 操作系统
-  - Windows（只支持32位，64位需自行编译）
-  - Ubuntu
-
-- 交易品种
-  - 黄金TD
-
-- 持仓方向
-  - 只支持双向持仓
-
-- 历史数据
-  - 不提供
-
-#### 相关字段
-
-- 用户名：
-- 密码：
-- 交易服务器：
-- 行情服务器：
-- 账号类型：银行账号、黄金账号
-
-#### 获取账号
-
-请通过黄金现货经纪商获取。
+#### 其他特点
+rpc服务支持同一外部接口数据在本地多进程分发，比如在服务端连接了ctp接口，订阅了rb1910后，客户端多个进程会自动订阅来自服务端分发的订阅数据# 交易接口

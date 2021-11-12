@@ -1,71 +1,39 @@
-# RiskManager - 事前风控模块
+# 事前风控模块
 
-## 功能简介
+交易风控模块属于事前风控，即在委托在通过交易API接口发出去前，需要检查其状态不能超过风控限制，其中包括：
+- 委托数量必须大于0
+- 单笔委托的数量上限
+- 当日总成交数量上限
+- 委托流数量上限
+- 当前活动委托次数上限
+- 当日撤单次数上限
 
-RiskManager模块是用于**事前风险检测与交易控制**的功能模块，用户可以通过图形界面操作来便捷完成启动风控，参数修改和停止风控等任务。
+&nbsp;
 
 ## 加载启动
 
-### VN Station加载
+进入VN Trader后，首先登陆接口，如连接CTP；然后在菜单栏中点击“功能”->"交易风控“后，会弹出交易风控窗口，如图。
+![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/risk_manager/risk_manager.png)
 
-启动登录VN Station后，点击【VN Trader Pro】按钮，在配置对话框中的【上层应用】栏勾选【RiskManager】。
+窗口中显示的参数，对应的是C:\Users\Administrator\.vntrader里面risk_manager_setting.json的参数字典，如图。
+![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/risk_manager/data_setting.png)
 
-### 脚本加载
+在“风控运行状态”的选择框中点击“启动”后
+- 立刻调用RiskManagerEngine类的update_setting()函数读取risk_manager_setting.json的参数字典并且绑定类的属性。
+- 在日志中输出"交易风控功能启动"。
+- 运行check_risk()函数，去检查每一笔发出去的委托是否符合各种风控要求，若全部满足后，流控计数+1，委托真正通过API接口发送出去。
 
-在启动脚本中添加如下代码：
+&nbsp;
 
-```
-# 写在顶部
-from vnpy_riskmanager import RiskManagerApp
+## 修改参数
 
-# 写在创建main_engine对象后
-main_engine.add_app(RiskManagerApp)
-```
+交易风控组件允许用户修改风控参数。由于GUI界面的各参数栏是基于PyQt5的QSpinBox，用户可以用鼠标点击上下箭头来修改，也可以直接键盘输入来修改。
 
-## 启动模块
+最后点击窗口下方的“保存”按钮，对调用RiskManagerEngine类的save_setting()函数去更新到risk_manager_setting.json的参数字典中，最后通过update_setting()函数把参数字典绑定到类的属性。
 
-在菜单栏中点击【功能】-> 【交易风控】，或者点击左侧按钮栏的图标：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/risk_manager/1-1.png)
-
-即可进入事前风控模块的UI界面，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/risk_manager/1-2.png)
-
-
-## 启动风控
-
-事前风控模块负责在委托通过交易API接口发出前，检查其状态是否符合各种风控规则。风控规则包括交易流控、下单数量、活动委托、撤单总数等，具体如下：
-
- - 委托流控相关：
-   - 委托流控上限：给定时间窗口内最多允许发出的委托笔数
-   - 委托流控清空：每隔多少秒清零上述统计的委托笔数
- - 单笔委托上限：每一笔委托允许的最大下单量
- - 总成交上限：今天日内允许的最大总成交笔数（注意不是委托笔数）
- - 活动委托上限：允许的处于活动状态（提交中、未成交、部分成交）最大委托数量
- - 合约撤单上限：今天日内允许的单合约撤单次数上限（每个合约独立统计）
-
-推荐每天在运行自动交易前启动事前风控，以检查每一笔发出的委托是否符合风控要求：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/risk_manager/1-3.png)
-
-1. 在【风控运行状态】一栏的下拉框中选择【启动】；
-2. 设定各种风控规则的参数后，点击下方的【保存】按钮，即可开始运行风控；
-3. 此时系统内的每一笔委托，都需要满足全部风控要求（不超过限制）后，才能通过底层接口发出。
-
-
-## 参数修改
-
-事前风控模块允许用户自定义风控参数：
-
-* 用户可以点击输入框右侧的上下箭头来修改参数，也可以直接输入数字来修改，如下图所示。
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/risk_manager/1-4.png)
-* 修改后请点击【保存】按钮生效。
+&nbsp;
 
 ## 停止风控
 
-不需要运行风控时，用户可以停止风控：
+在“风控运行状态”的选择框中点击“停止后”后，RiskManagerEngine类的active变成False，check_risk()函数不再检查委托的风控流控状态，同时在日志中输出"交易风控功能停止"。
 
-* 在【风控运行状态】的下拉框中选择【停止】，如下图所示：
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/risk_manager/1-5.png)
-* 点击下方的【保存】按钮即可停止对委托的风控检查。

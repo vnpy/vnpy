@@ -63,10 +63,10 @@ class EventEngine:
 
     def _process(self, event: Event) -> None:
         """
-        First distribute event to those handlers registered listening
+        First ditribute event to those handlers registered listening
         to this type.
 
-        Then distribute event to those general handlers which listens
+        Then distrubute event to those general handlers which listens
         to all types.
         """
         if event.type in self._handlers:

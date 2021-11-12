@@ -26,103 +26,53 @@
 
 ## 支持的接口
 
-**vnpy.gateway**，覆盖国内外所有交易品种的交易接口：
+**vnpy.gateway**，盖国内外所有交易品种的交易接口：
 
 * 国内市场
 
-  * CTP（ctp）：期货、期货期权
+  * CTP(ctp)：国内期货、期权
 
-  * CTP测试（ctptest）：期货、期货期权
+  * CTP Mini(mini)：国内期货、期权
 
-  * CTP Mini（mini）：期货、期货期权
+  * 飞马(femas)：国内期货
 
-  * CTP Mini测试（minitest）：期货、期货期权
+  * 宽睿(oes)：国内证券（A股）
 
-  * 飞马（femas）：期货
-    
-  * CTP期权（sopt）：ETF期权
+  * 中泰XTP(xtp)：国内证券（A股）
 
-  * CTP期权测试（sopttest）：ETF期权
-
-  * 飞创期权（sec）：ETF期权
-
-  * 恒生UFT（uft）：期货、ETF期权
-
-  * 恒生期权（hsoption）：ETF期权
-
-  * 中泰XTP（xtp）：A股、两融、ETF期权
-
-  * 国泰君安（gtja）：A股
-
-  * 华鑫奇点股票（torastock）：A股
-
-  * 华鑫奇点期权（toraoption）：ETF期权
-
-  * 宽睿（oes）：A股、ETF期权
-    
-  * 中亿汇达Comstar（comstar）：银行间市场
-
-  * 融航（rohon）：期货资管
-
-  * 鑫管家（xgj）：期货资管
-
-  * 飞鼠（sgit）：黄金TD
-
-  * 金仕达黄金（ksgold）：黄金TD
+  * 华鑫奇点(tora)：国内证券（A股）
 
 * 海外市场
-  
-  * 富途证券（futu）：港股、美股
+    
+  * 富途证券(futu)：港股、美股
 
-  * 盈透证券（ib）：海外全品种
+  * 老虎证券(tiger)：全球证券、期货、期权、外汇等
 
-  * 老虎证券（tiger）：海外全品种
+  * Interactive Brokers(ib)：全球证券、期货、期权、外汇等
 
-  * 易盛9.0外盘（tap）：外盘期货
-
-  * 直达期货（da）：外盘期货
-
-  * MetaTrader 5（mt5）：外汇、CFD、股票、期货
-
-  * Alpaca（alpaca）：美股
-
-  * 佳兆业投资（kaisa）：港股
+  * 易盛9.0外盘(tap)：全球期货
 
 * 数字货币
 
-  * 币安（binance）：数字货币
+  * BitMEX(bitmex)：数字货币期货、期权、永续合约
 
-  * 币安永续合约（binances）：数字货币永续和期货
+  * OKEX合约(okexf)：数字货币期货
 
-  * 火币（huobi）：数字货币
+  * 火币合约(huobif)：数字货币期货
 
-  * 火币期货（huobif）：数字货币期货
+  * 币安(binance)：数字货币现货
 
-  * 火币永续（huobis）：数字货币永续
+  * OKEX(okex)：数字货币现货
 
-  * 火币期权（huobio）：数字货币期权
+  * 火币(huobi)：数字货币现货
 
-  * OKEX V5（okex）：数字货币、期货、永续、期权
+  * Bitfinex(bitfinex)：数字货币现货
 
-  * BitMEX（bitmex）：数字货币期货、永续
-
-  * Bybit（bybit）：数字货币永续
-
-  * Gate.io合约（gateios）：数字货币永续
-
-  * Deribit（deribit）：数字货币永续、期权
-
-  * Bitfinex（bitfinex）：数字货币
-
-  * Coinbase（coinbase）：数字货币
-
-  * Bitstamp（bitstamp）：数字货币
-
-  * 1Token（onetoken）：数字货币
+  * 1Token(onetoken)：数字货币券商（现货、期货）
 
 * 特殊应用
 
-  * RPC服务（rpc）：跨进程通讯接口，用于分布式架构
+  * RPC服务(rpc)：跨进程通讯接口，用于分布式架构
 
 
 ## 支持的应用
@@ -133,39 +83,26 @@
 
 * cta_backtester：CTA策略回测模块，无需使用Jupyter Notebook，直接使用图形界面直接进行策略回测分析、参数优化等相关工作
 
-* spread_trading：多合约价差套利模块，除了允许用户通过手动的方式来启动算法买卖价差外，也同样支持用户使用策略模板SpreadStrategyTemplate来开发各种价差类的量化交易策略
-
 * algo_trading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等等，支持常用算法配置保存
-
-* option_master：期权波动率交易模块，提供波动率曲线图表，允许用户作出相应的判断分析，进而使用波动率管理组件设置定价参考波动率，然后就可以通过期权电子眼算法自动扫描市场上的最优交易机会并瞬时完成交易
-
-* portfolio_strategy：多合约组合策略模块，专门针对需要同时交易多合约的量化策略设计，满足其历史数据回测和实盘自动交易的需求
 
 * script_trader：脚本策略模块，针对多标的组合类交易策略设计，同时也可以直接在命令行中实现REPL指令形式的交易，不支持回测功能
 
-* chart_wizard：实时K线图表模块，可以实现简单的实时K线行情显示，直接在本地合约代码的编辑框中输入vt_symbol，点击【新建图表】的按钮就会打开对应合约的图表
-
 * rpc_service：RPC服务模块，允许将某一VN Trader进程启动为服务端，作为统一的行情和交易路由通道，允许多客户端同时连接，实现多进程分布式系统
 
-* excel_rtd：EXCEL RTD模块，RTD全称是RealTimeData，是微软主要为金融行业的实时数据需求设计的Excel数据对接方案。该模块用于实现在Excel中访问vn.py程序内任意数据信息的功能
-
-* data_manager：历史数据管理模块，是VN Trader内部针对历史数据的全功能管理工具，可以支持数据导入、数据查看以及数据导出等功能，支持自定义数据表头格式
+* csv_loader：CSV历史数据加载器，用于加载CSV格式文件中的历史数据到平台数据库中，用于策略的回测研究以及实盘初始化等功能，支持自定义数据表头格式
 
 * data_recorder：行情记录模块，基于图形界面进行配置，根据需求实时录制Tick或者K线行情到数据库中，用于策略回测或者实盘初始化
 
 * risk_manager：风险管理模块，提供包括交易流控、下单数量、活动委托、撤单总数等规则的统计和限制，有效实现前端风控功能
 
-* portfolio_manager：投资组合管理模块，该模块主要面向各种采用基本面策略的投资者，针对每个投资策略，创建一个独立的投资组合策略对象
-
-* paper_account：模拟交易账户模块，是为了解决目前各类需要依赖服务端功能的仿真交易账户的问题，直接在交易客户端内部提供一套本地化的模拟交易环境，同时基于实盘行情的盘口数据进行委托撮合
 
 
 ## 通用类组件
 
+**vnpy.api**，Python交易API接口封装，提供上述交易接口的底层对接实现。
+
 **vnpy.event**，简洁易用的事件驱动引擎，作为事件驱动型交易程序的核心。
 
+**vnpy.rpc**，跨进程通讯标准组件，用于实现分布式部署的复杂交易系统。
+
 **vnpy.chart**，Python高性能K线图表，支持大数据量图表显示以及实时数据更新功能。
-
-**vnpy.trader.database**，集成了几大数据库管理端模块，以支持数据库读写性能和未来的新数据库扩展。
-
-**vnpy.trader.datafeed**， 提供标准化接口BaseDataFeed，带来了更加灵活的数据服务支持。

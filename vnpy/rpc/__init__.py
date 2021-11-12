@@ -48,7 +48,7 @@ class RpcServer:
         """
         Constructor
         """
-        # Save functions dict: key is function name, value is function object
+        # Save functions dict: key is fuction name, value is fuction object
         self.__functions: Dict[str, Any] = {}
 
         # Zmq port related
@@ -179,9 +179,6 @@ class RpcServer:
         # Unbind socket address
         self.__socket_pub.unbind(self.__socket_pub.LAST_ENDPOINT)
         self.__socket_rep.unbind(self.__socket_rep.LAST_ENDPOINT)
-
-        if self.__authenticator:
-            self.__authenticator.stop()
 
     def publish(self, topic: str, data: Any) -> None:
         """
@@ -358,9 +355,6 @@ class RpcClient:
         # Close socket
         self.__socket_req.close()
         self.__socket_sub.close()
-
-        if self.__authenticator:
-            self.__authenticator.stop()
 
     def callback(self, topic: str, data: Any) -> None:
         """

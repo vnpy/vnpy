@@ -77,7 +77,8 @@ class ChartItem(pg.GraphicsObject):
 
         bars = self._manager.get_all_bars()
         for ix, bar in enumerate(bars):
-            self._bar_picutures[ix] = None
+            bar_picture = self._draw_bar_picture(ix, bar)
+            self._bar_picutures[ix] = bar_picture
 
         self.update()
 
@@ -87,7 +88,8 @@ class ChartItem(pg.GraphicsObject):
         """
         ix = self._manager.get_index(bar.datetime)
 
-        self._bar_picutures[ix] = None
+        bar_picture = self._draw_bar_picture(ix, bar)
+        self._bar_picutures[ix] = bar_picture
 
         self.update()
 
@@ -129,14 +131,8 @@ class ChartItem(pg.GraphicsObject):
         self._item_picuture = QtGui.QPicture()
         painter = QtGui.QPainter(self._item_picuture)
 
-        for ix in range(min_ix, max_ix):
-            bar_picture = self._bar_picutures[ix]
-
-            if bar_picture is None:
-                bar = self._manager.get_bar(ix)
-                bar_picture = self._draw_bar_picture(ix, bar)
-                self._bar_picutures[ix] = bar_picture
-
+        for n in range(min_ix, max_ix):
+            bar_picture = self._bar_picutures[n]
             bar_picture.play(painter)
 
         painter.end()

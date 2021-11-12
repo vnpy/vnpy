@@ -32,6 +32,8 @@ $python -m pip install numpy
 
 # Install extra packages
 $python -m pip install ta-lib
+$python -m pip install psycopg2-binary
+$python -m pip install https://pip.vnpy.com/colletion/ibapi-9.76.1.tar.gz
 
 # Install Python Modules
 $python -m pip install -r requirements.txt

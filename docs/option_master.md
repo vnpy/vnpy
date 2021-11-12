@@ -6,13 +6,6 @@ OptionMaster是vn.py框架内针对【期权波动率交易】专门设计的上
 
 &nbsp;
 
-在启动模块之前，请先连接交易接口（连接方法详见基本使用篇的连接接口部分）。看到VN Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/1.png)
-
-请注意，IB接口因为登录时无法自动获取所有的合约信息，只有在用户手动订阅行情时才能获取。因此需要在主界面上先行手动订阅合约行情，再启动模块。
-&nbsp;
-
 ## 初始化配置
 
 ![](https://user-images.githubusercontent.com/11263900/93662592-d215c500-fa93-11ea-8a24-a49bc4be7829.png)
@@ -46,7 +39,7 @@ OptionMaster是vn.py框架内针对【期权波动率交易】专门设计的上
 
 1.从定价波动率来计算期权价格：calculate_price相关函数，包括希腊值相关的计算函数calculate_greeks；
 
-2.从期权价格来反推隐含波动率：calculate_impv函数，使用Newton-Raphson method（牛顿迭代法）来计算。
+2.从期权价格来返推隐含波动率：calculate_impv函数，使用Newton-Raphson method（牛顿迭代法）来计算。
 
 所有模型中都包含了输入数值的边界检查功能，避免计算出某些异常数值。
 
@@ -206,4 +199,5 @@ T型报价是期权交易中最常用的行情显示方式，中间白色的一�
 
 
 &nbsp;
+
 
