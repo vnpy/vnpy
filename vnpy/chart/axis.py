@@ -22,6 +22,10 @@ class DatetimeAxis(pg.AxisItem):
         """
         Convert original index to datetime string.
         """
+        # Show no axis string if spacing smaller than 1
+        if spacing < 1:
+            return ["" for i in values]
+
         strings = []
 
         for ix in values:
