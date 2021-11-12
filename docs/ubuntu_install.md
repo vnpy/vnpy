@@ -56,7 +56,7 @@ bash install.sh
 
 1. 下载安装ta-lib库和numpy；
 2. 安装requirements.txt文件内的相关依赖库；
-3. 使用local-gen安装中文编码（针对英文系统；）
+3. 使用local-gen安装中文编码（针对英文系统）；
 4. 安装vn.py本身。
 
 > 若是在虚拟机上运行，请把内存调至4G以上，否则会报错内存不足。
