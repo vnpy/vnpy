@@ -18,6 +18,8 @@
 - 数据周期：日线、小时线、分钟线、TICK（实时更新）
 - 注册申请：[RICEQUANT](https://www.ricequant.com/welcome/purchase?utm_source=vnpy)
 
+**请注意，配置信息里的username和password不是米筐官网登录用的账号和密码。**
+
 
 ## UData
 
