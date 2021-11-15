@@ -59,8 +59,6 @@
   * 华鑫奇点股票（torastock）：A股
 
   * 华鑫奇点期权（toraoption）：ETF期权
-
-  * 宽睿（oes）：A股、ETF期权
     
   * 中亿汇达Comstar XBond（comstarxbond）：银行间市场
 
@@ -85,8 +83,6 @@
   * 直达期货（da）：外盘期货
 
   * MetaTrader 5（mt5）：外汇、CFD、股票、期货
-
-  * Alpaca（alpaca）：美股
 
 * 数字货币
 
