@@ -1,12 +1,16 @@
+from typing import List
+
 from vnpy.event import Event
 from vnpy.rpc import RpcClient
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     SubscribeRequest,
+    HistoryRequest,
     CancelRequest,
     OrderRequest
 )
 from vnpy.trader.constant import Exchange
+from vnpy.trader.object import BarData
 
 
 class RpcGateway(BaseGateway):
@@ -64,6 +68,11 @@ class RpcGateway(BaseGateway):
     def query_position(self):
         """"""
         pass
+
+    def query_history(self, req: HistoryRequest) -> List[BarData]:
+        """"""
+        gateway_name = self.symbol_gateway_map.get(req.vt_symbol, "")
+        return self.client.query_history(req, gateway_name)
 
     def query_all(self):
         """"""
