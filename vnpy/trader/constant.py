@@ -86,6 +86,7 @@ class Exchange(Enum):
     INE = "INE"             # Shanghai International Energy Exchange
     SSE = "SSE"             # Shanghai Stock Exchange
     SZSE = "SZSE"           # Shenzhen Stock Exchange
+    BSE = "BSE"             # Beijing Stock Exchange
     SGE = "SGE"             # Shanghai Gold Exchange
     WXE = "WXE"             # Wuxi Steel Exchange
     CFETS = "CFETS"         # CFETS Bond Market Maker Trading System
