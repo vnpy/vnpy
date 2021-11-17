@@ -952,6 +952,36 @@ class ArrayManager(object):
             return result
         return result[-1]
 
+    def kdj(
+        self,
+        fastk_period: int,
+        slowk_period: int,
+        slowk_matype: int,
+        slowd_period: int,
+        slowd_matype: int,
+        array: bool = False
+    ) -> Union[
+        Tuple[float, float, float],
+        Tuple[np.ndarray, np.ndarray, np.ndarray]
+    ]:
+        """
+        Stochastic Indicator
+        """
+        K, D = talib.STOCH(
+            self.high,
+            self.low,
+            self.close,
+            fastk_period,
+            slowk_period,
+            slowk_matype,
+            slowd_period,
+            slowd_matype
+        )
+        J = (3 * K) - (2 * D)
+        if array:
+            return K, D, J
+        return K[-1], D[-1], J[-1]
+
 
 def virtual(func: Callable) -> Callable:
     """
