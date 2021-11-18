@@ -73,9 +73,9 @@ C:\Users\Administrator\strategies
 
 注意下载完成后的历史数据会保存在本地数据库中，后续回测时可以直接使用，无需每次都重复下载。
 
-### 数据来源：RQData（期货、股票、期权）
+### 数据来源：数据服务（期货、股票、期权）
 
-[RQData](https://www.ricequant.com/welcome/purchase?utm_source=vnpy)提供国内期货、股票以及期权的历史数据。在使用前需要保证RQData已经正确配置（配置方法详见基本使用篇的全局配置部分）。打开CtaBacktester时会自动执行RQData登录初始化，若成功则会输出“RQData数据接口初始化成功”的日志，如下图所示：
+以RQData为例，[RQData](https://www.ricequant.com/welcome/purchase?utm_source=vnpy)提供国内期货、股票以及期权的历史数据。在使用前需要保证数据服务已经正确配置（配置方法详见基本使用篇的全局配置部分）。打开CtaBacktester时会自动执行数据服务登录初始化，若成功则会输出“数据服务初始化成功”的日志，如下图所示：
 
  ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/26.png)
 
@@ -266,7 +266,7 @@ K线图表中的图例说明可以在窗口底部看到，整体上采用了国�
 
 ### 遗传算法优化
 
-设置好需要优化的参数后，点击窗口底部的【遗传算法优化】按钮，此时CtaBacktester会自动调用Python的deap模块，来执行高效智能化的遗传算法优化任务。
+设置好需要优化的参数后，点击窗口底部的【遗传算法优化】按钮，此时CtaBacktester会调用Python的multiprocessing模块和deap模块，来执行高效智能化的多进程遗传算法优化任务。
 
 附上遗传算法的简要工作原理：
 
