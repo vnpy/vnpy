@@ -77,7 +77,7 @@ main_engine.add_app(PaperAccountApp)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/paper_account/3.png)
 
-请注意，本地模拟交易模块没有提供资金计算功能，所以【资金】组件显示的是实盘账号的资金，并不会因为在本地模拟交易模块产生的委托而改变。
+请注意，本地模拟交易模块**没有提供资金计算功能**，所以【资金】组件显示的是实盘账号的资金，并不会因为在本地模拟交易模块产生的委托而改变。
 
 
 ## 业务逻辑
