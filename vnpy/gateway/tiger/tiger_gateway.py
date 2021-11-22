@@ -1,5 +1,5 @@
 """
-Author: KeKe
+Author: KeKe, Xuqiang
 Please install tiger-api before use.
 pip install tigeropen
 """
