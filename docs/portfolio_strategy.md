@@ -53,7 +53,7 @@ C:\Users\Administrator\strategies
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/1.png)
 
-如果配置了[RQData](https://www.ricequant.com/welcome/purchase?utm_source=vnpy)数据服务（配置方法详见基本使用篇的全局配置部分），打开多合约组合策略模块时会自动执行RQData登录初始化。若成功登录，则会输出“RQData数据接口初始化成功”的日志，如下图所示：
+如果配置了数据服务（配置方法详见基本使用篇的全局配置部分），打开多合约组合策略模块时会自动执行数据服务登录初始化。若成功登录，则会输出“数据服务初始化成功”的日志，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/2.png)
 
@@ -109,7 +109,7 @@ C:\Users\Administrator\strategies
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/6.png)
 
-初始化完成后，可观察到此时该策略实例的【inited】状态已经为【True】，且变量也都显示对应的数值（不再为0）。说明该策略实例已经加载过历史数据并完成初始化了。【trading】状态还是为【False】，说明此时该策略实例还不能开始自动交易。
+初始化完成后，可观察到此时该策略实例的【inited】状态已经为【True】。说明该策略实例已经加载过历史数据并完成初始化了。【trading】状态还是为【False】，说明此时该策略实例还不能开始自动交易。
 
 请注意，与CTA策略不同，如果创建实例时输入错误的vt_symbol，多合约组合策略模块会在初始化时报错而不是在创建策略实例时报错，如下图所示：
 
@@ -660,6 +660,14 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 * 出参：List[OrderData] / 无
 
 在策略里调用get_all_active_orderids函数，可以获取当前全部活动委托号。
+
+**get_pricetick**
+
+* 入参：vt_symbol
+
+* 出参：pricetick: float / None
+
+在策略里调用get_price函数，可以获取特定合约的最小价格跳动。
 
 **write_log**
 
