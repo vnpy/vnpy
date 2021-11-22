@@ -98,7 +98,7 @@ class TigerGateway(BaseGateway):
     default_setting = {
         "tiger_id": "",
         "account": "",
-        "服务器": ["标准", "环球", "仿真"],
+        "服务器": ["综合", "环球", "仿真"],
         "private_key": "",
     }
 
