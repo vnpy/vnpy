@@ -607,7 +607,7 @@ class TigerGateway(BaseGateway):
             self.write_log(f"无请求周期:{req.interval}")
             return
         end = datetime.now() if req.end is None else req.end
-        delta = req.end - req.start
+        delta: timedelta = req.end - req.start
 
         datetime_fmt = "%Y-%m-%d %H-%M-%S"
         datetime_daily_fmt = "%Y-%m-%d"
@@ -617,7 +617,7 @@ class TigerGateway(BaseGateway):
             begin_time = req.start.strftime(datetime_daily_fmt)
             end_time = end.strftime(datetime_daily_fmt)
         else:
-            limit = delta.minutes
+            limit = delta.total_seconds() / 60
             begin_time = req.start.strftime(datetime_fmt)
             end_time = end.strftime(datetime_fmt)
 
