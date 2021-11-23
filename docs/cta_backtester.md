@@ -79,15 +79,9 @@ C:\Users\Administrator\strategies
 
  ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/26.png)
 
-### 数据来源：数字货币（现货、期货、永续）
+### 数据来源：IB（外盘期货、股票、现货等）
 
-各大数字货币交易所都直接提供自家的历史数据下载，但每家交易所可以获取的历史数据长度限制有所区别，注意下载前需要先在VN Trader主界面连接好对应的接口。下载成功如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/60.png)
-
-### 数据来源：IB（外盘期货、股票、外汇等）
-
-Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据下载（包括股票、期货、期权、外汇等），注意下载前需要先启动IB TWS交易软件，并在VN Trader主界面连接好IB接口，并订阅所需合约行情。下载成功如下图所示：
+Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据下载（包括股票、期货、期权、现货等），注意下载前需要先启动IB TWS交易软件，并在VN Trader主界面连接好IB接口，并订阅所需合约行情。下载成功如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/28.png)
 
@@ -110,7 +104,6 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
   - 价格跳动：合约价格的最小变动价位；
   - 回测资金：账户资金；
   - 合约模式：
-    - 反向：只有数字货币市场才有的一种特殊衍生品合约规则，是指用计价法币来标识价格，用数字货币来结算盈亏的衍生品合约；
     - 正向：除反向合约外，其他所有的金融市场（股票、期货、期权等）采用的规则。
 
 配置完成后，点击下方的【开始回测】按钮，会弹出策略参数配置对话框，用于设置策略参数，如下图所示：
