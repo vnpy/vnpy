@@ -72,39 +72,13 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * 海外市场
 
-        * 富途证券（futu）：港股、美股
-
-        * Interactive Brokers（[ib](https://www.github.com/vnpy/vnpy_ib)）：全球证券、期货、期权、外汇等
+        * Interactive Brokers（[ib](https://www.github.com/vnpy/vnpy_ib)）：全球证券、期货、期权、贵金属等
 
         * 易盛9.0外盘（[tap](https://www.github.com/vnpy/vnpy_tap)）：全球期货
 
         * 直达期货（[da](https://www.github.com/vnpy/vnpy_da)）：全球期货
 
-        * MetaTrader 5（mt5）：外汇、CFD、期货、股票
-
-        * Alpaca（alpaca）：美股（零佣金）
-
-    * 数字货币
-
-        * 币安（[binance](https://www.github.com/vnpy/vnpy_binance)）：数字货币现货、期货、永续合约
-
-        * 火币（[huobi](https://www.github.com/vnpy/vnpy_huobi)）：数字货币现货、期货、永续合约
-
-        * OKEX（[okex](https://www.github.com/vnpy/vnpy_okex)）：数字货币现货、期货、永续、期权（V5统一账户）
-
-        * FTX（[ftx](https://www.github.com/vnpy/vnpy_ftx)）：数字货币现货、期货、永续合约
-
-        * Bybit（[bybit](https://www.github.com/vnpy/vnpy_bybit)）：数字货币永续合约
-        
-        * Deribit（[deribit](https://www.github.com/vnpy/vnpy_deribit)），数字货币期权、永续合约        
-
-        * Bitfinex（[bitfinex](https://www.github.com/vnpy/vnpy_bitfinex)）：数字货币现货
-
-        * Coinbase（[coinbase](https://www.github.com/vnpy/vnpy_coinbase)）：数字货币现货
-
-        * Bitstamp（[bitstamp](https://www.github.com/vnpy/vnpy_bitstamp)）：数字货币现货
-
-        * Gate.io永续（gateios）：数字货币永续合约
+        * MetaTrader 5（mt5）：全球期货
 
     * 特殊应用
 
@@ -128,7 +102,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * paper_account：模拟交易模块，纯本地化实现的模拟交易功能，基于交易接口获取的实时行情进行委托撮合，提供委托成交推送以及持仓记录
 
-    * [chart_wizard](https://www.github.com/vnpy/vnpy_chartwizard)：K线图表模块，基于RQData数据服务（期货）或者交易接口（数字货币）获取历史数据，并结合Tick推送显示实时行情变化
+    * [chart_wizard](https://www.github.com/vnpy/vnpy_chartwizard)：K线图表模块，基于RQData数据服务（期货）或者交易接口获取历史数据，并结合Tick推送显示实时行情变化
 
     * [portfolio_manager](https://www.github.com/vnpy/vnpy_portfoliomanager)：交易组合管理模块，以独立的策略交易组合（子账户）为基础，提供委托成交记录管理、交易仓位自动跟踪以及每日盈亏实时统计功能
 
@@ -180,7 +154,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * 恒生UData（[udata](https://www.github.com/vnpy/vnpy_udata)）：股票、期货、期权
 
-    * TuShare（[tushare](https://www.github.com/vnpy/vnpy_tushare)）：股票、期货、期权、基金、数字货币
+    * TuShare（[tushare](https://www.github.com/vnpy/vnpy_tushare)）：股票、期货、期权、基金
 
     * 万得Wind（[wind](https://www.github.com/vnpy/vnpy_wind)）：股票、期货、基金、债券
 
@@ -189,8 +163,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
     * 同花顺iFinD（[ifind](https://www.github.com/vnpy/vnpy_ifind)）：股票、期货、基金、债券
 
     * 天勤TQSDK（[tqsdk](https://www.github.com/vnpy/vnpy_tqsdk)）：期货
-
-    * CoinAPI（[coinapi](https://www.github.com/vnpy/vnpy_coinapi)）：数字货币
 
 8. 跨进程通讯标准组件（vnpy.rpc），用于实现分布式部署的复杂交易系统。
 
