@@ -245,6 +245,7 @@ class ContractData(BaseData):
     option_strike: float = 0
     option_underlying: str = ""     # vt_symbol of underlying contract
     option_type: OptionType = None
+    option_listed: datetime = None
     option_expiry: datetime = None
     option_portfolio: str = ""
     option_index: str = ""          # for identifying options with same strike price

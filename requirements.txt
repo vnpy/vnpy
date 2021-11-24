@@ -24,10 +24,7 @@ vnpy_rest==1.0.3
 vnpy_websocket==1.0.2
 vnpy_ctp==6.5.1.6
 vnpy_ctptest==6.5.1.3
-vnpy_okex==2021.4.21.5
-vnpy_deribit==2.0.1.1
 vnpy_xtp==2.2.27.5
-vnpy_bybit==2021.10.25
 vnpy_tts==6.5.1.0
 vnpy_rohon==6.5.1.0
 vnpy_mini==1.5.6.1
@@ -35,13 +32,6 @@ vnpy_sopt==3.5.5.0
 vnpy_uft==3.7.2.4.0
 vnpy_esunny==1.0.2.2.0
 vnpy_comstar==1.0.1
-vnpy_binance==2021.10.23
-vnpy_huobi==2021.9.24
-vnpy_bitfinex==2021.9.17
-vnpy_bitstamp==2021.9.17
-vnpy_coinbase==2021.9.17
-vnpy_ftx==2021.10.25
-vnpy_dydx==2021.10.3
 vnpy_ib==9.81.1.0
 vnpy_tap==9.0.0
 vnpy_da==1.12.0

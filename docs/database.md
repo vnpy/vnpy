@@ -11,7 +11,7 @@ SQLite是一个轻量的嵌入式数据库，无需安装和配置数据服务�
  - 不需要在系统中配置、安装和管理；
  - 不需要一个单独的服务器进程。
 
-#### SQLite字段
+#### SQLite配置字段
 
 SQLite在VN Trader中配置时，需填写以下字段信息：
 
@@ -20,7 +20,7 @@ SQLite在VN Trader中配置时，需填写以下字段信息：
 |database.name     | sqlite |
 |database.database   | 数据库文件（相对于trader目录） |
 
-SQLite的例子如下所示：
+SQLite配置示例如下所示：
 
 | 字段名            | 值 |
 |---------           |---- |
@@ -40,7 +40,7 @@ PostgreSQL是特性更为丰富的开源关系型数据库，只推荐熟手使�
  - 采用多进程结构；
  - 支持通过扩展插件来新增功能。
 
-#### SQL(MySQL, PostgreSQL)字段
+#### SQL(MySQL, PostgreSQL)配置字段
 
 MySQL和PostgreSQL在VN Trader中配置时，需要填写以下字段信息：
 
@@ -53,7 +53,7 @@ MySQL和PostgreSQL在VN Trader中配置时，需要填写以下字段信息：
 |database.user       | 用户名 |
 |database.password   | 密码 |
 
-MySQL的例子如下所示：
+MySQL配置示例如下所示：
 
 | 字段名            | 值 |
 |---------           |----  |
@@ -62,7 +62,7 @@ MySQL的例子如下所示：
 |database.port       | 3306 |
 |database.database   | vnpy |
 |database.user       | root |
-|database.password   | .... |
+|database.password   |      |
 
 请注意，vn.py不会主动为关系型数据库创建数据库，所以请确保你所填的database.database字段对应的数据库已经创建好了。若未创建数据库，请手动连上数据库并运行该命令：
 ```
@@ -75,12 +75,12 @@ create database <你填的database.database>;
 
 ### MongoDB
 
-MongoDB是一个基于分布式文件储存 （bson格式）的非关系型数据库，其特点如下：
+MongoDB是一个基于分布式文件储存（bson格式）的非关系型数据库，其特点如下：
  - 面向文档存储，操作比较简单；
  - 支持丰富的存储类型和数据操作；
  - 内置的热数据内存缓存实现更快的读写速度。
 
-#### MongoDB字段
+#### MongoDB配置字段
 
 MongoDB在VN Trader中配置时，需要填写以下字段信息：
 
@@ -94,7 +94,7 @@ MongoDB在VN Trader中配置时，需要填写以下字段信息：
 |database.password   | 密码| 可选 |
 |database.authentication_source   | [创建用户所用的数据库][AuthSource]| 可选 |
 
-MongoDB的带认证例子如下所示：
+MongoDB的带认证配置示例如下所示：
 
 | 字段名             | 值 |
 |---------           |----  |
@@ -103,7 +103,7 @@ MongoDB的带认证例子如下所示：
 |database.port       | 27017 |
 |database.database   | vnpy |
 |database.user       | root |
-|database.password   | .... |
+|database.password   |      |
 |database.authentication_source   | vnpy |
 
 
@@ -116,7 +116,9 @@ InfluxDB是专门针对时间序列数据存储设计的非关系型数据库，
 - 列式数据存储提供极高的读写效率；
 - 采用独立服务进程的模式运行，也能支持多进程的并发访问需求。
 
-#### InfluxDB字段
+在安装时请注意要选择2.0版本的InfluxDB。
+
+#### InfluxDB配置字段
 InfluxDB在VN Trader中配置时，需要填写以下字段信息：
 
 | 字段名            | 值 |
@@ -129,7 +131,7 @@ InfluxDB在VN Trader中配置时，需要填写以下字段信息：
 |database.password   | 密码|
 
 
-InfluxDB的例子如下所示：
+InfluxDB配置示例如下所示：
 
 | 字段名             | 值 |
 |---------           |----  |
@@ -138,7 +140,7 @@ InfluxDB的例子如下所示：
 |database.port       | 8086 |
 |database.database   | vnpy |
 |database.user       | root |
-|database.password   | .... |
+|database.password   |      |
 |database.authentication_source   | vnpy |
 
 请注意，运行influxd.exe的cmd需要保持运行，如果关闭则会导致InfluxDB退出，或者也可以使用一些辅助工具将其注册为后台运行的Windows服务。
@@ -150,7 +152,9 @@ DolphinDB是浙江智臾科技有限公司研发的一款高性能分布式时�
 - 原生分区表存储，合理的分区方案可以让CPU多线程并行加载每个分区内的数据；
 - 支持高效的数据压缩，显著减小硬盘存储空间的同时，还能大幅降低IO通讯的开销。
 
-#### DolphinDB字段
+尽管DolphinDB是商业软件，但是也提供了免费的社区版，在安装时注意要选择2.0的Beta版本。
+
+#### DolphinDB配置字段
 
 需要填写以下字段：
 
@@ -165,7 +169,7 @@ DolphinDB是浙江智臾科技有限公司研发的一款高性能分布式时�
 |database.password  | 密码 |
 
  
-DolphinDB的例子：
+DolphinDB配置示例如下所示：
 
 
 | 字段名            | 值 |
@@ -175,7 +179,7 @@ DolphinDB的例子：
 |database.port      | 8848 |
 |database.database  | vnpy |
 |database.user      | admin |
-|database.password  | .... |
+|database.password  | 123456|
 
 ### Arctic
 
@@ -185,7 +189,7 @@ Arctic是由英国量化对冲基金Man AHL基于MongoDB开发的高性能金融
 - 基于分块化存储和LZ4压缩，在网络和磁盘IO方面节省大量资源，实现最高每秒百万行的数据查询。
 
 
-#### Artic字段
+#### Artic配置字段
 ## Arctic
 
 
@@ -196,14 +200,14 @@ Arctic是由英国量化对冲基金Man AHL基于MongoDB开发的高性能金融
 |database.port    | 端口 |
 
  
-Arctic的例子：
+Arctic配置示例如下所示：
 
 
 | 字段名          | 值 |
 |---------        |----  |
 |database.name    | arctic |
 |database.host    | localhost |
-|database.port    | 0 |
+|database.database    | vnpy |
 
 ### Level DB
 LevelDB是由Google推出的高性能Key/Value数据库，其特点如下：
@@ -211,7 +215,7 @@ LevelDB是由Google推出的高性能Key/Value数据库，其特点如下：
 - 基于LSM算法实现进程内存储引擎；
 - 支持数十亿级别的海量数据。
 
-#### LevelDB 字段
+#### LevelDB配置字段
 | 字段名            | 值 |
 |---------          |---- |
 |database.name      | "leveldb"|
@@ -220,14 +224,13 @@ LevelDB是由Google推出的高性能Key/Value数据库，其特点如下：
 
 
 
-LevelDB的例子：
+LevelDB配置示例如下所示：
 
 
 | 字段名            | 值 |
 |---------          |  ----  |
 |database.name      | leveldb |
 |database.database  | vnpy_data |
-|database.port      | 0 |
 
 ## 数据库配置（以MySQL为例）
 
@@ -286,7 +289,7 @@ database.password: 1001
 
 填写完毕后如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/database/11.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/database/22.png)
 
 保存完成配置修改后，重启VN Trader来启用新的数据库配置。重启后，在打开VN Trader的过程中若无报错提示，则说明MySQL数据库配置成功。 
 
