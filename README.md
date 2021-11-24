@@ -78,8 +78,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 直达期货（[da](https://www.github.com/vnpy/vnpy_da)）：全球期货
 
-        * MetaTrader 5（mt5）：全球期货
-
     * 特殊应用
 
         * RPC服务（rpc）：跨进程通讯接口，用于分布式架构

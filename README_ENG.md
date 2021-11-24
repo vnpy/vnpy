@@ -66,17 +66,11 @@ For financial institution users of vn.py, a special 【vn.py Institutional Users
 
     * Overseas market
 
-        * Futu Securities (futu): Hong Kong stocks, U.S. stocks
-
         * Interactive Brokers (ib): global securities, futures, options, foreign exchange, etc.
 
         * EaseUS 9.0 Foreign Exchange (tap): Global futures
 
         * Direct Futures (da): Global Futures
-
-        * MetaTrader 5 (mt5): Forex, CFDs, Futures, Stocks
-
-        * Alpaca (alpaca): US stocks (zero commission)
 
     * Special Applications
 
