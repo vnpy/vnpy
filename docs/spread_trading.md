@@ -59,7 +59,7 @@ C:\Users\Administrator\strategies
 
 ### 查询合约
 
-在创建价差合约前，用户可以通过【查询合约】功能，寻找可以组成价差的合约：
+在创建价差合约前，用户可以通过【查询合约】功能，寻找可以组成价差的合约（**不支持交易所套利合约**）：
 
 - 在VN Trader菜单栏中点击【帮助】-> 【查询合约】按钮，弹出合约查询界面，如下图所示：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/3.png)
