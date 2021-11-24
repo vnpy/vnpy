@@ -109,7 +109,6 @@ class RestClient(object):
     ) -> None:
         """
         Init rest client with url_base which is the API root address.
-        e.g. "https://www.bitmex.com/api/v1/"
         """
         self.url_base = url_base
 

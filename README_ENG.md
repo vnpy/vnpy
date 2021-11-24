@@ -78,36 +78,6 @@ For financial institution users of vn.py, a special 【vn.py Institutional Users
 
         * Alpaca (alpaca): US stocks (zero commission)
 
-    * Digital currencies
-
-        * BitMEX (bitmex): digital currency futures, options, perpetual contracts
-
-        * Bybit (bybit): digital currency perpetual contracts
-
-        * Binance (binance): digital currency spot
-
-        * binance (binances): digital currency perpetual contracts
-
-        * OKEX (okex): digital currency spot, futures, perpetual, options (V5 unified account)
-
-        * Firecoin (huobi): digital currency spot
-
-        * Firecoin Futures (huobif): digital currency futures
-
-        * Firecoin perpetual (huobis): digital currency perpetual
-
-        * Firecoin Options (huobio): digital currency options
-        
-        * Gate.io perpetual (gateios): digital currency perpetual contracts
-
-        * Deribit (deribit), digital currency options, perpetual contracts        
-
-        * Bitfinex (bitfinex): digital currency spot
-
-        * Coinbase (coinbase): digital currency spot
-
-        * Bitstamp (bitstamp): digital currency spot
-
     * Special Applications
 
         * RPC service (rpc): cross-process communication interface for distributed architecture
