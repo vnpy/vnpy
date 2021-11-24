@@ -18,7 +18,7 @@ AlgoTrading是用于**算法委托执行交易**的模块，用户可以通过�
 
 ```
 # 写在顶部
-from vnpy.app.algo_trading import AlgoTradingApp
+from vnpy_algotrading import AlgoTradingApp
 
 # 写在创建main_engine对象后
 main_engine.add_app(AlgoTradingApp)
@@ -72,7 +72,7 @@ main_engine.add_app(AlgoTradingApp)
 
 ## 启动算法
 
-目前vn.py共提供了八种常用的示例算法。本文档以时间加权平均算法（TWAP）为例，介绍算法启动过程。
+目前vn.py共提供了六种常用的示例算法。本文档以时间加权平均算法（TWAP）为例，介绍算法启动过程。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/3.png)
 
@@ -136,7 +136,7 @@ main_engine.add_app(AlgoTradingApp)
 
 ## 示例算法
 
-示例算法路径位于algo_trading.algos文件夹下（请注意，个别算法是没有写开平方向的，若有需要，可基于自身需求进行个性化修改）。目前，算法交易模块提供了以下八种内置算法：
+示例算法路径位于algo_trading.algos文件夹下（请注意，个别算法是没有写开平方向的，若有需要，可基于自身需求进行个性化修改）。目前，算法交易模块提供了以下六种内置算法：
 
 ### DMA - 直接委托算法
 

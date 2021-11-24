@@ -52,7 +52,6 @@ main_engine.add_app(OptionMasterApp)
   * 定价模型中用到的无风险折现利率；
 * 合约模式
   * 正向：包括ETF期权、期货期权、股指期权等大多数产品；
-  * 反向：只有数字货币市场的反向期权产品；
 * Greeks小数位
   * 显示希腊值时保留的小数位数；
 * 期权链对应的定价标的
@@ -281,5 +280,4 @@ main_engine.add_app(OptionMasterApp)
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/option_master/14.png)
 
 当需要对算法配置进行批量修改时，可以通过电子眼窗口的右上角的全局修改功能进行操作，更加方便快捷。
-
 
