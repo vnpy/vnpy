@@ -125,8 +125,6 @@ class OrderData(BaseData):
     status: Status = Status.SUBMITTING
     datetime: datetime = None
     reference: str = ""
-    author_id: int = 0
-    strategy_id: int = 0
 
     def __post_init__(self):
         """"""
@@ -165,8 +163,6 @@ class TradeData(BaseData):
     orderid: str
     tradeid: str
     direction: Direction = None
-    author_id: int = None
-    strategy_id: int = None
     offset: Offset = Offset.NONE
     signal_price: float = 0         # 产生信号的价格
     limit_price: float = 0          # 委托价，限价
@@ -351,10 +347,6 @@ class OrderRequest:
     signal_price: float = 0
     offset: Offset = Offset.NONE
     reference: str = ""
-    author_name: str = ''
-    author_id: int = 0
-    strategy_name: str = ''
-    strategy_id: int = 0
 
     def __post_init__(self):
         """"""
@@ -365,8 +357,6 @@ class OrderRequest:
         Create order data from request.
         """
         order = OrderData(
-            author_id=self.author_id,
-            strategy_id=self.strategy_id,
             symbol=self.symbol,
             exchange=self.exchange,
             orderid=orderid,
