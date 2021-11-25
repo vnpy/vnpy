@@ -198,8 +198,8 @@ log.active, log.level, log.console和log.file用于对日志输出进行配置�
 
 - log.file：该参数用于控制是否要将日志输出到文件中，建议设置为True，否则无法记录生成的日志。
  
-VN Trader的日志文件，默认位于运行时目录的.vntrader\log目录下，完整路径为：
-C:\users\administrator.vntrader\log
+VN Trader的日志文件，默认位于运行时目录的.wc-vntrader\log目录下，完整路径为：
+C:\users\administrator.wc-vntrader\log
 
 其中，administrator为当前Windows系统的登录用户名。
 

@@ -65,7 +65,7 @@ main_engine.add_app(AlgoTradingApp)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/4.png)
 
-保存的配置文件在.vntrader文件夹下的algo_trading_setting.json中，如下图所示：
+保存的配置文件在.wc-vntrader文件夹下的algo_trading_setting.json中，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/5.png)
 

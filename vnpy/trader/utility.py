@@ -2,6 +2,7 @@
 General utility functions.
 """
 
+from datetime import datetime, timedelta
 import json
 import logging
 import sys
@@ -15,8 +16,9 @@ import talib
 
 from .object import BarData, TickData
 from .constant import Exchange, Interval
+from tzlocal import get_localzone
 
-
+local_zone = get_localzone()
 log_formatter = logging.Formatter('[%(asctime)s] %(message)s')
 
 
@@ -42,7 +44,7 @@ def _get_trader_dir(temp_name: str) -> Tuple[Path, Path]:
     cwd = Path.cwd()
     temp_path = cwd.joinpath(temp_name)
 
-    # If .vntrader folder exists in current working directory,
+    # If .wc-vntrader folder exists in current working directory,
     # then use it as trader running path.
     if temp_path.exists():
         return cwd, temp_path
@@ -51,14 +53,14 @@ def _get_trader_dir(temp_name: str) -> Tuple[Path, Path]:
     home_path = Path.home()
     temp_path = home_path.joinpath(temp_name)
 
-    # Create .vntrader folder under home path if not exist.
+    # Create .wc-vntrader folder under home path if not exist.
     if not temp_path.exists():
         temp_path.mkdir()
 
     return home_path, temp_path
 
 
-TRADER_DIR, TEMP_DIR = _get_trader_dir(".vntrader")
+TRADER_DIR, TEMP_DIR = _get_trader_dir(".wc-vntrader")
 sys.path.append(str(TRADER_DIR))
 
 
@@ -167,7 +169,7 @@ class BarGenerator:
     """
     For:
     1. generating 1 minute bar data from tick data
-    2. generating x minute bar/x hour bar data from 1 minute data
+    2. generateing x minute bar/x hour bar data from 1 minute data
 
     Notice:
     1. for x minute bar, x must be able to divide 60: 2, 3, 5, 6, 10, 15, 20, 30
@@ -181,6 +183,13 @@ class BarGenerator:
         on_window_bar: Callable = None,
         interval: Interval = Interval.MINUTE
     ):
+        """
+
+        :param on_bar: 1分钟回调
+        :param window: n分钟窗口大小， n必须可以被60整除2, 3, 5, 6, 10, 15, 20, 30
+        :param on_window_bar: n分钟回调
+        :param interval:默认是分钟
+        """
         """Constructor"""
         self.bar: BarData = None
         self.on_bar: Callable = on_bar
@@ -189,12 +198,16 @@ class BarGenerator:
         self.interval_count: int = 0
 
         self.hour_bar: BarData = None
+        self.day_bar: BarData = None
+        self.week_bar: BarData = None
 
         self.window: int = window
         self.window_bar: BarData = None
         self.on_window_bar: Callable = on_window_bar
 
         self.last_tick: TickData = None
+        self.last_bar: BarData = None
+        self.minute_change_flag = True
 
     def update_tick(self, tick: TickData) -> None:
         """
@@ -212,16 +225,19 @@ class BarGenerator:
 
         if not self.bar:
             new_minute = True
-        elif (
-            (self.bar.datetime.minute != tick.datetime.minute)
-            or (self.bar.datetime.hour != tick.datetime.hour)
-        ):
+
+        elif tick.datetime.second >= 55 and self.minute_change_flag:
+            # elif tick.datetime.minute != self.bar.datetime.minute:
             self.bar.datetime = self.bar.datetime.replace(
                 second=0, microsecond=0
             )
+            self.minute_change_flag = False
             self.on_bar(self.bar)
 
             new_minute = True
+        elif (self.bar.datetime.minute != tick.datetime.minute) or \
+             (self.bar.datetime.hour != tick.datetime.hour):
+            self.minute_change_flag = True
 
         if new_minute:
             self.bar = BarData(
@@ -253,9 +269,6 @@ class BarGenerator:
             volume_change = tick.volume - self.last_tick.volume
             self.bar.volume += max(volume_change, 0)
 
-            turnover_change = tick.turnover - self.last_tick.turnover
-            self.bar.turnover += max(turnover_change, 0)
-
         self.last_tick = tick
 
     def update_bar(self, bar: BarData) -> None:
@@ -264,8 +277,12 @@ class BarGenerator:
         """
         if self.interval == Interval.MINUTE:
             self.update_bar_minute_window(bar)
-        else:
+        elif self.interval == Interval.HOUR:
             self.update_bar_hour_window(bar)
+        elif self.interval == Interval.DAILY:
+            self.update_bar_day_window(bar)  # 处理日线
+        else:
+            self.update_bar_week_window(bar)  # 处理周线
 
     def update_bar_minute_window(self, bar: BarData) -> None:
         """"""
@@ -292,16 +309,18 @@ class BarGenerator:
                 bar.low_price
             )
 
-        # Update close price/volume/turnover into window bar
+        # Update close price/volume into window bar
         self.window_bar.close_price = bar.close_price
-        self.window_bar.volume += bar.volume
-        self.window_bar.turnover += bar.turnover
+        self.window_bar.volume += int(bar.volume)
         self.window_bar.open_interest = bar.open_interest
 
         # Check if window bar completed
         if not (bar.datetime.minute + 1) % self.window:
             self.on_window_bar(self.window_bar)
             self.window_bar = None
+
+        # Cache last bar object
+        self.last_bar = bar
 
     def update_bar_hour_window(self, bar: BarData) -> None:
         """"""
@@ -316,10 +335,7 @@ class BarGenerator:
                 open_price=bar.open_price,
                 high_price=bar.high_price,
                 low_price=bar.low_price,
-                close_price=bar.close_price,
-                volume=bar.volume,
-                turnover=bar.turnover,
-                open_interest=bar.open_interest
+                volume=bar.volume
             )
             return
 
@@ -337,8 +353,7 @@ class BarGenerator:
             )
 
             self.hour_bar.close_price = bar.close_price
-            self.hour_bar.volume += bar.volume
-            self.hour_bar.turnover += bar.turnover
+            self.hour_bar.volume += int(bar.volume)
             self.hour_bar.open_interest = bar.open_interest
 
             finished_bar = self.hour_bar
@@ -357,10 +372,7 @@ class BarGenerator:
                 open_price=bar.open_price,
                 high_price=bar.high_price,
                 low_price=bar.low_price,
-                close_price=bar.close_price,
-                volume=bar.volume,
-                turnover=bar.turnover,
-                open_interest=bar.open_interest
+                volume=bar.volume
             )
         # Otherwise only update minute bar
         else:
@@ -374,13 +386,84 @@ class BarGenerator:
             )
 
             self.hour_bar.close_price = bar.close_price
-            self.hour_bar.volume += bar.volume
-            self.hour_bar.turnover += bar.turnover
+            self.hour_bar.volume += int(bar.volume)
             self.hour_bar.open_interest = bar.open_interest
 
         # Push finished window bar
         if finished_bar:
             self.on_hour_bar(finished_bar)
+
+        # Cache last bar object
+        self.last_bar = bar
+
+    def update_bar_day_window(self, bar: BarData) -> None:
+        """
+        生成日线bar
+        :param bar:
+        :return:
+        """
+        # 没有日线bar就生成一个
+
+        if not self.day_bar:
+            dt = bar.datetime.replace(minute=0, second=0, microsecond=0)
+            self.day_bar = BarData(
+                symbol=bar.symbol,
+                exchange=bar.exchange,
+                datetime=dt,
+                gateway_name=bar.gateway_name,
+                open_price=bar.open_price,
+                high_price=bar.high_price,
+                low_price=bar.low_price,
+                volume=bar.volume
+            )
+            return
+
+        finished_bar = None
+        # 15:00 更新bar，日线bar完成
+        if bar.datetime.minute == 59 and bar.datetime.hour == 14:
+            self.day_bar.high_price = max(
+                self.day_bar.high_price,
+                bar.high_price
+            )
+            self.day_bar.low_price = min(
+                self.day_bar.low_price,
+                bar.low_price
+            )
+
+            self.day_bar.close_price = bar.close_price
+            self.day_bar.volume += int(bar.volume)
+            self.day_bar.open_interest = bar.open_interest
+            # 15:00最后一个bar的date就是这个日线的日期
+            self.day_bar.datetime = (bar.datetime + timedelta(hours=4)).replace(hour=0, minute=0, second=0, microsecond=0)
+
+            finished_bar = self.day_bar  # 保存日线bar
+            self.day_bar = None  # 因为日线bar已经保存给finished_bar了所以将日线bar设为空，下次新数据来了就会生成新的日线bar
+
+        else:
+            # 其他时间一直更新就可以
+            self.day_bar.high_price = max(
+                self.day_bar.high_price,
+                bar.high_price
+            )
+            self.day_bar.low_price = min(
+                self.day_bar.low_price,
+                bar.low_price
+            )
+
+            self.day_bar.close_price = bar.close_price
+            self.day_bar.volume += int(bar.volume)
+            self.day_bar.open_interest = bar.open_interest
+
+        # 推送日线给on_hour_bar处理
+        if finished_bar:
+
+            self.on_hour_bar(finished_bar)
+
+        # Cache last bar object
+        self.last_bar = bar
+
+    def update_bar_week_window(self, bar):
+        pass
 
     def on_hour_bar(self, bar: BarData) -> None:
         """"""
@@ -408,8 +491,7 @@ class BarGenerator:
                 )
 
             self.window_bar.close_price = bar.close_price
-            self.window_bar.volume += bar.volume
-            self.window_bar.turnover += bar.turnover
+            self.window_bar.volume += int(bar.volume)
             self.window_bar.open_interest = bar.open_interest
 
             self.interval_count += 1

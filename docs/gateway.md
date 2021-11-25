@@ -33,11 +33,11 @@ main_engine.add_gateway(CtpGateway)
 
 ### 修改json配置文件
 
-接口配置相关信息保存在json文件中，放在如图C盘用户目录下的.vntrader文件夹内。
+接口配置相关信息保存在json文件中，放在如图C盘用户目录下的.wc-vntrader文件夹内。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/3.png)
 
-所以如果要修改接口配置文件，用户既可以在图形化界面VN Trader内修改，也可以直接在.vntrader修改对应的json文件。
+所以如果要修改接口配置文件，用户既可以在图形化界面VN Trader内修改，也可以直接在.wc-vntrader修改对应的json文件。
 
 另外将json配置文件分离于vnpy的好处在于：避免每次升级都要重新配置json文件。
 

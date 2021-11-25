@@ -117,7 +117,9 @@ class OrderData(BaseData):
     type: OrderType = OrderType.LIMIT
     direction: Direction = None
     offset: Offset = Offset.NONE
-    price: float = 0
+    signal_price: float = None              # 信号价格, 一般是last_price
+    price: float = None                     # 限价
+    backtest_price: float = 0               # 回测理论成交价
     volume: float = 0
     traded: float = 0
     status: Status = Status.SUBMITTING
@@ -128,12 +130,16 @@ class OrderData(BaseData):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
         self.vt_orderid = f"{self.gateway_name}.{self.orderid}"
+        self.reference = f"{self.gateway_name}.{self.orderid}"
 
     def is_active(self) -> bool:
         """
         Check if the order is active.
         """
-        return self.status in ACTIVE_STATUSES
+        if self.status in ACTIVE_STATUSES:
+            return True
+        else:
+            return False
 
     def create_cancel_request(self) -> "CancelRequest":
         """
@@ -157,9 +163,13 @@ class TradeData(BaseData):
     orderid: str
     tradeid: str
     direction: Direction = None
-
     offset: Offset = Offset.NONE
-    price: float = 0
+    signal_price: float = 0         # 产生信号的价格
+    limit_price: float = 0          # 委托价，限价
+    price: float = 0                # 成交价
+    slippage: float = 0             # 滑点
+    backtest_price: float = 0               # 回测理论成交价
+    backtest_real_slippage: float = 0       # 实盘与回测的误差
     volume: float = 0
     datetime: datetime = None
 
@@ -168,6 +178,12 @@ class TradeData(BaseData):
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
         self.vt_orderid = f"{self.gateway_name}.{self.orderid}"
         self.vt_tradeid = f"{self.gateway_name}.{self.tradeid}"
+
+        self.slippage = self.signal_price - self.price
+        self.backtest_real_slippage = self.backtest_price - self.price
+        if self.direction == Direction.SHORT:
+            self.slippage = -self.slippage
+            self.backtest_real_slippage = -self.backtest_real_slippage
 
 
 @dataclass
@@ -185,6 +201,8 @@ class PositionData(BaseData):
     price: float = 0
     pnl: float = 0
     yd_volume: float = 0
+    author_id: int = 0
+    strategy_id: int = 0
 
     def __post_init__(self):
         """"""
@@ -218,6 +236,10 @@ class LogData(BaseData):
 
     msg: str
     level: int = INFO
+    author_name: str = None
+    author_id: str = None
+    strategy_id: str = None
+    strategy_name: str = None
 
     def __post_init__(self):
         """"""
@@ -322,6 +344,7 @@ class OrderRequest:
     type: OrderType
     volume: float
     price: float = 0
+    signal_price: float = 0
     offset: Offset = Offset.NONE
     reference: str = ""
 
@@ -341,6 +364,7 @@ class OrderRequest:
             direction=self.direction,
             offset=self.offset,
             price=self.price,
+            signal_price=self.signal_price,
             volume=self.volume,
             reference=self.reference,
             gateway_name=gateway_name,
