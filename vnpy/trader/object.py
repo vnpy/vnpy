@@ -131,7 +131,7 @@ class OrderData(BaseData):
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
-        self.vt_orderid = f"{self.gateway_name}.{self.orderid}.{self.author_id}.{self.strategy_id}"
+        self.vt_orderid = f"{self.gateway_name}.{self.orderid}"
         self.reference = f"{self.gateway_name}.{self.orderid}"
 
     def is_active(self) -> bool:
@@ -180,7 +180,7 @@ class TradeData(BaseData):
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
-        self.vt_orderid = f"{self.gateway_name}.{self.orderid}.{self.author_id}.{self.strategy_id}"
+        self.vt_orderid = f"{self.gateway_name}.{self.orderid}"
         self.vt_tradeid = f"{self.gateway_name}.{self.tradeid}"
 
         self.slippage = self.signal_price - self.price
