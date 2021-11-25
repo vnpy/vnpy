@@ -44,7 +44,7 @@ def _get_trader_dir(temp_name: str) -> Tuple[Path, Path]:
     cwd = Path.cwd()
     temp_path = cwd.joinpath(temp_name)
 
-    # If .vntrader folder exists in current working directory,
+    # If .wc-vntrader folder exists in current working directory,
     # then use it as trader running path.
     if temp_path.exists():
         return cwd, temp_path
@@ -53,14 +53,14 @@ def _get_trader_dir(temp_name: str) -> Tuple[Path, Path]:
     home_path = Path.home()
     temp_path = home_path.joinpath(temp_name)
 
-    # Create .vntrader folder under home path if not exist.
+    # Create .wc-vntrader folder under home path if not exist.
     if not temp_path.exists():
         temp_path.mkdir()
 
     return home_path, temp_path
 
 
-TRADER_DIR, TEMP_DIR = _get_trader_dir(".vntrader")
+TRADER_DIR, TEMP_DIR = _get_trader_dir(".wc-vntrader")
 sys.path.append(str(TRADER_DIR))
 
 

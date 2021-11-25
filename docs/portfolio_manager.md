@@ -117,6 +117,6 @@ main_engine.add_app(PortfolioManagerApp)
 
 Windows系统上缓存文件的默认路径位于：
 
-    C:\Users\Administrator\\.vntrader\portfolio_manager_data.json
+    C:\Users\Administrator\\.wc-vntrader\portfolio_manager_data.json
 
 其中Administrator是当前Windows系统的用户名。

@@ -94,7 +94,7 @@ C:\Users\Administrator\strategies
 
 从上图可观察到，此时该策略实例的【inited】和【trading】状态都为【False】。说明该策略实例还没有初始化，也还不能发出交易信号。
 
-策略实例创建成功后，该策略实例的配置信息会被保存到.vntrader文件夹下的cta_strategy_setting.json文件中。
+策略实例创建成功后，该策略实例的配置信息会被保存到.wc-vntrader文件夹下的cta_strategy_setting.json文件中。
 
 ### 创建失败
 
@@ -141,7 +141,7 @@ C:\Users\Administrator\strategies
 
    在每天实盘运行的过程中，量化策略中的有些变量只和历史行情数据相关，这类变量通过加载历史数据回放就能得到正确的数值。另一类变量则可能和交易状态相关，如策略的持仓、移动止损的最高价跟踪等，这类变量需要缓存在硬盘上（退出程序时），第二天回放完历史数据后再读取还原，才能保证和之前交易状态的一致性。
 
-   每次停止策略时，会自动将策略的variables列表对应的变量以及策略持仓缓存进.vntrader目录下的cta_strategy_data.json文件中，以便在下一次策略初始化时自动载入。
+   每次停止策略时，会自动将策略的variables列表对应的变量以及策略持仓缓存进.wc-vntrader目录下的cta_strategy_data.json文件中，以便在下一次策略初始化时自动载入。
 
    注意在某些情况下（比如手动平仓了），缓存的数据可能会出现偏差，此时可以通过手动修改json文件来调整。
 
@@ -191,7 +191,7 @@ C:\Users\Administrator\strategies
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/18.png)
 
-CTA策略引擎会自动将该策略之前发出的所有活动委托全部撤销，以保证在策略停止后不会有失去控制的委托存在。同时该策略实例最新的变量信息会被保存到.vntrader文件夹下的cta_strategy_data.json文件中。
+CTA策略引擎会自动将该策略之前发出的所有活动委托全部撤销，以保证在策略停止后不会有失去控制的委托存在。同时该策略实例最新的变量信息会被保存到.wc-vntrader文件夹下的cta_strategy_data.json文件中。
 
 此时可观察到该策略实例的【trading】状态已变为【False】，说明此时该策略实例已经停止自动交易了。
 
@@ -207,7 +207,7 @@ CTA策略引擎会自动将该策略之前发出的所有活动委托全部撤�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/40.png)
 
-但是策略实例的交易合约代码无法修改，同时修改完后也不会重新执行初始化操作。也请注意，此时修改的只是.vntrader文件夹下cta_strategy_setting.json文件中该策略实例的参数值，并没有修改原策略文件下的参数。
+但是策略实例的交易合约代码无法修改，同时修改完后也不会重新执行初始化操作。也请注意，此时修改的只是.wc-vntrader文件夹下cta_strategy_setting.json文件中该策略实例的参数值，并没有修改原策略文件下的参数。
 
 修改前，json文件如下图所示：
 
@@ -227,7 +227,7 @@ CTA策略引擎会自动将该策略之前发出的所有活动委托全部撤�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/21.png)
 
-此时.vntrader文件夹下的cta_strategy_setting.json文件也移除了该策略实例的配置信息。
+此时.wc-vntrader文件夹下的cta_strategy_setting.json文件也移除了该策略实例的配置信息。
 
 ### 状态跟踪
 

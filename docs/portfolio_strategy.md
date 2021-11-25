@@ -94,7 +94,7 @@ C:\Users\Administrator\strategies
 
 从上图可观察到，此时该策略实例的【inited】和【trading】状态都为【False】。说明该策略实例还没有初始化，也还不能发出交易信号。
 
-策略实例创建成功后，该策略实例的配置信息会被保存到.vntrader文件夹下的portfolio_strategy_setting.json文件中。
+策略实例创建成功后，该策略实例的配置信息会被保存到.wc-vntrader文件夹下的portfolio_strategy_setting.json文件中。
 
 请注意，如果添加了同名的策略实例，则会创建失败，图形界面输出“创建策略失败，存在重名”的日志信息，如下图所示：
 
@@ -138,7 +138,7 @@ C:\Users\Administrator\strategies
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/11.png)
 
-组合策略引擎会自动将该策略之前发出的所有活动委托全部撤销，以保证在策略停止后不会有失去控制的委托存在。同时该策略实例最新的变量信息会被保存到.vntrader文件夹下的portfolio_strategy_data.json文件中。
+组合策略引擎会自动将该策略之前发出的所有活动委托全部撤销，以保证在策略停止后不会有失去控制的委托存在。同时该策略实例最新的变量信息会被保存到.wc-vntrader文件夹下的portfolio_strategy_data.json文件中。
 
 此时可观察到该策略实例的【trading】状态已变为【False】，说明此时该策略实例已经停止自动交易了。
 
@@ -152,7 +152,7 @@ C:\Users\Administrator\strategies
 
 编辑完策略参数之后，点击下方的【确定】按钮，相应的修改会立即更新在参数表格中。
 
-但是策略实例的交易合约代码无法修改，同时修改完后也不会重新执行初始化操作。也请注意，此时修改的只是.vntrader文件夹下porfolio_strategy_setting.json文件中该策略实例的参数值，并没有修改原策略文件下的参数。
+但是策略实例的交易合约代码无法修改，同时修改完后也不会重新执行初始化操作。也请注意，此时修改的只是.wc-vntrader文件夹下porfolio_strategy_setting.json文件中该策略实例的参数值，并没有修改原策略文件下的参数。
 
 若盘中编辑后想要再次启动策略，点击策略实例下的【启动】按钮即可再次启动该策略实例。
 
@@ -162,7 +162,7 @@ C:\Users\Administrator\strategies
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/13.png)
 
-此时.vntrader文件夹下的portfolio_strategy_setting.json文件也移除了该策略实例的配置信息。
+此时.wc-vntrader文件夹下的portfolio_strategy_setting.json文件也移除了该策略实例的配置信息。
 
 ### 状态跟踪
 

@@ -246,7 +246,7 @@ C:\Users\Administrator\strategies
 
 从上图可观察到，此时该策略实例的【inited】和【trading】状态都为【False】。说明该策略实例还没有初始化，也还不能发出交易信号。
 
-策略实例创建成功后，该策略实例的配置信息会被保存到.vntrader文件夹下的spread_trading_strategy.json文件中。
+策略实例创建成功后，该策略实例的配置信息会被保存到.wc-vntrader文件夹下的spread_trading_strategy.json文件中。
 
 
 ### 启动策略
