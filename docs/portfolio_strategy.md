@@ -15,11 +15,11 @@ PortfolioStrategy是用于**多合约组合策略实盘**的功能模块，用�
 在启动脚本中添加如下代码：
 
 ```python 3
-    # 写在顶部
-    from vnpy_portfoliostrategy import PortfolioStrategyApp
+# 写在顶部
+from vnpy_portfoliostrategy import PortfolioStrategyApp
 
-    # 写在创建main_engine对象后
-    main_engine.add_app(PortfolioStrategyApp)
+# 写在创建main_engine对象后
+main_engine.add_app(PortfolioStrategyApp)
 ```
 
 
@@ -254,13 +254,13 @@ PortfolioStrategy是用于**多合约组合策略实盘**的功能模块，用�
 在基于策略模板编写策略逻辑之前，需要在策略文件的顶部载入需要用到的内部组件，如下方代码所示：
 
 ```python 3
-    from typing import List, Dict
-    from datetime import datetime
+from typing import List, Dict
+from datetime import datetime
 
-    from vnpy.trader.utility import ArrayManager, Interval
-    from vnpy.trader.object import TickData, BarData
-    from vnpy_portfoliostrategy import StrategyTemplate, StrategyEngine
-    from vnpy_portfoliostrategy.utility import PortfolioBarGenerator
+from vnpy.trader.utility import ArrayManager, Interval
+from vnpy.trader.object import TickData, BarData
+from vnpy_portfoliostrategy import StrategyTemplate, StrategyEngine
+from vnpy_portfoliostrategy.utility import PortfolioBarGenerator
 ```
 
 其中，StrategyTemplate是策略模板，StrategyEngine是策略引擎，Interval是数据频率，TickData和BarData都是储存对应信息的数据容器，PortfolioBarGenerator是组合策略K线生成模块，ArrayManager是K线时间序列管理模块。
@@ -350,7 +350,7 @@ __init__函数是策略类的构造函数，需要与继承的StrategyTemplate�
 如果只基于on_bar进行交易，这里代码可以写成：
 
 ```python 3
-    self.pbg = PortfolioBarGenerator(self.on_bars)
+        self.pbg = PortfolioBarGenerator(self.on_bars)
 ```
 
 而不用给pbg实例传入需要基于on_bars周期合成的更长K线周期，以及接收更长K线周期的函数名。
@@ -362,13 +362,13 @@ PortfolioBarGenerator默认的基于on_bar函数合成长周期K线的数据频�
 文件顶部导入Interval：
 
 ```python 3
-    from vnpy.trader.constant import Interval
+from vnpy.trader.constant import Interval
 ```
 
 __init__函数创建bg实例时传入数据频率：
 
 ```python 3
-    self.pbg = BarGenerator(self.on_bars, 2, self.on_2hour_bars, Interval.HOUR)
+        self.pbg = BarGenerator(self.on_bars, 2, self.on_2hour_bars, Interval.HOUR)
 ```
 注意：self.on_hour_bars函数名在程序内部已使用，1小时请使用self.on_1_hour_bars或者其他命名，否则会产生意料之外的问题。
 

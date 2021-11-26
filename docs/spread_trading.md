@@ -16,11 +16,11 @@ SpreadTrading是用于**价差交易**的功能模块，用户可以通过图形
 在启动脚本中添加如下代码：
 
 ```python 3
-    # 写在顶部
-    from vnpy_spreadtrading import SpreadTradingApp
+# 写在顶部
+from vnpy_spreadtrading import SpreadTradingApp
 
-    # 写在创建main_engine对象后
-    main_engine.add_app(spread_trading)         
+# 写在创建main_engine对象后
+main_engine.add_app(spread_trading)         
 ```
 
 
@@ -349,16 +349,16 @@ SpreadTrading是用于**价差交易**的功能模块，用户可以通过图形
 在基于价差交易策略模板编写策略逻辑之前，需要在策略文件的顶部载入需要用到的内部组件，如下方代码所示：
 
 ```python 3
-    from vnpy.trader.utility import BarGenerator, ArrayManager
-    from vnpy_spreadtrading import (
-        SpreadStrategyTemplate,
-        SpreadAlgoTemplate,
-        SpreadData,
-        OrderData,
-        TradeData,
-        TickData,
-        BarData
-    )
+from vnpy.trader.utility import BarGenerator, ArrayManager
+from vnpy_spreadtrading import (
+    SpreadStrategyTemplate,
+    SpreadAlgoTemplate,
+    SpreadData,
+    OrderData,
+    TradeData,
+    TickData,
+    BarData
+)
 ```
 
 其中，SpreadStrategyTemplate和SpreadAlgoTemplate是价差交易策略模板和价差算法模板，SpreadData、OrderData、TickData、TradeData和BarData是储存对应信息的数据容器，BarGenerator是K线生成模块，ArrayManager是K线时间序列管理模块。

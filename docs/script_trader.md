@@ -20,11 +20,11 @@ ScriptTrader模块提供了交互式的量化分析和程序化交易功能，�
 在启动脚本中添加如下代码：
 
 ```python 3
-    # 写在顶部
-    from vnpy_scripttrader import ScriptTraderApp
+# 写在顶部
+from vnpy_scripttrader import ScriptTraderApp
 
-    # 写在创建main_engine对象后
-    main_engine.add_app(ScriptTraderApp)
+# 写在创建main_engine对象后
+main_engine.add_app(ScriptTraderApp)
 ```
 
 ## 启动模块
@@ -79,32 +79,32 @@ ScriptTrader模块提供了交互式的量化分析和程序化交易功能，�
 - 每隔3秒获取最新行情。
 
 ```python 3
-    from time import sleep
-    from vnpy_scripttrader import ScriptEngine
+from time import sleep
+from vnpy_scripttrader import ScriptEngine
 
-    def run(engine: ScriptEngine):
-        """"""
-        vt_symbols = ["sc2209.INE", "sc2203.INE"]
+def run(engine: ScriptEngine):
+    """"""
+    vt_symbols = ["sc2209.INE", "sc2203.INE"]
 
-        # 订阅行情
-        engine.subscribe(vt_symbols)
+    # 订阅行情
+    engine.subscribe(vt_symbols)
 
-        # 获取合约信息
+    # 获取合约信息
+    for vt_symbol in vt_symbols:
+        contract = engine.get_contract(vt_symbol)
+        msg = f"合约信息，{contract}"
+        engine.write_log(msg)
+
+    # 持续运行，使用strategy_active来判断是否要退出程序
+    while engine.strategy_active:
+        # 轮询获取行情
         for vt_symbol in vt_symbols:
-            contract = engine.get_contract(vt_symbol)
-            msg = f"合约信息，{contract}"
+            tick = engine.get_tick(vt_symbol)
+            msg = f"最新行情, {tick}"
             engine.write_log(msg)
 
-        # 持续运行，使用strategy_active来判断是否要退出程序
-        while engine.strategy_active:
-            # 轮询获取行情
-            for vt_symbol in vt_symbols:
-                tick = engine.get_tick(vt_symbol)
-                msg = f"最新行情, {tick}"
-                engine.write_log(msg)
-
-            # 等待3秒进入下一轮
-            sleep(3)
+        # 等待3秒进入下一轮
+        sleep(3)
 ```
 
 其中engine.strategy_active用于控制While循环，可视作是脚本策略的开关：
@@ -118,9 +118,9 @@ ScriptTrader模块提供了交互式的量化分析和程序化交易功能，�
 下面通过jupyter notebook来说明ScriptEngine引擎的各功能函数。首先打开Jupyter notebook，然后加载组件、初始化脚本引擎：
 
 ```python 3
-    from vnpy_scripttrader import init_cli_trading
-    from vnpy_ctp import CtpGateway
-    engine = init_cli_trading([CtpGateway])
+from vnpy_scripttrader import init_cli_trading
+from vnpy_ctp import CtpGateway
+engine = init_cli_trading([CtpGateway])
 ```
 
 其中：
@@ -149,7 +149,7 @@ ScriptTrader模块提供了交互式的量化分析和程序化交易功能，�
 ### 订阅行情
 subscribe()函数用于订阅行情信息，若需要订阅一篮子合约的行情，可以使用列表格式。
 ```python 3
-    engine.subscribe(vt_symbols = ["rb1909.SHFE","rb1910.SHFE"])
+engine.subscribe(vt_symbols = ["rb1909.SHFE","rb1910.SHFE"])
 ```
 
 ### 查询数据
@@ -163,7 +163,7 @@ subscribe()函数用于订阅行情信息，若需要订阅一篮子合约的行
 
 **get_tick**：查询单个标的最新tick，use_df为可选参数，用于把返回的类对象转化成DataFrame格式，便于数据分析。
 ```python 3
-    tick = engine.get_tick(vt_symbol="rb1910.SHFE",use_df=False)
+tick = engine.get_tick(vt_symbol="rb1910.SHFE",use_df=False)
 ```
 
 其中：
@@ -175,7 +175,7 @@ subscribe()函数用于订阅行情信息，若需要订阅一篮子合约的行
 
 **get_order**：根据vt_orderid查询委托单的详细信息。
 ```python 3
-    order = engine.get_order(vt_orderid='CTP.3_-9351590_1',use_df=False)
+order = engine.get_order(vt_orderid='CTP.3_-9351590_1',use_df=False)
 ```
 
 其中，vt_orderid为本地委托号，在委托下单时，会自动返回该委托的vt_orderid。
@@ -184,22 +184,22 @@ subscribe()函数用于订阅行情信息，若需要订阅一篮子合约的行
 
 **get_contract**：根据本地vt_symbol来查询对应合约对象的详细信息。
 ```python 3
-    contract = engine.get_contract(vt_symbol="rb1910.SHFE",use_df=False)
+contract = engine.get_contract(vt_symbol="rb1910.SHFE",use_df=False)
 ```
 
 ![](https://static.vnpy.com/upload/temp/4111776b-91fd-44e6-8b2c-289961862a3a.jpg)
 
 **get_account**：根据本地vt_accountid来查询对应合约对象的详细信息。
 ```python 3
-    account = engine.get_account(vt_accountid="CTP.158995",use_df=False)
+account = engine.get_account(vt_accountid="CTP.158995",use_df=False)
 ```
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/script_trader/12.png)
 
 **get_bars**：通过配置的数据服务查询历史数据。
 ```python 3
-    bars = engine.get_bars(vt_symbol="rb1910.SHFE",start_date="20190101",
-                            interval=Interval.MINUTE,use_df=False)
+bars = engine.get_bars(vt_symbol="rb1910.SHFE",start_date="20190101",
+                        interval=Interval.MINUTE,use_df=False)
 ```
 
 其中：
@@ -209,24 +209,24 @@ subscribe()函数用于订阅行情信息，若需要订阅一篮子合约的行
 - interval：K线周期，包括：分钟、小时、日、周；
 - bars：包含了一系列BarData数据的列表对象，其BarData的定义如下：
 ```python 3
-    @dataclass
-    class BarData(BaseData):
+@dataclass
+class BarData(BaseData):
 
-        symbol: str
-        exchange: Exchange
-        datetime: datetime
+    symbol: str
+    exchange: Exchange
+    datetime: datetime
 
-        interval: Interval = None
-        volume: float = 0
-        turnover: float = 0
-        open_interest: float = 0
-        open_price: float = 0
-        high_price: float = 0
-        low_price: float = 0
-        close_price: float = 0
+    interval: Interval = None
+    volume: float = 0
+    turnover: float = 0
+    open_interest: float = 0
+    open_price: float = 0
+    high_price: float = 0
+    low_price: float = 0
+    close_price: float = 0
 
-        def __post_init__(self):
-            self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
+    def __post_init__(self):
+        self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
 ```
 
 **get_position**：根据vt_positionid来查询持仓情况，返回对象包含接口名称、交易所、合约代码、数量、冻结数量等。
@@ -241,7 +241,7 @@ subscribe()函数用于订阅行情信息，若需要订阅一篮子合约的行
 
 **get_ticks**：查询多个合约最新tick。
 ```python 3
-    ticks = engine.get_ticks(vt_symbols=['rb1910.SHFE','rb1909.SHFE'],use_df = True)
+ticks = engine.get_ticks(vt_symbols=['rb1910.SHFE','rb1909.SHFE'],use_df = True)
 ```
 
 vt_symbols是列表格式，里面包含多个vt_symbol，如图。
@@ -251,12 +251,12 @@ vt_symbols是列表格式，里面包含多个vt_symbol，如图。
 
 **get_orders**：根据查询多个vt_orderid查询其详细信息。vt_orderids为列表，里面包含多个vt_orderid
 ```python 3
-    orders = engine.get_orders([orderid_one,orderid_two],use_df=True)
+orders = engine.get_orders([orderid_one,orderid_two],use_df=True)
 ```
 
 **get_trades**：根据给定的一个vt_orderid返回这次报单过程中的所有TradeData对象。vt_orderid是本地委托号，每一个委托OrderData，由于部分成交关系，可以对应多笔成交TradeData。
 ```python 3
-    trades = engine.get_trades(vt_orderid = your_vt_orderid,use_df = True)
+trades = engine.get_trades(vt_orderid = your_vt_orderid,use_df = True)
 ```
 
 #### 全量查询
@@ -279,12 +279,12 @@ vt_symbols是列表格式，里面包含多个vt_symbol，如图。
 - volume：报单数量（浮点数类型）;
 - order_type：OrderType枚举常量，默认为限价单（OrderType.LIMIT），同时支持停止单（OrderType.STOP）、FAK（OrderType.FAK）、FOK（OrderType.FOK）、市价单（OrderType.MARKET），不同交易所支持报单方式不完全一致。
 ```python 3
-    engine.buy(vt_symbol = "rb1910.SHFE", price = 3200, volume = 1, order_type=OrderType.LIMIT)
+engine.buy(vt_symbol = "rb1910.SHFE", price = 3200, volume = 1, order_type=OrderType.LIMIT)
 ```
 
 执行交易委托后会返回本地委托号vt_orderid，撤单也是基于该本地委托号的：
 ```python 3
-    engine.cancel_order(vt_orderid = 'CTP.3_-9351590_1')
+engine.cancel_order(vt_orderid = 'CTP.3_-9351590_1')
 ```
 
 ### 信息输出
@@ -297,7 +297,7 @@ send_email()函数用于实时通过email通知用户策略运行情况：
 - 邮件标题为“脚本策略引擎通知”；
 - msg为字符串格式，表示邮件正文内容，如图。
 ```python 3
-    engine.send_email(msg = "Your Msg")
+engine.send_email(msg = "Your Msg")
 ```
 
 ![](https://static.vnpy.com/upload/temp/8dd8d6b0-6c04-4cb4-a426-ad43d11a13eb.png)

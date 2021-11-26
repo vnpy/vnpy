@@ -320,56 +320,56 @@ LevelDB配置示例如下所示：
 
 脚本使用前，请先按照上文配置好使用的数据库, 使用时调用相应的函数接口。
 ```python 3
-        from datetime import datetime
-        from typing import List
-        from vnpy.trader.constant import Exchange, Interval
-        from vnpy.trader.database import get_database
-        from vnpy.trader.object import BarData, TickData
+from datetime import datetime
+from typing import List
+from vnpy.trader.constant import Exchange, Interval
+from vnpy.trader.database import get_database
+from vnpy.trader.object import BarData, TickData
 
-        symbol = "CU888"
-        exchange = Exchange.SHFE
-        start = datetime(2019, 1, 1)
-        end = datetime(2021, 1, 20)
-        interval = Interval.DAILY
+symbol = "CU888"
+exchange = Exchange.SHFE
+start = datetime(2019, 1, 1)
+end = datetime(2021, 1, 20)
+interval = Interval.DAILY
 
-        # 获取数据库实例
-        database = get_database()
+# 获取数据库实例
+database = get_database()
 
-        # 需要存入的k线数据，请自行获取并转换成所需的形式
-        bar_data: List[BarData] = None
+# 需要存入的k线数据，请自行获取并转换成所需的形式
+bar_data: List[BarData] = None
 
-        # 将k线数据存入数据库
-        database.save_bar_data(bar_data)
+# 将k线数据存入数据库
+database.save_bar_data(bar_data)
 
-        # 读取数据库中k线数据
-        database.load_bar_data(
-                symbol=symbol,
-                exchange=exchange,
-                interval=interval,
-                start=start,
-                end=end)
+# 读取数据库中k线数据
+database.load_bar_data(
+        symbol=symbol,
+        exchange=exchange,
+        interval=interval,
+        start=start,
+        end=end)
 
-        # 删除数据库中k线数据
-        database.delete_bar_data(
-                symbol=symbol,
-                exchange=exchange,
-                interval=interval)
+# 删除数据库中k线数据
+database.delete_bar_data(
+        symbol=symbol,
+        exchange=exchange,
+        interval=interval)
 
-        # 需要存入的k线数据，请自行获取并转换成所需的形式
-        tick_data: List[TickData] = None
+# 需要存入的k线数据，请自行获取并转换成所需的形式
+tick_data: List[TickData] = None
 
-        # 将tick数据存入数据库
-        database.save_bar_data(tick_data)
+# 将tick数据存入数据库
+database.save_bar_data(tick_data)
 
-        # 读取数据库中tick数据
-        database.load_tick_data(
-                symbol=symbol,
-                exchange=exchange,
-                start=start,
-                end=end)
+# 读取数据库中tick数据
+database.load_tick_data(
+        symbol=symbol,
+        exchange=exchange,
+        start=start,
+        end=end)
 
-        # 删除数据库中tick数据
-        database.delete_tick_data(
-                symbol=symbol,
-                exchange=exchange)
+# 删除数据库中tick数据
+database.delete_tick_data(
+        symbol=symbol,
+        exchange=exchange)
 ```

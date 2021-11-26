@@ -12,7 +12,7 @@
 
 以CTP接口为例，在启动脚本中添加如下代码：
 
-```python
+```python 3
 # 写在顶部
 from vnpy_ctp import CtpGateway
 

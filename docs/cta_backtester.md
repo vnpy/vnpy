@@ -15,11 +15,11 @@ CtaBacktester是用于**CTA策略历史回测研究**的功能模块，用户可
 在启动脚本中添加如下代码：
 
 ```python 3
-  # 写在顶部
-  from vnpy_ctabacktester import CtaBacktesterApp
+# 写在顶部
+from vnpy_ctabacktester import CtaBacktesterApp
 
-  # 写在创建main_engine对象后
-  main_engine.add_app(CtaBacktesterApp)
+# 写在创建main_engine对象后
+main_engine.add_app(CtaBacktesterApp)
 ```
 
 

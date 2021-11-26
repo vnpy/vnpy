@@ -16,11 +16,11 @@ OptionMaster是用于**期权交易**的功能模块，用户可以通过OptionM
 在启动脚本中添加如下代码：
 
 ```python 3
-    # 写在顶部
-    from vnpy.app.option_master import OptionMasterApp
+# 写在顶部
+from vnpy.app.option_master import OptionMasterApp
 
-    # 写在创建main_engine对象后
-    main_engine.add_app(OptionMasterApp)
+# 写在创建main_engine对象后
+main_engine.add_app(OptionMasterApp)
 ```
 
 

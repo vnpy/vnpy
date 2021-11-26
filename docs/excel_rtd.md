@@ -54,11 +54,11 @@ RTD全称是RealTimeData，是微软提供的主要面向金融行业中实时�
 在启动脚本中添加如下代码：
 
 ```python 3
-    # 写在顶部
-    from vnpy_excelrtd import ExcelRtdApp
+# 写在顶部
+from vnpy_excelrtd import ExcelRtdApp
 
-    # 写在创建main_engine对象后
-    main_engine.add_app(ExcelRtdApp)
+# 写在创建main_engine对象后
+main_engine.add_app(ExcelRtdApp)
 ```
 
 ## 启动模块

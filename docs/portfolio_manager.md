@@ -17,11 +17,11 @@ PortfolioManager是用于**投资组合盈亏统计和分析**的功能模块，
 在启动脚本中添加如下代码：
 
 ```python 3
-    # 写在顶部
-    from vnpy_portfoliomanager import PortfolioManagerApp
+# 写在顶部
+from vnpy_portfoliomanager import PortfolioManagerApp
 
-    # 写在创建main_engine对象后
-    main_engine.add_app(PortfolioManagerApp)
+# 写在创建main_engine对象后
+main_engine.add_app(PortfolioManagerApp)
 ```
 
 

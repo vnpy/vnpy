@@ -15,11 +15,11 @@ RiskManager模块是用于**事前风险检测与交易控制**的功能模块�
 在启动脚本中添加如下代码：
 
 ```python 3
-    # 写在顶部
-    from vnpy_riskmanager import RiskManagerApp
+# 写在顶部
+from vnpy_riskmanager import RiskManagerApp
 
-    # 写在创建main_engine对象后
-    main_engine.add_app(RiskManagerApp)
+# 写在创建main_engine对象后
+main_engine.add_app(RiskManagerApp)
 ```
 
 ## 启动模块

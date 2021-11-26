@@ -40,11 +40,11 @@ WebTrader采用了FastAPI作为后端服务器，支持REST主动请求调用和
 在启动脚本中添加如下代码：
 
 ```python 3
-    # 写在顶部
-    from vnpy_webtrader import WebTraderApp
+# 写在顶部
+from vnpy_webtrader import WebTraderApp
 
-    # 写在创建main_engine对象后
-    main_engine.add_app(WebTraderApp)
+# 写在创建main_engine对象后
+main_engine.add_app(WebTraderApp)
 ```
 
 ### 启动模块
@@ -79,19 +79,19 @@ WebTrader采用了FastAPI作为后端服务器，支持REST主动请求调用和
 
 ### 获得令牌（token）
 ```python 3
-    import requests
-    import json
+import requests
+import json
 
-    url = "http://127.0.0.1:8000/"
-    username = "vnpy"
-    password = "vnpy"
+url = "http://127.0.0.1:8000/"
+username = "vnpy"
+password = "vnpy"
 
-    r = requests.post(
-        url + "token",
-        data={"username": username, "password": password},
-        headers={"accept": "application/json"}
-    )
-    token = r.json()["access_token"]
+r = requests.post(
+    url + "token",
+    data={"username": username, "password": password},
+    headers={"accept": "application/json"}
+)
+token = r.json()["access_token"]
 ```
 首先导入相应的模块requests和json，接着定义url和用户名和密码，最后通过requests的post方法传入相应参数就能够获得令牌（token），后续访问使用各种接口直接传该token就行。
 
@@ -106,20 +106,20 @@ r = requests.post(url + "tick/" + "cu2112.SHFE", headers={"Authorization":"Beare
 ###  批量查询
 ```python 3
 # 查询函数
-    def query_test(name):
-        """查询对应类型的数据"""
-        r = requests.get(
-            url + name,
-            headers={"Authorization": "Bearer " + token}
-        )
-        return r.json()
+def query_test(name):
+    """查询对应类型的数据"""
+    r = requests.get(
+        url + name,
+        headers={"Authorization": "Bearer " + token}
+    )
+    return r.json()
 
-    # 批量查询
-    for name in ["tick", "contract", "account", "position", "order", "trade"]:
-        data = query_test(name)
-        print(name + "-" * 20)
-        if data:
-            print(data[0])
+# 批量查询
+for name in ["tick", "contract", "account", "position", "order", "trade"]:
+    data = query_test(name)
+    print(name + "-" * 20)
+    if data:
+        print(data[0])
 ```
 我们同样可以通过发出主动请求查询相关的数据，比如tick数据、合约数据、账户数据、 持仓数据、委托数据以及成交数据。
 
@@ -128,25 +128,25 @@ r = requests.post(url + "tick/" + "cu2112.SHFE", headers={"Authorization":"Beare
 ### 委托测试
 ```python 3
 # 委托测试
-    req = {
-        "symbol": "cu2112",
-        "exchange": "SHFE",
-        "direction": "多",
-        "type": "限价",
-        "volume": 1,
-        "price": 71030,
-        "offset": "开",
-        "reference": "WebTrader"
-    }
+req = {
+    "symbol": "cu2112",
+    "exchange": "SHFE",
+    "direction": "多",
+    "type": "限价",
+    "volume": 1,
+    "price": 71030,
+    "offset": "开",
+    "reference": "WebTrader"
+}
 
-    r = requests.post(
-        url + "order",
-        json=req,
-        headers={"Authorization": "Bearer " + token}
-    )
-    vt_orderid = r.json()
+r = requests.post(
+    url + "order",
+    json=req,
+    headers={"Authorization": "Bearer " + token}
+)
+vt_orderid = r.json()
 
-    print(vt_orderid)
+print(vt_orderid)
 ```
 下单后同样能在图形化界面看到订单，如下图所示：
 
@@ -155,10 +155,10 @@ r = requests.post(url + "tick/" + "cu2112.SHFE", headers={"Authorization":"Beare
 ### 撤单测试
 ```python 3
 # 撤单测试
-    r = requests.delete(
-        url + "order/" + vt_orderid,
-        headers={"Authorization": "Bearer " + token}
-    )
+r = requests.delete(
+    url + "order/" + vt_orderid,
+    headers={"Authorization": "Bearer " + token}
+)
 ```
 如果想将之前下的委托撤销，可以发送主动请求，结果同样会在图形化界面更新，如下图所示：
 
@@ -168,15 +168,15 @@ r = requests.post(url + "tick/" + "cu2112.SHFE", headers={"Authorization":"Beare
 
 ```python 3
 # Weboscket测试
-    from websocket import create_connection
+from websocket import create_connection
 
-    ws = create_connection("ws://127.0.0.1:8000/ws/?token=" + token)
+ws = create_connection("ws://127.0.0.1:8000/ws/?token=" + token)
 
-    while True:
-        result =  ws.recv()
-        print("Received '%s'" % result)
+while True:
+    result =  ws.recv()
+    print("Received '%s'" % result)
 
-    ws.close()
+ws.close()
 ```
 通过Websocket同样可以被动接收策略交易进程推送过来的行情数据和委托数据等，如图：
 

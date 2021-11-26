@@ -15,11 +15,11 @@ CtaStrategy是用于**CTA策略实盘**的功能模块，用户可以通过图�
 在启动脚本中添加如下代码：
 
 ```python 3
-    # 写在顶部
-    from vnpy_ctastrategy import CtaStrategyApp
+# 写在顶部
+from vnpy_ctastrategy import CtaStrategyApp
 
-    # 写在创建main_engine对象后
-    main_engine.add_app(CtaStrategyApp)
+# 写在创建main_engine对象后
+main_engine.add_app(CtaStrategyApp)
 ```
 
 
@@ -384,16 +384,16 @@ CTA策略模板提供完整的信号生成和委托管理功能，用户可以�
 在基于CTA策略模板编写策略逻辑之前，需要在策略文件的顶部载入需要用到的内部组件，如下方代码所示：
 
 ```python 3
-    from vnpy_ctastrategy import (
-        CtaTemplate,
-        StopOrder,
-        TickData,
-        BarData,
-        TradeData,
-        OrderData,
-        BarGenerator,
-        ArrayManager
-    )
+from vnpy_ctastrategy import (
+    CtaTemplate,
+    StopOrder,
+    TickData,
+    BarData,
+    TradeData,
+    OrderData,
+    BarGenerator,
+    ArrayManager
+)
 ```
 
 其中，CtaTemplate是CTA策略模板，StopOrder、TickData、BarData、TradeData和OrderData都是储存对应信息的数据容器，BarGenerator是K线生成模块，ArrayManager是K线时间序列管理模块。
@@ -476,7 +476,7 @@ __init__函数是策略类的构造函数，需要与继承的CtaTemplate保持�
 如果只基于on_bar进行交易，这里代码可以写成：
 
 ```python 3
-    self.bg = BarGenerator(self.on_bar)
+        self.bg = BarGenerator(self.on_bar)
 ```
 
 而不用给bg实例传入需要基于on_bar周期合成的更长K线周期，以及接收更长K线周期的函数名。
@@ -488,13 +488,13 @@ BarGenerator默认的基于on_bar函数合成长周期K线的数据频率是分�
 文件顶部导入Interval：
 
 ```python 3
-    from vnpy.trader.constant import Interval
+from vnpy.trader.constant import Interval
 ```
 
 __init__函数创建bg实例时传入数据频率：
 
 ```python 3
-    self.bg = BarGenerator(self.on_bar, 2, self.on_2hour_bar, Interval.HOUR)
+        self.bg = BarGenerator(self.on_bar, 2, self.on_2hour_bar, Interval.HOUR)
 ```
 
 3 . 调用K线时间序列管理模块（ArrayManager）：基于K线数据，如1分钟、15分钟，
