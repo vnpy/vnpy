@@ -269,17 +269,6 @@ vn.py使用Github托管其源代码，如果希望贡献代码请使用github的
   * 使用[autopep8](https://github.com/hhatto/autopep8)格式化你的代码。运行```autopep8 --in-place --recursive . ```即可。
   * 使用[flake8](https://pypi.org/project/flake8/)检查你的代码，确保没有error和warning。在项目根目录下运行```flake8```即可。
 
-
-## 项目捐赠
-
-过去7年中收到过许多社区用户的捐赠，在此深表感谢！所有的捐赠资金都投入到了vn.py社区基金中，用于支持vn.py项目的运作。
-
-先强调一下：**vn.py是开源项目，可以永久免费使用，并没有强制捐赠的要求！！！**
-
-捐赠方式：支付宝3216630132@qq.com（*晓优）
-
-长期维护捐赠清单，请在留言中注明是项目捐赠以及捐赠人的名字。
-
 ## 其他内容
 
 * [获取帮助](https://github.com/vnpy/vnpy/blob/dev/.github/SUPPORT.md)
