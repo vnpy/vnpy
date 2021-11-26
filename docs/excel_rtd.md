@@ -27,8 +27,8 @@ RTD全称是RealTimeData，是微软提供的主要面向金融行业中实时�
 
 接着运行以下命令：
 ```bash
-    pip install pyxll
-    pyxll install
+pip install pyxll
+pyxll install
 ```
 
 接着按照要求一步一步就能安装成功了。需要注意的是在执行到这一步时：

@@ -36,7 +36,7 @@ MySQL是目前最流行的开源关系型数据库，其特点如下：
 
 #### MySQL配置字段
 
-MySQL和PostgreSQL在VN Trader中配置时，需要填写以下字段信息：
+MySQL在VN Trader中配置时，需要填写以下字段信息：
 
 | 字段名            | 值 | 是否必填 |
 |---------           |---- | ---- |
@@ -66,7 +66,7 @@ PostgreSQL是特性更为丰富的开源关系型数据库，只推荐熟手使�
 
 #### PostgreSQL配置字段
 
-MySQL和PostgreSQL在VN Trader中配置时，需要填写以下字段信息：
+PostgreSQL在VN Trader中配置时，需要填写以下字段信息：
 
 | 字段名            | 值 | 是否必填 |
 |---------           |---- | ---- |
@@ -77,7 +77,7 @@ MySQL和PostgreSQL在VN Trader中配置时，需要填写以下字段信息：
 |database.user       | 用户名 | 必填 |
 |database.password   | 密码 | 必填 |
 
-MySQL配置示例如下所示：
+PostgreSQL配置示例如下所示：
 
 | 字段名            | 值 |
 |---------           |----  |
