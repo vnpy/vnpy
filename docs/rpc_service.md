@@ -102,7 +102,7 @@ vn.py提供了与RpcService配套使用的RpcGateway，作为客户端的标准�
 
 由一个特定的进程连接交易接口充当**服务器**的角色，在本地物理机或者局域网内部向其他独立的**客户端**进程主动推送事件，并处理客户端相关请求，如下图所示：
 
-![](https://static.vnpy.com/upload/temp/a67e561d-d94d-43f4-9d40-bb929ed6e0e5.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/rpc_service/7.png)
 
 ## RPC服务（RpcService）的应用场景
 
