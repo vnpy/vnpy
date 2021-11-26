@@ -26,9 +26,9 @@ RTD全称是RealTimeData，是微软提供的主要面向金融行业中实时�
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/excel_rtd/excel_rtd_4.png)
 
 接着运行以下命令：
-```
-pip install pyxll
-pyxll install
+```bash
+    pip install pyxll
+    pyxll install
 ```
 
 接着按照要求一步一步就能安装成功了。需要注意的是在执行到这一步时：
@@ -53,12 +53,12 @@ pyxll install
 
 在启动脚本中添加如下代码：
 
-```
-# 写在顶部
-from vnpy_excelrtd import ExcelRtdApp
+```python 3
+    # 写在顶部
+    from vnpy_excelrtd import ExcelRtdApp
 
-# 写在创建main_engine对象后
-main_engine.add_app(ExcelRtdApp)
+    # 写在创建main_engine对象后
+    main_engine.add_app(ExcelRtdApp)
 ```
 
 ## 启动模块

@@ -12,7 +12,7 @@
 
 以CTP接口为例，在启动脚本中添加如下代码：
 
-```
+```python
 # 写在顶部
 from vnpy_ctp import CtpGateway
 
@@ -322,7 +322,7 @@ main_engine.add_gateway(CtpGateway)
 
 #### 相关字段
 
-- 用账号：
+- 账号：
 - 密码：
 - 行情地址：
 - 交易地址：

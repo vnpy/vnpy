@@ -14,8 +14,8 @@
 在文件夹examples/vn_trader中找到run.py文件(不是vnstudio下的，需要在github上单独下载）。运行run.py即可进入VN Trader。
 
 - 以Win10系统为例，用户可在run.py所在文件夹内按住【Shift】，同时点击鼠标右键，选择【在此处打开 powershell 窗口】，在弹出窗口中，输入如下命令，即可启动VN Trader。
-   ```
-   python run.py
+   ```bash
+        python run.py
    ```
    ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/3.png)
 
@@ -96,6 +96,7 @@
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/subcribe_contract_module.png)
 
 行情组件监控内容包括以下部分：
+
 - 合约信息：合约代码、交易所、合约名称；
 - 行情信息：最新价、成交量、开盘价、最高价、最低价、收盘价、买1价、买1量、卖1价、卖1量；
 - 其他信息：数据推送时间、接口。
@@ -143,7 +144,7 @@
 
 - 可用资金：可以用于委托的现金
 - 冻结：委托操作冻结的金额（与保证金不是一个概念）
-- 余额：总资金，即可用资金 + 保证金 + 浮动盈亏 
+- 余额：总资金，即可用资金 + 保证金 + 浮动盈亏
 
 若全部平仓，浮动盈亏变成实际盈亏，保证金和浮动盈亏清零，总资金等于可用资金。
 
@@ -188,7 +189,9 @@ log.active, log.level, log.console和log.file用于对日志输出进行配置�
 - log.file：该参数用于控制是否要将日志输出到文件中，建议设置为True，否则无法记录生成的日志。
 
 VN Trader的日志文件，默认位于运行时目录的.vntrader\log目录下，完整路径为：
-C:\users\administrator.vntrader\log
+```
+C:\users\administrator\.vntrader\log
+```
 
 其中，administrator为当前Windows系统的登录用户名。
 
@@ -224,11 +227,11 @@ C:\users\administrator.vntrader\log
 - [iFinD]
 - [Tinysoft]
 
-[RQData]:https://github.com/vnpy/vnpy_rqdata 
+[RQData]:https://github.com/vnpy/vnpy_rqdata
 [Udata]: https://github.com/vnpy/vnpy_udata
 [TuShare]: https://github.com/vnpy/vnpy_tushare
 [TQSDK]: https://github.com/vnpy/vnpy_tqsdk
-[Wind]:https://github.com/vnpy/vnpy_wind 
+[Wind]:https://github.com/vnpy/vnpy_wind
 [iFinD]: https://github.com/vnpy/vnpy_ifind
 [Tinysoft]: https://github.com/vnpy/vnpy_tinysoft
 
@@ -236,6 +239,3 @@ C:\users\administrator.vntrader\log
 ### 数据库
 
 以database为前缀的参数用于配置数据库服务。目前，vn.py支持SQLite、MySQL、PostgreSQL、MongoDB、InfluxDB、DolphinDB、Arctic和LevelDB八种数据库。具体配置方法详见项目文档的数据库配置部分。
-
-
-
