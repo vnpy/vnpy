@@ -28,7 +28,7 @@ vnpy_ctp==6.5.1.6
 vnpy_ctptest==6.5.1.3
 vnpy_okex==2021.4.21.5
 vnpy_deribit==2.0.1.1
-vnpy_xtp==2.2.27.5
+vnpy_xtp>=2.2.27.5
 vnpy_bybit==2021.10.25
 vnpy_tts==6.5.1.0
 vnpy_rohon==6.5.1.0
