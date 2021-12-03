@@ -286,8 +286,8 @@ class PositionHolding:
             trade.signal_price = order.signal_price
             trade.limit_price = order.price
             trade.backtest_price = order.backtest_price
-        # 重新计算post_init
-        trade.__post_init__()
+            # 重新计算post_init
+            trade.__post_init__()
 
         self.long_pos = self.long_td + self.long_yd
         self.short_pos = self.short_td + self.short_yd

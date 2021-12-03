@@ -140,6 +140,7 @@ class Exchange(Enum):
 
     # Special Function
     LOCAL = "LOCAL"         # For local generated data
+    LOCAL_BASKET = "LOCAL_BASKET"       #本地篮子
 
 
 class Currency(Enum):
