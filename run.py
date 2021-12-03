@@ -5,6 +5,9 @@ from vnpy.gateway.ctp import CtpGateway
 from vnpy.gateway.uft import UftGateway
 from vnpy_ctastrategy import CtaStrategyApp
 from vnpy_ctabacktester import CtaBacktesterApp
+from vnpy_spreadtrading import SpreadTradingApp
+from vnpy_xtp import XtpGateway
+from vnpy_okex import OkexGateway
 
 
 def main():
@@ -16,8 +19,12 @@ def main():
 
     main_engine.add_gateway(CtpGateway)
     main_engine.add_gateway(UftGateway)
+    main_engine.add_gateway(XtpGateway)
+    main_engine.add_gateway(OkexGateway)
     main_engine.add_app(CtaStrategyApp)
     main_engine.add_app(CtaBacktesterApp)
+    main_engine.add_app(SpreadTradingApp)
+
 
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()
