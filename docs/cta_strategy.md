@@ -14,7 +14,7 @@ CtaStrategy是用于**CTA策略实盘**的功能模块，用户可以通过图�
 
 在启动脚本中添加如下代码：
 
-```
+```python 3
 # 写在顶部
 from vnpy_ctastrategy import CtaStrategyApp
 
@@ -236,13 +236,12 @@ CTA策略引擎会自动将该策略之前发出的所有活动委托全部撤�
 1. 调用put_event函数
 
    策略实例中所有的的变量信息，都需要把变量名写在策略的variables列表中，才能在图形界面显示。如果想跟踪变量的状态变化，则需要在策略中调用put_event函数，界面上才会进行数据刷新。
-   
+
    有时用户会发现自己写的策略无论跑多久，变量信息都不发生变化，这种情况请检查策略中是否漏掉了对put_event函数的调用。
 
 2. 调用write_log函数
 
    如果不仅想观察到变量信息的状态变化，还想根据策略的状态输出基于自己需求的个性化的日志，可以在策略中调用write_log函数，进行日志输出。
-
 
 ## 运行日志
 
@@ -297,7 +296,7 @@ vn.py的本地停止单有三个特点：
 
 停止单刚发出时是处于【等待中】的状态。因为停止单的信息记录在本地，没有发往交易所，所以此时主界面上【委托】栏不会有变化。
 
-一旦该停止单的委托价格被触发，为了实现立即成交的目的，CTA策略引擎会立即以**涨跌停价**或者**盘口五档**的价格，去发出**限价**委托（所以建议本地停止单只用于流动性较好的合约）。限价委托发出后，VN Trader主界面上【委托】栏将更新该订单的状态，此时停止单状态会变为【已触发】，【限价委托号】栏下也会填入该订单的限价委托号。
+一旦该停止单的委托价格被触发，为了实现立即成交的目的，CTA策略引擎会立即以**涨跌停价**的价格，去发出**限价**委托（所以建议本地停止单只用于流动性较好的合约）。限价委托发出后，VN Trader主界面上【委托】栏将更新该订单的状态，此时停止单状态会变为【已触发】，【限价委托号】栏下也会填入该订单的限价委托号。
 
 需注意，停止单界面显示的价格是本地停止单的触发价格，而不是发出限价单的价格。
 
@@ -384,7 +383,7 @@ CTA策略模板提供完整的信号生成和委托管理功能，用户可以�
 
 在基于CTA策略模板编写策略逻辑之前，需要在策略文件的顶部载入需要用到的内部组件，如下方代码所示：
 
-```
+```python 3
 from vnpy_ctastrategy import (
     CtaTemplate,
     StopOrder,
@@ -403,7 +402,7 @@ from vnpy_ctastrategy import (
 
 在策略类的下方，可以设置策略的作者（author），参数（parameters）以及变量（variables），如下方代码所示：
 
-```
+```python 3
 
     author = "用Python的交易员"
 
@@ -461,7 +460,7 @@ __init__函数是策略类的构造函数，需要与继承的CtaTemplate保持�
 
 在这个继承的策略类里，初始化一般分三步，如下方代码所示：
 
-```
+```python 3
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
         super().__init__(cta_engine, strategy_name, vt_symbol, setting)
@@ -476,7 +475,7 @@ __init__函数是策略类的构造函数，需要与继承的CtaTemplate保持�
 
 如果只基于on_bar进行交易，这里代码可以写成：
 
-```
+```python 3
         self.bg = BarGenerator(self.on_bar)
 ```
 
@@ -488,13 +487,13 @@ BarGenerator默认的基于on_bar函数合成长周期K线的数据频率是分�
 
 文件顶部导入Interval：
 
-```
+```python 3
 from vnpy.trader.constant import Interval
 ```
 
 __init__函数创建bg实例时传入数据频率：
 
-```
+```python 3
         self.bg = BarGenerator(self.on_bar, 2, self.on_2hour_bar, Interval.HOUR)
 ```
 
@@ -519,7 +518,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 初始化策略时on_init函数会被调用，默认写法是先调用write_log函数输出“策略初始化”日志，再调用load_bar函数加载历史数据，如下方代码所示：
 
-```
+```python 3
     def on_init(self):
         """
         Callback when strategy is inited.
@@ -540,7 +539,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 启动策略时on_start函数会被调用，默认写法是调用write_log函数输出“策略启动”日志，如下方代码所示：
 
-```
+```python 3
     def on_start(self):
         """
         Callback when strategy is started.
@@ -558,7 +557,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 停止策略时on_stop函数会被调用，默认写法是调用write_log函数输出“策略停止”日志，如下方代码所示：
 
-```
+```python 3
     def on_stop(self):
         """
         Callback when strategy is stopped.
@@ -580,7 +579,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 当策略收到最新的Tick数据的行情推送时，on_tick函数会被调用。默认写法是通过BarGenerator的update_tick函数把收到的Tick数据推进前面创建的bg实例中以便合成1分钟的K线，如下方代码所示：
 
-```
+```python 3
     def on_tick(self, tick: TickData):
         """
         Callback of new tick data update.
@@ -600,7 +599,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 2 . 如果策略需要基于on_bar推进来的K线数据通过BarGenerator合成更长时间周期的K线来交易，那么请在on_bar中调用BarGenerator的update_bar函数，把收到的这个bar推进前面创建的bg实例中即可，如下方代码所示：
 
-```
+```python 3
     def on_bar(self, bar: BarData):
         """
         Callback of new bar data update.
@@ -610,7 +609,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 示例策略类BollChannelStrategy是通过15分钟K线数据回报来生成CTA信号的。一共有三部分，如下方代码所示：
 
-```
+```python 3
     def on_15min_bar(self, bar: BarData):
         """"""
         self.cancel_all()
@@ -710,7 +709,7 @@ buy/sell/short/cover都是策略内部的负责发单的交易请求类函数。
 
 如果net设置为True，那么该笔订单则会进行净仓委托转换（基于整体账户的所有仓位，根据净仓持有方式来对策略下单的开平方向进行转换）。但是净仓交易模式与锁仓交易模式互斥，因此net设置为True时，lock必须设置为False。
 
-```
+```python 3
     def buy(self, price: float, volume: float, stop: bool = False, lock: bool = False, net: bool = False):
         """
         Send buy order to open a long position.
@@ -788,7 +787,7 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 如下方代码所示，load_bar函数调用时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据。在回测时，10天指的是10个交易日，而在实盘时，10天则是指的是自然日，因此建议加载的天数宁可多一些也不要太少。
 
-```
+```python 3
     def load_bar(
         self,
         days: int,

@@ -15,7 +15,7 @@ SpreadTrading是用于**价差交易**的功能模块，用户可以通过图形
 
 在启动脚本中添加如下代码：
 
-```
+```python 3
 # 写在顶部
 from vnpy_spreadtrading import SpreadTradingApp
 
@@ -32,8 +32,8 @@ main_engine.add_app(spread_trading)
 
 对于在Windows上默认安装的用户来说，放置策略的strategies目录路径通常为：
 
-```
-C:\Users\Administrator\strategies
+```bash
+    C:\Users\Administrator\strategies
 ```
 
 其中Administrator为当前登录Windows的系统用户名。
@@ -59,7 +59,7 @@ C:\Users\Administrator\strategies
 
 ### 查询合约
 
-在创建价差合约前，用户可以通过【查询合约】功能，寻找可以组成价差的合约：
+在创建价差合约前，用户可以通过【查询合约】功能，寻找可以组成价差的合约（**不支持交易所套利合约**）：
 
 - 在VN Trader菜单栏中点击【帮助】-> 【查询合约】按钮，弹出合约查询界面，如下图所示：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/3.png)
@@ -348,7 +348,7 @@ C:\Users\Administrator\strategies
 
 在基于价差交易策略模板编写策略逻辑之前，需要在策略文件的顶部载入需要用到的内部组件，如下方代码所示：
 
-```
+```python 3
 from vnpy.trader.utility import BarGenerator, ArrayManager
 from vnpy_spreadtrading import (
     SpreadStrategyTemplate,
@@ -367,7 +367,7 @@ from vnpy_spreadtrading import (
 
 在策略类的下方，可以设置策略的作者（author），参数（parameters）以及变量（variables），如下方代码所示：
 
-```
+```python 3
     author = "用Python的交易员"
 
     boll_window = 20
@@ -412,7 +412,7 @@ __init__函数是策略类的构造函数，需要与继承的SpreadStrategyTemp
 
 在这个继承的策略类里，初始化一般分三步，如下方代码所示：
 
-```
+```python 3
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
         super().__init__(
@@ -448,7 +448,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 初始化策略时on_init函数会被调用，默认写法是调用write_log函数输出“策略初始化”日志，再调用load_bar函数加载历史数据，如下方代码所示：
 
-```
+```python 3
     def on_init(self):
         """
         Callback when strategy is inited.
@@ -469,7 +469,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 启动策略时on_start函数会被调用，默认写法是调用write_log函数输出“策略启动”日志，如下方代码所示：
 
-```
+```python 3
     def on_start(self):
         """
         Callback when strategy is started.
@@ -487,7 +487,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 停止策略时on_stop函数会被调用，默认写法是调用write_log函数输出“策略停止”日志，同时还原策略的变量，如下方代码所示：
 
-```
+```python 3
     def on_stop(self):
         """
         Callback when strategy is stopped.
@@ -507,7 +507,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 当价差数据更新的时候on_spread_data函数会被调用（因本次示例策略类StatisticalArbitrageStrategy不是基于on_spread_data交易，故不作示例讲解。基于on_spread_data交易的示例代码可参考示例策略BasicSpreadStrategy）。StatisticalArbitrageStrategy的写法是先调用get_spread_tick获取价差Tick数据，然后推进on_spread_tick函数中，如下方代码所示：
 
-```
+```python 3
     def on_spread_data(self):
         """
         Callback when spread price is updated.
@@ -524,7 +524,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 当策略收到最新的价差Tick数据的行情时，on_spread_tick函数会被调用。默认写法是通过BarGenerator的update_tick函数把收到的Tick数据推进前面创建的bg实例中以便合成1分钟的K线，如下方代码所示：
 
-```
+```python 3
     def on_spread_tick(self, tick: TickData):
         """
         Callback when new spread tick data is generated.
@@ -542,7 +542,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 如果策略基于on_spread_bar推进来的K线交易，那么请把交易请求类函数都写在on_spread_bar函数下。示例策略类StatisticalArbitrageStrategy是通过1分钟K线数据回报来生成CTA信号的。一共有三部分，如下方代码所示：
 
-```
+```python 3
     def on_spread_bar(self, bar: BarData):
         """
         Callback when spread bar data is generated.
@@ -612,7 +612,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 收到持有仓位更新时on_spread_pos函数会被调用。与CTA策略模块访问策略逻辑持仓不同，价差交易模块访问的是账户底层持仓。所以默认写法是通过调用get_spread_pos函数获取价差持仓，以供策略进行逻辑判断，如下方代码所示：
 
-```
+```python 3
     def on_spread_pos(self):
         """
         Callback when spread position is updated.
@@ -663,7 +663,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 以下方star_long_algo函数的代码为例，可以看到，价格、数量、超价的数值、时间间隔是必填的参数，锁仓转换和开平方向则分别默认为False和Offset.NONE。也可以看到，函数内部收到传进来的参数之后就调用了SpreadStrategyTemplate里的start_algo函数来发单（因为是long指令，则自动把方向填成了LONG）
 
-```
+```python 3
      def start_long_algo(
         self,
         price: float,
@@ -727,7 +727,7 @@ buy/sell/short/cover都是策略内部的负责针对特定合约发出底层交
 
 如果lock设置为True，那么该笔订单则会进行锁仓委托转换（在有今仓的情况下，如果想平仓，则会先平掉所有的昨仓，然后剩下的部分都进行反向开仓来代替平今仓，以避免平今的手续费惩罚）。
 
-```
+```python 3
     def buy(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
         """"""
         return self.send_order(vt_symbol, price, volume, Direction.LONG, Offset.OPEN, lock)
@@ -833,7 +833,7 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 如下方代码所示，load_bar函数调用时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据。在回测时，10天指的是10个交易日，而在实盘时，10天则是指的是自然日，因此建议加载的天数宁可多一些也不要太少。
 
-```
+```python 3
     def load_bar(
         self,
         days: int,

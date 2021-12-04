@@ -89,7 +89,7 @@ install.bat
 
 一键安装过程整体分为3步：
 
-1. 下载安装ta-lib库和ibapi；
+1. 下载安装ta-lib库；
 2. 安装requirements.txt文件内的相关依赖库；
 3. 安装vn.py本身。
 
