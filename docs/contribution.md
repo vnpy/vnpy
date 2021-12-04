@@ -3,7 +3,8 @@
 ---
 ## 创建PR
 我们欢迎任何人贡献代码到vn.py。  
-如果希望贡献代码请使用github的PR(Pull Request)的流程。
+
+如果希望贡献代码请使用Github的PR(Pull Request)的流程。
 
 PR流程大致如下：
 
