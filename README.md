@@ -40,7 +40,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * CTP证券（[sopt](https://www.github.com/vnpy/vnpy_sopt)）：ETF期权
 
-        * 飞马（femas）：国内期货
+        * 飞马（[femas](https://www.github.com/vnpy/vnpy_femas)）：国内期货
 
         * 恒生UFT（[uft](https://www.github.com/vnpy/vnpy_uft)）：国内期货、ETF期权
 
@@ -54,15 +54,15 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
         * 中泰XTP（[xtp](https://www.github.com/vnpy/vnpy_xtp)）：国内证券（A股）、ETF期权
 
+        * 华鑫奇点（[tora](https://www.github.com/vnpy/vnpy_tora)）：国内证券（A股）、ETF期权
+
         * 国泰君安（gtja）：国内证券（A股）
 
         * 恒生期权（hsoption）：ETF期权
 
-        * 华鑫奇点（tora）：国内证券（A股）、ETF期权
-
         * 飞鼠（[sgit](https://www.github.com/vnpy/vnpy_sgit)）：黄金TD、国内期货
 
-        * 金仕达黄金（ksgold）：黄金TD
+        * 金仕达黄金（[ksgold](https://www.github.com/vnpy/vnpy_ksgold)）：黄金TD
 
         * 融航（[rohon](https://www.github.com/vnpy/vnpy_rohon)）：期货资管
 

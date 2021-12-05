@@ -1,11 +1,19 @@
 # 2.8.0版本
 
+# 新增
+1. 新增东证OST柜台交易接口vnpy_ost
+
 # 修复
 1. 修复部分C++接口模块剥离后，遗留的安装脚本编译代码导致的报错问题
 
 # 调整
 1. 移除老版本基于requests库的RestClient客户端
 2. 移除老版本基于websocket-client库的WebsocketClient客户端
+
+# 剥离
+1. 将华鑫奇点交易接口剥离到vnpy_tora项目中，并升级到4.0版本
+2. 将飞马交易接口剥离到vnpy_femas项目中
+3. 将金仕达黄金接口剥离到vnpy_ksgold项目中
 
 
 # 2.7.0版本
