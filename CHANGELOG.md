@@ -16,6 +16,7 @@
 2. 将飞马交易接口剥离到vnpy_femas项目中
 3. 将金仕达黄金接口剥离到vnpy_ksgold项目中
 4. 将投资组合策略模块剥离到vnpy_portfoliostrategy项目中
+5. 将Excel RTD模块剥离到vnpy_excelrtd项目中
 
 
 # 2.7.0版本
