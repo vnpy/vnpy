@@ -52,6 +52,7 @@ vnpy_optionmaster==1.0.0
 vnpy_algotrading==1.0.1
 vnpy_scripttrader==1.0.0
 vnpy_portfoliomanager==1.0.0
+vnpy_portfoliostrategy==1.0.0
 
 vnpy_sqlite==1.0.0
 vnpy_mysql==1.0.0
