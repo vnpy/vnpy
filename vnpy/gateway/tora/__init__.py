@@ -1,2 +1,1 @@
-from .toraoption_gateway import ToraOptionGateway
-from .torastock_gateway import ToraStockGateway
+from vnpy_tora import ToraStockGateway, ToraOptionGateway
