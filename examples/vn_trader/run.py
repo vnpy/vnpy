@@ -24,6 +24,7 @@ from vnpy_ctp import CtpGateway
 # from vnpy_da import DaGateway
 # from vnpy_rohon import RohonGateway
 # from vnpy_tts import TtsGateway
+# from vnpy_sgit import SgitGateway
 
 # from vnpy_ctastrategy import CtaStrategyApp
 # from vnpy_ctabacktester import CtaBacktesterApp
@@ -72,6 +73,7 @@ def main():
     # main_engine.add_gateway(DaGateway)
     # main_engine.add_gateway(RohonGateway)
     # main_engine.add_gateway(TtsGateway)
+    # main_engine.add_gateway(SgitGateway)
     
     # main_engine.add_app(CtaStrategyApp)
     # main_engine.add_app(CtaBacktesterApp)
