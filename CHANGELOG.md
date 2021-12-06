@@ -7,7 +7,7 @@
 # 修复
 1. 修复部分C++接口模块剥离后，遗留的安装脚本编译代码导致的报错问题
 2. 修复vnpy_xtp订阅深交所行情后，可能出现的闪退问题
-
+3. 修复vnpy_tushare部分数据字段为None时，导致的数据错误
 # 调整
 1. 移除老版本基于requests库的RestClient客户端
 2. 移除老版本基于websocket-client库的WebsocketClient客户端
