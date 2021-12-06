@@ -7,7 +7,7 @@
 💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.7.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.8.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
@@ -49,8 +49,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
         * 飞创证券（sec）：ETF期权
 
         * 南华NHTD（nhtd）：国内期货、ETF期权
-
-        * 宽睿（oes）：国内证券（A股）、ETF期权
 
         * 中泰XTP（[xtp](https://www.github.com/vnpy/vnpy_xtp)）：国内证券（A股）、ETF期权
 
@@ -266,7 +264,6 @@ vn.py使用Github托管其源代码，如果希望贡献代码请使用github的
 
 在提交代码的时候，请遵守以下规则，以提高代码质量：
 
-  * 使用[autopep8](https://github.com/hhatto/autopep8)格式化你的代码。运行```autopep8 --in-place --recursive . ```即可。
   * 使用[flake8](https://pypi.org/project/flake8/)检查你的代码，确保没有error和warning。在项目根目录下运行```flake8```即可。
 
 ## 其他内容
