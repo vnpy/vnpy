@@ -27,6 +27,7 @@ from vnpy_ctp import CtpGateway
 # from vnpy_sgit import SgitGateway
 # from vnpy_ksgold import KsgoldGateway
 # from vnpy_ost import OstGateway
+# form vnpy_hft import GtjaGateway
 
 # from vnpy_ctastrategy import CtaStrategyApp
 # from vnpy_ctabacktester import CtaBacktesterApp
@@ -78,6 +79,7 @@ def main():
     # main_engine.add_gateway(SgitGateway)
     # main_engine.add_gateway(KsgoldGateway)
     # main_engine.add_gateway(OstGateway)
+    # main_engine.add_gateway(GtjaGateway)
     
     # main_engine.add_app(CtaStrategyApp)
     # main_engine.add_app(CtaBacktesterApp)
