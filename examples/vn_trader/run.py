@@ -71,7 +71,6 @@ def main():
     # main_engine.add_gateway(TapGateway)
     # main_engine.add_gateway(DaGateway)
     # main_engine.add_gateway(RohonGateway)
-    # main_engine.add_gateway(XgjGateway)
     # main_engine.add_gateway(TtsGateway)
     
     # main_engine.add_app(CtaStrategyApp)
