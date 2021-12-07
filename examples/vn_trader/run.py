@@ -87,6 +87,7 @@ def main():
     # main_engine.add_gateway(NhStockGateway)
     # main_engine.add_gateway(FutuGateway)
     
+    # main_engine.add_app(PaperAccountApp)
     # main_engine.add_app(CtaStrategyApp)
     # main_engine.add_app(CtaBacktesterApp)
     # main_engine.add_app(SpreadTradingApp)
@@ -102,7 +103,6 @@ def main():
     # main_engine.add_app(RiskManagerApp)
     # main_engine.add_app(WebTraderApp)
     # main_engine.add_app(PortfolioManagerApp)
-    # main_engine.add_app(PaperAccountApp)
     
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()
