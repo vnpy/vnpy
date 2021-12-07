@@ -47,4 +47,4 @@
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/error_debug/5.png)
 
-在使用run.py的时候，只需要按需取消掉相应接口（Gateway）和应用（APP）前面的注释则可。在使用的过程中需要注意的是，最好不要同时加载多个C++类的接口。
+在使用run.py的时候，只需要按需取消掉相应接口（Gateway）和应用（App）前面的注释则可。在使用的过程中需要注意的是，最好不要同时加载多个C++类的接口。
