@@ -2,7 +2,7 @@
 
 ## 简介
 
-只有正确的定位问题，我们才能快速的解决问题。而正确定位问题的前提是获得报错提示信息，这一点完全可以通过命令行启动VN Station来实现。因此，在这里我们介绍两种通过命令行启动VN Station/VN Trader图形界面的方法（新手推荐使用第一种）。
+只有正确的定位问题，我们才能快速的解决问题。而正确定位问题的前提是获得报错提示信息，这一点完全可以通过命令行启动VN Station来实现。因此，在这里我们向用户介绍两种通过命令行启动VN Station/VN Trader图形界面的方法（新手推荐使用第一种）。
 
 ## python -m vnstation启动
 
@@ -20,20 +20,24 @@
 
 （上图中qt的warning信息不影响程序的运行）
 
-剩下的操作则跟从桌面图标启动VN Station完全一致。重点在于假如出现了BUG，那么我们就可以在该命令行下看到报错的提示，从而定位问题所在。如此也方便大家将报错截图发送到微信/QQ群中或者论坛上寻求帮助。这里提供一个连接数据库失败的例子，如下图所示：
+剩下的操作则跟从桌面图标启动VN Station完全一致。重点在于假如出现了BUG，那么用户就可以在该命令行下看到报错的提示，从而定位问题所在。如此也方便用户将报错截图发送到微信/QQ群中或者论坛上寻求帮助。
+
+这里举一个常见的例子，假如用户将DolphinDB作为vn.py的数据库配置，然后在通过桌面图标的方式启动VN Studio/VN Trader之前并没有启动DolphinDB数据库，那么就会出现如下图所示的白屏错误：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/error_debug/8.png)
+
+因为用户是通过桌面图标启动，因此这时候也无法得知这个错误究竟是什么，这时只需要按照上述方式用命令行启动就可以得到准确的错误提示，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/error_debug/7.png)
 
-如果将DolphinDB作为vn.py的数据库配置，那么在启动VN Trader之前必须先启动DolphinDB数据库，否则就会报如上图所示的错误。
-
-除了有BUG会提示之外，如果想通过“打印输出”的方式检查代码逻辑是否正确，同样可以在策略中加上print()函数。例如，我在策略中加了一句 ```print("test")``` 之后，命令行的输出如下图所示：
+除了有BUG会提示之外，如果想通过打印输出的方式检查代码逻辑是否正确，同样可以在策略中加上print()函数。例如，我在策略中加了一句 ```print("test")``` 之后，命令行的输出如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/error_debug/6.png)
 
 
 ## python run.py启动
 
-除了通过 ```python -m vnstaion``` 先启动VN Station再启动VN Trader之外，我们还提供了通过运行脚本[run.py](https://gitee.com/vnpy/vnpy/blob/master/examples/vn_trader/run.py)直接启动VN Trader图形界面的方法。
+除了通过 ```python -m vnstaion``` 先启动VN Station再启动VN Trader之外，官方还提供了通过运行脚本[run.py](https://gitee.com/vnpy/vnpy/blob/master/examples/vn_trader/run.py)直接启动VN Trader图形界面的方法。
 
 首先下载上述run.py代码到本地，比如下载到D:\downloads\run.py，然后进入D:\downloads目录，按住shift键，然后选择“在此处打开PowerShell窗口”，接着就会打开一个PowerShell窗口，如下图所示：
 
@@ -43,4 +47,4 @@
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/error_debug/5.png)
 
-需要注意的是，在使用run.py的时候，将需要加载的接口和应用模块的代码取消注释就行，但是最好不要同时加载多个C++类的接口。
+在使用run.py的时候，只需要按需取消掉响应接口和应用前面的注释则可。在使用的过程中需要注意的是，最好不要同时加载多个C++类的接口。
