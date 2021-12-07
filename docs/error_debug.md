@@ -22,7 +22,7 @@
 
 剩下的操作则跟从桌面图标启动VN Station完全一致。重点在于假如出现了BUG，那么用户就可以在该命令行下看到报错的提示，从而定位问题所在。如此也方便用户将报错截图发送到微信/QQ群中或者论坛上寻求帮助。
 
-这里举一个常见的例子，假如用户将DolphinDB作为vn.py的数据库配置，然后在通过桌面图标的方式启动VN Studio/VN Trader之前并没有启动DolphinDB数据库，那么就会出现如下图所示的白屏错误：
+这里举一个常见的例子，假如用户将DolphinDB作为vn.py的数据库配置，然后在通过桌面图标的方式启动VN Station之前并没有启动DolphinDB数据库，那么就会出现如下图所示的白屏错误：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/error_debug/8.png)
 
@@ -30,7 +30,7 @@
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/error_debug/7.png)
 
-除了有BUG会提示之外，如果想通过打印输出的方式检查代码逻辑是否正确，同样可以在策略中加上print()函数。例如，我在策略中加了一句 ```print("test")``` 之后，命令行的输出如下图所示：
+除了在有BUG会有详细的报错信息输出之外，如果想通过打印输出的方式检查代码逻辑是否正确，同样可以在策略中加上print()函数。例如，我在策略中加了一句 ```print("test")``` 之后，命令行的输出如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/error_debug/6.png)
 
@@ -47,4 +47,4 @@
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/error_debug/5.png)
 
-在使用run.py的时候，只需要按需取消掉相应接口（Gateway）和应用（App）前面的注释则可。在使用的过程中需要注意的是，最好不要同时加载多个C++类的接口。
+在使用run.py的时候，只需要按需取消掉相应接口（Gateway）和应用（App）前面的注释则可。在使用的过程中需要注意的是，请不要同时加载多个C++类的接口，可能会导致dll文件同名冲突。
