@@ -61,7 +61,7 @@ vnpy_mysql==1.0.0
 vnpy_postgresql==1.0.0
 vnpy_mongodb==1.0.0
 vnpy_influxdb==1.0.1
-vnpy_dolphindb==1.0.3
+vnpy_dolphindb==1.0.5
 vnpy_arctic==1.0.2
 vnpy_leveldb==1.0.1
 
