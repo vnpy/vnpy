@@ -38,7 +38,7 @@
   * CTP Mini测试（minitest）：期货、期货期权
 
   * 飞马（femas）：期货
-    
+
   * CTP期权（sopt）：ETF期权
 
   * CTP期权测试（sopttest）：ETF期权
@@ -58,7 +58,7 @@
   * 华鑫奇点股票（torastock）：A股
 
   * 华鑫奇点期权（toraoption）：ETF期权
-    
+
   * 中亿汇达Comstar XBond（comstarxbond）：银行间市场
 
   * 中亿汇达Comstar 双边（comstarquote）：银行间市场

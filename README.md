@@ -7,7 +7,7 @@
 💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.7.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.8.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
@@ -40,7 +40,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
         * CTP证券（[sopt](https://www.github.com/vnpy/vnpy_sopt)）：ETF期权
 
-        * 飞马（femas）：国内期货
+        * 飞马（[femas](https://www.github.com/vnpy/vnpy_femas)）：国内期货
 
         * 恒生UFT（[uft](https://www.github.com/vnpy/vnpy_uft)）：国内期货、ETF期权
 
@@ -50,19 +50,17 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
         * 南华NHTD（nhtd）：国内期货、ETF期权
 
-        * 宽睿（oes）：国内证券（A股）、ETF期权
-
         * 中泰XTP（[xtp](https://www.github.com/vnpy/vnpy_xtp)）：国内证券（A股）、ETF期权
+
+        * 华鑫奇点（[tora](https://www.github.com/vnpy/vnpy_tora)）：国内证券（A股）、ETF期权
 
         * 国泰君安（gtja）：国内证券（A股）
 
         * 恒生期权（hsoption）：ETF期权
 
-        * 华鑫奇点（tora）：国内证券（A股）、ETF期权
-
         * 飞鼠（[sgit](https://www.github.com/vnpy/vnpy_sgit)）：黄金TD、国内期货
 
-        * 金仕达黄金（ksgold）：黄金TD
+        * 金仕达黄金（[ksgold](https://www.github.com/vnpy/vnpy_ksgold)）：黄金TD
 
         * 融航（[rohon](https://www.github.com/vnpy/vnpy_rohon)）：期货资管
 
@@ -92,13 +90,13 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
     * [option_master](https://www.github.com/vnpy/vnpy_optionmaster)：期权交易模块，针对国内期权市场设计，支持多种期权定价模型、隐含波动率曲面计算、希腊值风险跟踪等功能
 
-    * portfolio_strategy：组合策略模块，面向同时交易多合约的量化策略（Alpha、期权套利等），提供历史数据回测和实盘自动交易功能
+    * [portfolio_strategy](https://www.github.com/vnpy/vnpy_portfoliostrategy)：组合策略模块，面向同时交易多合约的量化策略（Alpha、期权套利等），提供历史数据回测和实盘自动交易功能
 
     * [algo_trading](https://www.github.com/vnpy/vnpy_algotrading)：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等
 
     * [script_trader](https://www.github.com/vnpy/vnpy_scripttrader)：脚本策略模块，针对多标的组合类交易策略设计，同时也可以直接在命令行中实现REPL指令形式的交易，不支持回测功能
 
-    * paper_account：模拟交易模块，纯本地化实现的模拟交易功能，基于交易接口获取的实时行情进行委托撮合，提供委托成交推送以及持仓记录
+    * [paper_account](https://www.github.com/vnpy/vnpy_paperaccount)：本地仿真模块，纯本地化实现的仿真模拟交易功能，基于交易接口获取的实时行情进行委托撮合，提供委托成交推送以及持仓记录
 
     * [chart_wizard](https://www.github.com/vnpy/vnpy_chartwizard)：K线图表模块，基于RQData数据服务（期货）或者交易接口获取历史数据，并结合Tick推送显示实时行情变化
 
@@ -110,7 +108,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
     * [data_recorder](https://www.github.com/vnpy/vnpy_datarecorder)：行情记录模块，基于图形界面进行配置，根据需求实时录制Tick或者K线行情到数据库中，用于策略回测或者实盘初始化
 
-    * excel_rtd：Excel RTD（Real Time Data）实时数据服务，基于pyxll模块实现在Excel中获取各类数据（行情、合约、持仓等）的实时推送更新
+    * [excel_rtd](https://www.github.com/vnpy/vnpy_excelrtd)：Excel RTD（Real Time Data）实时数据服务，基于pyxll模块实现在Excel中获取各类数据（行情、合约、持仓等）的实时推送更新
 
     * [risk_manager](https://www.github.com/vnpy/vnpy_riskmanager)：风险管理模块，提供包括交易流控、下单数量、活动委托、撤单总数等规则的统计和限制，有效实现前端风控功能
 
@@ -172,7 +170,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.7.0](https://download.vnpy.com/vnstudio-2.7.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.8.0](https://download.vnpy.com/vnstudio-2.8.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 10以上/Windows Server 2016以上/Ubuntu 20.04 LTS以上
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 
@@ -266,13 +264,12 @@ vn.py使用Github托管其源代码，如果希望贡献代码请使用github的
 
 在提交代码的时候，请遵守以下规则，以提高代码质量：
 
-  * 使用[autopep8](https://github.com/hhatto/autopep8)格式化你的代码。运行```autopep8 --in-place --recursive . ```即可。
   * 使用[flake8](https://pypi.org/project/flake8/)检查你的代码，确保没有error和warning。在项目根目录下运行```flake8```即可。
 
 ## 其他内容
 
 * [获取帮助](https://github.com/vnpy/vnpy/blob/dev/.github/SUPPORT.md)
-* [社区行为准侧](https://github.com/vnpy/vnpy/blob/dev/.github/CODE_OF_CONDUCT.md)
+* [社区行为准则](https://github.com/vnpy/vnpy/blob/dev/.github/CODE_OF_CONDUCT.md)
 * [Issue模板](https://github.com/vnpy/vnpy/blob/dev/.github/ISSUE_TEMPLATE.md)
 * [PR模板](https://github.com/vnpy/vnpy/blob/dev/.github/PULL_REQUEST_TEMPLATE.md)
 

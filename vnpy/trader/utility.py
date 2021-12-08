@@ -952,6 +952,35 @@ class ArrayManager(object):
             return result
         return result[-1]
 
+    def stoch(
+        self,
+        fastk_period: int,
+        slowk_period: int,
+        slowk_matype: int,
+        slowd_period: int,
+        slowd_matype: int,
+        array: bool = False
+    ) -> Union[
+        Tuple[float, float],
+        Tuple[np.ndarray, np.ndarray]
+    ]:
+        """
+        Stochastic Indicator
+        """
+        k, d = talib.STOCH(
+            self.high,
+            self.low,
+            self.close,
+            fastk_period,
+            slowk_period,
+            slowk_matype,
+            slowd_period,
+            slowd_matype
+        )
+        if array:
+            return k, d
+        return k[-1], d[-1]
+
 
 def virtual(func: Callable) -> Callable:
     """

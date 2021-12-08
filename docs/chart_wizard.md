@@ -14,7 +14,7 @@ ChartWizard是用于**实时K线图表展示**的功能模块，用户可以通�
 
 在启动脚本中添加如下代码：
 
-```
+```python 3
 # 写在顶部
 from vnpy_chartwizard import ChartWizardApp
 
@@ -68,4 +68,3 @@ main_engine.add_app(ChartWizardApp)
 
 - 可以通过鼠标左键的拖拽，左右平移K线图显示的时间范围；
 - 可以通过鼠标滚轮的滚动，放大和缩小K线图显示的时间范围。
-

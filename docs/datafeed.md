@@ -67,3 +67,37 @@ TuShare是国内知名的开源Python金融数据接口项目，由大神Jimmy�
 - 数据分类：期货
 - 数据周期：分钟线（实施更新）
 - 注册申请：[天软.NET金融分析平台](http://www.tinysoft.com.cn/TSDN/HomePage.tsl)
+
+## 脚本使用
+脚本使用前，请先按照上文配置好使用的数据服务, 使用时调用相应的函数接口(具体接口支持请参考上文中支持的数据周期)。
+```python 3
+from datetime import datetime
+from vnpy.trader.constant import Exchange, Interval
+from vnpy.trader.datafeed import get_datafeed
+from vnpy.trader.object import HistoryRequest
+
+bar_req = HistoryRequest(
+        symbol="CU888",
+        exchange=Exchange("SHFE"),
+        start=datetime(2019, 1, 1),
+        end=datetime(2021, 1, 20),
+        interval=Interval.DAILY
+    )
+
+tick_req = HistoryRequest(
+        symbol="CU888",
+        exchange=Exchange("SHFE"),
+        start=datetime(2019, 1, 1),
+        end=datetime(2021, 1, 20),
+        interval=Interval.TICK
+    )
+
+# 获取数据服务实例
+datafeed = get_datafeed()
+
+# 获取k线历史数据
+data = datafeed.query_bar_history(bar_req)
+
+# 获取tick历史数据
+data = datafeed.query_tick_history(tick_req)
+```

@@ -1,16 +1,6 @@
-from pathlib import Path
+import sys
 
-from vnpy.trader.app import BaseApp
-
-from .engine import PaperEngine, APP_NAME
+import vnpy_paperaccount
 
 
-class PaperAccountApp(BaseApp):
-    """"""
-    app_name = APP_NAME
-    app_module = __module__
-    app_path = Path(__file__).parent
-    display_name = "模拟交易"
-    engine_class = PaperEngine
-    widget_name = "PaperManager"
-    icon_name = "paper.ico"
+sys.modules[__name__] = vnpy_paperaccount

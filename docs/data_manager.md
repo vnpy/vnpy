@@ -14,7 +14,7 @@ DataManager是用于**历史数据管理**的功能模块，用户可以通过�
 
 在启动脚本中添加如下代码：
 
-```
+```python 3
 # 写在顶部
 from vnpy_datamanager import DataManagerApp
 
@@ -47,9 +47,9 @@ DataManager模块提供了一键下载历史数据的功能，点击右上角【
 - 代码
   - 代码格式为合约品种
   - 如IF888、rb2105
-- 交易所：
+- 交易所
   - 合约交易的交易所（点击窗口右侧箭头按钮可选择vn.py支持的所有交易所）
-- 周期：
+- 周期
   - MINUTE（1分钟K线）
   - HOUR（1小时K线）
   - DAILY（日K线）

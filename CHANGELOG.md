@@ -1,3 +1,42 @@
+# 2.8.0版本
+
+# 新增
+1. 新增东证OST柜台交易接口vnpy_ost
+2. 增加投资组合策略模块的策略参数优化功能
+
+# 修复
+1. 修复部分C++接口模块剥离后，遗留的安装脚本编译代码导致的报错问题
+2. 修复vnpy_xtp订阅深交所行情后，可能出现的闪退问题
+3. 修复vnpy_tushare部分数据字段为None时，导致的数据错误
+4. 修复vnpy_mini，在夜盘换日时上期所行情时间戳的日期字段误差问题
+5. 修复vnpy_uft的ETF期权合约信息解析缺失的问题
+6. 修复vnpy_wind下载数据存在缺失时的N/A解析问题
+7. 修复vnpy_webtrader的html静态文件缺失的问题
+8. 修复vnpy_dolphindb存储Tick数据时的数据类型问题
+9. 修复vnpy_dolphindb读取数据为空时的BUG
+10. 修复vnpy_esunny查询黄金TD合约的合约乘数为0的问题
+11. 修复vnpy_ctastrategy策略初始化读取布尔值false失败的问题
+12. 修复vnpy_rohon的期权合约字段赋值错误的问题
+13. 修复vnpy_leveldb的Linux安装依赖库问题
+
+# 调整
+1. 移除老版本基于requests库的RestClient客户端
+2. 移除老版本基于websocket-client库的WebsocketClient客户端
+3. vnpy_tts增加对上交所和深交所股票模拟交易的支持
+4. 移除vnpy_ctp的期权询价指令支持
+5. 增加vnpy_ctp的授权码验证失败后，避免重复操作的功能
+6. 优化vnpy_uft的断线重连行情订阅逻辑
+7. 增加vnpy_arctic对于用户名和密码的鉴权功能
+8. 增加vnpy_mini对于股指期权的支持
+
+# 剥离
+1. 将华鑫奇点交易接口剥离到vnpy_tora项目中，并升级到4.0版本
+2. 将飞马交易接口剥离到vnpy_femas项目中
+3. 将金仕达黄金接口剥离到vnpy_ksgold项目中
+4. 将投资组合策略模块剥离到vnpy_portfoliostrategy项目中
+5. 将Excel RTD模块剥离到vnpy_excelrtd项目中
+6. 将本地仿真模拟交易模块剥离到vnpy_paperaccount项目中
+
 # 2.7.0版本
 
 # 新增
@@ -16,11 +55,9 @@
 13. vnpy_dolphindb优化数据的加载解析速度
 14. vnpy_influxdb采用pandas解析CSV数据，提高整体速度
 
-## 修复
+# 修复
 1. 修复vnpy_ctp的CtpGateway，在夜盘换日时上期所行情时间戳的日期字段误差问题
 2. 修复vnpy_arctic的数据重复写入时出现的错误覆盖问题
-
-
 
 # 剥离
 1. 将InteractiveBrokers交易接口剥离到vnpy_ib项目中
