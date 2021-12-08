@@ -37,7 +37,7 @@ vnpy_tap==9.0.0
 vnpy_da==1.12.0
 vnpy_sgit==4.8.0
 vnpy_femas==1.0.0
-vnpy_ost==2.0.1.0
+vnpy_ost==2.0.1.1
 vnpy_tora==2021.12.5
 
 vnpy_ctastrategy==1.0.6
