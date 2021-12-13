@@ -198,12 +198,11 @@ bash install_osx.sh
 
 3. 启动VN Station（安装VN Studio后会在桌面自动创建快捷方式），输入上一步的账号密码登录
 
-4. 点击底部的**VN Trader Lite**按钮，开始你的交易！！！
+4. 点击底部的**VN Trader Pro**按钮，灵活配置量化交易应用组件，开始你的交易！！！
 
 注意：
 
 * 在VN Trader的运行过程中请勿关闭VN Station（会自动退出）
-* 如需要灵活配置量化交易应用组件，请使用**VN Trader Pro**
 
 ## 脚本运行
 
