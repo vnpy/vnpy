@@ -54,9 +54,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
         * 华鑫奇点（[tora](https://www.github.com/vnpy/vnpy_tora)）：国内证券（A股）、ETF期权
 
-        * 国泰君安（gtja）：国内证券（A股）
-
-        * 恒生期权（hsoption）：ETF期权
+        * 国泰君安（[hft](https://www.github.com/vnpy/vnpy_hft)）：国内证券（A股、两融）
 
         * 飞鼠（[sgit](https://www.github.com/vnpy/vnpy_sgit)）：黄金TD、国内期货
 
