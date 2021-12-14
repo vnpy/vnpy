@@ -17,6 +17,7 @@
 10. 修复vnpy_esunny查询黄金TD合约的合约乘数为0的问题
 11. 修复vnpy_ctastrategy策略初始化读取布尔值false失败的问题
 12. 修复vnpy_rohon的期权合约字段赋值错误的问题
+13. 修复vnpy_leveldb的Linux安装依赖库问题
 
 # 调整
 1. 移除老版本基于requests库的RestClient客户端
@@ -26,6 +27,7 @@
 5. 增加vnpy_ctp的授权码验证失败后，避免重复操作的功能
 6. 优化vnpy_uft的断线重连行情订阅逻辑
 7. 增加vnpy_arctic对于用户名和密码的鉴权功能
+8. 增加vnpy_mini对于股指期权的支持
 
 # 剥离
 1. 将华鑫奇点交易接口剥离到vnpy_tora项目中，并升级到4.0版本

@@ -54,9 +54,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
         * 华鑫奇点（[tora](https://www.github.com/vnpy/vnpy_tora)）：国内证券（A股）、ETF期权
 
-        * 国泰君安（gtja）：国内证券（A股）
-
-        * 恒生期权（hsoption）：ETF期权
+        * 国泰君安（[hft](https://www.github.com/vnpy/vnpy_hft)）：国内证券（A股、两融）
 
         * 飞鼠（[sgit](https://www.github.com/vnpy/vnpy_sgit)）：黄金TD、国内期货
 
@@ -170,7 +168,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.7.0](https://download.vnpy.com/vnstudio-2.7.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.8.0](https://download.vnpy.com/vnstudio-2.8.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 10以上/Windows Server 2016以上/Ubuntu 20.04 LTS以上
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 
