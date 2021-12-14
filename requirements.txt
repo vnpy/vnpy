@@ -10,7 +10,7 @@ matplotlib
 seaborn
 PyCryptodome==3.9.9
 rqdatac==2.9.38
-ta-lib
+ta-lib==0.4.17
 ibapi
 deap
 pyzmq
