@@ -14,7 +14,7 @@ PortfolioStrategy是用于**多合约组合策略实盘**的功能模块，用�
 
 在启动脚本中添加如下代码：
 
-```
+```python 3
 # 写在顶部
 from vnpy_portfoliostrategy import PortfolioStrategyApp
 
@@ -32,7 +32,7 @@ main_engine.add_app(PortfolioStrategyApp)
 对于在Windows上默认安装的用户来说，放置策略的strategies目录路径通常为：
 
 ```
-C:\Users\Administrator\strategies
+    C:\Users\Administrator\strategies
 ```
 
 其中Administrator为当前登录Windows的系统用户名。
@@ -53,7 +53,7 @@ C:\Users\Administrator\strategies
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/1.png)
 
-如果配置了[RQData](https://www.ricequant.com/welcome/purchase?utm_source=vnpy)数据服务（配置方法详见基本使用篇的全局配置部分），打开多合约组合策略模块时会自动执行RQData登录初始化。若成功登录，则会输出“RQData数据接口初始化成功”的日志，如下图所示：
+如果配置了数据服务（配置方法详见基本使用篇的全局配置部分），打开多合约组合策略模块时会自动执行数据服务登录初始化。若成功登录，则会输出“数据服务初始化成功”的日志，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/2.png)
 
@@ -109,7 +109,7 @@ C:\Users\Administrator\strategies
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/6.png)
 
-初始化完成后，可观察到此时该策略实例的【inited】状态已经为【True】，且变量也都显示对应的数值（不再为0）。说明该策略实例已经加载过历史数据并完成初始化了。【trading】状态还是为【False】，说明此时该策略实例还不能开始自动交易。
+初始化完成后，可观察到此时该策略实例的【inited】状态已经为【True】。说明该策略实例已经加载过历史数据并完成初始化了。【trading】状态还是为【False】，说明此时该策略实例还不能开始自动交易。
 
 请注意，与CTA策略不同，如果创建实例时输入错误的vt_symbol，多合约组合策略模块会在初始化时报错而不是在创建策略实例时报错，如下图所示：
 
@@ -180,13 +180,12 @@ C:\Users\Administrator\strategies
 1. 调用put_event函数
 
    策略实例中所有的的变量信息，都需要把变量名写在策略的variables列表中，才能在图形界面显示。如果想跟踪变量的状态变化，则需要在策略中调用put_event函数，界面上才会进行数据刷新。
-   
+
    有时用户会发现自己写的策略无论跑多久，变量信息都不发生变化，这种情况请检查策略中是否漏掉了对put_event函数的调用。
 
 2. 调用write_log函数
 
    如果不仅想观察到变量信息的状态变化，还想根据策略的状态输出基于自己需求的个性化的日志，可以在策略中调用write_log函数，进行日志输出。
-
 
 ## 运行日志
 
@@ -213,7 +212,6 @@ C:\Users\Administrator\strategies
 点击【清空日志】后，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/14.png)
-
 
 ## 批量操作
 
@@ -247,57 +245,52 @@ C:\Users\Administrator\strategies
 
 请注意：
 
-1. 策略文件命名采用下划线模式，如trend_following_strategy.py，而策略类命名采用驼峰式，如TrendFollowingStrategy。
+1. 策略文件命名采用下划线模式，如portfolio_boll_channel_strategy.py，而策略类命名采用驼峰式，如PortfolioBollChannelStrategy。
 
 2. 自建策略的类名不要与示例策略的类名重合。如果重合了，图形界面上只会显示一个策略类名。
 
-下面通过TrendFollowingStrategy策略示例，来展示策略开发的具体步骤：
+下面通过PortfolioBollChannelStrategy策略示例，来展示策略开发的具体步骤：
 
 在基于策略模板编写策略逻辑之前，需要在策略文件的顶部载入需要用到的内部组件，如下方代码所示：
 
-```
+```python 3
 from typing import List, Dict
 from datetime import datetime
 
-from vnpy_portfoliostrategy import StrategyTemplate, StrategyEngine
-from vnpy.trader.utility import BarGenerator, ArrayManager
+from vnpy.trader.utility import ArrayManager, Interval
 from vnpy.trader.object import TickData, BarData
+from vnpy_portfoliostrategy import StrategyTemplate, StrategyEngine
+from vnpy_portfoliostrategy.utility import PortfolioBarGenerator
 ```
 
-其中，StrategyTemplate是策略模板，StrategyEngine是策略引擎，TickData和BarData都是储存对应信息的数据容器，BarGenerator是K线生成模块，ArrayManager是K线时间序列管理模块。
+其中，StrategyTemplate是策略模板，StrategyEngine是策略引擎，Interval是数据频率，TickData和BarData都是储存对应信息的数据容器，PortfolioBarGenerator是组合策略K线生成模块，ArrayManager是K线时间序列管理模块。
 
 ### 策略参数与变量
 
 在策略类的下方，可以设置策略的作者（author），参数（parameters）以及变量（variables），如下方代码所示：
 
-```
+```python 3
 
     author = "用Python的交易员"
 
-    atr_window = 22
-    atr_ma_window = 10
-    rsi_window = 5
-    rsi_entry = 16
-    trailing_percent = 0.8
+    boll_window = 18
+    boll_dev = 3.4
+    cci_window = 10
+    atr_window = 30
+    sl_multiplier = 5.2
     fixed_size = 1
     price_add = 5
 
-    rsi_buy = 0
-    rsi_sell = 0
-
     parameters = [
-        "price_add",
+        "boll_window",
+        "boll_dev",
+        "cci_window",
         "atr_window",
-        "atr_ma_window",
-        "rsi_window",
-        "rsi_entry",
-        "trailing_percent",
-        "fixed_size"
+        "sl_multiplier",
+        "fixed_size",
+        "price_add"
     ]
-    variables = [
-        "rsi_buy",
-        "rsi_sell"
-    ]
+    variables = []
 
 ```
 
@@ -315,9 +308,9 @@ from vnpy.trader.object import TickData, BarData
 
 __init__函数是策略类的构造函数，需要与继承的StrategyTemplate保持一致。
 
-在这个继承的策略类里，初始化一般分三步，如下方代码所示：
+在这个继承的策略类里，初始化一般分四步，如下方代码所示：
 
-```
+```python 3
     def __init__(
         self,
         strategy_engine: StrategyEngine,
@@ -328,34 +321,56 @@ __init__函数是策略类的构造函数，需要与继承的StrategyTemplate�
         """"""
         super().__init__(strategy_engine, strategy_name, vt_symbols, setting)
 
-        self.bgs: Dict[str, BarGenerator] = {}
-        self.ams: Dict[str, ArrayManager] = {}
-
-        self.rsi_data: Dict[str, float] = {}
-        self.atr_data: Dict[str, float] = {}
-        self.atr_ma: Dict[str, float] = {}
+        self.boll_up: Dict[str, float] = {}
+        self.boll_down: Dict[str, float] = {}
+        self.cci_value: Dict[str, float] = {}
+        self.atr_value: Dict[str, float] = {}
         self.intra_trade_high: Dict[str, float] = {}
         self.intra_trade_low: Dict[str, float] = {}
 
         self.targets: Dict[str, int] = {}
         self.last_tick_time: datetime = None
 
-        # Obtain contract info
+        self.ams: Dict[str, ArrayManager] = {}
         for vt_symbol in self.vt_symbols:
-            def on_bar(bar: BarData):
-                """"""
-                pass
-
-            self.bgs[vt_symbol] = BarGenerator(on_bar)
             self.ams[vt_symbol] = ArrayManager()
             self.targets[vt_symbol] = 0
+
+        self.pbg = PortfolioBarGenerator(self.on_bars, 2, self.on_2hour_bars, Interval.HOUR)
 ```
 
 1 . 通过super( )的方法继承策略模板，在__init__( )函数中传入策略引擎、策略名称、vt_symbols以及参数设置（以上参数均由策略引擎在使用策略类创建策略实例时自动传入，用户无需进行设置）。
 
-2 . 创建策略所需的存放不同合约K线时间序列管理模块、K线生成模块和策略变量的字典。
+2 . 创建策略所需的存放不同合约K线时间序列管理模块和策略变量的字典。
 
-3 . 分别为策略交易的不同合约创建K线生成实例（BarGenerator）、K线时间序列管理实例（ArrayManager）和目标仓位变量并放进字典里。
+3 . 分别为策略交易的不同合约创建K线时间序列管理实例（ArrayManager）和目标仓位变量并放进字典里。
+
+4 . 调用组合策略K线生成模块（PortfolioBarGenerator）：通过时间切片将Tick数据合成1分钟K线数据。如有需求，还可合成更长的时间周期数据，如15分钟K线。
+
+如果只基于on_bar进行交易，这里代码可以写成：
+
+```python 3
+        self.pbg = PortfolioBarGenerator(self.on_bars)
+```
+
+而不用给pbg实例传入需要基于on_bars周期合成的更长K线周期，以及接收更长K线周期的函数名。
+
+请注意，合成X分钟线时，X必须设为能被60整除的数（60除外）。对于小时线的合成没有这个限制。
+
+PortfolioBarGenerator默认的基于on_bar函数合成长周期K线的数据频率是分钟级别，如果需要基于合成的小时线或者更长周期的K线交易，请在策略文件顶部导入Interval，并传入对应的数据频率给bg实例。如下方代码所示：
+
+文件顶部导入Interval：
+
+```python 3
+from vnpy.trader.constant import Interval
+```
+
+__init__函数创建bg实例时传入数据频率：
+
+```python 3
+        self.pbg = BarGenerator(self.on_bars, 2, self.on_2hour_bars, Interval.HOUR)
+```
+注意：self.on_hour_bars函数名在程序内部已使用，1小时请使用self.on_1_hour_bars或者其他命名，否则会产生意料之外的问题。
 
 ### 策略引擎调用的函数
 
@@ -373,20 +388,14 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 
 * 出参：无
 
-初始化策略时on_init函数会被调用，默认写法是先调用write_log函数输出“策略初始化”日志，再调用load_bars函数加载历史数据。
+初始化策略时on_init函数会被调用，默认写法是先调用write_log函数输出“策略初始化”日志，再调用load_bars函数加载历史数据。如下方代码所示：
 
-在本示例策略中，还根据参数计算了策略变量的值，如下方代码所示：
-
-```
+```python 3
     def on_init(self):
         """
         Callback when strategy is inited.
         """
         self.write_log("策略初始化")
-
-        self.rsi_buy = 50 + self.rsi_entry
-        self.rsi_sell = 50 - self.rsi_entry
-
         self.load_bars(10)
 ```
 
@@ -402,7 +411,7 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 
 启动策略时on_start函数会被调用，默认写法是调用write_log函数输出“策略启动”日志，如下方代码所示：
 
-```
+```python 3
     def on_start(self):
         """
         Callback when strategy is started.
@@ -420,7 +429,7 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 
 停止策略时on_stop函数会被调用，默认写法是调用write_log函数输出“策略停止”日志，如下方代码所示：
 
-```
+```python 3
     def on_stop(self):
         """
         Callback when strategy is stopped.
@@ -438,28 +447,16 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 
 * 出参：无
 
-绝大部分交易系统都只提供Tick数据的推送。即使一部分数字货币交易平台或者外汇平台可以提供K线数据的推送，但是这些数据到达本地电脑的速度也会慢于Tick数据的推送，因为也需要平台合成之后才能推送过来。所以实盘的时候，vn.py里所有的策略的K线都是由收到的Tick数据合成的。
+绝大部分交易系统都只提供Tick数据的推送。即使一部分平台可以提供K线数据的推送，但是这些数据到达本地电脑的速度也会慢于Tick数据的推送，因为也需要平台合成之后才能推送过来。所以实盘的时候，vn.py里所有的策略的K线都是由收到的Tick数据合成的。
 
-当策略收到实盘中最新的Tick数据的行情推送时，on_tick函数会被调用。默认写法是通过BarGenerator的update_tick函数把收到的不同合约的Tick数据推进前面创建的对应的bg实例中以便合成1分钟的K线。根据收到的最新Tick和上一个Tick的分钟不同来判断是否走完了1分钟，走完了就强制合成1分钟线，合成之后一起推送给on_bars函数。如下方代码所示：
+当策略收到实盘中最新的Tick数据的行情推送时，on_tick函数会被调用。默认写法是通过PortfolioBarGenerator的update_tick函数把收到的Tick数据推进前面创建的pbg实例中以便合成1分钟的K线，如下方代码所示：
 
-```
+```python 3
     def on_tick(self, tick: TickData):
         """
         Callback of new tick data update.
         """
-        if (
-            self.last_tick_time
-            and self.last_tick_time.minute != tick.datetime.minute
-        ):
-            bars = {}
-            for vt_symbol, bg in self.bgs.items():
-                bars[vt_symbol] = bg.generate()
-            self.on_bars(bars)
-
-        bg: BarGenerator = self.bgs[tick.vt_symbol]
-        bg.update_tick(tick)
-
-        self.last_tick_time = tick.datetime
+        self.pbg.update_tick(tick)
 ```
 
 请注意，on_tick只有实盘中会调用，回测不支持。
@@ -474,14 +471,27 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 
 与CTA策略模块不同，多合约组合策略模块在接收K线推送时，是通过on_bars回调函数一次性接收该时间点上所有合约的K线数据，而不是通过on_bar函数一个个接收（无法判断当前时点的K线是否全部走完了 ）。
 
-示例策略类TrendFollowingStrategy是通过1分钟K线数据回报来生成信号的。一共有三部分，如下方代码所示：
+示例策略里出现过的写法有两种：
 
-```
+1 . 如果策略基于on_bars推进来的K线交易，那么请把交易请求类函数都写在on_bars函数下（因本次示例策略类PortfolioBollChannelStrategy不是基于on_bars交易，故不作示例讲解。基于on_bars交易的示例代码可参考其他示例策略）；
+
+2 . 如果策略需要基于on_bars推进来的K线数据通过PortfolioBarGenerator合成更长时间周期的K线来交易，那么请在on_bars中调用PortfolioBarGenerator的update_bars函数，把收到的bars推进前面创建的pbg实例中即可，如下方代码所示：
+
+```python 3
     def on_bars(self, bars: Dict[str, BarData]):
+        """
+        Callback of new bars data update.
+        """
+        self.pbg.update_bars(bars)
+```
+
+示例策略类PortfolioBollChannelStrategy是通过2小时K线数据回报来生成信号的。一共有三部分，如下方代码所示：
+
+```python 3
+    def on_2hour_bars(self, bars: Dict[str, BarData]):
         """"""
         self.cancel_all()
 
-        # 更新K线计算RSI数值
         for vt_symbol, bar in bars.items():
             am: ArrayManager = self.ams[vt_symbol]
             am.update_bar(bar)
@@ -491,41 +501,34 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
             if not am.inited:
                 return
 
-            atr_array = am.atr(self.atr_window, array=True)
-            self.atr_data[vt_symbol] = atr_array[-1]
-            self.atr_ma[vt_symbol] = atr_array[-self.atr_ma_window:].mean()
-            self.rsi_data[vt_symbol] = am.rsi(self.rsi_window)
+            self.boll_up[vt_symbol], self.boll_down[vt_symbol] = am.boll(self.boll_window, self.boll_dev)
+            self.cci_value[vt_symbol] = am.cci(self.cci_window)
+            self.atr_value[vt_symbol] = am.atr(self.atr_window)
 
             current_pos = self.get_pos(vt_symbol)
             if current_pos == 0:
                 self.intra_trade_high[vt_symbol] = bar.high_price
                 self.intra_trade_low[vt_symbol] = bar.low_price
 
-                if self.atr_data[vt_symbol] > self.atr_ma[vt_symbol]:
-                    if self.rsi_data[vt_symbol] > self.rsi_buy:
-                        self.targets[vt_symbol] = self.fixed_size
-                    elif self.rsi_data[vt_symbol] < self.rsi_sell:
-                        pass
-                        self.targets[vt_symbol] = -self.fixed_size
-                    else:
-                        pass
-                        self.targets[vt_symbol] = 0
+                if self.cci_value[vt_symbol] > 0:
+                    self.targets[vt_symbol] = self.fixed_size
+                elif self.cci_value[vt_symbol] < 0:
+                    self.targets[vt_symbol] = -self.fixed_size
 
             elif current_pos > 0:
                 self.intra_trade_high[vt_symbol] = max(self.intra_trade_high[vt_symbol], bar.high_price)
                 self.intra_trade_low[vt_symbol] = bar.low_price
 
-                long_stop = self.intra_trade_high[vt_symbol] * (1 - self.trailing_percent / 100)
+                long_stop = self.intra_trade_high[vt_symbol] - self.atr_value[vt_symbol] * self.sl_multiplier
 
                 if bar.close_price <= long_stop:
                     self.targets[vt_symbol] = 0
 
             elif current_pos < 0:
-                pass
                 self.intra_trade_low[vt_symbol] = min(self.intra_trade_low[vt_symbol], bar.low_price)
                 self.intra_trade_high[vt_symbol] = bar.high_price
 
-                short_stop = self.intra_trade_low[vt_symbol] * (1 + self.trailing_percent / 100)
+                short_stop = self.intra_trade_low[vt_symbol] + self.atr_value[vt_symbol] * self.sl_multiplier
 
                 if bar.close_price >= short_stop:
                     self.targets[vt_symbol] = 0
@@ -537,6 +540,8 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
             pos_diff = target_pos - current_pos
             volume = abs(pos_diff)
             bar = bars[vt_symbol]
+            boll_up = self.boll_up[vt_symbol]
+            boll_down = self.boll_down[vt_symbol]
 
             if pos_diff > 0:
                 price = bar.close_price + self.price_add
@@ -544,23 +549,23 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
                 if current_pos < 0:
                     self.cover(vt_symbol, price, volume)
                 else:
-                    self.buy(vt_symbol, price, volume)
+                    self.buy(vt_symbol, boll_up, volume)
             elif pos_diff < 0:
                 price = bar.close_price - self.price_add
 
                 if current_pos > 0:
                     self.sell(vt_symbol, price, volume)
                 else:
-                    self.short(vt_symbol, price, volume)
+                    self.short(vt_symbol, boll_down, volume)
 
         self.put_event()
 ```
 
-- 清空未成交委托：为了防止之前下的单子在上1分钟没有成交，但是下1分钟可能已经调整了价格，就用cancel_all()方法立刻撤销之前未成交的所有委托，保证策略在当前这1分钟开始时的整个状态是清晰和唯一的；
+- 清空未成交委托：为了防止之前下的单子在上一个2小时没有成交，但是下一个2小时可能已经调整了价格，就用cancel_all()方法立刻撤销之前未成交的所有委托，保证策略在当前这2小时开始时的整个状态是清晰和唯一的；
 
-- 调用K线时间序列管理模块：基于最新的1分钟K线数据来计算相应的技术指标，如RSI指标、ATR指标等。首先获取ArrayManager对象，然后将收到的K线推送进去，检查ArrayManager的初始化状态，如果还没初始化成功就直接返回，没有必要去进行后续的交易相关的逻辑判断。因为很多技术指标计算对最少K线数量有要求，如果数量不够的话计算出来的指标会出现错误或无意义。反之，如果没有return，就可以开始计算技术指标了；
+- 调用K线时间序列管理模块：基于最新的2小时K线数据来计算相应的技术指标，如布林带上下轨、CCI指标、ATR指标等。首先获取ArrayManager对象，然后将收到的K线推送进去，检查ArrayManager的初始化状态，如果还没初始化成功就直接返回，没有必要去进行后续的交易相关的逻辑判断。因为很多技术指标计算对最少K线数量有要求，如果数量不够的话计算出来的指标会出现错误或无意义。反之，如果没有return，就可以开始计算技术指标了；
 
-- 信号计算：通过持仓的判断以及结合RSI指标、ATR指标在通道突破点挂出**限价单委托**（buy/sell)，同时设置离场点(short/cover)。
+- 信号计算：通过持仓的判断以及结合CCI指标、ATR指标在通道突破点挂出**限价单委托**（buy/sell)，同时设置离场点(short/cover)。
 
     请注意：
     1. 在CTA策略模块中，通常都是通过访问策略的变量pos获取策略持仓来进行持仓判断。但在多合约组合策略模块中，是通过调用get_pos函数获取某一合约现在的持仓来进行逻辑判断，然后设定该合约的目标仓位，最后通过目标仓位和实际仓位的差别来进行逻辑判断进而发出交易信号的；
@@ -593,7 +598,7 @@ buy/sell/short/cover都是策略内部的负责发单的交易请求类函数。
 
 如果net设置为True，那么该笔订单则会进行净仓委托转换（基于整体账户的所有仓位，根据净仓持有方式来对策略下单的开平方向进行转换）。但是净仓交易模式与锁仓交易模式互斥，因此net设置为True时，lock必须设置为False。
 
-```
+```python 3
     def buy(self, vt_symbol: str, price: float, volume: float, lock: bool = False, net: bool = False) -> List[str]:
         """
         Send buy order to open a long position.
@@ -601,7 +606,7 @@ buy/sell/short/cover都是策略内部的负责发单的交易请求类函数。
         return self.send_order(vt_symbol, Direction.LONG, Offset.OPEN, price, volume, lock, net)
 ```
 
-请注意，国内期货有开平仓的概念，例如买入操作要区分为买入开仓和买入平仓；但对于股票、外盘期货和绝大部分数字货币都是净持仓模式，没有开仓和平仓概念，所以只需使用买入（buy）和卖出（sell）这两个指令就可以了。
+请注意，国内期货有开平仓的概念，例如买入操作要区分为买入开仓和买入平仓；但对于股票、外盘期货都是净持仓模式，没有开仓和平仓概念，所以只需使用买入（buy）和卖出（sell）这两个指令就可以了。
 
 **send_order**
 
@@ -661,6 +666,14 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 在策略里调用get_all_active_orderids函数，可以获取当前全部活动委托号。
 
+**get_pricetick**
+
+* 入参：vt_symbol
+
+* 出参：pricetick: float / None
+
+在策略里调用get_price函数，可以获取特定合约的最小价格跳动。
+
 **write_log**
 
 * 入参：msg: str
@@ -679,7 +692,7 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 如下方代码所示，load_bars函数调用时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据。在回测时，10天指的是10个交易日，而在实盘时，10天则是指的是自然日，因此建议加载的天数宁可多一些也不要太少。
 
-```
+```python 3
     def load_bars(self, days: int, interval: Interval = Interval.MINUTE) -> None:
         """
         Load historical bar data for initializing strategy.

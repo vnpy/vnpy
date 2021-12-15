@@ -66,47 +66,11 @@ For financial institution users of vn.py, a special 【vn.py Institutional Users
 
     * Overseas market
 
-        * Futu Securities (futu): Hong Kong stocks, U.S. stocks
-
         * Interactive Brokers (ib): global securities, futures, options, foreign exchange, etc.
 
         * EaseUS 9.0 Foreign Exchange (tap): Global futures
 
         * Direct Futures (da): Global Futures
-
-        * MetaTrader 5 (mt5): Forex, CFDs, Futures, Stocks
-
-        * Alpaca (alpaca): US stocks (zero commission)
-
-    * Digital currencies
-
-        * BitMEX (bitmex): digital currency futures, options, perpetual contracts
-
-        * Bybit (bybit): digital currency perpetual contracts
-
-        * Binance (binance): digital currency spot
-
-        * binance (binances): digital currency perpetual contracts
-
-        * OKEX (okex): digital currency spot, futures, perpetual, options (V5 unified account)
-
-        * Firecoin (huobi): digital currency spot
-
-        * Firecoin Futures (huobif): digital currency futures
-
-        * Firecoin perpetual (huobis): digital currency perpetual
-
-        * Firecoin Options (huobio): digital currency options
-        
-        * Gate.io perpetual (gateios): digital currency perpetual contracts
-
-        * Deribit (deribit), digital currency options, perpetual contracts        
-
-        * Bitfinex (bitfinex): digital currency spot
-
-        * Coinbase (coinbase): digital currency spot
-
-        * Bitstamp (bitstamp): digital currency spot
 
     * Special Applications
 

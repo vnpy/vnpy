@@ -14,7 +14,7 @@ CtaBacktester是用于**CTA策略历史回测研究**的功能模块，用户可
 
 在启动脚本中添加如下代码：
 
-```
+```python 3
 # 写在顶部
 from vnpy_ctabacktester import CtaBacktesterApp
 
@@ -73,21 +73,15 @@ C:\Users\Administrator\strategies
 
 注意下载完成后的历史数据会保存在本地数据库中，后续回测时可以直接使用，无需每次都重复下载。
 
-### 数据来源：RQData（期货、股票、期权）
+### 数据来源：数据服务（期货、股票、期权）
 
-[RQData](https://www.ricequant.com/welcome/purchase?utm_source=vnpy)提供国内期货、股票以及期权的历史数据。在使用前需要保证RQData已经正确配置（配置方法详见基本使用篇的全局配置部分）。打开CtaBacktester时会自动执行RQData登录初始化，若成功则会输出“RQData数据接口初始化成功”的日志，如下图所示：
+以RQData为例，[RQData](https://www.ricequant.com/welcome/purchase?utm_source=vnpy)提供国内期货、股票以及期权的历史数据。在使用前需要保证数据服务已经正确配置（配置方法详见基本使用篇的全局配置部分）。打开CtaBacktester时会自动执行数据服务登录初始化，若成功则会输出“数据服务初始化成功”的日志，如下图所示：
 
  ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/26.png)
 
-### 数据来源：数字货币（现货、期货、永续）
+### 数据来源：IB（外盘期货、股票、现货等）
 
-各大数字货币交易所都直接提供自家的历史数据下载，但每家交易所可以获取的历史数据长度限制有所区别，注意下载前需要先在VN Trader主界面连接好对应的接口。下载成功如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/60.png)
-
-### 数据来源：IB（外盘期货、股票、外汇等）
-
-Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据下载（包括股票、期货、期权、外汇等），注意下载前需要先启动IB TWS交易软件，并在VN Trader主界面连接好IB接口，并订阅所需合约行情。下载成功如下图所示：
+Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据下载（包括股票、期货、期权、现货等），注意下载前需要先启动IB TWS交易软件，并在VN Trader主界面连接好IB接口，并订阅所需合约行情。下载成功如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/28.png)
 
@@ -110,7 +104,6 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
   - 价格跳动：合约价格的最小变动价位；
   - 回测资金：账户资金；
   - 合约模式：
-    - 反向：只有数字货币市场才有的一种特殊衍生品合约规则，是指用计价法币来标识价格，用数字货币来结算盈亏的衍生品合约；
     - 正向：除反向合约外，其他所有的金融市场（股票、期货、期权等）采用的规则。
 
 配置完成后，点击下方的【开始回测】按钮，会弹出策略参数配置对话框，用于设置策略参数，如下图所示：
@@ -266,7 +259,7 @@ K线图表中的图例说明可以在窗口底部看到，整体上采用了国�
 
 ### 遗传算法优化
 
-设置好需要优化的参数后，点击窗口底部的【遗传算法优化】按钮，此时CtaBacktester会自动调用Python的deap模块，来执行高效智能化的遗传算法优化任务。
+设置好需要优化的参数后，点击窗口底部的【遗传算法优化】按钮，此时CtaBacktester会调用Python的multiprocessing模块和deap模块，来执行高效智能化的多进程遗传算法优化任务。
 
 附上遗传算法的简要工作原理：
 

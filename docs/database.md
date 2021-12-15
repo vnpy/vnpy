@@ -11,16 +11,16 @@ SQLite是一个轻量的嵌入式数据库，无需安装和配置数据服务�
  - 不需要在系统中配置、安装和管理；
  - 不需要一个单独的服务器进程。
 
-#### SQLite字段
+#### SQLite配置字段
 
 SQLite在VN Trader中配置时，需填写以下字段信息：
 
-| 字段名             | 值 |
-|---------           |---- |
-|database.name     | sqlite |
-|database.database   | 数据库文件（相对于trader目录） |
+| 字段名             | 值 | 是否必填 |
+|---------           |---- | --- |
+|database.name     | sqlite | 可选(不填默认使用sqlite)
+|database.database   | 数据库文件（相对于trader目录） | 必填 |
 
-SQLite的例子如下所示：
+SQLite配置示例如下所示：
 
 | 字段名            | 值 |
 |---------           |---- |
@@ -34,26 +34,20 @@ MySQL是目前最流行的开源关系型数据库，其特点如下：
  - 支持多种操作系统，多种开发语言；
  - 可替换其他高NewSQL兼容实现（如TiDB）。
 
-### PostgreSQL
+#### MySQL配置字段
 
-PostgreSQL是特性更为丰富的开源关系型数据库，只推荐熟手使用。相比于MySQL，其特点如下：
- - 采用多进程结构；
- - 支持通过扩展插件来新增功能。
+MySQL在VN Trader中配置时，需要填写以下字段信息：
 
-#### SQL(MySQL, PostgreSQL)字段
+| 字段名            | 值 | 是否必填 |
+|---------           |---- | ---- |
+|database.name     | "mysql"| 必填 |
+|database.host       | 地址 | 必填 |
+|database.port       | 端口 | 必填 |
+|database.database   | 数据库名 | 必填 |
+|database.user       | 用户名 | 可选 |
+|database.password   | 密码 | 可选 |
 
-MySQL和PostgreSQL在VN Trader中配置时，需要填写以下字段信息：
-
-| 字段名            | 值 |
-|---------           |---- |
-|database.name     | "mysql"或"postgresql" |
-|database.host       | 地址 |
-|database.port       | 端口 |
-|database.database   | 数据库名 |
-|database.user       | 用户名 |
-|database.password   | 密码 |
-
-MySQL的例子如下所示：
+MySQL配置示例如下所示：
 
 | 字段名            | 值 |
 |---------           |----  |
@@ -62,11 +56,41 @@ MySQL的例子如下所示：
 |database.port       | 3306 |
 |database.database   | vnpy |
 |database.user       | root |
-|database.password   | .... |
+|database.password   |      |
+
+### PostgreSQL
+
+PostgreSQL是特性更为丰富的开源关系型数据库，只推荐熟手使用。相比于MySQL，其特点如下：
+ - 采用多进程结构；
+ - 支持通过扩展插件来新增功能。
+
+#### PostgreSQL配置字段
+
+PostgreSQL在VN Trader中配置时，需要填写以下字段信息：
+
+| 字段名            | 值 | 是否必填 |
+|---------           |---- | ---- |
+|database.name     | "postgresql" | 必填 |
+|database.host       | 地址 | 必填 |
+|database.port       | 端口 | 必填 |
+|database.database   | 数据库名 | 必填 |
+|database.user       | 用户名 | 必填 |
+|database.password   | 密码 | 必填 |
+
+PostgreSQL配置示例如下所示：
+
+| 字段名            | 值 |
+|---------           |----  |
+|database.name     | postgresql |
+|database.host       | localhost |
+|database.port       | 5432 |
+|database.database   | vnpy |
+|database.user       | postgres |
+|database.password   | 123456 |
 
 请注意，vn.py不会主动为关系型数据库创建数据库，所以请确保你所填的database.database字段对应的数据库已经创建好了。若未创建数据库，请手动连上数据库并运行该命令：
-```
-create database <你填的database.database>;
+```sql
+    create database <你填的database.database>;
 ```
 
 
@@ -75,12 +99,12 @@ create database <你填的database.database>;
 
 ### MongoDB
 
-MongoDB是一个基于分布式文件储存 （bson格式）的非关系型数据库，其特点如下：
+MongoDB是一个基于分布式文件储存（bson格式）的非关系型数据库，其特点如下：
  - 面向文档存储，操作比较简单；
  - 支持丰富的存储类型和数据操作；
  - 内置的热数据内存缓存实现更快的读写速度。
 
-#### MongoDB字段
+#### MongoDB配置字段
 
 MongoDB在VN Trader中配置时，需要填写以下字段信息：
 
@@ -94,7 +118,7 @@ MongoDB在VN Trader中配置时，需要填写以下字段信息：
 |database.password   | 密码| 可选 |
 |database.authentication_source   | [创建用户所用的数据库][AuthSource]| 可选 |
 
-MongoDB的带认证例子如下所示：
+MongoDB的带认证配置示例如下所示：
 
 | 字段名             | 值 |
 |---------           |----  |
@@ -103,7 +127,7 @@ MongoDB的带认证例子如下所示：
 |database.port       | 27017 |
 |database.database   | vnpy |
 |database.user       | root |
-|database.password   | .... |
+|database.password   |      |
 |database.authentication_source   | vnpy |
 
 
@@ -116,20 +140,22 @@ InfluxDB是专门针对时间序列数据存储设计的非关系型数据库，
 - 列式数据存储提供极高的读写效率；
 - 采用独立服务进程的模式运行，也能支持多进程的并发访问需求。
 
-#### InfluxDB字段
+在安装时请注意要选择2.0版本的InfluxDB。
+
+#### InfluxDB配置字段
 InfluxDB在VN Trader中配置时，需要填写以下字段信息：
 
-| 字段名            | 值 |
-|---------           |---- |
-|database.name     | "influxdb" |
-|database.host       | 地址|
-|database.port       | 端口|
-|database.database   | 数据库名|
-|database.user       | 用户名|
-|database.password   | 密码|
+| 字段名            | 值 | 是否必填 |
+|---------           |---- | ---- |
+|database.name     | "influxdb" | 必填 |
+|database.host       | 地址| 必填 |
+|database.port       | 端口| 必填 |
+|database.database   | 数据库名| 必填 |
+|database.user       | 用户名| 必填 |
+|database.password   | 密码| 必填 |
 
 
-InfluxDB的例子如下所示：
+InfluxDB配置示例如下所示：
 
 | 字段名             | 值 |
 |---------           |----  |
@@ -138,8 +164,7 @@ InfluxDB的例子如下所示：
 |database.port       | 8086 |
 |database.database   | vnpy |
 |database.user       | root |
-|database.password   | .... |
-|database.authentication_source   | vnpy |
+|database.password   | 12345678 |
 
 请注意，运行influxd.exe的cmd需要保持运行，如果关闭则会导致InfluxDB退出，或者也可以使用一些辅助工具将其注册为后台运行的Windows服务。
 
@@ -150,22 +175,24 @@ DolphinDB是浙江智臾科技有限公司研发的一款高性能分布式时�
 - 原生分区表存储，合理的分区方案可以让CPU多线程并行加载每个分区内的数据；
 - 支持高效的数据压缩，显著减小硬盘存储空间的同时，还能大幅降低IO通讯的开销。
 
-#### DolphinDB字段
+尽管DolphinDB是商业软件，但是也提供了免费的社区版，在安装时注意要选择2.0的Beta版本。
+
+#### DolphinDB配置字段
 
 需要填写以下字段：
 
 
-| 字段名        | 值 |
-|---------          |---- |
-|database.name      | "dolphindb"|
-|database.host      | 地址 |
-|database.port      | 端口 |
-|database.database  | 数据库名 |
-|database.user      | 用户名 |
-|database.password  | 密码 |
+| 字段名        | 值 | 是否必填 |
+|---------          |---- | ---- |
+|database.name      | "dolphindb"| 必填 |
+|database.host      | 地址 | 必填 |
+|database.port      | 端口 | 必填 |
+|database.database  | 数据库名 | 必填 |
+|database.user      | 用户名 | 必填 |
+|database.password  | 密码 | 必填 |
 
  
-DolphinDB的例子：
+DolphinDB配置示例如下所示：
 
 
 | 字段名            | 值 |
@@ -175,7 +202,7 @@ DolphinDB的例子：
 |database.port      | 8848 |
 |database.database  | vnpy |
 |database.user      | admin |
-|database.password  | .... |
+|database.password  | 123456|
 
 ### Arctic
 
@@ -185,25 +212,25 @@ Arctic是由英国量化对冲基金Man AHL基于MongoDB开发的高性能金融
 - 基于分块化存储和LZ4压缩，在网络和磁盘IO方面节省大量资源，实现最高每秒百万行的数据查询。
 
 
-#### Artic字段
+#### Artic配置字段
 ## Arctic
 
 
-| 字段名          | 值 |
-|---------        |---- |
-|database.name    | "arctic"|
-|database.host    | 地址 |
-|database.port    | 端口 |
+| 字段名          | 值 | 是否必填 |
+|---------        |---- | ---- |
+|database.name    | "arctic"| 必填 |
+|database.host    | 地址 | 必填 |
+|database.port    | 端口 | 必填 |
 
  
-Arctic的例子：
+Arctic配置示例如下所示：
 
 
 | 字段名          | 值 |
 |---------        |----  |
 |database.name    | arctic |
 |database.host    | localhost |
-|database.port    | 0 |
+|database.database    | vnpy |
 
 ### Level DB
 LevelDB是由Google推出的高性能Key/Value数据库，其特点如下：
@@ -211,23 +238,21 @@ LevelDB是由Google推出的高性能Key/Value数据库，其特点如下：
 - 基于LSM算法实现进程内存储引擎；
 - 支持数十亿级别的海量数据。
 
-#### LevelDB 字段
-| 字段名            | 值 |
-|---------          |---- |
-|database.name      | "leveldb"|
-|database.database  | 数据库名 |
-|database.port    | 端口 |
+#### LevelDB配置字段
+| 字段名            | 值 | 是否必填 |
+|---------          |---- | ---- |
+|database.name      | "leveldb"| 必填 |
+|database.database  | 数据库名 | 必填 |
+|database.port    | 端口 | 必填 |
 
 
-
-LevelDB的例子：
+LevelDB配置示例如下所示：
 
 
 | 字段名            | 值 |
 |---------          |  ----  |
 |database.name      | leveldb |
 |database.database  | vnpy_data |
-|database.port      | 0 |
 
 ## 数据库配置（以MySQL为例）
 
@@ -275,18 +300,76 @@ LevelDB的例子：
 - user用户名为root
 - password密码则是之前我们设置的1001。
 
-```
-database.name: mysql
-database.database: vnpy
-database.host: localhost
-database.port: 3306
-database.user: root
-database.password: 1001
+```json
+        database.name: mysql
+        database.database: vnpy
+        database.host: localhost
+        database.port: 3306
+        database.user: root
+        database.password: 1001
 ```
 
 填写完毕后如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/database/11.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/database/22.png)
 
 保存完成配置修改后，重启VN Trader来启用新的数据库配置。重启后，在打开VN Trader的过程中若无报错提示，则说明MySQL数据库配置成功。 
 
+
+## 脚本使用
+
+脚本使用前，请先按照上文配置好使用的数据库, 使用时调用相应的函数接口。
+```python 3
+from datetime import datetime
+from typing import List
+from vnpy.trader.constant import Exchange, Interval
+from vnpy.trader.database import get_database
+from vnpy.trader.object import BarData, TickData
+
+symbol = "CU888"
+exchange = Exchange.SHFE
+start = datetime(2019, 1, 1)
+end = datetime(2021, 1, 20)
+interval = Interval.DAILY
+
+# 获取数据库实例
+database = get_database()
+
+# 需要存入的k线数据，请自行获取并转换成所需的形式
+bar_data: List[BarData] = None
+
+# 将k线数据存入数据库
+database.save_bar_data(bar_data)
+
+# 读取数据库中k线数据
+database.load_bar_data(
+        symbol=symbol,
+        exchange=exchange,
+        interval=interval,
+        start=start,
+        end=end)
+
+# 删除数据库中k线数据
+database.delete_bar_data(
+        symbol=symbol,
+        exchange=exchange,
+        interval=interval)
+
+# 需要存入的k线数据，请自行获取并转换成所需的形式
+tick_data: List[TickData] = None
+
+# 将tick数据存入数据库
+database.save_bar_data(tick_data)
+
+# 读取数据库中tick数据
+database.load_tick_data(
+        symbol=symbol,
+        exchange=exchange,
+        start=start,
+        end=end)
+
+# 删除数据库中tick数据
+database.delete_tick_data(
+        symbol=symbol,
+        exchange=exchange)
+```

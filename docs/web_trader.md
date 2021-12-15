@@ -1,5 +1,9 @@
 # WebTrader - Web应用后端服务
 
+## 功能简介
+
+WebTrader是用于**Web应用后端服务**的功能模块，用户可以通过浏览器（而非PyQt桌面端）来运行管理vn.py量化策略交易。
+
 ## 架构设计
 
 WebTrader采用了FastAPI作为后端服务器，支持REST主动请求调用和WebSocket被动数据推送，运行时整体框架图如下：
@@ -29,13 +33,13 @@ WebTrader采用了FastAPI作为后端服务器，支持REST主动请求调用和
 
 ### VN Station加载
 
-启动登录VN Station后，点击【VN Trader Pro】按钮，在配置对话框中的【上层应用】栏勾选【WebTRader】。
+启动登录VN Station后，点击【VN Trader Pro】按钮，在配置对话框中的【上层应用】栏勾选【WebTrader】。
 
 ### 脚本加载
 
 在启动脚本中添加如下代码：
 
-```
+```python 3
 # 写在顶部
 from vnpy_webtrader import WebTraderApp
 
@@ -73,13 +77,12 @@ main_engine.add_app(WebTraderApp)
 
 [Jupyter Notebook]:https://github.com/vnpy/vnpy_webtrader/blob/main/script/test.ipynb
 
-
-### 获得令牌（taoken）
-```
+### 获得令牌（token）
+```python 3
 import requests
 import json
 
-url = "http://127.0.0l1:8000/"
+url = "http://127.0.0.1:8000/"
 username = "vnpy"
 password = "vnpy"
 
@@ -101,7 +104,7 @@ r = requests.post(url + "tick/" + "cu2112.SHFE", headers={"Authorization":"Beare
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_4.png)
 
 ###  批量查询
-```
+```python 3
 # 查询函数
 def query_test(name):
     """查询对应类型的数据"""
@@ -118,12 +121,12 @@ for name in ["tick", "contract", "account", "position", "order", "trade"]:
     if data:
         print(data[0])
 ```
-我们同样可以通过发出主动请求查询相关的数据比如tick数据, 订阅数据, 账户数据, 持仓数据, 委托单数据以及交易数据。
+我们同样可以通过发出主动请求查询相关的数据，比如tick数据、合约数据、账户数据、 持仓数据、委托数据以及成交数据。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_5.png)
 
 ### 委托测试
-```
+```python 3
 # 委托测试
 req = {
     "symbol": "cu2112",
@@ -145,28 +148,25 @@ vt_orderid = r.json()
 
 print(vt_orderid)
 ```
-下单后同样能在图形化界面看到订单，如图：
+下单后同样能在图形化界面看到订单，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_6.png)
 
 ### 撤单测试
-```
+```python 3
 # 撤单测试
 r = requests.delete(
     url + "order/" + vt_orderid,
     headers={"Authorization": "Bearer " + token}
 )
 ```
-如果想将之前下的订单撤销，可以发送主动请求，结果同样会在图像化界面更新，如图：
+如果想将之前下的委托撤销，可以发送主动请求，结果同样会在图形化界面更新，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_7.png)
 
-注意，由于之前那个订单已经成交了，所以上图才会显示撤单失败。
-
-
 ### Websocket测试
 
-```
+```python 3
 # Weboscket测试
 from websocket import create_connection
 

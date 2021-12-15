@@ -24,7 +24,7 @@
 
 在[vn.py官网](https://www.vnpy.com/)可以下载最新版本的VN Studio，如下图所示。
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/1.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/15.png)
 
 下载完成后，双击安装包进入VN Studio安装向导，使用默认设置一路点击【下一步】按钮即可完成VN Studio安装，如下图所示：
 
@@ -47,11 +47,11 @@
 
 登录成功后，即可进入到VN Station的主界面，如下图所示。
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/4.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/16.png)
 
 主界面窗口底部有6个按钮：
 
-- 【VN Trader Lite】直接运行VN Trader （只加载了CTP接口，提供CTA策略和回测功能）；
+- 【VN Trader Lite】直接运行VN Trader（只加载了CTP接口，提供CTA策略和回测功能）；
 - 【VN Trader Pro】可以更改保存相关临时文件的目录，再运行VN Trader（可以个性化选择底层接口和上层应用模块）；
 - 【Jupyter Notebook】在指定的目录启动Jupyter Notebook，进行交互式的量化策略研究工作；
 - 【策略加密】使用Cython工具对原本为可读代码的Python策略文件进行加密，生成不可读的二进制pyd文件；
@@ -89,7 +89,7 @@ install.bat
 
 一键安装过程整体分为3步：
 
-1. 下载安装ta-lib库和ibapi；
+1. 下载安装ta-lib库；
 2. 安装requirements.txt文件内的相关依赖库；
 3. 安装vn.py本身。
 

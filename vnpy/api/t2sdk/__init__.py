@@ -1,1 +1,0 @@
-from . import py_t2sdk

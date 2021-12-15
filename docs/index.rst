@@ -5,7 +5,8 @@ vn.py项目文档
    :maxdepth: 2
 
    introduction.md
-   install.md
+   windows_install.md
+   ubuntu_install.md
    quickstart.md
    gateway.md
    database.md
@@ -27,5 +28,6 @@ vn.py项目文档
    chart_wizard.md
    portfolio_manager.md
    excel_rtd.md
+   web_trader.md
    
    contribution.md
