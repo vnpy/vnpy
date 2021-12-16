@@ -132,16 +132,16 @@ engine = init_cli_trading([CtpGateway])
 ### 连接接口
 不同接口需要不同的配置参数，SimNow的配置如下：
 ```json
-    setting = {
-        "用户名": "xxxx",
-        "密码": "xxxx",
-        "经纪商代码": "9999",
-        "交易服务器":"180.168.146.187:10101",
-        "行情服务器":"180.168.146.187:10111",
-        "产品名称":"0000000000000000",
-        "授权编码":"0000000000000000"
-    }
-    engine.connect_gateway(setting,"CTP")
+setting = {
+    "用户名": "xxxx",
+    "密码": "xxxx",
+    "经纪商代码": "9999",
+    "交易服务器":"180.168.146.187:10202",
+    "行情服务器":"180.168.146.187:10212",
+    "产品名称":"simnow_client_test",
+    "授权编码":"0000000000000000"
+}
+engine.connect_gateway(setting,"CTP")
 ```
 
 其他接口配置可以参考site-packages目录下不同接口模块类（如vnpy_ctp.gateway.ctp_gateway）中的default_setting来填写。
@@ -149,7 +149,7 @@ engine = init_cli_trading([CtpGateway])
 ### 订阅行情
 subscribe()函数用于订阅行情信息，若需要订阅一篮子合约的行情，可以使用列表格式。
 ```python 3
-engine.subscribe(vt_symbols = ["rb1909.SHFE","rb1910.SHFE"])
+engine.subscribe(vt_symbols = ["rb2209.SHFE","rb2210.SHFE"])
 ```
 
 ### 查询数据
@@ -163,42 +163,39 @@ engine.subscribe(vt_symbols = ["rb1909.SHFE","rb1910.SHFE"])
 
 **get_tick**：查询单个标的最新tick，use_df为可选参数，用于把返回的类对象转化成DataFrame格式，便于数据分析。
 ```python 3
-tick = engine.get_tick(vt_symbol="rb1910.SHFE",use_df=False)
+tick = engine.get_tick(vt_symbol="rb2210.SHFE",use_df=False)
 ```
 
 其中：
 
-- vt_symbol：为本地合约代码，格式是合约品种+交易所，如rb1910.SHFE；
+- vt_symbol：为本地合约代码，格式是合约品种+交易所，如rb2210.SHFE；
 - use_df：为bool变量，默认False，返回TickData类对象，否则返回相应DataFrame，如下图所示：
 
-![](https://static.vnpy.com/upload/temp/d00ca165-1266-4812-afaa-f6723745d6a4.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/script_trader/13.png)
 
 **get_order**：根据vt_orderid查询委托单的详细信息。
 ```python 3
-order = engine.get_order(vt_orderid='CTP.3_-9351590_1',use_df=False)
+order = engine.get_order(vt_orderid="CTP.3_-1795780178_1",use_df=False)
 ```
 
 其中，vt_orderid为本地委托号，在委托下单时，会自动返回该委托的vt_orderid。
-
-![](https://static.vnpy.com/upload/temp/ae9f6d7f-49da-41e4-a862-825bf146118d.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/script_trader/14.png)
 
 **get_contract**：根据本地vt_symbol来查询对应合约对象的详细信息。
 ```python 3
-contract = engine.get_contract(vt_symbol="rb1910.SHFE",use_df=False)
+contract = engine.get_contract(vt_symbol="rb2210.SHFE",use_df=False)
 ```
-
-![](https://static.vnpy.com/upload/temp/4111776b-91fd-44e6-8b2c-289961862a3a.jpg)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/script_trader/15.png)
 
 **get_account**：根据本地vt_accountid来查询对应合约对象的详细信息。
 ```python 3
-account = engine.get_account(vt_accountid="CTP.158995",use_df=False)
+account = engine.get_account(vt_accountid="CTP.189672",use_df=False)
 ```
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/script_trader/12.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/script_trader/16.png)
 
 **get_bars**：通过配置的数据服务查询历史数据。
 ```python 3
-bars = engine.get_bars(vt_symbol="rb1910.SHFE",start_date="20190101",
+bars = engine.get_bars(vt_symbol="rb2210.SHFE",start_date="20211201",
                         interval=Interval.MINUTE,use_df=False)
 ```
 
@@ -231,22 +228,20 @@ class BarData(BaseData):
 
 **get_position**：根据vt_positionid来查询持仓情况，返回对象包含接口名称、交易所、合约代码、数量、冻结数量等。
 ```python 3
-    position = engine.get_position(vt_positionid='rb1909.SHFE.Direction.LONG')
+position = engine.get_position(vt_positionid='rb2202.SHFE.多')
 ```
-注意，vt_positionid为vnpy内部对于一笔特定持仓的唯一持仓编号，格式为"vt_symbol.Direction.LONG"，其中持仓方向可选多仓、空仓和净持仓，如下图所示：
-
-![](https://static.vnpy.com/upload/temp/4c585dac-0ac9-4fd8-9926-ddc104512359.jpg)
+注意，vt_positionid为vnpy内部对于一笔特定持仓的唯一持仓编号，格式为"vt_symbol.Direction.value"，其中持仓方向可选“多”、“空”和“净”，如下图所示：
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/script_trader/17.png)
 
 #### 多条查询
 
 **get_ticks**：查询多个合约最新tick。
 ```python 3
-ticks = engine.get_ticks(vt_symbols=['rb1910.SHFE','rb1909.SHFE'],use_df = True)
+ticks = engine.get_ticks(vt_symbols=['rb2209.SHFE','rb2210.SHFE'],use_df=True)
 ```
 
 vt_symbols是列表格式，里面包含多个vt_symbol，如图。
-
-![](https://static.vnpy.com/upload/temp/311e1ee8-1a3d-496f-833f-bbb7a3a624ab.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/script_trader/18.png)
 
 
 **get_orders**：根据查询多个vt_orderid查询其详细信息。vt_orderids为列表，里面包含多个vt_orderid
@@ -256,7 +251,7 @@ orders = engine.get_orders([orderid_one,orderid_two],use_df=True)
 
 **get_trades**：根据给定的一个vt_orderid返回这次报单过程中的所有TradeData对象。vt_orderid是本地委托号，每一个委托OrderData，由于部分成交关系，可以对应多笔成交TradeData。
 ```python 3
-trades = engine.get_trades(vt_orderid = your_vt_orderid,use_df = True)
+trades = engine.get_trades(vt_orderid=your_vt_orderid,use_df=True)
 ```
 
 #### 全量查询
@@ -267,8 +262,7 @@ trades = engine.get_trades(vt_orderid = your_vt_orderid,use_df = True)
 - **get_all_active_orders**：活动委托指的是等待委托完全成交，故其状态包含“已提交、未成交、部分成交”；函数将返回包含一系列OrderData的列表对象；
 - **get_all_accounts**：默认返回包含AccountData的列表对象；
 - **get_all_positions**：默认返回包含PositionData的列表对象，如下图所示：
-
-![](https://static.vnpy.com/upload/temp/5d698a27-545b-46bb-9d16-428a8ccb7956.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/script_trader/19.png)
 
 ### 交易委托
 
@@ -279,12 +273,12 @@ trades = engine.get_trades(vt_orderid = your_vt_orderid,use_df = True)
 - volume：报单数量（浮点数类型）;
 - order_type：OrderType枚举常量，默认为限价单（OrderType.LIMIT），同时支持停止单（OrderType.STOP）、FAK（OrderType.FAK）、FOK（OrderType.FOK）、市价单（OrderType.MARKET），不同交易所支持报单方式不完全一致。
 ```python 3
-engine.buy(vt_symbol = "rb1910.SHFE", price = 3200, volume = 1, order_type=OrderType.LIMIT)
+engine.buy(vt_symbol="rb2210.SHFE", price=4200, volume=1, order_type=OrderType.LIMIT)
 ```
 
 执行交易委托后会返回本地委托号vt_orderid，撤单也是基于该本地委托号的：
 ```python 3
-engine.cancel_order(vt_orderid = 'CTP.3_-9351590_1')
+engine.cancel_order(vt_orderid='CTP.3_-1795780178_1')
 ```
 
 ### 信息输出
@@ -297,7 +291,7 @@ send_email()函数用于实时通过email通知用户策略运行情况：
 - 邮件标题为“脚本策略引擎通知”；
 - msg为字符串格式，表示邮件正文内容，如图。
 ```python 3
-engine.send_email(msg = "Your Msg")
+engine.send_email(msg="Your Msg")
 ```
 
 ![](https://static.vnpy.com/upload/temp/8dd8d6b0-6c04-4cb4-a426-ad43d11a13eb.png)
