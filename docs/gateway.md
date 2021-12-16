@@ -73,7 +73,6 @@ main_engine.add_gateway(CtpGateway)
 | 盈透证券              |                 海外全品种                      |
 | 易盛9.0外盘           |                  外盘期货                       |
 | 直达期货              |                  外盘期货                       |
-| MetaTrader 5         |                   外盘期货                 |
 | 融航                 |                  期货资管                        |
 | TTS                  |                    期货                         |
 | 飞鼠                  |                  黄金TD                         |
