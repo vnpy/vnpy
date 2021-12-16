@@ -26,8 +26,5 @@ $python -m pip install ta-lib==0.4.17
 # Install Python Modules
 $python -m pip install -r requirements.txt
 
-# Install local Chinese language environment
-locale-gen zh_CN.GB18030
-
 # Install vn.py
 $python -m pip install . $@
