@@ -611,7 +611,7 @@ class ConnectDialog(QtWidgets.QDialog):
 
                 if "密码" in field_name:
                     widget.setEchoMode(QtWidgets.QLineEdit.Password)
-                
+
                 if field_type == int:
                     validator = QtGui.QIntValidator()
                     widget.setValidator(validator)

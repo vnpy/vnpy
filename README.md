@@ -244,7 +244,7 @@ if __name__ == "__main__":
 
 vn.py使用Github托管其源代码，如果希望贡献代码请使用github的PR（Pull Request）的流程:
 
-1. [创建 Issue](https://github.com/vnpy/vnpy/issues/new) - 对于较大的改动（如新功能，大型重构等）最好先开issue讨论一下，较小的improvement（如文档改进，bugfix等）直接发PR即可
+1. [创建 Issue](https://github.com/vnpy/vnpy/issues/new) - 对于较大的改动（如新功能，大型重构等）最好先开issue讨论一下，较小的improvement（如文档改进，bufix等）直接发PR即可
 
 2. Fork [vn.py](https://github.com/vnpy/vnpy) - 点击右上角**Fork**按钮
 
