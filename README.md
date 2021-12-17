@@ -46,9 +46,9 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
         * 易盛（[esunny](https://www.github.com/vnpy/vnpy_esunny)）：国内期货、黄金TD
 
-        * 飞创证券（sec）：ETF期权
+        * 顶点飞创（[sec](https://www.github.com/vnpy/vnpy_sec)）：ETF期权
 
-        * 南华NHTD（nhtd）：国内期货、ETF期权
+        * 南华NHTD（[nhtd](https://www.github.com/vnpy/vnpy_nhtd)）：国内期货、ETF期权
 
         * 中泰XTP（[xtp](https://www.github.com/vnpy/vnpy_xtp)）：国内证券（A股）、ETF期权
 
@@ -76,7 +76,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
     * 特殊应用
 
-        * RPC服务（rpc）：跨进程通讯接口，用于分布式架构
+        * RPC服务（[rpc](https://www.github.com/vnpy/vnpy_rpcservice)）：跨进程通讯接口，用于分布式架构
 
 3. 开箱即用的各类量化策略交易应用（vnpy.app）：
 
@@ -100,7 +100,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
     * [portfolio_manager](https://www.github.com/vnpy/vnpy_portfoliomanager)：交易组合管理模块，以独立的策略交易组合（子账户）为基础，提供委托成交记录管理、交易仓位自动跟踪以及每日盈亏实时统计功能
 
-    * rpc_service：RPC服务模块，允许将某一VN Trader进程启动为服务端，作为统一的行情和交易路由通道，允许多客户端同时连接，实现多进程分布式系统
+    * [rpc_service](https://www.github.com/vnpy/vnpy_rpcservice)：RPC服务模块，允许将某一VN Trader进程启动为服务端，作为统一的行情和交易路由通道，允许多客户端同时连接，实现多进程分布式系统
 
     * [data_manager](https://www.github.com/vnpy/vnpy_datamanager)：历史数据管理模块，通过树形目录查看数据库中已有的数据概况，选择任意时间段数据查看字段细节，支持CSV文件的数据导入和导出
 
@@ -198,12 +198,11 @@ bash install_osx.sh
 
 3. 启动VN Station（安装VN Studio后会在桌面自动创建快捷方式），输入上一步的账号密码登录
 
-4. 点击底部的**VN Trader Lite**按钮，开始你的交易！！！
+4. 点击底部的**VN Trader Pro**按钮，开始你的交易！！！
 
 注意：
 
 * 在VN Trader的运行过程中请勿关闭VN Station（会自动退出）
-* 如需要灵活配置量化交易应用组件，请使用**VN Trader Pro**
 
 ## 脚本运行
 
