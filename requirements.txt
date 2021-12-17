@@ -39,6 +39,8 @@ vnpy_sgit==4.8.0
 vnpy_femas==1.0.0
 vnpy_ost==2.0.1.1
 vnpy_tora==2021.12.5
+vnpy_hft==1.0.0
+vnpy_nhtd==1.0.0
 
 vnpy_ctastrategy==1.0.6
 vnpy_ctabacktester==1.0.3
