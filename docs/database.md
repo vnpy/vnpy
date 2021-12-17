@@ -213,7 +213,6 @@ Arctic是由英国量化对冲基金Man AHL基于MongoDB开发的高性能金融
 
 
 #### Artic配置字段
-## Arctic
 
 
 | 字段名          | 值 | 是否必填 |
@@ -359,7 +358,7 @@ database.delete_bar_data(
 tick_data: List[TickData] = None
 
 # 将tick数据存入数据库
-database.save_bar_data(tick_data)
+database.save_tick_data(tick_data)
 
 # 读取数据库中tick数据
 database.load_tick_data(
