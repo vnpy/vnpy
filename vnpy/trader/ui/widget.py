@@ -1,5 +1,5 @@
 """
-Basic widgets for VN Trader.
+Basic widgets for UI.
 """
 
 import csv
@@ -188,7 +188,7 @@ class MsgCell(BaseCell):
 
 class BaseMonitor(QtWidgets.QTableWidget):
     """
-    Monitor data update in VN Trader.
+    Monitor data update.
     """
 
     event_type: str = ""
@@ -1118,7 +1118,7 @@ class ContractManager(QtWidgets.QWidget):
 
 class AboutDialog(QtWidgets.QDialog):
     """
-    About VN Trader.
+    Information about the trading platform.
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):

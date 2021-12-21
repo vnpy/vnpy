@@ -1,5 +1,5 @@
 """
-Implements main window of VN Trader.
+Implements main window of the trading platform.
 """
 
 import webbrowser
@@ -32,7 +32,7 @@ from ..utility import get_icon_path, TRADER_DIR
 
 class MainWindow(QtWidgets.QMainWindow):
     """
-    Main window of VN Trader.
+    Main window of the trading platform.
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):

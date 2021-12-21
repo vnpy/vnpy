@@ -1,5 +1,5 @@
 """
-Global setting of VN Trader.
+Global setting of the trading platform.
 """
 
 from logging import CRITICAL
