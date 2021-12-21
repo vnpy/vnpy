@@ -12,9 +12,9 @@
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
 
-vn.py is a Python-based open source quantitative trading system development framework, officially released in January 2015, has grown step by step into a full-featured quantitative trading platform with 6 years of continuous contributions from the open source community, and currently has more than 600 users from domestic and international financial institutions, including: private equity funds, securities proprietary and capital management, futures capital management and subsidiaries, university research institutions, proprietary trading companies, exchanges, Token Funds, etc.
+vn.py is a Python-based open source quantitative trading system development framework, officially released in January 2015, has grown step by step into a full-featured quantitative trading platform with 6 years of continuous contributions from the open source community, and currently has many users from domestic and international financial institutions, including: hedge funds, investment banks, futures brokers, university research institutions, proprietary trading companies, etc.
 
-The new "vn.py Full Practical Advance" online course series has been launched on the official WeChat public number [**vnpy-community**], covering CTA strategies (completed), options volatility trading (being updated) and more. To purchase, please scan the QR code below and click the [Advanced Course] button in the menu bar to.
+The new "vn.py Full Practical Advance" online course series has been launched on the official WeChat account [**vnpy-community**], covering CTA strategies (completed), options volatility trading (being updated) and more. To purchase, please scan the QR code below and click the [Advanced Course] button in the menu bar to.
 
 <p align="center">
   <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy_qr.jpg"/>
@@ -22,7 +22,7 @@ The new "vn.py Full Practical Advance" online course series has been launched on
 
 If you have any questions about using vn.py for secondary development (strategies, modules, etc.), please check the [**vn.py Project Documentation**](https://www.vnpy.com/docs/cn/index.html). If you can't solve it, please go to the [Questions and Help] section of the [**Official Community Forum**](https://www.vnpy.com/forum/) forum for help, or share your experience in the [Experience Sharing] section!
 
-For financial institution users of vn.py, a special [vn.py Institutional Users Group] (QQ group number: 676499931) has been created to share issues related to institutional applications, such as: interbank market access, asset management O32 system, distributed deployment, etc. Please note that this group is only open to financial institution users, please specify: Name - Institution - Department when adding the group.
+For financial institution users of vn.py, a special [vn.py Institutional Users Group] (QQ group number: 676499931) has been created to share issues related to institutional applications, such as: interbank market access, asset management O32 system, distributed deployment, etc. Please note that this group is only open to financial institution users, please specify: Name - Institution - Department when joining the group.
 
 ## Functional Features
 
@@ -40,27 +40,27 @@ For financial institution users of vn.py, a special [vn.py Institutional Users G
 
         * Pegasus ([femas](https://www.github.com/vnpy/vnpy_femas)): domestic futures
 
-        * Hang Seng UFT ([uft](https://www.github.com/vnpy/vnpy_uft)): domestic futures, ETF options
+        * UFT ([uft](https://www.github.com/vnpy/vnpy_uft)): domestic futures, ETF options
         
-        * Yisheng ([esunny](https://www.github.com/vnpy/vnpy_esunny)): domestic futures, Gold TD
+        * Esunny ([esunny](https://www.github.com/vnpy/vnpy_esunny)): domestic futures, Gold TD
 
-        * Feitron Securities (sec): ETF options
+        * XSpeed Securities ([sec](https://www.github.com/vnpy/vnpy_sec)): ETF options
 
-        * South China NHTD (nhtd): domestic futures, ETF options
+        * NHTD ([nhtd](https://www.github.com/vnpy/vnpy_nhtd)): domestic futures, ETF options
 
-        * Zhongtai XTP ([xtp](https://www.github.com/vnpy/vnpy_xtp)): Domestic securities (A shares), ETF options
+        * XTP ([xtp](https://www.github.com/vnpy/vnpy_xtp)): domestic securities (A shares), ETF options
 
-        * Guotai Junan ([hft](https://www.github.com/vnpy/vnpy_hft)): Domestic securities (A shares)
+        * Guotai Junan ([hft](https://www.github.com/vnpy/vnpy_hft)): domestic securities (A shares)
 
-        * Huaxin Singularity ([tora](https://www.github.com/vnpy/vnpy_tora)): Domestic securities (A shares), ETF options
+        * TORA ([tora](https://www.github.com/vnpy/vnpy_tora)): domestic securities (A shares), ETF options
 
-        * Flying Rat ([sgit](https://www.github.com/vnpy/vnpy_sgit)): Gold TD, domestic futures
+        * SGIT ([sgit](https://www.github.com/vnpy/vnpy_sgit)): spot precious metal, domestic futures
 
-        * Jinshida Gold ([ksgold](https://www.github.com/vnpy/vnpy_ksgold)): Gold TD
+        * KsGold ([ksgold](https://www.github.com/vnpy/vnpy_ksgold)): spot precious metal
 
-        * Rong Hang ([rohon](https://www.github.com/vnpy/vnpy_rohon)): futures management
+        * Rohon ([rohon](https://www.github.com/vnpy/vnpy_rohon)): futures management
 
-        * Zhong Hui Yi Da ([comstar](https://www.github.com/vnpy/vnpy_comstar)): Interbank market
+        * ComStar ([comstar](https://www.github.com/vnpy/vnpy_comstar)): interbank fixed-income market
         
         * TTS ([tts](https://www.github.com/vnpy/vnpy_tts)): domestic futures (simulation)
 
@@ -68,13 +68,13 @@ For financial institution users of vn.py, a special [vn.py Institutional Users G
 
         * Interactive Brokers ([ib](https://www.github.com/vnpy/vnpy_ib)): global securities, futures, options, foreign exchange, etc.
 
-        * EaseUS 9.0 Foreign Exchange ([tap](https://www.github.com/vnpy/vnpy_tap)): Global futures
+        * Esunny 9.0 ([tap](https://www.github.com/vnpy/vnpy_tap)): global futures
 
-        * Direct Futures ([da](https://www.github.com/vnpy/vnpy_da)): Global Futures
+        * Direct Futures ([da](https://www.github.com/vnpy/vnpy_da)): global futures
 
     * Special Applications
 
-        * RPC service (rpc): cross-process communication interface for distributed architecture
+        * RPC service ([rpc](https://www.github.com/vnpy/vnpy_rpcservice)): inter-process communication interface for distributed architecture
 
 3. Out-of-the-box trading applications for various quantitative strategies (vnpy.app).
 
@@ -98,7 +98,7 @@ For financial institution users of vn.py, a special [vn.py Institutional Users G
 
     * [portfolio_manager](https://www.github.com/vnpy/vnpy_portfoliomanager): portfolio module, for all kinds of fundamental trading strategies, based on separate strategy sub-accounts, providing automatic tracking of trading positions and real-time profit and loss statistics
 
-    * rpc_service: RPC service module, allowing a VN Trader process to be started as a server, serving as a unified routing channel for quotes and trades, allowing multiple clients to connect at the same time, realizing a multi-process distributed system
+    * [rpc_service](https://www.github.com/vnpy/vnpy_rpcservice): RPC service module, allowing a VN Trader process to be started as a server, serving as a unified routing channel for quotes and trades, allowing multiple clients to connect at the same time, realizing a multi-process distributed system
 
     * [data_manager](https://www.github.com/vnpy/vnpy_datamanager): Historical data management module, view the existing data in the database through the tree directory, select any time period data to view the field details, support CSV file data import and export
 
@@ -159,11 +159,11 @@ For financial institution users of vn.py, a special [vn.py Institutional Users G
     * TQSDK ([tqsdk](https://www.github.com/vnpy/vnpy_tqsdk)): futures
 
 
-8. standard component for cross-process communication (vnpy.rpc) for implementing complex trading systems in distributed deployments
+8. Standard component for inter-process communication (vnpy.rpc) for implementing complex trading systems in distributed deployments
 
-9.  Python high-performance K-line charts (vnpy.chart), supporting large data volume chart display and real-time data update functions
+9. Python high-performance K-line charts (vnpy.chart), supporting large data volume chart display and real-time data update functions
 
-10.  [Community Forum](http://www.vnpy.com) and [Zhihu Column](http://zhuanlan.zhihu.com/vn-py), which include the development tutorial of vn.py project and the research on the application of Python in the field of quantitative trading, etc.
+10.  [Community Forum](http://www.vnpy.com) and [Zhihu Blog](http://zhuanlan.zhihu.com/vn-py), which include the development tutorial of vn.py project and the research on the application of Python in the field of quantitative trading, etc.
 
 11. The official communication group 262656087 (QQ), with strict management (regular purging of long-term diving members), and the membership fee will be donated to the vn.py community fund.
 
@@ -203,7 +203,7 @@ bash install_osx.sh
 
 3. Launch VN Station (a shortcut will be created automatically on your desktop after installing VN Studio), enter the account password from the previous step and login
 
-4. Click on the **VN Trader Lite** button at the bottom and start your trading!
+4. Click on the **VN Trader Pro** button at the bottom and start your trading!
 
 Attention.
 
@@ -218,7 +218,7 @@ In addition to the graphical start-up method based on VN Station, you can also c
 from vnpy.event import EventEngine
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import MainWindow, create_qapp
-from vnpy.gateway.ctp import CtpGateway
+from vnpy_ctp import CtpGateway
 from vnpy_ctastrategy import CtaStrategyApp
 from vnpy_ctabacktester import CtaBacktesterApp
 
