@@ -2,12 +2,14 @@
 
 # 调整
 1. 移除hsoption接口
-2. 
+2. vnpy_webtrader增加对于自定义监听地址和端口的支持
 
 # 剥离
 1. 将南华期货NHTD交易接口剥离到vnpy_nhtd项目中
 2. 将国泰君安证券统一接入网关交易接口剥离到vnpy_hft项目中
 3. 将顶点飞创交易接口剥离到vnpy_sec项目中
+4. 将RPC服务和接口剥离到vnpy_rpcservice项目中
+
 
 
 

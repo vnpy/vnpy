@@ -1132,7 +1132,7 @@ class AboutDialog(QtWidgets.QDialog):
 
     def init_ui(self) -> None:
         """"""
-        self.setWindowTitle("关于VN Trader")
+        self.setWindowTitle("关于Veighna Trader")
 
         text = f"""
             By Traders, For Traders.
@@ -1230,7 +1230,7 @@ class GlobalDialog(QtWidgets.QDialog):
         QtWidgets.QMessageBox.information(
             self,
             "注意",
-            "全局配置的修改需要重启VN Trader后才会生效！",
+            "全局配置的修改需要重启后才会生效！",
             QtWidgets.QMessageBox.Ok
         )
 

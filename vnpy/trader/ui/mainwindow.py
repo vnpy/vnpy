@@ -42,7 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine
 
-        self.window_title: str = f"VN Trader {vnpy.__version__} [{TRADER_DIR}]"
+        self.window_title: str = f"Veighna Trader {vnpy.__version__} [{TRADER_DIR}]"
 
         self.widgets: Dict[str, QtWidgets.QWidget] = {}
 
@@ -318,7 +318,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         Sending a test email.
         """
-        self.main_engine.send_email("VN Trader", "testing")
+        self.main_engine.send_email("Veighna Trader", "testing")
 
     def open_forum(self) -> None:
         """
