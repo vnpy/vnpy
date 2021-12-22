@@ -98,7 +98,7 @@ For financial institution users of vn.py, a special [vn.py Institutional Users G
 
     * [portfolio_manager](https://www.github.com/vnpy/vnpy_portfoliomanager): portfolio module, for all kinds of fundamental trading strategies, based on separate strategy sub-accounts, providing automatic tracking of trading positions and real-time profit and loss statistics
 
-    * [rpc_service](https://www.github.com/vnpy/vnpy_rpcservice): RPC service module, allowing a VN Trader process to be started as a server, serving as a unified routing channel for quotes and trades, allowing multiple clients to connect at the same time, realizing a multi-process distributed system
+    * [rpc_service](https://www.github.com/vnpy/vnpy_rpcservice): RPC service module, allowing a Veighna Trader process to be started as a server, serving as a unified routing channel for quotes and trades, allowing multiple clients to connect at the same time, realizing a multi-process distributed system
 
     * [data_manager](https://www.github.com/vnpy/vnpy_datamanager): Historical data management module, view the existing data in the database through the tree directory, select any time period data to view the field details, support CSV file data import and export
 
@@ -203,12 +203,12 @@ bash install_osx.sh
 
 3. Launch VN Station (a shortcut will be created automatically on your desktop after installing VN Studio), enter the account password from the previous step and login
 
-4. Click on the **VN Trader Pro** button at the bottom and start your trading!
+4. Click on the **Veighna Trader** button at the bottom and start your trading!
 
 Attention.
 
-* Please do not close VN Station during the running of VN Trader (it will exit automatically)
-* For flexible configuration of quantitative trading application components, please use **VN Trader Pro**
+* Please do not close VN Station during the running of Veighna Trader (it will exit automatically)
+* For flexible configuration of quantitative trading application components, please use **Veighna Trader**
 
 ## Script Run
 
@@ -241,7 +241,7 @@ if __name__ == "__main__"。
     main()
 ```
 
-Open CMD in that directory (hold Shift->click right mouse button->open command window/PowerShell here) and then run the following command to start VN Trader.
+Open CMD in that directory (hold Shift->click right mouse button->open command window/PowerShell here) and then run the following command to start Veighna Trader.
 
     python run.py
     

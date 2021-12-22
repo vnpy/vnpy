@@ -10,7 +10,7 @@ PortfolioManager是用于**投资组合盈亏统计和分析**的功能模块，
 
 ### VN Station加载
 
-启动登录VN Station后，点击【VN Trader Pro】按钮，在配置对话框中的【上层应用】栏勾选【PortfolioManager】。
+启动登录VN Station后，点击【Veighna Trader】按钮，在配置对话框中的【上层应用】栏勾选【PortfolioManager】。
 
 ### 脚本加载
 
@@ -109,11 +109,11 @@ main_engine.add_app(PortfolioManagerApp)
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_manager/5.png)
 
 
-请注意，所有组合的持仓数据会在关闭VN Trader时写入缓存文件中，所以不要直接杀进程退出，会丢失数据。  
+请注意，所有组合的持仓数据会在关闭Veighna Trader时写入缓存文件中，所以不要直接杀进程退出，会丢失数据。  
 
 在隔日加载时，程序会自动将昨天的总仓位结算到今天的昨仓数据字段中，该逻辑对于24小时交易的市场（外盘期货）不一定合适，后续考虑加入每日定时结算或者手动结算功能。
 
-如果发现有仓位记录错误，或者策略已经移除的情况，可以手动修改缓存文件，再重新启动VN Trader即可。
+如果发现有仓位记录错误，或者策略已经移除的情况，可以手动修改缓存文件，再重新启动Veighna Trader即可。
 
 Windows系统上缓存文件的默认路径位于：
 

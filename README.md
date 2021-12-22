@@ -100,7 +100,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
     * [portfolio_manager](https://www.github.com/vnpy/vnpy_portfoliomanager)：交易组合管理模块，以独立的策略交易组合（子账户）为基础，提供委托成交记录管理、交易仓位自动跟踪以及每日盈亏实时统计功能
 
-    * [rpc_service](https://www.github.com/vnpy/vnpy_rpcservice)：RPC服务模块，允许将某一VN Trader进程启动为服务端，作为统一的行情和交易路由通道，允许多客户端同时连接，实现多进程分布式系统
+    * [rpc_service](https://www.github.com/vnpy/vnpy_rpcservice)：RPC服务模块，允许将某一vn.py进程启动为服务端，作为统一的行情和交易路由通道，允许多客户端同时连接，实现多进程分布式系统
 
     * [data_manager](https://www.github.com/vnpy/vnpy_datamanager)：历史数据管理模块，通过树形目录查看数据库中已有的数据概况，选择任意时间段数据查看字段细节，支持CSV文件的数据导入和导出
 
@@ -202,11 +202,11 @@ bash install_osx.sh
 
 3. 启动VN Station（安装VN Studio后会在桌面自动创建快捷方式），输入上一步的账号密码登录
 
-4. 点击底部的**VN Trader Pro**按钮，开始你的交易！！！
+4. 点击底部的**Veighna Trader**按钮，开始你的交易！！！
 
 注意：
 
-* 在VN Trader的运行过程中请勿关闭VN Station（会自动退出）
+* 在Veighna Trader的运行过程中请勿关闭VN Station（会自动退出）
 
 ## 脚本运行
 
@@ -221,7 +221,7 @@ from vnpy.app.cta_strategy import CtaStrategyApp
 from vnpy.app.cta_backtester import CtaBacktesterApp
 
 def main():
-    """Start VN Trader"""
+    """Start Veighna Trader"""
     qapp = create_qapp()
 
     event_engine = EventEngine()
@@ -240,7 +240,7 @@ if __name__ == "__main__":
     main()
 ```
 
-在该目录下打开CMD（按住Shift->点击鼠标右键->在此处打开命令窗口/PowerShell）后运行下列命令启动VN Trader：
+在该目录下打开CMD（按住Shift->点击鼠标右键->在此处打开命令窗口/PowerShell）后运行下列命令启动Veighna Trader：
 
     python run.py
 

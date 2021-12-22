@@ -47,7 +47,7 @@ pyxll install
 
 ### VN Station加载
 
-启动登录VN Station后，点击【VN Trader Pro】按钮，在配置对话框中的【上层应用】栏勾选【ExcelRtd】。
+启动登录VN Station后，点击【Veighna Trader】按钮，在配置对话框中的【上层应用】栏勾选【ExcelRtd】。
 
 ### 脚本加载
 
@@ -63,7 +63,7 @@ main_engine.add_app(ExcelRtdApp)
 
 ## 启动模块
 
-在启动模块之前，请先连接交易接口（连接方法详见基本使用篇的连接接口部分）。看到VN Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：
+在启动模块之前，请先连接交易接口（连接方法详见基本使用篇的连接接口部分）。看到Veighna Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/1.png)
 

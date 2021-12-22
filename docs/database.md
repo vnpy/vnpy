@@ -1,6 +1,6 @@
 # 数据库
 
-VN Trader目前支持以下八种数据库：
+Veighna Trader目前支持以下八种数据库：
 
 ## SQL类数据库简介
 
@@ -13,7 +13,7 @@ SQLite是一个轻量的嵌入式数据库，无需安装和配置数据服务�
 
 #### SQLite配置字段
 
-SQLite在VN Trader中配置时，需填写以下字段信息：
+SQLite在Veighna Trader中配置时，需填写以下字段信息：
 
 | 字段名             | 值 | 是否必填 |
 |---------           |---- | --- |
@@ -36,7 +36,7 @@ MySQL是目前最流行的开源关系型数据库，其特点如下：
 
 #### MySQL配置字段
 
-MySQL在VN Trader中配置时，需要填写以下字段信息：
+MySQL在Veighna Trader中配置时，需要填写以下字段信息：
 
 | 字段名            | 值 | 是否必填 |
 |---------           |---- | ---- |
@@ -66,7 +66,7 @@ PostgreSQL是特性更为丰富的开源关系型数据库，只推荐熟手使�
 
 #### PostgreSQL配置字段
 
-PostgreSQL在VN Trader中配置时，需要填写以下字段信息：
+PostgreSQL在Veighna Trader中配置时，需要填写以下字段信息：
 
 | 字段名            | 值 | 是否必填 |
 |---------           |---- | ---- |
@@ -106,7 +106,7 @@ MongoDB是一个基于分布式文件储存（bson格式）的非关系型数据
 
 #### MongoDB配置字段
 
-MongoDB在VN Trader中配置时，需要填写以下字段信息：
+MongoDB在Veighna Trader中配置时，需要填写以下字段信息：
 
 | 字段名               |   值 |          是否必填|
 |---------           |---- |  ---|
@@ -143,7 +143,7 @@ InfluxDB是专门针对时间序列数据存储设计的非关系型数据库，
 在安装时请注意要选择2.0版本的InfluxDB。
 
 #### InfluxDB配置字段
-InfluxDB在VN Trader中配置时，需要填写以下字段信息：
+InfluxDB在Veighna Trader中配置时，需要填写以下字段信息：
 
 | 字段名            | 值 | 是否必填 |
 |---------           |---- | ---- |
@@ -290,7 +290,7 @@ LevelDB配置示例如下所示：
 
 在之后弹出的数据库脚本执行确认对话框中，同样点击【Apply】即可，这样就完成了在MySQL WorkBench的所有操作。
 
-随后启动VN Trader，点击菜单栏的【配置】，设置数据库相关字段：
+随后启动Veighna Trader，点击菜单栏的【配置】，设置数据库相关字段：
 
 - name要改成mysql（请注意大小写）；
 - database改成vnpy；
@@ -312,7 +312,7 @@ LevelDB配置示例如下所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/database/22.png)
 
-保存完成配置修改后，重启VN Trader来启用新的数据库配置。重启后，在打开VN Trader的过程中若无报错提示，则说明MySQL数据库配置成功。 
+保存完成配置修改后，重启Veighna Trader来启用新的数据库配置。重启后，在打开Veighna Trader的过程中若无报错提示，则说明MySQL数据库配置成功。 
 
 
 ## 脚本使用

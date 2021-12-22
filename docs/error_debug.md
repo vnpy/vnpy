@@ -37,13 +37,13 @@
 
 ## python run.py启动
 
-除了通过 ```python -m vnstaion``` 先启动VN Station再启动VN Trader之外，官方还提供了通过运行脚本[run.py](https://gitee.com/vnpy/vnpy/blob/master/examples/vn_trader/run.py)直接启动VN Trader图形界面的方法。
+除了通过 ```python -m vnstaion``` 先启动VN Station再启动Veighna Trader之外，官方还提供了通过运行脚本[run.py](https://gitee.com/vnpy/vnpy/blob/master/examples/vn_trader/run.py)直接启动Veighna Trader图形界面的方法。
 
 首先下载上述run.py代码到本地，比如下载到D:\downloads\run.py，然后进入D:\downloads目录，按住shift键，然后选择“在此处打开PowerShell窗口”，接着就会打开一个PowerShell窗口，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/error_debug/4.png)
 
-之后输入 ```python .\run.py``` 则会直接进入VN Trader图形界面。同样，如果之后有BUG出现，那么也可以在该PowerShell窗口上找到错误提示，如下图所示：
+之后输入 ```python .\run.py``` 则会直接进入Veighna Trader图形界面。同样，如果之后有BUG出现，那么也可以在该PowerShell窗口上找到错误提示，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/error_debug/5.png)
 

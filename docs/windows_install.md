@@ -51,8 +51,8 @@
 
 主界面窗口底部有6个按钮：
 
-- 【VN Trader Lite】直接运行VN Trader（只加载了CTP接口，提供CTA策略和回测功能）；
-- 【VN Trader Pro】可以更改保存相关临时文件的目录，再运行VN Trader（可以个性化选择底层接口和上层应用模块）；
+- 【Veighna Trader Lite】直接运行Veighna Trader（只加载了CTP接口，提供CTA策略和回测功能）；
+- 【Veighna Trader】可以更改保存相关临时文件的目录，再运行Veighna Trader（可以个性化选择底层接口和上层应用模块）；
 - 【Jupyter Notebook】在指定的目录启动Jupyter Notebook，进行交互式的量化策略研究工作；
 - 【策略加密】使用Cython工具对原本为可读代码的Python策略文件进行加密，生成不可读的二进制pyd文件；
 - 【提问求助】在浏览器中打开vn.py社区论坛，遇到问题可以通过相关版块提问求助；
@@ -95,11 +95,11 @@ install.bat
 
 如果某一步安装过程中发生错误，请截取保存命令行中的报错信息（**注意优先保存最底部的报错内容**），前往vn.py社区论坛发帖提问寻求帮助。
 
-### 启动VN Trader
+### 启动Veighna Trader
 
 启动命令行工具，进入解压vn.py源代码的目录下，在文件夹examples/vn_trader中找到run.py文件。
 
-输入如下命令即可启动VN Trader：
+输入如下命令即可启动Veighna Trader：
 
 ```
 python run.py 
