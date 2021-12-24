@@ -318,6 +318,12 @@ LevelDB配置示例如下所示：
 ## 脚本使用
 
 脚本使用前，请先按照上文配置好使用的数据库, 使用时调用相应的函数接口。
+
+
+### 脚本加载
+
+在脚本中加载所需的包和数据结构
+
 ```python 3
 from datetime import datetime
 from typing import List
@@ -325,47 +331,67 @@ from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.database import get_database
 from vnpy.trader.object import BarData, TickData
 
-symbol = "CU888"
-exchange = Exchange.SHFE
-start = datetime(2019, 1, 1)
-end = datetime(2021, 1, 20)
-interval = Interval.DAILY
-
 # 获取数据库实例
 database = get_database()
+```
 
+配置所需合约的具体参数数据
+
+```python 3
+# 合约代码，888为米筐的连续合约，仅用于示范，具体合约代码请根据需求自行更改
+symbol = "CU888"
+# 交易所 目标合约的交易所
+exchange = Exchange.SHFE
+# 历史数据开始时间，精确到日
+start = datetime(2019, 1, 1)
+# 历史数据结束时间，精确到日
+end = datetime(2021, 1, 20)
+# 数据的时间粒度，这里示例采用日级别
+interval = Interval.DAILY
+```
+
+数据库的读取操作(如是数据库指定时间段没有数据，则返回空列表)
+
+```python 3
+# 读取数据库中k线数据
+bar1 = database.load_bar_data(
+                symbol=symbol,
+                exchange=exchange,
+                interval=interval,
+                start=start,
+                end=end)
+
+# 读取数据库中tick数据
+tick1 = database.load_tick_data(
+                symbol=symbol,
+                exchange=exchange,
+                start=start,
+                end=end)
+```
+
+数据库的写入操作(示例中的bar_data和tick_data均未在示例展现获取和转换方法，如需以脚本方式写入，请自行参考源码或其他途径，转换成示例中的数据结构。)
+
+```python 3
 # 需要存入的k线数据，请自行获取并转换成所需的形式
 bar_data: List[BarData] = None
 
-# 将k线数据存入数据库
 database.save_bar_data(bar_data)
-
-# 读取数据库中k线数据
-database.load_bar_data(
-        symbol=symbol,
-        exchange=exchange,
-        interval=interval,
-        start=start,
-        end=end)
-
-# 删除数据库中k线数据
-database.delete_bar_data(
-        symbol=symbol,
-        exchange=exchange,
-        interval=interval)
 
 # 需要存入的k线数据，请自行获取并转换成所需的形式
 tick_data: List[TickData] = None
 
 # 将tick数据存入数据库
 database.save_tick_data(tick_data)
+```
 
-# 读取数据库中tick数据
-database.load_tick_data(
+数据库删除操作(无法恢复，谨慎操作。)
+
+```python 3
+# 删除数据库中k线数据
+database.delete_bar_data(
         symbol=symbol,
         exchange=exchange,
-        start=start,
-        end=end)
+        interval=interval)
 
 # 删除数据库中tick数据
 database.delete_tick_data(
