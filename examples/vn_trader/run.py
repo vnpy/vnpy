@@ -7,14 +7,11 @@ from vnpy.trader.ui import MainWindow, create_qapp
 from vnpy_ctp import CtpGateway
 # from vnpy_ctptest import CtptestGateway
 # from vnpy_mini import MiniGateway
-# from vnpy.gateway.minitest import MinitestGateway
 # from vnpy_femas import FemasGateway
 # from vnpy_sopt import SoptGateway
-# from vnpy.gateway.sopttest import SopttestGateway
 # from vnpy_sec import SecGateway
 # from vnpy_uft import UftGateway
 # from vnpy_esunny import EsunnyGateway
-# from vnpy.gateway.hsoption import HsoptionGateway
 # from vnpy_xtp import XtpGateway
 # from vnpy_tora import ToraStockGateway
 # from vnpy_tora import ToraOptionGateway
@@ -24,13 +21,8 @@ from vnpy_ctp import CtpGateway
 # from vnpy_da import DaGateway
 # from vnpy_rohon import RohonGateway
 # from vnpy_tts import TtsGateway
-# from vnpy_sgit import SgitGateway
-# from vnpy_ksgold import KsgoldGateway
 # from vnpy_ost import OstGateway
 # from vnpy_hft import GtjaGateway
-# from vnpy_nhtd import NhFuturesGateway
-# from vnpy_nhtd import NhStockGateway
-# from vnpy_futu import FutuGateway
 
 # from vnpy_ctastrategy import CtaStrategyApp
 # from vnpy_ctabacktester import CtaBacktesterApp
@@ -40,7 +32,7 @@ from vnpy_ctp import CtpGateway
 # from vnpy_portfoliostrategy import PortfolioStrategyApp
 # from vnpy_scripttrader import ScriptTraderApp
 # from vnpy_chartwizard import ChartWizardApp
-# from vnpy.app.rpc_service import RpcServiceApp
+# from vnpy_rpcservice import RpcServiceApp
 # from vnpy_excelrtd import ExcelRtdApp
 # from vnpy_datamanager import DataManagerApp
 # from vnpy_datarecorder import DataRecorderApp
@@ -61,14 +53,11 @@ def main():
     main_engine.add_gateway(CtpGateway)
     # main_engine.add_gateway(CtptestGateway)
     # main_engine.add_gateway(MiniGateway)
-    # main_engine.add_gateway(MinitestGateway)
     # main_engine.add_gateway(FemasGateway)
     # main_engine.add_gateway(SoptGateway)
-    # main_engine.add_gateway(SopttestGateway)
     # main_engine.add_gateway(SecGateway)    
     # main_engine.add_gateway(UftGateway)
     # main_engine.add_gateway(EsunnyGateway)
-    # main_engine.add_gateway(HsoptionGateway)
     # main_engine.add_gateway(XtpGateway)
     # main_engine.add_gateway(ToraStockGateway)
     # main_engine.add_gateway(ToraOptionGateway)
@@ -79,14 +68,10 @@ def main():
     # main_engine.add_gateway(DaGateway)
     # main_engine.add_gateway(RohonGateway)
     # main_engine.add_gateway(TtsGateway)
-    # main_engine.add_gateway(SgitGateway)
-    # main_engine.add_gateway(KsgoldGateway)
     # main_engine.add_gateway(OstGateway)
-    # main_engine.add_gateway(GtjaGateway)
     # main_engine.add_gateway(NhFuturesGateway)
     # main_engine.add_gateway(NhStockGateway)
-    # main_engine.add_gateway(FutuGateway)
-    
+
     # main_engine.add_app(PaperAccountApp)
     # main_engine.add_app(CtaStrategyApp)
     # main_engine.add_app(CtaBacktesterApp)

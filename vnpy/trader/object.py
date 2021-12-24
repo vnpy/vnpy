@@ -1,5 +1,5 @@
 """
-Basic data structure used for general trading function in VN Trader.
+Basic data structure used for general trading function in the trading platform.
 """
 
 from dataclasses import dataclass

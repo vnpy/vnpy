@@ -1,1 +1,1 @@
-from .sec_gateway import SecGateway
+from vnpy_sec import SecGateway

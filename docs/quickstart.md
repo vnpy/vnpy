@@ -4,29 +4,29 @@
 
 ### 图形模式
 
-启动登录VN Station后，用户可通过以下两种方式进入VN Trader：
-- 点击【VN Trade Lite】按钮，快速进入VN Trader Lite（底层接口只包含CTP接口，功能模块只包含CTA策略模块和CTA回测模块）；
-- 点击【VN Trader Pro】按钮，勾选所需的底层接口和上层应用，点击【启动】按钮进入VN Trader Pro，如下图所示：
+启动登录Veighna Station后，用户可通过以下两种方式进入Veighna Trader：
+- 点击【VN Trade Lite】按钮，快速进入Veighna Trader Lite（底层接口只包含CTP接口，功能模块只包含CTA策略模块和CTA回测模块）；
+- 点击【Veighna Trader】按钮，勾选所需的底层接口和上层应用，点击【启动】按钮进入Veighna Trader，如下图所示：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/18.png)
 
 ### 脚本模式
 
-在文件夹examples/vn_trader中找到run.py文件(不是vnstudio下的，需要在github上单独下载）。运行run.py即可进入VN Trader。
+在文件夹examples/vn_trader中找到run.py文件(不是vnstudio下的，需要在github上单独下载）。运行run.py即可进入Veighna Trader。
 
-- 以Win10系统为例，用户可在run.py所在文件夹内按住【Shift】，同时点击鼠标右键，选择【在此处打开 powershell 窗口】，在弹出窗口中，输入如下命令，即可启动VN Trader。
+- 以Win10系统为例，用户可在run.py所在文件夹内按住【Shift】，同时点击鼠标右键，选择【在此处打开 powershell 窗口】，在弹出窗口中，输入如下命令，即可启动Veighna Trader。
    ```bash
         python run.py
    ```
    ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/3.png)
 
-启动成功的VN Trader如下图所示：
+启动成功的Veighna Trader如下图所示：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/10.png)
 
 ## 连接接口
 
 ### SimNow仿真
 
-以使用SinNow仿真交易账号登陆**CTP**接口为例，点击VN Trader上的菜单栏中点击【系统】->【连接CTP】，会弹出账号配置窗口，如下图所示：
+以使用SinNow仿真交易账号登陆**CTP**接口为例，点击Veighna Trader上的菜单栏中点击【系统】->【连接CTP】，会弹出账号配置窗口，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/1.png)
 
@@ -41,7 +41,7 @@
 
 请注意，用户名需填写InvestorID（6位纯数字），而不是Simnow网站注册时的账号（手机号）。此外，Simnow注册的账号需要修改一次密码后才能登录。
 
-连接成功以后，VN Trader主界面【日志】组件会立刻输出登陆相关信息，同时用户也可以看到账号信息，持仓信息，合约查询等相关信息。如下图所示：
+连接成功以后，Veighna Trader主界面【日志】组件会立刻输出登陆相关信息，同时用户也可以看到账号信息，持仓信息，合约查询等相关信息。如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/1.png)
 
@@ -157,14 +157,14 @@
 
 ## 应用模块
 
-vn.py官方提供了开箱即用的量化交易应用模块，在启动VN Trader时勾选所需的功能模块，启动成功后在菜单栏中点击【功能】按钮，即可显示所勾选的功能模块，如下图所示：
+vn.py官方提供了开箱即用的量化交易应用模块，在启动Veighna Trader时勾选所需的功能模块，启动成功后在菜单栏中点击【功能】按钮，即可显示所勾选的功能模块，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/21.png)
 
 
 ## 全局配置
 
-点击VN Trader菜单栏上的【配置】按钮弹出【全局配置】窗口，如下图所示：
+点击Veighna Trader菜单栏上的【配置】按钮弹出【全局配置】窗口，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/20.png)
 
@@ -172,23 +172,23 @@ vn.py官方提供了开箱即用的量化交易应用模块，在启动VN Trader
 
 font.family和font.size参数用于配置GUI界面，各参数含义如下所示：
 
-- font.family：设置VN Trader图形界面的字体类型，除了默认的Arial字体，也支持Courier New和System字体；
+- font.family：设置Veighna Trader图形界面的字体类型，除了默认的Arial字体，也支持Courier New和System字体；
 
-- font.size：设置VN Trader图形界面的字体大小，用户可以根据自己显示器的实际分辨率对字体大小进行修改。
+- font.size：设置Veighna Trader图形界面的字体大小，用户可以根据自己显示器的实际分辨率对字体大小进行修改。
 
 ### 日志输出
 
 log.active, log.level, log.console和log.file用于对日志输出进行配置，各参数含义如下所示：
 
-- log.active：控制是否启动LogEngine，默认为True。如果该项修改为False，则后续几项参数都将失效，同时VN Trader运行时不再输出日志或生成日志文件（可以降低部分系统延时）；
+- log.active：控制是否启动LogEngine，默认为True。如果该项修改为False，则后续几项参数都将失效，同时Veighna Trader运行时不再输出日志或生成日志文件（可以降低部分系统延时）；
 
 - log.level：控制日志输出的级别，日志可以从轻到严重分成DEBUG、INFO、WARNING、ERROR、CRITICAL五个级别，分别对应10、20、30、40、50的整数值。如果日志等级低于该项设置值，将会被忽略。如果想要记录更详细的系统运行信息，建议将该项整数值调低；
 
-- log.console：console指的是终端，如Windows系统上的cmd和Powershell，以及Linux上的Terminal。当设置为True时，通过终端运行脚本来启动VN Trader，日志信息会输出在终端中；如果通过VN Station来直接启动VN Trader，则无console输出；
+- log.console：console指的是终端，如Windows系统上的cmd和Powershell，以及Linux上的Terminal。当设置为True时，通过终端运行脚本来启动Veighna Trader，日志信息会输出在终端中；如果通过Veighna Station来直接启动Veighna Trader，则无console输出；
 
 - log.file：该参数用于控制是否要将日志输出到文件中，建议设置为True，否则无法记录生成的日志。
 
-VN Trader的日志文件，默认位于运行时目录的.vntrader\log目录下，完整路径为：
+Veighna Trader的日志文件，默认位于运行时目录的.vntrader\log目录下，完整路径为：
 ```
 C:\users\administrator\.vntrader\log
 ```

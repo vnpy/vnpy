@@ -1,5 +1,5 @@
 """
-Basic widgets for VN Trader.
+Basic widgets for UI.
 """
 
 import csv
@@ -188,7 +188,7 @@ class MsgCell(BaseCell):
 
 class BaseMonitor(QtWidgets.QTableWidget):
     """
-    Monitor data update in VN Trader.
+    Monitor data update.
     """
 
     event_type: str = ""
@@ -611,7 +611,7 @@ class ConnectDialog(QtWidgets.QDialog):
 
                 if "密码" in field_name:
                     widget.setEchoMode(QtWidgets.QLineEdit.Password)
-                
+
                 if field_type == int:
                     validator = QtGui.QIntValidator()
                     widget.setValidator(validator)
@@ -1118,7 +1118,7 @@ class ContractManager(QtWidgets.QWidget):
 
 class AboutDialog(QtWidgets.QDialog):
     """
-    About VN Trader.
+    Information about the trading platform.
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
@@ -1132,7 +1132,7 @@ class AboutDialog(QtWidgets.QDialog):
 
     def init_ui(self) -> None:
         """"""
-        self.setWindowTitle("关于VN Trader")
+        self.setWindowTitle("关于Veighna Trader")
 
         text = f"""
             By Traders, For Traders.
@@ -1230,7 +1230,7 @@ class GlobalDialog(QtWidgets.QDialog):
         QtWidgets.QMessageBox.information(
             self,
             "注意",
-            "全局配置的修改需要重启VN Trader后才会生效！",
+            "全局配置的修改需要重启后才会生效！",
             QtWidgets.QMessageBox.Ok
         )
 

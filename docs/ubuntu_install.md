@@ -68,11 +68,11 @@ sudo apt-get install build-essential
 > 若是在虚拟机上运行，请把内存调至4G以上，否则会报错内存不足。
 
 
-## 启动VN Trader
+## 启动Veighna Trader
 
 进入解压vn.py源代码的目录下，在文件夹examples/vn_trader中找到run.py文件。
 
-点击鼠标右键打开终端，输入如下命令即可启动VN Trader：
+点击鼠标右键打开终端，输入如下命令即可启动Veighna Trader：
 
 ```
 python run.py 

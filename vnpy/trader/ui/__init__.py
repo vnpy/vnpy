@@ -13,7 +13,7 @@ from ..setting import SETTINGS
 from ..utility import get_icon_path
 
 
-def create_qapp(app_name: str = "VN Trader") -> QtWidgets.QApplication:
+def create_qapp(app_name: str = "Veighna Trader") -> QtWidgets.QApplication:
     """
     Create Qt Application.
     """

@@ -48,7 +48,7 @@ from .utility import get_folder_path, TRADER_DIR
 
 class MainEngine:
     """
-    Acts as the core of VN Trader.
+    Acts as the core of the trading platform.
     """
 
     def __init__(self, event_engine: EventEngine = None):
@@ -272,7 +272,7 @@ class LogEngine(BaseEngine):
 
         self.level: int = SETTINGS["log.level"]
 
-        self.logger: Logger = logging.getLogger("VN Trader")
+        self.logger: Logger = logging.getLogger("vn.py")
         self.logger.setLevel(self.level)
 
         self.formatter = logging.Formatter(
@@ -335,7 +335,7 @@ class LogEngine(BaseEngine):
 
 class OmsEngine(BaseEngine):
     """
-    Provides order management system function for VN Trader.
+    Provides order management system function.
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
@@ -554,7 +554,7 @@ class OmsEngine(BaseEngine):
 
 class EmailEngine(BaseEngine):
     """
-    Provides email sending function for VN Trader.
+    Provides email sending function.
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
