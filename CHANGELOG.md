@@ -1,8 +1,13 @@
 # 2.9.0版本
 
+# 新增
+1. 新增顶点HTS柜台交易接口vnpy_hts
+
 # 调整
-1. 移除hsoption接口
+1. 移除恒生期权hsoption接口
 2. vnpy_webtrader增加对于自定义监听地址和端口的支持
+3. vnpy_mongodb锁定pymongo的依赖版本为3.12.3
+4. vnpy_udata安装脚本中添加hs_udata库的依赖
 
 # 剥离
 1. 将南华期货NHTD交易接口剥离到vnpy_nhtd项目中
@@ -10,6 +15,12 @@
 3. 将顶点飞创交易接口剥离到vnpy_sec项目中
 4. 将RPC服务和接口剥离到vnpy_rpcservice项目中
 
+# 修复
+1. 修复vnpy_tora撤单时，由于撤单编号和委托编号冲突导致的撤单失败问题
+2. 修复vnpy_tora股票委托状态中【未成交】状态的错误映射问题
+3. 修复vnpy_ctabacktester中，回测开始日期编辑框的数据缓存问题
+4. 修复vnpy_udata中，分段下载数据时，可能进入死循环的问题
+5. 修复vnpy_udata中，修复下载的数据量为空时，出现的异常报错问题
 
 
 
