@@ -21,4 +21,4 @@
 # SOFTWARE.
 
 
-__version__ = "3.0.b"
+__version__ = "3.0.0.b"
