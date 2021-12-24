@@ -1,1 +1,0 @@
-from .gtja_gateway import GtjaGateway

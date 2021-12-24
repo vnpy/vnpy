@@ -6,9 +6,9 @@ CtaBacktester是用于**CTA策略历史回测研究**的功能模块，用户可
 
 ## 加载启动
 
-### VN Station加载
+### Veighna Station加载
 
-启动登录VN Station后，点击【VN Trader Pro】按钮，在配置对话框中的【上层应用】栏勾选【CtaBacktester】。
+启动登录Veighna Station后，点击【Veighna Trader】按钮，在配置对话框中的【上层应用】栏勾选【CtaBacktester】。
 
 ### 脚本加载
 
@@ -25,7 +25,7 @@ main_engine.add_app(CtaBacktesterApp)
 
 ## 启动模块
 
-对于用户自行开发的策略，需要放到VN Trader运行时目录下的**strategies**目录中，才能被识别加载。具体的运行时目录路径，可以在VN Trader主界面顶部的标题栏查看。
+对于用户自行开发的策略，需要放到Veighna Trader运行时目录下的**strategies**目录中，才能被识别加载。具体的运行时目录路径，可以在Veighna Trader主界面顶部的标题栏查看。
 
 对于在Windows上默认安装的用户来说，放置策略的strategies目录路径通常为：
 
@@ -35,7 +35,7 @@ C:\Users\Administrator\strategies
 
 其中Administrator为当前登录Windows的系统用户名。
 
-启动VN Trader后，在菜单栏中点击【功能】-> 【CTA回测】，或者点击左侧按钮栏的图标：
+启动Veighna Trader后，在菜单栏中点击【功能】-> 【CTA回测】，或者点击左侧按钮栏的图标：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/00.png)
 
@@ -81,7 +81,7 @@ C:\Users\Administrator\strategies
 
 ### 数据来源：IB（外盘期货、股票、现货等）
 
-Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据下载（包括股票、期货、期权、现货等），注意下载前需要先启动IB TWS交易软件，并在VN Trader主界面连接好IB接口，并订阅所需合约行情。下载成功如下图所示：
+Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据下载（包括股票、期货、期权、现货等），注意下载前需要先启动IB TWS交易软件，并在Veighna Trader主界面连接好IB接口，并订阅所需合约行情。下载成功如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/28.png)
 
@@ -292,7 +292,7 @@ K线图表中的图例说明可以在窗口底部看到，整体上采用了国�
 
 ### 代码编辑
 
-VN Trader内置了轻量级策略编辑器，在CtaBacktester界面左上角的下拉框中选择策略后，点击左下角的【代码编辑】按钮，即可打开：
+Veighna Trader内置了轻量级策略编辑器，在CtaBacktester界面左上角的下拉框中选择策略后，点击左下角的【代码编辑】按钮，即可打开：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/57.png)
 

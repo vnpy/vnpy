@@ -3,7 +3,7 @@
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Sequence, Dict, List, Optional, Callable
+from typing import Any, Dict, List, Optional, Callable
 from copy import copy
 
 from vnpy.event import Event, EventEngine
