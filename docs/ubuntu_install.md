@@ -7,10 +7,10 @@
 - [Miniconda官方下载地址](https://docs.conda.io/en/latest/miniconda.html)
 - [Miniconda清华镜像下载地址](https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/)
 
-启动Terminal终端，进入已下载好的Miniconda3-py37_4.9.2-Linux-x86_64.sh文件所在目录，运行如下命令开始安装：
+启动Terminal终端，进入已下载好的Miniconda3-py37_4.10.3-Linux-x86_64.sh文件所在目录，运行如下命令开始安装：
 
 ```
-$ bash Miniconda3-py37_4.9.2-Linux-x86_64.sh
+$ bash Miniconda3-py37_4.10.3-Linux-x86_64.sh
 ```
 
 安装时可以设置安装路径和默认环境，在询问是否要将Miniconda设置为Python默认环境时选择yes，如下图所示：
@@ -44,12 +44,18 @@ sudo apt-get update
 sudo apt-get install build-essential
 ```
 
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/19.png)
+
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/11.png)
 
-然后进入之前解压出来的vn.py源代码目录（包含install.sh这个文件），打开终端运行如下命令执行一键安装：
+然后进入之前解压出来的vn.py源代码目录（包含install.sh这个文件）
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/20.png)
+
+打开终端运行如下命令执行一键安装：
 
 ```
-bash install.sh
+. install.sh
 ```
 
 一键安装过程整体分为4步：
@@ -122,7 +128,7 @@ sudo apt-get install python3-dev
 
 编译安装ta-lib完毕后，重新执行下述命令安装vnpy即可。
 ```
-bash install.sh
+. install.sh
 ```
 
 ## 图形驱动问题处理
