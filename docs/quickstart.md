@@ -4,7 +4,7 @@
 
 ### 图形模式
 
-启动登录VN Station后，用户可通过以下两种方式进入Veighna Trader：
+启动登录Veighna Station后，用户可通过以下两种方式进入Veighna Trader：
 - 点击【VN Trade Lite】按钮，快速进入Veighna Trader Lite（底层接口只包含CTP接口，功能模块只包含CTA策略模块和CTA回测模块）；
 - 点击【Veighna Trader】按钮，勾选所需的底层接口和上层应用，点击【启动】按钮进入Veighna Trader，如下图所示：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/18.png)
@@ -184,7 +184,7 @@ log.active, log.level, log.console和log.file用于对日志输出进行配置�
 
 - log.level：控制日志输出的级别，日志可以从轻到严重分成DEBUG、INFO、WARNING、ERROR、CRITICAL五个级别，分别对应10、20、30、40、50的整数值。如果日志等级低于该项设置值，将会被忽略。如果想要记录更详细的系统运行信息，建议将该项整数值调低；
 
-- log.console：console指的是终端，如Windows系统上的cmd和Powershell，以及Linux上的Terminal。当设置为True时，通过终端运行脚本来启动Veighna Trader，日志信息会输出在终端中；如果通过VN Station来直接启动Veighna Trader，则无console输出；
+- log.console：console指的是终端，如Windows系统上的cmd和Powershell，以及Linux上的Terminal。当设置为True时，通过终端运行脚本来启动Veighna Trader，日志信息会输出在终端中；如果通过Veighna Station来直接启动Veighna Trader，则无console输出；
 
 - log.file：该参数用于控制是否要将日志输出到文件中，建议设置为True，否则无法记录生成的日志。
 

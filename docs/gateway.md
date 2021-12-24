@@ -2,9 +2,9 @@
 
 ## 加载启动
 
-### VN Station加载
+### Veighna Station加载
 
-启动登录VN Station后，点击【Veighna Trader】按钮，在配置对话框中的【底层接口】栏勾选想要交易的接口。
+启动登录Veighna Station后，点击【Veighna Trader】按钮，在配置对话框中的【底层接口】栏勾选想要交易的接口。
 
 请注意: CTP、CTP测试以及融航接口不能同时加载，CTP Mini和CTP Mini测试接口也不能同时加载，会导致API版本错误，报错4097; 所有接口都只支持全仓保证金模式。
 

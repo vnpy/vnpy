@@ -14,15 +14,15 @@
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/error_debug/1.png)
 
-输入命令 ```python -m vnstation``` 之后并按Enter键则会进入VN Station的登录界面，如下图所示:
+输入命令 ```python -m vnstation``` 之后并按Enter键则会进入Veighna Station的登录界面，如下图所示:
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/error_debug/2.png)
 
 （上图中qt的warning信息不影响程序的运行）
 
-剩下的操作则跟从桌面图标启动VN Station完全一致。重点在于假如出现了BUG，那么用户就可以在该命令行下看到报错的提示，从而定位问题所在。如此也方便用户将报错截图发送到微信/QQ群中或者论坛上寻求帮助。
+剩下的操作则跟从桌面图标启动Veighna Station完全一致。重点在于假如出现了BUG，那么用户就可以在该命令行下看到报错的提示，从而定位问题所在。如此也方便用户将报错截图发送到微信/QQ群中或者论坛上寻求帮助。
 
-这里举一个常见的例子，假如用户将DolphinDB作为vn.py的数据库配置，然后在通过桌面图标的方式启动VN Station之前并没有启动DolphinDB数据库，那么就会出现如下图所示的白屏错误：
+这里举一个常见的例子，假如用户将DolphinDB作为vn.py的数据库配置，然后在通过桌面图标的方式启动Veighna Station之前并没有启动DolphinDB数据库，那么就会出现如下图所示的白屏错误：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/error_debug/8.png)
 
@@ -37,7 +37,7 @@
 
 ## python run.py启动
 
-除了通过 ```python -m vnstaion``` 先启动VN Station再启动Veighna Trader之外，官方还提供了通过运行脚本[run.py](https://gitee.com/vnpy/vnpy/blob/master/examples/vn_trader/run.py)直接启动Veighna Trader图形界面的方法。
+除了通过 ```python -m vnstaion``` 先启动Veighna Station再启动Veighna Trader之外，官方还提供了通过运行脚本[run.py](https://gitee.com/vnpy/vnpy/blob/master/examples/vn_trader/run.py)直接启动Veighna Trader图形界面的方法。
 
 首先下载上述run.py代码到本地，比如下载到D:\downloads\run.py，然后进入D:\downloads目录，按住shift键，然后选择“在此处打开PowerShell窗口”，接着就会打开一个PowerShell窗口，如下图所示：
 

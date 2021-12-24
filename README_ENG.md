@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.8.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.9.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
@@ -169,7 +169,7 @@ For financial institution users of vn.py, a special [vn.py Institutional Users G
 
 ## Environment preparation
 
-* We recommend using the Python distribution [VNStudio-2.8.0](https://download.vnpy.com/vnstudio-2.8.0.exe), which is built with the latest version of vn.py framework and VN Station quantitative management platform, specifically created by the vn.py team for quantitative trading. Manual installation
+* We recommend using the Python distribution [VNStudio-2.9.0](https://download.vnpy.com/vnstudio-2.9.0.exe), which is built with the latest version of vn.py framework and Veighna Station quantitative management platform, specifically created by the vn.py team for quantitative trading. Manual installation
 * Supported system versions: Windows 10 or above/Windows Server 2016 or above/Ubuntu 20.04 LTS
 * Supported Python version: Python 3.7 64-bit (**Note that it must be Python 3.7 64-bit version**)
 
@@ -199,20 +199,20 @@ bash install_osx.sh
 
 1. Register a CTP Demo account at [SimNow](http://www.simnow.com.cn/) and get the broker code and the trading quotes server address at [this page](http://www.simnow.com.cn/product.action).
 
-2. Register at [vn.py community forum](https://www.vnpy.com/forum/) to get the VN Station account password (the forum account password is)
+2. Register at [vn.py community forum](https://www.vnpy.com/forum/) to get the Veighna Station account password (the forum account password is)
 
-3. Launch VN Station (a shortcut will be created automatically on your desktop after installing VN Studio), enter the account password from the previous step and login
+3. Launch Veighna Station (a shortcut will be created automatically on your desktop after installing Veighna Studio), enter the account password from the previous step and login
 
 4. Click on the **Veighna Trader** button at the bottom and start your trading!
 
 Attention.
 
-* Please do not close VN Station during the running of Veighna Trader (it will exit automatically)
+* Please do not close Veighna Station during the running of Veighna Trader (it will exit automatically)
 * For flexible configuration of quantitative trading application components, please use **Veighna Trader**
 
 ## Script Run
 
-In addition to the graphical start-up method based on VN Station, you can also create run.py in any directory and write the following sample code.
+In addition to the graphical start-up method based on Veighna Station, you can also create run.py in any directory and write the following sample code.
 
 ```Python
 from vnpy.event import EventEngine

@@ -7,35 +7,35 @@
 
 > 其他版本的Windows系统安装时可能遇到各种依赖库问题，不推荐使用。
 
-在Windows系统上安装vn.py，推荐使用官方推出的【VN Studio Python发行版】，**尤其是初次接触Python的编程新手**。
+在Windows系统上安装vn.py，推荐使用官方推出的【Veighna Studio Python发行版】，**尤其是初次接触Python的编程新手**。
 
-作为一站式的量化投研交易Python环境，VN Studio整合了：
+作为一站式的量化投研交易Python环境，Veighna Studio整合了：
 
 - Python 3.7 64位（Python官网版本）
 - vn.py和其他相关依赖库
-- VN Station（vn.py框架的图形化管理工具）
+- Veighna Station（vn.py框架的图形化管理工具）
 
 对于已经有比较丰富的编程经验或者需要用到特定Python发行版（如Anaconda）的用户，也可以采用手动安装的方案。
 
 
-## VN Studio方案
+## Veighna Studio方案
 
 ### 下载安装
 
-在[vn.py官网](https://www.vnpy.com/)可以下载最新版本的VN Studio，如下图所示。
+在[vn.py官网](https://www.vnpy.com/)可以下载最新版本的Veighna Studio，如下图所示。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/15.png)
 
-下载完成后，双击安装包进入VN Studio安装向导，使用默认设置一路点击【下一步】按钮即可完成VN Studio安装，如下图所示：
+下载完成后，双击安装包进入Veighna Studio安装向导，使用默认设置一路点击【下一步】按钮即可完成Veighna Studio安装，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/2.png)
 
-> 推荐将VN Studio安装在默认路径的C:\vnstudio，其他vn.py文档和教程中均使用该目录作为vn.py安装目录进行讲解。
+> 推荐将Veighna Studio安装在默认路径的C:\vnstudio，其他vn.py文档和教程中均使用该目录作为vn.py安装目录进行讲解。
 
 
-### 上手VN Station
+### 上手Veighna Station
 
-双击桌面图标运行VN Station，输入账号密码或直接微信扫码即可登录，登录对话框如下图所示。
+双击桌面图标运行Veighna Station，输入账号密码或直接微信扫码即可登录，登录对话框如下图所示。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/3.png)
 
@@ -45,7 +45,7 @@
 - 用户名自动使用注册时的微信【昵称】（不支持修改）；
 - 密码请牢记，该密码也同样用于登录[vn.py社区论坛](https://www.vnpy.com/forum)
 
-登录成功后，即可进入到VN Station的主界面，如下图所示。
+登录成功后，即可进入到Veighna Station的主界面，如下图所示。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/16.png)
 

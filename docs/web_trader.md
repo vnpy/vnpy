@@ -31,9 +31,9 @@ WebTrader采用了FastAPI作为后端服务器，支持REST主动请求调用和
 
 ## 加载启动
 
-### VN Station加载
+### Veighna Station加载
 
-启动登录VN Station后，点击【Veighna Trader】按钮，在配置对话框中的【上层应用】栏勾选【WebTrader】。
+启动登录Veighna Station后，点击【Veighna Trader】按钮，在配置对话框中的【上层应用】栏勾选【WebTrader】。
 
 ### 脚本加载
 
