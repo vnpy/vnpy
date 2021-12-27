@@ -8,6 +8,7 @@
 2. vnpy_webtrader增加对于自定义监听地址和端口的支持
 3. vnpy_mongodb锁定pymongo的依赖版本为3.12.3
 4. vnpy_udata安装脚本中添加hs_udata库的依赖
+5. vnpy_uft升级使用3.7.2.4版本的恒生API接口
 
 # 剥离
 1. 将南华期货NHTD交易接口剥离到vnpy_nhtd项目中
@@ -21,7 +22,7 @@
 3. 修复vnpy_ctabacktester中，回测开始日期编辑框的数据缓存问题
 4. 修复vnpy_udata中，分段下载数据时，可能进入死循环的问题
 5. 修复vnpy_udata中，修复下载的数据量为空时，出现的异常报错问题
-
+6. 修复vnpy_dolphindb中，合约名带有符号时数据无法读取问题
 
 
 # 2.8.0版本

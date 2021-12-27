@@ -63,7 +63,7 @@ vnpy_mysql==1.0.0
 vnpy_postgresql==1.0.0
 vnpy_mongodb==1.0.1
 vnpy_influxdb==1.0.1
-vnpy_dolphindb==1.0.5
+vnpy_dolphindb==1.0.6
 vnpy_leveldb==1.0.1
 
 vnpy_rqdata==2.9.38.1

@@ -19,7 +19,6 @@ vn.py项目文档
    portfolio_strategy.md   
    algo_trading.md
    script_trader.md
-
    paper_account.md
    data_recorder.md
    data_manager.md

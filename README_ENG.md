@@ -169,7 +169,7 @@ For financial institution users of vn.py, a special [vn.py Institutional Users G
 
 ## Environment preparation
 
-* We recommend using the Python distribution [Veighna Studio-2.9.0](https://download.vnpy.com/vnstudio-2.9.0.exe), which is built with the latest version of vn.py framework and Veighna Station quantitative management platform, specifically created by the vn.py team for quantitative trading. Manual installation
+* We recommend using the Python distribution [Veighna Studio-2.9.0](https://download.vnpy.com/veighna-studio-2.9.0.exe), which is built with the latest version of vn.py framework and Veighna Station quantitative management platform, specifically created by the vn.py team for quantitative trading. Manual installation
 * Supported system versions: Windows 10 or above/Windows Server 2016 or above/Ubuntu 20.04 LTS
 * Supported Python version: Python 3.7 64-bit (**Note that it must be Python 3.7 64-bit version**)
 
