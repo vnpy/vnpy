@@ -1,26 +1,10 @@
 # Ubuntu安装指南
 
-## 安装Miniconda
+## 检查python
 
-下载Python 3.7版本的Miniconda（或者Anaconda），注意必须是**Python3.7 64位版本**，本文档以Miniconda为例；
-
-- [Miniconda官方下载地址](https://docs.conda.io/en/latest/miniconda.html)
-- [Miniconda清华镜像下载地址](https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/)
-
-启动Terminal终端，进入已下载好的Miniconda3-py37_4.10.3-Linux-x86_64.sh文件所在目录，运行如下命令开始安装：
-
-```
-$ bash Miniconda3-py37_4.10.3-Linux-x86_64.sh
-```
-
-安装时可以设置安装路径和默认环境，在询问是否要将Miniconda设置为Python默认环境时选择yes，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/8.png)
-
-安装完成后，启动终端运行命令python，若能进入Python解释器（如下图所示），则说明已成功把Miniconda设置为系统默认的Python环境：
+检查本地python版本，需要需要3.7版本以后的python，在命令行输入python检查当前python版本
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/9.png)
-
 
 ## 安装vn.py
 
