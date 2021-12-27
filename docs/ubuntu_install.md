@@ -1,8 +1,8 @@
 # Ubuntu安装指南
 
-## 检查python
+## 检查Python
 
-检查本地python版本，需要需要3.7版本以后的python，在命令行输入python检查当前python版本
+检查本地Python版本，需要需要3.7版本以上的版本，在命令行运行python命令查看：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/9.png)
 

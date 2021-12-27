@@ -6,6 +6,8 @@ pyqtgraph
 qdarkstyle
 numpy==1.18.2
 pandas
+matplotlib
+seaborn
 PyCryptodome==3.9.9
 rqdatac==2.9.38
 ta-lib==0.4.17

@@ -339,13 +339,17 @@ database = get_database()
 
 ```python 3
 # 合约代码，888为米筐的连续合约，仅用于示范，具体合约代码请根据需求自行更改
-symbol = "CU888"
-# 交易所 目标合约的交易所
+symbol = "cu888"
+
+# 交易所，目标合约的交易所
 exchange = Exchange.SHFE
+
 # 历史数据开始时间，精确到日
 start = datetime(2019, 1, 1)
+
 # 历史数据结束时间，精确到日
 end = datetime(2021, 1, 20)
+
 # 数据的时间粒度，这里示例采用日级别
 interval = Interval.DAILY
 ```
@@ -355,18 +359,20 @@ interval = Interval.DAILY
 ```python 3
 # 读取数据库中k线数据
 bar1 = database.load_bar_data(
-                symbol=symbol,
-                exchange=exchange,
-                interval=interval,
-                start=start,
-                end=end)
+    symbol=symbol,
+    exchange=exchange,
+    interval=interval,
+    start=start,
+    end=end
+)
 
 # 读取数据库中tick数据
 tick1 = database.load_tick_data(
-                symbol=symbol,
-                exchange=exchange,
-                start=start,
-                end=end)
+    symbol=symbol,
+    exchange=exchange,
+    start=start,
+    end=end
+)
 ```
 
 数据库的写入操作(示例中的bar_data和tick_data均未在示例展现获取和转换方法，如需以脚本方式写入，请自行参考源码或其他途径，转换成示例中的数据结构。)
@@ -389,12 +395,14 @@ database.save_tick_data(tick_data)
 ```python 3
 # 删除数据库中k线数据
 database.delete_bar_data(
-        symbol=symbol,
-        exchange=exchange,
-        interval=interval)
+    symbol=symbol,
+    exchange=exchange,
+    interval=interval
+)
 
 # 删除数据库中tick数据
 database.delete_tick_data(
-        symbol=symbol,
-        exchange=exchange)
+    symbol=symbol,
+    exchange=exchange
+)
 ```
