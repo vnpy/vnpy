@@ -28,8 +28,6 @@ def get_install_requires():
         "peewee",
         "numpy",
         "pandas",
-        "matplotlib",
-        "seaborn",
         "rqdatac",
         "ta-lib",
         "deap",

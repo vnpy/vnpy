@@ -6,8 +6,6 @@ pyqtgraph
 qdarkstyle
 numpy==1.18.2
 pandas
-matplotlib
-seaborn
 PyCryptodome==3.9.9
 rqdatac==2.9.38
 ta-lib==0.4.17
@@ -29,7 +27,7 @@ vnpy_tts==6.5.1.1
 vnpy_rohon==6.5.1.1
 vnpy_mini==1.5.6.3
 vnpy_sopt==3.5.5.0
-vnpy_uft==3.7.2.4.1
+vnpy_uft==3.7.2.4.2
 vnpy_esunny==1.0.2.2.3
 vnpy_comstar==1.0.1
 vnpy_ib==9.81.1.0
