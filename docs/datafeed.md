@@ -8,7 +8,7 @@
 - datafeed.username：数据服务的用户名；
 - datafeed.password：数据服务的密码。
 
-以上字段对于所有数据服务都是必填的，如果是token方式授权请填写在database.password字段中。目前VN Trader支持以下七种数据服务，**具体每个数据服务的细节可在对应的项目地址中找到**。
+以上字段对于所有数据服务都是必填的，如果是token方式授权请填写在datafeed.password字段中。目前Veighna Trader支持以下七种数据服务，**具体每个数据服务的细节可在对应的项目地址中找到**。
 
 ## RQData
 
@@ -70,34 +70,57 @@ TuShare是国内知名的开源Python金融数据接口项目，由大神Jimmy�
 
 ## 脚本使用
 脚本使用前，请先按照上文配置好使用的数据服务, 使用时调用相应的函数接口(具体接口支持请参考上文中支持的数据周期)。
+
+### 脚本加载
+
+在脚本中加载所需的包和数据结构
+
 ```python 3
 from datetime import datetime
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.datafeed import get_datafeed
 from vnpy.trader.object import HistoryRequest
 
-bar_req = HistoryRequest(
-        symbol="CU888",
-        exchange=Exchange("SHFE"),
-        start=datetime(2019, 1, 1),
-        end=datetime(2021, 1, 20),
-        interval=Interval.DAILY
-    )
-
-tick_req = HistoryRequest(
-        symbol="CU888",
-        exchange=Exchange("SHFE"),
-        start=datetime(2019, 1, 1),
-        end=datetime(2021, 1, 20),
-        interval=Interval.TICK
-    )
-
 # 获取数据服务实例
 datafeed = get_datafeed()
+```
+
+获取k线级别的历史数据
+
+```python 3
+req = HistoryRequest(
+    # 合约代码（示例cu888为米筐连续合约代码，仅用于示范，具体合约代码请根据需求查询数据服务提供商）
+    symbol="cu888",
+    # 合约所在交易所
+    exchange=Exchange.SHFE,
+    # 历史数据开始时间
+    start=datetime(2019, 1, 1),
+    # 历史数据结束时间
+    end=datetime(2021, 1, 20),
+    # 数据时间粒度，默认可选分钟级、小时级和日级，具体选择需要结合该数据服务的权限和需求自行选择
+    interval=Interval.DAILY
+)
 
 # 获取k线历史数据
-data = datafeed.query_bar_history(bar_req)
+data = datafeed.query_bar_history(req)
+```
+
+获取tick级别的历史数据(由于tick数据量较大，下载前请先参考上文确认数据服务是否提供tick数据的下载服务)
+
+```python 3
+req = HistoryRequest(
+    # 合约代码（示例cu888为米筐连续合约代码，仅用于示范，具体合约代码请根据需求查询数据服务提供商）
+    symbol="cu888",
+    # 合约所在交易所
+    exchange=Exchange.SHFE,
+    # 历史数据开始时间
+    start=datetime(2019, 1, 1),
+    # 历史数据结束时间
+    end=datetime(2021, 1, 20),
+    # 数据时间粒度，为tick级别
+    interval=Interval.TICK
+)
 
 # 获取tick历史数据
-data = datafeed.query_tick_history(tick_req)
+data = datafeed.query_tick_history(req)
 ```

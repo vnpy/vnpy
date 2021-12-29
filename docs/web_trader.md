@@ -12,7 +12,7 @@ WebTrader采用了FastAPI作为后端服务器，支持REST主动请求调用和
 
 后端服务包括两个独立的进程：
 - 策略交易进程
-  - 运行VN Trader的进程，负责所有策略交易功能的运行；
+  - 运行Veighna Trader的进程，负责所有策略交易功能的运行；
   - 启动了RpcServer用于对Web服务进程挺功能调用；
 - Web服务进程
   - 运行了FastAPI的进程，负责对外提供Web访问的服务；
@@ -31,9 +31,9 @@ WebTrader采用了FastAPI作为后端服务器，支持REST主动请求调用和
 
 ## 加载启动
 
-### VN Station加载
+### Veighna Station加载
 
-启动登录VN Station后，点击【VN Trader Pro】按钮，在配置对话框中的【上层应用】栏勾选【WebTrader】。
+启动登录Veighna Station后，点击【Veighna Trader】按钮，在配置对话框中的【上层应用】栏勾选【WebTrader】。
 
 ### 脚本加载
 
@@ -49,7 +49,7 @@ main_engine.add_app(WebTraderApp)
 
 ### 启动模块
 
-在启动模块之前，请先连接登录交易接口（连接方法详见基本使用篇的连接接口部分）。看到VN Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：  
+在启动模块之前，请先连接登录交易接口（连接方法详见基本使用篇的连接接口部分）。看到Veighna Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：  
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/1.png) 
 

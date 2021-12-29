@@ -7,9 +7,9 @@ PaperAccount是用于**本地模拟交易**的功能模块，用户可以通过�
 
 ## 加载启动
 
-### VN Station加载
+### Veighna Station加载
 
- 启动登录VN Station后，点击【VN Trader Pro】按钮，在配置对话框中的【上层应用】栏勾选【PaperAccount】。
+ 启动登录Veighna Station后，点击【Veighna Trader】按钮，在配置对话框中的【上层应用】栏勾选【PaperAccount】。
 
 ### 脚本加载
 
@@ -26,7 +26,7 @@ main_engine.add_app(PaperAccountApp)
 
 ## 启动模块
 
-在启动模块之前，请先连接要进行模拟交易的接口（连接方法详见基本使用篇的连接接口部分）。看到VN Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：
+在启动模块之前，请先连接要进行模拟交易的接口（连接方法详见基本使用篇的连接接口部分）。看到Veighna Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/1.png)
 
@@ -108,5 +108,5 @@ main_engine.add_app(PaperAccountApp)
 
 - 数据的持久化保存：
 
-  - 成交数据和委托数据不保存，关闭VN Trader后即消失；
-  - 持仓数据会在有变化时**立即写入硬盘文件**，重启VN Trader登录交易接口后即可看到（要收到相应的合约信息）。
+  - 成交数据和委托数据不保存，关闭Veighna Trader后即消失；
+  - 持仓数据会在有变化时**立即写入硬盘文件**，重启Veighna Trader登录交易接口后即可看到（要收到相应的合约信息）。

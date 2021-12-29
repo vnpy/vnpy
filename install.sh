@@ -5,14 +5,18 @@ prefix=$2
 shift 2
 
 [[ -z $python ]] && python=python
-[[ -z $prefix ]] && prefix=/usr
+[[ -z $prefix ]] && prefix=~/usr/talib
 
 $python -m pip install --upgrade pip setuptools wheel
 
 # Get and build ta-lib
 function install-ta-lib()
-{
-    pushd /tmp
+{   
+    # install numpy first
+    $python -m pip install numpy==1.18.2
+
+    mkdir -p $prefix
+    pushd $prefix
     wget https://pip.vnpy.com/colletion/ta-lib-0.4.0-src.tar.gz
     tar -xf ta-lib-0.4.0-src.tar.gz
     cd ta-lib
@@ -20,19 +24,17 @@ function install-ta-lib()
     make -j1
     make install
     popd
+
+    echo "export LD_LIBRARY_PATH=$prefix/lib:\$LD_LIBRARY_PATH" >> ~/.bashrc
+    export LD_LIBRARY_PATH=$prefix/lib:\$LD_LIBRARY_PATH
+    
+    CPPFLAGS="-I$prefix/include" LDFLAGS="-L$prefix/lib" pip install ta-lib==0.4.17
 }
 function ta-lib-exists()
 {
-    ta-lib-config --libs > /dev/null
+    $prefix/ta-lib-config --libs > /dev/null
 }
 ta-lib-exists || install-ta-lib
-
-# old versions of ta-lib imports numpy in setup.py
-$python -m pip install numpy
-
-# Install extra packages
-$python -m pip install ta-lib
-$python -m pip install psycopg2-binary
 
 # Install Python Modules
 $python -m pip install -r requirements.txt
