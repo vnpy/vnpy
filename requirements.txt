@@ -39,7 +39,7 @@ vnpy_femas==1.0.0
 vnpy_ost==2.0.1.1
 vnpy_tora==2021.12.24
 vnpy_hft==1.0.0
-vnpy_sec==1.0.0
+vnpy_sec==1.0.1
 vnpy_hts==1.0.0
 
 vnpy_ctastrategy==1.0.6
@@ -57,6 +57,7 @@ vnpy_portfoliomanager==1.0.0
 vnpy_portfoliostrategy==1.0.0
 vnpy_paperaccount==1.0.0
 vnpy_excelrtd==1.0.0
+vnpy_rpcservice==1.0.0
 
 vnpy_sqlite==1.0.0
 vnpy_mysql==1.0.0
