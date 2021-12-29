@@ -1,7 +1,7 @@
 six
 wheel
 tzlocal==2.0.0
-PyQt5
+PyQt5==5.14.1
 pyqtgraph
 qdarkstyle
 numpy==1.18.2
