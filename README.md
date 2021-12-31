@@ -218,9 +218,11 @@ bash install_osx.sh
 from vnpy.event import EventEngine
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import MainWindow, create_qapp
-from vnpy.gateway.ctp import CtpGateway
-from vnpy.app.cta_strategy import CtaStrategyApp
-from vnpy.app.cta_backtester import CtaBacktesterApp
+
+from vnpy_ctp import CtpGateway
+from vnpy_ctastrategy import CtaStrategyApp
+from vnpy_ctabacktester import CtaBacktesterApp
+
 
 def main():
     """Start Veighna Trader"""
@@ -237,6 +239,7 @@ def main():
     main_window.showMaximized()
 
     qapp.exec()
+
 
 if __name__ == "__main__":
     main()

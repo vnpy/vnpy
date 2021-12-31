@@ -1,5 +1,5 @@
 from time import sleep
-from vnpy.app.script_trader import ScriptEngine
+from vnpy_scripttrader import ScriptEngine
 
 
 def run(engine: ScriptEngine):
