@@ -8,6 +8,7 @@ from vnpy_ctabacktester import CtaBacktesterApp
 from vnpy_spreadtrading import SpreadTradingApp
 from vnpy_xtp import XtpGateway
 from vnpy_okex import OkexGateway
+from vnpy_esunny import EsunnyGateway
 
 
 def main():

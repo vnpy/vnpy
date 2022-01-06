@@ -14,7 +14,7 @@ from math import floor, ceil
 import numpy as np
 import talib
 
-from .object import BarData, TickData
+from .object import BarData, TickData, SnapshotData
 from .constant import Exchange, Interval
 from tzlocal import get_localzone
 
@@ -208,8 +208,9 @@ class BarGenerator:
         self.last_tick: TickData = None
         self.last_bar: BarData = None
         self.minute_change_flag = True
+        self.minute_first_snapshot = None               # 分钟开始snapshot
 
-    def update_tick(self, tick: TickData) -> None:
+def update_tick(self, tick: TickData) -> None:
         """
         Update new tick data into generator.
         """
@@ -270,6 +271,63 @@ class BarGenerator:
             self.bar.volume += max(volume_change, 0)
 
         self.last_tick = tick
+
+    def update_snapshot(self, snapshot: SnapshotData):
+        dt = snapshot.dt.replace(second=0, microsecond=0)
+        if self.minute_first_snapshot is None:
+            self.minute_first_snapshot = snapshot
+            self.bar = BarData(
+                symbol=snapshot.symbol,
+                interval=Interval.MINUTE,
+                dt=dt,
+                open_price=snapshot.last_price,
+                high_price=snapshot.last_price,
+                low_price=snapshot.last_price,
+                close_price=snapshot.last_price,
+                volume=0
+            )
+        elif snapshot.dt.minute > self.minute_first_snapshot.dt.minute:
+            # 进入下一分钟
+            finished_bar = self.bar
+            dt = snapshot.dt.replace(second=0, microsecond=0)
+            self.bar = BarData(
+                symbol=snapshot.symbol,
+                interval=Interval.MINUTE,
+                datetime=dt,
+                open_price=snapshot.last_price,
+                high_price=snapshot.last_price,
+                low_price=snapshot.last_price,
+                close_price=snapshot.last_price,
+                volume=0
+            )
+            self.minute_first_snapshot = snapshot
+            self.on_bar(finished_bar)
+            self.bar = BarData(
+                symbol=snapshot.symbol,
+                interval=Interval.MINUTE,
+                datetime=dt,
+                open_price=snapshot.last_price,
+                high_price=snapshot.last_price,
+                low_price=snapshot.last_price,
+                close_price=snapshot.last_price,
+                volume=0
+            )
+        else:
+            # 当前分钟中间过程
+            self.bar.high_price = max(
+                self.bar.high_price,
+                snapshot.last_price
+            )
+            self.bar.low_price = min(
+                self.bar.low_price,
+                snapshot.last_price
+            )
+
+            # Update close price/volume into window bar
+            self.bar.close_price = snapshot.last_price
+            self.bar.volume = int(snapshot.volume - self.minute_first_snapshot.volume)
+            # # 未完成bar是否执行 on_bar # 默认不执行
+            # self.on_bar(self.bar)
 
     def update_bar(self, bar: BarData) -> None:
         """
@@ -526,8 +584,9 @@ class ArrayManager(object):
         self.count: int = 0
         self.size: int = size
         self.inited: bool = False
+        self.last_bar_dt = datetime(year=1900, month=1, day=1, hour=1, minute=1, second=1)
 
-        self.open_array: np.ndarray = np.zeros(size)
+    self.open_array: np.ndarray = np.zeros(size)
         self.high_array: np.ndarray = np.zeros(size)
         self.low_array: np.ndarray = np.zeros(size)
         self.close_array: np.ndarray = np.zeros(size)
@@ -538,26 +597,28 @@ class ArrayManager(object):
     def update_bar(self, bar: BarData) -> None:
         """
         Update new bar data into array manager.
+        最后一个bar可以持续更新
+        只有时间改变，才会进入下一分钟
         """
-        self.count += 1
-        if not self.inited and self.count >= self.size:
-            self.inited = True
 
-        self.open_array[:-1] = self.open_array[1:]
-        self.high_array[:-1] = self.high_array[1:]
-        self.low_array[:-1] = self.low_array[1:]
-        self.close_array[:-1] = self.close_array[1:]
-        self.volume_array[:-1] = self.volume_array[1:]
-        self.turnover_array[:-1] = self.turnover_array[1:]
-        self.open_interest_array[:-1] = self.open_interest_array[1:]
+        if bar.datetime != self.last_bar_dt:
+            # 如果是新的时间bar
+            self.count += 1
+            if not self.inited and self.count >= self.size:
+                self.inited = True
+            self.last_bar_dt = bar.datetime
+
+            self.open_array[:-1] = self.open_array[1:]
+            self.high_array[:-1] = self.high_array[1:]
+            self.low_array[:-1] = self.low_array[1:]
+            self.close_array[:-1] = self.close_array[1:]
+            self.volume_array[:-1] = self.volume_array[1:]
 
         self.open_array[-1] = bar.open_price
         self.high_array[-1] = bar.high_price
         self.low_array[-1] = bar.low_price
         self.close_array[-1] = bar.close_price
         self.volume_array[-1] = bar.volume
-        self.turnover_array[-1] = bar.turnover
-        self.open_interest_array[-1] = bar.open_interest
 
     @property
     def open(self) -> np.ndarray:
