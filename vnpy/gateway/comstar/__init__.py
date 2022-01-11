@@ -1,1 +1,1 @@
-from .comstar_gateway import ComstarGateway
+from vnpy_comstar import ComstarGateway

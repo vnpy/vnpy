@@ -1,5 +1,5 @@
 """
-General constant string used in VN Trader.
+General constant enums used in the trading platform.
 """
 
 from enum import Enum

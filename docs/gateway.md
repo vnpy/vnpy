@@ -2,9 +2,9 @@
 
 ## 加载启动
 
-### VN Station加载
+### Veighna Station加载
 
-启动登录VN Station后，点击【VN Trader】按钮，在配置对话框中的【底层接口】栏勾选想要交易的接口。
+启动登录Veighna Station后，点击【Veighna Trader】按钮，在配置对话框中的【底层接口】栏勾选想要交易的接口。
 
 请注意: CTP、CTP测试以及融航接口不能同时加载，CTP Mini和CTP Mini测试接口也不能同时加载，会导致API版本错误，报错4097; 所有接口都只支持全仓保证金模式。
 
@@ -23,7 +23,7 @@ main_engine.add_gateway(CtpGateway)
 
 ## 连接接口
 
-在图形化操作界面VN Trader上的菜单栏中点击【系统】->【连接CTP】，会弹出账号配置窗口，如下图所示：
+在图形化操作界面Veighna Trader上的菜单栏中点击【系统】->【连接CTP】，会弹出账号配置窗口，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/1.png)
 
@@ -37,7 +37,7 @@ main_engine.add_gateway(CtpGateway)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/3.png)
 
-所以如果要修改接口配置文件，用户既可以在图形化界面VN Trader内修改，也可以直接在.vntrader修改对应的json文件。
+所以如果要修改接口配置文件，用户既可以在图形化界面Veighna Trader内修改，也可以直接在.vntrader修改对应的json文件。
 
 另外将json配置文件分离于vnpy的好处在于：避免每次升级都要重新配置json文件。
 
@@ -73,7 +73,6 @@ main_engine.add_gateway(CtpGateway)
 | 盈透证券              |                 海外全品种                      |
 | 易盛9.0外盘           |                  外盘期货                       |
 | 直达期货              |                  外盘期货                       |
-| MetaTrader 5         |                   外盘期货                 |
 | 融航                 |                  期货资管                        |
 | TTS                  |                    期货                         |
 | 飞鼠                  |                  黄金TD                         |
@@ -688,7 +687,7 @@ XTP是首家提供融资融券的极速柜台。
 
 可交易品种几乎覆盖全球的股票、期权、期权；手续费相对较低。
 
-请注意，IB接口的合约代码较为特殊，请前往官网的产品查询板块查询。VN Trader中使用的是盈透证券对于每个合约在某一交易所的唯一标识符ConId来作为合约代码，而非Symbol或者LocalName。
+请注意，IB接口的合约代码较为特殊，请前往官网的产品查询板块查询。Veighna Trader中使用的是盈透证券对于每个合约在某一交易所的唯一标识符ConId来作为合约代码，而非Symbol或者LocalName。
 
 ### TAP（易盛9.0外盘）
 
@@ -749,35 +748,6 @@ XTP是首家提供融资融券的极速柜台。
 #### 获取账号
 
 在直达期货开户并且入金后可以获得API接入权限。
-
-### MT5（MetaTrader 5）
-
-#### 接口支持
-
-- 操作系统
-  - Windows
-  - Ubuntu
-  - Mac
-
-- 交易品种
-  - 外盘期货
-
-- 持仓方向
-  - 只支持单向持仓
-
-- 历史数据
-  - 提供
-
-#### 相关字段
-
-- 通讯地址：localhost
-- 请求端口：6888
-- 订阅端口：8666
-
-#### 获取账号
-
-测试账号请通过MT5申请。
-
 
 ### ROHON（融航）
 

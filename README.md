@@ -7,7 +7,7 @@
 💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.8.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.9.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
@@ -46,9 +46,11 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
         * 易盛（[esunny](https://www.github.com/vnpy/vnpy_esunny)）：国内期货、黄金TD
 
-        * 飞创证券（sec）：ETF期权
+        * 顶点飞创（[sec](https://www.github.com/vnpy/vnpy_sec)）：ETF期权
 
-        * 南华NHTD（nhtd）：国内期货、ETF期权
+        * 顶点HTS（[hts](https://www.github.com/vnpy/vnpy_hts)）：ETF期权
+
+        * 南华NHTD（[nhtd](https://www.github.com/vnpy/vnpy_nhtd)）：国内期货、ETF期权
 
         * 中泰XTP（[xtp](https://www.github.com/vnpy/vnpy_xtp)）：国内证券（A股）、ETF期权
 
@@ -76,7 +78,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
     * 特殊应用
 
-        * RPC服务（rpc）：跨进程通讯接口，用于分布式架构
+        * RPC服务（[rpc](https://www.github.com/vnpy/vnpy_rpcservice)）：跨进程通讯接口，用于分布式架构
 
 3. 开箱即用的各类量化策略交易应用（vnpy.app）：
 
@@ -100,7 +102,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
     * [portfolio_manager](https://www.github.com/vnpy/vnpy_portfoliomanager)：交易组合管理模块，以独立的策略交易组合（子账户）为基础，提供委托成交记录管理、交易仓位自动跟踪以及每日盈亏实时统计功能
 
-    * rpc_service：RPC服务模块，允许将某一VN Trader进程启动为服务端，作为统一的行情和交易路由通道，允许多客户端同时连接，实现多进程分布式系统
+    * [rpc_service](https://www.github.com/vnpy/vnpy_rpcservice)：RPC服务模块，允许将某一vn.py进程启动为服务端，作为统一的行情和交易路由通道，允许多客户端同时连接，实现多进程分布式系统
 
     * [data_manager](https://www.github.com/vnpy/vnpy_datamanager)：历史数据管理模块，通过树形目录查看数据库中已有的数据概况，选择任意时间段数据查看字段细节，支持CSV文件的数据导入和导出
 
@@ -168,7 +170,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.8.0](https://download.vnpy.com/vnstudio-2.8.0.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[Veighna Studio-2.9.0](https://download.vnpy.com/veighna-studio-2.9.0.exe)，内置了最新版的vn.py框架以及Veighna Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 10以上/Windows Server 2016以上/Ubuntu 20.04 LTS以上
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 
@@ -178,11 +180,15 @@ vn.py是一套基于Python的开源量化交易系统开发框架，在开源社
 
 **Windows**
 
-    install.bat
+```
+install.bat
+```
 
 **Ubuntu**
 
-    bash install.sh
+```
+. install.sh
+```
 
 **Macos**
 
@@ -194,20 +200,19 @@ bash install_osx.sh
 
 1. 在[SimNow](http://www.simnow.com.cn/)注册CTP仿真账号，并在[该页面](http://www.simnow.com.cn/product.action)获取经纪商代码以及交易行情服务器地址。
 
-2. 在[vn.py社区论坛](https://www.vnpy.com/forum/)注册获得VN Station账号密码（论坛账号密码即是）
+2. 在[vn.py社区论坛](https://www.vnpy.com/forum/)注册获得Veighna Station账号密码（论坛账号密码即是）
 
-3. 启动VN Station（安装VN Studio后会在桌面自动创建快捷方式），输入上一步的账号密码登录
+3. 启动Veighna Station（安装Veighna Studio后会在桌面自动创建快捷方式），输入上一步的账号密码登录
 
-4. 点击底部的**VN Trader Lite**按钮，开始你的交易！！！
+4. 点击底部的**Veighna Trader**按钮，开始你的交易！！！
 
 注意：
 
-* 在VN Trader的运行过程中请勿关闭VN Station（会自动退出）
-* 如需要灵活配置量化交易应用组件，请使用**VN Trader Pro**
+* 在Veighna Trader的运行过程中请勿关闭Veighna Station（会自动退出）
 
 ## 脚本运行
 
-除了基于VN Station的图形化启动方式外，也可以在任意目录下创建run.py，写入以下示例代码：
+除了基于Veighna Station的图形化启动方式外，也可以在任意目录下创建run.py，写入以下示例代码：
 
 ```Python
 from vnpy.event import EventEngine
@@ -218,7 +223,7 @@ from vnpy.app.cta_strategy import CtaStrategyApp
 from vnpy.app.cta_backtester import CtaBacktesterApp
 
 def main():
-    """Start VN Trader"""
+    """Start Veighna Trader"""
     qapp = create_qapp()
 
     event_engine = EventEngine()
@@ -237,7 +242,7 @@ if __name__ == "__main__":
     main()
 ```
 
-在该目录下打开CMD（按住Shift->点击鼠标右键->在此处打开命令窗口/PowerShell）后运行下列命令启动VN Trader：
+在该目录下打开CMD（按住Shift->点击鼠标右键->在此处打开命令窗口/PowerShell）后运行下列命令启动Veighna Trader：
 
     python run.py
 
@@ -245,7 +250,7 @@ if __name__ == "__main__":
 
 vn.py使用Github托管其源代码，如果希望贡献代码请使用github的PR（Pull Request）的流程:
 
-1. [创建 Issue](https://github.com/vnpy/vnpy/issues/new) - 对于较大的改动（如新功能，大型重构等）最好先开issue讨论一下，较小的improvement（如文档改进，bugfix等）直接发PR即可
+1. [创建 Issue](https://github.com/vnpy/vnpy/issues/new) - 对于较大的改动（如新功能，大型重构等）最好先开issue讨论一下，较小的improvement（如文档改进，bufix等）直接发PR即可
 
 2. Fork [vn.py](https://github.com/vnpy/vnpy) - 点击右上角**Fork**按钮
 

@@ -1,5 +1,5 @@
 """
-Implements main window of VN Trader.
+Implements main window of the trading platform.
 """
 
 import webbrowser
@@ -32,7 +32,7 @@ from ..utility import get_icon_path, TRADER_DIR
 
 class MainWindow(QtWidgets.QMainWindow):
     """
-    Main window of VN Trader.
+    Main window of the trading platform.
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
@@ -42,7 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine
 
-        self.window_title: str = f"VN Trader {vnpy.__version__} [{TRADER_DIR}]"
+        self.window_title: str = f"Veighna Trader 社区版 - {vnpy.__version__}   [{TRADER_DIR}]"
 
         self.widgets: Dict[str, QtWidgets.QWidget] = {}
 
@@ -318,7 +318,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         Sending a test email.
         """
-        self.main_engine.send_email("VN Trader", "testing")
+        self.main_engine.send_email("Veighna Trader", "testing")
 
     def open_forum(self) -> None:
         """
