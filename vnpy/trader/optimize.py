@@ -4,6 +4,7 @@ from concurrent.futures import ProcessPoolExecutor
 from random import random, choice
 from time import perf_counter
 from multiprocessing import Manager, Pool, get_context
+from decimal import Decimal
 
 from deap import creator, base, tools, algorithms
 
@@ -36,7 +37,11 @@ class OptimizationSetting:
         step: float = None
     ) -> Tuple[bool, str]:
         """"""
-        if end is None and step is None:
+        if isinstance(start, list):
+            self.params[name] = start
+            return True, "列表参数添加成功"
+
+        if end is None and step is None or start == end:
             self.params[name] = [start]
             return True, "固定参数添加成功"
 
@@ -46,12 +51,15 @@ class OptimizationSetting:
         if step <= 0:
             return False, "参数优化步进必须大于0"
 
-        value: float = start
-        value_list: List[float] = []
+        decimal_value = Decimal(str(start))
+        decimal_end = Decimal(str(end))
+        decimal_step = Decimal(str(step))
+        value_type = int if isinstance(start, int) and isinstance(step, int) else float
+        value_list = []
 
-        while value <= end:
-            value_list.append(value)
-            value += step
+        while decimal_value <= decimal_end:
+            value_list.append(value_type(decimal_value))
+            decimal_value += decimal_step
 
         self.params[name] = value_list
 
