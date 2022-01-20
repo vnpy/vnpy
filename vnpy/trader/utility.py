@@ -210,7 +210,7 @@ class BarGenerator:
         self.minute_change_flag = True
         self.minute_first_snapshot = None               # 分钟开始snapshot
 
-def update_tick(self, tick: TickData) -> None:
+    def update_tick(self, tick: TickData) -> None:
         """
         Update new tick data into generator.
         """
@@ -586,7 +586,7 @@ class ArrayManager(object):
         self.inited: bool = False
         self.last_bar_dt = datetime(year=1900, month=1, day=1, hour=1, minute=1, second=1)
 
-    self.open_array: np.ndarray = np.zeros(size)
+        self.open_array: np.ndarray = np.zeros(size)
         self.high_array: np.ndarray = np.zeros(size)
         self.low_array: np.ndarray = np.zeros(size)
         self.close_array: np.ndarray = np.zeros(size)

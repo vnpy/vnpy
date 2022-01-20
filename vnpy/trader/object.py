@@ -183,7 +183,8 @@ class OrderData(BaseData):
         Create cancel request object from order.
         """
         req = CancelRequest(
-            orderid=self.orderid, symbol=self.symbol, exchange=self.exchange
+            orderid=self.orderid, symbol=self.symbol, exchange=self.exchange,
+            reference=self.reference
         )
         return req
 
@@ -201,10 +202,10 @@ class TradeData(BaseData):
     tradeid: str
     direction: Direction = None
     offset: Offset = Offset.NONE
-    signal_price: float = 0         # 产生信号的价格
-    limit_price: float = 0          # 委托价，限价
-    price: float = 0                # 成交价
-    slippage: float = 0             # 滑点
+    signal_price: float = 0                 # 产生信号的价格
+    limit_price: float = 0                  # 委托价，限价
+    price: float = 0                        # 成交价
+    slippage: float = 0                     # 滑点
     backtest_price: float = 0               # 回测理论成交价
     backtest_real_slippage: float = 0       # 实盘与回测的误差
     volume: float = 0
@@ -215,8 +216,10 @@ class TradeData(BaseData):
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
         self.vt_orderid = f"{self.gateway_name}.{self.orderid}"
         self.vt_tradeid = f"{self.gateway_name}.{self.tradeid}"
-
-        self.slippage = self.signal_price - self.price
+        try:
+            self.slippage = self.signal_price - self.price
+        except Exception:
+            pass
         self.backtest_real_slippage = self.backtest_price - self.price
         if self.direction == Direction.SHORT:
             self.slippage = -self.slippage
@@ -418,6 +421,7 @@ class CancelRequest:
     orderid: str
     symbol: str
     exchange: Exchange
+    reference: str = None
 
     def __post_init__(self):
         """"""
