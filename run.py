@@ -1,3 +1,4 @@
+import ssl
 from vnpy_jg.gateway.jg_gateway import JGGateway
 from vnpy_riskmanager import RiskManagerApp
 from vnpy.event import EventEngine
