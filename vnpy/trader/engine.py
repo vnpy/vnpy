@@ -180,6 +180,8 @@ class MainEngine:
         """
         Send new order request to a specific gateway.
         """
+        contract = self.get_contract(req.vt_symbol)
+        req.product = contract.product
         gateway = self.get_gateway(gateway_name)
         if gateway:
             return gateway.send_order(req)
