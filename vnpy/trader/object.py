@@ -184,7 +184,7 @@ class OrderData(BaseData):
         """
         req = CancelRequest(
             orderid=self.orderid, symbol=self.symbol, exchange=self.exchange,
-            reference=self.reference
+            reference=self.reference,
         )
         return req
 
@@ -383,6 +383,7 @@ class OrderRequest:
     direction: Direction
     type: OrderType
     volume: float
+    product: Product
     price: float = 0
     signal_price: float = 0
     offset: Offset = Offset.NONE

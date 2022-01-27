@@ -52,6 +52,7 @@ class Product(Enum):
     WARRANT = "权证"
     SPREAD = "价差"
     FUND = "基金"
+    OTHERS = "其他"
 
 
 class OrderType(Enum):
