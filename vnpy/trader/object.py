@@ -80,43 +80,6 @@ class TickData(BaseData):
 
 
 @dataclass
-class SnapshotData(BaseData):
-    """
-    行情快照
-    """
-    symbol: str
-    dt: datetime
-    last_price: float
-    volume: int
-    high_limit: float
-    low_limit: float
-
-    ask_price_1: float
-    ask_price_2: float
-    ask_price_3: float
-    ask_price_4: float
-    ask_price_5: float
-
-    ask_vol_1: int
-    ask_vol_2: int
-    ask_vol_3: int
-    ask_vol_4: int
-    ask_vol_5: int
-
-    bid_price_1: float
-    bid_price_2: float
-    bid_price_3: float
-    bid_price_4: float
-    bid_price_5: float
-
-    bid_vol_1: int
-    bid_vol_2: int
-    bid_vol_3: int
-    bid_vol_4: int
-    bid_vol_5: int
-
-
-@dataclass
 class BarData(BaseData):
     """
     Candlestick bar data of a certain trading period.
