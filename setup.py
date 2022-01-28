@@ -73,7 +73,7 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "Operating System :: Microsoft :: Windows",
         "Operating System :: Microsoft :: Windows :: Windows 10",
-        "Operating System :: POSIX :: Linux"
+        "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
         "Topic :: Office/Business :: Financial :: Investment",
