@@ -2,7 +2,7 @@ tzlocal==2.0.0
 PyQt5==5.15.6
 pyqtgraph==0.12.3
 qdarkstyle==3.0.3
-numpy==1.18.2
+numpy==1.22.1
 pandas==1.4.0
 matplotlib==3.5.1
 seaborn==0.11.2
