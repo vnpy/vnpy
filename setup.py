@@ -23,17 +23,19 @@ from setuptools import find_packages, setup
 
 def get_install_requires():
     install_requires = [
-        "PyQt5",
-        "qdarkstyle",
-        "peewee",
-        "numpy",
-        "pandas",
-        "matplotlib",
-        "seaborn",
-        "ta-lib",
-        "deap",
-        "pyzmq",
-        "QScintilla"
+        "tzlocal>=2.0.0",
+        "PyQt5>=5.15.6",
+        "pyqtgraph>=0.12.3",
+        "qdarkstyle>=3.0.3",
+        "numpy>=1.22.1",
+        "pandas>=1.4.0",
+        "matplotlib>=3.5.1",
+        "seaborn>=0.11.2",
+        "ta-lib>=0.4.24",
+        "deap>=1.3.1",
+        "pyzmq>=22.3.0",
+        "QScintilla>=2.13.1",
+        "plotly>=5.5.0",
     ]
 
     return install_requires
