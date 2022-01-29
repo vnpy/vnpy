@@ -1,5 +1,3 @@
-import os
-from os import truncate
 import signal
 import threading
 import traceback
@@ -30,13 +28,13 @@ class RemoteException(Exception):
         """
         Constructor
         """
-        self.__value = value
+        self._value = value
 
     def __str__(self):
         """
         Output error message
         """
-        return self.__value
+        return self._value
 
 
 class RpcServer:
@@ -47,66 +45,63 @@ class RpcServer:
         Constructor
         """
         # Save functions dict: key is function name, value is function object
-        self.__functions: Dict[str, Any] = {}
+        self._functions: Dict[str, Any] = {}
 
         # Zmq port related
-        self.__context: zmq.Context = zmq.Context()
+        self._context: zmq.Context = zmq.Context()
 
         # Reply socket (Request–reply pattern)
-        self.__socket_rep: zmq.Socket = self.__context.socket(zmq.REP)
+        self._socket_rep: zmq.Socket = self._context.socket(zmq.REP)
 
         # Publish socket (Publish–subscribe pattern)
-        self.__socket_pub: zmq.Socket = self.__context.socket(zmq.PUB)
+        self._socket_pub: zmq.Socket = self._context.socket(zmq.PUB)
 
         # Worker thread related
-        self.__active: bool = False                     # RpcServer status
-        self.__thread: threading.Thread = None          # RpcServer thread
-        self.__lock: threading.Lock = threading.Lock()
+        self._active: bool = False                      # RpcServer status
+        self._thread: threading.Thread = None           # RpcServer thread
+        self._lock: threading.Lock = threading.Lock()
 
     def is_active(self) -> bool:
         """"""
-        return self.__active
+        return self._active
 
     def start(
         self, 
         rep_address: str, 
         pub_address: str,
-        server_secretkey_path: str = "",
-        username: str = "",
-        password: str = ""
     ) -> None:
         """
         Start RpcServer
         """
-        if self.__active:
+        if self._active:
             return
 
         # Bind socket address
-        self.__socket_rep.bind(rep_address)
-        self.__socket_pub.bind(pub_address)
+        self._socket_rep.bind(rep_address)
+        self._socket_pub.bind(pub_address)
 
         # Start RpcServer status
-        self.__active = True
+        self._active = True
 
         # Start RpcServer thread
-        self.__thread = threading.Thread(target=self.run)
-        self.__thread.start()
+        self._thread = threading.Thread(target=self.run)
+        self._thread.start()
 
     def stop(self) -> None:
         """
         Stop RpcServer
         """
-        if not self.__active:
+        if not self._active:
             return
 
         # Stop RpcServer status
-        self.__active = False
+        self._active = False
 
     def join(self) -> None:
         # Wait for RpcServer thread to exit
-        if self.__thread and self.__thread.is_alive():
-            self.__thread.join()
-        self.__thread = None
+        if self._thread and self._thread.is_alive():
+            self._thread.join()
+        self._thread = None
 
     def run(self) -> None:
         """
@@ -114,7 +109,7 @@ class RpcServer:
         """
         start = datetime.utcnow()
 
-        while self.__active:
+        while self._active:
             # Use poll to wait event arrival, waiting time is 1 second (1000 milliseconds)
             cur = datetime.utcnow()
             delta = cur - start
@@ -122,42 +117,42 @@ class RpcServer:
             if delta >= KEEP_ALIVE_INTERVAL:
                 self.publish(KEEP_ALIVE_TOPIC, cur)
 
-            if not self.__socket_rep.poll(1000):
+            if not self._socket_rep.poll(1000):
                 continue
 
             # Receive request data from Reply socket
-            req = self.__socket_rep.recv_pyobj()
+            req = self._socket_rep.recv_pyobj()
 
             # Get function name and parameters
             name, args, kwargs = req
 
             # Try to get and execute callable function object; capture exception information if it fails
             try:
-                func = self.__functions[name]
+                func = self._functions[name]
                 r = func(*args, **kwargs)
                 rep = [True, r]
             except Exception as e:  # noqa
                 rep = [False, traceback.format_exc()]
 
             # send callable response by Reply socket
-            self.__socket_rep.send_pyobj(rep)
+            self._socket_rep.send_pyobj(rep)
 
         # Unbind socket address
-        self.__socket_pub.unbind(self.__socket_pub.LAST_ENDPOINT)
-        self.__socket_rep.unbind(self.__socket_rep.LAST_ENDPOINT)
+        self._socket_pub.unbind(self._socket_pub.LAST_ENDPOINT)
+        self._socket_rep.unbind(self._socket_rep.LAST_ENDPOINT)
 
     def publish(self, topic: str, data: Any) -> None:
         """
         Publish data
         """
-        with self.__lock:
-            self.__socket_pub.send_pyobj([topic, data])
+        with self._lock:
+            self._socket_pub.send_pyobj([topic, data])
 
     def register(self, func: Callable) -> None:
         """
         Register function
         """
-        self.__functions[func.__name__] = func
+        self._functions[func.__name__] = func
 
 
 class RpcClient:
@@ -166,18 +161,18 @@ class RpcClient:
     def __init__(self):
         """Constructor"""
         # zmq port related
-        self.__context: zmq.Context = zmq.Context()
+        self._context: zmq.Context = zmq.Context()
 
         # Request socket (Request–reply pattern)
-        self.__socket_req: zmq.Socket = self.__context.socket(zmq.REQ)
+        self._socket_req: zmq.Socket = self._context.socket(zmq.REQ)
 
         # Subscribe socket (Publish–subscribe pattern)
-        self.__socket_sub: zmq.Socket = self.__context.socket(zmq.SUB)
+        self._socket_sub: zmq.Socket = self._context.socket(zmq.SUB)
 
         # Worker thread relate, used to process data pushed from server
-        self.__active: bool = False                 # RpcClient status
-        self.__thread: threading.Thread = None      # RpcClient thread
-        self.__lock: threading.Lock = threading.Lock()
+        self._active: bool = False                 # RpcClient status
+        self._thread: threading.Thread = None      # RpcClient thread
+        self._lock: threading.Lock = threading.Lock()
 
         self._last_received_ping: datetime = datetime.utcnow()
 
@@ -199,16 +194,16 @@ class RpcClient:
             req = [name, args, kwargs]
 
             # Send request and wait for response
-            with self.__lock:
-                self.__socket_req.send_pyobj(req)
+            with self._lock:
+                self._socket_req.send_pyobj(req)
                 
                 # Timeout reached without any data
-                n = self.__socket_req.poll(timeout)
+                n = self._socket_req.poll(timeout)
                 if not n:
                     msg = f"Timeout of {timeout}ms reached for {req}"
                     raise RemoteException(msg)
                 
-                rep = self.__socket_req.recv_pyobj()
+                rep = self._socket_req.recv_pyobj()
 
             # Return response if successed; Trigger exception if failed
             if rep[0]:
@@ -221,28 +216,24 @@ class RpcClient:
     def start(
         self, 
         req_address: str, 
-        sub_address: str,
-        client_secretkey_path: str = "",
-        server_publickey_path: str = "",
-        username: str = "",
-        password: str = ""
+        sub_address: str
     ) -> None:
         """
         Start RpcClient
         """
-        if self.__active:
+        if self._active:
             return
             
         # Connect zmq port
-        self.__socket_req.connect(req_address)
-        self.__socket_sub.connect(sub_address)
+        self._socket_req.connect(req_address)
+        self._socket_sub.connect(sub_address)
 
         # Start RpcClient status
-        self.__active = True
+        self._active = True
 
         # Start RpcClient thread
-        self.__thread = threading.Thread(target=self.run)
-        self.__thread.start()
+        self._thread = threading.Thread(target=self.run)
+        self._thread.start()
 
         self._last_received_ping = datetime.utcnow()
 
@@ -250,17 +241,17 @@ class RpcClient:
         """
         Stop RpcClient
         """
-        if not self.__active:
+        if not self._active:
             return
 
         # Stop RpcClient status
-        self.__active = False
+        self._active = False
 
     def join(self) -> None:
         # Wait for RpcClient thread to exit
-        if self.__thread and self.__thread.is_alive():
-            self.__thread.join()
-        self.__thread = None
+        if self._thread and self._thread.is_alive():
+            self._thread.join()
+        self._thread = None
 
     def run(self) -> None:
         """
@@ -268,13 +259,13 @@ class RpcClient:
         """
         pull_tolerance = int(KEEP_ALIVE_TOLERANCE.total_seconds() * 1000)
 
-        while self.__active:
-            if not self.__socket_sub.poll(pull_tolerance):
+        while self._active:
+            if not self._socket_sub.poll(pull_tolerance):
                 self.on_disconnected()
                 continue
 
             # Receive data from subscribe socket
-            topic, data = self.__socket_sub.recv_pyobj(flags=NOBLOCK)
+            topic, data = self._socket_sub.recv_pyobj(flags=NOBLOCK)
 
             if topic == KEEP_ALIVE_TOPIC:
                 self._last_received_ping = data
@@ -283,8 +274,8 @@ class RpcClient:
                 self.callback(topic, data)
 
         # Close socket
-        self.__socket_req.close()
-        self.__socket_sub.close()
+        self._socket_req.close()
+        self._socket_sub.close()
 
     def callback(self, topic: str, data: Any) -> None:
         """
@@ -296,7 +287,7 @@ class RpcClient:
         """
         Subscribe data
         """
-        self.__socket_sub.setsockopt_string(zmq.SUBSCRIBE, topic)
+        self._socket_sub.setsockopt_string(zmq.SUBSCRIBE, topic)
 
     def on_disconnected(self):
         """
