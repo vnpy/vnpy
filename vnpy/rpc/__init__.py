@@ -3,11 +3,13 @@ import threading
 import traceback
 from datetime import datetime, timedelta
 from functools import lru_cache
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 import zmq
 import zmq.auth
 from zmq.backend.cython.constants import NOBLOCK
+
+from vnpy.event import EventEngine, Event, EVENT_TIMER
 
 
 # Achieve Ctrl-c interrupt recv
@@ -15,7 +17,6 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
 KEEP_ALIVE_TOPIC: str = "_keep_alive"
-KEEP_ALIVE_INTERVAL: timedelta = timedelta(seconds=1)
 KEEP_ALIVE_TOLERANCE: timedelta = timedelta(seconds=30)
 
 
@@ -40,10 +41,17 @@ class RemoteException(Exception):
 class RpcServer:
     """"""
 
-    def __init__(self):
+    def __init__(self, event_engine: Optional[EventEngine] = None):
         """
         Constructor
         """
+        # Initialize event engine if not passed as argument
+        if not event_engine:
+            event_engine = EventEngine()
+            event_engine.start()
+
+        self._event_engine: EventEngine = event_engine
+
         # Save functions dict: key is function name, value is function object
         self._functions: Dict[str, Any] = {}
 
@@ -87,6 +95,9 @@ class RpcServer:
         self._thread = threading.Thread(target=self.run)
         self._thread.start()
 
+        # Register timer event
+        self._event_engine.register(EVENT_TIMER, self.process_timer_event)
+
     def stop(self) -> None:
         """
         Stop RpcServer
@@ -107,16 +118,7 @@ class RpcServer:
         """
         Run RpcServer functions
         """
-        start = datetime.utcnow()
-
         while self._active:
-            # Use poll to wait event arrival, waiting time is 1 second (1000 milliseconds)
-            cur = datetime.utcnow()
-            delta = cur - start
-
-            if delta >= KEEP_ALIVE_INTERVAL:
-                self.publish(KEEP_ALIVE_TOPIC, cur)
-
             if not self._socket_rep.poll(1000):
                 continue
 
@@ -153,6 +155,13 @@ class RpcServer:
         Register function
         """
         self._functions[func.__name__] = func
+
+    def process_timer_event(self, event: Event) -> None:
+        """
+        Publish heartbeat.
+        """
+        if self._active:
+            self.publish(KEEP_ALIVE_TOPIC, datetime.utcnow())
 
 
 class RpcClient:
