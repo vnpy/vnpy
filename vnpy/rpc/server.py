@@ -1,37 +1,20 @@
-import signal
 import threading
 import traceback
-from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, Optional
+from time import time
+from typing import Any, Callable, Dict
 
 import zmq
-import zmq.auth
 
-from vnpy.event import EventEngine, Event, EVENT_TIMER
-
-
-# Achieve Ctrl-c interrupt recv
-signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-
-KEEP_ALIVE_TOPIC: str = "_keep_alive"
-KEEP_ALIVE_TOLERANCE: timedelta = timedelta(seconds=30)
+from .common import HEARTBEAT_TOPIC, HEARTBEAT_INTERVAL
 
 
 class RpcServer:
     """"""
 
-    def __init__(self, event_engine: Optional[EventEngine] = None):
+    def __init__(self):
         """
         Constructor
         """
-        # Initialize event engine if not passed as argument
-        if not event_engine:
-            event_engine = EventEngine()
-            event_engine.start()
-
-        self._event_engine: EventEngine = event_engine
-
         # Save functions dict: key is function name, value is function object
         self._functions: Dict[str, Any] = {}
 
@@ -48,6 +31,9 @@ class RpcServer:
         self._active: bool = False                      # RpcServer status
         self._thread: threading.Thread = None           # RpcServer thread
         self._lock: threading.Lock = threading.Lock()
+
+        # Heartbeat related
+        self._heartbeat_at: int = None
 
     def is_active(self) -> bool:
         """"""
@@ -75,8 +61,8 @@ class RpcServer:
         self._thread = threading.Thread(target=self.run)
         self._thread.start()
 
-        # Register timer event
-        self._event_engine.register(EVENT_TIMER, self.process_timer_event)
+        # Init heartbeat publish timestamp
+        self._heartbeat_at = time() + HEARTBEAT_INTERVAL
 
     def stop(self) -> None:
         """
@@ -99,7 +85,11 @@ class RpcServer:
         Run RpcServer functions
         """
         while self._active:
-            if not self._socket_rep.poll(1000):
+            # Poll response socket for 1 second
+            n: int = self._socket_rep.poll(1000)
+            self.check_heartbeat()
+
+            if not n:
                 continue
 
             # Receive request data from Reply socket
@@ -136,9 +126,14 @@ class RpcServer:
         """
         self._functions[func.__name__] = func
 
-    def process_timer_event(self, event: Event) -> None:
+    def check_heartbeat(self) -> None:
         """
-        Publish heartbeat.
+        Check whether it is required to send heartbeat.
         """
-        if self._active:
-            self.publish(KEEP_ALIVE_TOPIC, datetime.utcnow())
+        now: float = time()
+        if now >= self._heartbeat_at:
+            # Publish heartbeat
+            self.publish(HEARTBEAT_TOPIC, now)
+
+            # Update timestamp of next publish
+            self._heartbeat_at = now + HEARTBEAT_INTERVAL

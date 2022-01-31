@@ -1,20 +1,12 @@
-import signal
 import threading
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import lru_cache
 from typing import Any
 
 import zmq
-import zmq.auth
 from zmq.backend.cython.constants import NOBLOCK
 
-
-# Achieve Ctrl-c interrupt recv
-signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-
-KEEP_ALIVE_TOPIC: str = "_keep_alive"
-KEEP_ALIVE_TOLERANCE: timedelta = timedelta(seconds=30)
+from .common import HEARTBEAT_TOPIC, HEARTBEAT_TOLERANCE
 
 
 class RemoteException(Exception):
@@ -137,7 +129,7 @@ class RpcClient:
         """
         Run RpcClient function
         """
-        pull_tolerance = int(KEEP_ALIVE_TOLERANCE.total_seconds() * 1000)
+        pull_tolerance = HEARTBEAT_TOLERANCE * 1000
 
         while self._active:
             if not self._socket_sub.poll(pull_tolerance):
@@ -147,7 +139,7 @@ class RpcClient:
             # Receive data from subscribe socket
             topic, data = self._socket_sub.recv_pyobj(flags=NOBLOCK)
 
-            if topic == KEEP_ALIVE_TOPIC:
+            if topic == HEARTBEAT_TOPIC:
                 self._last_received_ping = data
             else:
                 # Process data by callable function
@@ -173,7 +165,5 @@ class RpcClient:
         """
         Callback when heartbeat is lost.
         """
-        print(
-            "RpcServer has no response over {tolerance} seconds, please check you connection."
-            .format(tolerance=KEEP_ALIVE_TOLERANCE.total_seconds())
-        )
+        msg = f"RpcServer has no response over {HEARTBEAT_TOLERANCE} seconds, please check you connection."
+        print(msg)
