@@ -5,7 +5,8 @@ Implements main window of the trading platform.
 import webbrowser
 from functools import partial
 from importlib import import_module
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict, Tuple, Union
+from pathlib import Path
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -115,7 +116,13 @@ class MainWindow(QtWidgets.QMainWindow):
             widget_class = getattr(ui_module, app.widget_name)
 
             func = partial(self.open_widget, widget_class, app.app_name)
-            icon_path = str(app.app_path.joinpath("ui", app.icon_name))
+
+            # Use image resource from qrc file
+            if ":" not in app.icon_name:
+                icon_path = app.app_path.joinpath("ui", app.icon_name)
+            else:
+                icon_path = app.icon_name
+
             self.add_menu_action(
                 app_menu, app.display_name, icon_path, func
             )
@@ -198,11 +205,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self,
         menu: QtWidgets.QMenu,
         action_name: str,
-        icon_name: str,
+        icon_name: Union[str, Path],
         func: Callable,
     ) -> None:
         """"""
-        icon = QtGui.QIcon(get_icon_path(__file__, icon_name))
+        if isinstance(icon_name, str):
+            if ":" in icon_name:
+                icon_path = icon_name
+            else:
+                icon_path: str = get_icon_path(__file__, icon_name)
+        else:
+            icon_path: str = str(icon_name)
+
+        icon = QtGui.QIcon(icon_path)
 
         action = QtWidgets.QAction(action_name, self)
         action.triggered.connect(func)
@@ -213,11 +228,19 @@ class MainWindow(QtWidgets.QMainWindow):
     def add_toolbar_action(
         self,
         action_name: str,
-        icon_name: str,
+        icon_name: Union[str, Path],
         func: Callable,
     ) -> None:
         """"""
-        icon = QtGui.QIcon(get_icon_path(__file__, icon_name))
+        if isinstance(icon_name, str):
+            if ":" in icon_name:
+                icon_path = icon_name
+            else:
+                icon_path: str = get_icon_path(__file__, icon_name)
+        else:
+            icon_path: str = str(icon_name)
+
+        icon = QtGui.QIcon(icon_path)
 
         action = QtWidgets.QAction(action_name, self)
         action.triggered.connect(func)
