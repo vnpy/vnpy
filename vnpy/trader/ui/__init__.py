@@ -6,7 +6,11 @@ import webbrowser
 import types
 
 import qdarkstyle
-from PyQt5 import QtGui, QtWidgets, QtCore
+try:
+    from PyQt5 import QtGui, QtWidgets, QtCore
+except ImportError:
+    from PySide2 import QtGui, QtWidgets, QtCore
+    QtCore.pyqtSignal = QtCore.Signal
 
 from .mainwindow import MainWindow
 from ..setting import SETTINGS
