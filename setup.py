@@ -34,7 +34,6 @@ def get_install_requires():
         "ta-lib>=0.4.24",
         "deap>=1.3.1",
         "pyzmq>=22.3.0",
-        "QScintilla>=2.13.1",
         "plotly>=5.5.0",
     ]
 

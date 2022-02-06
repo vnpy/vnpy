@@ -26,7 +26,6 @@ from .widget import (
     AboutDialog,
     GlobalDialog
 )
-from .editor import CodeEditor
 from ..engine import MainEngine
 from ..utility import get_icon_path, TRADER_DIR
 
@@ -148,18 +147,6 @@ class MainWindow(QtWidgets.QMainWindow):
             "查询合约",
             "contract.ico",
             partial(self.open_widget, ContractManager, "contract")
-        )
-
-        self.add_menu_action(
-            help_menu,
-            "代码编辑",
-            "editor.ico",
-            partial(self.open_widget, CodeEditor, "editor")
-        )
-        self.add_toolbar_action(
-            "代码编辑",
-            "editor.ico",
-            partial(self.open_widget, CodeEditor, "editor")
         )
 
         self.add_menu_action(
