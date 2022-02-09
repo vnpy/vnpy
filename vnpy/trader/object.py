@@ -1,7 +1,6 @@
 """
 Basic data structure used for general trading function in VN Trader.
 """
-
 from dataclasses import dataclass
 from datetime import datetime
 from logging import INFO
@@ -274,6 +273,8 @@ class ContractData(BaseData):
     option_portfolio: str = ""
     option_index: str = ""          # for identifying options with same strike price
 
+    etf_purchase_redem: str = ""         # ETF申赎代码
+
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
@@ -446,3 +447,29 @@ class QuoteRequest:
             gateway_name=gateway_name,
         )
         return quote
+
+
+@dataclass
+class BasketComponent:
+    basket_name: str
+    symbol: str
+    exchange: Exchange
+    name: str
+    share: int                              # 成分数量
+    premium_ratio: float                    # 溢价比例
+    cash_substitute: float                  # 替代总额
+    redemption_cash_substitute: float       # 赎回替代金额;对于跨境 ETF、跨市场 ETF、黄金 ETF 和现金债券 ETF，
+    # 该字段为 0.0000;此字段只有当替代标志为‘2’时才有效.
+
+    substitute_flag: int = 1                # 现金替代标志
+    # 0 表示该证券为沪市证券，禁止现金替代（必须有证券）
+    # 1 表示该证券为沪市证券，可以进行现金替代（先用证券，证券不足的话用现金替代）
+    # 2 表示该证券为沪市证券，必须用现金替代。
+    # 3 表示该证券为深市证券，退补现金替代。
+    # 4 表示该证券为深市证券，必须现金替代。
+    # 5 表示非沪深市场成分证券退补现金替代。
+    # 6 表示非沪深市场成份证券必须现金替代。
+
+    def __post_init__(self):
+        """"""
+        self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
