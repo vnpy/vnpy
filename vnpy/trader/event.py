@@ -15,3 +15,4 @@ EVENT_QUOTE = "eQuote."
 EVENT_CONTRACT = "eContract."
 EVENT_LOG = "eLog"
 EVENT_SNAPSHOT = "eSnapshot."
+EVENT_BASKET_COMPONENT = 'eBasketComponent'

@@ -16,6 +16,7 @@ from .event import (
     EVENT_CONTRACT,
     EVENT_LOG,
     EVENT_QUOTE,
+    EVENT_BASKET_COMPONENT,
 )
 from .object import (
     TickData,
@@ -32,7 +33,8 @@ from .object import (
     HistoryRequest,
     QuoteRequest,
     Exchange,
-    BarData
+    BarData,
+    BasketComponent
 )
 
 
@@ -152,6 +154,9 @@ class BaseGateway(ABC):
         Contract event push.
         """
         self.on_event(EVENT_CONTRACT, contract)
+
+    def on_basket_component(self, component: BasketComponent):
+        self.on_event(EVENT_BASKET_COMPONENT, component)
 
     def write_log(self, msg: str) -> None:
         """

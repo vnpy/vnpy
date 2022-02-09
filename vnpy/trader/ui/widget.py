@@ -975,8 +975,7 @@ class TradingWidget(QtWidgets.QWidget):
             volume=volume,
             price=price,
             offset=Offset(str(self.offset_combo.currentText())),
-            reference="ManualTrading",
-            product=contract.product
+            reference="ManualTrading"
         )
 
         gateway_name = str(self.gateway_combo.currentText())

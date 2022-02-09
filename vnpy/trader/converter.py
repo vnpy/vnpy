@@ -171,6 +171,8 @@ class PositionHolding:
             old_order = self.orders.get(order.vt_orderid)
             old_order.status = order.status
             old_order.traded = order.traded
+            old_order.datetime = order.datetime
+            old_order.offset = order.offset
 
         if order.is_active():
             self.active_orders[order.vt_orderid] = order

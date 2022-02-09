@@ -1,6 +1,7 @@
 """
 """
 
+from collections import defaultdict
 import logging
 from logging import Logger
 import smtplib
@@ -22,9 +23,11 @@ from .event import (
     EVENT_ACCOUNT,
     EVENT_CONTRACT,
     EVENT_LOG,
-    EVENT_QUOTE
+    EVENT_QUOTE,
+    EVENT_BASKET_COMPONENT
 )
 from .gateway import BaseGateway
+from .constant import Product
 from .object import (
     CancelRequest,
     LogData,
@@ -40,7 +43,8 @@ from .object import (
     PositionData,
     AccountData,
     ContractData,
-    Exchange
+    Exchange,
+    BasketComponent
 )
 from .setting import SETTINGS
 from .utility import get_folder_path, TRADER_DIR
@@ -187,6 +191,17 @@ class MainEngine:
             return gateway.send_order(req)
         else:
             return ""
+
+    def send_basket_order(self, req: OrderRequest, gateway_name: str):
+        contract = self.get_contract(req.vt_symbol)
+        if contract.product != Product.ETF:
+            raise ValueError('send_basket_order 只能买卖 ETF 篮子')
+        req.product = contract.product
+        gateway = self.get_gateway(gateway_name)
+        if gateway:
+            return gateway.send_basket_order(req)
+        else:
+            return None, None
 
     def cancel_order(self, req: CancelRequest, gateway_name: str) -> None:
         """
@@ -350,6 +365,7 @@ class OmsEngine(BaseEngine):
         self.positions: Dict[str, PositionData] = {}
         self.accounts: Dict[str, AccountData] = {}
         self.contracts: Dict[str, ContractData] = {}
+        self.baskets: Dict[str, List[BasketComponent]] = defaultdict(list)
         self.quotes: Dict[str, QuoteData] = {}
 
         self.active_orders: Dict[str, OrderData] = {}
@@ -377,6 +393,7 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_all_quotes = self.get_all_quotes
         self.main_engine.get_all_active_orders = self.get_all_active_orders
         self.main_engine.get_all_active_qutoes = self.get_all_active_quotes
+        self.main_engine.get_basket_components = self.get_basket_components
 
     def register_event(self) -> None:
         """"""
@@ -387,6 +404,7 @@ class OmsEngine(BaseEngine):
         self.event_engine.register(EVENT_ACCOUNT, self.process_account_event)
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
         self.event_engine.register(EVENT_QUOTE, self.process_quote_event)
+        self.event_engine.register(EVENT_BASKET_COMPONENT, self.process_basket_component)
 
     def process_tick_event(self, event: Event) -> None:
         """"""
@@ -424,6 +442,10 @@ class OmsEngine(BaseEngine):
         """"""
         contract: ContractData = event.data
         self.contracts[contract.vt_symbol] = contract
+
+    def process_basket_component(self, event: Event):
+        component: BasketComponent = event.data
+        self.baskets[component.basket_name].append(component)
 
     def process_quote_event(self, event: Event) -> None:
         """"""
@@ -472,6 +494,9 @@ class OmsEngine(BaseEngine):
         Get contract data by vt_symbol.
         """
         return self.contracts.get(vt_symbol, None)
+
+    def get_basket_components(self, basket_name):
+        return self.baskets.get(basket_name)
 
     def get_quote(self, vt_quoteid: str) -> Optional[QuoteData]:
         """

@@ -12,6 +12,10 @@ class Direction(Enum):
     LONG = "多"
     SHORT = "空"
     NET = "净"
+    PURCHASE = '申购'
+    REDEMPTION = '赎回'
+    BUY_BASKET = '买篮子'
+    SELL_BASKET = '买篮子'
 
 
 class Offset(Enum):
@@ -66,6 +70,7 @@ class OrderType(Enum):
     FAK = "FAK"
     FOK = "FOK"
     RFQ = "询价"
+    JG_TDC_PRICETYPE_BestOrLimit = "7"
 
 
 class OptionType(Enum):
@@ -142,7 +147,8 @@ class Exchange(Enum):
 
     # Special Function
     LOCAL = "LOCAL"         # For local generated data
-    LOCAL_BASKET = "LOCAL_BASKET"       #本地篮子
+    LOCAL_BASKET = "LOCAL_BASKET"       # 本地篮子
+    BASKET = 'BASKET'                   # gateway提供的篮子
 
 
 class Currency(Enum):
