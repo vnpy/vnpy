@@ -7,6 +7,7 @@ pandas>=1.4.0
 matplotlib>=3.5.1
 seaborn>=0.11.2
 ta-lib>=0.4.24
+setuptools==57.0.0
 deap>=1.3.1
 pyzmq>=22.3.0
 plotly>=5.5.0
