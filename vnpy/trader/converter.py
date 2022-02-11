@@ -14,7 +14,7 @@ from .object import (
     TickData,
     BarData
 )
-from .constant import Direction, Offset, Exchange
+from .constant import Direction, Offset, Exchange, OrderType
 from vnpy.event import Event
 from .event import EVENT_TRADE_UPDATE, EVENT_ORDER_UPDATE
 
@@ -96,6 +96,9 @@ class OffsetConverter:
 
         holding = self.get_position_holding(req.vt_symbol)
 
+        if req.direction in (Direction.BUY_BASKET, Direction.SELL_BASKET):
+            return self.convert_basket_order_req(req)
+
         if lock:
             return holding.convert_order_request_lock(req)
         elif net:
@@ -104,6 +107,29 @@ class OffsetConverter:
             return holding.convert_order_request_shfe(req)
         else:
             return [req]
+
+    def convert_basket_order_req(self, req: OrderRequest):
+        basket = self.main_engine.get_basket_components(req.symbol)
+        req_list = []
+        if basket is None:
+            self.write_log(f'创建价差失败， 找不到篮子 <{vt_symbol}>')
+            return req_list
+        for component in basket:
+            symbol = component.symbol
+            exchange = component.exchange
+            count = component.share
+            new_req = OrderRequest(
+                symbol=symbol,
+                exchange=exchange,
+                volume=count * req.volume,
+                direction=Direction.LONG,
+                type=OrderType.JG_TDC_PRICETYPE_BestOrLimit,
+                price=0,
+                signal_price=0,
+                offset=Offset.NONE
+            )
+            req_list.append(new_req)
+        return req_list
 
     def is_convert_required(self, vt_symbol: str) -> bool:
         """

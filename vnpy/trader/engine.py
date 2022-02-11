@@ -180,6 +180,12 @@ class MainEngine:
         if gateway:
             gateway.subscribe(req)
 
+    def get_basket_components(self, symbol):
+        """
+        不带后缀！
+        """
+        raise NotImplementedError
+
     def send_order(self, req: OrderRequest, gateway_name: str) -> str:
         """
         Send new order request to a specific gateway.
