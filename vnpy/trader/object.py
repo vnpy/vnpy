@@ -274,6 +274,7 @@ class ContractData(BaseData):
     option_index: str = ""          # for identifying options with same strike price
 
     etf_purchase_redem: str = ""         # ETF申赎代码
+    etf_purchase_redem_min: str = 0      # ETF申赎最小数量
 
     def __post_init__(self):
         """"""

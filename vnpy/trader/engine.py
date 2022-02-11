@@ -27,7 +27,7 @@ from .event import (
     EVENT_BASKET_COMPONENT
 )
 from .gateway import BaseGateway
-from .constant import Product
+from .constant import Product, Direction
 from .object import (
     CancelRequest,
     LogData,
@@ -190,6 +190,8 @@ class MainEngine:
         """
         Send new order request to a specific gateway.
         """
+        if req.direction in (Direction.BUY_BASKET, Direction.SELL_BASKET):
+            return self.send_basket_order(req, gateway_name)
         contract = self.get_contract(req.vt_symbol)
         req.product = contract.product
         gateway = self.get_gateway(gateway_name)
