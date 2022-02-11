@@ -698,7 +698,8 @@ class TradingWidget(QtWidgets.QWidget):
 
         self.direction_combo = QtWidgets.QComboBox()
         self.direction_combo.addItems(
-            [Direction.LONG.value, Direction.SHORT.value])
+            [Direction.LONG.value, Direction.SHORT.value, Direction.BUY_BASKET.value, Direction.SELL_BASKET.value,
+             Direction.PURCHASE.value, Direction.REDEMPTION.value])
 
         self.offset_combo = QtWidgets.QComboBox()
         self.offset_combo.addItems([offset.value for offset in Offset])
