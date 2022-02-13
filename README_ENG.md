@@ -5,16 +5,16 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.9.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-3.0.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
-    <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
+    <img src ="https://img.shields.io/badge/python-3.10-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
 
 vn.py is a Python-based open source quantitative trading system development framework, officially released in January 2015, has grown step by step into a full-featured quantitative trading platform with 6 years of continuous contributions from the open source community, and currently has many users from domestic and international financial institutions, including: hedge funds, investment banks, futures brokers, university research institutions, proprietary trading companies, etc.
 
-The new "vn.py Full Practical Advance" online course series has been launched on the official WeChat account [**vnpy-community**], covering CTA strategies (completed), options volatility trading (being updated) and more. To purchase, please scan the QR code below and click the [Advanced Course] button in the menu bar to.
+The new "vn.py Full Practical Advance" online course series has been launched on the official WeChat account [**VeighNa开源量化**], covering CTA strategies (completed), options volatility trading (being updated) and more. To purchase, please scan the QR code below and click the [Advanced Course] button in the menu bar to.
 
 <p align="center">
   <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy_qr.jpg"/>
@@ -38,22 +38,24 @@ For financial institution users of vn.py, a special [vn.py Institutional Users G
 
         * CTP Securities ([sopt](https://www.github.com/vnpy/vnpy_sopt)): ETF options
 
-        * Pegasus ([femas](https://www.github.com/vnpy/vnpy_femas)): domestic futures
+        * FEMAS ([femas](https://www.github.com/vnpy/vnpy_femas)): domestic futures
 
         * UFT ([uft](https://www.github.com/vnpy/vnpy_uft)): domestic futures, ETF options
         
         * Esunny ([esunny](https://www.github.com/vnpy/vnpy_esunny)): domestic futures, Gold TD
 
-        * XSpeed Securities ([sec](https://www.github.com/vnpy/vnpy_sec)): ETF options
+        * APEX XSpeed ([sec](https://www.github.com/vnpy/vnpy_sec)): ETF options
+
+        * APEX HTS ([hts](https://www.github.com/vnpy/vnpy_hts)): ETF options
 
         * NHTD ([nhtd](https://www.github.com/vnpy/vnpy_nhtd)): domestic futures, ETF options
 
         * XTP ([xtp](https://www.github.com/vnpy/vnpy_xtp)): domestic securities (A shares), ETF options
 
-        * Guotai Junan ([hft](https://www.github.com/vnpy/vnpy_hft)): domestic securities (A shares)
-
         * TORA ([tora](https://www.github.com/vnpy/vnpy_tora)): domestic securities (A shares), ETF options
 
+        * Guotai Junan ([hft](https://www.github.com/vnpy/vnpy_hft)): domestic securities (A shares)
+        
         * SGIT ([sgit](https://www.github.com/vnpy/vnpy_sgit)): spot precious metal, domestic futures
 
         * KsGold ([ksgold](https://www.github.com/vnpy/vnpy_ksgold)): spot precious metal

@@ -7,9 +7,9 @@
 💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.9.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-3.0.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
-    <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
+    <img src ="https://img.shields.io/badge/python-3.10-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
@@ -218,9 +218,11 @@ bash install_osx.sh
 from vnpy.event import EventEngine
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import MainWindow, create_qapp
-from vnpy.gateway.ctp import CtpGateway
-from vnpy.app.cta_strategy import CtaStrategyApp
-from vnpy.app.cta_backtester import CtaBacktesterApp
+
+from vnpy_ctp import CtpGateway
+from vnpy_ctastrategy import CtaStrategyApp
+from vnpy_ctabacktester import CtaBacktesterApp
+
 
 def main():
     """Start Veighna Trader"""
@@ -237,6 +239,7 @@ def main():
     main_window.showMaximized()
 
     qapp.exec()
+
 
 if __name__ == "__main__":
     main()
