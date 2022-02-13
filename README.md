@@ -16,10 +16,10 @@
 
 vn.py是一套基于Python的开源量化交易系统开发框架，在开源社区7年持续不断的贡献下一步步成长为全功能量化交易平台，自2015年正式发布以来已经积累了众多来自金融机构或相关领域的用户，包括私募基金、证券公司、期货公司等。
 
-全新的《vn.py全实战进阶》系列在线课程，已经在官方微信公众号[**veighna-community**]上线，覆盖30天入门、CTA策略、期权波动率交易等内容。购买请扫描下方二维码关注后，点击菜单栏的【进阶资料】按钮即可：
+全新的《vn.py全实战进阶》系列在线课程，已经在官方微信公众号[**VeighNa开源量化**]上线，覆盖30天入门、CTA策略、期权波动率交易等内容。购买请扫描下方二维码关注后，点击菜单栏的【进阶资料】按钮即可：
 
 <p align="center">
-  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy_qrcode.jpg"/>
+  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy_qr.jpg"/>
 </p>
 
 在使用vn.py进行二次开发（策略、模块等）的过程中有任何疑问，请查看[**vn.py项目文档**](https://www.vnpy.com/docs/cn/index.html)，如果无法解决请前往[**官方社区论坛**](https://www.vnpy.com/forum/)的【提问求助】板块寻求帮助，也欢迎在【经验分享】板块分享你的使用心得！
