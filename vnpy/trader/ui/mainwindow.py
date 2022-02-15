@@ -8,10 +8,10 @@ from importlib import import_module
 from typing import Callable, Dict, Tuple, Union
 from pathlib import Path
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-
 import vnpy
 from vnpy.event import EventEngine
+
+from .qt import QtCore, QtGui, QtWidgets
 from .widget import (
     TickMonitor,
     OrderMonitor,
@@ -93,7 +93,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def init_menu(self) -> None:
         """"""
         bar = self.menuBar()
-        bar.setNativeMenuBar(False) # for mac and linux
+        bar.setNativeMenuBar(False)     # for mac and linux
 
         # System menu
         sys_menu = bar.addMenu("系统")
