@@ -23,18 +23,18 @@ from setuptools import find_packages, setup
 
 def get_install_requires():
     install_requires = [
-        "PyQt5",
-        "qdarkstyle",
-        "peewee",
-        "numpy",
-        "pandas",
-        "matplotlib",
-        "seaborn",
-        "rqdatac",
-        "ta-lib",
-        "deap",
-        "pyzmq",
-        "QScintilla"
+        "tzlocal==2.0.0",
+        "PySide6==6.2.3",
+        "pyqtgraph==0.12.3",
+        "qdarkstyle==3.0.3",
+        "numpy==1.22.1",
+        "pandas==1.4.0",
+        "matplotlib==3.5.1",
+        "seaborn==0.11.2",
+        "ta-lib==0.4.24",
+        "deap==1.3.1",
+        "pyzmq==22.3.0",
+        "plotly==5.5.0",
     ]
 
     return install_requires
@@ -73,7 +73,7 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "Operating System :: Microsoft :: Windows",
         "Operating System :: Microsoft :: Windows :: Windows 10",
-        "Operating System :: POSIX :: Linux"
+        "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
         "Topic :: Office/Business :: Financial :: Investment",

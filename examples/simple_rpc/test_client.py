@@ -29,12 +29,7 @@ if __name__ == "__main__":
 
     tc = TestClient()
     tc.subscribe_topic("")
-    tc.start(
-        req_address,
-        sub_address,
-        "./certificates/client.key_secret",
-        "./certificates/server.key"
-    )
+    tc.start(req_address, sub_address)
 
     while 1:
         print(tc.add(1, 3))

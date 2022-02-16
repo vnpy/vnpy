@@ -7,7 +7,7 @@ shift 2
 [[ -z $python ]] && python=python
 [[ -z $prefix ]] && prefix=~/usr/talib
 
-$python -m pip install --upgrade pip setuptools wheel
+$python -m pip install --upgrade pip wheel
 
 # Get and build ta-lib
 function install-ta-lib()

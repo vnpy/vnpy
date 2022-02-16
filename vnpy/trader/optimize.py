@@ -101,7 +101,7 @@ def run_bf_optimization(
     """Run brutal force optimization"""
     settings: List[Dict] = optimization_setting.generate_settings()
 
-    output(f"开始执行穷举算法优化")
+    output("开始执行穷举算法优化")
     output(f"参数优化空间：{len(settings)}")
 
     start: int = perf_counter()
@@ -180,7 +180,7 @@ def run_ga_optimization(
         pop: list = toolbox.population(pop_size)
 
         # Run ga optimization
-        output(f"开始执行遗传算法优化")
+        output("开始执行遗传算法优化")
         output(f"参数优化空间：{total_size}")
         output(f"每代族群总数：{pop_size}")
         output(f"优良筛选个数：{mu}")

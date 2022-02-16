@@ -31,11 +31,7 @@ if __name__ == "__main__":
     pub_address = "tcp://*:4102"
 
     ts = TestServer()
-    ts.start(
-        rep_address,
-        pub_address,
-        "./certificates/server.key_secret"
-    )
+    ts.start(rep_address, pub_address)
 
     while 1:
         content = f"current server time is {time()}"

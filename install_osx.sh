@@ -5,7 +5,7 @@ shift 1
 
 [[ -z $python ]] && python=python
 
-$python -m pip install --upgrade pip setuptools wheel
+$python -m pip install --upgrade pip wheel
 
 # Get and build ta-lib
 function install-ta-lib()
