@@ -101,11 +101,11 @@ class MainWindow(QtWidgets.QMainWindow):
         gateway_names = self.main_engine.get_all_gateway_names()
         for name in gateway_names:
             func = partial(self.connect, name)
-            self.add_menu_action(sys_menu, f"连接{name}", "connect.ico", func)
+            self.add_action(sys_menu, f"连接{name}", "connect.ico", func)
 
         sys_menu.addSeparator()
 
-        self.add_menu_action(sys_menu, "退出", "exit.ico", self.close)
+        self.add_action(sys_menu, "退出", "exit.ico", self.close)
 
         # App menu
         app_menu = bar.addMenu("功能")
@@ -123,12 +123,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 icon_path = app.icon_name
 
-            self.add_menu_action(
-                app_menu, app.display_name, icon_path, func
-            )
-            self.add_toolbar_action(
-                app.display_name, icon_path, func
-            )
+            self.add_action(app_menu, app.display_name, icon_path, func, True)
 
         # Global setting editor
         action = QtWidgets.QAction("配置", self)
@@ -138,34 +133,27 @@ class MainWindow(QtWidgets.QMainWindow):
         # Help menu
         help_menu = bar.addMenu("帮助")
 
-        self.add_menu_action(
+        self.add_action(
             help_menu,
             "查询合约",
             "contract.ico",
             partial(self.open_widget, ContractManager, "contract"),
-        )
-        self.add_toolbar_action(
-            "查询合约",
-            "contract.ico",
-            partial(self.open_widget, ContractManager, "contract")
+            True
         )
 
-        self.add_menu_action(
+        self.add_action(
             help_menu, "还原窗口", "restore.ico", self.restore_window_setting
         )
 
-        self.add_menu_action(
+        self.add_action(
             help_menu, "测试邮件", "email.ico", self.send_test_email
         )
 
-        self.add_menu_action(
-            help_menu, "社区论坛", "forum.ico", self.open_forum
-        )
-        self.add_toolbar_action(
-            "社区论坛", "forum.ico", self.open_forum
+        self.add_action(
+            help_menu, "社区论坛", "forum.ico", self.open_forum, True
         )
 
-        self.add_menu_action(
+        self.add_action(
             help_menu,
             "关于",
             "about.ico",
@@ -189,12 +177,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.addToolBar(QtCore.Qt.LeftToolBarArea, self.toolbar)
 
-    def add_menu_action(
+    def add_action(
         self,
         menu: QtWidgets.QMenu,
         action_name: str,
         icon_name: Union[str, Path],
         func: Callable,
+        toolbar: bool = False
     ) -> None:
         """"""
         if isinstance(icon_name, str):
@@ -213,28 +202,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         menu.addAction(action)
 
-    def add_toolbar_action(
-        self,
-        action_name: str,
-        icon_name: Union[str, Path],
-        func: Callable,
-    ) -> None:
-        """"""
-        if isinstance(icon_name, str):
-            if ":" in icon_name:
-                icon_path = icon_name
-            else:
-                icon_path: str = get_icon_path(__file__, icon_name)
-        else:
-            icon_path: str = str(icon_name)
-
-        icon = QtGui.QIcon(icon_path)
-
-        action = QtWidgets.QAction(action_name, self)
-        action.triggered.connect(func)
-        action.setIcon(icon)
-
-        self.toolbar.addAction(action)
+        if toolbar:
+            self.toolbar.addAction(action)
 
     def create_dock(
         self,
