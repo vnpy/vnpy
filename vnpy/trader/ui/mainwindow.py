@@ -5,8 +5,7 @@ Implements main window of the trading platform.
 import webbrowser
 from functools import partial
 from importlib import import_module
-from typing import Callable, Dict, Tuple, Union
-from pathlib import Path
+from typing import Callable, Dict, Tuple
 
 import vnpy
 from vnpy.event import EventEngine
@@ -101,11 +100,21 @@ class MainWindow(QtWidgets.QMainWindow):
         gateway_names = self.main_engine.get_all_gateway_names()
         for name in gateway_names:
             func = partial(self.connect, name)
-            self.add_action(sys_menu, f"连接{name}", "connect.ico", func)
+            self.add_action(
+                sys_menu,
+                f"连接{name}",
+                get_icon_path(__file__, "connect.ico"),
+                func
+            )
 
         sys_menu.addSeparator()
 
-        self.add_action(sys_menu, "退出", "exit.ico", self.close)
+        self.add_action(
+            sys_menu,
+            "退出",
+            get_icon_path(__file__, "exit.ico"),
+            self.close
+        )
 
         # App menu
         app_menu = bar.addMenu("功能")
@@ -117,13 +126,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             func = partial(self.open_widget, widget_class, app.app_name)
 
-            # Use image resource from qrc file
-            if ":" not in app.icon_name:
-                icon_path = app.app_path.joinpath("ui", app.icon_name)
-            else:
-                icon_path = app.icon_name
-
-            self.add_action(app_menu, app.display_name, icon_path, func, True)
+            self.add_action(app_menu, app.display_name, app.icon_name, func, True)
 
         # Global setting editor
         action = QtWidgets.QAction("配置", self)
@@ -136,27 +139,37 @@ class MainWindow(QtWidgets.QMainWindow):
         self.add_action(
             help_menu,
             "查询合约",
-            "contract.ico",
+            get_icon_path(__file__, "contract.ico"),
             partial(self.open_widget, ContractManager, "contract"),
             True
         )
 
         self.add_action(
-            help_menu, "还原窗口", "restore.ico", self.restore_window_setting
+            help_menu,
+            "还原窗口",
+            get_icon_path(__file__, "restore.ico"),
+            self.restore_window_setting
         )
 
         self.add_action(
-            help_menu, "测试邮件", "email.ico", self.send_test_email
+            help_menu,
+            "测试邮件",
+            get_icon_path(__file__, "email.ico"),
+            self.send_test_email
         )
 
         self.add_action(
-            help_menu, "社区论坛", "forum.ico", self.open_forum, True
+            help_menu,
+            "社区论坛",
+            get_icon_path(__file__, "forum.ico"),
+            self.open_forum,
+            True
         )
 
         self.add_action(
             help_menu,
             "关于",
-            "about.ico",
+            get_icon_path(__file__, "about.ico"),
             partial(self.open_widget, AboutDialog, "about"),
         )
 
@@ -181,20 +194,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self,
         menu: QtWidgets.QMenu,
         action_name: str,
-        icon_name: Union[str, Path],
+        icon_name: str,
         func: Callable,
         toolbar: bool = False
     ) -> None:
         """"""
-        if isinstance(icon_name, str):
-            if ":" in icon_name:
-                icon_path = icon_name
-            else:
-                icon_path: str = get_icon_path(__file__, icon_name)
-        else:
-            icon_path: str = str(icon_name)
-
-        icon = QtGui.QIcon(icon_path)
+        icon = QtGui.QIcon(icon_name)
 
         action = QtWidgets.QAction(action_name, self)
         action.triggered.connect(func)
