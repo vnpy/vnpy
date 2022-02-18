@@ -10,6 +10,7 @@
 5. 调整rpc子模块中的心跳机制的实现方式
 6. 移除基于QScintilla开发的代码编辑器，改用VSCode打开代码
 7. 优化MainWindow主窗口中，对于QAction按钮图标的加载逻辑
+8. MainEngine添加交易接口时，支持自定义接口名称
 
 ## 修复
 

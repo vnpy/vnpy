@@ -15,6 +15,8 @@ from ..utility import get_icon_path
 Qt = QtCore.Qt
 QtCore.pyqtSignal = QtCore.Signal
 QtWidgets.QAction = QtGui.QAction
+QtCore.QDate.toPyDate = QtCore.QDate.toPython
+QtCore.QDateTime.toPyDate = QtCore.QDateTime.toPython
 
 
 def create_qapp(app_name: str = "Veighna Trader") -> QtWidgets.QApplication:
