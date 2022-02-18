@@ -25,7 +25,7 @@ def create_qapp(app_name: str = "Veighna Trader") -> QtWidgets.QApplication:
     """
     # Set up dark stylesheet
     qapp = QtWidgets.QApplication(sys.argv)
-    qapp.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+    qapp.setStyleSheet(qdarkstyle.load_stylesheet(qt_api="pyside6"))
 
     # Set up font
     font = QtGui.QFont(SETTINGS["font.family"], SETTINGS["font.size"])
