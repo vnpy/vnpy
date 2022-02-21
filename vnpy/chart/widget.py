@@ -41,7 +41,7 @@ class ChartWidget(pg.PlotWidget):
 
     def _init_ui(self) -> None:
         """"""
-        self.setWindowTitle("ChartWidget of vn.py")
+        self.setWindowTitle("ChartWidget of VeighNa")
 
         self._layout = pg.GraphicsLayout()
         self._layout.setContentsMargins(10, 10, 10, 10)

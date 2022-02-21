@@ -28,9 +28,9 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 ## 功能特点
 
-1. 全功能量化交易平台（vnpy.trader），整合了多种交易接口，并针对具体策略算法和功能开发提供了简洁易用的API，用于快速构建交易员所需的量化交易应用。
+1. 全功能量化交易平台（trader），整合了多种交易接口，并针对具体策略算法和功能开发提供了简洁易用的API，用于快速构建交易员所需的量化交易应用。
 
-2. 覆盖国内外所有交易品种的交易接口（vnpy.gateway）：
+2. 覆盖国内外所有交易品种的交易接口（gateway）：
 
     * 国内市场
 
@@ -58,6 +58,8 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
         * 国泰君安（[hft](https://www.github.com/vnpy/vnpy_hft)）：国内证券（A股、两融）
 
+        * 东证OST（[ost](https://www.github.com/vnpy/vnpy_ost)）：国内证券（A股）
+
         * 飞鼠（[sgit](https://www.github.com/vnpy/vnpy_sgit)）：黄金TD、国内期货
 
         * 金仕达黄金（[ksgold](https://www.github.com/vnpy/vnpy_ksgold)）：黄金TD
@@ -80,7 +82,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
         * RPC服务（[rpc](https://www.github.com/vnpy/vnpy_rpcservice)）：跨进程通讯接口，用于分布式架构
 
-3. 开箱即用的各类量化策略交易应用（vnpy.app）：
+3. 开箱即用的各类量化策略交易应用（app）：
 
     * [cta_strategy](https://www.github.com/vnpy/vnpy_ctastrategy)：CTA策略引擎模块，在保持易用性的同时，允许用户针对CTA类策略运行过程中委托的报撤行为进行细粒度控制（降低交易滑点、实现高频策略）
 
@@ -114,15 +116,15 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
     * [web_trader](https://www.github.com/vnpy/vnpy_webtrader)：Web服务模块，针对B-S架构需求设计，实现了提供主动函数调用（REST）和被动数据推送（Websocket）的Web服务器
 
-4. Python交易API接口封装（vnpy.api），提供上述交易接口的底层对接实现。
+4. Python交易API接口封装（api），提供上述交易接口的底层对接实现。
 
     * REST Client（[rest](https://www.github.com/vnpy/vnpy_rest)）：基于协程异步IO的高性能REST API客户端，采用事件消息循环的编程模型，支持高并发实时交易请求发送
 
     * Websocket Client（[websocket](https://www.github.com/vnpy/vnpy_websocket)）：基于协程异步IO的高性能Websocket API客户端，支持和REST Client共用事件循环并发运行，避免GIL带来的多线程性能损耗
 
-5. 简洁易用的事件驱动引擎（vnpy.event），作为事件驱动型交易程序的核心。
+5. 简洁易用的事件驱动引擎（event），作为事件驱动型交易程序的核心。
 
-6. 对接各类数据库的适配器接口：
+6. 对接各类数据库的适配器接口（database）：
 
     * SQL类
 
@@ -144,7 +146,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
         * LevelDB（[leveldb](https://www.github.com/vnpy/vnpy_leveldb)）：由Google推出的高性能Key/Value数据库，基于LSM算法实现进程内存储引擎，支持数十亿级别的海量数据
 
-7. 对接各类数据服务的适配器接口：
+7. 对接各类数据服务的适配器接口（datafeed）：
 
     * 米筐RQData（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：股票、期货、期权、基金、债券、黄金TD
 
@@ -160,9 +162,9 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
     * 天勤TQSDK（[tqsdk](https://www.github.com/vnpy/vnpy_tqsdk)）：期货
 
-8. 跨进程通讯标准组件（vnpy.rpc），用于实现分布式部署的复杂交易系统。
+8. 跨进程通讯标准组件（rpc），用于实现分布式部署的复杂交易系统。
 
-9. Python高性能K线图表（vnpy.chart），支持大数据量图表显示以及实时数据更新功能。
+9. Python高性能K线图表（hart），支持大数据量图表显示以及实时数据更新功能。
 
 10. [社区论坛](http://www.vnpy.com/forum)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括VeighNa项目的开发教程和Python在量化交易领域的应用研究等内容。
 
@@ -170,9 +172,9 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 ## 环境准备
 
-* 推荐使用VeighNa团队为量化交易专门打造的Python发行版[Veighna Studio-2.9.0](https://download.vnpy.com/veighna-studio-2.9.0.exe)，内置了最新版的VeighNa框架以及Veighna Station量化管理平台，无需手动安装
-* 支持的系统版本：Windows 10以上/Windows Server 2016以上/Ubuntu 20.04 LTS以上
-* 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
+* 推荐使用VeighNa团队为量化交易专门打造的Python发行版[Veighna Studio-3.0.0](https://download.vnpy.com/veighna-studio-3.0.0.exe)，内置了最新版的VeighNa框架以及Veighna Station量化管理平台，无需手动安装
+* 支持的系统版本：Windows 10以上 / Windows Server 2016以上 / Ubuntu 20.04 LTS以上
+* 支持的Python版本：Python 3.7/ 3.8 / 3.9 / 3.10 64位（**推荐使用Python 3.10**）
 
 ## 安装步骤
 
@@ -187,7 +189,7 @@ install.bat
 **Ubuntu**
 
 ```
-. install.sh
+bash install.sh
 ```
 
 **Macos**

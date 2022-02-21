@@ -276,7 +276,7 @@ class LogEngine(BaseEngine):
 
         self.level: int = SETTINGS["log.level"]
 
-        self.logger: Logger = logging.getLogger("vn.py")
+        self.logger: Logger = logging.getLogger("veighna")
         self.logger.setLevel(self.level)
 
         self.formatter = logging.Formatter(
