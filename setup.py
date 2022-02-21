@@ -1,13 +1,13 @@
 """
-vn.py - By Traders, For Traders.
+VeighNa - By Traders, For Traders.
 
-The vn.py project is an open-source quantitative trading framework
+The VeighNa project is an open-source quantitative trading framework
 that is developed by traders, for traders.
 
 The project is mainly written in Python and uses C++ for low-layer
 and performance sensitive infrastructure.
 
-Using the vn.py project, institutional investors and professional
+Using the VeighNa project, institutional investors and professional
 traders, such as hedge funds, prop trading firms and investment banks,
 can easily develop complex trading strategies with the Event Engine
 Strategy Module, and automatically route their orders to the most
@@ -52,8 +52,8 @@ def get_version_string():
 setup(
     name="vnpy",
     version=get_version_string(),
-    author="vn.py team",
-    author_email="vn.py@foxmail.com",
+    author="Xiaoyou Chen",
+    author_email="xiaoyou.chen@mail.vnpy.com",
     license="MIT",
     url="https://www.vnpy.com",
     description="A framework for developing quant trading systems.",

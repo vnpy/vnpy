@@ -1,5 +1,5 @@
 """
-Event-driven framework of vn.py framework.
+Event-driven framework of VeighNa framework.
 """
 
 from collections import defaultdict

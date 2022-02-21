@@ -1145,12 +1145,11 @@ class AboutDialog(QtWidgets.QDialog):
             Github：www.github.com/vnpy/vnpy
 
 
-            vn.py - {vnpy_version}
+            VeighNa - {vnpy_version}
             Python - {platform.python_version()}
             PySide6 - {importlib_metadata.version("pyside6")}
             NumPy - {importlib_metadata.version("numpy")}
             pandas - {importlib_metadata.version("pandas")}
-            RQData - {importlib_metadata.version("rqdatac")}
             """
 
         label = QtWidgets.QLabel()

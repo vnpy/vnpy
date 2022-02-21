@@ -20,8 +20,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'vnpy'
-copyright = '2019, vn.py Team'
-author = 'vn.py Team'
+copyright = '2019 - 2022, VeighNa Team'
+author = 'VeighNa Team'
 
 # The short X.Y version
 version = '2.0.3'
@@ -95,7 +95,7 @@ html_theme_options = {
     'github_repo': 'vnpy',
     'github_type': 'star',
     'description': (r"<div class='col-md-12'>"
-                    r"<strong>VN.PY</strong>"
+                    r"<strong>VeighNa</strong>"
                     r"</div>"
                     r"<br/>"
                     r"By Traders, For Traders"),
@@ -163,7 +163,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'vnpy.tex', 'vnpy Documentation',
-     'vn.py Team', 'manual'),
+     'VeighNa Team', 'manual'),
 ]
 
 # -- Options for manual page output ------------------------------------------
