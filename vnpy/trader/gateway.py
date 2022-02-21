@@ -75,6 +75,9 @@ class BaseGateway(ABC):
 
     """
 
+    # Default name for the gateway.
+    default_name: str = ""
+
     # Fields required in setting dict for connect function.
     default_setting: Dict[str, Any] = {}
 

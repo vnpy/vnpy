@@ -15,6 +15,8 @@ from ..utility import get_icon_path
 Qt = QtCore.Qt
 QtCore.pyqtSignal = QtCore.Signal
 QtWidgets.QAction = QtGui.QAction
+QtCore.QDate.toPyDate = QtCore.QDate.toPython
+QtCore.QDateTime.toPyDate = QtCore.QDateTime.toPython
 
 
 def create_qapp(app_name: str = "Veighna Trader") -> QtWidgets.QApplication:
@@ -23,7 +25,7 @@ def create_qapp(app_name: str = "Veighna Trader") -> QtWidgets.QApplication:
     """
     # Set up dark stylesheet
     qapp = QtWidgets.QApplication(sys.argv)
-    qapp.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+    qapp.setStyleSheet(qdarkstyle.load_stylesheet(qt_api="pyside6"))
 
     # Set up font
     font = QtGui.QFont(SETTINGS["font.family"], SETTINGS["font.size"])
