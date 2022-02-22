@@ -5,7 +5,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from logging import INFO
 
-from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
+from .constant import (
+    Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType,
+    Currency
+)
 
 ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
 
@@ -223,11 +226,12 @@ class AccountData(BaseData):
 
     balance: float = 0
     frozen: float = 0
+    currency: Currency = Currency.CNY
 
     def __post_init__(self):
         """"""
         self.available = self.balance - self.frozen
-        self.vt_accountid = f"{self.gateway_name}.{self.accountid}"
+        self.vt_accountid = f"{self.gateway_name}.{self.currency.value}.{self.accountid}"
 
 
 @dataclass

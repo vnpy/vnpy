@@ -247,6 +247,18 @@ class MainEngine:
         else:
             return None
 
+    def get_account(self, vt_accountid: str) -> Optional[AccountData]:
+        """
+        根据账户id获取账户信息对象
+        """
+        raise NotImplementedError
+
+    def get_all_accounts(self) -> List[AccountData]:
+        """
+        获取所有账户信息对象
+        """
+        raise NotImplementedError
+
     def close(self) -> None:
         """
         Make sure every gateway and app is closed properly before

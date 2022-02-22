@@ -158,6 +158,8 @@ class Currency(Enum):
     USD = "USD"
     HKD = "HKD"
     CNY = "CNY"
+    EUR = "EUR"
+    OTHERS = 'OTHERS'
 
 
 class Interval(Enum):
