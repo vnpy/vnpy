@@ -1,7 +1,7 @@
-# By Traders, For Traders.
+# VeighNa - By Traders, For Traders.
 
 <p align="center">
-  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy-logo.png"/>
+  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/veighna-logo.png"/>
 </p>
 
 💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
