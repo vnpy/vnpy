@@ -12,6 +12,7 @@ from vnpy_xtp import XtpGateway
 from vnpy_okex import OkexGateway
 from vnpy_esunny import EsunnyGateway
 from vnpy_ctptest import CtptestGateway
+from vnpy_tap import TapGateway
 
 
 def main():
@@ -26,6 +27,7 @@ def main():
     main_engine.add_gateway(UftGateway)
     main_engine.add_gateway(XtpGateway)
     main_engine.add_gateway(OkexGateway)
+    main_engine.add_gateway(TapGateway)
     main_engine.add_app(CtaStrategyApp)
     main_engine.add_app(CtaBacktesterApp)
     main_engine.add_app(SpreadTradingApp)
