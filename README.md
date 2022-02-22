@@ -9,7 +9,7 @@
 <p align="center">
     <img src ="https://img.shields.io/badge/version-3.0.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
-    <img src ="https://img.shields.io/badge/python-3.10-blue.svg" />
+    <img src ="https://img.shields.io/badge/python-3.7|3.8|3.9|3.10-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
@@ -180,8 +180,6 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 在[这里](https://github.com/vnpy/vnpy/releases)下载最新版本，解压后运行以下命令安装：
 
-(setup.cfg中列举了VeighNa框架安装所需的依赖库，requirements.txt中列举了这些依赖库的推荐安装版本，默认安装推荐版本)
-
 **Windows**
 
 ```
@@ -199,6 +197,8 @@ bash install.sh
 ```
 bash install_osx.sh
 ```
+
+**注意：setup.cfg中列举了VeighNa框架安装所需的依赖库，requirements.txt中给出了这些依赖库的推荐安装版本。**
 
 ## 使用指南
 
