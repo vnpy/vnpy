@@ -157,7 +157,7 @@
 
 ## 应用模块
 
-vn.py官方提供了开箱即用的量化交易应用模块，在启动Veighna Trader时勾选所需的功能模块，启动成功后在菜单栏中点击【功能】按钮，即可显示所勾选的功能模块，如下图所示：
+VeighNa官方提供了开箱即用的量化交易应用模块，在启动Veighna Trader时勾选所需的功能模块，启动成功后在菜单栏中点击【功能】按钮，即可显示所勾选的功能模块，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/21.png)
 
@@ -238,4 +238,4 @@ C:\users\administrator\.vntrader\log
 
 ### 数据库
 
-以database为前缀的参数用于配置数据库服务。目前，vn.py支持SQLite、MySQL、PostgreSQL、MongoDB、InfluxDB、DolphinDB、Arctic和LevelDB八种数据库。具体配置方法详见项目文档的数据库配置部分。
+以database为前缀的参数用于配置数据库服务。目前，VeighNa支持SQLite、MySQL、PostgreSQL、MongoDB、InfluxDB、DolphinDB、Arctic和LevelDB八种数据库。具体配置方法详见项目文档的数据库配置部分。

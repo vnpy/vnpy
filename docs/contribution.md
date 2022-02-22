@@ -2,7 +2,7 @@
 
 ---
 ## 创建PR
-我们欢迎任何人贡献代码到vn.py。  
+我们欢迎任何人贡献代码到VeighNa。  
 
 如果希望贡献代码请使用Github的PR(Pull Request)的流程。
 
@@ -11,7 +11,7 @@ PR流程大致如下：
 ---
 1. [创建 Issue][CreateIssue] - 对于较大的改动(如新功能，大型重构等)最好先开issue讨论一下， 较小的improvement(如文档改进，bugfix等)直接发PR即可
 
-2. Fork [vn.py][#GithubVnpy] - 点击右上角**Fork**按钮
+2. Fork [VeighNa][#GithubVnpy] - 点击右上角**Fork**按钮
 
 3. Clone你自己的fork: ```git clone https://github.com/$userid/vnpy.git```
 	
@@ -31,7 +31,7 @@ PR流程大致如下：
 
 ---
 ## 代码风格
-在为vn.py写代码的时候，需要遵循一些基本的规则，否则你的代码可能无法被merge。
+在为VeighNa写代码的时候，需要遵循一些基本的规则，否则你的代码可能无法被merge。
 这些规则包括：
 - [贡献代码](#贡献代码)
   - [创建PR](#创建pr)
@@ -50,7 +50,7 @@ PR流程大致如下：
 
 例如：
 ```python 3
-DEFAULT_PATH = "/tmp/vn.py/"
+DEFAULT_PATH = "/tmp/VeighNa/"
 class ClassA:
     def __init__(self, arg_one: int, arg_two: str):
         if arg_two is None:
