@@ -26,5 +26,5 @@ $python -m pip install ta-lib==0.4.17
 # Install Python Modules
 $python -m pip install -r requirements.txt
 
-# Install vn.py
+# Install VeighNa
 $python -m pip install . $@

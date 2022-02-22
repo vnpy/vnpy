@@ -2,7 +2,7 @@
 
 * 操作系统: 如Windows 11或者Ubuntu 20.04
 * Python版本: 如Veighna Studio-2.9.0
-* vn.py版本: 如v2.9.0发行版或者dev branch 20211224（下载日期）
+* VeighNa版本: 如v2.9.0发行版或者dev branch 20211224（下载日期）
 
 ## Issue类型
 三选一：Bug/Enhancement/Question

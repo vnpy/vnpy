@@ -42,5 +42,5 @@ $python -m pip install -r requirements.txt
 # Install local Chinese language environment
 locale-gen zh_CN.GB18030
 
-# Install vn.py
+# Install VeighNa
 $python -m pip install .
