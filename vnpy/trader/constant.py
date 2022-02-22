@@ -158,6 +158,7 @@ class Currency(Enum):
     USD = "USD"
     HKD = "HKD"
     CNY = "CNY"
+    CNH = "CNH"
     EUR = "EUR"
     OTHERS = 'OTHERS'
 
