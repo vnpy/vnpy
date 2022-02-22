@@ -180,6 +180,8 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 在[这里](https://github.com/vnpy/vnpy/releases)下载最新版本，解压后运行以下命令安装：
 
+(setup.cfg中列举了VeighNa框架安装所需的依赖库，requirements.txt中列举了这些依赖库的推荐安装版本，默认安装推荐版本)
+
 **Windows**
 
 ```
