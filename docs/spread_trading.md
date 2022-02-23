@@ -253,11 +253,11 @@ main_engine.add_app(spread_trading)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/13.png)
 
-此时，【算法】组件显示，test策略调用SpreadTaker算法，分别在600和-300的位子上挂上买入和卖出委托；由于实际价格没有达到这2个阈值，故委托一直挂着，其委托状态为【未成交】。
+此时，【算法】组件显示，test策略调用SpreadTaker算法，分别在-300和800的位子上挂上买入和卖出委托；由于实际价格没有达到这2个阈值，故委托一直挂着，其委托状态为【未成交】。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/14.png)
 
-【策略】组件中【trading】字段从【True】变为【False】，如下图所示：
+【策略】组件中【trading】字段从【False】变为【True】，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/24.png)
 

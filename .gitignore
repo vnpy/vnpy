@@ -19,7 +19,7 @@ build
 dist
 *.local
 
-# vn.py
+# VeighNa
 .vntrader
 
 # Visual Studio intermediate files

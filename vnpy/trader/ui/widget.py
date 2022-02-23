@@ -9,13 +9,11 @@ from typing import Any, Dict
 from copy import copy
 from tzlocal import get_localzone
 
-from PyQt5 import QtCore, QtGui, QtWidgets, Qt
 import importlib_metadata
 
-import vnpy
-from vnpy.event import Event, EventEngine
+from .qt import QtCore, QtGui, QtWidgets
 from ..constant import Direction, Exchange, Offset, OrderType
-from ..engine import MainEngine
+from ..engine import MainEngine, Event, EventEngine
 from ..event import (
     EVENT_QUOTE,
     EVENT_TICK,
@@ -1134,6 +1132,8 @@ class AboutDialog(QtWidgets.QDialog):
         """"""
         self.setWindowTitle("关于Veighna Trader")
 
+        from ... import __version__ as vnpy_version
+
         text = f"""
             By Traders, For Traders.
 
@@ -1145,12 +1145,11 @@ class AboutDialog(QtWidgets.QDialog):
             Github：www.github.com/vnpy/vnpy
 
 
-            vn.py - {vnpy.__version__}
+            VeighNa - {vnpy_version}
             Python - {platform.python_version()}
-            PyQt5 - {Qt.PYQT_VERSION_STR}
+            PySide6 - {importlib_metadata.version("pyside6")}
             NumPy - {importlib_metadata.version("numpy")}
             pandas - {importlib_metadata.version("pandas")}
-            RQData - {importlib_metadata.version("rqdatac")}
             """
 
         label = QtWidgets.QLabel()

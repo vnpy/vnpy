@@ -72,7 +72,7 @@ main_engine.add_app(AlgoTradingApp)
 
 ## 启动算法
 
-目前vn.py共提供了六种常用的示例算法。本文档以时间加权平均算法（TWAP）为例，介绍算法启动过程。
+目前VeighNa共提供了六种常用的示例算法。本文档以时间加权平均算法（TWAP）为例，介绍算法启动过程。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/3.png)
 

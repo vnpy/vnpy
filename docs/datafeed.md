@@ -1,7 +1,7 @@
 # DataFeed - 数据服务
 
 
-对于数据服务，vn.py提供了标准化的接口BaseDatafeed（位于vnpy.trader.datafeed中），实现了更加灵活的数据服务支持。在全局配置中，和数据服务相关的字段全部都以datafeed作为前缀。
+对于数据服务，VeighNa提供了标准化的接口BaseDatafeed（位于vnpy.trader.datafeed中），实现了更加灵活的数据服务支持。在全局配置中，和数据服务相关的字段全部都以datafeed作为前缀。
 
 具体字段含义如下：
 - datafeed.name：数据服务接口的名称，必须为全称的小写英文字母；
@@ -12,7 +12,7 @@
 
 ## RQData
 
-米筐RQData一直以来都是我们vn.py官方团队长期推荐的数据服务，对于大部分个人投资者来说应该都是性价比比较高的选择：
+米筐RQData一直以来都是我们VeighNa官方团队长期推荐的数据服务，对于大部分个人投资者来说应该都是性价比比较高的选择：
 - 项目地址：[vnpy_rqdata](https://github.com/vnpy/vnpy_rqdata)
 - 数据分类：股票、期货、期权、基金和黄金TD
 - 数据周期：日线、小时线、分钟线、TICK（实时更新）

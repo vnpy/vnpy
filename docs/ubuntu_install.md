@@ -6,14 +6,14 @@
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/9.png)
 
-## 安装vn.py
+## 安装VeighNa
 
 ### 下载源代码
 
-下载最新版本的vn.py源代码（Ubuntu系统请选择tar.gz格式）：
+下载最新版本的VeighNa源代码（Ubuntu系统请选择tar.gz格式）：
 
-- [vn.py Github下载地址](https://github.com/vnpy/vnpy/releases)
-- [vn.py gitee下载地址](https://gitee.com/mirrors/vn-py/releases)
+- [VeighNa Github下载地址](https://github.com/vnpy/vnpy/releases)
+- [VeighNa gitee下载地址](https://gitee.com/mirrors/vn-py/releases)
 
 下载完成后用tar命令解压文件，如下图所示。
 
@@ -21,7 +21,7 @@
 
 ### 执行一键安装
 
-安装vn.py前需要先安装gcc编译器，用于编译C++类接口文件。在终端中运行以下命令：
+安装VeighNa前需要先安装gcc编译器，用于编译C++类接口文件。在终端中运行以下命令：
 
 ```
 sudo apt-get update
@@ -32,7 +32,7 @@ sudo apt-get install build-essential
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/11.png)
 
-然后进入之前解压出来的vn.py源代码目录（包含install.sh这个文件）
+然后进入之前解压出来的VeighNa源代码目录（包含install.sh这个文件）
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/20.png)
 
@@ -47,14 +47,14 @@ sudo apt-get install build-essential
 1. 下载安装ta-lib库和numpy；
 2. 安装requirements.txt文件内的相关依赖库；
 3. 使用local-gen安装中文编码（针对英文系统）；
-4. 安装vn.py本身。
+4. 安装VeighNa本身。
 
 > 若是在虚拟机上运行，请把内存调至4G以上，否则会报错内存不足。
 
 
 ## 启动Veighna Trader
 
-进入解压vn.py源代码的目录下，在文件夹examples/vn_trader中找到run.py文件。
+进入解压VeighNa源代码的目录下，在文件夹examples/vn_trader中找到run.py文件。
 
 点击鼠标右键打开终端，输入如下命令即可启动Veighna Trader：
 

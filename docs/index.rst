@@ -1,4 +1,4 @@
-vn.py项目文档
+VeighNa项目文档
 ~~~~~~~~~
 
 .. toctree::

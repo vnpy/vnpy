@@ -4,9 +4,10 @@ from vnpy.event import EventEngine, Event
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import MainWindow, create_qapp
 from vnpy.trader.event import EVENT_LOG
-from vnpy.gateway.ctp import CtpGateway
-from vnpy.app.rpc_service import RpcServiceApp
-from vnpy.app.rpc_service.engine import EVENT_RPC_LOG
+
+from vnpy_ctp import CtpGateway
+from vnpy_rpcservice import RpcServiceApp
+from vnpy_rpcservice.rpc_service.engine import EVENT_RPC_LOG
 
 
 def main_ui():

@@ -75,12 +75,16 @@ class MainEngine:
         self.engines[engine.engine_name] = engine
         return engine
 
-    def add_gateway(self, gateway_class: Type[BaseGateway]) -> BaseGateway:
+    def add_gateway(self, gateway_class: Type[BaseGateway], gateway_name: str = "") -> BaseGateway:
         """
         Add gateway.
         """
-        gateway = gateway_class(self.event_engine)
-        self.gateways[gateway.gateway_name] = gateway
+        # Use default name if gateway_name not passed
+        if not gateway_name:
+            gateway_name = gateway_class.default_name
+
+        gateway = gateway_class(self.event_engine, gateway_name)
+        self.gateways[gateway_name] = gateway
 
         # Add gateway supported exchanges into engine
         for exchange in gateway.exchanges:
@@ -272,7 +276,7 @@ class LogEngine(BaseEngine):
 
         self.level: int = SETTINGS["log.level"]
 
-        self.logger: Logger = logging.getLogger("vn.py")
+        self.logger: Logger = logging.getLogger("veighna")
         self.logger.setLevel(self.level)
 
         self.formatter = logging.Formatter(
