@@ -524,6 +524,7 @@ class AccountMonitor(BaseMonitor):
 
     headers = {
         "accountid": {"display": "账号", "cell": BaseCell, "update": False},
+        "currency": {"display": "币种", "cell": BaseCell, "update": False},
         "balance": {"display": "余额", "cell": BaseCell, "update": True},
         "frozen": {"display": "冻结", "cell": BaseCell, "update": True},
         "available": {"display": "可用", "cell": BaseCell, "update": True},

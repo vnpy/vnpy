@@ -13,6 +13,9 @@ from vnpy_okex import OkexGateway
 from vnpy_esunny import EsunnyGateway
 from vnpy_ctptest import CtptestGateway
 from vnpy_tap import TapGateway
+from vnpy_portfoliomanager import PortfolioManagerApp, PortfolioEngine
+from vnpy_datarecorder import DataRecorderApp
+from vnpy_optionmaster import OptionMasterApp
 
 
 def main():
@@ -32,6 +35,9 @@ def main():
     main_engine.add_app(CtaBacktesterApp)
     main_engine.add_app(SpreadTradingApp)
     main_engine.add_app(RiskManagerApp)
+    main_engine.add_app(PortfolioManagerApp)
+    main_engine.add_app(DataRecorderApp)
+    main_engine.add_app(OptionMasterApp)
 
 
     main_window = MainWindow(main_engine, event_engine)

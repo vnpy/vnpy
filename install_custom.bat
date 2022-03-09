@@ -5,3 +5,4 @@ call D:\wc-vnstudio\Scripts\activate.bat
 echo env switch complete
 pip install --upgrade git+git://github.com/fsksf/vnpy.git
 pip install --upgrade git+git://github.com/fsksf/vnpy_ctastrategy.git
+pip install --upgrade git+git://github.com/fsksf/vnpy_tap.git
