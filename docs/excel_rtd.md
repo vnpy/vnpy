@@ -37,7 +37,7 @@ pyxll install
 
 如果你没有具体制定哪个文件夹，则会安装到图中的默认位置，因为后面还需要进入这个文件夹，所以需要用户记住这个路径。
 
-接着进入该目录下的examples目录，并把路劲~/vnstudio/Lib/site-packages/vnpy_excelrtd/下的vnpy_rtd放入该目录，如下图所示：
+接着进入该目录下的examples目录，并把路径~/vnstudio/Lib/site-packages/vnpy_excelrtd/下的vnpy_rtd放入该目录，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/excel_rtd/excel_rtd_5.png)
 
