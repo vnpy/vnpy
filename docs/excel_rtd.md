@@ -17,15 +17,7 @@ RTD全称是RealTimeData，是微软提供的主要面向金融行业中实时�
 
 这时需要填写相应字段，其中**Python Version**选择Python3.10，而**Excel Version**则根据自己安装的Excel版本选择，一般为64bit(x64)。
 
-填写完之后点击【Download PyXLL】，就会跳转到下载页面，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/excel_rtd/excel_rtd_3.png)
-
-将文件下载好之后，进入放置该文件的文件夹，按住shift键并且点击鼠标右键，选择【在此处打开PowerShell窗口】，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/excel_rtd/excel_rtd_4.png)
-
-运行以下命令：
+填写完之后点击【Download PyXLL】，就会跳转到下载页面。将文件下载好之后，进入放置该文件的文件夹，按住shift键并且点击鼠标右键，选择【在此处打开PowerShell窗口】，运行以下命令：
 ```bash
 pip install pyxll
 pyxll install
