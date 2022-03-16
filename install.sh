@@ -13,7 +13,7 @@ $python -m pip install --upgrade pip wheel
 function install-ta-lib()
 {   
     # install numpy first
-    $python -m pip install numpy==1.18.2
+    $python -m pip install numpy==1.21.5
 
     mkdir -p $prefix
     pushd $prefix
@@ -28,7 +28,7 @@ function install-ta-lib()
     echo "export LD_LIBRARY_PATH=$prefix/lib:\$LD_LIBRARY_PATH" >> ~/.bashrc
     export LD_LIBRARY_PATH=$prefix/lib:\$LD_LIBRARY_PATH
     
-    CPPFLAGS="-I$prefix/include" LDFLAGS="-L$prefix/lib" pip install ta-lib==0.4.17
+    CPPFLAGS="-I$prefix/include" LDFLAGS="-L$prefix/lib" pip install ta-lib==0.4.24
 }
 function ta-lib-exists()
 {
