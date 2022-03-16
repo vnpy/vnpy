@@ -172,7 +172,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 ## 环境准备
 
-* 推荐使用VeighNa团队为量化交易专门打造的Python发行版[Veighna Studio-3.0.0](https://download.vnpy.com/veighna-studio-3.0.0.exe)，内置了最新版的VeighNa框架以及Veighna Station量化管理平台，无需手动安装
+* 推荐使用VeighNa团队为量化交易专门打造的Python发行版[VeighNa Studio-3.0.0](https://download.vnpy.com/veighna-studio-3.0.0.exe)，内置了最新版的VeighNa框架以及VeighNa Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 10以上 / Windows Server 2016以上 / Ubuntu 20.04 LTS以上
 * 支持的Python版本：Python 3.7/ 3.8 / 3.9 / 3.10 64位（**推荐使用Python 3.10**）
 
@@ -204,19 +204,19 @@ bash install_osx.sh
 
 1. 在[SimNow](http://www.simnow.com.cn/)注册CTP仿真账号，并在[该页面](http://www.simnow.com.cn/product.action)获取经纪商代码以及交易行情服务器地址。
 
-2. 在[VeighNa社区论坛](https://www.vnpy.com/forum/)注册获得Veighna Station账号密码（论坛账号密码即是）
+2. 在[VeighNa社区论坛](https://www.vnpy.com/forum/)注册获得VeighNa Station账号密码（论坛账号密码即是）
 
-3. 启动Veighna Station（安装Veighna Studio后会在桌面自动创建快捷方式），输入上一步的账号密码登录
+3. 启动VeighNa Station（安装VeighNa Studio后会在桌面自动创建快捷方式），输入上一步的账号密码登录
 
-4. 点击底部的**Veighna Trader**按钮，开始你的交易！！！
+4. 点击底部的**VeighNa Trader**按钮，开始你的交易！！！
 
 注意：
 
-* 在Veighna Trader的运行过程中请勿关闭Veighna Station（会自动退出）
+* 在VeighNa Trader的运行过程中请勿关闭VeighNa Station（会自动退出）
 
 ## 脚本运行
 
-除了基于Veighna Station的图形化启动方式外，也可以在任意目录下创建run.py，写入以下示例代码：
+除了基于VeighNa Station的图形化启动方式外，也可以在任意目录下创建run.py，写入以下示例代码：
 
 ```Python
 from vnpy.event import EventEngine
@@ -229,7 +229,7 @@ from vnpy_ctabacktester import CtaBacktesterApp
 
 
 def main():
-    """Start Veighna Trader"""
+    """Start VeighNa Trader"""
     qapp = create_qapp()
 
     event_engine = EventEngine()
@@ -249,7 +249,7 @@ if __name__ == "__main__":
     main()
 ```
 
-在该目录下打开CMD（按住Shift->点击鼠标右键->在此处打开命令窗口/PowerShell）后运行下列命令启动Veighna Trader：
+在该目录下打开CMD（按住Shift->点击鼠标右键->在此处打开命令窗口/PowerShell）后运行下列命令启动VeighNa Trader：
 
     python run.py
 

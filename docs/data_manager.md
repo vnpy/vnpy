@@ -6,9 +6,9 @@ DataManager是用于**历史数据管理**的功能模块，用户可以通过�
 
 ## 加载启动
 
-### Veighna Station加载
+### VeighNa Station加载
 
-启动登录Veighna Station后，点击【Veighna Trader】按钮，在配置对话框中的【上层应用】栏勾选【DataManager】。
+启动登录VeighNa Station后，点击【VeighNa Trader】按钮，在配置对话框中的【上层应用】栏勾选【DataManager】。
 
 ### 脚本加载
 
@@ -25,7 +25,7 @@ main_engine.add_app(DataManagerApp)
 
 ## 启动模块
 
-启动Veighna Trader后，在菜单栏中点击【功能】-> 【数据管理】，或者点击左侧按钮栏的图标：
+启动VeighNa Trader后，在菜单栏中点击【功能】-> 【数据管理】，或者点击左侧按钮栏的图标：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/data_manager/00.png)
 
@@ -73,7 +73,7 @@ DataManager模块提供了一键下载历史数据的功能，点击右上角【
 
 ### 数据来源：IB（外盘期货、股票、现货等）
 
-Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据下载（包括股票、期货、期权、现货等），注意下载前需要先启动IB TWS交易软件，并在Veighna Trader主界面连接好IB接口，并订阅所需合约行情。
+Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据下载（包括股票、期货、期权、现货等），注意下载前需要先启动IB TWS交易软件，并在VeighNa Trader主界面连接好IB接口，并订阅所需合约行情。
 
 
 ## 导入数据
@@ -112,7 +112,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 ## 查看数据
 
-目前Veighna Trader中获取数据的方式一共有三种：
+目前VeighNa Trader中获取数据的方式一共有三种：
 
 - 通过数据服务或者交易接口下载
 
