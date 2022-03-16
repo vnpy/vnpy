@@ -7,9 +7,9 @@ OptionMaster是用于**期权交易**的功能模块，用户可以通过OptionM
 
 ## 加载启动
 
-### Veighna Station加载
+### VeighNa Station加载
 
-启动登录Veighna Station后，点击【Veighna Trader】按钮，在配置对话框中的【上层应用】栏勾选【OptionMaster】。
+启动登录VeighNa Station后，点击【VeighNa Trader】按钮，在配置对话框中的【上层应用】栏勾选【OptionMaster】。
 
 ### 脚本加载
 
@@ -26,7 +26,7 @@ main_engine.add_app(OptionMasterApp)
 
 ## 启动模块
 
-启动Veighna Trader后，在菜单栏中点击【功能】-> 【期权交易】，或者点击左侧按钮栏的图标：
+启动VeighNa Trader后，在菜单栏中点击【功能】-> 【期权交易】，或者点击左侧按钮栏的图标：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/option_master/1.png)
 
@@ -99,7 +99,7 @@ main_engine.add_app(OptionMasterApp)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/option_master/5.png)
 
-整体使用方法和Veighna Trader主界面的交易组件相似，输入合约代码、买卖方向、开平方向、交易价格和数量后，点击【委托】按钮即可发出限价委托，点击【全撤】按钮即可一键全撤当前的全部活动委托。
+整体使用方法和VeighNa Trader主界面的交易组件相似，输入合约代码、买卖方向、开平方向、交易价格和数量后，点击【委托】按钮即可发出限价委托，点击【全撤】按钮即可一键全撤当前的全部活动委托。
 
 双击T型报价中某一期权的单元格，可以快速填充本窗口的【代码】编辑框。
 

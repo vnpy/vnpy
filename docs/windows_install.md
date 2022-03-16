@@ -7,35 +7,35 @@
 
 > 其他版本的Windows系统安装时可能遇到各种依赖库问题，不推荐使用。
 
-在Windows系统上安装VeighNa，推荐使用官方推出的【Veighna Studio Python发行版】，**尤其是初次接触Python的编程新手**。
+在Windows系统上安装VeighNa，推荐使用官方推出的【VeighNa Studio Python发行版】，**尤其是初次接触Python的编程新手**。
 
-作为一站式的量化投研交易Python环境，Veighna Studio整合了：
+作为一站式的量化投研交易Python环境，VeighNa Studio整合了：
 
 - Python 3.7 64位（Python官网版本）
 - VeighNa和其他相关依赖库
-- Veighna Station（VeighNa框架的图形化管理工具）
+- VeighNa Station（VeighNa框架的图形化管理工具）
 
 对于已经有比较丰富的编程经验或者需要用到特定Python发行版（如Anaconda）的用户，也可以采用手动安装的方案。
 
 
-## Veighna Studio方案
+## VeighNa Studio方案
 
 ### 下载安装
 
-在[VeighNa官网](https://www.vnpy.com/)可以下载最新版本的Veighna Studio，如下图所示。
+在[VeighNa官网](https://www.vnpy.com/)可以下载最新版本的VeighNa Studio，如下图所示。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/15.png)
 
-下载完成后，双击安装包进入Veighna Studio安装向导，使用默认设置一路点击【下一步】按钮即可完成Veighna Studio安装，如下图所示：
+下载完成后，双击安装包进入VeighNa Studio安装向导，使用默认设置一路点击【下一步】按钮即可完成VeighNa Studio安装，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/2.png)
 
-> 推荐将Veighna Studio安装在默认路径的C:\vnstudio，其他VeighNa文档和教程中均使用该目录作为VeighNa安装目录进行讲解。
+> 推荐将VeighNa Studio安装在默认路径的C:\vnstudio，其他VeighNa文档和教程中均使用该目录作为VeighNa安装目录进行讲解。
 
 
-### 上手Veighna Station
+### 上手VeighNa Station
 
-双击桌面图标运行Veighna Station，输入账号密码或直接微信扫码即可登录，登录对话框如下图所示。
+双击桌面图标运行VeighNa Station，输入账号密码或直接微信扫码即可登录，登录对话框如下图所示。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/3.png)
 
@@ -45,14 +45,14 @@
 - 用户名自动使用注册时的微信【昵称】（不支持修改）；
 - 密码请牢记，该密码也同样用于登录[VeighNa社区论坛](https://www.vnpy.com/forum)
 
-登录成功后，即可进入到Veighna Station的主界面，如下图所示。
+登录成功后，即可进入到VeighNa Station的主界面，如下图所示。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/16.png)
 
 主界面窗口底部有6个按钮：
 
-- 【Veighna Trader Lite】直接运行Veighna Trader（只加载了CTP接口，提供CTA策略和回测功能）；
-- 【Veighna Trader】可以更改保存相关临时文件的目录，再运行Veighna Trader（可以个性化选择底层接口和上层应用模块）；
+- 【VeighNa Trader Lite】直接运行VeighNa Trader（只加载了CTP接口，提供CTA策略和回测功能）；
+- 【VeighNa Trader】可以更改保存相关临时文件的目录，再运行VeighNa Trader（可以个性化选择底层接口和上层应用模块）；
 - 【Jupyter Notebook】在指定的目录启动Jupyter Notebook，进行交互式的量化策略研究工作；
 - 【策略加密】使用Cython工具对原本为可读代码的Python策略文件进行加密，生成不可读的二进制pyd文件；
 - 【提问求助】在浏览器中打开VeighNa社区论坛，遇到问题可以通过相关版块提问求助；
@@ -95,11 +95,11 @@ install.bat
 
 如果某一步安装过程中发生错误，请截取保存命令行中的报错信息（**注意优先保存最底部的报错内容**），前往VeighNa社区论坛发帖提问寻求帮助。
 
-### 启动Veighna Trader
+### 启动VeighNa Trader
 
 启动命令行工具，进入解压VeighNa源代码的目录下，在文件夹examples/vn_trader中找到run.py文件。
 
-输入如下命令即可启动Veighna Trader：
+输入如下命令即可启动VeighNa Trader：
 
 ```
 python run.py 
