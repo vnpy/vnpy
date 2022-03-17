@@ -10,7 +10,7 @@ PortfolioManager是用于**投资组合盈亏统计和分析**的功能模块，
 
 ### VeighNa Station加载
 
-启动登录VeighNa Station后，点击【VeighNa Trader】按钮，在配置对话框中的【上层应用】栏勾选【PortfolioManager】。
+启动登录VeighNa Station后，点击【交易】按钮，在配置对话框中的【应用模块】栏勾选【PortfolioManager】。
 
 ### 脚本加载
 

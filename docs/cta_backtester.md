@@ -8,7 +8,7 @@ CtaBacktester是用于**CTA策略历史回测研究**的功能模块，用户可
 
 ### VeighNa Station加载
 
-启动登录VeighNa Station后，点击【VeighNa Trader】按钮，在配置对话框中的【上层应用】栏勾选【CtaBacktester】。
+启动登录VeighNa Station后，点击【交易】按钮，在配置对话框中的【应用模块】栏勾选【CtaBacktester】。
 
 ### 脚本加载
 
