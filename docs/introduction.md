@@ -35,41 +35,27 @@
 
   * CTP Mini（mini）：期货、期货期权
 
-  * CTP Mini测试（minitest）：期货、期货期权
-
   * 飞马（femas）：期货
 
   * CTP期权（sopt）：ETF期权
 
-  * CTP期权测试（sopttest）：ETF期权
+  * 顶点飞创（sec）：ETF期权
 
-  * 飞创期权（sec）：ETF期权
+  * 顶点HTS（hts）：ETF期权
 
   * 恒生UFT（uft）：期货、ETF期权
 
   * 易盛（esunny）：期货、黄金TD
 
-  * 恒生期权（hsoption）：ETF期权
-
   * 中泰XTP（xtp）：A股、两融、ETF期权
 
-  * 国泰君安（gtja）：A股
+  * 国泰君安统一交易网关（hft）：A股、两融
 
-  * 华鑫奇点股票（torastock）：A股
-
-  * 华鑫奇点期权（toraoption）：ETF期权
-
-  * 中亿汇达Comstar XBond（comstarxbond）：银行间市场
-
-  * 中亿汇达Comstar 双边（comstarquote）：银行间市场
+  * 东方证券OST（ost）：A股
 
   * 融航（rohon）：期货资管
 
   * TTS（tts）：期货
-
-  * 飞鼠（sgit）：黄金TD
-
-  * 金仕达黄金（ksgold）：黄金TD
 
 * 海外市场
 
@@ -94,7 +80,7 @@
 
 * spread_trading：多合约价差套利模块，除了允许用户通过手动的方式来启动算法买卖价差外，也同样支持用户使用策略模板SpreadStrategyTemplate来开发各种价差类的量化交易策略
 
-* algo_trading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等等，支持常用算法配置保存
+* algo_trading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等等。支持常用算法配置保存
 
 * option_master：期权波动率交易模块，提供波动率曲线图表，允许用户作出相应的判断分析，进而使用波动率管理组件设置定价参考波动率，然后就可以通过期权电子眼算法自动扫描市场上的最优交易机会并瞬时完成交易
 
@@ -108,7 +94,7 @@
 
 * excel_rtd：EXCEL RTD模块，RTD全称是RealTimeData，是微软主要为金融行业的实时数据需求设计的Excel数据对接方案。该模块用于实现在Excel中访问VeighNa程序内任意数据信息的功能
 
-* data_manager：历史数据管理模块，是VeighNa Trader内部针对历史数据的全功能管理工具，可以支持数据导入、数据查看以及数据导出等功能，支持自定义数据表头格式
+* data_manager：历史数据管理模块，是VeighNa Trader内部针对历史数据的全功能管理工具。可以支持数据导入、数据查看以及数据导出等功能，支持自定义数据表头格式
 
 * data_recorder：行情记录模块，基于图形界面进行配置，根据需求实时录制Tick或者K线行情到数据库中，用于策略回测或者实盘初始化
 

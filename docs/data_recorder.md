@@ -8,7 +8,7 @@ DataRecorder是用于**实时行情记录**的模块，用户可以利用该模�
 
 ### VeighNa Station加载
 
-启动登录VeighNa Station后，点击【VeighNa Trader】按钮，在配置对话框中的【上层应用】栏勾选【DataRecorder】。
+启动登录VeighNa Station后，点击【交易】按钮，在配置对话框中的【应用模块】栏勾选【DataRecorder】。
 
 ### 脚本加载
 
