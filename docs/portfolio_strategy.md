@@ -6,9 +6,9 @@ PortfolioStrategy是用于**多合约组合策略实盘**的功能模块，用�
 
 ## 加载启动
 
-### Veighna Station加载
+### VeighNa Station加载
 
-启动登录Veighna Station后，点击【Veighna Trader】按钮，在配置对话框中的【上层应用】栏勾选【PortfolioStrategy】。
+启动登录VeighNa Station后，点击【交易】按钮，在配置对话框中的【应用模块】栏勾选【PortfolioStrategy】。
 
 ### 脚本加载
 
@@ -27,7 +27,7 @@ main_engine.add_app(PortfolioStrategyApp)
 
 <span id="jump">
 
-对于用户自行开发的策略，需要放到Veighna Trader运行时目录下的**strategies**目录中，才能被识别加载。具体的运行时目录路径，可以在Veighna Trader主界面顶部的标题栏查看。
+对于用户自行开发的策略，需要放到VeighNa Trader运行时目录下的**strategies**目录中，才能被识别加载。具体的运行时目录路径，可以在VeighNa Trader主界面顶部的标题栏查看。
 
 对于在Windows上默认安装的用户来说，放置策略的strategies目录路径通常为：
 
@@ -39,7 +39,7 @@ main_engine.add_app(PortfolioStrategyApp)
 
 </span>
 
-在启动模块之前，请先连接交易接口（连接方法详见基本使用篇的连接接口部分）。看到Veighna Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：
+在启动模块之前，请先连接交易接口（连接方法详见基本使用篇的连接接口部分）。看到VeighNa Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/1.png)
 
@@ -125,7 +125,7 @@ main_engine.add_app(PortfolioStrategyApp)
 
 在上一步策略初始化的过程中，尽管策略同样在接收（历史）数据，并调用对应的功能函数，但因为【trading】状态为【False】，所以并不会有任何真正的委托下单操作或者交易相关的日志信息输出。
 
-如果启动之后，策略发出了委托，可以去Veighna Trader主界面【委托】栏查看委托订单细节，如下图所示：
+如果启动之后，策略发出了委托，可以去VeighNa Trader主界面【委托】栏查看委托订单细节，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/9.png)
 
@@ -142,7 +142,7 @@ main_engine.add_app(PortfolioStrategyApp)
 
 此时可观察到该策略实例的【trading】状态已变为【False】，说明此时该策略实例已经停止自动交易了。
 
-在多合约组合策略的实盘交易过程中，正常情况应该让策略在整个交易时段中都自动运行，尽量不要有额外的暂停重启类操作。对于国内期货市场来说，应该在交易时段开始前，启动策略的自动交易，然后直到收盘后，再关闭自动交易。因为现在CTP夜盘收盘后也会关闭系统，早上开盘前重启，所以夜盘收盘后也需要停止策略，关闭Veighna Trader了。
+在多合约组合策略的实盘交易过程中，正常情况应该让策略在整个交易时段中都自动运行，尽量不要有额外的暂停重启类操作。对于国内期货市场来说，应该在交易时段开始前，启动策略的自动交易，然后直到收盘后，再关闭自动交易。因为现在CTP夜盘收盘后也会关闭系统，早上开盘前重启，所以夜盘收盘后也需要停止策略，关闭VeighNa Trader了。
 
 ### 编辑
 

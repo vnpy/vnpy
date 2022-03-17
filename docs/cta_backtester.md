@@ -6,9 +6,9 @@ CtaBacktester是用于**CTA策略历史回测研究**的功能模块，用户可
 
 ## 加载启动
 
-### Veighna Station加载
+### VeighNa Station加载
 
-启动登录Veighna Station后，点击【Veighna Trader】按钮，在配置对话框中的【上层应用】栏勾选【CtaBacktester】。
+启动登录VeighNa Station后，点击【交易】按钮，在配置对话框中的【应用模块】栏勾选【CtaBacktester】。
 
 ### 脚本加载
 
@@ -25,7 +25,7 @@ main_engine.add_app(CtaBacktesterApp)
 
 ## 启动模块
 
-对于用户自行开发的策略，需要放到Veighna Trader运行时目录下的**strategies**目录中，才能被识别加载。具体的运行时目录路径，可以在Veighna Trader主界面顶部的标题栏查看。
+对于用户自行开发的策略，需要放到VeighNa Trader运行时目录下的**strategies**目录中，才能被识别加载。具体的运行时目录路径，可以在VeighNa Trader主界面顶部的标题栏查看。
 
 对于在Windows上默认安装的用户来说，放置策略的strategies目录路径通常为：
 
@@ -35,7 +35,7 @@ C:\Users\Administrator\strategies
 
 其中Administrator为当前登录Windows的系统用户名。
 
-启动Veighna Trader后，在菜单栏中点击【功能】-> 【CTA回测】，或者点击左侧按钮栏的图标：
+启动VeighNa Trader后，在菜单栏中点击【功能】-> 【CTA回测】，或者点击左侧按钮栏的图标：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/00.png)
 
@@ -81,7 +81,7 @@ C:\Users\Administrator\strategies
 
 ### 数据来源：IB（外盘期货、股票、现货等）
 
-Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据下载（包括股票、期货、期权、现货等），注意下载前需要先启动IB TWS交易软件，并在Veighna Trader主界面连接好IB接口，并订阅所需合约行情。下载成功如下图所示：
+Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据下载（包括股票、期货、期权、现货等），注意下载前需要先启动IB TWS交易软件，并在VeighNa Trader主界面连接好IB接口，并订阅所需合约行情。下载成功如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/28.png)
 
@@ -103,8 +103,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
   - 合约乘数：合约的交易单位；
   - 价格跳动：合约价格的最小变动价位；
   - 回测资金：账户资金；
-  - 合约模式：
-    - 正向：除反向合约外，其他所有的金融市场（股票、期货、期权等）采用的规则。
+  - 合约模式：正向。
 
 配置完成后，点击下方的【开始回测】按钮，会弹出策略参数配置对话框，用于设置策略参数，如下图所示：
 
@@ -114,7 +113,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/10.png)
 
-回测完成后，会自动在右侧区域显示策略回测业绩的统计指标以及相关图表：
+回测完成后，会自动在右侧区域显示策略回测业绩的统计指标以及相关图表，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/30.png)
 
@@ -271,8 +270,6 @@ K线图表中的图例说明可以在窗口底部看到，整体上采用了国�
 6. 以上3-5步为一次完整的种群迭代，在整个优化过程中需要多次重复；
 7. 多次迭代后，种群内差异性减少，参数收敛向最优解，最终输出结果。
 
-注意以上结果为遗传算法优化的帕累托解集，可以是1个或者数个参数组合，而不会像穷举算法包含全部参数组合。
-
 ### 优化结果分析
 
 优化完成后，会在日志区域输出信息提示：
@@ -292,19 +289,13 @@ K线图表中的图例说明可以在窗口底部看到，整体上采用了国�
 
 ### 代码编辑
 
-Veighna Trader内置了轻量级策略编辑器，在CtaBacktester界面左上角的下拉框中选择策略后，点击左下角的【代码编辑】按钮，即可打开：
+如果需要对策略进行修改，在CtaBacktester界面左上角的下拉框中选择策略后，点击左下角的【代码编辑】按钮，即可自动打开Visual Studio Code进行代码编辑。若找不到Visual Studio Code，则会弹出启动代码编辑器失败对话框，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/57.png)
-
-该编辑器基于Qscitinlla开发，提供常规的语法高亮、自动补全、代码折叠等功能，同时也可以通过按住Ctrl键滚动鼠标滚轮来进行字体大小的缩放。
-
-修改完成后，点击窗口右上角关闭按钮时会弹出下图对话框，需要选择【Save】按钮保存修改后的策略文件：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/58.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/61.png)
 
 ### 策略重载
 
-当用户在CtaBacktester打开时，对策略源代码进行修改后（不管是用内置的策略编辑器，还是外部编辑器，如VSCode），此时的修改尚停留在硬盘上的代码文件层面，内存中依然是修改前的策略代码。
+当用户通过CtaBacktester对策略源代码进行修改后，此时的修改尚停留在硬盘上的代码文件层面，内存中依然是修改前的策略代码。
 
 想让修改内容在内存中立即生效，需要点击左下角的【策略重载】按钮，此时CtaBacktester会自动扫描并重新加载所有策略文件中的策略代码，同时会有相关日志输出，如下图所示：
 

@@ -168,7 +168,7 @@
 2. 在MainWindow的AboutDialog中，基于importlib_metadata模块来获取版本信息
 3. 隐藏所有对话框右上角的【？】按钮
 4. 将易盛外盘TapGateway的合约信息，从行情接口获取改为交易接口获取（避免外盘合约size为0的问题）
-5. 改进Veighna Trader的异常捕捉对话框弹出方式，避免多次重复报错情况下的程序卡死崩溃
+5. 改进VeighNa Trader的异常捕捉对话框弹出方式，避免多次重复报错情况下的程序卡死崩溃
 
 ## 修复
 1. 修复Linux下安装时，对于已经剥离的XTP API的自动编译操作

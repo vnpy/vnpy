@@ -8,7 +8,7 @@
 - datafeed.username：数据服务的用户名；
 - datafeed.password：数据服务的密码。
 
-以上字段对于所有数据服务都是必填的，如果是token方式授权请填写在datafeed.password字段中。目前Veighna Trader支持以下七种数据服务，**具体每个数据服务的细节可在对应的项目地址中找到**。
+以上字段对于所有数据服务都是必填的，如果是token方式授权请填写在datafeed.password字段中。目前VeighNa Trader支持以下七种数据服务，**具体每个数据服务的细节可在对应的项目地址中找到**。
 
 ## RQData
 

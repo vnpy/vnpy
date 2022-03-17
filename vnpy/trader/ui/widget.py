@@ -1130,14 +1130,14 @@ class AboutDialog(QtWidgets.QDialog):
 
     def init_ui(self) -> None:
         """"""
-        self.setWindowTitle("关于Veighna Trader")
+        self.setWindowTitle("关于VeighNa Trader")
 
         from ... import __version__ as vnpy_version
 
         text = f"""
             By Traders, For Traders.
 
-            Created by Veighna Technology
+            Created by VeighNa Technology
 
 
             License：MIT
