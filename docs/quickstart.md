@@ -4,14 +4,12 @@
 
 ### 图形模式
 
-启动登录VeighNa Station后，用户可通过以下两种方式进入VeighNa Trader：
-- 点击【VN Trade Lite】按钮，快速进入VeighNa Trader Lite（底层接口只包含CTP接口，功能模块只包含CTA策略模块和CTA回测模块）；
-- 点击【VeighNa Trader】按钮，勾选所需的底层接口和上层应用，点击【启动】按钮进入VeighNa Trader，如下图所示：
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/18.png)
+启动登录VeighNa Station后，用户可通过点击【交易】按钮，勾选所需的交易接口和应用模块，点击【启动】按钮进入VeighNa Trader，如下图所示：
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/22.png)
 
 ### 脚本模式
 
-在文件夹examples/vn_trader中找到run.py文件(不是vnstudio下的，需要在github上单独下载）。运行run.py即可进入VeighNa Trader。
+在文件夹examples/vn_trader中找到run.py文件(不是veighna_studio下的，需要在gitee上下载源码）。运行run.py即可进入VeighNa Trader。
 
 - 以Win10系统为例，用户可在run.py所在文件夹内按住【Shift】，同时点击鼠标右键，选择【在此处打开 powershell 窗口】，在弹出窗口中，输入如下命令，即可启动VeighNa Trader。
    ```bash
@@ -20,7 +18,7 @@
    ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/3.png)
 
 启动成功的VeighNa Trader如下图所示：
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/10.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/23.png)
 
 ## 连接接口
 
@@ -57,11 +55,11 @@
 
 ## 订阅行情
 
-在交易组件输入交易所和合约代码，按回车键即可订阅行情，如订阅铁矿石期货时，交易所填写DCE，代码填写对应合约代码i2106。
+在交易组件输入交易所和合约代码，按回车键即可订阅行情。如订阅股指期货时，交易所填写CFFEX，代码填写对应合约代码IF2206。
 
 订阅成功后，交易组件会显示合约名称，并且在下方显示深度行情报价，如最新价、买一价和卖一价，行情组件会显示最新行情信息，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/11.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/24.png)
 
 请注意，**输入的合约代码需与在菜单栏的【帮助】->【查询合约】功能中查到的一致**。
 
@@ -72,12 +70,12 @@
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/5.png)
 
-请注意，若委托类型为市价单，委托价格可不填；若交易接口只支持单向持仓（接口持仓方向支持详见交易接口篇），请勿填写开平方向。
+请注意，若委托类型为市价单，委托价格可不填；若交易接口只支持单向持仓（接口持仓方向支持详见交易接口篇），可不填写开平方向。
 
 发出委托后，本地会缓存委托相关信息，并显示到【委托】组件和【活动】组件，此时委托状态为【提交中】。
 
 交易所收到用户发送的委托后，会将其插入中央订单簿来进行撮合成交，并推送委托回报给用户：
-- 若委托还未成交，【委托】组件和【活动】组件只会更新时间和委托状态这两字段，委托状态变成【未成交】；
+- 若委托还未成交，【委托】组件和【活动】组件只会更新时间和委托状态这两个字段，委托状态变成【未成交】；
 - 若委托立刻成交，委托相关信息会从【活动】组件移除，新增至【成交】组件，委托状态变成【全部成交】。
 
 
@@ -103,7 +101,7 @@
 
 ### 活动组件
 
-活动组件用于存放还未成交的委托，如限价单或者没有立刻成交的市价单。在该组件中鼠标双击任一委托可以完成撤单操作，如下图所示：
+活动组件用于存放还未成交的委托，如有限价单或者没有立刻成交的市价单，在该组件中鼠标双击任一委托可以完成撤单操作，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/15.png)
 
@@ -159,7 +157,7 @@
 
 VeighNa官方提供了开箱即用的量化交易应用模块，在启动VeighNa Trader时勾选所需的功能模块，启动成功后在菜单栏中点击【功能】按钮，即可显示所勾选的功能模块，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/21.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/25.png)
 
 
 ## 全局配置
@@ -184,7 +182,7 @@ log.active, log.level, log.console和log.file用于对日志输出进行配置�
 
 - log.level：控制日志输出的级别，日志可以从轻到严重分成DEBUG、INFO、WARNING、ERROR、CRITICAL五个级别，分别对应10、20、30、40、50的整数值。如果日志等级低于该项设置值，将会被忽略。如果想要记录更详细的系统运行信息，建议将该项整数值调低；
 
-- log.console：console指的是终端，如Windows系统上的cmd和Powershell，以及Linux上的Terminal。当设置为True时，通过终端运行脚本来启动VeighNa Trader，日志信息会输出在终端中；如果通过VeighNa Station来直接启动VeighNa Trader，则无console输出；
+- log.console：console指的是终端，如Windows系统上的cmd和Powershell，以及Linux上的Terminal。当设置为True时，通过终端运行脚本（需要注册日志事件监听）来启动VeighNa Trader，日志信息会输出在终端中；如果通过VeighNa Station来直接启动VeighNa Trader，则无console输出；
 
 - log.file：该参数用于控制是否要将日志输出到文件中，建议设置为True，否则无法记录生成的日志。
 
