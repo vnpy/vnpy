@@ -267,7 +267,7 @@ CTA策略引擎一般输出的是全局信息。下图中除了策略实例名�
 
 点击【清空日志】前，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/69.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/66.png)
 
 点击【清空日志】后，如下图所示：
 
@@ -364,7 +364,6 @@ VeighNa的本地停止单有三个特点：
 回到VeighNa Trader主界面，也可以查看到详细的移仓委托和成交记录。如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/78.png)
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/79.png)
 
 
 ## CTA策略模板（CtaTemplate）
