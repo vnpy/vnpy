@@ -51,11 +51,21 @@
 
   * 国泰君安统一交易网关（hft）：A股、两融
 
+  * 华鑫奇点股票（torastock）：A股
+
+  * 华鑫奇点期权（toraoption）：ETF期权
+
+  * 中亿汇达Comstar（comstar）：银行间市场
+
   * 东方证券OST（ost）：A股
 
   * 融航（rohon）：期货资管
 
   * TTS（tts）：期货
+
+  * 飞鼠（sgit）：黄金TD
+
+  * 金仕达黄金（ksgold）：黄金TD
 
 * 海外市场
 
