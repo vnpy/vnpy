@@ -232,6 +232,8 @@ LevelDB是由Google推出的高性能Key/Value数据库，其特点如下：
 - 基于LSM算法实现进程内存储引擎；
 - 支持数十亿级别的海量数据。
 
+请注意，因为LevelDB目前不支持Python3.10，所以VeighNa Studio 3.0.0没有提供LevelDB支持。
+
 #### LevelDB配置字段
 | 字段名            | 值 | 是否必填 |
 |---------          |---- | ---- |
