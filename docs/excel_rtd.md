@@ -23,15 +23,15 @@ pip install pyxll
 pyxll install
 ```
 
-接着按照要求就能安装成功了。
+接着按照软件要求就能成功安装了。
 
 请注意，在执行到下图这一步时：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/excel_rtd/excel_rtd_9.png)
 
-如果没有具体指定路径，会安装到图中的默认位置。因为后面还需要进入这个文件夹，所以请记住这个路径。
+如果没有具体指定路径，会安装到图中的默认位置（因为后面还需要进入这个文件夹，所以请记住这个路径）。
 
-接着进入该目录下的examples目录，并把路径~/vnstudio/Lib/site-packages/vnpy_excelrtd/下的vnpy_rtd放入该目录，如下图所示：
+接着进入该目录下的examples目录，并把路径~/veighna_studio/Lib/site-packages/vnpy_excelrtd/下的vnpy_rtd.py放入该目录，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/excel_rtd/excel_rtd_5.png)
 
@@ -84,7 +84,7 @@ main_engine.add_app(ExcelRtdApp)
 
 上图是获取豆油2205四个字段实时数据（分别是bid_price_1、high_price、low_price以及last_price）的例子。
 
-从图中可以看出rtd_tick_data函数需要两个参数：一个是symbol，另一个是VeighNa中定义的TickData的属性（具体属性可参考源代码vnpy.trader.object.TickData）。这两个参数都是字符串，第一个参数可以通过单元格的具体位置指定，比如“A1”表示A列第1行的数据。
+从图中可以看出rtd_tick_data函数需要两个参数：一个是vt_symbol，另一个是VeighNa中定义的TickData的属性（具体属性可参考源代码vnpy.trader.object.TickData）。这两个参数都是字符串，第一个参数可以通过单元格的具体位置指定，比如“A1”表示A列第1行的数据。
 
 与此同时，在Excel RTD模块的图形界面中也能看到相应输出，如下图所示：
 
