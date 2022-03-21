@@ -75,7 +75,7 @@ TuShare是国内知名的开源Python金融数据接口项目，由大神Jimmy�
 
 ### 脚本加载
 
-在脚本中加载所需的包和数据结构
+#### 在脚本中加载所需的包和数据结构
 
 ```python 3
 from datetime import datetime
@@ -87,7 +87,7 @@ from vnpy.trader.object import HistoryRequest
 datafeed = get_datafeed()
 ```
 
-获取k线级别的历史数据
+#### 获取k线级别的历史数据
 
 ```python 3
 req = HistoryRequest(
@@ -107,7 +107,9 @@ req = HistoryRequest(
 data = datafeed.query_bar_history(req)
 ```
 
-获取tick级别的历史数据(由于tick数据量较大，下载前请先参考上文确认数据服务是否提供tick数据的下载服务)
+#### 获取tick级别的历史数据
+
+由于tick数据量较大，下载前请先参考上文确认数据服务是否提供tick数据的下载服务
 
 ```python 3
 req = HistoryRequest(
