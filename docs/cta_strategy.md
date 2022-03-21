@@ -133,7 +133,7 @@ C:\Users\Administrator\strategies
 
    为了确保策略内指标数值的准确性，每个策略实例都需要一定的历史数据来进行策略初始化。
 
-   因此，在策略初始化时，策略实例内部的load_bar函数会先去接口获取最新历史数据。如果接口不提供历史数据，则通过配置的数据服务获取（以RQData为例，RQData提供国内期货、股票以及期权的历史数据。RQData的数据服务提供盘中K线更新，即使在9点45分才启动策略，也能获取到之前从9点30开盘到9点45分之间的K线数据，提供给策略进行初始化计算，而不用担心数据缺失的问题）。如果没有配置数据服务，则通过访问本地数据库查询。这种情况下，用户需要保证数据库中的数据完整性（满足初始化需求），可以通过DataRecorder录制，或者使用DataManager从CSV文件导入。
+   因此，在策略初始化时，策略实例内部的load_bar函数会先去接口获取最新历史数据。如果接口不提供历史数据，则通过配置的数据服务获取（以RQData为例，[RQData](https://www.ricequant.com/welcome/purchase?utm_source=vnpy)提供国内期货、股票以及期权的历史数据。RQData的数据服务提供盘中K线更新，即使在9点45分才启动策略，也能获取到之前从9点30开盘到9点45分之间的K线数据，提供给策略进行初始化计算，而不用担心数据缺失的问题）。如果没有配置数据服务，则通过访问本地数据库查询。这种情况下，用户需要保证数据库中的数据完整性（满足初始化需求），可以通过DataRecorder录制，或者使用DataManager从CSV文件导入。
 
    具体载入数据的长度，取决于load_bar函数的参数控制（策略模板默认是10天）。数据载入后会以逐根K线（或者Tick）的方式推送给策略，实现内部变量的初始化计算，比如缓存K线序列、计算技术指标等。
 
@@ -267,7 +267,7 @@ CTA策略引擎一般输出的是全局信息。下图中除了策略实例名�
 
 点击【清空日志】前，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/69.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/66.png)
 
 点击【清空日志】后，如下图所示：
 
@@ -364,7 +364,6 @@ VeighNa的本地停止单有三个特点：
 回到VeighNa Trader主界面，也可以查看到详细的移仓委托和成交记录。如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/78.png)
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/79.png)
 
 
 ## CTA策略模板（CtaTemplate）
