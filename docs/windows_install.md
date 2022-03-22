@@ -42,7 +42,7 @@
 
 ### 使用
 
-安装成功后，打开cmd即可直接使用VeighNa Studio Python发行版。
+安装成功后，启动命令行工具即可直接使用VeighNa Studio Python发行版。
 
 输入python即可进入python的交互式环境，如下图所示：
 
