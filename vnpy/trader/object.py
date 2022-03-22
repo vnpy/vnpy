@@ -105,7 +105,7 @@ class BarData(BaseData):
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
 
 
-@dataclass
+@dataclass(eq=bool)
 class OrderData(BaseData):
     """
     Order data contains information for tracking lastest status
@@ -455,7 +455,7 @@ class QuoteRequest:
 
 
 @dataclass
-class BasketComponent:
+class BasketComponent(BaseData):
     basket_name: str
     symbol: str
     exchange: Exchange
@@ -478,3 +478,12 @@ class BasketComponent:
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
+
+    def cash_flag(self):
+        flg = int(self.substitute_flag)
+        if flg in (0, ):
+            return 0  # 禁止
+        elif flg in (1, 3, 5):
+            return 1  # 可以
+        else:
+            return 2  # 必须
