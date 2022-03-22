@@ -28,7 +28,7 @@ function install-ta-lib()
     echo "export LD_LIBRARY_PATH=$prefix/lib:\$LD_LIBRARY_PATH" >> ~/.bashrc
     export LD_LIBRARY_PATH=$prefix/lib:\$LD_LIBRARY_PATH
     
-    CPPFLAGS="-I$prefix/include" LDFLAGS="-L$prefix/lib" pip install ta-lib==0.4.24
+    CPPFLAGS="-I$prefix/include" LDFLAGS="-L$prefix/lib" $python -m pip install ta-lib==0.4.24
 }
 function ta-lib-exists()
 {
