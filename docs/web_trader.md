@@ -13,7 +13,7 @@ WebTrader采用了FastAPI作为后端服务器，支持REST主动请求调用和
 后端服务包括两个独立的进程：
 - 策略交易进程
   - 运行VeighNa Trader的进程，负责所有策略交易功能的运行；
-  - 启动了RpcServer用于对Web服务进程挺功能调用；
+  - 启动了RpcServer用于对Web服务进程功能调用；
 - Web服务进程
   - 运行了FastAPI的进程，负责对外提供Web访问的服务；
   - 启动了RpcClient用于调用策略交易进程的相关功能。
@@ -73,9 +73,7 @@ main_engine.add_app(WebTraderApp)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_2.png)
 
-这里包含了目前WebTrader支持的相关接口信息，下面我们结合vnpy_webtrader项目下提供的[Jupyter Notebook]进行相关的接口演示。
-
-[Jupyter Notebook]:https://github.com/vnpy/vnpy_webtrader/blob/main/script/test.ipynb
+这里包含了目前WebTrader支持的相关接口信息，下面结合vnpy_webtrader项目下提供的[Jupyter Notebook](https://github.com/vnpy/vnpy_webtrader/blob/main/script/test.ipynb)进行相关的接口演示。
 
 ### 获得令牌（token）
 ```python 3
@@ -93,13 +91,13 @@ r = requests.post(
 )
 token = r.json()["access_token"]
 ```
-首先导入相应的模块requests和json，接着定义url和用户名和密码，最后通过requests的post方法传入相应参数就能够获得令牌（token），后续访问使用各种接口直接传该token就行。
+首先导入相应的模块requests和json，接着定义url和用户名和密码，通过requests的post方法传入相应参数就能够获得令牌（token），后续访问使用各种接口直接传入token即可。
 
 ### 行情订阅
 ```
 r = requests.post(url + "tick/" + "cu2112.SHFE", headers={"Authorization":"Bearer" + token})
 ```
-通过该命令则实现了对合约cu2112.SHFE的订阅。同时可以在图形界面看到该合约的行情数据。
+通过上述命令可实现对合约cu2112.SHFE的订阅，同时可以在图形界面收到该合约的行情数据推送，入下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_4.png)
 
@@ -121,7 +119,7 @@ for name in ["tick", "contract", "account", "position", "order", "trade"]:
     if data:
         print(data[0])
 ```
-我们同样可以通过发出主动请求查询相关的数据，比如tick数据、合约数据、账户数据、 持仓数据、委托数据以及成交数据。
+如有需要，同样可以通过发出主动请求查询相关的数据，比如tick数据、合约数据、账户数据、 持仓数据、委托数据以及成交数据。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_5.png)
 
@@ -148,7 +146,7 @@ vt_orderid = r.json()
 
 print(vt_orderid)
 ```
-下单后同样能在图形化界面看到订单，如下图所示：
+下单后同样能在图形化界面看到委托信息，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_6.png)
 
@@ -178,7 +176,7 @@ while True:
 
 ws.close()
 ```
-通过Websocket同样可以被动接收策略交易进程推送过来的行情数据和委托数据等，如图：
+通过Websocket可以被动接收策略交易进程推送过来的行情数据和委托数据等，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_8.png)
 

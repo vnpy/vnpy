@@ -67,7 +67,7 @@ C:\Users\Administrator\strategies
 
 </span>
 
-全部填写完成后，点击下方【下载数据】按钮启动下载任务，成功后如下图所示：
+填写完成后，点击下方【下载数据】按钮启动下载任务，成功后如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/27.png)
 
@@ -195,7 +195,7 @@ Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/46.png)
 
-表格也支持一键将表内全部内容保存为CSV文件，在上一步右键弹出的菜单中，点击【保存数据】按钮，即可弹出如下图所示选择保存文件名的对话框：
+表格也支持一键将表内数据保存为CSV文件，在上一步右键弹出的菜单中，点击【保存数据】按钮，即可弹出如下图所示选择保存文件名的对话框：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_backtester/42.png)
 

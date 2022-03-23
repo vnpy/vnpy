@@ -59,7 +59,7 @@ main_engine.add_app(PaperAccountApp)
 - 清空所有持仓
   - 一键清空本地所有持仓数据。
 
-本地模拟交易模块同样可以和其他策略应用模块（如CtaStrategy模块、SpreadTrading模块等）一起使用，从而实现完全本地化的量化策略仿真交易测试。
+本地模拟交易模块同样可以和其他策略应用模块（如CtaStrategy模块、SpreadTrading模块等）一起使用，从而实现本地化的量化策略仿真交易测试。
 
 
 ## 数据监控

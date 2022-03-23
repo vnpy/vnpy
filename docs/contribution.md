@@ -9,7 +9,7 @@
 PR流程大致如下：
 
 ---
-1. [创建 Issue][CreateIssue] - 对于较大的改动(如新功能，大型重构等)最好先开issue讨论一下， 较小的improvement(如文档改进，bugfix等)直接发PR即可
+1. [创建 Issue][CreateIssue] - 对于较大的改动(如新功能，大型重构等)建议先开issue讨论一下， 较小的improvement(如文档改进，bugfix等)直接发PR即可
 
 2. Fork [VeighNa][#GithubVnpy] - 点击右上角**Fork**按钮
 
@@ -61,7 +61,7 @@ class ClassA:
 
 
 ### 代码格式
-我们对代码格式没有特别严格的要求，但是至少要符合pep8标准，并且额外要在类和所有函数下面带上docstring(就是一段"""""")。
+我们对代码格式没有特别严格的要求，但是至少要符合pep8标准，并且额外要在类和函数下面带上docstring(就是一段"""""")。
 
 要让代码符合pep8标准，写完代码之后使用[autopep8](https://github.com/hhatto/autopep8)格式化你的代码就可以了:  
 ```bash

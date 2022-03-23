@@ -86,7 +86,7 @@ main_engine.add_app(AlgoTradingApp)
 
 当有较多算法需要启动时，可以通过CSV文件来一次性批量启动。点击图形界面左侧的【CSV启动】按钮，在弹出的对话框中找到要导入的CSV文件后打开即可快速启动算法。
 
-请注意，CSV文件的格式应如下图所示，和左侧编辑区的各字段完全一致：
+请注意，CSV文件的格式应如下图所示，和左侧编辑区的各字段一致：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/12.png)
 

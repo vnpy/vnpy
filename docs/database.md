@@ -29,7 +29,7 @@ SQLite配置示例如下所示：
 
 ### MySQL
 
-MySQL是目前最流行的开源关系型数据库，其特点如下：
+MySQL是目前主流的开源关系型数据库，其特点如下：
  - 文档材料丰富，社区及用户活跃；
  - 支持多种操作系统，多种开发语言；
  - 可替换其他高性能NewSQL数据库兼容实现（如TiDB）。
@@ -206,7 +206,7 @@ DolphinDB配置示例如下所示：
 Arctic是由英国量化对冲基金Man AHL基于MongoDB开发的高性能金融时序数据库，其特点如下：
 - 支持直接存储pandas的DataFrame和numpy的ndaaray对象；
 - 允许对数据进行版本化管理（类似于数据库中的git），便于因子挖掘过程中的数据迭代管理；
-- 基于分块化存储和LZ4压缩，在网络和磁盘IO方面节省大量资源，实现最高每秒百万行的数据查询。
+- 基于分块化存储和LZ4压缩，在网络和磁盘IO方面节省大量资源，实现超高性能的数据查询。
 
 请注意，因为Arctic目前不支持Python3.10，所以VeighNa Studio 3.0.0没有提供Arctic支持。
 
@@ -231,6 +231,8 @@ LevelDB是由Google推出的高性能Key/Value数据库，其特点如下：
 - 定位为通用型数据存储方案；
 - 基于LSM算法实现进程内存储引擎；
 - 支持数十亿级别的海量数据。
+
+请注意，因为LevelDB目前不支持Python3.10，所以VeighNa Studio 3.0.0没有提供LevelDB支持。
 
 #### LevelDB配置字段
 | 字段名            | 值 | 是否必填 |
@@ -259,7 +261,7 @@ LevelDB配置示例如下所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/database/3.png)
 
-下载完成后得到msi格式的安装包，双击打开后选择【Full】模式，安装MySQL完整版，一路点击【Next】按钮即可完成安装。
+下载完成后得到msi格式的安装包，双击打开后选择【Full】模式安装MySQL，一路点击【Next】按钮即可完成安装。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/database/4.png)
 
