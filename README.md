@@ -130,7 +130,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
         * SQLite（[sqlite](https://www.github.com/vnpy/vnpy_sqlite)）：轻量级单文件数据库，无需安装和配置数据服务程序，VeighNa的默认选项，适合入门新手用户
 
-        * MySQL（[mysql](https://www.github.com/vnpy/vnpy_mysql)）：主流的开源关系型数据库，文档资料极为丰富，且可替换其他高NewSQL兼容实现（如TiDB）
+        * MySQL（[mysql](https://www.github.com/vnpy/vnpy_mysql)）：主流的开源关系型数据库，文档资料极为丰富，且可替换其他NewSQL兼容实现（如TiDB）
 
         * PostgreSQL（[postgresql](https://www.github.com/vnpy/vnpy_postgresql)）：特性更为丰富的开源关系型数据库，支持通过扩展插件来新增功能，只推荐熟手使用
 
@@ -164,7 +164,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 8. 跨进程通讯标准组件（rpc），用于实现分布式部署的复杂交易系统。
 
-9. Python高性能K线图表（hart），支持大数据量图表显示以及实时数据更新功能。
+9. Python高性能K线图表（chart），支持大数据量图表显示以及实时数据更新功能。
 
 10. [社区论坛](http://www.vnpy.com/forum)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括VeighNa项目的开发教程和Python在量化交易领域的应用研究等内容。
 
