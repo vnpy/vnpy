@@ -1,7 +1,7 @@
 # DataFeed - 数据服务
 
 
-对于数据服务，VeighNa提供了标准化的接口BaseDatafeed（位于vnpy.trader.datafeed中），实现了更加灵活的数据服务支持。在全局配置中，和数据服务相关的字段全部都以datafeed作为前缀。
+对于数据服务，VeighNa提供了标准化的接口BaseDatafeed（位于vnpy.trader.datafeed中），实现了更加灵活的数据服务支持。在全局配置中，和数据服务相关的字段都以datafeed作为前缀。
 
 具体字段含义如下：
 - datafeed.name：数据服务接口的名称，必须为全称的小写英文字母；
@@ -23,7 +23,7 @@
 
 ## UData
 
-恒有数UData是由恒生电子最新推出的云端数据服务，提供不限次、不限量的多种金融数据获取：
+恒有数UData是由恒生电子推出的云端数据服务，提供不限次、不限量的多种金融数据获取：
 - 项目地址：[vnpy_udata](https://github.com/vnpy/vnpy_udata)
 - 数据分类：股票、期货
 - 数据周期：分钟线（盘后更新）
@@ -40,7 +40,7 @@ TuShare是国内知名的开源Python金融数据接口项目，由大神Jimmy�
 
 
 ## TQSDK
-天勤TQSDK是由信易科技推出的Python程序化交易解决方案，提供当前所有可交易合约上市以来的全部历史数据获取：
+天勤TQSDK是由信易科技推出的Python程序化交易解决方案，提供当前可交易合约上市以来的历史数据获取：
 - 项目地址：[vnpy_tqsdk](https://github.com/vnpy/vnpy_tqsdk)
 - 数据分类：期货
 - 数据周期：分钟线（实时更新）

@@ -334,7 +334,7 @@ main_engine.add_app(spread_trading)
 
 ## 价差交易策略模板（SpreadStrategyTemplate）
 
-价差交易策略模板提供完整的信号生成和委托管理功能，用户可以基于该模板(位于vnpy_spreadtrading.template中)自行开发策略。
+价差交易策略模板提供了信号生成和委托管理功能，用户可以基于该模板(位于vnpy_spreadtrading.template中)自行开发策略。
 
 用户自行开发的策略可以放在用户运行文件夹下的[strategies](#jump)文件夹内。
 

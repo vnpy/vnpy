@@ -91,7 +91,7 @@ r = requests.post(
 )
 token = r.json()["access_token"]
 ```
-首先导入相应的模块requests和json，接着定义url和用户名和密码，最后通过requests的post方法传入相应参数就能够获得令牌（token），后续访问使用各种接口直接传入token即可。
+首先导入相应的模块requests和json，接着定义url和用户名和密码，通过requests的post方法传入相应参数就能够获得令牌（token），后续访问使用各种接口直接传入token即可。
 
 ### 行情订阅
 ```

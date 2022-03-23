@@ -22,7 +22,7 @@
 
 ### 下载安装
 
-在[VeighNa官网](https://www.vnpy.com/)可以下载最新版本的VeighNa Studio。
+在[VeighNa官网](https://www.vnpy.com/)可以下载VeighNa Studio安装包。
 
 下载完成后，双击安装包进入VeighNa Studio安装向导（推荐点击右键，选择【使用管理员身份运行】进行安装），使用默认设置点击【快速安装】按钮即可进行VeighNa Studio安装，如下图所示：
 
@@ -131,10 +131,10 @@ examples.run()
 
 ### 下载安装VeighNa  
 
-下载最新版本的VeighNa源代码（Windows系统请选择zip格式）：
+下载VeighNa源代码（Windows系统请选择zip格式）：
 
 - [VeighNa Github下载地址](https://github.com/vnpy/vnpy/releases)
-- [VeighNa gitee下载地址](https://gitee.com/mirrors/vn-py/releases)
+- [VeighNa Gitee下载地址](https://gitee.com/mirrors/vn-py/releases)
 
 下载完成后解压，然后启动命令行工具（CMD或者PowerShell），进入源代码所在的目录后（即install.bat文件所在的目录），输入下列命令运行脚本执行一键安装：
 
@@ -148,7 +148,7 @@ install.bat
 2. 安装requirements.txt文件内的相关依赖库；
 3. 安装VeighNa本身。
 
-如果某一步安装过程中发生错误，请截取保存命令行中的报错信息（**注意优先保存最底部的报错内容**），前往VeighNa社区论坛发帖提问寻求帮助。
+如果某一步安装过程中发生错误，请截取保存命令行中的报错信息（**注意优先保存底部的报错内容**），前往VeighNa社区论坛发帖提问寻求帮助。
 
 ### 启动VeighNa Trader
 

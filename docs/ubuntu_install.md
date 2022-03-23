@@ -11,10 +11,10 @@
 
 ### 下载源代码
 
-下载最新版本的VeighNa源代码（Ubuntu系统请选择tar.gz格式）：
+下载VeighNa源代码（Ubuntu系统请选择tar.gz格式）：
 
 - [VeighNa Github下载地址](https://github.com/vnpy/vnpy/releases)
-- [VeighNa gitee下载地址](https://gitee.com/mirrors/vn-py/releases)
+- [VeighNa Gitee下载地址](https://gitee.com/mirrors/vn-py/releases)
 
 下载完成后用tar命令解压文件，如下图所示。
 

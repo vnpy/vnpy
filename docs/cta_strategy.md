@@ -149,7 +149,7 @@ C:\Users\Administrator\strategies
 
    最后基于vt_symbol参数获取该策略所交易合约的信息，并订阅该合约的实时行情推送。如果实盘交易系统找不到该合约的信息，比如没有连接登录接口或者vt_symbol填写错误，则会在日志模块中输出相应的报错信息。
 
-以上三个步骤全部完成后，可观察到此时该策略实例的【inited】状态已经为【True】，且变量也都显示对应的数值（不再为0）。说明该策略实例已经调用过load_bar函数加载历史数据并完成初始化了。【trading】状态还是为【False】，说明此时该策略实例还不能开始自动交易。
+以上三个步骤完成后，可观察到此时该策略实例的【inited】状态已经为【True】，且变量也都显示对应的数值（不再为0）。说明该策略实例已经调用过load_bar函数加载历史数据并完成初始化了。【trading】状态还是为【False】，说明此时该策略实例还不能开始自动交易。
 
 ### 初始化失败
 
@@ -368,7 +368,7 @@ VeighNa的本地停止单有三个特点：
 
 ## CTA策略模板（CtaTemplate）
 
-CTA策略模板提供完整的信号生成和委托管理功能，用户可以基于该模板(位于site-packages\vnpy_ctastrategy\template中)自行开发CTA策略。
+CTA策略模板提供了信号生成和委托管理功能，用户可以基于该模板(位于site-packages\vnpy_ctastrategy\template中)自行开发CTA策略。
 
 用户自行开发的策略可以放在用户运行文件夹下的[strategies](#jump)文件夹内。
 
