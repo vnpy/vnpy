@@ -14,7 +14,7 @@
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
 
-VeighNa是一套基于Python的开源量化交易系统开发框架，在开源社区7年持续不断的贡献下一步步成长为多功能量化交易平台，自2015年正式发布以来已经积累了众多来自金融机构或相关领域的用户，包括私募基金、证券公司、期货公司等。
+VeighNa是一套基于Python的开源量化交易系统开发框架，在开源社区持续不断的贡献下一步步成长为多功能量化交易平台，自发布以来已经积累了众多来自金融机构或相关领域的用户，包括私募基金、证券公司、期货公司等。
 
 《VeighNa实战进阶》系列在线课程，已经在官方微信公众号[**VeighNa开源量化**]上线，覆盖30天入门、CTA策略、期权波动率交易等内容。购买请扫描下方二维码关注后，点击菜单栏的【进阶资料】按钮即可：
 
@@ -30,7 +30,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 1. 多功能量化交易平台（trader），整合了多种交易接口，并针对具体策略算法和功能开发提供了简洁易用的API，用于快速构建交易员所需的量化交易应用。
 
-2. 覆盖国内外所有交易品种的交易接口（gateway）：
+2. 覆盖国内外所拥有的下述交易品种的交易接口（gateway）：
 
     * 国内市场
 
@@ -82,11 +82,11 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
         * RPC服务（[rpc](https://www.github.com/vnpy/vnpy_rpcservice)）：跨进程通讯接口，用于分布式架构
 
-3. 开箱即用的各类量化策略交易应用（app）：
+3. 覆盖下述各类量化策略的交易应用（app）：
 
     * [cta_strategy](https://www.github.com/vnpy/vnpy_ctastrategy)：CTA策略引擎模块，在保持易用性的同时，允许用户针对CTA类策略运行过程中委托的报撤行为进行细粒度控制（降低交易滑点、实现高频策略）
 
-    * [cta_backtester](https://www.github.com/vnpy/vnpy_ctabacktester)：CTA策略回测模块，无需使用Jupyter Notebook，直接使用图形界面直接进行策略回测分析、参数优化等相关工作
+    * [cta_backtester](https://www.github.com/vnpy/vnpy_ctabacktester)：CTA策略回测模块，无需使用Jupyter Notebook，直接使用图形界面进行策略回测分析、参数优化等相关工作
 
     * [spread_trading](https://www.github.com/vnpy/vnpy_spreadtrading)：价差交易模块，支持自定义价差，实时计算价差行情和持仓，支持价差算法交易以及自动价差策略两种模式
 
@@ -96,7 +96,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
     * [algo_trading](https://www.github.com/vnpy/vnpy_algotrading)：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等
 
-    * [script_trader](https://www.github.com/vnpy/vnpy_scripttrader)：脚本策略模块，针对多标的组合类交易策略设计，同时也可以直接在命令行中实现REPL指令形式的交易，不支持回测功能
+    * [script_trader](https://www.github.com/vnpy/vnpy_scripttrader)：脚本策略模块，面向多标的类量化策略和计算任务设计，同时也可以在命令行中实现REPL指令形式的交易，不支持回测功能
 
     * [paper_account](https://www.github.com/vnpy/vnpy_paperaccount)：本地仿真模块，纯本地化实现的仿真模拟交易功能，基于交易接口获取的实时行情进行委托撮合，提供委托成交推送以及持仓记录
 
@@ -120,7 +120,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
     * REST Client（[rest](https://www.github.com/vnpy/vnpy_rest)）：基于协程异步IO的高性能REST API客户端，采用事件消息循环的编程模型，支持高并发实时交易请求发送
 
-    * Websocket Client（[websocket](https://www.github.com/vnpy/vnpy_websocket)）：基于协程异步IO的高性能Websocket API客户端，支持和REST Client共用事件循环并发运行，避免GIL带来的多线程性能损耗
+    * Websocket Client（[websocket](https://www.github.com/vnpy/vnpy_websocket)）：基于协程异步IO的高性能Websocket API客户端，支持和REST Client共用事件循环并发运行
 
 5. 简洁易用的事件驱动引擎（event），作为事件驱动型交易程序的核心。
 
@@ -136,9 +136,9 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
     * NoSQL类
 
-        * DolphinDB（[dolphindb](https://www.github.com/vnpy/vnpy_dolphindb)）：由浙江智臾科技有限公司研发的一款高性能分布式时序数据库，特别适用于对速度要求极高的低延时或实时性任务
+        * DolphinDB（[dolphindb](https://www.github.com/vnpy/vnpy_dolphindb)）：一款高性能分布式时序数据库，适用于对速度要求极高的低延时或实时性任务
 
-        * Arctic（[arctic](https://www.github.com/vnpy/vnpy_arctic)）：由量化对冲基金Man AHL基于MongoDB开发的高性能金融时序数据库，采用了分块化储存、LZ4压缩等性能优化方案，实现比MongoDB更高的读写效率
+        * Arctic（[arctic](https://www.github.com/vnpy/vnpy_arctic)）：高性能金融时序数据库，采用了分块化储存、LZ4压缩等性能优化方案，以实现时序数据的高效读写
 
         * MongoDB（[mongodb](https://www.github.com/vnpy/vnpy_mongodb)）：基于分布式文件储存（bson格式）的文档式数据库，内置的热数据内存缓存提供更快读写速度
 
@@ -146,7 +146,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
         * LevelDB（[leveldb](https://www.github.com/vnpy/vnpy_leveldb)）：由Google推出的高性能Key/Value数据库，基于LSM算法实现进程内存储引擎，支持数十亿级别的海量数据
 
-7. 对接各类数据服务的适配器接口（datafeed）：
+7. 对接下述各类数据服务的适配器接口（datafeed）：
 
     * 米筐RQData（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：股票、期货、期权、基金、债券、黄金TD
 
@@ -169,6 +169,8 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 10. [社区论坛](http://www.vnpy.com/forum)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括VeighNa项目的开发教程和Python在量化交易领域的应用研究等内容。
 
 11. 官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给VeighNa社区基金。
+
+注：以上关于功能特点的说明为根据说明文档发布时情况罗列，后续可能存在更新或调整。若功能描述同实际存在出入，欢迎通过Issue联系进行调整。
 
 ## 环境准备
 
