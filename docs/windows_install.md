@@ -2,7 +2,7 @@
 
 本文档中安装步骤适用的Windows系统包括：
 
-- Windows 10
+- Windows 10/11
 - Windows Server 2019
 
 > 其他版本的Windows系统安装时可能遇到各种依赖库问题，不推荐使用。
@@ -11,7 +11,7 @@
 
 作为一站式的量化投研交易Python环境，VeighNa Studio整合了：
 
-- Python 3.7 64位（Python官网版本）
+- Python 3.10 64位（Python官网版本）
 - VeighNa和其他相关依赖库
 - VeighNa Station（VeighNa框架的图形化管理工具）
 
@@ -22,56 +22,111 @@
 
 ### 下载安装
 
-在[VeighNa官网](https://www.vnpy.com/)可以下载最新版本的VeighNa Studio，如下图所示。
+在[VeighNa官网](https://www.vnpy.com/)可以下载最新版本的VeighNa Studio。
+
+下载完成后，双击安装包进入VeighNa Studio安装向导（推荐点击右键，选择【使用管理员身份运行】进行安装），使用默认设置点击【快速安装】按钮即可进行VeighNa Studio安装，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/21.png)
+
+> 推荐将VeighNa Studio安装在默认路径的C:\veighna_studio，其他VeighNa文档和教程中均使用该目录作为VeighNa安装目录进行讲解。
+
+如果想进行个性化安装，可点击【自定义安装】进入高级选项页面，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/24.png)
+
+安装完成后，会转换到安装成功页面，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/26.png)
+
+此时桌面会出现VeighNa Station的图标，双击图标即可运行VeighNa Station。
+
+### 使用
+
+安装成功后，启动命令行工具即可直接使用VeighNa Studio Python发行版。
+
+输入python即可进入python的交互式环境，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/29.png)
+
+此时在命令行中输入python代码就会立即执行。如果想运行pyqtgraph的自带的例子，可以依次输入以下代码：
+
+```python 3
+from pyqtgraph import examples
+examples.run()
+```
+
+此时则会弹出Examples的运行窗口，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/30.png)
+
+点击左侧的Basic Plotting则会弹出示例的图形界面，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/31.png)
+
+如果想打开jupyter lab进行投资研究工作，可以打开cmd，输入jupyter lab，即可成功启动，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/32.png)
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/38.png)
+
+### 修改
+
+如果安装之后，想要添加或者移除某项功能，可以双击VeighNa Studio的安装包，进入VeighNa Studio安装界面，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/33.png)
+
+点击【修改】，进入修改页面，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/35.png)
+
+选择完可选功能后，点击【下一步】，进入高级选项页面，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/37.png)
+
+选择完毕，即可重新安装。
+
+### 修复
+
+如果安装之后，出现安装不完整或者其他需要修复的情况，可以双击VeighNa Studio的安装包，进入VeighNa Studio安装界面，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/33.png)
+
+点击【修复】，进入修复界面，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/34.png)
+
+修复完成后，会转换到修复成功页面，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/15.png)
 
-下载完成后，双击安装包进入VeighNa Studio安装向导，使用默认设置一路点击【下一步】按钮即可完成VeighNa Studio安装，如下图所示：
+### 卸载
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/2.png)
+如果想卸载VeighNa Studio， 可以双击VeighNa Studio的安装包，进入VeighNa Studio安装界面，如下图所示：
 
-> 推荐将VeighNa Studio安装在默认路径的C:\vnstudio，其他VeighNa文档和教程中均使用该目录作为VeighNa安装目录进行讲解。
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/33.png)
 
+点击【卸载】，进入卸载界面，如下图所示：
 
-### 上手VeighNa Station
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/27.png)
 
-双击桌面图标运行VeighNa Station，输入账号密码或直接微信扫码即可登录，登录对话框如下图所示。
+卸载完成后，会转换到卸载成功页面，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/3.png)
-
-如果是首次使用，使用微信扫码时会自动进入注册页面，注册时：
-
-- 个人邮箱请如实填写（后续用于找回密码等论坛功能）；
-- 用户名自动使用注册时的微信【昵称】（不支持修改）；
-- 密码请牢记，该密码也同样用于登录[VeighNa社区论坛](https://www.vnpy.com/forum)
-
-登录成功后，即可进入到VeighNa Station的主界面，如下图所示。
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/16.png)
-
-主界面窗口底部有6个按钮：
-
-- 【VeighNa Trader Lite】直接运行VeighNa Trader（只加载了CTP接口，提供CTA策略和回测功能）；
-- 【VeighNa Trader】可以更改保存相关临时文件的目录，再运行VeighNa Trader（可以个性化选择底层接口和上层应用模块）；
-- 【Jupyter Notebook】在指定的目录启动Jupyter Notebook，进行交互式的量化策略研究工作；
-- 【策略加密】使用Cython工具对原本为可读代码的Python策略文件进行加密，生成不可读的二进制pyd文件；
-- 【提问求助】在浏览器中打开VeighNa社区论坛，遇到问题可以通过相关版块提问求助；
-- 【已是最新/更新】有新版本的VeighNa发布时，该按钮会亮起，点击即可实现VeighNa一键自动更新。
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/28.png)
 
 
 ## 手动安装方案
 
 ### 准备Python环境
 
-首先请在电脑上准备好Python 3.7 64位环境（**注意必须是Python 3.7 64位版本**），推荐使用Python官网的发行版，也可以使用Anaconda、Miniconda、Canopy等发行版。
+首先请在电脑上准备好Python 3.10 64位环境（**注意必须是64位版本**），推荐使用Python官网的发行版，也可以使用Anaconda、Miniconda、Canopy等发行版。
 
-这里我们以Python官网的发行版为例，首先在[Python官网](https://www.python.org/downloads/windows/)下载安装文件，选择可执行安装器【executable installer】，如下图所示：
+这里我们以Python官网的发行版为例，首先在[Python官网](https://www.python.org/downloads/windows/)下载安装文件，选择【Windows installer (64-bit)】，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/5.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/22.png)
 
-下载完毕后，双击文件进入Python安装向导，勾选【Add Python3.7 to PATH】选项后，点击【Install Now】进行安装，推荐使用默认设置一路点击【下一步】直到安装完成即可：
+下载完毕后，双击文件进入Python安装向导，勾选【Add Python3.10 to PATH】选项后，点击【Install Now】进行安装，推荐使用默认设置一路点击【下一步】直到安装完成即可：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/6.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/23.png)
 
 
 ### 下载安装VeighNa  
@@ -97,7 +152,7 @@ install.bat
 
 ### 启动VeighNa Trader
 
-启动命令行工具，进入解压VeighNa源代码的目录下，在文件夹examples/vn_trader中找到run.py文件。
+启动命令行工具，进入解压VeighNa源代码的目录下，在文件夹examples/veighna_trader中找到run.py文件。
 
 输入如下命令即可启动VeighNa Trader：
 
@@ -105,7 +160,7 @@ install.bat
 python run.py 
 ```
 
-请注意run.py中包含了较多的启动加载项（交易接口和策略应用），请根据自己所用的操作系统以及实际的交易需求修改调整使用（若需加载接口，取消接口前注释符号即可）。
+请注意run.py中包含了较多的启动加载项（交易接口和应用模块），请根据自己所用的操作系统以及实际的交易需求修改调整使用（若需加载接口，取消接口前注释符号即可）。
 
 连接接口介绍详见交易接口篇。
 
