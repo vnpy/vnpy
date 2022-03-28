@@ -11,7 +11,7 @@ from datetime import datetime
 from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
-from typing import Any, Type, Dict, List, Optional
+from typing import Any, Type, Dict, List, Optional, Set
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -177,6 +177,10 @@ class MainEngine:
         Subscribe tick data update of a specific gateway.
         """
         gateway = self.get_gateway(gateway_name)
+        # 如果是ETF,则监控计算可卖、可申购、可赎回等信息
+        contract: ContractData = self.get_contract(req.vt_symbol)
+        if contract.product == Product.ETF:
+            self.set_basket_forcus(contract)
         if gateway:
             gateway.subscribe(req)
 
@@ -185,6 +189,19 @@ class MainEngine:
         不带后缀！
         """
         raise NotImplementedError
+
+    def get_position(self, vt_positionid: str) -> Optional[PositionData]:
+        """
+        Get latest position data by vt_positionid.
+        """
+        raise NotImplementedError
+
+    def get_basket_position(self, vt_symbol, direction=Direction.LONG):
+        """
+        持仓转换成篮子后的 量
+        """
+        raise NotImplementedError
+
 
     def send_order(self, req: OrderRequest, gateway_name: str) -> str:
         """
@@ -257,6 +274,12 @@ class MainEngine:
         """
         获取所有账户信息对象
         """
+        raise NotImplementedError
+
+    def set_basket_forcus(self, vt_symbol):
+        raise NotImplementedError
+
+    def get_contract(self, vt_symbol):
         raise NotImplementedError
 
     def close(self) -> None:
@@ -386,6 +409,7 @@ class OmsEngine(BaseEngine):
         self.accounts: Dict[str, AccountData] = {}
         self.contracts: Dict[str, ContractData] = {}
         self.baskets: Dict[str, List[BasketComponent]] = defaultdict(list)
+        self.basket_forcus: Set[ContractData] = set()                # 订阅的ETF会计算篮子可卖、可申购
         self.quotes: Dict[str, QuoteData] = {}
 
         self.active_orders: Dict[str, OrderData] = {}
@@ -414,6 +438,8 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_all_active_orders = self.get_all_active_orders
         self.main_engine.get_all_active_qutoes = self.get_all_active_quotes
         self.main_engine.get_basket_components = self.get_basket_components
+        self.main_engine.set_basket_forcus = self.set_basket_forcus
+        self.main_engine.get_basket_position = self.get_basket_position
 
     def register_event(self) -> None:
         """"""
@@ -451,7 +477,11 @@ class OmsEngine(BaseEngine):
     def process_position_event(self, event: Event) -> None:
         """"""
         position: PositionData = event.data
+        old_pos = self.get_position(position.vt_positionid)
+        # if position != old_pos:
         self.positions[position.vt_positionid] = position
+        if position.product not in  (Product.BASKET, ):
+            self.calculate_basket_sp_able()
 
     def process_account_event(self, event: Event) -> None:
         """"""
@@ -517,6 +547,67 @@ class OmsEngine(BaseEngine):
 
     def get_basket_components(self, basket_name):
         return self.baskets.get(basket_name)
+
+    @staticmethod
+    def get_positionid(vt_symbol, product: Product, direction: Direction):
+        return f"{vt_symbol}.{product.name}.{direction.name}"
+
+    def calculate_basket_sp_able(self):
+        """计算篮子可申购、可卖数量"""
+        #TODO 针对A股 只计算了LONG
+
+        for contract in self.basket_forcus:
+            basket_position = PositionData(
+                gateway_name=contract.gateway_name,
+                symbol=contract.symbol,
+                exchange=contract.exchange,
+                product=Product.BASKET,
+                direction=Direction.LONG
+            )
+            first = True
+            basket_components = self.get_basket_components(contract.vt_symbol)
+            for comp in basket_components:
+                if comp.cash_flag() == 2:
+                    continue
+                tick: TickData = self.get_tick(comp.vt_symbol)
+                if tick is None or (tick.limit_down == tick.last_price or tick.limit_up == tick.last_price):
+                    continue
+                pos_id = self.get_positionid(comp.vt_symbol, product=Product.EQUITY, direction=Direction.LONG)
+                pos: PositionData = self.get_position(pos_id)
+                if pos is None:
+                    basket_position.volume = 0
+                    basket_position.sell_able = 0
+                    basket_position.purchase_able = 0
+                    basket_position.yd_volume = 0
+                    break
+                _volume = pos.volume / comp.share
+                _sell_able = pos.sell_able / comp.share
+                _purchase_able = pos.purchase_able / comp.share
+                _yd_volume = pos.yd_volume / comp.share
+
+                if first:
+                    basket_position.valume = _volume
+                    basket_position.sell_able = _sell_able
+                    basket_position.purchase_able = _purchase_able
+                    basket_position.yd_volume = _yd_volume
+                else:
+                    basket_position.valume = min(_volume, basket_position.valume)
+                    basket_position.sell_able = min(_sell_able, basket_position.sell_able)
+                    basket_position.purchase_able = min(_purchase_able, basket_position.purchase_able)
+                    basket_position.yd_volume = min(_yd_volume, basket_position.yd_volume)
+
+            self.event_engine.put(Event(type=EVENT_POSITION, data=basket_position))
+
+    def set_basket_forcus(self, contract):
+        self.basket_forcus.add(contract)
+
+    def get_basket_position(self, vt_symbol, direction=Direction.LONG):
+        """
+        持仓转换成篮子后的 量
+        """
+        vt_pos_id = self.get_positionid(vt_symbol=vt_symbol, product=Product.BASKET, direction=direction)
+        position = self.get_position(vt_pos_id)
+        return position
 
     def get_quote(self, vt_quoteid: str) -> Optional[QuoteData]:
         """

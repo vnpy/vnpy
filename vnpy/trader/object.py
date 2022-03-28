@@ -191,16 +191,17 @@ class TradeData(BaseData):
             self.backtest_real_slippage = -self.backtest_real_slippage
 
 
-@dataclass
+@dataclass(eq=True)
 class PositionData(BaseData):
     """
     Positon data is used for tracking each individual position holding.
     """
 
     symbol: str
+
     exchange: Exchange
     direction: Direction
-
+    product: Product = Product.OTHERS
     volume: float = 0
     frozen: float = 0
     price: float = 0
@@ -208,11 +209,13 @@ class PositionData(BaseData):
     yd_volume: float = 0
     author_id: int = 0
     strategy_id: int = 0
+    sell_able: int = 0                  # 可卖数量
+    purchase_able: int = 0              # 可申赎数量(股票是可申购、如果是ETF，就是可赎回)
 
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
-        self.vt_positionid = f"{self.vt_symbol}.{self.direction.value}"
+        self.vt_positionid = f"{self.vt_symbol}.{self.product.name}.{self.direction.name}"
 
 
 @dataclass
@@ -252,7 +255,7 @@ class LogData(BaseData):
         self.time = datetime.now()
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class ContractData(BaseData):
     """
     Contract data contains basic information about each contract traded.

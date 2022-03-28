@@ -57,6 +57,7 @@ class Product(Enum):
     WARRANT = "权证"
     SPREAD = "价差"
     FUND = "基金"
+    BASKET = "篮子"
     OTHERS = "其他"
 
 
