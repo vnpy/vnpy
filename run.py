@@ -12,7 +12,7 @@ from vnpy_xtp import XtpGateway
 from vnpy_okex import OkexGateway
 from vnpy_esunny import EsunnyGateway
 from vnpy_ctptest import CtptestGateway
-# from vnpy_ctp import CtpGateway
+from vnpy_ctp import CtpGateway
 from vnpy_tap import TapGateway
 from vnpy_portfoliomanager import PortfolioManagerApp, PortfolioEngine
 from vnpy_datarecorder import DataRecorderApp

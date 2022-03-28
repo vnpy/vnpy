@@ -190,6 +190,12 @@ class MainEngine:
         """
         raise NotImplementedError
 
+    def get_position(self, vt_positionid: str) -> Optional[PositionData]:
+        """
+        Get latest position data by vt_positionid.
+        """
+        raise NotImplementedError
+
     def get_basket_position(self, vt_symbol, direction=Direction.LONG):
         """
         持仓转换成篮子后的 量
