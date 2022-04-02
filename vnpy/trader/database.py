@@ -35,6 +35,19 @@ class BarOverview:
     end: datetime = None
 
 
+@dataclass
+class TickOverview:
+    """
+    Overview of tick data stored in database.
+    """
+
+    symbol: str = ""
+    exchange: Exchange = None
+    interval: Interval = Interval.TICK
+    count: int = 0
+    start: datetime = None
+    end: datetime = None
+
 class BaseDatabase(ABC):
     """
     Abstract database class for connecting to different database.
