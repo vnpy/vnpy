@@ -232,8 +232,15 @@ class PositionHolding:
                                                 - self.long_td)
                         self.long_td_frozen = self.long_td
 
-            self.long_pos_frozen = self.long_td_frozen + self.long_yd_frozen
-            self.short_pos_frozen = self.short_td_frozen + self.short_yd_frozen
+        # Frozen volume should be no more than total volume
+        self.long_td_frozen = min(self.long_td_frozen, self.long_td)
+        self.long_yd_frozen = min(self.long_yd_frozen, self.long_yd)
+
+        self.short_td_frozen = min(self.short_td_frozen, self.short_td)
+        self.short_yd_frozen = min(self.short_yd_frozen, self.short_yd)
+
+        self.long_pos_frozen = self.long_td_frozen + self.long_yd_frozen
+        self.short_pos_frozen = self.short_td_frozen + self.short_yd_frozen
 
     def convert_order_request_shfe(self, req: OrderRequest) -> List[OrderRequest]:
         """"""
