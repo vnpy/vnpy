@@ -1,8 +1,8 @@
-# RpcService - RPC服务模块
+# RpcService - RPC服务器模块
 
 ## 功能简介
 
-RpcService模块用于将VeighNa Trader进程转化为RPC服务器，对外提供交易路由、行情数据推送、持仓资金查询等功能。
+RpcService是用于**将VeighNa Trader进程转化为RPC服务器**的功能模块，对外提供交易路由、行情数据推送、持仓资金查询等功能。
 
 关于RPC的具体应用场景请参考本文档结尾的【RPC的应用场景】版块。
 

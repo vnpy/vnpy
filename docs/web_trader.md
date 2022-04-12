@@ -1,4 +1,4 @@
-# WebTrader - Web应用后端服务
+# WebTrader - Web服务器模块
 
 ## 功能简介
 
