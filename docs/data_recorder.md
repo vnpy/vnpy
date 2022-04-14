@@ -1,6 +1,6 @@
-# DataRecorder - 行情记录模块
+# DataRecorder - 实盘行情记录模块
 
-DataRecorder是用于**实时行情记录**的模块，用户可以利用该模块记录实时Tick数据和K线数据，并自动写入保存到数据库中。
+DataRecorder是用于**实盘行情记录**的模块，用户可以利用该模块记录实时Tick数据和K线数据，并自动写入保存到数据库中。
 
 记录的数据可以通过DataManager模块查看，也可以用于CtaBacktester的历史回测，以及CtaStrategy、PortfolioStrategy等策略的实盘初始化。
 

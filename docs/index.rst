@@ -7,6 +7,7 @@ VeighNa项目文档
    introduction.md
    windows_install.md
    ubuntu_install.md
+   veighna_station.md
    quickstart.md
    gateway.md
    database.md
