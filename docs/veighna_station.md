@@ -1,4 +1,4 @@
-# 基本使用
+# VeighNa Station
 
 ## 启动程序
 
@@ -12,9 +12,9 @@
 
 ### 命令行启动
 
-打开命令行工具，输入VeighNa，按下enter键，即可运行VeighNa Station。
+打开命令行工具，输入veighna回车运行，即可启动VeighNa Station。
 
-## 登录界面
+## 用户登录
 
 首次使用VeighNa Station时会弹出VeighNa Studio的免责声明，如下图所示：
 
@@ -34,7 +34,7 @@
 
 **登录界面只在首次运行VeighNa Station时弹出**，之后运行VeighNa Station时会自动登录。
 
-## 使用界面
+## 界面窗口
 
 登录完成后，VeighNa Station界面会自动弹出，如下图所示：
 
@@ -48,13 +48,13 @@
 
 #### 配置
 
-点击【系统】-【配置】，会弹出系统配置窗口，可以对PyPi索引和pip代理进行修改，如下图所示：
+点击【系统】-【配置】，会弹出系统配置窗口，可以对PyPI索引和pip代理进行修改，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/veighna_station/5.png)
 
-PyPi索引用于更换VeighNa Station使用的pypiserver地址，当留空时默认使用的是https://pypi.org的pypi服务器。由于https://pypi.org的pypi服务器主机位于境外，国内用户连接时会出现速度慢、断连的现象。默认139.196.190.180为韦纳公司于国内搭建的pypi服务器，便于用户在使用VeighNa Station时所需文件的下载与升级功能。
+PyPI索引用于更换VeighNa Station使用的pypiserver地址，当留空时默认使用的是https://pypi.org的PyPI服务器。
 
-pip代理默认为空，用户可自行设置，用于加快与https://pypi.org的pypi服务器的连接。修改后可点击【保存】按钮，对配置进行保存并退出窗口。
+pip代理默认为空，用户可自行设置。修改后可点击【保存】按钮，对配置进行保存并退出窗口。
 
 #### 登出
 
@@ -72,25 +72,12 @@ pip代理默认为空，用户可自行设置，用于加快与https://pypi.org�
 
 点击【Yes】立即关闭程序。
 
-#### 关于
 
-点击【帮助】-【关于】，会弹出关于VeighNa Station窗口，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/veighna_station/8.png)
-
-显示了VeighNa Station的相关信息。
-
-### 标题栏
-
-菜单栏下为标题栏。标题栏左侧区域为VeighNa Station图标与英文全称的大写，右侧区域为用户登录所用的用户名。
-
-### 功能栏与主显示区域
+### 主窗口
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/veighna_station/9.png)
 
 如上图所示，图中左侧区域为功能栏，右侧区域为主显示区域。功能栏包括社区、交易、投研、加密、更新等内容。随着左侧功能栏的不同选择，右侧主显示区域会显示对应的相关内容。
-
-### 学习与使用区域
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/veighna_station/10.png)
 
@@ -100,8 +87,6 @@ pip代理默认为空，用户可自行设置，用于加快与https://pypi.org�
 
 点击【社区求助】后会打开浏览器，并跳转到官方论坛https://www.vnpy.com/forum/ ，用户可以在论坛查询技术贴，并发帖交流。
 
-### 官方频道区域
-
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/veighna_station/11.png)
 
 如上图所示，学习与使用区域下方为官方频道区域。
@@ -109,7 +94,7 @@ pip代理默认为空，用户可自行设置，用于加快与https://pypi.org�
 从左到右分别为官方的Github仓库，官方微信公众号和官方知乎账号。点击即可打开浏览器直接跳转到相关页面。
 
 
-# 具体使用
+## 功能使用
 
 ### 社区
 

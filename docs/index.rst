@@ -8,7 +8,7 @@ VeighNa项目文档
    windows_install.md
    ubuntu_install.md
    veighna_station.md
-   quickstart.md
+   veighna_trader.md
    gateway.md
    database.md
    datafeed.md
