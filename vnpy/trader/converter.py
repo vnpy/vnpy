@@ -190,6 +190,9 @@ class PositionHolding:
         self.long_pos = self.long_td + self.long_yd
         self.short_pos = self.short_td + self.short_yd
 
+        # Update frozen volume to ensure no more than total volume
+        self.sum_pos_frozen()
+
     def calculate_frozen(self) -> None:
         """"""
         self.long_pos_frozen = 0
@@ -232,6 +235,10 @@ class PositionHolding:
                                                 - self.long_td)
                         self.long_td_frozen = self.long_td
 
+        self.sum_pos_frozen()
+
+    def sum_pos_frozen(self) -> None:
+        """"""
         # Frozen volume should be no more than total volume
         self.long_td_frozen = min(self.long_td_frozen, self.long_td)
         self.long_yd_frozen = min(self.long_yd_frozen, self.long_yd)
