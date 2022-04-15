@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+from types import ModuleType
 from typing import List
 from pytz import timezone
 from dataclasses import dataclass
@@ -17,7 +18,7 @@ def convert_tz(dt: datetime) -> datetime:
     """
     Convert timezone of datetime object to DB_TZ.
     """
-    dt = dt.astimezone(DB_TZ)
+    dt: datetime = dt.astimezone(DB_TZ)
     return dt.replace(tzinfo=None)
 
 
@@ -128,11 +129,11 @@ def get_database() -> BaseDatabase:
 
     # Try to import database module
     try:
-        module = import_module(module_name)
+        module: ModuleType = import_module(module_name)
     except ModuleNotFoundError:
         print(f"找不到数据库驱动{module_name}，使用默认的SQLite数据库")
-        module = import_module("vnpy_sqlite")
+        module: ModuleType = import_module("vnpy_sqlite")
 
     # Create database object from module
-    database = module.Database()
+    database: BaseDatabase = module.Database()
     return database

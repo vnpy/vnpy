@@ -45,5 +45,5 @@ SETTINGS.update(load_json(SETTING_FILENAME))
 
 
 def get_settings(prefix: str = "") -> Dict[str, Any]:
-    prefix_length = len(prefix)
+    prefix_length: int = len(prefix)
     return {k[prefix_length:]: v for k, v in SETTINGS.items() if k.startswith(prefix)}

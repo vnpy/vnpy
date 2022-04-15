@@ -1,6 +1,7 @@
 from typing import Dict, List, Callable, Tuple
 from itertools import product
 from concurrent.futures import ProcessPoolExecutor
+from _collections_abc import dict_keys, dict_values
 from random import random, choice
 from time import perf_counter
 from multiprocessing import Manager, Pool, get_context
@@ -8,9 +9,9 @@ from multiprocessing import Manager, Pool, get_context
 from deap import creator, base, tools, algorithms
 
 
-OUTPUT_FUNC = Callable[[str], None]
-EVALUATE_FUNC = Callable[[dict], dict]
-KEY_FUNC = Callable[[list], float]
+OUTPUT_FUNC: callable = Callable[[str], None]
+EVALUATE_FUNC: callable = Callable[[dict], dict]
+KEY_FUNC: callable = Callable[[list], float]
 
 
 # Create individual class used in genetic algorithm optimization
@@ -63,13 +64,13 @@ class OptimizationSetting:
 
     def generate_settings(self) -> List[dict]:
         """"""
-        keys = self.params.keys()
-        values = self.params.values()
-        products = list(product(*values))
+        keys: dict_keys = self.params.keys()
+        values: dict_values = self.params.values()
+        products: list = list(product(*values))
 
-        settings = []
+        settings: list = []
         for p in products:
-            setting = dict(zip(keys, p))
+            setting: dict = dict(zip(keys, p))
             settings.append(setting)
 
         return settings
@@ -140,8 +141,8 @@ def run_ga_optimization(
 
     def mutate_individual(individual: list, indpb: float) -> tuple:
         """"""
-        size = len(individual)
-        paramlist = generate_parameter()
+        size: int = len(individual)
+        paramlist: list = generate_parameter()
         for i in range(size):
             if random() < indpb:
                 individual[i] = paramlist[i]
@@ -153,7 +154,7 @@ def run_ga_optimization(
         cache: Dict[Tuple, Tuple] = manager.dict()
 
         # Set up toolbox
-        toolbox = base.Toolbox()
+        toolbox: base.Toolbox = base.Toolbox()
         toolbox.register("individual", tools.initIterate, creator.Individual, generate_parameter)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
         toolbox.register("mate", tools.cxTwoPoint)
