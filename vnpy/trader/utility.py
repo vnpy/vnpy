@@ -2,11 +2,13 @@
 General utility functions.
 """
 
+from dataclasses import dataclass
+from datetime import datetime
 import json
 import logging
 import sys
 from pathlib import Path
-from typing import Callable, Dict, Tuple, Union, Optional
+from typing import Callable, Dict, Tuple, Union, Optional, Any
 from decimal import Decimal
 from math import floor, ceil
 
@@ -17,7 +19,7 @@ from .object import BarData, TickData
 from .constant import Exchange, Interval
 
 
-log_formatter = logging.Formatter('[%(asctime)s] %(message)s')
+log_formatter: logging.Formatter = logging.Formatter('[%(asctime)s] %(message)s')
 
 
 def extract_vt_symbol(vt_symbol: str) -> Tuple[str, Exchange]:
@@ -39,8 +41,8 @@ def _get_trader_dir(temp_name: str) -> Tuple[Path, Path]:
     """
     Get path where trader is running in.
     """
-    cwd = Path.cwd()
-    temp_path = cwd.joinpath(temp_name)
+    cwd: Path = Path.cwd()
+    temp_path: Path = cwd.joinpath(temp_name)
 
     # If .vntrader folder exists in current working directory,
     # then use it as trader running path.
@@ -48,8 +50,8 @@ def _get_trader_dir(temp_name: str) -> Tuple[Path, Path]:
         return cwd, temp_path
 
     # Otherwise use home path of system.
-    home_path = Path.home()
-    temp_path = home_path.joinpath(temp_name)
+    home_path: Path = Path.home()
+    temp_path: Path = home_path.joinpath(temp_name)
 
     # Create .vntrader folder under home path if not exist.
     if not temp_path.exists():
@@ -73,7 +75,7 @@ def get_folder_path(folder_name: str) -> Path:
     """
     Get path for temp folder with folder name.
     """
-    folder_path = TEMP_DIR.joinpath(folder_name)
+    folder_path: Path = TEMP_DIR.joinpath(folder_name)
     if not folder_path.exists():
         folder_path.mkdir()
     return folder_path
@@ -83,8 +85,8 @@ def get_icon_path(filepath: str, ico_name: str) -> str:
     """
     Get path for icon file with ico name.
     """
-    ui_path = Path(filepath).parent
-    icon_path = ui_path.joinpath("ico", ico_name)
+    ui_path: Path = Path(filepath).parent
+    icon_path: Path = ui_path.joinpath("ico", ico_name)
     return str(icon_path)
 
 
@@ -92,11 +94,11 @@ def load_json(filename: str) -> dict:
     """
     Load data from json file in temp path.
     """
-    filepath = get_file_path(filename)
+    filepath: Path = get_file_path(filename)
 
     if filepath.exists():
         with open(filepath, mode="r", encoding="UTF-8") as f:
-            data = json.load(f)
+            data: Any = json.load(f)
         return data
     else:
         save_json(filename, {})
@@ -107,7 +109,7 @@ def save_json(filename: str, data: dict) -> None:
     """
     Save data into json file in temp path.
     """
-    filepath = get_file_path(filename)
+    filepath: Path = get_file_path(filename)
     with open(filepath, mode="w+", encoding="UTF-8") as f:
         json.dump(
             data,
@@ -121,9 +123,9 @@ def round_to(value: float, target: float) -> float:
     """
     Round price to price tick value.
     """
-    value = Decimal(str(value))
-    target = Decimal(str(target))
-    rounded = float(int(round(value / target)) * target)
+    value: Decimal = Decimal(str(value))
+    target: Decimal = Decimal(str(target))
+    rounded: float = float(int(round(value / target)) * target)
     return rounded
 
 
@@ -131,9 +133,9 @@ def floor_to(value: float, target: float) -> float:
     """
     Similar to math.floor function, but to target float number.
     """
-    value = Decimal(str(value))
-    target = Decimal(str(target))
-    result = float(int(floor(value / target)) * target)
+    value: Decimal = Decimal(str(value))
+    target: Decimal = Decimal(str(target))
+    result: float = float(int(floor(value / target)) * target)
     return result
 
 
@@ -141,9 +143,9 @@ def ceil_to(value: float, target: float) -> float:
     """
     Similar to math.ceil function, but to target float number.
     """
-    value = Decimal(str(value))
-    target = Decimal(str(target))
-    result = float(int(ceil(value / target)) * target)
+    value: Decimal = Decimal(str(value))
+    target: Decimal = Decimal(str(target))
+    result: float = float(int(ceil(value / target)) * target)
     return result
 
 
@@ -151,7 +153,7 @@ def get_digits(value: float) -> int:
     """
     Get number of digits after decimal point.
     """
-    value_str = str(value)
+    value_str: str = str(value)
 
     if "e-" in value_str:
         _, buf = value_str.split("e-")
@@ -180,7 +182,7 @@ class BarGenerator:
         window: int = 0,
         on_window_bar: Callable = None,
         interval: Interval = Interval.MINUTE
-    ):
+    ) -> None:
         """Constructor"""
         self.bar: BarData = None
         self.on_bar: Callable = on_bar
@@ -200,7 +202,7 @@ class BarGenerator:
         """
         Update new tick data into generator.
         """
-        new_minute = False
+        new_minute: bool = False
 
         # Filter tick data with 0 last price
         if not tick.last_price:
@@ -211,7 +213,7 @@ class BarGenerator:
             return
 
         if not self.bar:
-            new_minute = True
+            new_minute: bool = True
         elif (
             (self.bar.datetime.minute != tick.datetime.minute)
             or (self.bar.datetime.hour != tick.datetime.hour)
@@ -221,10 +223,10 @@ class BarGenerator:
             )
             self.on_bar(self.bar)
 
-            new_minute = True
+            new_minute: bool = True
 
         if new_minute:
-            self.bar = BarData(
+            self.bar: BarData = BarData(
                 symbol=tick.symbol,
                 exchange=tick.exchange,
                 interval=Interval.MINUTE,
@@ -250,10 +252,10 @@ class BarGenerator:
             self.bar.datetime = tick.datetime
 
         if self.last_tick:
-            volume_change = tick.volume - self.last_tick.volume
+            volume_change: float = tick.volume - self.last_tick.volume
             self.bar.volume += max(volume_change, 0)
 
-            turnover_change = tick.turnover - self.last_tick.turnover
+            turnover_change: float = tick.turnover - self.last_tick.turnover
             self.bar.turnover += max(turnover_change, 0)
 
         self.last_tick = tick
@@ -271,8 +273,8 @@ class BarGenerator:
         """"""
         # If not inited, create window bar object
         if not self.window_bar:
-            dt = bar.datetime.replace(second=0, microsecond=0)
-            self.window_bar = BarData(
+            dt: datetime = bar.datetime.replace(second=0, microsecond=0)
+            self.window_bar: BarData = BarData(
                 symbol=bar.symbol,
                 exchange=bar.exchange,
                 datetime=dt,
@@ -307,8 +309,8 @@ class BarGenerator:
         """"""
         # If not inited, create window bar object
         if not self.hour_bar:
-            dt = bar.datetime.replace(minute=0, second=0, microsecond=0)
-            self.hour_bar = BarData(
+            dt: datetime = bar.datetime.replace(minute=0, second=0, microsecond=0)
+            self.hour_bar: BarData = BarData(
                 symbol=bar.symbol,
                 exchange=bar.exchange,
                 datetime=dt,
@@ -323,7 +325,7 @@ class BarGenerator:
             )
             return
 
-        finished_bar = None
+        finished_bar: BarData = None
 
         # If minute is 59, update minute bar into window bar and push
         if bar.datetime.minute == 59:
@@ -341,15 +343,15 @@ class BarGenerator:
             self.hour_bar.turnover += bar.turnover
             self.hour_bar.open_interest = bar.open_interest
 
-            finished_bar = self.hour_bar
+            finished_bar: BarData = self.hour_bar
             self.hour_bar = None
 
         # If minute bar of new hour, then push existing window bar
         elif bar.datetime.hour != self.hour_bar.datetime.hour:
-            finished_bar = self.hour_bar
+            finished_bar: BarData = self.hour_bar
 
-            dt = bar.datetime.replace(minute=0, second=0, microsecond=0)
-            self.hour_bar = BarData(
+            dt: datetime = bar.datetime.replace(minute=0, second=0, microsecond=0)
+            self.hour_bar: BarData = BarData(
                 symbol=bar.symbol,
                 exchange=bar.exchange,
                 datetime=dt,
@@ -388,7 +390,7 @@ class BarGenerator:
             self.on_window_bar(bar)
         else:
             if not self.window_bar:
-                self.window_bar = BarData(
+                self.window_bar: BarData = BarData(
                     symbol=bar.symbol,
                     exchange=bar.exchange,
                     datetime=bar.datetime,
@@ -422,7 +424,7 @@ class BarGenerator:
         """
         Generate the bar data and call callback immediately.
         """
-        bar = self.bar
+        bar: BarData = self.bar
 
         if self.bar:
             bar.datetime = bar.datetime.replace(second=0, microsecond=0)
@@ -439,7 +441,7 @@ class ArrayManager(object):
     2. calculating technical indicator value
     """
 
-    def __init__(self, size: int = 100):
+    def __init__(self, size: int = 100) -> None:
         """Constructor"""
         self.count: int = 0
         self.size: int = size
@@ -530,7 +532,7 @@ class ArrayManager(object):
         """
         Simple moving average.
         """
-        result = talib.SMA(self.close, n)
+        result: np.ndarray = talib.SMA(self.close, n)
         if array:
             return result
         return result[-1]
@@ -539,7 +541,7 @@ class ArrayManager(object):
         """
         Exponential moving average.
         """
-        result = talib.EMA(self.close, n)
+        result: np.ndarray = talib.EMA(self.close, n)
         if array:
             return result
         return result[-1]
@@ -548,7 +550,7 @@ class ArrayManager(object):
         """
         KAMA.
         """
-        result = talib.KAMA(self.close, n)
+        result: np.ndarray = talib.KAMA(self.close, n)
         if array:
             return result
         return result[-1]
@@ -557,7 +559,7 @@ class ArrayManager(object):
         """
         WMA.
         """
-        result = talib.WMA(self.close, n)
+        result: np.ndarray = talib.WMA(self.close, n)
         if array:
             return result
         return result[-1]
@@ -572,7 +574,7 @@ class ArrayManager(object):
         """
         APO.
         """
-        result = talib.APO(self.close, fast_period, slow_period, matype)
+        result: np.ndarray = talib.APO(self.close, fast_period, slow_period, matype)
         if array:
             return result
         return result[-1]
@@ -581,7 +583,7 @@ class ArrayManager(object):
         """
         CMO.
         """
-        result = talib.CMO(self.close, n)
+        result: np.ndarray = talib.CMO(self.close, n)
         if array:
             return result
         return result[-1]
@@ -590,7 +592,7 @@ class ArrayManager(object):
         """
         MOM.
         """
-        result = talib.MOM(self.close, n)
+        result: np.ndarray = talib.MOM(self.close, n)
         if array:
             return result
         return result[-1]
@@ -605,7 +607,7 @@ class ArrayManager(object):
         """
         PPO.
         """
-        result = talib.PPO(self.close, fast_period, slow_period, matype)
+        result: np.ndarray = talib.PPO(self.close, fast_period, slow_period, matype)
         if array:
             return result
         return result[-1]
@@ -614,7 +616,7 @@ class ArrayManager(object):
         """
         ROC.
         """
-        result = talib.ROC(self.close, n)
+        result: np.ndarray = talib.ROC(self.close, n)
         if array:
             return result
         return result[-1]
@@ -623,7 +625,7 @@ class ArrayManager(object):
         """
         ROCR.
         """
-        result = talib.ROCR(self.close, n)
+        result: np.ndarray = talib.ROCR(self.close, n)
         if array:
             return result
         return result[-1]
@@ -632,7 +634,7 @@ class ArrayManager(object):
         """
         ROCP.
         """
-        result = talib.ROCP(self.close, n)
+        result: np.ndarray = talib.ROCP(self.close, n)
         if array:
             return result
         return result[-1]
@@ -641,7 +643,7 @@ class ArrayManager(object):
         """
         ROCR100.
         """
-        result = talib.ROCR100(self.close, n)
+        result: np.ndarray = talib.ROCR100(self.close, n)
         if array:
             return result
         return result[-1]
@@ -650,7 +652,7 @@ class ArrayManager(object):
         """
         TRIX.
         """
-        result = talib.TRIX(self.close, n)
+        result: np.ndarray = talib.TRIX(self.close, n)
         if array:
             return result
         return result[-1]
@@ -659,7 +661,7 @@ class ArrayManager(object):
         """
         Standard deviation.
         """
-        result = talib.STDDEV(self.close, n, nbdev)
+        result: np.ndarray = talib.STDDEV(self.close, n, nbdev)
         if array:
             return result
         return result[-1]
@@ -668,7 +670,7 @@ class ArrayManager(object):
         """
         OBV.
         """
-        result = talib.OBV(self.close, self.volume)
+        result: np.ndarray = talib.OBV(self.close, self.volume)
         if array:
             return result
         return result[-1]
@@ -677,7 +679,7 @@ class ArrayManager(object):
         """
         Commodity Channel Index (CCI).
         """
-        result = talib.CCI(self.high, self.low, self.close, n)
+        result: np.ndarray = talib.CCI(self.high, self.low, self.close, n)
         if array:
             return result
         return result[-1]
@@ -686,7 +688,7 @@ class ArrayManager(object):
         """
         Average True Range (ATR).
         """
-        result = talib.ATR(self.high, self.low, self.close, n)
+        result: np.ndarray = talib.ATR(self.high, self.low, self.close, n)
         if array:
             return result
         return result[-1]
@@ -695,7 +697,7 @@ class ArrayManager(object):
         """
         NATR.
         """
-        result = talib.NATR(self.high, self.low, self.close, n)
+        result: np.ndarray = talib.NATR(self.high, self.low, self.close, n)
         if array:
             return result
         return result[-1]
@@ -704,7 +706,7 @@ class ArrayManager(object):
         """
         Relative Strenght Index (RSI).
         """
-        result = talib.RSI(self.close, n)
+        result: np.ndarray = talib.RSI(self.close, n)
         if array:
             return result
         return result[-1]
@@ -733,7 +735,7 @@ class ArrayManager(object):
         """
         ADX.
         """
-        result = talib.ADX(self.high, self.low, self.close, n)
+        result: np.ndarray = talib.ADX(self.high, self.low, self.close, n)
         if array:
             return result
         return result[-1]
@@ -742,7 +744,7 @@ class ArrayManager(object):
         """
         ADXR.
         """
-        result = talib.ADXR(self.high, self.low, self.close, n)
+        result: np.ndarray = talib.ADXR(self.high, self.low, self.close, n)
         if array:
             return result
         return result[-1]
@@ -751,7 +753,7 @@ class ArrayManager(object):
         """
         DX.
         """
-        result = talib.DX(self.high, self.low, self.close, n)
+        result: np.ndarray = talib.DX(self.high, self.low, self.close, n)
         if array:
             return result
         return result[-1]
@@ -760,7 +762,7 @@ class ArrayManager(object):
         """
         MINUS_DI.
         """
-        result = talib.MINUS_DI(self.high, self.low, self.close, n)
+        result: np.ndarray = talib.MINUS_DI(self.high, self.low, self.close, n)
         if array:
             return result
         return result[-1]
@@ -769,7 +771,7 @@ class ArrayManager(object):
         """
         PLUS_DI.
         """
-        result = talib.PLUS_DI(self.high, self.low, self.close, n)
+        result: np.ndarray = talib.PLUS_DI(self.high, self.low, self.close, n)
         if array:
             return result
         return result[-1]
@@ -778,7 +780,7 @@ class ArrayManager(object):
         """
         WILLR.
         """
-        result = talib.WILLR(self.high, self.low, self.close, n)
+        result: np.ndarray = talib.WILLR(self.high, self.low, self.close, n)
         if array:
             return result
         return result[-1]
@@ -793,7 +795,7 @@ class ArrayManager(object):
         """
         Ultimate Oscillator.
         """
-        result = talib.ULTOSC(self.high, self.low, self.close, time_period1, time_period2, time_period3)
+        result: np.ndarray = talib.ULTOSC(self.high, self.low, self.close, time_period1, time_period2, time_period3)
         if array:
             return result
         return result[-1]
@@ -802,7 +804,7 @@ class ArrayManager(object):
         """
         TRANGE.
         """
-        result = talib.TRANGE(self.high, self.low, self.close)
+        result: np.ndarray = talib.TRANGE(self.high, self.low, self.close)
         if array:
             return result
         return result[-1]
@@ -819,11 +821,11 @@ class ArrayManager(object):
         """
         Bollinger Channel.
         """
-        mid = self.sma(n, array)
-        std = self.std(n, 1, array)
+        mid: Union[float, np.ndarray] = self.sma(n, array)
+        std: Union[float, np.ndarray] = self.std(n, 1, array)
 
-        up = mid + std * dev
-        down = mid - std * dev
+        up: Union[float, np.ndarray] = mid + std * dev
+        down: Union[float, np.ndarray] = mid - std * dev
 
         return up, down
 
@@ -839,11 +841,11 @@ class ArrayManager(object):
         """
         Keltner Channel.
         """
-        mid = self.sma(n, array)
-        atr = self.atr(n, array)
+        mid: Union[float, np.ndarray] = self.sma(n, array)
+        atr: Union[float, np.ndarray] = self.atr(n, array)
 
-        up = mid + atr * dev
-        down = mid - atr * dev
+        up: Union[float, np.ndarray] = mid + atr * dev
+        down: Union[float, np.ndarray] = mid - atr * dev
 
         return up, down
 
@@ -856,8 +858,8 @@ class ArrayManager(object):
         """
         Donchian Channel.
         """
-        up = talib.MAX(self.high, n)
-        down = talib.MIN(self.low, n)
+        up: np.ndarray = talib.MAX(self.high, n)
+        down: np.ndarray = talib.MIN(self.low, n)
 
         if array:
             return up, down
@@ -884,7 +886,7 @@ class ArrayManager(object):
         """
         Aroon Oscillator.
         """
-        result = talib.AROONOSC(self.high, self.low, n)
+        result: np.ndarray = talib.AROONOSC(self.high, self.low, n)
 
         if array:
             return result
@@ -894,7 +896,7 @@ class ArrayManager(object):
         """
         MINUS_DM.
         """
-        result = talib.MINUS_DM(self.high, self.low, n)
+        result: np.ndarray = talib.MINUS_DM(self.high, self.low, n)
 
         if array:
             return result
@@ -904,7 +906,7 @@ class ArrayManager(object):
         """
         PLUS_DM.
         """
-        result = talib.PLUS_DM(self.high, self.low, n)
+        result: np.ndarray = talib.PLUS_DM(self.high, self.low, n)
 
         if array:
             return result
@@ -914,7 +916,7 @@ class ArrayManager(object):
         """
         Money Flow Index.
         """
-        result = talib.MFI(self.high, self.low, self.close, self.volume, n)
+        result: np.ndarray = talib.MFI(self.high, self.low, self.close, self.volume, n)
         if array:
             return result
         return result[-1]
@@ -923,7 +925,7 @@ class ArrayManager(object):
         """
         AD.
         """
-        result = talib.AD(self.high, self.low, self.close, self.volume)
+        result: np.ndarray = talib.AD(self.high, self.low, self.close, self.volume)
         if array:
             return result
         return result[-1]
@@ -937,7 +939,7 @@ class ArrayManager(object):
         """
         ADOSC.
         """
-        result = talib.ADOSC(self.high, self.low, self.close, self.volume, fast_period, slow_period)
+        result: np.ndarray = talib.ADOSC(self.high, self.low, self.close, self.volume, fast_period, slow_period)
         if array:
             return result
         return result[-1]
@@ -946,7 +948,7 @@ class ArrayManager(object):
         """
         BOP.
         """
-        result = talib.BOP(self.open, self.high, self.low, self.close)
+        result: np.ndarray = talib.BOP(self.open, self.high, self.low, self.close)
 
         if array:
             return result
@@ -995,9 +997,9 @@ file_handlers: Dict[str, logging.FileHandler] = {}
 
 
 def _get_file_logger_handler(filename: str) -> logging.FileHandler:
-    handler = file_handlers.get(filename, None)
+    handler: logging.FileHandler = file_handlers.get(filename, None)
     if handler is None:
-        handler = logging.FileHandler(filename)
+        handler: logging.FileHandler = logging.FileHandler(filename)
         file_handlers[filename] = handler  # Am i need a lock?
     return handler
 
@@ -1006,8 +1008,8 @@ def get_file_logger(filename: str) -> logging.Logger:
     """
     return a logger that writes records into a file.
     """
-    logger = logging.getLogger(filename)
-    handler = _get_file_logger_handler(filename)  # get singleton handler.
+    logger: logging.Logger = logging.getLogger(filename)
+    handler: logging.FileHandler = _get_file_logger_handler(filename)  # get singleton handler.
     handler.setFormatter(log_formatter)
     logger.addHandler(handler)  # each handler will be added only once.
     return logger
