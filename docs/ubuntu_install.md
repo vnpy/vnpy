@@ -40,13 +40,13 @@ sudo apt-get install build-essential
 打开终端运行如下命令执行一键安装：
 
 ```
-. install.sh
+sudo bash install.sh
 ```
 
 请注意，如果python软连接名不为python，比如python3或python3.10，请执行如下命令：
 
 ```
-. install.sh 你的python软连接
+sudo bash install.sh 你的python软连接
 ```
 
 一键安装过程整体分为3步：
