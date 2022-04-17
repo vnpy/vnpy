@@ -4,7 +4,7 @@ Global setting of the trading platform.
 
 from logging import CRITICAL
 from typing import Dict, Any
-from tzlocal import get_localzone
+from tzlocal import get_localzone_name
 
 from .utility import load_json
 
@@ -29,7 +29,7 @@ SETTINGS: Dict[str, Any] = {
     "datafeed.username": "",
     "datafeed.password": "",
 
-    "database.timezone": get_localzone().zone,
+    "database.timezone": get_localzone_name(),
     "database.name": "sqlite",
     "database.database": "database.db",
     "database.host": "",
