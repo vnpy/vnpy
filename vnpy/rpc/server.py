@@ -11,7 +11,7 @@ from .common import HEARTBEAT_TOPIC, HEARTBEAT_INTERVAL
 class RpcServer:
     """"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Constructor
         """
@@ -100,11 +100,11 @@ class RpcServer:
 
             # Try to get and execute callable function object; capture exception information if it fails
             try:
-                func = self._functions[name]
+                func: Any = self._functions[name]
                 r = func(*args, **kwargs)
-                rep = [True, r]
+                rep: list = [True, r]
             except Exception as e:  # noqa
-                rep = [False, traceback.format_exc()]
+                rep: list = [False, traceback.format_exc()]
 
             # send callable response by Reply socket
             self._socket_rep.send_pyobj(rep)
