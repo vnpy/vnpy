@@ -1,5 +1,6 @@
 from typing import Dict, List, Tuple
 from datetime import datetime
+from _collections_abc import dict_keys
 
 from vnpy.trader.object import BarData
 
@@ -9,7 +10,7 @@ from .base import to_int
 class BarManager:
     """"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """"""
         self._bars: Dict[datetime, BarData] = {}
         self._datetime_index_map: Dict[datetime, int] = {}
@@ -30,8 +31,8 @@ class BarManager:
         self._bars = dict(sorted(self._bars.items(), key=lambda tp: tp[0]))
 
         # Update map relationiship
-        ix_list = range(len(self._bars))
-        dt_list = self._bars.keys()
+        ix_list: range = range(len(self._bars))
+        dt_list: dict_keys = self._bars.keys()
 
         self._datetime_index_map = dict(zip(dt_list, ix_list))
         self._index_datetime_map = dict(zip(ix_list, dt_list))
@@ -43,10 +44,10 @@ class BarManager:
         """
         Update one single bar data.
         """
-        dt = bar.datetime
+        dt: datetime = bar.datetime
 
         if dt not in self._datetime_index_map:
-            ix = len(self._bars)
+            ix: int = len(self._bars)
             self._datetime_index_map[dt] = ix
             self._index_datetime_map[ix] = dt
 
@@ -70,15 +71,15 @@ class BarManager:
         """
         Get datetime with index.
         """
-        ix = to_int(ix)
+        ix: int = to_int(ix)
         return self._index_datetime_map.get(ix, None)
 
     def get_bar(self, ix: float) -> BarData:
         """
         Get bar data with index.
         """
-        ix = to_int(ix)
-        dt = self._index_datetime_map.get(ix, None)
+        ix: int = to_int(ix)
+        dt: datetime = self._index_datetime_map.get(ix, None)
         if not dt:
             return None
 
@@ -98,21 +99,21 @@ class BarManager:
             return 0, 1
 
         if not min_ix:
-            min_ix = 0
-            max_ix = len(self._bars) - 1
+            min_ix: int = 0
+            max_ix: int = len(self._bars) - 1
         else:
-            min_ix = to_int(min_ix)
-            max_ix = to_int(max_ix)
+            min_ix: int = to_int(min_ix)
+            max_ix: int = to_int(max_ix)
             max_ix = min(max_ix, self.get_count())
 
-        buf = self._price_ranges.get((min_ix, max_ix), None)
+        buf: tuple = self._price_ranges.get((min_ix, max_ix), None)
         if buf:
             return buf
 
-        bar_list = list(self._bars.values())[min_ix:max_ix + 1]
-        first_bar = bar_list[0]
-        max_price = first_bar.high_price
-        min_price = first_bar.low_price
+        bar_list: List[BarData] = list(self._bars.values())[min_ix:max_ix + 1]
+        first_bar: BarData = bar_list[0]
+        max_price: float = first_bar.high_price
+        min_price: float = first_bar.low_price
 
         for bar in bar_list[1:]:
             max_price = max(max_price, bar.high_price)
@@ -129,20 +130,20 @@ class BarManager:
             return 0, 1
 
         if not min_ix:
-            min_ix = 0
-            max_ix = len(self._bars) - 1
+            min_ix: int = 0
+            max_ix: int = len(self._bars) - 1
         else:
-            min_ix = to_int(min_ix)
-            max_ix = to_int(max_ix)
+            min_ix: int = to_int(min_ix)
+            max_ix: int = to_int(max_ix)
             max_ix = min(max_ix, self.get_count())
 
-        buf = self._volume_ranges.get((min_ix, max_ix), None)
+        buf: tuple = self._volume_ranges.get((min_ix, max_ix), None)
         if buf:
             return buf
 
-        bar_list = list(self._bars.values())[min_ix:max_ix + 1]
+        bar_list: List[BarData] = list(self._bars.values())[min_ix:max_ix + 1]
 
-        first_bar = bar_list[0]
+        first_bar: BarData = bar_list[0]
         max_volume = first_bar.volume
         min_volume = 0
 
