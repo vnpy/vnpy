@@ -16,7 +16,7 @@ class RpcServer:
         Constructor
         """
         # Save functions dict: key is function name, value is function object
-        self._functions: Dict[str, Any] = {}
+        self._functions: Dict[str, Callable] = {}
 
         # Zmq port related
         self._context: zmq.Context = zmq.Context()
@@ -100,8 +100,8 @@ class RpcServer:
 
             # Try to get and execute callable function object; capture exception information if it fails
             try:
-                func: Any = self._functions[name]
-                r = func(*args, **kwargs)
+                func: Callable = self._functions[name]
+                r: Any = func(*args, **kwargs)
                 rep: list = [True, r]
             except Exception as e:  # noqa
                 rep: list = [False, traceback.format_exc()]
