@@ -237,20 +237,24 @@ class WCIVStrategy(StrategyTemplate):
                 second_diff_pos = self.volume - second_pos
                 # 空仓情况，先买入次月合约，卖出当月合约
                 if second_diff_pos > 0:
-                    if not self.active_orderids and \
-                            down_limit <= second_opt.exercise_price <= up_limit and \
+                    if self.active_orderids:
+                        self.write_log('有未完成的订单，忽略开仓买入次月条件')
+                        return
+                    if down_limit <= second_opt.exercise_price <= up_limit and \
                             down_limit <= first_opt.exercise_price <= up_limit:
-                        print('空仓情况，先买入次月合约')
-                        self.send_order(
-                            vt_symbol=self.second_opt,
-                            volume=second_diff_pos,
-                            direction=Direction.LONG,
-                            offset=Offset.OPEN,
-                            price=second_tick.ask_price_1
-                        )
+                        self.write_log('行权价超出两个跳范围，忽略开仓买入条件')
+                    print('空仓情况，先买入次月合约')
+                    self.send_order(
+                        vt_symbol=self.second_opt,
+                        volume=second_diff_pos,
+                        direction=Direction.LONG,
+                        offset=Offset.OPEN,
+                        price=second_tick.ask_price_1
+                    )
             elif delta < self.avg1:
                 # 有多仓，平仓
                 if not self.active_orderids and second_pos > 0:
+                    self.write_log('有多仓，达到平仓条件，平仓')
                     self.send_order(
                         vt_symbol=self.second_opt,
                         volume=second_pos,
@@ -259,6 +263,7 @@ class WCIVStrategy(StrategyTemplate):
                         price=second_tick.bid_price_1
                     )
                 if not self.active_orderids and first_pos < 0:
+                    self.write_log('有空仓，达到平仓条件，平仓')
                     self.send_order(
                         vt_symbol=self.first_opt,
                         volume=first_pos,
@@ -271,20 +276,25 @@ class WCIVStrategy(StrategyTemplate):
                 # 空仓情况，买入当月合约，卖出次月合约
                 second_diff_pos = self.volume - second_pos
                 if second_diff_pos > 0:
-                    if not self.active_orderids and \
-                            down_limit <= second_opt.exercise_price <= up_limit and \
+                    if self.active_orderids:
+                        self.write_log('有未完成的订单，忽略开空次月条件')
+                        return
+                    if down_limit <= second_opt.exercise_price <= up_limit and \
                             down_limit <= first_opt.exercise_price <= up_limit:
-                        print('空仓情况，先买入次月合约')
-                        self.send_order(
-                            self.second_opt,
-                            volume=second_diff_pos,
-                            direction=Direction.SHORT,
-                            offset=Offset.OPEN,
-                            price=second_tick.ask_price_1
-                        )
+                        self.write_log('行权价超出两个跳范围，忽略开仓卖出条件')
+                        return
+                    self.write_log('空仓情况，先买入次月合约')
+                    self.send_order(
+                        self.second_opt,
+                        volume=second_diff_pos,
+                        direction=Direction.SHORT,
+                        offset=Offset.OPEN,
+                        price=second_tick.ask_price_1
+                    )
             elif delta > self.avg1:
                 # 平
                 if not self.active_orderids and second_pos < 0:
+                    self.write_log('平仓')
                      self.send_order(
                         vt_symbol=self.second_opt,
                         volume=second_pos,
@@ -293,6 +303,7 @@ class WCIVStrategy(StrategyTemplate):
                         price=second_tick.ask_price_1
                      )
                 if not self.active_orderids and first_pos > 0:
+                    self.write_log('平仓')
                     self.send_order(
                         vt_symbol=self.first_opt,
                         volume=first_pos,
