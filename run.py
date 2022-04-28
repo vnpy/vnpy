@@ -14,9 +14,12 @@ from vnpy_esunny import EsunnyGateway
 from vnpy_ctptest import CtptestGateway
 from vnpy_ctp import CtpGateway
 from vnpy_tap import TapGateway
+from vnpy.gateway.sopttest import SopttestGateway
 from vnpy_portfoliomanager import PortfolioManagerApp, PortfolioEngine
 from vnpy_datarecorder import DataRecorderApp
 from vnpy_optionmaster import OptionMasterApp
+from vnpy_scripttrader import ScriptTraderApp
+from vnpy.app.portfolio_strategy import PortfolioStrategyApp
 
 
 def main():
@@ -27,7 +30,7 @@ def main():
     main_engine = MainEngine(event_engine)
 
     main_engine.add_gateway(CtptestGateway)
-    # main_engine.add_gateway(CtpGateway)
+    main_engine.add_gateway(SopttestGateway)
     main_engine.add_gateway(JGGateway)
     main_engine.add_gateway(UftGateway)
     main_engine.add_gateway(XtpGateway)
@@ -40,7 +43,8 @@ def main():
     main_engine.add_app(PortfolioManagerApp)
     main_engine.add_app(DataRecorderApp)
     main_engine.add_app(OptionMasterApp)
-
+    main_engine.add_app(ScriptTraderApp)
+    main_engine.add_app(PortfolioStrategyApp)
 
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()

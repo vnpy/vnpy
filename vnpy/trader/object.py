@@ -278,7 +278,7 @@ class ContractData(BaseData):
     option_type: OptionType = None
     option_expiry: datetime = None
     option_portfolio: str = ""
-    option_index: str = ""          # for identifying options with same strike price
+    option_index: str = ""          # for identifying options with same strike price用于识别具有相同执行价格的期权
 
     etf_purchase_redem: str = ""         # ETF申赎代码
     etf_purchase_redem_min: str = 0      # ETF申赎最小数量
