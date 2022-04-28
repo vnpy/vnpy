@@ -33,7 +33,7 @@ class StrategyTemplate(ABC):
 
         self.inited: bool = False
         self.trading: bool = False
-        self.pos: Dict[str, int] = defaultdict(int)
+        self.pos: Dict[str, int] = defaultdict(lambda : 0)
 
         self.orders: Dict[str, OrderData] = {}
         self.active_orderids: Set[str] = set()
@@ -247,8 +247,7 @@ class StrategyTemplate(ABC):
         """
         Put an strategy data event for ui update.
         """
-        if self.inited:
-            self.strategy_engine.put_strategy_event(self)
+        self.strategy_engine.put_strategy_event(self)
 
     def send_email(self, msg) -> None:
         """
