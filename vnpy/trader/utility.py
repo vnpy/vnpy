@@ -2,12 +2,12 @@
 General utility functions.
 """
 
-from datetime import datetime
 import json
 import logging
 import sys
+from datetime import datetime
 from pathlib import Path
-from typing import Callable, Dict, Tuple, Union, Optional, Any
+from typing import Callable, Dict, Tuple, Union, Optional
 from decimal import Decimal
 from math import floor, ceil
 
@@ -97,7 +97,7 @@ def load_json(filename: str) -> dict:
 
     if filepath.exists():
         with open(filepath, mode="r", encoding="UTF-8") as f:
-            data: Any = json.load(f)
+            data: dict = json.load(f)
         return data
     else:
         save_json(filename, {})

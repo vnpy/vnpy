@@ -276,7 +276,7 @@ class QuoteData(BaseData):
     datetime: datetime = None
     reference: str = ""
 
-    def __post_init__(self)  -> None:
+    def __post_init__(self) -> None:
         """"""
         self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
         self.vt_quoteid: str = f"{self.gateway_name}.{self.quoteid}"
