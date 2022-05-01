@@ -102,7 +102,7 @@ class ChartWidget(pg.PlotWidget):
 
         # Connect x-axis link
         if self._plots:
-            first_plot: List[pg.PlotItem] = list(self._plots.values())[0]
+            first_plot: pg.PlotItem = list(self._plots.values())[0]
             plot.setXLink(first_plot)
 
         # Store plot object in dict
@@ -443,12 +443,12 @@ class ChartCursor(QtCore.QObject):
 
     def _update_label(self) -> None:
         """"""
-        bottom_plot: List[pg.PlotItem] = list(self._plots.values())[-1]
+        bottom_plot: pg.PlotItem = list(self._plots.values())[-1]
         axis_width = bottom_plot.getAxis("right").width()
         axis_height = bottom_plot.getAxis("bottom").height()
         axis_offset: QtCore.QPointF = QtCore.QPointF(axis_width, axis_height)
 
-        bottom_view: List[pg.ViewBox] = list(self._views.values())[-1]
+        bottom_view: pg.ViewBox = list(self._views.values())[-1]
         bottom_right = bottom_view.mapSceneToView(
             bottom_view.sceneBoundingRect().bottomRight() - axis_offset
         )
