@@ -254,11 +254,11 @@ class PositionHolding:
             return [req]
 
         if req.direction == Direction.LONG:
-            pos_available: float = self.short_pos - self.short_pos_frozen
-            td_available: float = self.short_td - self.short_td_frozen
+            pos_available: int = self.short_pos - self.short_pos_frozen
+            td_available: int = self.short_td - self.short_td_frozen
         else:
-            pos_available: float = self.long_pos - self.long_pos_frozen
-            td_available: float = self.long_td - self.long_td_frozen
+            pos_available: int = self.long_pos - self.long_pos_frozen
+            td_available: int = self.long_td - self.long_td_frozen
 
         if req.volume > pos_available:
             return []
@@ -285,11 +285,11 @@ class PositionHolding:
     def convert_order_request_lock(self, req: OrderRequest) -> List[OrderRequest]:
         """"""
         if req.direction == Direction.LONG:
-            td_volume: float = self.short_td
-            yd_available: float = self.short_yd - self.short_yd_frozen
+            td_volume: int = self.short_td
+            yd_available: int = self.short_yd - self.short_yd_frozen
         else:
-            td_volume: float = self.long_td
-            yd_available: float = self.long_yd - self.long_yd_frozen
+            td_volume: int = self.long_td
+            yd_available: int = self.long_yd - self.long_yd_frozen
 
         # If there is td_volume, we can only lock position
         if td_volume:
@@ -299,8 +299,8 @@ class PositionHolding:
         # If no td_volume, we close opposite yd position first
         # then open new position
         else:
-            close_volume: float = min(req.volume, yd_available)
-            open_volume: float = max(0, req.volume - yd_available)
+            close_volume: int = min(req.volume, yd_available)
+            open_volume: int = max(0, req.volume - yd_available)
             req_list: List[OrderRequest] = []
 
             if yd_available:
@@ -323,13 +323,13 @@ class PositionHolding:
     def convert_order_request_net(self, req: OrderRequest) -> List[OrderRequest]:
         """"""
         if req.direction == Direction.LONG:
-            pos_available: float = self.short_pos - self.short_pos_frozen
-            td_available: float = self.short_td - self.short_td_frozen
-            yd_available: float = self.short_yd - self.short_yd_frozen
+            pos_available: int = self.short_pos - self.short_pos_frozen
+            td_available: int = self.short_td - self.short_td_frozen
+            yd_available: int = self.short_yd - self.short_yd_frozen
         else:
-            pos_available: float = self.long_pos - self.long_pos_frozen
-            td_available: float = self.long_td - self.long_td_frozen
-            yd_available: float = self.long_yd - self.long_yd_frozen
+            pos_available: int = self.long_pos - self.long_pos_frozen
+            td_available: int = self.long_td - self.long_td_frozen
+            yd_available: int = self.long_yd - self.long_yd_frozen
 
         # Split close order to close today/yesterday for SHFE/INE exchange
         if req.exchange in {Exchange.SHFE, Exchange.INE}:
@@ -337,7 +337,7 @@ class PositionHolding:
             volume_left: float = req.volume
 
             if td_available:
-                td_volume: float = min(td_available, volume_left)
+                td_volume: int = min(td_available, volume_left)
                 volume_left -= td_volume
 
                 td_req: OrderRequest = copy(req)
@@ -346,7 +346,7 @@ class PositionHolding:
                 reqs.append(td_req)
 
             if volume_left and yd_available:
-                yd_volume: float = min(yd_available, volume_left)
+                yd_volume: int = min(yd_available, volume_left)
                 volume_left -= yd_volume
 
                 yd_req: OrderRequest = copy(req)
@@ -355,7 +355,7 @@ class PositionHolding:
                 reqs.append(yd_req)
 
             if volume_left > 0:
-                open_volume: float = volume_left
+                open_volume: int = volume_left
 
                 open_req: OrderRequest = copy(req)
                 open_req.offset = Offset.OPEN
@@ -369,7 +369,7 @@ class PositionHolding:
             volume_left: float = req.volume
 
             if pos_available:
-                close_volume: float = min(pos_available, volume_left)
+                close_volume: int = min(pos_available, volume_left)
                 volume_left -= pos_available
 
                 close_req: OrderRequest = copy(req)
@@ -378,7 +378,7 @@ class PositionHolding:
                 reqs.append(close_req)
 
             if volume_left > 0:
-                open_volume: float = volume_left
+                open_volume: int = volume_left
 
                 open_req: OrderRequest = copy(req)
                 open_req.offset = Offset.OPEN
