@@ -13,7 +13,7 @@ from .manager import BarManager
 class ChartItem(pg.GraphicsObject):
     """"""
 
-    def __init__(self, manager: BarManager):
+    def __init__(self, manager: BarManager) -> None:
         """"""
         super().__init__()
 
@@ -69,23 +69,23 @@ class ChartItem(pg.GraphicsObject):
         """
         pass
 
-    def update_history(self, history: List[BarData]) -> BarData:
+    def update_history(self, history: List[BarData]) -> None:
         """
         Update a list of bar data.
         """
         self._bar_picutures.clear()
 
-        bars = self._manager.get_all_bars()
+        bars: List[BarData] = self._manager.get_all_bars()
         for ix, bar in enumerate(bars):
             self._bar_picutures[ix] = None
 
         self.update()
 
-    def update_bar(self, bar: BarData) -> BarData:
+    def update_bar(self, bar: BarData) -> None:
         """
         Update single bar data.
         """
-        ix = self._manager.get_index(bar.datetime)
+        ix: int = self._manager.get_index(bar.datetime)
 
         self._bar_picutures[ix] = None
 
@@ -103,7 +103,7 @@ class ChartItem(pg.GraphicsObject):
         painter: QtGui.QPainter,
         opt: QtWidgets.QStyleOptionGraphicsItem,
         w: QtWidgets.QWidget
-    ):
+    ) -> None:
         """
         Reimplement the paint method of parent class.
 
@@ -111,11 +111,11 @@ class ChartItem(pg.GraphicsObject):
         """
         rect = opt.exposedRect
 
-        min_ix = int(rect.left())
-        max_ix = int(rect.right())
-        max_ix = min(max_ix, len(self._bar_picutures))
+        min_ix: int = int(rect.left())
+        max_ix: int = int(rect.right())
+        max_ix: int = min(max_ix, len(self._bar_picutures))
 
-        rect_area = (min_ix, max_ix)
+        rect_area: tuple = (min_ix, max_ix)
         if rect_area != self._rect_area or not self._item_picuture:
             self._rect_area = rect_area
             self._draw_item_picture(min_ix, max_ix)
@@ -127,13 +127,13 @@ class ChartItem(pg.GraphicsObject):
         Draw the picture of item in specific range.
         """
         self._item_picuture = QtGui.QPicture()
-        painter = QtGui.QPainter(self._item_picuture)
+        painter: QtGui.QPainter = QtGui.QPainter(self._item_picuture)
 
         for ix in range(min_ix, max_ix):
-            bar_picture = self._bar_picutures[ix]
+            bar_picture: QtGui.QPicture = self._bar_picutures[ix]
 
             if bar_picture is None:
-                bar = self._manager.get_bar(ix)
+                bar: BarData = self._manager.get_bar(ix)
                 bar_picture = self._draw_bar_picture(ix, bar)
                 self._bar_picutures[ix] = bar_picture
 
@@ -153,15 +153,15 @@ class ChartItem(pg.GraphicsObject):
 class CandleItem(ChartItem):
     """"""
 
-    def __init__(self, manager: BarManager):
+    def __init__(self, manager: BarManager) -> None:
         """"""
         super().__init__(manager)
 
     def _draw_bar_picture(self, ix: int, bar: BarData) -> QtGui.QPicture:
         """"""
         # Create objects
-        candle_picture = QtGui.QPicture()
-        painter = QtGui.QPainter(candle_picture)
+        candle_picture: QtGui.QPicture = QtGui.QPicture()
+        painter: QtGui.QPainter = QtGui.QPainter(candle_picture)
 
         # Set painter color
         if bar.close_price >= bar.open_price:
@@ -185,7 +185,7 @@ class CandleItem(ChartItem):
                 QtCore.QPointF(ix + BAR_WIDTH, bar.open_price),
             )
         else:
-            rect = QtCore.QRectF(
+            rect: QtCore.QRectF = QtCore.QRectF(
                 ix - BAR_WIDTH,
                 bar.open_price,
                 BAR_WIDTH * 2,
@@ -200,7 +200,7 @@ class CandleItem(ChartItem):
     def boundingRect(self) -> QtCore.QRectF:
         """"""
         min_price, max_price = self._manager.get_price_range()
-        rect = QtCore.QRectF(
+        rect: QtCore.QRectF = QtCore.QRectF(
             0,
             min_price,
             len(self._bar_picutures),
@@ -221,10 +221,10 @@ class CandleItem(ChartItem):
         """
         Get information text to show by cursor.
         """
-        bar = self._manager.get_bar(ix)
+        bar: BarData = self._manager.get_bar(ix)
 
         if bar:
-            words = [
+            words: list = [
                 "Date",
                 bar.datetime.strftime("%Y-%m-%d"),
                 "",
@@ -243,9 +243,9 @@ class CandleItem(ChartItem):
                 "Close",
                 str(bar.close_price)
             ]
-            text = "\n".join(words)
+            text: str = "\n".join(words)
         else:
-            text = ""
+            text: str = ""
 
         return text
 
@@ -253,15 +253,15 @@ class CandleItem(ChartItem):
 class VolumeItem(ChartItem):
     """"""
 
-    def __init__(self, manager: BarManager):
+    def __init__(self, manager: BarManager) -> None:
         """"""
         super().__init__(manager)
 
     def _draw_bar_picture(self, ix: int, bar: BarData) -> QtGui.QPicture:
         """"""
         # Create objects
-        volume_picture = QtGui.QPicture()
-        painter = QtGui.QPainter(volume_picture)
+        volume_picture: QtGui.QPicture = QtGui.QPicture()
+        painter: QtGui.QPainter = QtGui.QPainter(volume_picture)
 
         # Set painter color
         if bar.close_price >= bar.open_price:
@@ -272,7 +272,7 @@ class VolumeItem(ChartItem):
             painter.setBrush(self._down_brush)
 
         # Draw volume body
-        rect = QtCore.QRectF(
+        rect: QtCore.QRectF = QtCore.QRectF(
             ix - BAR_WIDTH,
             0,
             BAR_WIDTH * 2,
@@ -287,7 +287,7 @@ class VolumeItem(ChartItem):
     def boundingRect(self) -> QtCore.QRectF:
         """"""
         min_volume, max_volume = self._manager.get_volume_range()
-        rect = QtCore.QRectF(
+        rect: QtCore.QRectF = QtCore.QRectF(
             0,
             min_volume,
             len(self._bar_picutures),
@@ -308,11 +308,11 @@ class VolumeItem(ChartItem):
         """
         Get information text to show by cursor.
         """
-        bar = self._manager.get_bar(ix)
+        bar: BarData = self._manager.get_bar(ix)
 
         if bar:
-            text = f"Volume {bar.volume}"
+            text: str = f"Volume {bar.volume}"
         else:
-            text = ""
+            text: str = ""
 
         return text
