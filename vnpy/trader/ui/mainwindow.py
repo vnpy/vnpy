@@ -100,7 +100,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         gateway_names: list = self.main_engine.get_all_gateway_names()
         for name in gateway_names:
-            func = partial(self.connect, name)
+            func: Callable = partial(self.connect, name)
             self.add_action(
                 sys_menu,
                 f"连接{name}",
@@ -123,9 +123,9 @@ class MainWindow(QtWidgets.QMainWindow):
         all_apps: List[BaseApp] = self.main_engine.get_all_apps()
         for app in all_apps:
             ui_module: ModuleType = import_module(app.app_module + ".ui")
-            widget_class = getattr(ui_module, app.widget_name)
+            widget_class: QtWidgets.QWidget = getattr(ui_module, app.widget_name)
 
-            func = partial(self.open_widget, widget_class, app.app_name)
+            func: Callable = partial(self.open_widget, widget_class, app.app_name)
 
             self.add_action(app_menu, app.display_name, app.icon_name, func, True)
 

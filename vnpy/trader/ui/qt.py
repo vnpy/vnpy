@@ -61,7 +61,7 @@ def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
 
 class ExceptionWidget(QtWidgets.QWidget):
     """"""
-    signal: QtCore.Signal = QtCore.pyqtSignal(str)
+    signal: QtCore.Signal = QtCore.Signal(str)
 
     def __init__(self, parent: QtWidgets.QWidget = None) -> None:
         """"""

@@ -204,7 +204,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
     sorting: bool = False
     headers: dict = {}
 
-    signal: QtCore.Signal = QtCore.pyqtSignal(Event)
+    signal: QtCore.Signal = QtCore.Signal(Event)
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
@@ -660,7 +660,7 @@ class TradingWidget(QtWidgets.QWidget):
     General manual trading widget.
     """
 
-    signal_tick: QtCore.Signal = QtCore.pyqtSignal(Event)
+    signal_tick: QtCore.Signal = QtCore.Signal(Event)
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""

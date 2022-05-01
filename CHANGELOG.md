@@ -4,6 +4,7 @@
 
 1. 升级tzlocal库的版本到4.2，消除get_localzone()函数的warning
 2. 完善代码中函数和变量类型提示
+3. 使用QtCore.Signal代替老的QtCore.pyqtSignal
 
 ## 修复
 
