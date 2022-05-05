@@ -199,7 +199,6 @@ class StrategyEngine(BaseEngine):
             type=OrderType.LIMIT,
             price=price,
             volume=volume,
-            product=contract.product,
             reference=f"{APP_NAME}_{strategy.strategy_name}"
         )
 

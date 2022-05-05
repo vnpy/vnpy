@@ -139,10 +139,11 @@ class StrategyTemplate(ABC):
         """
         Callback of new trade data update.
         """
+        pos = self.pos.get(trade.vt_symbol, 0)
         if trade.direction == Direction.LONG:
-            self.pos[trade.vt_symbol] += trade.volume
+            self.pos[trade.vt_symbol] = pos + trade.volume
         else:
-            self.pos[trade.vt_symbol] -= trade.volume
+            self.pos[trade.vt_symbol] = pos - trade.volume
 
     def update_order(self, order: OrderData) -> None:
         """
@@ -211,7 +212,6 @@ class StrategyTemplate(ABC):
         """
         if self.trading:
             self.strategy_engine.cancel_order(self, vt_orderid)
-        self.order_start_dt = None
 
     def cancel_all(self) -> None:
         """
@@ -219,7 +219,6 @@ class StrategyTemplate(ABC):
         """
         for vt_orderid in list(self.active_orderids):
             self.cancel_order(vt_orderid)
-        self.order_start_dt = None
 
     def get_pos(self, vt_symbol: str) -> int:
         """"""

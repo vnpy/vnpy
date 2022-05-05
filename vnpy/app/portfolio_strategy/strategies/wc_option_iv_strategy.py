@@ -247,8 +247,10 @@ class WCIVStrategy(StrategyTemplate):
         first_tick: TickData = self.get_tick(self.first_opt)
         second_tick: TickData = self.get_tick(self.second_opt)
         if not self.if_hege():
+            # 先处理不平衡的问题
             first_diff_pos = self.target_pos.first - first_pos
             if self.target_pos.first != 0:
+                # 开仓
                 if first_diff_pos > 0:
 
                     print('不平衡，先买入当月合约')
@@ -263,15 +265,16 @@ class WCIVStrategy(StrategyTemplate):
                     print('不平衡情况，先买空当月合约')
                     self.send_order(
                         vt_symbol=self.first_opt,
-                        volume=first_diff_pos,
+                        volume=abs(first_diff_pos),
                         direction=Direction.SHORT,
                         offset=Offset.OPEN,
                         price=first_tick.bid_price_2
                     )
             else:
+                # 平仓
                 if first_diff_pos > 0:
 
-                    print('不平衡，先买入当月合约')
+                    print('买平')
                     self.send_order(
                         vt_symbol=self.first_opt,
                         volume=first_diff_pos,
@@ -280,7 +283,7 @@ class WCIVStrategy(StrategyTemplate):
                         price=first_tick.ask_price_2
                     )
                 else:
-                    print('不平衡情况，先买空当月合约')
+                    print('卖平')
                     self.send_order(
                         vt_symbol=self.first_opt,
                         volume=first_diff_pos,
@@ -288,10 +291,11 @@ class WCIVStrategy(StrategyTemplate):
                         offset=Offset.CLOSE,
                         price=first_tick.bid_price_2
                     )
+            return
         second_diff_pos = self.target_pos.second - second_pos
         if self.target_pos.second != 0:
             if second_diff_pos > 0:
-                print('空仓情况，先买入次月合约')
+                print('空仓情况，先买多次月合约')
                 self.send_order(
                     vt_symbol=self.second_opt,
                     volume=second_diff_pos,
@@ -300,7 +304,7 @@ class WCIVStrategy(StrategyTemplate):
                     price=second_tick.ask_price_2
                 )
             elif second_diff_pos < 0:
-                print('空仓情况，先买入次月合约')
+                print('空仓情况，先卖空次月合约')
                 self.send_order(
                     vt_symbol=self.second_opt,
                     volume=abs(second_diff_pos),
@@ -330,30 +334,29 @@ class WCIVStrategy(StrategyTemplate):
 
     def check_iv(self, tick: TickData):
         # 检查买卖条件
-        self.write_log('检查买卖条件')
+        if self.active_orderids:
+            if self.order_start_dt and \
+                    (datetime.now() - self.order_start_dt).seconds > self.order_cancel_count:
+                self.cancel_all()
+            return
         if not self.if_hege():
-            self.take_first()
+            self.take_target_pos()
+            return
         delta = self.delta()
         first_pos = self.get_pos(self.first_opt)
         second_pos = self.get_pos(self.second_opt)
         first_opt: OptContract = self.contract_manager.get_option_contract(self.first_opt)
         second_opt: OptContract = self.contract_manager.get_option_contract(self.second_opt)
-
+        last_underlying_tick = self.get_tick(self.underlying_symbol)
         price_tick = self.price_tick(tick.last_price)
-        up_limit = 2 * price_tick + tick.last_price
-        down_limit = tick.last_price - 2 * price_tick
+        up_limit = 2 * price_tick + last_underlying_tick.last_price
+        down_limit = last_underlying_tick.last_price - 2 * price_tick
         if self.target_pos and \
                 self.target_pos.second == second_pos and \
                 self.target_pos.first == first_pos:
             self.target_pos = None
 
         if delta is None:
-            return
-
-        if self.active_orderids:
-            if self.order_start_dt and \
-                    (datetime.now() - self.order_start_dt).seconds > self.order_cancel_count:
-                self.cancel_all()
             return
 
         if not (down_limit <= second_opt.exercise_price <= up_limit and
