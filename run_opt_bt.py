@@ -2,7 +2,7 @@
 
 from datetime import datetime
 import pandas as pd
-
+import dateutil.parser
 from sqlalchemy import desc
 import contextlib
 from datetime import datetime
@@ -11,6 +11,11 @@ from importlib import reload
 from vnpy.app.portfolio_strategy import BacktestingEngine
 from vnpy.trader.constant import Interval
 from vnpy.app.portfolio_strategy.strategies.wc_option_iv_strategy_bars2 import WCIVStrategy
+
+
+date_ratio = pd.read_csv('C:/Users/kangy/.wc-vntrader/data_ratio.csv', parse_dates=['date'])
+ratio_dict = date_ratio.set_index('date')['ratio'].to_dict()
+ratio_dict = {k.date(): v/100 for k, v in ratio_dict.items()}
 
 engine = BacktestingEngine()
 engine.set_parameters(
@@ -63,7 +68,7 @@ engine.set_parameters(
     capital=1000000,
 )
 # engine.add_strategy(DeltaNeutralStrategy, {})
-engine.add_strategy(WCIVStrategy, {})
+engine.add_strategy(WCIVStrategy, {'r': ratio_dict})
 #%%
 engine.load_data()
 engine.run_backtesting()

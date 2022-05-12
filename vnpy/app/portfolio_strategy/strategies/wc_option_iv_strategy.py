@@ -170,6 +170,7 @@ class WCIVStrategy(StrategyTemplate):
         self.second_iv = round(second_iv, 4)
         self.put_event()
         self.check_iv(tick)
+        self.check_expire()
 
     def update_underlying_tick(self, tick: TickData):
         """
@@ -364,14 +365,14 @@ class WCIVStrategy(StrategyTemplate):
                 down_limit <= first_opt.exercise_price <= up_limit):
             self.write_log('行权价超出两个跳范围，忽略开仓卖出条件')
             return
-        if delta < self.avg1 and self.spread_pos() > 0:
+        if delta < self.avg1 and self.spread_pos() < 0:
             # 有多仓，平仓
             print('平')
             self.target_pos = PosTarget(first=0, second=0)
             self.take_target_pos()
             return
 
-        elif delta > self.avg1 and self.spread_pos() < 0:
+        elif delta > self.avg1 and self.spread_pos() > 0:
             # 平
             self.target_pos = PosTarget(first=0, second=0)
             self.take_target_pos()

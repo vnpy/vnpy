@@ -6,7 +6,7 @@
 回测同时成交版本
 """
 from typing import List, Dict
-from datetime import datetime, time
+from datetime import datetime, time, date
 import pandas as pd
 from dataclasses import dataclass
 from sqlalchemy import desc
@@ -35,13 +35,13 @@ class WCIVStrategy(StrategyTemplate):
     """"""
 
     author = "kangyuqiang"
-    r: float = 0.02
+    r: Dict[date, float] = {}
     volume: int = 1
     threshold_up: float = 0.02                          # 阈值1
     threshold_down: float = -0.02                       # 阈值2
     avg1: float = 0.0                                   # 均值
-    days_adv_change: int = 3
-    days_adv_close: int = 4
+    days_adv_change: int = 6
+    days_adv_close: int = 6
     adv_close_time = time(hour=13, minute=20, second=0)
     parameters = [
         "volume",
@@ -85,6 +85,7 @@ class WCIVStrategy(StrategyTemplate):
         self.order_start_dt = None
         self.order_cancel_count = 10
         self.trading = True
+        self.current_dt = datetime(year=1900, month=1, day=1)
 
     def on_init(self):
         """
@@ -141,6 +142,7 @@ class WCIVStrategy(StrategyTemplate):
         """
         计算隐含波动率
         """
+        self.check_expire()
         leg_2_bar: BarData = self.get_bar(self.leg_2_opt)
         leg_1_bar: BarData = self.get_bar(self.leg_1_opt)
         if not leg_2_bar or not leg_1_bar:
@@ -155,6 +157,7 @@ class WCIVStrategy(StrategyTemplate):
         leg_1_period = self.contract_manager.get_contract_period(leg_1_opt, dt=leg_2_bar.datetime)
         leg_2_atm = self._synthetic_futures_price.get(leg_2_period)
         leg_1_atm = self._synthetic_futures_price.get(leg_1_period)
+        r = self.r.get(self.current_dt.date(), 0.02)
         if leg_2_atm is None or leg_1_atm is None:
             self.write_log(f'合成期货的价格为None: {leg_2_atm}, {leg_1_atm}')
             return
@@ -162,7 +165,7 @@ class WCIVStrategy(StrategyTemplate):
             price=leg_2_price,
             s=leg_2_atm,
             k=leg_2_opt.exercise_price,
-            r=self.r,
+            r=r,
             t=get_rest_pct(end_dt=leg_2_opt.expire_date, now=leg_2_bar.datetime),
             cp=1 if leg_2_opt.contract_type == 'CO' else -1
         )
@@ -170,7 +173,7 @@ class WCIVStrategy(StrategyTemplate):
             price=leg_1_price,
             s=leg_1_atm,
             k=leg_1_opt.exercise_price,
-            r=self.r,
+            r=r,
             t=get_rest_pct(end_dt=leg_1_opt.expire_date, now=leg_2_bar.datetime),
             cp=1 if leg_1_opt.contract_type == 'CO' else -1
         )
@@ -187,6 +190,7 @@ class WCIVStrategy(StrategyTemplate):
         underlying_bar: BarData = self.get_bar(self.underlying_symbol)
         if underlying_bar is None:
             return
+        self.current_dt = underlying_bar.datetime
         price = underlying_bar.close_price
         for p in [Period.curr_month, Period.next_month]:
             call, put = self.contract_manager.get_equal_opts(
@@ -212,10 +216,11 @@ class WCIVStrategy(StrategyTemplate):
             if call_bar is None or put_bar is None:
                 print(f'平值合约的行情为: {call_bar}, {put_bar}')
                 continue
+            r = self.r.get(self.current_dt.date(), 0.02)
             futures_price = opt_compose_price(
                 c_price=call_bar.close_price,
                 p_price=put_bar.close_price,
-                r=self.r,
+                r=r,
                 rest_pct=get_rest_pct(end_dt=call.expire_date, now=underlying_bar.datetime),
                 exercise_price=call.exercise_price
             )
@@ -337,14 +342,18 @@ class WCIVStrategy(StrategyTemplate):
                 down_limit <= leg_2_opt.exercise_price <= up_limit):
             self.write_log('行权价超出两个跳范围，忽略开仓卖出条件')
             return
-        if delta < self.avg1 and self.spread_pos() > 0:
+
+        if self.spread_pos() > 0:
+            pass
+
+        if delta < self.avg1 and self.spread_pos() < 0:
             # 有多仓，平仓
             print('平')
             self.target_pos = PosTarget(leg_2=0, leg_1=0)
             self.take_target_pos()
             return
 
-        elif delta > self.avg1 and self.spread_pos() < 0:
+        elif delta > self.avg1 and self.spread_pos() > 0:
             # 平
             self.target_pos = PosTarget(leg_2=0, leg_1=0)
             self.take_target_pos()
@@ -376,7 +385,9 @@ class WCIVStrategy(StrategyTemplate):
 
     def check_expire(self):
         # 检查过期时间
-        now = datetime.now()
+        now = self.current_dt
+        if now.time() < time(hour=14, minute=50):
+            return
         leg_2_opt: OptContract = self.contract_manager.get_option_contract(self.leg_2_opt)
         leg_1_opt: OptContract = self.contract_manager.get_option_contract(self.leg_1_opt)
         days1 = distance(dt_a=now, dt_b=leg_2_opt.expire_date)
@@ -386,8 +397,8 @@ class WCIVStrategy(StrategyTemplate):
         bar1: BarData = self.get_bar(self.leg_2_opt)
         bar2: BarData = self.get_bar(self.leg_1_opt)
         tm = now.time()
-        if days1 <= self.days_adv_close and days2 <= self.days_adv_close and tm > self.adv_close_time:
-            self.write_log('临近交易日，触发平仓并关闭策略')
+        if days1 <= self.days_adv_close or days2 <= self.days_adv_close:
+            print('临近交易日，触发平仓并关闭策略')
             self.cancel_all()
             if pos_2 > 0:
                 self.sell(vt_symbol=self.leg_2_opt,
@@ -408,4 +419,5 @@ class WCIVStrategy(StrategyTemplate):
                            volume=abs(pos_1))
             if pos_2 == pos_1 == 0:
                 self.inited = False
+                self.trading = False
                 self.on_stop()
