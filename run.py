@@ -17,6 +17,7 @@ from vnpy_tap import TapGateway
 from vnpy.gateway.sopttest import SopttestGateway
 from vnpy_portfoliomanager import PortfolioManagerApp, PortfolioEngine
 from vnpy_datarecorder import DataRecorderApp
+from vnpy_datamanager import DataManagerApp
 from vnpy_optionmaster import OptionMasterApp
 from vnpy_scripttrader import ScriptTraderApp
 from vnpy.app.portfolio_strategy import PortfolioStrategyApp
@@ -45,6 +46,7 @@ def main():
     main_engine.add_app(OptionMasterApp)
     main_engine.add_app(ScriptTraderApp)
     main_engine.add_app(PortfolioStrategyApp)
+    main_engine.add_app(DataManagerApp)
 
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()

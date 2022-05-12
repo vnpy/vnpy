@@ -112,7 +112,7 @@ class StrategyTemplate(ABC):
         """
         Callback when strategy is started.
         """
-        pass
+        self.trading = True
 
     @virtual
     def on_stop(self) -> None:

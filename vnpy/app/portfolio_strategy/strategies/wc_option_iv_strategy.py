@@ -5,7 +5,7 @@
 @since: 2022/4/28 8:35
 """
 from typing import List, Dict
-from datetime import datetime
+from datetime import datetime, time
 import pandas as pd
 from dataclasses import dataclass
 from sqlalchemy import desc
@@ -38,17 +38,17 @@ class WCIVStrategy(StrategyTemplate):
     author = "kangyuqiang"
     r: float = 0.02
     volume: int = 100
-    threshold1: float = 0.02                    # 阈值1
-    threshold2: float = 0.01                    # 阈值2
+    threshold_up: float = 0.02                    # 阈值1
+    threshold_down: float = 0.01                    # 阈值2
     avg1: float = 0.001                         # 均值
     days_adv_change: int = 3
     days_adv_close: int = 4
-
+    adv_close_time = time(hour=13, minute=20, second=0)
     parameters = [
         "volume",
         "r",
-        "threshold1",
-        "threshold2",
+        "threshold_up",
+        "threshold_down",
         "avg1",
         "days_adv_change",
         "days_adv_close",
@@ -206,7 +206,7 @@ class WCIVStrategy(StrategyTemplate):
                     gateway_name=contract.gateway_name
                 )
                 self.iv_engine.symbol_strategy_map[put.code].append(self)
-                self._sbd.add(call.code)
+                self._sbd.add(put.code)
 
             if call is None or put is None:
                 self.write_log('平值合约计算出来为None')
@@ -235,10 +235,23 @@ class WCIVStrategy(StrategyTemplate):
     def if_hege(self):
         first_pos = self.get_pos(self.first_opt)
         second_pos = self.get_pos(self.second_opt)
-        if abs(first_pos) == abs(second_pos):
+        if first_pos == -second_pos:
             return True
         else:
             return False
+
+    def spread_pos(self):
+        first_pos = self.get_pos(self.first_opt)
+        second_pos = self.get_pos(self.second_opt)
+        mi = min(abs(first_pos), abs(second_pos))
+        if first_pos == 0 or second_pos == 0:
+            return  0
+        elif first_pos > 0 and second_pos < 0:
+            return mi
+        elif first_pos < 0 and second_pos > 0:
+            return -mi
+        else:
+            return 0
 
     def take_target_pos(self):
         first_pos = self.get_pos(self.first_opt)
@@ -248,88 +261,77 @@ class WCIVStrategy(StrategyTemplate):
         second_tick: TickData = self.get_tick(self.second_opt)
         if not self.if_hege():
             # 先处理不平衡的问题
-            first_diff_pos = self.target_pos.first - first_pos
-            if self.target_pos.first != 0:
-                # 开仓
-                if first_diff_pos > 0:
+            first_diff_pos = -second_pos - first_pos
 
+            # 当前有持仓
+            # 开仓
+            if first_diff_pos > 0:
+                if first_pos >= 0:
                     print('不平衡，先买入当月合约')
-                    self.send_order(
+                    self.buy(
                         vt_symbol=self.first_opt,
                         volume=first_diff_pos,
-                        direction=Direction.LONG,
-                        offset=Offset.OPEN,
                         price=first_tick.ask_price_2
                     )
                 else:
-                    print('不平衡情况，先买空当月合约')
-                    self.send_order(
+                    if abs(first_pos) > first_diff_pos:
+                        volume = first_diff_pos
+                    else:
+                        volume = first_pos
+                    self.cover(
+                        vt_symbol=self.first_opt,
+                        volume=volume,
+                        price=first_tick.ask_price_2
+                    )
+            elif first_diff_pos < 0:
+                if first_pos <= 0:
+                    self.short(
                         vt_symbol=self.first_opt,
                         volume=abs(first_diff_pos),
-                        direction=Direction.SHORT,
-                        offset=Offset.OPEN,
-                        price=first_tick.bid_price_2
-                    )
-            else:
-                # 平仓
-                if first_diff_pos > 0:
-
-                    print('买平')
-                    self.send_order(
-                        vt_symbol=self.first_opt,
-                        volume=first_diff_pos,
-                        direction=Direction.LONG,
-                        offset=Offset.CLOSE,
                         price=first_tick.ask_price_2
                     )
                 else:
-                    print('卖平')
-                    self.send_order(
+                    if first_pos > abs(first_diff_pos):
+                        volume = first_diff_pos
+                    else:
+                        volume = first_pos
+                    self.sell(
                         vt_symbol=self.first_opt,
-                        volume=first_diff_pos,
-                        direction=Direction.SHORT,
-                        offset=Offset.CLOSE,
-                        price=first_tick.bid_price_2
+                        volume=abs(volume),
+                        price=first_tick.ask_price_2
                     )
-            return
+
+        # 主动
         second_diff_pos = self.target_pos.second - second_pos
         if self.target_pos.second != 0:
             if second_diff_pos > 0:
                 print('空仓情况，先买多次月合约')
-                self.send_order(
+                self.buy(
                     vt_symbol=self.second_opt,
                     volume=second_diff_pos,
-                    direction=Direction.LONG,
-                    offset=Offset.OPEN,
                     price=second_tick.ask_price_2
                 )
             elif second_diff_pos < 0:
                 print('空仓情况，先卖空次月合约')
-                self.send_order(
+                self.short(
                     vt_symbol=self.second_opt,
                     volume=abs(second_diff_pos),
-                    direction=Direction.SHORT,
-                    offset=Offset.OPEN,
                     price=second_tick.bid_price_2
                 )
         else:
             if second_diff_pos > 0:
-                print('空仓情况，先买入次月合约')
-                self.send_order(
+                print('平仓次月合约')
+                self.cover(
                     vt_symbol=self.second_opt,
                     volume=second_diff_pos,
-                    direction=Direction.LONG,
-                    offset=Offset.CLOSE,
-                    price=second_tick.ask_price_2
+                    price=second_tick.bid_price_2
                 )
             elif second_diff_pos < 0:
                 print('空仓情况，先买入次月合约')
-                self.send_order(
+                self.sell(
                     vt_symbol=self.second_opt,
                     volume=abs(second_diff_pos),
-                    direction=Direction.SHORT,
-                    offset=Offset.CLOSE,
-                    price=second_tick.bid_price_2
+                    price=second_tick.ask_price_2
                 )
 
     def check_iv(self, tick: TickData):
@@ -348,9 +350,8 @@ class WCIVStrategy(StrategyTemplate):
         first_opt: OptContract = self.contract_manager.get_option_contract(self.first_opt)
         second_opt: OptContract = self.contract_manager.get_option_contract(self.second_opt)
         last_underlying_tick = self.get_tick(self.underlying_symbol)
-        price_tick = self.price_tick(tick.last_price)
-        up_limit = 2 * price_tick + last_underlying_tick.last_price
-        down_limit = last_underlying_tick.last_price - 2 * price_tick
+
+        down_limit, up_limit = self.price_limit(last_underlying_tick.last_price)
         if self.target_pos and \
                 self.target_pos.second == second_pos and \
                 self.target_pos.first == first_pos:
@@ -363,40 +364,42 @@ class WCIVStrategy(StrategyTemplate):
                 down_limit <= first_opt.exercise_price <= up_limit):
             self.write_log('行权价超出两个跳范围，忽略开仓卖出条件')
             return
+        if delta < self.avg1 and self.spread_pos() > 0:
+            # 有多仓，平仓
+            print('平')
+            self.target_pos = PosTarget(first=0, second=0)
+            self.take_target_pos()
+            return
 
-        if delta > self.threshold1:
+        elif delta > self.avg1 and self.spread_pos() < 0:
+            # 平
+            self.target_pos = PosTarget(first=0, second=0)
+            self.take_target_pos()
+            return
+        elif delta > self.threshold_up and self.spread_pos() == 0:
             print('大')
-
             self.target_pos = PosTarget(first=-self.volume, second=self.volume)
             self.take_target_pos()
             return
-        elif delta < self.threshold2:
+        elif delta < self.threshold_down and self.spread_pos() == 0:
             print('小')
             # 空仓情况，买入当月合约，卖出次月合约
             self.target_pos = PosTarget(first=self.volume, second=-self.volume)
             self.take_target_pos()
             return
-        elif delta < self.avg1 and second_pos > 0 and first_pos < 0:
-            # 有多仓，平仓
-
-            self.target_pos = PosTarget(first=0, second=0)
-            self.take_target_pos()
-            return
-
-        elif delta > self.avg1 and second_pos < 0 and first_pos > 0:
-            # 平
-
-            self.target_pos = PosTarget(first=0, second=0)
-            self.take_target_pos()
-            return
-
 
     @staticmethod
-    def price_tick(etf_price):
-        if etf_price < 3:
-            return 0.05
-        else:
-            return 0.1
+    def price_limit(etf_price):
+        if etf_price <= 2.925:
+            return etf_price - 0.05 * 2, etf_price + 0.05 * 2
+        elif 2.925 < etf_price <= 2.975:
+            return etf_price - 0.05 * 2, etf_price + 0.05 + 0.1
+        elif 2.975 < etf_price <= 3.05:
+            return etf_price - 0.05 * 2, etf_price + 0.1 * 2
+        elif 3.05 < etf_price <= 3.15:
+            return etf_price - 0.05 + 0.1, etf_price + 0.1 * 2
+        elif etf_price > 3.1:
+            return etf_price - 0.1 * 2, etf_price + 0.1 * 2
 
     def check_expire(self):
         # 检查过期时间
@@ -409,33 +412,27 @@ class WCIVStrategy(StrategyTemplate):
         pos2 = self.get_pos(self.second_opt)
         tick1: TickData = self.get_tick(self.first_opt)
         tick2: TickData = self.get_tick(self.second_opt)
-        if days1 <= self.days_adv_close and days2 <= self.days_adv_close:
+        tm = now.time()
+        if days1 <= self.days_adv_close and days2 <= self.days_adv_close and tm > self.adv_close_time:
+            self.write_log('临近交易日，触发平仓并关闭策略')
             self.cancel_all()
             if pos1 > 0:
-                self.send_order(vt_symbol=self.first_opt,
-                                direction=Direction.SHORT,
-                                offset=Offset.CLOSE,
-                                price=tick1.ask_price_3,
-                                volume=pos1)
+                self.sell(vt_symbol=self.first_opt,
+                          price=tick1.ask_price_3,
+                          volume=pos1)
             elif pos1 < 0:
-                self.send_order(vt_symbol=self.first_opt,
-                                direction=Direction.LONG,
-                                offset=Offset.CLOSE,
-                                price=tick1.bid_price_3,
-                                volume=abs(pos1))
+                self.cover(vt_symbol=self.first_opt,
+                           price=tick1.bid_price_3,
+                           volume=abs(pos1))
 
             if pos2 > 0:
-                self.send_order(vt_symbol=self.second_opt,
-                                direction=Direction.SHORT,
-                                offset=Offset.CLOSE,
-                                price=tick2.ask_price_3,
-                                volume=pos2)
+                self.sell(vt_symbol=self.second_opt,
+                          price=tick2.ask_price_3,
+                          volume=pos2)
             elif pos2 < 0:
-                self.send_order(vt_symbol=self.second_opt,
-                                direction=Direction.LONG,
-                                offset=Offset.CLOSE,
-                                price=tick2.bid_price_3,
-                                volume=abs(pos2))
+                self.cover(vt_symbol=self.second_opt,
+                           price=tick2.bid_price_3,
+                           volume=abs(pos2))
             if pos1 == pos2 == 0:
                 self.inited = False
                 self.on_stop()

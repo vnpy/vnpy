@@ -181,7 +181,7 @@ class BacktestingEngine:
         # Use the first [days] of history data for initializing strategy
         day_count = 0
         ix = 0
-
+        self.strategy.on_start()
         for ix, dt in enumerate(dts):
             if self.datetime and dt.day != self.datetime.day:
                 day_count += 1
@@ -224,8 +224,9 @@ class BacktestingEngine:
         # Add trade data into daily reuslt.
         for trade in self.trades.values():
             d = trade.datetime.date()
-            daily_result = self.daily_results[d]
-            daily_result.add_trade(trade)
+            daily_result = self.daily_results.get(d)
+            if daily_result:
+                daily_result.add_trade(trade)
 
         # Calculate daily result by iteration.
         pre_closes = {}
@@ -820,9 +821,9 @@ class PortfolioDailyResult:
             contract_result.calculate_pnl(
                 pre_closes.get(vt_symbol, 0),
                 start_poses.get(vt_symbol, 0),
-                sizes[vt_symbol],
-                rates[vt_symbol],
-                slippages[vt_symbol]
+                sizes.get(vt_symbol, 1),
+                rates.get(vt_symbol, 0),
+                slippages.get(vt_symbol, 0.002)
             )
 
             self.trade_count += contract_result.trade_count
