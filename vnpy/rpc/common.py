@@ -5,6 +5,6 @@ import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
-HEARTBEAT_TOPIC: str = "heartbeat"
-HEARTBEAT_INTERVAL: int = 10
-HEARTBEAT_TOLERANCE: int = 30
+HEARTBEAT_TOPIC = "heartbeat"
+HEARTBEAT_INTERVAL = 10
+HEARTBEAT_TOLERANCE = 30

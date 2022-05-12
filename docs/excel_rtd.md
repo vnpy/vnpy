@@ -1,8 +1,9 @@
-# Excel RTD模块
+# ExcelRtd - EXCEL RTD模块
 
 ## 功能简介
 
-RTD全称是RealTimeData，是微软提供的主要面向金融行业中实时数据需求设计的Excel数据对接方案，而ExcelRtd模块则是VeighNa官方提供的用于**实现在Excel中访问VeighNa程序内任意数据信息**的功能模块。ExcelRtd依赖于PyXLLC模块（www.pyxll.com），该模块属于商业软件，需要购买才能使用（提供30天免费使用）。
+ExcelRtd是用于**在Excel中访问VeighNa程序内任意数据信息**的功能模块，
+RTD全称是RealTimeData，是微软提供的主要面向金融行业中实时数据需求设计的Excel数据对接方案。ExcelRtd依赖于PyXLLC模块（www.pyxll.com），该模块属于商业软件，需要购买才能使用（提供30天免费使用）。
 
 ## 安装PyXLL
 为了使用ExcelRtd模块，需要安装PyXLL插件。步骤如下：

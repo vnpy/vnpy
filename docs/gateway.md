@@ -46,7 +46,7 @@ main_engine.add_gateway(CtpGateway)
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/4.png)
 
 
-## 交易接口分类
+## 接口分类
 
 | 接口                 |                    类型                         |
 | ---------------------| :--------------------------------------------: |

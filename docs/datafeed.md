@@ -1,4 +1,4 @@
-# DataFeed - 数据服务
+# 数据服务
 
 
 对于数据服务，VeighNa提供了标准化的接口BaseDatafeed（位于vnpy.trader.datafeed中），实现了更加灵活的数据服务支持。在全局配置中，和数据服务相关的字段都以datafeed作为前缀。

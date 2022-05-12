@@ -1,4 +1,4 @@
-tzlocal==2.0.0
+tzlocal==4.2
 PySide6==6.2.3
 pyqtgraph==0.12.3
 qdarkstyle==3.0.3

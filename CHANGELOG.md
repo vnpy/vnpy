@@ -1,8 +1,29 @@
+# 3.1.0版本
+
+## 新增
+1. 新增恒生云UF2.0证券仿真环境交易接口vnpy_uf
+2. 新增火象投教仿真环境交易接口vnpy_hx
+
+## 调整
+1. 升级tzlocal库的版本到4.2，消除get_localzone()函数的warning
+2. 完善代码中函数和变量类型提示
+3. 使用QtCore.Signal代替老的QtCore.pyqtSignal
+4. 优化vnpy_rohon接口的委托成交相关细节功能
+5. 更新vnpy_xtp到2.2.32.2.0版本XTP API，支持上交所新债系统
+6. 优化vnpy_mongodb的数据写入速度，基于pymongo 4.0版本的批量写入功能
+7. 增加vnpy_ctp对于委托函数返回值为非0（请求发送失败）状态的处理
+8. 对vnpy_ctastrategy和vnpy_ctabacktester的策略模板下拉框中内容，改为基于首字母排序
+
+## 修复
+1. 修复vnpy_optionmaster模块希腊值监控组件的数据刷新问题
+2. 修复vnpy_mongodb由于时间戳的时区信息确实，导致的数据加载范围问题
+3. 修复vnpy_tts的sdist源代码打包缺失lib文件的问题
+4. 修复vnpy_rqdata由于查询返回数据为NaN导致的解析问题
+
 
 # 3.0.0版本
 
 ## 调整
-
 1. 移除api、gateway、app子模块的目录
 2. 移除requirements.txt对于插件的默认依赖
 3. 简化重构rpc子模块，定位于可靠环境下跨进程通讯（本机、局域网）
@@ -13,7 +34,6 @@
 8. MainEngine添加交易接口时，支持自定义接口名称
 
 ## 修复
-
 1. 使用非原生窗口菜单栏，修复Linux/Mac下【配置】按钮不显示的问题
 
 
