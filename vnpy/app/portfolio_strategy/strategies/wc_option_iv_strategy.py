@@ -18,7 +18,6 @@ from fnlib.contract_manager import ContractManager
 from vnpy.trader.object import TickData, OrderData, TradeData, SubscribeRequest, ContractData
 from vnpy.trader.constant import Direction, Offset, OptionType, Exchange
 from vnpy.app.portfolio_strategy import StrategyTemplate, StrategyEngine
-from vnpy.trader.utility import BarGenerator, extract_vt_symbol
 from vnpy.trader.object import TickData, BarData
 from vnpy.app.portfolio_strategy.jq import login_jq
 
@@ -99,7 +98,6 @@ class WCIVStrategy(StrategyTemplate):
                 opt.OPT_CONTRACT_INFO.underlying_symbol == self.underlying_symbol.replace('.SSE', '.XSHG')
             ).order_by(desc(opt.OPT_CONTRACT_INFO.id)))
 
-            print(df)
             df['code'] = df['code'].str.replace('.XSHG', '.SSE')
             df['underlying_symbol'] = df['underlying_symbol'].str.replace('.XSHG', '.SSE')
             self.contract_manager.opt_contract_from_df(df)
@@ -398,13 +396,16 @@ class WCIVStrategy(StrategyTemplate):
         elif 2.975 < etf_price <= 3.05:
             return etf_price - 0.05 * 2, etf_price + 0.1 * 2
         elif 3.05 < etf_price <= 3.15:
-            return etf_price - 0.05 + 0.1, etf_price + 0.1 * 2
+            return etf_price - 0.05 - 0.1, etf_price + 0.1 * 2
         elif etf_price > 3.1:
             return etf_price - 0.1 * 2, etf_price + 0.1 * 2
 
     def check_expire(self):
         # 检查过期时间
         now = datetime.now()
+        tm = now.time()
+        if tm < self.adv_close_time:
+            return
         first_opt: OptContract = self.contract_manager.get_option_contract(self.first_opt)
         second_opt: OptContract = self.contract_manager.get_option_contract(self.second_opt)
         days1 = distance(dt_a=now, dt_b=first_opt.expire_date)
@@ -413,8 +414,8 @@ class WCIVStrategy(StrategyTemplate):
         pos2 = self.get_pos(self.second_opt)
         tick1: TickData = self.get_tick(self.first_opt)
         tick2: TickData = self.get_tick(self.second_opt)
-        tm = now.time()
-        if days1 <= self.days_adv_close and days2 <= self.days_adv_close and tm > self.adv_close_time:
+
+        if days1 <= self.days_adv_close or days2 <= self.days_adv_close:
             self.write_log('临近交易日，触发平仓并关闭策略')
             self.cancel_all()
             if pos1 > 0:

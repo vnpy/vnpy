@@ -102,7 +102,7 @@ class WCIVStrategy(StrategyTemplate):
                 opt.OPT_CONTRACT_INFO.expire_date <= end,
                 opt.OPT_CONTRACT_INFO.underlying_symbol == self.underlying_symbol.replace('.SSE', '.XSHG')
             ).order_by(desc(opt.OPT_CONTRACT_INFO.id)))
-
+            df = df[~df['name'].str.endswith('A')]
             df['code'] = df['code'].str.replace('.XSHG', '.SSE')
             df['underlying_symbol'] = df['underlying_symbol'].str.replace('.XSHG', '.SSE')
             self.contract_manager.opt_contract_from_df(df)
@@ -224,6 +224,7 @@ class WCIVStrategy(StrategyTemplate):
                 rest_pct=get_rest_pct(end_dt=call.expire_date, now=underlying_bar.datetime),
                 exercise_price=call.exercise_price
             )
+            print(f'平值合约：{call_bar.datetime} {call_bar.close_price}， {put_bar.close_price}')
             # 合成期货价格
             self._synthetic_futures_price[p] = futures_price
 

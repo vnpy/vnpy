@@ -410,7 +410,7 @@ class WCIVStrategy(StrategyTemplate):
         bar2: BarData = self.get_bar(self.leg_1_opt)
         tm = now.time()
         if days1 <= self.days_adv_close and days2 <= self.days_adv_close and tm > self.adv_close_time:
-            self.write_log('临近交易日，触发平仓并关闭策略')
+            print('临近交易日，触发平仓并关闭策略')
             self.cancel_all()
             if pos_2 > 0:
                 self.sell(vt_symbol=self.leg_2_opt,
