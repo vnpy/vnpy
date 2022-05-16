@@ -608,20 +608,20 @@ class BacktestingEngine:
                 self.strategy.update_order(order)
 
             # Check whether limit orders can be filled.
-            # long_cross = (
-            #     order.direction == Direction.LONG
-            #     and order.price >= long_cross_price
-            #     and long_cross_price > 0
-            # )
-            #
-            # short_cross = (
-            #     order.direction == Direction.SHORT
-            #     and order.price <= short_cross_price
-            #     and short_cross_price > 0
-            # )
-            #
-            # if not long_cross and not short_cross:
-            #     continue
+            long_cross = (
+                order.direction == Direction.LONG
+                and order.price >= long_cross_price
+                and long_cross_price > 0
+            )
+
+            short_cross = (
+                order.direction == Direction.SHORT
+                and order.price <= short_cross_price
+                and short_cross_price > 0
+            )
+
+            if not long_cross and not short_cross:
+                continue
 
             # Push order update with status "all traded" (filled).
             order.traded = order.volume
@@ -632,11 +632,11 @@ class BacktestingEngine:
 
             # Push trade update
             self.trade_count += 1
-            trade_price = long_best_price
-            # if long_cross:
-            #     trade_price = min(order.price, long_best_price)
-            # else:
-            #     trade_price = max(order.price, short_best_price)
+
+            if long_cross:
+                trade_price = min(order.price, long_best_price)
+            else:
+                trade_price = max(order.price, short_best_price)
 
             trade = TradeData(
                 symbol=order.symbol,

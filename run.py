@@ -11,7 +11,7 @@ from vnpy_spreadtrading import SpreadTradingApp
 from vnpy_xtp import XtpGateway
 from vnpy_okex import OkexGateway
 from vnpy_esunny import EsunnyGateway
-from vnpy_ctptest import CtptestGateway
+# from vnpy_ctptest import CtptestGateway
 from vnpy_ctp import CtpGateway
 from vnpy_tap import TapGateway
 from vnpy.gateway.sopttest import SopttestGateway
@@ -30,7 +30,7 @@ def main():
     event_engine = EventEngine()
     main_engine = MainEngine(event_engine)
 
-    main_engine.add_gateway(CtptestGateway)
+    main_engine.add_gateway(CtpGateway)
     main_engine.add_gateway(SopttestGateway)
     main_engine.add_gateway(JGGateway)
     main_engine.add_gateway(UftGateway)
