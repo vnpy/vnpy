@@ -28,7 +28,8 @@ from vnpy.trader.event import (
     EVENT_TICK,
     EVENT_ORDER,
     EVENT_TRADE,
-    EVENT_POSITION
+    EVENT_POSITION,
+    EVENT_TIMER
 )
 from vnpy.trader.constant import (
     Direction,
@@ -96,6 +97,7 @@ class StrategyEngine(BaseEngine):
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
         self.event_engine.register(EVENT_POSITION, self.process_position_event)
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
     def query_bar_from_datafeed(
         self, symbol: str, exchange: Exchange, interval: Interval, start: datetime, end: datetime
@@ -160,6 +162,11 @@ class StrategyEngine(BaseEngine):
 
         self.offset_converter.update_position(position)
 
+    def process_timer_event(self, event: Event):
+        """"""
+        for strategy in self.strategies.values():
+            strategy.on_time()
+
     def send_order(
         self,
         strategy: StrategyTemplate,
@@ -192,7 +199,6 @@ class StrategyEngine(BaseEngine):
             type=OrderType.LIMIT,
             price=price,
             volume=volume,
-            product=contract.product,
             reference=f"{APP_NAME}_{strategy.strategy_name}"
         )
 

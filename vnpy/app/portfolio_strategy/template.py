@@ -1,4 +1,5 @@
 """"""
+import datetime
 from abc import ABC
 from copy import copy
 from typing import Dict, Set, List, TYPE_CHECKING
@@ -46,6 +47,8 @@ class StrategyTemplate(ABC):
         self.variables.insert(2, "pos")
 
         self.update_setting(setting)
+        self.order_start_dt = None
+        self.order_cancel_count = 10
 
     def update_setting(self, setting: dict) -> None:
         """
@@ -109,7 +112,7 @@ class StrategyTemplate(ABC):
         """
         Callback when strategy is started.
         """
-        pass
+        self.trading = True
 
     @virtual
     def on_stop(self) -> None:
@@ -136,10 +139,11 @@ class StrategyTemplate(ABC):
         """
         Callback of new trade data update.
         """
+        pos = self.pos.get(trade.vt_symbol, 0)
         if trade.direction == Direction.LONG:
-            self.pos[trade.vt_symbol] += trade.volume
+            self.pos[trade.vt_symbol] = pos + trade.volume
         else:
-            self.pos[trade.vt_symbol] -= trade.volume
+            self.pos[trade.vt_symbol] = pos - trade.volume
 
     def update_order(self, order: OrderData) -> None:
         """
@@ -149,6 +153,8 @@ class StrategyTemplate(ABC):
 
         if not order.is_active() and order.vt_orderid in self.active_orderids:
             self.active_orderids.remove(order.vt_orderid)
+        if not self.active_orderids:
+            self.order_start_dt = None
 
     def buy(self, vt_symbol: str, price: float, volume: float, lock: bool = False, net: bool = False) -> List[str]:
         """
@@ -187,6 +193,7 @@ class StrategyTemplate(ABC):
         """
         Send a new order.
         """
+        self.order_start_dt = datetime.datetime.now()
         if self.trading:
             vt_orderids = self.strategy_engine.send_order(
                 self, vt_symbol, direction, offset, price, volume, lock, net
@@ -194,7 +201,7 @@ class StrategyTemplate(ABC):
 
             for vt_orderid in vt_orderids:
                 self.active_orderids.add(vt_orderid)
-
+            self.order_start_dt = datetime.datetime.now()
             return vt_orderids
         else:
             return []
@@ -262,3 +269,9 @@ class StrategyTemplate(ABC):
         """
         if self.trading:
             self.strategy_engine.sync_strategy_data(self)
+
+    def on_time(self):
+        now = datetime.datetime.now()
+        if self.order_start_dt and self.active_orderids and \
+                (now - self.order_start_dt).seconds > self.order_cancel_count:
+            self.cancel_all()
