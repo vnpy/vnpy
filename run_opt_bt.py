@@ -1,5 +1,4 @@
-
-
+import json
 from datetime import datetime
 import pandas as pd
 import dateutil.parser
@@ -16,8 +15,9 @@ from vnpy.app.portfolio_strategy.strategies.wc_option_iv_strategy_bars2 import W
 date_ratio = pd.read_csv('C:/Users/kangy/.wc-vntrader/data_ratio.csv', parse_dates=['date'])
 ratio_dict = date_ratio.set_index('date')['ratio'].shift(1).to_dict()
 ratio_dict = {k.date(): v/100 for k, v in ratio_dict.items()}
-
-vt_symbols = ["510050.SSE", "10003784.SSE", "10004037.SSE", "10003785.SSE", "10004038.SSE", "10003531.SSE",
+code1 = "10003784.SSE"
+code2 = "10004037.SSE"
+vt_symbols = ["510050.SSE", code1, code2, "10003785.SSE", "10004038.SSE", "10003531.SSE",
               "10003532.SSE", "10003533.SSE", "10003534.SSE", "10003535.SSE",
               "10003536.SSE", "10003537.SSE", "10003538.SSE", "10003539.SSE", "10003540.SSE", "10003541.SSE",
               "10003542.SSE", "10003543.SSE",
@@ -104,8 +104,10 @@ df = engine.calculate_result()
 engine.calculate_statistics()
 engine.show_chart()
 # 每日资金汇总
-strategy_name = f'{vt_symbols[1]}-{vt_symbols[2]}.csv'
-engine.daily_df['balance'].to_csv(f'C:/Users/kangy/.wc-vntrader/result/{strategy_name}')
 
-for trade in engine.trades.values():
-    print(trade.datetime, trade.vt_symbol, trade.direction, trade.volume, "@", trade.price)
+strategy_name = f'{vt_symbols[1]}-{vt_symbols[2]}.csv'
+engine.daily_df['end_poses'] = engine.daily_df['end_poses'].apply(lambda xd: f'{code1}: {xd[code1]}, {code2}: {xd[code2]}')
+engine.daily_df.to_csv(f'C:/Users/kangy/.wc-vntrader/result/{strategy_name}')
+
+# for trade in engine.trades.values():
+#     print(trade.datetime, trade.vt_symbol, trade.direction, trade.volume, "@", trade.price)
