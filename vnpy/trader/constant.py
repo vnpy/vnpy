@@ -15,7 +15,7 @@ class Direction(Enum):
     PURCHASE = '申购'
     REDEMPTION = '赎回'
     BUY_BASKET = '买篮子'
-    SELL_BASKET = '买篮子'
+    SELL_BASKET = '卖篮子'
 
 
 class Offset(Enum):
