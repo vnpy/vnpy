@@ -18,9 +18,9 @@ from .object import BarData, TickData
 from .constant import Exchange, Interval
 
 if sys.version_info >= (3, 9):
-    from zoneinfo import ZoneInfo
+    from zoneinfo import ZoneInfo, available_timezones
 else:
-    from backports.zoneinfo import ZoneInfo
+    from backports.zoneinfo import ZoneInfo, available_timezones
 
 
 log_formatter: logging.Formatter = logging.Formatter('[%(asctime)s] %(message)s')
