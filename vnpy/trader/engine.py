@@ -202,7 +202,6 @@ class MainEngine:
         """
         raise NotImplementedError
 
-
     def send_order(self, req: OrderRequest, gateway_name: str) -> str:
         """
         Send new order request to a specific gateway.
