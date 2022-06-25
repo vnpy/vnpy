@@ -1,3 +1,27 @@
+# 3.2.0版本
+
+## 新增
+1. 添加广州期货交易所枚举值字段GFEX
+2. 新增CTP期权（ETF）穿透式测试接口vnpy_sopttest
+3. 新增Currency.CAD（加元）枚举值
+4. 新增Exchange.TSE（多伦多交易所）和Exchange.AMEX（美洲交易所）枚举值
+
+## 调整
+1. 更新vnpy_ctp/vnpy_ctptest支持广州期货交易所
+2. 更新vnpy_tora的现货API接口到最新版本：API_Python3.7_交易_v4.0.3_20220222
+3. 更新vnpy_tora的期权API接口到最新版本：API_Python3.7_v1.3.2_20211201
+4. 更新vnpy_esunny/vnpy_tap添加关闭接口时对于API退出函数的调用
+5. 移除vnpy_ctastrategy/vnpy_ctabacktester/vnpy_optionmaster的反向合约支持
+6. 增加vnpy_ib对于沪股通、深股通、多伦多交易所、美洲交易所的支持
+7. 增加vnpy_ib对于指数行情数据的支持
+8. 添加vnpy_ctastrategy策略交易管理界面的策略实例查找功能
+
+## 修复
+
+1. 修复vnpy_mongodb中K线数据量统计的问题（使用新的count_documents函数）
+
+
+
 # 3.1.0版本
 
 ## 新增

@@ -101,6 +101,8 @@ class Exchange(Enum):
     ISLAND = "ISLAND"       # Nasdaq Island ECN
     BATS = "BATS"           # Bats Global Markets
     IEX = "IEX"             # The Investors Exchange
+    AMEX = "AMEX"           # American Stock Exchange
+    TSE = "TSE"             # Toronto Stock Exchange
     NYMEX = "NYMEX"         # New York Mercantile Exchange
     COMEX = "COMEX"         # COMEX of CME
     GLOBEX = "GLOBEX"       # Globex of CME
@@ -135,6 +137,7 @@ class Currency(Enum):
     USD = "USD"
     HKD = "HKD"
     CNY = "CNY"
+    CAD = "CAD"
 
 
 class Interval(Enum):
