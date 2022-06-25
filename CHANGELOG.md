@@ -5,6 +5,8 @@
 2. 新增CTP期权（ETF）穿透式测试接口vnpy_sopttest
 3. 新增Currency.CAD（加元）枚举值
 4. 新增Exchange.TSE（多伦多交易所）和Exchange.AMEX（美洲交易所）枚举值
+5. 新增vnpy_taos，涛思数据TDengine时序数据库适配器
+5. 新增vnpy_timescaledb，TimescaleDB时序数据库适配器
 
 ## 调整
 1. 更新vnpy_ctp/vnpy_ctptest支持广州期货交易所
@@ -19,6 +21,7 @@
 ## 修复
 
 1. 修复vnpy_mongodb中K线数据量统计的问题（使用新的count_documents函数）
+2. 修复由于PySide6对象销毁先于__del__调用，导致的BaseMonitor衍生组件无法自动保存界面状态的问题
 
 
 
