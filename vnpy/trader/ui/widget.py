@@ -52,7 +52,7 @@ class BaseCell(QtWidgets.QTableWidgetItem):
 
     def __init__(self, content: Any, data: Any) -> None:
         """"""
-        super(BaseCell, self).__init__()
+        super().__init__()
         self.setTextAlignment(QtCore.Qt.AlignCenter)
         self.set_content(content, data)
 
@@ -77,14 +77,14 @@ class EnumCell(BaseCell):
 
     def __init__(self, content: str, data: Any) -> None:
         """"""
-        super(EnumCell, self).__init__(content, data)
+        super().__init__(content, data)
 
     def set_content(self, content: Any, data: Any) -> None:
         """
         Set text using enum.constant.value.
         """
         if content:
-            super(EnumCell, self).set_content(content.value, data)
+            super().set_content(content.value, data)
 
 
 class DirectionCell(EnumCell):
@@ -94,13 +94,13 @@ class DirectionCell(EnumCell):
 
     def __init__(self, content: str, data: Any) -> None:
         """"""
-        super(DirectionCell, self).__init__(content, data)
+        super().__init__(content, data)
 
     def set_content(self, content: Any, data: Any) -> None:
         """
         Cell color is set according to direction.
         """
-        super(DirectionCell, self).set_content(content, data)
+        super().set_content(content, data)
 
         if content is Direction.SHORT:
             self.setForeground(COLOR_SHORT)
@@ -115,7 +115,7 @@ class BidCell(BaseCell):
 
     def __init__(self, content: Any, data: Any) -> None:
         """"""
-        super(BidCell, self).__init__(content, data)
+        super().__init__(content, data)
 
         self.setForeground(COLOR_BID)
 
@@ -127,7 +127,7 @@ class AskCell(BaseCell):
 
     def __init__(self, content: Any, data: Any) -> None:
         """"""
-        super(AskCell, self).__init__(content, data)
+        super().__init__(content, data)
 
         self.setForeground(COLOR_ASK)
 
@@ -139,14 +139,14 @@ class PnlCell(BaseCell):
 
     def __init__(self, content: Any, data: Any) -> None:
         """"""
-        super(PnlCell, self).__init__(content, data)
+        super().__init__(content, data)
 
     def set_content(self, content: Any, data: Any) -> None:
         """
         Cell color is set based on whether pnl is
         positive or negative.
         """
-        super(PnlCell, self).set_content(content, data)
+        super().set_content(content, data)
 
         if str(content).startswith("-"):
             self.setForeground(COLOR_SHORT)
@@ -163,7 +163,7 @@ class TimeCell(BaseCell):
 
     def __init__(self, content: Any, data: Any) -> None:
         """"""
-        super(TimeCell, self).__init__(content, data)
+        super().__init__(content, data)
 
     def set_content(self, content: Any, data: Any) -> None:
         """"""
@@ -190,7 +190,7 @@ class MsgCell(BaseCell):
 
     def __init__(self, content: str, data: Any) -> None:
         """"""
-        super(MsgCell, self).__init__(content, data)
+        super().__init__(content, data)
         self.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
 
 
@@ -208,7 +208,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
-        super(BaseMonitor, self).__init__()
+        super().__init__()
 
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine
@@ -217,10 +217,6 @@ class BaseMonitor(QtWidgets.QTableWidget):
         self.init_ui()
         self.load_setting()
         self.register_event()
-
-    def __del__(self) -> None:
-        """"""
-        self.save_setting()
 
     def init_ui(self) -> None:
         """"""
@@ -471,7 +467,7 @@ class OrderMonitor(BaseMonitor):
         """
         Connect signal.
         """
-        super(OrderMonitor, self).init_ui()
+        super().init_ui()
 
         self.setToolTip("双击单元格撤单")
         self.itemDoubleClicked.connect(self.cancel_order)
@@ -1025,7 +1021,7 @@ class ActiveOrderMonitor(OrderMonitor):
         """
         Hides the row if order is not active.
         """
-        super(ActiveOrderMonitor, self).process_event(event)
+        super().process_event(event)
 
         order: OrderData = event.data
         row_cells: dict = self.cells[order.vt_orderid]
