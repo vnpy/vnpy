@@ -84,6 +84,7 @@ class Exchange(Enum):
     CZCE = "CZCE"           # Zhengzhou Commodity Exchange
     DCE = "DCE"             # Dalian Commodity Exchange
     INE = "INE"             # Shanghai International Energy Exchange
+    GFEX = "GFEX"           # Guangzhou Futures Exchange
     SSE = "SSE"             # Shanghai Stock Exchange
     SZSE = "SZSE"           # Shenzhen Stock Exchange
     BSE = "BSE"             # Beijing Stock Exchange
@@ -101,6 +102,8 @@ class Exchange(Enum):
     ISLAND = "ISLAND"       # Nasdaq Island ECN
     BATS = "BATS"           # Bats Global Markets
     IEX = "IEX"             # The Investors Exchange
+    AMEX = "AMEX"           # American Stock Exchange
+    TSE = "TSE"             # Toronto Stock Exchange
     NYMEX = "NYMEX"         # New York Mercantile Exchange
     COMEX = "COMEX"         # COMEX of CME
     GLOBEX = "GLOBEX"       # Globex of CME
@@ -135,6 +138,7 @@ class Currency(Enum):
     USD = "USD"
     HKD = "HKD"
     CNY = "CNY"
+    CAD = "CAD"
 
 
 class Interval(Enum):

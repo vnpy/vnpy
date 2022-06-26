@@ -39,6 +39,9 @@ class ChartItem(pg.GraphicsObject):
         # Very important! Only redraw the visible part and improve speed a lot.
         self.setFlag(self.ItemUsesExtendedStyleOption)
 
+        # Force update during the next paint
+        self._to_update: bool = False
+
     @abstractmethod
     def _draw_bar_picture(self, ix: int, bar: BarData) -> QtGui.QPicture:
         """
@@ -96,6 +99,7 @@ class ChartItem(pg.GraphicsObject):
         Refresh the item.
         """
         if self.scene():
+            self._to_update = True
             self.scene().update()
 
     def paint(
@@ -116,7 +120,12 @@ class ChartItem(pg.GraphicsObject):
         max_ix: int = min(max_ix, len(self._bar_picutures))
 
         rect_area: tuple = (min_ix, max_ix)
-        if rect_area != self._rect_area or not self._item_picuture:
+        if (
+            self._to_update
+            or rect_area != self._rect_area
+            or not self._item_picuture
+        ):
+            self._to_update = False
             self._rect_area = rect_area
             self._draw_item_picture(min_ix, max_ix)
 

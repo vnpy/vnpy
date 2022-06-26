@@ -21,7 +21,7 @@ WebTrader采用了FastAPI作为后端服务器，支持REST主动请求调用和
 从网页端到策略交易进程的双向通讯模式包括：
 - 主动请求调用（订阅行情、挂撤单、查询数据）
   - 浏览器发起REST API调用（访问某个URL地址提交数据）到Web服务进程；
-  - Web服务进程收到后，转换为RPC请求（Req-Req通讯模式）发送给策略交易进程；
+  - Web服务进程收到后，转换为RPC请求（Req-Rep通讯模式）发送给策略交易进程；
   - 策略交易进程执行请求处理后，返回结果给Web服务进程；
   - Web服务进程返回数据给浏览器。
 - 被动数据推送（行情推送、委托推送）
@@ -49,9 +49,9 @@ main_engine.add_app(WebTraderApp)
 
 ### 启动模块
 
-在启动模块之前，请先连接登录交易接口（连接方法详见基本使用篇的连接接口部分）。看到VeighNa Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：  
+在启动模块之前，请先连接登录交易接口（连接方法详见基本使用篇的连接接口部分）。看到VeighNa Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/1.png) 
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/market_radar/1.png)
 
 成功连接交易接口后，在菜单栏中点击【功能】-> 【Web服务】，或者点击左侧按钮栏的图标：
 
