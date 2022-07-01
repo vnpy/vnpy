@@ -13,6 +13,7 @@ from vnpy.event import EventEngine
 
 from .qt import QtCore, QtGui, QtWidgets
 from .widget import (
+    BaseMonitor,
     TickMonitor,
     OrderMonitor,
     TradeMonitor,
@@ -45,6 +46,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.window_title: str = f"VeighNa Trader 社区版 - {vnpy.__version__}   [{TRADER_DIR}]"
 
         self.widgets: Dict[str, QtWidgets.QWidget] = {}
+        self.monitors: Dict[str, BaseMonitor] = {}
 
         self.init_ui()
 
@@ -221,6 +223,8 @@ class MainWindow(QtWidgets.QMainWindow):
         Initialize a dock widget.
         """
         widget: QtWidgets.QWidget = widget_class(self.main_engine, self.event_engine)
+        if isinstance(widget, BaseMonitor):
+            self.monitors[name] = widget
 
         dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget(name)
         dock.setWidget(widget)
@@ -251,6 +255,10 @@ class MainWindow(QtWidgets.QMainWindow):
         if reply == QtWidgets.QMessageBox.Yes:
             for widget in self.widgets.values():
                 widget.close()
+
+            for monitor in self.monitors.values():
+                monitor.save_setting()
+
             self.save_window_setting("custom")
 
             self.main_engine.close()
