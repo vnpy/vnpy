@@ -14,13 +14,6 @@ from vnpy.event import EventEngine
 from .qt import QtCore, QtGui, QtWidgets
 from .widget import (
     BaseMonitor,
-    TickMonitor,
-    OrderMonitor,
-    TradeMonitor,
-    PositionMonitor,
-    AccountMonitor,
-    LogMonitor,
-    ActiveOrderMonitor,
     ConnectDialog,
     ContractManager,
     TradingWidget,
@@ -29,6 +22,20 @@ from .widget import (
 )
 from ..engine import MainEngine, BaseApp
 from ..utility import get_icon_path, TRADER_DIR
+from .model import (
+    TickTableModel,
+    AccountTableModel,
+    LogTableModel,
+    TradeTableModel,
+    OrderTableModel,
+    PositionTableModel,
+    ActiveOrderModel
+)
+from .view import (
+    BaseView,
+    CancelOrderView,
+    FillView
+)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -63,34 +70,34 @@ class MainWindow(QtWidgets.QMainWindow):
         self.trading_widget, trading_dock = self.create_dock(
             TradingWidget, "交易", QtCore.Qt.LeftDockWidgetArea
         )
-        tick_widget, tick_dock = self.create_dock(
-            TickMonitor, "行情", QtCore.Qt.RightDockWidgetArea
+        tick_widget, _ = self.create_view_dock(
+            TickTableModel, "行情", QtCore.Qt.RightDockWidgetArea, FillView
         )
-        order_widget, order_dock = self.create_dock(
-            OrderMonitor, "委托", QtCore.Qt.RightDockWidgetArea
+        self.create_view_dock(
+            LogTableModel, "日志", QtCore.Qt.BottomDockWidgetArea, BaseView
         )
-        active_widget, active_dock = self.create_dock(
-            ActiveOrderMonitor, "活动", QtCore.Qt.RightDockWidgetArea
+        self.create_view_dock(
+            TradeTableModel, "成交", QtCore.Qt.RightDockWidgetArea, BaseView
         )
-        trade_widget, trade_dock = self.create_dock(
-            TradeMonitor, "成交", QtCore.Qt.RightDockWidgetArea
+        _, order_dock = self.create_view_dock(
+            OrderTableModel, "委托", QtCore.Qt.RightDockWidgetArea, CancelOrderView
         )
-        log_widget, log_dock = self.create_dock(
-            LogMonitor, "日志", QtCore.Qt.BottomDockWidgetArea
+        _, active_dock = self.create_view_dock(
+            ActiveOrderModel, "活动", QtCore.Qt.RightDockWidgetArea, CancelOrderView
         )
-        account_widget, account_dock = self.create_dock(
-            AccountMonitor, "资金", QtCore.Qt.BottomDockWidgetArea
+        self.create_view_dock(
+            AccountTableModel, "资金", QtCore.Qt.BottomDockWidgetArea, BaseView
         )
-        position_widget, position_dock = self.create_dock(
-            PositionMonitor, "持仓", QtCore.Qt.BottomDockWidgetArea
+        position_widget, _ = self.create_view_dock(
+            PositionTableModel, "持仓", QtCore.Qt.BottomDockWidgetArea, FillView
         )
 
         self.tabifyDockWidget(active_dock, order_dock)
 
         self.save_window_setting("default")
 
-        tick_widget.itemDoubleClicked.connect(self.trading_widget.update_with_cell)
-        position_widget.itemDoubleClicked.connect(self.trading_widget.update_with_cell)
+        tick_widget.add_double_click_event(self.trading_widget.update_with_cell)
+        position_widget.add_double_click_event(self.trading_widget.update_with_cell)
 
     def init_menu(self) -> None:
         """"""
@@ -232,6 +239,27 @@ class MainWindow(QtWidgets.QMainWindow):
         dock.setFeatures(dock.DockWidgetFloatable | dock.DockWidgetMovable)
         self.addDockWidget(area, dock)
         return widget, dock
+
+    def create_view_dock(
+        self,
+        model_class,
+        name: str,
+        area: int,
+        view_class,
+    ) -> None:
+        """
+        Initialize a dock widget with view.
+        """
+        view = view_class()
+        model = model_class(self.main_engine, self.event_engine)
+        view.setModel(model)
+
+        dock = QtWidgets.QDockWidget(name)
+        dock.setWidget(view)
+        dock.setObjectName(name)
+        dock.setFeatures(dock.DockWidgetFloatable | dock.DockWidgetMovable)
+        self.addDockWidget(area, dock)
+        return view, dock
 
     def connect(self, gateway_name: str) -> None:
         """
