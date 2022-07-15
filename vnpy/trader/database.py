@@ -44,7 +44,6 @@ class TickOverview:
 
     symbol: str = ""
     exchange: Exchange = None
-    interval: Interval = Interval.TICK
     count: int = 0
     start: datetime = None
     end: datetime = None
