@@ -2,16 +2,16 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from types import ModuleType
 from typing import List
-from pytz import timezone
 from dataclasses import dataclass
 from importlib import import_module
 
 from .constant import Interval, Exchange
 from .object import BarData, TickData
 from .setting import SETTINGS
+from.utility import ZoneInfo
 
 
-DB_TZ = timezone(SETTINGS["database.timezone"])
+DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
 
 
 def convert_tz(dt: datetime) -> datetime:
