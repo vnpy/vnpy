@@ -8,7 +8,7 @@ from importlib import import_module
 from .constant import Interval, Exchange
 from .object import BarData, TickData
 from .setting import SETTINGS
-from.utility import ZoneInfo
+from .utility import ZoneInfo
 
 
 DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
