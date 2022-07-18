@@ -5,6 +5,7 @@ from typing import Any
 
 import zmq
 from zmq.backend.cython.constants import NOBLOCK
+from zmq.auth.thread import ThreadAuthenticator
 
 from .common import HEARTBEAT_TOPIC, HEARTBEAT_TOLERANCE
 
@@ -45,7 +46,8 @@ class RpcClient:
         self._active: bool = False                 # RpcClient status
         self._thread: threading.Thread = None      # RpcClient thread
         self._lock: threading.Lock = threading.Lock()
-
+        # Authenticator used to ensure data security
+        self.__authenticator: ThreadAuthenticator = None
         self._last_received_ping: datetime = datetime.utcnow()
 
     @lru_cache(100)
@@ -88,13 +90,50 @@ class RpcClient:
     def start(
         self,
         req_address: str,
-        sub_address: str
+        sub_address: str,
+        username: str = "",
+        password: str = "",
+        client_secretkey_path: str = "",
+        server_publickey_path: str = ""
     ) -> None:
         """
         Start RpcClient
         """
         if self._active:
             return
+
+        # Start authenticator
+        if client_secretkey_path and server_publickey_path:
+            self.__authenticator = ThreadAuthenticator(self.__context)
+            self.__authenticator.start()
+            self.__authenticator.configure_curve(
+                domain="*",
+                location=zmq.auth.CURVE_ALLOW_ANY
+            )
+
+            publickey, secretkey = zmq.auth.load_certificate(client_secretkey_path)
+            serverkey, _ = zmq.auth.load_certificate(server_publickey_path)
+
+            self.__socket_sub.curve_secretkey = secretkey
+            self.__socket_sub.curve_publickey = publickey
+            self.__socket_sub.curve_serverkey = serverkey
+
+            self.__socket_req.curve_secretkey = secretkey
+            self.__socket_req.curve_publickey = publickey
+            self.__socket_req.curve_serverkey = serverkey
+        elif username and password:
+            self.__authenticator = ThreadAuthenticator(self.__context)
+            self.__authenticator.start()
+            self.__authenticator.configure_plain(
+                domain="*",
+                passwords={username: password}
+            )
+
+            self.__socket_sub.plain_username = username.encode()
+            self.__socket_sub.plain_password = password.encode()
+
+            self.__socket_req.plain_username = username.encode()
+            self.__socket_req.plain_password = password.encode()
 
         # Connect zmq port
         self._socket_req.connect(req_address)
@@ -148,6 +187,9 @@ class RpcClient:
         # Close socket
         self._socket_req.close()
         self._socket_sub.close()
+
+        if self.__authenticator:
+            self.__authenticator.stop()
 
     def callback(self, topic: str, data: Any) -> None:
         """

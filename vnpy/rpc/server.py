@@ -4,6 +4,7 @@ from time import time
 from typing import Any, Callable, Dict
 
 import zmq
+from zmq.auth.thread import ThreadAuthenticator
 
 from .common import HEARTBEAT_TOPIC, HEARTBEAT_INTERVAL
 
@@ -35,6 +36,9 @@ class RpcServer:
         # Heartbeat related
         self._heartbeat_at: int = None
 
+        # Authenticator used to ensure data security
+        self.__authenticator: ThreadAuthenticator = None
+
     def is_active(self) -> bool:
         """"""
         return self._active
@@ -43,12 +47,44 @@ class RpcServer:
         self,
         rep_address: str,
         pub_address: str,
+        username: str = "",
+        password: str = "",
+        server_secretkey_path: str = ""
     ) -> None:
         """
         Start RpcServer
         """
         if self._active:
             return
+
+        # Start authenticator
+        if server_secretkey_path:
+            self.__authenticator = ThreadAuthenticator(self.__context)
+            self.__authenticator.start()
+            self.__authenticator.configure_curve(
+                domain="*",
+                location=zmq.auth.CURVE_ALLOW_ANY
+            )
+
+            publickey, secretkey = zmq.auth.load_certificate(server_secretkey_path)
+
+            self.__socket_pub.curve_secretkey = secretkey
+            self.__socket_pub.curve_publickey = publickey
+            self.__socket_pub.curve_server = True
+
+            self.__socket_rep.curve_secretkey = secretkey
+            self.__socket_rep.curve_publickey = publickey
+            self.__socket_rep.curve_server = True
+        elif username and password:
+            self.__authenticator = ThreadAuthenticator(self.__context)
+            self.__authenticator.start()
+            self.__authenticator.configure_plain(
+                domain="*",
+                passwords={username: password}
+            )
+
+            self.__socket_pub.plain_server = True
+            self.__socket_rep.plain_server = True
 
         # Bind socket address
         self._socket_rep.bind(rep_address)
@@ -112,6 +148,8 @@ class RpcServer:
         # Unbind socket address
         self._socket_pub.unbind(self._socket_pub.LAST_ENDPOINT)
         self._socket_rep.unbind(self._socket_rep.LAST_ENDPOINT)
+        if self.__authenticator:
+            self.__authenticator.stop()
 
     def publish(self, topic: str, data: Any) -> None:
         """
