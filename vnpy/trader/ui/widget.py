@@ -8,7 +8,7 @@ import platform
 from enum import Enum
 from typing import Any, Dict, List
 from copy import copy
-from tzlocal import get_localzone
+from tzlocal import get_localzone_name
 
 import importlib_metadata
 
@@ -34,7 +34,7 @@ from ..object import (
     QuoteData,
     TickData
 )
-from ..utility import load_json, save_json, get_digits
+from ..utility import load_json, save_json, get_digits, ZoneInfo
 from ..setting import SETTING_FILENAME, SETTINGS
 
 
@@ -159,7 +159,7 @@ class TimeCell(BaseCell):
     Cell used for showing time string from datetime object.
     """
 
-    local_tz = get_localzone()
+    local_tz = ZoneInfo(get_localzone_name())
 
     def __init__(self, content: Any, data: Any) -> None:
         """"""

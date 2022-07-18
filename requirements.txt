@@ -11,3 +11,4 @@ deap==1.3.1
 pyzmq==22.3.0
 plotly==5.5.0
 importlib-metadata==4.10.1
+backports.zoneinfo; python_version < '3.9'
