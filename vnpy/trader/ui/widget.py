@@ -983,7 +983,7 @@ class TradingWidget(QtWidgets.QWidget):
 
     def update_with_cell(self, cell: BaseCell) -> None:
         """"""
-        data = cell.get_data()
+        data = cell
 
         self.symbol_line.setText(data.symbol)
         self.exchange_combo.setCurrentIndex(
