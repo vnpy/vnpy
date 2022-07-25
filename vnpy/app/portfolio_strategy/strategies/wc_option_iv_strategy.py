@@ -31,7 +31,7 @@ class PosTarget:
         return self.first is None and self.second is None
 
 
-class WCIVStrategy(StrategyTemplate):
+class WCIVStrategyReal(StrategyTemplate):
     """"""
 
     author = "kangyuqiang"
@@ -97,7 +97,7 @@ class WCIVStrategy(StrategyTemplate):
                 opt.OPT_CONTRACT_INFO.expire_date <= end,
                 opt.OPT_CONTRACT_INFO.underlying_symbol == self.underlying_symbol.replace('.SSE', '.XSHG')
             ).order_by(desc(opt.OPT_CONTRACT_INFO.id)))
-
+            df = df[~df['name'].str.endswith('A')]
             df['code'] = df['code'].str.replace('.XSHG', '.SSE')
             df['underlying_symbol'] = df['underlying_symbol'].str.replace('.XSHG', '.SSE')
             self.contract_manager.opt_contract_from_df(df)

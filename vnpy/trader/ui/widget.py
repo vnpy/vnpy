@@ -680,7 +680,7 @@ class TradingWidget(QtWidgets.QWidget):
         self.event_engine: EventEngine = event_engine
 
         self.vt_symbol: str = ""
-        self.price_digits: int = 0
+        self.price_digits: int = 3
 
         self.init_ui()
         self.register_event()

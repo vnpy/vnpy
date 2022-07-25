@@ -179,10 +179,29 @@ class MainEngine:
         gateway = self.get_gateway(gateway_name)
         # 如果是ETF,则监控计算可卖、可申购、可赎回等信息
         contract: ContractData = self.get_contract(req.vt_symbol)
+        if not contract:
+            print('订阅不存在的标的', req.vt_symbol)
+            return
         if contract.product == Product.ETF:
             self.set_basket_forcus(contract)
         if gateway:
             gateway.subscribe(req)
+
+    def subscribe_many(self, req_list: List[SubscribeRequest], gateway_name: str) -> None:
+        """
+        Subscribe tick data update of a specific gateway.
+        """
+        gateway = self.get_gateway(gateway_name)
+        # 如果是ETF,则监控计算可卖、可申购、可赎回等信息
+        for req in req_list:
+            contract: ContractData = self.get_contract(req.vt_symbol)
+            if not contract:
+                print('订阅不存在的标的', req.vt_symbol)
+                continue
+            if contract.product == Product.ETF:
+                self.set_basket_forcus(contract)
+        if gateway:
+            gateway.subscribe_many(req_list)
 
     def get_basket_components(self, symbol):
         """
@@ -201,7 +220,6 @@ class MainEngine:
         持仓转换成篮子后的 量
         """
         raise NotImplementedError
-
 
     def send_order(self, req: OrderRequest, gateway_name: str) -> str:
         """

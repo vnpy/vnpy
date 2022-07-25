@@ -229,11 +229,12 @@ class AccountData(BaseData):
 
     balance: float = 0
     frozen: float = 0
+    position: float = 0
     currency: Currency = Currency.CNY
 
     def __post_init__(self):
         """"""
-        self.available = self.balance - self.frozen
+        self.available = self.balance - self.frozen - self.position
         self.vt_accountid = f"{self.gateway_name}.{self.currency.value}.{self.accountid}"
 
 

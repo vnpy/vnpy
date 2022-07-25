@@ -251,7 +251,7 @@ class BacktestingEngine:
             fields = [
                 "date", "trade_count", "turnover",
                 "commission", "slippage", "trading_pnl",
-                "holding_pnl", "total_pnl", "net_pnl"
+                "holding_pnl", "total_pnl", "net_pnl", "end_poses"
             ]
             for key in fields:
                 value = getattr(daily_result, key)
