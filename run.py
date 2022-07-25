@@ -15,7 +15,6 @@ from vnpy_esunny import EsunnyGateway
 from vnpy_ctp import CtpGateway
 from vnpy_tap import TapGateway
 from vnpy.gateway.sopttest import SopttestGateway
-from vnpy_portfoliomanager import PortfolioManagerApp, PortfolioEngine
 from vnpy_datarecorder import DataRecorderApp
 from vnpy_datamanager import DataManagerApp
 from vnpy_optionmaster import OptionMasterApp
@@ -41,7 +40,6 @@ def main():
     main_engine.add_app(CtaBacktesterApp)
     main_engine.add_app(SpreadTradingApp)
     main_engine.add_app(RiskManagerApp)
-    main_engine.add_app(PortfolioManagerApp)
     main_engine.add_app(DataRecorderApp)
     main_engine.add_app(OptionMasterApp)
     main_engine.add_app(ScriptTraderApp)
