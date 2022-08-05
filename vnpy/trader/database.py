@@ -55,14 +55,14 @@ class BaseDatabase(ABC):
     """
 
     @abstractmethod
-    def save_bar_data(self, bars: List[BarData]) -> bool:
+    def save_bar_data(self, bars: List[BarData], stream: bool = False) -> bool:
         """
         Save bar data into database.
         """
         pass
 
     @abstractmethod
-    def save_tick_data(self, ticks: List[TickData]) -> bool:
+    def save_tick_data(self, ticks: List[TickData], stream: bool = False) -> bool:
         """
         Save tick data into database.
         """
