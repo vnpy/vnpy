@@ -48,7 +48,7 @@ from .object import (
 )
 from .setting import SETTINGS
 from .utility import get_folder_path, TRADER_DIR
-
+from .utils import get_from_url
 
 class MainEngine:
     """
@@ -300,6 +300,9 @@ class MainEngine:
     def get_contract(self, vt_symbol):
         raise NotImplementedError
 
+    def get_from_url(self, url, params=None):
+        raise NotImplementedError
+
     def close(self) -> None:
         """
         Make sure every gateway and app is closed properly before
@@ -458,6 +461,7 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_basket_components = self.get_basket_components
         self.main_engine.set_basket_forcus = self.set_basket_forcus
         self.main_engine.get_basket_position = self.get_basket_position
+        self.main_engine.get_from_url = self.get_from_url
 
     def register_event(self) -> None:
         """"""
@@ -706,6 +710,11 @@ class OmsEngine(BaseEngine):
                 if quote.vt_symbol == vt_symbol
             ]
             return active_quotes
+
+    def get_from_url(self, url, params=None):
+        return get_from_url(url, params)
+
+
 
 
 class EmailEngine(BaseEngine):
