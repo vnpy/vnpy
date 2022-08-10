@@ -59,7 +59,7 @@ class RpcServer:
 
         # Start authenticator
         if server_secretkey_path:
-            self.__authenticator = ThreadAuthenticator(self.__context)
+            self.__authenticator = ThreadAuthenticator(self._context)
             self.__authenticator.start()
             self.__authenticator.configure_curve(
                 domain="*",
@@ -68,23 +68,23 @@ class RpcServer:
 
             publickey, secretkey = zmq.auth.load_certificate(server_secretkey_path)
 
-            self.__socket_pub.curve_secretkey = secretkey
-            self.__socket_pub.curve_publickey = publickey
-            self.__socket_pub.curve_server = True
+            self._socket_pub.curve_secretkey = secretkey
+            self._socket_pub.curve_publickey = publickey
+            self._socket_pub.curve_server = True
 
-            self.__socket_rep.curve_secretkey = secretkey
-            self.__socket_rep.curve_publickey = publickey
-            self.__socket_rep.curve_server = True
+            self._socket_rep.curve_secretkey = secretkey
+            self._socket_rep.curve_publickey = publickey
+            self._socket_rep.curve_server = True
         elif username and password:
-            self.__authenticator = ThreadAuthenticator(self.__context)
+            self.__authenticator = ThreadAuthenticator(self._context)
             self.__authenticator.start()
             self.__authenticator.configure_plain(
                 domain="*",
                 passwords={username: password}
             )
 
-            self.__socket_pub.plain_server = True
-            self.__socket_rep.plain_server = True
+            self._socket_pub.plain_server = True
+            self._socket_rep.plain_server = True
 
         # Bind socket address
         self._socket_rep.bind(rep_address)

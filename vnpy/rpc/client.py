@@ -104,7 +104,7 @@ class RpcClient:
 
         # Start authenticator
         if client_secretkey_path and server_publickey_path:
-            self.__authenticator = ThreadAuthenticator(self.__context)
+            self.__authenticator = ThreadAuthenticator(self._context)
             self.__authenticator.start()
             self.__authenticator.configure_curve(
                 domain="*",
@@ -114,26 +114,26 @@ class RpcClient:
             publickey, secretkey = zmq.auth.load_certificate(client_secretkey_path)
             serverkey, _ = zmq.auth.load_certificate(server_publickey_path)
 
-            self.__socket_sub.curve_secretkey = secretkey
-            self.__socket_sub.curve_publickey = publickey
-            self.__socket_sub.curve_serverkey = serverkey
+            self._socket_sub.curve_secretkey = secretkey
+            self._socket_sub.curve_publickey = publickey
+            self._socket_sub.curve_serverkey = serverkey
 
-            self.__socket_req.curve_secretkey = secretkey
-            self.__socket_req.curve_publickey = publickey
-            self.__socket_req.curve_serverkey = serverkey
+            self._socket_req.curve_secretkey = secretkey
+            self._socket_req.curve_publickey = publickey
+            self._socket_req.curve_serverkey = serverkey
         elif username and password:
-            self.__authenticator = ThreadAuthenticator(self.__context)
+            self.__authenticator = ThreadAuthenticator(self._context)
             self.__authenticator.start()
             self.__authenticator.configure_plain(
                 domain="*",
                 passwords={username: password}
             )
 
-            self.__socket_sub.plain_username = username.encode()
-            self.__socket_sub.plain_password = password.encode()
+            self._socket_sub.plain_username = username.encode()
+            self._socket_sub.plain_password = password.encode()
 
-            self.__socket_req.plain_username = username.encode()
-            self.__socket_req.plain_password = password.encode()
+            self._socket_req.plain_username = username.encode()
+            self._socket_req.plain_password = password.encode()
 
         # Connect zmq port
         self._socket_req.connect(req_address)
