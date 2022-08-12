@@ -3,6 +3,7 @@
 ## 新增
 1. 新增数据库组件vnpy.trader.database中的TickOverview对象
 2. 新增掘金仿真环境交易接口vnpy_gm
+3. BaseData基础数据类型增加extra字段（字典类型），用于传送任意相关数据
 
 ## 调整
 1. 使用Python内置的zoneinfo库替换三方的pytz库
