@@ -121,7 +121,14 @@ class BaseDatabase(ABC):
     @abstractmethod
     def get_bar_overview(self) -> List[BarOverview]:
         """
-        Return data avaible in database.
+        Return bar data avaible in database.
+        """
+        pass
+
+    @abstractmethod
+    def get_tick_overview(self) -> List[TickOverview]:
+        """
+        Return tick data avaible in database.
         """
         pass
 
