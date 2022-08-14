@@ -2,16 +2,16 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from types import ModuleType
 from typing import List
-from pytz import timezone
 from dataclasses import dataclass
 from importlib import import_module
 
 from .constant import Interval, Exchange
 from .object import BarData, TickData
 from .setting import SETTINGS
+from .utility import ZoneInfo
 
 
-DB_TZ = timezone(SETTINGS["database.timezone"])
+DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
 
 
 def convert_tz(dt: datetime) -> datetime:
@@ -36,20 +36,33 @@ class BarOverview:
     end: datetime = None
 
 
+@dataclass
+class TickOverview:
+    """
+    Overview of tick data stored in database.
+    """
+
+    symbol: str = ""
+    exchange: Exchange = None
+    count: int = 0
+    start: datetime = None
+    end: datetime = None
+
+
 class BaseDatabase(ABC):
     """
     Abstract database class for connecting to different database.
     """
 
     @abstractmethod
-    def save_bar_data(self, bars: List[BarData]) -> bool:
+    def save_bar_data(self, bars: List[BarData], stream: bool = False) -> bool:
         """
         Save bar data into database.
         """
         pass
 
     @abstractmethod
-    def save_tick_data(self, ticks: List[TickData]) -> bool:
+    def save_tick_data(self, ticks: List[TickData], stream: bool = False) -> bool:
         """
         Save tick data into database.
         """
@@ -108,7 +121,14 @@ class BaseDatabase(ABC):
     @abstractmethod
     def get_bar_overview(self) -> List[BarOverview]:
         """
-        Return data avaible in database.
+        Return bar data avaible in database.
+        """
+        pass
+
+    @abstractmethod
+    def get_tick_overview(self) -> List[TickOverview]:
+        """
+        Return tick data avaible in database.
         """
         pass
 

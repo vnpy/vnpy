@@ -17,6 +17,11 @@ import talib
 from .object import BarData, TickData
 from .constant import Exchange, Interval
 
+if sys.version_info >= (3, 9):
+    from zoneinfo import ZoneInfo, available_timezones              # noqa
+else:
+    from backports.zoneinfo import ZoneInfo, available_timezones    # noqa
+
 
 log_formatter: logging.Formatter = logging.Formatter('[%(asctime)s] %(message)s')
 
