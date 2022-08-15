@@ -4,7 +4,7 @@ from functools import lru_cache
 from typing import Any
 
 import zmq
-from zmq.backend.cython.constants import NOBLOCK
+from zmq.constants import NOBLOCK
 
 from .common import HEARTBEAT_TOPIC, HEARTBEAT_TOLERANCE
 
