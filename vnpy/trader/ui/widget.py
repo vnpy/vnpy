@@ -233,7 +233,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
         self.verticalHeader().setVisible(False)
         self.setEditTriggers(self.NoEditTriggers)
         self.setAlternatingRowColors(True)
-        self.setSortingEnabled(self.sorting)
+        # self.setSortingEnabled(self.sorting)
 
     def init_menu(self) -> None:
         """
@@ -266,8 +266,8 @@ class BaseMonitor(QtWidgets.QTableWidget):
         Process new data from event and update into table.
         """
         # Disable sorting to prevent unwanted error.
-        if self.sorting:
-            self.setSortingEnabled(False)
+        # if self.sorting:
+        #     self.setSortingEnabled(False)
 
         # Update data into table.
         data = event.data
@@ -282,9 +282,9 @@ class BaseMonitor(QtWidgets.QTableWidget):
             else:
                 self.insert_new_row(data)
 
-        # Enable sorting
-        if self.sorting:
-            self.setSortingEnabled(True)
+        # # Enable sorting
+        # if self.sorting:
+        #     self.setSortingEnabled(True)
 
     def insert_new_row(self, data: Any):
         """
