@@ -4,6 +4,7 @@ from types import ModuleType
 from typing import List
 from dataclasses import dataclass
 from importlib import import_module
+from pandas import DataFrame
 
 from .constant import Interval, Exchange
 from .object import BarData, TickData
@@ -20,6 +21,20 @@ def convert_tz(dt: datetime) -> datetime:
     """
     dt: datetime = dt.astimezone(DB_TZ)
     return dt.replace(tzinfo=None)
+
+
+def datetime_tz_convert(dt: datetime) -> datetime:
+    """"""
+    dt: datetime = datetime.fromtimestamp(dt.timestamp(), DB_TZ)
+    return dt
+
+
+def dataframe_tz_convert(df: DataFrame, time_column: str) -> DataFrame:
+    """"""
+    df.set_index(time_column, inplace=True)
+    df.sort_index(inplace=True)
+    df: DataFrame = df.tz_localize(DB_TZ.key)
+    return df
 
 
 @dataclass
