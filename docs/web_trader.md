@@ -95,7 +95,7 @@ token = r.json()["access_token"]
 
 ### 行情订阅
 ```
-r = requests.post(url + "tick/" + "cu2112.SHFE", headers={"Authorization":"Bearer" + token})
+r = requests.post(url + "tick/" + "cu2112.SHFE", headers={"Authorization":"Bearer " + token})
 ```
 通过上述命令可实现对合约cu2112.SHFE的订阅，同时可以在图形界面收到该合约的行情数据推送，入下图所示：
 
