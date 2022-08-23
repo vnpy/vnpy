@@ -2,7 +2,7 @@
 Basic data structure used for general trading function in the trading platform.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from logging import INFO
 
@@ -19,6 +19,8 @@ class BaseData:
     """
 
     gateway_name: str
+
+    extra: dict = field(default=None, init=False)
 
 
 @dataclass

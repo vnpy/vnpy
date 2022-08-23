@@ -55,14 +55,14 @@ class BaseDatabase(ABC):
     """
 
     @abstractmethod
-    def save_bar_data(self, bars: List[BarData]) -> bool:
+    def save_bar_data(self, bars: List[BarData], stream: bool = False) -> bool:
         """
         Save bar data into database.
         """
         pass
 
     @abstractmethod
-    def save_tick_data(self, ticks: List[TickData]) -> bool:
+    def save_tick_data(self, ticks: List[TickData], stream: bool = False) -> bool:
         """
         Save tick data into database.
         """
@@ -121,7 +121,14 @@ class BaseDatabase(ABC):
     @abstractmethod
     def get_bar_overview(self) -> List[BarOverview]:
         """
-        Return data avaible in database.
+        Return bar data avaible in database.
+        """
+        pass
+
+    @abstractmethod
+    def get_tick_overview(self) -> List[TickOverview]:
+        """
+        Return tick data avaible in database.
         """
         pass
 

@@ -100,7 +100,7 @@ pip代理默认为空，用户可自行设置。修改后可点击【保存】�
 
 点击VeighNa Station左侧的【社区】按钮，右侧主显示区域显示内容为官方论坛，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/veighna_station/3.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/veighna_station/4.png)
 
 用户可以在该区域浏览官方论坛内容。
 
