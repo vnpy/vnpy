@@ -303,6 +303,9 @@ class MainEngine:
     def get_from_url(self, url, params=None):
         raise NotImplementedError
 
+    def get_tick(self, vt_symbol):
+        raise NotImplementedError
+
     def close(self) -> None:
         """
         Make sure every gateway and app is closed properly before
@@ -429,7 +432,7 @@ class OmsEngine(BaseEngine):
         self.positions: Dict[str, PositionData] = {}
         self.accounts: Dict[str, AccountData] = {}
         self.contracts: Dict[str, ContractData] = {}
-        self.baskets: Dict[str, List[BasketComponent]] = defaultdict(list)
+        self.baskets: Dict[str, Dict[BasketComponent]] = defaultdict(dict)
         self.basket_forcus: Set[ContractData] = set()                # 订阅的ETF会计算篮子可卖、可申购
         self.quotes: Dict[str, QuoteData] = {}
 
@@ -517,7 +520,7 @@ class OmsEngine(BaseEngine):
 
     def process_basket_component(self, event: Event):
         component: BasketComponent = event.data
-        self.baskets[component.basket_name].append(component)
+        self.baskets[component.basket_name][component.vt_symbol] = component
 
     def process_quote_event(self, event: Event) -> None:
         """"""
@@ -568,7 +571,11 @@ class OmsEngine(BaseEngine):
         return self.contracts.get(vt_symbol, None)
 
     def get_basket_components(self, basket_name):
-        return self.baskets.get(basket_name)
+        basket = self.baskets.get(basket_name)
+        if basket:
+            return list(basket.values())
+        else:
+            return []
 
     @staticmethod
     def get_positionid(vt_symbol, product: Product, direction: Direction):

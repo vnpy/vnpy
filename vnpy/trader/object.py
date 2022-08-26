@@ -283,6 +283,7 @@ class ContractData(BaseData):
 
     etf_purchase_redem: str = ""         # ETF申赎代码
     etf_purchase_redem_min: str = 0      # ETF申赎最小数量
+    dEstimateCashComponent: int = 0      # ETF预估现金
 
     def __post_init__(self):
         """"""
