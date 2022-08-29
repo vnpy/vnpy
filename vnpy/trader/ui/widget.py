@@ -1062,6 +1062,8 @@ class ContractManager(QtWidgets.QWidget):
         "size": "合约乘数",
         "pricetick": "价格跳动",
         "min_volume": "最小委托量",
+        "etf_purchase_redem": "ETF申赎代码",
+        "etf_purchase_redem_min": "ETF最小申赎数量",
         "gateway_name": "交易接口",
     }
 

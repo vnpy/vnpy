@@ -105,7 +105,7 @@ class BarData(BaseData):
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
 
 
-@dataclass(eq=bool)
+@dataclass(eq=True)
 class OrderData(BaseData):
     """
     Order data contains information for tracking lastest status
