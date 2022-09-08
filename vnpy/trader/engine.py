@@ -595,8 +595,11 @@ class OmsEngine(BaseEngine):
             )
             first = True
             basket_components = self.get_basket_components(contract.vt_symbol)
+            etf_contract = contract
             for comp in basket_components:
                 if comp.cash_flag() == 2:
+                    continue
+                if comp.exchange != etf_contract.exchange:
                     continue
                 tick: TickData = self.get_tick(comp.vt_symbol)
                 if tick is None or (tick.limit_down == tick.last_price or tick.limit_up == tick.last_price):

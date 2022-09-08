@@ -125,7 +125,10 @@ def round_to(value: float, target: float) -> float:
     """
     value = Decimal(str(value))
     target = Decimal(str(target))
-    rounded = float(int(round(value / target)) * target)
+    try:
+        rounded = float(int(round(value / target)) * target)
+    except Exception:
+        return value
     return rounded
 
 
