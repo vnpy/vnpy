@@ -48,8 +48,6 @@ For financial institution users of VeighNa, a special [VeighNa Institutional Use
 
         * APEX HTS ([hts](https://www.github.com/vnpy/vnpy_hts)): ETF options
 
-        * NHTD ([nhtd](https://www.github.com/vnpy/vnpy_nhtd)): domestic futures, ETF options
-
         * XTP ([xtp](https://www.github.com/vnpy/vnpy_xtp)): domestic securities (A shares), ETF options
 
         * TORA ([tora](https://www.github.com/vnpy/vnpy_tora)): domestic securities (A shares), ETF options

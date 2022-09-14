@@ -50,8 +50,6 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
         * 顶点HTS（[hts](https://www.github.com/vnpy/vnpy_hts)）：ETF期权
 
-        * 南华NHTD（[nhtd](https://www.github.com/vnpy/vnpy_nhtd)）：国内期货、ETF期权
-
         * 中泰XTP（[xtp](https://www.github.com/vnpy/vnpy_xtp)）：国内证券（A股）、ETF期权
 
         * 华鑫奇点（[tora](https://www.github.com/vnpy/vnpy_tora)）：国内证券（A股）、ETF期权
