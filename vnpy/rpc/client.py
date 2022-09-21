@@ -4,8 +4,8 @@ from functools import lru_cache
 from typing import Any
 
 import zmq
-from zmq.backend.cython.constants import NOBLOCK
-
+#from zmq.backend.cython.constants import NOBLOCK     pyzmq23以及以后的版本会报错
+from zmq import NOBLOCK    #适用于pyzmq23以及以上的版本
 from .common import HEARTBEAT_TOPIC, HEARTBEAT_TOLERANCE
 
 
