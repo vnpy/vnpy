@@ -5,7 +5,6 @@ from typing import Any
 
 import zmq
 
-from zmq import NOBLOCK
 from .common import HEARTBEAT_TOPIC, HEARTBEAT_TOLERANCE
 
 
