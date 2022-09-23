@@ -40,6 +40,11 @@ class RpcClient:
         # Subscribe socket (Publish–subscribe pattern)
         self._socket_sub: zmq.Socket = self._context.socket(zmq.SUB)
 
+        # Set socket option to keepalive
+        for socket in [self._socket_req, self._socket_sub]:
+            socket.setsockopt(zmq.TCP_KEEPALIVE, 1)
+            socket.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 60)
+
         # Worker thread relate, used to process data pushed from server
         self._active: bool = False                 # RpcClient status
         self._thread: threading.Thread = None      # RpcClient thread

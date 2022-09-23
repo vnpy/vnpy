@@ -1,5 +1,10 @@
 # 3.4.0版本
 
+
+## 调整
+
+1. 开启vnpy.rpc的pyzmq连接keepalive机制，避免在复杂网络环境下闲置连接的断开
+
 ## 修复
 
 1. 修复vnpy.rpc模块对于23.0以上版本pyzmq的NOBLOCK兼容性问题
