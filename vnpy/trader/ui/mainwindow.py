@@ -128,8 +128,8 @@ class MainWindow(QtWidgets.QMainWindow):
             widget_class: QtWidgets.QWidget = getattr(ui_module, app.widget_name)
 
             func: Callable = partial(self.open_widget, widget_class, app.app_name)
-
-            self.add_action(app_menu, app.display_name, app.icon_name, func, True)
+            icon_path = str(app.app_path.joinpath("ui", app.icon_name))
+            self.add_action(app_menu, app.display_name, icon_path, func, True)
 
         # Global setting editor
         action: QtGui.QAction = QtWidgets.QAction("配置", self)
