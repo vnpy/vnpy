@@ -17,6 +17,7 @@ from .event import (
     EVENT_LOG,
     EVENT_QUOTE,
     EVENT_BASKET_COMPONENT,
+    EVENT_UNIMPORTANT_TICK
 )
 from .object import (
     TickData,
@@ -101,7 +102,7 @@ class BaseGateway(ABC):
         Tick event of a specific vt_symbol is also pushed.
         """
         self.on_event(EVENT_TICK, tick)
-        self.on_event(EVENT_TICK + tick.vt_symbol, tick)
+        # self.on_event(EVENT_TICK + tick.vt_symbol, tick)
 
     def on_trade(self, trade: TradeData) -> None:
         """
@@ -109,7 +110,7 @@ class BaseGateway(ABC):
         Trade event of a specific vt_symbol is also pushed.
         """
         self.on_event(EVENT_TRADE, trade)
-        self.on_event(EVENT_TRADE + trade.vt_symbol, trade)
+        # self.on_event(EVENT_TRADE + trade.vt_symbol, trade)
 
     def on_order(self, order: OrderData) -> None:
         """
@@ -117,7 +118,7 @@ class BaseGateway(ABC):
         Order event of a specific vt_orderid is also pushed.
         """
         self.on_event(EVENT_ORDER, order)
-        self.on_event(EVENT_ORDER + order.vt_orderid, order)
+        # self.on_event(EVENT_ORDER + order.vt_orderid, order)
 
     def on_position(self, position: PositionData) -> None:
         """
@@ -125,7 +126,7 @@ class BaseGateway(ABC):
         Position event of a specific vt_symbol is also pushed.
         """
         self.on_event(EVENT_POSITION, position)
-        self.on_event(EVENT_POSITION + position.vt_symbol, position)
+        # self.on_event(EVENT_POSITION + position.vt_symbol, position)
 
     def on_account(self, account: AccountData) -> None:
         """
@@ -133,7 +134,7 @@ class BaseGateway(ABC):
         Account event of a specific vt_accountid is also pushed.
         """
         self.on_event(EVENT_ACCOUNT, account)
-        self.on_event(EVENT_ACCOUNT + account.vt_accountid, account)
+        # self.on_event(EVENT_ACCOUNT + account.vt_accountid, account)
 
     def on_quote(self, quote: QuoteData) -> None:
         """
@@ -141,7 +142,7 @@ class BaseGateway(ABC):
         Quote event of a specific vt_symbol is also pushed.
         """
         self.on_event(EVENT_QUOTE, quote)
-        self.on_event(EVENT_QUOTE + quote.vt_symbol, quote)
+        # self.on_event(EVENT_QUOTE + quote.vt_symbol, quote)
 
     def on_log(self, log: LogData) -> None:
         """

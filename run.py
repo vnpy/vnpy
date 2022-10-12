@@ -15,6 +15,7 @@ from vnpy_esunny import EsunnyGateway
 from vnpy_ctp import CtpGateway
 from vnpy_tap import TapGateway
 from vnpy.gateway.sopttest import SopttestGateway
+from vnpy_gm import GmGateway
 from vnpy_datarecorder import DataRecorderApp
 from vnpy_datamanager import DataManagerApp
 from vnpy_optionmaster import OptionMasterApp
@@ -36,6 +37,7 @@ def main():
     main_engine.add_gateway(XtpGateway)
     main_engine.add_gateway(OkexGateway)
     main_engine.add_gateway(TapGateway)
+    main_engine.add_gateway(GmGateway)
     main_engine.add_app(CtaStrategyApp)
     main_engine.add_app(CtaBacktesterApp)
     main_engine.add_app(SpreadTradingApp)

@@ -340,6 +340,7 @@ class SubscribeRequest:
 
     symbol: str
     exchange: Exchange
+    important: bool = True                  # 此订阅是否是重要事件，关系到tick被分配到哪个queue
 
     def __post_init__(self):
         """"""

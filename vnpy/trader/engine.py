@@ -24,7 +24,8 @@ from .event import (
     EVENT_CONTRACT,
     EVENT_LOG,
     EVENT_QUOTE,
-    EVENT_BASKET_COMPONENT
+    EVENT_BASKET_COMPONENT,
+    EVENT_UNIMPORTANT_TICK
 )
 from .gateway import BaseGateway
 from .constant import Product, Direction
@@ -469,6 +470,8 @@ class OmsEngine(BaseEngine):
     def register_event(self) -> None:
         """"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
+        self.event_engine.register(EVENT_UNIMPORTANT_TICK, self.process_tick_event)
+
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
         self.event_engine.register(EVENT_POSITION, self.process_position_event)
