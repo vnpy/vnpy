@@ -4,6 +4,7 @@ import sys
 import traceback
 import webbrowser
 import types
+import threading
 
 import qdarkstyle
 from PySide6 import QtGui, QtWidgets, QtCore
@@ -55,6 +56,16 @@ def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
         exception_widget.signal.emit(msg)
 
     sys.excepthook = excepthook
+
+    if sys.version_info >= (3, 8):
+        def threading_excepthook(args, /):
+            """"""
+            sys.__excepthook__(args.exc_type, args.exc_value, args.exc_traceback)
+
+            msg: str = "".join(traceback.format_exception(args.exc_type, args.exc_value, args.exc_traceback))
+            exception_widget.signal.emit(msg)
+
+        threading.excepthook = threading_excepthook
 
     return qapp
 
