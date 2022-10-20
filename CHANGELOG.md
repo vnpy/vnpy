@@ -11,6 +11,7 @@
 3. 调整vnpy_postgresql采用批量方式写入数据，提高效率
 4. 添加VeighNa Trader中的子线程异常捕捉（需要Python>=3.8）
 5. 调整vnpy_ib接口查询历史K线数据时，对外汇和贵金属均采用中间价（而非成交价）
+6. 增加vnpy_ctastrategy对于回测过程中资金爆仓（小于等于0）情况的检查
 
 ## 修复
 

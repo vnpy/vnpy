@@ -64,6 +64,8 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
         * 融航（[rohon](https://www.github.com/vnpy/vnpy_rohon)）：期货资管
 
+        * 杰宜斯（[jees](https://www.github.com/vnpy/vnpy_jees)）：期货资管
+
         * 中汇亿达（[comstar](https://www.github.com/vnpy/vnpy_comstar)）：银行间市场
 
         * 掘金（[gm](https://www.github.com/vnpy/vnpy_gm)）：国内证券（仿真）

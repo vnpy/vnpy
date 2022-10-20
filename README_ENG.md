@@ -60,6 +60,8 @@ For financial institution users of VeighNa, a special [VeighNa Institutional Use
 
         * Rohon ([rohon](https://www.github.com/vnpy/vnpy_rohon)): futures management
 
+        * Jees ([jees](https://www.github.com/vnpy/vnpy_jees)): futures management
+
         * ComStar ([comstar](https://www.github.com/vnpy/vnpy_comstar)): interbank fixed-income market
         
         * TTS ([tts](https://www.github.com/vnpy/vnpy_tts)): domestic futures (simulation)
