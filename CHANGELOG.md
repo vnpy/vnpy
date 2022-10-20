@@ -12,6 +12,7 @@
 4. 添加VeighNa Trader中的子线程异常捕捉（需要Python>=3.8）
 5. 调整vnpy_ib接口查询历史K线数据时，对外汇和贵金属均采用中间价（而非成交价）
 6. 增加vnpy_ctastrategy对于回测过程中资金爆仓（小于等于0）情况的检查
+7. 优化vnpy_webtrader模块的加密鉴权，支持web进程关闭重启
 
 ## 修复
 
