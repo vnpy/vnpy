@@ -4,7 +4,6 @@ from functools import lru_cache
 from typing import Any
 
 import zmq
-from zmq.backend.cython.constants import NOBLOCK
 
 from .common import HEARTBEAT_TOPIC, HEARTBEAT_TOLERANCE
 
@@ -40,6 +39,11 @@ class RpcClient:
 
         # Subscribe socket (Publish–subscribe pattern)
         self._socket_sub: zmq.Socket = self._context.socket(zmq.SUB)
+
+        # Set socket option to keepalive
+        for socket in [self._socket_req, self._socket_sub]:
+            socket.setsockopt(zmq.TCP_KEEPALIVE, 1)
+            socket.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 60)
 
         # Worker thread relate, used to process data pushed from server
         self._active: bool = False                 # RpcClient status
@@ -137,7 +141,7 @@ class RpcClient:
                 continue
 
             # Receive data from subscribe socket
-            topic, data = self._socket_sub.recv_pyobj(flags=NOBLOCK)
+            topic, data = self._socket_sub.recv_pyobj(flags=zmq.NOBLOCK)
 
             if topic == HEARTBEAT_TOPIC:
                 self._last_received_ping = data

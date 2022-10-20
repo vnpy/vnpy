@@ -1,3 +1,26 @@
+# 3.4.0版本
+
+## 新增
+
+1. 新增杰宜斯资管系统交易接口vnpy_jees
+
+## 调整
+
+1. 开启vnpy.rpc的pyzmq连接keepalive机制，避免在复杂网络环境下闲置连接的断开
+2. 移除vnpy_rpcservice中服务端的EVENT_TIMER定时事件推送
+3. 调整vnpy_postgresql采用批量方式写入数据，提高效率
+4. 添加VeighNa Trader中的子线程异常捕捉（需要Python>=3.8）
+5. 调整vnpy_ib接口查询历史K线数据时，对外汇和贵金属均采用中间价（而非成交价）
+6. 增加vnpy_ctastrategy对于回测过程中资金爆仓（小于等于0）情况的检查
+
+## 修复
+
+1. 修复vnpy.rpc模块对于23.0以上版本pyzmq的NOBLOCK兼容性问题
+2. 修复vnpy_taos由于TDengine版本升级，出现d的一系列兼容问题
+3. 修复vnpy_datamanager刷新数据汇总信息显示时，老数据点移除失败的问题
+
+
+
 # 3.3.0版本
 
 ## 新增

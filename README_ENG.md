@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-3.3.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-3.4.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.10-blue.svg" />
     <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
@@ -59,6 +59,8 @@ For financial institution users of VeighNa, a special [VeighNa Institutional Use
         * KsGold ([ksgold](https://www.github.com/vnpy/vnpy_ksgold)): spot precious metal
 
         * Rohon ([rohon](https://www.github.com/vnpy/vnpy_rohon)): futures management
+
+        * Jees ([jees](https://www.github.com/vnpy/vnpy_jees)): futures management
 
         * ComStar ([comstar](https://www.github.com/vnpy/vnpy_comstar)): interbank fixed-income market
         
