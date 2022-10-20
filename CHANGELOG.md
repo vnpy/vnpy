@@ -10,6 +10,7 @@
 2. 移除vnpy_rpcservice中服务端的EVENT_TIMER定时事件推送
 3. 调整vnpy_postgresql采用批量方式写入数据，提高效率
 4. 添加VeighNa Trader中的子线程异常捕捉（需要Python>=3.8）
+5. 调整vnpy_ib接口查询历史K线数据时，对外汇和贵金属均采用中间价（而非成交价）
 
 ## 修复
 
