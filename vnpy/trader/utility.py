@@ -18,6 +18,11 @@ from .object import BarData, TickData
 from .constant import Exchange, Interval
 from tzlocal import get_localzone
 
+if sys.version_info >= (3, 9):
+    from zoneinfo import ZoneInfo, available_timezones              # noqa
+else:
+    from backports.zoneinfo import ZoneInfo, available_timezones    # noqa
+
 local_zone = get_localzone()
 log_formatter = logging.Formatter('[%(asctime)s] %(message)s')
 

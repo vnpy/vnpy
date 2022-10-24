@@ -84,10 +84,10 @@ class BaseGateway(ABC):
     # Exchanges supported in the gateway.
     exchanges: List[Exchange] = []
 
-    def __init__(self, event_engine: EventEngine, gateway_name: str):
+    def __init__(self, event_engine: EventEngine, gateway_name: str = None):
         """"""
         self.event_engine: EventEngine = event_engine
-        self.gateway_name: str = gateway_name
+        self.gateway_name: str = gateway_name or self.__class__.__name__
 
     def on_event(self, type: str, data: Any = None) -> None:
         """
