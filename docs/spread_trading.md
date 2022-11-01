@@ -20,7 +20,7 @@ SpreadTrading是用于**多合约价差套利**的功能模块，用户可以通
 from vnpy_spreadtrading import SpreadTradingApp
 
 # 写在创建main_engine对象后
-main_engine.add_app(spread_trading)         
+main_engine.add_app(SpreadTradingApp)
 ```
 
 
