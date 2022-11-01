@@ -237,7 +237,7 @@ class BarGenerator:
         elif tick.datetime.second >= 55 and self.minute_change_flag:
             # elif tick.datetime.minute != self.bar.datetime.minute:
             self.bar.datetime = self.bar.datetime.replace(
-                second=0, microsecond=0
+                second=0, microsecond=0, tzinfo=None,
             )
             self.minute_change_flag = False
             self.on_bar(self.bar)
@@ -296,7 +296,7 @@ class BarGenerator:
         """"""
         # If not inited, create window bar object
         if not self.window_bar:
-            dt = bar.datetime.replace(second=0, microsecond=0)
+            dt = bar.datetime.replace(second=0, microsecond=0, tzinfo=None)
             self.window_bar = BarData(
                 symbol=bar.symbol,
                 exchange=bar.exchange,
@@ -334,7 +334,7 @@ class BarGenerator:
         """"""
         # If not inited, create window bar object
         if not self.hour_bar:
-            dt = bar.datetime.replace(minute=0, second=0, microsecond=0)
+            dt = bar.datetime.replace(minute=0, second=0, microsecond=0, tzinfo=None)
             self.hour_bar = BarData(
                 symbol=bar.symbol,
                 exchange=bar.exchange,
@@ -371,7 +371,7 @@ class BarGenerator:
         elif bar.datetime.hour != self.hour_bar.datetime.hour:
             finished_bar = self.hour_bar
 
-            dt = bar.datetime.replace(minute=0, second=0, microsecond=0)
+            dt = bar.datetime.replace(minute=0, second=0, microsecond=0, tzinfo=None)
             self.hour_bar = BarData(
                 symbol=bar.symbol,
                 exchange=bar.exchange,
@@ -413,7 +413,7 @@ class BarGenerator:
         # 没有日线bar就生成一个
 
         if not self.day_bar:
-            dt = bar.datetime.replace(minute=0, second=0, microsecond=0)
+            dt = bar.datetime.replace(minute=0, second=0, microsecond=0, tzinfo=None)
             self.day_bar = BarData(
                 symbol=bar.symbol,
                 exchange=bar.exchange,
@@ -442,7 +442,8 @@ class BarGenerator:
             self.day_bar.volume += int(bar.volume)
             self.day_bar.open_interest = bar.open_interest
             # 15:00最后一个bar的date就是这个日线的日期
-            self.day_bar.datetime = (bar.datetime + timedelta(hours=4)).replace(hour=0, minute=0, second=0, microsecond=0)
+            self.day_bar.datetime = (bar.datetime + timedelta(hours=4)).replace(
+                hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
 
             finished_bar = self.day_bar  # 保存日线bar
             self.day_bar = None  # 因为日线bar已经保存给finished_bar了所以将日线bar设为空，下次新数据来了就会生成新的日线bar
@@ -515,7 +516,7 @@ class BarGenerator:
         bar = self.bar
 
         if self.bar:
-            bar.datetime = bar.datetime.replace(second=0, microsecond=0)
+            bar.datetime = bar.datetime.replace(second=0, microsecond=0, tzinfo=None)
             self.on_bar(bar)
 
         self.bar = None
@@ -534,7 +535,7 @@ class ArrayManager(object):
         self.count: int = 0
         self.size: int = size
         self.inited: bool = False
-        self.last_bar_dt = datetime(year=1900, month=1, day=1, hour=1, minute=1, second=1)
+        self.last_bar_dt = datetime(year=1900, month=1, day=1, hour=1, minute=1, second=0, tzinfo=None)
 
         self.open_array: np.ndarray = np.zeros(size)
         self.high_array: np.ndarray = np.zeros(size)
@@ -550,8 +551,8 @@ class ArrayManager(object):
         最后一个bar可以持续更新
         只有时间改变，才会进入下一分钟
         """
-
-        if bar.datetime != self.last_bar_dt:
+        bar.datetime = bar.datetime.replace(tzinfo=None)
+        if bar.datetime > self.last_bar_dt:
             # 如果是新的时间bar
             self.count += 1
             if not self.inited and self.count >= self.size:

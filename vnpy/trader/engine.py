@@ -510,7 +510,7 @@ class OmsEngine(BaseEngine):
         tick: TickData = event.data
         self.ticks[tick.vt_symbol] = tick
 
-    @cachetools.func.ttl_cache(ttl=60)
+    @cachetools.func.ttl_cache(ttl=3)
     def get_moment_profit(self, etf_symbol: str):
         """
         获取ETF折、溢价瞬时利润
@@ -569,7 +569,6 @@ class OmsEngine(BaseEngine):
         shbenefit.dSellStamps = 1
         shbenefit.dETFBuyBenefit = 0.05
         shbenefit.dETFSellBenefit = 0.05
-
 
         szbenefit = BenefitInfo()
         szbenefit.dStockBuyBenefit = 0.15
