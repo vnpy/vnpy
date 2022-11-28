@@ -29,7 +29,7 @@ from .event import (
     EVENT_UNIMPORTANT_TICK
 )
 from .gateway import BaseGateway
-from .constant import Product, Direction
+from .constant import Product, Direction, Status
 from .object import (
     CancelRequest,
     LogData,
@@ -49,7 +49,7 @@ from .object import (
     BasketComponent
 )
 from .setting import SETTINGS
-from .utility import get_folder_path, TRADER_DIR
+from .utility import get_folder_path, TRADER_DIR, round_to
 from .utils import get_from_url
 
 from vnpy.trader.jgetf_moment_profit.jgetf_api_func_def import *
@@ -87,7 +87,11 @@ class MainEngine:
         """
         Add gateway.
         """
-        gateway = gateway_class(self.event_engine)
+        try:
+            gateway = gateway_class(self.event_engine)
+        except TypeError:
+            name = gateway_class.__name__.replace('Gateway', '').upper()
+            gateway = gateway_class(self.event_engine, gateway_name=name)
         self.gateways[gateway.gateway_name] = gateway
 
         # Add gateway supported exchanges into engine
@@ -190,6 +194,8 @@ class MainEngine:
             self.set_basket_forcus(contract)
         if gateway:
             gateway.subscribe(req)
+        if req.important:
+            self.event_engine.add_important_symbol(req.vt_symbol)
 
     def subscribe_many(self, req_list: List[SubscribeRequest], gateway_name: str) -> None:
         """
@@ -204,6 +210,8 @@ class MainEngine:
                 continue
             if contract.product == Product.ETF:
                 self.set_basket_forcus(contract)
+            if req.important:
+                self.event_engine.add_important_symbol(req.vt_symbol)
         if gateway:
             gateway.subscribe_many(req_list)
 
@@ -234,6 +242,7 @@ class MainEngine:
         contract = self.get_contract(req.vt_symbol)
         req.product = contract.product
         gateway = self.get_gateway(gateway_name)
+        req.price = round_to(req.price, contract.pricetick)
         if gateway:
             return gateway.send_order(req)
         else:
@@ -603,6 +612,16 @@ class OmsEngine(BaseEngine):
         """"""
         trade: TradeData = event.data
         self.trades[trade.vt_tradeid] = trade
+        if trade.vt_tradeid in self.trades:
+            return
+        old_order = self.orders.get(trade.vt_orderid, None)
+        if not old_order:
+            return
+        old_order.traded += trade.volume
+        if old_order.traded == old_order.volume:
+            old_order.status = Status.ALLTRADED
+            self.event_engine.put(Event(type=EVENT_ORDER, data=old_order))
+
 
     def process_position_event(self, event: Event) -> None:
         """"""

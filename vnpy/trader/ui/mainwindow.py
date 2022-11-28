@@ -27,7 +27,7 @@ from .widget import (
 )
 from .editor import CodeEditor
 from ..engine import MainEngine
-from ..utility import get_icon_path, TRADER_DIR
+from ..utility import get_icon_path, TRADER_DIR, TEMP_DIR
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -42,7 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine
 
-        self.window_title: str = f"VN Trader {vnpy.__version__} [{TRADER_DIR}]"
+        self.window_title: str = f"VN Trader {vnpy.__version__}  [ {TEMP_DIR} ]"
 
         self.widgets: Dict[str, QtWidgets.QWidget] = {}
 

@@ -72,7 +72,7 @@ class OrderType(Enum):
     FAK = "FAK"
     FOK = "FOK"
     RFQ = "询价"
-    JG_TDC_PRICETYPE_BestOrLimit = "7"
+    BestOrLimit = "最优五转现价"
 
 
 class OptionType(Enum):
@@ -94,11 +94,14 @@ class Exchange(Enum):
     DCE = "DCE"             # Dalian Commodity Exchange
     INE = "INE"             # Shanghai International Energy Exchange
     SSE = "SSE"             # Shanghai Stock Exchange
+    SHO = "SHO"
     SZSE = "SZSE"           # Shenzhen Stock Exchange
+    SZO = "SZO"
     SGE = "SGE"             # Shanghai Gold Exchange
     WXE = "WXE"             # Wuxi Steel Exchange
     CFETS = "CFETS"         # CFETS Bond Market Maker Trading System
     XBOND = "XBOND"         # CFETS X-Bond Anonymous Trading System
+    GFEX = "GFEX"
 
     # Global
     SMART = "SMART"         # Smart Router for US stocks

@@ -7,8 +7,9 @@ from queue import Empty, Queue
 from threading import Thread
 from time import sleep
 from typing import Any, Callable, List
+from vnpy.trader.event import EVENT_TICK, EVENT_TIMER
 
-EVENT_TIMER = "eTimer"
+
 
 
 class Event:
@@ -44,8 +45,9 @@ class EventEngine:
         """
         self._interval: int = interval
         self._queue: Queue = Queue()
-        self._unimportant_queue: Queue = Queue(maxsize=10000)                        # 非重要队列，处理特殊非重要事件，防止self._queue阻塞
-                                                                        # 会丢失数据！！！
+        self._unimportant_queue: Queue = Queue(maxsize=10000)       # 非重要队列，处理特殊非重要事件，防止self._queue阻塞
+                                                                    # 会丢失数据！！！
+        self._important_symbols = set()
         self._active: bool = False
         self._thread: Thread = Thread(target=self._run)
         self._unimportant_th: Thread = Thread(target=self._run_unimportant)
@@ -116,11 +118,16 @@ class EventEngine:
         self._thread.join()
         self._unimportant_th.join()
 
+    def add_important_symbol(self, vt_symbol):
+        self._important_symbols.add(vt_symbol)
+
     def put(self, event: Event) -> None:
         """
         Put an event object into event queue.
         """
-        if event.type.startswith('eUnimportant_'):
+        if event.type.startswith('eUnimportant_') or not (
+            event.type == EVENT_TICK and event.data.vt_symbol in self._important_symbols
+        ):
             self._unimportant_queue.put(event)
             return
         self._queue.put(event)

@@ -17,6 +17,7 @@ import talib
 from .object import BarData, TickData
 from .constant import Exchange, Interval
 from tzlocal import get_localzone
+from vnpy import WORK_DIR
 
 if sys.version_info >= (3, 9):
     from zoneinfo import ZoneInfo, available_timezones              # noqa
@@ -65,7 +66,7 @@ def _get_trader_dir(temp_name: str) -> Tuple[Path, Path]:
     return home_path, temp_path
 
 
-TRADER_DIR, TEMP_DIR = _get_trader_dir(".wc-vntrader")
+TRADER_DIR, TEMP_DIR = _get_trader_dir(WORK_DIR)
 sys.path.append(str(TRADER_DIR))
 
 
@@ -323,9 +324,10 @@ class BarGenerator:
         self.window_bar.open_interest = bar.open_interest
 
         # Check if window bar completed
-        if not (bar.datetime.minute + 1) % self.window:
-            self.on_window_bar(self.window_bar)
-            self.window_bar = None
+        if self.window and self.on_window_bar:
+            if not (bar.datetime.minute + 1) % self.window:
+                self.on_window_bar(self.window_bar)
+                self.window_bar = None
 
         # Cache last bar object
         self.last_bar = bar
