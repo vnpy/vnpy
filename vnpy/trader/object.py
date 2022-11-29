@@ -105,7 +105,7 @@ class BarData(BaseData):
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
 
 
-@dataclass(eq=bool)
+@dataclass(eq=True)
 class OrderData(BaseData):
     """
     Order data contains information for tracking lastest status
@@ -283,6 +283,7 @@ class ContractData(BaseData):
 
     etf_purchase_redem: str = ""         # ETF申赎代码
     etf_purchase_redem_min: str = 0      # ETF申赎最小数量
+    dEstimateCashComponent: int = 0      # ETF预估现金
 
     def __post_init__(self):
         """"""
@@ -339,6 +340,7 @@ class SubscribeRequest:
 
     symbol: str
     exchange: Exchange
+    important: bool = True                  # 此订阅是否是重要事件，关系到tick被分配到哪个queue
 
     def __post_init__(self):
         """"""

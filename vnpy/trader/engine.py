@@ -2,6 +2,7 @@
 """
 
 from collections import defaultdict
+import cachetools.func
 import logging
 from logging import Logger
 import smtplib
@@ -24,10 +25,11 @@ from .event import (
     EVENT_CONTRACT,
     EVENT_LOG,
     EVENT_QUOTE,
-    EVENT_BASKET_COMPONENT
+    EVENT_BASKET_COMPONENT,
+    EVENT_UNIMPORTANT_TICK
 )
 from .gateway import BaseGateway
-from .constant import Product, Direction
+from .constant import Product, Direction, Status
 from .object import (
     CancelRequest,
     LogData,
@@ -47,8 +49,10 @@ from .object import (
     BasketComponent
 )
 from .setting import SETTINGS
-from .utility import get_folder_path, TRADER_DIR
+from .utility import get_folder_path, TRADER_DIR, round_to
+from .utils import get_from_url
 
+from vnpy.trader.jgetf_moment_profit.jgetf_api_func_def import *
 
 class MainEngine:
     """
@@ -83,7 +87,11 @@ class MainEngine:
         """
         Add gateway.
         """
-        gateway = gateway_class(self.event_engine)
+        try:
+            gateway = gateway_class(self.event_engine)
+        except TypeError:
+            name = gateway_class.__name__.replace('Gateway', '').upper()
+            gateway = gateway_class(self.event_engine, gateway_name=name)
         self.gateways[gateway.gateway_name] = gateway
 
         # Add gateway supported exchanges into engine
@@ -186,6 +194,8 @@ class MainEngine:
             self.set_basket_forcus(contract)
         if gateway:
             gateway.subscribe(req)
+        if req.important:
+            self.event_engine.add_important_symbol(req.vt_symbol)
 
     def subscribe_many(self, req_list: List[SubscribeRequest], gateway_name: str) -> None:
         """
@@ -200,6 +210,8 @@ class MainEngine:
                 continue
             if contract.product == Product.ETF:
                 self.set_basket_forcus(contract)
+            if req.important:
+                self.event_engine.add_important_symbol(req.vt_symbol)
         if gateway:
             gateway.subscribe_many(req_list)
 
@@ -230,6 +242,7 @@ class MainEngine:
         contract = self.get_contract(req.vt_symbol)
         req.product = contract.product
         gateway = self.get_gateway(gateway_name)
+        req.price = round_to(req.price, contract.pricetick)
         if gateway:
             return gateway.send_order(req)
         else:
@@ -298,6 +311,25 @@ class MainEngine:
         raise NotImplementedError
 
     def get_contract(self, vt_symbol):
+        raise NotImplementedError
+
+    def get_from_url(self, url, params=None):
+        raise NotImplementedError
+
+    def get_tick(self, vt_symbol):
+        raise NotImplementedError
+
+    def get_spread(self, spread_name: str):
+        raise NotImplementedError
+
+    def get_moment_profit(self, etf_symbol: str):
+        """
+        获取ETF折、溢价瞬时利润
+        折价： 买ETF，赎回成篮子，卖篮子
+        溢价： 买篮子，申购成ETF，卖ETF
+        :param etf_symbol:
+        :return:
+        """
         raise NotImplementedError
 
     def close(self) -> None:
@@ -421,12 +453,14 @@ class OmsEngine(BaseEngine):
         super(OmsEngine, self).__init__(main_engine, event_engine, "oms")
 
         self.ticks: Dict[str, TickData] = {}
+        self.spread: Dict[str, "SpreadData"] = {}
+
         self.orders: Dict[str, OrderData] = {}
         self.trades: Dict[str, TradeData] = {}
         self.positions: Dict[str, PositionData] = {}
         self.accounts: Dict[str, AccountData] = {}
         self.contracts: Dict[str, ContractData] = {}
-        self.baskets: Dict[str, List[BasketComponent]] = defaultdict(list)
+        self.baskets: Dict[str, Dict[BasketComponent]] = defaultdict(dict)
         self.basket_forcus: Set[ContractData] = set()                # 订阅的ETF会计算篮子可卖、可申购
         self.quotes: Dict[str, QuoteData] = {}
 
@@ -458,10 +492,15 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_basket_components = self.get_basket_components
         self.main_engine.set_basket_forcus = self.set_basket_forcus
         self.main_engine.get_basket_position = self.get_basket_position
+        self.main_engine.get_from_url = self.get_from_url
+        self.main_engine.get_spread = self.get_spread
+        self.main_engine.get_moment_profit = self.get_moment_profit
 
     def register_event(self) -> None:
         """"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
+        self.event_engine.register(EVENT_UNIMPORTANT_TICK, self.process_tick_event)
+
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
         self.event_engine.register(EVENT_POSITION, self.process_position_event)
@@ -470,10 +509,92 @@ class OmsEngine(BaseEngine):
         self.event_engine.register(EVENT_QUOTE, self.process_quote_event)
         self.event_engine.register(EVENT_BASKET_COMPONENT, self.process_basket_component)
 
+        from vnpy_spreadtrading.base import (
+            EVENT_SPREAD_DATA
+        )
+        self.event_engine.register(EVENT_SPREAD_DATA, self.process_spread_event)
+
     def process_tick_event(self, event: Event) -> None:
         """"""
         tick: TickData = event.data
         self.ticks[tick.vt_symbol] = tick
+
+    @cachetools.func.ttl_cache(ttl=3)
+    def get_moment_profit(self, etf_symbol: str):
+        """
+        获取ETF折、溢价瞬时利润
+        折价： 买ETF，赎回成篮子，卖篮子
+        溢价： 买篮子，申购成ETF，卖ETF
+        :param etf_symbol:
+        :return:
+        """
+
+        contract: ContractData = self.get_contract(etf_symbol)
+
+        if not contract:
+            return None, None
+        if contract.product != Product.ETF:
+            return None, None
+        components: List[BasketComponent] = self.get_basket_components(etf_symbol)
+
+        headinfo = ETFRedemptionHead()
+        headinfo.szETFCode = bytes(contract.symbol, encoding="gb2312")
+        if contract.exchange == Exchange.SSE:
+            headinfo.nETFExchangeType = MARKET_TYPE.MARKET_TYPE_STOCKSH.value
+        else:
+            headinfo.nETFExchangeType = MARKET_TYPE.MARKET_TYPE_STOCKSZ.value
+        headinfo.dEstimateCashComponent = contract.dEstimateCashComponent
+        headinfo.lCreationRedemptionUnit = contract.etf_purchase_redem_min
+        headinfo.nRecordnum = len(components)
+        codelist = (ETFRedemptionCodeList * len(components))()
+
+        count = 0
+        for component in components:
+
+            codelist[count].szSecurityCode = bytes(component.symbol, encoding="gb2312")
+            if contract.exchange == Exchange.SSE:
+                codelist[count].nMarketType = MARKET_TYPE.MARKET_TYPE_STOCKSH.value
+            else:
+                codelist[count].nMarketType = MARKET_TYPE.MARKET_TYPE_STOCKSZ.value
+            codelist[count].dCreationCashSubstitute = component.cash_substitute
+            codelist[count].dRedemptionCashSubstitute = component.redemption_cash_substitute
+            codelist[count].nSampleVolume = component.share
+            codelist[count].cReplaceFlag = bytes(str(component.substitute_flag), encoding="gb2312")
+            tick: TickData = self.get_tick(component.vt_symbol)
+            if tick:
+                codelist[count].nNowPrice = int(tick.last_price * 10000)
+            else:
+                codelist[count].nNowPrice = 0
+            count += 1
+
+        tick: TickData = self.get_tick(contract.vt_symbol)
+        etfbuyprice = tick.bid_price_1
+        etfsellprice = tick.ask_price_1
+
+        shbenefit = BenefitInfo()
+        shbenefit.dStockBuyBenefit = 0.15
+        shbenefit.dStockSellBenefit = 0.15
+        shbenefit.dBuyStamps = 0
+        shbenefit.dSellStamps = 1
+        shbenefit.dETFBuyBenefit = 0.05
+        shbenefit.dETFSellBenefit = 0.05
+
+        szbenefit = BenefitInfo()
+        szbenefit.dStockBuyBenefit = 0.15
+        szbenefit.dStockSellBenefit = 0.15
+        szbenefit.dBuyStamps = 0
+        szbenefit.dSellStamps = 1
+        szbenefit.dETFBuyBenefit = 0.06
+        szbenefit.dETFSellBenefit = 0.06
+
+        etfprofit = API_CalETFProfit(headinfo, codelist, headinfo.nRecordnum, etfbuyprice, etfsellprice, szbenefit,
+                                     shbenefit)
+
+        return etfprofit.dDiscount, etfprofit.dPremium
+
+    def process_spread_event(self, event: Event) -> None:
+        spread: SpreadData = event.data
+        self.spread[spread.name] = spread
 
     def process_order_event(self, event: Event) -> None:
         """"""
@@ -491,6 +612,16 @@ class OmsEngine(BaseEngine):
         """"""
         trade: TradeData = event.data
         self.trades[trade.vt_tradeid] = trade
+        if trade.vt_tradeid in self.trades:
+            return
+        old_order = self.orders.get(trade.vt_orderid, None)
+        if not old_order:
+            return
+        old_order.traded += trade.volume
+        if old_order.traded == old_order.volume:
+            old_order.status = Status.ALLTRADED
+            self.event_engine.put(Event(type=EVENT_ORDER, data=old_order))
+
 
     def process_position_event(self, event: Event) -> None:
         """"""
@@ -513,7 +644,7 @@ class OmsEngine(BaseEngine):
 
     def process_basket_component(self, event: Event):
         component: BasketComponent = event.data
-        self.baskets[component.basket_name].append(component)
+        self.baskets[component.basket_name][component.vt_symbol] = component
 
     def process_quote_event(self, event: Event) -> None:
         """"""
@@ -563,8 +694,18 @@ class OmsEngine(BaseEngine):
         """
         return self.contracts.get(vt_symbol, None)
 
+    def get_spread(self, spread_name: str):
+        """
+        获取价差数据
+        """
+        return self.spread.get(spread_name, None)
+
     def get_basket_components(self, basket_name):
-        return self.baskets.get(basket_name)
+        basket = self.baskets.get(basket_name)
+        if basket:
+            return list(basket.values())
+        else:
+            return []
 
     @staticmethod
     def get_positionid(vt_symbol, product: Product, direction: Direction):
@@ -584,8 +725,11 @@ class OmsEngine(BaseEngine):
             )
             first = True
             basket_components = self.get_basket_components(contract.vt_symbol)
+            etf_contract = contract
             for comp in basket_components:
                 if comp.cash_flag() == 2:
+                    continue
+                if comp.exchange != etf_contract.exchange:
                     continue
                 tick: TickData = self.get_tick(comp.vt_symbol)
                 if tick is None or (tick.limit_down == tick.last_price or tick.limit_up == tick.last_price):
@@ -707,6 +851,11 @@ class OmsEngine(BaseEngine):
             ]
             return active_quotes
 
+    def get_from_url(self, url, params=None):
+        return get_from_url(url, params)
+
+
+
 
 class EmailEngine(BaseEngine):
     """
@@ -769,3 +918,7 @@ class EmailEngine(BaseEngine):
 
         self.active = False
         self.thread.join()
+
+
+if __name__ == '__main__':
+    from vnpy_spreadtrading.base import SpreadData

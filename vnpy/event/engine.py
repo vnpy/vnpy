@@ -7,8 +7,9 @@ from queue import Empty, Queue
 from threading import Thread
 from time import sleep
 from typing import Any, Callable, List
+from vnpy.trader.event import EVENT_TICK, EVENT_TIMER
 
-EVENT_TIMER = "eTimer"
+
 
 
 class Event:
@@ -44,11 +45,26 @@ class EventEngine:
         """
         self._interval: int = interval
         self._queue: Queue = Queue()
+        self._unimportant_queue: Queue = Queue(maxsize=10000)       # 非重要队列，处理特殊非重要事件，防止self._queue阻塞
+                                                                    # 会丢失数据！！！
+        self._important_symbols = set()
         self._active: bool = False
         self._thread: Thread = Thread(target=self._run)
+        self._unimportant_th: Thread = Thread(target=self._run_unimportant)
         self._timer: Thread = Thread(target=self._run_timer)
         self._handlers: defaultdict = defaultdict(list)
         self._general_handlers: List = []
+
+    def _run_unimportant(self):
+        while self._active:
+            try:
+                event = self._unimportant_queue.get(block=True, timeout=1)
+                self._process(event)
+                # 太多就清空
+                if self._unimportant_queue.full():
+                    self._unimportant_queue = Queue(maxsize=10000)
+            except Empty:
+                pass
 
     def _run(self) -> None:
         """
@@ -91,6 +107,7 @@ class EventEngine:
         self._active = True
         self._thread.start()
         self._timer.start()
+        self._unimportant_th.start()
 
     def stop(self) -> None:
         """
@@ -99,11 +116,20 @@ class EventEngine:
         self._active = False
         self._timer.join()
         self._thread.join()
+        self._unimportant_th.join()
+
+    def add_important_symbol(self, vt_symbol):
+        self._important_symbols.add(vt_symbol)
 
     def put(self, event: Event) -> None:
         """
         Put an event object into event queue.
         """
+        if event.type.startswith('eUnimportant_') or not (
+            event.type == EVENT_TICK and event.data.vt_symbol in self._important_symbols
+        ):
+            self._unimportant_queue.put(event)
+            return
         self._queue.put(event)
 
     def register(self, type: str, handler: HandlerType) -> None:
