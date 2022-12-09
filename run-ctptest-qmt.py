@@ -31,7 +31,7 @@ from vnpy_optionmaster import OptionMasterApp
 from vnpy_scripttrader import ScriptTraderApp
 from vnpy.app.portfolio_strategy import PortfolioStrategyApp
 from vnpy_qmt.qmt_gateway import QmtGateway
-from vnpy_sopt.gateway.sopt_gateway import SoptGateway
+
 
 def main():
     """Start VN Trader"""
@@ -42,8 +42,6 @@ def main():
 
     # main_engine.add_gateway(CtpGateway)
     main_engine.add_gateway(CtptestGateway)
-    main_engine.add_gateway(SoptGateway)
-    main_engine.add_gateway(SopttestGateway)
     main_engine.add_gateway(JGGateway)
     main_engine.add_gateway(UftGateway)
     main_engine.add_gateway(XtpGateway)
