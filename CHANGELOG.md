@@ -1,3 +1,25 @@
+# 3.5.0版本
+
+## 新增
+
+1. 新增基于米筐RQData的跨市场行情数据接口RqdataGateway
+2. 新增东方财富证券EMT柜台交易接口vnpy_emt
+
+## 调整
+
+1. 调整vnpy_algotrading模块设计（模板、引擎），只支持单合约算法执行交易
+2. 优化vnpy_algotrading的算法状态控制，增加状态枚举值，算法支持暂停和恢复运行
+
+
+## 修复
+
+1. 修复后台线程异常捕捉钩子函数，对于Python 3.7的语法兼容性问题
+2. 修复vnpy_mysql加载历史数据时存在时段重复的问题
+3. 修复vnpy_ib由于TWS客户端升级导致的委托失败问题
+4. 修复vnpy_rest/vnpy_websocket对Python 3.10后asyncio的支持
+5. 修复vnpy_sopt由于流控导致的委托失败时，返回【提交中】状态委托的问题
+
+
 # 3.4.0版本
 
 ## 新增

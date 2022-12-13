@@ -58,6 +58,8 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
         * 东证OST（[ost](https://www.github.com/vnpy/vnpy_ost)）：国内证券（A股）
 
+        * 东方财富EMT（[emt](https://www.github.com/vnpy/vnpy_emt)）：国内证券（A股）
+
         * 飞鼠（[sgit](https://www.github.com/vnpy/vnpy_sgit)）：黄金TD、国内期货
 
         * 金仕达黄金（[ksgold](https://www.github.com/vnpy/vnpy_ksgold)）：黄金TD
@@ -85,6 +87,8 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
         * 直达期货（[da](https://www.github.com/vnpy/vnpy_da)）：海外期货
 
     * 特殊应用
+
+        * RQData行情（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：跨市场（股票、指数、ETF、期货）实时行情
 
         * RPC服务（[rpc](https://www.github.com/vnpy/vnpy_rpcservice)）：跨进程通讯接口，用于分布式架构
 
