@@ -9,7 +9,8 @@
 
 1. 调整vnpy_algotrading模块设计（模板、引擎），只支持单合约算法执行交易
 2. 优化vnpy_algotrading的算法状态控制，增加状态枚举值，算法支持暂停和恢复运行
-
+3. 升级vnpy_hft接口支持HFT国君统一交易网关的2.0版本API
+4. 优化vnpy_portfoliostrategy的策略模板，支持持仓目标调仓交易模式
 
 ## 修复
 
