@@ -146,7 +146,7 @@ class MainEngine:
 
     def get_all_gateway_names(self) -> List[str]:
         """
-        Get all names of gatewasy added in main engine.
+        Get all names of gateway added in main engine.
         """
         return list(self.gateways.keys())
 
@@ -241,7 +241,7 @@ class MainEngine:
 
 class BaseEngine(ABC):
     """
-    Abstract class for implementing an function engine.
+    Abstract class for implementing a function engine.
     """
 
     def __init__(
