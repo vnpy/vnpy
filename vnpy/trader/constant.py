@@ -5,6 +5,12 @@ General constant string used in VN Trader.
 from enum import Enum
 
 
+class AccType(Enum):
+    """账户类型"""
+    Normal = '普通'
+    Credit = '信用'
+
+
 class Direction(Enum):
     """
     Direction of order/trade/position.
@@ -16,6 +22,12 @@ class Direction(Enum):
     REDEMPTION = '赎回'
     BUY_BASKET = '买篮子'
     SELL_BASKET = '卖篮子'
+    LoanBuy = "融资买入"
+    LoanSell = "融券卖出"
+    EnBuyBack = "买券还券"
+    EnSellBack = "卖券还款"
+    PayBack = "直接还款"
+    StockBack = "直接还券"
     NONE = 'NONE'
 
 

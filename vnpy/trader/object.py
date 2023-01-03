@@ -7,7 +7,7 @@ from logging import INFO
 
 from .constant import (
     Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType,
-    Currency
+    Currency, AccType
 )
 
 ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
@@ -185,7 +185,8 @@ class TradeData(BaseData):
             self.slippage = self.signal_price - self.price
         except Exception:
             pass
-        self.backtest_real_slippage = self.backtest_price - self.price
+        self.backtest_real_slippage = float(self.backtest_price) - \
+                                        float(self.price)
         if self.direction == Direction.SHORT:
             self.slippage = -self.slippage
             self.backtest_real_slippage = -self.backtest_real_slippage
@@ -226,15 +227,27 @@ class AccountData(BaseData):
     """
 
     accountid: str
-
+    acc_type: AccType = AccType.Normal
+    currency: Currency = Currency.CNY
+    # 真实资金
     balance: float = 0
     frozen: float = 0
     position: float = 0
-    currency: Currency = Currency.CNY
+    available: float = 0
+    income: float = 0                       # 总盈亏
+    # 两融额度资金
+
+    credit_quota: float = 0                 # 授信额度
+    credit_buy_available: float = 0         # 可融资金余额
+    credit_sell_available: float = 0        # 可融券余额
+    total_debit: float = 0                  # 总负债
+
+
 
     def __post_init__(self):
         """"""
-        self.available = self.balance - self.frozen - self.position
+        if self.available == 0:
+            self.available = self.balance - self.frozen - self.position
         self.vt_accountid = f"{self.gateway_name}.{self.currency.value}.{self.accountid}"
 
 
