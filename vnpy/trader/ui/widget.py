@@ -9,7 +9,7 @@ from typing import Any, Dict, Iterable
 from copy import copy
 from tzlocal import get_localzone
 
-from PyQt5 import QtCore, QtGui, QtWidgets, Qt
+from PyQt5 import QtCore, QtGui, QtWidgets
 import importlib_metadata
 
 import vnpy
@@ -185,7 +185,7 @@ class MsgCell(BaseCell):
     def __init__(self, content: str, data: Any):
         """"""
         super(MsgCell, self).__init__(content, data)
-        self.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        self.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignVCenter)
 
 
 class BaseMonitor(QtWidgets.QTableWidget):
@@ -226,7 +226,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
         Initialize table.
         """
         self.setColumnCount(len(self.headers))
-
+        self.horizontalHeader().setVisible(True)
         labels = [d["display"] for d in self.headers.values()]
         self.setHorizontalHeaderLabels(labels)
 
@@ -535,7 +535,10 @@ class AccountMonitor(BaseMonitor):
         "credit_quota": {"display": "授信额度", "cell": BaseCell, "update": True},
         "credit_buy_available": {"display": "融资余额", "cell": BaseCell, "update": True},
         "credit_sell_available": {"display": "融券余额", "cell": BaseCell, "update": True},
+        "fund_debit": {"display": "资金负债", "cell": BaseCell, "update": True},
+        "stock_debit": {"display": "股票负债", "cell": BaseCell, "update": True},
         "total_debit": {"display": "总负债", "cell": BaseCell, "update": True},
+        "shortsell_frozen": {"display": "卖券冻结", "cell": BaseCell, "update": True},
         "gateway_name": {"display": "接口", "cell": BaseCell, "update": False},
     }
 
@@ -709,7 +712,7 @@ class TradingWidget(QtWidgets.QWidget):
         self.direction_combo.addItems(
             [Direction.LONG.value, Direction.SHORT.value, Direction.BUY_BASKET.value, Direction.SELL_BASKET.value,
              Direction.PURCHASE.value, Direction.REDEMPTION.value,
-             Direction.LoanBuy.value, Direction.LoanSell.value,
+             Direction.LoanBuy.value, Direction.LoanSell.value, Direction.PreBookLoanSell.value,
              Direction.EnBuyBack.value, Direction.EnSellBack.value,
              Direction.PayBack.value, Direction.StockBack.value
              ])
@@ -828,7 +831,7 @@ class TradingWidget(QtWidgets.QWidget):
     def create_label(
         self,
         color: str = "",
-        alignment: int = QtCore.Qt.AlignLeft
+        alignment: int = QtCore.Qt.AlignmentFlag.AlignLeft
     ) -> QtWidgets.QLabel:
         """
         Create label with certain font color.

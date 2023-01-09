@@ -7,7 +7,7 @@ from logging import INFO
 
 from .constant import (
     Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType,
-    Currency, AccType
+    Currency, AccType, AssetsType
 )
 
 ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
@@ -197,9 +197,7 @@ class PositionData(BaseData):
     """
     Positon data is used for tracking each individual position holding.
     """
-
     symbol: str
-
     exchange: Exchange
     direction: Direction
     product: Product = Product.OTHERS
@@ -217,6 +215,14 @@ class PositionData(BaseData):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
         self.vt_positionid = f"{self.vt_symbol}.{self.product.name}.{self.direction.name}"
+
+
+@dataclass
+class LoanAssetPosition:
+    symbol: str
+    exchange: Exchange
+    product: Product = Product.EQUITY
+
 
 
 @dataclass
@@ -240,7 +246,10 @@ class AccountData(BaseData):
     credit_quota: float = 0                 # 授信额度
     credit_buy_available: float = 0         # 可融资金余额
     credit_sell_available: float = 0        # 可融券余额
+    fund_debit: float = 0                   # 资金负债
+    stock_debit: float = 0                  # 股票负债
     total_debit: float = 0                  # 总负债
+    shortsell_frozen: float = 0            # 融券卖出所得冻结金额
 
 
 

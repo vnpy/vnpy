@@ -11,6 +11,13 @@ class AccType(Enum):
     Credit = '信用'
 
 
+class AssetsType(Enum):
+    """资产类型、持仓类型"""
+    Normal = '普通'
+    LoanBuy = '融资'
+    LoanSell = '融券'
+
+
 class Direction(Enum):
     """
     Direction of order/trade/position.
@@ -24,6 +31,7 @@ class Direction(Enum):
     SELL_BASKET = '卖篮子'
     LoanBuy = "融资买入"
     LoanSell = "融券卖出"
+    PreBookLoanSell = "专融卖出"
     EnBuyBack = "买券还券"
     EnSellBack = "卖券还款"
     PayBack = "直接还款"
