@@ -1,3 +1,4 @@
+# -*- encoding:utf-8 -*-
 import sys
 args = sys.argv
 try:
@@ -17,11 +18,8 @@ from vnpy.gateway.uft import UftGateway
 from vnpy_ctastrategy import CtaStrategyApp
 from vnpy_ctabacktester import CtaBacktesterApp
 from vnpy_spreadtrading import SpreadTradingApp
-from vnpy_xtp import XtpGateway
-from vnpy_okex import OkexGateway
-from vnpy_esunny import EsunnyGateway
-from vnpy_ctptest import CtptestGateway
-# from vnpy_ctp import CtpGateway
+# from vnpy_ctptest import CtptestGateway
+from vnpy_ctp import CtpGateway
 from vnpy_tap import TapGateway
 from vnpy.gateway.sopttest import SopttestGateway
 from vnpy_datarecorder import DataRecorderApp
@@ -39,15 +37,12 @@ def main():
     event_engine = EventEngine()
     main_engine = MainEngine(event_engine)
 
-    # main_engine.add_gateway(CtpGateway)
-    main_engine.add_gateway(CtptestGateway)
+    main_engine.add_gateway(CtpGateway)
+    # main_engine.add_gateway(CtptestGateway)
     main_engine.add_gateway(SoptGateway)
     main_engine.add_gateway(SopttestGateway)
     main_engine.add_gateway(JGGateway)
     main_engine.add_gateway(UftGateway)
-    main_engine.add_gateway(XtpGateway)
-    main_engine.add_gateway(OkexGateway)
-    main_engine.add_gateway(TapGateway)
     main_engine.add_gateway(QmtGateway)
     main_engine.add_app(CtaStrategyApp)
     main_engine.add_app(CtaBacktesterApp)

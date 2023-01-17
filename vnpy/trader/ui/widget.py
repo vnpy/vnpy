@@ -226,7 +226,6 @@ class BaseMonitor(QtWidgets.QTableWidget):
         Initialize table.
         """
         self.setColumnCount(len(self.headers))
-        self.horizontalHeader().setVisible(True)
         labels = [d["display"] for d in self.headers.values()]
         self.setHorizontalHeaderLabels(labels)
 
