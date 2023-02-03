@@ -1,5 +1,5 @@
 from copy import copy
-from typing import Dict, List
+from typing import Dict, List, Set
 
 from .engine import MainEngine
 from .object import (
@@ -291,8 +291,10 @@ class PositionHolding:
             td_volume: int = self.long_td
             yd_available: int = self.long_yd - self.long_yd_frozen
 
+        close_yd_exchanges: Set[Exchange] = {Exchange.SHFE, Exchange.INE}
+
         # If there is td_volume, we can only lock position
-        if td_volume:
+        if td_volume and self.exchange not in close_yd_exchanges:
             req_open: OrderRequest = copy(req)
             req_open.offset = Offset.OPEN
             return [req_open]
@@ -305,7 +307,7 @@ class PositionHolding:
 
             if yd_available:
                 req_yd: OrderRequest = copy(req)
-                if self.exchange in [Exchange.SHFE, Exchange.INE]:
+                if self.exchange in close_yd_exchanges:
                     req_yd.offset = Offset.CLOSEYESTERDAY
                 else:
                     req_yd.offset = Offset.CLOSE
