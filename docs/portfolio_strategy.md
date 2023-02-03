@@ -235,7 +235,7 @@ main_engine.add_app(PortfolioStrategyApp)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/21.png)
 
-## 多合约组合策略模板（StrategyTemplate）
+## 多合约组合策略模板（StrategyTemplate）-- 基础
 
 多合约组合策略模板提供了信号生成和委托管理功能，用户可以基于该模板(位于site-packages\vnpy_portfoliostrategy\template中)自行开发多合约组合策略。
 
@@ -722,3 +722,162 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 在策略中调用sync_data函数，可以在实盘的时候，每次停止或成交时都同步策略变量进json文件中进行本地缓存，方便第二天初始化时再进行读取还原（策略引擎会去调用，在策略里无需主动调用）。
 
 请注意，要在策略启动之后，也就是策略的trading状态变为【True】之后，才能同步策略信息。
+
+## 多合约组合策略模板（StrategyTemplate）-- 进阶
+
+PortfolioStrategy模块针对的是多标的投资组合类的量化策略，这类策略在执行层面追求的是将策略投资组合的持仓调整到目标状态，而不去过多关注底层的委托交易细节。
+
+首先介绍持仓目标调仓交易的功能函数，来展示持仓目标调仓交易的功能支持：
+
+### 持仓目标调仓交易的功能函数介绍
+
+以下为持仓目标调仓交易模式中策略调用的功能函数：
+
+**set_target**
+
+* 入参：vt_symbol: str, target: int
+
+* 出参：无
+
+在策略里调用set_target函数，可以设定特定合约的目标仓位。
+
+请注意：目标仓位是一种持续性的状态，因此设置后在后续时间会持续保持下去，直到被再次设置修改。
+
+**get_target**
+
+* 入参：vt_symbol: str
+
+* 出参：int
+
+在策略里调用get_target函数，可以获取设定的特定合约目标仓位。
+
+请注意：策略的目标仓位状态会在sync_data时（成交、停止等）自动持久化到硬盘文件，并在策略重启后恢复。
+
+**rebalance_portfolio**
+
+* 入参：bars: Dict[str, BarData]
+
+* 出参：无
+
+在策略里调用rebalance_portfolio函数，可以基于设定的特定合约的目标仓位执行调仓交易。
+
+请注意：只有当前bars字典中有K线切片的合约，才会参与本次调仓交易的执行，从而保证非交易时段（没有行情推送）的合约不会错误发出委托。
+
+**calculate_price**
+
+* 入参：vt_symbol: str, direction: Direction, reference: float
+
+* 出参：pricetick: float
+
+在策略里重载calculate_price函数，可以按需设定特定合约的目标价格（如固定价格超价、固定pricetick超价、百分比超价等）。
+
+如果不传则默认返回参考价格（如不在策略中重载，则在rebalance_portfolio函数中以K线的收盘价作为委托价发出）。
+
+### 持仓目标调仓交易的功能函数使用示例
+
+持仓目标调仓交易功能与StrategyTemplate基础用法最大的不同，就在于策略on_bars函数中的处理差异。下面通过TrendFollowingStrategy策略示例，来展示持仓目标调仓交易的具体步骤：
+
+**on_bars**
+
+* 入参：bars: Dict[str, BarData]
+
+* 出参：无
+
+当策略收到最新的K线数据时（实盘时默认推进来的是基于Tick合成的一分钟的K线，回测时则取决于选择参数时填入的K线数据频率），on_bars函数就会被调用。
+
+示例策略类TrendFollowingStrategy是通过一分钟K线数据回报来生成信号的。一共有三部分，如下方代码所示：
+
+```python 3
+    def on_bars(self, bars: Dict[str, BarData]) -> None:
+        """K线切片回调"""
+        # 更新K线计算RSI数值
+        for vt_symbol, bar in bars.items():
+            am: ArrayManager = self.ams[vt_symbol]
+            am.update_bar(bar)
+
+        for vt_symbol, bar in bars.items():
+            am: ArrayManager = self.ams[vt_symbol]
+            if not am.inited:
+                return
+
+            atr_array = am.atr(self.atr_window, array=True)
+            self.atr_data[vt_symbol] = atr_array[-1]
+            self.atr_ma[vt_symbol] = atr_array[-self.atr_ma_window:].mean()
+            self.rsi_data[vt_symbol] = am.rsi(self.rsi_window)
+
+            current_pos = self.get_pos(vt_symbol)
+            if current_pos == 0:
+                self.intra_trade_high[vt_symbol] = bar.high_price
+                self.intra_trade_low[vt_symbol] = bar.low_price
+
+                if self.atr_data[vt_symbol] > self.atr_ma[vt_symbol]:
+                    if self.rsi_data[vt_symbol] > self.rsi_buy:
+                        self.set_target(vt_symbol, self.fixed_size)
+                    elif self.rsi_data[vt_symbol] < self.rsi_sell:
+                        self.set_target(vt_symbol, -self.fixed_size)
+                    else:
+                        self.set_target(vt_symbol, 0)
+
+            elif current_pos > 0:
+                self.intra_trade_high[vt_symbol] = max(self.intra_trade_high[vt_symbol], bar.high_price)
+                self.intra_trade_low[vt_symbol] = bar.low_price
+
+                long_stop = self.intra_trade_high[vt_symbol] * (1 - self.trailing_percent / 100)
+
+                if bar.close_price <= long_stop:
+                    self.set_target(vt_symbol, 0)
+
+            elif current_pos < 0:
+                self.intra_trade_low[vt_symbol] = min(self.intra_trade_low[vt_symbol], bar.low_price)
+                self.intra_trade_high[vt_symbol] = bar.high_price
+
+                short_stop = self.intra_trade_low[vt_symbol] * (1 + self.trailing_percent / 100)
+
+                if bar.close_price >= short_stop:
+                    self.set_target(vt_symbol, 0)
+
+        self.rebalance_portfolio(bars)
+
+        self.put_event()
+```
+
+- 调用K线时间序列管理模块：基于最新的分钟K线数据来计算相应的技术指标，如ATR指标、RSI指标等。首先获取ArrayManager对象，然后将收到的K线推送进去，检查ArrayManager的初始化状态，如果还没初始化成功就直接返回，没有必要去进行后续的交易相关的逻辑判断。因为很多技术指标计算对最少K线数量有要求，如果数量不够的话计算出来的指标会出现错误或无意义。反之，如果没有return，就可以开始计算技术指标了；
+
+- 信号计算：通过持仓的判断（get_pos）以及结合指标计算结果在通道突破点**设定目标仓位**（set_target）
+
+- 执行调仓交易（rebalance_portfolio）
+
+**calculate_price**
+
+* 入参：vt_symbol: str, direction: Direction, reference: float
+
+* 出参：prcie: float
+
+当rebalance_portfolio函数检测到目标仓位与实际仓位存在差别的时候，会调用calculate_price函数计算调仓委托价格。
+
+策略内的默认写法是针对委托方向基于设置的price_add来计算委托价格，也可以参考示例策略PairTradingStrategy中的基于设置的tick_add来计算委托价格。
+
+```python 3
+    def calculate_price(self, vt_symbol: str, direction: Direction, reference: float) -> float:
+        """计算调仓委托价格（支持按需重载实现）"""
+        if direction == Direction.LONG:
+            price: float = reference + self.price_add
+        else:
+            price: float = reference - self.price_add
+
+        return price
+```
+
+### 与StrategyTemplate基础用法的差别
+
+**on_bars**
+
+1 . 无需清空未成交委托：rebalance_portfolio中已经有调用cancel_all函数的逻辑，无需再在收到on_bars函数推送的时候调用cancel_all函数对未成交的委托进行撤单处理。
+
+2 . 无需使用self.targets字典缓存合约目标仓位：直接调用set_target函数传入合约以及目标仓位（正数代表做多、负数代表做空）进行设置即可。
+
+3 . 无需基于缓存的目标仓位在策略内手写委托逻辑：rebalance_portfolio函数已经自动接管调仓交易，会基于目标仓位进行委托。
+
+**calculate_price**
+
+持仓目标调仓交易需要调用calculate_price函数计算调仓委托价格。
