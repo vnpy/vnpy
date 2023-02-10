@@ -175,7 +175,7 @@ class TradeData(BaseData):
 @dataclass
 class PositionData(BaseData):
     """
-    Positon data is used for tracking each individual position holding.
+    Position data is used for tracking each individual position holding.
     """
 
     symbol: str
