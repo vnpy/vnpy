@@ -1,7 +1,6 @@
 from copy import copy
-from typing import Dict, List, Set
+from typing import Dict, List, Set, TYPE_CHECKING
 
-from .engine import MainEngine
 from .object import (
     ContractData,
     OrderData,
@@ -11,14 +10,18 @@ from .object import (
 )
 from .constant import Direction, Offset, Exchange
 
+if TYPE_CHECKING:
+    from .engine import MainEngine
+
 
 class OffsetConverter:
     """"""
 
-    def __init__(self, main_engine: MainEngine) -> None:
+    def __init__(self, main_engine: "MainEngine") -> None:
         """"""
-        self.main_engine: MainEngine = main_engine
         self.holdings: Dict[str, "PositionHolding"] = {}
+
+        self.get_contract = main_engine.get_contract
 
     def update_position(self, position: PositionData) -> None:
         """"""
@@ -56,7 +59,7 @@ class OffsetConverter:
         """"""
         holding: PositionHolding = self.holdings.get(vt_symbol, None)
         if not holding:
-            contract: ContractData = self.main_engine.get_contract(vt_symbol)
+            contract: ContractData = self.get_contract(vt_symbol)
             holding = PositionHolding(contract)
             self.holdings[vt_symbol] = holding
         return holding
@@ -86,7 +89,7 @@ class OffsetConverter:
         """
         Check if the contract needs offset convert.
         """
-        contract: ContractData = self.main_engine.get_contract(vt_symbol)
+        contract: ContractData = self.get_contract(vt_symbol)
 
         # Only contracts with long-short position mode requires convert
         if not contract:
