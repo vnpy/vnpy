@@ -1,3 +1,20 @@
+# 3.6.0版本
+
+## 新增
+
+1. 新增vnpy_ctp的Mac系统支持（M1/M2）
+
+## 调整
+
+1. BaseDatafeed的相关功能函数增加output入参用于输出日志
+2. OffsetConverter增加对于SHFE/INE合约的锁仓模式支持
+3. 在OmsEngine中添加全局的OffsetConverter功能，不再需要各AppEngine自行维护
+
+## 修复
+
+1. 修复异常捕捉钩子threading_excepthook的参数错误问题
+
+
 # 3.5.0版本
 
 ## 新增

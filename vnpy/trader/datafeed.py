@@ -1,6 +1,6 @@
 from abc import ABC
 from types import ModuleType
-from typing import Optional, List
+from typing import Optional, List, Callable
 from importlib import import_module
 
 from .object import HistoryRequest, TickData, BarData
@@ -12,19 +12,19 @@ class BaseDatafeed(ABC):
     Abstract datafeed class for connecting to different datafeed.
     """
 
-    def init(self) -> bool:
+    def init(self, output: Callable = None) -> bool:
         """
         Initialize datafeed service connection.
         """
         pass
 
-    def query_bar_history(self, req: HistoryRequest) -> Optional[List[BarData]]:
+    def query_bar_history(self, req: HistoryRequest, output: Callable = None) -> Optional[List[BarData]]:
         """
         Query history bar data.
         """
         pass
 
-    def query_tick_history(self, req: HistoryRequest) -> Optional[List[TickData]]:
+    def query_tick_history(self, req: HistoryRequest, output: Callable = None) -> Optional[List[TickData]]:
         """
         Query history tick data.
         """
