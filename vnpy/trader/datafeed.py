@@ -12,19 +12,19 @@ class BaseDatafeed(ABC):
     Abstract datafeed class for connecting to different datafeed.
     """
 
-    def init(self, output: Callable = None) -> bool:
+    def init(self, output: Callable = print) -> bool:
         """
         Initialize datafeed service connection.
         """
         pass
 
-    def query_bar_history(self, req: HistoryRequest, output: Callable = None) -> Optional[List[BarData]]:
+    def query_bar_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[BarData]]:
         """
         Query history bar data.
         """
         pass
 
-    def query_tick_history(self, req: HistoryRequest, output: Callable = None) -> Optional[List[TickData]]:
+    def query_tick_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[TickData]]:
         """
         Query history tick data.
         """

@@ -7,12 +7,15 @@
 ## 调整
 
 1. BaseDatafeed的相关功能函数增加output入参用于输出日志
-2. OffsetConverter增加对于SHFE/INE合约的锁仓模式支持
-3. 在OmsEngine中添加全局的OffsetConverter功能，不再需要各AppEngine自行维护
+2. 修改相关数据服务模块适配output参数：vnpy_rqdata/vnpy_ifind/vnpy_wind/vnpy_tushare
+3. OffsetConverter增加对于SHFE/INE合约的锁仓模式支持
+4. 在OmsEngine中添加全局的OffsetConverter功能，不再需要各AppEngine自行维护
+5. 添加CTA策略模块在执行参数优化时的最大进程数量限制参数
 
 ## 修复
 
 1. 修复异常捕捉钩子threading_excepthook的参数错误问题
+2. 修复vnpy_ib获取历史数据时的异常失败问题
 
 
 # 3.5.0版本
