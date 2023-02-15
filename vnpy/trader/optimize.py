@@ -1,11 +1,12 @@
 from typing import Dict, List, Callable, Tuple
 from itertools import product
 from concurrent.futures import ProcessPoolExecutor
-from _collections_abc import dict_keys, dict_values
 from random import random, choice
 from time import perf_counter
 from multiprocessing import Manager, Pool, get_context
+from _collections_abc import dict_keys, dict_values, Iterable
 
+from tqdm import tqdm
 from deap import creator, base, tools, algorithms
 
 
@@ -111,7 +112,11 @@ def run_bf_optimization(
         max_workers,
         mp_context=get_context("spawn")
     ) as executor:
-        results: List[Tuple] = list(executor.map(evaluate_func, settings))
+        it: Iterable = tqdm(
+            executor.map(evaluate_func, settings),
+            total=len(settings)
+        )
+        results: List[Tuple] = list(it)
         results.sort(reverse=True, key=key_func)
 
         end: int = perf_counter()
@@ -199,7 +204,7 @@ def run_ga_optimization(
             cxpb,
             mutpb,
             ngen,
-            verbose=False
+            verbose=True
         )
 
         end: int = perf_counter()

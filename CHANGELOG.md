@@ -11,6 +11,8 @@
 3. OffsetConverter增加对于SHFE/INE合约的锁仓模式支持
 4. 在OmsEngine中添加全局的OffsetConverter功能，不再需要各AppEngine自行维护
 5. 添加CTA策略模块在执行参数优化时的最大进程数量限制参数
+6. 增加穷举优化算法运行过程中基于tqdm的进度条输出
+7. 增加遗传优化算法运行过程中的迭代次数进度输出
 
 ## 修复
 
