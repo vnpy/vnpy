@@ -1,3 +1,38 @@
+# 3.6.0版本
+
+## 新增
+
+1. 新增vnpy_ctp的Mac系统支持（M1/M2）
+
+## 调整
+
+1. BaseDatafeed的相关功能函数增加output入参用于输出日志
+2. 修改相关数据服务模块适配output参数：vnpy_rqdata/vnpy_ifind/vnpy_wind/vnpy_tushare
+3. 修改相关策略应用模块适配output参数：vnpy_ctastrategy/vnpy_ctabacktester/vnpy_portfoliostrategy/vnpy_spreadtrading/vnpy_datamanager
+3. OffsetConverter增加对于SHFE/INE合约的锁仓模式支持
+4. 在OmsEngine中添加全局的OffsetConverter功能，不再需要各AppEngine自行维护
+5. 添加CTA策略模块在执行参数优化时的最大进程数量限制参数：vnpy_ctastrategy/vnpy_ctabacktester
+6. 增加穷举优化算法运行过程中基于tqdm的进度条输出
+7. 增加遗传优化算法运行过程中的迭代次数进度输出
+8. 增加vnpy_optionmaster模块的期权产品对应标的合约的匹配函数，不再限制产品范围
+9.  升级vnpy_tts的dll链接库，解决openctp升级导致的资金不显示的问题
+10. 修改vnpy_ctastrategy使用vnpy.trader.database中统一定义的时区来加载数据
+11. 增加vnpy_ctastrategy策略模板的合约乘数查询函数get_size
+12. 增加vnpy_spreadtrading回测中统计绩效时对于爆仓情况的检查
+13. 增加vnpy_scripttrader基于vt_symbol和direction查询持仓数据的函数
+14. 修改vt_positionid的字符串内容，增加gateway_name前缀标识
+
+## 修复
+
+1. 修复异常捕捉钩子threading_excepthook的参数错误问题
+2. 修复vnpy_ib获取历史数据时的异常失败问题
+3. 修复vnpy_rest/vnpy_websocket中aiohttp的代理参数proxy传空时必须为None的问题
+4. 修复vnpy_optionmaster模块的Greeks监控表行数设置不足的问题
+5. 修复vnpy_rqdata查询股票期权数据报错的问题
+6. 修复vnpy_rqdata中RqdataGateway获取期货指数和连续合约信息时错误的问题
+7. 修复vnpy_portfoliostrategy中，从缓存文件恢复数据，导致defaultdict变成dict的问题
+
+
 # 3.5.0版本
 
 ## 新增
