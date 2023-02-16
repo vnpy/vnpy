@@ -19,7 +19,8 @@
 10. 修改vnpy_ctastrategy使用vnpy.trader.database中统一定义的时区来加载数据
 11. 增加vnpy_ctastrategy策略模板的合约乘数查询函数get_size
 12. 增加vnpy_spreadtrading回测中统计绩效时对于爆仓情况的检查
-
+13. 增加vnpy_scripttrader基于vt_symbol和direction查询持仓数据的函数
+14. 修改vt_positionid的字符串内容，增加gateway_name前缀标识
 
 ## 修复
 
