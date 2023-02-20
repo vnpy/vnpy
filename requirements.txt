@@ -79,4 +79,6 @@ vnpy_tinysoft==2021.6.17
 vnpy_ifind==1.0.0
 vnpy_wind==1.0.0
 cachetools==5.2.0
+backports.zoneinfo
+requests
 

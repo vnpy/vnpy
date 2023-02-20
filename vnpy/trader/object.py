@@ -515,3 +515,16 @@ class BasketComponent(BaseData):
             return 1  # 可以
         else:
             return 2  # 必须
+
+
+@dataclass
+class LoanMaxData(BaseData):
+    account_id: str
+    symbol: str
+    exchange: Exchange
+    volume: int
+    currency: Currency = Currency.CNY
+
+    def __post_init__(self):
+        self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
+        self.account_uid = f"{self.gateway_name}.{self.currency.value}.{self.account_id}"

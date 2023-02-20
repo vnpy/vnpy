@@ -1,19 +1,20 @@
 """
 """
-
+import os
+from abc import ABC
+import json
 from collections import defaultdict
 import cachetools.func
 import logging
 from logging import Logger
 import smtplib
-import os
-from abc import ABC
 from datetime import datetime
 from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
 from typing import Any, Type, Dict, List, Optional, Set
-
+import requests
+from vnpy import WORK_DIR
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
 from .event import (
@@ -26,7 +27,8 @@ from .event import (
     EVENT_LOG,
     EVENT_QUOTE,
     EVENT_BASKET_COMPONENT,
-    EVENT_UNIMPORTANT_TICK
+    EVENT_UNIMPORTANT_TICK,
+    EVENT_LOAN_MAX
 )
 from .gateway import BaseGateway
 from .constant import Product, Direction, Status
@@ -46,7 +48,8 @@ from .object import (
     AccountData,
     ContractData,
     Exchange,
-    BasketComponent
+    BasketComponent,
+    LoanMaxData
 )
 from .setting import SETTINGS
 from .utility import get_folder_path, TRADER_DIR, round_to
@@ -243,6 +246,11 @@ class MainEngine:
         req.product = contract.product
         gateway = self.get_gateway(gateway_name)
         req.price = round_to(req.price, contract.pricetick)
+        if req.direction in [Direction.LoanSell, Direction.PreBookLoanSell]:
+            tick: TickData = self.get_tick(req.vt_symbol)
+            if tick and req.price < tick.bid_price_1:
+                req.price = tick.bid_price_1
+                self.write_log(f'融卖价低于bid1, 已修正为 {req.price}@{req.vt_symbol}')
         if gateway:
             return gateway.send_order(req)
         else:
@@ -329,6 +337,15 @@ class MainEngine:
         溢价： 买篮子，申购成ETF，卖ETF
         :param etf_symbol:
         :return:
+        """
+        raise NotImplementedError
+
+    def get_loan_max_volume(self, account_uid, vt_symbol):
+        """
+        获取某个账户某标的的融券额度（预约券）
+        :param account_uid: JG.123456.CNY
+        :param vt_symbol: 510050.SSE
+        :return: int
         """
         raise NotImplementedError
 
@@ -463,6 +480,7 @@ class OmsEngine(BaseEngine):
         self.baskets: Dict[str, Dict[BasketComponent]] = defaultdict(dict)
         self.basket_forcus: Set[ContractData] = set()                # 订阅的ETF会计算篮子可卖、可申购
         self.quotes: Dict[str, QuoteData] = {}
+        self.loan_max: Dict[str, Dict[str, int]] = defaultdict(dict)        # 存储融券剩余额度
 
         self.active_orders: Dict[str, OrderData] = {}
         self.active_quotes: Dict[str, QuoteData] = {}
@@ -495,6 +513,7 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_from_url = self.get_from_url
         self.main_engine.get_spread = self.get_spread
         self.main_engine.get_moment_profit = self.get_moment_profit
+        self.main_engine.get_loan_max_volume = self.get_loan_max_volume
 
     def register_event(self) -> None:
         """"""
@@ -508,6 +527,7 @@ class OmsEngine(BaseEngine):
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
         self.event_engine.register(EVENT_QUOTE, self.process_quote_event)
         self.event_engine.register(EVENT_BASKET_COMPONENT, self.process_basket_component)
+        self.event_engine.register(EVENT_LOAN_MAX, self.process_loan_max_event)
 
         from vnpy_spreadtrading.base import (
             EVENT_SPREAD_DATA
@@ -627,15 +647,54 @@ class OmsEngine(BaseEngine):
         """"""
         position: PositionData = event.data
         old_pos = self.get_position(position.vt_positionid)
-        # if position != old_pos:
+        if position == old_pos:
+            return
         self.positions[position.vt_positionid] = position
         if position.product not in  (Product.BASKET, ):
             self.calculate_basket_sp_able()
 
+        if not SETTINGS["signal.report"]:
+            return
+
+        data = {
+            'position_id': position.vt_positionid,
+            'account': f'{WORK_DIR}-{position.gateway_name}',
+            'symbol': position.vt_symbol,
+            'volume': position.volume,
+            'ydVolume': position.yd_volume,
+            'direction': position.direction.name,
+            'avgPrice': position.price,
+            'currPrice': 0,
+            'pnl': position.pnl,
+            'client': WORK_DIR,
+        }
+        self.send_hedging_report({'positionData': [data]})
+
     def process_account_event(self, event: Event) -> None:
         """"""
         account: AccountData = event.data
+        old_account = self.accounts.get(account.vt_accountid)
+        if account == old_account:
+            return
         self.accounts[account.vt_accountid] = account
+
+        if not SETTINGS["signal.report"]:
+            return
+        data = {
+            'account_id': account.vt_accountid,
+            'account': account.accountid,
+            'type': account.acc_type.name,
+            'currency': account.currency.name,
+            'asset': account.balance,
+            'avaliable': account.available,
+            'income': account.income,
+            'creditQuota': account.credit_quota,
+            'creditBuyAvaliable': account.credit_buy_available,
+            'creditSellAvaliable': account.credit_sell_available,
+            'gateway': account.gateway_name,
+            'clinet': WORK_DIR
+        }
+        self.send_hedging_report({'accountData': [data]})
 
     def process_contract_event(self, event: Event) -> None:
         """"""
@@ -657,6 +716,10 @@ class OmsEngine(BaseEngine):
         # Otherwise, pop inactive quote from in dict
         elif quote.vt_quoteid in self.active_quotes:
             self.active_quotes.pop(quote.vt_quoteid)
+
+    def process_loan_max_event(self, event: Event) -> None:
+        loan_data: LoanMaxData = event.data
+        self.loan_max[loan_data.account_uid][loan_data.vt_symbol] = loan_data.volume
 
     def get_tick(self, vt_symbol: str) -> Optional[TickData]:
         """
@@ -854,6 +917,20 @@ class OmsEngine(BaseEngine):
     def get_from_url(self, url, params=None):
         return get_from_url(url, params)
 
+    def get_loan_max_volume(self, account_uid, vt_symbol):
+        """
+        获取某个账户某标的的融券额度（预约券）
+        :param account_uid: JG.CNY.123456
+        :param vt_symbol: 510050.SSE
+        :return: int
+        """
+        return self.loan_max.get(account_uid, {}).get(vt_symbol, 0)
+
+    @staticmethod
+    def send_hedging_report(data):
+
+        requests.post(f'http://{SETTINGS["signal.host"]}/api/signal/hedging_board',
+                      data=json.dumps(data), timeout=3)
 
 
 
