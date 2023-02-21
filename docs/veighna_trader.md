@@ -198,8 +198,8 @@ C:\users\administrator\.vntrader\log
 
 以email为前缀的参数用于对邮箱进行配置，可以在特定事件发生时（如委托成交，数据异常时）发送邮件实时通知，各参数含义如下：
 
-- email.server: SMTP邮件服务器地址，vnpy默认填写好了QQ邮箱服务器地址，可以直接用，如果需要使用其他邮箱，需要自行查找一下其他的服务器地址；
-- email.port: SMTP邮件服务器端口号，vnpm默认填写好了QQ邮箱服务器端口，可以直接用；
+- email.server: SMTP邮件服务器地址，默认填写好了QQ邮箱服务器地址，可以直接用，如果需要使用其他邮箱，需要自行查找一下其他的服务器地址；
+- email.port: SMTP邮件服务器端口号，默认填写好了QQ邮箱服务器端口，可以直接用；
 - email.username: 填写邮箱地址即可，如xxxx@qq.com；
 - email.password: 对于QQ邮箱，此处不是邮箱密码，而是开通SMTP后系统生成的一个授权码；
 - email.sender: 发送邮箱名，与email.username一致；
