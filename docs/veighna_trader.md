@@ -24,7 +24,7 @@
 
 ### SimNow仿真
 
-以使用SinNow仿真交易账号登陆**CTP**接口为例，点击VeighNa Trader上的菜单栏中点击【系统】->【连接CTP】，会弹出账号配置窗口，如下图所示：
+以使用SimNow仿真交易账号登陆**CTP**接口为例，在VeighNa Trader上的菜单栏中点击【系统】->【连接CTP】，会弹出账号配置窗口，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/1.png)
 
@@ -48,6 +48,7 @@
 
 成功连接交易接口后，用户可以通过合约查询功能查询合约信息：
 点击菜单栏的【帮助】->【合约查询】，在弹出的对话框中直接点击右上角的【查询】按钮，即可查询合约信息（留空则查询所有合约的价格信息），如下图所示：
+
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/3.png)
 
 请注意，IB接口因为登录时无法自动获取所有的合约信息，只有在用户手动订阅行情时才能获取。因此需要在主界面上先行手动订阅合约行情，才能查到合约信息。
@@ -197,8 +198,8 @@ C:\users\administrator\.vntrader\log
 
 以email为前缀的参数用于对邮箱进行配置，可以在特定事件发生时（如委托成交，数据异常时）发送邮件实时通知，各参数含义如下：
 
-- email.server: SMTP邮件服务器地址，vnpy默认填写好了QQ邮箱服务器地址，可以直接用，如果需要使用其他邮箱，需要自行查找一下其他的服务器地址；
-- email.port: SMTP邮件服务器端口号，vnpm默认填写好了QQ邮箱服务器端口，可以直接用；
+- email.server: SMTP邮件服务器地址，默认填写好了QQ邮箱服务器地址，可以直接用，如果需要使用其他邮箱，需要自行查找一下其他的服务器地址；
+- email.port: SMTP邮件服务器端口号，默认填写好了QQ邮箱服务器端口，可以直接用；
 - email.username: 填写邮箱地址即可，如xxxx@qq.com；
 - email.password: 对于QQ邮箱，此处不是邮箱密码，而是开通SMTP后系统生成的一个授权码；
 - email.sender: 发送邮箱名，与email.username一致；
