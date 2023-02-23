@@ -349,6 +349,10 @@ class MainEngine:
         """
         raise NotImplementedError
 
+    @staticmethod
+    def send_hedging_report(data):
+        pass
+
     def close(self) -> None:
         """
         Make sure every gateway and app is closed properly before
@@ -514,6 +518,7 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_spread = self.get_spread
         self.main_engine.get_moment_profit = self.get_moment_profit
         self.main_engine.get_loan_max_volume = self.get_loan_max_volume
+        self.main_engine.send_hedging_report = self.send_hedging_report
 
     def register_event(self) -> None:
         """"""
@@ -655,18 +660,21 @@ class OmsEngine(BaseEngine):
 
         if not SETTINGS["signal.report"]:
             return
-
+        tick = self.get_tick(position.vt_symbol)
         data = {
             'position_id': position.vt_positionid,
-            'account': f'{WORK_DIR}-{position.gateway_name}',
+            'account':
+                f'{position.gateway_name}.{position.account_id}.{position.account_type.name}'
+                if position.account_id != '' else f'{WORK_DIR}-{position.gateway_name}',
             'symbol': position.vt_symbol,
             'volume': position.volume,
             'ydVolume': position.yd_volume,
             'direction': position.direction.name,
             'avgPrice': position.price,
-            'currPrice': 0,
+            'currPrice': tick.last_price if tick else 0,
             'pnl': position.pnl,
-            'client': WORK_DIR,
+            'dt': datetime.now().strftime('%y%m%d %H:%M:%S'),
+            'client': WORK_DIR
         }
         self.send_hedging_report({'positionData': [data]})
 
@@ -692,7 +700,8 @@ class OmsEngine(BaseEngine):
             'creditBuyAvaliable': account.credit_buy_available,
             'creditSellAvaliable': account.credit_sell_available,
             'gateway': account.gateway_name,
-            'clinet': WORK_DIR
+            'dt': datetime.now().strftime('%y%m%d %H:%M:%S'),
+            'client': WORK_DIR
         }
         self.send_hedging_report({'accountData': [data]})
 
@@ -928,10 +937,11 @@ class OmsEngine(BaseEngine):
 
     @staticmethod
     def send_hedging_report(data):
-
-        requests.post(f'http://{SETTINGS["signal.host"]}/api/signal/hedging_board',
-                      data=json.dumps(data), timeout=3)
-
+        try:
+            requests.post(f'http://{SETTINGS["signal.host"]}/api/signal/hedging_board',
+                          data=json.dumps(data), timeout=3)
+        except:
+            pass
 
 
 class EmailEngine(BaseEngine):

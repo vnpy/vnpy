@@ -210,11 +210,14 @@ class PositionData(BaseData):
     strategy_id: int = 0
     sell_able: int = 0                  # 可卖数量
     purchase_able: int = 0              # 可申赎数量(股票是可申购、如果是ETF，就是可赎回)
+    account_id: str = ''
+    account_type: AccType = AccType.Normal
 
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
-        self.vt_positionid = f"{self.vt_symbol}.{self.product.name}.{self.direction.name}"
+        self.vt_positionid = f"{self.account_id}.{self.account_type.name}.{self.vt_symbol}" \
+                             f".{self.product.name}.{self.direction.name}"
 
 
 @dataclass
@@ -528,3 +531,24 @@ class LoanMaxData(BaseData):
     def __post_init__(self):
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
         self.account_uid = f"{self.gateway_name}.{self.currency.value}.{self.account_id}"
+
+
+@dataclass
+class ReportStrategy:
+    """策略状态信息对象，用于上报"""
+    name: str
+    strategy_type: str
+    trading: bool
+    symbols: dict
+    positions: dict
+    targets: dict
+    statue: str
+    client: str
+    other_info: object = ''
+    dt = ''
+    uid = ''
+
+    def __post_init__(self):
+        self.dt = datetime.now().strftime('%y%m%d %H:%M:%S')
+        self.uid = f'{self.strategy_type}.{self.name}'
+
