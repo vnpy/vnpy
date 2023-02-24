@@ -707,12 +707,20 @@ class OmsEngine(BaseEngine):
 
     def process_contract_event(self, event: Event) -> None:
         """"""
-        contract: ContractData = event.data
-        self.contracts[contract.vt_symbol] = contract
+        contract: Union[ContractData, List[ContractData]] = event.data
+        if isinstance(contract, ContractData):
+            self.contracts[contract.vt_symbol] = contract
+        else:
+            for _c in contract:
+                self.contracts[_c.vt_symbol] = _c
 
     def process_basket_component(self, event: Event):
-        component: BasketComponent = event.data
-        self.baskets[component.basket_name][component.vt_symbol] = component
+        component: Union[BasketComponent, List[BasketComponent]] = event.data
+        if isinstance(component, ContractData):
+            self.baskets[component.basket_name][component.vt_symbol] = component
+        else:
+            for _c in component:
+                self.baskets[_c.basket_name][_c.vt_symbol] = _c
 
     def process_quote_event(self, event: Event) -> None:
         """"""
