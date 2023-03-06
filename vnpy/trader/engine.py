@@ -931,8 +931,8 @@ class OmsEngine(BaseEngine):
             ]
             return active_quotes
 
-    def get_from_url(self, url, params=None):
-        return get_from_url(url, params)
+    def get_from_url(self, url, params=None, headers=None):
+        return get_from_url(url, params, headers=headers)
 
     def get_loan_max_volume(self, account_uid, vt_symbol):
         """
@@ -947,9 +947,10 @@ class OmsEngine(BaseEngine):
     def send_hedging_report(data):
         try:
             requests.post(f'http://{SETTINGS["signal.host"]}/api/signal/hedging_board',
-                          data=json.dumps(data), timeout=3)
-        except:
-            pass
+                          data=json.dumps(data), timeout=3,
+                          headers={'Api-Token': SETTINGS['signal.token']})
+        except Exception as e:
+            print(str(e))
 
 
 class EmailEngine(BaseEngine):
