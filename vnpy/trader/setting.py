@@ -35,7 +35,10 @@ SETTINGS: Dict[str, Any] = {
     "database.host": "localhost",
     "database.port": 3306,
     "database.user": "root",
-    "database.password": ""
+    "database.password": "",
+    "signal.host": "localhost:8090",
+    "signal.report": False,
+    "signal.token": ""
 }
 
 # Load global setting from json file.

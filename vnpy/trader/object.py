@@ -7,7 +7,7 @@ from logging import INFO
 
 from .constant import (
     Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType,
-    Currency
+    Currency, AccType, AssetsType
 )
 
 ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
@@ -185,7 +185,8 @@ class TradeData(BaseData):
             self.slippage = self.signal_price - self.price
         except Exception:
             pass
-        self.backtest_real_slippage = self.backtest_price - self.price
+        self.backtest_real_slippage = float(self.backtest_price) - \
+                                        float(self.price)
         if self.direction == Direction.SHORT:
             self.slippage = -self.slippage
             self.backtest_real_slippage = -self.backtest_real_slippage
@@ -196,9 +197,7 @@ class PositionData(BaseData):
     """
     Positon data is used for tracking each individual position holding.
     """
-
     symbol: str
-
     exchange: Exchange
     direction: Direction
     product: Product = Product.OTHERS
@@ -211,11 +210,22 @@ class PositionData(BaseData):
     strategy_id: int = 0
     sell_able: int = 0                  # 可卖数量
     purchase_able: int = 0              # 可申赎数量(股票是可申购、如果是ETF，就是可赎回)
+    account_id: str = ''
+    account_type: AccType = AccType.Normal
 
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
-        self.vt_positionid = f"{self.vt_symbol}.{self.product.name}.{self.direction.name}"
+        self.vt_positionid = f"{self.account_id}.{self.account_type.name}.{self.vt_symbol}" \
+                             f".{self.product.name}.{self.direction.name}"
+
+
+@dataclass
+class LoanAssetPosition:
+    symbol: str
+    exchange: Exchange
+    product: Product = Product.EQUITY
+
 
 
 @dataclass
@@ -226,15 +236,30 @@ class AccountData(BaseData):
     """
 
     accountid: str
-
+    acc_type: AccType = AccType.Normal
+    currency: Currency = Currency.CNY
+    # 真实资金
     balance: float = 0
     frozen: float = 0
     position: float = 0
-    currency: Currency = Currency.CNY
+    available: float = 0
+    income: float = 0                       # 总盈亏
+    # 两融额度资金
+
+    credit_quota: float = 0                 # 授信额度
+    credit_buy_available: float = 0         # 可融资金余额
+    credit_sell_available: float = 0        # 可融券余额
+    fund_debit: float = 0                   # 资金负债
+    stock_debit: float = 0                  # 股票负债
+    total_debit: float = 0                  # 总负债
+    shortsell_frozen: float = 0            # 融券卖出所得冻结金额
+
+
 
     def __post_init__(self):
         """"""
-        self.available = self.balance - self.frozen - self.position
+        if self.available == 0:
+            self.available = self.balance - self.frozen - self.position
         self.vt_accountid = f"{self.gateway_name}.{self.currency.value}.{self.accountid}"
 
 
@@ -493,3 +518,37 @@ class BasketComponent(BaseData):
             return 1  # 可以
         else:
             return 2  # 必须
+
+
+@dataclass
+class LoanMaxData(BaseData):
+    account_id: str
+    symbol: str
+    exchange: Exchange
+    volume: int
+    currency: Currency = Currency.CNY
+
+    def __post_init__(self):
+        self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
+        self.account_uid = f"{self.gateway_name}.{self.currency.value}.{self.account_id}"
+
+
+@dataclass
+class ReportStrategy:
+    """策略状态信息对象，用于上报"""
+    name: str
+    strategy_type: str
+    trading: bool
+    symbols: dict
+    positions: dict
+    targets: dict
+    statue: str
+    client: str
+    other_info: object = ''
+    dt = ''
+    uid = ''
+
+    def __post_init__(self):
+        self.dt = datetime.now().strftime('%y%m%d %H:%M:%S')
+        self.uid = f'{self.strategy_type}.{self.name}'
+

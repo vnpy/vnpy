@@ -145,6 +145,7 @@ class SopttestGateway(BaseGateway):
 
         self.td_api = SopttestTdApi(self)
         self.md_api = SopttestMdApi(self)
+        self.ticks = {}
 
     def connect(self, setting: dict):
         """"""
@@ -186,6 +187,10 @@ class SopttestGateway(BaseGateway):
     def query_position(self):
         """"""
         self.td_api.query_position()
+
+    def on_tick(self, tick: TickData) -> None:
+        self.ticks[tick.vt_symbol] = tick
+        super(SopttestGateway, self).on_tick(tick)
 
     def close(self):
         """"""
@@ -542,6 +547,15 @@ class SopttestTdApi(TdApi):
         if position.volume and size:
             cost += data["PositionCost"]
             position.price = cost / (position.volume * size)
+
+        if position.pnl == 0.0:
+            current_tick: TickData = self.gateway.ticks.get(position.vt_symbol)
+            if current_tick:
+                _pnl = (current_tick.last_price - position.price) * position.volume * size
+                if position.direction == Direction.LONG:
+                    position.pnl = _pnl
+                else:
+                    position.pnl = - _pnl
 
         # Get frozen volume
         if position.direction == Direction.LONG:

@@ -19,3 +19,4 @@ EVENT_CONTRACT = "eContract."
 EVENT_LOG = "eLog"
 EVENT_SNAPSHOT = "eSnapshot."
 EVENT_BASKET_COMPONENT = 'eBasketComponent'
+EVENT_LOAN_MAX = 'eLoanMax'                             # 融券额度剩余
