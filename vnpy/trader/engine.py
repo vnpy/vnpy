@@ -660,6 +660,8 @@ class OmsEngine(BaseEngine):
 
         if not SETTINGS["signal.report"]:
             return
+        if position.yd_volume == 0 and position.volume == 0:
+            return
         tick = self.get_tick(position.vt_symbol)
         data = {
             'position_id': position.vt_positionid,
@@ -945,6 +947,8 @@ class OmsEngine(BaseEngine):
 
     @staticmethod
     def send_hedging_report(data):
+        if not SETTINGS["signal.report"]:
+            return
         try:
             requests.post(f'http://{SETTINGS["signal.host"]}/api/signal/hedging_board',
                           data=json.dumps(data), timeout=3,

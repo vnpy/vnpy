@@ -377,7 +377,6 @@ class OrderRequest:
     """
     Request sending to specific gateway for creating a new order.
     """
-
     symbol: str
     exchange: Exchange
     direction: Direction
@@ -550,5 +549,5 @@ class ReportStrategy:
 
     def __post_init__(self):
         self.dt = datetime.now().strftime('%y%m%d %H:%M:%S')
-        self.uid = f'{self.strategy_type}.{self.name}'
+        self.uid = f'{self.client}.{self.strategy_type}.{self.name}'
 
