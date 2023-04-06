@@ -250,9 +250,9 @@ account = engine.get_account(vt_accountid="CTP.189672",use_df=False)
 根据vt_positionid来查询持仓情况，返回对象包含接口名称、交易所、合约代码、数量、冻结数量等。
 
 ```python 3
-position = engine.get_position(vt_positionid='rb2202.SHFE.多')
+position = engine.get_position(vt_positionid='CTP.hc2305.SHFE.多')
 ```
-注意，vt_positionid为vnpy内部对于一笔特定持仓的唯一持仓编号，格式为"vt_symbol.Direction.value"，其中持仓方向可选“多”、“空”和“净”，如下图所示：
+注意，vt_positionid为vnpy内部对于一笔特定持仓的唯一持仓编号，格式为"gateway_name.vt_symbol.Direction.value"，其中持仓方向可选“多”、“空”和“净”，如下图所示：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/script_trader/17.png)
 
 #### 多条查询
