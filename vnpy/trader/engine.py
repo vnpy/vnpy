@@ -31,7 +31,7 @@ from .event import (
     EVENT_LOAN_MAX
 )
 from .gateway import BaseGateway
-from .constant import Product, Direction, Status
+from .constant import Product, Direction, Status, OrderType
 from .object import (
     CancelRequest,
     LogData,
@@ -251,6 +251,20 @@ class MainEngine:
             if tick and req.price < tick.bid_price_1:
                 req.price = tick.bid_price_1
                 self.write_log(f'融卖价低于bid1, 已修正为 {req.price}@{req.vt_symbol}')
+
+        # 最优五档转限价注册制新规
+        if req.type == OrderType.BestOrLimit:
+            if req.direction in (Direction.LONG, Direction.LoanBuy):
+                tick: TickData = self.get_tick(req.vt_symbol)
+                if tick and req.price == 0:
+                    req.price = tick.ask_price_5
+                    self.write_log(f'最优五限价低于bid1, 已修正为 {req.price}@{req.vt_symbol}')
+            elif req.direction in (Direction.SHORT, Direction.LoanSell, Direction.PreBookLoanSell):
+                tick: TickData = self.get_tick(req.vt_symbol)
+                if tick and req.price == 0:
+                    req.price = tick.bid_price_5
+                    self.write_log(f'最优五限价高于ask1, 已修正为 {req.price}@{req.vt_symbol}')
+
         if gateway:
             return gateway.send_order(req)
         else:
@@ -718,7 +732,7 @@ class OmsEngine(BaseEngine):
 
     def process_basket_component(self, event: Event):
         component: Union[BasketComponent, List[BasketComponent]] = event.data
-        if isinstance(component, ContractData):
+        if isinstance(component, BasketComponent):
             self.baskets[component.basket_name][component.vt_symbol] = component
         else:
             for _c in component:
