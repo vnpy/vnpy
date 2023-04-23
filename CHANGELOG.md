@@ -3,6 +3,30 @@
 ## 新增
 
 1. 新增沪股通和深股通交易所枚举值
+2. 增加vnpy_tap对于Linux系统的支持
+3. 增加vnpy_rqdata对于新型主力合约数据支持（切换前一日收盘价比例复权）
+
+## 调整
+
+1. vnpy_ctastrategy/vnpy_ctabacktester加载策略类时，过滤TargetPosTemplate模板
+2. vnpy_ctp连接登录过程中，只有在授权码错误的情况下，才禁止再次发起认证
+3. vnpy_uft增加对广期所GFEX的支持
+4. vnpy_tqsdk增加对于output日志输出功能的支持
+5. vnpy_dolphindb允许指定用户自行配置具体的数据库实例
+6. vnpy_rqdata优化对于郑商所期货和期权合约的查询代码转换规则
+7. vnpy_rqdata增加对广期所GFEX的支持
+8. vnpy_portfoliostrategy增加回测爆仓检查
+9. vnpy_portfoliostrategy策略模板增加合约乘数查询函数get_size
+10. vnpy_portfoliostrategy回测加载日线和小时线数据时，不使用分段加载
+
+
+## 修复
+
+1. 修复vnpy_rpcservice中，RPC接口对于推送数据的vt前缀相关字段错误问题
+2. 修复vnpy_mini中，对于INE交易所今昨仓位的特殊处理
+3. 修复vnpy_datamanager中，批量数据更新时缺失output函数的问题
+4. 修复vnpy_spreadtrading中，回测加载数据时优先从数据服务获取历史数据的问题，改为优先从本地数据库加载
+
 
 # 3.6.0版本
 
