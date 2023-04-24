@@ -40,4 +40,4 @@ if __name__ == "__main__":
     # timer.start(100)
 
     widget.show()
-    app.exec_()
+    app.exec()
