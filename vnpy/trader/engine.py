@@ -53,7 +53,6 @@ from .object import (
 )
 from .setting import SETTINGS
 from .utility import get_folder_path, TRADER_DIR, round_to
-from .utils import get_from_url
 
 from vnpy.trader.jgetf_moment_profit.jgetf_api_func_def import *
 
@@ -243,11 +242,19 @@ class MainEngine:
         if req.direction in (Direction.BUY_BASKET, Direction.SELL_BASKET):
             return self.send_basket_order(req, gateway_name)
         contract = self.get_contract(req.vt_symbol)
+        if contract is None:
+            self.write_log(f'合约 {req.vt_symbol} 不存在，无法下单')
+            return ""
         req.product = contract.product
         gateway = self.get_gateway(gateway_name)
         req.price = round_to(req.price, contract.pricetick)
+        tick: TickData = self.get_tick(req.vt_symbol)
+        if tick and (req.price > tick.limit_up or req.price < tick.limit_down):
+            self.write_log(f'{req.vt_symbol} 委托价格 {req.price} 超出限价范围'
+                           f'{round_to(tick.limit_down, contract.pricetick)}~'
+                           f'{round_to(tick.limit_up, contract.pricetick)}, 禁止发单')
+            return ""
         if req.direction in [Direction.LoanSell, Direction.PreBookLoanSell]:
-            tick: TickData = self.get_tick(req.vt_symbol)
             if tick and req.price < tick.bid_price_1:
                 req.price = tick.bid_price_1
                 self.write_log(f'融卖价低于bid1, 已修正为 {req.price}@{req.vt_symbol}')
@@ -255,12 +262,10 @@ class MainEngine:
         # 最优五档转限价注册制新规
         if req.type == OrderType.BestOrLimit:
             if req.direction in (Direction.LONG, Direction.LoanBuy):
-                tick: TickData = self.get_tick(req.vt_symbol)
                 if tick and req.price == 0:
                     req.price = tick.ask_price_5
                     self.write_log(f'最优五限价低于bid1, 已修正为 {req.price}@{req.vt_symbol}')
             elif req.direction in (Direction.SHORT, Direction.LoanSell, Direction.PreBookLoanSell):
-                tick: TickData = self.get_tick(req.vt_symbol)
                 if tick and req.price == 0:
                     req.price = tick.bid_price_5
                     self.write_log(f'最优五限价高于ask1, 已修正为 {req.price}@{req.vt_symbol}')
@@ -333,9 +338,6 @@ class MainEngine:
         raise NotImplementedError
 
     def get_contract(self, vt_symbol):
-        raise NotImplementedError
-
-    def get_from_url(self, url, params=None):
         raise NotImplementedError
 
     def get_tick(self, vt_symbol):
@@ -528,7 +530,6 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_basket_components = self.get_basket_components
         self.main_engine.set_basket_forcus = self.set_basket_forcus
         self.main_engine.get_basket_position = self.get_basket_position
-        self.main_engine.get_from_url = self.get_from_url
         self.main_engine.get_spread = self.get_spread
         self.main_engine.get_moment_profit = self.get_moment_profit
         self.main_engine.get_loan_max_volume = self.get_loan_max_volume
@@ -946,9 +947,6 @@ class OmsEngine(BaseEngine):
                 if quote.vt_symbol == vt_symbol
             ]
             return active_quotes
-
-    def get_from_url(self, url, params=None, headers=None):
-        return get_from_url(url, params, headers=headers)
 
     def get_loan_max_volume(self, account_uid, vt_symbol):
         """
