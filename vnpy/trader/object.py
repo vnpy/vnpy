@@ -386,6 +386,7 @@ class OrderRequest:
     signal_price: float = 0
     offset: Offset = Offset.NONE
     reference: str = ""
+    gateway_name: str = ""
 
     def __post_init__(self):
         """"""

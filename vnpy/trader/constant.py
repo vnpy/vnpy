@@ -92,7 +92,7 @@ class OrderType(Enum):
     FAK = "FAK"
     FOK = "FOK"
     RFQ = "询价"
-    BestOrLimit = "最优五转现价"
+    BestOrLimit = "最优五转限价"
 
 
 class OptionType(Enum):

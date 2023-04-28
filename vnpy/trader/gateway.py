@@ -220,6 +220,11 @@ class BaseGateway(ABC):
         """
         pass
 
+    def send_order_many(self, req_list: List[OrderRequest]):
+        # 批量下单, 不重写性能会非常差
+        for req in req_list:
+            self.send_order(req)
+
     @abstractmethod
     def cancel_order(self, req: CancelRequest) -> None:
         """

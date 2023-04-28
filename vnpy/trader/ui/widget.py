@@ -270,7 +270,13 @@ class BaseMonitor(QtWidgets.QTableWidget):
 
         # Update data into table.
         data = event.data
+        if isinstance(data, Iterable):
+            for _data in data:
+                self._on_data(_data)
+        else:
+            self._on_data(data)
 
+    def _on_data(self, data):
         if not self.data_key:
             self.insert_new_row(data)
         else:
@@ -1048,8 +1054,14 @@ class ActiveOrderMonitor(OrderMonitor):
         Hides the row if order is not active.
         """
         super(ActiveOrderMonitor, self).process_event(event)
+        data = event.data
+        if isinstance(data, Iterable):
+            for _data in data:
+                self._on_active_order(_data)
+        else:
+            self._on_active_order(data)
 
-        order = event.data
+    def _on_active_order(self, order):
         row_cells = self.cells[order.vt_orderid]
         row = self.row(row_cells["volume"])
 

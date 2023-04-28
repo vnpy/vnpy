@@ -12,7 +12,7 @@ from datetime import datetime
 from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
-from typing import Any, Type, Dict, List, Optional, Set
+from typing import Any, Type, Dict, List, Optional, Set, Iterable
 import requests
 from vnpy import WORK_DIR
 from vnpy.event import Event, EventEngine
@@ -235,7 +235,7 @@ class MainEngine:
         """
         raise NotImplementedError
 
-    def send_order(self, req: OrderRequest, gateway_name: str) -> str:
+    def check_order_request(self, req: OrderRequest) -> OrderRequest:
         """
         Send new order request to a specific gateway.
         """
@@ -245,35 +245,65 @@ class MainEngine:
         if contract is None:
             self.write_log(f'合约 {req.vt_symbol} 不存在，无法下单')
             return ""
+        if not req.gateway_name:
+            req.gateway_name = contract.gateway_name
         req.product = contract.product
-        gateway = self.get_gateway(gateway_name)
         req.price = round_to(req.price, contract.pricetick)
         tick: TickData = self.get_tick(req.vt_symbol)
-        if tick and (req.price > tick.limit_up or req.price < tick.limit_down):
-            self.write_log(f'{req.vt_symbol} 委托价格 {req.price} 超出限价范围'
-                           f'{round_to(tick.limit_down, contract.pricetick)}~'
-                           f'{round_to(tick.limit_up, contract.pricetick)}, 禁止发单')
-            return ""
+
         if req.direction in [Direction.LoanSell, Direction.PreBookLoanSell]:
             if tick and req.price < tick.bid_price_1:
                 req.price = tick.bid_price_1
                 self.write_log(f'融卖价低于bid1, 已修正为 {req.price}@{req.vt_symbol}')
 
         # 最优五档转限价注册制新规
+        # 最优五一般是批量下单，尽量不打印日志到队列，影响队列性能
         if req.type == OrderType.BestOrLimit:
             if req.direction in (Direction.LONG, Direction.LoanBuy):
                 if tick and req.price == 0:
                     req.price = tick.ask_price_5
-                    self.write_log(f'最优五限价低于bid1, 已修正为 {req.price}@{req.vt_symbol}')
+                    print(f'最优五限价低于bid1, 已修正为 {req.price}@{req.vt_symbol}')
+                elif not tick:
+                    # 没有行情，只能用市价
+                    req.type = OrderType.MARKET
             elif req.direction in (Direction.SHORT, Direction.LoanSell, Direction.PreBookLoanSell):
                 if tick and req.price == 0:
                     req.price = tick.bid_price_5
-                    self.write_log(f'最优五限价高于ask1, 已修正为 {req.price}@{req.vt_symbol}')
+                    print(f'最优五限价高于ask1, 已修正为 {req.price}@{req.vt_symbol}')
+                elif not tick:
+                    # 没有行情，只能用市价
+                    req.type = OrderType.MARKET
+        return req
 
+    def send_order(self, req: OrderRequest, gateway_name: str) -> str:
+        """
+        Send new order request to a specific gateway.
+        """
+        req.gateway_name = gateway_name
+        req = self.check_order_request(req)
+        if not req:
+            return ""
+        gateway = self.get_gateway(gateway_name)
         if gateway:
             return gateway.send_order(req)
         else:
             return ""
+        
+    def send_order_many(self, req_list: List[OrderRequest]):
+        _checked_disp = defaultdict(list)
+        _order_ids = []
+        for req in req_list:
+            _req = self.check_order_request(req)
+            if not _req:
+                continue
+            _checked_disp[_req.gateway_name].append(_req)
+
+        for gateway_name, _req_list in _checked_disp.items():
+            gateway = self.get_gateway(gateway_name)
+            if gateway:
+                _order_ids.extend(gateway.send_order_many(_req_list))
+        return _order_ids
+
 
     def send_basket_order(self, req: OrderRequest, gateway_name: str):
         contract = self.get_contract(req.vt_symbol)
@@ -636,9 +666,16 @@ class OmsEngine(BaseEngine):
         spread: SpreadData = event.data
         self.spread[spread.name] = spread
 
-    def process_order_event(self, event: Event) -> None:
+    def process_order_event(self, event: Event):
         """"""
-        order: OrderData = event.data
+        order = event.data
+        if isinstance(order, Iterable):
+            for _order in order:
+                self._on_order(_order)
+        else:
+            self._on_order(order)
+
+    def _on_order(self, order):
         self.orders[order.vt_orderid] = order
 
         # If order is active, then update data in dict.
@@ -648,24 +685,41 @@ class OmsEngine(BaseEngine):
         elif order.vt_orderid in self.active_orders:
             self.active_orders.pop(order.vt_orderid)
 
-    def process_trade_event(self, event: Event) -> None:
+    def process_trade_event(self, event: Event):
         """"""
-        trade: TradeData = event.data
+        trade = event.data
+        if isinstance(trade, Iterable):
+            for _trade in trade:
+                self._on_trade(_trade)
+        else:
+            self._on_trade(trade)
+
+    def _on_trade(self, trade) -> None:
+        """"""
         self.trades[trade.vt_tradeid] = trade
         if trade.vt_tradeid in self.trades:
             return
         old_order = self.orders.get(trade.vt_orderid, None)
         if not old_order:
             return
+        if old_order.vt_symbol != trade.vt_symbol:
+            return
         old_order.traded += trade.volume
         if old_order.traded == old_order.volume:
             old_order.status = Status.ALLTRADED
             self.event_engine.put(Event(type=EVENT_ORDER, data=old_order))
 
-
-    def process_position_event(self, event: Event) -> None:
+    def process_position_event(self, event: Event):
         """"""
-        position: PositionData = event.data
+        position = event.data
+        if isinstance(position, Iterable):
+            for _pos in position:
+                self._on_position(_pos)
+        else:
+            self._on_position(position)
+
+    def _on_position(self, position) -> None:
+        """"""
         old_pos = self.get_position(position.vt_positionid)
         if position == old_pos:
             return
