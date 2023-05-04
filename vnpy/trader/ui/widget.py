@@ -176,6 +176,12 @@ class TimeCell(BaseCell):
         self.setText(timestamp)
         self._data = data
 
+    def get_data(self) -> Any:
+        """
+        Get data object.
+        """
+        return self._data
+
 
 class MsgCell(BaseCell):
     """
@@ -275,6 +281,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
                 self._on_data(_data)
         else:
             self._on_data(data)
+        self.update()
 
     def _on_data(self, data):
         if not self.data_key:
@@ -286,10 +293,6 @@ class BaseMonitor(QtWidgets.QTableWidget):
                 self.update_old_row(data)
             else:
                 self.insert_new_row(data)
-
-        # # Enable sorting
-        # if self.sorting:
-        #     self.setSortingEnabled(True)
 
     def insert_new_row(self, data: Any):
         """

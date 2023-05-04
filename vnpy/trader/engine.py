@@ -689,25 +689,31 @@ class OmsEngine(BaseEngine):
         """"""
         trade = event.data
         if isinstance(trade, Iterable):
-            for _trade in trade:
-                self._on_trade(_trade)
+            order_list = self._on_trade(trade)
         else:
-            self._on_trade(trade)
+            order_list = self._on_trade([trade])
+        if order_list:
+            self.event_engine.put(Event(type=EVENT_ORDER, data=order_list))
 
-    def _on_trade(self, trade) -> None:
+
+    def _on_trade(self, trades) -> List[OrderData]:
         """"""
-        self.trades[trade.vt_tradeid] = trade
-        if trade.vt_tradeid in self.trades:
-            return
-        old_order = self.orders.get(trade.vt_orderid, None)
-        if not old_order:
-            return
-        if old_order.vt_symbol != trade.vt_symbol:
-            return
-        old_order.traded += trade.volume
-        if old_order.traded == old_order.volume:
-            old_order.status = Status.ALLTRADED
-            self.event_engine.put(Event(type=EVENT_ORDER, data=old_order))
+        order_list = []
+        for trade in trades:
+            self.trades[trade.vt_tradeid] = trade
+            if trade.vt_tradeid in self.trades:
+                continue
+            old_order = self.orders.get(trade.vt_orderid, None)
+            if not old_order:
+                continue
+            if old_order.vt_symbol != trade.vt_symbol:
+                continue
+            old_order.traded += trade.volume
+            if old_order.traded == old_order.volume:
+                old_order.status = Status.ALLTRADED
+                order_list.append(old_order)
+
+        return  order_list
 
     def process_position_event(self, event: Event):
         """"""
