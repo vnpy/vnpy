@@ -72,7 +72,7 @@ class EventEngine:
         """
         while self._active:
             try:
-                event = self._queue.get(block=True, timeout=1)
+                event = self._queue.get(block=True, timeout=0.1)
                 self._process(event)
             except Empty:
                 pass

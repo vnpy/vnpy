@@ -377,7 +377,6 @@ class OrderRequest:
     """
     Request sending to specific gateway for creating a new order.
     """
-
     symbol: str
     exchange: Exchange
     direction: Direction
@@ -387,6 +386,7 @@ class OrderRequest:
     signal_price: float = 0
     offset: Offset = Offset.NONE
     reference: str = ""
+    gateway_name: str = ""
 
     def __post_init__(self):
         """"""
@@ -550,5 +550,13 @@ class ReportStrategy:
 
     def __post_init__(self):
         self.dt = datetime.now().strftime('%y%m%d %H:%M:%S')
-        self.uid = f'{self.strategy_type}.{self.name}'
+        self.uid = f'{self.client}.{self.strategy_type}.{self.name}'
 
+    def pformat(self):
+        """优化显示"""
+        out = {}
+        for k, v in self.__dict__.items():
+            if isinstance(v, dict):
+                v = "\n".join([f"{k1}: {v1}" for k1, v1 in v.items()])
+            out[k] = v
+        return out

@@ -12,7 +12,7 @@ from datetime import datetime
 from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
-from typing import Any, Type, Dict, List, Optional, Set
+from typing import Any, Type, Dict, List, Optional, Set, Iterable
 import requests
 from vnpy import WORK_DIR
 from vnpy.event import Event, EventEngine
@@ -31,7 +31,7 @@ from .event import (
     EVENT_LOAN_MAX
 )
 from .gateway import BaseGateway
-from .constant import Product, Direction, Status
+from .constant import Product, Direction, Status, OrderType
 from .object import (
     CancelRequest,
     LogData,
@@ -53,7 +53,6 @@ from .object import (
 )
 from .setting import SETTINGS
 from .utility import get_folder_path, TRADER_DIR, round_to
-from .utils import get_from_url
 
 from vnpy.trader.jgetf_moment_profit.jgetf_api_func_def import *
 
@@ -236,25 +235,75 @@ class MainEngine:
         """
         raise NotImplementedError
 
-    def send_order(self, req: OrderRequest, gateway_name: str) -> str:
+    def check_order_request(self, req: OrderRequest) -> OrderRequest:
         """
         Send new order request to a specific gateway.
         """
         if req.direction in (Direction.BUY_BASKET, Direction.SELL_BASKET):
             return self.send_basket_order(req, gateway_name)
         contract = self.get_contract(req.vt_symbol)
+        if contract is None:
+            self.write_log(f'合约 {req.vt_symbol} 不存在，无法下单')
+            return ""
+        if not req.gateway_name:
+            req.gateway_name = contract.gateway_name
         req.product = contract.product
-        gateway = self.get_gateway(gateway_name)
         req.price = round_to(req.price, contract.pricetick)
+        tick: TickData = self.get_tick(req.vt_symbol)
+
         if req.direction in [Direction.LoanSell, Direction.PreBookLoanSell]:
-            tick: TickData = self.get_tick(req.vt_symbol)
             if tick and req.price < tick.bid_price_1:
                 req.price = tick.bid_price_1
                 self.write_log(f'融卖价低于bid1, 已修正为 {req.price}@{req.vt_symbol}')
+
+        # 最优五档转限价注册制新规
+        # 最优五一般是批量下单，尽量不打印日志到队列，影响队列性能
+        if req.type == OrderType.BestOrLimit:
+            if req.direction in (Direction.LONG, Direction.LoanBuy):
+                if tick and req.price == 0:
+                    req.price = tick.ask_price_5
+                    print(f'最优五限价低于bid1, 已修正为 {req.price}@{req.vt_symbol}')
+                elif not tick:
+                    # 没有行情，只能用市价
+                    req.type = OrderType.MARKET
+            elif req.direction in (Direction.SHORT, Direction.LoanSell, Direction.PreBookLoanSell):
+                if tick and req.price == 0:
+                    req.price = tick.bid_price_5
+                    print(f'最优五限价高于ask1, 已修正为 {req.price}@{req.vt_symbol}')
+                elif not tick:
+                    # 没有行情，只能用市价
+                    req.type = OrderType.MARKET
+        return req
+
+    def send_order(self, req: OrderRequest, gateway_name: str) -> str:
+        """
+        Send new order request to a specific gateway.
+        """
+        req.gateway_name = gateway_name
+        req = self.check_order_request(req)
+        if not req:
+            return ""
+        gateway = self.get_gateway(gateway_name)
         if gateway:
             return gateway.send_order(req)
         else:
             return ""
+        
+    def send_order_many(self, req_list: List[OrderRequest]):
+        _checked_disp = defaultdict(list)
+        _order_ids = []
+        for req in req_list:
+            _req = self.check_order_request(req)
+            if not _req:
+                continue
+            _checked_disp[_req.gateway_name].append(_req)
+
+        for gateway_name, _req_list in _checked_disp.items():
+            gateway = self.get_gateway(gateway_name)
+            if gateway:
+                _order_ids.extend(gateway.send_order_many(_req_list))
+        return _order_ids
+
 
     def send_basket_order(self, req: OrderRequest, gateway_name: str):
         contract = self.get_contract(req.vt_symbol)
@@ -319,9 +368,6 @@ class MainEngine:
         raise NotImplementedError
 
     def get_contract(self, vt_symbol):
-        raise NotImplementedError
-
-    def get_from_url(self, url, params=None):
         raise NotImplementedError
 
     def get_tick(self, vt_symbol):
@@ -514,7 +560,6 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_basket_components = self.get_basket_components
         self.main_engine.set_basket_forcus = self.set_basket_forcus
         self.main_engine.get_basket_position = self.get_basket_position
-        self.main_engine.get_from_url = self.get_from_url
         self.main_engine.get_spread = self.get_spread
         self.main_engine.get_moment_profit = self.get_moment_profit
         self.main_engine.get_loan_max_volume = self.get_loan_max_volume
@@ -621,9 +666,16 @@ class OmsEngine(BaseEngine):
         spread: SpreadData = event.data
         self.spread[spread.name] = spread
 
-    def process_order_event(self, event: Event) -> None:
+    def process_order_event(self, event: Event):
         """"""
-        order: OrderData = event.data
+        order = event.data
+        if isinstance(order, Iterable):
+            for _order in order:
+                self._on_order(_order)
+        else:
+            self._on_order(order)
+
+    def _on_order(self, order):
         self.orders[order.vt_orderid] = order
 
         # If order is active, then update data in dict.
@@ -633,24 +685,47 @@ class OmsEngine(BaseEngine):
         elif order.vt_orderid in self.active_orders:
             self.active_orders.pop(order.vt_orderid)
 
-    def process_trade_event(self, event: Event) -> None:
+    def process_trade_event(self, event: Event):
         """"""
-        trade: TradeData = event.data
-        self.trades[trade.vt_tradeid] = trade
-        if trade.vt_tradeid in self.trades:
-            return
-        old_order = self.orders.get(trade.vt_orderid, None)
-        if not old_order:
-            return
-        old_order.traded += trade.volume
-        if old_order.traded == old_order.volume:
-            old_order.status = Status.ALLTRADED
-            self.event_engine.put(Event(type=EVENT_ORDER, data=old_order))
+        trade = event.data
+        if isinstance(trade, Iterable):
+            order_list = self._on_trade(trade)
+        else:
+            order_list = self._on_trade([trade])
+        if order_list:
+            self.event_engine.put(Event(type=EVENT_ORDER, data=order_list))
 
 
-    def process_position_event(self, event: Event) -> None:
+    def _on_trade(self, trades) -> List[OrderData]:
         """"""
-        position: PositionData = event.data
+        order_list = []
+        for trade in trades:
+            self.trades[trade.vt_tradeid] = trade
+            if trade.vt_tradeid in self.trades:
+                continue
+            old_order = self.orders.get(trade.vt_orderid, None)
+            if not old_order:
+                continue
+            if old_order.vt_symbol != trade.vt_symbol:
+                continue
+            old_order.traded += trade.volume
+            if old_order.traded == old_order.volume:
+                old_order.status = Status.ALLTRADED
+                order_list.append(old_order)
+
+        return  order_list
+
+    def process_position_event(self, event: Event):
+        """"""
+        position = event.data
+        if isinstance(position, Iterable):
+            for _pos in position:
+                self._on_position(_pos)
+        else:
+            self._on_position(position)
+
+    def _on_position(self, position) -> None:
+        """"""
         old_pos = self.get_position(position.vt_positionid)
         if position == old_pos:
             return
@@ -659,6 +734,8 @@ class OmsEngine(BaseEngine):
             self.calculate_basket_sp_able()
 
         if not SETTINGS["signal.report"]:
+            return
+        if position.yd_volume == 0 and position.volume == 0:
             return
         tick = self.get_tick(position.vt_symbol)
         data = {
@@ -716,7 +793,7 @@ class OmsEngine(BaseEngine):
 
     def process_basket_component(self, event: Event):
         component: Union[BasketComponent, List[BasketComponent]] = event.data
-        if isinstance(component, ContractData):
+        if isinstance(component, BasketComponent):
             self.baskets[component.basket_name][component.vt_symbol] = component
         else:
             for _c in component:
@@ -931,9 +1008,6 @@ class OmsEngine(BaseEngine):
             ]
             return active_quotes
 
-    def get_from_url(self, url, params=None, headers=None):
-        return get_from_url(url, params, headers=headers)
-
     def get_loan_max_volume(self, account_uid, vt_symbol):
         """
         获取某个账户某标的的融券额度（预约券）
@@ -945,6 +1019,8 @@ class OmsEngine(BaseEngine):
 
     @staticmethod
     def send_hedging_report(data):
+        if not SETTINGS["signal.report"]:
+            return
         try:
             requests.post(f'http://{SETTINGS["signal.host"]}/api/signal/hedging_board',
                           data=json.dumps(data), timeout=3,

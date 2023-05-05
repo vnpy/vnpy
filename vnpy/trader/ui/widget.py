@@ -176,6 +176,12 @@ class TimeCell(BaseCell):
         self.setText(timestamp)
         self._data = data
 
+    def get_data(self) -> Any:
+        """
+        Get data object.
+        """
+        return self._data
+
 
 class MsgCell(BaseCell):
     """
@@ -270,7 +276,14 @@ class BaseMonitor(QtWidgets.QTableWidget):
 
         # Update data into table.
         data = event.data
+        if isinstance(data, Iterable):
+            for _data in data:
+                self._on_data(_data)
+        else:
+            self._on_data(data)
+        self.update()
 
+    def _on_data(self, data):
         if not self.data_key:
             self.insert_new_row(data)
         else:
@@ -280,10 +293,6 @@ class BaseMonitor(QtWidgets.QTableWidget):
                 self.update_old_row(data)
             else:
                 self.insert_new_row(data)
-
-        # # Enable sorting
-        # if self.sorting:
-        #     self.setSortingEnabled(True)
 
     def insert_new_row(self, data: Any):
         """
@@ -1048,8 +1057,14 @@ class ActiveOrderMonitor(OrderMonitor):
         Hides the row if order is not active.
         """
         super(ActiveOrderMonitor, self).process_event(event)
+        data = event.data
+        if isinstance(data, Iterable):
+            for _data in data:
+                self._on_active_order(_data)
+        else:
+            self._on_active_order(data)
 
-        order = event.data
+    def _on_active_order(self, order):
         row_cells = self.cells[order.vt_orderid]
         row = self.row(row_cells["volume"])
 
