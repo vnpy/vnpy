@@ -281,7 +281,6 @@ class BaseMonitor(QtWidgets.QTableWidget):
                 self._on_data(_data)
         else:
             self._on_data(data)
-        self.update()
 
     def _on_data(self, data):
         if not self.data_key:
