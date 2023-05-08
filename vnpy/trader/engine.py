@@ -262,20 +262,34 @@ class MainEngine:
         # 最优五档转限价注册制新规
         # 最优五一般是批量下单，尽量不打印日志到队列，影响队列性能
         if req.type == OrderType.BestOrLimit:
-            if req.direction in (Direction.LONG, Direction.LoanBuy):
-                if tick and req.price == 0:
+            req = self.get_bast_or_limit_price(tick, req)
+        return req
+
+    def get_bast_or_limit_price(self, tick: TickData, req: OrderRequest):
+        if req.direction in (Direction.LONG, Direction.LoanBuy):
+            if tick and req.price == 0:
+                # 接近涨停, ask5==0
+                if tick.ask_price_5 == 0:
+                    print(f'最优五限价低于bid1, 当前接近涨停， 已修正为 {req.price}@{req.vt_symbol}')
+                    req.price == tick.limit_up
+                else:
                     req.price = tick.ask_price_5
                     print(f'最优五限价低于bid1, 已修正为 {req.price}@{req.vt_symbol}')
-                elif not tick:
-                    # 没有行情，只能用市价
-                    req.type = OrderType.MARKET
-            elif req.direction in (Direction.SHORT, Direction.LoanSell, Direction.PreBookLoanSell):
-                if tick and req.price == 0:
+            elif not tick:
+                # 没有行情，只能用市价
+                req.type = OrderType.MARKET
+        elif req.direction in (Direction.SHORT, Direction.LoanSell, Direction.PreBookLoanSell):
+            if tick and req.price == 0:
+                # 接近跌停， bid5==0
+                if tick.bid_price_5 == 0:
+                    print(f'最优五限价高于ask1, 接近跌停, 已修正为 {req.price}@{req.vt_symbol}')
+                    req.price = tick.limit_down
+                else:
                     req.price = tick.bid_price_5
                     print(f'最优五限价高于ask1, 已修正为 {req.price}@{req.vt_symbol}')
-                elif not tick:
-                    # 没有行情，只能用市价
-                    req.type = OrderType.MARKET
+            elif not tick:
+                # 没有行情，只能用市价
+                req.type = OrderType.MARKET
         return req
 
     def send_order(self, req: OrderRequest, gateway_name: str) -> str:

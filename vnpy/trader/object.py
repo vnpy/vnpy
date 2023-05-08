@@ -1,13 +1,14 @@
 """
 Basic data structure used for general trading function in VN Trader.
 """
+from typing import List
 from dataclasses import dataclass
 from datetime import datetime
 from logging import INFO
 
 from .constant import (
     Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType,
-    Currency, AccType, AssetsType
+    Currency, AccType, AssetsType, ProductStatus
 )
 
 ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
@@ -35,6 +36,7 @@ class TickData(BaseData):
     symbol: str
     exchange: Exchange
     datetime: datetime
+    status: ProductStatus = ProductStatus.NONE
 
     name: str = ""
     volume: float = 0
@@ -79,6 +81,11 @@ class TickData(BaseData):
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
+
+    @property
+    def trade_able(self) -> bool:
+        """可以交易"""
+        return not (self.status in (ProductStatus.B, ProductStatus.P, ProductStatus.M, ProductStatus.N))
 
 
 @dataclass
@@ -513,11 +520,11 @@ class BasketComponent(BaseData):
     def cash_flag(self):
         flg = int(self.substitute_flag)
         if flg in (0, ):
-            return 0  # 禁止
+            return 0  # 禁止替代
         elif flg in (1, 3, 5):
-            return 1  # 可以
+            return 1  # 可以替代
         else:
-            return 2  # 必须
+            return 2  # 必须替代
 
 
 @dataclass
