@@ -1,10 +1,13 @@
 """
 """
 import os
+import time
 from abc import ABC
 import json
 from collections import defaultdict
 import cachetools.func
+import cachetools.keys
+from cachetools import cached, TTLCache
 import logging
 from logging import Logger
 import smtplib
@@ -537,6 +540,7 @@ class OmsEngine(BaseEngine):
 
         self.add_function()
         self.register_event()
+        self.last_report_tm = time.time()
 
     def add_function(self) -> None:
         """Add query function to main engine."""
@@ -718,11 +722,19 @@ class OmsEngine(BaseEngine):
     def process_position_event(self, event: Event):
         """"""
         position = event.data
+        report_data = []
         if isinstance(position, Iterable):
             for _pos in position:
-                self._on_position(_pos)
+                pos_report = self._on_position(_pos)
+                if pos_report:
+                    report_data.append(pos_report)
         else:
-            self._on_position(position)
+            pos_report = self._on_position(position)
+            if pos_report:
+                report_data.append(pos_report)
+
+        self.send_hedging_report(report_data)
+
 
     def _on_position(self, position) -> None:
         """"""
@@ -753,7 +765,7 @@ class OmsEngine(BaseEngine):
             'dt': datetime.now().strftime('%y%m%d %H:%M:%S'),
             'client': WORK_DIR
         }
-        self.send_hedging_report({'positionData': [data]})
+        return data
 
     def process_account_event(self, event: Event) -> None:
         """"""
@@ -1017,10 +1029,14 @@ class OmsEngine(BaseEngine):
         """
         return self.loan_max.get(account_uid, {}).get(vt_symbol, 0)
 
-    @staticmethod
-    def send_hedging_report(data):
+    def send_hedging_report(self, data):
+        now = time.time()
+        if now - self.last_report_tm < 3:
+            return
+        self.last_report_tm = now
         if not SETTINGS["signal.report"]:
             return
+
         try:
             requests.post(f'http://{SETTINGS["signal.host"]}/api/signal/hedging_board',
                           data=json.dumps(data), timeout=3,
