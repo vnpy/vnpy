@@ -125,8 +125,8 @@ class EventEngine:
         """
         Put an event object into event queue.
         """
-        if event.type.startswith('eUnimportant_') or not (
-            event.type == EVENT_TICK and event.data.vt_symbol in self._important_symbols
+        if event.type.startswith('eUnimportant_') or (
+            event.type == EVENT_TICK and not (event.data.vt_symbol in self._important_symbols)
         ):
             self._unimportant_queue.put(event)
             return

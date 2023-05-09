@@ -197,3 +197,12 @@ class Interval(Enum):
     DAILY = "d"
     WEEKLY = "w"
     TICK = "tick"
+
+
+class ProductStatus(Enum):
+    NONE = '正常'
+    B = '停牌'
+    M = '暂时熔断'
+    N = '今日熔断'
+    P = '暂停交易'
+
