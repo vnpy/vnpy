@@ -4,6 +4,7 @@ from concurrent.futures import ProcessPoolExecutor
 from random import random, choice
 from time import perf_counter
 from multiprocessing import Manager, Pool, get_context
+from multiprocessing.context import BaseContext
 from _collections_abc import dict_keys, dict_values, Iterable
 
 from tqdm import tqdm
@@ -154,7 +155,8 @@ def run_ga_optimization(
         return individual,
 
     # Set up multiprocessing Pool and Manager
-    with Manager() as manager, Pool(max_workers) as pool:
+    ctx: BaseContext = get_context("spawn")
+    with ctx.Manager() as manager, ctx.Pool(max_workers) as pool:
         # Create shared dict for result cache
         cache: Dict[Tuple, Tuple] = manager.dict()
 
