@@ -747,7 +747,7 @@ class OmsEngine(BaseEngine):
             if pos_report:
                 report_data.append(pos_report)
 
-        self.send_hedging_report(report_data)
+        self.send_hedging_report({'positionData': report_data})
 
 
     def _on_position(self, position) -> None:
@@ -1045,7 +1045,7 @@ class OmsEngine(BaseEngine):
 
     def send_hedging_report(self, data):
         now = time.time()
-        if now - self.last_report_tm < 3:
+        if (now - self.last_report_tm < 3) and not data.get('strategyData'):
             return
         self.last_report_tm = now
         if not SETTINGS["signal.report"]:
