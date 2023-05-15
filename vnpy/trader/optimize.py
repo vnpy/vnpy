@@ -3,7 +3,7 @@ from itertools import product
 from concurrent.futures import ProcessPoolExecutor
 from random import random, choice
 from time import perf_counter
-from multiprocessing import Manager, Pool, get_context
+from multiprocessing import get_context
 from multiprocessing.context import BaseContext
 from _collections_abc import dict_keys, dict_values, Iterable
 
