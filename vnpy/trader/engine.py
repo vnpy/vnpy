@@ -243,7 +243,7 @@ class MainEngine:
         Send new order request to a specific gateway.
         """
         if req.direction in (Direction.BUY_BASKET, Direction.SELL_BASKET):
-            return self.send_basket_order(req, gateway_name)
+            return self.send_basket_order(req, req.gateway_name)
         contract = self.get_contract(req.vt_symbol)
         if contract is None:
             self.write_log(f'合约 {req.vt_symbol} 不存在，无法下单')
@@ -292,11 +292,15 @@ class MainEngine:
                 req.type = OrderType.MARKET
         return req
 
-    def send_order(self, req: OrderRequest, gateway_name: str) -> str:
+    def send_order(self, req: OrderRequest, gateway_name: str = None) -> str:
         """
         Send new order request to a specific gateway.
         """
-        req.gateway_name = gateway_name
+        if gateway_name:
+            req.gateway_name = gateway_name
+        elif not req.gateway_name:
+            contract = self.get_contract(req.vt_symbol)
+            req.gateway_name = contract.gateway_name
         req = self.check_order_request(req)
         if not req:
             return ""
