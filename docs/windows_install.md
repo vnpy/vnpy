@@ -7,7 +7,7 @@
 
 > 其他版本的Windows系统安装时可能遇到各种依赖库问题，不推荐使用。
 
-在Windows系统上安装VeighNa，推荐使用官方推出的【VeighNa Studio Python发行版】，**尤其是初次接触Python的编程新手**。
+在Windows系统中安装VeighNa，推荐使用官方推出的【VeighNa Studio Python发行版】，**尤其适合初次接触Python的编程新手**。
 
 作为一站式的量化投研交易Python环境，VeighNa Studio整合了：
 
@@ -15,7 +15,7 @@
 - VeighNa和其他相关依赖库
 - VeighNa Station（VeighNa框架的图形化管理工具）
 
-对于已经有比较丰富的编程经验或者需要用到特定Python发行版（如Anaconda）的用户，也可以采用手动安装的方案。
+对于有较丰富的编程经验或需用到特定Python发行版（如Anaconda）的用户，可选择手动安装的方案。
 
 
 ## VeighNa Studio方案
@@ -24,17 +24,17 @@
 
 在[VeighNa官网](https://www.vnpy.com/)可以下载VeighNa Studio安装包。
 
-下载完成后，双击安装包进入VeighNa Studio安装向导（推荐点击右键，选择【使用管理员身份运行】进行安装），使用默认设置点击【快速安装】按钮即可进行VeighNa Studio安装，如下图所示：
+下载完成后，双击安装包启动VeighNa Studio安装向导（建议右键选择【使用管理员身份运行】进行安装），使用默认设置点击【快速安装】按钮即可进行VeighNa Studio安装，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/21.png)
 
-> 推荐将VeighNa Studio安装在默认路径的C:\veighna_studio，其他VeighNa文档和教程中均使用该目录作为VeighNa安装目录进行讲解。
+> 推荐将VeighNa Studio安装在默认路径C:\veighna_studio下，该路径在其他VeighNa文档和教程中均作为示例VeighNa安装目录使用。
 
-如果想进行个性化安装，可点击【自定义安装】进入高级选项页面，如下图所示：
+如想进行个性化安装，可点击【自定义安装】进入高级选项页面，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/24.png)
 
-安装完成后，会转换到安装成功页面，如下图所示：
+安装完成后，将转到安装成功页面，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/26.png)
 
@@ -71,7 +71,7 @@ examples.run()
 
 ### 修改
 
-如果安装之后，想要添加或者移除某项功能，可以双击VeighNa Studio的安装包，进入VeighNa Studio安装界面，如下图所示：
+若在安装后需要添加或移除某项功能，可以双击VeighNa Studio的安装包，进入VeighNa Studio安装界面，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/33.png)
 
@@ -87,7 +87,7 @@ examples.run()
 
 ### 修复
 
-如果安装之后，出现安装不完整或者其他需要修复的情况，可以双击VeighNa Studio的安装包，进入VeighNa Studio安装界面，如下图所示：
+若在安装后遇到不完整安装或其他需要修复的问题，可以双击VeighNa Studio的安装包，进入VeighNa Studio安装界面，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/33.png)
 
@@ -101,7 +101,7 @@ examples.run()
 
 ### 卸载
 
-如果想卸载VeighNa Studio， 可以双击VeighNa Studio的安装包，进入VeighNa Studio安装界面，如下图所示：
+若需要卸载VeighNa Studio， 可以双击VeighNa Studio的安装包，进入VeighNa Studio安装界面，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/33.png)
 
@@ -120,11 +120,11 @@ examples.run()
 
 首先请在电脑上准备好Python 3.10 64位环境（**注意必须是64位版本**），推荐使用Python官网的发行版，也可以使用Anaconda、Miniconda、Canopy等发行版。
 
-这里我们以Python官网的发行版为例，首先在[Python官网](https://www.python.org/downloads/windows/)下载安装文件，选择【Windows installer (64-bit)】，如下图所示：
+以Python官方版为例，首先在[Python官网](https://www.python.org/downloads/windows/)下载安装文件，选择【Windows installer (64-bit)】，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/22.png)
 
-下载完毕后，双击文件进入Python安装向导，勾选【Add Python3.10 to PATH】选项后，点击【Install Now】进行安装，推荐使用默认设置一路点击【下一步】直到安装完成即可：
+下载完毕后，双击文件进入Python安装向导，勾选【Add Python3.10 to PATH】选项后，点击【Install Now】进行安装，推荐保持默认设置一路点击【下一步】直到安装完成即可：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/23.png)
 
@@ -148,20 +148,20 @@ install.bat
 2. 安装requirements.txt文件内的相关依赖库；
 3. 安装VeighNa本身。
 
-如果某一步安装过程中发生错误，请截取保存命令行中的报错信息（**注意优先保存底部的报错内容**），前往VeighNa社区论坛发帖提问寻求帮助。
+若在任意安装步骤中发生错误，请截取保存命令行中的报错信息（**注意优先保存底部的报错内容**），前往VeighNa社区论坛发帖提问寻求帮助。
 
 ### 启动VeighNa Trader
 
-启动命令行工具，进入解压VeighNa源代码的目录下，在文件夹examples/veighna_trader中找到run.py文件。
+启动命令行工具，进入解压后的VeighNa源代码目录，在文件夹examples/veighna_trader中找到run.py文件。
 
-输入如下命令即可启动VeighNa Trader：
+执行以下命令即可启动VeighNa Trader：
 
 ```
 python run.py 
 ```
 
-请注意run.py中包含了较多的启动加载项（交易接口和应用模块），请根据自己所用的操作系统以及实际的交易需求修改调整使用（若需加载接口，取消接口前注释符号即可）。
+请注意run.py文件中包含多个启动加载项（交易接口和应用模块），请根据自己所用的操作系统以及实际的交易需求进行相应修改（若需加载接口，取消接口前注释符号即可）。
 
-连接接口介绍详见交易接口篇。
+接口连接介绍详见交易接口相关章节。
 
-> 如果启动时出现一些库版本不兼容的情况，可根据提示对这些库重新pip安装。
+> 若启动时出现库版本不兼容问题，可根据提示重新pip安装对应库。

@@ -52,7 +52,7 @@
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/veighna_station/5.png)
 
-PyPI索引用于更换VeighNa Station使用的pypiserver地址，当留空时默认使用的是https://pypi.org的PyPI服务器。
+PyPI索引用于更换VeighNa Station使用的pypiserver地址，当留空时系统默认链接https://pypi.org的PyPI服务器。
 
 pip代理默认为空，用户可自行设置。修改后可点击【保存】按钮，对配置进行保存并退出窗口。
 
@@ -62,7 +62,7 @@ pip代理默认为空，用户可自行设置。修改后可点击【保存】�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/veighna_station/6.png)
 
-点击【Yes】会登出用户，并立即关闭程序。用户登出后，在下次启动时，需要重新进行用户登录。
+点击【Yes】会登出用户，并立即关闭程序。用户登出后，在下次启动时需重新进行用户登录。
 
 #### 关闭
 
@@ -77,7 +77,7 @@ pip代理默认为空，用户可自行设置。修改后可点击【保存】�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/veighna_station/9.png)
 
-如上图所示，图中左侧区域为功能栏，右侧区域为主显示区域。功能栏包括社区、交易、投研、加密、更新等内容。随着左侧功能栏的不同选择，右侧主显示区域会显示对应的相关内容。
+如上图所示，左侧区域为功能栏，右侧区域为主显示区域。功能栏包括社区、交易、投研、加密、更新等内容。根据左侧选择的功能栏项不同，右侧主显示区域将显示相应的内容。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/veighna_station/10.png)
 
@@ -122,7 +122,7 @@ pip代理默认为空，用户可自行设置。修改后可点击【保存】�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/veighna_station/14.png)
 
-点击主显示区域左下角的【启动】按钮后，将会在右下角指定的运行目录运行jupyterlab应用，可以在jupyterlab应用中进行投研操作，如下图所示：
+点击主显示区域左下角的【启动】按钮后，将会在右下角指定的运行目录启动jupyterlab应用，可以在jupyterlab应用中进行投研操作，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/veighna_station/15.png)
 
@@ -142,7 +142,7 @@ pip代理默认为空，用户可自行设置。修改后可点击【保存】�
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/veighna_station/18.png)
 
-等到输出文件加密进程终止后，将会在加密文件所在位置生成一个加密后的pyd文件。
+待输出文件加密进程终止后，将会在加密文件所在位置生成一个加密后的pyd文件。
 
 请注意，加密后需要先**把pyd文件名中的.cp310-win_amd64部分移除**，然后再放进自建strategies文件夹中。
 
