@@ -8,11 +8,11 @@
 - datafeed.username：数据服务的用户名；
 - datafeed.password：数据服务的密码。
 
-以上字段对于所有数据服务都是必填的，如果是token方式授权请填写在datafeed.password字段中。目前VeighNa Trader支持以下七种数据服务，**具体每个数据服务的细节可在对应的项目地址中找到**。
+上述字段对于所有数据服务都是必填的，如果采用token方式授权，请将其填写在datafeed.password字段中。目前VeighNa Trader支持以下七种数据服务，**具体每个数据服务的细节可在对应的项目地址中找到**。
 
 ## RQData
 
-米筐RQData一直以来都是VeighNa官方团队长期推荐的数据服务，对于大部分个人投资者来说应该都是性价比比较高的选择：
+米筐RQData一直以来都是VeighNa官方团队长期推荐的数据服务，对大部分个人投资者来说应该都是性价比较高的选择：
 - 项目地址：[vnpy_rqdata](https://github.com/vnpy/vnpy_rqdata)
 - 数据分类：股票、期货、期权、基金和黄金TD
 - 数据周期：日线、小时线、分钟线、TICK（实时更新）
@@ -48,30 +48,30 @@ TuShare是国内知名的开源Python金融数据接口项目，由大神Jimmy�
 
 
 ## Wind
-万得Wind对于在国内金融机构工作的从业者来说，已经是工作中的标准配置，不管是股票、债券还是商品市场的数据，Wind可以说是应有尽有：
+万得Wind对于在国内金融机构工作的从业者来说，已是工作中的标准配置，无论是股票、债券还是商品市场的数据，Wind几乎拥有一切所需：
 - 项目地址：[vnpy_wind](https://github.com/vnpy/vnpy_wind)
 - 数据分类：期货
 - 数据周期：分钟线（实时更新）
 - 注册申请：[Wind金融终端](https://www.wind.com.cn/newsite/wft.html)
 
 ## iFinD
-同花顺iFinD是同花顺公司推出的面向专业机构用户的金融数据终端，且在过去几年中的市场占有率快速上升：
+同花顺iFinD是同花顺公司推出的面向专业机构用户的金融数据终端，且在过去几年内的市场占有率快速上升：
 - 项目地址：[vnpy_ifind](https://github.com/vnpy/vnpy_ifind)
 - 数据分类：期货
 - 数据周期：分钟线（实时更新）
 - 注册申请：[iFinD金融数据终端](http://www.51ifind.com/)
 
 ## Tinysoft
-作为国内老牌金融数据公司的天软，其核心产品【天软.NET金融分析平台】（简称TinySoft），在券商研究所和自营领域积累了大量用户。翻看券商的金融工程研报时，经常会发现图表的备注信息中写有“以上数据来自天软”的数据来源说明：
+天软作为国内的老牌金融数据公司，其核心产品【天软.NET金融分析平台】（简称TinySoft），在券商研究所和自营领域积累了大量用户，经常能在券商的金融工程研报中看到备注“以上数据来自天软”的图表：
 - 项目地址：[vnpy_tinysoft](https://github.com/vnpy/vnpy_tinysoft)
 - 数据分类：期货
 - 数据周期：分钟线（实时更新）
 - 注册申请：[天软.NET金融分析平台](http://www.tinysoft.com.cn/TSDN/HomePage.tsl)
 
-请注意，因为Tinysoft目前不支持Python3.10，所以VeighNa Studio 3.0.0没有提供Tinysoft支持。
+请注意，安装环境推荐基于3.6.0版本以上的VeighNa Studio。
 
 ## 脚本使用
-脚本使用前，请先按照上文配置好使用的数据服务, 使用时调用相应的函数接口(具体接口支持请参考上文中支持的数据周期)。
+使用脚本前，需按照上文先配置好要使用的数据服务, 使用时调用相应的函数接口。(具体接口支持请参考上文中支持的数据周期)。
 
 ### 脚本加载
 
