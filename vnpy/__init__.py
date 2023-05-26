@@ -1,4 +1,4 @@
-__version__ = "2023.05.09"
+__version__ = "2023.05.25"
 WORK_DIR = '.wc-vntrader'
 
 def set_work_dir(dir_name):
