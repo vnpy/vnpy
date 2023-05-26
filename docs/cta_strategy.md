@@ -123,7 +123,7 @@ C:\Users\Administrator\strategies
 
 ### 初始化
 
-策略实例创建成功后，即可对该实例进行初始化。点击该策略实例下的【初始化】按钮，若初始化成功，则如下图所示：
+明该策略实例已经调用过load_bar函数加载历史数据并完成初始化
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/54.png)
 

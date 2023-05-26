@@ -26,7 +26,7 @@ main_engine.add_app(AlgoTradingApp)
 
 ## 启动模块
 
-对于用户搭建的算法，需要放到algo_trading.algos目录中，才能被识别加载。
+对于用户自行搭建的算法，需要放到algo_trading.algos目录中，才能被识别加载。
 
 在启动模块之前，请先连接交易接口（连接方法详见基本使用篇的连接接口部分）。看到VeighNa Trader主界面【日志】栏输出“合约信息查询成功”之后再启动模块，如下图所示：
 
@@ -72,7 +72,7 @@ main_engine.add_app(AlgoTradingApp)
 
 ## 启动算法
 
-目前VeighNa一共提供了六种常用的示例算法。本文档以时间加权平均算法（TWAP）为例，介绍算法启动过程。
+目前VeighNa共提供了六种常用的示例算法。本文档以时间加权平均算法（TWAP）为例，介绍算法启动过程。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/algo_trading/3.png)
 
@@ -134,7 +134,7 @@ main_engine.add_app(AlgoTradingApp)
 
 ## 示例算法
 
-示例算法路径位于algo_trading.algos文件夹下（请注意，个别算法是没有写开平方向的，若有需要，可基于自身需求进行个性化修改）。目前，算法交易模块提供了以下六种内置算法：
+示例算法路径位于algo_trading.algos文件夹下（请注意，个别算法没有写开平方向，若有需要，可基于自身需求进行个性化修改）。目前，算法交易模块提供了以下六种内置算法：
 
 ### DMA - 直接委托算法
 
