@@ -4,12 +4,12 @@
 ## 创建PR
 我们欢迎任何人贡献代码到VeighNa。  
 
-如果希望贡献代码请使用Github的PR(Pull Request)的流程。
+如果希望贡献代码请按照Github的PR(Pull Request)流程进行。
 
 PR流程大致如下：
 
 ---
-1. [创建 Issue][CreateIssue] - 对于较大的改动(如新功能，大型重构等)建议先开issue讨论一下， 较小的improvement(如文档改进，bugfix等)直接发PR即可
+1. [创建 Issue][CreateIssue] - 对于较大的改动(如新功能，大型重构等)建议先开设issue进行讨论， 较小的improvement(如文档改进，bugfix等)直接提交PR即可
 
 2. Fork [VeighNa][#GithubVnpy] - 点击右上角**Fork**按钮
 
@@ -26,12 +26,12 @@ PR流程大致如下：
 
 ---
 
-创建完PR之后请耐心等待：我们一旦有空就会检查PR，一旦你的代码有用且[符合要求](#代码风格)，就会被合并！
+提交PR后请耐心等待：我们会在任何时间允许的情况下检查PR，一旦你的代码有价值且[符合要求](#代码风格)，我们将会合并您的提交！
 
 
 ---
 ## 代码风格
-在为VeighNa写代码的时候，需要遵循一些基本的规则，否则你的代码可能无法被merge。
+在为VeighNa贡献代码的时候，需要遵循一些基本的规则，否则你的代码可能无法被采用。
 这些规则包括：
 - [贡献代码](#贡献代码)
   - [创建PR](#创建pr)
@@ -61,7 +61,7 @@ class ClassA:
 
 
 ### 代码格式
-我们对代码格式没有特别严格的要求，但是至少要符合pep8标准，并且额外要在类和函数下面带上docstring(就是一段"""""")。
+我们对代码格式没有特别严格的要求，但是至少要符合pep8标准，并且额外要在类和函数下方附上docstring进行描述和说明(就是一段"""""")。
 
 要让代码符合pep8标准，写完代码之后使用[autopep8](https://github.com/hhatto/autopep8)格式化你的代码就可以了:  
 ```bash
@@ -70,7 +70,7 @@ autopep8 --in-place --recursive .
 
 ### 代码质量检查
 使用[flake8](https://pypi.org/project/flake8/)检查你的代码，确保没有error和warning。
-在项目根目录下运行```flake8```就可以检查出代码中书写不严谨的地方了。如果检查出error或者warning，说明你的代码需要进行一些修改以提升质量。
+在项目根目录下运行```flake8```即可检查出代码中书写不严谨的地方。如果检查出error或者warning，说明你的代码需要进一步的修改以提升质量。
 
 [GithubVnpy]:https://github.com/vnpy/vnpy
 [GithubDocForSync]:https://help.github.com/articles/syncing-a-fork/
