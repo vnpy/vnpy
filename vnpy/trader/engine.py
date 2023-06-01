@@ -34,7 +34,7 @@ from .event import (
     EVENT_LOAN_MAX
 )
 from .gateway import BaseGateway
-from .constant import Product, Direction, Status, OrderType
+from .constant import Product, Direction, Status, OrderType, Currency, Offset
 from .object import (
     CancelRequest,
     LogData,
@@ -59,6 +59,7 @@ from .utility import get_folder_path, TRADER_DIR, round_to
 
 from vnpy.trader.jgetf_moment_profit.jgetf_api_func_def import *
 
+
 class MainEngine:
     """
     Acts as the core of VN Trader.
@@ -77,8 +78,8 @@ class MainEngine:
         self.apps: Dict[str, BaseApp] = {}
         self.exchanges: List[Exchange] = []
 
-        os.chdir(TRADER_DIR)    # Change working directory
-        self.init_engines()     # Initialize function engines
+        os.chdir(TRADER_DIR)  # Change working directory
+        self.init_engines()  # Initialize function engines
 
     def add_engine(self, engine_class: Any) -> "BaseEngine":
         """
@@ -265,6 +266,34 @@ class MainEngine:
             req = self.get_bast_or_limit_price(tick, req)
         return req
 
+    def check_order_fund_available(self, req_list: List[OrderRequest]) -> bool:
+        """
+        订单发出前检查可用资金是否够用
+        :param req_list:
+        :return:
+        """
+
+        account: Dict[str, float] = {}
+
+        for req in req_list:
+            contract: ContractData = self.get_contract(req.vt_symbol)
+            tick: TickData = self.get_tick(req.vt_symbol)
+
+            if contract.gateway_name not in account:
+                account[contract.gateway_name] = self.get_account_currency_cny(contract.gateway_name).available
+
+            if contract.product == Product.EQUITY and req.direction == Direction.LONG:
+                account[contract.gateway_name] -= tick.last_price * req.volume
+            elif contract.product == Product.FUTURES and req.offset == Offset.OPEN:
+                account[contract.gateway_name] -= tick.last_price * req.volume
+            else:
+                pass
+
+            if account[contract.gateway_name] < 0:
+                return False
+
+        return True
+
     def get_bast_or_limit_price(self, tick: TickData, req: OrderRequest):
         if req.direction in (Direction.LONG, Direction.LoanBuy):
             if tick and req.price == 0:
@@ -309,7 +338,7 @@ class MainEngine:
             return gateway.send_order(req)
         else:
             return ""
-        
+
     def send_order_many(self, req_list: List[OrderRequest]):
         _checked_disp = defaultdict(list)
         _order_ids = []
@@ -324,7 +353,6 @@ class MainEngine:
             if gateway:
                 _order_ids.extend(gateway.send_order_many(_req_list))
         return _order_ids
-
 
     def send_basket_order(self, req: OrderRequest, gateway_name: str):
         contract = self.get_contract(req.vt_symbol)
@@ -376,6 +404,12 @@ class MainEngine:
     def get_account(self, vt_accountid: str) -> Optional[AccountData]:
         """
         根据账户id获取账户信息对象
+        """
+        raise NotImplementedError
+
+    def get_account_currency_cny(self, gateway_name: str) -> Optional[AccountData]:
+        """
+        获取账户信息对象
         """
         raise NotImplementedError
 
@@ -441,10 +475,10 @@ class BaseEngine(ABC):
     """
 
     def __init__(
-        self,
-        main_engine: MainEngine,
-        event_engine: EventEngine,
-        engine_name: str,
+            self,
+            main_engine: MainEngine,
+            event_engine: EventEngine,
+            engine_name: str,
     ):
         """"""
         self.main_engine = main_engine
@@ -549,9 +583,9 @@ class OmsEngine(BaseEngine):
         self.accounts: Dict[str, AccountData] = {}
         self.contracts: Dict[str, ContractData] = {}
         self.baskets: Dict[str, Dict[BasketComponent]] = defaultdict(dict)
-        self.basket_forcus: Set[ContractData] = set()                # 订阅的ETF会计算篮子可卖、可申购
+        self.basket_forcus: Set[ContractData] = set()  # 订阅的ETF会计算篮子可卖、可申购
         self.quotes: Dict[str, QuoteData] = {}
-        self.loan_max: Dict[str, Dict[str, int]] = defaultdict(dict)        # 存储融券剩余额度
+        self.loan_max: Dict[str, Dict[str, int]] = defaultdict(dict)  # 存储融券剩余额度
 
         self.active_orders: Dict[str, OrderData] = {}
         self.active_quotes: Dict[str, QuoteData] = {}
@@ -567,6 +601,7 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_trade = self.get_trade
         self.main_engine.get_position = self.get_position
         self.main_engine.get_account = self.get_account
+        self.main_engine.get_account_currency_cny = self.get_account_currency_cny
         self.main_engine.get_contract = self.get_contract
         self.main_engine.get_quote = self.get_quote
 
@@ -717,7 +752,6 @@ class OmsEngine(BaseEngine):
         if order_list:
             self.event_engine.put(Event(type=EVENT_ORDER, data=order_list))
 
-
     def _on_trade(self, trades) -> List[OrderData]:
         """"""
         order_list = []
@@ -735,7 +769,7 @@ class OmsEngine(BaseEngine):
                 old_order.status = Status.ALLTRADED
                 order_list.append(old_order)
 
-        return  order_list
+        return order_list
 
     def process_position_event(self, event: Event):
         """"""
@@ -753,14 +787,13 @@ class OmsEngine(BaseEngine):
 
         self.send_hedging_report({'positionData': report_data})
 
-
     def _on_position(self, position) -> None:
         """"""
         old_pos = self.get_position(position.vt_positionid)
         if position == old_pos:
             return
         self.positions[position.vt_positionid] = position
-        if position.product not in  (Product.BASKET, ):
+        if position.product not in (Product.BASKET,):
             self.calculate_basket_sp_able()
 
         if not SETTINGS["signal.report"]:
@@ -875,6 +908,15 @@ class OmsEngine(BaseEngine):
         """
         return self.accounts.get(vt_accountid, None)
 
+    def get_account_currency_cny(self, gateway_name: str):
+        """
+        获取账户信息对象
+        """
+        for account in self.accounts.values():
+            if account.gateway_name == gateway_name and account.currency == Currency.CNY:
+                return account
+        return []
+
     def get_contract(self, vt_symbol: str) -> Optional[ContractData]:
         """
         Get contract data by vt_symbol.
@@ -900,7 +942,7 @@ class OmsEngine(BaseEngine):
 
     def calculate_basket_sp_able(self):
         """计算篮子可申购、可卖数量"""
-        #TODO 针对A股 只计算了LONG
+        # TODO 针对A股 只计算了LONG
 
         for contract in self.basket_forcus:
             basket_position = PositionData(
@@ -1103,7 +1145,7 @@ class EmailEngine(BaseEngine):
                 msg = self.queue.get(block=True, timeout=1)
 
                 with smtplib.SMTP_SSL(
-                    SETTINGS["email.server"], SETTINGS["email.port"]
+                        SETTINGS["email.server"], SETTINGS["email.port"]
                 ) as smtp:
                     smtp.login(
                         SETTINGS["email.username"], SETTINGS["email.password"]
