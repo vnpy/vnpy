@@ -80,7 +80,7 @@ class OffsetConverter:
             return holding.convert_order_request_lock(req)
         elif net:
             return holding.convert_order_request_net(req)
-        elif req.exchange in [Exchange.SHFE, Exchange.INE]:
+        elif req.exchange in {Exchange.SHFE, Exchange.INE}:
             return holding.convert_order_request_shfe(req)
         else:
             return [req]
@@ -164,7 +164,7 @@ class PositionHolding:
             elif trade.offset == Offset.CLOSEYESTERDAY:
                 self.short_yd -= trade.volume
             elif trade.offset == Offset.CLOSE:
-                if trade.exchange in [Exchange.SHFE, Exchange.INE]:
+                if trade.exchange in {Exchange.SHFE, Exchange.INE}:
                     self.short_yd -= trade.volume
                 else:
                     self.short_td -= trade.volume
@@ -180,7 +180,7 @@ class PositionHolding:
             elif trade.offset == Offset.CLOSEYESTERDAY:
                 self.long_yd -= trade.volume
             elif trade.offset == Offset.CLOSE:
-                if trade.exchange in [Exchange.SHFE, Exchange.INE]:
+                if trade.exchange in {Exchange.SHFE, Exchange.INE}:
                     self.long_yd -= trade.volume
                 else:
                     self.long_td -= trade.volume

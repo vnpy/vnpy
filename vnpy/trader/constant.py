@@ -88,6 +88,8 @@ class Exchange(Enum):
     SSE = "SSE"             # Shanghai Stock Exchange
     SZSE = "SZSE"           # Shenzhen Stock Exchange
     BSE = "BSE"             # Beijing Stock Exchange
+    SHHK = "SHHK"           # Shanghai-HK Stock Connect
+    SZHK = "SZHK"           # Shenzhen-HK Stock Connect
     SGE = "SGE"             # Shanghai Gold Exchange
     WXE = "WXE"             # Wuxi Steel Exchange
     CFETS = "CFETS"         # CFETS Bond Market Maker Trading System
