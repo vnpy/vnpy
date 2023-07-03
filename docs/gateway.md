@@ -83,6 +83,7 @@ main_engine.add_gateway(CtpGateway)
 - 操作系统
   - Windows
   - Ubuntu
+  - Mac (见论坛声明已支持mac的接口)
 
 - 交易品种
   - 期货

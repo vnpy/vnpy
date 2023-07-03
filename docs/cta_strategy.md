@@ -123,7 +123,7 @@ C:\Users\Administrator\strategies
 
 ### 初始化
 
-明该策略实例已经调用过load_bar函数加载历史数据并完成初始化
+该策略实例已经调用过load_bar函数加载历史数据并完成初始化
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/54.png)
 

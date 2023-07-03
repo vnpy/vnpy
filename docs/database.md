@@ -202,14 +202,16 @@ DolphinDB配置示例如下所示：
 
 ### Arctic
 
-Arctic是由英国量化对冲基金Man AHL基于MongoDB开发的高性能金融时序数据库，其特点如下：
-- 支持直接存储pandas的DataFrame和numpy的ndaaray对象；
+Arctic已经不再更新。Man Group新出了一个叫ArcticDB的库。详情请见https://github.com/man-group/ArcticDB
+以下是我尝试修改
+
+ArcticDB是由英国量化对冲基金Man AHL基于MongoDB开发的高性能金融时序数据库，其特点如下：
+- 支持直接存储pandas的DataFrame和numpy的nd.array对象；
 - 允许对数据进行版本化管理（类似于数据库中的git），便于因子挖掘过程中的数据迭代管理；
 - 基于分块化存储和LZ4压缩，在网络和磁盘IO方面节省大量资源，实现超高性能的数据查询。
 
-请注意，因为Arctic目前不支持Python3.10，所以VeighNa Studio 3.0.0没有提供Arctic支持。
 
-#### Artic配置字段
+#### Arctic配置字段
 
 | 字段名          | 值 | 是否必填 |
 |---------        |---- | ---- |
