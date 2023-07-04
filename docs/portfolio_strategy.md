@@ -767,7 +767,7 @@ PortfolioStrategy模块针对的是多标的投资组合类的量化策略，这
 
 * 入参：vt_symbol: str, direction: Direction, reference: float
 
-* 出参：pricetick: float
+* 出参：reference (源码里这么写的): float
 
 在策略里重载calculate_price函数，可以按需设定特定合约的目标价格（如固定价格超价、固定pricetick超价、百分比超价等）。
 

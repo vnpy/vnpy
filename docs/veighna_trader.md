@@ -237,4 +237,4 @@ C:\users\administrator\.vntrader\log
 
 ### 数据库
 
-以database为前缀的参数用于配置数据库服务。目前，VeighNa支持SQLite、MySQL、PostgreSQL、MongoDB、InfluxDB、DolphinDB、Arctic和LevelDB八种数据库。具体配置方法详见项目文档的数据库配置部分。
+以database为前缀的参数用于配置数据库服务。目前，VeighNa支持SQLite、MySQL、PostgreSQL、MongoDB、InfluxDB、DolphinDB、ArcticDB和LevelDB八种数据库。具体配置方法详见项目文档的数据库配置部分。

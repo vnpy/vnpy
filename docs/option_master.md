@@ -173,7 +173,7 @@ main_engine.add_app(OptionMasterApp)
   * 选择0，即为保持整体组合的Delta中性；
   * 选择正数，即为保持整体组合的Delta多头敞口；
   * 选择负数，即为保持整体组合的Delta空头敞口；
-* Delta范围：当仓位类型的Delta值偏离上述Delta目标超过多少时，触发对冲任务；
+* 对冲阈值：当仓位类型的Delta值偏离上述Delta目标超过多少时，触发对冲任务；
 * 委托超价：发出对冲委托时，价格相对于对面盘口的超价；
 
 点击【启动】按钮即可启动自动对冲功能，当读秒达到执行间隔时即会执行一次检查，如果满足条件则会启动TWAP算法执行对冲操作。
@@ -209,6 +209,8 @@ main_engine.add_app(OptionMasterApp)
 ## 波动率管理
 
 点击管理界面的【波动率管理】按钮，打开定价波动率管理界面：
+
+此处图片和文档已经过期，目前界面显示OTM隐波，CALL隐波，PUT隐波
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/option_master/11.png)
 
