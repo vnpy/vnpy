@@ -210,8 +210,6 @@ main_engine.add_app(OptionMasterApp)
 
 点击管理界面的【波动率管理】按钮，打开定价波动率管理界面：
 
-此处图片和文档已经过期，目前界面显示OTM隐波，CALL隐波，PUT隐波
-
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/option_master/11.png)
 
 点击顶部的期权链标签切换对应期权链的定价波动率管理组件，第一次打开时下方表格中的【定价隐波】数值均为0。
