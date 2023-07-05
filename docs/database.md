@@ -8,8 +8,8 @@ VeighNa Trader目前支持以下八种数据库：
 
 SQLite是一个轻量的嵌入式数据库，无需安装和配置数据服务程序，是VeighNa的**默认数据库**。适合入门新手用户，其特点如下：
  - 存储在一个单一的跨平台的磁盘文件上；
- - 不需要在系统中配置、安装和管理；
- - 不需要一个单独的服务器进程。
+ - 无需在系统中配置、安装和管理；
+ - 无需单独的服务器进程。
 
 #### SQLite配置字段
 
@@ -60,7 +60,7 @@ MySQL配置示例如下所示：
 
 ### PostgreSQL
 
-PostgreSQL是特性更为丰富的开源关系型数据库，只推荐熟手使用。相比于MySQL，其特点如下：
+PostgreSQL是特性更为丰富的开源关系型数据库，只推荐有经验的用户使用。相较MySQL，其特点如下：
  - 采用多进程结构；
  - 支持通过扩展插件来新增功能。
 
@@ -88,7 +88,7 @@ PostgreSQL配置示例如下所示：
 |database.user       | postgres |
 |database.password   | 123456 |
 
-请注意，VeighNa不会主动为关系型数据库创建数据库，所以请确保所填写的database.database字段对应的数据库已经创建好了。若未创建数据库，请手动连接数据库并运行该命令：
+请注意，VeighNa不会主动为关系型数据库创建数据库，所以请确保所填写的database.database字段对应的数据库已经创建好。若未创建数据库，请手动连接数据库并运行该命令：
 ```sql
     create database <填写的database.database>;
 ```
@@ -99,7 +99,7 @@ PostgreSQL配置示例如下所示：
 ### MongoDB
 
 MongoDB是一个基于分布式文件储存（bson格式）的非关系型数据库，其特点如下：
- - 面向文档存储，操作比较简单；
+ - 面向文档存储，操作较为简单；
  - 支持丰富的存储类型和数据操作；
  - 内置的热数据内存缓存实现更快的读写速度。
 
@@ -171,11 +171,10 @@ DolphinDB是浙江智臾科技有限公司研发的一款高性能分布式时�
 - 原生分区表存储，合理的分区方案可以让CPU多线程并行加载每个分区内的数据；
 - 支持高效的数据压缩，显著减小硬盘存储空间的同时，还能大幅降低IO通讯的开销。
 
-尽管DolphinDB是商业软件，但是也提供了免费的社区版，在安装时需要选择[2.0 Beta](https://github.com/dolphindb/release/blob/master/2.00/README.md)版本。
+尽管DolphinDB是商业软件，但也提供了免费的社区版，在安装时需要选择[2.0 Beta](https://github.com/dolphindb/release/blob/master/2.00/README.md)版本。
 
 请注意：
- - 运行dolphindb.exe的cmd需要保持运行，如果关闭则会导致DolphinDB退出，或者也可以使用一些辅助工具将其注册为后台运行的Windows服务；
- - 因为DolphinDB目前不支持Python3.10，所以VeighNa Studio 3.0.0没有提供DolphinDB支持。
+ - 运行dolphindb.exe的cmd需要保持运行，如果关闭则会导致DolphinDB退出，或者也可以使用一些辅助工具将其注册为后台运行的Windows服务。
 
 #### DolphinDB配置字段
 
@@ -203,14 +202,16 @@ DolphinDB配置示例如下所示：
 
 ### Arctic
 
-Arctic是由英国量化对冲基金Man AHL基于MongoDB开发的高性能金融时序数据库，其特点如下：
-- 支持直接存储pandas的DataFrame和numpy的ndaaray对象；
+Arctic已经不再更新。Man Group新出了一个叫ArcticDB的库。详情请见https://github.com/man-group/ArcticDB
+以下是我尝试修改
+
+ArcticDB是由英国量化对冲基金Man AHL基于MongoDB开发的高性能金融时序数据库，其特点如下：
+- 支持直接存储pandas的DataFrame和numpy的nd.array对象；
 - 允许对数据进行版本化管理（类似于数据库中的git），便于因子挖掘过程中的数据迭代管理；
 - 基于分块化存储和LZ4压缩，在网络和磁盘IO方面节省大量资源，实现超高性能的数据查询。
 
-请注意，因为Arctic目前不支持Python3.10，所以VeighNa Studio 3.0.0没有提供Arctic支持。
 
-#### Artic配置字段
+#### Arctic配置字段
 
 | 字段名          | 值 | 是否必填 |
 |---------        |---- | ---- |
@@ -232,7 +233,6 @@ LevelDB是由Google推出的高性能Key/Value数据库，其特点如下：
 - 基于LSM算法实现进程内存储引擎；
 - 支持数十亿级别的海量数据。
 
-请注意，因为LevelDB目前不支持Python3.10，所以VeighNa Studio 3.0.0没有提供LevelDB支持。
 
 #### LevelDB配置字段
 | 字段名            | 值 | 是否必填 |
@@ -271,12 +271,12 @@ LevelDB配置示例如下所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/database/6.png)
 
-安装过程中将会要求输入3次密码，这里为了方便演示，我们将密码设置为1001，请在自己安装的过程中使用更加复杂安全的密码。  
+安装过程中将会要求输入3次密码，为便于演示，这里将密码设置为1001，建议用户在自行安装过程中使用更复杂且安全的密码。  
 安装完毕后会自动打开MySQL的图形管理工具MySQL WorkBench，点击菜单栏【Database】->【Connect to Database】，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/database/7.png)
 
-在弹出的对话框中，直接选择默认数据库Local Instance MySQL，然后点击【OK】按钮连接MySQL数据库服务器。
+在弹出的对话框中，选择默认数据库Local Instance MySQL，然后点击【OK】按钮连接MySQL数据库服务器。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/database/8.png)
 
@@ -284,7 +284,7 @@ LevelDB配置示例如下所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/database/9.png)
 
-在之后弹出的数据库脚本执行确认对话框中，同样点击【Apply】即可，这样就完成了在MySQL WorkBench的所有操作。
+在后续弹出的数据库脚本执行确认对话框中，同样点击【Apply】即可，至此就完成了在MySQL WorkBench的所有操作。
 
 随后启动VeighNa Trader，点击菜单栏的【配置】，设置数据库相关字段：
 
@@ -313,7 +313,7 @@ LevelDB配置示例如下所示：
 
 ## 脚本使用
 
-脚本使用前，请先按照上文配置好使用的数据库, 使用时调用相应的函数接口。
+使用脚本前，需按照上文先配置好要使用的数据服务, 使用时调用相应的函数接口。
 
 ### 脚本加载
 
@@ -374,7 +374,7 @@ tick1 = database.load_tick_data(
 
 #### 数据库的写入操作
 
-请注意，示例中的**bar_data**和**tick_data**均未在示例中展现获取和转换方法。如需以脚本方式写入，请自行参考源码或其他途径，转换成示例中的数据结构。
+请注意，示例中**bar_data**和**tick_data**的获取和转换方法并未在示例中展示。如需以脚本方式写入，请自行参考源码或其他途径，转换成示例中的数据结构。
 
 ```python 3
 # 需要存入的k线数据，请自行获取并转换成所需的形式

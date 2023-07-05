@@ -24,19 +24,19 @@ pip install pyxll
 pyxll install
 ```
 
-接着按照软件要求就能成功安装了。
+接着按照软件要求即可成功安装。
 
 请注意，在执行到下图这一步时：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/excel_rtd/excel_rtd_9.png)
 
-如果没有具体指定路径，会安装到图中的默认位置（因为后面还需要进入这个文件夹，所以请记住这个路径）。
+如果没有具体指定路径，会安装到图中的默认位置（因为后面还需进入这个文件夹，请记住这个路径）。
 
 接着进入该目录下的examples目录，并把路径~/veighna_studio/Lib/site-packages/vnpy_excelrtd/下的vnpy_rtd.py放入该目录，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/excel_rtd/excel_rtd_5.png)
 
-如此就算正式安装完成了。
+如此就算正式安装完成。
 
 ## 加载启动
 
@@ -92,7 +92,7 @@ main_engine.add_app(ExcelRtdApp)
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/excel_rtd/16.png)
 
 ### 进阶应用
-当然，上面只是简单的展示了ExcelRtd模块的功能。至于具体获取哪些数据，以什么样的方式展示在excel上，则由用户根据自己的实际需求编写。这里提供几个进阶的案例，包括期货市场报价跟踪、市场深度行情跟踪以及价差监控：
+当然，上述内容仅简要展示了ExcelRtd模块的功能。根据实际需求，用户可自定义编写获取数据类型以及在Excel上的展示方式。以下将提供一些更深入的案例，包括期货市场报价跟踪、市场深度行情跟踪，以及价差监控：
 
 #### 期货市场报价跟踪
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/excel_rtd/excel_rtd_10.png)

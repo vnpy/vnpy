@@ -28,7 +28,7 @@ main_engine.add_app(SpreadTradingApp)
 
 <span id="jump">
 
-对于用户自行开发的策略，需要放到VeighNa Trader运行时目录下的**strategies**目录中，才能被识别加载。具体的运行时目录路径，可以在VeighNa Trader主界面顶部的标题栏查看。
+用户自行开发的策略需被放在VeighNa Trader运行时目录下的**strategies**文件夹中，才能被识别加载。具体的运行时目录路径，可以在VeighNa Trader主界面顶部的标题栏查看。
 
 对于在Windows上默认安装的用户来说，放置策略的strategies目录路径通常为：
 
@@ -90,7 +90,7 @@ main_engine.add_app(SpreadTradingApp)
 - 【A、B、C、D、E】
   - 包含构建价差合约的主动腿与被动腿，也可以引入不参与交易的定价腿，由合约代码、交易方向、交易乘数组成：
     - 合约代码为公式中的变量所对应的合约本地代码（vt_symbol）；
-    - 一般来说，价差交易原则上是主动腿完成交易后，立刻用被动腿进行对冲，故主动腿一般选择较为不活跃的合约，价格乘数和交易乘数均为正；被动腿一般选择较为活跃的合约，价格乘数和交易乘数均为负；
+    - 一般来说，价差交易原则上是主动腿完成交易后，立刻用被动腿进行对冲，故主动腿通常选择较为不活跃的合约，价格乘数和交易乘数均为正；被动腿一般选择较为活跃的合约，价格乘数和交易乘数均为负；
     - 不用的变量留空即可；
 
 设置好价差合约的参数后，点击下方的【创建价差】按钮，即可成功创建价差合约。
@@ -232,9 +232,9 @@ main_engine.add_app(SpreadTradingApp)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/12.png)
 
-策略监控组件顶部显示的是策略实例名、价差名、策略类名以及策略作者名（在策略里定义的author）。顶部按钮用于控制和管理策略实例，第一行表格显示了策略内部的参数信息（参数名需要写在策略的parameters列表中图形界面才会显示），第二行表格则显示了策略运行过程中的变量信息（变量名需要写在策略的variables列表中图形界面才会显示）。【inited】字段表示当前策略的初始化状态（是否已经完成了历史数据回放），【trading】字段表示策略当前是否能够开始交易。
+策略监控组件顶部显示的是策略实例名、价差名、策略类名以及策略作者名（策略中定义的author）。顶部按钮为策略实例的控制和管理工具，第一行表格展示策略内部参数信息（参数名需要写在策略的parameters列表中图形界面才会显示），第二行表格展示策略运行过程中的变量信息（变量名需要写在策略的variables列表中图形界面才会显示）。【inited】字段表示当前策略的初始化状态（是否完成历史数据回放），【trading】字段表示策略当前是否能够开始交易。
 
-从上图可观察到，此时该策略实例的【inited】和【trading】状态都为【False】。说明该策略实例还没有初始化，也还不能发出交易信号。
+由上图知，此时该策略实例的【inited】和【trading】状态都为【False】。说明该策略实例还未初始化，也还不能发出交易信号。
 
 策略实例创建成功后，该策略实例的配置信息会被保存到.vntrader文件夹下的spread_trading_strategy.json文件中。
 
@@ -242,18 +242,18 @@ main_engine.add_app(SpreadTradingApp)
 
 #### 初始化
 
-策略实例创建成功后，就可以对该实例进行初始化了。点击该策略实例下的【初始化】按钮，若初始化成功，则如下图所示：
+策略实例创建成功后，即可对该实例进行初始化。点击该策略实例下的【初始化】按钮，若初始化成功，则如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/23.png)
 
-可观察到此时该策略实例的【inited】状态已经为【True】。说明该策略实例已经调用过load_bar函数加载历史数据并完成初始化了。【trading】状态还是为【False】，说明此时该策略实例还不能开始自动交易。
+可观察到此时该策略实例的【inited】状态已经为【True】。说明该策略实例已经调用过load_bar函数加载历史数据并完成初始化。【trading】状态仍为【False】，则该策略实例此时还不能开始自动交易。
 #### 启动
 
 策略实例初始化成功，【inited】状态为【True】时，才能启动该策略的自动交易功能。点击该策略实例下的【启动】按钮，即可启动该策略实例。成功启动后，【日志】组件则会输出相应信息（请注意，策略启动并不代表算法启动，算法启动状态取决于策略逻辑），如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/13.png)
 
-此时，【算法】组件显示，test策略调用SpreadTaker算法，分别在-300和800的位子上挂上买入和卖出委托；由于实际价格没有达到这2个阈值，故委托一直挂着，其委托状态为【未成交】。
+此时，【算法】组件显示，test策略调用SpreadTaker算法，分别在-300和800的位置上挂上买入和卖出委托；由于实际价格没有达到这2个阈值，故委托一直挂着，其委托状态为【未成交】。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/14.png)
 
@@ -285,7 +285,7 @@ main_engine.add_app(SpreadTradingApp)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/30.png)
 
-但是策略实例的交易合约代码无法修改，同时修改完后也不会重新执行初始化操作。也请注意，此时修改的只是.vntrader文件夹下spread_trading_strategy.json文件中该策略实例的参数值，并没有修改原策略文件下的参数。
+但是策略实例的交易合约代码无法修改，同时修改后也不会重新执行初始化操作。请注意，此时修改的只是.vntrader文件夹下spread_trading_strategy.json文件中该策略实例的参数值，并没有修改原策略文件下的参数。
 
 修改前，json文件如下图所示：
 
@@ -344,7 +344,7 @@ main_engine.add_app(SpreadTradingApp)
 
 2. 自建策略的类名不要与示例策略的类名重合。如果重合了，图形界面上只会显示一个策略类名。
 
-目前，VeighNa官方提供两个价差策略，即BasicSpreadStrategy和StatisticalArbitrageStrategy。下面通过StatisticalArbitrageStrategy示例，来展示策略开发的具体步骤：
+目前，VeighNa官方提供两个价差策略示例，即BasicSpreadStrategy和StatisticalArbitrageStrategy。下面通过StatisticalArbitrageStrategy示例，来展示策略开发的具体步骤：
 
 在基于价差交易策略模板编写策略逻辑之前，需要在策略文件的顶部载入需要用到的内部组件，如下方代码所示：
 
@@ -433,7 +433,7 @@ ArrayManager的默认长度为100，如需调整ArrayManager的长度，可传�
 
 ### 价差策略引擎调用的函数
 
-SpreadStrategyTemplate中的update_setting函数、该函数后面四个以get开头的函数和后面两个以update开头的函数，都是价差策略引擎去负责调用的函数，一般在策略编写的时候是不需要调用的。
+SpreadStrategyTemplate中的update_setting函数后四个以get开头的函数和两个以update开头的函数，均为价差策略引擎去负责调用的函数，一般在策略编写中无需调用的时候。
 
 ### 策略的回调函数
 
@@ -460,7 +460,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 请注意，如果是基于Tick数据回测，请在此处调用load_tick函数。
 
-策略初始化时，策略的inited和trading状态都为【False】，此时只是调用ArrayManager计算并缓存相关的计算指标，不能发出交易信号。调用完on_init函数之后，策略的inited状态才变为【True】，策略初始化才完成。
+策略初始化时，策略的inited和trading状态都为【False】，此时只是调用ArrayManager计算并缓存相关的计算指标，不能发出交易信号。调用完on_init函数之后，策略的inited状态变为【True】，策略初始化才完成。
 
 **on_start**
 
@@ -541,7 +541,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 当策略收到最新的价差K线数据时（实盘时默认推进来的是基于Tick合成的一分钟的K线，回测时则取决于选择参数时填入的K线数据频率），on_spread_bar函数就会被调用。
 
-如果策略基于on_spread_bar推进来的K线交易，那么请把交易请求类函数都写在on_spread_bar函数下。示例策略类StatisticalArbitrageStrategy是通过1分钟K线数据回报来生成CTA信号的。一共有三部分，如下方代码所示：
+如果策略基于on_spread_bar推送的K线交易，那么请把交易请求类函数都写在on_spread_bar函数下。示例策略类StatisticalArbitrageStrategy是通过1分钟K线数据回报来生成CTA信号的。一共有三部分，如下方代码所示：
 
 ```python 3
     def on_spread_bar(self, bar: BarData):
@@ -593,9 +593,9 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
         self.put_event()
 ```
 
-- 清空未成交委托：为了防止之前下的单子在上1分钟没有成交，但是下1分钟可能已经调整了价格，就用stop_all_algos()方法立刻撤销之前未成交的所有委托，保证策略在当前这1分钟开始时的整个状态是清晰和唯一的；
+- 清空未成交委托：为防止之前挂出的单子在上1分钟没有成交，但在下1分钟可能已经调整了价格，就用stop_all_algos()方法立刻撤销之前未成交的所有委托，保证策略在当前这1分钟开始时的整个状态是清晰且唯一的；
 
-- 调用K线时间序列管理模块：基于最新的1分钟价差K线数据来计算相应的技术指标，如布林带通道上下轨等。首先获取ArrayManager对象，然后将收到的K线推送进去，检查ArrayManager的初始化状态，如果还没初始化成功就直接返回，没有必要去进行后续的交易相关的逻辑判断。因为很多技术指标计算对最少K线数量有要求，如果数量不够的话计算出来的指标会出现错误或无意义。反之，如果没有return，就可以开始计算技术指标了；
+- 调用K线时间序列管理模块：基于最新的1分钟价差K线数据来计算相应的技术指标，如布林带通道上下轨等。首先获取ArrayManager对象，然后将收到的K线推送进去，检查ArrayManager的初始化状态，如果还没初始化成功就直接返回，则没有必要去进行后续的交易相关的逻辑判断。因为很多技术指标计算对最少K线数量有要求，如果数量不够的话计算出来的指标会出现错误或无意义。反之，如果没有直接返回，就可以开始计算技术指标了；
 
 - 信号计算：通过持仓的判断以及结合布林带通道在通道突破点挂出委托，同时设置离场点。
   
@@ -603,7 +603,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 #### 委托状态更新
 
-以下函数在策略中几乎都可以直接pass，其具体逻辑应用交给回测/实盘引擎负责。
+以下函数在策略中几乎都可以直接跳过，其具体逻辑应用交给回测/实盘引擎负责。
 
 **on_spread_pos**
 
@@ -660,9 +660,9 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 * 出参：algoid: str
 
-与CTA策略模块不同，价差交易的示例策略都是通过调用star_long_algo/start_short_algo函数（针对价差）而不是buy/sell/short/cover函数（针对特定合约）来发出委托的。在价差交易模块中，算法负责价差交易的执行，策略负责价差算法的调度。价差算法将价差交易简化为了普通委托，封装掉了所有主动腿下单和被动腿对冲的细节。
+与CTA策略模块不同，价差交易的示例策略都是通过调用star_long_algo/start_short_algo函数（针对价差）而不是buy/sell/short/cover函数（针对特定合约）来发出委托的。在价差交易模块中，算法负责价差交易的执行，策略负责价差算法的调度。价差算法将价差交易简化为普通委托，封装了所有主动腿下单和被动腿对冲的细节。
 
-以下方star_long_algo函数的代码为例，可以看到，价格、数量、超价的数值、时间间隔是必填的参数，锁仓转换和开平方向则分别默认为False和Offset.NONE。也可以看到，函数内部收到传进来的参数之后就调用了SpreadStrategyTemplate里的start_algo函数来发单（因为是long指令，则自动把方向填成了LONG）
+以下方star_long_algo函数的代码为例，可以看到，价格、数量、超价的数值、时间间隔是必填的参数，锁仓转换和开平方向则分别默认为False和Offset.NONE。同时，函数内部收到传入的参数后就调用了SpreadStrategyTemplate里的start_algo函数来发单（因为是long指令，则自动把方向填成了LONG）
 
 ```python 3
      def start_long_algo(
@@ -722,11 +722,11 @@ stop_algo和stop_all_algos都是负责停止价差算法的交易请求类函数
 
 * 出参：vt_orderids: List[vt_orderid] / 无 
 
-buy/sell/short/cover都是策略内部的负责针对特定合约发出底层交易委托的请求类函数。策略可以通过这些函数给价差策略引擎发送交易信号来达到下单的目的。
+buy/sell/short/cover都是策略内部负责针对特定合约发出底层交易委托的请求类函数。策略可以通过这些函数给价差策略引擎发送交易信号来达到下单的目的。
 
 以下方buy函数的代码为例，可以看到，本地代码、价格和数量是必填的参数，锁仓转换则默认为False。也可以看到，函数内部收到传进来的参数之后就调用了SpreadStrategyTemplate里的send_order函数来发单（因为是buy指令，则自动把方向填成了LONG，开平填成了OPEN）
 
-如果lock设置为True，那么该笔订单则会进行锁仓委托转换（在有今仓的情况下，如果想平仓，则会先平掉所有的昨仓，然后剩下的部分都进行反向开仓来代替平今仓，以避免平今的手续费惩罚）。
+如果lock设置为True，则该笔订单会进行锁仓委托转换（在有今仓的情况下，如果想平仓，会先平掉所有的昨仓，然后余量进行反向开仓来代替平今仓，以避免平今的手续费惩罚）。
 
 ```python 3
     def buy(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
@@ -832,7 +832,7 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 在策略中调用load_bar函数，可以在策略初始化时加载价差K线数据。
 
-如下方代码所示，load_bar函数调用时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据。在回测时，10天指的是10个交易日，而在实盘时，10天则是指的是自然日，因此建议加载的天数宁可多一些也不要太少。加载时会先依次尝试通过交易接口、数据服务、数据库获取历史数据，直到获取历史数据或返回空。
+如下方代码所示，load_bar函数调用时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据。在回测时，10天指的是10个交易日，而在实盘时，10天则是指的是自然日，因此建议加载的天数宁多勿少。加载时会先依次尝试通过交易接口、数据服务、数据库获取历史数据，直到获取历史数据或返回空。
 
 请注意，回测期内每条腿的K线数据（1分钟最佳），若有某条腿缺失一段，则所有腿的这一段数据都会被弃用。
 

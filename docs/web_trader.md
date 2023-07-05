@@ -13,10 +13,10 @@ WebTrader采用了FastAPI作为后端服务器，支持REST主动请求调用和
 后端服务包括两个独立的进程：
 - 策略交易进程
   - 运行VeighNa Trader的进程，负责所有策略交易功能的运行；
-  - 启动了RpcServer用于对Web服务进程功能调用；
+  - 启动RpcServer用于对Web服务进程功能调用；
 - Web服务进程
-  - 运行了FastAPI的进程，负责对外提供Web访问的服务；
-  - 启动了RpcClient用于调用策略交易进程的相关功能。
+  - 运行FastAPI的进程，负责对外提供Web访问的服务；
+  - 启动RpcClient用于调用策略交易进程的相关功能。
 
 从网页端到策略交易进程的双向通讯模式包括：
 - 主动请求调用（订阅行情、挂撤单、查询数据）
@@ -158,7 +158,7 @@ r = requests.delete(
     headers={"Authorization": "Bearer " + token}
 )
 ```
-如果想将之前下的委托撤销，可以发送主动请求，结果同样会在图形化界面更新，如下图所示：
+如果需要撤销先前下达的委托，可以主动发送撤销请求，操作结果同样会在图形化界面更新，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_7.png)
 
@@ -181,6 +181,6 @@ ws.close()
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_8.png)
 
 ## 后续计划
-WebTrader仅实现了Web应用的后端（提供了浏览器访问数据的接口），而前端页面（也就是浏览器中看到的网页）则按照之前的计划交给社区用户来实现，欢迎大家贡献代码。
+WebTrader仅实现了Web应用的后端（提供了浏览器访问数据的接口），而前端页面（即浏览器中看到的网页）则按之前的计划交给社区用户来实现，欢迎大家贡献代码。
 
-同时WebTrader目前只支持基础的手动交易功能，后续将会逐渐加上策略交易应用相关的管理功能（比如CtaStrategy的相关调用）。
+同时WebTrader目前只支持基础的手动交易功能，后续将会逐步增加策略交易应用相关的管理功能（比如CtaStrategy的相关调用）。
