@@ -16,19 +16,19 @@ class BaseDatafeed(ABC):
         """
         Initialize datafeed service connection.
         """
-        pass
+        output("当前没有配置数据服务，无法进行查询，请在全局配置中修改datafeed相关信息")
 
     def query_bar_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[BarData]]:
         """
         Query history bar data.
         """
-        pass
+        output("当前没有配置数据服务，无法进行查询，请在全局配置中修改datafeed相关信息")
 
     def query_tick_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[TickData]]:
         """
         Query history tick data.
         """
-        pass
+        output("当前没有配置数据服务，无法进行查询，请在全局配置中修改datafeed相关信息")
 
 
 datafeed: BaseDatafeed = None
@@ -48,10 +48,14 @@ def get_datafeed() -> BaseDatafeed:
     # Try to import datafeed module
     try:
         module: ModuleType = import_module(module_name)
-    except ModuleNotFoundError:
-        print(f"找不到数据服务驱动{module_name}，使用默认的RQData数据服务")
-        module: ModuleType = import_module("vnpy_rqdata")
 
-    # Create datafeed object from module
-    datafeed = module.Datafeed()
+        # Create datafeed object from module
+        datafeed = module.Datafeed()
+
+    except ModuleNotFoundError:
+        if datafeed_name:
+            print(f"找不到数据服务驱动{module_name}")
+
+        datafeed = BaseDatafeed()
+
     return datafeed
