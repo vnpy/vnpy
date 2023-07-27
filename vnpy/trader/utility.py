@@ -205,7 +205,7 @@ class BarGenerator:
 
         self.daily_end: time = daily_end
         if self.interval == Interval.DAILY and not self.daily_end:
-            raise RuntimeError("必须填写日线结束时间")
+            raise RuntimeError("合成日K线必须传入每日收盘时间")
 
     def update_tick(self, tick: TickData) -> None:
         """
@@ -435,11 +435,10 @@ class BarGenerator:
         """"""
         # If not inited, create daily bar object
         if not self.daily_bar:
-            dt: datetime = bar.datetime
             self.daily_bar = BarData(
                 symbol=bar.symbol,
                 exchange=bar.exchange,
-                datetime=dt,
+                datetime=bar.datetime,
                 gateway_name=bar.gateway_name,
                 open_price=bar.open_price,
                 high_price=bar.high_price,
@@ -464,8 +463,14 @@ class BarGenerator:
 
         # Check if daily bar completed
         if bar.datetime.time() == self.daily_end:
-            self.daily_bar.datetime = bar.datetime.replace(hour=0, minute=0, second=0, microsecond=0)
+            self.daily_bar.datetime = bar.datetime.replace(
+                hour=0,
+                minute=0,
+                second=0,
+                microsecond=0
+            )
             self.on_window_bar(self.daily_bar)
+
             self.daily_bar = None
 
     def generate(self) -> Optional[BarData]:
