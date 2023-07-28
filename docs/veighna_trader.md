@@ -9,7 +9,7 @@
 
 ### 脚本模式
 
-在文件夹examples/vn_trader中找到run.py文件(不是veighna_studio下的，需要在github上下载源码）。运行run.py即可进入VeighNa Trader。
+在文件夹examples/veighna_trader中找到run.py文件(不是veighna_studio下的，需要在github上下载源码）。运行run.py即可进入VeighNa Trader。
 
 - 以Win10系统为例，用户可在run.py所在文件夹内按住【Shift】，同时点击鼠标右键，选择【在此处打开 powershell 窗口】，在弹出窗口中，输入如下命令，即可启动VeighNa Trader。
    ```bash
