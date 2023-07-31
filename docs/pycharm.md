@@ -88,6 +88,10 @@ PyCharm 是JetBrains公司研发，用于开发Python的IDE开发工具。其带
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/15.png)
 
+点击项目界面右下角的python解释器，会弹出Settings窗口，可以看到对应Python下安装的包的版本号，以及最新版本号。版本号前有升级符号的包，说明当前版本不是最新版，点击升级按钮即可进行升级（VeighNa Studio是一站式打包的Python环境，不建议用户手动升级安装的包到最新版，可能会出现版本冲突）。
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/49.png)
+
 ### PyCharm运行启动脚本
 
 在文件夹examples/veighna_trader中找到run.py文件（不是VeighNa Studio下的，需要在GitHub上下载源码），将其放置于trader文件夹下，则可在项目中看见run.py文件，如下图所示：
