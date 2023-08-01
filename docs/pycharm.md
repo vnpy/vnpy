@@ -53,11 +53,11 @@ PyCharm 是JetBrains公司研发，用于开发Python的IDE开发工具。其带
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/7.png)
 
-点击右侧Add Interpreter下拉框中的【Add Local Interpreter】，在弹出的添加Python解释器窗口中选择【System Interpreter】标签，选择VeighNa Studio自带python的路径，如下图所示：
+点击右侧Add Interpreter下拉框中的【Add Local Interpreter】，在弹出的添加Python解释器窗口中选择【System Interpreter】标签，选择VeighNa Studio自带Python的路径，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/8.png)
 
-- 文档示例是基于VeighNa Studio示范的。若是在Conda上进行了手动安装，也需选择对应的python解释器，如下图所示：
+- 文档示例是基于VeighNa Studio示范的。若是在Conda上进行了手动安装，也需选择对应的Python解释器，如下图所示：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/24.png)
 
 点击“OK”保存解释器配置，回到新项目窗口中，点击“Create”创建新项目，如下图所示：
@@ -72,7 +72,7 @@ PyCharm 是JetBrains公司研发，用于开发Python的IDE开发工具。其带
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/11.png)
 
-点击site_packages文件夹，可以看见python环境中安装的包，如下图所示：
+点击site_packages文件夹，可以看见Python环境中安装的包，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/12.png)
 
@@ -84,11 +84,11 @@ PyCharm 是JetBrains公司研发，用于开发Python的IDE开发工具。其带
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/14.png)
 
-若按住Ctrl再点击用鼠标左键代码（Ctrl+B与其效果一致），则会跳转到代码的声明部分，如下图所示：
+若按住Ctrl再用鼠标左键点击代码（Ctrl+B与其效果一致），则会跳转到代码的声明部分，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/15.png)
 
-点击项目界面右下角的python解释器，会弹出Settings窗口，可以看到对应Python下安装的包的版本号，以及最新版本号。版本号前有升级符号的包，说明当前版本不是最新版，点击升级按钮即可进行升级（VeighNa Studio是一站式打包的Python环境，不建议用户手动升级安装的包到最新版，可能会出现版本冲突）。
+点击项目界面右下角的Python解释器，会弹出Settings窗口，可以看到对应Python下安装的包的版本号，以及最新版本号。版本号前有升级符号的包，说明当前版本不是最新版，点击升级按钮即可进行升级（VeighNa Studio是一站式打包的Python环境，不建议用户手动升级安装的包到最新版，可能会出现版本冲突）。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/49.png)
 
@@ -136,9 +136,7 @@ PyCharm 是JetBrains公司研发，用于开发Python的IDE开发工具。其带
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/25.png)
 
-在创建成功的backtest.py中写一段策略回测的代码（可参考vnpy项目源码文件夹examples/cta_backtesting中的backtesting_demo内容）。
-
-在想要调试的地方打上断点，如下图所示：
+在创建成功的backtest.py中写一段策略回测的代码（可参考vnpy项目源码文件夹examples/cta_backtesting中的backtesting_demo内容），在想要调试的地方打上断点，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/26.png)
 
@@ -210,7 +208,7 @@ PyCharm 是JetBrains公司研发，用于开发Python的IDE开发工具。其带
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/44.png)
 
-##### .vntrader文件夹相关拓展
+#### .vntrader文件夹相关拓展
 
 VeighNa Trader的配置和运行是通过.vntrader文件夹来维护的。
 
@@ -220,7 +218,7 @@ VeighNa Trader的配置和运行是通过.vntrader文件夹来维护的。
 
 此时启动的VeighNa Trader是一个由新创建的.vntrader文件夹配置信息控制，独立于用户目录下配置信息启动运行的环境。这样的启动方式能够隔离同一接口不同账户的配置信息，在开源版本的基础上提供多账户的支持。
 
-**使用默认SQLite回测常见问题**
+##### 使用默认SQLite回测常见问题
 
 之前经常有使用自带数据库**SQLite**的用户反馈，在图形界面启动可以顺利回测，通过脚本回测加载出来的历史数据量为0，没有成交记录。
 
@@ -246,9 +244,50 @@ VeighNa Trader的配置和运行是通过.vntrader文件夹来维护的。
 
 因为此时回测脚本是去用户目录下.vntrader文件夹下的database.db里读取的数据（之前保存过）。
 
+#### 封装C++API回调函数调试拓展
+
+一般情况下，PyCharm只能对Python代码进行调整，没有办法直接调试pyd。之前部分用户也反映过在调试C++接口的时候没有办法对封装API的回调函数打断点的问题，这是因为调试时非Python的线程没有设置调试机制导致的。
+
+在项目界面点击点击鼠标右键，选择【New】-【File】, 创建geteway_test.py。
+
+在创建成功的geteway_test中写一段脚本策略的代码（可参考vnpy项目源码文件夹examples/notebook_trading中的demo_notebook内容），按住Ctrl再用鼠标左键点击代码“CtpGateway”转至ctp_gateway的源码中，在想要调试的回调函数内打上断点（请勿打在函数定义那一行），如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/50.png)
+
+回到gateway_test脚本的页面，点击鼠标右键选择【Debug 'gateway_test'】, 即可开始调试脚本，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/51.png)
+
+ - 请注意，如果用load_json函数读取connect_ctp.json，请确保读取对应.vntrader文件夹的json文件中配置了CTP账户登录信息。
+
+此时可观察到并没有进入之前设定的断点，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/52.png)
+
+停止调试，再次跳转到之前设定的断点处，在回调函数内，断点前添加以下代码：
+
+```Python 3
+import pydevd
+pydevd.settrace(suspend=False, trace_only_current_thread=True)
+```
+
+请注意：
+ - pydevd是PyCharm自带的调试插件，没有安装在Python解释器所在的Python环境里
+ - suspend参数设置为True之后，调试会在这一句代码运行完之后暂停，而不是停在断点处。
+trace_only_current_thread参数设置为True之后，调试过程中只会监控当前线程
+ - 调试结束之后不要忘记删掉这段代码
+
+然后再重新调试脚本，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/53.png)
+
+此时可以看到项目界面下方的窗口开始输出信息并停在设置的断点处了。底部左边显示的是线程信息（可以看到多了一个Dummy线程显示），右边显示的是变量信息（可以看到回调函数的入参），如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/54.png)
+
 
 ## PyCharm V.S VS Code
 
-1. PyCharm 每个项目都需要对python环境进行配置，VS Code是通过图形界面右下角的Python解释器来选择python环境的（针对所有打开的文件）；
+1. PyCharm 每个项目都需要对Python环境进行配置，VS Code是通过图形界面右下角的Python解释器来选择Python环境的（针对所有打开的文件）；
 
 2. PyCharm Community 只提供了Jupyter只读支持，VS Code Community可以编辑和运行Jupyter脚本。
