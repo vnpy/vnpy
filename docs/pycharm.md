@@ -225,8 +225,8 @@ pydevd.settrace(suspend=False, trace_only_current_thread=True)
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/54.png)
 
 
-## 和VS Code的对比
+## 对比VS Code
 
-1. PyCharm 每个项目都需要对Python环境进行配置，VS Code是通过图形界面右下角的Python解释器来选择Python环境的（针对所有打开的文件）；
+1. 在PyCharm中，每个项目都需要对Python环境进行配置。在VS Code中，默认通过窗口右下角的Python解释器来选择全局的Python环境（针对所有打开的文件）；
 
-2. PyCharm Community 只提供了Jupyter只读支持，VS Code可以编辑和运行Jupyter脚本。
+2. PyCharm的Community版仅对Jupyter提供了只读支持，需要Professional版才能编辑和运行。VS Code仅需安装功能插件，就可以使用和Jupyter相关全部功能（包括读取、编辑、运行）。
