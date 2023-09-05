@@ -1,3 +1,33 @@
+# 3.8.0版本
+
+## 新增
+
+1. 基于华鑫奇点柜台的C++ API重构vnpy_tora，实现VeighNa Station加载支持
+
+
+## 调整
+
+1. vnpy_rest/vnpy_websocket限制在Windows上改为必须使用Selector事件循环
+2. vnpy_rest/vnpy_websocket客户端关闭时确保所有会话结束，并等待有异步任务完成后安全退出
+3. vnpy_ctp升级6.6.9版本API
+4. vnpy_ctp支持大商所的1毫秒级别行情时间戳
+5. vnpy_tqsdk过滤不支持的K线频率查询并输出日志
+6. vnpy_datamanager增加数据频率下按交易所显示支持，优化数据加载显示速度
+7. vnpy_ctabacktester如果加载的历史数据为空，则不执行后续回测
+8. vnpy_spreadtrading采用轻量级数据结构，优化图形界面更新机制
+9. vnpy_spreadtrading价差子引擎之间的事件推送，不再经过事件引擎，降低延迟水平
+10. vnpy_rpcservice增加对下单返回委托号的gateway_name替换处理
+11. vnpy_portfoliostrategy策略模板增加引擎类型查询函数get_engine_type
+12  vnpy_sec更新行情API至1.6.45.0版本，更新交易API版本至1.6.88.18版本
+
+## 修复
+
+1. 修复vnpy_datarecorder对于新版本vnpy_spreadtrading价差数据的录制支持
+2. 修复vnpy_algotrading条件委托算法StopAlgo全部成交后状态更新可能缺失的问题
+3. 修复vnpy_ctastrategy策略初始化时，历史数据重复推送调用on_bar的问题
+
+
+
 # 3.7.0版本
 
 ## 新增
