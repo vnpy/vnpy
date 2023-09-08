@@ -183,6 +183,24 @@ class TimeCell(BaseCell):
         self._data = data
 
 
+class DateCell(BaseCell):
+    """
+    Cell used for showing date string from datetime object.
+    """
+
+    def __init__(self, content: Any, data: Any) -> None:
+        """"""
+        super().__init__(content, data)
+
+    def set_content(self, content: Any, data: Any) -> None:
+        """"""
+        if content is None:
+            return
+
+        self.setText(content.strftime("%Y-%m-%d"))
+        self._data = data
+
+
 class MsgCell(BaseCell):
     """
     Cell used for showing msg data.
@@ -1047,6 +1065,10 @@ class ContractManager(QtWidgets.QWidget):
         "size": "合约乘数",
         "pricetick": "价格跳动",
         "min_volume": "最小委托量",
+        "option_portfolio": "期权产品",
+        "option_expiry": "期权到期日",
+        "option_strike": "期权行权价",
+        "option_type": "期权类型",
         "gateway_name": "交易接口",
     }
 
@@ -1110,9 +1132,15 @@ class ContractManager(QtWidgets.QWidget):
 
         for row, contract in enumerate(contracts):
             for column, name in enumerate(self.headers.keys()):
-                value = getattr(contract, name)
+                value: object = getattr(contract, name)
+
+                if value in {None, 0, 0.0}:
+                    value = ""
+
                 if isinstance(value, Enum):
                     cell: EnumCell = EnumCell(value, contract)
+                elif isinstance(value, datetime):
+                    cell: DateCell = DateCell(value, contract)
                 else:
                     cell: BaseCell = BaseCell(value, contract)
                 self.contract_table.setItem(row, column, cell)
