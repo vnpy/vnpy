@@ -1,5 +1,5 @@
 # VeighNa - By Traders, For Traders.
-
+【个人策略在dev分支】
 <p align="center">
   <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/veighna-logo.png"/>
 </p>
