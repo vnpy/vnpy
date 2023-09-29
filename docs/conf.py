@@ -19,14 +19,14 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'vnpy'
-copyright = '2019 - 2022, VeighNa Team'
-author = 'VeighNa Team'
+project = 'VeighNa'
+copyright = '2015 - 2023, 上海韦纳软件科技有限公司'
+author = '上海韦纳软件科技有限公司'
 
 # The short X.Y version
-version = '2.0.3'
+version = '2023.9.29'
 # The full version, including alpha/beta/rc tags
-release = '2.0.3'
+release = '2023.9.29'
 
 # -- General configuration ---------------------------------------------------
 
