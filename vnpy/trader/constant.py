@@ -79,6 +79,7 @@ class Exchange(Enum):
     Exchange.
     """
     # Chinese
+    BINANCE = "BINANCE"
     CFFEX = "CFFEX"         # China Financial Futures Exchange
     SHFE = "SHFE"           # Shanghai Futures Exchange
     CZCE = "CZCE"           # Zhengzhou Commodity Exchange
