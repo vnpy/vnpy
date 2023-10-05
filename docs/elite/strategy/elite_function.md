@@ -1,4 +1,4 @@
-# 计算函数
+# 指标计算函数
 
 VeighNa Elite Trader的CTA策略模块内置了以下计算函数供策略调用：
 
