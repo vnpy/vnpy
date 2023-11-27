@@ -8,6 +8,8 @@
 
 1. vnpy_sopt升级6.7.0版本API
 2. vnpy_portfoliostrategy回测引擎支持交易日参数annual_days
+3. K线合成器（BarGenerator）移除对于Tick时间戳的检查过滤逻辑，交由用户层负责控制过滤
+
 
 
 # 3.8.0版本
