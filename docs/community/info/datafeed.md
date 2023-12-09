@@ -10,9 +10,17 @@
 
 以上字段对于所有数据服务都是必填的，如果是token方式授权请填写在datafeed.password字段中。目前VeighNa Trader支持以下七种数据服务，**具体每个数据服务的细节可在对应的项目地址中找到**。
 
+## 迅投研
+
+迅投研是由睿智融科公司推出的专业数据服务，对于大部分个人投资者来说应该都是性价比比较高的选择：
+- 项目地址：[vnpy_xt](https://github.com/vnpy/vnpy_xt)
+- 数据分类：股票、期货、期权、基金、合约信息、财务信息
+- 数据周期：日线、小时线、分钟线、TICK（实时更新）
+- 注册申请：[迅投研](https://xuntou.net/#/signup?utm_source=vnpy)
+
 ## RQData
 
-米筐RQData一直以来都是VeighNa官方团队长期推荐的数据服务，对于大部分个人投资者来说应该都是性价比比较高的选择：
+米筐RQData是由米筐科技公司推出的云端数据服务，提供了广泛的国内金融市场品种数据支持：
 - 项目地址：[vnpy_rqdata](https://github.com/vnpy/vnpy_rqdata)
 - 数据分类：股票、期货、期权、基金和黄金TD
 - 数据周期：日线、小时线、分钟线、TICK（实时更新）
