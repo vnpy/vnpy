@@ -3,13 +3,35 @@
 ## 新增
 
 1. 迅投研数据服务vnpy_xt，支持股票、期货、期权、债券、基金历史数据获取
+2. vnpy_ib增加对CBOE和CBOT交易所的支持、对指数期权的支持
+3. vnpy_rqdata增加对于88A2连续次主力合约的支持
+4. vnpy_wind增加广期所和上期能源交易所的数据支持
 
 ## 调整
 
-1. vnpy_sopt升级6.7.0版本API
+1. vnpy_sopt升级3.7.0版本API
 2. vnpy_portfoliostrategy回测引擎支持交易日参数annual_days
 3. K线合成器（BarGenerator）移除对于Tick时间戳的检查过滤逻辑，交由用户层负责控制过滤
+4. vnpy_ib收到期权合约数据后，自动查询其切片行情数据
+5. vnpy_paperaccount实现对于IB接口合约的特殊路由处理
+6. 接口封装升级更新pybind11到2.11.1版本：vnpy_ctp、vnpy_sopt、vnpy_tora
+7. vnpy_ctp过滤不支持的委托状态推送
+8. vnpy_mysql兼容无数据库写入权限情况下的数据表初始化
+9. vnpy_chartwizard支持关闭单个图表标签页
+10. vnpy_portfoliostrategy移除策略后同时清除对应的策略状态缓存数据
+11. vnpy_portfoliostrategy调整每日盈亏清算对象开盘持仓数据的初始化方式
+12. 策略模块遗传优化函数增加ngen_size和max_workers参数
+13. vnpy_cta
 
+
+## 修复
+
+1. 修复vnpy_tora接口中的委托部分撤单状态映射缺失
+2. 修复vnpy_wind查询日线历史数据时数值存在NaN的问题
+3. 修复vnpy_mongodb的Tick汇总数据的条数统计错误
+4. 修复vnpy_chartwizard对于升级后的vnpy_spreadtrading价差行情显示问题
+5. 修复vnpy_ctastrategy回测成交记录为空时的报错
+6. 修复vnpy_ctastrategy策略初始化时，历史数据重复推送调用on_bar的问题
 
 
 # 3.8.0版本
