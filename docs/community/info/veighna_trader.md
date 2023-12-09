@@ -218,6 +218,7 @@ C:\users\administrator\.vntrader\log
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/17.png)
 
 目前支持七种datafeed：
+- [XT]
 - [RQData]
 - [Udata]
 - [TuShare]
@@ -226,6 +227,7 @@ C:\users\administrator\.vntrader\log
 - [iFinD]
 - [Tinysoft]
 
+[XT]:https://github.com/vnpy/vnpy_xt
 [RQData]:https://github.com/vnpy/vnpy_rqdata
 [Udata]: https://github.com/vnpy/vnpy_udata
 [TuShare]: https://github.com/vnpy/vnpy_tushare
