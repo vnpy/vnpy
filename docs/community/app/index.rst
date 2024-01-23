@@ -21,3 +21,4 @@
    portfolio_manager.md
    excel_rtd.md
    web_trader.md
+   i18n.md
