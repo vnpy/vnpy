@@ -21,7 +21,6 @@
 10. vnpy_portfoliostrategy移除策略后同时清除对应的策略状态缓存数据
 11. vnpy_portfoliostrategy调整每日盈亏清算对象开盘持仓数据的初始化方式
 12. 策略模块遗传优化函数增加ngen_size和max_workers参数
-13. vnpy_cta
 
 
 ## 修复
