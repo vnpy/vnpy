@@ -319,7 +319,7 @@ LevelDB配置示例如下所示：
 
 #### 在脚本中加载所需的包和数据结构
 
-```python 3
+```python3
 from datetime import datetime
 from typing import List
 from vnpy.trader.constant import Exchange, Interval
@@ -332,7 +332,7 @@ database = get_database()
 
 #### 配置所需合约的具体参数数据
 
-```python 3
+```python3
 # 合约代码，888为米筐的连续合约，仅用于示范，具体合约代码请根据需求自行更改
 symbol = "cu888"
 
@@ -353,7 +353,7 @@ interval = Interval.DAILY
 
 如数据库指定时间段没有数据，返回空列表
 
-```python 3
+```python3
 # 读取数据库中k线数据
 bar1 = database.load_bar_data(
     symbol=symbol,
@@ -376,7 +376,7 @@ tick1 = database.load_tick_data(
 
 请注意，示例中的**bar_data**和**tick_data**均未在示例中展现获取和转换方法。如需以脚本方式写入，请自行参考源码或其他途径，转换成示例中的数据结构。
 
-```python 3
+```python3
 # 需要存入的k线数据，请自行获取并转换成所需的形式
 bar_data: List[BarData] = None
 
@@ -393,7 +393,7 @@ database.save_tick_data(tick_data)
 
 无法恢复，请谨慎操作
 
-```python 3
+```python3
 # 删除数据库中k线数据
 database.delete_bar_data(
     symbol=symbol,

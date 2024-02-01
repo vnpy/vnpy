@@ -15,34 +15,34 @@
 
 1. 前往Python官网下载3.10版本的安装包（或者使用brew安装），安装完成后在终端（Terminal）中运行命令：
 
-```python 3
+```python3
 python3
 ```
 检查确认打开的Python解释器为3.10版本。
 
 2. 使用brew安装TA-Lib的C++开发包：
 
-```python 3
+```python3
 brew install ta-lib
 ```
 
 3. 安装NumPy和TA-Lib（Python），这里推荐使用豆瓣PyPI镜像解决官方源访问困难的问题：
 
-```python 3
+```python3
 python3 -m pip install numpy --index=https://pypi.doubanio.com/simple
 python3 -m pip install ta-lib==0.4.24 --index=https://pypi.doubanio.com/simple
 ```
 
 4. 安装米筐RQData客户端，注意这里使用的是米筐PyPI源：
 
-```python 3
+```python3
 python3 -m pip install rqdatac --index=https://pypi2.ricequant.com/simple
 ```
 
 5. 安装VeighNa核心框架，以及需要使用的功能插件模块：
 
 
-```python 3
+```python3
 python3 -m pip install vnpy --index=https://pypi.doubanio.com/simple
 python3 -m pip install vnpy_ctastrategy vnpy_ctabacktester vnpy_datamanager vnpy_sqlite vnpy_rqdata --index=https://pypi.doubanio.com/simple
 ```
@@ -57,7 +57,7 @@ pip安装过程中如果出现报错某些依赖库的缺失，可以尝试先pi
 
 6. 安装CTP交易接口模块：
 
-```python 3
+```python3
 python3 -m pip install vnpy_ctp --index=https://pypi.doubanio.com/simple
 ```
 
@@ -65,7 +65,7 @@ python3 -m pip install vnpy_ctp --index=https://pypi.doubanio.com/simple
 
 完成后即可使用run.py脚本启动VeighNa Trader：
 
-```python 3
+```python3
 from vnpy.event import EventEngine
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import MainWindow, create_qapp

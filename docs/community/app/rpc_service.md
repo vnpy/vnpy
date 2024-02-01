@@ -16,7 +16,7 @@ RpcService是用于**将VeighNa Trader进程转化为RPC服务器**的功能模�
 
 在启动脚本中添加如下代码：
 ›
-```python 3
+```python3
 # 写在顶部
 from vnpy_rpcservice import RpcServiceApp
 

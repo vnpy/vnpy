@@ -16,7 +16,7 @@ AlgoTrading是用于**算法委托执行交易**的模块，用户可以通过�
 
 在启动脚本中添加如下代码：
 
-```python 3
+```python3
 # 写在顶部
 from vnpy_algotrading import AlgoTradingApp
 

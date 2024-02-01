@@ -49,7 +49,7 @@ PR流程大致如下：
 * 常量使用大写加下划线的形式
 
 例如：
-```python 3
+```python3
 DEFAULT_PATH = "/tmp/VeighNa/"
 class ClassA:
     def __init__(self, arg_one: int, arg_two: str):

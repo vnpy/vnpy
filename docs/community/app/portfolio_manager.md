@@ -16,7 +16,7 @@ PortfolioManager是用于**投资组合管理**的功能模块，用户可以在
 
 在启动脚本中添加如下代码：
 
-```python 3
+```python3
 # 写在顶部
 from vnpy_portfoliomanager import PortfolioManagerApp
 

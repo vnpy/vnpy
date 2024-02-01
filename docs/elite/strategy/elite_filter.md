@@ -54,7 +54,7 @@ VeighNa Elite Trader的CTA策略模块内置的EliteCtaTemplate提供了对垃�
 
 若想要测试数据过滤功能的效果，可以在策略的on_history函数中添加打印语句看看策略内部是否收到了非交易时段的K线，如下所示：
 
-```python 3
+```python3
 # 判断实盘trading状态，只有策略启动之后才进行输出
 if self.trading:
     self.write_log(f"{self.strategy_name}_{self.vt_symbol}：{hm.datetime[-1]}")

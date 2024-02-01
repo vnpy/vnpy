@@ -19,7 +19,7 @@ ScriptTrader是用于**脚本策略交易**的功能模块，提供了交互式�
 
 在启动脚本中添加如下代码：
 
-```python 3
+```python3
 # 写在顶部
 from vnpy_scripttrader import ScriptTraderApp
 
@@ -82,7 +82,7 @@ main_engine.add_app(ScriptTraderApp)
 - 打印合约信息；
 - 每隔3秒获取最新行情。
 
-```python 3
+```python3
 from time import sleep
 from vnpy_scripttrader import ScriptEngine
 
@@ -123,7 +123,7 @@ Jupyter模式是基于脚本引擎（ScriptEngine）驱动的，下面通过jupy
 
 首先打开Jupyter notebook，然后加载组件、初始化脚本引擎：
 
-```python 3
+```python3
 from vnpy_scripttrader import init_cli_trading
 from vnpy_ctp import CtpGateway
 engine = init_cli_trading([CtpGateway])
@@ -168,7 +168,7 @@ engine.connect_gateway(setting,"CTP")
 * 出参：无
 
 subscribe()函数用于订阅行情信息，若需要订阅一篮子合约的行情，可以使用列表格式。
-```python 3
+```python3
 engine.subscribe(vt_symbols = ["rb2209.SHFE","rb2210.SHFE"])
 ```
 
@@ -189,7 +189,7 @@ engine.subscribe(vt_symbols = ["rb2209.SHFE","rb2210.SHFE"])
 
 查询单个标的最新tick，use_df为可选参数，用于把返回的类对象转化成DataFrame格式，便于数据分析。
 
-```python 3
+```python3
 tick = engine.get_tick(vt_symbol="rb2210.SHFE",use_df=False)
 ```
 
@@ -208,7 +208,7 @@ tick = engine.get_tick(vt_symbol="rb2210.SHFE",use_df=False)
 
 根据vt_orderid查询委托单的详细信息。
 
-```python 3
+```python3
 order = engine.get_order(vt_orderid="CTP.3_-1795780178_1",use_df=False)
 ```
 
@@ -223,7 +223,7 @@ order = engine.get_order(vt_orderid="CTP.3_-1795780178_1",use_df=False)
 
 根据本地vt_symbol来查询对应合约对象的详细信息。
 
-```python 3
+```python3
 contract = engine.get_contract(vt_symbol="rb2210.SHFE",use_df=False)
 ```
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/script_trader/15.png)
@@ -236,7 +236,7 @@ contract = engine.get_contract(vt_symbol="rb2210.SHFE",use_df=False)
 
 根据本地vt_accountid来查询对应资金信息。
 
-```python 3
+```python3
 account = engine.get_account(vt_accountid="CTP.189672",use_df=False)
 ```
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/script_trader/16.png)
@@ -249,7 +249,7 @@ account = engine.get_account(vt_accountid="CTP.189672",use_df=False)
 
 根据vt_positionid来查询持仓情况，返回对象包含接口名称、交易所、合约代码、数量、冻结数量等。
 
-```python 3
+```python3
 position = engine.get_position(vt_positionid='CTP.hc2305.SHFE.多')
 ```
 注意，vt_positionid为vnpy内部对于一笔特定持仓的唯一持仓编号，格式为"gateway_name.vt_symbol.Direction.value"，其中持仓方向可选“多”、“空”和“净”，如下图所示：
@@ -265,7 +265,7 @@ position = engine.get_position(vt_positionid='CTP.hc2305.SHFE.多')
 
 查询多个合约最新tick。
 
-```python 3
+```python3
 ticks = engine.get_ticks(vt_symbols=['rb2209.SHFE','rb2210.SHFE'],use_df=True)
 ```
 
@@ -281,7 +281,7 @@ vt_symbols是列表格式，里面包含多个vt_symbol，如图。
 
 根据查询多个vt_orderid查询其详细信息。vt_orderids为列表，里面包含多个vt_orderid。
 
-```python 3
+```python3
 orders = engine.get_orders([orderid_one,orderid_two],use_df=True)
 ```
 
@@ -293,7 +293,7 @@ orders = engine.get_orders([orderid_one,orderid_two],use_df=True)
 
 根据给定的一个vt_orderid返回这次报单过程中的所有TradeData对象。vt_orderid是本地委托号，每一个委托OrderData，由于部分成交关系，可以对应多笔成交TradeData。
 
-```python 3
+```python3
 trades = engine.get_trades(vt_orderid=your_vt_orderid,use_df=True)
 ```
 
@@ -305,7 +305,7 @@ trades = engine.get_trades(vt_orderid=your_vt_orderid,use_df=True)
 
 通过配置的数据服务查询历史数据。
 
-```python 3
+```python3
 bars = engine.get_bars(vt_symbol="rb2210.SHFE",start_date="20211201",
                         interval=Interval.MINUTE,use_df=False)
 ```
@@ -316,7 +316,7 @@ bars = engine.get_bars(vt_symbol="rb2210.SHFE",start_date="20211201",
 - start_date：起始日期，格式为"%Y%m%d"；
 - interval：K线周期，包括：分钟、小时、日、周；
 - bars：包含了一系列BarData数据的列表对象，其BarData的定义如下：
-```python 3
+```python3
 @dataclass
 class BarData(BaseData):
 
@@ -394,7 +394,7 @@ class BarData(BaseData):
 - price：报单价格（浮点数类型）;
 - volume：报单数量（浮点数类型）;
 - order_type：OrderType枚举常量，默认为限价单（OrderType.LIMIT），同时支持停止单（OrderType.STOP）、FAK（OrderType.FAK）、FOK（OrderType.FOK）、市价单（OrderType.MARKET），不同交易所支持报单方式不完全一致。
-```python 3
+```python3
 engine.buy(vt_symbol="rb2210.SHFE", price=4200, volume=1, order_type=OrderType.LIMIT)
 ```
 
@@ -416,7 +416,7 @@ send_order函数是脚本交易策略引擎调用的发送委托的函数。一�
 
 基于本地委托号撤销委托。
 
-```python 3
+```python3
 engine.cancel_order(vt_orderid='CTP.3_-1795780178_1')
 ```
 
