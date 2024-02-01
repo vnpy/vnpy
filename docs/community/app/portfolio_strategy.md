@@ -14,7 +14,7 @@ PortfolioStrategy是用于**多合约组合策略实盘**的功能模块，用�
 
 在启动脚本中添加如下代码：
 
-```python 3
+```python3
 # 写在顶部
 from vnpy_portfoliostrategy import PortfolioStrategyApp
 
@@ -251,7 +251,7 @@ main_engine.add_app(PortfolioStrategyApp)
 
 在基于策略模板编写策略逻辑之前，需要在策略文件的顶部载入需要用到的内部组件，如下方代码所示：
 
-```python 3
+```python3
 from typing import List, Dict
 from datetime import datetime
 
@@ -267,7 +267,7 @@ from vnpy_portfoliostrategy.utility import PortfolioBarGenerator
 
 在策略类的下方，可以设置策略的作者（author），参数（parameters）以及变量（variables），如下方代码所示：
 
-```python 3
+```python3
 
     author = "用Python的交易员"
 
@@ -308,7 +308,7 @@ __init__函数是策略类的构造函数，需要与继承的StrategyTemplate�
 
 在这个继承的策略类里，初始化一般分四步，如下方代码所示：
 
-```python 3
+```python3
     def __init__(
         self,
         strategy_engine: StrategyEngine,
@@ -349,7 +349,7 @@ ArrayManager的默认长度为100，如需调整ArrayManager的长度，可传�
 
 如果只基于on_bar进行交易，这里代码可以写成：
 
-```python 3
+```python3
         self.pbg = PortfolioBarGenerator(self.on_bars)
 ```
 
@@ -381,7 +381,7 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 
 初始化策略时on_init函数会被调用，默认写法是先调用write_log函数输出“策略初始化”日志，再调用load_bars函数加载历史数据。如下方代码所示：
 
-```python 3
+```python3
     def on_init(self):
         """
         Callback when strategy is inited.
@@ -402,7 +402,7 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 
 启动策略时on_start函数会被调用，默认写法是调用write_log函数输出“策略启动”日志，如下方代码所示：
 
-```python 3
+```python3
     def on_start(self):
         """
         Callback when strategy is started.
@@ -420,7 +420,7 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 
 停止策略时on_stop函数会被调用，默认写法是调用write_log函数输出“策略停止”日志，如下方代码所示：
 
-```python 3
+```python3
     def on_stop(self):
         """
         Callback when strategy is stopped.
@@ -442,7 +442,7 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 
 当策略收到实盘中最新的Tick数据的行情推送时，on_tick函数会被调用。默认写法是通过PortfolioBarGenerator的update_tick函数把收到的Tick数据推进前面创建的pbg实例中以便合成1分钟的K线，如下方代码所示：
 
-```python 3
+```python3
     def on_tick(self, tick: TickData):
         """
         Callback of new tick data update.
@@ -468,7 +468,7 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 
 2 . 如果策略需要基于on_bars推进来的K线数据通过PortfolioBarGenerator合成更长时间周期的K线来交易，那么请在on_bars中调用PortfolioBarGenerator的update_bars函数，把收到的bars推进前面创建的pbg实例中即可，如下方代码所示：
 
-```python 3
+```python3
     def on_bars(self, bars: Dict[str, BarData]):
         """
         Callback of new bars data update.
@@ -478,7 +478,7 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 
 示例策略类PortfolioBollChannelStrategy是通过2小时K线数据回报来生成信号的。一共有三部分，如下方代码所示：
 
-```python 3
+```python3
     def on_2hour_bars(self, bars: Dict[str, BarData]):
         """"""
         self.cancel_all()
@@ -593,7 +593,7 @@ buy/sell/short/cover都是策略内部的负责发单的交易请求类函数。
 
 请注意，如果向上期所发出平仓委托，因为该交易所必须指定平今、平昨，底层会对其平仓指令自动进行转换。因为上期所部分品种有平今优惠，所以默认是以平今优先的方式发出委托的（如果交易的标的在上期所平昨更优惠的话，可以自行在vnpy.trader.converter的convert_order_request_shfe函数中做适当的修改）。
 
-```python 3
+```python3
     def buy(self, vt_symbol: str, price: float, volume: float, lock: bool = False, net: bool = False) -> List[str]:
         """
         Send buy order to open a long position.
@@ -685,7 +685,7 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 如下方代码所示，load_bars函数调用时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据。在回测时，10天指的是10个交易日，而在实盘时，10天则是指的是自然日，因此建议加载的天数宁可多一些也不要太少。加载时会先依次尝试通过交易接口、数据服务、数据库获取历史数据，直到获取历史数据或返回空。
 
-```python 3
+```python3
     def load_bars(self, days: int, interval: Interval = Interval.MINUTE) -> None:
         """
         Load historical bar data for initializing strategy.
@@ -787,7 +787,7 @@ PortfolioStrategy模块针对的是多标的投资组合类的量化策略，这
 
 示例策略类TrendFollowingStrategy是通过一分钟K线数据回报来生成信号的。一共有三部分，如下方代码所示：
 
-```python 3
+```python3
     def on_bars(self, bars: Dict[str, BarData]) -> None:
         """K线切片回调"""
         # 更新K线计算RSI数值
@@ -857,7 +857,7 @@ PortfolioStrategy模块针对的是多标的投资组合类的量化策略，这
 
 策略内的默认写法是针对委托方向基于设置的price_add来计算委托价格，也可以参考示例策略PairTradingStrategy中的基于设置的tick_add来计算委托价格。
 
-```python 3
+```python3
     def calculate_price(self, vt_symbol: str, direction: Direction, reference: float) -> float:
         """计算调仓委托价格（支持按需重载实现）"""
         if direction == Direction.LONG:

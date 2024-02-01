@@ -14,7 +14,7 @@ ChartWizard是用于**实时K线图表展示**的功能模块，用户可以通�
 
 在启动脚本中添加如下代码：
 
-```python 3
+```python3
 # 写在顶部
 from vnpy_chartwizard import ChartWizardApp
 

@@ -50,7 +50,7 @@
 
 此时在命令行中输入python代码就会立即执行。如果想运行pyqtgraph的自带的例子，可以依次输入以下代码：
 
-```python 3
+```python3
 from pyqtgraph import examples
 examples.run()
 ```

@@ -283,7 +283,7 @@ VeighNa Elite Trader的价差套利模块提供了EliteSpreadStrategyTemplate专
 
 在基于EliteSpreadStrategyTemplate编写策略逻辑之前，需要在策略文件的顶部载入需要用到的内部组件，如下方代码所示：
 
-```python 3
+```python3
 from vnpy.trader.utility import BarGenerator, ArrayManager
 
 from elite_spreadtrading import (
@@ -315,7 +315,7 @@ from elite_spreadtrading import (
 
 在策略类的下方，可以设置策略的作者（author），参数（parameters）以及变量（variables），如下方代码所示：
 
-```python 3
+```python3
     author = "用Python的交易员"
 
     ma_window: int = Parameter(60)
@@ -376,7 +376,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 完成上述组件初始化后，再调用load_bar函数加载历史数据，如下方代码所示：
 
-```python 3
+```python3
     def on_init(self):
         """
         Callback when strategy is inited.
@@ -404,7 +404,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 启动策略时on_start函数会被调用，默认写法是调用write_log函数输出“策略启动”日志，如下方代码所示：
 
-```python 3
+```python3
     def on_start(self):
         """
         Callback when strategy is started.
@@ -422,7 +422,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 停止策略时on_stop函数会被调用，默认写法是调用write_log函数输出“策略停止”日志，如下方代码所示：
 
-```python 3
+```python3
     def on_stop(self):
         """
         Callback when strategy is stopped.
@@ -442,7 +442,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 当价差数据更新的时候on_spread_data函数会被调用（因本次示例策略类MeanReversionStrategy不是基于on_spread_data交易，故不作示例讲解）。MeanReversionStrategy的写法是先调用get_spread_tick获取价差Tick数据，然后推进on_spread_tick函数中，如下方代码所示：
 
-```python 3
+```python3
     def on_spread_data(self):
         """
         Callback when spread price is updated.
@@ -459,7 +459,7 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 on_spread_tick函数通常由用户在on_spread_data下发起调用，通常的用法是通过BarGenerator的update_tick函数把收到的Tick数据推进前面创建的bg实例中以便合成1分钟的K线，如下方代码所示：
 
-```python 3
+```python3
     def on_spread_tick(self, tick: TickData):
         """
         Callback when new spread tick data is generated.
@@ -477,7 +477,7 @@ on_spread_tick函数通常由用户在on_spread_data下发起调用，通常的�
 
 如果策略基于on_spread_bar推进来的K线交易，那么请把交易请求类函数都写在on_spread_bar函数下。示例策略类MeanReversionStrategy是通过1分钟K线数据回报来生成CTA信号的。一共有三部分，如下方代码所示：
 
-```python 3
+```python3
     def on_spread_bar(self, bar: BarData):
         """
         Callback when spread bar data is generated.
@@ -561,7 +561,7 @@ on_spread_tick函数通常由用户在on_spread_data下发起调用，通常的�
 
 收到持有仓位更新时on_spread_pos函数会被调用。与CTA策略模块访问策略逻辑持仓不同，价差交易模块访问的是账户底层持仓。所以默认写法是通过调用get_spread_pos函数获取价差持仓，以供策略进行逻辑判断，如下方代码所示：
 
-```python 3
+```python3
     def on_spread_pos(self):
         """
         Callback when spread position is updated.
@@ -612,7 +612,7 @@ on_spread_tick函数通常由用户在on_spread_data下发起调用，通常的�
 
 以下方star_long_algo函数的代码为例，可以看到，价格和数量是必填的参数，超价的数值、时间间隔、算法类型、算法开平、maker挂单范围阈值、maker单笔委托量最大值等参数都是选填。也可以看到，函数内部收到传进来的参数之后就调用了SpreadStrategyTemplate里的start_algo函数来发单（因为是long指令，则自动把方向填成了LONG）
 
-```python 3
+```python3
     def start_long_algo(
         self,
         price: float,
@@ -686,7 +686,7 @@ buy/sell/short/cover都是策略内部的负责针对特定的单一合约发出
 
 如果lock设置为True，那么该笔订单则会进行锁仓委托转换（在有今仓的情况下，如果想平仓，则会先平掉所有的昨仓，然后剩下的部分都进行反向开仓来代替平今仓，以避免平今的手续费惩罚）。
 
-```python 3
+```python3
     def buy(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
         """"""
         return self.send_order(vt_symbol, price, volume, Direction.LONG, Offset.OPEN, lock)
@@ -802,7 +802,7 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 请注意，回测期内每条腿的K线数据（1分钟最佳），若有某条腿缺失一段，则所有腿的这一段数据都会被弃用。
 
-```python 3
+```python3
     def load_bar(
         self,
         days: int,

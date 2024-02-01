@@ -14,7 +14,7 @@ RiskManager模块是用于**事前风控管理**的功能模块，用户可以�
 
 在启动脚本中添加如下代码：
 
-```python 3
+```python3
 # 写在顶部
 from vnpy_riskmanager import RiskManagerApp
 

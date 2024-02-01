@@ -14,7 +14,7 @@ DataManager是用于**历史数据管理**的功能模块，用户可以通过�
 
 在启动脚本中添加如下代码：
 
-```python 3
+```python3
 # 写在顶部
 from vnpy_datamanager import DataManagerApp
 

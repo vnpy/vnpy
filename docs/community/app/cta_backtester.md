@@ -14,7 +14,7 @@ CtaBacktester是用于**CTA回测研究**的功能模块，用户可以通过其
 
 在启动脚本中添加如下代码：
 
-```python 3
+```python3
 # 写在顶部
 from vnpy_ctabacktester import CtaBacktesterApp
 

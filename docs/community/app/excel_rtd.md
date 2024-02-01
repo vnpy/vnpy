@@ -48,7 +48,7 @@ pyxll install
 
 在启动脚本中添加如下代码：
 
-```python 3
+```python3
 # 写在顶部
 from vnpy_excelrtd import ExcelRtdApp
 
