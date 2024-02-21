@@ -58,7 +58,7 @@ def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
     sys.excepthook = excepthook
 
     if sys.version_info >= (3, 8):
-        def threading_excepthook(args: threading.ExceptHookArgs, extra: object) -> None:
+        def threading_excepthook(args: threading.ExceptHookArgs) -> None:
             """Show exception detail from background threads with QMessageBox."""
             sys.__excepthook__(args.exc_type, args.exc_value, args.exc_traceback)
 

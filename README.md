@@ -7,16 +7,16 @@
 💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-3.5.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-3.9.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
-    <img src ="https://img.shields.io/badge/python-3.7|3.8|3.9|3.10-blue.svg" />
-    <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
+    <img src ="https://img.shields.io/badge/python-3.8|3.9|3.10|3.11.|3.12-blue.svg" />
+    <img src ="https://img.shields.io/github/actions/workflow/status/vnpy/vnpy/pythonapp.yml?branch=master"/>
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
 
 VeighNa是一套基于Python的开源量化交易系统开发框架，在开源社区持续不断的贡献下一步步成长为多功能量化交易平台，自发布以来已经积累了众多来自金融机构或相关领域的用户，包括私募基金、证券公司、期货公司等。
 
-&#x1F393;&#x1F393;&#x1F393; **VeighNa核心团队推出的【零基础入门系列】课程第三阶段《30天精进Python交易GUI》已经更新到30集，围绕VeighNa开源量化平台详细讲解交易GUI开发中的各种实战细节，最终完成一套针对之前《超越海龟策略精析》课程中的复杂投组策略实盘交易的专用系统。报名方法请扫描下方二维码关注后，回复关键词【GUI】即可：**
+:rocket: :rocket: :rocket: **面向专业交易员的【VeighNa Elite量化终端】已经正式发布，针对专业交易员群体在海量策略并发、智能移仓换月、算法拆单执行、多账户交易支持等方面的需求提供了完善支持。了解更详细的信息请扫描下方二维码关注后，点击菜单栏的【社区交流 -> Elite会员服务】即可**：
 
 <p align="center">
   <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy_qr.jpg"/>
@@ -75,8 +75,6 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
         * 恒生云UF（[uf](https://www.github.com/vnpy/vnpy_uf)）：国内证券（仿真）
 
         * TTS（[tts](https://www.github.com/vnpy/vnpy_tts)）：国内期货（仿真）
-
-        * 火象（[hx](https://www.github.com/vnpy/vnpy_hx)）：国内期货（仿真）
 
     * 海外市场
 
@@ -162,6 +160,8 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 7. 对接下述各类数据服务的适配器接口（datafeed）：
 
+    * 迅投研（[xt](https://www.github.com/vnpy/vnpy_xt)）：股票、期货、期权、基金、债券
+
     * 米筐RQData（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：股票、期货、期权、基金、债券、黄金TD
 
     * 恒生UData（[udata](https://www.github.com/vnpy/vnpy_udata)）：股票、期货、期权
@@ -188,7 +188,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 ## 环境准备
 
-* 推荐使用VeighNa团队为量化交易专门打造的Python发行版[VeighNa Studio-3.5.0](https://download.vnpy.com/veighna_studio-3.5.0.exe)，集成内置了VeighNa框架以及VeighNa Station量化管理平台，无需手动安装
+* 推荐使用VeighNa团队为量化交易专门打造的Python发行版[VeighNa Studio-3.9.0](https://download.vnpy.com/veighna_studio-3.9.0.exe)，集成内置了VeighNa框架以及VeighNa Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 10以上 / Windows Server 2016以上 / Ubuntu 20.04 LTS以上
 * 支持的Python版本：Python 3.7/ 3.8 / 3.9 / 3.10 64位（**推荐使用Python 3.10**）
 

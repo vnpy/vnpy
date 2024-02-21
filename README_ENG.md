@@ -5,10 +5,10 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-3.5.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-3.9.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.10-blue.svg" />
-    <img src ="https://img.shields.io/github/workflow/status/vnpy/vnpy/Python%20application/master"/>
+    <img src ="https://img.shields.io/github/actions/workflow/status/vnpy/vnpy/pythonapp.yml?branch=master"/>
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
 

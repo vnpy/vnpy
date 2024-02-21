@@ -5,8 +5,8 @@ pypi_index=$2
 shift 2
 
 
-[[ -z $python ]] && python=python
-[[ -z $pypi_index ]] && pypi_index=https://pypi.org/simple
+[[ -z $python ]] && python=python3
+[[ -z $pypi_index ]] && pypi_index=https://pypi.douban.com/simple
 
 $python -m pip install --upgrade pip wheel --index $pypi_index
 
@@ -14,7 +14,7 @@ $python -m pip install --upgrade pip wheel --index $pypi_index
 function install-ta-lib()
 {   
     # install numpy first
-    $python -m pip install numpy==1.21.5 --index $pypi_index
+    $python -m pip install numpy==1.23.1 --index $pypi_index
 
     pushd /tmp
     wget https://pip.vnpy.com/colletion/ta-lib-0.4.0-src.tar.gz
@@ -41,4 +41,3 @@ locale-gen zh_CN.GB18030
 
 # Install VeighNa
 $python -m pip install . --index $pypi_index
-

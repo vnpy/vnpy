@@ -1,7 +1,6 @@
 from copy import copy
-from typing import Dict, List
+from typing import Dict, List, Set, TYPE_CHECKING
 
-from .engine import MainEngine
 from .object import (
     ContractData,
     OrderData,
@@ -11,14 +10,18 @@ from .object import (
 )
 from .constant import Direction, Offset, Exchange
 
+if TYPE_CHECKING:
+    from .engine import MainEngine
+
 
 class OffsetConverter:
     """"""
 
-    def __init__(self, main_engine: MainEngine) -> None:
+    def __init__(self, main_engine: "MainEngine") -> None:
         """"""
-        self.main_engine: MainEngine = main_engine
         self.holdings: Dict[str, "PositionHolding"] = {}
+
+        self.get_contract = main_engine.get_contract
 
     def update_position(self, position: PositionData) -> None:
         """"""
@@ -56,7 +59,7 @@ class OffsetConverter:
         """"""
         holding: PositionHolding = self.holdings.get(vt_symbol, None)
         if not holding:
-            contract: ContractData = self.main_engine.get_contract(vt_symbol)
+            contract: ContractData = self.get_contract(vt_symbol)
             holding = PositionHolding(contract)
             self.holdings[vt_symbol] = holding
         return holding
@@ -77,7 +80,7 @@ class OffsetConverter:
             return holding.convert_order_request_lock(req)
         elif net:
             return holding.convert_order_request_net(req)
-        elif req.exchange in [Exchange.SHFE, Exchange.INE]:
+        elif req.exchange in {Exchange.SHFE, Exchange.INE}:
             return holding.convert_order_request_shfe(req)
         else:
             return [req]
@@ -86,7 +89,7 @@ class OffsetConverter:
         """
         Check if the contract needs offset convert.
         """
-        contract: ContractData = self.main_engine.get_contract(vt_symbol)
+        contract: ContractData = self.get_contract(vt_symbol)
 
         # Only contracts with long-short position mode requires convert
         if not contract:
@@ -161,7 +164,7 @@ class PositionHolding:
             elif trade.offset == Offset.CLOSEYESTERDAY:
                 self.short_yd -= trade.volume
             elif trade.offset == Offset.CLOSE:
-                if trade.exchange in [Exchange.SHFE, Exchange.INE]:
+                if trade.exchange in {Exchange.SHFE, Exchange.INE}:
                     self.short_yd -= trade.volume
                 else:
                     self.short_td -= trade.volume
@@ -177,7 +180,7 @@ class PositionHolding:
             elif trade.offset == Offset.CLOSEYESTERDAY:
                 self.long_yd -= trade.volume
             elif trade.offset == Offset.CLOSE:
-                if trade.exchange in [Exchange.SHFE, Exchange.INE]:
+                if trade.exchange in {Exchange.SHFE, Exchange.INE}:
                     self.long_yd -= trade.volume
                 else:
                     self.long_td -= trade.volume
@@ -291,8 +294,10 @@ class PositionHolding:
             td_volume: int = self.long_td
             yd_available: int = self.long_yd - self.long_yd_frozen
 
+        close_yd_exchanges: Set[Exchange] = {Exchange.SHFE, Exchange.INE}
+
         # If there is td_volume, we can only lock position
-        if td_volume:
+        if td_volume and self.exchange not in close_yd_exchanges:
             req_open: OrderRequest = copy(req)
             req_open.offset = Offset.OPEN
             return [req_open]
@@ -305,7 +310,7 @@ class PositionHolding:
 
             if yd_available:
                 req_yd: OrderRequest = copy(req)
-                if self.exchange in [Exchange.SHFE, Exchange.INE]:
+                if self.exchange in close_yd_exchanges:
                     req_yd.offset = Offset.CLOSEYESTERDAY
                 else:
                     req_yd.offset = Offset.CLOSE

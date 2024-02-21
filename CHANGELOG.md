@@ -1,3 +1,137 @@
+# 3.9.0版本
+
+## 新增
+
+1. 迅投研数据服务vnpy_xt，支持股票、期货、期权、债券、基金历史数据获取
+2. vnpy_ib增加对CBOE和CBOT交易所的支持、对指数期权的支持
+3. vnpy_rqdata增加对于88A2连续次主力合约的支持
+4. vnpy_wind增加广期所和上期能源交易所的数据支持
+
+## 调整
+
+1. vnpy_sopt升级3.7.0版本API
+2. vnpy_portfoliostrategy回测引擎支持交易日参数annual_days
+3. K线合成器（BarGenerator）移除对于Tick时间戳的检查过滤逻辑，交由用户层负责控制过滤
+4. vnpy_ib收到期权合约数据后，自动查询其切片行情数据
+5. vnpy_paperaccount实现对于IB接口合约的特殊路由处理
+6. 接口封装升级更新pybind11到2.11.1版本：vnpy_ctp、vnpy_sopt、vnpy_tora
+7. vnpy_ctp过滤不支持的委托状态推送
+8. vnpy_mysql兼容无数据库写入权限情况下的数据表初始化
+9. vnpy_chartwizard支持关闭单个图表标签页
+10. vnpy_portfoliostrategy移除策略后同时清除对应的策略状态缓存数据
+11. vnpy_portfoliostrategy调整每日盈亏清算对象开盘持仓数据的初始化方式
+12. 策略模块遗传优化函数增加ngen_size和max_workers参数
+
+
+## 修复
+
+1. 修复vnpy_tora接口中的委托部分撤单状态映射缺失
+2. 修复vnpy_wind查询日线历史数据时数值存在NaN的问题
+3. 修复vnpy_mongodb的Tick汇总数据的条数统计错误
+4. 修复vnpy_chartwizard对于升级后的vnpy_spreadtrading价差行情显示问题
+5. 修复vnpy_ctastrategy回测成交记录为空时的报错
+6. 修复vnpy_ctastrategy策略初始化时，历史数据重复推送调用on_bar的问题
+
+
+# 3.8.0版本
+
+## 新增
+
+1. K线合成器（BarGenerator）增加对日K线的合成支持
+2. 基于华鑫奇点柜台的C++ API重构vnpy_tora，实现VeighNa Station加载支持
+3. 新增vnpy_ib对于期权合约查询、波动率和希腊值等扩展行情数据的支持
+
+## 调整
+
+1. vnpy_rest/vnpy_websocket限制在Windows上改为必须使用Selector事件循环
+2. vnpy_rest/vnpy_websocket客户端关闭时确保所有会话结束，并等待有异步任务完成后安全退出
+3. vnpy_ctp升级6.6.9版本API
+4. vnpy_ctp支持大商所的1毫秒级别行情时间戳
+5. vnpy_tqsdk过滤不支持的K线频率查询并输出日志
+6. vnpy_datamanager增加数据频率下按交易所显示支持，优化数据加载显示速度
+7. vnpy_ctabacktester如果加载的历史数据为空，则不执行后续回测
+8. vnpy_spreadtrading采用轻量级数据结构，优化图形界面更新机制
+9. vnpy_spreadtrading价差子引擎之间的事件推送，不再经过事件引擎，降低延迟水平
+10. vnpy_rpcservice增加对下单返回委托号的gateway_name替换处理
+11. vnpy_portfoliostrategy策略模板增加引擎类型查询函数get_engine_type
+12. vnpy_sec更新行情API至1.6.45.0版本，更新交易API版本至1.6.88.18版本
+13. vnpy_ib更新10.19.1版本的API，恢复对于数字格式代码（ConId）的支持
+14. 没有配置数据服务或者加载模块失败的情况下，使用BaseDatafeed作为数据服务
+15. 遗传优化算法运行时，子进程指定使用spawn方式启动，避免数据库连接对象异常
+16. 合约管理控件，增加对于期权合约的特有数据字段显示
+
+## 修复
+
+1. 修复vnpy_datarecorder对于新版本vnpy_spreadtrading价差数据的录制支持
+2. 修复vnpy_algotrading条件委托算法StopAlgo全部成交后状态更新可能缺失的问题
+3. 修复vnpy_ctastrategy策略初始化时，历史数据重复推送调用on_bar的问题
+4. 修复vnpy_wind查询日线历史数据时，数值存在NaN的问题
+
+
+# 3.7.0版本
+
+## 新增
+
+1. 新增沪股通和深股通交易所枚举值
+2. 增加vnpy_tap对于Linux系统的支持
+3. 增加vnpy_rqdata对于新型主力合约数据支持（切换前一日收盘价比例复权）
+
+## 调整
+
+1. vnpy_ctastrategy/vnpy_ctabacktester加载策略类时，过滤TargetPosTemplate模板
+2. vnpy_ctp连接登录过程中，只有在授权码错误的情况下，才禁止再次发起认证
+3. vnpy_uft增加对广期所GFEX的支持
+4. vnpy_tqsdk增加对于output日志输出功能的支持
+5. vnpy_dolphindb允许指定用户自行配置具体的数据库实例
+6. vnpy_rqdata优化对于郑商所期货和期权合约的查询代码转换规则
+7. vnpy_rqdata增加对广期所GFEX的支持
+8. vnpy_portfoliostrategy增加回测爆仓检查
+9. vnpy_portfoliostrategy策略模板增加合约乘数查询函数get_size
+10. vnpy_portfoliostrategy回测加载日线和小时线数据时，不使用分段加载
+
+## 修复
+
+1. 修复vnpy_rpcservice中，RPC接口对于推送数据的vt前缀相关字段错误问题
+2. 修复vnpy_mini中，对于INE交易所今昨仓位的特殊处理
+3. 修复vnpy_datamanager中，批量数据更新时缺失output函数的问题
+4. 修复vnpy_spreadtrading中，回测加载数据时优先从数据服务获取历史数据的问题，改为优先从本地数据库加载
+
+
+# 3.6.0版本
+
+## 新增
+
+1. 新增vnpy_ctp的Mac系统支持（M1/M2）
+
+## 调整
+
+1. BaseDatafeed的相关功能函数增加output入参用于输出日志
+2. 修改相关数据服务模块适配output参数：vnpy_rqdata/vnpy_ifind/vnpy_wind/vnpy_tushare
+3. 修改相关策略应用模块适配output参数：vnpy_ctastrategy/vnpy_ctabacktester/vnpy_portfoliostrategy/vnpy_spreadtrading/vnpy_datamanager
+3. OffsetConverter增加对于SHFE/INE合约的锁仓模式支持
+4. 在OmsEngine中添加全局的OffsetConverter功能，不再需要各AppEngine自行维护
+5. 添加CTA策略模块在执行参数优化时的最大进程数量限制参数：vnpy_ctastrategy/vnpy_ctabacktester
+6. 增加穷举优化算法运行过程中基于tqdm的进度条输出
+7. 增加遗传优化算法运行过程中的迭代次数进度输出
+8. 增加vnpy_optionmaster模块的期权产品对应标的合约的匹配函数，不再限制产品范围
+9.  升级vnpy_tts的dll链接库，解决openctp升级导致的资金不显示的问题
+10. 修改vnpy_ctastrategy使用vnpy.trader.database中统一定义的时区来加载数据
+11. 增加vnpy_ctastrategy策略模板的合约乘数查询函数get_size
+12. 增加vnpy_spreadtrading回测中统计绩效时对于爆仓情况的检查
+13. 增加vnpy_scripttrader基于vt_symbol和direction查询持仓数据的函数
+14. 修改vt_positionid的字符串内容，增加gateway_name前缀标识
+
+## 修复
+
+1. 修复异常捕捉钩子threading_excepthook的参数错误问题
+2. 修复vnpy_ib获取历史数据时的异常失败问题
+3. 修复vnpy_rest/vnpy_websocket中aiohttp的代理参数proxy传空时必须为None的问题
+4. 修复vnpy_optionmaster模块的Greeks监控表行数设置不足的问题
+5. 修复vnpy_rqdata查询股票期权数据报错的问题
+6. 修复vnpy_rqdata中RqdataGateway获取期货指数和连续合约信息时错误的问题
+7. 修复vnpy_portfoliostrategy中，从缓存文件恢复数据，导致defaultdict变成dict的问题
+
+
 # 3.5.0版本
 
 ## 新增

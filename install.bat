@@ -2,7 +2,7 @@
 python -m pip install --upgrade pip wheel
 
 ::Install prebuild wheel
-python -m pip install --extra-index-url http://139.196.190.180 --trusted-host 139.196.190.180 TA_Lib
+python -m pip install --extra-index-url https://pypi.vnpy.com TA_Lib==0.4.24
 
 ::Install Python Modules
 python -m pip install -r requirements.txt
