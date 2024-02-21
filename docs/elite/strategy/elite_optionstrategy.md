@@ -18,7 +18,7 @@ OptionStrategy模块需要启动之前通过【策略应用】标签页加载。
 
 成功连接交易接口后，在菜单栏中点击【功能】-> 【期权策略交易】，或者点击左侧按钮栏的图标：
 
-![]()
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/optionstrategy/1.png)
 
 即可进入期权策略交易模块的UI界面。
 
@@ -85,7 +85,7 @@ C:\Users\Administrator\strategies
 
 策略实例创建成功后，就可以对该实例进行初始化了。点击该策略实例下的【初始化】按钮，若初始化成功，则如下图所示：
 
-![]()
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/optionstrategy/6.png)
 
 初始化完成后，可观察到此时该策略实例的【inited】状态已经为【True】。说明该策略实例已经完成初始化了。【trading】状态还是为【False】，说明此时该策略实例还不能开始自动交易。
 
@@ -93,7 +93,7 @@ C:\Users\Administrator\strategies
 
 策略实例初始化成功，【inited】状态为【True】时，才能启动该策略的自动交易功能。点击该策略实例下的【启动】按钮，即可启动该策略实例。成功后如下图所示：
 
-![]()
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/optionstrategy/7.png)
 
 可观察到此时该策略实例的【inited】和【trading】状态都为【True】。说明此时该策略实例已经完成了初始化函数中指定合约的行情订阅，而且此时策略内部的交易请求类函数（buy/sell/short/cover/cancel_order等），以及信息输出类函数（send_email/put_event等），才会真正执行并发出对应的请求指令到底层接口中（真正执行交易）。
 
@@ -106,7 +106,7 @@ C:\Users\Administrator\strategies
 
 如果启动策略之后，由于某些情况（如到了市场收盘时间，或盘中遇到紧急情况）想要停止、编辑或者移除策略，可以点击策略实例下的【停止】按钮，即可停止该策略实例的自动交易。成功后如下图所示：
 
-![]()
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/optionstrategy/8.png)
 
 期权策略引擎会自动将该策略之前发出的所有活动委托全部撤销，以保证在策略停止后不会有失去控制的委托存在。同时该策略实例最新的变量信息会被保存到.vntrader文件夹下的option_strategy_data.json文件中。
 
@@ -119,24 +119,24 @@ C:\Users\Administrator\strategies
 
 如果创建策略实例之后，想要编辑某个策略实例的参数（若已启动策略，需要先点击策略实例下的【停止】按钮，停止策略），可以点击该策略实例下的【编辑】按钮，会弹出参数编辑对话框，以供修改策略参数。如下图所示：
 
-![]()
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/optionstrategy/9.png)
 
 编辑完策略参数之后，点击下方的【确定】按钮，相应的修改会立即更新在参数表格中，如下图所示：
 
-![]()
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/optionstrategy/10.png)
 
 但是策略实例的交易合约代码无法修改，同时修改完后也不会重新执行初始化操作。也请注意，此时修改的只是.vntrader文件夹下option_strategy_setting.json文件中该策略实例的参数值，并没有修改原策略文件下的参数。
 
 若盘中编辑后想要再次启动策略，点击策略实例下的【启动】按钮即可再次启动该策略实例，如下图所示：
 
-![]()
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/optionstrategy/11.png)
 
 
 ## 移除策略
 
 如果创建策略实例之后，想要移除某个策略实例（若已启动策略，需要先点击策略实例下的【停止】按钮，停止策略），可以点击该策略实例下的【移除】按钮。移除成功后，图形界面左侧的策略监控组件中将不会再显示该策略实例的信息，如下图所示：
 
-![]()
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/optionstrategy/12.png)
 
 此时.vntrader文件夹下的option_strategy_setting.json文件也移除了该策略实例的配置信息。
 
@@ -166,13 +166,13 @@ C:\Users\Administrator\strategies
 
 策略引擎一般输出的是全局信息。下图中除了策略实例名后加冒号的内容之外，都是策略引擎输出的日志。
 
-![]()
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/optionstrategy/13.png)
 
 **策略日志**
 
 如果在策略中调用了write_log函数，那么日志内容就会通过策略日志输出。下图红框里的内容是策略实例输出的策略日志。冒号前是策略实例的名称，冒号后是write_log函数输出的内容。
 
-![]()
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/optionstrategy/14.png)
 
 ### 清空操作
 
@@ -180,11 +180,11 @@ C:\Users\Administrator\strategies
 
 点击【清空日志】前，如下图所示：
 
-![]()
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/optionstrategy/12.png)
 
 点击【清空日志】后，如下图所示：
 
-![]()
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/optionstrategy/15.png)
 
 
 ## 批量操作
