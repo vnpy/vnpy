@@ -188,7 +188,7 @@ install.bat
 **Ubuntu**
 
 ```
-. install.sh
+sudo bash install.sh
 ```
 
 **Macos**

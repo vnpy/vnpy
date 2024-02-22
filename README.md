@@ -210,7 +210,7 @@ install.bat
 **Ubuntu**
 
 ```
-bash install.sh
+sudo bash install.sh
 ```
 
 **Macos**
