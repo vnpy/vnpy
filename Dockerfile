@@ -33,5 +33,7 @@ RUN wget https://github.com/vnpy/vnpy/archive/refs/tags/3.9.0.tar.gz &&\
 RUN cd vnpy-3.9.0 && pip install --no-cache -r requirements.txt && \
   pip install --no-cache . && mv /home/veighna/vnpy-3.9.0/examples/veighna_trader/run.py /home/veighna/run.py &&\
   cd .. && rm -rf vnpy-3.9.0
+RUN pip install --no-cache -r requirements_optional.txt
+
 ENTRYPOINT ["/usr/bin/run.sh"]
 
