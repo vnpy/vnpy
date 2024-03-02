@@ -1002,7 +1002,14 @@ class ArrayManager(object):
         if array:
             return result
         return result[-1]
-
+        
+    def sar(self, acceleration = 0.02, maximum = 0.2, array: bool = False)  -> Union[float, np.ndarray]:
+        """sar"""
+        result = talib.sar(self.high,self.low, acceleration= acceleration,maximum = maximum)
+        if array:
+            return result
+        return result[-1]
+        
     def stoch(
         self,
         fastk_period: int,
