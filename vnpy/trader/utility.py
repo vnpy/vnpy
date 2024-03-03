@@ -1005,7 +1005,7 @@ class ArrayManager(object):
         
     def sar(self, acceleration = 0.02, maximum = 0.2, array: bool = False)  -> Union[float, np.ndarray]:
         """sar"""
-        result = talib.sar(self.high,self.low, acceleration= acceleration,maximum = maximum)
+        result = talib.SAR(self.high,self.low, acceleration= acceleration,maximum = maximum)
         if array:
             return result
         return result[-1]
