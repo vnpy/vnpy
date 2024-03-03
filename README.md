@@ -274,10 +274,6 @@ if __name__ == "__main__":
 
     python run.py
 
-## docker运行
-docker run -d -p 3389:3389 veighna_xrdp:3.9 username password yes
-其中，username 和 password 由用户自定义，yes 表示用户拥有 sudo 权限。 容器运行后使用远程桌面登录连接容器（Windows 11 中搜索“远程桌面”并点击打开，或者运行 mstsc.exe;linux中为rdesktop -u username ip;）。如果部署在本地，连接计算机名为 127.0.0.1:3389。如果部署在云端服务器，注意先允许云服务器的端口3389（sudo ufw allow 3389/tcp或者在云服务器控制台开启3389端口），然后连接服务器的 IP :3389（xx.xx.xx.xx:3389）。用户名和密码填写设定的 username 和 password。 远程桌面连接容器后，在命令窗口运行 python3 /home/veighna/run.py。
-
 ## 贡献代码
 
 VeighNa使用Github托管其源代码，如果希望贡献代码请使用github的PR（Pull Request）的流程:
