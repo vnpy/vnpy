@@ -5,7 +5,7 @@ from importlib import import_module
 
 from .object import HistoryRequest, TickData, BarData
 from .setting import SETTINGS
-from ..locale import _
+from .locale import _
 
 
 class BaseDatafeed(ABC):

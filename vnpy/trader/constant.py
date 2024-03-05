@@ -4,7 +4,7 @@ General constant enums used in the trading platform.
 
 from enum import Enum
 
-from ..locale import _
+from .locale import _
 
 
 class Direction(Enum):

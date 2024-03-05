@@ -16,7 +16,7 @@ import talib
 
 from .object import BarData, TickData
 from .constant import Exchange, Interval
-from ..locale import _
+from .locale import _
 
 if sys.version_info >= (3, 9):
     from zoneinfo import ZoneInfo, available_timezones              # noqa

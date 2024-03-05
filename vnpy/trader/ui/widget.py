@@ -12,7 +12,6 @@ from tzlocal import get_localzone_name
 
 import importlib_metadata
 
-from vnpy.locale import _
 from .qt import QtCore, QtGui, QtWidgets
 from ..constant import Direction, Exchange, Offset, OrderType
 from ..engine import MainEngine, Event, EventEngine
@@ -37,6 +36,7 @@ from ..object import (
 )
 from ..utility import load_json, save_json, get_digits, ZoneInfo
 from ..setting import SETTING_FILENAME, SETTINGS
+from ..locale import _
 
 
 COLOR_LONG = QtGui.QColor("red")

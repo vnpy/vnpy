@@ -10,7 +10,6 @@ from typing import Callable, Dict, List, Tuple
 
 import vnpy
 from vnpy.event import EventEngine
-from vnpy.locale import _
 
 from .qt import QtCore, QtGui, QtWidgets
 from .widget import (
@@ -30,6 +29,7 @@ from .widget import (
 )
 from ..engine import MainEngine, BaseApp
 from ..utility import get_icon_path, TRADER_DIR
+from ..locale import _
 
 
 class MainWindow(QtWidgets.QMainWindow):

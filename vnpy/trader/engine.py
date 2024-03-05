@@ -43,7 +43,7 @@ from .object import (
 from .setting import SETTINGS
 from .utility import get_folder_path, TRADER_DIR
 from .converter import OffsetConverter
-from ..locale import _
+from .locale import _
 
 
 class MainEngine:

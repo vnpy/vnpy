@@ -9,9 +9,9 @@ import threading
 import qdarkstyle
 from PySide6 import QtGui, QtWidgets, QtCore
 
-from vnpy.locale import _
 from ..setting import SETTINGS
 from ..utility import get_icon_path
+from ..locale import _
 
 
 Qt = QtCore.Qt

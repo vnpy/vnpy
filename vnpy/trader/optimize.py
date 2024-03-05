@@ -10,7 +10,7 @@ from _collections_abc import dict_keys, dict_values, Iterable
 from tqdm import tqdm
 from deap import creator, base, tools, algorithms
 
-from ..locale import _
+from .locale import _
 
 OUTPUT_FUNC = Callable[[str], None]
 EVALUATE_FUNC = Callable[[dict], dict]
