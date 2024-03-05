@@ -52,7 +52,7 @@ class ChartWidget(pg.PlotWidget):
         self.setCentralItem(self._layout)
 
     def _get_new_x_axis(self) -> DatetimeAxis:
-        return DatetimeAxis(self._manager, orientation='bottom')
+        return DatetimeAxis(self._manager, orientation="bottom")
 
     def add_cursor(self) -> None:
         """"""
@@ -71,12 +71,12 @@ class ChartWidget(pg.PlotWidget):
         Add plot area.
         """
         # Create plot object
-        plot: pg.PlotItem = pg.PlotItem(axisItems={'bottom': self._get_new_x_axis()})
+        plot: pg.PlotItem = pg.PlotItem(axisItems={"bottom": self._get_new_x_axis()})
         plot.setMenuEnabled(False)
         plot.setClipToView(True)
-        plot.hideAxis('left')
-        plot.showAxis('right')
-        plot.setDownsampling(mode='peak')
+        plot.hideAxis("left")
+        plot.showAxis("right")
+        plot.setDownsampling(mode="peak")
         plot.setRange(xRange=(0, 1), yRange=(0, 1))
         plot.hideButtons()
         plot.setMinimumHeight(minimum_height)
@@ -96,7 +96,7 @@ class ChartWidget(pg.PlotWidget):
         view.setMouseEnabled(x=True, y=False)
 
         # Set right axis
-        right_axis: pg.AxisItem = plot.getAxis('right')
+        right_axis: pg.AxisItem = plot.getAxis("right")
         right_axis.setWidth(60)
         right_axis.tickFont = NORMAL_FONT
 
