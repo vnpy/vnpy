@@ -444,7 +444,7 @@ class TradeMonitor(BaseMonitor):
     sorting: bool = True
 
     headers: dict = {
-        "tradeid": {"display": _("成交号 "), "cell": BaseCell, "update": False},
+        "tradeid": {"display": _("成交号"), "cell": BaseCell, "update": False},
         "orderid": {"display": _("委托号"), "cell": BaseCell, "update": False},
         "symbol": {"display": _("代码"), "cell": BaseCell, "update": False},
         "exchange": {"display": _("交易所"), "cell": EnumCell, "update": False},

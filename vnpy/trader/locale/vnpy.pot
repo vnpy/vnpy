@@ -404,7 +404,7 @@ msgid "信息"
 msgstr ""
 
 #: vnpy\trader\ui\widget.py:447
-msgid "成交号 "
+msgid "成交号"
 msgstr ""
 
 #: vnpy\trader\ui\widget.py:448 vnpy\trader\ui\widget.py:470
