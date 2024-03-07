@@ -30,8 +30,9 @@ def extract_vt_symbol(vt_symbol: str) -> Tuple[str, Exchange]:
     """
     :return: (symbol, exchange)
     """
-    symbol = vt_symbol[:vt_symbol.rfind(".")]
-    exchange_str = vt_symbol[vt_symbol.rfind(".")+1:]
+    idx = vt_symbol.rfind(".")
+    symbol = vt_symbol[:]
+    exchange_str = vt_symbol[idx+1:]
     return symbol, Exchange(exchange_str)
 
 
