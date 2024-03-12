@@ -16,6 +16,7 @@ import talib
 
 from .object import BarData, TickData
 from .constant import Exchange, Interval
+from .locale import _
 
 if sys.version_info >= (3, 9):
     from zoneinfo import ZoneInfo, available_timezones              # noqa
@@ -23,7 +24,7 @@ else:
     from backports.zoneinfo import ZoneInfo, available_timezones    # noqa
 
 
-log_formatter: logging.Formatter = logging.Formatter('[%(asctime)s] %(message)s')
+log_formatter: logging.Formatter = logging.Formatter("[%(asctime)s] %(message)s")
 
 
 def extract_vt_symbol(vt_symbol: str) -> Tuple[str, Exchange]:
@@ -205,7 +206,7 @@ class BarGenerator:
 
         self.daily_end: time = daily_end
         if self.interval == Interval.DAILY and not self.daily_end:
-            raise RuntimeError("合成日K线必须传入每日收盘时间")
+            raise RuntimeError(_("合成日K线必须传入每日收盘时间"))
 
     def update_tick(self, tick: TickData) -> None:
         """
