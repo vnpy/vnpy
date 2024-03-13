@@ -1,1 +1,1 @@
-recursive-include vnpy *.ico *.ini *.dll *.so *.pyd *.h *.hpp *.cpp, *.mo
+recursive-include vnpy *.ico *.po *.mo
