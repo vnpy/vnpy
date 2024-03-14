@@ -11,6 +11,7 @@ from PySide6 import QtGui, QtWidgets, QtCore
 
 from ..setting import SETTINGS
 from ..utility import get_icon_path
+from ..locale import _
 
 
 Qt = QtCore.Qt
@@ -83,19 +84,19 @@ class ExceptionWidget(QtWidgets.QWidget):
 
     def init_ui(self) -> None:
         """"""
-        self.setWindowTitle("触发异常")
+        self.setWindowTitle(_("触发异常"))
         self.setFixedSize(600, 600)
 
         self.msg_edit: QtWidgets.QTextEdit = QtWidgets.QTextEdit()
         self.msg_edit.setReadOnly(True)
 
-        copy_button: QtWidgets.QPushButton = QtWidgets.QPushButton("复制")
+        copy_button: QtWidgets.QPushButton = QtWidgets.QPushButton(_("复制"))
         copy_button.clicked.connect(self._copy_text)
 
-        community_button: QtWidgets.QPushButton = QtWidgets.QPushButton("求助")
+        community_button: QtWidgets.QPushButton = QtWidgets.QPushButton(_("求助"))
         community_button.clicked.connect(self._open_community)
 
-        close_button: QtWidgets.QPushButton = QtWidgets.QPushButton("关闭")
+        close_button: QtWidgets.QPushButton = QtWidgets.QPushButton(_("关闭"))
         close_button.clicked.connect(self.close)
 
         hbox: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()

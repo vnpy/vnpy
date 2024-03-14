@@ -1,6 +1,7 @@
 # Python
 *.pyc
 *.pyo
+*.pyd
 *.egg-info/
 
 # Jupyter
@@ -35,3 +36,4 @@ _templates
 
 # Misc
 .DS_Store
+*.mo

@@ -1,0 +1,1 @@
+python C:\veighna_studio\Tools\i18n\pygettext.py -o vnpy\trader\locale\vnpy.pot vnpy\trader\*.py vnpy\trader\ui\*.py
