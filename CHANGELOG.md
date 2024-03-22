@@ -1,3 +1,41 @@
+# 3.9.1版本
+
+## 新增
+
+1. 增加i18n国际化支持，以及对应的英文翻译
+2. 增加CFD和SWAP品种类型枚举值
+3. vnpy_ib增加COMEX、Eurex交易所支持
+4. vnpy_ib增加CFD品种支持
+
+## 调整
+
+1. vnpy_rqdata完善对于周五夜盘数据查询的支持
+2. vnpy_ib订阅行情和委托下单时，检查代码字符串是否包含空格
+3. vnpy_ib解析合约对象时，增加对于ConId是否包含非数字字符的检查
+4. vnpy_ib查询历史K线数据，支持更长时间段跨度（不再限制半年）
+5. vnpy_da更新API版本到1.18.2.0
+6. vnpy_da移除历史数据查询功能
+7. vnpy_tora调整期权接口的委托号生成规则，支持上限10万数量委托
+8. vnpy_xtp调整账户冻结资金的计算逻辑
+9. vnpy_optionmaster增加对IB的股票期权品种支持
+10. vnpy_optionmaster定价模型改为计算理论希腊值
+11. vnpy_optionmaster调整对象希腊值为理论模式
+12. vnpy_optionmaster调整中值隐波动的计算方法
+13. vnpy_spreadtrading使用线程池实现策略初始化的异步执行
+14. vnpy_postgresql支持自动重用已经打开的数据库连接
+15. vnpy_ctptest更新API版本至6.7.2
+16. 接口封装升级更新pybind11到2.11.1版本：vnpy_ctptest、vnpy_sopttest
+17. vnpy_ctp更新API版本到6.7.2
+18. 调整extract_vt_symbol函数，兼容代码中带有"."的情况，如HHI.HK-HKD-FUT.HKFE
+19. 更新vnpy框架的核心依赖模块到2024年较新的版本
+
+## 修复
+
+1. 修复vnpy_portfoliostrategy调用stop_strategy没有撤销活动委托的问题
+2. 修复vnpy_xtp的API封装中queryTickersPriceInfo底层调用错误
+3. 修复RpcClient中_last_received_ping变量的类型问题
+
+
 # 3.9.0版本
 
 ## 新增
