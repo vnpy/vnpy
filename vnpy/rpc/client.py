@@ -1,5 +1,5 @@
 import threading
-from datetime import datetime
+from time import time
 from functools import lru_cache
 from typing import Any
 
@@ -50,7 +50,7 @@ class RpcClient:
         self._thread: threading.Thread = None      # RpcClient thread
         self._lock: threading.Lock = threading.Lock()
 
-        self._last_received_ping: datetime = datetime.utcnow()
+        self._last_received_ping: time = time()
 
     @lru_cache(100)
     def __getattr__(self, name: str) -> Any:
@@ -111,7 +111,7 @@ class RpcClient:
         self._thread = threading.Thread(target=self.run)
         self._thread.start()
 
-        self._last_received_ping = datetime.utcnow()
+        self._last_received_ping = time()
 
     def stop(self) -> None:
         """
