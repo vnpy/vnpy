@@ -54,7 +54,7 @@ class Product(Enum):
     WARRANT = _("权证")
     SPREAD = _("价差")
     FUND = _("基金")
-    CFD = _("差价")
+    CFD = "CFD"
     SWAP = _("互换")
 
 

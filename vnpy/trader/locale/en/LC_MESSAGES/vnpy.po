@@ -107,10 +107,6 @@ msgstr "Spread"
 msgid "基金"
 msgstr "Fund"
 
-#: vnpy\trader\constant.py:57
-msgid "差价"
-msgstr "Cfd"
-
 #: vnpy\trader\constant.py:58
 msgid "互换"
 msgstr "Swap"
