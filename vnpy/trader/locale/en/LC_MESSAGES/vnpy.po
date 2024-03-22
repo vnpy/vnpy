@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-03-06 09:25+0800\n"
+"POT-Creation-Date: 2024-03-21 16:21+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -107,23 +107,31 @@ msgstr "Spread"
 msgid "基金"
 msgstr "Fund"
 
-#: vnpy\trader\constant.py:63
+#: vnpy\trader\constant.py:57
+msgid "差价"
+msgstr "Cfd"
+
+#: vnpy\trader\constant.py:58
+msgid "互换"
+msgstr "Swap"
+
+#: vnpy\trader\constant.py:65
 msgid "限价"
 msgstr "Limit"
 
-#: vnpy\trader\constant.py:64
+#: vnpy\trader\constant.py:66
 msgid "市价"
 msgstr "Market"
 
-#: vnpy\trader\constant.py:68
+#: vnpy\trader\constant.py:70
 msgid "询价"
 msgstr "RFQ"
 
-#: vnpy\trader\constant.py:75
+#: vnpy\trader\constant.py:77
 msgid "看涨期权"
 msgstr "Call"
 
-#: vnpy\trader\constant.py:76
+#: vnpy\trader\constant.py:78
 msgid "看跌期权"
 msgstr "Put"
 
