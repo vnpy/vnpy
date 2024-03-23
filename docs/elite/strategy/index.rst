@@ -10,3 +10,4 @@
 
    elite_portfoliostrategy.md
    elite_spreadtrading.md
+   elite_optionstrategy.md

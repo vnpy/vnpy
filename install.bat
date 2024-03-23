@@ -2,7 +2,7 @@
 SET python=%1
 SET pypi_index=%2
 IF     %python%""     == "" SET python=python
-IF     %pypi_index%"" == "" SET pypi_index=https://pypi.douban.com/simple
+IF     %pypi_index%"" == "" SET pypi_index=https://pypi.vnpy.com
 IF NOT %pypi_index%"" == "" SET pypi_index=--index-url %pypi_index%
 @ECHO ON
 

@@ -369,7 +369,7 @@ VeighNa Elite Trader的CTA策略模块提供了EliteCtaTemplate专业CTA策略�
 
 在基于EliteCtaTemplate编写策略逻辑之前，需要在策略文件的顶部载入需要用到的内部组件，如下方代码所示：
 
-```python 3
+```python3
 from numpy import ndarray
 
 from elite_ctastrategy import (
@@ -396,7 +396,7 @@ from elite_ctastrategy import (
 
 在策略类的下方，可以设置策略的作者（author），参数（parameters）以及变量（variables），如下方代码所示：
 
-```python 3
+```python3
 
     author = "VeighNa菁英版"
 
@@ -447,7 +447,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 初始化策略时on_init函数会被调用，默认写法是先调用write_log函数输出“策略初始化”日志，再调用load_bar函数加载历史数据，如下方代码所示：
 
-```python 3
+```python3
     def on_init(self) -> None:
         """初始化"""
         self.write_log("策略初始化")
@@ -464,7 +464,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 启动策略时on_start函数会被调用，默认写法是调用write_log函数输出“策略启动”日志，如下方代码所示：
 
-```python 3
+```python3
     def on_start(self):
         """
         Callback when strategy is started.
@@ -482,7 +482,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 停止策略时on_stop函数会被调用，默认写法是调用write_log函数输出“策略停止”日志，如下方代码所示：
 
-```python 3
+```python3
     def on_stop(self):
         """
         Callback when strategy is stopped.
@@ -504,7 +504,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 
 示例策略类RumiStrategy是通过30分钟K线数据回报来生成CTA信号的。一共有三部分，如下方代码所示：
 
-```python 3
+```python3
     def on_history(self, hm: HistoryManager) -> None:
         """K线推送"""
         # 计算均线数组

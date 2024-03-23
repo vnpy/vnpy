@@ -468,7 +468,7 @@ VeighNa Elite Trader的CTA策略模块内置了以下计算函数供策略调用
 
 若想要测试resample_data函数的效果，可以在策略的on_history函数收到hm推送的时候先获取K线DataFrame，再调用resample_data函数对K线数据重新取样，如下所示：
 
-```python 3
+```python3
 # 判断实盘trading状态，只有策略启动之后才进行输出
 df: pd.DataFrame = hm.to_dataframe()
 resampled_df: pd.DataFrame = resample_data(df, "5min")

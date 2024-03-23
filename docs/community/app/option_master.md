@@ -15,7 +15,7 @@ OptionMaster是用于**期权波动率交易**的功能模块，用户可以通�
 
 在启动脚本中添加如下代码：
 
-```python 3
+```python3
 # 写在顶部
 from vnpy_optionmaster import OptionMasterApp
 

@@ -43,6 +43,7 @@ from .object import (
 from .setting import SETTINGS
 from .utility import get_folder_path, TRADER_DIR
 from .converter import OffsetConverter
+from .locale import _
 
 
 class MainEngine:
@@ -124,7 +125,7 @@ class MainEngine:
         """
         gateway: BaseGateway = self.gateways.get(gateway_name, None)
         if not gateway:
-            self.write_log(f"找不到底层接口：{gateway_name}")
+            self.write_log(_("找不到底层接口：{}").format(gateway_name))
         return gateway
 
     def get_engine(self, engine_name: str) -> "BaseEngine":
@@ -133,7 +134,7 @@ class MainEngine:
         """
         engine: BaseEngine = self.engines.get(engine_name, None)
         if not engine:
-            self.write_log(f"找不到引擎：{engine_name}")
+            self.write_log(_("找不到引擎：{}").format(engine_name))
         return engine
 
     def get_default_setting(self, gateway_name: str) -> Optional[Dict[str, Any]]:

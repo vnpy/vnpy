@@ -14,7 +14,7 @@ DataRecorder是用于**实盘行情记录**的模块，用户可以利用该模�
 
 在启动脚本中添加如下代码：
 
-```python 3
+```python3
 # 写在顶部
 from vnpy_datarecorder import DataRecorderApp
 

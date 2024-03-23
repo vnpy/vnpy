@@ -39,7 +39,7 @@ WebTrader采用了FastAPI作为后端服务器，支持REST主动请求调用和
 
 在启动脚本中添加如下代码：
 
-```python 3
+```python3
 # 写在顶部
 from vnpy_webtrader import WebTraderApp
 
@@ -76,7 +76,7 @@ main_engine.add_app(WebTraderApp)
 这里包含了目前WebTrader支持的相关接口信息，下面结合vnpy_webtrader项目下提供的[Jupyter Notebook](https://github.com/vnpy/vnpy_webtrader/blob/main/script/test.ipynb)进行相关的接口演示。
 
 ### 获得令牌（token）
-```python 3
+```python3
 import requests
 import json
 
@@ -102,7 +102,7 @@ r = requests.post(url + "tick/" + "cu2112.SHFE", headers={"Authorization":"Beare
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_4.png)
 
 ###  批量查询
-```python 3
+```python3
 # 查询函数
 def query_test(name):
     """查询对应类型的数据"""
@@ -124,7 +124,7 @@ for name in ["tick", "contract", "account", "position", "order", "trade"]:
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_5.png)
 
 ### 委托测试
-```python 3
+```python3
 # 委托测试
 req = {
     "symbol": "cu2112",
@@ -151,7 +151,7 @@ print(vt_orderid)
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_6.png)
 
 ### 撤单测试
-```python 3
+```python3
 # 撤单测试
 r = requests.delete(
     url + "order/" + vt_orderid,
@@ -164,7 +164,7 @@ r = requests.delete(
 
 ### Websocket测试
 
-```python 3
+```python3
 # Weboscket测试
 from websocket import create_connection
 

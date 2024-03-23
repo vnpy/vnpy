@@ -13,3 +13,4 @@
    datafeed.md
    pycharm.md
    contribution.md
+   i18n.md
