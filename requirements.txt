@@ -11,4 +11,4 @@ deap==1.4.1
 pyzmq==25.1.2
 plotly==5.20.0
 importlib-metadata==7.0.2
-tqdm==4.66.2
+tqdm==4.66.3
