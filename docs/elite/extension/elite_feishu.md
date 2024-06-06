@@ -33,7 +33,7 @@ VeighNa Elite Trader主界面的全局配置的窗口提供了飞书消息通知
 在VeighNa Elite Trader的全局配置窗口中的【飞书】部分进行配置：
 
 - 启动：选择【是】选项；
-- URL：填入飞书设置webhook窗口时复制出的Webhook地址；
+- URL：填入飞书设置Webhook窗口时复制出的Webhook地址；
 - 密钥：填入飞书添加机器人勾选【签名校验】选项时复制出的密钥。
 
 
