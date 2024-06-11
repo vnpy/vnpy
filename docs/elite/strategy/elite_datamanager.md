@@ -1,0 +1,198 @@
+# 历史数据管理
+
+DataManager是用于**历史数据管理**的功能模块，用户可以通过其UI界面操作来便捷完成数据下载、数据查看、数据导入、数据导出和数据更新等任务。
+
+
+## 主要优势
+
+DataManager模块不仅提供了数据下载、数据查看、数据导入、数据导出和数据更新支持，还提供了期权数据更新功能，以实现更加强大的期权策略支持。
+
+
+## 启动模块
+
+DataManager模块需要启动之前通过【策略应用】标签页加载。
+
+启动登录VeighNa Elite Trader后，在菜单栏中点击【功能】-> 【历史数据管理】，或者点击左侧按钮栏的图标：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/1.png)
+
+即可进入历史数据管理UI界面，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/2.png)
+
+
+## 下载数据
+
+DataManager模块提供了一键下载历史数据的功能，点击界面上方的【下载数据】按钮，会弹出下载历史数据窗口，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/3.png)
+
+需要填写代码、交易所、周期以及开始日期四个字段信息：
+
+<span id="jump">
+
+- 代码
+  - 代码格式为合约品种
+  - 如IF2412、rb2406
+- 交易所
+  - 合约交易的交易所（点击窗口右侧箭头按钮可选择VeighNa支持的交易所列表）
+- 周期
+  - MINUTE（1分钟K线）
+  - HOUR（1小时K线）
+  - DAILY（日K线）
+  - WEEKLY（周K线）
+  - TICK（一个Tick）
+- 开始日期
+  - 格式为yy/mm/dd
+  - 如2021/6/6
+
+</span>
+
+填写完成后，点击下方【下载】按钮启动下载程序，下载成功如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/4.png)
+
+注意下载完成后的历史数据会保存在本地数据库中，后续回测或实盘时可以直接使用，无需每次都重复下载。
+
+### 数据来源：数据服务（期货、股票、期权）
+
+以迅投研为例，[迅投研](https://xuntou.net/#/signup?utm_source=vnpy)提供国内期货、股票以及期权的历史数据。在使用前需要保证数据服务已经正确配置（配置方法详见基本使用篇的全局配置部分）。
+
+### 数据来源：IB（外盘期货、股票、现货等）
+
+Interactive Brokers盈透证券（IB）提供丰富的外盘市场历史数据下载（包括股票、期货、期权、现货等），注意下载前需要先启动IB TWS交易软件，并在VeighNa Elite Trader主界面连接好IB接口，并订阅所需合约行情。
+
+
+## 导入数据
+
+如果已经从其他渠道获取到了CSV格式的数据文件，可以通过DataManager的数据导入功能，将其快速导入VeighNa数据库。点击右上角的【导入数据】按钮，会弹出从如下图所示的对话框：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/5.png)
+
+点击顶部的【选择文件】按钮，会弹出窗口选择要导入的CSV文件路径，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/6.png)
+
+然后配置数据导入的相关细节：
+
+- 合约信息
+  - 格式详见本章[下载数据](#jump)部分的介绍；
+  - 请注意，导入的合约代码（symbol）和交易所（exchange）两个字段组合起来，才能构成在CTA回测等模块中使用的本地代码（vt_symbol）；
+  - 若合约代码为**rb2406**，交易所选择**SHFE**（上期所），则在CtaBacktester中回测要用到的本地代码应为**rb2406.SHFE**；
+  - 可以对时间戳时区进行选择；
+- 表头信息
+  - 可查看CSV文件的表头信息，并将对应的表头字符串输入在表头信息中；
+  - 对于CSV文件中不存在的字段（如股票数据没有【持仓量】字段），请留空即可；
+- 格式信息
+  - 采用Python内置库datetime模块的时间格式定义，来解析时间戳字符串；
+  - 默认时间格式为"%Y-%m-%d %H:%M:%S"，对应的是"2024-1-3 0:00:00"；
+  - 如果时间戳是"2024-1-3  0:00"，那么时间格式应该是"%Y-%m-%d %H:%M"。
+
+填写完毕，则如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/7.png)
+
+点击【确定】按钮，开始从CSV文件导入数据到数据库中。导入过程中界面会处于半卡住的情况，CSV文件越大（数据量越多），卡住的时间也会越长。成功载入之后，会弹出窗口显示载入成功，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/8.png)
+
+
+## 查看数据
+
+目前VeighNa Elite Trader中获取数据的方式一共有三种：
+
+- 通过数据服务或者交易接口下载
+
+- 从CSV文件导入
+
+- 使用DataRecorder模块录制
+
+不管采用何种方法获取数据，点击左上角的【刷新】按钮，即可看到当前数据库中已有数据的统计情况（Tick数据除外）。刷新过程中界面可能会有偶尔的卡顿，通常对于越多的数据，卡顿的时间也会越长。刷新成功之后，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/9.png)
+
+点击【查看】按钮，则会弹出选择数据要查看数据区间（每个时间频率下都可基于交易所查看）的对话框，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/12.png)
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/11.png)
+
+选择好要显示的数据范围和交易所后，点击【确定】按钮即可在右侧表格中看到每个时间点上具体的数据字段：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/13.png)
+
+在数据库已有数据的前提下，点击表格最左侧【数据】列下的数据频率前的小箭头，则可展开或收起该数据频率下的合约信息显示。
+
+若表格的右侧区域显示不完整，可拖动界面底端的横向滚动条进行调整。
+
+
+## 导出数据
+
+如果想导出数据库中的数据到本地CSV文件，则可选择要导出的合约，点击该合约所在行右侧的【导出】按钮后，会弹出选择数据区间对话框，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/14.png)
+
+选择要导出的数据区间范围，点击【确定】后，会再次弹出对话框选择输出文件的位置，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/15.png)
+
+选择好导出文件要放置的目录，填写完CSV文件名之后，点击【保存】按钮即可完成CSV文件的导出。
+
+
+## 删除数据
+
+若想删除特定合约数据，则可选择要删除的合约，点击该合约行数据右侧的【删除】按钮后，会弹出对话框，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/16.png)
+
+点击【OK】按钮即可删除该合约数据，并弹出删除成功窗口，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/17.png)
+
+此时再点击【刷新】按钮，图形界面上已经没有该合约的信息了，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/18.png)
+
+
+## 更新数据
+
+在用户**配置了数据服务**或者**交易接口（已连接）提供充足的历史数据**的情况下，点击界面上方的【更新数据】按钮，即可基于图形界面上显示的所有合约数据，执行一键自动下载更新。
+
+更新前图形界面显示如下图：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/19.png)
+
+点击【更新数据】按钮，会弹出更新进度的信息提示对话框。此时DataManager会自动**从数据库中已有数据的结束日期开始，下载截止到当前最新日期**的数据，并更新到数据库中。
+
+如果需要更新的数据较少，则可能瞬间完成更新任务，此时没有观察到更新对话框也是正常的。
+
+更新完成后，点击左上角【刷新】按钮，即可看到该合约数据已更新至当前最新日期。
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/20.png)
+
+## 数据范围
+
+请注意，虽然界面上显示了数据库中已有数据的开始和结束时间，**但并不代表数据库中储存了从开始时间到结束时间之间所有的数据**。
+
+如果依赖于交易接口提供的历史数据，一但开始时间和结束时间之间的时间跨度超过接口所能提供的数据范围，就可能导致数据之间出现缺失的情况。因此建议更新数据之后，点击【查看】按钮检查一下该合约数据是否连续。
+
+
+## 更新期权数据
+
+对界面右上角的【交易所】和【开始时间】进行配置之后，点击【更新期权数据】按钮，即可基于交易所更新数据库里存储的期权合约信息和历史数据，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/21.png)
+
+更新完成后，点击左上角【刷新】按钮，即可看到期权合约数据已更新至当前最新日期。
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/22.png)
+
+若在更新过程中想停止数据更新，可以点击右上角的【停止数据更新按钮】，即可停止更新任务，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/datamanager/23.png)
+
+请注意：
+
+ - 目前只有配置了迅投研或米筐才能使用期权数据更新功能
+ - 上图是迅投研更新的截图，若使用配置米筐为数据服务，更新过程中不会出现“开始更新合约历史信息”的输出
+ - 如果在更新过程中点击图形界面右上角的叉，关闭历史数据管理UI界面的话，更新任务会停止
