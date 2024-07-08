@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-3.9.1-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-3.9.2-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.10|3.11|3.12-blue.svg" />
     <img src ="https://img.shields.io/github/actions/workflow/status/vnpy/vnpy/pythonapp.yml?branch=master"/>
@@ -172,8 +172,8 @@ For financial institution users of VeighNa, a special [VeighNa Institutional Use
 ## Environment preparation
 
 * We recommend using the Python distribution [VeighNa Studio-2.9.0](https://download.vnpy.com/veighna-studio-2.9.0.exe), which is built with the latest version of VeighNa framework and VeighNa Station quantitative management platform, specifically created by the VeighNa team for quantitative trading. Manual installation
-* Supported system versions: Windows 10 or above/Windows Server 2016 or above/Ubuntu 20.04 LTS
-* Supported Python version: Python 3.7 64-bit (**Note that it must be Python 3.7 64-bit version**)
+* Supported system versions: Windows 10 or above/Windows Server 2019 or above/Ubuntu 22.04 LTS
+* Supported Python version: Python 3.10 64-bit or above
 
 ## Installation steps
 
