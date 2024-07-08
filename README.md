@@ -93,6 +93,8 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
         * RQData行情（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：跨市场（股票、指数、ETF、期货）实时行情
 
+        * 迅投研行情（[xt](https://www.github.com/vnpy/vnpy_xt)）：跨市场（股票、指数、可转债、ETF、期货、期权）实时行情
+
         * RPC服务（[rpc](https://www.github.com/vnpy/vnpy_rpcservice)）：跨进程通讯接口，用于分布式架构
 
 3. 覆盖下述各类量化策略的交易应用（app）：
