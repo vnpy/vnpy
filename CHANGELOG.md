@@ -2,11 +2,12 @@
 
 ## 新增
 
-1. vnpy_ctabacktester、vnpy_ctastrategy、vnpy_portfoliostrategy增加i18n国际化支持
+1. vnpy_xt增加实时行情接口XtGateway
 2. vnpy_xt增加基于文件锁实现的xtdc单例运行
 3. vnpy_ib增加行情退订功能
 4. vnpy_ib的合约乘数支持浮点数
 5. vnpy_ib增加期权链合约数据更新结束回报
+6. vnpy_ctabacktester、vnpy_ctastrategy、vnpy_portfoliostrategy增加i18n国际化支持
 
 ## 调整
 
@@ -23,6 +24,8 @@
 11. vnpy_ib移除期权合约的自动查询功能
 12. vnpy_ib缓存查询返回的IB合约数据，简化行情切片查询函数
 13. vnpy_ib查询历史数据时，使用UTC时间戳传参，并将最长等待时间延长为600秒
+14. vnpy_ctastrategy的绩效统计值增加基于指数移动平均计算的EWM Sharpe比率
+15. vnpy_ctastrategy回测引擎的show_chart函数直接返回图表对象
 
 ## 修复
 
@@ -30,6 +33,7 @@
 2. 修复vnpy_datarecorder记录价差数据时缺失的localtime字段
 3. 修复vnpy_spreadtraidng从datafeed加载数据时，时间戳传参缺失时区信息的问题
 4. 修复vnpy_paperaccount委托数量为0撮合之后导致的ZeroDivisionError问题
+5. 修复vnpy_portoliostrategy停止策略时，没有自动撤销策略委托的功能
 
 # 3.9.1版本
 
