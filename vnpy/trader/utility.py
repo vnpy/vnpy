@@ -12,7 +12,7 @@ from decimal import Decimal
 from math import floor, ceil
 
 import numpy as np
-import talib
+#import talib
 
 from .object import BarData, TickData, TradeData
 from .constant import Exchange, Interval, Direction
