@@ -11,7 +11,6 @@ from .setting import SETTINGS
 from .utility import ZoneInfo
 from .locale import _
 
-
 DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
 
 
@@ -57,6 +56,31 @@ class TickOverview:
     count: int = 0
     start: datetime = None
     end: datetime = None
+
+
+@dataclass
+class FactorOverview:
+    """
+    BarOverview of bar data stored in database.
+    """
+
+    symbol: str = ""
+    name: str = ""
+    exchange: Exchange = None
+    interval: Interval = None
+    count: int = 0
+    start: datetime = None
+    end: datetime = None
+
+    def __init__(self, symbol: str, name: str, exchange: Exchange, interval: Interval, start: datetime, end: datetime,
+                 count: int = 0):
+        self.symbol = symbol
+        self.name = name
+        self.exchange = exchange
+        self.interval = interval
+        self.start = start
+        self.end = end
+        self.count = count
 
 
 class BaseDatabase(ABC):
