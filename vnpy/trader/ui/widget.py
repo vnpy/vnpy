@@ -38,7 +38,6 @@ from ..utility import load_json, save_json, get_digits, ZoneInfo
 from ..setting import SETTING_FILENAME, SETTINGS
 from ..locale import _
 
-
 COLOR_LONG = QtGui.QColor("red")
 COLOR_SHORT = QtGui.QColor("green")
 COLOR_BID = QtGui.QColor(255, 174, 201)
@@ -251,6 +250,9 @@ class BaseMonitor(QtWidgets.QTableWidget):
         labels: list = [d["display"] for d in self.headers.values()]
         self.setHorizontalHeaderLabels(labels)
 
+        font_stylesheet = "::section{font-size: %dpt;}" % (SETTINGS["font.size"])
+        self.horizontalHeader().setStyleSheet(font_stylesheet)
+
         self.verticalHeader().setVisible(False)
         self.setEditTriggers(self.NoEditTriggers)
         self.setAlternatingRowColors(True)
@@ -339,7 +341,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
         """
         Resize all columns according to contents.
         """
-        self.horizontalHeader().resizeSections(QtWidgets.QHeaderView.ResizeToContents)
+        self.horizontalHeader().resizeSections(QtWidgets.QHeaderView.Stretch)
 
     def save_csv(self) -> None:
         """
@@ -821,9 +823,9 @@ class TradingWidget(QtWidgets.QWidget):
         self.setLayout(vbox)
 
     def create_label(
-        self,
-        color: str = "",
-        alignment: int = QtCore.Qt.AlignLeft
+            self,
+            color: str = "",
+            alignment: int = QtCore.Qt.AlignLeft
     ) -> QtWidgets.QLabel:
         """
         Create label with certain font color.
@@ -1016,7 +1018,7 @@ class TradingWidget(QtWidgets.QWidget):
                 direction: Direction = Direction.LONG
             elif data.direction == Direction.LONG:
                 direction: Direction = Direction.SHORT
-            else:       # Net position mode
+            else:  # Net position mode
                 if data.volume > 0:
                     direction: Direction = Direction.SHORT
                 else:
