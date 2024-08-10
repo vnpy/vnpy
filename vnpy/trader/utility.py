@@ -1053,30 +1053,3 @@ def get_file_logger(filename: str) -> logging.Logger:
     handler.setFormatter(log_formatter)
     logger.addHandler(handler)  # each handler will be added only once.
     return logger
-
-
-def bn_exection_report2trade_data(report: dict) -> TradeData:
-    """
-    Convert binance execution report to trade data.
-    """
-    symbol = report['s']
-    order_id = report['c']
-    trade_id = report['t']
-    direction = Direction.LONG if report['S'] == "BUY" else Direction.SHORT
-    price = float(report['p'])
-    volume = float(report['q'])
-    transaction_time = datetime.fromtimestamp(report['T'] / 1000.0)
-
-    trade = TradeData(
-        symbol=symbol,
-        exchange=Exchange.BINANCE,
-        orderid=order_id,
-        tradeid=trade_id,
-        direction=direction,
-        price=price,
-        volume=volume,
-        datetime=transaction_time,
-        gateway_name="BINANCE_SPOT"
-    )
-
-    return trade
