@@ -1,14 +1,15 @@
 """
 Basic data structure used for general trading function in the trading platform.
 """
-
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
 from logging import INFO
+from typing import Optional
 
 from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
 
-ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
+ACTIVE_STATUSES = {Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED}
 
 
 @dataclass
@@ -80,6 +81,25 @@ class TickData(BaseData):
         """"""
         self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
 
+@dataclass
+class FactorData(BaseData):
+    """
+    Factor data contains information about:
+        * factor value
+        * factor name
+        * factor frequency
+    """
+
+    factor_name: str
+    frequency: str = ""
+    datetime: datetime = None
+
+    value: defaultdict[float] = field(default_factory=defaultdict)
+
+    def __post_init__(self) -> None:
+        """"""
+        self.vt_symbol: str = f"{self.factor_name}.{self.frequency}"
+
 
 @dataclass
 class BarData(BaseData):
@@ -121,6 +141,8 @@ class OrderData(BaseData):
     offset: Offset = Offset.NONE
     price: float = 0
     volume: float = 0
+    stop_loss_price: float = 0
+    take_profit_price: float = 0
     traded: float = 0
     status: Status = Status.SUBMITTING
     datetime: datetime = None
@@ -325,6 +347,9 @@ class OrderRequest:
     type: OrderType
     volume: float
     price: float = 0
+    stop_loss: float = 0
+    take_profit: float = 0
+    strategy_name: str = ""
     offset: Offset = Offset.NONE
     reference: str = ""
 
@@ -332,10 +357,17 @@ class OrderRequest:
         """"""
         self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
 
-    def create_order_data(self, orderid: str, gateway_name: str) -> OrderData:
+    def create_order_data(self, orderid: Optional[str], gateway_name: Optional[str]) -> OrderData:
         """
         Create order data from request.
         """
+        orderid = f"{self.vt_symbol}.{self.strategy_name}_{datetime.now().timestamp()}"
+        if self.direction == Direction.LONG:
+            stop_loss_price = self.price * (1 - self.stop_loss)
+            take_profit_price = self.price * (1 + self.take_profit)
+        else:
+            stop_loss_price = self.price * (1 + self.stop_loss)
+            take_profit_price = self.price * (1 - self.take_profit)
         order: OrderData = OrderData(
             symbol=self.symbol,
             exchange=self.exchange,
@@ -344,6 +376,8 @@ class OrderRequest:
             direction=self.direction,
             offset=self.offset,
             price=self.price,
+            stop_loss_price=stop_loss_price,
+            take_profit_price=take_profit_price,
             volume=self.volume,
             reference=self.reference,
             gateway_name=gateway_name,
