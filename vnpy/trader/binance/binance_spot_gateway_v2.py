@@ -1,7 +1,7 @@
+import json
 from typing import Optional
 
 from binance.spot import Spot
-from binance.websocket.websocket_client import BinanceWebsocketClient
 
 import urllib
 import hashlib
@@ -42,8 +42,6 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.event import EVENT_TIMER
 from vnpy.event import Event, EventEngine
-from vnpy_rest import RestClient, Request, Response
-from vnpy_websocket import WebsocketClient
 from asyncio import (
     run_coroutine_threadsafe
 )
@@ -489,70 +487,56 @@ class BinanceSpotRestAPi:
 
                 params["endTime"] = end_time * 1000
 
-            resp: Response = self.request(
-                "GET",
-                "/api/v3/klines",
-                data={"security": Security.NONE},
-                params=params
-            )
+            try:
+                data = self._client.klines(**params)
+                data = json.loads(data)
+                if data['code']:
+                    if data['code'] == 429:
+                        self.gateway.write_log(f"获取历史数据失败：{data['code']}, {data['msg']}")
+                        self.gateway.write_log(f"{sleep_seconds=} for retring connection")
+                        time.sleep(sleep_seconds)
+                        sleep_seconds *= 2
+                        continue
+                    else:
+                        sleep_seconds = 0.5
 
-            if resp.status_code == 429:
-                self.gateway.write_log(f"{resp.status_code=},{resp.text=}")
-                self.gateway.write_log(f"{sleep_seconds=} for retring connection")
-                time.sleep(sleep_seconds)
-                sleep_seconds *= 2
-                continue
-            else:
-                sleep_seconds = 0.5
-            # 如果请求失败则终止循环
-            if resp.status_code // 100 != 2:
-                msg: str = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
-                self.gateway.write_log(msg)
+                    if data["code"] // 100 != 2:
+                        self.gateway.write_log(f"获取历史数据失败：{data['code']}, {data['msg']}")
+                        break
+                else:
+                    for row in data:
+                        bar: BarData = BarData(
+                            symbol=req.symbol,
+                            exchange=req.exchange,
+                            datetime=datetime.fromtimestamp(row[0]),
+                            interval=req.interval,
+                            volume=float(row[5]),
+                            turnover=float(row[7]),
+                            open_price=float(row[1]),
+                            high_price=float(row[2]),
+                            low_price=float(row[3]),
+                            close_price=float(row[4]),
+                            gateway_name=self.gateway_name
+                        )
+                        history.append(bar)
+
+                    begin: datetime = history[0].datetime
+                    end: datetime = history[-1].datetime
+                    self.gateway.write_log(f"获取历史数据成功，{req.symbol} - {req.interval.value}, {begin} - {end}")
+
+                    if len(data) < limit:
+                        break
+
+                    start_dt = bar.datetime + TIMEDELTA_MAP[req.interval]
+                    start_time = int(datetime.timestamp(start_dt))
+            except Exception as e:
+                self.gateway.write_log(f"获取历史数据失败：{e}")
                 break
-            else:
-                data: dict = resp.json()
-                if not data:
-                    msg: str = f"获取历史数据为空，开始时间：{start_time}"
-                    self.gateway.write_log(msg)
-                    break
-
-                buf: List[BarData] = []
-
-                for row in data:
-                    bar: BarData = BarData(
-                        symbol=req.symbol,
-                        exchange=req.exchange,
-                        datetime=generate_datetime(row[0]),
-                        interval=req.interval,
-                        volume=float(row[5]),
-                        turnover=float(row[7]),
-                        open_price=float(row[1]),
-                        high_price=float(row[2]),
-                        low_price=float(row[3]),
-                        close_price=float(row[4]),
-                        gateway_name=self.gateway_name
-                    )
-                    buf.append(bar)
-
-                history.extend(buf)
-
-                begin: datetime = buf[0].datetime
-                end: datetime = buf[-1].datetime
-                msg: str = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
-                self.gateway.write_log(msg)
-
-                # 如果收到了最后一批数据则终止循环
-                if len(data) < limit:
-                    break
-
-                # 更新开始时间
-                start_dt = bar.datetime + TIMEDELTA_MAP[req.interval]
-                start_time = int(datetime.timestamp(start_dt))
 
         return history
 
 
-class BinanceSpotTradeWebsocketApi(WebsocketClient):
+class BinanceSpotTradeWebsocketApi:
     """币安现货交易Websocket API"""
 
     def __init__(self, gateway: BinanceSpotGateway) -> None:
@@ -564,6 +548,7 @@ class BinanceSpotTradeWebsocketApi(WebsocketClient):
 
     def connect(self, url: str, proxy_host: str, proxy_port: int) -> None:
         """连接Websocket交易频道"""
+        self._client = SpotWebsocketStreamClient(url, self.gateway)
         self.init(url, proxy_host, proxy_port)
         self.start()
 
