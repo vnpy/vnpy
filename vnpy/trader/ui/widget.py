@@ -250,9 +250,6 @@ class BaseMonitor(QtWidgets.QTableWidget):
         labels: list = [d["display"] for d in self.headers.values()]
         self.setHorizontalHeaderLabels(labels)
 
-        font_stylesheet = "::section{font-size: %dpt;}" % (SETTINGS["font.size"])
-        self.horizontalHeader().setStyleSheet(font_stylesheet)
-
         self.verticalHeader().setVisible(False)
         self.setEditTriggers(self.NoEditTriggers)
         self.setAlternatingRowColors(True)
