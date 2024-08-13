@@ -546,11 +546,11 @@ class BinanceSpotTradeWebsocketApi:
         self.gateway: BinanceSpotGateway = gateway
         self.gateway_name = gateway.gateway_name
 
-    def connect(self, url: str, proxy_host: str, proxy_port: int) -> None:
+    def connect(self, stream_url: str, listen_key: str) -> None:
         """连接Websocket交易频道"""
-        self._client = SpotWebsocketStreamClient(url, self.gateway)
-        self.init(url, proxy_host, proxy_port)
-        self.start()
+        self._client = SpotWebsocketStreamClient(stream_url=stream_url, 
+                                                 on_message=self.on_packet)
+        self._client.user_data(listen_key)
 
     def on_connected(self) -> None:
         """连接成功回报"""
@@ -614,7 +614,7 @@ class BinanceSpotTradeWebsocketApi:
             volume=float(packet["q"]),
             traded=float(packet["z"]),
             status=STATUS_BINANCE2VT[packet["X"]],
-            datetime=generate_datetime(packet["O"]),
+            datetime=datetime.fromtimestamp(packet["O"]/1000),
             gateway_name=self.gateway_name,
             offset=offset
         )
@@ -638,7 +638,7 @@ class BinanceSpotTradeWebsocketApi:
             direction=order.direction,
             price=float(packet["L"]),
             volume=trade_volume,
-            datetime=generate_datetime(packet["T"]),
+            datetime=datetime.fromtimestamp(packet["T"]/1000),
             gateway_name=self.gateway_name,
             offset=offset
         )
