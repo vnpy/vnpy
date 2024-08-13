@@ -2,6 +2,7 @@ import json
 from typing import Optional
 
 from binance.spot import Spot
+from binance.websocket.websocket_client import BinanceWebsocketClient
 
 import urllib
 import hashlib
@@ -551,6 +552,7 @@ class BinanceSpotTradeWebsocketApi:
         self._client = SpotWebsocketStreamClient(stream_url=stream_url, 
                                                  on_message=self.on_packet)
         self._client.user_data(listen_key)
+        self.on_connected()
 
     def on_connected(self) -> None:
         """连接成功回报"""
@@ -648,6 +650,130 @@ class BinanceSpotTradeWebsocketApi:
         """连接断开回报"""
         self.gateway.write_log("交易Websocket API断开")
         self.gateway.rest_api.start_user_stream()
+
+
+
+class BinanceSpotDataWebsocketApi:
+    """币安现货行情Websocket API"""
+
+    def __init__(self, gateway: BinanceSpotGateway) -> None:
+        """构造函数"""
+        super().__init__()
+
+        self.gateway: BinanceSpotGateway = gateway
+        self.gateway_name: str = gateway.gateway_name
+
+        self.ticks: Dict[str, TickData] = {}
+        self.reqid: int = 0
+
+    def connect(self, proxy_host: str, proxy_port: int, server: str):
+        """连接Websocket行情频道"""
+        if server == "REAL":
+            self._client = SpotWebsocketStreamClient(stream_url=WEBSOCKET_DATA_HOST, on_message=self.on_packet)
+        else:
+            self._client = SpotWebsocketStreamClient(stream_url=TESTNET_WEBSOCKET_DATA_HOST, on_message=self.on_packet)
+
+        self.on_connected()
+
+    def on_connected(self) -> None:
+        """连接成功回报"""
+        self.gateway.write_log("行情Websocket API连接成功")
+
+        # 重新订阅行情
+        if self.ticks:
+            channels_ticker = []
+            channels_depth = []
+            for symbol in self.ticks.keys():
+                channels_ticker.append(f"{symbol}@ticker")
+                channels_depth.append(f"{symbol}@depth5")
+
+            req: dict = {
+                "method": "SUBSCRIBE",
+                "params": channels,
+                "id": self.reqid
+            }
+            self.send_packet(req)
+
+    def subscribe(self, req: SubscribeRequest) -> None:
+        """订阅行情"""
+        if req.symbol in self.ticks:
+            return
+
+        if req.symbol not in symbol_contract_map:
+            self.gateway.write_log(f"找不到该合约代码{req.symbol}")
+            return
+
+        self.reqid += 1
+
+        # 创建TICK对象
+        tick: TickData = TickData(
+            symbol=req.symbol,
+            name=symbol_contract_map[req.symbol].name,
+            exchange=Exchange.BINANCE,
+            datetime=datetime.now(CHINA_TZ),
+            gateway_name=self.gateway_name,
+        )
+        self.ticks[req.symbol] = tick
+
+        channels = [
+            f"{req.symbol}@ticker",
+            f"{req.symbol}@depth5"
+        ]
+
+        req: dict = {
+            "method": "SUBSCRIBE",
+            "params": channels,
+            "id": self.reqid
+        }
+        self.send_packet(req)
+
+    def on_packet(self, packet: dict) -> None:
+        """推送数据回报"""
+        stream: Optional[str] = packet.get("stream", None)
+
+        if not stream:
+            return
+
+        data: dict = packet["data"]
+
+        symbol, channel = stream.split("@")
+        tick: TickData = self.ticks[symbol]
+
+        if channel == "ticker":
+            tick.volume = float(data['v'])
+            tick.turnover = float(data['q'])
+            tick.open_price = float(data['o'])
+            tick.high_price = float(data['h'])
+            tick.low_price = float(data['l'])
+            tick.last_price = float(data['c'])
+            tick.datetime = generate_datetime(float(data['E']))
+        else:
+            bids: list = data["bids"]
+            for n in range(min(5, len(bids))):
+                price, volume = bids[n]
+                tick.__setattr__("bid_price_" + str(n + 1), float(price))
+                tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
+
+            asks: list = data["asks"]
+            for n in range(min(5, len(asks))):
+                price, volume = asks[n]
+                tick.__setattr__("ask_price_" + str(n + 1), float(price))
+                tick.__setattr__("ask_volume_" + str(n + 1), float(volume))
+
+        if tick.last_price:
+            tick.localtime = datetime.now()
+            self.gateway.on_tick(copy(tick))
+
+    def on_disconnected(self) -> None:
+        """连接断开回报"""
+        self.gateway.write_log("行情Websocket API断开")
+
+
+
+
+
+
+
 
 
 class SpotWebsocketStreamClient(BinanceWebsocketClient):
