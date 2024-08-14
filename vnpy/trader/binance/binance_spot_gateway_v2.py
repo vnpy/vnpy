@@ -681,18 +681,10 @@ class BinanceSpotDataWebsocketApi:
 
         # 重新订阅行情
         if self.ticks:
-            channels_ticker = []
-            channels_depth = []
+            symbols = []
             for symbol in self.ticks.keys():
-                channels_ticker.append(f"{symbol}@ticker")
-                channels_depth.append(f"{symbol}@depth5")
-
-            req: dict = {
-                "method": "SUBSCRIBE",
-                "params": channels,
-                "id": self.reqid
-            }
-            self.send_packet(req)
+                self._client.ticker(symbol)
+                self._client.partial_book_depth(symbol)
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """订阅行情"""
@@ -710,22 +702,13 @@ class BinanceSpotDataWebsocketApi:
             symbol=req.symbol,
             name=symbol_contract_map[req.symbol].name,
             exchange=Exchange.BINANCE,
-            datetime=datetime.now(CHINA_TZ),
+            datetime=datetime.now(),
             gateway_name=self.gateway_name,
         )
         self.ticks[req.symbol] = tick
 
-        channels = [
-            f"{req.symbol}@ticker",
-            f"{req.symbol}@depth5"
-        ]
-
-        req: dict = {
-            "method": "SUBSCRIBE",
-            "params": channels,
-            "id": self.reqid
-        }
-        self.send_packet(req)
+        self._client.ticker(req.symbol)
+        self._client.partial_book_depth(req.symbol)
 
     def on_packet(self, packet: dict) -> None:
         """推送数据回报"""
@@ -746,7 +729,7 @@ class BinanceSpotDataWebsocketApi:
             tick.high_price = float(data['h'])
             tick.low_price = float(data['l'])
             tick.last_price = float(data['c'])
-            tick.datetime = generate_datetime(float(data['E']))
+            tick.datetime = datetime.fromtimestamp(float(data['E'])/1000)
         else:
             bids: list = data["bids"]
             for n in range(min(5, len(bids))):
@@ -766,6 +749,7 @@ class BinanceSpotDataWebsocketApi:
 
     def on_disconnected(self) -> None:
         """连接断开回报"""
+        self._client.stop()
         self.gateway.write_log("行情Websocket API断开")
 
 
