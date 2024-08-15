@@ -4,22 +4,16 @@ from typing import Optional
 from binance.spot import Spot
 from binance.websocket.websocket_client import BinanceWebsocketClient
 
-import urllib
-import hashlib
-import hmac
 import time
 from copy import copy
 from datetime import datetime, timedelta
-from enum import Enum
 from threading import Lock
-import pytz
 from typing import Any, Dict, List, Optional
 
 #from vnpy.api.rest import RestClient, Request
 #from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.utility import round_to
 
-from requests.exceptions import SSLError
 from vnpy.trader.constant import (
     Direction,
     Exchange,
@@ -135,7 +129,7 @@ class BinanceSpotGateway(BaseGateway):
         server: str = setting["server"]
 
         self.rest_api.connect(key, secret, server)
-        #self.market_ws_api.connect(proxy_host, proxy_port, server)
+        self.market_ws_api.connect(server)
 
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
@@ -230,7 +224,7 @@ class BinanceSpotRestAPi:
         self.query_contract()
         self.start_user_stream()
 
-    def query_time(self) -> Request:
+    def query_time(self) -> None:
         """查询时间"""
         data = self._client.time()
         self.on_query_time(data)
@@ -309,7 +303,7 @@ class BinanceSpotRestAPi:
         data = self._client.new_listen_key()
         self.on_start_user_stream(data)
 
-    def keep_user_stream(self) -> Optional[Request]:
+    def keep_user_stream(self) -> None:
         """延长listenKey有效期"""
         self.keep_alive_count += 1
         if self.keep_alive_count < 600:
@@ -444,11 +438,11 @@ class BinanceSpotRestAPi:
         self.keep_alive_count = 0
 
         if self.server == "REAL":
-            url = WEBSOCKET_TRADE_HOST + self.user_stream_key
+            url = WEBSOCKET_TRADE_HOST
         else:
-            url = TESTNET_WEBSOCKET_TRADE_HOST + self.user_stream_key
+            url = TESTNET_WEBSOCKET_TRADE_HOST
 
-        self.trade_ws_api.connect(url, self.proxy_host, self.proxy_port)
+        self.trade_ws_api.connect(url, self.user_stream_key)
 
     def on_keep_user_stream(self, data) -> None:
         """延长listenKey有效期回报"""
@@ -666,7 +660,7 @@ class BinanceSpotDataWebsocketApi:
         self.ticks: Dict[str, TickData] = {}
         self.reqid: int = 0
 
-    def connect(self, proxy_host: str, proxy_port: int, server: str):
+    def connect(self, server: str):
         """连接Websocket行情频道"""
         if server == "REAL":
             self._client = SpotWebsocketStreamClient(stream_url=WEBSOCKET_DATA_HOST, on_message=self.on_packet)
