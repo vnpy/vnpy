@@ -10,8 +10,6 @@ from datetime import datetime, timedelta
 from threading import Lock
 from typing import Any, Dict, List, Optional
 
-#from vnpy.api.rest import RestClient, Request
-#from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.utility import round_to
 
 from vnpy.trader.constant import (
@@ -201,6 +199,8 @@ class BinanceSpotRestAPi:
         self.order_count_lock: Lock = Lock()
         self.connect_time: int = 0
 
+        self._active: bool = False
+
     def connect(
             self,
             key: str,
@@ -217,6 +217,7 @@ class BinanceSpotRestAPi:
         self.connect_time = self._client.time(self._client)["serverTime"]
 
         self.gateway.write_log("REST API启动成功")
+        self._active = True
 
         self.query_time()
         self.query_account()
@@ -530,6 +531,11 @@ class BinanceSpotRestAPi:
 
         return history
 
+    def stop(self) -> None:
+        """停止"""
+        self._active = False
+        self._client.close_listen_key(listenKey=self.user_stream_key)
+
 
 class BinanceSpotTradeWebsocketApi:
     """币安现货交易Websocket API"""
@@ -540,12 +546,16 @@ class BinanceSpotTradeWebsocketApi:
 
         self.gateway: BinanceSpotGateway = gateway
         self.gateway_name = gateway.gateway_name
+        self._active: bool = False
 
     def connect(self, stream_url: str, listen_key: str) -> None:
         """连接Websocket交易频道"""
         self._client = SpotWebsocketStreamClient(stream_url=stream_url, 
                                                  on_message=self.on_packet)
         self._client.user_data(listen_key)
+
+        self._active = True
+
         self.on_connected()
 
     def on_connected(self) -> None:
@@ -569,10 +579,9 @@ class BinanceSpotTradeWebsocketApi:
     def disconnect(self) -> None:
         """"主动断开webscoket链接"""
         self._active = False
-        ws = self._ws
-        if ws:
-            coro = ws.close()
-            run_coroutine_threadsafe(coro, self._loop)
+        if self._client:
+            self._client.stop()
+            self.gateway.write_log("交易Websocket API断开")
 
     def on_account(self, packet: dict) -> None:
         """资金更新推送"""
@@ -645,6 +654,9 @@ class BinanceSpotTradeWebsocketApi:
         self.gateway.write_log("交易Websocket API断开")
         self.gateway.rest_api.start_user_stream()
 
+    def stop(self):
+        self.disconnect()
+        self._active = False
 
 
 class BinanceSpotDataWebsocketApi:
@@ -659,6 +671,7 @@ class BinanceSpotDataWebsocketApi:
 
         self.ticks: Dict[str, TickData] = {}
         self.reqid: int = 0
+        self._active: bool = False
 
     def connect(self, server: str):
         """连接Websocket行情频道"""
@@ -667,6 +680,7 @@ class BinanceSpotDataWebsocketApi:
         else:
             self._client = SpotWebsocketStreamClient(stream_url=TESTNET_WEBSOCKET_DATA_HOST, on_message=self.on_packet)
 
+        self._active = True
         self.on_connected()
 
     def on_connected(self) -> None:
@@ -746,12 +760,10 @@ class BinanceSpotDataWebsocketApi:
         self._client.stop()
         self.gateway.write_log("行情Websocket API断开")
 
-
-
-
-
-
-
+    def stop(self):
+        self._active = False
+        if self._client:
+            self._client.stop()
 
 
 class SpotWebsocketStreamClient(BinanceWebsocketClient):
