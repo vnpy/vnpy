@@ -6,17 +6,18 @@ import json
 import logging
 import sys
 from datetime import datetime, time
-from pathlib import Path
-from typing import Callable, Dict, Tuple, Union, Optional
 from decimal import Decimal
 from math import floor, ceil
+from pathlib import Path
+from typing import Callable, Dict, Tuple, Union, Optional
 
 import numpy as np
-#import talib
 
-from .object import BarData, TickData, TradeData
-from .constant import Exchange, Interval, Direction
+from .constant import Exchange, Interval
 from .locale import _
+from .object import BarData, TickData
+
+# import talib
 
 if sys.version_info >= (3, 9):
     from zoneinfo import ZoneInfo, available_timezones  # noqa
