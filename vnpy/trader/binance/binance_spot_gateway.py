@@ -1,19 +1,15 @@
-import urllib
-import hashlib
-import hmac
+import json
 import time
 from copy import copy
 from datetime import datetime, timedelta
-from enum import Enum
 from threading import Lock
-import pytz
 from typing import Any, Dict, List, Optional
 
-#from vnpy.api.rest import RestClient, Request
-#from vnpy.api.websocket import WebsocketClient
-from vnpy.trader.utility import round_to
+from binance.spot import Spot
+from binance.websocket.websocket_client import BinanceWebsocketClient
 
-from requests.exceptions import SSLError
+
+from vnpy.event import Event, EventEngine
 from vnpy.trader.constant import (
     Direction,
     Exchange,
@@ -22,6 +18,7 @@ from vnpy.trader.constant import (
     OrderType,
     Interval
 )
+from vnpy.trader.event import EVENT_TIMER
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     TickData,
@@ -35,30 +32,21 @@ from vnpy.trader.object import (
     SubscribeRequest,
     HistoryRequest
 )
-from vnpy.trader.event import EVENT_TIMER
-from vnpy.event import Event, EventEngine
-from vnpy_rest import RestClient, Request, Response
-from vnpy_websocket import WebsocketClient
-from asyncio import (
-    run_coroutine_threadsafe
-)
-
-# 中国时区
-CHINA_TZ = pytz.timezone("Asia/Shanghai")
+from vnpy.trader.utility import round_to
 
 # 实盘REST API地址
 REST_HOST: str = "https://api.binance.com"
 
 # 实盘Websocket API地址
-WEBSOCKET_TRADE_HOST: str = "wss://stream.binance.com:9443/ws/"
-WEBSOCKET_DATA_HOST: str = "wss://stream.binance.com:9443/stream"
+WEBSOCKET_TRADE_HOST: str = "wss://stream.binance.com:9443"
+WEBSOCKET_DATA_HOST: str = "wss://stream.binance.com:9443"
 
 # 模拟盘REST API地址
 TESTNET_REST_HOST: str = "https://testnet.binance.vision"
 
 # 模拟盘Websocket API地址
-TESTNET_WEBSOCKET_TRADE_HOST: str = "wss://testnet.binance.vision/ws/"
-TESTNET_WEBSOCKET_DATA_HOST: str = "wss://testnet.binance.vision/stream"
+TESTNET_WEBSOCKET_TRADE_HOST: str = "wss://testnet.binance.vision"
+TESTNET_WEBSOCKET_DATA_HOST: str = "wss://testnet.binance.vision"
 
 # 委托状态映射
 STATUS_BINANCE2VT: Dict[str, Status] = {
@@ -102,13 +90,6 @@ TIMEDELTA_MAP: Dict[Interval, timedelta] = {
 symbol_contract_map: Dict[str, ContractData] = {}
 
 
-# 鉴权类型
-class Security(Enum):
-    NONE = 0
-    SIGNED = 1
-    API_KEY = 2
-
-
 class BinanceSpotGateway(BaseGateway):
     """
     vn.py用于对接币安现货账户的交易接口。
@@ -119,9 +100,7 @@ class BinanceSpotGateway(BaseGateway):
     default_setting: Dict[str, Any] = {
         "key": "",
         "secret": "",
-        "服务器": ["REAL", "TESTNET"],
-        "代理地址": "",
-        "代理端口": 0
+        "server": ["REAL", "TESTNET"]
     }
 
     exchanges: Exchange = [Exchange.BINANCE]
@@ -140,12 +119,10 @@ class BinanceSpotGateway(BaseGateway):
         """连接交易接口"""
         key: str = setting["key"]
         secret: str = setting["secret"]
-        proxy_host: str = setting["代理地址"]
-        proxy_port: int = setting["代理端口"]
-        server: str = setting["服务器"]
+        server: str = setting["server"]
 
-        self.rest_api.connect(key, secret, proxy_host, proxy_port, server)
-        #self.market_ws_api.connect(proxy_host, proxy_port, server)
+        self.rest_api.connect(key, secret, server)
+        self.market_ws_api.connect(server)
 
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
@@ -193,7 +170,7 @@ class BinanceSpotGateway(BaseGateway):
         return self.orders.get(orderid, None)
 
 
-class BinanceSpotRestAPi(RestClient):
+class BinanceSpotRestAPi:
     """币安现货REST API"""
 
     def __init__(self, gateway: BinanceSpotGateway) -> None:
@@ -217,81 +194,25 @@ class BinanceSpotRestAPi(RestClient):
         self.order_count_lock: Lock = Lock()
         self.connect_time: int = 0
 
-    def sign(self, request: Request) -> Request:
-        """生成币安签名"""
-        security: Security = request.data["security"]
-        if security == Security.NONE:
-            request.data = None
-            return request
-
-        if request.params:
-            path: str = request.path + "?" + urllib.parse.urlencode(request.params)
-        else:
-            request.params = dict()
-            path: str = request.path
-
-        if security == Security.SIGNED:
-            timestamp: int = int(time.time() * 1000)
-
-            if self.time_offset > 0:
-                timestamp -= abs(self.time_offset)
-            elif self.time_offset < 0:
-                timestamp += abs(self.time_offset)
-
-            request.params["timestamp"] = timestamp
-
-            query = urllib.parse.urlencode(sorted(request.params.items()))
-            signature = hmac.new(self.secret, query.encode(
-                "utf-8"), hashlib.sha256).hexdigest()
-
-            query += "&signature={}".format(signature)
-            path: str = request.path + "?" + query
-
-        request.path = path
-        request.params = {}
-        request.data = {}
-
-        # 添加请求头
-        headers = {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Accept": "application/json",
-            "X-MBX-APIKEY": self.key,
-            "Connection": "close"
-        }
-
-        if security in [Security.SIGNED, Security.API_KEY]:
-            request.headers = headers
-
-        return request
+        self._active: bool = False
 
     def connect(
             self,
             key: str,
             secret: str,
-            proxy_host: str,
-            proxy_port: int,
             server: str
     ) -> None:
         """连接REST服务器"""
         self.key = key
-        self.secret = secret.encode()
-        self.proxy_port = proxy_port
-        self.proxy_host = proxy_host
+        self.secret = secret
         self.server = server
 
-        self.connect_time = (
-                int(datetime.now(CHINA_TZ).strftime("%y%m%d%H%M%S")) * self.order_count
-        )
+        self._client = Spot(api_key=self.key, api_secret=self.secret)
 
-        if self.server == "REAL":
-            self.init(REST_HOST, proxy_host, proxy_port)
-        else:
-            self.init(TESTNET_REST_HOST, proxy_host, proxy_port)
-
-        self.start()
+        self.connect_time = self._client.time()["serverTime"]
 
         self.gateway.write_log("REST API启动成功")
-
+        self._active = True
 
         self.query_time()
         self.query_account()
@@ -299,53 +220,22 @@ class BinanceSpotRestAPi(RestClient):
         self.query_contract()
         self.start_user_stream()
 
-    def query_time(self) -> Request:
+    def query_time(self) -> None:
         """查询时间"""
-        data: dict = {
-            "security": Security.NONE
-        }
-        path: str = "/api/v3/time"
-
-        return self.add_request(
-            "GET",
-            path,
-            callback=self.on_query_time,
-            data=data
-        )
+        data = self._client.time()
+        self.on_query_time(data)
 
     def query_account(self) -> None:
         """查询资金"""
-        data: dict = {"security": Security.SIGNED}
-
-        self.add_request(
-            method="GET",
-            path="/api/v3/account",
-            callback=self.on_query_account,
-            data=data
-        )
+        self.on_query_account(self._client.account())
 
     def query_order(self) -> None:
         """查询未成交委托"""
-        data: dict = {"security": Security.SIGNED}
-
-        self.add_request(
-            method="GET",
-            path="/api/v3/openOrders",
-            callback=self.on_query_order,
-            data=data
-        )
+        self.on_query_order(self._client.get_open_orders())
 
     def query_contract(self) -> None:
         """查询合约信息"""
-        data: dict = {
-            "security": Security.NONE
-        }
-        self.add_request(
-            method="GET",
-            path="/api/v3/exchangeInfo",
-            callback=self.on_query_contract,
-            data=data
-        )
+        self.on_query_contract(self._client.exchange_info())
 
     def _new_order_id(self) -> int:
         """生成本地委托号"""
@@ -365,10 +255,6 @@ class BinanceSpotRestAPi(RestClient):
         )
         self.gateway.on_order(order)
 
-        data: dict = {
-            "security": Security.SIGNED
-        }
-
         # 生成委托请求
         params: dict = {
             "symbol": req.symbol.upper(),
@@ -386,24 +272,17 @@ class BinanceSpotRestAPi(RestClient):
             params["type"] = "STOP_MARKET"
             params["stopPrice"] = float(req.price)
 
-        self.add_request(
-            method="POST",
-            path="/api/v3/order",
-            callback=self.on_send_order,
-            data=data,
-            params=params,
-            extra=order,
-            on_error=self.on_send_order_error,
-            on_failed=self.on_send_order_failed
-        )
+        try:
+            data = self._client.new_order(**params)
+            self.on_send_order(data, order)
+        except Exception as e:
+            self.on_send_order_error(e, order)
+            return ""
 
         return order.vt_orderid
 
     def cancel_order(self, req: CancelRequest) -> None:
         """委托撤单"""
-        data: dict = {
-            "security": Security.SIGNED
-        }
 
         params: dict = {
             "symbol": req.symbol.upper(),
@@ -412,60 +291,34 @@ class BinanceSpotRestAPi(RestClient):
 
         order: OrderData = self.gateway.get_order(req.orderid)
 
-        self.add_request(
-            method="DELETE",
-            path="/api/v3/order",
-            callback=self.on_cancel_order,
-            params=params,
-            data=data,
-            on_failed=self.on_cancel_failed,
-            extra=order
-        )
+        data = self._client.cancel_order(**params)
+        self.on_cancel_order(data, order)
 
-    def start_user_stream(self) -> Request:
+    def start_user_stream(self) -> None:
         """生成listenKey"""
-        data: dict = {
-            "security": Security.API_KEY
-        }
+        data = self._client.new_listen_key()
+        self.on_start_user_stream(data)
 
-        return self.add_request(
-            method="POST",
-            path="/api/v3/userDataStream",
-            callback=self.on_start_user_stream,
-            data=data
-        )
-
-    def keep_user_stream(self) -> Optional[Request]:
+    def keep_user_stream(self) -> None:
         """延长listenKey有效期"""
         self.keep_alive_count += 1
         if self.keep_alive_count < 600:
             return
         self.keep_alive_count = 0
 
-        data: dict = {
-            "security": Security.API_KEY
-        }
+        try:
+            data = self._client.renew_listen_key(listenKey=self.user_stream_key)
+            self.on_keep_user_stream(data)
+        except Exception as e:
+            self.on_keep_user_stream_error(e)
 
-        params: dict = {
-            "listenKey": self.user_stream_key
-        }
-
-        self.add_request(
-            method="PUT",
-            path="/api/v3/userDataStream",
-            callback=self.on_keep_user_stream,
-            params=params,
-            data=data,
-            on_error=self.on_keep_user_stream_error
-        )
-
-    def on_query_time(self, data: dict, request: Request) -> None:
+    def on_query_time(self, data: dict) -> None:
         """时间查询回报"""
         local_time = int(time.time() * 1000)
         server_time = int(data["serverTime"])
         self.time_offset = local_time - server_time
 
-    def on_query_account(self, data: dict, request: Request) -> None:
+    def on_query_account(self, data: dict) -> None:
         """资金查询回报"""
         for account_data in data["balances"]:
             account: AccountData = AccountData(
@@ -480,7 +333,7 @@ class BinanceSpotRestAPi(RestClient):
 
         self.gateway.write_log("账户资金查询成功")
 
-    def on_query_order(self, data: dict, request: Request) -> None:
+    def on_query_order(self, data: dict) -> None:
         """未成交委托查询回报"""
         for d in data:
             # 过滤不支持类型的委托
@@ -497,14 +350,14 @@ class BinanceSpotRestAPi(RestClient):
                 direction=DIRECTION_BINANCE2VT[d["side"]],
                 traded=float(d["executedQty"]),
                 status=STATUS_BINANCE2VT.get(d["status"], None),
-                datetime=generate_datetime(d["time"]),
+                datetime=datetime.fromtimestamp(int(d["time"])/1000),
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_order(order)
 
         self.gateway.write_log("委托信息查询成功")
 
-    def on_query_contract(self, data: dict, request: Request) -> None:
+    def on_query_contract(self, data: dict) -> None:
         """合约信息查询回报"""
         for d in data["symbols"]:
             base_currency: str = d["baseAsset"]
@@ -538,67 +391,68 @@ class BinanceSpotRestAPi(RestClient):
 
         self.gateway.write_log("合约信息查询成功")
 
-    def on_send_order(self, data: dict, request: Request) -> None:
+    def on_send_order(self, data: dict, order: OrderData) -> None:
         """委托下单回报"""
+        if data['status'] not in STATUS_BINANCE2VT:
+            self.on_send_order_failed(data, order)
         pass
 
-    def on_send_order_failed(self, status_code: int, request: Request) -> None:
+    def on_send_order_failed(self, data: dict, order: OrderData) -> None:
         """委托下单失败服务器报错回报"""
-        order: OrderData = request.extra
         order.status = Status.REJECTED
         self.gateway.on_order(order)
 
-        msg: str = f"委托失败，状态码：{status_code}，信息：{request.response.text}"
-        self.gateway.write_log(msg)
+        self.gateway.write_log(f"{order.vt_orderid}委托失败，状态码：{data['code']}, 信息：{data['msg']}")
 
     def on_send_order_error(
-            self, exception_type: type, exception_value: Exception, tb, request: Request
+            self, exception, order: OrderData
     ) -> None:
         """委托下单回报函数报错回报"""
-        order: OrderData = request.extra
         order.status = Status.REJECTED
         self.gateway.on_order(order)
 
-        if not issubclass(exception_type, (ConnectionError, SSLError)):
-            self.on_error(exception_type, exception_value, tb, request)
+        self.gateway.write_log(f"{order.vt_orderid}委托失败：{exception}")
 
-    def on_cancel_order(self, data: dict, request: Request) -> None:
+    def on_cancel_order(self, data: dict, order: OrderData) -> None:
         """委托撤单回报"""
+        if data['code']:
+            self.on_cancel_failed(data, order)
         pass
 
-    def on_cancel_failed(self, status_code: int, request: Request) -> None:
+    def on_cancel_failed(self, data: dict, order: OrderData) -> None:
         """撤单回报函数报错回报"""
-        if request.extra:
-            order = request.extra
+        if order:
             order.status = Status.REJECTED
             self.gateway.on_order(order)
 
-        msg = f"撤单失败，状态码：{status_code}，信息：{request.response.text}"
+        msg = f"撤单失败，状态码：{data['code']}，信息：{data['msg']}"
         self.gateway.write_log(msg)
 
-    def on_start_user_stream(self, data: dict, request: Request) -> None:
+    def on_start_user_stream(self, data: dict) -> None:
         """生成listenKey回报"""
         self.user_stream_key = data["listenKey"]
         self.keep_alive_count = 0
 
         if self.server == "REAL":
-            url = WEBSOCKET_TRADE_HOST + self.user_stream_key
+            url = WEBSOCKET_TRADE_HOST
         else:
-            url = TESTNET_WEBSOCKET_TRADE_HOST + self.user_stream_key
+            url = TESTNET_WEBSOCKET_TRADE_HOST
 
-        self.trade_ws_api.connect(url, self.proxy_host, self.proxy_port)
+        self.trade_ws_api.connect(url, self.user_stream_key)
 
-    def on_keep_user_stream(self, data: dict, request: Request) -> None:
+    def on_keep_user_stream(self, data) -> None:
         """延长listenKey有效期回报"""
         pass
 
     def on_keep_user_stream_error(
-            self, exception_type: type, exception_value: Exception, tb, request: Request
-    ) -> None:
+            self, exception) -> None:
         """延长listenKey有效期函数报错回报"""
         # 当延长listenKey有效期时，忽略超时报错
-        if not issubclass(exception_type, TimeoutError):
-            self.on_error(exception_type, exception_value, tb, request)
+        self.gateway.write_log(f"延长listenKey有效期失败：{exception}; reconnecting...")
+        try:
+            self.start_user_stream()
+        except Exception as e:
+            self.gateway.write_log(f"重连失败：{e}")
 
     def query_history(self, req: HistoryRequest) -> List[BarData]:
         """查询历史数据"""
@@ -624,70 +478,61 @@ class BinanceSpotRestAPi(RestClient):
 
                 params["endTime"] = end_time * 1000
 
-            resp: Response = self.request(
-                "GET",
-                "/api/v3/klines",
-                data={"security": Security.NONE},
-                params=params
-            )
+            try:
+                data = self._client.klines(**params)
+                data = json.loads(data)
+                if data['code']:
+                    if data['code'] == 429:
+                        self.gateway.write_log(f"获取历史数据失败：{data['code']}, {data['msg']}")
+                        self.gateway.write_log(f"{sleep_seconds=} for retring connection")
+                        time.sleep(sleep_seconds)
+                        sleep_seconds *= 2
+                        continue
+                    else:
+                        sleep_seconds = 0.5
 
-            if resp.status_code == 429:
-                self.gateway.write_log(f"{resp.status_code=},{resp.text=}")
-                self.gateway.write_log(f"{sleep_seconds=} for retring connection")
-                time.sleep(sleep_seconds)
-                sleep_seconds *= 2
-                continue
-            else:
-                sleep_seconds = 0.5
-            # 如果请求失败则终止循环
-            if resp.status_code // 100 != 2:
-                msg: str = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
-                self.gateway.write_log(msg)
+                    if data["code"] // 100 != 2:
+                        self.gateway.write_log(f"获取历史数据失败：{data['code']}, {data['msg']}")
+                        break
+                else:
+                    for row in data:
+                        bar: BarData = BarData(
+                            symbol=req.symbol,
+                            exchange=req.exchange,
+                            datetime=datetime.fromtimestamp(row[0]),
+                            interval=req.interval,
+                            volume=float(row[5]),
+                            turnover=float(row[7]),
+                            open_price=float(row[1]),
+                            high_price=float(row[2]),
+                            low_price=float(row[3]),
+                            close_price=float(row[4]),
+                            gateway_name=self.gateway_name
+                        )
+                        history.append(bar)
+
+                    begin: datetime = history[0].datetime
+                    end: datetime = history[-1].datetime
+                    self.gateway.write_log(f"获取历史数据成功，{req.symbol} - {req.interval.value}, {begin} - {end}")
+
+                    if len(data) < limit:
+                        break
+
+                    start_dt = bar.datetime + TIMEDELTA_MAP[req.interval]
+                    start_time = int(datetime.timestamp(start_dt))
+            except Exception as e:
+                self.gateway.write_log(f"获取历史数据失败：{e}")
                 break
-            else:
-                data: dict = resp.json()
-                if not data:
-                    msg: str = f"获取历史数据为空，开始时间：{start_time}"
-                    self.gateway.write_log(msg)
-                    break
-
-                buf: List[BarData] = []
-
-                for row in data:
-                    bar: BarData = BarData(
-                        symbol=req.symbol,
-                        exchange=req.exchange,
-                        datetime=generate_datetime(row[0]),
-                        interval=req.interval,
-                        volume=float(row[5]),
-                        turnover=float(row[7]),
-                        open_price=float(row[1]),
-                        high_price=float(row[2]),
-                        low_price=float(row[3]),
-                        close_price=float(row[4]),
-                        gateway_name=self.gateway_name
-                    )
-                    buf.append(bar)
-
-                history.extend(buf)
-
-                begin: datetime = buf[0].datetime
-                end: datetime = buf[-1].datetime
-                msg: str = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
-                self.gateway.write_log(msg)
-
-                # 如果收到了最后一批数据则终止循环
-                if len(data) < limit:
-                    break
-
-                # 更新开始时间
-                start_dt = bar.datetime + TIMEDELTA_MAP[req.interval]
-                start_time = int(datetime.timestamp(start_dt))
 
         return history
 
+    def stop(self) -> None:
+        """停止"""
+        self._active = False
+        self._client.close_listen_key(listenKey=self.user_stream_key)
 
-class BinanceSpotTradeWebsocketApi(WebsocketClient):
+
+class BinanceSpotTradeWebsocketApi:
     """币安现货交易Websocket API"""
 
     def __init__(self, gateway: BinanceSpotGateway) -> None:
@@ -696,23 +541,32 @@ class BinanceSpotTradeWebsocketApi(WebsocketClient):
 
         self.gateway: BinanceSpotGateway = gateway
         self.gateway_name = gateway.gateway_name
+        self._active: bool = False
 
-    def connect(self, url: str, proxy_host: str, proxy_port: int) -> None:
+    def connect(self, stream_url: str, listen_key: str) -> None:
         """连接Websocket交易频道"""
-        self.init(url, proxy_host, proxy_port)
-        self.start()
+        self._client = SpotWebsocketStreamClient(stream_url=stream_url,
+                                                 on_message=self.on_packet)
+        self._client.user_data(listen_key)
+
+        self._active = True
+
+        self.on_connected()
 
     def on_connected(self) -> None:
         """连接成功回报"""
         self.gateway.write_log("交易Websocket API连接成功")
 
-    def on_packet(self, packet: dict) -> None:
+    def on_packet(self, _, packet) -> None:
         """推送数据回报"""
-        if packet["e"] == "outboundAccountPosition":
+        if isinstance(packet, str):
+            packet = json.loads(packet)
+        event_type = packet.get("e", None)
+        if event_type == "outboundAccountPosition":
             self.on_account(packet)
-        elif packet["e"] == "executionReport":
+        elif event_type == "executionReport":
             self.on_order(packet)
-        elif packet["e"] == "listenKeyExpired":
+        elif event_type == "listenKeyExpired":
             self.on_listen_key_expired()
 
     def on_listen_key_expired(self) -> None:
@@ -723,10 +577,9 @@ class BinanceSpotTradeWebsocketApi(WebsocketClient):
     def disconnect(self) -> None:
         """"主动断开webscoket链接"""
         self._active = False
-        ws = self._ws
-        if ws:
-            coro = ws.close()
-            run_coroutine_threadsafe(coro, self._loop)
+        if self._client:
+            self._client.stop()
+            self.gateway.write_log("交易Websocket API断开")
 
     def on_account(self, packet: dict) -> None:
         """资金更新推送"""
@@ -764,7 +617,7 @@ class BinanceSpotTradeWebsocketApi(WebsocketClient):
             volume=float(packet["q"]),
             traded=float(packet["z"]),
             status=STATUS_BINANCE2VT[packet["X"]],
-            datetime=generate_datetime(packet["O"]),
+            datetime=datetime.fromtimestamp(packet["O"]/1000),
             gateway_name=self.gateway_name,
             offset=offset
         )
@@ -788,7 +641,7 @@ class BinanceSpotTradeWebsocketApi(WebsocketClient):
             direction=order.direction,
             price=float(packet["L"]),
             volume=trade_volume,
-            datetime=generate_datetime(packet["T"]),
+            datetime=datetime.fromtimestamp(packet["T"]/1000),
             gateway_name=self.gateway_name,
             offset=offset
         )
@@ -799,8 +652,12 @@ class BinanceSpotTradeWebsocketApi(WebsocketClient):
         self.gateway.write_log("交易Websocket API断开")
         self.gateway.rest_api.start_user_stream()
 
+    def stop(self):
+        self.disconnect()
+        self._active = False
 
-class BinanceSpotDataWebsocketApi(WebsocketClient):
+
+class BinanceSpotDataWebsocketApi:
     """币安现货行情Websocket API"""
 
     def __init__(self, gateway: BinanceSpotGateway) -> None:
@@ -812,15 +669,17 @@ class BinanceSpotDataWebsocketApi(WebsocketClient):
 
         self.ticks: Dict[str, TickData] = {}
         self.reqid: int = 0
+        self._active: bool = False
 
-    def connect(self, proxy_host: str, proxy_port: int, server: str):
+    def connect(self, server: str):
         """连接Websocket行情频道"""
         if server == "REAL":
-            self.init(WEBSOCKET_DATA_HOST, proxy_host, proxy_port)
+            self._client = SpotWebsocketStreamClient(stream_url=WEBSOCKET_DATA_HOST, on_message=self.on_packet)
         else:
-            self.init(TESTNET_WEBSOCKET_DATA_HOST, proxy_host, proxy_port)
+            self._client = SpotWebsocketStreamClient(stream_url=TESTNET_WEBSOCKET_DATA_HOST, on_message=self.on_packet)
 
-        self.start()
+        self._active = True
+        self.on_connected()
 
     def on_connected(self) -> None:
         """连接成功回报"""
@@ -828,17 +687,9 @@ class BinanceSpotDataWebsocketApi(WebsocketClient):
 
         # 重新订阅行情
         if self.ticks:
-            channels = []
             for symbol in self.ticks.keys():
-                channels.append(f"{symbol}@ticker")
-                channels.append(f"{symbol}@depth5")
-
-            req: dict = {
-                "method": "SUBSCRIBE",
-                "params": channels,
-                "id": self.reqid
-            }
-            self.send_packet(req)
+                self._client.ticker(symbol)
+                self._client.partial_book_depth(symbol)
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """订阅行情"""
@@ -856,24 +707,15 @@ class BinanceSpotDataWebsocketApi(WebsocketClient):
             symbol=req.symbol,
             name=symbol_contract_map[req.symbol].name,
             exchange=Exchange.BINANCE,
-            datetime=datetime.now(CHINA_TZ),
+            datetime=datetime.now(),
             gateway_name=self.gateway_name,
         )
         self.ticks[req.symbol] = tick
 
-        channels = [
-            f"{req.symbol}@ticker",
-            f"{req.symbol}@depth5"
-        ]
+        self._client.ticker(req.symbol)
+        self._client.partial_book_depth(req.symbol)
 
-        req: dict = {
-            "method": "SUBSCRIBE",
-            "params": channels,
-            "id": self.reqid
-        }
-        self.send_packet(req)
-
-    def on_packet(self, packet: dict) -> None:
+    def on_packet(self, _, packet: dict) -> None:
         """推送数据回报"""
         stream: Optional[str] = packet.get("stream", None)
 
@@ -892,7 +734,7 @@ class BinanceSpotDataWebsocketApi(WebsocketClient):
             tick.high_price = float(data['h'])
             tick.low_price = float(data['l'])
             tick.last_price = float(data['c'])
-            tick.datetime = generate_datetime(float(data['E']))
+            tick.datetime = datetime.fromtimestamp(float(data['E'])/1000)
         else:
             bids: list = data["bids"]
             for n in range(min(5, len(bids))):
@@ -912,11 +754,222 @@ class BinanceSpotDataWebsocketApi(WebsocketClient):
 
     def on_disconnected(self) -> None:
         """连接断开回报"""
+        self._client.stop()
         self.gateway.write_log("行情Websocket API断开")
 
+    def stop(self):
+        self._active = False
+        if self._client:
+            self._client.stop()
 
-def generate_datetime(timestamp: float) -> datetime:
-    """生成时间"""
-    dt: datetime = datetime.fromtimestamp(timestamp / 1000)
-    dt: datetime = CHINA_TZ.localize(dt)
-    return dt
+
+class SpotWebsocketStreamClient(BinanceWebsocketClient):
+    def __init__(
+            self,
+            stream_url="wss://stream.binance.com:9443",
+            on_message=None,
+            on_open=None,
+            on_close=None,
+            on_error=None,
+            on_ping=None,
+            on_pong=None,
+            is_combined=False,
+            timeout=None,
+            logger=None,
+            proxies: Optional[dict] = None,
+    ):
+        if is_combined:
+            stream_url = stream_url + "/stream"
+        else:
+            stream_url = stream_url + "/ws"
+        super().__init__(
+            stream_url,
+            on_message=on_message,
+            on_open=on_open,
+            on_close=on_close,
+            on_error=on_error,
+            on_ping=on_ping,
+            on_pong=on_pong,
+            timeout=timeout,
+            logger=logger,
+            proxies=proxies,
+        )
+
+    def agg_trade(self, symbol: str | list[str], id=None, action=None, **kwargs):
+        """Aggregate Trade Streams
+
+        The Aggregate Trade Streams push trade information that is aggregated for a single taker order.
+
+        Stream Name: <symbol>@aggTrade
+
+        Update Speed: Real-time
+        """
+        if isinstance(symbol, str):
+            symbol = [symbol]
+        stream_name = ["{}@aggTrade".format(s.lower()) for s in symbol]
+
+        self.send_message_to_server(stream_name, action=action, id=id)
+
+    def trade(self, symbol: str | list[str], id=None, action=None, **kwargs):
+        """Trade Streams
+
+        The Trade Streams push raw trade information; each trade has a unique buyer and seller.
+
+        Stream Name: <symbol>@trade
+
+        Update Speed: Real-time
+        """
+
+        if isinstance(symbol, str):
+            symbol = [symbol]
+        stream_name = ["{}@trade".format(s.lower()) for s in symbol]
+
+        self.send_message_to_server(stream_name, action=action, id=id)
+
+    def kline(self, symbol: str | list[str], interval: str, id=None, action=None):
+        """Kline/Candlestick Streams
+
+        The Kline/Candlestick Stream push updates to the current klines/candlestick every second.
+
+        Stream Name: <symbol>@kline_<interval>
+
+        interval:
+        m -> minutes; h -> hours; d -> days; w -> weeks; M -> months
+
+        - 1m
+        - 3m
+        - 5m
+        - 15m
+        - 30m
+        - 1h
+        - 2h
+        - 4h
+        - 6h
+        - 8h
+        - 12h
+        - 1d
+        - 3d
+        - 1w
+        - 1M
+
+        Update Speed: 2000ms
+        """
+        if isinstance(symbol, str):
+            symbol = [symbol]
+        stream_name = ["{}@kline_{}".format(s.lower(), interval) for s in symbol]
+
+        self.send_message_to_server(stream_name, action=action, id=id)
+
+    def mini_ticker(self, symbol=None, id=None, action=None, **kwargs):
+        """Individual symbol or all symbols mini ticker
+
+        24hr rolling window mini-ticker statistics.
+        These are NOT the statistics of the UTC day, but a 24hr rolling window for the previous 24hrs
+
+        Stream Name: <symbol>@miniTicker or
+        Stream Name: !miniTicker@arr
+
+        Update Speed: 1000ms
+        """
+
+        if symbol is None:
+            stream_name = "!miniTicker@arr"
+        else:
+            stream_name = "{}@miniTicker".format(symbol.lower())
+
+        self.send_message_to_server(stream_name, action=action, id=id)
+
+    def ticker(self, symbol=None, id=None, action=None, **kwargs):
+        """Individual symbol or all symbols ticker
+
+        24hr rolling window ticker statistics for a single symbol.
+        These are NOT the statistics of the UTC day, but a 24hr rolling window for the previous 24hrs.
+
+        Stream Name: <symbol>@ticker or
+        Stream Name: !ticker@arr
+
+        Update Speed: 1000ms
+        """
+
+        if symbol is None:
+            stream_name = "!ticker@arr"
+        else:
+            stream_name = "{}@ticker".format(symbol.lower())
+        self.send_message_to_server(stream_name, action=action, id=id)
+
+    def book_ticker(self, symbol, id=None, action=None, **kwargs):
+        """Individual symbol book ticker
+
+        Pushes any update to the best bid or ask's price or quantity in real-time for a specified symbol.
+
+        Stream Name: <symbol>@bookTicker
+
+        Update Speed: realtime
+        """
+
+        self.send_message_to_server(
+            "{}@bookTicker".format(symbol.lower()), action=action, id=id
+        )
+
+    def partial_book_depth(
+            self, symbol: str, level=5, speed=1000, id=None, action=None, **kwargs
+    ):
+        """Partial Book Depth Streams
+
+        Top bids and asks, Valid are 5, 10, or 20.
+
+        Stream Names: <symbol>@depth<levels> OR <symbol>@depth<levels>@100ms.
+
+        Update Speed: 1000ms or 100ms
+        """
+        self.send_message_to_server(
+            "{}@depth{}@{}ms".format(symbol.lower(), level, speed), id=id, action=action
+        )
+
+    def rolling_window_ticker(self, symbol: str, windowSize: str, id=None, action=None):
+        """Rolling window ticker statistics for a single symbol, computed over multiple windows.
+
+        Stream Name: <symbol>@ticker_<window_size>
+
+        Window Sizes: 1h, 4h, 1d
+
+        Update Speed: 1000ms
+
+        Note: This stream is different from the <symbol>@ticker stream. The open time "O" always starts on a minute, while the closing time "C" is the current time of the update. As such, the effective window might be up to 59999ms wider that <window_size>.
+        """
+        self.send_message_to_server(
+            "{}@ticker_{}".format(symbol.lower(), windowSize), id=id, action=action
+        )
+
+    def rolling_window_ticker_all_symbols(self, windowSize: str, id=None, action=None):
+        """All Market Rolling Window Statistics Streams
+
+        Rolling window ticker statistics for all market symbols, computed over multiple windows. Note that only tickers that have changed will be present in the array.
+
+        Stream Name: !ticker_<window-size>@arr
+
+        Window Size: 1h, 4h, 1d
+
+        Update Speed: 1000ms
+        """
+        self.send_message_to_server(
+            "!ticker_{}@arr".format(windowSize), id=id, action=action
+        )
+
+    def diff_book_depth(self, symbol: str, speed=1000, id=None, action=None, **kwargs):
+        """Diff. Depth Stream
+
+        Stream Name: <symbol>@depth OR <symbol>@depth@100ms
+
+        Update Speed: 1000ms or 100ms
+
+        Order book price and quantity depth updates used to locally manage an order book.
+        """
+
+        self.send_message_to_server(
+            "{}@depth@{}ms".format(symbol.lower(), speed), action=action, id=id
+        )
+
+    def user_data(self, listen_key: str, id=None, action=None, **kwargs):
+        """Listen to user data by using the provided listen_key"""
+        self.send_message_to_server(listen_key, action=action, id=id)
