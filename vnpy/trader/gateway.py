@@ -200,6 +200,13 @@ class BaseGateway(ABC):
         """
         Send a new order to server.
 
+        order_data: OrderData = req.create_order_data()
+        def convert2binance_order(order_data) -> dict:
+            return {}
+
+        order_params = convert2binance_order(order_data)
+        self.spot.send_order(**order_params)
+
         implementation should finish the tasks blow:
         * create an OrderData from req using OrderRequest.create_order_data
         * assign a unique(gateway instance scope) id to OrderData.orderid
