@@ -1,0 +1,1 @@
+python C:\veighna_studio\Tools\i18n\pygettext.py -o vnpy_portfoliostrategy\locale\vnpy_portfoliostrategy.pot  vnpy_portfoliostrategy\*.py vnpy_portfoliostrategy\ui\*.py vnpy_portfoliostrategy\strategies\*.py

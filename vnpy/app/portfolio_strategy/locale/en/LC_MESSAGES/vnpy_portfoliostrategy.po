@@ -1,0 +1,327 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2024-07-04 15:22+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: vnpy_portfoliostrategy\__init__.py:50
+#: vnpy_portfoliostrategy\ui\widget.py:41
+msgid "组合策略"
+msgstr "PortfolioStrategy"
+
+#: vnpy_portfoliostrategy\backtesting.py:134
+msgid "开始加载历史数据"
+msgstr "Start loading historical data"
+
+#: vnpy_portfoliostrategy\backtesting.py:140
+msgid "起始日期必须小于结束日期"
+msgstr "The start date must be earlier than the end date"
+
+#: vnpy_portfoliostrategy\backtesting.py:177
+msgid "{}加载进度：{} [{:.0%}]"
+msgstr "Loading progress: {} [{:.0%}]"
+
+#: vnpy_portfoliostrategy\backtesting.py:197
+msgid "{}历史数据加载完成，数据量：{}"
+msgstr "Historical data loading completed, data count: {}"
+
+#: vnpy_portfoliostrategy\backtesting.py:199
+msgid "所有历史数据加载完成"
+msgstr "All historical data has been loaded"
+
+#: vnpy_portfoliostrategy\backtesting.py:221
+#: vnpy_portfoliostrategy\backtesting.py:237
+msgid "触发异常，回测终止"
+msgstr "Exception triggered, backtest terminated"
+
+#: vnpy_portfoliostrategy\backtesting.py:226
+msgid "策略初始化完成"
+msgstr "Strategy initialization complete"
+
+#: vnpy_portfoliostrategy\backtesting.py:230
+msgid "开始回放历史数据"
+msgstr "Start replaying historical data"
+
+#: vnpy_portfoliostrategy\backtesting.py:241
+msgid "历史数据回放结束"
+msgstr "Historical backtest complete"
+
+#: vnpy_portfoliostrategy\backtesting.py:245
+msgid "开始计算逐日盯市盈亏"
+msgstr "Start calculating daily mark-to-market profit and loss"
+
+#: vnpy_portfoliostrategy\backtesting.py:248
+msgid "成交记录为空，无法计算"
+msgstr "Failed to calculate strategy statistical indicators due to empty trade records"
+
+#: vnpy_portfoliostrategy\backtesting.py:286
+msgid "逐日盯市盈亏计算完成"
+msgstr "The daily mark-to-market profit and loss calculation is complete"
+
+#: vnpy_portfoliostrategy\backtesting.py:291
+msgid "开始计算策略统计指标"
+msgstr "Start calculating strategy statistical indicators"
+
+#: vnpy_portfoliostrategy\backtesting.py:337
+msgid "回测中出现爆仓（资金小于等于0），无法计算策略统计指标"
+msgstr "There was a liquidation during the backtest (the funds were less than or equal to 0), and the strategy statistical indicators could not be calculated"
+
+#: vnpy_portfoliostrategy\backtesting.py:390
+msgid "首个交易日：\t{}"
+msgstr "Start Date: \t{}"
+
+#: vnpy_portfoliostrategy\backtesting.py:391
+msgid "最后交易日：\t{}"
+msgstr "End Date: \t{}"
+
+#: vnpy_portfoliostrategy\backtesting.py:393
+msgid "总交易日：\t{}"
+msgstr "Total Days: \t{}"
+
+#: vnpy_portfoliostrategy\backtesting.py:394
+msgid "盈利交易日：\t{}"
+msgstr "Profit Days: \t{}"
+
+#: vnpy_portfoliostrategy\backtesting.py:395
+msgid "亏损交易日：\t{}"
+msgstr "Loss Days: \t{}"
+
+#: vnpy_portfoliostrategy\backtesting.py:397
+msgid "起始资金：\t{:,.2f}"
+msgstr "Capital: \t{:,.2f}"
+
+#: vnpy_portfoliostrategy\backtesting.py:398
+msgid "结束资金：\t{:,.2f}"
+msgstr "End Balance: \t{:,.2f}"
+
+#: vnpy_portfoliostrategy\backtesting.py:400
+msgid "总收益率：\t{:,.2f}%"
+msgstr "Total Return: \t{:,.2f}%"
+
+#: vnpy_portfoliostrategy\backtesting.py:401
+msgid "年化收益：\t{:,.2f}%"
+msgstr "Annual Return: \t{:,.2f}%"
+
+#: vnpy_portfoliostrategy\backtesting.py:402
+msgid "最大回撤: \t{:,.2f}"
+msgstr "Max Drawdown: \t{:,.2f}"
+
+#: vnpy_portfoliostrategy\backtesting.py:403
+msgid "百分比最大回撤: {:,.2f}%"
+msgstr "Max Ddpercent: {:,.2f}%"
+
+#: vnpy_portfoliostrategy\backtesting.py:404
+msgid "最长回撤天数: \t{}"
+msgstr "Max Drawdown Duration: \t{}"
+
+#: vnpy_portfoliostrategy\backtesting.py:406
+msgid "总盈亏：\t{:,.2f}"
+msgstr "Total Net P&L: \t{:,.2f}"
+
+#: vnpy_portfoliostrategy\backtesting.py:407
+msgid "总手续费：\t{:,.2f}"
+msgstr "Total Commission: \t{:,.2f}"
+
+#: vnpy_portfoliostrategy\backtesting.py:408
+msgid "总滑点：\t{:,.2f}"
+msgstr "Total Slippage: \t{:,.2f}"
+
+#: vnpy_portfoliostrategy\backtesting.py:409
+msgid "总成交金额：\t{:,.2f}"
+msgstr "Total Turnover: \t{:,.2f}"
+
+#: vnpy_portfoliostrategy\backtesting.py:410
+msgid "总成交笔数：\t{}"
+msgstr "Total Trade Count: \t{}"
+
+#: vnpy_portfoliostrategy\backtesting.py:412
+msgid "日均盈亏：\t{:,.2f}"
+msgstr "Daily Net P&L: \t{:,.2f}"
+
+#: vnpy_portfoliostrategy\backtesting.py:413
+msgid "日均手续费：\t{:,.2f}"
+msgstr "Daily Commission: \t{:,.2f}"
+
+#: vnpy_portfoliostrategy\backtesting.py:414
+msgid "日均滑点：\t{:,.2f}"
+msgstr "Daily Slippage: \t{:,.2f}"
+
+#: vnpy_portfoliostrategy\backtesting.py:415
+msgid "日均成交金额：\t{:,.2f}"
+msgstr "Daily Turnover: \t{:,.2f}"
+
+#: vnpy_portfoliostrategy\backtesting.py:416
+msgid "日均成交笔数：\t{}"
+msgstr "Daily Trade Count: \t{}"
+
+#: vnpy_portfoliostrategy\backtesting.py:418
+msgid "日均收益率：\t{:,.2f}%"
+msgstr "Daily Return: \t{:,.2f}%"
+
+#: vnpy_portfoliostrategy\backtesting.py:419
+msgid "收益标准差：\t{:,.2f}%"
+msgstr "Return Std: \t{:,.2f}%"
+
+#: vnpy_portfoliostrategy\backtesting.py:421
+msgid "收益回撤比：\t{:,.2f}"
+msgstr "Return Drawdown Ratio: \t{:,.2f}"
+
+#: vnpy_portfoliostrategy\backtesting.py:458
+msgid "策略统计指标计算完成"
+msgstr "Strategy statistical indicators calculation completed"
+
+#: vnpy_portfoliostrategy\backtesting.py:522
+#: vnpy_portfoliostrategy\backtesting.py:552
+msgid "参数：{}, 目标：{}"
+msgstr "Parameters: {}, Target: {}"
+
+#: vnpy_portfoliostrategy\base.py:8
+msgid "实盘"
+msgstr "Live"
+
+#: vnpy_portfoliostrategy\base.py:9
+msgid "回测"
+msgstr "Backtesting"
+
+#: vnpy_portfoliostrategy\engine.py:86
+msgid "组合策略引擎初始化成功"
+msgstr "StrategyEngine initialized"
+
+#: vnpy_portfoliostrategy\engine.py:102
+msgid "数据服务初始化成功"
+msgstr "Datafeed initialized"
+
+#: vnpy_portfoliostrategy\engine.py:170
+msgid "委托失败，找不到合约：{}"
+msgstr "Entrustment failed, unable to find contract: {}"
+
+#: vnpy_portfoliostrategy\engine.py:338
+msgid ""
+"触发异常已停止\n"
+"{}"
+msgstr ""
+"Exception triggered, strategy instance has stopped\n"
+"{}"
+
+#: vnpy_portfoliostrategy\engine.py:346
+msgid "创建策略失败，存在重名{}"
+msgstr "Failed to create strategy instance, duplicate name {} exists"
+
+#: vnpy_portfoliostrategy\engine.py:351
+msgid "创建策略失败，找不到策略类{}"
+msgstr "Failed to create strategy instance, strategy class {} not found"
+
+#: vnpy_portfoliostrategy\engine.py:373
+msgid "{}已经完成初始化，禁止重复操作"
+msgstr "{} has been initialized, repeated operations are prohibited"
+
+#: vnpy_portfoliostrategy\engine.py:376
+msgid "{}开始执行初始化"
+msgstr "{} starts initializing"
+
+#: vnpy_portfoliostrategy\engine.py:405
+msgid "行情订阅失败，找不到合约{}"
+msgstr "Subscription failed, unable to find contract {}"
+
+#: vnpy_portfoliostrategy\engine.py:410
+msgid "{}初始化完成"
+msgstr "{} initialization completed"
+
+#: vnpy_portfoliostrategy\engine.py:416
+msgid "策略{}启动失败，请先初始化"
+msgstr "Failed to start strategy instance {}, please initialize first"
+
+#: vnpy_portfoliostrategy\engine.py:420
+msgid "{}已经启动，请勿重复操作"
+msgstr "{} has been started, repeated operations are prohibited"
+
+#: vnpy_portfoliostrategy\engine.py:463
+msgid "策略{}移除失败，请先停止"
+msgstr "Failed to remove strategy instance {}, please stop strategy instance first"
+
+#: vnpy_portfoliostrategy\engine.py:509
+msgid ""
+"策略文件{}加载失败，触发异常：\n"
+"{}"
+msgstr ""
+"Strategy file {} failed to import, exception triggered:\n"
+"{}"
+
+#: vnpy_portfoliostrategy\engine.py:604
+msgid "组合策略引擎"
+msgstr "StrategyEngine"
+
+#: vnpy_portfoliostrategy\ui\widget.py:46
+msgid "添加策略"
+msgstr "Add Strategy"
+
+#: vnpy_portfoliostrategy\ui\widget.py:49
+msgid "全部初始化"
+msgstr "Initialize All Strategies"
+
+#: vnpy_portfoliostrategy\ui\widget.py:52
+msgid "全部启动"
+msgstr "Start All Strategies"
+
+#: vnpy_portfoliostrategy\ui\widget.py:55
+msgid "全部停止"
+msgstr "Stop All Strategies"
+
+#: vnpy_portfoliostrategy\ui\widget.py:58
+msgid "清空日志"
+msgstr "Clear Logs"
+
+#: vnpy_portfoliostrategy\ui\widget.py:178
+msgid "初始化"
+msgstr "Init"
+
+#: vnpy_portfoliostrategy\ui\widget.py:181
+msgid "启动"
+msgstr "Start"
+
+#: vnpy_portfoliostrategy\ui\widget.py:185
+msgid "停止"
+msgstr "Stop"
+
+#: vnpy_portfoliostrategy\ui\widget.py:189
+msgid "编辑"
+msgstr "Edit"
+
+#: vnpy_portfoliostrategy\ui\widget.py:192
+msgid "移除"
+msgstr "Remove"
+
+#: vnpy_portfoliostrategy\ui\widget.py:331
+msgid "时间"
+msgstr "Time"
+
+#: vnpy_portfoliostrategy\ui\widget.py:332
+msgid "信息"
+msgstr "Msg"
+
+#: vnpy_portfoliostrategy\ui\widget.py:371
+msgid "添加策略：{}"
+msgstr "Add Strategy: {}"
+
+#: vnpy_portfoliostrategy\ui\widget.py:372
+msgid "添加"
+msgstr "Add"
+
+#: vnpy_portfoliostrategy\ui\widget.py:376
+msgid "参数编辑：{}"
+msgstr "Edit Parameters: {}"
+
+#: vnpy_portfoliostrategy\ui\widget.py:377
+msgid "确定"
+msgstr "OK"
