@@ -108,9 +108,13 @@ class BinanceSpotGateway(BaseGateway):
     def __init__(self, event_engine: EventEngine, gateway_name: str) -> None:
         """构造函数"""
         super().__init__(event_engine, gateway_name)
-
+        # 订阅交易数据 比如order变化，仓位变化
         self.trade_ws_api: "BinanceSpotTradeWebsocketApi" = BinanceSpotTradeWebsocketApi(self)
+
+        # 订阅市场数据 比如Kline， ticker， depth
         self.market_ws_api: "BinanceSpotDataWebsocketApi" = BinanceSpotDataWebsocketApi(self)
+
+        # 与binance交互， 比如下单，撤单
         self.rest_api: "BinanceSpotRestAPi" = BinanceSpotRestAPi(self)
 
         self.orders: Dict[str, OrderData] = {}
@@ -714,6 +718,7 @@ class BinanceSpotDataWebsocketApi:
 
         self._client.ticker(req.symbol)
         self._client.partial_book_depth(req.symbol)
+        self._client.kline(req.symbol, '1m')
 
     def on_packet(self, _, packet: dict) -> None:
         """推送数据回报"""
