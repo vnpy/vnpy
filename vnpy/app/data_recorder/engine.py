@@ -12,7 +12,7 @@ from vnpy.trader.object import (
     BarData,
     ContractData
 )
-from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT
+from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT,
 from vnpy.trader.utility import load_json, save_json, BarGenerator
 from vnpy_clickhouse.clickhouse_database import ClickhouseDatabase
 
@@ -162,6 +162,7 @@ class RecorderEngine(BaseEngine):
     def register_event(self):
         """"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
+        self.event_engine.register(EVENT_BAR, self.process_tick_event)
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
 
     def process_tick_event(self, event: Event):

@@ -134,9 +134,6 @@ class Exchange(Enum):
     IBKRATS = "IBKRATS"     # Paper Trading Exchange of IB
     BINANCE = "BINANCE"     # Binance
 
-    # crypto
-    BINANCE = 'BINANCE'
-
     # Special Function
     LOCAL = "LOCAL"         # For local generated data
 
