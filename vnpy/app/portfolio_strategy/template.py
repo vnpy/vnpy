@@ -47,15 +47,6 @@ class StrategyTemplate(ABC):
         #Tick数据字典
         self.ticks: dict[str, TickData] = defaultdict(TickData)
         #Bar数据字典
-        self.bgs: dict[str, BarGenerator] = {}
-
-        def on_bar(bar: BarData):
-            """"""
-            pass
-
-        for vt_symbol in self.vt_symbols:
-            self.bgs[vt_symbol] = BarGenerator(on_bar)
-
         self.bars: dict[str, BarData] = defaultdict(BarData)
 
         # 委托缓存容器
@@ -155,8 +146,13 @@ class StrategyTemplate(ABC):
     @virtual
     def on_bars(self, bars: dict[str, BarData]) -> None:
         """K线切片回调"""
-        if bars:
-            self.rebalance_portfolio(bars)
+        pass
+
+    def on_bar(self, bar: BarData) -> None:
+        """K线推送回调"""
+        if bar.vt_symbol in self.vt_symbols:
+            self.bars[bar.vt_symbol] = bar
+
         pass
 
     def on_factor(self, factor: FactorData) -> None:
@@ -166,7 +162,8 @@ class StrategyTemplate(ABC):
             check_result: bool = self.update_factor(factor)
             if check_result:
                 self.on_factor_ready()
-                self.rebalance_portfolio()
+                bars = copy(self.bars)
+                self.rebalance_portfolio(bars)
                 self.init_checklist()
         return
 

@@ -142,6 +142,18 @@ class StrategyEngine(BaseEngine):
             if strategy.inited:
                 self.call_strategy_func(strategy, strategy.on_tick, tick)
 
+    def process_bar_event(self, event: Event) -> None:
+        """K线数据推送"""
+        bar: BarData = event.data
+
+        strategies: list = self.symbol_strategy_map[bar.vt_symbol]
+        if not strategies:
+            return
+
+        for strategy in strategies:
+            if strategy.inited:
+                self.call_strategy_func(strategy, strategy.on_bar, bar)
+
     def process_order_event(self, event: Event) -> None:
         """委托数据推送"""
         order: OrderData = event.data

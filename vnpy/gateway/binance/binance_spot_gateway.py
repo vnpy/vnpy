@@ -672,6 +672,7 @@ class BinanceSpotDataWebsocketApi:
         self.gateway_name: str = gateway.gateway_name
 
         self.ticks: Dict[str, TickData] = {}
+        self.bars: Dict[str, BarData] = {}
         self.reqid: int = 0
         self._active: bool = False
 
@@ -730,6 +731,20 @@ class BinanceSpotDataWebsocketApi:
         data: dict = packet["data"]
 
         symbol, channel = stream.split("@")
+
+        if channel == 'kline_1m':
+            kdata = data['k']
+            if kdata['x'] == 'true':
+                bar: BarData = self.bars[symbol]
+                bar.volume = float(kdata['v'])
+                bar.datetime = datetime.fromtimestamp(float(kdata['t'])/1000)
+                bar.open_price = float(kdata['o'])
+                bar.high_price = float(kdata['h'])
+                bar.low_price = float(kdata['l'])
+                bar.close_price = float(kdata['c'])
+                self.gateway.on_bar(copy(bar))
+            return
+
         tick: TickData = self.ticks[symbol]
 
         if channel == "ticker":

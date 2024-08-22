@@ -11,7 +11,7 @@ from .event import (
     EVENT_ACCOUNT,
     EVENT_CONTRACT,
     EVENT_LOG,
-    EVENT_QUOTE,
+    EVENT_QUOTE, EVENT_BAR,
 )
 from .object import (
     TickData,
