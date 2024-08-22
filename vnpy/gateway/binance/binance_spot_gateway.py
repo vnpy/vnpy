@@ -695,6 +695,8 @@ class BinanceSpotDataWebsocketApi:
             for symbol in self.ticks.keys():
                 self._client.ticker(symbol)
                 self._client.partial_book_depth(symbol)
+        if self.bars:
+            for symbol in self.bars.keys():
                 self._client.kline(symbol, '1m')
 
     def subscribe(self, req: SubscribeRequest) -> None:
