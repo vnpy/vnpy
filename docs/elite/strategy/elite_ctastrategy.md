@@ -467,7 +467,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 ```python3
     def on_start(self):
         """
-        Callback when strategy is started.
+        Callback when strategies is started.
         """
         self.write_log("策略启动")
 ```
@@ -485,7 +485,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 ```python3
     def on_stop(self):
         """
-        Callback when strategy is stopped.
+        Callback when strategies is stopped.
         """
         self.write_log("策略停止")
 ```

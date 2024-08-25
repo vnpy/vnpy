@@ -107,6 +107,7 @@ class MainEngine:
         """
         Init all engines.
         """
+        self.write_log("add log, oms, email engines")
         self.add_engine(LogEngine)
         self.add_engine(OmsEngine)
         self.add_engine(EmailEngine)

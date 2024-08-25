@@ -384,7 +384,7 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 ```python3
     def on_init(self):
         """
-        Callback when strategy is inited.
+        Callback when strategies is inited.
         """
         self.write_log("策略初始化")
         self.load_bars(10)
@@ -405,7 +405,7 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 ```python3
     def on_start(self):
         """
-        Callback when strategy is started.
+        Callback when strategies is started.
         """
         self.write_log("策略启动")
 ```
@@ -423,7 +423,7 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 ```python3
     def on_stop(self):
         """
-        Callback when strategy is stopped.
+        Callback when strategies is stopped.
         """
         self.write_log("策略停止")
 ```
@@ -688,7 +688,7 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 ```python3
     def load_bars(self, days: int, interval: Interval = Interval.MINUTE) -> None:
         """
-        Load historical bar data for initializing strategy.
+        Load historical bar data for initializing strategies.
         """
         self.strategy_engine.load_bars(self, days, interval)
 ```

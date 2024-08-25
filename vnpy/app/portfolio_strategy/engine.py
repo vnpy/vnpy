@@ -473,9 +473,11 @@ class StrategyEngine(BaseEngine):
         self.call_strategy_func(strategy, strategy.on_stop)
 
         # 撤销全部委托
+        self.write_log(f"策略{strategy_name}撤销全部委托")
         self.cancel_all(strategy)
 
         # 同步数据状态
+        self.write_log(f"策略{strategy_name}同步数据状态")
         self.sync_strategy_data(strategy)
 
         # 推送策略事件通知停止完成状态
@@ -484,7 +486,7 @@ class StrategyEngine(BaseEngine):
     def edit_strategy(self, strategy_name: str, setting: dict) -> None:
         """编辑策略参数"""
         strategy: StrategyTemplate = self.strategies[strategy_name]
-        # update strategy parameters
+        # update strategies parameters
         strategy.update_setting(setting)
 
         self.save_strategy_setting()
@@ -520,8 +522,9 @@ class StrategyEngine(BaseEngine):
 
     def load_strategy_class(self) -> None:
         """加载策略类"""
+        # todo 个人认为应该改成由setting文件中的strategy_class_path来加载策略类
         path1: Path = Path(__file__).parent.joinpath("strategies")
-        self.load_strategy_class_from_folder(path1, "vnpy_portfoliostrategy.strategies")
+        self.load_strategy_class_from_folder(path1, "portfolio_strategy.strategies")
 
         path2: Path = Path.cwd().joinpath("strategies")
         self.load_strategy_class_from_folder(path2, "strategies")
