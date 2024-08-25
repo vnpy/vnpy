@@ -178,7 +178,7 @@ class StrategyTemplate(ABC):
 
         return all(self.checklist.values())
 
-    def on_factor_ready(self) -> dict[str, float]:
+    def on_factor_ready(self) -> None:
         """因子推送完成回调"""
         # todo 优化因子推送完成逻辑, update target positions
         pass

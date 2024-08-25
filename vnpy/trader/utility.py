@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Callable, Dict, Tuple, Union, Optional
 
 import numpy as np
-import talib
+#import talib
 
 from .constant import Exchange, Interval
 from .locale import _

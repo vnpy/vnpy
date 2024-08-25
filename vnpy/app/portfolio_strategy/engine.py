@@ -74,12 +74,12 @@ class StrategyEngine(BaseEngine):
         self.vt_tradeids: set[str] = set()
 
         # 数据库和数据服务
-        self.database: BaseDatabase = get_database()
-        self.datafeed: BaseDatafeed = get_datafeed()
+        #self.database: BaseDatabase = get_database()
+        #self.datafeed: BaseDatafeed = get_datafeed()
 
     def init_engine(self) -> None:
         """初始化引擎"""
-        self.init_datafeed()
+        #self.init_datafeed()
         self.load_strategy_class()
         self.load_strategy_setting()
         self.load_strategy_data()
