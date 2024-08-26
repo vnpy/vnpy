@@ -93,24 +93,6 @@ class MainEngine:
 
         return gateway
 
-    def add_gateway_with_settings(self, gateway_class: Type[BaseGateway], gateway_name: str = "",gateway_setting: dict = None) -> BaseGateway:
-        """
-        Add gateway.
-        """
-        # Use default name if gateway_name not passed
-        if not gateway_name:
-            gateway_name: str = gateway_class.default_name
-
-        gateway: BaseGateway = gateway_class(self.event_engine, gateway_name,gateway_setting=gateway_setting)
-        self.gateways[gateway_name] = gateway
-
-        # Add gateway supported exchanges into engine
-        for exchange in gateway.exchanges:
-            if exchange not in self.exchanges:
-                self.exchanges.append(exchange)
-
-        return gateway
-
     def add_app(self, app_class: Type[BaseApp]) -> "BaseEngine":
         """
         Add app.

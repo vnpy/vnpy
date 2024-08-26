@@ -48,7 +48,7 @@ SETTINGS: Dict[str, Any] = {
 # Load global setting from json file.
 SETTING_FILENAME: str = "vt_setting.json"
 SETTINGS.update(load_json(SETTING_FILENAME))
-print(f"LOG: update SETTINGS from {SETTING_FILENAME}:")
+print(f"LOG: update SETTINGS from {SETTING_FILENAME}")
 
 
 def get_settings(prefix: str = "") -> Dict[str, Any]:
