@@ -112,7 +112,7 @@ class BarData(BaseData):
     datetime: datetime
 
     interval: Interval = None
-    volume: float = 0
+    volume: float = 0 # quoted asset volume (比如一般都用usdt计价, 那么这里的volume是以usdt计价后的volume)
     turnover: float = 0
     open_interest: float = 0
     open_price: float = 0
