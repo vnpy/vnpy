@@ -1,13 +1,13 @@
 import json
 import time
+from collections import defaultdict
 from copy import copy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,timezone
 from threading import Lock
 from typing import Any, Dict, List, Optional
 
 from binance.spot import Spot
 from binance.websocket.websocket_client import BinanceWebsocketClient
-
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.constant import (
@@ -354,7 +354,7 @@ class BinanceSpotRestAPi:
                 direction=DIRECTION_BINANCE2VT[d["side"]],
                 traded=float(d["executedQty"]),
                 status=STATUS_BINANCE2VT.get(d["status"], None),
-                datetime=datetime.fromtimestamp(int(d["time"])/1000),
+                datetime=datetime.fromtimestamp(int(d["time"]) / 1000),
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_order(order)
@@ -621,7 +621,7 @@ class BinanceSpotTradeWebsocketApi:
             volume=float(packet["q"]),
             traded=float(packet["z"]),
             status=STATUS_BINANCE2VT[packet["X"]],
-            datetime=datetime.fromtimestamp(packet["O"]/1000),
+            datetime=datetime.fromtimestamp(packet["O"] / 1000),
             gateway_name=self.gateway_name,
             offset=offset
         )
@@ -645,7 +645,7 @@ class BinanceSpotTradeWebsocketApi:
             direction=order.direction,
             price=float(packet["L"]),
             volume=trade_volume,
-            datetime=datetime.fromtimestamp(packet["T"]/1000),
+            datetime=datetime.fromtimestamp(packet["T"] / 1000),
             gateway_name=self.gateway_name,
             offset=offset
         )
@@ -679,9 +679,12 @@ class BinanceSpotDataWebsocketApi:
     def connect(self, server: str):
         """连接Websocket行情频道"""
         if server == "REAL":
-            self._client = SpotWebsocketStreamClient_vnpy(stream_url=WEBSOCKET_DATA_HOST, on_message=self.on_packet)
+            # self._client = SpotWebsocketStreamClient_vnpy(stream_url=WEBSOCKET_DATA_HOST, on_message=self.on_packet)
+            self._client = SpotWebsocketStreamClient_vnpy(stream_url=WEBSOCKET_DATA_HOST, on_message=self.on_packet,
+                                                          is_combined=True)
         else:
-            self._client = SpotWebsocketStreamClient_vnpy(stream_url=TESTNET_WEBSOCKET_DATA_HOST, on_message=self.on_packet)
+            self._client = SpotWebsocketStreamClient_vnpy(stream_url=TESTNET_WEBSOCKET_DATA_HOST,
+                                                          on_message=self.on_packet, is_combined=True)
 
         self._active = True
         self.on_connected()
@@ -718,7 +721,15 @@ class BinanceSpotDataWebsocketApi:
             datetime=datetime.now(),
             gateway_name=self.gateway_name,
         )
+        bar: BarData = BarData(
+            symbol=req.symbol,
+            exchange=Exchange.BINANCE,
+            datetime=datetime.fromtimestamp(0,tz=timezone.utc),
+            gateway_name=self.gateway_name,
+            interval=Interval.MINUTE
+        )
         self.ticks[req.symbol] = tick
+        self.bars[req.symbol] = bar
 
         self._client.ticker(req.symbol)
         self._client.partial_book_depth(req.symbol)
@@ -726,6 +737,8 @@ class BinanceSpotDataWebsocketApi:
 
     def on_packet(self, _, packet: dict) -> None:
         """推送数据回报"""
+        if isinstance(packet, str):
+            packet = json.loads(packet)
         stream: Optional[str] = packet.get("stream", None)
 
         if not stream:
@@ -733,18 +746,20 @@ class BinanceSpotDataWebsocketApi:
 
         data: dict = packet["data"]
 
-        symbol, channel = stream.split("@")
+        symbol, channel = stream.split("@", 1)
 
         if channel == 'kline_1m':
             kdata = data['k']
-            if kdata['x'] == 'true':
+            # if kdata['x'] == 'true':
+            if True:
                 bar: BarData = self.bars[symbol]
-                bar.volume = float(kdata['v'])
-                bar.datetime = datetime.fromtimestamp(float(kdata['t'])/1000)
+                bar.symbol = symbol
+                bar.datetime = datetime.fromtimestamp(float(kdata['t']) / 1000)
                 bar.open_price = float(kdata['o'])
                 bar.high_price = float(kdata['h'])
                 bar.low_price = float(kdata['l'])
                 bar.close_price = float(kdata['c'])
+                bar.volume = float(kdata['q'])
                 self.gateway.on_bar(copy(bar))
             return
 
@@ -757,7 +772,7 @@ class BinanceSpotDataWebsocketApi:
             tick.high_price = float(data['h'])
             tick.low_price = float(data['l'])
             tick.last_price = float(data['c'])
-            tick.datetime = datetime.fromtimestamp(float(data['E'])/1000)
+            tick.datetime = datetime.fromtimestamp(float(data['E']) / 1000)
         else:
             bids: list = data["bids"]
             for n in range(min(5, len(bids))):

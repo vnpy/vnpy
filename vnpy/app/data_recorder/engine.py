@@ -1,18 +1,18 @@
 """"""
-
+from collections import defaultdict
 from threading import Thread
 from queue import Queue, Empty
 from copy import copy
 
 from vnpy.event import Event, EventEngine
-from vnpy.trader.engine import BaseEngine, MainEngine,OmsEngine
+from vnpy.trader.engine import BaseEngine, MainEngine, OmsEngine
 from vnpy.trader.object import (
     SubscribeRequest,
     TickData,
     BarData,
     ContractData
 )
-from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT,EVENT_BAR
+from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT, EVENT_BAR
 from vnpy.trader.utility import load_json, save_json, BarGenerator
 from vnpy_clickhouse.clickhouse_database import ClickhouseDatabase
 
@@ -47,6 +47,8 @@ class RecorderEngine(BaseEngine):
 
         # 用clickhouse数据库
         self.database_manager = ClickhouseDatabase()
+        self.buffer = defaultdict(list)
+        self.buffer_size = 4
 
     # def load_setting(self):
     #     """"""
@@ -72,7 +74,15 @@ class RecorderEngine(BaseEngine):
                 if task_type == "tick":
                     self.database_manager.save_tick_data([data])
                 elif task_type == "bar":
-                    self.database_manager.save_bar_data([data])
+                    assert isinstance(data, BarData)
+                    self.buffer[data.vt_symbol].append(data)
+                    to_remove = []
+                    for k, v in self.buffer.items():
+                        if len(v) > self.buffer_size:
+                            to_remove.append(k)
+                            self.database_manager.save_bar_data(self.buffer[data.vt_symbol])
+                    for k in to_remove:
+                        self.buffer.pop(k)
 
             except Empty:
                 continue
@@ -168,10 +178,9 @@ class RecorderEngine(BaseEngine):
     def process_bar_event(self, event: Event):
         """"""
         bar = event.data
-
+        self.add_bar_recording(vt_symbol=bar.vt_symbol)
         if bar.vt_symbol in self.bar_recordings:
             self.record_bar(bar)
-
 
     def process_tick_event(self, event: Event):
         """"""
