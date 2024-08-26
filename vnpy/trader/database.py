@@ -11,7 +11,6 @@ from .setting import SETTINGS
 from .utility import ZoneInfo
 from .locale import _
 
-
 DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
 
 
@@ -26,7 +25,7 @@ def convert_tz(dt: datetime) -> datetime:
 @dataclass
 class BarOverview:
     """
-    Overview of bar data stored in database.
+    BarOverview of bar data stored in database.
     """
 
     symbol: str = ""
@@ -36,11 +35,20 @@ class BarOverview:
     start: datetime = None
     end: datetime = None
 
+    def __init__(self, symbol: str, exchange: Exchange, interval: Interval, start: datetime, end: datetime,
+                 count: int = 0):
+        self.symbol = symbol
+        self.exchange = exchange
+        self.interval = interval
+        self.start = start
+        self.end = end
+        self.count = count
+
 
 @dataclass
 class TickOverview:
     """
-    Overview of tick data stored in database.
+    BarOverview of tick data stored in database.
     """
 
     symbol: str = ""
@@ -48,6 +56,31 @@ class TickOverview:
     count: int = 0
     start: datetime = None
     end: datetime = None
+
+
+@dataclass
+class FactorOverview:
+    """
+    BarOverview of bar data stored in database.
+    """
+
+    symbol: str = ""
+    name: str = ""
+    exchange: Exchange = None
+    interval: Interval = None
+    count: int = 0
+    start: datetime = None
+    end: datetime = None
+
+    def __init__(self, symbol: str, name: str, exchange: Exchange, interval: Interval, start: datetime, end: datetime,
+                 count: int = 0):
+        self.symbol = symbol
+        self.name = name
+        self.exchange = exchange
+        self.interval = interval
+        self.start = start
+        self.end = end
+        self.count = count
 
 
 class BaseDatabase(ABC):
@@ -71,12 +104,12 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     def load_bar_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval,
-        start: datetime,
-        end: datetime
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval,
+            start: datetime,
+            end: datetime
     ) -> List[BarData]:
         """
         Load bar data from database.
@@ -85,11 +118,11 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     def load_tick_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        start: datetime,
-        end: datetime
+            self,
+            symbol: str,
+            exchange: Exchange,
+            start: datetime,
+            end: datetime
     ) -> List[TickData]:
         """
         Load tick data from database.
@@ -98,10 +131,10 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     def delete_bar_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval
     ) -> int:
         """
         Delete all bar data with given symbol + exchange + interval.
@@ -110,9 +143,9 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     def delete_tick_data(
-        self,
-        symbol: str,
-        exchange: Exchange
+            self,
+            symbol: str,
+            exchange: Exchange
     ) -> int:
         """
         Delete all tick data with given symbol + exchange.
