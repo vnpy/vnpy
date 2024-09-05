@@ -1,5 +1,6 @@
 import importlib
 import traceback
+from datetime import datetime, timedelta
 from logging import getLogger
 from typing import Type, Optional, Callable
 from concurrent.futures import ThreadPoolExecutor
@@ -7,12 +8,13 @@ from concurrent.futures import ThreadPoolExecutor
 from vnpy.app.factor_maker.base import APP_NAME, EVENT_FACTOR_LOG, EVENT_FACTOR_MAKER
 from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.event import EventEngine, Event
-from vnpy.trader.database import BaseDatabase, get_database
+from vnpy.trader.constant import Interval
+from vnpy.trader.database import BaseDatabase, get_database, DB_TZ
 from vnpy.trader.datafeed import BaseDatafeed, get_datafeed
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.event import EVENT_TICK, EVENT_BAR
-from vnpy.trader.object import LogData, ContractData, SubscribeRequest, TickData, BarData
-from vnpy.trader.utility import load_json, save_json
+from vnpy.trader.object import LogData, ContractData, SubscribeRequest, TickData, BarData, HistoryRequest
+from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
 
 factor_module_name = 'vnpy.app.factor_maker.factors'
 
@@ -36,11 +38,11 @@ class FactorEngine(BaseEngine):
 
         # 数据库和数据服务
         self.database: BaseDatabase = get_database()
-        self.datafeed: BaseDatafeed = get_datafeed()
+        #self.datafeed: BaseDatafeed = get_datafeed()
 
     def init_engine(self) -> None:
         """"""
-        self.init_datafeed()
+        #self.init_datafeed()
         self.load_factor_class()
         self.load_factor_setting()
         self.load_factor_data()
@@ -57,6 +59,85 @@ class FactorEngine(BaseEngine):
         result: bool = self.datafeed.init(self.write_log)
         if result:
             self.write_log(f"数据服务初始化成功")
+
+    def load_bars(self, factor: FactorTemplate, days: int, interval: Interval) -> None:
+        """Load historical data"""
+        vt_symbols: list = factor.vt_symbols
+        dts: set[datetime] = set()
+        history_data: dict[tuple, BarData] = {}
+
+        # Fetch historical data from the database, data service, or API
+        for vt_symbol in vt_symbols:
+            data: list[BarData] = self.load_bar(vt_symbol, days, interval)
+
+            for bar in data:
+                dts.add(bar.datetime)
+                history_data[(bar.datetime, vt_symbol)] = bar
+
+        dts: list = list(dts)
+        dts.sort()
+
+        bars: dict = {}
+
+        for dt in dts:
+            for vt_symbol in vt_symbols:
+                bar: Optional[BarData] = history_data.get((dt, vt_symbol), None)
+
+                # If historical data for the specific contract and time is available, store it in the bars dictionary
+                if bar:
+                    bars[vt_symbol] = bar
+                # If data is unavailable, use previous data in the bars dictionary to fill in
+                elif vt_symbol in bars:
+                    old_bar: BarData = bars[vt_symbol]
+
+                    bar = BarData(
+                        symbol=old_bar.symbol,
+                        exchange=old_bar.exchange,
+                        datetime=dt,
+                        open_price=old_bar.close_price,
+                        high_price=old_bar.close_price,
+                        low_price=old_bar.close_price,
+                        close_price=old_bar.close_price,
+                        gateway_name=old_bar.gateway_name
+                    )
+                    bars[vt_symbol] = bar
+
+            self.call_factor_func(factor, factor.on_bars, bars)
+
+    def load_bar(self, vt_symbol: str, days: int, interval: Interval) -> list[BarData]:
+        """Load historical data for a single contract"""
+        symbol, exchange = extract_vt_symbol(vt_symbol)
+        end: datetime = datetime.now(DB_TZ)
+        start: datetime = end - timedelta(days)
+        contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
+        data: list[BarData]
+
+        # Fetch historical data from the database first
+        data = self.database.load_bar_data(
+            symbol=symbol,
+            exchange=exchange,
+            interval=interval,
+            start=start,
+            end=end,
+        )
+
+        # If no data from the database, fetch via API or data service
+        if not data:
+            if contract and contract.history_data:
+                req: HistoryRequest = HistoryRequest(
+                    symbol=symbol,
+                    exchange=exchange,
+                    interval=interval,
+                    start=start,
+                    end=end
+                )
+                data = self.main_engine.query_history(req, contract.gateway_name)
+
+            else:
+                msg = f"Failed to load historical data for {vt_symbol}"
+                self.write_log(msg)
+
+        return data
 
     def load_factor_class(self):
         """Load a strategy class from a specified module."""

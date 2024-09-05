@@ -279,12 +279,12 @@ class StrategyEngine(BaseEngine):
             return None
 
     def load_bars(self, strategy: StrategyTemplate, days: int, interval: Interval) -> None:
-        """加载历史数据"""
+        """Load historical data"""
         vt_symbols: list = strategy.vt_symbols
         dts: set[datetime] = set()
         history_data: dict[tuple, BarData] = {}
 
-        # 通过接口、数据服务、数据库获取历史数据
+        # Fetch historical data from the database, data service, or API
         for vt_symbol in vt_symbols:
             data: list[BarData] = self.load_bar(vt_symbol, days, interval)
 
@@ -301,10 +301,10 @@ class StrategyEngine(BaseEngine):
             for vt_symbol in vt_symbols:
                 bar: Optional[BarData] = history_data.get((dt, vt_symbol), None)
 
-                # 如果获取到合约指定时间的历史数据，缓存进bars字典
+                # If historical data for the specific contract and time is available, store it in the bars dictionary
                 if bar:
                     bars[vt_symbol] = bar
-                # 如果获取不到，但bars字典中已有合约数据缓存, 使用之前的数据填充
+                # If data is unavailable, use previous data in the bars dictionary to fill in
                 elif vt_symbol in bars:
                     old_bar: BarData = bars[vt_symbol]
 
@@ -323,37 +323,37 @@ class StrategyEngine(BaseEngine):
             self.call_strategy_func(strategy, strategy.on_bars, bars)
 
     def load_bar(self, vt_symbol: str, days: int, interval: Interval) -> list[BarData]:
-        """加载单个合约历史数据"""
+        """Load historical data for a single contract"""
         symbol, exchange = extract_vt_symbol(vt_symbol)
         end: datetime = datetime.now(DB_TZ)
         start: datetime = end - timedelta(days)
         contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
         data: list[BarData]
 
-        # 通过接口获取历史数据
-        if contract and contract.history_data:
-            req: HistoryRequest = HistoryRequest(
-                symbol=symbol,
-                exchange=exchange,
-                interval=interval,
-                start=start,
-                end=end
-            )
-            data = self.main_engine.query_history(req, contract.gateway_name)
+        # Fetch historical data from the database first
+        data = self.database.load_bar_data(
+            symbol=symbol,
+            exchange=exchange,
+            interval=interval,
+            start=start,
+            end=end,
+        )
 
-        # 通过数据服务获取历史数据
-        else:
-            data = self.query_bar_from_datafeed(symbol, exchange, interval, start, end)
-
-        # 通过数据库获取数据
+        # If no data from the database, fetch via API or data service
         if not data:
-            data = self.database.load_bar_data(
-                symbol=symbol,
-                exchange=exchange,
-                interval=interval,
-                start=start,
-                end=end,
-            )
+            if contract and contract.history_data:
+                req: HistoryRequest = HistoryRequest(
+                    symbol=symbol,
+                    exchange=exchange,
+                    interval=interval,
+                    start=start,
+                    end=end
+                )
+                data = self.main_engine.query_history(req, contract.gateway_name)
+
+            # Fetch historical data via data service if API data is unavailable
+            else:
+                data = self.query_bar_from_datafeed(symbol, exchange, interval, start, end)
 
         return data
 
