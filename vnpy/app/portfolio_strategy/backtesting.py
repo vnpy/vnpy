@@ -830,7 +830,7 @@ class ContractDailyResult:
             turnover: float = trade.volume * size * trade.price
 
             self.trading_pnl += pos_change * (self.close_price - trade.price) * size
-            self.slippage += trade.volume * size * slippage
+            self.slippage += trade.volume * size * slippage # it looks like slippage's unit is price, not percent
             self.turnover += turnover
             self.commission += turnover * rate
 
