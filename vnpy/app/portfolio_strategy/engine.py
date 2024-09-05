@@ -77,12 +77,12 @@ class StrategyEngine(BaseEngine):
         self.vt_tradeids: set[str] = set()
 
         # 数据库和数据服务
-        #self.database: BaseDatabase = get_database()
-        #self.datafeed: BaseDatafeed = get_datafeed()
+        self.database: BaseDatabase = get_database()
+        self.datafeed: BaseDatafeed = get_datafeed()
 
     def init_engine(self) -> None:
         """初始化引擎"""
-        #self.init_datafeed()
+        self.init_datafeed()
         self.load_strategy_class()
         self.load_strategy_setting()
         self.load_strategy_data()
@@ -382,13 +382,13 @@ class StrategyEngine(BaseEngine):
 
         # Get the class from the module
         strategy_class = getattr(self.module, class_name)
-        self.classes[strategy_class.__name__] = strategy_class
-
-        #strategy_class: Optional[StrategyTemplate] = self.classes.get(class_name, None)
         if not strategy_class:
             msg: str = f"创建策略失败，找不到策略类{class_name}"
             self.write_log(msg)
             return
+
+        if strategy_class.__name__ not in self.classes:
+            self.classes[strategy_class.__name__] = strategy_class
 
         strategy: StrategyTemplate = strategy_class(self, strategy_name, vt_symbols, setting)
         self.strategies[strategy_name] = strategy
