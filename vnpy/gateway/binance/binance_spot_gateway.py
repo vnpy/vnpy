@@ -2,7 +2,7 @@ import json
 import time
 from collections import defaultdict
 from copy import copy
-from datetime import datetime, timedelta,timezone
+from datetime import datetime, timedelta, timezone
 from threading import Lock
 from typing import Any, Dict, List, Optional
 
@@ -724,9 +724,9 @@ class BinanceSpotDataWebsocketApi:
         bar: BarData = BarData(
             symbol=req.symbol,
             exchange=Exchange.BINANCE,
-            datetime=datetime.fromtimestamp(0,tz=timezone.utc),
+            datetime=datetime.fromtimestamp(0, tz=timezone.utc),
             gateway_name=self.gateway_name,
-            interval=Interval.MINUTE
+            interval=None
         )
         self.ticks[req.symbol] = tick
         self.bars[req.symbol] = bar
@@ -748,12 +748,14 @@ class BinanceSpotDataWebsocketApi:
 
         symbol, channel = stream.split("@", 1)
 
-        if channel == 'kline_1m':
+        if channel.startswith('kline_'):
             kdata = data['k']
+            # print(kdata['x'], type(kdata['x']))
             # if kdata['x'] == 'true':
             if True:
                 bar: BarData = self.bars[symbol]
                 bar.symbol = symbol
+                bar.interval = Interval(kdata['i'])
                 bar.datetime = datetime.fromtimestamp(float(kdata['t']) / 1000)
                 bar.open_price = float(kdata['o'])
                 bar.high_price = float(kdata['h'])
