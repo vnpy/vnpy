@@ -81,6 +81,7 @@ class TickData(BaseData):
         """"""
         self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
 
+
 @dataclass
 class FactorData(BaseData):
     """
@@ -92,9 +93,12 @@ class FactorData(BaseData):
 
     factor_name: str
     frequency: str = ""
+    symbol: str = ""
+    exchange: Exchange = None
     datetime: datetime = None
 
     value: defaultdict[float] = field(default_factory=defaultdict)
+    value1: float = None
 
     def __post_init__(self) -> None:
         """"""
@@ -112,7 +116,7 @@ class BarData(BaseData):
     datetime: datetime
 
     interval: Interval = None
-    volume: float = 0 # quoted asset volume (比如一般都用usdt计价, 那么这里的volume是以usdt计价后的volume)
+    volume: float = 0  # quoted asset volume (比如一般都用usdt计价, 那么这里的volume是以usdt计价后的volume)
     turnover: float = 0
     open_interest: float = 0
     open_price: float = 0
@@ -261,18 +265,18 @@ class ContractData(BaseData):
     size: float
     pricetick: float
 
-    min_volume: float = 1           # minimum trading volume of the contract
-    stop_supported: bool = True    # whether server supports stop order
-    net_position: bool = True      # whether gateway uses net position volume
-    history_data: bool = False      # whether gateway provides bar history data
+    min_volume: float = 1  # minimum trading volume of the contract
+    stop_supported: bool = True  # whether server supports stop order
+    net_position: bool = True  # whether gateway uses net position volume
+    history_data: bool = False  # whether gateway provides bar history data
 
     option_strike: float = 0
-    option_underlying: str = ""     # vt_symbol of underlying contract
+    option_underlying: str = ""  # vt_symbol of underlying contract
     option_type: OptionType = None
     option_listed: datetime = None
     option_expiry: datetime = None
     option_portfolio: str = ""
-    option_index: str = ""          # for identifying options with same strike price
+    option_index: str = ""  # for identifying options with same strike price
 
     def __post_init__(self) -> None:
         """"""
