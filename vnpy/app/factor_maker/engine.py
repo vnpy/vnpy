@@ -1,16 +1,15 @@
 import importlib
 import traceback
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from logging import getLogger
 from typing import Type, Optional, Callable
-from concurrent.futures import ThreadPoolExecutor
 
 from vnpy.app.factor_maker.base import APP_NAME, EVENT_FACTOR_LOG, EVENT_FACTOR_MAKER
 from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.event import EventEngine, Event
 from vnpy.trader.constant import Interval
 from vnpy.trader.database import BaseDatabase, get_database, DB_TZ
-from vnpy.trader.datafeed import BaseDatafeed, get_datafeed
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.event import EVENT_TICK, EVENT_BAR
 from vnpy.trader.object import LogData, ContractData, SubscribeRequest, TickData, BarData, HistoryRequest
@@ -38,11 +37,9 @@ class FactorEngine(BaseEngine):
 
         # 数据库和数据服务
         self.database: BaseDatabase = get_database()
-        #self.datafeed: BaseDatafeed = get_datafeed()
 
     def init_engine(self) -> None:
         """"""
-        #self.init_datafeed()
         self.load_factor_class()
         self.load_factor_setting()
         self.load_factor_data()
@@ -53,12 +50,6 @@ class FactorEngine(BaseEngine):
         """注册事件引擎"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_BAR, self.process_bar_event)
-
-    def init_datafeed(self) -> None:
-        """初始化数据服务"""
-        result: bool = self.datafeed.init(self.write_log)
-        if result:
-            self.write_log(f"数据服务初始化成功")
 
     def load_bars(self, factor: FactorTemplate, days: int, interval: Interval) -> None:
         """Load historical data"""
