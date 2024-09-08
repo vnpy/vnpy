@@ -91,18 +91,20 @@ class FactorData(BaseData):
         * factor frequency
     """
 
-    factor_name: str
-    frequency: str = ""
     symbol: str = ""
     exchange: Exchange = None
     datetime: datetime = None
+    factor_name: str = "factor_unknown"
+    interval: Interval = None
 
-    value: defaultdict[float] = field(default_factory=defaultdict)
-    value1: float = None
+    value: float = None
+
+    VTSYMBOL_TEMPLATE_FACTOR = "factor_{}_{}_{}.{}"  # interval, symbol(ticker), name(factor name), exchange
 
     def __post_init__(self) -> None:
         """"""
-        self.vt_symbol: str = f"{self.factor_name}.{self.frequency}"
+        self.vt_symbol: str = self.VTSYMBOL_TEMPLATE_FACTOR.format(self.frequency, self.symbol, self.factor_name,
+                                                                   self.exchange.value)
 
 
 @dataclass
