@@ -522,7 +522,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 ```python3
     def on_init(self):
         """
-        Callback when strategy is inited.
+        Callback when strategies is inited.
         """
         self.write_log("策略初始化")
         self.load_bar(10)
@@ -543,7 +543,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 ```python3
     def on_start(self):
         """
-        Callback when strategy is started.
+        Callback when strategies is started.
         """
         self.write_log("策略启动")
 ```
@@ -561,7 +561,7 @@ CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程�
 ```python3
     def on_stop(self):
         """
-        Callback when strategy is stopped.
+        Callback when strategies is stopped.
         """
         self.write_log("策略停止")
 ```
@@ -799,7 +799,7 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
         use_database: bool = False
     ):
         """
-        Load historical bar data for initializing strategy.
+        Load historical bar data for initializing strategies.
         """
         if not callback:
             callback = self.on_bar

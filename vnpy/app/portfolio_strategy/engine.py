@@ -2,6 +2,7 @@ import importlib
 import glob
 import traceback
 from collections import defaultdict
+from logging import getLogger
 from pathlib import Path
 from types import ModuleType
 from typing import Type, Callable, Optional
@@ -46,6 +47,8 @@ from vnpy.app.portfolio_strategy.base import (
 )
 from .locale import _
 from vnpy.app.portfolio_strategy.template import StrategyTemplate
+
+strategy_module_name = 'vnpy.app.portfolio_strategy.strategies'
 
 
 class StrategyEngine(BaseEngine):
@@ -104,7 +107,7 @@ class StrategyEngine(BaseEngine):
             self.write_log(_("数据服务初始化成功"))
 
     def query_bar_from_datafeed(
-        self, symbol: str, exchange: Exchange, interval: Interval, start: datetime, end: datetime
+            self, symbol: str, exchange: Exchange, interval: Interval, start: datetime, end: datetime
     ) -> list[BarData]:
         """通过数据服务获取历史数据"""
         req: HistoryRequest = HistoryRequest(
@@ -181,15 +184,15 @@ class StrategyEngine(BaseEngine):
         self.call_strategy_func(strategy, strategy.update_trade, trade)
 
     def send_order(
-        self,
-        strategy: StrategyTemplate,
-        vt_symbol: str,
-        direction: Direction,
-        offset: Offset,
-        price: float,
-        volume: float,
-        lock: bool,
-        net: bool,
+            self,
+            strategy: StrategyTemplate,
+            vt_symbol: str,
+            direction: Direction,
+            offset: Offset,
+            price: float,
+            volume: float,
+            lock: bool,
+            net: bool,
     ) -> Optional[list]:
         """发送委托"""
         contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
@@ -276,12 +279,12 @@ class StrategyEngine(BaseEngine):
             return None
 
     def load_bars(self, strategy: StrategyTemplate, days: int, interval: Interval) -> None:
-        """加载历史数据"""
+        """Load historical data"""
         vt_symbols: list = strategy.vt_symbols
         dts: set[datetime] = set()
         history_data: dict[tuple, BarData] = {}
 
-        # 通过接口、数据服务、数据库获取历史数据
+        # Fetch historical data from the database, data service, or API
         for vt_symbol in vt_symbols:
             data: list[BarData] = self.load_bar(vt_symbol, days, interval)
 
@@ -298,10 +301,10 @@ class StrategyEngine(BaseEngine):
             for vt_symbol in vt_symbols:
                 bar: Optional[BarData] = history_data.get((dt, vt_symbol), None)
 
-                # 如果获取到合约指定时间的历史数据，缓存进bars字典
+                # If historical data for the specific contract and time is available, store it in the bars dictionary
                 if bar:
                     bars[vt_symbol] = bar
-                # 如果获取不到，但bars字典中已有合约数据缓存, 使用之前的数据填充
+                # If data is unavailable, use previous data in the bars dictionary to fill in
                 elif vt_symbol in bars:
                     old_bar: BarData = bars[vt_symbol]
 
@@ -320,37 +323,37 @@ class StrategyEngine(BaseEngine):
             self.call_strategy_func(strategy, strategy.on_bars, bars)
 
     def load_bar(self, vt_symbol: str, days: int, interval: Interval) -> list[BarData]:
-        """加载单个合约历史数据"""
+        """Load historical data for a single contract"""
         symbol, exchange = extract_vt_symbol(vt_symbol)
         end: datetime = datetime.now(DB_TZ)
         start: datetime = end - timedelta(days)
         contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
         data: list[BarData]
 
-        # 通过接口获取历史数据
-        if contract and contract.history_data:
-            req: HistoryRequest = HistoryRequest(
-                symbol=symbol,
-                exchange=exchange,
-                interval=interval,
-                start=start,
-                end=end
-            )
-            data = self.main_engine.query_history(req, contract.gateway_name)
+        # Fetch historical data from the database first
+        data = self.database.load_bar_data(
+            symbol=symbol,
+            exchange=exchange,
+            interval=interval,
+            start=start,
+            end=end,
+        )
 
-        # 通过数据服务获取历史数据
-        else:
-            data = self.query_bar_from_datafeed(symbol, exchange, interval, start, end)
-
-        # 通过数据库获取数据
+        # If no data from the database, fetch via API or data service
         if not data:
-            data = self.database.load_bar_data(
-                symbol=symbol,
-                exchange=exchange,
-                interval=interval,
-                start=start,
-                end=end,
-            )
+            if contract and contract.history_data:
+                req: HistoryRequest = HistoryRequest(
+                    symbol=symbol,
+                    exchange=exchange,
+                    interval=interval,
+                    start=start,
+                    end=end
+                )
+                data = self.main_engine.query_history(req, contract.gateway_name)
+
+            # Fetch historical data via data service if API data is unavailable
+            else:
+                data = self.query_bar_from_datafeed(symbol, exchange, interval, start, end)
 
         return data
 
@@ -369,19 +372,23 @@ class StrategyEngine(BaseEngine):
             self.write_log(msg, strategy)
 
     def add_strategy(
-        self, class_name: str, strategy_name: str, vt_symbols: list, setting: dict
+            self, class_name: str, strategy_name: str, vt_symbols: list, setting: dict
     ) -> None:
-        """添加策略实例"""
+        """Add and load a strategy instance from a specified module."""
         if strategy_name in self.strategies:
-            msg: str = f"创建策略失败，存在重名{strategy_name}"
+            msg = f"Creation failed, strategy name {strategy_name} already exists."
             self.write_log(msg)
             return
 
-        strategy_class: Optional[StrategyTemplate] = self.classes.get(class_name, None)
+        # Get the class from the module
+        strategy_class = getattr(self.module, class_name)
         if not strategy_class:
             msg: str = f"创建策略失败，找不到策略类{class_name}"
             self.write_log(msg)
             return
+
+        if strategy_class.__name__ not in self.classes:
+            self.classes[strategy_class.__name__] = strategy_class
 
         strategy: StrategyTemplate = strategy_class(self, strategy_name, vt_symbols, setting)
         self.strategies[strategy_name] = strategy
@@ -473,9 +480,11 @@ class StrategyEngine(BaseEngine):
         self.call_strategy_func(strategy, strategy.on_stop)
 
         # 撤销全部委托
+        self.write_log(f"策略{strategy_name}撤销全部委托")
         self.cancel_all(strategy)
 
         # 同步数据状态
+        self.write_log(f"策略{strategy_name}同步数据状态")
         self.sync_strategy_data(strategy)
 
         # 推送策略事件通知停止完成状态
@@ -484,7 +493,7 @@ class StrategyEngine(BaseEngine):
     def edit_strategy(self, strategy_name: str, setting: dict) -> None:
         """编辑策略参数"""
         strategy: StrategyTemplate = self.strategies[strategy_name]
-        # update strategy parameters
+        # update strategies parameters
         strategy.update_setting(setting)
 
         self.save_strategy_setting()
@@ -518,35 +527,16 @@ class StrategyEngine(BaseEngine):
 
         return True
 
-    def load_strategy_class(self) -> None:
-        """加载策略类"""
-        path1: Path = Path(__file__).parent.joinpath("strategies")
-        self.load_strategy_class_from_folder(path1, "vnpy_portfoliostrategy.strategies")
-
-        path2: Path = Path.cwd().joinpath("strategies")
-        self.load_strategy_class_from_folder(path2, "strategies")
-
-    def load_strategy_class_from_folder(self, path: Path, module_name: str = "") -> None:
-        """通过指定文件夹加载策略类"""
-        for suffix in ["py", "pyd", "so"]:
-            pathname: str = str(path.joinpath(f"*.{suffix}"))
-            for filepath in glob.glob(pathname):
-                stem: str = Path(filepath).stem
-                strategy_module_name: str = f"{module_name}.{stem}"
-                self.load_strategy_class_from_module(strategy_module_name)
-
-    def load_strategy_class_from_module(self, module_name: str) -> None:
-        """通过策略文件加载策略类"""
+    def load_strategy_class(self):
+        """Load a strategy class from a specified module."""
         try:
-            module: ModuleType = importlib.import_module(module_name)
+            # Import the module
+            self.module = importlib.import_module(strategy_module_name)
 
-            for name in dir(module):
-                value = getattr(module, name)
-                if (isinstance(value, type) and issubclass(value, StrategyTemplate) and value is not StrategyTemplate):
-                    self.classes[value.__name__] = value
-        except:  # noqa
-            msg: str = _("策略文件{}加载失败，触发异常：\n{}").format(module_name, traceback.format_exc())
-            self.write_log(msg)
+        except Exception as e:
+            logger = getLogger(__name__)
+            logger.error(
+                f"Failed to import strategy module from {strategy_module_name}, triggered exception:\n{traceback.format_exc()}")
 
     def load_strategy_data(self) -> None:
         """加载策略数据"""
@@ -555,7 +545,7 @@ class StrategyEngine(BaseEngine):
     def sync_strategy_data(self, strategy: StrategyTemplate) -> None:
         """保存策略数据到文件"""
         data: dict = strategy.get_variables()
-        data.pop("inited")      # 不保存策略状态信息
+        data.pop("inited")  # 不保存策略状态信息
         data.pop("trading")
 
         self.strategy_data[strategy.strategy_name] = data

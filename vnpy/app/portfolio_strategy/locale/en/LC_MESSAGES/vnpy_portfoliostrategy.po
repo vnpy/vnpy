@@ -63,7 +63,7 @@ msgstr "Start calculating daily mark-to-market profit and loss"
 
 #: vnpy_portfoliostrategy\backtesting.py:248
 msgid "成交记录为空，无法计算"
-msgstr "Failed to calculate strategy statistical indicators due to empty trade records"
+msgstr "Failed to calculate strategies statistical indicators due to empty trade records"
 
 #: vnpy_portfoliostrategy\backtesting.py:286
 msgid "逐日盯市盈亏计算完成"
@@ -71,11 +71,11 @@ msgstr "The daily mark-to-market profit and loss calculation is complete"
 
 #: vnpy_portfoliostrategy\backtesting.py:291
 msgid "开始计算策略统计指标"
-msgstr "Start calculating strategy statistical indicators"
+msgstr "Start calculating strategies statistical indicators"
 
 #: vnpy_portfoliostrategy\backtesting.py:337
 msgid "回测中出现爆仓（资金小于等于0），无法计算策略统计指标"
-msgstr "There was a liquidation during the backtest (the funds were less than or equal to 0), and the strategy statistical indicators could not be calculated"
+msgstr "There was a liquidation during the backtest (the funds were less than or equal to 0), and the strategies statistical indicators could not be calculated"
 
 #: vnpy_portfoliostrategy\backtesting.py:390
 msgid "首个交易日：\t{}"
@@ -211,16 +211,16 @@ msgid ""
 "触发异常已停止\n"
 "{}"
 msgstr ""
-"Exception triggered, strategy instance has stopped\n"
+"Exception triggered, strategies instance has stopped\n"
 "{}"
 
 #: vnpy_portfoliostrategy\engine.py:346
 msgid "创建策略失败，存在重名{}"
-msgstr "Failed to create strategy instance, duplicate name {} exists"
+msgstr "Failed to create strategies instance, duplicate name {} exists"
 
 #: vnpy_portfoliostrategy\engine.py:351
 msgid "创建策略失败，找不到策略类{}"
-msgstr "Failed to create strategy instance, strategy class {} not found"
+msgstr "Failed to create strategies instance, strategies class {} not found"
 
 #: vnpy_portfoliostrategy\engine.py:373
 msgid "{}已经完成初始化，禁止重复操作"
@@ -240,7 +240,7 @@ msgstr "{} initialization completed"
 
 #: vnpy_portfoliostrategy\engine.py:416
 msgid "策略{}启动失败，请先初始化"
-msgstr "Failed to start strategy instance {}, please initialize first"
+msgstr "Failed to start strategies instance {}, please initialize first"
 
 #: vnpy_portfoliostrategy\engine.py:420
 msgid "{}已经启动，请勿重复操作"
@@ -248,7 +248,7 @@ msgstr "{} has been started, repeated operations are prohibited"
 
 #: vnpy_portfoliostrategy\engine.py:463
 msgid "策略{}移除失败，请先停止"
-msgstr "Failed to remove strategy instance {}, please stop strategy instance first"
+msgstr "Failed to remove strategies instance {}, please stop strategies instance first"
 
 #: vnpy_portfoliostrategy\engine.py:509
 msgid ""

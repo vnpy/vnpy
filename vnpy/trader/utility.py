@@ -13,7 +13,7 @@ from typing import Callable, Dict, Tuple, Union, Optional
 import os
 
 import numpy as np
-import talib
+#import talib
 
 from .constant import Exchange, Interval, TimeFreq
 from .locale import _
