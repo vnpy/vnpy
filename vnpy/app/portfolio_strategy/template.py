@@ -19,7 +19,7 @@ class StrategyTemplate(ABC):
     author: str = ""
     parameters: list = []
     variables: list = []
-    factors: list = []
+    factors: list = [] # {factor_name}_{interval}
 
     def __init__(
             self,
@@ -152,8 +152,7 @@ class StrategyTemplate(ABC):
         """K线推送回调"""
         if bar.vt_symbol in self.vt_symbols:
             self.bars[bar.vt_symbol] = bar
-
-        pass
+        return
 
     def on_factor(self, factor: FactorData) -> None:
         # todo 优化因子推送逻辑
@@ -162,19 +161,17 @@ class StrategyTemplate(ABC):
             check_result: bool = self.update_factor(factor)
             if check_result:
                 self.on_factor_ready()
-                bars = copy(self.bars)
-                self.rebalance_portfolio(bars)
                 self.init_checklist()
         return
 
     def update_factor(self, factor: FactorData) -> bool:
         """因子数据更新"""
-        # todo 优化因子数据更新逻辑
-        if factor.factor_name in self.factors:
-            setattr(self, factor.factor_name, factor.value)
-            self.checklist[factor.factor_name] = True
+        factor_name_with_interval = f"{factor.factor_name}_{factor.interval.value}"
+        if factor_name_with_interval in self.factors:
+            setattr(self, factor_name_with_interval, factor.value)
+            self.checklist[factor_name_with_interval] = True
         else:
-            self.write_log(f"因子{factor.factor_name}不在策略因子列表中")
+            self.write_log(f"因子{factor_name_with_interval}不在策略因子列表中")
 
         return all(self.checklist.values())
 

@@ -1,3 +1,5 @@
+from collections import deque
+
 from vnpy.app.factor_maker.engine import FactorEngine
 from vnpy.trader.object import TickData, BarData
 
@@ -5,8 +7,10 @@ from vnpy.trader.object import TickData, BarData
 class FactorTemplate:
     """"""
 
+    max_bar_count: int = 100
+
     author: str = ""
-    parameters: list = []
+    parameters: list = ['max_bar_count']
     variables: list = []
 
     def __init__(self, engine: FactorEngine, factor_name: str, vt_symbols: list[str], setting: dict):
@@ -20,7 +24,7 @@ class FactorTemplate:
         self.inited: bool = False
         self.trading: bool = False
 
-        self.bar_memory: dict[str, list[BarData]] = {}
+        self.bar_memory: dict[str, deque[BarData]] = {}
 
     def on_init(self) -> None:
         """"""
@@ -48,7 +52,7 @@ class FactorTemplate:
     def on_bar(self, bar: BarData) -> None:
         """"""
         if bar.vt_symbol in self.vt_symbols:
-            bars = self.bar_memory.get(bar.vt_symbol, [])
+            bars = self.bar_memory.get(bar.vt_symbol, deque(maxlen=self.max_bar_count))
             bars.append(bar)
 
     def on_bars(self, bars: dict[str, BarData]) -> None:
