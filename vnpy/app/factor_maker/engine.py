@@ -15,6 +15,8 @@ from vnpy.trader.event import EVENT_TICK, EVENT_BAR
 from vnpy.trader.object import LogData, ContractData, SubscribeRequest, TickData, BarData, HistoryRequest
 from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
 
+import polars as pl
+
 factor_module_name = 'vnpy.app.factor_maker.factors'
 
 
@@ -35,6 +37,9 @@ class FactorEngine(BaseEngine):
 
         self.init_executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
 
+        self.memory_dict: dict[str, pl.Series] = {}
+        self.max_memory_length: int = 10
+
         # 数据库和数据服务
         self.database: BaseDatabase = get_database()
 
@@ -44,6 +49,8 @@ class FactorEngine(BaseEngine):
         self.load_factor_setting()
         self.load_factor_data()
         self.register_event()
+        self.init_all_factors()
+        self.start_all_factors()
         self.write_log("因子计算引擎初始化成功")
 
     def register_event(self) -> None:
@@ -131,7 +138,7 @@ class FactorEngine(BaseEngine):
         return data
 
     def load_factor_class(self):
-        """Load a strategy class from a specified module."""
+        """Load a factor class from a specified module."""
         try:
             # Import the module
             self.module = importlib.import_module(factor_module_name)
@@ -139,21 +146,21 @@ class FactorEngine(BaseEngine):
         except Exception as e:
             logger = getLogger(__name__)
             logger.error(
-                f"Failed to import strategy module from {factor_module_name}, triggered exception:\n{traceback.format_exc()}")
+                f"Failed to import factor module from {factor_module_name}, triggered exception:\n{traceback.format_exc()}")
 
     def load_factor_data(self) -> None:
         """加载策略数据"""
-        self.strategy_data = load_json(self.data_filename)
+        self.factor_data = load_json(self.data_filename)
 
     def load_factor_setting(self) -> None:
         """加载策略配置"""
-        strategy_setting: dict = load_json(self.setting_filename)
+        factor_setting: dict = load_json(self.setting_filename)
 
-        for factor_name, factor_config in strategy_setting.items():
+        for factor_name, factor_config in factor_setting.items():
             self.add_factor(
                 factor_config["class_name"],
                 factor_name,
-                factor_config["vt_symbols"],
+                factor_config["ticker"],
                 factor_config["setting"]
             )
 
@@ -164,8 +171,9 @@ class FactorEngine(BaseEngine):
         for name, factor in self.factors.items():
             factor_setting[name] = {
                 "class_name": factor.__class__.__name__,
-                "vt_symbols": factor.vt_symbols,
-                "setting": factor.get_parameters()
+                "ticker": factor.ticker,
+                "setting": factor.get_parameters(),
+                "dependencies": factor.dependencies
             }
 
         save_json(self.setting_filename, factor_setting)
@@ -176,8 +184,8 @@ class FactorEngine(BaseEngine):
         data.pop("inited")  # 不保存策略状态信息
         data.pop("trading")
 
-        self.factor_data[factor.strategy_name] = data
-        save_json(self.data_filename, self.strategy_data)
+        self.factor_data[factor.factor_name] = data
+        save_json(self.data_filename, self.factor_data)
 
     def get_all_factor_class_names(self) -> list:
         """获取所有加载因子类名"""
@@ -231,17 +239,19 @@ class FactorEngine(BaseEngine):
                 setattr(factor, name, value)
 
         # Subscribe to market data
-        for vt_symbol in factor.vt_symbols:
-            contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
-            if contract:
-                req: SubscribeRequest = SubscribeRequest(
-                    symbol=contract.symbol, exchange=contract.exchange)
-                self.main_engine.subscribe(req, contract.gateway_name)
-            else:
-                self.write_log(f"Market data subscription failed, contract {vt_symbol} not found", factor)
+        vt_symbol = f'{factor.ticker}.{factor.exchange.value}'
+        contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
+        if contract:
+            req: SubscribeRequest = SubscribeRequest(
+                symbol=contract.symbol, exchange=contract.exchange)
+            self.main_engine.subscribe(req, contract.gateway_name)
+        else:
+            self.write_log(f"Market data subscription failed, contract {vt_symbol} not found", factor.factor_name)
 
         # Notify that the factor initialization is complete
         factor.inited = True
+        self.max_memory_length = max(self.max_memory_length, factor.lookback_period)
+        self.memory_dict[factor.factor_name] = pl.Series(name=factor.factor_name, data=[None] * self.max_memory_length)
         self.put_factor_event(factor)
         self.write_log(f"Factor {factor_name} initialization complete")
 
@@ -293,7 +303,8 @@ class FactorEngine(BaseEngine):
         """关闭"""
         self.stop_all_factors()
 
-    def add_factor(self, class_name: str, factor_name: str, vt_symbols: list[str], setting: dict) -> None:
+    def add_factor(self, class_name: str, factor_name: str, ticker: str, setting: dict) -> None:
+
         if factor_name in self.factors:
             msg = f"Creation failed, factor name {factor_name} already exists."
             self.write_log(msg)
@@ -304,17 +315,16 @@ class FactorEngine(BaseEngine):
             msg = f"Creation failed, factor class {class_name} not found."
             self.write_log(msg)
             return
-        if factor_class.__name__ in self.classes:
+        if factor_class.__name__ not in self.classes:
             self.classes[factor_class.__name__] = factor_class
 
-        factor: FactorTemplate = factor_class(self, factor_name, vt_symbols, setting)
+        factor: FactorTemplate = factor_class(self, ticker, setting)
+        # factor_name should equal to factor.factor_name
         self.factors[factor_name] = factor
 
-        for vt_symbol in vt_symbols:
-            if vt_symbol not in self.symbol_factor_map:
-                self.symbol_factor_map[vt_symbol] = []
-            factors: list = self.symbol_factor_map[vt_symbol]
-            factors.append(factor)
+        if factor.ticker not in self.symbol_factor_map:
+            self.symbol_factor_map[factor.ticker] = []
+        self.symbol_factor_map[factor.ticker].append(factor)
 
     def edit_factor(self, factor_name: str, setting: dict) -> None:
         """编辑因子参数"""
@@ -333,9 +343,8 @@ class FactorEngine(BaseEngine):
             self.write_log(msg, factor)
             return False
 
-        for vt_symbol in factor.vt_symbols:
-            factors: list = self.symbol_factor_map[vt_symbol]
-            factors.remove(factor)
+        factors: list = self.symbol_factor_map[factor.ticker]
+        factors.remove(factor)
 
         self.factors.pop(factor_name)
         self.save_factor_setting()
@@ -348,7 +357,7 @@ class FactorEngine(BaseEngine):
     def write_log(self, msg: str, factor: FactorTemplate = None) -> None:
         """输出日志"""
         if factor:
-            msg: str = f"{factor.strategy_name}: {msg}"
+            msg: str = f"{factor.factor_name}: {msg}"
 
         log: LogData = LogData(msg=msg, gateway_name=APP_NAME)
         event: Event = Event(type=EVENT_FACTOR_LOG, data=log)
@@ -363,7 +372,7 @@ class FactorEngine(BaseEngine):
     def send_email(self, msg: str, factor: FactorTemplate = None) -> None:
         """发送邮件"""
         if factor:
-            subject: str = f"{factor.strategy_name}"
+            subject: str = f"{factor.factor_name}"
         else:
             subject: str = "Factor Maker Engine"
 
@@ -406,5 +415,3 @@ class FactorEngine(BaseEngine):
         for factor in factors:
             if factor.inited:
                 self.call_factor_func(factor, factor.on_bar, bar)
-
-
