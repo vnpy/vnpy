@@ -121,11 +121,15 @@ class StrategyEngine(BaseEngine):
         return data
 
     def process_factor_event(self, event: Event) -> None:
-        """因子数据推送"""
-        # todo 因子数据推送
+        """process factor data"""
         factor: FactorData = event.data
 
-        strategies: list = self.factor_strategy_map[factor.factor_name]
+        factor_name: str = factor.factor_name
+        factor_interval: Interval = factor.interval
+
+        idx = factor_name + "_" + factor_interval.value
+
+        strategies: list = self.factor_strategy_map[idx]
         if not strategies:
             return
 
