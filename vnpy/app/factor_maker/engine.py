@@ -193,7 +193,7 @@ class FactorEngine(BaseEngine):
 
     def get_factor_class_parameters(self, class_name: str) -> dict:
         """获取策略类参数"""
-        factor_class: FactorTemplate = self.classes[class_name]
+        factor_class: FactorTemplate = getattr(self.module, class_name)
 
         parameters: dict = {}
         for name in factor_class.parameters:
@@ -203,7 +203,7 @@ class FactorEngine(BaseEngine):
 
     def get_factor_parameters(self, factor_name) -> dict:
         """获取策略参数"""
-        factor: FactorTemplate = self.factor[factor_name]
+        factor: FactorTemplate = self.factors[factor_name]
         return factor.get_parameters()
 
     def init_all_factors(self) -> None:
@@ -322,9 +322,11 @@ class FactorEngine(BaseEngine):
         # factor_name should equal to factor.factor_name
         self.factors[factor_name] = factor
 
-        if factor.ticker not in self.symbol_factor_map:
-            self.symbol_factor_map[factor.ticker] = []
-        self.symbol_factor_map[factor.ticker].append(factor)
+        vt_symbol = f'{factor.ticker}.{factor.exchange.value}'
+
+        if vt_symbol not in self.symbol_factor_map:
+            self.symbol_factor_map[vt_symbol] = []
+        self.symbol_factor_map[vt_symbol].append(factor)
 
     def edit_factor(self, factor_name: str, setting: dict) -> None:
         """编辑因子参数"""
@@ -343,7 +345,9 @@ class FactorEngine(BaseEngine):
             self.write_log(msg, factor)
             return False
 
-        factors: list = self.symbol_factor_map[factor.ticker]
+        vt_symbol = f'{factor.ticker}.{factor.exchange.value}'
+
+        factors: list = self.symbol_factor_map[vt_symbol]
         factors.remove(factor)
 
         self.factors.pop(factor_name)
@@ -407,6 +411,8 @@ class FactorEngine(BaseEngine):
     def process_bar_event(self, event: Event) -> None:
         """K-line (bar) data push"""
         bar: BarData = event.data
+
+        self.update_memory(bar)
 
         factors: list = self.symbol_factor_map[bar.vt_symbol]
         if not factors:
