@@ -726,7 +726,7 @@ class BinanceSpotDataWebsocketApi:
             exchange=Exchange.BINANCE,
             datetime=datetime.fromtimestamp(0, tz=timezone.utc),
             gateway_name=self.gateway_name,
-            interval=None
+            interval=Interval.MINUTE  #todo
         )
         self.ticks[req.symbol] = tick
         self.bars[req.symbol] = bar

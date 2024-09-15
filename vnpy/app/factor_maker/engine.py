@@ -5,19 +5,21 @@ from datetime import datetime, timedelta
 from logging import getLogger
 from typing import Type, Optional, Callable
 
-from vnpy.app.factor_maker.base import APP_NAME, EVENT_FACTOR_LOG, EVENT_FACTOR_MAKER
+from vnpy.app.factor_maker.base import APP_NAME, EVENT_FACTOR_LOG, EVENT_FACTOR_MAKER, EVENT_FACTOR_RECORD
 from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.event import EventEngine, Event
 from vnpy.trader.constant import Interval
 from vnpy.trader.database import BaseDatabase, get_database, DB_TZ
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.event import EVENT_TICK, EVENT_BAR
-from vnpy.trader.object import LogData, ContractData, SubscribeRequest, TickData, BarData, HistoryRequest
+from vnpy.trader.object import LogData, ContractData, SubscribeRequest, TickData, BarData, HistoryRequest, FactorData
 from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
 
 import polars as pl
 
 factor_module_name = 'vnpy.app.factor_maker.factors'
+
+# factor maker engine
 
 
 class FactorEngine(BaseEngine):
@@ -50,7 +52,9 @@ class FactorEngine(BaseEngine):
         self.load_factor_data()
         self.register_event()
         self.init_all_factors()
+
         self.start_all_factors()
+
         self.write_log("因子计算引擎初始化成功")
 
     def register_event(self) -> None:
@@ -58,9 +62,9 @@ class FactorEngine(BaseEngine):
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_BAR, self.process_bar_event)
 
-    def load_bars(self, factor: FactorTemplate, days: int, interval: Interval) -> None:
+    def load_bars(self, days: int, interval: Interval) -> None:
         """Load historical data"""
-        vt_symbols: list = factor.vt_symbols
+        vt_symbols: list = list(self.symbol_factor_map.keys())
         dts: set[datetime] = set()
         history_data: dict[tuple, BarData] = {}
 
@@ -99,8 +103,11 @@ class FactorEngine(BaseEngine):
                         gateway_name=old_bar.gateway_name
                     )
                     bars[vt_symbol] = bar
+                factors: list = self.symbol_factor_map[vt_symbol]
+                for factor in factors:
+                    self.call_factor_func(factor, factor.on_bar, bar)
 
-            self.call_factor_func(factor, factor.on_bars, bars)
+            #self.call_factor_func(factor, factor.on_bars, bars)
 
     def load_bar(self, vt_symbol: str, days: int, interval: Interval) -> list[BarData]:
         """Load historical data for a single contract"""
@@ -184,7 +191,7 @@ class FactorEngine(BaseEngine):
         data.pop("inited")  # 不保存策略状态信息
         data.pop("trading")
 
-        self.factor_data[factor.factor_name] = data
+        self.factor_data[factor.factor_key] = data
         save_json(self.data_filename, self.factor_data)
 
     def get_all_factor_class_names(self) -> list:
@@ -246,12 +253,13 @@ class FactorEngine(BaseEngine):
                 symbol=contract.symbol, exchange=contract.exchange)
             self.main_engine.subscribe(req, contract.gateway_name)
         else:
-            self.write_log(f"Market data subscription failed, contract {vt_symbol} not found", factor.factor_name)
+            self.write_log(f"Market data subscription failed, contract {vt_symbol} not found", factor.factor_key)
 
         # Notify that the factor initialization is complete
         factor.inited = True
         self.max_memory_length = max(self.max_memory_length, factor.lookback_period)
-        self.memory_dict[factor.factor_name] = pl.Series(name=factor.factor_name, data=[None] * self.max_memory_length)
+        # todo hyf
+        self.memory_dict[factor.factor_key] = pl.Series(name=factor.factor_key, data=[None] * self.max_memory_length)
         self.put_factor_event(factor)
         self.write_log(f"Factor {factor_name} initialization complete")
 
@@ -361,7 +369,7 @@ class FactorEngine(BaseEngine):
     def write_log(self, msg: str, factor: FactorTemplate = None) -> None:
         """输出日志"""
         if factor:
-            msg: str = f"{factor.factor_name}: {msg}"
+            msg: str = f"{factor.factor_key}: {msg}"
 
         log: LogData = LogData(msg=msg, gateway_name=APP_NAME)
         event: Event = Event(type=EVENT_FACTOR_LOG, data=log)
@@ -376,7 +384,7 @@ class FactorEngine(BaseEngine):
     def send_email(self, msg: str, factor: FactorTemplate = None) -> None:
         """发送邮件"""
         if factor:
-            subject: str = f"{factor.factor_name}"
+            subject: str = f"{factor.factor_key}"
         else:
             subject: str = "Factor Maker Engine"
 
@@ -421,3 +429,16 @@ class FactorEngine(BaseEngine):
         for factor in factors:
             if factor.inited:
                 self.call_factor_func(factor, factor.on_bar, bar)
+
+    def update_factor(self, factor_name, factor_data: FactorData) -> None:
+        factor_memory: pl.Series = self.memory_dict[factor_name]
+        # todo check max memory length
+        factor_memory.append(factor_data.value)
+        # todo
+        self.event_engine.put(
+            Event(
+                type=EVENT_FACTOR_RECORD,
+                data=factor_data
+            )
+        )
+        pass

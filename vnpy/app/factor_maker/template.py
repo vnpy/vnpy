@@ -2,7 +2,7 @@ from collections import deque
 
 from vnpy.app.factor_maker.engine import FactorEngine
 from vnpy.trader.constant import Exchange, Interval
-from vnpy.trader.object import TickData, BarData
+from vnpy.trader.object import TickData, BarData, FactorData
 
 
 class FactorTemplate:
@@ -12,7 +12,7 @@ class FactorTemplate:
     lookback_period: int = 10
 
     author: str = ""
-    vt_symbol: str = "momentum_10min.BINANCE"
+    factor_name: str = ""
     parameters: list = ['lookback_period']
     variables: list = []
     exchange: Exchange = Exchange.BINANCE
@@ -22,7 +22,6 @@ class FactorTemplate:
     def __init__(self, engine: FactorEngine, ticker: str, setting: dict):
         """"""
         self.engine: FactorEngine = engine
-        #self.factor_name: str = factor_name
         self.ticker: str = ticker
         self.setting: dict = setting
 
@@ -32,26 +31,26 @@ class FactorTemplate:
 
         self.bar_memory: dict[str, deque[BarData]] = {}
 
-        self.factor_name = self.VTSYMBOL_TEMPLATE_FACTOR.format(self.frequency.value, self.ticker, self.factor_name,
-                                                                self.exchange.value)
+        self.factor_key = self.VTSYMBOL_TEMPLATE_FACTOR.format(self.frequency.value, self.ticker, self.factor_name,
+                                                               self.exchange.value)
 
     def on_init(self) -> None:
         """"""
         self.inited = True
-        msg = f"{self.factor_name}初始化完成"
+        msg = f"{self.factor_key}初始化完成"
         self.engine.write_log(msg)
 
     def on_start(self) -> None:
         """"""
         self.trading = True
-        msg = f"{self.factor_name}开始运行"
+        msg = f"{self.factor_key}开始运行"
         self.engine.write_log(msg)
         pass
 
     def on_stop(self) -> None:
         """"""
         self.trading = False
-        msg = f"{self.factor_name}停止运行"
+        msg = f"{self.factor_key}停止运行"
         self.engine.write_log(msg)
 
     def on_tick(self, tick: TickData) -> None:
@@ -60,6 +59,17 @@ class FactorTemplate:
 
     def on_bar(self, bar: BarData) -> None:
         """"""
+        value = 0
+        factor_data: FactorData = FactorData(
+            symbol=bar.symbol,
+            exchange=bar.exchange,
+            datetime=bar.datetime,
+            interval=bar.interval,
+            value=value,
+            factor_name=self.factor_name,
+            gateway_name="factor_template"
+        )
+        self.engine.update_factor(self.factor_key, factor_data)
         pass
 
     def on_bars(self, bars: dict[str, BarData]) -> None:
@@ -93,7 +103,7 @@ class FactorTemplate:
     def get_data(self) -> dict:
         """查询策略状态数据"""
         factor_data: dict = {
-            "factor_name": self.factor_name,
+            "factor_name": self.factor_key,
             "class_name": self.__class__.__name__,
             "author": self.author,
             "parameters": self.get_parameters(),
