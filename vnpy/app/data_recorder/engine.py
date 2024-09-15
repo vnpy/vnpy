@@ -34,7 +34,7 @@ class RecorderEngine(BaseEngine):
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
-        self.queue = Queue() # fixme
+        self.queue = Queue()
         self.thread = Thread(target=self.run)
         self.active = False
 

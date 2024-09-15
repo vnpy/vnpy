@@ -17,7 +17,7 @@ import numpy as np
 
 from .constant import Exchange, Interval, TimeFreq
 from .locale import _
-from .object import BarData, TickData
+from .object import BarData, TickData,FactorData
 
 # import talib
 
@@ -43,10 +43,12 @@ def extract_vt_symbol(vt_symbol: str,is_factor=False) -> Union[Tuple[str, Exchan
     return symbol, Exchange(exchange_str)
 
 
-def generate_vt_symbol(symbol: str, exchange: Exchange) -> str:
+def generate_vt_symbol(symbol: str, exchange: Exchange,is_factor=False,factor_name=None,interval:Interval=None) -> str:
     """
     return vt_symbol
     """
+    if is_factor:
+        return FactorData(symbol=symbol, exchange=exchange, interval=interval, factor_name=factor_name).vt_symbol
     return f"{symbol}.{exchange.value}"
 
 

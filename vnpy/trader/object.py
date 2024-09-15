@@ -101,9 +101,24 @@ class FactorData(BaseData):
 
     VTSYMBOL_TEMPLATE_FACTOR = "factor_{}_{}_{}.{}"  # interval, symbol(ticker), name(factor name), exchange
 
+    def __init__(self, symbol: str = ""
+                 , exchange: Exchange = None
+                 , datetime_: datetime = None
+                 , factor_name: str = "factor_unknown"
+                 , interval: Interval = None
+                 , value: float = None):
+        self.symbol = symbol
+        self.exchange = exchange
+        self.datetime = datetime_
+        self.factor_name = factor_name
+        self.interval = interval
+        self.value = value
+
+        self.__post_init__()
+
     def __post_init__(self) -> None:
         """"""
-        self.vt_symbol: str = self.VTSYMBOL_TEMPLATE_FACTOR.format(self.frequency, self.symbol, self.factor_name,
+        self.vt_symbol: str = self.VTSYMBOL_TEMPLATE_FACTOR.format(self.interval.value, self.symbol, self.factor_name,
                                                                    self.exchange.value)
 
 
