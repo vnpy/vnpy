@@ -5,6 +5,7 @@ Basic data structure used for general trading function in the trading platform.
 from dataclasses import dataclass, field
 from datetime import datetime
 from logging import INFO
+from typing import Optional
 
 from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
 
@@ -20,7 +21,7 @@ class BaseData:
 
     gateway_name: str
 
-    extra: dict = field(default=None, init=False)
+    extra: Optional[dict] = field(default=None, init=False)
 
 
 @dataclass
@@ -239,7 +240,8 @@ class ContractData(BaseData):
     size: float
     pricetick: float
 
-    min_volume: float = 1           # minimum trading volume of the contract
+    min_volume: float = 1           # minimum order volume
+    max_volume: float = 0           # maximum order volume
     stop_supported: bool = False    # whether server supports stop order
     net_position: bool = False      # whether gateway uses net position volume
     history_data: bool = False      # whether gateway provides bar history data
