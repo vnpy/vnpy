@@ -1,11 +1,12 @@
 from abc import ABC
 from copy import copy
+from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 from collections import defaultdict
 
-from vnpy.trader.constant import Interval, Direction, Offset
+from vnpy.trader.constant import Interval, Direction, Offset, Exchange
 from vnpy.trader.object import BarData, TickData, OrderData, TradeData, FactorData
-from vnpy.trader.utility import virtual, BarGenerator
+from vnpy.trader.utility import virtual, BarGenerator, extract_vt_symbol
 
 from vnpy.app.portfolio_strategy.base import EngineType
 
@@ -20,6 +21,8 @@ class StrategyTemplate(ABC):
     parameters: list = []
     variables: list = []
     factors: list = [] # {factor_name}_{interval}
+    exchange: Exchange = Exchange.BINANCE
+    interval: Interval = Interval.MINUTE
 
     def __init__(
             self,
@@ -32,6 +35,7 @@ class StrategyTemplate(ABC):
         self.strategy_engine: "StrategyEngine" = strategy_engine
         self.strategy_name: str = strategy_name
         self.vt_symbols: list[str] = vt_symbols
+        self.factor_dict = None
 
         self.checklist: dict[str, bool] = {}
         self.portfolio_value: float = 0
@@ -62,7 +66,26 @@ class StrategyTemplate(ABC):
 
         # 设置策略参数
         self.update_setting(setting)
+        self.init_factors()
         self.init_checklist()
+
+    def init_factors(self) -> None:
+        """初始化策略因子"""
+        factor_dict: dict[str, FactorData] = {}
+        for vt_symbol in self.vt_symbols:
+            symbol, _ = extract_vt_symbol(vt_symbol, is_factor=False)
+            for factor_name in self.factors:
+                factor: FactorData = FactorData(
+                    symbol=symbol,
+                    exchange=self.exchange,
+                    datetime=datetime.now(),
+                    interval=self.interval,
+                    value=0,
+                    factor_name=factor_name,
+                    gateway_name="strategy_template"
+                )
+                factor_dict[factor.vt_symbol] = factor
+        self.factor_dict = factor_dict
 
     def update_setting(self, setting: dict) -> None:
         """设置策略参数"""
