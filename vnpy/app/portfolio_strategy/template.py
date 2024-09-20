@@ -189,12 +189,12 @@ class StrategyTemplate(ABC):
 
     def update_factor(self, factor: FactorData) -> bool:
         """因子数据更新"""
-        factor_name_with_interval = f"{factor.factor_name}_{factor.interval.value}"
-        if factor_name_with_interval in self.factors:
-            setattr(self, factor_name_with_interval, factor.value)
-            self.checklist[factor_name_with_interval] = True
+        vt_symbol = factor.vt_symbol
+        if vt_symbol in self.factor_dict:
+            self.factor_dict[vt_symbol] = factor
+            self.checklist[factor.factor_name] = True
         else:
-            self.write_log(f"因子{factor_name_with_interval}不在策略因子列表中")
+            self.write_log(f"因子{factor.factor_name}不在策略因子列表中")
 
         return all(self.checklist.values())
 
