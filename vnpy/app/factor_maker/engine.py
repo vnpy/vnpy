@@ -11,13 +11,14 @@ from vnpy.event import EventEngine, Event
 from vnpy.trader.constant import Interval
 from vnpy.trader.database import BaseDatabase, get_database, DB_TZ
 from vnpy.trader.engine import BaseEngine, MainEngine
-from vnpy.trader.event import EVENT_TICK, EVENT_BAR
+from vnpy.trader.event import EVENT_TICK, EVENT_BAR, EVENT_BAR_FACTOR
 from vnpy.trader.object import LogData, ContractData, SubscribeRequest, TickData, BarData, HistoryRequest, FactorData
 from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
 
 import polars as pl
 
 factor_module_name = 'vnpy.app.factor_maker.factors'
+
 
 # factor maker engine
 
@@ -53,6 +54,7 @@ class FactorEngine(BaseEngine):
         """注册事件引擎"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_BAR, self.process_bar_event)
+        self.event_engine.register(EVENT_BAR_FACTOR, self.process_bar_factor_event)
 
     # Loading and Saving Data
     def load_factor_class(self):
@@ -61,7 +63,8 @@ class FactorEngine(BaseEngine):
             self.module = importlib.import_module(factor_module_name)
         except Exception as e:
             logger = getLogger(__name__)
-            logger.error(f"Failed to import factor module from {factor_module_name}, triggered exception:\n{traceback.format_exc()}")
+            logger.error(
+                f"Failed to import factor module from {factor_module_name}, triggered exception:\n{traceback.format_exc()}")
 
     def load_factor_setting(self) -> None:
         """加载策略配置"""
@@ -80,7 +83,7 @@ class FactorEngine(BaseEngine):
         for name, factor in self.factors.items():
             factor_setting[name] = {
                 "class_name": factor.__class__.__name__,
-                "ticker": factor.ticker,
+                "ticker": factor.symbol,
                 "setting": factor.get_parameters(),
                 "dependencies": factor.dependencies
             }
@@ -113,7 +116,7 @@ class FactorEngine(BaseEngine):
             self.classes[factor_class.__name__] = factor_class
         factor: FactorTemplate = factor_class(self, ticker, setting)
         self.factors[factor_name] = factor
-        vt_symbol = f'{factor.ticker}.{factor.exchange.value}'
+        vt_symbol = f'{factor.symbol}.{factor.exchange.value}'
         if vt_symbol not in self.symbol_factor_map:
             self.symbol_factor_map[vt_symbol] = []
         self.symbol_factor_map[vt_symbol].append(factor)
@@ -132,7 +135,7 @@ class FactorEngine(BaseEngine):
             msg: str = f"因子{factor_name}移除失败，请先停止"
             self.write_log(msg, factor)
             return False
-        vt_symbol = f'{factor.ticker}.{factor.exchange.value}'
+        vt_symbol = f'{factor.symbol}.{factor.exchange.value}'
         factors: list = self.symbol_factor_map[vt_symbol]
         factors.remove(factor)
         self.factors.pop(factor_name)
@@ -180,7 +183,7 @@ class FactorEngine(BaseEngine):
                 value: Optional[object] = data.get(name, None)
                 if value is not None:
                     setattr(factor, name, value)
-        vt_symbol = f'{factor.ticker}.{factor.exchange.value}'
+        vt_symbol = f'{factor.symbol}.{factor.exchange.value}'
         contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
         if contract:
             req: SubscribeRequest = SubscribeRequest(symbol=contract.symbol, exchange=contract.exchange)
@@ -318,6 +321,23 @@ class FactorEngine(BaseEngine):
             if factor.inited:
                 self.call_factor_func(factor, factor.on_bar, bar)
 
+        # 为了OHLC等因子的计算，需要在每个bar更新后，更新因子的数据
+        event.type = EVENT_BAR_FACTOR
+        self.event_engine.put(event)
+
+    def process_bar_factor_event(self, event: Event) -> None:
+        """K-line (bar) data push"""
+        bar: BarData = event.data
+        for k,factor in self.factors.items():
+            if factor.factor_name in ['open','high','low','close']:
+                self.call_factor_func(factor, factor.on_bar, bar)
+
+
+    def process_factor_event(self, event: Event) -> None:
+        """Process factor event"""
+        data: FactorData = event.data
+
+
     # Utility Functions
     def call_factor_func(self, factor: FactorTemplate, func: Callable, params: object = None) -> None:
         """Safely call factor function"""
@@ -359,4 +379,3 @@ class FactorEngine(BaseEngine):
     def update_memory(self, bar: BarData) -> None:
         # Implementation needed
         pass
-

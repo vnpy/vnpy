@@ -12,16 +12,14 @@ from vnpy.trader.object import (
     TickData,
     BarData,
     FactorData,
-    ContractData
+    ContractData,
+    LogData
 )
-from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT, EVENT_BAR
+from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT, EVENT_BAR, EVENT_RECORDER_LOG, EVENT_RECORDER_UPDATE
 from vnpy.trader.utility import load_json, save_json, BarGenerator
 from vnpy_clickhouse.clickhouse_database import ClickhouseDatabase
 
 APP_NAME = "DataRecorder"
-
-EVENT_RECORDER_LOG = "eRecorderLog"
-EVENT_RECORDER_UPDATE = "eRecorderUpdate"
 
 
 class RecorderEngine(BaseEngine):
@@ -29,7 +27,6 @@ class RecorderEngine(BaseEngine):
 
     def __init__(self,
                  main_engine: MainEngine,
-                 # main_engine: OmsEngine,
                  event_engine: EventEngine):
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
@@ -68,6 +65,18 @@ class RecorderEngine(BaseEngine):
     #     save_json(self.setting_filename, setting)
 
     def save_data(self, task_type=None, data=None, force_save=False):
+        """
+        
+        Parameters
+        ----------
+        task_type :
+        data :
+        force_save :
+
+        Returns
+        -------
+
+        """
         if task_type == "tick":
             self.database_manager.save_tick_data([data])
         elif task_type == "bar":
@@ -238,9 +247,10 @@ class RecorderEngine(BaseEngine):
 
     def write_log(self, msg: str):
         """"""
+        log: LogData = LogData(msg=msg, gateway_name=APP_NAME)
         event = Event(
             EVENT_RECORDER_LOG,
-            msg
+            log
         )
         self.event_engine.put(event)
 
