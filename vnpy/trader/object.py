@@ -103,7 +103,7 @@ class FactorData(BaseData):
 
     def __post_init__(self) -> None:
         """"""
-        self.vt_symbol: str = self.VTSYMBOL_TEMPLATE_FACTOR.format(self.frequency, self.symbol, self.factor_name,
+        self.vt_symbol: str = self.VTSYMBOL_TEMPLATE_FACTOR.format(self.interval.value, self.symbol, self.factor_name,
                                                                    self.exchange.value)
 
 
