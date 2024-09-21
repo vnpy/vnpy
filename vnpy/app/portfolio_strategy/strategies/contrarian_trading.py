@@ -41,7 +41,7 @@ class ContrarianStrategy(StrategyTemplate):
         for vt_symbol in vt_symbols:
             self.close_price[vt_symbol] = 0.0
 
-    def on_factor_ready(self) -> None:
+    def on_factor_updated(self) -> None:
         """"""
         self.write_log('factor ready')
         return

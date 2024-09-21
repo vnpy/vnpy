@@ -1,12 +1,15 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from copy import copy
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 from collections import defaultdict
 
+import pandas as pd
+import polars as pl
+
 from vnpy.trader.constant import Interval, Direction, Offset, Exchange
 from vnpy.trader.object import BarData, TickData, OrderData, TradeData, FactorData
-from vnpy.trader.utility import virtual, BarGenerator, extract_vt_symbol
+from vnpy.trader.utility import virtual, BarGenerator, extract_vt_symbol, convert_dict_to_dataframe
 
 from vnpy.app.portfolio_strategy.base import EngineType
 
@@ -20,7 +23,7 @@ class StrategyTemplate(ABC):
     author: str = ""
     parameters: list = []
     variables: list = []
-    factors: list = [] # {factor_name}_{interval}
+    factors: list = []  # {factor_name}_{interval}
     exchange: Exchange = Exchange.BINANCE
     interval: Interval = Interval.MINUTE
 
@@ -67,11 +70,11 @@ class StrategyTemplate(ABC):
         # 设置策略参数
         self.update_setting(setting)
         self.init_factors()
-        self.init_checklist()
 
     def init_factors(self) -> None:
         """初始化策略因子"""
-        factor_dict: dict[str, FactorData] = {}
+        self.factor_dict: dict[tuple[str, str], FactorData] = {}
+        self.status_dict: dict[tuple[str, str], bool] = {}
         for vt_symbol in self.vt_symbols:
             symbol, _ = extract_vt_symbol(vt_symbol, is_factor=False)
             for factor_name in self.factors:
@@ -84,8 +87,8 @@ class StrategyTemplate(ABC):
                     factor_name=factor_name,
                     gateway_name="strategy_template"
                 )
-                factor_dict[factor.vt_symbol] = factor
-        self.factor_dict = factor_dict
+                self.factor_dict[(symbol, factor_name)] = factor
+                self.status_dict[(symbol, factor_name)] = False
 
     def update_setting(self, setting: dict) -> None:
         """设置策略参数"""
@@ -93,10 +96,9 @@ class StrategyTemplate(ABC):
             if name in setting:
                 setattr(self, name, setting[name])
 
-    def init_checklist(self) -> None:
+    def init_status_dict(self) -> None:
         """初始化因子检查列表"""
-        for name in self.factors:
-            self.checklist[name] = False
+        self.status_dict.update((key, False) for key in self.status_dict)
 
     @classmethod
     def get_class_parameters(cls) -> dict:
@@ -120,13 +122,6 @@ class StrategyTemplate(ABC):
             strategy_variables[name] = getattr(self, name)
         return strategy_variables
 
-    def get_factors(self) -> dict:
-        """查询策略因子"""
-        strategy_factors: dict = {}
-        for name in self.factors:
-            strategy_factors[name] = getattr(self, name)
-        return strategy_factors
-
     def get_data(self) -> dict:
         """查询策略状态数据"""
         strategy_data: dict = {
@@ -136,7 +131,7 @@ class StrategyTemplate(ABC):
             "author": self.author,
             "parameters": self.get_parameters(),
             "variables": self.get_variables(),
-            "factors": self.get_factors()
+            "factors": self.factor_dict
         }
         return strategy_data
 
@@ -181,24 +176,28 @@ class StrategyTemplate(ABC):
         # todo 优化因子推送逻辑
         if self.trading:
             """因子推送回调"""
-            check_result: bool = self.update_factor(factor)
-            if check_result:
-                self.on_factor_ready()
-                self.init_checklist()
+            updated_all: bool = self.update_factor(factor)
+            if updated_all:
+                factor_df: Optional[pd.DataFrame, pl.DataFrame] = convert_dict_to_dataframe(data=self.factor_dict, is_polars=False)
+                self.calculate(factor_df)
+                self.init_status_dict()
         return
 
     def update_factor(self, factor: FactorData) -> bool:
         """因子数据更新"""
-        vt_symbol = factor.vt_symbol
-        if vt_symbol in self.factor_dict:
-            self.factor_dict[vt_symbol] = factor
-            self.checklist[factor.factor_name] = True
+        symbol = factor.symbol
+        factor_name = factor.factor_name
+        key = (symbol, factor_name)
+        if key in self.factor_dict:
+            self.factor_dict[key] = factor
+            self.status_dict[key] = True
         else:
             self.write_log(f"因子{factor.factor_name}不在策略因子列表中")
 
-        return all(self.checklist.values())
+        return all(self.status_dict.values())
 
-    def on_factor_ready(self) -> None:
+    @abstractmethod
+    def calculate(self, df) -> None:
         """因子推送完成回调"""
         # todo 优化因子推送完成逻辑, update target positions
         pass

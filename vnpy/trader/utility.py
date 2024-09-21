@@ -11,9 +11,9 @@ from math import floor, ceil
 from pathlib import Path
 from typing import Callable, Dict, Tuple, Union, Optional
 import os
-
+import pandas as pd
+import polars as pl
 import numpy as np
-#import talib
 
 from .constant import Exchange, Interval, TimeFreq
 from .locale import _
@@ -483,6 +483,42 @@ class BarGenerator:
 
         self.bar = None
         return bar
+
+
+def convert_dict_to_dataframe(data: dict, is_polars: bool = False):
+    """
+    Convert a dictionary with tuple keys and float values to either a Pandas or Polars DataFrame.
+
+    Parameters:
+        data (dict): Dictionary with tuple keys (row, column) and float values.
+        is_polars (bool): If True, return a Polars DataFrame. If False, return a Pandas DataFrame.
+
+    Returns:
+        Either a Pandas or Polars DataFrame, depending on the is_polars flag.
+    """
+    if is_polars:
+        # Polars conversion
+        rows = [key[0] for key in data.keys()]
+        columns = [key[1] for key in data.keys()]
+        values = list(data.values())
+
+        # Create a Polars DataFrame
+        df = pl.DataFrame({
+            "Row": rows,
+            "Column": columns,
+            "Value": values
+        })
+
+        # Pivot the DataFrame
+        df_pivot = df.pivot(values="Value", index="Row", columns="Column")
+        return df_pivot
+    else:
+        # Pandas conversion
+        df = pd.DataFrame.from_dict(data, orient='index')
+        df.index = pd.MultiIndex.from_tuples(df.index, names=['Row', 'Column'])
+        df = df.unstack()
+        df.columns = df.columns.droplevel(0)
+        return df
 
 
 class ArrayManager(object):
