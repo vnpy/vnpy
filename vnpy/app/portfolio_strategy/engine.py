@@ -159,8 +159,8 @@ class StrategyEngine(BaseEngine):
         for vt_symbol in vt_symbols:
             strategies: list = self.symbol_strategy_map[vt_symbol]
             strategies.append(strategy)
-        for factor_vt_symbol in strategy.factor_dict.keys():
-            strategies: list = self.factor_strategy_map[factor_vt_symbol]
+        for key, factor_data in strategy.factor_dict.items():
+            strategies: list = self.factor_strategy_map[factor_data.vt_symbol]
             strategies.append(strategy)
         self.save_strategy_setting()
         self.put_strategy_event(strategy)
