@@ -2,9 +2,7 @@ from typing import Optional
 
 from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.trader.object import TickData, BarData, Exchange, Interval, FactorData
-from .open import OPEN_BASE
-from .high import HIGH_BASE
-from .low import LOW_BASE
+from vnpy.app.factor_maker.factors.bar import OPEN_BASE, HIGH_BASE, LOW_BASE
 
 
 class FAIR_PRICE_BASE(FactorTemplate):
@@ -14,8 +12,9 @@ class FAIR_PRICE_BASE(FactorTemplate):
     variables: list = []
     exchange: Exchange = Exchange.BINANCE
     freq: Interval = Interval.MINUTE
-    symbol = ""
+
     dependencies_factor: list[str] = [OPEN_BASE.factor_name, HIGH_BASE.factor_name, LOW_BASE.factor_name]
+
 
     parameters: list = []
 

@@ -7,31 +7,33 @@ from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.object import TickData, BarData, FactorData
 
 
-class FactorTemplate:
+class FactorTemplate(object):
     """"""
     VTSYMBOL_TEMPLATE_FACTOR = "factor_{}_{}_{}.{}"  # interval, symbol(ticker), name(factor name), exchange
 
-    # lookback_period: int = 0 # hyf, 去掉该param, 只有当需要该参数的时候才实例化该attribute
-
     author: str = ""
-    factor_name: str = ""
     parameters: list = []
-    variables: list = []  # dependencies?
-    exchange: Optional[Exchange] = None
+    variables: list = []
+
+    factor_name: str = ""
     freq: Optional[Interval] = None
-    symbol: Optional[str] = None
-    dependencies_symbol: list[str] = []
+    symbol: str = ""
+    exchange: Exchange = None
+
     dependencies_factor: list[str] = []
+    dependencies_freq: list[Interval] = []
+    dependencies_symbol: list[str] = []
+    dependencies_exchange: list[Exchange] = []
+
     status: dict[tuple, bool] = {}  # 用来标识dependencies是否全部ready
 
-    def __init__(self, engine: FactorEngine, symbol: str, setting: dict,
-                 exchange: Optional[Exchange] = Exchange.BINANCE,
-                 freq: Optional[Interval] = Interval.MINUTE
+    def __init__(self, engine: FactorEngine, setting: dict,
                  ):
         """"""
         self.engine: FactorEngine = engine
-        self.symbol: str = symbol
         self.setting: dict = setting
+        for s in setting.items():
+            setattr(self, s[0], s[1])
 
         self.class_name: str = self.__class__.__name__
         self.inited: bool = False
@@ -74,7 +76,7 @@ class FactorTemplate:
         pass
 
     def wrap_data(self, bar: BarData, value: float) -> FactorData:
-        """将
+        """将数据实例化为factor data
 
         Parameters
         ----------
