@@ -10,7 +10,8 @@ class MA10_BASE(FactorTemplate):
     variables: list = []
     exchange: Exchange = Exchange.BINANCE
     freq: Interval = Interval.MINUTE
-    dependencies: list[str] = []
+
+
 
     def on_bar(self, bar: BarData) -> None:
         value = 0

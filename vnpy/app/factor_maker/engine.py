@@ -11,7 +11,7 @@ from vnpy.event import EventEngine, Event
 from vnpy.trader.constant import Interval
 from vnpy.trader.database import BaseDatabase, get_database, DB_TZ
 from vnpy.trader.engine import BaseEngine, MainEngine
-from vnpy.trader.event import EVENT_TICK, EVENT_BAR, EVENT_BAR_FACTOR
+from vnpy.trader.event import EVENT_TICK, EVENT_BAR, EVENT_BAR_FACTOR,EVENT_FACTOR
 from vnpy.trader.object import LogData, ContractData, SubscribeRequest, TickData, BarData, HistoryRequest, FactorData
 from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
 
@@ -55,6 +55,7 @@ class FactorEngine(BaseEngine):
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_BAR, self.process_bar_event)
         self.event_engine.register(EVENT_BAR_FACTOR, self.process_bar_factor_event)
+        self.event_engine.register(EVENT_FACTOR, self.process_factor_event)
 
     # Loading and Saving Data
     def load_factor_class(self):
@@ -67,7 +68,7 @@ class FactorEngine(BaseEngine):
                 f"Failed to import factor module from {factor_module_name}, triggered exception:\n{traceback.format_exc()}")
 
     def load_factor_setting(self) -> None:
-        """加载策略配置"""
+        """加载因子计算策略配置"""
         factor_setting: dict = load_json(self.setting_filename)
         for factor_name, factor_config in factor_setting.items():
             self.add_factor(
@@ -114,7 +115,7 @@ class FactorEngine(BaseEngine):
             return
         if factor_class.__name__ not in self.classes:
             self.classes[factor_class.__name__] = factor_class
-        factor: FactorTemplate = factor_class(self, ticker, setting)
+        factor: FactorTemplate = factor_class(engine=self, setting=setting)
         self.factors[factor_name] = factor
         vt_symbol = f'{factor.symbol}.{factor.exchange.value}'
         if vt_symbol not in self.symbol_factor_map:
@@ -321,22 +322,20 @@ class FactorEngine(BaseEngine):
             if factor.inited:
                 self.call_factor_func(factor, factor.on_bar, bar)
 
-        # 为了OHLC等因子的计算，需要在每个bar更新后，更新因子的数据
+        # 为了OHLC等因子的计算，需要在每个bar更新后，生成新的因子
         event.type = EVENT_BAR_FACTOR
         self.event_engine.put(event)
 
     def process_bar_factor_event(self, event: Event) -> None:
         """K-line (bar) data push"""
         bar: BarData = event.data
-        for k,factor in self.factors.items():
-            if factor.factor_name in ['open','high','low','close']:
+        for k, factor in self.factors.items():
+            if factor.factor_name in ['open', 'high', 'low', 'close', 'volume']:
                 self.call_factor_func(factor, factor.on_bar, bar)
-
 
     def process_factor_event(self, event: Event) -> None:
         """Process factor event"""
         data: FactorData = event.data
-
 
     # Utility Functions
     def call_factor_func(self, factor: FactorTemplate, func: Callable, params: object = None) -> None:
