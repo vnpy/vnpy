@@ -504,18 +504,18 @@ def convert_dict_to_dataframe(data: dict, is_polars: bool = False):
 
         # Create a Polars DataFrame
         df = pl.DataFrame({
-            "Row": rows,
+            "datetime": rows,
             "Column": columns,
             "Value": values
         })
 
         # Pivot the DataFrame
-        df_pivot = df.pivot(values="Value", index="Row", columns="Column")
+        df_pivot = df.pivot(values="Value", index="datetime", columns="Column")
         return df_pivot.fill_null(strategy='forward')
     else:
         # Pandas conversion
         df = pd.DataFrame.from_dict(data, orient='index')
-        df.index = pd.MultiIndex.from_tuples(df.index, names=['Row', 'Column'])
+        df.index = pd.MultiIndex.from_tuples(df.index, names=['datetime', 'Column'])
         df = df.unstack()
         df.columns = df.columns.droplevel(0)
         return df.fillna(method='ffill')
