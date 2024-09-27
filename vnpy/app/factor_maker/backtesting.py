@@ -43,6 +43,7 @@ class FactorBacktestingEngine:
         self.logs: list = []
 
         self.database: BaseDatabase = get_database()
+        self.factor: FactoeTemplate = None
 
         self.bar_data = None
         self.factor_data = None
@@ -89,7 +90,7 @@ class FactorBacktestingEngine:
         self.load_factor()
         # align bar data and factor data
         self.bar_data, self.factor_data = pl.align_frames(
-            self.bar_data, self.factor_data, on="Row"
+            self.bar_data, self.factor_data, on="datetime", how="inner"
         )
 
     def load_bars(self):
@@ -184,9 +185,14 @@ class FactorBacktestingEngine:
             )
             for factor_data in data:
                 factor_dict[(factor_data.datetime, symbol)] = factor_data.value
-        self.factor_data = convert_dict_to_dataframe(data=factor_dict, is_polars=True)
+        self.factor_data: pl.DataFrame = convert_dict_to_dataframe(data=factor_dict, is_polars=True)
+        # row index: datetime, column index: symbol:btcusdt
 
         self.output("因子数据加载完成")
+
+    def calculate_factor(self, setting) -> pl.DataFrame:
+        factor_data = self.factor.make_factor(setting)
+        return factor_data
 
     def run_backtesting_groups(self, n_groups: int, if_plot: bool = False):
         """运行回测"""
