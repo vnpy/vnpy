@@ -113,6 +113,7 @@ class OrderData(BaseData):
     """
 
     symbol: str
+    name: str
     exchange: Exchange
     orderid: str
 
@@ -155,6 +156,7 @@ class TradeData(BaseData):
     """
 
     symbol: str
+    name: str
     exchange: Exchange
     orderid: str
     tradeid: str
@@ -320,6 +322,7 @@ class OrderRequest:
     """
 
     symbol: str
+    name: str
     exchange: Exchange
     direction: Direction
     type: OrderType
@@ -338,6 +341,7 @@ class OrderRequest:
         """
         order: OrderData = OrderData(
             symbol=self.symbol,
+            name=self.name,
             exchange=self.exchange,
             orderid=orderid,
             type=self.type,
