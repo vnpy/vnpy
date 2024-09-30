@@ -2,7 +2,7 @@ from collections import deque
 from abc import abstractmethod
 from typing import Optional
 
-from vnpy.app.factor_maker.engine import FactorEngine
+# from vnpy.app.factor_maker.engine import FactorEngine
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.object import TickData, BarData, FactorData
 
@@ -27,10 +27,16 @@ class FactorTemplate(object):
 
     status: dict[tuple, bool] = {}  # 用来标识dependencies是否全部ready
 
-    def __init__(self, engine: FactorEngine, setting: dict,
+    def __init__(self, engine, setting: dict,
                  ):
-        """"""
-        self.engine: FactorEngine = engine
+        """
+
+        Parameters
+        ----------
+        engine : FactorEngine
+        setting :
+        """
+        self.engine = engine # type: FactorEngine
         self.setting: dict = setting
         for s in setting.items():
             setattr(self, s[0], s[1])

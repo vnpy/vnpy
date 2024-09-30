@@ -4,9 +4,20 @@ from typing import Optional
 
 
 class OPEN_BASE(FactorTemplate):
-
     factor_name = "open"
 
+    def on_bar(self, bar: BarData) -> FactorData:
+        pass
+
+    def on_tick(self, tick: TickData) -> None:
+        pass
+
+    def on_factor(self, factor: FactorData) -> FactorData:
+        pass
+
+
+class OPEN(OPEN_BASE):
+    factor_name = "open"
 
     def on_bar(self, bar: BarData) -> FactorData:
         value = bar.open_price
