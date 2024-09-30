@@ -1,1 +1,1 @@
-from bar import *
+from .bar import *
