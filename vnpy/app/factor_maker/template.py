@@ -2,7 +2,7 @@ from collections import deque
 from abc import abstractmethod
 from typing import Optional
 
-# from vnpy.app.factor_maker.engine import FactorEngine
+from vnpy.app.factor_maker.engine import FactorEngine
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.object import TickData, BarData, FactorData
 
