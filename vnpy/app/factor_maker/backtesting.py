@@ -152,6 +152,8 @@ class FactorBacktestingEngine:
         self.database: BaseDatabase = get_database()
         self.factor: Optional[FactorTemplate] = None
 
+        self.dts = set()
+        self.bar_data_dict: dict[str, pl.DataFrame] = None
         self.bar_data: pl.DataFrame = None
         self.factor_data: pl.DataFrame = None
 
@@ -255,7 +257,10 @@ class FactorBacktestingEngine:
             return
 
         # 清理上次加载的历史数据
-        bar_dict = {}
+        bar_dict_open = {}
+        bar_dict_high = {}
+        bar_dict_low = {}
+        bar_dict_close = {}
         self.dts.clear()
 
         # 每次加载30天历史数据
@@ -284,7 +289,10 @@ class FactorBacktestingEngine:
 
                     for bar in data:
                         self.dts.add(bar.datetime)
-                        bar_dict[(bar.datetime, vt_symbol)] = compose_bar(bar)
+                        bar_dict_open[(bar.datetime, vt_symbol)] = bar.open_price
+                        bar_dict_high[(bar.datetime, vt_symbol)] = bar.high_price
+                        bar_dict_low[(bar.datetime, vt_symbol)] = bar.low_price
+                        bar_dict_close[(bar.datetime, vt_symbol)] = bar.close_price
                         data_count += 1
 
                     progress += progress_delta / total_delta
@@ -308,13 +316,21 @@ class FactorBacktestingEngine:
 
                 for bar in data:
                     self.dts.add(bar.datetime)
-                    bar_dict[(bar.datetime, vt_symbol)] = compose_bar(bar)
+                    bar_dict_open[(bar.datetime, vt_symbol)] = bar.open_price
+                    bar_dict_high[(bar.datetime, vt_symbol)] = bar.high_price
+                    bar_dict_low[(bar.datetime, vt_symbol)] = bar.low_price
+                    bar_dict_close[(bar.datetime, vt_symbol)] = bar.close_price
 
                 data_count = len(data)
 
             self.output("{}历史数据加载完成，数据量：{}".format(vt_symbol, data_count))
 
-        self.bar_data: pl.DataFrame = convert_dict_to_dataframe(data=bar_dict, is_polars=True)
+        self.bar_data_dict['open'] = convert_dict_to_dataframe(data=bar_dict_open, is_polars=True)
+        self.bar_data_dict['high'] = convert_dict_to_dataframe(data=bar_dict_high, is_polars=True)
+        self.bar_data_dict['low'] = convert_dict_to_dataframe(data=bar_dict_low, is_polars=True)
+        self.bar_data_dict['close'] = convert_dict_to_dataframe(data=bar_dict_close, is_polars=True)
+
+        self.bar_data = compose_bar(self.bar_data_dict)
 
         self.output("所有历史数据加载完成")
 
@@ -341,8 +357,8 @@ class FactorBacktestingEngine:
     def calculate_factor(self, factor_params: dict) -> None:
         """Calculate factor data using provided parameters"""
         self.output("Calculating factor data with new parameters")
-        self.factor.set_parameters(factor_params)
-        self.factor_data = self.factor.make_factor(self.bar_data)
+        self.factor.set_params(factor_params)
+        self.factor_data = self.factor.make_factor(self.bar_data_dict)
 
         # Align bar data and factor data
         self.bar_data, self.factor_data = pl.align_frames(
@@ -602,5 +618,48 @@ class FactorBacktestingEngine:
         plt.show()
 
 
-def compose_bar(bar: BarData) -> float:
-    return (bar.open_price + bar.high_price + bar.low_price + bar.close_price) / 4
+def compose_bar(bar_dict: dict[str, pl.DataFrame]) -> pl.DataFrame:
+    """
+    Compose bar data from open, high, low, close data into mean of OHLC.
+
+    Parameters:
+        bar_dict (dict[str, pl.DataFrame]): Dictionary containing 'open', 'high', 'low', 'close' DataFrames.
+            Each DataFrame has 'datetime' as the first column and symbols as subsequent columns.
+
+    Returns:
+        pl.DataFrame: DataFrame with mean OHLC values, rows are 'datetime', columns are symbols.
+    """
+    # Extract DataFrames from the dictionary
+    open_df = bar_dict.get('open')
+    high_df = bar_dict.get('high')
+    low_df = bar_dict.get('low')
+    close_df = bar_dict.get('close')
+
+    # Check that all DataFrames are present
+    if any(df is None for df in [open_df, high_df, low_df, close_df]):
+        raise ValueError("bar_dict must contain 'open', 'high', 'low', and 'close' DataFrames.")
+
+    # Align DataFrames on 'datetime' column
+    aligned_dfs = pl.align_frames(open_df, high_df, low_df, close_df, on='datetime', how='inner')
+
+    # Unpack the aligned DataFrames
+    open_df_aligned, high_df_aligned, low_df_aligned, close_df_aligned = aligned_dfs
+
+    # Extract 'datetime' column
+    datetime_col = open_df_aligned['datetime']
+
+    # Drop 'datetime' column from each DataFrame to perform arithmetic operations
+    open_values = open_df_aligned.drop('datetime')
+    high_values = high_df_aligned.drop('datetime')
+    low_values = low_df_aligned.drop('datetime')
+    close_values = close_df_aligned.drop('datetime')
+
+    # Compute the mean of OHLC for each cell
+    mean_values = (open_values + high_values + low_values + close_values) / 4
+
+    # Concatenate 'datetime' column back with the mean values
+    mean_df = pl.concat([datetime_col, mean_values], how='horizontal')
+
+    # Return the resulting DataFrame with mean OHLC values
+    return mean_df
+
