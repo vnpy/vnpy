@@ -17,9 +17,9 @@ class FactorTemplate(object):
     variables: list = []
 
     factor_name: str = ""
-    freq: Optional[Interval] = None
+    freq: Optional[Interval] = Interval.MINUTE
     symbol: str = ""
-    exchange: Exchange = None
+    exchange: Exchange = Exchange.BINANCE
 
     dependencies_factor: list[str] = []
     dependencies_freq: list[Interval] = []
@@ -72,13 +72,13 @@ class FactorTemplate(object):
 
     def set_params(self, params: Dict[str, Any]) -> None:
         """
-        Set the factor's parameters dynamically.
-
-        Parameters:
-            params (dict): Dictionary of parameter names and values to set.
+        Set the parameters of the factor.
         """
         for key, value in params.items():
-            setattr(self, key, value)
+            if key in self.parameters:
+                setattr(self, key, value)
+            else:
+                raise ValueError(f"Parameter {key} is not recognized.")
 
     def on_init(self) -> None:
         """
