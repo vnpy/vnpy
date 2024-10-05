@@ -12,3 +12,7 @@ pyzmq==25.1.2
 plotly==5.20.0
 importlib-metadata==7.0.2
 tqdm==4.66.2
+vnpy_sqlite==1.0.1
+vnpy_ctp==6.7.2
+vnpy_ctastrategy==1.1.5
+vnpy_ctabacktester==1.1.0
