@@ -1,14 +1,18 @@
 from datetime import datetime
 
+from vnpy.app.factor_maker import FactorEngine
 from vnpy.app.factor_maker.backtesting import FactorOptimizer, FactorBacktestingEngine
+from vnpy.app.factor_maker.base import FactorMode
+from vnpy.app.factor_maker.factors.technical import MACDFactor
 from vnpy.trader.constant import Interval
 
 # Create an instance of the backtesting engine
 engine = FactorBacktestingEngine()
 
 # Set up the MACD factor
-macd_factor = MACDFactor()
+macd_factor = MACDFactor(engine=engine, setting={})
 macd_factor.factor_name = "MACD_Factor"
+macd_factor.factor_mode = FactorMode.Backtest
 
 # Assign the factor to the engine
 engine.factor = macd_factor
@@ -30,9 +34,9 @@ engine.load_data()
 
 # Define parameter bounds for optimization
 param_bounds = {
-    'fast_period': (5, 15),     # Fast EMA period between 5 and 15
-    'slow_period': (20, 30),    # Slow EMA period between 20 and 30
-    'signal_period': (5, 15)    # Signal EMA period between 5 and 15
+    'fast_period': (5, 15),  # Fast EMA period between 5 and 15
+    'slow_period': (20, 30),  # Slow EMA period between 20 and 30
+    'signal_period': (5, 15)  # Signal EMA period between 5 and 15
 }
 
 # Create an instance of the optimizer

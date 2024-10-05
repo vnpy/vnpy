@@ -2,6 +2,8 @@ from collections import deque
 from abc import abstractmethod
 from typing import Optional, Dict, Tuple, Any
 
+from vnpy.app.factor_maker.backtesting import FactorBacktestingEngine
+from vnpy.app.factor_maker.base import FactorMode
 from vnpy.app.factor_maker.engine import FactorEngine
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.object import TickData, BarData, FactorData
@@ -17,24 +19,26 @@ class FactorTemplate(object):
     variables: list = []
 
     factor_name: str = ""
-    freq: Optional[Interval] = Interval.MINUTE
+    freq: Optional[Interval] = None
     symbol: str = ""
-    exchange: Exchange = Exchange.BINANCE
+    exchange: Exchange = None
 
     dependencies_factor: list[str] = []
     dependencies_freq: list[Interval] = []
     dependencies_symbol: list[str] = []
     dependencies_exchange: list[Exchange] = []
 
-    def __init__(self, engine, setting: dict, **kwargs):
+    factor_mode: FactorMode = None
+
+    def __init__(self, engine: Optional[FactorEngine, FactorBacktestingEngine], setting: dict, **kwargs):
         """
         Initialize the factor template with the given engine and settings.
 
         Parameters:
-            engine (FactorEngine): The factor engine instance.
+            engine (Optional[FactorEngine, FactorBacktestingEngine]): The factor engine instance.
             setting (dict): Settings for the factor.
         """
-        self.engine = engine  # Type: FactorEngine
+        self.engine = engine  # Type: FactorEngine, FactorBacktestingEngine
         self.setting: Dict[str, Any] = setting
 
         # Update instance attributes based on settings
@@ -84,6 +88,8 @@ class FactorTemplate(object):
         """
         Callback when the factor is initialized.
         """
+        if self.factor_mode == FactorMode.Backtest:
+            pass
         self.inited = True
         self.engine.write_log(f"{self.factor_key} initialized.")
 
@@ -91,6 +97,8 @@ class FactorTemplate(object):
         """
         Callback when the factor starts.
         """
+        if self.factor_mode == FactorMode.Backtest:
+            pass
         self.trading = True
         self.engine.write_log(f"{self.factor_key} started.")
 
@@ -98,6 +106,8 @@ class FactorTemplate(object):
         """
         Callback when the factor stops.
         """
+        if self.factor_mode == FactorMode.Backtest:
+            pass
         self.trading = False
         self.engine.write_log(f"{self.factor_key} stopped.")
 

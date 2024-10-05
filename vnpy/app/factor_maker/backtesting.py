@@ -62,7 +62,7 @@ class FactorOptimizer:
 
         # Handle cases where Sharpe Ratio is NaN
         if np.isnan(sharpe_ratio):
-            self.engine.output("Sharpe Ratio is NaN on training data. Returning a large negative value.")
+            self.engine.write_log("Sharpe Ratio is NaN on training data. Returning a large negative value.")
             return -np.inf
 
         # Since we want to maximize Sharpe ratio, return its negative
@@ -96,7 +96,7 @@ class FactorOptimizer:
 
         # Get the best parameters from optimization
         best_params = self.optimizer.max['params']
-        self.engine.output(f"Best parameters on training data: {best_params}")
+        self.engine.write_log(f"Best parameters on training data: {best_params}")
 
         # Recalculate factor data with best parameters
         self.engine.calculate_factor(best_params)
@@ -109,11 +109,11 @@ class FactorOptimizer:
 
         # Extract the Sharpe ratio on test data
         test_sharpe_ratio = performance_metrics.get('Sharpe Ratio', np.nan)
-        self.engine.output(f"Sharpe Ratio on test data: {test_sharpe_ratio}")
+        self.engine.write_log(f"Sharpe Ratio on test data: {test_sharpe_ratio}")
 
         # Check if Sharpe ratio on test data exceeds the threshold
         if test_sharpe_ratio > sharpe_threshold:
-            self.engine.output(f"Sharpe Ratio on test data exceeds threshold of {sharpe_threshold}.")
+            self.engine.write_log(f"Sharpe Ratio on test data exceeds threshold of {sharpe_threshold}.")
             self.best_params = best_params
             self.best_sharpe_ratio = test_sharpe_ratio
             return {
@@ -121,7 +121,7 @@ class FactorOptimizer:
                 'sharpe_ratio': test_sharpe_ratio
             }
         else:
-            self.engine.output(f"Sharpe Ratio on test data does not exceed threshold of {sharpe_threshold}.")
+            self.engine.write_log(f"Sharpe Ratio on test data does not exceed threshold of {sharpe_threshold}.")
             return None
 
 
@@ -247,13 +247,13 @@ class FactorBacktestingEngine:
 
     def load_bars(self):
         """加载K线数据"""
-        self.output("开始加载历史数据")
+        self.write_log("开始加载历史数据")
 
         if not self.end:
             self.end = datetime.now()
 
         if self.start >= self.end:
-            self.output(f"起始日期必须小于结束日期")
+            self.write_log(f"起始日期必须小于结束日期")
             return
 
         # 清理上次加载的历史数据
@@ -297,7 +297,7 @@ class FactorBacktestingEngine:
 
                     progress += progress_delta / total_delta
                     progress = min(progress, 1)
-                    self.output(
+                    self.write_log(
                         "{}加载进度：[{:.0%}]".format(
                             vt_symbol, progress
                         )
@@ -323,7 +323,7 @@ class FactorBacktestingEngine:
 
                 data_count = len(data)
 
-            self.output("{}历史数据加载完成，数据量：{}".format(vt_symbol, data_count))
+            self.write_log("{}历史数据加载完成，数据量：{}".format(vt_symbol, data_count))
 
         self.bar_data_dict['open'] = convert_dict_to_dataframe(data=bar_dict_open, is_polars=True)
         self.bar_data_dict['high'] = convert_dict_to_dataframe(data=bar_dict_high, is_polars=True)
@@ -332,11 +332,11 @@ class FactorBacktestingEngine:
 
         self.bar_data = compose_bar(self.bar_data_dict)
 
-        self.output("所有历史数据加载完成")
+        self.write_log("所有历史数据加载完成")
 
     def load_factor(self):
 
-        self.output("开始加载因子数据")
+        self.write_log("开始加载因子数据")
         factor_dict = {}
         for vt_symbol in self.vt_symbols:
             symbol, exchange = extract_vt_symbol(vt_symbol)
@@ -352,11 +352,11 @@ class FactorBacktestingEngine:
         self.factor_data: pl.DataFrame = convert_dict_to_dataframe(data=factor_dict, is_polars=True)
         # row index: datetime, column index: symbol:btcusdt
 
-        self.output("因子数据加载完成")
+        self.write_log("因子数据加载完成")
 
     def calculate_factor(self, factor_params: dict) -> None:
         """Calculate factor data using provided parameters"""
-        self.output("Calculating factor data with new parameters")
+        self.write_log("Calculating factor data with new parameters")
         self.factor.set_params(factor_params)
         self.factor_data = self.factor.make_factor(self.bar_data_dict)
 
@@ -368,7 +368,7 @@ class FactorBacktestingEngine:
         # Split factor data into train and test sets
         self.factor_data_train, self.factor_data_test = self.factor_data.split_in_two(frac=0.8)
 
-        self.output("Factor data calculation completed")
+        self.write_log("Factor data calculation completed")
 
     def run_backtesting_groups(
         self,
@@ -389,7 +389,7 @@ class FactorBacktestingEngine:
         Returns:
             tuple: (portfolio_values, performance_metrics, ic_series, ir)
         """
-        self.output("Starting backtesting with groups.")
+        self.write_log("Starting backtesting with groups.")
         dates = bar_data['datetime'].to_numpy()
 
         # Convert to numpy arrays
@@ -486,7 +486,7 @@ class FactorBacktestingEngine:
         Returns:
             tuple: (portfolio_values, performance_metrics)
         """
-        self.output("Starting backtesting with positions.")
+        self.write_log("Starting backtesting with positions.")
         dates = bar_data['datetime'].to_numpy()
         tickers = bar_data.columns[1:]
 
@@ -573,7 +573,7 @@ class FactorBacktestingEngine:
 
         return portfolio_values, performance_metrics
 
-    def output(self, msg) -> None:
+    def write_log(self, msg) -> None:
         """输出回测引擎信息"""
         print(f"{datetime.now()}\t{msg}")
 
