@@ -100,7 +100,8 @@ def run_bf_optimization(
     optimization_setting: OptimizationSetting,
     key_func: KEY_FUNC,
     max_workers: int = None,
-    output: OUTPUT_FUNC = print
+    output: OUTPUT_FUNC = print,
+    batch_size: int = 100  # 设定每次处理的批次数量
 ) -> List[Tuple]:
     """Run brutal force optimization"""
     settings: List[Dict] = optimization_setting.generate_settings()
@@ -109,6 +110,7 @@ def run_bf_optimization(
     output(_("参数优化空间：{}").format(len(settings)))
 
     start: int = perf_counter()
+    results: List[Tuple] = []
 
     with ProcessPoolExecutor(
         max_workers,
@@ -118,9 +120,13 @@ def run_bf_optimization(
             executor.map(evaluate_func, settings),
             total=len(settings)
         )
-        results: List[Tuple] = list(it)
-        results.sort(reverse=True, key=key_func)
-
+        # results: List[Tuple] = list(it)
+        # results.sort(reverse=True, key=key_func)
+        for i in range(0, len(settings), batch_size):
+            batch = settings[i:i + batch_size]
+            it: Iterable = tqdm(executor.map(evaluate_func, batch), total=len(batch))
+            batch_results = list(it)
+            results.extend(batch_results)  # 使用 extend 而不是 list() 来避免创建新列表
         end: int = perf_counter()
         cost: int = int((end - start))
         output(_("穷举算法优化完成，耗时{}秒").format(cost))
