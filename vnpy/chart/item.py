@@ -37,7 +37,7 @@ class ChartItem(pg.GraphicsObject):
         self._rect_area: Tuple[float, float] = None
 
         # Very important! Only redraw the visible part and improve speed a lot.
-        self.setFlag(self.ItemUsesExtendedStyleOption)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemUsesExtendedStyleOption)
 
         # Force update during the next paint
         self._to_update: bool = False
