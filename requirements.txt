@@ -1,5 +1,5 @@
 tzlocal==5.2
-PySide6==6.3.0
+PySide6==6.7.3
 pyqtgraph==0.13.4
 qdarkstyle==3.2.3
 numpy==1.26.4
