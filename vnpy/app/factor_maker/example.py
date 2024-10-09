@@ -17,6 +17,8 @@ macd_factor.factor_mode = FactorMode.Backtest
 # Assign the factor to the engine
 engine.factor = macd_factor
 
+engine.factor_source = "calculation"
+
 # Set backtesting parameters
 engine.set_parameters(
     vt_symbols=["BTCUSDT.BINANCE", "ETHISDT.BINANCE"],  # Replace with your actual symbols

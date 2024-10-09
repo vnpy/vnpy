@@ -8,6 +8,7 @@ from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.trader.object import TickData, BarData, FactorData
 from vnpy.trader.constant import Exchange, Interval
 
+
 class MACDFactor(FactorTemplate):
     """
     MACD Factor class that calculates the MACD histogram as a factor.

@@ -108,7 +108,7 @@ class FactorOptimizer:
         )
 
         # Extract the Sharpe ratio on test data
-        test_sharpe_ratio = performance_metrics.get('Sharpe Ratio', np.nan)
+        test_sharpe_ratio = performance_metrics.get('Annualized Sharpe Ratio', np.nan)
         self.engine.write_log(f"Sharpe Ratio on test data: {test_sharpe_ratio}")
 
         # Check if Sharpe ratio on test data exceeds the threshold
@@ -244,6 +244,9 @@ class FactorBacktestingEngine:
         # Split bar data and factor data into train and test sets
         self.bar_data_train, self.bar_data_test = self.bar_data.split_in_two(frac=0.8)
         self.factor_data_train, self.factor_data_test = self.factor_data.split_in_two(frac=0.8)
+
+    def load_bars_csv(self, file_path: str) -> None:
+        pass
 
     def load_bars(self):
         """加载K线数据"""
@@ -561,10 +564,10 @@ class FactorBacktestingEngine:
         )
 
         performance_metrics = {
-            'Total Return': total_return,
+            'Cumulative Return': total_return,
             'Annualized Return': annualized_return,
             'Annualized Volatility': annualized_volatility,
-            'Sharpe Ratio': sharpe_ratio
+            'Annualized Sharpe Ratio': sharpe_ratio
         }
 
         if if_plot:
