@@ -45,7 +45,7 @@ class BacktestingEngine:
         self.start: datetime = None
         self.end: datetime = None
 
-        self.rates: dict[str, float] = 0
+        self.rates: dict[str, float] = 0 # commission rate
         self.slippages: dict[str, float] = 0
         self.sizes: dict[str, float] = 1
         self.priceticks: dict[str, float] = 0
