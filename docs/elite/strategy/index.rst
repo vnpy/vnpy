@@ -11,3 +11,6 @@
    elite_portfoliostrategy.md
    elite_spreadtrading.md
    elite_optionstrategy.md
+
+   elite_algotrading.md
+   elite_datamanager.md

@@ -69,6 +69,8 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
         * 金仕达黄金（[ksgold](https://www.github.com/vnpy/vnpy_ksgold)）：黄金TD
 
+        * 利星资管（[lstar](https://www.github.com/vnpy/vnpy_lstar)）：期货资管
+
         * 融航（[rohon](https://www.github.com/vnpy/vnpy_rohon)）：期货资管
 
         * 杰宜斯（[jees](https://www.github.com/vnpy/vnpy_jees)）：期货资管
@@ -170,6 +172,8 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
     * 迅投研（[xt](https://www.github.com/vnpy/vnpy_xt)）：股票、期货、期权、基金、债券
 
     * 米筐RQData（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：股票、期货、期权、基金、债券、黄金TD
+
+    * 咏春大师（[voltrader](https://www.github.com/vnpy/vnpy_voltrader)）：期货、期权
 
     * 恒生UData（[udata](https://www.github.com/vnpy/vnpy_udata)）：股票、期货、期权
 
