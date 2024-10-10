@@ -62,28 +62,28 @@ class MainWindow(QtWidgets.QMainWindow):
     def init_dock(self) -> None:
         """"""
         self.trading_widget, trading_dock = self.create_dock(
-            TradingWidget, _("交易"), QtCore.Qt.LeftDockWidgetArea
+            TradingWidget, _("交易"), QtCore.Qt.DockWidgetArea.LeftDockWidgetArea
         )
         tick_widget, tick_dock = self.create_dock(
-            TickMonitor, _("行情"), QtCore.Qt.RightDockWidgetArea
+            TickMonitor, _("行情"), QtCore.Qt.DockWidgetArea.RightDockWidgetArea
         )
         order_widget, order_dock = self.create_dock(
-            OrderMonitor, _("委托"), QtCore.Qt.RightDockWidgetArea
+            OrderMonitor, _("委托"), QtCore.Qt.DockWidgetArea.RightDockWidgetArea
         )
         active_widget, active_dock = self.create_dock(
-            ActiveOrderMonitor, _("活动"), QtCore.Qt.RightDockWidgetArea
+            ActiveOrderMonitor, _("活动"), QtCore.Qt.DockWidgetArea.RightDockWidgetArea
         )
         trade_widget, trade_dock = self.create_dock(
-            TradeMonitor, _("成交"), QtCore.Qt.RightDockWidgetArea
+            TradeMonitor, _("成交"), QtCore.Qt.DockWidgetArea.RightDockWidgetArea
         )
         log_widget, log_dock = self.create_dock(
-            LogMonitor, _("日志"), QtCore.Qt.BottomDockWidgetArea
+            LogMonitor, _("日志"), QtCore.Qt.DockWidgetArea.BottomDockWidgetArea
         )
         account_widget, account_dock = self.create_dock(
-            AccountMonitor, _("资金"), QtCore.Qt.BottomDockWidgetArea
+            AccountMonitor, _("资金"), QtCore.Qt.DockWidgetArea.BottomDockWidgetArea
         )
         position_widget, position_dock = self.create_dock(
-            PositionMonitor, _("持仓"), QtCore.Qt.BottomDockWidgetArea
+            PositionMonitor, _("持仓"), QtCore.Qt.DockWidgetArea.BottomDockWidgetArea
         )
 
         self.tabifyDockWidget(active_dock, order_dock)
@@ -133,7 +133,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.add_action(app_menu, app.display_name, app.icon_name, func, True)
 
         # Global setting editor
-        action: QtGui.QAction = QtWidgets.QAction(_("配置"), self)
+        action: QtGui.QAction = QtGui.QAction(_("配置"), self)
         action.triggered.connect(self.edit_global_setting)
         bar.addAction(action)
 
@@ -192,7 +192,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Set button spacing
         self.toolbar.layout().setSpacing(10)
 
-        self.addToolBar(QtCore.Qt.LeftToolBarArea, self.toolbar)
+        self.addToolBar(QtCore.Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
 
     def add_action(
         self,
@@ -205,7 +205,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """"""
         icon: QtGui.QIcon = QtGui.QIcon(icon_name)
 
-        action: QtGui.QAction = QtWidgets.QAction(action_name, self)
+        action: QtGui.QAction = QtGui.QAction(action_name, self)
         action.triggered.connect(func)
         action.setIcon(icon)
 
@@ -230,7 +230,7 @@ class MainWindow(QtWidgets.QMainWindow):
         dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget(name)
         dock.setWidget(widget)
         dock.setObjectName(name)
-        dock.setFeatures(dock.DockWidgetFloatable | dock.DockWidgetMovable)
+        dock.setFeatures(dock.DockWidgetFeature.DockWidgetFloatable | dock.DockWidgetFeature.DockWidgetMovable)
         self.addDockWidget(area, dock)
         return widget, dock
 
@@ -249,11 +249,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self,
             _("退出"),
             _("确认退出？"),
-            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-            QtWidgets.QMessageBox.No,
+            QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
+            QtWidgets.QMessageBox.StandardButton.No,
         )
 
-        if reply == QtWidgets.QMessageBox.Yes:
+        if reply == QtWidgets.QMessageBox.StandardButton.Yes:
             for widget in self.widgets.values():
                 widget.close()
 

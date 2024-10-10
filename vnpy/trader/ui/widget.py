@@ -54,7 +54,7 @@ class BaseCell(QtWidgets.QTableWidgetItem):
     def __init__(self, content: Any, data: Any) -> None:
         """"""
         super().__init__()
-        self.setTextAlignment(QtCore.Qt.AlignCenter)
+        self.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.set_content(content, data)
 
     def set_content(self, content: Any, data: Any) -> None:
@@ -210,7 +210,7 @@ class MsgCell(BaseCell):
     def __init__(self, content: str, data: Any) -> None:
         """"""
         super().__init__(content, data)
-        self.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        self.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter)
 
 
 class BaseMonitor(QtWidgets.QTableWidget):
@@ -252,7 +252,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
         self.setHorizontalHeaderLabels(labels)
 
         self.verticalHeader().setVisible(False)
-        self.setEditTriggers(self.NoEditTriggers)
+        self.setEditTriggers(self.EditTrigger.NoEditTriggers)
         self.setAlternatingRowColors(True)
         self.setSortingEnabled(self.sorting)
 
@@ -262,11 +262,11 @@ class BaseMonitor(QtWidgets.QTableWidget):
         """
         self.menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
 
-        resize_action: QtGui.QAction = QtWidgets.QAction(_("调整列宽"), self)
+        resize_action: QtGui.QAction = QtGui.QAction(_("调整列宽"), self)
         resize_action.triggered.connect(self.resize_columns)
         self.menu.addAction(resize_action)
 
-        save_action: QtGui.QAction = QtWidgets.QAction(_("保存数据"), self)
+        save_action: QtGui.QAction = QtGui.QAction(_("保存数据"), self)
         save_action.triggered.connect(self.save_csv)
         self.menu.addAction(save_action)
 
@@ -339,7 +339,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
         """
         Resize all columns according to contents.
         """
-        self.horizontalHeader().resizeSections(QtWidgets.QHeaderView.ResizeToContents)
+        self.horizontalHeader().resizeSections(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 
     def save_csv(self) -> None:
         """
@@ -388,7 +388,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
 
         if isinstance(column_state, QtCore.QByteArray):
             self.horizontalHeader().restoreState(column_state)
-            self.horizontalHeader().setSortIndicator(-1, QtCore.Qt.AscendingOrder)
+            self.horizontalHeader().setSortIndicator(-1, QtCore.Qt.SortOrder.AscendingOrder)
 
 
 class TickMonitor(BaseMonitor):
@@ -633,7 +633,7 @@ class ConnectDialog(QtWidgets.QDialog):
                     widget.setText(str(saved_value))
 
                 if _("密码") in field_name:
-                    widget.setEchoMode(QtWidgets.QLineEdit.Password)
+                    widget.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
 
                 if field_type == int:
                     validator: QtGui.QIntValidator = QtGui.QIntValidator()
@@ -771,15 +771,15 @@ class TradingWidget(QtWidgets.QWidget):
         self.bp5_label: QtWidgets.QLabel = self.create_label(bid_color)
 
         self.bv1_label: QtWidgets.QLabel = self.create_label(
-            bid_color, alignment=QtCore.Qt.AlignRight)
+            bid_color, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
         self.bv2_label: QtWidgets.QLabel = self.create_label(
-            bid_color, alignment=QtCore.Qt.AlignRight)
+            bid_color, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
         self.bv3_label: QtWidgets.QLabel = self.create_label(
-            bid_color, alignment=QtCore.Qt.AlignRight)
+            bid_color, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
         self.bv4_label: QtWidgets.QLabel = self.create_label(
-            bid_color, alignment=QtCore.Qt.AlignRight)
+            bid_color, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
         self.bv5_label: QtWidgets.QLabel = self.create_label(
-            bid_color, alignment=QtCore.Qt.AlignRight)
+            bid_color, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
 
         self.ap1_label: QtWidgets.QLabel = self.create_label(ask_color)
         self.ap2_label: QtWidgets.QLabel = self.create_label(ask_color)
@@ -788,18 +788,18 @@ class TradingWidget(QtWidgets.QWidget):
         self.ap5_label: QtWidgets.QLabel = self.create_label(ask_color)
 
         self.av1_label: QtWidgets.QLabel = self.create_label(
-            ask_color, alignment=QtCore.Qt.AlignRight)
+            ask_color, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
         self.av2_label: QtWidgets.QLabel = self.create_label(
-            ask_color, alignment=QtCore.Qt.AlignRight)
+            ask_color, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
         self.av3_label: QtWidgets.QLabel = self.create_label(
-            ask_color, alignment=QtCore.Qt.AlignRight)
+            ask_color, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
         self.av4_label: QtWidgets.QLabel = self.create_label(
-            ask_color, alignment=QtCore.Qt.AlignRight)
+            ask_color, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
         self.av5_label: QtWidgets.QLabel = self.create_label(
-            ask_color, alignment=QtCore.Qt.AlignRight)
+            ask_color, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
 
         self.lp_label: QtWidgets.QLabel = self.create_label()
-        self.return_label: QtWidgets.QLabel = self.create_label(alignment=QtCore.Qt.AlignRight)
+        self.return_label: QtWidgets.QLabel = self.create_label(alignment=QtCore.Qt.AlignmentFlag.AlignRight)
 
         form: QtWidgets.QFormLayout = QtWidgets.QFormLayout()
         form.addRow(self.ap5_label, self.av5_label)
@@ -823,7 +823,7 @@ class TradingWidget(QtWidgets.QWidget):
     def create_label(
         self,
         color: str = "",
-        alignment: int = QtCore.Qt.AlignLeft
+        alignment: int = QtCore.Qt.AlignmentFlag.AlignLeft
     ) -> QtWidgets.QLabel:
         """
         Create label with certain font color.
@@ -1101,7 +1101,7 @@ class ContractManager(QtWidgets.QWidget):
         self.contract_table.setColumnCount(len(self.headers))
         self.contract_table.setHorizontalHeaderLabels(labels)
         self.contract_table.verticalHeader().setVisible(False)
-        self.contract_table.setEditTriggers(self.contract_table.NoEditTriggers)
+        self.contract_table.setEditTriggers(self.contract_table.EditTrigger.NoEditTriggers)
         self.contract_table.setAlternatingRowColors(True)
 
         hbox: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
