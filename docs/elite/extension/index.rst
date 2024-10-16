@@ -7,3 +7,4 @@
    elite_ladder.md
    elite_algotrading.md
    elite_dingtalk.md
+   elite_feishu.md

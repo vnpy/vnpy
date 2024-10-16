@@ -143,11 +143,11 @@ main_engine.add_app(SpreadTradingApp)
 
 ### 发出委托立即成交
 
-假设目标价差合约价格为425，我们以超价5元的形式，即430的价位发出买入限价单，如下图所示：
+假设目标价差合约价格为420，我们以超价5跳的形式，即430的价位发出买入限价单，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/2-7.png)
 
-由于限价单（430）价位高于当前卖价（420），所以委托立刻成交，如下图所示：
+由于限价单（430）价位高于当前卖价（410），所以委托立刻成交，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/8.png)
 
@@ -173,7 +173,7 @@ main_engine.add_app(SpreadTradingApp)
 - 算法组件
   - 委托状态为【未成交】，要结束算法只需鼠标双击【SpreadTaker_000002】单元格即可。
 
-仅当卖价低于-300时，才触发该限价单，已超价5元，即-295去主动成交。
+仅当卖价低于-300时，才触发该限价单，已超价5跳，即-290去主动成交。
 
 ### 撤销委托
 
@@ -224,7 +224,7 @@ main_engine.add_app(SpreadTradingApp)
     - max_pos
       - 主动腿委托数量；
     - payup
-      - 超价的数值;
+      - 超价的跳数;
     - interval
       - 时间间隔，即每隔一段时间，会发出委托。
 
