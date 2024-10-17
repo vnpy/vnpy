@@ -492,7 +492,7 @@ execute_trading被调用之后，在函数内部会先撤销策略所有活动�
 ##### 属性
 
  - vt_symbol: str（本地代码）
- - contractData: ContractData（合约信息）
+ - contract: ContractData（合约信息）
  - strike: float（行权价）
  - price: float（最新价）
  - pos: float（净持仓）
