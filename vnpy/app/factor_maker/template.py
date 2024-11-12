@@ -17,8 +17,8 @@ class FactorTemplate(object):
 
     factor_name: str = ""
     freq: Optional[Interval] = None
-    symbol: str = ""
-    exchange: Exchange = None
+    symbol: str = ""  # deprecated?
+    exchange: Exchange = None  # deprecated?
 
     dependencies_factor: list[str] = []
     dependencies_freq: list[Interval] = []
@@ -27,8 +27,7 @@ class FactorTemplate(object):
 
     status: dict[tuple, bool] = {}  # 用来标识dependencies是否全部ready
 
-    def __init__(self, engine, setting: dict,
-                 ):
+    def __init__(self, engine, setting: dict, ):
         """
 
         Parameters
@@ -36,8 +35,8 @@ class FactorTemplate(object):
         engine : FactorEngine
         setting :
         """
-        self.engine = engine # type: FactorEngine
-        self.setting: dict = setting
+        self.engine = engine  # type: FactorEngine
+        self.setting: dict = setting if setting else {}
         for s in setting.items():
             setattr(self, s[0], s[1])
 

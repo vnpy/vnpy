@@ -57,7 +57,7 @@ class EventEngine:
         while self._active:
             try:
                 event: Event = self._queue.get(block=True, timeout=1)
-                # print(event.type)
+                # print(event.type,event.data)
                 self._process(event)
             except Empty:
                 pass
