@@ -40,6 +40,9 @@ SETTINGS: Dict[str, Any] = {
     "gateway.api_key": "",
     "gateway.api_secret": "",
 
+    # trading
+    "tickers": [],
+
 }
 
 # Load global setting from json file.
