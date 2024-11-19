@@ -668,6 +668,7 @@ class BinanceSpotDataWebsocketApi:
         """构造函数"""
         super().__init__()
 
+        self._client: Optional[SpotWebsocketStreamClient_vnpy] = None  # 数据源
         self.gateway: BinanceSpotGateway = gateway
         self.gateway_name: str = gateway.gateway_name
 
@@ -703,7 +704,7 @@ class BinanceSpotDataWebsocketApi:
                 self._client.kline(symbol, '1m')
 
     def subscribe(self, req: SubscribeRequest) -> None:
-        """订阅行情"""
+        """订阅行情, 并send_message_to_server"""
         if req.symbol in self.ticks:
             return
 
@@ -713,26 +714,28 @@ class BinanceSpotDataWebsocketApi:
 
         self.reqid += 1
 
-        # 创建TICK对象
-        tick: TickData = TickData(
-            symbol=req.symbol,
-            name=symbol_contract_map[req.symbol].name,
-            exchange=Exchange.BINANCE,
-            datetime=datetime.now(),
-            gateway_name=self.gateway_name,
-        )
+        # # 创建TICK对象
+        # tick: TickData = TickData(
+        #     symbol=req.symbol,
+        #     name=symbol_contract_map[req.symbol].name,
+        #     exchange=Exchange.BINANCE,
+        #     datetime=datetime.now(),
+        #     gateway_name=self.gateway_name,
+        # )
         bar: BarData = BarData(
             symbol=req.symbol,
             exchange=Exchange.BINANCE,
             datetime=datetime.fromtimestamp(0, tz=timezone.utc),
             gateway_name=self.gateway_name,
-            interval=Interval.MINUTE  #todo
+            interval=Interval.MINUTE  # todo
         )
-        self.ticks[req.symbol] = tick
+        # todo: 订阅tick数据
+        # self.ticks[req.symbol] = tick
         self.bars[req.symbol] = bar
 
-        self._client.ticker(req.symbol)
-        self._client.partial_book_depth(req.symbol)
+        # todo: 订阅tick数据
+        # self._client.ticker(req.symbol)
+        # self._client.partial_book_depth(req.symbol)
         self._client.kline(req.symbol, '1m')
 
     def on_packet(self, _, packet: dict) -> None:
@@ -762,35 +765,37 @@ class BinanceSpotDataWebsocketApi:
                 bar.low_price = float(kdata['l'])
                 bar.close_price = float(kdata['c'])
                 bar.volume = float(kdata['q'])
+                assert bar.volume > 1000, f"bar.volume is too low"
                 self.gateway.on_bar(copy(bar))
             return
 
-        tick: TickData = self.ticks[symbol]
+        # todo: 订阅tick数据
+        # tick: TickData = self.ticks[symbol]
+        #
+        # if channel == "ticker":
+        #     tick.volume = float(data['v'])
+        #     tick.turnover = float(data['q'])
+        #     tick.open_price = float(data['o'])
+        #     tick.high_price = float(data['h'])
+        #     tick.low_price = float(data['l'])
+        #     tick.last_price = float(data['c'])
+        #     tick.datetime = datetime.fromtimestamp(float(data['E']) / 1000)
+        # else:
+        #     bids: list = data["bids"]
+        #     for n in range(min(5, len(bids))):
+        #         price, volume = bids[n]
+        #         tick.__setattr__("bid_price_" + str(n + 1), float(price))
+        #         tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
+        #
+        #     asks: list = data["asks"]
+        #     for n in range(min(5, len(asks))):
+        #         price, volume = asks[n]
+        #         tick.__setattr__("ask_price_" + str(n + 1), float(price))
+        #         tick.__setattr__("ask_volume_" + str(n + 1), float(volume))
 
-        if channel == "ticker":
-            tick.volume = float(data['v'])
-            tick.turnover = float(data['q'])
-            tick.open_price = float(data['o'])
-            tick.high_price = float(data['h'])
-            tick.low_price = float(data['l'])
-            tick.last_price = float(data['c'])
-            tick.datetime = datetime.fromtimestamp(float(data['E']) / 1000)
-        else:
-            bids: list = data["bids"]
-            for n in range(min(5, len(bids))):
-                price, volume = bids[n]
-                tick.__setattr__("bid_price_" + str(n + 1), float(price))
-                tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
-
-            asks: list = data["asks"]
-            for n in range(min(5, len(asks))):
-                price, volume = asks[n]
-                tick.__setattr__("ask_price_" + str(n + 1), float(price))
-                tick.__setattr__("ask_volume_" + str(n + 1), float(volume))
-
-        if tick.last_price:
-            tick.localtime = datetime.now()
-            self.gateway.on_tick(copy(tick))
+        # if tick.last_price:
+        #     tick.localtime = datetime.now()
+        #     self.gateway.on_tick(copy(tick))
 
     def on_disconnected(self) -> None:
         """连接断开回报"""
