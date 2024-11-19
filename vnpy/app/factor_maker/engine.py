@@ -1,18 +1,18 @@
 import importlib
-import pprint
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from logging import getLogger
 from typing import Type, Optional, Callable
 
-from vnpy.app.factor_maker.base import APP_NAME, EVENT_FACTOR_LOG, EVENT_FACTOR_MAKER, EVENT_FACTOR_RECORD
+from vnpy.app.factor_maker.base import APP_NAME, EVENT_FACTOR_LOG, EVENT_FACTOR_MAKER, EVENT_FACTOR_RECORD, \
+    RollingDataFrame
 from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.event import EventEngine, Event
 from vnpy.trader.constant import Interval, Exchange
 from vnpy.trader.database import BaseDatabase, get_database, DB_TZ
 from vnpy.trader.engine import BaseEngine, MainEngine
-from vnpy.trader.event import EVENT_TICK, EVENT_BAR, EVENT_BAR_FACTOR, EVENT_FACTOR
+from vnpy.trader.event import EVENT_TICK, EVENT_BAR, EVENT_BAR_FACTOR,EVENT_FACTOR
 from vnpy.trader.object import LogData, ContractData, SubscribeRequest, TickData, BarData, HistoryRequest, FactorData
 from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
 
@@ -35,11 +35,11 @@ class FactorEngine(BaseEngine):
         self.factor_data: dict[str, dict] = {}
         self.classes: dict[str, Type[FactorTemplate]] = {}
         self.factors: dict[str, FactorTemplate] = {}
-        # self.symbol_factor_map: dict[str, list[FactorTemplate]] = {} # todo: #1. 暂时不需要这个. 日后如果为了更细化每个symbol所需要计算的因子种类再启用.
         self.init_executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
-        self.memory_dict: dict[str, pl.Series] = {}
+        self.memory_dict: dict[str, RollingDataFrame] = {}
         self.max_memory_length: int = 10
         self.database: BaseDatabase = get_database()
+        self.tickers = self.main_engine.tickers
 
     def init_engine(self) -> None:
         """"""
@@ -47,21 +47,6 @@ class FactorEngine(BaseEngine):
         self.load_factor_setting()
         self.load_factor_data()
         self.register_event()
-
-        # test
-        # from vnpy.app.factor_maker.factors import OPEN
-        # fct = OPEN
-        # factor_class = str(fct).rsplit(sep='.', maxsplit=1)[1][:-2]  # 去掉最后的"'>"
-        # factor_symbol = fct.symbol
-        # factor_name = fct.factor_name
-        # # factor_class = factor_class[0]+'.'+factor_class[1].upper()
-        # self.add_factor(factor_class, factor_name, ticker='btcusdt',
-        #                 setting={'freq': Interval.MINUTE,
-        #                          'symbol': factor_symbol,
-        #                          'factor_name': factor_name,
-        #                          'exchange': Exchange.BINANCE})  # self.freq.value, self.symbol, self.factor_name, self.exchange.value
-        # self.save_factor_setting()
-
         self.init_all_factors()
         self.start_all_factors()
         self.write_log("因子计算引擎初始化成功")
@@ -84,8 +69,8 @@ class FactorEngine(BaseEngine):
                 f"Failed to import factor module from {factor_module_name}, triggered exception:\n{traceback.format_exc()}")
 
     def load_factor_setting(self) -> None:
-        """从js加载因子计算策略配置"""
-        factor_setting: dict = load_json(self.setting_filename)  # todo: 需要设为self.factor_setting吗? 感觉弄成内部变量更好
+        """加载因子计算策略配置"""
+        factor_setting: dict = load_json(self.setting_filename)
         for factor_name, factor_config in factor_setting.items():
             self.add_factor(
                 factor_config["class_name"],
@@ -102,11 +87,7 @@ class FactorEngine(BaseEngine):
                 "class_name": factor.__class__.__name__,
                 "ticker": factor.symbol,
                 "setting": factor.get_parameters(),
-                # "dependencies": factor.dependencies
-                "dependencies_factor": factor.dependencies_factor,
-                "dependencies_freq": factor.dependencies_freq,
-                "dependencies_symbol": factor.dependencies_symbol,
-                "dependencies_exchange": factor.dependencies_exchange,
+                "dependencies": factor.dependencies
             }
         save_json(self.setting_filename, factor_setting)
 
@@ -123,7 +104,7 @@ class FactorEngine(BaseEngine):
         save_json(self.data_filename, self.factor_data)
 
     # Factor Management
-    def add_factor(self, class_name: str, factor_name: str, ticker: str, setting: dict) -> None:
+    def add_factor(self, class_name: str, factor_name: str, setting: dict) -> None:
         if factor_name in self.factors:
             msg = f"Creation failed, factor name {factor_name} already exists."
             self.write_log(msg)
@@ -137,10 +118,6 @@ class FactorEngine(BaseEngine):
             self.classes[factor_class.__name__] = factor_class
         factor: FactorTemplate = factor_class(engine=self, setting=setting)
         self.factors[factor_name] = factor
-        # vt_symbol = f'{factor.symbol}.{factor.exchange.value}'
-        # if vt_symbol not in self.symbol_factor_map:
-        #     self.symbol_factor_map[vt_symbol] = []
-        # self.symbol_factor_map[vt_symbol].append(factor)
 
     def edit_factor(self, factor_name: str, setting: dict) -> None:
         """编辑因子参数"""
@@ -156,10 +133,7 @@ class FactorEngine(BaseEngine):
             msg: str = f"因子{factor_name}移除失败，请先停止"
             self.write_log(msg, factor)
             return False
-        raise NotImplementedError("需要删除symbol_factor_map")
-        vt_symbol = f'{factor.symbol}.{factor.exchange.value}'
-        factors: list = self.symbol_factor_map[vt_symbol]  # todo: #1. 暂时不需要这个. 日后如果为了更细化每个symbol所需要计算的因子种类再启用.
-        factors.remove(factor)
+
         self.factors.pop(factor_name)
         self.save_factor_setting()
         self.factor_data.pop(factor_name, None)
@@ -184,16 +158,19 @@ class FactorEngine(BaseEngine):
     # Factor Lifecycle
     def init_all_factors(self) -> None:
         """初始化所有策略"""
+        print(3)
         for factor_name in self.factors.keys():
             self.init_factor(factor_name)
 
     def init_factor(self, factor_name: str) -> None:
         """Initialize factor"""
+        print(2)
         self.init_executor.submit(self._init_factor, factor_name)
 
     def _init_factor(self, factor_name: str) -> None:
         """Initialize factor"""
         factor: FactorTemplate = self.factors[factor_name]
+        print(1)
         if factor.inited:
             self.write_log(f"Factor {factor_name} has already been initialized, duplicate operation is not allowed")
             return
@@ -205,16 +182,12 @@ class FactorEngine(BaseEngine):
                 value: Optional[object] = data.get(name, None)
                 if value is not None:
                     setattr(factor, name, value)
-        vt_symbol = f'{factor.symbol}.{factor.exchange.value}'
-        contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
-        if contract:
-            req: SubscribeRequest = SubscribeRequest(symbol=contract.symbol, exchange=contract.exchange)
-            self.main_engine.subscribe(req, contract.gateway_name)
-        else:
-            self.write_log(f"Market data subscription failed, contract {vt_symbol} not found", factor.factor_key)
+
         factor.inited = True
         self.max_memory_length = max(self.max_memory_length, factor.lookback_period)
-        self.memory_dict[factor.factor_key] = pl.Series(name=factor.factor_key, data=[None] * self.max_memory_length)
+        # init the memory dataframe (row:datetime, column:ticker) for factors
+        memory_df = RollingDataFrame(self.tickers, self.max_memory_length)
+        self.memory_dict[factor_name] = memory_df
         self.put_factor_event(factor)
         self.write_log(f"Factor {factor_name} initialization complete")
 
@@ -259,7 +232,9 @@ class FactorEngine(BaseEngine):
     # Historical Data Handling
     def load_bars(self, days: int, interval: Interval) -> None:
         """Load historical data"""
-        vt_symbols: list = list(self.symbol_factor_map.keys())
+        # todo check vt_symbols and tickers
+        # here we only using binance
+        vt_symbols: list = [f'{ticker}.{Exchange.BINANCE.value}' for ticker in self.tickers]
         dts: set[datetime] = set()
         history_data: dict[tuple, BarData] = {}
         for vt_symbol in vt_symbols:
@@ -288,8 +263,7 @@ class FactorEngine(BaseEngine):
                         gateway_name=old_bar.gateway_name
                     )
                     bars[vt_symbol] = bar
-                factors: list = self.symbol_factor_map[vt_symbol]
-                for factor in factors:
+                for factor_name, factor in self.factors:
                     self.call_factor_func(factor, factor.on_bar, bar)
 
     def load_bar(self, vt_symbol: str, days: int, interval: Interval) -> list[BarData]:
@@ -325,23 +299,19 @@ class FactorEngine(BaseEngine):
     def process_tick_event(self, event: Event) -> None:
         """Market data tick push"""
         tick: TickData = event.data
-        print(self.symbol_factor_map)
-        factors: list = self.symbol_factor_map.get(tick.vt_symbol, [])
-        if not factors:
+        if not self.factors:
             return
-        for factor in factors:
+        for factor_name, factor in self.factors:
             if factor.inited:
                 self.call_factor_func(factor, factor.on_tick, tick)
 
     def process_bar_event(self, event: Event) -> None:
         """K-line (bar) data push"""
-        print(event.__dict__)
         bar: BarData = event.data
         self.update_memory(bar)
-        factors: list = self.symbol_factor_map[bar.vt_symbol]
-        if not factors:
+        if not self.factors:
             return
-        for factor in factors:
+        for factor_name, factor in self.factors:
             if factor.inited:
                 self.call_factor_func(factor, factor.on_bar, bar)
 
@@ -394,8 +364,8 @@ class FactorEngine(BaseEngine):
         self.main_engine.send_email(subject, msg)
 
     def update_factor(self, factor_name, factor_data: FactorData) -> None:
-        factor_memory: pl.Series = self.memory_dict[factor_name]
-        factor_memory.append(factor_data.value)
+        factor_memory: RollingDataFrame = self.memory_dict.get(factor_name)
+        factor_memory.update_factor(factor_data.datetime, factor_data.symbol, factor_data.value)
         self.event_engine.put(Event(type=EVENT_FACTOR_RECORD, data=factor_data))
 
     def update_memory(self, bar: BarData) -> None:

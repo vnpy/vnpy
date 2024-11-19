@@ -8,7 +8,6 @@ from tzlocal import get_localzone_name
 
 from .utility import load_json
 
-
 SETTINGS: Dict[str, Any] = {
     "font.family": "微软雅黑",
     "font.size": 12,
@@ -40,12 +39,13 @@ SETTINGS: Dict[str, Any] = {
     "database.password": "",
 
     # mycode
-    "gateway.api_key":"",
-    "gateway.api_secret":"",
+    "gateway.api_key": "",
+    "gateway.api_secret": "",
 
+    # trading
+    "tickers": [],
 
 }
-
 
 # Load global setting from json file.
 SETTING_FILENAME: str = "vt_setting.json"

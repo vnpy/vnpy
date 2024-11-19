@@ -6,3 +6,5 @@
 # @Author   : EvanHong
 # @Email    : 939778128@qq.com
 # @Description:
+
+from .macd import MACDFactor

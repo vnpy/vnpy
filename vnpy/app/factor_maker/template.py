@@ -1,10 +1,13 @@
 from collections import deque
 from abc import abstractmethod
-from typing import Optional
+from typing import Optional, Dict, Tuple, Any
 
-# from vnpy.app.factor_maker.engine import FactorEngine
+from vnpy.app.factor_maker.backtesting import FactorBacktestingEngine
+from vnpy.app.factor_maker.base import FactorMode
+from vnpy.app.factor_maker.engine import FactorEngine
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.object import TickData, BarData, FactorData
+import polars as pl
 
 
 class FactorTemplate(object):
@@ -17,82 +20,145 @@ class FactorTemplate(object):
 
     factor_name: str = ""
     freq: Optional[Interval] = None
-    symbol: str = ""  # deprecated?
-    exchange: Exchange = None  # deprecated?
+    symbol: str = ""
+    exchange: Exchange = None
 
     dependencies_factor: list[str] = []
     dependencies_freq: list[Interval] = []
     dependencies_symbol: list[str] = []
     dependencies_exchange: list[Exchange] = []
 
-    status: dict[tuple, bool] = {}  # 用来标识dependencies是否全部ready
+    factor_mode: FactorMode = None
 
-    def __init__(self, engine, setting: dict, ):
+    def __init__(self, engine: Optional[FactorEngine, FactorBacktestingEngine], setting: dict, **kwargs):
         """
+        Initialize the factor template with the given engine and settings.
 
-        Parameters
-        ----------
-        engine : FactorEngine
-        setting :
+        Parameters:
+            engine (Optional[FactorEngine, FactorBacktestingEngine]): The factor engine instance.
+            setting (dict): Settings for the factor.
         """
-        self.engine = engine  # type: FactorEngine
-        self.setting: dict = setting if setting else {}
-        for s in setting.items():
-            setattr(self, s[0], s[1])
+        self.engine = engine  # Type: FactorEngine, FactorBacktestingEngine
+        self.setting: Dict[str, Any] = setting
 
-        self.class_name: str = self.__class__.__name__
+        # Update instance attributes based on settings
+        self.update_setting(setting)
+
+        # Unique identifier for the factor
+        self.factor_key: str = self.VTSYMBOL_TEMPLATE_FACTOR.format(
+            interval=self.freq.value if self.freq else "",
+            symbol=self.symbol,
+            factor_name=self.factor_name,
+            exchange=self.exchange.value
+        )
+
+        # Status of dependencies (if any)
+        self.status: Dict[Tuple[str, str], bool] = {
+            (dep_symbol, dep_factor): False
+            for dep_symbol in self.dependencies_symbol
+            for dep_factor in self.dependencies_factor
+        }
+
+        # Internal state
         self.inited: bool = False
         self.trading: bool = False
 
-        self.bar_memory: dict[str, deque[BarData]] = {}  # fixme: factor class 不应该保存数据, 所有数据统一存放在engine的memory中
+    def update_setting(self, setting: Dict[str, Any]) -> None:
+        """
+        Update the factor's settings.
 
-        self.factor_key = self.VTSYMBOL_TEMPLATE_FACTOR.format(self.freq.value, self.symbol, self.factor_name,
-                                                               self.exchange.value)
+        Parameters:
+            setting (dict): Dictionary of settings to update.
+        """
+        for key in self.parameters:
+            if key in setting:
+                setattr(self, key, setting[key])
 
-        self.init_status()
-
-    def init_status(self):
-        for dep_symbol in self.dependencies_symbol:
-            for dep_factor in self.dependencies_factor:
-                self.status[(dep_symbol, dep_factor)] = False
+    def set_params(self, params: Dict[str, Any]) -> None:
+        """
+        Set the parameters of the factor.
+        """
+        for key, value in params.items():
+            if key in self.parameters:
+                setattr(self, key, value)
+            else:
+                raise ValueError(f"Parameter {key} is not recognized.")
 
     def on_init(self) -> None:
-        """"""
+        """
+        Callback when the factor is initialized.
+        """
+        if self.factor_mode == FactorMode.Backtest:
+            pass
         self.inited = True
-        msg = f"{self.factor_key}初始化完成"
-        self.engine.write_log(msg)
+        self.engine.write_log(f"{self.factor_key} initialized.")
 
     def on_start(self) -> None:
-        """"""
+        """
+        Callback when the factor starts.
+        """
+        if self.factor_mode == FactorMode.Backtest:
+            pass
         self.trading = True
-        msg = f"{self.factor_key}开始运行"
-        self.engine.write_log(msg)
-        pass
+        self.engine.write_log(f"{self.factor_key} started.")
 
     def on_stop(self) -> None:
-        """"""
+        """
+        Callback when the factor stops.
+        """
+        if self.factor_mode == FactorMode.Backtest:
+            pass
         self.trading = False
-        msg = f"{self.factor_key}停止运行"
-        self.engine.write_log(msg)
+        self.engine.write_log(f"{self.factor_key} stopped.")
 
     @abstractmethod
     def on_tick(self, tick: TickData) -> None:
-        """"""
+        """
+        Callback of new tick data update.
+
+        Parameters:
+            tick (TickData): Tick data.
+        """
+        pass
+
+    @abstractmethod
+    def on_bar(self, bar: BarData) -> None:
+        """
+        Callback of new bar data update.
+
+        Parameters:
+            bar (BarData): Bar data.
+        """
+        pass
+
+    @abstractmethod
+    def on_factor(self, factor: FactorData) -> None:
+        """
+        Callback of new factor data update (from dependencies).
+
+        Parameters:
+            factor (FactorData): Factor data.
+        """
+        pass
+
+    def on_timer(self) -> None:
+        """
+        Callback of timer update.
+        """
         pass
 
     def wrap_data(self, bar: BarData, value: float) -> FactorData:
-        """将数据实例化为factor data
-
-        Parameters
-        ----------
-        bar :
-        value :
-
-        Returns
-        -------
-
         """
-        factor_data: FactorData = FactorData(
+        Wrap bar data and factor value into a FactorData object.
+
+        Parameters:
+            bar (BarData): Bar data.
+            value (float): Factor value.
+
+        Returns:
+            FactorData: Wrapped factor data.
+        """
+        return FactorData(
             symbol=bar.symbol,
             exchange=bar.exchange,
             datetime=bar.datetime,
@@ -101,67 +167,76 @@ class FactorTemplate(object):
             factor_name=self.factor_name,
             gateway_name="factor_template"
         )
-        return factor_data
-
-    @abstractmethod
-    def on_bar(self, bar: BarData) -> None:
-        """"""
-        pass
-
-    @abstractmethod
-    def on_factor(self, factor: FactorData) -> None:
-        """"""
-        pass
 
     def on_bars(self, bars: dict[str, BarData]) -> None:
         """"""
         pass
 
-    def on_timer(self) -> None:
-        """"""
-        pass
+    def get_parameters(self) -> Dict[str, Any]:
+        """
+        Get the parameters of the factor.
 
-    def get_parameters(self):
-        factor_parameters: dict = {}
-        for name in self.parameters:
-            factor_parameters[name] = getattr(self, name)
-        return factor_parameters
+        Returns:
+            dict: Dictionary of parameter names and values.
+        """
+        return {name: getattr(self, name) for name in self.parameters}
+
+    def get_variables(self) -> Dict[str, Any]:
+        """
+        Get the variables of the factor.
+
+        Returns:
+            dict: Dictionary of variable names and values.
+        """
+        return {name: getattr(self, name) for name in self.variables if name not in ["inited", "trading"]}
 
     @classmethod
-    def get_class_parameters(cls) -> dict:
-        """查取策略默认参数"""
-        class_parameters: dict = {}
-        for name in cls.parameters:
-            class_parameters[name] = getattr(cls, name)
-        return class_parameters
+    def get_class_parameters(cls) -> Dict[str, Any]:
+        """
+        Get the default parameters of the factor class.
 
-    def update_setting(self, setting):
-        """设置策略参数"""
-        for name in self.parameters:
-            if name in setting:
-                setattr(self, name, setting[name])
+        Returns:
+            dict: Dictionary of default parameter names and values.
+        """
+        return {name: getattr(cls, name) for name in cls.parameters}
 
-    def get_data(self) -> dict:
-        """查询策略状态数据"""
-        factor_data: dict = {
+    def get_data(self) -> Dict[str, Any]:
+        """
+        Get the data representing the factor's state.
+
+        Returns:
+            dict: Dictionary containing factor data.
+        """
+        return {
             "factor_name": self.factor_key,
             "class_name": self.__class__.__name__,
             "author": self.author,
             "parameters": self.get_parameters(),
             "variables": self.get_variables()
         }
-        return factor_data
-
-    def get_variables(self) -> dict:
-        """查询策略变量"""
-        factor_variables: dict = {}
-        for name in self.variables:
-            if name in ["inited", "trading"]:
-                continue
-            factor_variables[name] = getattr(self, name)
-        return factor_variables
 
     @abstractmethod
-    def calculate_polars(self, input_, *args, **kwargs) -> float:
-        """具体计算因子值"""
-        return 0
+    def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
+        """
+        Calculate the factor value using Polars DataFrame.
+
+        Parameters:
+            input_data (pl.DataFrame): Input data for calculation.
+
+        Returns:
+            Any: Calculated factor value(s).
+        """
+        pass
+
+    @abstractmethod
+    def make_factor(self, bar_data_dict: dict[str, pl.DataFrame]) -> pl.DataFrame:
+        """
+        Generate factor values from historical bar data.
+
+        Parameters:
+            bar_data_dict (dict[str, pl.DataFrame]): Historical bar data.
+
+        Returns:
+            pl.DataFrame: Factor values.
+        """
+        pass

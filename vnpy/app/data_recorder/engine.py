@@ -19,6 +19,7 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT, EVENT_BAR, EVENT_RECORDER_LOG, EVENT_RECORDER_UPDATE
 from vnpy.trader.utility import load_json, save_json, BarGenerator
+
 from vnpy_clickhouse.clickhouse_database import ClickhouseDatabase
 
 APP_NAME = "DataRecorder"

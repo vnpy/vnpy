@@ -63,6 +63,7 @@ class MainEngine:
         self.engines: Dict[str, BaseEngine] = {}
         self.apps: Dict[str, BaseApp] = {}
         self.exchanges: List[Exchange] = []
+        self.tickers:list[str] = SETTINGS.get('tickers', [])
 
         os.chdir(TRADER_DIR)    # Change working directory
         self.init_engines()     # Initialize function engines
@@ -240,6 +241,18 @@ class MainEngine:
 
         for gateway in self.gateways.values():
             gateway.close()
+
+    def start_data_stream(self):
+        for exchange in self.exchanges:
+            for ticker in self.tickers:
+                vt_symbol = f'{ticker}.{exchange.value}'
+                contract: Optional[ContractData] = self.get_contract(vt_symbol)
+                if contract:
+                    req: SubscribeRequest = SubscribeRequest(symbol=contract.symbol, exchange=contract.exchange)
+                    self.subscribe(req, contract.gateway_name)
+                else:
+                    self.write_log(msg=f"Market data subscription failed, contract {vt_symbol} not found",
+                                   source='MainEngine')
 
 
 class BaseEngine(ABC):
