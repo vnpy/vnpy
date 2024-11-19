@@ -137,6 +137,8 @@ class Exchange(Enum):
 
     # Special Function
     LOCAL = "LOCAL"  # For local generated data
+    UNKNOWN = "UNKNOWN"  # Unknown exchange
+    TEST = "TEST"  # For testing
 
 
 class Currency(Enum):
