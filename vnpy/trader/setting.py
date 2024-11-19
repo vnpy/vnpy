@@ -29,8 +29,10 @@ SETTINGS: Dict[str, Any] = {
     "datafeed.password": "",
 
     "database.timezone": get_localzone_name(),
-    "database.name": "sqlite",
-    "database.database": "database.db",
+    # "database.name": "sqlite",
+    # "database.database": "database.db",
+    "database.name": "clickhouse",
+    "database.database": "test",
     "database.host": "",
     "database.port": 0,
     "database.user": "",

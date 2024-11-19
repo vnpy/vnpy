@@ -75,7 +75,7 @@ class FactorEngine(BaseEngine):
             self.add_factor(
                 factor_config["class_name"],
                 factor_name,
-                factor_config["ticker"],
+                # factor_config["ticker"],
                 factor_config["setting"]
             )
 
@@ -158,19 +158,16 @@ class FactorEngine(BaseEngine):
     # Factor Lifecycle
     def init_all_factors(self) -> None:
         """初始化所有策略"""
-        print(3)
         for factor_name in self.factors.keys():
             self.init_factor(factor_name)
 
     def init_factor(self, factor_name: str) -> None:
         """Initialize factor"""
-        print(2)
         self.init_executor.submit(self._init_factor, factor_name)
 
     def _init_factor(self, factor_name: str) -> None:
         """Initialize factor"""
         factor: FactorTemplate = self.factors[factor_name]
-        print(1)
         if factor.inited:
             self.write_log(f"Factor {factor_name} has already been initialized, duplicate operation is not allowed")
             return
@@ -311,11 +308,11 @@ class FactorEngine(BaseEngine):
         self.update_memory(bar)
         if not self.factors:
             return
-        for factor_name, factor in self.factors:
+        for factor_name, factor in self.factors.items():
             if factor.inited:
                 self.call_factor_func(factor, factor.on_bar, bar)
 
-        # 为了OHLC等因子的计算，需要在每个bar更新后，生成新的因子
+        # 为了OHLC等因子的计算，需要在每个bar更新后，立即生成新的因子
         event.type = EVENT_BAR_FACTOR
         self.event_engine.put(event)
 
