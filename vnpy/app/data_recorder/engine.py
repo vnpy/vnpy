@@ -3,6 +3,8 @@ from collections import defaultdict
 from threading import Thread
 from queue import Queue, Empty
 from copy import copy
+from typing import Literal
+
 import polars as pl
 
 from vnpy.event import Event, EventEngine
@@ -33,6 +35,7 @@ class RecorderEngine(BaseEngine):
         super().__init__(main_engine, event_engine, APP_NAME)
 
         self.queue = Queue()
+        self.queue_pylist=[]
         self.thread = Thread(target=self.run)
         self.active = False
 
@@ -65,14 +68,18 @@ class RecorderEngine(BaseEngine):
     #     }
     #     save_json(self.setting_filename, setting)
 
-    def save_data(self, task_type=None, data=None, force_save=False):
+    def save_data(self,
+                  task_type: Literal["tick", "bar", "factor", None] = None,
+                  data=None,
+                  force_save: bool = False):
         """
         
         Parameters
         ----------
         task_type :
         data :
-        force_save :
+        force_save : bool
+            无视buffer_size, 强制保存当前所有的数据
 
         Returns
         -------
@@ -83,22 +90,25 @@ class RecorderEngine(BaseEngine):
         elif task_type == "bar":
             assert isinstance(data, BarData)
             self.buffer_bar[data.vt_symbol].append(data)
-            to_remove = []
+            if data.volume<1000:
+                print(f"data_recorder.RecorderEngine.save_data: {data.__dict__}")
+                raise ValueError(f"data_recorder.RecorderEngine.save_data: {data.__dict__}")
+            to_remove = []  # 保存完数据后, 将其从buffer中删除
             for k, v in self.buffer_bar.items():
-                if len(v) > self.buffer_size or force_save:
+                if len(v) >= self.buffer_size or force_save:
                     to_remove.append(k)
-                    self.database_manager.save_bar_data(self.buffer_bar[data.vt_symbol])
+                    self.database_manager.save_bar_data(v)
             for k in to_remove:
                 self.buffer_bar[k] = []
         elif task_type == 'factor':
             if isinstance(data, FactorData):
-                self.buffer_factor[data.vt_symbol].append(data)
+                self.buffer_factor[data.vt_symbol].append(data)  # todo: 这里用vt_symbol可以吗???
                 to_remove = []
                 for k, v in self.buffer_factor.items():
-                    if len(v) > self.buffer_size or force_save:
+                    if len(v) >= self.buffer_size or force_save:
                         to_remove.append(k)
                         self.database_manager.save_factor_data(name=data.factor_name,
-                                                               data=self.buffer_factor[data.vt_symbol])
+                                                               data=v)
                 for k in to_remove:
                     self.buffer_factor[k] = []
             elif isinstance(data, pl.DataFrame):
@@ -107,6 +117,7 @@ class RecorderEngine(BaseEngine):
                 raise TypeError(f"Unsupported data type: {type(data)}")
 
         elif task_type is None and data is None:
+            raise TypeError("task_type and data 不希望都为None, 需要完善当前逻辑")
             # 强制保存当前所有的数据
             for k, v in self.buffer_bar.items():
                 if len(v) == 0: continue
@@ -121,8 +132,9 @@ class RecorderEngine(BaseEngine):
         """"""
         while self.active:
             try:
-                task = self.queue.get(timeout=1)
+                task = self.queue.get(timeout=1)  # fixme: 问题在这里
                 task_type, data = task
+                # print(task_type, data.__dict__)
 
                 self.save_data(task_type, data)
 
@@ -144,7 +156,7 @@ class RecorderEngine(BaseEngine):
         self.thread.start()
 
     def add_bar_recording(self, vt_symbol: str):
-        """"""
+        """todo: by hyf: 这个函数是干嘛的"""
         if vt_symbol in self.bar_recordings:
             self.write_log(f"已在K线记录列表中：{vt_symbol}")
             return
@@ -215,7 +227,7 @@ class RecorderEngine(BaseEngine):
 
     def register_event(self):
         """"""
-        self.event_engine.register(EVENT_TICK, self.process_tick_event)
+        # self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_BAR, self.process_bar_event)
         # self.event_engine.register(EVENT_FACTOR, self.process_factor_event)
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
@@ -283,6 +295,7 @@ class RecorderEngine(BaseEngine):
         """"""
         task = ("bar", copy(bar))
         self.queue.put(task)
+
 
     def get_bar_generator(self, vt_symbol: str):
         """"""

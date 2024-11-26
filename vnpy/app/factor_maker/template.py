@@ -2,9 +2,7 @@ from collections import deque
 from abc import abstractmethod
 from typing import Optional, Dict, Tuple, Any
 
-from vnpy.app.factor_maker.backtesting import FactorBacktestingEngine
 from vnpy.app.factor_maker.base import FactorMode
-from vnpy.app.factor_maker.engine import FactorEngine
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.object import TickData, BarData, FactorData
 import polars as pl
@@ -21,7 +19,7 @@ class FactorTemplate(object):
     factor_name: str = ""
     freq: Optional[Interval] = None
     symbol: str = ""
-    exchange: Exchange = None
+    exchange: Exchange = Exchange.TEST
 
     dependencies_factor: list[str] = []
     dependencies_freq: list[Interval] = []
@@ -30,15 +28,13 @@ class FactorTemplate(object):
 
     factor_mode: FactorMode = None
 
-    def __init__(self, engine: Optional[FactorEngine, FactorBacktestingEngine], setting: dict, **kwargs):
+    def __init__(self, setting: dict, **kwargs):
         """
         Initialize the factor template with the given engine and settings.
 
         Parameters:
-            engine (Optional[FactorEngine, FactorBacktestingEngine]): The factor engine instance.
             setting (dict): Settings for the factor.
         """
-        self.engine = engine  # Type: FactorEngine, FactorBacktestingEngine
         self.setting: Dict[str, Any] = setting
 
         # Update instance attributes based on settings
@@ -46,10 +42,10 @@ class FactorTemplate(object):
 
         # Unique identifier for the factor
         self.factor_key: str = self.VTSYMBOL_TEMPLATE_FACTOR.format(
-            interval=self.freq.value if self.freq else "",
-            symbol=self.symbol,
-            factor_name=self.factor_name,
-            exchange=self.exchange.value
+            self.freq.value if self.freq else "",
+            self.symbol,
+            self.factor_name,
+            self.exchange.value
         )
 
         # Status of dependencies (if any)
@@ -91,7 +87,6 @@ class FactorTemplate(object):
         if self.factor_mode == FactorMode.Backtest:
             pass
         self.inited = True
-        self.engine.write_log(f"{self.factor_key} initialized.")
 
     def on_start(self) -> None:
         """
@@ -100,7 +95,6 @@ class FactorTemplate(object):
         if self.factor_mode == FactorMode.Backtest:
             pass
         self.trading = True
-        self.engine.write_log(f"{self.factor_key} started.")
 
     def on_stop(self) -> None:
         """
@@ -109,7 +103,6 @@ class FactorTemplate(object):
         if self.factor_mode == FactorMode.Backtest:
             pass
         self.trading = False
-        self.engine.write_log(f"{self.factor_key} stopped.")
 
     @abstractmethod
     def on_tick(self, tick: TickData) -> None:

@@ -30,13 +30,4 @@ class FAIR_PRICE_BASE(FactorTemplate):
         pass
 
     def on_factor(self, factor: FactorData) -> None:
-        open_factor = self.engine.get_factor(factor.symbol, OPEN_BASE.factor_name)
-        high_factor = self.engine.get_factor(factor.symbol, HIGH_BASE.factor_name)
-        low_factor = self.engine.get_factor(factor.symbol, LOW_BASE.factor_name)
-
-        value = (open_factor.value + high_factor.value + low_factor.value) / 3
-        factor = FactorData(gateway_name="FactorTemplate", symbol=factor.symbol, exchange=factor.exchange,
-                            datetime=factor.datetime,
-                            value=value, factor_name=self.factor_name, interval=factor.interval)
-        self.engine.put_factor(factor)
         pass

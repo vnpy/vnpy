@@ -21,6 +21,7 @@ class OPEN(OPEN_BASE):
 
     def on_bar(self, bar: BarData) -> FactorData:
         value = bar.open_price
+        print(bar.symbol,bar.vt_symbol,value)
         return FactorData(gateway_name="FactorTemplate", symbol=bar.symbol, exchange=bar.exchange,
                           datetime=bar.datetime,
                           value=value, factor_name=self.factor_name, interval=bar.interval)
