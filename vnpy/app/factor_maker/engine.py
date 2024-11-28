@@ -13,10 +13,8 @@ from vnpy.trader.constant import Interval, Exchange
 from vnpy.trader.database import BaseDatabase, get_database, DB_TZ
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.event import EVENT_TICK, EVENT_BAR, EVENT_BAR_FACTOR, EVENT_FACTOR
-from vnpy.trader.object import LogData, ContractData, SubscribeRequest, TickData, BarData, HistoryRequest, FactorData
+from vnpy.trader.object import LogData, ContractData, TickData, BarData, HistoryRequest, FactorData
 from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
-
-import polars as pl
 
 factor_module_name = 'vnpy.app.factor_maker.factors'
 
@@ -26,15 +24,16 @@ factor_module_name = 'vnpy.app.factor_maker.factors'
 
 class FactorEngine(BaseEngine):
     setting_filename: str = "factor_maker_setting.json"
-    data_filename: str = "factor_maker_data.json"
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
+        self.module = None
+
         self.factors: dict[str, FactorTemplate] = {}
         self.classes: dict[str, Type[FactorTemplate]] = {}
-        self.factor_data: dict[str, dict] = {}
+
         self.memory: dict[str, RollingDataFrame] = {}
         self.max_memory_length = 10
 
@@ -49,7 +48,6 @@ class FactorEngine(BaseEngine):
         """"""
         self.load_factor_class()
         self.load_factor_setting()
-        self.load_factor_data()
         self.register_event()
         self.init_all_factors()
         self.start_all_factors()
@@ -79,33 +77,15 @@ class FactorEngine(BaseEngine):
             self.add_factor(
                 factor_config["class_name"],
                 factor_name,
-                factor_config["ticker"],
-                factor_config["setting"]
+                factor_config
             )
 
     def save_factor_setting(self) -> None:
         """保存因子配置"""
         factor_setting: dict = {}
         for name, factor in self.factors.items():
-            factor_setting[name] = {
-                "class_name": factor.__class__.__name__,
-                "ticker": factor.symbol,
-                "setting": factor.get_parameters(),
-                "dependencies": factor.dependencies
-            }
+            factor_setting[name] = factor.to_dict()
         save_json(self.setting_filename, factor_setting)
-
-    def load_factor_data(self) -> None:
-        """加载策略数据"""
-        self.factor_data = load_json(self.data_filename)
-
-    def sync_factor_data(self, factor: FactorTemplate) -> None:
-        """保存因子数据到文件"""
-        data: dict = factor.get_variables()
-        data.pop("inited")
-        data.pop("trading")
-        self.factor_data[factor.factor_key] = data
-        save_json(self.data_filename, self.factor_data)
 
     # Factor Management
     def add_factor(self, class_name: str, factor_name: str, setting: dict) -> None:
@@ -140,8 +120,7 @@ class FactorEngine(BaseEngine):
 
         self.factors.pop(factor_name)
         self.save_factor_setting()
-        self.factor_data.pop(factor_name, None)
-        save_json(self.data_filename, self.factor_data)
+
         return True
 
     def get_all_factor_class_names(self) -> list:
@@ -151,16 +130,15 @@ class FactorEngine(BaseEngine):
     def get_factor_class_parameters(self, class_name: str) -> dict:
         """获取策略类参数"""
         factor_class: FactorTemplate = getattr(self.module, class_name)
-        parameters: dict = {name: getattr(factor_class, name) for name in factor_class.parameters}
+        parameters: dict = {name: getattr(factor_class, name) for name in factor_class.params}
         return parameters
 
     def get_factor_parameters(self, factor_name) -> dict:
         """获取策略参数"""
         factor: FactorTemplate = self.factors[factor_name]
-        return factor.get_parameters()
+        return factor.get_params()
 
     # Factor Lifecycle
-
     def init_all_factors(self) -> None:
         for name in self.factors:
             self.executor.submit(self.init_factor, name)
@@ -178,12 +156,6 @@ class FactorEngine(BaseEngine):
             return
         self.write_log(f"Factor {factor_name} is starting initialization")
         self.call_factor_func(factor, factor.on_init)
-        data: Optional[dict] = self.factor_data.get(factor_name, None)
-        if data:
-            for name in factor.variables:
-                value: Optional[object] = data.get(name, None)
-                if value is not None:
-                    setattr(factor, name, value)
 
         factor.inited = True
         self.max_memory_length = max(self.max_memory_length, factor.lookback_period)
@@ -221,7 +193,6 @@ class FactorEngine(BaseEngine):
             return
         self.call_factor_func(factor, factor.on_stop)
         self.write_log(f"因子{factor_name}同步数据状态")
-        self.sync_factor_data(factor)
         self.put_factor_event(factor)
 
     def close(self) -> None:

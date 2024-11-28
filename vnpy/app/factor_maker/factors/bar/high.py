@@ -11,7 +11,7 @@ class HIGH_BASE(FactorTemplate):
     freq: Interval = Interval.MINUTE
     dependencies: list[str] = []
 
-    parameters: list = []
+    params: list = []
 
     def on_bar(self, bar: BarData) -> FactorData:
         value = bar.high_price
