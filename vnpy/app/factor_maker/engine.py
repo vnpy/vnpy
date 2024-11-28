@@ -31,13 +31,18 @@ class FactorEngine(BaseEngine):
 
         self.module = None
 
-        self.classes: dict[str, Type[FactorTemplate]] = {}
         self.factors: dict[str, FactorTemplate] = {}
-        self.init_executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
-        self.memory_dict: dict[str, RollingDataFrame] = {}
-        self.max_memory_length: int = 10
-        self.database: BaseDatabase = get_database()
-        self.tickers = self.main_engine.tickers
+        self.classes: dict[str, Type[FactorTemplate]] = {}
+
+        self.memory: dict[str, RollingDataFrame] = {}
+        self.max_memory_length = 10
+
+        self.executor = ThreadPoolExecutor(max_workers=1)
+        self.database = get_database()
+        self.dt = None
+        self.bars = {}
+
+        self.vt_symbols = main_engine.vt_symbols
 
     def init_engine(self) -> None:
         """"""
@@ -135,17 +140,17 @@ class FactorEngine(BaseEngine):
 
     # Factor Lifecycle
     def init_all_factors(self) -> None:
-        """初始化所有策略"""
-        for factor_name in self.factors.keys():
-            self.init_factor(factor_name)
+        for name in self.factors:
+            self.executor.submit(self.init_factor, name)
+
+        self.memory["open"] = RollingDataFrame(self.vt_symbols, self.max_memory_length)
+        self.memory["high"] = RollingDataFrame(self.vt_symbols, self.max_memory_length)
+        self.memory["low"] = RollingDataFrame(self.vt_symbols, self.max_memory_length)
+        self.memory["close"] = RollingDataFrame(self.vt_symbols, self.max_memory_length)
+        self.memory["volume"] = RollingDataFrame(self.vt_symbols, self.max_memory_length)
 
     def init_factor(self, factor_name: str) -> None:
-        """Initialize factor"""
-        self.init_executor.submit(self._init_factor, factor_name)
-
-    def _init_factor(self, factor_name: str) -> None:
-        """Initialize factor"""
-        factor: FactorTemplate = self.factors[factor_name]
+        factor = self.factors[factor_name]
         if factor.inited:
             self.write_log(f"Factor {factor_name} has already been initialized, duplicate operation is not allowed")
             return
@@ -154,9 +159,6 @@ class FactorEngine(BaseEngine):
 
         factor.inited = True
         self.max_memory_length = max(self.max_memory_length, factor.lookback_period)
-        # init the memory dataframe (row:datetime, column:ticker) for factors
-        memory_df = RollingDataFrame(self.tickers, self.max_memory_length)
-        self.memory_dict[factor_name] = memory_df
         self.put_factor_event(factor)
         self.write_log(f"Factor {factor_name} initialization complete")
 
@@ -197,71 +199,99 @@ class FactorEngine(BaseEngine):
         """关闭"""
         self.stop_all_factors()
 
-    # Historical Data Handling
+    # Historical Data Management
     def load_bars(self, days: int, interval: Interval) -> None:
-        """Load historical data"""
-        # todo check vt_symbols and tickers
-        # here we only using binance
-        vt_symbols: list = [f'{ticker}.{Exchange.BINANCE.value}' for ticker in self.tickers]
-        dts: set[datetime] = set()
-        history_data: dict[tuple, BarData] = {}
+        """Load historical bar data for all contracts."""
+        vt_symbols = self.main_engine.vt_symbols
+        dts = set()
+        history_data = {}
+
         for vt_symbol in vt_symbols:
-            data: list[BarData] = self.load_bar(vt_symbol, days, interval)
+            data = self.load_bar(vt_symbol, days, interval)
             for bar in data:
                 dts.add(bar.datetime)
                 history_data[(bar.datetime, vt_symbol)] = bar
-        dts: list = list(dts)
-        dts.sort()
-        bars: dict = {}
+
+        # Organize and process bars
+        dts = sorted(dts)
         for dt in dts:
+            bars = {}
             for vt_symbol in vt_symbols:
-                bar: Optional[BarData] = history_data.get((dt, vt_symbol), None)
+                bar = history_data.get((dt, vt_symbol))
                 if bar:
                     bars[vt_symbol] = bar
-                elif vt_symbol in bars:
-                    old_bar: BarData = bars[vt_symbol]
-                    bar = BarData(
-                        symbol=old_bar.symbol,
-                        exchange=old_bar.exchange,
-                        datetime=dt,
-                        open_price=old_bar.close_price,
-                        high_price=old_bar.close_price,
-                        low_price=old_bar.close_price,
-                        close_price=old_bar.close_price,
-                        gateway_name=old_bar.gateway_name
-                    )
-                    bars[vt_symbol] = bar
-                for factor_name, factor in self.factors:
-                    self.call_factor_func(factor, factor.on_bar, bar)
+                else:
+                    # Handle missing data
+                    bars[vt_symbol] = self.create_placeholder_bar(dt, vt_symbol, bars)
+            self.on_bars(dt, bars)
 
     def load_bar(self, vt_symbol: str, days: int, interval: Interval) -> list[BarData]:
-        """Load historical data for a single contract"""
+        """Load historical bar data for a specific contract."""
         symbol, exchange = extract_vt_symbol(vt_symbol)
-        end: datetime = datetime.now(DB_TZ)
-        start: datetime = end - timedelta(days)
-        contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
-        data: list[BarData]
-        data = self.database.load_bar_data(
+        end = datetime.now(DB_TZ)
+        start = end - timedelta(days)
+        contract = self.main_engine.get_contract(vt_symbol)
+
+        data = self.database.load_bar_data(symbol, exchange, interval, start, end)
+        if not data and contract and contract.history_data:
+            req = HistoryRequest(
+                symbol=symbol,
+                exchange=exchange,
+                interval=interval,
+                start=start,
+                end=end
+            )
+            data = self.main_engine.query_history(req, contract.gateway_name)
+        if not data:
+            self.write_log(f"Failed to load data for {vt_symbol}.")
+        return data or []
+
+    def create_placeholder_bar(self, dt: datetime, vt_symbol: str, bars: dict) -> BarData:
+        """Create a placeholder bar when data is missing."""
+        symbol, exchange = extract_vt_symbol(vt_symbol)
+        if vt_symbol in bars:
+            previous_bar = bars[vt_symbol]
+            return BarData(
+                symbol=previous_bar.symbol,
+                exchange=previous_bar.exchange,
+                datetime=dt,
+                open_price=previous_bar.close_price,
+                high_price=previous_bar.close_price,
+                low_price=previous_bar.close_price,
+                close_price=previous_bar.close_price,
+                gateway_name=previous_bar.gateway_name,
+            )
+        return BarData(
             symbol=symbol,
             exchange=exchange,
-            interval=interval,
-            start=start,
-            end=end,
+            datetime=dt,
+            open_price=0,
+            high_price=0,
+            low_price=0,
+            close_price=0,
+            gateway_name=""
         )
-        if not data:
-            if contract and contract.history_data:
-                req: HistoryRequest = HistoryRequest(
-                    symbol=symbol,
-                    exchange=exchange,
-                    interval=interval,
-                    start=start,
-                    end=end
-                )
-                data = self.main_engine.query_history(req, contract.gateway_name)
-            else:
-                msg = f"Failed to load historical data for {vt_symbol}"
-                self.write_log(msg)
-        return data
+
+    def on_bars(self, dt: datetime, bars: dict) -> None:
+        """Process a batch of bars."""
+        open_prices = [bar.open_price for bar in bars.values()]
+        high_prices = [bar.high_price for bar in bars.values()]
+        low_prices = [bar.low_price for bar in bars.values()]
+        close_prices = [bar.close_price for bar in bars.values()]
+        volumes = [bar.volume for bar in bars.values()]
+
+        self.memory["open"].append_row(dt, open_prices)
+        self.memory["high"].append_row(dt, high_prices)
+        self.memory["low"].append_row(dt, low_prices)
+        self.memory["close"].append_row(dt, close_prices)
+        self.memory["volume"].append_row(dt, volumes)
+
+        memory = self.memory.copy()
+
+        self.on_calculation(memory)
+
+    def on_calculation(self, memory):
+        pass
 
     # Event Processing
     def process_tick_event(self, event: Event) -> None:
@@ -274,18 +304,14 @@ class FactorEngine(BaseEngine):
                 self.call_factor_func(factor, factor.on_tick, tick)
 
     def process_bar_event(self, event: Event) -> None:
-        """K-line (bar) data push"""
-        bar: BarData = event.data
-        self.update_memory(bar)
-        if not self.factors:
-            return
-        for factor_name, factor in self.factors.items():
-            if factor.inited:
-                self.call_factor_func(factor, factor.on_bar, bar)
-
-        # 为了OHLC等因子的计算，需要在每个bar更新后，立即生成新的因子
-        event.type = EVENT_BAR_FACTOR
-        self.event_engine.put(event)
+        """Process incoming bar data."""
+        bar = event.data
+        if not self.dt or bar.datetime > self.dt:
+            if self.dt:
+                self.on_bars(self.dt, self.bars)
+            self.dt = bar.datetime
+            self.bars = {}
+        self.bars[bar.vt_symbol] = bar
 
     def process_bar_factor_event(self, event: Event) -> None:
         """K-line (bar) data push"""
@@ -330,12 +356,3 @@ class FactorEngine(BaseEngine):
         """发送邮件"""
         subject: str = f"{factor.factor_key}" if factor else "Factor Maker Engine"
         self.main_engine.send_email(subject, msg)
-
-    def update_factor(self, factor_name, factor_data: FactorData) -> None:
-        factor_memory: RollingDataFrame = self.memory_dict.get(factor_name)
-        factor_memory.update_factor(factor_data.datetime, factor_data.symbol, factor_data.value)
-        self.event_engine.put(Event(type=EVENT_FACTOR_RECORD, data=factor_data))
-
-    def update_memory(self, bar: BarData) -> None:
-        # Implementation needed
-        pass

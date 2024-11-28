@@ -43,7 +43,7 @@ SETTINGS: Dict[str, Any] = {
     "gateway.api_secret": "",
 
     # trading
-    "tickers": [],
+    "vt_symbols": [],
 
 }
 

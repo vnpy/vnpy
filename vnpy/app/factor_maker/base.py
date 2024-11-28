@@ -48,31 +48,6 @@ class RollingDataFrame:
         if self.data.height > self.max_length:
             self.data = self.data.tail(self.max_length)
 
-    def update_factor(self, datetime_value, ticker, value):
-        """
-        Update the value of a specific ticker at a given datetime.
-
-        Args:
-            datetime_value (datetime): The datetime for the row to update.
-            ticker (str): The column (ticker) to update.
-            value: The new value for the ticker.
-        """
-        if ticker not in self.tickers:
-            raise ValueError(f"Ticker '{ticker}' not found in columns.")
-
-        # Check if the datetime exists in the data
-        if datetime_value not in self.data["datetime"]:
-            # If datetime doesn't exist, append a new row with default values
-            default_values = {t: None for t in self.tickers}
-            default_values["datetime"] = datetime_value
-            self.append_row(datetime_value, [default_values[t] for t in self.tickers])
-
-        # Update the specific value
-        mask = self.data["datetime"] == datetime_value
-        self.data = self.data.with_columns(
-            pl.when(mask).then(value).otherwise(self.data[ticker]).alias(ticker)
-        )
-
     def get_dataframe(self):
         """
         Retrieve the current DataFrame.

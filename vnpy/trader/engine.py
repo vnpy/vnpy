@@ -63,7 +63,7 @@ class MainEngine:
         self.engines: Dict[str, BaseEngine] = {}
         self.apps: Dict[str, BaseApp] = {}
         self.exchanges: List[Exchange] = []
-        self.tickers:list[str] = SETTINGS.get('tickers', [])
+        self.vt_symbols:list[str] = SETTINGS.get('vt_symbols', [])
 
         os.chdir(TRADER_DIR)    # Change working directory
         self.init_engines()     # Initialize function engines
