@@ -2,8 +2,6 @@ from typing import Any, Dict, Optional
 import numpy as np
 import polars as pl
 
-from vnpy.app.factor_maker.backtesting import FactorBacktestingEngine
-from vnpy.app.factor_maker.engine import FactorEngine
 from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.trader.object import TickData, BarData, FactorData
 from vnpy.trader.constant import Exchange, Interval
@@ -14,25 +12,19 @@ class MACDFactor(FactorTemplate):
     MACD Factor class that calculates the MACD histogram as a factor.
     """
 
-    author = "Your Name"
-    factor_name = "MACD_Factor"
-    parameters = ["fast_period", "slow_period", "signal_period"]
-    variables = []
+    author = "Tester"
+    factor_name = "macd"
 
-    def __init__(self, engine: Optional[FactorEngine, FactorBacktestingEngine], setting: Dict[str, Any], **kwargs):
+    def __init__(self, setting: Dict[str, Any], **kwargs):
         """
         Initialize the MACD factor with the given engine and settings.
 
         Parameters:
-            engine (Optional[FactorEngine, FactorBacktestingEngine]): The factor engine instance.
             setting (dict): Settings for the factor.
         """
-        super().__init__(engine, setting, **kwargs)
-
+        super().__init__(setting, **kwargs)
         # Default MACD parameters
-        self.fast_period: int = setting.get("fast_period", 12)
-        self.slow_period: int = setting.get("slow_period", 26)
-        self.signal_period: int = setting.get("signal_period", 9)
+        self.add_params(["fast_period", "slow_period", "signal_period"])
 
     def on_tick(self, tick: TickData) -> None:
         """

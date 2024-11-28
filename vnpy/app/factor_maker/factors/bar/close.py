@@ -10,7 +10,7 @@ class CLOSE_BASE(FactorTemplate):
     exchange: Exchange = Exchange.BINANCE
     freq: Interval = Interval.MINUTE
 
-    parameters: list = []
+    params: list = []
 
     def on_bar(self, bar: BarData) -> FactorData:
         value = bar.close_price

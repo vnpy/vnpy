@@ -16,7 +16,7 @@ class FAIR_PRICE_BASE(FactorTemplate):
     dependencies_factor: list[str] = [OPEN_BASE.factor_name, HIGH_BASE.factor_name, LOW_BASE.factor_name]
 
 
-    parameters: list = []
+    params: list = []
 
     def __init__(self, engine, symbol, setting,
                  exchange: Optional[Exchange] = Exchange.BINANCE,
