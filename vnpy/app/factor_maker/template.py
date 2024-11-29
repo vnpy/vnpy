@@ -1,10 +1,10 @@
 from abc import abstractmethod, ABC
 from typing import Optional, Dict, Any, Union, List
+
 import polars as pl
 
 from vnpy.app.factor_maker.base import FactorMode
 from vnpy.trader.constant import Exchange, Interval
-from vnpy.trader.object import TickData, BarData, FactorData
 
 
 class FactorParameters(object):
@@ -130,22 +130,62 @@ class FactorTemplate(ABC):
         self.inited: bool = False
         self.trading: bool = False
 
-    def add_params(self, param_names: Union[str, List[str]]) -> None:
+    def add_params(self, param_names: Union[str, List[str]], auto_property: bool = True) -> None:
         """
         Add parameters to the factor.
-        This method must check the factor definition has already contained property, getter and setter of this attribute.
+
+        This method registers new parameters by setting them in the `params` object.
+        If `auto_property` is True, it automatically creates properties (getter and setter)
+        for each parameter if they are not already defined.
+
+        Parameters
+        ----------
+        param_names : Union[str, List[str]]
+            Name(s) of the parameter(s) to add.
+        auto_property : bool, optional
+            If True, automatically creates properties (getter and setter) for the parameter(s).
 
         Notes
         -----
-        only used in the declaration/definition of the factor.
+        This method can be used during the factor's initialization or dynamically
+        during runtime to add new parameters.
+
+        Raises
+        ------
+        AttributeError
+            If a parameter does not have a corresponding property and `auto_property` is False.
         """
+        # Ensure param_names is a list
         if isinstance(param_names, str):
             param_names = [param_names]
+
+        # Add parameters to the params object
         self.params.set_parameters({param: None for param in param_names})
-        # Check if a class attribute is a property
+
+        # Ensure each parameter has a property
         for attr_name in param_names:
-            attr = getattr(self, attr_name)
-            if isinstance(attr, property):
+            attr = getattr(self.__class__, attr_name, None)
+
+            # If the property doesn't exist, create it if auto_property is True
+            if not isinstance(attr, property):
+                if auto_property:
+                    # Define getter and setter dynamically
+                    def getter(self, name=attr_name):
+                        return self.params.get_parameter(name)
+
+                    def setter(self, value, name=attr_name):
+                        self.params.set_parameters({name: value})
+
+                    # Attach the property dynamically to the class
+                    setattr(self.__class__, attr_name, property(getter, setter))
+                    print(f"Created property for parameter: {attr_name}")
+                else:
+                    raise AttributeError(
+                        f"The parameter '{attr_name}' must have a corresponding property "
+                        f"(with a getter and setter) defined in the class, or set `auto_property=True`."
+                    )
+            else:
+                # Check and log existing property parts
                 print(f"{attr_name} is a property")
                 if attr.fget:
                     print(f"  - Getter is defined")
@@ -198,94 +238,9 @@ class FactorTemplate(ABC):
         self.trading = False
 
     @abstractmethod
-    def on_tick(self, tick: TickData) -> None:
+    def calculate(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
         """
-        Callback of new tick data update.
-
-        Parameters:
-            tick (TickData): Tick data.
-        """
-        pass
-
-    @abstractmethod
-    def on_bar(self, bar: BarData) -> None:
-        """
-        Callback of new bar data update.
-
-        Parameters:
-            bar (BarData): Bar data.
-        """
-        pass
-
-    @abstractmethod
-    def on_factor(self, factor: FactorData) -> None:
-        """
-        Callback of new factor data update (from dependencies).
-
-        Parameters:
-            factor (FactorData): Factor data.
-        """
-        pass
-
-    def on_timer(self) -> None:
-        """
-        Callback of timer update.
-        """
-        pass
-
-    def wrap_data(self, bar: BarData, value: float) -> FactorData:
-        """
-        Wrap bar data and factor value into a FactorData object.
-
-        Parameters:
-            bar (BarData): Bar data.
-            value (float): Factor value.
-
-        Returns:
-            FactorData: Wrapped factor data.
-        """
-        return FactorData(
-            symbol=bar.symbol,
-            exchange=bar.exchange,
-            datetime=bar.datetime,
-            interval=bar.interval,
-            value=value,
-            factor_name=self.factor_name,
-            gateway_name="factor_template"
-        )
-
-    def on_bars(self, bars: dict[str, BarData]) -> None:
-        """"""
-        pass
-
-    # def get_variables(self) -> Dict[str, Any]:
-    #     """
-    #     Get the variables of the factor.
-    #
-    #     Returns:
-    #         dict: Dictionary of variable names and values.
-    #     """
-    #     return {name: getattr(self, name) for name in self.variables if name not in ["inited", "trading"]}
-
-    # def get_data(self) -> Dict[str, Any]:
-    #     """
-    #     Get the data representing the factor's state.
-    #
-    #     Returns:
-    #         dict: Dictionary containing factor data.
-    #     """
-    #     return {
-    #         "factor_name": self.factor_key,
-    #         "class_name": self.__class__.__name__,
-    #         "author": self.author,
-    #         "parameters": self.get_parameters(),
-    #         "variables": self.get_variables()
-    #     }
-
-    @abstractmethod
-    def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
-        """
-        Calculate the factor value using Polars DataFrame.
+        Calculate the factor value
 
         Parameters:
             input_data (pl.DataFrame): Input data for calculation.
@@ -321,16 +276,3 @@ class FactorTemplate(ABC):
                 "dependencies_exchange": self.dependencies_exchange
             }
         }
-
-    # @abstractmethod
-    # def make_factor(self, bar_data_dict: dict[str, pl.DataFrame]) -> pl.DataFrame:
-    #     """
-    #     Generate factor values from historical bar data.
-    #
-    #     Parameters:
-    #         bar_data_dict (dict[str, pl.DataFrame]): Historical bar data.
-    #
-    #     Returns:
-    #         pl.DataFrame: Factor values.
-    #     """
-    #     pass
