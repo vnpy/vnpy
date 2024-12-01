@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from logging import getLogger
 from typing import Type, Optional, Callable
+import dask
 
 from vnpy.app.factor_maker.base import APP_NAME, EVENT_FACTOR_LOG, EVENT_FACTOR_MAKER, EVENT_FACTOR_RECORD, \
     RollingDataFrame
@@ -50,6 +51,7 @@ class FactorEngine(BaseEngine):
         self.load_factor_setting()
         self.register_event()
         self.init_all_factors()
+        self.build_computation_graph()  # Build the graph after initializing factors
         self.start_all_factors()
         self.write_log("因子计算引擎初始化成功")
 
@@ -290,8 +292,67 @@ class FactorEngine(BaseEngine):
 
         self.on_calculation(memory)
 
-    def on_calculation(self, memory):
-        pass
+    def on_calculation(self) -> None:
+        """
+        Execute the pre-built computation graph with updated memory.
+
+        The memory is dynamically updated before each calculation.
+        """
+        if not hasattr(self, "tasks"):
+            self.write_log("Computation graph has not been built. Please initialize the engine first.")
+            return
+
+        # Execute the computation graph
+        results = dask.compute(*self.tasks.values())
+
+        # Update factors with results
+        for factor_name, result in zip(self.factors.keys(), results):
+            self.factors[factor_name].update_results(result)
+
+        self.write_log("Factor calculations completed successfully.")
+
+    def build_computation_graph(self) -> None:
+        """
+        Build the computation graph for all factors and store it in self.tasks.
+
+        This method is called once after all factors are added to the engine.
+        """
+        self.tasks = {}
+
+        # Add memory task as the root
+        self.tasks["memory"] = dask.delayed(lambda: self.memory.copy())
+
+        # Function to create a task for a factor
+        def create_task(factor_name: str) -> dask.delayed:
+            """
+            Create a Dask task for a given factor dynamically.
+
+            Parameters:
+                factor_name (str): The name of the factor to create the task for.
+
+            Returns:
+                dask.delayed: The Dask task for the factor calculation.
+            """
+            # Check if the task has already been created
+            if factor_name in self.tasks:
+                return self.tasks[factor_name]
+
+            # Retrieve the factor instance
+            factor = self.factors[factor_name]
+
+            # Resolve dependencies recursively
+            dependency_results = [create_task(dep) for dep in factor.dependencies]
+
+            # Create the task for the current factor using memory and resolved dependencies
+            self.tasks[factor_name] = dask.delayed(factor.calculate)(*dependency_results)
+
+            return self.tasks[factor_name]
+
+        # Build tasks for all factors
+        for factor_name in self.factors.keys():
+            create_task(factor_name)
+
+        self.write_log("Computation graph built successfully.")
 
     # Event Processing
     def process_tick_event(self, event: Event) -> None:
