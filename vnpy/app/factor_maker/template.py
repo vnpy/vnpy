@@ -101,10 +101,10 @@ class FactorTemplate(ABC):
     symbol: str = ""
     exchange: Exchange = Exchange.TEST
 
-    dependencies_factor: list[str] = []
-    dependencies_freq: list[Interval] = []
-    dependencies_symbol: list[str] = []
-    dependencies_exchange: list[Exchange] = []
+    dependencies_factor: List[Any] = []
+    dependencies_freq: List[Interval] = []
+    dependencies_symbol: List[str] = []
+    dependencies_exchange: List[Exchange] = []
 
     factor_mode: FactorMode = None
 
@@ -115,6 +115,10 @@ class FactorTemplate(ABC):
         """
         return f"{self.factor_name}@{self.params.to_str(with_value=True)}"
 
+    @abstractmethod
+    def __init_dependencies__(self):
+        pass
+
     def __init__(self, setting: Optional[Dict] = None, **kwargs):
         """
         Initialize the factor template with the given engine and settings.
@@ -124,7 +128,8 @@ class FactorTemplate(ABC):
             kwargs: Additional parameters.
         """
         self.from_dict(setting)
-        self.set_params(kwargs)
+        self.set_params(kwargs)  # 这里是把setting里面的参数设置到self.params里面, 也就是FactorParameters这个类里面
+        self.__init_dependencies__()  # 比如macd, 需要ma10和ma20, 那么这里就要初始化ma, 生成两个ma实例, 并且把这两个ma实例加入到dependencies_factor里面
 
         # Internal state
         self.inited: bool = False
@@ -237,10 +242,8 @@ class FactorTemplate(ABC):
             pass
         self.trading = False
 
-    @abstractmethod
-    def calculate(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
-        """
-        Calculate the factor value
+    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str,]]], *args, **kwargs) -> Any:
+        """unified api for calculating factor value
 
         Parameters:
             input_data (pl.DataFrame): Input data for calculation.
@@ -248,11 +251,18 @@ class FactorTemplate(ABC):
         Returns:
             Any: Calculated factor value(s).
         """
+        if isinstance(input_data, pl.DataFrame):
+            return self.calculate_polars(input_data, *args, **kwargs)
+        else:
+            raise NotImplementedError("Only polars DataFrame is supported for now.")
+
+    @abstractmethod
+    def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
         pass
 
     def from_dict(self, dic: Optional[Dict] = None) -> None:
         """
-        Restore the factor template from a dictionary.
+        load factor from `factor_maker_setting.json`
         """
         if dic is None:
             return

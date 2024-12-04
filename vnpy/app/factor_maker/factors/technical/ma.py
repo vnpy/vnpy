@@ -1,19 +1,13 @@
-#  Copyright (c) 2024. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-#  Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
-#  Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
-#  Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
-#  Vestibulum commodo. Ut rhoncus gravida arcu.
-
 import polars as pl
 from typing import Any
 
-from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.trader.object import TickData, BarData, Exchange, Interval, FactorData
-
+from vnpy.app.factor_maker.template import FactorTemplate
+from vnpy.app.factor_maker.factors.bar import *
 
 class MA_BASE(FactorTemplate):
     factor_name = "ma"
-    author: str = ""
+    author: str = "EvanHong"
 
     @property
     def window(self):
@@ -26,6 +20,10 @@ class MA_BASE(FactorTemplate):
     @window.getter
     def window(self):
         return self.params.get_parameter("window")
+
+    def __init_dependencies__(self):
+        self.params.get_parameter("target")
+        self.dependencies_factor = []
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

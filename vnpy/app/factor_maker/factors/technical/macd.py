@@ -1,10 +1,12 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List, Type, Union
 import numpy as np
 import polars as pl
 
-from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.trader.object import TickData, BarData, FactorData
 from vnpy.trader.constant import Exchange, Interval
+
+from vnpy.app.factor_maker.template import FactorTemplate
+from vnpy.app.factor_maker.factors.technical.ma import MA
 
 
 class MACDFactor(FactorTemplate):
@@ -15,6 +17,17 @@ class MACDFactor(FactorTemplate):
     author = "Tester"
     factor_name = "macd"
 
+    dependencies_factor: List[Type[FactorTemplate]] = [MA, MA]
+
+    def __init_dependencies__(self):
+        fast_period = self.params.get_parameter("fast_period")
+        slow_period = self.params.get_parameter("slow_period")
+        signal_period = self.params.get_parameter("signal_period")
+        self.ma_fast = MA(window=fast_period)  # todo: check if this is correct
+        self.ma_slow = MA(window=slow_period)
+        self.ma_signal = signal_period
+        setattr(self, "dependencies_factor", [self.ma_fast, self.ma_slow])  # 重新覆盖attribute
+
     def __init__(self, setting: Dict[str, Any], **kwargs):
         """
         Initialize the MACD factor with the given engine and settings.
@@ -24,7 +37,7 @@ class MACDFactor(FactorTemplate):
         """
         super().__init__(setting, **kwargs)
         # Default MACD parameters
-        self.add_params(["fast_period", "slow_period", "signal_period"])
+        self.add_params(["fast_period", "slow_period", "signal_period"])  # 怎么去标识快慢ma
 
     def on_tick(self, tick: TickData) -> None:
         """
@@ -47,6 +60,27 @@ class MACDFactor(FactorTemplate):
         """
         pass
 
+    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str,]]], *args, **kwargs) -> Any:
+        """
+        Calculate MACD histogram values from input data.
+
+        Parameters:
+            input_data (pl.DataFrame): DataFrame with 'datetime' as index and symbols as columns containing close prices.
+
+        Returns:
+            pl.DataFrame: DataFrame with 'datetime' as index and symbols as columns containing MACD histogram values.
+        """
+        if isinstance(input_data, dict):
+            fast = input_data.get(self.ma_fast.factor_key)
+            slow = input_data.get(self.ma_slow.factor_key)
+            # compute macd
+            macd = fast - slow
+
+        else:
+            raise ValueError("The input_data must be a dictionary.")
+
+        return macd
+
     def calculate_polars(self, close_df: pl.DataFrame, *args, **kwargs) -> pl.DataFrame:
         """
         Calculate MACD histogram using Polars DataFrame.
@@ -57,6 +91,7 @@ class MACDFactor(FactorTemplate):
         Returns:
             pl.DataFrame: DataFrame with 'datetime' as index and symbols as columns containing MACD histogram values.
         """
+
         # Ensure 'datetime' is a column (since Polars does not have index)
         if 'datetime' not in close_df.columns:
             raise ValueError("The 'close' DataFrame must contain a 'datetime' column.")
