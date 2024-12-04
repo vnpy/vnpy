@@ -3,7 +3,7 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from logging import getLogger
-from typing import Type, Optional, Callable
+from typing import Type, Optional, Callable, Union, List, Tuple
 import dask
 
 from vnpy.app.factor_maker.base import APP_NAME, EVENT_FACTOR_LOG, EVENT_FACTOR_MAKER, EVENT_FACTOR_RECORD, \
@@ -37,6 +37,7 @@ class FactorEngine(BaseEngine):
 
         self.memory: dict[str, RollingDataFrame] = {}
         self.max_memory_length = 10
+        self.tasks = {}  # dask tasks
 
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.database = get_database()
@@ -290,7 +291,7 @@ class FactorEngine(BaseEngine):
 
         memory = self.memory.copy()
 
-        self.on_calculation(memory)
+        self.on_calculation()
 
     def on_calculation(self) -> None:
         """
@@ -307,7 +308,7 @@ class FactorEngine(BaseEngine):
 
         # Update factors with results
         for factor_name, result in zip(self.factors.keys(), results):
-            self.factors[factor_name].update_results(result)
+            self.factors[factor_name].update_results(result)  # fixme: store the result in the engine, not factors
 
         self.write_log("Factor calculations completed successfully.")
 
@@ -317,10 +318,9 @@ class FactorEngine(BaseEngine):
 
         This method is called once after all factors are added to the engine.
         """
-        self.tasks = {}
 
         # Add memory task as the root
-        self.tasks["memory"] = dask.delayed(lambda: self.memory.copy())
+        self.tasks["ohlcv"] = dask.delayed(lambda: self.memory.copy())
 
         # Function to create a task for a factor
         def create_task(factor_name: str) -> dask.delayed:
@@ -341,10 +341,13 @@ class FactorEngine(BaseEngine):
             factor = self.factors[factor_name]
 
             # Resolve dependencies recursively
-            dependency_results = [create_task(dep) for dep in factor.dependencies]
+            dep_tasks = {}
+            for f in factor.dependencies_factor:  # fixme: 先取所有factor的dependencies_factor的set, 然后再遍历
+                dep = f.factor_key
+                dep_tasks[dep] = create_task(dep)
 
             # Create the task for the current factor using memory and resolved dependencies
-            self.tasks[factor_name] = dask.delayed(factor.calculate)(*dependency_results)
+            self.tasks[factor_name] = dask.delayed(factor.calculate)(**dep_tasks)
 
             return self.tasks[factor_name]
 
