@@ -58,7 +58,7 @@ class FactorOptimizer:
             factor = factor_class(**params)
 
             # Calculate factor values (DataFrame: datetime x symbols)
-            factor_values = factor.calculate(self.data["close"])
+            factor_values = factor.calculate(**data)
 
             # Run backtesting
             backtester = self.backtester_class(factor_values)

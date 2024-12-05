@@ -319,37 +319,53 @@ class FactorEngine(BaseEngine):
         This method is called once after all factors are added to the engine.
         """
 
+        def complete_factor_tree():
+            for f_key, f in self.factors.items():
+                for dep_f in f.dependencies_factor:
+                    if dep_f.factor_key in self.factors:
+                        continue
+                    self.factors[dep_f.factor_key] = dep_f
+
+        complete_factor_tree()
+
         # Add memory task as the root
         self.tasks["ohlcv"] = dask.delayed(lambda: self.memory.copy())
 
         # Function to create a task for a factor
-        def create_task(factor_name: str) -> dask.delayed:
+        def create_task(factor_key: str) -> dask.delayed:
             """
             Create a Dask task for a given factor dynamically.
 
             Parameters:
-                factor_name (str): The name of the factor to create the task for.
+                factor_key (str): The name of the factor to create the task for.
 
             Returns:
                 dask.delayed: The Dask task for the factor calculation.
             """
             # Check if the task has already been created
-            if factor_name in self.tasks:
-                return self.tasks[factor_name]
+            if factor_key in self.tasks:
+                return self.tasks[factor_key]
 
             # Retrieve the factor instance
-            factor = self.factors[factor_name]
+            factor = self.factors[factor_key]
 
             # Resolve dependencies recursively
             dep_tasks = {}
-            for f in factor.dependencies_factor:  # fixme: 先取所有factor的dependencies_factor的set, 然后再遍历
-                dep = f.factor_key
-                dep_tasks[dep] = create_task(dep)
+            if not factor.dependencies_factor:
+                # Create memory dict with delayed tasks for each key
+                memory_dict = {key: dask.delayed(df.get_dataframe)() for key, df in self.memory.items()}
+                # Pass the memory_dict as input to factor.calculate
+                self.tasks[factor_key] = dask.delayed(factor.calculate)(**memory_dict)
+            else:
+                # Resolve dependencies recursively
+                for f in factor.dependencies_factor:
+                    dep = f.factor_key
+                    dep_tasks[dep] = create_task(dep)
 
-            # Create the task for the current factor using memory and resolved dependencies
-            self.tasks[factor_name] = dask.delayed(factor.calculate)(**dep_tasks)
+                # Create the task for the current factor using memory and resolved dependencies
+                self.tasks[factor_key] = dask.delayed(factor.calculate)(**dep_tasks)
 
-            return self.tasks[factor_name]
+            return self.tasks[factor_key]
 
         # Build tasks for all factors
         for factor_name in self.factors.keys():
