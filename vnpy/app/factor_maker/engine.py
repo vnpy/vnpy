@@ -328,9 +328,6 @@ class FactorEngine(BaseEngine):
 
         complete_factor_tree()
 
-        # Add memory task as the root
-        self.tasks["ohlcv"] = dask.delayed(lambda: self.memory.copy())
-
         # Function to create a task for a factor
         def create_task(factor_key: str) -> dask.delayed:
             """
