@@ -14,45 +14,74 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 
+def resample_data(data: Dict[str, pd.DataFrame], trading_freq: str) -> Dict[str, pd.DataFrame]:
+    """
+    Resample the data to match the trading frequency.
+
+    Parameters:
+        data (dict): Original 1-minute data.
+        trading_freq (str): Desired trading frequency, e.g., '1H'.
+
+    Returns:
+        dict: Resampled data.
+    """
+    # todo how to resample factor data?
+    resampled_data = {}
+    for key, df in data.items():
+        if key == "volume":
+            # For volume, sum over the interval
+            resampled_data[key] = df.resample(trading_freq).sum()
+        else:
+            # For price-related data, resample appropriately
+            resampled_data[key] = pd.DataFrame({
+                "open": df["open"].resample(trading_freq).first(),
+                "high": df["high"].resample(trading_freq).max(),
+                "low": df["low"].resample(trading_freq).min(),
+                "close": df["close"].resample(trading_freq).last()
+            })
+
+    return resampled_data
+
+
 class FactorBacktesting:
     """
     A backtesting engine for evaluating factors with DataFrame-based factor values.
     """
 
-    def __init__(self, factor_values: pd.DataFrame, commission_rate: float = 0.001, slippage: float = 0.001):
+    def __init__(self, data: Dict[str, pd.DataFrame], commission_rate: float = 0.001, slippage: float = 0.001):
         """
-        Initialize the backtesting engine.
+        Initialize the backtesting engine with fixed data.
 
         Parameters:
-            factor_values (pd.DataFrame): Factor values with datetime as row index and symbols as columns.
+            data (dict): Historical data dictionary with keys ('open', 'high', 'low', 'close', 'volume').
             commission_rate (float): Commission rate per trade.
             slippage (float): Slippage per trade.
         """
-        self.factor_values = factor_values
+        self.data = data
         self.commission_rate = commission_rate
         self.slippage = slippage
         self.portfolio_values = None
         self.performance_metrics = None
 
-    def run_backtesting(self, data: Dict[str, pd.DataFrame], if_plot: bool = True) -> Dict[str, float]:
+    def run_backtesting(self, factor_values: pd.DataFrame, if_plot: bool = True) -> Dict[str, float]:
         """
-        Run the backtesting process.
+        Run the backtesting process with new factor values.
 
         Parameters:
-            data (dict): Historical data dictionary with keys ('open', 'high', 'low', 'close', 'volume').
+            factor_values (pd.DataFrame): Factor values with datetime as row index and symbols as columns.
             if_plot (bool): Whether to plot the portfolio performance.
 
         Returns:
             dict: Performance metrics including Sharpe ratio, cumulative return, etc.
         """
         # Extract close prices
-        close_prices = data["close"]
+        close_prices = self.data["close"]
 
         # Calculate daily returns
         daily_returns = close_prices.pct_change()
 
         # Normalize factor values
-        weights = self.factor_values.div(self.factor_values.abs().sum(axis=1), axis=0)
+        weights = factor_values.div(factor_values.abs().sum(axis=1), axis=0)
 
         # Calculate portfolio returns
         portfolio_returns = (weights.shift(1) * daily_returns).sum(axis=1)
