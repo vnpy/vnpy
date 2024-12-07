@@ -63,48 +63,9 @@ class FactorEngine(BaseEngine):
         self.event_engine.register(EVENT_BAR_FACTOR, self.process_bar_factor_event)
         self.event_engine.register(EVENT_FACTOR, self.process_factor_event)
 
-    # Loading and Saving Data
-    def load_factor_class(self):
-        """Load a factor class from a specified module."""
-        try:
-            self.module = importlib.import_module(factor_module_name)
-        except Exception as e:
-            logger = getLogger(__name__)
-            logger.error(
-                f"Failed to import factor module from {factor_module_name}, triggered exception:\n{traceback.format_exc()}")
 
-    def load_factor_setting(self) -> None:
-        """加载因子计算策略配置"""
-        factor_setting: dict = load_json(self.setting_filename)
-        for factor_name, factor_config in factor_setting.items():
-            self.add_factor(
-                factor_config["class_name"],
-                factor_name,
-                factor_config
-            )
 
-    def save_factor_setting(self) -> None:
-        """保存因子配置"""
-        factor_setting: dict = {}
-        for name, factor in self.factors.items():
-            factor_setting[name] = factor.to_dict()
-        save_json(self.setting_filename, factor_setting)
 
-    # Factor Management
-    def add_factor(self, class_name: str, factor_name: str, setting: dict) -> None:
-        if factor_name in self.factors:
-            msg = f"Creation failed, factor name {factor_name} already exists."
-            self.write_log(msg)
-            return
-        factor_class = getattr(self.module, class_name)
-        if not factor_class:
-            msg = f"Creation failed, factor class {class_name} not found."
-            self.write_log(msg)
-            return
-        if factor_class.__name__ not in self.classes:
-            self.classes[factor_class.__name__] = factor_class
-        factor: FactorTemplate = factor_class(engine=self, setting=setting)
-        self.factors[factor_name] = factor
 
     def edit_factor(self, factor_name: str, setting: dict) -> None:
         """编辑因子参数"""

@@ -9,39 +9,47 @@
 
 from unittest import TestCase
 
-from vnpy.app.factor_maker.factors.bar.open import OPEN
+from vnpy.app.factor_maker.factors.bar import *
 
 
 class TestOPEN(TestCase):
 
     def init(self):
-        self.open = OPEN(setting={})
+        self.open = OPEN(setting={
+            "open@noparams": {
+                "class_name": "OPEN",
+                "freq":"1m",
+                "params": {},
+                "dependencies_factor": [{
+                    "close@noparams": {
+                        "class_name": "CLOSE",
+                        "freq": "1m",
+                        "params": {},
+                        "dependencies_factor": [],
+                        "dependencies_freq": [],
+                        "dependencies_symbol": [],
+                        "dependencies_exchange": []
+                    }
+                }],
+                "dependencies_freq": [],
+                "dependencies_symbol": [],
+                "dependencies_exchange": []
+            }
+        })
 
     def test_set_params(self):
         self.init()
         self.open.set_params({'a': 1})
         self.assertEqual(self.open.get_params(), {'a': 1})
 
-    def test_on_init(self):
-        open = OPEN(setting={})
-        print(open.get_params())
-        open.set_params()
+    def test_init_from_json(self):
+        import json
+        with open(f'/Users/hongyifan/Desktop/work/crypto/20240720/examples/no_ui/.vntrader/factor_maker_setting.json','r') as fr:
+            js=json.load(fr)
+        print(js)
+        # print(self.open.dependencies_factor)
 
 
-    def test_on_bar(self):
-        open = OPEN()
-        open.on_bar(bar=None)
-        self.fail()
-
-    def test_on_tick(self):
-        open = OPEN()
-        open.on_tick(tick=None)
-        self.fail()
-
-    def test_on_factor(self):
-        open = OPEN()
-        open.on_factor(factor=None)
-        self.fail()
-
-    def test_calculate_polars(self):
-        self.fail()
+    def test_to_dict(self):
+        self.init()
+        print(self.open.to_dict())

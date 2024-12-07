@@ -22,8 +22,8 @@ class MA_BASE(FactorTemplate):
         return self.params.get_parameter("window")
 
     def __init_dependencies__(self):
-        self.params.get_parameter("target")
-        self.dependencies_factor = []
+        pass
+
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

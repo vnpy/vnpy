@@ -7,4 +7,5 @@
 # @Email    : 939778128@qq.com
 # @Description:
 
+from .ma import MA
 from .macd import MACDFactor

@@ -60,7 +60,7 @@ class MACDFactor(FactorTemplate):
         """
         pass
 
-    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str,]]], *args, **kwargs) -> Any:
+    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str,Any]]], *args, **kwargs) -> Any:
         """
         Calculate MACD histogram values from input data.
 
