@@ -20,11 +20,10 @@ class MACD(FactorTemplate):
     dependencies_factor: List[Type[FactorTemplate]] = [MA, MA]
 
     def __init_dependencies__(self):
-        # fixme: ???
         fast_period = self.params.get_parameter("fast_period")
         slow_period = self.params.get_parameter("slow_period")
         signal_period = self.params.get_parameter("signal_period")
-        self.ma_fast = MA(setting={}, window=fast_period)  # todo: check if this is correct
+        self.ma_fast = MA(setting={}, window=fast_period)
         self.ma_slow = MA(setting={}, window=slow_period)
         self.ma_signal = signal_period
         setattr(self, "dependencies_factor", [self.ma_fast, self.ma_slow])  # ÖØÐÂ¸²¸Çattribute

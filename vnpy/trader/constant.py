@@ -161,6 +161,10 @@ class Interval(Enum):
     WEEKLY = "w"
     TICK = "tick"
 
+    # special
+    UNKNOWN = "UNKNOWN"  # Unknown exchange
+    TEST = "TEST"  # For testing
+
 
 class TimeFreq(AEnum):
     """

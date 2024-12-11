@@ -269,7 +269,7 @@ class FactorTemplate(ABC):
         if dic is None:
             return
         for factor_key, factor_setting in dic.items():
-            self.freq = Interval(factor_setting.get("freq", None))
+            self.freq = Interval(factor_setting.get("freq", Interval.UNKNOWN))
             self.params.set_parameters(factor_setting.get("params", {}))
             # load factor settings, and init them in __init_dependencies__
             self.dependencies_factor = factor_setting.get("dependencies_factor", [])
@@ -285,7 +285,7 @@ class FactorTemplate(ABC):
         d = {
             self.factor_key: {
                 "class_name": self.__class__.__name__,
-                "freq": str(self.freq.value) if self.freq is not None else None,
+                "freq": str(self.freq.value) if self.freq is not None else Interval.UNKNOWN.value,
                 "params": self.params.get_all_parameters(),
                 "dependencies_factor": [f.to_dict() for f in self.dependencies_factor],
                 "dependencies_freq": self.dependencies_freq,
