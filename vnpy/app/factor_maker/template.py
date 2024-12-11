@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
-from typing import Optional, Dict, Any, Union, List
-
+from typing import Optional, Dict, Any, Union, List, Type
+import importlib
 import polars as pl
 
 from vnpy.app.factor_maker.base import FactorMode
@@ -70,31 +70,11 @@ class FactorParameters(object):
 
 class FactorTemplate(ABC):
     """
-    Each factor inherited from this class must implement:
-    1. add_params: add parameters to the attribute "params", so that we can recognize this parameter later
-    2. @property, @getter, @setter: define the getter and setter of the parameter
-
-    Examples
-    --------
-    >>> @property
-    >>> def window(self):
-    >>>     return self.params.get_parameter("window")
-    >>> @window.setter
-    >>> def window(self, value):
-    >>>     self.params.set_parameters({"window": value})
-    >>> @window.getter
-    >>> def window(self):
-    >>>     return self.params.get_parameter("window")
-    >>> def __init__(self, **kwargs):
-    >>>     super().__init__(**kwargs)
-    >>>     self.add_params(
-    >>>         ["window"])  # add parameters to the attribute "params", so that we can recognize this parameter later
-
     """
     # VTSYMBOL_TEMPLATE_FACTOR = "factor_{}_{}_{}.{}"  # interval, symbol(ticker), name(factor name), exchange
 
     author: str = ""
-    params: FactorParameters = FactorParameters()  # 新增字段, 希望用一个class来存储参数数据, 并且能方便地save json/load json
+    module = None  # import all factors in the factors folder, get the class by getattr(module, class_name)
 
     factor_name: str = ""
     freq: Optional[Interval] = None
@@ -115,11 +95,17 @@ class FactorTemplate(ABC):
         """
         return f"{self.factor_name}@{self.params.to_str(with_value=True)}"
 
-    @abstractmethod
     def __init_dependencies__(self):
-        pass
+        dependencies_factor_initialized = []
+        for f_setting in self.dependencies_factor:  # list of dicts
+            for module_name, module_setting in f_setting.items():
+                f_class: Type[FactorTemplate] = getattr(self.module, module_setting["class_name"])
+                f_class = f_class({module_name: module_setting}, **module_setting["params"])  # recursion
+                dependencies_factor_initialized.append(f_class)
 
-    def __init__(self, setting: Optional[Dict] = None, **kwargs):
+        self.dependencies_factor = dependencies_factor_initialized
+
+    def __init__(self, setting: Optional[dict] = None, **kwargs):
         """
         Initialize the factor template with the given engine and settings.
 
@@ -127,8 +113,11 @@ class FactorTemplate(ABC):
             setting (dict): Settings for the factor.
             kwargs: Additional parameters.
         """
+        self.params: FactorParameters = FactorParameters()  # 新增字段, 希望用一个class来存储参数数据, 并且能方便地save json/load json
+        self.module = importlib.import_module(".factors", package=__package__)
         self.from_dict(setting)
-        self.set_params(kwargs)  # 这里是把setting里面的参数设置到self.params里面, 也就是FactorParameters这个类里面
+        self.set_params(
+            kwargs)  # 这里是把setting里面的参数设置到self.params里面, 也就是FactorParameters这个类里面, 如果有和setting['params']重复的参数, 那么就会覆盖
         self.__init_dependencies__()  # 比如macd, 需要ma10和ma20, 那么这里就要初始化ma, 生成两个ma实例, 并且把这两个ma实例加入到dependencies_factor里面
 
         # Internal state
@@ -204,10 +193,23 @@ class FactorTemplate(ABC):
         Set the parameters of the factor.
         """
         for key, value in params_dict.items():
-            if key in self.params:
-                setattr(self, key, value)
+            if hasattr(self, key):
+                if value is not None:
+                    print(f"Parameter {key} is updated: {getattr(self, key)} -> {value}")
+                    # setattr(self.params.set_parameters({key:value}), key, value)
+                    self.params.set_parameters({key: value})
             else:
-                raise ValueError(f"Parameter {key} is not recognized.")
+                self.add_params(key)
+                print(f"Parameter {key} is set: {value}")
+                #                 setattr(self.params.set_parameters({key:value}), key, value)
+                self.params.set_parameters({key: value})
+            # if key in self.params:
+            #     print(f"Parameter {key} is updated: {getattr(self, key)} -> {value}")
+            #     setattr(self, key, value)
+            # else:
+            #     # why raise error here? Because we want to make sure the parameter is correctly set in the factor,
+            #     # and we can't set a parameter that is not defined in the factor
+            #     raise ValueError(f"Parameter {key} is not recognized.")
 
     def get_params(self):
         """
@@ -242,7 +244,7 @@ class FactorTemplate(ABC):
             pass
         self.trading = False
 
-    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str,]]], *args, **kwargs) -> Any:
+    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str, Any]]], *args, **kwargs) -> Any:
         """unified api for calculating factor value
 
         Parameters:
@@ -260,29 +262,35 @@ class FactorTemplate(ABC):
     def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
         pass
 
-    def from_dict(self, dic: Optional[Dict] = None) -> None:
+    def from_dict(self, dic: Optional[dict] = None) -> None:
         """
         load factor from `factor_maker_setting.json`
         """
         if dic is None:
             return
-        self.params.set_parameters(dic.get("params", {}))
-        self.dependencies_factor = dic.get("dependencies_factor", [])
-        self.dependencies_freq = dic.get("dependencies_freq", [])
-        self.dependencies_symbol = dic.get("dependencies_symbol", [])
-        self.dependencies_exchange = dic.get("dependencies_exchange", [])
+        for factor_key, factor_setting in dic.items():
+            self.freq = Interval(factor_setting.get("freq", Interval.UNKNOWN))
+            self.params.set_parameters(factor_setting.get("params", {}))
+            # load factor settings, and init them in __init_dependencies__
+            self.dependencies_factor = factor_setting.get("dependencies_factor", [])
+            self.dependencies_freq = factor_setting.get("dependencies_freq", [])
+            self.dependencies_symbol = factor_setting.get("dependencies_symbol", [])
+            self.dependencies_exchange = factor_setting.get("dependencies_exchange", [])
 
     def to_dict(self) -> dict:
         """
         Convert the factor template to a dictionary.
         """
-        return {
+        # freq = str(self.freq.value) if self.freq is not None else None
+        d = {
             self.factor_key: {
                 "class_name": self.__class__.__name__,
+                "freq": str(self.freq.value) if self.freq is not None else Interval.UNKNOWN.value,
                 "params": self.params.get_all_parameters(),
-                "dependencies_factor": self.dependencies_factor,
+                "dependencies_factor": [f.to_dict() for f in self.dependencies_factor],
                 "dependencies_freq": self.dependencies_freq,
                 "dependencies_symbol": self.dependencies_symbol,
                 "dependencies_exchange": self.dependencies_exchange
             }
         }
+        return d

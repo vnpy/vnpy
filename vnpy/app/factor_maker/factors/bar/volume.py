@@ -1,22 +1,9 @@
-from vnpy.app.factor_maker.template import FactorTemplate
+from vnpy.app.factor_maker.factors.bar.bar_base import BarFactor
 from vnpy.trader.object import TickData, BarData, Exchange, Interval, FactorData
 from typing import Optional
 
 
-class VOLUME_BASE(FactorTemplate):
-    factor_name = "VOLUME"
-
-    def on_bar(self, bar: BarData) -> FactorData:
-        pass
-
-    def on_tick(self, tick: TickData) -> None:
-        pass
-
-    def on_factor(self, factor: FactorData) -> FactorData:
-        pass
-
-
-class VOLUME(VOLUME_BASE):
+class VOLUME(BarFactor):
     factor_name = "volume"
 
     def on_bar(self, bar: BarData) -> FactorData:

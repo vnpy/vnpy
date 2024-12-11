@@ -22,10 +22,10 @@ from vnpy.app.factor_maker.factors.technical.ma import MA
 class TestMA(TestCase):
 
     def init(self):
-        self.open = MA(setting={})
+        self.factor = MA(setting={})
 
     def test_set_params(self):
         self.init()
-        self.open.set_params({'window': 10})
-        self.assertEqual(self.open.params.__dict__, {'window': 10})
+        self.factor.set_params({'window': 10})
+        self.assertEqual(self.factor.params.__dict__, {'window': 10})
 
