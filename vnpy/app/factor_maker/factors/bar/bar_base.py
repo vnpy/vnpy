@@ -8,5 +8,5 @@ from vnpy.app.factor_maker.template import FactorTemplate
 
 class BarFactor(FactorTemplate):
 
-    def __init__(self, setting, **kwargs):
-        super().__init__(setting=setting, **kwargs)
+    def __init__(self, setting):
+        super().__init__(setting=setting)

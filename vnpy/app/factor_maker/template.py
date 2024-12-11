@@ -70,26 +70,6 @@ class FactorParameters(object):
 
 class FactorTemplate(ABC):
     """
-    Each factor inherited from this class must implement:
-    1. add_params: add parameters to the attribute "params", so that we can recognize this parameter later
-    2. @property, @getter, @setter: define the getter and setter of the parameter
-
-    Examples
-    --------
-    >>> @property
-    >>> def window(self):
-    >>>     return self.params.get_parameter("window")
-    >>> @window.setter
-    >>> def window(self, value):
-    >>>     self.params.set_parameters({"window": value})
-    >>> @window.getter
-    >>> def window(self):
-    >>>     return self.params.get_parameter("window")
-    >>> def __init__(self, **kwargs):
-    >>>     self.add_params(
-    >>>         ["window"])  # add parameters to the attribute "params", so that we can recognize this parameter later
-    >>>     super().__init__(**kwargs)
-
     """
     # VTSYMBOL_TEMPLATE_FACTOR = "factor_{}_{}_{}.{}"  # interval, symbol(ticker), name(factor name), exchange
 
@@ -136,7 +116,8 @@ class FactorTemplate(ABC):
         self.params: FactorParameters = FactorParameters()  # 新增字段, 希望用一个class来存储参数数据, 并且能方便地save json/load json
         self.module = importlib.import_module(".factors", package=__package__)
         self.from_dict(setting)
-        self.set_params(kwargs)  # 这里是把setting里面的参数设置到self.params里面, 也就是FactorParameters这个类里面, 如果有和setting['params']重复的参数, 那么就会覆盖
+        self.set_params(
+            kwargs)  # 这里是把setting里面的参数设置到self.params里面, 也就是FactorParameters这个类里面, 如果有和setting['params']重复的参数, 那么就会覆盖
         self.__init_dependencies__()  # 比如macd, 需要ma10和ma20, 那么这里就要初始化ma, 生成两个ma实例, 并且把这两个ma实例加入到dependencies_factor里面
 
         # Internal state
@@ -300,10 +281,11 @@ class FactorTemplate(ABC):
         """
         Convert the factor template to a dictionary.
         """
-        return {
+        # freq = str(self.freq.value) if self.freq is not None else None
+        d = {
             self.factor_key: {
                 "class_name": self.__class__.__name__,
-                "freq": str(self.freq.value),
+                "freq": str(self.freq.value) if self.freq is not None else None,
                 "params": self.params.get_all_parameters(),
                 "dependencies_factor": [f.to_dict() for f in self.dependencies_factor],
                 "dependencies_freq": self.dependencies_freq,
@@ -311,3 +293,4 @@ class FactorTemplate(ABC):
                 "dependencies_exchange": self.dependencies_exchange
             }
         }
+        return d
