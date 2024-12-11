@@ -15,27 +15,10 @@ from vnpy.app.factor_maker.factors.bar import *
 class TestOPEN(TestCase):
 
     def init(self):
-        self.open = OPEN(setting={
-            "open@noparams": {
-                "class_name": "OPEN",
-                "freq":"1m",
-                "params": {},
-                "dependencies_factor": [{
-                    "close@noparams": {
-                        "class_name": "CLOSE",
-                        "freq": "1m",
-                        "params": {},
-                        "dependencies_factor": [],
-                        "dependencies_freq": [],
-                        "dependencies_symbol": [],
-                        "dependencies_exchange": []
-                    }
-                }],
-                "dependencies_freq": [],
-                "dependencies_symbol": [],
-                "dependencies_exchange": []
-            }
-        })
+        close = CLOSE(setting={'freq': '1m'}, window=10)
+
+        self.open = OPEN(setting={'dependencies_factor': [close.to_dict()]}, window=10)
+        self.open.dependencies_factor = [close]
 
     def test_set_params(self):
         self.init()
@@ -44,11 +27,11 @@ class TestOPEN(TestCase):
 
     def test_init_from_json(self):
         import json
-        with open(f'/Users/hongyifan/Desktop/work/crypto/20240720/examples/no_ui/.vntrader/factor_maker_setting.json','r') as fr:
-            js=json.load(fr)
+        with open(f'/Users/hongyifan/Desktop/work/crypto/20240720/examples/no_ui/.vntrader/factor_maker_setting.json',
+                  'r') as fr:
+            js = json.load(fr)
         print(js)
         # print(self.open.dependencies_factor)
-
 
     def test_to_dict(self):
         self.init()

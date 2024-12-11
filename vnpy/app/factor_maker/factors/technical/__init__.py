@@ -8,4 +8,4 @@
 # @Description:
 
 from .ma import MA
-from .macd import MACDFactor
+from .macd import MACD

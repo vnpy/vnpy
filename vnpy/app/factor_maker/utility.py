@@ -5,20 +5,9 @@ from vnpy.trader.utility import load_json, save_json
 import factors
 
 
-def load_factor_class(class_name: str) -> None:
+def get_factor_class(class_name: str) -> None:
     """Load a factor class from a specified module."""
     return getattr(factors, class_name)
-
-
-def load_factor_setting(self) -> None:
-    """加载因子计算策略配置"""
-    factor_setting: dict = load_json(self.setting_filename)
-    for factor_name, factor_config in factor_setting.items():
-        self.add_factor(
-            factor_config["class_name"],
-            factor_name,
-            factor_config
-        )
 
 
 def save_factor_setting(self) -> None:
@@ -27,22 +16,6 @@ def save_factor_setting(self) -> None:
     for name, factor in self.factors.items():
         factor_setting[name] = factor.to_dict()
     save_json(self.setting_filename, factor_setting)
-
-    # Factor Management
-    def add_factor(self, class_name: str, factor_name: str, setting: dict) -> None:
-        if factor_name in self.factors:
-            msg = f"Creation failed, factor name {factor_name} already exists."
-            self.write_log(msg)
-            return
-        factor_class = getattr(self.module, class_name)
-        if not factor_class:
-            msg = f"Creation failed, factor class {class_name} not found."
-            self.write_log(msg)
-            return
-        if factor_class.__name__ not in self.classes:
-            self.classes[factor_class.__name__] = factor_class
-        factor: FactorTemplate = factor_class(engine=self, setting=setting)
-        self.factors[factor_name] = factor
 
 
 # mycode
@@ -74,7 +47,7 @@ def init_factors(f_setting: Dict):
     -------
 
     """
-    factors_list=[]
+    factors_list = []
     for module_name, module_setting in f_setting.items():
         f_class = getattr(factors, module_setting["class_name"])
         f_class = f_class({module_name: module_setting}, **module_setting["params"])  # recursion
@@ -83,7 +56,7 @@ def init_factors(f_setting: Dict):
 
 
 if __name__ == '__main__':
-    setting=load_factor_setting(
+    setting = load_factor_setting(
         '/Users/hongyifan/Desktop/work/crypto/20240720/examples/no_ui/.vntrader/factor_maker_setting.json')
-    factors_list=init_factors(setting)
+    factors_list = init_factors(setting)
     print(factors_list)

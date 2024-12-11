@@ -86,16 +86,15 @@ class FactorTemplate(ABC):
     >>> def window(self):
     >>>     return self.params.get_parameter("window")
     >>> def __init__(self, **kwargs):
-    >>>     super().__init__(**kwargs)
     >>>     self.add_params(
     >>>         ["window"])  # add parameters to the attribute "params", so that we can recognize this parameter later
+    >>>     super().__init__(**kwargs)
 
     """
     # VTSYMBOL_TEMPLATE_FACTOR = "factor_{}_{}_{}.{}"  # interval, symbol(ticker), name(factor name), exchange
 
     author: str = ""
-    params: FactorParameters = FactorParameters()  # 新增字段, 希望用一个class来存储参数数据, 并且能方便地save json/load json
-    module = None # import all factors in the factors folder, get the class by getattr(module, class_name)
+    module = None  # import all factors in the factors folder, get the class by getattr(module, class_name)
 
     factor_name: str = ""
     freq: Optional[Interval] = None
@@ -134,9 +133,10 @@ class FactorTemplate(ABC):
             setting (dict): Settings for the factor.
             kwargs: Additional parameters.
         """
+        self.params: FactorParameters = FactorParameters()  # 新增字段, 希望用一个class来存储参数数据, 并且能方便地save json/load json
         self.module = importlib.import_module(".factors", package=__package__)
         self.from_dict(setting)
-        self.set_params(kwargs)  # 这里是把setting里面的参数设置到self.params里面, 也就是FactorParameters这个类里面
+        self.set_params(kwargs)  # 这里是把setting里面的参数设置到self.params里面, 也就是FactorParameters这个类里面, 如果有和setting['params']重复的参数, 那么就会覆盖
         self.__init_dependencies__()  # 比如macd, 需要ma10和ma20, 那么这里就要初始化ma, 生成两个ma实例, 并且把这两个ma实例加入到dependencies_factor里面
 
         # Internal state
@@ -212,10 +212,23 @@ class FactorTemplate(ABC):
         Set the parameters of the factor.
         """
         for key, value in params_dict.items():
-            if key in self.params:
-                setattr(self, key, value)
+            if hasattr(self, key):
+                if value is not None:
+                    print(f"Parameter {key} is updated: {getattr(self, key)} -> {value}")
+                    # setattr(self.params.set_parameters({key:value}), key, value)
+                    self.params.set_parameters({key: value})
             else:
-                raise ValueError(f"Parameter {key} is not recognized.")
+                self.add_params(key)
+                print(f"Parameter {key} is set: {value}")
+                #                 setattr(self.params.set_parameters({key:value}), key, value)
+                self.params.set_parameters({key: value})
+            # if key in self.params:
+            #     print(f"Parameter {key} is updated: {getattr(self, key)} -> {value}")
+            #     setattr(self, key, value)
+            # else:
+            #     # why raise error here? Because we want to make sure the parameter is correctly set in the factor,
+            #     # and we can't set a parameter that is not defined in the factor
+            #     raise ValueError(f"Parameter {key} is not recognized.")
 
     def get_params(self):
         """

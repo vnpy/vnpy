@@ -3,14 +3,14 @@ from datetime import datetime
 from vnpy.app.factor_maker import FactorEngine
 from vnpy.app.factor_maker.backtesting_v2 import FactorOptimizer, FactorBacktestingEngine
 from vnpy.app.factor_maker.base import FactorMode
-from vnpy.app.factor_maker.factors.technical import MACDFactor
+from vnpy.app.factor_maker.factors.technical import MACD
 from vnpy.trader.constant import Interval
 
 # Create an instance of the backtesting engine
 engine = FactorBacktestingEngine()
 
 # Set up the MACD factor
-macd_factor = MACDFactor(engine=engine, setting={})
+macd_factor = MACD(engine=engine, setting={})
 macd_factor.factor_name = "MACD_Factor"
 macd_factor.factor_mode = FactorMode.Backtest
 

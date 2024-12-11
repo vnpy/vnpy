@@ -56,6 +56,31 @@ class FactorEngine(BaseEngine):
         self.start_all_factors()
         self.write_log("因子计算引擎初始化成功")
 
+    # def load_factor_setting(self) -> None:
+    #     """加载因子计算策略配置"""
+    #     factor_setting: dict = load_json(self.setting_filename)
+    #     for factor_name, factor_config in factor_setting.items():
+    #         self.add_factor(
+    #             factor_config["class_name"],
+    #             factor_name,
+    #             factor_config
+    #         )
+
+    def add_factor(self, class_name: str, factor_name: str, setting: dict) -> None:
+        if factor_name in self.factors:
+            msg = f"Creation failed, factor name {factor_name} already exists."
+            self.write_log(msg)
+            return
+        factor_class = getattr(self.module, class_name)
+        if not factor_class:
+            msg = f"Creation failed, factor class {class_name} not found."
+            self.write_log(msg)
+            return
+        if factor_class.__name__ not in self.classes:
+            self.classes[factor_class.__name__] = factor_class
+        factor: FactorTemplate = factor_class(engine=self, setting=setting)
+        self.factors[factor_name] = factor
+
     def register_event(self) -> None:
         """注册事件引擎"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)

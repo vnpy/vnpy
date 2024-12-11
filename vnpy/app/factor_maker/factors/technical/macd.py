@@ -9,7 +9,7 @@ from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.app.factor_maker.factors.technical.ma import MA
 
 
-class MACDFactor(FactorTemplate):
+class MACD(FactorTemplate):
     """
     MACD Factor class that calculates the MACD histogram as a factor.
     """
@@ -20,24 +20,33 @@ class MACDFactor(FactorTemplate):
     dependencies_factor: List[Type[FactorTemplate]] = [MA, MA]
 
     def __init_dependencies__(self):
+        # fixme: ???
         fast_period = self.params.get_parameter("fast_period")
         slow_period = self.params.get_parameter("slow_period")
         signal_period = self.params.get_parameter("signal_period")
-        self.ma_fast = MA(window=fast_period)  # todo: check if this is correct
-        self.ma_slow = MA(window=slow_period)
+        self.ma_fast = MA(setting={}, window=fast_period)  # todo: check if this is correct
+        self.ma_slow = MA(setting={}, window=slow_period)
         self.ma_signal = signal_period
         setattr(self, "dependencies_factor", [self.ma_fast, self.ma_slow])  # 重新覆盖attribute
 
-    def __init__(self, setting: Dict[str, Any], **kwargs):
+    def __init__(self, setting: Dict[str, Any],
+                 fast_period: int = None,
+                 slow_period: int = None,
+                 signal_period: int = None,
+                 ):
         """
         Initialize the MACD factor with the given engine and settings.
 
         Parameters:
             setting (dict): Settings for the factor.
         """
-        super().__init__(setting, **kwargs)
+        # self.add_params(["fast_period", "slow_period", "signal_period"])  # 怎么去标识快慢ma
+        super().__init__(setting=setting,
+                         fast_period=fast_period,
+                         slow_period=slow_period,
+                         signal_period=signal_period,
+                         )
         # Default MACD parameters
-        self.add_params(["fast_period", "slow_period", "signal_period"])  # 怎么去标识快慢ma
 
     def on_tick(self, tick: TickData) -> None:
         """
@@ -60,7 +69,7 @@ class MACDFactor(FactorTemplate):
         """
         pass
 
-    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str,Any]]], *args, **kwargs) -> Any:
+    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str, Any]]], *args, **kwargs) -> Any:
         """
         Calculate MACD histogram values from input data.
 
@@ -137,27 +146,27 @@ class MACDFactor(FactorTemplate):
 
         return result
 
-    def make_factor(self, bar_data_dict: Dict[str, pl.DataFrame]) -> pl.DataFrame:
-        """
-        Generate MACD factor values from historical bar data.
-
-        Parameters:
-            bar_data_dict (dict[str, pl.DataFrame]): Dictionary with keys 'open', 'high', 'low', 'close'.
-                Each DataFrame has 'datetime' as index and symbols as columns.
-
-        Returns:
-            pl.DataFrame: DataFrame with 'datetime' as index and symbols as columns containing MACD histogram values.
-        """
-        # Extract close prices DataFrame
-        close_df = bar_data_dict.get('close')
-        if close_df is None:
-            raise ValueError("bar_data_dict must contain a 'close' DataFrame.")
-
-        # Ensure 'datetime' is a column
-        if 'datetime' not in close_df.columns:
-            raise ValueError("The 'close' DataFrame must contain a 'datetime' column.")
-
-        # Calculate MACD histogram for all symbols
-        factor_data = self.calculate_polars(close_df)
-
-        return factor_data
+    # def make_factor(self, bar_data_dict: Dict[str, pl.DataFrame]) -> pl.DataFrame:
+    #     """
+    #     Generate MACD factor values from historical bar data.
+    #
+    #     Parameters:
+    #         bar_data_dict (dict[str, pl.DataFrame]): Dictionary with keys 'open', 'high', 'low', 'close'.
+    #             Each DataFrame has 'datetime' as index and symbols as columns.
+    #
+    #     Returns:
+    #         pl.DataFrame: DataFrame with 'datetime' as index and symbols as columns containing MACD histogram values.
+    #     """
+    #     # Extract close prices DataFrame
+    #     close_df = bar_data_dict.get('close')
+    #     if close_df is None:
+    #         raise ValueError("bar_data_dict must contain a 'close' DataFrame.")
+    #
+    #     # Ensure 'datetime' is a column
+    #     if 'datetime' not in close_df.columns:
+    #         raise ValueError("The 'close' DataFrame must contain a 'datetime' column.")
+    #
+    #     # Calculate MACD histogram for all symbols
+    #     factor_data = self.calculate_polars(close_df)
+    #
+    #     return factor_data

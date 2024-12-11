@@ -5,30 +5,29 @@ from vnpy.trader.object import TickData, BarData, Exchange, Interval, FactorData
 from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.app.factor_maker.factors.bar import *
 
+
 class MA_BASE(FactorTemplate):
     factor_name = "ma"
     author: str = "EvanHong"
-
-    @property
-    def window(self):
-        return self.params.get_parameter("window")
-
-    @window.setter
-    def window(self, value):
-        self.params.set_parameters({"window": value})
-
-    @window.getter
-    def window(self):
-        return self.params.get_parameter("window")
+    #
+    # @property
+    # def window(self):
+    #     return self.params.get_parameter("window")
+    #
+    # @window.setter
+    # def window(self, value):
+    #     self.params.set_parameters({"window": value})
+    #
+    # @window.getter
+    # def window(self):
+    #     return self.params.get_parameter("window")
 
     def __init_dependencies__(self):
         pass
 
+    def __init__(self, setting, window=None):
+        super().__init__(setting, window=window)
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.add_params(
-            ["window"])  # add parameters to the attribute "params", so that we can recognize this parameter later
 
     def on_bar(self, bar: BarData) -> None:
         value = 0
