@@ -512,6 +512,7 @@ class PositionMonitor(BaseMonitor):
     headers: dict = {
         "symbol": {"display": _("代码"), "cell": BaseCell, "update": False},
         "exchange": {"display": _("交易所"), "cell": EnumCell, "update": False},
+        "name": {"display": _("名字"), "cell": BaseCell, "update": False},
         "direction": {"display": _("方向"), "cell": DirectionCell, "update": False},
         "volume": {"display": _("数量"), "cell": BaseCell, "update": True},
         "yd_volume": {"display": _("昨仓"), "cell": BaseCell, "update": True},

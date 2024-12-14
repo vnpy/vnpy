@@ -182,6 +182,7 @@ class PositionData(BaseData):
     symbol: str
     exchange: Exchange
     direction: Direction
+    name: str = ""
 
     volume: float = 0
     frozen: float = 0
