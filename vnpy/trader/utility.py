@@ -1033,6 +1033,739 @@ class ArrayManager(object):
             return k, d
         return k[-1], d[-1]
 
+    # TalibK线形态识别
+    def cdl2crows(self, array: bool = False):
+        """Two Crows"""
+        result = talib.CDL2CROWS(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdl3blackcrows(self, array: bool = False):
+        """Three Black Crows"""
+        result = talib.CDL3BLACKCROWS(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdl3inside(self, array: bool = False):
+        """Three Inside Up/Down"""
+        result = talib.CDL3INSIDE(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdl3linestrike(self, array: bool = False):
+        """Three-Line Strike"""
+        result = talib.CDL3LINESTRIKE(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdl3outside(self, array: bool = False):
+        """Three Outside Up/Down"""
+        result = talib.CDL3OUTSIDE(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdl3starsinsouth(self, array: bool = False):
+        """Three Stars In The South"""
+        result = talib.CDL3STARSINSOUTH(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdl3whitesoldiers(self, array: bool = False):
+        """Three Advancing White Soldiers"""
+        result = talib.CDL3WHITESOLDIERS(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlabandonedbaby(self, array: bool = False):
+        """Abandoned Baby"""
+        result = talib.CDLABANDONEDBABY(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdladvanceblock(self, array: bool = False):
+        """Advance Block"""
+        result = talib.CDLADVANCEBLOCK(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlbelthold(self, array: bool = False):
+        """Belt-hold"""
+        result = talib.CDLBELTHOLD(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlbreakaway(self, array: bool = False):
+        """Breakaway"""
+        result = talib.CDLBREAKAWAY(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlclosingmarubozu(self, array: bool = False):
+        """Closing Marubozu"""
+        result = talib.CDLCLOSINGMARUBOZU(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlconcealbabyswall(self, array: bool = False):
+        """Concealing Baby Swallow"""
+        result = talib.CDLCONCEALBABYSWALL(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlcounterattack(self, array: bool = False):
+        """Counterattack"""
+        result = talib.CDLCOUNTERATTACK(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdldarkcloudcover(self, array: bool = False):
+        """Dark Cloud Cover"""
+        result = talib.CDLDARKCLOUDCOVER(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdldoji(self, array: bool = False):
+        """Doji"""
+        result = talib.CDLDOJI(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdldojistar(self, array: bool = False):
+        """Doji Star"""
+        result = talib.CDLDOJISTAR(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdldragonflydoji(self, array: bool = False):
+        """Dragonfly Doji"""
+        result = talib.CDLDRAGONFLYDOJI(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlengulfing(self, array: bool = False):
+        """Engulfing Pattern"""
+        result = talib.CDLENGULFING(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdleveningdojistar(self, array: bool = False):
+        """Evening Doji Star"""
+        result = talib.CDLEVENINGDOJISTAR(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdleveningstar(self, array: bool = False):
+        """Evening Star"""
+        result = talib.CDLEVENINGSTAR(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlgapsidesidewhite(self, array: bool = False):
+        """Up/Down-gap side-by-side white lines"""
+        result = talib.CDLGAPSIDESIDEWHITE(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlgravestonedoji(self, array: bool = False):
+        """Gravestone Doji"""
+        result = talib.CDLGRAVESTONEDOJI(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlhammer(self, array: bool = False):
+        """Hammer"""
+        result = talib.CDLHAMMER(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlhangingman(self, array: bool = False):
+        """Hanging Man"""
+        result = talib.CDLHANGINGMAN(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlharami(self, array: bool = False):
+        """Harami Pattern"""
+        result = talib.CDLHARAMI(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlharamicross(self, array: bool = False):
+        """Harami Cross Pattern"""
+        result = talib.CDLHARAMICROSS(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlhighwave(self, array: bool = False):
+        """High-Wave Candle"""
+        result = talib.CDLHIGHWAVE(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlhikkake(self, array: bool = False):
+        """Hikkake Pattern"""
+        result = talib.CDLHIKKAKE(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlhikkakemod(self, array: bool = False):
+        """Modified Hikkake Pattern"""
+        result = talib.CDLHIKKAKEMOD(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlhomingpigeon(self, array: bool = False):
+        """Homing Pigeon"""
+        result = talib.CDLHOMINGPIGEON(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlidentical3crows(self, array: bool = False):
+        """Identical Three Crows"""
+        result = talib.CDLIDENTICAL3CROWS(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlinneck(self, array: bool = False):
+        """In-Neck Pattern"""
+        result = talib.CDLINNECK(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlinvertedhammer(self, array: bool = False):
+        """Inverted Hammer"""
+        result = talib.CDLINVERTEDHAMMER(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlkicking(self, array: bool = False):
+        """Kicking"""
+        result = talib.CDLKICKING(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlkickingbylength(self, array: bool = False):
+        """Kicking - bull/bear determined by the longer marubozu"""
+        result = talib.CDLKICKINGBYLENGTH(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlladderbottom(self, array: bool = False):
+        """Ladder Bottom"""
+        result = talib.CDLLADDERBOTTOM(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdllongleggeddoji(self, array: bool = False):
+        """Long Legged Doji"""
+        result = talib.CDLLONGLEGGEDDOJI(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdllongline(self, array: bool = False):
+        """Long Line Candle"""
+        result = talib.CDLLONGLINE(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlmarubozu(self, array: bool = False):
+        """Marubozu"""
+        result = talib.CDLMARUBOZU(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlmatchinglow(self, array: bool = False):
+        """Matching Low"""
+        result = talib.CDLMATCHINGLOW(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlmathold(self, array: bool = False):
+        """Mat Hold"""
+        result = talib.CDLMATHOLD(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlmorningdojistar(self, array: bool = False):
+        """Morning Doji Star"""
+        result = talib.CDLMORNINGDOJISTAR(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlmorningstar(self, array: bool = False):
+        """Morning Star"""
+        result = talib.CDLMORNINGSTAR(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlonneck(self, array: bool = False):
+        """On-Neck Pattern"""
+        result = talib.CDLONNECK(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlpiercing(self, array: bool = False):
+        """Piercing Pattern"""
+        result = talib.CDLPIERCING(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlrickshawman(self, array: bool = False):
+        """Rickshaw Man"""
+        result = talib.CDLRICKSHAWMAN(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlrisefall3methods(self, array: bool = False):
+        """Rising/Falling Three Methods"""
+        result = talib.CDLRISEFALL3METHODS(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlseparatinglines(self, array: bool = False):
+        """Separating Lines"""
+        result = talib.CDLSEPARATINGLINES(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlshootingstar(self, array: bool = False):
+        """Shooting Star"""
+        result = talib.CDLSHOOTINGSTAR(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlshortline(self, array: bool = False):
+        """Short Line Candle"""
+        result = talib.CDLSHORTLINE(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlspinningtop(self, array: bool = False):
+        """Spinning Top"""
+        result = talib.CDLSPINNINGTOP(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlstalledpattern(self, array: bool = False):
+        """Stalled Pattern"""
+        result = talib.CDLSTALLEDPATTERN(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlsticksandwich(self, array: bool = False):
+        """Stick Sandwich"""
+        result = talib.CDLSTICKSANDWICH(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdltakuri(self, array: bool = False):
+        """Takuri (Dragonfly Doji with very long lower shadow)"""
+        result = talib.CDLTAKURI(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdltasukigap(self, array: bool = False):
+        """Tasuki Gap"""
+        result = talib.CDLTASUKIGAP(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlthrusting(self, array: bool = False):
+        """Thrusting Pattern"""
+        result = talib.CDLTHRUSTING(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdltristar(self, array: bool = False):
+        """Tristar Pattern"""
+        result = talib.CDLTRISTAR(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlunique3river(self, array: bool = False):
+        """Unique 3 River"""
+        result = talib.CDLUNIQUE3RIVER(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlupsidegap2crows(self, array: bool = False):
+        """Upside Gap Two Crows"""
+        result = talib.CDLUPSIDEGAP2CROWS(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+    
+    def cdlxsidegap3methods(self, array: bool = False):
+        """Upside/Downside Gap Three Methods"""
+        result = talib.CDLXSIDEGAP3METHODS(
+            self.open,
+            self.high,
+            self.low,
+            self.close,
+        )
+        if array:
+            return result
+        return result[-1]
+
 
 def virtual(func: Callable) -> Callable:
     """
