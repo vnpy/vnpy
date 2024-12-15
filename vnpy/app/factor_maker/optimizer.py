@@ -4,10 +4,10 @@ from typing import Dict, List, Any
 import dask
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
+import polars as pl
 
+from vnpy.app.factor_maker.backtesting import FactorBacktester
 from vnpy.app.factor_maker.template import FactorTemplate
-from vnpy.app.factor_maker.backtesting import FactorBacktesting
 
 
 class FactorOptimizer:
@@ -15,7 +15,7 @@ class FactorOptimizer:
     A class to optimize factor parameters using backtesting.
     """
 
-    def __init__(self, backtester: FactorBacktesting, data: Dict[str, pd.DataFrame]):
+    def __init__(self, backtester: FactorBacktester, data: Dict[str, pd.DataFrame]):
         """
         Initialize the optimizer.
 
@@ -23,11 +23,10 @@ class FactorOptimizer:
             backtester: The backtester class to use for evaluation.
             data: Historical data dictionary with keys ('open', 'high', 'low', 'close', 'volume').
         """
-        self.dependency_factor = None
+        self.dependency_factor = {}
         self.factor = None
 
         self.backtester = backtester
-        self.backtester.data = data
         self.data = data
 
     def add_factor(self, factor: type[FactorTemplate]):
@@ -40,11 +39,13 @@ class FactorOptimizer:
 
     def build_computational_graph(self):
         def complete_factor_tree():
-            for f in self.dependency_factor:
+            dependency_factor = self.dependency_factor.copy()
+            for f_key, f in self.dependency_factor.items():
                 for dep_f in f.dependencies_factor:
-                    if dep_f.factor_key in self.dependency_factor:
+                    if dep_f.factor_key in dependency_factor:
                         continue
-                    self.dependency_factor[dep_f.factor_key] = dep_f
+                    dependency_factor[dep_f.factor_key] = dep_f
+            self.dependency_factor = dependency_factor
 
         complete_factor_tree()
 
@@ -72,9 +73,9 @@ class FactorOptimizer:
             dep_tasks = {}
             if not factor.dependencies_factor:
                 # Create memory dict with delayed tasks for each key
-                memory_dict = {key: dask.delayed(lambda df=df: df.copy())() for key, df in self.data.items()}
+                memory_dict = {key: dask.delayed(lambda df=df: df.clone())() for key, df in self.data.items()}
                 # Pass the memory_dict as input to factor.calculate
-                self.tasks[factor_key] = dask.delayed(factor.calculate)(**memory_dict)
+                self.tasks[factor_key] = dask.delayed(factor.calculate)(input_data=memory_dict)
             else:
                 # Resolve dependencies recursively
                 for f in factor.dependencies_factor:
@@ -82,7 +83,7 @@ class FactorOptimizer:
                     dep_tasks[dep] = create_task(dep)
 
                 # Create the task for the current factor using memory and resolved dependencies
-                self.tasks[factor_key] = dask.delayed(factor.calculate)(**dep_tasks)
+                self.tasks[factor_key] = dask.delayed(factor.calculate)(input_data=dep_tasks)
 
             return self.tasks[factor_key]
 
@@ -133,7 +134,7 @@ class FactorOptimizer:
             factor_values = self.factor.calculate(self.factor_data)
 
             # Run backtesting
-            metrics = self.backtester.run_backtesting(factor_values, if_plot=False)
+            metrics = self.backtester.run_backtesting_pandas(factor_values, if_plot=False)
 
             # Return the chosen metric and params
             return metrics.get(metric, -float("inf")), params
@@ -152,26 +153,10 @@ class FactorOptimizer:
                 best_score = score
                 best_params = params
 
+        self.factor.set_params(best_params)
+        self.factor.to_dict()
+
         return {"best_params": best_params, "best_score": best_score}
-
-
-class MomentumFactor(FactorTemplate):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.add_params(["window"], auto_property=True)
-
-    def calculate(self, input_data: pd.DataFrame, *args, **kwargs) -> pd.DataFrame:
-        """
-        Calculate the momentum factor value.
-
-        Parameters:
-            input_data (pd.DataFrame): Input price data with columns as symbols and index as datetime.
-
-        Returns:
-            pd.DataFrame: Factor values with datetime as row index and symbols as columns.
-        """
-        window = self.window
-        return input_data.diff(window)
 
 
 if __name__ == "__main__":
@@ -189,14 +174,37 @@ if __name__ == "__main__":
 
     data = load_data()
 
-    # Define parameter grid
-    param_grid = {
-        "window": [5, 10, 20],
+    class MACD(FactorTemplate):
+        factor_name = 'macd'
+        dependencies_factor = []
+
+        def __init__(self, setting, **kwargs):
+            self.add_params('window')
+            self.add_params('freq')
+            super().__init__(setting, **kwargs)
+
+        def __init_dependencies__(self, ma10_setting, ma20_setting):
+            self.ma_fast = MA(ma10_setting)
+            
+
+
+        def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
+            ma_fast = input_data[self.ma_fast.factor_key]
+
+    macd = MACD({}, window=10, freq='1min')
+
+    input_data = {
+        'ma_window_10', df1,
+        'ma_window_20', df2
     }
 
-    # Initialize optimizer
-    optimizer = FactorOptimizer(FactorBacktesting, data)
-    results = optimizer.optimize(param_grid, MomentumFactor)
+    ma10_setting = {}
+    ma20_setting = {}
+    ma10 = MA(ma10_setting)
+    ma20 = MA(ma20_setting)
 
-    print("Optimization Results:")
-    print(results)
+    macd.dependencies_factor = [ma20, ma10]
+
+    macd.to_dict()
+
+
