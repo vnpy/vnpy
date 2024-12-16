@@ -8,6 +8,7 @@ import polars as pl
 
 from vnpy.app.factor_maker.backtesting import FactorBacktester
 from vnpy.app.factor_maker.template import FactorTemplate
+from vnpy.app.factor_maker.utility import build_computational_graph
 
 
 class FactorOptimizer:
@@ -33,63 +34,9 @@ class FactorOptimizer:
         self.factor = factor
         self.dependency_factor = {f.factor_key: f for f in factor.dependencies_factor}
 
-        self.build_computational_graph()
+        self.tasks = build_computational_graph(self.dependency_factor, self.data)
 
         self.prepare_data()
-
-    def build_computational_graph(self):
-        def complete_factor_tree():
-            dependency_factor = self.dependency_factor.copy()
-            for f_key, f in self.dependency_factor.items():
-                for dep_f in f.dependencies_factor:
-                    if dep_f.factor_key in dependency_factor:
-                        continue
-                    dependency_factor[dep_f.factor_key] = dep_f
-            self.dependency_factor = dependency_factor
-
-        complete_factor_tree()
-
-        self.tasks = {}
-
-        # Function to create a task for a factor
-        def create_task(factor_key: str) -> dask.delayed:
-            """
-            Create a Dask task for a given factor dynamically.
-
-            Parameters:
-                factor_key (str): The name of the factor to create the task for.
-
-            Returns:
-                dask.delayed: The Dask task for the factor calculation.
-            """
-            # Check if the task has already been created
-            if factor_key in self.tasks:
-                return self.tasks[factor_key]
-
-            # Retrieve the factor instance
-            factor = self.dependency_factor[factor_key]
-
-            # Resolve dependencies recursively
-            dep_tasks = {}
-            if not factor.dependencies_factor:
-                # Create memory dict with delayed tasks for each key
-                memory_dict = {key: dask.delayed(lambda df=df: df.clone())() for key, df in self.data.items()}
-                # Pass the memory_dict as input to factor.calculate
-                self.tasks[factor_key] = dask.delayed(factor.calculate)(input_data=memory_dict)
-            else:
-                # Resolve dependencies recursively
-                for f in factor.dependencies_factor:
-                    dep = f.factor_key
-                    dep_tasks[dep] = create_task(dep)
-
-                # Create the task for the current factor using memory and resolved dependencies
-                self.tasks[factor_key] = dask.delayed(factor.calculate)(input_data=dep_tasks)
-
-            return self.tasks[factor_key]
-
-        # Build tasks for all factors
-        for factor_key in self.dependency_factor.keys():
-            create_task(factor_key)
 
     def prepare_data(self):
         """
