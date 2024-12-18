@@ -32,9 +32,9 @@ class FactorOptimizer:
 
     def add_factor(self, factor: type[FactorTemplate]):
         self.factor = factor
-        self.dependency_factor = {f.factor_key: f for f in factor.dependencies_factor}
+        dependency_factor = {f.factor_key: f for f in factor.dependencies_factor}
 
-        self.tasks = build_computational_graph(self.dependency_factor, self.data)
+        self.tasks = build_computational_graph(dependency_factor, self.data)
 
         self.prepare_data()
 
