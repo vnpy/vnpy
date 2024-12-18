@@ -32,14 +32,16 @@ class TestMACDFactor(TestCase):
                                                                        'dependencies_exchange': []}}],
                                                                    'dependencies_freq': [], 'dependencies_symbol': [],
                                                                    'dependencies_exchange': []}}
-                           )
+        )
         print(self.factor.to_dict())
+        print(self.factor.fast_period)
 
     def test_init_with_setting(self):
         self.init_with_setting()
 
+
     def init_with_params(self):
-        self.factor = MACD(setting={}, fast_period=12, slow_period=26, signal_period=9)
+        self.factor = MACD(setting={}, fast_period=10000, slow_period=26, signal_period=9)
         print(self.factor.to_dict())
 
     def test_init_with_params(self):

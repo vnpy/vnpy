@@ -12,6 +12,9 @@ from time import sleep
 from datetime import datetime, time
 from logging import INFO
 import pprint
+import numpy as np
+import pandas as pd
+import polars as pl
 
 from vnpy.event import EventEngine,Event
 from vnpy.trader.setting import SETTINGS
@@ -26,11 +29,24 @@ from vnpy.app.factor_maker.factors import OPEN
 
 
 class TestFactorEngine(TestCase):
-    def setUp(self):
+    def init(self):
         event_engine = EventEngine()
         main_engine = MainEngine(event_engine)
         self.factor_engine = FactorEngine(main_engine, event_engine)
         self.factor_engine.init_engine()
+
+        date_range = pd.date_range("2024-01-01", periods=200, freq="1min")
+        memory = {
+            "open": pl.DataFrame(data=np.random.random(200)),
+            "high": pl.DataFrame(data=np.random.random(200)),
+            "low": pl.DataFrame(data=np.random.random(200)),
+            "close": pl.DataFrame(data=np.random.random(200)),
+            "volume": pl.DataFrame(data=np.random.random(200)),
+        }
+        self.factor_engine.memory=memory
+
+    def test_init(self):
+        self.init()
 
     def test_pipeline(self):
         """测试因子从数据源到因子计算和最终入库的整个流程
@@ -64,22 +80,12 @@ class TestFactorEngine(TestCase):
             main_engine.subscribe(SubscribeRequest(symbol='btcusdt', exchange=Exchange.BINANCE),
                                   gateway_name='BINANCE_SPOT')
 
-        def init_engine(self):
-            fct = OPEN
-            factor_class = str(fct).rsplit(sep='.', maxsplit=1)[1][:-2]  # 去掉最后的"'>"
-            factor_symbol = fct.symbol
-            factor_name = fct.factor_name
-            # factor_class = factor_class[0]+'.'+factor_class[1].upper()
-            self.factor_engine.add_factor(factor_class, factor_name, ticker='btcusdt',
-                                          setting={'freq': Interval.MINUTE,
-                                                   'symbol': factor_symbol,
-                                                   'factor_name': factor_name,
-                                                   'exchange': Exchange.BINANCE})  # self.freq.value, self.symbol, self.factor_name, self.exchange.value
 
-        self.setUp()
+        self.init()
 
-        init_engine(self)
-        self.factor_engine.start_all_factors()
+        res=self.factor_engine.start_calculation()
+        print(res)
+
         buffer=[]
         while not self.factor_engine.event_engine._queue.empty():
 

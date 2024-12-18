@@ -3,7 +3,7 @@ from typing import Optional, Dict, Any, Union, List, Type
 import importlib
 import polars as pl
 
-from vnpy.app.factor_maker.base import FactorMode
+from vnpy.app.factor_maker.base import FactorMode, RollingDataFrame
 from vnpy.trader.constant import Exchange, Interval
 
 
@@ -29,8 +29,8 @@ class FactorParameters(object):
     def set_parameters(self, params: Dict[str, Any]) -> None:
         # assert params is not None and len(params) > 0
         for key, value in params.items():
-            if getattr(self, key, None) is not None:
-                print(f"Parameter {key} is updated: {getattr(self, key)} -> {value}")
+            # if getattr(self, key, None) is not None:
+            #     print(f"Parameter {key} is updated: {getattr(self, key)} -> {value}")
             setattr(self, key, value)
 
     def get_parameter(self, key: str) -> Any:
@@ -74,7 +74,7 @@ class FactorTemplate(ABC):
     # VTSYMBOL_TEMPLATE_FACTOR = "factor_{}_{}_{}.{}"  # interval, symbol(ticker), name(factor name), exchange
 
     author: str = ""
-    module = None  # import all factors in the factors folder, get the class by getattr(module, class_name)
+    module = None
 
     factor_name: str = ""
     freq: Optional[Interval] = None
@@ -99,7 +99,7 @@ class FactorTemplate(ABC):
         dependencies_factor_initialized = []
         for f_setting in self.dependencies_factor:  # list of dicts
             for module_name, module_setting in f_setting.items():
-                f_class: Type[FactorTemplate] = getattr(self.module, module_setting["class_name"])
+                f_class = getattr(self.module, module_setting["class_name"])
                 f_class = f_class({module_name: module_setting}, **module_setting["params"])  # recursion
                 dependencies_factor_initialized.append(f_class)
 
@@ -153,9 +153,6 @@ class FactorTemplate(ABC):
         if isinstance(param_names, str):
             param_names = [param_names]
 
-        # Add parameters to the params object
-        self.params.set_parameters({param: None for param in param_names})
-
         # Ensure each parameter has a property
         for attr_name in param_names:
             attr = getattr(self.__class__, attr_name, None)
@@ -172,7 +169,7 @@ class FactorTemplate(ABC):
 
                     # Attach the property dynamically to the class
                     setattr(self.__class__, attr_name, property(getter, setter))
-                    print(f"Created property for parameter: {attr_name}")
+                    # print(f"Created property for\t {self.__class__.__name__}\t parameter: {attr_name}")
                 else:
                     raise AttributeError(
                         f"The parameter '{attr_name}' must have a corresponding property "
@@ -180,13 +177,14 @@ class FactorTemplate(ABC):
                     )
             else:
                 # Check and log existing property parts
-                print(f"{attr_name} is a property")
-                if attr.fget:
-                    print(f"  - Getter is defined")
-                if attr.fset:
-                    print(f"  - Setter is defined")
-                if attr.fdel:
-                    print(f"  - Deleter is defined")
+                # print(f"{attr_name} is a property")
+                # if attr.fget:
+                #     print(f"  - Getter is defined")
+                # if attr.fset:
+                #     print(f"  - Setter is defined")
+                # if attr.fdel:
+                #     print(f"  - Deleter is defined")
+                pass
 
     def set_params(self, params_dict: Dict[str, Any]) -> None:
         """
@@ -195,21 +193,12 @@ class FactorTemplate(ABC):
         for key, value in params_dict.items():
             if hasattr(self, key):
                 if value is not None:
-                    print(f"Parameter {key} is updated: {getattr(self, key)} -> {value}")
-                    # setattr(self.params.set_parameters({key:value}), key, value)
+                    # print(f"Parameter {key} is updated: {getattr(self, key)} -> {value}")
                     self.params.set_parameters({key: value})
             else:
                 self.add_params(key)
-                print(f"Parameter {key} is set: {value}")
-                #                 setattr(self.params.set_parameters({key:value}), key, value)
+                # print(f"Parameter {key} is set: {value}")
                 self.params.set_parameters({key: value})
-            # if key in self.params:
-            #     print(f"Parameter {key} is updated: {getattr(self, key)} -> {value}")
-            #     setattr(self, key, value)
-            # else:
-            #     # why raise error here? Because we want to make sure the parameter is correctly set in the factor,
-            #     # and we can't set a parameter that is not defined in the factor
-            #     raise ValueError(f"Parameter {key} is not recognized.")
 
     def get_params(self):
         """
@@ -244,7 +233,9 @@ class FactorTemplate(ABC):
             pass
         self.trading = False
 
-    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str, Any]]], *args, **kwargs) -> Any:
+    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str, Any]]], historical_data,
+                  *args,
+                  **kwargs) -> Any:
         """unified api for calculating factor value
 
         Parameters:
@@ -252,15 +243,36 @@ class FactorTemplate(ABC):
 
         Returns:
             Any: Calculated factor value(s).
+
+        Parameters
+        ----------
+        historical_data :
         """
         if isinstance(input_data, pl.DataFrame):
             return self.calculate_polars(input_data, *args, **kwargs)
+        elif isinstance(input_data, RollingDataFrame):
+            raise NotImplementedError("not supported yet")
+        elif isinstance(input_data, dict):
+            if isinstance(input_data["ohlcv"], pl.DataFrame):
+                raise NotImplementedError("not supported yet")
+                return self.calculate_polars(input_data["ohlcv"], *args, **kwargs)
+            else:
+                sample_data = list(input_data.values())[0]
+                if isinstance(sample_data, pl.DataFrame):
+                    raise NotImplementedError("not supported yet")
+                elif isinstance(sample_data, RollingDataFrame):
+                    raise NotImplementedError("not supported yet")
+
+            return self.calculate_dict(input_data, *args, **kwargs)
+
         else:
             raise NotImplementedError("Only polars DataFrame is supported for now.")
 
-    @abstractmethod
     def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
         pass
+
+    def calculate_dict(self, input_data: Dict[str, pl.DataFrame], *args, **kwargs) -> Any:
+        return self.calculate_polars(pl.DataFrame(input_data), *args, **kwargs)
 
     def from_dict(self, dic: Optional[dict] = None) -> None:
         """

@@ -1,8 +1,8 @@
 import logging
-from logging import Logger
+from logging import Logger,CRITICAL,FATAL,ERROR,WARNING,WARN,INFO,DEBUG,NOTSET
 import smtplib
 import os
-from abc import ABC
+from abc import ABC,abstractmethod
 from pathlib import Path
 from datetime import datetime
 from email.message import EmailMessage
@@ -113,13 +113,21 @@ class MainEngine:
         self.add_engine(OmsEngine)
         self.add_engine(EmailEngine)
 
-    def write_log(self, msg: str, source: str = "") -> None:
+    def write_log(self, msg: str,event_type:str=None, source: str = "",level=INFO) -> None:
         """
         Put log event with specific message.
         """
-        log: LogData = LogData(msg=msg, gateway_name=source)
-        event: Event = Event(EVENT_LOG, log)
+        msg = f"[{source}] \t{msg}" if source else msg
+        log: LogData = LogData(msg=msg, gateway_name=source,level=level)
+        event: Event = Event(event_type, log)
         self.event_engine.put(event)
+
+    def register_log_event(self, event_name: str) -> None:
+        """
+        Register log event to event engine.
+        """
+        self.get_engine("log").register_log_event(event_name)
+
 
     def get_gateway(self, gateway_name: str) -> BaseGateway:
         """
@@ -275,6 +283,10 @@ class BaseEngine(ABC):
         """"""
         pass
 
+    def register_event(self):
+        """what to do when receives an event"""
+        pass
+
 
 class LogEngine(BaseEngine):
     """
@@ -349,6 +361,12 @@ class LogEngine(BaseEngine):
         """
         log: LogData = event.data
         self.logger.log(log.level, log.msg)
+
+    def register_log_event(self, event_name: str) -> None:
+        """
+        Register specific log event.
+        """
+        self.event_engine.register(event_name, self.process_log_event)
 
 
 class OmsEngine(BaseEngine):

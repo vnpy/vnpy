@@ -39,34 +39,12 @@ class MACD(FactorTemplate):
         Parameters:
             setting (dict): Settings for the factor.
         """
-        # self.add_params(["fast_period", "slow_period", "signal_period"])  # 怎么去标识快慢ma
         super().__init__(setting=setting,
                          fast_period=fast_period,
                          slow_period=slow_period,
                          signal_period=signal_period,
                          )
-        # Default MACD parameters
 
-    def on_tick(self, tick: TickData) -> None:
-        """
-        Callback of new tick data update.
-        Not implemented for this factor.
-        """
-        pass
-
-    def on_bar(self, bar: BarData) -> None:
-        """
-        Callback of new bar data update.
-        Not implemented for this factor.
-        """
-        pass
-
-    def on_factor(self, factor: FactorData) -> None:
-        """
-        Callback of new factor data update (from dependencies).
-        Not implemented for this factor.
-        """
-        pass
 
     def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str, Any]]], *args, **kwargs) -> Any:
         """
@@ -145,27 +123,23 @@ class MACD(FactorTemplate):
 
         return result
 
-    # def make_factor(self, bar_data_dict: Dict[str, pl.DataFrame]) -> pl.DataFrame:
-    #     """
-    #     Generate MACD factor values from historical bar data.
-    #
-    #     Parameters:
-    #         bar_data_dict (dict[str, pl.DataFrame]): Dictionary with keys 'open', 'high', 'low', 'close'.
-    #             Each DataFrame has 'datetime' as index and symbols as columns.
-    #
-    #     Returns:
-    #         pl.DataFrame: DataFrame with 'datetime' as index and symbols as columns containing MACD histogram values.
-    #     """
-    #     # Extract close prices DataFrame
-    #     close_df = bar_data_dict.get('close')
-    #     if close_df is None:
-    #         raise ValueError("bar_data_dict must contain a 'close' DataFrame.")
-    #
-    #     # Ensure 'datetime' is a column
-    #     if 'datetime' not in close_df.columns:
-    #         raise ValueError("The 'close' DataFrame must contain a 'datetime' column.")
-    #
-    #     # Calculate MACD histogram for all symbols
-    #     factor_data = self.calculate_polars(close_df)
-    #
-    #     return factor_data
+    def calculate(self, input_data: Dict[str, pl.DataFrame], *args, **kwargs) -> Any:
+        """
+        Calculate MACD histogram values from input data.
+
+        Parameters:
+            input_data (pl.DataFrame): DataFrame with 'datetime' as index and symbols as columns containing close prices.
+
+        Returns:
+            pl.DataFrame: DataFrame with 'datetime' as index and symbols as columns containing MACD histogram values.
+        """
+        if isinstance(input_data, dict):
+            fast = input_data.get(self.ma_fast.factor_key)
+            slow = input_data.get(self.ma_slow.factor_key)
+            # compute macd
+            macd = fast - slow
+
+        else:
+            raise ValueError("The input_data must be a dictionary.")
+
+        return macd

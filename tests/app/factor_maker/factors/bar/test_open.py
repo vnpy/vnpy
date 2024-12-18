@@ -1,7 +1,7 @@
 # -*- coding=utf-8 -*-
 # @Project  : 20240720
 # @FilePath : vnpy/tests/app/factor_maker/factors/bar
-# @File     : open.py
+# @File     : test_open.py
 # @Time     : 2024/11/25 21:16
 # @Author   : EvanHong
 # @Email    : 939778128@qq.com
