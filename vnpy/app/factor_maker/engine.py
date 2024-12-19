@@ -8,14 +8,14 @@ import dask
 import polars as pl
 
 from vnpy.event import EventEngine, Event
+from vnpy.event.events import EVENT_BAR_FACTOR, EVENT_FACTOR,EVENT_FACTORMAKER_LOG, EVENT_FACTORMAKER, EVENT_FACTOR_RECORD
 from vnpy.trader.constant import Interval, Exchange
 from vnpy.trader.database import BaseDatabase, get_database, DB_TZ
 from vnpy.trader.engine import BaseEngine, MainEngine
-from vnpy.trader.event import EVENT_TICK, EVENT_BAR, EVENT_BAR_FACTOR, EVENT_FACTOR
+from vnpy.trader.event import EVENT_TICK, EVENT_BAR
 from vnpy.trader.object import LogData, ContractData, TickData, BarData, HistoryRequest, FactorData
 from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
-from vnpy.app.factor_maker.base import APP_NAME, EVENT_FACTOR_LOG, EVENT_FACTOR_MAKER, EVENT_FACTOR_RECORD, \
-    RollingDataFrame
+from vnpy.app.factor_maker.base import APP_NAME, RollingDataFrame
 from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.app.factor_maker.utility import *
 
@@ -35,7 +35,8 @@ class FactorEngine(BaseEngine):
         self.factors: dict[str, FactorTemplate] = {}
         # self.classes: dict[str, Type[FactorTemplate]] = {}
 
-        self.memory: Dict[str, pl.DataFrame] = {}
+        self.memory_bar: Dict[str, pl.DataFrame] = {}
+        self.memory_factor: Dict[str, pl.DataFrame] = {}
         self.max_memory_length = 10
         self.tasks = {}  # dask tasks
 
@@ -50,7 +51,8 @@ class FactorEngine(BaseEngine):
         self.register_event()
         self.init_all_factors()
         self.init_memory()
-        self.tasks = build_computational_graph(self.factors, self.memory)  # Build the graph after initializing factors
+        self.tasks = build_computational_graph(self.factors,
+                                               self.memory_bar)  # Build the graph after initializing factors
         self.write_log("因子计算引擎初始化成功")
 
     # def load_factor_setting(self) -> None:
@@ -85,38 +87,30 @@ class FactorEngine(BaseEngine):
         self.event_engine.register(EVENT_BAR_FACTOR, self.process_bar_factor_event)
         self.event_engine.register(EVENT_FACTOR, self.process_factor_event)
 
-        self.main_engine.register_log_event(EVENT_FACTOR_LOG)
-
-    # def get_all_factor_class_names(self) -> list:
-    #     """获取所有加载因子类名"""
-    #     return list(self.classes.keys())
+        self.main_engine.register_log_event(EVENT_FACTORMAKER_LOG)
 
     def get_factor_parameters(self, factor_key) -> dict:
         """获取策略参数"""
         factor: FactorTemplate = self.factors[factor_key]
         return factor.get_params()
 
-    # Factor Lifecycle
     def init_memory(self) -> None:
-        # self.memory["open"] = RollingDataFrame(self.vt_symbols, self.max_memory_length)
-        # self.memory["high"] = RollingDataFrame(self.vt_symbols, self.max_memory_length)
-        # self.memory["low"] = RollingDataFrame(self.vt_symbols, self.max_memory_length)
-        # self.memory["close"] = RollingDataFrame(self.vt_symbols, self.max_memory_length)
-        # self.memory["volume"] = RollingDataFrame(self.vt_symbols, self.max_memory_length)
-
-        # self.memory = RollingDataFrame(columns=["open", "high", "low", "close", "volume"] + list(self.factors.keys()),
-        #                                max_length=self.max_memory_length)
-
-        self.memory["open"] = pl.DataFrame()
-        self.memory["high"] = pl.DataFrame()
-        self.memory["low"] = pl.DataFrame()
-        self.memory["close"] = pl.DataFrame()
-        self.memory["volume"] = pl.DataFrame()
+        data = {'datetime': []}
+        schema = {'datetime': datetime}
+        for symbol in self.vt_symbols:
+            data[symbol] = []
+            schema[symbol] = pl.Float32
+        for b in ["open", "high", "low", "close", "volume"]:
+            self.memory_bar[b] = pl.DataFrame(data=data, schema=schema)
+        for f in self.factors.keys():
+            self.memory_factor[f] = pl.DataFrame(data=data, schema=schema)
 
     def init_all_factors(self) -> None:
         """初始化所有因子"""
         factors = init_all_factors(load_factor_setting(self.setting_filename))
         self.factors = {f.factor_key: f for f in factors}
+
+        # get max_memory_length from all potential attributes
         self.max_memory_length = max([self.max_memory_length] + [
             max(getattr(factor, "lookback_period", 0),
                 getattr(factor, "window", 0),
@@ -128,22 +122,6 @@ class FactorEngine(BaseEngine):
                 getattr(factor, "length", 0),
                 ) for factor in self.factors.values()])
         self.write_log(f"max_memory_length: {self.max_memory_length}")
-
-    def start_calculation(self):
-        """start dask computation"""
-        if not hasattr(self, "tasks"):
-            raise ValueError("Computation graph has not been built. Please run build_computational_graph first.")
-
-        # Execute the Dask computation graph
-        computed_results = dask.compute(*self.tasks.values())
-        # Map computed results back to their corresponding factors
-        self.factor_data = {
-            factor_key: result for factor_key, result in zip(self.tasks.keys(), computed_results)
-        }
-
-        f.depen
-
-        return self.factor_data
 
     def start_factor(self, factor_key: str) -> None:
         """Start factor"""
@@ -250,6 +228,18 @@ class FactorEngine(BaseEngine):
             gateway_name=""
         )
 
+    def _truncate_memory_bar(self) -> None:
+        """Truncate the memory to the maximum length."""
+        for key, df in self.memory_bar.items():
+            if len(df) > self.max_memory_length:
+                self.memory_bar[key] = df.tail(self.max_memory_length)
+
+    def _truncate_memory_factor(self) -> None:
+        """Truncate the memory to the maximum length."""
+        for key, df in self.memory_factor.items():
+            if len(df) > self.max_memory_length:
+                self.memory_factor[key] = df.tail(self.max_memory_length)
+
     def on_bars(self, dt: datetime, bars: dict) -> None:
         """Process a batch of bars."""
         open_prices = [bar.open_price for bar in bars.values()]
@@ -264,17 +254,17 @@ class FactorEngine(BaseEngine):
         close_prices = pl.DataFrame(data={'datetime': dt, 'close': close_prices})
         volumes = pl.DataFrame(data={'datetime': dt, 'volume': volumes})
 
-        self.memory["open"] = pl.concat([self.memory["open"], open_prices], how='vertical')
-        self.memory["high"] = pl.concat([self.memory["high"], high_prices], how='vertical')
-        self.memory["low"] = pl.concat([self.memory["low"], low_prices], how='vertical')
-        self.memory["close"] = pl.concat([self.memory["close"], close_prices], how='vertical')
-        self.memory["volume"] = pl.concat([self.memory["volume"], volumes], how='vertical')
+        self.memory_bar["open"] = pl.concat([self.memory_bar["open"], open_prices], how='vertical')
+        self.memory_bar["high"] = pl.concat([self.memory_bar["high"], high_prices], how='vertical')
+        self.memory_bar["low"] = pl.concat([self.memory_bar["low"], low_prices], how='vertical')
+        self.memory_bar["close"] = pl.concat([self.memory_bar["close"], close_prices], how='vertical')
+        self.memory_bar["volume"] = pl.concat([self.memory_bar["volume"], volumes], how='vertical')
 
-        memory = self.memory.copy()
+        self._truncate_memory_bar()
 
-        self.on_calculation()
+        self.on_calculation(dt=dt)
 
-    def on_calculation(self) -> None:
+    def on_calculation(self, dt: datetime) -> None:
         """
         Execute the pre-built computation graph with updated memory.
 
@@ -283,15 +273,16 @@ class FactorEngine(BaseEngine):
         todo: 1. historical data of the factor is being calculated 2. factor calculation 3. factor update
         """
         if not hasattr(self, "tasks"):
-            self.write_log("Computation graph has not been built. Please initialize the engine first.")
-            return
+            raise RuntimeError("Computation graph has not been built. Please initialize the engine first.")
 
         # Execute the computation graph
         results = dask.compute(*self.tasks.values())
 
-        # Update factors with results
+        # Update factor values with results
         for factor_name, result in zip(self.factors.keys(), results):
-            self.factors[factor_name].update_results(result)  # fixme: store the result in the engine, not factors
+            self.memory_factor[factor_name] = result
+
+        self._truncate_memory_factor()
 
         self.write_log("Factor calculations completed successfully.")
 
@@ -399,7 +390,7 @@ class FactorEngine(BaseEngine):
             msg: str = f"An exception occurred, factor has been stopped\n{traceback.format_exc()}"
             self.write_log(msg, factor)
 
-    def write_log(self, msg: str, factor: FactorTemplate = None, event_type=EVENT_FACTOR_LOG, level=INFO) -> None:
+    def write_log(self, msg: str, factor: FactorTemplate = None, event_type=EVENT_FACTORMAKER_LOG, level=INFO) -> None:
         """输出日志"""
         if factor:
             msg: str = f"{factor.factor_key}: {msg}"
@@ -408,7 +399,7 @@ class FactorEngine(BaseEngine):
     def put_factor_event(self, factor: FactorTemplate) -> None:
         """推送事件更新策略界面"""
         data: dict = factor.get_data()
-        event: Event = Event(EVENT_FACTOR_MAKER, data)
+        event: Event = Event(EVENT_FACTORMAKER, data)
         self.event_engine.put(event)
 
     def send_email(self, msg: str, factor: FactorTemplate = None) -> None:

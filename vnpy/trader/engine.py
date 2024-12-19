@@ -1,8 +1,8 @@
 import logging
-from logging import Logger,CRITICAL,FATAL,ERROR,WARNING,WARN,INFO,DEBUG,NOTSET
+from logging import Logger, CRITICAL, FATAL, ERROR, WARNING, WARN, INFO, DEBUG, NOTSET
 import smtplib
 import os
-from abc import ABC,abstractmethod
+from abc import ABC, abstractmethod
 from pathlib import Path
 from datetime import datetime
 from email.message import EmailMessage
@@ -63,10 +63,10 @@ class MainEngine:
         self.engines: Dict[str, BaseEngine] = {}
         self.apps: Dict[str, BaseApp] = {}
         self.exchanges: List[Exchange] = []
-        self.vt_symbols:list[str] = SETTINGS.get('vt_symbols', [])
+        self.vt_symbols: list[str] = SETTINGS.get('vt_symbols', [])
 
-        os.chdir(TRADER_DIR)    # Change working directory
-        self.init_engines()     # Initialize function engines
+        os.chdir(TRADER_DIR)  # Change working directory
+        self.init_engines()  # Initialize function engines
 
     def add_engine(self, engine_class: Any) -> "BaseEngine":
         """
@@ -113,12 +113,14 @@ class MainEngine:
         self.add_engine(OmsEngine)
         self.add_engine(EmailEngine)
 
-    def write_log(self, msg: str,event_type:str=None, source: str = "",level=INFO) -> None:
+    def write_log(self, msg: str, source: str = "", event_type: str = EVENT_LOG, level=INFO) -> None:
         """
         Put log event with specific message.
         """
+        if not source:
+            source = self.__class__.__name__
         msg = f"[{source}] \t{msg}" if source else msg
-        log: LogData = LogData(msg=msg, gateway_name=source,level=level)
+        log: LogData = LogData(msg=msg, gateway_name=source, level=level)
         event: Event = Event(event_type, log)
         self.event_engine.put(event)
 
@@ -127,7 +129,6 @@ class MainEngine:
         Register log event to event engine.
         """
         self.get_engine("log").register_log_event(event_name)
-
 
     def get_gateway(self, gateway_name: str) -> BaseGateway:
         """
@@ -269,10 +270,10 @@ class BaseEngine(ABC):
     """
 
     def __init__(
-        self,
-        main_engine: MainEngine,
-        event_engine: EventEngine,
-        engine_name: str,
+            self,
+            main_engine: MainEngine,
+            event_engine: EventEngine,
+            engine_name: str,
     ) -> None:
         """"""
         self.main_engine: MainEngine = main_engine
@@ -620,11 +621,11 @@ class OmsEngine(BaseEngine):
             converter.update_order_request(req, vt_orderid)
 
     def convert_order_request(
-        self,
-        req: OrderRequest,
-        gateway_name: str,
-        lock: bool,
-        net: bool = False
+            self,
+            req: OrderRequest,
+            gateway_name: str,
+            lock: bool,
+            net: bool = False
     ) -> List[OrderRequest]:
         """
         Convert original order request according to given mode.
@@ -683,7 +684,7 @@ class EmailEngine(BaseEngine):
                 msg: EmailMessage = self.queue.get(block=True, timeout=1)
 
                 with smtplib.SMTP_SSL(
-                    SETTINGS["email.server"], SETTINGS["email.port"]
+                        SETTINGS["email.server"], SETTINGS["email.port"]
                 ) as smtp:
                     smtp.login(
                         SETTINGS["email.username"], SETTINGS["email.password"]

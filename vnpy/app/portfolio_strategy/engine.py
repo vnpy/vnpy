@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 
 from vnpy.event import Event, EventEngine
+from vnpy.event.events import EVENT_FACTOR
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
     OrderRequest,
@@ -26,7 +27,7 @@ from vnpy.trader.object import (
 from vnpy.trader.event import (
     EVENT_TICK,
     EVENT_ORDER,
-    EVENT_TRADE, EVENT_FACTOR
+    EVENT_TRADE
 )
 from vnpy.trader.constant import (
     Direction,

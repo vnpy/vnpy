@@ -6,26 +6,129 @@
 # @Author   : EvanHong
 # @Email    : 939778128@qq.com
 # @Description:
-from unittest import TestCase
 import multiprocessing
-from time import sleep
 from datetime import datetime, time
 from logging import INFO
-import pprint
+from time import sleep
+from unittest import TestCase
+
 import numpy as np
 import pandas as pd
 import polars as pl
 
-from vnpy.event import EventEngine,Event
-from vnpy.trader.setting import SETTINGS
-from vnpy.trader.engine import MainEngine
-from vnpy.trader.object import SubscribeRequest, BarData
-from vnpy.trader.constant import Exchange,Interval
-
-from vnpy.gateway.binance import BinanceSpotGateway
-from vnpy.app.data_recorder import DataRecorderApp
 from vnpy.app.factor_maker import FactorEngine
-from vnpy.app.factor_maker.factors import OPEN
+from vnpy.app.factor_maker import FactorMakerApp
+from vnpy.event import Event
+from vnpy.event import EventEngine
+from vnpy.gateway.binance import BinanceSpotGateway
+from vnpy.trader.constant import Exchange
+from vnpy.trader.engine import MainEngine
+from vnpy.trader.object import SubscribeRequest
+from vnpy.trader.setting import SETTINGS
+
+SETTINGS["log.active"] = True
+SETTINGS["log.level"] = INFO
+SETTINGS["log.console"] = True
+SETTINGS["log.file"] = True
+
+
+def run_child():
+    """
+    Running in the child process.
+    """
+
+    event_engine = EventEngine()
+    main_engine = MainEngine(event_engine)
+    main_engine.write_log("主引擎创建成功")
+
+    # connect to exchange
+    main_engine.add_gateway(BinanceSpotGateway, "BINANCE_SPOT")
+    binance_gateway_setting = {
+        "key": SETTINGS.get("gateway.api_key", ""),
+        "secret": SETTINGS.get("gateway.api_secret", ""),
+        "server": "REAL"
+    }
+    main_engine.connect(binance_gateway_setting, "BINANCE_SPOT")
+    main_engine.write_log("连接币安接口")
+    main_engine.subscribe(SubscribeRequest(symbol='btcusdt', exchange=Exchange.BINANCE), gateway_name='BINANCE_SPOT')
+
+    # # start data recorder
+    # data_recorder_engine=main_engine.add_app(DataRecorderApp)
+    # main_engine.write_log("启动数据记录程序")
+
+    factor_maker_engine = main_engine.add_app(FactorMakerApp)
+    factor_maker_engine.init_engine()
+    main_engine.write_log("启动因子计算程序")
+
+    # log_engine = main_engine.get_engine("log")
+    # event_engine.register(EVENT_CTA_LOG, log_engine.process_log_event)
+    # main_engine.write_log("注册日志事件监听")
+    #
+    # main_engine.connect(ctp_setting, "CTP")
+    # main_engine.write_log("连接CTP接口")
+    #
+    # sleep(10)
+    #
+    # cta_engine.init_engine()
+    # main_engine.write_log("CTA策略初始化完成")
+    #
+    # cta_engine.init_all_strategies()
+    # sleep(60)   # Leave enough time to complete strategy initialization
+    # main_engine.write_log("CTA策略全部初始化")
+    #
+    # cta_engine.start_all_strategies()
+    # main_engine.write_log("CTA策略全部启动")
+
+    while True:
+        # print(main_engine.event_engine._queue.get())
+        # print(main_engine.event_engine._queue.get().type)
+        # print(type(main_engine.event_engine._queue.get()))
+        sleep(1)
+
+
+def run_parent():
+    """
+    Running in the parent process.
+    """
+    print("启动CTA策略守护父进程")
+
+    # Chinese futures market trading period (day/night)
+    DAY_START = time(8, 45)
+    DAY_END = time(15, 30)
+
+    NIGHT_START = time(20, 45)
+    NIGHT_END = time(2, 45)
+
+    child_process = None
+
+    while True:
+        current_time = datetime.now().time()
+        trading = False
+
+        # Check whether in trading period
+        if (
+                (current_time >= DAY_START and current_time <= DAY_END)
+                or (current_time >= NIGHT_START)
+                or (current_time <= NIGHT_END)
+        ) or True:
+            trading = True
+
+        # Start child process in trading period
+        if trading and child_process is None:
+            print("启动子进程")
+            child_process = multiprocessing.Process(target=run_child)
+            child_process.start()
+            print("子进程启动成功")
+
+        # 非记录时间则退出子进程
+        if not trading and child_process is not None:
+            print("关闭子进程")
+            child_process.terminate()
+            child_process.join()
+            child_process = None
+            print("子进程关闭成功")
+
+        sleep(5)
 
 
 class TestFactorEngine(TestCase):
@@ -34,16 +137,30 @@ class TestFactorEngine(TestCase):
         main_engine = MainEngine(event_engine)
         self.factor_engine = FactorEngine(main_engine, event_engine)
         self.factor_engine.init_engine()
+        print(self.factor_engine.memory_bar)
+        print(self.factor_engine.memory_factor)
 
-        date_range = pd.date_range("2024-01-01", periods=200, freq="1min")
-        memory = {
-            "open": pl.DataFrame(data=np.random.random(200)),
-            "high": pl.DataFrame(data=np.random.random(200)),
-            "low": pl.DataFrame(data=np.random.random(200)),
-            "close": pl.DataFrame(data=np.random.random(200)),
-            "volume": pl.DataFrame(data=np.random.random(200)),
-        }
-        self.factor_engine.memory=memory
+        data = {'datetime': pd.date_range("2024-01-01", periods=200, freq="1min")}
+        schema = {'datetime': datetime}
+        for symbol in self.factor_engine.main_engine.vt_symbols:
+            data[symbol] = np.random.random(200)
+            schema[symbol] = pl.Float32
+        for b in ["open", "high", "low", "close", "volume"]:
+            self.factor_engine.memory_bar[b] = pl.concat(
+                [self.factor_engine.memory_bar[b], pl.DataFrame(data=data, schema=schema)], how='vertical')
+        for f in self.factor_engine.factors.keys():
+            self.factor_engine.memory_factor[f] = pl.concat(
+                [self.factor_engine.memory_factor[f], pl.DataFrame(data=data, schema=schema)], how='vertical')
+
+        print(self.factor_engine.memory_bar)
+        print(self.factor_engine.memory_factor)
+
+    def test_sth(self):
+        a = pl.DataFrame(
+            data={'datetime': [], 'symbol': [], 'open': [], 'high': [], 'low': [], 'close': [], 'volume': []},
+            schema={'datetime': datetime, 'symbol': pl.Utf8, 'open': pl.Float64, 'high': pl.Float64, 'low': pl.Float64,
+                    'close': np.float16, 'volume': float})
+        print(a)
 
     def test_init(self):
         self.init()
@@ -80,16 +197,14 @@ class TestFactorEngine(TestCase):
             main_engine.subscribe(SubscribeRequest(symbol='btcusdt', exchange=Exchange.BINANCE),
                                   gateway_name='BINANCE_SPOT')
 
-
         self.init()
 
-        res=self.factor_engine.start_calculation()
+        res = self.factor_engine.start_calculation()
         print(res)
 
-        buffer=[]
+        buffer = []
         while not self.factor_engine.event_engine._queue.empty():
-
-            res: Event=self.factor_engine.event_engine._queue.get(block=True, timeout=1)
+            res: Event = self.factor_engine.event_engine._queue.get(block=True, timeout=1)
             buffer.append(res)
             # sleep(10)
         print(buffer)
