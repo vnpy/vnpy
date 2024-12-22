@@ -8,7 +8,7 @@ import dask
 import polars as pl
 
 from vnpy.event import EventEngine, Event
-from vnpy.event.events import EVENT_BAR_FACTOR, EVENT_FACTOR,EVENT_FACTORMAKER_LOG, EVENT_FACTORMAKER, EVENT_FACTOR_RECORD
+from vnpy.event.events import EVENT_BAR_FACTOR, EVENT_FACTOR, EVENT_FACTORMAKER
 from vnpy.trader.constant import Interval, Exchange
 from vnpy.trader.database import BaseDatabase, get_database, DB_TZ
 from vnpy.trader.engine import BaseEngine, MainEngine
@@ -42,9 +42,10 @@ class FactorEngine(BaseEngine):
 
         self.database = get_database()
         self.dt = None
-        self.bars = {}
+        self.bars = {}  # bar data containing all vt_symbols
 
         self.vt_symbols = main_engine.vt_symbols
+        self.subscribed_symbols = main_engine.subscribed_symbols
 
     def init_engine(self) -> None:
         """"""
@@ -87,7 +88,7 @@ class FactorEngine(BaseEngine):
         self.event_engine.register(EVENT_BAR_FACTOR, self.process_bar_factor_event)
         self.event_engine.register(EVENT_FACTOR, self.process_factor_event)
 
-        self.main_engine.register_log_event(EVENT_FACTORMAKER_LOG)
+        # self.main_engine.register_log_event(EVENT_FACTORMAKER_LOG)
 
     def get_factor_parameters(self, factor_key) -> dict:
         """获取策略参数"""
@@ -97,7 +98,7 @@ class FactorEngine(BaseEngine):
     def init_memory(self) -> None:
         data = {'datetime': []}
         schema = {'datetime': datetime}
-        for symbol in self.vt_symbols:
+        for symbol in self.subscribed_symbols:
             data[symbol] = []
             schema[symbol] = pl.Float32
         for b in ["open", "high", "low", "close", "volume"]:
@@ -107,8 +108,8 @@ class FactorEngine(BaseEngine):
 
     def init_all_factors(self) -> None:
         """初始化所有因子"""
-        factors = init_all_factors(load_factor_setting(self.setting_filename))
-        self.factors = {f.factor_key: f for f in factors}
+        inited_factors = init_all_factors(load_factor_setting(self.setting_filename), factor_mode=FactorMode.Live)
+        self.factors = {f.factor_key: f for f in inited_factors}
 
         # get max_memory_length from all potential attributes
         self.max_memory_length = max([self.max_memory_length] + [
@@ -242,23 +243,32 @@ class FactorEngine(BaseEngine):
 
     def on_bars(self, dt: datetime, bars: dict) -> None:
         """Process a batch of bars."""
-        open_prices = [bar.open_price for bar in bars.values()]
-        high_prices = [bar.high_price for bar in bars.values()]
-        low_prices = [bar.low_price for bar in bars.values()]
-        close_prices = [bar.close_price for bar in bars.values()]
-        volumes = [bar.volume for bar in bars.values()]
+        print(f"on_bars: {dt}, {bars.keys()} {bars}", flush=True)
 
-        open_prices = pl.DataFrame(data={'datetime': dt, 'open': open_prices})
-        high_prices = pl.DataFrame(data={'datetime': dt, 'high': high_prices})
-        low_prices = pl.DataFrame(data={'datetime': dt, 'low': low_prices})
-        close_prices = pl.DataFrame(data={'datetime': dt, 'close': close_prices})
-        volumes = pl.DataFrame(data={'datetime': dt, 'volume': volumes})
+        # dict of dicts, {'open': {'datetime': dt, 'symbol1': symbol1, 'symbol2': symbol2, }, ...}
+        data = {
+            "open": {'datetime': dt},
+            "high": {'datetime': dt},
+            "low": {'datetime': dt},
+            "close": {'datetime': dt},
+            "volume": {'datetime': dt},
+        }
+        for symbol, bar in bars.items():
+            data["open"][symbol] = bar.open_price
+            data["high"][symbol] = bar.high_price
+            data["low"][symbol] = bar.low_price
+            data["close"][symbol] = bar.close_price
+            data["volume"][symbol] = bar.volume
 
-        self.memory_bar["open"] = pl.concat([self.memory_bar["open"], open_prices], how='vertical')
-        self.memory_bar["high"] = pl.concat([self.memory_bar["high"], high_prices], how='vertical')
-        self.memory_bar["low"] = pl.concat([self.memory_bar["low"], low_prices], how='vertical')
-        self.memory_bar["close"] = pl.concat([self.memory_bar["close"], close_prices], how='vertical')
-        self.memory_bar["volume"] = pl.concat([self.memory_bar["volume"], volumes], how='vertical')
+        tmp = {}
+        for key, df in data.items():
+            tmp[key] = pl.DataFrame(data=df)
+
+        self.memory_bar["open"] = pl.concat([self.memory_bar["open"], tmp["open"]], how='vertical')
+        self.memory_bar["high"] = pl.concat([self.memory_bar["high"], tmp["high"]], how='vertical')
+        self.memory_bar["low"] = pl.concat([self.memory_bar["low"], tmp["low"]], how='vertical')
+        self.memory_bar["close"] = pl.concat([self.memory_bar["close"], tmp["close"]], how='vertical')
+        self.memory_bar["volume"] = pl.concat([self.memory_bar["volume"], tmp["volume"]], how='vertical')
 
         self._truncate_memory_bar()
 
@@ -357,13 +367,17 @@ class FactorEngine(BaseEngine):
 
     def process_bar_event(self, event: Event) -> None:
         """Process incoming bar data."""
-        bar = event.data
-        if not self.dt or bar.datetime > self.dt:
-            if self.dt:
-                self.on_bars(self.dt, self.bars)
+        bar: BarData = event.data
+        if self.dt is None:
             self.dt = bar.datetime
-            self.bars = {}
-        self.bars[bar.vt_symbol] = bar
+            self.bars[bar.vt_symbol] = bar
+        else:
+            if bar.datetime == self.dt:
+                self.bars[bar.vt_symbol] = bar
+            elif bar.datetime > self.dt:
+                self.on_bars(self.dt, self.bars)  # push data to factor calculation
+                self.dt = bar.datetime
+                self.bars = {bar.vt_symbol: bar}  # totally create a new self.bars and add the new bar
 
     def process_bar_factor_event(self, event: Event) -> None:
         """K-line (bar) data push"""
@@ -390,11 +404,11 @@ class FactorEngine(BaseEngine):
             msg: str = f"An exception occurred, factor has been stopped\n{traceback.format_exc()}"
             self.write_log(msg, factor)
 
-    def write_log(self, msg: str, factor: FactorTemplate = None, event_type=EVENT_FACTORMAKER_LOG, level=INFO) -> None:
+    def write_log(self, msg: str, factor: FactorTemplate = None, level=INFO) -> None:
         """输出日志"""
         if factor:
             msg: str = f"{factor.factor_key}: {msg}"
-        self.main_engine.write_log(msg, event_type=event_type, source=APP_NAME, level=level)
+        self.main_engine.write_log(msg, source=APP_NAME, level=level)
 
     def put_factor_event(self, factor: FactorTemplate) -> None:
         """推送事件更新策略界面"""

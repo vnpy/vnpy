@@ -18,6 +18,7 @@ import polars as pl
 
 from vnpy.app.factor_maker import FactorEngine
 from vnpy.app.factor_maker import FactorMakerApp
+from vnpy.app.data_recorder import DataRecorderApp
 from vnpy.event import Event
 from vnpy.event import EventEngine
 from vnpy.gateway.binance import BinanceSpotGateway
@@ -26,15 +27,12 @@ from vnpy.trader.engine import MainEngine
 from vnpy.trader.object import SubscribeRequest
 from vnpy.trader.setting import SETTINGS
 
-SETTINGS["log.active"] = True
-SETTINGS["log.level"] = INFO
-SETTINGS["log.console"] = True
-SETTINGS["log.file"] = True
-
 
 def run_child():
     """
-    Running in the child process.
+    1. start gateway
+    2. feed data to factor engine
+    3. push bar and factors into database
     """
 
     event_engine = EventEngine()
@@ -50,13 +48,13 @@ def run_child():
     }
     main_engine.connect(binance_gateway_setting, "BINANCE_SPOT")
     main_engine.write_log("连接币安接口")
-    main_engine.subscribe(SubscribeRequest(symbol='btcusdt', exchange=Exchange.BINANCE), gateway_name='BINANCE_SPOT')
+    main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
 
-    # # start data recorder
-    # data_recorder_engine=main_engine.add_app(DataRecorderApp)
-    # main_engine.write_log("启动数据记录程序")
+    # start data recorder
+    data_recorder_engine=main_engine.add_app(DataRecorderApp)
+    main_engine.write_log("启动数据记录程序")
 
-    factor_maker_engine = main_engine.add_app(FactorMakerApp)
+    factor_maker_engine:FactorEngine = main_engine.add_app(FactorMakerApp)
     factor_maker_engine.init_engine()
     main_engine.write_log("启动因子计算程序")
 
@@ -90,7 +88,7 @@ def run_parent():
     """
     Running in the parent process.
     """
-    print("启动CTA策略守护父进程")
+    print("启动父进程")
 
     # Chinese futures market trading period (day/night)
     DAY_START = time(8, 45)
@@ -173,30 +171,6 @@ class TestFactorEngine(TestCase):
 
         """
 
-        def run_child():
-            """
-            Running in the child process.
-            """
-            SETTINGS["log.file"] = True
-
-            event_engine = EventEngine()
-            main_engine = MainEngine(event_engine)
-            # main_engine.add_gateway(CtpGateway)
-            # cta_engine = main_engine.add_app(CtaStrategyApp)
-            main_engine.write_log("主引擎创建成功")
-
-            main_engine.add_gateway(BinanceSpotGateway, "BINANCE_SPOT")
-            binance_gateway_setting = {
-                "key": SETTINGS.get("gateway.api_key", ""),
-                "secret": SETTINGS.get("gateway.api_secret", ""),
-                "server": "REAL"
-            }
-            main_engine.connect(binance_gateway_setting, "BINANCE_SPOT")
-            main_engine.write_log("连接币安接口")
-
-            main_engine.subscribe(SubscribeRequest(symbol='btcusdt', exchange=Exchange.BINANCE),
-                                  gateway_name='BINANCE_SPOT')
-
         self.init()
 
         res = self.factor_engine.start_calculation()
@@ -211,35 +185,5 @@ class TestFactorEngine(TestCase):
 
         # pprint.pprint(self.factor_engine.__dict__)
 
-    def test_init_engine(self):
-        self.fail()
-
-    def test_get_all_factor_class_names(self):
-        self.fail()
-
-    def test_load_factor_class(self):
-        self.fail()
-
-    def test_load_factor_setting(self):
-        self.fail()
-
-    def test_save_factor_setting(self):
-        self.fail()
-
-    def test_load_factor_data(self):
-        self.fail()
-
-    def test_sync_factor_data(self):
-        self.fail()
-
-    def test_start_all_factors(self):
-        self.fail()
-
-    def test_start_factor(self):
-        self.fail()
-
-    def test_load_bar(self):
-        self.fail()
-
-    def test_update_memory(self):
-        self.fail()
+    def test_real_run(self):
+        run_parent()

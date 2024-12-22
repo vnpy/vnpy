@@ -3,6 +3,7 @@ import polars as pl
 
 from vnpy.trader.utility import load_json, save_json
 import vnpy.app.factor_maker.factors as factors
+from vnpy.app.factor_maker.base import FactorMode
 
 from typing import Dict, Any
 import dask
@@ -37,11 +38,13 @@ def load_factor_setting(setting_filename: str):
     return js
 
 
-def init_all_factors(f_setting: Dict):
+def init_all_factors(f_setting: Dict, factor_mode: FactorMode):
     """initiate factors from the factor setting with a for loop, but the factor will init dependency factors recursively
 
     Parameters
     ----------
+    factor_mode : FactorMode
+        Live = "live", Backtest = "backtest"
     f_setting : Dict
         factor settings saved in json file
 
@@ -52,8 +55,9 @@ def init_all_factors(f_setting: Dict):
     factors_list = []
     for module_name, module_setting in f_setting.items():
         f_class = get_factor_class(module_setting["class_name"])
-        f_class = f_class(setting={module_name: module_setting}, **module_setting["params"])  # recursion
-        factors_list.append(f_class)
+        factor = f_class(setting={module_name: module_setting}, **module_setting["params"])  # recursion
+        factor.factor_mode = factor_mode
+        factors_list.append(factor)
     return factors_list
 
 

@@ -9,6 +9,7 @@ from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
 from typing import Any, Type, Dict, List, Optional
+import itertools
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -63,7 +64,8 @@ class MainEngine:
         self.engines: Dict[str, BaseEngine] = {}
         self.apps: Dict[str, BaseApp] = {}
         self.exchanges: List[Exchange] = []
-        self.vt_symbols: list[str] = SETTINGS.get('vt_symbols', [])
+        self.subscribed_symbols: list[str] = SETTINGS.get('gateway.subscriptions', [])
+        self.vt_symbols: list[str] = list(itertools.chain(*[[(symbol, exchange) for exchange in self.exchanges] for symbol in self.subscribed_symbols]))
 
         os.chdir(TRADER_DIR)  # Change working directory
         self.init_engines()  # Initialize function engines
@@ -113,7 +115,7 @@ class MainEngine:
         self.add_engine(OmsEngine)
         self.add_engine(EmailEngine)
 
-    def write_log(self, msg: str, source: str = "", event_type: str = EVENT_LOG, level=INFO) -> None:
+    def write_log(self, msg: str, source: str = "", level=INFO) -> None:
         """
         Put log event with specific message.
         """
@@ -121,14 +123,8 @@ class MainEngine:
             source = self.__class__.__name__
         msg = f"[{source}] \t{msg}" if source else msg
         log: LogData = LogData(msg=msg, gateway_name=source, level=level)
-        event: Event = Event(event_type, log)
+        event: Event = Event(EVENT_LOG, log)
         self.event_engine.put(event)
-
-    def register_log_event(self, event_name: str) -> None:
-        """
-        Register log event to event engine.
-        """
-        self.get_engine("log").register_log_event(event_name)
 
     def get_gateway(self, gateway_name: str) -> BaseGateway:
         """
@@ -190,6 +186,14 @@ class MainEngine:
         gateway: BaseGateway = self.get_gateway(gateway_name)
         if gateway:
             gateway.subscribe(req)
+
+    def subscribe_all(self, gateway_name: str) -> None:
+        """
+        Subscribe all data update of a specific gateway.
+        """
+        for symbol in self.subscribed_symbols:
+            req: SubscribeRequest = SubscribeRequest(symbol=symbol, exchange=Exchange.BINANCE)
+            self.subscribe(req, gateway_name)
 
     def send_order(self, req: OrderRequest, gateway_name: str) -> str:
         """

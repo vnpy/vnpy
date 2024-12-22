@@ -9,7 +9,7 @@ from logging import Logger, CRITICAL, FATAL, ERROR, WARNING, WARN, INFO, DEBUG, 
 import polars as pl
 
 from vnpy.event import Event, EventEngine
-from vnpy.event.events import EVENT_RECORDER_UPDATE, EVENT_RECORDER_LOG, EVENT_RECORDER_EXCEPTION, EVENT_RECORDER_RECORD
+from vnpy.event.events import EVENT_RECORDER_UPDATE, EVENT_RECORDER_EXCEPTION, EVENT_RECORDER_RECORD
 from vnpy.trader.engine import BaseEngine, MainEngine, OmsEngine
 from vnpy.trader.object import (
     SubscribeRequest,
@@ -74,14 +74,14 @@ class RecorderEngine(BaseEngine):
                   task_type: Literal["tick", "bar", "factor", None] = None,
                   data=None,
                   force_save: bool = False):
-        """
+        """The actual implementation of the core functions that put the data into the database
         
         Parameters
         ----------
         task_type :
         data :
         force_save : bool
-            无视buffer_size, 强制保存当前所有的数据
+            Ignore buffer_size and force all current data to be saved
 
         Returns
         -------
@@ -93,7 +93,7 @@ class RecorderEngine(BaseEngine):
             assert isinstance(data, BarData)
             self.buffer_bar[data.vt_symbol].append(data)
             if data.volume < 1000:
-                print(f"data_recorder.RecorderEngine.save_data: {data.__dict__}")
+                print(f"data_recorder.{self.__name__}.{self.save_data.__name__}: {data.__dict__}")
                 raise ValueError(f"data_recorder.RecorderEngine.save_data: {data.__dict__}")
             to_remove = []  # 保存完数据后, 将其从buffer中删除
             for k, v in self.buffer_bar.items():
@@ -114,12 +114,11 @@ class RecorderEngine(BaseEngine):
                 for k in to_remove:
                     self.buffer_factor[k] = []
             elif isinstance(data, pl.DataFrame):
-                self.database_manager.save_factor_data(name=data.factor_name, data=data)
+                self.database_manager.save_factor_data(name=data.columns[-1], data=data)
             else:
                 raise TypeError(f"Unsupported data type: {type(data)}")
 
         elif task_type is None and data is None:
-            raise TypeError("task_type and data 不希望都为None, 需要完善当前逻辑")
             # 强制保存当前所有的数据
             for k, v in self.buffer_bar.items():
                 if len(v) == 0: continue
@@ -136,8 +135,6 @@ class RecorderEngine(BaseEngine):
             try:
                 task = self.queue.get(timeout=1)
                 task_type, data = task
-                # print(task_type, data.__dict__)
-
                 self.save_data(task_type, data)
 
             except Empty:
@@ -161,12 +158,12 @@ class RecorderEngine(BaseEngine):
     def add_bar_recording(self, vt_symbol: str):
         """add a symbol to the bar recording list, which means that the bar data of this symbol will be recorded"""
         if vt_symbol in self.bar_recordings:
-            self.write_log(f"已在K线记录列表中：{vt_symbol}")
+            self.write_log(f"已在K线记录列表中：{vt_symbol}", level=NOTSET)
             return
 
         contract = self.main_engine.get_contract(vt_symbol)
         if not contract:
-            self.write_log(f"找不到合约：{vt_symbol}")
+            self.write_log(f"找不到合约：{vt_symbol}", level=ERROR)
             return
 
         self.bar_recordings[vt_symbol] = {
@@ -179,17 +176,17 @@ class RecorderEngine(BaseEngine):
         # self.save_setting()
         self.put_event()
 
-        self.write_log(f"添加K线记录成功：{vt_symbol}")
+        self.write_log(f"添加K线记录成功：{vt_symbol}", level=DEBUG)
 
     def add_tick_recording(self, vt_symbol: str):
-        """"""
+        """add a symbol to the tick recording list, which means that the tick data of this symbol will be recorded"""
         if vt_symbol in self.tick_recordings:
-            self.write_log(f"已在Tick记录列表中：{vt_symbol}")
+            self.write_log(f"已在Tick记录列表中：{vt_symbol}", level=NOTSET)
             return
 
         contract = self.main_engine.get_contract(vt_symbol)
         if not contract:
-            self.write_log(f"找不到合约：{vt_symbol}")
+            self.write_log(f"找不到合约：{vt_symbol}", level=ERROR)
             return
 
         self.tick_recordings[vt_symbol] = {
@@ -202,12 +199,12 @@ class RecorderEngine(BaseEngine):
         # self.save_setting()
         self.put_event()
 
-        self.write_log(f"添加Tick记录成功：{vt_symbol}")
+        self.write_log(f"添加Tick记录成功：{vt_symbol}", level=DEBUG)
 
     def remove_bar_recording(self, vt_symbol: str):
-        """"""
+        """remove a symbol from the bar recording list"""
         if vt_symbol not in self.bar_recordings:
-            self.write_log(f"不在K线记录列表中：{vt_symbol}")
+            self.write_log(f"不在K线记录列表中：{vt_symbol}", level=DEBUG)
             return
 
         self.bar_recordings.pop(vt_symbol)
@@ -217,9 +214,9 @@ class RecorderEngine(BaseEngine):
         self.write_log(f"移除K线记录成功：{vt_symbol}")
 
     def remove_tick_recording(self, vt_symbol: str):
-        """"""
+        """remove a symbol from the tick recording list"""
         if vt_symbol not in self.tick_recordings:
-            self.write_log(f"不在Tick记录列表中：{vt_symbol}")
+            self.write_log(f"不在Tick记录列表中：{vt_symbol}", level=DEBUG)
             return
 
         self.tick_recordings.pop(vt_symbol)
@@ -235,7 +232,7 @@ class RecorderEngine(BaseEngine):
         # self.event_engine.register(EVENT_FACTOR, self.process_factor_event)
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
 
-        self.main_engine.register_log_event(EVENT_RECORDER_LOG)
+        # self.main_engine.register_log_event(EVENT_RECORDER_LOG)
 
     def process_bar_event(self, event: Event):
         """"""
@@ -265,7 +262,7 @@ class RecorderEngine(BaseEngine):
 
     def write_log(self, msg: str, level=INFO) -> None:
         """输出日志"""
-        self.main_engine.write_log(msg, event_type=EVENT_RECORDER_LOG, source=APP_NAME, level=level)
+        self.main_engine.write_log(msg, source=APP_NAME, level=level)
 
     def put_event(self):
         """"""
