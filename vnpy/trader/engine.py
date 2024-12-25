@@ -63,9 +63,9 @@ class MainEngine:
         self.gateways: Dict[str, BaseGateway] = {}
         self.engines: Dict[str, BaseEngine] = {}
         self.apps: Dict[str, BaseApp] = {}
-        self.exchanges: List[Exchange] = []
+        self.exchanges: List[Exchange] = SETTINGS.get('gateway.exchanges', [])
         self.subscribed_symbols: list[str] = SETTINGS.get('gateway.subscriptions', [])
-        self.vt_symbols: list[str] = list(itertools.chain(*[[(symbol, exchange) for exchange in self.exchanges] for symbol in self.subscribed_symbols]))
+        self.vt_symbols: list[str] = list(itertools.chain(*[[f"{symbol}.{exchange}" for exchange in self.exchanges] for symbol in self.subscribed_symbols]))
 
         os.chdir(TRADER_DIR)  # Change working directory
         self.init_engines()  # Initialize function engines

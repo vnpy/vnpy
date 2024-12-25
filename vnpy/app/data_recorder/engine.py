@@ -92,9 +92,9 @@ class RecorderEngine(BaseEngine):
         elif task_type == "bar":
             assert isinstance(data, BarData)
             self.buffer_bar[data.vt_symbol].append(data)
-            if data.volume < 1000:
-                print(f"data_recorder.{self.__name__}.{self.save_data.__name__}: {data.__dict__}")
-                raise ValueError(f"data_recorder.RecorderEngine.save_data: {data.__dict__}")
+            # if data.volume < 1000:
+            #     print(f"data_recorder.RecorderEngine.{self.save_data.__name__}: {data.__dict__}")
+            #     raise ValueError(f"data_recorder.RecorderEngine.save_data: {data.__dict__}")
             to_remove = []  # 保存完数据后, 将其从buffer中删除
             for k, v in self.buffer_bar.items():
                 if len(v) >= self.buffer_size or force_save:

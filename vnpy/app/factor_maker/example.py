@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from vnpy.app.factor_maker import FactorEngine
-from vnpy.app.factor_maker.backtesting_v2 import FactorOptimizer, FactorBacktestingEngine
+# from vnpy.app.factor_maker.backtesting_v2 import FactorOptimizer, FactorBacktestingEngine
 from vnpy.app.factor_maker.base import FactorMode
 from vnpy.app.factor_maker.factors.technical import MACD
 from vnpy.trader.constant import Interval

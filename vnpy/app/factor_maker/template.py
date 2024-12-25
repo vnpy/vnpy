@@ -100,7 +100,9 @@ class FactorTemplate(ABC):
         for f_setting in self.dependencies_factor:  # list of dicts
             for module_name, module_setting in f_setting.items():
                 f_class = getattr(self.module, module_setting["class_name"])
-                f_class = f_class({module_name: module_setting}, **module_setting["params"])  # recursion
+                kwargs=module_setting["params"]
+                kwargs["factor_mode"] = self.factor_mode
+                f_class = f_class({module_name: module_setting}, **kwargs)  # recursion
                 dependencies_factor_initialized.append(f_class)
 
         self.dependencies_factor = dependencies_factor_initialized
@@ -113,6 +115,7 @@ class FactorTemplate(ABC):
             setting (dict): Settings for the factor.
             kwargs: Additional parameters.
         """
+        self.factor_mode = kwargs.get("factor_mode", FactorMode.Backtest)
         self.params: FactorParameters = FactorParameters()  # 新增字段, 希望用一个class来存储参数数据, 并且能方便地save json/load json
         self.module = importlib.import_module(".factors", package=__package__)
         self.from_dict(setting)
@@ -233,13 +236,16 @@ class FactorTemplate(ABC):
             pass
         self.trading = False
 
-    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str, Any]]], historical_data,
+    def calculate(self, input_data: Dict[str, Any], historical_data: Dict[str, Any],
                   *args,
                   **kwargs) -> Any:
         """unified api for calculating factor value
 
         Parameters:
-            input_data (pl.DataFrame): Input data for calculation.
+            input_data:
+                dask computed result
+            historical_data:
+                historical data of this factor, append and then truncate
 
         Returns:
             Any: Calculated factor value(s).
@@ -253,7 +259,7 @@ class FactorTemplate(ABC):
         elif isinstance(input_data, RollingDataFrame):
             raise NotImplementedError("not supported yet")
         elif isinstance(input_data, dict):
-            if isinstance(input_data["ohlcv"], pl.DataFrame):
+            if isinstance(input_data.get("ohlcv", None), pl.DataFrame):
                 raise NotImplementedError("not supported yet")
                 return self.calculate_polars(input_data["ohlcv"], *args, **kwargs)
             else:
@@ -263,7 +269,7 @@ class FactorTemplate(ABC):
                 elif isinstance(sample_data, RollingDataFrame):
                     raise NotImplementedError("not supported yet")
 
-            return self.calculate_dict(input_data, *args, **kwargs)
+                return self.calculate_dict(input_data, *args, **kwargs)
 
         else:
             raise NotImplementedError("Only polars DataFrame is supported for now.")
@@ -272,7 +278,7 @@ class FactorTemplate(ABC):
         pass
 
     def calculate_dict(self, input_data: Dict[str, pl.DataFrame], *args, **kwargs) -> Any:
-        return self.calculate_polars(pl.DataFrame(input_data), *args, **kwargs)
+        pass
 
     def from_dict(self, dic: Optional[dict] = None) -> None:
         """

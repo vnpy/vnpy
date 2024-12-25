@@ -334,7 +334,6 @@ class FactorBacktester:
 
         return self.performance_metrics
 
-
     def run_backtesting_pandas(self, factor_values: pd.DataFrame, if_plot: bool = True) -> Dict[str, float]:
         """
         Run the backtesting process with new factor values.

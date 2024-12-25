@@ -135,23 +135,24 @@ class TestFactorEngine(TestCase):
         main_engine = MainEngine(event_engine)
         self.factor_engine = FactorEngine(main_engine, event_engine)
         self.factor_engine.init_engine()
-        print(self.factor_engine.memory_bar)
-        print(self.factor_engine.memory_factor)
+        # print(self.factor_engine.memory_bar)
+        # print(self.factor_engine.memory_factor)
 
         data = {'datetime': pd.date_range("2024-01-01", periods=200, freq="1min")}
         schema = {'datetime': datetime}
         for symbol in self.factor_engine.main_engine.vt_symbols:
             data[symbol] = np.random.random(200)
             schema[symbol] = pl.Float32
+
         for b in ["open", "high", "low", "close", "volume"]:
             self.factor_engine.memory_bar[b] = pl.concat(
                 [self.factor_engine.memory_bar[b], pl.DataFrame(data=data, schema=schema)], how='vertical')
-        for f in self.factor_engine.factors.keys():
+        for f in self.factor_engine.top_level_factors.keys():
             self.factor_engine.memory_factor[f] = pl.concat(
                 [self.factor_engine.memory_factor[f], pl.DataFrame(data=data, schema=schema)], how='vertical')
 
-        print(self.factor_engine.memory_bar)
-        print(self.factor_engine.memory_factor)
+        # print(self.factor_engine.memory_bar)
+        # print(self.factor_engine.memory_factor)
 
     def test_sth(self):
         a = pl.DataFrame(
@@ -173,7 +174,7 @@ class TestFactorEngine(TestCase):
 
         self.init()
 
-        res = self.factor_engine.start_calculation()
+        res = self.factor_engine.process_bar_event()
         print(res)
 
         buffer = []

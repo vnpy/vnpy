@@ -6,23 +6,39 @@ from vnpy.trader.constant import Interval
 from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.app.factor_maker.factors.bar.open import OPEN
 from vnpy.app.factor_maker.factors.bar.volume import VOLUME
+from typing import Optional, Union, Dict, Any
 
+import polars as pl
+
+from vnpy.app.factor_maker.template import FactorTemplate
+from vnpy.trader.constant import Interval
+from vnpy.app.factor_maker.base import FactorMode
 
 class VWAP(FactorTemplate):
     factor_name = 'vwap'
     dependencies_factor = []
     freq = Interval.MINUTE
+    factor_mode = FactorMode.Backtest
 
-    def __init__(self, setting, window: int = None):
-        super().__init__(setting, window=window)
+    def __init__(self, setting, window: int = None,**kwargs):
+        """
+        Initialize VWAP with its settings and rolling window size.
+        """
+        super().__init__(setting, window=window,**kwargs)
 
     def __init_dependencies__(self):
+        """
+        Define dependencies for the VWAP factor.
+        """
+        super().__init_dependencies__()
+
         self.open = OPEN({})
         self.volume = VOLUME({})
+        self.open.factor_mode = self.factor_mode
+        self.volume.factor_mode = self.factor_mode
         setattr(self, 'dependencies_factor', [self.open, self.volume])
 
-    def calculate(self, input_data: Dict[str, Any], memory: Optional[pl.DataFrame] = None, *args,
-                  **kwargs) -> pl.DataFrame:
+    def calculate(self, input_data: Dict[str, Any], memory: Optional[pl.DataFrame] = None, *args, **kwargs) -> pl.DataFrame:
         """
         Calculate the rolling VWAP (Volume Weighted Average Price) for Live Trading or Backtesting.
 
@@ -33,6 +49,10 @@ class VWAP(FactorTemplate):
         Returns:
             pl.DataFrame: Updated VWAP DataFrame.
         """
+        # Validate factor_mode
+        if self.factor_mode not in [FactorMode.Backtest, FactorMode.Live]:
+            raise ValueError("Invalid factor_mode. Must be 'Backtest' or 'Live'.")
+
         # Retrieve open and volume data
         open_prices = input_data.get(self.open.factor_key)
         volumes = input_data.get(self.volume.factor_key)
@@ -46,8 +66,11 @@ class VWAP(FactorTemplate):
         if window is None:
             raise ValueError("The rolling window size (window) is not set.")
 
-        if memory is not None:
-            # Live Trading Mode
+        if self.factor_mode == FactorMode.Live:
+            # Live Mode: Ensure memory is provided
+            if memory is None:
+                raise ValueError("Memory must be provided in 'Live' mode.")
+
             # Get tail(window) of the input data
             open_tail = open_prices.tail(window)
             volume_tail = volumes.tail(window)
@@ -68,10 +91,11 @@ class VWAP(FactorTemplate):
                 "datetime": datetime_col,
                 **{col: [latest_vwap[col]] for col in latest_vwap.columns}
             })
-            memory = pl.concat([memory, new_row], how="vertical")  # Keep memory within window size
+            memory = pl.concat([memory, new_row], how="vertical")
             return memory
-        else:
-            # Backtesting Mode
+
+        elif self.factor_mode == FactorMode.Backtest:
+            # Backtesting Mode: Perform calculations on the entire dataset
             # Preserve the datetime column
             datetime_col = None
             if "datetime" in open_prices.columns and "datetime" in volumes.columns:
@@ -94,6 +118,3 @@ class VWAP(FactorTemplate):
                 vwap = vwap.insert_column(0, datetime_col)
 
             return vwap
-
-    def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
-        pass
