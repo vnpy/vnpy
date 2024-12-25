@@ -6,15 +6,13 @@
 # @Author   : EvanHong
 # @Email    : 939778128@qq.com
 # @Description:
-import itertools
 import re
-from typing import Dict, List, Any
+from typing import Dict
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
-
 import polars as pl
+from matplotlib import pyplot as plt
 
 
 def resample_bar_polars(data: Dict[str, pl.DataFrame], trading_freq: str) -> Dict[str, pl.DataFrame]:
@@ -333,7 +331,6 @@ class FactorBacktester:
             plot_portfolio_performance_polars(portfolio_values)
 
         return self.performance_metrics
-
 
     def run_backtesting_pandas(self, factor_values: pd.DataFrame, if_plot: bool = True) -> Dict[str, float]:
         """
