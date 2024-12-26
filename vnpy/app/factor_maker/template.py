@@ -100,7 +100,7 @@ class FactorTemplate(ABC):
         for f_setting in self.dependencies_factor:  # list of dicts
             for module_name, module_setting in f_setting.items():
                 f_class = getattr(self.module, module_setting["class_name"])
-                kwargs=module_setting["params"]
+                kwargs = module_setting["params"]
                 kwargs["factor_mode"] = self.factor_mode
                 f_class = f_class({module_name: module_setting}, **kwargs)  # recursion
                 dependencies_factor_initialized.append(f_class)
@@ -236,23 +236,20 @@ class FactorTemplate(ABC):
             pass
         self.trading = False
 
-    def calculate(self, input_data: Dict[str, Any], historical_data: Dict[str, Any],
+    def calculate(self, input_data: Dict[str, Any], memory: Dict[str, Any],
                   *args,
-                  **kwargs) -> Any:
+                  **kwargs) -> pl.DataFrame:
         """unified api for calculating factor value
 
         Parameters:
             input_data:
-                dask computed result
-            historical_data:
+                dask computed result.
+            memory:
                 historical data of this factor, append and then truncate
 
         Returns:
-            Any: Calculated factor value(s).
-
-        Parameters
-        ----------
-        historical_data :
+            pl.DataFrame: Calculated factor value concatenated to its historical data, and return as a pl.DataFrame.
+            The pl.DataFrame will be stored in a dict[taskname, pl.DataFrame] and passed to the downstream factor.
         """
         if isinstance(input_data, pl.DataFrame):
             return self.calculate_polars(input_data, *args, **kwargs)

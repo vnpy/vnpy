@@ -17,7 +17,7 @@ def get_factor_class(class_name: str):
 def save_factor_setting(self) -> None:
     """"""
     factor_setting: dict = {}
-    for name, factor in self.top_level_factors.items():
+    for name, factor in self.stacked_factors.items():
         factor_setting[name] = factor.to_dict()
     save_json(self.setting_filename, factor_setting)
 
