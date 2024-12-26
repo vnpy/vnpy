@@ -2,6 +2,7 @@ import logging
 from logging import Logger
 import smtplib
 import os
+import traceback
 from abc import ABC
 from pathlib import Path
 from datetime import datetime
@@ -646,17 +647,22 @@ class EmailEngine(BaseEngine):
 
     def run(self) -> None:
         """"""
+        server: str = SETTINGS["email.server"]
+        port: int = SETTINGS["email.port"]
+        username: str = SETTINGS["email.username"]
+        password: str = SETTINGS["email.password"]
+
         while self.active:
             try:
                 msg: EmailMessage = self.queue.get(block=True, timeout=1)
 
-                with smtplib.SMTP_SSL(
-                    SETTINGS["email.server"], SETTINGS["email.port"]
-                ) as smtp:
-                    smtp.login(
-                        SETTINGS["email.username"], SETTINGS["email.password"]
-                    )
-                    smtp.send_message(msg)
+                try:
+                    with smtplib.SMTP_SSL(server, port) as smtp:
+                        smtp.login(username, password)
+                        smtp.send_message(msg)
+                except Exception:
+                    msg: str = _("邮件发送失败: {}").format(traceback.format_exc())
+                    self.main_engine.write_log(msg, "EMAIL")
             except Empty:
                 pass
 
