@@ -79,13 +79,13 @@ class MA(FactorTemplate):
         if self.factor_mode == FactorMode.Live:
             # Live Mode: Ensure memory is provided
             if memory is None:
-                raise ValueError("Memory must be provided in 'Live' mode.")
+                raise ValueError("Memory cannot be none.")
 
             # Get tail(window) of the input data
             latest_data = df.tail(window)
 
             # Drop the datetime column for calculation
-            datetime_col = latest_data["datetime"].tail(1)  # Latest datetime
+            dt = latest_data["datetime"].tail(1)  # Latest datetime
             latest_data = latest_data.drop("datetime")
 
             # Calculate rolling mean for the latest row
@@ -93,8 +93,8 @@ class MA(FactorTemplate):
 
             # Create a new row for the memory update
             new_row = pl.DataFrame({
-                "datetime": datetime_col,
-                **{col: [rolling_means[col]] for col in latest_data.columns}
+                "datetime": dt,
+                **{col: rolling_means[col] for col in latest_data.columns}
             })
 
             # Update memory
@@ -104,9 +104,9 @@ class MA(FactorTemplate):
         elif self.factor_mode == FactorMode.Backtest:
             # Backtesting Mode: Perform calculations on the entire dataset
             # Preserve datetime column
-            datetime_col = None
+            dt = None
             if "datetime" in df.columns:
-                datetime_col = df["datetime"]
+                dt = df["datetime"]
                 df = df.drop("datetime")
 
             # Calculate rolling mean for all columns except datetime
@@ -116,7 +116,7 @@ class MA(FactorTemplate):
             ])
 
             # Add datetime column back to the result if it exists
-            if datetime_col is not None:
-                rolling_means = rolling_means.insert_column(0, datetime_col)
+            if dt is not None:
+                rolling_means = rolling_means.insert_column(0, dt)
 
             return rolling_means

@@ -42,6 +42,7 @@ class MACD(FactorTemplate):
         # setattr(self, 'dependencies_factor', [self.ma_fast, self.ma_slow])
 
         # todo: new version: bind initialized factors with variables with some logic
+        assert len(self.dependencies_factor) == 2
         self.ma_fast = self.dependencies_factor[0]
         self.ma_slow = self.dependencies_factor[1]
         if not isinstance(self.ma_fast, MA) or not isinstance(self.ma_slow, MA):
@@ -102,8 +103,9 @@ class MACD(FactorTemplate):
             # Append the latest histogram to memory
             new_row = pl.DataFrame({
                 "datetime": datetime_col,
-                **{col: [last_histogram[col]] for col in macd_line.columns},
+                **{col: last_histogram[col] for col in macd_line.columns},
             })
+
             memory = pl.concat([memory, new_row], how="vertical")
             return memory
 

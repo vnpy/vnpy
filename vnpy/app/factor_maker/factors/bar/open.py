@@ -19,12 +19,13 @@ class OPEN(FactorTemplate):
         """
         super().__init__(setting, **kwargs)
 
-    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str, Any]]], memory: Optional[pl.DataFrame] = None, *args, **kwargs) -> Any:
+    def calculate(self, input_data: Dict[str, Any], memory: Optional[pl.DataFrame] = None, *args,
+                  **kwargs) -> pl.DataFrame:
         """
         Return the 'open' data for Live Trading or Backtesting.
 
         Parameters:
-            input_data (Optional[Union[pl.DataFrame, Dict[str, Any]]]): Input data containing 'open'.
+            input_data (Dict[str, Any]): memory_bar with key 'open'.
             memory (Optional[pl.DataFrame]): Unused for this factor but kept for uniformity.
 
         Returns:
@@ -36,7 +37,9 @@ class OPEN(FactorTemplate):
 
         # Retrieve the 'open' data
         if isinstance(input_data, dict):
-            open_data = input_data.get('open')
+            open_data = input_data.get('open', None)
+            if open_data is None:
+                raise ValueError("Missing 'open' data in input_data.")
         elif isinstance(input_data, pl.DataFrame):
             open_data = input_data
         else:
@@ -47,5 +50,6 @@ class OPEN(FactorTemplate):
             raise ValueError("'open' data must be a Polars DataFrame.")
 
         return open_data
+
     def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
         pass

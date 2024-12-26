@@ -55,7 +55,7 @@ def run_child():
     main_engine.write_log("启动数据记录程序")
 
     factor_maker_engine:FactorEngine = main_engine.add_app(FactorMakerApp)
-    factor_maker_engine.init_engine()
+    factor_maker_engine.init_engine(fake=True)
     main_engine.write_log("启动因子计算程序")
 
     # log_engine = main_engine.get_engine("log")
@@ -142,12 +142,12 @@ class TestFactorEngine(TestCase):
         schema = {'datetime': datetime}
         for symbol in self.factor_engine.main_engine.vt_symbols:
             data[symbol] = np.random.random(200)
-            schema[symbol] = pl.Float32
+            schema[symbol] = pl.Float64
 
         for b in ["open", "high", "low", "close", "volume"]:
             self.factor_engine.memory_bar[b] = pl.concat(
                 [self.factor_engine.memory_bar[b], pl.DataFrame(data=data, schema=schema)], how='vertical')
-        for f in self.factor_engine.top_level_factors.keys():
+        for f in self.factor_engine.stacked_factors.keys():
             self.factor_engine.memory_factor[f] = pl.concat(
                 [self.factor_engine.memory_factor[f], pl.DataFrame(data=data, schema=schema)], how='vertical')
 
