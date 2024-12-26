@@ -14,18 +14,18 @@ class FactorMode(Enum):
 
 
 class RollingDataFrame:
-    def __init__(self, tickers, max_length):
+    def __init__(self, columns, max_length):
         """
         Initialize the RollingDataFrame.
 
         Args:
-            tickers (list): List of column names (tickers).
+            columns (list): List of column names.
             max_length (int): Maximum number of rows allowed (queue size).
         """
-        self.tickers = tickers
+        self.columns = columns
         self.max_length = max_length
         self.datetime_queue = deque(maxlen=max_length)
-        self.data = pl.DataFrame(schema=tickers + ["datetime"])
+        self.data = pl.DataFrame(schema=["datetime"] + columns)
 
     def append_row(self, datetime_value, values):
         """
@@ -39,7 +39,7 @@ class RollingDataFrame:
         self.datetime_queue.append(datetime_value)
 
         # Add data to the DataFrame
-        new_data = {ticker: val for ticker, val in zip(self.tickers, values)}
+        new_data = {col: val for col, val in zip(self.columns, values)}
         new_data["datetime"] = datetime_value
         new_row = pl.DataFrame([new_data])
 
@@ -48,7 +48,7 @@ class RollingDataFrame:
         if self.data.height > self.max_length:
             self.data = self.data.tail(self.max_length)
 
-    def get_dataframe(self):
+    def get_dataframe(self) -> pl.DataFrame:
         """
         Retrieve the current DataFrame.
 
@@ -57,10 +57,18 @@ class RollingDataFrame:
         """
         return self.data
 
+    def clone(self):
+        """
+        Clone the RollingDataFrame.
+
+        Returns:
+            RollingDataFrame: A new RollingDataFrame with the same data.
+        """
+        # raise NotImplementedError("Not implemented yet")
+        new_rdf = RollingDataFrame(self.columns, self.max_length)
+        new_rdf.datetime_queue = deque(self.datetime_queue)
+        new_rdf.data = self.data.clone()
+        return new_rdf
+
 
 APP_NAME = "FactorMaker"
-
-EVENT_FACTOR_LOG = "eFactorLog"
-EVENT_FACTOR_MAKER = "eFactorMaker"
-
-EVENT_FACTOR_RECORD = "eFactorRecord"

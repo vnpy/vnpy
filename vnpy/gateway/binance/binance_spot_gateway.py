@@ -5,6 +5,7 @@ from copy import copy
 from datetime import datetime, timedelta, timezone
 from threading import Lock
 from typing import Any, Dict, List, Optional
+from logging import ERROR, INFO, DEBUG
 
 from binance.spot import Spot
 from binance.websocket.websocket_client import BinanceWebsocketClient
@@ -215,7 +216,7 @@ class BinanceSpotRestAPi:
 
         self.connect_time = self._client.time()["serverTime"]
 
-        self.gateway.write_log("REST API启动成功")
+        self.gateway.write_log("REST API启动成功", level=INFO)
         self._active = True
 
         self.query_time()
@@ -335,7 +336,7 @@ class BinanceSpotRestAPi:
             if account.balance:
                 self.gateway.on_account(account)
 
-        self.gateway.write_log("账户资金查询成功")
+        self.gateway.write_log("账户资金查询成功", level=INFO)
 
     def on_query_order(self, data: dict) -> None:
         """未成交委托查询回报"""
@@ -709,7 +710,7 @@ class BinanceSpotDataWebsocketApi:
             return
 
         if req.symbol not in symbol_contract_map:
-            self.gateway.write_log(f"找不到该合约代码{req.symbol}")
+            self.gateway.write_log(f"找不到该合约代码{req.symbol}", level=ERROR)
             return
 
         self.reqid += 1
@@ -765,7 +766,7 @@ class BinanceSpotDataWebsocketApi:
                 bar.low_price = float(kdata['l'])
                 bar.close_price = float(kdata['c'])
                 bar.volume = float(kdata['q'])
-                assert bar.volume > 1000, f"bar.volume is too low"
+                # assert bar.volume > 1000, f"bar.volume is too low"
                 self.gateway.on_bar(copy(bar))
             return
 
