@@ -1,3 +1,25 @@
+# 3.9.4版本
+
+## 新增
+
+1. vnpy_tora增加登录时终端动态密钥支持
+2. vnpy_taos升级支持TDengine的3.0版本
+
+## 调整
+
+1. vnpy_xt行情接口增加实时行情中的涨跌停价字段
+2. vnpy_taos移除不必要的时区转换提高性能
+3. vnpy_dolphindb优化写入大量数据时候的内存占用
+4. vnpy_portfoliostrategy简化回测引擎的calculate_pnl每日盈亏计算函数
+5. vnpy_tap/vnpy_tts升级pybind11封装工具库的版本，支持Python 3.12编译
+6. EmailEngine发送邮件失败后，捕捉异常并输出日志
+
+## 修复
+
+1. vnpy_optionmaster移除不必要的价格缓存代码
+2. vnpy_dolphindb修复保存overview的时区不正确问题
+
+
 # 3.9.3版本
 
 ## 新增
