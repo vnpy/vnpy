@@ -307,12 +307,13 @@ class FactorBacktester:
         # Calculate cumulative portfolio value
         portfolio_values = portfolio_returns.select([
             "datetime",
+            "adjusted_return",
             pl.fold(acc=pl.lit(1.0), function=lambda acc, x: acc * (1 + x),
                     exprs=pl.col("adjusted_return")).alias("portfolio_value")
         ])
 
         # Performance metrics
-        cumulative_return = portfolio_values["portfolio_value"].list.last() - 1
+        cumulative_return = (portfolio_values["adjusted_return"].to_numpy()+1).cumprod()[-1] - 1
         annualized_return = portfolio_returns["adjusted_return"].mean() * self.trading_periods_per_year
         annualized_volatility = portfolio_returns["adjusted_return"].std() * (self.trading_periods_per_year ** 0.5)
         sharpe_ratio = (
