@@ -6,15 +6,13 @@
 # @Author   : EvanHong
 # @Email    : 939778128@qq.com
 # @Description:
-import itertools
 import re
-from typing import Dict, List, Any
+from typing import Dict
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
-
 import polars as pl
+from matplotlib import pyplot as plt
 
 
 def resample_bar_polars(data: Dict[str, pl.DataFrame], trading_freq: str) -> Dict[str, pl.DataFrame]:
@@ -167,17 +165,30 @@ def plot_portfolio_performance_polars(portfolio_values: pl.DataFrame) -> None:
     Plot portfolio performance using Polars DataFrame.
 
     Parameters:
-        portfolio_values (pl.DataFrame): Portfolio values with datetime and portfolio_value columns.
+        portfolio_values (pl.DataFrame): Portfolio values with 'datetime', 'adjusted_return', and 'portfolio_value' columns.
     """
     # Ensure the DataFrame contains necessary columns
-    if "datetime" not in portfolio_values.columns or "portfolio_value" not in portfolio_values.columns:
-        raise ValueError("Portfolio values must contain 'datetime' and 'portfolio_value' columns.")
+    required_columns = {"datetime", "portfolio_value"}
+    if not required_columns.issubset(set(portfolio_values.columns)):
+        raise ValueError(f"Portfolio values must contain {required_columns} columns.")
 
-    # Convert the Polars DataFrame to Pandas for easy plotting
-    portfolio_values_pd = portfolio_values.to_pandas()
+    # Convert Polars DataFrame to Pandas for plotting
+    portfolio_values_pd = portfolio_values.select(["datetime", "portfolio_value"]).to_pandas()
+
+    # Set 'datetime' as the index for better plotting
+    portfolio_values_pd.set_index("datetime", inplace=True)
 
     # Plot the portfolio performance
-    plot_portfolio_performance_pandas(portfolio_values_pd)
+    portfolio_values_pd["portfolio_value"].plot(
+        title="Portfolio Performance",
+        ylabel="Portfolio Value",
+        xlabel="Date",
+        figsize=(12, 6),
+        grid=True,
+        color="blue",
+    )
+
+    plt.show()
 
 
 class FactorBacktester:
@@ -309,12 +320,13 @@ class FactorBacktester:
         # Calculate cumulative portfolio value
         portfolio_values = portfolio_returns.select([
             "datetime",
+            "adjusted_return",
             pl.fold(acc=pl.lit(1.0), function=lambda acc, x: acc * (1 + x),
                     exprs=pl.col("adjusted_return")).alias("portfolio_value")
         ])
 
         # Performance metrics
-        cumulative_return = portfolio_values["portfolio_value"].list.last() - 1
+        cumulative_return = (portfolio_values["adjusted_return"].to_numpy()+1).cumprod()[-1] - 1
         annualized_return = portfolio_returns["adjusted_return"].mean() * self.trading_periods_per_year
         annualized_volatility = portfolio_returns["adjusted_return"].std() * (self.trading_periods_per_year ** 0.5)
         sharpe_ratio = (
