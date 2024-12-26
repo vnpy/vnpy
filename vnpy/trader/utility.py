@@ -1033,6 +1033,15 @@ class ArrayManager(object):
             return k, d
         return k[-1], d[-1]
 
+    def sar(self, acceleration: float, maximum: float, array: bool = False) -> Union[float, np.ndarray]:
+        """
+        SAR.
+        """
+        result: np.ndarray = talib.SAR(self.high, self.low, acceleration, maximum)
+        if array:
+            return result
+        return result[-1]
+
 
 def virtual(func: Callable) -> Callable:
     """
