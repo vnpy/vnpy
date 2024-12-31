@@ -492,7 +492,7 @@ execute_trading被调用之后，在函数内部会先撤销策略所有活动�
 ##### 属性
 
  - vt_symbol: str（本地代码）
- - contractData: ContractData（合约信息）
+ - contract: ContractData（合约信息）
  - strike: float（行权价）
  - price: float（最新价）
  - pos: float（净持仓）
@@ -622,7 +622,7 @@ engine.show_chart()
 
 - **set_parameters**
 
-  * 入参：interval: Interval,  start: datetime, end: datetime, rate: float, slippage: float, capital: int = 1_000_000
+  * 入参：interval: Interval,  start: datetime, end: datetime, rate: float, slippage: float, capital: int = 1_000_000, cache: str = ""
 
   * 出参：无
 
@@ -674,7 +674,7 @@ engine.show_chart()
 
 ### 期权回测数据缓存
 
-在创建回测引擎实例之后，在调用set_parameters函数的时候，如果给入参task_name赋值，则会创建指定名称的缓存文件。下次加载数据的时候可以直接读取。
+为了加快期权策略的回测和优化速度，回测引擎支持数据文件缓存功能：在调用set_parameters函数时，传入回测任务缓存名称参数cache（str类型），即可在首次回测时自动创建数据缓存，并加快后续每次的回测速度。
 
 - **list_cache**
 

@@ -7,7 +7,7 @@
 💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-3.9.2-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-3.9.3-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.10|3.11.|3.12-blue.svg" />
     <img src ="https://img.shields.io/github/actions/workflow/status/vnpy/vnpy/pythonapp.yml?branch=master"/>
@@ -68,6 +68,8 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
         * 飞鼠（[sgit](https://www.github.com/vnpy/vnpy_sgit)）：黄金TD、国内期货
 
         * 金仕达黄金（[ksgold](https://www.github.com/vnpy/vnpy_ksgold)）：黄金TD
+
+        * 利星资管（[lstar](https://www.github.com/vnpy/vnpy_lstar)）：期货资管
 
         * 融航（[rohon](https://www.github.com/vnpy/vnpy_rohon)）：期货资管
 
@@ -171,6 +173,8 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
     * 米筐RQData（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：股票、期货、期权、基金、债券、黄金TD
 
+    * 咏春大师（[voltrader](https://www.github.com/vnpy/vnpy_voltrader)）：期货、期权
+
     * 恒生UData（[udata](https://www.github.com/vnpy/vnpy_udata)）：股票、期货、期权
 
     * TuShare（[tushare](https://www.github.com/vnpy/vnpy_tushare)）：股票、期货、期权、基金
@@ -195,7 +199,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 ## 环境准备
 
-* 推荐使用VeighNa团队为量化交易专门打造的Python发行版[VeighNa Studio-3.9.2](https://download.vnpy.com/veighna_studio-3.9.2.exe)，集成内置了VeighNa框架以及VeighNa Station量化管理平台，无需手动安装
+* 推荐使用VeighNa团队为量化交易专门打造的Python发行版[VeighNa Studio-3.9.3](https://download.vnpy.com/veighna_studio-3.9.3.exe)，集成内置了VeighNa框架以及VeighNa Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 11以上 / Windows Server 2019以上 / Ubuntu 22.04 LTS以上
 * 支持的Python版本：Python 3.10以上（64位），**推荐使用Python 3.10**
 

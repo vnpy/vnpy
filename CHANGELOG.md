@@ -1,3 +1,29 @@
+# 3.9.3版本
+
+## 新增
+
+1. 利星资管交易接口vnpy_lstar
+2. 咏春大师数据服务vnpy_voltrader
+3. vnpy_rpcservice增加数据服务代理工具RpcDatafeed
+
+## 调整
+
+1. 适配6.3.0版本以上的PySide6模块：vnpy/vnpy_ctastrategy/vnpy_ctabacktester/vnpy_portfoliostrategy/vnpy_spreadtrading/vnpy_datamanager/vnpy_algotrading/vnpy_portfoliomananger/vnpy_optionmaster
+2. vnpy_uft升级3.7.4.1004版本API
+3. vnpy_ib的execDetails成交回报使用本地缓存的委托记录填充交易所，解决SMART交易所字段可能发生变化的问题
+4. vnpy_ib的openOrder委托回报优先使用本地缓存的委托记录，解决交易所字段可能发生变化的问题
+5. vnpy_ib的查询历史数据时，使用UTC时间戳传参
+6. vnpy_ib的查询历史数据时，异步返回最长等待时间延长为600秒
+7. vnpy_ib的增加期权链合约数据更新结束回报
+8. vnpy_ib的合约乘数支持浮点数
+9. 合约信息ContractData数据类，增加单笔最大委托数量max_volume
+
+## 修复
+
+1. 修复vnpy_spreadtrading回测引擎clear_data时，没有清空价差仓位的问题
+2. 修复vnpy_ib查询历史数据失败时的日志输出错误
+
+
 # 3.9.2版本
 
 ## 新增
