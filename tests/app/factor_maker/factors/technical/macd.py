@@ -441,7 +441,7 @@ from vnpy.app.factor_maker.optimizer import FactorOptimizer
 
 # Step 1: Create Backtester
 backtester = FactorBacktester(
-    data=raw_data,  # Use synthetic OHLCV data
+    memory_bar=raw_data,  # Use synthetic OHLCV data
     commission_rate=0.001,
     slippage=0.001,
     trading_freq="15d"
@@ -470,7 +470,7 @@ print("Best Sharpe Ratio:", best_params["best_score"])
 # Step 7: Perform Backtesting with Best Parameters
 macd.set_params(best_params["best_params"])
 factor_values = macd.calculate(optimizer.memory_factor)
-performance_metrics = backtester.run_backtesting_polars(factor_values, if_plot=True)
+performance_metrics = backtester.run_backtesting(factor_values, if_report=False)
 
 # Step 8: Display Performance Metrics
 print("\nPerformance Metrics:")

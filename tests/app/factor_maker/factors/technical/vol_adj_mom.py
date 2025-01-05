@@ -253,8 +253,8 @@ class GRJMOM(FactorTemplate):
 
         n_pow = self.params.get_parameter('n_param')
         realvol_data = realvol_data.select([
-                pl.col(col).pow(n_pow).alias(col) for col in realvol_data.columns
-            ])
+            pl.col(col).pow(n_pow).alias(col) for col in realvol_data.columns
+        ])
         # Calculate GRJMOM = XSMOM / (RealVol^n_param)
         grjmom_values = xsmom_data / realvol_data
 
@@ -265,6 +265,7 @@ class GRJMOM(FactorTemplate):
 
     def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
         pass
+
 
 # Example usage with synthetic data
 
@@ -350,10 +351,10 @@ from vnpy.app.factor_maker.optimizer import FactorOptimizer
 
 # Step 1: Create Backtester
 backtester = FactorBacktester(
-    data=raw_data,  # Use synthetic OHLCV data
+    memory_bar=raw_data,  # Use synthetic OHLCV data
     commission_rate=0.001,
     slippage=0.001,
-    trading_freq="15d"
+    trading_freq="1d"
 )
 
 # Step 2: Initialize Optimizer
@@ -377,10 +378,9 @@ print("Best Sharpe Ratio:", best_params["best_score"])
 # Step 7: Perform Backtesting with Best Parameters
 grjmom.set_params(best_params["best_params"])
 factor_values = grjmom.calculate(optimizer.memory_factor)
-performance_metrics = backtester.run_backtesting_polars(factor_values, if_plot=True)
+performance_metrics = backtester.run_backtesting(factor_values, if_report=False)
 
 # Step 8: Display Performance Metrics
 print("\nPerformance Metrics:")
 for metric, value in performance_metrics.items():
     print(f"{metric}: {value:.4f}")
-
