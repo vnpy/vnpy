@@ -60,7 +60,7 @@ class FactorOptimizer:
             factor_key: result for factor_key, result in zip(self.tasks.keys(), computed_results)
         }
 
-    def optimize(self, param_grid: Dict[str, List[Any]], metric: str = "Sharpe Ratio") -> Dict[str, Any]:
+    def optimize(self, param_grid: Dict[str, List[Any]]) -> Dict[str, Any]:
         """
         Optimize the factor parameters using grid search and Dask.
 
@@ -81,8 +81,8 @@ class FactorOptimizer:
             """
             self.factor.set_params(params)
             factor_values = self.factor.calculate(self.memory_factor)
-            metrics = self.backtester.run_backtesting_polars(factor_values, if_plot=False)
-            return metrics.get(metric, -float("inf")), params
+            sr = self.backtester.run_backtesting(factor_values, if_report=False)
+            return sr, params
 
         # Create evaluation tasks for all parameter combinations
         tasks = [evaluate_params(dict(zip(param_names, param_values))) for param_values in param_combinations]
