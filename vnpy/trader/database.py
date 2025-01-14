@@ -11,6 +11,8 @@ from .setting import SETTINGS
 from .utility import ZoneInfo
 from .locale import _
 
+from vnpy.config import VTSYMBOL_KLINE, VTSYMBOL_FACTOR
+
 DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
 
 
@@ -20,6 +22,18 @@ def convert_tz(dt: datetime) -> datetime:
     """
     dt: datetime = dt.astimezone(DB_TZ)
     return dt.replace(tzinfo=None)
+
+
+@dataclass
+class BaseOverview:
+    VTSYMBOL_TEMPLATE: str
+
+    symbol: str = ""
+    exchange: Exchange = None
+    interval: Interval = None
+    count: int = 0
+    start: datetime = None
+    end: datetime = None
 
 
 @dataclass
@@ -35,6 +49,8 @@ class BarOverview:
     start: datetime = None
     end: datetime = None
 
+    VTSYMBOL_TEMPLATE=VTSYMBOL_KLINE
+
     def __init__(self, symbol: str, exchange: Exchange, interval: Interval, start: datetime, end: datetime,
                  count: int = 0):
         self.symbol = symbol
@@ -44,6 +60,12 @@ class BarOverview:
         self.end = end
         self.count = count
 
+    def __post_init__(self):
+        self.vt_symbol = self.VTSYMBOL_TEMPLATE.format(
+            interval=self.interval.value,
+            symbol=self.symbol,
+            exchange=self.exchange.value
+        )
 
 @dataclass
 class TickOverview:
@@ -72,6 +94,8 @@ class FactorOverview:
     start: datetime = None
     end: datetime = None
 
+    VTSYMBOL_TEMPLATE=VTSYMBOL_FACTOR
+
     def __init__(self, symbol: str, name: str, exchange: Exchange, interval: Interval, start: datetime, end: datetime,
                  count: int = 0):
         self.symbol = symbol
@@ -81,6 +105,14 @@ class FactorOverview:
         self.start = start
         self.end = end
         self.count = count
+
+    def __post_init__(self):
+        self.vt_symbol = self.VTSYMBOL_TEMPLATE.format(
+            interval=self.interval.value,
+            symbol=self.symbol,
+            factorname=self.name,
+            exchange=self.exchange.value
+        )
 
 
 class BaseDatabase(ABC):

@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import polars as pl
 
-from vnpy.app.factor_maker import FactorEngine,FactorMakerApp
+from vnpy.app.factor_maker import FactorEngine, FactorMakerApp
 from vnpy.app.data_recorder import DataRecorderApp
 from vnpy.app.vnpy_datamanager import DataManagerEngine
 from vnpy.event import Event
@@ -30,7 +30,7 @@ from vnpy.trader.setting import SETTINGS
 def gen_requests():
     # Create a HistoryRequest object with test data
     for symbol in ["BTCUSDT", "ETHUSDT"]:
-        for interval in [Interval.HOUR, Interval.DAILY]:
+        for interval in [Interval.MINUTE]:
             req = HistoryRequest(
                 symbol=symbol,
                 exchange=Exchange.BINANCE,
@@ -39,6 +39,7 @@ def gen_requests():
                 end=datetime(2025, 1, 5)
             )
             yield req
+
 
 def run_child():
     """
@@ -63,16 +64,17 @@ def run_child():
     main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
 
     # start data manager
-    manager_engine = main_engine.add_engine(DataManagerEngine)
+    manager_engine: DataManagerEngine = main_engine.add_engine(DataManagerEngine)
     main_engine.write_log("启动数据管理程序")
 
     # Initialize the BinanceDatafeed object
-    datafeed = BinanceDatafeed()
     for req in gen_requests():
-        print("="*50,req.symbol, req.interval,"="*50)
-        history=datafeed.query_bar_history(req)
-        print(history)
-
+        print("=" * 50, req.symbol, req.interval, "=" * 50)
+        records = manager_engine.download_bar_data(symbol=req.symbol, exchange=req.exchange,
+                                                   interval=req.interval.value,
+                                                   start=req.start, end=req.end, save=True,
+                                                   save_dir=f"./vnpy_data")
+        print(records)
 
     # # start data recorder
     # data_recorder_engine=main_engine.add_app(DataRecorderApp)
@@ -152,6 +154,7 @@ def run_parent():
 
         sleep(5)
 
+
 class TestBinanceDatafeed(unittest.TestCase):
 
     @patch('vnpy_datafeed.vnpy_datafeed.binance_datafeed.BinanceDataDumper')
@@ -188,3 +191,7 @@ class TestBinanceDatafeed(unittest.TestCase):
 
     def test_real_run(self):
         run_parent()
+
+
+if __name__ == '__main__':
+    print(gen_requests())

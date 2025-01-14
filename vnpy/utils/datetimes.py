@@ -5,7 +5,7 @@
 # @Author   : EvanHong
 # @Email    : 939778128@qq.com
 # @Description:
-from typing import Union, Optional
+from typing import Union, Optional, Tuple
 
 from aenum import Enum, NoAlias
 import datetime
@@ -14,21 +14,24 @@ import os
 
 
 class TimeFreq(Enum):
-    """
-    用于表示时间频率，最小频率为ms
+    """用于表示时间频率，最小频率为ms. The values are in milliseconds and just are indicators, not the true values. Because something like months and years are not fixed in milliseconds.
+
+    References
+    ----------
+    - https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
     """
     _settings_ = NoAlias
 
     unknown = 0
     ms = 1
     s = 1000
-    m = 60 * 1000  # minutes
-    min = 60 * 1000  # minutes
-    h = 60 * 60 * 1000  # hours
-    d = 24 * 60 * 60 * 1000  # days
-    W = 7 * 24 * 60 * 60 * 1000  # weeks
-    M = 30 * 24 * 60 * 60 * 1000  # months
-    Y = 365 * 24 * 60 * 60 * 1000  # years
+    m = s * 60  # minutes
+    min = s * 60  # minutes
+    h = m * 60  # hours
+    d = h * 24  # days
+    W = d * 7  # weeks
+    M = d * 30  # months
+    Y = d * 365  # years
 
 
 class DatetimeUtils:
@@ -301,7 +304,7 @@ def normalize_unix(unix: Union[int, float], to_precision: str = 's') -> Union[fl
     return unix
 
 
-def split_time_str(time_str: str) -> tuple:
+def split_time_str(time_str: str) -> Tuple[int, int]:
     """
     从时间字符串中提取数字和freq单位
     Parameters
@@ -311,7 +314,8 @@ def split_time_str(time_str: str) -> tuple:
 
     Returns
     -------
-    tuple, (int, TimeFreq)
+    tuple: (int, int)
+        first part and second part of the time string represented in ms
     """
 
     # note that the order of if-elif-else is important, the longer the freq string is, the higher priority it has to be
