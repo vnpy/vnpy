@@ -48,9 +48,9 @@ class TestDatetimeUtils(unittest.TestCase):
         self.assertEqual(DatetimeUtils.split_time_str('1ms'), (1, TimeFreq.ms))
         print(DatetimeUtils.split_time_str('1m'), (1, TimeFreq.m))
         print(DatetimeUtils.split_time_str('1ms'), (1, TimeFreq.ms))
-        self.assertEqual(TimeFreq.ms.name, 'ms')
+        self.assertEqual(TimeFreq.ms.factor_name, 'ms')
         self.assertEqual(TimeFreq.ms.value, 1)
-        self.assertEqual(TimeFreq.s.name, 's')
+        self.assertEqual(TimeFreq.s.factor_name, 's')
         self.assertEqual(TimeFreq.s.value, 1000)
 
     def test_str2freq_converts_correctly(self):

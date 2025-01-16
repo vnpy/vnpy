@@ -10,13 +10,14 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Type, TypeVar
+import datetime
 
 import polars as pl
 
 from vnpy.config import VTSYMBOL_KLINE
 from vnpy.trader.constant import Exchange, Interval
-from vnpy.trader.database import BarOverview, FactorOverview
+from vnpy.trader.database import BarOverview, FactorOverview, BaseOverview, TV_BaseOverview
 from vnpy.trader.object import BarData
 from vnpy.trader.utility import load_json, save_json
 
@@ -25,6 +26,10 @@ class OverviewEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, (Exchange, Interval)):
             return o.value
+        elif isinstance(o, datetime.datetime):
+            return o.strftime('%Y-%m-%d %H:%M:%S')
+        elif isinstance(o, datetime.date):
+            return o.strftime("%Y-%m-%d")
         elif hasattr(o, '__dict__'):
             return o.__dict__
         else:
@@ -40,18 +45,27 @@ class OverviewDecoder(json.JSONDecoder):
             d['exchange'] = Exchange(d['exchange'])
         if 'interval' in d:
             d['interval'] = Interval(d['interval'])
+        for dt_field in ['start', 'end']:
+            if dt_field in d:
+                try:
+                    d[dt_field] = datetime.datetime.strptime(d[dt_field], '%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    d[dt_field] = datetime.datetime.strptime(d[dt_field], '%Y-%m-%d')
         return d
 
 
-def save_overview(filename: str, overview_data: Dict[str, Dict]) -> None:
+def save_overview(filename: str, overview_data: Dict[str, TV_BaseOverview]) -> None:
     # with open(filename, 'w', encoding='utf-8') as f:
     #     json.dump(overview_data, f, cls=OverviewEncoder)
 
+    # convert overview_data to dict
+    overview_data_dict = {k: v.__dict__ for k, v in overview_data.items()}
+
     # use vnpy save json
-    save_json(filename, overview_data, cls=OverviewEncoder, mode='w')
+    save_json(filename, overview_data_dict, cls=OverviewEncoder, mode='w')
 
 
-def load_overview(filename: str) -> Dict[str, Dict]:
+def load_overview(filename: str, overview_cls: TV_BaseOverview.__class__) -> Dict[str, TV_BaseOverview]:
     # if not os.path.exists(file_path):
     #     return {}
     # with open(file_path, 'r', encoding='utf-8') as f:
@@ -61,7 +75,11 @@ def load_overview(filename: str) -> Dict[str, Dict]:
     #     return dic
 
     # use vnpy load json
-    return load_json(filename=filename, cls=OverviewDecoder)
+    overviews: Dict[str, TV_BaseOverview] = {}
+    overview_dict = load_json(filename=filename, cls=OverviewDecoder)
+    for k, v in overview_dict.items():
+        overviews[k] = overview_cls(**v)
+    return overviews
 
 
 def update_bar_overview(symbol: str,

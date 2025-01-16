@@ -20,11 +20,11 @@ class BaseData:
     and should inherit base data.
     """
 
-    gateway_name: str
+    gateway_name: str = field(default=None, init=False)
 
     extra: dict = field(default=None, init=False)
 
-    VTSYMBOL_TEMPLATE: str
+    VTSYMBOL_TEMPLATE: str = field(default=None, init=False)
 
 
 @dataclass

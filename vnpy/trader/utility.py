@@ -1173,15 +1173,15 @@ class DatetimeUtils:
         """
 
         # note that the order of if-elif-else is important, the longer the freq string is, the higher priority it has to be
-        if time_str.endswith(TimeFreq.min.name):
+        if time_str.endswith(TimeFreq.min.factor_name):
             return int(time_str[:-3]), TimeFreq.m
-        elif time_str.endswith(TimeFreq.ms.name):
+        elif time_str.endswith(TimeFreq.ms.factor_name):
             return int(time_str[:-2]), TimeFreq.ms
-        elif time_str.endswith(TimeFreq.s.name):
+        elif time_str.endswith(TimeFreq.s.factor_name):
             return int(time_str[:-1]), TimeFreq.s
-        elif time_str.endswith(TimeFreq.m.name):
+        elif time_str.endswith(TimeFreq.m.factor_name):
             return int(time_str[:-1]), TimeFreq.m
-        elif time_str.endswith(TimeFreq.d.name):
+        elif time_str.endswith(TimeFreq.d.factor_name):
             return int(time_str[:-1]), TimeFreq.d
         else:
             raise NotImplementedError("invalid time_str, please check the input string.")
