@@ -8,6 +8,7 @@ from logging import INFO
 from typing import Optional
 
 from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
+from ..config import VTSYMBOL_KLINE, VTSYMBOL_BARDATA, VTSYMBOL_FACTOR
 
 ACTIVE_STATUSES = {Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED}
 
@@ -19,9 +20,11 @@ class BaseData:
     and should inherit base data.
     """
 
-    gateway_name: str
+    gateway_name: str = field(default=None, init=False)
 
     extra: dict = field(default=None, init=False)
+
+    VTSYMBOL_TEMPLATE: str = field(default=None, init=False)
 
 
 @dataclass
@@ -99,12 +102,12 @@ class FactorData(BaseData):
 
     value: float = None
 
-    VTSYMBOL_TEMPLATE_FACTOR = "factor_{}_{}_{}.{}"  # interval, symbol(ticker), name(factor name), exchange
+    VTSYMBOL_TEMPLATE = VTSYMBOL_FACTOR
 
     def __post_init__(self) -> None:
         """"""
-        self.vt_symbol: str = self.VTSYMBOL_TEMPLATE_FACTOR.format(self.interval.value, self.symbol, self.factor_name,
-                                                                   self.exchange.value)
+        self.vt_symbol: str = self.VTSYMBOL_TEMPLATE.format(interval=self.interval.value, symbol=self.symbol,
+                                                            factorname=self.factor_name, exchange=self.exchange.value)
 
 
 @dataclass
@@ -126,9 +129,11 @@ class BarData(BaseData):
     low_price: float = 0
     close_price: float = 0
 
+    VTSYMBOL_TEMPLATE = VTSYMBOL_BARDATA
+
     def __post_init__(self) -> None:
         """"""
-        self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
+        self.vt_symbol: str = self.VTSYMBOL_TEMPLATE.format(symbol=self.symbol, exchange=self.exchange.value)
 
 
 @dataclass

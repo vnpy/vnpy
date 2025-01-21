@@ -17,7 +17,7 @@ import numpy as np
 
 from .constant import Exchange, Interval, TimeFreq
 from .locale import _
-from .object import BarData, TickData,FactorData
+from .object import BarData, TickData, FactorData
 
 # import talib
 
@@ -29,12 +29,12 @@ else:
 log_formatter: logging.Formatter = logging.Formatter("[%(asctime)s] %(message)s")
 
 
-def extract_vt_symbol(vt_symbol: str,is_factor=False) -> Union[Tuple[str, Exchange], Tuple[Interval,str, str, Exchange]]:
+def extract_vt_symbol(vt_symbol: str, is_factor=False) -> Union[
+    Tuple[str, Exchange], Tuple[Interval, str, str, Exchange]]:
     """
     :return: (symbol, exchange) or ('factor',interval, symbol(ticker), name(factor name), exchange)
     """
     if is_factor:
-        # "factor_{}_{}_{}.{}"  # interval, symbol(ticker), name(factor name), exchange
         symbol, exchange_str = vt_symbol.rsplit(".", 1)
         _, interval_str, factor_symbol, factor_name = symbol.split("_")
         return Interval(interval_str), factor_symbol, factor_name, Exchange(exchange_str)
@@ -43,12 +43,14 @@ def extract_vt_symbol(vt_symbol: str,is_factor=False) -> Union[Tuple[str, Exchan
     return symbol, Exchange(exchange_str)
 
 
-def generate_vt_symbol(symbol: str, exchange: Exchange,is_factor=False,factor_name=None,interval:Interval=None) -> str:
+def generate_vt_symbol(symbol: str, exchange: Exchange, is_factor=False, factor_name=None,
+                       interval: Interval = None) -> str:
     """
     return vt_symbol
     """
     if is_factor:
-        return FactorData(symbol=symbol, exchange=exchange, interval=interval, factor_name=factor_name).vt_symbol
+        return FactorData(symbol=symbol, exchange=exchange, interval=interval,
+                          factor_name=factor_name, gateway_name='').vt_symbol
     return f"{symbol}.{exchange.value}"
 
 
@@ -96,7 +98,7 @@ def get_icon_path(filepath: str, ico_name: str) -> str:
     return str(icon_path)
 
 
-def load_json(filename: str) -> dict:
+def load_json(filename: str, cls=json.JSONDecoder) -> dict:
     """
     Load data from json file in temp path.
     """
@@ -104,24 +106,25 @@ def load_json(filename: str) -> dict:
 
     if filepath.exists():
         with open(filepath, mode="r", encoding="UTF-8") as f:
-            data: dict = json.load(f)
+            data: dict = json.load(f, cls=cls)
         return data
     else:
         save_json(filename, {})
         return {}
 
 
-def save_json(filename: str, data: dict) -> None:
+def save_json(filename: str, data: dict, mode="w+", cls=json.JSONEncoder) -> None:
     """
     Save data into json file in temp path.
     """
     filepath: Path = get_file_path(filename)
-    with open(filepath, mode="w+", encoding="UTF-8") as f:
+    with open(filepath, mode=mode, encoding="UTF-8") as f:
         json.dump(
             data,
             f,
             indent=4,
-            ensure_ascii=False
+            ensure_ascii=False,
+            cls=cls
         )
 
 
@@ -1170,15 +1173,15 @@ class DatetimeUtils:
         """
 
         # note that the order of if-elif-else is important, the longer the freq string is, the higher priority it has to be
-        if time_str.endswith(TimeFreq.min.name):
+        if time_str.endswith(TimeFreq.min.factor_name):
             return int(time_str[:-3]), TimeFreq.m
-        elif time_str.endswith(TimeFreq.ms.name):
+        elif time_str.endswith(TimeFreq.ms.factor_name):
             return int(time_str[:-2]), TimeFreq.ms
-        elif time_str.endswith(TimeFreq.s.name):
+        elif time_str.endswith(TimeFreq.s.factor_name):
             return int(time_str[:-1]), TimeFreq.s
-        elif time_str.endswith(TimeFreq.m.name):
+        elif time_str.endswith(TimeFreq.m.factor_name):
             return int(time_str[:-1]), TimeFreq.m
-        elif time_str.endswith(TimeFreq.d.name):
+        elif time_str.endswith(TimeFreq.d.factor_name):
             return int(time_str[:-1]), TimeFreq.d
         else:
             raise NotImplementedError("invalid time_str, please check the input string.")

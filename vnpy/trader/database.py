@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from types import ModuleType
-from typing import List
-from dataclasses import dataclass
+from typing import List, TypeVar
+from dataclasses import dataclass, field
 from importlib import import_module
 
 from .constant import Interval, Exchange
@@ -10,6 +10,8 @@ from .object import BarData, TickData
 from .setting import SETTINGS
 from .utility import ZoneInfo
 from .locale import _
+
+from vnpy.config import VTSYMBOL_KLINE, VTSYMBOL_FACTOR
 
 DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
 
@@ -23,11 +25,7 @@ def convert_tz(dt: datetime) -> datetime:
 
 
 @dataclass
-class BarOverview:
-    """
-    BarOverview of bar data stored in database.
-    """
-
+class BaseOverview:
     symbol: str = ""
     exchange: Exchange = None
     interval: Interval = None
@@ -35,52 +33,59 @@ class BarOverview:
     start: datetime = None
     end: datetime = None
 
-    def __init__(self, symbol: str, exchange: Exchange, interval: Interval, start: datetime, end: datetime,
-                 count: int = 0):
-        self.symbol = symbol
-        self.exchange = exchange
-        self.interval = interval
-        self.start = start
-        self.end = end
-        self.count = count
+    vt_symbol: str = ""
+    VTSYMBOL_TEMPLATE: str = field(default=None, init=False)
 
 
 @dataclass
-class TickOverview:
+class BarOverview(BaseOverview):
+    """
+    BarOverview of bar data stored in database.
+    """
+
+    VTSYMBOL_TEMPLATE = VTSYMBOL_KLINE
+
+    def __post_init__(self):
+        self.vt_symbol = self.VTSYMBOL_TEMPLATE.format(
+            interval=self.interval.value,
+            symbol=self.symbol,
+            exchange=self.exchange.value
+        )
+
+
+@dataclass
+class TickOverview(BaseOverview):
     """
     BarOverview of tick data stored in database.
     """
 
-    symbol: str = ""
-    exchange: Exchange = None
-    count: int = 0
-    start: datetime = None
-    end: datetime = None
+    VTSYMBOL_TEMPLATE = ""
+
+    def __post_init__(self):
+        raise NotImplementedError("TickOverview is not implemented yet.")
+        self.vt_symbol = self.VTSYMBOL_TEMPLATE.format(
+            interval=self.interval.value,
+            symbol=self.symbol,
+            exchange=self.exchange.value
+        )
 
 
 @dataclass
-class FactorOverview:
+class FactorOverview(BaseOverview):
     """
     BarOverview of bar data stored in database.
     """
 
-    symbol: str = ""
-    name: str = ""
-    exchange: Exchange = None
-    interval: Interval = None
-    count: int = 0
-    start: datetime = None
-    end: datetime = None
+    factor_name: str = ""
+    VTSYMBOL_TEMPLATE = VTSYMBOL_FACTOR
 
-    def __init__(self, symbol: str, name: str, exchange: Exchange, interval: Interval, start: datetime, end: datetime,
-                 count: int = 0):
-        self.symbol = symbol
-        self.name = name
-        self.exchange = exchange
-        self.interval = interval
-        self.start = start
-        self.end = end
-        self.count = count
+    def __post_init__(self):
+        self.vt_symbol = self.VTSYMBOL_TEMPLATE.format(
+            interval=self.interval.value,
+            symbol=self.symbol,
+            factorname=self.factor_name,
+            exchange=self.exchange.value
+        )
 
 
 class BaseDatabase(ABC):
@@ -168,6 +173,7 @@ class BaseDatabase(ABC):
 
 
 database: BaseDatabase = None
+TV_BaseOverview = TypeVar('TV_BaseOverview', bound=BaseOverview)  # TV means TypeVar
 
 
 def get_database() -> BaseDatabase:
