@@ -9,7 +9,7 @@
 from __future__ import annotations
 
 import os
-from abc import ABC
+from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Optional, Literal
 
@@ -42,6 +42,12 @@ class DataSource(Enum):
 class StatusCode(Enum):
     success = 0
     failed = 900  # group 9 means failed
+
+
+class BaseSchema(object):
+
+    def to_sql(cls):
+        return ','.join([f'`{k}` {v}' for k, v in cls.__dict__.items()])
 
 
 class BaseAdapter(ABC):

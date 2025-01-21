@@ -41,3 +41,8 @@ TRAIN_START_DATE_for_test = '2022-01-01'
 TRAIN_END_DATE_for_test = '2022-01-31'
 TEST_START_DATE_for_test = '2022-02-01'
 TEST_END_DATE_for_test = '2022-02-28'
+
+# data related
+BAR_OVERVIEW_FILENAME = "bar_overview.json"
+TICK_OVERVIEW_FILENAME = "tick_overview.json"
+FACTOR_OVERVIEW_FILENAME = "factor_overview.json"

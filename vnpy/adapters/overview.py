@@ -59,7 +59,7 @@ def save_overview(filename: str, overview_data: Dict[str, TV_BaseOverview]) -> N
     #     json.dump(overview_data, f, cls=OverviewEncoder)
 
     # convert overview_data to dict
-    overview_data_dict = {k: v.__dict__ for k, v in overview_data.items()}
+    overview_data_dict = {k: v.__dict__ for k, v in overview_data.items()} # v is TV_BaseOverview
 
     # use vnpy save json
     save_json(filename, overview_data_dict, cls=OverviewEncoder, mode='w')
@@ -80,6 +80,9 @@ def load_overview(filename: str, overview_cls: TV_BaseOverview.__class__) -> Dic
     for k, v in overview_dict.items():
         overviews[k] = overview_cls(**v)
     return overviews
+
+def update_overview(overview_dict,vt_symbol,save_path):
+    pass
 
 
 def update_bar_overview(symbol: str,

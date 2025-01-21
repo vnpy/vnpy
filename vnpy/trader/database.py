@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from types import ModuleType
-from typing import List,TypeVar
+from typing import List, TypeVar
 from dataclasses import dataclass, field
 from importlib import import_module
 
@@ -26,7 +26,6 @@ def convert_tz(dt: datetime) -> datetime:
 
 @dataclass
 class BaseOverview:
-
     symbol: str = ""
     exchange: Exchange = None
     interval: Interval = None
@@ -174,7 +173,8 @@ class BaseDatabase(ABC):
 
 
 database: BaseDatabase = None
-TV_BaseOverview=TypeVar('TV_BaseOverview', bound=BaseOverview)
+TV_BaseOverview = TypeVar('TV_BaseOverview', bound=BaseOverview)  # TV means TypeVar
+
 
 def get_database() -> BaseDatabase:
     """"""
