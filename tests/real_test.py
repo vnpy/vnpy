@@ -59,6 +59,9 @@ def run_child():
     main_engine.write_log("连接币安接口")
     main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
 
+    # zc: overview(vnpy.adapters.overview) + datafeed(vnpy_datafeed) + database(vnpy_clickhouse) 补历史数据
+
+
     # start data recorder
     data_recorder_engine = main_engine.add_app(DataRecorderApp)
     main_engine.write_log("启动[DataRecorderApp]")
@@ -66,6 +69,8 @@ def run_child():
     factor_maker_engine: FactorEngine = main_engine.add_app(FactorMakerApp)
     factor_maker_engine.init_engine(fake=True)
     main_engine.write_log("启动[FactorMakerApp]")
+
+
 
     # log_engine = main_engine.get_engine("log")
     # event_engine.register(EVENT_CTA_LOG, log_engine.process_log_event)

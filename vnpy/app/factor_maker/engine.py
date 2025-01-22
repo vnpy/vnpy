@@ -1,24 +1,22 @@
 import importlib
 import traceback
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
-from logging import Logger, CRITICAL, FATAL, ERROR, WARNING, WARN, INFO, DEBUG, NOTSET
-from typing import Type, Optional, Callable, Union, List, Tuple
-import dask
+from logging import INFO, DEBUG
+from typing import Callable
 import numpy as np
 import pandas as pd
 import polars as pl
-from copy import deepcopy, copy
+from copy import deepcopy
 
 from vnpy.event import EventEngine, Event
-from vnpy.event.events import EVENT_BAR_FACTOR, EVENT_FACTOR, EVENT_FACTORMAKER
-from vnpy.trader.constant import Interval, Exchange
-from vnpy.trader.database import BaseDatabase, get_database, DB_TZ
+from vnpy.trader.event import EVENT_BAR_FACTOR, EVENT_FACTOR, EVENT_FACTORMAKER
+from vnpy.trader.constant import Interval
+from vnpy.trader.database import get_database, DB_TZ
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.event import EVENT_TICK, EVENT_BAR
-from vnpy.trader.object import LogData, ContractData, TickData, BarData, HistoryRequest, FactorData
-from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
-from vnpy.app.factor_maker.base import APP_NAME, RollingDataFrame
+from vnpy.trader.object import TickData, BarData, HistoryRequest, FactorData
+from vnpy.trader.utility import extract_vt_symbol
+from vnpy.app.factor_maker.base import APP_NAME
 from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.app.factor_maker.utility import *
 
@@ -48,6 +46,7 @@ class FactorEngine(BaseEngine):
         self.database = get_database()
         self.dt = None
         self.bars = {}  # bar data containing all vt_symbols
+        self.factors = {}  # factor data containing all vt_symbols
 
         self.vt_symbols = main_engine.vt_symbols
         self.subscribed_symbols = main_engine.subscribed_symbols
@@ -338,7 +337,7 @@ class FactorEngine(BaseEngine):
         """used in create_task"""
         return self.memory_bar
 
-    def __copy_meomory_factor__(self,factor_key):
+    def __copy_meomory_factor__(self, factor_key):
         """used in create_task"""
         return self.memory_factor[factor_key]
 
@@ -375,7 +374,7 @@ class FactorEngine(BaseEngine):
             #     memory_dict[key] = dask.delayed(copy)(df)
 
             # memory_dict = dask.delayed(copy)(self.memory_bar)
-            memory_dict = dask.delayed(self.__copy_memory_bar__)() # new style
+            memory_dict = dask.delayed(self.__copy_memory_bar__)()  # new style
             tasks[factor_key] = dask.delayed(factor.calculate)(input_data=memory_dict,
                                                                memory=None)
         else:  # Resolve dependencies recursively
@@ -431,6 +430,31 @@ class FactorEngine(BaseEngine):
         self.memory_bar["volume"] = pl.concat([self.memory_bar["volume"], tmp["volume"]], how='vertical')
 
         self._truncate_memory_bar()
+
+        self.on_calculation(dt=dt)
+
+    def on_factors(self, dt: datetime, factors: dict) -> None:
+        """Process a batch of factors of many symbols."""
+        data = {}
+        schema = {}
+        for vt_symbol, factor in factors.items():
+            # data[symbol] = factor.value
+            # schema[symbol] = pl.Float64
+            data[factor.factor_name] = {'datetime': dt}
+            schema[factor.factor_name] = {'datetime': datetime}
+
+        for vt_symbol, factor in factors.items():
+            data[factor.factor_name][factor.symbol] = factor.value
+            schema[factor.factor_name][factor.symbol] = pl.Float64
+
+        tmp = {}
+        for key, dic, in data.items():
+            tmp[key] = pl.DataFrame(data=dic, schema=schema[key])
+
+        for factor_key in self.memory_factor.keys():
+            self.memory_factor[factor_key] = pl.concat([self.memory_factor[factor_key], tmp], how='vertical')
+
+        self._truncate_memory_factor()
 
         self.on_calculation(dt=dt)
 
@@ -530,15 +554,15 @@ class FactorEngine(BaseEngine):
     def process_bar_event(self, event: Event) -> None:
         """Process incoming bar data."""
         bar: BarData = event.data
-        if self.dt is None:
+        if self.dt is None:  # only happens at the beginning
             self.dt = bar.datetime
             self.bars[bar.vt_symbol] = bar
         else:
             if bar.datetime == self.dt:
                 self.bars[bar.vt_symbol] = bar
-            elif bar.datetime > self.dt:
-                self.on_bars(self.dt, self.bars)  # push data to factor calculation
-                self.dt = bar.datetime
+            elif bar.datetime > self.dt:  # new timeframe
+                self.on_bars(self.dt, self.bars)  # push previous data to factor calculation
+                self.dt = bar.datetime  # update time
                 self.bars = {bar.vt_symbol: bar}  # totally create a new self.bars and add the new bar
 
     def process_bar_factor_event(self, event: Event) -> None:
@@ -550,7 +574,17 @@ class FactorEngine(BaseEngine):
 
     def process_factor_event(self, event: Event) -> None:
         """Process factor event"""
-        data: FactorData = event.data
+        factor: FactorData = event.data
+        if self.dt is None:  # only happens at the beginning
+            self.dt = factor.datetime
+            self.factors[factor.vt_symbol] = factor
+        else:
+            if factor.datetime == self.dt:
+                self.factors[factor.vt_symbol] = factor
+            elif factor.datetime > self.dt:  # new timeframe
+                self.on_factors(self.dt, self.factors)  # push previous data to factor calculation
+                self.dt = factor.datetime  # update time
+                self.factors = {factor.vt_symbol: factor}  # totally create a new self.factors and add the new factor
 
     # Utility Functions
     def call_factor_func(self, factor: FactorTemplate, func: Callable, params: object = None) -> None:
@@ -574,8 +608,7 @@ class FactorEngine(BaseEngine):
 
     def put_factor_event(self, factor: FactorTemplate) -> None:
         """推送事件更新策略界面"""
-        data: dict = factor.get_data()
-        event: Event = Event(EVENT_FACTORMAKER, data)
+        event: Event = Event(EVENT_FACTOR, factor)
         self.event_engine.put(event)
 
     def send_email(self, msg: str, factor: FactorTemplate = None) -> None:

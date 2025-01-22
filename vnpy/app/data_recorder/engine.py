@@ -4,23 +4,21 @@ from threading import Thread
 from queue import Queue, Empty
 from copy import copy
 from typing import Literal
-from logging import Logger, CRITICAL, FATAL, ERROR, WARNING, WARN, INFO, DEBUG, NOTSET
+from logging import ERROR, INFO, DEBUG, NOTSET
 
 import polars as pl
 
 from vnpy.event import Event, EventEngine
-from vnpy.event.events import EVENT_RECORDER_UPDATE, EVENT_RECORDER_EXCEPTION, EVENT_RECORDER_RECORD
-from vnpy.trader.engine import BaseEngine, MainEngine, OmsEngine
+from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
     SubscribeRequest,
     TickData,
     BarData,
     FactorData,
-    ContractData,
-    LogData
+    ContractData
 )
-from vnpy.trader.event import EVENT_TICK, EVENT_CONTRACT, EVENT_BAR
-from vnpy.trader.utility import load_json, save_json, BarGenerator
+from vnpy.trader.event import EVENT_CONTRACT, EVENT_BAR, EVENT_FACTOR,EVENT_RECORDER_UPDATE
+from vnpy.trader.utility import BarGenerator
 
 from vnpy_clickhouse.clickhouse_database import ClickhouseDatabase
 
@@ -43,6 +41,7 @@ class RecorderEngine(BaseEngine):
 
         self.tick_recordings = {}  # list of symbols to record tick data
         self.bar_recordings = {}  # list of symbols to record bar data
+        self.factor_recordings = {}  # list of symbols to record bar data
         self.bar_generators = {}
 
         # self.load_setting()
@@ -178,6 +177,29 @@ class RecorderEngine(BaseEngine):
 
         self.write_log(f"添加K线记录成功：{vt_symbol}", level=DEBUG)
 
+    def add_factor_recording(self, vt_symbol: str):
+        """add a symbol to the factor recording list, which means that the factor data of this symbol will be recorded"""
+        if vt_symbol in self.factor_recordings:
+            self.write_log(f"已在因子记录列表中：{vt_symbol}", level=NOTSET)
+            return
+
+        contract = self.main_engine.get_contract(vt_symbol)
+        if not contract:
+            self.write_log(f"找不到合约：{vt_symbol}", level=ERROR)
+            return
+
+        self.factor_recordings[vt_symbol] = {
+            "symbol": contract.symbol,
+            "exchange": contract.exchange.value,
+            "gateway_name": contract.gateway_name
+        }
+
+        self.subscribe(contract)
+        # self.save_setting()
+        self.put_event()
+
+        self.write_log(f"添加因子记录成功：{vt_symbol}", level=DEBUG)
+
     def add_tick_recording(self, vt_symbol: str):
         """add a symbol to the tick recording list, which means that the tick data of this symbol will be recorded"""
         if vt_symbol in self.tick_recordings:
@@ -229,7 +251,7 @@ class RecorderEngine(BaseEngine):
         """"""
         # self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_BAR, self.process_bar_event)
-        # self.event_engine.register(EVENT_FACTOR, self.process_factor_event)
+        self.event_engine.register(EVENT_FACTOR, self.process_factor_event)
         self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
 
         # self.main_engine.register_log_event(EVENT_RECORDER_LOG)
@@ -240,6 +262,13 @@ class RecorderEngine(BaseEngine):
         self.add_bar_recording(vt_symbol=bar.vt_symbol)
         if bar.vt_symbol in self.bar_recordings:
             self.record_bar(bar)
+
+    def process_factor_event(self, event: Event):
+        """"""
+        factor = event.data
+        self.add_factor_recording(vt_symbol=factor.vt_symbol)
+        if factor.vt_symbol in self.factor_recordings:
+            self.record_factor(factor)
 
     def process_tick_event(self, event: Event):
         """"""
@@ -291,6 +320,11 @@ class RecorderEngine(BaseEngine):
     def record_bar(self, bar: BarData):
         """"""
         task = ("bar", copy(bar))
+        self.queue.put(task)
+
+    def record_factor(self, factor: FactorData):
+        """"""
+        task = ("factor", copy(factor))
         self.queue.put(task)
 
     def get_bar_generator(self, vt_symbol: str):
