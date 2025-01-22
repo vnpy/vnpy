@@ -1,15 +1,13 @@
 import importlib
-import glob
 import traceback
 from collections import defaultdict
 from logging import getLogger
-from pathlib import Path
-from types import ModuleType
 from typing import Type, Callable, Optional
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 
 from vnpy.event import Event, EventEngine
+from vnpy.trader.event import EVENT_FACTOR
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
     OrderRequest,
@@ -26,7 +24,7 @@ from vnpy.trader.object import (
 from vnpy.trader.event import (
     EVENT_TICK,
     EVENT_ORDER,
-    EVENT_TRADE, EVENT_FACTOR
+    EVENT_TRADE
 )
 from vnpy.trader.constant import (
     Direction,

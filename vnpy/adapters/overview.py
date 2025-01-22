@@ -51,6 +51,8 @@ class OverviewDecoder(json.JSONDecoder):
                     d[dt_field] = datetime.datetime.strptime(d[dt_field], '%Y-%m-%d %H:%M:%S')
                 except ValueError:
                     d[dt_field] = datetime.datetime.strptime(d[dt_field], '%Y-%m-%d')
+                except TypeError:
+                    print("TypeError", d[dt_field])
         return d
 
 
@@ -82,6 +84,7 @@ def load_overview(filename: str, overview_cls: TV_BaseOverview.__class__) -> Dic
     return overviews
 
 def update_overview(overview_dict,vt_symbol,save_path):
+    # todo: here
     pass
 
 
