@@ -8,6 +8,7 @@ from logging import INFO
 from typing import Optional
 
 from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
+from ..config import VTSYMBOL_KLINE, VTSYMBOL_BARDATA, VTSYMBOL_FACTOR
 
 ACTIVE_STATUSES = {Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED}
 
@@ -18,10 +19,10 @@ class BaseData:
     Any data object needs a gateway_name as source
     and should inherit base data.
     """
-
-    gateway_name: str
-
+    gateway_name: str = field(default=None)
     extra: dict = field(default=None, init=False)
+
+    VTSYMBOL_TEMPLATE: str = field(default=None, init=False)
 
 
 @dataclass
@@ -33,9 +34,9 @@ class TickData(BaseData):
         * intraday market statistics.
     """
 
-    symbol: str
-    exchange: Exchange
-    datetime: datetime
+    symbol: str = field(default=None, init=True)
+    exchange: Exchange = field(default=None, init=True)
+    datetime: datetime = field(default=None, init=True)
 
     name: str = ""
     volume: float = 0
@@ -91,20 +92,20 @@ class FactorData(BaseData):
         * factor frequency
     """
 
-    symbol: str = ""
-    exchange: Exchange = None
-    datetime: datetime = None
-    factor_name: str = "factor_unknown"
-    interval: Interval = None
+    symbol: str = field(default=None, init=True)
+    exchange: Exchange = field(default=None, init=True)
+    datetime: datetime = field(default=None, init=True)
+    factor_name: str = field(default="factor_unknown", init=True)
+    interval: Interval = field(default=None, init=True)
 
     value: float = None
 
-    VTSYMBOL_TEMPLATE_FACTOR = "factor_{}_{}_{}.{}"  # interval, symbol(ticker), name(factor name), exchange
+    VTSYMBOL_TEMPLATE = VTSYMBOL_FACTOR
 
     def __post_init__(self) -> None:
         """"""
-        self.vt_symbol: str = self.VTSYMBOL_TEMPLATE_FACTOR.format(self.interval.value, self.symbol, self.factor_name,
-                                                                   self.exchange.value)
+        self.vt_symbol: str = self.VTSYMBOL_TEMPLATE.format(interval=self.interval.value, symbol=self.symbol,
+                                                            factorname=self.factor_name, exchange=self.exchange.value)
 
 
 @dataclass
@@ -113,9 +114,9 @@ class BarData(BaseData):
     Candlestick bar data of a certain trading period.
     """
 
-    symbol: str
-    exchange: Exchange
-    datetime: datetime
+    symbol: str = field(default=None, init=True)
+    exchange: Exchange = field(default=None, init=True)
+    datetime: datetime = field(default=None, init=True)
 
     interval: Interval = None
     volume: float = 0  # quoted asset volume (比如一般都用usdt计价, 那么这里的volume是以usdt计价后的volume)
@@ -125,10 +126,16 @@ class BarData(BaseData):
     high_price: float = 0
     low_price: float = 0
     close_price: float = 0
+    quote_asset_volume: float = 0
+    number_of_trades: float = 0
+    taker_buy_base_asset_volume: float = 0
+    taker_buy_quote_asset_volume: float = 0
+
+    VTSYMBOL_TEMPLATE = VTSYMBOL_BARDATA
 
     def __post_init__(self) -> None:
         """"""
-        self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
+        self.vt_symbol: str = self.VTSYMBOL_TEMPLATE.format(symbol=self.symbol, exchange=self.exchange.value)
 
 
 @dataclass
@@ -138,9 +145,9 @@ class OrderData(BaseData):
     of a specific order.
     """
 
-    symbol: str
-    exchange: Exchange
-    orderid: str
+    symbol: str = field(default=None, init=True)
+    exchange: Exchange = field(default=None, init=True)
+    orderid: str = field(default=None, init=True)
 
     type: OrderType = OrderType.LIMIT
     direction: Direction = None
@@ -182,10 +189,10 @@ class TradeData(BaseData):
     can have several trade fills.
     """
 
-    symbol: str
-    exchange: Exchange
-    orderid: str
-    tradeid: str
+    symbol: str = field(default=None, init=True)
+    exchange: Exchange = field(default=None, init=True)
+    orderid: str = field(default=None, init=True)
+    tradeid: str = field(default=None, init=True)
     direction: Direction = None
 
     offset: Offset = Offset.NONE
@@ -206,9 +213,9 @@ class PositionData(BaseData):
     Position data is used for tracking each individual position holding.
     """
 
-    symbol: str
-    exchange: Exchange
-    direction: Direction
+    symbol: str = field(default=None, init=True)
+    exchange: Exchange = field(default=None, init=True)
+    direction: Direction = field(default=None, init=True)
 
     volume: float = 0
     frozen: float = 0
@@ -229,7 +236,7 @@ class AccountData(BaseData):
     available.
     """
 
-    accountid: str
+    accountid: str = field(default=None, init=True)
 
     balance: float = 0
     frozen: float = 0
@@ -246,8 +253,8 @@ class LogData(BaseData):
     Log data is used for recording log messages on GUI or in log files.
     """
 
-    msg: str
-    level: int = INFO
+    msg: str = field(default=None, init=True)
+    level: int = field(default=INFO, init=True)
 
     def __post_init__(self) -> None:
         """"""
@@ -260,12 +267,12 @@ class ContractData(BaseData):
     Contract data contains basic information about each contract traded.
     """
 
-    symbol: str
-    exchange: Exchange
-    name: str
-    product: Product
-    size: float
-    pricetick: float
+    symbol: str = field(default=None, init=True)
+    exchange: Exchange = field(default=None, init=True)
+    name: str = field(default=None, init=True)
+    product: Product = field(default=None, init=True)
+    size: float = field(default=None, init=True)
+    pricetick: float = field(default=None, init=True)
 
     min_volume: float = 1  # minimum trading volume of the contract
     stop_supported: bool = True  # whether server supports stop order
@@ -292,9 +299,9 @@ class QuoteData(BaseData):
     of a specific quote.
     """
 
-    symbol: str
-    exchange: Exchange
-    quoteid: str
+    symbol: str = field(default=None, init=True)
+    exchange: Exchange = field(default=None, init=True)
+    quoteid: str = field(default=None, init=True)
 
     bid_price: float = 0.0
     bid_volume: int = 0

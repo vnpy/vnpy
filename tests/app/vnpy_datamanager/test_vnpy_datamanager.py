@@ -1,11 +1,10 @@
-# -*- coding=utf-8 -*-
-# @Project  : 20240720
-# @FilePath : ${DIR_PATH}
-# @File     : ${FILE_NAME}
-# @Time     : 2024/9/28 21:00
-# @Author   : EvanHong
-# @Email    : 939778128@qq.com
-# @Description:
+import unittest
+from unittest.mock import patch, MagicMock
+from datetime import datetime
+from vnpy.trader.constant import Interval, Exchange
+from vnpy.trader.object import HistoryRequest, BarData
+from vnpy_datafeed.binance_datafeed import BinanceDatafeed
+
 import multiprocessing
 from datetime import datetime, time
 from logging import INFO
@@ -16,9 +15,9 @@ import numpy as np
 import pandas as pd
 import polars as pl
 
-from vnpy.app.factor_maker import FactorEngine
-from vnpy.app.factor_maker import FactorMakerApp
+from vnpy.app.factor_maker import FactorEngine, FactorMakerApp
 from vnpy.app.data_recorder import DataRecorderApp
+from vnpy.app.vnpy_datamanager import DataManagerEngine
 from vnpy.event import Event
 from vnpy.event import EventEngine
 from vnpy.gateway.binance import BinanceSpotGateway
@@ -26,6 +25,20 @@ from vnpy.trader.constant import Exchange
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.object import SubscribeRequest
 from vnpy.trader.setting import SETTINGS
+
+
+def gen_requests():
+    # Create a HistoryRequest object with test data
+    for symbol in ["BTCUSDT", "ETHUSDT"]:
+        for interval in [Interval.MINUTE]:
+            req = HistoryRequest(
+                symbol=symbol,
+                exchange=Exchange.BINANCE,
+                interval=interval,
+                start=datetime(2025, 1, 3),
+                end=datetime(2025, 1, 5)
+            )
+            yield req
 
 
 def run_child():
@@ -50,13 +63,26 @@ def run_child():
     main_engine.write_log("连接币安接口")
     main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
 
-    # start data recorder
-    data_recorder_engine=main_engine.add_app(DataRecorderApp)
-    main_engine.write_log("启动数据记录程序")
+    # start data manager
+    manager_engine: DataManagerEngine = main_engine.add_engine(DataManagerEngine)
+    main_engine.write_log("启动数据管理程序")
 
-    factor_maker_engine:FactorEngine = main_engine.add_app(FactorMakerApp)
-    factor_maker_engine.init_engine(fake=True)
-    main_engine.write_log("启动因子计算程序")
+    # Initialize the BinanceDatafeed object
+    for req in gen_requests():
+        print("=" * 50, req.symbol, req.interval, "=" * 50)
+        records = manager_engine.download_bar_data(symbol=req.symbol, exchange=req.exchange,
+                                                   interval=req.interval.value,
+                                                   start=req.start, end=req.end, save=True,
+                                                   save_dir=f"./vnpy_data")
+        print(records)
+
+    # # start data recorder
+    # data_recorder_engine=main_engine.add_app(DataRecorderApp)
+    # main_engine.write_log("启动数据记录程序")
+    #
+    # factor_maker_engine:FactorEngine = main_engine.add_app(FactorMakerApp)
+    # factor_maker_engine.init_engine(fake=True)
+    # main_engine.write_log("启动因子计算程序")
 
     # log_engine = main_engine.get_engine("log")
     # event_engine.register(EVENT_CTA_LOG, log_engine.process_log_event)
@@ -129,62 +155,43 @@ def run_parent():
         sleep(5)
 
 
-class TestFactorEngine(TestCase):
-    def init(self):
-        event_engine = EventEngine()
-        main_engine = MainEngine(event_engine)
-        self.factor_engine = FactorEngine(main_engine, event_engine)
-        self.factor_engine.init_engine()
-        # print(self.factor_engine.memory_bar)
-        # print(self.factor_engine.memory_factor)
+class TestBinanceDatafeed(unittest.TestCase):
 
-        data = {'datetime': pd.date_range("2024-01-01", periods=200, freq="1min")}
-        schema = {'datetime': datetime}
-        for symbol in self.factor_engine.main_engine.vt_symbols:
-            data[symbol] = np.random.random(200)
-            schema[symbol] = pl.Float64
+    @patch('vnpy_datafeed.vnpy_datafeed.binance_datafeed.BinanceDataDumper')
+    def test_query_bar_history_binance_historical_data(self, MockBinanceDataDumper):
+        # Mock the BinanceDataDumper and its dump_data method
+        mock_dumper = MockBinanceDataDumper.return_value
+        mock_dumper.dump_data = MagicMock()
 
-        for b in ["open", "high", "low", "close", "volume"]:
-            self.factor_engine.memory_bar[b] = pl.concat(
-                [self.factor_engine.memory_bar[b], pl.DataFrame(data=data, schema=schema)], how='vertical')
-        for f in self.factor_engine.stacked_factors.keys():
-            self.factor_engine.memory_factor[f] = pl.concat(
-                [self.factor_engine.memory_factor[f], pl.DataFrame(data=data, schema=schema)], how='vertical')
+        # Create a HistoryRequest object with test data
+        req = HistoryRequest(
+            symbol="BTCUSDT",
+            exchange=Exchange.BINANCE,
+            interval=Interval.MINUTE,
+            start=datetime(2023, 1, 1),
+            end=datetime(2023, 1, 2)
+        )
 
-        # print(self.factor_engine.memory_bar)
-        # print(self.factor_engine.memory_factor)
+        # Initialize the BinanceDatafeed object
+        datafeed = BinanceDatafeed()
 
-    def test_sth(self):
-        a = pl.DataFrame(
-            data={'datetime': [], 'symbol': [], 'open': [], 'high': [], 'low': [], 'close': [], 'volume': []},
-            schema={'datetime': datetime, 'symbol': pl.Utf8, 'open': pl.Float64, 'high': pl.Float64, 'low': pl.Float64,
-                    'close': np.float16, 'volume': float})
-        print(a)
+        # Call the _query_bar_history_binance_historical_data_ method
+        bars = datafeed._query_bar_history_binance_historical_data_(req=req, save_path=datafeed.save_path)
 
-    def test_init(self):
-        self.init()
+        # Assert that the dump_data method was called with the correct parameters
+        mock_dumper.dump_data.assert_called_once_with(
+            tickers=["BTCUSDT"],
+            date_start=req.start.date(),
+            date_end=req.end.date(),
+            is_to_update_existing=False
+        )
 
-    def test_pipeline(self):
-        """测试因子从数据源到因子计算和最终入库的整个流程
-
-        Returns
-        -------
-
-        """
-
-        self.init()
-
-        # res = self.factor_engine.process_bar_event()
-        # print(res)
-
-        buffer = []
-        while not self.factor_engine.event_engine._queue.empty():
-            res: Event = self.factor_engine.event_engine._queue.get(block=True, timeout=1)
-            buffer.append(res)
-            # sleep(10)
-        print(buffer)
-
-        # pprint.pprint(self.factor_engine.__dict__)
+        # Assert that the method returns an empty list (as no actual data is processed in this test)
+        self.assertEqual(bars, [])
 
     def test_real_run(self):
         run_parent()
+
+
+if __name__ == '__main__':
+    print(gen_requests())

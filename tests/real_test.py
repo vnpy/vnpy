@@ -1,5 +1,14 @@
 # -*- coding=utf-8 -*-
 # @Project  : 20240720
+# @FilePath : vnpy/tests
+# @File     : real_test.py
+# @Time     : 2025/1/21 19:25
+# @Author   : EvanHong
+# @Email    : 939778128@qq.com
+# @Description:
+
+# -*- coding=utf-8 -*-
+# @Project  : 20240720
 # @FilePath : ${DIR_PATH}
 # @File     : ${FILE_NAME}
 # @Time     : 2024/9/28 21:00
@@ -50,13 +59,18 @@ def run_child():
     main_engine.write_log("连接币安接口")
     main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
 
-    # start data recorder
-    data_recorder_engine=main_engine.add_app(DataRecorderApp)
-    main_engine.write_log("启动数据记录程序")
+    # zc: overview(vnpy.adapters.overview) + datafeed(vnpy_datafeed) + database(vnpy_clickhouse) 补历史数据
 
-    factor_maker_engine:FactorEngine = main_engine.add_app(FactorMakerApp)
+
+    # start data recorder
+    data_recorder_engine = main_engine.add_app(DataRecorderApp)
+    main_engine.write_log("启动[DataRecorderApp]")
+
+    factor_maker_engine: FactorEngine = main_engine.add_app(FactorMakerApp)
     factor_maker_engine.init_engine(fake=True)
-    main_engine.write_log("启动因子计算程序")
+    main_engine.write_log("启动[FactorMakerApp]")
+
+
 
     # log_engine = main_engine.get_engine("log")
     # event_engine.register(EVENT_CTA_LOG, log_engine.process_log_event)
