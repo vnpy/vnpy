@@ -51,6 +51,8 @@ class OverviewDecoder(json.JSONDecoder):
                     d[dt_field] = datetime.datetime.strptime(d[dt_field], '%Y-%m-%d %H:%M:%S')
                 except ValueError:
                     d[dt_field] = datetime.datetime.strptime(d[dt_field], '%Y-%m-%d')
+                except TypeError:
+                    print("TypeError", d[dt_field])
         return d
 
 

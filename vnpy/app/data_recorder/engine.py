@@ -54,7 +54,7 @@ class RecorderEngine(BaseEngine):
         self.database_manager = ClickhouseDatabase()
         self.buffer_bar = defaultdict(list)
         self.buffer_factor = defaultdict(list)
-        self.buffer_size = 4  # todo: 调大该数字
+        self.buffer_size = 1  # todo: 调大该数字
 
     # def load_setting(self):
     #     """"""
