@@ -3,53 +3,25 @@ import polars as pl
 from vnpy.app.factor_maker.factors.bar.bar_base import BarFactor
 from vnpy.trader.object import TickData, BarData, Exchange, Interval, FactorData
 from typing import Optional, Any, Union, Dict
-from vnpy.app.factor_maker.template import FactorTemplate
-from vnpy.app.factor_maker.base import FactorMode
 
 
-class OPEN(FactorTemplate):
-    factor_name = 'open'
-    dependencies_factor = []
-    freq = Interval.MINUTE
-    factor_mode = FactorMode.Backtest
+class OPEN(BarFactor):
+    factor_name = "open"
 
-    def __init__(self, setting, **kwargs):
-        """
-        Initialize the OPEN factor with its settings.
-        """
-        super().__init__(setting, **kwargs)
+    def on_bar(self, bar: BarData) -> FactorData:
+        value = bar.open_price
+        return FactorData(gateway_name="FactorTemplate", symbol=bar.symbol, exchange=bar.exchange,
+                          datetime=bar.datetime,
+                          value=value, factor_name=self.factor_name, interval=bar.interval)
 
-    def calculate(self, input_data: Dict[str, Any], memory: Optional[pl.DataFrame] = None, *args,
-                  **kwargs) -> pl.DataFrame:
-        """
-        Return the 'open' data for Live Trading or Backtesting.
+    def on_tick(self, tick: TickData) -> None:
+        pass
 
-        Parameters:
-            input_data (Dict[str, Any]): memory_bar with key 'open'.
-            memory (Optional[pl.DataFrame]): Unused for this factor but kept for uniformity.
-
-        Returns:
-            pl.DataFrame: Open price data.
-        """
-        # Validate factor_mode
-        if self.factor_mode not in [FactorMode.Backtest, FactorMode.Live]:
-            raise ValueError("Invalid factor_mode. Must be 'Backtest' or 'Live'.")
-
-        # Retrieve the 'open' data
-        if isinstance(input_data, dict):
-            open_data = input_data.get('open', None)
-            if open_data is None:
-                raise ValueError("Missing 'open' data in input_data.")
-        elif isinstance(input_data, pl.DataFrame):
-            open_data = input_data
-        else:
-            raise ValueError("Invalid input_data format. Expected pl.DataFrame or Dict[str, pl.DataFrame].")
-
-        # Ensure the data is a Polars DataFrame
-        if not isinstance(open_data, pl.DataFrame):
-            raise ValueError("'open' data must be a Polars DataFrame.")
-
-        return open_data
+    def on_factor(self, factor: FactorData) -> FactorData:
+        pass
 
     def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
         pass
+
+    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str, Any]]], *args, **kwargs) -> Any:
+        return input_data["open"]

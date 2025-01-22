@@ -177,6 +177,9 @@ class VWAP(FactorTemplate):
 
             return vwap
 
+    def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
+        pass
+
 
 class MA(FactorTemplate):
     factor_name = 'ma'
@@ -275,6 +278,9 @@ class MA(FactorTemplate):
 
             return rolling_means
 
+    def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
+        pass
+
 
 class MACD(FactorTemplate):
     factor_name = 'macd'
@@ -338,12 +344,15 @@ class MACD(FactorTemplate):
                 pl.col(col).rolling_mean(self.params.get_parameter('signal_period')).alias(col)
                 for col in macd_line.columns
             ])
-            histogram = (macd_line - signal_line)*(-1)
+            histogram = macd_line*0.7 - signal_line*0.5
 
             if datetime_col is not None:
                 histogram = histogram.insert_column(0, datetime_col)
 
             return histogram
+
+    def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
+        pass
 
 
 # Example usage with synthetic data
@@ -432,10 +441,10 @@ from vnpy.app.factor_maker.optimizer import FactorOptimizer
 
 # Step 1: Create Backtester
 backtester = FactorBacktester(
-    data=raw_data,  # Use synthetic OHLCV data
+    memory_bar=raw_data,  # Use synthetic OHLCV data
     commission_rate=0.001,
     slippage=0.001,
-    trading_freq="7d"
+    trading_freq="15d"
 )
 
 # Step 2: Initialize Optimizer
@@ -448,7 +457,7 @@ print(optimizer.memory_factor)
 
 # Step 4: Define Parameter Grid for Optimization
 param_grid = {
-    "signal_period": [2, 3, 5, 8, 10]
+    "signal_period": range(1, 15)
 }
 
 # Step 5: Optimize Parameters
@@ -461,7 +470,7 @@ print("Best Sharpe Ratio:", best_params["best_score"])
 # Step 7: Perform Backtesting with Best Parameters
 macd.set_params(best_params["best_params"])
 factor_values = macd.calculate(optimizer.memory_factor)
-performance_metrics = backtester.run_backtesting_polars(factor_values, if_plot=True)
+performance_metrics = backtester.run_backtesting(factor_values, if_report=False)
 
 # Step 8: Display Performance Metrics
 print("\nPerformance Metrics:")
