@@ -119,7 +119,7 @@ class Exchange(Enum):
     SEHK = "SEHK"           # Stock Exchange of Hong Kong
     HKFE = "HKFE"           # Hong Kong Futures Exchange
     SGX = "SGX"             # Singapore Global Exchange
-    CBOT = "CBT"            # Chicago Board of Trade
+    CBOT = "CBOT"            # Chicago Board of Trade
     CBOE = "CBOE"           # Chicago Board Options Exchange
     CFE = "CFE"             # CBOE Futures Exchange
     DME = "DME"             # Dubai Mercantile Exchange
