@@ -641,7 +641,7 @@ engine.show_chart()
 
 - **set_parameters**
 
-  * 入参：interval: Interval,  start: datetime, end: datetime, rate: float, slippage: float, capital: int = 1_000_000, cache: str = ""
+  * 入参：interval: Interval,  start: datetime, end: datetime, rate: float, slippage: float, capital: int = 1_000_000, cache: str = "", memory: bool = False
 
   * 出参：无
 
@@ -657,7 +657,7 @@ engine.show_chart()
 
 - **run_backtesting**
 
-  * 入参：无
+  * 入参：disable_tqdm: bool= False
 
   * 出参：无
 
@@ -677,7 +677,7 @@ engine.show_chart()
 
 - **calculate_statistics**
 
-  * 入参：无
+  * 入参：df: DataFrame = None, output: bool = True
 
   * 出参：无
 
@@ -685,7 +685,7 @@ engine.show_chart()
 
 - **show_chart**
 
-  * 入参：无
+  * 入参：df: DataFrame = None
 
   * 出参：无
 
