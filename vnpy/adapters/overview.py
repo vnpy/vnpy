@@ -12,12 +12,13 @@ import atexit
 import datetime
 import json
 import os
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from vnpy.config import VTSYMBOL_KLINE
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.database import BarOverview
 from vnpy.trader.database import TV_BaseOverview
+from vnpy.trader.object import HistoryRequest
 from vnpy.trader.utility import load_json, save_json
 
 
@@ -126,6 +127,25 @@ def load_overview(filename: str, overview_cls: TV_BaseOverview.__class__) -> Dic
         count = len(bars)"""
 
 
+def get_timedelta(interval: Interval) -> datetime.timedelta:
+    """
+    Get the timedelta for a given interval.
+
+    Parameters:
+        interval (Interval): Candlestick interval (e.g., 1m, 1h, 1d).
+
+    Returns:
+        timedelta: Time delta corresponding to the interval.
+    """
+    interval_map = {
+        Interval.MINUTE: datetime.timedelta(minutes=1),
+        Interval.HOUR: datetime.timedelta(hours=1),
+        Interval.DAILY: datetime.timedelta(days=1),
+        Interval.WEEKLY: datetime.timedelta(weeks=1)
+    }
+    return interval_map.get(interval, datetime.timedelta(minutes=1))  # Default to 1 minute if unknown
+
+
 class OverviewHandler:
     """
     Handles the overview metadata for market bars in memory,
@@ -199,3 +219,33 @@ class OverviewHandler:
         overview_data_dict = {k: v.__dict__ for k, v in self.overview_dict.items()}
         save_json(self.filename, overview_data_dict, cls=OverviewEncoder, mode="w")
         print(f"OverviewHandler: Saved {len(self.overview_dict)} overview records to {self.filename}.")
+
+    def check_missing_data(self) -> List[HistoryRequest]:
+        """
+        Scan all overview records and detect missing historical data.
+        Generates a list of HistoryRequest objects for any missing data.
+
+        Returns:
+            List[HistoryRequest]: List of missing data requests.
+        """
+        missing_requests = []
+        current_time = datetime.datetime.now(tz=datetime.UTC)
+
+        for vt_symbol, overview in self.overview_dict.items():
+            expected_end = overview.end + get_timedelta(overview.interval)
+
+            # If current time is significantly ahead, request missing data
+            if current_time > expected_end:
+                print(f"OverviewVT: Missing data detected for {vt_symbol}. Expected end: {expected_end}, Current time: {current_time}")
+
+                missing_requests.append(
+                    HistoryRequest(
+                        symbol=overview.symbol,
+                        exchange=overview.exchange,
+                        start=expected_end,
+                        end=current_time,
+                        interval=overview.interval
+                    )
+                )
+
+        return missing_requests
