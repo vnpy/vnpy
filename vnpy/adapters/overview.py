@@ -8,17 +8,16 @@
 # @Description:
 from __future__ import annotations
 
+import atexit
+import datetime
 import json
 import os
-from typing import Dict, List, Union, Type, TypeVar
-import datetime
-
-import polars as pl
+from typing import Dict, List
 
 from vnpy.config import VTSYMBOL_KLINE
 from vnpy.trader.constant import Exchange, Interval
-from vnpy.trader.database import BarOverview, FactorOverview, BaseOverview, TV_BaseOverview
-from vnpy.trader.object import BarData
+from vnpy.trader.database import BarOverview
+from vnpy.trader.database import TV_BaseOverview
 from vnpy.trader.utility import load_json, save_json
 
 
@@ -57,11 +56,11 @@ class OverviewDecoder(json.JSONDecoder):
 
 
 def save_overview(filename: str, overview_data: Dict[str, TV_BaseOverview]) -> None:
-    # with open(filename, 'w', encoding='utf-8') as f:
+    # with open(path, 'w', encoding='utf-8') as f:
     #     json.dump(overview_data, f, cls=OverviewEncoder)
 
     # convert overview_data to dict
-    overview_data_dict = {k: v.__dict__ for k, v in overview_data.items()} # v is TV_BaseOverview
+    overview_data_dict = {k: v.__dict__ for k, v in overview_data.items()}  # v is TV_BaseOverview
 
     # use vnpy save json
     save_json(filename, overview_data_dict, cls=OverviewEncoder, mode='w')
@@ -83,12 +82,8 @@ def load_overview(filename: str, overview_cls: TV_BaseOverview.__class__) -> Dic
         overviews[k] = overview_cls(**v)
     return overviews
 
-def update_overview(overview_dict,vt_symbol,save_path):
-    # todo: here
-    pass
 
-
-def update_bar_overview(symbol: str,
+"""def update_bar_overview(symbol: str,
                         exchange: Exchange,
                         interval: Interval,
                         bars: Union[List, pl.DataFrame],
@@ -128,4 +123,79 @@ def update_bar_overview(symbol: str,
         # find the first and last datetime
         start = bars['datetime'].min()
         end = bars['datetime'].max()
-        count = len(bars)
+        count = len(bars)"""
+
+
+class OverviewHandler:
+    """
+    Handles the overview metadata for market bars in memory,
+    loads data on startup, updates dynamically, and saves on exit.
+    """
+
+    def __init__(self, path: str):
+        """
+        Initialize OverviewHandler by loading existing overview data.
+
+        Parameters:
+            path (str): Path to the JSON file where overview data is stored.
+        """
+        self.filename = path
+        self.overview_dict: Dict[str, BarOverview] = {}  # Stores bar metadata in memory
+        self.load_overview()
+
+        # Register the save function to execute when the program exits
+        atexit.register(self.save_overview)
+
+    def load_overview(self):
+        """
+        Load overview data from the JSON file into memory using OverviewDecoder.
+        """
+        if os.path.exists(self.filename):
+            overview_data = load_json(self.filename, cls=OverviewDecoder)
+            self.overview_dict = {k: BarOverview(**v) for k, v in overview_data.items()}
+            print(f"OverviewHandler: Loaded {len(self.overview_dict)} overview records from {self.filename}.")
+        else:
+            print("OverviewHandler: No existing overview file found. Starting fresh.")
+
+    def update_bar_overview(self, symbol: str, exchange: Exchange, interval: Interval, bars: List[tuple]):
+        """
+        Update the in-memory overview data when new bars arrive.
+
+        Parameters:
+            symbol (str): Trading symbol (e.g., BTCUSDT).
+            exchange (Exchange): Exchange (e.g., Binance, CME).
+            interval (Interval): Candlestick interval (e.g., 1m, 1h, 1d).
+            bars (List[tuple]): List of bar data in tuple format (datetime, price, volume, etc.).
+        """
+        if not bars:
+            return
+
+        vt_symbol = VTSYMBOL_KLINE.format(interval=interval.value, symbol=symbol, exchange=exchange.name)
+
+        # If this symbol has no stored overview, create a new entry
+        if vt_symbol not in self.overview_dict:
+            self.overview_dict[vt_symbol] = BarOverview(
+                symbol=symbol,
+                exchange=exchange,
+                interval=interval,
+                start=bars[0][0],  # First bar's timestamp
+                end=bars[-1][0],  # Last bar's timestamp
+                count=len(bars)
+            )
+        else:
+            overview = self.overview_dict[vt_symbol]
+
+            # Update start/end timestamps and bar count
+            overview.start = min(overview.start, bars[0][0])
+            overview.end = max(overview.end, bars[-1][0])
+            overview.count += len(bars)
+
+        print(f"OverviewHandler: Updated {vt_symbol} with {len(bars)} new bars.")
+
+    def save_overview(self):
+        """
+        Save the in-memory overview data to a JSON file using OverviewEncoder.
+        """
+        overview_data_dict = {k: v.__dict__ for k, v in self.overview_dict.items()}
+        save_json(self.filename, overview_data_dict, cls=OverviewEncoder, mode="w")
+        print(f"OverviewHandler: Saved {len(self.overview_dict)} overview records to {self.filename}.")
