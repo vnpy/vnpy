@@ -19,7 +19,8 @@ from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.database import BarOverview
 from vnpy.trader.database import TV_BaseOverview
 from vnpy.trader.object import HistoryRequest
-from vnpy.trader.utility import load_json, save_json
+from vnpy.trader.setting import SETTINGS
+from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
 
 
 class OverviewEncoder(json.JSONEncoder):
@@ -82,7 +83,6 @@ def load_overview(filename: str, overview_cls: TV_BaseOverview.__class__) -> Dic
     for k, v in overview_dict.items():
         overviews[k] = overview_cls(**v)
     return overviews"""
-
 
 """def update_bar_overview(symbol: str,
                         exchange: Exchange,
@@ -177,6 +177,18 @@ class OverviewHandler:
         else:
             print("OverviewHandler: No existing overview file found. Starting fresh.")
 
+        for vt_symbol in SETTINGS.get("vt_symbols", ""):
+            symbol, exchange = extract_vt_symbol(vt_symbol)
+            interval = Interval.MINUTE
+            vt_symbol = VTSYMBOL_KLINE.format(interval=interval.value, symbol=symbol, exchange=exchange.name)
+            if vt_symbol not in self.overview_dict:
+                self.overview_dict[vt_symbol] = BarOverview(
+                    symbol=symbol,
+                    exchange=exchange,
+                    interval=interval,
+                    count=0
+                )
+
     def update_bar_overview(self, symbol: str, exchange: Exchange, interval: Interval, bars: List[tuple]):
         """
         Update the in-memory overview data when new bars arrive.
@@ -228,15 +240,20 @@ class OverviewHandler:
         Returns:
             List[HistoryRequest]: List of missing data requests.
         """
+
         missing_requests = []
         current_time = datetime.datetime.now(tz=datetime.UTC)
 
         for vt_symbol, overview in self.overview_dict.items():
-            expected_end = overview.end + get_timedelta(overview.interval)
+            if overview.start is None:
+                expected_end = datetime.datetime(2024, 1, 1, 0, 0, 0)
+            else:
+                expected_end = overview.end + get_timedelta(overview.interval)
 
             # If current time is significantly ahead, request missing data
             if current_time > expected_end:
-                print(f"OverviewVT: Missing data detected for {vt_symbol}. Expected end: {expected_end}, Current time: {current_time}")
+                print(
+                    f"OverviewVT: Missing data detected for {vt_symbol}. Expected end: {expected_end}, Current time: {current_time}")
 
                 missing_requests.append(
                     HistoryRequest(
