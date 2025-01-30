@@ -24,6 +24,8 @@ SETTINGS: Dict[str, Any] = {
     "email.sender": "",
     "email.receiver": "",
 
+    "overview.jsonpath": "",
+
     "datafeed.name": "",
     "datafeed.username": "",
     "datafeed.password": "",

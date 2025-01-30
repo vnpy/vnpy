@@ -12,7 +12,7 @@ import atexit
 import datetime
 import json
 import os
-from typing import Dict, List, Union
+from typing import Dict, List
 
 from vnpy.config import VTSYMBOL_KLINE
 from vnpy.trader.constant import Exchange, Interval
@@ -56,7 +56,7 @@ class OverviewDecoder(json.JSONDecoder):
         return d
 
 
-def save_overview(filename: str, overview_data: Dict[str, TV_BaseOverview]) -> None:
+"""def save_overview(filename: str, overview_data: Dict[str, TV_BaseOverview]) -> None:
     # with open(path, 'w', encoding='utf-8') as f:
     #     json.dump(overview_data, f, cls=OverviewEncoder)
 
@@ -81,7 +81,7 @@ def load_overview(filename: str, overview_cls: TV_BaseOverview.__class__) -> Dic
     overview_dict = load_json(filename=filename, cls=OverviewDecoder)
     for k, v in overview_dict.items():
         overviews[k] = overview_cls(**v)
-    return overviews
+    return overviews"""
 
 
 """def update_bar_overview(symbol: str,

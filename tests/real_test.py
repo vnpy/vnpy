@@ -25,6 +25,7 @@ import numpy as np
 import pandas as pd
 import polars as pl
 
+from vnpy.adapters.overview import OverviewHandler
 from vnpy.app.factor_maker import FactorEngine
 from vnpy.app.factor_maker import FactorMakerApp
 from vnpy.app.data_recorder import DataRecorderApp
@@ -60,7 +61,11 @@ def run_child():
     main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
 
     # zc: overview(vnpy.adapters.overview) + datafeed(vnpy_datafeed) + database(vnpy_clickhouse) 补历史数据
-
+    # todo hyf 确认这个overview是直接写在这还是集成到database
+    overview_handler = OverviewHandler(SETTINGS.get("overview_jsonpath", ""))
+    overview_handler.load_overview()
+    for req in overview_handler.check_missing_data():
+        bars = main_engine.query_history(req, gateway_name='BINANCE_SPOT')
 
     # start data recorder
     data_recorder_engine = main_engine.add_app(DataRecorderApp)
@@ -69,8 +74,6 @@ def run_child():
     factor_maker_engine: FactorEngine = main_engine.add_app(FactorMakerApp)
     factor_maker_engine.init_engine(fake=True)
     main_engine.write_log("启动[FactorMakerApp]")
-
-
 
     # log_engine = main_engine.get_engine("log")
     # event_engine.register(EVENT_CTA_LOG, log_engine.process_log_event)
