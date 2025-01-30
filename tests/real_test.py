@@ -19,6 +19,7 @@ import multiprocessing
 from datetime import datetime, time
 from logging import INFO
 from time import sleep
+from typing import Dict, Optional, Union, List
 from unittest import TestCase
 
 import numpy as np
@@ -33,8 +34,9 @@ from vnpy.event import Event
 from vnpy.event import EventEngine
 from vnpy.gateway.binance import BinanceSpotGateway
 from vnpy.trader.constant import Exchange
+from vnpy.trader.datafeed import get_datafeed
 from vnpy.trader.engine import MainEngine
-from vnpy.trader.object import SubscribeRequest
+from vnpy.trader.object import SubscribeRequest, BarData
 from vnpy.trader.setting import SETTINGS
 
 
@@ -62,10 +64,12 @@ def run_child():
 
     # zc: overview(vnpy.adapters.overview) + datafeed(vnpy_datafeed) + database(vnpy_clickhouse) 补历史数据
     # todo hyf 确认这个overview是直接写在这还是集成到database
+    datafeed = get_datafeed()
     overview_handler = OverviewHandler(SETTINGS.get("overview_jsonpath", ""))
     overview_handler.load_overview()
     for req in overview_handler.check_missing_data():
-        bars = main_engine.query_history(req, gateway_name='BINANCE_SPOT')
+        bars: Optional[Union[List[BarData], List[Dict]]] = datafeed.query_bar_history(req)
+        bars.to_database() # todo hyf bars insert to database; also update the overview memory
 
     # start data recorder
     data_recorder_engine = main_engine.add_app(DataRecorderApp)
