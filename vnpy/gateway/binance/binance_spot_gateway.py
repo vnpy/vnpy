@@ -705,11 +705,13 @@ class BinanceSpotDataWebsocketApi:
 
     def subscribe(self, req: SubscribeRequest) -> None:
         """订阅行情, 并send_message_to_server"""
-        if req.symbol in self.ticks:
+        if req.exchange.value != req.exchange.value:
+            return
+        if req.symbol in self.bars:
             return
 
         if req.symbol not in symbol_contract_map:
-            self.gateway.write_log(f"找不到该合约代码{req.symbol}")
+            self.gateway.write_log(f"找不到该标的代码{req.symbol}")
             return
 
         self.reqid += 1
@@ -727,7 +729,7 @@ class BinanceSpotDataWebsocketApi:
             exchange=Exchange.BINANCE,
             datetime=datetime.fromtimestamp(0, tz=timezone.utc),
             gateway_name=self.gateway_name,
-            interval=Interval.MINUTE  # todo
+            interval=req.interval  # todo; done! already update the default interval to req.interval 2025-01-31
         )
         # todo: 订阅tick数据
         # self.ticks[req.symbol] = tick
@@ -736,7 +738,7 @@ class BinanceSpotDataWebsocketApi:
         # todo: 订阅tick数据
         # self._client.ticker(req.symbol)
         # self._client.partial_book_depth(req.symbol)
-        self._client.kline(req.symbol, '1m')
+        self._client.kline(req.symbol, INTERVAL_VT2BINANCE[req.interval])
 
     def on_packet(self, _, packet: dict) -> None:
         """推送数据回报"""

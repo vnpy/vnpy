@@ -18,7 +18,7 @@ from vnpy.config import VTSYMBOL_KLINE
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.database import BarOverview
 from vnpy.trader.database import TV_BaseOverview
-from vnpy.trader.object import HistoryRequest
+from vnpy.trader.object import HistoryRequest, SubscribeRequest
 from vnpy.trader.setting import SETTINGS
 from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
 
@@ -266,3 +266,26 @@ class OverviewHandler:
                 )
 
         return missing_requests
+
+    def check_subscribe_stream(self) -> List[SubscribeRequest]:
+        """
+        Scan all overview records and generate subscription requests for real-time tick data updates.
+
+        Returns:
+            List[SubscribeRequest]: A list of tick data subscription requests.
+        """
+        subscribe_requests = []
+        for vt_symbol, bar_overview in self.overview_dict.items():
+            print(f"OverviewHandler: Subscribing to real-time data for {vt_symbol}.")
+            subscribe_requests.append(
+                SubscribeRequest(
+                    symbol=bar_overview.symbol,
+                    exchange=bar_overview.exchange,
+                    interval=bar_overview.interval
+                )
+            )
+
+        return subscribe_requests
+
+
+

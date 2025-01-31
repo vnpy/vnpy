@@ -119,7 +119,7 @@ class BarData(BaseData):
     datetime: datetime = field(default=None, init=True)
 
     interval: Interval = None
-    volume: float = 0  # quoted asset volume (±ÈÈçÒ»°ã¶¼ÓÃusdt¼Æ¼Û, ÄÇÃ´ÕâÀïµÄvolumeÊÇÒÔusdt¼Æ¼ÛºóµÄvolume)
+    volume: float = 0  # quoted asset volume (ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ã¶¼ï¿½ï¿½usdtï¿½Æ¼ï¿½, ï¿½ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ï¿½volumeï¿½ï¿½ï¿½ï¿½usdtï¿½Æ¼Ûºï¿½ï¿½volume)
     turnover: float = 0
     open_interest: float = 0
     open_price: float = 0
@@ -342,6 +342,7 @@ class SubscribeRequest:
 
     symbol: str
     exchange: Exchange
+    interval: Interval
 
     def __post_init__(self) -> None:
         """"""

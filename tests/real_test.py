@@ -60,7 +60,7 @@ def run_child():
     }
     main_engine.connect(binance_gateway_setting, "BINANCE_SPOT")
     main_engine.write_log("连接币安接口")
-    main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
+    #main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
 
     # zc: overview(vnpy.adapters.overview) + datafeed(vnpy_datafeed) + database(vnpy_clickhouse) 补历史数据
     # todo hyf 确认这个overview是直接写在这还是集成到database
@@ -69,7 +69,10 @@ def run_child():
     overview_handler.load_overview()
     for req in overview_handler.check_missing_data():
         bars: Optional[Union[List[BarData], List[Dict]]] = datafeed.query_bar_history(req)
-        bars.to_database() # todo hyf bars insert to database; also update the overview memory
+        bars.to_database()  # todo hyf bars insert to database; also update the overview memory
+
+    for req in overview_handler.check_subscribe_stream():
+        main_engine.subscribe(req=req, gateway_name='BINANCE_SPOT')  #第63行放到这操作
 
     # start data recorder
     data_recorder_engine = main_engine.add_app(DataRecorderApp)
