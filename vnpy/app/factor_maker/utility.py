@@ -1,7 +1,7 @@
 import json
 
 from vnpy.trader.utility import load_json, save_json
-import factors
+import vnpy.app.factor_maker.factors as factors
 
 from typing import Dict, Any
 import dask
@@ -32,8 +32,7 @@ def load_factor_setting(setting_path: str):
     -------
 
     """
-    with open(setting_path, 'r') as fr:
-        js = json.load(fr)
+    js = load_json(setting_path)
     return js
 
 

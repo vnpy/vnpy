@@ -4,20 +4,14 @@ from threading import Thread
 from queue import Queue, Empty
 from copy import copy
 from typing import Literal
-from logging import ERROR, INFO, DEBUG, NOTSET
+from logging import ERROR, INFO, DEBUG, NOTSET, WARNING
 
 import polars as pl
 
-from vnpy.event import Event, EventEngine
-from vnpy.trader.engine import BaseEngine, MainEngine
-from vnpy.trader.object import (
-    SubscribeRequest,
-    TickData,
-    BarData,
-    FactorData,
-    ContractData
-)
-from vnpy.trader.event import EVENT_CONTRACT, EVENT_BAR, EVENT_FACTOR,EVENT_RECORDER_UPDATE
+from vnpy.event.engine import Event
+from vnpy.trader.event import EVENT_LOG, EVENT_CONTRACT, EVENT_BAR, EVENT_FACTOR, EVENT_RECORDER_UPDATE
+from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine
+from vnpy.trader.object import (SubscribeRequest, TickData, BarData, FactorData, ContractData, LogData)
 from vnpy.trader.utility import BarGenerator
 
 from vnpy_clickhouse.clickhouse_database import ClickhouseDatabase
@@ -35,15 +29,16 @@ class RecorderEngine(BaseEngine):
         super().__init__(main_engine, event_engine, APP_NAME)
 
         self.queue = Queue()
-        self.queue_pylist = []
         self.thread = Thread(target=self.run)
         self.active = False
 
+        # zc
         self.tick_recordings = {}  # list of symbols to record tick data
         self.bar_recordings = {}  # list of symbols to record bar data
         self.factor_recordings = {}  # list of symbols to record bar data
         self.bar_generators = {}
 
+        # zc
         # self.load_setting()
         self.register_event()
         self.start()
@@ -55,19 +50,14 @@ class RecorderEngine(BaseEngine):
         self.buffer_factor = defaultdict(list)
         self.buffer_size = 1  # todo: 调大该数字
 
-    # def load_setting(self):
-    #     """"""
-    #     setting = load_json(self.setting_filename)
-    #     self.tick_recordings = setting.get("tick", {})
-    #     self.bar_recordings = setting.get("bar", {})
+    def register_event(self):
+        """"""
+        # self.event_engine.register(EVENT_TICK, self.process_tick_event)
+        self.event_engine.register(EVENT_BAR, self.process_bar_event)
+        self.event_engine.register(EVENT_FACTOR, self.process_factor_event)
+        self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
 
-    # def save_setting(self):
-    #     """"""
-    #     setting = {
-    #         "tick": self.tick_recordings,
-    #         "bar": self.bar_recordings
-    #     }
-    #     save_json(self.setting_filename, setting)
+        # self.main_engine.register_log_event(EVENT_RECORDER_LOG)
 
     def save_data(self,
                   task_type: Literal["tick", "bar", "factor", None] = None,
@@ -137,14 +127,12 @@ class RecorderEngine(BaseEngine):
                 self.save_data(task_type, data)
 
             except Empty:
-                continue
+                self.write_log("数据记录引擎处理队列为空", level=WARNING)
 
     def close(self):
         """"""
-        self.active = False
-
         self.save_data(None, None)  # 保存所有buffer中残留的数据
-
+        self.active = False
         if self.thread.isAlive():
             self.thread.join()
 
@@ -247,14 +235,7 @@ class RecorderEngine(BaseEngine):
 
         self.write_log(f"移除Tick记录成功：{vt_symbol}")
 
-    def register_event(self):
-        """"""
-        # self.event_engine.register(EVENT_TICK, self.process_tick_event)
-        self.event_engine.register(EVENT_BAR, self.process_bar_event)
-        self.event_engine.register(EVENT_FACTOR, self.process_factor_event)
-        self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
 
-        # self.main_engine.register_log_event(EVENT_RECORDER_LOG)
 
     def process_bar_event(self, event: Event):
         """"""
@@ -289,12 +270,29 @@ class RecorderEngine(BaseEngine):
         if (vt_symbol in self.tick_recordings or vt_symbol in self.bar_recordings):
             self.subscribe(contract)
 
-    def write_log(self, msg: str, level=INFO) -> None:
-        """输出日志"""
-        self.main_engine.write_log(msg, source=APP_NAME, level=level)
+    def record_tick(self, tick: TickData):
+        """"""
+        task = ("tick", copy(tick))
+        self.queue.put(task)
+
+    def record_bar(self, bar: BarData):
+        """"""
+        task = ("bar", copy(bar))
+        self.queue.put(task)
+
+    def record_factor(self, factor: FactorData):
+        """"""
+        task = ("factor", copy(factor))
+        self.queue.put(task)
+
+    def write_log(self, msg: str, level: int = INFO) -> None:
+        """"""
+        log: LogData = LogData(msg=msg, gateway_name=APP_NAME, level=level)
+        event: Event = Event(EVENT_LOG, log)
+        self.event_engine.put(event)
 
     def put_event(self):
-        """"""
+        """  # fixme: What does this function do?"""
         tick_symbols = list(self.tick_recordings.keys())
         tick_symbols.sort()
 
@@ -311,21 +309,6 @@ class RecorderEngine(BaseEngine):
             data
         )
         self.event_engine.put(event)
-
-    def record_tick(self, tick: TickData):
-        """"""
-        task = ("tick", copy(tick))
-        self.queue.put(task)
-
-    def record_bar(self, bar: BarData):
-        """"""
-        task = ("bar", copy(bar))
-        self.queue.put(task)
-
-    def record_factor(self, factor: FactorData):
-        """"""
-        task = ("factor", copy(factor))
-        self.queue.put(task)
 
     def get_bar_generator(self, vt_symbol: str):
         """"""

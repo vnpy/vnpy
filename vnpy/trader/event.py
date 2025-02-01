@@ -14,6 +14,8 @@ EVENT_CONTRACT = "eContract."
 EVENT_LOG = "eLog"
 
 # ================================= apps =================================
+# name rule: EVENT_<APP_NAME>_<ACTION/EVENT_NAME>
+# ========================================================================
 # data recorder
 # EVENT_RECORDER_LOG = "eRecorderLog"  # tell the LogEngine to log the message
 EVENT_BAR = "eBar."  # hyf

@@ -5,7 +5,9 @@ from logging import DEBUG, INFO, ERROR, WARNING
 import polars as pl
 import os
 
-from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine, Event, EVENT_LOG
+from vnpy.event.engine import Event
+from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine
+from vnpy.trader.event import EVENT_LOG
 from vnpy.trader.constant import Interval, Exchange
 from vnpy.trader.object import BarData, TickData, ContractData, HistoryRequest, LogData
 from vnpy.trader.database import BaseDatabase, get_database, BarOverview, DB_TZ

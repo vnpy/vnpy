@@ -49,7 +49,6 @@ class FactorEngine(BaseEngine):
         self.factors = {}  # factor data containing all vt_symbols
 
         self.vt_symbols = main_engine.vt_symbols
-        self.subscribed_symbols = main_engine.subscribed_symbols
 
     def init_engine(self, fake: bool = False) -> None:
         """"""
@@ -144,7 +143,7 @@ class FactorEngine(BaseEngine):
 
     def init_all_factors(self) -> None:
         """初始化所有因子"""
-        inited_factors = init_all_factors(load_factor_setting(self.setting_filename), factor_mode=FactorMode.Live)
+        inited_factors = init_factors(load_factor_setting(self.setting_filename))
         self.stacked_factors = {f.factor_key: f for f in inited_factors}
 
         # get max_memory_length from all potential attributes
@@ -337,7 +336,7 @@ class FactorEngine(BaseEngine):
         """used in create_task"""
         return self.memory_bar
 
-    def __copy_meomory_factor__(self, factor_key):
+    def __copy_memory_factor__(self, factor_key):
         """used in create_task"""
         return self.memory_factor[factor_key]
 
@@ -368,22 +367,15 @@ class FactorEngine(BaseEngine):
 
         # Handle dependencies
         if not factor.dependencies_factor:  # No dependencies
-
-            # memory_dict = {}
-            # for key, df in self.memory_bar.items():
-            #     memory_dict[key] = dask.delayed(copy)(df)
-
-            # memory_dict = dask.delayed(copy)(self.memory_bar)
             memory_dict = dask.delayed(self.__copy_memory_bar__)()  # new style
-            tasks[factor_key] = dask.delayed(factor.calculate)(input_data=memory_dict,
-                                                               memory=None)
+            tasks[factor_key] = dask.delayed(factor.calculate)(input_data=memory_dict, memory=None)
         else:  # Resolve dependencies recursively
             dep_tasks = {
                 dep_factor.factor_key: self.create_task(dep_factor.factor_key, factors, tasks)
                 for dep_factor in factor.dependencies_factor
             }
             # historical_data = dask.delayed(copy)(self.memory_factor[factor_key])
-            historical_data = dask.delayed(self.__copy_meomory_factor__)(factor_key)
+            historical_data = dask.delayed(self.__copy_memory_factor__)(factor_key)
             tasks[factor_key] = dask.delayed(factor.calculate)(input_data=dep_tasks, memory=historical_data)
 
         return tasks[factor_key]
@@ -407,17 +399,17 @@ class FactorEngine(BaseEngine):
             "volume": {'datetime': datetime},
         }
 
-        for symbol, bar in bars.items():
-            data["open"][symbol] = bar.open_price
-            data["high"][symbol] = bar.high_price
-            data["low"][symbol] = bar.low_price
-            data["close"][symbol] = bar.close_price
-            data["volume"][symbol] = bar.volume
-            schema["open"][symbol] = pl.Float64
-            schema["high"][symbol] = pl.Float64
-            schema["low"][symbol] = pl.Float64
-            schema["close"][symbol] = pl.Float64
-            schema["volume"][symbol] = pl.Float64
+        for vt_symbol, bar in bars.items():
+            data["open"][vt_symbol] = bar.open_price
+            data["high"][vt_symbol] = bar.high_price
+            data["low"][vt_symbol] = bar.low_price
+            data["close"][vt_symbol] = bar.close_price
+            data["volume"][vt_symbol] = bar.volume
+            schema["open"][vt_symbol] = pl.Float64
+            schema["high"][vt_symbol] = pl.Float64
+            schema["low"][vt_symbol] = pl.Float64
+            schema["close"][vt_symbol] = pl.Float64
+            schema["volume"][vt_symbol] = pl.Float64
 
         tmp = {}
         for key, dic, in data.items():
@@ -429,8 +421,6 @@ class FactorEngine(BaseEngine):
         self.memory_bar["close"] = pl.concat([self.memory_bar["close"], tmp["close"]], how='vertical')
         self.memory_bar["volume"] = pl.concat([self.memory_bar["volume"], tmp["volume"]], how='vertical')
 
-        self._truncate_memory_bar()
-
         self.on_calculation(dt=dt)
 
     def on_factors(self, dt: datetime, factors: dict) -> None:
@@ -438,8 +428,6 @@ class FactorEngine(BaseEngine):
         data = {}
         schema = {}
         for vt_symbol, factor in factors.items():
-            # data[symbol] = factor.value
-            # schema[symbol] = pl.Float64
             data[factor.factor_name] = {'datetime': dt}
             schema[factor.factor_name] = {'datetime': datetime}
 
@@ -448,15 +436,14 @@ class FactorEngine(BaseEngine):
             schema[factor.factor_name][factor.symbol] = pl.Float64
 
         tmp = {}
-        for key, dic, in data.items():
-            tmp[key] = pl.DataFrame(data=dic, schema=schema[key])
+        for factor_name, data_dict, in data.items():
+            tmp[factor_name] = pl.DataFrame(data=data_dict, schema=schema[factor_name])
 
-        for factor_key in self.memory_factor.keys():
-            self.memory_factor[factor_key] = pl.concat([self.memory_factor[factor_key], tmp], how='vertical')
+        for factor_name in self.memory_factor.keys():
+            self.memory_factor[factor_name] = pl.concat([self.memory_factor[factor_name], tmp[factor_name]], how='vertical')
 
+        self._truncate_memory_bar()
         self._truncate_memory_factor()
-
-        self.on_calculation(dt=dt)
 
     def on_calculation(self, dt: datetime) -> None:
         """
@@ -476,70 +463,9 @@ class FactorEngine(BaseEngine):
         for factor_name, result in zip(self.tasks.keys(), results):
             self.memory_factor[factor_name] = result
 
-        self._truncate_memory_factor()
-
         self.write_log("Factor calculations completed successfully.", level=DEBUG)
         self.write_log(f"self.memory_bar {self.memory_bar}", level=DEBUG)
         self.write_log(f"self.memory_factor {self.memory_factor}", level=DEBUG)
-
-    # def build_computation_graph(self) -> None:
-    #     """
-    #     Build the computation graph for all factors and store it in self.tasks.
-    #
-    #     This method is called once after all factors are added to the engine.
-    #     """
-    #
-    #     def complete_factor_tree():
-    #         new_factors
-    #         for f_key, f in self.factors.items():
-    #             for dep_f in f.dependencies_factor:
-    #                 if dep_f.factor_key in self.factors:
-    #                     continue
-    #                 self.factors[dep_f.factor_key] = dep_f
-    #
-    #     complete_factor_tree()
-    #
-    #     # Function to create a task for a factor
-    #     def create_task(factor_key: str) -> dask.delayed:
-    #         """
-    #         Create a Dask task for a given factor dynamically.
-    #
-    #         Parameters:
-    #             factor_key (str): The name of the factor to create the task for.
-    #
-    #         Returns:
-    #             dask.delayed: The Dask task for the factor calculation.
-    #         """
-    #         # Check if the task has already been created
-    #         if factor_key in self.tasks:
-    #             return self.tasks[factor_key]
-    #
-    #         # Retrieve the factor instance
-    #         factor = self.factors[factor_key]
-    #
-    #         # Resolve dependencies recursively
-    #         dep_tasks = {}
-    #         if not factor.dependencies_factor:
-    #             # Create memory dict with delayed tasks for each key
-    #             memory_dict = {key: dask.delayed(df.get_dataframe)() for key, df in self.memory.items()}
-    #             # Pass the memory_dict as input to factor.calculate
-    #             self.tasks[factor_key] = dask.delayed(factor.calculate)(input_data=memory_dict)
-    #         else:
-    #             # Resolve dependencies recursively
-    #             for f in factor.dependencies_factor:
-    #                 dep = f.factor_key
-    #                 dep_tasks[dep] = create_task(dep)
-    #
-    #             # Create the task for the current factor using memory and resolved dependencies
-    #             self.tasks[factor_key] = dask.delayed(factor.calculate)(input_data=dep_tasks)
-    #
-    #         return self.tasks[factor_key]
-    #
-    #     # Build tasks for all factors
-    #     for factor_name in self.factors.keys():
-    #         create_task(factor_name)
-    #
-    #     self.write_log("Computation graph built successfully.")
 
     # Event Processing
     def process_tick_event(self, event: Event) -> None:
@@ -554,7 +480,7 @@ class FactorEngine(BaseEngine):
     def process_bar_event(self, event: Event) -> None:
         """Process incoming bar data."""
         bar: BarData = event.data
-        if self.dt is None:  # only happens at the beginning
+        if self.dt is None:  # only happens at the starting
             self.dt = bar.datetime
             self.bars[bar.vt_symbol] = bar
         else:

@@ -33,6 +33,7 @@ from vnpy.trader.object import (
     HistoryRequest
 )
 from vnpy.trader.utility import round_to
+from vnpy.trader.setting import SETTINGS
 
 # 实盘REST API地址
 REST_HOST: str = "https://api.binance.com"
@@ -103,7 +104,7 @@ class BinanceSpotGateway(BaseGateway):
         "server": ["REAL", "TESTNET"]
     }
 
-    exchanges: Exchange = [Exchange.BINANCE]
+    exchanges: List[Exchange] = [Exchange.BINANCE]
 
     def __init__(self, event_engine: EventEngine, gateway_name: str) -> None:
         """构造函数"""
@@ -118,6 +119,9 @@ class BinanceSpotGateway(BaseGateway):
         self.rest_api: "BinanceSpotRestAPi" = BinanceSpotRestAPi(self)
 
         self.orders: Dict[str, OrderData] = {}
+
+        # update exchanges by settings
+        self.exchanges = [Exchange(e) for e in SETTINGS.get("gateway.exchanges", [])]
 
     def connect(self, setting: dict):
         """连接交易接口"""
@@ -767,7 +771,7 @@ class BinanceSpotDataWebsocketApi:
                 bar.low_price = float(kdata['l'])
                 bar.close_price = float(kdata['c'])
                 bar.volume = float(kdata['q'])
-                assert bar.volume > 1000, f"bar.volume is too low"
+                assert bar.volume > 1000, f"bar.volume({bar.volume}) is too low"
                 self.gateway.on_bar(copy(bar))
             return
 
