@@ -13,6 +13,15 @@ from vnpy.trader.event import EVENT_LOG, EVENT_CONTRACT, EVENT_BAR, EVENT_FACTOR
 from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine
 from vnpy.trader.object import (SubscribeRequest, TickData, BarData, FactorData, ContractData, LogData)
 from vnpy.trader.utility import BarGenerator
+from vnpy.adapters.overview import OverviewHandler
+from vnpy.trader.utility import (
+    generate_vt_symbol,
+    extract_vt_symbol,
+    get_file_path
+)
+from vnpy.trader.database import (BarOverview, TickOverview, FactorOverview, TV_BaseOverview)
+
+from vnpy.trader.constant import Exchange, Interval
 
 from vnpy_clickhouse.clickhouse_database import ClickhouseDatabase
 
@@ -44,11 +53,14 @@ class RecorderEngine(BaseEngine):
         self.start()
         self.put_event()
 
-        # 用clickhouse数据库
+        # database settings
         self.database_manager = ClickhouseDatabase()
         self.buffer_bar = defaultdict(list)
         self.buffer_factor = defaultdict(list)
         self.buffer_size = 1  # todo: 调大该数字
+
+        # overview
+        self.overview_handler = OverviewHandler()
 
     def register_event(self):
         """"""
@@ -62,11 +74,15 @@ class RecorderEngine(BaseEngine):
     def save_data(self,
                   task_type: Literal["tick", "bar", "factor", None] = None,
                   data=None,
-                  force_save: bool = False):
+                  force_save: bool = False,
+                  stream: bool = False,
+                  ):
         """The actual implementation of the core functions that put the data into the database
         
         Parameters
         ----------
+        stream : bool
+            true when the data is streamed
         task_type :
         data :
         force_save : bool
@@ -86,9 +102,32 @@ class RecorderEngine(BaseEngine):
             #     raise ValueError(f"data_recorder.RecorderEngine.save_data: {data.__dict__}")
             to_remove = []  # 保存完数据后, 将其从buffer中删除
             for k, v in self.buffer_bar.items():
+                # do insertion
                 if len(v) >= self.buffer_size or force_save:
-                    to_remove.append(k)
-                    self.database_manager.save_bar_data(v)
+                    status = self.database_manager.save_bar_data(v)
+                    # todo: use status
+                    to_remove.append(k)  # to remove the key from buffer
+
+                    sample_data = v[0]
+
+                    # 读取主键参数
+                    vt_symbol: str = sample_data.vt_symbol
+                    interval: Interval = sample_data.interval
+                    # 更新K线汇总数据
+                    symbol, exchange = extract_vt_symbol(vt_symbol)
+                    # key: str = f"{vt_symbol}_{interval.value}"
+                    overview = self.overview_handler.bar_overview.get(vt_symbol, {})
+
+                    # todo: maintain overview here
+                    self.overview_handler.update_bar_overview(symbol=sample_data.vt_symbol,
+                                                              exchange=sample_data.exchange,
+                                                              interval=sample_data.interval, bars=v)
+
+                    # check consistency
+                    ret = self.database_manager.client_bar.select(freq=str(interval.value), ticker_list=symbol,
+                                                                  start_time=overview.start,
+                                                                  end_time=overview.end, ret='rows')
+                    assert self.overview_handler.bar_overview.count == len(ret)
             for k in to_remove:
                 self.buffer_bar[k] = []
         elif task_type == 'factor':
@@ -235,8 +274,6 @@ class RecorderEngine(BaseEngine):
 
         self.write_log(f"移除Tick记录成功：{vt_symbol}")
 
-
-
     def process_bar_event(self, event: Event):
         """"""
         bar = event.data
@@ -324,6 +361,7 @@ class RecorderEngine(BaseEngine):
         """"""
         req = SubscribeRequest(
             symbol=contract.symbol,
-            exchange=contract.exchange
+            exchange=contract.exchange,
+            interval=contract.interval
         )
         self.main_engine.subscribe(req, contract.gateway_name)
