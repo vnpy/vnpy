@@ -273,6 +273,7 @@ class ContractData(BaseData):
     product: Product = field(default=None, init=True)
     size: float = field(default=None, init=True)
     pricetick: float = field(default=None, init=True)
+    interval: Interval = field(default=None, init=True)  # hyf
 
     min_volume: float = 1  # minimum trading volume of the contract
     stop_supported: bool = True  # whether server supports stop order

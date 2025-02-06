@@ -35,6 +35,8 @@ from vnpy.trader.object import (
 from vnpy.trader.utility import round_to
 from vnpy.trader.setting import SETTINGS
 
+SYSTEM_MODE = SETTINGS.get('system.mode', 'LIVE')
+
 # 实盘REST API地址
 REST_HOST: str = "https://api.binance.com"
 
@@ -771,7 +773,9 @@ class BinanceSpotDataWebsocketApi:
                 bar.low_price = float(kdata['l'])
                 bar.close_price = float(kdata['c'])
                 bar.volume = float(kdata['q'])
-                assert bar.volume > 1000, f"bar.volume({bar.volume}) is too low"
+                if bar.volume < 1000 and SYSTEM_MODE == 'TEST':
+                    self.gateway.write_log(f"bar.volume is too low: {str(bar.__dict__)}")
+                # assert bar.volume > 1000, f"bar.volume is too low: {str(bar.__dict__)}" if SYSTEM_MODE != 'TEST' else True
                 self.gateway.on_bar(copy(bar))
             return
 

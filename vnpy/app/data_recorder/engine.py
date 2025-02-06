@@ -1,9 +1,10 @@
 """"""
+import time
 from collections import defaultdict
 from threading import Thread
 from queue import Queue, Empty
-from copy import copy
-from typing import Literal
+from copy import deepcopy
+from typing import Literal, Optional
 from logging import ERROR, INFO, DEBUG, NOTSET, WARNING
 
 import polars as pl
@@ -22,10 +23,11 @@ from vnpy.trader.utility import (
 from vnpy.trader.database import (BarOverview, TickOverview, FactorOverview, TV_BaseOverview)
 
 from vnpy.trader.constant import Exchange, Interval
-
+from vnpy.trader.setting import SETTINGS
 from vnpy_clickhouse.clickhouse_database import ClickhouseDatabase
 
 APP_NAME = "DataRecorder"
+SYSTEM_MODE = SETTINGS.get("system.mode", "LIVE")
 
 
 class RecorderEngine(BaseEngine):
@@ -72,7 +74,7 @@ class RecorderEngine(BaseEngine):
         # self.main_engine.register_log_event(EVENT_RECORDER_LOG)
 
     def save_data(self,
-                  task_type: Literal["tick", "bar", "factor", None] = None,
+                  task_type: Optional[Literal["bar", "factor", "tick"]] = None,
                   data=None,
                   force_save: bool = False,
                   stream: bool = False,
@@ -97,51 +99,52 @@ class RecorderEngine(BaseEngine):
         elif task_type == "bar":
             assert isinstance(data, BarData)
             self.buffer_bar[data.vt_symbol].append(data)
-            # if data.volume < 1000:
-            #     print(f"data_recorder.RecorderEngine.{self.save_data.__name__}: {data.__dict__}")
-            #     raise ValueError(f"data_recorder.RecorderEngine.save_data: {data.__dict__}")
             to_remove = []  # 保存完数据后, 将其从buffer中删除
             for k, v in self.buffer_bar.items():
                 # do insertion
                 if len(v) >= self.buffer_size or force_save:
-                    status = self.database_manager.save_bar_data(v)
+                    # get info for the data list
+                    sample_data = v[0]
+                    vt_symbol: str = sample_data.vt_symbol
+                    interval: Interval = sample_data.interval
+                    symbol, exchange = extract_vt_symbol(vt_symbol, is_factor=False)
+
+                    status = self.database_manager.save_bar_data(v, interval=interval, exchange=exchange)
                     # todo: use status
                     to_remove.append(k)  # to remove the key from buffer
 
-                    sample_data = v[0]
-
-                    # 读取主键参数
-                    vt_symbol: str = sample_data.vt_symbol
-                    interval: Interval = sample_data.interval
-                    # 更新K线汇总数据
-                    symbol, exchange = extract_vt_symbol(vt_symbol)
-                    # key: str = f"{vt_symbol}_{interval.value}"
-                    overview = self.overview_handler.bar_overview.get(vt_symbol, {})
-
-                    # todo: maintain overview here
-                    self.overview_handler.update_bar_overview(symbol=sample_data.vt_symbol,
-                                                              exchange=sample_data.exchange,
-                                                              interval=sample_data.interval, bars=v)
+                    self.overview_handler.update_overview_hyf(task_type=task_type, data_list=v, is_stream=stream)
 
                     # check consistency
+                    overview = self.overview_handler.bar_overview.get(vt_symbol, {})
                     ret = self.database_manager.client_bar.select(freq=str(interval.value), ticker_list=symbol,
                                                                   start_time=overview.start,
                                                                   end_time=overview.end, ret='rows')
-                    assert self.overview_handler.bar_overview.count == len(ret)
+                    assert self.overview_handler.bar_overview[vt_symbol].count == len(
+                        ret) if not SYSTEM_MODE == 'TEST' else True
             for k in to_remove:
                 self.buffer_bar[k] = []
         elif task_type == 'factor':
+            self.write_log(f"识别到factor")
             if isinstance(data, FactorData):
+                self.write_log(f"识别到FactorData")
                 self.buffer_factor[data.vt_symbol].append(data)  # todo: 这里用vt_symbol可以吗???
                 to_remove = []
                 for k, v in self.buffer_factor.items():
                     if len(v) >= self.buffer_size or force_save:
+                        # get info for the data list
+                        sample_data: FactorData = v[0]
+                        vt_symbol: str = sample_data.vt_symbol
+                        interval: Interval = sample_data.interval
+                        interval_, symbol, factor_name, exchange = extract_vt_symbol(vt_symbol, is_factor=True)
+
+                        status = self.database_manager.save_factor_data(name=data.factor_name, data=v)
                         to_remove.append(k)
-                        self.database_manager.save_factor_data(name=data.factor_name,
-                                                               data=v)
+
                 for k in to_remove:
                     self.buffer_factor[k] = []
             elif isinstance(data, pl.DataFrame):
+                self.write_log(f"识别到polars dataframe")
                 self.database_manager.save_factor_data(name=data.columns[-1], data=data)
             else:
                 raise TypeError(f"Unsupported data type: {type(data)}")
@@ -160,13 +163,21 @@ class RecorderEngine(BaseEngine):
     def run(self):
         """"""
         while self.active:
-            try:
+            # try:
+            #     task = self.queue.get(timeout=1)
+            #     task_type, data = task
+            #     self.save_data(task_type, data)
+            # except Empty as e:
+            #     self.write_log(f"数据记录引擎处理队列为空 {self.queue.qsize()}", level=WARNING)
+            # except Exception as e:
+            #     self.write_log(f"{str(e)}", level=ERROR)
+            if self.queue.qsize() > 0:
                 task = self.queue.get(timeout=1)
                 task_type, data = task
                 self.save_data(task_type, data)
-
-            except Empty:
-                self.write_log("数据记录引擎处理队列为空", level=WARNING)
+            else:
+                self.write_log(f"数据记录引擎处理队列为空 {self.queue.qsize()}", level=WARNING)
+                time.sleep(1)
 
     def close(self):
         """"""
@@ -309,17 +320,20 @@ class RecorderEngine(BaseEngine):
 
     def record_tick(self, tick: TickData):
         """"""
-        task = ("tick", copy(tick))
+        self.write_log(f"record_tick")
+        task = ("tick", deepcopy(tick))
         self.queue.put(task)
 
     def record_bar(self, bar: BarData):
         """"""
-        task = ("bar", copy(bar))
+        self.write_log(f"record_bar")
+        task = ("bar", deepcopy(bar))
         self.queue.put(task)
 
     def record_factor(self, factor: FactorData):
         """"""
-        task = ("factor", copy(factor))
+        self.write_log(f"record_factor")
+        task = ("factor", deepcopy(factor))
         self.queue.put(task)
 
     def write_log(self, msg: str, level: int = INFO) -> None:

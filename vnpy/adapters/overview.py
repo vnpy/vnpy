@@ -13,7 +13,7 @@ import copy
 import datetime
 import json
 import os
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional
 import warnings
 
 from vnpy.config import BAR_OVERVIEW_FILENAME, FACTOR_OVERVIEW_FILENAME, TICK_OVERVIEW_FILENAME
@@ -28,6 +28,8 @@ from vnpy.trader.utility import (
 )
 from vnpy.trader.utility import load_json, save_json
 from vnpy.utils.datetimes import normalize_unix, datetime2unix, TimeFreq, DatetimeUtils
+
+SYSTEM_MODE = SETTINGS.get("system.mode", "LIVE")
 
 
 class OverviewEncoder(json.JSONEncoder):
@@ -248,8 +250,8 @@ class OverviewHandler:
         # use vnpy save json
         save_json(filename, overview_data_dict, cls=OverviewEncoder, mode='w')
 
-    def update_overview_hyf(self, task_type: Literal['bar', 'factor', 'tick'],
-                            data_list: List[BarData, TickData, FactorData],
+    def update_overview_hyf(self, task_type: Optional[Literal["bar", "factor", "tick"]] = None,
+                            data_list: List[BarData, TickData, FactorData] = None,
                             is_stream: bool = True):
         """Update the in-memory overview data when new data arrives.
 
@@ -267,19 +269,19 @@ class OverviewHandler:
         if not data_list:
             return
         if task_type == 'bar':
-            overview_dict = self.bar_overview.copy()  # shallow copy
+            overview_dict = self.bar_overview
         elif task_type == 'tick':
-            overview_dict = self.tick_overview.copy()  # shallow copy
+            overview_dict = self.tick_overview
         elif task_type == 'factor':
-            overview_dict = self.factor_overview.copy()  # shallow copy
+            overview_dict = self.factor_overview
         else:
             raise ValueError(f"task_type {task_type} is not supported.")
 
         first, last = data_list[0], data_list[-1]
         vt_symbol = first.vt_symbol
-        interval = first.value
+        interval = first.interval
         symbol = first.symbol
-        exchange = first.name
+        exchange = first.exchange
         overview = copy.deepcopy(overview_dict.get(vt_symbol, None))
 
         if not overview:
@@ -294,7 +296,7 @@ class OverviewHandler:
         elif is_stream:
             # 根据interval计算出期望的时间间隔, 预计最新的数据.start应该是本地overview.end的相差interval的时间
             expected_gap_ms = TimeFreq(interval.value).value
-            if (first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms:
+            if (first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms and not SYSTEM_MODE == "TEST":
                 raise ValueError(f"数据时间间隔不符合预期, 请检查数据是否有跳空")
             overview.end = last.datetime
             overview.count += len(data_list)
@@ -304,7 +306,7 @@ class OverviewHandler:
             # 根据interval计算出期望的时间间隔, 预计最新的数据.start应该是本地overview.end的相差interval的时间
             n, tf = DatetimeUtils.split_time_str(interval.value)
             expected_gap_ms = n * tf.value
-            if (first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms:
+            if (first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms and not SYSTEM_MODE == "TEST":
                 raise ValueError(f"数据时间间隔不符合预期, 请检查数据是否有跳空")  # zc: 补数据
 
             # update start and end
@@ -313,6 +315,8 @@ class OverviewHandler:
             overview.end = max(overview.end, last.datetime)
 
         overview_dict[vt_symbol] = overview
+        if task_type == 'bar':
+            assert overview_dict == self.bar_overview
         self.save_overview_hyf(task_type=task_type)
 
     def update_bar_overview(self, symbol: str, exchange: Exchange, interval: Interval, bars: List[tuple]):

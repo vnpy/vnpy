@@ -1,5 +1,5 @@
 import logging
-from logging import Logger,INFO
+from logging import Logger, INFO
 import smtplib
 import os
 from abc import ABC
@@ -9,6 +9,7 @@ from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
 from typing import Any, Type, Dict, List, Optional, Union
+from itertools import product
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -38,7 +39,8 @@ from .object import (
     PositionData,
     AccountData,
     ContractData,
-    Exchange
+    Exchange,
+    Interval
 )
 from .setting import SETTINGS
 from .utility import get_folder_path, TRADER_DIR
@@ -62,10 +64,14 @@ class MainEngine:
         self.gateways: Dict[str, BaseGateway] = {}
         self.engines: Dict[str, BaseEngine] = {}
         self.apps: Dict[str, BaseApp] = {}
-        self.exchanges: List[Exchange] = []
-        self.vt_symbols: list[str] = SETTINGS.get('vt_symbols', [])
-        # self.subscriptions = SETTINGS.get("gateway.subscriptions", [])
-        # self.exchanges = SETTINGS.get("gateway.exchanges", [])
+        self.intervals = SETTINGS.get('gateway.intervals', [])
+        self.symbols = SETTINGS.get("gateway.symbols", [])  # hyf
+        # self.exchanges: List[Exchange] = []  # zc
+        self.exchanges = SETTINGS.get("gateway.exchanges", [])  # hyf
+        # self.vt_symbols: list[str] = SETTINGS.get('vt_symbols', [])  # zc
+        self.vt_symbols: list[str] = [f"{s}.{e}" for s, e in product(self.symbols, self.exchanges)]
+        self.mode: str = SETTINGS.get('mode', 'LIVE')
+        assert self.mode in ['LIVE', 'BACKTEST', 'TEST']
 
         os.chdir(TRADER_DIR)  # Change working directory
         self.init_engines()  # Initialize function engines
@@ -188,8 +194,9 @@ class MainEngine:
         """
         Subscribe tick data update of all contracts in a gateway.
         """
-        for vt_symbol in self.vt_symbols:
-            req: SubscribeRequest = SubscribeRequest(symbol=vt_symbol, exchange=Exchange.BINANCE)
+        for symbol, exchange, interval in product(self.symbols, self.exchanges, self.intervals):
+            req: SubscribeRequest = SubscribeRequest(symbol=symbol, exchange=Exchange(exchange),
+                                                     interval=Interval(interval))
             self.subscribe(req, gateway_name)
 
     def send_order(self, req: OrderRequest, gateway_name: str) -> str:

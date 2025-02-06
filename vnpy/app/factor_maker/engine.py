@@ -1,4 +1,5 @@
 import importlib
+import time
 import traceback
 from datetime import datetime, timedelta
 from logging import INFO, DEBUG
@@ -9,18 +10,20 @@ import polars as pl
 from copy import deepcopy
 
 from vnpy.event import EventEngine, Event
-from vnpy.trader.event import EVENT_BAR_FACTOR, EVENT_FACTOR, EVENT_FACTORMAKER
+from vnpy.trader.event import EVENT_BAR_FACTOR, EVENT_FACTOR, EVENT_FACTOR_CALCULATE
 from vnpy.trader.constant import Interval
 from vnpy.trader.database import get_database, DB_TZ
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.event import EVENT_TICK, EVENT_BAR
 from vnpy.trader.object import TickData, BarData, HistoryRequest, FactorData
 from vnpy.trader.utility import extract_vt_symbol
+from vnpy.trader.setting import SETTINGS
 from vnpy.app.factor_maker.base import APP_NAME
 from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.app.factor_maker.utility import *
 
 factor_module_name = 'vnpy.app.factor_maker.factors'
+SYSTEM_MODE = SETTINGS.get('system.mode', 'LIVE')
 
 
 # factor maker engine
@@ -90,7 +93,7 @@ class FactorEngine(BaseEngine):
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_BAR, self.process_bar_event)
         self.event_engine.register(EVENT_BAR_FACTOR, self.process_bar_factor_event)
-        self.event_engine.register(EVENT_FACTOR, self.process_factor_event)
+        # self.event_engine.register(EVENT_FACTOR, self.process_factor_event)  # factormaker doesn't need to process factor event, only recorder needs
 
         # self.main_engine.register_log_event(EVENT_FACTORMAKER_LOG)
 
@@ -121,7 +124,7 @@ class FactorEngine(BaseEngine):
         for f in self.flattened_factors.keys():
             self.memory_factor[f] = pl.DataFrame(data=data, schema=schema)
 
-        if fake:
+        if fake:  # concat fake data to memory
             for b in ["open", "high", "low", "close", "volume"]:
                 # fake data
                 data = {'datetime': pd.date_range("2024-01-01", periods=200, freq="1min")}
@@ -140,6 +143,8 @@ class FactorEngine(BaseEngine):
                     schema[symbol] = pl.Float64
                 self.memory_factor[f] = pl.concat(
                     [self.memory_factor[f], pl.DataFrame(data=data, schema=schema)], how='vertical')
+        # self.write_log(f"init_memory {self.memory_bar}", level=DEBUG)
+        # self.write_log(f"init_memory {self.memory_factor}", level=DEBUG)
 
     def init_all_factors(self) -> None:
         """初始化所有因子"""
@@ -381,7 +386,8 @@ class FactorEngine(BaseEngine):
         return tasks[factor_key]
 
     def on_bars(self, dt: datetime, bars: dict) -> None:
-        """Process a batch of bars."""
+        """update memory_bar. throw factor calculation event"""
+        print(f"bars {bars}")
 
         # dict of dicts, {'open': {'datetime': dt, 'symbol1': symbol1, 'symbol2': symbol2, }, ...}
         data = {
@@ -415,13 +421,21 @@ class FactorEngine(BaseEngine):
         for key, dic, in data.items():
             tmp[key] = pl.DataFrame(data=dic, schema=schema[key])
 
+        # self.write_log(f'self.memory_bar["open"] {self.memory_bar["open"]}', level=DEBUG)
+        # self.write_log(f'tmp["open"] {tmp["open"]}', level=DEBUG)
+        print(f'self.memory_bar["open"] {self.memory_bar["open"]}')
+        print(f'tmp["open"] {tmp["open"]}')
         self.memory_bar["open"] = pl.concat([self.memory_bar["open"], tmp["open"]], how='vertical')
         self.memory_bar["high"] = pl.concat([self.memory_bar["high"], tmp["high"]], how='vertical')
         self.memory_bar["low"] = pl.concat([self.memory_bar["low"], tmp["low"]], how='vertical')
         self.memory_bar["close"] = pl.concat([self.memory_bar["close"], tmp["close"]], how='vertical')
         self.memory_bar["volume"] = pl.concat([self.memory_bar["volume"], tmp["volume"]], how='vertical')
 
-        self.on_calculation(dt=dt)
+        print(1)
+        self.on_calculation(dt=dt)  # calculate factor
+        print(2)
+        self.event_engine.put(Event(EVENT_FACTOR, self.memory_factor))  # factors are calculated
+        print(3)
 
     def on_factors(self, dt: datetime, factors: dict) -> None:
         """Process a batch of factors of many symbols."""
@@ -440,7 +454,8 @@ class FactorEngine(BaseEngine):
             tmp[factor_name] = pl.DataFrame(data=data_dict, schema=schema[factor_name])
 
         for factor_name in self.memory_factor.keys():
-            self.memory_factor[factor_name] = pl.concat([self.memory_factor[factor_name], tmp[factor_name]], how='vertical')
+            self.memory_factor[factor_name] = pl.concat([self.memory_factor[factor_name], tmp[factor_name]],
+                                                        how='vertical')
 
         self._truncate_memory_bar()
         self._truncate_memory_factor()
@@ -463,9 +478,13 @@ class FactorEngine(BaseEngine):
         for factor_name, result in zip(self.tasks.keys(), results):
             self.memory_factor[factor_name] = result
 
+        time.sleep(1)
         self.write_log("Factor calculations completed successfully.", level=DEBUG)
         self.write_log(f"self.memory_bar {self.memory_bar}", level=DEBUG)
         self.write_log(f"self.memory_factor {self.memory_factor}", level=DEBUG)
+        print(f"{self.__class__.__name__}.on_calculation: Factor calculations completed successfully.", flush=True)
+        print(f"{self.__class__.__name__}.on_calculation: self.memory_bar {self.memory_bar}", flush=True)
+        print(f"{self.__class__.__name__}.on_calculation: self.memory_factor {self.memory_factor}", flush=True)
 
     # Event Processing
     def process_tick_event(self, event: Event) -> None:
@@ -500,17 +519,18 @@ class FactorEngine(BaseEngine):
 
     def process_factor_event(self, event: Event) -> None:
         """Process factor event"""
-        factor: FactorData = event.data
-        if self.dt is None:  # only happens at the beginning
-            self.dt = factor.datetime
-            self.factors[factor.vt_symbol] = factor
-        else:
-            if factor.datetime == self.dt:
-                self.factors[factor.vt_symbol] = factor
-            elif factor.datetime > self.dt:  # new timeframe
-                self.on_factors(self.dt, self.factors)  # push previous data to factor calculation
-                self.dt = factor.datetime  # update time
-                self.factors = {factor.vt_symbol: factor}  # totally create a new self.factors and add the new factor
+        # factor: FactorData = event.data
+        # if self.dt is None:  # only happens at the beginning
+        #     self.dt = factor.datetime
+        #     self.factors[factor.vt_symbol] = factor
+        # else:
+        #     if factor.datetime == self.dt:
+        #         self.factors[factor.vt_symbol] = factor
+        #     elif factor.datetime > self.dt:  # new timeframe
+        #         self.on_factors(self.dt, self.factors)  # push previous data to factor calculation
+        #         self.dt = factor.datetime  # update time
+        #         self.factors = {factor.vt_symbol: factor}  # totally create a new self.factors and add the new factor
+        pass
 
     # Utility Functions
     def call_factor_func(self, factor: FactorTemplate, func: Callable, params: object = None) -> None:
