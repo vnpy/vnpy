@@ -91,6 +91,7 @@ class FactorTemplate(ABC):
     @property
     def factor_key(self) -> str:
         """
+        # todo: consider change this property to 'vt_symbol' for consistency
         Get the factor name key.
         """
         return f"{self.factor_name}@{self.params.to_str(with_value=True)}"
@@ -253,6 +254,7 @@ class FactorTemplate(ABC):
         Returns:
             Any: Calculated factor value(s).
         """
+        print(f"factor_key {self.factor_key}")
         print(f"type(input_data): {type(input_data)}")
         print(f"input_data: {input_data}")
         if isinstance(input_data, pl.DataFrame):

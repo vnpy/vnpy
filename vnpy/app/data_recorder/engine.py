@@ -4,7 +4,7 @@ from collections import defaultdict
 from threading import Thread
 from queue import Queue, Empty
 from copy import deepcopy
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 from logging import ERROR, INFO, DEBUG, NOTSET, WARNING
 
 import polars as pl
@@ -145,7 +145,13 @@ class RecorderEngine(BaseEngine):
                     self.buffer_factor[k] = []
             elif isinstance(data, pl.DataFrame):
                 self.write_log(f"识别到polars dataframe")
+                time.sleep(0.1)
+                self.write_log(f"data {data}")
                 self.database_manager.save_factor_data(name=data.columns[-1], data=data)
+            elif isinstance(data,dict):
+                self.write_log(f"识别到dict")
+                for factor_key,factor_df in data.items():
+                    self.database_manager.save_factor_data(name=factor_key, data=factor_df)
             else:
                 raise TypeError(f"Unsupported data type: {type(data)}")
 
@@ -288,16 +294,16 @@ class RecorderEngine(BaseEngine):
     def process_bar_event(self, event: Event):
         """"""
         bar = event.data
-        self.add_bar_recording(vt_symbol=bar.vt_symbol)
-        if bar.vt_symbol in self.bar_recordings:
-            self.record_bar(bar)
+        # self.add_bar_recording(vt_symbol=bar.vt_symbol)
+        # if bar.vt_symbol in self.bar_recordings:
+        self.record_bar(bar)
 
     def process_factor_event(self, event: Event):
         """"""
-        factor = event.data
-        self.add_factor_recording(vt_symbol=factor.vt_symbol)
-        if factor.vt_symbol in self.factor_recordings:
-            self.record_factor(factor)
+        factor_dict: dict = event.data
+        for factor_key,factor_df in factor_dict.items():
+            # self.add_factor_recording(vt_symbol=factor_name)
+            self.record_factor({factor_key:factor_df})
 
     def process_tick_event(self, event: Event):
         """"""
@@ -320,19 +326,19 @@ class RecorderEngine(BaseEngine):
 
     def record_tick(self, tick: TickData):
         """"""
-        self.write_log(f"record_tick")
+        self.write_log(f"record_tick", level=DEBUG)
         task = ("tick", deepcopy(tick))
         self.queue.put(task)
 
     def record_bar(self, bar: BarData):
         """"""
-        self.write_log(f"record_bar")
+        self.write_log(f"record_bar", level=DEBUG)
         task = ("bar", deepcopy(bar))
         self.queue.put(task)
 
-    def record_factor(self, factor: FactorData):
+    def record_factor(self, factor: Union[FactorData, pl.DataFrame, dict]):
         """"""
-        self.write_log(f"record_factor")
+        self.write_log(f"record_factor", level=DEBUG)
         task = ("factor", deepcopy(factor))
         self.queue.put(task)
 

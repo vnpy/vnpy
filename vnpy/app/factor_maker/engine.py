@@ -431,11 +431,9 @@ class FactorEngine(BaseEngine):
         self.memory_bar["close"] = pl.concat([self.memory_bar["close"], tmp["close"]], how='vertical')
         self.memory_bar["volume"] = pl.concat([self.memory_bar["volume"], tmp["volume"]], how='vertical')
 
-        print(1)
-        self.on_calculation(dt=dt)  # calculate factor
-        print(2)
-        self.event_engine.put(Event(EVENT_FACTOR, self.memory_factor))  # factors are calculated
-        print(3)
+        self.execute_calculation(dt=dt)  # calculate factor
+        newest_memory_factor = {k: v.tail(1) for k, v in self.memory_factor.items()}
+        self.event_engine.put(Event(EVENT_FACTOR, newest_memory_factor))  # factors are calculated
 
     def on_factors(self, dt: datetime, factors: dict) -> None:
         """Process a batch of factors of many symbols."""
@@ -460,7 +458,7 @@ class FactorEngine(BaseEngine):
         self._truncate_memory_bar()
         self._truncate_memory_factor()
 
-    def on_calculation(self, dt: datetime) -> None:
+    def execute_calculation(self, dt: datetime) -> None:
         """
         Execute the pre-built computation graph with updated memory.
 
@@ -478,13 +476,13 @@ class FactorEngine(BaseEngine):
         for factor_name, result in zip(self.tasks.keys(), results):
             self.memory_factor[factor_name] = result
 
-        time.sleep(1)
-        self.write_log("Factor calculations completed successfully.", level=DEBUG)
-        self.write_log(f"self.memory_bar {self.memory_bar}", level=DEBUG)
-        self.write_log(f"self.memory_factor {self.memory_factor}", level=DEBUG)
-        print(f"{self.__class__.__name__}.on_calculation: Factor calculations completed successfully.", flush=True)
-        print(f"{self.__class__.__name__}.on_calculation: self.memory_bar {self.memory_bar}", flush=True)
-        print(f"{self.__class__.__name__}.on_calculation: self.memory_factor {self.memory_factor}", flush=True)
+        # time.sleep(1)
+        # self.write_log("Factor calculations completed successfully.", level=DEBUG)
+        # self.write_log(f"self.memory_bar {self.memory_bar}", level=DEBUG)
+        # self.write_log(f"self.memory_factor {self.memory_factor}", level=DEBUG)
+        # print(f"{self.__class__.__name__}.on_calculation: Factor calculations completed successfully.", flush=True)
+        # print(f"{self.__class__.__name__}.on_calculation: self.memory_bar {self.memory_bar}", flush=True)
+        # print(f"{self.__class__.__name__}.on_calculation: self.memory_factor {self.memory_factor}", flush=True)
 
     # Event Processing
     def process_tick_event(self, event: Event) -> None:

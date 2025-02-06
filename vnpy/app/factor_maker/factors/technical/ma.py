@@ -1,5 +1,5 @@
 import polars as pl
-from typing import Any
+from typing import Any, Optional, Union, Dict,List,Type
 
 from vnpy.trader.object import TickData, BarData, Exchange, Interval, FactorData
 from vnpy.app.factor_maker.template import FactorTemplate
@@ -9,18 +9,9 @@ from vnpy.app.factor_maker.factors.bar import *
 class MA_BASE(FactorTemplate):
     factor_name = "ma"
     author: str = "EvanHong"
-    #
-    # @property
-    # def window(self):
-    #     return self.params.get_parameter("window")
-    #
-    # @window.setter
-    # def window(self, value):
-    #     self.params.set_parameters({"window": value})
-    #
-    # @window.getter
-    # def window(self):
-    #     return self.params.get_parameter("window")
+
+    # dependencies_factor: List[Type[FactorTemplate]] = [MA, MA]
+
 
     def __init_dependencies__(self):
         pass
@@ -53,3 +44,13 @@ class MA(MA_BASE):
 
     def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
         pass
+
+    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str, Any]]], *args, **kwargs) -> Any:
+        if isinstance(input_data, dict):
+            fast = input_data.get(self.ma_fast.factor_key)
+            slow = input_data.get(self.ma_slow.factor_key)
+            # compute macd
+            macd = fast - slow
+
+        else:
+            raise ValueError("The input_data must be a dictionary.")
