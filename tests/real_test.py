@@ -63,7 +63,8 @@ def run_child():
     main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
     # main_engine.subscribe(SubscribeRequest(symbol='btcusdt', exchange=Exchange.BINANCE,interval=Interval.MINUTE), gateway_name='BINANCE_SPOT')
 
-    # # todo zc: vnpy.app.vnpy_datamanager + datafeed(vnpy_datafeed) ->vnpy.app.data_recorder = overview(vnpy.adapters.overview) + database(vnpy_clickhouse)  补历史数据
+    # #
+    # # todo zc: vnpy.app.vnpy_datamanager + datafeed(vnpy_datafeed.query_history)/gateway ->vnpy.app.data_recorder(insert data into database) = overview(vnpy.adapters.overview.) + database(vnpy_clickhouse)  补历史数据
     # # fixme: implement below in vnpy.app.vnpy_datamanager
     # datafeed = get_datafeed()
     # overview_handler = OverviewHandler(SETTINGS.get("overview_jsonpath", ""))

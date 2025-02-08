@@ -1,10 +1,9 @@
-import json
+from typing import Dict
+from typing import Tuple, Union
 
-from vnpy.trader.utility import load_json, save_json
 import vnpy.app.factor_maker.factors as factors
-
-from typing import Dict, Any
-import dask
+from vnpy.trader.constant import Exchange, Interval
+from vnpy.trader.utility import load_json, save_json
 
 
 def get_factor_class(class_name: str) -> None:

@@ -5,6 +5,7 @@ import polars as pl
 
 from vnpy.app.factor_maker.base import FactorMode
 from vnpy.trader.constant import Exchange, Interval
+from vnpy.config import VTSYMBOL_FACTOR
 
 
 class FactorParameters(object):
@@ -87,6 +88,7 @@ class FactorTemplate(ABC):
     dependencies_exchange: List[Exchange] = []
 
     factor_mode: FactorMode = None
+    VTSYMBOL_TEMPLATE: str = VTSYMBOL_FACTOR
 
     @property
     def factor_key(self) -> str:
@@ -94,7 +96,8 @@ class FactorTemplate(ABC):
         # todo: consider change this property to 'vt_symbol' for consistency
         Get the factor name key.
         """
-        return f"{self.factor_name}@{self.params.to_str(with_value=True)}"
+        # return f"{self.factor_name}@{self.params.to_str(with_value=True)}"  # 20250208 modified
+        return f"{self.VTSYMBOL_TEMPLATE.format(interval=self.freq.value, factorname=self.factor_name)}@{self.params.to_str(with_value=True)}"  # 20250208 modified
 
     def __init_dependencies__(self):
         dependencies_factor_initialized = []
@@ -259,8 +262,8 @@ class FactorTemplate(ABC):
         print(f"input_data: {input_data}")
         if isinstance(input_data, pl.DataFrame):
             return self.calculate_polars(input_data, *args, **kwargs)
-        elif isinstance(input_data,dict):
-            input_data=pl.DataFrame(input_data)
+        elif isinstance(input_data, dict):
+            input_data = pl.DataFrame(input_data)
             return self.calculate_polars(input_data, *args, **kwargs)
         else:
             raise NotImplementedError("Only polars DataFrame is supported for now.")

@@ -145,13 +145,30 @@ class RecorderEngine(BaseEngine):
                     self.buffer_factor[k] = []
             elif isinstance(data, pl.DataFrame):
                 self.write_log(f"识别到polars dataframe")
-                time.sleep(0.1)
                 self.write_log(f"data {data}")
+                time.sleep(0.1)
                 self.database_manager.save_factor_data(name=data.columns[-1], data=data)
-            elif isinstance(data,dict):
+            elif isinstance(data, dict) and isinstance(list(data.values())[0], pl.DataFrame):
                 self.write_log(f"识别到dict")
-                for factor_key,factor_df in data.items():
-                    self.database_manager.save_factor_data(name=factor_key, data=factor_df)
+
+                for factor_key, factor_df in data.items():
+                    self.write_log(f"factor_key: {factor_key}")
+                    self.write_log(f"factor_df: {factor_df}")
+                    interval, factor_name = extract_vt_symbol(factor_key, is_factor=True)
+                    # Reshaping the DataFrame
+                    df_long = factor_df.melt(
+                        id_vars=["datetime"],
+                        value_vars=list(sorted(set(factor_df.columns)-{'datetime'})),
+                        variable_name="ticker",
+                        value_name=factor_key
+                    )
+                    self.write_log(f"df_long: {df_long}")
+                    status = self.database_manager.save_factor_data(name=factor_key, data=df_long, interval=interval)
+                    # maintain overview here
+                    # self.overview_handler.update_overview_hyf(task_type=task_type, data_list=v, is_stream=stream)
+                    # overview = self.overview_handler.bar_overview.get(vt_symbol, {})
+                    # assert self.overview_handler.bar_overview[vt_symbol].count == len(
+                    #     ret) if not SYSTEM_MODE == 'TEST' else True
             else:
                 raise TypeError(f"Unsupported data type: {type(data)}")
 
@@ -301,9 +318,9 @@ class RecorderEngine(BaseEngine):
     def process_factor_event(self, event: Event):
         """"""
         factor_dict: dict = event.data
-        for factor_key,factor_df in factor_dict.items():
+        for factor_key, factor_df in factor_dict.items():
             # self.add_factor_recording(vt_symbol=factor_name)
-            self.record_factor({factor_key:factor_df})
+            self.record_factor({factor_key: factor_df})
 
     def process_tick_event(self, event: Event):
         """"""

@@ -16,8 +16,8 @@ import os
 from typing import Dict, List, Literal, Optional
 import warnings
 
-from vnpy.config import BAR_OVERVIEW_FILENAME, FACTOR_OVERVIEW_FILENAME, TICK_OVERVIEW_FILENAME
-from vnpy.config import VTSYMBOL_KLINE
+from vnpy.config import BAR_OVERVIEW_FILENAME, FACTOR_OVERVIEW_FILENAME, TICK_OVERVIEW_FILENAME, VTSYMBOL_KLINE, \
+    VTSYMBOL_FACTOR
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.database import (BarOverview, TickOverview, FactorOverview, TV_BaseOverview)
 from vnpy.trader.object import HistoryRequest, SubscribeRequest, BarData, TickData, FactorData

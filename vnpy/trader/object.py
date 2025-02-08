@@ -8,7 +8,7 @@ from logging import INFO
 from typing import Optional
 
 from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
-from ..config import VTSYMBOL_KLINE, VTSYMBOL_BARDATA, VTSYMBOL_FACTOR
+from ..config import VTSYMBOL_BARDATA, VTSYMBOL_FACTORDATA, VTSYMBOL_TICKDATA
 
 ACTIVE_STATUSES = {Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED}
 
@@ -78,9 +78,11 @@ class TickData(BaseData):
 
     localtime: datetime = None
 
+    VTSYMBOL_TEMPLATE = VTSYMBOL_TICKDATA
+
     def __post_init__(self) -> None:
         """"""
-        self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
+        self.vt_symbol: str = self.VTSYMBOL_TEMPLATE.format(symbol=self.symbol, exchange=self.exchange.value)
 
 
 @dataclass
@@ -100,7 +102,7 @@ class FactorData(BaseData):
 
     value: float = None
 
-    VTSYMBOL_TEMPLATE = VTSYMBOL_FACTOR
+    VTSYMBOL_TEMPLATE = VTSYMBOL_FACTORDATA
 
     def __post_init__(self) -> None:
         """"""

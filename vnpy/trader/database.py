@@ -11,7 +11,7 @@ from .setting import SETTINGS
 from .utility import ZoneInfo
 from .locale import _
 
-from vnpy.config import VTSYMBOL_KLINE, VTSYMBOL_FACTOR
+from vnpy.config import VTSYMBOL_KLINE, VTSYMBOL_FACTORDATA
 
 DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
 
@@ -77,7 +77,7 @@ class FactorOverview(BaseOverview):
     """
 
     factor_name: str = ""
-    VTSYMBOL_TEMPLATE = VTSYMBOL_FACTOR
+    VTSYMBOL_TEMPLATE = VTSYMBOL_FACTORDATA
 
     def __post_init__(self):
         self.vt_symbol = self.VTSYMBOL_TEMPLATE.format(
