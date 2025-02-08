@@ -1,5 +1,5 @@
 import logging
-from logging import Logger
+from logging import Logger, INFO
 import smtplib
 import os
 from abc import ABC
@@ -8,7 +8,8 @@ from datetime import datetime
 from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
-from typing import Any, Type, Dict, List, Optional
+from typing import Any, Type, Dict, List, Optional, Union
+from itertools import product
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -38,7 +39,8 @@ from .object import (
     PositionData,
     AccountData,
     ContractData,
-    Exchange
+    Exchange,
+    Interval
 )
 from .setting import SETTINGS
 from .utility import get_folder_path, TRADER_DIR
@@ -62,11 +64,17 @@ class MainEngine:
         self.gateways: Dict[str, BaseGateway] = {}
         self.engines: Dict[str, BaseEngine] = {}
         self.apps: Dict[str, BaseApp] = {}
-        self.exchanges: List[Exchange] = []
-        self.vt_symbols:list[str] = SETTINGS.get('vt_symbols', [])
+        self.intervals = SETTINGS.get('gateway.intervals', [])
+        self.symbols = SETTINGS.get("gateway.symbols", [])  # hyf
+        # self.exchanges: List[Exchange] = []  # zc
+        self.exchanges = SETTINGS.get("gateway.exchanges", [])  # hyf
+        # self.vt_symbols: list[str] = SETTINGS.get('vt_symbols', [])  # zc
+        self.vt_symbols: list[str] = [f"{s}.{e}" for s, e in product(self.symbols, self.exchanges)]
+        self.mode: str = SETTINGS.get('mode', 'LIVE')
+        assert self.mode in ['LIVE', 'BACKTEST', 'TEST']
 
-        os.chdir(TRADER_DIR)    # Change working directory
-        self.init_engines()     # Initialize function engines
+        os.chdir(TRADER_DIR)  # Change working directory
+        self.init_engines()  # Initialize function engines
 
     def add_engine(self, engine_class: Any) -> "BaseEngine":
         """
@@ -94,7 +102,7 @@ class MainEngine:
 
         return gateway
 
-    def add_app(self, app_class: Type[BaseApp]) -> "BaseEngine":
+    def add_app(self, app_class: Type[BaseApp]) -> Union["BaseEngine", Type["BaseEngine"]]:
         """
         Add app.
         """
@@ -113,11 +121,11 @@ class MainEngine:
         self.add_engine(OmsEngine)
         self.add_engine(EmailEngine)
 
-    def write_log(self, msg: str, source: str = "") -> None:
+    def write_log(self, msg: str, source: str = "", level=INFO) -> None:
         """
         Put log event with specific message.
         """
-        log: LogData = LogData(msg=msg, gateway_name=source)
+        log: LogData = LogData(msg=msg, gateway_name=source, level=level)
         event: Event = Event(EVENT_LOG, log)
         self.event_engine.put(event)
 
@@ -181,6 +189,15 @@ class MainEngine:
         gateway: BaseGateway = self.get_gateway(gateway_name)
         if gateway:
             gateway.subscribe(req)
+
+    def subscribe_all(self, gateway_name: str) -> None:
+        """
+        Subscribe tick data update of all contracts in a gateway.
+        """
+        for symbol, exchange, interval in product(self.symbols, self.exchanges, self.intervals):
+            req: SubscribeRequest = SubscribeRequest(symbol=symbol, exchange=Exchange(exchange),
+                                                     interval=Interval(interval))
+            self.subscribe(req, gateway_name)
 
     def send_order(self, req: OrderRequest, gateway_name: str) -> str:
         """
@@ -261,10 +278,10 @@ class BaseEngine(ABC):
     """
 
     def __init__(
-        self,
-        main_engine: MainEngine,
-        event_engine: EventEngine,
-        engine_name: str,
+            self,
+            main_engine: MainEngine,
+            event_engine: EventEngine,
+            engine_name: str,
     ) -> None:
         """"""
         self.main_engine: MainEngine = main_engine
@@ -602,11 +619,11 @@ class OmsEngine(BaseEngine):
             converter.update_order_request(req, vt_orderid)
 
     def convert_order_request(
-        self,
-        req: OrderRequest,
-        gateway_name: str,
-        lock: bool,
-        net: bool = False
+            self,
+            req: OrderRequest,
+            gateway_name: str,
+            lock: bool,
+            net: bool = False
     ) -> List[OrderRequest]:
         """
         Convert original order request according to given mode.
@@ -665,7 +682,7 @@ class EmailEngine(BaseEngine):
                 msg: EmailMessage = self.queue.get(block=True, timeout=1)
 
                 with smtplib.SMTP_SSL(
-                    SETTINGS["email.server"], SETTINGS["email.port"]
+                        SETTINGS["email.server"], SETTINGS["email.port"]
                 ) as smtp:
                     smtp.login(
                         SETTINGS["email.username"], SETTINGS["email.password"]

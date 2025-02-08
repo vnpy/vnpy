@@ -28,8 +28,9 @@ FILENAME_FACTOR_CONCAT = "{factorname}_{interval}_{start_date}_{end_date}.csv"  
 # vtsymbol templates. vnpy regard it as the combination of `symbol` and `exchange`, and rsplit it by '.'.
 VTSYMBOL_KLINE = "kline_{interval}_{symbol}.{exchange}"  # interval, symbol, exchange
 VTSYMBOL_TICK = "tick_{interval}_{symbol}.{exchange}"  # interval, symbol, exchange
-VTSYMBOL_FACTOR = "factor_{interval}_{symbol}_{factorname}.{exchange}"  # interval, symbol(ticker), name(factor name), exchange
+VTSYMBOL_FACTOR = "factor_{interval}_{factorname}"  # for factor_key. all symbol and exchange needs to be calculated so we don't care if they will be displayed in the key.
 VTSYMBOL_BARDATA = "{symbol}.{exchange}"
+VTSYMBOL_TICKDATA = "{symbol}.{exchange}"
 VTSYMBOL_FACTORDATA = "{interval}_{symbol}_{factorname}.{exchange}"
 
 # data related

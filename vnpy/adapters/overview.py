@@ -9,18 +9,27 @@
 from __future__ import annotations
 
 import atexit
+import copy
 import datetime
 import json
 import os
-from typing import Dict, List
+from typing import Dict, List, Literal, Optional
+import warnings
 
-from vnpy.config import VTSYMBOL_KLINE
+from vnpy.config import BAR_OVERVIEW_FILENAME, FACTOR_OVERVIEW_FILENAME, TICK_OVERVIEW_FILENAME, VTSYMBOL_KLINE, \
+    VTSYMBOL_FACTOR
 from vnpy.trader.constant import Exchange, Interval
-from vnpy.trader.database import BarOverview
-from vnpy.trader.database import TV_BaseOverview
-from vnpy.trader.object import HistoryRequest, SubscribeRequest
+from vnpy.trader.database import (BarOverview, TickOverview, FactorOverview, TV_BaseOverview)
+from vnpy.trader.object import HistoryRequest, SubscribeRequest, BarData, TickData, FactorData
 from vnpy.trader.setting import SETTINGS
-from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
+from vnpy.trader.utility import (
+    extract_vt_symbol,
+    get_file_path
+)
+from vnpy.trader.utility import load_json, save_json
+from vnpy.utils.datetimes import normalize_unix, datetime2unix, TimeFreq, DatetimeUtils
+
+SYSTEM_MODE = SETTINGS.get("system.mode", "LIVE")
 
 
 class OverviewEncoder(json.JSONEncoder):
@@ -151,17 +160,26 @@ class OverviewHandler:
     Handles the overview metadata for market bars in memory,
     loads data on startup, updates dynamically, and saves on exit.
     """
+    bar_overview_filepath = str(get_file_path(BAR_OVERVIEW_FILENAME))
+    tick_overview_filepath = str(get_file_path(TICK_OVERVIEW_FILENAME))
+    factor_overview_filepath = str(get_file_path(FACTOR_OVERVIEW_FILENAME))
 
-    def __init__(self, path: str):
+    def __init__(self, path: str = ""):
         """
         Initialize OverviewHandler by loading existing overview data.
 
         Parameters:
             path (str): Path to the JSON file where overview data is stored.
         """
-        self.filename = path
-        self.overview_dict: Dict[str, BarOverview] = {}  # Stores bar metadata in memory
-        self.load_overview()
+        self.filename = path  # TODO: deprecate it
+        warnings.warn('"path" in OverviewHandler.__init__ will be deprecated', DeprecationWarning)
+
+        self.overview_dict: Dict[str, BarOverview] = {}  # Stores metadata in memory
+        # init database overview file
+        self.bar_overview = self.load_overview_hyf(filename=self.bar_overview_filepath, overview_cls=BarOverview)
+        self.tick_overview = self.load_overview_hyf(filename=self.tick_overview_filepath, overview_cls=TickOverview)
+        self.factor_overview = self.load_overview_hyf(filename=self.factor_overview_filepath,
+                                                      overview_cls=FactorOverview)
 
         # Register the save function to execute when the program exits
         atexit.register(self.save_overview)
@@ -188,6 +206,118 @@ class OverviewHandler:
                     interval=interval,
                     count=0
                 )
+
+    def load_overview_hyf(self, filename: str, overview_cls: TV_BaseOverview.__class__) -> Dict[str, TV_BaseOverview]:
+        # if not os.path.exists(file_path):
+        #     return {}
+        # with open(file_path, 'r', encoding='utf-8') as f:
+        #     dic = json.load(f)
+        #     for k, v in dic.items():
+        #         dic[k] = cls(**v)
+        #     return dic
+
+        # use vnpy load json
+        overviews: Dict[str, TV_BaseOverview] = {}
+        overview_dict = load_json(filename=filename, cls=OverviewDecoder)
+        for k, v in overview_dict.items():
+            overviews[k] = overview_cls(**v)
+        return overviews
+
+    def save_overview(self):
+        """
+        Save the in-memory overview data to a JSON file using OverviewEncoder.
+        """
+        overview_data_dict = {k: v.__dict__ for k, v in self.overview_dict.items()}
+        save_json(self.filename, overview_data_dict, cls=OverviewEncoder, mode="w")
+        print(f"OverviewHandler: Saved {len(self.overview_dict)} overview records to {self.filename}.")
+
+    def save_overview_hyf(self, task_type: Literal['bar', 'factor', 'tick']) -> None:
+        if task_type == 'bar':
+            overview_data = self.bar_overview
+            filename = os.path.basename(self.bar_overview_filepath)
+        elif task_type == 'factor':
+            overview_data = self.factor_overview
+            filename = os.path.basename(self.factor_overview_filepath)
+        elif task_type == 'tick':
+            overview_data = self.tick_overview
+            filename = os.path.basename(self.tick_overview_filepath)
+        else:
+            raise ValueError(f"task_type {task_type} is not supported.")
+
+        # convert overview_data to dict
+        overview_data_dict = {k: v.__dict__ for k, v in overview_data.items()}  # v is TV_BaseOverview
+
+        # use vnpy save json
+        save_json(filename, overview_data_dict, cls=OverviewEncoder, mode='w')
+
+    def update_overview_hyf(self, task_type: Optional[Literal["bar", "factor", "tick"]] = None,
+                            data_list: List[BarData, TickData, FactorData] = None,
+                            is_stream: bool = True):
+        """Update the in-memory overview data when new data arrives.
+
+        Parameters
+        ----------
+        task_type :
+        data_list :
+        is_stream : bool
+            If True, the data is streaming data, otherwise it is historical data.
+
+        Returns
+        -------
+
+        """
+        if not data_list:
+            return
+        if task_type == 'bar':
+            overview_dict = self.bar_overview
+        elif task_type == 'tick':
+            overview_dict = self.tick_overview
+        elif task_type == 'factor':
+            overview_dict = self.factor_overview
+        else:
+            raise ValueError(f"task_type {task_type} is not supported.")
+
+        first, last = data_list[0], data_list[-1]
+        vt_symbol = first.vt_symbol
+        interval = first.interval
+        symbol = first.symbol
+        exchange = first.exchange
+        overview = copy.deepcopy(overview_dict.get(vt_symbol, None))
+
+        if not overview:
+            overview = BarOverview(
+                symbol=symbol,
+                exchange=exchange,
+                interval=interval,
+                start=first.datetime,
+                end=last.datetime,
+                count=len(data_list)
+            )
+        elif is_stream:
+            # 根据interval计算出期望的时间间隔, 预计最新的数据.start应该是本地overview.end的相差interval的时间
+            expected_gap_ms = TimeFreq(interval.value).value
+            if (first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms and not SYSTEM_MODE == "TEST":
+                raise ValueError(f"数据时间间隔不符合预期, 请检查数据是否有跳空")
+            overview.end = last.datetime
+            overview.count += len(data_list)
+        else:
+            # 有历史数据, 所以先把新的bar insert到数据库, 然后取全量数据更新overview
+
+            # 根据interval计算出期望的时间间隔, 预计最新的数据.start应该是本地overview.end的相差interval的时间
+            n, tf = DatetimeUtils.split_time_str(interval.value)
+            expected_gap_ms = n * tf.value
+            if (first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms and not SYSTEM_MODE == "TEST":
+                raise ValueError(f"数据时间间隔不符合预期, 请检查数据是否有跳空")  # zc: 补数据
+
+            # update start and end
+            # TODO: 和community上有人说的一样, 其实不应该只看两端的时间, 中间如果存在跳空的数据也应该用某种方式记录下来
+            overview.start = min(overview.start, first.datetime)
+            overview.end = max(overview.end, last.datetime)
+
+        overview_dict[vt_symbol] = overview
+        if task_type == 'bar':
+            assert overview_dict == self.bar_overview
+        self.save_overview_hyf(task_type=task_type)
 
     def update_bar_overview(self, symbol: str, exchange: Exchange, interval: Interval, bars: List[tuple]):
         """
@@ -224,14 +354,6 @@ class OverviewHandler:
 
         print(f"OverviewHandler: Updated {vt_symbol} with {len(bars)} new bars.")
 
-    def save_overview(self):
-        """
-        Save the in-memory overview data to a JSON file using OverviewEncoder.
-        """
-        overview_data_dict = {k: v.__dict__ for k, v in self.overview_dict.items()}
-        save_json(self.filename, overview_data_dict, cls=OverviewEncoder, mode="w")
-        print(f"OverviewHandler: Saved {len(self.overview_dict)} overview records to {self.filename}.")
-
     def check_missing_data(self) -> List[HistoryRequest]:
         """
         Scan all overview records and detect missing historical data.
@@ -242,7 +364,7 @@ class OverviewHandler:
         """
 
         missing_requests = []
-        current_time = datetime.datetime.now(tz=datetime.UTC)
+        current_time = datetime.datetime.now(tz=datetime.timezone.utc)
 
         for vt_symbol, overview in self.overview_dict.items():
             if overview.start is None:
@@ -286,6 +408,3 @@ class OverviewHandler:
             )
 
         return subscribe_requests
-
-
-

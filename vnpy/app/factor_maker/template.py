@@ -5,6 +5,7 @@ import polars as pl
 
 from vnpy.app.factor_maker.base import FactorMode
 from vnpy.trader.constant import Exchange, Interval
+from vnpy.config import VTSYMBOL_FACTOR
 
 
 class FactorParameters(object):
@@ -15,7 +16,7 @@ class FactorParameters(object):
                 setattr(self, key, value)
 
     def __str__(self):
-        # Ë¼¿¼ÁËÒ»ÏÂ»¹ÊÇÓ¦¸Ã´øÉÏ²ÎÊıÖµ, ÕâÑù²ÅÄÜÎ¨Ò»µØ±êÊ¶Ò»¸öfactor
+        # Ë¼ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Â»ï¿½ï¿½ï¿½Ó¦ï¿½Ã´ï¿½ï¿½Ï²ï¿½ï¿½ï¿½Öµ, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¨Ò»ï¿½Ø±ï¿½Ê¶Ò»ï¿½ï¿½factor
         if len(self.__dict__) == 0:
             return "noparams"
         return "-".join([f"{k}_{v}" for k, v in self.__dict__.items()])
@@ -87,13 +88,16 @@ class FactorTemplate(ABC):
     dependencies_exchange: List[Exchange] = []
 
     factor_mode: FactorMode = None
+    VTSYMBOL_TEMPLATE: str = VTSYMBOL_FACTOR
 
     @property
     def factor_key(self) -> str:
         """
+        # todo: consider change this property to 'vt_symbol' for consistency
         Get the factor name key.
         """
-        return f"{self.factor_name}@{self.params.to_str(with_value=True)}"
+        # return f"{self.factor_name}@{self.params.to_str(with_value=True)}"  # 20250208 modified
+        return f"{self.VTSYMBOL_TEMPLATE.format(interval=self.freq.value, factorname=self.factor_name)}@{self.params.to_str(with_value=True)}"  # 20250208 modified
 
     def __init_dependencies__(self):
         dependencies_factor_initialized = []
@@ -113,12 +117,12 @@ class FactorTemplate(ABC):
             setting (dict): Settings for the factor.
             kwargs: Additional parameters.
         """
-        self.params: FactorParameters = FactorParameters()  # ĞÂÔö×Ö¶Î, Ï£ÍûÓÃÒ»¸öclassÀ´´æ´¢²ÎÊıÊı¾İ, ²¢ÇÒÄÜ·½±ãµØsave json/load json
+        self.params: FactorParameters = FactorParameters()  # ï¿½ï¿½ï¿½ï¿½ï¿½Ö¶ï¿½, Ï£ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½classï¿½ï¿½ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½Ü·ï¿½ï¿½ï¿½ï¿½save json/load json
         self.module = importlib.import_module(".factors", package=__package__)
         self.from_dict(setting)
         self.set_params(
-            kwargs)  # ÕâÀïÊÇ°ÑsettingÀïÃæµÄ²ÎÊıÉèÖÃµ½self.paramsÀïÃæ, Ò²¾ÍÊÇFactorParametersÕâ¸öÀàÀïÃæ, Èç¹ûÓĞºÍsetting['params']ÖØ¸´µÄ²ÎÊı, ÄÇÃ´¾Í»á¸²¸Ç
-        self.__init_dependencies__()  # ±ÈÈçmacd, ĞèÒªma10ºÍma20, ÄÇÃ´ÕâÀï¾ÍÒª³õÊ¼»¯ma, Éú³ÉÁ½¸ömaÊµÀı, ²¢ÇÒ°ÑÕâÁ½¸ömaÊµÀı¼ÓÈëµ½dependencies_factorÀïÃæ
+            kwargs)  # ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½settingï¿½ï¿½ï¿½ï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½self.paramsï¿½ï¿½ï¿½ï¿½, Ò²ï¿½ï¿½ï¿½ï¿½FactorParametersï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½Ğºï¿½setting['params']ï¿½Ø¸ï¿½ï¿½Ä²ï¿½ï¿½ï¿½, ï¿½ï¿½Ã´ï¿½Í»á¸²ï¿½ï¿½
+        self.__init_dependencies__()  # ï¿½ï¿½ï¿½ï¿½macd, ï¿½ï¿½Òªma10ï¿½ï¿½ma20, ï¿½ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½Ê¼ï¿½ï¿½ma, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½maÊµï¿½ï¿½, ï¿½ï¿½ï¿½Ò°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½maÊµï¿½ï¿½ï¿½ï¿½ï¿½ëµ½dependencies_factorï¿½ï¿½ï¿½ï¿½
 
         # Internal state
         self.inited: bool = False
@@ -253,7 +257,13 @@ class FactorTemplate(ABC):
         Returns:
             Any: Calculated factor value(s).
         """
+        print(f"factor_key {self.factor_key}")
+        print(f"type(input_data): {type(input_data)}")
+        print(f"input_data: {input_data}")
         if isinstance(input_data, pl.DataFrame):
+            return self.calculate_polars(input_data, *args, **kwargs)
+        elif isinstance(input_data, dict):
+            input_data = pl.DataFrame(input_data)
             return self.calculate_polars(input_data, *args, **kwargs)
         else:
             raise NotImplementedError("Only polars DataFrame is supported for now.")

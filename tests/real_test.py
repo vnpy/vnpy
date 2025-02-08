@@ -33,7 +33,7 @@ from vnpy.app.data_recorder import DataRecorderApp
 from vnpy.event import Event
 from vnpy.event import EventEngine
 from vnpy.gateway.binance import BinanceSpotGateway
-from vnpy.trader.constant import Exchange
+from vnpy.trader.constant import Exchange,Interval
 from vnpy.trader.datafeed import get_datafeed
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.object import SubscribeRequest, BarData
@@ -60,27 +60,29 @@ def run_child():
     }
     main_engine.connect(binance_gateway_setting, "BINANCE_SPOT")
     main_engine.write_log("连接币安接口")
-    #main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
+    main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
+    # main_engine.subscribe(SubscribeRequest(symbol='btcusdt', exchange=Exchange.BINANCE,interval=Interval.MINUTE), gateway_name='BINANCE_SPOT')
 
-    # zc: overview(vnpy.adapters.overview) + datafeed(vnpy_datafeed) + database(vnpy_clickhouse) 补历史数据
-    # todo hyf 确认这个overview是直接写在这还是集成到database
-    datafeed = get_datafeed()
-    overview_handler = OverviewHandler(SETTINGS.get("overview_jsonpath", ""))
-    overview_handler.load_overview()
-    for req in overview_handler.check_missing_data():
-        bars: Optional[Union[List[BarData], List[Dict]]] = datafeed.query_bar_history(req)
-        bars.to_database()  # todo hyf bars insert to database; also update the overview memory
-
-    for req in overview_handler.check_subscribe_stream():
-        main_engine.subscribe(req=req, gateway_name='BINANCE_SPOT')  #第63行放到这操作
+    # #
+    # # todo zc: vnpy.app.vnpy_datamanager + datafeed(vnpy_datafeed.query_history)/gateway ->vnpy.app.data_recorder(insert data into database) = overview(vnpy.adapters.overview.) + database(vnpy_clickhouse)  补历史数据
+    # # fixme: implement below in vnpy.app.vnpy_datamanager
+    # datafeed = get_datafeed()
+    # overview_handler = OverviewHandler(SETTINGS.get("overview_jsonpath", ""))
+    # overview_handler.load_overview()
+    # for req in overview_handler.check_missing_data():
+    #     bars: Optional[Union[List[BarData], List[Dict]]] = datafeed.query_bar_history(req)
+    #     bars.to_database()  # fixme: implement this step with vnpy.app.data_recorder, and maintain overview in vnpy.app.data_recorder
+    #
+    # for req in overview_handler.check_subscribe_stream():
+    #     main_engine.subscribe(req=req, gateway_name='BINANCE_SPOT')  #第63行放到这操作
 
     # start data recorder
     data_recorder_engine = main_engine.add_app(DataRecorderApp)
-    main_engine.write_log("启动[DataRecorderApp]")
+    main_engine.write_log(f"启动[{data_recorder_engine.__class__.__name__}]")
 
     factor_maker_engine: FactorEngine = main_engine.add_app(FactorMakerApp)
     factor_maker_engine.init_engine(fake=True)
-    main_engine.write_log("启动[FactorMakerApp]")
+    main_engine.write_log(f"启动[{factor_maker_engine.__class__.__name__}]")
 
     # log_engine = main_engine.get_engine("log")
     # event_engine.register(EVENT_CTA_LOG, log_engine.process_log_event)

@@ -1,28 +1,33 @@
 """"""
+import time
 from collections import defaultdict
 from threading import Thread
 from queue import Queue, Empty
-from copy import copy
-from typing import Literal
-from logging import ERROR, INFO, DEBUG, NOTSET
+from copy import deepcopy
+from typing import Literal, Optional, Union
+from logging import ERROR, INFO, DEBUG, NOTSET, WARNING
 
 import polars as pl
 
-from vnpy.event import Event, EventEngine
-from vnpy.trader.engine import BaseEngine, MainEngine
-from vnpy.trader.object import (
-    SubscribeRequest,
-    TickData,
-    BarData,
-    FactorData,
-    ContractData
-)
-from vnpy.trader.event import EVENT_CONTRACT, EVENT_BAR, EVENT_FACTOR,EVENT_RECORDER_UPDATE
+from vnpy.event.engine import Event
+from vnpy.trader.event import EVENT_LOG, EVENT_CONTRACT, EVENT_BAR, EVENT_FACTOR, EVENT_RECORDER_UPDATE
+from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine
+from vnpy.trader.object import (SubscribeRequest, TickData, BarData, FactorData, ContractData, LogData)
 from vnpy.trader.utility import BarGenerator
+from vnpy.adapters.overview import OverviewHandler
+from vnpy.trader.utility import (
+    generate_vt_symbol,
+    extract_vt_symbol,
+    get_file_path
+)
+from vnpy.trader.database import (BarOverview, TickOverview, FactorOverview, TV_BaseOverview)
 
+from vnpy.trader.constant import Exchange, Interval
+from vnpy.trader.setting import SETTINGS
 from vnpy_clickhouse.clickhouse_database import ClickhouseDatabase
 
 APP_NAME = "DataRecorder"
+SYSTEM_MODE = SETTINGS.get("system.mode", "LIVE")
 
 
 class RecorderEngine(BaseEngine):
@@ -35,48 +40,51 @@ class RecorderEngine(BaseEngine):
         super().__init__(main_engine, event_engine, APP_NAME)
 
         self.queue = Queue()
-        self.queue_pylist = []
         self.thread = Thread(target=self.run)
         self.active = False
 
+        # zc
         self.tick_recordings = {}  # list of symbols to record tick data
         self.bar_recordings = {}  # list of symbols to record bar data
         self.factor_recordings = {}  # list of symbols to record bar data
         self.bar_generators = {}
 
+        # zc
         # self.load_setting()
         self.register_event()
         self.start()
         self.put_event()
 
-        # 用clickhouse数据库
+        # database settings
         self.database_manager = ClickhouseDatabase()
         self.buffer_bar = defaultdict(list)
         self.buffer_factor = defaultdict(list)
         self.buffer_size = 1  # todo: 调大该数字
 
-    # def load_setting(self):
-    #     """"""
-    #     setting = load_json(self.setting_filename)
-    #     self.tick_recordings = setting.get("tick", {})
-    #     self.bar_recordings = setting.get("bar", {})
+        # overview
+        self.overview_handler = OverviewHandler()
 
-    # def save_setting(self):
-    #     """"""
-    #     setting = {
-    #         "tick": self.tick_recordings,
-    #         "bar": self.bar_recordings
-    #     }
-    #     save_json(self.setting_filename, setting)
+    def register_event(self):
+        """"""
+        # self.event_engine.register(EVENT_TICK, self.process_tick_event)
+        self.event_engine.register(EVENT_BAR, self.process_bar_event)
+        self.event_engine.register(EVENT_FACTOR, self.process_factor_event)
+        self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
+
+        # self.main_engine.register_log_event(EVENT_RECORDER_LOG)
 
     def save_data(self,
-                  task_type: Literal["tick", "bar", "factor", None] = None,
+                  task_type: Optional[Literal["bar", "factor", "tick"]] = None,
                   data=None,
-                  force_save: bool = False):
+                  force_save: bool = False,
+                  stream: bool = False,
+                  ):
         """The actual implementation of the core functions that put the data into the database
         
         Parameters
         ----------
+        stream : bool
+            true when the data is streamed
         task_type :
         data :
         force_save : bool
@@ -91,29 +99,76 @@ class RecorderEngine(BaseEngine):
         elif task_type == "bar":
             assert isinstance(data, BarData)
             self.buffer_bar[data.vt_symbol].append(data)
-            # if data.volume < 1000:
-            #     print(f"data_recorder.RecorderEngine.{self.save_data.__name__}: {data.__dict__}")
-            #     raise ValueError(f"data_recorder.RecorderEngine.save_data: {data.__dict__}")
             to_remove = []  # 保存完数据后, 将其从buffer中删除
             for k, v in self.buffer_bar.items():
+                # do insertion
                 if len(v) >= self.buffer_size or force_save:
-                    to_remove.append(k)
-                    self.database_manager.save_bar_data(v)
+                    # get info for the data list
+                    sample_data = v[0]
+                    vt_symbol: str = sample_data.vt_symbol
+                    interval: Interval = sample_data.interval
+                    symbol, exchange = extract_vt_symbol(vt_symbol, is_factor=False)
+
+                    status = self.database_manager.save_bar_data(v, interval=interval, exchange=exchange)
+                    # todo: use status
+                    to_remove.append(k)  # to remove the key from buffer
+
+                    self.overview_handler.update_overview_hyf(task_type=task_type, data_list=v, is_stream=stream)
+
+                    # check consistency
+                    overview = self.overview_handler.bar_overview.get(vt_symbol, {})
+                    ret = self.database_manager.client_bar.select(freq=str(interval.value), ticker_list=symbol,
+                                                                  start_time=overview.start,
+                                                                  end_time=overview.end, ret='rows')
+                    assert self.overview_handler.bar_overview[vt_symbol].count == len(
+                        ret) if not SYSTEM_MODE == 'TEST' else True
             for k in to_remove:
                 self.buffer_bar[k] = []
         elif task_type == 'factor':
+            self.write_log(f"识别到factor")
             if isinstance(data, FactorData):
+                self.write_log(f"识别到FactorData")
                 self.buffer_factor[data.vt_symbol].append(data)  # todo: 这里用vt_symbol可以吗???
                 to_remove = []
                 for k, v in self.buffer_factor.items():
                     if len(v) >= self.buffer_size or force_save:
+                        # get info for the data list
+                        sample_data: FactorData = v[0]
+                        vt_symbol: str = sample_data.vt_symbol
+                        interval: Interval = sample_data.interval
+                        interval_, symbol, factor_name, exchange = extract_vt_symbol(vt_symbol, is_factor=True)
+
+                        status = self.database_manager.save_factor_data(name=data.factor_name, data=v)
                         to_remove.append(k)
-                        self.database_manager.save_factor_data(name=data.factor_name,
-                                                               data=v)
+
                 for k in to_remove:
                     self.buffer_factor[k] = []
             elif isinstance(data, pl.DataFrame):
+                self.write_log(f"识别到polars dataframe")
+                self.write_log(f"data {data}")
+                time.sleep(0.1)
                 self.database_manager.save_factor_data(name=data.columns[-1], data=data)
+            elif isinstance(data, dict) and isinstance(list(data.values())[0], pl.DataFrame):
+                self.write_log(f"识别到dict")
+
+                for factor_key, factor_df in data.items():
+                    self.write_log(f"factor_key: {factor_key}")
+                    self.write_log(f"factor_df: {factor_df}")
+                    interval, factor_name = extract_vt_symbol(factor_key, is_factor=True)
+                    # Reshaping the DataFrame
+                    df_long = factor_df.melt(
+                        id_vars=["datetime"],
+                        value_vars=list(sorted(set(factor_df.columns)-{'datetime'})),
+                        variable_name="ticker",
+                        value_name=factor_key
+                    )
+                    self.write_log(f"df_long: {df_long}")
+                    status = self.database_manager.save_factor_data(name=factor_key, data=df_long, interval=interval)
+                    # maintain overview here
+                    # self.overview_handler.update_overview_hyf(task_type=task_type, data_list=v, is_stream=stream)
+                    # overview = self.overview_handler.bar_overview.get(vt_symbol, {})
+                    # assert self.overview_handler.bar_overview[vt_symbol].count == len(
+                    #     ret) if not SYSTEM_MODE == 'TEST' else True
             else:
                 raise TypeError(f"Unsupported data type: {type(data)}")
 
@@ -131,20 +186,26 @@ class RecorderEngine(BaseEngine):
     def run(self):
         """"""
         while self.active:
-            try:
+            # try:
+            #     task = self.queue.get(timeout=1)
+            #     task_type, data = task
+            #     self.save_data(task_type, data)
+            # except Empty as e:
+            #     self.write_log(f"数据记录引擎处理队列为空 {self.queue.qsize()}", level=WARNING)
+            # except Exception as e:
+            #     self.write_log(f"{str(e)}", level=ERROR)
+            if self.queue.qsize() > 0:
                 task = self.queue.get(timeout=1)
                 task_type, data = task
                 self.save_data(task_type, data)
-
-            except Empty:
-                continue
+            else:
+                self.write_log(f"数据记录引擎处理队列为空 {self.queue.qsize()}", level=WARNING)
+                time.sleep(1)
 
     def close(self):
         """"""
-        self.active = False
-
         self.save_data(None, None)  # 保存所有buffer中残留的数据
-
+        self.active = False
         if self.thread.isAlive():
             self.thread.join()
 
@@ -247,28 +308,19 @@ class RecorderEngine(BaseEngine):
 
         self.write_log(f"移除Tick记录成功：{vt_symbol}")
 
-    def register_event(self):
-        """"""
-        # self.event_engine.register(EVENT_TICK, self.process_tick_event)
-        self.event_engine.register(EVENT_BAR, self.process_bar_event)
-        self.event_engine.register(EVENT_FACTOR, self.process_factor_event)
-        self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
-
-        # self.main_engine.register_log_event(EVENT_RECORDER_LOG)
-
     def process_bar_event(self, event: Event):
         """"""
         bar = event.data
-        self.add_bar_recording(vt_symbol=bar.vt_symbol)
-        if bar.vt_symbol in self.bar_recordings:
-            self.record_bar(bar)
+        # self.add_bar_recording(vt_symbol=bar.vt_symbol)
+        # if bar.vt_symbol in self.bar_recordings:
+        self.record_bar(bar)
 
     def process_factor_event(self, event: Event):
         """"""
-        factor = event.data
-        self.add_factor_recording(vt_symbol=factor.vt_symbol)
-        if factor.vt_symbol in self.factor_recordings:
-            self.record_factor(factor)
+        factor_dict: dict = event.data
+        for factor_key, factor_df in factor_dict.items():
+            # self.add_factor_recording(vt_symbol=factor_name)
+            self.record_factor({factor_key: factor_df})
 
     def process_tick_event(self, event: Event):
         """"""
@@ -289,12 +341,32 @@ class RecorderEngine(BaseEngine):
         if (vt_symbol in self.tick_recordings or vt_symbol in self.bar_recordings):
             self.subscribe(contract)
 
-    def write_log(self, msg: str, level=INFO) -> None:
-        """输出日志"""
-        self.main_engine.write_log(msg, source=APP_NAME, level=level)
+    def record_tick(self, tick: TickData):
+        """"""
+        self.write_log(f"record_tick", level=DEBUG)
+        task = ("tick", deepcopy(tick))
+        self.queue.put(task)
+
+    def record_bar(self, bar: BarData):
+        """"""
+        self.write_log(f"record_bar", level=DEBUG)
+        task = ("bar", deepcopy(bar))
+        self.queue.put(task)
+
+    def record_factor(self, factor: Union[FactorData, pl.DataFrame, dict]):
+        """"""
+        self.write_log(f"record_factor", level=DEBUG)
+        task = ("factor", deepcopy(factor))
+        self.queue.put(task)
+
+    def write_log(self, msg: str, level: int = INFO) -> None:
+        """"""
+        log: LogData = LogData(msg=msg, gateway_name=APP_NAME, level=level)
+        event: Event = Event(EVENT_LOG, log)
+        self.event_engine.put(event)
 
     def put_event(self):
-        """"""
+        """  # fixme: What does this function do?"""
         tick_symbols = list(self.tick_recordings.keys())
         tick_symbols.sort()
 
@@ -312,21 +384,6 @@ class RecorderEngine(BaseEngine):
         )
         self.event_engine.put(event)
 
-    def record_tick(self, tick: TickData):
-        """"""
-        task = ("tick", copy(tick))
-        self.queue.put(task)
-
-    def record_bar(self, bar: BarData):
-        """"""
-        task = ("bar", copy(bar))
-        self.queue.put(task)
-
-    def record_factor(self, factor: FactorData):
-        """"""
-        task = ("factor", copy(factor))
-        self.queue.put(task)
-
     def get_bar_generator(self, vt_symbol: str):
         """"""
         bg = self.bar_generators.get(vt_symbol, None)
@@ -341,6 +398,7 @@ class RecorderEngine(BaseEngine):
         """"""
         req = SubscribeRequest(
             symbol=contract.symbol,
-            exchange=contract.exchange
+            exchange=contract.exchange,
+            interval=contract.interval
         )
         self.main_engine.subscribe(req, contract.gateway_name)
