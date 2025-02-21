@@ -25,7 +25,7 @@ from pathlib import Path
 import importlib_metadata
 from vnpy.trader.app import BaseApp
 
-from .engine import APP_NAME, DataManagerEngine
+from .engine import APP_NAME, ManagerEngine
 
 
 try:
@@ -38,9 +38,9 @@ class DataManagerApp(BaseApp):
     """"""
 
     app_name: str = APP_NAME
-    app_module: str = __module__
+    app_module: str = None
     app_path: Path = Path(__file__).parent
     display_name: str = "数据管理"
-    engine_class: DataManagerEngine = DataManagerEngine
+    engine_class: ManagerEngine = ManagerEngine
     widget_name: str = "ManagerWidget"
     icon_name: str = str(app_path.joinpath("ui", "manager.ico"))
