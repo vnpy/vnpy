@@ -159,6 +159,9 @@ class OverviewHandler:
     """
     Handles the overview metadata for market bars in memory,
     loads data on startup, updates dynamically, and saves on exit.
+
+    TODO: 和community上有人说的一样, 其实不应该只看两端的时间, 中间如果存在跳空的数据也应该用某种方式记录下来
+
     """
     bar_overview_filepath = str(get_file_path(BAR_OVERVIEW_FILENAME))
     tick_overview_filepath = str(get_file_path(TICK_OVERVIEW_FILENAME))
