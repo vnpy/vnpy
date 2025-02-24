@@ -113,7 +113,7 @@ class RecorderEngine(BaseEngine):
                     # todo: use status
                     to_remove.append(k)  # to remove the key from buffer
 
-                    self.overview_handler.update_overview_hyf(task_type=task_type, data_list=v, is_stream=stream)
+                    self.overview_handler.update_overview_hyf(type_=task_type, data=v, is_stream=stream)
 
                     # check consistency
                     overview = self.overview_handler.bar_overview.get(vt_symbol, {})

@@ -13,8 +13,9 @@ import copy
 import datetime
 import json
 import os
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Literal, Optional, Union
 import warnings
+import polars as pl
 
 from vnpy.config import BAR_OVERVIEW_FILENAME, FACTOR_OVERVIEW_FILENAME, TICK_OVERVIEW_FILENAME, VTSYMBOL_KLINE, \
     VTSYMBOL_FACTOR
@@ -27,7 +28,7 @@ from vnpy.trader.utility import (
     get_file_path
 )
 from vnpy.trader.utility import load_json, save_json
-from vnpy.utils.datetimes import normalize_unix, datetime2unix, TimeFreq, DatetimeUtils
+from vnpy.utils.datetimes import normalize_unix, datetime2unix, TimeFreq, DatetimeUtils, interval2unix, interval2timefreq
 
 SYSTEM_MODE = SETTINGS.get("system.mode", "LIVE")
 
@@ -136,24 +137,6 @@ def load_overview(filename: str, overview_cls: TV_BaseOverview.__class__) -> Dic
         count = len(bars)"""
 
 
-def get_timedelta(interval: Interval) -> datetime.timedelta:
-    """
-    Get the timedelta for a given interval.
-
-    Parameters:
-        interval (Interval): Candlestick interval (e.g., 1m, 1h, 1d).
-
-    Returns:
-        timedelta: Time delta corresponding to the interval.
-    """
-    interval_map = {
-        Interval.MINUTE: datetime.timedelta(minutes=1),
-        Interval.HOUR: datetime.timedelta(hours=1),
-        Interval.DAILY: datetime.timedelta(days=1),
-        Interval.WEEKLY: datetime.timedelta(weeks=1)
-    }
-    return interval_map.get(interval, datetime.timedelta(minutes=1))  # Default to 1 minute if unknown
-
 
 class OverviewHandler:
     """
@@ -167,25 +150,23 @@ class OverviewHandler:
     tick_overview_filepath = str(get_file_path(TICK_OVERVIEW_FILENAME))
     factor_overview_filepath = str(get_file_path(FACTOR_OVERVIEW_FILENAME))
 
-    def __init__(self, path: str = ""):
+    def __init__(self):
         """
         Initialize OverviewHandler by loading existing overview data.
-
-        Parameters:
-            path (str): Path to the JSON file where overview data is stored.
         """
-        self.filename = path  # TODO: deprecate it
-        warnings.warn('"path" in OverviewHandler.__init__ will be deprecated', DeprecationWarning)
 
         self.overview_dict: Dict[str, BarOverview] = {}  # Stores metadata in memory
         # init database overview file
+        # todo: collect them in one dict
         self.bar_overview = self.load_overview_hyf(filename=self.bar_overview_filepath, overview_cls=BarOverview)
         self.tick_overview = self.load_overview_hyf(filename=self.tick_overview_filepath, overview_cls=TickOverview)
         self.factor_overview = self.load_overview_hyf(filename=self.factor_overview_filepath,
                                                       overview_cls=FactorOverview)
 
         # Register the save function to execute when the program exits
-        atexit.register(self.save_overview)
+        atexit.register(self.save_overview_hyf, task_type='bar')
+        atexit.register(self.save_overview_hyf, task_type='factor')
+        atexit.register(self.save_overview_hyf, task_type='tick')
 
     def load_overview(self):
         """
@@ -211,13 +192,6 @@ class OverviewHandler:
                 )
 
     def load_overview_hyf(self, filename: str, overview_cls: TV_BaseOverview.__class__) -> Dict[str, TV_BaseOverview]:
-        # if not os.path.exists(file_path):
-        #     return {}
-        # with open(file_path, 'r', encoding='utf-8') as f:
-        #     dic = json.load(f)
-        #     for k, v in dic.items():
-        #         dic[k] = cls(**v)
-        #     return dic
 
         # use vnpy load json
         overviews: Dict[str, TV_BaseOverview] = {}
@@ -234,18 +208,18 @@ class OverviewHandler:
         save_json(self.filename, overview_data_dict, cls=OverviewEncoder, mode="w")
         print(f"OverviewHandler: Saved {len(self.overview_dict)} overview records to {self.filename}.")
 
-    def save_overview_hyf(self, task_type: Literal['bar', 'factor', 'tick']) -> None:
-        if task_type == 'bar':
+    def save_overview_hyf(self, type_: Literal['bar', 'factor', 'tick']) -> None:
+        if type_ == 'bar':
             overview_data = self.bar_overview
             filename = os.path.basename(self.bar_overview_filepath)
-        elif task_type == 'factor':
+        elif type_ == 'factor':
             overview_data = self.factor_overview
             filename = os.path.basename(self.factor_overview_filepath)
-        elif task_type == 'tick':
+        elif type_ == 'tick':
             overview_data = self.tick_overview
             filename = os.path.basename(self.tick_overview_filepath)
         else:
-            raise ValueError(f"task_type {task_type} is not supported.")
+            raise ValueError(f"task_type {type_} is not supported.")
 
         # convert overview_data to dict
         overview_data_dict = {k: v.__dict__ for k, v in overview_data.items()}  # v is TV_BaseOverview
@@ -253,74 +227,122 @@ class OverviewHandler:
         # use vnpy save json
         save_json(filename, overview_data_dict, cls=OverviewEncoder, mode='w')
 
-    def update_overview_hyf(self, task_type: Optional[Literal["bar", "factor", "tick"]] = None,
-                            data_list: List[BarData, TickData, FactorData] = None,
-                            is_stream: bool = True):
+    def get_overview_dict(self, type_: Optional[Literal["bar", "factor", "tick"]]) -> Dict[str, TV_BaseOverview]:
+        if type_ == 'bar':
+            return self.bar_overview
+        elif type_ == 'factor':
+            return self.factor_overview
+        elif type_ == 'tick':
+            return self.tick_overview
+        else:
+            raise ValueError(f"task_type {type_} is not supported.")
+
+    def __update_overview_dict__(self, type_: Optional[Literal["bar", "factor", "tick"]] = None,
+                                 overview_dict: Dict[str, TV_BaseOverview] = None):
+        if type_ == 'bar':
+            self.bar_overview = overview_dict
+        elif type_ == 'factor':
+            self.factor_overview = overview_dict
+        elif type_ == 'tick':
+            self.tick_overview = overview_dict
+        else:
+            raise ValueError(f"task_type {type_} is not supported.")
+
+    def update_overview_hyf(self, type_: Literal["bar", "factor", "tick"],
+                            data: Union[List[Union[BarData, TickData, FactorData]], pl.DataFrame],
+                            is_stream: bool = True,
+                            interval: Interval = None):
         """Update the in-memory overview data when new data arrives.
 
         Parameters
         ----------
-        task_type :
-        data_list :
+        type_ :
+        data :
         is_stream : bool
             If True, the data is streaming data, otherwise it is historical data.
+        interval : Interval
 
         Returns
         -------
 
         """
-        if not data_list:
+        # Reduce the amount of code in the database by coupling
+        if len(data) == 0:
             return
-        if task_type == 'bar':
-            overview_dict = self.bar_overview
-        elif task_type == 'tick':
-            overview_dict = self.tick_overview
-        elif task_type == 'factor':
-            overview_dict = self.factor_overview
-        else:
-            raise ValueError(f"task_type {task_type} is not supported.")
 
-        first, last = data_list[0], data_list[-1]
-        vt_symbol = first.vt_symbol
-        interval = first.interval
-        symbol = first.symbol
-        exchange = first.exchange
-        overview = copy.deepcopy(overview_dict.get(vt_symbol, None))
+        overview_dict = self.get_overview_dict(type_=type_)
 
-        if not overview:
-            overview = BarOverview(
-                symbol=symbol,
-                exchange=exchange,
-                interval=interval,
-                start=first.datetime,
-                end=last.datetime,
-                count=len(data_list)
-            )
-        elif is_stream:
-            # 根据interval计算出期望的时间间隔, 预计最新的数据.start应该是本地overview.end的相差interval的时间
-            expected_gap_ms = TimeFreq(interval.value).value
-            if (first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms and not SYSTEM_MODE == "TEST":
-                raise ValueError(f"数据时间间隔不符合预期, 请检查数据是否有跳空")
-            overview.end = last.datetime
-            overview.count += len(data_list)
-        else:
-            # 有历史数据, 所以先把新的bar insert到数据库, 然后取全量数据更新overview
+        # Update the overview data based on the data type
+        if isinstance(data, list) and isinstance(data[0], BarData):
+            first, last = data[0], data[-1]
+            vt_symbol = first.vt_symbol
+            interval = first.interval
+            symbol = first.symbol
+            exchange = first.exchange
+            overview = copy.deepcopy(overview_dict.get(vt_symbol, None))
 
-            # 根据interval计算出期望的时间间隔, 预计最新的数据.start应该是本地overview.end的相差interval的时间
-            n, tf = DatetimeUtils.split_time_str(interval.value)
-            expected_gap_ms = n * tf.value
-            if (first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms and not SYSTEM_MODE == "TEST":
-                raise ValueError(f"数据时间间隔不符合预期, 请检查数据是否有跳空")  # zc: 补数据
+            if not overview:
+                overview = BarOverview(
+                    symbol=symbol,
+                    exchange=exchange,
+                    interval=interval,
+                    start=first.datetime,
+                    end=last.datetime,
+                    count=len(data)
+                )
+            elif is_stream:
+                # 根据interval计算出期望的时间间隔, 预计最新的数据.start应该是本地overview.end的相差interval的时间
+                expected_gap_ms = interval2timefreq(interval=interval).value
+                if (
+                        first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms and not SYSTEM_MODE == "TEST":
+                    raise ValueError(f"数据时间间隔不符合预期, 请检查数据是否有跳空")
+                overview.end = last.datetime
+                overview.count += len(data)
+            else:
+                # 有历史数据, 所以先把新的bar insert到数据库, 然后取全量数据更新overview
 
-            # update start and end
-            # TODO: 和community上有人说的一样, 其实不应该只看两端的时间, 中间如果存在跳空的数据也应该用某种方式记录下来
-            overview.start = min(overview.start, first.datetime)
-            overview.end = max(overview.end, last.datetime)
+                # 根据interval计算出期望的时间间隔, 预计最新的数据.start应该是本地overview.end的相差interval的时间
+                n, tf = DatetimeUtils.split_time_str(interval.value)
+                expected_gap_ms = n * tf.value
+                if (
+                        first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms and not SYSTEM_MODE == "TEST":
+                    raise ValueError(f"数据时间间隔不符合预期, 请检查数据是否有跳空")  # zc: 补数据
 
-        overview_dict[vt_symbol] = overview
-        if task_type == 'bar':
-            assert overview_dict == self.bar_overview
-        self.save_overview_hyf(task_type=task_type)
+                # update start and end
+                # TODO: 和community上有人说的一样, 其实不应该只看两端的时间, 中间如果存在跳空的数据也应该用某种方式记录下来
+                overview.start = min(overview.start, first.datetime)
+                overview.end = max(overview.end, last.datetime)
+
+            overview_dict[vt_symbol] = overview
+        elif isinstance(data, pl.DataFrame):
+            assert interval is not None, "interval must be provided when data is polars.DataFrame"
+
+            # Group data by ticker and process each group separately
+            for ticker, group_data in data.groupby('ticker'):
+                # Update bar overview data for each ticker
+                symbol, exchange = extract_vt_symbol(ticker)
+                overview_dict = self.get_overview_dict('bar')
+                overview = overview_dict.get(symbol, {})
+
+                if not overview:
+                    overview = BarOverview(
+                        symbol=symbol,
+                        exchange=exchange,
+                        interval=interval,
+                        start=group_data['datetime'].iloc[0],
+                        end=group_data['datetime'].iloc[-1],
+                        count=len(group_data)
+                    )
+                else:
+                    overview.start = min(overview.start, group_data['datetime'].iloc[0])
+                    overview.end = max(overview.end, group_data['datetime'].iloc[-1])
+                    overview.count = len(group_data)
+
+                overview_dict[symbol] = overview
+
+        # Update the overview_dict in memory
+        self.__update_overview_dict__(type_=type_, overview_dict=overview_dict)
+        self.save_overview_hyf(type_=type_)
 
     def update_bar_overview(self, symbol: str, exchange: Exchange, interval: Interval, bars: List[tuple]):
         """
@@ -373,7 +395,7 @@ class OverviewHandler:
             if overview.start is None:
                 expected_end = datetime.datetime(2024, 1, 1, 0, 0, 0)
             else:
-                expected_end = overview.end + get_timedelta(overview.interval)
+                expected_end = overview.end + interval2unix(overview.interval)
 
             # If current time is significantly ahead, request missing data
             if current_time > expected_end:

@@ -7,13 +7,35 @@
 # @Description:
 from typing import Union, Optional, Tuple
 
-from aenum import Enum, NoAlias
+from enum import Enum as EEnum
+from aenum import Enum as AEnum, NoAlias
 import datetime
 import polars as pl
 import os
 
+from vnpy.trader.constant import Exchange, Interval
 
-class TimeFreq(Enum):
+class TimeFreq_Enum(EEnum):
+    """用于表示时间频率，最小频率为ms. The values are in milliseconds and just are indicators, not the true values. Because something like months and years are not fixed in milliseconds.
+    """
+    # fixme: error here
+    def __new__(cls, value):
+        obj = object.__new__(cls)
+        obj._value_ = value
+        return obj
+
+    unknown = 0
+    ms = 1
+    s = 1000
+    m = s * 60  # minutes
+    min = s * 60  # minutes
+    h = m * 60  # hours
+    d = h * 24  # days
+    W = d * 7  # weeks
+    M = d * 30  # months
+    Y = d * 365  # years
+
+class TimeFreq(AEnum):
     """用于表示时间频率，最小频率为ms. The values are in milliseconds and just are indicators, not the true values. Because something like months and years are not fixed in milliseconds.
 
     References
@@ -475,3 +497,47 @@ def datetime2unix_polars(df: pl.DataFrame, col: str, time_unit='ms', tz='UTC') -
     set_tz(tz)
 
     return df.with_columns(pl.col(col).dt.epoch(time_unit=time_unit))
+
+
+def interval2unix(interval: Interval,
+                  ret_unit: Optional[Union[TimeFreq, str]] = TimeFreq.ms) -> Union[int, float]:
+    """
+    Get the timedelta for a given interval.
+
+    Parameters:
+        interval (Interval): Candlestick interval (e.g., 1m, 1h, 1d).
+
+    Returns:
+        timedelta: Time delta corresponding to the interval.
+    """
+    if isinstance(ret_unit, str):
+        ret_unit = TimeFreq(ret_unit)
+
+    interval_map = {
+        Interval.MINUTE: datetime.timedelta(minutes=1),
+        Interval.HOUR: datetime.timedelta(hours=1),
+        Interval.DAILY: datetime.timedelta(days=1),
+        Interval.WEEKLY: datetime.timedelta(weeks=1)
+    }
+    delta = interval_map.get(interval)
+    if ret_unit == TimeFreq.ms:
+        delta = delta.total_seconds() * 1000
+    elif ret_unit == TimeFreq.s:
+        delta = delta.total_seconds()
+    else:
+        raise NotImplementedError("not supported yet")
+    return delta
+
+
+def interval2timefreq(interval: Interval) -> TimeFreq:
+    """
+    Convert an interval to a TimeFreq enum.
+
+    Parameters:
+        interval (Interval): Candlestick interval (e.g., 1m, 1h, 1d).
+
+    Returns:
+        TimeFreq: Time frequency corresponding to the interval.
+    """
+
+    return TimeFreq(interval2unix(interval, ret_unit='ms'))
