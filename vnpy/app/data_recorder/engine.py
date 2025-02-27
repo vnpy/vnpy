@@ -77,7 +77,7 @@ class RecorderEngine(BaseEngine):
         """"""
         self.active = False
 
-        if self.thread.isAlive():
+        if self.thread.is_alive():
             self.thread.join()
 
     def start(self):

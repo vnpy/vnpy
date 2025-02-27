@@ -79,8 +79,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Python37\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\ctp;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Python37\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\AppData\Run\Python310\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\ctp;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\AppData\Run\Python310\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
     <TargetExt>.pyd</TargetExt>
     <OutDir>$(SolutionDir)..\</OutDir>
   </PropertyGroup>
