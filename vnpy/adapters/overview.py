@@ -28,7 +28,8 @@ from vnpy.trader.utility import (
     get_file_path
 )
 from vnpy.trader.utility import load_json, save_json
-from vnpy.utils.datetimes import normalize_unix, datetime2unix, TimeFreq, DatetimeUtils, interval2unix, interval2timefreq
+from vnpy.utils.datetimes import normalize_unix, datetime2unix, TimeFreq, DatetimeUtils, interval2unix, \
+    interval2timefreq
 
 SYSTEM_MODE = SETTINGS.get("system.mode", "LIVE")
 
@@ -137,7 +138,6 @@ def load_overview(filename: str, overview_cls: TV_BaseOverview.__class__) -> Dic
         count = len(bars)"""
 
 
-
 class OverviewHandler:
     """
     Handles the overview metadata for market bars in memory,
@@ -164,9 +164,9 @@ class OverviewHandler:
                                                       overview_cls=FactorOverview)
 
         # Register the save function to execute when the program exits
-        atexit.register(self.save_overview_hyf, task_type='bar')
-        atexit.register(self.save_overview_hyf, task_type='factor')
-        atexit.register(self.save_overview_hyf, task_type='tick')
+        atexit.register(self.save_overview_hyf, type_='bar')
+        atexit.register(self.save_overview_hyf, type_='factor')
+        atexit.register(self.save_overview_hyf, type_='tick')
 
     def load_overview(self):
         """
@@ -292,9 +292,9 @@ class OverviewHandler:
                 )
             elif is_stream:
                 # 根据interval计算出期望的时间间隔, 预计最新的数据.start应该是本地overview.end的相差interval的时间
-                expected_gap_ms = interval2timefreq(interval=interval).value
-                if (
-                        first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms and not SYSTEM_MODE == "TEST":
+                expected_gap_ms = interval2unix(interval=interval, ret_unit='ms')
+                if ((first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms
+                        and not SYSTEM_MODE == "TEST"):
                     raise ValueError(f"数据时间间隔不符合预期, 请检查数据是否有跳空")
                 overview.end = last.datetime
                 overview.count += len(data)
@@ -318,7 +318,8 @@ class OverviewHandler:
             assert interval is not None, "interval must be provided when data is polars.DataFrame"
 
             # Group data by ticker and process each group separately
-            for ticker, group_data in data.groupby('ticker'):
+            for ticker, group_data in data.group_by(['ticker']):  # group by param must be a list
+                ticker = ticker[0]  # polars group by key will be a tuple
                 # Update bar overview data for each ticker
                 symbol, exchange = extract_vt_symbol(ticker)
                 overview_dict = self.get_overview_dict('bar')
@@ -329,13 +330,13 @@ class OverviewHandler:
                         symbol=symbol,
                         exchange=exchange,
                         interval=interval,
-                        start=group_data['datetime'].iloc[0],
-                        end=group_data['datetime'].iloc[-1],
+                        start=group_data[0, 'datetime'],
+                        end=group_data[-1, 'datetime'],
                         count=len(group_data)
                     )
                 else:
-                    overview.start = min(overview.start, group_data['datetime'].iloc[0])
-                    overview.end = max(overview.end, group_data['datetime'].iloc[-1])
+                    overview.start = min(overview.start, group_data[0, 'datetime'])
+                    overview.end = max(overview.end, group_data[-1, 'datetime'])
                     overview.count = len(group_data)
 
                 overview_dict[symbol] = overview

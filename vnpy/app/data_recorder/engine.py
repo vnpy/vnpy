@@ -61,8 +61,8 @@ class RecorderEngine(BaseEngine):
         self.buffer_factor = defaultdict(list)
         self.buffer_size = 1  # todo: 调大该数字
 
-        # overview
-        self.overview_handler = OverviewHandler()
+        # overview. DO NOT USE IT FOR UPDATING OVERVIEW!
+        self.overview_handler_for_result_check = OverviewHandler()  # only used for check data consistency.
 
     def register_event(self):
         """"""
@@ -113,14 +113,13 @@ class RecorderEngine(BaseEngine):
                     # todo: use status
                     to_remove.append(k)  # to remove the key from buffer
 
-                    self.overview_handler.update_overview_hyf(type_=task_type, data=v, is_stream=stream)
 
                     # check consistency
-                    overview = self.overview_handler.bar_overview.get(vt_symbol, {})
+                    overview = self.overview_handler_for_result_check.bar_overview.get(vt_symbol, {})
                     ret = self.database_manager.client_bar.select(freq=str(interval.value), ticker_list=symbol,
                                                                   start_time=overview.start,
                                                                   end_time=overview.end, ret='rows')
-                    assert self.overview_handler.bar_overview[vt_symbol].count == len(
+                    assert self.overview_handler_for_result_check.bar_overview[vt_symbol].count == len(
                         ret) if not SYSTEM_MODE == 'TEST' else True
             for k in to_remove:
                 self.buffer_bar[k] = []

@@ -15,25 +15,21 @@ import os
 
 from vnpy.trader.constant import Exchange, Interval
 
+
 class TimeFreq_Enum(EEnum):
     """用于表示时间频率，最小频率为ms. The values are in milliseconds and just are indicators, not the true values. Because something like months and years are not fixed in milliseconds.
     """
-    # fixme: error here
-    def __new__(cls, value):
-        obj = object.__new__(cls)
-        obj._value_ = value
-        return obj
-
     unknown = 0
     ms = 1
-    s = 1000
+    s = ms * 1000
     m = s * 60  # minutes
-    min = s * 60  # minutes
+    # min = s * 60  # minutes
     h = m * 60  # hours
     d = h * 24  # days
     W = d * 7  # weeks
     M = d * 30  # months
     Y = d * 365  # years
+
 
 class TimeFreq(AEnum):
     """用于表示时间频率，最小频率为ms. The values are in milliseconds and just are indicators, not the true values. Because something like months and years are not fixed in milliseconds.
@@ -511,7 +507,8 @@ def interval2unix(interval: Interval,
         timedelta: Time delta corresponding to the interval.
     """
     if isinstance(ret_unit, str):
-        ret_unit = TimeFreq(ret_unit)
+        ret_unit = normalize_time_str(ret_unit)
+    ret_unit = TimeFreq[ret_unit]
 
     interval_map = {
         Interval.MINUTE: datetime.timedelta(minutes=1),
