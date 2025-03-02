@@ -28,22 +28,26 @@ else:
 
 log_formatter: logging.Formatter = logging.Formatter("[%(asctime)s] %(message)s")
 
-def extract_vt_symbol_factor(vt_symbol: str) -> Union[Tuple[str, Exchange], Tuple[Interval, str]]:
+
+def extract_vt_symbol_factor(vt_symbol: str) -> Tuple[Interval, str, str, Exchange]:
     """
     Returns
     -------
-        (interval, symbol(ticker), factorname, exchange)
-    """
-    if not vt_symbol.startswith('factor_'): raise ValueError(
-        "vt_symbol should follow VTSYMBOL_FACTOR not VTSYMBOL_FACTORDATA")
-    VTSYMBOL_FACTOR = "factor_{interval}_{factorname}"  # for factor_key. all symbol and exchange needs to be calculated so we don't care if they will be displayed in the key.
 
-    vt_symbol, param_str = vt_symbol.split("@", 1)
-    prefix, interval_str, factor_name = vt_symbol.split("_")
-    return Interval(interval_str), factor_name
+    """
+    if vt_symbol.startswith('factor_'):
+        raise ValueError(f"vt_symbol should follow VTSYMBOL_FACTORDATA not VTSYMBOL_FACTOR. current is {vt_symbol}")
+    # VTSYMBOL_FACTORDATA = ""{interval}_{symbol}_{factorname}.{exchange}""
+    # for factor_key. all symbol and exchange needs to be calculated,
+    # so we don't care if they will be displayed in the key.
+
+    prefix, exchange = vt_symbol.rsplit(".", 1)
+    interval_str, symbol, factor_name = prefix.split("_")
+    return Interval(interval_str), symbol, factor_name, Exchange(exchange)
+
 
 def extract_vt_symbol(vt_symbol: str, is_factor=False) -> Union[
-    Tuple[str, Exchange], Tuple[Interval, str]]:
+    Tuple[str, Exchange], Tuple[Interval, str, str, Exchange]]:
     """
     :return: (symbol, exchange) or ('factor',interval, symbol(ticker), name(factor name), exchange)
     """

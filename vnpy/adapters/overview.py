@@ -168,28 +168,28 @@ class OverviewHandler:
         atexit.register(self.save_overview_hyf, type_='factor')
         atexit.register(self.save_overview_hyf, type_='tick')
 
-    def load_overview(self):
-        """
-        Load overview data from the JSON file into memory using OverviewDecoder.
-        """
-        if os.path.exists(self.filename):
-            overview_data = load_json(self.filename, cls=OverviewDecoder)
-            self.overview_dict = {k: BarOverview(**v) for k, v in overview_data.items()}
-            print(f"OverviewHandler: Loaded {len(self.overview_dict)} overview records from {self.filename}.")
-        else:
-            print("OverviewHandler: No existing overview file found. Starting fresh.")
-
-        for vt_symbol in SETTINGS.get("vt_symbols", ""):
-            symbol, exchange = extract_vt_symbol(vt_symbol)
-            interval = Interval.MINUTE
-            vt_symbol = VTSYMBOL_KLINE.format(interval=interval.value, symbol=symbol, exchange=exchange.name)
-            if vt_symbol not in self.overview_dict:
-                self.overview_dict[vt_symbol] = BarOverview(
-                    symbol=symbol,
-                    exchange=exchange,
-                    interval=interval,
-                    count=0
-                )
+    # def load_overview(self):
+    #     """by: zc
+    #     Load overview data from the JSON file into memory using OverviewDecoder.
+    #     """
+    #     if os.path.exists(self.filename):
+    #         overview_data = load_json(self.filename, cls=OverviewDecoder)
+    #         self.overview_dict = {k: BarOverview(**v) for k, v in overview_data.items()}
+    #         print(f"OverviewHandler: Loaded {len(self.overview_dict)} overview records from {self.filename}.")
+    #     else:
+    #         print("OverviewHandler: No existing overview file found. Starting fresh.")
+    #
+    #     for vt_symbol in SETTINGS.get("vt_symbols", ""):
+    #         symbol, exchange = extract_vt_symbol(vt_symbol)
+    #         interval = Interval.MINUTE
+    #         vt_symbol = VTSYMBOL_KLINE.format(interval=interval.value, symbol=symbol, exchange=exchange.name)
+    #         if vt_symbol not in self.overview_dict:
+    #             self.overview_dict[vt_symbol] = BarOverview(
+    #                 symbol=symbol,
+    #                 exchange=exchange,
+    #                 interval=interval,
+    #                 count=0
+    #             )
 
     def load_overview_hyf(self, filename: str, overview_cls: TV_BaseOverview.__class__) -> Dict[str, TV_BaseOverview]:
 
@@ -199,14 +199,6 @@ class OverviewHandler:
         for k, v in overview_dict.items():
             overviews[k] = overview_cls(**v)
         return overviews
-
-    def save_overview(self):
-        """
-        Save the in-memory overview data to a JSON file using OverviewEncoder.
-        """
-        overview_data_dict = {k: v.__dict__ for k, v in self.overview_dict.items()}
-        save_json(self.filename, overview_data_dict, cls=OverviewEncoder, mode="w")
-        print(f"OverviewHandler: Saved {len(self.overview_dict)} overview records to {self.filename}.")
 
     def save_overview_hyf(self, type_: Literal['bar', 'factor', 'tick']) -> None:
         if type_ == 'bar':
@@ -248,6 +240,10 @@ class OverviewHandler:
         else:
             raise ValueError(f"task_type {type_} is not supported.")
 
+    def update_overview_20250302(self, type_: Literal["bar", "factor", "tick"],
+                                 overview_dict: Dict[str, TV_BaseOverview] = None):
+        self.__update_overview_dict__(type_=type_, overview_dict=overview_dict)
+
     def update_overview_hyf(self, type_: Literal["bar", "factor", "tick"],
                             data: Union[List[Union[BarData, TickData, FactorData]], pl.DataFrame],
                             is_stream: bool = True,
@@ -266,7 +262,8 @@ class OverviewHandler:
         -------
 
         """
-        # Reduce the amount of code in the database by coupling
+        raise DeprecationWarning("This method is deprecated, use update_overview instead.")
+        # Reduce the amount of code in the database by coupling. fixme: it's inappropriately coupled, the transaction of data is low efficiency
         if len(data) == 0:
             return
 
@@ -304,9 +301,11 @@ class OverviewHandler:
                 # 根据interval计算出期望的时间间隔, 预计最新的数据.start应该是本地overview.end的相差interval的时间
                 n, tf = DatetimeUtils.split_time_str(interval.value)
                 expected_gap_ms = n * tf.value
-                if (
-                        first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms and not SYSTEM_MODE == "TEST":
+                if ((first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms
+                        and not SYSTEM_MODE == "TEST"):
                     raise ValueError(f"数据时间间隔不符合预期, 请检查数据是否有跳空")  # zc: 补数据
+                elif first.datetime <= overview.end:
+                    raise ValueError(f"当前数据起始时间必须位于overview.end之后")
 
                 # update start and end
                 # TODO: 和community上有人说的一样, 其实不应该只看两端的时间, 中间如果存在跳空的数据也应该用某种方式记录下来

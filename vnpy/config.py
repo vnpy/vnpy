@@ -25,13 +25,17 @@ FILENAME_KLINE_CONCAT = "{symbol}_{interval}_{start_date}_{end_date}.csv"  # sym
 FILENAME_FACTOR = "{factorname}_{interval}_{date}.csv"  # factor, interval, date
 FILENAME_FACTOR_CONCAT = "{factorname}_{interval}_{start_date}_{end_date}.csv"  # factor, interval, start_date, end_date
 
-# vtsymbol templates. vnpy regard it as the combination of `symbol` and `exchange`, and rsplit it by '.'.
+# vtsymbol templates.
+# for keys. such as the first part (the str before @) of the factor key
 VTSYMBOL_KLINE = "kline_{interval}_{symbol}.{exchange}"  # interval, symbol, exchange
 VTSYMBOL_TICK = "tick_{interval}_{symbol}.{exchange}"  # interval, symbol, exchange
-VTSYMBOL_FACTOR = "factor_{interval}_{factorname}"  # for factor_key. all symbol and exchange needs to be calculated so we don't care if they will be displayed in the key.
+# for factor_key. all symbols and exchanges needs to be calculated, so we don't care if they will be displayed in the key.
+# forms factor_key and is displayed as column names in database
+VTSYMBOL_FACTOR = "factor_{interval}_{factorname}"
+# for datas. vnpy regards it as the combination of `symbol` and `exchange`, and rsplit it by '.'.
 VTSYMBOL_BARDATA = "{symbol}.{exchange}"
 VTSYMBOL_TICKDATA = "{symbol}.{exchange}"
-VTSYMBOL_FACTORDATA = "{interval}_{symbol}_{factorname}.{exchange}"
+VTSYMBOL_FACTORDATA = "{interval}_{symbol}_{factorname}.{exchange}"  # displayed in ticker column of database
 
 # data related
 TRAIN_START_DATE = '2020-10-01'
