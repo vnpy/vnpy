@@ -23,13 +23,9 @@ from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.database import (BarOverview, TickOverview, FactorOverview, TV_BaseOverview)
 from vnpy.trader.object import HistoryRequest, SubscribeRequest, BarData, TickData, FactorData
 from vnpy.trader.setting import SETTINGS
-from vnpy.trader.utility import (
-    extract_vt_symbol,
-    get_file_path
-)
+from vnpy.trader.utility import extract_vt_symbol, get_file_path
 from vnpy.trader.utility import load_json, save_json
-from vnpy.utils.datetimes import normalize_unix, datetime2unix, TimeFreq, DatetimeUtils, interval2unix, \
-    interval2timefreq
+from vnpy.utils.datetimes import TimeFreq, DatetimeUtils
 
 SYSTEM_MODE = SETTINGS.get("system.mode", "LIVE")
 
@@ -289,7 +285,7 @@ class OverviewHandler:
                 )
             elif is_stream:
                 # 根据interval计算出期望的时间间隔, 预计最新的数据.start应该是本地overview.end的相差interval的时间
-                expected_gap_ms = interval2unix(interval=interval, ret_unit='ms')
+                expected_gap_ms = DatetimeUtils.interval2unix(interval=interval, ret_unit='ms')
                 if ((first.datetime - overview.end).total_seconds() * 1000 > expected_gap_ms
                         and not SYSTEM_MODE == "TEST"):
                     raise ValueError(f"数据时间间隔不符合预期, 请检查数据是否有跳空")
@@ -395,7 +391,7 @@ class OverviewHandler:
             if overview.start is None:
                 expected_end = datetime.datetime(2024, 1, 1, 0, 0, 0)
             else:
-                expected_end = overview.end + interval2unix(overview.interval)
+                expected_end = overview.end + DatetimeUtils.interval2unix(overview.interval)
 
             # If current time is significantly ahead, request missing data
             if current_time > expected_end:
