@@ -28,22 +28,35 @@ else:
 
 log_formatter: logging.Formatter = logging.Formatter("[%(asctime)s] %(message)s")
 
-def extract_vt_symbol_factor(vt_symbol: str) -> Union[Tuple[str, Exchange], Tuple[Interval, str]]:
+def extract_factor_key(factor_key:str) -> Tuple[Interval, str]:
     """
     Returns
     -------
-        (interval, symbol(ticker), factorname, exchange)
+    (interval, factor_name)
     """
-    if not vt_symbol.startswith('factor_'): raise ValueError(
-        "vt_symbol should follow VTSYMBOL_FACTOR not VTSYMBOL_FACTORDATA")
-    VTSYMBOL_FACTOR = "factor_{interval}_{factorname}"  # for factor_key. all symbol and exchange needs to be calculated so we don't care if they will be displayed in the key.
-
-    vt_symbol, param_str = vt_symbol.split("@", 1)
-    prefix, interval_str, factor_name = vt_symbol.split("_")
+    factor_key,param=factor_key.split('@')
+    _, interval_str, factor_name = factor_key.split("_")
     return Interval(interval_str), factor_name
 
+def extract_vt_symbol_factor(vt_symbol: str) -> Tuple[Interval, str, str, Exchange]:
+    """
+    Returns
+    -------
+
+    """
+    if vt_symbol.startswith('factor_'):
+        raise ValueError(f"vt_symbol should follow VTSYMBOL_FACTORDATA not VTSYMBOL_FACTOR. current is {vt_symbol}")
+    # VTSYMBOL_FACTORDATA = ""{interval}_{symbol}_{factorname}.{exchange}""
+    # for factor_key. all symbol and exchange needs to be calculated,
+    # so we don't care if they will be displayed in the key.
+
+    prefix, exchange = vt_symbol.rsplit(".", 1)
+    interval_str, symbol, factor_name = prefix.split("_")
+    return Interval(interval_str), symbol, factor_name, Exchange(exchange)
+
+
 def extract_vt_symbol(vt_symbol: str, is_factor=False) -> Union[
-    Tuple[str, Exchange], Tuple[Interval, str]]:
+    Tuple[str, Exchange], Tuple[Interval, str, str, Exchange]]:
     """
     :return: (symbol, exchange) or ('factor',interval, symbol(ticker), name(factor name), exchange)
     """
@@ -1116,238 +1129,3 @@ def get_file_logger(filename: str) -> logging.Logger:
     return logger
 
 
-class DatetimeUtils:
-    """
-    author: hyf 20240908
-    """
-
-    @classmethod
-    def set_tz(cls, tz: str = 'UTC'):
-        os.environ['TZ'] = tz
-
-    @classmethod
-    def normalize_time_str(cls, time_str: str) -> str:
-        """
-        ``min`` will be converted into ``m``
-
-        Parameters
-        ----------
-        time_str : str,
-            something like '1m', '1s', '1ms'
-
-        Returns
-        -------
-        str
-        """
-        if time_str == 'min':
-            time_str = 'm'
-        return time_str
-
-    @classmethod
-    def normalize_unix(cls, unix: Union[int, float], to_precision: str = 's') -> Union[float, int]:
-        """
-        将unix时间戳转换为指定精度
-        Parameters
-        ----------
-        unix : int,
-            unix时间戳
-        to_precision : str
-            's'表示转换为秒，'ms'表示转换为毫秒
-
-        Returns
-        -------
-        int
-        """
-        if to_precision == 's':
-            if unix > 9999999999:
-                unix /= 1000
-        elif to_precision == 'ms':
-            if unix < 9999999999:
-                unix *= 1000
-        else:
-            raise NotImplementedError("invalid to_precision, please check the input string.")
-
-        return unix
-
-    @classmethod
-    def split_time_str(cls, time_str: str) -> tuple:
-        """
-        从时间字符串中提取数字和freq单位
-        Parameters
-        ----------
-        time_str : str,
-            something like '1m', '1s', '1ms'
-
-        Returns
-        -------
-        tuple, (int, TimeFreq)
-        """
-
-        # note that the order of if-elif-else is important, the longer the freq string is, the higher priority it has to be
-        if time_str.endswith(TimeFreq.min.factor_name):
-            return int(time_str[:-3]), TimeFreq.m
-        elif time_str.endswith(TimeFreq.ms.factor_name):
-            return int(time_str[:-2]), TimeFreq.ms
-        elif time_str.endswith(TimeFreq.s.factor_name):
-            return int(time_str[:-1]), TimeFreq.s
-        elif time_str.endswith(TimeFreq.m.factor_name):
-            return int(time_str[:-1]), TimeFreq.m
-        elif time_str.endswith(TimeFreq.d.factor_name):
-            return int(time_str[:-1]), TimeFreq.d
-        else:
-            raise NotImplementedError("invalid time_str, please check the input string.")
-
-    @classmethod
-    def str2freq(cls, time_str: str, ret_unit: Optional[Union[TimeFreq, str]] = TimeFreq.ms) -> int:
-        """
-        将time_str转换为最小单位freq的int倍数
-        Parameters
-        ----------
-        time_str : str,
-            something like '1m', '1s', '1ms'
-        ret_unit : TimeFreq,
-            返回的时间单位
-
-
-        Notes
-        -----
-        ``min`` will be converted into ``m``
-
-        Returns
-        -------
-        int
-        """
-
-        if isinstance(ret_unit, str):
-            ret_unit = TimeFreq[ret_unit]
-        if ret_unit is None:
-            ret_unit = TimeFreq.ms
-        time_str = cls.normalize_time_str(time_str)
-        split = cls.split_time_str(time_str)
-        return int(split[0] * split[1].value / ret_unit.value)
-
-    @classmethod
-    def freq2str(cls, freq: int, ret_unit: Optional[Union[TimeFreq, str]] = TimeFreq.ms) -> str:
-        """
-        将freq转换为时间字符串
-        Parameters
-        ----------
-        freq : int,
-            时间频率
-        ret_unit : TimeFreq,
-            返回的时间单位
-
-        Returns
-        -------
-        str
-        """
-        raise NotImplementedError("尚未想好单位怎么正确表示")
-        if isinstance(ret_unit, str):
-            ret_unit = TimeFreq(ret_unit)
-        if ret_unit is None:
-            ret_unit = TimeFreq.ms
-        return f"{freq / (TimeFreq.ms.value * ret_unit.value)}{ret_unit.name}"
-
-    @classmethod
-    def unix2datetime(cls, unix: Union[int, float], tz='UTC') -> datetime:
-        """
-        将unix时间戳转换为datetime对象
-        Parameters
-        ----------
-        unix : int,
-            unix时间戳
-        tz : str,
-            时区
-        Returns
-        -------
-        datetime.datetime
-        """
-        cls.set_tz(tz)
-        unix = cls.normalize_unix(unix, to_precision='s')
-        return datetime.fromtimestamp(unix)
-
-    @classmethod
-    def datetime2unix(cls, dt: datetime, tz='UTC') -> int:
-        """
-        将datetime对象转换为unix时间戳
-        Parameters
-        ----------
-        dt : datetime.datetime
-        tz : str,
-            时区
-        Returns
-        -------
-        int
-        """
-        cls.set_tz(tz)
-
-        return int(dt.timestamp() * 1000)
-
-    @classmethod
-    def unix2ymd(cls, unix: int, tz='UTC') -> str:
-        """
-        将unix时间戳转换为年月日字符串
-        Parameters
-        ----------
-        unix : int,
-            unix时间戳
-        tz : str,
-            时区
-
-        Returns
-        -------
-        str
-        """
-        cls.set_tz(tz)
-
-        return cls.unix2datetime(unix).strftime('%Y-%m-%d')
-
-    @classmethod
-    def unix2datetime_polars(cls, df, col: str = 'datetime', tz='UTC'):
-        """
-        将unix时间戳转换为datetime对象
-        Parameters
-        ----------
-        df : polars.DataFrame
-        col : str,
-            时间戳所在列名
-        tz : str,
-            时区
-        Returns
-        -------
-        """
-        import polars as pl
-
-        cls.set_tz(tz)
-
-        if df[col][0] < 9999999999:  # unixtime是s级
-            df = df.with_columns(
-                pl.from_epoch(col, time_unit='s')
-            )
-        else:
-            df = df.with_columns(
-                pl.from_epoch(col, time_unit='ms')
-            )
-        return df
-
-    @classmethod
-    def datetime2unix_polars(cls, df, col: str, time_unit='ms', tz='UTC'):
-        """
-        将datetime对象转换为unix时间戳
-        Parameters
-        ----------
-        df : polars.DataFrame
-        col : str,
-            时间戳所在列名
-        tz : str,
-            时区
-        time_unit : str,
-            时间单位，'s'表示秒，'ms'表示毫秒
-        Returns
-        -------
-        pl.DataFrame
-        """
-        import polars as pl
-        cls.set_tz(tz)
-
-        return df.with_columns(pl.col(col).dt.epoch(time_unit=time_unit))

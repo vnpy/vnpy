@@ -54,8 +54,11 @@ class TestDatetimeUtils(unittest.TestCase):
         self.assertEqual(TimeFreq.s.value, 1000)
 
     def test_str2freq_converts_correctly(self):
-        self.assertEqual(DatetimeUtils.str2freq('1m'), 60000)
-        self.assertEqual(DatetimeUtils.str2freq('1s'), 1000)
+        self.assertEqual(DatetimeUtils.str2freq('1m', ret_unit=TimeFreq.ms), (60000, TimeFreq.ms))
+        self.assertEqual(DatetimeUtils.str2freq('1s', ret_unit=TimeFreq.ms), (1000, TimeFreq.ms))
+        self.assertEqual(DatetimeUtils.str2freq(time_str='1.5m', ret_unit=TimeFreq.ms),(90000, TimeFreq.ms))
+        self.assertEqual(DatetimeUtils.str2freq(time_str='1.5s', ret_unit=TimeFreq.ms),(1500, TimeFreq.ms))
+        self.assertRaises(ValueError, DatetimeUtils.str2freq, time_str='1.5ms', ret_unit=TimeFreq.s)
 
     def test_unix2datetime_converts_correctly(self):
         self.assertEqual(DatetimeUtils.unix2datetime(1609459200), datetime(2021, 1, 1))
