@@ -14,6 +14,7 @@ import os
 
 from vnpy.trader.constant import Exchange, Interval
 
+
 # from aenum import Enum as AEnum, NoAlias
 # class TimeFreq(AEnum):
 #     """Deprecated because of the inconvenience of using aenum
@@ -53,7 +54,6 @@ class TimeFreq(EEnum):
 
 
 class DatetimeUtils:
-    # todo: replace all functions in this project with the static methods in this class
     @classmethod
     def set_tz(cls, tz: str = 'UTC'):
         os.environ['TZ'] = tz
@@ -218,23 +218,6 @@ class DatetimeUtils:
         return datetime.datetime.fromtimestamp(unix)
 
     @classmethod
-    def datetime2unix(cls, dt: datetime.datetime, tz='UTC') -> int:
-        """
-        将datetime对象转换为unix时间戳
-        Parameters
-        ----------
-        dt : datetime.datetime
-        tz : str,
-            时区
-        Returns
-        -------
-        int
-        """
-        cls.set_tz(tz)
-
-        return int(dt.timestamp() * 1000)
-
-    @classmethod
     def unix2ymd(cls, unix: int, tz='UTC') -> str:
         """
         将unix时间戳转换为年月日字符串
@@ -279,6 +262,23 @@ class DatetimeUtils:
                 pl.from_epoch(col, time_unit='ms')
             )
         return df
+
+    @classmethod
+    def datetime2unix(cls, dt: datetime.datetime, tz='UTC') -> int:
+        """
+        将datetime对象转换为unix时间戳
+        Parameters
+        ----------
+        dt : datetime.datetime
+        tz : str,
+            时区
+        Returns
+        -------
+        int
+        """
+        cls.set_tz(tz)
+
+        return int(dt.timestamp() * 1000)
 
     @classmethod
     def datetime2unix_polars(cls, df: pl.DataFrame, col: str, time_unit='ms', tz='UTC') -> pl.DataFrame:

@@ -28,6 +28,15 @@ else:
 
 log_formatter: logging.Formatter = logging.Formatter("[%(asctime)s] %(message)s")
 
+def extract_factor_key(factor_key:str) -> Tuple[Interval, str]:
+    """
+    Returns
+    -------
+    (interval, factor_name)
+    """
+    factor_key,param=factor_key.split('@')
+    _, interval_str, factor_name = factor_key.split("_")
+    return Interval(interval_str), factor_name
 
 def extract_vt_symbol_factor(vt_symbol: str) -> Tuple[Interval, str, str, Exchange]:
     """

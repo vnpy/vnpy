@@ -18,7 +18,8 @@ from vnpy.adapters.overview import OverviewHandler
 from vnpy.trader.utility import (
     generate_vt_symbol,
     extract_vt_symbol,
-    get_file_path
+    get_file_path,
+    extract_factor_key
 )
 from vnpy.trader.database import (BarOverview, TickOverview, FactorOverview, TV_BaseOverview)
 
@@ -113,7 +114,6 @@ class RecorderEngine(BaseEngine):
                     # todo: use status
                     to_remove.append(k)  # to remove the key from buffer
 
-
                     # check consistency
                     overview = self.overview_handler_for_result_check.bar_overview.get(vt_symbol, {})
                     ret = self.database_manager.client_bar.select(freq=str(interval.value), ticker_list=symbol,
@@ -124,9 +124,9 @@ class RecorderEngine(BaseEngine):
             for k in to_remove:
                 self.buffer_bar[k] = []
         elif task_type == 'factor':
-            self.write_log(f"识别到factor")
+            self.write_log(f"识别到factor", level=DEBUG)
             if isinstance(data, FactorData):
-                self.write_log(f"识别到FactorData")
+                self.write_log(f"识别到FactorData", level=DEBUG)
                 self.buffer_factor[data.vt_symbol].append(data)  # todo: 这里用vt_symbol可以吗???
                 to_remove = []
                 for k, v in self.buffer_factor.items():
@@ -153,15 +153,34 @@ class RecorderEngine(BaseEngine):
                 for factor_key, factor_df in data.items():
                     self.write_log(f"factor_key: {factor_key}")
                     self.write_log(f"factor_df: {factor_df}")
-                    interval, factor_name = extract_vt_symbol(factor_key, is_factor=True)
-                    # Reshaping the DataFrame
+                    interval, factor_name = extract_factor_key(factor_key)
+                    # stacking the DataFrame (make column_names into one column called ticker)
+                    """
+                    2025-03-05 15:48:00,489  INFO: factor_df: shape: (1, 3)
+                    ┌─────────────────────┬─────────────────┬─────────────────┐
+                    │ datetime            ┆ btcusdt.BINANCE ┆ ethusdt.BINANCE │
+                    │ ---                 ┆ ---             ┆ ---             │
+                    │ datetime[μs]        ┆ f64             ┆ f64             │
+                    ╞═════════════════════╪═════════════════╪═════════════════╡
+                    │ 2025-03-05 15:47:00 ┆ 88620.0         ┆ 2190.79         │
+                    └─────────────────────┴─────────────────┴─────────────────┘
+                    ->
+                    2025-03-05 15:48:00,489  INFO: df_long: shape: (2, 3)
+                    ┌─────────────────────┬─────────────────┬─────────────────────────┐
+                    │ datetime            ┆ ticker          ┆ factor_1m_open@noparams │
+                    │ ---                 ┆ ---             ┆ ---                     │
+                    │ datetime[μs]        ┆ str             ┆ f64                     │
+                    ╞═════════════════════╪═════════════════╪═════════════════════════╡
+                    │ 2025-03-05 15:47:00 ┆ btcusdt.BINANCE ┆ 88620.0                 │
+                    │ 2025-03-05 15:47:00 ┆ ethusdt.BINANCE ┆ 2190.79                 │
+                    └─────────────────────┴─────────────────┴─────────────────────────┘
+                    """
                     df_long = factor_df.melt(
                         id_vars=["datetime"],
-                        value_vars=list(sorted(set(factor_df.columns)-{'datetime'})),
+                        value_vars=list(sorted(set(factor_df.columns) - {'datetime'})),
                         variable_name="ticker",
                         value_name=factor_key
                     )
-                    self.write_log(f"df_long: {df_long}")
                     status = self.database_manager.save_factor_data(name=factor_key, data=df_long, interval=interval)
                     # maintain overview here
                     # self.overview_handler.update_overview_hyf(task_type=task_type, data_list=v, is_stream=stream)
@@ -174,10 +193,12 @@ class RecorderEngine(BaseEngine):
         elif task_type is None and data is None:
             # 强制保存当前所有的数据
             for k, v in self.buffer_bar.items():
-                if len(v) == 0: continue
+                if len(v) == 0:
+                    continue
                 self.database_manager.save_bar_data(v)
             for k, v in self.buffer_factor.items():
-                if len(v) == 0: continue
+                if len(v) == 0:
+                    continue
                 self.database_manager.save_factor_data(name=v[0].factor_name, data=v)
             self.buffer_bar = defaultdict(list)
             self.buffer_factor = defaultdict(list)
