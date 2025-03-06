@@ -3,7 +3,7 @@ import time
 import traceback
 from datetime import datetime, timedelta
 from logging import INFO, DEBUG
-from typing import Callable,Any
+from typing import Callable, Any
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -426,11 +426,11 @@ class FactorEngine(BaseEngine):
         # self.write_log(f'tmp["open"] {tmp["open"]}', level=DEBUG)
         # print(f'self.memory_bar["open"] {self.memory_bar["open"]}')
         # print(f'tmp["open"] {tmp["open"]}')
-        self.memory_bar["open"] = pl.concat([self.memory_bar["open"], tmp["open"]], how='vertical')
-        self.memory_bar["high"] = pl.concat([self.memory_bar["high"], tmp["high"]], how='vertical')
-        self.memory_bar["low"] = pl.concat([self.memory_bar["low"], tmp["low"]], how='vertical')
-        self.memory_bar["close"] = pl.concat([self.memory_bar["close"], tmp["close"]], how='vertical')
-        self.memory_bar["volume"] = pl.concat([self.memory_bar["volume"], tmp["volume"]], how='vertical')
+        self.memory_bar["open"] = pl.concat([self.memory_bar["open"], tmp["open"]], how='vertical_relaxed')
+        self.memory_bar["high"] = pl.concat([self.memory_bar["high"], tmp["high"]], how='vertical_relaxed')
+        self.memory_bar["low"] = pl.concat([self.memory_bar["low"], tmp["low"]], how='vertical_relaxed')
+        self.memory_bar["close"] = pl.concat([self.memory_bar["close"], tmp["close"]], how='vertical_relaxed')
+        self.memory_bar["volume"] = pl.concat([self.memory_bar["volume"], tmp["volume"]], how='vertical_relaxed')
 
         self.execute_calculation(dt=dt)  # calculate factor
         newest_memory_factor = {k: v.tail(1) for k, v in self.memory_factor.items()}
@@ -440,7 +440,8 @@ class FactorEngine(BaseEngine):
 
     def on_factors(self, dt: datetime, factors: dict) -> None:
         """Process a batch of factors of many symbols."""
-        raise RuntimeError(f"{self.__class__.__name__} doesn't need to receive factor data, so that this method shouldn't be used.")
+        raise RuntimeError(
+            f"{self.__class__.__name__} doesn't need to receive factor data, so that this method shouldn't be used.")
         data = {}
         schema = {}
         for vt_symbol, factor in factors.items():

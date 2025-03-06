@@ -20,13 +20,17 @@ class MACD(FactorTemplate):
     dependencies_factor: List[Type[FactorTemplate]] = [MA, MA]
 
     def __init_dependencies__(self):
+        super().__init_dependencies__()
         fast_period = self.params.get_parameter("fast_period")
         slow_period = self.params.get_parameter("slow_period")
         signal_period = self.params.get_parameter("signal_period")
-        self.ma_fast = MA(setting={}, window=fast_period)
-        self.ma_slow = MA(setting={}, window=slow_period)
+        for factor in self.dependencies_factor:
+            if factor.get_param('window') == fast_period:
+                self.ma_fast = factor
+            elif factor.get_param('window') == slow_period:
+                self.ma_slow = factor
         self.ma_signal = signal_period
-        setattr(self, "dependencies_factor", [self.ma_fast, self.ma_slow])  # ÖØÐÂ¸²¸Çattribute
+        setattr(self, "dependencies_factor", [self.ma_fast, self.ma_slow])  # ï¿½ï¿½ï¿½Â¸ï¿½ï¿½ï¿½attribute
 
     def __init__(self, setting: Dict[str, Any],
                  fast_period: int = None,
@@ -39,7 +43,7 @@ class MACD(FactorTemplate):
         Parameters:
             setting (dict): Settings for the factor.
         """
-        # self.add_params(["fast_period", "slow_period", "signal_period"])  # ÔõÃ´È¥±êÊ¶¿ìÂýma
+        # self.add_params(["fast_period", "slow_period", "signal_period"])  # ï¿½ï¿½Ã´È¥ï¿½ï¿½Ê¶ï¿½ï¿½ï¿½ï¿½ma
         super().__init__(setting=setting,
                          fast_period=fast_period,
                          slow_period=slow_period,
@@ -47,28 +51,8 @@ class MACD(FactorTemplate):
                          )
         # Default MACD parameters
 
-    def on_tick(self, tick: TickData) -> None:
-        """
-        Callback of new tick data update.
-        Not implemented for this factor.
-        """
-        pass
-
-    def on_bar(self, bar: BarData) -> None:
-        """
-        Callback of new bar data update.
-        Not implemented for this factor.
-        """
-        pass
-
-    def on_factor(self, factor: FactorData) -> None:
-        """
-        Callback of new factor data update (from dependencies).
-        Not implemented for this factor.
-        """
-        pass
-
-    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str, Any]]], *args, **kwargs) -> Any:
+    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str, Any]]], memory, *args,
+                  **kwargs) -> pl.DataFrame:
         """
         Calculate MACD histogram values from input data.
 
@@ -78,16 +62,23 @@ class MACD(FactorTemplate):
         Returns:
             pl.DataFrame: DataFrame with 'datetime' as index and symbols as columns containing MACD histogram values.
         """
+        print('MACD calculate')
+        print(input_data)
         if isinstance(input_data, dict):
+            datetime_index = input_data.get(self.ma_fast.factor_key)['datetime']
             fast = input_data.get(self.ma_fast.factor_key)
             slow = input_data.get(self.ma_slow.factor_key)
             # compute macd
-            macd = fast - slow
-
+            macd = (fast - slow).tail(1)
+            last_row = macd.select(
+                [pl.lit(datetime_index[-1]).alias("datetime")] +
+                [pl.col(col) for col in macd.columns if col != "datetime"]
+            )
+            res = pl.concat([memory, last_row], how='vertical')
+            print(res)
+            return res
         else:
             raise ValueError("The input_data must be a dictionary.")
-
-        return macd
 
     def calculate_polars(self, close_df: pl.DataFrame, *args, **kwargs) -> pl.DataFrame:
         """
@@ -144,28 +135,3 @@ class MACD(FactorTemplate):
         result = result.sort("datetime")
 
         return result
-
-    # def make_factor(self, bar_data_dict: Dict[str, pl.DataFrame]) -> pl.DataFrame:
-    #     """
-    #     Generate MACD factor values from historical bar data.
-    #
-    #     Parameters:
-    #         bar_data_dict (dict[str, pl.DataFrame]): Dictionary with keys 'open', 'high', 'low', 'close'.
-    #             Each DataFrame has 'datetime' as index and symbols as columns.
-    #
-    #     Returns:
-    #         pl.DataFrame: DataFrame with 'datetime' as index and symbols as columns containing MACD histogram values.
-    #     """
-    #     # Extract close prices DataFrame
-    #     close_df = bar_data_dict.get('close')
-    #     if close_df is None:
-    #         raise ValueError("bar_data_dict must contain a 'close' DataFrame.")
-    #
-    #     # Ensure 'datetime' is a column
-    #     if 'datetime' not in close_df.columns:
-    #         raise ValueError("The 'close' DataFrame must contain a 'datetime' column.")
-    #
-    #     # Calculate MACD histogram for all symbols
-    #     factor_data = self.calculate_polars(close_df)
-    #
-    #     return factor_data
