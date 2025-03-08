@@ -14,11 +14,10 @@ class MA_BASE(FactorTemplate):
 
     def __init_dependencies__(self):
         super().__init_dependencies__()
-
+        assert len(self.dependencies_factor) == 1
         self.underlying_factor: Type[FactorTemplate] = self.dependencies_factor[0]
 
     def __init__(self, setting, window=None):
-        print(self.factor_name, setting, window)
         super().__init__(setting, window=window)
 
 

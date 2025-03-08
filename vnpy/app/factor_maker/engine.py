@@ -166,17 +166,17 @@ class FactorEngine(BaseEngine):
         self.write_log(f"max_memory_length: {self.max_memory_length}", level=DEBUG)
         self.write_log(f"self.stacked_factors {list(self.stacked_factors.keys())}", level=INFO)
 
-    def start_factor(self, factor_key: str) -> None:
-        """Start factor"""
-        factor: FactorTemplate = self.stacked_factors[factor_key]
-        if not factor.inited:
-            self.write_log(f"Factor {factor_key} failed to start, please initialize it first")
-            return
-        if factor.trading:
-            self.write_log(f"Factor {factor_key} is already running, please do not repeat the operation")
-            return
-        self.call_factor_func(factor, factor.on_start)
-        self.put_factor_event(factor)
+    # def start_factor(self, factor_key: str) -> None:
+    #     """Start factor"""
+    #     factor: FactorTemplate = self.stacked_factors[factor_key]
+    #     if not factor.inited:
+    #         self.write_log(f"Factor {factor_key} failed to start, please initialize it first")
+    #         return
+    #     if factor.trading:
+    #         self.write_log(f"Factor {factor_key} is already running, please do not repeat the operation")
+    #         return
+    #     self.call_factor_func(factor, factor.on_start)
+    #     self.put_factor_event(factor)
 
     def stop_all_factors(self) -> None:
         """启动所有策略"""

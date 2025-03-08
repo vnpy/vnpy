@@ -47,6 +47,8 @@ from .utility import get_folder_path, TRADER_DIR
 from .converter import OffsetConverter
 from .locale import _
 
+APP_NAME = 'MainEngine'
+
 
 class MainEngine:
     """
@@ -125,7 +127,7 @@ class MainEngine:
         """
         Put log event with specific message.
         """
-        log: LogData = LogData(msg=msg, gateway_name=source, level=level)
+        log: LogData = LogData(msg=msg, gateway_name=APP_NAME if not source else source, level=level)
         event: Event = Event(EVENT_LOG, log)
         self.event_engine.put(event)
 
@@ -311,7 +313,7 @@ class LogEngine(BaseEngine):
         self.logger.setLevel(self.level)
 
         self.formatter: logging.Formatter = logging.Formatter(
-            "%(asctime)s  %(levelname)s: %(message)s"
+            '%(asctime)s | %(levelname)-8s | %(message)s'
         )
 
         self.add_null_handler()

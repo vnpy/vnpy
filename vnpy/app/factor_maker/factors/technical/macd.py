@@ -62,8 +62,6 @@ class MACD(FactorTemplate):
         Returns:
             pl.DataFrame: DataFrame with 'datetime' as index and symbols as columns containing MACD histogram values.
         """
-        print('MACD calculate')
-        print(input_data)
         if isinstance(input_data, dict):
             datetime_index = input_data.get(self.ma_fast.factor_key)['datetime']
             fast = input_data.get(self.ma_fast.factor_key)
@@ -75,63 +73,6 @@ class MACD(FactorTemplate):
                 [pl.col(col) for col in macd.columns if col != "datetime"]
             )
             res = pl.concat([memory, last_row], how='vertical')
-            print(res)
             return res
         else:
             raise ValueError("The input_data must be a dictionary.")
-
-    def calculate_polars(self, close_df: pl.DataFrame, *args, **kwargs) -> pl.DataFrame:
-        """
-        Calculate MACD histogram using Polars DataFrame.
-
-        Parameters:
-            close_df (pl.DataFrame): DataFrame with 'datetime' as index and symbols as columns containing close prices.
-
-        Returns:
-            pl.DataFrame: DataFrame with 'datetime' as index and symbols as columns containing MACD histogram values.
-        """
-
-        # Ensure 'datetime' is a column (since Polars does not have index)
-        if 'datetime' not in close_df.columns:
-            raise ValueError("The 'close' DataFrame must contain a 'datetime' column.")
-
-        # Sort data by 'datetime'
-        close_df = close_df.sort("datetime")
-
-        # Get the list of symbols (columns excluding 'datetime')
-        symbols = [col for col in close_df.columns if col != 'datetime']
-
-        # Initialize a dictionary to hold MACD histograms
-        macd_hist_dict = {'datetime': close_df['datetime']}
-
-        for symbol in symbols:
-            # Extract close prices for the symbol
-            close_prices: pl.Series = close_df[symbol]
-
-            # Handle missing data
-            if close_prices.null_count() == len(close_prices):
-                # All values are null for this symbol; skip it
-                continue
-
-            # Calculate alpha values
-            alpha_fast = 2 / (self.fast_period + 1)
-            alpha_slow = 2 / (self.slow_period + 1)
-            alpha_signal = 2 / (self.signal_period + 1)
-
-            # Calculate EMAs using Polars ewm_mean
-            ema_fast = close_prices.ewm_mean(alpha=alpha_fast, adjust=False, min_periods=1)
-            ema_slow = close_prices.ewm_mean(alpha=alpha_slow, adjust=False, min_periods=1)
-            macd_line = ema_fast - ema_slow
-            signal_line = macd_line.ewm_mean(alpha=alpha_signal, adjust=False, min_periods=1)
-            macd_histogram = macd_line - signal_line
-
-            # Add to the dictionary
-            macd_hist_dict[symbol] = macd_histogram
-
-        # Create the result DataFrame
-        result = pl.DataFrame(macd_hist_dict)
-
-        # Sort by 'datetime'
-        result = result.sort("datetime")
-
-        return result
