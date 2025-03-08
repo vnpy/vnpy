@@ -57,7 +57,7 @@ class RecorderEngine(BaseEngine):
         self.put_event()
 
         # database settings
-        self.database_manager = ClickhouseDatabase()
+        self.database_manager = ClickhouseDatabase(event_engine=event_engine)
         self.buffer_bar = defaultdict(list)
         self.buffer_factor = defaultdict(list)
         self.buffer_size = 1  # todo: 调大该数字
@@ -149,11 +149,17 @@ class RecorderEngine(BaseEngine):
                 self.database_manager.save_factor_data(name=data.columns[-1], data=data)
             elif isinstance(data, dict) and isinstance(list(data.values())[0], pl.DataFrame):
                 self.write_log(f"识别到dict")
-
+                df_list = []
+                checked_interval = None
                 for factor_key, factor_df in data.items():
                     self.write_log(f"factor_key: {factor_key}")
                     self.write_log(f"factor_df: {factor_df}")
                     interval, factor_name = extract_factor_key(factor_key)
+                    # check all the data have the same interval
+                    if checked_interval is None:
+                        checked_interval = interval
+                    else:
+                        assert interval == checked_interval
                     # stacking the DataFrame (make column_names into one column called ticker)
                     """
                     2025-03-05 15:48:00,489  INFO: factor_df: shape: (1, 3)
@@ -175,18 +181,17 @@ class RecorderEngine(BaseEngine):
                     │ 2025-03-05 15:47:00 ┆ ethusdt.BINANCE ┆ 2190.79                 │
                     └─────────────────────┴─────────────────┴─────────────────────────┘
                     """
-                    df_long = factor_df.melt(
+                    df_pivoted = factor_df.melt(
                         id_vars=["datetime"],
                         value_vars=list(sorted(set(factor_df.columns) - {'datetime'})),
                         variable_name="ticker",
                         value_name=factor_key
                     )
-                    status = self.database_manager.save_factor_data(name=factor_key, data=df_long, interval=interval)
-                    # maintain overview here
-                    # self.overview_handler.update_overview_hyf(task_type=task_type, data_list=v, is_stream=stream)
-                    # overview = self.overview_handler.bar_overview.get(vt_symbol, {})
-                    # assert self.overview_handler.bar_overview[vt_symbol].count == len(
-                    #     ret) if not SYSTEM_MODE == 'TEST' else True
+                    df_list.append(df_pivoted)
+                df_pivoted = pl.concat(df_list, how='align')
+                self.write_log(f"df_pivoted: {df_pivoted}", level=DEBUG)
+                status = self.database_manager.save_factor_data(data=df_pivoted, interval=checked_interval)
+
             else:
                 raise TypeError(f"Unsupported data type: {type(data)}")
 
@@ -338,9 +343,11 @@ class RecorderEngine(BaseEngine):
     def process_factor_event(self, event: Event):
         """"""
         factor_dict: dict = event.data
-        for factor_key, factor_df in factor_dict.items():
-            # self.add_factor_recording(vt_symbol=factor_name)
-            self.record_factor({factor_key: factor_df})
+        # for factor_key, factor_df in factor_dict.items():
+        #     # self.add_factor_recording(vt_symbol=factor_name)
+        #     self.record_factor({factor_key: factor_df})
+        self.write_log(f"factor_dict: {factor_dict}", level=DEBUG)
+        self.record_factor(factor_dict)
 
     def process_tick_event(self, event: Event):
         """"""

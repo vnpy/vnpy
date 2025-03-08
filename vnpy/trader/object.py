@@ -260,6 +260,7 @@ class LogData(BaseData):
 
     def __post_init__(self) -> None:
         """"""
+        self.msg = f"[{self.gateway_name+']:':<17} {self.msg}"
         self.time: datetime = datetime.now()
 
 
