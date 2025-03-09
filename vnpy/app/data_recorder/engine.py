@@ -393,7 +393,7 @@ class RecorderEngine(BaseEngine):
         self.event_engine.put(event)
 
     def put_event(self):
-        """  # fixme: What does this function do?"""
+        """ this function is apply on widget.py """
         tick_symbols = list(self.tick_recordings.keys())
         tick_symbols.sort()
 
