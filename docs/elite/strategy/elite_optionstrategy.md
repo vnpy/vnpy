@@ -343,6 +343,25 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 在策略里调用subscribe_options函数，可以订阅特定期权产品的期权组合行情。
 
+期权组合名称一定要是实盘交易系统中可以查到的合约上的期权产品名称（可以通过【合约查询】查看）。
+
+    标的对应期权产品名称示例：
+
+    ETF期权
+      "510050" - "510050_O"
+      "159919" - "159919_O"
+
+    股指期权
+      "IF" - "IO"
+      "IH" - "HO"
+      "IM" - "MO"
+
+    商品期权
+      "i" - "i_o"
+      "cu" - "cu_o"
+      "sc" - "sc_o"
+      "SR" - "SR"
+
 若返回False，则说明底层没有获取到对应的期权合约信息。
 
 **subscribe_data**
@@ -492,7 +511,7 @@ execute_trading被调用之后，在函数内部会先撤销策略所有活动�
 ##### 属性
 
  - vt_symbol: str（本地代码）
- - contractData: ContractData（合约信息）
+ - contract: ContractData（合约信息）
  - strike: float（行权价）
  - price: float（最新价）
  - pos: float（净持仓）
@@ -622,7 +641,7 @@ engine.show_chart()
 
 - **set_parameters**
 
-  * 入参：interval: Interval,  start: datetime, end: datetime, rate: float, slippage: float, capital: int = 1_000_000, cache: str = ""
+  * 入参：interval: Interval,  start: datetime, end: datetime, rate: float, slippage: float, capital: int = 1_000_000, cache: str = "", memory: bool = False
 
   * 出参：无
 
@@ -638,7 +657,7 @@ engine.show_chart()
 
 - **run_backtesting**
 
-  * 入参：无
+  * 入参：disable_tqdm: bool= False
 
   * 出参：无
 
@@ -658,7 +677,7 @@ engine.show_chart()
 
 - **calculate_statistics**
 
-  * 入参：无
+  * 入参：df: DataFrame = None, output: bool = True
 
   * 出参：无
 
@@ -666,7 +685,7 @@ engine.show_chart()
 
 - **show_chart**
 
-  * 入参：无
+  * 入参：df: DataFrame = None
 
   * 出参：无
 
