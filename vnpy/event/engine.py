@@ -25,7 +25,7 @@ class Event:
 
 
 # Defines handler function to be used in event engine.
-HandlerType: callable = Callable[[Event], None]
+HandlerType = Callable[[Event], None]
 
 
 class EventEngine:
