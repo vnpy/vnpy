@@ -127,8 +127,8 @@ class MainEngine:
         self.get_all_accounts: Callable[[], list[AccountData]] = oms_engine.get_all_accounts
         self.get_all_contracts: Callable[[], list[ContractData]] = oms_engine.get_all_contracts
         self.get_all_quotes: Callable[[], list[QuoteData]] = oms_engine.get_all_quotes
-        self.get_all_active_orders: Callable[[str], list[OrderData]] = oms_engine.get_all_active_orders
-        self.get_all_active_quotes: Callable[[str], list[QuoteData]] = oms_engine.get_all_active_quotes
+        self.get_all_active_orders: Callable[[], list[OrderData]] = oms_engine.get_all_active_orders
+        self.get_all_active_quotes: Callable[[], list[QuoteData]] = oms_engine.get_all_active_quotes
         self.update_order_request: Callable[[OrderRequest, str, str], None] = oms_engine.update_order_request
         self.convert_order_request: Callable[[OrderRequest, str, bool, bool], list[OrderRequest]] = oms_engine.convert_order_request
         self.get_converter: Callable[[str], OffsetConverter | None] = oms_engine.get_converter
@@ -548,36 +548,17 @@ class OmsEngine(BaseEngine):
         """
         return list(self.quotes.values())
 
-    def get_all_active_orders(self, vt_symbol: str = "") -> list[OrderData]:
+    def get_all_active_orders(self) -> list[OrderData]:
         """
-        Get all active orders by vt_symbol.
+        Get all active orders.
+        """
+        return list(self.active_orders.values())
 
-        If vt_symbol is empty, return all active orders.
+    def get_all_active_quotes(self) -> list[QuoteData]:
         """
-        if not vt_symbol:
-            return list(self.active_orders.values())
-        else:
-            active_orders: list[OrderData] = [
-                order
-                for order in self.active_orders.values()
-                if order.vt_symbol == vt_symbol
-            ]
-            return active_orders
-
-    def get_all_active_quotes(self, vt_symbol: str = "") -> list[QuoteData]:
+        Get all active quotes.
         """
-        Get all active quotes by vt_symbol.
-        If vt_symbol is empty, return all active qutoes.
-        """
-        if not vt_symbol:
-            return list(self.active_quotes.values())
-        else:
-            active_quotes: list[QuoteData] = [
-                quote
-                for quote in self.active_quotes.values()
-                if quote.vt_symbol == vt_symbol
-            ]
-            return active_quotes
+        return list(self.active_quotes.values())
 
     def update_order_request(self, req: OrderRequest, vt_orderid: str, gateway_name: str) -> None:
         """
