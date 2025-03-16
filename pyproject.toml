@@ -59,9 +59,11 @@ include = ["vnpy*"]
 [tool.setuptools.package-data]
 "vnpy" = ["**/*.ico", "**/*.po", "**/*.mo"]
 
-[tool.flake8]
-exclude = ["venv", "build", "__pycache__", "__init__.py"]
-ignore = ["E501", "W503"]
+[tool.ruff]
+target-version = "py310"
+
+[tool.ruff.lint]
+ignore = ["E501"]
 
 [tool.build-scripts]
 pre-build = "vnpy/trader/locale/generate_mo.py"

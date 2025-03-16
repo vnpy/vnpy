@@ -617,7 +617,7 @@ class ConnectDialog(QtWidgets.QDialog):
         for field_name, field_value in default_setting.items():
             field_type: type = type(field_value)
 
-            if field_type == list:
+            if field_type is list:
                 widget: QtWidgets.QComboBox = QtWidgets.QComboBox()
                 widget.addItems(field_value)
 
@@ -635,7 +635,7 @@ class ConnectDialog(QtWidgets.QDialog):
                 if _("密码") in field_name:
                     widget.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
 
-                if field_type == int:
+                if field_type is int:
                     validator: QtGui.QIntValidator = QtGui.QIntValidator()
                     widget.setValidator(validator)
 
@@ -655,7 +655,7 @@ class ConnectDialog(QtWidgets.QDialog):
         setting: dict = {}
         for field_name, tp in self.widgets.items():
             widget, field_type = tp
-            if field_type == list:
+            if field_type is list:
                 field_value = str(widget.currentText())
             else:
                 try:
@@ -1251,7 +1251,7 @@ class GlobalDialog(QtWidgets.QDialog):
             widget, field_type = tp
             value_text: str = widget.text()
 
-            if field_type == bool:
+            if field_type is bool:
                 if value_text == "True":
                     field_value: bool = True
                 else:
