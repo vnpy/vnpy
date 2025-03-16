@@ -6,7 +6,7 @@ from types import ModuleType
 import webbrowser
 from functools import partial
 from importlib import import_module
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Tuple, Type, TypeVar
 
 import vnpy
 from vnpy.event import EventEngine
@@ -30,6 +30,9 @@ from .widget import (
 from ..engine import MainEngine, BaseApp
 from ..utility import get_icon_path, TRADER_DIR
 from ..locale import _
+
+
+WidgetType = TypeVar("WidgetType", bound="QtWidgets.QWidget")
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -103,7 +106,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         gateway_names: list = self.main_engine.get_all_gateway_names()
         for name in gateway_names:
-            func: Callable = partial(self.connect, name)
+            func: Callable = partial(self.connect_gateway, name)
             self.add_action(
                 sys_menu,
                 _("连接{}").format(name),
@@ -126,9 +129,9 @@ class MainWindow(QtWidgets.QMainWindow):
         all_apps: List[BaseApp] = self.main_engine.get_all_apps()
         for app in all_apps:
             ui_module: ModuleType = import_module(app.app_module + ".ui")
-            widget_class: QtWidgets.QWidget = getattr(ui_module, app.widget_name)
+            widget_class: Type[QtWidgets.QWidget] = getattr(ui_module, app.widget_name)
 
-            func: Callable = partial(self.open_widget, widget_class, app.app_name)
+            func = partial(self.open_widget, widget_class, app.app_name)
 
             self.add_action(app_menu, app.display_name, app.icon_name, func, True)
 
@@ -190,7 +193,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toolbar.setIconSize(size)
 
         # Set button spacing
-        self.toolbar.layout().setSpacing(10)
+        layout: QtWidgets.QLayout | None = self.toolbar.layout()
+        if layout:
+            layout.setSpacing(10)
 
         self.addToolBar(QtCore.Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
 
@@ -216,14 +221,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def create_dock(
         self,
-        widget_class: QtWidgets.QWidget,
+        widget_class: Type[WidgetType],
         name: str,
-        area: int
-    ) -> Tuple[QtWidgets.QWidget, QtWidgets.QDockWidget]:
+        area: QtCore.Qt.DockWidgetArea
+    ) -> Tuple[WidgetType, QtWidgets.QDockWidget]:
         """
         Initialize a dock widget.
         """
-        widget: QtWidgets.QWidget = widget_class(self.main_engine, self.event_engine)
+        widget: WidgetType = widget_class(self.main_engine, self.event_engine)      # type: ignore
         if isinstance(widget, BaseMonitor):
             self.monitors[name] = widget
 
@@ -234,7 +239,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.addDockWidget(area, dock)
         return widget, dock
 
-    def connect(self, gateway_name: str) -> None:
+    def connect_gateway(self, gateway_name: str) -> None:
         """
         Open connect dialog for gateway connection.
         """
@@ -268,13 +273,13 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             event.ignore()
 
-    def open_widget(self, widget_class: QtWidgets.QWidget, name: str) -> None:
+    def open_widget(self, widget_class: Type[QtWidgets.QWidget], name: str) -> None:
         """
         Open contract manager.
         """
-        widget: QtWidgets.QWidget = self.widgets.get(name, None)
+        widget: QtWidgets.QWidget | None = self.widgets.get(name, None)
         if not widget:
-            widget = widget_class(self.main_engine, self.event_engine)
+            widget = widget_class(self.main_engine, self.event_engine)      # type: ignore
             self.widgets[name] = widget
 
         if isinstance(widget, QtWidgets.QDialog):
@@ -313,7 +318,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         Sending a test email.
         """
-        self.main_engine.send_email("VeighNa Trader", "testing")
+        self.main_engine.send_email("VeighNa Trader", "testing", None)
 
     def open_forum(self) -> None:
         """

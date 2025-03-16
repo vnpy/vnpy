@@ -134,7 +134,7 @@ class MainEngine:
         self.get_converter: Callable[[str], OffsetConverter | None] = oms_engine.get_converter
 
         email_engine: EmailEngine = self.add_engine(EmailEngine)
-        self.send_email: Callable[[str, str, str], None] = email_engine.send_email
+        self.send_email: Callable[[str, str, str | None], None] = email_engine.send_email
 
     def write_log(self, msg: str, source: str = "") -> None:
         """
@@ -605,7 +605,7 @@ class EmailEngine(BaseEngine):
         self.queue: Queue = Queue()
         self.active: bool = False
 
-    def send_email(self, subject: str, content: str, receiver: str = "") -> None:
+    def send_email(self, subject: str, content: str, receiver: str | None = None) -> None:
         """"""
         # Start email engine when sending first email.
         if not self.active:
