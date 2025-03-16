@@ -1,7 +1,7 @@
 import threading
 import traceback
 from time import time
-from typing import Any, Callable, Dict
+from typing import Callable
 
 import zmq
 
@@ -16,7 +16,7 @@ class RpcServer:
         Constructor
         """
         # Save functions dict: key is function name, value is function object
-        self._functions: Dict[str, Callable] = {}
+        self._functions: dict[str, Callable] = {}
 
         # Zmq port related
         self._context: zmq.Context = zmq.Context()
@@ -101,7 +101,7 @@ class RpcServer:
             # Try to get and execute callable function object; capture exception information if it fails
             try:
                 func: Callable = self._functions[name]
-                r: Any = func(*args, **kwargs)
+                r: object = func(*args, **kwargs)
                 rep: list = [True, r]
             except Exception as e:  # noqa
                 rep: list = [False, traceback.format_exc()]
@@ -113,7 +113,7 @@ class RpcServer:
         self._socket_pub.unbind(self._socket_pub.LAST_ENDPOINT)
         self._socket_rep.unbind(self._socket_rep.LAST_ENDPOINT)
 
-    def publish(self, topic: str, data: Any) -> None:
+    def publish(self, topic: str, data: object) -> None:
         """
         Publish data
         """

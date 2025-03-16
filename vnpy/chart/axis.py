@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 
 import pyqtgraph as pg
 
@@ -19,7 +18,7 @@ class DatetimeAxis(pg.AxisItem):
         self.setPen(width=AXIS_WIDTH)
         self.tickFont: QtGui.QFont = NORMAL_FONT
 
-    def tickStrings(self, values: List[int], scale: float, spacing: int) -> list:
+    def tickStrings(self, values: list[int], scale: float, spacing: int) -> list:
         """
         Convert original index to datetime string.
         """

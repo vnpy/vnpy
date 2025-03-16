@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Dict, Type
+from typing import Type
 
 import pyqtgraph as pg
 
@@ -28,9 +28,9 @@ class ChartWidget(pg.PlotWidget):
 
         self._manager: BarManager = BarManager()
 
-        self._plots: Dict[str, pg.PlotItem] = {}
-        self._items: Dict[str, ChartItem] = {}
-        self._item_plot_map: Dict[ChartItem, pg.PlotItem] = {}
+        self._plots: dict[str, pg.PlotItem] = {}
+        self._items: dict[str, ChartItem] = {}
+        self._item_plot_map: dict[ChartItem, pg.PlotItem] = {}
 
         self._first_plot: pg.PlotItem = None
         self._cursor: ChartCursor = None
@@ -135,7 +135,7 @@ class ChartWidget(pg.PlotWidget):
         """
         return self._plots.get(plot_name, None)
 
-    def get_all_plots(self) -> List[pg.PlotItem]:
+    def get_all_plots(self) -> list[pg.PlotItem]:
         """
         Get all plot objects.
         """
@@ -153,7 +153,7 @@ class ChartWidget(pg.PlotWidget):
         if self._cursor:
             self._cursor.clear_all()
 
-    def update_history(self, history: List[BarData]) -> None:
+    def update_history(self, history: list[BarData]) -> None:
         """
         Update a list of bar data.
         """
@@ -311,16 +311,16 @@ class ChartCursor(QtCore.QObject):
         self,
         widget: ChartWidget,
         manager: BarManager,
-        plots: Dict[str, pg.GraphicsObject],
-        item_plot_map: Dict[ChartItem, pg.GraphicsObject]
+        plots: dict[str, pg.GraphicsObject],
+        item_plot_map: dict[ChartItem, pg.GraphicsObject]
     ) -> None:
         """"""
         super().__init__()
 
         self._widget: ChartWidget = widget
         self._manager: BarManager = manager
-        self._plots: Dict[str, pg.GraphicsObject] = plots
-        self._item_plot_map: Dict[ChartItem, pg.GraphicsObject] = item_plot_map
+        self._plots: dict[str, pg.GraphicsObject] = plots
+        self._item_plot_map: dict[ChartItem, pg.GraphicsObject] = item_plot_map
 
         self._x: int = 0
         self._y: int = 0
@@ -339,9 +339,9 @@ class ChartCursor(QtCore.QObject):
         """
         Create line objects.
         """
-        self._v_lines: Dict[str, pg.InfiniteLine] = {}
-        self._h_lines: Dict[str, pg.InfiniteLine] = {}
-        self._views: Dict[str, pg.ViewBox] = {}
+        self._v_lines: dict[str, pg.InfiniteLine] = {}
+        self._h_lines: dict[str, pg.InfiniteLine] = {}
+        self._views: dict[str, pg.ViewBox] = {}
 
         pen: QtGui.QPen = pg.mkPen(WHITE_COLOR)
 
@@ -363,7 +363,7 @@ class ChartCursor(QtCore.QObject):
         """
         Create label objects on axis.
         """
-        self._y_labels: Dict[str, pg.TextItem] = {}
+        self._y_labels: dict[str, pg.TextItem] = {}
         for plot_name, plot in self._plots.items():
             label: pg.TextItem = pg.TextItem(
                 plot_name, fill=CURSOR_COLOR, color=BLACK_COLOR)
@@ -383,7 +383,7 @@ class ChartCursor(QtCore.QObject):
     def _init_info(self) -> None:
         """
         """
-        self._infos: Dict[str, pg.TextItem] = {}
+        self._infos: dict[str, pg.TextItem] = {}
         for plot_name, plot in self._plots.items():
             info: pg.TextItem = pg.TextItem(
                 "info",

@@ -6,7 +6,7 @@ import csv
 from datetime import datetime
 import platform
 from enum import Enum
-from typing import Any, Dict, List, cast
+from typing import cast
 from copy import copy
 from tzlocal import get_localzone_name
 
@@ -51,20 +51,20 @@ class BaseCell(QtWidgets.QTableWidgetItem):
     General cell used in tablewidgets.
     """
 
-    def __init__(self, content: Any, data: Any) -> None:
+    def __init__(self, content: object, data: object) -> None:
         """"""
         super().__init__()
         self.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.set_content(content, data)
 
-    def set_content(self, content: Any, data: Any) -> None:
+    def set_content(self, content: object, data: object) -> None:
         """
         Set text content.
         """
         self.setText(str(content))
         self._data = data
 
-    def get_data(self) -> Any:
+    def get_data(self) -> object:
         """
         Get data object.
         """
@@ -76,11 +76,11 @@ class EnumCell(BaseCell):
     Cell used for showing enum data.
     """
 
-    def __init__(self, content: Enum, data: Any) -> None:
+    def __init__(self, content: Enum, data: object) -> None:
         """"""
         super().__init__(content, data)
 
-    def set_content(self, content: Any, data: Any) -> None:
+    def set_content(self, content: object, data: object) -> None:
         """
         Set text using enum.constant.value.
         """
@@ -93,11 +93,11 @@ class DirectionCell(EnumCell):
     Cell used for showing direction data.
     """
 
-    def __init__(self, content: Enum, data: Any) -> None:
+    def __init__(self, content: Enum, data: object) -> None:
         """"""
         super().__init__(content, data)
 
-    def set_content(self, content: Any, data: Any) -> None:
+    def set_content(self, content: object, data: object) -> None:
         """
         Cell color is set according to direction.
         """
@@ -114,7 +114,7 @@ class BidCell(BaseCell):
     Cell used for showing bid price and volume.
     """
 
-    def __init__(self, content: Any, data: Any) -> None:
+    def __init__(self, content: object, data: object) -> None:
         """"""
         super().__init__(content, data)
 
@@ -126,7 +126,7 @@ class AskCell(BaseCell):
     Cell used for showing ask price and volume.
     """
 
-    def __init__(self, content: Any, data: Any) -> None:
+    def __init__(self, content: object, data: object) -> None:
         """"""
         super().__init__(content, data)
 
@@ -138,11 +138,11 @@ class PnlCell(BaseCell):
     Cell used for showing pnl data.
     """
 
-    def __init__(self, content: Any, data: Any) -> None:
+    def __init__(self, content: object, data: object) -> None:
         """"""
         super().__init__(content, data)
 
-    def set_content(self, content: Any, data: Any) -> None:
+    def set_content(self, content: object, data: object) -> None:
         """
         Cell color is set based on whether pnl is
         positive or negative.
@@ -162,11 +162,11 @@ class TimeCell(BaseCell):
 
     local_tz = ZoneInfo(get_localzone_name())
 
-    def __init__(self, content: Any, data: Any) -> None:
+    def __init__(self, content: object, data: object) -> None:
         """"""
         super().__init__(content, data)
 
-    def set_content(self, content: datetime, data: Any) -> None:
+    def set_content(self, content: datetime, data: object) -> None:
         """"""
         if content is None:
             return
@@ -189,11 +189,11 @@ class DateCell(BaseCell):
     Cell used for showing date string from datetime object.
     """
 
-    def __init__(self, content: Any, data: Any) -> None:
+    def __init__(self, content: object, data: object) -> None:
         """"""
         super().__init__(content, data)
 
-    def set_content(self, content: Any, data: Any) -> None:
+    def set_content(self, content: object, data: object) -> None:
         """"""
         if content is None:
             return
@@ -207,7 +207,7 @@ class MsgCell(BaseCell):
     Cell used for showing msg data.
     """
 
-    def __init__(self, content: str, data: Any) -> None:
+    def __init__(self, content: str, data: object) -> None:
         """"""
         super().__init__(content, data)
         self.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter)
@@ -231,7 +231,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
 
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine
-        self.cells: Dict[str, dict] = {}
+        self.cells: dict[str, dict] = {}
 
         self.init_ui()
         self.load_setting()
@@ -303,7 +303,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
         if self.sorting:
             self.setSortingEnabled(True)
 
-    def insert_new_row(self, data: Any) -> None:
+    def insert_new_row(self, data: object) -> None:
         """
         Insert a new row at the top of table.
         """
@@ -324,7 +324,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
             key: str = data.__getattribute__(self.data_key)
             self.cells[key] = row_cells
 
-    def update_old_row(self, data: Any) -> None:
+    def update_old_row(self, data: object) -> None:
         """
         Update an old row in table.
         """
@@ -596,7 +596,7 @@ class ConnectDialog(QtWidgets.QDialog):
         self.gateway_name: str = gateway_name
         self.filename: str = f"connect_{gateway_name.lower()}.json"
 
-        self.widgets: Dict[str, tuple[QtWidgets.QWidget, type]] = {}
+        self.widgets: dict[str, tuple[QtWidgets.QWidget, type]] = {}
 
         self.init_ui()
 
@@ -701,7 +701,7 @@ class TradingWidget(QtWidgets.QWidget):
         self.setFixedWidth(300)
 
         # Trading function area
-        exchanges: List[Exchange] = self.main_engine.get_all_exchanges()
+        exchanges: list[Exchange] = self.main_engine.get_all_exchanges()
         self.exchange_combo: QtWidgets.QComboBox = QtWidgets.QComboBox()
         self.exchange_combo.addItems([exchange.value for exchange in exchanges])
 
@@ -1001,7 +1001,7 @@ class TradingWidget(QtWidgets.QWidget):
         """
         Cancel all active orders.
         """
-        order_list: List[OrderData] = self.main_engine.get_all_active_orders()
+        order_list: list[OrderData] = self.main_engine.get_all_active_orders()
         for order in order_list:
             req: CancelRequest = order.create_cancel_request()
             self.main_engine.cancel_order(req, order.gateway_name)
@@ -1063,7 +1063,7 @@ class ContractManager(QtWidgets.QWidget):
     Query contract data available to trade in system.
     """
 
-    headers: Dict[str, str] = {
+    headers: dict[str, str] = {
         "vt_symbol": _("本地代码"),
         "symbol": _("代码"),
         "exchange": _("交易所"),
@@ -1126,9 +1126,9 @@ class ContractManager(QtWidgets.QWidget):
         """
         flt: str = str(self.filter_line.text())
 
-        all_contracts: List[ContractData] = self.main_engine.get_all_contracts()
+        all_contracts: list[ContractData] = self.main_engine.get_all_contracts()
         if flt:
-            contracts: List[ContractData] = [
+            contracts: list[ContractData] = [
                 contract for contract in all_contracts if flt in contract.vt_symbol
             ]
         else:
@@ -1212,7 +1212,7 @@ class GlobalDialog(QtWidgets.QDialog):
         """"""
         super().__init__()
 
-        self.widgets: Dict[str, Any] = {}
+        self.widgets: dict[str, object] = {}
 
         self.init_ui()
 

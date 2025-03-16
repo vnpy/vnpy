@@ -1,4 +1,4 @@
-from typing import Dict, List, Callable, Tuple
+from typing import Callable
 from itertools import product
 from concurrent.futures import ProcessPoolExecutor
 from random import random, choice
@@ -29,7 +29,7 @@ class OptimizationSetting:
 
     def __init__(self) -> None:
         """"""
-        self.params: Dict[str, List] = {}
+        self.params: dict[str, list] = {}
         self.target_name: str = ""
 
     def add_parameter(
@@ -38,7 +38,7 @@ class OptimizationSetting:
         start: float,
         end: float = None,
         step: float = None
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """"""
         if end is None and step is None:
             self.params[name] = [start]
@@ -51,7 +51,7 @@ class OptimizationSetting:
             return False, _("参数优化步进必须大于0")
 
         value: float = start
-        value_list: List[float] = []
+        value_list: list[float] = []
 
         while value <= end:
             value_list.append(value)
@@ -65,7 +65,7 @@ class OptimizationSetting:
         """"""
         self.target_name = target_name
 
-    def generate_settings(self) -> List[dict]:
+    def generate_settings(self) -> list[dict]:
         """"""
         keys: dict_keys = self.params.keys()
         values: dict_values = self.params.values()
@@ -101,9 +101,9 @@ def run_bf_optimization(
     key_func: KEY_FUNC,
     max_workers: int = None,
     output: OUTPUT_FUNC = print
-) -> List[Tuple]:
+) -> list[tuple]:
     """Run brutal force optimization"""
-    settings: List[Dict] = optimization_setting.generate_settings()
+    settings: list[dict] = optimization_setting.generate_settings()
 
     output(_("开始执行穷举算法优化"))
     output(_("参数优化空间：{}").format(len(settings)))
@@ -118,7 +118,7 @@ def run_bf_optimization(
             executor.map(evaluate_func, settings),
             total=len(settings)
         )
-        results: List[Tuple] = list(it)
+        results: list[tuple] = list(it)
         results.sort(reverse=True, key=key_func)
 
         end: int = perf_counter()
@@ -136,11 +136,11 @@ def run_ga_optimization(
     population_size: int = 100,
     ngen_size: int = 30,
     output: OUTPUT_FUNC = print
-) -> List[Tuple]:
+) -> list[tuple]:
     """Run genetic algorithm optimization"""
     # Define functions for generate parameter randomly
-    buf: List[Dict] = optimization_setting.generate_settings()
-    settings: List[Tuple] = [list(d.items()) for d in buf]
+    buf: list[dict] = optimization_setting.generate_settings()
+    settings: list[tuple] = [list(d.items()) for d in buf]
 
     def generate_parameter() -> list:
         """"""
@@ -159,7 +159,7 @@ def run_ga_optimization(
     ctx: BaseContext = get_context("spawn")
     with ctx.Manager() as manager, ctx.Pool(max_workers) as pool:
         # Create shared dict for result cache
-        cache: Dict[Tuple, Tuple] = manager.dict()
+        cache: dict[tuple, tuple] = manager.dict()
 
         # Set up toolbox
         toolbox: base.Toolbox = base.Toolbox()

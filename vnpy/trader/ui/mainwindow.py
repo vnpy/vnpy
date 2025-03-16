@@ -6,7 +6,7 @@ from types import ModuleType
 import webbrowser
 from functools import partial
 from importlib import import_module
-from typing import Callable, Dict, List, Tuple, Type, TypeVar
+from typing import Callable, Type, TypeVar
 
 import vnpy
 from vnpy.event import EventEngine
@@ -49,8 +49,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.window_title: str = _("VeighNa Trader 社区版 - {}   [{}]").format(vnpy.__version__, TRADER_DIR)
 
-        self.widgets: Dict[str, QtWidgets.QWidget] = {}
-        self.monitors: Dict[str, BaseMonitor] = {}
+        self.widgets: dict[str, QtWidgets.QWidget] = {}
+        self.monitors: dict[str, BaseMonitor] = {}
 
         self.init_ui()
 
@@ -126,7 +126,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # App menu
         app_menu: QtWidgets.QMenu = bar.addMenu(_("功能"))
 
-        all_apps: List[BaseApp] = self.main_engine.get_all_apps()
+        all_apps: list[BaseApp] = self.main_engine.get_all_apps()
         for app in all_apps:
             ui_module: ModuleType = import_module(app.app_module + ".ui")
             widget_class: Type[QtWidgets.QWidget] = getattr(ui_module, app.widget_name)
@@ -224,7 +224,7 @@ class MainWindow(QtWidgets.QMainWindow):
         widget_class: Type[WidgetType],
         name: str,
         area: QtCore.Qt.DockWidgetArea
-    ) -> Tuple[WidgetType, QtWidgets.QDockWidget]:
+    ) -> tuple[WidgetType, QtWidgets.QDockWidget]:
         """
         Initialize a dock widget.
         """

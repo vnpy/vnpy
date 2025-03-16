@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from types import ModuleType
-from typing import List
 from dataclasses import dataclass
 from importlib import import_module
 
@@ -56,14 +55,14 @@ class BaseDatabase(ABC):
     """
 
     @abstractmethod
-    def save_bar_data(self, bars: List[BarData], stream: bool = False) -> bool:
+    def save_bar_data(self, bars: list[BarData], stream: bool = False) -> bool:
         """
         Save bar data into database.
         """
         pass
 
     @abstractmethod
-    def save_tick_data(self, ticks: List[TickData], stream: bool = False) -> bool:
+    def save_tick_data(self, ticks: list[TickData], stream: bool = False) -> bool:
         """
         Save tick data into database.
         """
@@ -77,7 +76,7 @@ class BaseDatabase(ABC):
         interval: Interval,
         start: datetime,
         end: datetime
-    ) -> List[BarData]:
+    ) -> list[BarData]:
         """
         Load bar data from database.
         """
@@ -90,7 +89,7 @@ class BaseDatabase(ABC):
         exchange: Exchange,
         start: datetime,
         end: datetime
-    ) -> List[TickData]:
+    ) -> list[TickData]:
         """
         Load tick data from database.
         """
@@ -120,14 +119,14 @@ class BaseDatabase(ABC):
         pass
 
     @abstractmethod
-    def get_bar_overview(self) -> List[BarOverview]:
+    def get_bar_overview(self) -> list[BarOverview]:
         """
         Return bar data avaible in database.
         """
         pass
 
     @abstractmethod
-    def get_tick_overview(self) -> List[TickOverview]:
+    def get_tick_overview(self) -> list[TickOverview]:
         """
         Return tick data avaible in database.
         """

@@ -1,7 +1,6 @@
 import threading
 from time import time
 from functools import lru_cache
-from typing import Any
 
 import zmq
 
@@ -13,7 +12,7 @@ class RemoteException(Exception):
     RPC remote exception
     """
 
-    def __init__(self, value: Any) -> None:
+    def __init__(self, value: object) -> None:
         """
         Constructor
         """
@@ -53,7 +52,7 @@ class RpcClient:
         self._last_received_ping: time = time()
 
     @lru_cache(100)
-    def __getattr__(self, name: str) -> Any:
+    def __getattr__(self, name: str) -> object:
         """
         Realize remote call function
         """
@@ -152,7 +151,7 @@ class RpcClient:
         self._socket_req.close()
         self._socket_sub.close()
 
-    def callback(self, topic: str, data: Any) -> None:
+    def callback(self, topic: str, data: object) -> None:
         """
         Callable function
         """

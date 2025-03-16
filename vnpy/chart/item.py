@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from typing import List, Dict, Tuple
 
 import pyqtgraph as pg
 
@@ -19,7 +18,7 @@ class ChartItem(pg.GraphicsObject):
 
         self._manager: BarManager = manager
 
-        self._bar_picutures: Dict[int, QtGui.QPicture] = {}
+        self._bar_picutures: dict[int, QtGui.QPicture] = {}
         self._item_picuture: QtGui.QPicture = None
 
         self._black_brush: QtGui.QBrush = pg.mkBrush(color=BLACK_COLOR)
@@ -34,7 +33,7 @@ class ChartItem(pg.GraphicsObject):
         )
         self._down_brush: QtGui.QBrush = pg.mkBrush(color=DOWN_COLOR)
 
-        self._rect_area: Tuple[float, float] = None
+        self._rect_area: tuple[float, float] = None
 
         # Very important! Only redraw the visible part and improve speed a lot.
         self.setFlag(self.GraphicsItemFlag.ItemUsesExtendedStyleOption)
@@ -57,7 +56,7 @@ class ChartItem(pg.GraphicsObject):
         pass
 
     @abstractmethod
-    def get_y_range(self, min_ix: int = None, max_ix: int = None) -> Tuple[float, float]:
+    def get_y_range(self, min_ix: int = None, max_ix: int = None) -> tuple[float, float]:
         """
         Get range of y-axis with given x-axis range.
 
@@ -72,13 +71,13 @@ class ChartItem(pg.GraphicsObject):
         """
         pass
 
-    def update_history(self, history: List[BarData]) -> None:
+    def update_history(self, history: list[BarData]) -> None:
         """
         Update a list of bar data.
         """
         self._bar_picutures.clear()
 
-        bars: List[BarData] = self._manager.get_all_bars()
+        bars: list[BarData] = self._manager.get_all_bars()
         for ix, bar in enumerate(bars):
             self._bar_picutures[ix] = None
 
@@ -217,7 +216,7 @@ class CandleItem(ChartItem):
         )
         return rect
 
-    def get_y_range(self, min_ix: int = None, max_ix: int = None) -> Tuple[float, float]:
+    def get_y_range(self, min_ix: int = None, max_ix: int = None) -> tuple[float, float]:
         """
         Get range of y-axis with given x-axis range.
 
@@ -304,7 +303,7 @@ class VolumeItem(ChartItem):
         )
         return rect
 
-    def get_y_range(self, min_ix: int = None, max_ix: int = None) -> Tuple[float, float]:
+    def get_y_range(self, min_ix: int = None, max_ix: int = None) -> tuple[float, float]:
         """
         Get range of y-axis with given x-axis range.
 
