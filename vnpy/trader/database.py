@@ -18,7 +18,7 @@ def convert_tz(dt: datetime) -> datetime:
     """
     Convert timezone of datetime object to DB_TZ.
     """
-    dt: datetime = dt.astimezone(DB_TZ)
+    dt = dt.astimezone(DB_TZ)
     return dt.replace(tzinfo=None)
 
 
@@ -29,11 +29,11 @@ class BarOverview:
     """
 
     symbol: str = ""
-    exchange: Exchange = None
-    interval: Interval = None
+    exchange: Exchange | None = None
+    interval: Interval | None = None
     count: int = 0
-    start: datetime = None
-    end: datetime = None
+    start: datetime | None = None
+    end: datetime | None = None
 
 
 @dataclass
@@ -43,10 +43,10 @@ class TickOverview:
     """
 
     symbol: str = ""
-    exchange: Exchange = None
+    exchange: Exchange | None = None
     count: int = 0
-    start: datetime = None
-    end: datetime = None
+    start: datetime | None = None
+    end: datetime | None = None
 
 
 class BaseDatabase(ABC):
@@ -133,7 +133,7 @@ class BaseDatabase(ABC):
         pass
 
 
-database: BaseDatabase = None
+database: BaseDatabase | None = None
 
 
 def get_database() -> BaseDatabase:
@@ -152,8 +152,8 @@ def get_database() -> BaseDatabase:
         module: ModuleType = import_module(module_name)
     except ModuleNotFoundError:
         print(_("找不到数据库驱动{}，使用默认的SQLite数据库").format(module_name))
-        module: ModuleType = import_module("vnpy_sqlite")
+        module = import_module("vnpy_sqlite")
 
     # Create database object from module
     database = module.Database()
-    return database
+    return database     # type: ignore

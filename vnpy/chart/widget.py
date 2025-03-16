@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Type
 
-import pyqtgraph as pg
+import pyqtgraph as pg      # type: ignore
 
 from vnpy.trader.ui import QtGui, QtWidgets, QtCore
 from vnpy.trader.object import BarData
@@ -22,7 +22,7 @@ class ChartWidget(pg.PlotWidget):
     """"""
     MIN_BAR_COUNT = 100
 
-    def __init__(self, parent: QtWidgets.QWidget = None) -> None:
+    def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         """"""
         super().__init__(parent)
 
@@ -32,8 +32,8 @@ class ChartWidget(pg.PlotWidget):
         self._items: dict[str, ChartItem] = {}
         self._item_plot_map: dict[ChartItem, pg.PlotItem] = {}
 
-        self._first_plot: pg.PlotItem = None
-        self._cursor: ChartCursor = None
+        self._first_plot: pg.PlotItem | None = None
+        self._cursor: ChartCursor | None = None
 
         self._right_ix: int = 0                     # Index of most right data
         self._bar_count: int = self.MIN_BAR_COUNT   # Total bar visible in chart
@@ -64,7 +64,7 @@ class ChartWidget(pg.PlotWidget):
         self,
         plot_name: str,
         minimum_height: int = 80,
-        maximum_height: int = None,
+        maximum_height: int | None = None,
         hide_x_axis: bool = False
     ) -> None:
         """
@@ -139,7 +139,7 @@ class ChartWidget(pg.PlotWidget):
         """
         Get all plot objects.
         """
-        return self._plots.values()
+        return list(self._plots.values())
 
     def clear_all(self) -> None:
         """
@@ -208,6 +208,9 @@ class ChartWidget(pg.PlotWidget):
         """
         Update the y-axis range of plots.
         """
+        if not self._first_plot:
+            return
+
         view: pg.ViewBox = self._first_plot.getViewBox()
         view_range: list = view.viewRange()
 
@@ -223,6 +226,9 @@ class ChartWidget(pg.PlotWidget):
         """
         Reimplement this method of parent to update current max_ix value.
         """
+        if not self._first_plot:
+            return
+
         view: pg.ViewBox = self._first_plot.getViewBox()
         view_range: list = view.viewRange()
         self._right_ix = max(0, view_range[0][1])
@@ -233,13 +239,15 @@ class ChartWidget(pg.PlotWidget):
         """
         Reimplement this method of parent to move chart horizontally and zoom in/out.
         """
-        if event.key() == QtCore.Qt.Key_Left:
+        Key = QtCore.Qt.Key
+
+        if event.key() == Key.Key_Left:
             self._on_key_left()
-        elif event.key() == QtCore.Qt.Key_Right:
+        elif event.key() == Key.Key_Right:
             self._on_key_right()
-        elif event.key() == QtCore.Qt.Key_Up:
+        elif event.key() == Key.Key_Up:
             self._on_key_up()
-        elif event.key() == QtCore.Qt.Key_Down:
+        elif event.key() == Key.Key_Down:
             self._on_key_down()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
@@ -261,8 +269,10 @@ class ChartWidget(pg.PlotWidget):
         self._right_ix = max(self._right_ix, self._bar_count)
 
         self._update_x_range()
-        self._cursor.move_left()
-        self._cursor.update_info()
+
+        if self._cursor:
+            self._cursor.move_left()
+            self._cursor.update_info()
 
     def _on_key_right(self) -> None:
         """
@@ -272,28 +282,34 @@ class ChartWidget(pg.PlotWidget):
         self._right_ix = min(self._right_ix, self._manager.get_count())
 
         self._update_x_range()
-        self._cursor.move_right()
-        self._cursor.update_info()
+
+        if self._cursor:
+            self._cursor.move_right()
+            self._cursor.update_info()
 
     def _on_key_down(self) -> None:
         """
         Zoom out the chart.
         """
-        self._bar_count *= 1.2
+        self._bar_count = int(self._bar_count * 1.2)
         self._bar_count = min(int(self._bar_count), self._manager.get_count())
 
         self._update_x_range()
-        self._cursor.update_info()
+
+        if self._cursor:
+            self._cursor.update_info()
 
     def _on_key_up(self) -> None:
         """
         Zoom in the chart.
         """
-        self._bar_count /= 1.2
+        self._bar_count = int(self._bar_count / 1.2)
         self._bar_count = max(int(self._bar_count), self.MIN_BAR_COUNT)
 
         self._update_x_range()
-        self._cursor.update_info()
+
+        if self._cursor:
+            self._cursor.update_info()
 
     def move_to_right(self) -> None:
         """
@@ -301,7 +317,9 @@ class ChartWidget(pg.PlotWidget):
         """
         self._right_ix = self._manager.get_count()
         self._update_x_range()
-        self._cursor.update_info()
+
+        if self._cursor:
+            self._cursor.update_info()
 
 
 class ChartCursor(QtCore.QObject):
@@ -323,7 +341,7 @@ class ChartCursor(QtCore.QObject):
         self._item_plot_map: dict[ChartItem, pg.GraphicsObject] = item_plot_map
 
         self._x: int = 0
-        self._y: int = 0
+        self._y: float = 0
         self._plot_name: str = ""
 
         self._init_ui()
@@ -461,7 +479,7 @@ class ChartCursor(QtCore.QObject):
             else:
                 label.hide()
 
-        dt: datetime = self._manager.get_datetime(self._x)
+        dt: datetime | None = self._manager.get_datetime(self._x)
         if dt:
             self._x_label.setText(dt.strftime("%Y-%m-%d %H:%M:%S"))
             self._x_label.show()
@@ -515,7 +533,10 @@ class ChartCursor(QtCore.QObject):
         """
         Update cursor after moved by left/right.
         """
-        bar: BarData = self._manager.get_bar(self._x)
+        bar: BarData | None = self._manager.get_bar(self._x)
+        if bar is None:
+            return
+
         self._y = bar.close_price
 
         self._update_line()

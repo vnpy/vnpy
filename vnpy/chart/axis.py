@@ -1,6 +1,6 @@
 from datetime import datetime
 
-import pyqtgraph as pg
+import pyqtgraph as pg      # type: ignore
 
 from .manager import BarManager
 from .base import AXIS_WIDTH, NORMAL_FONT, QtGui
@@ -29,14 +29,14 @@ class DatetimeAxis(pg.AxisItem):
         strings: list = []
 
         for ix in values:
-            dt: datetime = self._manager.get_datetime(ix)
+            dt: datetime | None = self._manager.get_datetime(ix)
 
             if not dt:
                 s: str = ""
             elif dt.hour:
-                s: str = dt.strftime("%Y-%m-%d\n%H:%M:%S")
+                s = dt.strftime("%Y-%m-%d\n%H:%M:%S")
             else:
-                s: str = dt.strftime("%Y-%m-%d")
+                s = dt.strftime("%Y-%m-%d")
 
             strings.append(s)
 

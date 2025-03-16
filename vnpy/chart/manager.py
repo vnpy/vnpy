@@ -60,25 +60,25 @@ class BarManager:
         """
         return len(self._bars)
 
-    def get_index(self, dt: datetime) -> int:
+    def get_index(self, dt: datetime) -> int | None:
         """
         Get index with datetime.
         """
         return self._datetime_index_map.get(dt, None)
 
-    def get_datetime(self, ix: float) -> datetime:
+    def get_datetime(self, ix: float) -> datetime | None:
         """
         Get datetime with index.
         """
-        ix: int = to_int(ix)
+        ix = to_int(ix)
         return self._index_datetime_map.get(ix, None)
 
-    def get_bar(self, ix: float) -> BarData:
+    def get_bar(self, ix: float) -> BarData | None:
         """
         Get bar data with index.
         """
-        ix: int = to_int(ix)
-        dt: datetime = self._index_datetime_map.get(ix, None)
+        ix = to_int(ix)
+        dt: datetime | None = self._index_datetime_map.get(ix, None)
         if not dt:
             return None
 
@@ -90,22 +90,22 @@ class BarManager:
         """
         return list(self._bars.values())
 
-    def get_price_range(self, min_ix: float = None, max_ix: float = None) -> tuple[float, float]:
+    def get_price_range(self, min_ix: float | None = None, max_ix: float | None = None) -> tuple[float, float]:
         """
         Get price range to show within given index range.
         """
         if not self._bars:
             return 0, 1
 
-        if not min_ix:
-            min_ix: int = 0
-            max_ix: int = len(self._bars) - 1
+        if min_ix is None or max_ix is None:
+            min_ix = 0
+            max_ix = len(self._bars) - 1
         else:
-            min_ix: int = to_int(min_ix)
-            max_ix: int = to_int(max_ix)
+            min_ix = to_int(min_ix)
+            max_ix = to_int(max_ix)
             max_ix = min(max_ix, self.get_count())
 
-        buf: tuple = self._price_ranges.get((min_ix, max_ix), None)
+        buf: tuple[float, float] | None = self._price_ranges.get((min_ix, max_ix), None)
         if buf:
             return buf
 
@@ -121,22 +121,22 @@ class BarManager:
         self._price_ranges[(min_ix, max_ix)] = (min_price, max_price)
         return min_price, max_price
 
-    def get_volume_range(self, min_ix: float = None, max_ix: float = None) -> tuple[float, float]:
+    def get_volume_range(self, min_ix: float | None = None, max_ix: float | None = None) -> tuple[float, float]:
         """
         Get volume range to show within given index range.
         """
         if not self._bars:
             return 0, 1
 
-        if not min_ix:
-            min_ix: int = 0
-            max_ix: int = len(self._bars) - 1
+        if min_ix is None or max_ix is None:
+            min_ix = 0
+            max_ix = len(self._bars) - 1
         else:
-            min_ix: int = to_int(min_ix)
-            max_ix: int = to_int(max_ix)
+            min_ix = to_int(min_ix)
+            max_ix = to_int(max_ix)
             max_ix = min(max_ix, self.get_count())
 
-        buf: tuple = self._volume_ranges.get((min_ix, max_ix), None)
+        buf: tuple[float, float] | None = self._volume_ranges.get((min_ix, max_ix), None)
         if buf:
             return buf
 
