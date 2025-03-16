@@ -7,7 +7,7 @@ import logging
 import sys
 from datetime import datetime, time
 from pathlib import Path
-from typing import Callable, Dict, Tuple, Union, Optional
+from typing import Callable
 from decimal import Decimal
 from math import floor, ceil
 
@@ -27,7 +27,7 @@ else:
 log_formatter: logging.Formatter = logging.Formatter("[%(asctime)s] %(message)s")
 
 
-def extract_vt_symbol(vt_symbol: str) -> Tuple[str, Exchange]:
+def extract_vt_symbol(vt_symbol: str) -> tuple[str, Exchange]:
     """
     :return: (symbol, exchange)
     """
@@ -42,7 +42,7 @@ def generate_vt_symbol(symbol: str, exchange: Exchange) -> str:
     return f"{symbol}.{exchange.value}"
 
 
-def _get_trader_dir(temp_name: str) -> Tuple[Path, Path]:
+def _get_trader_dir(temp_name: str) -> tuple[Path, Path]:
     """
     Get path where trader is running in.
     """
@@ -56,7 +56,7 @@ def _get_trader_dir(temp_name: str) -> Tuple[Path, Path]:
 
     # Otherwise use home path of system.
     home_path: Path = Path.home()
-    temp_path: Path = home_path.joinpath(temp_name)
+    temp_path = home_path.joinpath(temp_name)
 
     # Create .vntrader folder under home path if not exist.
     if not temp_path.exists():
@@ -128,9 +128,9 @@ def round_to(value: float, target: float) -> float:
     """
     Round price to price tick value.
     """
-    value: Decimal = Decimal(str(value))
-    target: Decimal = Decimal(str(target))
-    rounded: float = float(int(round(value / target)) * target)
+    decimal_value: Decimal = Decimal(str(value))
+    decimal_target: Decimal = Decimal(str(target))
+    rounded: float = float(int(round(decimal_value / decimal_target)) * decimal_target)
     return rounded
 
 
@@ -138,9 +138,9 @@ def floor_to(value: float, target: float) -> float:
     """
     Similar to math.floor function, but to target float number.
     """
-    value: Decimal = Decimal(str(value))
-    target: Decimal = Decimal(str(target))
-    result: float = float(int(floor(value / target)) * target)
+    decimal_value: Decimal = Decimal(str(value))
+    decimal_target: Decimal = Decimal(str(target))
+    result: float = float(int(floor(decimal_value / decimal_target)) * decimal_target)
     return result
 
 
@@ -148,9 +148,9 @@ def ceil_to(value: float, target: float) -> float:
     """
     Similar to math.ceil function, but to target float number.
     """
-    value: Decimal = Decimal(str(value))
-    target: Decimal = Decimal(str(target))
-    result: float = float(int(ceil(value / target)) * target)
+    decimal_value: Decimal = Decimal(str(value))
+    decimal_target: Decimal = Decimal(str(target))
+    result: float = float(int(ceil(decimal_value / decimal_target)) * decimal_target)
     return result
 
 
@@ -184,27 +184,27 @@ class BarGenerator:
         self,
         on_bar: Callable,
         window: int = 0,
-        on_window_bar: Callable = None,
+        on_window_bar: Callable | None = None,
         interval: Interval = Interval.MINUTE,
-        daily_end: time = None
+        daily_end: time | None = None
     ) -> None:
         """Constructor"""
-        self.bar: BarData = None
+        self.bar: BarData | None = None
         self.on_bar: Callable = on_bar
 
         self.interval: Interval = interval
         self.interval_count: int = 0
 
-        self.hour_bar: BarData = None
-        self.daily_bar: BarData = None
+        self.hour_bar: BarData | None = None
+        self.daily_bar: BarData | None = None
 
         self.window: int = window
-        self.window_bar: BarData = None
-        self.on_window_bar: Callable = on_window_bar
+        self.window_bar: BarData | None = None
+        self.on_window_bar: Callable | None = on_window_bar
 
-        self.last_tick: TickData = None
+        self.last_tick: TickData | None = None
 
-        self.daily_end: time = daily_end
+        self.daily_end: time | None = daily_end
         if self.interval == Interval.DAILY and not self.daily_end:
             raise RuntimeError(_("合成日K线必须传入每日收盘时间"))
 
@@ -244,20 +244,20 @@ class BarGenerator:
                 close_price=tick.last_price,
                 open_interest=tick.open_interest
             )
-        else:
+        elif self.bar:
             self.bar.high_price = max(self.bar.high_price, tick.last_price)
-            if tick.high_price > self.last_tick.high_price:
+            if self.last_tick and tick.high_price > self.last_tick.high_price:
                 self.bar.high_price = max(self.bar.high_price, tick.high_price)
 
             self.bar.low_price = min(self.bar.low_price, tick.last_price)
-            if tick.low_price < self.last_tick.low_price:
+            if self.last_tick and tick.low_price < self.last_tick.low_price:
                 self.bar.low_price = min(self.bar.low_price, tick.low_price)
 
             self.bar.close_price = tick.last_price
             self.bar.open_interest = tick.open_interest
             self.bar.datetime = tick.datetime
 
-        if self.last_tick:
+        if self.last_tick and self.bar:
             volume_change: float = tick.volume - self.last_tick.volume
             self.bar.volume += max(volume_change, 0)
 
@@ -310,7 +310,9 @@ class BarGenerator:
 
         # Check if window bar completed
         if not (bar.datetime.minute + 1) % self.window:
-            self.on_window_bar(self.window_bar)
+            if self.on_window_bar:
+                self.on_window_bar(self.window_bar)
+
             self.window_bar = None
 
     def update_bar_hour_window(self, bar: BarData) -> None:
@@ -333,7 +335,7 @@ class BarGenerator:
             )
             return
 
-        finished_bar: BarData = None
+        finished_bar: BarData | None = None
 
         # If minute is 59, update minute bar into window bar and push
         if bar.datetime.minute == 59:
@@ -358,7 +360,7 @@ class BarGenerator:
         elif bar.datetime.hour != self.hour_bar.datetime.hour:
             finished_bar = self.hour_bar
 
-            dt: datetime = bar.datetime.replace(minute=0, second=0, microsecond=0)
+            dt = bar.datetime.replace(minute=0, second=0, microsecond=0)
             self.hour_bar = BarData(
                 symbol=bar.symbol,
                 exchange=bar.exchange,
@@ -395,7 +397,8 @@ class BarGenerator:
     def on_hour_bar(self, bar: BarData) -> None:
         """"""
         if self.window == 1:
-            self.on_window_bar(bar)
+            if self.on_window_bar:
+                self.on_window_bar(bar)
         else:
             if not self.window_bar:
                 self.window_bar = BarData(
@@ -425,7 +428,10 @@ class BarGenerator:
             self.interval_count += 1
             if not self.interval_count % self.window:
                 self.interval_count = 0
-                self.on_window_bar(self.window_bar)
+
+                if self.on_window_bar:
+                    self.on_window_bar(self.window_bar)
+
                 self.window_bar = None
 
     def update_bar_daily_window(self, bar: BarData) -> None:
@@ -466,17 +472,19 @@ class BarGenerator:
                 second=0,
                 microsecond=0
             )
-            self.on_window_bar(self.daily_bar)
+
+            if self.on_window_bar:
+                self.on_window_bar(self.daily_bar)
 
             self.daily_bar = None
 
-    def generate(self) -> Optional[BarData]:
+    def generate(self) -> BarData | None:
         """
         Generate the bar data and call callback immediately.
         """
-        bar: BarData = self.bar
+        bar: BarData | None = self.bar
 
-        if self.bar:
+        if bar:
             bar.datetime = bar.datetime.replace(second=0, microsecond=0)
             self.on_bar(bar)
 
@@ -578,7 +586,7 @@ class ArrayManager(object):
         """
         return self.open_interest_array
 
-    def sma(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def sma(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         Simple moving average.
         """
@@ -587,7 +595,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def ema(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def ema(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         Exponential moving average.
         """
@@ -596,7 +604,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def kama(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def kama(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         KAMA.
         """
@@ -605,7 +613,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def wma(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def wma(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         WMA.
         """
@@ -620,16 +628,16 @@ class ArrayManager(object):
         slow_period: int,
         matype: int = 0,
         array: bool = False
-    ) -> Union[float, np.ndarray]:
+    ) -> float | np.ndarray:
         """
         APO.
         """
-        result: np.ndarray = talib.APO(self.close, fast_period, slow_period, matype)
+        result: np.ndarray = talib.APO(self.close, fast_period, slow_period, talib.MA_Type(matype))
         if array:
             return result
         return result[-1]
 
-    def cmo(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def cmo(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         CMO.
         """
@@ -638,7 +646,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def mom(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def mom(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         MOM.
         """
@@ -653,16 +661,16 @@ class ArrayManager(object):
         slow_period: int,
         matype: int = 0,
         array: bool = False
-    ) -> Union[float, np.ndarray]:
+    ) -> float | np.ndarray:
         """
         PPO.
         """
-        result: np.ndarray = talib.PPO(self.close, fast_period, slow_period, matype)
+        result: np.ndarray = talib.PPO(self.close, fast_period, slow_period, talib.MA_Type(matype))
         if array:
             return result
         return result[-1]
 
-    def roc(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def roc(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         ROC.
         """
@@ -671,7 +679,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def rocr(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def rocr(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         ROCR.
         """
@@ -680,7 +688,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def rocp(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def rocp(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         ROCP.
         """
@@ -689,7 +697,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def rocr_100(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def rocr_100(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         ROCR100.
         """
@@ -698,7 +706,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def trix(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def trix(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         TRIX.
         """
@@ -707,7 +715,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def std(self, n: int, nbdev: int = 1, array: bool = False) -> Union[float, np.ndarray]:
+    def std(self, n: int, nbdev: int = 1, array: bool = False) -> float | np.ndarray:
         """
         Standard deviation.
         """
@@ -716,7 +724,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def obv(self, array: bool = False) -> Union[float, np.ndarray]:
+    def obv(self, array: bool = False) -> float | np.ndarray:
         """
         OBV.
         """
@@ -725,7 +733,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def cci(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def cci(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         Commodity Channel Index (CCI).
         """
@@ -734,7 +742,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def atr(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def atr(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         Average True Range (ATR).
         """
@@ -743,7 +751,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def natr(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def natr(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         NATR.
         """
@@ -752,7 +760,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def rsi(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def rsi(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         Relative Strenght Index (RSI).
         """
@@ -767,10 +775,7 @@ class ArrayManager(object):
         slow_period: int,
         signal_period: int,
         array: bool = False
-    ) -> Union[
-        Tuple[np.ndarray, np.ndarray, np.ndarray],
-        Tuple[float, float, float]
-    ]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray] | tuple[float, float, float]:
         """
         MACD.
         """
@@ -781,7 +786,7 @@ class ArrayManager(object):
             return macd, signal, hist
         return macd[-1], signal[-1], hist[-1]
 
-    def adx(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def adx(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         ADX.
         """
@@ -790,7 +795,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def adxr(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def adxr(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         ADXR.
         """
@@ -799,7 +804,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def dx(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def dx(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         DX.
         """
@@ -808,7 +813,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def minus_di(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def minus_di(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         MINUS_DI.
         """
@@ -817,7 +822,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def plus_di(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def plus_di(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         PLUS_DI.
         """
@@ -826,7 +831,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def willr(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def willr(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         WILLR.
         """
@@ -841,7 +846,7 @@ class ArrayManager(object):
         time_period2: int = 14,
         time_period3: int = 28,
         array: bool = False
-    ) -> Union[float, np.ndarray]:
+    ) -> float | np.ndarray:
         """
         Ultimate Oscillator.
         """
@@ -850,7 +855,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def trange(self, array: bool = False) -> Union[float, np.ndarray]:
+    def trange(self, array: bool = False) -> float | np.ndarray:
         """
         TRANGE.
         """
@@ -864,47 +869,50 @@ class ArrayManager(object):
         n: int,
         dev: float,
         array: bool = False
-    ) -> Union[
-        Tuple[np.ndarray, np.ndarray],
-        Tuple[float, float]
-    ]:
+    ) -> tuple[np.ndarray, np.ndarray] | tuple[float, float]:
         """
         Bollinger Channel.
         """
-        mid: Union[float, np.ndarray] = self.sma(n, array)
-        std: Union[float, np.ndarray] = self.std(n, 1, array)
+        mid_array: np.ndarray = talib.SMA(self.close, n)
+        std_array: np.ndarray = talib.STDDEV(self.close, n, 1)
 
-        up: Union[float, np.ndarray] = mid + std * dev
-        down: Union[float, np.ndarray] = mid - std * dev
-
-        return up, down
+        if array:
+            up_array: np.ndarray = mid_array + std_array * dev
+            down_array: np.ndarray = mid_array - std_array * dev
+            return up_array, down_array
+        else:
+            mid: float = mid_array[-1]
+            std: float = std_array[-1]
+            up: float = mid + std * dev
+            down: float = mid - std * dev
+            return up, down
 
     def keltner(
         self,
         n: int,
         dev: float,
         array: bool = False
-    ) -> Union[
-        Tuple[np.ndarray, np.ndarray],
-        Tuple[float, float]
-    ]:
+    ) -> tuple[np.ndarray, np.ndarray] | tuple[float, float]:
         """
         Keltner Channel.
         """
-        mid: Union[float, np.ndarray] = self.sma(n, array)
-        atr: Union[float, np.ndarray] = self.atr(n, array)
+        mid_array: np.ndarray = talib.SMA(self.close, n)
+        atr_array: np.ndarray = talib.ATR(self.high, self.low, self.close, n)
 
-        up: Union[float, np.ndarray] = mid + atr * dev
-        down: Union[float, np.ndarray] = mid - atr * dev
-
-        return up, down
+        if array:
+            up_array: np.ndarray = mid_array + atr_array * dev
+            down_array: np.ndarray = mid_array - atr_array * dev
+            return up_array, down_array
+        else:
+            mid: float = mid_array[-1]
+            atr: float = atr_array[-1]
+            up: float = mid + atr * dev
+            down: float = mid - atr * dev
+            return up, down
 
     def donchian(
         self, n: int, array: bool = False
-    ) -> Union[
-        Tuple[np.ndarray, np.ndarray],
-        Tuple[float, float]
-    ]:
+    ) -> tuple[np.ndarray, np.ndarray] | tuple[float, float]:
         """
         Donchian Channel.
         """
@@ -919,10 +927,7 @@ class ArrayManager(object):
         self,
         n: int,
         array: bool = False
-    ) -> Union[
-        Tuple[np.ndarray, np.ndarray],
-        Tuple[float, float]
-    ]:
+    ) -> tuple[np.ndarray, np.ndarray] | tuple[float, float]:
         """
         Aroon indicator.
         """
@@ -932,7 +937,7 @@ class ArrayManager(object):
             return aroon_up, aroon_down
         return aroon_up[-1], aroon_down[-1]
 
-    def aroonosc(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def aroonosc(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         Aroon Oscillator.
         """
@@ -942,7 +947,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def minus_dm(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def minus_dm(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         MINUS_DM.
         """
@@ -952,7 +957,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def plus_dm(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def plus_dm(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         PLUS_DM.
         """
@@ -962,7 +967,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def mfi(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
+    def mfi(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         Money Flow Index.
         """
@@ -971,7 +976,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def ad(self, array: bool = False) -> Union[float, np.ndarray]:
+    def ad(self, array: bool = False) -> float | np.ndarray:
         """
         AD.
         """
@@ -985,7 +990,7 @@ class ArrayManager(object):
         fast_period: int,
         slow_period: int,
         array: bool = False
-    ) -> Union[float, np.ndarray]:
+    ) -> float | np.ndarray:
         """
         ADOSC.
         """
@@ -994,7 +999,7 @@ class ArrayManager(object):
             return result
         return result[-1]
 
-    def bop(self, array: bool = False) -> Union[float, np.ndarray]:
+    def bop(self, array: bool = False) -> float | np.ndarray:
         """
         BOP.
         """
@@ -1012,10 +1017,7 @@ class ArrayManager(object):
         slowd_period: int,
         slowd_matype: int,
         array: bool = False
-    ) -> Union[
-        Tuple[float, float],
-        Tuple[np.ndarray, np.ndarray]
-    ]:
+    ) -> tuple[float, float] | tuple[np.ndarray, np.ndarray]:
         """
         Stochastic Indicator
         """
@@ -1025,15 +1027,15 @@ class ArrayManager(object):
             self.close,
             fastk_period,
             slowk_period,
-            slowk_matype,
+            talib.MA_Type(slowk_matype),
             slowd_period,
-            slowd_matype
+            talib.MA_Type(slowd_matype)
         )
         if array:
             return k, d
         return k[-1], d[-1]
 
-    def sar(self, acceleration: float, maximum: float, array: bool = False) -> Union[float, np.ndarray]:
+    def sar(self, acceleration: float, maximum: float, array: bool = False) -> float | np.ndarray:
         """
         SAR.
         """
@@ -1052,11 +1054,11 @@ def virtual(func: Callable) -> Callable:
     return func
 
 
-file_handlers: Dict[str, logging.FileHandler] = {}
+file_handlers: dict[str, logging.FileHandler] = {}
 
 
 def _get_file_logger_handler(filename: str) -> logging.FileHandler:
-    handler: logging.FileHandler = file_handlers.get(filename, None)
+    handler: logging.FileHandler | None = file_handlers.get(filename, None)
     if handler is None:
         handler = logging.FileHandler(filename)
         file_handlers[filename] = handler  # Am i need a lock?
