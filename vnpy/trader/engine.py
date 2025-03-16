@@ -294,7 +294,7 @@ class LogEngine(BaseEngine):
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
-        super(LogEngine, self).__init__(main_engine, event_engine, "log")
+        super().__init__(main_engine, event_engine, "log")
 
         if not SETTINGS["log.active"]:
             return
@@ -369,7 +369,7 @@ class OmsEngine(BaseEngine):
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
-        super(OmsEngine, self).__init__(main_engine, event_engine, "oms")
+        super().__init__(main_engine, event_engine, "oms")
 
         self.ticks: dict[str, TickData] = {}
         self.orders: dict[str, OrderData] = {}
@@ -599,7 +599,7 @@ class EmailEngine(BaseEngine):
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
-        super(EmailEngine, self).__init__(main_engine, event_engine, "email")
+        super().__init__(main_engine, event_engine, "email")
 
         self.thread: Thread = Thread(target=self.run)
         self.queue: Queue = Queue()

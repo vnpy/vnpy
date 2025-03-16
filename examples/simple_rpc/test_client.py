@@ -12,7 +12,7 @@ class TestClient(RpcClient):
         """
         Constructor
         """
-        super(TestClient, self).__init__()
+        super().__init__()
 
     def callback(self, topic, data):
         """
