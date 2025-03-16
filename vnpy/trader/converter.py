@@ -1,5 +1,5 @@
 from copy import copy
-from typing import Dict, List, Set, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from .object import (
     ContractData,
@@ -11,57 +11,64 @@ from .object import (
 from .constant import Direction, Offset, Exchange
 
 if TYPE_CHECKING:
-    from .engine import MainEngine
+    from .engine import OmsEngine
 
 
 class OffsetConverter:
     """"""
 
-    def __init__(self, main_engine: "MainEngine") -> None:
+    def __init__(self, oms_engine: "OmsEngine") -> None:
         """"""
-        self.holdings: Dict[str, "PositionHolding"] = {}
+        self.holdings: dict[str, "PositionHolding"] = {}
 
-        self.get_contract = main_engine.get_contract
+        self.get_contract = oms_engine.get_contract
 
     def update_position(self, position: PositionData) -> None:
         """"""
         if not self.is_convert_required(position.vt_symbol):
             return
 
-        holding: PositionHolding = self.get_position_holding(position.vt_symbol)
-        holding.update_position(position)
+        holding: PositionHolding | None = self.get_position_holding(position.vt_symbol)
+        if holding:
+            holding.update_position(position)
 
     def update_trade(self, trade: TradeData) -> None:
         """"""
         if not self.is_convert_required(trade.vt_symbol):
             return
 
-        holding: PositionHolding = self.get_position_holding(trade.vt_symbol)
-        holding.update_trade(trade)
+        holding: PositionHolding | None = self.get_position_holding(trade.vt_symbol)
+        if holding:
+            holding.update_trade(trade)
 
     def update_order(self, order: OrderData) -> None:
         """"""
         if not self.is_convert_required(order.vt_symbol):
             return
 
-        holding: PositionHolding = self.get_position_holding(order.vt_symbol)
-        holding.update_order(order)
+        holding: PositionHolding | None = self.get_position_holding(order.vt_symbol)
+        if holding:
+            holding.update_order(order)
 
     def update_order_request(self, req: OrderRequest, vt_orderid: str) -> None:
         """"""
         if not self.is_convert_required(req.vt_symbol):
             return
 
-        holding: PositionHolding = self.get_position_holding(req.vt_symbol)
-        holding.update_order_request(req, vt_orderid)
+        holding: PositionHolding | None = self.get_position_holding(req.vt_symbol)
+        if holding:
+            holding.update_order_request(req, vt_orderid)
 
-    def get_position_holding(self, vt_symbol: str) -> "PositionHolding":
+    def get_position_holding(self, vt_symbol: str) -> "PositionHolding" | None:
         """"""
-        holding: PositionHolding = self.holdings.get(vt_symbol, None)
+        holding: PositionHolding | None = self.holdings.get(vt_symbol, None)
+
         if not holding:
-            contract: ContractData = self.get_contract(vt_symbol)
-            holding = PositionHolding(contract)
-            self.holdings[vt_symbol] = holding
+            contract: ContractData | None = self.get_contract(vt_symbol)
+            if contract:
+                holding = PositionHolding(contract)
+                self.holdings[vt_symbol] = holding
+
         return holding
 
     def convert_order_request(
@@ -69,14 +76,16 @@ class OffsetConverter:
         req: OrderRequest,
         lock: bool,
         net: bool = False
-    ) -> List[OrderRequest]:
+    ) -> list[OrderRequest]:
         """"""
         if not self.is_convert_required(req.vt_symbol):
             return [req]
 
-        holding: PositionHolding = self.get_position_holding(req.vt_symbol)
+        holding: PositionHolding | None = self.get_position_holding(req.vt_symbol)
 
-        if lock:
+        if not holding:
+            return [req]
+        elif lock:
             return holding.convert_order_request_lock(req)
         elif net:
             return holding.convert_order_request_net(req)
@@ -89,7 +98,7 @@ class OffsetConverter:
         """
         Check if the contract needs offset convert.
         """
-        contract: ContractData = self.get_contract(vt_symbol)
+        contract: ContractData | None = self.get_contract(vt_symbol)
 
         # Only contracts with long-short position mode requires convert
         if not contract:
@@ -108,7 +117,7 @@ class PositionHolding:
         self.vt_symbol: str = contract.vt_symbol
         self.exchange: Exchange = contract.exchange
 
-        self.active_orders: Dict[str, OrderData] = {}
+        self.active_orders: dict[str, OrderData] = {}
 
         self.long_pos: float = 0
         self.long_yd: float = 0
@@ -251,17 +260,17 @@ class PositionHolding:
         self.long_pos_frozen = self.long_td_frozen + self.long_yd_frozen
         self.short_pos_frozen = self.short_td_frozen + self.short_yd_frozen
 
-    def convert_order_request_shfe(self, req: OrderRequest) -> List[OrderRequest]:
+    def convert_order_request_shfe(self, req: OrderRequest) -> list[OrderRequest]:
         """"""
         if req.offset == Offset.OPEN:
             return [req]
 
         if req.direction == Direction.LONG:
-            pos_available: int = self.short_pos - self.short_pos_frozen
-            td_available: int = self.short_td - self.short_td_frozen
+            pos_available: float = self.short_pos - self.short_pos_frozen
+            td_available: float = self.short_td - self.short_td_frozen
         else:
-            pos_available: int = self.long_pos - self.long_pos_frozen
-            td_available: int = self.long_td - self.long_td_frozen
+            pos_available = self.long_pos - self.long_pos_frozen
+            td_available = self.long_td - self.long_td_frozen
 
         if req.volume > pos_available:
             return []
@@ -270,10 +279,10 @@ class PositionHolding:
             req_td.offset = Offset.CLOSETODAY
             return [req_td]
         else:
-            req_list: List[OrderRequest] = []
+            req_list: list[OrderRequest] = []
 
             if td_available > 0:
-                req_td: OrderRequest = copy(req)
+                req_td = copy(req)
                 req_td.offset = Offset.CLOSETODAY
                 req_td.volume = td_available
                 req_list.append(req_td)
@@ -285,16 +294,16 @@ class PositionHolding:
 
             return req_list
 
-    def convert_order_request_lock(self, req: OrderRequest) -> List[OrderRequest]:
+    def convert_order_request_lock(self, req: OrderRequest) -> list[OrderRequest]:
         """"""
         if req.direction == Direction.LONG:
-            td_volume: int = self.short_td
-            yd_available: int = self.short_yd - self.short_yd_frozen
+            td_volume: float = self.short_td
+            yd_available: float = self.short_yd - self.short_yd_frozen
         else:
-            td_volume: int = self.long_td
-            yd_available: int = self.long_yd - self.long_yd_frozen
+            td_volume = self.long_td
+            yd_available = self.long_yd - self.long_yd_frozen
 
-        close_yd_exchanges: Set[Exchange] = {Exchange.SHFE, Exchange.INE}
+        close_yd_exchanges: set[Exchange] = {Exchange.SHFE, Exchange.INE}
 
         # If there is td_volume, we can only lock position
         if td_volume and self.exchange not in close_yd_exchanges:
@@ -304,9 +313,9 @@ class PositionHolding:
         # If no td_volume, we close opposite yd position first
         # then open new position
         else:
-            close_volume: int = min(req.volume, yd_available)
-            open_volume: int = max(0, req.volume - yd_available)
-            req_list: List[OrderRequest] = []
+            close_volume: float = min(req.volume, yd_available)
+            open_volume: float = max(0, req.volume - yd_available)
+            req_list: list[OrderRequest] = []
 
             if yd_available:
                 req_yd: OrderRequest = copy(req)
@@ -318,31 +327,31 @@ class PositionHolding:
                 req_list.append(req_yd)
 
             if open_volume:
-                req_open: OrderRequest = copy(req)
+                req_open = copy(req)
                 req_open.offset = Offset.OPEN
                 req_open.volume = open_volume
                 req_list.append(req_open)
 
             return req_list
 
-    def convert_order_request_net(self, req: OrderRequest) -> List[OrderRequest]:
+    def convert_order_request_net(self, req: OrderRequest) -> list[OrderRequest]:
         """"""
         if req.direction == Direction.LONG:
-            pos_available: int = self.short_pos - self.short_pos_frozen
-            td_available: int = self.short_td - self.short_td_frozen
-            yd_available: int = self.short_yd - self.short_yd_frozen
+            pos_available: float = self.short_pos - self.short_pos_frozen
+            td_available: float = self.short_td - self.short_td_frozen
+            yd_available: float = self.short_yd - self.short_yd_frozen
         else:
-            pos_available: int = self.long_pos - self.long_pos_frozen
-            td_available: int = self.long_td - self.long_td_frozen
-            yd_available: int = self.long_yd - self.long_yd_frozen
+            pos_available = self.long_pos - self.long_pos_frozen
+            td_available = self.long_td - self.long_td_frozen
+            yd_available = self.long_yd - self.long_yd_frozen
 
         # Split close order to close today/yesterday for SHFE/INE exchange
         if req.exchange in {Exchange.SHFE, Exchange.INE}:
-            reqs: List[OrderRequest] = []
+            reqs: list[OrderRequest] = []
             volume_left: float = req.volume
 
             if td_available:
-                td_volume: int = min(td_available, volume_left)
+                td_volume: float = min(td_available, volume_left)
                 volume_left -= td_volume
 
                 td_req: OrderRequest = copy(req)
@@ -351,7 +360,7 @@ class PositionHolding:
                 reqs.append(td_req)
 
             if volume_left and yd_available:
-                yd_volume: int = min(yd_available, volume_left)
+                yd_volume: float = min(yd_available, volume_left)
                 volume_left -= yd_volume
 
                 yd_req: OrderRequest = copy(req)
@@ -360,7 +369,7 @@ class PositionHolding:
                 reqs.append(yd_req)
 
             if volume_left > 0:
-                open_volume: int = volume_left
+                open_volume: float = volume_left
 
                 open_req: OrderRequest = copy(req)
                 open_req.offset = Offset.OPEN
@@ -370,11 +379,11 @@ class PositionHolding:
             return reqs
         # Just use close for other exchanges
         else:
-            reqs: List[OrderRequest] = []
-            volume_left: float = req.volume
+            reqs = []
+            volume_left = req.volume
 
             if pos_available:
-                close_volume: int = min(pos_available, volume_left)
+                close_volume: float = min(pos_available, volume_left)
                 volume_left -= pos_available
 
                 close_req: OrderRequest = copy(req)
@@ -383,9 +392,9 @@ class PositionHolding:
                 reqs.append(close_req)
 
             if volume_left > 0:
-                open_volume: int = volume_left
+                open_volume = volume_left
 
-                open_req: OrderRequest = copy(req)
+                open_req = copy(req)
                 open_req.offset = Offset.OPEN
                 open_req.volume = open_volume
                 reqs.append(open_req)
