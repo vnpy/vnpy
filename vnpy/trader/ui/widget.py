@@ -6,7 +6,7 @@ import csv
 from datetime import datetime
 import platform
 from enum import Enum
-from typing import cast
+from typing import cast, Any
 from copy import copy
 from tzlocal import get_localzone_name
 
@@ -51,20 +51,20 @@ class BaseCell(QtWidgets.QTableWidgetItem):
     General cell used in tablewidgets.
     """
 
-    def __init__(self, content: object, data: object) -> None:
+    def __init__(self, content: Any, data: Any) -> None:
         """"""
         super().__init__()
         self.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.set_content(content, data)
 
-    def set_content(self, content: object, data: object) -> None:
+    def set_content(self, content: Any, data: Any) -> None:
         """
         Set text content.
         """
         self.setText(str(content))
         self._data = data
 
-    def get_data(self) -> object:
+    def get_data(self) -> Any:
         """
         Get data object.
         """
@@ -76,11 +76,11 @@ class EnumCell(BaseCell):
     Cell used for showing enum data.
     """
 
-    def __init__(self, content: Enum, data: object) -> None:
+    def __init__(self, content: Enum, data: Any) -> None:
         """"""
         super().__init__(content, data)
 
-    def set_content(self, content: object, data: object) -> None:
+    def set_content(self, content: Any, data: Any) -> None:
         """
         Set text using enum.constant.value.
         """
@@ -93,11 +93,11 @@ class DirectionCell(EnumCell):
     Cell used for showing direction data.
     """
 
-    def __init__(self, content: Enum, data: object) -> None:
+    def __init__(self, content: Enum, data: Any) -> None:
         """"""
         super().__init__(content, data)
 
-    def set_content(self, content: object, data: object) -> None:
+    def set_content(self, content: Any, data: Any) -> None:
         """
         Cell color is set according to direction.
         """
@@ -114,7 +114,7 @@ class BidCell(BaseCell):
     Cell used for showing bid price and volume.
     """
 
-    def __init__(self, content: object, data: object) -> None:
+    def __init__(self, content: Any, data: Any) -> None:
         """"""
         super().__init__(content, data)
 
@@ -126,7 +126,7 @@ class AskCell(BaseCell):
     Cell used for showing ask price and volume.
     """
 
-    def __init__(self, content: object, data: object) -> None:
+    def __init__(self, content: Any, data: Any) -> None:
         """"""
         super().__init__(content, data)
 
@@ -138,11 +138,11 @@ class PnlCell(BaseCell):
     Cell used for showing pnl data.
     """
 
-    def __init__(self, content: object, data: object) -> None:
+    def __init__(self, content: Any, data: Any) -> None:
         """"""
         super().__init__(content, data)
 
-    def set_content(self, content: object, data: object) -> None:
+    def set_content(self, content: Any, data: Any) -> None:
         """
         Cell color is set based on whether pnl is
         positive or negative.
@@ -162,11 +162,11 @@ class TimeCell(BaseCell):
 
     local_tz = ZoneInfo(get_localzone_name())
 
-    def __init__(self, content: object, data: object) -> None:
+    def __init__(self, content: Any, data: Any) -> None:
         """"""
         super().__init__(content, data)
 
-    def set_content(self, content: datetime, data: object) -> None:
+    def set_content(self, content: datetime, data: Any) -> None:
         """"""
         if content is None:
             return
@@ -189,11 +189,11 @@ class DateCell(BaseCell):
     Cell used for showing date string from datetime object.
     """
 
-    def __init__(self, content: object, data: object) -> None:
+    def __init__(self, content: Any, data: Any) -> None:
         """"""
         super().__init__(content, data)
 
-    def set_content(self, content: object, data: object) -> None:
+    def set_content(self, content: Any, data: Any) -> None:
         """"""
         if content is None:
             return
@@ -207,7 +207,7 @@ class MsgCell(BaseCell):
     Cell used for showing msg data.
     """
 
-    def __init__(self, content: str, data: object) -> None:
+    def __init__(self, content: str, data: Any) -> None:
         """"""
         super().__init__(content, data)
         self.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter)
@@ -303,7 +303,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
         if self.sorting:
             self.setSortingEnabled(True)
 
-    def insert_new_row(self, data: object) -> None:
+    def insert_new_row(self, data: Any) -> None:
         """
         Insert a new row at the top of table.
         """
@@ -324,7 +324,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
             key: str = data.__getattribute__(self.data_key)
             self.cells[key] = row_cells
 
-    def update_old_row(self, data: object) -> None:
+    def update_old_row(self, data: Any) -> None:
         """
         Update an old row in table.
         """
@@ -1139,7 +1139,7 @@ class ContractManager(QtWidgets.QWidget):
 
         for row, contract in enumerate(contracts):
             for column, name in enumerate(self.headers.keys()):
-                value: object = getattr(contract, name)
+                value: Any = getattr(contract, name)
 
                 if value in {None, 0, 0.0}:
                     value = ""
@@ -1212,7 +1212,7 @@ class GlobalDialog(QtWidgets.QDialog):
         """"""
         super().__init__()
 
-        self.widgets: dict[str, object] = {}
+        self.widgets: dict[str, tuple[QtWidgets.QLineEdit, type]] = {}
 
         self.init_ui()
 

@@ -6,7 +6,7 @@ from collections import defaultdict
 from queue import Empty, Queue
 from threading import Thread
 from time import sleep
-from typing import Callable
+from typing import Callable, Any
 
 EVENT_TIMER = "eTimer"
 
@@ -18,10 +18,10 @@ class Event:
     object which contains the real data.
     """
 
-    def __init__(self, type: str, data: object | None = None) -> None:
+    def __init__(self, type: str, data: Any = None) -> None:
         """"""
         self.type: str = type
-        self.data: object | None = data
+        self.data: Any = data
 
 
 # Defines handler function to be used in event engine.

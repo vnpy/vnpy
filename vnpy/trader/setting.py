@@ -8,7 +8,7 @@ from tzlocal import get_localzone_name
 from .utility import load_json
 
 
-SETTINGS: dict[str, str | int | bool] = {
+SETTINGS: dict = {
     "font.family": "微软雅黑",
     "font.size": 12,
 
