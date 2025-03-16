@@ -1,0 +1,67 @@
+[project]
+name = "vnpy"
+dynamic = ["version"]
+description = "A framework for developing quant trading systems."
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Xiaoyou Chen", email = "xiaoyou.chen@mail.vnpy.com"}]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Natural Language :: Chinese (Simplified)",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "tzlocal==5.3.1",
+    "PySide6==6.8.2.1",
+    "pyqtgraph==0.13.7",
+    "qdarkstyle==3.2.3",
+    "numpy==2.2.3",
+    "pandas==2.2.3",
+    "matplotlib==3.10.1",
+    "seaborn==0.13.2",
+    "ta-lib==0.6.3",
+    "deap==1.4.2",
+    "pyzmq==26.3.0",
+    "plotly==6.0.0",
+    "tqdm==4.67.1",
+]
+keywords = ["quant", "quantitative", "investment", "trading", "algotrading"]
+
+[project.urls]
+"Homepage" = "https://www.vnpy.com"
+"Documentation" = "https://www.vnpy.com/docs"
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {attr = "vnpy.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["vnpy*"]
+
+[tool.setuptools.package-data]
+"vnpy" = ["**/*.ico", "**/*.po", "**/*.mo"]
+
+[tool.flake8]
+exclude = ["venv", "build", "__pycache__", "__init__.py"]
+ignore = ["E501", "W503"]
+
+[tool.build-scripts]
+pre-build = "vnpy/trader/locale/generate_mo.py"
