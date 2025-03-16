@@ -9,7 +9,7 @@ from datetime import datetime
 from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
-from typing import Type, Optional, Callable, TypeVar
+from typing import Type, Callable, TypeVar
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -114,12 +114,12 @@ class MainEngine:
         self.add_engine(LogEngine)
 
         oms_engine: OmsEngine = self.add_engine(OmsEngine)
-        self.get_order: Callable[[str], Optional[OrderData]] = oms_engine.get_order
-        self.get_trade: Callable[[str], Optional[TradeData]] = oms_engine.get_trade
-        self.get_position: Callable[[str], Optional[PositionData]] = oms_engine.get_position
-        self.get_account: Callable[[str], Optional[AccountData]] = oms_engine.get_account
-        self.get_contract: Callable[[str], Optional[ContractData]] = oms_engine.get_contract
-        self.get_quote: Callable[[str], Optional[QuoteData]] = oms_engine.get_quote
+        self.get_order: Callable[[str], OrderData | None] = oms_engine.get_order
+        self.get_trade: Callable[[str], TradeData | None] = oms_engine.get_trade
+        self.get_position: Callable[[str], PositionData | None] = oms_engine.get_position
+        self.get_account: Callable[[str], AccountData | None] = oms_engine.get_account
+        self.get_contract: Callable[[str], ContractData | None] = oms_engine.get_contract
+        self.get_quote: Callable[[str], QuoteData | None] = oms_engine.get_quote
         self.get_all_ticks: Callable[[], list[TickData]] = oms_engine.get_all_ticks
         self.get_all_orders: Callable[[], list[OrderData]] = oms_engine.get_all_orders
         self.get_all_trades: Callable[[], list[TradeData]] = oms_engine.get_all_trades
@@ -162,7 +162,7 @@ class MainEngine:
             self.write_log(_("找不到引擎：{}").format(engine_name))
         return engine
 
-    def get_default_setting(self, gateway_name: str) -> Optional[dict[str, str | bool | int | float]]:
+    def get_default_setting(self, gateway_name: str) -> dict[str, str | bool | int | float] | None:
         """
         Get default setting dict of a specific gateway.
         """
@@ -241,7 +241,7 @@ class MainEngine:
         if gateway:
             gateway.cancel_quote(req)
 
-    def query_history(self, req: HistoryRequest, gateway_name: str) -> Optional[list[BarData]]:
+    def query_history(self, req: HistoryRequest, gateway_name: str) -> list[BarData]:
         """
         Query bar history data from a specific gateway.
         """
@@ -249,7 +249,7 @@ class MainEngine:
         if gateway:
             return gateway.query_history(req)
         else:
-            return None
+            return []
 
     def close(self) -> None:
         """
@@ -464,43 +464,43 @@ class OmsEngine(BaseEngine):
         elif quote.vt_quoteid in self.active_quotes:
             self.active_quotes.pop(quote.vt_quoteid)
 
-    def get_tick(self, vt_symbol: str) -> Optional[TickData]:
+    def get_tick(self, vt_symbol: str) -> TickData | None:
         """
         Get latest market tick data by vt_symbol.
         """
         return self.ticks.get(vt_symbol, None)
 
-    def get_order(self, vt_orderid: str) -> Optional[OrderData]:
+    def get_order(self, vt_orderid: str) -> OrderData | None:
         """
         Get latest order data by vt_orderid.
         """
         return self.orders.get(vt_orderid, None)
 
-    def get_trade(self, vt_tradeid: str) -> Optional[TradeData]:
+    def get_trade(self, vt_tradeid: str) -> TradeData | None:
         """
         Get trade data by vt_tradeid.
         """
         return self.trades.get(vt_tradeid, None)
 
-    def get_position(self, vt_positionid: str) -> Optional[PositionData]:
+    def get_position(self, vt_positionid: str) -> PositionData | None:
         """
         Get latest position data by vt_positionid.
         """
         return self.positions.get(vt_positionid, None)
 
-    def get_account(self, vt_accountid: str) -> Optional[AccountData]:
+    def get_account(self, vt_accountid: str) -> AccountData | None:
         """
         Get latest account data by vt_accountid.
         """
         return self.accounts.get(vt_accountid, None)
 
-    def get_contract(self, vt_symbol: str) -> Optional[ContractData]:
+    def get_contract(self, vt_symbol: str) -> ContractData | None:
         """
         Get contract data by vt_symbol.
         """
         return self.contracts.get(vt_symbol, None)
 
-    def get_quote(self, vt_quoteid: str) -> Optional[QuoteData]:
+    def get_quote(self, vt_quoteid: str) -> QuoteData | None:
         """
         Get latest quote data by vt_orderid.
         """

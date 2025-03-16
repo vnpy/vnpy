@@ -1,6 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Callable
-from copy import copy
 
 from vnpy.event import Event, EventEngine
 from .event import (

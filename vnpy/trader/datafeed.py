@@ -1,6 +1,6 @@
 from abc import ABC
 from types import ModuleType
-from typing import Optional, Callable
+from typing import Callable
 from importlib import import_module
 
 from .object import HistoryRequest, TickData, BarData
@@ -19,17 +19,19 @@ class BaseDatafeed(ABC):
         """
         pass
 
-    def query_bar_history(self, req: HistoryRequest, output: Callable = print) -> Optional[list[BarData]]:
+    def query_bar_history(self, req: HistoryRequest, output: Callable = print) -> list[BarData]:
         """
         Query history bar data.
         """
         output(_("查询K线数据失败：没有正确配置数据服务"))
+        return []
 
-    def query_tick_history(self, req: HistoryRequest, output: Callable = print) -> Optional[list[TickData]]:
+    def query_tick_history(self, req: HistoryRequest, output: Callable = print) -> list[TickData]:
         """
         Query history tick data.
         """
         output(_("查询Tick数据失败：没有正确配置数据服务"))
+        return []
 
 
 datafeed: BaseDatafeed = None
