@@ -6,7 +6,7 @@ import webbrowser
 import types
 import threading
 
-import qdarkstyle
+import qdarkstyle  # type: ignore
 from PySide6 import QtGui, QtWidgets, QtCore
 
 from ..setting import SETTINGS
@@ -15,10 +15,6 @@ from ..locale import _
 
 
 Qt = QtCore.Qt
-QtCore.pyqtSignal = QtCore.Signal
-QtWidgets.QAction = QtGui.QAction
-QtCore.QDate.toPyDate = QtCore.QDate.toPython
-QtCore.QDateTime.toPyDate = QtCore.QDateTime.toPython
 
 
 def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
@@ -43,13 +39,10 @@ def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
             app_name
         )
 
-    # Hide help button for all dialogs
-    # qapp.setAttribute(QtCore.Qt.AA_DisableWindowContextHelpButton)
-
     # Exception Handling
     exception_widget: ExceptionWidget = ExceptionWidget()
 
-    def excepthook(exctype: type, value: Exception, tb: types.TracebackType) -> None:
+    def excepthook(exctype: type[BaseException], value: BaseException, tb: types.TracebackType | None) -> None:
         """Show exception detail with QMessageBox."""
         sys.__excepthook__(exctype, value, tb)
 
@@ -58,15 +51,15 @@ def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
 
     sys.excepthook = excepthook
 
-    if sys.version_info >= (3, 8):
-        def threading_excepthook(args: threading.ExceptHookArgs) -> None:
-            """Show exception detail from background threads with QMessageBox."""
+    def threading_excepthook(args: threading.ExceptHookArgs) -> None:
+        """Show exception detail from background threads with QMessageBox."""
+        if args.exc_value and args.exc_traceback:
             sys.__excepthook__(args.exc_type, args.exc_value, args.exc_traceback)
 
-            msg: str = "".join(traceback.format_exception(args.exc_type, args.exc_value, args.exc_traceback))
-            exception_widget.signal.emit(msg)
+        msg: str = "".join(traceback.format_exception(args.exc_type, args.exc_value, args.exc_traceback))
+        exception_widget.signal.emit(msg)
 
-        threading.excepthook = threading_excepthook
+    threading.excepthook = threading_excepthook
 
     return qapp
 
@@ -75,7 +68,7 @@ class ExceptionWidget(QtWidgets.QWidget):
     """"""
     signal: QtCore.Signal = QtCore.Signal(str)
 
-    def __init__(self, parent: QtWidgets.QWidget = None) -> None:
+    def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         """"""
         super().__init__(parent)
 
