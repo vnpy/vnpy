@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 import pyqtgraph as pg      # type: ignore
 
@@ -9,7 +10,7 @@ from .base import AXIS_WIDTH, NORMAL_FONT, QtGui
 class DatetimeAxis(pg.AxisItem):
     """"""
 
-    def __init__(self, manager: BarManager, *args, **kwargs) -> None:
+    def __init__(self, manager: BarManager, *args: Any, **kwargs: Any) -> None:
         """"""
         super().__init__(*args, **kwargs)
 

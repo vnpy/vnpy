@@ -58,12 +58,9 @@ class RpcClient:
         Realize remote call function
         """
         # Perform remote call task
-        def dorpc(*args, **kwargs) -> Any:
+        def dorpc(*args: Any, **kwargs: Any) -> Any:
             # Get timeout value from kwargs, default value is 30 seconds
-            if "timeout" in kwargs:
-                timeout = kwargs.pop("timeout")
-            else:
-                timeout = 30000
+            timeout: int = kwargs.pop("timeout", 30000)
 
             # Generate request
             req: list = [name, args, kwargs]

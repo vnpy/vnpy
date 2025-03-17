@@ -17,7 +17,7 @@ class BaseDatafeed(ABC):
         """
         Initialize datafeed service connection.
         """
-        pass
+        return False
 
     def query_bar_history(self, req: HistoryRequest, output: Callable = print) -> list[BarData]:
         """
@@ -34,7 +34,7 @@ class BaseDatafeed(ABC):
         return []
 
 
-datafeed: BaseDatafeed = None
+datafeed: BaseDatafeed | None = None
 
 
 def get_datafeed() -> BaseDatafeed:
@@ -66,4 +66,4 @@ def get_datafeed() -> BaseDatafeed:
 
             print(_("无法加载数据服务模块，请运行 pip install {} 尝试安装").format(module_name))
 
-    return datafeed
+    return datafeed     # type: ignore

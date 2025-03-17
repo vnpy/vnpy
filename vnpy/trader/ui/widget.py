@@ -166,7 +166,7 @@ class TimeCell(BaseCell):
         """"""
         super().__init__(content, data)
 
-    def set_content(self, content: datetime, data: Any) -> None:
+    def set_content(self, content: datetime | None, data: Any) -> None:
         """"""
         if content is None:
             return
@@ -565,7 +565,7 @@ class QuoteMonitor(BaseMonitor):
         "gateway_name": {"display": _("接口"), "cell": BaseCell, "update": False},
     }
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """
         Connect signal.
         """
@@ -1042,7 +1042,7 @@ class ActiveOrderMonitor(OrderMonitor):
     Monitor which shows active order only.
     """
 
-    def process_event(self, event) -> None:
+    def process_event(self, event: Event) -> None:
         """
         Hides the row if order is not active.
         """

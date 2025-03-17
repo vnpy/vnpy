@@ -590,37 +590,45 @@ class ArrayManager(object):
         """
         Simple moving average.
         """
-        result: np.ndarray = talib.SMA(self.close, n)
+        result_array: np.ndarray = talib.SMA(self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def ema(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         Exponential moving average.
         """
-        result: np.ndarray = talib.EMA(self.close, n)
+        result_array: np.ndarray = talib.EMA(self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def kama(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         KAMA.
         """
-        result: np.ndarray = talib.KAMA(self.close, n)
+        result_array: np.ndarray = talib.KAMA(self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def wma(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         WMA.
         """
-        result: np.ndarray = talib.WMA(self.close, n)
+        result_array: np.ndarray = talib.WMA(self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def apo(
         self,
@@ -632,28 +640,34 @@ class ArrayManager(object):
         """
         APO.
         """
-        result: np.ndarray = talib.APO(self.close, fast_period, slow_period, talib.MA_Type(matype))
+        result_array: np.ndarray = talib.APO(self.close, fast_period, slow_period, talib.MA_Type(matype))
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def cmo(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         CMO.
         """
-        result: np.ndarray = talib.CMO(self.close, n)
+        result_array: np.ndarray = talib.CMO(self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def mom(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         MOM.
         """
-        result: np.ndarray = talib.MOM(self.close, n)
+        result_array: np.ndarray = talib.MOM(self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def ppo(
         self,
@@ -665,109 +679,133 @@ class ArrayManager(object):
         """
         PPO.
         """
-        result: np.ndarray = talib.PPO(self.close, fast_period, slow_period, talib.MA_Type(matype))
+        result_array: np.ndarray = talib.PPO(self.close, fast_period, slow_period, talib.MA_Type(matype))
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def roc(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         ROC.
         """
-        result: np.ndarray = talib.ROC(self.close, n)
+        result_array: np.ndarray = talib.ROC(self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def rocr(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         ROCR.
         """
-        result: np.ndarray = talib.ROCR(self.close, n)
+        result_array: np.ndarray = talib.ROCR(self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def rocp(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         ROCP.
         """
-        result: np.ndarray = talib.ROCP(self.close, n)
+        result_array: np.ndarray = talib.ROCP(self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def rocr_100(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         ROCR100.
         """
-        result: np.ndarray = talib.ROCR100(self.close, n)
+        result_array: np.ndarray = talib.ROCR100(self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def trix(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         TRIX.
         """
-        result: np.ndarray = talib.TRIX(self.close, n)
+        result_array: np.ndarray = talib.TRIX(self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def std(self, n: int, nbdev: int = 1, array: bool = False) -> float | np.ndarray:
         """
         Standard deviation.
         """
-        result: np.ndarray = talib.STDDEV(self.close, n, nbdev)
+        result_array: np.ndarray = talib.STDDEV(self.close, n, nbdev)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def obv(self, array: bool = False) -> float | np.ndarray:
         """
         OBV.
         """
-        result: np.ndarray = talib.OBV(self.close, self.volume)
+        result_array: np.ndarray = talib.OBV(self.close, self.volume)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def cci(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         Commodity Channel Index (CCI).
         """
-        result: np.ndarray = talib.CCI(self.high, self.low, self.close, n)
+        result_array: np.ndarray = talib.CCI(self.high, self.low, self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def atr(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         Average True Range (ATR).
         """
-        result: np.ndarray = talib.ATR(self.high, self.low, self.close, n)
+        result_array: np.ndarray = talib.ATR(self.high, self.low, self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def natr(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         NATR.
         """
-        result: np.ndarray = talib.NATR(self.high, self.low, self.close, n)
+        result_array: np.ndarray = talib.NATR(self.high, self.low, self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def rsi(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         Relative Strenght Index (RSI).
         """
-        result: np.ndarray = talib.RSI(self.close, n)
+        result_array: np.ndarray = talib.RSI(self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def macd(
         self,
@@ -790,55 +828,67 @@ class ArrayManager(object):
         """
         ADX.
         """
-        result: np.ndarray = talib.ADX(self.high, self.low, self.close, n)
+        result_array: np.ndarray = talib.ADX(self.high, self.low, self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def adxr(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         ADXR.
         """
-        result: np.ndarray = talib.ADXR(self.high, self.low, self.close, n)
+        result_array: np.ndarray = talib.ADXR(self.high, self.low, self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def dx(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         DX.
         """
-        result: np.ndarray = talib.DX(self.high, self.low, self.close, n)
+        result_array: np.ndarray = talib.DX(self.high, self.low, self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def minus_di(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         MINUS_DI.
         """
-        result: np.ndarray = talib.MINUS_DI(self.high, self.low, self.close, n)
+        result_array: np.ndarray = talib.MINUS_DI(self.high, self.low, self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def plus_di(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         PLUS_DI.
         """
-        result: np.ndarray = talib.PLUS_DI(self.high, self.low, self.close, n)
+        result_array: np.ndarray = talib.PLUS_DI(self.high, self.low, self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def willr(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         WILLR.
         """
-        result: np.ndarray = talib.WILLR(self.high, self.low, self.close, n)
+        result_array: np.ndarray = talib.WILLR(self.high, self.low, self.close, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def ultosc(
         self,
@@ -850,19 +900,23 @@ class ArrayManager(object):
         """
         Ultimate Oscillator.
         """
-        result: np.ndarray = talib.ULTOSC(self.high, self.low, self.close, time_period1, time_period2, time_period3)
+        result_array: np.ndarray = talib.ULTOSC(self.high, self.low, self.close, time_period1, time_period2, time_period3)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def trange(self, array: bool = False) -> float | np.ndarray:
         """
         TRANGE.
         """
-        result: np.ndarray = talib.TRANGE(self.high, self.low, self.close)
+        result_array: np.ndarray = talib.TRANGE(self.high, self.low, self.close)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def boll(
         self,
@@ -941,49 +995,59 @@ class ArrayManager(object):
         """
         Aroon Oscillator.
         """
-        result: np.ndarray = talib.AROONOSC(self.high, self.low, n)
+        result_array: np.ndarray = talib.AROONOSC(self.high, self.low, n)
 
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def minus_dm(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         MINUS_DM.
         """
-        result: np.ndarray = talib.MINUS_DM(self.high, self.low, n)
+        result_array: np.ndarray = talib.MINUS_DM(self.high, self.low, n)
 
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def plus_dm(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         PLUS_DM.
         """
-        result: np.ndarray = talib.PLUS_DM(self.high, self.low, n)
+        result_array: np.ndarray = talib.PLUS_DM(self.high, self.low, n)
 
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def mfi(self, n: int, array: bool = False) -> float | np.ndarray:
         """
         Money Flow Index.
         """
-        result: np.ndarray = talib.MFI(self.high, self.low, self.close, self.volume, n)
+        result_array: np.ndarray = talib.MFI(self.high, self.low, self.close, self.volume, n)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def ad(self, array: bool = False) -> float | np.ndarray:
         """
         AD.
         """
-        result: np.ndarray = talib.AD(self.high, self.low, self.close, self.volume)
+        result_array: np.ndarray = talib.AD(self.high, self.low, self.close, self.volume)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def adosc(
         self,
@@ -994,20 +1058,24 @@ class ArrayManager(object):
         """
         ADOSC.
         """
-        result: np.ndarray = talib.ADOSC(self.high, self.low, self.close, self.volume, fast_period, slow_period)
+        result_array: np.ndarray = talib.ADOSC(self.high, self.low, self.close, self.volume, fast_period, slow_period)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def bop(self, array: bool = False) -> float | np.ndarray:
         """
         BOP.
         """
-        result: np.ndarray = talib.BOP(self.open, self.high, self.low, self.close)
+        result_array: np.ndarray = talib.BOP(self.open, self.high, self.low, self.close)
 
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
     def stoch(
         self,
@@ -1039,10 +1107,12 @@ class ArrayManager(object):
         """
         SAR.
         """
-        result: np.ndarray = talib.SAR(self.high, self.low, acceleration, maximum)
+        result_array: np.ndarray = talib.SAR(self.high, self.low, acceleration, maximum)
         if array:
-            return result
-        return result[-1]
+            return result_array
+
+        result_value: float = result_array[-1]
+        return result_value
 
 
 def virtual(func: Callable) -> Callable:

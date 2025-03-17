@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     widget.update_history(history)
 
-    def update_bar():
+    def update_bar() -> None:
         bar = new_data.pop(0)
         widget.update_bar(bar)
 
