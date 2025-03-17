@@ -14,101 +14,6 @@ if TYPE_CHECKING:
     from .engine import OmsEngine
 
 
-class OffsetConverter:
-    """"""
-
-    def __init__(self, oms_engine: "OmsEngine") -> None:
-        """"""
-        self.holdings: dict[str, "PositionHolding"] = {}
-
-        self.get_contract = oms_engine.get_contract
-
-    def update_position(self, position: PositionData) -> None:
-        """"""
-        if not self.is_convert_required(position.vt_symbol):
-            return
-
-        holding: PositionHolding | None = self.get_position_holding(position.vt_symbol)
-        if holding:
-            holding.update_position(position)
-
-    def update_trade(self, trade: TradeData) -> None:
-        """"""
-        if not self.is_convert_required(trade.vt_symbol):
-            return
-
-        holding: PositionHolding | None = self.get_position_holding(trade.vt_symbol)
-        if holding:
-            holding.update_trade(trade)
-
-    def update_order(self, order: OrderData) -> None:
-        """"""
-        if not self.is_convert_required(order.vt_symbol):
-            return
-
-        holding: PositionHolding | None = self.get_position_holding(order.vt_symbol)
-        if holding:
-            holding.update_order(order)
-
-    def update_order_request(self, req: OrderRequest, vt_orderid: str) -> None:
-        """"""
-        if not self.is_convert_required(req.vt_symbol):
-            return
-
-        holding: PositionHolding | None = self.get_position_holding(req.vt_symbol)
-        if holding:
-            holding.update_order_request(req, vt_orderid)
-
-    def get_position_holding(self, vt_symbol: str) -> "PositionHolding" | None:
-        """"""
-        holding: PositionHolding | None = self.holdings.get(vt_symbol, None)
-
-        if not holding:
-            contract: ContractData | None = self.get_contract(vt_symbol)
-            if contract:
-                holding = PositionHolding(contract)
-                self.holdings[vt_symbol] = holding
-
-        return holding
-
-    def convert_order_request(
-        self,
-        req: OrderRequest,
-        lock: bool,
-        net: bool = False
-    ) -> list[OrderRequest]:
-        """"""
-        if not self.is_convert_required(req.vt_symbol):
-            return [req]
-
-        holding: PositionHolding | None = self.get_position_holding(req.vt_symbol)
-
-        if not holding:
-            return [req]
-        elif lock:
-            return holding.convert_order_request_lock(req)
-        elif net:
-            return holding.convert_order_request_net(req)
-        elif req.exchange in {Exchange.SHFE, Exchange.INE}:
-            return holding.convert_order_request_shfe(req)
-        else:
-            return [req]
-
-    def is_convert_required(self, vt_symbol: str) -> bool:
-        """
-        Check if the contract needs offset convert.
-        """
-        contract: ContractData | None = self.get_contract(vt_symbol)
-
-        # Only contracts with long-short position mode requires convert
-        if not contract:
-            return False
-        elif contract.net_position:
-            return False
-        else:
-            return True
-
-
 class PositionHolding:
     """"""
 
@@ -400,3 +305,98 @@ class PositionHolding:
                 reqs.append(open_req)
 
             return reqs
+
+
+class OffsetConverter:
+    """"""
+
+    def __init__(self, oms_engine: "OmsEngine") -> None:
+        """"""
+        self.holdings: dict[str, PositionHolding] = {}
+
+        self.get_contract = oms_engine.get_contract
+
+    def update_position(self, position: PositionData) -> None:
+        """"""
+        if not self.is_convert_required(position.vt_symbol):
+            return
+
+        holding: PositionHolding | None = self.get_position_holding(position.vt_symbol)
+        if holding:
+            holding.update_position(position)
+
+    def update_trade(self, trade: TradeData) -> None:
+        """"""
+        if not self.is_convert_required(trade.vt_symbol):
+            return
+
+        holding: PositionHolding | None = self.get_position_holding(trade.vt_symbol)
+        if holding:
+            holding.update_trade(trade)
+
+    def update_order(self, order: OrderData) -> None:
+        """"""
+        if not self.is_convert_required(order.vt_symbol):
+            return
+
+        holding: PositionHolding | None = self.get_position_holding(order.vt_symbol)
+        if holding:
+            holding.update_order(order)
+
+    def update_order_request(self, req: OrderRequest, vt_orderid: str) -> None:
+        """"""
+        if not self.is_convert_required(req.vt_symbol):
+            return
+
+        holding: PositionHolding | None = self.get_position_holding(req.vt_symbol)
+        if holding:
+            holding.update_order_request(req, vt_orderid)
+
+    def get_position_holding(self, vt_symbol: str) -> PositionHolding | None:
+        """"""
+        holding: PositionHolding | None = self.holdings.get(vt_symbol, None)
+
+        if not holding:
+            contract: ContractData | None = self.get_contract(vt_symbol)
+            if contract:
+                holding = PositionHolding(contract)
+                self.holdings[vt_symbol] = holding
+
+        return holding
+
+    def convert_order_request(
+        self,
+        req: OrderRequest,
+        lock: bool,
+        net: bool = False
+    ) -> list[OrderRequest]:
+        """"""
+        if not self.is_convert_required(req.vt_symbol):
+            return [req]
+
+        holding: PositionHolding | None = self.get_position_holding(req.vt_symbol)
+
+        if not holding:
+            return [req]
+        elif lock:
+            return holding.convert_order_request_lock(req)
+        elif net:
+            return holding.convert_order_request_net(req)
+        elif req.exchange in {Exchange.SHFE, Exchange.INE}:
+            return holding.convert_order_request_shfe(req)
+        else:
+            return [req]
+
+    def is_convert_required(self, vt_symbol: str) -> bool:
+        """
+        Check if the contract needs offset convert.
+        """
+        contract: ContractData | None = self.get_contract(vt_symbol)
+
+        # Only contracts with long-short position mode requires convert
+        if not contract:
+            return False
+        elif contract.net_position:
+            return False
+        else:
+            return True

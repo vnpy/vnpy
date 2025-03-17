@@ -1,7 +1,6 @@
-import logging
-from logging import Logger
 import smtplib
 import os
+import sys
 import traceback
 from abc import ABC
 from pathlib import Path
@@ -10,6 +9,8 @@ from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
 from typing import Type, Callable, TypeVar
+
+from loguru import logger
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -48,6 +49,27 @@ from .locale import _
 
 
 EngineType = TypeVar("EngineType", bound="BaseEngine")
+
+
+class BaseEngine(ABC):
+    """
+    Abstract class for implementing a function engine.
+    """
+
+    def __init__(
+        self,
+        main_engine: "MainEngine",
+        event_engine: EventEngine,
+        engine_name: str,
+    ) -> None:
+        """"""
+        self.main_engine: MainEngine = main_engine
+        self.event_engine: EventEngine = event_engine
+        self.engine_name: str = engine_name
+
+    def close(self) -> None:
+        """"""
+        pass
 
 
 class MainEngine:
@@ -97,7 +119,7 @@ class MainEngine:
 
         return gateway
 
-    def add_app(self, app_class: Type[BaseApp]) -> "BaseEngine":
+    def add_app(self, app_class: Type[BaseApp]) -> BaseEngine:
         """
         Add app.
         """
@@ -153,7 +175,7 @@ class MainEngine:
             self.write_log(_("找不到底层接口：{}").format(gateway_name))
         return gateway
 
-    def get_engine(self, engine_name: str) -> "BaseEngine" | None:
+    def get_engine(self, engine_name: str) -> BaseEngine | None:
         """
         Return engine object by name.
         """
@@ -266,100 +288,62 @@ class MainEngine:
             gateway.close()
 
 
-class BaseEngine(ABC):
-    """
-    Abstract class for implementing a function engine.
-    """
-
-    def __init__(
-        self,
-        main_engine: MainEngine,
-        event_engine: EventEngine,
-        engine_name: str,
-    ) -> None:
-        """"""
-        self.main_engine: MainEngine = main_engine
-        self.event_engine: EventEngine = event_engine
-        self.engine_name: str = engine_name
-
-    def close(self) -> None:
-        """"""
-        pass
-
-
 class LogEngine(BaseEngine):
-    """
-    Processes log event and output with logging module.
-    """
+    """Use loguru instead of logging"""
+
+    level_map: dict[int, str] = {
+        10: "DEBUG",
+        20: "INFO",
+        30: "WARNING",
+        40: "ERROR",
+        50: "CRITICAL",
+    }
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
         super().__init__(main_engine, event_engine, "log")
 
-        if not SETTINGS["log.active"]:
-            return
+        self.active = SETTINGS["log.active"]
 
         self.level: int = SETTINGS["log.level"]
 
-        self.logger: Logger = logging.getLogger("veighna")
-        self.logger.setLevel(self.level)
-
-        self.formatter: logging.Formatter = logging.Formatter(
-            "%(asctime)s  %(levelname)s: %(message)s"
+        self.format: str = (
+            "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> "
+            "| <level>{level}</level> "
+            "| <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
+            "- <level>{message}</level>"
         )
 
-        self.add_null_handler()
+        # Remove default stderr output
+        logger.remove()
 
+        # Add console output
         if SETTINGS["log.console"]:
-            self.add_console_handler()
+            logger.add(sink=sys.stdout, level=self.level, format=self.format)
 
+        # Add file output
         if SETTINGS["log.file"]:
-            self.add_file_handler()
+            today_date: str = datetime.now().strftime("%Y%m%d")
+            filename: str = f"vt_{today_date}.log"
+            log_path: Path = get_folder_path("log")
+            file_path: Path = log_path.joinpath(filename)
+
+            logger.add(sink=file_path, level=self.level, format=self.format)
 
         self.register_event()
 
-    def add_null_handler(self) -> None:
-        """
-        Add null handler for logger.
-        """
-        null_handler: logging.NullHandler = logging.NullHandler()
-        self.logger.addHandler(null_handler)
-
-    def add_console_handler(self) -> None:
-        """
-        Add console output of log.
-        """
-        console_handler: logging.StreamHandler = logging.StreamHandler()
-        console_handler.setLevel(self.level)
-        console_handler.setFormatter(self.formatter)
-        self.logger.addHandler(console_handler)
-
-    def add_file_handler(self) -> None:
-        """
-        Add file output of log.
-        """
-        today_date: str = datetime.now().strftime("%Y%m%d")
-        filename: str = f"vt_{today_date}.log"
-        log_path: Path = get_folder_path("log")
-        file_path: Path = log_path.joinpath(filename)
-
-        file_handler: logging.FileHandler = logging.FileHandler(
-            file_path, mode="a", encoding="utf8"
-        )
-        file_handler.setLevel(self.level)
-        file_handler.setFormatter(self.formatter)
-        self.logger.addHandler(file_handler)
-
     def register_event(self) -> None:
-        """"""
+        """Register log event handler"""
         self.event_engine.register(EVENT_LOG, self.process_log_event)
 
     def process_log_event(self, event: Event) -> None:
-        """
-        Process log event.
-        """
+        """Process log event"""
+        if not self.active:
+            return
+
         log: LogData = event.data
-        self.logger.log(log.level, log.msg)
+        level: str | int = self.level_map.get(log.level, log.level)
+        logger.log(level, log.msg)
 
 
 class OmsEngine(BaseEngine):
