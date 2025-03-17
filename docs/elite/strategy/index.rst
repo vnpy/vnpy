@@ -13,4 +13,5 @@
    elite_optionstrategy.md
 
    elite_algotrading.md
+   elite_riskmanager.md
    elite_datamanager.md
