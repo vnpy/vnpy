@@ -8,6 +8,7 @@ import threading
 
 import qdarkstyle  # type: ignore
 from PySide6 import QtGui, QtWidgets, QtCore
+from loguru import logger
 
 from ..setting import SETTINGS
 from ..utility import get_icon_path
@@ -42,11 +43,16 @@ def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
     # Exception Handling
     exception_widget: ExceptionWidget = ExceptionWidget()
 
-    def excepthook(exctype: type[BaseException], value: BaseException, tb: types.TracebackType | None) -> None:
+    def excepthook(
+        exc_type: type[BaseException],
+        exc_value: BaseException,
+        exc_traceback: types.TracebackType | None
+    ) -> None:
         """Show exception detail with QMessageBox."""
-        sys.__excepthook__(exctype, value, tb)
+        logger.opt(exception=(exc_type, exc_value, exc_traceback)).error("Main thread exception")
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
 
-        msg: str = "".join(traceback.format_exception(exctype, value, tb))
+        msg: str = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
         exception_widget.signal.emit(msg)
 
     sys.excepthook = excepthook
@@ -54,6 +60,7 @@ def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
     def threading_excepthook(args: threading.ExceptHookArgs) -> None:
         """Show exception detail from background threads with QMessageBox."""
         if args.exc_value and args.exc_traceback:
+            logger.opt(exception=(args.exc_type, args.exc_value, args.exc_traceback)).error("Background thread exception")
             sys.__excepthook__(args.exc_type, args.exc_value, args.exc_traceback)
 
         msg: str = "".join(traceback.format_exception(args.exc_type, args.exc_value, args.exc_traceback))

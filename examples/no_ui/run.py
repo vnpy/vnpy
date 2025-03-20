@@ -2,11 +2,11 @@ import multiprocessing
 import sys
 from time import sleep
 from datetime import datetime, time
-from logging import INFO
 
 from vnpy.event import EventEngine
 from vnpy.trader.setting import SETTINGS
 from vnpy.trader.engine import MainEngine, LogEngine
+from vnpy.trader.logger import INFO
 
 from vnpy_ctp import CtpGateway
 from vnpy_ctastrategy import CtaStrategyApp, CtaEngine

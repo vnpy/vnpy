@@ -4,9 +4,10 @@ Basic data structure used for general trading function in the trading platform.
 
 from dataclasses import dataclass, field
 from datetime import datetime as Datetime
-from logging import INFO
 
 from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
+from .logger import INFO
+
 
 ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
 

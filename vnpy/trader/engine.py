@@ -1,16 +1,11 @@
 import smtplib
 import os
-import sys
 import traceback
 from abc import ABC
-from pathlib import Path
-from datetime import datetime
 from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
 from typing import Type, Callable, TypeVar
-
-from loguru import logger
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -43,8 +38,9 @@ from .object import (
     Exchange
 )
 from .setting import SETTINGS
-from .utility import get_folder_path, TRADER_DIR
+from .utility import TRADER_DIR
 from .converter import OffsetConverter
+from .logger import logger, DEBUG, INFO, WARNING, ERROR, CRITICAL
 from .locale import _
 
 
@@ -289,14 +285,16 @@ class MainEngine:
 
 
 class LogEngine(BaseEngine):
-    """Use loguru instead of logging"""
+    """
+    Provides log event output function.
+    """
 
     level_map: dict[int, str] = {
-        10: "DEBUG",
-        20: "INFO",
-        30: "WARNING",
-        40: "ERROR",
-        50: "CRITICAL",
+        DEBUG: "DEBUG",
+        INFO: "INFO",
+        WARNING: "WARNING",
+        ERROR: "ERROR",
+        CRITICAL: "CRITICAL",
     }
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
@@ -304,31 +302,6 @@ class LogEngine(BaseEngine):
         super().__init__(main_engine, event_engine, "log")
 
         self.active = SETTINGS["log.active"]
-
-        self.level: int = SETTINGS["log.level"]
-
-        self.format: str = (
-            "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> "
-            "| <level>{level}</level> "
-            "| <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
-            "- <level>{message}</level>"
-        )
-
-        # Remove default stderr output
-        logger.remove()
-
-        # Add console output
-        if SETTINGS["log.console"]:
-            logger.add(sink=sys.stdout, level=self.level, format=self.format)
-
-        # Add file output
-        if SETTINGS["log.file"]:
-            today_date: str = datetime.now().strftime("%Y%m%d")
-            filename: str = f"vt_{today_date}.log"
-            log_path: Path = get_folder_path("log")
-            file_path: Path = log_path.joinpath(filename)
-
-            logger.add(sink=file_path, level=self.level, format=self.format)
 
         self.register_event()
 
