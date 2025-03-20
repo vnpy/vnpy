@@ -42,30 +42,31 @@ keywords = ["quant", "quantitative", "investment", "trading", "algotrading"]
 "Documentation" = "https://www.vnpy.com/docs"
 
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.27.0", "babel>=2.17.0"]
+build-backend = "hatchling.build"
 
-[tool.setuptools]
-zip-safe = false
+[tool.hatch.version]
+path = "vnpy/__init__.py"
+pattern = "__version__ = ['\"](?P<version>[^'\"]+)['\"]"
+
+[tool.hatch.build.targets.wheel]
+packages = ["vnpy"]
 include-package-data = true
 
-[tool.setuptools.dynamic]
-version = {attr = "vnpy.__version__"}
-
-[tool.setuptools.packages.find]
+[tool.hatch.build.targets.sdist]
 include = ["vnpy*"]
 
-[tool.setuptools.package-data]
-"vnpy" = ["**/*.ico", "**/*.po", "**/*.mo"]
+[tool.hatch.build.hooks.custom]
+path = "vnpy/trader/locale/build_hook.py"
+
+[tool.hatch.build.targets.wheel.force-include]
+"vnpy/trader/locale/en/LC_MESSAGES/vnpy.mo" = "vnpy/trader/locale/en/LC_MESSAGES/vnpy.mo"
 
 [tool.ruff]
 target-version = "py310"
 
 [tool.ruff.lint]
 ignore = ["E501"]
-
-[tool.build-scripts]
-pre-build = "vnpy/trader/locale/generate_mo.py"
 
 [tool.mypy]
 python_version = "3.10"
