@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import List
+from typing import Any
 
-import pyqtgraph as pg
+import pyqtgraph as pg      # type: ignore
 
 from .manager import BarManager
 from .base import AXIS_WIDTH, NORMAL_FONT, QtGui
@@ -10,7 +10,7 @@ from .base import AXIS_WIDTH, NORMAL_FONT, QtGui
 class DatetimeAxis(pg.AxisItem):
     """"""
 
-    def __init__(self, manager: BarManager, *args, **kwargs) -> None:
+    def __init__(self, manager: BarManager, *args: Any, **kwargs: Any) -> None:
         """"""
         super().__init__(*args, **kwargs)
 
@@ -19,7 +19,7 @@ class DatetimeAxis(pg.AxisItem):
         self.setPen(width=AXIS_WIDTH)
         self.tickFont: QtGui.QFont = NORMAL_FONT
 
-    def tickStrings(self, values: List[int], scale: float, spacing: int) -> list:
+    def tickStrings(self, values: list[int], scale: float, spacing: int) -> list:
         """
         Convert original index to datetime string.
         """
@@ -30,14 +30,14 @@ class DatetimeAxis(pg.AxisItem):
         strings: list = []
 
         for ix in values:
-            dt: datetime = self._manager.get_datetime(ix)
+            dt: datetime | None = self._manager.get_datetime(ix)
 
             if not dt:
                 s: str = ""
             elif dt.hour:
-                s: str = dt.strftime("%Y-%m-%d\n%H:%M:%S")
+                s = dt.strftime("%Y-%m-%d\n%H:%M:%S")
             else:
-                s: str = dt.strftime("%Y-%m-%d")
+                s = dt.strftime("%Y-%m-%d")
 
             strings.append(s)
 

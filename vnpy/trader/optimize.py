@@ -1,20 +1,21 @@
-from typing import Dict, List, Callable, Tuple
+from typing import Callable
 from itertools import product
 from concurrent.futures import ProcessPoolExecutor
 from random import random, choice
 from time import perf_counter
 from multiprocessing import get_context
 from multiprocessing.context import BaseContext
+from multiprocessing.managers import DictProxy
 from _collections_abc import dict_keys, dict_values, Iterable
 
-from tqdm import tqdm
-from deap import creator, base, tools, algorithms
+from tqdm import tqdm                                   # type: ignore
+from deap import creator, base, tools, algorithms       # type: ignore
 
 from .locale import _
 
 OUTPUT_FUNC = Callable[[str], None]
 EVALUATE_FUNC = Callable[[dict], dict]
-KEY_FUNC = Callable[[list], float]
+KEY_FUNC = Callable[[tuple], float]
 
 
 # Create individual class used in genetic algorithm optimization
@@ -29,18 +30,18 @@ class OptimizationSetting:
 
     def __init__(self) -> None:
         """"""
-        self.params: Dict[str, List] = {}
+        self.params: dict[str, list] = {}
         self.target_name: str = ""
 
     def add_parameter(
         self,
         name: str,
         start: float,
-        end: float = None,
-        step: float = None
-    ) -> Tuple[bool, str]:
+        end: float | None = None,
+        step: float | None = None
+    ) -> tuple[bool, str]:
         """"""
-        if end is None and step is None:
+        if end is None or step is None:
             self.params[name] = [start]
             return True, _("固定参数添加成功")
 
@@ -51,7 +52,7 @@ class OptimizationSetting:
             return False, _("参数优化步进必须大于0")
 
         value: float = start
-        value_list: List[float] = []
+        value_list: list[float] = []
 
         while value <= end:
             value_list.append(value)
@@ -65,7 +66,7 @@ class OptimizationSetting:
         """"""
         self.target_name = target_name
 
-    def generate_settings(self) -> List[dict]:
+    def generate_settings(self) -> list[dict]:
         """"""
         keys: dict_keys = self.params.keys()
         values: dict_values = self.params.values()
@@ -99,16 +100,16 @@ def run_bf_optimization(
     evaluate_func: EVALUATE_FUNC,
     optimization_setting: OptimizationSetting,
     key_func: KEY_FUNC,
-    max_workers: int = None,
+    max_workers: int | None = None,
     output: OUTPUT_FUNC = print
-) -> List[Tuple]:
+) -> list[tuple]:
     """Run brutal force optimization"""
-    settings: List[Dict] = optimization_setting.generate_settings()
+    settings: list[dict] = optimization_setting.generate_settings()
 
     output(_("开始执行穷举算法优化"))
     output(_("参数优化空间：{}").format(len(settings)))
 
-    start: int = perf_counter()
+    start: float = perf_counter()
 
     with ProcessPoolExecutor(
         max_workers,
@@ -118,10 +119,10 @@ def run_bf_optimization(
             executor.map(evaluate_func, settings),
             total=len(settings)
         )
-        results: List[Tuple] = list(it)
+        results: list[tuple] = list(it)
         results.sort(reverse=True, key=key_func)
 
-        end: int = perf_counter()
+        end: float = perf_counter()
         cost: int = int((end - start))
         output(_("穷举算法优化完成，耗时{}秒").format(cost))
 
@@ -132,15 +133,15 @@ def run_ga_optimization(
     evaluate_func: EVALUATE_FUNC,
     optimization_setting: OptimizationSetting,
     key_func: KEY_FUNC,
-    max_workers: int = None,
+    max_workers: int | None = None,
     population_size: int = 100,
     ngen_size: int = 30,
     output: OUTPUT_FUNC = print
-) -> List[Tuple]:
+) -> list[tuple]:
     """Run genetic algorithm optimization"""
     # Define functions for generate parameter randomly
-    buf: List[Dict] = optimization_setting.generate_settings()
-    settings: List[Tuple] = [list(d.items()) for d in buf]
+    buf: list[dict] = optimization_setting.generate_settings()
+    settings: list[list[tuple]] = [list(d.items()) for d in buf]
 
     def generate_parameter() -> list:
         """"""
@@ -159,7 +160,7 @@ def run_ga_optimization(
     ctx: BaseContext = get_context("spawn")
     with ctx.Manager() as manager, ctx.Pool(max_workers) as pool:
         # Create shared dict for result cache
-        cache: Dict[Tuple, Tuple] = manager.dict()
+        cache: DictProxy[tuple, tuple] = manager.dict()
 
         # Set up toolbox
         toolbox: base.Toolbox = base.Toolbox()
@@ -197,7 +198,7 @@ def run_ga_optimization(
         output(_("交叉概率：{:.0%}").format(cxpb))
         output(_("突变概率：{:.0%}").format(mutpb))
 
-        start: int = perf_counter()
+        start: float = perf_counter()
 
         algorithms.eaMuPlusLambda(
             pop,
@@ -210,7 +211,7 @@ def run_ga_optimization(
             verbose=True
         )
 
-        end: int = perf_counter()
+        end: float = perf_counter()
         cost: int = int((end - start))
 
         output(_("遗传算法优化完成，耗时{}秒").format(cost))
@@ -222,19 +223,19 @@ def run_ga_optimization(
 
 def ga_evaluate(
     cache: dict,
-    evaluate_func: callable,
-    key_func: callable,
+    evaluate_func: Callable,
+    key_func: Callable,
     parameters: list
-) -> float:
+) -> tuple[float, ]:
     """
     Functions to be run in genetic algorithm optimization.
     """
     tp: tuple = tuple(parameters)
     if tp in cache:
-        result: tuple = cache[tp]
+        result: dict = cache[tp]
     else:
         setting: dict = dict(parameters)
-        result: dict = evaluate_func(setting)
+        result = evaluate_func(setting)
         cache[tp] = result
 
     value: float = key_func(result)

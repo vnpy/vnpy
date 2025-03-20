@@ -1,7 +1,7 @@
 import threading
 import traceback
 from time import time
-from typing import Any, Callable, Dict
+from typing import Callable
 
 import zmq
 
@@ -16,7 +16,7 @@ class RpcServer:
         Constructor
         """
         # Save functions dict: key is function name, value is function object
-        self._functions: Dict[str, Callable] = {}
+        self._functions: dict[str, Callable] = {}
 
         # Zmq port related
         self._context: zmq.Context = zmq.Context()
@@ -28,12 +28,12 @@ class RpcServer:
         self._socket_pub: zmq.Socket = self._context.socket(zmq.PUB)
 
         # Worker thread related
-        self._active: bool = False                      # RpcServer status
-        self._thread: threading.Thread = None           # RpcServer thread
+        self._active: bool = False                          # RpcServer status
+        self._thread: threading.Thread | None = None        # RpcServer thread
         self._lock: threading.Lock = threading.Lock()
 
         # Heartbeat related
-        self._heartbeat_at: int = None
+        self._heartbeat_at: float | None = None
 
     def is_active(self) -> bool:
         """"""
@@ -101,19 +101,19 @@ class RpcServer:
             # Try to get and execute callable function object; capture exception information if it fails
             try:
                 func: Callable = self._functions[name]
-                r: Any = func(*args, **kwargs)
+                r: object = func(*args, **kwargs)
                 rep: list = [True, r]
             except Exception as e:  # noqa
-                rep: list = [False, traceback.format_exc()]
+                rep = [False, traceback.format_exc()]
 
             # send callable response by Reply socket
             self._socket_rep.send_pyobj(rep)
 
         # Unbind socket address
-        self._socket_pub.unbind(self._socket_pub.LAST_ENDPOINT)
-        self._socket_rep.unbind(self._socket_rep.LAST_ENDPOINT)
+        self._socket_pub.unbind(str(self._socket_pub.LAST_ENDPOINT))
+        self._socket_rep.unbind(str(self._socket_rep.LAST_ENDPOINT))
 
-    def publish(self, topic: str, data: Any) -> None:
+    def publish(self, topic: str, data: object) -> None:
         """
         Publish data
         """
@@ -131,7 +131,8 @@ class RpcServer:
         Check whether it is required to send heartbeat.
         """
         now: float = time()
-        if now >= self._heartbeat_at:
+
+        if self._heartbeat_at and now >= self._heartbeat_at:
             # Publish heartbeat
             self.publish(HEARTBEAT_TOPIC, now)
 

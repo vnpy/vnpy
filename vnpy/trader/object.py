@@ -3,11 +3,11 @@ Basic data structure used for general trading function in the trading platform.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
-from logging import INFO
-from typing import Optional
+from datetime import datetime as Datetime
 
 from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
+from .logger import INFO
+
 
 ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
 
@@ -21,7 +21,7 @@ class BaseData:
 
     gateway_name: str
 
-    extra: Optional[dict] = field(default=None, init=False)
+    extra: dict | None = field(default=None, init=False)
 
 
 @dataclass
@@ -35,7 +35,7 @@ class TickData(BaseData):
 
     symbol: str
     exchange: Exchange
-    datetime: datetime
+    datetime: Datetime
 
     name: str = ""
     volume: float = 0
@@ -75,7 +75,7 @@ class TickData(BaseData):
     ask_volume_4: float = 0
     ask_volume_5: float = 0
 
-    localtime: datetime = None
+    localtime: Datetime | None = None
 
     def __post_init__(self) -> None:
         """"""
@@ -90,9 +90,9 @@ class BarData(BaseData):
 
     symbol: str
     exchange: Exchange
-    datetime: datetime
+    datetime: Datetime
 
-    interval: Interval = None
+    interval: Interval | None = None
     volume: float = 0
     turnover: float = 0
     open_interest: float = 0
@@ -118,13 +118,13 @@ class OrderData(BaseData):
     orderid: str
 
     type: OrderType = OrderType.LIMIT
-    direction: Direction = None
+    direction: Direction | None = None
     offset: Offset = Offset.NONE
     price: float = 0
     volume: float = 0
     traded: float = 0
     status: Status = Status.SUBMITTING
-    datetime: datetime = None
+    datetime: Datetime | None = None
     reference: str = ""
 
     def __post_init__(self) -> None:
@@ -159,12 +159,12 @@ class TradeData(BaseData):
     exchange: Exchange
     orderid: str
     tradeid: str
-    direction: Direction = None
+    direction: Direction | None = None
 
     offset: Offset = Offset.NONE
     price: float = 0
     volume: float = 0
-    datetime: datetime = None
+    datetime: Datetime | None = None
 
     def __post_init__(self) -> None:
         """"""
@@ -224,7 +224,7 @@ class LogData(BaseData):
 
     def __post_init__(self) -> None:
         """"""
-        self.time: datetime = datetime.now()
+        self.time: Datetime = Datetime.now()
 
 
 @dataclass
@@ -240,19 +240,19 @@ class ContractData(BaseData):
     size: float
     pricetick: float
 
-    min_volume: float = 1           # minimum order volume
-    max_volume: float = None        # maximum order volume
-    stop_supported: bool = False    # whether server supports stop order
-    net_position: bool = False      # whether gateway uses net position volume
-    history_data: bool = False      # whether gateway provides bar history data
+    min_volume: float = 1                   # minimum order volume
+    max_volume: float | None = None      # maximum order volume
+    stop_supported: bool = False            # whether server supports stop order
+    net_position: bool = False              # whether gateway uses net position volume
+    history_data: bool = False              # whether gateway provides bar history data
 
-    option_strike: float = 0
-    option_underlying: str = ""     # vt_symbol of underlying contract
-    option_type: OptionType = None
-    option_listed: datetime = None
-    option_expiry: datetime = None
-    option_portfolio: str = ""
-    option_index: str = ""          # for identifying options with same strike price
+    option_strike: float | None = None
+    option_underlying: str | None = None     # vt_symbol of underlying contract
+    option_type: OptionType | None = None
+    option_listed: Datetime | None = None
+    option_expiry: Datetime | None = None
+    option_portfolio: str | None = None
+    option_index: str | None = None          # for identifying options with same strike price
 
     def __post_init__(self) -> None:
         """"""
@@ -277,7 +277,7 @@ class QuoteData(BaseData):
     bid_offset: Offset = Offset.NONE
     ask_offset: Offset = Offset.NONE
     status: Status = Status.SUBMITTING
-    datetime: datetime = None
+    datetime: Datetime | None = None
     reference: str = ""
 
     def __post_init__(self) -> None:
@@ -376,9 +376,9 @@ class HistoryRequest:
 
     symbol: str
     exchange: Exchange
-    start: datetime
-    end: datetime = None
-    interval: Interval = None
+    start: Datetime
+    end: Datetime | None = None
+    interval: Interval | None = None
 
     def __post_init__(self) -> None:
         """"""
