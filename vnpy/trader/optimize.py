@@ -5,16 +5,17 @@ from random import random, choice
 from time import perf_counter
 from multiprocessing import get_context
 from multiprocessing.context import BaseContext
+from multiprocessing.managers import DictProxy
 from _collections_abc import dict_keys, dict_values, Iterable
 
-from tqdm import tqdm
-from deap import creator, base, tools, algorithms
+from tqdm import tqdm                                   # type: ignore
+from deap import creator, base, tools, algorithms       # type: ignore
 
 from .locale import _
 
 OUTPUT_FUNC = Callable[[str], None]
 EVALUATE_FUNC = Callable[[dict], dict]
-KEY_FUNC = Callable[[list], float]
+KEY_FUNC = Callable[[tuple], float]
 
 
 # Create individual class used in genetic algorithm optimization
@@ -36,11 +37,11 @@ class OptimizationSetting:
         self,
         name: str,
         start: float,
-        end: float = None,
-        step: float = None
+        end: float | None = None,
+        step: float | None = None
     ) -> tuple[bool, str]:
         """"""
-        if end is None and step is None:
+        if end is None or step is None:
             self.params[name] = [start]
             return True, _("固定参数添加成功")
 
@@ -99,7 +100,7 @@ def run_bf_optimization(
     evaluate_func: EVALUATE_FUNC,
     optimization_setting: OptimizationSetting,
     key_func: KEY_FUNC,
-    max_workers: int = None,
+    max_workers: int | None = None,
     output: OUTPUT_FUNC = print
 ) -> list[tuple]:
     """Run brutal force optimization"""
@@ -108,7 +109,7 @@ def run_bf_optimization(
     output(_("开始执行穷举算法优化"))
     output(_("参数优化空间：{}").format(len(settings)))
 
-    start: int = perf_counter()
+    start: float = perf_counter()
 
     with ProcessPoolExecutor(
         max_workers,
@@ -121,7 +122,7 @@ def run_bf_optimization(
         results: list[tuple] = list(it)
         results.sort(reverse=True, key=key_func)
 
-        end: int = perf_counter()
+        end: float = perf_counter()
         cost: int = int((end - start))
         output(_("穷举算法优化完成，耗时{}秒").format(cost))
 
@@ -132,7 +133,7 @@ def run_ga_optimization(
     evaluate_func: EVALUATE_FUNC,
     optimization_setting: OptimizationSetting,
     key_func: KEY_FUNC,
-    max_workers: int = None,
+    max_workers: int | None = None,
     population_size: int = 100,
     ngen_size: int = 30,
     output: OUTPUT_FUNC = print
@@ -140,7 +141,7 @@ def run_ga_optimization(
     """Run genetic algorithm optimization"""
     # Define functions for generate parameter randomly
     buf: list[dict] = optimization_setting.generate_settings()
-    settings: list[tuple] = [list(d.items()) for d in buf]
+    settings: list[list[tuple]] = [list(d.items()) for d in buf]
 
     def generate_parameter() -> list:
         """"""
@@ -159,7 +160,7 @@ def run_ga_optimization(
     ctx: BaseContext = get_context("spawn")
     with ctx.Manager() as manager, ctx.Pool(max_workers) as pool:
         # Create shared dict for result cache
-        cache: dict[tuple, tuple] = manager.dict()
+        cache: DictProxy[tuple, tuple] = manager.dict()
 
         # Set up toolbox
         toolbox: base.Toolbox = base.Toolbox()
@@ -197,7 +198,7 @@ def run_ga_optimization(
         output(_("交叉概率：{:.0%}").format(cxpb))
         output(_("突变概率：{:.0%}").format(mutpb))
 
-        start: int = perf_counter()
+        start: float = perf_counter()
 
         algorithms.eaMuPlusLambda(
             pop,
@@ -210,7 +211,7 @@ def run_ga_optimization(
             verbose=True
         )
 
-        end: int = perf_counter()
+        end: float = perf_counter()
         cost: int = int((end - start))
 
         output(_("遗传算法优化完成，耗时{}秒").format(cost))
@@ -222,19 +223,19 @@ def run_ga_optimization(
 
 def ga_evaluate(
     cache: dict,
-    evaluate_func: callable,
-    key_func: callable,
+    evaluate_func: Callable,
+    key_func: Callable,
     parameters: list
-) -> float:
+) -> tuple[float, ]:
     """
     Functions to be run in genetic algorithm optimization.
     """
     tp: tuple = tuple(parameters)
     if tp in cache:
-        result: tuple = cache[tp]
+        result: dict = cache[tp]
     else:
         setting: dict = dict(parameters)
-        result: dict = evaluate_func(setting)
+        result = evaluate_func(setting)
         cache[tp] = result
 
     value: float = key_func(result)
