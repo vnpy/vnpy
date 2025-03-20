@@ -52,7 +52,7 @@ class RpcClient:
 
         self._last_received_ping: float = time()
 
-    @lru_cache(100)
+    @lru_cache(100)  # noqa
     def __getattr__(self, name: str) -> Any:
         """
         Realize remote call function

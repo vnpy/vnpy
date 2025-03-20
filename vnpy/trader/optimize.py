@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 from itertools import product
 from concurrent.futures import ProcessPoolExecutor
 from random import random, choice
@@ -74,7 +74,7 @@ class OptimizationSetting:
 
         settings: list = []
         for p in products:
-            setting: dict = dict(zip(keys, p))
+            setting: dict = dict(zip(keys, p, strict=False))
             settings.append(setting)
 
         return settings
@@ -123,7 +123,7 @@ def run_bf_optimization(
         results.sort(reverse=True, key=key_func)
 
         end: float = perf_counter()
-        cost: int = int((end - start))
+        cost: int = int(end - start)
         output(_("穷举算法优化完成，耗时{}秒").format(cost))
 
         return results
@@ -212,7 +212,7 @@ def run_ga_optimization(
         )
 
         end: float = perf_counter()
-        cost: int = int((end - start))
+        cost: int = int(end - start)
 
         output(_("遗传算法优化完成，耗时{}秒").format(cost))
 

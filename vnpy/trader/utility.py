@@ -6,7 +6,7 @@ import json
 import sys
 from datetime import datetime, time
 from pathlib import Path
-from typing import Callable
+from collections.abc import Callable
 from decimal import Decimal
 from math import floor, ceil
 
@@ -94,7 +94,7 @@ def load_json(filename: str) -> dict:
     filepath: Path = get_file_path(filename)
 
     if filepath.exists():
-        with open(filepath, mode="r", encoding="UTF-8") as f:
+        with open(filepath, encoding="UTF-8") as f:
             data: dict = json.load(f)
         return data
     else:
@@ -484,7 +484,7 @@ class BarGenerator:
         return bar
 
 
-class ArrayManager(object):
+class ArrayManager:
     """
     For:
     1. time series container of bar data

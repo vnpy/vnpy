@@ -16,9 +16,10 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Topic :: Office/Business :: Financial :: Investment",
     "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Office/Business :: Financial :: Investment",
     "Natural Language :: Chinese (Simplified)",
+    "Typing :: Typed",
 ]
 requires-python = ">=3.10"
 dependencies = [
@@ -40,6 +41,9 @@ keywords = ["quant", "quantitative", "investment", "trading", "algotrading"]
 [project.urls]
 "Homepage" = "https://www.vnpy.com"
 "Documentation" = "https://www.vnpy.com/docs"
+"Changes" = "https://github.com/vnpy/vnpy/blob/master/CHANGELOG.md"
+"Source" = "https://github.com/vnpy/vnpy/"
+"Forum" = "https://www.vnpy.com/forum"
 
 [build-system]
 requires = ["hatchling>=1.27.0", "babel>=2.17.0"]
@@ -64,8 +68,16 @@ path = "vnpy/trader/locale/build_hook.py"
 
 [tool.ruff]
 target-version = "py310"
+output-format = "full"
 
 [tool.ruff.lint]
+select = [
+    "B",  # flake8-bugbear
+    "E",  # pycodestyle error
+    "F",  # pyflakes
+    "UP",  # pyupgrade
+    "W",  # pycodestyle warning
+]
 ignore = ["E501"]
 
 [tool.mypy]

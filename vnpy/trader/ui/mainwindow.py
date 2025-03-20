@@ -6,7 +6,8 @@ from types import ModuleType
 import webbrowser
 from functools import partial
 from importlib import import_module
-from typing import Callable, Type, TypeVar
+from typing import TypeVar
+from collections.abc import Callable
 
 import vnpy
 from vnpy.event import EventEngine
@@ -129,7 +130,7 @@ class MainWindow(QtWidgets.QMainWindow):
         all_apps: list[BaseApp] = self.main_engine.get_all_apps()
         for app in all_apps:
             ui_module: ModuleType = import_module(app.app_module + ".ui")
-            widget_class: Type[QtWidgets.QWidget] = getattr(ui_module, app.widget_name)
+            widget_class: type[QtWidgets.QWidget] = getattr(ui_module, app.widget_name)
 
             func = partial(self.open_widget, widget_class, app.app_name)
 
@@ -221,7 +222,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def create_dock(
         self,
-        widget_class: Type[WidgetType],
+        widget_class: type[WidgetType],
         name: str,
         area: QtCore.Qt.DockWidgetArea
     ) -> tuple[WidgetType, QtWidgets.QDockWidget]:
@@ -273,7 +274,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             event.ignore()
 
-    def open_widget(self, widget_class: Type[QtWidgets.QWidget], name: str) -> None:
+    def open_widget(self, widget_class: type[QtWidgets.QWidget], name: str) -> None:
         """
         Open contract manager.
         """

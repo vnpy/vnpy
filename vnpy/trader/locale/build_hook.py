@@ -18,6 +18,6 @@ class LocaleBuildHook(BuildHookInterface):
         self.mo_path: Path = self.locale_path.joinpath("en", "LC_MESSAGES", "vnpy.mo")
         self.po_path: Path = self.locale_path.joinpath("en", "LC_MESSAGES", "vnpy.po")
 
-        with open(self.mo_path, 'wb') as mo_f:
-            with open(self.po_path, 'r', encoding='utf-8') as po_f:
+        with open(self.mo_path, "wb") as mo_f:
+            with open(self.po_path, encoding="utf-8") as po_f:
                 write_mo(mo_f, read_po(po_f))

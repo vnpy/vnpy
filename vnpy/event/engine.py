@@ -3,10 +3,12 @@ Event-driven framework of VeighNa framework.
 """
 
 from collections import defaultdict
+from collections.abc import Callable
 from queue import Empty, Queue
 from threading import Thread
 from time import sleep
-from typing import Callable, Any
+from typing import Any
+
 
 EVENT_TIMER = "eTimer"
 

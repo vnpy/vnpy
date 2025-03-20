@@ -33,8 +33,8 @@ class BarManager:
         ix_list: range = range(len(self._bars))
         dt_list: dict_keys = self._bars.keys()
 
-        self._datetime_index_map = dict(zip(dt_list, ix_list))
-        self._index_datetime_map = dict(zip(ix_list, dt_list))
+        self._datetime_index_map = dict(zip(dt_list, ix_list, strict=False))
+        self._index_datetime_map = dict(zip(ix_list, dt_list, strict=False))
 
         # Clear data range cache
         self._clear_cache()

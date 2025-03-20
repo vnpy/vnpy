@@ -1,11 +1,12 @@
 import smtplib
 import os
 import traceback
-from abc import ABC
+from abc import ABC, abstractmethod
 from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
-from typing import Type, Callable, TypeVar
+from typing import TypeVar
+from collections.abc import Callable
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -63,6 +64,7 @@ class BaseEngine(ABC):
         self.event_engine: EventEngine = event_engine
         self.engine_name: str = engine_name
 
+    @abstractmethod
     def close(self) -> None:
         """"""
         pass
@@ -89,7 +91,7 @@ class MainEngine:
         os.chdir(TRADER_DIR)    # Change working directory
         self.init_engines()     # Initialize function engines
 
-    def add_engine(self, engine_class: Type[EngineType]) -> EngineType:
+    def add_engine(self, engine_class: type[EngineType]) -> EngineType:
         """
         Add function engine.
         """
@@ -97,7 +99,7 @@ class MainEngine:
         self.engines[engine.engine_name] = engine
         return engine
 
-    def add_gateway(self, gateway_class: Type[BaseGateway], gateway_name: str = "") -> BaseGateway:
+    def add_gateway(self, gateway_class: type[BaseGateway], gateway_name: str = "") -> BaseGateway:
         """
         Add gateway.
         """
@@ -115,7 +117,7 @@ class MainEngine:
 
         return gateway
 
-    def add_app(self, app_class: Type[BaseApp]) -> BaseEngine:
+    def add_app(self, app_class: type[BaseApp]) -> BaseEngine:
         """
         Add app.
         """
@@ -129,9 +131,9 @@ class MainEngine:
         """
         Init all engines.
         """
-        self.add_engine(LogEngine)
+        self.add_engine(LogEngine)      # type: ignore
 
-        oms_engine: OmsEngine = self.add_engine(OmsEngine)
+        oms_engine: OmsEngine = self.add_engine(OmsEngine)      # type: ignore
         self.get_order: Callable[[str], OrderData | None] = oms_engine.get_order
         self.get_trade: Callable[[str], TradeData | None] = oms_engine.get_trade
         self.get_position: Callable[[str], PositionData | None] = oms_engine.get_position

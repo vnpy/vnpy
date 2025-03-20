@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Type
 
 import pyqtgraph as pg      # type: ignore
 
@@ -114,7 +113,7 @@ class ChartWidget(pg.PlotWidget):
 
     def add_item(
         self,
-        item_class: Type[ChartItem],
+        item_class: type[ChartItem],
         item_name: str,
         plot_name: str
     ) -> None:

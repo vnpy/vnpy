@@ -1,7 +1,7 @@
 import threading
 import traceback
 from time import time
-from typing import Callable
+from collections.abc import Callable
 
 import zmq
 

@@ -1141,7 +1141,7 @@ class ContractManager(QtWidgets.QWidget):
             for column, name in enumerate(self.headers.keys()):
                 value: Any = getattr(contract, name)
 
-                if value in {None, 0, 0.0}:
+                if value in {None, 0}:
                     value = ""
 
                 cell: BaseCell

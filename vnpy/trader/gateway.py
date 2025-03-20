@@ -243,7 +243,7 @@ class BaseGateway(ABC):
         implementation should finish the tasks blow:
         * send request to server
         """
-        pass
+        return
 
     @abstractmethod
     def query_account(self) -> None:

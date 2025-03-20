@@ -4,6 +4,6 @@ from .item import CandleItem, VolumeItem
 
 __all__ = [
     "ChartWidget",
-    "CandleItem", 
+    "CandleItem",
     "VolumeItem",
 ]

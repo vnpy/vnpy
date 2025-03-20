@@ -78,7 +78,8 @@ class ChartItem(pg.GraphicsObject):
         self._bar_picutures.clear()
 
         bars: list[BarData] = self._manager.get_all_bars()
-        for ix, bar in enumerate(bars):
+
+        for ix, _ in enumerate(bars):
             self._bar_picutures[ix] = None
 
         self.update()
