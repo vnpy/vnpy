@@ -6,7 +6,6 @@ numpy==1.26.4
 pandas==2.2.1
 matplotlib==3.8.3
 seaborn==0.13.2
-ta-lib==0.4.24
 deap==1.4.1
 pyzmq==25.1.2
 plotly==5.20.0
