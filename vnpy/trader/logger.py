@@ -23,8 +23,8 @@ __all__ = [
 format: str = (
     "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> "
     "| <level>{level}</level> "
-    "| <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> "
-    "- <level>{message}</level>"
+    "| <cyan>{extra[gateway_name]}</cyan> "
+    "| <level>{message}</level>"
 )
 
 

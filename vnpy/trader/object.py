@@ -6,7 +6,9 @@ from dataclasses import dataclass, field
 from datetime import datetime as Datetime
 
 from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
-from .logger import INFO
+
+
+INFO: int = 20
 
 
 ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])

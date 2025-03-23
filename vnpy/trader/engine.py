@@ -53,6 +53,7 @@ class BaseEngine(ABC):
     Abstract class for implementing a function engine.
     """
 
+    @abstractmethod
     def __init__(
         self,
         main_engine: "MainEngine",
@@ -64,10 +65,9 @@ class BaseEngine(ABC):
         self.event_engine: EventEngine = event_engine
         self.engine_name: str = engine_name
 
-    @abstractmethod
     def close(self) -> None:
         """"""
-        pass
+        return
 
 
 class MainEngine:
@@ -131,9 +131,9 @@ class MainEngine:
         """
         Init all engines.
         """
-        self.add_engine(LogEngine)      # type: ignore
+        self.add_engine(LogEngine)
 
-        oms_engine: OmsEngine = self.add_engine(OmsEngine)      # type: ignore
+        oms_engine: OmsEngine = self.add_engine(OmsEngine)
         self.get_order: Callable[[str], OrderData | None] = oms_engine.get_order
         self.get_trade: Callable[[str], TradeData | None] = oms_engine.get_trade
         self.get_position: Callable[[str], PositionData | None] = oms_engine.get_position
@@ -305,11 +305,7 @@ class LogEngine(BaseEngine):
 
         self.active = SETTINGS["log.active"]
 
-        self.register_event()
-
-    def register_event(self) -> None:
-        """Register log event handler"""
-        self.event_engine.register(EVENT_LOG, self.process_log_event)
+        self.register_log(EVENT_LOG)
 
     def process_log_event(self, event: Event) -> None:
         """Process log event"""
@@ -318,7 +314,11 @@ class LogEngine(BaseEngine):
 
         log: LogData = event.data
         level: str | int = self.level_map.get(log.level, log.level)
-        logger.log(level, log.msg)
+        logger.log(level, log.msg, gateway_name=log.gateway_name)
+
+    def register_log(self, event_type: str) -> None:
+        """Register log event handler"""
+        self.event_engine.register(event_type, self.process_log_event)
 
 
 class OmsEngine(BaseEngine):
