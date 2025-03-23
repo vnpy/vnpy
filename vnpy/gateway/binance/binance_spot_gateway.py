@@ -616,6 +616,7 @@ class BinanceSpotTradeWebsocketApi:
             orderid: str = packet["C"]
 
         offset = self.gateway.get_order(orderid).offset if self.gateway.get_order(orderid) else None
+        reference = self.gateway.get_order(orderid).reference if self.gateway.get_order(orderid) else None
 
         order: OrderData = OrderData(
             symbol=packet["s"].lower(),
@@ -629,7 +630,8 @@ class BinanceSpotTradeWebsocketApi:
             status=STATUS_BINANCE2VT[packet["X"]],
             datetime=datetime.fromtimestamp(packet["O"] / 1000),
             gateway_name=self.gateway_name,
-            offset=offset
+            offset=offset,
+            reference=reference
         )
 
         self.gateway.on_order(order)
