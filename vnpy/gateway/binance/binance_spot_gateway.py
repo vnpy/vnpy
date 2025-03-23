@@ -266,13 +266,16 @@ class BinanceSpotRestAPi:
         self.gateway.on_order(order)
 
         # 生成委托请求
+        contract: ContractData = symbol_contract_map.get(order.symbol, None)
+        if contract:
+            req.volume = round_to(float(req.volume), contract.min_volume) # todo: how to round to avoid Account has insufficient balance for requested action error
         params: dict = {
             "symbol": req.symbol.upper(),
             "side": DIRECTION_VT2BINANCE[req.direction],
             "type": ORDERTYPE_VT2BINANCE[req.type],
             "quantity": format(req.volume, "f"),
-            "newClientOrderId": orderid,
-            "newOrderRespType": "ACK"
+            "newClientOrderId": order.orderid,
+            "newOrderRespType": "FULL"
         }
 
         if req.type == OrderType.LIMIT:
@@ -284,10 +287,11 @@ class BinanceSpotRestAPi:
 
         try:
             data = self._client.new_order(**params)
+            print(data)
             self.on_send_order(data, order)
         except Exception as e:
             self.on_send_order_error(e, order)
-            return ""
+            raise e
 
         return order.vt_orderid
 
@@ -298,6 +302,7 @@ class BinanceSpotRestAPi:
             "symbol": req.symbol.upper(),
             "origClientOrderId": req.orderid
         }
+        print(params)
 
         order: OrderData = self.gateway.get_order(req.orderid)
 
@@ -402,10 +407,23 @@ class BinanceSpotRestAPi:
         self.gateway.write_log("合约信息查询成功")
 
     def on_send_order(self, data: dict, order: OrderData) -> None:
+        """
+
+        Parameters
+        ----------
+        data :
+            binance response
+        order :
+
+        Returns
+        -------
+
+        """
         """委托下单回报"""
         if data['status'] not in STATUS_BINANCE2VT:
             self.on_send_order_failed(data, order)
-        pass
+        order.status = STATUS_BINANCE2VT[data['status']]
+        self.gateway.on_order(order)
 
     def on_send_order_failed(self, data: dict, order: OrderData) -> None:
         """委托下单失败服务器报错回报"""
@@ -425,9 +443,9 @@ class BinanceSpotRestAPi:
 
     def on_cancel_order(self, data: dict, order: OrderData) -> None:
         """委托撤单回报"""
-        if data['code']:
+        print("on_cancel_order", data)
+        if data.get('code', None):
             self.on_cancel_failed(data, order)
-        pass
 
     def on_cancel_failed(self, data: dict, order: OrderData) -> None:
         """撤单回报函数报错回报"""

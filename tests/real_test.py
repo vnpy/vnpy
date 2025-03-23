@@ -33,11 +33,12 @@ from vnpy.app.data_recorder import DataRecorderApp
 from vnpy.event import Event
 from vnpy.event import EventEngine
 from vnpy.gateway.binance import BinanceSpotGateway
-from vnpy.trader.constant import Exchange,Interval
+from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.datafeed import get_datafeed
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.object import SubscribeRequest, BarData
 from vnpy.trader.setting import SETTINGS
+from strategies import SimpleOrderStrategyApp, SimpleOrderStrategyEngine
 
 
 def run_child():
@@ -77,12 +78,12 @@ def run_child():
     #     main_engine.subscribe(req=req, gateway_name='BINANCE_SPOT')  #第63行放到这操作
 
     # start data recorder
-    data_recorder_engine = main_engine.add_app(DataRecorderApp)
-    main_engine.write_log(f"启动[{data_recorder_engine.__class__.__name__}]")
-
-    factor_maker_engine: FactorEngine = main_engine.add_app(FactorMakerApp)
-    factor_maker_engine.init_engine(fake=True)
-    main_engine.write_log(f"启动[{factor_maker_engine.__class__.__name__}]")
+    # data_recorder_engine = main_engine.add_app(DataRecorderApp)
+    # main_engine.write_log(f"启动[{data_recorder_engine.__class__.__name__}]")
+    #
+    # factor_maker_engine: FactorEngine = main_engine.add_app(FactorMakerApp)
+    # factor_maker_engine.init_engine(fake=True)
+    # main_engine.write_log(f"启动[{factor_maker_engine.__class__.__name__}]")
 
     # log_engine = main_engine.get_engine("log")
     # event_engine.register(EVENT_CTA_LOG, log_engine.process_log_event)
@@ -102,6 +103,13 @@ def run_child():
     #
     # cta_engine.start_all_strategies()
     # main_engine.write_log("CTA策略全部启动")
+
+    # # test order engine
+    order_engine: SimpleOrderStrategyEngine = main_engine.add_app(SimpleOrderStrategyApp)
+    order_engine.init_engine()
+    order_engine.run_all_tests()
+    # data_recorder_engine = main_engine.add_app(DataRecorderApp)
+    # main_engine.write_log(f"启动[{data_recorder_engine.__class__.__name__}]")
 
     while True:
         # print(main_engine.event_engine._queue.get())

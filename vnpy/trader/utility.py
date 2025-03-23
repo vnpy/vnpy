@@ -15,7 +15,7 @@ import pandas as pd
 import polars as pl
 import numpy as np
 
-from .constant import Exchange, Interval, TimeFreq
+from .constant import Exchange, Interval
 from .locale import _
 from .object import BarData, TickData, FactorData
 
@@ -28,15 +28,17 @@ else:
 
 log_formatter: logging.Formatter = logging.Formatter("[%(asctime)s] %(message)s")
 
-def extract_factor_key(factor_key:str) -> Tuple[Interval, str]:
+
+def extract_factor_key(factor_key: str) -> Tuple[Interval, str]:
     """
     Returns
     -------
     (interval, factor_name)
     """
-    factor_key,param=factor_key.split('@')
+    factor_key, param = factor_key.split('@')
     _, interval_str, factor_name = factor_key.split("_")
     return Interval(interval_str), factor_name
+
 
 def extract_vt_symbol_factor(vt_symbol: str) -> Tuple[Interval, str, str, Exchange]:
     """
@@ -1129,3 +1131,9 @@ def get_file_logger(filename: str) -> logging.Logger:
     return logger
 
 
+def is_nothing(obj)->bool:
+    if obj is None:
+        return True
+    if len(obj) == 0:
+        return True
+    return False

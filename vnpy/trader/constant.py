@@ -169,21 +169,3 @@ class Interval(Enum):
     TEST = "TEST"  # For testing
 
 
-class TimeFreq(AEnum):
-    """
-    用于表示时间频率，最小频率为ms
-
-    author: hyf
-    """
-    _settings_ = NoAlias
-
-    unknown = 0
-    ms = 1
-    s = 1000
-    m = 60 * 1000  # minutes
-    min = 60 * 1000  # minutes
-    h = 60 * 60 * 1000  # hours
-    d = 24 * 60 * 60 * 1000  # days
-    W = 7 * 24 * 60 * 60 * 1000  # weeks
-    M = 30 * 24 * 60 * 60 * 1000  # months
-    Y = 365 * 24 * 60 * 60 * 1000  # years

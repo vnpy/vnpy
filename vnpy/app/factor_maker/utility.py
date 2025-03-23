@@ -53,10 +53,3 @@ def init_factors(f_setting: Dict):
         f_class = f_class({module_name: module_setting}, **module_setting["params"])  # recursion
         factors_list.append(f_class)
     return factors_list
-
-
-if __name__ == '__main__':
-    setting = load_factor_setting(
-        '/Users/hongyifan/Desktop/work/crypto/20240720/examples/no_ui/.vntrader/factor_maker_setting.json')
-    factors_list = init_factors(setting)
-    print(factors_list)

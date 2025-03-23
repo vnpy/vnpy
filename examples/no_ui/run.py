@@ -102,7 +102,7 @@ def run_parent():
                 (current_time >= DAY_START and current_time <= DAY_END)
                 or (current_time >= NIGHT_START)
                 or (current_time <= NIGHT_END)
-        ) or True:  # fixme
+        ):
             trading = True
 
         # Start child process in trading period

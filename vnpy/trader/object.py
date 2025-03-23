@@ -166,7 +166,7 @@ class OrderData(BaseData):
     def __post_init__(self) -> None:
         """"""
         self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
-        self.vt_orderid: str = f"{self.gateway_name}.{self.orderid}"
+        self.vt_orderid: str = f"{self.gateway_name}-{self.orderid}"
 
     def is_active(self) -> bool:
         """
@@ -379,7 +379,7 @@ class OrderRequest:
         """
         Create order data from request.
         """
-        orderid = f"{self.vt_symbol}.{self.strategy_name}_{datetime.now().timestamp()}"
+        orderid = f"{self.symbol}-{self.strategy_name}-{str(datetime.now().timestamp()).split('.')[0]}"
         if self.direction == Direction.LONG:
             stop_loss_price = self.price * (1 - self.stop_loss)
             take_profit_price = self.price * (1 + self.take_profit)
