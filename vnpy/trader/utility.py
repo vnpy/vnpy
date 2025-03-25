@@ -6,7 +6,7 @@ import json
 import logging
 import sys
 from datetime import datetime, time
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 from math import floor, ceil
 from pathlib import Path
 from typing import Callable, Dict, Tuple, Union, Optional
@@ -182,6 +182,37 @@ def ceil_to(value: float, target: float) -> float:
     target: Decimal = Decimal(str(target))
     result: float = float(int(ceil(value / target)) * target)
     return result
+
+def round_volume(volume: float, target: float, trading_cost: float = 0.0005) -> float:
+    """
+    Round volume down to the nearest tradable unit, considering trading fee.
+
+    Parameters
+    ----------
+    volume : float
+        The raw available volume.
+    target : float
+        The smallest tradable unit.
+    trading_cost : float
+        Safety buffer to reserve for trading fee (default = 0.0005).
+
+    Returns
+    -------
+    float
+        Rounded volume safe for order submission.
+    """
+    volume_dec = Decimal(str(volume))
+    target_dec = Decimal(str(target))
+    cost_dec = Decimal(str(trading_cost))
+
+    # Subtract trading cost
+    usable_volume = volume_dec * (1-cost_dec)
+    if usable_volume < target_dec:
+        return 0.0  # Not enough to trade after fee
+
+    units = (usable_volume / target_dec).to_integral_value(rounding=ROUND_DOWN)
+    rounded = units * target_dec
+    return float(rounded)
 
 
 def get_digits(value: float) -> int:
