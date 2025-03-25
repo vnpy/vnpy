@@ -32,7 +32,7 @@ from vnpy.trader.object import (
     SubscribeRequest,
     HistoryRequest
 )
-from vnpy.trader.utility import round_to
+from vnpy.trader.utility import round_to, round_volume
 from vnpy.trader.setting import SETTINGS
 
 SYSTEM_MODE = SETTINGS.get('system.mode', 'LIVE')
@@ -268,7 +268,7 @@ class BinanceSpotRestAPi:
         # 生成委托请求
         contract: ContractData = symbol_contract_map.get(order.symbol, None)
         if contract:
-            req.volume = round_to(float(req.volume), contract.min_volume) # todo: how to round to avoid Account has insufficient balance for requested action error
+            req.volume = round_volume(float(req.volume), contract.min_volume, self.commission_rate) # todo: how to round to avoid Account has insufficient balance for requested action error
         params: dict = {
             "symbol": req.symbol.upper(),
             "side": DIRECTION_VT2BINANCE[req.direction],
@@ -335,6 +335,7 @@ class BinanceSpotRestAPi:
 
     def on_query_account(self, data: dict) -> None:
         """资金查询回报"""
+        self.commission_rate = float(data["commissionRates"].get('taker', 0.0015))
         for account_data in data["balances"]:
             account: AccountData = AccountData(
                 accountid=account_data["asset"],
