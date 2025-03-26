@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from typing import Any
 
 import numpy as np
 
@@ -22,7 +23,7 @@ class AlphaModel(metaclass=ABCMeta):
         """
         pass
 
-    def detail(self) -> None:
+    def detail(self) -> Any:
         """
         Output detailed information about the model
         """

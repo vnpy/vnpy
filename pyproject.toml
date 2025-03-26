@@ -45,6 +45,7 @@ alpha = [
     "alphalens-reloaded==0.4.5",
     "scikit-learn==1.6.1",
     "lightgbm==4.6.0",
+    "torch==2.6.0",
 ]
 
 [project.urls]

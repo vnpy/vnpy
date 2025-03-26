@@ -112,12 +112,11 @@ def calculate_by_expression(df: pl.DataFrame, expression: str) -> pl.DataFrame:
     """Execute calculation based on expression"""
     # Import operators locally to avoid polluting global namespace
     from .ts_function import (              # noqa
-        ts_delay, delay,
-        ts_delta, delta,
+        ts_delay,
         ts_min, ts_max,
         ts_argmax, ts_argmin,
         ts_rank,
-        ts_sum, ts_product,
+        ts_sum,
         ref,
         mean, std,
         slope,
@@ -125,10 +124,9 @@ def calculate_by_expression(df: pl.DataFrame, expression: str) -> pl.DataFrame:
         max, min,
         quantile,
         idxmax, idxmin,
-        log, corr, ts_covariance,
+        log, corr,
         sum, abs,
-        less, greater,
-        pow,
+        less, greater
     )
     from .cs_function import (              # noqa
         cs_rank, rank,
