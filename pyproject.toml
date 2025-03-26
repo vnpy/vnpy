@@ -41,7 +41,8 @@ keywords = ["quant", "quantitative", "investment", "trading", "algotrading"]
 [project.optional-dependencies]
 alpha = [
     "polars==1.26.0",
-    "scipy==1.15.2"
+    "scipy==1.15.2",
+    "alphalens-reloaded==0.4.5"
 ]
 
 [project.urls]
