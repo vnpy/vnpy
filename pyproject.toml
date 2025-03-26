@@ -42,7 +42,9 @@ keywords = ["quant", "quantitative", "investment", "trading", "algotrading"]
 alpha = [
     "polars==1.26.0",
     "scipy==1.15.2",
-    "alphalens-reloaded==0.4.5"
+    "alphalens-reloaded==0.4.5",
+    "scikit-learn==1.6.1",
+    "lightgbm==4.6.0",
 ]
 
 [project.urls]
