@@ -224,22 +224,3 @@ def ts_abs(feature: DataProxy) -> DataProxy:
         pl.col("data").abs().over("vt_symbol")
     )
     return DataProxy(df)
-
-
-sum = ts_sum
-ref = ts_delay
-mean = ts_mean
-std = ts_std
-slope = ts_slope
-rsquare = ts_rsquare
-resi = ts_resi
-max = ts_max
-min = ts_min
-quantile = ts_quantile
-idxmax = ts_argmax
-idxmin = ts_argmin
-corr = ts_corr
-less = ts_less
-greater = ts_greater
-log = ts_log
-abs = ts_abs

@@ -115,24 +115,23 @@ def calculate_by_expression(df: pl.DataFrame, expression: str) -> pl.DataFrame:
         ts_delay,
         ts_min, ts_max,
         ts_argmax, ts_argmin,
-        ts_rank,
-        ts_sum,
-        ref,
-        mean, std,
-        slope,
-        rsquare, resi,
-        max, min,
-        quantile,
-        idxmax, idxmin,
-        log, corr,
-        sum, abs,
-        less, greater
+        ts_rank, ts_sum,
+        ts_mean, ts_std,
+        ts_slope, ts_quantile,
+        ts_rsquare, ts_resi,
+        ts_corr,
+        ts_less, ts_greater,
+        ts_log, ts_abs
     )
     from .cs_function import (              # noqa
-        cs_rank, rank,
-        cs_mean, cs_std
+        cs_rank,
+        cs_mean,
+        cs_std
     )
-    from .ta_function import rsi, atr       # noqa
+    from .ta_function import (              # noqa
+        ta_rsi,
+        ta_atr
+    )
 
     # Extract feature objects to local space
     d: dict = locals()

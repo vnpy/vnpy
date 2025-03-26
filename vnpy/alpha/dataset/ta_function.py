@@ -19,7 +19,7 @@ def to_pl_dataframe(series: pd.Series) -> pl.DataFrame:
     return pl.from_pandas(series.reset_index().rename(columns={0: "data"}))
 
 
-def rsi(close: DataProxy, window: int) -> DataProxy:
+def ta_rsi(close: DataProxy, window: int) -> DataProxy:
     """Calculate RSI indicator by contract"""
     close_: pd.Series = to_pd_series(close)
 
@@ -29,7 +29,7 @@ def rsi(close: DataProxy, window: int) -> DataProxy:
     return DataProxy(df)
 
 
-def atr(high: DataProxy, low: DataProxy, close: DataProxy, window: int) -> DataProxy:
+def ta_atr(high: DataProxy, low: DataProxy, close: DataProxy, window: int) -> DataProxy:
     """Calculate ATR indicator by contract"""
     high_: pd.Series = to_pd_series(high)
     low_: pd.Series = to_pd_series(low)

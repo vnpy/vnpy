@@ -35,7 +35,3 @@ def cs_std(feature: DataProxy) -> DataProxy:
         pl.col("data").std().over("datetime")
     )
     return DataProxy(df)
-
-
-rank = cs_rank
-
