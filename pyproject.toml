@@ -34,7 +34,8 @@ dependencies = [
     "pyzmq==26.3.0",
     "plotly==6.0.0",
     "tqdm==4.67.1",
-    "loguru==0.7.3"
+    "loguru==0.7.3",
+    "nbformat==5.10.4"
 ]
 keywords = ["quant", "quantitative", "investment", "trading", "algotrading"]
 
@@ -46,6 +47,7 @@ alpha = [
     "scikit-learn==1.6.1",
     "lightgbm==4.6.0",
     "torch==2.6.0",
+    "pyarrow==19.0.1",
 ]
 
 [project.urls]

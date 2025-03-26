@@ -147,7 +147,7 @@ def calculate_by_expression(df: pl.DataFrame, expression: str) -> pl.DataFrame:
         d[column] = DataProxy(column_df)
 
     # Use eval to execute calculation
-    other: DataProxy = eval(expression)
+    other: DataProxy = eval(expression, {}, d)
 
     # Return result DataFrame
     return other.df

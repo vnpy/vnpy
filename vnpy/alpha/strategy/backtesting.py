@@ -44,7 +44,7 @@ class BacktestingEngine:
         self.strategy_class: type[AlphaStrategy]
         self.strategy: AlphaStrategy
         self.bars: dict[str, BarData] = {}
-        self.datetime: datetime
+        self.datetime: datetime | None = None
 
         self.interval: Interval
         self.history_data: dict[tuple, BarData] = {}
@@ -708,6 +708,10 @@ class BacktestingEngine:
 
     def get_signal(self) -> pl.DataFrame:
         """Get model prediction signal for current time"""
+        if not self.datetime:
+            self.write_log("尚未开始数据回放，无法加载模型预测值")
+            return pl.DataFrame()
+
         dt: datetime = self.datetime.replace(tzinfo=None)
         signal: pl.DataFrame = self.signal_df.filter(pl.col("datetime") == dt)
 

@@ -66,23 +66,19 @@ class AlphaLab:
 
         data: list = []
         for bar in bars:
-            bar.datetime = bar.datetime.replace(tzinfo=None)
-            data.append(bar)
+            bar_data: dict = {
+                "datetime": bar.datetime.replace(tzinfo=None),
+                "open": bar.open_price,
+                "high": bar.high_price,
+                "low": bar.low_price,
+                "close": bar.close_price,
+                "volume": bar.volume,
+                "turnover": bar.turnover,
+                "open_interest": bar.open_interest
+            }
+            data.append(bar_data)
 
-        df: pl.DataFrame = pl.DataFrame(data)
-
-        new_df: pl.DataFrame = (df.select(
-            [
-                pl.col("datetime"),
-                pl.col("open_price").alias("open"),
-                pl.col("high_price").alias("high"),
-                pl.col("low_price").alias("low"),
-                pl.col("close_price").alias("close"),
-                pl.col("volume"),
-                pl.col("turnover"),
-                pl.col("open_interest"),
-            ]
-        ))
+        new_df: pl.DataFrame = pl.DataFrame(data)
 
         # If file exists, read and merge
         if file_path.exists():

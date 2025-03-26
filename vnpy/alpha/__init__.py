@@ -2,6 +2,7 @@ from .logger import logger
 from .dataset import AlphaDataset, Segment, to_datetime
 from .model import AlphaModel
 from .strategy import AlphaStrategy, BacktestingEngine
+from .lab import AlphaLab
 
 
 __all__ = [
@@ -11,5 +12,6 @@ __all__ = [
     "to_datetime",
     "AlphaModel",
     "AlphaStrategy",
-    "BacktestingEngine"
+    "BacktestingEngine",
+    "AlphaLab"
 ]
