@@ -8,6 +8,7 @@ from .processor import (
     process_cs_rank_norm
 )
 
+
 __all__ = [
     "AlphaDataset",
     "Segment",

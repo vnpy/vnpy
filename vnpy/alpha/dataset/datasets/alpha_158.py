@@ -1,6 +1,6 @@
 import polars as pl
 
-from vnpy.alpha.dataset import AlphaDataset
+from vnpy.alpha import AlphaDataset
 
 
 class Alpha158(AlphaDataset):
