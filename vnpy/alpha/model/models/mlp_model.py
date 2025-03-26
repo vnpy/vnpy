@@ -196,7 +196,7 @@ class MlpModel(AlphaModel):
         for step in range(1, self.n_epochs + 1):
             # Check if early stopping condition is met
             if early_stop_count >= self.early_stop_rounds:
-                logger.info("Early stopping condition reached, training ended")
+                logger.info("达到早停条件,训练结束")
                 break
 
             # Train one batch
@@ -315,7 +315,7 @@ class MlpModel(AlphaModel):
         # Update best model if validation performance improves
         best_params = None
         if loss_val < best_valid_score:
-            logger.info(f"\tValidation loss decreased from {best_valid_score:.6f} to {loss_val:.6f}")
+            logger.info(f"\t验证集损失从 {best_valid_score:.6f} 降低到 {loss_val:.6f}")
             best_valid_score = loss_val
             self.best_step = step
             early_stop_count = 0
@@ -436,21 +436,21 @@ class MlpModel(AlphaModel):
             Feature importance dataframe
         """
         if not self.fitted:
-            logger.info("Model has not been trained, cannot display detailed information")
+            logger.info("模型尚未训练，无法显示详细信息")
             return None
 
-        # Display basic model information
-        logger.info(f"Input feature dimension: {self.input_size}")
-        logger.info(f"Hidden layer sizes: {self.hidden_sizes}")
+        # 显示模型基本信息
+        logger.info(f"输入特征维度: {self.input_size}")
+        logger.info(f"隐藏层大小: {self.hidden_sizes}")
 
-        # Calculate total model parameters
+        # 计算模型总参数量
         total_params = sum(p.numel() for p in self.model.parameters())
-        logger.info(f"Total model parameters: {total_params:,}")
+        logger.info(f"模型总参数量: {total_params:,}")
 
-        # Display training status information
-        logger.info(f"Training device: {self.device}")
-        logger.info(f"Current learning rate: {self.lr}")
-        logger.info(f"Batch size: {self.batch_size}")
+        # 显示训练状态信息
+        logger.info(f"训练设备: {self.device}")
+        logger.info(f"当前学习率: {self.lr}")
+        logger.info(f"批次大小: {self.batch_size}")
 
         # Calculate feature importance
         importance_df = self._calculate_feature_importance()
