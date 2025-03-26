@@ -126,7 +126,7 @@ class AlphaStrategy(metaclass=ABCMeta):
         """Query target position"""
         return self.target_data[vt_symbol]
 
-    def set_target(self, vt_symbol: str, target: int) -> None:
+    def set_target(self, vt_symbol: str, target: float) -> None:
         """Set target position"""
         self.target_data[vt_symbol] = target
 
