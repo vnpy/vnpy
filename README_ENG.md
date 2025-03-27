@@ -1,4 +1,4 @@
-# VeighNa - By Traders, For Traders.
+# VeighNa - By Traders, For Traders, AI-Powered.
 
 <p align="center">
   <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/veighna-logo.png"/>
@@ -30,11 +30,44 @@ If you have any questions about using VeighNa for secondary development (strateg
   <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/github_wx.png"/, width=250>
 </p>
 
+
+## AI-Powered
+
+On the tenth anniversary of VeighNa's release, version 4.0 officially introduces the [vnpy.alpha](./vnpy/alpha) module targeting AI quantitative strategies, providing professional quantitative traders with **an all-in-one multi-factor machine learning (ML) strategy development, research, and live trading solution**:
+
+* :bar_chart: **[dataset](./vnpy/alpha/dataset)**: Factor Feature Engineering
+
+    * Designed specifically for ML algorithm training optimization, supporting efficient batch feature calculation and processing
+    * Built-in rich factor feature expression calculation engine, enabling rapid one-click generation of training data
+    * [Alpha 158](./vnpy/alpha/dataset/datasets/alpha_158.py): A collection of stock market features from Microsoft's Qlib project, covering multiple dimensions of quantitative factors including K-line patterns, price trends, and time-series volatility
+
+* :bulb: **[model](./vnpy/alpha/model)**: Prediction Model Training
+
+    * Provides standardized ML model development templates, greatly simplifying model building and training processes
+    * Unified API interface design, supporting seamless switching between different algorithms for performance comparison testing
+    * Integrates multiple mainstream machine learning algorithms:
+        * [Lasso](./vnpy/alpha/model/models/lasso_model.py): Classic Lasso regression model, implementing feature selection through L1 regularization
+        * [LightGBM](./vnpy/alpha/model/models/lgb_model.py): Efficient gradient boosting decision tree with a training engine optimized for large-scale datasets
+        * [MLP](./vnpy/alpha/model/models/mlp_model.py): Multi-layer perceptron neural network, suitable for modeling complex non-linear relationships
+
+* :robot: **[strategy](./vnpy/alpha/strategy)**: Strategy Research and Development
+
+    * Quickly build quantitative trading strategies based on ML signal prediction models
+    * Support for both cross-sectional multi-asset and time-series single-asset strategy types
+
+* :microscope: **[lab](./vnpy/alpha/lab.py)**: Research Process Management
+
+    * Integrates complete workflow including data management, model training, signal generation, and strategy backtesting
+    * Simple API design with built-in visualization analysis tools for intuitive evaluation of strategy performance and model effectiveness
+
+The design concept of the vnpy.alpha module was inspired by the [Qlib](https://github.com/microsoft/qlib) project, providing powerful AI quantitative capabilities while maintaining ease of use. We would like to express our sincere gratitude to the Qlib development team!
+
+
 ## Functional Features
 
 Modules marked with :arrow_up: have completed the upgrade compatibility testing for version 4.0. Additionally, the 4.0 core framework uses an upgrade approach that prioritizes compatibility, so most modules can also be used directly (interfaces involving C++ API encapsulation must be upgraded before use).
 
-1. Multi-functional quantitative trading platform (vnpy.trader) that integrates various trading interfaces and provides simple and easy-to-use APIs for specific strategy algorithm and function development, for quickly building quantitative trading applications required by traders.
+1. :arrow_up: Multi-functional quantitative trading platform (vnpy.trader) that integrates various trading interfaces and provides simple and easy-to-use APIs for specific strategy algorithm and function development, for quickly building quantitative trading applications required by traders.
 
 2. Trading interfaces (vnpy.gateway) covering all domestic and international trading varieties:
 
@@ -142,7 +175,7 @@ Modules marked with :arrow_up: have completed the upgrade compatibility testing 
     * Websocket Client ([websocket](https://www.github.com/vnpy/vnpy_websocket)): High-performance Websocket API client based on coroutine process asynchronous IO, supports sharing event loops with REST Client to avoid multi-threaded performance loss caused by GIL
 
 
-5. Simple and easy-to-use event-driven engine (vnpy.event), which is the core of event-driven trading programs
+5. :arrow_up: Simple and easy-to-use event-driven engine (vnpy.event), which is the core of event-driven trading programs
 
 6. Standardized management client (vnpy.database) interfacing with various databases:
 
@@ -174,7 +207,7 @@ Modules marked with :arrow_up: have completed the upgrade compatibility testing 
 
     * XtQuant ([xt](https://www.github.com/vnpy/vnpy_xt)): Stocks, futures, options, funds, bonds
 
-    * RQData ([rqdata](https://www.github.com/vnpy/vnpy_rqdata)): Stocks, futures, options, funds, bonds, Gold TD
+    * :arrow_up: RQData ([rqdata](https://www.github.com/vnpy/vnpy_rqdata)): Stocks, futures, options, funds, bonds, Gold TD
 
     * VoltTrader ([voltrader](https://www.github.com/vnpy/vnpy_voltrader)): Futures, options
     
@@ -191,9 +224,9 @@ Modules marked with :arrow_up: have completed the upgrade compatibility testing 
     * TQSDK ([tqsdk](https://www.github.com/vnpy/vnpy_tqsdk)): Futures
 
 
-8. Standard component for inter-process communication (vnpy.rpc) for implementing complex trading systems in distributed deployments
+8. :arrow_up: Standard component for inter-process communication (vnpy.rpc) for implementing complex trading systems in distributed deployments
 
-9. Python high-performance K-line charts (vnpy.chart), supporting large data volume chart display and real-time data update functions
+9. :arrow_up: Python high-performance K-line charts (vnpy.chart), supporting large data volume chart display and real-time data update functions
 
 10. [Community Forum](http://www.vnpy.com/forum) and [Zhihu Blog](http://zhuanlan.zhihu.com/vn-py), which include the development tutorial of VeighNa project and the research on the application of Python in the field of quantitative trading, etc.
 
@@ -320,7 +353,3 @@ When submitting code, please observe the following rules to improve the quality 
 ## Copyright statement
 
 MIT
-  
-
-
-

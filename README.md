@@ -1,4 +1,4 @@
-# VeighNa - By Traders, For Traders.
+# VeighNa - By Traders, For Traders, AI-Powered.
 
 <p align="center">
   <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/veighna-logo.png"/>
@@ -29,6 +29,38 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 <p align="center">
   <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/github_wx.png"/, width=250>
 </p>
+
+
+## AI-Powered
+
+VeighNa发布十周年之际正式推出4.0版本，重磅新增面向AI量化策略的[vnpy.alpha](./vnpy/alpha)模块，为专业量化交易员提供**一站式多因子机器学习（ML）策略开发、投研和实盘交易解决方案**：
+
+* :bar_chart: **[dataset](./vnpy/alpha/dataset)**：因子特征工程
+
+    * 专为ML算法训练优化设计，支持高效批量特征计算与处理
+    * 内置丰富的因子特征表达式计算引擎，实现快速一键生成训练数据
+    * [Alpha 158](./vnpy/alpha/dataset/datasets/alpha_158.py)：源于微软Qlib项目的股票市场特征集合，涵盖K线形态、价格趋势、时序波动等多维度量化因子
+
+* :bulb: **[model](./vnpy/alpha/model)**：预测模型训练
+
+    * 提供标准化的ML模型开发模板，大幅简化模型构建与训练流程
+    * 统一API接口设计，支持无缝切换不同算法进行性能对比测试
+    * 集成多种主流机器学习算法：
+        * [Lasso](./vnpy/alpha/model/models/lasso_model.py)：经典Lasso回归模型，通过L1正则化实现特征选择
+        * [LightGBM](./vnpy/alpha/model/models/lgb_model.py)：高效梯度提升决策树，针对大规模数据集优化的训练引擎
+        * [MLP](./vnpy/alpha/model/models/mlp_model.py)：多层感知机神经网络，适用于复杂非线性关系建模
+
+* :robot: **[strategy](./vnpy/alpha/strategy)**：策略投研开发
+
+    * 基于ML信号预测模型快速构建量化交易策略
+    * 支持截面多标的和时序单标的两种策略类型
+
+* :microscope: **[lab](./vnpy/alpha/lab.py)**：投研流程管理
+
+    * 集成数据管理、模型训练、信号生成和策略回测等完整工作流程
+    * 简洁API设计，内置可视化分析工具，直观评估策略表现和模型效果
+
+vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)项目的启发，在保持易用性的同时提供强大的AI量化能力，特此向Qlib开发团队致以诚挚感谢！
 
 
 ## 功能特点
