@@ -16,9 +16,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install ta-lib==0.6.3 --index=https://pypi.vnpy.com
-        pip install -r requirements.txt
         pip install ruff mypy uv
+        uv pip install ta-lib==0.6.3 --index=https://pypi.vnpy.com --system
+        uv pip install -e .[alpha,dev] --system
     - name: Lint with ruff
       run: |
         # Run ruff linter based on pyproject.toml configuration

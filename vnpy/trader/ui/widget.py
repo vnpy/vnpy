@@ -3,14 +3,13 @@ Basic widgets for UI.
 """
 
 import csv
-from datetime import datetime
 import platform
 from enum import Enum
 from typing import cast, Any
 from copy import copy
 from tzlocal import get_localzone_name
-
-import importlib_metadata
+from datetime import datetime
+from importlib import metadata
 
 from .qt import QtCore, QtGui, QtWidgets, Qt
 from ..constant import Direction, Exchange, Offset, OrderType
@@ -1189,9 +1188,9 @@ class AboutDialog(QtWidgets.QDialog):
 
             VeighNa - {vnpy_version}
             Python - {platform.python_version()}
-            PySide6 - {importlib_metadata.version("pyside6")}
-            NumPy - {importlib_metadata.version("numpy")}
-            pandas - {importlib_metadata.version("pandas")}
+            PySide6 - {metadata.version("pyside6")}
+            NumPy - {metadata.version("numpy")}
+            pandas - {metadata.version("pandas")}
             """
 
         label: QtWidgets.QLabel = QtWidgets.QLabel()

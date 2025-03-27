@@ -23,31 +23,36 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "tzlocal==5.3.1",
-    "PySide6==6.8.2.1",
-    "pyqtgraph==0.13.7",
-    "qdarkstyle==3.2.3",
-    "numpy==2.2.3",
-    "pandas==2.2.3",
-    "ta-lib==0.6.3",
-    "deap==1.4.2",
-    "pyzmq==26.3.0",
-    "plotly==6.0.0",
-    "tqdm==4.67.1",
-    "loguru==0.7.3",
-    "nbformat==5.10.4"
+    "tzlocal>=5.3.1",
+    "PySide6>=6.8.2.1",
+    "pyqtgraph>=0.13.7",
+    "qdarkstyle>=3.2.3",
+    "numpy>=2.2.3",
+    "pandas>=2.2.3",
+    "ta-lib>=0.6.3",
+    "deap>=1.4.2",
+    "pyzmq>=26.3.0",
+    "plotly>=6.0.0",
+    "tqdm>=4.67.1",
+    "loguru>=0.7.3",
+    "nbformat>=5.10.4"
 ]
 keywords = ["quant", "quantitative", "investment", "trading", "algotrading"]
 
 [project.optional-dependencies]
 alpha = [
-    "polars==1.26.0",
-    "scipy==1.15.2",
-    "alphalens-reloaded==0.4.5",
-    "scikit-learn==1.6.1",
-    "lightgbm==4.6.0",
-    "torch==2.6.0",
-    "pyarrow==19.0.1",
+    "polars>=1.26.0",
+    "scipy>=1.15.2",
+    "alphalens-reloaded>=0.4.5",
+    "scikit-learn>=1.6.1",
+    "lightgbm>=4.6.0",
+    "torch>=2.6.0",
+    "pyarrow>=19.0.1",
+]
+dev = [
+    "pandas-stubs>=2.2.3.250308",
+    "hatchling>=1.27.0",
+    "babel>=2.17.0",
 ]
 
 [project.urls]
