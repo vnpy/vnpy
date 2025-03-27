@@ -35,7 +35,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 带有 :arrow_up: 的模块代表已经完成4.0版本的升级适配测试，同时4.0核心框架采用了优先保证兼容性的升级方式，因此大多数模块也都可以直接使用（涉及到C++ API封装的接口必须升级后才能使用）。 
 
-1. 多功能量化交易平台（trader），整合了多种交易接口，并针对具体策略算法和功能开发提供了简洁易用的API，用于快速构建交易员所需的量化交易应用。
+1. :arrow_up: 多功能量化交易平台（trader），整合了多种交易接口，并针对具体策略算法和功能开发提供了简洁易用的API，用于快速构建交易员所需的量化交易应用。
 
 2. 覆盖国内外所拥有的下述交易品种的交易接口（gateway）：
 
@@ -141,7 +141,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
     * Websocket Client（[websocket](https://www.github.com/vnpy/vnpy_websocket)）：基于协程异步IO的高性能Websocket API客户端，支持和REST Client共用事件循环并发运行
 
-5. 简洁易用的事件驱动引擎（event），作为事件驱动型交易程序的核心。
+5. :arrow_up: 简洁易用的事件驱动引擎（event），作为事件驱动型交易程序的核心。
 
 6. 对接各类数据库的适配器接口（database）：
 
@@ -173,7 +173,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
     * 迅投研（[xt](https://www.github.com/vnpy/vnpy_xt)）：股票、期货、期权、基金、债券
 
-    * 米筐RQData（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：股票、期货、期权、基金、债券、黄金TD
+    * :arrow_up: 米筐RQData（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：股票、期货、期权、基金、债券、黄金TD
 
     * 咏春大师（[voltrader](https://www.github.com/vnpy/vnpy_voltrader)）：期货、期权
 
@@ -189,9 +189,9 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
     * 天勤TQSDK（[tqsdk](https://www.github.com/vnpy/vnpy_tqsdk)）：期货
 
-8. 跨进程通讯标准组件（rpc），用于实现分布式部署的复杂交易系统。
+8. :arrow_up: 跨进程通讯标准组件（rpc），用于实现分布式部署的复杂交易系统。
 
-9. Python高性能K线图表（chart），支持大数据量图表显示以及实时数据更新功能。
+9. :arrow_up: Python高性能K线图表（chart），支持大数据量图表显示以及实时数据更新功能。
 
 10. [社区论坛](http://www.vnpy.com/forum)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括VeighNa项目的开发教程和Python在量化交易领域的应用研究等内容。
 
