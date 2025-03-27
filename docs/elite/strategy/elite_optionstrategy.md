@@ -259,7 +259,7 @@ StrategyTemplate中以on开头的函数称为回调函数，在编写策略的�
 
 * 出参：无
 
-当策略收到实盘中最新的Tick数据的行情推送时，on_tick函数会被调用。默认写法是先决定策略的执行频率（可通过tick的datetime判断过滤），再定时将缓存的tick价格数据推送进封装的策略执行函数中，最后将新收到的tick数据缓存至数据缓存容器中。
+当策略收到实盘中最新的tick数据的行情推送时，on_tick函数会被调用。默认写法是先决定策略的执行频率（可通过tick的datetime判断过滤），再定时将缓存的tick价格数据推送进封装的策略执行函数中，最后将新收到的tick数据缓存至数据缓存容器中。
 
 请注意，on_tick函数只在实盘中会被调用，回测不支持。
 
@@ -342,6 +342,25 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 * 出参：res: bool
 
 在策略里调用subscribe_options函数，可以订阅特定期权产品的期权组合行情。
+
+期权组合名称一定要是实盘交易系统中可以查到的合约上的期权产品名称（可以通过【合约查询】查看）。
+
+    标的对应期权产品名称示例：
+
+    ETF期权
+      "510050" - "510050_O"
+      "159919" - "159919_O"
+
+    股指期权
+      "IF" - "IO"
+      "IH" - "HO"
+      "IM" - "MO"
+
+    商品期权
+      "i" - "i_o"
+      "cu" - "cu_o"
+      "sc" - "sc_o"
+      "SR" - "SR"
 
 若返回False，则说明底层没有获取到对应的期权合约信息。
 
@@ -492,7 +511,7 @@ execute_trading被调用之后，在函数内部会先撤销策略所有活动�
 ##### 属性
 
  - vt_symbol: str（本地代码）
- - contractData: ContractData（合约信息）
+ - contract: ContractData（合约信息）
  - strike: float（行权价）
  - price: float（最新价）
  - pos: float（净持仓）
@@ -597,6 +616,56 @@ execute_trading被调用之后，在函数内部会先撤销策略所有活动�
 
   一般pos_data的key会设置成合约的vt_symbol。
 
+### 策略可用K线合成器
+
+#### OptionBarGenerator - 期权策略K线截面合成器
+
+OptionBarGenerator是一个专为期权策略设计的K线截面合成工具，用于将实时tick数据转换为1分钟K线数据截面。该工具支持多合约同时处理，能够高效地为期权策略提供所需的K线数据。
+
+##### 功能特点
+
+ - 多合约支持：同时处理多个合约的tick数据，生成对应的K线数据
+ - 时间戳监控：可指定特定合约作为时间戳监控合约，控制K线生成的节奏
+ - 交易时段过滤（只支持期货和期货期权）：基于配置的品种和时段自动过滤非交易时段的数据，确保K线质量
+ - 实时更新：随着tick数据的推送实时更新K线信息
+
+##### 使用方法
+
+```python
+from elite_optionstrategy.utility import OptionBarGenerator
+
+class MyOptionStrategy(StrategyTemplate):
+    
+    def __init__(self, strategy_engine, strategy_name, vt_symbols, setting):
+        super().__init__(strategy_engine, strategy_name, vt_symbols, setting)
+        
+        # 创建K线生成器实例
+        # 可选指定时间戳监控合约
+        self.bg = OptionBarGenerator(self.on_bars, dt_symbol="xxx")
+        
+    def on_tick(self, tick: TickData):
+        """tick数据更新"""
+        # 更新K线生成器
+        self.bg.update_tick(tick)
+        
+        # 其他tick数据处理逻辑
+        
+    def on_bars(self, bars: dict[str, BarData]):
+        """K线截面数据更新"""
+        # 处理K线截面数据
+        for vt_symbol, bar in bars_dict.items():
+            print(f"{vt_symbol} - 高:{bar.high_price} 开:{bar.open_price} 低:{bar.low_price} 收:{bar.close_price}")
+        
+        # 策略信号计算和交易逻辑
+```
+
+参数说明
+ - on_bars: 回调函数，当新的K线截面生成时被调用，接收包含多个合约K线的字典
+ - dt_symbol: 指定时间戳监控合约代码，用于控制K线生成的节奏（收到该合约下一分钟tick就合成所有合约上一分钟bar），留空则不指定
+
+工作原理
+OptionBarGenerator通过持续接收tick数据更新内部状态，当检测到分钟变化时，会生成当前分钟的K线截面并通过回调函数返回。如果指定了时间戳监控合约，则只有当该合约的时间戳发生分钟变化时，才会触发K线截面的生成。如果指定了时间戳监控合约并且配置了合约过滤信息（可参考[行情数据过滤文档](https://www.vnpy.com/docs/cn/elite/strategy/elite_filter.html)），则只有当该合约的时间戳发生分钟变化时且在有效交易时段内，才会触发K线截面的生成。
+
 
 ## 策略回测
 
@@ -622,7 +691,7 @@ engine.show_chart()
 
 - **set_parameters**
 
-  * 入参：interval: Interval,  start: datetime, end: datetime, rate: float, slippage: float, capital: int = 1_000_000, cache: str = ""
+  * 入参：interval: Interval,  start: datetime, end: datetime, rate: float, slippage: float, capital: int = 1_000_000, cache: str = "", memory: bool = False
 
   * 出参：无
 
@@ -638,7 +707,7 @@ engine.show_chart()
 
 - **run_backtesting**
 
-  * 入参：无
+  * 入参：disable_tqdm: bool= False
 
   * 出参：无
 
@@ -658,7 +727,7 @@ engine.show_chart()
 
 - **calculate_statistics**
 
-  * 入参：无
+  * 入参：df: DataFrame = None, output: bool = True
 
   * 出参：无
 
@@ -666,7 +735,7 @@ engine.show_chart()
 
 - **show_chart**
 
-  * 入参：无
+  * 入参：df: DataFrame = None
 
   * 出参：无
 

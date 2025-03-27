@@ -3,16 +3,15 @@ Basic widgets for UI.
 """
 
 import csv
-from datetime import datetime
 import platform
 from enum import Enum
-from typing import Any, Dict, List
+from typing import cast, Any
 from copy import copy
 from tzlocal import get_localzone_name
+from datetime import datetime
+from importlib import metadata
 
-import importlib_metadata
-
-from .qt import QtCore, QtGui, QtWidgets
+from .qt import QtCore, QtGui, QtWidgets, Qt
 from ..constant import Direction, Exchange, Offset, OrderType
 from ..engine import MainEngine, Event, EventEngine
 from ..event import (
@@ -76,7 +75,7 @@ class EnumCell(BaseCell):
     Cell used for showing enum data.
     """
 
-    def __init__(self, content: str, data: Any) -> None:
+    def __init__(self, content: Enum, data: Any) -> None:
         """"""
         super().__init__(content, data)
 
@@ -93,7 +92,7 @@ class DirectionCell(EnumCell):
     Cell used for showing direction data.
     """
 
-    def __init__(self, content: str, data: Any) -> None:
+    def __init__(self, content: Enum, data: Any) -> None:
         """"""
         super().__init__(content, data)
 
@@ -166,12 +165,12 @@ class TimeCell(BaseCell):
         """"""
         super().__init__(content, data)
 
-    def set_content(self, content: Any, data: Any) -> None:
+    def set_content(self, content: datetime | None, data: Any) -> None:
         """"""
         if content is None:
             return
 
-        content: datetime = content.astimezone(self.local_tz)
+        content = content.astimezone(self.local_tz)
         timestamp: str = content.strftime("%H:%M:%S")
 
         millisecond: int = int(content.microsecond / 1000)
@@ -231,7 +230,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
 
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine
-        self.cells: Dict[str, dict] = {}
+        self.cells: dict[str, dict] = {}
 
         self.init_ui()
         self.load_setting()
@@ -363,7 +362,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
 
                 row_data: list = []
                 for column in range(self.columnCount()):
-                    item: QtWidgets.QTableWidgetItem = self.item(row, column)
+                    item: QtWidgets.QTableWidgetItem | None = self.item(row, column)
                     if item:
                         row_data.append(str(item.text()))
                     else:
@@ -565,7 +564,7 @@ class QuoteMonitor(BaseMonitor):
         "gateway_name": {"display": _("接口"), "cell": BaseCell, "update": False},
     }
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """
         Connect signal.
         """
@@ -596,7 +595,7 @@ class ConnectDialog(QtWidgets.QDialog):
         self.gateway_name: str = gateway_name
         self.filename: str = f"connect_{gateway_name.lower()}.json"
 
-        self.widgets: Dict[str, QtWidgets.QWidget] = {}
+        self.widgets: dict[str, tuple[QtWidgets.QWidget, type]] = {}
 
         self.init_ui()
 
@@ -605,8 +604,7 @@ class ConnectDialog(QtWidgets.QDialog):
         self.setWindowTitle(_("连接{}").format(self.gateway_name))
 
         # Default setting provides field name, field data type and field default value.
-        default_setting: dict = self.main_engine.get_default_setting(
-            self.gateway_name)
+        default_setting: dict | None = self.main_engine.get_default_setting(self.gateway_name)
 
         # Saved setting provides field data used last time.
         loaded_setting: dict = load_json(self.filename)
@@ -614,52 +612,59 @@ class ConnectDialog(QtWidgets.QDialog):
         # Initialize line edits and form layout based on setting.
         form: QtWidgets.QFormLayout = QtWidgets.QFormLayout()
 
-        for field_name, field_value in default_setting.items():
-            field_type: type = type(field_value)
+        if default_setting:
+            for field_name, field_value in default_setting.items():
+                field_type: type = type(field_value)
 
-            if field_type == list:
-                widget: QtWidgets.QComboBox = QtWidgets.QComboBox()
-                widget.addItems(field_value)
+                if field_type is list:
+                    combo: QtWidgets.QComboBox = QtWidgets.QComboBox()
+                    combo.addItems(field_value)
 
-                if field_name in loaded_setting:
-                    saved_value = loaded_setting[field_name]
-                    ix: int = widget.findText(saved_value)
-                    widget.setCurrentIndex(ix)
-            else:
-                widget: QtWidgets.QLineEdit = QtWidgets.QLineEdit(str(field_value))
+                    if field_name in loaded_setting:
+                        saved_value = loaded_setting[field_name]
+                        ix: int = combo.findText(saved_value)
+                        combo.setCurrentIndex(ix)
 
-                if field_name in loaded_setting:
-                    saved_value = loaded_setting[field_name]
-                    widget.setText(str(saved_value))
+                    form.addRow(f"{field_name} <{field_type.__name__}>", combo)
+                    self.widgets[field_name] = (combo, field_type)
+                else:
+                    line: QtWidgets.QLineEdit = QtWidgets.QLineEdit(str(field_value))
 
-                if _("密码") in field_name:
-                    widget.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+                    if field_name in loaded_setting:
+                        saved_value = loaded_setting[field_name]
+                        line.setText(str(saved_value))
 
-                if field_type == int:
-                    validator: QtGui.QIntValidator = QtGui.QIntValidator()
-                    widget.setValidator(validator)
+                    if _("密码") in field_name:
+                        line.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
 
-            form.addRow(f"{field_name} <{field_type.__name__}>", widget)
-            self.widgets[field_name] = (widget, field_type)
+                    if field_type is int:
+                        validator: QtGui.QIntValidator = QtGui.QIntValidator()
+                        line.setValidator(validator)
+
+                    form.addRow(f"{field_name} <{field_type.__name__}>", line)
+                    self.widgets[field_name] = (line, field_type)
 
         button: QtWidgets.QPushButton = QtWidgets.QPushButton(_("连接"))
-        button.clicked.connect(self.connect)
+        button.clicked.connect(self.connect_gateway)
         form.addRow(button)
 
         self.setLayout(form)
 
-    def connect(self) -> None:
+    def connect_gateway(self) -> None:
         """
         Get setting value from line edits and connect the gateway.
         """
         setting: dict = {}
+
         for field_name, tp in self.widgets.items():
             widget, field_type = tp
-            if field_type == list:
-                field_value = str(widget.currentText())
+            if field_type is list:
+                combo: QtWidgets.QComboBox = cast(QtWidgets.QComboBox, widget)
+                field_value = str(combo.currentText())
             else:
+                line: QtWidgets.QLineEdit = cast(QtWidgets.QLineEdit, widget)
                 try:
-                    field_value = field_type(widget.text())
+                    field_value = field_type(line.text())
                 except ValueError:
                     field_value = field_type()
             setting[field_name] = field_value
@@ -695,7 +700,7 @@ class TradingWidget(QtWidgets.QWidget):
         self.setFixedWidth(300)
 
         # Trading function area
-        exchanges: List[Exchange] = self.main_engine.get_all_exchanges()
+        exchanges: list[Exchange] = self.main_engine.get_all_exchanges()
         self.exchange_combo: QtWidgets.QComboBox = QtWidgets.QComboBox()
         self.exchange_combo.addItems([exchange.value for exchange in exchanges])
 
@@ -831,7 +836,7 @@ class TradingWidget(QtWidgets.QWidget):
         label: QtWidgets.QLabel = QtWidgets.QLabel()
         if color:
             label.setStyleSheet(f"color:{color}")
-        label.setAlignment(alignment)
+        label.setAlignment(Qt.AlignmentFlag(alignment))
         return label
 
     def register_event(self) -> None:
@@ -898,13 +903,13 @@ class TradingWidget(QtWidgets.QWidget):
         self.vt_symbol = vt_symbol
 
         # Update name line widget and clear all labels
-        contract: ContractData = self.main_engine.get_contract(vt_symbol)
+        contract: ContractData | None = self.main_engine.get_contract(vt_symbol)
         if not contract:
             self.name_line.setText("")
             gateway_name: str = self.gateway_combo.currentText()
         else:
             self.name_line.setText(contract.name)
-            gateway_name: str = contract.gateway_name
+            gateway_name = contract.gateway_name
 
             # Update gateway combo box.
             ix: int = self.gateway_combo.findText(gateway_name)
@@ -972,7 +977,7 @@ class TradingWidget(QtWidgets.QWidget):
 
         price_text: str = str(self.price_line.text())
         if not price_text:
-            price = 0
+            price: float = 0
         else:
             price = float(price_text)
 
@@ -995,7 +1000,7 @@ class TradingWidget(QtWidgets.QWidget):
         """
         Cancel all active orders.
         """
-        order_list: List[OrderData] = self.main_engine.get_all_active_orders()
+        order_list: list[OrderData] = self.main_engine.get_all_active_orders()
         for order in order_list:
             req: CancelRequest = order.create_cancel_request()
             self.main_engine.cancel_order(req, order.gateway_name)
@@ -1015,12 +1020,12 @@ class TradingWidget(QtWidgets.QWidget):
             if data.direction == Direction.SHORT:
                 direction: Direction = Direction.LONG
             elif data.direction == Direction.LONG:
-                direction: Direction = Direction.SHORT
+                direction = Direction.SHORT
             else:       # Net position mode
                 if data.volume > 0:
-                    direction: Direction = Direction.SHORT
+                    direction = Direction.SHORT
                 else:
-                    direction: Direction = Direction.LONG
+                    direction = Direction.LONG
 
             self.direction_combo.setCurrentIndex(
                 self.direction_combo.findText(direction.value)
@@ -1036,7 +1041,7 @@ class ActiveOrderMonitor(OrderMonitor):
     Monitor which shows active order only.
     """
 
-    def process_event(self, event) -> None:
+    def process_event(self, event: Event) -> None:
         """
         Hides the row if order is not active.
         """
@@ -1057,7 +1062,7 @@ class ContractManager(QtWidgets.QWidget):
     Query contract data available to trade in system.
     """
 
-    headers: Dict[str, str] = {
+    headers: dict[str, str] = {
         "vt_symbol": _("本地代码"),
         "symbol": _("代码"),
         "exchange": _("交易所"),
@@ -1120,30 +1125,31 @@ class ContractManager(QtWidgets.QWidget):
         """
         flt: str = str(self.filter_line.text())
 
-        all_contracts: List[ContractData] = self.main_engine.get_all_contracts()
+        all_contracts: list[ContractData] = self.main_engine.get_all_contracts()
         if flt:
-            contracts: List[ContractData] = [
+            contracts: list[ContractData] = [
                 contract for contract in all_contracts if flt in contract.vt_symbol
             ]
         else:
-            contracts: List[ContractData] = all_contracts
+            contracts = all_contracts
 
         self.contract_table.clearContents()
         self.contract_table.setRowCount(len(contracts))
 
         for row, contract in enumerate(contracts):
             for column, name in enumerate(self.headers.keys()):
-                value: object = getattr(contract, name)
+                value: Any = getattr(contract, name)
 
-                if value in {None, 0, 0.0}:
+                if value in {None, 0}:
                     value = ""
 
+                cell: BaseCell
                 if isinstance(value, Enum):
-                    cell: EnumCell = EnumCell(value, contract)
+                    cell = EnumCell(value, contract)
                 elif isinstance(value, datetime):
-                    cell: DateCell = DateCell(value, contract)
+                    cell = DateCell(value, contract)
                 else:
-                    cell: BaseCell = BaseCell(value, contract)
+                    cell = BaseCell(value, contract)
                 self.contract_table.setItem(row, column, cell)
 
         self.contract_table.resizeColumnsToContents()
@@ -1182,9 +1188,9 @@ class AboutDialog(QtWidgets.QDialog):
 
             VeighNa - {vnpy_version}
             Python - {platform.python_version()}
-            PySide6 - {importlib_metadata.version("pyside6")}
-            NumPy - {importlib_metadata.version("numpy")}
-            pandas - {importlib_metadata.version("pandas")}
+            PySide6 - {metadata.version("pyside6")}
+            NumPy - {metadata.version("numpy")}
+            pandas - {metadata.version("pandas")}
             """
 
         label: QtWidgets.QLabel = QtWidgets.QLabel()
@@ -1205,7 +1211,7 @@ class GlobalDialog(QtWidgets.QDialog):
         """"""
         super().__init__()
 
-        self.widgets: Dict[str, Any] = {}
+        self.widgets: dict[str, tuple[QtWidgets.QLineEdit, type]] = {}
 
         self.init_ui()
 
@@ -1251,11 +1257,11 @@ class GlobalDialog(QtWidgets.QDialog):
             widget, field_type = tp
             value_text: str = widget.text()
 
-            if field_type == bool:
+            if field_type is bool:
                 if value_text == "True":
                     field_value: bool = True
                 else:
-                    field_value: bool = False
+                    field_value = False
             else:
                 field_value = field_type(value_text)
 
@@ -1265,7 +1271,7 @@ class GlobalDialog(QtWidgets.QDialog):
             self,
             _("注意"),
             _("全局配置的修改需要重启后才会生效！"),
-            QtWidgets.QMessageBox.Ok
+            QtWidgets.QMessageBox.StandardButton.Ok
         )
 
         save_json(SETTING_FILENAME, settings)

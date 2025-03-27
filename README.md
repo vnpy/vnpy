@@ -1,4 +1,4 @@
-# VeighNa - By Traders, For Traders.
+# VeighNa - By Traders, For Traders, AI-Powered.
 
 <p align="center">
   <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/veighna-logo.png"/>
@@ -7,9 +7,9 @@
 💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-3.9.4-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-4.0.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
-    <img src ="https://img.shields.io/badge/python-3.10|3.11.|3.12-blue.svg" />
+    <img src ="https://img.shields.io/badge/python-3.10|3.11|3.12|3.13-blue.svg" />
     <img src ="https://img.shields.io/github/actions/workflow/status/vnpy/vnpy/pythonapp.yml?branch=master"/>
     <img src ="https://img.shields.io/github/license/vnpy/vnpy.svg?color=orange"/>
 </p>
@@ -31,15 +31,49 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 </p>
 
 
+## AI-Powered
+
+VeighNa发布十周年之际正式推出4.0版本，重磅新增面向AI量化策略的[vnpy.alpha](./vnpy/alpha)模块，为专业量化交易员提供**一站式多因子机器学习（ML）策略开发、投研和实盘交易解决方案**：
+
+* :bar_chart: **[dataset](./vnpy/alpha/dataset)**：因子特征工程
+
+    * 专为ML算法训练优化设计，支持高效批量特征计算与处理
+    * 内置丰富的因子特征表达式计算引擎，实现快速一键生成训练数据
+    * [Alpha 158](./vnpy/alpha/dataset/datasets/alpha_158.py)：源于微软Qlib项目的股票市场特征集合，涵盖K线形态、价格趋势、时序波动等多维度量化因子
+
+* :bulb: **[model](./vnpy/alpha/model)**：预测模型训练
+
+    * 提供标准化的ML模型开发模板，大幅简化模型构建与训练流程
+    * 统一API接口设计，支持无缝切换不同算法进行性能对比测试
+    * 集成多种主流机器学习算法：
+        * [Lasso](./vnpy/alpha/model/models/lasso_model.py)：经典Lasso回归模型，通过L1正则化实现特征选择
+        * [LightGBM](./vnpy/alpha/model/models/lgb_model.py)：高效梯度提升决策树，针对大规模数据集优化的训练引擎
+        * [MLP](./vnpy/alpha/model/models/mlp_model.py)：多层感知机神经网络，适用于复杂非线性关系建模
+
+* :robot: **[strategy](./vnpy/alpha/strategy)**：策略投研开发
+
+    * 基于ML信号预测模型快速构建量化交易策略
+    * 支持截面多标的和时序单标的两种策略类型
+
+* :microscope: **[lab](./vnpy/alpha/lab.py)**：投研流程管理
+
+    * 集成数据管理、模型训练、信号生成和策略回测等完整工作流程
+    * 简洁API设计，内置可视化分析工具，直观评估策略表现和模型效果
+
+vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)项目的启发，在保持易用性的同时提供强大的AI量化能力，特此向Qlib开发团队致以诚挚感谢！
+
+
 ## 功能特点
 
-1. 多功能量化交易平台（trader），整合了多种交易接口，并针对具体策略算法和功能开发提供了简洁易用的API，用于快速构建交易员所需的量化交易应用。
+带有 :arrow_up: 的模块代表已经完成4.0版本的升级适配测试，同时4.0核心框架采用了优先保证兼容性的升级方式，因此大多数模块也都可以直接使用（涉及到C++ API封装的接口必须升级后才能使用）。 
+
+1. :arrow_up: 多功能量化交易平台（trader），整合了多种交易接口，并针对具体策略算法和功能开发提供了简洁易用的API，用于快速构建交易员所需的量化交易应用。
 
 2. 覆盖国内外所拥有的下述交易品种的交易接口（gateway）：
 
     * 国内市场
 
-        * CTP（[ctp](https://www.github.com/vnpy/vnpy_ctp)）：国内期货、期权
+        * :arrow_up: CTP（[ctp](https://www.github.com/vnpy/vnpy_ctp)）：国内期货、期权
 
         * CTP Mini（[mini](https://www.github.com/vnpy/vnpy_mini)）：国内期货、期权
 
@@ -93,7 +127,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
     * 特殊应用
 
-        * RQData行情（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：跨市场（股票、指数、ETF、期货）实时行情
+        * :arrow_up: RQData行情（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：跨市场（股票、指数、ETF、期货）实时行情
 
         * 迅投研行情（[xt](https://www.github.com/vnpy/vnpy_xt)）：跨市场（股票、指数、可转债、ETF、期货、期权）实时行情
 
@@ -101,7 +135,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 3. 覆盖下述各类量化策略的交易应用（app）：
 
-    * [cta_strategy](https://www.github.com/vnpy/vnpy_ctastrategy)：CTA策略引擎模块，在保持易用性的同时，允许用户针对CTA类策略运行过程中委托的报撤行为进行细粒度控制（降低交易滑点、实现高频策略）
+    * :arrow_up: [cta_strategy](https://www.github.com/vnpy/vnpy_ctastrategy)：CTA策略引擎模块，在保持易用性的同时，允许用户针对CTA类策略运行过程中委托的报撤行为进行细粒度控制（降低交易滑点、实现高频策略）
 
     * [cta_backtester](https://www.github.com/vnpy/vnpy_ctabacktester)：CTA策略回测模块，无需使用Jupyter Notebook，直接使用图形界面进行策略回测分析、参数优化等相关工作
 
@@ -139,13 +173,13 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
     * Websocket Client（[websocket](https://www.github.com/vnpy/vnpy_websocket)）：基于协程异步IO的高性能Websocket API客户端，支持和REST Client共用事件循环并发运行
 
-5. 简洁易用的事件驱动引擎（event），作为事件驱动型交易程序的核心。
+5. :arrow_up: 简洁易用的事件驱动引擎（event），作为事件驱动型交易程序的核心。
 
 6. 对接各类数据库的适配器接口（database）：
 
     * SQL类
 
-        * SQLite（[sqlite](https://www.github.com/vnpy/vnpy_sqlite)）：轻量级单文件数据库，无需安装和配置数据服务程序，VeighNa的默认选项，适合入门新手用户
+        * :arrow_up: SQLite（[sqlite](https://www.github.com/vnpy/vnpy_sqlite)）：轻量级单文件数据库，无需安装和配置数据服务程序，VeighNa的默认选项，适合入门新手用户
 
         * MySQL（[mysql](https://www.github.com/vnpy/vnpy_mysql)）：主流的开源关系型数据库，文档资料极为丰富，且可替换其他NewSQL兼容实现（如TiDB）
 
@@ -171,7 +205,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
     * 迅投研（[xt](https://www.github.com/vnpy/vnpy_xt)）：股票、期货、期权、基金、债券
 
-    * 米筐RQData（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：股票、期货、期权、基金、债券、黄金TD
+    * :arrow_up: 米筐RQData（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：股票、期货、期权、基金、债券、黄金TD
 
     * 咏春大师（[voltrader](https://www.github.com/vnpy/vnpy_voltrader)）：期货、期权
 
@@ -187,9 +221,9 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
     * 天勤TQSDK（[tqsdk](https://www.github.com/vnpy/vnpy_tqsdk)）：期货
 
-8. 跨进程通讯标准组件（rpc），用于实现分布式部署的复杂交易系统。
+8. :arrow_up: 跨进程通讯标准组件（rpc），用于实现分布式部署的复杂交易系统。
 
-9. Python高性能K线图表（chart），支持大数据量图表显示以及实时数据更新功能。
+9. :arrow_up: Python高性能K线图表（chart），支持大数据量图表显示以及实时数据更新功能。
 
 10. [社区论坛](http://www.vnpy.com/forum)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括VeighNa项目的开发教程和Python在量化交易领域的应用研究等内容。
 
@@ -199,9 +233,9 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 ## 环境准备
 
-* 推荐使用VeighNa团队为量化交易专门打造的Python发行版[VeighNa Studio-3.9.4](https://download.vnpy.com/veighna_studio-3.9.4.exe)，集成内置了VeighNa框架以及VeighNa Station量化管理平台，无需手动安装
-* 支持的系统版本：Windows 11以上 / Windows Server 2019以上 / Ubuntu 22.04 LTS以上
-* 支持的Python版本：Python 3.10以上（64位），**推荐使用Python 3.10**
+* 推荐使用VeighNa团队为量化交易专门打造的Python发行版[VeighNa Studio-4.0.0](https://download.vnpy.com/veighna_studio-4.0.0.exe)，集成内置了VeighNa框架以及VeighNa Station量化管理平台，无需手动安装
+* 支持的系统版本：Windows 11以上 / Windows Server 2022以上 / Ubuntu 22.04 LTS以上
+* 支持的Python版本：Python 3.10以上（64位），**推荐使用Python 3.13**
 
 ## 安装步骤
 

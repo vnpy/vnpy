@@ -40,6 +40,6 @@ VeighNa Elite Trader主界面的全局配置的窗口提供了钉钉消息通知
 
 ## 钉钉接收信息样式
 
-VeighNa Elite Trader和钉钉都配置完毕后，VeighNa Elite Trader运行过程中的核心系统日志、CTA策略模块日志、组合策略模块日志以及期权策略模块日志就会发送到配置Token对应的钉钉群聊会话中了。如下图所示：
+VeighNa Elite Trader和钉钉都配置完毕后，VeighNa Elite Trader运行过程中以“$”结尾（过滤普通日志）的日志就会发送到配置Token对应的钉钉群聊会话中了。如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/elite/ding/6.png)
