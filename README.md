@@ -31,7 +31,7 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 VeighNa发布十周年之际正式推出4.0版本，重磅新增面向AI量化策略的[vnpy.alpha](./vnpy/alpha)模块，为专业量化交易员提供**一站式多因子机器学习（ML）策略开发、投研和实盘交易解决方案**：
 
 <p align="center">
-  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/alpha_demo.jpg"/, width=700>
+  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/alpha_demo.jpg"/, width=500>
 </p>
 
 * :bar_chart: **[dataset](./vnpy/alpha/dataset)**：因子特征工程
