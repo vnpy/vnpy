@@ -53,16 +53,22 @@ class BaseCell(QtWidgets.QTableWidgetItem):
     def __init__(self, content: Any, data: Any) -> None:
         """"""
         super().__init__()
+
+        self._text: str = ""
+        self._data: Any = None
+
         self.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
         self.set_content(content, data)
 
     def set_content(self, content: Any, data: Any) -> None:
         """
         Set text content.
         """
-        self._text: str = str(content)
-        self.setText(self._text)
+        self._text = str(content)
         self._data = data
+
+        self.setText(self._text)
 
     def get_data(self) -> Any:
         """
@@ -70,11 +76,12 @@ class BaseCell(QtWidgets.QTableWidgetItem):
         """
         return self._data
 
-    def __lt__(self, other: "BaseCell"):
+    def __lt__(self, other: "BaseCell") -> bool:        # type: ignore
         """
         Sort by text content.
         """
-        return self._text < other._text
+        result: bool = self._text < other._text
+        return result
 
 
 class EnumCell(BaseCell):
