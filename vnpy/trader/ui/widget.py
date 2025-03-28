@@ -60,7 +60,8 @@ class BaseCell(QtWidgets.QTableWidgetItem):
         """
         Set text content.
         """
-        self.setText(str(content))
+        self._text: str = str(content)
+        self.setText(self._text)
         self._data = data
 
     def get_data(self) -> Any:
@@ -68,6 +69,12 @@ class BaseCell(QtWidgets.QTableWidgetItem):
         Get data object.
         """
         return self._data
+
+    def __lt__(self, other: "BaseCell"):
+        """
+        Sort by text content.
+        """
+        return self._text < other._text
 
 
 class EnumCell(BaseCell):
