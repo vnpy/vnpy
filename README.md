@@ -16,12 +16,6 @@
 
 VeighNa是一套基于Python的开源量化交易系统开发框架，在开源社区持续不断的贡献下一步步成长为多功能量化交易平台，自发布以来已经积累了众多来自金融机构或相关领域的用户，包括私募基金、证券公司、期货公司等。
 
-:rocket: :rocket: :rocket: **面向专业交易员的【VeighNa Elite量化终端】已经正式发布，针对专业交易员群体在海量策略并发、智能移仓换月、算法拆单执行、多账户交易支持等方面的需求提供了完善支持。了解更详细的信息请扫描下方二维码关注后，点击菜单栏的【社区交流 -> Elite会员服务】即可**：
-
-<p align="center">
-  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy_qr.jpg"/>
-</p>
-
 在使用VeighNa进行二次开发（策略、模块等）的过程中有任何疑问，请查看[**VeighNa项目文档**](https://www.vnpy.com/docs/cn/index.html)，如果无法解决请前往[**官方社区论坛**](https://www.vnpy.com/forum/)的【提问求助】板块寻求帮助，也欢迎在【经验分享】板块分享你的使用心得！
 
 **想要获取更多关于VeighNa的资讯信息？** 请扫描下方二维码添加小助手加入【VeighNa社区交流微信群】：
@@ -33,7 +27,12 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 ## AI-Powered
 
+
 VeighNa发布十周年之际正式推出4.0版本，重磅新增面向AI量化策略的[vnpy.alpha](./vnpy/alpha)模块，为专业量化交易员提供**一站式多因子机器学习（ML）策略开发、投研和实盘交易解决方案**：
+
+<p align="center">
+  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/alpha_demo.jpg"/>
+</p>
 
 * :bar_chart: **[dataset](./vnpy/alpha/dataset)**：因子特征工程
 
@@ -59,6 +58,13 @@ VeighNa发布十周年之际正式推出4.0版本，重磅新增面向AI量化�
 
     * 集成数据管理、模型训练、信号生成和策略回测等完整工作流程
     * 简洁API设计，内置可视化分析工具，直观评估策略表现和模型效果
+
+* :book: **[notebook](./examples/alpha_research)**：量化投研Demo
+
+    * [download_data_rq](./examples/alpha_research/download_data_rq.ipynb)：基于RQData下载A股指数成分股数据，包含指数成分变化跟踪及历史行情获取
+    * [research_workflow_lasso](./examples/alpha_research/research_workflow_lasso.ipynb)：基于Lasso回归模型的量化投研工作流，展示线性模型特征选择与预测能力
+    * [research_workflow_lgb](./examples/alpha_research/research_workflow_lgb.ipynb)：基于LightGBM梯度提升树的量化投研工作流，利用高效集成学习方法进行预测
+    * [research_workflow_mlp](./examples/alpha_research/research_workflow_mlp.ipynb)：基于多层感知机神经网络的量化投研工作流，展示深度学习在量化交易中的应用
 
 vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)项目的启发，在保持易用性的同时提供强大的AI量化能力，特此向Qlib开发团队致以诚挚感谢！
 
@@ -335,7 +341,8 @@ VeighNa使用Github托管其源代码，如果希望贡献代码请使用github�
 
 在提交代码的时候，请遵守以下规则，以提高代码质量：
 
-  * 使用[flake8](https://pypi.org/project/flake8/)检查你的代码，确保没有error和warning。在项目根目录下运行```flake8```即可。
+  * 使用[ruff](https://github.com/astral-sh/ruff)检查你的代码样式，确保没有error和warning。在项目根目录下运行```ruff check .```即可。
+  * 使用[mypy](https://github.com/python/mypy)进行静态类型检查，确保类型注解正确。在项目根目录下运行```mypy vnpy```即可。
 
 ## 其他内容
 

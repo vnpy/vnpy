@@ -35,6 +35,10 @@ If you have any questions about using VeighNa for secondary development (strateg
 
 On the tenth anniversary of VeighNa's release, version 4.0 officially introduces the [vnpy.alpha](./vnpy/alpha) module targeting AI quantitative strategies, providing professional quantitative traders with **an all-in-one multi-factor machine learning (ML) strategy development, research, and live trading solution**:
 
+<p align="center">
+  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/alpha_demo.jpg"/>
+</p>
+
 * :bar_chart: **[dataset](./vnpy/alpha/dataset)**: Factor Feature Engineering
 
     * Designed specifically for ML algorithm training optimization, supporting efficient batch feature calculation and processing
@@ -59,6 +63,13 @@ On the tenth anniversary of VeighNa's release, version 4.0 officially introduces
 
     * Integrates complete workflow including data management, model training, signal generation, and strategy backtesting
     * Simple API design with built-in visualization analysis tools for intuitive evaluation of strategy performance and model effectiveness
+
+* :book: **[notebook](./examples/alpha_research)**: Quantitative Research Demo
+
+    * [download_data_rq](./examples/alpha_research/download_data_rq.ipynb): Download A-share index constituent stock data based on RQData, including index constituent tracking and historical market data retrieval
+    * [research_workflow_lasso](./examples/alpha_research/research_workflow_lasso.ipynb): Quantitative research workflow based on Lasso regression model, demonstrating feature selection and prediction capability of linear models
+    * [research_workflow_lgb](./examples/alpha_research/research_workflow_lgb.ipynb): Quantitative research workflow based on LightGBM gradient boosting tree, utilizing efficient ensemble learning methods for prediction
+    * [research_workflow_mlp](./examples/alpha_research/research_workflow_mlp.ipynb): Quantitative research workflow based on multilayer perceptron neural network, demonstrating the application of deep learning in quantitative trading
 
 The design concept of the vnpy.alpha module was inspired by the [Qlib](https://github.com/microsoft/qlib) project, providing powerful AI quantitative capabilities while maintaining ease of use. We would like to express our sincere gratitude to the Qlib development team!
 
@@ -339,7 +350,8 @@ VeighNa uses Github to host its source code, if you wish to contribute code plea
 
 When submitting code, please observe the following rules to improve the quality of the code:
 
-  * Check your code with [flake8](https://pypi.org/project/flake8/) to make sure there are no errors and warnings. Just run ``flake8`` in the project root directory.
+  * Use [ruff](https://github.com/astral-sh/ruff) to check your code style, ensuring there are no errors and warnings. Just run ``ruff check .`` in the project root directory.
+  * Use [mypy](https://github.com/python/mypy) for static type checking, ensuring type annotations are correct. Just run ``mypy vnpy`` in the project root directory.
 
 
 ## Other content
