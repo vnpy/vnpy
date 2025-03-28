@@ -36,7 +36,7 @@ If you have any questions about using VeighNa for secondary development (strateg
 On the tenth anniversary of VeighNa's release, version 4.0 officially introduces the [vnpy.alpha](./vnpy/alpha) module targeting AI quantitative strategies, providing professional quantitative traders with **an all-in-one multi-factor machine learning (ML) strategy development, research, and live trading solution**:
 
 <p align="center">
-  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/alpha_demo.jpg"/, width=700>
+  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/alpha_demo.jpg"/, width=500>
 </p>
 
 * :bar_chart: **[dataset](./vnpy/alpha/dataset)**: Factor Feature Engineering
