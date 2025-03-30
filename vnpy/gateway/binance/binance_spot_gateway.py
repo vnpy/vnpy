@@ -268,7 +268,7 @@ class BinanceSpotRestAPi:
         # 生成委托请求
         contract: ContractData = symbol_contract_map.get(order.symbol, None)
         if contract:
-            req.volume = round_volume(float(req.volume), contract.min_volume, self.commission_rate) # todo: how to round to avoid Account has insufficient balance for requested action error
+            req.volume = round_volume(float(req.volume), contract.min_volume, self.commission_rate)
         params: dict = {
             "symbol": req.symbol.upper(),
             "side": DIRECTION_VT2BINANCE[req.direction],
@@ -444,7 +444,6 @@ class BinanceSpotRestAPi:
 
     def on_cancel_order(self, data: dict, order: OrderData) -> None:
         """委托撤单回报"""
-        print("on_cancel_order", data)
         if data.get('code', None):
             self.on_cancel_failed(data, order)
 

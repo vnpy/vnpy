@@ -1,11 +1,4 @@
-# -*- coding=utf-8 -*-
-# @Project  : 20240720
-# @FilePath : vnpy/tests/trader
-# @File     : test.py
-# @Time     : 2025/3/23 20:42
-# @Author   : EvanHong
-# @Email    : 939778128@qq.com
-# @Description:
+# encoding: UTF-8
 import time
 import logging
 from typing import Optional
@@ -14,16 +7,19 @@ from vnpy.trader.constant import Status
 from vnpy.trader.engine import BaseEngine
 from vnpy.trader.event import EVENT_ACCOUNT, EVENT_BAR, EVENT_ORDER, EVENT_TRADE
 from vnpy.trader.object import AccountData, CancelRequest, ContractData, OrderData, OrderRequest, TradeData
+from vnpy.trader.constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
+from pathlib import Path
+from vnpy.trader.app import BaseApp
 
-
-class TestEngine(BaseEngine):
+class SimpleOrderStrategyEngine(BaseEngine):
     setting_filename = "gateway_test_setting.json"
     gateway_name = "BINANCE_SPOT"
     reference = "test"
+    engine_name = "SimpleOrderStrategyEngine"
 
     def __init__(self, main_engine, event_engine):
         """"""
-        super().__init__(main_engine, event_engine)
+        super().__init__(main_engine, event_engine, engine_name=self.engine_name)
 
         self.trades = {}
         self.accounts = {}
@@ -40,19 +36,17 @@ class TestEngine(BaseEngine):
     def place_order(self,
                     quote_asset: str,
                     base_asset: str,
-                    direction: str,
+                    direction,
                     price: float,
-                    type: str,
+                    type,
                     volume: float
                     ):
-        assert direction in {"long", "short"}, f"Invalid direction: {direction}"
-        assert type in {"limit", "market"}, f"Invalid order type: {type}"
         assert volume > 0, "Order volume must be positive"
 
         symbol = quote_asset + base_asset
         order_req = OrderRequest(
             symbol=symbol,
-            exchange="binance",
+            exchange=Exchange.BINANCE,
             direction=direction,
             type=type,
             price=price,
@@ -75,7 +69,7 @@ class TestEngine(BaseEngine):
         order = self.orders.get(vt_order_id)
         if order:
             cancel_req = CancelRequest(orderid=order.orderid, symbol=order.symbol, exchange=order.exchange)
-            self.main_engine.cancel_order(cancel_req)
+            self.main_engine.cancel_order(cancel_req, gateway_name=self.gateway_name)
             self.write_log(f"Cancel request sent for order: {vt_order_id}")
         else:
             self.write_log(f"Order {vt_order_id} not found for cancellation.", level=logging.WARNING)
@@ -85,13 +79,13 @@ class TestEngine(BaseEngine):
         vt_order_id = self.place_order(
             quote_asset="eth",
             base_asset="usdt",
-            direction="long",
-            price=0.1,
-            type="limit",
-            volume=0.005
+            direction=Direction.LONG,
+            price=1900,
+            type=OrderType.LIMIT,
+            volume=0.01
         )
 
-        time.sleep(5)  # Wait for order to be processed
+        time.sleep(10)  # Wait for order to be processed
 
         # Step 2: Check if the order is active
         order: OrderData = self.orders[vt_order_id]
@@ -118,10 +112,11 @@ class TestEngine(BaseEngine):
         vt_order_id_long = self.place_order(
             quote_asset="eth",
             base_asset="usdt",
-            direction="long",
             price=0,
-            type="market",
-            volume=0.005
+            volume=0.005,
+            direction=Direction.LONG,
+            type=OrderType.MARKET,
+
         )
 
         vt_account_id = f"{self.gateway_name}.ETH"
@@ -136,12 +131,13 @@ class TestEngine(BaseEngine):
         assert account.balance > 0, "Market order is unfilled"
 
         # Step 3: Place a sell order
+        print("account.balance",account.balance)
         vt_order_id_short = self.place_order(
             quote_asset="eth",
             base_asset="usdt",
-            direction="short",
+            direction=Direction.SHORT,
             price=0,
-            type="market",
+            type=OrderType.MARKET,
             volume=account.balance
         )
 
@@ -175,8 +171,19 @@ class TestEngine(BaseEngine):
         self.main_engine.write_log(msg, source='TEST_ENGINE', level=level)
 
     def run_all_tests(self):
-        self.write_log("Running test: test_impossible_order_and_cancel")
-        self.test_impossible_order_and_cancel()
+        # self.write_log("Running test: test_impossible_order_and_cancel")
+        # self.test_impossible_order_and_cancel()
         self.write_log("Running test: test_full_trade_cycle")
         self.test_full_trade_cycle()
         self.write_log("All tests completed successfully.")
+
+class SimpleOrderStrategyApp(BaseApp):
+    """"""
+    app_name = 'SimpleOrderStrategyApp'
+    # app_module = __module__
+    app_module = None
+    app_path = Path(__file__).parent
+    display_name = "下单策略测试引擎"
+    engine_class = SimpleOrderStrategyEngine
+    widget_name = "SimpleOrderStrategy"
+    # icon_name = "recorder.ico"

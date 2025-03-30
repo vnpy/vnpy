@@ -224,7 +224,7 @@ class RecorderEngine(BaseEngine):
                 task_type, data = task
                 self.save_data(task_type, data)
             else:
-                self.write_log(f"数据记录引擎处理队列为空 {self.queue.qsize()}", level=WARNING)
+                self.write_log(f"DataRecorderEngine queue len is {self.queue.qsize()}", level=DEBUG)
                 time.sleep(1)
 
     def close(self):

@@ -75,6 +75,7 @@ def generate_vt_symbol(symbol: str, exchange: Exchange, is_factor=False, factor_
     return vt_symbol
     """
     if is_factor:
+        print("think about it. generate_vt_symbol maybe should only contain symbol and exchange")
         return FactorData(symbol=symbol, exchange=exchange, interval=interval,
                           factor_name=factor_name, gateway_name='').vt_symbol
     return f"{symbol}.{exchange.value}"

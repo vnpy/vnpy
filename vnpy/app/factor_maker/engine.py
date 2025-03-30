@@ -64,39 +64,12 @@ class FactorEngine(BaseEngine):
         self.tasks = self.build_computational_graph()  # Build the graph after initializing factors
         self.write_log("因子计算引擎初始化成功")
 
-    # def load_factor_setting(self) -> None:
-    #     """加载因子计算策略配置"""
-    #     factor_setting: dict = load_json(self.setting_filename)
-    #     for factor_name, factor_config in factor_setting.items():
-    #         self.add_factor(
-    #             factor_config["class_name"],
-    #             factor_name,
-    #             factor_config
-    #         )
-
-    # def add_factor(self, class_name: str, factor_name: str, setting: dict) -> None:
-    #     if factor_name in self.factors:
-    #         msg = f"Creation failed, factor name {factor_name} already exists."
-    #         self.write_log(msg)
-    #         return
-    #     factor_class = get_factor_class(class_name)
-    #     if not factor_class:
-    #         msg = f"Creation failed, factor class {class_name} not found."
-    #         self.write_log(msg)
-    #         return
-    #     if factor_class.__name__ not in self.classes:
-    #         self.classes[factor_class.__name__] = factor_class
-    #     factor: FactorTemplate = factor_class(engine=self, setting=setting)
-    #     self.factors[factor_name] = factor
-
     def register_event(self) -> None:
         """what to do when event is triggered"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_BAR, self.process_bar_event)
         self.event_engine.register(EVENT_BAR_FACTOR, self.process_bar_factor_event)
         # self.event_engine.register(EVENT_FACTOR, self.process_factor_event)  # factormaker doesn't need to process factor event, only recorder needs
-
-        # self.main_engine.register_log_event(EVENT_FACTORMAKER_LOG)
 
     def get_factor_parameters(self, factor_key) -> dict:
         """获取策略参数"""

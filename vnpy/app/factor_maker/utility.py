@@ -50,6 +50,7 @@ def init_factors(f_setting: Dict):
     factors_list = []
     for module_name, module_setting in f_setting.items():
         f_class = getattr(factors, module_setting["class_name"])
-        f_class = f_class({module_name: module_setting}, **module_setting["params"])  # recursion
+        # f_class = f_class({module_name: module_setting}, **module_setting["params"])  # recursion
+        f_class = f_class(module_setting, **module_setting["params"])  # recursion
         factors_list.append(f_class)
     return factors_list
