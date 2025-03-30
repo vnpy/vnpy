@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import Optional, Dict, Any, Union, List, Type
+from typing import Optional, Dict, Any, Union, List, Type, TypeVar
 import importlib
 import polars as pl
 
@@ -16,6 +16,7 @@ class FactorParameters(object):
                 setattr(self, key, value)
 
     def __str__(self):
+        # ˼����һ�»���Ӧ�ô��ϲ���ֵ, ��������Ψһ�ر�ʶһ��factor
         if len(self.__dict__) == 0:
             return "noparams"
         return "-".join([f"{k}_{v}" for k, v in self.__dict__.items()])
@@ -92,18 +93,27 @@ class FactorTemplate(ABC):
     @property
     def factor_key(self) -> str:
         """
-        # todo: consider change this property to 'vt_symbol' for consistency
+        # this is different from vt_symbol, because factor key doesn't care about the symbol and exchange.
+        it is used for uniquely indicating one kind of factors, which have the same calculation function.
         Get the factor name key.
         """
         # return f"{self.factor_name}@{self.params.to_str(with_value=True)}"  # 20250208 modified
         return f"{self.VTSYMBOL_TEMPLATE.format(interval=self.freq.value, factorname=self.factor_name)}@{self.params.to_str(with_value=True)}"  # 20250208 modified
 
     def __init_dependencies__(self):
+        """
+        1. Initialize the dependencies_factor list with the given settings.
+        2. binding dependencies with explicit indicator.
+            e.g. macd depends on ma10 and ma20, so we need to initialize ma10 and ma20 first. then bind them to fast and slow
+        Returns
+        -------
+
+        """
         dependencies_factor_initialized = []
         for f_setting in self.dependencies_factor:  # list of dicts
             for module_name, module_setting in f_setting.items():
-                f_class: Type[FactorTemplate] = getattr(self.module, module_setting["class_name"])
-                f_class = f_class({module_name: module_setting}, **module_setting["params"])  # recursion
+                f_class: Type[TV_FactorTemplate] = getattr(self.module, module_setting["class_name"])
+                f_class = f_class(module_setting, **module_setting["params"])  # recursion
                 dependencies_factor_initialized.append(f_class)
 
         self.dependencies_factor = dependencies_factor_initialized
@@ -118,10 +128,10 @@ class FactorTemplate(ABC):
         """
         self.params: FactorParameters = FactorParameters()
         self.module = importlib.import_module(".factors", package=__package__)
-        self.from_dict(setting)
-        self.set_params(
-            kwargs)
+        self.from_setting(setting)
+        self.set_params(kwargs)
         self.__init_dependencies__()
+
         # Internal state
         self.inited: bool = False
         self.trading: bool = False
@@ -222,6 +232,18 @@ class FactorTemplate(ABC):
         """
         return self.params.items()
 
+    def get_param(self, key: str) -> Any:
+        """
+        Get the value of a parameter.
+
+        Parameters:
+            key (str): Name of the parameter.
+
+        Returns:
+            Any: Value of the parameter.
+        """
+        return self.params.get_parameter(key)
+
     def on_init(self) -> None:
         """
         Callback when the factor is initialized.
@@ -246,49 +268,53 @@ class FactorTemplate(ABC):
             pass
         self.trading = False
 
-    def calculate(self, input_data: Optional[Union[pl.DataFrame, Dict[str, Any]]], *args, **kwargs) -> Any:
-        """Unified API for calculating factor value.
-
-        Parameters:
-            input_data (pl.DataFrame or dict): Input data for calculation.
-
-        Returns:
-            Any: Calculated factor value(s).
-        """
-
-        if isinstance(input_data, dict):
-            input_data = pl.DataFrame(input_data)
-        elif not isinstance(input_data, pl.DataFrame):
-            raise NotImplementedError("Only polars DataFrame and dict are supported for now.")
-
-        return self.calculate_polars(input_data, *args, **kwargs)
-
     @abstractmethod
-    def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
-        """Abstract method to calculate factor value using polars DataFrame.
+    def calculate(self, input_data: Dict[str, pl.DataFrame],
+                  memory: Dict[str, pl.DataFrame], *args, **kwargs) -> pl.DataFrame:
+        """unified api for calculating factor value
 
-        Parameters:
-            input_data (pl.DataFrame): Input data for calculation.
+        Parameters
+        ----------
+        input_data: Dict[str, pl.DataFrame]
+            Input data for calculation.
+        memory: Dict[str, pl.DataFrame]
+            Memory data (historical data) for calculation.
 
-        Returns:
+        Returns
+        -------
             Any: Calculated factor value(s).
+
+
         """
         pass
 
-    def from_dict(self, dic: Optional[dict] = None) -> None:
+    def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
+        pass
+
+    def from_setting(self, setting: Optional[dict] = None) -> None:
         """
         load factor from `factor_maker_setting.json`
         """
-        if dic is None:
+        if setting is None:
             return
-        for factor_key, factor_setting in dic.items():
+        # for factor_key, factor_setting in setting.items():
+        factor_setting = setting
+        if isinstance(factor_setting.get("freq", Interval.UNKNOWN), str):
             self.freq = Interval(factor_setting.get("freq", Interval.UNKNOWN))
-            self.params.set_parameters(factor_setting.get("params", {}))
-            # load factor settings, and init them in __init_dependencies__
-            self.dependencies_factor = factor_setting.get("dependencies_factor", [])
-            self.dependencies_freq = factor_setting.get("dependencies_freq", [])
-            self.dependencies_symbol = factor_setting.get("dependencies_symbol", [])
-            self.dependencies_exchange = factor_setting.get("dependencies_exchange", [])
+        elif isinstance(factor_setting.get("freq", Interval.UNKNOWN), Interval):
+            self.freq = factor_setting.get("freq", Interval.UNKNOWN)
+        else:
+            raise ValueError("The freq must be a string or an Interval object.")
+        # if params appear in setting, then set it. But if kwargs get the same param, it will overwrite the previous one, the one in setting
+        self.params.set_parameters(factor_setting.get("params", {}))
+        # load factor settings, and init them in __init_dependencies__
+        self.dependencies_factor = factor_setting.get("dependencies_factor", [])
+        self.dependencies_freq = factor_setting.get("dependencies_freq", [])
+        self.dependencies_symbol = factor_setting.get("dependencies_symbol", [])
+        self.dependencies_exchange = factor_setting.get("dependencies_exchange", [])
+
+    def to_setting(self) -> dict:
+        return self.to_dict()
 
     def to_dict(self) -> dict:
         """
@@ -307,3 +333,6 @@ class FactorTemplate(ABC):
             }
         }
         return d
+
+
+TV_FactorTemplate = TypeVar('TV_FactorTemplate', bound=FactorTemplate)

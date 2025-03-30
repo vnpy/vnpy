@@ -1,14 +1,5 @@
 # -*- coding=utf-8 -*-
 # @Project  : 20240720
-# @FilePath : vnpy/tests
-# @File     : real_test.py
-# @Time     : 2025/1/21 19:25
-# @Author   : EvanHong
-# @Email    : 939778128@qq.com
-# @Description:
-
-# -*- coding=utf-8 -*-
-# @Project  : 20240720
 # @FilePath : ${DIR_PATH}
 # @File     : ${FILE_NAME}
 # @Time     : 2024/9/28 21:00
@@ -60,19 +51,6 @@ def run_child():
     main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
     # main_engine.subscribe(SubscribeRequest(symbol='btcusdt', exchange=Exchange.BINANCE,interval=Interval.MINUTE), gateway_name='BINANCE_SPOT')
 
-    # #
-    # # todo zc: vnpy.app.vnpy_datamanager + datafeed(vnpy_datafeed.query_history)/gateway ->vnpy.app.data_recorder(insert data into database) = overview(vnpy.adapters.overview.) + database(vnpy_clickhouse)  补历史数据
-    # # fixme: implement below in vnpy.app.vnpy_datamanager
-    # datafeed = get_datafeed()
-    # overview_handler = OverviewHandler(SETTINGS.get("overview_jsonpath", ""))
-    # overview_handler.load_overview()
-    # for req in overview_handler.check_missing_data():
-    #     bars: Optional[Union[List[BarData], List[Dict]]] = datafeed.query_bar_history(req)
-    #     bars.to_database()  # fixme: implement this step with vnpy.app.data_recorder, and maintain overview in vnpy.app.data_recorder
-    #
-    # for req in overview_handler.check_subscribe_stream():
-    #     main_engine.subscribe(req=req, gateway_name='BINANCE_SPOT')  #第63行放到这操作
-
     # start data recorder
     data_recorder_engine = main_engine.add_app(DataRecorderApp)
     main_engine.write_log(f"启动[{data_recorder_engine.__class__.__name__}]")
@@ -99,13 +77,6 @@ def run_child():
     #
     # cta_engine.start_all_strategies()
     # main_engine.write_log("CTA策略全部启动")
-
-    # # test order engine
-    order_engine: SimpleOrderStrategyEngine = main_engine.add_app(SimpleOrderStrategyApp)
-    order_engine.init_engine()
-    order_engine.run_all_tests()
-    # data_recorder_engine = main_engine.add_app(DataRecorderApp)
-    # main_engine.write_log(f"启动[{data_recorder_engine.__class__.__name__}]")
 
     while True:
         # print(main_engine.event_engine._queue.get())

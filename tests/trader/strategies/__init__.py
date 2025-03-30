@@ -6,5 +6,5 @@
 # @Author   : EvanHong
 # @Email    : 939778128@qq.com
 # @Description:
-from .app_file import SimpleOrderStrategyApp
-from .gateway_test_strategy import SimpleOrderStrategyEngine as SimpleOrderStrategyEngine
+
+from .simple_order_strategy import SimpleOrderStrategyEngine,SimpleOrderStrategyApp
