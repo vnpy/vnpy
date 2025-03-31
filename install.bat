@@ -12,8 +12,5 @@ IF NOT %pypi_index%"" == "" SET pypi_index=--index-url %pypi_index%
 ::Install prebuild wheel
 %python% -m pip install --extra-index-url https://pypi.vnpy.com TA_Lib==0.4.24
 
-::Install Python Modules
-%python% -m pip install -r requirements.txt %pypi_index%
-
 :: Install VeighNa
 %python% -m pip install .

@@ -265,8 +265,6 @@ bash install.sh
 bash install_osx.sh
 ```
 
-**注意：setup.cfg中列举了VeighNa框架安装所需的依赖库，requirements.txt中给出了这些依赖库的推荐安装版本。**
-
 ## 使用指南
 
 1. 在[SimNow](http://www.simnow.com.cn/)注册CTP仿真账号，并在[该页面](http://www.simnow.com.cn/product.action)获取经纪商代码以及交易行情服务器地址。

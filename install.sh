@@ -33,9 +33,6 @@ function ta-lib-exists()
 }
 ta-lib-exists || install-ta-lib
 
-# Install Python Modules
-$python -m pip install -r requirements.txt --index $pypi_index
-
 # Install local Chinese language environment
 locale-gen zh_CN.GB18030
 

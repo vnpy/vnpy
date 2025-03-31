@@ -25,8 +25,5 @@ ta-lib-exists || install-ta-lib
 $python -m pip install numpy==1.23.1 --index $pypi_index
 $python -m pip install ta-lib==0.4.24 --index $pypi_index
 
-# Install Python Modules
-$python -m pip install -r requirements.txt --index $pypi_index
-
 # Install VeighNa
 $python -m pip install . --index $pypi_index
