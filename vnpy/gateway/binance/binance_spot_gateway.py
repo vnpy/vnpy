@@ -1,3 +1,4 @@
+from functools import lru_cache
 import json
 import time
 from collections import defaultdict
@@ -247,6 +248,11 @@ class BinanceSpotRestAPi:
         """查询合约信息"""
         self.on_query_contract(self._client.exchange_info())
 
+    @lru_cache(maxsize=128)
+    def get_cached_contract(self, symbol: str) -> Optional[ContractData]:
+        """从缓存中获取合约信息"""
+        return symbol_contract_map.get(symbol)
+
     def _new_order_id(self) -> int:
         """生成本地委托号"""
         with self.order_count_lock:
@@ -265,8 +271,7 @@ class BinanceSpotRestAPi:
         )
         self.gateway.on_order(order)
 
-        # 生成委托请求
-        contract: ContractData = symbol_contract_map.get(order.symbol, None)
+        contract: Optional[ContractData] = self.get_cached_contract(req.symbol)
         if contract:
             req.volume = round_volume(float(req.volume), contract.min_volume, self.commission_rate)
         params: dict = {
@@ -444,6 +449,7 @@ class BinanceSpotRestAPi:
 
     def on_cancel_order(self, data: dict, order: OrderData) -> None:
         """委托撤单回报"""
+        print("on_cancel_order", data)
         if data.get('code', None):
             self.on_cancel_failed(data, order)
 
@@ -782,8 +788,7 @@ class BinanceSpotDataWebsocketApi:
         if channel.startswith('kline_'):
             kdata = data['k']
             # print(kdata['x'], type(kdata['x']))
-            # if kdata['x'] == 'true':
-            if True:
+            if kdata['x'] == 'true':
                 bar: BarData = self.bars[symbol]
                 bar.symbol = symbol
                 bar.interval = Interval(kdata['i'])
@@ -799,33 +804,42 @@ class BinanceSpotDataWebsocketApi:
                 self.gateway.on_bar(copy(bar))
             return
 
-        # todo: 订阅tick数据
-        # tick: TickData = self.ticks[symbol]
-        #
-        # if channel == "ticker":
-        #     tick.volume = float(data['v'])
-        #     tick.turnover = float(data['q'])
-        #     tick.open_price = float(data['o'])
-        #     tick.high_price = float(data['h'])
-        #     tick.low_price = float(data['l'])
-        #     tick.last_price = float(data['c'])
-        #     tick.datetime = datetime.fromtimestamp(float(data['E']) / 1000)
-        # else:
-        #     bids: list = data["bids"]
-        #     for n in range(min(5, len(bids))):
-        #         price, volume = bids[n]
-        #         tick.__setattr__("bid_price_" + str(n + 1), float(price))
-        #         tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
-        #
-        #     asks: list = data["asks"]
-        #     for n in range(min(5, len(asks))):
-        #         price, volume = asks[n]
-        #         tick.__setattr__("ask_price_" + str(n + 1), float(price))
-        #         tick.__setattr__("ask_volume_" + str(n + 1), float(volume))
+        # Subscribe to tick data
+        tick: TickData = self.ticks.get(symbol, None)
+        if not tick:
+            tick = TickData(
+            symbol=symbol,
+            name=symbol_contract_map[symbol].name,
+            exchange=Exchange.BINANCE,
+            datetime=datetime.now(),
+            gateway_name=self.gateway_name,
+            )
+            self.ticks[symbol] = tick
 
-        # if tick.last_price:
-        #     tick.localtime = datetime.now()
-        #     self.gateway.on_tick(copy(tick))
+        if channel == "ticker":
+            tick.volume = float(data['v'])
+            tick.turnover = float(data['q'])
+            tick.open_price = float(data['o'])
+            tick.high_price = float(data['h'])
+            tick.low_price = float(data['l'])
+            tick.last_price = float(data['c'])
+            tick.datetime = datetime.fromtimestamp(float(data['E']) / 1000)
+        elif channel.startswith("depth"):
+            bids: list = data["bids"]
+            for n in range(min(5, len(bids))):
+                price, volume = bids[n]
+                tick.__setattr__("bid_price_" + str(n + 1), float(price))
+                tick.__setattr__("bid_volume_" + str(n + 1), float(volume))
+
+            asks: list = data["asks"]
+            for n in range(min(5, len(asks))):
+                price, volume = asks[n]
+                tick.__setattr__("ask_price_" + str(n + 1), float(price))
+                tick.__setattr__("ask_volume_" + str(n + 1), float(volume))
+
+        if tick.last_price:
+            tick.localtime = datetime.now()
+            self.gateway.on_tick(copy(tick))
 
     def on_disconnected(self) -> None:
         """连接断开回报"""
