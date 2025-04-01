@@ -98,7 +98,9 @@ class BaseGateway(ABC):
         Tick event of a specific vt_symbol is also pushed.
         """
         self.on_event(EVENT_TICK, tick)
-        self.on_event(EVENT_TICK + tick.vt_symbol, tick)
+        # Avoid redundant calls by combining event creation
+        specific_event_type = EVENT_TICK + tick.vt_symbol
+        self.on_event(specific_event_type, tick)
 
     def on_bar(self, bar: BarData) -> None:
         """
@@ -106,7 +108,8 @@ class BaseGateway(ABC):
         Bar event of a specific vt_symbol is also pushed.
         """
         self.on_event(EVENT_BAR, bar)
-        self.on_event(EVENT_BAR + bar.vt_symbol, bar)
+        specific_event_type = EVENT_BAR + bar.vt_symbol
+        self.on_event(specific_event_type, bar)
 
     def on_trade(self, trade: TradeData) -> None:
         """
@@ -114,7 +117,8 @@ class BaseGateway(ABC):
         Trade event of a specific vt_symbol is also pushed.
         """
         self.on_event(EVENT_TRADE, trade)
-        self.on_event(EVENT_TRADE + trade.vt_symbol, trade)
+        specific_event_type = EVENT_TRADE + trade.vt_symbol
+        self.on_event(specific_event_type, trade)
 
     def on_order(self, order: OrderData) -> None:
         """
@@ -122,7 +126,8 @@ class BaseGateway(ABC):
         Order event of a specific vt_orderid is also pushed.
         """
         self.on_event(EVENT_ORDER, order)
-        self.on_event(EVENT_ORDER + order.vt_orderid, order)
+        specific_event_type = EVENT_ORDER + order.vt_orderid
+        self.on_event(specific_event_type, order)
 
     def on_position(self, position: PositionData) -> None:
         """
@@ -130,7 +135,8 @@ class BaseGateway(ABC):
         Position event of a specific vt_symbol is also pushed.
         """
         self.on_event(EVENT_POSITION, position)
-        self.on_event(EVENT_POSITION + position.vt_symbol, position)
+        specific_event_type = EVENT_POSITION + position.vt_symbol
+        self.on_event(specific_event_type, position)
 
     def on_account(self, account: AccountData) -> None:
         """
@@ -138,7 +144,8 @@ class BaseGateway(ABC):
         Account event of a specific vt_accountid is also pushed.
         """
         self.on_event(EVENT_ACCOUNT, account)
-        self.on_event(EVENT_ACCOUNT + account.vt_accountid, account)
+        specific_event_type = EVENT_ACCOUNT + account.vt_accountid
+        self.on_event(specific_event_type, account)
 
     def on_quote(self, quote: QuoteData) -> None:
         """
@@ -146,7 +153,8 @@ class BaseGateway(ABC):
         Quote event of a specific vt_symbol is also pushed.
         """
         self.on_event(EVENT_QUOTE, quote)
-        self.on_event(EVENT_QUOTE + quote.vt_symbol, quote)
+        specific_event_type = EVENT_QUOTE + quote.vt_symbol
+        self.on_event(specific_event_type, quote)
 
     def on_log(self, log: LogData) -> None:
         """
