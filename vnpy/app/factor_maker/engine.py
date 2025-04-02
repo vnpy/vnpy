@@ -2,7 +2,7 @@ import importlib
 import time
 import traceback
 from datetime import datetime, timedelta
-from logging import INFO, DEBUG
+from logging import INFO, DEBUG, WARNING, ERROR
 from typing import Callable, Any
 import numpy as np
 import pandas as pd
@@ -21,7 +21,8 @@ from vnpy.trader.utility import extract_vt_symbol
 from vnpy.trader.setting import SETTINGS
 from vnpy.app.factor_maker.base import APP_NAME
 from vnpy.app.factor_maker.template import FactorTemplate
-from vnpy.app.factor_maker.utility import *
+from vnpy.app.factor_maker.utils.factor_utils import *
+from vnpy.app.factor_maker.utils.memory_utils import truncate_memory, create_placeholder_bar
 
 factor_module_name = 'vnpy.app.factor_maker.factors'
 SYSTEM_MODE = SETTINGS.get('system.mode', 'LIVE')
@@ -32,7 +33,13 @@ class FactorEngine(BaseEngine):
     setting_filename: str = "factor_maker_setting.json"
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
-        """"""
+        """
+        Initialize the FactorEngine.
+
+        Parameters:
+            main_engine (MainEngine): The main engine instance.
+            event_engine (EventEngine): The event engine instance.
+        """
         super().__init__(main_engine, event_engine, APP_NAME)
 
         self.module_factors = importlib.import_module(factor_module_name)
@@ -173,90 +180,93 @@ class FactorEngine(BaseEngine):
 
     # Historical Data Management
     def load_bars(self, days: int, interval: Interval) -> None:
-        """Load historical bar data for all contracts."""
-        vt_symbols = self.main_engine.vt_symbols
-        dts = set()
-        history_data = {}
+        """
+        Load historical bar data for all contracts.
 
-        for vt_symbol in vt_symbols:
-            data = self.load_bar(vt_symbol, days, interval)
-            for bar in data:
-                dts.add(bar.datetime)
-                history_data[(bar.datetime, vt_symbol)] = bar
+        Parameters:
+            days (int): Number of days to load.
+            interval (Interval): The interval of the bar data.
+        """
+        try:
+            vt_symbols = self.main_engine.vt_symbols
+            dts = set()
+            history_data = {}
 
-        # Organize and process bars
-        dts = sorted(dts)
-        for dt in dts:
-            bars = {}
             for vt_symbol in vt_symbols:
-                bar = history_data.get((dt, vt_symbol))
-                if bar:
-                    bars[vt_symbol] = bar
-                else:
-                    # Handle missing data
-                    bars[vt_symbol] = self.create_placeholder_bar(dt, vt_symbol, bars)
-            self.on_bars(dt, bars)
+                data = self.load_bar(vt_symbol, days, interval)
+                for bar in data:
+                    dts.add(bar.datetime)
+                    history_data[(bar.datetime, vt_symbol)] = bar
+
+            dts = sorted(dts)
+            for dt in dts:
+                bars = {}
+                for vt_symbol in vt_symbols:
+                    bar = history_data.get((dt, vt_symbol))
+                    if bar:
+                        bars[vt_symbol] = bar
+                    else:
+                        bars[vt_symbol] = self.create_placeholder_bar(dt, vt_symbol, bars)
+                self.on_bars(dt, bars)
+
+        except Exception as e:
+            self.write_log(f"Error loading bars: {e}", level=ERROR)
 
     def load_bar(self, vt_symbol: str, days: int, interval: Interval) -> list[BarData]:
-        """Load historical bar data for a specific contract."""
-        symbol, exchange = extract_vt_symbol(vt_symbol)
-        end = datetime.now(DB_TZ)
-        start = end - timedelta(days)
-        contract = self.main_engine.get_contract(vt_symbol)
+        """
+        Load historical bar data for a specific contract.
 
-        data = self.database.load_bar_data(symbol, exchange, interval, start, end)
-        if not data and contract and contract.history_data:
-            req = HistoryRequest(
-                symbol=symbol,
-                exchange=exchange,
-                interval=interval,
-                start=start,
-                end=end
-            )
-            data = self.main_engine.query_history(req, contract.gateway_name)
-        if not data:
-            self.write_log(f"Failed to load data for {vt_symbol}.")
-        return data or []
+        Parameters:
+            vt_symbol (str): The vt_symbol of the contract.
+            days (int): Number of days to load.
+            interval (Interval): The interval of the bar data.
+
+        Returns:
+            list[BarData]: List of bar data.
+        """
+        try:
+            symbol, exchange = extract_vt_symbol(vt_symbol)
+            end = datetime.now(DB_TZ)
+            start = end - timedelta(days)
+            contract = self.main_engine.get_contract(vt_symbol)
+
+            data = self.database.load_bar_data(symbol, exchange, interval, start, end)
+            if not data and contract and contract.history_data:
+                req = HistoryRequest(
+                    symbol=symbol,
+                    exchange=exchange,
+                    interval=interval,
+                    start=start,
+                    end=end
+                )
+                data = self.main_engine.query_history(req, contract.gateway_name)
+            if not data:
+                self.write_log(f"Failed to load data for {vt_symbol}.", level=WARNING)
+            return data or []
+
+        except Exception as e:
+            self.write_log(f"Error loading bar for {vt_symbol}: {e}", level=ERROR)
+            return []
 
     def create_placeholder_bar(self, dt: datetime, vt_symbol: str, bars: dict) -> BarData:
-        """Create a placeholder bar when data is missing."""
-        symbol, exchange = extract_vt_symbol(vt_symbol)
-        if vt_symbol in bars:
-            previous_bar = bars[vt_symbol]
-            return BarData(
-                symbol=previous_bar.symbol,
-                exchange=previous_bar.exchange,
-                datetime=dt,
-                open_price=previous_bar.close_price,
-                high_price=previous_bar.close_price,
-                low_price=previous_bar.close_price,
-                close_price=previous_bar.close_price,
-                gateway_name=previous_bar.gateway_name,
-            )
-        return BarData(
-            symbol=symbol,
-            exchange=exchange,
-            datetime=dt,
-            open_price=0,
-            high_price=0,
-            low_price=0,
-            close_price=0,
-            gateway_name=""
-        )
+        """
+        Create a placeholder bar when data is missing.
+        """
+        return create_placeholder_bar(dt, vt_symbol, bars)
 
     def _truncate_memory_bar(self) -> None:
-        """Truncate the memory to the maximum length."""
-        temp = deepcopy(self.memory_bar)
-        for key, df in temp.items():
-            if len(df) > self.max_memory_length:
-                self.memory_bar[key] = df.tail(self.max_memory_length)
+        """
+        Truncate the memory_bar to the maximum length.
+        """
+        assert self.memory_bar, "memory_bar is not initialized."
+        truncate_memory(self.memory_bar, self.max_memory_length)
 
     def _truncate_memory_factor(self) -> None:
-        """Truncate the memory to the maximum length."""
-        temp = deepcopy(self.memory_factor)
-        for key, df in temp.items():
-            if len(df) > self.max_memory_length:
-                self.memory_factor[key] = df.tail(self.max_memory_length)
+        """
+        Truncate the memory_factor to the maximum length.
+        """
+        assert self.memory_factor, "memory_factor is not initialized."
+        truncate_memory(self.memory_factor, self.max_memory_length)
 
     def complete_factor_tree(self, factors: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -440,27 +450,22 @@ class FactorEngine(BaseEngine):
         """
         Execute the pre-built computation graph with updated memory.
 
-        The memory is dynamically updated before each calculation.
-
-        todo: 1. historical data of the factor is being calculated 2. factor calculation 3. factor update
+        Parameters:
+            dt (datetime): The current datetime for calculation.
         """
-        if not hasattr(self, "tasks"):
-            raise RuntimeError("Computation graph has not been built. Please initialize the engine first.")
+        try:
+            if not hasattr(self, "tasks"):
+                raise RuntimeError("Computation graph has not been built. Please initialize the engine first.")
 
-        # Execute the computation graph
-        results = dask.compute(*self.tasks.values())
+            results = dask.compute(*self.tasks.values())
 
-        # Update factor values with results
-        for factor_name, result in zip(self.tasks.keys(), results):
-            self.memory_factor[factor_name] = result
+            for factor_name, result in zip(self.tasks.keys(), results):
+                self.memory_factor[factor_name] = result
 
-        # time.sleep(1)
-        # self.write_log("Factor calculations completed successfully.", level=DEBUG)
-        # self.write_log(f"self.memory_bar {self.memory_bar}", level=DEBUG)
-        # self.write_log(f"self.memory_factor {self.memory_factor}", level=DEBUG)
-        # print(f"{self.__class__.__name__}.on_calculation: Factor calculations completed successfully.", flush=True)
-        # print(f"{self.__class__.__name__}.on_calculation: self.memory_bar {self.memory_bar}", flush=True)
-        # print(f"{self.__class__.__name__}.on_calculation: self.memory_factor {self.memory_factor}", flush=True)
+            self.write_log("Factor calculations completed successfully.", level=INFO)
+
+        except Exception as e:
+            self.write_log(f"Error during factor calculation: {e}", level=ERROR)
 
     # Event Processing
     def process_tick_event(self, event: Event) -> None:
