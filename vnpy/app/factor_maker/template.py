@@ -11,37 +11,88 @@ from vnpy.config import VTSYMBOL_FACTOR
 class FactorParameters(object):
 
     def __init__(self, params: Optional[Dict[str, Any]] = None) -> None:
+        """
+        Initialize the FactorParameters object.
+
+        Parameters:
+            params (Optional[Dict[str, Any]]): A dictionary of parameter names and values.
+        """
         if params is not None:
             for key, value in params.items():
                 setattr(self, key, value)
 
-    def __str__(self):
-        # ˼����һ�»���Ӧ�ô��ϲ���ֵ, ��������Ψһ�ر�ʶһ��factor
+    def __str__(self) -> str:
+        """
+        Convert the parameters to a string representation.
+
+        Returns:
+            str: A string representation of the parameters.
+        """
         if len(self.__dict__) == 0:
             return "noparams"
         return "-".join([f"{k}_{v}" for k, v in self.__dict__.items()])
 
     def __iter__(self):
+        """
+        Iterate over the parameters.
+
+        Returns:
+            Iterator: An iterator over the parameter items.
+        """
         return iter(self.__dict__.items())
 
     def __contains__(self, item):
+        """
+        Check if a parameter exists.
+
+        Parameters:
+            item (str): The parameter name.
+
+        Returns:
+            bool: True if the parameter exists, False otherwise.
+        """
         return hasattr(self, item)
 
     def set_parameters(self, params: Dict[str, Any]) -> None:
-        # assert params is not None and len(params) > 0
+        """
+        Set or update parameters.
+
+        Parameters:
+            params (Dict[str, Any]): A dictionary of parameter names and values.
+        """
         for key, value in params.items():
             if getattr(self, key, None) is not None:
                 print(f"Parameter {key} is updated: {getattr(self, key)} -> {value}")
             setattr(self, key, value)
 
     def get_parameter(self, key: str) -> Any:
-        p = getattr(self, key)
-        return p
+        """
+        Get the value of a parameter.
 
+        Parameters:
+            key (str): The parameter name.
+
+        Returns:
+            Any: The value of the parameter.
+        """
+        return getattr(self, key)
+        
     def get_all_parameters(self) -> Dict[str, Any]:
+        """
+        Get all parameters as a dictionary.
+
+        Returns:
+            Dict[str, Any]: A dictionary of all parameters.
+        """
         return self.__dict__
 
     def del_parameters(self, key: Union[str, List[str]]) -> None:
+        """
+        Delete one or more parameters.
+
+        Parameters:
+            key (Union[str, List[str]]): The parameter name(s) to delete.
+        """
         if isinstance(key, str):
             if key in self.__dict__.keys():
                 delattr(self, key)
@@ -50,13 +101,15 @@ class FactorParameters(object):
                 if k in self.__dict__.keys():
                     delattr(self, k)
 
-    def to_str(self, with_value=True) -> str:
-        """Convert the parameters to a string.
+    def to_str(self, with_value: bool = True) -> str:
+        """
+        Convert the parameters to a string.
 
-        Parameters
-        ----------
-        with_value : bool
-            Whether to include the value of the parameters.
+        Parameters:
+        with_value (bool): Whether to include the values of the parameters.
+
+        Returns:
+            str: A string representation of the parameters.
         """
         if with_value:
             return self.__str__()
@@ -66,6 +119,12 @@ class FactorParameters(object):
             return "-".join([f"{k}" for k in self.__dict__.keys()])
 
     def items(self):
+        """
+        Get all parameter items.
+
+        Returns:
+            ItemsView: A view of the parameter items.
+        """
         return self.__dict__.items()
 
 
@@ -93,9 +152,10 @@ class FactorTemplate(ABC):
     @property
     def factor_key(self) -> str:
         """
-        # this is different from vt_symbol, because factor key doesn't care about the symbol and exchange.
-        it is used for uniquely indicating one kind of factors, which have the same calculation function.
-        Get the factor name key.
+        Get the unique key for the factor.
+
+        Returns:
+            str: The unique key for the factor.
         """
         # return f"{self.factor_name}@{self.params.to_str(with_value=True)}"  # 20250208 modified
         return f"{self.VTSYMBOL_TEMPLATE.format(interval=self.freq.value, factorname=self.factor_name)}@{self.params.to_str(with_value=True)}"  # 20250208 modified
@@ -203,6 +263,9 @@ class FactorTemplate(ABC):
     def set_params(self, params_dict: Dict[str, Any]) -> None:
         """
         Set the parameters of the factor.
+
+        Parameters:
+            params_dict (Dict[str, Any]): A dictionary of parameter names and values.
         """
         for key, value in params_dict.items():
             if hasattr(self, key):
@@ -271,7 +334,8 @@ class FactorTemplate(ABC):
     @abstractmethod
     def calculate(self, input_data: Dict[str, pl.DataFrame],
                   memory: Dict[str, pl.DataFrame], *args, **kwargs) -> pl.DataFrame:
-        """unified api for calculating factor value
+        """
+        Abstract method for calculating the factor value.
 
         Parameters
         ----------
@@ -289,11 +353,23 @@ class FactorTemplate(ABC):
         pass
 
     def calculate_polars(self, input_data: pl.DataFrame, *args, **kwargs) -> Any:
+        """
+        Calculate the factor value using Polars DataFrame.
+
+        Parameters:
+            input_data (pl.DataFrame): Input data for calculation.
+
+        Returns:
+            Any: The calculated factor value(s).
+        """
         pass
 
     def from_setting(self, setting: Optional[dict] = None) -> None:
         """
-        load factor from `factor_maker_setting.json`
+        Load factor settings from a dictionary.
+
+        Parameters:
+            setting (Optional[dict]): The factor settings.
         """
         if setting is None:
             return
@@ -314,11 +390,20 @@ class FactorTemplate(ABC):
         self.dependencies_exchange = factor_setting.get("dependencies_exchange", [])
 
     def to_setting(self) -> dict:
+        """
+        Convert the factor to a settings dictionary.
+
+        Returns:
+            dict: The factor settings.
+        """
         return self.to_dict()
 
     def to_dict(self) -> dict:
         """
-        Convert the factor template to a dictionary.
+        Convert the factor to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the factor.
         """
         # freq = str(self.freq.value) if self.freq is not None else None
         d = {
