@@ -1,7 +1,0 @@
-[flake8]
-exclude = venv,build,__pycache__,__init__.py,ib,talib,uic
-ignore =
-    # line too long, fixed by black
-    E501,
-    # line break before binary operator
-    W503,

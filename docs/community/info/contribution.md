@@ -69,8 +69,16 @@ autopep8 --in-place --recursive .
 ```
 
 ### 代码质量检查
-使用[flake8](https://pypi.org/project/flake8/)检查你的代码，确保没有error和warning。
-在项目根目录下运行```flake8```就可以检查出代码中书写不严谨的地方了。如果检查出error或者warning，说明你的代码需要进行一些修改以提升质量。
+VeighNa项目使用两个工具来保证代码质量：
+
+1. [ruff](https://github.com/astral-sh/ruff) - 用于代码风格和质量检查
+   - 在项目根目录下运行```ruff check .```检查代码中的风格问题
+   - 可以使用```ruff check --fix .```自动修复部分问题
+
+2. [mypy](https://github.com/python/mypy) - 用于静态类型检查
+   - 在项目根目录下运行```mypy vnpy```检查代码中的类型注解问题
+
+如果检查出error或warning，说明你的代码需要进行修改以符合项目标准。确保在提交PR前解决所有警告和错误。
 
 [GithubVnpy]:https://github.com/vnpy/vnpy
 [GithubDocForSync]:https://help.github.com/articles/syncing-a-fork/
