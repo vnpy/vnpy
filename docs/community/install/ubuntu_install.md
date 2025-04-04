@@ -52,8 +52,7 @@ sudo bash install.sh 你的python软连接
 一键安装过程整体分为3步：
 
 1. 下载安装ta-lib库和numpy；
-2. 安装requirements.txt文件内的相关依赖库；
-3. 安装VeighNa本身。
+2. 安装VeighNa本身。
 
 > 若是在虚拟机上运行，请把内存调至4G以上，否则会报错内存不足。
 
