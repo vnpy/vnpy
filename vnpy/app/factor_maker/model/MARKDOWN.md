@@ -1,151 +1,165 @@
-# Model Engine Documentation
+# Model Template Documentation
 
 ## Purpose
-The ModelEngine is designed to facilitate model training and evaluation using factor data. It provides functionality for:
-- Loading and managing factor data
-- Generating training labels
-- Data preprocessing and normalization
-- Feature engineering and combination
-- Model training data preparation
+The ModelTemplate provides a base class for implementing factor models in the vnpy trading system. It handles:
+- Feature data loading and preprocessing
+- Label generation
+- Training data preparation
+- Model training and prediction interfaces
 
 ## Components
 
-### ModelEngine
-Main engine for factor model management and training data preparation.
+### ModelTemplate
+Base template class for implementing factor models.
 
 #### Constructor
 ```python
-ModelEngine(
-    main_engine: MainEngine,
-    event_engine: EventEngine,
-    label_generator: Optional[LabelGenerator] = None
+ModelTemplate(
+    factor_keys: List[str],
+    label_generator: Optional[LabelGenerator] = None,
+    params: Optional[Dict[str, Any]] = None
 )
 ```
 
 #### Key Methods
 ```python
-def add_factor(self, factor: FactorTemplate) -> None:
-    """Add a factor to the model engine"""
+def load_features(self, factor_data: Dict[str, pl.DataFrame]) -> None:
+    """Load and preprocess factor data"""
 
-def load_factor_data(self, factor_data: Dict[str, pl.DataFrame]) -> None:
-    """Load factor data from backtesting or live calculation"""
-    
-def generate_labels(self, method: str = "returns", lookforward_period: int = 1) -> None:
+def generate_labels(
+    self,
+    price_data: pl.DataFrame,
+    method: str = "returns",
+    lookforward_period: int = 1
+) -> None:
     """Generate labels for training"""
-    
-def prepare_training_data(self, start_time: datetime, end_time: datetime) -> tuple[pl.DataFrame, pl.DataFrame]:
-    """Prepare feature matrix and label vector for training"""
+
+def prepare_data(
+    self,
+    start_time: datetime,
+    end_time: datetime
+) -> tuple[pl.DataFrame, pl.DataFrame]:
+    """Prepare feature matrix and label vector"""
+
+@abstractmethod
+def train(self, features: pl.DataFrame, labels: pl.DataFrame, **kwargs) -> None:
+    """Train the model - must be implemented by concrete classes"""
+
+@abstractmethod
+def predict(self, features: pl.DataFrame) -> Union[np.ndarray, pl.Series]:
+    """Generate predictions - must be implemented by concrete classes"""
 ```
 
 ## Usage Examples
 
-### Basic Model Training Setup
+### Basic Model Implementation
 ```python
-from vnpy.app.factor_maker.model.engine import ModelEngine
-from vnpy.app.factor_maker.template import FactorTemplate
+from vnpy.app.factor_maker.model.template import ModelTemplate
+import polars as pl
+import numpy as np
+from sklearn.linear_model import LogisticRegression
 
-# Initialize engine
-model_engine = ModelEngine(main_engine, event_engine)
+class SimpleFactorModel(ModelTemplate):
+    def __init__(self, factor_keys: List[str]):
+        super().__init__(factor_keys=factor_keys)
+        self.model = LogisticRegression()
+        
+    def train(self, features: pl.DataFrame, labels: pl.DataFrame, **kwargs):
+        X = features.drop("datetime").to_numpy()
+        y = labels.drop("datetime").to_numpy().ravel()
+        self.model.fit(X, y)
+        
+    def predict(self, features: pl.DataFrame):
+        X = features.drop("datetime").to_numpy()
+        return self.model.predict_proba(X)[:, 1]
+```
 
-# Add factors
-model_engine.add_factor(your_factor)
+### Using the Model
+```python
+# Initialize model
+model = SimpleFactorModel(factor_keys=["factor1", "factor2"])
 
-# Load factor data
+# Load data
 factor_data = {
     "factor1": pl.DataFrame(...),
     "factor2": pl.DataFrame(...)
 }
-model_engine.load_factor_data(factor_data)
+model.load_features(factor_data)
 
-# Generate labels
-model_engine.generate_labels(
+# Generate labels from price data
+price_data = pl.DataFrame(...)
+model.generate_labels(
+    price_data=price_data,
     method="returns",
     lookforward_period=5
 )
 
-# Get training data
-features, labels = model_engine.prepare_training_data(
+# Prepare training data
+features, labels = model.prepare_data(
     start_time=datetime(2023, 1, 1),
     end_time=datetime(2023, 12, 31)
 )
-```
 
-### Custom Label Generation
-```python
-from vnpy.app.factor_maker.model.utils.label_generator import LabelGenerator
+# Train model
+model.train(features, labels)
 
-# Create custom label generator
-class CustomLabelGenerator(LabelGenerator):
-    def generate(self, price_data: pl.DataFrame, **kwargs) -> pl.DataFrame:
-        # Your custom label logic here
-        pass
-
-# Use custom generator
-model_engine = ModelEngine(
-    main_engine=main_engine,
-    event_engine=event_engine,
-    label_generator=CustomLabelGenerator()
-)
+# Make predictions
+predictions = model.predict(new_features)
 ```
 
 ## Data Requirements
 
-### Factor Data Format
-- Must be a polars DataFrame
-- Must contain a 'datetime' column
-- Values should be numeric
-- Missing values will be handled by preprocessing
+### Feature Data
+- Must be provided as Dict[str, pl.DataFrame]
+- Each DataFrame must have a 'datetime' column
+- Values should be numeric and preprocessed
 
-### Label Data Format
-- Must align with factor data datetime
-- Can be returns, binary signals, or custom values
-- Must be numeric values suitable for training
-
-## Dependencies
-- vnpy core framework
-- polars for data processing
-- numpy for numerical operations
+### Label Data
+- Must have matching datetime index with features
+- Values should be appropriate for the model type (binary, continuous, etc.)
 
 ## Error Handling
-The engine includes comprehensive error checking for:
-- Data format validation
-- Missing value handling
-- Date alignment
-- Feature combination
+The template includes comprehensive error handling for:
+- Data validation
+- Feature preprocessing
+- Training data preparation
+- Model operations
 
-## Performance Considerations
-- Uses polars for efficient data processing
-- Implements memory-efficient data structures
-- Supports batch processing for large datasets
+## Dependencies
+- polars for data processing
+- numpy for numerical operations
+- logging for error tracking
+- datetime for time management
 
 ## Testing
 ```python
-def test_model_engine():
-    # Initialize
-    engine = ModelEngine(main_engine, event_engine)
+def test_model_template():
+    # Test data preparation
+    model = SimpleFactorModel(factor_keys=["test_factor"])
     
-    # Add test factor
-    factor = MockFactor()
-    engine.add_factor(factor)
-    
-    # Test data loading
-    test_data = {
-        "factor1": pl.DataFrame({
+    # Create test data
+    factor_data = {
+        "test_factor": pl.DataFrame({
             "datetime": [datetime(2023, 1, 1)],
             "value": [1.0]
         })
     }
-    engine.load_factor_data(test_data)
+    
+    # Test feature loading
+    model.load_features(factor_data)
+    assert len(model.feature_data) > 0
     
     # Test label generation
-    engine.generate_labels(method="returns", lookforward_period=1)
-    
-    # Test data preparation
-    features, labels = engine.prepare_training_data(
-        start_time=datetime(2023, 1, 1),
-        end_time=datetime(2023, 1, 2)
-    )
-    
-    assert isinstance(features, pl.DataFrame)
-    assert isinstance(labels, pl.DataFrame)
+    price_data = pl.DataFrame({
+        "datetime": [datetime(2023, 1, 1)],
+        "close": [100.0]
+    })
+    model.generate_labels(price_data)
+    assert len(model.label_data) > 0
 ```
+
+## Notes
+- Models should be stateless during prediction
+- Use appropriate data validation before training
+- Consider using dependency injection for components like label generators
+- Implement proper model persistence methods if needed
