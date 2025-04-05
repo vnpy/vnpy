@@ -1,3 +1,4 @@
+import json
 from typing import Dict, List, Optional, Any
 import polars as pl
 import numpy as np
@@ -7,6 +8,8 @@ from dataclasses import dataclass, field
 from vnpy.trader.constant import Interval
 from vnpy.app.factor_maker.template import FactorTemplate
 from vnpy.app.factor_maker.base import FactorMode
+from pathlib import Path
+from .utils.report_utils import create_tear_sheet, generate_quant_stats_report, generate_report_html
 
 @dataclass
 class BacktestingResult:
@@ -161,3 +164,53 @@ class Backtester:
             'max_drawdown': (returns.cumsum() - returns.cumsum().cummax()).min(),
             'win_rate': sum(returns > 0) / len(returns)
         }
+    
+    def save_report(self, save_dir: Optional[str] = None) -> None:
+        """
+        Generate and save backtest report with visualizations using QuantStats
+        
+        Parameters:
+            save_dir (Optional[str]): Directory to save report. Defaults to ./reports/
+        """
+        try:
+            # Create save directory
+            if save_dir is None:
+                save_dir = "./reports"
+            save_path = Path(save_dir)
+            save_path.mkdir(parents=True, exist_ok=True)
+            
+            # Generate timestamp for filename
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            
+            # Save QuantStats report
+            quant_stats_path = save_path / f"quant_stats_{self.factor.factor_name}_{timestamp}.html"
+            generate_quant_stats_report(
+                returns=self.result.returns,
+                positions=self.result.positions,
+                trades=self.result.trades,
+                save_path=quant_stats_path
+            )
+            
+            # Save detailed tear sheet
+            tearsheet_path = save_path / f"tearsheet_{self.factor.factor_name}_{timestamp}.html"
+            create_tear_sheet(
+                result={
+                    "returns": self.result.returns,
+                    "positions": self.result.positions,
+                    "trades": self.result.trades,
+                    "metrics": self.result.metrics
+                },
+                factor_info={
+                    "factor_name": self.factor.factor_name,
+                    "parameters": self.factor.params.get_all_parameters(),
+                    "dependencies": [f.factor_name for f in self.factor.dependencies_factor]
+                },
+                save_path=tearsheet_path
+            )
+            
+            self.logger.info(f"QuantStats report saved to {quant_stats_path}")
+            self.logger.info(f"Detailed tear sheet saved to {tearsheet_path}")
+            
+        except Exception as e:
+            self.logger.error(f"Error saving report: {str(e)}")
+            raise
