@@ -1,4 +1,4 @@
-from typing import Union
+from typing import List, Union
 import polars as pl
 import numpy as np
 from sklearn.linear_model import LogisticRegression

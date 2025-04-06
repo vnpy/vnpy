@@ -1,134 +1,128 @@
-# -*- coding=utf-8 -*-
-# @Project  : 20240720
-# @FilePath : ${DIR_PATH}
-# @File     : ${FILE_NAME}
-# @Time     : 2024/9/28 21:00
-# @Author   : EvanHong
-# @Email    : 939778128@qq.com
-# @Description:
-import multiprocessing
-from datetime import datetime, time
-from logging import INFO
-from time import sleep
-from unittest import TestCase
-
-import numpy as np
-import pandas as pd
+import unittest
+from unittest.mock import MagicMock, patch
+import json
+import tempfile
+import os
 import polars as pl
+from datetime import datetime
 
-from vnpy.app.factor_maker import FactorEngine
-from vnpy.app.factor_maker import FactorMakerApp
-from vnpy.app.data_recorder import DataRecorderApp
-from vnpy.event import Event
+from tests.app.factor_maker.utils.test_utils import generate_test_bars
 from vnpy.event import EventEngine
-from vnpy.gateway.binance import BinanceSpotGateway
-from vnpy.trader.constant import Exchange
 from vnpy.trader.engine import MainEngine
-from vnpy.trader.object import SubscribeRequest
-from vnpy.trader.setting import SETTINGS
+from vnpy.app.factor_maker.engine import FactorEngine
+from vnpy.trader.constant import Interval
+from vnpy.app.factor_maker.factors.test_factors import SimpleMAFactor, CompositeFactor
+from vnpy.trader.utility import load_json
 
-
-def run_child():
+class TestFactorMaker(unittest.TestCase):
     """
-    1. start gateway
-    2. feed data to factor engine
-    3. push bar and factors into database
+    Test suite for Factor Maker Engine
     """
+    
+    def setUp(self):
+        """Set up test environment"""
+        self.event_engine = EventEngine()
+        self.main_engine = MainEngine(self.event_engine)
+        
+        # Mock symbols
+        self.main_engine.vt_symbols = ["BTC-USD.TEST", "ETH-USD.TEST"]
+        
+        # Create temporary setting file
+        self.temp_dir = tempfile.mkdtemp()
+        self.setting_file = os.path.join(self.temp_dir, "factor_maker_setting.json")
+        self.create_test_settings()
+        
+        # Initialize engine
+        self.factor_engine = FactorEngine(self.main_engine, self.event_engine)
+        self.factor_engine.setting_filename = self.setting_file
 
-    event_engine = EventEngine()
-    main_engine = MainEngine(event_engine)
-    main_engine.write_log("主引擎创建成功")
+        self.factor_engine.init_engine(fake=True)
 
-    # connect to exchange
-    main_engine.add_gateway(BinanceSpotGateway, "BINANCE_SPOT")
-    binance_gateway_setting = {
-        "key": SETTINGS.get("gateway.api_key", ""),
-        "secret": SETTINGS.get("gateway.api_secret", ""),
-        "server": "REAL"
-    }
-    main_engine.connect(binance_gateway_setting, "BINANCE_SPOT")
-    main_engine.write_log("连接币安接口")
-    main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
-    # main_engine.subscribe(SubscribeRequest(symbol='btcusdt', exchange=Exchange.BINANCE,interval=Interval.MINUTE), gateway_name='BINANCE_SPOT')
+                
+    def create_test_settings(self):
+        """Create test factor settings"""
+        settings = {
+            "factor_1m_SimpleMA": {  # Match the VTSYMBOL_TEMPLATE format
+                "class_name": "SimpleMAFactor",
+                "freq": "1m",
+                "params": {"window": 10}
+            },
+            "factor_1m_Composite": {  # Match the VTSYMBOL_TEMPLATE format
+                "class_name": "CompositeFactor",
+                "freq": "1m",
+                "params": {},
+                "dependencies_factor": [{
+                    "SimpleMA": {
+                        "class_name": "SimpleMAFactor",
+                        "params": {"window": 10}
+                    }
+                }]
+            }
+        }
+        with open(self.setting_file, 'w') as f:
+            json.dump(settings, f)
+    
+    def test_basic_initialization(self):
+        """Test if engine initializes correctly"""
+        self.assertTrue(hasattr(self.factor_engine, 'flattened_factors'))
+        self.assertTrue(len(self.factor_engine.flattened_factors) > 0)
 
-    # start data recorder
-    data_recorder_engine = main_engine.add_app(DataRecorderApp)
-    main_engine.write_log(f"启动[{data_recorder_engine.__class__.__name__}]")
+    def test_memory_structure(self):
+        """Test if memory structures are correctly initialized"""
+        self.assertTrue(all(k in self.factor_engine.memory_bar for k in ['open', 'high', 'low', 'close', 'volume']))
+        self.assertTrue(len(self.factor_engine.memory_factor) > 0)
 
-    factor_maker_engine: FactorEngine = main_engine.add_app(FactorMakerApp)
-    factor_maker_engine.init_engine(fake=True)
-    main_engine.write_log(f"启动[{factor_maker_engine.__class__.__name__}]")
+    def test_factor_calculation(self):
+        """Test basic factor calculation workflow"""
+        
+        # Generate and process test data
+        test_bars = generate_test_bars(self.main_engine.vt_symbols, days=1)
+        
+        # Process the first bar to initialize
+        first_bars = test_bars[0]
+        dt = list(first_bars.values())[0].datetime
+        self.factor_engine.on_bars(dt, first_bars)
+        
+        # Verify factors are initialized
+        self.assertTrue(len(self.factor_engine.memory_factor) > 0)
+        self.assertTrue(any('SimpleMA' in key for key in self.factor_engine.memory_factor.keys()))
+        
+        # Process remaining bars
+        for bar_dict in test_bars[1:]:
+            dt = list(bar_dict.values())[0].datetime
+            self.factor_engine.on_bars(dt, bar_dict)
+        
+        # Verify calculations
+        for factor_name, factor_data in self.factor_engine.memory_factor.items():
+            self.assertIsInstance(factor_data, pl.DataFrame)
+            self.assertTrue(len(factor_data) > 0)
+            self.assertTrue('datetime' in factor_data.columns)
 
-    # log_engine = main_engine.get_engine("log")
-    # event_engine.register(EVENT_CTA_LOG, log_engine.process_log_event)
-    # main_engine.write_log("注册日志事件监听")
-    #
-    # main_engine.connect(ctp_setting, "CTP")
-    # main_engine.write_log("连接CTP接口")
-    #
-    # sleep(10)
-    #
-    # cta_engine.init_engine()
-    # main_engine.write_log("CTA策略初始化完成")
-    #
-    # cta_engine.init_all_strategies()
-    # sleep(60)   # Leave enough time to complete strategy initialization
-    # main_engine.write_log("CTA策略全部初始化")
-    #
-    # cta_engine.start_all_strategies()
-    # main_engine.write_log("CTA策略全部启动")
-
-    while True:
-        # print(main_engine.event_engine._queue.get())
-        # print(main_engine.event_engine._queue.get().type)
-        # print(type(main_engine.event_engine._queue.get()))
-        sleep(1)
-
-
-def run_parent():
-    """
-    Running in the parent process.
-    """
-    print("启动父进程")
-
-    # Chinese futures market trading period (day/night)
-    DAY_START = time(8, 45)
-    DAY_END = time(15, 30)
-
-    NIGHT_START = time(20, 45)
-    NIGHT_END = time(2, 45)
-
-    child_process = None
-
-    while True:
-        current_time = datetime.now().time()
-        trading = False
-
-        # Check whether in trading period
-        if (
-                (current_time >= DAY_START and current_time <= DAY_END)
-                or (current_time >= NIGHT_START)
-                or (current_time <= NIGHT_END)
-        ) or True:
-            trading = True
-
-        # Start child process in trading period
-        if trading and child_process is None:
-            print("启动子进程")
-            child_process = multiprocessing.Process(target=run_child)
-            child_process.start()
-            print("子进程启动成功")
-
-        # 非记录时间则退出子进程
-        if not trading and child_process is not None:
-            print("关闭子进程")
-            child_process.terminate()
-            child_process.join()
-            child_process = None
-            print("子进程关闭成功")
-
-        sleep(5)
-
+    def test_dependency_resolution(self):
+        """Test factor dependency resolution"""
+        
+        # Check dependencies are properly resolved
+        self.assertTrue(len(self.factor_engine.flattened_factors) >= 2)
+        composite = self.factor_engine.flattened_factors.get("factor_1m_Composite@noparams")
+        self.assertTrue(len(composite.dependencies_factor) > 0)
+        
+    def test_error_handling(self):
+        """Test error handling and circuit breaker"""
+        
+        # Simulate calculation errors
+        with patch.object(self.factor_engine, 'execute_calculation') as mock_calc:
+            mock_calc.side_effect = Exception("Test error")
+            
+            with self.assertRaises(RuntimeError):
+                for _ in range(self.factor_engine.error_threshold + 1):
+                    self.factor_engine.on_bars(datetime.now(), {})
+                    
+    def tearDown(self):
+        """Clean up"""
+        self.factor_engine.close()
+        self.main_engine.close()
+        os.remove(self.setting_file)
+        os.rmdir(self.temp_dir)
 
 if __name__ == '__main__':
-    run_parent()
+    unittest.main()

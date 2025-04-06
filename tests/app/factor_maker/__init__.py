@@ -1,0 +1,1 @@
+"""Factor Maker test suite"""

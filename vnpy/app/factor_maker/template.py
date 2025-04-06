@@ -1,7 +1,9 @@
 from abc import abstractmethod, ABC
+from datetime import datetime
 from typing import Optional, Dict, Any, Union, List, Type, TypeVar
 import importlib
 import polars as pl
+from dask.delayed import Delayed
 
 from vnpy.app.factor_maker.base import FactorMode
 from vnpy.trader.constant import Exchange, Interval
@@ -157,7 +159,6 @@ class FactorTemplate(ABC):
         Returns:
             str: The unique key for the factor.
         """
-        # return f"{self.factor_name}@{self.params.to_str(with_value=True)}"  # 20250208 modified
         return f"{self.VTSYMBOL_TEMPLATE.format(interval=self.freq.value, factorname=self.factor_name)}@{self.params.to_str(with_value=True)}"  # 20250208 modified
 
     def __init_dependencies__(self):
@@ -196,6 +197,21 @@ class FactorTemplate(ABC):
         self.inited: bool = False
         self.trading: bool = False
 
+        self.on_init()
+        self.on_start()
+
+        self.run_datetime: str = self.update_datetime()
+
+    def update_datetime(self) -> str:
+        """
+        Update the run datetime.
+
+        Returns:
+            str: The updated run datetime.
+        """
+        run_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return run_datetime
+    
     def add_params(self, param_names: Union[str, List[str]], auto_property: bool = True) -> None:
         """
         Add parameters to the factor.
@@ -244,21 +260,13 @@ class FactorTemplate(ABC):
 
                     # Attach the property dynamically to the class
                     setattr(self.__class__, attr_name, property(getter, setter))
-                    print(f"Created property for parameter: {attr_name}")
                 else:
                     raise AttributeError(
                         f"The parameter '{attr_name}' must have a corresponding property "
                         f"(with a getter and setter) defined in the class, or set `auto_property=True`."
                     )
             else:
-                # Check and log existing property parts
-                print(f"{attr_name} is a property")
-                if attr.fget:
-                    print(f"  - Getter is defined")
-                if attr.fset:
-                    print(f"  - Setter is defined")
-                if attr.fdel:
-                    print(f"  - Deleter is defined")
+                return  # If the property already exists, do nothing
 
     def set_params(self, params_dict: Dict[str, Any]) -> None:
         """
@@ -276,15 +284,7 @@ class FactorTemplate(ABC):
             else:
                 self.add_params(key)
                 print(f"Parameter {key} is set: {value}")
-                #                 setattr(self.params.set_parameters({key:value}), key, value)
                 self.params.set_parameters({key: value})
-            # if key in self.params:
-            #     print(f"Parameter {key} is updated: {getattr(self, key)} -> {value}")
-            #     setattr(self, key, value)
-            # else:
-            #     # why raise error here? Because we want to make sure the parameter is correctly set in the factor,
-            #     # and we can't set a parameter that is not defined in the factor
-            #     raise ValueError(f"Parameter {key} is not recognized.")
 
     def get_params(self):
         """
@@ -322,6 +322,7 @@ class FactorTemplate(ABC):
         if self.factor_mode == FactorMode.Backtest:
             pass
         self.trading = True
+        self.run_datetime: str = self.update_datetime()
 
     def on_stop(self) -> None:
         """
@@ -332,23 +333,30 @@ class FactorTemplate(ABC):
         self.trading = False
 
     @abstractmethod
-    def calculate(self, input_data: Dict[str, pl.DataFrame],
-                  memory: Dict[str, pl.DataFrame], *args, **kwargs) -> pl.DataFrame:
+    def calculate(self, 
+                 input_data: Dict[str, Union[pl.DataFrame, Delayed]],
+                 memory: Optional[pl.DataFrame] = None,
+                 *args, **kwargs) -> pl.DataFrame:
         """
-        Abstract method for calculating the factor value.
+        Enhanced abstract method for calculating factor values with Dask support.
 
         Parameters
         ----------
-        input_data: Dict[str, pl.DataFrame]
-            Input data for calculation.
-        memory: Dict[str, pl.DataFrame]
-            Memory data (historical data) for calculation.
-
+        input_data : Dict[str, Union[pl.DataFrame, Delayed]]
+            Input data for calculation. Can be either direct DataFrames or Dask Delayed objects
+        memory : Optional[pl.DataFrame]
+            Historical data for calculation
+        
         Returns
         -------
-            Any: Calculated factor value(s).
+        pl.DataFrame
+            Calculated factor values
 
-
+        Notes
+        -----
+        - Implementations should handle both direct DataFrames and Dask Delayed objects
+        - Use chunking for large datasets
+        - Implement error handling for data quality issues
         """
         pass
 
@@ -388,6 +396,7 @@ class FactorTemplate(ABC):
         self.dependencies_freq = factor_setting.get("dependencies_freq", [])
         self.dependencies_symbol = factor_setting.get("dependencies_symbol", [])
         self.dependencies_exchange = factor_setting.get("dependencies_exchange", [])
+        self.run_datetime = factor_setting.get("last_run_datetime", self.update_datetime())
 
     def to_setting(self) -> dict:
         """
@@ -405,7 +414,6 @@ class FactorTemplate(ABC):
         Returns:
             dict: A dictionary representation of the factor.
         """
-        # freq = str(self.freq.value) if self.freq is not None else None
         d = {
             self.factor_key: {
                 "class_name": self.__class__.__name__,
@@ -414,10 +422,36 @@ class FactorTemplate(ABC):
                 "dependencies_factor": [f.to_dict() for f in self.dependencies_factor],
                 "dependencies_freq": self.dependencies_freq,
                 "dependencies_symbol": self.dependencies_symbol,
-                "dependencies_exchange": self.dependencies_exchange
+                "dependencies_exchange": self.dependencies_exchange,
+                "last_run_datetime": self.run_datetime,
             }
         }
         return d
 
+    def validate_inputs(self, input_data: Dict[str, Any], memory: Optional[pl.DataFrame] = None) -> None:
+        """
+        Validate input data before calculation.
+
+        Parameters
+        ----------
+        input_data : Dict[str, Any]
+            Input data to validate
+        memory : Optional[pl.DataFrame]
+            Historical data to validate
+        
+        Raises
+        ------
+        ValueError
+            If input data is invalid
+        """
+        if not input_data:
+            raise ValueError("Input data cannot be empty")
+            
+        required_columns = {'datetime'}  # Add other required columns
+        if memory is not None:
+            if not isinstance(memory, pl.DataFrame):
+                raise ValueError("Memory must be a Polars DataFrame")
+            if not required_columns.issubset(memory.columns):
+                raise ValueError(f"Memory missing required columns: {required_columns}")
 
 TV_FactorTemplate = TypeVar('TV_FactorTemplate', bound=FactorTemplate)
