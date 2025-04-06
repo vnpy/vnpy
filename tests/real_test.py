@@ -17,23 +17,15 @@
 # @Description:
 import multiprocessing
 from datetime import datetime, time
-from logging import INFO
 from time import sleep
-from unittest import TestCase
 
-import numpy as np
-import pandas as pd
-import polars as pl
-
+from tests.trader.strategies import *
+from vnpy.app.data_recorder import DataRecorderApp
 from vnpy.app.factor_maker import FactorEngine
 from vnpy.app.factor_maker import FactorMakerApp
-from vnpy.app.data_recorder import DataRecorderApp
-from vnpy.event import Event
 from vnpy.event import EventEngine
 from vnpy.gateway.binance import BinanceSpotGateway
-from vnpy.trader.constant import Exchange
 from vnpy.trader.engine import MainEngine
-from vnpy.trader.object import SubscribeRequest
 from vnpy.trader.setting import SETTINGS
 
 
@@ -58,20 +50,6 @@ def run_child():
     main_engine.connect(binance_gateway_setting, "BINANCE_SPOT")
     main_engine.write_log("连接币安接口")
     main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
-    # main_engine.subscribe(SubscribeRequest(symbol='btcusdt', exchange=Exchange.BINANCE,interval=Interval.MINUTE), gateway_name='BINANCE_SPOT')
-
-    # #
-    # # todo zc: vnpy.app.vnpy_datamanager + datafeed(vnpy_datafeed.query_history)/gateway ->vnpy.app.data_recorder(insert data into database) = overview(vnpy.adapters.overview.) + database(vnpy_clickhouse)  补历史数据
-    # # fixme: implement below in vnpy.app.vnpy_datamanager
-    # datafeed = get_datafeed()
-    # overview_handler = OverviewHandler(SETTINGS.get("overview_jsonpath", ""))
-    # overview_handler.load_overview()
-    # for req in overview_handler.check_missing_data():
-    #     bars: Optional[Union[List[BarData], List[Dict]]] = datafeed.query_bar_history(req)
-    #     bars.to_database()  # fixme: implement this step with vnpy.app.data_recorder, and maintain overview in vnpy.app.data_recorder
-    #
-    # for req in overview_handler.check_subscribe_stream():
-    #     main_engine.subscribe(req=req, gateway_name='BINANCE_SPOT')  #第63行放到这操作
 
     # start data recorder
     data_recorder_engine = main_engine.add_app(DataRecorderApp)
@@ -104,8 +82,7 @@ def run_child():
     order_engine: SimpleOrderStrategyEngine = main_engine.add_app(SimpleOrderStrategyApp)
     order_engine.init_engine()
     order_engine.run_all_tests()
-    # data_recorder_engine = main_engine.add_app(DataRecorderApp)
-    # main_engine.write_log(f"启动[{data_recorder_engine.__class__.__name__}]")
+    main_engine.write_log(f"启动[{order_engine.__class__.__name__}]")
 
     while True:
         # print(main_engine.event_engine._queue.get())
