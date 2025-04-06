@@ -4,3 +4,4 @@ from .fundamental import *
 from .momentum import *
 from .risk import *
 from .technical import *
+from .test_factors import *
