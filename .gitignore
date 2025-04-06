@@ -39,3 +39,6 @@ _templates
 *.mo
 requirements.txt
 requirements.txt
+
+# Alpha
+lab/

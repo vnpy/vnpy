@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Configuration file for the Sphinx documentation builder.
 #
 # This file does only contain a selection of the most common options. For a
@@ -20,13 +18,13 @@
 # -- Project information -----------------------------------------------------
 
 project = 'VeighNa'
-copyright = '2015 - 2023, 上海韦纳软件科技有限公司'
+copyright = '2015 - 2024, 上海韦纳软件科技有限公司'
 author = '上海韦纳软件科技有限公司'
 
 # The short X.Y version
-version = '2023.9.29'
+version = '2024.7.18'
 # The full version, including alpha/beta/rc tags
-release = '2023.9.29'
+release = '2024.7.18'
 
 # -- General configuration ---------------------------------------------------
 

@@ -11,7 +11,7 @@ from __future__ import annotations
 import os
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Optional, Literal
+from typing import Optional, Literal, Dict
 
 
 class DataSource(Enum):
@@ -45,9 +45,17 @@ class StatusCode(Enum):
 
 
 class BaseSchema(object):
+    def assign_schema_type(self, schema_type: Dict[str, str]):
+        supposed_attributes = set(self.__dict__.keys())
+        schema_attributes = set(schema_type.keys())
+        if not supposed_attributes == schema_attributes:
+            raise ValueError(
+                f"supposed_attributes - schema_attributes:{supposed_attributes - schema_attributes}; \nschema_attributes - supposed_attributes: {schema_attributes - supposed_attributes}")
+        for k, v in schema_type.items():
+            setattr(self,k, v)
 
-    def to_sql(cls):
-        return ','.join([f'`{k}` {v}' for k, v in cls.__dict__.items()])
+    def to_sql(self):
+        return ','.join([f'`{k}` {v}' for k, v in self.__dict__.items()])
 
 
 class BaseAdapter(ABC):
@@ -154,4 +162,3 @@ class BaseDataAdapter(BaseAdapter):
     #
     #     """
     #     pass
-

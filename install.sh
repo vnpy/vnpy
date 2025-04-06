@@ -17,24 +17,21 @@ function install-ta-lib()
     $python -m pip install numpy==1.23.1 --index $pypi_index
 
     pushd /tmp
-    wget https://pip.vnpy.com/colletion/ta-lib-0.4.0-src.tar.gz
-    tar -xf ta-lib-0.4.0-src.tar.gz
+    wget https://pip.vnpy.com/colletion/ta-lib-0.6.3-src.tar.gz
+    tar -xf ta-lib-0.6.3-src.tar.gz
     cd ta-lib
     ./configure --prefix=/usr/local
     make -j1
     make install
     popd
 
-    $python -m pip install ta-lib==0.4.24 --index $pypi_index
+    $python -m pip install ta-lib==0.6.3 --index $pypi_index
 }
 function ta-lib-exists()
 {
     $prefix/ta-lib-config --libs > /dev/null
 }
 ta-lib-exists || install-ta-lib
-
-# Install Python Modules
-$python -m pip install -r requirements.txt --index $pypi_index
 
 # Install local Chinese language environment
 locale-gen zh_CN.GB18030

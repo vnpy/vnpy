@@ -8,12 +8,13 @@ from tzlocal import get_localzone_name
 
 from .utility import load_json
 
-SETTINGS: Dict[str, Any] = {
+
+SETTINGS: dict = {
     "font.family": "微软雅黑",
     "font.size": 12,
 
     "log.active": True,
-    "log.level": INFO,
+    "log.level": CRITICAL,
     "log.console": True,
     "log.file": True,
 
@@ -55,7 +56,7 @@ SETTINGS.update(load_json(SETTING_FILENAME))
 print(f"LOG: update SETTINGS from {SETTING_FILENAME}")
 
 
-def get_settings(prefix: str = "") -> Dict[str, Any]:
-    prefix_length: int = len(prefix)
-    settings = {k[prefix_length:]: v for k, v in SETTINGS.items() if k.startswith(prefix)}
-    return settings
+# def get_settings(prefix: str = "") -> Dict[str, Any]:
+#     prefix_length: int = len(prefix)
+#     settings = {k[prefix_length:]: v for k, v in SETTINGS.items() if k.startswith(prefix)}
+#     return settings

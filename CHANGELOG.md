@@ -1,3 +1,71 @@
+# 4.0.0版本
+
+## 新增
+
+1. 新增面向机器学习多因子策略的vnpy.alpha模块
+
+## 调整
+
+1. 核心支持版本升级到Python 3.13
+2. 使用pyproject.toml统一项目配置
+3. 日志功能使用loguru替代logging
+4. 使用mypy优化静态类型声明
+5. 使用ruff优化代码细节质量
+6. 使用uv作为开发环境管理工具
+7. 升级扩展模块适配4.0版本：vnpy_ctp/vnpy_ctastrategy/vnpy_sqlite/vnpy_rqdata
+
+## 修复
+
+1. 修复PySide6中单元格排序可能出现的乱序问题
+
+# 3.9.4版本
+
+## 新增
+
+1. vnpy_tora增加登录时终端动态密钥支持
+2. vnpy_taos升级支持TDengine的3.0版本
+
+## 调整
+
+1. vnpy_xt行情接口增加实时行情中的涨跌停价字段
+2. vnpy_taos移除不必要的时区转换提高性能
+3. vnpy_dolphindb优化写入大量数据时候的内存占用
+4. vnpy_portfoliostrategy简化回测引擎的calculate_pnl每日盈亏计算函数
+5. vnpy_tap/vnpy_tts升级pybind11封装工具库的版本，支持Python 3.12编译
+6. EmailEngine发送邮件失败后，捕捉异常并输出日志
+
+## 修复
+
+1. vnpy_optionmaster移除不必要的价格缓存代码
+2. vnpy_dolphindb修复保存overview的时区不正确问题
+
+
+# 3.9.3版本
+
+## 新增
+
+1. 利星资管交易接口vnpy_lstar
+2. 咏春大师数据服务vnpy_voltrader
+3. vnpy_rpcservice增加数据服务代理工具RpcDatafeed
+
+## 调整
+
+1. 适配6.3.0版本以上的PySide6模块：vnpy/vnpy_ctastrategy/vnpy_ctabacktester/vnpy_portfoliostrategy/vnpy_spreadtrading/vnpy_datamanager/vnpy_algotrading/vnpy_portfoliomananger/vnpy_optionmaster
+2. vnpy_uft升级3.7.4.1004版本API
+3. vnpy_ib的execDetails成交回报使用本地缓存的委托记录填充交易所，解决SMART交易所字段可能发生变化的问题
+4. vnpy_ib的openOrder委托回报优先使用本地缓存的委托记录，解决交易所字段可能发生变化的问题
+5. vnpy_ib的查询历史数据时，使用UTC时间戳传参
+6. vnpy_ib的查询历史数据时，异步返回最长等待时间延长为600秒
+7. vnpy_ib的增加期权链合约数据更新结束回报
+8. vnpy_ib的合约乘数支持浮点数
+9. 合约信息ContractData数据类，增加单笔最大委托数量max_volume
+
+## 修复
+
+1. 修复vnpy_spreadtrading回测引擎clear_data时，没有清空价差仓位的问题
+2. 修复vnpy_ib查询历史数据失败时的日志输出错误
+
+
 # 3.9.2版本
 
 ## 新增

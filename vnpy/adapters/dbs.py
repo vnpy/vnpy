@@ -17,7 +17,7 @@ import pandas as pd
 import polars as pl
 
 from vnpy.utils.datetimes import TimeFreq
-from .base import BaseDataAdapter, DataSource
+from .base import BaseDataAdapter, DataSource, BaseSchema
 
 
 #
@@ -184,43 +184,6 @@ class DBController(ABC):
 class KlineDBAdapter(BaseDataAdapter):
     __col_mapper__ = {'open': 'open_', 'close': 'close_'}  # 主要为了解决sqlite中的关键字问题
     __col_mapper_reversed__ = {v: k for k, v in __col_mapper__.items()}
-    __kline_cols__ = ['symbol_id',
-                      'open_time',
-                      'open_',  # 主要为了解决sqlite中的关键字问题
-                      'high',
-                      'low',
-                      'close_',  # 主要为了解决sqlite中的关键字问题
-                      'volume',
-                      'quote_asset_volume',
-                      'number_of_trades',
-                      'taker_buy_base_asset_volume',
-                      'taker_buy_quote_asset_volume',
-                      'ignore', ]
-    __kline_cols_origin__ = ['symbol_id',
-                             'open_time',
-                             'open',  # 如果不是sqlite，这里的open_和close_可以不用
-                             'high',
-                             'low',
-                             'close',  # 如果不是sqlite，这里的open_和close_可以不用
-                             'volume',
-                             'quote_asset_volume',
-                             'number_of_trades',
-                             'taker_buy_base_asset_volume',
-                             'taker_buy_quote_asset_volume',
-                             'ignore', ]
-    __exclude__ = ['close_time']
-    dtypes = {'symbol_id': int,
-              'open_time': int,
-              'open_': float,
-              'high': float,
-              'low': float,
-              'close_': float,
-              'volume': float,
-              'quote_asset_volume': float,
-              'number_of_trades': int,
-              'taker_buy_base_asset_volume': float,
-              'taker_buy_quote_asset_volume': float,
-              'ignore': int, }
 
     def __init__(self, from_: Optional[DataSource] = None, to_: Optional[DataSource] = None,
                  *args, **kwargs):
@@ -253,7 +216,6 @@ class KlineDBAdapter(BaseDataAdapter):
 
 class FactorDBAdapter(BaseDataAdapter):
     __primary_cols__ = None
-    dtypes = float
 
     def __init__(self, from_: Optional[DataSource] = None, to_: Optional[DataSource] = None,
                  *args, **kwargs):
@@ -282,6 +244,7 @@ class FactorDBAdapter(BaseDataAdapter):
     @abstractmethod
     def insert(self, *args, **kwargs):
         pass
+
 
 #
 # # ====================================================
@@ -914,6 +877,35 @@ class FactorDBAdapter(BaseDataAdapter):
 
 
 # ====================================================
+# binance schema definition (without schema type)
+# ====================================================
+class BinanceKlineSchema(BaseSchema):
+    def __init__(self, schema_type: Dict[str, str] = None):
+        super().__init__()
+        self.datetime: str = ""
+        self.ticker: str = ""
+        self.open: str = ""
+        self.high: str = ""
+        self.low: str = ""
+        self.close: str = ""
+        self.volume: str = ""
+        self.quote_asset_volume: str = ""
+        self.number_of_trades: str = ""
+        self.taker_buy_base_asset_volume: str = ""
+        self.taker_buy_quote_asset_volume: str = ""
+
+        self.assign_schema_type(schema_type=schema_type)
+
+
+class BinanceFactorSchema(BaseSchema):
+
+    def __init__(self, schema_type: Dict[str, str] = None):
+        super().__init__()
+        self.datetime: str = ""
+        self.ticker: str = ""
+
+        self.assign_schema_type(schema_type=schema_type)
+
+# ====================================================
 # see details about clickhouse in package vnpy_clickhouse
 # ====================================================
-

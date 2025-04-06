@@ -87,8 +87,7 @@ def run_child():
     order_engine: SimpleOrderStrategyEngine = main_engine.add_app(SimpleOrderStrategyApp)
     order_engine.init_engine()
     order_engine.run_all_tests()
-    # data_recorder_engine = main_engine.add_app(DataRecorderApp)
-    # main_engine.write_log(f"启动[{data_recorder_engine.__class__.__name__}]")
+
 
     while True:
         # print(main_engine.event_engine._queue.get())

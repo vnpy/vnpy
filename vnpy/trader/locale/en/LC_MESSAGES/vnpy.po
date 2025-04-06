@@ -159,6 +159,10 @@ msgstr "Gateway not found: {}"
 msgid "找不到引擎：{}"
 msgstr "Engine not found: {}"
 
+#: vnpy\trader\engine.py:663
+msgid "邮件发送失败: {}"
+msgstr "Sending email failed: {}"
+
 #: vnpy\trader\optimize.py:45
 msgid "固定参数添加成功"
 msgstr "Fixed parameter added successfully"
