@@ -3,7 +3,6 @@ General constant enums used in the trading platform.
 """
 
 from enum import Enum
-from aenum import Enum as AEnum, NoAlias
 
 from .locale import _
 

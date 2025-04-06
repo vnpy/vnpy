@@ -5,4 +5,4 @@
 * Github Issues：[Issues页面](https://github.com/vnpy/vnpy/issues)
 * 官方QQ群: 262656087
 * 项目论坛：[VeighNa量化社区](http://www.vnpy.com/forum)
-* 项目邮箱: VeighNa@foxmail.com
+* 项目邮箱: vn.py@foxmail.com

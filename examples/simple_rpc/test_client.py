@@ -1,7 +1,5 @@
-from __future__ import print_function
-from __future__ import absolute_import
 from time import sleep
-
+from typing import Any
 from vnpy.rpc import RpcClient
 
 
@@ -10,13 +8,13 @@ class TestClient(RpcClient):
     Test RpcClient
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Constructor
         """
-        super(TestClient, self).__init__()
+        super().__init__()
 
-    def callback(self, topic, data):
+    def callback(self, topic: str, data: Any) -> None:
         """
         Realize callable function
         """

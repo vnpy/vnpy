@@ -1,18 +1,19 @@
 import multiprocessing
+import sys
 from time import sleep
 from datetime import datetime, time
 from logging import INFO
 
 from vnpy.event import EventEngine
 from vnpy.trader.setting import SETTINGS
-from vnpy.trader.engine import MainEngine
+from vnpy.trader.engine import MainEngine, LogEngine
 
 from vnpy.trader.object import SubscribeRequest, BarData
 from vnpy.trader.constant import Exchange
 
-# from vnpy.gateway.ctp import CtpGateway
-# from vnpy.app.cta_strategy import CtaStrategyApp
-# from vnpy.app.cta_strategy.base import EVENT_CTA_LOG
+# from vnpy_ctp import CtpGateway
+# from vnpy_ctastrategy import CtaStrategyApp, CtaEngine
+# from vnpy_ctastrategy.base import EVENT_CTA_LOG
 
 from vnpy.gateway.binance import BinanceSpotGateway
 from vnpy.app.data_recorder import DataRecorderApp
@@ -24,13 +25,48 @@ SETTINGS["log.console"] = True
 SETTINGS["log.file"] = True
 
 
-def run_child():
+ctp_setting = {
+    "用户名": "",
+    "密码": "",
+    "经纪商代码": "",
+    "交易服务器": "",
+    "行情服务器": "",
+    "产品名称": "",
+    "授权编码": "",
+    "产品信息": ""
+}
+
+
+# Chinese futures market trading period (day/night)
+DAY_START = time(8, 45)
+DAY_END = time(15, 0)
+
+NIGHT_START = time(20, 45)
+NIGHT_END = time(2, 45)
+
+
+def check_trading_period() -> bool:
+    """"""
+    current_time = datetime.now().time()
+
+    trading = False
+    if (
+        (current_time >= DAY_START and current_time <= DAY_END)
+        or (current_time >= NIGHT_START)
+        or (current_time <= NIGHT_END)
+    ):
+        trading = True
+
+    return trading
+
+
+def run_child() -> None:
     """
     Running in the child process.
     """
 
-    event_engine = EventEngine()
-    main_engine = MainEngine(event_engine)
+    event_engine: EventEngine = EventEngine()
+    main_engine: MainEngine = MainEngine(event_engine)
     main_engine.write_log("主引擎创建成功")
 
     # connect to exchange
@@ -72,38 +108,25 @@ def run_child():
     # main_engine.write_log("CTA策略全部启动")
 
     while True:
-        # print(main_engine.event_engine._queue.get())
-        # print(main_engine.event_engine._queue.get().type)
-        # print(type(main_engine.event_engine._queue.get()))
         sleep(1)
 
+        trading = check_trading_period()
+        if not trading:
+            print("关闭子进程")
+            main_engine.close()
+            sys.exit(0)
 
-def run_parent():
+
+def run_parent() -> None:
     """
     Running in the parent process.
     """
     print("启动CTA策略守护父进程")
 
-    # Chinese futures market trading period (day/night)
-    DAY_START = time(8, 45)
-    DAY_END = time(15, 30)
-
-    NIGHT_START = time(20, 45)
-    NIGHT_END = time(2, 45)
-
     child_process = None
 
     while True:
-        current_time = datetime.now().time()
-        trading = False
-
-        # Check whether in trading period
-        if (
-                (current_time >= DAY_START and current_time <= DAY_END)
-                or (current_time >= NIGHT_START)
-                or (current_time <= NIGHT_END)
-        ):
-            trading = True
+        trading = check_trading_period()
 
         # Start child process in trading period
         if trading and child_process is None:

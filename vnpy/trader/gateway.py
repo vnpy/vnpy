@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Callable
+from typing import Optional, Callable
 from copy import copy
 
 from vnpy.event import Event, EventEngine
@@ -75,17 +75,17 @@ class BaseGateway(ABC):
     default_name: str = ""
 
     # Fields required in setting dict for connect function.
-    default_setting: Dict[str, Any] = {}
+    default_setting: dict[str, str | int | float | bool] = {}
 
     # Exchanges supported in the gateway.
-    exchanges: List[Exchange] = []
+    exchanges: list[Exchange] = []
 
     def __init__(self, event_engine: EventEngine, gateway_name: str) -> None:
         """"""
         self.event_engine: EventEngine = event_engine
         self.gateway_name: str = gateway_name
 
-    def on_event(self, type: str, data: Any = None) -> None:
+    def on_event(self, type: str, data: object = None) -> None:
         """
         General event push.
         """
@@ -260,7 +260,7 @@ class BaseGateway(ABC):
         implementation should finish the tasks blow:
         * send request to server
         """
-        pass
+        return
 
     @abstractmethod
     def query_account(self) -> None:
@@ -276,13 +276,13 @@ class BaseGateway(ABC):
         """
         pass
 
-    def query_history(self, req: HistoryRequest) -> List[BarData]:
+    def query_history(self, req: HistoryRequest) -> list[BarData]:
         """
         Query bar history data.
         """
-        pass
+        return []
 
-    def get_default_setting(self) -> Dict[str, Any]:
+    def get_default_setting(self) -> dict[str, str | int | float | bool]:
         """
         Return default setting dict.
         """
@@ -301,20 +301,20 @@ class LocalOrderManager:
         # For generating local orderid
         self.order_prefix: str = order_prefix
         self.order_count: int = 0
-        self.orders: Dict[str, OrderData] = {}  # local_orderid: order
+        self.orders: dict[str, OrderData] = {}        # local_orderid: order
 
         # Map between local and system orderid
-        self.local_sys_orderid_map: Dict[str, str] = {}
-        self.sys_local_orderid_map: Dict[str, str] = {}
+        self.local_sys_orderid_map: dict[str, str] = {}
+        self.sys_local_orderid_map: dict[str, str] = {}
 
         # Push order data buf
-        self.push_data_buf: Dict[str, Dict] = {}  # sys_orderid: data
+        self.push_data_buf: dict[str, dict] = {}  # sys_orderid: data
 
         # Callback for processing push order data
         self.push_data_callback: Callable = None
 
         # Cancel request buf
-        self.cancel_request_buf: Dict[str, CancelRequest] = {}  # local_orderid: req
+        self.cancel_request_buf: dict[str, CancelRequest] = {}    # local_orderid: req
 
         # Hook cancel order function
         self._cancel_order: Callable = gateway.cancel_order

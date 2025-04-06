@@ -1,0 +1,112 @@
+[project]
+name = "vnpy"
+dynamic = ["version"]
+description = "A framework for developing quant trading systems."
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Xiaoyou Chen", email = "xiaoyou.chen@mail.vnpy.com"}]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Natural Language :: Chinese (Simplified)",
+    "Typing :: Typed",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "tzlocal>=5.3.1",
+    "PySide6>=6.8.2.1",
+    "pyqtgraph>=0.13.7",
+    "qdarkstyle>=3.2.3",
+    "numpy>=2.2.3",
+    "pandas>=2.2.3",
+    "ta-lib>=0.6.3",
+    "deap>=1.4.2",
+    "pyzmq>=26.3.0",
+    "plotly>=6.0.0",
+    "tqdm>=4.67.1",
+    "loguru>=0.7.3",
+    "nbformat>=5.10.4"
+]
+keywords = ["quant", "quantitative", "investment", "trading", "algotrading"]
+
+[project.optional-dependencies]
+alpha = [
+    "polars>=1.26.0",
+    "scipy>=1.15.2",
+    "alphalens-reloaded>=0.4.5",
+    "scikit-learn>=1.6.1",
+    "lightgbm>=4.6.0",
+    "torch>=2.6.0",
+    "pyarrow>=19.0.1",
+]
+dev = [
+    "pandas-stubs>=2.2.3.250308",
+    "hatchling>=1.27.0",
+    "babel>=2.17.0",
+]
+
+[project.urls]
+"Homepage" = "https://www.vnpy.com"
+"Documentation" = "https://www.vnpy.com/docs"
+"Changes" = "https://github.com/vnpy/vnpy/blob/master/CHANGELOG.md"
+"Source" = "https://github.com/vnpy/vnpy/"
+"Forum" = "https://www.vnpy.com/forum"
+
+[build-system]
+requires = ["hatchling>=1.27.0", "babel>=2.17.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "vnpy/__init__.py"
+pattern = "__version__ = ['\"](?P<version>[^'\"]+)['\"]"
+
+[tool.hatch.build.targets.wheel]
+packages = ["vnpy"]
+include-package-data = true
+
+[tool.hatch.build.targets.sdist]
+include = ["vnpy*"]
+
+[tool.hatch.build.hooks.custom]
+path = "vnpy/trader/locale/build_hook.py"
+
+[tool.hatch.build.targets.wheel.force-include]
+"vnpy/trader/locale/en/LC_MESSAGES/vnpy.mo" = "vnpy/trader/locale/en/LC_MESSAGES/vnpy.mo"
+
+[tool.ruff]
+target-version = "py310"
+output-format = "full"
+
+[tool.ruff.lint]
+select = [
+    "B",  # flake8-bugbear
+    "E",  # pycodestyle error
+    "F",  # pyflakes
+    "UP",  # pyupgrade
+    "W",  # pycodestyle warning
+]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true

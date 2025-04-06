@@ -1,6 +1,5 @@
-from abc import ABC
 from types import ModuleType
-from typing import Optional, List, Callable
+from collections.abc import Callable
 from importlib import import_module
 
 from .object import HistoryRequest, TickData, BarData
@@ -8,7 +7,7 @@ from .setting import SETTINGS
 from .locale import _
 
 
-class BaseDatafeed(ABC):
+class BaseDatafeed:
     """
     Abstract datafeed class for connecting to different datafeed.
     """
@@ -17,22 +16,24 @@ class BaseDatafeed(ABC):
         """
         Initialize datafeed service connection.
         """
-        pass
+        return False
 
-    def query_bar_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[BarData]]:
+    def query_bar_history(self, req: HistoryRequest, output: Callable = print) -> list[BarData]:
         """
         Query history bar data.
         """
         output(_("查询K线数据失败：没有正确配置数据服务"))
+        return []
 
-    def query_tick_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[TickData]]:
+    def query_tick_history(self, req: HistoryRequest, output: Callable = print) -> list[TickData]:
         """
         Query history tick data.
         """
         output(_("查询Tick数据失败：没有正确配置数据服务"))
+        return []
 
 
-datafeed: BaseDatafeed = None
+datafeed: BaseDatafeed | None = None
 
 
 def get_datafeed() -> BaseDatafeed:
@@ -64,4 +65,4 @@ def get_datafeed() -> BaseDatafeed:
 
             print(_("无法加载数据服务模块，请运行 pip install {} 尝试安装").format(module_name))
 
-    return datafeed
+    return datafeed     # type: ignore

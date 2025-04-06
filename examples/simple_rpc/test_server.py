@@ -1,5 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
 from time import sleep, time
 
 from vnpy.rpc import RpcServer
@@ -14,7 +12,7 @@ class TestServer(RpcServer):
         """
         Constructor
         """
-        super(TestServer, self).__init__()
+        super().__init__()
 
         self.register(self.add)
 
