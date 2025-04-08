@@ -134,6 +134,7 @@ class MainEngine:
         self.add_engine(LogEngine)
 
         oms_engine: OmsEngine = self.add_engine(OmsEngine)
+        self.get_tick: Callable[[str], TickData | None] = oms_engine.get_tick
         self.get_order: Callable[[str], OrderData | None] = oms_engine.get_order
         self.get_trade: Callable[[str], TradeData | None] = oms_engine.get_trade
         self.get_position: Callable[[str], PositionData | None] = oms_engine.get_position

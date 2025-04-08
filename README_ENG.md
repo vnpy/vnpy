@@ -273,8 +273,6 @@ bash install.sh
 bash install_osx.sh
 ```
 
-**Note: setup.cfg lists the dependency libraries required for VeighNa framework installation, and requirements.txt provides the recommended installation versions of these dependencies.**
-
 ## User's Guide
 
 1. Register a CTP Demo account at [SimNow](http://www.simnow.com.cn/) and get the broker code and the trading quotes server address at [this page](http://www.simnow.com.cn/product.action).
