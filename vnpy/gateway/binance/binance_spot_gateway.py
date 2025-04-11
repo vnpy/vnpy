@@ -679,7 +679,8 @@ class BinanceSpotTradeWebsocketApi:
             volume=trade_volume,
             datetime=datetime.fromtimestamp(packet["T"] / 1000),
             gateway_name=self.gateway_name,
-            offset=offset
+            offset=offset,
+            reference=reference
         )
         self.gateway.on_trade(trade)
 

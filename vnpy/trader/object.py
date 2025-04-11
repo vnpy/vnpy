@@ -201,6 +201,7 @@ class TradeData(BaseData):
     price: float = 0
     volume: float = 0
     datetime: datetime = None
+    reference: str = ""
 
     def __post_init__(self) -> None:
         """"""
