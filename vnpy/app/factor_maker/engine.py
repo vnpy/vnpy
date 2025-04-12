@@ -94,6 +94,7 @@ class FactorEngine(BaseEngine):
     def init_engine(self, fake: bool = False) -> None:
         """"""
         self.register_event()
+        self.write_log("register event", level=DEBUG)
         self.init_all_factors()  # stacked factors
         self.flattened_factors = self.complete_factor_tree(self.stacked_factors)  # flatten the factor tree
 

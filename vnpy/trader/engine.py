@@ -11,6 +11,8 @@ from typing import Any, Type, Dict, List, Optional, Union
 from itertools import product
 from typing import TypeVar
 from collections.abc import Callable
+from datetime import datetime as Datetime
+from pathlib import Path
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -400,7 +402,7 @@ class LogEngine(BaseEngine):
         """
         Add file output of log.
         """
-        today_date: str = datetime.now().strftime("%Y%m%d")
+        today_date: str = Datetime.now().strftime("%Y%m%d")
         filename: str = f"vt_{today_date}.log"
         log_path: Path = get_folder_path("log")
         file_path: Path = log_path.joinpath(filename)
@@ -427,8 +429,8 @@ class LogEngine(BaseEngine):
         if not self.active:
             return
         log: LogData = event.data
-        level: Union[str,int] = self.level_map.get(log.level, log.level)
-        self.logger.log(level, log.msg, gateway_name=log.gateway_name)  # vnpy v4.0.0 update
+        # level: Union[str,int] = self.level_map.get(log.level, log.level)  # Do not use vnpy v4.0.0 update.
+        self.logger.log(log.level, log.msg)  # Do not use vnpy v4.0.0 update.
 
 
 class OmsEngine(BaseEngine):

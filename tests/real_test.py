@@ -7,14 +7,6 @@
 # @Email    : 939778128@qq.com
 # @Description:
 
-# -*- coding=utf-8 -*-
-# @Project  : 20240720
-# @FilePath : ${DIR_PATH}
-# @File     : ${FILE_NAME}
-# @Time     : 2024/9/28 21:00
-# @Author   : EvanHong
-# @Email    : 939778128@qq.com
-# @Description:
 import multiprocessing
 from datetime import datetime, time
 from time import sleep
@@ -78,16 +70,17 @@ def run_child():
     # cta_engine.start_all_strategies()
     # main_engine.write_log("CTA策略全部启动")
 
-    # # test order engine
-    order_engine: SimpleOrderStrategyEngine = main_engine.add_app(SimpleOrderStrategyApp)
-    order_engine.init_engine()
-    order_engine.run_all_tests()
-    main_engine.write_log(f"启动[{order_engine.__class__.__name__}]")
+    # # # test order engine
+    # order_engine: SimpleOrderStrategyEngine = main_engine.add_app(SimpleOrderStrategyApp)
+    # order_engine.init_engine()
+    # order_engine.run_all_tests()
+    # main_engine.write_log(f"启动[{order_engine.__class__.__name__}]")
 
     while True:
         # print(main_engine.event_engine._queue.get())
         # print(main_engine.event_engine._queue.get().type)
         # print(type(main_engine.event_engine._queue.get()))
+        main_engine.write_log("running")
         sleep(1)
 
 

@@ -1,16 +1,15 @@
 """
 Basic data structure used for general trading function in the trading platform.
 """
-from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime as Datetime
 from logging import INFO
 from typing import Optional
 
 from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
 from ..config import VTSYMBOL_BARDATA, VTSYMBOL_FACTORDATA, VTSYMBOL_TICKDATA
 
-ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
+ACTIVE_STATUSES = {Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED}
 
 
 @dataclass
@@ -36,7 +35,7 @@ class TickData(BaseData):
 
     symbol: str = field(default=None, init=True)
     exchange: Exchange = field(default=None, init=True)
-    datetime: datetime = field(default=None, init=True)
+    datetime: Datetime = field(default=None, init=True)
 
     name: str = ""
     volume: float = 0
@@ -76,7 +75,7 @@ class TickData(BaseData):
     ask_volume_4: float = 0
     ask_volume_5: float = 0
 
-    localtime: datetime = None
+    localtime: Datetime = None
 
     VTSYMBOL_TEMPLATE = VTSYMBOL_TICKDATA
 
@@ -96,7 +95,7 @@ class FactorData(BaseData):
 
     symbol: str = field(default=None, init=True)
     exchange: Exchange = field(default=None, init=True)
-    datetime: datetime = field(default=None, init=True)
+    datetime: Datetime = field(default=None, init=True)
     factor_name: str = field(default="factor_unknown", init=True)
     interval: Interval = field(default=None, init=True)
 
@@ -118,7 +117,7 @@ class BarData(BaseData):
 
     symbol: str = field(default=None, init=True)
     exchange: Exchange = field(default=None, init=True)
-    datetime: datetime = field(default=None, init=True)
+    datetime: Datetime = field(default=None, init=True)
 
     interval: Interval = None
     volume: float = 0  # quoted asset volume (����һ�㶼��usdt�Ƽ�, ��ô�����volume����usdt�Ƽۺ��volume)
@@ -200,7 +199,7 @@ class TradeData(BaseData):
     offset: Offset = Offset.NONE
     price: float = 0
     volume: float = 0
-    datetime: datetime = None
+    datetime: Datetime = None
     reference: str = ""
 
     def __post_init__(self) -> None:
@@ -262,7 +261,7 @@ class LogData(BaseData):
     def __post_init__(self) -> None:
         """"""
         self.msg = f"[{self.gateway_name+']:':<17} {self.msg}"
-        self.time: datetime = datetime.now()
+        self.time: Datetime = Datetime.now()
 
 
 @dataclass
@@ -288,8 +287,8 @@ class ContractData(BaseData):
     option_strike: float | None = None
     option_underlying: str | None = None     # vt_symbol of underlying contract
     option_type: OptionType | None = None
-    option_listed: datetime | None = None
-    option_expiry: datetime | None = None
+    option_listed: Datetime | None = None
+    option_expiry: Datetime | None = None
     option_portfolio: str | None = None
     option_index: str | None = None          # for identifying options with same strike price
 
@@ -316,7 +315,7 @@ class QuoteData(BaseData):
     bid_offset: Offset = Offset.NONE
     ask_offset: Offset = Offset.NONE
     status: Status = Status.SUBMITTING
-    datetime: datetime | None = None
+    datetime: Datetime | None = None
     reference: str = ""
 
     def __post_init__(self) -> None:
@@ -381,7 +380,7 @@ class OrderRequest:
         """
         Create order data from request.
         """
-        orderid = f"{self.symbol}-{self.strategy_name}-{str(datetime.now().timestamp()).split('.')[0]}"
+        orderid = f"{self.symbol}-{self.strategy_name}-{str(Datetime.now().timestamp()).split('.')[0]}"
         if self.direction == Direction.LONG:
             stop_loss_price = self.price * (1 - self.stop_loss)
             take_profit_price = self.price * (1 + self.take_profit)
@@ -428,8 +427,8 @@ class HistoryRequest:
 
     symbol: str
     exchange: Exchange
-    start: datetime
-    end: datetime | None = None
+    start: Datetime
+    end: Datetime | None = None
     interval: Interval | None = None
 
     def __post_init__(self) -> None:
