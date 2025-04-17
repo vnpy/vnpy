@@ -178,7 +178,7 @@ class OrderData(BaseData):
         Create cancel request object from order.
         """
         req: CancelRequest = CancelRequest(
-            orderid=self.orderid, symbol=self.symbol, exchange=self.exchange
+            orderid=self.orderid, symbol=self.symbol, exchange=self.exchange, reference=self.reference
         )
         return req
 
@@ -413,6 +413,7 @@ class CancelRequest:
     orderid: str
     symbol: str
     exchange: Exchange
+    reference: str = ""
 
     def __post_init__(self) -> None:
         """"""

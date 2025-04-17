@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 from vnpy.trader.object import BarData
-from vnpy.app.portfolio_strategy.utils.position_manager import PositionManager
+from vnpy.app.portfolio_strategy.portfolio.portfolio_manager import PositionManager
 
 
 @pytest.fixture
