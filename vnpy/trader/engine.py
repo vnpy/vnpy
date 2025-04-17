@@ -14,6 +14,8 @@ from collections.abc import Callable
 from datetime import datetime as Datetime
 from pathlib import Path
 
+import requests
+
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
 from .event import (
@@ -774,3 +776,69 @@ class EmailEngine(BaseEngine):
 
         self.active = False
         self.thread.join()
+
+class TelegramEngine(BaseEngine):
+    """Telegram message sending engine"""
+
+    def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
+        super().__init__(main_engine, event_engine, "telegram")
+
+        self.active: bool = SETTINGS.get("telegram.active", False)
+        self.token: str = SETTINGS.get("telegram.token", "")
+        self.chat: str = SETTINGS.get("telegram.chat", "")
+        self.url: str = f"https://api.telegram.org/bot{self.token}/sendMessage"
+
+        self.proxies: dict[str, str] = {}
+        proxy: str = SETTINGS.get("telegram.proxy", "")
+        if proxy:
+            self.proxies["http"] = proxy
+            self.proxies["https"] = proxy
+
+        self.thread: Thread = Thread(target=self.run, daemon=True)
+        self.queue: Queue = Queue()
+
+        if self.active:
+            self.register_event()
+            self.thread.start()
+
+    def register_event(self) -> None:
+        """Register event handler"""
+        self.event_engine.register(EVENT_LOG, self.process_log_event)
+
+    def process_log_event(self, event: Event) -> None:
+        """Process log event"""
+        log: LogData = event.data
+
+        msg = f"{log.time}\t[{log.gateway_name}] {log.msg}"
+        self.queue.put(msg)
+
+    def close(self) -> None:
+        """Stop task thread"""
+        if not self.active:
+            return
+
+        self.active = False
+        self.thread.join()
+
+    def run(self) -> None:
+        """Task thread loop"""
+        while self.active:
+            try:
+                msg: str = self.queue.get(block=True, timeout=1)
+                self.send_msg(msg)
+            except Empty:
+                pass
+
+    def send_msg(self, msg: str) -> dict:
+        """Sending message"""
+        data: dict = {
+            "chat_id": self.chat,
+            "text": msg
+        }
+
+        # 发送请求
+        try:
+            r: requests.Response = requests.post(self.url, data=data)
+            return r.json()
+        except Exception:
+            return None
