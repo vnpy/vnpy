@@ -24,15 +24,15 @@
 from pathlib import Path
 from typing import Type
 
-import importlib_metadata
+import importlib
 from vnpy.trader.app import BaseApp
 
 from .engine import PortfolioEngine, APP_NAME
 
 
 try:
-    __version__ = importlib_metadata.version("vnpy_portfoliomanager")
-except importlib_metadata.PackageNotFoundError:
+    __version__ = importlib.metadata.version("vnpy_portfoliomanager")
+except importlib.metadata.PackageNotFoundError:
     __version__ = "dev"
 
 

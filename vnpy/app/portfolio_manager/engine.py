@@ -49,7 +49,7 @@ class PortfolioEngine(BaseEngine):
         self.subscribed: Set[str] = set()
         self.result_symbols: Set[str] = set()
         self.order_reference_map: Dict[str, str] = {}
-        self.contract_results: Dict[str, ContractResult] = {}
+        self.contract_results: Dict[set, ContractResult] = {}
         self.portfolio_results: Dict[str, PortfolioResult] = {}
 
         self.timer_count: int = 0
@@ -159,7 +159,7 @@ class PortfolioEngine(BaseEngine):
             reference, vt_symbol = key.split(",")
 
             if date == today:
-                pos: float = d["open_pos"]
+                pos: float = d["open_pos"] #todo 有点弄不懂open pos和last pos的区别
             else:
                 pos: float = d["last_pos"]
                 date_changed: bool = True
