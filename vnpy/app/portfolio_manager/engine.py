@@ -1,6 +1,6 @@
-from typing import Any, Dict, Set, Optional
+import logging
+from typing import Any, Dict, Set, Optional, Tuple
 from datetime import datetime
-from copy import copy
 
 from vnpy.event import Event
 from vnpy.trader.engine import (
@@ -18,8 +18,7 @@ from vnpy.trader.object import (
     ContractData,
     OrderData,
     TradeData,
-    SubscribeRequest,
-    TickData
+    SubscribeRequest
 )
 from vnpy.trader.utility import load_json, save_json
 
@@ -39,17 +38,21 @@ class PortfolioEngine(BaseEngine):
     data_filename: str = "portfolio_manager_data.json"
     order_filename: str = "portfolio_manager_order.json"
 
+    # Fix incorrect type annotation - key should be Tuple[str, str] not set
+    contract_results: Dict[Tuple[str, str], ContractResult]
+
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
-        """"""
+        """Initialize portfolio engine with main engine and event engine."""
         super().__init__(main_engine, event_engine, APP_NAME)
 
-        self.get_tick: Optional[TickData] = self.main_engine.get_tick
-        self.get_contract: Optional[ContractData] = self.main_engine.get_contract
+        # Remove logger initialization
+        self.get_tick = self.main_engine.get_tick
+        self.get_contract = self.main_engine.get_contract
 
         self.subscribed: Set[str] = set()
         self.result_symbols: Set[str] = set()
         self.order_reference_map: Dict[str, str] = {}
-        self.contract_results: Dict[set, ContractResult] = {}
+        self.contract_results: Dict[Tuple[str, str], ContractResult] = {}
         self.portfolio_results: Dict[str, PortfolioResult] = {}
 
         self.timer_count: int = 0
@@ -77,19 +80,20 @@ class PortfolioEngine(BaseEngine):
             order.reference = self.order_reference_map[order.vt_orderid]
 
     def process_trade_event(self, event: Event) -> None:
-        """"""
+        """Process new trade data and update portfolio accordingly."""
         trade: TradeData = event.data
 
         reference: str = self.order_reference_map.get(trade.vt_orderid, "")
         if not reference:
+            self.write_log(f"Trade {trade.vt_tradeid} has no reference", logging.DEBUG)
             return
 
-        vt_symbol: str = trade.vt_symbol
-        key: set = (reference, vt_symbol)
+        # Fix key type from set to tuple
+        key: Tuple[str, str] = (reference, trade.vt_symbol)
 
         contract_result: Optional[ContractResult] = self.contract_results.get(key, None)
         if not contract_result:
-            contract_result: ContractResult = ContractResult(self, reference, vt_symbol)
+            contract_result: ContractResult = ContractResult(self, reference, trade.vt_symbol)
             self.contract_results[key] = contract_result
 
         contract_result.update_trade(trade)
@@ -110,7 +114,12 @@ class PortfolioEngine(BaseEngine):
         self.main_engine.subscribe(req, contract.gateway_name)
 
     def process_timer_event(self, event: Event) -> None:
-        """"""
+        """Process timer event and update PnL calculations."""
+        # Add validation
+        if not event:
+            self.write_log("Received empty timer event", logging.ERROR)
+            return
+
         self.timer_count += 1
         if self.timer_count < self.timer_interval:
             return
@@ -238,3 +247,7 @@ class PortfolioEngine(BaseEngine):
     def get_timer_interval(self) -> int:
         """"""
         return self.timer_interval
+    
+    def write_log(self, msg: str, level: int = logging.INFO) -> None:
+        """Write log message with appropriate level."""
+        self.main_engine.write_log(msg, APP_NAME, level)

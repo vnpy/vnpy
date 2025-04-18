@@ -104,7 +104,7 @@ class ContractResult:
     total_pnl: float          # Total PnL
     trades: Dict[str, TradeData]  # Trade history
     long_volume: float        # Long position volume
-    short_volume: float       # Short position volume
+    short_volume: float        # Short position volume
     long_cost: float         # Long position cost
     short_cost: float        # Short position cost
 ```
@@ -132,6 +132,57 @@ Timer Event -> process_timer_event() ->
     PortfolioResult aggregation -> 
     EVENT_PM_CONTRACT/EVENT_PM_PORTFOLIO
 ```
+
+### Calculation Logic
+
+#### Position Management
+1. Position Types:
+   - `open_pos`: Starting position for the day (carried from previous day)
+   - `last_pos`: Current actual position after trades
+
+2. Position Tracking:
+   - Maintains separate long/short positions
+   - Tracks cumulative volumes and costs
+   - Updates on each trade
+
+#### PnL Calculation Process
+
+1. Trading PnL (Realized)
+   ```python
+   # Long positions
+   long_value = long_volume * current_price * contract_size
+   long_pnl = long_value - long_cost
+   
+   # Short positions
+   short_value = short_volume * current_price * contract_size
+   short_pnl = short_cost - short_value
+   
+   # Total trading PnL
+   trading_pnl = long_pnl + short_pnl
+   ```
+
+2. Holding PnL (Unrealized)
+   ```python
+   # Based on open position from day start
+   holding_pnl = (current_price - previous_close) * open_pos * contract_size
+   ```
+
+3. Total PnL
+   ```python
+   total_pnl = trading_pnl + holding_pnl
+   ```
+
+#### Trade Processing Flow
+1. New Trade Arrival:
+   - Validate trade is not duplicate
+   - Update position (last_pos)
+   - Store trade for PnL calculation
+
+2. PnL Calculation Cycle:
+   - Process new trades
+   - Update costs and volumes
+   - Calculate current values
+   - Update PnL components
 
 ### Error Handling
 
