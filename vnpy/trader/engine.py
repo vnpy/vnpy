@@ -174,6 +174,9 @@ class MainEngine:
         email_engine: EmailEngine = self.add_engine(EmailEngine)
         self.send_email: Callable[[str, str, str], None] = email_engine.send_email
 
+        telegram_engine: TelegramEngine = self.add_engine(TelegramEngine)
+        self.send_telegram: Callable[[str], None] = telegram_engine.send_msg
+
     def write_log(self, msg: str, source: str = "", level=INFO) -> None:
         """
         Put log event with specific message.
@@ -787,7 +790,7 @@ class TelegramEngine(BaseEngine):
         self.token: str = SETTINGS.get("telegram.token", "")
         self.chat: str = SETTINGS.get("telegram.chat", "")
         self.url: str = f"https://api.telegram.org/bot{self.token}/sendMessage"
-
+        # refer to telegram_tutorial.md
         self.proxies: dict[str, str] = {}
         proxy: str = SETTINGS.get("telegram.proxy", "")
         if proxy:

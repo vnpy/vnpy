@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2015-present, Xiaoyou Chen
+# Copyright (c) 2023-present, VeighNa Global
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-
-from pathlib import Path
-from typing import Type
-
-import importlib
-from vnpy.trader.app import BaseApp
-
-from .engine import PortfolioEngine, APP_NAME
+from .okx_gateway import OkxGateway
 
 
-try:
-    __version__ = importlib.metadata.version("vnpy_portfoliomanager")
-except importlib.metadata.PackageNotFoundError:
-    __version__ = "dev"
-
-
-class PortfolioManagerApp(BaseApp):
-    """"""
-
-    app_name: str = APP_NAME
-    app_module: str = __module__
-    app_path: Path = Path(__file__).parent
-    display_name: str = "投资组合"
-    engine_class: Type[PortfolioEngine] = PortfolioEngine
-    widget_name: str = "PortfolioManager"
-    icon_name: str = str(app_path.joinpath("ui", "portfolio.ico"))
+__version__ = "2024.4.3"
