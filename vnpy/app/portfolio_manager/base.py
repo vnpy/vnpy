@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List, TYPE_CHECKING, Optional
+from typing import Dict, List, TYPE_CHECKING, Optional, Union
 from decimal import Decimal
 
 from vnpy.trader.object import TickData, TradeData, ContractData
@@ -54,7 +54,8 @@ class ContractResult:
         engine: "PortfolioEngine",
         reference: str,
         vt_symbol: str,
-        open_pos: int = 0
+        open_pos: Union[float, int] = 0.0
+
     ) -> None:
         # Initialize logger
         self.logger = logging.getLogger(f"{APP_NAME}.ContractResult")
@@ -62,7 +63,7 @@ class ContractResult:
         # Add input validation
         assert isinstance(reference, str), "reference must be string"
         assert isinstance(vt_symbol, str), "vt_symbol must be string"
-        assert isinstance(open_pos, int), "open_pos must be integer"
+        assert isinstance(open_pos, Union[float, int]), "open_pos must be integer"
         
         super().__init__()
 
@@ -73,6 +74,8 @@ class ContractResult:
 
         self.open_pos: int = open_pos
         self.last_pos: int = open_pos
+
+        self.value: float = 0
 
         self.trading_pnl: float = 0
         self.holding_pnl: float = 0
@@ -146,6 +149,9 @@ class ContractResult:
         last_price: float = tick.last_price
         size: float = contract.size
 
+        # calculate the contract value
+        self.value: float = last_price * self.open_pos * size
+
         # 计算新成交额
         for trade in self.new_trades:
             trade_volume: float = trade.volume
@@ -160,16 +166,14 @@ class ContractResult:
 
         self.new_trades.clear()
 
-        # 计算成交利润
-        long_value: float = self.long_volume * last_price * size
-        long_pnl: float = long_value - self.long_cost
-
-        short_value: float = self.short_volume * last_price * size
-        short_pnl: float = self.short_cost - short_value  # Fixed variable name
-
+        # Calculate trading PnL
+        long_value = self.long_volume * last_price * size
+        long_pnl = long_value - self.long_cost
+        short_value = self.short_volume * last_price * size
+        short_pnl = self.short_cost - short_value
         self.trading_pnl = long_pnl + short_pnl
 
-        # 计算未实现利润和总利润
+        # Calculate holding PnL using overnight positions (open_pos) 
         self.holding_pnl = (last_price - tick.pre_close) * self.open_pos * size
         self.total_pnl = self.holding_pnl + self.trading_pnl
 
@@ -238,6 +242,7 @@ class PortfolioResult:
         self.trading_pnl: float = 0
         self.holding_pnl: float = 0
         self.total_pnl: float = 0
+        self.value: float = 0
 
     def clear_pnl(self) -> None:
         """
@@ -253,6 +258,19 @@ class PortfolioResult:
         self.holding_pnl = 0
         self.total_pnl = 0
 
+        self.value = 0
+
+    def get_total_value(self) -> float:
+        """
+        Get total value of the portfolio.
+        
+        Returns
+        -------
+        float
+            Total value of the portfolio
+        """
+        return self.value
+    
     def get_data(self) -> dict:
         """
         Get current portfolio state.

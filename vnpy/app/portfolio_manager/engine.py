@@ -135,6 +135,7 @@ class PortfolioEngine(BaseEngine):
             portfolio_result.trading_pnl += contract_result.trading_pnl
             portfolio_result.holding_pnl += contract_result.holding_pnl
             portfolio_result.total_pnl += contract_result.total_pnl
+            portfolio_result.value += contract_result.value
 
             event: Event = Event(EVENT_PM_CONTRACT, contract_result.get_data())
             self.event_engine.put(event)
@@ -168,9 +169,9 @@ class PortfolioEngine(BaseEngine):
             reference, vt_symbol = key.split(",")
 
             if date == today:
-                pos: float = d["open_pos"] #todo 有点弄不懂open pos和last pos的区别
+                pos: float = d["open_pos"]  # If same day, use open position
             else:
-                pos: float = d["last_pos"]
+                pos: float = d["last_pos"]  # If new day, last position becomes open position
                 date_changed: bool = True
 
             self.result_symbols.add(vt_symbol)
