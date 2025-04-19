@@ -11,15 +11,13 @@ from vnpy.trader.utility import convert_dict_to_dataframe
 from vnpy.app.portfolio_strategy.base import EngineType
 from vnpy.app.portfolio_strategy.config.models.config import ModelConfig
 from vnpy.app.portfolio_strategy.config.trading.config import TradingConfig
-from vnpy.app.portfolio_strategy.portfolio.portfolio_tracker import PortfolioTracker
-from vnpy.app.portfolio_strategy.portfolio.order_manager import OrderManager
 
 if TYPE_CHECKING:
     from vnpy.app.portfolio_strategy.engine import StrategyEngine
 
 
 class StrategyTemplate(ABC):
-    """Portfolio Strategy Template focused on factor processing"""
+    """Portfolio Strategy Template"""
 
     # Class Properties
     author: str = ""
@@ -50,13 +48,12 @@ class StrategyTemplate(ABC):
         self.inited: bool = False
         self.trading: bool = False
 
-        # Initialize managers
-        self.portfolio_tracker = PortfolioTracker()
-        self.order_manager = OrderManager(strategy_name=strategy_name)
-
         # Market data cache
         self.bars: dict[str, BarData] = defaultdict(BarData)
         self.latest_factor_data: Optional[pd.DataFrame] = None
+
+        # Access portfolio result directly from portfolio engine
+        self.portfolio_result = strategy_engine.portfolio_engine.get_portfolio_result(reference=strategy_name)
 
         # Update settings
         self.restore_state(state=state)
@@ -70,7 +67,7 @@ class StrategyTemplate(ABC):
         pass
 
     @abstractmethod
-    def project_signals_to_positions(self, signals: pd.Series) -> pd.Series:
+    def project_signals_to_weights(self, signals: pd.Series) -> pd.Series:
         """Convert raw signals to target positions"""
         pass
 
@@ -92,75 +89,72 @@ class StrategyTemplate(ABC):
             if not df.empty:
                 self.latest_factor_data = df
 
-                # Calculate target weights from signals
+                # Calculate target positions
                 signals = self.calculate(df)
-                target_weights = self.project_signals_to_positions(signals)
+                target_weights = self.project_signals_to_weights(signals)
 
-                # Update portfolio targets
-                self.portfolio_tracker.set_target_weights(target_weights)
+                target_positions_usd = target_weights * self.portfolio_result.get_total_value()
 
-                order_reqs = self.rebalance_portfolio()
+                # Generate orders based on target positions
+                order_reqs = self.generate_orders_from_targets(target_positions_usd)
 
                 return order_reqs
 
-    def on_order(self, order: OrderData) -> None:
-        """Process order update"""
-        self.order_manager.on_order(order)
-
-    def on_trade(self, trade: TradeData) -> None:
-        """Process trade update and update positions"""
-        self.order_manager.on_trade(trade)
-
-        # Update portfolio position
-        if trade.direction == Direction.LONG:
-            self.portfolio_tracker.set_position(
-                trade.vt_symbol,
-                self.portfolio_tracker.get_position(trade.vt_symbol) + trade.volume
-            )
-        else:
-            self.portfolio_tracker.set_position(
-                trade.vt_symbol,
-                self.portfolio_tracker.get_position(trade.vt_symbol) - trade.volume
-            )
-
-    # --------------------------------
-    # Portfolio Management Methods
-    # --------------------------------
-    def rebalance_portfolio(self) -> List[OrderRequest]:
-        """Generate order requests for rebalancing"""
-        self.cancel_all()
-
-        # Get all required position changes
-        position_changes = self.portfolio_tracker.get_position_changes()
+    def generate_orders_from_targets(self, target_positions_usd: pd.Series) -> List[OrderRequest]:
+        """Generate orders to achieve target positions"""
         order_reqs = []
 
-        # Process each required change
-        for vt_symbol, change in position_changes.items():
-            if abs(change) < 1e-9:  # Skip tiny changes
+        for symbol, target_pos in target_positions_usd.items():
+
+            tick = self.get_tick(symbol)
+            if not tick:
                 continue
 
-            price = self.portfolio_tracker.get_price(vt_symbol)
+            price = tick.last_price
 
-            if change > 0:  # Need to buy
+            contract_result = self.strategy_engine.portfolio_engine.contract_results.get((symbol,self.strategy_name), 0)
+            if not contract_result:
+                current_pos = 0
+            else:
+                current_pos = contract_result.open_pos
+
+            target_pos = target_pos / price
+            pos_diff = target_pos - current_pos
+
+            if abs(pos_diff) < 1e-9:  # Skip tiny changes
+                continue
+
+            if pos_diff > 0:  # Need to buy
                 order_reqs.append(
                     self._create_order_request(
-                        vt_symbol, Direction.LONG, OrderType.LIMIT, price, change
+                        symbol, Direction.LONG, OrderType.LIMIT, price, pos_diff
                     )
                 )
             else:  # Need to sell
                 order_reqs.append(
                     self._create_order_request(
-                        vt_symbol, Direction.SHORT, OrderType.LIMIT, price, abs(change)
+                        symbol, Direction.SHORT, OrderType.LIMIT, price, abs(pos_diff)
                     )
                 )
 
         return order_reqs
 
+    def on_order(self, order: OrderData) -> None:
+        """Process order update - for strategy monitoring only"""
+        pass
+
+    def on_trade(self, trade: TradeData) -> None:
+        """Process trade update - for strategy monitoring only"""
+        pass
+
+    # --------------------------------
+    # Portfolio Management Methods
+    # --------------------------------
     def close_all_positions(self) -> List[OrderRequest]:
         """Close all positions"""
         order_reqs = []
         for vt_symbol in self.vt_symbols:
-            pos = self.portfolio_tracker.get_position(vt_symbol)
+            pos = self.portfolio_result.get_position(vt_symbol)
             if pos > 0:
                 order_req = self._create_order_request(
                     vt_symbol, Direction.SHORT, OrderType.MARKET, 0, pos
@@ -168,6 +162,10 @@ class StrategyTemplate(ABC):
                 order_reqs.append(order_req)
                 self.write_log(f"Closed position for {vt_symbol}: {pos}")
         return order_reqs
+
+    def get_portfolio_state(self) -> dict:
+        """Get current portfolio state"""
+        return self.portfolio_result.get_data() if self.portfolio_result else {}
 
     # --------------------------------
     # Order Management Methods
@@ -201,8 +199,8 @@ class StrategyTemplate(ABC):
     def cancel_all_active_orders(self) -> List[CancelRequest]:
         """Cancel all active orders"""
         cancel_reqs = []
-        for vt_orderid in self.order_manager.cancel_all_active_orders():
-            order = self.order_manager.get_order(vt_orderid)
+        for vt_orderid in self.portfolio_result.get_active_orders():
+            order = self.portfolio_result.get_order(vt_orderid)
             cancel_reqs.append(self.cancel_order(order))
         return cancel_reqs
 
@@ -221,16 +219,15 @@ class StrategyTemplate(ABC):
 
     def get_data(self) -> dict:
         """Get strategy runtime data"""
-        portfolio_data = self.portfolio_tracker.get_state()
-        
         data = {
             "inited": self.inited,
             "trading": self.trading,
-            "portfolio": portfolio_data,
-            "trades": {k: v.__dict__ for k, v in self.order_manager.trades.items()},
-            "orders": {k: v.__dict__ for k, v in self.order_manager.orders.items()},
-            "metrics": self.order_manager.get_metrics()
         }
+
+        # Add portfolio data from portfolio engine
+        if self.portfolio_result:
+            data["portfolio_result"] = self.portfolio_result.get_data()
+
         return data
 
     def get_state(self) -> dict:
@@ -258,21 +255,7 @@ class StrategyTemplate(ABC):
 
     def restore_data(self, data: dict) -> None:
         """Restore strategy runtime data"""
-        if "portfolio" in data:
-            self.portfolio_tracker.restore_state(data["portfolio"])
-
-        if "trades" in data:
-            for trade_dict in data["trades"].values():
-                self.order_manager.trades[trade_dict["vt_tradeid"]] = TradeData(**trade_dict)
-
-        if "orders" in data:
-            for order_dict in data["orders"].values():
-                self.order_manager.orders[order_dict["vt_orderid"]] = OrderData(**order_dict)
-                
-        if "metrics" in data:
-            self.order_manager.order_metrics.update(data["metrics"])
-
-        # Set status after restore
+        # Only restore strategy status
         if "inited" in data:
             self.inited = data["inited"]
         if "trading" in data:
@@ -282,10 +265,10 @@ class StrategyTemplate(ABC):
         """Restore complete strategy state"""
         if "settings" in state:
             self.restore_settings(state["settings"])
-        
+
         if "data" in state:
             self.restore_data(state["data"])
-            
+
         # Set status after restore
         if "inited" in state.get("data", {}):
             self.inited = state["data"]["inited"]

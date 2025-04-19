@@ -1,12 +1,12 @@
 import importlib
 import traceback
 import os
-from typing import Type, Callable, Dict, List
+from typing import Type, Callable, Dict, List, Set
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 
 from vnpy.event import Event, EventEngine
-from vnpy.trader.event import EVENT_FACTOR
+from vnpy.trader.event import EVENT_FACTOR, EVENT_TRADE, EVENT_ORDER
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
     OrderRequest,
@@ -14,11 +14,8 @@ from vnpy.trader.object import (
     LogData,
     TickData,
     OrderData,
+    TradeData,
     BarData
-)
-from vnpy.trader.event import (
-    EVENT_ORDER,
-    EVENT_TRADE
 )
 from vnpy.trader.utility import load_json, save_json
 
@@ -28,9 +25,9 @@ from vnpy.app.portfolio_strategy.base import (
     EVENT_PORTFOLIO_STRATEGY,
     EngineType
 )
-from .locale import _
 from vnpy.app.portfolio_strategy.template import StrategyTemplate
 from execution_agent import ExecutionAgent
+from vnpy.app.portfolio_manager.engine import PortfolioEngine
 
 strategy_module_name = 'vnpy.app.portfolio_strategy.strategies'
 
@@ -40,30 +37,28 @@ class StrategyEngine(BaseEngine):
     
     engine_type: EngineType = EngineType.LIVE
     setting_filename: str = "portfolio_strategy_setting.json"
+    data_filename: str = "portfolio_strategy_data.json"
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
-        """Initialize the strategy engine"""
+        """Initialize strategy engine with portfolio management"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
-        # Core state management
-        self.settings: dict[str, dict] = {}  # Strategy settings storage
-        self.classes: dict[str, Type[StrategyTemplate]] = {}
-        self.strategies: dict[str, StrategyTemplate] = {}
-        self.orderid_strategy_map: dict[str, StrategyTemplate] = {}
-        
-        # Factor data caching 
+        # Initialize portfolio engine - it will handle its own event subscriptions
+        self.portfolio_engine = PortfolioEngine(main_engine, event_engine)
+
+        # Core state management  
+        self.strategies: Dict[str, StrategyTemplate] = {}
+        self.classes: Dict[str, Type[StrategyTemplate]] = {}
+        self.vt_symbols: Set[str] = set()
+
+        # Factor data caching
         self.latest_factors: Dict[str, Dict] = {}
-        self.factor_update_time: datetime = datetime.now(tz=datetime.utc)
-        
-        # Thread and external resources
+        self.factor_update_time: datetime = datetime.now()
+
         self.init_executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=1)
-        self.vt_tradeids: set[str] = set()
         
-        # Configure execution agent
-        self.execution_agent = ExecutionAgent(
-            main_engine=self.main_engine,
-            gateway_name="BINANCE"  # Configurable gateway
-        )
+        # Initialize engine
+        self.init_engine()
 
     # --------------------------------
     # Engine Core Methods
@@ -91,6 +86,8 @@ class StrategyEngine(BaseEngine):
     def close(self) -> None:
         """Close the engine"""
         self.stop_all_strategies()
+        # Close portfolio engine
+        self.portfolio_engine.close()
 
     # --------------------------------
     # Settings Management
@@ -340,15 +337,15 @@ class StrategyEngine(BaseEngine):
             self.call_strategy_func(strategy, strategy.on_order, order)
 
     def process_trade_event(self, event: Event) -> None:
-        """Process trade updates"""
-        trade = event.data
-        
-        strategy = self.strategies.get(trade.reference)
+        """Process trade updates - only update strategy state"""
+        trade: TradeData = event.data
+        strategy: StrategyTemplate = self.strategies.get(trade.reference, None)
         if strategy:
+            # Only update strategy internal state
             self.call_strategy_func(strategy, strategy.on_trade, trade)
 
     def process_factor_event(self, event: Event) -> None:
-        """Process factor updates"""
+        """Process factor updates and portfolio rebalancing"""
         try:
             factor_dict = event.data
             self.latest_factors.update(factor_dict)
@@ -356,9 +353,15 @@ class StrategyEngine(BaseEngine):
 
             for strategy in self.strategies.values():
                 if strategy.inited and strategy.trading:
-                    order_reqs: List[OrderRequest] = self.call_strategy_func(strategy, strategy.on_factor, self.latest_factors)
+                    # Get order requests from strategy
+                    order_reqs: List[OrderRequest] = self.call_strategy_func(
+                        strategy, 
+                        strategy.on_factor,
+                        self.latest_factors
+                    )
                     
                     if order_reqs:
+                        # Process orders through execution agent 
                         for req in order_reqs:
                             self.execution_agent.send_order(
                                 strategy.strategy_name,
