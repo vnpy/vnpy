@@ -1,6 +1,9 @@
 import logging
 from typing import Dict, List, TYPE_CHECKING, Optional, Union
 from decimal import Decimal
+import numpy as np
+import pandas as pd
+from datetime import datetime
 
 from vnpy.trader.object import TickData, TradeData, ContractData
 from vnpy.trader.constant import Direction
@@ -291,3 +294,135 @@ class PortfolioResult:
             "total_pnl": self.total_pnl,
         }
         return data
+
+
+class PortfolioStatistics:
+    """
+    Portfolio statistics calculator.
+    
+    Tracks precise portfolio value changes and calculates metrics like Sharpe Ratio and Max Drawdown.
+    
+    Attributes
+    ----------
+    daily_values : Dict[str, float]
+        Records portfolio values with precise timestamps as strings (format: "%Y-%m-%d %H:%M:%S")
+    """
+
+    def __init__(self) -> None:
+        self.daily_values: Dict[str, float] = {}
+
+    def record_value(self, timestamp: str, value: float) -> None:
+        """
+        Record the portfolio value with a precise timestamp.
+        
+        Parameters
+        ----------
+        timestamp : str
+            Timestamp in the format "%Y-%m-%d %H:%M:%S"
+        value : float
+            Portfolio value at the given timestamp
+        """
+        assert isinstance(timestamp, str), "timestamp must be a string"
+        assert isinstance(value, (float, int)), "value must be a number"
+        self.daily_values[timestamp] = value
+
+    def resample_values(self, frequency: str = "D") -> pd.Series:
+        """
+        Resample the recorded values to a specified frequency.
+        
+        Parameters
+        ----------
+        frequency : str, optional
+            Resampling frequency (e.g., "D" for daily, "H" for hourly), defaults to "D"
+        
+        Returns
+        -------
+        pd.Series
+            Resampled portfolio values
+        """
+        if not self.daily_values:
+            logging.warning("No data available for resampling.")
+            return pd.Series(dtype=float)
+
+        # Convert to pandas Series for resampling
+        data = pd.Series(self.daily_values, dtype=float)
+        data.index = pd.to_datetime(data.index, format="%Y-%m-%d %H:%M:%S")
+        resampled_data = data.resample(frequency).last().fillna(method="ffill")
+        return resampled_data
+
+    def calculate_sharpe_ratio(self, risk_free_rate: float = 0.0, frequency: str = "D") -> Optional[float]:
+        """
+        Calculate the Sharpe Ratio based on resampled returns.
+        
+        Parameters
+        ----------
+        risk_free_rate : float, optional
+            Risk-free rate for Sharpe Ratio calculation, defaults to 0.0
+        frequency : str, optional
+            Resampling frequency for returns, defaults to "D"
+        
+        Returns
+        -------
+        Optional[float]
+            Sharpe Ratio, or None if insufficient data
+        """
+        resampled_data = self.resample_values(frequency)
+        if len(resampled_data) < 2:
+            logging.warning("Not enough data to calculate Sharpe Ratio.")
+            return None
+
+        daily_returns = resampled_data.pct_change().dropna()
+        excess_returns = daily_returns - risk_free_rate / 252  # Assuming 252 trading days
+
+        if daily_returns.std() == 0:
+            logging.warning("Standard deviation of returns is zero.")
+            return None
+
+        sharpe_ratio = excess_returns.mean() / excess_returns.std()
+        return sharpe_ratio
+
+    def calculate_max_drawdown(self, frequency: str = "D") -> Optional[float]:
+        """
+        Calculate the maximum drawdown of the portfolio based on resampled values.
+        
+        Parameters
+        ----------
+        frequency : str, optional
+            Resampling frequency for drawdown calculation, defaults to "D"
+        
+        Returns
+        -------
+        Optional[float]
+            Maximum drawdown, or None if insufficient data
+        """
+        resampled_data = self.resample_values(frequency)
+        if len(resampled_data) < 2:
+            logging.warning("Not enough data to calculate Max Drawdown.")
+            return None
+
+        values = resampled_data.values
+        peak = np.maximum.accumulate(values)
+        drawdown = (values - peak) / peak
+        max_drawdown = np.min(drawdown)
+        return max_drawdown
+
+    def get_statistics(self, frequency: str = "D") -> dict:
+        """
+        Get all calculated statistics based on resampled values.
+        
+        Parameters
+        ----------
+        frequency : str, optional
+            Resampling frequency for statistics, defaults to "D"
+        
+        Returns
+        -------
+        dict
+            Contains:
+            - sharpe_ratio: Optional[float]
+            - max_drawdown: Optional[float]
+        """
+        return {
+            "sharpe_ratio": self.calculate_sharpe_ratio(frequency=frequency),
+            "max_drawdown": self.calculate_max_drawdown(frequency=frequency),
+        }

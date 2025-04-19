@@ -22,7 +22,7 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.utility import load_json, save_json
 
-from .base import ContractResult, PortfolioResult
+from .base import ContractResult, PortfolioResult, PortfolioStatistics
 
 
 APP_NAME = "PortfolioManager"
@@ -54,6 +54,7 @@ class PortfolioEngine(BaseEngine):
         self.order_reference_map: Dict[str, str] = {}
         self.contract_results: Dict[Tuple[str, str], ContractResult] = {}
         self.portfolio_results: Dict[str, PortfolioResult] = {}
+        self.portfolio_statistics: Dict[str, PortfolioStatistics] = {}
 
         self.timer_count: int = 0
         self.timer_interval: int = 5
@@ -124,6 +125,7 @@ class PortfolioEngine(BaseEngine):
         if self.timer_count < self.timer_interval:
             return
         self.timer_count = 0
+        datetime_str: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         for portfolio_result in self.portfolio_results.values():
             portfolio_result.clear_pnl()
@@ -140,8 +142,13 @@ class PortfolioEngine(BaseEngine):
             event: Event = Event(EVENT_PM_CONTRACT, contract_result.get_data())
             self.event_engine.put(event)
 
-        for portfolio_result in self.portfolio_results.values():
+        for reference, portfolio_result in self.portfolio_results.items():
             event: Event = Event(EVENT_PM_PORTFOLIO, portfolio_result.get_data())
+            portfolio_statistics: PortfolioStatistics = self.portfolio_statistics.get(reference, None)
+            if not portfolio_statistics:
+                portfolio_statistics = PortfolioStatistics(reference)
+                self.portfolio_statistics[reference] = portfolio_statistics
+            portfolio_statistics.record_value(datetime_str, portfolio_result.get_total_value())
             self.event_engine.put(event)
 
     def process_contract_event(self, event: Event) -> None:
