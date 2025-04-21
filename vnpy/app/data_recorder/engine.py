@@ -38,7 +38,7 @@ class RecorderEngine(BaseEngine):
                  main_engine: MainEngine,
                  event_engine: EventEngine):
         """"""
-        super().__init__(main_engine, event_engine, APP_NAME)
+        super().__init__(main_engine, event_engine, engine_name=APP_NAME)
 
         self.queue = Queue()
         self.thread = Thread(target=self.run)

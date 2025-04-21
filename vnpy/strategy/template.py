@@ -15,7 +15,7 @@ from vnpy.app.portfolio_strategy.portfolio.portfolio_tracker import PortfolioTra
 from vnpy.app.portfolio_strategy.portfolio.order_manager import OrderManager
 
 if TYPE_CHECKING:
-    from vnpy.app.portfolio_strategy.engine import StrategyEngine
+    from vnpy.strategy.engine import BaseStrategyEngine
 
 
 class StrategyTemplate(ABC):
@@ -23,19 +23,20 @@ class StrategyTemplate(ABC):
 
     # Class Properties
     author: str = ""
+    required_vt_symbols: list[str] = []
     required_factors: list[str] = []
     exchange: Exchange = Exchange.BINANCE
     interval: Interval = Interval.MINUTE
 
     def __init__(
             self,
-            strategy_engine: "StrategyEngine",
+            strategy_engine: BaseStrategyEngine,
             strategy_name: str,
             vt_symbols: list[str],
             state: dict
     ) -> None:
         """Constructor"""
-        self.strategy_engine: "StrategyEngine" = strategy_engine
+        self.strategy_engine: BaseStrategyEngine = strategy_engine
         self.strategy_name: str = strategy_name
         self.vt_symbols: list[str] = vt_symbols
 
@@ -114,7 +115,8 @@ class StrategyTemplate(ABC):
 
             price = tick.last_price
 
-            contract_result = self.strategy_engine.portfolio_engine.contract_results.get((symbol,self.strategy_name), 0)
+            contract_result = self.strategy_engine.portfolio_engine.contract_results.get((symbol, self.strategy_name),
+                                                                                         0)
             if not contract_result:
                 current_pos = 0
             else:
@@ -173,12 +175,12 @@ class StrategyTemplate(ABC):
     # Order Management Methods
     # --------------------------------
     def _create_order_request(
-        self,
-        vt_symbol: str,
-        direction: Direction,
-        type: OrderType,
-        price: float,
-        volume: float
+            self,
+            vt_symbol: str,
+            direction: Direction,
+            type: OrderType,
+            price: float,
+            volume: float
     ) -> OrderRequest:
         """Create order request"""
         return OrderRequest(

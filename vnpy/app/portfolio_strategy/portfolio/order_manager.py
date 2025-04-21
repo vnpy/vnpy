@@ -84,6 +84,7 @@ class OrderManager:
 
     def cancel_all_active_orders(self) -> Set[str]:
         """Get all active orderids for cancellation"""
+        raise DeprecationWarning("OrderManager should not execute cancellation")
         return self.active_orderids.copy()
 
     def get_pos_direction(self, vt_symbol: str) -> int:
