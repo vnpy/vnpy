@@ -1219,6 +1219,10 @@ def virtual(func: Callable) -> Callable:
     mark a function as "virtual", which means that this function can be override.
     any base class should use this or @abstractmethod to decorate all functions
     that can be (re)implemented by subclasses.
+
+    Virtual methods have an implementation and provide the derived classes with the option of overriding it.
+    Abstract methods do not provide an implementation and force the derived classes to override the method.
+    So, abstract methods have no actual code in them, and (non-abstract) subclasses HAVE TO override the method.
     """
     return func
 

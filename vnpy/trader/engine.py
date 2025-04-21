@@ -55,30 +55,12 @@ from .locale import _
 
 APP_NAME = 'MainEngine'
 
-
 EngineType = TypeVar("EngineType", bound="BaseEngine")
 
 
+# Forward declare class for type hints
 class BaseEngine(ABC):
-    """
-    Abstract class for implementing a function engine.
-    """
-
-    @abstractmethod
-    def __init__(
-        self,
-        main_engine: "MainEngine",
-        event_engine: EventEngine,
-        engine_name: str,
-    ) -> None:
-        """"""
-        self.main_engine: MainEngine = main_engine
-        self.event_engine: EventEngine = event_engine
-        self.engine_name: str = engine_name
-
-    def close(self) -> None:
-        """"""
-        return
+    pass
 
 
 class MainEngine:
@@ -111,7 +93,7 @@ class MainEngine:
         """
         Add function engine.
         """
-        engine: EngineType = engine_class(self, self.event_engine)      # type: ignore
+        engine: EngineType = engine_class(self, self.event_engine)  # type: ignore
         self.engines[engine.engine_name] = engine
         return engine
 
@@ -133,7 +115,7 @@ class MainEngine:
 
         return gateway
 
-    def add_app(self, app_class: Type[BaseApp]) -> Union[BaseEngine, Type[BaseEngine],EngineType]:
+    def add_app(self, app_class: Type[BaseApp]) -> Union[BaseEngine, Type[BaseEngine], EngineType]:
         """
         Add app.
         """
@@ -168,7 +150,8 @@ class MainEngine:
         self.get_all_active_orders: Callable[[], list[OrderData]] = oms_engine.get_all_active_orders
         self.get_all_active_quotes: Callable[[], list[QuoteData]] = oms_engine.get_all_active_quotes
         self.update_order_request: Callable[[OrderRequest, str, str], None] = oms_engine.update_order_request
-        self.convert_order_request: Callable[[OrderRequest, str, bool, bool], list[OrderRequest]] = oms_engine.convert_order_request
+        self.convert_order_request: Callable[
+            [OrderRequest, str, bool, bool], list[OrderRequest]] = oms_engine.convert_order_request
         self.get_converter: Callable[[str], OffsetConverter] = oms_engine.get_converter
 
         email_engine: EmailEngine = self.add_engine(EmailEngine)
@@ -334,19 +317,27 @@ class BaseEngine(ABC):
     """
 
     def __init__(
-        self,
-        main_engine: MainEngine,
-        event_engine: EventEngine,
-        engine_name: str,
+            self,
+            main_engine: MainEngine,
+            event_engine: EventEngine,
+            engine_name: str,
     ) -> None:
         """"""
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine
         self.engine_name: str = engine_name
 
+    @abstractmethod
     def close(self) -> None:
         """"""
         pass
+
+    def write_log(self, msg: str, source: str = "", level=INFO) -> None:
+        """
+        Put log event with specific message.
+        """
+        source = source if source else self.engine_name
+        self.main_engine.write_log(msg=msg, source=source, level=level)
 
 
 class LogEngine(BaseEngine):
@@ -385,7 +376,7 @@ class LogEngine(BaseEngine):
         if SETTINGS["log.file"]:
             self.add_file_handler()
 
-        self.register_event() # vnpy v4.0.0 update
+        self.register_event()  # vnpy v4.0.0 update
 
     def add_null_handler(self) -> None:
         """
@@ -690,11 +681,11 @@ class OmsEngine(BaseEngine):
             converter.update_order_request(req, vt_orderid)
 
     def convert_order_request(
-        self,
-        req: OrderRequest,
-        gateway_name: str,
-        lock: bool,
-        net: bool = False
+            self,
+            req: OrderRequest,
+            gateway_name: str,
+            lock: bool,
+            net: bool = False
     ) -> list[OrderRequest]:
         """
         Convert original order request according to given mode.

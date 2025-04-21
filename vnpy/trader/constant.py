@@ -78,6 +78,14 @@ class OptionType(Enum):
     PUT = _("看跌期权")
 
 
+class EngineType(Enum):
+    """
+    Engine type.
+    """
+    LIVE = _("实盘")
+    BACKTESTING = _("回测")
+    TEST = "TEST"  # Test engine
+
 class Exchange(Enum):
     """
     Exchange.
@@ -166,5 +174,3 @@ class Interval(Enum):
     # special
     UNKNOWN = "UNKNOWN"  # Unknown exchange
     TEST = "TEST"  # For testing
-
-
