@@ -6,7 +6,7 @@ import pandas as pd
 
 from vnpy.trader.constant import Interval, Direction, Offset, Exchange, OrderType
 from vnpy.trader.object import BarData, CancelRequest, OrderData, FactorData, OrderRequest, TradeData
-from vnpy.trader.utility import convert_dict_to_dataframe
+from vnpy.trader.utility import convert_dict_to_dataframe, virtual
 
 from vnpy.app.portfolio_strategy.base import EngineType
 from vnpy.app.portfolio_strategy.config.models.config import ModelConfig
@@ -77,6 +77,7 @@ class StrategyTemplate(ABC):
     # --------------------------------
     # Event Processing Methods
     # --------------------------------
+    @virtual
     def on_factor(self, factor_dict: dict[tuple[str, str], FactorData]) -> List[OrderRequest]:
         """Process incoming factor data"""
         if not self.trading:
@@ -103,6 +104,19 @@ class StrategyTemplate(ABC):
 
                 return order_reqs
 
+    @virtual
+    def on_order(self, order: OrderData) -> None:
+        """Process order update - for strategy monitoring only"""
+        pass
+
+    @virtual
+    def on_trade(self, trade: TradeData) -> None:
+        """Process trade update - for strategy monitoring only"""
+        pass
+
+    # --------------------------------
+    # Portfolio Management Methods
+    # --------------------------------
     def generate_orders_from_targets(self, target_positions_usd: pd.Series) -> List[OrderRequest]:
         """Generate orders to achieve target positions"""
         order_reqs = []
@@ -143,17 +157,6 @@ class StrategyTemplate(ABC):
 
         return order_reqs
 
-    def on_order(self, order: OrderData) -> None:
-        """Process order update - for strategy monitoring only"""
-        pass
-
-    def on_trade(self, trade: TradeData) -> None:
-        """Process trade update - for strategy monitoring only"""
-        pass
-
-    # --------------------------------
-    # Portfolio Management Methods
-    # --------------------------------
     def close_all_positions(self) -> List[OrderRequest]:
         """Close all positions"""
         order_reqs = []
@@ -279,6 +282,26 @@ class StrategyTemplate(ABC):
             self.inited = state["data"]["inited"]
         if "trading" in state.get("data", {}):
             self.trading = state["data"]["trading"]
+
+    def update_setting(self, setting: dict) -> None:
+        """设置策略参数"""
+        if "required_factors" in setting:
+            self.required_factors = setting["required_factors"]
+
+        if "model_config" in setting:
+            self.model_config = ModelConfig(**setting["model_config"])
+
+        if "trading_config" in setting:
+            self.trading_config = TradingConfig(**setting["trading_config"])
+            self.trading_config.validate()
+
+        if "vt_symbols" in setting:
+            self.vt_symbols = setting["vt_symbols"]
+
+        raise FutureWarning(f"self.parameters is not defined in {self.__class__.__name__}, ")
+        for name in self.parameters:
+            if name in setting:
+                setattr(self, name, setting[name])
 
     # --------------------------------
     # Utility Methods
