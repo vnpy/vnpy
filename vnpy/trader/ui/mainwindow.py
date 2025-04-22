@@ -12,7 +12,7 @@ from collections.abc import Callable
 import vnpy
 from vnpy.event import EventEngine
 
-from .qt import QtCore, QtGui, QtWidgets
+from qtpy import QtGui, QtWidgets, QtCore
 from .widget import (
     BaseMonitor,
     TickMonitor,

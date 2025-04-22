@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 from collections import defaultdict
 from typing import Literal, cast

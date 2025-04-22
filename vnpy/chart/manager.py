@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 from _collections_abc import dict_keys
 

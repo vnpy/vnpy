@@ -1,5 +1,5 @@
 """
-Cross Section Operators
+Cross-Section Operators
 """
 
 import polars as pl

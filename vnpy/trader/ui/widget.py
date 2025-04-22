@@ -1,6 +1,7 @@
 """
 Basic widgets for UI.
 """
+from __future__ import annotations
 
 import csv
 import platform
@@ -11,7 +12,8 @@ from tzlocal import get_localzone_name
 from datetime import datetime
 from importlib import metadata
 
-from .qt import QtCore, QtGui, QtWidgets, Qt
+from qtpy import QtGui, QtWidgets, QtCore
+from .qt import Qt
 from ..constant import Direction, Exchange, Offset, OrderType
 from ..engine import MainEngine, Event, EventEngine
 from ..event import (

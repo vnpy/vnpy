@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from types import ModuleType
 from collections.abc import Callable
 from importlib import import_module

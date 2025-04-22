@@ -1,6 +1,7 @@
 """
 Basic data structure used for general trading function in the trading platform.
 """
+from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime as Datetime

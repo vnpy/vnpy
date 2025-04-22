@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Callable
 from itertools import product
 from concurrent.futures import ProcessPoolExecutor

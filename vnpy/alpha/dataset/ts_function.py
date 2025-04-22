@@ -2,7 +2,7 @@
 Time Series Operators
 """
 
-from typing import cast
+from typing import cast, Union
 
 from scipy import stats     # type: ignore
 import polars as pl
@@ -173,7 +173,7 @@ def ts_corr(feature1: DataProxy, feature2: DataProxy, window: int) -> DataProxy:
     return DataProxy(df)
 
 
-def ts_less(feature1: DataProxy, feature2: DataProxy | float) -> DataProxy:
+def ts_less(feature1: DataProxy, feature2: Union[DataProxy, float]) -> DataProxy:
     """Return the minimum value between two features"""
     if isinstance(feature2, DataProxy):
         df_merged: pl.DataFrame = feature1.df.join(feature2.df, on=["datetime", "vt_symbol"])
@@ -189,7 +189,7 @@ def ts_less(feature1: DataProxy, feature2: DataProxy | float) -> DataProxy:
     return DataProxy(df)
 
 
-def ts_greater(feature1: DataProxy, feature2: DataProxy | float) -> DataProxy:
+def ts_greater(feature1: DataProxy, feature2: Union[DataProxy, float]) -> DataProxy:
     """Return the maximum value between two features"""
     if isinstance(feature2, DataProxy):
         df_merged: pl.DataFrame = feature1.df.join(feature2.df, on=["datetime", "vt_symbol"])

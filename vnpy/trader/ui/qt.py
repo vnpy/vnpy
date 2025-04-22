@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import ctypes
 import platform
 import sys
@@ -7,7 +9,7 @@ import types
 import threading
 
 import qdarkstyle  # type: ignore
-from PySide6 import QtGui, QtWidgets, QtCore
+from qtpy import QtGui, QtWidgets, QtCore
 from loguru import logger
 
 from ..setting import SETTINGS

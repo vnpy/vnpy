@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import threading
 from time import time
 from functools import lru_cache
