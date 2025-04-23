@@ -15,6 +15,10 @@ class ExecutionAgent:
     main_engine: MainEngine
     gateway_name: str
 
+    def __init__(self, main_engine: MainEngine, gateway_name: str) -> None:
+        self.main_engine = main_engine
+        self.gateway_name = gateway_name
+
     def send_order(
             self,
             req: OrderRequest,

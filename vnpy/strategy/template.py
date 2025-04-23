@@ -4,15 +4,14 @@ from collections import defaultdict
 
 import pandas as pd
 
-from vnpy.trader.constant import Interval, Direction, Offset, Exchange, OrderType
+from vnpy.trader.constant import Interval, Direction, Offset, Exchange, OrderType,EngineType
 from vnpy.trader.object import BarData, CancelRequest, OrderData, FactorData, OrderRequest, TradeData
 from vnpy.trader.utility import convert_dict_to_dataframe, virtual
 
-from vnpy.app.portfolio_strategy.base import EngineType
-from vnpy.app.portfolio_strategy.config.models.config import ModelConfig
-from vnpy.app.portfolio_strategy.config.trading.config import TradingConfig
-from vnpy.app.portfolio_strategy.portfolio.portfolio_tracker import PortfolioTracker
-from vnpy.app.portfolio_strategy.portfolio.order_manager import OrderManager
+from .config.models.config import ModelConfig
+from .config.trading.config import TradingConfig
+from .portfolio.portfolio_tracker import PortfolioTracker
+from .portfolio.order_manager import OrderManager
 
 if TYPE_CHECKING:
     from vnpy.strategy.engine import BaseStrategyEngine
