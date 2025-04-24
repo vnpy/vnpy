@@ -8,7 +8,7 @@ import sys
 from datetime import datetime, time
 from pathlib import Path
 from typing import Callable, Dict, Tuple, Union, Optional
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from math import floor, ceil
 
 import numpy as np
@@ -126,12 +126,12 @@ def save_json(filename: str, data: dict) -> None:
 
 def round_to(value: float, target: float) -> float:
     """
-    Round price to price tick value.
+    Round price to price tick value using ROUND_HALF_UP method.
     """
     value: Decimal = Decimal(str(value))
     target: Decimal = Decimal(str(target))
-    rounded: float = float(int(round(value / target)) * target)
-    return rounded
+    rounded: Decimal = (value / target).quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+    return float(rounded * target)
 
 
 def floor_to(value: float, target: float) -> float:
