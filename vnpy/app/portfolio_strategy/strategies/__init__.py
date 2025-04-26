@@ -1,1 +1,0 @@
-from .contrarian_trading import ContrarianStrategy
