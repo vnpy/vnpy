@@ -1,10 +1,13 @@
 import importlib
 import traceback
 import os
-from typing import Type, Callable, Dict, List, TYPE_CHECKING,Optional
+from typing import Type, Callable, Dict, List, TYPE_CHECKING, Optional
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
-from logging import INFO,ERROR,DEBUG
+from logging import INFO, ERROR, DEBUG
+from pathlib import Path
+from types import ModuleType
+import glob
 
 from vnpy.event import Event, EventEngine
 from vnpy.strategy.base import (
@@ -28,7 +31,8 @@ from vnpy.trader.object import (
     LogData,
     TickData,
     OrderData,
-    BarData
+    BarData,
+    ContractData
 )
 from vnpy.trader.utility import load_json, save_json, virtual
 from .execution_agent import ExecutionAgent
@@ -36,107 +40,6 @@ from .base import StrategyState, AlgoStatus
 
 if TYPE_CHECKING:
     from vnpy.strategy.template import StrategyTemplate
-strategy_module_name = 'vnpy.app.portfolio_strategy.strategies'
-
-"""
-Based on the provided files, here are the mutual member functions found across the strategy engines:
-
-strategy control
-- [x] start_strategy	Start a specific strategy
-- [x] stop_strategy	Stop a specific strategy
-- [x] init_strategy	Initialize a specific strategy
-
-strategy management
-- [ ] add_strategy	Add a new strategy instance
-- [ ] edit_strategy	Edit strategy parameters
-- [ ] remove_strategy	Remove a strategy instance
-
-- [ ] write_log	Write log messages
-- [ ] process_tick_event	Process incoming tick data
-- [ ] process_order_event	Process order updates
-- [ ] process_trade_event	Process trade updates
-- [ ] send_order	Send trading orders
-- [ ] cancel_order	Cancel existing orders
-- [ ] get_pricetick	Get contract price tick size
-- [ ] get_size	Get contract size
-Common Batch Operations
-- [ ] load_strategy_class	Load strategy classes from files
-- [ ] start_all_strategies	Start all strategies
-- [ ] stop_all_strategies	Stop all strategies
-- [ ] init_all_strategies	Initialize all strategies
-Common Settings Management
-- [ ] get_strategy_class_parameters	Get strategy class default parameters
-- [ ] get_strategy_parameters	Get strategy instance parameters
-- [ ] get_all_strategy_class_names	Get names of all available strategy classes
-- [ ] load_strategy_setting	Load strategy settings from file
-These functions represent the core functionality needed for strategy management, execution, and monitoring across different types of strategy engines (CTA, Portfolio, Spread Trading, etc.).
-
-The main differences between the engines are in their specific implementations and additional specialized functions for handling their respective strategy types. For example:
-
-- [ ] CTA engine has specific functions for stop orders
-- [ ] Spread engine has special handling for spread calculations
-- [ ] Portfolio engine includes factor-related functionality
-- [ ] Nova engine includes data table management
-
-
-================
-Let me analyze the differences between the common function list and the actual implementation in engine.py.
-
-### Functions in engine.py but NOT in common list:
-
-1. **Core Engine Methods**
-- `init_engine()`
-- `init_datafeed()`
-- `register_event()`
-- `close()`
-
-2. **Strategy State Management** 
-- `save_strategy_setting()`
-- `update_strategy_setting()`
-- `_validate_requirements()`
-- `_init_strategy()` (internal implementation)
-
-3. **Event Processing**
-- `process_factor_event()`
-
-4. **Utility Methods**
-- `call_strategy_func()`
-- `put_strategy_event()`
-- `send_email()`
-- `get_bar()`
-- `get_engine_type()`
-
-### Functions in common list but NOT in engine.py:
-
-1. **Data Loading**
-- `load_bars()`
-- `load_tick()` 
-
-2. **Contract Info**
-- `get_pricetick()` - The common list has this but not implemented in current engine.py
-- `get_size()` - The common list has this but not implemented in current engine.py
-
-3. **Process Events**
-- `process_tick_event()` - The common list has this but not registered/implemented in current engine.py
-
-4. **Settings Management**
-- `get_strategy_class_parameters()` - Listed but not implemented
-- `get_strategy_parameters()` - Listed but not implemented
-- `get_all_strategy_class_names()` - Listed but not implemented
-
-5. **Strategy Data Management**
-- `load_strategy_data()` - Commented out in current implementation
-- `sync_strategy_data()` - Commented out in current implementation
-
-The main differences show that the current engine.py:
-1. Has more focus on factor event processing
-2. Has more utility and helper methods
-3. Missing some standard market data processing functions
-4. Has contract info methods commented out or not implemented
-5. Has data management functions commented out
-
-This suggests the current implementation is more focused on factor-based portfolio strategy rather than general trading strategy management.
-"""
 
 
 class BaseStrategyEngine(BaseEngine):
@@ -152,6 +55,7 @@ class BaseStrategyEngine(BaseEngine):
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine, engine_name: str = APP_NAME) -> None:
         """Initialize the strategy engine"""
         super().__init__(main_engine, event_engine, engine_name=engine_name)
+        self.module = None
         self.setting_filename = f"{self.engine_name}_setting.json"
 
         # Core state management
@@ -215,24 +119,40 @@ class BaseStrategyEngine(BaseEngine):
     # --------------------------------
     # Settings Management
     # --------------------------------
-    def load_strategy_class(self) -> None:
-        """Load strategy classes from module"""
-        try:
-            # Import strategy module
-            self.module = importlib.import_module(strategy_module_name)
 
-            # Get all strategy classes from module
+    def load_strategy_class(self) -> None:
+        """"""
+        # todo: check whether we need this or not
+        # path1: Path = Path(__file__).parent.joinpath("strategies")
+        # self.load_strategy_class_from_folder(path1, "strategy.strategies")
+
+        path2: Path = Path.cwd().joinpath("strategies")
+        self.load_strategy_class_from_folder(path2, "strategies")
+
+    def load_strategy_class_from_folder(self, path: Path, module_name: str = "") -> None:
+        """"""
+        for suffix in ["py", "pyd", "so"]:
+            pathname: str = str(path.joinpath(f"*.{suffix}"))
+            for filepath in glob.glob(pathname):
+                stem: str = Path(filepath).stem
+                strategy_module_name: str = f"{module_name}.{stem}"
+                self.load_strategy_class_from_module(strategy_module_name)
+
+    def load_strategy_class_from_module(self, module_name: str) -> None:
+        """"""
+        try:
+            self.module: ModuleType = importlib.import_module(module_name)
+
             for name in dir(self.module):
                 value = getattr(self.module, name)
-                if (isinstance(value, type) and
-                        issubclass(value, StrategyTemplate) and
-                        value is not StrategyTemplate):
+                if (isinstance(value, type) and issubclass(value, StrategyTemplate) and value is not StrategyTemplate):
                     self.classes[value.__name__] = value
+            self.write_log(f"Successfully loaded {len(self.classes)} strategy classes", level=INFO)
 
-            self.write_log(f"Successfully loaded {len(self.classes)} strategy classes")
-        except Exception as e:
+        except:  # noqa
             self.write_log(
-                f"Failed to import strategy module from {strategy_module_name}, triggered exception:\n{traceback.format_exc()}")
+                f"Failed to import strategy module from {module_name}, triggered exception:\n{traceback.format_exc()}",
+                level=ERROR)
 
     def load_strategy_setting(self) -> None:
         """Load strategy settings and create instances"""
@@ -244,7 +164,7 @@ class BaseStrategyEngine(BaseEngine):
                 class_name=setting["class_name"],
                 strategy_name=strategy_name,
                 vt_symbols=setting["vt_symbols"],
-                setting={"settings": setting}  # Only restore settings here
+                setting=setting["setting"]
             )
 
     def save_strategy_setting(self) -> None:
@@ -264,8 +184,17 @@ class BaseStrategyEngine(BaseEngine):
     def update_strategy_setting(self, strategy: StrategyTemplate) -> None:
         """Update single strategy setting"""
         self.settings[strategy.strategy_name] = strategy.get_settings()
-        save_json(self.setting_filename, self.settings)
-        self.write_log(f"Updated settings for strategy: {strategy.strategy_name}")
+        # save_json(self.setting_filename, self.settings)
+        self.write_log(f"Updated settings for strategy: {strategy.strategy_name}", level=INFO)
+
+    def remove_strategy_setting(self, strategy_name: str) -> None:
+        """
+        Update setting file.
+        """
+        if strategy_name not in self.settings:
+            return
+
+        self.settings.pop(strategy_name, None)
 
     # def save_strategy_state(self, strategy_name: str) -> None:
     #     """Save both settings and data for a strategy"""
@@ -279,25 +208,6 @@ class BaseStrategyEngine(BaseEngine):
     #
     #     self.write_log(f"Saved complete state for strategy: {strategy_name}")
 
-    # def load_strategy_data(self) -> None:
-    #     """Load runtime data for each strategy"""
-    #     # fixme: load data from database and datafeed
-    #     for strategy_name, strategy in self.strategies.items():
-    #         data_filename = f"portfolio_strategy_{strategy_name}_data.json"
-    #
-    #         if os.path.exists(data_filename):
-    #             try:
-    #                 # Load and restore strategy data
-    #                 data = load_json(data_filename)
-    #                 strategy.restore_data(data)
-    #                 self.write_log(f"Loaded data for strategy: {strategy_name}")
-    #             except Exception as e:
-    #                 self.write_log(f"Failed to load data for strategy {strategy_name}: {e}")
-    #         else:
-    #             # Create new data file for strategy
-    #             self.write_log(f"Creating new data file for strategy: {strategy_name}")
-    #             save_json(data_filename, strategy.get_data())
-
     # def sync_strategy_data(self, strategy: StrategyTemplate) -> None:
     #     """Sync strategy runtime data"""
     #     data_filename = f"portfolio_strategy_{strategy.strategy_name}_data.json"
@@ -307,15 +217,15 @@ class BaseStrategyEngine(BaseEngine):
     # --------------------------------
     # Strategy Management
     # --------------------------------
-    def add_strategy(self, class_name: str, strategy_name: str, vt_symbols: list,setting: dict) -> None:
+    def add_strategy(self, class_name: str, strategy_name: str, vt_symbols: list, setting: dict) -> None:
         """Add a new strategy instance"""
         if strategy_name in self.strategies:
-            self.write_log(f"Creation failed, strategy {strategy_name} already exists",level=ERROR)
+            self.write_log(f"Creation failed, strategy {strategy_name} already exists", level=ERROR)
             return
 
         strategy_class: Optional[Type[StrategyTemplate]] = getattr(self.module, class_name)
         if not strategy_class:
-            self.write_log(f"Creation failed, strategy class {class_name} not found",level=ERROR)
+            self.write_log(f"Creation failed, strategy class {class_name} not found", level=ERROR)
             return
 
         if strategy_class.__name__ not in self.classes:
@@ -324,43 +234,58 @@ class BaseStrategyEngine(BaseEngine):
         strategy = strategy_class(self, strategy_name, vt_symbols, setting)
 
         # Validate strategy requirements
-        if not self._validate_requirements(strategy_class, vt_symbols):
+        if not self._validate_requirements(strategy):
             return
 
         # pass validation, add strategy
         self.strategies[strategy_name] = strategy
         self.update_strategy_setting(strategy)
 
-    def edit_strategy(self, strategy_name: str, state: dict) -> None:
+    def edit_strategy(self, strategy_name: str, setting: dict) -> None:
         """Edit strategy state"""
         strategy: StrategyTemplate = self.strategies[strategy_name]
-        strategy.restore_state(state)
+        strategy.update_setting(setting)
         self.update_strategy_setting(strategy)
+        self.save_strategy_setting()
 
     def remove_strategy(self, strategy_name: str) -> bool:
         """Remove a strategy instance"""
         strategy: StrategyTemplate = self.strategies[strategy_name]
         if strategy.trading:
-            self.write_log(f"Strategy {strategy_name} removal failed - please stop first", strategy)
+            self.write_log(f"Strategy {strategy_name} removal failed - please stop first", strategy, level=ERROR)
             return False
 
+        # Remove strategy instance
         self.strategies.pop(strategy_name)
-        self.settings.pop(strategy_name, None)
-        self.save_settings()
+
+        # Remove setting
+        self.remove_strategy_setting(strategy_name)
+        self.save_strategy_setting()
+
         return True
 
-    def _validate_requirements(self, strategy: StrategyTemplate, vt_symbols: List[str]) -> bool:
+    def _validate_requirements(self, strategy: StrategyTemplate) -> bool:
         """Validate strategy requirements"""
-        if hasattr(strategy, "required_symbols"):
-            missing_symbols = set(strategy.required_vt_symbols) - set(vt_symbols)
-            if missing_symbols:
-                self.write_log(f"Missing required symbols: {missing_symbols}")
-                return False
+        missing_symbols = set(strategy.required_vt_symbols) - set(self.required_vt_symbols)
+        if missing_symbols:
+            self.write_log(f"Missing required symbols: {missing_symbols}", level=ERROR)
+            return False
 
-        if hasattr(strategy, "required_factors"):
-            pass
+        missing_factors = set(strategy.required_factors) - set(self.required_factors)
+        if missing_factors:
+            self.write_log(f"Missing required factors: {missing_factors}", level=ERROR)
+            return False
 
         return True
+
+    # --------------------------------
+    # Strategy data Management
+    # --------------------------------
+    @virtual
+    def load_strategy_data(self) -> None:
+        """Load runtime data for each strategy"""
+        # fixme: load data from database and datafeed. just like factor maker
+        pass
 
     # --------------------------------
     # Strategy Lifecycle Management
@@ -371,14 +296,12 @@ class BaseStrategyEngine(BaseEngine):
 
     def init_strategy(self, strategy_name: str) -> None:
         """Initialize strategy with saved state"""
-        self.write_log(FutureWarning("I don't understand that why use multiprocessing for initialization instead of running. maybe _init_strategy will be deprecated, because we don't need parellel processing, use init_all_strategies instead"),level=ERROR)
-
         strategy: StrategyTemplate = self.strategies[strategy_name]
         if strategy.inited:
-            self.write_log(f"{strategy_name} already initialized",level=DEBUG)
+            self.write_log(f"{strategy_name} already initialized", level=DEBUG)
             return
 
-        self.write_log(f"Initializing {strategy_name}",level=DEBUG)
+        self.write_log(f"Initializing {strategy_name}", level=DEBUG)
 
         # Subscribe market data
         for vt_symbol in strategy.vt_symbols:
@@ -386,7 +309,8 @@ class BaseStrategyEngine(BaseEngine):
             if contract:
                 req = SubscribeRequest(
                     symbol=contract.symbol,
-                    exchange=contract.exchange
+                    exchange=contract.exchange,
+                    interval=contract.interval,
                 )
                 self.main_engine.subscribe(req, contract.gateway_name)
             else:
@@ -424,13 +348,13 @@ class BaseStrategyEngine(BaseEngine):
         cancel_reqs = self.call_strategy_func(strategy, strategy.cancel_all_active_orders)
         if cancel_reqs:
             for req in cancel_reqs:
-                self.execution_agent.cancel_order(req)
+                self.cancel_order(req)
                 self.write_log(f"Cancelled order: {req}")
 
         close_order_reqs = self.call_strategy_func(strategy, strategy.close_all_positions)
         if close_order_reqs:
             for req in close_order_reqs:
-                self.execution_agent.send_order(
+                self.send_order(
                     strategy.strategy_name,
                     req,
                     lock=False,
@@ -449,16 +373,19 @@ class BaseStrategyEngine(BaseEngine):
         self.update_strategy_setting(strategy)
         # self.sync_strategy_data(strategy) # commented out in original code
 
+    @virtual
     def init_all_strategies(self) -> None:
         """Initialize all strategies"""
         for strategy_name in self.strategies.keys():
             self.init_strategy(strategy_name)
 
+    @virtual
     def start_all_strategies(self) -> None:
         """Start all strategies"""
         for strategy_name in self.strategies.keys():
             self.start_strategy(strategy_name)
 
+    @virtual
     def stop_all_strategies(self) -> None:
         """Stop all strategies"""
         for strategy_name in self.strategies.keys():
@@ -497,9 +424,9 @@ class BaseStrategyEngine(BaseEngine):
 
                     if order_reqs:
                         for req in order_reqs:
-                            self.execution_agent.send_order(
+                            self.send_order(
                                 strategy.strategy_name,
-                                req,
+                                req=req,
                                 lock=False,
                                 net=False
                             )
@@ -511,6 +438,7 @@ class BaseStrategyEngine(BaseEngine):
     # --------------------------------
     # Order Management
     # --------------------------------
+    @virtual
     def send_order(
             self,
             strategy: StrategyTemplate,
@@ -519,15 +447,71 @@ class BaseStrategyEngine(BaseEngine):
             net: bool = False
     ) -> List[str]:
         """Send order via execution agent"""
-        pass
+        return self.execution_agent.send_order(
+            req=req,
+            lock=False,
+            net=False
+        )
 
-    def cancel_order(self, strategy: StrategyTemplate, order: OrderData) -> None:
+    @virtual
+    def cancel_order(self, req) -> None:
         """Cancel order via execution agent"""
-        pass
+        self.execution_agent.cancel_order(req)
 
     # --------------------------------
     # Utility Methods
     # --------------------------------
+    def get_pricetick(self, strategy: StrategyTemplate, vt_symbol: str) -> Optional[float]:
+        """获取合约价格跳动"""
+        contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
+
+        if contract:
+            return contract.pricetick
+        else:
+            self.write_log(f"获取合约{vt_symbol}失败", strategy)
+            return None
+
+    def get_size(self, strategy: StrategyTemplate, vt_symbol: str) -> Optional[float]:
+        """获取合约乘数"""
+        contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
+
+        if contract:
+            return contract.size
+        else:
+            self.write_log(f"获取合约{vt_symbol}失败", strategy)
+            return None
+
+    def get_engine_type(self) -> EngineType:
+        """Get engine type"""
+        return self.engine_type
+
+    def get_tick(self, vt_symbol) -> TickData:
+        """Get tick data"""
+        return self.main_engine.get_tick(vt_symbol)
+
+    def get_bar(self, vt_symbol) -> BarData:
+        """Get bar data"""
+        return self.main_engine.get_bar(vt_symbol)
+
+    def get_all_strategy_class_names(self) -> list:
+        """获取所有加载策略类名"""
+        return list(self.classes.keys())
+
+    def get_strategy_class_parameters(self, class_name: str) -> dict:
+        """获取策略类参数"""
+        strategy_class: Type[StrategyTemplate] = self.classes[class_name]
+
+        parameters: dict = {}
+        for name in strategy_class.parameters:
+            parameters[name] = getattr(strategy_class, name)
+
+        return parameters
+
+    def get_strategy_parameters(self, strategy_name) -> dict:
+        """获取策略参数"""
+        strategy: StrategyTemplate = self.strategies[strategy_name]
+        return strategy.get_parameters()
+
     def call_strategy_func(self, strategy: StrategyTemplate, func: Callable, params: object = None):
         """Safely call strategy function"""
         try:
@@ -554,7 +538,7 @@ class BaseStrategyEngine(BaseEngine):
             msg: str = f"{strategy.strategy_name}: {msg}"
         else:
             msg: str = f"{self.engine_name}: {msg}"
-        log: LogData = LogData(msg=msg, gateway_name=APP_NAME,level=level)
+        log: LogData = LogData(msg=msg, gateway_name=APP_NAME, level=level)
         event: Event = Event(type=EVENT_PORTFOLIO_LOG, data=log)
         self.event_engine.put(event)
 
@@ -562,15 +546,3 @@ class BaseStrategyEngine(BaseEngine):
         """Send email"""
         subject: str = f"{strategy.strategy_name}" if strategy else "Portfolio Strategy Engine"
         self.main_engine.send_email(subject, msg)
-
-    def get_engine_type(self) -> EngineType:
-        """Get engine type"""
-        return self.engine_type
-
-    def get_tick(self, vt_symbol) -> TickData:
-        """Get tick data"""
-        return self.main_engine.get_tick(vt_symbol)
-
-    def get_bar(self, vt_symbol) -> BarData:
-        """Get bar data"""
-        return self.main_engine.get_bar(vt_symbol)

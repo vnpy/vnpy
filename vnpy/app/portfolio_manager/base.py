@@ -177,7 +177,7 @@ class ContractResult:
         self.trading_pnl = long_pnl + short_pnl
 
         # Calculate holding PnL using overnight positions (open_pos) 
-        self.holding_pnl = (last_price - tick.pre_close) * self.open_pos * size
+        self.holding_pnl = (last_price - tick.open_price) * self.open_pos * size
         self.total_pnl = self.holding_pnl + self.trading_pnl
 
     def get_data(self) -> dict:
