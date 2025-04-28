@@ -41,7 +41,7 @@ from vnpy.trader.event import (
     EVENT_FACTOR
 )
 from vnpy.trader.constant import EngineType
-from vnpy.trader.utility import load_json, save_json, get_file_path
+from vnpy.trader.utility import load_json, save_json, get_file_path, virtual
 from vnpy.trader.database import BaseDatabase, get_database
 from vnpy.trader.datafeed import BaseDatafeed, get_datafeed
 
