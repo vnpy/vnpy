@@ -18,11 +18,10 @@ Core Responsibilities:
 
 import importlib
 import traceback
-import os
 import sys
 import glob
-from typing import Type, Callable, Dict, List, Optional, Any, Tuple, Set, Union
-from datetime import datetime, timezone, date
+from typing import Type, Callable, Dict, List, Optional, Any, Tuple, Union
+from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor
 from logging import INFO, ERROR, DEBUG, WARNING # Standard logging levels
 from pathlib import Path
@@ -33,11 +32,11 @@ from vnpy.event import Event, EventEngine
 from vnpy.strategy.base import EVENT_PORTFOLIO_STRATEGY
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
-    OrderRequest, SubscribeRequest, CancelRequest,
-    LogData, TickData, OrderData, TradeData, BarData, ContractData
+    OrderRequest, CancelRequest,
+    TickData, OrderData, BarData, ContractData
 )
 from vnpy.trader.event import (
-    EVENT_ORDER, EVENT_TRADE, EVENT_CONTRACT, EVENT_TIMER, EVENT_LOG,
+    EVENT_ORDER, EVENT_TRADE, EVENT_LOG,
     EVENT_FACTOR
 )
 from vnpy.trader.constant import EngineType
