@@ -18,10 +18,11 @@ Core Responsibilities:
 
 import importlib
 import traceback
+import os
 import sys
 import glob
-from typing import Type, Callable, Dict, List, Optional, Any, Tuple, Union
-from datetime import datetime, timezone
+from typing import Type, Callable, Dict, List, Optional, Any, Tuple, Set, Union
+from datetime import datetime, timezone, date
 from concurrent.futures import ThreadPoolExecutor
 from logging import INFO, ERROR, DEBUG, WARNING # Standard logging levels
 from pathlib import Path
@@ -32,11 +33,11 @@ from vnpy.event import Event, EventEngine
 from vnpy.strategy.base import EVENT_PORTFOLIO_STRATEGY
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
-    OrderRequest, CancelRequest,
-    TickData, OrderData, BarData, ContractData
+    OrderRequest, SubscribeRequest, CancelRequest,
+    LogData, TickData, OrderData, TradeData, BarData, ContractData
 )
 from vnpy.trader.event import (
-    EVENT_ORDER, EVENT_TRADE, EVENT_LOG,
+    EVENT_ORDER, EVENT_TRADE, EVENT_CONTRACT, EVENT_TIMER, EVENT_LOG,
     EVENT_FACTOR
 )
 from vnpy.trader.constant import EngineType
@@ -45,16 +46,12 @@ from vnpy.trader.database import BaseDatabase, get_database
 from vnpy.trader.datafeed import BaseDatafeed, get_datafeed
 
 # --- Strategy & Portfolio Specific Imports ---
-# Attempt to import dependencies, provide fallbacks or clear errors
+    # Assumes portfolio_manager is accessible (e.g., sibling directory or installed)
 from vnpy.app.portfolio_manager.engine import PortfolioEngine
 PORTFOLIO_APP_NAME = PortfolioEngine.APP_NAME
 
-
 from vnpy.strategy.execution_agent import ExecutionAgent
 
-
-
-# Import the base StrategyTemplate
 from vnpy.strategy.template import StrategyTemplate
 
 # --- Constants ---
@@ -98,7 +95,6 @@ class BaseStrategyEngine(BaseEngine):
         super().__init__(main_engine, event_engine, engine_name=engine_name)
 
         # --- Load Configuration from MainEngine Settings ---
-        # Allow overriding defaults via vnpy's global settings if available
         engine_settings = main_engine.get_settings(f"{engine_name}.") # Prefix for engine-specific settings
         strategies_dir = engine_settings.get("strategies_dir", DEFAULT_STRATEGIES_DIR)
         self.execution_gateway_name = engine_settings.get("execution_gateway", DEFAULT_EXECUTION_GATEWAY)
@@ -137,7 +133,6 @@ class BaseStrategyEngine(BaseEngine):
         """Initialize the ExecutionAgent."""
         self.write_log(f"Initializing ExecutionAgent for gateway: {self.execution_gateway_name}", level=INFO)
         try:
-            # Ensure ExecutionAgent class is valid before instantiation
             if not callable(ExecutionAgent) or ExecutionAgent.__name__ == 'object': # Check if it's the dummy
                 raise ImportError("ExecutionAgent class is not valid or not imported.")
             agent = ExecutionAgent(
@@ -149,7 +144,6 @@ class BaseStrategyEngine(BaseEngine):
         except Exception as e:
             self.write_log(f"FATAL: Failed to initialize ExecutionAgent: {e}\n{traceback.format_exc()}", level=ERROR)
             print(f"FATAL ERROR in {self.engine_name}: ExecutionAgent failed. Order functionality disabled.")
-            # Return a non-functional dummy to prevent crashes on attribute access
             class DummyExecutionAgent:
                 def send_order(self, req: OrderRequest, lock: bool, net: bool) -> List[str]: self.log_error(req); return []
                 def cancel_order(self, req: Union[CancelRequest, OrderData]) -> None: self.log_error(req)
@@ -190,7 +184,6 @@ class BaseStrategyEngine(BaseEngine):
                            f"Portfolio Management: {'ENABLED' if self.portfolio_engine else 'DISABLED'}", level=INFO)
         except Exception as e:
             self.write_log(f"CRITICAL ERROR during engine initialization: {e}\n{traceback.format_exc()}", level=ERROR)
-            # Depending on severity, might want to stop the engine or raise exception
 
     def init_datafeed(self) -> None:
         """Initialize the data feed connection."""
@@ -219,18 +212,14 @@ class BaseStrategyEngine(BaseEngine):
     def close(self) -> None:
         """Cleanly shut down the engine and its components."""
         self.write_log(f"Shutting down {self.engine_name}...")
-        # 1. Stop strategies (cancels orders, calls on_stop, saves data)
         self.stop_all_strategies()
-        # 2. Close Portfolio Engine (saves its state)
         if self.portfolio_engine:
             try:
                 self.portfolio_engine.close()
                 self.write_log(f"PortfolioEngine ('{PORTFOLIO_APP_NAME}') closed.", level=INFO)
             except Exception as e:
                 self.write_log(f"Error closing PortfolioEngine: {e}\n{traceback.format_exc()}", level=ERROR)
-        # 3. Unregister events
         self.unregister_event()
-        # 4. Shut down thread pool
         self.write_log("Shutting down init executor...", level=DEBUG)
         self.init_executor.shutdown(wait=True)
         self.write_log("Init executor shut down.", level=DEBUG)
@@ -259,22 +248,19 @@ class BaseStrategyEngine(BaseEngine):
             return
 
         initial_class_count = len(self.strategy_classes)
-        # Determine module prefix based on path relative to potential package structure
         module_prefix = self.strategies_path.name
 
-        for suffix in ["py", "pyd", "so"]: # Supported file types
+        for suffix in ["py", "pyd", "so"]:
             pathname = str(self.strategies_path.joinpath(f"*.{suffix}"))
             for filepath in glob.glob(pathname):
                 module_path = Path(filepath)
                 stem = module_path.stem
-                if stem.startswith("_"): continue # Skip __init__, hidden files
+                if stem.startswith("_"): continue
 
-                # Assume module name is relative to the strategies directory parent
                 strategy_module_name = f"{module_prefix}.{stem}"
                 try:
                     self._load_strategy_class_from_module(strategy_module_name)
                 except ImportError:
-                     # Fallback: Try importing just by stem name if relative import fails
                      self.write_log(f"Relative import failed for {strategy_module_name}, trying direct import of '{stem}'...", level=DEBUG)
                      try:
                           self._load_strategy_class_from_module(stem)
@@ -309,18 +295,17 @@ class BaseStrategyEngine(BaseEngine):
                         self.write_log(f"Loaded strategy class: '{class_name}' from '{module_name}'", level=DEBUG)
             return count
         except ModuleNotFoundError:
-            # This exception is caught by the caller for fallback attempt
-            self.write_log(f"Module '{module_name}' not found.", level=DEBUG) # Log failure at debug level here
-            raise # Re-raise for caller to handle fallback
+            self.write_log(f"Module '{module_name}' not found.", level=DEBUG)
+            raise
         except Exception:
             self.write_log(f"Failed to load strategy class from module '{module_name}':\n{traceback.format_exc()}", level=ERROR)
-            return 0 # Don't re-raise other exceptions
+            return 0
 
     def load_all_strategy_settings(self) -> None:
         """Load strategy settings from the JSON configuration file."""
         self.write_log(f"Loading strategy settings from: {self.setting_filename}", level=INFO)
         filepath = get_file_path(self.setting_filename)
-        loaded_settings = load_json(filepath) # Handles file not found/errors -> {}
+        loaded_settings = load_json(filepath)
 
         if not isinstance(loaded_settings, dict):
             self.write_log(f"Invalid settings file format in '{filepath}': Expected a dictionary, got {type(loaded_settings)}. Ignoring.", level=ERROR)
@@ -339,23 +324,19 @@ class BaseStrategyEngine(BaseEngine):
             if not self._validate_setting_entry(strategy_name, setting):
                 invalid_settings_names.append(strategy_name)
                 continue
-            # Extract validated settings
             class_name = setting["class_name"]
             vt_symbols = setting["vt_symbols"]
-            strategy_params = setting["setting"] # Parameters for the strategy class init
+            strategy_params = setting["setting"]
 
             if self.add_strategy(class_name, strategy_name, vt_symbols, strategy_params):
                 created_count += 1
             else:
-                invalid_settings_names.append(strategy_name) # Add failed
+                invalid_settings_names.append(strategy_name)
 
-        # Clean up invalid settings from the runtime dictionary
         if invalid_settings_names:
             for name in invalid_settings_names:
                 self.strategy_settings.pop(name, None)
             self.write_log(f"Removed {len(invalid_settings_names)} invalid or failed strategy settings from runtime config.", level=WARNING)
-            # Optionally save the cleaned settings file
-            # self.save_all_strategy_settings()
 
         self.write_log(f"Finished creating strategy instances. Successful: {created_count}", level=INFO)
 
@@ -403,134 +384,459 @@ class BaseStrategyEngine(BaseEngine):
         """Create the dictionary representation of a strategy's settings for saving."""
         if not hasattr(strategy, 'get_parameters') or not callable(strategy.get_parameters):
              raise AttributeError(f"Strategy '{strategy.strategy_name}' missing 'get_parameters' method.")
-        # Use get_parameters which should handle serialization of configs etc.
         strategy_params = strategy.get_parameters()
-        # Ensure vt_symbols and class_name are included at the top level
-        strategy_params['vt_symbols'] = strategy.vt_symbols # Use current symbols
+        strategy_params['vt_symbols'] = strategy.vt_symbols
         strategy_params['class_name'] = strategy.__class__.__name__
-        # Re-structure to match the expected load format {class_name, vt_symbols, setting:{...}}
         setting_dict = {
             "class_name": strategy_params.pop('class_name'),
             "vt_symbols": strategy_params.pop('vt_symbols'),
-            "setting": strategy_params # Remaining items are the strategy-specific params
+            "setting": strategy_params
         }
         return setting_dict
 
-    # --- (Keep update_strategy_setting_cache and remove_strategy_setting_cache as before) ---
     def update_strategy_setting_cache(self, strategy_name: str) -> None:
         """Update the internal settings cache (self.strategy_settings) for a single strategy."""
-        # ... (implementation remains the same as v3) ...
+        if strategy_name not in self.strategies:
+            self.write_log(f"Cannot update settings cache: Strategy '{strategy_name}' not found.", level=ERROR)
+            return
+        strategy = self.strategies[strategy_name]
+        try:
+             self.strategy_settings[strategy_name] = self._get_strategy_setting_dict(strategy)
+             self.write_log(f"Updated internal settings cache for strategy: {strategy_name}", level=DEBUG)
+        except Exception as e:
+             self.write_log(f"Error updating settings cache for strategy '{strategy_name}': {e}", level=ERROR, strategy=strategy)
 
     def remove_strategy_setting_cache(self, strategy_name: str) -> None:
         """Remove a strategy's setting from the internal cache. Does NOT save to file."""
-        # ... (implementation remains the same as v3) ...
+        if strategy_name in self.strategy_settings:
+            if self.strategy_settings.pop(strategy_name, None):
+                self.write_log(f"Removed setting for strategy '{strategy_name}' from internal cache.", level=DEBUG)
 
     # --------------------------------
     # Strategy Runtime Data Management
     # --------------------------------
-    # --- (load_all_strategy_data, _load_single_strategy_data, save_strategy_data, save_all_strategy_data remain the same as v3) ---
     @virtual
     def load_all_strategy_data(self) -> None:
         """Load runtime data for all strategy instances that implement `load_data`."""
-        # ... (implementation remains the same as v3) ...
+        self.write_log("Loading strategy runtime data...", level=INFO)
+        loaded_count = 0
+        for strategy_name in list(self.strategies.keys()):
+             if strategy_name in self.strategies:
+                 strategy = self.strategies[strategy_name]
+                 if self._load_single_strategy_data(strategy):
+                     loaded_count += 1
+        self.write_log(f"Finished loading runtime data. Loaded for {loaded_count} strategies.", level=INFO)
 
     def _load_single_strategy_data(self, strategy: StrategyTemplate) -> bool:
         """Load runtime data for a single strategy instance if supported."""
-        # ... (implementation remains the same as v3, using STRATEGY_DATA_FILENAME_TPL) ...
+        if not (hasattr(strategy, 'load_data') and callable(strategy.load_data)):
+            return False
+        strategy_name = strategy.strategy_name
+        data_filename = STRATEGY_DATA_FILENAME_TPL.format(strategy_name)
+        filepath = get_file_path(data_filename)
+        if not filepath.exists():
+            self.write_log(f"No runtime data file found for strategy: {strategy_name} at {filepath}", level=DEBUG, strategy=strategy)
+            return False
+        try:
+            strategy_data = load_json(filepath)
+            if strategy_data:
+                self.write_log(f"Attempting to load runtime data into strategy: {strategy_name}", level=DEBUG, strategy=strategy)
+                strategy.load_data(strategy_data)
+                self.write_log(f"Successfully loaded runtime data for strategy: {strategy_name}", level=INFO, strategy=strategy)
+                return True
+            else:
+                self.write_log(f"Runtime data file for strategy {strategy_name} is empty or invalid JSON at {filepath}", level=WARNING, strategy=strategy)
+                return False
+        except Exception:
+            self.write_log(f"Error occurred within {strategy_name}.load_data() method:\n{traceback.format_exc()}", level=ERROR, strategy=strategy)
+            return False
 
     @virtual
     def save_strategy_data(self, strategy_name: str) -> bool:
         """Save runtime data for a specific strategy instance if supported."""
-        # ... (implementation remains the same as v3, using STRATEGY_DATA_FILENAME_TPL) ...
+        if strategy_name not in self.strategies:
+            self.write_log(f"Cannot save data: Strategy '{strategy_name}' not found.", level=ERROR)
+            return False
+        strategy = self.strategies[strategy_name]
+        if not (hasattr(strategy, 'get_data') and callable(strategy.get_data)):
+            self.write_log(f"Strategy '{strategy_name}' does not implement get_data(). Cannot save runtime data.", level=DEBUG, strategy=strategy)
+            return False
+        data_filename = STRATEGY_DATA_FILENAME_TPL.format(strategy_name)
+        filepath = get_file_path(data_filename)
+        try:
+            strategy_data = strategy.get_data()
+            if not isinstance(strategy_data, dict):
+                 self.write_log(f"Strategy '{strategy_name}' get_data() did not return a dictionary (returned {type(strategy_data)}). Cannot save.", level=WARNING, strategy=strategy)
+                 return False
+            self.write_log(f"Saving runtime data for strategy: {strategy_name} to {filepath}", level=DEBUG, strategy=strategy)
+            if save_json(filepath, strategy_data):
+                return True
+            else:
+                self.write_log(f"Failed to save runtime data for strategy {strategy_name} (save_json returned False)", level=ERROR, strategy=strategy)
+                return False
+        except Exception:
+            self.write_log(f"Error occurred within {strategy_name}.get_data() method:\n{traceback.format_exc()}", level=ERROR, strategy=strategy)
+            return False
 
     def save_all_strategy_data(self) -> None:
         """Save runtime data for all active strategies that support it."""
-        # ... (implementation remains the same as v3) ...
-
+        self.write_log("Saving runtime data for all strategies...", level=DEBUG)
+        saved_count = 0
+        for strategy_name in list(self.strategies.keys()):
+            if strategy_name in self.strategies:
+                if self.save_strategy_data(strategy_name):
+                    saved_count += 1
+        self.write_log(f"Finished saving runtime data. Saved for {saved_count} strategies.", level=INFO)
 
     # --------------------------------
     # Strategy Instance Management (Add, Edit, Remove)
     # --------------------------------
-    # --- (add_strategy, edit_strategy, remove_strategy remain largely the same as v3, ensure consistency) ---
     def add_strategy(self, class_name: str, strategy_name: str, vt_symbols: List[str], setting: dict) -> bool:
         """Create, validate, and add a new strategy instance."""
-        # ... (implementation remains the same as v3) ...
+        if not isinstance(strategy_name, str) or not strategy_name:
+             self.write_log("Add failed: Strategy name must be a non-empty string.", level=ERROR)
+             return False
+        if strategy_name in self.strategies:
+            self.write_log(f"Add failed: Strategy name '{strategy_name}' already exists.", level=ERROR)
+            return False
+        strategy_class = self.strategy_classes.get(class_name)
+        if not strategy_class:
+            self.write_log(f"Add failed for '{strategy_name}': Strategy class '{class_name}' not found.", level=ERROR)
+            return False
+        if not isinstance(vt_symbols, list):
+            self.write_log(f"Add failed for '{strategy_name}': vt_symbols must be a list.", level=ERROR)
+            return False
+        if not isinstance(setting, dict):
+            self.write_log(f"Add failed for '{strategy_name}': setting (parameters) must be a dictionary.", level=ERROR)
+            return False
+        try:
+            self.write_log(f"Instantiating strategy '{strategy_name}' from class '{class_name}'...", level=DEBUG)
+            strategy = strategy_class(self, strategy_name, vt_symbols, setting)
+            if not hasattr(strategy, 'get_parameters') or not callable(strategy.get_parameters):
+                 raise TypeError("Instantiated strategy object missing required 'get_parameters' method.")
+        except Exception:
+            self.write_log(f"Failed to instantiate or validate strategy '{strategy_name}' from class '{class_name}':\n{traceback.format_exc()}", level=ERROR)
+            return False
+        self.strategies[strategy_name] = strategy
+        self.update_strategy_setting_cache(strategy_name)
+        self.write_log(f"Strategy '{strategy_name}' (Class: '{class_name}') added successfully.", level=INFO, strategy=strategy)
+        self.put_strategy_update_event(strategy)
+        return True
 
     def edit_strategy(self, strategy_name: str, setting: dict) -> bool:
         """Update parameters of an existing, stopped strategy instance. Saves settings."""
-        # ... (implementation remains the same as v3) ...
+        if strategy_name not in self.strategies:
+            self.write_log(f"Edit failed: Strategy '{strategy_name}' not found.", level=ERROR)
+            return False
+        strategy = self.strategies[strategy_name]
+        if strategy.trading:
+            self.write_log(f"Edit failed: Strategy '{strategy_name}' is currently running. Stop it before editing.", level=WARNING, strategy=strategy)
+            return False
+        if not isinstance(setting, dict):
+            self.write_log(f"Edit failed for '{strategy_name}': New setting must be a dictionary.", level=ERROR)
+            return False
+        if not (hasattr(strategy, 'update_setting') and callable(strategy.update_setting)):
+            self.write_log(f"Edit failed: Strategy class '{strategy.__class__.__name__}' does not implement 'update_setting'.", level=ERROR, strategy=strategy)
+            return False
+        try:
+            self.write_log(f"Applying parameter updates to strategy '{strategy_name}'...", level=DEBUG, strategy=strategy)
+            strategy.update_setting(setting)
+            self.update_strategy_setting_cache(strategy_name)
+            self.save_all_strategy_settings()
+            self.write_log(f"Strategy '{strategy_name}' parameters updated and settings saved. Re-initialize the strategy to use new parameters.", level=INFO, strategy=strategy)
+            self.put_strategy_update_event(strategy)
+            return True
+        except Exception:
+            self.write_log(f"Error applying settings update to strategy '{strategy_name}':\n{traceback.format_exc()}", level=ERROR, strategy=strategy)
+            return False
 
     def remove_strategy(self, strategy_name: str, remove_data_file: bool = False) -> bool:
         """Remove a stopped strategy instance. Saves settings. Optionally removes data."""
-        # ... (implementation remains the same as v3) ...
-
+        if strategy_name not in self.strategies:
+            self.write_log(f"Remove failed: Strategy '{strategy_name}' not found.", level=WARNING)
+            return False
+        strategy = self.strategies[strategy_name]
+        if strategy.trading:
+            self.write_log(f"Remove failed: Strategy '{strategy_name}' is currently running. Stop it first.", level=ERROR, strategy=strategy)
+            return False
+        self.write_log(f"Removing strategy '{strategy_name}'...", level=INFO, strategy=strategy)
+        if hasattr(strategy, 'on_stop') and callable(strategy.on_stop):
+            self.write_log(f"Ensuring on_stop is called for '{strategy_name}' during removal.", level=DEBUG, strategy=strategy)
+            self.call_strategy_func(strategy, strategy.on_stop)
+        removed_strategy = self.strategies.pop(strategy_name, None)
+        if removed_strategy:
+            self.remove_strategy_setting_cache(strategy_name)
+            self.save_all_strategy_settings()
+            if remove_data_file:
+                data_filename = STRATEGY_DATA_FILENAME_TPL.format(strategy_name)
+                filepath = get_file_path(data_filename)
+                try:
+                    if filepath.exists():
+                        os.remove(filepath)
+                        self.write_log(f"Removed runtime data file: {filepath}", level=INFO)
+                except OSError as e:
+                    self.write_log(f"Error removing runtime data file {filepath}: {e}", level=WARNING)
+            self.put_strategy_update_event(removed_strategy, removed=True)
+            self.write_log(f"Strategy '{strategy_name}' removed successfully.", level=INFO)
+            return True
+        else:
+            self.write_log(f"Internal error during removal of strategy '{strategy_name}'.", level=ERROR)
+            return False
 
     # --------------------------------
     # Strategy Lifecycle Control (Init, Start, Stop)
     # --------------------------------
-    # --- (init_strategy, _init_strategy_thread, _subscribe_strategy_data, _unsubscribe_strategy_data, start_strategy, stop_strategy, _cancel_strategy_orders, init_all_strategies, start_all_strategies, stop_all_strategies remain largely the same as v3) ---
     def init_strategy(self, strategy_name: str) -> None:
         """Asynchronously initialize a strategy instance."""
-        # ... (implementation remains the same as v3) ...
+        if strategy_name not in self.strategies:
+            self.write_log(f"Init request ignored: Strategy '{strategy_name}' not found.", level=ERROR)
+            return
+        strategy = self.strategies[strategy_name]
+        if strategy.inited:
+            self.write_log(f"Init request ignored: Strategy '{strategy_name}' is already initialized.", level=DEBUG, strategy=strategy)
+            return
+        self.write_log(f"Queueing initialization for strategy: {strategy_name}", level=INFO, strategy=strategy)
+        self.init_executor.submit(self._init_strategy_thread, strategy_name)
 
     def _init_strategy_thread(self, strategy_name: str) -> None:
         """[Internal] Worker thread function for initializing a single strategy."""
-        # ... (implementation remains the same as v3) ...
+        if strategy_name not in self.strategies:
+            self.write_log(f"Init aborted: Strategy '{strategy_name}' removed before initialization started.", level=WARNING)
+            return
+        strategy = self.strategies[strategy_name]
+        if strategy.inited: # Double check within thread
+            self.write_log(f"Init aborted: Strategy '{strategy_name}' was already initialized by another thread.", level=DEBUG, strategy=strategy)
+            return
+        self.write_log(f"Starting initialization process for: {strategy_name}", level=INFO, strategy=strategy)
+        init_success = False
+        try:
+            self._load_single_strategy_data(strategy)
+            if not self._subscribe_strategy_data(strategy):
+                raise RuntimeError("Market data subscription failed.")
+            if hasattr(strategy, 'on_init') and callable(strategy.on_init):
+                self.write_log(f"Calling {strategy_name}.on_init()...", level=DEBUG, strategy=strategy)
+                self.call_strategy_func(strategy, strategy.on_init)
+                if not strategy.inited:
+                     raise RuntimeError("Strategy on_init logic failed or did not set 'inited' flag.")
+            else:
+                 strategy.inited = True
+                 self.write_log(f"Strategy '{strategy_name}' has no on_init method, marked as initialized after subscriptions.", level=DEBUG, strategy=strategy)
+            init_success = True
+            self.write_log(f"Strategy '{strategy_name}' initialized successfully.", level=INFO, strategy=strategy)
+        except Exception as e:
+             strategy.inited = False
+             self.write_log(f"Initialization failed for strategy '{strategy_name}': {e}", level=ERROR, strategy=strategy)
+             self._unsubscribe_strategy_data(strategy)
+        finally:
+             self.put_strategy_update_event(strategy)
 
     def _subscribe_strategy_data(self, strategy: StrategyTemplate) -> bool:
         """[Internal] Subscribe to market data required by the strategy."""
-        # ... (implementation remains the same as v3) ...
+        self.write_log(f"Subscribing market data for '{strategy.strategy_name}': {strategy.vt_symbols}", level=DEBUG, strategy=strategy)
+        all_subs_successful = True
+        subscribed_count = 0
+        if not strategy.vt_symbols:
+             self.write_log(f"No vt_symbols defined for strategy '{strategy.strategy_name}'. Skipping subscription.", level=DEBUG, strategy=strategy)
+             return True
+        for vt_symbol in strategy.vt_symbols:
+            contract = self.get_contract(vt_symbol)
+            if not contract:
+                self.write_log(f"Subscription failed for {vt_symbol}: Contract details not found.", level=ERROR, strategy=strategy)
+                all_subs_successful = False; continue
+            gateway_name = contract.gateway_name
+            if not gateway_name:
+                 self.write_log(f"Subscription failed for {vt_symbol}: Contract has no associated gateway name.", level=ERROR, strategy=strategy)
+                 all_subs_successful = False; continue
+            req = SubscribeRequest(symbol=contract.symbol, exchange=contract.exchange)
+            try:
+                self.write_log(f"Sending subscription request: {req} via gateway '{gateway_name}'", level=DEBUG, strategy=strategy)
+                self.main_engine.subscribe(req, gateway_name)
+                subscribed_count += 1
+            except Exception as e:
+                self.write_log(f"Subscription request failed for {vt_symbol} on gateway {gateway_name}: {e}", level=ERROR, strategy=strategy)
+                all_subs_successful = False
+        if subscribed_count > 0:
+             self.write_log(f"Sent subscription requests for {subscribed_count}/{len(strategy.vt_symbols)} symbols for '{strategy.strategy_name}'.", level=INFO, strategy=strategy)
+        if not all_subs_successful:
+             self.write_log(f"One or more market data subscriptions failed for '{strategy.strategy_name}'. Check logs.", level=WARNING, strategy=strategy)
+        return all_subs_successful
 
     def _unsubscribe_strategy_data(self, strategy: StrategyTemplate) -> None:
         """[Internal] Placeholder for unsubscribing market data for a strategy."""
-        # ... (implementation remains the same as v3) ...
+        self.write_log(f"Note: Unsubscribing data for '{strategy.strategy_name}' relies on gateway behavior or manual intervention.", level=DEBUG)
+        pass
 
     @virtual
     def start_strategy(self, strategy_name: str) -> None:
         """Start trading for an initialized strategy."""
-        # ... (implementation remains the same as v3) ...
+        if strategy_name not in self.strategies:
+            self.write_log(f"Start failed: Strategy '{strategy_name}' not found.", level=ERROR); return
+        strategy = self.strategies[strategy_name]
+        if not strategy.inited:
+            self.write_log(f"Start failed: Strategy '{strategy_name}' must be initialized first.", level=WARNING, strategy=strategy); return
+        if strategy.trading:
+            self.write_log(f"Start ignored: Strategy '{strategy_name}' is already trading.", level=DEBUG, strategy=strategy); return
+        self.write_log(f"Starting strategy: {strategy_name}", level=INFO, strategy=strategy)
+        start_success = False
+        try:
+            if hasattr(strategy, 'on_start') and callable(strategy.on_start):
+                self.write_log(f"Calling {strategy_name}.on_start()...", level=DEBUG, strategy=strategy)
+                self.call_strategy_func(strategy, strategy.on_start)
+                if strategy.trading: start_success = True
+            else:
+                strategy.trading = True; start_success = True
+                self.write_log(f"Strategy '{strategy_name}' has no on_start method, marked as trading.", level=DEBUG, strategy=strategy)
+            if start_success:
+                self.write_log(f"Strategy '{strategy_name}' started successfully.", level=INFO, strategy=strategy)
+            else:
+                self.write_log(f"Strategy '{strategy_name}' failed to start (check logs for errors in on_start).", level=WARNING, strategy=strategy)
+        except Exception as e:
+             strategy.trading = False
+             self.write_log(f"Unexpected error during start process for '{strategy_name}': {e}", level=ERROR, strategy=strategy)
+        finally:
+             self.put_strategy_update_event(strategy)
 
     @virtual
     def stop_strategy(self, strategy_name: str) -> None:
         """Stop trading for a strategy."""
-        # ... (implementation remains the same as v3) ...
+        if strategy_name not in self.strategies:
+            self.write_log(f"Stop failed: Strategy '{strategy_name}' not found.", level=ERROR); return
+        strategy = self.strategies[strategy_name]
+        if not strategy.trading:
+            self.write_log(f"Stop ignored: Strategy '{strategy_name}' is already stopped.", level=DEBUG, strategy=strategy); return
+        self.write_log(f"Stopping strategy: {strategy_name}...", level=INFO, strategy=strategy)
+        strategy.trading = False
+        try:
+            self._cancel_strategy_orders(strategy)
+            if hasattr(strategy, 'on_stop') and callable(strategy.on_stop):
+                self.write_log(f"Calling {strategy_name}.on_stop()...", level=DEBUG, strategy=strategy)
+                self.call_strategy_func(strategy, strategy.on_stop)
+            self.save_strategy_data(strategy_name)
+            self.write_log(f"Strategy '{strategy_name}' stopped successfully.", level=INFO, strategy=strategy)
+        except Exception as e:
+             self.write_log(f"Error during stop process for '{strategy_name}': {e}\n{traceback.format_exc()}", level=ERROR, strategy=strategy)
+        finally:
+            self.put_strategy_update_event(strategy)
 
     def _cancel_strategy_orders(self, strategy: StrategyTemplate) -> None:
         """[Internal] Cancel all active orders reported by a strategy."""
-        # ... (implementation remains the same as v3) ...
+        strategy_name = strategy.strategy_name
+        self.write_log(f"Cancelling active orders for strategy '{strategy_name}'...", level=DEBUG, strategy=strategy)
+        if not (hasattr(strategy, 'get_active_order_ids') and callable(strategy.get_active_order_ids)):
+            self.write_log(f"Cannot cancel orders: Strategy '{strategy_name}' does not implement get_active_order_ids().", level=WARNING, strategy=strategy); return
+        try:
+            active_order_ids: List[str] = strategy.get_active_order_ids()
+            if not isinstance(active_order_ids, list):
+                 self.write_log(f"Strategy '{strategy_name}' get_active_order_ids() did not return a list. Cannot cancel orders.", level=WARNING, strategy=strategy); return
+        except Exception:
+            self.write_log(f"Error calling get_active_order_ids() for strategy '{strategy_name}':\n{traceback.format_exc()}", level=ERROR, strategy=strategy); return
+        if not active_order_ids:
+            self.write_log(f"No active orders reported by strategy '{strategy_name}' to cancel.", level=DEBUG, strategy=strategy); return
+        self.write_log(f"Strategy '{strategy_name}' reported {len(active_order_ids)} active order(s): {active_order_ids}. Attempting cancellation.", level=DEBUG, strategy=strategy)
+        cancelled_count = 0
+        for vt_orderid in list(active_order_ids): # Iterate over copy
+            if not isinstance(vt_orderid, str):
+                 self.write_log(f"Skipping invalid order ID from {strategy_name}: {vt_orderid}", level=WARNING, strategy=strategy); continue
+            order = self.main_engine.get_order(vt_orderid)
+            if order and order.is_active():
+                try:
+                    self.cancel_order(order) # Use engine's method which handles mode
+                    cancelled_count += 1
+                except Exception:
+                    self.write_log(f"Failed to send cancel request for order {vt_orderid} (Strategy: {strategy_name}):\n{traceback.format_exc()}", level=ERROR, strategy=strategy)
+        self.write_log(f"Sent cancel requests for {cancelled_count}/{len(active_order_ids)} active orders reported by '{strategy_name}'.", level=INFO, strategy=strategy)
 
     @virtual
     def init_all_strategies(self) -> None:
         """Initialize all strategy instances that are not already initialized."""
-        # ... (implementation remains the same as v3) ...
+        self.write_log("Initializing all strategies...", level=INFO)
+        strategy_names = list(self.strategies.keys())
+        init_queued_count = 0
+        for name in strategy_names:
+            if name in self.strategies and not self.strategies[name].inited:
+                self.init_strategy(name)
+                init_queued_count += 1
+        self.write_log(f"Queued initialization for {init_queued_count} strategies.", level=INFO)
 
     @virtual
     def start_all_strategies(self) -> None:
         """Start all strategy instances that are initialized but not trading."""
-        # ... (implementation remains the same as v3) ...
+        self.write_log("Starting all initialized strategies...", level=INFO)
+        strategy_names = list(self.strategies.keys())
+        start_attempt_count = 0
+        for name in strategy_names:
+            if name in self.strategies:
+                strategy = self.strategies[name]
+                if strategy.inited and not strategy.trading:
+                    self.start_strategy(name)
+                    start_attempt_count += 1
+        self.write_log(f"Attempted to start {start_attempt_count} initialized strategies.", level=INFO)
 
     @virtual
     def stop_all_strategies(self) -> None:
         """Stop all strategy instances that are currently trading."""
-        # ... (implementation remains the same as v3) ...
-
+        self.write_log("Stopping all running strategies...", level=INFO)
+        strategy_names = list(self.strategies.keys())
+        stop_attempt_count = 0
+        for name in strategy_names:
+            if name in self.strategies and self.strategies[name].trading:
+                self.stop_strategy(name)
+                stop_attempt_count += 1
+        self.write_log(f"Attempted to stop {stop_attempt_count} running strategies.", level=INFO)
+        self.save_all_strategy_data()
 
     # --------------------------------
     # Event Processing Callbacks
     # --------------------------------
-    # --- (process_order_event, process_trade_event, process_factor_event remain largely the same as v3, ensure consistency) ---
     def process_order_event(self, event: Event) -> None:
         """Process ORDER events: Forward to the relevant strategy instance."""
-        # ... (implementation remains the same as v3) ...
+        order: OrderData = event.data
+        if not isinstance(order, OrderData): return
+        reference = getattr(order, 'reference', None)
+        if not reference: return
+        strategy = self.strategies.get(reference)
+        if strategy and hasattr(strategy, 'on_order') and callable(strategy.on_order):
+            self.call_strategy_func(strategy, strategy.on_order, order)
 
     def process_trade_event(self, event: Event) -> None:
         """Process TRADE events: Forward to the relevant strategy instance."""
-        # ... (implementation remains the same as v3) ...
+        trade: TradeData = event.data
+        if not isinstance(trade, TradeData): return
+        reference = getattr(trade, 'reference', None)
+        if not reference and self.portfolio_engine:
+            reference = self.portfolio_engine.order_reference_map.get(trade.vt_orderid)
+            if reference: trade.reference = reference
+        if not reference: return
+        strategy = self.strategies.get(reference)
+        if strategy and hasattr(strategy, 'on_trade') and callable(strategy.on_trade):
+            self.call_strategy_func(strategy, strategy.on_trade, trade)
 
     def process_factor_event(self, event: Event) -> None:
         """Process FACTOR events: Update cache and trigger `on_factor` for active strategies."""
-        # ... (implementation remains the same as v3) ...
+        factor_data: Any = event.data
+        if not isinstance(factor_data, dict):
+            self.write_log(f"Ignoring factor event: Data is not a dictionary (Type: {type(factor_data)}).", level=WARNING); return
+        if not factor_data:
+            self.write_log("Ignoring factor event: Data dictionary is empty.", level=DEBUG); return
 
+        self.write_log(f"Processing factor update: {list(factor_data.keys())}", level=DEBUG)
+        self.latest_factors.update(factor_data)
+        self.factor_update_time = self.get_current_datetime() # Use engine time
+
+        active_strategies = [s for s in list(self.strategies.values()) if s.inited and s.trading]
+        for strategy in active_strategies:
+            if hasattr(strategy, 'on_factor') and callable(strategy.on_factor):
+                order_reqs: Optional[List[OrderRequest]] = self.call_strategy_func(
+                    strategy, strategy.on_factor, self.latest_factors
+                )
+                if isinstance(order_reqs, list):
+                    for req in order_reqs:
+                        if isinstance(req, OrderRequest):
+                            self.send_order(strategy_name=strategy.strategy_name, req=req)
+                        else:
+                            self.write_log(f"Strategy '{strategy.strategy_name}' returned invalid item in on_factor list: {type(req)}", level=WARNING, strategy=strategy)
+                elif order_reqs is not None:
+                    self.write_log(f"Strategy '{strategy.strategy_name}' on_factor returned unexpected type: {type(order_reqs)}", level=WARNING, strategy=strategy)
 
     # --------------------------------
     # Order Submission and Cancellation (Via ExecutionAgent / Backtester)
@@ -547,31 +853,26 @@ class BaseStrategyEngine(BaseEngine):
         Send an order request, handling live vs. backtesting modes.
         Sets the order reference to the strategy name.
         """
-        strategy = self.strategies.get(strategy_name) # For logging context
-        req.reference = strategy_name # Ensure reference is set
+        strategy = self.strategies.get(strategy_name)
+        req.reference = strategy_name
 
         log_msg = (f"Sending order: Ref={req.reference}, {req.vt_symbol} "
                    f"{req.direction} {req.type} {req.volume}@{req.price}")
         self.write_log(log_msg, level=INFO, strategy=strategy)
 
-        if not all([req.vt_symbol, req.direction, req.type, req.volume is not None]): # Check volume is not None
+        if not all([req.vt_symbol, req.direction, req.type, req.volume is not None]):
              self.write_log(f"Order rejected: Missing required fields in OrderRequest: {req}", level=ERROR, strategy=strategy)
              return []
 
-        # --- Mode-Specific Handling ---
         if self.get_engine_type() == EngineType.BACKTESTING:
             try:
-                # Delegate to main_engine's backtesting send_order
-                # Assumes main_engine has send_order for backtesting
                 vt_orderid = self.main_engine.send_order(req, gateway_name="BACKTESTING")
                 self.write_log(f"Order submitted to Backtester. VT OrderID: {vt_orderid}", level=INFO, strategy=strategy)
                 return [vt_orderid] if vt_orderid else []
             except AttributeError:
-                 self.write_log("Backtesting Error: MainEngine does not have 'send_order' method for backtesting.", level=ERROR)
-                 return []
+                 self.write_log("Backtesting Error: MainEngine does not have 'send_order' method.", level=ERROR); return []
             except Exception:
-                 self.write_log(f"Exception during backtesting order submission:\n{traceback.format_exc()}", level=ERROR, strategy=strategy)
-                 return []
+                 self.write_log(f"Exception during backtesting order submission:\n{traceback.format_exc()}", level=ERROR, strategy=strategy); return []
         else: # Live Trading
             try:
                 vt_orderids: List[str] = self.execution_agent.send_order(req=req, lock=lock, net=net)
@@ -585,7 +886,6 @@ class BaseStrategyEngine(BaseEngine):
                 self.write_log(f"Exception during order submission via ExecutionAgent:\n{traceback.format_exc()}", level=ERROR, strategy=strategy)
                 return []
 
-
     @virtual
     def cancel_order(self, req: Union[CancelRequest, OrderData]) -> None:
         """Cancel an active order, handling live vs. backtesting modes."""
@@ -596,8 +896,7 @@ class BaseStrategyEngine(BaseEngine):
             vt_orderid_log = req.vt_orderid
             strategy_ref_log = f" (Ref: {req.reference})" if req.reference else ""
             if not req.is_active():
-                 self.write_log(f"Cancel ignored: Order {vt_orderid_log} is already inactive.", level=DEBUG)
-                 return
+                 self.write_log(f"Cancel ignored: Order {vt_orderid_log} is already inactive.", level=DEBUG); return
             try: cancel_req = req.create_cancel_request()
             except Exception: self.write_log(f"Failed to create CancelRequest from OrderData (ID: {vt_orderid_log}):\n{traceback.format_exc()}", level=ERROR); return
         elif isinstance(req, CancelRequest):
@@ -611,104 +910,186 @@ class BaseStrategyEngine(BaseEngine):
 
         self.write_log(f"Attempting cancellation for order ID: {vt_orderid_log}{strategy_ref_log}", level=INFO)
 
-        # --- Mode-Specific Handling ---
         if self.get_engine_type() == EngineType.BACKTESTING:
             try:
-                # Delegate to main_engine's backtesting cancel_order
                 self.main_engine.cancel_order(cancel_req, gateway_name="BACKTESTING")
                 self.write_log(f"Cancel request sent to Backtester for order {vt_orderid_log}.", level=INFO)
             except AttributeError:
-                 self.write_log("Backtesting Error: MainEngine does not have 'cancel_order' method for backtesting.", level=ERROR)
+                 self.write_log("Backtesting Error: MainEngine does not have 'cancel_order' method.", level=ERROR)
             except Exception:
                  self.write_log(f"Exception during backtesting order cancellation (ID: {vt_orderid_log}):\n{traceback.format_exc()}", level=ERROR)
         else: # Live Trading
             try:
                 self.execution_agent.cancel_order(cancel_req)
-                # Confirmation comes via ORDER event.
             except Exception:
                 self.write_log(f"Exception during order cancellation via ExecutionAgent (ID: {vt_orderid_log}):\n{traceback.format_exc()}", level=ERROR)
-
 
     # --------------------------------
     # Utility Methods for Strategies
     # --------------------------------
-    # --- (get_contract, get_tick, get_bar, get_pricetick, get_size, get_engine_type remain same as v3) ---
     def get_contract(self, vt_symbol: str) -> Optional[ContractData]:
         """Get contract details from MainEngine."""
-        # ... (implementation remains the same as v3) ...
+        return self.main_engine.get_contract(vt_symbol)
+
     def get_tick(self, vt_symbol: str) -> Optional[TickData]:
         """Get the latest tick data from MainEngine."""
-        # ... (implementation remains the same as v3) ...
+        return self.main_engine.get_tick(vt_symbol)
+
     def get_bar(self, vt_symbol: str) -> Optional[BarData]:
         """Get the latest bar data from MainEngine (if available)."""
-        # ... (implementation remains the same as v3) ...
+        return self.main_engine.get_bar(vt_symbol)
+
     def get_pricetick(self, strategy: StrategyTemplate, vt_symbol: str) -> Optional[float]:
         """Get the price tick (minimum price increment) for a contract."""
-        # ... (implementation remains the same as v3) ...
+        contract = self.get_contract(vt_symbol)
+        if contract:
+            return contract.pricetick
+        else:
+            self.write_log(f"Failed to get pricetick for {vt_symbol}: Contract not found.", strategy=strategy, level=WARNING)
+            return None
+
     def get_size(self, strategy: StrategyTemplate, vt_symbol: str) -> Optional[float]:
         """Get the contract size (multiplier)."""
-        # ... (implementation remains the same as v3) ...
+        contract = self.get_contract(vt_symbol)
+        if contract:
+            return contract.size
+        else:
+            self.write_log(f"Failed to get size for {vt_symbol}: Contract not found.", strategy=strategy, level=WARNING)
+            return None
+
     def get_engine_type(self) -> EngineType:
         """Return the current engine type (LIVE or BACKTESTING)."""
-        # Check if engine_type was overridden by MainEngine (common in backtesting setups)
         if hasattr(self.main_engine, "engine_type"):
              return self.main_engine.engine_type
-        return self.engine_type # Return own default if not overridden
+        return self.engine_type
 
     def get_current_datetime(self) -> datetime:
         """Get current datetime (UTC in live, backtest time in backtesting)."""
         if self.get_engine_type() == EngineType.BACKTESTING:
-             dt = getattr(self.main_engine, "datetime", None) # Standard attribute in BacktestingEngine
+             dt = getattr(self.main_engine, "datetime", None)
              if dt and isinstance(dt, datetime):
                   return dt
              else:
                   self.write_log("Backtesting time not available via main_engine.datetime. Falling back to system time.", level=ERROR)
-                  return datetime.now(timezone.utc) # Fallback, likely incorrect
+                  return datetime.now(timezone.utc)
         else:
              return datetime.now(timezone.utc)
 
     # --- Portfolio Data Accessors ---
-    # --- (get_portfolio_position, get_portfolio_entry_price, get_portfolio_pnl, get_portfolio_total_pnl remain same as v3) ---
     def get_portfolio_position(self, strategy_name: str, vt_symbol: str) -> float:
         """Get current position size for a symbol tracked by the PortfolioEngine."""
-        # ... (implementation remains the same as v3) ...
+        if not self.portfolio_engine:
+            self.write_log("Cannot get portfolio position: PortfolioEngine is disabled.", level=WARNING); return 0.0
+        contract_result = self.portfolio_engine.contract_results.get((strategy_name, vt_symbol))
+        return contract_result.last_pos if contract_result else 0.0
+
     def get_portfolio_entry_price(self, strategy_name: str, vt_symbol: str) -> float:
         """Get average entry price for the current position tracked by PortfolioEngine."""
-        # ... (implementation remains the same as v3) ...
+        if not self.portfolio_engine:
+            self.write_log("Cannot get entry price: PortfolioEngine is disabled.", level=WARNING); return 0.0
+        contract_result = self.portfolio_engine.contract_results.get((strategy_name, vt_symbol))
+        return contract_result.avg_price if contract_result else 0.0
+
     def get_portfolio_pnl(self, strategy_name: str, vt_symbol: str) -> Tuple[float, float, float]:
         """Get (Trading PnL, Holding PnL, Total PnL) tracked by PortfolioEngine."""
-        # ... (implementation remains the same as v3) ...
+        if not self.portfolio_engine:
+            self.write_log("Cannot get PnL: PortfolioEngine is disabled.", level=WARNING); return 0.0, 0.0, 0.0
+        contract_result = self.portfolio_engine.contract_results.get((strategy_name, vt_symbol))
+        if contract_result:
+            return (contract_result.trading_pnl, contract_result.holding_pnl, contract_result.total_pnl)
+        else:
+            return 0.0, 0.0, 0.0
+
     def get_portfolio_total_pnl(self, strategy_name: str) -> float:
         """Get the aggregated Total PnL for the entire strategy portfolio."""
-        # ... (implementation remains the same as v3) ...
+        if not self.portfolio_engine:
+            self.write_log("Cannot get total PnL: PortfolioEngine is disabled.", level=WARNING); return 0.0
+        portfolio_result = self.portfolio_engine.portfolio_results.get(strategy_name)
+        return portfolio_result.total_pnl if portfolio_result else 0.0
 
     # --- Strategy Information Accessors ---
-    # --- (get_all_strategy_class_names, get_strategy_class_parameters, get_strategy_parameters remain same as v3) ---
     def get_all_strategy_class_names(self) -> List[str]:
         """Return a list of names of all loaded strategy classes."""
-        # ... (implementation remains the same as v3) ...
+        return list(self.strategy_classes.keys())
+
     def get_strategy_class_parameters(self, class_name: str) -> Optional[dict]:
         """Get the default parameters defined in a strategy class."""
-        # ... (implementation remains the same as v3) ...
+        strategy_class = self.strategy_classes.get(class_name)
+        if not strategy_class:
+            self.write_log(f"Cannot get class parameters: Strategy class '{class_name}' not found.", level=ERROR); return None
+        params = {}
+        param_names = getattr(strategy_class, "parameters", [])
+        for name in param_names:
+            params[name] = getattr(strategy_class, name, None)
+        return params
+
     def get_strategy_parameters(self, strategy_name: str) -> Optional[dict]:
         """Get the current parameters of a running strategy instance."""
-        # ... (implementation remains the same as v3) ...
+        strategy = self.strategies.get(strategy_name)
+        if not strategy:
+            self.write_log(f"Cannot get parameters: Strategy instance '{strategy_name}' not found.", level=ERROR); return None
+        if hasattr(strategy, 'get_parameters') and callable(strategy.get_parameters):
+             return strategy.get_parameters()
+        else:
+             self.write_log(f"Strategy '{strategy_name}' does not implement get_parameters().", level=WARNING, strategy=strategy)
+             return getattr(strategy, 'setting', None)
 
     # --------------------------------
     # Internal Helpers
     # --------------------------------
-    # --- (call_strategy_func, put_strategy_update_event, write_log, send_email remain same as v3) ---
     def call_strategy_func(self, strategy: StrategyTemplate, func: Callable, params: Optional[Any] = None) -> Any:
         """Safely execute a method on a strategy instance, handling exceptions."""
-        # ... (implementation remains the same as v3) ...
+        func_name = getattr(func, '__name__', 'unknown_function')
+        try:
+            if params is not None:
+                return func(params)
+            else:
+                return func()
+        except Exception:
+            error_msg = (f"Strategy '{strategy.strategy_name}' encountered an exception in '{func_name}'. "
+                         f"Stopping strategy to prevent further errors.\n{traceback.format_exc()}")
+            self.write_log(error_msg, strategy=strategy, level=ERROR)
+            if strategy.trading:
+                 strategy.trading = False
+                 self.put_strategy_update_event(strategy)
+            return None
+
     def put_strategy_update_event(self, strategy: StrategyTemplate, removed: bool = False) -> None:
         """Publish an event notifying listeners of a strategy state change or removal."""
-        # ... (implementation remains the same as v3) ...
+        try:
+            data: dict
+            if hasattr(strategy, 'get_data') and callable(strategy.get_data):
+                data = strategy.get_data()
+                if not isinstance(data, dict):
+                     self.write_log(f"Strategy '{strategy.strategy_name}'.get_data() did not return dict. Sending minimal update.", level=WARNING, strategy=strategy)
+                     data = {}
+            else: data = {}
+            data.update({
+                "strategy_name": strategy.strategy_name,
+                "class_name": strategy.__class__.__name__,
+                "inited": getattr(strategy, 'inited', False),
+                "trading": getattr(strategy, 'trading', False),
+                "removed": removed
+            })
+            event = Event(type=EVENT_STRATEGY_UPDATE, data=data)
+            self.event_engine.put(event)
+        except Exception as e:
+            self.write_log(f"Error preparing or putting strategy update event for '{strategy.strategy_name}': {e}", level=ERROR, strategy=strategy)
+
     @virtual
     def write_log(self, msg: str, strategy: Optional[StrategyTemplate] = None, level: int = INFO) -> None:
         """Write a log message, prefixing with source and pushing to vnpy event log."""
-        # ... (implementation remains the same as v3) ...
+        prefix = f"[{strategy.strategy_name}]" if strategy else f"[{self.engine_name}]"
+        log_entry = LogData(msg=f"{prefix} {msg}", gateway_name=self.engine_name, level=level)
+        event = Event(type=EVENT_STRATEGY_LOG, data=log_entry)
+        self.event_engine.put(event)
+
     def send_email(self, subject: str, msg: str, strategy: Optional[StrategyTemplate] = None) -> None:
         """Send an email notification through the MainEngine."""
-        # ... (implementation remains the same as v3) ...
+        full_subject = f"[{strategy.strategy_name if strategy else self.engine_name}] {subject}"
+        try:
+            self.main_engine.send_email(full_subject, msg)
+            self.write_log(f"Sent email notification: Subject: {full_subject}", level=INFO, strategy=strategy)
+        except Exception:
+            self.write_log(f"Failed to send email: Subject: {full_subject}\n{traceback.format_exc()}", level=ERROR, strategy=strategy)
 
