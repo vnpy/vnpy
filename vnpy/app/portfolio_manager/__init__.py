@@ -27,7 +27,7 @@ from typing import Type
 import importlib
 from vnpy.trader.app import BaseApp
 
-from .engine_v2 import PortfolioEngine, APP_NAME
+from .engine import PortfolioEngine, APP_NAME
 
 
 try:

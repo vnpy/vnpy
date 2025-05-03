@@ -29,12 +29,12 @@ from vnpy.trader.utility import load_json, save_json
 # Imports from the application module
 # Assuming the app structure allows this import path
 try:
-    from vnpy.app.portfolio_manager.base_v2 import (
+    from vnpy.app.portfolio_manager.base import (
         ContractResult, PortfolioResult, PortfolioStatistics,
         DATE_KEY, DATA_KEY, OPEN_POS_KEY, LAST_POS_KEY, TIMER_INTERVAL_KEY,
         TIMESTAMP_FORMAT, logger as app_logger
     )
-    from vnpy.app.portfolio_manager.engine_v2 import (
+    from vnpy.app.portfolio_manager.engine import (
         PortfolioEngine, APP_NAME,
         EVENT_PM_CONTRACT, EVENT_PM_PORTFOLIO, EVENT_PM_TRADE, EVENT_PM_STATISTICS,
         SETTING_FILENAME, DATA_FILENAME, ORDER_FILENAME, STATS_FILENAME

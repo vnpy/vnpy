@@ -34,7 +34,7 @@ class TestMACDFactor(TestCase):
                                                                    'dependencies_exchange': []}}
         )
         print(self.factor.to_dict())
-        print(self.factor.fast_period)
+        print(set(self.factor))
 
     def test_init_with_setting(self):
         self.init_with_setting()
