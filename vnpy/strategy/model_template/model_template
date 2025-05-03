@@ -1,0 +1,286 @@
+# -*- coding: utf-8 -*-
+"""
+Provides a base template specifically for strategies that use a predictive model
+(e.g., linear, polynomial, machine learning) to generate raw trading signals
+from factor data. Inherits from StrategyTemplate.
+
+Strategies inheriting from this template should implement:
+- `predict_signal`: Contains the core model prediction logic.
+- `project_signals_to_weights`: Converts the model's raw signal to target weights.
+"""
+
+from abc import abstractmethod
+from logging import DEBUG, ERROR, INFO, WARNING
+import traceback
+from typing import TYPE_CHECKING, Optional, List, Dict, Any
+import pandas as pd
+
+# --- VnTrader Imports ---
+# (Inherited functionality uses these, but no direct new imports needed here)
+
+# --- Local Imports ---
+# Import the base StrategyTemplate
+# Adjust path if necessary
+try:
+    from ..template import StrategyTemplate # Assuming strategy_template.py contains StrategyTemplate
+except ImportError:
+    print("ERROR: Could not import base StrategyTemplate. Ensure it's accessible.")
+    # Use the dummy class defined in the previous context if needed for type checking
+    class StrategyTemplate: # Dummy for type hinting if import fails
+        parameters: list = []
+        factors: set = set(); required_factors: set = set(); required_vt_symbols: set = set()
+        def __init__(self, engine: Any, strategy_name: str, vt_symbols: List[str], setting: dict): pass
+        @abstractmethod
+        def calculate(self, df: pd.DataFrame) -> pd.Series: pass
+        @abstractmethod
+        def project_signals_to_weights(self, signals: pd.Series) -> pd.Series: pass
+        # Add other necessary methods/attributes used by ModelStrategyTemplate if base fails to import
+        def write_log(self, msg: str, level: int = 20): pass # INFO=20
+
+# Type hint for the engine
+if TYPE_CHECKING:
+    from ..engine import BaseStrategyEngine
+
+
+class ModelStrategyTemplate(StrategyTemplate):
+    """
+    Abstract base class for strategies using predictive models for signal generation.
+
+    Focuses on the `predict_signal` step, leaving portfolio construction
+    (`project_signals_to_weights`) to be implemented by concrete strategies
+    that inherit from this template.
+    """
+
+    # --- Model-Specific Metadata (Add as needed) ---
+    # Example: Add model_path to parameters if loading from file
+    parameters: List[str] = StrategyTemplate.parameters + ["model_path"]
+    variables: List[str] = StrategyTemplate.variables + ["model_loaded"]
+
+    def __init__(
+        self,
+        strategy_engine: "BaseStrategyEngine",
+        strategy_name: str,
+        vt_symbols: List[str],
+        setting: dict
+    ) -> None:
+        """
+        Initialize the ModelStrategyTemplate.
+
+        Args:
+            strategy_engine: The Strategy Engine managing this strategy.
+            strategy_name: A unique name for this strategy instance.
+            vt_symbols: Initial list of vt_symbols from configuration.
+            setting: Dictionary of initial parameters from configuration.
+        """
+        # --- Model State ---
+        self.model: Optional[Any] = None # Placeholder for the loaded model object
+        self.model_loaded: bool = False
+        self.model_path: Optional[str] = None # Example parameter for model file path
+
+        # --- Initialize Base Class ---
+        # Base class __init__ handles engine linking, basic state, config objects,
+        # portfolio linking, and applies initial settings via self.update_setting.
+        super().__init__(strategy_engine, strategy_name, vt_symbols, setting)
+
+        # --- Load the Predictive Model ---
+        # Model loading should happen *after* settings are applied by base __init__
+        self._load_model()
+
+
+    # --------------------------------
+    # Model Loading (Implement or Override in Subclass)
+    # --------------------------------
+
+    def _load_model(self) -> None:
+        """
+        [Internal] Loads the predictive model.
+        This method should be implemented or overridden in subclasses based on
+        how the model is stored (e.g., file path, database, generated).
+        Sets `self.model` and `self.model_loaded`.
+        """
+        self.write_log("Attempting to load predictive model...")
+        # Example: Loading a model using self.model_path parameter
+        if self.model_path:
+            try:
+                # Replace this with actual model loading logic (e.g., joblib, pickle, tensorflow)
+                # import joblib
+                # self.model = joblib.load(self.model_path)
+                # self.model_loaded = True
+                # self.write_log(f"Model successfully loaded from: {self.model_path}")
+
+                # --- Placeholder ---
+                self.write_log(f"Placeholder: Model loading from '{self.model_path}' needs implementation.", level=WARNING)
+                # Set to True for testing even without actual loading
+                self.model = "DummyModelObject" # Replace with actual loaded model
+                self.model_loaded = True
+                # --- End Placeholder ---
+
+            except FileNotFoundError:
+                self.write_log(f"Model file not found at: {self.model_path}", level=ERROR)
+                self.model_loaded = False
+            except Exception as e:
+                self.write_log(f"Error loading model from {self.model_path}: {e}\n{traceback.format_exc()}", level=ERROR)
+                self.model_loaded = False
+        else:
+            self.write_log("No model path specified. Model not loaded.", level=WARNING)
+            self.model_loaded = False
+
+    # --------------------------------
+    # Core Logic Implementation
+    # --------------------------------
+
+    @abstractmethod
+    def predict_signal(self, df: pd.DataFrame) -> pd.Series:
+        """
+        Generate raw signals using the loaded predictive model.
+
+        Args:
+            df: Pandas DataFrame containing the prepared features (factors)
+                required by the model, indexed by vt_symbol.
+
+        Returns:
+            Pandas Series containing the raw predicted signal for each vt_symbol.
+            The nature of the signal depends on the model (e.g., probability,
+            raw score, classification). Index should be vt_symbol.
+        """
+        # Example structure (replace with actual model prediction):
+        # if not self.model_loaded or self.model is None:
+        #     self.write_log("Model not loaded, cannot predict signals.", level=ERROR)
+        #     return pd.Series(dtype=float) # Return empty Series
+        #
+        # # Ensure DataFrame columns match model's expected features
+        # required_features = [...] # Get expected features from model or config
+        # df_features = df[required_features]
+        #
+        # # Make predictions
+        # raw_predictions = self.model.predict(df_features) # Or predict_proba, etc.
+        #
+        # # Convert predictions to a Pandas Series indexed by vt_symbol
+        # signals = pd.Series(raw_predictions, index=df.index)
+        # return signals
+        pass
+
+
+    def calculate(self, df: pd.DataFrame) -> pd.Series:
+        """
+        Calculate trading signals by calling the model's prediction method.
+        This implements the abstract method from the base StrategyTemplate.
+
+        Args:
+            df: Pandas DataFrame of factor data indexed by vt_symbol.
+
+        Returns:
+            Pandas Series of raw signals indexed by vt_symbol.
+        """
+        if not self.model_loaded:
+            self.write_log("Cannot calculate signals: Model not loaded.", level=WARNING)
+            return pd.Series(dtype=float) # Return empty series if model isn't ready
+
+        if df.empty:
+            self.write_log("Cannot calculate signals: Input factor DataFrame is empty.", level=DEBUG)
+            return pd.Series(dtype=float)
+
+        # --- Feature Engineering (Optional) ---
+        # Add any necessary feature engineering steps before prediction
+        # features_df = self._prepare_features(df)
+        features_df = df # Assuming df is already the feature set for simplicity
+
+        # --- Prediction ---
+        try:
+            signals = self.predict_signal(features_df)
+            if not isinstance(signals, pd.Series):
+                 self.write_log("predict_signal did not return a Pandas Series.", level=ERROR)
+                 return pd.Series(dtype=float)
+            return signals
+        except Exception as e:
+            self.write_log(f"Error during signal prediction: {e}\n{traceback.format_exc()}", level=ERROR)
+            return pd.Series(dtype=float) # Return empty series on error
+
+
+    # Keep project_signals_to_weights abstract - to be implemented by inheriting strategy
+    @abstractmethod
+    def project_signals_to_weights(self, signals: pd.Series) -> pd.Series:
+        """
+        Convert calculated raw signals into target portfolio weights.
+        (Implementation required in the final strategy inheriting this template).
+        """
+        pass
+
+    # --------------------------------
+    # State Management Overrides (Optional)
+    # --------------------------------
+
+    def get_parameters(self) -> dict:
+        """
+        Return the current strategy parameters, including model-specific ones.
+        """
+        # Get base parameters
+        params = super().get_parameters()
+        # Add/update model-specific parameters
+        params["model_path"] = self.model_path
+        # Add other model parameters if needed
+        return params
+
+    def update_setting(self, setting: dict) -> None:
+        """
+        Update strategy parameters from a dictionary, including model path.
+        """
+        # Update base parameters first
+        super().update_setting(setting)
+
+        # Update model-specific parameters
+        if "model_path" in setting:
+            new_model_path = setting["model_path"]
+            if isinstance(new_model_path, str) or new_model_path is None:
+                 # Reload model only if path changes and strategy is not trading
+                 if new_model_path != self.model_path:
+                      self.write_log(f"Model path setting changed to: {new_model_path}", level=INFO)
+                      self.model_path = new_model_path
+                      if not self.trading:
+                           self._load_model() # Attempt to reload model if stopped
+                      else:
+                           self.write_log("Model path changed, but strategy is trading. Reload will occur on next restart/init.", level=WARNING)
+            else:
+                 self.write_log(f"Invalid type for model_path setting: {type(new_model_path)}. Expected str or None.", level=WARNING)
+
+        # Update other model-specific settings if necessary
+
+    def get_data(self) -> dict:
+        """
+        Get the current runtime state, including model status.
+        """
+        # Get base data
+        data = super().get_data()
+        # Add model status
+        data["model_loaded"] = self.model_loaded
+        data["model_path"] = self.model_path # Include current path for reference
+        # Add other model state variables if needed
+        return data
+
+    def load_data(self, data: dict) -> None:
+        """
+        Restore the strategy's runtime state, including model status.
+        Note: Does not reload the model itself here, relies on _load_model during init.
+        """
+        # Load base data
+        super().load_data(data)
+        # Restore model status (usually informational, actual loading happens in init)
+        self.model_loaded = data.get("model_loaded", False)
+        # Restore model path parameter if saved (it's also handled by update_setting)
+        # self.model_path = data.get("model_path", self.model_path)
+
+
+    # --------------------------------
+    # Lifecycle Method Overrides (Optional)
+    # --------------------------------
+    # @virtual # Uncomment if overriding
+    # def on_init(self) -> None:
+    #     """Override on_init if additional model-specific initialization is needed."""
+    #     super().on_init() # Call base class initialization
+    #     # Add model-specific init steps here
+    #     if not self.model_loaded:
+    #          self.write_log("Attempting model load during on_init...", level=INFO)
+    #          self._load_model()
+    #     # Ensure self.inited is set correctly based on overall success
+    #     self.inited = self.inited and self.model_loaded # Example: init fails if model fails
+
