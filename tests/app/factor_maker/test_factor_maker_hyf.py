@@ -39,25 +39,29 @@ def run_child():
     main_engine = MainEngine(event_engine)
     main_engine.write_log("主引擎创建成功")
 
-    # connect to exchange
-    main_engine.add_gateway(BinanceSpotGateway, "BINANCE_SPOT")
-    binance_gateway_setting = {
-        "key": SETTINGS.get("gateway.api_key", ""),
-        "secret": SETTINGS.get("gateway.api_secret", ""),
-        "server": "REAL"
-    }
-    main_engine.connect(binance_gateway_setting, "BINANCE_SPOT")
-    main_engine.write_log("连接币安接口")
-    main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
+    # # connect to exchange
+    # main_engine.add_gateway(BinanceSpotGateway, "BINANCE_SPOT")
+    # binance_gateway_setting = {
+    #     "key": SETTINGS.get("gateway.api_key", ""),
+    #     "secret": SETTINGS.get("gateway.api_secret", ""),
+    #     "server": "REAL"
+    # }
+    # main_engine.connect(binance_gateway_setting, "BINANCE_SPOT")
+    # main_engine.write_log("连接币安接口")
+    # main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
     # main_engine.subscribe(SubscribeRequest(symbol='btcusdt', exchange=Exchange.BINANCE,interval=Interval.MINUTE), gateway_name='BINANCE_SPOT')
 
-    # start data recorder
-    data_recorder_engine = main_engine.add_app(DataRecorderApp)
-    main_engine.write_log(f"启动[{data_recorder_engine.__class__.__name__}]")
+    # # start data recorder
+    # data_recorder_engine = main_engine.add_app(DataRecorderApp)
+    # main_engine.write_log(f"启动[{data_recorder_engine.__class__.__name__}]")
 
     factor_maker_engine: FactorEngine = main_engine.add_app(FactorMakerApp)
     factor_maker_engine.init_engine(fake=True)
     main_engine.write_log(f"启动[{factor_maker_engine.__class__.__name__}]")
+
+    print(factor_maker_engine.flattened_factors)
+    print(set(list(factor_maker_engine.flattened_factors)))
+
 
     # log_engine = main_engine.get_engine("log")
     # event_engine.register(EVENT_CTA_LOG, log_engine.process_log_event)

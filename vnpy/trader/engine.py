@@ -48,7 +48,7 @@ from .object import (
     Interval
 )
 from .setting import SETTINGS
-from .utility import get_folder_path, TRADER_DIR
+from .utility import get_folder_path, TRADER_DIR, virtual
 from .converter import OffsetConverter
 from .logger import logger, DEBUG, INFO, WARNING, ERROR, CRITICAL
 from .locale import _
@@ -332,6 +332,7 @@ class BaseEngine(ABC):
         """"""
         pass
 
+    @virtual
     def write_log(self, msg: str, source: str = "", level=INFO) -> None:
         """
         Put log event with specific message.
@@ -427,6 +428,9 @@ class LogEngine(BaseEngine):
         log: LogData = event.data
         # level: Union[str,int] = self.level_map.get(log.level, log.level)  # Do not use vnpy v4.0.0 update.
         self.logger.log(log.level, log.msg)  # Do not use vnpy v4.0.0 update.
+
+    def close(self) -> None:
+        pass
 
 
 class OmsEngine(BaseEngine):
@@ -703,6 +707,9 @@ class OmsEngine(BaseEngine):
         """
         return self.offset_converters.get(gateway_name, None)
 
+    def close(self) -> None:
+        pass
+
 
 class EmailEngine(BaseEngine):
     """
@@ -770,6 +777,7 @@ class EmailEngine(BaseEngine):
 
         self.active = False
         self.thread.join()
+
 
 class TelegramEngine(BaseEngine):
     """Telegram message sending engine"""
