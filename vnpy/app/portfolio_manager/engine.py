@@ -89,7 +89,7 @@ class PortfolioEngine(BaseEngine):
 
         # --- Timer Settings ---
         self.timer_count: int = 0
-        self.timer_interval: int = 5  # Default interval in seconds
+        self.timer_interval: int = 60  # Default interval in seconds
 
         # --- Daily Rollover Tracking ---
         self.current_utc_day: Optional[date] = None # Track current UTC day

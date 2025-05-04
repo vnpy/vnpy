@@ -788,8 +788,8 @@ class BinanceSpotDataWebsocketApi:
 
         if channel.startswith('kline_'):
             kdata = data['k']
-            self.gateway.write_log(f"{symbol,kdata['x']}")
-            if kdata['x'] == 'True':
+            # self.gateway.write_log(f"{symbol, kdata['x'], type(kdata['x'])}")
+            if kdata['x']:
                 bar: BarData = self.bars[symbol]
                 bar.symbol = symbol
                 bar.interval = Interval(kdata['i'])
@@ -800,7 +800,7 @@ class BinanceSpotDataWebsocketApi:
                 bar.close_price = float(kdata['c'])
                 bar.volume = float(kdata['q'])
                 if bar.volume < 1000 and SYSTEM_MODE == 'TEST':
-                    self.gateway.write_log(f"bar.volume is too low: {str(bar.__dict__)}",)
+                    self.gateway.write_log(f"bar.volume is too low: {str(bar.__dict__)}", )
                 self.gateway.on_bar(copy(bar))
             return
 
@@ -808,11 +808,11 @@ class BinanceSpotDataWebsocketApi:
         tick: TickData = self.ticks.get(symbol, None)
         if not tick:
             tick = TickData(
-            symbol=symbol,
-            name=symbol_contract_map[symbol].name,
-            exchange=Exchange.BINANCE,
-            datetime=datetime.now(),
-            gateway_name=self.gateway_name,
+                symbol=symbol,
+                name=symbol_contract_map[symbol].name,
+                exchange=Exchange.BINANCE,
+                datetime=datetime.now(),
+                gateway_name=self.gateway_name,
             )
             self.ticks[symbol] = tick
 

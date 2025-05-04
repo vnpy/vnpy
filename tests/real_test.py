@@ -9,9 +9,9 @@
 
 import multiprocessing
 from datetime import datetime, time
+from logging import DEBUG
 from time import sleep
 
-from tests.trader.strategies import *
 from vnpy.app.data_recorder import DataRecorderApp
 from vnpy.app.factor_maker import FactorEngine
 from vnpy.app.factor_maker import FactorMakerApp
@@ -19,6 +19,8 @@ from vnpy.event import EventEngine
 from vnpy.gateway.binance import BinanceSpotGateway
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.setting import SETTINGS
+from vnpy.strategy.engine import BaseStrategyEngine
+from vnpy.strategy.examples.test_strategy_template import TestStrategyTemplate
 
 
 def run_child():
@@ -51,6 +53,18 @@ def run_child():
     factor_maker_engine.init_engine(fake=True)
     main_engine.write_log(f"启动[{factor_maker_engine.__class__.__name__}]")
 
+    # # test engine
+    strategy_engine: BaseStrategyEngine = main_engine.add_engine(BaseStrategyEngine)
+
+    # init strategy template
+    template_strategy = TestStrategyTemplate(strategy_engine=strategy_engine,
+                                             strategy_name=TestStrategyTemplate.strategy_name,
+                                             vt_symbols=['btcusdt.BINANCE'], setting={})
+
+    strategy_engine.init_engine(strategies_path="vnpy/tests/strategy/strategies",
+                                strategies={template_strategy.strategy_name: template_strategy})
+    main_engine.write_log(f"启动[{strategy_engine.__class__.__name__}]")
+
     # log_engine = main_engine.get_engine("log")
     # event_engine.register(EVENT_CTA_LOG, log_engine.process_log_event)
     # main_engine.write_log("注册日志事件监听")
@@ -69,18 +83,12 @@ def run_child():
     #
     # cta_engine.start_all_strategies()
     # main_engine.write_log("CTA策略全部启动")
-
-    # # # test order engine
-    # order_engine: SimpleOrderStrategyEngine = main_engine.add_app(SimpleOrderStrategyApp)
-    # order_engine.init_engine()
-    # order_engine.run_all_tests()
-    # main_engine.write_log(f"启动[{order_engine.__class__.__name__}]")
-
+    counter = 0
     while True:
-        # print(main_engine.event_engine._queue.get())
-        # print(main_engine.event_engine._queue.get().type)
-        # print(type(main_engine.event_engine._queue.get()))
-        main_engine.write_log("running")
+        if counter == 5:
+            main_engine.write_log("running", level=DEBUG)
+            counter = 0
+        counter += 1
         sleep(1)
 
 

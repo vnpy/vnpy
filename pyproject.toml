@@ -29,13 +29,14 @@ dependencies = [
     "qdarkstyle>=3.2.3",
     "numpy>=2.2.3",
     "pandas>=2.2.3",
-    "ta-lib>=0.6.3",
+#    "ta-lib>=0.6.3",
     "deap>=1.4.2",
     "pyzmq>=26.3.0",
     "plotly>=6.0.0",
     "tqdm>=4.67.1",
     "loguru>=0.7.3",
-    "nbformat>=5.10.4"
+    "nbformat>=5.10.4",
+    "dask"
 ]
 keywords = ["quant", "quantitative", "investment", "trading", "algotrading"]
 

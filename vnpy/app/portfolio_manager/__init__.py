@@ -30,17 +30,11 @@ from vnpy.trader.app import BaseApp
 from .engine import PortfolioEngine, APP_NAME
 
 
-try:
-    __version__ = importlib.metadata.version("vnpy_portfoliomanager")
-except importlib.metadata.PackageNotFoundError:
-    __version__ = "dev"
-
-
 class PortfolioManagerApp(BaseApp):
     """"""
 
     app_name: str = APP_NAME
-    app_module: str = __module__
+    app_module: str = None
     app_path: Path = Path(__file__).parent
     display_name: str = "投资组合"
     engine_class: Type[PortfolioEngine] = PortfolioEngine

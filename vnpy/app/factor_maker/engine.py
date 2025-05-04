@@ -34,6 +34,7 @@ from vnpy.app.factor_maker.utils.memory_utils import truncate_memory, create_pla
 FACTOR_MODULE_NAME = 'vnpy.app.factor_maker.factors'
 SYSTEM_MODE = SETTINGS.get('system.mode', 'LIVE')
 
+
 @dataclass
 class CalculationMetrics:
     """Performance metrics for factor calculations"""
@@ -65,7 +66,7 @@ class FactorEngine(BaseEngine):
 
         # Core components
         self.module_factors = importlib.import_module(FACTOR_MODULE_NAME)
-        self.database = get_database() # mark it when running test
+        self.database = get_database()  # mark it when running test
         self.vt_symbols = main_engine.vt_symbols
 
         # Factor management
@@ -76,12 +77,13 @@ class FactorEngine(BaseEngine):
         self.memory_bar: Dict[str, pl.DataFrame] = {}
         self.memory_factor: Dict[str, pl.DataFrame] = {}
         self.max_memory_length = 10
-        
+
         # State management
         self.dt = None
         self.bars = {}
         self.factors = {}
         self.tasks = {}
+        self.receiving_status = {k: False for k in self.vt_symbols}  # when bar is received, set it to True
 
         # Performance monitoring
         self.metrics: Dict[str, CalculationMetrics] = {}
@@ -97,6 +99,7 @@ class FactorEngine(BaseEngine):
         self.write_log("register event", level=DEBUG)
         self.init_all_factors()  # stacked factors
         self.flattened_factors = self.complete_factor_tree(self.stacked_factors)  # flatten the factor tree
+        self.write_log(f"self.flattened_factors {list(self.flattened_factors.keys())}", level=INFO)
 
         self.init_memory(fake=fake)  # initialize memory
         self.tasks = self.build_computational_graph()  # Build the graph after initializing factors
@@ -106,7 +109,7 @@ class FactorEngine(BaseEngine):
         """what to do when event is triggered"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_BAR, self.process_bar_event)
-    
+
     def get_factor_parameters(self, factor_key) -> dict:
         """get factor parameters"""
         if factor_key not in self.stacked_factors:
@@ -146,19 +149,19 @@ class FactorEngine(BaseEngine):
         if fake:  # concat fake data to memory
             for b in ["open", "high", "low", "close", "volume"]:
                 # fake data
-                data = {'datetime': pd.date_range("2024-01-01", periods=200, freq="1min")}
+                data = {'datetime': pd.date_range("2024-01-01", periods=self.max_memory_length, freq="1min")}
                 schema = {'datetime': datetime}
                 for symbol in self.main_engine.vt_symbols:
-                    data[symbol] = np.array(list(range(200))) * np.random.rand()
+                    data[symbol] = np.array(list(range(self.max_memory_length))) * np.random.rand()
                     schema[symbol] = pl.Float64
                 self.memory_bar[b] = pl.concat(
                     [self.memory_bar[b], pl.DataFrame(data=data, schema=schema)], how='vertical')
             for f in self.flattened_factors.keys():
                 # fake data
-                data = {'datetime': pd.date_range("2024-01-01", periods=200, freq="1min")}
+                data = {'datetime': pd.date_range("2024-01-01", periods=self.max_memory_length, freq="1min")}
                 schema = {'datetime': datetime}
                 for symbol in self.main_engine.vt_symbols:
-                    data[symbol] = np.array(list(range(200))) * np.random.rand()
+                    data[symbol] = np.array(list(range(self.max_memory_length))) * np.random.rand()
                     schema[symbol] = pl.Float64
                 self.memory_factor[f] = pl.concat(
                     [self.memory_factor[f], pl.DataFrame(data=data, schema=schema)], how='vertical')
@@ -169,18 +172,15 @@ class FactorEngine(BaseEngine):
         self.stacked_factors = {f.factor_key: f for f in inited_factors}
 
         # Calculate max memory length based on factor parameters
-        lookback_attrs = ["lookback_period", "window", "period", "fast_period", 
-                         "slow_period", "signal_period", "len", "length"]
-        
+        lookback_attrs = ["lookback_period", "window", "period", "fast_period",
+                          "slow_period", "signal_period", "len", "length"]
+
         self.max_memory_length = max(
-                [self.max_memory_length] + [
+            [self.max_memory_length] + [
                 max(getattr(factor, attr, 20) for attr in lookback_attrs)
                 for factor in self.stacked_factors.values()
-                ]
-            )
-        
-
-        self.write_log(f"Initialized {len(self.stacked_factors)} factors", level=INFO)
+            ]
+        )
         self.write_log(f"Maximum memory length: {self.max_memory_length}", level=DEBUG)
 
     def stop_all_factors(self) -> None:
@@ -342,19 +342,19 @@ class FactorEngine(BaseEngine):
         Build a Dask computational graph with improved performance and error handling.
         """
         tasks = {}
-        
+
         # Create a graph of dependencies first
         dependency_graph = {}
         for factor_key, factor in self.flattened_factors.items():
             dependency_graph[factor_key] = [d.factor_key for d in factor.dependencies_factor]
-        
+
         # Topologically sort factors to ensure optimal execution order
         sorted_factors = self._topological_sort(dependency_graph)
-        
+
         # Build tasks in dependency order
         for factor_key in sorted_factors:
             self.create_task(factor_key, self.flattened_factors, tasks)
-            
+
         return tasks
 
     def _topological_sort(self, graph: Dict[str, list]) -> list:
@@ -364,7 +364,7 @@ class FactorEngine(BaseEngine):
         visited = set()
         temp = set()
         order = []
-        
+
         def visit(node: str):
             if node in temp:
                 raise ValueError(f"Circular dependency detected involving {node}")
@@ -376,11 +376,11 @@ class FactorEngine(BaseEngine):
             temp.remove(node)
             visited.add(node)
             order.append(node)
-            
+
         for node in graph:
             if node not in visited:
                 visit(node)
-                
+
         return order[::-1]
 
     def __copy_memory_bar__(self):
@@ -394,33 +394,40 @@ class FactorEngine(BaseEngine):
     def create_task(self,
                     factor_key: str,
                     factors: Dict[str, Any],
-                    tasks: Dict[str, Delayed]
-                    ) -> Delayed:
+                    tasks: Dict[str, dask.delayed]
+                    ) -> dask.delayed:
         """
-        Create a Dask task with improved memory management and parallel processing.
+        Recursively create a Dask task for a given factor and its dependencies.
+
+        Notes:
+            this method can not contain any class attributes, otherwise the data will be a fixed one.
+            To fix this, you need to write a function (which is fixed) to load data dynamically
+
+        Parameters:
+            factor_key (str): The key of the factor to create a task for.
+            factors (Dict[str, Any]): Dictionary of all factors keyed by factor_key.
+            tasks (Dict[str, dask.delayed]): Dictionary to store the created tasks.
+
+        Returns:
+            dask.delayed: The Dask task for the factor calculation.
         """
         if factor_key in tasks:
-            return tasks[factor_key]
+            return tasks[factor_key]  # Return cached task if already created
 
         factor = factors[factor_key]
 
         # Handle dependencies
         if not factor.dependencies_factor:  # No dependencies
             memory_dict = dask.delayed(self.__copy_memory_bar__)()  # new style
-            tasks[factor_key] = dask.delayed(factor.calculate, nout=1)(
-                input_data=memory_dict,
-                memory=None
-            ).persist()  # Cache intermediate results
+            tasks[factor_key] = dask.delayed(factor.calculate)(input_data=memory_dict, memory=None)
         else:  # Resolve dependencies recursively
             dep_tasks = {
                 dep_factor.factor_key: self.create_task(dep_factor.factor_key, factors, tasks)
                 for dep_factor in factor.dependencies_factor
             }
+            # historical_data = dask.delayed(copy)(self.memory_factor[factor_key])
             historical_data = dask.delayed(self.__copy_memory_factor__)(factor_key)
-            tasks[factor_key] = dask.delayed(factor.calculate, nout=1)(
-                input_data=dep_tasks,
-                memory=historical_data
-            ).persist()  # Cache intermediate results
+            tasks[factor_key] = dask.delayed(factor.calculate)(input_data=dep_tasks, memory=historical_data)
 
         return tasks[factor_key]
 
@@ -469,12 +476,16 @@ class FactorEngine(BaseEngine):
         self.memory_bar["close"] = pl.concat([self.memory_bar["close"], tmp["close"]], how='vertical_relaxed')
         self.memory_bar["volume"] = pl.concat([self.memory_bar["volume"], tmp["volume"]], how='vertical_relaxed')
 
+        # calculate. results are saved in self.memory_factor
         self.execute_calculation(dt=dt)  # calculate factor
+
+        # broadcast result
         newest_memory_factor = {k: v.tail(1) for k, v in self.memory_factor.items()}
         self.event_engine.put(Event(EVENT_FACTOR, newest_memory_factor))  # factors are calculated
+
+        # maintain memory length
         self._truncate_memory_bar()
         self._truncate_memory_factor()
-
 
     @lru_cache(maxsize=1000)
     def _cached_calculation(self, factor_key: str, input_data_hash: str) -> pl.DataFrame:
@@ -521,7 +532,7 @@ class FactorEngine(BaseEngine):
                 # Update metrics
                 end_time = time.time()
                 final_resources = self._monitor_resources()
-                
+
                 for factor_name, result in zip(self.tasks.keys(), results):
                     if result is not None:
                         self.memory_factor[factor_name] = result
@@ -534,24 +545,24 @@ class FactorEngine(BaseEngine):
 
                 self.consecutive_errors = 0
                 self.write_log(f"Calculations completed in {end_time - start_time:.2f}s", level=INFO)
-                
+
                 # Log resource usage
                 self.write_log(
                     f"Resource usage - Memory: {final_resources['memory_percent']:.1f}%, "
-                    f"CPU: {final_resources['cpu_percent']:.1f}%", 
+                    f"CPU: {final_resources['cpu_percent']:.1f}%",
                     level=DEBUG
                 )
 
         except Exception as e:
             self.consecutive_errors += 1
             self.write_log(f"Calculation error: {str(e)}\n{traceback.format_exc()}", level=ERROR)
-            
+
             # Circuit breaker pattern
             if self.consecutive_errors >= self.error_threshold:
                 self.write_log("Error threshold exceeded, stopping calculations", level=ERROR)
                 self.stop_all_factors()
                 raise RuntimeError("Critical error threshold exceeded")
-            
+
             raise
 
     def _cleanup_memory(self):
@@ -584,16 +595,15 @@ class FactorEngine(BaseEngine):
     def process_bar_event(self, event: Event) -> None:
         """Process incoming bar data."""
         bar: BarData = event.data
-        if self.dt is None:  # only happens at the starting
-            self.dt = bar.datetime
-            self.bars[bar.vt_symbol] = bar
-        else:
-            if bar.datetime == self.dt:
-                self.bars[bar.vt_symbol] = bar
-            elif bar.datetime > self.dt:  # new timeframe
-                self.on_bars(self.dt, self.bars)  # push previous data to factor calculation
-                self.dt = bar.datetime  # update time
-                self.bars = {bar.vt_symbol: bar}  # totally create a new self.bars and add the new bar
+        self.dt = bar.datetime
+        self.bars[bar.vt_symbol] = bar
+        self.receiving_status[bar.vt_symbol] = True
+
+        if all(self.receiving_status.values()):
+            self.write_log(f"All bars received {self.dt}. start calculation", level=DEBUG)
+            self.on_bars(self.dt, self.bars)  # push previous data to factor calculation
+            self.receiving_status = {k: False for k in self.receiving_status.keys()}
+            self.bars = {}
 
     # Utility Functions
     def call_factor_func(self, factor: FactorTemplate, func: Callable, params: object = None) -> None:
@@ -618,4 +628,4 @@ class FactorEngine(BaseEngine):
     def send_email(self, msg: str, factor: FactorTemplate = None) -> None:
         """send email"""
         subject: str = f"{factor.factor_key}" if factor else "Factor Maker Engine"
-        self.main_engine.send_email(subject, msg)
+        self.main_engine.send_email(subject, msg, receiver=None)
