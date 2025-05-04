@@ -124,7 +124,7 @@ class RecorderEngine(BaseEngine):
             for k in to_remove:
                 self.buffer_bar[k] = []
         elif task_type == 'factor':
-            self.write_log(f"识别到factor", level=DEBUG)
+            self.write_log(f"识别到factor", level=NOTSET)
             if isinstance(data, FactorData):
                 self.write_log(f"识别到FactorData", level=DEBUG)
                 self.buffer_factor[data.vt_symbol].append(data)  # todo: 这里用vt_symbol可以吗???
@@ -148,12 +148,12 @@ class RecorderEngine(BaseEngine):
                 time.sleep(0.1)
                 self.database_manager.save_factor_data(name=data.columns[-1], data=data)
             elif isinstance(data, dict) and isinstance(list(data.values())[0], pl.DataFrame):
-                self.write_log(f"识别到dict")
+                self.write_log(f"识别到dict", level=NOTSET)
                 df_list = []
                 checked_interval = None
                 for factor_key, factor_df in data.items():
-                    self.write_log(f"factor_key: {factor_key}")
-                    self.write_log(f"factor_df: {factor_df}")
+                    self.write_log(f"factor_key: {factor_key}", level=NOTSET)
+                    self.write_log(f"factor_df: {factor_df}", level=NOTSET)
                     interval, factor_name = extract_factor_key(factor_key)
                     # check all the data have the same interval
                     if checked_interval is None:
@@ -189,7 +189,7 @@ class RecorderEngine(BaseEngine):
                     )
                     df_list.append(df_pivoted)
                 df_pivoted = pl.concat(df_list, how='align')
-                self.write_log(f"df_pivoted: {df_pivoted}", level=DEBUG)
+                self.write_log(f"df_pivoted: {df_pivoted}", level=NOTSET)
                 status = self.database_manager.save_factor_data(data=df_pivoted, interval=checked_interval)
 
             else:
@@ -211,14 +211,6 @@ class RecorderEngine(BaseEngine):
     def run(self):
         """"""
         while self.active:
-            # try:
-            #     task = self.queue.get(timeout=1)
-            #     task_type, data = task
-            #     self.save_data(task_type, data)
-            # except Empty as e:
-            #     self.write_log(f"数据记录引擎处理队列为空 {self.queue.qsize()}", level=WARNING)
-            # except Exception as e:
-            #     self.write_log(f"{str(e)}", level=ERROR)
             if self.queue.qsize() > 0:
                 task = self.queue.get(timeout=1)
                 task_type, data = task
@@ -335,17 +327,13 @@ class RecorderEngine(BaseEngine):
     def process_bar_event(self, event: Event):
         """"""
         bar = event.data
-        # self.add_bar_recording(vt_symbol=bar.vt_symbol)
-        # if bar.vt_symbol in self.bar_recordings:
         self.record_bar(bar)
 
     def process_factor_event(self, event: Event):
         """"""
         factor_dict: dict = event.data
-        # for factor_key, factor_df in factor_dict.items():
-        #     # self.add_factor_recording(vt_symbol=factor_name)
-        #     self.record_factor({factor_key: factor_df})
-        self.write_log(f"factor_dict: {factor_dict}", level=DEBUG)
+
+        self.write_log(f"factor_dict: {factor_dict}", level=NOTSET)
         self.record_factor(factor_dict)
 
     def process_tick_event(self, event: Event):

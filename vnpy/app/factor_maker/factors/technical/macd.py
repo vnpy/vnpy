@@ -62,6 +62,7 @@ class MACD(FactorTemplate):
         Returns:
             pl.DataFrame: DataFrame with 'datetime' as index and symbols as columns containing MACD histogram values.
         """
+
         if isinstance(input_data, dict):
             datetime_index = input_data.get(self.ma_fast.factor_key)['datetime']
             fast = input_data.get(self.ma_fast.factor_key)
