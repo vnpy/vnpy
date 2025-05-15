@@ -179,7 +179,7 @@ class FactorTemplate(ABC):
     exchange: Exchange = Exchange.TEST
 
     # Configurations for dependencies, will be resolved to FactorTemplate instances
-    dependencies_factor_config: List[Dict[str, Any]] = [] 
+    dependencies_factor_config: List[Dict[str, Any]] = {}
     dependencies_freq_config: List[Interval] = [] # Or strings
     dependencies_symbol_config: List[str] = []
     dependencies_exchange_config: List[Exchange] = [] # Or strings
