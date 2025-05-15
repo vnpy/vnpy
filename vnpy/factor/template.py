@@ -5,6 +5,8 @@ import importlib
 import polars as pl
 from dask.delayed import Delayed
 
+from vnpy.factor.utils.factor_utils import init_factors
+
 # Assuming FactorMemory is in a sibling file 'factor_memory.py'
 # If FactorMemory is defined elsewhere, adjust the import path accordingly.
 try:
@@ -20,7 +22,7 @@ except ImportError:
         pass
 
 
-from vnpy.app.factor_maker.base import FactorMode
+from vnpy.factor.base import FactorMode
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.config import VTSYMBOL_FACTOR # General vnpy config/constant
 
@@ -167,8 +169,7 @@ class FactorTemplate(ABC):
     Subclasses must implement `get_output_schema` and `calculate`.
     """
     author: str = "Unknown" # Author of the factor
-    module_factors_lookup = None # Class attribute to hold the imported factors module, set by FactorEngine
-
+    
     factor_name: str = "" # Unique name for the factor, set by subclass or from settings
     freq: Optional[Interval] = None # Calculation frequency/interval of the factor
     
@@ -191,7 +192,7 @@ class FactorTemplate(ABC):
     VTSYMBOL_TEMPLATE: str = VTSYMBOL_FACTOR # Template string for generating factor keys
 
     @abstractmethod
-    def get_output_schema(self) -> Dict[str, pl.PolarsDataType]:
+    def get_output_schema(self) -> Dict[str, pl.DataType]:
         """
         Returns the Polars schema of the DataFrame produced by this factor's
         calculate() method. This schema will be used by FactorMemory.
@@ -237,50 +238,10 @@ class FactorTemplate(ABC):
         their stored configurations (self.dependencies_factor_config).
         Requires self.module_factors_lookup to be set by the FactorEngine.
         """
-        if not self.dependencies_factor_config or isinstance(self.dependencies_factor_config[0], FactorTemplate):
-            # Already initialized (if list contains instances) or no config to initialize from.
-            if isinstance(self.dependencies_factor_config, list) and \
-               all(isinstance(item, FactorTemplate) for item in self.dependencies_factor_config):
-                self.dependencies_factor = self.dependencies_factor_config # Already instances
+        if not self.dependencies_factor_config:
             return
-
-        if not self.module_factors_lookup:
-            print(f"Warning: Factors module (self.module_factors_lookup) not set for {self.factor_key}. "
-                  "Cannot initialize dependency instances from configurations.")
-            self.dependencies_factor = [] # Clear or keep as config? Clearing to avoid mixed types.
-            return
-
-        initialized_deps = []
-        for dep_conf_item in self.dependencies_factor_config:
-            # dep_conf_item is usually a dict like { "factor_key_of_dependency": { actual_settings_for_dependency }}
-            # or directly the actual_settings_for_dependency if simplified.
-            
-            actual_dep_settings = None
-            if isinstance(dep_conf_item, dict) and len(dep_conf_item) == 1: # {factor_key: settings}
-                actual_dep_settings = list(dep_conf_item.values())[0]
-            elif isinstance(dep_conf_item, dict) and "class_name" in dep_conf_item: # Direct settings
-                actual_dep_settings = dep_conf_item
-            
-            if not actual_dep_settings or "class_name" not in actual_dep_settings:
-                print(f"Warning: Invalid dependency configuration for {self.factor_key}: {dep_conf_item}. Skipping.")
-                continue
-
-            dep_class_name = actual_dep_settings["class_name"]
-            try:
-                DepFactorClass: Type[FactorTemplate] = getattr(self.module_factors_lookup, dep_class_name)
-            except AttributeError:
-                print(f"Error: Dependency class '{dep_class_name}' not found in factors module for {self.factor_key}.")
-                continue
-            
-            dep_params = actual_dep_settings.get("params", {})
-            # Pass the full setting for the dependency, and params separately for __init__ kwargs
-            try:
-                dep_instance = DepFactorClass(setting=actual_dep_settings, **dep_params)
-                initialized_deps.append(dep_instance)
-            except Exception as e:
-                print(f"Error initializing dependency instance {dep_class_name} for {self.factor_key}: {e}")
         
-        self.dependencies_factor = initialized_deps
+        self.dependencies_factor = init_factors(self.dependencies_factor_config)
 
 
     def __init__(self, setting: Optional[dict] = None, **kwargs):

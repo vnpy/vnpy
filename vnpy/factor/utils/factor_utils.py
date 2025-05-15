@@ -2,7 +2,7 @@
 
 from typing import Dict
 from vnpy.trader.utility import load_json, save_json
-import vnpy.app.factor_maker.factors as factors
+import vnpy.factor.factors as factors
 
 def get_factor_class(class_name: str):
     """
@@ -55,3 +55,10 @@ def init_factors(f_setting: Dict):
         f_class = f_class(module_setting, **module_setting["params"])
         factors_list.append(f_class)
     return factors_list
+
+if __name__ == "__main__":
+    f_setting = load_factor_setting("/Users/chenzhao/Documents/crypto_vnpy/vnpy/vnpy/factor/factor_maker_setting.json")
+    print(f_setting)
+    factors = init_factors(f_setting)
+    for factor in factors:
+        print(factor.__class__.__name__)

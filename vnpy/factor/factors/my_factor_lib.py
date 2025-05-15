@@ -21,7 +21,7 @@ class EMAFactor(FactorTemplate):
     Calculates the Exponential Moving Average (EMA) for each symbol.
     """
     author = "VN Trader Community"
-    factor_name = "EMA"  # Default, can be overridden by factor_name in settings
+    factor_name = "EMAFactor"  # Default, can be overridden by factor_name in settings
 
     def __init__(self, setting: Optional[dict] = None, vt_symbols: Optional[List[str]] = None, **kwargs):
         """
@@ -41,7 +41,7 @@ class EMAFactor(FactorTemplate):
         except ValueError as e:
             raise ValueError(f"EMAFactor ({self.factor_key}): Invalid 'period' parameter: {e}")
 
-    def get_output_schema(self) -> Dict[str, pl.PolarsDataType]:
+    def get_output_schema(self) -> Dict[str, pl.DataType]:
         """
         Defines the output schema: a datetime column and one Float64 column for each symbol.
         Column names for symbols are the vt_symbol strings themselves.
@@ -107,7 +107,7 @@ class MACDFactor(FactorTemplate):
     Depends on two EMAFactor instances (fast and slow).
     """
     author = "VN Trader Community"
-    factor_name = "MACD"
+    factor_name = "MACDFactor"
 
     def __init__(self, setting: Optional[dict] = None, vt_symbols: Optional[List[str]] = None, **kwargs):
         """
@@ -138,7 +138,7 @@ class MACDFactor(FactorTemplate):
             raise ValueError(f"MACDFactor ({self.factor_key}): fast_period ({self.fast_period}) "
                              f"must be less than slow_period ({self.slow_period}).")
 
-    def get_output_schema(self) -> Dict[str, pl.PolarsDataType]:
+    def get_output_schema(self) -> Dict[str, pl.DataType]:
         """
         Defines output schema: datetime and, for each symbol,
         columns for macd, signal, and histogram values.
@@ -255,7 +255,7 @@ class MyCustomFactor(FactorTemplate):
         if self.source_column_name not in ["open", "high", "low", "close", "volume"]:
             raise ValueError(f"MyCustomFactor ({self.factor_key}): 'source' parameter must be one of open, high, low, close, volume.")
 
-    def get_output_schema(self) -> Dict[str, pl.PolarsDataType]:
+    def get_output_schema(self) -> Dict[str, pl.DataType]:
         """
         Defines output schema: datetime and one Float64 column for each symbol (named by symbol string).
         """

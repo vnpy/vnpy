@@ -6,8 +6,8 @@ class FactorMode(Enum):
     """
     因子计算模式
     """
-    Live = "live"
-    Backtest = "backtest"
+    LIVE = "live"
+    BACKTEST = "backtest"
 
 
 APP_NAME = "FactorMaker"

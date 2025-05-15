@@ -25,7 +25,7 @@ class FactorMemory:
         self,
         file_path: Union[str, Path],
         max_rows: int,
-        schema: Dict[str, pl.PolarsDataType],
+        schema: Dict[str, pl.DataType],
         datetime_col: str = "datetime"
     ):
         """
