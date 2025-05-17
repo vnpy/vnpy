@@ -47,7 +47,6 @@ class EMAFactor(FactorTemplate):
         Column names for symbols are the vt_symbol strings themselves.
         """
         schema = {DEFAULT_DATETIME_COL: pl.Datetime(time_unit="us", time_zone=DB_TZ if DB_TZ else None)}
-        print(schema[DEFAULT_DATETIME_COL])
         if not self.vt_symbols:
             # Consider logging a warning if no symbols are provided, FactorMemory might need at least one value column.
             # For now, allows schema with only datetime if vt_symbols is empty.
