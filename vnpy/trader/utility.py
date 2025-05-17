@@ -8,17 +8,16 @@ import sys
 from datetime import datetime, time
 from pathlib import Path
 from decimal import Decimal, ROUND_DOWN
-from typing import Callable, Union
+from typing import Callable, Optional, Union
 
 import pandas as pd
 import polars as pl
 import numpy as np
-# import talib
+import talib
 from zoneinfo import ZoneInfo, available_timezones  # noqa
 
-from .object import BarData, TickData, FactorData
-from .constant import Exchange, Interval
-from .locale import _
+from vnpy.trader.object import BarData, TickData, FactorData
+from vnpy.trader.constant import Exchange, Interval
 
 if sys.version_info >= (3, 9):
     from zoneinfo import ZoneInfo, available_timezones  # noqa
@@ -139,7 +138,7 @@ def load_json(filename: str, cls=json.JSONDecoder) -> dict:
         return {}
 
 
-def save_json(filename: str, data: dict, mode="w+", cls=json.JSONEncoder) -> None:
+def save_json(filename: str, data: dict|list, mode="w+", cls=json.JSONEncoder) -> None:
     """
     Save data into json file in temp path.
     """
@@ -170,7 +169,7 @@ def floor_to(value: float, target: float) -> float:
     """
     decimal_value: Decimal = Decimal(str(value))
     decimal_target: Decimal = Decimal(str(target))
-    result: float = float(int(floor(decimal_value / decimal_target)) * decimal_target)
+    result: float = float(int(np.floor(decimal_value / decimal_target)) * decimal_target)
     return result
 
 
@@ -180,7 +179,7 @@ def ceil_to(value: float, target: float) -> float:
     """
     decimal_value: Decimal = Decimal(str(value))
     decimal_target: Decimal = Decimal(str(target))
-    result: float = float(int(ceil(decimal_value / decimal_target)) * decimal_target)
+    result: float = float(int(np.ceil(decimal_value / decimal_target)) * decimal_target)
     return result
 
 
@@ -268,7 +267,7 @@ class BarGenerator:
 
         self.daily_end: time | None = daily_end
         if self.interval == Interval.DAILY and not self.daily_end:
-            raise RuntimeError(_("合成日K线必须传入每日收盘时间"))
+            raise RuntimeError("合成日K线必须传入每日收盘时间")
 
     def update_tick(self, tick: TickData) -> None:
         """
