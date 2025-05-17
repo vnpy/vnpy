@@ -1,7 +1,6 @@
 from abc import abstractmethod, ABC
 from datetime import datetime
-from typing import Optional, Dict, Any, Union, List, Type, TypeVar
-import importlib
+from typing import Optional, Dict, Any, Union, List, TypeVar
 import polars as pl
 from dask.delayed import Delayed
 
@@ -9,17 +8,7 @@ from vnpy.factor.utils.factor_utils import init_factors
 
 # Assuming FactorMemory is in a sibling file 'factor_memory.py'
 # If FactorMemory is defined elsewhere, adjust the import path accordingly.
-try:
-    from .memory import FactorMemory
-except ImportError:
-    # Fallback if running in a context where relative import fails (e.g. top-level script)
-    # This might require FactorMemory to be in PYTHONPATH or installed.
-    # For this example, we'll assume it might be defined in the same file temporarily
-    # if the relative import fails, or that the user will adjust.
-    print("Attempting to import FactorMemory, ensure it's accessible.")
-    # As a placeholder if the import fails and it's not defined in this file:
-    class FactorMemory: # type: ignore
-        pass
+from vnpy.factor.memory import FactorMemory
 
 
 from vnpy.factor.base import FactorMode
@@ -169,6 +158,7 @@ class FactorTemplate(ABC):
     Subclasses must implement `get_output_schema` and `calculate`.
     """
     author: str = "Unknown" # Author of the factor
+    module_factors_lookup = None # Lookup for module factors, set by FactorEngine
     
     factor_name: str = "" # Unique name for the factor, set by subclass or from settings
     freq: Optional[Interval] = None # Calculation frequency/interval of the factor
@@ -241,10 +231,22 @@ class FactorTemplate(ABC):
         if not self.dependencies_factor_config:
             return
         
-        self.dependencies_factor = init_factors(self.dependencies_factor_config)
+        if not self._dependencies_module_lookup:
+            if self.dependencies_factor_config: # Only an issue if there are dependencies
+                raise ValueError(
+                    f"Factor '{self.factor_name}' has dependencies but "
+                    "dependencies_module_lookup was not provided during initialization."
+                )
+            return # No dependencies to init, so it's fine
+        
+        self.dependencies_factor = init_factors(
+            self._dependencies_module_lookup, 
+            self.dependencies_factor_config,
+            self._dependencies_module_lookup # Pass the same module lookup for dependencies
+        )
 
 
-    def __init__(self, setting: Optional[dict] = None, **kwargs):
+    def __init__(self, setting: Optional[dict] = None, dependencies_module_lookup: Optional[object] = None,  **kwargs):
         """
         Initializes the FactorTemplate.
 
@@ -266,6 +268,8 @@ class FactorTemplate(ABC):
         # This allows dynamic parameter adjustments.
         if kwargs:
             self.set_params(kwargs)
+
+        self._dependencies_module_lookup = dependencies_module_lookup # Store it
 
         # Initialize dependency instances from their configurations.
         # This requires self.module_factors_lookup to be set, usually by FactorEngine.
@@ -466,36 +470,30 @@ class FactorTemplate(ABC):
             self.factor_mode = mode_str
 
     def to_setting(self) -> dict:
-        """
-        Converts the factor's current configuration to a dictionary suitable for saving.
-        This represents the settings for *this specific factor instance*.
-        """
-        # Convert dependency FactorTemplate instances back to their setting representations
         dep_factor_settings_list = []
-        for dep_instance in self.dependencies_factor: # These should be FactorTemplate instances
+        for dep_instance in self.dependencies_factor: # self.dependencies_factor holds FactorTemplate instances
             if isinstance(dep_instance, FactorTemplate):
-                # to_dict() returns {factor_key: settings_dict}
-                # We want to store the settings_dict part.
-                dep_settings_dict_outer = dep_instance.to_dict()
-                # Assuming to_dict() returns a single key dict
-                dep_settings_dict_inner = list(dep_settings_dict_outer.values())[0] if dep_settings_dict_outer else {}
-                dep_factor_settings_list.append({dep_instance.factor_key: dep_settings_dict_inner})
-
-            elif isinstance(dep_instance, dict): # If it's already a setting dict (less ideal here)
-                dep_factor_settings_list.append(dep_instance)
-
+                # Get the full settings of the dependency instance
+                dep_factor_settings_list.append(dep_instance.to_setting()) # CHANGED
+            elif isinstance(dep_instance, dict): 
+                # This case implies dep_instance is already a settings dict (e.g. from config)
+                # This might occur if dependencies aren't fully resolved to instances yet
+                # or if the stored dependency was just a config.
+                # For saving, we prefer actual instance settings if available.
+                # If it's a dict, assume it's already a compliant settings dict.
+                dep_factor_settings_list.append(dep_instance) 
 
         return {
             "class_name": self.__class__.__name__,
-            "factor_name": self.factor_name, # Crucial to save the effective factor_name
+            "factor_name": self.factor_name,
             "freq": str(self.freq.value) if self.freq else Interval.UNKNOWN.value,
             "params": self.params.get_all_parameters(),
-            "dependencies_factor": dep_factor_settings_list, # List of {dep_key: dep_settings}
-            "dependencies_freq": [str(f.value) if isinstance(f, Interval) else f for f in self.dependencies_freq_config], # Save original config
+            "dependencies_factor": dep_factor_settings_list, # NOW A LIST OF SETTINGS DICTS
+            "dependencies_freq": [str(f.value) if isinstance(f, Interval) else f for f in self.dependencies_freq_config],
             "dependencies_symbol": self.dependencies_symbol_config,
             "dependencies_exchange": [str(e.value) if isinstance(e, Exchange) else e for e in self.dependencies_exchange_config],
             "last_run_datetime": self.run_datetime,
-            "factor_mode": self.factor_mode.name if self.factor_mode else FactorMode.LIVE.name # Save as string
+            "factor_mode": self.factor_mode.name if self.factor_mode else FactorMode.LIVE.name
         }
 
     def to_dict(self) -> dict:

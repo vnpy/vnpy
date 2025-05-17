@@ -1,64 +1,93 @@
 # Utility functions for factor management
 
-from typing import Dict
-from vnpy.trader.utility import load_json, save_json
-import vnpy.factor.factors as factors
+import importlib
+from types import ModuleType
+from typing import Any, Dict, Type, List
 
-def get_factor_class(class_name: str):
+from vnpy.trader.utility import load_json, save_json
+
+def get_factor_class(module_to_search: ModuleType, class_name: str) -> Type:
     """
-    Load a factor class from a specified module.
+    Retrieves a factor class by its name from a specified module object.
 
     Parameters:
+        module_to_search (ModuleType): The Python module object in which to find the class.
         class_name (str): Name of the class to load.
 
     Returns:
-        The factor class object.
+        The factor class object (Type).
+
+    Raises:
+        AttributeError: If the class_name is not found in the module_to_search.
     """
-    return getattr(factors, class_name)
+    try:
+        return getattr(module_to_search, class_name)
+    except AttributeError as e:
+        error_msg = (f"Factor class '{class_name}' not found in module "
+                     f"'{module_to_search.__name__}'.")
+        # You might log this error or let the caller handle it.
+        # Re-raising with more context is often good.
+        raise AttributeError(error_msg) from e
 
-def save_factor_setting(factors: Dict, setting_filename: str) -> None:
+def save_factor_setting(settings_list_to_save: List[Dict[str, Any]], setting_filename: str) -> None:
     """
-    Save factor settings to a JSON file.
-
-    Parameters:
-        factors (Dict): Dictionary of factors.
-        setting_filename (str): Path to the JSON file.
+    Saves a list of factor settings dictionaries to a JSON file.
     """
-    factor_setting = {name: factor.to_dict() for name, factor in factors.items()}
-    save_json(setting_filename, factor_setting)
+    save_json(setting_filename, settings_list_to_save)
 
-def load_factor_setting(setting_path: str):
+def load_factor_setting(setting_path: str) -> List[Dict[str, Any]]:
     """
-    Load factor settings from a JSON file.
-
-    Parameters:
-        setting_path (str): Path to the JSON file.
-
-    Returns:
-        dict: Loaded factor settings.
+    Loads a list of factor settings dictionaries from a JSON file.
     """
-    return load_json(setting_path)
+    loaded_data = load_json(setting_path)
+    if not isinstance(loaded_data, list):
+        # Optional: Add handling for old dictionary format for backward compatibility
+        # For now, enforce the new list format.
+        raise TypeError(f"Factor settings file '{setting_path}' is not in the expected list format. "
+                        f"Expected a list of factor settings, got {type(loaded_data)}.")
+    # Further validation: check if all items in the list are dicts
+    if not all(isinstance(item, dict) for item in loaded_data):
+        raise ValueError(f"Factor settings file '{setting_path}' contains non-dictionary items in the list.")
+    return loaded_data
 
-def init_factors(f_setting: Dict):
-    """
-    Initialize factors from the factor settings.
+def init_factors(
+    module_for_primary_classes: ModuleType,
+    settings_data: List[Dict[str, Any]], # THIS IS NOW A LIST OF ACTUAL SETTINGS DICTS
+    dependencies_module_lookup_for_instances: ModuleType
+) -> List[Any]: # Returns List[FactorTemplate]
+    initialized_factors = []
 
-    Parameters:
-        f_setting (Dict): Factor settings saved in a JSON file.
+    if not isinstance(settings_data, list): # Should be caught by load_factor_setting
+        raise TypeError(f"init_factors expected settings_data to be a list, got {type(settings_data)}")
 
-    Returns:
-        list: List of initialized factors.
-    """
-    factors_list = []
-    for module_name, module_setting in f_setting.items():
-        f_class = getattr(factors, module_setting["class_name"])
-        f_class = f_class(module_setting, **module_setting["params"])
-        factors_list.append(f_class)
-    return factors_list
+    for actual_factor_settings in settings_data: # Iterate directly over settings dicts
+        if not isinstance(actual_factor_settings, dict):
+            print(f"[FactorUtils] Warning: Expected a dict for factor settings, got {type(actual_factor_settings)}. Skipping.")
+            continue
+
+        class_name = actual_factor_settings.get("class_name")
+        if not class_name:
+            print(f"[FactorUtils] Warning: 'class_name' not found in factor settings: {actual_factor_settings}. Skipping.")
+            continue
+
+        try:
+            FactorClass = get_factor_class(module_for_primary_classes, class_name)
+        except AttributeError as e:
+            print(str(e) + " Skipping this factor.")
+            continue
+
+        instance = FactorClass(
+            setting=actual_factor_settings,
+            dependencies_module_lookup=dependencies_module_lookup_for_instances
+        )
+        initialized_factors.append(instance)
+    return initialized_factors
 
 if __name__ == "__main__":
     f_setting = load_factor_setting("/Users/chenzhao/Documents/crypto_vnpy/vnpy/vnpy/factor/factor_maker_setting.json")
     print(f_setting)
-    factors = init_factors(f_setting)
+    FACTOR_MODULE_NAME = 'vnpy.factor.factors' # Default, can be overridden
+    module_factors = importlib.import_module(FACTOR_MODULE_NAME)
+    factors = init_factors(module_factors, f_setting, module_factors)
     for factor in factors:
         print(factor.__class__.__name__)
