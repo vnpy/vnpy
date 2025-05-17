@@ -3,7 +3,9 @@
 import importlib
 from types import ModuleType
 from typing import Any, Dict, Type, List
+from pathlib import Path
 
+from vnpy.factor.memory import FactorMemory
 from vnpy.trader.utility import load_json, save_json
 
 def get_factor_class(module_to_search: ModuleType, class_name: str) -> Type:
@@ -83,11 +85,22 @@ def init_factors(
         initialized_factors.append(instance)
     return initialized_factors
 
-if __name__ == "__main__":
+"""if __name__ == "__main__":
     f_setting = load_factor_setting("/Users/chenzhao/Documents/crypto_vnpy/vnpy/vnpy/factor/factor_maker_setting.json")
     print(f_setting)
     FACTOR_MODULE_NAME = 'vnpy.factor.factors' # Default, can be overridden
     module_factors = importlib.import_module(FACTOR_MODULE_NAME)
     factors = init_factors(module_factors, f_setting, module_factors)
+    settings_list_to_save = []
     for factor in factors:
-        print(factor.__class__.__name__)
+        settings_list_to_save.append(factor.to_setting())
+    save_factor_setting(settings_list_to_save, "/Users/chenzhao/Documents/crypto_vnpy/vnpy/vnpy/factor/factor_maker_setting.json")
+    factor_data_cache = Path('/Users/chenzhao/Documents/crypto_vnpy/vnpy/tests/factor_data_cache')
+
+    factor_memory_dict = {}
+    for factor in factors:
+        factor_memory_dict[factor.factor_key] = FactorMemory(
+            file_path= factor_data_cache.joinpath(f"{factor.factor_key}.arrow"),
+            max_rows=30,
+            schema=factor.get_output_schema()
+        )"""

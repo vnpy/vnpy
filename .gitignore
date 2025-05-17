@@ -4,6 +4,8 @@
 *.pyd
 *.egg-info/
 
+*.arrow
+
 # Jupyter
 .ipynb_checkpoints
 

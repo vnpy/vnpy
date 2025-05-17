@@ -46,7 +46,8 @@ class EMAFactor(FactorTemplate):
         Defines the output schema: a datetime column and one Float64 column for each symbol.
         Column names for symbols are the vt_symbol strings themselves.
         """
-        schema = {DEFAULT_DATETIME_COL: pl.Datetime(time_unit="us", timezone=DB_TZ if DB_TZ else None)}
+        schema = {DEFAULT_DATETIME_COL: pl.Datetime(time_unit="us", time_zone=DB_TZ if DB_TZ else None)}
+        print(schema[DEFAULT_DATETIME_COL])
         if not self.vt_symbols:
             # Consider logging a warning if no symbols are provided, FactorMemory might need at least one value column.
             # For now, allows schema with only datetime if vt_symbols is empty.
@@ -64,40 +65,57 @@ class EMAFactor(FactorTemplate):
         Returns a wide DataFrame: datetime | SYM1_ema | SYM2_ema | ...
         """
         df_close = input_data.get("close")
+        output_schema = self.get_output_schema()
 
-        empty_df_schema = self.get_output_schema()
         if df_close is None or df_close.is_empty():
-            return pl.DataFrame(data={}, schema=empty_df_schema)
+            return pl.DataFrame(data={}, schema=output_schema)
 
         if DEFAULT_DATETIME_COL not in df_close.columns:
-            # Log error or raise, then return empty
             print(f"Warning: '{DEFAULT_DATETIME_COL}' missing in 'close' data for {self.factor_key}. Returning empty.")
-            return pl.DataFrame(data={}, schema=empty_df_schema)
+            return pl.DataFrame(data={}, schema=output_schema)
 
-        datetime_series = df_close.select(pl.col(DEFAULT_DATETIME_COL))
-        calculated_emas: List[pl.Series] = []
+        # Get the datetime column directly as a Series
+        datetime_s = df_close.get_column(DEFAULT_DATETIME_COL)
+        
+        # Start a list of Series that will form the columns of the new DataFrame
+        all_series_for_new_df: List[pl.Series] = [datetime_s]
 
         for symbol_col_name in df_close.columns:
             if symbol_col_name == DEFAULT_DATETIME_COL:
                 continue
             
-            # Only calculate for symbols intended for output (in self.vt_symbols used for schema)
             if self.vt_symbols and symbol_col_name not in self.vt_symbols:
                 continue
 
             ema_series = df_close.get_column(symbol_col_name).ewm_mean(span=self.period, adjust=False).alias(symbol_col_name)
-            calculated_emas.append(ema_series)
+            all_series_for_new_df.append(ema_series)
 
-        if not calculated_emas and not datetime_series.is_empty():
-             # Only datetime column, no value columns produced (e.g. no matching symbols)
-             return datetime_series.clone().with_columns([
-                 pl.lit(None, dtype=empty_df_schema.get(s_col, pl.Float64)).alias(s_col)
-                 for s_col in empty_df_schema if s_col != DEFAULT_DATETIME_COL
-             ])
-        if not calculated_emas and datetime_series.is_empty():
-            return pl.DataFrame(data={}, schema=empty_df_schema)
+        # If only the datetime series is present (no EMAs calculated because no matching symbols found)
+        if len(all_series_for_new_df) == 1: 
+            if datetime_s.is_empty(): # Should have been caught by df_close.is_empty()
+                return pl.DataFrame(data={}, schema=output_schema)
+            else:
+                # Create a DataFrame from the datetime series first
+                temp_df = datetime_s.to_frame() 
+                # Add other expected columns from the schema as nulls
+                for col_name_in_schema, col_type_in_schema in output_schema.items():
+                    if col_name_in_schema != DEFAULT_DATETIME_COL: # If it's not the datetime col we already have
+                        temp_df = temp_df.with_columns(
+                            pl.lit(None, dtype=col_type_in_schema).alias(col_name_in_schema)
+                        )
+                # Ensure correct column order
+                return temp_df.select(list(output_schema.keys()))
 
-        result_df = pl.concat([datetime_series] + calculated_emas, how="horizontal")
+        # Construct the DataFrame directly from the list of Series
+        # Each Series in all_series_for_new_df will become a column
+        result_df = pl.DataFrame(all_series_for_new_df)
+        
+        # The pl.DataFrame constructor should maintain the order of series given.
+        # If strict adherence to output_schema column order is paramount and might differ,
+        # a final .select() could be used, but usually isn't necessary if all_series_for_new_df
+        # is built in the desired order. The "no EMAs calculated" case above handles this.
+        # result_df = result_df.select(list(output_schema.keys())) # Optional: if strict order needed and not guaranteed
+
         return result_df
 
 
@@ -144,84 +162,114 @@ class MACDFactor(FactorTemplate):
         columns for macd, signal, and histogram values.
         e.g., SYM1_macd, SYM1_signal, SYM1_histogram
         """
-        schema = {DEFAULT_DATETIME_COL: pl.Datetime(time_unit="us", timezone=DB_TZ if DB_TZ else None)}
+        schema = {DEFAULT_DATETIME_COL: pl.Datetime(time_unit="us", time_zone=DB_TZ if DB_TZ else None)}
         for symbol in self.vt_symbols:
-            schema[f"{symbol}_macd"] = pl.Float64
-            schema[f"{symbol}_signal"] = pl.Float64
-            schema[f"{symbol}_histogram"] = pl.Float64
+            schema[symbol] = pl.Float64
         return schema
 
     def calculate(self,
                   input_data: Dict[str, pl.DataFrame],  # Expects {ema_fast_key: df_ema_fast, ema_slow_key: df_ema_slow}
                   memory: FactorMemory) -> pl.DataFrame:
         """
-        Calculates MACD lines using input from two dependency EMA factors.
-        Returns a wide DataFrame: datetime | SYM1_macd | SYM1_signal | SYM1_hist | SYM2_macd | ...
+        Calculates MACD lines using input from two dependency EMA factors,
+        but outputs only the histogram.
+        Returns a wide DataFrame: datetime | SYM1_histogram | SYM2_histogram | ...
         """
-        empty_df_schema = self.get_output_schema()
+        output_schema = self.get_output_schema() # Get the expected output schema
+
         if len(self.dependencies_factor) < 2:
             print(f"Warning: MACDFactor ({self.factor_key}) requires two EMA dependency factors. Returning empty.")
-            return pl.DataFrame(data={}, schema=empty_df_schema)
+            return pl.DataFrame(data={}, schema=output_schema)
 
         ema_fast_instance: Optional[FactorTemplate] = None
         ema_slow_instance: Optional[FactorTemplate] = None
 
+        # Identify fast and slow EMA dependencies based on their 'period' parameter
         for dep_factor in self.dependencies_factor:
+            # Ensure dep_factor is an actual factor instance with params
             if hasattr(dep_factor, 'params') and hasattr(dep_factor.params, 'period'):
-                dep_period = int(dep_factor.params.period)
-                if dep_period == self.fast_period:
-                    ema_fast_instance = dep_factor
-                elif dep_period == self.slow_period:
-                    ema_slow_instance = dep_factor
+                try:
+                    dep_period = int(dep_factor.params.period)
+                    if dep_period == self.fast_period:
+                        ema_fast_instance = dep_factor
+                    elif dep_period == self.slow_period:
+                        ema_slow_instance = dep_factor
+                except (ValueError, TypeError):
+                    print(f"Warning: Could not parse period for dependency factor {getattr(dep_factor, 'factor_key', 'UnknownDep')} for {self.factor_key}")
+                    continue # Skip this dependency if period is invalid
         
         if not ema_fast_instance or not ema_slow_instance:
-            print(f"Warning: MACDFactor ({self.factor_key}) could not identify fast/slow EMA dependencies. Returning empty.")
-            return pl.DataFrame(data={}, schema=empty_df_schema)
+            print(f"Warning: MACDFactor ({self.factor_key}) could not identify fast/slow EMA dependencies from its dependency list. Returning empty.")
+            return pl.DataFrame(data={}, schema=output_schema)
 
         df_ema_fast = input_data.get(ema_fast_instance.factor_key)
         df_ema_slow = input_data.get(ema_slow_instance.factor_key)
 
         if df_ema_fast is None or df_ema_fast.is_empty() or df_ema_slow is None or df_ema_slow.is_empty():
-            return pl.DataFrame(data={}, schema=empty_df_schema)
+            print(f"Warning: MACDFactor ({self.factor_key}) received empty or missing data from one or both EMA dependencies. Returning empty.")
+            return pl.DataFrame(data={}, schema=output_schema)
         
         if DEFAULT_DATETIME_COL not in df_ema_fast.columns or DEFAULT_DATETIME_COL not in df_ema_slow.columns:
             print(f"Warning: '{DEFAULT_DATETIME_COL}' missing in dependency EMA data for {self.factor_key}. Returning empty.")
-            return pl.DataFrame(data={}, schema=empty_df_schema)
+            return pl.DataFrame(data={}, schema=output_schema)
 
-        # For robust merging, explicitly join on datetime and handle suffixes if any column name clashes (unlikely for symbols)
-        # However, since EMA output is "datetime | SYM1 | SYM2", direct access is fine if aligned.
-        # Assume alignment for simplicity. A production system might use an asof join or ensure exact datetime matches.
-        datetime_series = df_ema_fast.select(pl.col(DEFAULT_DATETIME_COL)) # Assume same datetimes as df_ema_slow
+        # Get the datetime column as a Series (assuming both EMAs are aligned and have the same datetime index)
+        datetime_s = df_ema_fast.get_column(DEFAULT_DATETIME_COL)
         
-        output_components: List[pl.Series] = [datetime_series.get_column(DEFAULT_DATETIME_COL)]
+        # List to hold all Series that will form the columns of the new DataFrame
+        all_series_for_new_df: List[pl.Series] = [datetime_s]
 
+        # Determine common symbols present in both EMA DataFrames
         symbols_in_fast = set(df_ema_fast.columns) - {DEFAULT_DATETIME_COL}
         symbols_in_slow = set(df_ema_slow.columns) - {DEFAULT_DATETIME_COL}
         
-        # Calculate for symbols present in both EMA inputs and intended for output
-        symbols_to_process = sorted(list(symbols_in_fast.intersection(symbols_in_slow)))
-        if self.vt_symbols: # If specific output symbols are defined, filter by them
-            symbols_to_process = [s for s in symbols_to_process if s in self.vt_symbols]
+        common_symbols = sorted(list(symbols_in_fast.intersection(symbols_in_slow)))
+        
+        # Filter by vt_symbols if provided for this MACD factor instance
+        symbols_to_process = common_symbols
+        if self.vt_symbols:
+            symbols_to_process = [s for s in common_symbols if s in self.vt_symbols]
+
+        if not symbols_to_process:
+            print(f"Warning: MACDFactor ({self.factor_key}) found no common symbols to process after filtering. Input fast symbols: {symbols_in_fast}, slow: {symbols_in_slow}, vt_symbols: {self.vt_symbols}")
 
         for symbol in symbols_to_process:
             fast_ema_values = df_ema_fast.get_column(symbol)
             slow_ema_values = df_ema_slow.get_column(symbol)
             
-            macd_line_values = fast_ema_values - slow_ema_values
+            # MACD line and signal line are intermediate calculations
+            macd_line_values = fast_ema_values - slow_ema_values 
             signal_line_values = macd_line_values.ewm_mean(span=self.signal_period, adjust=False)
-            histogram_values = macd_line_values - signal_line_values
             
-            output_components.append(macd_line_values.alias(f"{symbol}_macd"))
-            output_components.append(signal_line_values.alias(f"{symbol}_signal"))
-            output_components.append(histogram_values.alias(f"{symbol}_histogram"))
+            # Only the histogram is aliased and appended for the output
+            histogram_values = (macd_line_values - signal_line_values).alias(symbol)
+            
+            all_series_for_new_df.append(histogram_values)
         
-        if len(output_components) == 1: # Only datetime column, no value columns
-            return datetime_series.clone().with_columns([
-                 pl.lit(None, dtype=empty_df_schema.get(s_col, pl.Float64)).alias(s_col)
-                 for s_col in empty_df_schema if s_col != DEFAULT_DATETIME_COL
-             ])
+        # If only the datetime series is present (no MACD histogram values were calculated)
+        if len(all_series_for_new_df) == 1:
+            if datetime_s.is_empty(): # Should be caught by earlier checks on df_ema_fast/slow
+                return pl.DataFrame(data={}, schema=output_schema)
+            else:
+                # Create a DataFrame from the datetime series first
+                temp_df = datetime_s.to_frame() 
+                # Add other expected columns from the schema (which are only histogram columns now) as nulls
+                for col_name_in_schema, col_type_in_schema in output_schema.items():
+                    if col_name_in_schema != DEFAULT_DATETIME_COL: # If it's not the datetime col we already have
+                        temp_df = temp_df.with_columns(
+                            pl.lit(None, dtype=col_type_in_schema).alias(col_name_in_schema)
+                        )
+                # Ensure correct column order
+                return temp_df.select(list(output_schema.keys()))
 
-        result_df = pl.concat(output_components, how="horizontal")
+        # Construct the DataFrame directly from the list of Series
+        result_df = pl.DataFrame(all_series_for_new_df)
+        
+        # Optional: Ensure column order matches the schema if not already guaranteed.
+        # The construction of all_series_for_new_df (datetime first, then histogram per symbol)
+        # should align with a typical schema order. If exact schema order is critical and might diverge:
+        # result_df = result_df.select(list(output_schema.keys()))
+
         return result_df
 
 
@@ -259,7 +307,7 @@ class MyCustomFactor(FactorTemplate):
         """
         Defines output schema: datetime and one Float64 column for each symbol (named by symbol string).
         """
-        schema = {DEFAULT_DATETIME_COL: pl.Datetime(time_unit="us", timezone=DB_TZ if DB_TZ else None)}
+        schema = {DEFAULT_DATETIME_COL: pl.Datetime(time_unit="us", time_zone=DB_TZ if DB_TZ else None)}
         for symbol in self.vt_symbols:
             schema[symbol] = pl.Float64
         return schema

@@ -165,7 +165,7 @@ class FactorTemplate(ABC):
     
     # These are typically not used directly by individual factors if they are symbol/exchange agnostic
     # but can be part of the context if a factor is specific.
-    symbol: str = "" 
+    vt_symbols: List[str] = []
     exchange: Exchange = Exchange.TEST
 
     # Configurations for dependencies, will be resolved to FactorTemplate instances
@@ -193,7 +193,7 @@ class FactorTemplate(ABC):
         Example:
             return {
                 "datetime": pl.Datetime(time_unit="us"), # Standard datetime column
-                self.factor_name + "_value": pl.Float64, # Example output column
+                self.vt_symbols: pl.Float64, # Example output column
                 # Add other output columns as needed
             }
         """
@@ -485,7 +485,7 @@ class FactorTemplate(ABC):
 
         return {
             "class_name": self.__class__.__name__,
-            "factor_name": self.factor_name,
+            "factor_name": self.factor_key,
             "freq": str(self.freq.value) if self.freq else Interval.UNKNOWN.value,
             "params": self.params.get_all_parameters(),
             "dependencies_factor": dep_factor_settings_list, # NOW A LIST OF SETTINGS DICTS

@@ -52,14 +52,6 @@ class FactorMemory:
         if datetime_col not in schema:
             raise ValueError(f"datetime_col '{datetime_col}' must be defined in the schema.")
         
-        # Check if the type of the datetime_col in the schema is a Polars Datetime or Date type
-        dt_col_type = schema[datetime_col]
-        if not (isinstance(dt_col_type, pl.datatypes.DataTypeClass) and \
-                (dt_col_type.base_type() == pl.Datetime or dt_col_type.base_type() == pl.Date)):
-             raise ValueError(
-                 f"Schema type for datetime_col '{datetime_col}' (which is {dt_col_type}) "
-                 "must be pl.Datetime or pl.Date."
-            )
 
         self.file_path = Path(file_path).resolve() # Use absolute path
         self.max_rows = max_rows

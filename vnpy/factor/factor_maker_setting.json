@@ -1,71 +1,75 @@
 [
-  {
-    "class_name": "EMAFactor",
-    "factor_name": "EMA_Close_12",
-    "freq": "1m",
-    "params": {
-      "period": 12
-    },
-    "dependencies_factor": [],
-    "dependencies_freq": [],
-    "dependencies_symbol": [],
-    "dependencies_exchange": [],
-    "last_run_datetime": "2025-05-10 10:00:00",
-    "factor_mode": "LIVE"
-  },
-  {
-    "class_name": "EMAFactor",
-    "factor_name": "EMA_Close_26",
-    "freq": "1m",
-    "params": {
-      "period": 26
-    },
-    "dependencies_factor": [],
-    "dependencies_freq": [],
-    "dependencies_symbol": [],
-    "dependencies_exchange": [],
-    "last_run_datetime": "2025-05-10 10:00:00",
-    "factor_mode": "LIVE"
-  },
-  {
-    "class_name": "MACDFactor",
-    "factor_name": "MACD_12_26_9",
-    "freq": "1m",
-    "params": {
-      "fast_period": 12,
-      "slow_period": 26,
-      "signal_period": 9
-    },
-    "dependencies_factor": [
-      {
+    {
         "class_name": "EMAFactor",
-        "factor_name": "EMA_Close_12",
+        "factor_name": "factor_1m_EMAFactor@period_12",
         "freq": "1m",
-        "params": {"period": 12},
+        "params": {
+            "period": 12
+        },
         "dependencies_factor": [],
         "dependencies_freq": [],
         "dependencies_symbol": [],
         "dependencies_exchange": [],
-        "last_run_datetime": "2025-05-10 10:00:00",
+        "last_run_datetime": "2025-05-17 08:05:50",
         "factor_mode": "LIVE"
-      },
-      {
+    },
+    {
         "class_name": "EMAFactor",
-        "factor_name": "EMA_Close_26",
+        "factor_name": "factor_1m_EMAFactor@period_26",
         "freq": "1m",
-        "params": {"period": 26},
+        "params": {
+            "period": 26
+        },
         "dependencies_factor": [],
         "dependencies_freq": [],
         "dependencies_symbol": [],
         "dependencies_exchange": [],
-        "last_run_datetime": "2025-05-10 10:00:00",
+        "last_run_datetime": "2025-05-17 08:05:50",
         "factor_mode": "LIVE"
-      }
-    ],
-    "dependencies_freq": [],
-    "dependencies_symbol": [],
-    "dependencies_exchange": [],
-    "last_run_datetime": "2025-05-10 10:00:00",
-    "factor_mode": "LIVE"
-  }
+    },
+    {
+        "class_name": "MACDFactor",
+        "factor_name": "factor_1m_MACDFactor@fast_period_12-signal_period_9-slow_period_26",
+        "freq": "1m",
+        "params": {
+            "fast_period": 12,
+            "slow_period": 26,
+            "signal_period": 9
+        },
+        "dependencies_factor": [
+            {
+                "class_name": "EMAFactor",
+                "factor_name": "factor_1m_EMAFactor@period_12",
+                "freq": "1m",
+                "params": {
+                    "period": 12
+                },
+                "dependencies_factor": [],
+                "dependencies_freq": [],
+                "dependencies_symbol": [],
+                "dependencies_exchange": [],
+                "last_run_datetime": "2025-05-17 08:05:50",
+                "factor_mode": "LIVE"
+            },
+            {
+                "class_name": "EMAFactor",
+                "factor_name": "factor_1m_EMAFactor@period_26",
+                "freq": "1m",
+                "params": {
+                    "period": 26
+                },
+                "dependencies_factor": [],
+                "dependencies_freq": [],
+                "dependencies_symbol": [],
+                "dependencies_exchange": [],
+                "last_run_datetime": "2025-05-17 08:05:50",
+                "factor_mode": "LIVE"
+            }
+        ],
+        "dependencies_freq": [],
+        "dependencies_symbol": [],
+        "dependencies_exchange": [],
+        "last_run_datetime": "2025-05-17 08:05:50",
+        "factor_mode": "LIVE"
+    }
 ]

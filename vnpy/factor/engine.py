@@ -149,7 +149,7 @@ class FactorEngine(BaseEngine):
         inited_factor_instances = init_factors(
             self.module_factors, # Module for finding primary factor classes
             factor_settings_list,
-            dependencies_module_lookup_override=self.module_factors # Module for their dependencies too
+            dependencies_module_lookup_for_instances=self.module_factors # Module for their dependencies too
         )
         self.stacked_factors = {f.factor_key: f for f in inited_factor_instances}
         self.write_log(f"Loaded {len(self.stacked_factors)} stacked factors.", level=INFO)
@@ -202,6 +202,7 @@ class FactorEngine(BaseEngine):
         self.factor_memory_instances.clear()
         for factor_key, factor_instance in self.flattened_factors.items():
             try:
+                factor_instance.vt_symbols = self.vt_symbols # Pass symbols to factor instance
                 output_schema = factor_instance.get_output_schema()
                 if self.factor_datetime_col not in output_schema:
                     raise ValueError(f"Factor '{factor_key}' output schema must contain the datetime column '{self.factor_datetime_col}'.")
@@ -211,7 +212,7 @@ class FactorEngine(BaseEngine):
                 if not isinstance(factor_specific_max_rows, int) or factor_specific_max_rows <=0:
                     factor_specific_max_rows = self.max_memory_length_factor # Use engine default
 
-                file_path = self.factor_data_dir / f"{safe_filename(factor_key)}.arrow"
+                file_path = self.factor_data_dir.joinpath(f"{safe_filename(factor_key)}.arrow")
                 
                 self.factor_memory_instances[factor_key] = FactorMemory(
                     file_path=file_path,
