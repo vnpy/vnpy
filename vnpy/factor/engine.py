@@ -27,7 +27,7 @@ from vnpy.factor.base import APP_NAME # Import FactorMode
 # FactorTemplate and FactorMemory are assumed to be defined above or importable
 from vnpy.factor.utils.factor_utils import init_factors, load_factor_setting, save_factor_setting # Ensure these utils are compatible
 from vnpy.factor.utils.memory_utils import truncate_memory as truncate_bar_memory
-
+from vnpy.factor.settings import get_factor_path, get_factor_setting
 
 FACTOR_MODULE_NAME = 'vnpy.factor.factors' # Default, can be overridden
 SYSTEM_MODE = SETTINGS.get('system.mode', 'LIVE') # LIVE, BACKTEST, etc.
@@ -45,11 +45,18 @@ class CalculationMetrics:
     error_count: int
 
 class FactorEngine(BaseEngine):
-    setting_filename: str = "/Users/chenzhao/Documents/crypto_vnpy/vnpy/vnpy/factor/factor_maker_setting.json"
-    factor_data_cache_dirname: str = "factor_data_cache" # Directory for FactorMemory files
-
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         super().__init__(main_engine, event_engine, APP_NAME)
+        
+        # Use settings for paths and configuration
+        self.setting_filename = get_factor_path("factor_settings")
+        self.factor_data_dir = get_factor_path("factor_data_cache")
+        
+        # Load other settings
+        self.factor_datetime_col = get_factor_setting("datetime_col")
+        self.max_memory_length_bar = get_factor_setting("max_memory_length_bar")
+        self.max_memory_length_factor = get_factor_setting("max_memory_length_factor")
+        self.error_threshold = get_factor_setting("error_threshold")
 
         try:
             self.module_factors = importlib.import_module(FACTOR_MODULE_NAME)

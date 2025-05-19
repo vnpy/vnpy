@@ -24,7 +24,7 @@ from vnpy.trader.setting import SETTINGS
 from vnpy.factor.base import APP_NAME, FactorMode # Import FactorMode
 # FactorTemplate and FactorMemory are assumed to be defined above or importable
 from vnpy.factor.utils.factor_utils import init_factors, load_factor_setting # Ensure these utils are compatible
-
+from vnpy.factor.settings import get_factor_path, get_factor_setting
 
 FACTOR_MODULE_NAME = 'vnpy.factor.factors' # Default, can be overridden
 SYSTEM_MODE = SETTINGS.get('system.mode', 'BACKTEST') # LIVE, BACKTEST, etc.
@@ -56,13 +56,14 @@ class BacktestEngine:
     def __init__(
         self,
         vt_symbols: List[str],
-        factor_settings_path: str,
-        factor_module_name: str = DEFAULT_FACTOR_MODULE_NAME,
-        output_data_dir: str = "backtest_factor_data_cache"
+        factor_settings_path: Optional[str] = None,
+        factor_module_name: Optional[str] = None,
+        output_data_dir: Optional[str] = None
     ) -> None:
-        self.factor_settings_path = Path(factor_settings_path)
-        self.factor_module_name = factor_module_name
-        self.output_data_dir = Path(output_data_dir)
+        # Use provided paths or defaults from settings
+        self.factor_settings_path = Path(factor_settings_path) if factor_settings_path else get_factor_path("factor_settings")
+        self.factor_module_name = factor_module_name or get_factor_setting("module_name")
+        self.output_data_dir = Path(output_data_dir) if output_data_dir else get_factor_path("backtest_data_cache")
 
         try:
             self.module_factors = importlib.import_module(self.factor_module_name)
