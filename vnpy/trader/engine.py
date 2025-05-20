@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
-from typing import Any, Type, Dict, List, Optional, Union
+from typing import Type, Dict, List, Optional, Union
 from itertools import product
 from typing import TypeVar
 from collections.abc import Callable
@@ -50,8 +50,7 @@ from .object import (
 from .setting import SETTINGS
 from .utility import get_folder_path, TRADER_DIR, virtual
 from .converter import OffsetConverter
-from .logger import logger, DEBUG, INFO, WARNING, ERROR, CRITICAL
-from .locale import _
+from .logger import DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 APP_NAME = 'MainEngine'
 
@@ -174,7 +173,7 @@ class MainEngine:
         """
         gateway: BaseGateway = self.gateways.get(gateway_name, None)
         if not gateway:
-            self.write_log(_("找不到底层接口：{}").format(gateway_name))
+            self.write_log(f"Cannot find gateway: {gateway_name}")
         return gateway
 
     def get_engine(self, engine_name: str) -> BaseEngine:
@@ -183,7 +182,7 @@ class MainEngine:
         """
         engine: BaseEngine = self.engines.get(engine_name, None)
         if not engine:
-            self.write_log(_("找不到引擎：{}").format(engine_name))
+            self.write_log(f"Cannot find engine: {engine_name}")
         return engine
 
     def get_default_setting(self, gateway_name: str) -> dict[str, str | bool | int | float] | None:
@@ -760,7 +759,7 @@ class EmailEngine(BaseEngine):
                         smtp.login(username, password)
                         smtp.send_message(msg)
                 except Exception:
-                    log_msg: str = _("邮件发送失败: {}").format(traceback.format_exc())
+                    log_msg: str = f"Email sending failed: {traceback.format_exc()}"
                     self.main_engine.write_log(log_msg, "EMAIL")
             except Empty:
                 pass

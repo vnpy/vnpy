@@ -275,11 +275,11 @@ class BaseMonitor(QtWidgets.QTableWidget):
         """
         self.menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
 
-        resize_action: QtGui.QAction = QtGui.QAction(_("调整列宽"), self)
+        resize_action: QtGui.QAction = QtGui.QAction("Adjust Column Width", self)
         resize_action.triggered.connect(self.resize_columns)
         self.menu.addAction(resize_action)
 
-        save_action: QtGui.QAction = QtGui.QAction(_("保存数据"), self)
+        save_action: QtGui.QAction = QtGui.QAction("Save Data", self)
         save_action.triggered.connect(self.save_csv)
         self.menu.addAction(save_action)
 
@@ -414,20 +414,20 @@ class TickMonitor(BaseMonitor):
     sorting: bool = True
 
     headers: dict = {
-        "symbol": {"display": _("代码"), "cell": BaseCell, "update": False},
-        "exchange": {"display": _("交易所"), "cell": EnumCell, "update": False},
-        "name": {"display": _("名称"), "cell": BaseCell, "update": True},
-        "last_price": {"display": _("最新价"), "cell": BaseCell, "update": True},
-        "volume": {"display": _("成交量"), "cell": BaseCell, "update": True},
-        "open_price": {"display": _("开盘价"), "cell": BaseCell, "update": True},
-        "high_price": {"display": _("最高价"), "cell": BaseCell, "update": True},
-        "low_price": {"display": _("最低价"), "cell": BaseCell, "update": True},
-        "bid_price_1": {"display": _("买1价"), "cell": BidCell, "update": True},
-        "bid_volume_1": {"display": _("买1量"), "cell": BidCell, "update": True},
-        "ask_price_1": {"display": _("卖1价"), "cell": AskCell, "update": True},
-        "ask_volume_1": {"display": _("卖1量"), "cell": AskCell, "update": True},
-        "datetime": {"display": _("时间"), "cell": TimeCell, "update": True},
-        "gateway_name": {"display": _("接口"), "cell": BaseCell, "update": False},
+        "symbol": {"display": "Code", "cell": BaseCell, "update": False},
+        "exchange": {"display": "Exchange", "cell": EnumCell, "update": False},
+        "name": {"display": "Name", "cell": BaseCell, "update": True},
+        "last_price": {"display": "Last", "cell": BaseCell, "update": True},
+        "volume": {"display": "Volume", "cell": BaseCell, "update": True},
+        "open_price": {"display": "Open", "cell": BaseCell, "update": True},
+        "high_price": {"display": "High", "cell": BaseCell, "update": True},
+        "low_price": {"display": "Low", "cell": BaseCell, "update": True},
+        "bid_price_1": {"display": "Bid", "cell": BidCell, "update": True},
+        "bid_volume_1": {"display": "Bid Vol", "cell": BidCell, "update": True},
+        "ask_price_1": {"display": "Ask", "cell": AskCell, "update": True}, 
+        "ask_volume_1": {"display": "Ask Vol", "cell": AskCell, "update": True},
+        "datetime": {"display": "Time", "cell": TimeCell, "update": True},
+        "gateway_name": {"display": "Gateway", "cell": BaseCell, "update": False},
     }
 
 

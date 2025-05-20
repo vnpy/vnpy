@@ -4,16 +4,14 @@ General constant enums used in the trading platform.
 
 from enum import Enum
 
-from .locale import _
-
 
 class Direction(Enum):
     """
     Direction of order/trade/position.
     """
-    LONG = _("多")
-    SHORT = _("空")
-    NET = _("净")
+    LONG = "LONG"
+    SHORT = "SHORT" 
+    NET = "NET"
 
 
 class Offset(Enum):
@@ -21,69 +19,69 @@ class Offset(Enum):
     Offset of order/trade.
     """
     NONE = ""
-    OPEN = _("开")
-    CLOSE = _("平")
-    CLOSETODAY = _("平今")
-    CLOSEYESTERDAY = _("平昨")
+    OPEN = "OPEN"
+    CLOSE = "CLOSE"
+    CLOSETODAY = "CLOSETODAY"
+    CLOSEYESTERDAY = "CLOSEYESTERDAY"
 
 
 class Status(Enum):
     """
     Order status.
     """
-    SUBMITTING = _("提交中")
-    NOTTRADED = _("未成交")
-    PARTTRADED = _("部分成交")
-    ALLTRADED = _("全部成交")
-    CANCELLED = _("已撤销")
-    REJECTED = _("拒单")
+    SUBMITTING = "SUBMITTING"
+    NOTTRADED = "NOT TRADED"
+    PARTTRADED = "PARTIALLY TRADED"
+    ALLTRADED = "FULLY TRADED"
+    CANCELLED = "CANCELLED"
+    REJECTED = "REJECTED"
 
 
 class Product(Enum):
     """
     Product class.
     """
-    EQUITY = _("股票")
-    FUTURES = _("期货")
-    OPTION = _("期权")
-    INDEX = _("指数")
-    FOREX = _("外汇")
-    SPOT = _("现货")
+    EQUITY = "EQUITY"
+    FUTURES = "FUTURES"
+    OPTION = "OPTION"  
+    INDEX = "INDEX"
+    FOREX = "FOREX"
+    SPOT = "SPOT"
     ETF = "ETF"
-    BOND = _("债券")
-    WARRANT = _("权证")
-    SPREAD = _("价差")
-    FUND = _("基金")
+    BOND = "BOND"
+    WARRANT = "WARRANT"
+    SPREAD = "SPREAD"
+    FUND = "FUND"
     CFD = "CFD"
-    SWAP = _("互换")
+    SWAP = "SWAP"
 
 
 class OrderType(Enum):
     """
     Order type.
     """
-    LIMIT = _("限价")
-    MARKET = _("市价")
+    LIMIT = "LIMIT"
+    MARKET = "MARKET"
     STOP = "STOP"
     FAK = "FAK"
     FOK = "FOK"
-    RFQ = _("询价")
+    RFQ = "RFQ"
 
 
 class OptionType(Enum):
     """
     Option type.
     """
-    CALL = _("看涨期权")
-    PUT = _("看跌期权")
+    CALL = "CALL"
+    PUT = "PUT"
 
 
 class EngineType(Enum):
     """
     Engine type.
     """
-    LIVE = _("实盘")
-    BACKTESTING = _("回测")
+    LIVE = "LIVE"
+    BACKTESTING = "BACKTESTING"
     TEST = "TEST"  # Test engine
 
 class Exchange(Enum):

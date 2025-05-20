@@ -9,7 +9,6 @@ from .constant import Interval, Exchange
 from .object import BarData, TickData
 from .setting import SETTINGS
 from .utility import ZoneInfo
-from .locale import _
 
 from vnpy.config import VTSYMBOL_KLINE, VTSYMBOL_FACTORDATA
 
@@ -191,7 +190,7 @@ def get_database() -> BaseDatabase:
     try:
         module: ModuleType = import_module(module_name)
     except ModuleNotFoundError:
-        print(_("找不到数据库驱动{}，使用默认的SQLite数据库").format(module_name))
+        print(f"Cannot find database driver {module_name}, using default SQLite database")
         module: ModuleType = import_module("vnpy_sqlite")
 
     # Create database object from module
