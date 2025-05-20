@@ -1,11 +1,8 @@
 # Utility functions for factor management
 
-import importlib
 from types import ModuleType
 from typing import Any, Dict, Type, List
-from pathlib import Path
 
-from vnpy.factor.memory import FactorMemory
 from vnpy.trader.utility import load_json, save_json
 
 def get_factor_class(module_to_search: ModuleType, class_name: str) -> Type:
