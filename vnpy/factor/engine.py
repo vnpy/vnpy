@@ -27,7 +27,7 @@ from vnpy.factor.base import APP_NAME # Import FactorMode
 # FactorTemplate and FactorMemory are assumed to be defined above or importable
 from vnpy.factor.utils.factor_utils import init_factors, load_factor_setting, save_factor_setting # Ensure these utils are compatible
 from vnpy.factor.utils.memory_utils import truncate_memory as truncate_bar_memory
-from vnpy.factor.settings import get_factor_definitions_filepath, get_factor_setting, get_factor_data_cache_path, FACTOR_MODULE_SETTINGS
+from .setting import get_factor_definitions_filepath, get_factor_setting, get_factor_data_cache_path, FACTOR_MODULE_SETTINGS
 
 FACTOR_MODULE_NAME = FACTOR_MODULE_SETTINGS.get("module_name", 'vnpy.factor.factors') # Use setting
 SYSTEM_MODE = SETTINGS.get('system.mode', 'LIVE') # LIVE, BACKTEST, etc.
