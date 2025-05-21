@@ -133,7 +133,7 @@ class LassoModel(AlphaModel):
         data = [x for x in data if round(x[1], 6) != 0]
 
         # Print feature importance
-        logger.info(f"LASSO模型特征总数量: {len(data)}")
+        logger.info(f"Total number of LASSO model features: {len(data)}")
 
         for name, importance in data:
             logger.info(f"{name}: {importance:.6f}")

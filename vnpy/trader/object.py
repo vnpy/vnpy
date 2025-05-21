@@ -120,7 +120,7 @@ class BarData(BaseData):
     datetime: Datetime = field(default=None, init=True)
 
     interval: Interval = None
-    volume: float = 0  # quoted asset volume (����һ�㶼��usdt�Ƽ�, ��ô�����volume����usdt�Ƽۺ��volume)
+    volume: float = 0  # quoted asset volume (Usually, it is denominated in USDT, so this volume is the volume denominated in USDT)
     turnover: float = 0
     open_interest: float = 0
     open_price: float = 0

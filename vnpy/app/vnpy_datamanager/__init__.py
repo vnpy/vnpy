@@ -42,5 +42,3 @@ class DataManagerApp(BaseApp):
     app_path: Path = Path(__file__).parent
     display_name: str = "数据管理"
     engine_class: ManagerEngine = ManagerEngine
-    widget_name: str = "ManagerWidget"
-    icon_name: str = str(app_path.joinpath("ui", "manager.ico"))

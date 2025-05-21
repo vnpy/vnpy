@@ -32,7 +32,7 @@ SYSTEM_MODE = SETTINGS.get("system.mode", "LIVE")
 
 
 class RecorderEngine(BaseEngine):
-    """用于将从binance等exchange拿到的数据入库, 不负责计算因子"""
+    """For storing data obtained from exchanges like Binance into the database, not responsible for calculating factors"""
 
     def __init__(self,
                  main_engine: MainEngine,
@@ -100,7 +100,7 @@ class RecorderEngine(BaseEngine):
         elif task_type == "bar":
             assert isinstance(data, BarData)
             self.buffer_bar[data.vt_symbol].append(data)
-            to_remove = []  # 保存完数据后, 将其从buffer中删除
+            to_remove = []  # After saving the data, remove it from the buffer
             for k, v in self.buffer_bar.items():
                 # do insertion
                 if len(v) >= self.buffer_size or force_save:
@@ -124,10 +124,10 @@ class RecorderEngine(BaseEngine):
             for k in to_remove:
                 self.buffer_bar[k] = []
         elif task_type == 'factor':
-            self.write_log(f"识别到factor", level=NOTSET)
+            self.write_log(f"Recognized factor", level=NOTSET)
             if isinstance(data, FactorData):
-                self.write_log(f"识别到FactorData", level=DEBUG)
-                self.buffer_factor[data.vt_symbol].append(data)  # todo: 这里用vt_symbol可以吗???
+                self.write_log(f"Recognized FactorData", level=DEBUG)
+                self.buffer_factor[data.vt_symbol].append(data)  # todo: Can vt_symbol be used here???
                 to_remove = []
                 for k, v in self.buffer_factor.items():
                     if len(v) >= self.buffer_size or force_save:
@@ -143,12 +143,12 @@ class RecorderEngine(BaseEngine):
                 for k in to_remove:
                     self.buffer_factor[k] = []
             elif isinstance(data, pl.DataFrame):
-                self.write_log(f"识别到polars dataframe")
+                self.write_log(f"Recognized polars dataframe")
                 self.write_log(f"data {data}")
                 time.sleep(0.1)
                 self.database_manager.save_factor_data(name=data.columns[-1], data=data)
             elif isinstance(data, dict) and isinstance(list(data.values())[0], pl.DataFrame):
-                self.write_log(f"识别到dict", level=NOTSET)
+                self.write_log(f"Recognized dict", level=NOTSET)
                 df_list = []
                 checked_interval = None
                 for factor_key, factor_df in data.items():
@@ -196,7 +196,7 @@ class RecorderEngine(BaseEngine):
                 raise TypeError(f"Unsupported data type: {type(data)}")
 
         elif task_type is None and data is None:
-            # 强制保存当前所有的数据
+            # Force save all current data
             for k, v in self.buffer_bar.items():
                 if len(v) == 0:
                     continue
@@ -220,26 +220,26 @@ class RecorderEngine(BaseEngine):
 
     def close(self):
         """"""
-        self.save_data(None, None)  # 保存所有buffer中残留的数据
+        self.save_data(None, None)  # Save all remaining data in the buffer
         self.active = False
         if self.thread.isAlive():
             self.thread.join()
 
     def start(self):
         """"""
-        self.write_log("启动数据拉取引擎")
+        self.write_log("Starting data fetching engine")
         self.active = True
         self.thread.start()
 
     def add_bar_recording(self, vt_symbol: str):
         """add a symbol to the bar recording list, which means that the bar data of this symbol will be recorded"""
         if vt_symbol in self.bar_recordings:
-            self.write_log(f"已在K线记录列表中：{vt_symbol}", level=NOTSET)
+            self.write_log(f"Already in K-line recording list: {vt_symbol}", level=NOTSET)
             return
 
         contract = self.main_engine.get_contract(vt_symbol)
         if not contract:
-            self.write_log(f"找不到合约：{vt_symbol}", level=ERROR)
+            self.write_log(f"Cannot find contract: {vt_symbol}", level=ERROR)
             return
 
         self.bar_recordings[vt_symbol] = {
@@ -252,17 +252,17 @@ class RecorderEngine(BaseEngine):
         # self.save_setting()
         self.put_event()
 
-        self.write_log(f"添加K线记录成功：{vt_symbol}", level=DEBUG)
+        self.write_log(f"Added K-line recording successfully: {vt_symbol}", level=DEBUG)
 
     def add_factor_recording(self, vt_symbol: str):
         """add a symbol to the factor recording list, which means that the factor data of this symbol will be recorded"""
         if vt_symbol in self.factor_recordings:
-            self.write_log(f"已在因子记录列表中：{vt_symbol}", level=NOTSET)
+            self.write_log(f"Already in factor recording list: {vt_symbol}", level=NOTSET)
             return
 
         contract = self.main_engine.get_contract(vt_symbol)
         if not contract:
-            self.write_log(f"找不到合约：{vt_symbol}", level=ERROR)
+            self.write_log(f"Cannot find contract: {vt_symbol}", level=ERROR)
             return
 
         self.factor_recordings[vt_symbol] = {
@@ -275,17 +275,17 @@ class RecorderEngine(BaseEngine):
         # self.save_setting()
         self.put_event()
 
-        self.write_log(f"添加因子记录成功：{vt_symbol}", level=DEBUG)
+        self.write_log(f"Added factor recording successfully: {vt_symbol}", level=DEBUG)
 
     def add_tick_recording(self, vt_symbol: str):
         """add a symbol to the tick recording list, which means that the tick data of this symbol will be recorded"""
         if vt_symbol in self.tick_recordings:
-            self.write_log(f"已在Tick记录列表中：{vt_symbol}", level=NOTSET)
+            self.write_log(f"Already in Tick recording list: {vt_symbol}", level=NOTSET)
             return
 
         contract = self.main_engine.get_contract(vt_symbol)
         if not contract:
-            self.write_log(f"找不到合约：{vt_symbol}", level=ERROR)
+            self.write_log(f"Cannot find contract: {vt_symbol}", level=ERROR)
             return
 
         self.tick_recordings[vt_symbol] = {
@@ -298,31 +298,31 @@ class RecorderEngine(BaseEngine):
         # self.save_setting()
         self.put_event()
 
-        self.write_log(f"添加Tick记录成功：{vt_symbol}", level=DEBUG)
+        self.write_log(f"Added Tick recording successfully: {vt_symbol}", level=DEBUG)
 
     def remove_bar_recording(self, vt_symbol: str):
         """remove a symbol from the bar recording list"""
         if vt_symbol not in self.bar_recordings:
-            self.write_log(f"不在K线记录列表中：{vt_symbol}", level=DEBUG)
+            self.write_log(f"Not in K-line recording list: {vt_symbol}", level=DEBUG)
             return
 
         self.bar_recordings.pop(vt_symbol)
         # self.save_setting()
         self.put_event()
 
-        self.write_log(f"移除K线记录成功：{vt_symbol}")
+        self.write_log(f"Removed K-line recording successfully: {vt_symbol}")
 
     def remove_tick_recording(self, vt_symbol: str):
         """remove a symbol from the tick recording list"""
         if vt_symbol not in self.tick_recordings:
-            self.write_log(f"不在Tick记录列表中：{vt_symbol}", level=DEBUG)
+            self.write_log(f"Not in Tick recording list: {vt_symbol}", level=DEBUG)
             return
 
         self.tick_recordings.pop(vt_symbol)
         # self.save_setting()
         self.put_event()
 
-        self.write_log(f"移除Tick记录成功：{vt_symbol}")
+        self.write_log(f"Removed Tick recording successfully: {vt_symbol}")
 
     def process_bar_event(self, event: Event):
         """"""

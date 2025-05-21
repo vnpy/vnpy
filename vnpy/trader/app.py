@@ -17,5 +17,3 @@ class BaseApp(ABC):
     app_path: Path                      # Absolute path of app folder
     display_name: str                   # Name for display on the menu.
     engine_class: type["BaseEngine"]    # App engine class
-    widget_name: str                    # Class name of app widget
-    icon_name: str                      # Icon file name of app widget
