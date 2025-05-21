@@ -27,9 +27,9 @@ from vnpy.factor.base import APP_NAME # Import FactorMode
 # FactorTemplate and FactorMemory are assumed to be defined above or importable
 from vnpy.factor.utils.factor_utils import init_factors, load_factor_setting, save_factor_setting # Ensure these utils are compatible
 from vnpy.factor.utils.memory_utils import truncate_memory as truncate_bar_memory
-from vnpy.factor.settings import get_factor_path, get_factor_setting
+from vnpy.factor.settings import get_factor_definitions_filepath, get_factor_setting, get_factor_data_cache_path, FACTOR_MODULE_SETTINGS
 
-FACTOR_MODULE_NAME = 'vnpy.factor.factors' # Default, can be overridden
+FACTOR_MODULE_NAME = FACTOR_MODULE_SETTINGS.get("module_name", 'vnpy.factor.factors') # Use setting
 SYSTEM_MODE = SETTINGS.get('system.mode', 'LIVE') # LIVE, BACKTEST, etc.
 DEFAULT_DATETIME_COL = "datetime" # Standard datetime column name for FactorMemory
 
@@ -49,8 +49,8 @@ class FactorEngine(BaseEngine):
         super().__init__(main_engine, event_engine, APP_NAME)
         
         # Use settings for paths and configuration
-        self.setting_filename = get_factor_path("factor_settings")
-        self.factor_data_dir = get_factor_path("factor_data_cache")
+        self.setting_filename = get_factor_definitions_filepath()  # Updated
+        self.factor_data_dir = get_factor_data_cache_path()      # Updated
         
         # Load other settings
         self.factor_datetime_col = get_factor_setting("datetime_col")
@@ -80,7 +80,7 @@ class FactorEngine(BaseEngine):
         self.memory_bar: Dict[str, pl.DataFrame] = {} # For OHLCV data
         
         # NEW: Manages FactorMemory instances
-        self.factor_data_dir = Path(self.factor_data_cache_dirname)
+        # self.factor_data_dir is already a Path object from get_factor_data_cache_path()
         self.factor_memory_instances: Dict[str, FactorMemory] = {}
         self.latest_calculated_factors_cache: Dict[str, pl.DataFrame] = {}
 

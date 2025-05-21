@@ -1,0 +1,33 @@
+[
+    {
+        "class_name": "AtrRsiStrategy",
+        "template_name": "ATR_RSI_Trend_Strategy",
+        "author": "Default",
+        "description": "A trend-following strategy using ATR for stop loss and RSI for entry.",
+        "parameters": {
+            "vt_symbols": ["IF99.CFFEX"],
+            "atr_length": 22,
+            "atr_multiplier": 3.2,
+            "rsi_length": 5,
+            "rsi_entry": 18,
+            "trailing_percent": 0.8,
+            "min_order_volume": 1,
+            "trading_size": 1
+        },
+        "required_data_interval": "1m"
+    },
+    {
+        "class_name": "DualMovingAverageStrategy",
+        "template_name": "DMA_Cross_Strategy",
+        "author": "Default",
+        "description": "A simple strategy based on the crossover of two moving averages.",
+        "parameters": {
+            "vt_symbols": ["RB99.SHFE"],
+            "fast_window": 5,
+            "slow_window": 20,
+            "trading_size": 1,
+            "min_order_volume": 1
+        },
+        "required_data_interval": "1h"
+    }
+]

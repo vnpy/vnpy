@@ -44,6 +44,7 @@ from vnpy.trader.constant import EngineType
 from vnpy.trader.utility import load_json, save_json, get_file_path, virtual
 from vnpy.trader.database import BaseDatabase, get_database
 from vnpy.trader.datafeed import BaseDatafeed, get_datafeed
+from vnpy.strategy.settings import get_strategy_definitions_filepath, get_strategy_setting, STRATEGY_MODULE_SETTINGS
 import pandas as pd # For DataFrame operations
 
 # --- Strategy & Portfolio Specific Imports ---
@@ -58,11 +59,11 @@ from vnpy.strategy.template import StrategyTemplate
 
 # --- Constants ---
 STRATEGY_ENGINE_APP_NAME: str = "StrategyEngine"  # Default unique name for this engine
-DEFAULT_STRATEGIES_DIR: str = "vnpy/"  # Default subdirectory for strategy code
-DEFAULT_EXECUTION_GATEWAY: str = "BINANCE"  # Default gateway for order execution
+# DEFAULT_STRATEGIES_DIR is now handled by STRATEGY_MODULE_SETTINGS
+# DEFAULT_EXECUTION_GATEWAY is now handled by STRATEGY_MODULE_SETTINGS
 
 # Filename Templates
-SETTING_FILENAME_TPL: str = "{}_setting.json"  # Template for engine settings filename
+# SETTING_FILENAME_TPL is replaced by definitions_filepath
 STRATEGY_DATA_FILENAME_TPL: str = "strategy_data_{}.json"  # Template for strategy runtime data
 
 # Event Types
@@ -96,18 +97,19 @@ class BaseStrategyEngine(BaseEngine):
         """
         super().__init__(main_engine, event_engine, engine_name=engine_name)
 
-        # --- Load Configuration from MainEngine Settings ---
-        # engine_settings = main_engine.get_settings(f"{engine_name}.")  # Prefix for engine-specific settings
-        strategies_dir = "vnpy/strategy/examples"
-        self.execution_gateway_name = "BINANCE_SPOT"
+        # --- Load Configuration from Settings ---
+        strategies_dir_default = "vnpy/strategy/examples"  # Default if not in settings
+        strategies_dir_from_settings = STRATEGY_MODULE_SETTINGS.get("default_strategy_path", strategies_dir_default)
+        self.strategies_path: Path = Path.cwd().joinpath(strategies_dir_from_settings)
 
-        self.strategies_path: Path = Path.cwd().joinpath(strategies_dir)
-        self.setting_filename: str = SETTING_FILENAME_TPL.format(self.engine_name)
+        self.execution_gateway_name = STRATEGY_MODULE_SETTINGS.get("default_execution_gateway", "BINANCE_SPOT")
+        
+        self.definitions_filepath: Path = get_strategy_definitions_filepath()
 
         self.write_log(f"Engine Name: {self.engine_name}", level=DEBUG)
-        self.write_log(f"Strategies Directory: {self.strategies_path}", level=INFO)
+        self.write_log(f"Strategies Code Directory: {self.strategies_path}", level=INFO)
         self.write_log(f"Execution Gateway: {self.execution_gateway_name}", level=INFO)
-        self.write_log(f"Settings File: {self.setting_filename}", level=DEBUG)
+        self.write_log(f"Strategy Definitions File: {self.definitions_filepath}", level=INFO)
 
         # --- Core Strategy State ---
         self.strategy_classes: Dict[str, Type[StrategyTemplate]] = {}  # {ClassName: Class}
@@ -325,19 +327,60 @@ class BaseStrategyEngine(BaseEngine):
             return 0
 
     def load_all_strategy_settings(self) -> None:
-        """Load strategy settings from the JSON configuration file."""
-        self.write_log(f"Loading strategy settings from: {self.setting_filename}", level=INFO)
-        filepath = get_file_path(self.setting_filename)
-        loaded_settings = load_json(filepath)
+        """Load strategy settings from the definitions JSON file."""
+        self.write_log(f"Loading strategy instance definitions from: {self.definitions_filepath}", level=INFO)
+        
+        loaded_data = load_json(self.definitions_filepath)
+        transformed_settings: Dict[str, dict] = {}
 
-        if not isinstance(loaded_settings, dict):
+        if isinstance(loaded_data, list):
+            # Original format: list of template definitions
+            self.write_log(f"Detected list format in {self.definitions_filepath}, transforming to instance dictionary.", level=INFO)
+            for i, template_def in enumerate(loaded_data):
+                if not isinstance(template_def, dict):
+                    self.write_log(f"Skipping invalid template definition (not a dict) at index {i}.", level=WARNING)
+                    continue
+
+                class_name = template_def.get("class_name")
+                if not class_name:
+                    self.write_log(f"Skipping template definition at index {i} due to missing 'class_name'.", level=WARNING)
+                    continue
+
+                parameters = template_def.get("parameters", {})
+                vt_symbols = parameters.get("vt_symbols", []) # Assuming vt_symbols is within parameters
+
+                # Generate a unique strategy instance name
+                # Priority: strategy_instance_name > template_name > class_name
+                strategy_instance_name = template_def.get("strategy_instance_name")
+                if not strategy_instance_name:
+                    template_name = template_def.get("template_name", class_name)
+                    strategy_instance_name = f"{template_name}_Instance_{i+1}"
+                
+                if strategy_instance_name in transformed_settings:
+                    self.write_log(f"Duplicate strategy instance name '{strategy_instance_name}' generated/found. Appending counter.", level=WARNING)
+                    strategy_instance_name = f"{strategy_instance_name}_{i+1}"
+
+                transformed_settings[strategy_instance_name] = {
+                    "class_name": class_name,
+                    "vt_symbols": vt_symbols,
+                    "setting": parameters  # The whole "parameters" dict from template_def
+                }
+            self.strategy_settings = transformed_settings
+            self.write_log(f"Transformed {len(transformed_settings)} strategy templates into instance settings.", level=INFO)
+            # Consider saving back in the new dict format immediately or on close
+            # self.save_all_strategy_settings() 
+        elif isinstance(loaded_data, dict):
+            # New format: dictionary of instance configurations
+            self.strategy_settings = loaded_data
+            self.write_log(f"Loaded {len(self.strategy_settings)} strategy instance configurations directly from {self.definitions_filepath}.", level=INFO)
+        elif loaded_data is None and not self.definitions_filepath.exists():
+             self.write_log(f"Strategy definitions file {self.definitions_filepath} not found. Initializing with empty settings.", level=INFO)
+             self.strategy_settings = {}
+        else:
             self.write_log(
-                f"Invalid settings file format in '{filepath}': Expected a dictionary, got {type(loaded_settings)}. Ignoring.",
+                f"Invalid data format in '{self.definitions_filepath}': Expected a list or dictionary, got {type(loaded_data)}. Initializing with empty settings.",
                 level=ERROR)
             self.strategy_settings = {}
-        else:
-            self.strategy_settings = loaded_settings
-            self.write_log(f"Loaded settings for {len(self.strategy_settings)} strategies.", level=INFO)
 
     def create_strategies_from_settings(self) -> None:
         """Instantiate strategy objects based on the loaded settings."""
@@ -397,8 +440,8 @@ class BaseStrategyEngine(BaseEngine):
         return True
 
     def save_all_strategy_settings(self) -> None:
-        """Save the current configuration of all active strategies to the settings file."""
-        self.write_log(f"Saving strategy settings to: {self.setting_filename}", level=DEBUG)
+        """Save the current configuration of all active strategies to the definitions file."""
+        self.write_log(f"Saving strategy instance configurations to: {self.definitions_filepath}", level=DEBUG)
         settings_to_save: Dict[str, dict] = {}
         for strategy_name, strategy in self.strategies.items():
             try:
@@ -407,11 +450,11 @@ class BaseStrategyEngine(BaseEngine):
                 self.write_log(f"Error preparing settings for strategy '{strategy_name}' for saving: {e}", level=ERROR,
                                strategy=strategy)
 
-        filepath = get_file_path(self.setting_filename)
-        if save_json(filepath, settings_to_save):
-            self.write_log(f"Saved settings for {len(settings_to_save)} strategies to {filepath}", level=INFO)
+        # The definitions_filepath is already a Path object
+        if save_json(self.definitions_filepath, settings_to_save):
+            self.write_log(f"Saved configurations for {len(settings_to_save)} strategy instances to {self.definitions_filepath}", level=INFO)
         else:
-            self.write_log(f"Failed to save strategy settings to {filepath} (save_json returned False)", level=ERROR)
+            self.write_log(f"Failed to save strategy instance configurations to {self.definitions_filepath} (save_json returned False)", level=ERROR)
 
     def _get_strategy_setting_dict(self, strategy: StrategyTemplate) -> dict:
         """Create the dictionary representation of a strategy's settings for saving."""
