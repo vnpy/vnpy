@@ -44,6 +44,7 @@ from vnpy.trader.constant import EngineType
 from vnpy.trader.utility import load_json, save_json, get_file_path, virtual
 from vnpy.trader.database import BaseDatabase, get_database
 from vnpy.trader.datafeed import BaseDatafeed, get_datafeed
+import pandas as pd # For DataFrame operations
 
 # --- Strategy & Portfolio Specific Imports ---
 # Assumes portfolio_manager is accessible (e.g., sibling directory or installed)
@@ -52,7 +53,7 @@ from vnpy.app.portfolio_manager.engine import PortfolioEngine, APP_NAME as Portf
 PORTFOLIO_APP_NAME = PortfolioEngine_APP_NAME
 
 from vnpy.strategy.execution_agent import ExecutionAgent
-
+from vnpy.factor.memory import FactorMemory # Added
 from vnpy.strategy.template import StrategyTemplate
 
 # --- Constants ---
@@ -125,8 +126,9 @@ class BaseStrategyEngine(BaseEngine):
         )
 
         # --- Factor Handling ---
-        self.latest_factors: Dict[str, Any] = {}
+        self.latest_factors: Dict[str, Any] = {} # Will be deprecated in process_factor_event
         self.factor_update_time: Optional[datetime] = None
+        self.latest_factor_memories: Dict[str, "FactorMemory"] = {} # Added
 
         self.write_log("Engine initialization started.", level=DEBUG)
 
@@ -214,6 +216,7 @@ class BaseStrategyEngine(BaseEngine):
             self.event_engine.register(EVENT_ORDER, self.process_order_event)
             self.event_engine.register(EVENT_TRADE, self.process_trade_event)
             self.event_engine.register(EVENT_FACTOR, self.process_factor_event)
+            self.event_engine.register(EVENT_TIMER, self._process_timer_event) # Added
             self.write_log("Engine event listeners registered.", level=DEBUG)
         except Exception as e:
             self.write_log(f"Error registering engine events: {e}", level=ERROR)
@@ -241,6 +244,7 @@ class BaseStrategyEngine(BaseEngine):
             self.event_engine.unregister(EVENT_ORDER, self.process_order_event)
             self.event_engine.unregister(EVENT_TRADE, self.process_trade_event)
             self.event_engine.unregister(EVENT_FACTOR, self.process_factor_event)
+            self.event_engine.unregister(EVENT_TIMER, self._process_timer_event) # Added
             self.write_log("Engine event listeners unregistered.", level=DEBUG)
         except Exception as e:
             self.write_log(f"Error unregistering engine events: {e}", level=ERROR)
@@ -916,24 +920,25 @@ class BaseStrategyEngine(BaseEngine):
 
     def process_factor_event(self, event: Event) -> None:
         """Process FACTOR events: Update cache and trigger `on_factor` for active strategies."""
-        factor_data: Any = event.data
-        if not isinstance(factor_data, dict):
-            self.write_log(f"Ignoring factor event: Data is not a dictionary (Type: {type(factor_data)}).",
+        factor_memories: Dict[str, "FactorMemory"] = event.data
+        if not isinstance(factor_memories, dict):
+            self.write_log(f"Ignoring factor event: Data is not a dictionary (Type: {type(factor_memories)}).",
                            level=WARNING)
             return
-        if not factor_data:
+        if not factor_memories:
             self.write_log("Ignoring factor event: Data dictionary is empty.", level=DEBUG)
             return
 
-        self.write_log(f"Processing factor update: {list(factor_data.keys())}", level=DEBUG)
-        self.latest_factors.update(factor_data)
+        self.write_log(f"Processing factor update with FactorMemory objects: {list(factor_memories.keys())}", level=DEBUG)
+        self.latest_factor_memories = factor_memories # Cache the received FactorMemory objects
         self.factor_update_time = self.get_current_datetime()  # Use engine time
 
         active_strategies = [s for s in list(self.strategies.values()) if s.inited and s.trading]
         for strategy in active_strategies:
             if hasattr(strategy, 'on_factor') and callable(strategy.on_factor):
+                # Pass the entire dictionary of FactorMemory objects to the strategy
                 order_reqs: Optional[List[OrderRequest]] = self.call_strategy_func(
-                    strategy, strategy.on_factor, self.latest_factors
+                    strategy, strategy.on_factor, factor_memories
                 )
                 if isinstance(order_reqs, list):
                     for req in order_reqs:
@@ -947,6 +952,182 @@ class BaseStrategyEngine(BaseEngine):
                     self.write_log(
                         f"Strategy '{strategy.strategy_name}' on_factor returned unexpected type: {type(order_reqs)}",
                         level=WARNING, strategy=strategy)
+
+    def _process_timer_event(self, event: Event) -> None:
+        """Process TIMER events to check for strategy model retraining schedules."""
+        current_datetime = self.get_current_datetime()
+
+        # Iterate over a copy of strategy values if strategies dict could be modified
+        for strategy in list(self.strategies.values()):
+            if not (strategy.inited and strategy.trading):
+                continue
+
+            if not (hasattr(strategy, 'check_retraining_schedule') and callable(strategy.check_retraining_schedule)):
+                continue
+            if not (hasattr(strategy, 'train_model') and callable(strategy.train_model)):
+                continue
+
+            try:
+                if strategy.check_retraining_schedule(current_datetime):
+                    self.write_log(f"Retraining condition met for strategy '{strategy.strategy_name}'. "
+                                   f"Queueing model training.", level=INFO, strategy=strategy)
+                    self.init_executor.submit(self._train_strategy_model_thread, strategy.strategy_name)
+            except Exception as e:
+                self.write_log(f"Error during check_retraining_schedule for '{strategy.strategy_name}': {e}",
+                               level=ERROR, strategy=strategy)
+
+    def _train_strategy_model_thread(self, strategy_name: str) -> None:
+        """
+        [Internal] Worker thread function for training a single strategy's model.
+        Prepares data from FactorMemory and calls strategy.train_model.
+        """
+        strategy = self.strategies.get(strategy_name)
+        if not strategy:
+            self.write_log(f"Model training aborted: Strategy '{strategy_name}' not found.", level=WARNING)
+            return
+        if not (strategy.inited and strategy.trading):
+            self.write_log(f"Model training aborted for '{strategy_name}': Strategy no longer inited or trading.",
+                           level=INFO, strategy=strategy)
+            return
+
+        self.write_log(f"Starting model training process for strategy: {strategy_name}",
+                       level=INFO, strategy=strategy)
+        
+        if not self.latest_factor_memories:
+            self.write_log(f"Cannot train model for '{strategy_name}': No FactorMemory objects available in engine cache.",
+                           level=ERROR, strategy=strategy)
+            return
+
+        required_factors = getattr(strategy, 'required_factors', [])
+        if not required_factors:
+            self.write_log(f"Cannot train model for '{strategy_name}': Strategy has no 'required_factors' defined.",
+                           level=WARNING, strategy=strategy)
+            return
+
+        training_data_parts: Dict[str, pd.DataFrame] = {}
+        all_factors_available = True
+        for factor_name in required_factors:
+            factor_memory = self.latest_factor_memories.get(factor_name)
+            if not factor_memory:
+                self.write_log(f"Cannot train model for '{strategy_name}': Required factor '{factor_name}' "
+                               f"not found in latest FactorMemory cache.", level=ERROR, strategy=strategy)
+                all_factors_available = False
+                break
+            
+            try:
+                # Fetch all historical data for this factor
+                polars_df = factor_memory.get_data() 
+                if polars_df is None or polars_df.is_empty():
+                    self.write_log(f"Factor '{factor_name}' provided no historical data (get_data returned empty). "
+                                   f"Skipping for training of '{strategy_name}'.", level=WARNING, strategy=strategy)
+                    # Depending on strategy, might need to skip training or proceed with partial data
+                    all_factors_available = False # Or handle as per strategy needs
+                    break
+                
+                pandas_df = polars_df.to_pandas()
+                
+                # Basic validation of the structure from FactorMemory.get_data()
+                # Expects at least 'vt_symbol', 'datetime', and a value column
+                if not all(col in pandas_df.columns for col in ['vt_symbol', 'datetime']):
+                    self.write_log(f"Factor '{factor_name}' DataFrame from get_data() missing 'vt_symbol' or 'datetime'. "
+                                   f"Schema: {pandas_df.columns}. Skipping for training.", level=WARNING, strategy=strategy)
+                    all_factors_available = False
+                    break
+
+                # Identify value column (similar to on_factor)
+                value_col_found = False
+                if 'value' in pandas_df.columns:
+                    renamed_df = pandas_df.rename(columns={'value': factor_name})
+                    value_col_found = True
+                elif factor_name in pandas_df.columns: # If factor_name is already a column
+                    renamed_df = pandas_df
+                    value_col_found = True
+                else:
+                    # Try to infer if only one other column apart from vt_symbol, datetime
+                    potential_value_cols = [c for c in pandas_df.columns if c not in ['vt_symbol', 'datetime']]
+                    if len(potential_value_cols) == 1:
+                        renamed_df = pandas_df.rename(columns={potential_value_cols[0]: factor_name})
+                        value_col_found = True
+                
+                if not value_col_found:
+                    self.write_log(f"Factor '{factor_name}' DataFrame from get_data() has no clear value column "
+                                   f"(expected 'value', '{factor_name}', or single other). Schema: {pandas_df.columns}. "
+                                   f"Skipping for training.", level=WARNING, strategy=strategy)
+                    all_factors_available = False
+                    break
+
+                # Pivot or set index to align data by datetime and vt_symbol
+                # Assuming 'datetime' is the primary index for time-series alignment
+                # And 'vt_symbol' for cross-sectional alignment for each factor value
+                # Example: set_index(['datetime', 'vt_symbol']) and select factor_name column
+                processed_df = renamed_df.set_index(['datetime', 'vt_symbol'])[[factor_name]]
+                training_data_parts[factor_name] = processed_df
+
+            except Exception as e:
+                self.write_log(f"Error processing historical data for factor '{factor_name}' for training '{strategy_name}': {e}\n"
+                               f"{traceback.format_exc()}", level=ERROR, strategy=strategy)
+                all_factors_available = False
+                break
+        
+        if not all_factors_available or not training_data_parts:
+            self.write_log(f"Model training for '{strategy_name}' aborted due to missing or incomplete factor data.",
+                           level=ERROR, strategy=strategy)
+            return
+
+        try:
+            # Combine all factor data into a single DataFrame aligned by ('datetime', 'vt_symbol')
+            # Using outer join to keep all data points, then handle NaNs
+            combined_df = pd.concat(training_data_parts.values(), axis=1, join='outer')
+            
+            # Handle NaNs after combining - strategy might prefer specific imputation
+            # For now, log and let strategy's train_model handle it or fill with a placeholder
+            if combined_df.isnull().values.any():
+                self.write_log(f"Combined training DataFrame for '{strategy_name}' contains NaNs. "
+                               f"Shape: {combined_df.shape}. Consider handling NaNs before training.", level=WARNING, strategy=strategy)
+                # Example: combined_df = combined_df.fillna(method='ffill').fillna(0) # Forward fill then zero fill
+                # This should ideally be part of the strategy's data prep within train_model
+            
+            # Reset index if train_model expects flat DataFrame, or pass as is if it handles multi-index
+            # Assuming train_model can handle multi-index or will reset it.
+            # combined_df = combined_df.reset_index() 
+
+            self.write_log(f"Successfully prepared combined training data for '{strategy_name}'. Shape: {combined_df.shape}",
+                           level=DEBUG, strategy=strategy)
+
+        except Exception as e:
+            self.write_log(f"Error combining/aligning historical factor data for training '{strategy_name}': {e}\n"
+                           f"{traceback.format_exc()}", level=ERROR, strategy=strategy)
+            return
+
+        # Call the strategy's train_model method
+        training_successful = False
+        try:
+            self.write_log(f"Calling {strategy_name}.train_model()...", level=INFO, strategy=strategy)
+            # Assuming strategy.train_model will use the combined_df and update its internal self.model
+            # and self.last_retrain_time
+            self.call_strategy_func(strategy, strategy.train_model, combined_df)
+            
+            # Check if model attribute was updated (simple check)
+            if hasattr(strategy, 'model') and strategy.model is not None:
+                 # Check if last_retrain_time was updated by the strategy
+                if hasattr(strategy, 'last_retrain_time') and isinstance(strategy.last_retrain_time, datetime):
+                    if (self.get_current_datetime() - strategy.last_retrain_time).total_seconds() < 600: # Updated recently
+                        training_successful = True
+            
+            if training_successful:
+                self.write_log(f"Model training completed for strategy: {strategy_name}. "
+                               f"Last retrained: {strategy.last_retrain_time}", level=INFO, strategy=strategy)
+            else:
+                self.write_log(f"Model training for strategy: {strategy_name} finished, but model/retrain_time "
+                               f"not updated as expected. Review strategy's train_model method.", level=WARNING, strategy=strategy)
+
+        except Exception as e: # call_strategy_func already logs, but good to have specific message here
+            self.write_log(f"Exception during {strategy_name}.train_model(): {e}", level=ERROR, strategy=strategy)
+            # call_strategy_func would have already logged the full traceback.
+        
+        # Update strategy state event if needed (e.g., if last_retrain_time changed)
+        self.put_strategy_update_event(strategy)
+
 
     # --------------------------------
     # Order Submission and Cancellation (Via ExecutionAgent / Backtester)

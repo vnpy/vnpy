@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from logging import DEBUG, ERROR, INFO, WARNING
 import traceback
-from typing import TYPE_CHECKING, Callable, List, Optional, Dict, Any, Set, Union
+from typing import TYPE_CHECKING, Callable, List, Optional, Dict, Any, Set, Union, TYPE_CHECKING
 from collections import defaultdict
 import pandas as pd
 
@@ -24,6 +24,8 @@ from vnpy.trader.object import (
     BarData, ContractData, TickData, CancelRequest, OrderData, FactorData, OrderRequest, TradeData
 )
 from vnpy.trader.utility import convert_dict_to_dataframe, virtual, round_to
+from vnpy.factor.memory import FactorMemory
+
 
 # --- Local Imports ---
 # Assuming these config models exist in the specified path relative to the template
@@ -45,6 +47,8 @@ except ImportError:
 # Type hint for the engine, resolved during type checking
 if TYPE_CHECKING:
     from .engine import BaseStrategyEngine  # Use relative import if in same package
+    from vnpy.trader.object import OrderRequest
+    from vnpy.factor.memory import FactorMemory # Though imported above, good for explicitness in hints
 
 
 class StrategyTemplate(ABC):
@@ -59,10 +63,10 @@ class StrategyTemplate(ABC):
     # --- Strategy Metadata (Override in subclasses) ---
     author: str = "Unknown"  # Strategy author name
     parameters: List[str] = [  # List of configurable parameter names
-        "vt_symbols", "required_factors", "model_config", "trading_config"
+        "vt_symbols", "required_factors", "model_config", "trading_config", "retrain_interval_days"
     ]
     variables: List[str] = [  # List of state variables to expose (optional)
-        "inited", "trading", "latest_factor_update_time"
+        "inited", "trading", "latest_factor_update_time", "last_retrain_time"
     ]
 
     # --- Default Settings (Can be overridden in subclasses or settings file) ---
@@ -119,6 +123,11 @@ class StrategyTemplate(ABC):
         self.latest_factor_data: Optional[pd.DataFrame] = None
         self.latest_factor_update_time: Optional[datetime] = None
 
+        # --- Model Related Attributes ---
+        self.model: Any = None
+        self.last_retrain_time: Optional[datetime] = None
+        self.retrain_interval_days: int = 30  # Default retraining interval
+
         # --- Order Management ---
         # Stores vt_orderids of orders placed by this strategy that are still active
         self.active_order_ids: Set[str] = set()
@@ -149,10 +158,30 @@ class StrategyTemplate(ABC):
     # Abstract Core Logic Methods (Implement in Subclass)
     # --------------------------------
 
-    @abstractmethod
+    @virtual
     def calculate(self, df: pd.DataFrame) -> pd.Series:
         """
         Calculate raw trading signals based on input data.
+        This method can be overridden if a strategy uses a simpler, non-model-based calculation.
+        For model-based strategies, `predict_from_model` will be the primary method.
+        """
+        pass
+
+    @abstractmethod
+    def train_model(self, data: pd.DataFrame) -> None:
+        """
+        Train the strategy's underlying model.
+
+        Args:
+            data: Pandas DataFrame containing historical features (factors) and potentially targets
+                  for training the model. Structure depends on the specific model implementation.
+        """
+        pass
+
+    @abstractmethod
+    def predict_from_model(self, data: pd.DataFrame) -> pd.Series:
+        """
+        Generate trading signals from the trained model using new input data.
 
         Args:
             df: Pandas DataFrame containing relevant data (e.g., factors, market data)
@@ -229,75 +258,144 @@ class StrategyTemplate(ABC):
     # --------------------------------
 
     @virtual
-    def on_factor(self, factor_data: Dict[str, Any]) -> Optional[List[OrderRequest]]:
+    def on_factor(self, factor_memories: Dict[str, "FactorMemory"]) -> Optional[List[OrderRequest]]:
         """
         Callback when new factor data is received.
 
         Args:
-            factor_data: Dictionary containing the latest factor values.
-                         Format might vary, assuming {factor_name: value} or
-                         nested dict {vt_symbol: {factor_name: value}}.
-                         Needs adaptation based on actual factor event structure.
+            factor_memories: Dictionary mapping factor names to FactorMemory objects.
 
         Returns:
             A list of OrderRequest objects to be executed, or None/empty list.
         """
         if not self.trading:
-            return None  # Do nothing if not trading
+            return None
 
-        self.write_log(f"Received factor update: {list(factor_data.keys())}", level=DEBUG)
+        self.write_log(f"Received factor memories update: {list(factor_memories.keys())}", level=DEBUG)
         self.latest_factor_update_time = self.strategy_engine.get_current_datetime()
 
-        # --- Data Preparation ---
-        # Adapt this section based on the actual structure of factor_data
-        # Example: Assuming factor_data is {vt_symbol: {factor_name: value}}
+        # --- Data Preparation for Model ---
+        data_for_model: Dict[str, pd.DataFrame] = {}
+        missing_factors = False
+        for factor_name in self.required_factors:
+            if factor_name in factor_memories:
+                factor_memory = factor_memories[factor_name]
+                # Get latest row(s) of factor data
+                # For now, N=1, meaning the most recent snapshot for each symbol.
+                # If model needs sequence, N > 1.
+                polars_df = factor_memory.get_latest_rows(N=1)
+
+                if polars_df is None or polars_df.is_empty():
+                    self.write_log(f"Factor {factor_name} provided empty data from get_latest_rows(1).", level=WARNING)
+                    missing_factors = True
+                    break 
+                
+                pandas_df = polars_df.to_pandas()
+                # Store the pandas DataFrame, assuming it's correctly structured by FactorMemory
+                # (e.g., has 'vt_symbol' and value columns)
+                data_for_model[factor_name] = pandas_df
+            else:
+                self.write_log(f"Required factor {factor_name} not found in received factor_memories.", level=WARNING)
+                missing_factors = True
+                break  # Skip this cycle if a required factor is missing
+
+        if missing_factors or not data_for_model:
+            self.write_log("Skipping prediction due to missing or incomplete factor data.", level=WARNING)
+            return None
+
+        # --- Combine Factor DataFrames ---
+        combined_dfs = []
+        for factor_name, pandas_df in data_for_model.items():
+            if 'vt_symbol' not in pandas_df.columns:
+                self.write_log(f"Factor {factor_name} DataFrame missing 'vt_symbol' column. Schema: {pandas_df.columns}", level=WARNING)
+                continue # Skip this factor
+
+            # Assuming the primary value column is named 'value' or the factor_name itself
+            # This needs to be robust based on FactorMemory's output structure
+            value_col_found = False
+            if 'value' in pandas_df.columns:
+                renamed_df = pandas_df.rename(columns={'value': factor_name})
+                value_col_found = True
+            elif factor_name in pandas_df.columns:
+                renamed_df = pandas_df # Already has factor_name as a column
+                value_col_found = True
+            else:
+                # Attempt to find a suitable value column if only 'vt_symbol', 'datetime' and one other exist
+                potential_value_cols = [col for col in pandas_df.columns if col not in ['vt_symbol', 'datetime']]
+                if len(potential_value_cols) == 1:
+                    self.write_log(f"Factor {factor_name}: Assuming '{potential_value_cols[0]}' is the value column.", level=DEBUG)
+                    renamed_df = pandas_df.rename(columns={potential_value_cols[0]: factor_name})
+                    value_col_found = True
+                else:
+                    self.write_log(f"Factor {factor_name} DataFrame missing a clear value column (expected 'value', '{factor_name}', or single other). Schema: {pandas_df.columns}", level=WARNING)
+                    continue
+
+            if value_col_found:
+                # Ensure vt_symbol is index, select only the factor column
+                processed_df = renamed_df.set_index('vt_symbol')[[factor_name]]
+                combined_dfs.append(processed_df)
+
+        if not combined_dfs:
+            self.write_log("No factor data successfully processed and combined for model input.", level=WARNING)
+            return None
+
         try:
-            # Convert to DataFrame, indexed by vt_symbol, columns are factors
-            df = pd.DataFrame.from_dict(factor_data, orient="index")
-            if df.empty:
-                self.write_log("Factor data is empty after conversion.", level=DEBUG)
-                return None
+            model_input_df = pd.concat(combined_dfs, axis=1)
         except Exception as e:
-            self.write_log(f"Error converting factor data to DataFrame: {e}", level=ERROR)
+            self.write_log(f"Error concatenating factor DataFrames: {e}", level=ERROR)
             return None
-
+            
         # Filter for symbols relevant to this strategy
-        relevant_symbols = [sym for sym in df.index if sym in self.vt_symbols]
-        if not relevant_symbols:
-            self.write_log("No relevant symbols found in factor data.", level=DEBUG)
+        model_input_df = model_input_df[model_input_df.index.isin(self.vt_symbols)]
+        if model_input_df.empty:
+            self.write_log("Model input DataFrame is empty after filtering for strategy symbols.", level=DEBUG)
             return None
-        df = df.loc[relevant_symbols]
+            
+        # Check for NaNs after merging and handle if necessary (e.g., fill or drop)
+        if model_input_df.isnull().values.any():
+            self.write_log(f"NaNs found in model_input_df. Shape: {model_input_df.shape}. NaNs per column:\n{model_input_df.isnull().sum()}", level=WARNING)
+            # Option: fillna or dropna based on strategy requirements
+            # For now, let's try filling with a common value like 0, or ffill/bfill if appropriate
+            # This is a placeholder; proper NaN handling is crucial.
+            model_input_df = model_input_df.fillna(0) # Example: fill with 0
+            # self.write_log(f"Filled NaNs with 0. Resulting df:\n{model_input_df.head()}", level=DEBUG)
 
-        # Filter for required factors if specified
-        if self.required_factors:
-            available_factors = [f for f in self.required_factors if f in df.columns]
-            if not available_factors:
-                self.write_log(f"None of the required factors {self.required_factors} found in data.", level=WARNING)
-                return None
-            df = df[available_factors]
 
-        if df.empty:
-            self.write_log("Factor DataFrame is empty after filtering.", level=DEBUG)
-            return None
-
-        self.latest_factor_data = df  # Cache the processed data
+        self.latest_factor_data = model_input_df # Cache the processed data for inspection
 
         # --- Core Logic ---
         try:
-            # 1. Calculate Signals
-            signals: pd.Series = self.calculate(df)
-            if not isinstance(signals, pd.Series) or signals.empty:
-                self.write_log("Signal calculation returned empty or invalid result.", level=WARNING)
+            # 1. Check Retraining Schedule (Placeholder - actual training call might be elsewhere or asynchronous)
+            current_dt = self.get_current_datetime()
+            if self.check_retraining_schedule(current_dt):
+                self.write_log("Retraining condition met. Triggering model training (actual training TBD).", level=INFO)
+                # Placeholder: In a real system, you might fetch more historical data here.
+                # For now, assume train_model can use available historical factor data or self.latest_factor_data
+                # if designed for online updates. The `data` arg for train_model needs careful consideration.
+                # self.train_model(historical_data_df) # This would need data beyond current factors
+                # For now, we'll log and skip actual training in on_factor to avoid blocking.
+                # Training should ideally be handled by a separate process or scheduled task.
+                # If train_model updates self.model, it will be used by predict_from_model.
+                pass # Actual training call is complex; for now, focus on prediction path.
+
+            if self.model is None:
+                self.write_log("Model is not trained. Cannot generate predictions.", level=WARNING)
                 return None
 
-            # 2. Project Signals to Target Weights
+            # 2. Generate Signals using the Model
+            signals: pd.Series = self.predict_from_model(model_input_df)
+            if not isinstance(signals, pd.Series) or signals.empty:
+                self.write_log("Prediction from model returned empty or invalid result.", level=WARNING)
+                return None
+
+            # 3. Project Signals to Target Weights
             target_weights: pd.Series = self.project_signals_to_weights(signals)
             if not isinstance(target_weights, pd.Series) or target_weights.empty:
                 self.write_log("Weight projection returned empty or invalid result.", level=WARNING)
                 return None
 
-            # Ensure weights are aligned with available factor symbols
-            target_weights = target_weights.reindex(df.index).fillna(0.0)
+            # Ensure weights are aligned with available factor symbols (index of model_input_df)
+            target_weights = target_weights.reindex(model_input_df.index).fillna(0.0)
 
             # 3. Calculate Target Positions in Quote Currency (e.g., USD)
             if not self.portfolio_result:
@@ -352,6 +450,35 @@ class StrategyTemplate(ABC):
                        f"Price: {trade.price} Volume: {trade.volume}", level=DEBUG)
 
         # Custom strategy logic based on trade fills can be added here.
+
+    # --------------------------------
+    # Model and Retraining
+    # --------------------------------
+
+    def check_retraining_schedule(self, current_datetime: datetime) -> bool:
+        """
+        Check if the model should be retrained based on the schedule.
+        """
+        if self.model is None:
+            self.write_log("Retraining check: Model is None, retraining required.", level=INFO)
+            return True
+        
+        if self.last_retrain_time is None:
+            self.write_log("Retraining check: Last retrain time is None, retraining required.", level=INFO)
+            return True
+
+        if self.retrain_interval_days <= 0: # Retraining is disabled or set to manual
+            return False
+
+        days_since_last_retrain = (current_datetime - self.last_retrain_time).days
+        if days_since_last_retrain >= self.retrain_interval_days:
+            self.write_log(
+                f"Retraining check: {days_since_last_retrain} days since last retrain "
+                f"(interval: {self.retrain_interval_days} days). Retraining required.", level=INFO
+            )
+            return True
+        
+        return False
 
     # --------------------------------
     # Portfolio and Order Generation
@@ -696,20 +823,20 @@ class StrategyTemplate(ABC):
         data = {
             "inited": self.inited,
             "trading": self.trading,
-            "active_order_ids": list(self.active_order_ids),  # Save active orders
+            "active_order_ids": list(self.active_order_ids),
             "latest_factor_update_time": self.latest_factor_update_time.isoformat() if self.latest_factor_update_time else None,
-            # Optionally save latest factor data (can be large!)
-            # "latest_factor_data": self.latest_factor_data.to_dict() if self.latest_factor_data is not None else None,
+            "last_retrain_time": self.last_retrain_time.isoformat() if self.last_retrain_time else None,
+            # Model serialization placeholder
+            "model_params": self.model.get_params() if hasattr(self.model, "get_params") else ("model_exists" if self.model is not None else None)
         }
-        # Add variables defined in the 'variables' list
+        # Add variables defined in the 'variables' list (ensure 'last_retrain_time' is handled if it's in self.variables)
         for name in self.variables:
-            if name not in data:  # Avoid overwriting core state
+            if name not in data:  # Avoid overwriting core state or already added items
                 value = getattr(self, name, None)
-                # Ensure value is serializable (basic types, lists, dicts)
-                if isinstance(value, (bool, int, float, str, list, dict, type(None))):
-                    data[name] = value
-                elif isinstance(value, datetime):
+                if isinstance(value, datetime):
                     data[name] = value.isoformat()
+                elif isinstance(value, (bool, int, float, str, list, dict, type(None))):
+                    data[name] = value
                 # Add other serializable types as needed
         return data
 
@@ -729,24 +856,46 @@ class StrategyTemplate(ABC):
             self.active_order_ids = set(saved_order_ids)
             self.write_log(f"Restored {len(self.active_order_ids)} active order IDs.", level=DEBUG)
 
-        # Restore latest factor time
-        time_str = data.get("latest_factor_update_time")
-        if time_str:
-            try:
-                self.latest_factor_update_time = datetime.fromisoformat(time_str)
-            except (TypeError, ValueError):
-                self.write_log(f"Could not parse saved factor update time: {time_str}", level=WARNING)
+        # Restore time-related fields
+        for time_field_name in ["latest_factor_update_time", "last_retrain_time"]:
+            time_str = data.get(time_field_name)
+            if time_str:
+                try:
+                    setattr(self, time_field_name, datetime.fromisoformat(time_str))
+                except (TypeError, ValueError):
+                    self.write_log(f"Could not parse saved time for {time_field_name}: {time_str}", level=WARNING)
+        
+        # Model restoration placeholder
+        model_params_data = data.get("model_params")
+        if model_params_data:
+            if model_params_data == "model_exists" or isinstance(model_params_data, dict):
+                self.model = "ModelLoadedPlaceholder" # Placeholder
+                self.write_log("Model state found in saved data. Concrete strategy should handle re-instantiation.", level=INFO)
+            # In a real scenario, you'd use model_params_data to re-initialize the model, e.g.
+            # self.model = YourModelClass(**model_params_data) or joblib.load(...)
 
         # Restore other variables defined in the 'variables' list
         for name in self.variables:
+            # Skip already handled variables to prevent double processing or errors
+            if name in ["active_order_ids", "latest_factor_update_time", "last_retrain_time"]: 
+                continue
             if name in data:
                 value = data[name]
                 # Handle potential type conversions (e.g., ISO string back to datetime)
-                if "time" in name.lower() and isinstance(value, str):
+                # Check if the attribute is annotated as Optional[datetime] or datetime
+                # This is a simplified check; proper type handling might be more complex
+                is_datetime_field = False
+                if hasattr(self, '__annotations__'):
+                    attr_type = self.__annotations__.get(name)
+                    if attr_type == Optional[datetime] or attr_type == datetime:
+                        is_datetime_field = True
+
+                if (is_datetime_field or "time" in name.lower()) and isinstance(value, str):
                     try:
                         setattr(self, name, datetime.fromisoformat(value))
                     except (TypeError, ValueError):
-                        setattr(self, name, value)  # Keep original if parse fails
+                        self.write_log(f"Error parsing datetime string '{value}' for '{name}'. Setting as is.", level=WARNING)
+                        setattr(self, name, value) # Keep original if parse fails
                 else:
                     setattr(self, name, value)
 
