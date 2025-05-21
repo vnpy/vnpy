@@ -101,7 +101,7 @@ class AlphaDataset:
             expressions.append(("label", self.label_expression))
 
         # Create process pool
-        logger.info("开始计算表达式因子特征")
+        logger.info("Start calculating expression factor features")
 
         args: list[tuple] = [(self.df, name, expression) for name, expression in expressions]
 
@@ -118,7 +118,7 @@ class AlphaDataset:
         self.result_df = self.df.with_columns(results)
 
         # Merge result data factor features
-        logger.info("开始合并结果数据因子特征")
+        logger.info("Start merging result data factor features")
 
         for name, result in tqdm(self.feature_results.items()):
             result = result.rename({"data": name})
@@ -128,7 +128,7 @@ class AlphaDataset:
         raw_df = self.result_df.fill_null(float("nan"))
 
         if filters:
-            logger.info("开始筛选成分股数据")
+            logger.info("Start filtering constituent stock data")
 
             filtered_df = pl.DataFrame()
 

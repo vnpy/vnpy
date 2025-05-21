@@ -837,7 +837,7 @@ class TelegramEngine(BaseEngine):
             "text": msg
         }
 
-        # 发送请求
+        # Send request
         try:
             r: requests.Response = requests.post(self.url, data=data)
             return r.json()

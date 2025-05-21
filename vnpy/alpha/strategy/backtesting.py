@@ -93,7 +93,7 @@ class BacktestingEngine:
         for vt_symbol in vt_symbols:
             setting: dict = contract_settings.get(vt_symbol, None)
             if not setting:
-                logger.warning(f"找不到合约{vt_symbol}的交易配置，请检查！")
+                logger.warning(f"Trading configuration for contract {vt_symbol} not found, please check!")
                 continue
 
             self.long_rates[vt_symbol] = setting["long_rate"]
@@ -111,13 +111,13 @@ class BacktestingEngine:
 
     def load_data(self) -> None:
         """Load historical data"""
-        logger.info("开始加载历史数据")
+        logger.info("Start loading historical data")
 
         if not self.end:
             self.end = datetime.now()
 
         if self.start >= self.end:
-            logger.info("起始日期必须小于结束日期")
+            logger.info("Start date must be less than end date")
             return
 
         # Clear previously loaded historical data
@@ -143,36 +143,36 @@ class BacktestingEngine:
                 empty_symbols.append(vt_symbol)
 
         if empty_symbols:
-            logger.info(f"部分合约历史数据为空：{empty_symbols}")
+            logger.info(f"Historical data for some contracts is empty: {empty_symbols}")
 
-        logger.info("所有历史数据加载完成")
+        logger.info("All historical data loading complete")
 
     def run_backtesting(self) -> None:
         """Start backtesting"""
         self.strategy.on_init()
-        logger.info("策略初始化完成")
+        logger.info("Strategy initialization complete")
 
         # Use remaining historical data for strategy backtesting
         dts: list = list(self.dts)
         dts.sort()
 
-        logger.info("开始回放历史数据")
+        logger.info("Start replaying historical data")
         for dt in dts:
             try:
                 self.new_bars(dt)
             except Exception:
-                logger.info("触发异常，回测终止")
+                logger.info("Exception triggered, backtest terminated")
                 logger.info(traceback.format_exc())
                 return
 
-        logger.info("历史数据回放结束")
+        logger.info("Historical data replay finished")
 
     def calculate_result(self) -> pl.DataFrame | None:
         """Calculate daily mark-to-market profit and loss"""
-        logger.info("开始计算逐日盯市盈亏")
+        logger.info("Start calculating daily mark-to-market P&L")
 
         if not self.trades:
-            logger.info("成交记录为空，无法计算")
+            logger.info("Trade records are empty, cannot calculate")
             return None
 
         for trade in self.trades.values():
@@ -222,12 +222,12 @@ class BacktestingEngine:
                 pl.Series("net_pnl", results["net_pnl"], dtype=pl.Float64),
             ])
 
-        logger.info("逐日盯市盈亏计算完成")
+        logger.info("Daily mark-to-market P&L calculation complete")
         return self.daily_df
 
     def calculate_statistics(self) -> dict:
         """Calculate strategy statistics"""
-        logger.info("开始计算策略统计指标")
+        logger.info("Start calculating strategy statistics")
 
         # Initialize statistics
         start_date: str = ""
@@ -279,7 +279,7 @@ class BacktestingEngine:
             # Check if bankruptcy occurred
             positive_balance = (df["balance"] > 0).all()
             if not positive_balance:
-                logger.info("回测中出现爆仓（资金小于等于0），无法计算策略统计指标")
+                logger.info("Bankruptcy (capital less than or equal to 0) occurred during backtesting, cannot calculate strategy statistics")
 
             # Save data object
             self.daily_df = df
@@ -334,36 +334,36 @@ class BacktestingEngine:
 
         # Output results
         logger.info("-" * 30)
-        logger.info(f"首个交易日：  {start_date}")
-        logger.info(f"最后交易日：  {end_date}")
+        logger.info(f"First trading day:  {start_date}")
+        logger.info(f"Last trading day:  {end_date}")
 
-        logger.info(f"总交易日：  {total_days}")
-        logger.info(f"盈利交易日：  {profit_days}")
-        logger.info(f"亏损交易日：  {loss_days}")
+        logger.info(f"Total trading days:  {total_days}")
+        logger.info(f"Profit trading days:  {profit_days}")
+        logger.info(f"Loss trading days:  {loss_days}")
 
-        logger.info(f"起始资金：  {self.capital:,.2f}")
-        logger.info(f"结束资金：  {end_balance:,.2f}")
+        logger.info(f"Starting capital:  {self.capital:,.2f}")
+        logger.info(f"Ending capital:  {end_balance:,.2f}")
 
-        logger.info(f"总收益率：  {total_return:,.2f}%")
-        logger.info(f"年化收益：  {annual_return:,.2f}%")
-        logger.info(f"最大回撤:   {max_drawdown:,.2f}")
-        logger.info(f"百分比最大回撤: {max_ddpercent:,.2f}%")
-        logger.info(f"最长回撤天数:   {max_drawdown_duration}")
+        logger.info(f"Total return:  {total_return:,.2f}%")
+        logger.info(f"Annualized return:  {annual_return:,.2f}%")
+        logger.info(f"Max drawdown:   {max_drawdown:,.2f}")
+        logger.info(f"Max drawdown percentage: {max_ddpercent:,.2f}%")
+        logger.info(f"Longest drawdown duration (days):   {max_drawdown_duration}")
 
-        logger.info(f"总盈亏：  {total_net_pnl:,.2f}")
-        logger.info(f"总手续费：  {total_commission:,.2f}")
-        logger.info(f"总成交金额：  {total_turnover:,.2f}")
-        logger.info(f"总成交笔数：  {total_trade_count}")
+        logger.info(f"Total net P&L:  {total_net_pnl:,.2f}")
+        logger.info(f"Total commission:  {total_commission:,.2f}")
+        logger.info(f"Total turnover:  {total_turnover:,.2f}")
+        logger.info(f"Total trades:  {total_trade_count}")
 
-        logger.info(f"日均盈亏：  {daily_net_pnl:,.2f}")
-        logger.info(f"日均手续费：  {daily_commission:,.2f}")
-        logger.info(f"日均成交金额：  {daily_turnover:,.2f}")
-        logger.info(f"日均成交笔数：  {daily_trade_count}")
+        logger.info(f"Daily average P&L:  {daily_net_pnl:,.2f}")
+        logger.info(f"Daily average commission:  {daily_commission:,.2f}")
+        logger.info(f"Daily average turnover:  {daily_turnover:,.2f}")
+        logger.info(f"Daily average trades:  {daily_trade_count}")
 
-        logger.info(f"日均收益率：  {daily_return:,.2f}%")
-        logger.info(f"收益标准差：  {return_std:,.2f}%")
+        logger.info(f"Daily average return:  {daily_return:,.2f}%")
+        logger.info(f"Return standard deviation:  {return_std:,.2f}%")
         logger.info(f"Sharpe Ratio：  {sharpe_ratio:,.2f}")
-        logger.info(f"收益回撤比：  {return_drawdown_ratio:,.2f}")
+        logger.info(f"Return/Drawdown ratio:  {return_drawdown_ratio:,.2f}")
 
         statistics: dict = {
             "start_date": start_date,
@@ -398,7 +398,7 @@ class BacktestingEngine:
                 value = 0
             statistics[key] = np.nan_to_num(value)
 
-        logger.info("策略统计指标计算完成")
+        logger.info("Strategy statistics calculation complete")
         return statistics
 
     def show_chart(self) -> None:
@@ -709,14 +709,14 @@ class BacktestingEngine:
     def get_signal(self) -> pl.DataFrame:
         """Get model prediction signal for current time"""
         if not self.datetime:
-            self.write_log("尚未开始数据回放，无法加载模型预测值")
+            self.write_log("Data replay has not started, cannot load model predictions")
             return pl.DataFrame()
 
         dt: datetime = self.datetime.replace(tzinfo=None)
         signal: pl.DataFrame = self.signal_df.filter(pl.col("datetime") == dt)
 
         if signal.is_empty():
-            self.write_log(f"找不到{dt}对应的信号模型预测值")
+            self.write_log(f"Cannot find signal model predictions for {dt}")
 
         return signal
 
