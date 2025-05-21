@@ -48,6 +48,10 @@ SETTINGS: dict = {
     # trading
     "vt_symbols": [],
 
+    "factor.settings_file_path": "factor_settings.json",
+    "factor.definitions_file_path": "factor_maker_setting.json",
+    "strategy.settings_file_path": "strategy_settings.json",
+    "strategy.definitions_file_path": "strategy_template_definitions.json",
 }
 
 # Load global setting from json file.
