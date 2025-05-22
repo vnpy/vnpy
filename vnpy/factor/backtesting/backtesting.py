@@ -24,7 +24,7 @@ from vnpy.trader.setting import SETTINGS
 from vnpy.factor.base import APP_NAME, FactorMode # Import FactorMode
 # FactorTemplate and FactorMemory are assumed to be defined above or importable
 from vnpy.factor.utils.factor_utils import init_factors, load_factor_setting # Ensure these utils are compatible
-from vnpy.factor.settings import get_factor_path, get_factor_setting
+from vnpy.factor.setting import get_factor_path, get_factor_setting
 
 FACTOR_MODULE_NAME = 'vnpy.factor.factors' # Default, can be overridden
 SYSTEM_MODE = SETTINGS.get('system.mode', 'BACKTEST') # LIVE, BACKTEST, etc.
