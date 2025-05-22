@@ -1,7 +1,6 @@
 from functools import lru_cache
 import json
 import time
-from collections import defaultdict
 from copy import copy
 from datetime import datetime, timedelta, timezone
 from threading import Lock
@@ -576,6 +575,7 @@ class BinanceSpotTradeWebsocketApi:
         self.gateway: BinanceSpotGateway = gateway
         self.gateway_name = gateway.gateway_name
         self._active: bool = False
+        self._client: Optional[SpotWebsocketStreamClient_vnpy] = None  # 数据源
 
     def connect(self, stream_url: str, listen_key: str) -> None:
         """连接Websocket交易频道"""

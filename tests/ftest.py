@@ -27,7 +27,7 @@ if __name__ == '__main__':
     event_engine = EventEngine()
     main_engine = MainEngine(event_engine)
     main_engine.write_log("Main engine created successfully")
-    main_engine.vt_symbols = ['btcusdt.Binance', 'ethusdt.Binance']
+    main_engine.vt_symbols = ['btcusdt.BINANCE', 'ethusdt.BINANCE']
 
     # start factor engine
     factor_maker_engine: FactorEngine = main_engine.add_engine(FactorEngine)

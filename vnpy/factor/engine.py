@@ -7,7 +7,6 @@ from logging import INFO, DEBUG, WARNING, ERROR
 from typing import Callable, Any, Dict, Optional, List
 from dataclasses import dataclass
 from threading import Lock
-from pathlib import Path
 import re
 import numpy as np
 import polars as pl # Ensure polars is imported
@@ -27,11 +26,10 @@ from vnpy.factor.base import APP_NAME # Import FactorMode
 # FactorTemplate and FactorMemory are assumed to be defined above or importable
 from vnpy.factor.utils.factor_utils import init_factors, load_factor_setting, save_factor_setting # Ensure these utils are compatible
 from vnpy.factor.utils.memory_utils import truncate_memory as truncate_bar_memory
-from .setting import get_factor_definitions_filepath, get_factor_setting, get_factor_data_cache_path, FACTOR_MODULE_SETTINGS
+from .setting import get_factor_definitions_filepath, get_factor_data_cache_path, FACTOR_MODULE_SETTINGS
 
 FACTOR_MODULE_NAME = FACTOR_MODULE_SETTINGS.get("module_name", 'vnpy.factor.factors') # Use setting
 SYSTEM_MODE = SETTINGS.get('system.mode', 'LIVE') # LIVE, BACKTEST, etc.
-DEFAULT_DATETIME_COL = "datetime" # Standard datetime column name for FactorMemory
 
 def safe_filename(name: str) -> str:
     name = re.sub(r'[^\w\.\-@]', '_', name)
@@ -53,10 +51,10 @@ class FactorEngine(BaseEngine):
         self.factor_data_dir = get_factor_data_cache_path()      # Updated
         
         # Load other settings
-        self.factor_datetime_col = get_factor_setting("datetime_col")
-        self.max_memory_length_bar = get_factor_setting("max_memory_length_bar")
-        self.max_memory_length_factor = get_factor_setting("max_memory_length_factor")
-        self.error_threshold = get_factor_setting("error_threshold")
+        self.factor_datetime_col = FACTOR_MODULE_SETTINGS.get("datetime_col", "datetime")
+        self.max_memory_length_bar = FACTOR_MODULE_SETTINGS.get("max_memory_length_bar", 100)
+        self.max_memory_length_factor = FACTOR_MODULE_SETTINGS.get("max_memory_length_factor", 500)
+        self.error_threshold = FACTOR_MODULE_SETTINGS.get("error_threshold", 3)
 
         try:
             self.module_factors = importlib.import_module(FACTOR_MODULE_NAME)
@@ -84,9 +82,6 @@ class FactorEngine(BaseEngine):
         self.factor_memory_instances: Dict[str, FactorMemory] = {}
         self.latest_calculated_factors_cache: Dict[str, pl.DataFrame] = {}
 
-        self.max_memory_length_bar = 100 # Max length for OHLCV bar memory
-        self.max_memory_length_factor = 500 # Default max_rows for FactorMemory instances
-
         self.dt: Optional[datetime] = None
         self.bars: Dict[str, BarData] = {} # Current batch of bars
         self.tasks: Dict[str, Delayed] = {} # Dask tasks
@@ -95,10 +90,7 @@ class FactorEngine(BaseEngine):
         self.metrics: Dict[str, CalculationMetrics] = {}
         self.calculation_lock = Lock() # Ensures only one execute_calculation runs at a time
         # self.thread_pool = ThreadPoolExecutor(max_workers=4) # Dask manages its own threading/processing
-        self.error_threshold = 3 # Consecutive errors to trigger circuit breaker
         self.consecutive_errors = 0
-        
-        self.factor_datetime_col = DEFAULT_DATETIME_COL # Datetime col for FactorMemory
 
     def init_engine(self, fake: bool = False) -> None:
         self.write_log("Initializing FactorEngine...", level=INFO)
@@ -138,7 +130,7 @@ class FactorEngine(BaseEngine):
         """Loads factor settings, initializes FactorTemplate instances, and determines max lookback periods."""
         self.write_log("Loading factor settings and initializing factor instances...", level=DEBUG)
         try:
-            factor_settings_list = load_factor_setting(self.setting_filename) # Expects a list of settings dicts
+            factor_settings_list: List = load_factor_setting(self.setting_filename) # Expects a list of settings dicts
             if not factor_settings_list:
                 self.write_log("No factor settings found or file is empty.", level=WARNING)
                 self.stacked_factors = {}
@@ -153,7 +145,7 @@ class FactorEngine(BaseEngine):
             return
 
         # init_factors should take the list of settings and the factors module
-        inited_factor_instances = init_factors(
+        inited_factor_instances: List = init_factors(
             self.module_factors, # Module for finding primary factor classes
             factor_settings_list,
             dependencies_module_lookup_for_instances=self.module_factors # Module for their dependencies too
@@ -182,7 +174,7 @@ class FactorEngine(BaseEngine):
 
 
         self.max_memory_length_bar = max(all_bar_lookbacks) if all_bar_lookbacks else 100
-        # self.max_memory_length_factor = max(all_factor_mem_max_rows) if all_factor_mem_max_rows else 500
+        self.max_memory_length_factor = max(all_factor_mem_max_rows) if all_factor_mem_max_rows else 500
         # Note: max_memory_length_factor will be used as default if a factor doesn't specify its own.
         # It's better to set FactorMemory max_rows per factor if needed, or use a generous global default.
 
@@ -214,20 +206,15 @@ class FactorEngine(BaseEngine):
                 if self.factor_datetime_col not in output_schema:
                     raise ValueError(f"Factor '{factor_key}' output schema must contain the datetime column '{self.factor_datetime_col}'.")
 
-                # Allow factor to specify its own max_rows via params
-                factor_specific_max_rows = factor_instance.get_param("factor_memory_max_rows")
-                if not isinstance(factor_specific_max_rows, int) or factor_specific_max_rows <=0:
-                    factor_specific_max_rows = self.max_memory_length_factor # Use engine default
-
                 file_path = self.factor_data_dir.joinpath(f"{safe_filename(factor_key)}.arrow")
                 
                 self.factor_memory_instances[factor_key] = FactorMemory(
                     file_path=file_path,
-                    max_rows=factor_specific_max_rows,
+                    max_rows=self.max_memory_length_factor,
                     schema=output_schema,
                     datetime_col=self.factor_datetime_col
                 )
-                self.write_log(f"Initialized FactorMemory for {factor_key} at {file_path} with max_rows={factor_specific_max_rows}", level=DEBUG)
+                self.write_log(f"Initialized FactorMemory for {factor_key} at {file_path}", level=DEBUG)
             except Exception as e:
                 self.write_log(f"Failed to initialize FactorMemory for {factor_key}: {e}. This factor may not calculate correctly.", level=ERROR)
 

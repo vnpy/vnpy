@@ -49,10 +49,10 @@ if not _SETTINGS_INITIALIZED:
     if _factor_settings_filepath.exists():
         _temp_factor_module_settings = load_json_main(str(_factor_settings_filepath))
         if not isinstance(_temp_factor_module_settings, dict): # Ensure it's a dict if file was empty or malformed
-            print(f"Warning: Content of factor settings file {_factor_settings_filepath} is not a valid JSON object. Initializing with empty settings.")
+            print(f"[vnpy.factor.setting] Warning: Content of factor settings file {_factor_settings_filepath} is not a valid JSON object. Initializing with empty settings.")
             _temp_factor_module_settings = {}
     else:
-        print(f"Warning: Factor settings file not found at {_factor_settings_filepath}. Initializing with empty settings.")
+        print(f"[vnpy.factor.setting] Warning: Factor settings file not found at {_factor_settings_filepath}. Initializing with empty settings.")
 
     # Override _temp_factor_module_settings with values from global SETTINGS if they exist
     _keys_to_override = [
@@ -105,22 +105,6 @@ def get_backtest_data_cache_path() -> Path:
 
 # For easier access if needed, though direct use of FACTOR_MODULE_SETTINGS is common
 FACTOR_SETTINGS = FACTOR_MODULE_SETTINGS
-
-# The following old definitions are now replaced or managed by the logic above:
-# - Old FACTOR_SETTINGS dictionary (now FACTOR_MODULE_SETTINGS, loaded and overridden)
-# - Old FACTOR_PATHS dictionary (replaced by specific getter functions)
-# - Old SETTINGS_PATH (not explicitly needed as files are resolved via MODULE_ROOT_PATH or global SETTINGS)
-# - Old get_factor_path function (replaced by specific getter functions)
-
-# Example of how to ensure specific cache subdirectories exist if needed
-# get_factor_data_cache_path().mkdir(parents=True, exist_ok=True)
-# get_backtest_data_cache_path().mkdir(parents=True, exist_ok=True)
-
-# print(f"LOG: Factor settings loaded. Definitions path: {FACTOR_DEFINITIONS_FILEPATH}")
-# print(f"LOG: Factor module config: {FACTOR_MODULE_SETTINGS}")
-# print(f"LOG: Factor root path: {ROOT_PATH}")
-# print(f"LOG: Factor data path: {DATA_PATH}")
-# print(f"LOG: Factor cache path: {CACHE_PATH}")
 
 # Make FACTOR_DEFINITIONS_FILEPATH available for import if needed elsewhere for clarity,
 # though get_factor_definitions_filepath() is the preferred accessor.

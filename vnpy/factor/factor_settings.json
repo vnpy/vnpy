@@ -1,7 +1,7 @@
 {
     "module_name": "vnpy.factor.factors",
     "datetime_col": "datetime",
-    "max_memory_length_bar": 100,
-    "max_memory_length_factor": 500,
+    "max_memory_length_bar": 500,
+    "max_memory_length_factor": 100,
     "error_threshold": 3
 }

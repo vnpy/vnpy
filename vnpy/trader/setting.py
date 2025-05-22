@@ -62,7 +62,7 @@ SETTING_FILENAME: str = "vt_setting.json"
 if not _VT_SETTING_LOADED:
     SETTINGS.update(load_json(SETTING_FILENAME))
     _VT_SETTING_LOADED = True
-    # print(f"LOG: update SETTINGS from {SETTING_FILENAME}")
+    print("[vnpy.trader.setting] Updated SETTINGS from {}", SETTING_FILENAME)
 
 
 # def get_settings(prefix: str = "") -> Dict[str, Any]:
