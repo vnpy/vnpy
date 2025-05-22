@@ -2,6 +2,10 @@ import json
 from pathlib import Path
 from typing import Any, Dict
 
+# Caching variables
+_CACHED_FACTOR_MODULE_SETTINGS: Dict[str, Any] = None
+_SETTINGS_INITIALIZED: bool = False
+
 try:
     from vnpy.trader.setting import SETTINGS
     from vnpy.trader.utility import load_json as load_json_main
@@ -39,28 +43,34 @@ FACTOR_DEFINITIONS_FILEPATH = Path(_factor_definitions_file_path_str)
 if not FACTOR_DEFINITIONS_FILEPATH.is_absolute():
     FACTOR_DEFINITIONS_FILEPATH = MODULE_ROOT_PATH / FACTOR_DEFINITIONS_FILEPATH
 
-# Load Factor Module Settings from the JSON file
-FACTOR_MODULE_SETTINGS: Dict[str, Any] = {}
-if _factor_settings_filepath.exists():
-    FACTOR_MODULE_SETTINGS = load_json_main(str(_factor_settings_filepath))
-    if not isinstance(FACTOR_MODULE_SETTINGS, dict): # Ensure it's a dict if file was empty or malformed
-        print(f"Warning: Content of factor settings file {_factor_settings_filepath} is not a valid JSON object. Initializing with empty settings.")
-        FACTOR_MODULE_SETTINGS = {}
-else:
-    print(f"Warning: Factor settings file not found at {_factor_settings_filepath}. Initializing with empty settings.")
+if not _SETTINGS_INITIALIZED:
+    # Load Factor Module Settings from the JSON file
+    _temp_factor_module_settings: Dict[str, Any] = {}
+    if _factor_settings_filepath.exists():
+        _temp_factor_module_settings = load_json_main(str(_factor_settings_filepath))
+        if not isinstance(_temp_factor_module_settings, dict): # Ensure it's a dict if file was empty or malformed
+            print(f"Warning: Content of factor settings file {_factor_settings_filepath} is not a valid JSON object. Initializing with empty settings.")
+            _temp_factor_module_settings = {}
+    else:
+        print(f"Warning: Factor settings file not found at {_factor_settings_filepath}. Initializing with empty settings.")
 
-# Override FACTOR_MODULE_SETTINGS with values from global SETTINGS if they exist
-_keys_to_override = [
-    "module_name",
-    "datetime_col",
-    "max_memory_length_bar",
-    "max_memory_length_factor",
-    "error_threshold"
-]
-for key in _keys_to_override:
-    override_value = SETTINGS.get(f"factor.{key}")
-    if override_value is not None:
-        FACTOR_MODULE_SETTINGS[key] = override_value
+    # Override _temp_factor_module_settings with values from global SETTINGS if they exist
+    _keys_to_override = [
+        "module_name",
+        "datetime_col",
+        "max_memory_length_bar",
+        "max_memory_length_factor",
+        "error_threshold"
+    ]
+    for key in _keys_to_override:
+        override_value = SETTINGS.get(f"factor.{key}")
+        if override_value is not None:
+            _temp_factor_module_settings[key] = override_value
+    
+    _CACHED_FACTOR_MODULE_SETTINGS = _temp_factor_module_settings
+    _SETTINGS_INITIALIZED = True
+
+FACTOR_MODULE_SETTINGS: Dict[str, Any] = _CACHED_FACTOR_MODULE_SETTINGS
 
 # Base paths for factor data, cache, etc.
 ROOT_PATH = Path(SETTINGS.get("factor.root_path", Path.cwd() / ".vnpy" / "factor"))
@@ -106,11 +116,11 @@ FACTOR_SETTINGS = FACTOR_MODULE_SETTINGS
 # get_factor_data_cache_path().mkdir(parents=True, exist_ok=True)
 # get_backtest_data_cache_path().mkdir(parents=True, exist_ok=True)
 
-print(f"LOG: Factor settings loaded. Definitions path: {FACTOR_DEFINITIONS_FILEPATH}")
-print(f"LOG: Factor module config: {FACTOR_MODULE_SETTINGS}")
-print(f"LOG: Factor root path: {ROOT_PATH}")
-print(f"LOG: Factor data path: {DATA_PATH}")
-print(f"LOG: Factor cache path: {CACHE_PATH}")
+# print(f"LOG: Factor settings loaded. Definitions path: {FACTOR_DEFINITIONS_FILEPATH}")
+# print(f"LOG: Factor module config: {FACTOR_MODULE_SETTINGS}")
+# print(f"LOG: Factor root path: {ROOT_PATH}")
+# print(f"LOG: Factor data path: {DATA_PATH}")
+# print(f"LOG: Factor cache path: {CACHE_PATH}")
 
 # Make FACTOR_DEFINITIONS_FILEPATH available for import if needed elsewhere for clarity,
 # though get_factor_definitions_filepath() is the preferred accessor.
