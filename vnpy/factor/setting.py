@@ -63,7 +63,7 @@ for key in _keys_to_override:
         FACTOR_MODULE_SETTINGS[key] = override_value
 
 # Base paths for factor data, cache, etc.
-ROOT_PATH = Path(SETTINGS.get("factor.root_path", Path.home() / ".vnpy" / "factor"))
+ROOT_PATH = Path(SETTINGS.get("factor.root_path", Path.cwd() / ".vnpy" / "factor"))
 DATA_PATH = ROOT_PATH / "data"
 CACHE_PATH = ROOT_PATH / "cache"
 

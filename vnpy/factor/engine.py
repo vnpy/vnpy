@@ -503,6 +503,7 @@ class FactorEngine(BaseEngine):
 
 
     def execute_calculation(self, dt: datetime) -> None:
+        self.write_log(f"Executing Dask computation for datetime {dt}...", level=INFO)
         """Executes the Dask computational graph and updates FactorMemory instances."""
         if not self.tasks:
             self.write_log("No tasks to execute.", level=DEBUG)
@@ -520,6 +521,7 @@ class FactorEngine(BaseEngine):
             # Configure Dask for local threaded execution (default if no cluster)
             dask.config.set(scheduler='threads') 
             # dask.config.set(num_workers=psutil.cpu_count(logical=False)) # Optional: set num_workers
+            self.write_log('start to do dask computation', level=INFO)
 
             try:
                 with dask.diagnostics.ProgressBar(minimum=0.1), dask.diagnostics.ResourceProfiler(dt=0.25) as rprof:

@@ -10,7 +10,7 @@
         "dependencies_freq": [],
         "dependencies_symbol": [],
         "dependencies_exchange": [],
-        "last_run_datetime": "2025-05-17 08:05:50",
+        "last_run_datetime": "2025-05-22 05:33:25",
         "factor_mode": "LIVE"
     },
     {
@@ -24,7 +24,7 @@
         "dependencies_freq": [],
         "dependencies_symbol": [],
         "dependencies_exchange": [],
-        "last_run_datetime": "2025-05-17 08:05:50",
+        "last_run_datetime": "2025-05-22 05:33:25",
         "factor_mode": "LIVE"
     },
     {
@@ -48,7 +48,7 @@
                 "dependencies_freq": [],
                 "dependencies_symbol": [],
                 "dependencies_exchange": [],
-                "last_run_datetime": "2025-05-17 08:05:50",
+                "last_run_datetime": "2025-05-22 05:33:25",
                 "factor_mode": "LIVE"
             },
             {
@@ -62,14 +62,14 @@
                 "dependencies_freq": [],
                 "dependencies_symbol": [],
                 "dependencies_exchange": [],
-                "last_run_datetime": "2025-05-17 08:05:50",
+                "last_run_datetime": "2025-05-22 05:33:25",
                 "factor_mode": "LIVE"
             }
         ],
         "dependencies_freq": [],
         "dependencies_symbol": [],
         "dependencies_exchange": [],
-        "last_run_datetime": "2025-05-17 08:05:50",
+        "last_run_datetime": "2025-05-22 05:33:25",
         "factor_mode": "LIVE"
     }
 ]

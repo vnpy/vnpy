@@ -2,7 +2,7 @@
 Global setting of the trading platform.
 """
 
-from logging import CRITICAL, INFO
+from logging import CRITICAL, DEBUG, INFO
 from typing import Dict, Any
 from tzlocal import get_localzone_name
 
@@ -14,7 +14,7 @@ SETTINGS: dict = {
     "font.size": 12,
 
     "log.active": True,
-    "log.level": CRITICAL,
+    "log.level": DEBUG,
     "log.console": True,
     "log.file": True,
 
