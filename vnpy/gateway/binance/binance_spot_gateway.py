@@ -579,8 +579,12 @@ class BinanceSpotTradeWebsocketApi:
 
     def connect(self, stream_url: str, listen_key: str) -> None:
         """连接Websocket交易频道"""
+        if self._client:
+            self._client.stop()
+
         self._client = SpotWebsocketStreamClient_vnpy(stream_url=stream_url,
-                                                      on_message=self.on_packet)
+                                                      on_message=self.on_packet,
+                                                      on_close=self.on_disconnected)
         self._client.user_data(listen_key)
 
         self._active = True
@@ -712,13 +716,20 @@ class BinanceSpotDataWebsocketApi:
 
     def connect(self, server: str):
         """连接Websocket行情频道"""
+        if self._client:
+            self._client.stop()
+
         if server == "REAL":
             # self._client = SpotWebsocketStreamClient_vnpy(stream_url=WEBSOCKET_DATA_HOST, on_message=self.on_packet)
-            self._client = SpotWebsocketStreamClient_vnpy(stream_url=WEBSOCKET_DATA_HOST, on_message=self.on_packet,
+            self._client = SpotWebsocketStreamClient_vnpy(stream_url=WEBSOCKET_DATA_HOST, 
+                                                          on_message=self.on_packet,
+                                                          on_close=self.on_disconnected,
                                                           is_combined=True)
         else:
             self._client = SpotWebsocketStreamClient_vnpy(stream_url=TESTNET_WEBSOCKET_DATA_HOST,
-                                                          on_message=self.on_packet, is_combined=True)
+                                                          on_message=self.on_packet, 
+                                                          on_close=self.on_disconnected,
+                                                          is_combined=True)
 
         self._active = True
         self.on_connected()

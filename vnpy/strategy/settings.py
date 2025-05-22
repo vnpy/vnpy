@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 from typing import Any, Dict
 
+_STRATEGY_SETTINGS_LOADED = False
+
 try:
     from vnpy.trader.setting import SETTINGS
     from vnpy.trader.utility import load_json as load_json_main
@@ -20,45 +22,55 @@ except ImportError:
         return {}
     load_json_main = load_json_fallback
 
-# Default filenames used if not specified in global SETTINGS or for standalone mode
-DEFAULT_STRATEGY_SETTINGS_FILENAME = "strategy_settings.json"
-DEFAULT_STRATEGY_DEFINITIONS_FILENAME = "strategy_template_definitions.json"
-
-# Root path of this module, used for resolving relative paths in standalone mode
-MODULE_ROOT_PATH = Path(__file__).parent
-
-# Determine the strategy settings file path
-_strategy_settings_file_path_str = SETTINGS.get("strategy.settings_file_path", DEFAULT_STRATEGY_SETTINGS_FILENAME)
-_strategy_settings_filepath = Path(_strategy_settings_file_path_str)
-if not _strategy_settings_filepath.is_absolute():
-    _strategy_settings_filepath = MODULE_ROOT_PATH / _strategy_settings_filepath
-
-# Determine the strategy definitions file path
-_strategy_definitions_file_path_str = SETTINGS.get("strategy.definitions_file_path", DEFAULT_STRATEGY_DEFINITIONS_FILENAME)
-STRATEGY_DEFINITIONS_FILEPATH = Path(_strategy_definitions_file_path_str)
-if not STRATEGY_DEFINITIONS_FILEPATH.is_absolute():
-    STRATEGY_DEFINITIONS_FILEPATH = MODULE_ROOT_PATH / _strategy_definitions_file_path_str # Corrected variable name
-
-# Load Strategy Module Settings from the JSON file
+# Define module-level defaults that might be accessed before/outside the loading block
 STRATEGY_MODULE_SETTINGS: Dict[str, Any] = {}
-if _strategy_settings_filepath.exists():
-    STRATEGY_MODULE_SETTINGS = load_json_main(str(_strategy_settings_filepath))
-    if not isinstance(STRATEGY_MODULE_SETTINGS, dict): # Ensure it's a dict if file was empty or malformed
-        print(f"Warning: Content of strategy settings file {_strategy_settings_filepath} is not a valid JSON object. Initializing with empty settings.")
-        STRATEGY_MODULE_SETTINGS = {}
-else:
-    print(f"Warning: Strategy settings file not found at {_strategy_settings_filepath}. Initializing with empty settings.")
+STRATEGY_DEFINITIONS_FILEPATH: Path = None # Will be set inside the block
 
-# Override STRATEGY_MODULE_SETTINGS with values from global SETTINGS if they exist
-_keys_to_override = [
-    "default_strategy_path",
-    "default_retrain_interval_days"
-    # Add other strategy-specific keys here if they become globally configurable
-]
-for key in _keys_to_override:
-    override_value = SETTINGS.get(f"strategy.{key}")
-    if override_value is not None:
-        STRATEGY_MODULE_SETTINGS[key] = override_value
+if not _STRATEGY_SETTINGS_LOADED:
+    # Default filenames used if not specified in global SETTINGS or for standalone mode
+    DEFAULT_STRATEGY_SETTINGS_FILENAME = "strategy_settings.json"
+    DEFAULT_STRATEGY_DEFINITIONS_FILENAME = "strategy_template_definitions.json"
+
+    # Root path of this module, used for resolving relative paths in standalone mode
+    MODULE_ROOT_PATH = Path(__file__).parent
+
+    # Determine the strategy settings file path
+    _strategy_settings_file_path_str = SETTINGS.get("strategy.settings_file_path", DEFAULT_STRATEGY_SETTINGS_FILENAME)
+    _strategy_settings_filepath = Path(_strategy_settings_file_path_str)
+    if not _strategy_settings_filepath.is_absolute():
+        _strategy_settings_filepath = MODULE_ROOT_PATH / _strategy_settings_filepath
+
+    # Determine the strategy definitions file path
+    _strategy_definitions_file_path_str = SETTINGS.get("strategy.definitions_file_path", DEFAULT_STRATEGY_DEFINITIONS_FILENAME)
+    _temp_strategy_definitions_filepath = Path(_strategy_definitions_file_path_str) # Use temp var
+    if not _temp_strategy_definitions_filepath.is_absolute():
+        _temp_strategy_definitions_filepath = MODULE_ROOT_PATH / _temp_strategy_definitions_filepath
+    STRATEGY_DEFINITIONS_FILEPATH = _temp_strategy_definitions_filepath # Assign to global
+
+    # Load Strategy Module Settings from the JSON file
+    _temp_strategy_module_settings: Dict[str, Any] = {} # Use temp var
+    if _strategy_settings_filepath.exists():
+        _temp_strategy_module_settings = load_json_main(str(_strategy_settings_filepath))
+        if not isinstance(_temp_strategy_module_settings, dict): # Ensure it's a dict if file was empty or malformed
+            print(f"Warning: Content of strategy settings file {_strategy_settings_filepath} is not a valid JSON object. Initializing with empty settings.")
+            _temp_strategy_module_settings = {}
+    else:
+        print(f"Warning: Strategy settings file not found at {_strategy_settings_filepath}. Initializing with empty settings.")
+    
+    STRATEGY_MODULE_SETTINGS = _temp_strategy_module_settings # Assign to global
+
+    # Override STRATEGY_MODULE_SETTINGS with values from global SETTINGS if they exist
+    _keys_to_override = [
+        "default_strategy_path",
+        "default_retrain_interval_days"
+        # Add other strategy-specific keys here if they become globally configurable
+    ]
+    for key in _keys_to_override:
+        override_value = SETTINGS.get(f"strategy.{key}")
+        if override_value is not None:
+            STRATEGY_MODULE_SETTINGS[key] = override_value
+    
+    _STRATEGY_SETTINGS_LOADED = True
 
 # Strategy specific paths (Minimal for now, can be expanded)
 # Example: If strategies save models or specific logs to a configurable directory
@@ -79,8 +91,8 @@ def get_strategy_definitions_filepath() -> Path:
     """Get the absolute path to the strategy definitions JSON file."""
     return STRATEGY_DEFINITIONS_FILEPATH
 
-print(f"LOG: Strategy settings loaded. Definitions path: {STRATEGY_DEFINITIONS_FILEPATH}")
-print(f"LOG: Strategy module config: {STRATEGY_MODULE_SETTINGS}")
+# print(f"LOG: Strategy settings loaded. Definitions path: {STRATEGY_DEFINITIONS_FILEPATH}")
+# print(f"LOG: Strategy module config: {STRATEGY_MODULE_SETTINGS}")
 
 __all__ = [
     "STRATEGY_MODULE_SETTINGS",

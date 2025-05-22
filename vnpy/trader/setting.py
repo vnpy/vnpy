@@ -8,6 +8,8 @@ from tzlocal import get_localzone_name
 
 from .utility import load_json
 
+_VT_SETTING_LOADED = False
+
 
 SETTINGS: dict = {
     "font.family": "微软雅黑",
@@ -56,8 +58,11 @@ SETTINGS: dict = {
 
 # Load global setting from json file.
 SETTING_FILENAME: str = "vt_setting.json"
-SETTINGS.update(load_json(SETTING_FILENAME))
-print(f"LOG: update SETTINGS from {SETTING_FILENAME}")
+
+if not _VT_SETTING_LOADED:
+    SETTINGS.update(load_json(SETTING_FILENAME))
+    _VT_SETTING_LOADED = True
+    # print(f"LOG: update SETTINGS from {SETTING_FILENAME}")
 
 
 # def get_settings(prefix: str = "") -> Dict[str, Any]:
