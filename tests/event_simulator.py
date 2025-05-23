@@ -9,6 +9,7 @@
 
 import multiprocessing
 from time import sleep
+import time
 
 from vnpy.factor.engine import FactorEngine
 #from vnpy.app.factor_maker import FactorMakerApp
@@ -30,12 +31,14 @@ def run_child():
     main_engine = MainEngine(event_engine)
     main_engine.write_log("Main engine created successfully")
 
+    time.sleep(10)
+
 
     # start factor engine
     factor_maker_engine: FactorEngine = main_engine.add_engine(FactorEngine)
     factor_maker_engine.init_engine(fake=False)
 
-    main_engine.write_log("Factor engine dask worker started successfully")
+    time.sleep(10)
 
     gateway_settings = {
         "symbols": [],

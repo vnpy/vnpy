@@ -102,7 +102,7 @@ class FactorEngine(BaseEngine):
 
         # 2. Flatten the dependency tree
         self.flattened_factors = self.complete_factor_tree(self.stacked_factors)
-        self.write_log(f"Flattened factors ({len(self.flattened_factors)}): {list(self.flattened_factors.keys())}", level=INFO)
+        self.write_log(f"Flattened {len(self.flattened_factors)} factors", level=INFO)
 
         # 3. Initialize memory structures (memory_bar and FactorMemory instances)
         self.init_memory(fake=fake) 
@@ -124,7 +124,6 @@ class FactorEngine(BaseEngine):
     def register_event(self) -> None:
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_BAR, self.process_bar_event)
-        self.write_log("Registered for TICK and BAR events.", level=DEBUG)
 
     def init_all_factors(self) -> None:
         """Loads factor settings, initializes FactorTemplate instances, and determines max lookback periods."""
@@ -178,9 +177,6 @@ class FactorEngine(BaseEngine):
         # Note: max_memory_length_factor will be used as default if a factor doesn't specify its own.
         # It's better to set FactorMemory max_rows per factor if needed, or use a generous global default.
 
-        self.write_log(f"Max memory length for bar data (OHLCV): {self.max_memory_length_bar}", level=DEBUG)
-        self.write_log(f"Default max memory length for individual factor history: {self.max_memory_length_factor}", level=DEBUG)
-
 
     def init_memory(self, fake: bool = False) -> None:
         """Initializes memory_bar (in-memory OHLCV) and FactorMemory instances for each factor."""
@@ -214,7 +210,6 @@ class FactorEngine(BaseEngine):
                     schema=output_schema,
                     datetime_col=self.factor_datetime_col
                 )
-                self.write_log(f"Initialized FactorMemory for {factor_key} at {file_path}", level=DEBUG)
             except Exception as e:
                 self.write_log(f"Failed to initialize FactorMemory for {factor_key}: {e}. This factor may not calculate correctly.", level=ERROR)
 
@@ -271,7 +266,7 @@ class FactorEngine(BaseEngine):
                 # Update cache with the latest fake row
                 if not fake_factor_df.is_empty():
                     self.latest_calculated_factors_cache[factor_key] = fm_instance.get_latest_rows(1)
-        self.write_log("Memory initialization complete.", level=DEBUG)
+        self.write_log(f"Memory initialization complete for {len(self.factor_memory_instances)} factors.", level=DEBUG)
 
 
     def complete_factor_tree(self, factors: Dict[str, FactorTemplate]) -> Dict[str, FactorTemplate]:
@@ -426,8 +421,6 @@ class FactorEngine(BaseEngine):
             self.write_log(f"on_bars called with empty bars for dt: {dt}. Skipping.", level=DEBUG)
             return
 
-        self.write_log(f"Processing bars for {dt} across {len(bars)} symbols.", level=DEBUG)
-
         # 1. Update memory_bar (OHLCV data)
         # Prepare a single row DataFrame for each OHLCV type
         new_ohlcv_rows: Dict[str, Dict[str, Any]] = {
@@ -505,14 +498,14 @@ class FactorEngine(BaseEngine):
             initial_resources = self._monitor_resources()
 
             # Configure Dask for local single threaded execution (default if no cluster)
-            dask.config.set(scheduler='single-threaded') # this would fix the interpreter shut down issue
+            # dask.config.set(scheduler='single-threaded') # this would fix the interpreter shut down issue
             # dask.config.set(num_workers=psutil.cpu_count(logical=False)) # Optional: set num_workers
-            self.write_log('start to do dask computation', level=INFO)
 
             try:
                 with dask.diagnostics.ProgressBar(minimum=0.1), dask.diagnostics.ResourceProfiler(dt=0.25) as rprof:
                     # Compute all tasks. Results will be a list of DataFrames.
-                    computed_results = dask.compute(*self.tasks.values(), optimize_graph=True, sync=True)
+                    with dask.config.set(scheduler='single-threaded'):
+                        computed_results = dask.compute(*self.tasks.values(), optimize_graph=True)
                 
                 end_time = time.time()
                 self.write_log(f"Dask computation finished in {end_time - start_time:.3f}s.", level=INFO)

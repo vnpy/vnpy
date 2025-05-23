@@ -101,10 +101,10 @@ class MimicGateway(BaseGateway):
         )
         self.on_contract(contract) # Inform upstream about the contract
 
+        self.write_log(f"Subscribed to {vt_symbol} and started bar simulation.")
         thread = threading.Thread(target=self._run_bar_simulation, args=(req.symbol, req.exchange, req.interval if req.interval else Interval.MINUTE))
         self.active_simulations[vt_symbol] = thread
         thread.start()
-        self.write_log(f"Subscribed to {vt_symbol} and started bar simulation.")
 
     def _run_bar_simulation(self, symbol: str, exchange: Exchange, interval: Interval):
         """
@@ -179,6 +179,8 @@ class MimicGateway(BaseGateway):
         low_price = actual_low
 
         volume = random.uniform(volume_range[0], volume_range[1])
+
+        print(f"Generated BarData: {symbol}, Open: {open_price}, High: {high_price}, Low: {low_price}, Close: {close_price}, Volume: {volume}")
 
         bar = BarData(
             gateway_name=self.gateway_name,
