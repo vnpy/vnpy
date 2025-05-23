@@ -4,6 +4,7 @@ import threading
 from datetime import datetime, timedelta
 from typing import Dict, Set
 
+from vnpy.event.engine import EventEngine
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import BarData, SubscribeRequest, ContractData
 from vnpy.trader.event import EVENT_CONTRACT
@@ -29,11 +30,11 @@ class MimicGateway(BaseGateway):
         "volume_range_max": 1000
     }
 
-    exchanges = [Exchange.SSE, Exchange.SZSE, Exchange.CFFEX, Exchange.SHFE, Exchange.DCE, Exchange.CZCE, Exchange.INE, Exchange.NASDAQ, Exchange.BINANCE] # Add more as needed
+    exchanges = [Exchange.BINANCE] # Add more as needed
 
-    def __init__(self, event_engine):
+    def __init__(self, event_engine: EventEngine, gateway_name: str = GATEWAY_NAME):
         """Constructor"""
-        super().__init__(event_engine, GATEWAY_NAME)
+        super().__init__(event_engine, gateway_name)
 
         self.active_simulations: Dict[str, threading.Thread] = {} # vt_symbol -> thread
         self.subscribed_symbols: Set[str] = set() # Store vt_symbols of subscribed contracts

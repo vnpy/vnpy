@@ -6,44 +6,44 @@ from typing import Any, Dict
 _CACHED_FACTOR_MODULE_SETTINGS: Dict[str, Any] = None
 _SETTINGS_INITIALIZED: bool = False
 
-try:
-    from vnpy.trader.setting import SETTINGS
-    from vnpy.trader.utility import load_json as load_json_main
-except ImportError:
-    SETTINGS: Dict[str, Any] = {}
-    # Basic load_json fallback for standalone if vnpy.trader.utility.load_json is not available
-    def load_json_fallback(filename: str) -> dict:
-        filepath = Path(filename)
-        if filepath.exists():
-            with open(filepath, 'r', encoding='utf-8') as f:
-                try:
-                    return json.load(f)
-                except json.JSONDecodeError:
-                    print(f"Warning: JSONDecodeError in {filename}")
-                    return {}
-        return {}
-    load_json_main = load_json_fallback
-
-# Default filenames used if not specified in global SETTINGS or for standalone mode
-DEFAULT_FACTOR_SETTINGS_FILENAME = "factor_settings.json"
-DEFAULT_FACTOR_DEFINITIONS_FILENAME = "factor_maker_setting.json"
-
-# Root path of this module, used for resolving relative paths in standalone mode
-MODULE_ROOT_PATH = Path(__file__).parent
-
-# Determine the factor settings file path
-_factor_settings_file_path_str = SETTINGS.get("factor.settings_file_path", DEFAULT_FACTOR_SETTINGS_FILENAME)
-_factor_settings_filepath = Path(_factor_settings_file_path_str)
-if not _factor_settings_filepath.is_absolute():
-    _factor_settings_filepath = MODULE_ROOT_PATH / _factor_settings_filepath
-
-# Determine the factor definitions file path
-_factor_definitions_file_path_str = SETTINGS.get("factor.definitions_file_path", DEFAULT_FACTOR_DEFINITIONS_FILENAME)
-FACTOR_DEFINITIONS_FILEPATH = Path(_factor_definitions_file_path_str)
-if not FACTOR_DEFINITIONS_FILEPATH.is_absolute():
-    FACTOR_DEFINITIONS_FILEPATH = MODULE_ROOT_PATH / FACTOR_DEFINITIONS_FILEPATH
-
 if not _SETTINGS_INITIALIZED:
+    try:
+        from vnpy.trader.setting import SETTINGS
+        from vnpy.trader.utility import load_json as load_json_main
+    except ImportError:
+        SETTINGS: Dict[str, Any] = {}
+        # Basic load_json fallback for standalone if vnpy.trader.utility.load_json is not available
+        def load_json_fallback(filename: str) -> dict:
+            filepath = Path(filename)
+            if filepath.exists():
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    try:
+                        return json.load(f)
+                    except json.JSONDecodeError:
+                        print(f"Warning: JSONDecodeError in {filename}")
+                        return {}
+            return {}
+        load_json_main = load_json_fallback
+
+    # Default filenames used if not specified in global SETTINGS or for standalone mode
+    DEFAULT_FACTOR_SETTINGS_FILENAME = "factor_settings.json"
+    DEFAULT_FACTOR_DEFINITIONS_FILENAME = "factor_maker_setting.json"
+
+    # Root path of this module, used for resolving relative paths in standalone mode
+    MODULE_ROOT_PATH = Path(__file__).parent
+
+    # Determine the factor settings file path
+    _factor_settings_file_path_str = SETTINGS.get("factor.settings_file_path", DEFAULT_FACTOR_SETTINGS_FILENAME)
+    _factor_settings_filepath = Path(_factor_settings_file_path_str)
+    if not _factor_settings_filepath.is_absolute():
+        _factor_settings_filepath = MODULE_ROOT_PATH / _factor_settings_filepath
+
+    # Determine the factor definitions file path
+    _factor_definitions_file_path_str = SETTINGS.get("factor.definitions_file_path", DEFAULT_FACTOR_DEFINITIONS_FILENAME)
+    FACTOR_DEFINITIONS_FILEPATH = Path(_factor_definitions_file_path_str)
+    if not FACTOR_DEFINITIONS_FILEPATH.is_absolute():
+        FACTOR_DEFINITIONS_FILEPATH = MODULE_ROOT_PATH / FACTOR_DEFINITIONS_FILEPATH
+
     # Load Factor Module Settings from the JSON file
     _temp_factor_module_settings: Dict[str, Any] = {}
     if _factor_settings_filepath.exists():
@@ -70,16 +70,19 @@ if not _SETTINGS_INITIALIZED:
     _CACHED_FACTOR_MODULE_SETTINGS = _temp_factor_module_settings
     _SETTINGS_INITIALIZED = True
 
-FACTOR_MODULE_SETTINGS: Dict[str, Any] = _CACHED_FACTOR_MODULE_SETTINGS
+    FACTOR_MODULE_SETTINGS: Dict[str, Any] = _CACHED_FACTOR_MODULE_SETTINGS
 
-# Base paths for factor data, cache, etc.
-ROOT_PATH = Path(SETTINGS.get("factor.root_path", Path.cwd() / ".vnpy" / "factor"))
-DATA_PATH = ROOT_PATH / "data"
-CACHE_PATH = ROOT_PATH / "cache"
+    # Base paths for factor data, cache, etc.
+    ROOT_PATH = Path(SETTINGS.get("factor.root_path", Path.cwd() / ".vnpy" / "factor"))
+    DATA_PATH = ROOT_PATH / "data"
+    CACHE_PATH = ROOT_PATH / "cache"
 
-# Ensure base directories exist
-for path in [ROOT_PATH, DATA_PATH, CACHE_PATH]:
-    path.mkdir(parents=True, exist_ok=True)
+    # Ensure base directories exist
+    for path in [ROOT_PATH, DATA_PATH, CACHE_PATH]:
+        path.mkdir(parents=True, exist_ok=True)
+
+    # For easier access if needed, though direct use of FACTOR_MODULE_SETTINGS is common
+    FACTOR_SETTINGS = FACTOR_MODULE_SETTINGS
 
 def get_factor_setting(key: str) -> Any:
     """
@@ -102,9 +105,6 @@ def get_factor_data_cache_path() -> Path:
 def get_backtest_data_cache_path() -> Path:
     """Get the path to the backtest factor data cache directory."""
     return CACHE_PATH / "backtest_factor_data_cache"
-
-# For easier access if needed, though direct use of FACTOR_MODULE_SETTINGS is common
-FACTOR_SETTINGS = FACTOR_MODULE_SETTINGS
 
 # Make FACTOR_DEFINITIONS_FILEPATH available for import if needed elsewhere for clarity,
 # though get_factor_definitions_filepath() is the preferred accessor.

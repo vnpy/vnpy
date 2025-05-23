@@ -8,7 +8,7 @@
 # @Description:
 
 import multiprocessing
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from logging import DEBUG
 from time import sleep
 
@@ -17,10 +17,15 @@ from vnpy.factor.engine import FactorEngine
 #from vnpy.app.factor_maker import FactorMakerApp
 from vnpy.event import EventEngine
 from vnpy.gateway.binance import BinanceSpotGateway
+from vnpy.trader.constant import Exchange
 from vnpy.trader.engine import MainEngine
+from vnpy.trader.event import EVENT_BAR
+from vnpy.trader.object import BarData
 from vnpy.trader.setting import SETTINGS
 from vnpy.strategy.engine import BaseStrategyEngine
 #from vnpy.strategy.examples.test_strategy_template import TestStrategyTemplate
+
+from vnpy.event import Event
 
 
 def run_child():
@@ -34,8 +39,57 @@ def run_child():
     main_engine = MainEngine(event_engine)
     main_engine.write_log("Main engine created successfully")
 
+
+    # start factor engine
+    factor_maker_engine: FactorEngine = main_engine.add_engine(FactorEngine)
+    factor_maker_engine.init_engine(fake=True)
+    factor_maker_engine.execute_calculation(dt=datetime.now())
+
+    factor_maker_engine.bars = {}
+
+    main_engine.write_log("Factor engine dask worker started successfully")
+
+    dt = datetime.now()+timedelta(minutes=1)
+
+
+    event1 = Event(
+        type = EVENT_BAR,
+        data=BarData(
+            symbol="btcusdt",
+            exchange=Exchange.BINANCE,
+            datetime=dt,
+            interval="1m",
+            volume=687678,
+            open_price=111111,
+            high_price=1111459,
+            low_price=111110,
+            close_price=111118,
+            gateway_name="BINANCE_SPOT"
+        )
+    )
+
+    event2 = Event(
+        type = EVENT_BAR,
+        data=BarData(
+            symbol="ethusdt",
+            exchange=Exchange.BINANCE,
+            datetime=dt,
+            interval="1m",
+            volume=288000,
+            open_price=2000,
+            high_price=3000,
+            low_price=1980,
+            close_price=2500,
+            gateway_name="BINANCE_SPOT"
+        )
+    )
+
+    event_engine.put(event1)
+    event_engine.put(event2)
+    main_engine.write_log("Bar Event broadcasted successfully")
+
     # connect to exchange
-    main_engine.add_gateway(BinanceSpotGateway, "BINANCE_SPOT")
+    """ main_engine.add_gateway(BinanceSpotGateway, "BINANCE_SPOT")
     binance_gateway_setting = {
         "key": SETTINGS.get("gateway.api_key", ""),
         "secret": SETTINGS.get("gateway.api_secret", ""),
@@ -43,12 +97,8 @@ def run_child():
     }
     main_engine.connect(binance_gateway_setting, "BINANCE_SPOT")
     main_engine.write_log("Connected to Binance interface")
-    main_engine.subscribe_all(gateway_name='BINANCE_SPOT')
-
-    # start factor engine
-    factor_maker_engine: FactorEngine = main_engine.add_engine(FactorEngine)
-    factor_maker_engine.init_engine()
-    main_engine.write_log(f"Started [{factor_maker_engine.__class__.__name__}]")
+    main_engine.subscribe_all(gateway_name='BINANCE_SPOT')"""
+    # start data recorder
 
     """# # test engine
     strategy_engine: BaseStrategyEngine = main_engine.add_engine(BaseStrategyEngine)
@@ -117,4 +167,4 @@ def run_parent():
 
 
 if __name__ == '__main__':
-    run_parent()
+    run_child()

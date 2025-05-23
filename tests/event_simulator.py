@@ -1,87 +1,94 @@
 # -*- coding=utf-8 -*-
 # @Project  : 20240720
 # @FilePath : vnpy/tests
-# @File     : event_simulator.py
-# @Time     : 2024/12/19 21:52
+# @File     : real_test.py
+# @Time     : 2025/1/21 19:25
 # @Author   : EvanHong
 # @Email    : 939778128@qq.com
-# @Description: simulate sending event signals
+# @Description:
 
-from vnpy.event import EventEngine, Event
-from vnpy.trader.constant import Interval, Exchange
-from vnpy.trader.object import BarData, TickData
-from vnpy.trader.event import EVENT_BAR, EVENT_TICK
-from vnpy.trader.utility import load_json
+import multiprocessing
+from time import sleep
+
+from vnpy.factor.engine import FactorEngine
+#from vnpy.app.factor_maker import FactorMakerApp
+from vnpy.event import EventEngine
+from vnpy.gateway.mimicgateway.mimicgateway import MimicGateway
 from vnpy.trader.engine import MainEngine
-from vnpy.trader.setting import SETTINGS
-from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.app import BaseApp
-from vnpy.trader.utility import extract_vt_symbol
-from vnpy.trader.object import HistoryRequest
+#from vnpy.strategy.examples.test_strategy_template import TestStrategyTemplate
 
 
-class EventSimulator:
+
+def run_child():
     """
-    Class for simulating sending event signals
+    1. start gateway
+    2. feed data to factor engine
+    3. push bar and factors into database
     """
 
-    def __init__(self):
-        """"""
-        self.event_engine = EventEngine()
-        self.main_engine = MainEngine(self.event_engine)
+    event_engine = EventEngine()
+    main_engine = MainEngine(event_engine)
+    main_engine.write_log("Main engine created successfully")
 
-        self.main_engine.add_gateway(MockGateway)
-        self.main_engine.add_app(MockApp)
 
-        self.main_engine.init_engine()
+    # start factor engine
+    factor_maker_engine: FactorEngine = main_engine.add_engine(FactorEngine)
+    factor_maker_engine.init_engine(fake=False)
 
-    def send_tick_event(self):
-        """"""
-        tick = TickData(
-            symbol="btcusdt",
-            exchange=Exchange.BINANCE,
-            datetime="2024-12-19 12:00:00",
-            name="BTCUSDT",
-            volume=1.0,
-            open_interest=0,
-            last_price=10000,
-            last_volume=1.0,
-            limit_up=11000,
-            limit_down=9000,
-            open_price=10000,
-            high_price=10000,
-            low_price=10000,
-            pre_close=10000,
-            bid_price_1=9999,
-            bid_volume_1=1.0,
-            ask_price_1=10001,
-            ask_volume_1=1.0,
-            gateway_name="mock"
-        )
+    main_engine.write_log("Factor engine dask worker started successfully")
 
-        event = Event(EVENT_TICK, tick)
-        self.event_engine.put(event)
+    gateway_settings = {
+        "symbols": [],
+        "simulation_interval_seconds": 60.0, # Bars every second for each symbol
+        "open_price_range_min": 100,
+        "open_price_range_max": 105,
+        "price_change_range_min": -1,
+        "price_change_range_max": 1,
+        "volume_range_min": 50,
+        "volume_range_max": 200
+    }
 
-    def send_bar_event(self):
-        """"""
-        bar = BarData(
-            symbol="btcusdt",
-            exchange=Exchange.BINANCE,
-            datetime="2024-12-19 12:00:00",
-            interval=Interval.MINUTE,
-            volume=1.0,
-            open_interest=0,
-            open_price=10000,
-            high_price=10000,
-            low_price=10000,
-            close_price=10000,
-            gateway_name="mock"
-        )
+    # connect to exchange
+    main_engine.add_gateway(MimicGateway, "MIMIC")
 
-        event = Event(EVENT_BAR, bar)
-        self.event_engine.put(event)
+    main_engine.connect(gateway_settings, "MIMIC")
+    main_engine.write_log("Connected to MIMIC interface")
+    main_engine.subscribe_all(gateway_name='MIMIC')
 
-    def run(self):
-        """"""
-        self.send_tick_event()
-        self.send_bar_event()
+
+def run_parent():
+    """
+    Running in the parent process.
+    """
+    print("Starting parent process")
+
+    # Crypto markets trade 24/7
+    child_process = None
+
+    try:
+        if child_process is None:
+            print("Starting child process")
+            child_process = multiprocessing.Process(target=run_child)
+            child_process.start()
+            print("Child process started successfully")
+            
+            # Keep the parent process running
+            while True:
+                sleep(5)
+                if not child_process.is_alive():
+                    print("Child process unexpectedly exited, restarting...")
+                    child_process.join()
+                    child_process = multiprocessing.Process(target=run_child)
+                    child_process.start()
+                    
+    except KeyboardInterrupt:
+        if child_process is not None:
+            print("Shutting down child process")
+            child_process.terminate()
+            child_process.join()
+            child_process = None
+            print("Child process shutdown successful")
+
+
+if __name__ == '__main__':
+    run_parent()

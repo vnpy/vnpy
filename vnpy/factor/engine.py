@@ -367,7 +367,7 @@ class FactorEngine(BaseEngine):
     def _get_current_memory_bar_dask_input(self) -> Dict[str, pl.DataFrame]:
         """Prepares OHLCV bar data for Dask task input. Returns copies."""
         # Dask works best with immutable inputs or copies to avoid side effects
-        return {k: df.clone() for k, df in self.memory_bar.items() if not df.is_empty()}
+        return self.memory_bar.copy() # Return a copy of the current memory_bar
 
 
     def _get_factor_memory_instance_for_dask(self, factor_key: str) -> FactorMemory:
@@ -490,7 +490,6 @@ class FactorEngine(BaseEngine):
 
 
     def execute_calculation(self, dt: datetime) -> None:
-        self.write_log(f"Executing Dask computation for datetime {dt}...", level=INFO)
         """Executes the Dask computational graph and updates FactorMemory instances."""
         if not self.tasks:
             self.write_log("No tasks to execute.", level=DEBUG)
@@ -505,15 +504,15 @@ class FactorEngine(BaseEngine):
             start_time = time.time()
             initial_resources = self._monitor_resources()
 
-            # Configure Dask for local threaded execution (default if no cluster)
-            dask.config.set(scheduler='threads') 
+            # Configure Dask for local single threaded execution (default if no cluster)
+            dask.config.set(scheduler='single-threaded') # this would fix the interpreter shut down issue
             # dask.config.set(num_workers=psutil.cpu_count(logical=False)) # Optional: set num_workers
             self.write_log('start to do dask computation', level=INFO)
 
             try:
                 with dask.diagnostics.ProgressBar(minimum=0.1), dask.diagnostics.ResourceProfiler(dt=0.25) as rprof:
                     # Compute all tasks. Results will be a list of DataFrames.
-                    computed_results = dask.compute(*self.tasks.values(), optimize_graph=True)
+                    computed_results = dask.compute(*self.tasks.values(), optimize_graph=True, sync=True)
                 
                 end_time = time.time()
                 self.write_log(f"Dask computation finished in {end_time - start_time:.3f}s.", level=INFO)
