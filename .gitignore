@@ -24,7 +24,7 @@ dist
 
 # VeighNa
 .vntrader
-
+.vnpy
 # Visual Studio intermediate files
 *.exp
 *.iobj
