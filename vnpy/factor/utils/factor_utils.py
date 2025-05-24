@@ -72,7 +72,7 @@ def init_factors(
         try:
             FactorClass = get_factor_class(module_for_primary_classes, class_name)
         except AttributeError as e:
-            print(str(e) + " Skipping this factor.")
+            print(f"[FactorUtils] Error initializing factor: {str(e)} Skipping.")
             continue
 
         instance = FactorClass(

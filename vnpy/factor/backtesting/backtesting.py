@@ -104,7 +104,7 @@ class BacktestEngine:
 
     def _initialize_all_factors(self) -> bool:
         """Loads factor settings and initializes FactorTemplate instances."""
-        self.write_log("Loading factor settings and initializing factor instances for batch backtest...", level=DEBUG)
+        self.write_log("Initializing factors...", level=INFO)
         try:
             factor_settings_list = load_factor_setting(str(self.factor_settings_path))
             if not factor_settings_list:
@@ -148,7 +148,7 @@ class BacktestEngine:
         }
         try:
             self.sorted_factor_keys = self._topological_sort(dependency_graph)
-            self.write_log(f"Flattened and sorted {len(self.flattened_factors)} factors: {self.sorted_factor_keys}")
+            self.write_log(f"Flattened and sorted {len(self.flattened_factors)} factors.") # Removed verbose list of keys
             return True
         except ValueError as e: # Circular dependency
             self.write_log(f"Circular dependency in factor graph: {e}", level=ERROR); return False
@@ -156,7 +156,7 @@ class BacktestEngine:
 
     def _initialize_factor_memory(self) -> bool:
         """Initializes FactorMemory instances for each factor."""
-        self.write_log("Initializing FactorMemory instances for batch backtest...", level=DEBUG)
+        self.write_log("Initializing factor memory...", level=INFO) # Changed from DEBUG to INFO and made concise
         if self.num_data_rows <= 0:
             self.write_log("Number of data rows is 0. FactorMemory max_rows will be 1. "
                            "Ensure data was loaded correctly if this is unexpected.", level=WARNING)
@@ -205,7 +205,7 @@ class BacktestEngine:
 
     def _build_dask_computational_graph(self) -> bool:
         """Builds the Dask computational graph for all factors."""
-        self.write_log("Building Dask computational graph for batch calculation...", level=DEBUG)
+        self.write_log("Building Dask computational graph...", level=INFO) # Changed from DEBUG to INFO and made concise
         
         # Prepare the full historical OHLCV data as a Dask Delayed object
         # Pass a copy to ensure Dask operates on a snapshot if self.memory_bar were to change (it shouldn't in batch)
@@ -243,12 +243,16 @@ class BacktestEngine:
                 self.write_log(f"Dask computation finished in {calc_time:.3f}s.", level=INFO)
 
                 error_count = 0
+                computation_errors: List[str] = []
+                memory_update_errors: List[str] = []
+                missing_memory_errors: List[str] = []
+
                 for factor_key, result_df in zip(self.dask_tasks.keys(), computed_results):
                     if result_df is None:
-                        self.write_log(f"Factor {factor_key} computation returned None.", level=WARNING)
+                        computation_errors.append(f"Factor {factor_key}: computation returned None.")
                         error_count +=1; continue
                     if not isinstance(result_df, pl.DataFrame):
-                        self.write_log(f"Factor {factor_key} returned non-DataFrame: {type(result_df)}.", level=ERROR)
+                        computation_errors.append(f"Factor {factor_key}: returned non-DataFrame type {type(result_df)}.")
                         error_count +=1; continue
 
                     fm_instance = self.factor_memory_instances.get(factor_key)
@@ -256,12 +260,19 @@ class BacktestEngine:
                         try:
                             fm_instance.update_data(result_df) # result_df is the new full history
                         except Exception as e_mem:
-                            self.write_log(f"Error updating FactorMemory for {factor_key}: {e_mem}\n{traceback.format_exc()}", level=ERROR)
+                            memory_update_errors.append(f"Factor {factor_key}: error updating FactorMemory - {e_mem}")
                             error_count +=1
                     else:
-                        self.write_log(f"No FactorMemory for {factor_key} to update. Critical error.", level=ERROR)
+                        missing_memory_errors.append(f"Factor {factor_key}: No FactorMemory found to update.")
                         error_count +=1 # This indicates a setup problem
                 
+                if computation_errors:
+                    self.write_log(f"Computation issues for {len(computation_errors)} factors:\n" + "\n".join(computation_errors), level=WARNING)
+                if memory_update_errors:
+                    self.write_log(f"FactorMemory update issues for {len(memory_update_errors)} factors:\n" + "\n".join(memory_update_errors), level=ERROR)
+                if missing_memory_errors:
+                    self.write_log(f"Missing FactorMemory instances for {len(missing_memory_errors)} factors:\n" + "\n".join(missing_memory_errors), level=ERROR)
+
                 # final_resources = self._monitor_resources() # Optional
                 # self.metrics["full_batch"] = CalculationMetrics(
                 #     calculation_time=calc_time,
@@ -292,7 +303,7 @@ class BacktestEngine:
         """
         Orchestrates the full batch backtest: data loading, initialization, Dask execution.
         """
-        self.write_log(f"Starting full factor backtest from {start_datetime} to {end_datetime} for symbols: {self.vt_symbols}")
+        self.write_log(f"Starting full factor backtest from {start_datetime} to {end_datetime} for {len(self.vt_symbols)} symbols.") # Log count of symbols
         self._prepare_output_directory() # Clear/prepare output dir for this run
 
         # 1. Load all historical OHLCV data into self.memory_bar
@@ -391,10 +402,11 @@ class BacktestEngine:
                 "disk_io_write_mb": disk_io.write_bytes/(1024*1024) if disk_io else 0}
 
     def _cleanup_memory_resources(self) -> None: # Kept from your original
-        gc.collect(); self.write_log("Garbage collection performed.", level=DEBUG)
+        gc.collect(); self.write_log("Garbage collection performed.", level=DEBUG) # Kept as DEBUG, useful for memory profiling
 
     def write_log(self, msg: str, level: int = INFO) -> None: # Kept from your original
-        log_msg = f"[{self.engine_name}] {msg}" # Simplified prefix
+        # Simplified prefix already applied in original, keeping it as is.
+        log_msg = f"[{self.engine_name}] {msg}"
         level_map = {DEBUG: logger.debug, INFO: logger.info, WARNING: logger.warning, ERROR: logger.error}
         log_func = level_map.get(level, logger.info)
         log_func(log_msg)

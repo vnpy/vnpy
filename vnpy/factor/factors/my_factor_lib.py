@@ -230,7 +230,7 @@ class MACDFactor(FactorTemplate):
             symbols_to_process = [s for s in common_symbols if s in self.vt_symbols]
 
         if not symbols_to_process:
-            print(f"Warning: MACDFactor ({self.factor_key}) found no common symbols to process after filtering. Input fast symbols: {symbols_in_fast}, slow: {symbols_in_slow}, vt_symbols: {self.vt_symbols}")
+            print(f"Warning: MACDFactor ({self.factor_key}) found no common symbols to process after filtering. Input fast symbols count: {len(symbols_in_fast)}, slow count: {len(symbols_in_slow)}, configured vt_symbols count: {len(self.vt_symbols)}")
 
         for symbol in symbols_to_process:
             fast_ema_values = df_ema_fast.get_column(symbol)
