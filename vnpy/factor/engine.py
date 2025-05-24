@@ -29,7 +29,7 @@ from vnpy.factor.utils.memory_utils import truncate_memory as truncate_bar_memor
 from .setting import get_factor_definitions_filepath, get_factor_data_cache_path, FACTOR_MODULE_SETTINGS
 
 FACTOR_MODULE_NAME = FACTOR_MODULE_SETTINGS.get("module_name", 'vnpy.factor.factors') # Use setting
-SYSTEM_MODE = SETTINGS.get('system.mode', 'LIVE') # LIVE, BACKTEST, etc.
+# SYSTEM_MODE = SETTINGS.get('system.mode', 'LIVE') # Not used within FactorEngine
 
 def safe_filename(name: str) -> str:
     name = re.sub(r'[^\w\.\-@]', '_', name)
@@ -70,7 +70,6 @@ class FactorEngine(BaseEngine):
                 self.vt_symbols = [contract.vt_symbol for contract in main_engine.get_all_contracts()]
             except Exception as e:
                 self.write_log(f"Failed to get vt_symbols from main_engine.get_all_contracts(): {e}", level=WARNING)
-
 
         self.stacked_factors: dict[str, FactorTemplate] = {}
         self.flattened_factors: dict[str, FactorTemplate] = {}
@@ -127,7 +126,7 @@ class FactorEngine(BaseEngine):
 
     def init_all_factors(self) -> None:
         """Loads factor settings, initializes FactorTemplate instances, and determines max lookback periods."""
-        self.write_log("Loading factor settings and initializing factor instances...", level=DEBUG)
+        self.write_log("Loading factor settings and initializing factor instances...", level=INFO) # Changed DEBUG to INFO
         try:
             factor_settings_list: List = load_factor_setting(self.setting_filename) # Expects a list of settings dicts
             if not factor_settings_list:
@@ -144,7 +143,7 @@ class FactorEngine(BaseEngine):
             return
 
         # init_factors should take the list of settings and the factors module
-        inited_factor_instances: List = init_factors(
+        inited_factor_instances: List[FactorTemplate] = init_factors(
             self.module_factors, # Module for finding primary factor classes
             factor_settings_list,
             dependencies_module_lookup_for_instances=self.module_factors # Module for their dependencies too
@@ -180,7 +179,7 @@ class FactorEngine(BaseEngine):
 
     def init_memory(self, fake: bool = False) -> None:
         """Initializes memory_bar (in-memory OHLCV) and FactorMemory instances for each factor."""
-        self.write_log("Initializing memory structures...", level=DEBUG)
+        self.write_log("Initializing memory structures...", level=INFO) # Changed DEBUG to INFO
         # 1. Initialize memory_bar (OHLCV)
         # Use a consistent schema for bar data DataFrames
         bar_data_schema = {'datetime': pl.Datetime(time_unit="us")} # Datetime column
@@ -197,7 +196,12 @@ class FactorEngine(BaseEngine):
         self.factor_memory_instances.clear()
         for factor_key, factor_instance in self.flattened_factors.items():
             try:
-                factor_instance.vt_symbols = self.vt_symbols # Pass symbols to factor instance
+                # Ensure factor_instance.vt_symbols is populated before calling get_output_schema,
+                # as the schema generation might depend on the symbols.
+                # This is a safeguard in case the factor's __init__ didn't set it from params.
+                if not hasattr(factor_instance, 'vt_symbols') or not factor_instance.vt_symbols:
+                    factor_instance.vt_symbols = self.vt_symbols
+
                 output_schema = factor_instance.get_output_schema()
                 if self.factor_datetime_col not in output_schema:
                     raise ValueError(f"Factor '{factor_key}' output schema must contain the datetime column '{self.factor_datetime_col}'.")
@@ -295,7 +299,7 @@ class FactorEngine(BaseEngine):
 
     def build_computational_graph(self) -> Dict[str, Delayed]:
         """Builds a Dask computational graph based on flattened factors."""
-        self.write_log("Building Dask computational graph...", level=DEBUG)
+        # self.write_log("Building Dask computational graph...", level=DEBUG) # Removed, init_engine logs similar message
         tasks: Dict[str, Delayed] = {}
         
         # Dependency graph for topological sort: factor_key -> list of dependency_factor_keys
@@ -346,9 +350,12 @@ class FactorEngine(BaseEngine):
             visited_permanently.add(node)  # Mark as fully processed
             order.append(node) # Add to the sorted list
 
-        all_nodes = set(graph.keys())
+        # Collect all unique nodes from the graph keys and dependency lists
+        nodes_as_keys = set(graph.keys())
+        nodes_as_dependencies = set()
         for dep_list in graph.values():
-            all_nodes.update(dep_list)
+            nodes_as_dependencies.update(dep_list)
+        all_nodes = nodes_as_keys | nodes_as_dependencies
 
         for node_key in all_nodes: # Iterate over all known nodes to ensure all are visited
             if node_key not in visited_permanently:
@@ -446,20 +453,20 @@ class FactorEngine(BaseEngine):
             try:
                 # Ensure the schema for the new row matches the existing DataFrame schema
                 expected_schema = self.memory_bar[b_col].schema
-                # Create a 1-row DataFrame, conforming to the expected schema
-                # Fill missing symbols (if any for this specific bar batch) with nulls
-                row_df_data = {
-                    col: data_dict_for_row.get(col, None if col != self.factor_datetime_col else dt) 
-                    for col in expected_schema.keys()
-                }
-                new_row_df = pl.DataFrame([row_df_data], schema=expected_schema)
+                # Create a 1-row DataFrame.
+                # new_ohlcv_rows[b_col] (aliased as data_dict_for_row) contains the datetime
+                # and available symbol data for the current bar.
+                # Providing the full expected_schema to pl.DataFrame constructor ensures
+                # that any columns in expected_schema but missing from data_dict_for_row
+                # (e.g., symbols that didn't have a bar in this specific dt) are created as nulls.
+                new_row_df = pl.DataFrame([data_dict_for_row], schema=expected_schema)
                 
                 self.memory_bar[b_col] = pl.concat(
-                    [self.memory_bar[b_col], new_row_df], 
+                    [self.memory_bar[b_col], new_row_df],
                     how='vertical_relaxed' # vertical_relaxed is more robust to minor schema diffs if they occur
                 )
             except Exception as e:
-                self.write_log(f"Error updating memory_bar for '{b_col}': {e}. Row data: {data_dict_for_row}", level=ERROR)
+                self.write_log(f"Error updating memory_bar for '{b_col}': {e}. Affected datetime: {dt}", level=ERROR) # Removed verbose Row data
                 # Potentially stop processing if bar memory update fails critically
                 return
 
@@ -479,7 +486,7 @@ class FactorEngine(BaseEngine):
         # FactorMemory instances handle their own truncation.
         self._truncate_memory_bar()
         
-        self.write_log(f"Finished processing bars for {dt}.", level=DEBUG)
+        # self.write_log(f"Finished processing bars for {dt}.", level=DEBUG) # Removed, can be too noisy
 
 
     def execute_calculation(self, dt: datetime) -> None:
@@ -511,44 +518,55 @@ class FactorEngine(BaseEngine):
                 self.write_log(f"Dask computation finished in {end_time - start_time:.3f}s.", level=INFO)
 
                 # Clear cache before populating with new results
-                self.latest_calculated_factors_cache.clear() 
+                self.latest_calculated_factors_cache.clear()
                 
                 calculation_errors_count = 0
+                # Lists to store error details for summary logging
+                computation_issues: List[str] = []
+                memory_update_issues: List[str] = []
+                missing_memory_instances: List[str] = []
+
                 # Process results: update FactorMemory instances and the latest_factors_cache
                 for factor_key, result_df in zip(self.tasks.keys(), computed_results):
                     if result_df is None:
-                        self.write_log(f"Factor {factor_key} computation returned None.", level=WARNING)
+                        computation_issues.append(f"{factor_key}: returned None")
                         calculation_errors_count +=1
                         continue
                     if not isinstance(result_df, pl.DataFrame):
-                        self.write_log(f"Factor {factor_key} computation returned non-DataFrame: {type(result_df)}.", level=ERROR)
+                        computation_issues.append(f"{factor_key}: returned non-DataFrame type {type(result_df)}")
                         calculation_errors_count +=1
                         continue
 
                     fm_instance = self.factor_memory_instances.get(factor_key)
                     if fm_instance:
                         try:
-                            # The result_df from factor.calculate IS the new full history.
-                            # FactorMemory.update_data will merge, sort, unique, truncate, and save.
                             fm_instance.update_data(result_df)
-                            
-                            # Update the cache with the latest row from this factor
                             latest_row = fm_instance.get_latest_rows(1)
                             if not latest_row.is_empty():
                                 self.latest_calculated_factors_cache[factor_key] = latest_row
-                            # else: factor might have produced an empty result or history is empty
                         except Exception as e:
-                            self.write_log(f"Error updating FactorMemory for {factor_key} with new data: {e}\n{traceback.format_exc()}", level=ERROR)
+                            # Log full traceback here as it's an unexpected error during memory update
+                            memory_update_issues.append(f"{factor_key}: {e}\n{traceback.format_exc(limit=2)}") # Limit traceback depth
                             calculation_errors_count +=1
                     else:
-                        self.write_log(f"No FactorMemory instance found for {factor_key} to update.", level=ERROR)
+                        missing_memory_instances.append(f"{factor_key}")
                         calculation_errors_count +=1
                 
+                if computation_issues:
+                    self.write_log(f"Computation issues for {len(computation_issues)} factors: {'; '.join(computation_issues)}", level=WARNING)
+                if memory_update_issues:
+                    self.write_log(f"FactorMemory update issues for {len(memory_update_issues)} factors. See details below:", level=ERROR)
+                    for issue in memory_update_issues: self.write_log(issue, level=ERROR) # Log each with traceback separately for clarity
+                if missing_memory_instances:
+                    self.write_log(f"Missing FactorMemory instances for factors: {', '.join(missing_memory_instances)}", level=ERROR)
+
                 final_resources = self._monitor_resources()
                 # Update metrics (overall for the batch)
                 # Per-factor metrics would require more granular timing within Dask tasks.
                 self.metrics["overall_batch"] = CalculationMetrics(
                     calculation_time=end_time - start_time,
+                    # initial_resources is expected to always contain "memory_percent".
+                    # The .get() with fallback is defensive; memory_usage would be 0 if key were missing.
                     memory_usage=final_resources["memory_percent"] - initial_resources.get("memory_percent", final_resources["memory_percent"]),
                     cache_hits=0, # Dask handles its own caching/optimization
                     error_count=calculation_errors_count
@@ -597,7 +615,7 @@ class FactorEngine(BaseEngine):
     def _cleanup_memory_resources(self) -> None:
         """Performs garbage collection."""
         gc.collect()
-        # self.write_log("Garbage collection performed.", level=DEBUG)
+        self.write_log("Garbage collection performed.", level=DEBUG) # Re-enabled this DEBUG log
 
 
     def process_tick_event(self, event: Event) -> None:
@@ -632,7 +650,7 @@ class FactorEngine(BaseEngine):
         # If bar is from a new datetime, process the previous batch
         if bar.datetime > self.dt:
             if any(self.receiving_status.values()): # If any bars were received for self.dt
-                self.write_log(f"New bar datetime {bar.datetime} received. Processing previous batch for {self.dt}.", level=DEBUG)
+                self.write_log(f"Bar time roll: new {bar.datetime}, processing previous {self.dt}.", level=DEBUG) # Made more concise
                 # Some symbols might not have sent a bar for self.dt.
                 # on_bars needs to handle potentially incomplete self.bars for self.dt
                 # by using placeholders or only processing available data.
@@ -651,7 +669,7 @@ class FactorEngine(BaseEngine):
         # Check if all *expected* symbols for the current self.dt have arrived
         # This assumes self.vt_symbols is the list of all symbols we expect bars from.
         if all(self.receiving_status[sym] for sym in self.vt_symbols if sym in self.receiving_status):
-            self.write_log(f"All expected bars received for {self.dt}. Processing batch.", level=DEBUG)
+            # self.write_log(f"All expected bars received for {self.dt}. Processing batch.", level=DEBUG) # Removed, can be noisy
             self.on_bars(self.dt, self.bars.copy())
             
             # Reset for the next interval after processing
@@ -701,7 +719,7 @@ class FactorEngine(BaseEngine):
     def write_log(self, msg: str, factor: Optional[FactorTemplate] = None, level: int = INFO) -> None:
         log_msg = f"{factor.factor_key}: {msg}" if factor else f"{msg}"
         log: LogData = LogData(msg=log_msg, gateway_name=APP_NAME, level=level)
-        event = Event(type_=EVENT_LOG, data=log)
+        event = Event(type=EVENT_LOG, data=log)
         self.event_engine.put(event)
 
     # Other utility functions like get_factor_parameters, stop_factor, etc. can be adapted

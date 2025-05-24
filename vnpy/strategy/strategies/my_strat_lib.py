@@ -8,6 +8,7 @@ import traceback
 from typing import TYPE_CHECKING, List, Dict, Any, Tuple
 import pandas as pd
 import polars as pl
+import numpy as np # Moved import to top
 
 # --- VnTrader Imports ---
 from vnpy.trader.constant import Direction, Offset, OrderType
@@ -51,8 +52,9 @@ class MyMomentumStrategy(StrategyTemplate):
 
         self.write_log(f"MyMomentumStrategy '{self.strategy_name}' initialized.")
         self.write_log(f"Custom Param A: {self.custom_param_a}, Custom Param B: {self.custom_param_b}")
-        self.write_log(f"Model Config: {self.model_config.__dict__ if self.model_config else 'N/A'}") # Assuming __dict__ for stub
-        self.write_log(f"Trading Config: {self.trading_config.__dict__ if self.trading_config else 'N/A'}")
+        # Log only key model/trading config details or just confirmation, avoid full __dict__ at INFO
+        self.write_log(f"Model Config loaded: Type '{self.model_config.model_type if self.model_config else 'N/A'}'", level=DEBUG)
+        self.write_log(f"Trading Config loaded: Default Vol '{self.trading_config.default_order_volume if self.trading_config else 'N/A'}'", level=DEBUG)
 
         # Model is loaded by super().__init__() via self.load_model()
         if self.model is None:
@@ -69,9 +71,13 @@ class MyMomentumStrategy(StrategyTemplate):
         Rows: vt_symbol, Columns: factor_feature_names
         Example: factor.1h.EMAFactor@... -> EMA_20 (if period is 20)
         """
-        self.write_log(f"Transforming latest factors: {list(latest_factor_data_map.keys())}", level=DEBUG)
+        factor_keys_sample = list(latest_factor_data_map.keys())[:3]
+        if len(latest_factor_data_map) > 3:
+            factor_keys_sample.append("...")
+        self.write_log(f"Transforming {len(latest_factor_data_map)} latest factors (e.g., {factor_keys_sample})", level=DEBUG)
         
         all_symbol_features = []
+        skipped_symbols_count = 0
 
         for vt_symbol in self.vt_symbols:
             symbol_features = {"vt_symbol": vt_symbol}
@@ -82,16 +88,15 @@ class MyMomentumStrategy(StrategyTemplate):
                 if factor_df is None or factor_df.is_empty():
                     self.write_log(f"Missing or empty data for factor '{factor_key}' for symbol '{vt_symbol}'.", level=WARNING)
                     symbol_has_all_factors = False
-                    break 
+                    break
                 
-                # Assuming factor_df is latest_rows(1), so it has one row.
-                # And columns are [datetime, SYM1, SYM2, ...]
                 if vt_symbol not in factor_df.columns:
-                    self.write_log(f"Symbol '{vt_symbol}' not found in data for factor '{factor_key}'. Available: {factor_df.columns}", level=WARNING)
+                    columns_sample = factor_df.columns[:3]
+                    if len(factor_df.columns) > 3: columns_sample.append("...")
+                    self.write_log(f"Symbol '{vt_symbol}' not found in data for factor '{factor_key}'. Available (sample): {columns_sample}", level=WARNING)
                     symbol_has_all_factors = False
                     break
                 
-                # Extract the scalar value for the symbol
                 try:
                     factor_value = factor_df.row(0, named=True).get(vt_symbol) # Get value for the symbol
                     if factor_value is None: # Could be None if data had nulls
@@ -116,9 +121,13 @@ class MyMomentumStrategy(StrategyTemplate):
             
             if symbol_has_all_factors and len(symbol_features) > 1: # Has vt_symbol + at least one factor
                 all_symbol_features.append(symbol_features)
-            elif not symbol_has_all_factors:
-                 self.write_log(f"Skipping symbol '{vt_symbol}' due to missing factor data for prediction.", level=DEBUG)
+            else: # This path is taken if symbol_has_all_factors is False, or if no actual factor features were added.
+                 # self.write_log(f"Skipping symbol '{vt_symbol}' due to missing factor data for prediction.", level=DEBUG) # Kept removed for now, can be noisy
+                 skipped_symbols_count +=1
 
+
+        if skipped_symbols_count > 0:
+            self.write_log(f"Skipped {skipped_symbols_count}/{len(self.vt_symbols)} symbols due to missing factor data during transformation.", level=DEBUG)
 
         if not all_symbol_features:
             self.write_log("No features generated for any symbol after transformation.", level=WARNING)
@@ -151,9 +160,15 @@ class MyMomentumStrategy(StrategyTemplate):
             # probabilities = self.model.predict_proba(data) # Returns array of [prob_class_0, prob_class_1]
             
             # Dummy prediction: 1 for buy, -1 for sell, 0 for hold, randomly
-            import numpy as np
+            # import numpy as np # Moved to top
             predictions = np.random.choice([-1, 0, 1], size=len(data))
-            self.write_log(f"Dummy predictions generated: {predictions}", level=DEBUG)
+            # Log a sample of predictions instead of the whole array if it's large
+            predictions_sample = predictions[:5] if len(predictions) > 5 else predictions
+            if len(predictions) > 5:
+                predictions_log_str = f"{predictions_sample}... (Total: {len(predictions)})"
+            else:
+                predictions_log_str = f"{predictions_sample}"
+            self.write_log(f"Dummy predictions generated: {predictions_log_str}", level=DEBUG)
             return pd.Series(predictions, index=data.index) # Ensure output is indexed by vt_symbol
 
         except Exception as e:
@@ -264,11 +279,12 @@ class MyMomentumStrategy(StrategyTemplate):
         
         all_features_list = []
         processed_symbols = set()
+        empty_factors_skipped = []
 
         # Iterate through each required factor
         for factor_key, factor_df_pl in historical_factor_data_map.items():
             if factor_df_pl.is_empty():
-                self.write_log(f"Historical data for factor '{factor_key}' is empty. Skipping.", level=WARNING)
+                empty_factors_skipped.append(factor_key)
                 continue
 
             # Assume factor_df_pl is [datetime, SYM1_val, SYM2_val, ...]
@@ -291,9 +307,14 @@ class MyMomentumStrategy(StrategyTemplate):
                 all_features_list.append(melted_df)
                 processed_symbols.update(melted_df["vt_symbol"].unique().to_list())
 
+        if empty_factors_skipped:
+            skipped_keys_sample = empty_factors_skipped[:3]
+            if len(empty_factors_skipped) > 3:
+                skipped_keys_sample.append("...")
+            self.write_log(f"Skipped {len(empty_factors_skipped)} factors with empty historical data (e.g., {skipped_keys_sample}).", level=WARNING)
 
         if not all_features_list:
-            self.write_log("No features could be extracted from historical factor data.", level=WARNING)
+            self.write_log("No features could be extracted from historical factor data (all non-empty factors processed).", level=WARNING)
             return pd.DataFrame(), pd.Series(dtype='float64')
 
         # Join all melted factor DataFrames
@@ -335,7 +356,7 @@ class MyMomentumStrategy(StrategyTemplate):
         # This is illustrative and needs actual price data and proper alignment.
         # For now, let's create random labels.
         num_rows = len(features_pl_df_combined)
-        import numpy as np
+        # import numpy as np # Moved to top
         dummy_labels = pl.Series("target", np.random.randint(0, 2, size=num_rows))
 
         # Align labels with features. If using shifted returns, ensure proper alignment.

@@ -23,6 +23,7 @@
       }
     },
     "trading_config": {
+      "default_order_volume": 0.01,
       "min_order_volume": 0.001,
       "max_position_risk_per_trade_pct": 0.02,
       "target_volatility_pct": 0.15

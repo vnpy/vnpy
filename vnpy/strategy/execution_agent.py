@@ -8,7 +8,6 @@ from vnpy.trader.engine import MainEngine
 logger = logging.getLogger(__name__)
 
 
-# todo vnpy algo trading
 class ExecutionAgent:
     """Handles order execution for portfolio strategies"""
 
@@ -26,12 +25,10 @@ class ExecutionAgent:
             net: bool = False
     ) -> List[str]:
         """Send order via main engine"""
-        # Validate request
         if req.volume <= 0:
             logger.warning(f"Invalid order volume: {req.volume}")
             return []
 
-        # Send order via main engine
         vt_orderids = []
         req_list = self.main_engine.convert_order_request(
             req, self.gateway_name, lock, net

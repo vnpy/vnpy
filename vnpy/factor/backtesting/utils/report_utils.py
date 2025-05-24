@@ -6,10 +6,10 @@ import quantstats as qs
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from pathlib import Path
-import logging
+# import logging # Unused logger
 from datetime import datetime
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__) # Unused logger
 
 def generate_quant_stats_report(
     returns: List[float],
@@ -19,7 +19,6 @@ def generate_quant_stats_report(
     save_path: Path = None
 ) -> None:
     """Generate a comprehensive report using QuantStats"""
-    # Convert returns to pandas Series
     returns_series = pd.Series(returns, name='Strategy')
     
     if benchmark_returns:
@@ -42,7 +41,6 @@ def create_tear_sheet(
 ) -> None:
     """Create a detailed tear sheet with multiple analyses"""
     
-    # Create returns series
     returns = pd.Series(result['returns'])
     
     # Basic metrics
@@ -114,7 +112,7 @@ def create_tear_sheet(
         row=3, col=1
     )
     
-    # Plot 6: Rolling Beta (if benchmark provided)
+    # Plot 6: Rolling Volatility
     rolling_volatility = returns.rolling(window=30).std() * np.sqrt(252)
     fig.add_trace(
         go.Scatter(y=rolling_volatility, name='Rolling Volatility'),

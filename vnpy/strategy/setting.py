@@ -32,8 +32,6 @@ MODEL_PATH = ROOT_PATH / "models"
 DATA_PATH = ROOT_PATH / "data" # For other strategy-specific data persistence
 CACHE_PATH = ROOT_PATH / "cache" # For other strategy-specific data persistence
 
-
-# Ensure these paths exist
 ROOT_PATH.mkdir(parents=True, exist_ok=True)
 MODEL_PATH.mkdir(parents=True, exist_ok=True)
 DATA_PATH.mkdir(parents=True, exist_ok=True)

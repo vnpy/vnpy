@@ -47,10 +47,9 @@ class EMAFactor(FactorTemplate):
         Column names for symbols are the vt_symbol strings themselves.
         """
         schema = {DEFAULT_DATETIME_COL: pl.Datetime(time_unit="us", time_zone=DB_TZ if DB_TZ else None)}
-        if not self.vt_symbols:
-            # Consider logging a warning if no symbols are provided, FactorMemory might need at least one value column.
-            # For now, allows schema with only datetime if vt_symbols is empty.
-            pass
+        # Allows schema with only datetime if vt_symbols is empty.
+        # FactorMemory might require at least one value column depending on its own logic,
+        # but this factor will produce an empty value set for such a schema.
         for symbol in self.vt_symbols:
             schema[symbol] = pl.Float64
         return schema
@@ -157,9 +156,9 @@ class MACDFactor(FactorTemplate):
 
     def get_output_schema(self) -> Dict[str, pl.DataType]:
         """
-        Defines output schema: datetime and, for each symbol,
-        columns for macd, signal, and histogram values.
-        e.g., SYM1_macd, SYM1_signal, SYM1_histogram
+        Defines output schema: a datetime column and one Float64 column for each symbol,
+        representing the MACD histogram value.
+        e.g., schema will be {DEFAULT_DATETIME_COL: Datetime, "SYM1": Float64, "SYM2": Float64, ...}
         """
         schema = {DEFAULT_DATETIME_COL: pl.Datetime(time_unit="us", time_zone=DB_TZ if DB_TZ else None)}
         for symbol in self.vt_symbols:
@@ -230,7 +229,7 @@ class MACDFactor(FactorTemplate):
             symbols_to_process = [s for s in common_symbols if s in self.vt_symbols]
 
         if not symbols_to_process:
-            print(f"Warning: MACDFactor ({self.factor_key}) found no common symbols to process after filtering. Input fast symbols: {symbols_in_fast}, slow: {symbols_in_slow}, vt_symbols: {self.vt_symbols}")
+            print(f"Warning: MACDFactor ({self.factor_key}) found no common symbols to process after filtering. Input fast symbols count: {len(symbols_in_fast)}, slow count: {len(symbols_in_slow)}, configured vt_symbols count: {len(self.vt_symbols)}")
 
         for symbol in symbols_to_process:
             fast_ema_values = df_ema_fast.get_column(symbol)
@@ -328,8 +327,8 @@ class MyCustomFactor(FactorTemplate):
             print(f"Warning: '{DEFAULT_DATETIME_COL}' missing in '{self.source_column_name}' data for {self.factor_key}. Returning empty.")
             return pl.DataFrame(data={}, schema=empty_df_schema)
 
-        datetime_series = df_source.select(pl.col(DEFAULT_DATETIME_COL))
-        calculated_values: List[pl.Series] = []
+        datetime_s = df_source.get_column(DEFAULT_DATETIME_COL)
+        all_series_for_new_df: List[pl.Series] = [datetime_s]
 
         for symbol_col_name in df_source.columns:
             if symbol_col_name == DEFAULT_DATETIME_COL:
@@ -340,16 +339,21 @@ class MyCustomFactor(FactorTemplate):
             
             # min_periods=1 allows output even if window isn't full. Can be self.length for strict full window.
             mean_series = df_source.get_column(symbol_col_name).rolling_mean(window_size=self.length, min_periods=1).alias(symbol_col_name)
-            calculated_values.append(mean_series)
+            all_series_for_new_df.append(mean_series)
 
-        if not calculated_values and not datetime_series.is_empty():
-             return datetime_series.clone().with_columns([
-                 pl.lit(None, dtype=empty_df_schema.get(s_col, pl.Float64)).alias(s_col)
-                 for s_col in empty_df_schema if s_col != DEFAULT_DATETIME_COL
-             ])
-        if not calculated_values and datetime_series.is_empty():
-            return pl.DataFrame(data={}, schema=empty_df_schema)
+        if len(all_series_for_new_df) == 1: # Only datetime series present
+            if datetime_s.is_empty():
+                return pl.DataFrame(data={}, schema=empty_df_schema)
+            else:
+                # Create a DataFrame from the datetime series first
+                temp_df = datetime_s.to_frame()
+                # Add other expected columns from the schema as nulls
+                for col_name_in_schema, col_type_in_schema in empty_df_schema.items():
+                    if col_name_in_schema != DEFAULT_DATETIME_COL:
+                        temp_df = temp_df.with_columns(
+                            pl.lit(None, dtype=col_type_in_schema).alias(col_name_in_schema)
+                        )
+                return temp_df.select(list(empty_df_schema.keys()))
 
-
-        result_df = pl.concat([datetime_series] + calculated_values, how="horizontal")
+        result_df = pl.DataFrame(all_series_for_new_df)
         return result_df

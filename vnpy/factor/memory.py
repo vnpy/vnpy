@@ -51,11 +51,10 @@ class FactorMemory:
             raise ValueError("Schema cannot be empty.")
         if datetime_col not in schema:
             raise ValueError(f"datetime_col '{datetime_col}' must be defined in the schema.")
-        
 
         self.file_path = Path(file_path).resolve() # Use absolute path
         self.max_rows = max_rows
-        self.schema = schema 
+        self.schema = schema
         self.datetime_col = datetime_col
         self._lock = Lock()
 
@@ -75,7 +74,7 @@ class FactorMemory:
                         else:
                             print(f"Warning: File {self.file_path} exists with mismatched schema. "
                                   f"Expected: {self.schema}, Found: {existing_df.schema}. Re-initializing.")
-                    except Exception as e: 
+                    except Exception as e:
                         print(f"Warning: Could not read existing file {self.file_path} (Reason: {e}). Re-initializing.")
                 
                 if should_initialize:
@@ -86,6 +85,20 @@ class FactorMemory:
                 raise IOError(f"Failed to initialize factor memory file {self.file_path}: {e_init}") from e_init
 
     def _conform_df_to_schema(self, df: pl.DataFrame, df_name: str = "input") -> pl.DataFrame:
+        """
+        Conforms an input DataFrame to the FactorMemory instance's schema.
+
+        It ensures all columns from `self.schema` exist, are in the correct order,
+        and attempts to cast data types if they don't match. Missing columns
+        are filled with nulls. Issues are collected and printed as warnings.
+
+        Args:
+            df: The input DataFrame to conform.
+            df_name: A descriptive name for the input DataFrame, used in warning messages.
+
+        Returns:
+            A new DataFrame that strictly adheres to `self.schema`.
+        """
         if df.schema == self.schema:
             return df
 
@@ -160,7 +173,7 @@ class FactorMemory:
             return self._load_data()
 
     def update_data(self, new_data: pl.DataFrame) -> None:
-        if new_data is None or new_data.is_empty(): # Added check for None
+        if new_data is None or new_data.is_empty():
             # print(f"Debug: update_data called with empty or None new_data for {self.file_path}. No action taken.")
             return
 
