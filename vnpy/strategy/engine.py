@@ -21,12 +21,14 @@ import traceback
 import os
 import sys
 import glob
+import re # For _camel_to_snake
+import inspect # For checking abstract base classes
 from typing import Type, Callable, Dict, List, Optional, Any, Tuple, Set, Union
 from datetime import datetime, timezone, date
 from concurrent.futures import ThreadPoolExecutor
 from logging import INFO, ERROR, DEBUG, WARNING  # Standard logging levels
 from pathlib import Path
-from types import ModuleType
+# from types import ModuleType # No longer needed for _load_strategy_class_from_module
 
 # --- VnTrader Core Imports ---
 from vnpy.event import Event, EventEngine
@@ -189,13 +191,16 @@ class BaseStrategyEngine(BaseEngine):
         self.write_log("Initializing Strategy Engine components...")
         try:
             self.init_datafeed()
-            # self.load_all_strategy_classes(args=args, kwargs=kwargs)
-            # self.load_all_strategy_settings()
-            # self.create_strategies_from_settings()
-            # self.load_all_strategy_data()
+            
+            # Load configurations and instantiate strategies
+            self.init_strategies_from_configs() # New unified method
 
-            if kwargs.get("strategies"):
-                self.strategies = kwargs.get("strategies")
+            # Load persisted runtime data for the instantiated strategies
+            self.load_all_strategy_data() 
+
+            # if kwargs.get("strategies"): # This seems to be for external injection, review if still needed
+            #     self.strategies = kwargs.get("strategies")
+
             self.register_event()
             self.write_log(f"{self.engine_name} initialization complete. "
                            f"{len(self.strategies)} strategies loaded. "
@@ -260,76 +265,106 @@ class BaseStrategyEngine(BaseEngine):
     # Strategy Loading and Settings
     # --------------------------------
 
-    def load_all_strategy_classes(self, *args, **kwargs) -> None:
-        """Scan the strategies directory and load all found strategy classes."""
+    def _camel_to_snake(self, name: str) -> str:
+        """Helper to convert CamelCase to snake_case for deriving module name."""
+        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
-        if kwargs.get("strategies_path", ""):
-            self.strategies_path = kwargs.get("strategies_path", "")
-        self.write_log(f"Loading strategy classes from directory: {self.strategies_path}", level=INFO)
-        if not self.strategies_path.is_dir():
-            self.write_log(f"Strategies directory not found or is not a directory: {self.strategies_path}", level=ERROR)
-            return
+    def _get_strategy_class(
+        self,
+        class_name: str,
+        module_file_name: Optional[str] = None
+    ) -> Optional[Type[StrategyTemplate]]:
+        """
+        Get a strategy class by its name, loading it from its module if necessary.
+        Caches loaded classes in self.strategy_classes.
+        """
+        if class_name in self.strategy_classes:
+            return self.strategy_classes[class_name]
 
-        initial_class_count = len(self.strategy_classes)
-        module_prefix = self.strategies_path.name
+        if module_file_name:
+            # Ensure module_file_name does not contain path separators, only the file name.
+            if os.path.sep in module_file_name or (os.altsep and os.altsep in module_file_name):
+                self.write_log(f"Warning: module_file_name '{module_file_name}' should be a filename, not a path. Using basename.", level=WARNING)
+                module_file_name = Path(module_file_name).name
+            module_name_stem = Path(module_file_name).stem
+        else:
+            module_name_stem = self._camel_to_snake(class_name)
+            self.write_log(f"Derived module name stem '{module_name_stem}' from class name '{class_name}'", level=DEBUG)
 
-        for suffix in ["py", "pyd", "so"]:
-            pathname = str(self.strategies_path.joinpath(f"*.{suffix}"))
-            for filepath in glob.glob(pathname):
-                module_path = Path(filepath)
-                stem = module_path.stem
-                if stem.startswith("_"): continue
+        # Construct module path for importlib
+        # self.strategies_path is e.g. Path("vnpy/strategy/examples")
+        # Python module path should be e.g. "vnpy.strategy.examples.my_strategy_module"
+        
+        # Convert self.strategies_path to a Python module path part
+        # This requires finding the part of self.strategies_path that is relative to a directory in sys.path
+        module_base_path_parts = []
+        strategies_path_resolved = self.strategies_path.resolve()
+        found_in_sys_path = False
+        for p_str in sys.path:
+            p_path = Path(p_str).resolve()
+            try:
+                if strategies_path_resolved.is_relative_to(p_path):
+                    relative_parts = strategies_path_resolved.relative_to(p_path).parts
+                    module_base_path_parts = list(relative_parts)
+                    found_in_sys_path = True
+                    break
+            except ValueError: # Python < 3.9 Path.is_relative_to throws ValueError
+                if str(strategies_path_resolved).startswith(str(p_path)):
+                    relative_path_str = str(strategies_path_resolved.relative_to(p_path))
+                    module_base_path_parts = list(Path(relative_path_str).parts)
+                    found_in_sys_path = True
+                    break
+        
+        if not found_in_sys_path:
+            # Fallback: use the name of the strategies_path directory as the top-level package for strategies
+            # This assumes parent of strategies_path is in sys.path
+            self.write_log(f"Warning: Could not determine module base path for strategies relative to sys.path. "
+                           f"Using strategies_path name '{self.strategies_path.name}' as module prefix.", level=WARNING)
+            module_path_str = f"{self.strategies_path.name}.{module_name_stem}"
+        else:
+            if module_base_path_parts:
+                 module_path_str = ".".join(module_base_path_parts) + f".{module_name_stem}"
+            else: # strategies_path is directly in sys.path
+                 module_path_str = module_name_stem
 
-                strategy_module_name = f"{module_prefix}.{stem}"
-                try:
-                    self._load_strategy_class_from_module(strategy_module_name)
-                except ImportError:
-                    self.write_log(
-                        f"Relative import failed for {strategy_module_name}, trying direct import of '{stem}'...",
-                        level=DEBUG)
-                    try:
-                        self._load_strategy_class_from_module(stem)
-                    except ImportError as e:
-                        self.write_log(f"Direct import also failed for '{stem}': {e}", level=ERROR)
 
-        loaded_count = len(self.strategy_classes) - initial_class_count
-        self.write_log(
-            f"Finished loading strategy classes. Found {loaded_count} new classes. Total: {len(self.strategy_classes)}",
-            level=INFO)
+        strategy_file_on_disk = self.strategies_path.joinpath(f"{module_name_stem}.py")
+        if not strategy_file_on_disk.exists():
+            # Check if it's a package (directory with __init__.py)
+            package_path_on_disk = self.strategies_path.joinpath(module_name_stem)
+            if not (package_path_on_disk.is_dir() and package_path_on_disk.joinpath("__init__.py").exists()):
+                self.write_log(f"Strategy file {strategy_file_on_disk} or package {package_path_on_disk} does not exist for module '{module_path_str}'.", level=ERROR)
+                return None
 
-    def _load_strategy_class_from_module(self, module_name: str) -> int:
-        """Load strategy classes from a specific module file, handling reload."""
-        count = 0
         try:
-            module_to_load: ModuleType
-            if module_name in sys.modules:
-                module_to_load = importlib.reload(sys.modules[module_name])
-                self.write_log(f"Reloaded strategy module: {module_name}", level=DEBUG)
-            else:
-                module_to_load = importlib.import_module(module_name)
-                self.write_log(f"Imported strategy module: {module_name}", level=DEBUG)
+            self.write_log(f"Attempting to import strategy module: {module_path_str}", level=DEBUG)
+            module_to_load = importlib.import_module(module_path_str)
+            module_to_load = importlib.reload(module_to_load) # Reload for development
+            self.write_log(f"Successfully imported/reloaded module: {module_path_str}", level=DEBUG)
 
-            for name in dir(module_to_load):
-                value = getattr(module_to_load, name)
-                if (isinstance(value, type) and issubclass(value, StrategyTemplate) and value is not StrategyTemplate):
-                    class_name = value.__name__
-                    if class_name in self.strategy_classes and self.strategy_classes[class_name] is not value:
-                        self.write_log(
-                            f"Warning: Strategy class '{class_name}' from '{module_name}' conflicts with existing class. Skipping.",
-                            level=WARNING)
-                        continue
-                    if class_name not in self.strategy_classes:
-                        self.strategy_classes[class_name] = value
-                        count += 1
-                        self.write_log(f"Loaded strategy class: '{class_name}' from '{module_name}'", level=DEBUG)
-            return count
-        except ModuleNotFoundError:
-            self.write_log(f"Module '{module_name}' not found.", level=DEBUG)
-            raise
-        except Exception:
-            self.write_log(f"Failed to load strategy class from module '{module_name}':\n{traceback.format_exc()}",
-                           level=ERROR)
-            return 0
+        except ImportError as e_import:
+            self.write_log(f"Failed to import strategy module '{module_name_stem}' using path '{module_path_str}'. Error: {e_import}\n{traceback.format_exc()}", level=ERROR)
+            return None
+        except Exception as e_general:
+            self.write_log(f"Unexpected error importing strategy module '{module_name_stem}' (Path: {module_path_str}): {e_general}\n{traceback.format_exc()}", level=ERROR)
+            return None
+
+        for item_name in dir(module_to_load):
+            item_value = getattr(module_to_load, item_name)
+            if (
+                inspect.isclass(item_value)
+                and item_value is not StrategyTemplate
+                and issubclass(item_value, StrategyTemplate)
+                and not inspect.isabstract(item_value) # Do not load abstract classes
+            ):
+                if item_value.__name__ == class_name:
+                    self.strategy_classes[class_name] = item_value
+                    self.write_log(f"Found and cached strategy class '{class_name}' from module '{module_path_str}'.", level=INFO)
+                    return item_value
+        
+        self.write_log(f"Strategy class '{class_name}' not found in module '{module_path_str}'.", level=ERROR)
+        return None
 
     def load_all_strategy_settings(self) -> None:
         """Load strategy instance configurations from the JSON file."""
@@ -369,42 +404,64 @@ class BaseStrategyEngine(BaseEngine):
                 level=ERROR)
             self.strategy_settings = {}
 
-    def create_strategies_from_settings(self) -> None:
-        """Instantiate strategy objects based on the loaded instance configurations."""
-        self.write_log("Creating strategy instances from configurations...", level=INFO)
+
+    def init_strategies_from_configs(self) -> None:
+        """
+        Loads strategy instance configurations and instantiates the strategies.
+        This replaces the old create_strategies_from_settings method.
+        """
+        self.write_log("Initializing strategies from configurations...", level=INFO)
+        
+        # Step 1: Load Instance Configurations
+        self.load_all_strategy_settings() # This populates self.strategy_settings
+
+        # Step 2: Instantiate Strategies
         created_count = 0
-        invalid_settings_names = []
+        strategies_to_remove_from_settings = [] # If instantiation fails
 
-        for strategy_name, instance_config in self.strategy_settings.items():
-            if not self._validate_setting_entry(strategy_name, instance_config): # Pass the whole instance_config
-                invalid_settings_names.append(strategy_name)
+        for strategy_name, instance_config_dict in self.strategy_settings.items():
+            if not self._validate_setting_entry(strategy_name, instance_config_dict):
+                strategies_to_remove_from_settings.append(strategy_name)
                 continue
-            
-            class_name = instance_config["class_name"]
-            vt_symbols = instance_config.get("vt_symbols", []) # Ensure vt_symbols exists
-            
-            # Pass the entire instance_config as 'setting' to add_strategy,
-            # which will then pass it to StrategyTemplate constructor.
-            # StrategyTemplate's __init__ will pick out specific params like model_load_path etc.
-            # and the rest will be handled by its update_setting or available via self.setting.
-            if self.add_strategy(
-                class_name=class_name, 
-                strategy_name=strategy_name, 
-                vt_symbols=vt_symbols, 
-                setting=instance_config # Pass the whole instance_config
-            ):
-                created_count += 1
+
+            class_name = instance_config_dict.get("class_name")
+            module_file = instance_config_dict.get("module_file") # Optional, for specific file hint
+
+            StrategyClass = self._get_strategy_class(class_name, module_file)
+
+            if StrategyClass:
+                try:
+                    self.write_log(f"Instantiating strategy '{strategy_name}' from class '{class_name}'", level=DEBUG)
+                    strategy_instance = StrategyClass(
+                        strategy_engine=self,
+                        strategy_name=strategy_name,
+                        vt_symbols=instance_config_dict.get("vt_symbols", []),
+                        setting=instance_config_dict, # Pass the whole dictionary
+                        model_load_path=instance_config_dict.get("model_load_path"),
+                        model_save_path=instance_config_dict.get("model_save_path"),
+                        retraining_config=instance_config_dict.get("retraining_config", {}),
+                        required_factor_keys=instance_config_dict.get("required_factor_keys", [])
+                    )
+                    self.strategies[strategy_name] = strategy_instance
+                    # Note: update_strategy_setting_cache is implicitly handled as self.strategy_settings already holds the config.
+                    # If strategy modifies its own config during init and it needs to be persisted, then an update would be needed.
+                    self.write_log(f"Strategy instance '{strategy_name}' (Class: '{class_name}') created successfully.", level=INFO, strategy=strategy_instance)
+                    self.put_strategy_update_event(strategy_instance) # Notify UI about new strategy
+                    created_count +=1
+                except Exception as e:
+                    self.write_log(f"Failed to instantiate strategy '{strategy_name}' from class '{class_name}': {e}\n{traceback.format_exc()}", level=ERROR)
+                    strategies_to_remove_from_settings.append(strategy_name)
             else:
-                invalid_settings_names.append(strategy_name)
-
-        if invalid_settings_names:
-            for name in invalid_settings_names:
+                self.write_log(f"Strategy class '{class_name}' for instance '{strategy_name}' not found or failed to load. Skipping.", level=ERROR)
+                strategies_to_remove_from_settings.append(strategy_name)
+        
+        if strategies_to_remove_from_settings:
+            for name in strategies_to_remove_from_settings:
                 self.strategy_settings.pop(name, None)
-            self.write_log(
-                f"Removed {len(invalid_settings_names)} invalid or failed strategy instance configurations from runtime config.",
-                level=WARNING)
+            self.write_log(f"Removed {len(strategies_to_remove_from_settings)} failed strategy configurations from runtime.", level=WARNING)
 
-        self.write_log(f"Finished creating strategy instances. Successful: {created_count}", level=INFO)
+        self.write_log(f"Finished creating strategy instances. Successful: {created_count} of {len(self.strategy_settings) + len(strategies_to_remove_from_settings)} defined.", level=INFO)
+
 
     def _validate_setting_entry(self, strategy_name_key: str, instance_config: Any) -> bool:
         """Perform basic validation on a single strategy instance configuration entry."""
@@ -423,35 +480,32 @@ class BaseStrategyEngine(BaseEngine):
 
         # Validate essential fields in the instance_config
         required_fields = {
-            "class_name": str, "vt_symbols": list, "required_factor_keys": list,
-            "model_load_path": (str, type(None)), "model_save_path": (str, type(None)),
-            "retraining_config": dict
-            # Add other essential fields as needed, e.g. model_config, trading_config if they are top-level
+            "class_name": str, 
+            # "vt_symbols": list, # vt_symbols is often optional at this stage, might be set later
+            # "required_factor_keys": list, # Also can be optional or have defaults
+            # "model_load_path": (str, type(None)), # Optional
+            # "model_save_path": (str, type(None)), # Optional
+            # "retraining_config": dict # Optional, defaults to {}
         }
-        # Also check for standard strategy parameters like "model_config", "trading_config"
-        # These might be nested or top-level depending on StrategyTemplate's expectation.
-        # For now, assuming they are part of the general 'setting' dict if not explicitly top-level here.
         
         for field, expected_type in required_fields.items():
             if field not in instance_config:
                 self.write_log(f"Invalid config for '{actual_strategy_name}': Missing required field '{field}'.", level=WARNING)
                 return False
-            if not isinstance(instance_config[field], expected_type):
+            if not isinstance(instance_config[field], expected_type): # type: ignore
                 self.write_log(f"Invalid config for '{actual_strategy_name}': Field '{field}' has incorrect type. Expected {expected_type}, got {type(instance_config[field])}.", level=WARNING)
                 return False
         
-        class_name = instance_config["class_name"]
-        if not class_name or not isinstance(class_name, str): # Redundant due to above but good practice
-            self.write_log(f"Invalid config for '{actual_strategy_name}': 'class_name' must be a non-empty string.", level=WARNING)
-            return False
-        if class_name not in self.strategy_classes:
-            self.write_log(f"Invalid config for '{actual_strategy_name}': Strategy class '{class_name}' is not loaded.", level=WARNING)
-            return False
+        class_name = instance_config["class_name"] # Already checked by required_fields
+        # No need to check if class_name is in self.strategy_classes here, as _get_strategy_class will handle loading it.
+        # _validate_setting_entry is called before class loading attempt.
             
-        # Validate specific structures like retraining_config
         retraining_cfg = instance_config.get("retraining_config", {})
-        if not isinstance(retraining_cfg.get("frequency_days"), (int, type(None))): # Allow None if optional
-             self.write_log(f"Invalid retraining_config for '{actual_strategy_name}': 'frequency_days' must be an integer or null.", level=WARNING)
+        if not isinstance(retraining_cfg, dict):
+             self.write_log(f"Invalid config for '{actual_strategy_name}': 'retraining_config' must be a dictionary.", level=WARNING)
+             return False
+        if "frequency_days" in retraining_cfg and not isinstance(retraining_cfg.get("frequency_days"), (int, type(None))):
+             self.write_log(f"Invalid retraining_config for '{actual_strategy_name}': 'frequency_days' must be an integer or null if present.", level=WARNING)
              return False
 
         return True
@@ -628,60 +682,71 @@ class BaseStrategyEngine(BaseEngine):
     # --------------------------------
     def add_strategy(self, class_name: str, strategy_name: str, vt_symbols: List[str], setting: dict) -> bool:
         """Create, validate, and add a new strategy instance."""
-        if not isinstance(strategy_name, str) or not strategy_name: # strategy_name is the key
-            self.write_log("Add failed: Strategy name (key) must be a non-empty string.", level=ERROR)
+        if not isinstance(strategy_name, str) or not strategy_name:
+            self.write_log("Add failed: Strategy name must be a non-empty string.", level=ERROR)
             return False
-        if strategy_name in self.strategies: # Check against existing instances
+        if strategy_name in self.strategies:
             self.write_log(f"Add failed: Strategy instance name '{strategy_name}' already exists.", level=ERROR)
             return False
         
-        strategy_class = self.strategy_classes.get(class_name)
-        if not strategy_class:
-            self.write_log(f"Add failed for '{strategy_name}': Strategy class '{class_name}' not found.", level=ERROR)
-            return False
-        
-        # 'setting' here is the full instance_config dictionary
+        # 'setting' is the full instance_config_dict
         if not isinstance(setting, dict):
-            self.write_log(f"Add failed for '{strategy_name}': Instance configuration (setting) must be a dictionary.", level=ERROR)
+            self.write_log(f"Add failed for '{strategy_name}': Instance configuration (setting parameter) must be a dictionary.", level=ERROR)
+            return False
+
+        class_name = setting.get("class_name")
+        if not class_name or not isinstance(class_name, str):
+            self.write_log(f"Add failed for '{strategy_name}': 'class_name' missing or invalid in configuration.", level=ERROR)
+            return False
+            
+        # module_file can be part of the setting dict to give a hint for loading
+        module_file = setting.get("module_file") 
+        StrategyClass = self._get_strategy_class(class_name, module_file)
+
+        if not StrategyClass:
+            self.write_log(f"Add failed for '{strategy_name}': Strategy class '{class_name}' could not be loaded.", level=ERROR)
             return False
         
-        # Validate that vt_symbols is a list within the setting dict
-        if not isinstance(vt_symbols, list): # vt_symbols is passed separately but comes from instance_config
-            self.write_log(f"Add failed for '{strategy_name}': vt_symbols (extracted from config) must be a list.", level=ERROR)
+        # vt_symbols is passed separately but should align with what's in setting or be primary
+        if not isinstance(vt_symbols, list): 
+            self.write_log(f"Add failed for '{strategy_name}': vt_symbols parameter must be a list.", level=ERROR)
             return False
+        
+        # Ensure vt_symbols in setting matches the passed vt_symbols if both exist, or update setting
+        # For simplicity, assume vt_symbols param is authoritative for this call
+        setting['vt_symbols'] = vt_symbols
+
 
         try:
-            self.write_log(f"Instantiating strategy '{strategy_name}' from class '{class_name}'...", level=DEBUG)
-            # StrategyTemplate __init__ expects:
-            # self, strategy_engine, strategy_name, vt_symbols, setting (full instance_config),
-            # model_load_path, model_save_path, retraining_config, required_factor_keys
-            # These specific paths/configs should be extracted from the 'setting' (instance_config) dict.
-            
-            strategy = strategy_class(
+            self.write_log(f"Instantiating strategy '{strategy_name}' from class '{class_name}' (runtime add).", level=DEBUG)
+            strategy_instance = StrategyClass(
                 strategy_engine=self,
                 strategy_name=strategy_name,
-                vt_symbols=vt_symbols, # Extracted from instance_config
-                setting=setting,       # The full instance_config dictionary
+                vt_symbols=vt_symbols,
+                setting=setting, # Pass the full instance_config dictionary
                 model_load_path=setting.get("model_load_path"),
                 model_save_path=setting.get("model_save_path"),
-                retraining_config=setting.get("retraining_config"),
-                required_factor_keys=setting.get("required_factor_keys")
+                retraining_config=setting.get("retraining_config", {}),
+                required_factor_keys=setting.get("required_factor_keys", [])
             )
 
-            if not hasattr(strategy, 'get_parameters') or not callable(strategy.get_parameters):
+            if not hasattr(strategy_instance, 'get_parameters') or not callable(strategy_instance.get_parameters):
                 raise TypeError("Instantiated strategy object missing required 'get_parameters' method.")
             
-        except Exception:
+        except Exception as e:
             self.write_log(
-                f"Failed to instantiate or validate strategy '{strategy_name}' from class '{class_name}':\n{traceback.format_exc()}",
+                f"Failed to instantiate strategy '{strategy_name}' from class '{class_name}' (runtime add): {e}\n{traceback.format_exc()}",
                 level=ERROR)
             return False
             
-        self.strategies[strategy_name] = strategy
-        self.update_strategy_setting_cache(strategy_name) # This will call _get_strategy_setting_dict
-        self.write_log(f"Strategy instance '{strategy_name}' (Class: '{class_name}') added successfully.", level=INFO,
-                       strategy=strategy)
-        self.put_strategy_update_event(strategy)
+        self.strategies[strategy_name] = strategy_instance
+        # Update self.strategy_settings with the new strategy's configuration
+        self.strategy_settings[strategy_name] = self._get_strategy_setting_dict(strategy_instance)
+        # self.update_strategy_setting_cache(strategy_name) # This is effectively done by the line above + _get_strategy_setting_dict
+        
+        self.write_log(f"Strategy instance '{strategy_name}' (Class: '{class_name}') added successfully at runtime.", level=INFO,
+                       strategy=strategy_instance)
+        self.put_strategy_update_event(strategy_instance)
         return True
 
     def edit_strategy(self, strategy_name: str, new_instance_config: dict) -> bool:

@@ -1,6 +1,7 @@
 [
   {
     "class_name": "MyMomentumStrategy",
+    "module_file": "my_momentum_strategy.py",
     "strategy_name": "MomentumBTC_ETH_FactorX_FactorY",
     "vt_symbols": ["BTCUSDT.BINANCE", "ETHUSDT.BINANCE"],
     "required_factor_keys": ["factor.1m.EMA_Close_12", "factor.1m.MACD_Hist_12_26_9"],
