@@ -151,6 +151,8 @@ class StrategyTemplate(ABC):
         # --- Configuration Objects ---
         # Initialize from nested dicts within 'settings'
         model_config_dict = settings.get("model_config", {})
+        # todo -- fix model and trading config classes to accept dicts
+        # todo -- check setting have model and trading config
         self.model_config = ModelConfig(**model_config_dict) if isinstance(model_config_dict, dict) else ModelConfig()
 
         trading_config_dict = settings.get("trading_config", {})

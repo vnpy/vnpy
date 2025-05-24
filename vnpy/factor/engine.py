@@ -719,7 +719,7 @@ class FactorEngine(BaseEngine):
     def write_log(self, msg: str, factor: Optional[FactorTemplate] = None, level: int = INFO) -> None:
         log_msg = f"{factor.factor_key}: {msg}" if factor else f"{msg}"
         log: LogData = LogData(msg=log_msg, gateway_name=APP_NAME, level=level)
-        event = Event(type_=EVENT_LOG, data=log)
+        event = Event(type=EVENT_LOG, data=log)
         self.event_engine.put(event)
 
     # Other utility functions like get_factor_parameters, stop_factor, etc. can be adapted
