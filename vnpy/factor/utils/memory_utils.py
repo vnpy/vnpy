@@ -37,12 +37,14 @@ def create_placeholder_bar(dt: datetime, vt_symbol: str, bars: dict) -> BarData:
             symbol=previous_bar.symbol,
             exchange=previous_bar.exchange,
             datetime=dt,
+            # Use previous bar's close for all OHLC fields to indicate no price change
             open_price=previous_bar.close_price,
             high_price=previous_bar.close_price,
             low_price=previous_bar.close_price,
             close_price=previous_bar.close_price,
             gateway_name=previous_bar.gateway_name,
         )
+    # If no previous bar data available, create a bar with 0 for all price fields
     return BarData(
         symbol=symbol,
         exchange=exchange,

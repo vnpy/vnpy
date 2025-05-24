@@ -6,8 +6,6 @@ from vnpy.trader.constant import Direction, Offset
 APP_NAME = "PortfolioStrategy"
 
 
-
-
 class StrategyState:
     """Strategy State"""
 

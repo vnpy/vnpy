@@ -29,7 +29,7 @@ from vnpy.factor.utils.memory_utils import truncate_memory as truncate_bar_memor
 from .setting import get_factor_definitions_filepath, get_factor_data_cache_path, FACTOR_MODULE_SETTINGS
 
 FACTOR_MODULE_NAME = FACTOR_MODULE_SETTINGS.get("module_name", 'vnpy.factor.factors') # Use setting
-SYSTEM_MODE = SETTINGS.get('system.mode', 'LIVE') # LIVE, BACKTEST, etc.
+# SYSTEM_MODE = SETTINGS.get('system.mode', 'LIVE') # Not used within FactorEngine
 
 def safe_filename(name: str) -> str:
     name = re.sub(r'[^\w\.\-@]', '_', name)
@@ -70,7 +70,6 @@ class FactorEngine(BaseEngine):
                 self.vt_symbols = [contract.vt_symbol for contract in main_engine.get_all_contracts()]
             except Exception as e:
                 self.write_log(f"Failed to get vt_symbols from main_engine.get_all_contracts(): {e}", level=WARNING)
-
 
         self.stacked_factors: dict[str, FactorTemplate] = {}
         self.flattened_factors: dict[str, FactorTemplate] = {}
@@ -144,7 +143,7 @@ class FactorEngine(BaseEngine):
             return
 
         # init_factors should take the list of settings and the factors module
-        inited_factor_instances: List = init_factors(
+        inited_factor_instances: List[FactorTemplate] = init_factors(
             self.module_factors, # Module for finding primary factor classes
             factor_settings_list,
             dependencies_module_lookup_for_instances=self.module_factors # Module for their dependencies too
@@ -197,7 +196,12 @@ class FactorEngine(BaseEngine):
         self.factor_memory_instances.clear()
         for factor_key, factor_instance in self.flattened_factors.items():
             try:
-                factor_instance.vt_symbols = self.vt_symbols # Pass symbols to factor instance
+                # Ensure factor_instance.vt_symbols is populated before calling get_output_schema,
+                # as the schema generation might depend on the symbols.
+                # This is a safeguard in case the factor's __init__ didn't set it from params.
+                if not hasattr(factor_instance, 'vt_symbols') or not factor_instance.vt_symbols:
+                    factor_instance.vt_symbols = self.vt_symbols
+
                 output_schema = factor_instance.get_output_schema()
                 if self.factor_datetime_col not in output_schema:
                     raise ValueError(f"Factor '{factor_key}' output schema must contain the datetime column '{self.factor_datetime_col}'.")
@@ -346,9 +350,12 @@ class FactorEngine(BaseEngine):
             visited_permanently.add(node)  # Mark as fully processed
             order.append(node) # Add to the sorted list
 
-        all_nodes = set(graph.keys())
+        # Collect all unique nodes from the graph keys and dependency lists
+        nodes_as_keys = set(graph.keys())
+        nodes_as_dependencies = set()
         for dep_list in graph.values():
-            all_nodes.update(dep_list)
+            nodes_as_dependencies.update(dep_list)
+        all_nodes = nodes_as_keys | nodes_as_dependencies
 
         for node_key in all_nodes: # Iterate over all known nodes to ensure all are visited
             if node_key not in visited_permanently:
@@ -446,16 +453,16 @@ class FactorEngine(BaseEngine):
             try:
                 # Ensure the schema for the new row matches the existing DataFrame schema
                 expected_schema = self.memory_bar[b_col].schema
-                # Create a 1-row DataFrame, conforming to the expected schema
-                # Fill missing symbols (if any for this specific bar batch) with nulls
-                row_df_data = {
-                    col: data_dict_for_row.get(col, None if col != self.factor_datetime_col else dt) 
-                    for col in expected_schema.keys()
-                }
-                new_row_df = pl.DataFrame([row_df_data], schema=expected_schema)
+                # Create a 1-row DataFrame.
+                # new_ohlcv_rows[b_col] (aliased as data_dict_for_row) contains the datetime
+                # and available symbol data for the current bar.
+                # Providing the full expected_schema to pl.DataFrame constructor ensures
+                # that any columns in expected_schema but missing from data_dict_for_row
+                # (e.g., symbols that didn't have a bar in this specific dt) are created as nulls.
+                new_row_df = pl.DataFrame([data_dict_for_row], schema=expected_schema)
                 
                 self.memory_bar[b_col] = pl.concat(
-                    [self.memory_bar[b_col], new_row_df], 
+                    [self.memory_bar[b_col], new_row_df],
                     how='vertical_relaxed' # vertical_relaxed is more robust to minor schema diffs if they occur
                 )
             except Exception as e:
@@ -558,6 +565,8 @@ class FactorEngine(BaseEngine):
                 # Per-factor metrics would require more granular timing within Dask tasks.
                 self.metrics["overall_batch"] = CalculationMetrics(
                     calculation_time=end_time - start_time,
+                    # initial_resources is expected to always contain "memory_percent".
+                    # The .get() with fallback is defensive; memory_usage would be 0 if key were missing.
                     memory_usage=final_resources["memory_percent"] - initial_resources.get("memory_percent", final_resources["memory_percent"]),
                     cache_hits=0, # Dask handles its own caching/optimization
                     error_count=calculation_errors_count

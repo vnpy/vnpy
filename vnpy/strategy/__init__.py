@@ -7,7 +7,10 @@ from .template import StrategyTemplate
 
 
 class PortfolioStrategyApp(BaseApp):
-    """"""
+    """
+    VN Trader Portfolio Strategy App.
+    Defines app metadata and main engine class for portfolio strategy functionality.
+    """
     app_name = APP_NAME
     app_module = None
     app_path = Path(__file__).parent

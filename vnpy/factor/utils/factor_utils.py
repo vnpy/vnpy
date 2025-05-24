@@ -2,6 +2,7 @@
 
 from types import ModuleType
 from typing import Any, Dict, Type, List
+from vnpy.factor.template import FactorTemplate # Import for type hinting
 
 from vnpy.trader.utility import load_json, save_json
 
@@ -53,8 +54,8 @@ def init_factors(
     module_for_primary_classes: ModuleType,
     settings_data: List[Dict[str, Any]], # THIS IS NOW A LIST OF ACTUAL SETTINGS DICTS
     dependencies_module_lookup_for_instances: ModuleType
-) -> List[Any]: # Returns List[FactorTemplate]
-    initialized_factors = []
+) -> List[FactorTemplate]: # Updated return type hint
+    initialized_factors: List[FactorTemplate] = [] # Explicitly type initialized_factors
 
     if not isinstance(settings_data, list): # Should be caught by load_factor_setting
         raise TypeError(f"init_factors expected settings_data to be a list, got {type(settings_data)}")

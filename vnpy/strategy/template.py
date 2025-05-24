@@ -76,10 +76,17 @@ try:
 except ImportError:
     print("Warning: [StrategyTemplate] Could not import ModelConfig or TradingConfig. Using dummy classes.")
     class ModelConfig: # type: ignore
-        def __init__(self, **kwargs): [setattr(self,k,v) for k,v in kwargs.items()]
+        def __init__(self, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
     class TradingConfig: # type: ignore
         min_order_volume: float = 1e-8
-        def __init__(self, **kwargs): self.min_order_volume = kwargs.get("min_order_volume",1e-8); [setattr(self,k,v) for k,v in kwargs.items() if k!="min_order_volume" or v is not None]
+        def __init__(self, **kwargs):
+            self.min_order_volume = kwargs.get("min_order_volume", 1e-8)
+            for k, v in kwargs.items():
+                if k == "min_order_volume" and v is None: # Already handled by getattr default
+                    continue
+                setattr(self, k, v)
         def validate(self): pass
 
 
@@ -114,7 +121,7 @@ class StrategyTemplate(ABC):
 
     def __init__(
             self,
-            engine_interface: "StrategyEngine", # Changed name for clarity
+            engine_interface: "StrategyEngine",
             settings: Dict[str, Any], # All config now comes from this single dict
     ) -> None:
         self.strategy_engine: "StrategyEngine" = engine_interface
@@ -130,12 +137,8 @@ class StrategyTemplate(ABC):
         self.required_factor_keys: List[str] = list(settings.get("required_factor_keys", []))
 
         # Model persistence paths
-        # Paths can be relative to MODEL_PATH or absolute
-        _model_load_path_setting = settings.get("model_load_path")
-        self.model_load_path: Optional[str] = str(MODEL_PATH / _model_load_path_setting) if _model_load_path_setting and not Path(_model_load_path_setting).is_absolute() else _model_load_path_setting
-        
-        _model_save_path_setting = settings.get("model_save_path")
-        self.model_save_path: Optional[str] = str(MODEL_PATH / _model_save_path_setting) if _model_save_path_setting and not Path(_model_save_path_setting).is_absolute() else _model_save_path_setting
+        self.model_load_path = self._resolve_model_path(settings.get("model_load_path"))
+        self.model_save_path = self._resolve_model_path(settings.get("model_save_path"))
 
         # Retraining configuration
         self.retraining_config: Dict[str, Any] = settings.get("retraining_config", {})
@@ -248,7 +251,7 @@ class StrategyTemplate(ABC):
     # --------------------------------
 
     @virtual
-    def on_factor_update(self, factor_memories: Dict[str, FactorMemory]) -> Optional[List[OrderRequest]]: # Renamed
+    def on_factor_update(self, factor_memories: Dict[str, FactorMemory]) -> Optional[List[OrderRequest]]:
         """Callback when new factor data is received via FactorMemory instances."""
         if not self.trading or not self.inited:
             return None
@@ -308,20 +311,18 @@ class StrategyTemplate(ABC):
 
     @virtual
     def on_order(self, order: OrderData) -> None:
-        # (Implementation from your previous code)
         self.write_log(f"Order Update: {order.vt_orderid} Status: {order.status} Filled: {order.traded}/{order.volume}", DEBUG)
         if order.is_active(): self.active_order_ids.add(order.vt_orderid)
         else: self.active_order_ids.discard(order.vt_orderid)
 
     @virtual
     def on_trade(self, trade: TradeData) -> None:
-        # (Implementation from your previous code)
         self.write_log(f"Trade Update: {trade.vt_orderid} Dir: {trade.direction} Px: {trade.price} Vol: {trade.volume}", DEBUG)
 
     @virtual
     def on_timer(self) -> None:
         """Optional timer callback, can be used for periodic checks by the strategy."""
-        self.write_log(f"on_timer called at {self.get_current_datetime()}", level=DEBUG)
+        # self.write_log(f"on_timer called at {self.get_current_datetime()}", level=DEBUG) # Removed: Can be too noisy
         # Example: Check if model needs reloading if file changed, or other periodic tasks
         # self.check_and_reload_model_if_updated()
 
@@ -351,7 +352,7 @@ class StrategyTemplate(ABC):
         if not self.model_save_path or self.model is None:
             self.write_log(f"Skipping model saving: No save path ('{self.model_save_path}') or model is None.", DEBUG); return
         save_path = Path(self.model_save_path)
-        if not save_path.is_absolute(): save_path = MODEL_PATH / self.model_save_path # Use global MODEL_PATH
+        if not save_path.is_absolute(): save_path = MODEL_PATH / self.model_save_path # Use global MODEL_PATH as base
         
         self.write_log(f"Attempting to save model to: {save_path}", INFO)
         try:
@@ -365,7 +366,6 @@ class StrategyTemplate(ABC):
             self.write_log(f"Failed to save model to {save_path}: {e}\n{traceback.format_exc()}", ERROR)
 
     def _fetch_historical_training_factors(self, factor_memories: Dict[str, FactorMemory]) -> Dict[str, pl.DataFrame]:
-        # (Implementation from your previous code - seems fine)
         historical_data_map: Dict[str, pl.DataFrame] = {}
         for key in self.required_factor_keys:
             fm = factor_memories.get(key)
@@ -374,7 +374,7 @@ class StrategyTemplate(ABC):
         return historical_data_map
 
     @virtual
-    def retrain_model(self, factor_memories_for_training: Dict[str, FactorMemory]) -> None: # Argument name changed
+    def retrain_model(self, factor_memories_for_training: Dict[str, FactorMemory]) -> None:
         """Orchestrates model retraining using provided FactorMemory instances for historical data."""
         self.write_log("Starting model retraining process...", INFO)
         try:
@@ -400,7 +400,6 @@ class StrategyTemplate(ABC):
             self.write_log(f"Error during model retraining: {e}\n{traceback.format_exc()}", ERROR)
 
     def check_retraining_schedule(self, current_datetime: datetime) -> bool:
-        # (Implementation from your previous code - seems fine, uses self.retrain_interval_days)
         # Ensure self.retrain_interval_days is correctly parsed from self.retraining_config
         self.retrain_interval_days = self.retraining_config.get("frequency_days", 30)
 
@@ -422,7 +421,6 @@ class StrategyTemplate(ABC):
     # Portfolio and Order Generation
     # --------------------------------
     def close_all_positions(self) -> List[OrderRequest]:
-        # (Implementation from your previous code - seems fine)
         self.write_log("Generating orders to close all positions...", INFO); reqs = []
         min_vol = getattr(self.trading_config, 'min_order_volume', 1e-8)
         for sym in self.vt_symbols:
@@ -438,22 +436,40 @@ class StrategyTemplate(ABC):
 
 
     def get_portfolio_state(self) -> Optional[dict]:
-        # (Implementation from your previous code - seems fine)
         if self.portfolio_result and hasattr(self.portfolio_result, 'get_data'): return self.portfolio_result.get_data()
         return None
 
     # --------------------------------
     # Order Management Actions (send_order, cancel_order, etc.)
     # --------------------------------
-    # (Implementations from your previous code - ensure they use self.strategy_engine correctly)
-    def send_order(self, vt_symbol:str,direction:Direction,order_type:OrderType,price:float,volume:float,offset:Offset=Offset.NONE,lock:bool=False,net:bool=False) -> List[str]:
-        if not self.trading: self.write_log("Order rejected: Not trading.", WARNING); return []
-        ct=self.get_contract(vt_symbol);
-        if not ct: self.write_log(f"Order rejected: Contract not found for {vt_symbol}.", ERROR); return []
-        r_price=round_to(price,ct.pricetick or 1e-8); r_vol=round_to(volume,ct.volumetick or 1e-8)
-        if r_vol < (ct.min_volume or 1e-8): self.write_log(f"Order rejected: Vol {volume} < min_vol {ct.min_volume} for {vt_symbol}", WARNING); return []
-        req=OrderRequest(symbol=ct.symbol,exchange=ct.exchange,direction=direction,offset=offset,type=order_type,price=r_price,volume=r_vol,reference=self.strategy_name)
-        return self.strategy_engine.send_order(strategy_name=self.strategy_name,req=req,lock=lock,net=net)
+    def send_order(self, vt_symbol: str, direction: Direction, order_type: OrderType, price: float, volume: float, offset: Offset = Offset.NONE, lock: bool = False, net: bool = False) -> List[str]:
+        if not self.trading:
+            self.write_log("Order rejected: Not trading.", WARNING)
+            return []
+        
+        ct = self.get_contract(vt_symbol)
+        if not ct:
+            self.write_log(f"Order rejected: Contract not found for {vt_symbol}.", ERROR)
+            return []
+        
+        r_price = round_to(price, ct.pricetick or 1e-8)
+        r_vol = round_to(volume, ct.volumetick or 1e-8)
+        
+        if r_vol < (ct.min_volume or 1e-8):
+            self.write_log(f"Order rejected: Vol {volume} < min_vol {ct.min_volume} for {vt_symbol}", WARNING)
+            return []
+            
+        req = OrderRequest(
+            symbol=ct.symbol,
+            exchange=ct.exchange,
+            direction=direction,
+            offset=offset,
+            type=order_type,
+            price=r_price,
+            volume=r_vol,
+            reference=self.strategy_name
+        )
+        return self.strategy_engine.send_order(strategy_name=self.strategy_name, req=req, lock=lock, net=net)
 
     def cancel_order(self, vt_orderid: str) -> None:
         if not self.trading: self.write_log("Cancel ignored: Not trading.", WARNING); return
@@ -480,18 +496,16 @@ class StrategyTemplate(ABC):
         for name in self.parameters: # self.parameters is list of attribute names
             value = getattr(self, name, None)
             if isinstance(value, (ModelConfig, TradingConfig)): params[name] = value.__dict__
-            elif isinstance(value, list): params[name] = list(value)
-            elif isinstance(value, set): params[name] = list(value) # For JSON
+            elif isinstance(value, list): params[name] = list(value) # Ensure lists are copied if mutable
+            elif isinstance(value, set): params[name] = list(value) # For JSON serializability
             elif isinstance(value, Path): params[name] = str(value) # Paths as strings
             else: params[name] = value
-        # Ensure required_factor_keys is always a list, even if None initially
-        if "required_factor_keys" not in params or params["required_factor_keys"] is None:
-            params["required_factor_keys"] = []
-        if "vt_symbols" not in params or params["vt_symbols"] is None:
-            params["vt_symbols"] = []
+        # self.vt_symbols and self.required_factor_keys are initialized as lists in __init__.
+        # If they could be None on self, a more robust getattr(self, name, []) would be needed.
+        # Current init ensures they are lists.
         return params
 
-    def get_settings(self) -> dict: return self.get_parameters() # Alias for compatibility
+    def get_settings(self) -> dict: return self.get_parameters() # Alias for settings compatibility
 
     def get_data(self) -> dict: # For runtime state saving
         data = {"active_order_ids": list(self.active_order_ids)}
@@ -532,13 +546,18 @@ class StrategyTemplate(ABC):
         # Update core attributes if present in settings
         self.vt_symbols = list(settings.get("vt_symbols", self.vt_symbols))
         self.required_factor_keys = list(settings.get("required_factor_keys", self.required_factor_keys))
-        
-        _mlp = settings.get("model_load_path", self.model_load_path) # Keep current if not in new settings
-        self.model_load_path = str(MODEL_PATH / _mlp) if _mlp and not Path(_mlp).is_absolute() else _mlp
-        
-        _msp = settings.get("model_save_path", self.model_save_path)
-        self.model_save_path = str(MODEL_PATH / _msp) if _msp and not Path(_msp).is_absolute() else _msp
 
+        # Use the helper for model paths, allowing current value as default if not in new settings
+        mlp_setting = settings.get("model_load_path") 
+        if mlp_setting is not None or "model_load_path" in settings: # Check if key was explicitly in settings (even if None)
+            self.model_load_path = self._resolve_model_path(mlp_setting)
+        # Else, self.model_load_path remains unchanged if key not in settings at all.
+
+        msp_setting = settings.get("model_save_path")
+        if msp_setting is not None or "model_save_path" in settings:
+            self.model_save_path = self._resolve_model_path(msp_setting)
+        # Else, self.model_save_path remains unchanged.
+            
         if "retraining_config" in settings and isinstance(settings["retraining_config"], dict):
             self.retraining_config.update(settings["retraining_config"])
             self.retrain_interval_days = self.retraining_config.get("frequency_days", self.retrain_interval_days)
@@ -574,6 +593,18 @@ class StrategyTemplate(ABC):
     # --------------------------------
     # Utility Methods
     # --------------------------------
+    def _resolve_model_path(self, path_setting: Optional[str]) -> Optional[str]:
+        """Helper to resolve model paths relative to MODEL_PATH if not absolute."""
+        if not path_setting:
+            return None
+        
+        path_obj = Path(path_setting)
+        if path_obj.is_absolute():
+            return str(path_obj)
+        else:
+            # Ensure MODEL_PATH is a Path object
+            return str(Path(MODEL_PATH) / path_obj)
+
     def write_log(self, msg: str, level: int = INFO) -> None:
         self.strategy_engine.write_log(msg, self, level=level)
 

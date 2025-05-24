@@ -26,13 +26,8 @@ from vnpy.factor.base import APP_NAME, FactorMode # Import FactorMode
 from vnpy.factor.utils.factor_utils import init_factors, load_factor_setting # Ensure these utils are compatible
 from vnpy.factor.setting import get_factor_path, get_factor_setting
 
-FACTOR_MODULE_NAME = 'vnpy.factor.factors' # Default, can be overridden
-SYSTEM_MODE = SETTINGS.get('system.mode', 'BACKTEST') # LIVE, BACKTEST, etc.
+# DEFAULT_FACTOR_MODULE_NAME = SETTINGS.get('factor.module_name', 'vnpy.factor.factors') # This is used by self.factor_module_name
 DEFAULT_DATETIME_COL = "datetime" # Standard datetime column name for FactorMemory
-
-
-DEFAULT_FACTOR_MODULE_NAME = SETTINGS.get('factor.module_name', 'vnpy.factor.factors')
-DEFAULT_DATETIME_COL = "datetime"
 
 def safe_filename(name: str) -> str:
     name = re.sub(r'[^\w\.\-@]', '_', name)
@@ -168,27 +163,27 @@ class BacktestEngine:
         for factor_key in self.sorted_factor_keys: # Use sorted keys
             factor_instance = self.flattened_factors[factor_key]
             try:
-                # Ensure vt_symbols is set on the instance if its get_output_schema depends on it.
-                # This is already handled if 'vt_symbols' was in params and FactorTemplate sets it.
-                # Or, if the factor's __init__ (like EMAFactor) explicitly takes and stores it.
-                # If FactorTemplate does not store vt_symbols from params, set it explicitly:
+                # Ensure factor_instance.vt_symbols is populated before calling get_output_schema,
+                # as the schema generation might depend on the symbols.
+                # This handles cases where a factor might not have explicitly set its own vt_symbols
+                # during its __init__ (e.g., if not passed via params or not handled by FactorTemplate).
                 if not hasattr(factor_instance, 'vt_symbols') or not factor_instance.vt_symbols:
-                     if hasattr(factor_instance, 'params') and factor_instance.params.get_parameter('vt_symbols'):
-                         factor_instance.vt_symbols = factor_instance.params.get_parameter('vt_symbols')
-                     else: # Fallback if not in params, use engine's list
-                         factor_instance.vt_symbols = self.vt_symbols
-
+                    # Attempt to set from its own parameters if 'vt_symbols' exists there
+                    if hasattr(factor_instance, 'params') and factor_instance.params.get_parameter('vt_symbols'):
+                        factor_instance.vt_symbols = factor_instance.params.get_parameter('vt_symbols')
+                    else:
+                        # Fallback to the engine's list of symbols for this backtest run.
+                        factor_instance.vt_symbols = self.vt_symbols
 
                 output_schema = factor_instance.get_output_schema()
                 if self.factor_datetime_col not in output_schema:
                     raise ValueError(f"Factor '{factor_key}' schema missing datetime col '{self.factor_datetime_col}'.")
 
-                # Allow factor-specific override for max_rows, though for batch it's usually full length
-                # For batch, we primarily use num_data_rows
-                # factor_specific_max_rows = factor_instance.get_param("factor_memory_max_rows")
-                # current_max_rows = int(factor_specific_max_rows) if factor_specific_max_rows else max_rows_for_memory
+                # For batch backtesting, FactorMemory instances use the full length of loaded data.
+                # Factor-specific overrides for max_rows are less common in this mode but could be
+                # supported if FactorTemplate had a standard way to declare 'factor_memory_max_rows'.
+                # For now, all instances use max_rows_for_memory.
                 current_max_rows = max_rows_for_memory
-
 
                 file_path = self.output_data_dir.joinpath(f"{safe_filename(factor_key)}.arrow")
                 self.factor_memory_instances[factor_key] = FactorMemory(
@@ -273,11 +268,13 @@ class BacktestEngine:
                 if missing_memory_errors:
                     self.write_log(f"Missing FactorMemory instances for {len(missing_memory_errors)} factors:\n" + "\n".join(missing_memory_errors), level=ERROR)
 
-                # final_resources = self._monitor_resources() # Optional
+                # Metrics calculation for the batch can be added here if needed.
+                # Example structure:
+                # final_resources = self._monitor_resources()
                 # self.metrics["full_batch"] = CalculationMetrics(
                 #     calculation_time=calc_time,
-                #     memory_usage=final_resources.get("memory_percent", 0) - initial_resources.get("memory_percent", 0),
-                #     cache_hits=0, # Dask internal
+                #     memory_usage=final_resources.get("memory_percent", 0) - initial_resources.get("memory_percent", 0), # Placeholder
+                #     cache_hits=0,  # Dask handles its own internal caching mechanisms
                 #     error_count=error_count
                 # )
 
@@ -362,7 +359,14 @@ class BacktestEngine:
 
     def _topological_sort(self, graph: Dict[str, List[str]]) -> List[str]:
         visited_permanently, visited_temporarily, order = set(), set(), []
-        all_nodes = set(graph.keys()) | set(dep for deps_list in graph.values() for dep in deps_list)
+        
+        # Collect all unique nodes from the graph keys and dependency lists
+        nodes_as_keys = set(graph.keys())
+        nodes_as_dependencies = set()
+        for deps_list in graph.values():
+            nodes_as_dependencies.update(deps_list)
+        all_nodes = nodes_as_keys | nodes_as_dependencies
+        
         def visit(node: str):
             if node in visited_permanently: return
             if node in visited_temporarily: raise ValueError(f"Circular dependency: {node} in {list(visited_temporarily)}")

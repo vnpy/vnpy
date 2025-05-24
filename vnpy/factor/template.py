@@ -41,7 +41,7 @@ class FactorParameters(object):
         Returns:
             str: A string representation of the parameters.
         """
-        if not self.__dict__: # Check if the dictionary is empty
+        if not self.__dict__:
             return "noparams"
         return "-".join([f"{k}_{v}" for k, v in sorted(self.__dict__.items())]) # Sort for consistency
 
@@ -303,8 +303,8 @@ class FactorTemplate(ABC):
         if auto_property:
             for attr_name in param_names:
                 # Check if a property with this name already exists on the class
-                if not hasattr(self.__class__, attr_name) or \
-                   not isinstance(getattr(self.__class__, attr_name, None), property):
+                if (not hasattr(self.__class__, attr_name) or
+                        not isinstance(getattr(self.__class__, attr_name, None), property)):
                     
                     # Define getter and setter dynamically
                     def getter(self_instance, name=attr_name): # Use self_instance to avoid cls/self confusion
@@ -474,8 +474,8 @@ class FactorTemplate(ABC):
         for dep_instance in self.dependencies_factor: # self.dependencies_factor holds FactorTemplate instances
             if isinstance(dep_instance, FactorTemplate):
                 # Get the full settings of the dependency instance
-                dep_factor_settings_list.append(dep_instance.to_setting()) # CHANGED
-            elif isinstance(dep_instance, dict): 
+                dep_factor_settings_list.append(dep_instance.to_setting())
+            elif isinstance(dep_instance, dict):
                 # This case implies dep_instance is already a settings dict (e.g. from config)
                 # This might occur if dependencies aren't fully resolved to instances yet
                 # or if the stored dependency was just a config.
@@ -488,7 +488,7 @@ class FactorTemplate(ABC):
             "factor_name": self.factor_key,
             "freq": str(self.freq.value) if self.freq else Interval.UNKNOWN.value,
             "params": self.params.get_all_parameters(),
-            "dependencies_factor": dep_factor_settings_list, # NOW A LIST OF SETTINGS DICTS
+            "dependencies_factor": dep_factor_settings_list,
             "dependencies_freq": [str(f.value) if isinstance(f, Interval) else f for f in self.dependencies_freq_config],
             "dependencies_symbol": self.dependencies_symbol_config,
             "dependencies_exchange": [str(e.value) if isinstance(e, Exchange) else e for e in self.dependencies_exchange_config],
