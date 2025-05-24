@@ -24,12 +24,14 @@ except ImportError:
 
 # Define module-level defaults that might be accessed before/outside the loading block
 STRATEGY_MODULE_SETTINGS: Dict[str, Any] = {}
-STRATEGY_DEFINITIONS_FILEPATH: Path = None # Will be set inside the block
+STRATEGY_DEFINITIONS_FILEPATH: Path = None  # For legacy template definitions (if ever needed side-by-side)
+STRATEGY_INSTANCE_DEFINITIONS_FILEPATH: Path = None # For new strategy instance configurations
 
 if not _STRATEGY_SETTINGS_LOADED:
     # Default filenames used if not specified in global SETTINGS or for standalone mode
-    DEFAULT_STRATEGY_SETTINGS_FILENAME = "strategy_settings.json"
-    DEFAULT_STRATEGY_DEFINITIONS_FILENAME = "strategy_template_definitions.json"
+    DEFAULT_STRATEGY_SETTINGS_FILENAME = "strategy_settings.json" # General module settings
+    DEFAULT_STRATEGY_DEFINITIONS_FILENAME = "strategy_template_definitions.json" # Legacy template definitions
+    DEFAULT_STRATEGY_INSTANCE_DEFINITIONS_FILENAME = "strategy_instance_settings.json" # New instance definitions
 
     # Root path of this module, used for resolving relative paths in standalone mode
     MODULE_ROOT_PATH = Path(__file__).parent
@@ -42,13 +44,23 @@ if not _STRATEGY_SETTINGS_LOADED:
 
     # Determine the strategy definitions file path
     _strategy_definitions_file_path_str = SETTINGS.get("strategy.definitions_file_path", DEFAULT_STRATEGY_DEFINITIONS_FILENAME)
-    _temp_strategy_definitions_filepath = Path(_strategy_definitions_file_path_str) # Use temp var
+    _temp_strategy_definitions_filepath = Path(_strategy_definitions_file_path_str)
     if not _temp_strategy_definitions_filepath.is_absolute():
         _temp_strategy_definitions_filepath = MODULE_ROOT_PATH / _temp_strategy_definitions_filepath
-    STRATEGY_DEFINITIONS_FILEPATH = _temp_strategy_definitions_filepath # Assign to global
+    STRATEGY_DEFINITIONS_FILEPATH = _temp_strategy_definitions_filepath
+
+    # Determine the strategy instance definitions file path
+    _strategy_instance_definitions_file_path_str = SETTINGS.get(
+        "strategy.instance_definitions_file_path", DEFAULT_STRATEGY_INSTANCE_DEFINITIONS_FILENAME
+    )
+    _temp_strategy_instance_definitions_filepath = Path(_strategy_instance_definitions_file_path_str)
+    if not _temp_strategy_instance_definitions_filepath.is_absolute():
+        _temp_strategy_instance_definitions_filepath = MODULE_ROOT_PATH / _temp_strategy_instance_definitions_filepath
+    STRATEGY_INSTANCE_DEFINITIONS_FILEPATH = _temp_strategy_instance_definitions_filepath # Assign to global
+
 
     # Load Strategy Module Settings from the JSON file
-    _temp_strategy_module_settings: Dict[str, Any] = {} # Use temp var
+    _temp_strategy_module_settings: Dict[str, Any] = {}
     if _strategy_settings_filepath.exists():
         _temp_strategy_module_settings = load_json_main(str(_strategy_settings_filepath))
         if not isinstance(_temp_strategy_module_settings, dict): # Ensure it's a dict if file was empty or malformed
@@ -88,15 +100,22 @@ def get_strategy_setting(key: str) -> Any:
     return value
 
 def get_strategy_definitions_filepath() -> Path:
-    """Get the absolute path to the strategy definitions JSON file."""
+    """Get the absolute path to the (legacy) strategy template definitions JSON file."""
     return STRATEGY_DEFINITIONS_FILEPATH
 
-# print(f"LOG: Strategy settings loaded. Definitions path: {STRATEGY_DEFINITIONS_FILEPATH}")
+def get_strategy_instance_definitions_filepath() -> Path:
+    """Get the absolute path to the strategy instance definitions JSON file."""
+    return STRATEGY_INSTANCE_DEFINITIONS_FILEPATH
+
+# print(f"LOG: Strategy settings loaded. Legacy Definitions path: {STRATEGY_DEFINITIONS_FILEPATH}")
+# print(f"LOG: Strategy Instance Definitions path: {STRATEGY_INSTANCE_DEFINITIONS_FILEPATH}")
 # print(f"LOG: Strategy module config: {STRATEGY_MODULE_SETTINGS}")
 
 __all__ = [
     "STRATEGY_MODULE_SETTINGS",
     "get_strategy_setting",
-    "STRATEGY_DEFINITIONS_FILEPATH", # Exposing the path directly as well
-    "get_strategy_definitions_filepath"
+    "STRATEGY_DEFINITIONS_FILEPATH",
+    "get_strategy_definitions_filepath",
+    "STRATEGY_INSTANCE_DEFINITIONS_FILEPATH",
+    "get_strategy_instance_definitions_filepath"
 ]

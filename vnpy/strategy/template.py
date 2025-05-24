@@ -12,9 +12,13 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from logging import DEBUG, ERROR, INFO, WARNING
 import traceback
-from typing import TYPE_CHECKING, Callable, List, Optional, Dict, Any, Set, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, List, Optional, Dict, Any, Set, Union, TYPE_CHECKING, Tuple
 from collections import defaultdict
 import pandas as pd
+import polars as pl
+import joblib
+import pickle
+# from sklearn.base import BaseEstimator # Example
 
 # --- VnTrader Imports ---
 from vnpy.trader.constant import (
@@ -63,15 +67,16 @@ class StrategyTemplate(ABC):
     # --- Strategy Metadata (Override in subclasses) ---
     author: str = "Unknown"  # Strategy author name
     parameters: List[str] = [  # List of configurable parameter names
-        "vt_symbols", "required_factors", "model_config", "trading_config", "retrain_interval_days"
+        "vt_symbols", "required_factor_keys", "model_config", "trading_config", "retrain_interval_days",
+        "model_load_path", "model_save_path", "retraining_config"
     ]
     variables: List[str] = [  # List of state variables to expose (optional)
-        "inited", "trading", "latest_factor_update_time", "last_retrain_time"
+        "inited", "trading", "latest_factor_update_time", "last_retrain_time", "model_load_path", "model_save_path"
     ]
 
     # --- Default Settings (Can be overridden in subclasses or settings file) ---
     required_vt_symbols: List[str] = []  # List of symbols required by the strategy
-    required_factors: List[str] = []  # List of factor names required from factor events
+    required_factor_keys: List[str] = []  # List of factor names required from factor events
     # Default exchange - override if needed or get from contract data
     exchange: Exchange = Exchange.BINANCE
     # Default interval - primarily informational, actual data depends on subscriptions
@@ -82,7 +87,11 @@ class StrategyTemplate(ABC):
             strategy_engine: "BaseStrategyEngine",
             strategy_name: str,
             vt_symbols: List[str],  # Initial symbols from settings
-            setting: dict  # Initial parameters from settings
+            setting: dict,  # Initial parameters from settings
+            model_load_path: Optional[str] = None,
+            model_save_path: Optional[str] = None,
+            retraining_config: Optional[Dict[str, Any]] = None,
+            required_factor_keys: Optional[List[str]] = None
     ) -> None:
         """
         Initialize the StrategyTemplate instance.
@@ -96,7 +105,14 @@ class StrategyTemplate(ABC):
         self.strategy_engine: "BaseStrategyEngine" = strategy_engine
         self.strategy_name: str = strategy_name
         # vt_symbols can be updated later via settings
-        self.vt_symbols: List[str] = list(vt_symbols)  # Ensure it's a mutable list
+        self.vt_symbols: List[str] = list(vt_symbols) if vt_symbols else [] # Ensure it's a mutable list
+
+        # --- Model Persistence and Configuration ---
+        self.model_load_path: Optional[str] = model_load_path
+        self.model_save_path: Optional[str] = model_save_path
+        self.retraining_config: Dict[str, Any] = retraining_config if retraining_config is not None else {}
+        self.required_factor_keys: List[str] = list(required_factor_keys) if required_factor_keys is not None else []
+
 
         # --- Engine Access ---
         # Convenience methods to access engine functionalities
@@ -119,12 +135,12 @@ class StrategyTemplate(ABC):
         # --- Market Data Cache ---
         # Stores the last known bar for each symbol (optional usage)
         self.bars: Dict[str, BarData] = defaultdict(BarData)
-        # Stores the latest factor data received (as a pandas DataFrame)
-        self.latest_factor_data: Optional[pd.DataFrame] = None
+        # Stores the latest factor data received (as a Polars DataFrame or Pandas for model input)
+        self.latest_factor_data: Optional[Union[pd.DataFrame, pl.DataFrame]] = None # Can store intermediate polars or final pandas
         self.latest_factor_update_time: Optional[datetime] = None
 
         # --- Model Related Attributes ---
-        self.model: Any = None
+        self.model: Any = None  # Model instance, e.g., scikit-learn estimator
         self.last_retrain_time: Optional[datetime] = None
         self.retrain_interval_days: int = 30  # Default retraining interval
 
@@ -149,7 +165,11 @@ class StrategyTemplate(ABC):
 
         # --- Apply Initial Settings ---
         # Load parameters provided in the 'setting' dictionary
-        self.update_setting(setting)
+        if setting: # Ensure settings are passed
+            self.update_setting(setting)
+        
+        # Attempt to load a pre-trained model if path is specified
+        self.load_model() 
         # Note: restore_state might be called by engine if loading persisted state
 
         self.write_log("Strategy instance initialized.", level=DEBUG)
@@ -158,57 +178,77 @@ class StrategyTemplate(ABC):
     # Abstract Core Logic Methods (Implement in Subclass)
     # --------------------------------
 
-    @virtual
-    def calculate(self, df: pd.DataFrame) -> pd.Series:
-        """
-        Calculate raw trading signals based on input data.
-        This method can be overridden if a strategy uses a simpler, non-model-based calculation.
-        For model-based strategies, `predict_from_model` will be the primary method.
-        """
-        pass
-
     @abstractmethod
-    def train_model(self, data: pd.DataFrame) -> None:
+    def _transform_latest_factors(self, latest_factor_data_map: Dict[str, "pl.DataFrame"]) -> "pl.DataFrame":
         """
-        Train the strategy's underlying model.
+        Transforms and combines the latest snapshot of multiple factor DataFrames (Polars)
+        into a single Polars DataFrame suitable for model prediction.
+        This typically involves aligning symbols and creating a feature matrix where
+        rows are vt_symbols and columns are factor features.
 
         Args:
-            data: Pandas DataFrame containing historical features (factors) and potentially targets
-                  for training the model. Structure depends on the specific model implementation.
-        """
-        pass
-
-    @abstractmethod
-    def predict_from_model(self, data: pd.DataFrame) -> pd.Series:
-        """
-        Generate trading signals from the trained model using new input data.
-
-        Args:
-            df: Pandas DataFrame containing relevant data (e.g., factors, market data)
-                indexed by vt_symbol, with columns for each factor/data point.
+            latest_factor_data_map: Dict mapping factor_key to a Polars DataFrame
+                                     containing the latest data for that factor.
+                                     Each DataFrame is expected to have at least 'vt_symbol'
+                                     and factor value column(s).
 
         Returns:
-            Pandas Series containing the calculated signal strength for each vt_symbol.
-            Index should be vt_symbol, values are the signals (e.g., -1 to 1).
+            A Polars DataFrame where each row represents a vt_symbol and columns
+            are the combined features from all relevant factors.
         """
         pass
 
     @abstractmethod
-    def project_signals_to_weights(self, signals: pd.Series) -> pd.Series:
+    def predict_from_model(self, data: pd.DataFrame) -> Any:
         """
-        Convert calculated signals into target portfolio weights.
-
-        This method implements the portfolio construction logic (e.g., ranking,
-        optimization, risk management constraints).
+        Generate raw predictions from the trained model using new input data.
+        This method typically calls `self.model.predict()` or `self.model.predict_proba()`.
 
         Args:
-            signals: Pandas Series of raw signals indexed by vt_symbol.
+            data: Pandas DataFrame containing the combined and transformed features,
+                  ready for input into the model. Index should be vt_symbol.
 
         Returns:
-            Pandas Series of target portfolio weights indexed by vt_symbol.
-            Weights should typically sum to 1 (or less for cash holding).
+            The raw output from the model (e.g., numpy array of predictions or probabilities).
         """
         pass
+
+    @abstractmethod
+    def generate_signals_from_prediction(
+        self, model_output: Any, symbol_feature_df: pd.DataFrame
+    ) -> List[OrderRequest]:
+        """
+        Convert the raw model output into trading signals or directly into OrderRequests.
+
+        Args:
+            model_output: The raw output from `predict_from_model`.
+            symbol_feature_df: The Pandas DataFrame that was fed into the model,
+                               indexed by vt_symbol. Useful for context (e.g., getting symbol list).
+
+        Returns:
+            A list of OrderRequest objects to be executed, or an empty list if no actions.
+            Can also return other types of signals if the strategy uses a multi-step process.
+        """
+        pass
+
+    @abstractmethod
+    def prepare_training_data(
+        self, historical_factor_data_map: Dict[str, "pl.DataFrame"]
+    ) -> Tuple[pd.DataFrame, pd.Series]:
+        """
+        Prepares features (X) and labels (y) for model training from historical factor data.
+
+        Args:
+            historical_factor_data_map: Dict mapping factor_key to a Polars DataFrame
+                                         containing historical data for that factor.
+
+        Returns:
+            A tuple (features_df, labels_series):
+            - features_df: Pandas DataFrame of features for training (X).
+            - labels_series: Pandas Series of labels for training (y).
+        """
+        pass
+
 
     # --------------------------------
     # Lifecycle Methods (Called by Engine)
@@ -272,152 +312,105 @@ class StrategyTemplate(ABC):
             return None
 
         self.write_log(f"Received factor memories update: {list(factor_memories.keys())}", level=DEBUG)
-        self.latest_factor_update_time = self.strategy_engine.get_current_datetime()
+        current_dt = self.strategy_engine.get_current_datetime()
+        self.latest_factor_update_time = current_dt
 
-        # --- Data Preparation for Model ---
-        data_for_model: Dict[str, pd.DataFrame] = {}
-        missing_factors = False
-        for factor_name in self.required_factors:
-            if factor_name in factor_memories:
-                factor_memory = factor_memories[factor_name]
-                # Get latest row(s) of factor data
-                # For now, N=1, meaning the most recent snapshot for each symbol.
-                # If model needs sequence, N > 1.
-                polars_df = factor_memory.get_latest_rows(N=1)
-
-                if polars_df is None or polars_df.is_empty():
-                    self.write_log(f"Factor {factor_name} provided empty data from get_latest_rows(1).", level=WARNING)
-                    missing_factors = True
-                    break 
-                
-                pandas_df = polars_df.to_pandas()
-                # Store the pandas DataFrame, assuming it's correctly structured by FactorMemory
-                # (e.g., has 'vt_symbol' and value columns)
-                data_for_model[factor_name] = pandas_df
-            else:
-                self.write_log(f"Required factor {factor_name} not found in received factor_memories.", level=WARNING)
-                missing_factors = True
-                break  # Skip this cycle if a required factor is missing
-
-        if missing_factors or not data_for_model:
-            self.write_log("Skipping prediction due to missing or incomplete factor data.", level=WARNING)
-            return None
-
-        # --- Combine Factor DataFrames ---
-        combined_dfs = []
-        for factor_name, pandas_df in data_for_model.items():
-            if 'vt_symbol' not in pandas_df.columns:
-                self.write_log(f"Factor {factor_name} DataFrame missing 'vt_symbol' column. Schema: {pandas_df.columns}", level=WARNING)
-                continue # Skip this factor
-
-            # Assuming the primary value column is named 'value' or the factor_name itself
-            # This needs to be robust based on FactorMemory's output structure
-            value_col_found = False
-            if 'value' in pandas_df.columns:
-                renamed_df = pandas_df.rename(columns={'value': factor_name})
-                value_col_found = True
-            elif factor_name in pandas_df.columns:
-                renamed_df = pandas_df # Already has factor_name as a column
-                value_col_found = True
-            else:
-                # Attempt to find a suitable value column if only 'vt_symbol', 'datetime' and one other exist
-                potential_value_cols = [col for col in pandas_df.columns if col not in ['vt_symbol', 'datetime']]
-                if len(potential_value_cols) == 1:
-                    self.write_log(f"Factor {factor_name}: Assuming '{potential_value_cols[0]}' is the value column.", level=DEBUG)
-                    renamed_df = pandas_df.rename(columns={potential_value_cols[0]: factor_name})
-                    value_col_found = True
-                else:
-                    self.write_log(f"Factor {factor_name} DataFrame missing a clear value column (expected 'value', '{factor_name}', or single other). Schema: {pandas_df.columns}", level=WARNING)
-                    continue
-
-            if value_col_found:
-                # Ensure vt_symbol is index, select only the factor column
-                processed_df = renamed_df.set_index('vt_symbol')[[factor_name]]
-                combined_dfs.append(processed_df)
-
-        if not combined_dfs:
-            self.write_log("No factor data successfully processed and combined for model input.", level=WARNING)
-            return None
-
-        try:
-            model_input_df = pd.concat(combined_dfs, axis=1)
-        except Exception as e:
-            self.write_log(f"Error concatenating factor DataFrames: {e}", level=ERROR)
-            return None
+        # --- 1. Fetch Latest Polars Data for Each Factor ---
+        latest_polars_data_map: Dict[str, pl.DataFrame] = {}
+        missing_data = False
+        for factor_key in self.required_factor_keys:
+            factor_memory = factor_memories.get(factor_key)
+            if not factor_memory:
+                self.write_log(f"Required factor key {factor_key} not found in received factor_memories.", level=WARNING)
+                missing_data = True
+                break
             
-        # Filter for symbols relevant to this strategy
-        model_input_df = model_input_df[model_input_df.index.isin(self.vt_symbols)]
-        if model_input_df.empty:
-            self.write_log("Model input DataFrame is empty after filtering for strategy symbols.", level=DEBUG)
+            # Get latest row(s) - N=1 for snapshot
+            polars_df = factor_memory.get_latest_rows(N=1)
+            if polars_df is None or polars_df.is_empty():
+                self.write_log(f"Factor {factor_key} provided empty data from get_latest_rows(1).", level=WARNING)
+                # missing_data = True # Depending on strategy, one missing factor might be acceptable
+                # break
+                continue # Store empty or skip, depends on how _transform_latest_factors handles it
+
+            latest_polars_data_map[factor_key] = polars_df
+        
+        if missing_data or not latest_polars_data_map:
+            self.write_log("Skipping prediction due to missing required factor data.", level=WARNING)
             return None
-            
-        # Check for NaNs after merging and handle if necessary (e.g., fill or drop)
-        if model_input_df.isnull().values.any():
-            self.write_log(f"NaNs found in model_input_df. Shape: {model_input_df.shape}. NaNs per column:\n{model_input_df.isnull().sum()}", level=WARNING)
-            # Option: fillna or dropna based on strategy requirements
-            # For now, let's try filling with a common value like 0, or ffill/bfill if appropriate
-            # This is a placeholder; proper NaN handling is crucial.
-            model_input_df = model_input_df.fillna(0) # Example: fill with 0
-            # self.write_log(f"Filled NaNs with 0. Resulting df:\n{model_input_df.head()}", level=DEBUG)
-
-
-        self.latest_factor_data = model_input_df # Cache the processed data for inspection
 
         # --- Core Logic ---
         try:
-            # 1. Check Retraining Schedule (Placeholder - actual training call might be elsewhere or asynchronous)
-            current_dt = self.get_current_datetime()
-            if self.check_retraining_schedule(current_dt):
-                self.write_log("Retraining condition met. Triggering model training (actual training TBD).", level=INFO)
-                # Placeholder: In a real system, you might fetch more historical data here.
-                # For now, assume train_model can use available historical factor data or self.latest_factor_data
-                # if designed for online updates. The `data` arg for train_model needs careful consideration.
-                # self.train_model(historical_data_df) # This would need data beyond current factors
-                # For now, we'll log and skip actual training in on_factor to avoid blocking.
-                # Training should ideally be handled by a separate process or scheduled task.
-                # If train_model updates self.model, it will be used by predict_from_model.
-                pass # Actual training call is complex; for now, focus on prediction path.
+            # 1. Check Retraining Schedule - This is usually handled by engine calling retrain_model separately
+            # if self.check_retraining_schedule(current_dt):
+            #     self.write_log("Retraining condition met. Consider triggering retrain_model.", level=INFO)
+                # Actual retraining should be asynchronous or scheduled, not blocking on_factor.
 
             if self.model is None:
-                self.write_log("Model is not trained. Cannot generate predictions.", level=WARNING)
+                self.write_log("Model is not loaded or trained. Cannot generate predictions.", level=WARNING)
                 return None
 
-            # 2. Generate Signals using the Model
-            signals: pd.Series = self.predict_from_model(model_input_df)
-            if not isinstance(signals, pd.Series) or signals.empty:
-                self.write_log("Prediction from model returned empty or invalid result.", level=WARNING)
+            # 2. Transform latest factors into a single DataFrame for the model
+            # This method is responsible for aligning symbols and creating a feature matrix.
+            transformed_pl_df = self._transform_latest_factors(latest_polars_data_map)
+            if transformed_pl_df is None or transformed_pl_df.is_empty():
+                self.write_log("Factor transformation resulted in empty data.", level=WARNING)
+                return None
+            
+            # Cache the Polars DataFrame (or convert to Pandas and cache)
+            self.latest_factor_data = transformed_pl_df 
+
+            # Filter for symbols relevant to this strategy, if not already done in _transform_latest_factors
+            # transformed_pl_df = transformed_pl_df.filter(pl.col('vt_symbol').is_in(self.vt_symbols))
+            # if transformed_pl_df.is_empty():
+            #     self.write_log("Transformed DataFrame is empty after filtering for strategy symbols.", level=DEBUG)
+            #     return None
+
+            # 3. Convert to Pandas DataFrame for scikit-learn or other libraries
+            # Assuming 'vt_symbol' is a column that should become the index
+            if 'vt_symbol' not in transformed_pl_df.columns:
+                self.write_log("Transformed Polars DataFrame missing 'vt_symbol' column for index.", level=ERROR)
+                return None
+            
+            # It's often better to let predict_from_model and generate_signals_from_prediction
+            # handle the conversion to pandas and indexing if they need it.
+            # For now, provide the Polars DF, and let the abstract methods decide.
+            # However, predict_from_model is typed to take pd.DataFrame.
+            
+            pandas_transformed_df = transformed_pl_df.to_pandas().set_index('vt_symbol')
+            
+            # Ensure all required factor keys are present as columns after transformation, if model expects them
+            # This check depends on how _transform_latest_factors structures its output.
+            # Example: for factor_key in self.required_factor_keys:
+            # if factor_key not in pandas_transformed_df.columns:
+            # self.write_log(f"Column for factor {factor_key} missing in pandas_transformed_df", ERROR)
+            # return None
+            
+            if pandas_transformed_df.empty:
+                self.write_log("Pandas DataFrame for model input is empty.", level=DEBUG)
                 return None
 
-            # 3. Project Signals to Target Weights
-            target_weights: pd.Series = self.project_signals_to_weights(signals)
-            if not isinstance(target_weights, pd.Series) or target_weights.empty:
-                self.write_log("Weight projection returned empty or invalid result.", level=WARNING)
+            # 4. Get predictions from the model
+            # predict_from_model is abstract, implementation will call self.model.predict() etc.
+            model_prediction_output = self.predict_from_model(pandas_transformed_df)
+            if model_prediction_output is None: # Could be empty list/array too
+                self.write_log("Prediction from model returned None or empty result.", level=WARNING)
                 return None
 
-            # Ensure weights are aligned with available factor symbols (index of model_input_df)
-            target_weights = target_weights.reindex(model_input_df.index).fillna(0.0)
+            # 5. Generate signals/OrderRequests from predictions
+            # generate_signals_from_prediction is abstract.
+            # It takes raw model output and the feature df (for context like symbol list).
+            order_reqs: List[OrderRequest] = self.generate_signals_from_prediction(
+                model_prediction_output,
+                pandas_transformed_df # Pass the pandas DF used for prediction
+            )
 
-            # 3. Calculate Target Positions in Quote Currency (e.g., USD)
-            if not self.portfolio_result:
-                self.write_log("Cannot calculate target positions: PortfolioResult not available.", level=ERROR)
-                return None
-
-            total_portfolio_value = self.portfolio_result.get_total_value()
-            if total_portfolio_value <= 0:
-                self.write_log(
-                    f"Cannot calculate target positions: Total portfolio value is {total_portfolio_value:.2f}",
-                    level=WARNING)
-                return None
-
-            target_positions_quote = target_weights * total_portfolio_value
-
-            # 4. Generate Orders
-            order_reqs = self.generate_orders_from_targets(target_positions_quote)
-            self.write_log(f"Generated {len(order_reqs)} order requests based on factor update.", level=DEBUG)
+            if order_reqs:
+                self.write_log(f"Generated {len(order_reqs)} order requests.", level=DEBUG)
             return order_reqs
 
         except Exception as e:
-            self.write_log(f"Error during factor processing pipeline: {e}\n{traceback.format_exc()}", level=ERROR)
+            self.write_log(f"Error during on_factor processing pipeline: {e}\n{traceback.format_exc()}", level=ERROR)
             return None
 
     @virtual
@@ -452,20 +445,154 @@ class StrategyTemplate(ABC):
         # Custom strategy logic based on trade fills can be added here.
 
     # --------------------------------
-    # Model and Retraining
+    # Model Persistence and Retraining
     # --------------------------------
+
+    def load_model(self) -> None:
+        """
+        Load the model from the path specified in `model_load_path`.
+        """
+        if self.model_load_path:
+            self.write_log(f"Attempting to load model from: {self.model_load_path}", level=INFO)
+            try:
+                # Ensure the path exists
+                import os
+                if not os.path.exists(self.model_load_path):
+                    self.write_log(f"Model file not found at {self.model_load_path}. No model loaded.", level=WARNING)
+                    return
+
+                with open(self.model_load_path, 'rb') as f:
+                    self.model = joblib.load(f)
+                self.write_log(f"Model loaded successfully from {self.model_load_path}", level=INFO)
+                
+                # If model loading implies it's "trained" for the purpose of retraining schedule:
+                # self.last_retrain_time = self.get_current_datetime() # Or load from metadata if saved with model
+            except FileNotFoundError:
+                self.write_log(f"Model file not found at {self.model_load_path}. No model loaded.", level=WARNING)
+            except pickle.UnpicklingError:
+                self.write_log(f"Error unpickling model from {self.model_load_path}. Model may be corrupt or incompatible.", level=ERROR)
+            except Exception as e:
+                self.write_log(f"Failed to load model from {self.model_load_path}: {e}\n{traceback.format_exc()}", level=ERROR)
+        else:
+            self.write_log("No model_load_path specified. Skipping model loading.", level=DEBUG)
+
+    def save_model(self) -> None:
+        """
+        Save the current model to the path specified in `model_save_path`.
+        """
+        if self.model_save_path and self.model is not None:
+            self.write_log(f"Attempting to save model to: {self.model_save_path}", level=INFO)
+            try:
+                # Ensure directory exists
+                import os
+                os.makedirs(os.path.dirname(self.model_save_path), exist_ok=True)
+
+                with open(self.model_save_path, 'wb') as f:
+                    joblib.dump(self.model, f)
+                self.write_log(f"Model saved successfully to {self.model_save_path}", level=INFO)
+            except Exception as e:
+                self.write_log(f"Failed to save model to {self.model_save_path}: {e}\n{traceback.format_exc()}", level=ERROR)
+        elif self.model is None:
+            self.write_log("No model instance to save.", level=WARNING)
+        else: # No save path
+            self.write_log("No model_save_path specified. Skipping model saving.", level=DEBUG)
+
+    def _fetch_historical_training_factors(self, factor_memories: Dict[str, "FactorMemory"]) -> Dict[str, "pl.DataFrame"]:
+        """
+        Helper to fetch full historical data for required factors.
+        """
+        historical_data_map: Dict[str, pl.DataFrame] = {}
+        for key in self.required_factor_keys:
+            factor_memory = factor_memories.get(key)
+            if factor_memory:
+                # get_data() should return a Polars DataFrame
+                data = factor_memory.get_data() 
+                if data is not None and not data.is_empty():
+                    historical_data_map[key] = data
+                else:
+                    self.write_log(f"No historical data retrieved for factor {key}.", level=WARNING)
+            else:
+                self.write_log(f"FactorMemory not found for key '{key}' during historical fetch.", level=WARNING)
+        return historical_data_map
+
+    @virtual # Keep virtual if subclasses might override the entire retraining orchestration
+    def retrain_model(self) -> None:
+        """
+        Orchestrates the model retraining process.
+        Fetches historical data, prepares it, trains the model, and saves it.
+        This method is intended to be called by the StrategyEngine based on a schedule or trigger.
+        """
+        self.write_log("Starting model retraining process...", level=INFO)
+        try:
+            # 1. Fetch historical factor data (Polars DataFrames)
+            # Access factor memories from the strategy engine
+            if not hasattr(self.strategy_engine, 'latest_factor_memories'):
+                self.write_log("StrategyEngine does not have 'latest_factor_memories'. Cannot fetch historical data.", level=ERROR)
+                return
+                
+            historical_polars_map = self._fetch_historical_training_factors(
+                self.strategy_engine.latest_factor_memories
+            )
+
+            if not historical_polars_map:
+                self.write_log("No historical factor data fetched. Aborting retraining.", level=WARNING)
+                return
+
+            # 2. Prepare training data (features X, labels y) using the abstract method
+            # This method is responsible for any complex transformations, feature engineering,
+            # and conversion to Pandas DataFrames/Series suitable for scikit-learn.
+            features_df, labels_series = self.prepare_training_data(historical_polars_map)
+
+            if features_df is None or features_df.empty or labels_series is None or labels_series.empty:
+                self.write_log("Training data preparation resulted in empty features or labels. Aborting retraining.", level=WARNING)
+                return
+
+            # 3. Train the model
+            if self.model is None:
+                # This implies the strategy needs to define how to instantiate its model
+                # if it's not loaded. For now, we log an error.
+                # A concrete strategy's __init__ or a specific method should create self.model.
+                self.write_log("self.model is None. Cannot fit. Please ensure model is initialized.", level=ERROR)
+                return
+            
+            # Assuming self.model is a scikit-learn compatible estimator
+            if not hasattr(self.model, 'fit'):
+                self.write_log("self.model does not have a 'fit' method. Cannot train.", level=ERROR)
+                return
+
+            self.write_log(f"Training model with {features_df.shape[0]} samples and {features_df.shape[1]} features.", level=INFO)
+            self.model.fit(features_df, labels_series)
+            self.write_log("Model training completed.", level=INFO)
+
+            # 4. Save the retrained model
+            self.save_model()
+
+            # 5. Update last retrain time
+            self.last_retrain_time = self.get_current_datetime()
+            self.write_log(f"Model retraining finished. Last retrain time updated to {self.last_retrain_time}", level=INFO)
+            self.put_event() # Notify state change
+
+        except Exception as e:
+            self.write_log(f"Error during model retraining: {e}\n{traceback.format_exc()}", level=ERROR)
 
     def check_retraining_schedule(self, current_datetime: datetime) -> bool:
         """
         Check if the model should be retrained based on the schedule.
         """
-        if self.model is None:
-            self.write_log("Retraining check: Model is None, retraining required.", level=INFO)
+        if self.model is None and not self.model_load_path: # If no model and no path to load one, retrain.
+            self.write_log("Retraining check: Model is None and no load path. Initial training required.", level=INFO)
             return True
         
-        if self.last_retrain_time is None:
-            self.write_log("Retraining check: Last retrain time is None, retraining required.", level=INFO)
-            return True
+        if self.last_retrain_time is None: # If model exists (loaded) but never retrained by this instance.
+            # This could mean it was loaded and is considered "trained enough" until first interval passes.
+            # Or, strategy might require retraining soon after loading if data is stale.
+            # For now, if loaded, assume last_retrain_time should be set or it implies first cycle.
+             self.write_log("Retraining check: Last retrain time is None. Consider if retraining is due.", level=INFO)
+             # Defaulting to False if last_retrain_time is None but model exists, to let interval drive it.
+             # If a model is loaded, and no last_retrain_time, it implies it hasn't been retrained by this instance yet.
+             # The first scheduled retrain will then happen after retrain_interval_days.
+             return False # Or True if immediate retrain post-load is desired without specific last_retrain_time.
+
 
         if self.retrain_interval_days <= 0: # Retraining is disabled or set to manual
             return False
@@ -481,107 +608,17 @@ class StrategyTemplate(ABC):
         return False
 
     # --------------------------------
-    # Portfolio and Order Generation
+    # Portfolio and Order Generation (Order generation is now part of generate_signals_from_prediction)
     # --------------------------------
+    # The method generate_orders_from_targets might still be useful if generate_signals_from_prediction
+    # returns target weights/positions instead of direct OrderRequests.
+    # For now, assuming generate_signals_from_prediction returns OrderRequests.
+    # If not, that method or a similar one to convert signals/weights to orders would be needed here.
+    # For example, if generate_signals_from_prediction returns target weights (pd.Series):
+    # target_weights = self.generate_signals_from_prediction(...)
+    # order_reqs = self.convert_weights_to_orders(target_weights)
 
-    def generate_orders_from_targets(self, target_positions_quote: pd.Series) -> List[OrderRequest]:
-        """
-        Generate buy/sell orders to adjust current positions towards target positions.
-
-        Args:
-            target_positions_quote: Pandas Series indexed by vt_symbol, where values
-                                     are the target position value in quote currency (e.g., USD).
-
-        Returns:
-            List of OrderRequest objects.
-        """
-        order_reqs: List[OrderRequest] = []
-        min_order_volume = getattr(self.trading_config, 'min_order_volume', 1e-8)
-
-        for vt_symbol in target_positions_quote.index:
-            if vt_symbol not in self.vt_symbols:
-                self.write_log(f"Symbol {vt_symbol} from target weights not in strategy's vt_symbols list. Skipping.",
-                               level=WARNING)
-                continue
-
-            # Get necessary data
-            tick = self.get_tick(vt_symbol)
-            contract = self.get_contract(vt_symbol)
-
-            if not tick or not tick.last_price or tick.last_price <= 0:
-                self.write_log(
-                    f"Skipping order generation for {vt_symbol}: Missing or invalid last price in tick data.",
-                    level=WARNING)
-                continue
-            if not contract:
-                self.write_log(f"Skipping order generation for {vt_symbol}: Contract details not found.", level=WARNING)
-                continue
-
-            last_price = tick.last_price
-            price_tick = contract.pricetick or 0.00000001  # Use small default if not available
-            size = contract.size or 1  # Contract multiplier
-
-            # Get current position (in base currency units)
-            current_pos_base = self.strategy_engine.get_portfolio_position(self.strategy_name, vt_symbol)
-
-            # Calculate target position in base currency units
-            target_pos_quote = target_positions_quote.get(vt_symbol, 0.0)
-            target_pos_base = target_pos_quote / (last_price * size)  # Adjust for contract size
-
-            # Calculate position difference
-            pos_diff_base = target_pos_base - current_pos_base
-
-            # Determine order direction and volume
-            direction: Optional[Direction] = None
-            volume: float = abs(pos_diff_base)
-
-            if pos_diff_base > min_order_volume:
-                direction = Direction.LONG
-            elif pos_diff_base < -min_order_volume:
-                direction = Direction.SHORT
-                # Ensure volume reflects selling the absolute difference
-            else:
-                continue  # Difference is too small, no order needed
-
-            # Round volume to contract's volume step (if available, otherwise use reasonable precision)
-            volume_tick = getattr(contract, 'volumetick', None)  # Check if volumetick exists
-            if volume_tick and volume_tick > 0:
-                volume = round_to(volume, volume_tick)
-            else:
-                # Default rounding if volumetick is not available
-                volume = round(volume, 8)  # Adjust precision as needed
-
-            # Skip if rounded volume becomes too small
-            if volume < min_order_volume:
-                continue
-
-            # --- Create Order Request ---
-            # Use LIMIT orders slightly away from last price for better execution chance?
-            # Or use MARKET orders (requires gateway support and careful consideration)
-            # Example: Limit order at last price (can be adjusted)
-            order_price = last_price
-            # Ensure price is rounded to price tick
-            order_price = round_to(order_price, price_tick)
-
-            # Use LIMIT order type as a default, adjust if needed
-            order_type = OrderType.LIMIT
-
-            req = OrderRequest(
-                symbol=contract.symbol,
-                exchange=contract.exchange,
-                direction=direction,
-                offset=Offset.NONE,  # Assuming no offset needed for portfolio adjustments
-                type=order_type,
-                price=order_price,
-                volume=volume,
-                reference=self.strategy_name  # Engine will set this, but good practice
-            )
-            order_reqs.append(req)
-            self.write_log(f"Generated Order: {req.vt_symbol} {req.direction} {req.volume:.6f} @ {req.price:.6f}",
-                           level=DEBUG)
-
-        return order_reqs
-
+    # This method is kept for utilities like closing all positions, not for main signal-to-order flow.
     def close_all_positions(self) -> List[OrderRequest]:
         """
         Generate orders to close all currently held positions for symbols
@@ -910,10 +947,22 @@ class StrategyTemplate(ABC):
 
         # Update standard parameters if present in the setting dict
         if "vt_symbols" in setting and isinstance(setting["vt_symbols"], list):
-            self.vt_symbols = list(setting["vt_symbols"])  # Update symbol list
+            self.vt_symbols = list(setting["vt_symbols"])
 
-        if "required_factors" in setting and isinstance(setting["required_factors"], list):
-            self.required_factors = list(setting["required_factors"])
+        # Update to required_factor_keys
+        if "required_factor_keys" in setting and isinstance(setting["required_factor_keys"], list):
+            self.required_factor_keys = list(setting["required_factor_keys"])
+        elif "required_factors" in setting and isinstance(setting["required_factors"], list): # Legacy support
+            self.write_log("Using legacy 'required_factors' setting, please update to 'required_factor_keys'.", WARNING)
+            self.required_factor_keys = list(setting["required_factors"])
+            
+        # Update new parameters
+        if "model_load_path" in setting:
+            self.model_load_path = setting["model_load_path"]
+        if "model_save_path" in setting:
+            self.model_save_path = setting["model_save_path"]
+        if "retraining_config" in setting and isinstance(setting["retraining_config"], dict):
+            self.retraining_config.update(setting["retraining_config"]) # Merge dicts
 
         # Update config objects if present
         if "model_config" in setting and isinstance(setting["model_config"], dict):

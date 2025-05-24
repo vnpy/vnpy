@@ -44,7 +44,11 @@ from vnpy.trader.constant import EngineType
 from vnpy.trader.utility import load_json, save_json, get_file_path, virtual
 from vnpy.trader.database import BaseDatabase, get_database
 from vnpy.trader.datafeed import BaseDatafeed, get_datafeed
-from vnpy.strategy.settings import get_strategy_definitions_filepath, get_strategy_setting, STRATEGY_MODULE_SETTINGS
+from vnpy.strategy.settings import (
+    get_strategy_instance_definitions_filepath, # Updated
+    get_strategy_setting,
+    STRATEGY_MODULE_SETTINGS
+)
 import pandas as pd # For DataFrame operations
 
 # --- Strategy & Portfolio Specific Imports ---
@@ -104,12 +108,13 @@ class BaseStrategyEngine(BaseEngine):
 
         self.execution_gateway_name = STRATEGY_MODULE_SETTINGS.get("default_execution_gateway", "BINANCE_SPOT")
         
-        self.definitions_filepath: Path = get_strategy_definitions_filepath()
+        # Use the new filepath for instance configurations
+        self.definitions_filepath: Path = get_strategy_instance_definitions_filepath()
 
         self.write_log(f"Engine Name: {self.engine_name}", level=DEBUG)
         self.write_log(f"Strategies Code Directory: {self.strategies_path}", level=INFO)
         self.write_log(f"Execution Gateway: {self.execution_gateway_name}", level=INFO)
-        self.write_log(f"Strategy Definitions File: {self.definitions_filepath}", level=INFO)
+        self.write_log(f"Strategy Instance Definitions File: {self.definitions_filepath}", level=INFO) # Updated log
 
         # --- Core Strategy State ---
         self.strategy_classes: Dict[str, Type[StrategyTemplate]] = {}  # {ClassName: Class}
@@ -327,76 +332,67 @@ class BaseStrategyEngine(BaseEngine):
             return 0
 
     def load_all_strategy_settings(self) -> None:
-        """Load strategy settings from the definitions JSON file."""
-        self.write_log(f"Loading strategy instance definitions from: {self.definitions_filepath}", level=INFO)
+        """Load strategy instance configurations from the JSON file."""
+        self.write_log(f"Loading strategy instance configurations from: {self.definitions_filepath}", level=INFO)
         
-        loaded_data = load_json(self.definitions_filepath)
-        transformed_settings: Dict[str, dict] = {}
+        # Expect a list of strategy instance configurations
+        loaded_data: List[Dict[str, Any]] = load_json(self.definitions_filepath)
+        
+        current_settings: Dict[str, dict] = {}
 
         if isinstance(loaded_data, list):
-            # Original format: list of template definitions
-            self.write_log(f"Detected list format in {self.definitions_filepath}, transforming to instance dictionary.", level=INFO)
-            for i, template_def in enumerate(loaded_data):
-                if not isinstance(template_def, dict):
-                    self.write_log(f"Skipping invalid template definition (not a dict) at index {i}.", level=WARNING)
+            for i, instance_config in enumerate(loaded_data):
+                if not isinstance(instance_config, dict):
+                    self.write_log(f"Skipping invalid instance configuration (not a dict) at index {i}.", level=WARNING)
                     continue
 
-                class_name = template_def.get("class_name")
-                if not class_name:
-                    self.write_log(f"Skipping template definition at index {i} due to missing 'class_name'.", level=WARNING)
+                strategy_name = instance_config.get("strategy_name")
+                if not strategy_name:
+                    self.write_log(f"Skipping instance configuration at index {i} due to missing 'strategy_name'.", level=WARNING)
                     continue
-
-                parameters = template_def.get("parameters", {})
-                vt_symbols = parameters.get("vt_symbols", []) # Assuming vt_symbols is within parameters
-
-                # Generate a unique strategy instance name
-                # Priority: strategy_instance_name > template_name > class_name
-                strategy_instance_name = template_def.get("strategy_instance_name")
-                if not strategy_instance_name:
-                    template_name = template_def.get("template_name", class_name)
-                    strategy_instance_name = f"{template_name}_Instance_{i+1}"
                 
-                if strategy_instance_name in transformed_settings:
-                    self.write_log(f"Duplicate strategy instance name '{strategy_instance_name}' generated/found. Appending counter.", level=WARNING)
-                    strategy_instance_name = f"{strategy_instance_name}_{i+1}"
+                if strategy_name in current_settings:
+                    self.write_log(f"Duplicate strategy_name '{strategy_name}' found in instance configurations. Previous entry will be overwritten.", level=WARNING)
+                
+                # Store the full instance configuration dictionary
+                current_settings[strategy_name] = instance_config 
+            
+            self.strategy_settings = current_settings
+            self.write_log(f"Loaded {len(self.strategy_settings)} strategy instance configurations.", level=INFO)
 
-                transformed_settings[strategy_instance_name] = {
-                    "class_name": class_name,
-                    "vt_symbols": vt_symbols,
-                    "setting": parameters  # The whole "parameters" dict from template_def
-                }
-            self.strategy_settings = transformed_settings
-            self.write_log(f"Transformed {len(transformed_settings)} strategy templates into instance settings.", level=INFO)
-            # Consider saving back in the new dict format immediately or on close
-            # self.save_all_strategy_settings() 
-        elif isinstance(loaded_data, dict):
-            # New format: dictionary of instance configurations
-            self.strategy_settings = loaded_data
-            self.write_log(f"Loaded {len(self.strategy_settings)} strategy instance configurations directly from {self.definitions_filepath}.", level=INFO)
         elif loaded_data is None and not self.definitions_filepath.exists():
-             self.write_log(f"Strategy definitions file {self.definitions_filepath} not found. Initializing with empty settings.", level=INFO)
+             self.write_log(f"Strategy instance definitions file {self.definitions_filepath} not found. Initializing with empty settings.", level=INFO)
              self.strategy_settings = {}
         else:
             self.write_log(
-                f"Invalid data format in '{self.definitions_filepath}': Expected a list or dictionary, got {type(loaded_data)}. Initializing with empty settings.",
+                f"Invalid data format in '{self.definitions_filepath}': Expected a list of strategy instance configurations, got {type(loaded_data)}. Initializing with empty settings.",
                 level=ERROR)
             self.strategy_settings = {}
 
     def create_strategies_from_settings(self) -> None:
-        """Instantiate strategy objects based on the loaded settings."""
-        self.write_log("Creating strategy instances from settings...", level=INFO)
+        """Instantiate strategy objects based on the loaded instance configurations."""
+        self.write_log("Creating strategy instances from configurations...", level=INFO)
         created_count = 0
         invalid_settings_names = []
 
-        for strategy_name, setting in self.strategy_settings.items():
-            if not self._validate_setting_entry(strategy_name, setting):
+        for strategy_name, instance_config in self.strategy_settings.items():
+            if not self._validate_setting_entry(strategy_name, instance_config): # Pass the whole instance_config
                 invalid_settings_names.append(strategy_name)
                 continue
-            class_name = setting["class_name"]
-            vt_symbols = setting["vt_symbols"]
-            strategy_params = setting["setting"]
-
-            if self.add_strategy(class_name, strategy_name, vt_symbols, strategy_params):
+            
+            class_name = instance_config["class_name"]
+            vt_symbols = instance_config.get("vt_symbols", []) # Ensure vt_symbols exists
+            
+            # Pass the entire instance_config as 'setting' to add_strategy,
+            # which will then pass it to StrategyTemplate constructor.
+            # StrategyTemplate's __init__ will pick out specific params like model_load_path etc.
+            # and the rest will be handled by its update_setting or available via self.setting.
+            if self.add_strategy(
+                class_name=class_name, 
+                strategy_name=strategy_name, 
+                vt_symbols=vt_symbols, 
+                setting=instance_config # Pass the whole instance_config
+            ):
                 created_count += 1
             else:
                 invalid_settings_names.append(strategy_name)
@@ -405,70 +401,120 @@ class BaseStrategyEngine(BaseEngine):
             for name in invalid_settings_names:
                 self.strategy_settings.pop(name, None)
             self.write_log(
-                f"Removed {len(invalid_settings_names)} invalid or failed strategy settings from runtime config.",
+                f"Removed {len(invalid_settings_names)} invalid or failed strategy instance configurations from runtime config.",
                 level=WARNING)
 
         self.write_log(f"Finished creating strategy instances. Successful: {created_count}", level=INFO)
 
-    def _validate_setting_entry(self, strategy_name: str, setting: Any) -> bool:
-        """Perform basic validation on a single strategy setting entry."""
-        if not isinstance(setting, dict):
-            self.write_log(f"Invalid setting for '{strategy_name}': Entry must be a dictionary.", level=WARNING)
+    def _validate_setting_entry(self, strategy_name_key: str, instance_config: Any) -> bool:
+        """Perform basic validation on a single strategy instance configuration entry."""
+        if not isinstance(instance_config, dict):
+            self.write_log(f"Invalid instance configuration for '{strategy_name_key}': Entry must be a dictionary.", level=WARNING)
             return False
-        required_keys = {"class_name", "vt_symbols", "setting"}
-        if not required_keys.issubset(setting.keys()):
-            self.write_log(
-                f"Invalid setting for '{strategy_name}': Missing required keys: {required_keys - set(setting.keys())}.",
-                level=WARNING)
+        
+        # Check for "strategy_name" inside the dictionary, and that it matches the key
+        actual_strategy_name = instance_config.get("strategy_name")
+        if not actual_strategy_name or not isinstance(actual_strategy_name, str):
+             self.write_log(f"Invalid config for key '{strategy_name_key}': 'strategy_name' field missing or not a string within the config dict.", level=WARNING)
+             return False
+        if actual_strategy_name != strategy_name_key:
+            self.write_log(f"Config mismatch for key '{strategy_name_key}': 'strategy_name' field ('{actual_strategy_name}') within dict does not match the key.", level=WARNING)
             return False
-        class_name = setting["class_name"]
-        if not isinstance(class_name, str) or not class_name:
-            self.write_log(f"Invalid setting for '{strategy_name}': 'class_name' must be a non-empty string.",
-                           level=WARNING)
-            return False
-        if not isinstance(setting["vt_symbols"], list):
-            self.write_log(f"Invalid setting for '{strategy_name}': 'vt_symbols' must be a list.", level=WARNING)
-            return False
-        if not isinstance(setting["setting"], dict):
-            self.write_log(f"Invalid setting for '{strategy_name}': 'setting' (parameters) must be a dictionary.",
-                           level=WARNING)
+
+        # Validate essential fields in the instance_config
+        required_fields = {
+            "class_name": str, "vt_symbols": list, "required_factor_keys": list,
+            "model_load_path": (str, type(None)), "model_save_path": (str, type(None)),
+            "retraining_config": dict
+            # Add other essential fields as needed, e.g. model_config, trading_config if they are top-level
+        }
+        # Also check for standard strategy parameters like "model_config", "trading_config"
+        # These might be nested or top-level depending on StrategyTemplate's expectation.
+        # For now, assuming they are part of the general 'setting' dict if not explicitly top-level here.
+        
+        for field, expected_type in required_fields.items():
+            if field not in instance_config:
+                self.write_log(f"Invalid config for '{actual_strategy_name}': Missing required field '{field}'.", level=WARNING)
+                return False
+            if not isinstance(instance_config[field], expected_type):
+                self.write_log(f"Invalid config for '{actual_strategy_name}': Field '{field}' has incorrect type. Expected {expected_type}, got {type(instance_config[field])}.", level=WARNING)
+                return False
+        
+        class_name = instance_config["class_name"]
+        if not class_name or not isinstance(class_name, str): # Redundant due to above but good practice
+            self.write_log(f"Invalid config for '{actual_strategy_name}': 'class_name' must be a non-empty string.", level=WARNING)
             return False
         if class_name not in self.strategy_classes:
-            self.write_log(f"Invalid setting for '{strategy_name}': Strategy class '{class_name}' is not loaded.",
-                           level=WARNING)
+            self.write_log(f"Invalid config for '{actual_strategy_name}': Strategy class '{class_name}' is not loaded.", level=WARNING)
             return False
+            
+        # Validate specific structures like retraining_config
+        retraining_cfg = instance_config.get("retraining_config", {})
+        if not isinstance(retraining_cfg.get("frequency_days"), (int, type(None))): # Allow None if optional
+             self.write_log(f"Invalid retraining_config for '{actual_strategy_name}': 'frequency_days' must be an integer or null.", level=WARNING)
+             return False
+
         return True
 
     def save_all_strategy_settings(self) -> None:
-        """Save the current configuration of all active strategies to the definitions file."""
+        """Save the current configuration of all active strategies to the instance definitions file."""
         self.write_log(f"Saving strategy instance configurations to: {self.definitions_filepath}", level=DEBUG)
-        settings_to_save: Dict[str, dict] = {}
+        
+        # settings_to_save will be a list of dictionaries
+        settings_to_save: List[Dict[str, Any]] = [] 
         for strategy_name, strategy in self.strategies.items():
             try:
-                settings_to_save[strategy_name] = self._get_strategy_setting_dict(strategy)
+                # _get_strategy_setting_dict should return the full config dict for this instance
+                instance_config_dict = self._get_strategy_setting_dict(strategy)
+                settings_to_save.append(instance_config_dict)
             except Exception as e:
                 self.write_log(f"Error preparing settings for strategy '{strategy_name}' for saving: {e}", level=ERROR,
                                strategy=strategy)
 
-        # The definitions_filepath is already a Path object
-        if save_json(self.definitions_filepath, settings_to_save):
+        if save_json(self.definitions_filepath, settings_to_save): # save_json expects data, not dict
             self.write_log(f"Saved configurations for {len(settings_to_save)} strategy instances to {self.definitions_filepath}", level=INFO)
         else:
             self.write_log(f"Failed to save strategy instance configurations to {self.definitions_filepath} (save_json returned False)", level=ERROR)
 
     def _get_strategy_setting_dict(self, strategy: StrategyTemplate) -> dict:
-        """Create the dictionary representation of a strategy's settings for saving."""
+        """Create the dictionary representation of a strategy's instance configuration for saving."""
         if not hasattr(strategy, 'get_parameters') or not callable(strategy.get_parameters):
             raise AttributeError(f"Strategy '{strategy.strategy_name}' missing 'get_parameters' method.")
-        strategy_params = strategy.get_parameters()
-        strategy_params['vt_symbols'] = strategy.vt_symbols
-        strategy_params['class_name'] = strategy.__class__.__name__
-        setting_dict = {
-            "class_name": strategy_params.pop('class_name'),
-            "vt_symbols": strategy_params.pop('vt_symbols'),
-            "setting": strategy_params
+        
+        # Get all parameters from the strategy (includes custom ones, model_config, trading_config etc.)
+        current_params = strategy.get_parameters() 
+
+        # Ensure standard fields required by the instance config structure are present
+        # These should ideally be part of what get_parameters() returns if they are configurable.
+        # If get_parameters() is well-implemented in StrategyTemplate, it should return all these.
+        instance_config = {
+            "strategy_name": strategy.strategy_name,
+            "class_name": strategy.__class__.__name__,
+            "vt_symbols": current_params.get("vt_symbols", strategy.vt_symbols), # Prefer from params, fallback to attr
+            "required_factor_keys": current_params.get("required_factor_keys", strategy.required_factor_keys),
+            "model_load_path": current_params.get("model_load_path", strategy.model_load_path),
+            "model_save_path": current_params.get("model_save_path", strategy.model_save_path),
+            "retrain_interval_days": current_params.get("retrain_interval_days", strategy.retrain_interval_days),
+            "retraining_config": current_params.get("retraining_config", strategy.retraining_config),
+            # model_config and trading_config are expected to be dicts within current_params
+            "model_config": current_params.get("model_config", {}), # Or strategy.model_config.__dict__
+            "trading_config": current_params.get("trading_config", {}) # Or strategy.trading_config.__dict__
         }
-        return setting_dict
+        
+        # Add any other parameters that were part of the original 'setting' but not explicitly listed above
+        # This assumes `get_parameters` returns everything that was in the initial `setting` dictionary
+        # plus any dynamic state variables that are also considered "parameters".
+        # We need to be careful not to just dump all attributes.
+        # The `strategy.parameters` list (class attribute of StrategyTemplate) defines what `get_parameters` collects.
+        # So, `current_params` should already contain all relevant items.
+        
+        # Merge remaining params from get_parameters() that are not already explicitly set.
+        # This ensures custom parameters are included.
+        for key, value in current_params.items():
+            if key not in instance_config: # Avoid overwriting explicitly set standard fields
+                instance_config[key] = value
+        
+        return instance_config
 
     def update_strategy_setting_cache(self, strategy_name: str) -> None:
         """Update the internal settings cache (self.strategy_settings) for a single strategy."""
@@ -477,6 +523,7 @@ class BaseStrategyEngine(BaseEngine):
             return
         strategy = self.strategies[strategy_name]
         try:
+            # self.strategy_settings stores {strategy_name: full_instance_config_dict}
             self.strategy_settings[strategy_name] = self._get_strategy_setting_dict(strategy)
             self.write_log(f"Updated internal settings cache for strategy: {strategy_name}", level=DEBUG)
         except Exception as e:
@@ -581,70 +628,111 @@ class BaseStrategyEngine(BaseEngine):
     # --------------------------------
     def add_strategy(self, class_name: str, strategy_name: str, vt_symbols: List[str], setting: dict) -> bool:
         """Create, validate, and add a new strategy instance."""
-        if not isinstance(strategy_name, str) or not strategy_name:
-            self.write_log("Add failed: Strategy name must be a non-empty string.", level=ERROR)
+        if not isinstance(strategy_name, str) or not strategy_name: # strategy_name is the key
+            self.write_log("Add failed: Strategy name (key) must be a non-empty string.", level=ERROR)
             return False
-        if strategy_name in self.strategies:
-            self.write_log(f"Add failed: Strategy name '{strategy_name}' already exists.", level=ERROR)
+        if strategy_name in self.strategies: # Check against existing instances
+            self.write_log(f"Add failed: Strategy instance name '{strategy_name}' already exists.", level=ERROR)
             return False
+        
         strategy_class = self.strategy_classes.get(class_name)
         if not strategy_class:
             self.write_log(f"Add failed for '{strategy_name}': Strategy class '{class_name}' not found.", level=ERROR)
             return False
-        if not isinstance(vt_symbols, list):
-            self.write_log(f"Add failed for '{strategy_name}': vt_symbols must be a list.", level=ERROR)
-            return False
+        
+        # 'setting' here is the full instance_config dictionary
         if not isinstance(setting, dict):
-            self.write_log(f"Add failed for '{strategy_name}': setting (parameters) must be a dictionary.", level=ERROR)
+            self.write_log(f"Add failed for '{strategy_name}': Instance configuration (setting) must be a dictionary.", level=ERROR)
             return False
+        
+        # Validate that vt_symbols is a list within the setting dict
+        if not isinstance(vt_symbols, list): # vt_symbols is passed separately but comes from instance_config
+            self.write_log(f"Add failed for '{strategy_name}': vt_symbols (extracted from config) must be a list.", level=ERROR)
+            return False
+
         try:
             self.write_log(f"Instantiating strategy '{strategy_name}' from class '{class_name}'...", level=DEBUG)
-            strategy = strategy_class(self, strategy_name, vt_symbols, setting)
+            # StrategyTemplate __init__ expects:
+            # self, strategy_engine, strategy_name, vt_symbols, setting (full instance_config),
+            # model_load_path, model_save_path, retraining_config, required_factor_keys
+            # These specific paths/configs should be extracted from the 'setting' (instance_config) dict.
+            
+            strategy = strategy_class(
+                strategy_engine=self,
+                strategy_name=strategy_name,
+                vt_symbols=vt_symbols, # Extracted from instance_config
+                setting=setting,       # The full instance_config dictionary
+                model_load_path=setting.get("model_load_path"),
+                model_save_path=setting.get("model_save_path"),
+                retraining_config=setting.get("retraining_config"),
+                required_factor_keys=setting.get("required_factor_keys")
+            )
+
             if not hasattr(strategy, 'get_parameters') or not callable(strategy.get_parameters):
                 raise TypeError("Instantiated strategy object missing required 'get_parameters' method.")
+            
         except Exception:
             self.write_log(
                 f"Failed to instantiate or validate strategy '{strategy_name}' from class '{class_name}':\n{traceback.format_exc()}",
                 level=ERROR)
             return False
+            
         self.strategies[strategy_name] = strategy
-        self.update_strategy_setting_cache(strategy_name)
-        self.write_log(f"Strategy '{strategy_name}' (Class: '{class_name}') added successfully.", level=INFO,
+        self.update_strategy_setting_cache(strategy_name) # This will call _get_strategy_setting_dict
+        self.write_log(f"Strategy instance '{strategy_name}' (Class: '{class_name}') added successfully.", level=INFO,
                        strategy=strategy)
         self.put_strategy_update_event(strategy)
         return True
 
-    def edit_strategy(self, strategy_name: str, setting: dict) -> bool:
+    def edit_strategy(self, strategy_name: str, new_instance_config: dict) -> bool:
         """Update parameters of an existing, stopped strategy instance. Saves settings."""
         if strategy_name not in self.strategies:
-            self.write_log(f"Edit failed: Strategy '{strategy_name}' not found.", level=ERROR)
+            self.write_log(f"Edit failed: Strategy instance '{strategy_name}' not found.", level=ERROR)
             return False
         strategy = self.strategies[strategy_name]
         if strategy.trading:
             self.write_log(f"Edit failed: Strategy '{strategy_name}' is currently running. Stop it before editing.",
                            level=WARNING, strategy=strategy)
             return False
-        if not isinstance(setting, dict):
-            self.write_log(f"Edit failed for '{strategy_name}': New setting must be a dictionary.", level=ERROR)
+        
+        if not isinstance(new_instance_config, dict):
+            self.write_log(f"Edit failed for '{strategy_name}': New instance configuration must be a dictionary.", level=ERROR)
             return False
+
+        # Validate the new configuration before applying
+        if not self._validate_setting_entry(strategy_name, new_instance_config):
+            self.write_log(f"Edit failed for '{strategy_name}': New instance configuration is invalid.", level=WARNING)
+            return False
+
         if not (hasattr(strategy, 'update_setting') and callable(strategy.update_setting)):
             self.write_log(
                 f"Edit failed: Strategy class '{strategy.__class__.__name__}' does not implement 'update_setting'.",
                 level=ERROR, strategy=strategy)
             return False
+            
         try:
-            self.write_log(f"Applying parameter updates to strategy '{strategy_name}'...", level=DEBUG,
+            self.write_log(f"Applying configuration updates to strategy '{strategy_name}'...", level=DEBUG,
                            strategy=strategy)
-            strategy.update_setting(setting)
-            self.update_strategy_setting_cache(strategy_name)
-            self.save_all_strategy_settings()
+            # update_setting in StrategyTemplate should handle the full new_instance_config
+            strategy.update_setting(new_instance_config) 
+            
+            # Update specific attributes like paths if they changed and are top-level on strategy
+            # This should also be handled by strategy.update_setting if designed well.
+            strategy.vt_symbols = new_instance_config.get("vt_symbols", strategy.vt_symbols)
+            strategy.model_load_path = new_instance_config.get("model_load_path", strategy.model_load_path)
+            strategy.model_save_path = new_instance_config.get("model_save_path", strategy.model_save_path)
+            strategy.required_factor_keys = new_instance_config.get("required_factor_keys", strategy.required_factor_keys)
+            strategy.retraining_config = new_instance_config.get("retraining_config", strategy.retraining_config)
+            
+            self.update_strategy_setting_cache(strategy_name) # This will call _get_strategy_setting_dict
+            self.save_all_strategy_settings() # This will save the list of dicts
             self.write_log(
-                f"Strategy '{strategy_name}' parameters updated and settings saved. Re-initialize the strategy to use new parameters.",
+                f"Strategy '{strategy_name}' configuration updated and settings saved. Re-initialize the strategy to use new configuration.",
                 level=INFO, strategy=strategy)
             self.put_strategy_update_event(strategy)
             return True
         except Exception:
-            self.write_log(f"Error applying settings update to strategy '{strategy_name}':\n{traceback.format_exc()}",
+            self.write_log(f"Error applying configuration update to strategy '{strategy_name}':\n{traceback.format_exc()}",
                            level=ERROR, strategy=strategy)
             return False
 
@@ -1006,169 +1094,63 @@ class BaseStrategyEngine(BaseEngine):
                 continue
 
             if not (hasattr(strategy, 'check_retraining_schedule') and callable(strategy.check_retraining_schedule)):
-                continue
-            if not (hasattr(strategy, 'train_model') and callable(strategy.train_model)):
-                continue
+                # Ensure retrain_model exists as well, which is the method to be called.
+                if not (hasattr(strategy, 'retrain_model') and callable(strategy.retrain_model)):
+                    self.write_log(f"Strategy '{strategy.strategy_name}' has check_retraining_schedule but no retrain_model method. Skipping.", level=WARNING, strategy=strategy)
+                    continue
 
-            try:
-                if strategy.check_retraining_schedule(current_datetime):
-                    self.write_log(f"Retraining condition met for strategy '{strategy.strategy_name}'. "
-                                   f"Queueing model training.", level=INFO, strategy=strategy)
-                    self.init_executor.submit(self._train_strategy_model_thread, strategy.strategy_name)
-            except Exception as e:
-                self.write_log(f"Error during check_retraining_schedule for '{strategy.strategy_name}': {e}",
-                               level=ERROR, strategy=strategy)
+                try:
+                    if strategy.check_retraining_schedule(current_datetime):
+                        self.write_log(f"Retraining condition met for strategy '{strategy.strategy_name}'. "
+                                       f"Queueing model retraining.", level=INFO, strategy=strategy)
+                        self.init_executor.submit(self._train_strategy_model_thread, strategy.strategy_name)
+                except Exception as e:
+                    self.write_log(f"Error during check_retraining_schedule for '{strategy.strategy_name}': {e}",
+                                   level=ERROR, strategy=strategy)
+            # else: # No check_retraining_schedule, so no scheduled retraining
+                # self.write_log(f"Strategy {strategy.strategy_name} does not implement check_retraining_schedule.", DEBUG)
+
 
     def _train_strategy_model_thread(self, strategy_name: str) -> None:
         """
-        [Internal] Worker thread function for training a single strategy's model.
-        Prepares data from FactorMemory and calls strategy.train_model.
+        [Internal] Worker thread function for orchestrating a single strategy's model retraining
+        by calling its `retrain_model` method.
         """
         strategy = self.strategies.get(strategy_name)
         if not strategy:
-            self.write_log(f"Model training aborted: Strategy '{strategy_name}' not found.", level=WARNING)
+            self.write_log(f"Model retraining aborted: Strategy '{strategy_name}' not found.", level=WARNING)
             return
         if not (strategy.inited and strategy.trading):
-            self.write_log(f"Model training aborted for '{strategy_name}': Strategy no longer inited or trading.",
+            self.write_log(f"Model retraining aborted for '{strategy_name}': Strategy no longer inited or trading.",
                            level=INFO, strategy=strategy)
             return
+        
+        if not (hasattr(strategy, 'retrain_model') and callable(strategy.retrain_model)):
+            self.write_log(f"Cannot retrain model for '{strategy_name}': Strategy does not have a callable 'retrain_model' method.",
+                           level=ERROR, strategy=strategy)
+            return
 
-        self.write_log(f"Starting model training process for strategy: {strategy_name}",
+        self.write_log(f"Starting model retraining process for strategy: {strategy_name} by calling strategy.retrain_model().",
                        level=INFO, strategy=strategy)
         
-        if not self.latest_factor_memories:
-            self.write_log(f"Cannot train model for '{strategy_name}': No FactorMemory objects available in engine cache.",
-                           level=ERROR, strategy=strategy)
-            return
-
-        required_factors = getattr(strategy, 'required_factors', [])
-        if not required_factors:
-            self.write_log(f"Cannot train model for '{strategy_name}': Strategy has no 'required_factors' defined.",
-                           level=WARNING, strategy=strategy)
-            return
-
-        training_data_parts: Dict[str, pd.DataFrame] = {}
-        all_factors_available = True
-        for factor_name in required_factors:
-            factor_memory = self.latest_factor_memories.get(factor_name)
-            if not factor_memory:
-                self.write_log(f"Cannot train model for '{strategy_name}': Required factor '{factor_name}' "
-                               f"not found in latest FactorMemory cache.", level=ERROR, strategy=strategy)
-                all_factors_available = False
-                break
-            
-            try:
-                # Fetch all historical data for this factor
-                polars_df = factor_memory.get_data() 
-                if polars_df is None or polars_df.is_empty():
-                    self.write_log(f"Factor '{factor_name}' provided no historical data (get_data returned empty). "
-                                   f"Skipping for training of '{strategy_name}'.", level=WARNING, strategy=strategy)
-                    # Depending on strategy, might need to skip training or proceed with partial data
-                    all_factors_available = False # Or handle as per strategy needs
-                    break
-                
-                pandas_df = polars_df.to_pandas()
-                
-                # Basic validation of the structure from FactorMemory.get_data()
-                # Expects at least 'vt_symbol', 'datetime', and a value column
-                if not all(col in pandas_df.columns for col in ['vt_symbol', 'datetime']):
-                    self.write_log(f"Factor '{factor_name}' DataFrame from get_data() missing 'vt_symbol' or 'datetime'. "
-                                   f"Schema: {pandas_df.columns}. Skipping for training.", level=WARNING, strategy=strategy)
-                    all_factors_available = False
-                    break
-
-                # Identify value column (similar to on_factor)
-                value_col_found = False
-                if 'value' in pandas_df.columns:
-                    renamed_df = pandas_df.rename(columns={'value': factor_name})
-                    value_col_found = True
-                elif factor_name in pandas_df.columns: # If factor_name is already a column
-                    renamed_df = pandas_df
-                    value_col_found = True
-                else:
-                    # Try to infer if only one other column apart from vt_symbol, datetime
-                    potential_value_cols = [c for c in pandas_df.columns if c not in ['vt_symbol', 'datetime']]
-                    if len(potential_value_cols) == 1:
-                        renamed_df = pandas_df.rename(columns={potential_value_cols[0]: factor_name})
-                        value_col_found = True
-                
-                if not value_col_found:
-                    self.write_log(f"Factor '{factor_name}' DataFrame from get_data() has no clear value column "
-                                   f"(expected 'value', '{factor_name}', or single other). Schema: {pandas_df.columns}. "
-                                   f"Skipping for training.", level=WARNING, strategy=strategy)
-                    all_factors_available = False
-                    break
-
-                # Pivot or set index to align data by datetime and vt_symbol
-                # Assuming 'datetime' is the primary index for time-series alignment
-                # And 'vt_symbol' for cross-sectional alignment for each factor value
-                # Example: set_index(['datetime', 'vt_symbol']) and select factor_name column
-                processed_df = renamed_df.set_index(['datetime', 'vt_symbol'])[[factor_name]]
-                training_data_parts[factor_name] = processed_df
-
-            except Exception as e:
-                self.write_log(f"Error processing historical data for factor '{factor_name}' for training '{strategy_name}': {e}\n"
-                               f"{traceback.format_exc()}", level=ERROR, strategy=strategy)
-                all_factors_available = False
-                break
-        
-        if not all_factors_available or not training_data_parts:
-            self.write_log(f"Model training for '{strategy_name}' aborted due to missing or incomplete factor data.",
-                           level=ERROR, strategy=strategy)
-            return
-
         try:
-            # Combine all factor data into a single DataFrame aligned by ('datetime', 'vt_symbol')
-            # Using outer join to keep all data points, then handle NaNs
-            combined_df = pd.concat(training_data_parts.values(), axis=1, join='outer')
+            # The strategy's retrain_model method is now responsible for all data fetching,
+            # preparation, training, and saving the model.
+            self.call_strategy_func(strategy, strategy.retrain_model) # No params needed from engine
             
-            # Handle NaNs after combining - strategy might prefer specific imputation
-            # For now, log and let strategy's train_model handle it or fill with a placeholder
-            if combined_df.isnull().values.any():
-                self.write_log(f"Combined training DataFrame for '{strategy_name}' contains NaNs. "
-                               f"Shape: {combined_df.shape}. Consider handling NaNs before training.", level=WARNING, strategy=strategy)
-                # Example: combined_df = combined_df.fillna(method='ffill').fillna(0) # Forward fill then zero fill
-                # This should ideally be part of the strategy's data prep within train_model
-            
-            # Reset index if train_model expects flat DataFrame, or pass as is if it handles multi-index
-            # Assuming train_model can handle multi-index or will reset it.
-            # combined_df = combined_df.reset_index() 
+            # Logging of success/failure and time updates should be handled within strategy.retrain_model()
+            # and call_strategy_func will log exceptions if retrain_model fails.
+            # We can add a generic completion log here.
+            self.write_log(f"Strategy.retrain_model() call completed for '{strategy_name}'. "
+                           f"Check strategy logs for details. Last retrained: {strategy.last_retrain_time}", 
+                           level=INFO, strategy=strategy)
 
-            self.write_log(f"Successfully prepared combined training data for '{strategy_name}'. Shape: {combined_df.shape}",
-                           level=DEBUG, strategy=strategy)
-
-        except Exception as e:
-            self.write_log(f"Error combining/aligning historical factor data for training '{strategy_name}': {e}\n"
-                           f"{traceback.format_exc()}", level=ERROR, strategy=strategy)
-            return
-
-        # Call the strategy's train_model method
-        training_successful = False
-        try:
-            self.write_log(f"Calling {strategy_name}.train_model()...", level=INFO, strategy=strategy)
-            # Assuming strategy.train_model will use the combined_df and update its internal self.model
-            # and self.last_retrain_time
-            self.call_strategy_func(strategy, strategy.train_model, combined_df)
-            
-            # Check if model attribute was updated (simple check)
-            if hasattr(strategy, 'model') and strategy.model is not None:
-                 # Check if last_retrain_time was updated by the strategy
-                if hasattr(strategy, 'last_retrain_time') and isinstance(strategy.last_retrain_time, datetime):
-                    if (self.get_current_datetime() - strategy.last_retrain_time).total_seconds() < 600: # Updated recently
-                        training_successful = True
-            
-            if training_successful:
-                self.write_log(f"Model training completed for strategy: {strategy_name}. "
-                               f"Last retrained: {strategy.last_retrain_time}", level=INFO, strategy=strategy)
-            else:
-                self.write_log(f"Model training for strategy: {strategy_name} finished, but model/retrain_time "
-                               f"not updated as expected. Review strategy's train_model method.", level=WARNING, strategy=strategy)
-
-        except Exception as e: # call_strategy_func already logs, but good to have specific message here
-            self.write_log(f"Exception during {strategy_name}.train_model(): {e}", level=ERROR, strategy=strategy)
-            # call_strategy_func would have already logged the full traceback.
+        except Exception as e: 
+            # This is a fallback, call_strategy_func should already log the detailed exception.
+            self.write_log(f"Exception during the call to {strategy_name}.retrain_model(): {e}", 
+                           level=ERROR, strategy=strategy)
         
-        # Update strategy state event if needed (e.g., if last_retrain_time changed)
+        # Update strategy state event as last_retrain_time might have changed
         self.put_strategy_update_event(strategy)
 
 
