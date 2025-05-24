@@ -60,11 +60,13 @@ except ImportError:
         "init_max_workers": 1,
     }
     def get_strategy_instance_definitions_filepath() -> Path:
-        return Path.cwd() / "strategy_portfolio.json" # Basic default
+        return Path.cwd() / "strategy_config.json" # Basic default
     MODEL_PATH = Path.cwd() / ".vnpy_strategy_data" / "models"
     DATA_PATH = Path.cwd() / ".vnpy_strategy_data" / "data"
+    CACHE_PATH = Path.cwd() / ".vnpy_strategy_data" / "cache"
     MODEL_PATH.mkdir(parents=True, exist_ok=True)
     DATA_PATH.mkdir(parents=True, exist_ok=True)
+    CACHE_PATH.mkdir(parents=True, exist_ok=True)
 
 
 # --- Constants ---
@@ -74,7 +76,7 @@ EVENT_STRATEGY_LOG = EVENT_LOG
 EVENT_STRATEGY_UPDATE = EVENT_PORTFOLIO_STRATEGY
 
 
-class BaseStrategyEngine(BaseEngine):
+class StrategyEngine(BaseEngine):
     engine_type: EngineType = EngineType.LIVE
 
     def __init__(
@@ -112,8 +114,8 @@ class BaseStrategyEngine(BaseEngine):
         self.strategy_settings: Dict[str, dict] = {} # Loaded instance settings
 
         # --- Supporting Components ---
-        self.database: Optional[BaseDatabase] = get_database() if callable(get_database) else None
-        self.datafeed: Optional[BaseDatafeed] = get_datafeed() if callable(get_datafeed) else None
+        #self.database: Optional[BaseDatabase] = get_database() if callable(get_database) else None
+        #self.datafeed: Optional[BaseDatafeed] = get_datafeed() if callable(get_datafeed) else None
         self.execution_agent: ExecutionAgent = self._init_execution_agent()
         self.portfolio_engine: Optional[PortfolioEngine] = self._init_portfolio_engine()
 
@@ -162,8 +164,8 @@ class BaseStrategyEngine(BaseEngine):
         """Main initialization sequence for the StrategyEngine."""
         self.write_log(f"Starting initialization sequence for {self.engine_name}...")
         try:
-            if self.datafeed and hasattr(self.datafeed, 'init'):
-                self.init_datafeed()
+            #if self.datafeed and hasattr(self.datafeed, 'init'):
+                #self.init_datafeed()
             
             # 1. Load all available strategy classes from the specified module path
             self._load_all_strategy_classes()
@@ -328,13 +330,11 @@ class BaseStrategyEngine(BaseEngine):
         else:
             self.write_log(f"Loaded {len(self.strategy_classes)} distinct strategy classes: {list(self.strategy_classes.keys())}", level=INFO)
 
-    def _get_strategy_class(self, class_name: str, module_file_hint: Optional[str] = None) -> Optional[Type[StrategyTemplate]]:
+    def _get_strategy_class(self, class_name: str) -> Optional[Type[StrategyTemplate]]:
         """Retrieves a strategy class from the pre-loaded self.strategy_classes dictionary."""
         strategy_class = self.strategy_classes.get(class_name)
         if not strategy_class:
             self.write_log(f"Strategy class '{class_name}' not found in pre-loaded classes. It should have been discovered by _load_all_strategy_classes.", level=ERROR)
-            # module_file_hint is largely ignored now as classes are pre-loaded.
-            # If dynamic loading on miss is desired, the old logic could be a fallback here.
         return strategy_class
         
     def load_all_strategy_settings(self) -> None:
@@ -366,8 +366,7 @@ class BaseStrategyEngine(BaseEngine):
             if not self._validate_setting_entry(strategy_name, instance_config):
                 failed_configs.append(strategy_name); continue
             class_name = instance_config["class_name"]
-            module_file_hint = instance_config.get("module_file") # Hint, but _get_strategy_class now uses cache
-            StrategyClass = self._get_strategy_class(class_name, module_file_hint)
+            StrategyClass = self._get_strategy_class(class_name)
 
             if not StrategyClass:
                 self.write_log(f"Cannot create instance '{strategy_name}': Class '{class_name}' not found/loaded.", ERROR)
@@ -376,7 +375,7 @@ class BaseStrategyEngine(BaseEngine):
                 # Pass the whole instance_config as 'settings' to StrategyTemplate's __init__
                 strategy_instance = StrategyClass(engine_interface=self, settings=instance_config)
                 self.strategies[strategy_name] = strategy_instance
-                self.write_log(f"Strategy instance '{strategy_name}' (Class: '{class_name}') created.", INFO, strategy=strategy_instance)
+                self.write_log(f"Strategy instance '{strategy_name}' (Class: '{class_name}') created.", strategy=strategy_instance, level=INFO)
                 self.put_strategy_update_event(strategy_instance)
                 created_count += 1
             except Exception as e:
@@ -460,21 +459,19 @@ class BaseStrategyEngine(BaseEngine):
     def write_log(self, msg: str, strategy: Optional[StrategyTemplate] = None, level: int = INFO) -> None:
         # (Your existing write_log implementation using main_engine or print)
         prefix = f"[{strategy.strategy_name}] " if strategy and hasattr(strategy, 'strategy_name') else ""
-        if self.main_engine and hasattr(self.main_engine, 'write_log'):
-            log_entry = LogData(msg=f"{prefix}{msg}", gateway_name=self.engine_name, level=level)
-            event = Event(type=EVENT_LOG, data=log_entry) # Use standard EVENT_LOG
-            self.event_engine.put(event)
-        else:
-            level_name_map = {INFO: "INFO", DEBUG: "DEBUG", WARNING: "WARNING", ERROR: "ERROR"}
-            print(f"{datetime.now()} [{level_name_map.get(level, 'INFO')}] [{self.engine_name}] {prefix}{msg}")
+        log_entry = LogData(msg=f"{prefix}{msg}", gateway_name=self.engine_name, level=level)
+        event = Event(type=EVENT_LOG, data=log_entry) # Use standard EVENT_LOG
+        self.event_engine.put(event)
 
     # --- Stubs for methods assumed from your original BaseStrategyEngine ---
     def load_all_strategy_data(self): self.write_log("Placeholder: load_all_strategy_data called", DEBUG)
     def process_order_event(self, event: Event): self.write_log(f"Placeholder: process_order_event: {event.data}", DEBUG)
-    # def process_trade_event(self, event: Event): self.write_log(f"Placeholder: process_trade_event: {event.data}", DEBUG) # Already defined above
+    def process_trade_event(self, event: Event): self.write_log(f"Placeholder: process_trade_event: {event.data}", DEBUG) # Already defined above
     def stop_all_strategies(self): self.write_log("Placeholder: stop_all_strategies called", INFO)
     def put_strategy_update_event(self, strategy: StrategyTemplate, removed: bool = False): self.write_log(f"Placeholder: put_strategy_update_event for {strategy.strategy_name}, removed={removed}", DEBUG)
     def call_strategy_func(self, strategy: StrategyTemplate, func: Callable, params: Optional[Any] = None) -> Any:
         try: return func(params) if params is not None else func()
         except Exception as e: self.write_log(f"Error in strategy func {func.__name__} for {strategy.strategy_name}: {e}", ERROR, strategy=strategy)
     def get_current_datetime(self) -> datetime: return datetime.now(timezone.utc)
+    def get_tick(self, symbol: str) -> Optional[TickData]: return self.main_engine.get_tick(symbol)
+    def get_contract(self, symbol: str) -> Optional[ContractData]: return self.main_engine.get_contract(symbol)

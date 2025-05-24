@@ -27,16 +27,17 @@ MODULE_DIR = Path(__file__).parent
 
 # Root path for strategy-related data (models, persistent data)
 # Can be overridden by global SETTINGS["strategy.root_path"]
-DEFAULT_STRATEGY_ROOT_PATH = Path.cwd() / ".vnpy_strategy_data" # Default if not in global settings
-STRATEGY_ROOT_PATH_STR = VNPY_GLOBAL_SETTINGS.get("strategy.root_path", str(DEFAULT_STRATEGY_ROOT_PATH))
-ROOT_PATH = Path(STRATEGY_ROOT_PATH_STR)
+ROOT_PATH = VNPY_GLOBAL_SETTINGS.get("strategy.root_path", Path.cwd() / ".vnpy" / "strategy")
 MODEL_PATH = ROOT_PATH / "models"
 DATA_PATH = ROOT_PATH / "data" # For other strategy-specific data persistence
+CACHE_PATH = ROOT_PATH / "cache" # For other strategy-specific data persistence
+
 
 # Ensure these paths exist
 ROOT_PATH.mkdir(parents=True, exist_ok=True)
 MODEL_PATH.mkdir(parents=True, exist_ok=True)
 DATA_PATH.mkdir(parents=True, exist_ok=True)
+CACHE_PATH.mkdir(parents=True, exist_ok=True)
 
 # --- Module-level Globals for Strategy Settings ---
 STRATEGY_ENGINE_OPERATIONAL_PARAMS: Dict[str, Any] = {}
@@ -117,5 +118,6 @@ __all__ = [
     "get_strategy_instance_definitions_filepath",
     "ROOT_PATH",
     "MODEL_PATH",
-    "DATA_PATH"
+    "DATA_PATH",
+    "CACHE_PATH"
 ]

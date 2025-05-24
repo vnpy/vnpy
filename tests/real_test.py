@@ -22,7 +22,7 @@ from vnpy.trader.engine import MainEngine
 from vnpy.trader.event import EVENT_BAR
 from vnpy.trader.object import BarData
 from vnpy.trader.setting import SETTINGS
-from vnpy.strategy.engine import BaseStrategyEngine
+from vnpy.strategy.engine import StrategyEngine
 #from vnpy.strategy.examples.test_strategy_template import TestStrategyTemplate
 
 from vnpy.event import Event

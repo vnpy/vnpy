@@ -19,7 +19,7 @@ from vnpy.event import EventEngine
 from vnpy.gateway.binance import BinanceSpotGateway
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.setting import SETTINGS
-from vnpy.strategy.engine import BaseStrategyEngine
+from vnpy.strategy.engine import StrategyEngine
 #from vnpy.strategy.examples.test_strategy_template import TestStrategyTemplate
 
 

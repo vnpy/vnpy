@@ -18,9 +18,9 @@ import dask.diagnostics
 from vnpy.factor.memory import FactorMemory
 from vnpy.factor.template import FactorTemplate
 from vnpy.event import EventEngine, Event
-from vnpy.trader.event import EVENT_FACTOR, EVENT_TICK, EVENT_BAR
+from vnpy.trader.event import EVENT_FACTOR, EVENT_LOG, EVENT_TICK, EVENT_BAR
 from vnpy.trader.engine import BaseEngine, MainEngine
-from vnpy.trader.object import BarData
+from vnpy.trader.object import BarData, LogData
 from vnpy.trader.setting import SETTINGS
 from vnpy.factor.base import APP_NAME # Import FactorMode
 # FactorTemplate and FactorMemory are assumed to be defined above or importable
@@ -699,8 +699,10 @@ class FactorEngine(BaseEngine):
             self.write_log(msg, factor=factor, level=ERROR) # Pass factor object
 
     def write_log(self, msg: str, factor: Optional[FactorTemplate] = None, level: int = INFO) -> None:
-        log_msg = f"[{APP_NAME}] {factor.factor_key}: {msg}" if factor else f"[{APP_NAME}] {msg}"
-        self.main_engine.write_log(msg=log_msg, level=level) # Removed source, APP_NAME is in msg
+        log_msg = f"{factor.factor_key}: {msg}" if factor else f"{msg}"
+        log: LogData = LogData(msg=log_msg, gateway_name=APP_NAME, level=level)
+        event = Event(type_=EVENT_LOG, data=log)
+        self.event_engine.put(event)
 
     # Other utility functions like get_factor_parameters, stop_factor, etc. can be adapted
     # from the original FactorEngine if still needed.

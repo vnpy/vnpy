@@ -85,7 +85,7 @@ except ImportError:
 
 # Type hint for the engine, resolved during type checking
 if TYPE_CHECKING:
-    from vnpy.strategy.engine import BaseStrategyEngine # Adjusted import path if engine is in vnpy.strategy.engine
+    from vnpy.strategy.engine import StrategyEngine # Adjusted import path if engine is in vnpy.strategy.engine
 
 
 class StrategyTemplate(ABC):
@@ -114,10 +114,10 @@ class StrategyTemplate(ABC):
 
     def __init__(
             self,
-            engine_interface: "BaseStrategyEngine", # Changed name for clarity
+            engine_interface: "StrategyEngine", # Changed name for clarity
             settings: Dict[str, Any], # All config now comes from this single dict
     ) -> None:
-        self.strategy_engine: "BaseStrategyEngine" = engine_interface
+        self.strategy_engine: "StrategyEngine" = engine_interface
         
         # --- Extract Core Settings ---
         # strategy_name is crucial and should be in settings (validated by engine)
@@ -143,7 +143,6 @@ class StrategyTemplate(ABC):
 
         # --- Engine Access ---
         self.get_tick: Callable[[str], Optional[TickData]] = self.strategy_engine.get_tick
-        self.get_bar: Callable[[str], Optional[BarData]] = self.strategy_engine.get_bar
         self.get_contract: Callable[[str], Optional[ContractData]] = self.strategy_engine.get_contract
 
         # --- Configuration Objects ---
