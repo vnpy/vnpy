@@ -1,0 +1,8 @@
+{
+  "strategy_code_module_path": "vnpy.strategy.strategies",
+  "default_execution_gateway": "BINANCE_SPOT",
+  "init_max_workers": 2,
+  "default_retrain_interval_days": 30,
+  "portfolio_manager_integration_enabled": true,
+  "log_level_override": "DEBUG"
+}

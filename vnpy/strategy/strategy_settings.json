@@ -1,5 +1,0 @@
-{
-    "default_strategy_path": "strategies",
-    "default_retrain_interval_days": 30,
-    "default_execution_gateway": "BINANCE_SPOT"
-}

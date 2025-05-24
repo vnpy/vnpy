@@ -2,23 +2,19 @@
 """
 Provides a base template for portfolio-level trading strategies, designed to
 work with the BaseStrategyEngine and optionally the PortfolioEngine.
-
-Strategies inheriting from this template should implement the core logic in:
-- `calculate`: To generate trading signals from input data (e.g., factors).
-- `project_signals_to_weights`: To convert signals into target portfolio weights.
 """
 
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timezone # Added timezone
 from logging import DEBUG, ERROR, INFO, WARNING
+from pathlib import Path
 import traceback
-from typing import TYPE_CHECKING, Callable, List, Optional, Dict, Any, Set, Union, TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, Callable, List, Optional, Dict, Any, Set, Union, Tuple # Removed duplicate TYPE_CHECKING
 from collections import defaultdict
 import pandas as pd
 import polars as pl
-import joblib
-import pickle
-# from sklearn.base import BaseEstimator # Example
+import joblib # For model persistence
+# import pickle # joblib is generally preferred for scikit-learn models
 
 # --- VnTrader Imports ---
 from vnpy.trader.constant import (
@@ -27,995 +23,570 @@ from vnpy.trader.constant import (
 from vnpy.trader.object import (
     BarData, ContractData, TickData, CancelRequest, OrderData, FactorData, OrderRequest, TradeData
 )
-from vnpy.trader.utility import convert_dict_to_dataframe, virtual, round_to
+from vnpy.trader.utility import virtual, round_to # Removed convert_dict_to_dataframe as it's not used here
 from vnpy.factor.memory import FactorMemory
 
-
-# --- Local Imports ---
-# Assuming these config models exist in the specified path relative to the template
+# --- Settings and Config Model Imports ---
+# Attempt to import MODEL_PATH, DATA_PATH for context or default path construction
 try:
-    from .config.models.config import ModelConfig
-    from .config.trading.config import TradingConfig
+    from vnpy.strategy.setting import MODEL_PATH, DATA_PATH
 except ImportError:
-    print("Warning: Could not import ModelConfig or TradingConfig. Using dummy classes.")
+    print("Warning: [StrategyTemplate] Could not import MODEL_PATH or DATA_PATH from vnpy.strategy.setting. Strategies may need absolute paths for models/data.")
+    MODEL_PATH = Path("./models") # type: ignore 
+    DATA_PATH = Path("./data")   # type: ignore
+    MODEL_PATH.mkdir(parents=True, exist_ok=True)
+    DATA_PATH.mkdir(parents=True, exist_ok=True)
 
-    # Define dummy classes if the real ones are not found
+
+# Assuming these config models exist in the specified path relative to the template
+# For a cleaner structure, these might be defined elsewhere (e.g., vnpy.strategy.config_models)
+# or passed as generic dicts and validated by the strategy.
+try:
+    # If these are part of your strategy app, use relative import:
+    # from .config.models.config import ModelConfig 
+    # from .config.trading.config import TradingConfig
+    # For now, assume they might be globally accessible or defined as stubs if not found
+    # This part is highly dependent on your project structure.
+    # If they are in, for example, vnpy.strategy.configs:
+    # from vnpy.strategy.configs import ModelConfig, TradingConfig
+
+    # Using placeholder stubs if specific config classes are not found.
+    # In a real application, these should be properly defined and imported.
     class ModelConfig:
-        pass
+        """Placeholder for strategy's model configuration."""
+        def __init__(self, **kwargs):
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+        def __repr__(self):
+            return f"ModelConfig({self.__dict__})"
 
     class TradingConfig:
-        min_order_volume: float = 0.0  # Example attribute
+        """Placeholder for strategy's trading parameters."""
+        min_order_volume: float = 1e-8 # Default minimum order volume
+        def __init__(self, **kwargs):
+            self.min_order_volume = kwargs.get("min_order_volume", 1e-8)
+            for key, value in kwargs.items():
+                if key == "min_order_volume" and value is None: # Ensure it has a float value
+                    continue
+                setattr(self, key, value)
+        def validate(self): pass # Placeholder
+        def __repr__(self):
+            return f"TradingConfig({self.__dict__})"
 
+except ImportError:
+    print("Warning: [StrategyTemplate] Could not import ModelConfig or TradingConfig. Using dummy classes.")
+    class ModelConfig: # type: ignore
+        def __init__(self, **kwargs): [setattr(self,k,v) for k,v in kwargs.items()]
+    class TradingConfig: # type: ignore
+        min_order_volume: float = 1e-8
+        def __init__(self, **kwargs): self.min_order_volume = kwargs.get("min_order_volume",1e-8); [setattr(self,k,v) for k,v in kwargs.items() if k!="min_order_volume" or v is not None]
         def validate(self): pass
+
 
 # Type hint for the engine, resolved during type checking
 if TYPE_CHECKING:
-    from .engine import BaseStrategyEngine  # Use relative import if in same package
-    from vnpy.trader.object import OrderRequest
-    from vnpy.factor.memory import FactorMemory # Though imported above, good for explicitness in hints
+    from vnpy.strategy.engine import BaseStrategyEngine # Adjusted import path if engine is in vnpy.strategy.engine
 
 
 class StrategyTemplate(ABC):
     """
     Abstract base class for portfolio trading strategies.
-
-    Provides a framework for handling market data (factors), generating target
-    positions, managing orders, and interacting with the Strategy Engine and
-    Portfolio Engine.
     """
-
-    # --- Strategy Metadata (Override in subclasses) ---
-    author: str = "Unknown"  # Strategy author name
-    parameters: List[str] = [  # List of configurable parameter names
-        "vt_symbols", "required_factor_keys", "model_config", "trading_config", "retrain_interval_days",
-        "model_load_path", "model_save_path", "retraining_config"
+    author: str = "Unknown"
+    # Parameters that are configurable via settings and managed by get_parameters/update_setting
+    parameters: List[str] = [
+        "vt_symbols", "required_factor_keys",
+        "model_config", "trading_config",
+        "model_load_path", "model_save_path",
+        "retraining_config" # Contains retrain_interval_days, lookback_days etc.
     ]
-    variables: List[str] = [  # List of state variables to expose (optional)
-        "inited", "trading", "latest_factor_update_time", "last_retrain_time", "model_load_path", "model_save_path"
+    # State variables that can be saved/loaded via get_data/load_data
+    variables: List[str] = [
+        "inited", "trading",
+        "latest_factor_update_time_iso", # Store as ISO string for JSON
+        "last_retrain_time_iso",       # Store as ISO string
+        # "active_order_ids" is handled separately in get_data/load_data
     ]
 
-    # --- Default Settings (Can be overridden in subclasses or settings file) ---
-    required_vt_symbols: List[str] = []  # List of symbols required by the strategy
-    required_factor_keys: List[str] = []  # List of factor names required from factor events
-    # Default exchange - override if needed or get from contract data
-    exchange: Exchange = Exchange.BINANCE
-    # Default interval - primarily informational, actual data depends on subscriptions
-    interval: Interval = Interval.MINUTE
+    required_factor_keys: List[str] = [] # Default empty list
+    exchange: Optional[Exchange] = None  # Can be set from contract or settings
+    interval: Optional[Interval] = None  # Informational
 
     def __init__(
             self,
-            strategy_engine: "BaseStrategyEngine",
-            strategy_name: str,
-            vt_symbols: List[str],  # Initial symbols from settings
-            setting: dict,  # Initial parameters from settings
-            model_load_path: Optional[str] = None,
-            model_save_path: Optional[str] = None,
-            retraining_config: Optional[Dict[str, Any]] = None,
-            required_factor_keys: Optional[List[str]] = None
+            engine_interface: "BaseStrategyEngine", # Changed name for clarity
+            settings: Dict[str, Any], # All config now comes from this single dict
     ) -> None:
-        """
-        Initialize the StrategyTemplate instance.
-
-        Args:
-            strategy_engine: The Strategy Engine managing this strategy.
-            strategy_name: A unique name for this strategy instance.
-            vt_symbols: Initial list of vt_symbols from configuration.
-            setting: Dictionary of initial parameters from configuration.
-        """
-        self.strategy_engine: "BaseStrategyEngine" = strategy_engine
-        self.strategy_name: str = strategy_name
+        self.strategy_engine: "BaseStrategyEngine" = engine_interface
+        
+        # --- Extract Core Settings ---
+        # strategy_name is crucial and should be in settings (validated by engine)
+        self.strategy_name: str = settings.get("strategy_name", "UnnamedStrategy")
+        
         # vt_symbols can be updated later via settings
-        self.vt_symbols: List[str] = list(vt_symbols) if vt_symbols else [] # Ensure it's a mutable list
+        self.vt_symbols: List[str] = list(settings.get("vt_symbols", []))
 
-        # --- Model Persistence and Configuration ---
-        self.model_load_path: Optional[str] = model_load_path
-        self.model_save_path: Optional[str] = model_save_path
-        self.retraining_config: Dict[str, Any] = retraining_config if retraining_config is not None else {}
-        self.required_factor_keys: List[str] = list(required_factor_keys) if required_factor_keys is not None else []
+        # Factor dependencies
+        self.required_factor_keys: List[str] = list(settings.get("required_factor_keys", []))
 
+        # Model persistence paths
+        # Paths can be relative to MODEL_PATH or absolute
+        _model_load_path_setting = settings.get("model_load_path")
+        self.model_load_path: Optional[str] = str(MODEL_PATH / _model_load_path_setting) if _model_load_path_setting and not Path(_model_load_path_setting).is_absolute() else _model_load_path_setting
+        
+        _model_save_path_setting = settings.get("model_save_path")
+        self.model_save_path: Optional[str] = str(MODEL_PATH / _model_save_path_setting) if _model_save_path_setting and not Path(_model_save_path_setting).is_absolute() else _model_save_path_setting
+
+        # Retraining configuration
+        self.retraining_config: Dict[str, Any] = settings.get("retraining_config", {})
+        self.retrain_interval_days: int = self.retraining_config.get("frequency_days", 30) # Example
 
         # --- Engine Access ---
-        # Convenience methods to access engine functionalities
         self.get_tick: Callable[[str], Optional[TickData]] = self.strategy_engine.get_tick
         self.get_bar: Callable[[str], Optional[BarData]] = self.strategy_engine.get_bar
         self.get_contract: Callable[[str], Optional[ContractData]] = self.strategy_engine.get_contract
 
         # --- Configuration Objects ---
-        # Initialize with default or empty configs first
-        self.model_config = ModelConfig()
-        self.trading_config = TradingConfig()
-        # Ensure default min_order_volume exists if TradingConfig is a dummy
-        if not hasattr(self.trading_config, 'min_order_volume'):
-            self.trading_config.min_order_volume = 1e-8  # Small default tolerance
+        # Initialize from nested dicts within 'settings'
+        model_config_dict = settings.get("model_config", {})
+        self.model_config = ModelConfig(**model_config_dict) if isinstance(model_config_dict, dict) else ModelConfig()
+
+        trading_config_dict = settings.get("trading_config", {})
+        self.trading_config = TradingConfig(**trading_config_dict) if isinstance(trading_config_dict, dict) else TradingConfig()
+        if hasattr(self.trading_config, 'validate') and callable(self.trading_config.validate):
+            try: self.trading_config.validate()
+            except Exception as e: self.write_log(f"TradingConfig validation failed: {e}", ERROR)
+
 
         # --- Strategy State ---
-        self.inited: bool = False  # True after on_init completes successfully
-        self.trading: bool = False  # True after on_start completes and strategy is active
+        self.inited: bool = False
+        self.trading: bool = False
 
         # --- Market Data Cache ---
-        # Stores the last known bar for each symbol (optional usage)
-        self.bars: Dict[str, BarData] = defaultdict(BarData)
-        # Stores the latest factor data received (as a Polars DataFrame or Pandas for model input)
-        self.latest_factor_data: Optional[Union[pd.DataFrame, pl.DataFrame]] = None # Can store intermediate polars or final pandas
+        self.latest_factor_data: Optional[pl.DataFrame] = None # Stores Polars DataFrame
         self.latest_factor_update_time: Optional[datetime] = None
 
         # --- Model Related Attributes ---
-        self.model: Any = None  # Model instance, e.g., scikit-learn estimator
-        self.last_retrain_time: Optional[datetime] = None
-        self.retrain_interval_days: int = 30  # Default retraining interval
+        self.model: Any = None
+        self.last_retrain_time: Optional[datetime] = None # Set after successful retraining or loading metadata
 
         # --- Order Management ---
-        # Stores vt_orderids of orders placed by this strategy that are still active
         self.active_order_ids: Set[str] = set()
 
-        # --- Portfolio Interaction ---
-        # Direct access to portfolio results (requires PortfolioEngine)
+        # --- Portfolio Interaction (Optional) ---
         self.portfolio_result = None
         if self.strategy_engine.portfolio_engine:
             try:
-                # Get the specific PortfolioResult object for this strategy instance
                 self.portfolio_result = self.strategy_engine.portfolio_engine.get_portfolio_result(
                     reference=self.strategy_name
                 )
-                self.write_log("Successfully linked with PortfolioResult.", level=DEBUG)
-            except Exception as e:
-                self.write_log(f"Error linking with PortfolioResult: {e}", level=ERROR)
-        else:
-            self.write_log("PortfolioEngine not available, portfolio results integration disabled.", level=WARNING)
-
-        # --- Apply Initial Settings ---
-        # Load parameters provided in the 'setting' dictionary
-        if setting: # Ensure settings are passed
-            self.update_setting(setting)
+            except Exception as e: self.write_log(f"Error linking with PortfolioResult: {e}", ERROR)
         
-        # Attempt to load a pre-trained model if path is specified
-        self.load_model() 
-        # Note: restore_state might be called by engine if loading persisted state
+        # Load model if path is specified
+        self.load_model()
+        # Runtime data (like last_retrain_time, active_order_ids) is loaded by engine via self.load_data()
 
-        self.write_log("Strategy instance initialized.", level=DEBUG)
+        self.write_log(f"Strategy instance '{self.strategy_name}' initialized with settings.", level=DEBUG)
 
     # --------------------------------
     # Abstract Core Logic Methods (Implement in Subclass)
     # --------------------------------
 
     @abstractmethod
-    def _transform_latest_factors(self, latest_factor_data_map: Dict[str, "pl.DataFrame"]) -> "pl.DataFrame":
+    def _transform_latest_factors(self, latest_factor_data_map: Dict[str, pl.DataFrame]) -> pl.DataFrame:
         """
-        Transforms and combines the latest snapshot of multiple factor DataFrames (Polars)
-        into a single Polars DataFrame suitable for model prediction.
-        This typically involves aligning symbols and creating a feature matrix where
-        rows are vt_symbols and columns are factor features.
-
-        Args:
-            latest_factor_data_map: Dict mapping factor_key to a Polars DataFrame
-                                     containing the latest data for that factor.
-                                     Each DataFrame is expected to have at least 'vt_symbol'
-                                     and factor value column(s).
-
-        Returns:
-            A Polars DataFrame where each row represents a vt_symbol and columns
-            are the combined features from all relevant factors.
+        Transforms latest factor data (Polars) into a single Polars DataFrame
+        for model prediction (rows=vt_symbol, cols=factor_features).
         """
         pass
 
     @abstractmethod
-    def predict_from_model(self, data: pd.DataFrame) -> Any:
-        """
-        Generate raw predictions from the trained model using new input data.
-        This method typically calls `self.model.predict()` or `self.model.predict_proba()`.
-
-        Args:
-            data: Pandas DataFrame containing the combined and transformed features,
-                  ready for input into the model. Index should be vt_symbol.
-
-        Returns:
-            The raw output from the model (e.g., numpy array of predictions or probabilities).
-        """
+    def predict_from_model(self, data: pd.DataFrame) -> Any: # Expects Pandas for sklearn
+        """Generates raw predictions from the model using new (Pandas) input data."""
         pass
 
     @abstractmethod
     def generate_signals_from_prediction(
         self, model_output: Any, symbol_feature_df: pd.DataFrame
     ) -> List[OrderRequest]:
-        """
-        Convert the raw model output into trading signals or directly into OrderRequests.
-
-        Args:
-            model_output: The raw output from `predict_from_model`.
-            symbol_feature_df: The Pandas DataFrame that was fed into the model,
-                               indexed by vt_symbol. Useful for context (e.g., getting symbol list).
-
-        Returns:
-            A list of OrderRequest objects to be executed, or an empty list if no actions.
-            Can also return other types of signals if the strategy uses a multi-step process.
-        """
+        """Converts raw model output into OrderRequests."""
         pass
 
     @abstractmethod
     def prepare_training_data(
-        self, historical_factor_data_map: Dict[str, "pl.DataFrame"]
-    ) -> Tuple[pd.DataFrame, pd.Series]:
-        """
-        Prepares features (X) and labels (y) for model training from historical factor data.
-
-        Args:
-            historical_factor_data_map: Dict mapping factor_key to a Polars DataFrame
-                                         containing historical data for that factor.
-
-        Returns:
-            A tuple (features_df, labels_series):
-            - features_df: Pandas DataFrame of features for training (X).
-            - labels_series: Pandas Series of labels for training (y).
-        """
+        self, historical_factor_data_map: Dict[str, pl.DataFrame]
+    ) -> Tuple[pd.DataFrame, pd.Series]: # Returns Pandas for sklearn
+        """Prepares features (X) and labels (y) for training from historical Polars factor data."""
         pass
-
 
     # --------------------------------
     # Lifecycle Methods (Called by Engine)
     # --------------------------------
     @virtual
     def on_init(self) -> None:
-        """
-        Callback when strategy is initializing.
-        Load historical data, initialize indicators, etc.
-        Set `self.inited = True` upon successful completion.
-        """
         self.write_log("Strategy initializing...")
-        # --- Example: Load historical data ---
-        # if self.get_engine_type() != EngineType.BACKTESTING:
-        #     self.load_bar(10) # Load last 10 bars for initialization
-
-        self.inited = True  # Mark as initialized
+        self.inited = True
         self.write_log("Strategy initialized.")
-        self.put_event()  # Notify engine/UI about state change
+        self.put_event()
 
     @virtual
     def on_start(self) -> None:
-        """
-        Callback when strategy is starting trading.
-        Set `self.trading = True` upon successful completion.
-        """
         self.write_log("Strategy starting...")
-        self.trading = True  # Mark as trading
+        self.trading = True
         self.write_log("Strategy started.")
-        self.put_event()  # Notify engine/UI
+        self.put_event()
 
     @virtual
     def on_stop(self) -> None:
-        """
-        Callback when strategy is stopping trading.
-        Perform cleanup, persist state if needed.
-        Engine automatically sets `self.trading = False` before calling this.
-        """
         self.write_log("Strategy stopping...")
-        # Clear active orders tracked by the strategy
-        self.active_order_ids.clear()
+        # self.trading is set to False by the engine *before* calling on_stop
+        self.active_order_ids.clear() # Clear tracked orders
         self.write_log("Strategy stopped.")
-        self.put_event()  # Notify engine/UI
+        self.put_event()
 
     # --------------------------------
     # Event Processing Methods (Called by Engine)
     # --------------------------------
 
     @virtual
-    def on_factor(self, factor_memories: Dict[str, "FactorMemory"]) -> Optional[List[OrderRequest]]:
-        """
-        Callback when new factor data is received.
-
-        Args:
-            factor_memories: Dictionary mapping factor names to FactorMemory objects.
-
-        Returns:
-            A list of OrderRequest objects to be executed, or None/empty list.
-        """
-        if not self.trading:
+    def on_factor_update(self, factor_memories: Dict[str, FactorMemory]) -> Optional[List[OrderRequest]]: # Renamed
+        """Callback when new factor data is received via FactorMemory instances."""
+        if not self.trading or not self.inited:
             return None
 
-        self.write_log(f"Received factor memories update: {list(factor_memories.keys())}", level=DEBUG)
         current_dt = self.strategy_engine.get_current_datetime()
         self.latest_factor_update_time = current_dt
+        self.write_log(f"Processing factor update event for {len(factor_memories)} factors at {current_dt}", level=DEBUG)
 
-        # --- 1. Fetch Latest Polars Data for Each Factor ---
         latest_polars_data_map: Dict[str, pl.DataFrame] = {}
-        missing_data = False
         for factor_key in self.required_factor_keys:
             factor_memory = factor_memories.get(factor_key)
             if not factor_memory:
-                self.write_log(f"Required factor key {factor_key} not found in received factor_memories.", level=WARNING)
-                missing_data = True
-                break
+                self.write_log(f"Required factor key '{factor_key}' not found in received factor_memories.", WARNING); return None
             
-            # Get latest row(s) - N=1 for snapshot
-            polars_df = factor_memory.get_latest_rows(N=1)
-            if polars_df is None or polars_df.is_empty():
-                self.write_log(f"Factor {factor_key} provided empty data from get_latest_rows(1).", level=WARNING)
-                # missing_data = True # Depending on strategy, one missing factor might be acceptable
-                # break
-                continue # Store empty or skip, depends on how _transform_latest_factors handles it
-
-            latest_polars_data_map[factor_key] = polars_df
+            latest_rows_df = factor_memory.get_latest_rows(N=1) # Expecting Polars DataFrame
+            if latest_rows_df is None or latest_rows_df.is_empty():
+                self.write_log(f"Factor '{factor_key}' provided empty data for latest row. Skipping prediction cycle.", WARNING); return None
+            latest_polars_data_map[factor_key] = latest_rows_df
         
-        if missing_data or not latest_polars_data_map:
-            self.write_log("Skipping prediction due to missing required factor data.", level=WARNING)
-            return None
+        if not latest_polars_data_map:
+            self.write_log("No required factor data available after fetching latest rows.", WARNING); return None
 
-        # --- Core Logic ---
         try:
-            # 1. Check Retraining Schedule - This is usually handled by engine calling retrain_model separately
-            # if self.check_retraining_schedule(current_dt):
-            #     self.write_log("Retraining condition met. Consider triggering retrain_model.", level=INFO)
-                # Actual retraining should be asynchronous or scheduled, not blocking on_factor.
+            if self.model is None: self.write_log("Model not loaded. Cannot predict.", WARNING); return None
 
-            if self.model is None:
-                self.write_log("Model is not loaded or trained. Cannot generate predictions.", level=WARNING)
-                return None
-
-            # 2. Transform latest factors into a single DataFrame for the model
-            # This method is responsible for aligning symbols and creating a feature matrix.
             transformed_pl_df = self._transform_latest_factors(latest_polars_data_map)
             if transformed_pl_df is None or transformed_pl_df.is_empty():
-                self.write_log("Factor transformation resulted in empty data.", level=WARNING)
-                return None
+                self.write_log("Factor transformation resulted in empty data.", WARNING); return None
             
-            # Cache the Polars DataFrame (or convert to Pandas and cache)
-            self.latest_factor_data = transformed_pl_df 
+            self.latest_factor_data = transformed_pl_df # Cache the Polars DF
 
-            # Filter for symbols relevant to this strategy, if not already done in _transform_latest_factors
-            # transformed_pl_df = transformed_pl_df.filter(pl.col('vt_symbol').is_in(self.vt_symbols))
-            # if transformed_pl_df.is_empty():
-            #     self.write_log("Transformed DataFrame is empty after filtering for strategy symbols.", level=DEBUG)
-            #     return None
-
-            # 3. Convert to Pandas DataFrame for scikit-learn or other libraries
-            # Assuming 'vt_symbol' is a column that should become the index
+            # Convert to Pandas for scikit-learn, assuming 'vt_symbol' is a column to become index
             if 'vt_symbol' not in transformed_pl_df.columns:
-                self.write_log("Transformed Polars DataFrame missing 'vt_symbol' column for index.", level=ERROR)
-                return None
+                # _transform_latest_factors should ensure vt_symbol is present if needed for indexing
+                self.write_log("Transformed Polars DataFrame missing 'vt_symbol' column for Pandas index.", ERROR); return None
             
-            # It's often better to let predict_from_model and generate_signals_from_prediction
-            # handle the conversion to pandas and indexing if they need it.
-            # For now, provide the Polars DF, and let the abstract methods decide.
-            # However, predict_from_model is typed to take pd.DataFrame.
-            
-            pandas_transformed_df = transformed_pl_df.to_pandas().set_index('vt_symbol')
-            
-            # Ensure all required factor keys are present as columns after transformation, if model expects them
-            # This check depends on how _transform_latest_factors structures its output.
-            # Example: for factor_key in self.required_factor_keys:
-            # if factor_key not in pandas_transformed_df.columns:
-            # self.write_log(f"Column for factor {factor_key} missing in pandas_transformed_df", ERROR)
-            # return None
-            
-            if pandas_transformed_df.empty:
-                self.write_log("Pandas DataFrame for model input is empty.", level=DEBUG)
-                return None
+            # It's cleaner if _transform_latest_factors returns a DF with vt_symbol as a regular column,
+            # and conversion to pandas with set_index happens just before predict_from_model.
+            try:
+                pandas_features_df = transformed_pl_df.to_pandas().set_index('vt_symbol')
+            except Exception as e_pd:
+                 self.write_log(f"Error converting transformed Polars DF to Pandas or setting index: {e_pd}", ERROR); return None
 
-            # 4. Get predictions from the model
-            # predict_from_model is abstract, implementation will call self.model.predict() etc.
-            model_prediction_output = self.predict_from_model(pandas_transformed_df)
-            if model_prediction_output is None: # Could be empty list/array too
-                self.write_log("Prediction from model returned None or empty result.", level=WARNING)
-                return None
+            if pandas_features_df.empty:
+                self.write_log("Pandas DataFrame for model input is empty.", DEBUG); return None
 
-            # 5. Generate signals/OrderRequests from predictions
-            # generate_signals_from_prediction is abstract.
-            # It takes raw model output and the feature df (for context like symbol list).
-            order_reqs: List[OrderRequest] = self.generate_signals_from_prediction(
-                model_prediction_output,
-                pandas_transformed_df # Pass the pandas DF used for prediction
-            )
+            model_prediction_output = self.predict_from_model(pandas_features_df)
+            if model_prediction_output is None:
+                self.write_log("Prediction from model returned None.", WARNING); return None
 
-            if order_reqs:
-                self.write_log(f"Generated {len(order_reqs)} order requests.", level=DEBUG)
+            order_reqs = self.generate_signals_from_prediction(model_prediction_output, pandas_features_df)
+            if order_reqs: self.write_log(f"Generated {len(order_reqs)} order requests.", DEBUG)
             return order_reqs
-
         except Exception as e:
-            self.write_log(f"Error during on_factor processing pipeline: {e}\n{traceback.format_exc()}", level=ERROR)
+            self.write_log(f"Error during on_factor_update pipeline: {e}\n{traceback.format_exc()}", ERROR)
             return None
 
     @virtual
     def on_order(self, order: OrderData) -> None:
-        """
-        Callback when an order update is received from the engine.
-        Use this to track the status of orders placed by this strategy.
-        """
-        self.write_log(f"Order Update: {order.vt_orderid} Status: {order.status} "
-                       f"Filled: {order.traded}/{order.volume}", level=DEBUG)
-
-        # Update internal tracking of active orders
-        if order.is_active():
-            self.active_order_ids.add(order.vt_orderid)
-        else:
-            if order.vt_orderid in self.active_order_ids:
-                self.active_order_ids.remove(order.vt_orderid)
-
-        # Custom strategy logic based on order status can be added here.
-        # For example, handling rejected orders, partial fills, etc.
+        # (Implementation from your previous code)
+        self.write_log(f"Order Update: {order.vt_orderid} Status: {order.status} Filled: {order.traded}/{order.volume}", DEBUG)
+        if order.is_active(): self.active_order_ids.add(order.vt_orderid)
+        else: self.active_order_ids.discard(order.vt_orderid)
 
     @virtual
     def on_trade(self, trade: TradeData) -> None:
-        """
-        Callback when a trade update (fill) is received from the engine.
-        Use this for monitoring or adjusting strategy state based on fills.
-        Portfolio PnL/position updates are handled by the PortfolioEngine.
-        """
-        self.write_log(f"Trade Update: {trade.vt_orderid} Direction: {trade.direction} "
-                       f"Price: {trade.price} Volume: {trade.volume}", level=DEBUG)
+        # (Implementation from your previous code)
+        self.write_log(f"Trade Update: {trade.vt_orderid} Dir: {trade.direction} Px: {trade.price} Vol: {trade.volume}", DEBUG)
 
-        # Custom strategy logic based on trade fills can be added here.
+    @virtual
+    def on_timer(self) -> None:
+        """Optional timer callback, can be used for periodic checks by the strategy."""
+        self.write_log(f"on_timer called at {self.get_current_datetime()}", level=DEBUG)
+        # Example: Check if model needs reloading if file changed, or other periodic tasks
+        # self.check_and_reload_model_if_updated()
+
 
     # --------------------------------
     # Model Persistence and Retraining
     # --------------------------------
-
     def load_model(self) -> None:
-        """
-        Load the model from the path specified in `model_load_path`.
-        """
-        if self.model_load_path:
-            self.write_log(f"Attempting to load model from: {self.model_load_path}", level=INFO)
-            try:
-                # Ensure the path exists
-                import os
-                if not os.path.exists(self.model_load_path):
-                    self.write_log(f"Model file not found at {self.model_load_path}. No model loaded.", level=WARNING)
-                    return
-
-                with open(self.model_load_path, 'rb') as f:
-                    self.model = joblib.load(f)
-                self.write_log(f"Model loaded successfully from {self.model_load_path}", level=INFO)
-                
-                # If model loading implies it's "trained" for the purpose of retraining schedule:
-                # self.last_retrain_time = self.get_current_datetime() # Or load from metadata if saved with model
-            except FileNotFoundError:
-                self.write_log(f"Model file not found at {self.model_load_path}. No model loaded.", level=WARNING)
-            except pickle.UnpicklingError:
-                self.write_log(f"Error unpickling model from {self.model_load_path}. Model may be corrupt or incompatible.", level=ERROR)
-            except Exception as e:
-                self.write_log(f"Failed to load model from {self.model_load_path}: {e}\n{traceback.format_exc()}", level=ERROR)
-        else:
-            self.write_log("No model_load_path specified. Skipping model loading.", level=DEBUG)
+        if not self.model_load_path:
+            self.write_log("No model_load_path specified. Skipping model loading.", DEBUG); return
+        load_path = Path(self.model_load_path)
+        if not load_path.is_absolute(): load_path = MODEL_PATH / self.model_load_path # Use global MODEL_PATH as base
+        
+        self.write_log(f"Attempting to load model from: {load_path}", INFO)
+        if not load_path.exists():
+            self.write_log(f"Model file not found at {load_path}. No model loaded.", WARNING); return
+        try:
+            with open(load_path, 'rb') as f: self.model = joblib.load(f)
+            self.write_log(f"Model loaded successfully from {load_path}", INFO)
+            # Optionally, load last_retrain_time if saved alongside model
+            # metadata_path = load_path.with_suffix(".meta.json")
+            # if metadata_path.exists(): ... self.last_retrain_time = ...
+        except Exception as e:
+            self.write_log(f"Failed to load model from {load_path}: {e}\n{traceback.format_exc()}", ERROR)
 
     def save_model(self) -> None:
-        """
-        Save the current model to the path specified in `model_save_path`.
-        """
-        if self.model_save_path and self.model is not None:
-            self.write_log(f"Attempting to save model to: {self.model_save_path}", level=INFO)
-            try:
-                # Ensure directory exists
-                import os
-                os.makedirs(os.path.dirname(self.model_save_path), exist_ok=True)
+        if not self.model_save_path or self.model is None:
+            self.write_log(f"Skipping model saving: No save path ('{self.model_save_path}') or model is None.", DEBUG); return
+        save_path = Path(self.model_save_path)
+        if not save_path.is_absolute(): save_path = MODEL_PATH / self.model_save_path # Use global MODEL_PATH
+        
+        self.write_log(f"Attempting to save model to: {save_path}", INFO)
+        try:
+            save_path.parent.mkdir(parents=True, exist_ok=True) # Ensure directory exists
+            with open(save_path, 'wb') as f: joblib.dump(self.model, f)
+            self.write_log(f"Model saved successfully to {save_path}", INFO)
+            # Optionally, save metadata like last_retrain_time
+            # metadata_path = save_path.with_suffix(".meta.json")
+            # with open(metadata_path, "w") as f_meta: json.dump({"last_retrain_time": self.last_retrain_time.isoformat()}, f_meta)
+        except Exception as e:
+            self.write_log(f"Failed to save model to {save_path}: {e}\n{traceback.format_exc()}", ERROR)
 
-                with open(self.model_save_path, 'wb') as f:
-                    joblib.dump(self.model, f)
-                self.write_log(f"Model saved successfully to {self.model_save_path}", level=INFO)
-            except Exception as e:
-                self.write_log(f"Failed to save model to {self.model_save_path}: {e}\n{traceback.format_exc()}", level=ERROR)
-        elif self.model is None:
-            self.write_log("No model instance to save.", level=WARNING)
-        else: # No save path
-            self.write_log("No model_save_path specified. Skipping model saving.", level=DEBUG)
-
-    def _fetch_historical_training_factors(self, factor_memories: Dict[str, "FactorMemory"]) -> Dict[str, "pl.DataFrame"]:
-        """
-        Helper to fetch full historical data for required factors.
-        """
+    def _fetch_historical_training_factors(self, factor_memories: Dict[str, FactorMemory]) -> Dict[str, pl.DataFrame]:
+        # (Implementation from your previous code - seems fine)
         historical_data_map: Dict[str, pl.DataFrame] = {}
         for key in self.required_factor_keys:
-            factor_memory = factor_memories.get(key)
-            if factor_memory:
-                # get_data() should return a Polars DataFrame
-                data = factor_memory.get_data() 
-                if data is not None and not data.is_empty():
-                    historical_data_map[key] = data
-                else:
-                    self.write_log(f"No historical data retrieved for factor {key}.", level=WARNING)
-            else:
-                self.write_log(f"FactorMemory not found for key '{key}' during historical fetch.", level=WARNING)
+            fm = factor_memories.get(key)
+            if fm: data = fm.get_data(); historical_data_map[key] = data if data is not None and not data.is_empty() else pl.DataFrame()
+            else: self.write_log(f"FactorMemory not found for '{key}' during historical fetch.", WARNING)
         return historical_data_map
 
-    @virtual # Keep virtual if subclasses might override the entire retraining orchestration
-    def retrain_model(self) -> None:
-        """
-        Orchestrates the model retraining process.
-        Fetches historical data, prepares it, trains the model, and saves it.
-        This method is intended to be called by the StrategyEngine based on a schedule or trigger.
-        """
-        self.write_log("Starting model retraining process...", level=INFO)
+    @virtual
+    def retrain_model(self, factor_memories_for_training: Dict[str, FactorMemory]) -> None: # Argument name changed
+        """Orchestrates model retraining using provided FactorMemory instances for historical data."""
+        self.write_log("Starting model retraining process...", INFO)
         try:
-            # 1. Fetch historical factor data (Polars DataFrames)
-            # Access factor memories from the strategy engine
-            if not hasattr(self.strategy_engine, 'latest_factor_memories'):
-                self.write_log("StrategyEngine does not have 'latest_factor_memories'. Cannot fetch historical data.", level=ERROR)
-                return
-                
-            historical_polars_map = self._fetch_historical_training_factors(
-                self.strategy_engine.latest_factor_memories
-            )
+            historical_polars_map = self._fetch_historical_training_factors(factor_memories_for_training)
+            if not historical_polars_map or all(df.is_empty() for df in historical_polars_map.values()):
+                self.write_log("No historical factor data fetched or all empty. Aborting retraining.", WARNING); return
 
-            if not historical_polars_map:
-                self.write_log("No historical factor data fetched. Aborting retraining.", level=WARNING)
-                return
-
-            # 2. Prepare training data (features X, labels y) using the abstract method
-            # This method is responsible for any complex transformations, feature engineering,
-            # and conversion to Pandas DataFrames/Series suitable for scikit-learn.
-            features_df, labels_series = self.prepare_training_data(historical_polars_map)
-
+            features_df, labels_series = self.prepare_training_data(historical_polars_map) # Returns Pandas
             if features_df is None or features_df.empty or labels_series is None or labels_series.empty:
-                self.write_log("Training data preparation resulted in empty features or labels. Aborting retraining.", level=WARNING)
-                return
-
-            # 3. Train the model
-            if self.model is None:
-                # This implies the strategy needs to define how to instantiate its model
-                # if it's not loaded. For now, we log an error.
-                # A concrete strategy's __init__ or a specific method should create self.model.
-                self.write_log("self.model is None. Cannot fit. Please ensure model is initialized.", level=ERROR)
-                return
+                self.write_log("Training data prep resulted in empty features/labels. Aborting.", WARNING); return
             
-            # Assuming self.model is a scikit-learn compatible estimator
-            if not hasattr(self.model, 'fit'):
-                self.write_log("self.model does not have a 'fit' method. Cannot train.", level=ERROR)
-                return
+            if self.model is None: self.write_log("self.model is None. Cannot fit. Ensure model is initialized.", ERROR); return
+            if not hasattr(self.model, 'fit'): self.write_log("self.model has no 'fit' method.", ERROR); return
 
-            self.write_log(f"Training model with {features_df.shape[0]} samples and {features_df.shape[1]} features.", level=INFO)
+            self.write_log(f"Training model with {features_df.shape[0]} samples, {features_df.shape[1]} features.", INFO)
             self.model.fit(features_df, labels_series)
-            self.write_log("Model training completed.", level=INFO)
-
-            # 4. Save the retrained model
+            self.write_log("Model training completed.", INFO)
             self.save_model()
-
-            # 5. Update last retrain time
             self.last_retrain_time = self.get_current_datetime()
-            self.write_log(f"Model retraining finished. Last retrain time updated to {self.last_retrain_time}", level=INFO)
-            self.put_event() # Notify state change
-
+            self.write_log(f"Model retraining finished. Last retrain: {self.last_retrain_time}", INFO)
+            self.put_event()
         except Exception as e:
-            self.write_log(f"Error during model retraining: {e}\n{traceback.format_exc()}", level=ERROR)
+            self.write_log(f"Error during model retraining: {e}\n{traceback.format_exc()}", ERROR)
 
     def check_retraining_schedule(self, current_datetime: datetime) -> bool:
-        """
-        Check if the model should be retrained based on the schedule.
-        """
-        if self.model is None and not self.model_load_path: # If no model and no path to load one, retrain.
-            self.write_log("Retraining check: Model is None and no load path. Initial training required.", level=INFO)
-            return True
-        
-        if self.last_retrain_time is None: # If model exists (loaded) but never retrained by this instance.
-            # This could mean it was loaded and is considered "trained enough" until first interval passes.
-            # Or, strategy might require retraining soon after loading if data is stale.
-            # For now, if loaded, assume last_retrain_time should be set or it implies first cycle.
-             self.write_log("Retraining check: Last retrain time is None. Consider if retraining is due.", level=INFO)
-             # Defaulting to False if last_retrain_time is None but model exists, to let interval drive it.
-             # If a model is loaded, and no last_retrain_time, it implies it hasn't been retrained by this instance yet.
-             # The first scheduled retrain will then happen after retrain_interval_days.
-             return False # Or True if immediate retrain post-load is desired without specific last_retrain_time.
+        # (Implementation from your previous code - seems fine, uses self.retrain_interval_days)
+        # Ensure self.retrain_interval_days is correctly parsed from self.retraining_config
+        self.retrain_interval_days = self.retraining_config.get("frequency_days", 30)
 
-
-        if self.retrain_interval_days <= 0: # Retraining is disabled or set to manual
-            return False
-
-        days_since_last_retrain = (current_datetime - self.last_retrain_time).days
-        if days_since_last_retrain >= self.retrain_interval_days:
-            self.write_log(
-                f"Retraining check: {days_since_last_retrain} days since last retrain "
-                f"(interval: {self.retrain_interval_days} days). Retraining required.", level=INFO
-            )
-            return True
-        
+        if self.model is None and not self.model_load_path:
+            self.write_log("Retraining check: Initial training required (no model, no load path).", INFO); return True
+        if self.last_retrain_time is None:
+            self.write_log("Retraining check: Last retrain time is None. Retraining might be due based on interval.", INFO)
+            # If a model was loaded, we might want to wait for the first interval to pass.
+            # Or, if no last_retrain_time, assume it's due if interval is positive.
+            return self.retrain_interval_days > 0 # Retrain if interval is set and no prior retrain by this instance
+            
+        if self.retrain_interval_days <= 0: return False # Disabled
+        days_since = (current_datetime.replace(tzinfo=None) - self.last_retrain_time.replace(tzinfo=None)).days # Naive comparison
+        if days_since >= self.retrain_interval_days:
+            self.write_log(f"Retraining check: {days_since} days since last retrain (interval: {self.retrain_interval_days}). Required.", INFO); return True
         return False
 
     # --------------------------------
-    # Portfolio and Order Generation (Order generation is now part of generate_signals_from_prediction)
+    # Portfolio and Order Generation
     # --------------------------------
-    # The method generate_orders_from_targets might still be useful if generate_signals_from_prediction
-    # returns target weights/positions instead of direct OrderRequests.
-    # For now, assuming generate_signals_from_prediction returns OrderRequests.
-    # If not, that method or a similar one to convert signals/weights to orders would be needed here.
-    # For example, if generate_signals_from_prediction returns target weights (pd.Series):
-    # target_weights = self.generate_signals_from_prediction(...)
-    # order_reqs = self.convert_weights_to_orders(target_weights)
-
-    # This method is kept for utilities like closing all positions, not for main signal-to-order flow.
     def close_all_positions(self) -> List[OrderRequest]:
-        """
-        Generate orders to close all currently held positions for symbols
-        managed by this strategy. Uses MARKET orders for quick closure.
-        """
-        self.write_log("Generating orders to close all positions...", level=INFO)
-        order_reqs: List[OrderRequest] = []
-        min_order_volume = getattr(self.trading_config, 'min_order_volume', 1e-8)
+        # (Implementation from your previous code - seems fine)
+        self.write_log("Generating orders to close all positions...", INFO); reqs = []
+        min_vol = getattr(self.trading_config, 'min_order_volume', 1e-8)
+        for sym in self.vt_symbols:
+            pos = self.strategy_engine.get_portfolio_position(self.strategy_name, sym)
+            if abs(pos) > min_vol:
+                ct = self.get_contract(sym)
+                if not ct: self.write_log(f"Cannot close for {sym}: Contract not found.", WARNING); continue
+                direction = Direction.SHORT if pos > 0 else Direction.LONG
+                vol = round_to(abs(pos), getattr(ct, 'volumetick', 1e-8))
+                if vol < getattr(ct, 'min_volume', 1e-8): continue
+                reqs.append(OrderRequest(symbol=ct.symbol,exchange=ct.exchange,direction=direction,offset=Offset.NONE,type=OrderType.MARKET,price=0,volume=vol,reference=self.strategy_name))
+        return reqs
 
-        for vt_symbol in self.vt_symbols:
-            current_pos = self.strategy_engine.get_portfolio_position(self.strategy_name, vt_symbol)
-
-            if abs(current_pos) > min_order_volume:  # Check if position is significant
-                contract = self.get_contract(vt_symbol)
-                if not contract:
-                    self.write_log(f"Cannot close position for {vt_symbol}: Contract not found.", level=WARNING)
-                    continue
-
-                direction: Direction
-                if current_pos > 0:  # Long position, need to sell
-                    direction = Direction.SHORT
-                else:  # Short position, need to buy back
-                    direction = Direction.LONG
-
-                # Round volume (absolute value)
-                volume = abs(current_pos)
-                volume_tick = getattr(contract, 'volumetick', None)
-                if volume_tick and volume_tick > 0:
-                    volume = round_to(volume, volume_tick)
-                else:
-                    volume = round(volume, 8)
-
-                if volume < min_order_volume: continue  # Skip if rounded volume is too small
-
-                # Use MARKET order for closing positions quickly
-                req = OrderRequest(
-                    symbol=contract.symbol,
-                    exchange=contract.exchange,
-                    direction=direction,
-                    offset=Offset.NONE,  # Or Offset.CLOSE if required by exchange/gateway
-                    type=OrderType.MARKET,
-                    price=0,  # Market orders don't need price
-                    volume=volume,
-                    reference=self.strategy_name
-                )
-                order_reqs.append(req)
-                self.write_log(
-                    f"Generated Close Order: {req.vt_symbol} {req.direction} {req.volume:.6f} (Current Pos: {current_pos:.6f})",
-                    level=INFO)
-
-        return order_reqs
 
     def get_portfolio_state(self) -> Optional[dict]:
-        """
-        Get the current state data of the portfolio associated with this strategy.
-        Requires PortfolioEngine to be active.
-        """
-        if self.portfolio_result and hasattr(self.portfolio_result, 'get_data'):
-            return self.portfolio_result.get_data()
-        elif self.strategy_engine.portfolio_engine:
-            self.write_log("PortfolioResult object not available, cannot get portfolio state.", level=WARNING)
-            return None
-        else:
-            # Portfolio engine not running, no state available
-            return None
+        # (Implementation from your previous code - seems fine)
+        if self.portfolio_result and hasattr(self.portfolio_result, 'get_data'): return self.portfolio_result.get_data()
+        return None
 
     # --------------------------------
-    # Order Management Actions
+    # Order Management Actions (send_order, cancel_order, etc.)
     # --------------------------------
-
-    def send_order(
-            self,
-            vt_symbol: str,
-            direction: Direction,
-            order_type: OrderType,
-            price: float,
-            volume: float,
-            offset: Offset = Offset.NONE,  # Default to OPEN/NONE
-            lock: bool = False,  # Pass through lock/net if needed by engine/agent
-            net: bool = False
-    ) -> List[str]:
-        """
-        Send an order request through the Strategy Engine.
-
-        Args:
-            vt_symbol: Target contract symbol.
-            direction: Direction (LONG or SHORT).
-            order_type: OrderType (LIMIT, MARKET, etc.).
-            price: Order price (required for LIMIT orders).
-            volume: Order volume.
-            offset: Order offset (OPEN, CLOSE, etc.) - Defaults to NONE/OPEN.
-            lock: Flag for position locking (used by ExecutionAgent).
-            net: Net position flag (used by ExecutionAgent).
-
-        Returns:
-            List of vt_orderid strings generated for the order(s).
-        """
-        if not self.trading:
-            self.write_log("Order rejected: Strategy is not currently trading.", level=WARNING)
-            return []
-
-        contract = self.get_contract(vt_symbol)
-        if not contract:
-            self.write_log(f"Order rejected: Contract not found for {vt_symbol}.", level=ERROR)
-            return []
-
-        # Round price and volume according to contract specifications
-        price_tick = contract.pricetick or 0.00000001
-        volume_tick = contract.volumetick or 0.00000001  # Use small default if not specified
-        min_volume = contract.min_volume or volume_tick  # Minimum order size
-
-        rounded_price = round_to(price, price_tick)
-        rounded_volume = round_to(volume, volume_tick)
-
-        # Validate volume against minimum
-        if rounded_volume < min_volume:
-            self.write_log(f"Order rejected: Volume {volume:.8f} (Rounded: {rounded_volume:.8f}) "
-                           f"is less than minimum volume {min_volume:.8f} for {vt_symbol}", level=WARNING)
-            return []
-
-        req = OrderRequest(
-            symbol=contract.symbol,
-            exchange=contract.exchange,
-            direction=direction,
-            offset=offset,
-            type=order_type,
-            price=rounded_price,
-            volume=rounded_volume,
-            reference=self.strategy_name  # Engine will ensure this is set
-        )
-
-        # Delegate sending to the engine
-        vt_orderids = self.strategy_engine.send_order(
-            strategy_name=self.strategy_name,
-            req=req,
-            lock=lock,
-            net=net
-        )
-        return vt_orderids
+    # (Implementations from your previous code - ensure they use self.strategy_engine correctly)
+    def send_order(self, vt_symbol:str,direction:Direction,order_type:OrderType,price:float,volume:float,offset:Offset=Offset.NONE,lock:bool=False,net:bool=False) -> List[str]:
+        if not self.trading: self.write_log("Order rejected: Not trading.", WARNING); return []
+        ct=self.get_contract(vt_symbol);
+        if not ct: self.write_log(f"Order rejected: Contract not found for {vt_symbol}.", ERROR); return []
+        r_price=round_to(price,ct.pricetick or 1e-8); r_vol=round_to(volume,ct.volumetick or 1e-8)
+        if r_vol < (ct.min_volume or 1e-8): self.write_log(f"Order rejected: Vol {volume} < min_vol {ct.min_volume} for {vt_symbol}", WARNING); return []
+        req=OrderRequest(symbol=ct.symbol,exchange=ct.exchange,direction=direction,offset=offset,type=order_type,price=r_price,volume=r_vol,reference=self.strategy_name)
+        return self.strategy_engine.send_order(strategy_name=self.strategy_name,req=req,lock=lock,net=net)
 
     def cancel_order(self, vt_orderid: str) -> None:
-        """
-        Request cancellation of a specific active order placed by this strategy.
-
-        Args:
-            vt_orderid: The unique order identifier (vt_orderid) to cancel.
-        """
-        if not self.trading:
-            self.write_log(f"Cancel request ignored: Strategy not trading.", level=WARNING)
-            return
-
-        # Check if the order ID belongs to the set of active orders tracked by this strategy
-        if vt_orderid not in self.active_order_ids:
-            self.write_log(f"Cancel request ignored: Order ID {vt_orderid} not found in this strategy's active orders.",
-                           level=WARNING)
-            # Option: Allow cancelling any order via engine? Could be risky.
-            # If allowed, remove the check above.
-            # return # Strict check: only cancel own active orders
-
-        # Get the full OrderData object to create a CancelRequest
-        order = self.strategy_engine.main_engine.get_order(vt_orderid)
+        if not self.trading: self.write_log("Cancel ignored: Not trading.", WARNING); return
+        if vt_orderid not in self.active_order_ids: self.write_log(f"Cancel ignored: Order {vt_orderid} not in active set.", WARNING); # return # Or allow general cancel
+        order=self.strategy_engine.main_engine.get_order(vt_orderid)
         if order:
-            if order.is_active():
-                # Delegate cancellation to the engine
-                self.strategy_engine.cancel_order(order)
-            else:
-                self.write_log(
-                    f"Cancel request ignored: Order {vt_orderid} is already inactive (Status: {order.status}).",
-                    level=DEBUG)
-                # Remove from active set if it's somehow still there
-                self.active_order_ids.discard(vt_orderid)
-        else:
-            self.write_log(f"Cancel request failed: Order {vt_orderid} not found in MainEngine.", level=WARNING)
-            # Remove from active set if it's somehow still there
-            self.active_order_ids.discard(vt_orderid)
+            if order.is_active(): self.strategy_engine.cancel_order(order)
+            else: self.write_log(f"Cancel ignored: Order {vt_orderid} inactive (Status: {order.status}).", DEBUG); self.active_order_ids.discard(vt_orderid)
+        else: self.write_log(f"Cancel failed: Order {vt_orderid} not found in MainEngine.", WARNING); self.active_order_ids.discard(vt_orderid)
 
     def cancel_all_active_orders(self) -> None:
-        """
-        Cancel all orders currently tracked as active by this strategy instance.
-        """
-        if not self.trading:
-            self.write_log("Cancel all request ignored: Strategy not trading.", level=WARNING)
-            return
+        if not self.trading: self.write_log("Cancel all ignored: Not trading.", WARNING); return
+        if not self.active_order_ids: self.write_log("No active orders to cancel.", DEBUG); return
+        self.write_log(f"Cancelling all {len(self.active_order_ids)} active orders...", INFO)
+        for oid in list(self.active_order_ids): self.cancel_order(oid)
 
-        if not self.active_order_ids:
-            self.write_log("No active orders tracked by this strategy to cancel.", level=DEBUG)
-            return
-
-        self.write_log(f"Cancelling all {len(self.active_order_ids)} active orders tracked by this strategy...",
-                       level=INFO)
-        # Iterate over a copy of the set, as cancel_order might modify it via on_order callback
-        for vt_orderid in list(self.active_order_ids):
-            self.cancel_order(vt_orderid)
-
-    def get_active_order_ids(self) -> List[str]:
-        """
-        Return a list of vt_orderids currently tracked as active by this strategy.
-        Required by the BaseStrategyEngine for cleanup during stop/removal.
-        """
-        return list(self.active_order_ids)
+    def get_active_order_ids(self) -> List[str]: return list(self.active_order_ids)
 
     # --------------------------------
     # State Management (Persistence)
     # --------------------------------
-
     def get_parameters(self) -> dict:
-        """
-        Return the current strategy parameters as a dictionary.
-        Used by the engine for saving settings.
-        """
-        # Collect parameters based on the 'parameters' list
-        params = {}
-        for name in self.parameters:
+        params = {"strategy_name": self.strategy_name, "class_name": self.__class__.__name__} # Core identifiers
+        for name in self.parameters: # self.parameters is list of attribute names
             value = getattr(self, name, None)
-            # Serialize config objects
-            if isinstance(value, (ModelConfig, TradingConfig)):
-                params[name] = value.__dict__  # Convert config object to dict
-            elif isinstance(value, list):
-                params[name] = list(value)  # Ensure lists are copied
-            elif isinstance(value, set):
-                params[name] = list(value)  # Convert sets to lists for JSON
-            else:
-                params[name] = value
+            if isinstance(value, (ModelConfig, TradingConfig)): params[name] = value.__dict__
+            elif isinstance(value, list): params[name] = list(value)
+            elif isinstance(value, set): params[name] = list(value) # For JSON
+            elif isinstance(value, Path): params[name] = str(value) # Paths as strings
+            else: params[name] = value
+        # Ensure required_factor_keys is always a list, even if None initially
+        if "required_factor_keys" not in params or params["required_factor_keys"] is None:
+            params["required_factor_keys"] = []
+        if "vt_symbols" not in params or params["vt_symbols"] is None:
+            params["vt_symbols"] = []
         return params
 
-    def get_settings(self) -> dict:
-        """
-        Get strategy settings dictionary (equivalent to get_parameters).
-        Kept for potential compatibility, prefer get_parameters.
-        """
-        return self.get_parameters()
+    def get_settings(self) -> dict: return self.get_parameters() # Alias for compatibility
 
-    def get_data(self) -> dict:
-        """
-        Get the current runtime state of the strategy as a dictionary.
-        Used by the engine for saving runtime data. Should be JSON serializable.
-        """
-        # Include basic state and any other relevant runtime variables
-        data = {
-            "inited": self.inited,
-            "trading": self.trading,
-            "active_order_ids": list(self.active_order_ids),
-            "latest_factor_update_time": self.latest_factor_update_time.isoformat() if self.latest_factor_update_time else None,
-            "last_retrain_time": self.last_retrain_time.isoformat() if self.last_retrain_time else None,
-            # Model serialization placeholder
-            "model_params": self.model.get_params() if hasattr(self.model, "get_params") else ("model_exists" if self.model is not None else None)
-        }
-        # Add variables defined in the 'variables' list (ensure 'last_retrain_time' is handled if it's in self.variables)
-        for name in self.variables:
-            if name not in data:  # Avoid overwriting core state or already added items
-                value = getattr(self, name, None)
-                if isinstance(value, datetime):
-                    data[name] = value.isoformat()
-                elif isinstance(value, (bool, int, float, str, list, dict, type(None))):
-                    data[name] = value
-                # Add other serializable types as needed
+    def get_data(self) -> dict: # For runtime state saving
+        data = {"active_order_ids": list(self.active_order_ids)}
+        for name in self.variables: # self.variables lists attributes to save
+            value = getattr(self, name, None)
+            if isinstance(value, datetime): data[name] = value.isoformat()
+            elif name.endswith("_iso") and isinstance(value, str): data[name] = value # Already iso
+            elif isinstance(value, (bool,int,float,str,list,dict,type(None))): data[name] = value
+        # Ensure specific time fields are correctly formatted if not in self.variables
+        if self.latest_factor_update_time and "latest_factor_update_time_iso" not in data: data["latest_factor_update_time_iso"] = self.latest_factor_update_time.isoformat()
+        if self.last_retrain_time and "last_retrain_time_iso" not in data: data["last_retrain_time_iso"] = self.last_retrain_time.isoformat()
         return data
 
-    def load_data(self, data: dict) -> None:
-        """
-        Restore the strategy's runtime state from a dictionary.
-        Called by the engine during initialization (before on_init).
-        """
-        self.write_log("Loading runtime data into strategy...", level=DEBUG)
-        # Restore basic state cautiously - engine manages init/trading flags mostly
-        # self.inited = data.get("inited", self.inited)
-        # self.trading = data.get("trading", self.trading)
-
-        # Restore tracked active orders
-        saved_order_ids = data.get("active_order_ids", [])
-        if isinstance(saved_order_ids, list):
-            self.active_order_ids = set(saved_order_ids)
-            self.write_log(f"Restored {len(self.active_order_ids)} active order IDs.", level=DEBUG)
-
-        # Restore time-related fields
-        for time_field_name in ["latest_factor_update_time", "last_retrain_time"]:
-            time_str = data.get(time_field_name)
-            if time_str:
-                try:
-                    setattr(self, time_field_name, datetime.fromisoformat(time_str))
-                except (TypeError, ValueError):
-                    self.write_log(f"Could not parse saved time for {time_field_name}: {time_str}", level=WARNING)
+    def load_data(self, data: dict) -> None: # For runtime state loading
+        self.write_log("Loading runtime data into strategy...", DEBUG)
+        self.active_order_ids = set(data.get("active_order_ids", []))
         
-        # Model restoration placeholder
-        model_params_data = data.get("model_params")
-        if model_params_data:
-            if model_params_data == "model_exists" or isinstance(model_params_data, dict):
-                self.model = "ModelLoadedPlaceholder" # Placeholder
-                self.write_log("Model state found in saved data. Concrete strategy should handle re-instantiation.", level=INFO)
-            # In a real scenario, you'd use model_params_data to re-initialize the model, e.g.
-            # self.model = YourModelClass(**model_params_data) or joblib.load(...)
+        time_fields_map = { # Maps data key to attribute name
+            "latest_factor_update_time_iso": "latest_factor_update_time",
+            "last_retrain_time_iso": "last_retrain_time"
+        }
+        for data_key, attr_name in time_fields_map.items():
+            time_str = data.get(data_key)
+            if time_str:
+                try: setattr(self, attr_name, datetime.fromisoformat(time_str).replace(tzinfo=timezone.utc if "Z" in time_str or "+" in time_str else None))
+                except: self.write_log(f"Could not parse saved time for {attr_name}: {time_str}", WARNING)
 
-        # Restore other variables defined in the 'variables' list
-        for name in self.variables:
-            # Skip already handled variables to prevent double processing or errors
-            if name in ["active_order_ids", "latest_factor_update_time", "last_retrain_time"]: 
-                continue
-            if name in data:
-                value = data[name]
-                # Handle potential type conversions (e.g., ISO string back to datetime)
-                # Check if the attribute is annotated as Optional[datetime] or datetime
-                # This is a simplified check; proper type handling might be more complex
-                is_datetime_field = False
-                if hasattr(self, '__annotations__'):
-                    attr_type = self.__annotations__.get(name)
-                    if attr_type == Optional[datetime] or attr_type == datetime:
-                        is_datetime_field = True
+        for name in self.variables: # Load other variables
+            if name in data and name not in time_fields_map.values(): # Avoid re-processing time fields
+                setattr(self, name, data[name])
+        self.write_log("Runtime data loaded.", DEBUG)
 
-                if (is_datetime_field or "time" in name.lower()) and isinstance(value, str):
-                    try:
-                        setattr(self, name, datetime.fromisoformat(value))
-                    except (TypeError, ValueError):
-                        self.write_log(f"Error parsing datetime string '{value}' for '{name}'. Setting as is.", level=WARNING)
-                        setattr(self, name, value) # Keep original if parse fails
-                else:
-                    setattr(self, name, value)
 
-        self.write_log("Runtime data loaded.", level=DEBUG)
+    def update_setting(self, settings: dict) -> None:
+        """Update strategy parameters from a dictionary (typically from engine)."""
+        self.write_log(f"Updating strategy settings for '{self.strategy_name}'...", DEBUG)
 
-    def update_setting(self, setting: dict) -> None:
-        """
-        Update strategy parameters from a dictionary.
-        Called by the engine when editing strategy settings.
-        """
-        self.write_log("Updating strategy settings...", level=DEBUG)
+        # Update core attributes if present in settings
+        self.vt_symbols = list(settings.get("vt_symbols", self.vt_symbols))
+        self.required_factor_keys = list(settings.get("required_factor_keys", self.required_factor_keys))
+        
+        _mlp = settings.get("model_load_path", self.model_load_path) # Keep current if not in new settings
+        self.model_load_path = str(MODEL_PATH / _mlp) if _mlp and not Path(_mlp).is_absolute() else _mlp
+        
+        _msp = settings.get("model_save_path", self.model_save_path)
+        self.model_save_path = str(MODEL_PATH / _msp) if _msp and not Path(_msp).is_absolute() else _msp
 
-        # Update standard parameters if present in the setting dict
-        if "vt_symbols" in setting and isinstance(setting["vt_symbols"], list):
-            self.vt_symbols = list(setting["vt_symbols"])
+        if "retraining_config" in settings and isinstance(settings["retraining_config"], dict):
+            self.retraining_config.update(settings["retraining_config"])
+            self.retrain_interval_days = self.retraining_config.get("frequency_days", self.retrain_interval_days)
 
-        # Update to required_factor_keys
-        if "required_factor_keys" in setting and isinstance(setting["required_factor_keys"], list):
-            self.required_factor_keys = list(setting["required_factor_keys"])
-        elif "required_factors" in setting and isinstance(setting["required_factors"], list): # Legacy support
-            self.write_log("Using legacy 'required_factors' setting, please update to 'required_factor_keys'.", WARNING)
-            self.required_factor_keys = list(setting["required_factors"])
-            
-        # Update new parameters
-        if "model_load_path" in setting:
-            self.model_load_path = setting["model_load_path"]
-        if "model_save_path" in setting:
-            self.model_save_path = setting["model_save_path"]
-        if "retraining_config" in setting and isinstance(setting["retraining_config"], dict):
-            self.retraining_config.update(setting["retraining_config"]) # Merge dicts
 
-        # Update config objects if present
-        if "model_config" in setting and isinstance(setting["model_config"], dict):
-            try:
-                self.model_config = ModelConfig(**setting["model_config"])
-                self.write_log("ModelConfig updated.", level=DEBUG)
-            except Exception as e:
-                self.write_log(f"Error updating ModelConfig: {e}", level=ERROR)
+        # Update ModelConfig and TradingConfig objects
+        model_cfg_dict = settings.get("model_config")
+        if isinstance(model_cfg_dict, dict):
+            try: self.model_config = ModelConfig(**model_cfg_dict)
+            except Exception as e: self.write_log(f"Error updating ModelConfig: {e}", ERROR)
+        
+        trading_cfg_dict = settings.get("trading_config")
+        if isinstance(trading_cfg_dict, dict):
+            try: 
+                self.trading_config = TradingConfig(**trading_cfg_dict)
+                if hasattr(self.trading_config, 'validate'): self.trading_config.validate()
+            except Exception as e: self.write_log(f"Error updating TradingConfig: {e}", ERROR)
 
-        if "trading_config" in setting and isinstance(setting["trading_config"], dict):
-            try:
-                self.trading_config = TradingConfig(**setting["trading_config"])
-                # Re-validate after update
-                if hasattr(self.trading_config, 'validate') and callable(self.trading_config.validate):
-                    self.trading_config.validate()
-                self.write_log("TradingConfig updated and validated.", level=DEBUG)
-            except Exception as e:
-                self.write_log(f"Error updating or validating TradingConfig: {e}", level=ERROR)
+        # Update other custom parameters listed in self.parameters
+        for param_name in self.parameters:
+            if param_name in settings and param_name not in [
+                "vt_symbols", "required_factor_keys", "model_load_path", 
+                "model_save_path", "retraining_config", "model_config", "trading_config"
+            ]: # Avoid re-assigning already handled standard fields
+                setattr(self, param_name, settings[param_name])
+        
+        # After updating settings, especially model_load_path, attempt to reload the model
+        self.load_model()
+        self.write_log("Strategy settings updated.", INFO)
+        self.put_event()
 
-        # Update other parameters defined in the 'parameters' list
-        for name in self.parameters:
-            # Avoid re-updating the handled ones above
-            if name not in ["vt_symbols", "required_factors", "model_config", "trading_config"]:
-                if name in setting:
-                    setattr(self, name, setting[name])
-
-        self.write_log("Strategy settings updated.", level=INFO)
 
     # --------------------------------
     # Utility Methods
     # --------------------------------
-
     def write_log(self, msg: str, level: int = INFO) -> None:
-        """Log a message through the Strategy Engine."""
         self.strategy_engine.write_log(msg, self, level=level)
 
     def put_event(self) -> None:
-        """
-        Publish an event to notify the engine (and potentially UI)
-        about a change in the strategy's state.
-        """
-        # Engine usually handles putting events on init/start/stop/remove.
-        # Call this if the strategy needs to signal an internal state change.
         self.strategy_engine.put_strategy_update_event(self)
 
     def send_email(self, subject: str, msg: str) -> None:
-        """Send an email notification through the Strategy Engine."""
         self.strategy_engine.send_email(subject, msg, self)
 
     def get_engine_type(self) -> EngineType:
-        """Get the type of the Strategy Engine (LIVE or BACKTESTING)."""
         return self.strategy_engine.get_engine_type()
 
     def get_current_datetime(self) -> datetime:
-        """Get the current datetime from the Strategy Engine (handles backtesting time)."""
         return self.strategy_engine.get_current_datetime()
+

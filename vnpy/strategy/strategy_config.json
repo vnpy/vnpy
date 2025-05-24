@@ -1,0 +1,55 @@
+[
+  {
+    "class_name": "MyMomentumStrategy",
+    "strategy_name": "Momentum_BTC_ETH_1h_Factors_EMA_RSI",
+    "vt_symbols": ["BTCUSDT.BINANCE", "ETHUSDT.BINANCE"],
+    "required_factor_keys": [
+      "factor.1h.EMAFactor@period_20-vt_symbols_['BTCUSDT.BINANCE', 'ETHUSDT.BINANCE']",
+      "factor.1h.RSIFactor@period_14-vt_symbols_['BTCUSDT.BINANCE', 'ETHUSDT.BINANCE']"
+    ],
+    "model_load_path": "momentum_model_v1.joblib",
+    "model_save_path": "momentum_model_v1.joblib",
+    "retraining_config": {
+      "frequency_days": 30,
+      "training_data_lookback_days": 180,
+      "custom_retrain_param": "some_value"
+    },
+    "model_config": {
+      "model_type": "LogisticRegression",
+      "hyperparameters": {
+        "C": 1.0,
+        "solver": "liblinear"
+      }
+    },
+    "trading_config": {
+      "min_order_volume": 0.001,
+      "max_position_risk_per_trade_pct": 0.02,
+      "target_volatility_pct": 0.15
+    },
+    "custom_strategy_param_A": "alpha",
+    "custom_strategy_param_B": 123
+  },
+  {
+    "class_name": "MeanReversionPairsStrategy",
+    "strategy_name": "Pairs_ETHBTC_30m_SpreadFactor",
+    "vt_symbols": ["ETHBTC.BINANCE"],
+    "required_factor_keys": [
+      "factor.30m.PairSpreadFactor@symbol1_ETHUSDT.BINANCE-symbol2_BTCUSDT.BINANCE"
+    ],
+    "model_load_path": "pairs_kalman_filter_model.joblib",
+    "model_save_path": "pairs_kalman_filter_model_updated.joblib",
+    "retraining_config": {
+      "frequency_days": 7,
+      "training_data_lookback_days": 90
+    },
+    "model_config": {
+      "filter_type": "Kalman",
+      "observation_covariance": 0.01
+    },
+    "trading_config": {
+      "entry_threshold_std": 2.0,
+      "exit_threshold_std": 0.5,
+      "min_order_volume": 0.01
+    }
+  }
+]
