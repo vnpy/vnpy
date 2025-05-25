@@ -590,7 +590,8 @@ class FactorEngine(BaseEngine):
                     # Potentially re-raise to halt the engine if critical
                     # raise RuntimeError(f"FactorEngine critical failure after {self.consecutive_errors} errors.") from e_dask
             finally:
-                self._cleanup_memory_resources() # GC and other cleanup
+                # self._cleanup_memory_resources() # GC and other cleanup
+                pass
 
     def _truncate_memory_bar(self) -> None:
         """Truncates the in-memory OHLCV bar data."""
